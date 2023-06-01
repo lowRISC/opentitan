@@ -35,7 +35,7 @@ enum {
    * Although some parts of the ERR_BITS register are marked reserved, the OTBN
    * documentation explicitly guarantees that ERR_BITS is zero for a successful
    * execution:
-   *   https://docs.opentitan.org/hw/ip/otbn/doc/#design-details-software-execution
+   *   https://opentitan.org/book/hw/ip/otbn/doc/theory_of_operation.html#software-execution-design-details
    */
   kOtbnErrBitsNoError = 0,
 };

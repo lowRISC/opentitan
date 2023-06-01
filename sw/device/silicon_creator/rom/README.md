@@ -26,10 +26,10 @@ The ROM needs to prepare the OpenTitan chip for executing a ROM_EXT, including e
         *   Disable Interrupts and set well-defined exception handler.
             This should keep initial execution deterministic.
 
-        *   [Clean Device State Part 1](#clean-device-state-p1).
+        *   [Clean Device State Part 1](#cleaning-device-state).
             This includes enabling SRAM Scrambling.
 
-        *   Setup structures for C execution ([CRT](#crt-init): `.data`, `.bss` sections, stack).
+        *   Setup structures for C execution ([CRT](#crt-initialization): `.data`, `.bss` sections, stack).
 
         *   Jump into C code
 
@@ -136,7 +136,7 @@ Dependencies:
 *   OTP
 *   ROM Integrity Measurement
 
-### Cleaning Device State {#clean-device-state-p1}
+### Cleaning Device State
 
 Part of this process is done before we can execute any C code. In particular, we
 have to clear all registers and all of the main RAM before we setup the CRT
@@ -160,7 +160,7 @@ until we have setup the CRT.
 
 Dependencies: None
 
-### CRT Initialization {#crt-init}
+### CRT Initialization
 
 Setting up the CRT involves: loading the `.data` and `.bss` sections, and
 setting up the stack and `gp` (`gp` may be used for referencing some data).

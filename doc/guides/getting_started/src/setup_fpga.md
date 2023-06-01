@@ -148,7 +148,7 @@ You will then need to run this command to configure the board. You only need to 
 bazel run //sw/host/opentitantool -- --interface=cw310 fpga set-pll
 ```
 
-Check that it's working by [running the demo](#hello-world-demo) or a test, such as the `uart_smoketest` below.
+Check that it's working by [running the demo](#bootstrapping-the-demo-software) or a test, such as the `uart_smoketest` below.
 ```console
 cd $REPO_TOP
 bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310_test_rom
@@ -245,7 +245,7 @@ I00001 test_rom.c:87] TestROM:6b2ca9a1
 I00002 test_rom.c:118] Test ROM complete, jumping to flash!
 ```
 
-#### Bootstrapping the demo software {#hello-world-demo}
+#### Bootstrapping the demo software
 
 The `hello_world` demo software shows off some capabilities of the OpenTitan hardware.
 To load `hello_world` into the FPGA on the ChipWhisperer CW310 board follow the steps shown below.

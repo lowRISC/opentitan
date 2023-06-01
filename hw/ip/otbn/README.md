@@ -97,7 +97,7 @@ A single instruction can both read and write to the stack.
 In this case, the read is ordered before the write.
 Providing the stack has at least one element, this is allowed, even if the stack is full.
 
-### Control and Status Registers (CSRs) {#csrs}
+### Control and Status Registers (CSRs)
 
 Control and Status Registers (CSRs) are 32b wide registers used for "special" purposes, as detailed in their description;
 they are not related to the GPRs.
@@ -310,7 +310,7 @@ GPRs are accessible from the base instruction subset, and WDRs are accessible fr
 | ...      |
 | w31      |
 
-### Wide Special Purpose Registers (WSRs) {#wsrs}
+### Wide Special Purpose Registers (WSRs)
 
 OTBN has 256b Wide Special purpose Registers (WSRs).
 These are analogous to the 32b CSRs, but are used by big number instructions.
@@ -462,25 +462,26 @@ Data in OTBN travels along a data path which includes the data memory (DMEM), th
 Whenever possible, data transmitted or stored within OTBN is protected with an integrity protection code which guarantees the detection of at least three modified bits per 32 bit word.
 Additionally, instructions and data stored in the instruction and data memory, respectively, are scrambled with a lightweight, non-cryptographically-secure cipher.
 
-Refer to the [Data Integrity Protection](#design-details-data-integrity-protection) section for details of how the data integrity protections are implemented.
+Refer to the [Data Integrity Protection](./doc/theory_of_operation.md#data-integrity-protection) section for details of how the data integrity protections are implemented.
 
 ## Secure Wipe
 
 OTBN provides a mechanism to securely wipe all state it stores, including the instruction memory.
 
 The full secure wipe mechanism is split into three parts:
-- [Data memory secure wipe](#design-details-secure-wipe-dmem)
-- [Instruction memory secure wipe](#design-details-secure-wipe-imem)
-- [Internal state secure wipe](#design-details-secure-wipe-internal)
+- [Data memory secure wipe](./doc/theory_of_operation.md#data-memory-dmem-secure-wipe)
+- [Instruction memory secure wipe](./doc/theory_of_operation.md#instruction-memory-imem-secure-wipe)
+- [Internal state secure wipe](./doc/theory_of_operation.md#internal-state-secure-wipe)
 
 A secure wipe is performed automatically in certain situations, or can be requested manually by the host software.
 The full secure wipe is automatically initiated as a local reaction to a fatal error.
 In addition, it can be triggered by the [Life Cycle Controller](../lc_ctrl/README.md) before RMA entry using the `lc_rma_req/ack` interface.
 In both cases OTBN enters the locked state afterwards and needs to be reset.
 A secure wipe of only the internal state is performed after reset, whenever an OTBN operation is complete, and after a recoverable error.
-Finally, host software can manually trigger the data memory and instruction memory secure wipe operations by issuing an appropriate [command](#design-details-commands).
+Finally, host software can manually trigger the data memory and instruction memory secure wipe operations by issuing an appropriate
+[command](./doc/theory_of_operation.md#operations-and-commands).
 
-Refer to the [Secure Wipe](#design-details-secure-wipe) section for implementation details.
+Refer to the [Secure Wipe](./doc/theory_of_operation.md#secure-wipe) section for implementation details.
 
 ## Instruction Counter
 
@@ -498,7 +499,7 @@ Software can access the first share of the key through the [`KEY_S0_L`](#key-s0-
 It is up to host software to configure the Key Manager so that it provides the right key to OTBN at the start of the operation, and to remove the key again once the operation on OTBN has completed.
 A `KEY_INVALID` software error is raised if OTBN software accesses any of the `KEY_*` WSRs when the Key Manager has not presented a key.
 
-## Blanking {#blanking}
+## Blanking
 
 To reduce side channel leakage OTBN employs a blanking technique on certain control and data paths.
 When a path is blanked it is forced to 0 (by ANDing the path with a blanking signal) preventing sensitive data bits producing a power signature via that path where that path isn't needed for the current instruction.

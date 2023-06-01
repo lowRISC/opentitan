@@ -262,9 +262,9 @@ X macros that are not part of a header's API should be `#undef`ed after they are
 Similarly, the arguments to an X macro, if they are defined in a header, should be `#undef`ed too.
 This is not necessary in a `.c` or `.cc` file, where this cannot cause downstream namespace pollution.
 
-## C++ Style Guide {#cxx-style-guide}
+## C++ Style Guide
 
-### C++ Version {#cxx-version}
+### C++ Version
 
 C++ code should target C++14.
 

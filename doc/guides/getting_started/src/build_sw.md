@@ -300,15 +300,15 @@ riscv32-unknown-elf-objdump --disassemble-all --headers --line-numbers --source 
 
 Refer to the output of `riscv32-unknown-elf-objdump --help` for a full list of options.
 
-## Troubleshooting {#troubleshooting}
+## Troubleshooting
 
-### Check CI {#troubleshooting-check-ci}
+### Check CI
 
 First, [check the GitHub repository](https://github.com/lowRISC/opentitan/commits/master) to make sure the CI check is succeeding for the commit you cloned.
 If there's an issue with that commit (it would have a red "X" next to it), check out the most recent commit that passed CI (indicated by a green check mark).
 We try to always keep the main branch healthy, but the project is in active development and we're not immune to temporary breaks.
 
-### Debugging a failed verilator test {#troubleshooting-verilator-test-failure}
+### Debugging a failed verilator test
 
 If your `bazelisk.sh` build failed trying to run a test on Verilator, the first step is to see if you can build the chip simulation on its own:
 

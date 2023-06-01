@@ -56,7 +56,7 @@ Identity is used to attest the owner and BL0 configuration, as well as an
 attestation key used by the Kernel. This key is endorsed by the Creator Identity,
 but can also be endorsed by the Silicon Owner PKI. Endorsement of the Owner
 Identity with the Owner's PKI, is covered in detail in the
-[Owner Personalization](../device_provisioning/README.md#owner_personalization) process
+[Owner Personalization](../device_provisioning/README.md#owner-personalization) process
 described in the provisioning specification.
 
 When using a Silicon Owner PKI, the Owner is expected to maintain a device
@@ -366,13 +366,13 @@ source with a security strength equivalent to the one supported by the key
 manager. The triggering mechanism for updating the value is covered in the
 [Attestation Updates](#attestation-updates) section.
 
-## Asymmetric Keys {#asymmetric-keys}
+## Asymmetric Keys
 
 OpenTitan uses ECDSA attestation keys conformant to
 [FIPS 186-4](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.186-4.pdf). Future
 revisions of this specification may add support for other signature schemes.
 
-### Key Identifiers {#key-identifiers}
+### Key Identifiers
 
 Key identifiers are defined as follows, where `SALT_CKI`and `SALT_OKI` are 256b
 values defined in `ROM_EXT` and `BL0` respectively.
@@ -629,7 +629,7 @@ OpenTitan Creator Identity custom extension:
   </tr>
 </table>
 
-#### Creator custom Extension {#creator-custom-extension}
+#### Creator custom extension
 
 This extension is formatted as an ASN.1 SEQUENCE containing device identifiable
 information. See [Privacy Considerations](#privacy-considerations) for
@@ -829,7 +829,7 @@ custom extensions.
 The binary manifest format must be standardized at the OpenTitan project level
 to ensure interoperability between silicon and software layers.
 
-## Privacy Considerations {#privacy-considerations}
+## Privacy Considerations
 
 The Silicon Owner software must address any privacy concerns associated with the
 use of device identifiable information.
@@ -870,4 +870,4 @@ DICE terminology.
 [diversification-key]:../identities_and_root_keys/README.md#diversification-key
 
 [device-provisioning]: ../device_provisioning/README.md
-[owner-personalization]: ../device_provisioning/README.md#owner_personalization
+[owner-personalization]: ../device_provisioning/README.md#owner-personalization

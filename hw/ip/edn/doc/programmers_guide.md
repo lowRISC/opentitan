@@ -15,7 +15,7 @@ void edn_init(unsigned int enable) {
 }
 ```
 
-## Module enable and disable {#enable-disable}
+## Module enable and disable
 
 EDN may only be enabled if CSRNG is enabled.
 Once disabled, EDN may only be re-enabled after CSRNG has been disabled and re-enabled.

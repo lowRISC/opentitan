@@ -126,7 +126,8 @@ We expect to see each software error triggered and upgraded to a fatal alert.
 
 This is tracked in the `promoted_err_cg` covergroup.
 
-Note that we already track seeing each software error triggered (but not upgraded) with the coverage for `ERR_BITS` in the [external CSRs](#ext-csrs) section below.
+Note that we already track seeing each software error triggered (but not upgraded) with the coverage for `ERR_BITS` in the [external
+CSRs](#external-bus-accessible-csrs) section below.
 
 ## Scratchpad memory
 
@@ -137,10 +138,10 @@ These are tracked in the `addr_cp` coverpoint in `scratchpad_writes_cg`.
 We also want to see a successful write to the top word of accessible DMEM.
 We don't track that explicitly, since it is covered by the `otbn_mem_walk` test.
 
-## External (bus-accessible) CSRs {#ext-csrs}
+## External (bus-accessible) CSRs
 
 The OTBN block exposes functionality to a bus host through bus-accessible CSRs.
-Behavior of some CSRs depends on [OTBN's operational state](../../README.md#design-details-operational-states).
+Behavior of some CSRs depends on [OTBN's operational state](../../doc/theory_of_operation.md#operational-states).
 
 For every CSR (no matter its access restrictions), we want to see an attempt to read it and an attempt to write it.
 The CSRs are tracked in covergroups based on the CSR name, with the format: `ext_csr_<name>_cg`.

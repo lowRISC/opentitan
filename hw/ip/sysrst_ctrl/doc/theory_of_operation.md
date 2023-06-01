@@ -108,7 +108,7 @@ In particular, the transitions that can be detected are fixed to the following:
 - A H -> L transition on the `pwrb_in_i` signal
 - A L -> H transition on the `lid_open_i` signal
 
-Note that the signals may be potentially inverted due to the [input inversion feature]({{< relref "#inversion" >}}).
+Note that the signals may be potentially inverted due to the [input inversion feature](#pin-output-and-keyboard-inversion-control).
 
 In order to activate this feature, software should do the following:
 
@@ -132,7 +132,7 @@ This is needed because this register has to be synchronized over to the AON cloc
 `sysrst_ctrl` allows the software to read the raw input pin values via the [`PIN_IN_VALUE`](../data/sysrst_ctrl.hjson#pin_in_value) register like GPIOs.
 To this end, the hardware samples the raw input values of `pwrb_in_i`, `key[0,1,2]_in_i`, `ac_present_i`, `ec_rst_l_i`, `flash_wp_l_i` before they are being inverted, and synchronizes them onto the bus clock domain.
 
-## Pin output and keyboard inversion control {#inversion}
+## Pin output and keyboard inversion control
 
 Software can optionally override all output signals, and change the signal polarity of some of the input and output signals.
 The output signal override feature always has higher priority than any of the combo pattern detection mechanisms described above.

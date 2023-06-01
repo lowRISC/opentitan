@@ -93,7 +93,7 @@ the
 [UICC EID Specification](https://www.gsma.com/newsroom/wp-content/uploads/SGP.02-v4.0.pdf)
 as an example.
 
-## Creator Root Key (`CreatorRootKey`) {#creator-root-key}
+## Creator Root Key (`CreatorRootKey`)
 
 The following sequence describes the creation of the `CreatorRootKey`. All
 inputs into the key manager can be locked down during ROM execution.
@@ -247,7 +247,7 @@ The `CreatorIdentitySeed` and the private portion of the Creator Identity shall
 be cleared before the ROM Extension hands over execution to the Silicon Owner
 first boot stage.
 
-## OwnerIntermediateKey {#owner-intermediate-key}
+## OwnerIntermediateKey
 
 The `OwnerIntermediateKey` is used as a root component of the Silicon Owner key
 hierarchy. It is used to establish a cryptographic link to the root secrets
@@ -338,7 +338,7 @@ Visibility: Hidden from software.
 The `OwnerIdentitySeed` and the private portion of the Owner Identity shall be
 cleared before the bootloader (BL0) hands over execution to the kernel.
 
-## Owner Root Key and Versioned Keys {#owner-root-key}
+## Owner Root Key and Versioned Keys
 
 The key manager supports the generation of versioned keys with lineage to the
 `OwnerRootKey` for software consumption and sideload operations.
@@ -439,7 +439,7 @@ charge of enforcing isolation.
   </tr>
 </table>
 
-### Software Binding {#software-binding}
+### Software Binding
 
 Software binding is used to ensure that the key derivation scheme is only
 reproducible for a trusted software configuration. This is achieved by having
@@ -453,7 +453,7 @@ implement binding with the application layer exclusively in software.
 
 Each key manager binding stage shall provide at least 128b of data.
 
-### Key Versioning {#key-versioning}
+### Key Versioning
 
 Key versioning is the mechanism by which software implements key rotation
 triggered by security updates. Since there may be more than one updateable code
@@ -514,15 +514,15 @@ hardening.
 
 ## Recommendations for Programming Model Abstraction
 
-### High Level Key Manager States {#high-level-key-manager-states}
+### High Level Key Manager States
 
 The hardware may opt to implement a software interface with higher level one-way
 step functions to advance the internal state of the key manager. The following
 are the minimum set of steps required:
 
-1   [CreatorRootKey](#creator-root-key)
-2   [OwnerIntermediateKey](#owner-intermediate-key)
-3   [OwnerRootKey](#owner-root-key)
+1   [CreatorRootKey](#creator-root-key-creatorrootkey)
+2   [OwnerIntermediateKey](#ownerintermediatekey)
+3   [OwnerRootKey](#owner-root-key-and-versioned-keys)
 
 <table>
   <tr>
