@@ -37,7 +37,6 @@ int_flag(
 
 string_flag(
     name = "lc_seed",
-    # Default must match value in hw/ip/lc_ctrl/data/lc_ctrl.hjson.
     build_setting_default = "10167336684108184581",
 )
 

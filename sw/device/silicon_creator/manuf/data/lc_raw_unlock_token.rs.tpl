@@ -6,7 +6,7 @@
 //
 // It has been generated with:
 // $ ./util/design/gen-lc-state-enc.py
-//     --seed ${lc_st_enc.config['seed']}
+//     --entropy-buffer <entropy buffer file>
 //     --raw-unlock-rs-template=sw/device/silicon_creator/manuf/data/lc_raw_unlock_token.rs.tpl
 
 #![allow(dead_code)]

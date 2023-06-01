@@ -13,18 +13,12 @@ from topgen import strong_random
 from lib.common import (check_int, ecc_encode, get_hd, hd_histogram,
                         is_valid_codeword, random_or_hexvalue, scatter_bits)
 
-# Seed diversification constant for LcStEnc (this enables to use
-# the same seed for different classes)
-LC_SEED_DIVERSIFIER = 1939944205722120255
-
 # State types and permissible format for entries
 # The format is index dependent, e.g. ['0', 'A1', 'B1'] for index 1
 LC_STATE_TYPES = {
     'lc_state': ['0', 'A{}', 'B{}'],
     'lc_cnt': ['0', 'C{}', 'D{}']
 }
-
-ENTROPY_BUFFER_SIZE_BYTES = 1000
 
 
 def _is_incremental_codeword(word1, word2):
@@ -272,8 +266,8 @@ class LcStEnc():
         log.info('Generate life cycle state')
         log.info('')
 
-        if 'seed' not in config:
-            raise RuntimeError('Missing seed in configuration')
+        if 'entropy_buffer' not in config:
+            raise RuntimeError('Missing entropy buffer file in configuration.')
         if 'secded' not in config:
             raise RuntimeError('Missing secded configuration')
         if 'tokens' not in config:
@@ -283,18 +277,8 @@ class LcStEnc():
             if typ not in config:
                 raise RuntimeError('Missing {} definition'.format(typ))
 
-        config['seed'] = check_int(config['seed'])
-        log.info('Seed: {0:x}'.format(config['seed']))
-        log.info('')
-
-        if 'entropy_buffer' in config:
-            # Load entropy from a file, if the file exists.
-            strong_random.load(config['entropy_buffer'])
-        else:
-            # Re-initialize with seed to make results reproducible.
-            strong_random.unsecure_generate_from_seed(
-                ENTROPY_BUFFER_SIZE_BYTES,
-                LC_SEED_DIVERSIFIER + int(config['seed']))
+        # Initialize strong_random module from the entropy buffer file.
+        strong_random.load(config['entropy_buffer'])
 
         log.info('Checking SECDED.')
         _validate_secded(config)

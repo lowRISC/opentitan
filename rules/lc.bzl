@@ -4,8 +4,6 @@
 
 """Rules for generating lc_ctrl netlist constants used in SW."""
 
-load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-
 def _lc_raw_unlock_token_impl(ctx):
     output = ctx.actions.declare_file("src/" + ctx.attr.name + ".rs")
     args = ctx.actions.args()
@@ -22,8 +20,8 @@ def _lc_raw_unlock_token_impl(ctx):
         output,
     )
     args.add(
-        "--seed",
-        ctx.attr.lc_seed[BuildSettingInfo].value,
+        "--entropy-buffer",
+        ctx.file.lc_state_enc_entropy_buffer,
     )
     ctx.actions.run(
         outputs = [output],
@@ -54,9 +52,10 @@ lc_raw_unlock_token = rule(
             default = "//sw/device/silicon_creator/manuf/data:lc_raw_unlock_token.rs.tpl",
             doc = "Life-cycle state definition file in Hjson format.",
         ),
-        "lc_seed": attr.label(
-            default = "//hw/ip/otp_ctrl/data:lc_seed",
-            doc = "Configuration override seed used to randomize LC netlist constants.",
+        "lc_state_enc_entropy_buffer": attr.label(
+            allow_single_file = [".txt"],
+            default = "//hw/ip/otp_ctrl/data:lc_state_enc_entropy_buffer",
+            doc = "Entropy buffer file used when generating the LC state encodings.",
         ),
         "_tool": attr.label(
             default = "//util/design:gen-lc-state-enc",

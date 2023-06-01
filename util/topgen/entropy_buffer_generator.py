@@ -52,15 +52,6 @@ def _parse_args():
 
 
 def gen_buffer(k: int, out, sec: bool, seed: int):
-
-    if (sec and seed):
-        log.error("Options --sec and --seed cannot be used together")
-        sys.exit(1)
-
-    if not (sec or seed):
-        seed = random.getrandbits(64)
-        log.warning("No seed specified, setting to {}.".format(seed))
-
     buffer = [0] * k
     if sec:
         for i in range(k):
@@ -81,6 +72,18 @@ def main():
     out = args.output_file
     sec = args.sec
     seed = args.seed
+
+    if sec and seed:
+        log.error("Options --sec and --seed cannot be used together.")
+        sys.exit(1)
+
+    if not (sec or seed):
+        seed = random.getrandbits(64)
+        log.warning("No seed specified, setting to {}.".format(seed))
+
+    if seed:
+        log.info('Entropy buffer file ({0}) generated from seed: {1:x}'.format(
+            out, seed))
 
     gen_buffer(k, out, sec, seed)
 

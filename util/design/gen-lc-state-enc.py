@@ -48,13 +48,9 @@ def main():
                         type=str,
                         default=LC_STATE_DEFINITION_FILE,
                         help='State encoding definition file in HJSON format.')
-    parser.add_argument('-s',
-                        '--seed',
-                        type=int,
-                        metavar='<seed>',
-                        help='Custom seed for RNG.')
     parser.add_argument("--entropy-buffer",
                         type=str,
+                        required=True,
                         metavar="<entropy buffer file path>",
                         help="A file with entropy.")
     parser.add_argument(
@@ -73,25 +69,8 @@ def main():
     with open(args.lc_state_def_file, 'r') as infile:
         config = hjson.load(infile)
 
-        if args.entropy_buffer:
-            if args.seed:
-                log.error(
-                    "'entropy_buffer' option cannot be used with 'seed' option"
-                )
-                exit(1)
-            else:
-                # generate entropy from a buffer
-                config['entropy_buffer'] = args.entropy_buffer
-        else:
-            # If specified, override the seed for random netlist constant computation.
-            if args.seed:
-                log.warning('Commandline override of seed with {}.'.format(
-                    args.seed))
-                config['seed'] = args.seed
-            # Otherwise we make sure a seed exists in the HJSON config file.
-            elif 'seed' not in config:
-                log.error('Seed not found in configuration HJSON.')
-                exit(1)
+        # Load the entropy buffer file.
+        config['entropy_buffer'] = args.entropy_buffer
 
         # validate config and generate encoding
         try:
