@@ -53,7 +53,10 @@ cc_library(
     name = "math",
     srcs = ["math.c"],
     hdrs = ["math.h"],
-    deps = [":math_builtins"],
+    deps = [
+        ":macros",
+        ":math_builtins",
+    ],
 )
 
 cc_test(
