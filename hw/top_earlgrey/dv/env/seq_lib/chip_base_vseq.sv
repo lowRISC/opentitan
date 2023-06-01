@@ -23,6 +23,9 @@ class chip_base_vseq #(
   // Local queue for holding received UART TX data.
   byte uart_tx_data_q[$];
 
+  // Indicates the first power up of the chip.
+  bit is_first_pwrup = 1'b1;
+
   `uvm_object_new
 
   virtual function void set_handles();
@@ -44,11 +47,13 @@ class chip_base_vseq #(
     // have to assert the main reset before that (release can happen in a randomized way
     // via the apply_reset task later on).
     // assert_por_reset();
-    `uvm_info(`gfn, "Asserting POR_N", UVM_LOW)
-    cfg.chip_vif.por_n_if.drive(0);
-    #10us;  // TODO: revisit this.
-    cfg.chip_vif.por_n_if.drive(1);
-    `uvm_info(`gfn, "POR_N complete", UVM_LOW)
+    if (!($test$plusargs("skip_por_n_during_first_pwrup") && is_first_pwrup)) begin
+      `uvm_info(`gfn, "Asserting POR_N", UVM_LOW)
+      cfg.chip_vif.por_n_if.drive(0);
+      #10us;  // TODO: revisit this.
+      cfg.chip_vif.por_n_if.drive(1);
+      `uvm_info(`gfn, "POR_N complete", UVM_LOW)
+    end
     // TODO: Cannot assert different types of resets in parallel; due to randomization
     // resets de-assert at different times. If the main rst_n de-asserts before others,
     // the CPU starts executing right away which can cause breakages.
@@ -158,6 +163,9 @@ class chip_base_vseq #(
     super.dut_init(reset_kind);
     alert_ping_en_shorten();
     callback_vseq.post_dut_init();
+
+    // Clear once upon the chip exiting the first reset.
+    is_first_pwrup = 0;
   endtask
 
   virtual task dut_shutdown();
