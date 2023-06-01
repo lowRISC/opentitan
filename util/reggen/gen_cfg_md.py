@@ -14,7 +14,7 @@ from reggen.md_helpers import (
 def gen_cfg_md(cfgs: IpBlock, output: TextIO) -> None:
     comport_url = url(
         "Comportable guideline for peripheral device functionality",
-        "https://opentitan.org/book/doc/rm/comportability_specification",
+        "https://opentitan.org/book/doc/contributing/hw/comportability",
     )
     output.write(
         f'Referring to the {comport_url}, the module '
