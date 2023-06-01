@@ -440,6 +440,44 @@ static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
   sec_mmio_check_counters(/*expected_check_count=*/5);
 
   // Jump to ROM_EXT entry point.
+  enum {
+    /**
+     * Expected value of the `kCfiRomTryBoot` counter when jumping to the first
+     * ROM_EXT image.
+     */
+    kCfiRomTryBootManifest0Val = 3 * kCfiIncrement + kCfiRomTryBootVal0,
+    /**
+     * Expected value of the `kCfiRomTryBoot` counter when jumping to the second
+     * ROM_EXT image.
+     */
+    kCfiRomTryBootManifest1Val = 10 * kCfiIncrement + kCfiRomTryBootVal0,
+  };
+  const manifest_t *manifest_check;
+  switch (launder32(rom_counters[kCfiRomTryBoot])) {
+    case kCfiRomTryBootManifest0Val:
+      HARDENED_CHECK_EQ(rom_counters[kCfiRomTryBoot],
+                        kCfiRomTryBootManifest0Val);
+      manifest_check = boot_policy_manifests_get().ordered[0];
+      break;
+    case kCfiRomTryBootManifest1Val:
+      HARDENED_CHECK_EQ(rom_counters[kCfiRomTryBoot],
+                        kCfiRomTryBootManifest1Val);
+      manifest_check = boot_policy_manifests_get().ordered[1];
+      break;
+    default:
+      HARDENED_TRAP();
+  }
+  HARDENED_CHECK_EQ(manifest, manifest_check);
+
+  if (launder32(manifest_check->address_translation) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(manifest_check->address_translation, kHardenedBoolTrue);
+    HARDENED_CHECK_EQ(rom_ext_vma_get(manifest_check,
+                                      manifest_entry_point_get(manifest_check)),
+                      entry_point);
+  } else {
+    HARDENED_CHECK_EQ(manifest_check->address_translation, kHardenedBoolFalse);
+    HARDENED_CHECK_EQ(manifest_entry_point_get(manifest_check), entry_point);
+  }
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomBoot, 5);
   ((rom_ext_entry_point *)entry_point)();
 
