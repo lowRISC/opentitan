@@ -22,6 +22,9 @@ opentitan_functest(
     copts = [
         "-Wno-implicit-fallthrough",
         "-Wno-strict-prototypes",
+        "-Wno-implicit-int-conversion",
+        "-Wno-sign-conversion",
+        "-Wno-shorten-64-to-32",
         "-DITERATIONS=8",
         "-DPERFORMANCE_RUN=1",
         "-DTOTAL_DATA_SIZE=2000",
