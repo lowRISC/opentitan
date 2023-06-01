@@ -16,6 +16,11 @@ class sysrst_ctrl_combo_detect_with_pre_cond_vseq extends sysrst_ctrl_base_vseq;
   bit ec_rst_h2l_expected = 0 ;
   bit ec_rst_l2h_expected = 0 ;
   bit disable_ec_rst_check = 0;
+  // because of CDC there can be max of two cycles delay on transition of combo detect
+  // input signals
+  localparam uint CDC_EXP_CYCLE_TOLERANCE = 2;
+  localparam uint COMBO_EXP_TOLERANCE = 4;
+  localparam uint EXP_CYCLE_TOLERANCE = COMBO_EXP_TOLERANCE + CDC_EXP_CYCLE_TOLERANCE;
 
   constraint num_trans_c {num_trans == 50;}
 
@@ -75,6 +80,7 @@ class sysrst_ctrl_combo_detect_with_pre_cond_vseq extends sysrst_ctrl_base_vseq;
   }
 
   constraint cycles_c {
+    cycles >= 2; // Minimum of 2 cycles to account for CDC randomization
     foreach (set_duration[i]) {
       cycles dist {
         [1 : (set_duration[i] + set_key_timer) - 2] :/ 5,
@@ -139,15 +145,23 @@ class sysrst_ctrl_combo_detect_with_pre_cond_vseq extends sysrst_ctrl_base_vseq;
         cfg.clk_aon_rst_vif.wait_clks(start_cycle-1);
         ec_rst_h2l_expected = 1;
         `uvm_info(`gfn, "ec_rst_h2l_expected == 1", UVM_LOW)
-        cfg.clk_aon_rst_vif.wait_clks(window);
-        ec_rst_h2l_expected = 0;
-        `uvm_info(`gfn, "ec_rst_h2l_expected == 0", UVM_LOW)
-        cfg.clk_aon_rst_vif.wait_clks(pulse_width_l-1);
+        fork // reset bit after a number of cycles indicated by window
+          begin
+            cfg.clk_aon_rst_vif.wait_clks(window);
+            ec_rst_h2l_expected = 0;
+            `uvm_info(`gfn, "ec_rst_h2l_expected == 0", UVM_LOW)
+          end
+        join_none
+        cfg.clk_aon_rst_vif.wait_clks(pulse_width_l);
         `uvm_info(`gfn, "ec_rst_l2h_expected == 1", UVM_LOW)
         ec_rst_l2h_expected = 1;
-        cfg.clk_aon_rst_vif.wait_clks(window);
-        ec_rst_l2h_expected = 0;
-        `uvm_info(`gfn, "ec_rst_l2h_expected == 0", UVM_LOW)
+        fork // reset bit after a number of cycles indicated by window
+          begin
+            cfg.clk_aon_rst_vif.wait_clks(window);
+            ec_rst_l2h_expected = 0;
+            `uvm_info(`gfn, "ec_rst_l2h_expected == 0", UVM_LOW)
+          end
+        join_none
       end
     join_none
   endtask
@@ -235,7 +249,8 @@ class sysrst_ctrl_combo_detect_with_pre_cond_vseq extends sysrst_ctrl_base_vseq;
                    inactive_cycles++;
                  end , "time out waiting for bat_disable == 1",
                  aon_period_ns * (exp_cycles + 20))
-    `DV_CHECK(inactive_cycles inside {[exp_cycles - 4 : exp_cycles + 4]},
+    `DV_CHECK(inactive_cycles inside {[exp_cycles - EXP_CYCLE_TOLERANCE :
+                                       exp_cycles + EXP_CYCLE_TOLERANCE]},
            $sformatf("bat_disable_check: inact(%0d) vs exp(%0d) +/-4", inactive_cycles, exp_cycles))
   endtask
 
@@ -248,7 +263,8 @@ class sysrst_ctrl_combo_detect_with_pre_cond_vseq extends sysrst_ctrl_base_vseq;
                    inactive_cycles++;
                  end , "time out waiting for rst_req == 1",
                  aon_period_ns * (exp_cycles + 20))
-    `DV_CHECK(inactive_cycles inside {[exp_cycles - 4 : exp_cycles + 4]},
+    `DV_CHECK(inactive_cycles inside {[exp_cycles - EXP_CYCLE_TOLERANCE :
+                                       exp_cycles + EXP_CYCLE_TOLERANCE]},
             $sformatf("rst_req_check: inact(%0d) vs exp(%0d) +/-4", inactive_cycles, exp_cycles))
   endtask
 
@@ -261,7 +277,8 @@ class sysrst_ctrl_combo_detect_with_pre_cond_vseq extends sysrst_ctrl_base_vseq;
                    inactive_cycles++;
                  end , "time out waiting for wkup_req == 1",
                  aon_period_ns * (exp_cycles + 20))
-    `DV_CHECK(inactive_cycles inside {[exp_cycles - 4 : exp_cycles + 4]},
+    `DV_CHECK(inactive_cycles inside {[exp_cycles - EXP_CYCLE_TOLERANCE :
+                                       exp_cycles + EXP_CYCLE_TOLERANCE]},
             $sformatf("wkup_req_check: inact(%0d) vs exp(%0d) +/-4", inactive_cycles, exp_cycles))
   endtask
 
@@ -425,8 +442,10 @@ class sysrst_ctrl_combo_detect_with_pre_cond_vseq extends sysrst_ctrl_base_vseq;
 
           // Randomize combo logic inputs except the ones asserted for precondition
           repeat ($urandom_range(1, 3)) cfg.vif.randomize_combo_input(combo_precondition_mask);
-
-          cfg.clk_aon_rst_vif.wait_clks(1);
+          if (combo_input_prev == get_combo_input()) break;
+          // delay before doing next transitions since CDC randomization can cause
+          // single cycle transitions to be ignored
+          cfg.clk_aon_rst_vif.wait_clks(2);
           // Update trigger value of Combo channel and ec_rst timing check bits
           foreach (combo_triggered[i]) begin
             bit com_out_ec_rst = get_field_val(ral.com_out_ctl[i].ec_rst, get_action[i]);
@@ -441,7 +460,7 @@ class sysrst_ctrl_combo_detect_with_pre_cond_vseq extends sysrst_ctrl_base_vseq;
           end
           set_ec_rst_transition_bits(ec_rst_start_time, set_pulse_width);
           // Wait for debounce + detect timer
-          cfg.clk_aon_rst_vif.wait_clks(cycles-1);
+          cfg.clk_aon_rst_vif.wait_clks(cycles-2);
 
           // Check if the interrupt has raised.
           // NOTE: The interrupt will only raise if the interrupt combo action is set.

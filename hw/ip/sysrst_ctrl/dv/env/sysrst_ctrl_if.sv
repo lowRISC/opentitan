@@ -27,6 +27,11 @@ interface sysrst_ctrl_if (
   logic wkup_req;
 
   logic [6:0] sysrst_ctrl_inputs;
+  logic [7:0] sysrst_ctrl_inputs_int;
+
+  `ifndef SYSRST_CTRL_DUT_TOP
+  `define SYSRST_CTRL_DUT_TOP tb.dut
+  `endif
 
   // reset value of input signals
   function automatic void reset_signals();
@@ -72,5 +77,13 @@ interface sysrst_ctrl_if (
 
   assign sysrst_ctrl_inputs = {flash_wp_l_in, ec_rst_l_in, ac_present, key2_in, key1_in, key0_in,
                                pwrb_in};
+  assign sysrst_ctrl_inputs_int[0] = `SYSRST_CTRL_DUT_TOP.aon_pwrb_int;
+  assign sysrst_ctrl_inputs_int[1] = `SYSRST_CTRL_DUT_TOP.aon_key0_int;
+  assign sysrst_ctrl_inputs_int[2] = `SYSRST_CTRL_DUT_TOP.aon_key1_int;
+  assign sysrst_ctrl_inputs_int[3] = `SYSRST_CTRL_DUT_TOP.aon_key2_int;
+  assign sysrst_ctrl_inputs_int[4] = `SYSRST_CTRL_DUT_TOP.aon_ac_present_int;
+  assign sysrst_ctrl_inputs_int[5] = `SYSRST_CTRL_DUT_TOP.aon_ec_rst_l_int;
+  assign sysrst_ctrl_inputs_int[6] = `SYSRST_CTRL_DUT_TOP.aon_flash_wp_l_int;
+  assign sysrst_ctrl_inputs_int[7] = `SYSRST_CTRL_DUT_TOP.aon_lid_open_int;
 
 endinterface : sysrst_ctrl_if

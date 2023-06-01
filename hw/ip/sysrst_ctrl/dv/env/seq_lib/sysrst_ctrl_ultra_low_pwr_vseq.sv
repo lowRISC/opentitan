@@ -63,11 +63,11 @@ class sysrst_ctrl_ultra_low_pwr_vseq extends sysrst_ctrl_base_vseq;
    task drive_ac();
     cfg.vif.ac_present = 1;
     for (int i = 0; i < ac_cycles; i++) begin
-      cfg.clk_aon_rst_vif.wait_clks(1);
       if (exp_z3_wakeup == 0 && enable_ulp && i > get_ac_timer) begin
         `uvm_info(`gfn, "z3_wakeup assertion expected for a HIGH level on ac_present_i", UVM_LOW)
         exp_z3_wakeup = 1;
       end
+      cfg.clk_aon_rst_vif.wait_clks(1);
     end
     cfg.vif.ac_present = 0;
    endtask
@@ -77,11 +77,11 @@ class sysrst_ctrl_ultra_low_pwr_vseq extends sysrst_ctrl_base_vseq;
     cfg.clk_aon_rst_vif.wait_clks($urandom_range(1,20));
     cfg.vif.pwrb_in = 0;
     for (int i = 0; i < pwrb_cycles; i++) begin
-      cfg.clk_aon_rst_vif.wait_clks(1);
       if (exp_z3_wakeup == 0 && enable_ulp && i > get_pwrb_timer) begin
         exp_z3_wakeup = 1;
         `uvm_info(`gfn, "z3_wakeup assertion expected for a H2L transition on pwrb_in_i", UVM_LOW)
       end
+      cfg.clk_aon_rst_vif.wait_clks(1);
     end
     cfg.vif.pwrb_in = 1;
    endtask
@@ -91,11 +91,11 @@ class sysrst_ctrl_ultra_low_pwr_vseq extends sysrst_ctrl_base_vseq;
     cfg.clk_aon_rst_vif.wait_clks($urandom_range(1,20));
     cfg.vif.lid_open = 1;
     for (int i = 0; i < lid_cycles; i++) begin
-      cfg.clk_aon_rst_vif.wait_clks(1);
       if (exp_z3_wakeup == 0 && enable_ulp && i > get_lid_timer) begin
         exp_z3_wakeup = 1;
         `uvm_info(`gfn, "z3_wakeup assertion expected for a L2H transition on lid_open_i", UVM_LOW)
       end
+      cfg.clk_aon_rst_vif.wait_clks(1);
     end
     cfg.vif.lid_open = 0;
    endtask
