@@ -1,6 +1,3 @@
-###
-<!-- this is a workaround to get around Hugo Issue #7296 (https://github.com/gohugoio/hugo/issues/7296) -->
-
 <table style="text-align:center;font-size:small">
   <tr>
     <td style="text-align:left"><strong>Strokes \ Halfword</strong></td>

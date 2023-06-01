@@ -1,5 +1,3 @@
-###
-<!-- this is a workaround to get around Hugo Issue #7296 (https://github.com/gohugoio/hugo/issues/7296) -->
 <table>
 <thead>
 <tr>
