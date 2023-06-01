@@ -16,6 +16,10 @@ cc_library(
     hdrs = [
         "coremark.h",
     ],
+    features = [
+        "-implicit_conversion_warnings",
+        "-strict_prototypes_warnings",
+    ],
     includes = ["."],
     deps = [
         "@lowrisc_opentitan//third_party/coremark/top_earlgrey:core_portme",
