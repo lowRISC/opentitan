@@ -29,6 +29,7 @@ DEVICE_LIBS_EXC: List[str] = [
     "//sw/device/lib/base:mmio_on_device_do_not_use_directly",
     "//sw/device/lib/base:mmio_on_host_do_not_use_directly",
     "//sw/device/lib/base:status",
+    "//sw/device/lib/base:status_report_unittest_c",
     "//sw/device/lib/crypto/...",
     "//sw/device/lib/dif/...",
     "//sw/device/lib/runtime/...",
@@ -162,12 +163,14 @@ def generate_report(out_dir: Path, merged_profile: Path, merged_library: Path,
     print(f"Saved coverage artifacts in {out_dir}")
 
 
-# Query for unit test targets
+# Query for test targets
 TEST_TARGETS_INC = [
     "//sw/device/silicon_creator/...",
 ]
 TEST_TARGETS_EXC = [
     "//sw/device/silicon_creator/rom_ext/...",
+    "//sw/device/lib/base:status_unittest",
+    "//sw/device/lib/base:status_report_unittest",
     "attr(tags, '[\\[ ]dv[,\\]]', //sw/device/silicon_creator/...)",
     "attr(tags, '[\\[ ]verilator[,\\]]', //sw/device/silicon_creator/...)",
     "attr(tags, '[\\[ ]broken[,\\]]', //sw/device/silicon_creator/...)",
