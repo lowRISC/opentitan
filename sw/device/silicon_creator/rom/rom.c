@@ -333,6 +333,10 @@ static void rom_pre_boot_check(void) {
   HARDENED_CHECK_EQ(boot_data_ok, kErrorOk);
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 4);
 
+  // Check the ePMP state
+  SHUTDOWN_IF_ERROR(epmp_state_check());
+  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 5);
+
   // Check the cpuctrl CSR.
   uint32_t cpuctrl_csr;
   uint32_t cpuctrl_otp =
@@ -347,10 +351,10 @@ static void rom_pre_boot_check(void) {
   HARDENED_CHECK_EQ(cpuctrl_csr, cpuctrl_otp);
   // Check rstmgr alert and cpu info collection configuration.
   SHUTDOWN_IF_ERROR(rstmgr_info_en_check(retention_sram_get()->reset_reasons));
-  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 5);
+  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 6);
 
   sec_mmio_check_counters(/*expected_check_count=*/3);
-  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 6);
+  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 7);
 }
 
 /**
@@ -422,12 +426,11 @@ static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
   // Unlock execution of ROM_EXT executable code (text) sections.
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
   rom_epmp_unlock_rom_ext_rx(text_region);
-  HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomBoot, 2, kCfiRomPreBootCheck);
   rom_pre_boot_check();
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomBoot, 4);
-  CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomPreBootCheck, 7);
+  CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomPreBootCheck, 8);
 
   // Enable execution of code from flash if signature is verified.
   flash_ctrl_exec_set(flash_exec);
