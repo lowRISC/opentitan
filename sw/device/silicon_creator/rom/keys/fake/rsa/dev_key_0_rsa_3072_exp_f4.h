@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_KEYS_FAKE_DEV_KEY_0_RSA_3072_EXP_F4_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_KEYS_FAKE_DEV_KEY_0_RSA_3072_EXP_F4_H_
+#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_KEYS_FAKE_RSA_DEV_KEY_0_RSA_3072_EXP_F4_H_
+#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_KEYS_FAKE_RSA_DEV_KEY_0_RSA_3072_EXP_F4_H_
 
 #define DEV_KEY_0_RSA_3072_EXP_F4                                       \
   {                                                                     \
@@ -35,4 +35,4 @@
         0xba4ebeb4, 0x7cb40b8c, 0x297e8ec1, 0x2af3bb20,                 \
     },                                                                  \
   }
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_KEYS_FAKE_DEV_KEY_0_RSA_3072_EXP_F4_H_
+#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_KEYS_FAKE_RSA_DEV_KEY_0_RSA_3072_EXP_F4_H_

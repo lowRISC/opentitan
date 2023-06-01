@@ -12,7 +12,7 @@ offline_presigning_artifacts(
     srcs = [
         "//sw/device/examples/hello_world:hello_world_bin",
     ],
-    key_file = "//sw/device/silicon_creator/rom/keys/fake:test_private_key_0",
+    key_file = "//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0",
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     tags = ["manual"],
 )
@@ -31,7 +31,7 @@ pkg_tar(
 offline_fake_sign(
     name = "fake",
     srcs = [":presigning"],
-    key_file = "//sw/device/silicon_creator/rom/keys/fake:test_private_key_0",
+    key_file = "//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0",
     tags = ["manual"],
 )
 
