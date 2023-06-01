@@ -598,6 +598,18 @@
       default: "4",
       local: "true"
     },
+    { name: "CreatorSwCfgSramKeyRenewEnOffset",
+      desc: "Offset of CREATOR_SW_CFG_SRAM_KEY_RENEW_EN",
+      type: "int",
+      default: "352",
+      local: "true"
+    },
+    { name: "CreatorSwCfgSramKeyRenewEnSize",
+      desc: "Size of CREATOR_SW_CFG_SRAM_KEY_RENEW_EN",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
     { name: "CreatorSwCfgDigestOffset",
       desc: "Offset of CREATOR_SW_CFG_DIGEST",
       type: "int",
