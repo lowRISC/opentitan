@@ -134,7 +134,7 @@ If after entering `Disabled` life cycle is deactivated or a fault is encountered
 If ever multiple conditions collide (a fault is detected at the same time software issues disable command), the `Invalid` entry path always takes precedence.
 
 ## Life Cycle Connection
-The function of the key manager is directly managed by the [life cycle controller](../../lc_ctrl/README.md#key-manager-en).
+The function of the key manager is directly managed by the [life cycle controller](../../lc_ctrl/README.md#key_manager_en).
 
 Until the life cycle controller activates the key manager, the key manager does not accept any software commands.
 Once the key manager is activated by the life cycle controller, it is then allowed to transition to the various states previously [described](#key-manager-states).

@@ -54,7 +54,7 @@ They send it back in an `UNLOCKED_OWNERSHIP` state.
 (This unlocking step is vital, although the Silicon Creator can endorse a new owner, they cannot unlock ownership for a device that is in a `LOCKED_OWNERSHIP` state.)
 The Silicon Creator can later endorse the ownership transfer payload of whoever buys the device, without further involvement from the previous owner.
 
-## Owner Keys {#owner-keys}
+## Owner Keys
 
 The following keys are provisioned as part of this flow.
 
@@ -104,7 +104,7 @@ Boot stages:
     *   `BL0`: Bootloader. Signed by the Silicon Owner.
     *   `KERNEL`: Signed by the Silicon Owner.
 
-## Key Provisioning {#key-provisioning}
+## Key Provisioning
 
 As part of the Ownership Transfer flow, the Silicon Owner keys are endorsed
 either by the Silicon Creator or by the Current Owner of the device. This is
@@ -290,7 +290,7 @@ However, there must be at least one mechanism available to perform ownership
 transfer at manufacturing time using an implementation compatible with ATE[^2]
 infrastructure.
 
-### Unlock Ownership {#unlock-ownership}
+### Unlock Ownership
 
 This flow implements transition from `LOCKED_OWNERSHIP` to `UNLOCKED_OWNERSHIP` states. It
 is used by the Silicon Owner to relinquish ownership of the device and enable
@@ -374,7 +374,7 @@ before propagating the result to the Host. The Host propagates the unlock result
 to the Device Registry. The Device Registry may opt to remove the device from
 its allow-list.
 
-### Ownership Transfer {#ownership-transfer-device}
+### Ownership Transfer
 
 An ownership transfer command sent by a host to OpenTitan, is serviced by the
 ROM extension (`ROM_EXT`) allowing the Silicon Owner to take ownership of the
@@ -525,7 +525,7 @@ Detailed steps:
     shared memory region and triggers a reset to perform ownership transfer on
     the next boot cycle.
 7.  The `ROM_EXT` executes the ownership transfer flow described in the
-    [Ownership Transfer](#ownership-transfer-device) section with the following
+    [Ownership Transfer](#ownership-transfer) section with the following
     differences:
     1.  Flash erase and flash image stages are not executed.
     2.  The activate owner stage may be delayed and executed later depending on
@@ -545,7 +545,7 @@ implemented by storing the Silicon Owner BL0 verification keys in the `ROM_EXT`.
 The `ROM_EXT` is thus not required to implement ownership transfer in this
 configuration.
 
-## Flash Layout {#flash-layout}
+## Flash Layout
 
 To simplify the implementation, the flash layout implements fixed offset and
 size allocations for the `ROM_EXT` and the certificate storage regions. This

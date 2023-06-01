@@ -163,7 +163,7 @@ By "care" an example would be to reset their value synchronously at a time after
 
 Based upon this and the fact that much of the team history was with asynchronous active low reset, we chose that methodology with added requirements that special care be applied for security state, the details of which will come at a later date.
 
-### Bus Interfaces {#bus-interfaces}
+### Bus Interfaces
 
 Peripherals can connect to the chip bus.
 All peripherals are assumed to have registers, and are thus required to expose at least one device interface on the chip bus.
@@ -245,7 +245,7 @@ The connection between the modules are defined in the top-level configuration fi
 
 See the section on [Inter Signal Handling](#inter-signal-handling) below for detailed data structure in the configuration file.
 
-### Security countermeasures {#countermeasures}
+### Security countermeasures
 
 If this IP block is considered security-critical, it will probably have design features that try to mitigate against attacks like fault injection or side channel analysis.
 These features can be loosely categorised and named with identifiers of the following form:
@@ -444,7 +444,7 @@ This is done with a list with key `countermeasures`.
 Each item is a dictionary with keys `name` and `desc`.
 The `desc` field is a human-readable description of the countermeasure.
 The `name` field should be either of the form `ASSET.CM_TYPE` or `INSTANCE.ASSET.CM_TYPE`.
-Here, `ASSET` and `CM_TYPE` should be one of the values given in the tables in the [Security countermeasures](#countermeasures) section.
+Here, `ASSET` and `CM_TYPE` should be one of the values given in the tables in the [Security countermeasures](#security-countermeasures) section.
 If specified, `INSTANCE` should name a submodule of the IP block holding the asset.
 It can be used to disambiguate in situations such as where there are two different keys that are protected with different countermeasures.
 

@@ -14,7 +14,7 @@ The high-level sequence by which the host processor should use OTBN is as follow
 1. Write the OTBN application binary to [`IMEM`](../data/otbn.hjson#imem), starting at address 0.
 1. Optional: Write constants and input arguments, as mandated by the calling convention of the loaded application, to the half of DMEM accessible through the [`DMEM`](../data/otbn.hjson#dmem) window.
 1. Optional: Read back [`LOAD_CHECKSUM`](../data/otbn.hjson#load_checksum) and perform an integrity check.
-1. Start the operation on OTBN by [issuing the `EXECUTE` command](#design-details-commands).
+1. Start the operation on OTBN by [issuing the `EXECUTE` command](./theory_of_operation.md#operations-and-commands).
    Now neither data nor instruction memory may be accessed from the host CPU.
    After it has been started the OTBN application runs to completion without further interaction with the host.
 1. Wait for the operation to complete (see below).
@@ -30,12 +30,12 @@ The host CPU can determine if an application has completed by either polling [`S
   When [`STATUS`](../data/otbn.hjson#status) has become `LOCKED` a fatal error has occurred and OTBN must be reset to perform further operations.
 * Alternatively, software can listen for the `done` interrupt to determine if the operation has completed.
   The standard sequence of working with interrupts has to be followed, i.e. the interrupt has to be enabled, an interrupt service routine has to be registered, etc.
-  The [DIF](#dif) contains helpers to do so conveniently.
+  The [DIF](#device-interface-functions-difs) contains helpers to do so conveniently.
 
 Note: This operation sequence only covers functional aspects.
 Depending on the application additional steps might be necessary, such as deleting secrets from the memories.
 
-## Writing OTBN applications {#writing-otbn-applications}
+## Writing OTBN applications
 
 OTBN applications are (small) pieces of software written in OTBN assembly.
 The full instruction set is described in the [ISA manual](./isa.md), and example software is available in the `sw/otbn` directory of the OpenTitan source tree.
@@ -54,25 +54,25 @@ The following tools are available:
 
 Other tools from the RV32 toolchain can be used directly, such as objcopy.
 
-### Passing of data between the host CPU and OTBN {#writing-otbn-applications-datapassing}
+### Passing of data between the host CPU and OTBN
 
 Passing data between the host CPU and OTBN is done through the first 2kiB of data memory (DMEM).
 No standard or required calling convention exists, every application is free to pass data in and out of OTBN in whatever format it finds convenient.
-All data passing must be done when OTBN [is idle](#design-details-operational-states); otherwise both the instruction and the data memory are inaccessible from the host CPU.
+All data passing must be done when OTBN [is idle](./theory_of_operation.md#operational-states); otherwise both the instruction and the data memory are inaccessible from the host CPU.
 
-### Returning from an application {#writing-otbn-applications-ecall}
+### Returning from an application
 
 The software running on OTBN signals completion by executing the {{#otbn-insn-ref ECALL}} instruction.
 
 Once OTBN has executed the {{#otbn-insn-ref ECALL}} instruction, the following things happen:
 
 - No more instructions are fetched or executed.
-- A [secure wipe of internal state](#design-details-secure-wipe-internal) is performed.
+- A [secure wipe of internal state](./theory_of_operation.md#internal-state-secure-wipe) is performed.
 - The [`ERR_BITS`](../data/otbn.hjson#err_bits) register is set to 0, indicating a successful operation.
 - The current operation is marked as complete by setting [`INTR_STATE.done`](../data/otbn.hjson#intr_state) and clearing [`STATUS`](../data/otbn.hjson#status).
 
 The first 2kiB of DMEM can be used to pass data back to the host processor, e.g. a "return value" or an "exit code".
-Refer to the section [Passing of data between the host CPU and OTBN](#writing-otbn-applications-datapassing) for more information.
+Refer to the section [Passing of data between the host CPU and OTBN](#passing-of-data-between-the-host-cpu-and-otbn) for more information.
 
 ### Using hardware loops
 
@@ -353,11 +353,11 @@ The outlined technique can be extended to arbitrary bit widths but requires unro
 
 Code snippets giving examples of 256x256 and 384x384 multiplies can be found in `sw/otbn/code-snippets/mul256.s` and `sw/otbn/code-snippets/mul384.s`.
 
-## Device Interface Functions (DIFs) {#dif}
+## Device Interface Functions (DIFs)
 
 - [Device Interface Functions](../../../../sw/device/lib/dif/dif_otbn.h)
 
-## Driver {#driver}
+## Driver
 
 A higher-level driver for the OTBN block is available at `sw/device/lib/runtime/otbn.h`.
 

@@ -15,7 +15,7 @@ two stages:
     [Creator Identity][creator_identity], its endorsement certificate, as well
     as additional secrets required to configure defensive mechanisms. This
     occurs only at manufacturing time.
-*   [Owner Personalization](#owner_personalization): Covers provisioning of
+*   [Owner Personalization](#owner-personalization): Covers provisioning of
     owner secrets and endorsement of the Owner Identity by the Silicon Owner.
     This may occur either at manufacturing time or as part of a later in-field
     ownership transfer.
@@ -48,7 +48,7 @@ requirements:
 
 ## Device Lifecycle and Personalization Stages
 
-### Unlock Tokens {#unlock_tokens}
+### Unlock Tokens
 
 OpenTitan provides a set of lock/unlock tokens to control the state of the
 device in early manufacturing stages. See
@@ -104,7 +104,7 @@ personalization.
 *   `PERSONALIZATION`: See [Personalization](#personalization) section for more
 *   `LOAD FW IMAGE`: Load factory image payload.
 
-## Personalization {#personalization}
+## Personalization
 
 ### Test Setup
 
@@ -185,7 +185,7 @@ flow with emphasis on the personalization process.
 Steps:
 
 1.  [Device identifiers][device_id] (`device_id`) and
-    [unlock tokens](#unlock_tokens) are programmed into the device's One Time
+    [unlock tokens](#unlock-tokens) are programmed into the device's One Time
     Programmable (OTP) memory. The unlock tokens are delivered in cleartext form
     to each OpenTitan die.
 2.  (Optional) A provisioning appliance collects all device identifiers and
@@ -203,7 +203,7 @@ Steps:
             generates `device_secrets` (in the injection case) and endorsement
             certificates. `appliance_secrets` are used to enable signing on
             endorsement certificates with Silicon Creator intermediate CA keys.
-        2.  [Self-Generated Process](#self_generated_process): The device
+        2.  [Self-Generated Process](#self-generated-process): The device
             generates its own `device_secrets` and the provisioning appliance is
             used to sign the endorsement certificate.
 6.  At the end of a successful provisioning flow, the provisioning appliance
@@ -211,7 +211,7 @@ Steps:
     the registry as part of identity ingestion flows.
 7.  The devices are shipped with a factory image and a Silicon Creator
     endorsement certificate. The Silicon Creator may also provide
-    [Owner Personalization](#owner_personalization) services. All shipped
+    [Owner Personalization](#owner-personalization) services. All shipped
     devices have secure boot enabled, which provides a logical locking mechanism
     to restrict the use of open samples.
 8.  The Silicon Creator may issue a Certificate Revocation List (CRL) to the
@@ -402,7 +402,7 @@ more details.
 The public portion of the Creator Identity is tested against the Creator
 Certificate. The result is reported to the TESTER via SPI.
 
-### Self-Generated Process {#self_generated_process}
+### Self-Generated Process
 
 This section describes the personalization self-generate mode in detail. In this
 mode, The device generates its own device secrets and the provisioning appliance
@@ -523,7 +523,7 @@ more details.
 The public portion of the Creator Identity is tested against the Creator
 Certificate. The result is reported to the TESTER via SPI.
 
-## Owner Personalization {#owner_personalization}
+## Owner Personalization
 
 OpenTitan provides a mechanism to enable provisioning of Silicon Owner secrets
 and endorsement certificates in manufacturing and post-manufacturing stages.

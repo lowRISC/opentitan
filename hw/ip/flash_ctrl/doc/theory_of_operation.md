@@ -81,7 +81,7 @@ Instead, whether bank erase is allowed is controlled by [`MP_BANK_CFG_SHADOWED`]
 When the corresponding bit is set, that particular bank is permitted to have bank level operations.
 
 The specific behavior of what is erased when bank erase is issued is flash memory dependent and thus can vary by vendor and technology.
-[This section](#flash-bank-erase) describes the general behavior and how open source modeling is done.
+[This section](#flash-bank-erase-behavior) describes the general behavior and how open source modeling is done.
 
 #### Memory Protection for Key Manager and Life Cycle
 
@@ -163,26 +163,26 @@ See (#flash-escalation) for further differentiation between standard and custom 
 Since the flash controller has multiple interfaces for access, transmission integrity failures can manifest in different ways.
 
 There are 4 interfaces:
-- host direct access to flash controller [register files](#host-direct-reg).
-- host direct access to [flash macro](#host-direct-macro)
-- host / software initiated flash controller access to [flash macro (read / program / erase)](#host-controller-op)
-- life cycle management interface / hardware initiated flash controller access to [flash macro (read / program / erase)](#hw-controller-op)
+- host direct access to flash controller [register files](#host-direct-access-to-flash-controller-register-files).
+- host direct access to [flash macro](#host-direct-access-to-flash-macro)
+- host / software initiated flash controller access to [flash macro (read / program / erase)](#host-software-initiated-access-to-flash-macro)
+- life cycle management interface / hardware initiated flash controller access to [flash macro (read / program / erase)](#life-cycle-management-interface-hardware-initiated-access-to-flash-macro)
 
 The impact of transmission integrity of each interface is described below.
 
-##### Host Direct Access to Flash Controller Register Files {#host-direct-reg}
+##### Host Direct Access to Flash Controller Register Files
 This category of transmission integrity behaves identically to other modules.
 A bus transaction, when received, is checked for command and data payload integrity.
 If an integrity error is seen, the issuing bus host receives an in-band error response and a fault is registered in [`STD_FAULT_STATUS.REG_INTG_ERR`](../data/flash_ctrl.hjson#std_fault_status).
 
-##### Host Direct Access to Flash Macro {#host-direct-macro}
+##### Host Direct Access to Flash Macro
 Flash can only be read by the host.
 The transmission integrity scheme used is end-to-end, so integrity generated inside the flash is fed directly to the host.
 It is the host's responsibility to check for integrity correctness and react accordingly.
 
-##### Host / Software Initiated Access to Flash Macro {#host-controller-op}
-Since controller operations are initiated through writes to the register file, the command check is identical to host direct access to [regfiles](#host-direct-reg).
-Controller reads behave similarly to [host direct access to macro](#host-direct-macro), the read data and its associated integrity are returned through the controller read FIFO for the initiating host to handle.
+##### Host / Software Initiated Access to Flash Macro
+Since controller operations are initiated through writes to the register file, the command check is identical to host direct access to [regfiles](#host-direct-access-to-flash-controller-register-files).
+Controller reads behave similarly to [host direct access to macro](#host-direct-access-to-flash-macro), the read data and its associated integrity are returned through the controller read FIFO for the initiating host to handle.
 
 For program operations, the write data and its associated integrity are stored and propagated through the flash protocol and physical controllers.
 Prior to packing the data for final flash program, the data is then checked for integrity correctness.
@@ -193,7 +193,7 @@ The reasons a program error is registered in two locations are two-fold:
 - It is registered in [`ERR_CODE`](../data/flash_ctrl.hjson#err_code) so software can discover during operation status that a program has failed.
 - It is registered in [`STD_FAULT_STATUS`](../data/flash_ctrl.hjson#std_fault_status) because transmission integrity failures represent a fatal failure in the standard structure of the design, something that should never happen.
 
-##### Life Cycle Management Interface / Hardware Initiated Access to Flash Macro {#hw-controller-op}
+##### Life Cycle Management Interface / Hardware Initiated Access to Flash Macro
 The life cycle management interface issues transactions directly to the flash controller and does not perform a command payload integrity check.
 
 For read operations, the read data and its associated integrity are directly checked by the life cycle management interface.
@@ -258,7 +258,7 @@ Every time the protocol controller loses such an arbitration, it increases an ar
 Once this lost count reaches 5, the protocol controller is favored.
 This ensures a stream of host activity cannot deny protocol controller access (for example a tight polling loop).
 
-#### Flash Bank Erase Behavior {#flash-bank-erase}
+#### Flash Bank Erase Behavior
 
 This section describes the open source modeling of flash memory.
 The actual flash memory behavior may differ, and should consult the specific vendor or technology specification.

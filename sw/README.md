@@ -44,7 +44,7 @@ Host software must be written in C++ or Rust.
 
 # Other Documentation
 
-## OpenTitan Software API Documentation {#sw-api-docs}
+## OpenTitan Software API Documentation
 
 The [OpenTitan Software API Documentation](https://opentitan.org/gen/doxy/) contains automatically generated documentation for the public software APIs.
 This includes the Device Interface Functions (DIFs).

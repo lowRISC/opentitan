@@ -15,7 +15,7 @@ The diagram below summarizes the specific steps involved in the secure boot proc
 
 <img src="secure_boot_flow.svg" style="width: 800px;">
 
-## ROM {#rom}
+## ROM
 
 The first stage of secure boot is called "ROM".
 ROM is a region of read-only memory that cannot be updated at all after an OpenTitan device is manufactured.
@@ -40,7 +40,7 @@ On boot, the ROM code does the following:
 5. Check the signature from the manifest against the digest and the selected Silicon Creator public key.
     * Unlock flash execution, configure ePMP so that the `ROM_EXT` region is executable, and jump to the start of `ROM_EXT`.
 
-## `ROM_EXT` {#rom-ext}
+## `ROM_EXT`
 
 The `ROM_EXT` ("ROM extension") stage is another region of read-only memory that is controlled by the Silicon Creator.
 However, unlike the ROM, it *can* be updated after the device is manufactured, as long as the new version is signed by the Silicon Creator.
@@ -69,7 +69,7 @@ Once the code has jumped into the Silicon Owner code at BL0, secure boot in its 
 The Silicon Owner may choose to extend the secure boot process with multiple boot stages of their own; this will differ between device owners, while the stages described here are guaranteed by the Silicon Creator and will be shared by all OpenTitan implementations.
 If any signature verification in the above process fails, or there is any kind of unexpected error, the device will fail to boot.
 
-# Silicon Creator Keys {#silicon-creator-keys}
+# Silicon Creator Keys
 
 The Silicon Creator has multiple public keys.
 This redundancy partially protects against the scenario in which one of the keys is compromised; any OpenTitan devices produced after the key is known to be compromised can mark the compromised key invalid, without requiring a full new ROM implementation.
@@ -129,7 +129,7 @@ The Silicon Owner can change during the lifetime of the device, but the Silicon 
 *   `BL0`: Bootloader. Signed by the Silicon Owner.
 *   `Kernel`: Post-bootloader code. Signed by the Silicon Owner.
 
-# Boot Policy {#boot-policy}
+# Boot Policy
 
 In order to provide a flexible boot mechanism the Boot Info page will store a
 structure called the Boot Policy. The boot policy dictates the boot flow,
@@ -138,7 +138,7 @@ the ROM code to decide when to mark a `ROM_EXT` good or bad. The boot policy
 also contains directions to `ROM_EXT` about which slot it loads silicon owner
 code from. TODO(gdk): Expand on policy.
 
-# Memory Layout {#memory-layout}
+# Memory Layout
 
 <img src="flash_layout.svg" style="width: 800px;">
 
@@ -151,7 +151,7 @@ beginning of each physical flash bank. It is expected that a Silicon Owner might
 arbitrarily reserve space at the end of each flash bank to use as additional
 storage.
 
-# Boot Services {#boot-services}
+# Boot Services
 
 Boot Services refers to the functionality stored inside of `ROM`/`ROM_EXT` that
 can be controlled via specific messages passed between from Silicon Owner code

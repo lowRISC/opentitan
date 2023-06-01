@@ -25,7 +25,7 @@ C++ users are cautioned: Rust shares a lot of terminology and concepts (ownershi
 Experience in C++ should not be expected to translate cleanly.
 
 
-## What is Rust? {#what-is-rust}
+## What is Rust?
 
 Rust is a general-purpose programming language with a focus on maximum programmer control and zero runtime overhead, while eliminating the sharp edges traditionally associated with such languages.
 It is also sometimes called a "systems language".
@@ -42,7 +42,7 @@ Rust also contains a special dialect called Unsafe Rust, which disables some sta
 We will make reference to this dialect throughout the document.
 
 
-## The Rust Toolchain {#the-rust-toolchain}
+## The Rust Toolchain
 
 A complete Rust toolchain consists of a few major parts:
 
@@ -107,18 +107,18 @@ rustc has a number of flags. The most salient of these are:
 Other interesting flags can be found under `rustc -C help` and, on nightly, under `rustc -Z help`.
 
 
-## Part I: Rewriting your C in Rust {#part-i-rewriting-your-c-in-rust}
+## Part I: Rewriting your C in Rust
 
 Before diving into Rust's specific features, we will begin by exploring how C concepts map onto Rust, as well as Unsafe Rust, a dialect of Rust that is free of many of Rust's restrictions, but also most of its safety guarantees.
 
 
-### Types {#types}
+### Types
 
 Rust and C have roughly the same approach to types, though Rust has few implicit conversions (for example, it lacks integer promotion like C).
 In this section, we will discuss how to translate C types into Rust types.
 
 
-#### Integers {#integers}
+#### Integers
 
 Rust lacks C's `int`, `long`, `unsigned`, and other types with an implementation-defined size.
 Instead, Rust's primitive integer types are exact-size types: `i8`, `i16`, `i32`, `i64`, and `i128` are signed integers of 8, 16, 32, 64, and 128 bits, respectively, while `u8`, `u16`, `u32`, `u64`, and `u128` are their unsigned variants.
@@ -141,7 +141,7 @@ It is also the only type that can be used in `if` and `while` conditions.
 Integers have an extensive set of built-in operations for bit-twiddling, exposed as methods, such as `x.count_zeros()` and `x.next_power_of_two()`[^18].
 See [https://doc.rust-lang.org/std/primitive.u32.html](https://doc.rust-lang.org/std/primitive.u32.html) for examples.
 
-#### Structs and Tuples {#structs-and-tuples}
+#### Structs and Tuples
 
 Structs are declared almost like in C:
 ```rust
@@ -262,7 +262,7 @@ We'll see these enums again when we discuss patterns.
 
 Just like with structs, `#[derive]` can be used on enums to define comparison operators, which are defined analogously to the struct case.
 
-#### Arrays {#arrays}
+#### Arrays
 
 Rust arrays are just C arrays: inline storage of a compile-time-known number of values.
 `T[N]` in C is spelled `[T; N]` in Rust.
@@ -276,7 +276,7 @@ Unsafe Rust can be used to cheat the bounds check when it is known (to the progr
 Rust arrays are "real" types, unlike in C. They can be passed by value into functions, and returned by value from functions.
 They also don't decay into pointers when passed into functions.
 
-#### Pointers {#pointers}
+#### Pointers
 
 Like every other embedded language, Rust has pointers.
 These are usually referred to as _raw pointers_, to distinguish them from the myriad of smart pointer types.
@@ -310,7 +310,7 @@ For that, we use _references_, which are discussed much later.
 We will touch on function pointers when we encounter functions.
 
 
-### Items {#items}
+### Items
 
 Like C, Rust has globals and functions.
 These, along with the type definitions above, are called _items_ in the grammar, to avoid confusion with C's declaration/definition distinction.
@@ -318,7 +318,7 @@ Unlike C, Rust does not have forward declaration or declaration-order semantics;
 Items are imported through dedicated import statements, rather than textual inclusion; more on this later.
 
 
-#### Constants and Globals {#constants-and-globals}
+#### Constants and Globals
 
 Rust has dedicated syntax for compile-time constants, which serve the same purpose as `#define`d constants do in C.
 Their syntax is
@@ -344,7 +344,7 @@ Mutable globals can also be a source other racy behavior due to IRQ control flow
 As such, reading or writing to a mutable global, or creating a reference to one, requires Unsafe Rust.
 
 
-#### Functions {#functions}
+#### Functions
 
 In C and Rust, functions are the most important syntactic construct. Rust declares functions like so:
 ```rust
@@ -385,7 +385,7 @@ The syntax available in `const` functions increases in every release, though.
 Most standard library functions that can be `const` are already `const`.
 
 
-#### Macros {#macros}
+#### Macros
 
 Rust, like C, has macros.
 Rust macros are much more powerful than C macros, and operate on Rust syntax trees, rather than by string replacement.
@@ -394,7 +394,7 @@ For example, `file!()` expands to a string literal with the file name.
 To learn more about macros, see [https://danielkeep.github.io/tlborm/book/index.html](https://danielkeep.github.io/tlborm/book/index.html).
 
 
-#### Aliases {#aliases}
+#### Aliases
 
 Rust has `type`, which works exactly like `typedef` in `C`.
 Its syntax is
@@ -402,7 +402,7 @@ Its syntax is
 type MyAlias = u32;
 ```
 
-### Expressions and Statements {#expressions-and-statements}
+### Expressions and Statements
 
 Very much unlike C, Rust has virtually no statements in its grammar: almost everything is an expression of some kind, and can be used in expression context.
 Roughly speaking, the only statement in the language is creating a binding:
@@ -423,7 +423,7 @@ Like in almost all other languages, literals, operators, function calls, variabl
 Let's dive into some of Rust's other expressions.
 
 
-#### Blocks {#blocks}
+#### Blocks
 
 Blocks in Rust are like better versions of C's blocks; in Rust, every block is an expression.
 A block is delimited by `{ }`, consists of a set of a list of statements and items, and potentially an ending expression, much like a function.
@@ -439,7 +439,7 @@ Blocks are like local functions that execute immediately, and can be useful for 
 If a block does not end in an expression (that is, every statement within ends in a semicolon), it will implicitly return `()`, just like a function does.
 This automatic `()` is important when dealing with constructs like `if` and `match` expressions that need to unify the types of multiple branches of execution into one.
 
-#### Conditionals: `if` and `match` {#conditionals-if-and-match}
+#### Conditionals: `if` and `match`
 
 Rust's `if` expression is, syntactically, similar to C's. The full syntax is
 ```rust
@@ -514,7 +514,7 @@ If this behavior is not desired in an enum (because more variants will be added 
 We will see later that pattern matching makes `match` far more powerful than C's `switch`.
 
 
-#### Loops: `loop` and `while` {#loops-loop-and-while}
+#### Loops: `loop` and `while`
 
 Rust has three kinds of loops: `loop`, `while`, and `for`.
 `for` is not a C-style `for`, so we'll discuss it later.
@@ -533,7 +533,7 @@ Having an unconditional infinite loop allows Rust to perform better type and lif
 Under the hood, all of Rust's control flow is implemented in terms of `loop`, `match`, and `break`.
 
 
-#### Control Flow {#control-flow}
+#### Control Flow
 
 Rust has `return`, `break`, and `continue`, which have their usual meanings from C.
 They are also expressions, and, much like `loop {}`, have type `!` because all code that follows them is never executed (since they yank control flow).
@@ -562,7 +562,7 @@ let value = loop {
 ```
 
 
-### Talking to C {#talking-to-c}
+### Talking to C
 
 One of Rust's great benefits is mostly-seamless interop with existing C libraries.
 Because Rust essentially has no runtime, Rust types that correspond to C types can be trivially shared, and Rust can call C functions with almost no overhead[^54].
@@ -580,9 +580,9 @@ Also, some care must be taken with what types are sent over the boundary.
 See [https://doc.rust-lang.org/reference/items/external-blocks.html](https://doc.rust-lang.org/reference/items/external-blocks.html) for more details.
 
 
-### Analogues of other functionality {#analogues-of-other-functionality}
+### Analogues of other functionality
 
-#### Volatile {#volatile}
+#### Volatile
 
 Rust does not have a `volatile` qualifier.
 Instead, volatile reads can be performed using the `read_volatile()`[^55] and `write_volatile()`[^56] methods on pointers, which behave exactly like volatile pointer dereference in C.
@@ -591,7 +591,7 @@ Note that these methods work on types wider than the architecture's volatile loa
 The same caveat applies in C: `volatile uint64_t` will emit multiple accesses on a 32-bit machine.
 
 
-#### Inline Assembly {#inline-assembly}
+#### Inline Assembly
 
 Rust does not quite support inline assembly yet.
 Clang's inline assembly syntax is available behind the unstable macro `llvm_asm!()`, which will eventually be replaced with a Rust-specific syntax that better integrates with the language.
@@ -600,7 +600,7 @@ Naked functions can be created using `#[naked]`. See [https://doc.rust-lang.org/
 
 [Note that this syntax is currently in the process of being redesigned and stabilized.](https://blog.rust-lang.org/inside-rust/2020/06/08/new-inline-asm.html)
 
-#### Bit Casting {#bit-casting}
+#### Bit Casting
 
 Rust provides a type system trap-door for bitcasting any type to any other type of the same size:
 ```rust
@@ -613,7 +613,7 @@ The primary embedded-relevant use-case is for summoning function pointers from t
 [https://doc.rust-lang.org/std/mem/fn.transmute.html](https://doc.rust-lang.org/std/mem/fn.transmute.html) has a list of uses, many of which do not actually require transmute.
 
 
-#### Linker Shenanigans and Other Attributes {#linker-shenanigans-and-other-attributes}
+#### Linker Shenanigans and Other Attributes
 
 Below are miscellaneous attributes relevant to embedded programming.
 Many of these subtly affect linker/optimizer behavior, and are very much in the "you probably don't need to worry about it" category.
@@ -624,14 +624,14 @@ Many of these subtly affect linker/optimizer behavior, and are very much in the 
 *   `#[cold]` can also be used to pessimize inlining for functions that are unlikely to ever be called.
 
 
-## Part II: Rust-Specific Features {#part-ii-rust-specific-features}
+## Part II: Rust-Specific Features
 
 The previous part established enough vocabulary to take roughly any embedded C program and manually translate it into Rust.
 However, those Rust programs are probably about as safe and ergonomic as the C they came from.
 This section will focus on introducing features that make Rust safer and easier to write.
 
 
-### Ownership {#ownership}
+### Ownership
 
 Double-free or, generally, double-use, are a large class of insidious bugs in C, which don't look obviously wrong at a glance:
 ```c
@@ -692,7 +692,7 @@ Of course, the copy/move distinction is something of a misnomer: reassignment du
 The distinction is purely for static analysis.
 
 
-### References and Lifetimes {#references-and-lifetimes}
+### References and Lifetimes
 
 Another class of use-after-free involves stack variables after the stack is destroyed.
 Consider the following C:
@@ -808,7 +808,7 @@ Finally, it should go without saying that references are only useful for main me
 [https://doc.rust-lang.org/book/ch10-03-lifetime-syntax.html](https://doc.rust-lang.org/book/ch10-03-lifetime-syntax.html) elaborates further on the various lifetime rules.
 
 
-#### Operations on References {#operations-on-references}
+#### Operations on References
 
 Rust references behave much more like scalar values than like pointers (borrow-checking aside).
 Because it is statically known that every reference, at all times, points to a valid, initialized value of type `T`, explicit dereferencing is elided most of the time (though, when necessary, they can be dereferenced: `*x` is an lvalue that can be assigned to).
@@ -823,7 +823,7 @@ Pointer equality is still possible with `std::ptr::eq(x, y)`.
 References can be coerced into raw pointers: `x as *const T`, and compared directly.
 
 
-### Methods {#methods}
+### Methods
 
 While Rust is not an object-oriented language, it does provide a mechanism for namespacing functions under types: `impl` (for implementation) blocks.
 These also allow you to make use of Rust's visibility annotations, to make implementation details and helpers inaccessible to outside users.
@@ -885,7 +885,7 @@ impl MyStruct<'_> { /* ... */ }
 As we've already seen, many primitive types have methods, too; these are defined in special `impl` blocks in the standard library.
 
 
-### Slices and `for` {#slices-and-for}
+### Slices and `for`
 
 References also do not allow for pointer arithmetic, so a `&u32` cannot be used to point to a buffer of words.
 Static buffers can be passed around as arrays, like `&[u32; 1024]`, but often we want to pass a pointer to contiguous memory of a runtime-known value.
@@ -962,7 +962,7 @@ This operation is unsafe, but useful for bridging C and Rust, or Rust and Rust a
 More slice operations can be found at [https://doc.rust-lang.org/std/slice/index.html](https://doc.rust-lang.org/std/slice/index.html) and [https://doc.rust-lang.org/std/primitive.slice.html](https://doc.rust-lang.org/std/primitive.slice.html).
 
 
-#### String Literals {#string-literals}
+#### String Literals
 
 Rust string literals are much like C string literals: `"abcd..."`.
 Arbitrary ASCII-range bytes can be inserted with `\xNN`, and supports most of the usual escape sequences.
@@ -992,7 +992,7 @@ Raw strings can also be byte strings: `br#"..."#`.
 Rust also has character literals in the form of `'z'`[^75], though their type is `char`, a 32-bit Unicode code-point.
 To get an ASCII byte of type `u8`, instead, use `b'z'`.
 
-### Destructors and RAII {#destructors-and-raii}
+### Destructors and RAII
 
 Destructors are special functions that perform cleanup logic when a value has become unreachable (i.e., both the `let` that originally declared it can no longer be named, and the last reference to it expired).
 After the destructor is run, each of the value's fields, if it's a struct or enum, are also destroyed (or "dropped").
@@ -1028,7 +1028,7 @@ The function `std::mem::needs_drop()`[^82] can be used to discover if a type nee
 `std::ptr::drop_in_place()`[^83] can be used to run the destructor in the value behind a raw pointer, without technically giving up access to it.
 
 
-### Pattern Matching {#pattern-matching}
+### Pattern Matching
 
 References cannot be null, but it turns out that a null value is sometimes useful.
 `Option<T>` is a standard library type representing a "possibly absent `T`"[^84].
@@ -1203,7 +1203,7 @@ for (k, v) in my_key_values {
 }
 ```
 
-### Traits {#traits}
+### Traits
 
 Traits are Rust's core code-reuse abstraction.
 Rust traits are like interfaces in other languages: a list of methods that a type must implement.
@@ -1264,7 +1264,7 @@ This last syntax is also useful in generic contexts, or for being precise about 
 Traits are also the vehicle for operator overloading: these traits are found in the std::ops[^94] module of the standard library.
 
 
-#### Trait Objects {#trait-objects}
+#### Trait Objects
 
 Traits can be used for dynamic dispatch (also known as virtual polymorphism) through a mechanism called _trait objects_.
 Given a trait `Trait`, and a type `T` that implements it, we can `as`-cast a reference `&T` into a dynamic trait object: `&dyn Trait`.
@@ -1309,7 +1309,7 @@ In other words, all of the functions must treat `Self` as if it were not sized a
 The type `dyn Trait` always behaves as if it implemented `Trait`, which is relevant for generics, discussed below.
 
 
-#### Unsafe Traits {#unsafe-traits}
+#### Unsafe Traits
 
 It is possible to mark a trait as `unsafe` by writing `unsafe trait MyTrait { /* ... */ }`; the only difference with normal traits is that it requires `unsafe impl` to be implemented.
 Unsafe traits typically enforce some kind of additional constraint in addition to their methods; in fact, unsafe traits frequently don't have methods at all.
@@ -1331,7 +1331,7 @@ Auto traits are always markers that you don't really want to opt out of.
 They're like the opposite of `derive()` traits, which you need to opt into, since they meaningfully affect the API of your type in a way that it is important to be able to control.
 
 
-### Generics {#generics}
+### Generics
 
 _Generic programming_ is writing source code that can be compiled for many types.
 Generics are one of Rust's core features, which enable polymorphic[^99] static dispatch.
@@ -1392,7 +1392,7 @@ impl<T> MyWrapper<T> {
 ```
 
 
-#### Generic Bounds {#generic-bounds}
+#### Generic Bounds
 
 However, generics alone have one limitation: the function is only type and borrow checked once, in its generic form, rather than per instantiation; this means that generic code can't just call inherent methods of `T` and expect the lookup to succeed[^104].
 For example, this code won't compile:
@@ -1504,7 +1504,7 @@ This is not always ideal, since it's sometimes useful to expose a `T` in your ty
 For more information on how to use it, refer to the type documentation[^109] or the relevant Rustonomicon entry[^110].
 
 
-### Smart Pointers {#smart-pointers}
+### Smart Pointers
 
 In Rust, a "smart pointer"[^1112] is any type that implements `std::ops::Deref`[^112], the dereference operator[^113].
 `Deref` is defined like this:
@@ -1549,7 +1549,7 @@ For example, `<[u8] as Index<usize>>::Output` is `u8`, while `<[u8] as Index<Ran
 Indexing with a single index produces a single byte, while indexing with a range produces another slice.
 
 
-### Closures {#closures}
+### Closures
 
 Closures (sometimes called "lambda expressions" in other languages) are function literals that capture some portion of their environment, which can be passed into other functions to customize behavior.
 
@@ -1621,7 +1621,7 @@ For example, `Fn(i32) -> i32` represents taking an `i32` argument and returning 
 Closures also implement `Copy` and `Clone` if all of their captures do, too.
 
 
-#### Closures as Function Arguments {#closures-as-function-arguments}
+#### Closures as Function Arguments
 
 There are roughly two ways of writing a function that accepts a closure argument: through dynamic dispatch, or through static dispatch, which have a performance and a size penalty, respectively.
 
@@ -1658,7 +1658,7 @@ The pseudotype `impl Trait` can be used in function argument position to say "th
 Note that `Trait` can technically be any generic bound involving at least one trait: `impl Clone + Default` and `impl Clone + 'a` are valid.
 
 
-#### Closures as Function Returns {#closures-as-function-returns}
+#### Closures as Function Returns
 
 Closure types are generally unnameable. The canonical way to return closures is with `impl Trait` in return position:
 ```rust
@@ -1702,7 +1702,7 @@ fn new_fn(flag: bool) -> fn(i32) -> i32 {
   }
 }
 ```
-#### Closures as Struct Fields {#closures-as-struct-fields}
+#### Closures as Struct Fields
 
 Using closures as struct fields is fairly limited without being able to easily allocate.
 The two options are to either make the trait generic on the closure type (which needs to be propagated through everything that uses the struct), or to require that closures not capture, and use function pointers instead:
@@ -1730,7 +1730,7 @@ struct MyStruct<'a> {
 ```
 
 
-### `Option` and `Result`: Error Handling in Rust {#option-and-result-error-handling-in-rust}
+### `Option` and `Result`: Error Handling in Rust
 
 As we saw above, `Option` is a type that lets us specify a "potentially uninitialized" value.
 While it is common to work with `Option` using `match` expressions, it also has a number of convenience functions that shorten common sequences of code.
@@ -1812,7 +1812,7 @@ let x = my_thing.foo()?.bar()?.baz()?;
 See [https://doc.rust-lang.org/std/result/index.html](https://doc.rust-lang.org/std/result/index.html) for more `Result` operations.
 
 
-### `for` Revisited: Iterators {#for-revisited-iterators}
+### `for` Revisited: Iterators
 
 An _iterator_ is any type that implements the `Iterator` trait, which looks like this:
 ```rust
@@ -1891,7 +1891,7 @@ In general, iterators can produce very efficient code similar to that emitted by
 See [https://doc.rust-lang.org/std/iter/trait.Iterator.html](https://doc.rust-lang.org/std/iter/trait.Iterator.html) and [https://doc.rust-lang.org/std/iter](https://doc.rust-lang.org/std/iter/) for full details on available operations.
 
 
-### Modules and Crate Layout {#modules-and-crate-layout}
+### Modules and Crate Layout
 
 Each Rust crate is (from the compiler's perspective) given a unique, single-identifier name.
 This name is used to namespace a crate's symbols[^121].
@@ -1975,7 +1975,7 @@ Rust does not have headers, or declaration order constraints; modules within a c
 Rust crate namespaces are closed: after a crate is fully compiled, no other symbols can be added to it.
 
 
-### Interior Mutability {#interior-mutability}
+### Interior Mutability
 
 _Interior mutability_ is a borrow check escape hatch for working around Rust's aliasing rules.
 
@@ -2014,7 +2014,7 @@ This illustrates another property of `UnsafeCell`: it causes data that is otherw
 See [https://doc.rust-lang.org/std/cell/index.html](https://doc.rust-lang.org/std/cell/index.html) for more details; as with all aliasing-related topics, it requires careful attention t detail, and this section is far from exhaustive.
 
 
-### Unsafe Rust {#unsafe-rust}
+### Unsafe Rust
 
 Unsafe Rust is a dialect of Rust that is denoted by the keyword `unsafe`: `unsafe` blocks, unsafe functions, unsafe traits.
 Importantly, all of these actions require uttering the keyword `unsafe`, so that they can be easily detected in code review.
