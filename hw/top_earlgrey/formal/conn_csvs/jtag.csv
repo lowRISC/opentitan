@@ -12,9 +12,9 @@ CONNECTION, PINMUX_LC_CTRL_JTAG_REQ, top_earlgrey.u_pinmux_aon, lc_jtag_o, top_e
 CONNECTION, PINMUX_LC_CTRL_JTAG_RSP, top_earlgrey.u_pinmux_aon, lc_jtag_i, top_earlgrey.u_lc_ctrl, jtag_o
 
 # Pinmux and flash_ctrl jtag connection.
-CONNECTION, PINMUX_FLASH_CTRL_TCK, top_earlgrey.u_pinmux_aon, mio_to_periph_o[top_earlgrey_pkg::MioInFlashCtrlTck], top_earlgrey.u_flash_ctrl, cio_tck_i
-CONNECTION, PINMUX_FLASH_CTRL_TMS, top_earlgrey.u_pinmux_aon, mio_to_periph_o[top_earlgrey_pkg::MioInFlashCtrlTms], top_earlgrey.u_flash_ctrl, cio_tms_i
-CONNECTION, PINMUX_FLASH_CTRL_TDI, top_earlgrey.u_pinmux_aon, mio_to_periph_o[top_earlgrey_pkg::MioInFlashCtrlTdi], top_earlgrey.u_flash_ctrl, cio_tdi_i
+CONNECTION, PINMUX_FLASH_CTRL_TCK, top_earlgrey.u_pinmux_aon, mio_to_periph_o[47], top_earlgrey.u_flash_ctrl, cio_tck_i
+CONNECTION, PINMUX_FLASH_CTRL_TMS, top_earlgrey.u_pinmux_aon, mio_to_periph_o[48], top_earlgrey.u_flash_ctrl, cio_tms_i
+CONNECTION, PINMUX_FLASH_CTRL_TDI, top_earlgrey.u_pinmux_aon, mio_to_periph_o[49], top_earlgrey.u_flash_ctrl, cio_tdi_i
 
-CONNECTION, PINMUX_FLASH_CTRL_TDO,    top_earlgrey.u_flash_ctrl, cio_tdo_o,    top_earlgrey.u_pinmux_aon, periph_to_mio_i[top_earlgrey_pkg::MioOutFlashCtrlTdo]
-CONNECTION, PINMUX_FLASH_CTRL_TDO_EN, top_earlgrey.u_flash_ctrl, cio_tdo_en_o, top_earlgrey.u_pinmux_aon, periph_to_mio_oe_i[top_earlgrey_pkg::MioOutFlashCtrlTdo]
+CONNECTION, PINMUX_FLASH_CTRL_TDO,    top_earlgrey.u_flash_ctrl, cio_tdo_o,    top_earlgrey.u_pinmux_aon, periph_to_mio_i[52]
+CONNECTION, PINMUX_FLASH_CTRL_TDO_EN, top_earlgrey.u_flash_ctrl, cio_tdo_en_o, top_earlgrey.u_pinmux_aon, periph_to_mio_oe_i[52]
