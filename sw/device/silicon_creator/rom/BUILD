@@ -173,8 +173,8 @@ opentitan_rom_binary(
     testonly = True,
     deps = [
         ":rom_without_keys",
-        "//sw/device/silicon_creator/rom/keys/fake/rsa",
-        "//sw/device/silicon_creator/rom/keys/fake/spx",
+        "//sw/device/silicon_creator/rom/keys/real/rsa",
+        "//sw/device/silicon_creator/rom/keys/real/spx",
     ],
 )
 

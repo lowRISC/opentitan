@@ -118,6 +118,7 @@ SILICON_CREATOR_KEYS = struct(
             ],
         ),
     ),
+    # We can't expose real private keys publicly.
     REAL = None,
     UNAUTHORIZED = struct(
         RSA = [
@@ -140,6 +141,7 @@ SILICON_OWNER_KEYS = struct(
             ],
             PROD = None,
         ),
+        # We can't expose real private keys publicly.
         REAL = None,
         UNAUTHORIZED = None,
     ),
