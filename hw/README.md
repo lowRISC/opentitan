@@ -51,7 +51,3 @@ Finally, we provide the same set of information for all available [top level des
 ### Earl Grey-specific comportable IPs
 
 {{#dashboard top_earlgrey }}
-
-## Hardware documentation overview
-
-{{% sectionContent %}}

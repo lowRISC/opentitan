@@ -29,5 +29,3 @@ code will live in: `sw/device/lib/testing/test\_framework`.
   This allows testutils functions to easily mix with DIFs within chip-level tests.
 - Avoid defining testutils that call a single DIF, and use the DIF directly.
   If a DIF does not exist for your needs, create one by following the [DIF development guide](../dif/README.md).
-
-{{% sectionContent %}}

@@ -26,7 +26,3 @@ There are also prototype versions of some of the boot stages, now only used for 
 
 - [`sw/device/lib/testing/test_rom`](https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/testing/test_rom) is a previous, testing-only version of the ROM.
 - `sw/device/exts` contains software for our prototype second boot stage images.
-
-## Documentation Index
-
-{{% sectionContent %}}
