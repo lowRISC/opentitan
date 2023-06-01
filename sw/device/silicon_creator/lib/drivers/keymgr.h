@@ -78,6 +78,12 @@ enum {
 /**
  * Sets the key manager software binding inputs.
  *
+ * This function also clears and caches the value of the `SW_BINDING_REGWEN`
+ * register in the `sec_mmio` expectations table. This register is unlocked
+ * after a successful transaction. It is recommended to call
+ * `keymgr_sw_binding_unlock_wait()` after initiating a transition to update its
+ * value in the `sec_mmio` expectations table.
+ *
  * @param binding_value_sealing Software binding for sealing value.
  * @param binding_value_attestation Software binding for attestation value.
  */
@@ -89,7 +95,9 @@ void keymgr_sw_binding_set(
  * Blocks until the software binding registers are unlocked.
  *
  * This function can be called after `keymgr_advance_state()` to wait for the
- * software binding registers to become available for writing.
+ * software binding registers to become available for writing and to update the
+ * cached value of `SW_BINDING_REGWEN` register in the `sec_mmio` expectations
+ * table.
  */
 void keymgr_sw_binding_unlock_wait(void);
 
@@ -136,8 +144,9 @@ rom_error_t keymgr_init(uint16_t entropy_reseed_interval);
  * time to ensure the advance transition completed without errors.
  *
  * Note: It is recommended to call `keymgr_sw_binding_unlock_wait()` before the
- * secure mmio `sec_mmio_check_values()` function to make sure the internal
- * state of the key manager is updated in the secure mmio expectations table.
+ * secure mmio `sec_mmio_check_values()` function to make sure the value of the
+ * `SW_BINDING_REGWEN` register is updated in the secure mmio expectations
+ * table.
  */
 void keymgr_advance_state(void);
 
