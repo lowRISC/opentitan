@@ -42,7 +42,6 @@ string_flag(
 
 string_flag(
     name = "otp_seed",
-    # Default must match value in hw/ip/otp_ctrl/data/otp_ctrl_mmap.hjson.
     build_setting_default = "10556718629619452145",
 )
 
