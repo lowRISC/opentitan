@@ -86,6 +86,8 @@ package otp_ctrl_reg_pkg;
   parameter int CreatorSwCfgRngAlertThresholdSize = 4;
   parameter int CreatorSwCfgRngHealthConfigDigestOffset = 348;
   parameter int CreatorSwCfgRngHealthConfigDigestSize = 4;
+  parameter int CreatorSwCfgSramKeyRenewEnOffset = 352;
+  parameter int CreatorSwCfgSramKeyRenewEnSize = 4;
   parameter int CreatorSwCfgDigestOffset = 856;
   parameter int CreatorSwCfgDigestSize = 8;
   parameter int OwnerSwCfgOffset = 864;

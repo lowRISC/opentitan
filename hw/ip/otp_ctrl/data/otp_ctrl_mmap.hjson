@@ -240,6 +240,10 @@
                     name: "CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST",
                     size: "4"
                 }
+                {
+                    name: "CREATOR_SW_CFG_SRAM_KEY_RENEW_EN",
+                    size: "4"
+                }
             ],
             desc: '''Software configuration partition for
             device-specific calibration data (Clock, LDO,
