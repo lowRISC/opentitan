@@ -68,3 +68,22 @@ jobs:
         --test_output=errors \
         //sw/device/silicon_creator/rom/e2e/...
     displayName: "Run all ROM E2E tests"
+
+- job: bob_spi_i2c
+  displayName: "BoB: SPI and I2C Tests"
+  timeoutInMinutes: 30
+  dependsOn: checkout
+  pool: FPGA
+  steps:
+  - template: ../ci/checkout-template.yml
+  - template: ../ci/install-package-dependencies.yml
+  - bash: |
+      set -x
+      module load "xilinx/vivado/$(VIVADO_VERSION)"
+      ci/bazelisk.sh test \
+        --define DISABLE_VERILATOR_BUILD=true \
+        --define bitstream=gcp_splice \
+        --build_tests_only \
+        --test_output=errors \
+        $(bazel query 'attr("tags", "[\[ ]bob[,\]]", attr("tags", "[\[ ]cw310[,\]]", tests(//...)))')
+    displayName: "Run all the SPI and I2C Tests with BoB"
