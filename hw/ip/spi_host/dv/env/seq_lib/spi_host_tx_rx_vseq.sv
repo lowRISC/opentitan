@@ -31,11 +31,10 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
     end
   endtask
 
-
+  // Read CSR.RXFIFO until spi_host is inactive and the fifo is empty.
+  // Wait until the TL-bus is inactive, then read status/intr_state for scb checking.
   virtual task read_rx_fifo();
     bit [7:0] read_q[$];
-    bit active = 0;
-    bit rxempty;
     spi_host_status_t status;
 
     // Wait until not-empty before entering the forever loop.
@@ -52,12 +51,13 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
       if (!status.active && status.rxempty && (status.rx_qd == 0)) begin
         break;
       end
-    end  // forever loop
+    end : read_rxfifo_until_empty_and_inactive
 
-    // wait for all accesses to complete
+    // Wait for all accesses to complete
     wait_no_outstanding_access();
 
-    // read out status/intr_state CSRs to check
+    // Read out status/intr_state CSRs (ignore the data)
+    // This lets the scoreboard check the values.
     check_status_and_clear_intrs();
 
   endtask
@@ -80,6 +80,7 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
     end
   endtask : send_trans
 
+  // Write dummy-data into TxFifo.
   virtual task txfifo_fill();
     spi_segment_item segment = new();
     spi_host_atomic.get(1);

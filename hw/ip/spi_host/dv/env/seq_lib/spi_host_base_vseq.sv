@@ -378,26 +378,33 @@ class spi_host_base_vseq extends cip_base_vseq #(
         write ? "WRITE" : "READ", addr, data, blocking, mask), UVM_HIGH)
   endtask : send_tl_access
 
+  // fifo == TxFifo : Write all bits in data_q to the TxFifo
+  //      == RxFifo : Read single 32-bit word from RxFifo
   virtual task access_data_fifo(ref bit [7:0] data_q[$], input spi_host_fifo_e fifo,
                                     bit fifo_avail_chk = 1'b1);
-    bit [TL_DBW-1:0][7:0]   data          = '0;
-    int                     cnt           =  0;
-    bit [TL_DBW-1:0]        mask          = '0;
-    bit                     wr_en         = 1;
+    typedef enum bit {WRITE = 1'b1, READ = 1'b0} rdwr_e;
+    rdwr_e                  rw                 = (fifo == RxFifo) ? READ : WRITE;
+    bit [TL_AW-1:0]         align_addr         = (fifo == RxFifo) ? SPI_HOST_RXDATA_OFFSET:
+                                                                    SPI_HOST_TXDATA_OFFSET;
+    bit [TL_DBW-1:0][7:0]   data               = '0;
+    int                     cnt                =  0;
+    bit [TL_DBW-1:0]        mask               = '0;
     bit [TL_AW-1:0]         align_addr;
+    `DV_CHECK_NE_FATAL(fifo, AllFifos)
+
     // check free space in fifo
     if (fifo_avail_chk) wait_for_fifos_available(fifo);
-    //TODO add interrupt handling if FIFO overflow
+    // TODO add interrupt handling if FIFO overflows
 
-    align_addr = get_aligned_tl_addr(fifo);
-    wr_en      = (fifo != RxFifo);
-    if (wr_en) begin
+    if (rw == WRITE) begin
+      // Pull bytes from data_q, assembling them into 32-bit words for TL-UL writes.
+      // If data_q.size()%4 != 0, add a runt access with the remaining data (mask-off empty bytes)
       while (data_q.size() > 0) begin
         data[cnt] = data_q.pop_front();
         mask[cnt] = 1'b1;
         if (cnt == 3) begin
-          send_tl_access(.addr(align_addr), .data(data), .write(wr_en),
-                         .mask(mask), .blocking(1'b1));
+          tl_access_inner(.addr(align_addr), .data(data), .write(WRITE),
+                          .mask(mask), .blocking(1'b1));
           cnt  = 0;
           data = '0;
           mask = '0;
@@ -407,11 +414,14 @@ class spi_host_base_vseq extends cip_base_vseq #(
       end
       // add runts
       if (cnt != 0) begin
-        send_tl_access(.addr(align_addr), .data(data), .write(wr_en), .mask(mask), .blocking(1'b1));
+        tl_access_inner(.addr(align_addr), .data(data), .write(WRITE), .mask(mask),
+                        .blocking(1'b1));
       end
-    end else begin
-      send_tl_access(.addr(align_addr), .data(data), .write(wr_en), .mask(mask), .blocking(1'b1));
+    end else if (rw == READ) begin
+      // Read a single 32-bit word
+      tl_access_inner(.addr(align_addr), .data(data), .write(READ), .mask(mask), .blocking(1'b1));
       data_q = {<<8{data}};
     end
-  endtask
+  endtask : access_data_fifo
+
 endclass : spi_host_base_vseq
