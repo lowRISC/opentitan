@@ -1,6 +1,6 @@
 # Hardware Interfaces
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/ip/aes/data/aes.hjson -->
-Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/rm/comportability_specification), the module **`aes`** has the following hardware interfaces defined
+Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`aes`** has the following hardware interfaces defined
 - Primary Clock: **`clk_i`**
 - Other Clocks: **`clk_edn_i`**
 - Bus Device Interfaces (TL-UL): **`tl`**
