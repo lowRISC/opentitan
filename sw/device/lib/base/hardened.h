@@ -542,7 +542,7 @@ inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
 #ifdef OT_PLATFORM_RV32
 // This string can be tuned to be longer or shorter as desired, for
 // fault-hardening purposes.
-#define HARDENED_UNIMP_SEQUENCE_() "unimp; unimp; unimp; unimp;"
+#define HARDENED_UNIMP_SEQUENCE_() "unimp; unimp; unimp;"
 
 #define HARDENED_CHECK_OP_EQ_ "beq"
 #define HARDENED_CHECK_OP_NE_ "bne"
