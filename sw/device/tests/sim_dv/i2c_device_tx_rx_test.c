@@ -168,7 +168,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_rv_plic_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
 
-  CHECK_STATUS_OK(i2c_testutils_connect_i2c_to_pinmux_pins(&pinmux, kI2cIdx));
+  CHECK_STATUS_OK(i2c_testutils_select_pinmux(&pinmux, kI2cIdx));
 
   // Enable functional interrupts as well as error interrupts to make sure
   // everything is behaving as expected.

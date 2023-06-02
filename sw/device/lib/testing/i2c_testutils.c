@@ -271,8 +271,8 @@ status_t i2c_testutils_target_check_write(const dif_i2c_t *i2c,
   return i2c_testutils_target_check_end(i2c, cont_byte);
 }
 
-status_t i2c_testutils_connect_i2c_to_pinmux_pins(const dif_pinmux_t *pinmux,
-                                                  uint8_t i2c_id) {
+status_t i2c_testutils_select_pinmux(const dif_pinmux_t *pinmux,
+                                     uint8_t i2c_id) {
   // Configure sda pin.
   TRY(dif_pinmux_input_select(pinmux, pinmux_conf[i2c_id].sda.peripheral_in,
                               pinmux_conf[i2c_id].sda.insel));

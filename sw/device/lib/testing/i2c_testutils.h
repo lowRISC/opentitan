@@ -128,8 +128,8 @@ status_t i2c_testutils_target_check_write(const dif_i2c_t *i2c,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t i2c_testutils_connect_i2c_to_pinmux_pins(const dif_pinmux_t *pinmux,
-                                                  uint8_t kI2cIdx);
+status_t i2c_testutils_select_pinmux(const dif_pinmux_t *pinmux,
+                                     uint8_t kI2cIdx);
 
 /**
  * Return whether the fifo is empty.
