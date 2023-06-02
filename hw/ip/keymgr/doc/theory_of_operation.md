@@ -488,9 +488,5 @@ A sideload key slot is selected for update only if the original software request
 
 If this check fails, an error is reflected in [`FAULT_STATUS.SIDE_CTRL_SEL`](../data/keymgr.hjson#fault_status).
 
-####
-
-####
-
 ## Hardware Interfaces
 * [Interface Tables](../data/keymgr.hjson#interfaces)
