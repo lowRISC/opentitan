@@ -22,6 +22,7 @@
 namespace flash_ctrl_unittest {
 namespace {
 using ::testing::Each;
+using ::testing::ElementsAre;
 using ::testing::Return;
 using ::testing::SizeIs;
 
@@ -67,7 +68,7 @@ class FlashCtrlTest : public rom_test::RomTest {
 };
 
 class InfoPagesTest : public FlashCtrlTest {};
-TEST_F(InfoPagesTest, NumberOfPages) { EXPECT_THAT(InfoPages(), SizeIs(20)); }
+TEST_F(InfoPagesTest, NumberOfPages) { EXPECT_THAT(InfoPages(), SizeIs(9)); }
 
 TEST_F(InfoPagesTest, PagesPerBank) {
   std::array<uint32_t, 2> pages_per_bank = {0, 0};
@@ -77,7 +78,7 @@ TEST_F(InfoPagesTest, PagesPerBank) {
     ++pages_per_bank[bank];
   }
 
-  EXPECT_THAT(pages_per_bank, Each(10));
+  EXPECT_THAT(pages_per_bank, ElementsAre(4, 5));
 }
 
 TEST_F(InfoPagesTest, PageIndices) {
