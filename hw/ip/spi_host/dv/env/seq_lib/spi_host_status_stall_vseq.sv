@@ -20,7 +20,7 @@ class spi_host_status_stall_vseq extends spi_host_tx_rx_vseq;
 
     begin : isolation_fork
       fork
-        start_reactive_seq();
+        start_agent_reactive_seqs();
       join_none
 
       begin

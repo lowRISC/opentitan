@@ -21,7 +21,7 @@ class spi_host_spien_vseq extends spi_host_tx_rx_vseq;
   virtual task body();
     spi_host_status_t status;
 
-    fork start_reactive_seq(); join_none
+    fork start_agent_reactive_seqs(); join_none
     wait_ready_for_command();
 
     fork

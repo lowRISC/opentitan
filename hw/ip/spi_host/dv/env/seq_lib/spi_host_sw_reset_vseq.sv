@@ -26,9 +26,7 @@ class spi_host_sw_reset_vseq extends spi_host_tx_rx_vseq;
     for (int i = 0; i < num_runs; i++) begin : for_num_runs
       `uvm_info(`gfn, $sformatf("Starting run %0d/%0d now!", i, num_runs), UVM_LOW)
       fork begin : isolation_fork
-        fork
-          start_reactive_seq();
-        join_none
+        fork start_agent_reactive_seqs(); join_none
 
         begin
           wait_ready_for_command();
