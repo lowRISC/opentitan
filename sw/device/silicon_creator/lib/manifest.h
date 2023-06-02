@@ -104,6 +104,20 @@ enum {
 };
 
 /**
+ * Manifest timestamp.
+ */
+typedef struct manifest_timestamp {
+  /**
+   * Least significant word of the timestamp.
+   */
+  uint32_t timestamp_low;
+  /**
+   * Most significant word of the timestamp.
+   */
+  uint32_t timestamp_high;
+} manifest_timestamp_t;
+
+/**
  * Manifest extensions table entry.
  *
  * An extension with index `i` exists if the `identifier` of the `i`th entry in
@@ -214,7 +228,7 @@ typedef struct manifest {
    * Unix timestamp that gives the creation time of the image, seconds since
    * 00:00:00 on January 1, 1970 UTC (the Unix Epoch).
    */
-  uint32_t timestamp[2];
+  manifest_timestamp_t timestamp;
   /**
    * Binding value used by key manager to derive secret values.
    *
