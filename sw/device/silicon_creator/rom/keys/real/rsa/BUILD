@@ -10,9 +10,13 @@ cc_library(
         "sigverify_rsa_keys_real.c",
     ],
     hdrs = [
-        "dev_key_0_rsa_3072_exp_f4.h",
-        "prod_key_0_rsa_3072_exp_f4.h",
-        "test_key_0_rsa_3072_exp_f4.h",
+        "earlgrey_a0_dev_0.h",
+        "earlgrey_a0_dev_1.h",
+        "earlgrey_a0_prod_0.h",
+        "earlgrey_a0_prod_1.h",
+        "earlgrey_a0_prod_2.h",
+        "earlgrey_a0_test_0.h",
+        "earlgrey_a0_test_1.h",
     ],
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
@@ -46,16 +50,36 @@ cc_test(
 )
 
 filegroup(
-    name = "test_private_key_0",
-    srcs = ["test_key_0_rsa_3072_exp_f4.pub.der"],
+    name = "test_public_key_0",
+    srcs = ["earlgrey_a0_test_0.der"],
 )
 
 filegroup(
-    name = "dev_private_key_0",
-    srcs = ["dev_key_0_rsa_3072_exp_f4.pub.der"],
+    name = "test_public_key_1",
+    srcs = ["earlgrey_a0_test_1.der"],
 )
 
 filegroup(
-    name = "prod_private_key_0",
-    srcs = ["prod_key_0_rsa_3072_exp_f4.pub.der"],
+    name = "dev_public_key_0",
+    srcs = ["earlgrey_a0_dev_0.der"],
+)
+
+filegroup(
+    name = "dev_public_key_1",
+    srcs = ["earlgrey_a0_dev_1.der"],
+)
+
+filegroup(
+    name = "prod_public_key_0",
+    srcs = ["earlgrey_a0_prod_0.der"],
+)
+
+filegroup(
+    name = "prod_public_key_1",
+    srcs = ["earlgrey_a0_prod_1.der"],
+)
+
+filegroup(
+    name = "prod_public_key_2",
+    srcs = ["earlgrey_a0_prod_2.der"],
 )
