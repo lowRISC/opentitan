@@ -1801,7 +1801,10 @@ opentitan_functest(
     name = "i2c_host_accelerometer_test",
     srcs = ["i2c_host_accelerometer_test.c"],
     cw310 = cw310_params(
-        tags = ["manual"],  # Requires the BoB in CI.
+        tags = [
+            "bob",
+            "manual",
+        ],  # Requires the BoB in CI.
     ),
     targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
     deps = [
@@ -1823,7 +1826,10 @@ opentitan_functest(
     name = "i2c_host_ambient_light_detector_test",
     srcs = ["i2c_host_ambient_light_detector_test.c"],
     cw310 = cw310_params(
-        tags = ["manual"],  # Requires the BoB in CI.
+        tags = [
+            "bob",
+            "manual",
+        ],  # Requires the BoB in CI.
     ),
     targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
     deps = [
@@ -1845,7 +1851,10 @@ opentitan_functest(
     name = "i2c_host_hdc1080_humidity_temp_test",
     srcs = ["i2c_host_hdc1080_humidity_temp_test.c"],
     cw310 = cw310_params(
-        tags = ["manual"],  # Requires the BoB in CI.
+        tags = [
+            "bob",
+            "manual",
+        ],  # Requires the BoB in CI.
     ),
     targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
     deps = [
@@ -1867,7 +1876,10 @@ opentitan_functest(
     name = "i2c_host_clock_stretching_test",
     srcs = ["i2c_host_clock_stretching_test.c"],
     cw310 = cw310_params(
-        tags = ["manual"],  # Requires the BoB in CI.
+        tags = [
+            "bob",
+            "manual",
+        ],  # Requires the BoB in CI.
     ),
     targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
     deps = [
@@ -1891,7 +1903,10 @@ opentitan_functest(
     name = "i2c_host_compass_test",
     srcs = ["i2c_host_compass_test.c"],
     cw310 = cw310_params(
-        tags = ["manual"],  # Requires the BoB in CI.
+        tags = [
+            "bob",
+            "manual",
+        ],  # Requires the BoB in CI.
     ),
     targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
     deps = [
@@ -1913,7 +1928,10 @@ opentitan_functest(
     name = "i2c_host_eeprom_test",
     srcs = ["i2c_host_eeprom_test.c"],
     cw310 = cw310_params(
-        tags = ["manual"],  # Requires the BoB in CI.
+        tags = [
+            "bob",
+            "manual",
+        ],  # Requires the BoB in CI.
     ),
     targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
     deps = [
@@ -1935,7 +1953,10 @@ opentitan_functest(
     name = "i2c_host_fram_test",
     srcs = ["i2c_host_fram_test.c"],
     cw310 = cw310_params(
-        tags = ["manual"],  # Requires the BoB in CI.
+        tags = [
+            "bob",
+            "manual",
+        ],  # Requires the BoB in CI.
     ),
     targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
     deps = [
@@ -1957,7 +1978,10 @@ opentitan_functest(
     name = "i2c_host_gas_sensor_test",
     srcs = ["i2c_host_gas_sensor_test.c"],
     cw310 = cw310_params(
-        tags = ["manual"],  # Requires the BoB in CI.
+        tags = [
+            "bob",
+            "manual",
+        ],  # Requires the BoB in CI.
     ),
     targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
     deps = [
@@ -1979,7 +2003,10 @@ opentitan_functest(
     name = "i2c_host_power_monitor_test",
     srcs = ["i2c_host_power_monitor_test.c"],
     cw310 = cw310_params(
-        tags = ["manual"],  # Requires the BoB in CI.
+        tags = [
+            "bob",
+            "manual",
+        ],  # Requires the BoB in CI.
     ),
     targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
     deps = [

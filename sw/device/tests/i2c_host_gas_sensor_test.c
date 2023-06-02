@@ -123,13 +123,13 @@ static status_t test_init(void) {
 
   TRY(dif_rv_core_ibex_init(base_addr, &rv_core_ibex));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C0_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C2_BASE_ADDR);
   TRY(dif_i2c_init(base_addr, &i2c));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
   TRY(dif_pinmux_init(base_addr, &pinmux));
 
-  TRY(i2c_testutils_select_pinmux(&pinmux, 0));
+  TRY(i2c_testutils_select_pinmux(&pinmux, 2));
 
   TRY(dif_i2c_host_set_enabled(&i2c, kDifToggleEnabled));
 
