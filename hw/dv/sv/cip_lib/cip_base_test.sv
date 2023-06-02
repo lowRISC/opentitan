@@ -22,5 +22,16 @@ class cip_base_test #(type CFG_T = cip_base_env_cfg,
     end
   endfunction
 
+  virtual task run_phase(uvm_phase phase);
+    // Disable random delays in specific `prim_cdc_rand_delay`s even if CDC instrumentation is
+    // enabled.  (See `cip_base_env_cfg` for details.)
+    foreach (cfg.disabled_prim_cdc_rand_delays[i]) begin
+      string path = {cfg.disabled_prim_cdc_rand_delays[i],
+                     ".gen_enable.cdc_instrumentation_enabled"};
+      `DV_CHECK(uvm_hdl_force(path, 1'b0));
+    end
+    super.run_phase(phase);
+  endtask
+
 endclass : cip_base_test
 
