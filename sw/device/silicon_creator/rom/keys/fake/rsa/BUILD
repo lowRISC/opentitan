@@ -7,12 +7,14 @@ package(default_visibility = ["//visibility:public"])
 cc_library(
     name = "rsa",
     srcs = [
-        "sigverify_rsa_keys_fake.c",
-    ],
-    hdrs = [
         "dev_key_0_rsa_3072_exp_f4.h",
+        "dev_key_1_rsa_3072_exp_f4.h",
         "prod_key_0_rsa_3072_exp_f4.h",
+        "prod_key_1_rsa_3072_exp_f4.h",
+        "prod_key_2_rsa_3072_exp_f4.h",
+        "sigverify_rsa_keys_fake.c",
         "test_key_0_rsa_3072_exp_f4.h",
+        "test_key_1_rsa_3072_exp_f4.h",
     ],
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
@@ -51,11 +53,31 @@ filegroup(
 )
 
 filegroup(
+    name = "test_private_key_1",
+    srcs = ["test_key_1_rsa_3072_exp_f4.der"],
+)
+
+filegroup(
     name = "dev_private_key_0",
     srcs = ["dev_key_0_rsa_3072_exp_f4.der"],
 )
 
 filegroup(
+    name = "dev_private_key_1",
+    srcs = ["dev_key_1_rsa_3072_exp_f4.der"],
+)
+
+filegroup(
     name = "prod_private_key_0",
     srcs = ["prod_key_0_rsa_3072_exp_f4.der"],
+)
+
+filegroup(
+    name = "prod_private_key_1",
+    srcs = ["prod_key_1_rsa_3072_exp_f4.der"],
+)
+
+filegroup(
+    name = "prod_private_key_2",
+    srcs = ["prod_key_2_rsa_3072_exp_f4.der"],
 )
