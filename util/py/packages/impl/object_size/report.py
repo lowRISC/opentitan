@@ -25,7 +25,7 @@ def print_utilization_report(memories) -> None:
         bar = Progress(TextColumn(f"[progress.description]{m.name:20}"),
                        BarColumn(complete_style="bold cyan"),
                        TaskProgressColumn(),
-                       f"{Size(used)} of {Size.__str__(m)}")
+                       f"Available: {Size(m.size - used)}, Used: {Size(used)} of {Size.__str__(m)}")
         task = bar.add_task("")
         bar.advance(task, used * 100 // m.size)
         rprint(Padding(bar.get_renderable(), (0, 0, 0, 4)))
