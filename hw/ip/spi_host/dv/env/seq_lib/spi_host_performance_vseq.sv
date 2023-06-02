@@ -38,7 +38,7 @@ class spi_host_performance_vseq extends spi_host_smoke_vseq;
     fork
       begin : isolation_fork
         fork
-          start_reactive_seq();
+          start_agent_reactive_seqs();
         join_none
 
         begin

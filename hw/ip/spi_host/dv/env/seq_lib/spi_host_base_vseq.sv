@@ -109,15 +109,16 @@ class spi_host_base_vseq extends cip_base_vseq #(
     super.pre_start();
   endtask : pre_start
 
-  virtual task start_reactive_seq();
-    // start device seq's
+  // Start sequences on the spi_agent (configured as a Device) that will respond to host bus activity.
+  // Currently we use "spi_device_cmd_rsp_seq", which discards write-data, and responds with random data for reads.
+  virtual task start_agent_reactive_seqs();
     fork
       for( int i = 0; i < SPI_HOST_NUM_CS; i++) begin
         m_spi_device_seq[i] = spi_device_cmd_rsp_seq::type_id::create($sformatf("spi_host[%0d]",i));
         m_spi_device_seq[i].start(p_sequencer.spi_sequencer_h);
       end
     join
-  endtask // start_reactive_seq
+  endtask : start_agent_reactive_seqs
 
   // Call this function to cleanup the above started reactive-sequences, such as if we
   // exit early, or are running sequences back-to-back.
@@ -125,7 +126,7 @@ class spi_host_base_vseq extends cip_base_vseq #(
     p_sequencer.spi_sequencer_h.stop_sequences();
     if (cfg.m_spi_agent_cfg.has_req_fifo) p_sequencer.spi_sequencer_h.req_analysis_fifo.flush();
     if (cfg.m_spi_agent_cfg.has_rsp_fifo) p_sequencer.spi_sequencer_h.rsp_analysis_fifo.flush();
-  endtask // cleanup_reactive_seq
+  endtask : cleanup_reactive_seq
 
   task post_start();
     super.post_start();

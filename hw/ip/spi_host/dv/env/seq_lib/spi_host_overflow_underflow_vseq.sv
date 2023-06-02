@@ -28,7 +28,7 @@ class spi_host_overflow_underflow_vseq extends spi_host_tx_rx_vseq;
      fork
       begin : isolation_fork
         fork
-          start_reactive_seq();
+          start_agent_reactive_seqs();
         join_none
         begin
           wait_ready_for_command();
