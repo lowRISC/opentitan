@@ -51,14 +51,45 @@ void ecc256_en_masks(const uint8_t *enable, size_t enable_len);
 void ecc256_set_seed(const uint8_t *seed, size_t seed_len);
 
 /**
+ * Simple serial 'c' (set constant) command handler.
+ *
+ * The constant must be `kEcc256SeedNumBytes` bytes long.
+ *
+ * @param C Value of the C constant.
+ * @param len Length of the C constant.
+ */
+void ecc256_set_c(const uint8_t *C, size_t len);
+
+/**
+ * Simple serial 'e' (secret keygen fvsr key batch mode) command handler.
+ *
+ * Collects data for ECDSA keygen fixed-vs-random test in the KEY mode.
+ * In the KEY mode, the fixed set of measurements is generated using the fixed
+ * 320 bit seed. The random set of measurements is generated in two steps:
+ *   1. Choose a random 256 bit number r
+ *   2. Compute the seed as (C + r) where C is the fixed 320 bit constant. Note
+ * that in this case the used key is equal to (C + r) mod curve_order_n.
+ * Takes a number of traces that has to be captured in one batch as input.
+ *
+ * @param data Value for trace count.
+ * @param data_len Length of trace count input.
+ */
+void ecc256_ecdsa_keygen_fvsr_key_batch(const uint8_t *data, size_t data_len);
+
+/**
  * Simple serial 'b' (secret keygen batch mode) command handler.
+ *
+ * Collects data for ECDSA keygen fixed-vs-random test in the SEED mode.
+ * In the SEED mode, the fixed set of measurements is generated using the fixed
+ * 320 bit seed. The random set of measurements is generated using a random 320
+ * bit seed. In both cases, the used key is equal to seed mod curve_order_n
  *
  * Takes a number of traces that has to be captured in one batch as input.
  *
  * @param data Value for trace count.
  * @param data_len Length of trace count input.
  */
-void ecc256_ecdsa_secret_keygen_batch(const uint8_t *data, size_t data_len);
+void ecc256_ecdsa_keygen_fvsr_seed_batch(const uint8_t *data, size_t data_len);
 
 /**
  * Simple serial 'k' (secret keygen) command handler.

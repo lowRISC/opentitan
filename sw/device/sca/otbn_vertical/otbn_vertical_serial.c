@@ -74,12 +74,16 @@ static void simple_serial_main(void) {
 
   simple_serial_init(sca_get_uart());
   SS_CHECK(simple_serial_register_handler(
-               'b', ecc256_ecdsa_secret_keygen_batch) == kSimpleSerialOk);
+               'b', ecc256_ecdsa_keygen_fvsr_seed_batch) == kSimpleSerialOk);
+  SS_CHECK(simple_serial_register_handler(
+               'e', ecc256_ecdsa_keygen_fvsr_key_batch) == kSimpleSerialOk);
   SS_CHECK(simple_serial_register_handler('k', ecc256_ecdsa_secret_keygen) ==
            kSimpleSerialOk);
   SS_CHECK(simple_serial_register_handler('p', ecc256_ecdsa_gen_keypair) ==
            kSimpleSerialOk);
   SS_CHECK(simple_serial_register_handler('x', ecc256_set_seed) ==
+           kSimpleSerialOk);
+  SS_CHECK(simple_serial_register_handler('c', ecc256_set_c) ==
            kSimpleSerialOk);
   SS_CHECK(simple_serial_register_handler('m', ecc256_en_masks) ==
            kSimpleSerialOk);
