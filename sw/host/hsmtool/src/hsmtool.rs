@@ -2,13 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result};
+use anyhow::{anyhow, Context, Result};
 use clap::Parser;
 use cryptoki::session::UserType;
 use log::LevelFilter;
+use std::path::PathBuf;
 
 use hsmtool::commands::{print_command, print_result, Commands, Dispatch, Format};
 use hsmtool::module;
+use hsmtool::profile::Profile;
 use hsmtool::util::attribute::AttributeMap;
 
 #[derive(Debug, Parser)]
@@ -27,6 +29,16 @@ struct Args {
 
     #[arg(short, long, help = "Use color in the output")]
     color: Option<bool>,
+
+    #[arg(
+        long,
+        default_value = "profiles.json",
+        help = "Filename of HSM profiles.  Relative to $XDG_CONFIG_HOME/hsmtool."
+    )]
+    profiles: PathBuf,
+
+    #[arg(long, help = "The name of an HSM profile to use")]
+    profile: Option<String>,
 
     #[arg(long, env = "HSMTOOL_MODULE", help = "Path to a PKCS11 shared library")]
     module: String,
@@ -76,7 +88,18 @@ fn main() -> Result<()> {
         return print_command(args.format, args.color, args.command.leaf());
     }
 
-    let session = if let Some(token) = &args.token {
+    let session = if let Some(profile) = &args.profile {
+        let profiles = Profile::load(&args.profiles)?;
+        let profile = profiles
+            .get(profile)
+            .ok_or_else(|| anyhow!("Profile {profile:?} not found."))?;
+        Some(module::connect(
+            &pkcs11,
+            &profile.token,
+            Some(profile.user),
+            profile.pin.as_deref(),
+        )?)
+    } else if let Some(token) = &args.token {
         Some(module::connect(
             &pkcs11,
             token,

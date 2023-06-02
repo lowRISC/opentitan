@@ -8,6 +8,7 @@ use cryptoki::context::Pkcs11;
 use cryptoki::session::Session;
 use cryptoki::session::UserType;
 use cryptoki::slot::Slot;
+use serde::de::{Deserialize, Deserializer};
 
 use crate::error::HsmError;
 
@@ -48,4 +49,12 @@ pub fn parse_user_type(val: &str) -> Result<UserType> {
         "User" | "USER" | "user" => Ok(UserType::User),
         _ => Err(HsmError::UnknownUser(val.into()).into()),
     }
+}
+
+pub fn deserialize_user<'de, D>(deserializer: D) -> std::result::Result<UserType, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let user = String::deserialize(deserializer)?;
+    parse_user_type(&user).map_err(serde::de::Error::custom)
 }

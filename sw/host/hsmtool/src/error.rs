@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::util::attribute::AttributeError;
 use thiserror::Error;
+
+use crate::util::attribute::AttributeError;
 
 #[derive(Debug, Error)]
 pub enum HsmError {
@@ -29,4 +30,6 @@ pub enum HsmError {
     ObjectNotFound(String),
     #[error("Expected exactly one object. Found {0} objects for search {1}")]
     TooManyObjects(usize, String),
+    #[error("Expected only owner permissions, but found permissions {0:o}")]
+    FilePermissionError(u32),
 }
