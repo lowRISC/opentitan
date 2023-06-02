@@ -34,4 +34,3 @@ class cip_base_test #(type CFG_T = cip_base_env_cfg,
   endtask
 
 endclass : cip_base_test
-
