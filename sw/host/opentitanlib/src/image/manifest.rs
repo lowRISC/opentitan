@@ -158,7 +158,8 @@ impl Default for ManifestUsageConstraints {
 #[repr(C)]
 #[derive(FromBytes, AsBytes, Debug, Default)]
 pub struct Timestamp {
-    pub data: [u32; 2usize],
+    pub timestamp_low: u32,
+    pub timestamp_high: u32,
 }
 
 #[repr(C)]

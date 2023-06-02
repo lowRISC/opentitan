@@ -296,7 +296,10 @@ impl TryFrom<[u32; 2]> for Timestamp {
     type Error = anyhow::Error;
 
     fn try_from(words: [u32; 2]) -> Result<Timestamp> {
-        Ok(Timestamp { data: words })
+        Ok(Timestamp {
+            timestamp_low: words[0],
+            timestamp_high: words[1],
+        })
     }
 }
 
@@ -341,7 +344,10 @@ impl From<&KeymgrBindingValue> for [ManifestSmallInt<u32>; 8] {
 }
 impl From<&Timestamp> for [ManifestSmallInt<u32>; 2] {
     fn from(o: &Timestamp) -> [ManifestSmallInt<u32>; 2] {
-        o.data.map(|v| ManifestSmallInt(Some(HexEncoded(v))))
+        [
+            ManifestSmallInt(Some(HexEncoded(o.timestamp_low))),
+            ManifestSmallInt(Some(HexEncoded(o.timestamp_high))),
+        ]
     }
 }
 
