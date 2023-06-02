@@ -88,10 +88,10 @@ otp_json(
                     CONST.HARDENED_BYTE_TRUE,  # key0
                     CONST.HARDENED_BYTE_TRUE,  # key1
                     CONST.HARDENED_BYTE_TRUE,  # key2
-                    CONST.HARDENED_BYTE_FALSE,  # key3
-                    CONST.HARDENED_BYTE_FALSE,  # key4
-                    CONST.HARDENED_BYTE_FALSE,  # key5
-                    CONST.HARDENED_BYTE_FALSE,  # key6
+                    CONST.HARDENED_BYTE_TRUE,  # key3
+                    CONST.HARDENED_BYTE_TRUE,  # key4
+                    CONST.HARDENED_BYTE_TRUE,  # key5
+                    CONST.HARDENED_BYTE_TRUE,  # key6
                     CONST.HARDENED_BYTE_FALSE,  # key7
                 ]),
                 # Disable SPX+ signature verification. See the definitions of
