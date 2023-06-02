@@ -236,7 +236,7 @@
         }
         { bits: "11"
           name: "RCONT"
-          desc: "Do not NAK the last byte read, let the read operation continue"
+          desc: "Do not NACK the last byte read, let the read operation continue"
         }
         { bits: "12"
           name: "NAKOK"
