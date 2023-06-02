@@ -68,6 +68,16 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   uint num_interrupts;
   uint num_edn;
 
+  // Knob to disable random delays in specific `prim_cdc_rand_delay`s even if CDC instrumentation is
+  // generally enabled.  This takes one absolute path to a `prim_cdc_rand_delay` instance per array
+  // element.
+  //
+  // This can be used to disable CDC instrumentation specifically for `prim_alert_sender`s, for
+  // which the scoreboard -- if random CDC delays were enabled -- would not know precisely in which
+  // clock cycle the handshake for an alert completes and thus could not accurately predict whether
+  // an alert request gets merged with an outstanding request or not (#18796).
+  string disabled_prim_cdc_rand_delays[];
+
   // if module has alerts, this list_of_alerts needs to override in cfg before super.initialize()
   // function is called
   string list_of_alerts[] = {};
