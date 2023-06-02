@@ -33,7 +33,7 @@
                     // invalid since we have currently only two keys. See the
                     // definition of `hardened_byte_bool_t` in
                     // sw/device/lib/base/hardened.h.
-                    value: "0x4b4b4b4b4b4ba5a5",
+                    value: "0x4ba5a5a5a5a5a5a5",
                 }
             ],
         }

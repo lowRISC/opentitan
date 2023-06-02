@@ -29,7 +29,7 @@
                     // invalid since we currently have only three keys. See the
                     // definition of `hardened_byte_bool_t` in
                     // sw/device/lib/base/hardened.h.
-                    value: "0x4b4b4b4b4ba5a5a5",
+                    value: "0x4ba5a5a5a5a5a5a5",
                 },
                 {
                     name: "CREATOR_SW_CFG_SIGVERIFY_SPX_EN",
@@ -38,6 +38,14 @@
                     // `kSigverifySpxEnabledOtp` in
                     // sw/device/silicon_creator/lib/sigverify/spx_verify.h.
                     value: "0x8d6c8c17",
+                },
+                {
+                    name: "CREATOR_SW_CFG_SIGVERIFY_SPX_KEY_EN",
+                    // Mark the first three keys as valid and remaining as
+                    // invalid since we currently have only three keys. See the
+                    // definition of `hardened_byte_bool_t` in
+                    // sw/device/lib/base/hardened.h.
+                    value: "0x4ba5a5a5a5a5a5a5",
                 },
                 {
                     name: "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG",
