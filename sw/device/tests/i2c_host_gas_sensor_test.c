@@ -129,7 +129,7 @@ static status_t test_init(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
   TRY(dif_pinmux_init(base_addr, &pinmux));
 
-  TRY(i2c_testutils_connect_i2c_to_pinmux_pins(&pinmux, 0));
+  TRY(i2c_testutils_select_pinmux(&pinmux, 0));
 
   TRY(dif_i2c_host_set_enabled(&i2c, kDifToggleEnabled));
 
