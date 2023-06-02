@@ -220,30 +220,6 @@ static rom_error_t write(uint32_t addr, flash_ctrl_partition_t partition,
 }
 
 /**
- * Returns the base address of an information page.
- *
- * @param info_page An information page.
- * @return Base address of the given page.
- */
-OT_WARN_UNUSED_RESULT
-static uint32_t info_page_addr(flash_ctrl_info_page_t info_page) {
-#define INFO_PAGE_ADDR_CASE_(name_, value_, bank_, page_) \
-  case (name_):                                           \
-    HARDENED_CHECK_EQ(launder32(info_page), (name_));     \
-    return (bank_)*FLASH_CTRL_PARAM_BYTES_PER_BANK +      \
-           (page_)*FLASH_CTRL_PARAM_BYTES_PER_PAGE;
-
-  switch (launder32(info_page)) {
-    FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_ADDR_CASE_)
-    default:
-      HARDENED_TRAP();
-      OT_UNREACHABLE();
-  }
-
-#undef INFO_PAGE_ADDR_CASE_
-}
-
-/**
  * A struct for storing config and config write-enable register addresses of an
  * info page.
  */
@@ -259,6 +235,20 @@ typedef struct info_cfg_regs {
 } info_cfg_regs_t;
 
 /**
+ * A struct for storing register addresses and base address of an info page.
+ */
+typedef struct info_page_details {
+  /**
+   * Config and write-enable register addresses.
+   */
+  info_cfg_regs_t cfg_regs;
+  /**
+   * Base address.
+   */
+  uint32_t addr;
+} info_page_details_t;
+
+/**
  * Returns config and config write-enable register addresses of an info page.
  *
  * Note: This function only supports info pages of type 0.
@@ -267,17 +257,22 @@ typedef struct info_cfg_regs {
  * @return Config and config write-enable register addresses of the info page.
  */
 OT_WARN_UNUSED_RESULT
-static info_cfg_regs_t info_cfg_regs(flash_ctrl_info_page_t info_page) {
-#define INFO_CFG_REGS_CASE_(name_, value_, bank_, page_)                  \
-  case (name_):                                                           \
-    HARDENED_CHECK_EQ(launder32(info_page), (name_));                     \
-    return (info_cfg_regs_t){                                             \
-        .cfg_wen_addr =                                                   \
-            kBase +                                                       \
-            FLASH_CTRL_BANK##bank_##_INFO0_REGWEN_##page_##_REG_OFFSET,   \
-        .cfg_addr =                                                       \
-            kBase +                                                       \
-            FLASH_CTRL_BANK##bank_##_INFO0_PAGE_CFG_##page_##_REG_OFFSET, \
+static info_page_details_t info_page_details(flash_ctrl_info_page_t info_page) {
+#define INFO_CFG_REGS_CASE_(name_, value_, bank_, page_)                          \
+  case (name_):                                                                   \
+    HARDENED_CHECK_EQ((info_page), (name_));                                      \
+    return (info_page_details_t){                                                 \
+        .cfg_regs =                                                               \
+            (info_cfg_regs_t){                                                    \
+                .cfg_wen_addr =                                                   \
+                    kBase +                                                       \
+                    FLASH_CTRL_BANK##bank_##_INFO0_REGWEN_##page_##_REG_OFFSET,   \
+                .cfg_addr =                                                       \
+                    kBase +                                                       \
+                    FLASH_CTRL_BANK##bank_##_INFO0_PAGE_CFG_##page_##_REG_OFFSET, \
+            },                                                                    \
+        .addr = (bank_)*FLASH_CTRL_PARAM_BYTES_PER_BANK +                         \
+                (page_)*FLASH_CTRL_PARAM_BYTES_PER_PAGE,                          \
     };
 
   switch (launder32(info_page)) {
@@ -299,7 +294,7 @@ static info_cfg_regs_t info_cfg_regs(flash_ctrl_info_page_t info_page) {
  * @param info_page An info page.
  */
 static void page_lockdown(flash_ctrl_info_page_t info_page) {
-  const info_cfg_regs_t regs = info_cfg_regs(info_page);
+  const info_cfg_regs_t regs = info_page_details(info_page).cfg_regs;
   sec_mmio_write32(regs.cfg_addr, 0);
   sec_mmio_write32(regs.cfg_wen_addr, 0);
 }
@@ -392,7 +387,7 @@ rom_error_t flash_ctrl_data_read(uint32_t addr, uint32_t word_count,
 rom_error_t flash_ctrl_info_read(flash_ctrl_info_page_t info_page,
                                  uint32_t offset, uint32_t word_count,
                                  void *data) {
-  const uint32_t addr = info_page_addr(info_page) + offset;
+  const uint32_t addr = info_page_details(info_page).addr + offset;
   transaction_start((transaction_params_t){
       .addr = addr,
       .op_type = FLASH_CTRL_CONTROL_OP_VALUE_READ,
@@ -414,7 +409,7 @@ rom_error_t flash_ctrl_data_write(uint32_t addr, uint32_t word_count,
 rom_error_t flash_ctrl_info_write(flash_ctrl_info_page_t info_page,
                                   uint32_t offset, uint32_t word_count,
                                   const void *data) {
-  const uint32_t addr = info_page_addr(info_page) + offset;
+  const uint32_t addr = info_page_details(info_page).addr + offset;
   return write(addr, kFlashCtrlPartitionInfo0, word_count, data,
                kErrorFlashCtrlInfoWrite);
 }
@@ -480,7 +475,7 @@ rom_error_t flash_ctrl_data_erase_verify(uint32_t addr,
 
 rom_error_t flash_ctrl_info_erase(flash_ctrl_info_page_t info_page,
                                   flash_ctrl_erase_type_t erase_type) {
-  const uint32_t addr = info_page_addr(info_page);
+  const uint32_t addr = info_page_details(info_page).addr;
   transaction_start((transaction_params_t){
       .addr = addr,
       .op_type = FLASH_CTRL_CONTROL_OP_VALUE_ERASE,
@@ -515,7 +510,7 @@ void flash_ctrl_info_perms_set(flash_ctrl_info_page_t info_page,
                                flash_ctrl_perms_t perms) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioInfoPermsSet, 1);
 
-  const uint32_t cfg_addr = info_cfg_regs(info_page).cfg_addr;
+  const uint32_t cfg_addr = info_page_details(info_page).cfg_regs.cfg_addr;
   // Read first to preserve ECC, scrambling, and high endurance bits.
   uint32_t reg = sec_mmio_read32(cfg_addr);
   reg = bitfield_field32_write(
@@ -547,7 +542,7 @@ void flash_ctrl_info_cfg_set(flash_ctrl_info_page_t info_page,
                              flash_ctrl_cfg_t cfg) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioInfoCfgSet, 1);
 
-  const uint32_t cfg_addr = info_cfg_regs(info_page).cfg_addr;
+  const uint32_t cfg_addr = info_page_details(info_page).cfg_regs.cfg_addr;
   // Read first to preserve permission bits.
   uint32_t reg = sec_mmio_read32(cfg_addr);
   reg = bitfield_field32_write(
