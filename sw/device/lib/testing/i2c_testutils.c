@@ -31,41 +31,65 @@ static const dif_i2c_fmt_flags_t kDefaultFlags = {.start = false,
                                                   .read_cont = false,
                                                   .suppress_nak_irq = false};
 
-typedef struct i2c_connect_conf {
-  const top_earlgrey_pinmux_mio_out_t pins_mio_out[2];
-  const top_earlgrey_pinmux_insel_t pins_insel[2];
-  const top_earlgrey_pinmux_peripheral_in_t pins_peripheral_in[2];
-  const top_earlgrey_pinmux_outsel_t pins_outsel[2];
-} i2c_connect_conf_t;
+typedef struct i2c_pinmux_map {
+  const top_earlgrey_pinmux_mio_out_t mio_out;
+  const top_earlgrey_pinmux_insel_t insel;
+  const top_earlgrey_pinmux_peripheral_in_t peripheral_in;
+  const top_earlgrey_pinmux_outsel_t outsel;
+} i2c_pinmux_map_t;
 
-const i2c_connect_conf_t i2c_conf[] = {
-    {.pins_mio_out = {kTopEarlgreyPinmuxMioOutIoa7,
-                      kTopEarlgreyPinmuxMioOutIoa8},
-     .pins_insel = {kTopEarlgreyPinmuxInselIoa7, kTopEarlgreyPinmuxInselIoa8},
-     .pins_peripheral_in =
+typedef struct i2c_pinmux_conf {
+  i2c_pinmux_map_t sda;
+  i2c_pinmux_map_t scl;
+} i2c_pinmux_conf_t;
+
+static const i2c_pinmux_conf_t pinmux_conf[] = {
+    // I2C0.
+    {.sda =
          {
-             kTopEarlgreyPinmuxPeripheralInI2c0Sda,
-             kTopEarlgreyPinmuxPeripheralInI2c0Scl,
+             .mio_out = kTopEarlgreyPinmuxMioOutIoa7,
+             .insel = kTopEarlgreyPinmuxInselIoa7,
+             .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c0Sda,
+             .outsel = kTopEarlgreyPinmuxOutselI2c0Sda,
          },
-     .pins_outsel =
+     .scl =
          {
-             kTopEarlgreyPinmuxOutselI2c0Sda,
-             kTopEarlgreyPinmuxOutselI2c0Scl,
+             .mio_out = kTopEarlgreyPinmuxMioOutIoa8,
+             .insel = kTopEarlgreyPinmuxInselIoa8,
+             .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c0Scl,
+             .outsel = kTopEarlgreyPinmuxOutselI2c0Scl,
          }},
-    {.pins_mio_out = {kTopEarlgreyPinmuxMioOutIob9,
-                      kTopEarlgreyPinmuxMioOutIob10},
-     .pins_insel = {kTopEarlgreyPinmuxInselIob9, kTopEarlgreyPinmuxInselIob10},
-     .pins_peripheral_in = {kTopEarlgreyPinmuxPeripheralInI2c1Scl,
-                            kTopEarlgreyPinmuxPeripheralInI2c1Sda},
-     .pins_outsel = {kTopEarlgreyPinmuxOutselI2c1Scl,
-                     kTopEarlgreyPinmuxOutselI2c1Sda}},
-    {.pins_mio_out = {kTopEarlgreyPinmuxMioOutIob11,
-                      kTopEarlgreyPinmuxMioOutIob12},
-     .pins_insel = {kTopEarlgreyPinmuxInselIob11, kTopEarlgreyPinmuxInselIob12},
-     .pins_peripheral_in = {kTopEarlgreyPinmuxPeripheralInI2c2Scl,
-                            kTopEarlgreyPinmuxPeripheralInI2c2Sda},
-     .pins_outsel = {kTopEarlgreyPinmuxOutselI2c2Scl,
-                     kTopEarlgreyPinmuxOutselI2c2Sda}}};
+    // I2C1.
+    {.sda =
+         {
+             .mio_out = kTopEarlgreyPinmuxMioOutIob10,
+             .insel = kTopEarlgreyPinmuxInselIob10,
+             .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c1Sda,
+             .outsel = kTopEarlgreyPinmuxOutselI2c1Sda,
+         },
+     .scl =
+         {
+             .mio_out = kTopEarlgreyPinmuxMioOutIob9,
+             .insel = kTopEarlgreyPinmuxInselIob9,
+             .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c1Scl,
+             .outsel = kTopEarlgreyPinmuxOutselI2c1Scl,
+         }},
+    // I2C2.
+    {.sda =
+         {
+             .mio_out = kTopEarlgreyPinmuxMioOutIob12,
+             .insel = kTopEarlgreyPinmuxInselIob12,
+             .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c2Sda,
+             .outsel = kTopEarlgreyPinmuxOutselI2c2Sda,
+         },
+     .scl =
+         {
+             .mio_out = kTopEarlgreyPinmuxMioOutIob11,
+             .insel = kTopEarlgreyPinmuxInselIob11,
+             .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c2Scl,
+             .outsel = kTopEarlgreyPinmuxOutselI2c2Scl,
+         }},
+};
 
 status_t i2c_testutils_write(const dif_i2c_t *i2c, uint8_t addr,
                              uint8_t byte_count, const uint8_t *data,
@@ -248,15 +272,18 @@ status_t i2c_testutils_target_check_write(const dif_i2c_t *i2c,
 }
 
 status_t i2c_testutils_connect_i2c_to_pinmux_pins(const dif_pinmux_t *pinmux,
-                                                  uint8_t kI2cIdx) {
-  TRY(dif_pinmux_input_select(pinmux, i2c_conf[kI2cIdx].pins_peripheral_in[0],
-                              i2c_conf[kI2cIdx].pins_insel[0]));
-  TRY(dif_pinmux_input_select(pinmux, i2c_conf[kI2cIdx].pins_peripheral_in[1],
-                              i2c_conf[kI2cIdx].pins_insel[1]));
-  TRY(dif_pinmux_output_select(pinmux, i2c_conf[kI2cIdx].pins_mio_out[0],
-                               i2c_conf[kI2cIdx].pins_outsel[0]));
-  TRY(dif_pinmux_output_select(pinmux, i2c_conf[kI2cIdx].pins_mio_out[1],
-                               i2c_conf[kI2cIdx].pins_outsel[1]));
+                                                  uint8_t i2c_id) {
+  // Configure sda pin.
+  TRY(dif_pinmux_input_select(pinmux, pinmux_conf[i2c_id].sda.peripheral_in,
+                              pinmux_conf[i2c_id].sda.insel));
+  TRY(dif_pinmux_output_select(pinmux, pinmux_conf[i2c_id].sda.mio_out,
+                               pinmux_conf[i2c_id].sda.outsel));
+
+  // Configure scl pin.
+  TRY(dif_pinmux_input_select(pinmux, pinmux_conf[i2c_id].scl.peripheral_in,
+                              pinmux_conf[i2c_id].scl.insel));
+  TRY(dif_pinmux_output_select(pinmux, pinmux_conf[i2c_id].scl.mio_out,
+                               pinmux_conf[i2c_id].scl.outsel));
   return OK_STATUS();
 }
 
