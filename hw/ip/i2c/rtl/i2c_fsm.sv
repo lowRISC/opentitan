@@ -473,11 +473,18 @@ module i2c_fsm import i2c_pkg::*;
     stretch_en = 1'b0;
     expect_stop = 1'b0;
     unique case (state_q)
-      // Idle: initial state, SDA and SCL are released (high)
+      // Idle: initial state, SDA is released (high), SCL is released if the
+      // bus is idle. Otherwise, if no STOP condition has been sent yet,
+      // continue pulling SCL low in host mode.
       Idle : begin
-        host_idle_o = 1'b1;
         sda_d = 1'b1;
-        scl_d = 1'b1;
+        if (host_enable_i && trans_started) begin
+          host_idle_o = 1'b0;
+          scl_d = 1'b0;
+        end else begin
+          host_idle_o = 1'b1;
+          scl_d = 1'b1;
+        end
       end
       // SetupStart: SDA and SCL are released
       SetupStart : begin
