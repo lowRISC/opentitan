@@ -3930,3 +3930,30 @@ opentitan_functest(
     signed = False,
     targets = ["cw310_rom_with_real_keys"],
 )
+
+# TODO(#18686): update to be pres-signed
+opentitan_functest(
+    name = "rom_e2e_self_hash",
+    srcs = ["rom_e2e_self_hash_test.c"],
+    cw310 = cw310_params(
+        timeout = "long",
+        bitstream = "//hw/bitstream:rom_with_real_keys_otp_test_unlocked0",
+    ),
+    dv = dv_params(
+        rom = "//sw/device/silicon_creator/rom:rom_with_real_keys",
+    ),
+    key_struct = RSA_ONLY_KEY_STRUCTS[0],
+    signed = True,
+    targets = [
+        "cw310_rom_with_real_keys",
+        "dv",
+    ],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/impl:hash",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
