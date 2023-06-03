@@ -1274,7 +1274,7 @@
       '''
       tags: ["rom", "fpga", "dv", "silicon"]
       stage: V3
-      tests: []
+      tests: ["rom_e2e_self_hash"]
     }
   ]
 }
