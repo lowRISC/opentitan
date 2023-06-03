@@ -1262,5 +1262,19 @@
       stage: V3
       tests: []
     }
+
+    {
+      name: rom_e2e_self_hash
+      desc: '''Verify that the expected ROM has been properly baked into the nelist.
+
+      - Hash the contents of the ROM using SHA256.
+      - Verify the hash against golden hash baked into the test.
+      - Print out hash over console.
+      - Run in TEST_UNLOCKED0 LC state.
+      '''
+      tags: ["rom", "fpga", "dv", "silicon"]
+      stage: V3
+      tests: []
+    }
   ]
 }
