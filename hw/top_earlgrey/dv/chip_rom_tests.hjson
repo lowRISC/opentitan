@@ -881,6 +881,22 @@
       run_timeout_mins: 480
     }
 
+    // ROM self hash test.
+    {
+      name: rom_e2e_self_hash
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: [
+        "//sw/device/silicon_creator/rom/e2e:rom_e2e_self_hash:1:signed"
+        "//hw/ip/otp_ctrl/data:img_test_unlocked0:4",
+      ]
+      en_run_modes: ["sw_test_mode_rom_with_real_keys"]
+      run_opts: [
+        "+sw_test_timeout_ns=200_000_000",
+        "+use_otp_image=OtpTypeCustom",
+      ]
+      run_timeout_mins: 480
+    }
+
     // Signed chip-level tests to be run with ROM, instead of test ROM.
     {
       name: chip_sw_uart_smoketest_signed
