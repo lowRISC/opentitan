@@ -251,6 +251,7 @@
                fusesoc_core: lowrisc:ip:lc_ctrl
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/ip/lc_ctrl/fsm/{sub_flow}/{tool}"
+               task: "SecCmCFI"
              }
              // This testbench verifies once keymgr goes to terminal state, there is no way to
              // revert back to functional states.
@@ -260,7 +261,7 @@
                fusesoc_core: lowrisc:ip:keymgr
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/ip/keymgr/fsm/{sub_flow}/{tool}"
-               cov: false
+               task: "SecCmCFILinear"
              }
              // This testbench verifies once esc request is received, it should always trigger a
              // reset request.
