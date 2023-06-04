@@ -39,6 +39,7 @@ class chip_base_vseq #(
   endtask
 
   virtual task apply_reset(string kind = "HARD");
+    bit skip_por_n_during_first_pwrup;
     callback_vseq.pre_apply_reset();
     // Note: The JTAG reset does not have a dedicated pad and is muxed with other chip IOs.
     // These IOs have pad attributes that are driven from registers, and as long as
@@ -47,7 +48,8 @@ class chip_base_vseq #(
     // have to assert the main reset before that (release can happen in a randomized way
     // via the apply_reset task later on).
     // assert_por_reset();
-    if (!($test$plusargs("skip_por_n_during_first_pwrup") && is_first_pwrup)) begin
+    void'($value$plusargs("skip_por_n_during_first_pwrup=%0b", skip_por_n_during_first_pwrup));
+    if (!(skip_por_n_during_first_pwrup && is_first_pwrup)) begin
       `uvm_info(`gfn, "Asserting POR_N", UVM_LOW)
       cfg.chip_vif.por_n_if.drive(0);
       #10us;  // TODO: revisit this.
