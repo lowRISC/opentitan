@@ -33,6 +33,9 @@ class chip_sw_lc_volatile_raw_unlock_vseq extends chip_sw_base_vseq;
 
     super.body();
 
+    // Since super.body only does backdoor operatoin,
+    // add wait for clock task before the test uses jtag polling task.
+    wait_rom_check_done();
     wait_lc_ready(1);
 
     // VOLATILE_RAW_UNLOCK does not require a reset after completion.

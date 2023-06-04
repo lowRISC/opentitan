@@ -983,9 +983,14 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.chip_vif.ext_clk_if.set_active(.drive_clk_val(1), .drive_rst_n_val(0));
 
     // Switch OTP to use external clock instead of internal clock.
-    // Wait for LC to be ready, acquire the transition interface mutex and
-    // enable external clock.
+    // Then wait for clock to arrive at the lc_ctrl prior to use
+    // jtag polling task.
+    wait_rom_check_done();
+
+    // Wait for LC to be ready, acquire the transition interface mutex
     wait_lc_ready();
+
+    // enable external clock.
     claim_transition_interface();
 
     // Switch to external clock via LC controller.
