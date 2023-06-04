@@ -196,7 +196,26 @@ module tb;
   // Instantiate & connect the simulation SRAM inside the CPU (rv_core_ibex) using forces.
   bit en_sim_sram = 1'b1;
   wire sel_sim_sram = !dut.chip_if.stub_cpu & en_sim_sram;
+`ifdef GATE_LEVEL
+  localparam int gsim_TlH2DWidth = $bits(tlul_pkg::tl_h2d_t);
+  localparam int gsim_TlD2HWidth = $bits(tlul_pkg::tl_d2h_t);
 
+  logic [gsim_TlH2DWidth-1:0] gsim_tl_win_h2d_int;
+  logic [gsim_TlD2HWidth-1:0] gsim_tl_win_d2h_int;
+
+  prim_buf #(
+    .Width(gsim_TlH2DWidth)
+  ) u_tlul_req_buf (
+    .in_i(tlul_pkg::tl_h2d_t'(`CPU_HIER.u_tlul_req_buf.in_i)),
+    .out_o(gsim_tl_win_h2d_int)
+  );
+  prim_buf #(
+    .Width(gsim_TlD2HWidth)
+  ) u_tlul_rsp_buf (
+    .in_i(u_sim_sram.tl_in_o),
+    .out_o(gsim_tl_win_d2h_int)
+  );
+`endif
   // Interface presently just permits the DPI model to be easily connected and
   // disconnected as required, since SENSE pin is a MIO with other uses.
   usb20_if u_usb20_if (
@@ -229,7 +248,11 @@ module tb;
   sim_sram u_sim_sram (
     .clk_i    (sel_sim_sram ? `CPU_HIER.clk_i : 1'b0),
     .rst_ni   (`CPU_HIER.rst_ni),
+`ifdef GATE_LEVEL
+    .tl_in_i  (tlul_pkg::tl_h2d_t'(gsim_tl_win_h2d_int)),
+`else
     .tl_in_i  (tlul_pkg::tl_h2d_t'(`CPU_HIER.u_tlul_req_buf.out_o)),
+`endif
     .tl_in_o  (),
     .tl_out_o (),
     .tl_out_i ()
@@ -239,7 +262,11 @@ module tb;
     void'($value$plusargs("en_sim_sram=%0b", en_sim_sram));
     if (!dut.chip_if.stub_cpu && en_sim_sram) begin
       `SIM_SRAM_IF.start_addr = SW_DV_START_ADDR;
+`ifdef GATE_LEVEL
+       force `CPU_HIER.u_tlul_rsp_buf.out_o = gsim_tl_win_d2h_int;
+`else
       force `CPU_HIER.u_tlul_rsp_buf.in_i = u_sim_sram.tl_in_o;
+`endif
     end
   end
 
@@ -550,16 +577,5 @@ module tb;
        #5ns;
        $asserton();
      end
-// TODO review this flow with real SDF
-`define GSIM_FF_D(FF_) \
-     initial begin \
-       force FF_.D = 0; \
-       @(posedge FF_.CK);\
-       release FF_.D;\
-     end
-  `GSIM_FF_D(tb.dut.top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.dft_strap_q_reg_0_)
-  `GSIM_FF_D(tb.dut.top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.dft_strap_q_reg_1_)
-
-`undef GSIM_FF_D
   `endif
 endmodule
