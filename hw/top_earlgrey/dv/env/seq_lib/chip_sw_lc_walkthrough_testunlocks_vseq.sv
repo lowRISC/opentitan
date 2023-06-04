@@ -51,7 +51,11 @@ class chip_sw_lc_walkthrough_testunlocks_vseq extends chip_sw_base_vseq;
     sw_symbol_backdoor_overwrite("kOtpExitToken", otp_exit_token);
     sw_symbol_backdoor_overwrite("kOtpUnlockToken", otp_unlock_token);
 
-    switch_to_external_clock();
+    // Since super.body only does backdoor operatoin,
+    // add wait for clock task before the test uses jtag polling task.
+    wait_rom_check_done();
+    wait_lc_ready(.allow_err(1));
+
     jtag_lc_state_transition(DecLcStRaw, DecLcStTestUnlocked0);
     apply_reset();
 
