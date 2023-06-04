@@ -20,19 +20,22 @@ class MockFlashCtrl : public global_mock::GlobalMock<MockFlashCtrl> {
   MOCK_METHOD(void, StatusGet, (flash_ctrl_status_t *));
   MOCK_METHOD(rom_error_t, DataRead, (uint32_t, uint32_t, void *));
   MOCK_METHOD(rom_error_t, InfoRead,
-              (flash_ctrl_info_page_t, uint32_t, uint32_t, void *));
+              (const flash_ctrl_info_page_t *, uint32_t, uint32_t, void *));
   MOCK_METHOD(rom_error_t, DataWrite, (uint32_t, uint32_t, const void *));
   MOCK_METHOD(rom_error_t, InfoWrite,
-              (flash_ctrl_info_page_t, uint32_t, uint32_t, const void *));
+              (const flash_ctrl_info_page_t *, uint32_t, uint32_t,
+               const void *));
   MOCK_METHOD(rom_error_t, DataErase, (uint32_t, flash_ctrl_erase_type_t));
   MOCK_METHOD(rom_error_t, DataEraseVerify,
               (uint32_t, flash_ctrl_erase_type_t));
   MOCK_METHOD(rom_error_t, InfoErase,
-              (flash_ctrl_info_page_t, flash_ctrl_erase_type_t));
+              (const flash_ctrl_info_page_t *, flash_ctrl_erase_type_t));
   MOCK_METHOD(void, DataDefaultPermsSet, (flash_ctrl_perms_t));
-  MOCK_METHOD(void, InfoPermsSet, (flash_ctrl_info_page_t, flash_ctrl_perms_t));
+  MOCK_METHOD(void, InfoPermsSet,
+              (const flash_ctrl_info_page_t *, flash_ctrl_perms_t));
   MOCK_METHOD(void, DataDefaultCfgSet, (flash_ctrl_cfg_t));
-  MOCK_METHOD(void, InfoCfgSet, (flash_ctrl_info_page_t, flash_ctrl_cfg_t));
+  MOCK_METHOD(void, InfoCfgSet,
+              (const flash_ctrl_info_page_t *, flash_ctrl_cfg_t));
   MOCK_METHOD(void, BankErasePermsSet, (hardened_bool_t));
   MOCK_METHOD(void, ExecSet, (uint32_t));
   MOCK_METHOD(void, CreatorInfoPagesLockdown, ());

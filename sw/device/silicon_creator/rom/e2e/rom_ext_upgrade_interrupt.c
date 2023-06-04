@@ -57,15 +57,15 @@ static rom_error_t first_boot_test(void) {
   CHECK(boot_data.min_security_version_rom_ext == kNewMinSecVer);
 
   uint32_t corrupted_words[4] = {0};
-  flash_ctrl_info_perms_set(kFlashCtrlInfoPageBootData0,
+  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageBootData0,
                             (flash_ctrl_perms_t){
                                 .read = kMultiBitBool4False,
                                 .write = kMultiBitBool4True,
                                 .erase = kMultiBitBool4False,
                             });
-  RETURN_IF_ERROR(flash_ctrl_info_write(kFlashCtrlInfoPageBootData0, 0, 4,
+  RETURN_IF_ERROR(flash_ctrl_info_write(&kFlashCtrlInfoPageBootData0, 0, 4,
                                         &corrupted_words));
-  flash_ctrl_info_perms_set(kFlashCtrlInfoPageBootData0,
+  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageBootData0,
                             (flash_ctrl_perms_t){
                                 .read = kMultiBitBool4False,
                                 .write = kMultiBitBool4False,

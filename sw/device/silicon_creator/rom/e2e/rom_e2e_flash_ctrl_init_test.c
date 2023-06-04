@@ -50,18 +50,16 @@ typedef struct flash_cfg_reg {
 /**
  * Check that an info page is in the expected bank.
  */
-static void check_info_page_bank(flash_ctrl_info_page_t info_page,
+static void check_info_page_bank(const flash_ctrl_info_page_t *info_page,
                                  uint32_t expected_bank) {
-#define INFO_PAGE_BANK_CASE_(name_, value_, bank_, page_) \
-  case (name_):                                           \
-    CHECK(bank_ == expected_bank);                        \
-    break;
-
-  switch (info_page) {
-    FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_BANK_CASE_)
-    default:
-      CHECK(false);
+#define INFO_PAGE_BANK_CASE_(name_, bank_, page_) \
+  if (&name_ == info_page) {                      \
+    CHECK(bank_ == expected_bank);                \
+    return;                                       \
   }
+
+  FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_BANK_CASE_);
+  CHECK(false);
 
 #undef INFO_PAGE_BANK_CASE_
 }
@@ -69,18 +67,16 @@ static void check_info_page_bank(flash_ctrl_info_page_t info_page,
 /**
  * Check that an info page has the expected page number.
  */
-static void check_info_page_pagenum(flash_ctrl_info_page_t info_page,
+static void check_info_page_pagenum(const flash_ctrl_info_page_t *info_page,
                                     uint32_t expected_pagenum) {
-#define INFO_PAGE_PAGENUM_CASE_(name_, value_, bank_, page_) \
-  case (name_):                                              \
-    CHECK(page_ == expected_pagenum);                        \
-    break;
-
-  switch (info_page) {
-    FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_PAGENUM_CASE_)
-    default:
-      CHECK(false);
+#define INFO_PAGE_PAGENUM_CASE_(name_, bank_, page_) \
+  if (&name_ == info_page) {                         \
+    CHECK(page_ == expected_pagenum);                \
+    return;                                          \
   }
+
+  FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_PAGENUM_CASE_);
+  CHECK(false);
 
 #undef INFO_PAGE_PAGENUM_CASE_
 }
@@ -152,10 +148,10 @@ static void boot_info_cfg_test(void) {
   // Expected values:
   // * kFlashCtrlInfoPageBootData0 -> bank 1, page 0
   // * kFlashCtrlInfoPageBootData1 -> bank 1, page 1
-  check_info_page_bank(kFlashCtrlInfoPageBootData0, 1);
-  check_info_page_pagenum(kFlashCtrlInfoPageBootData0, 0);
-  check_info_page_bank(kFlashCtrlInfoPageBootData1, 1);
-  check_info_page_pagenum(kFlashCtrlInfoPageBootData1, 1);
+  check_info_page_bank(&kFlashCtrlInfoPageBootData0, 1);
+  check_info_page_pagenum(&kFlashCtrlInfoPageBootData0, 0);
+  check_info_page_bank(&kFlashCtrlInfoPageBootData1, 1);
+  check_info_page_pagenum(&kFlashCtrlInfoPageBootData1, 1);
 
   // Extract expected values from OTP.
   uint32_t otp_boot_info_cfg_value =

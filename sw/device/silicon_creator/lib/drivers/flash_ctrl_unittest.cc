@@ -22,7 +22,6 @@
 namespace flash_ctrl_unittest {
 namespace {
 using ::testing::Each;
-using ::testing::ElementsAre;
 using ::testing::Return;
 using ::testing::SizeIs;
 
@@ -41,10 +40,10 @@ struct InfoPage {
  * Returns a map from `flash_ctrl_info_page_t` to `InfoPage` to be used in
  * tests.
  */
-const std::map<flash_ctrl_info_page_t, InfoPage> &InfoPages() {
-#define INFO_PAGE_MAP_INIT(name_, value_, bank_, page_)                 \
+const std::map<const flash_ctrl_info_page_t *, InfoPage> &InfoPages() {
+#define INFO_PAGE_MAP_INIT(name_, bank_, page_)                         \
   {                                                                     \
-      name_,                                                            \
+      &name_,                                                           \
       {                                                                 \
           bank_,                                                        \
           page_,                                                        \
@@ -53,8 +52,8 @@ const std::map<flash_ctrl_info_page_t, InfoPage> &InfoPages() {
       },                                                                \
   },
 
-  static const std::map<flash_ctrl_info_page_t, InfoPage> *const kInfoPages =
-      new std::map<flash_ctrl_info_page_t, InfoPage>{
+  static const std::map<const flash_ctrl_info_page_t *, InfoPage> *const
+      kInfoPages = new std::map<const flash_ctrl_info_page_t *, InfoPage>{
           FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_MAP_INIT)};
   return *kInfoPages;
 }
@@ -68,7 +67,7 @@ class FlashCtrlTest : public rom_test::RomTest {
 };
 
 class InfoPagesTest : public FlashCtrlTest {};
-TEST_F(InfoPagesTest, NumberOfPages) { EXPECT_THAT(InfoPages(), SizeIs(9)); }
+TEST_F(InfoPagesTest, NumberOfPages) { EXPECT_THAT(InfoPages(), SizeIs(20)); }
 
 TEST_F(InfoPagesTest, PagesPerBank) {
   std::array<uint32_t, 2> pages_per_bank = {0, 0};
@@ -78,7 +77,7 @@ TEST_F(InfoPagesTest, PagesPerBank) {
     ++pages_per_bank[bank];
   }
 
-  EXPECT_THAT(pages_per_bank, ElementsAre(4, 5));
+  EXPECT_THAT(pages_per_bank, Each(10));
 }
 
 TEST_F(InfoPagesTest, PageIndices) {
@@ -135,12 +134,12 @@ TEST_P(InitTest, Initialize) {
       otp_,
       read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET))
       .WillOnce(Return(CfgToOtp(GetParam().cfg)));
-  auto info_page = InfoPages().at(kFlashCtrlInfoPageBootData0);
+  auto info_page = InfoPages().at(&kFlashCtrlInfoPageBootData0);
   EXPECT_SEC_READ32(base_ + info_page.cfg_offset,
                     FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_REG_RESVAL);
   EXPECT_SEC_WRITE32(base_ + info_page.cfg_offset, GetParam().info_write_val);
 
-  info_page = InfoPages().at(kFlashCtrlInfoPageBootData1);
+  info_page = InfoPages().at(&kFlashCtrlInfoPageBootData1);
   EXPECT_SEC_READ32(base_ + info_page.cfg_offset,
                     FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_REG_RESVAL);
   EXPECT_SEC_WRITE32(base_ + info_page.cfg_offset, GetParam().info_write_val);
@@ -278,7 +277,7 @@ TEST_F(TransferTest, ReadInfoOk) {
   ExpectReadData(words_);
   ExpectWaitForDone(true, false);
   std::vector<uint32_t> words_out(words_.size());
-  EXPECT_EQ(flash_ctrl_info_read(kFlashCtrlInfoPageOwnerSlot0, 0x01234567,
+  EXPECT_EQ(flash_ctrl_info_read(&kFlashCtrlInfoPageOwnerSlot0, 0x01234567,
                                  words_.size(), &words_out.front()),
             kErrorOk);
   EXPECT_EQ(words_out, words_);
@@ -301,7 +300,7 @@ TEST_F(TransferTest, ProgInfoOk) {
                       addr + 0x01234567, words_.size());
   ExpectProgData(words_);
   ExpectWaitForDone(true, false);
-  EXPECT_EQ(flash_ctrl_info_write(kFlashCtrlInfoPageOwnerSlot0, 0x01234567,
+  EXPECT_EQ(flash_ctrl_info_write(&kFlashCtrlInfoPageOwnerSlot0, 0x01234567,
                                   words_.size(), &words_.front()),
             kErrorOk);
 }
@@ -320,7 +319,7 @@ TEST_F(TransferTest, EraseInfoPageOk) {
       1 * FLASH_CTRL_PARAM_BYTES_PER_BANK + 2 * FLASH_CTRL_PARAM_BYTES_PER_PAGE;
   ExpectTransferStart(1, 0, 0, FLASH_CTRL_CONTROL_OP_VALUE_ERASE, addr, 1);
   ExpectWaitForDone(true, false);
-  EXPECT_EQ(flash_ctrl_info_erase(kFlashCtrlInfoPageOwnerSlot0,
+  EXPECT_EQ(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSlot0,
                                   kFlashCtrlEraseTypePage),
             kErrorOk);
 }
@@ -628,11 +627,11 @@ INSTANTIATE_TEST_SUITE_P(AllCases, FlashCtrlCfgSetTest,
                              }));
 
 TEST_F(FlashCtrlTest, CreatorInfoLockdown) {
-  std::array<flash_ctrl_info_page_t, 7> no_owner_access = {
-      kFlashCtrlInfoPageCreatorSecret,   kFlashCtrlInfoPageOwnerSecret,
-      kFlashCtrlInfoPageWaferAuthSecret, kFlashCtrlInfoPageBootData0,
-      kFlashCtrlInfoPageBootData1,       kFlashCtrlInfoPageOwnerSlot0,
-      kFlashCtrlInfoPageOwnerSlot1,
+  std::array<const flash_ctrl_info_page_t *, 7> no_owner_access = {
+      &kFlashCtrlInfoPageCreatorSecret,   &kFlashCtrlInfoPageOwnerSecret,
+      &kFlashCtrlInfoPageWaferAuthSecret, &kFlashCtrlInfoPageBootData0,
+      &kFlashCtrlInfoPageBootData1,       &kFlashCtrlInfoPageOwnerSlot0,
+      &kFlashCtrlInfoPageOwnerSlot1,
   };
   for (auto page : no_owner_access) {
     auto info_page = InfoPages().at(page);
