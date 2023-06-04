@@ -64,68 +64,71 @@ typedef enum flash_ctrl_partition {
  * tests using the contants here. All information pages in this table are of
  * type 0 since silicon creator code does not need to access information pages
  * of other types.
- *
- * Encoding generated with
- * $ ./util/design/sparse-fsm-encode.py -d 6 -m 20 -n 32 \
- *     -s 1755363476 --language=c
- *
- * Minimum Hamming distance: 9
- * Maximum Hamming distance: 22
- * Minimum Hamming weight: 13
- * Maximum Hamming weight: 25
  */
 // clang-format off
 #define FLASH_CTRL_INFO_PAGES_DEFINE(X) \
   /**
    * Bank 0 information partition type 0 pages.
    */ \
-  X(kFlashCtrlInfoPageFactoryId,         	0x9dc41c33, 0, 0) \
-  X(kFlashCtrlInfoPageCreatorSecret,     	0xf56af4bb, 0, 1) \
-  X(kFlashCtrlInfoPageOwnerSecret,       	0x10adc6aa, 0, 2) \
-  X(kFlashCtrlInfoPageWaferAuthSecret,   	0x118b5dbb, 0, 3) \
-  /**
-   * Unused in ROM, commented out to save space.
-  X(kFlashCtrlInfoPageBank0Type0Page4,   	0xad3b5bee, 0, 4) \
-  X(kFlashCtrlInfoPageBank0Type0Page5,   	0xa4f6f6c3, 0, 5) \
-  X(kFlashCtrlInfoPageOwnerReserved0,    	0xf646f11b, 0, 6) \
-  X(kFlashCtrlInfoPageOwnerReserved1,    	0x6c86d980, 0, 7) \
-  X(kFlashCtrlInfoPageOwnerReserved2,    	0xdd7f34dc, 0, 8) \
-  X(kFlashCtrlInfoPageOwnerReserved3,    	0x5f07277e, 0, 9) \
-  */ \
+  X(kFlashCtrlInfoPageFactoryId,         	0, 0) \
+  X(kFlashCtrlInfoPageCreatorSecret,     	0, 1) \
+  X(kFlashCtrlInfoPageOwnerSecret,       	0, 2) \
+  X(kFlashCtrlInfoPageWaferAuthSecret,   	0, 3) \
+  X(kFlashCtrlInfoPageBank0Type0Page4,   	0, 4) \
+  X(kFlashCtrlInfoPageBank0Type0Page5,   	0, 5) \
+  X(kFlashCtrlInfoPageOwnerReserved0,    	0, 6) \
+  X(kFlashCtrlInfoPageOwnerReserved1,    	0, 7) \
+  X(kFlashCtrlInfoPageOwnerReserved2,    	0, 8) \
+  X(kFlashCtrlInfoPageOwnerReserved3,    	0, 9) \
   /**
    * Bank 1 information partition type 0 pages.
    */ \
-  X(kFlashCtrlInfoPageBootData0,          0xfa38c9f6, 1, 0) \
-  X(kFlashCtrlInfoPageBootData1,          0x389c449e, 1, 1) \
-  X(kFlashCtrlInfoPageOwnerSlot0,         0x238cf15c, 1, 2) \
-  X(kFlashCtrlInfoPageOwnerSlot1,         0xad886d3b, 1, 3) \
-  /**
-  X(kFlashCtrlInfoPageBank1Type0Page4,    0x7dfbdf9b, 1, 4) \
-  X(kFlashCtrlInfoPageBank1Type0Page5,    0xad5dd31d, 1, 5) \
-  */ \
-  X(kFlashCtrlInfoPageCreatorCertificate, 0xe3ffac86, 1, 6) \
-  /**
-  X(kFlashCtrlInfoPageBootServices,       0xf4f48c3d, 1, 7) \
-  X(kFlashCtrlInfoPageOwnerCerificate0,   0x9fbb840e, 1, 8) \
-  X(kFlashCtrlInfoPageOwnerCerificate1,   0xec309461, 1, 9) \
-  */
+  X(kFlashCtrlInfoPageBootData0,          1, 0) \
+  X(kFlashCtrlInfoPageBootData1,          1, 1) \
+  X(kFlashCtrlInfoPageOwnerSlot0,         1, 2) \
+  X(kFlashCtrlInfoPageOwnerSlot1,         1, 3) \
+  X(kFlashCtrlInfoPageBank1Type0Page4,    1, 4) \
+  X(kFlashCtrlInfoPageBank1Type0Page5,    1, 5) \
+  X(kFlashCtrlInfoPageCreatorCertificate, 1, 6) \
+  X(kFlashCtrlInfoPageBootServices,       1, 7) \
+  X(kFlashCtrlInfoPageOwnerCerificate0,   1, 8) \
+  X(kFlashCtrlInfoPageOwnerCerificate1,   1, 9) \
 // clang-format on
 
 /**
- * Helper macro for defining a `flash_ctrl_info_page_t` enumeration constant.
+ * A struct for storing base, config write-enable register, and config register
+ * addresses of an info page.
+ */
+typedef struct flash_ctrl_info_page {
+  /**
+   * Base address.
+   */
+  uint32_t base_addr;
+  /**
+   * Config write-enable register address.
+   */
+  uint32_t cfg_wen_addr;
+  /**
+   * Config register address.
+   */
+  uint32_t cfg_addr;
+} flash_ctrl_info_page_t;
+
+/**
+ * Helper macro for declaring an extern `flash_ctrl_info_page_t`.
  * @param name_ Name of the enumeration constant.
- * @param value_ Value of the enumeration constant.
  * @param bank_ Bank of the info page.
  * @param page_ Page of the info page.
  */
-#define INFO_PAGE_ENUM_INIT_(name_, value_, bank_, page_) name_ = value_,
+#define INFO_PAGE_STRUCT_DECL_(name_, bank_, page_) \
+  extern const flash_ctrl_info_page_t name_;
 
 /**
  * Info pages.
  */
-typedef enum flash_ctrl_info_page {
-  FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_ENUM_INIT_)
-} flash_ctrl_info_page_t;
+FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_STRUCT_DECL_);
+
+#undef INFO_PAGE_STRUCT_DECL_
 
 /**
  * Bitfields for `CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG` and
@@ -258,7 +261,7 @@ rom_error_t flash_ctrl_data_read(uint32_t addr, uint32_t word_count,
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t flash_ctrl_info_read(flash_ctrl_info_page_t info_page,
+rom_error_t flash_ctrl_info_read(const flash_ctrl_info_page_t *info_page,
                                  uint32_t offset, uint32_t word_count,
                                  void *data);
 
@@ -292,7 +295,7 @@ rom_error_t flash_ctrl_data_write(uint32_t addr, uint32_t word_count,
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t flash_ctrl_info_write(flash_ctrl_info_page_t info_page,
+rom_error_t flash_ctrl_info_write(const flash_ctrl_info_page_t *info_page,
                                   uint32_t offset, uint32_t word_count,
                                   const void *data);
 
@@ -353,7 +356,7 @@ rom_error_t flash_ctrl_data_erase_verify(uint32_t addr,
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t flash_ctrl_info_erase(flash_ctrl_info_page_t info_page,
+rom_error_t flash_ctrl_info_erase(const flash_ctrl_info_page_t *info_page,
                                   flash_ctrl_erase_type_t erase_type);
 
 /**
@@ -405,7 +408,7 @@ void flash_ctrl_data_default_perms_set(flash_ctrl_perms_t perms);
  * @param info_page An information page.
  * @param perms New permissions.
  */
-void flash_ctrl_info_perms_set(flash_ctrl_info_page_t info_page,
+void flash_ctrl_info_perms_set(const flash_ctrl_info_page_t *info_page,
                                flash_ctrl_perms_t perms);
 
 /**
@@ -451,7 +454,7 @@ void flash_ctrl_data_default_cfg_set(flash_ctrl_cfg_t cfg);
  * @param info_page An information page.
  * @param cfg New configuration settings.
  */
-void flash_ctrl_info_cfg_set(flash_ctrl_info_page_t info_page,
+void flash_ctrl_info_cfg_set(const flash_ctrl_info_page_t *info_page,
                              flash_ctrl_cfg_t cfg);
 
 /**

@@ -44,9 +44,9 @@ enum {
 /**
  * Boot data flash info pages.
  */
-static const flash_ctrl_info_page_t kPages[kPageCount] = {
-    kFlashCtrlInfoPageBootData0,
-    kFlashCtrlInfoPageBootData1,
+static const flash_ctrl_info_page_t *kPages[kPageCount] = {
+    &kFlashCtrlInfoPageBootData0,
+    &kFlashCtrlInfoPageBootData1,
 };
 
 /**
@@ -118,8 +118,8 @@ static hardened_bool_t boot_data_is_empty(const void *boot_data) {
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static rom_error_t boot_data_sniff(flash_ctrl_info_page_t page, size_t index,
-                                   uint32_t *masked_identifier) {
+static rom_error_t boot_data_sniff(const flash_ctrl_info_page_t *page,
+                                   size_t index, uint32_t *masked_identifier) {
   static_assert(kBootDataValidEntry == UINT64_MAX,
                 "is_valid must be UINT64_MAX for valid entries.");
   static_assert(kBootDataInvalidEntry == 0,
@@ -150,7 +150,7 @@ static rom_error_t boot_data_sniff(flash_ctrl_info_page_t page, size_t index,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static rom_error_t boot_data_entry_read(flash_ctrl_info_page_t page,
+static rom_error_t boot_data_entry_read(const flash_ctrl_info_page_t *page,
                                         size_t index, boot_data_t *boot_data) {
   const uint32_t offset = index * sizeof(boot_data_t);
   return flash_ctrl_info_read(page, offset, kBootDataNumWords, boot_data);
@@ -174,10 +174,9 @@ static rom_error_t boot_data_entry_read(flash_ctrl_info_page_t page,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static rom_error_t boot_data_entry_write_impl(flash_ctrl_info_page_t page,
-                                              size_t index,
-                                              const boot_data_t *boot_data,
-                                              hardened_bool_t erase) {
+static rom_error_t boot_data_entry_write_impl(
+    const flash_ctrl_info_page_t *page, size_t index,
+    const boot_data_t *boot_data, hardened_bool_t erase) {
   // This function assumes the following layout for the first three fields.
   OT_ASSERT_MEMBER_OFFSET(boot_data_t, digest, 0);
   OT_ASSERT_MEMBER_OFFSET(boot_data_t, is_valid, 32);
@@ -226,7 +225,7 @@ static rom_error_t boot_data_entry_write_impl(flash_ctrl_info_page_t page,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static rom_error_t boot_data_entry_write(flash_ctrl_info_page_t page,
+static rom_error_t boot_data_entry_write(const flash_ctrl_info_page_t *page,
                                          size_t index,
                                          const boot_data_t *boot_data,
                                          hardened_bool_t erase) {
@@ -262,8 +261,8 @@ static rom_error_t boot_data_entry_write(flash_ctrl_info_page_t page,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static rom_error_t boot_data_entry_invalidate(flash_ctrl_info_page_t page,
-                                              size_t index) {
+static rom_error_t boot_data_entry_invalidate(
+    const flash_ctrl_info_page_t *page, size_t index) {
   // Assertions for the assumptions below.
   OT_ASSERT_MEMBER_SIZE(boot_data_t, is_valid, 8);
   static_assert(kBootDataInvalidEntry == 0,
@@ -295,7 +294,7 @@ typedef struct active_page_info {
   /**
    * Info page.
    */
-  flash_ctrl_info_page_t page;
+  const flash_ctrl_info_page_t *page;
   /**
    * Whether this page has an empty entry.
    */
@@ -333,7 +332,7 @@ typedef struct active_page_info {
  */
 OT_WARN_UNUSED_RESULT
 static rom_error_t boot_data_page_info_update_impl(
-    flash_ctrl_info_page_t page, active_page_info_t *page_info,
+    const flash_ctrl_info_page_t *page, active_page_info_t *page_info,
     boot_data_t *boot_data) {
   uint32_t sniff_results[kBootDataEntriesPerPage];
 
@@ -441,9 +440,9 @@ static rom_error_t boot_data_page_info_update_impl(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static rom_error_t boot_data_page_info_update(flash_ctrl_info_page_t page,
-                                              active_page_info_t *page_info,
-                                              boot_data_t *boot_data) {
+static rom_error_t boot_data_page_info_update(
+    const flash_ctrl_info_page_t *page, active_page_info_t *page_info,
+    boot_data_t *boot_data) {
   flash_ctrl_info_perms_set(page, (flash_ctrl_perms_t){
                                       .read = kMultiBitBool4True,
                                       .write = kMultiBitBool4False,
@@ -475,7 +474,7 @@ OT_WARN_UNUSED_RESULT
 static rom_error_t boot_data_active_page_find(active_page_info_t *page_info,
                                               boot_data_t *boot_data) {
   *page_info = (active_page_info_t){
-      .page = (flash_ctrl_info_page_t)0,
+      .page = NULL,
       .has_empty_entry = kHardenedBoolFalse,
       .first_empty_index = kBootDataEntriesPerPage,
       .has_valid_entry = kHardenedBoolFalse,
@@ -597,7 +596,7 @@ rom_error_t boot_data_write(const boot_data_t *boot_data) {
     } else {
       // Erase the other page and write the new entry there if the active page
       // is full.
-      flash_ctrl_info_page_t new_page =
+      const flash_ctrl_info_page_t *new_page =
           active_page.page == kPages[0] ? kPages[1] : kPages[0];
       RETURN_IF_ERROR(
           boot_data_entry_write(new_page, 0, &new_entry, kHardenedBoolTrue));

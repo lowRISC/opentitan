@@ -108,7 +108,7 @@ class BootDataTest : public rom_test::RomTest {
    * @param count  Optionally the number of values expected to be read from the
    *               start of the entry. Useful for expecting sniffs.
    */
-  void ExpectRead(flash_ctrl_info_page_t page, size_t index,
+  void ExpectRead(const flash_ctrl_info_page_t *page, size_t index,
                   std::array<uint32_t, kBootDataNumWords> data,
                   rom_error_t error) {
     size_t offset = index * sizeof(boot_data_t);
@@ -137,7 +137,7 @@ class BootDataTest : public rom_test::RomTest {
    * @param error Value to be returned by the read.
    */
   template <size_t N>
-  void ExpectSniff(flash_ctrl_info_page_t page, size_t index,
+  void ExpectSniff(const flash_ctrl_info_page_t *page, size_t index,
                    std::array<uint32_t, N> data, rom_error_t error) {
     static_assert(N > 3, "Data must be at least three words for a sniff");
 
@@ -197,7 +197,7 @@ class BootDataTest : public rom_test::RomTest {
    * @param write Expected setting for the `.write` permission.
    * @param erase Expected setting for the `.erase` permission.
    */
-  void ExpectPermsSet(flash_ctrl_info_page_t page, bool read, bool write,
+  void ExpectPermsSet(const flash_ctrl_info_page_t *page, bool read, bool write,
                       bool erase) {
     flash_ctrl_perms_t perms = {
         .read = read ? kMultiBitBool4True : kMultiBitBool4False,
@@ -218,8 +218,9 @@ class BootDataTest : public rom_test::RomTest {
    * @param reads Function given the `page` containing expectations of the reads
    *              happening there.
    */
-  void ExpectPageScan(flash_ctrl_info_page_t page,
-                      std::function<void(flash_ctrl_info_page_t)> reads) {
+  void ExpectPageScan(
+      const flash_ctrl_info_page_t *page,
+      std::function<void(const flash_ctrl_info_page_t *)> reads) {
     ExpectPermsSet(page, true, false, false);
     reads(page);
     ExpectPermsSet(page, false, false, false);
@@ -249,7 +250,7 @@ class BootDataTest : public rom_test::RomTest {
     // #2. Non-erased and bootable but invalid digest.
     // #3. Entry with sniffed area erased but the rest not.
     // #4. Fully erased entry.
-    return [=](flash_ctrl_info_page_t page) {
+    return [=](const flash_ctrl_info_page_t *page) {
       // Expect to sniff each entry, fully reading if it could be erased.
       ExpectSniff(page, 0, non_erased_entry_, kErrorOk);
       ExpectSniff(page, 1, boot_data_raw, kErrorOk);
@@ -316,8 +317,8 @@ class BootDataReadTest : public BootDataTest {};
 
 TEST_F(BootDataReadTest, ReadBothValidTest1) {
   // Expect both pages to be checked, with both giving valid entries.
-  ExpectPageScan(kFlashCtrlInfoPageBootData0, EntryPage(kValidEntry0));
-  ExpectPageScan(kFlashCtrlInfoPageBootData1, EntryPage(kValidEntry1));
+  ExpectPageScan(&kFlashCtrlInfoPageBootData0, EntryPage(kValidEntry0));
+  ExpectPageScan(&kFlashCtrlInfoPageBootData1, EntryPage(kValidEntry1));
 
   boot_data_t boot_data = {{0}};
   EXPECT_EQ(boot_data_read(kLcStateTest, &boot_data), kErrorOk);
@@ -327,8 +328,8 @@ TEST_F(BootDataReadTest, ReadBothValidTest1) {
 
 TEST_F(BootDataReadTest, ReadBothValidTest2) {
   // Same as above, but swap which page contains `test_entry_1`.
-  ExpectPageScan(kFlashCtrlInfoPageBootData0, EntryPage(kValidEntry1));
-  ExpectPageScan(kFlashCtrlInfoPageBootData1, EntryPage(kValidEntry0));
+  ExpectPageScan(&kFlashCtrlInfoPageBootData0, EntryPage(kValidEntry1));
+  ExpectPageScan(&kFlashCtrlInfoPageBootData1, EntryPage(kValidEntry0));
 
   boot_data_t boot_data = {{0}};
   EXPECT_EQ(boot_data_read(kLcStateTest, &boot_data), kErrorOk);
@@ -338,8 +339,8 @@ TEST_F(BootDataReadTest, ReadBothValidTest2) {
 
 TEST_F(BootDataReadTest, ReadOneEntryTest) {
   // Expect both pages to be searched, but give only a valid entry for one.
-  ExpectPageScan(kFlashCtrlInfoPageBootData0, EntryPage(kValidEntry0));
-  ExpectPageScan(kFlashCtrlInfoPageBootData1, ErasedPage());
+  ExpectPageScan(&kFlashCtrlInfoPageBootData0, EntryPage(kValidEntry0));
+  ExpectPageScan(&kFlashCtrlInfoPageBootData1, ErasedPage());
 
   boot_data_t boot_data = {{0}};
   EXPECT_EQ(boot_data_read(kLcStateTest, &boot_data), kErrorOk);
@@ -348,8 +349,8 @@ TEST_F(BootDataReadTest, ReadOneEntryTest) {
 
 TEST_F(BootDataReadTest, ReadOneValidTest) {
   // Expect both pages to be searched, but give only a valid entry for one.
-  ExpectPageScan(kFlashCtrlInfoPageBootData0, EntryPage(kValidEntry0));
-  ExpectPageScan(kFlashCtrlInfoPageBootData1, EntryPage(kValidEntry1, false));
+  ExpectPageScan(&kFlashCtrlInfoPageBootData0, EntryPage(kValidEntry0));
+  ExpectPageScan(&kFlashCtrlInfoPageBootData1, EntryPage(kValidEntry1, false));
 
   boot_data_t boot_data = {{0}};
   EXPECT_EQ(boot_data_read(kLcStateTest, &boot_data), kErrorOk);
@@ -360,8 +361,8 @@ TEST_F(BootDataReadTest, ReadOneValidTest) {
 
 TEST_F(BootDataReadTest, ReadErasedDefaultTest) {
   // Expect both pages to be searched, but give no entry for either.
-  ExpectPageScan(kFlashCtrlInfoPageBootData0, ErasedPage());
-  ExpectPageScan(kFlashCtrlInfoPageBootData1, ErasedPage());
+  ExpectPageScan(&kFlashCtrlInfoPageBootData0, ErasedPage());
+  ExpectPageScan(&kFlashCtrlInfoPageBootData1, ErasedPage());
 
   // Expect to fall back to loading the default entry.
   ExpectAllowedInProdCheck(false);
@@ -374,8 +375,8 @@ TEST_F(BootDataReadTest, ReadErasedDefaultTest) {
 
 TEST_F(BootDataReadTest, ReadInvalidDefaultTest) {
   // Expect both pages to be searched, but give invalid entries for both.
-  ExpectPageScan(kFlashCtrlInfoPageBootData0, EntryPage(kValidEntry0, false));
-  ExpectPageScan(kFlashCtrlInfoPageBootData1, EntryPage(kValidEntry1, false));
+  ExpectPageScan(&kFlashCtrlInfoPageBootData0, EntryPage(kValidEntry0, false));
+  ExpectPageScan(&kFlashCtrlInfoPageBootData1, EntryPage(kValidEntry1, false));
 
   // Expect to fall back to loading the default entry.
   ExpectAllowedInProdCheck(false);
@@ -388,8 +389,8 @@ TEST_F(BootDataReadTest, ReadInvalidDefaultTest) {
 
 TEST_F(BootDataReadTest, ReadDefaultAllowedInProdTest) {
   // Expect both pages to be searched, but give no entry for either.
-  ExpectPageScan(kFlashCtrlInfoPageBootData0, ErasedPage());
-  ExpectPageScan(kFlashCtrlInfoPageBootData1, ErasedPage());
+  ExpectPageScan(&kFlashCtrlInfoPageBootData0, ErasedPage());
+  ExpectPageScan(&kFlashCtrlInfoPageBootData1, ErasedPage());
 
   // Expect to fall back to loading the default entry (allowed in prod).
   ExpectAllowedInProdCheck(true);
@@ -402,8 +403,8 @@ TEST_F(BootDataReadTest, ReadDefaultAllowedInProdTest) {
 
 TEST_F(BootDataReadTest, ReadDefaultNotAllowedInProdTest) {
   // Expect both pages to be searched, but give no entry for either.
-  ExpectPageScan(kFlashCtrlInfoPageBootData0, ErasedPage());
-  ExpectPageScan(kFlashCtrlInfoPageBootData1, ErasedPage());
+  ExpectPageScan(&kFlashCtrlInfoPageBootData0, ErasedPage());
+  ExpectPageScan(&kFlashCtrlInfoPageBootData1, ErasedPage());
 
   // Expect to fall back to loading the default entry (now allowed in prod).
   ExpectAllowedInProdCheck(false);

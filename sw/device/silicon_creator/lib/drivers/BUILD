@@ -12,6 +12,7 @@ filegroup(
     srcs = [
         "flash_ctrl.c",
         "flash_ctrl.h",
+        "flash_ctrl_info_pages.c",
         "lifecycle.h",
         "otp.h",
         "rstmgr.h",
@@ -121,6 +122,7 @@ dual_cc_library(
     srcs = dual_inputs(
         device = ["flash_ctrl.c"],
         host = ["mock_flash_ctrl.cc"],
+        shared = ["flash_ctrl_info_pages.c"],
     ),
     hdrs = dual_inputs(
         host = ["mock_flash_ctrl.h"],
@@ -128,9 +130,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
             "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
         host = [
             "//sw/device/lib/base:global_mock",
@@ -138,6 +138,8 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
+            "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:bitfield",
             "//sw/device/lib/base:hardened",
