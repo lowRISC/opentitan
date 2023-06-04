@@ -335,7 +335,7 @@ interface chip_if;
                                lc_ctrl_pkg::On;
 
 `ifdef GATE_LEVEL
-  wire pwrmgr_fast_pwr_state_strap_en = 0;
+  wire pwrmgr_fast_pwr_state_strap_en = `PINMUX_HIER.u_pinmux_strap_sampling.test_so1;
 `else
   wire pwrmgr_fast_pwr_state_strap_en = `PINMUX_HIER.u_pinmux_strap_sampling.strap_en_q;
 `endif
@@ -810,10 +810,11 @@ interface chip_if;
     logic [31:0] pc_wb;
   } probed_cpu_pc_t;
   wire probed_cpu_pc_t probed_cpu_pc;
+ `ifndef GATE_LEVEL
   assign probed_cpu_pc.pc_if = `CPU_CORE_HIER.u_ibex_core.pc_if;
   assign probed_cpu_pc.pc_id = `CPU_CORE_HIER.u_ibex_core.pc_id;
   assign probed_cpu_pc.pc_wb = `CPU_CORE_HIER.u_ibex_core.pc_wb;
-
+`endif
   // Stub CPU envorinment.
   //
   // The initial value is sought from a plusarg. It can however, be set by the sequence on the fly
@@ -1083,9 +1084,9 @@ interface chip_if;
   // Signal probe function for `vendor_test_ctrl` request from LC_CTRL to OTP_CTRL.
 `ifdef GATE_LEVEL
   import otp_ctrl_pkg::*;
-  dummy_signal_probe_keymgr_key_state;
+  bit dummy_signal_probe_otp_vendor_test_ctrl;
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_otp_vendor_test_ctrl,
-      dummy_signal_probe_keymgr_key_state)
+      dummy_signal_probe_otp_vendor_test_ctrl)
 `else
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_otp_vendor_test_ctrl,
       `OTP_CTRL_HIER.lc_otp_vendor_test_i)
