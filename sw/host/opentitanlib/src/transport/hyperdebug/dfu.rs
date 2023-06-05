@@ -167,6 +167,7 @@ pub fn update_firmware(
     progress: &dyn ProgressIndicator,
     force: bool,
 ) -> Result<Option<Box<dyn Annotate>>> {
+    log::info!("update firmware: cur={:?}", current_firmware_version);
     let firmware: &[u8] = if let Some(vec) = firmware.as_ref() {
         validate_firmware_image(vec)?;
         vec
@@ -452,6 +453,7 @@ fn wait_for_idle(dfu_device: &UsbBackend, dfu_interface: u8) -> Result<u8> {
             || device_state == DFU_STATE_DFU_IDLE
             || device_state == DFU_STATE_DOWNLOAD_IDLE
         {
+            log::info!("Device in state {:?}", device_state);
             return Ok(device_state);
         } else if device_state == DFU_STATE_DOWNLOAD_BUSY {
             std::thread::sleep(std::time::Duration::from_millis(minimum_delay_ms));
