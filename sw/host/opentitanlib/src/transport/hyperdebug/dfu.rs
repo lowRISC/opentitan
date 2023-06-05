@@ -198,7 +198,7 @@ pub fn update_firmware(
     // and disconnected from the USB bus.  Wait a little while, and then attempt to establish
     // connection with the DFU bootloader, which will appear with STM DID:VID (not Google's), but
     // same serial number as before.
-    std::thread::sleep(std::time::Duration::from_millis(1000));
+    std::thread::sleep(std::time::Duration::from_millis(2000));
     log::info!("Connecting to DFU bootloader...");
     let mut dfu_device = UsbBackend::new(
         VID_ST_MICROELECTRONICS,
@@ -214,7 +214,7 @@ pub fn update_firmware(
     // At this point, the new firmware has been completely transferred, and the USB device is
     // resetting and booting the new firmware.  Wait a second, then verify that device can now be
     // found on the USB bus with the original DID:VID.
-    std::thread::sleep(std::time::Duration::from_millis(1000));
+    std::thread::sleep(std::time::Duration::from_millis(2000));
     log::info!("Connecting to newly flashed firmware...");
     let _new_device = UsbBackend::new(
         usb_device.get_vendor_id(),

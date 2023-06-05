@@ -26,6 +26,7 @@ impl UsbBackend {
     ) -> Result<Vec<(rusb::Device<rusb::GlobalContext>, String)>> {
         let mut devices = Vec::new();
         let mut deferred_log_messages = Vec::new();
+        log::info!("USB scan({:04x}:{:04x}, {:?})", usb_vid, usb_pid, usb_serial);
         for device in rusb::devices().context("USB error")?.iter() {
             let descriptor = match device.device_descriptor() {
                 Ok(desc) => desc,
@@ -39,6 +40,7 @@ impl UsbBackend {
                     continue;
                 }
             };
+            log::info!("  Device {:04x}:{:04x}", descriptor.vendor_id(), descriptor.product_id());
             if descriptor.vendor_id() != usb_vid {
                 continue;
             }
@@ -69,11 +71,13 @@ impl UsbBackend {
                     continue;
                 }
             };
+            log::info!("    serial: \"{}\"", serial_number);
             if let Some(sn) = &usb_serial {
                 if &serial_number != sn {
                     continue;
                 }
             }
+            log::info!("    match!");
             devices.push((device, serial_number));
         }
 
