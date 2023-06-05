@@ -150,9 +150,8 @@ Hopefully you got a "Hello World!" demo running on OpenTitan using either the Ve
 Depending on the specific way you want to use or contribute to OpenTitan, there may be a few extra steps you want to do.
 In particular:
 * *If you want to contribute SystemVerilog code upstream to OpenTitan*, follow step 7a to install Verible.
-* *If you want to debug on-chip OpenTitan software with GDB*, follow step 7b to install OpenOCD.
-* *If you want to run supported formal verification flows for OpenTitan, using tools like JasperGold,* follow step 7c to set up formal verification.
-* *If you want to simulate OpenTitan using Siemens Questa,* follow step 7d to set it up.
+* *If you want to run supported formal verification flows for OpenTitan, using tools like JasperGold,* follow step 7b to set up formal verification.
+* *If you want to simulate OpenTitan using Siemens Questa,* follow step 7c to set it up.
 
 It also may make sense to stick with the basic setup and come back to these steps if you find you need them later.
 
@@ -194,15 +193,11 @@ After installation you need to add `/tools/verible/$VERIBLE_VERSION/bin` to your
 
 Note that we currently use version {{#tool-version verible }}, but it is expected that this version is going to be updated frequently, since the tool is under active development.
 
-### Step 7b: Install OpenOCD (optional)
-
-See the [OpenOCD install guide](./install_openocd.md).
-
-### Step 7c: Set up formal verification (optional)
+### Step 7b: Set up formal verification (optional)
 
 See the [formal verification setup guide](./setup_formal.md)
 
-### Step 7d: Set up Siemens Questa (optional)
+### Step 7c: Set up Siemens Questa (optional)
 ￼
 Once a standard installation of Questa has been completed, add `QUESTA_HOME` as an environment variable which points to the Questa installation directory.
 

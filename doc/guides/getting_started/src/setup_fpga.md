@@ -337,23 +337,15 @@ sudo udevadm trigger --verbose --type=subsystems --action=add --subsystem-match=
 stat --dereference -c '%a' /dev/jtag_adapter_arm_usb_tiny_h
 ```
 
-To connect the ChipWhisperer CW310 FPGA board with OpenOCD, run the following command:
+The command below tells OpenOCD to connect to the ChipWhisperer CW310 FPGA board via an Olimex ARM-USB-TINY-H JTAG adapter.
+(Note that a different JTAG adapter will require a different config than `//third_party/openocd:jtag_adapter_cfg`.)
 
 ```console
 cd $REPO_TOP
-openocd -f <adapter-config.cfg> \
-        -c "adapter speed 500; transport select jtag; reset_config trst_only" \
-        -f util/openocd/target/lowrisc-earlgrey.cfg
-```
-
-For the `Olimex ARM-USB-TINY-H` with a Debian-based distro, the adapter configuration would be at `/usr/share/openocd/scripts/interface/ftdi/olimex-arm-usb-tiny-h.cfg`.
-So for that particular case, the command would be the following:
-
-```console
-cd $REPO_TOP
-openocd -f /usr/share/openocd/scripts/interface/ftdi/olimex-arm-usb-tiny-h.cfg \
-        -c "adapter speed 500; transport select jtag; reset_config trst_only" \
-        -f util/openocd/target/lowrisc-earlgrey.cfg
+./bazelisk.sh run //third_party/openocd -- \
+    -f "bazel-opentitan/$(./bazelisk.sh outquery //third_party/openocd:jtag_adapter_cfg)" \
+    -c "adapter speed 500; transport select jtag; reset_config trst_only" \
+    -f util/openocd/target/lowrisc-earlgrey.cfg
 ```
 
 Example OpenOCD output:
@@ -380,7 +372,7 @@ Info : Listening on port 3333 for gdb connections
 Note that the `reset_config` command may need to be adjusted for the particular JTAG adapter in use.
 TRSTn is available on the 20-pin ARM JTAG header only.
 
-See the [install instructions](./install_openocd.md) for guidance on installing OpenOCD.
+For more guidance on using OpenOCD, see [Using OpenOCD](./using_openocd.md).
 
 To actually debug through OpenOCD, it must either be connected through telnet or GDB.
 
