@@ -548,6 +548,7 @@ static rom_error_t boot_data_default_get(lifecycle_state_t lc_state,
 
   boot_data->is_valid = kBootDataValidEntry;
   boot_data->identifier = kBootDataIdentifier;
+  boot_data->version = kBootDataVersion1;
   boot_data->counter = kBootDataDefaultCounterVal;
   boot_data->min_security_version_rom_ext =
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT_OFFSET);

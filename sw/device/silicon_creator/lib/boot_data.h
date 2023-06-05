@@ -42,6 +42,14 @@ typedef struct boot_data {
    */
   uint32_t identifier;
   /**
+   * Boot data format version.
+   *
+   * This field must be set to the latest version for new entries but is not
+   * enforced during reads for forward compatibility in ROM and backward
+   * compatibility in ROM_EXT.
+   */
+  uint32_t version;
+  /**
    * Counter.
    *
    * This is a monotonically increasing counter that is used to determine the
@@ -57,25 +65,31 @@ typedef struct boot_data {
    */
   uint32_t min_security_version_bl0;
   /**
-   * Padding to make the size of `boot_data_t` a power of two.
+   * Padding for future enhancements and to make the size of `boot_data_t` a
+   * power of two.
    */
-  uint8_t padding[8];
+  uint32_t padding[17];
 } boot_data_t;
 
 OT_ASSERT_MEMBER_OFFSET(boot_data_t, digest, 0);
 OT_ASSERT_MEMBER_OFFSET(boot_data_t, is_valid, 32);
 OT_ASSERT_MEMBER_OFFSET(boot_data_t, identifier, 40);
-OT_ASSERT_MEMBER_OFFSET(boot_data_t, counter, 44);
-OT_ASSERT_MEMBER_OFFSET(boot_data_t, min_security_version_rom_ext, 48);
-OT_ASSERT_MEMBER_OFFSET(boot_data_t, min_security_version_bl0, 52);
-OT_ASSERT_MEMBER_OFFSET(boot_data_t, padding, 56);
-OT_ASSERT_SIZE(boot_data_t, 64);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, version, 44);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, counter, 48);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, min_security_version_rom_ext, 52);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, min_security_version_bl0, 56);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, padding, 60);
+OT_ASSERT_SIZE(boot_data_t, 128);
 
 enum {
   /**
    * Boot data identifier value (ASCII "BODA").
    */
   kBootDataIdentifier = 0x41444f42,
+  /**
+   * Boot data version 1 value.
+   */
+  kBootDataVersion1 = 0xd4ce468e,
   /**
    * Value of the `is_valid` field for valid entries.
    */
@@ -99,18 +113,6 @@ enum {
    */
   kBootDataNumWords = sizeof(boot_data_t) / sizeof(uint32_t),
   /**
-   * Base address of the first boot data page.
-   *
-   * The first boot data page is the first info page of the second flash bank.
-   */
-  kBootDataPage0Base = 0x20080000,
-  /**
-   * Base address of the second boot data page.
-   *
-   * The second boot data page is the second info page of the second flash bank.
-   */
-  kBootDataPage1Base = 0x20080800,
-  /**
    * Number of boot data entries per info page.
    *
    * Boot data pages are used as append-only logs where new data is written to
@@ -119,7 +121,7 @@ enum {
    * will be erased and new data will be written to its first entry, making it
    * the new active page.
    */
-  kBootDataEntriesPerPage = 32,
+  kBootDataEntriesPerPage = 16,
 };
 static_assert(kBootDataInvalidEntry != kBootDataValidEntry,
               "Invalidation values cannot be equal.");
