@@ -38,11 +38,11 @@
 #define BUFSZ_LFSR_SEED(s) (uint8_t)(0x17U + (s)*7U)
 
 // Simple LFSR for 8-bit sequences
-// Note: zero is an isolated state that shall be avoided
-#define LFSR_ADVANCE(lfsr)                                    \
-  (uint8_t)((uint8_t)((lfsr) << 1) ^ (uint8_t)((lfsr) >> 1) ^ \
-            (uint8_t)((lfsr) >> 2) ^ (uint8_t)((lfsr) >> 3) ^ \
-            (uint8_t)((lfsr) >> 7) & 1u)
+/// Note: zero is an isolated state that shall be avoided
+#define LFSR_ADVANCE(lfsr)     \
+  (uint8_t)(                   \
+      (uint8_t)((lfsr) << 1) ^ \
+      ((((lfsr) >> 1) ^ ((lfsr) >> 2) ^ ((lfsr) >> 3) ^ ((lfsr) >> 7)) & 1U))
 
 // Test/stream flags
 typedef enum {
@@ -190,7 +190,7 @@ struct usb_testutils_streams_ctx {
   /**
    * Number of streams in use
    */
-  unsigned nstreams;
+  uint8_t nstreams;
   /**
    * State information for each of the test streams
    */
@@ -293,6 +293,6 @@ status_t usb_testutils_stream_service(usb_testutils_streams_ctx_t *ctx,
  */
 OT_WARN_UNUSED_RESULT
 bool usb_testutils_stream_completed(const usb_testutils_streams_ctx_t *ctx,
-                                    size_t id);
+                                    uint8_t id);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_STREAMS_H_

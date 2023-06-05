@@ -276,7 +276,7 @@ static status_t rx_show(void *stream_v, dif_usbdev_rx_packet_info_t packet_info,
 
 // Returns an indication of whether a stream has completed its data transfer
 bool usb_testutils_stream_completed(const usb_testutils_streams_ctx_t *ctx,
-                                    size_t id) {
+                                    uint8_t id) {
   // Locate the stream context information
   const usbdev_stream_t *s = &ctx->streams[id];
 
@@ -437,14 +437,14 @@ status_t usb_testutils_streams_init(usb_testutils_streams_ctx_t *ctx,
   TRY_CHECK(nstreams <= UINT8_MAX);
 
   // Remember the stream count
-  ctx->nstreams = nstreams;
+  ctx->nstreams = (uint8_t)nstreams;
 
   // Initialize the state of each stream
-  for (uint8_t id = 0; id < nstreams; id++) {
+  for (uint8_t id = 0U; id < nstreams; id++) {
     // Which endpoint are we using for the IN transfers to the host?
-    const uint8_t ep_in = id + 1;
+    const uint8_t ep_in = id + 1U;
     // Which endpoint are we using for the OUT transfers from the host?
-    const uint8_t ep_out = id + 1;
+    const uint8_t ep_out = id + 1U;
     TRY(usb_testutils_stream_init(ctx, id, ep_in, ep_out, num_bytes, flags,
                                   verbose));
   }
@@ -452,7 +452,7 @@ status_t usb_testutils_streams_init(usb_testutils_streams_ctx_t *ctx,
   // Decide how many buffers each endpoint may queue up for transmission;
   // we must ensure that there are buffers available for reception, and we
   // do not want any endpoint to starve another
-  for (uint8_t s = 0; s < nstreams; s++) {
+  for (uint8_t s = 0U; s < nstreams; s++) {
     // This is slightly overspending the available buffers, leaving the
     //   endpoints to vie for the final few buffers, so it's important that
     //   we limit the total number of buffers across all endpoints too
@@ -481,7 +481,7 @@ status_t usb_testutils_streams_service(usb_testutils_streams_ctx_t *ctx) {
 
 bool usb_testutils_streams_completed(const usb_testutils_streams_ctx_t *ctx) {
   // See whether any streams still have more work to do
-  for (size_t id = 0; id < ctx->nstreams; id++) {
+  for (uint8_t id = 0; id < ctx->nstreams; id++) {
     if (!usb_testutils_stream_completed(ctx, id)) {
       return false;
     }
