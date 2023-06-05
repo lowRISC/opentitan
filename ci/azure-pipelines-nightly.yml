@@ -49,11 +49,11 @@ jobs:
     artifact: opentitan-repo
     displayName: "Upload repository"
 
-- job: rom_e2e
-  displayName: "ROM E2E Tests"
+- job: hyper310
+  displayName: "HyperDebug tests"
   timeoutInMinutes: 180
   dependsOn: checkout
-  pool: FPGA
+  pool: FPGA-2
   steps:
   - template: ../ci/checkout-template.yml
   - template: ../ci/install-package-dependencies.yml
@@ -66,5 +66,5 @@ jobs:
         --test_tag_filters=-verilator,-dv,-broken \
         --build_tests_only \
         --test_output=errors \
-        //sw/device/silicon_creator/rom/e2e/...
-    displayName: "Run all ROM E2E tests"
+        //sw/device/tests:gpio_pinmux_test
+    displayName: "Run one hyper310 test to check hardware is set up"
