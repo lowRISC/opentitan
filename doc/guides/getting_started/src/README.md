@@ -198,7 +198,7 @@ Note that we currently use version {{#tool-version verible }}, but it is expecte
 See the [formal verification setup guide](./setup_formal.md)
 
 ### Step 7c: Set up Siemens Questa (optional)
-￼
+
 Once a standard installation of Questa has been completed, add `QUESTA_HOME` as an environment variable which points to the Questa installation directory.
 
 As of Questa version 21.4 there are some code incompatibilities with the OpenTitan code-base.
