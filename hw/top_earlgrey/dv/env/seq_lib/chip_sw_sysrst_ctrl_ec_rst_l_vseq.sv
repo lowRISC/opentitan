@@ -11,7 +11,7 @@ class chip_sw_sysrst_ctrl_ec_rst_l_vseq extends chip_sw_base_vseq;
   localparam bit [1:0] OUTPUT_ALL_SET = 2'b11;
   localparam bit [1:0] OUTPUT_NONE_SET = 2'b00;
   localparam uint TIMEOUT_VALUE = 5000000;
-  localparam uint EC_RST_TIMER = 2000 - 10; // Default value of sysrst_ctrl.EC_RST_CTL
+  localparam uint EC_RST_TIMER = 2000 + 1; // Default value of sysrst_ctrl.EC_RST_CTL
 
   localparam string PWRMGR_RSTREQ_PATH = "tb.dut.top_earlgrey.u_pwrmgr_aon.rstreqs_i[0]";
   localparam string RST_AON_NI_PATH = "tb.dut.top_earlgrey.u_sysrst_ctrl_aon.rst_aon_ni";
@@ -75,6 +75,7 @@ class chip_sw_sysrst_ctrl_ec_rst_l_vseq extends chip_sw_base_vseq;
     forever begin
       if (cfg.chip_vif.ec_rst_l_if.sample_pin(0) == 0) begin
         timeout_count++;
+        // Wait for ec_rst_l_o to deassert
         if (timeout_count >= EC_RST_TIMER) begin
           ec_rst_timer_over = 1; // set this for the other thread to continue
         end
