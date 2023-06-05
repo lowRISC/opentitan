@@ -59,6 +59,13 @@ jobs:
   - template: ../ci/install-package-dependencies.yml
   - bash: |
       set -x
+      ci/bazelisk.sh run //sw/host/opentitantool \
+        -- \
+        --interface=hyper310 \
+        transport update-firmware
+    displayName: "Update HyperDebug firmware"
+  - bash: |
+      set -x
       module load "xilinx/vivado/$(VIVADO_VERSION)"
       ci/bazelisk.sh test \
         --define DISABLE_VERILATOR_BUILD=true \
