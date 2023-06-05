@@ -865,8 +865,10 @@ interface chip_if;
         force cpu_d_tl_if.d2h = `CPU_HIER.cored_tl_h_i;
 `endif
       end
+`ifndef GATE_LEVEL
       @stub_cpu;
-      disable stub_cpu_cmd_intg_thread;
+     disable stub_cpu_cmd_intg_thread;
+`endif
     end
   end
 
