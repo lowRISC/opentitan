@@ -120,7 +120,8 @@ ifneq (${sw_images},)
 				--ui_event_filters=-info \
 				--noshow_progress \
 				--output=starlark); do \
-				if [[ $$dep != //hw* ]] && [[ $$dep != //util* ]] && [[ $$dep != //sw/host* ]]; then \
+				if [[ $$dep == //hw/ip/otp_ctrl/data* ]] || \
+				  ([[ $$dep != //hw* ]] && [[ $$dep != //util* ]] && [[ $$dep != //sw/host* ]]); then \
 					for artifact in $$($${bazel_cmd} cquery $${dep} \
 						--ui_event_filters=-info \
 						--noshow_progress \
