@@ -32,10 +32,10 @@ typedef enum usb_testutils_device_state {
 
 typedef struct usb_testutils_controlep_ctx {
   usb_testutils_ctx_t *ctx;
-  int ep;
+  uint8_t ep;
   usb_testutils_ctstate_t ctrlstate;
   usb_testutils_device_state_t device_state;
-  uint32_t new_dev;
+  uint8_t new_dev;
   uint8_t usb_config;
   /**
    * USB configuration descriptor
@@ -63,7 +63,7 @@ typedef struct usb_testutils_controlep_ctx {
  */
 OT_WARN_UNUSED_RESULT
 status_t usb_testutils_controlep_init(usb_testutils_controlep_ctx_t *ctctx,
-                                      usb_testutils_ctx_t *ctx, int ep,
+                                      usb_testutils_ctx_t *ctx, uint8_t ep,
                                       const uint8_t *cfg_dscr,
                                       size_t cfg_dscr_len,
                                       const uint8_t *test_dscr,

@@ -14,7 +14,7 @@
 // This is only here because caller of _init needs it
 typedef struct usb_testutils_ss_ctx {
   usb_testutils_ctx_t *ctx;
-  int ep;
+  uint8_t ep;
   bool sending;
   dif_usbdev_buffer_t cur_buf;
   int cur_cpos;
@@ -48,7 +48,7 @@ status_t usb_testutils_simpleserial_send_byte(usb_testutils_ss_ctx_t *ssctx,
  */
 OT_WARN_UNUSED_RESULT
 status_t usb_testutils_simpleserial_init(usb_testutils_ss_ctx_t *ssctx,
-                                         usb_testutils_ctx_t *ctx, int ep,
+                                         usb_testutils_ctx_t *ctx, uint8_t ep,
                                          void (*got_byte)(uint8_t));
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_SIMPLESERIAL_H_

@@ -437,9 +437,11 @@ status_t usb_testutils_fin(usb_testutils_ctx_t *ctx) {
                 "USBDEV_NUM_ENDPOINTS must fit into uint8_t");
   static_assert(USBDEV_NUM_ENDPOINTS > 0,
                 "USBDEV_NUM_ENDPOINTS - 1 must not overflow");
-  for (uint8_t ep = USBDEV_NUM_ENDPOINTS - 1; ep >= 0; ep--) {
+  uint8_t ep = USBDEV_NUM_ENDPOINTS;
+  do {
+    ep--;
     TRY(usb_testutils_endpoint_remove(ctx, ep));
-  }
+  } while (ep > 0U);
 
   // Disconnect from the bus
   TRY(dif_usbdev_interface_enable(ctx->dev, kDifToggleDisabled));

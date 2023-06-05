@@ -123,8 +123,8 @@ bool test_main(void) {
     CHECK_STATUS_OK(usb_testutils_poll(&usbdev));
   }
 
-  // Set up two serial ports.
-  CHECK_STATUS_OK(usb_testutils_simpleserial_init(&simple_serial, &usbdev, 1,
+  // Set up a serial port.
+  CHECK_STATUS_OK(usb_testutils_simpleserial_init(&simple_serial, &usbdev, 1U,
                                                   usb_receipt_callback));
 
   // Send a "Hi!Hi!" sign on message.
@@ -146,6 +146,8 @@ bool test_main(void) {
           kExpectedUsbRecved[i], buffer[i]);
   }
   LOG_INFO("USB received %d characters: %s", usb_chars_recved_total, buffer);
+
+  CHECK_STATUS_OK(usb_testutils_fin(&usbdev));
 
   return true;
 }

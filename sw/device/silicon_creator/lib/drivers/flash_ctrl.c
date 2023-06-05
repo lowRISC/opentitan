@@ -381,6 +381,8 @@ rom_error_t flash_ctrl_data_erase_verify(uint32_t addr,
       break;
     default:
       HARDENED_TRAP();
+      byte_count = 0U;
+      break;
   }
 
   // Truncate to the closest lower bank/page aligned address.
@@ -498,10 +500,12 @@ void flash_ctrl_bank_erase_perms_set(hardened_bool_t enable) {
       break;
     case kHardenedBoolFalse:
       HARDENED_CHECK_EQ(enable, kHardenedBoolFalse);
-      reg = 0;
+      reg = 0U;
       break;
     default:
       HARDENED_TRAP();
+      reg = 0U;
+      break;
   }
   sec_mmio_write32_shadowed(kBase + FLASH_CTRL_MP_BANK_CFG_SHADOWED_REG_OFFSET,
                             reg);
