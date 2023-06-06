@@ -28,8 +28,7 @@ enum {
    */
   kRetSramBaseAddr = TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
 
-  kRetSramOwnerAddr =
-      kRetSramBaseAddr + offsetof(retention_sram_t, reserved_owner),
+  kRetSramOwnerAddr = kRetSramBaseAddr + offsetof(retention_sram_t, owner),
   kRetRamLastAddr =
       kRetSramBaseAddr + TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES - 1,
 

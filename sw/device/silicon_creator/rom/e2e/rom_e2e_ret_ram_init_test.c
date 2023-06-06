@@ -26,7 +26,7 @@ rom_error_t retention_ram_init_test(void) {
   memset(&pattern64, kPattern, sizeof(pattern64));
 
   retention_sram_t *ret = retention_sram_get();
-  uint32_t reset_reasons = ret->reset_reasons;
+  uint32_t reset_reasons = ret->creator.reset_reasons;
 
   // Verify that reset_reasons reports POR.
   if (bitfield_bit32_read(reset_reasons, kRstmgrReasonPowerOn)) {

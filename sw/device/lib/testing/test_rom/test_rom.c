@@ -166,13 +166,13 @@ bool rom_test_main(void) {
 #if !OT_IS_ENGLISH_BREAKFAST
   // Store the reset reason in retention RAM and clear the register.
   volatile retention_sram_t *ret_ram = retention_sram_get();
-  ret_ram->reset_reasons = reset_reasons;
+  ret_ram->creator.reset_reasons = reset_reasons;
   CHECK_DIF_OK(dif_rstmgr_reset_info_clear(&rstmgr));
 
   // Write 0x54534554 (ASCII: TEST) to the end of the retention SRAM creator
   // area to be able to determine the type of ROM in tests.
   volatile uint32_t *creator_last_word =
-      &ret_ram->reserved_creator[ARRAYSIZE(ret_ram->reserved_creator) - 1];
+      &ret_ram->creator.reserved[ARRAYSIZE(ret_ram->creator.reserved) - 1];
   *creator_last_word = TEST_ROM_IDENTIFIER;
 #endif
 

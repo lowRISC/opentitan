@@ -35,14 +35,14 @@ bool check_ram_unchanged(retention_sram_t *ret) {
 
   // Ensure that all written sections were saved
   bool unchanged = true;
-  // Skip checking word 0 since that is used to store the
-  // reset reason and will be changed.
-  for (size_t i = sizeof(uint32_t); i < sizeof(retention_sram_t);
+  // Skip checking the first two words since that is used to store the
+  // version and reset reason.
+  for (size_t i = 2 * sizeof(uint32_t); i < sizeof(retention_sram_t);
        i += sizeof(uint32_t)) {
     uint32_t val = read_32((char *)ret + i);
     if (val != pattern32) {
-      LOG_ERROR("Retention SRAM changed at word %u (%x --> %x).", i, pattern32,
-                val);
+      LOG_ERROR("Retention SRAM changed at word %u (%x --> %x).",
+                i / sizeof(uint32_t), pattern32, val);
       unchanged = false;
     }
   }
@@ -52,7 +52,7 @@ bool check_ram_unchanged(retention_sram_t *ret) {
 rom_error_t retention_ram_keep_test(void) {
   // Variables of type `retention_sram_t` are static to reduce stack usage.
   retention_sram_t *ret = retention_sram_get();
-  uint32_t reset_reasons = ret->reset_reasons;
+  uint32_t reset_reasons = ret->creator.reset_reasons;
 
   // Verify that reset_reasons reports POR.
   if (bitfield_bit32_read(reset_reasons, kRstmgrReasonPowerOn)) {

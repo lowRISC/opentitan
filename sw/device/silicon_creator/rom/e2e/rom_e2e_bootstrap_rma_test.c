@@ -11,7 +11,7 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
-  uint32_t bitfield = retention_sram_get()->reset_reasons;
+  uint32_t bitfield = retention_sram_get()->creator.reset_reasons;
   LOG_INFO("reset_info_bitfield: 0x%x", bitfield);
   return true;
 }

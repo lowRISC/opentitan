@@ -97,9 +97,9 @@ status_t rstmgr_testutils_post_reset(
 }
 
 dif_rstmgr_reset_info_bitfield_t rstmgr_testutils_reason_get(void) {
-  return retention_sram_get()->reset_reasons;
+  return retention_sram_get()->creator.reset_reasons;
 }
 
 void rstmgr_testutils_reason_clear(void) {
-  retention_sram_get()->reset_reasons = 0;
+  retention_sram_get()->creator.reset_reasons = 0;
 }
