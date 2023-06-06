@@ -25,8 +25,6 @@ enum {
   kBase = TOP_EARLGREY_RSTMGR_AON_BASE_ADDR,
 };
 
-rstmgr_alert_info_t rstmgr_alert_info;
-
 static void rstmgr_alert_info_collect(void) {
   rstmgr_alert_info.length = bitfield_field32_read(
       abs_mmio_read32(kBase + RSTMGR_ALERT_INFO_ATTR_REG_OFFSET),
@@ -70,7 +68,6 @@ uint32_t rstmgr_reason_get(void) {
 
 #undef REASON_ASSERT
 
-  rstmgr_alert_info_collect();
   return abs_mmio_read32(kBase + RSTMGR_RESET_INFO_REG_OFFSET);
 }
 
