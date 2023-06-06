@@ -13,6 +13,7 @@ namespace {
 class ManifestTest : public rom_test::RomTest {
  protected:
   ManifestTest() {
+    manifest_.manifest_version.major = kManifestVersionMajor1;
     manifest_.length = sizeof(manifest_t) + 0x1000;
     manifest_.signed_region_end = sizeof(manifest_t) + 0x900;
     manifest_.code_start = sizeof(manifest_t);
