@@ -79,6 +79,10 @@ void rstmgr_alert_info_enable(void) {
   abs_mmio_write32(kBase + RSTMGR_ALERT_INFO_CTRL_REG_OFFSET, 1);
 }
 
+void rstmgr_cpu_info_enable(void) {
+  abs_mmio_write32(kBase + RSTMGR_CPU_INFO_CTRL_REG_OFFSET, 1);
+}
+
 rom_error_t rstmgr_info_en_check(uint32_t reset_reasons) {
   enum {
     kByteTrueXorFalse = kHardenedByteBoolTrue ^ kHardenedByteBoolFalse,

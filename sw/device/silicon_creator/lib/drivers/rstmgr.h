@@ -98,6 +98,11 @@ void rstmgr_reason_clear(uint32_t reasons);
 void rstmgr_alert_info_enable(void);
 
 /**
+ * Enable capturing of CPU crash dump in the event of a crash.
+ */
+void rstmgr_cpu_info_enable(void);
+
+/**
  * Requests a system reset.
  */
 #ifdef OT_PLATFORM_RV32
