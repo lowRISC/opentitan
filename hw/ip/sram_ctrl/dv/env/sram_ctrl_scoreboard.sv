@@ -412,7 +412,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
       // after a KDI transaction is completed, it takes 3 clock cycles in the SRAM domain
       // to properly synchronize and propagate the data through the DUT
-      cfg.clk_rst_vif.wait_clks(KDI_PROPAGATION_CYCLES + 1);
+      cfg.clk_rst_vif.wait_clks(KDI_PROPAGATION_CYCLES);
 
       // Wait a small delay before updating CSR status
       #1;

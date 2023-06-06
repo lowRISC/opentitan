@@ -36,9 +36,9 @@ package sram_ctrl_env_pkg;
   // 1 bit for valid, SramKeyWidth bits for the key, SramNonceWidth bits for the nonce.
   parameter int KDI_DATA_SIZE = 1 + otp_ctrl_pkg::SramKeyWidth + otp_ctrl_pkg::SramNonceWidth;
 
-  // after a KDI transaction is completed, it needs 2 cycles in the SRAM clock domain
+  // after a KDI transaction is completed, it needs 3 cycles in the SRAM clock domain
   // to be properly synchronized and propagated through the DUT
-  parameter int KDI_PROPAGATION_CYCLES = 2;
+  parameter int KDI_PROPAGATION_CYCLES = 3;
 
   // a LC escalation request needs 3 cycles to be fully propagated through the DUT
   parameter int LC_ESCALATION_PROPAGATION_CYCLES = 3;
