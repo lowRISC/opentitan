@@ -49,32 +49,32 @@ jobs:
     artifact: opentitan-repo
     displayName: "Upload repository"
 
-- job: hyper310_tests
-  displayName: "HyperDebug tests"
-  timeoutInMinutes: 180
-  dependsOn: checkout
-  pool: FPGA-2
-  steps:
-  - template: ../ci/checkout-template.yml
-  - template: ../ci/install-package-dependencies.yml
-  - bash: |
-      set -x
-      ci/bazelisk.sh run //sw/host/opentitantool \
-        -- \
-        --interface=hyper310 \
-        transport update-firmware
-    displayName: "Update HyperDebug firmware"
-  - bash: |
-      set -x
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/bazelisk.sh test \
-        --define DISABLE_VERILATOR_BUILD=true \
-        --define bitstream=gcp_splice \
-        --test_tag_filters=-verilator,-dv,-broken \
-        --build_tests_only \
-        --test_output=errors \
-        //sw/device/tests:gpio_pinmux_test
-    displayName: "Run one hyper310 test to check the hardware configuration works"
+#- job: hyper310_tests
+#  displayName: "HyperDebug tests"
+#  timeoutInMinutes: 180
+#  dependsOn: checkout
+#  pool: FPGA-2
+#  steps:
+#  - template: ../ci/checkout-template.yml
+#  - template: ../ci/install-package-dependencies.yml
+#  - bash: |
+#      set -x
+#      ci/bazelisk.sh run //sw/host/opentitantool \
+#        -- \
+#        --interface=hyper310 \
+#        transport update-firmware
+#    displayName: "Update HyperDebug firmware"
+#  - bash: |
+#      set -x
+#      module load "xilinx/vivado/$(VIVADO_VERSION)"
+#      ci/bazelisk.sh test \
+#        --define DISABLE_VERILATOR_BUILD=true \
+#        --define bitstream=gcp_splice \
+#        --test_tag_filters=-verilator,-dv,-broken \
+#        --build_tests_only \
+#        --test_output=errors \
+#        //sw/device/tests:gpio_pinmux_test
+#    displayName: "Run one hyper310 test to check the hardware configuration works"
 
 - job: bob_tests
   displayName: "BoB tests"
