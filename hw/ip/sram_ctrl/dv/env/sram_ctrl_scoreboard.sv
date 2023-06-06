@@ -507,11 +507,9 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
           end
           if (in_key_req || in_init) exp_mem[cfg.sram_ral_name].init();
         end else if (addr_phase_read) begin
-          // CTRL.renew_scr_key always reads as 0
+          // CTRL.renew_scr_key and CTRL.init always read as 0
           void'(ral.ctrl.renew_scr_key.predict(.value(0), .kind(UVM_PREDICT_READ)));
-
-          // CTRL.init will be set to 0 once initialization is complete
-          void'(ral.ctrl.init.predict(.value(in_init), .kind(UVM_PREDICT_READ)));
+          void'(ral.ctrl.init.predict(.value(0), .kind(UVM_PREDICT_READ)));
         end
       end
       default: begin
