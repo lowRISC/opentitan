@@ -145,6 +145,35 @@ typedef struct manifest_ext_table {
 } manifest_ext_table_t;
 
 /**
+ * Manifest version.
+ */
+typedef struct manifest_version {
+  /**
+   * Minor manifest format version.
+   *
+   * ROM doesn't check this field. Thus, this field can be used to update the
+   * manifest format without breaking the forward compatibility of ROM.
+   */
+  uint16_t minor;
+  /**
+   * Major manifest format version.
+   *
+   * This field can be used to maintain or break forward compatibility in ROM
+   * while preserving backward compatibility in ROM_EXT. ROM requires the major
+   * version to be `kManifestFormatVersionMajor1`.
+   */
+  uint16_t major;
+} manifest_version_t;
+
+/**
+ * Manifest versions.
+ */
+enum {
+  kManifestVersionMajor1 = CHIP_MANIFEST_VERSION_MAJOR_1,
+  kManifestVersionMinor1 = CHIP_MANIFEST_VERSION_MINOR_1,
+};
+
+/**
  * Manifest for boot stage images stored in flash.
  *
  * OpenTitan secure boot, at a minimum, consists of three boot stages: ROM,
@@ -198,6 +227,14 @@ typedef struct manifest {
    * Manifest identifier.
    */
   uint32_t identifier;
+  /**
+   * Manifest format major and minor version.
+   *
+   * These version values can be used to maintain or break forward compatibility
+   * in ROM while preserving backward compatibility in ROM_EXT. ROM requires the
+   * major version to be `kManifestFormatVersionMajor1`.
+   */
+  manifest_version_t manifest_version;
   /**
    * Offset of the end of the signed region relative to the start of the
    * manifest.
@@ -267,18 +304,19 @@ OT_ASSERT_MEMBER_OFFSET(manifest_t, usage_constraints, 384);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, rsa_modulus, 432);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, address_translation, 816);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, identifier, 820);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, signed_region_end, 824);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, length, 828);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, version_major, 832);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, version_minor, 836);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, security_version, 840);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, timestamp, 844);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, binding_value, 852);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, max_key_version, 884);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, code_start, 888);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, code_end, 892);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, entry_point, 896);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, extensions, 900);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, manifest_version, 824);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, signed_region_end, 828);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, length, 832);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, version_major, 836);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, version_minor, 840);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, security_version, 844);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, timestamp, 848);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, binding_value, 856);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, max_key_version, 888);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, code_start, 892);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, code_end, 896);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, entry_point, 900);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, extensions, 904);
 OT_ASSERT_SIZE(manifest_t, CHIP_MANIFEST_SIZE);
 
 /**
@@ -388,6 +426,11 @@ typedef struct manifest_ext_spx_signature {
  */
 OT_WARN_UNUSED_RESULT
 inline rom_error_t manifest_check(const manifest_t *manifest) {
+  // Major version must be `kManifestVersionMajor1`.
+  if (manifest->manifest_version.major != kManifestVersionMajor1) {
+    return kErrorManifestBadVersionMajor;
+  }
+
   // Signed region must be inside the image.
   if (manifest->signed_region_end > manifest->length) {
     return kErrorManifestBadSignedRegion;

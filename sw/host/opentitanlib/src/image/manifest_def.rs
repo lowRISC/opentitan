@@ -218,6 +218,7 @@ manifest_def! {
         rsa_modulus: ManifestRsaBigInt,
         address_translation: ManifestSmallInt<u32>,
         identifier: ManifestSmallInt<u32>,
+        manifest_version: ManifestVersionDef,
         signed_region_end: ManifestSmallInt<u32>,
         length: ManifestSmallInt<u32>,
         version_major: ManifestSmallInt<u32>,
@@ -241,6 +242,13 @@ manifest_def! {
         manuf_state_owner: ManifestSmallInt<u32>,
         life_cycle_state: ManifestSmallInt<u32>,
     }, ManifestUsageConstraints
+}
+
+manifest_def! {
+    pub struct ManifestVersionDef {
+        minor: ManifestSmallInt<u16>,
+        major: ManifestSmallInt<u16>,
+    }, ManifestVersion
 }
 
 #[derive(Clone, Default, Deserialize, Serialize, Debug)]

@@ -110,6 +110,13 @@
    */
   identifier: "0x00000000"
   /**
+   * Manifest format version.
+   */
+  manifest_version: {
+    minor: "0x0000"
+    major: "0x0000"
+  }
+  /**
    * Offset to the end of the signed region relative to the start of the manifest.
    */
   signed_region_end: "0x00000000"
