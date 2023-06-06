@@ -134,8 +134,9 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
           if ( (i == 0) && !dut_item.first_byte && ~prev_csaat) begin
             `uvm_fatal(`gfn, $sformatf("FIRST SPI_ITEM DIDN'T CONTAIN FIRST BYE INDICATION"))
           end else if (dut_item.first_byte && i != 0) begin
-            `uvm_fatal(`gfn, $sformatf("FIRST BYTE SET PREMATURELY - STILL MISSING %d",
-                                        exp_segment.command_reg.len+1 - i))
+            `uvm_fatal(`gfn, $sformatf("FIRST BYTE SET PREMATURELY - STILL MISSING %0d/%0d",
+                                       exp_segment.command_reg.len + 1 - i,
+                                       exp_segment.command_reg.len + 1))
           end
 
           if (dut_item.data[0] != exp_segment.spi_data[i]) begin
@@ -479,7 +480,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
     super.check_phase(phase);
     // post test checks - ensure that all local fifos and queues are empty
     if (in_tx_seg_cnt != checked_tx_seg_cnt)
-      `uvm_fatal(`gfn, $sformatf("Didn't check all segments - expected %d actual %d",
+      `uvm_fatal(`gfn, $sformatf("Didn't check all segments - expected %0d actual %0d",
                                   in_tx_seg_cnt, checked_tx_seg_cnt))
 
     `DV_EOT_PRINT_Q_CONTENTS(spi_segment_item, write_segment_q)

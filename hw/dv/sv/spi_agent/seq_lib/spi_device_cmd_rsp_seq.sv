@@ -89,7 +89,7 @@ class spi_device_cmd_rsp_seq extends spi_device_seq;
 
     end // forever
 
-  endtask
+  endtask : decode_cmd
 
   function void handle_reads();
     spi_item rsp = spi_item::type_id::create("rsp");
@@ -113,16 +113,16 @@ class spi_device_cmd_rsp_seq extends spi_device_seq;
     `downcast(rsp_clone, rsp.clone());
     rsp_q.push_back(rsp_clone);
 
-  endfunction // handle_read
+  endfunction : handle_reads
 
   function void handle_writes(spi_item item);
     void'(item.data.pop_front());
     // potential TODO add associative array for read back of write data
-  endfunction // handle_writes
+  endfunction : handle_writes
 
   function spi_cmd_e cmd_check(bit [7:0] data);
     spi_cmd_e cmd;
     `downcast(cmd, data, "Illegal Command seen")
     return cmd;
-  endfunction
+  endfunction : cmd_check
 endclass : spi_device_cmd_rsp_seq
