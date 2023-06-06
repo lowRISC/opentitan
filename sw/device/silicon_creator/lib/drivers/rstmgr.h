@@ -78,8 +78,6 @@ typedef enum rstmgr_reason {
  * The reset reason is a bitfield. Individual bits may be extracted using
  * the indices provided by the `rstmgr_reason_t` enumeration. The reset
  * reasons are not necessarily mutually exclusive.
- *
- * This function also captures alert information into `rstmgr_alert_info`.
  */
 OT_WARN_UNUSED_RESULT
 uint32_t rstmgr_reason_get(void);
