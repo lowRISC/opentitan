@@ -13,10 +13,10 @@ pub struct Ti50EmulatorOpts {
     #[structopt(long, default_value = "ti50")]
     instance_prefix: String,
 
-    #[structopt(long, parse(from_os_str), default_value = "/tools/host_emulation")]
+    #[structopt(long, parse(from_os_str), default_value = "")]
     executable_directory: PathBuf,
 
-    #[structopt(long, default_value = "host_emulation")]
+    #[structopt(long, default_value = "")]
     executable: String,
 }
 
