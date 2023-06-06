@@ -73,6 +73,6 @@ jobs:
         --define bitstream=gcp_splice \
         --test_tag_filters=-verilator,-dv,-broken \
         --build_tests_only \
-        --test_output=errors \
+        --test_output=streamed \
         //sw/device/tests:gpio_pinmux_test
     displayName: "Run one hyper310 test to check hardware is set up"

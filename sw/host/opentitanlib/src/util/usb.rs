@@ -98,6 +98,11 @@ impl UsbBackend {
         ensure!(!devices.is_empty(), TransportError::NoDevice);
         ensure!(devices.len() == 1, TransportError::MultipleDevices);
 
+        log::debug!("Asked to look for devices matching usb_vid={:x}, usb_pid={:x}, serial={:?}", usb_vid, usb_pid, usb_serial);
+        log::debug!("Found:");
+        for (device, serial_number) in &devices {
+            log::debug!("- {:?}: serial={}", device, serial_number);
+        }
         let (device, serial_number) = devices.remove(0);
         Ok(UsbBackend {
             handle: device.open().context("USB open error")?,
