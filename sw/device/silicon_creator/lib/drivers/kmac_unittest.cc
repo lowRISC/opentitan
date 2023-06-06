@@ -27,9 +27,9 @@ class KmacTest : public rom_test::RomTest {
    */
   void ExpectPollState(uint32_t flag, bool err) {
     // Test assumption: the status flags idle/absorb/squeeze are bits 0..2.
-    static_assert(KMAC_STATUS_SHA3_IDLE_BIT < 3);
-    static_assert(KMAC_STATUS_SHA3_ABSORB_BIT < 3);
-    static_assert(KMAC_STATUS_SHA3_SQUEEZE_BIT < 3);
+    static_assert(KMAC_STATUS_SHA3_IDLE_BIT < 3, "");
+    static_assert(KMAC_STATUS_SHA3_ABSORB_BIT < 3, "");
+    static_assert(KMAC_STATUS_SHA3_SQUEEZE_BIT < 3, "");
 
     // Calculate the status flags that are not this flag.
     uint32_t other_status_flag1 = (flag + 1) % 3;
