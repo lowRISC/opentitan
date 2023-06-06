@@ -148,8 +148,13 @@ impl ManifestPacked<ManifestRsaBuffer> for ManifestRsaBigInt {
     }
 }
 
-impl ManifestPacked<[ManifestExtTableEntry; 8]> for [ManifestExtTableEntryDef; 8] {
-    fn unpack(self, _name: &'static str) -> Result<[ManifestExtTableEntry; 8]> {
+impl ManifestPacked<[ManifestExtTableEntry; CHIP_MANIFEST_EXT_TABLE_COUNT]>
+    for [ManifestExtTableEntryDef; CHIP_MANIFEST_EXT_TABLE_COUNT]
+{
+    fn unpack(
+        self,
+        _name: &'static str,
+    ) -> Result<[ManifestExtTableEntry; CHIP_MANIFEST_EXT_TABLE_COUNT]> {
         Ok(self.map(|v| match v.0 {
             ManifestExtEntryVar::Name(name) => ManifestExtTableEntry {
                 identifier: name.into(),
@@ -230,7 +235,7 @@ manifest_def! {
         code_start: ManifestSmallInt<u32>,
         code_end: ManifestSmallInt<u32>,
         entry_point: ManifestSmallInt<u32>,
-        extensions: [ManifestExtTableEntryDef; 8],
+        extensions: [ManifestExtTableEntryDef; CHIP_MANIFEST_EXT_TABLE_COUNT],
     }, Manifest
 }
 
@@ -395,14 +400,14 @@ impl From<&ManifestExtTableEntry> for ManifestExtTableEntryDef {
     }
 }
 
-impl From<[ManifestExtTableEntry; 8]> for ManifestExtTable {
-    fn from(o: [ManifestExtTableEntry; 8]) -> ManifestExtTable {
+impl From<[ManifestExtTableEntry; CHIP_MANIFEST_EXT_TABLE_COUNT]> for ManifestExtTable {
+    fn from(o: [ManifestExtTableEntry; CHIP_MANIFEST_EXT_TABLE_COUNT]) -> ManifestExtTable {
         ManifestExtTable { entries: o }
     }
 }
 
-impl From<&ManifestExtTable> for [ManifestExtTableEntryDef; 8] {
-    fn from(o: &ManifestExtTable) -> [ManifestExtTableEntryDef; 8] {
+impl From<&ManifestExtTable> for [ManifestExtTableEntryDef; CHIP_MANIFEST_EXT_TABLE_COUNT] {
+    fn from(o: &ManifestExtTable) -> [ManifestExtTableEntryDef; CHIP_MANIFEST_EXT_TABLE_COUNT] {
         o.entries.map(|v| (&v).into())
     }
 }

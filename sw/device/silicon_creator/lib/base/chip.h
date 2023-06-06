@@ -13,7 +13,7 @@
 /**
  * Manifest size for boot stages stored in flash (in bytes).
  */
-#define CHIP_MANIFEST_SIZE 968
+#define CHIP_MANIFEST_SIZE 1024
 
 /**
  * Manifest format major and minor versions.
@@ -24,7 +24,7 @@
 /**
  * Number of entries in the manifest extensions table.
  */
-#define CHIP_MANIFEST_EXT_TABLE_ENTRY_COUNT 8
+#define CHIP_MANIFEST_EXT_TABLE_ENTRY_COUNT 15
 
 /**
  * ROM_EXT manifest identifier (ASCII "OTRE").
