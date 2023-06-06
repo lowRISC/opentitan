@@ -10,7 +10,7 @@ class spi_host_common_vseq extends spi_host_base_vseq;
 
   // for this vseq, $value$plusargs "+en_scb=0" is defined in spi_host_sim_cfg.hjson
   // disable spi_host_monitor and spi_host_scoreboard since they can not handle this test
-  
+
   virtual task body();
     `uvm_info(`gfn, "\n--> start of spi_host_common_vseq", UVM_DEBUG)
     run_common_vseq_wrapper(num_trans);

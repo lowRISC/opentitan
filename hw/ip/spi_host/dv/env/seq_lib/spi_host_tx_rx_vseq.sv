@@ -15,8 +15,8 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
   `uvm_object_utils(spi_host_tx_rx_vseq)
   `uvm_object_new
 
+  // This lock can be used to control access the the DUT TL-interface between testbench tasks.
   semaphore spi_host_atomic = new(1);
-
 
   virtual task start_spi_host_trans(int num_transactions, bit wait_ready = 1'b1);
     spi_host_status_t status;
@@ -62,19 +62,19 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
 
   endtask
 
-  // sending tx requests to the agent
+  // Generate the TL-writes needed for the DUT to send all segments of a "spi_transaction_item" transaction.
   virtual task send_trans(spi_transaction_item trans, bit wait_ready = 1'b1);
     spi_segment_item segment = new();
     while (trans.segments.size() > 0) begin
-      // wait on DUT ready
-      segment = trans.segments.pop_back();
       if (wait_ready) wait_ready_for_command();
       // lock fifo to this seq
       spi_host_atomic.get(1);
-      // write data to fifo
+      segment = trans.segments.pop_back();
+      // Populate TXIFIO with write-data (if required)
       if (segment.command_reg.direction != RxOnly) begin
         access_data_fifo(segment.spi_data, TxFifo);
       end
+      // As soon as the COMMAND reg is populated, the DUT will begin the transaction.
       program_command_reg(segment.command_reg);
       spi_host_atomic.put(1);
     end

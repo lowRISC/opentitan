@@ -27,7 +27,7 @@ class spi_host_base_vseq extends cip_base_vseq #(
   // transaction item contains a full spi transaction
   spi_transaction_item       transaction;
 
-  // re-active sequence
+  // reactive sequences to run on spi_agent (configured as a Device)
   spi_device_cmd_rsp_seq m_spi_device_seq[SPI_HOST_NUM_CS];
 
   // constraints for simulation loops
@@ -317,18 +317,6 @@ class spi_host_base_vseq extends cip_base_vseq #(
     print_spi_host_regs();
   endfunction : update_spi_agent_regs
 
-
-  virtual function bit [TL_AW-1:0] get_aligned_tl_addr(spi_host_fifo_e fifo);
-    bit [TL_AW-1:0] fifo_addr;
-    if (fifo == TxFifo) begin
-      fifo_addr = SPI_HOST_TXDATA_OFFSET;
-    end else if (fifo == RxFifo) begin
-      fifo_addr = SPI_HOST_RXDATA_OFFSET;
-    end
-    return fifo_addr;
-  endfunction : get_aligned_tl_addr
-
-
   // print the content of spi_host_regs[channel]
   virtual function void print_spi_host_regs(uint en_print = 1);
     if (en_print) begin
@@ -367,17 +355,21 @@ class spi_host_base_vseq extends cip_base_vseq #(
   endtask : do_phase_align_reset
 
 
-  // send tl read/write request to a memory address (window type)
-  virtual task send_tl_access(bit [TL_AW-1:0]  addr,
-                              bit [TL_DW-1:0]  data,
-                              bit              write,
-                              bit [TL_DBW-1:0] mask = {TL_DBW{1'b1}},
-                              bit              blocking = $urandom_range(0, 1));
-    tl_access(.addr(addr), .write(write), .data(data), .mask(mask), .blocking(blocking));
-    `uvm_info(`gfn, $sformatf("\n  rxtx_vseq, TL_%s to addr 0x%0x, data: 0x%8x, blk %b, mask %b",
-        write ? "WRITE" : "READ", addr, data, blocking, mask), UVM_HIGH)
-  endtask : send_tl_access
+  // Send TL-UL read/write request to a memory address (window type)
+  // > Randomly select between blocking/non-blocking accesses by default
+  virtual local task tl_access_inner(bit [TL_AW-1:0]  addr,
+                                     bit [TL_DW-1:0]  data,
+                                     bit              write,
+                                     bit [TL_DBW-1:0] mask = {TL_DBW{1'b1}},
+                                     bit              blocking = $urandom_range(0, 1));
+    super.tl_access(.addr(addr), .write(write), .data(data), .mask(mask), .blocking(blocking));
+    `uvm_info(`gfn,
+              $sformatf("\n  rxtx_vseq, TL_%s to addr 0x%0x, data: 0x%8x, blk %b, mask %b",
+                        write ? "WRITE" : "READ", addr, data, blocking, mask),
+              UVM_HIGH)
+  endtask : tl_access_inner
 
+  // Create TL access(es) to either TXFIFO/RXFIFO to write/read data.
   // fifo == TxFifo : Write all bits in data_q to the TxFifo
   //      == RxFifo : Read single 32-bit word from RxFifo
   virtual task access_data_fifo(ref bit [7:0] data_q[$], input spi_host_fifo_e fifo,
@@ -387,14 +379,13 @@ class spi_host_base_vseq extends cip_base_vseq #(
     bit [TL_AW-1:0]         align_addr         = (fifo == RxFifo) ? SPI_HOST_RXDATA_OFFSET:
                                                                     SPI_HOST_TXDATA_OFFSET;
     bit [TL_DBW-1:0][7:0]   data               = '0;
-    int                     cnt                =  0;
     bit [TL_DBW-1:0]        mask               = '0;
-    bit [TL_AW-1:0]         align_addr;
+    int                     cnt                =  0;
     `DV_CHECK_NE_FATAL(fifo, AllFifos)
 
-    // check free space in fifo
-    if (fifo_avail_chk) wait_for_fifos_available(fifo);
+    // Check for free space in the fifo
     // TODO add interrupt handling if FIFO overflows
+    if (fifo_avail_chk) wait_for_fifos_available(fifo);
 
     if (rw == WRITE) begin
       // Pull bytes from data_q, assembling them into 32-bit words for TL-UL writes.
