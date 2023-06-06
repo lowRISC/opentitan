@@ -72,7 +72,7 @@ bool test_main(void) {
   // storing it in flash, and still persists across a SW initiated reset.
   retention_sram_t *ret_sram_data = retention_sram_get();
   manuf_provisioning_t *export_data =
-      (manuf_provisioning_t *)&ret_sram_data->reserved_creator;
+      (manuf_provisioning_t *)&ret_sram_data->creator.reserved;
 
   dif_rstmgr_reset_info_bitfield_t info = rstmgr_testutils_reason_get();
   if (info & kDifRstmgrResetInfoPor) {

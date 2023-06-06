@@ -28,7 +28,7 @@ static void uart_alert_trigger(void) {
 
 bool test_main(void) {
   LOG_INFO("Starting test...");
-  uint32_t reset_reasons = retention_sram_get()->reset_reasons;
+  uint32_t reset_reasons = retention_sram_get()->creator.reset_reasons;
   switch (reset_reasons) {
     case 1 << kRstmgrReasonPowerOn:
       LOG_INFO("No alert escalation, going to trigger alert...");

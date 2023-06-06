@@ -144,8 +144,9 @@ static void check_lock_otp_partition(const dif_otp_ctrl_t *otp) {
 rom_error_t keymgr_rom_test(void) {
   ASSERT_OK(keymgr_state_check(kKeymgrStateReset));
   if (retention_sram_get()
-          ->reserved_creator[ARRAYSIZE((retention_sram_t){0}.reserved_creator) -
-                             1] == TEST_ROM_IDENTIFIER) {
+          ->creator
+          .reserved[ARRAYSIZE((retention_sram_t){0}.creator.reserved) - 1] ==
+      TEST_ROM_IDENTIFIER) {
     keymgr_sw_binding_set(&kBindingValueRomExt, &kBindingValueRomExt);
     keymgr_creator_max_ver_set(kMaxVerRomExt);
     SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioSwBindingSet +

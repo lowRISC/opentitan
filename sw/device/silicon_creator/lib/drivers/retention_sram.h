@@ -13,22 +13,25 @@ extern "C" {
 #endif
 
 /**
- * The retention SRAM is memory that is used to retain information, such as a
- * boot service request, across a device reset. If the reset reason is 'power
- * on' (POR) all fields will be initialized using the LFSR by the ROM.
+ * Retention SRAM silicon creator area.
  */
-typedef struct retention_sram {
+typedef struct retention_sram_creator {
   /**
    * Reset reasons reported by the reset manager before they were reset in mask
    * ROM.
    */
   uint32_t reset_reasons;
-
   /**
    * Space reserved for future allocation by the silicon creator.
    */
-  uint32_t reserved_creator[2048 / sizeof(uint32_t) - 1];
+  uint32_t reserved[2048 / sizeof(uint32_t) - 2];
+} retention_sram_creator_t;
+OT_ASSERT_SIZE(retention_sram_creator_t, 2044);
 
+/**
+ * Retention SRAM silicon owner area.
+ */
+typedef struct retention_sram_owner {
   /**
    * Space reserved for allocation by the silicon owner.
    *
@@ -38,13 +41,42 @@ typedef struct retention_sram {
    * Tests that need to trigger (or detect) a device reset may use this field to
    * preserve state information across resets.
    */
-  uint32_t reserved_owner[2048 / sizeof(uint32_t)];
+  uint32_t reserved[2048 / sizeof(uint32_t)];
+} retention_sram_owner_t;
+OT_ASSERT_SIZE(retention_sram_owner_t, 2048);
+
+/**
+ * The retention SRAM is memory that is used to retain information, such as a
+ * boot service request, across a device reset. If the reset reason is 'power
+ * on' (POR) all fields will be initialized using the LFSR by the ROM.
+ */
+typedef struct retention_sram {
+  /**
+   * Retention SRAM format version.
+   *
+   * ROM sets this field to `kRetentionSramVersion1` only after PoR and
+   * does not modify it otherwise. ROM_EXT can use this information for backward
+   * compatibility and set this field to a different value after migrating to a
+   * different layout if needed.
+   */
+  uint32_t version;
+  /**
+   * Silicon creator area.
+   */
+  retention_sram_creator_t creator;
+  /**
+   * Silicon owner area.
+   */
+  retention_sram_owner_t owner;
 } retention_sram_t;
 
-OT_ASSERT_MEMBER_OFFSET(retention_sram_t, reset_reasons, 0);
-OT_ASSERT_MEMBER_OFFSET(retention_sram_t, reserved_creator, 4);
-OT_ASSERT_MEMBER_OFFSET(retention_sram_t, reserved_owner, 2048);
+OT_ASSERT_MEMBER_OFFSET(retention_sram_t, creator, 4);
+OT_ASSERT_MEMBER_OFFSET(retention_sram_t, owner, 2048);
 OT_ASSERT_SIZE(retention_sram_t, 4096);
+
+enum {
+  kRetentionSramVersion1 = 0x72f4eb2e,
+};
 
 /**
  * Returns a typed pointer to the retention SRAM.

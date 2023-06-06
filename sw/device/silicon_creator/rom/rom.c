@@ -172,9 +172,10 @@ static rom_error_t rom_init(void) {
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_RET_RAM_RESET_MASK_OFFSET);
   if ((reset_reasons & reset_mask) != 0) {
     retention_sram_init();
+    retention_sram_get()->version = kRetentionSramVersion1;
   }
   // Store the reset reason in retention RAM and clear the register.
-  retention_sram_get()->reset_reasons = reset_reasons;
+  retention_sram_get()->creator.reset_reasons = reset_reasons;
   rstmgr_reason_clear(reset_reasons);
 
   // This function is a NOP unless ROM is built for an fpga.
@@ -350,7 +351,8 @@ static void rom_pre_boot_check(void) {
   }
   HARDENED_CHECK_EQ(cpuctrl_csr, cpuctrl_otp);
   // Check rstmgr alert and cpu info collection configuration.
-  SHUTDOWN_IF_ERROR(rstmgr_info_en_check(retention_sram_get()->reset_reasons));
+  SHUTDOWN_IF_ERROR(
+      rstmgr_info_en_check(retention_sram_get()->creator.reset_reasons));
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 6);
 
   sec_mmio_check_counters(/*expected_check_count=*/3);

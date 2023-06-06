@@ -84,8 +84,9 @@ status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
   // type of the ROM.
   bool is_using_test_rom =
       retention_sram_get()
-          ->reserved_creator[ARRAYSIZE((retention_sram_t){0}.reserved_creator) -
-                             1] == TEST_ROM_IDENTIFIER;
+          ->creator
+          .reserved[ARRAYSIZE((retention_sram_t){0}.creator.reserved) - 1] ==
+      TEST_ROM_IDENTIFIER;
 
   // POR reset.
   if (info == kDifRstmgrResetInfoPor) {
