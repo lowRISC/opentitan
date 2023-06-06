@@ -66,8 +66,9 @@
   uvm_test: sram_ctrl_base_test
   uvm_test_seq: sram_ctrl_base_vseq
 
-  // Increase timeout for all tests.
-  run_opts: ["+test_timeout_ns=1000000000"]
+  // Increase timeout for all tests and enable cdc instrumentation.
+  run_opts: ["+test_timeout_ns=1000000000",
+             "+cdc_instrumentation_enabled=1"]
 
   // List of test specifications.
   tests: [
