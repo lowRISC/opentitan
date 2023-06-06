@@ -72,7 +72,7 @@ static status_t read_temperature(void) {
 
   // HDC1080 temperature formula: T = -40 + 165 * (raw / 2^16)
   // Using fixed-point math for calculations.
-  int16_t temperature_raw = (data[0] << 8) | data[1];
+  int32_t temperature_raw = (data[0] << 8) | data[1];
   int32_t temperature_fixed = (-40 * (1 << 16)) + (165 * temperature_raw);
   temperature_fixed /= (1 << 16);
 
@@ -89,7 +89,7 @@ static status_t read_humidity(void) {
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &reg, true));
   TRY(i2c_testutils_read(&i2c, kDeviceAddr, 2, data, kDefaultTimeoutMicros));
 
-  uint16_t humidity_raw = (data[0] << 8) | data[1];
+  uint16_t humidity_raw = (uint16_t)(data[0] << 8) | data[1];
   int32_t humidity_fixed = (100 * humidity_raw) / (1 << 16);
 
   // Check if the humidity is within a plausible range for our CI setup.
