@@ -14,7 +14,7 @@ extern "C" {
 /**
  * A test that uses TRY() to exercises status_report()
  */
-status_t status_report_unittest_c();
+status_t status_report_unittest_c(void);
 
 #ifdef __cplusplus
 }
