@@ -18,20 +18,19 @@ extern "C" {
 #endif
 
 /**
- * Alert Infomation captured by the reset manager during the last reset.
+ * Alert information or CPU crash dump captured by the reset manager during the
+ * last reset.
  */
-typedef struct RstMgrAlertInfo {
+typedef struct rstmgr_info {
   /**
-   * Length of alert information.
+   * Length.
    */
   uint32_t length;
   /**
-   * Alert info words.
+   * Alert information or CPU crash dump words.
    */
   uint32_t info[16];
-} rstmgr_alert_info_t;
-
-extern rstmgr_alert_info_t rstmgr_alert_info;
+} rstmgr_info_t;
 
 /**
  * Reset reason bitfield indices.
@@ -71,6 +70,20 @@ typedef enum rstmgr_reason {
    */
   kRstmgrReasonLast = 7,
 } rstmgr_reason_t;
+
+/**
+ * Get alert information captured during last reset.
+ *
+ * @param[out] info Alert information.
+ */
+void rstmgr_alert_info_collect(rstmgr_info_t *info);
+
+/**
+ * Get CPU crash dump captured during last reset.
+ *
+ * @param[out] info CPU crash dump.
+ */
+void rstmgr_cpu_info_collect(rstmgr_info_t *info);
 
 /**
  * Get the reason(s) for the last reset.

@@ -29,6 +29,26 @@ TEST_F(RstmgrTest, GetResetReason) {
   EXPECT_EQ(rstmgr_reason_get(), 0x12345);
 }
 
+TEST_F(RstmgrTest, CollectAlertInfo) {
+  EXPECT_ABS_READ32(base_ + RSTMGR_ALERT_INFO_ATTR_REG_OFFSET, 5);
+  EXPECT_ABS_WRITE32(base_ + RSTMGR_ALERT_INFO_CTRL_REG_OFFSET, 0x00);
+  EXPECT_ABS_READ32(base_ + RSTMGR_ALERT_INFO_REG_OFFSET, 1);
+  EXPECT_ABS_WRITE32(base_ + RSTMGR_ALERT_INFO_CTRL_REG_OFFSET, 0x10);
+  EXPECT_ABS_READ32(base_ + RSTMGR_ALERT_INFO_REG_OFFSET, 2);
+  EXPECT_ABS_WRITE32(base_ + RSTMGR_ALERT_INFO_CTRL_REG_OFFSET, 0x20);
+  EXPECT_ABS_READ32(base_ + RSTMGR_ALERT_INFO_REG_OFFSET, 3);
+  EXPECT_ABS_WRITE32(base_ + RSTMGR_ALERT_INFO_CTRL_REG_OFFSET, 0x30);
+  EXPECT_ABS_READ32(base_ + RSTMGR_ALERT_INFO_REG_OFFSET, 4);
+  EXPECT_ABS_WRITE32(base_ + RSTMGR_ALERT_INFO_CTRL_REG_OFFSET, 0x40);
+  EXPECT_ABS_READ32(base_ + RSTMGR_ALERT_INFO_REG_OFFSET, 5);
+
+  rstmgr_info_t alert_info{};
+  rstmgr_alert_info_collect(&alert_info);
+  EXPECT_EQ(alert_info.length, 5);
+  EXPECT_THAT(alert_info.info,
+              ElementsAre(1, 2, 3, 4, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+}
+
 TEST_F(RstmgrTest, ClearResetReason) {
   uint32_t mask = 1u << kRstmgrReasonPowerOn;
   EXPECT_ABS_WRITE32(base_ + RSTMGR_RESET_INFO_REG_OFFSET, mask);
