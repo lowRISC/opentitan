@@ -31,6 +31,13 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
   } lc_esc_status_type;
   lc_esc_status_type status_lc_esc;
 
+  // this bit is set after processing a KDI transaction and is used in the status CSR
+  // comparison to detect mismatches due to random CDC delays.
+  bit new_key_received = 0;
+  // this bit is set after processing an init request transaction and is used in the status CSR
+  // comparison to detect mismatches due to random CDC delays.
+  bit init_after_new_key = 0;
+
   // path for backdoor access
   string write_en_path;
   string write_addr_path;
@@ -326,6 +333,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       // we can set the init done flag here.
       exp_status[SramCtrlInitDone] = status_lc_esc != EscNone ? 0 : 1;
       in_init = 0;
+      init_after_new_key = 1;
       `uvm_info(`gfn, "dropped in_init", UVM_MEDIUM)
     end
   endtask
@@ -437,6 +445,9 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
       `uvm_info(`gfn, $sformatf("Updated key: 0x%0x", key), UVM_MEDIUM)
       `uvm_info(`gfn, $sformatf("Updated nonce: 0x%0x", nonce), UVM_MEDIUM)
+
+      // this is used by status CSR read checks.
+      new_key_received = 1;
     end
   endtask
 
@@ -520,8 +531,24 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
     if (data_phase_read) begin
       if (do_read_check) begin
-        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
-                     $sformatf("reg name: %0s", csr.get_full_name()))
+        // Some read mismatches may be due to CDC instrumentation that inserts a random delay in
+        // synchronizers. In such cases, we allow for one mismatch here, but expect values to
+        // stabilize by the next access.
+        bit [TL_DW-1:0] mirrored_value = csr.get_mirrored_value();
+        if (csr.get_name() == "status" && new_key_received && (
+            mirrored_value[SramCtrlScrKeyValid] !=
+            item.d_data[SramCtrlScrKeyValid] ||
+            mirrored_value[SramCtrlScrKeySeedValid] !=
+            item.d_data[SramCtrlScrKeySeedValid])) begin
+          new_key_received = 0;
+        end else if (csr.get_name() == "status" && init_after_new_key &&
+            mirrored_value[SramCtrlInitDone] !=
+            item.d_data[SramCtrlInitDone]) begin
+          init_after_new_key = 0;
+        end else begin
+          `DV_CHECK_EQ(mirrored_value, item.d_data,
+                       $sformatf("reg name: %0s", csr.get_full_name()))
+        end
       end
       void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
@@ -539,6 +566,8 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     reset_key_nonce();
     in_init = 0;
     in_key_req = 0;
+    new_key_received = 0;
+    init_after_new_key = 0;
     mem_bkdr_scb.reset();
     mem_bkdr_scb.update_key(key, nonce);
     exp_status = '0;
