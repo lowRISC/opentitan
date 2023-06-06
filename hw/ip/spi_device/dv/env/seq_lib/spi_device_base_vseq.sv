@@ -457,10 +457,16 @@ class spi_device_base_vseq extends cip_base_vseq #(
       $asserton(0, "tb.dut.u_txf_underflow.SrcPulseCheck_M");
       $asserton(0, "tb.dut.u_txf_underflow.DstPulseCheck_A");
       $asserton(0, "tb.dut.u_rxf_overflow.SrcPulseCheck_M");
+      if (cfg.en_dv_cdc) begin
+        $asserton(0, "tb.dut.u_rxf_overflow.DstPulseCheck_A");
+      end
     end else begin
       $assertoff(0, "tb.dut.u_txf_underflow.SrcPulseCheck_M");
       $assertoff(0, "tb.dut.u_txf_underflow.DstPulseCheck_A");
       $assertoff(0, "tb.dut.u_rxf_overflow.SrcPulseCheck_M");
+      if (cfg.en_dv_cdc) begin
+        $assertoff(0, "tb.dut.u_rxf_overflow.DstPulseCheck_A");
+      end
     end
   endfunction
 endclass : spi_device_base_vseq
