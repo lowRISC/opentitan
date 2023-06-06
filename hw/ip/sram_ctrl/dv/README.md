@@ -61,9 +61,9 @@ All common types and methods defined at the package level can be found in
 // number of bits in a full KDI transactions
 parameter int KDI_DATA_SIZE = 1 + otp_ctrl_pkg::SramKeyWidth + otp_ctrl_pkg::SramNonceWidth;
 
-// a completed KDI transaction takes 4 cycles to be fully synchronized into the
+// a completed KDI transaction takes 3 cycles to be fully synchronized into the
 // SRAM clock domain
-parameter int KDI_PROPAGATION_CYCLES = 4;
+parameter int KDI_PROPAGATION_CYCLES = 3;
 
 // a LC escalation request needs 3 cycles to be fully propagated through the DUT
 parameter int LC_ESCALATION_PROPAGATION_CYCLES = 3;
