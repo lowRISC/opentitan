@@ -16,10 +16,10 @@ CONST = struct(
     # Must match the definitions in chip.h.
     ROM_EXT = 0x4552544f,
     OWNER = 0x3042544f,
-    MANIFEST_SIZE = 968,
-    ROM_EXT_SIZE_MIN = 968,
+    MANIFEST_SIZE = 1024,
+    ROM_EXT_SIZE_MIN = 1024,
     ROM_EXT_SIZE_MAX = 0x10000,
-    BL0_SIZE_MIN = 968,
+    BL0_SIZE_MIN = 1024,
     BL0_SIZE_MAX = 0x70000,
     DEFAULT_USAGE_CONSTRAINTS = 0xa5a5a5a5,
     # Must match the definition in spx_verify.h

@@ -26,10 +26,10 @@ use zerocopy::FromBytes;
 //      -- -I./ -Isw/device/lib/base/freestanding
 // TODO: Generate some constants as hex if possible, replacing manually for now.
 
-pub const CHIP_MANIFEST_SIZE: u32 = 968;
-pub const CHIP_MANIFEST_EXT_TABLE_COUNT: u32 = 8;
+pub const CHIP_MANIFEST_SIZE: u32 = 1024;
 pub const CHIP_MANIFEST_VERSION_MINOR1: u16 = 0x6c47;
 pub const CHIP_MANIFEST_VERSION_MAJOR1: u16 = 0x71c3;
+pub const CHIP_MANIFEST_EXT_TABLE_COUNT: usize = 15;
 pub const MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL: u32 = 0xa5a5a5a5;
 pub const MANIFEST_EXT_ID_SPX_KEY: u32 = 0x94ac01ec;
 pub const MANIFEST_EXT_ID_SPX_SIGNATURE: u32 = 0xad77f84a;
@@ -189,7 +189,7 @@ pub struct ManifestExtTableEntry {
 #[repr(C)]
 #[derive(FromBytes, AsBytes, Debug, Default, Copy, Clone)]
 pub struct ManifestExtTable {
-    pub entries: [ManifestExtTableEntry; CHIP_MANIFEST_EXT_TABLE_COUNT as usize],
+    pub entries: [ManifestExtTableEntry; CHIP_MANIFEST_EXT_TABLE_COUNT],
 }
 
 #[cfg(test)]
