@@ -10,9 +10,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
   `uvm_component_utils(entropy_src_scoreboard)
 
-  // TODO (Cleanup): Synchronize these parameters with the DUT's parameters
+  // TODO (Cleanup): Put the DUT-internal constant (`PreCondWidth`) into a package and use it here.
   localparam int SHACondWidth     = 64;
-  localparam int ObserveFifoDepth = 64;
+  localparam int ObserveFifoDepth = entropy_src_reg_pkg::ObserveFifoDepth;
 
   intr_vif                                     interrupt_vif;
   virtual entropy_src_cov_if                   cov_vif;
