@@ -37,9 +37,6 @@ The following utilities provide generic helper tasks and functions to perform ac
 * [dv_utils_pkg](../../../dv/sv/dv_utils/README.md)
 * [csr_utils_pkg](../../../dv/sv/csr_utils/README.md)
 
-<!--### Compile-time configurations
-TODO-->
-
 ### Global types & methods
 All common types and methods defined at the package level can be found in
 `entropy_src_env_pkg`. Some of them in use are:
