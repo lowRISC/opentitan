@@ -11,6 +11,7 @@ load(
 )
 load(
     "//rules:opentitan.bzl",
+    "OPENTITAN_CPU",
     "RSA_ONLY_KEY_STRUCTS",
     "filter_key_structs_for_lc_state",
     "opentitan_ram_binary",
@@ -19,6 +20,7 @@ load("//rules:const.bzl", "CONST", "get_lc_items")
 load("//rules:lc.bzl", "lc_raw_unlock_token")
 load("//rules:otp.bzl", "otp_image", "otp_json", "otp_partition")
 load("//rules:splice.bzl", "bitstream_splice")
+load("//rules:linker.bzl", "ld_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -77,13 +79,32 @@ _MANUF_LC_TRANSITION_TEST_CMDS_WBOOTSTRAP = _MANUF_LC_TRANSITION_TEST_CMDS + [
 _SRAM_PROGRAM_MAGIC = {
     # RAM + .static_critical
     "load_addr": 0x10001fc8,
-    # Arbitrary
-    "stack_size": 1024,
-    # End of RAM - stack size
-    "stack_pointer": 0x1001fc00,
-    # RAM + .static_critical + 2048
-    "global_pointer": 0x100027c8,
 }
+
+ld_library(
+    name = "sram_program_linker_script",
+    script = "sram_program.ld",
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//sw/device:info_sections",
+        "//sw/device/silicon_creator/lib/base:static_critical_sections",
+    ],
+)
+
+cc_library(
+    name = "sram_start_headers",
+    hdrs = ["sram_start.h"],
+)
+
+cc_library(
+    name = "sram_start",
+    srcs = ["sram_start.S"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":sram_start_headers",
+        "//sw/device/lib/crt",
+    ],
+)
 
 cc_library(
     name = "otp_img_types",
@@ -423,10 +444,11 @@ opentitan_ram_binary(
     deps = [
         ":individualize_preop",
         ":isolated_flash_partition",
+        ":sram_program_linker_script",
+        ":sram_start",
         ":test_wafer_auth_secret",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/examples/sram_program:sram_program_linker_script",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:flash_ctrl",
@@ -459,9 +481,6 @@ opentitan_ram_binary(
                 "--target-lc-state=\"{}\"".format(target_lc_state),
                 "--vmem=\"$(rootpath :sram_device_info_flash_wr_functest_fpga_cw310_vmem)\"",
                 "--load-addr={}".format(_SRAM_PROGRAM_MAGIC["load_addr"]),
-                "--stack-pointer={}".format(_SRAM_PROGRAM_MAGIC["stack_pointer"]),
-                "--stack-size={}".format(_SRAM_PROGRAM_MAGIC["stack_size"]),
-                "--global-pointer={}".format(_SRAM_PROGRAM_MAGIC["global_pointer"]),
             ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
         ),
         data = [
@@ -506,9 +525,10 @@ opentitan_ram_binary(
     hdrs = ["sram_exec_test.h"],
     archive_symbol_prefix = "sram_exec_test",
     deps = [
+        ":sram_program_linker_script",
+        ":sram_start",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/examples/sram_program:sram_program_linker_script",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:otp_ctrl",
@@ -536,9 +556,6 @@ opentitan_ram_binary(
                 "--bitstream=\"$(rootpath {bitstream})\"",
                 "--vmem=\"$(rootpath :sram_exec_test_fpga_cw310_vmem)\"",
                 "--load-addr={}".format(_SRAM_PROGRAM_MAGIC["load_addr"]),
-                "--stack-pointer={}".format(_SRAM_PROGRAM_MAGIC["stack_pointer"]),
-                "--stack-size={}".format(_SRAM_PROGRAM_MAGIC["stack_size"]),
-                "--global-pointer={}".format(_SRAM_PROGRAM_MAGIC["global_pointer"]),
             ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
         ),
         data = [

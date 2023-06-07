@@ -2279,9 +2279,6 @@ test_suite(
                 "--vmem=\"$(rootpath //sw/device/examples/sram_program:sram_program_fpga_cw310_vmem)\"",
                 # the following values come from the sram linker script
                 "--load-addr=0x10001fc4",
-                "--stack-pointer=0x10020000",
-                "--stack-size=1024",
-                "--global-pointer=0x100027C4",  # sram_load_addr + 2048;
             ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
         ),
         data = [
