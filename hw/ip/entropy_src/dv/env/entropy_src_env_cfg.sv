@@ -47,7 +47,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   // When selecting fixed duration, the total simulated duration of the test is approximately
   // equal to cfg.sim_duration
   //
-  // TODO: Randomize & constrain the following values
+  // TODO(#18836): Randomize & constrain the following values.
   realtime sim_duration;
 
   // Mean time before hard RNG failure
