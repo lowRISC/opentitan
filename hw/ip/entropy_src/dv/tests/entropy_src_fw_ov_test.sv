@@ -66,7 +66,6 @@ class entropy_src_fw_ov_test extends entropy_src_base_test;
     // RNG bit Enable shouldn't matter for this test. Randomize anyway
     cfg.dut_cfg.rng_bit_enable_pct          = 80;
 
-    // TODO: Randomize@50%
     cfg.dut_cfg.fips_enable_pct             = 50;
     cfg.dut_cfg.module_enable_pct           = 100;
     cfg.induce_targeted_transition_pct      = 75;
