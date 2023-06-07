@@ -150,9 +150,7 @@ cc_library(
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/silicon_creator/lib:chip_info",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
-        "//sw/device/silicon_creator/lib/base:static_critical_boot_measurements",
-        "//sw/device/silicon_creator/lib/base:static_critical_epmp_state",
-        "//sw/device/silicon_creator/lib/base:static_critical_sec_mmio",
+        "//sw/device/silicon_creator/lib/base:static_critical",
     ],
 )
 

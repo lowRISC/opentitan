@@ -194,9 +194,7 @@ cc_library(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
-        "//sw/device/silicon_creator/lib/base:static_critical_boot_measurements",
-        "//sw/device/silicon_creator/lib/base:static_critical_epmp_state",
-        "//sw/device/silicon_creator/lib/base:static_critical_sec_mmio",
+        "//sw/device/silicon_creator/lib/base:static_critical",
     ],
 )
 

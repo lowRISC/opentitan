@@ -104,6 +104,16 @@ ld_library(
 )
 
 cc_library(
+    name = "static_critical",
+    deps = [
+        ":static_critical_boot_measurements",
+        ":static_critical_epmp_state",
+        ":static_critical_sec_mmio",
+        ":static_critical_sections",
+    ],
+)
+
+cc_library(
     name = "chip",
     hdrs = ["chip.h"],
 )
