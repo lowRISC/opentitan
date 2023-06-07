@@ -108,8 +108,26 @@ class sysrst_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task dut_shutdown();
-    // check for pending sysrst_ctrl operations and wait for them to complete
-    // TODO
+    uvm_reg_data_t rdata;
+    uvm_reg  interrupt_register_q[$] = '{ral.ulp_status,
+                                         ral.wkup_status,
+                                         ral.combo_intr_status,
+                                         ral.key_intr_status};
+    // Check for any active interrupts
+    csr_rd(ral.intr_state, rdata);
+    if (rdata[0]) begin
+      `uvm_info(`gfn, "Unhandled interrupt detected", UVM_LOW)
+      foreach (interrupt_register_q[i]) begin
+        // Check interrupt status
+        csr_rd(interrupt_register_q[i], rdata);
+        if (rdata[0]) begin
+          `uvm_info(`gfn, $sformatf("%s : 0x%0x", interrupt_register_q[i].get_name(), rdata),
+            UVM_LOW)
+          `uvm_info(`gfn, $sformatf("Clearing %s", interrupt_register_q[i].get_name()), UVM_LOW)
+          csr_wr(interrupt_register_q[i], 'd0);
+        end
+      end
+    end
   endtask
 
   // setup basic sysrst_ctrl features

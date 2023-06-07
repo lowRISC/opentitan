@@ -14,7 +14,6 @@ class sysrst_ctrl_ultra_low_pwr_vseq extends sysrst_ctrl_base_vseq;
    rand uint16_t set_pwrb_timer, set_lid_timer, set_ac_timer;
    rand int pwrb_cycles, ac_cycles, lid_cycles;
    rand bit en_ulp;
-   // TODO: z3_wakeup check logic could move to scb.
    uint16_t get_ac_timer, get_pwrb_timer, get_lid_timer;
    bit enable_ulp, exp_z3_wakeup;
 
