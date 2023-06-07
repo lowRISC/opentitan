@@ -2485,18 +2485,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     // - unused internal state corresponding to partial seeds
     // - dropped outputs (due to finite buffer space inside the DUT)
     //
-    // One can in principal, check that there are no dropped outputs in
-    // the limited case that:
-    // 1. less than four (4) seeds have been generated, since the
-    //    last time the DUT was enabled, AND
-    // 2. all four have been given time to propagate through the DUT before
-    //    it is disabled.
-    //
-    // This second condition may be harder to achieve. An easier alternative
-    // would be to perform a check that none of the first 4 generated seeds
-    // are dropped since the DUT was most recently enabled.
-    //
-    // TODO: Add this latter alternative check.
+    // Entropy Source contains assertions to ensure that bits are only dropped
+    // when its internal buffers are full.  These checks depend on DUT internals,
+    // so we cannot and do not perform them in the scoreboard.
   endfunction
 
 endclass
