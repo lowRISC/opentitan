@@ -226,7 +226,6 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   // Clears the module_enable signal and at the same time clears the
   // any interrupts that may have become stale as a result of the disable
   // operation.
-  // TODO (documentation): Make sure this get an issue to be sure it goes into SW
   task reinit_dut(bit switch_to_fips_mode = 0);
 
     // Flag to force SW update to fire.
