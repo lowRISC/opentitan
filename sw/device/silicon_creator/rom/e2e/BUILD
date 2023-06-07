@@ -201,9 +201,7 @@ opentitan_functest(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/silicon_creator/lib:manifest_def",
-        "//sw/device/silicon_creator/lib/base:static_critical_boot_measurements",
-        "//sw/device/silicon_creator/lib/base:static_critical_epmp_state",
-        "//sw/device/silicon_creator/lib/base:static_critical_sec_mmio",
+        "//sw/device/silicon_creator/lib/base:static_critical",
     ],
 )
 
@@ -368,9 +366,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/silicon_creator/lib:manifest_def",
-        "//sw/device/silicon_creator/lib/base:static_critical_boot_measurements",
-        "//sw/device/silicon_creator/lib/base:static_critical_epmp_state",
-        "//sw/device/silicon_creator/lib/base:static_critical_sec_mmio",
+        "//sw/device/silicon_creator/lib/base:static_critical",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:pinmux",
         "//sw/device/silicon_creator/lib/drivers:uart",
