@@ -117,7 +117,7 @@ deploy_prod () {
 
 # Remove additional files from build directory that we don't need
 # TODO remove this when we are ready for .mdbookignore (https://github.com/rust-lang/mdBook/pull/1908)
-remove_cruft () { rm -rf ${build_dir}/book/.git ${build_dir}/book/.github ${build_dir}/book/build-site ${build_dir}/book/site ; }
+remove_cruft () { rm -rf ${build_dir}/book/.git ${build_dir}/book/.github ${build_dir}/book/build-site ; }
 
 #######
 # CLI #
