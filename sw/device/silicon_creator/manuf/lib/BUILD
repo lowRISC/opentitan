@@ -73,6 +73,18 @@ _MANUF_LC_TRANSITION_TEST_CMDS_WBOOTSTRAP = _MANUF_LC_TRANSITION_TEST_CMDS + [
     "--bootstrap=\"$(rootpath {flash})\"",
 ]
 
+# See `sram_program.ld` for details.
+_SRAM_PROGRAM_MAGIC = {
+    # RAM + .static_critical
+    "load_addr": 0x10001fc8,
+    # Arbitrary
+    "stack_size": 1024,
+    # End of RAM - stack size
+    "stack_pointer": 0x1001fc00,
+    # RAM + .static_critical + 2048
+    "global_pointer": 0x100027c8,
+}
+
 cc_library(
     name = "otp_img_types",
     hdrs = ["otp_img_types.h"],
@@ -446,11 +458,10 @@ opentitan_ram_binary(
                 "--bootstrap=\"$(location {flash})\"",
                 "--target-lc-state=\"{}\"".format(target_lc_state),
                 "--vmem=\"$(rootpath :sram_device_info_flash_wr_functest_fpga_cw310_vmem)\"",
-                # the following values come from the sram linker script
-                "--load-addr=0x10001fc4",
-                "--stack-pointer=0x10020000",
-                "--stack-size=1024",
-                "--global-pointer=0x100027C4",  # sram_load_addr + 2048;
+                "--load-addr={}".format(_SRAM_PROGRAM_MAGIC["load_addr"]),
+                "--stack-pointer={}".format(_SRAM_PROGRAM_MAGIC["stack_pointer"]),
+                "--stack-size={}".format(_SRAM_PROGRAM_MAGIC["stack_size"]),
+                "--global-pointer={}".format(_SRAM_PROGRAM_MAGIC["global_pointer"]),
             ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
         ),
         data = [
@@ -524,11 +535,10 @@ opentitan_ram_binary(
                 "--clear-bitstream",
                 "--bitstream=\"$(rootpath {bitstream})\"",
                 "--vmem=\"$(rootpath :sram_exec_test_fpga_cw310_vmem)\"",
-                # the following values come from the sram linker script
-                "--load-addr=0x10001fc4",
-                "--stack-pointer=0x10020000",
-                "--stack-size=1024",
-                "--global-pointer=0x100027C4",  # sram_load_addr + 2048;
+                "--load-addr={}".format(_SRAM_PROGRAM_MAGIC["load_addr"]),
+                "--stack-pointer={}".format(_SRAM_PROGRAM_MAGIC["stack_pointer"]),
+                "--stack-size={}".format(_SRAM_PROGRAM_MAGIC["stack_size"]),
+                "--global-pointer={}".format(_SRAM_PROGRAM_MAGIC["global_pointer"]),
             ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
         ),
         data = [

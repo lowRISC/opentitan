@@ -16,6 +16,7 @@
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
+#include "sw/device/silicon_creator/lib/base/static_critical_version.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/cfi.h"
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
@@ -129,6 +130,9 @@ static rom_error_t rom_init(void) {
   pinmux_init();
   // Configure UART0 as stdout.
   uart_init(kUartNCOValue);
+
+  // Set static_critical region format version.
+  static_critical_version = kStaticCriticalVersion1;
 
   // There are no conditional checks before writing to this CSR because it is
   // expected that if relevant Ibex countermeasures are disabled, this will

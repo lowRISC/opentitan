@@ -96,6 +96,17 @@ cc_library(
     alwayslink = True,
 )
 
+cc_library(
+    name = "static_critical_version",
+    srcs = ["static_critical_version.c"],
+    hdrs = ["static_critical_version.h"],
+    deps = [
+        "//sw/device/lib/base:macros",
+    ],
+    # This library provides a special symbol that the linker will find.
+    alwayslink = True,
+)
+
 ld_library(
     name = "static_critical_sections",
     includes = [
@@ -110,6 +121,7 @@ cc_library(
         ":static_critical_epmp_state",
         ":static_critical_sec_mmio",
         ":static_critical_sections",
+        ":static_critical_version",
     ],
 )
 
