@@ -321,7 +321,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   endfunction
 
   function int calc_extht_test(queue_of_rng_val_t window);
-    // TODO
+    // TODO(#16276)
     int result = 0;
     return result;
   endfunction
@@ -2257,7 +2257,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           // matches the RNG data and that the window boundaries (as seen on the XHT bus) appear
           // at the correct times.
           //
-          // TODO(V3): perform a more complete check of the other XHT outputs.
+          // TODO(#16276): perform a more complete check of the other XHT outputs.
           //
           forever begin : sample_loop
             // Wait either for the next xht_item, or wait at most two clocks
