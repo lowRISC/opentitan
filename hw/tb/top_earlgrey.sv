@@ -15,7 +15,7 @@
 
 module top_earlgrey #(
   // Manually defined parameters
-
+  parameter int unsigned HartIdOffs = 0,
   // Auto-inferred parameters
   // parameters for uart0
   // parameters for uart1
@@ -819,7 +819,7 @@ module top_earlgrey #(
   // ibex specific assignments
   // TODO: This should be further automated in the future.
   assign rv_core_ibex_irq_timer = intr_rv_timer_timer_expired_hart0_timer0;
-  assign rv_core_ibex_hart_id = '0;
+  assign rv_core_ibex_hart_id = HartIdOffs + '0;
 
   assign rv_core_ibex_boot_addr = ADDR_SPACE_ROM_CTRL__ROM;
 
