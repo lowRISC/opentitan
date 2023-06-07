@@ -133,6 +133,7 @@ noreturn
  *
  * @param reset_reasons Reset reasons.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t rstmgr_info_en_check(uint32_t reset_reasons);
 
 /**
