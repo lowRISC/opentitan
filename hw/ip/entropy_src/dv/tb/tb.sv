@@ -87,10 +87,30 @@ module tb;
   assign interrupts[FatalErr]         = intr_fatal_err;
 
   bind prim_packer_fifo : dut.u_entropy_src_core.u_prim_packer_fifo_precon
-    entropy_subsys_fifo_exception_if#(1) u_fifo_exc_if (.clk_i, .rst_ni, .wready_o, .wvalid_i);
+    entropy_subsys_fifo_exception_if #(
+      .IsPackerFifo(1)
+    ) u_fifo_exc_if (
+      .clk_i,
+      .rst_ni,
+      .wready_o,
+      .wvalid_i,
+      .rready_i,
+      .rvalid_o,
+      .full_o (1'b0) // unused for Packer FIFO
+    );
 
   bind prim_packer_fifo : dut.u_entropy_src_core.u_prim_packer_fifo_bypass
-    entropy_subsys_fifo_exception_if#(1) u_fifo_exc_if (.clk_i, .rst_ni, .wready_o, .wvalid_i);
+    entropy_subsys_fifo_exception_if #(
+      .IsPackerFifo(1)
+     ) u_fifo_exc_if (
+      .clk_i,
+      .rst_ni,
+      .wready_o,
+      .wvalid_i,
+      .rready_i,
+      .rvalid_o,
+      .full_o (1'b0) // unused for Packer FIFO
+    );
 
   bind prim_sparse_fsm_flop : dut.u_entropy_src_core.u_entropy_src_main_sm.u_state_regs
     entropy_src_fsm_cov_if u_fsm_cov_if (.clk_i, .state_i, .state_o);
