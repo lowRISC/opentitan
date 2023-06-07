@@ -42,7 +42,7 @@
   reseed: 50
 
   xcelium_cov_refine_files: [
-  // TODO(V3): Finalize coverage on ExtHT ports & remove the following exclusion file
+  // TODO(#16276): Finalize coverage on ExtHT ports & remove the following exclusion file
   "{proj_root}/hw/ip/entropy_src/dv/cov/entropy_src_extht_exclusions.vRefine"
   // Leave the following as a separate refinement, to support potential DV enhancements.
   // (See the comments within the file for more detail)
