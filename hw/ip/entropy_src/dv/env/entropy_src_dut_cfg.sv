@@ -319,10 +319,10 @@ class entropy_src_dut_cfg extends uvm_object;
       1 :/ bad_mubi_cfg_pct,
       0 :/ (100 - bad_mubi_cfg_pct)};}
 
-  // TODO: Is zero a valid value for this register?
-  // What does the DUT do with a value of zero?
   constraint observe_fifo_thresh_c {observe_fifo_thresh dist {
-      [1:entropy_src_reg_pkg::ObserveFifoDepth]  :/ 1};}
+      // 0 is a reserved value that is not to be used.
+      [1:entropy_src_reg_pkg::ObserveFifoDepth]  :/ 1};
+  }
 
   ///////////////
   // Functions //
