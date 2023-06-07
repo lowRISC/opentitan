@@ -74,7 +74,7 @@ _stack_start = _stack_end - _stack_size;
  * Size of the `.static_critical` section at the bottom of the main SRAM (in
  * bytes).
  */
-_static_critical_size = 8132;
+_static_critical_size = 8136;
 
 /**
  * `.chip_info` at the top of ROM.
