@@ -8,6 +8,8 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 //
+// Author: Maicol Ciani maicol.ciani@unibo.it
+//
 // Direct Interface to the Physical Emulated Flash, the host shall as first
 // write 1 to the debug mode register, then write the 76bit payload and 
 // the phy address to the registers before starting the transaction
@@ -61,7 +63,7 @@ module debug_mode_preload import tlul_ot_pkg::*; (
      
      state_d = IDLE;
      flash_req = 1'b0;
-     hw2reg.start.start.de = 1'b0; 
+     hw2reg.start.start.de = 1'b0;
       
      case(state_q)
        
@@ -80,7 +82,6 @@ module debug_mode_preload import tlul_ot_pkg::*; (
         WAIT: begin
            state_d = IDLE;
            hw2reg.start.start.de = 1'b1;
-           hw2reg.start.start.d = 1'b0;
         end
       
         default: state_d = IDLE;
@@ -88,6 +89,8 @@ module debug_mode_preload import tlul_ot_pkg::*; (
      endcase // case (state_q)
       
    end  // flash-phy-writes
+
+   assign hw2reg.start.start.d  = 1'b0;
    
    assign payload_1     = reg2hw.payload_1.q;
    assign payload_2     = reg2hw.payload_2.q;

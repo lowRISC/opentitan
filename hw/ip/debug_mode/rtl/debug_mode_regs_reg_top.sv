@@ -261,7 +261,7 @@ module debug_mode_regs_reg_top (
   prim_ot_subreg #(
     .DW      (1),
     .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h1)
   ) u_start_start (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
