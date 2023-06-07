@@ -65,12 +65,6 @@ class entropy_src_dut_cfg extends uvm_object;
   // This knob controls the frequency of bad configurations
   uint          bad_mubi_cfg_pct;
 
-  ///////////////////////////////////////////////
-  // Fixed DUT configurations (TODO:RANDOMIZE) //
-  ///////////////////////////////////////////////
-
-  uint boot_mode_retry_limit;
-
   ///////////////////////
   // Randomized fields //
   ///////////////////////
@@ -359,8 +353,6 @@ class entropy_src_dut_cfg extends uvm_object;
                   fips_window_size),
         $sformatf("\n\t |***** bypass_window_size          : %12d *****| \t",
                   bypass_window_size),
-        $sformatf("\n\t |***** boot_mode_retry_limit       : %12d *****| \t",
-                  boot_mode_retry_limit),
         $sformatf("\n\t |***** fw_read_enable              : %12s *****| \t",
                   fw_read_enable.name()),
         $sformatf("\n\t |***** fw_over_enable              : %12s *****| \t",
