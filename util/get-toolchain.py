@@ -228,7 +228,7 @@ def main():
             installed_toolchain['kind'], installed_toolchain['version'],
             available_toolchain['kind'], available_toolchain['version'])
     else:
-        if unpack_dir.exists():
+        if unpack_dir.exists() and (not unpack_dir.is_dir() or any(unpack_dir.iterdir())):
             sys.exit('Target directory %s already exists. '
                      'Delete it first, or use --update.' % str(unpack_dir))
 
