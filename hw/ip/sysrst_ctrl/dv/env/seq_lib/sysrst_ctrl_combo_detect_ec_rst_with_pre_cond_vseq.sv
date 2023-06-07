@@ -22,8 +22,8 @@ class sysrst_ctrl_combo_detect_ec_rst_with_pre_cond_vseq extends
     `uvm_info(`gfn, "Starting to setup pre-conditions", UVM_LOW)
 
     // Enable pwrb_in to trigger pre-condition.
-    // TODO: create an enum for key selections in CSR.
-    csr_wr(ral.com_pre_sel_ctl[0], 'h1 << 3);
+    ral.com_pre_sel_ctl[0].pwrb_in_sel.set(1'b1);
+    csr_update(ral.com_pre_sel_ctl[0]);
 
     // Configure the pre_condition detect timer.
     csr_wr(ral.com_pre_det_ctl[0], pre_cond_detect_timer);
