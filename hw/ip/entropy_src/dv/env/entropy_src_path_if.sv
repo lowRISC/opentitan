@@ -4,10 +4,7 @@
 
 // This interface deals with the force paths in ENTROPY_SRC interrupt and error tests
 
-interface entropy_src_path_if
-(
-  input entropy_src_hw_if_i
-);
+interface entropy_src_path_if ();
   import uvm_pkg::*;
 
   string core_path = "tb.dut.u_entropy_src_core";
