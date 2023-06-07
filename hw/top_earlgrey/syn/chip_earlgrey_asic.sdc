@@ -372,6 +372,14 @@ set_multicycle_path -hold -end -from [get_clocks SPI_DEV_CSB_CLK] \
 # falling edge of SPI_DEV_CLK would not be active.
 set_multicycle_path -hold -end -from [get_clocks SPI_DEV_CSB_CLK] \
     -to [get_clocks SPI_DEV_CLK] -through [get_ports ${SPI_DEV_DATA_PORTS}] 1
+# Relax the hold time constraint for the passthrough clock gate. Really this is
+# to accommodate the gate for the inverted clock, which isn't active for the
+# modes used for these constraints. However, it would be an okay outcome if the
+# filter result reached the gate before even the 7th clock edge got out.
+set_multicycle_path -hold -end 1 -from [get_clocks SPI_DEV_CLK] \
+    -to [get_pins -leaf -filter "@pin_direction == in" -of_objects \
+        [get_nets top_earlgrey/u_spi_device/u_passthrough/sck_gate_en]]
+
 # Even though this represents full-cycle sampling, require the data to at least
 # *start* appearing on the output before the posedge. This constraint may
 # optionally be removed. If it is removed, restrict generic mode to the same
@@ -401,6 +409,14 @@ set_false_path -hold -from [get_clocks SPI_DEV_IN_CLK] \
     -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
                [get_nets -segments -of_objects \
                  [get_pins top_earlgrey/u_spi_device/u_spi_tpm/miso_o]]]
+
+# Remove scan paths for timing analysis
+set_clock_sense -stop_propagation -clock SPI_DEV_CLK [get_pins -leaf -filter "@pin_direction == in" -of_objects [get_nets -segments -of_objects [get_pins u_ast/u_scan_clk/in_i*]]]
+set_false_path -from [get_clocks SPI_DEV_CSB_CLK] \
+    -through [get_pins -leaf -filter "@pin_direction == in" -of_objects \
+        [get_nets -segments -of_objects \
+            [get_pins u_ast/u_scan_rst_n/in_i*]]]
+
 
 ####################
 # SPI DEV TPM mode #
@@ -442,7 +458,7 @@ set MUXED_IOA_PORTS [get_ports IOA*]
 set MUXED_IOB_PORTS [get_ports IOB*]
 set MUXED_IOC_PORTS [get_ports IOC*]
 set MUXED_IOR_PORTS [get_ports "IOR0 IOR1 IOR2 IOR3 IOR4 IOR5 IOR6 IOR7 IOR10 IOR11 IOR12 IOR13"]
-set ALL_MUXED_PORTS "${MUXED_IOA_PORTS} ${MUXED_IOB_PORTS} ${MUXED_IOC_PORTS} ${MUXED_IOR_PORTS}"
+set ALL_MUXED_PORTS [get_ports "${MUXED_IOA_PORTS} ${MUXED_IOB_PORTS} ${MUXED_IOC_PORTS} ${MUXED_IOR_PORTS}"]
 
 # TPM CSB input delays.
 set_input_delay -min ${SPI_DEV_IN_DEL_MIN} [get_ports ${ALL_MUXED_PORTS}] \
@@ -452,9 +468,19 @@ set_input_delay -max ${SPI_DEV_IN_DEL_MAX} [get_ports ${ALL_MUXED_PORTS}] \
 
 # Relax hold path for TPM CSB, since CSB changes nominally on the same edge as
 # SPI_TPM_OUT_CLK, but the latter isn't actually toggling.
-set_multicycle_path -hold -end -from [get_clocks SPI_TPM_CLK] \
-    -through [get_ports ${ALL_MUXED_PORTS}] \
-    -to [get_clocks SPI_TPM_OUT_CLK] 1
+set_multicycle_path -hold -end 1 -from [get_ports ${ALL_MUXED_PORTS}] \
+    -to [get_clocks SPI_TPM_OUT_CLK] \
+    -through [get_pins -leaf -filter "@pin_direction == in" -of_objects \
+        [get_nets -segments -of_objects \
+            [get_pins top_earlgrey/u_spi_device/u_spi_tpm/rst_n]]]
+# Relax the hold time constraint for the passthrough clock gate. Really this is
+# to accommodate the gate for the inverted clock, which isn't active for the
+# modes used for these constraints. However, it would be an okay outcome if the
+# filter result reached the gate before even the 7th clock edge got out.
+set_multicycle_path -hold -end 1 -from [get_clocks SPI_TPM_CLK] \
+    -to [get_pins -leaf -filter "@pin_direction == in" -of_objects \
+        [get_nets top_earlgrey/u_spi_device/u_passthrough/sck_gate_en]]
+
 
 # Remove hold analysis from the following paths to ports. Even though the pins
 # can change before the prior data was latched upstream, their effect is held
@@ -477,6 +503,9 @@ set_false_path -hold -from [get_clocks SPI_TPM_IN_CLK] \
     -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
                [get_nets -segments -of_objects \
                  [get_pins top_earlgrey/u_spi_device/u_spi_tpm/miso_o]]]
+
+# Remove scan paths for timing analysis
+set_clock_sense -stop_propagation -clock SPI_TPM_CLK [get_pins -leaf -filter "@pin_direction == in" -of_objects [get_nets -segments -of_objects [get_pins u_ast/u_scan_clk/in_i*]]]
 
 
 ##################
@@ -585,6 +614,8 @@ set_output_delay -min ${SPI_DEV_OUT_DEL_MIN_FC} ${SPI_DEV_DATA_PORTS} \
     -clock_fall -clock SPI_DEV_PASS_CLK -add_delay
 set_output_delay -max ${SPI_DEV_OUT_DEL_MAX} ${SPI_DEV_DATA_PORTS} \
     -clock_fall -clock SPI_DEV_PASS_CLK -add_delay
+set_multicycle_path -setup 2 -from [get_clocks SPI_DEV_PASS_IN_CLK] \
+    -to [get_clocks SPI_DEV_PASS_CLK] -through [get_ports ${SPI_DEV_DATA_PORTS}]
 
 
 # bidir ports facing storage device
@@ -623,6 +654,14 @@ set_multicycle_path -hold -end -from [get_clocks SPI_DEV_PASS_CSB_CLK] \
 # falling edge of SPI_DEV_CLK would not be active.
 set_multicycle_path -hold -end -from [get_clocks SPI_DEV_PASS_CSB_CLK] \
     -to [get_clocks SPI_DEV_PASS_CLK] -through [get_ports ${SPI_DEV_DATA_PORTS}] 1
+# Relax the hold time constraint for the passthrough clock gate. Really this is
+# to accommodate the gate for the inverted clock, which isn't active for the
+# modes used for these constraints. However, it would be an okay outcome if the
+# filter result reached the gate before even the 7th clock edge got out.
+set_multicycle_path -hold -end 1 -from [get_clocks SPI_DEV_PASS_CLK] \
+    -to [get_pins -leaf -filter "@pin_direction == in" -of_objects \
+        [get_nets top_earlgrey/u_spi_device/u_passthrough/sck_gate_en]]
+
 # Even though this represents full-cycle sampling, require the data to at least
 # *start* appearing on the output before the posedge. This constraint may
 # optionally be removed. If it is removed, restrict generic mode to the same
@@ -652,6 +691,13 @@ set_false_path -hold -from [get_clocks SPI_DEV_PASS_IN_CLK] \
     -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
                [get_nets -segments -of_objects \
                  [get_pins top_earlgrey/u_spi_device/u_spi_tpm/miso_o]]]
+
+# Remove scan paths for timing analysis
+set_clock_sense -stop_propagation -clock SPI_DEV_PASS_CLK [get_pins -leaf -filter "@pin_direction == in" -of_objects [get_nets -segments -of_objects [get_pins u_ast/u_scan_clk/in_i*]]]
+set_false_path -from [get_clocks SPI_DEV_PASS_CSB_CLK] \
+    -through [get_pins -leaf -filter "@pin_direction == in" -of_objects \
+        [get_nets -segments -of_objects \
+            [get_pins u_ast/u_scan_rst_n/in_i*]]]
 
 ####################
 # SPI-specific CDC #
