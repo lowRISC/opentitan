@@ -66,6 +66,9 @@
   uvm_test: sram_ctrl_base_test
   uvm_test_seq: sram_ctrl_base_vseq
 
+  // Increase timeout for all tests.
+  run_opts: ["+test_timeout_ns=1000000000"]
+
   // List of test specifications.
   tests: [
     {
@@ -79,7 +82,6 @@
     {
       name: "{name}_bijection"
       uvm_test_seq: sram_ctrl_bijection_vseq
-      run_opts: ["+test_timeout_ns=1000000000"]
     }
     {
       name: "{name}_stress_pipeline"
