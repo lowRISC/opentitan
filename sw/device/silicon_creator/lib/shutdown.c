@@ -384,15 +384,12 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_report_error(rom_error_t reason)) {
   uart_ctrl_reg = bitfield_bit32_write(uart_ctrl_reg, UART_CTRL_TX_BIT, true);
   abs_mmio_write32(kUartBase + UART_CTRL_REG_OFFSET, uart_ctrl_reg);
 
-  // Extract the commit hash from the `chip_info` at the top of ROM.
-  uint64_t chip_info_version = kChipInfo.scm_revision;
-  uint32_t chip_info_version_truncated = chip_info_version >> 32;
-
   // Print the error message and the raw life cycle state as reported by the
   // hardware.
   shutdown_print(kShutdownLogPrefixBootFault, redacted_error);
   shutdown_print(kShutdownLogPrefixLifecycle, raw_state);
-  shutdown_print(kShutdownLogPrefixVersion, chip_info_version_truncated);
+  shutdown_print(kShutdownLogPrefixVersion,
+                 kChipInfo.scm_revision.scm_revision_high);
 
 #ifdef OT_PLATFORM_RV32
   // Wait until UART TX is complete.
