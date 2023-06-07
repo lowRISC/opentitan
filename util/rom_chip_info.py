@@ -5,7 +5,6 @@
 """Generates chip_info.c for ROM build."""
 
 import argparse
-import hashlib
 import logging as log
 from pathlib import Path
 
@@ -16,15 +15,11 @@ def generate_chip_info_c_source(scm_revision: int) -> str:
     Args:
         scm_revision: SHA1 sum identifying the current SCM revision.
     """
-
-    SHA1_DIGEST_SIZE_BITS = hashlib.sha1().digest_size * 8
-    assert scm_revision.bit_length() <= SHA1_DIGEST_SIZE_BITS
-    assert scm_revision >= 0
-
-    # Truncate the SCM revision to the top N bits.
-    SCM_REVISION_SIZE_BITS = 64
-    shift_amount = SHA1_DIGEST_SIZE_BITS - SCM_REVISION_SIZE_BITS
-    scm_revision >>= shift_amount
+    SHA1_BYTE_CNT = 20
+    assert 0 < scm_revision < 2**(SHA1_BYTE_CNT * 8)
+    scm_rev_byte_be = scm_revision.to_bytes(SHA1_BYTE_CNT, "big")
+    scm_revision_high = int.from_bytes(scm_rev_byte_be[0:4], "big")
+    scm_revision_low = int.from_bytes(scm_rev_byte_be[4:8], "big")
 
     return f"""
 // Copyright lowRISC contributors.
@@ -35,8 +30,15 @@ def generate_chip_info_c_source(scm_revision: int) -> str:
 
 #include "sw/device/silicon_creator/lib/chip_info.h"
 
-const chip_info_t kChipInfo __attribute__((section(".chip_info"))) = {{
-    .scm_revision = (uint64_t){scm_revision:#0x},
+#include "sw/device/lib/base/macros.h"
+
+OT_SECTION(".chip_info")
+const chip_info_t kChipInfo = {{
+  .scm_revision = (chip_info_scm_revision_t){{
+    .scm_revision_low = {scm_revision_low:#010x},
+    .scm_revision_high = {scm_revision_high:#010x},
+  }},
+  .version = (uint32_t)kChipInfoVersion1,
 }};
 """
 

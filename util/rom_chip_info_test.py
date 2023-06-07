@@ -25,8 +25,15 @@ class TestGenerateChipInfoCSource(unittest.TestCase):
 
 #include "sw/device/silicon_creator/lib/chip_info.h"
 
-const chip_info_t kChipInfo __attribute__((section(".chip_info"))) = {
-    .scm_revision = (uint64_t)0x4bbd966dcbfc4aa3,
+#include "sw/device/lib/base/macros.h"
+
+OT_SECTION(".chip_info")
+const chip_info_t kChipInfo = {
+  .scm_revision = (chip_info_scm_revision_t){
+    .scm_revision_low = 0xcbfc4aa3,
+    .scm_revision_high = 0x4bbd966d,
+  },
+  .version = (uint32_t)kChipInfoVersion1,
 };
 """
         self.assertEqual(source, expected)
@@ -43,8 +50,15 @@ const chip_info_t kChipInfo __attribute__((section(".chip_info"))) = {
 
 #include "sw/device/silicon_creator/lib/chip_info.h"
 
-const chip_info_t kChipInfo __attribute__((section(".chip_info"))) = {
-    .scm_revision = (uint64_t)0x4bbd966dcbfc4a,
+#include "sw/device/lib/base/macros.h"
+
+OT_SECTION(".chip_info")
+const chip_info_t kChipInfo = {
+  .scm_revision = (chip_info_scm_revision_t){
+    .scm_revision_low = 0x6dcbfc4a,
+    .scm_revision_high = 0x004bbd96,
+  },
+  .version = (uint32_t)kChipInfoVersion1,
 };
 """
         self.assertEqual(source, expected)
