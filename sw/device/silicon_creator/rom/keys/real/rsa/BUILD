@@ -7,6 +7,13 @@ package(default_visibility = ["//visibility:public"])
 cc_library(
     name = "rsa",
     srcs = [
+        "earlgrey_a0_dev_0.h",
+        "earlgrey_a0_dev_1.h",
+        "earlgrey_a0_prod_0.h",
+        "earlgrey_a0_prod_1.h",
+        "earlgrey_a0_prod_2.h",
+        "earlgrey_a0_test_0.h",
+        "earlgrey_a0_test_1.h",
         "sigverify_rsa_keys_real.c",
     ],
     deps = [
@@ -41,36 +48,36 @@ cc_test(
 )
 
 filegroup(
-    name = "test_private_key_0",
-    srcs = [],
+    name = "earlgrey_a0_test_0",
+    srcs = ["earlgrey_a0_test_0.der"],
 )
 
 filegroup(
-    name = "test_private_key_1",
-    srcs = [],
+    name = "earlgrey_a0_test_1",
+    srcs = ["earlgrey_a0_test_1.der"],
 )
 
 filegroup(
-    name = "dev_private_key_0",
-    srcs = [],
+    name = "earlgrey_a0_dev_0",
+    srcs = ["earlgrey_a0_dev_0.der"],
 )
 
 filegroup(
-    name = "dev_private_key_1",
-    srcs = [],
+    name = "earlgrey_a0_dev_1",
+    srcs = ["earlgrey_a0_dev_1.der"],
 )
 
 filegroup(
-    name = "prod_private_key_0",
-    srcs = [],
+    name = "earlgrey_a0_prod_0",
+    srcs = ["earlgrey_a0_prod_0.der"],
 )
 
 filegroup(
-    name = "prod_private_key_1",
-    srcs = [],
+    name = "earlgrey_a0_prod_1",
+    srcs = ["earlgrey_a0_prod_1.der"],
 )
 
 filegroup(
-    name = "prod_private_key_2",
-    srcs = [],
+    name = "earlgrey_a0_prod_2",
+    srcs = ["earlgrey_a0_prod_2.der"],
 )

@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/macros.h"
-#include "sw/device/silicon_creator/rom/keys/real/rsa/dev_key_0_rsa_3072_exp_f4.h"
-#include "sw/device/silicon_creator/rom/keys/real/rsa/dev_key_1_rsa_3072_exp_f4.h"
-#include "sw/device/silicon_creator/rom/keys/real/rsa/prod_key_0_rsa_3072_exp_f4.h"
-#include "sw/device/silicon_creator/rom/keys/real/rsa/prod_key_1_rsa_3072_exp_f4.h"
-#include "sw/device/silicon_creator/rom/keys/real/rsa/prod_key_2_rsa_3072_exp_f4.h"
-#include "sw/device/silicon_creator/rom/keys/real/rsa/test_key_0_rsa_3072_exp_f4.h"
-#include "sw/device/silicon_creator/rom/keys/real/rsa/test_key_1_rsa_3072_exp_f4.h"
+#include "sw/device/silicon_creator/rom/keys/real/rsa/earlgrey_a0_dev_0.h"
+#include "sw/device/silicon_creator/rom/keys/real/rsa/earlgrey_a0_dev_1.h"
+#include "sw/device/silicon_creator/rom/keys/real/rsa/earlgrey_a0_prod_0.h"
+#include "sw/device/silicon_creator/rom/keys/real/rsa/earlgrey_a0_prod_1.h"
+#include "sw/device/silicon_creator/rom/keys/real/rsa/earlgrey_a0_prod_2.h"
+#include "sw/device/silicon_creator/rom/keys/real/rsa/earlgrey_a0_test_0.h"
+#include "sw/device/silicon_creator/rom/keys/real/rsa/earlgrey_a0_test_1.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys_rsa.h"
 
 #include "otp_ctrl_regs.h"
@@ -40,49 +40,49 @@ const sigverify_rom_rsa_key_t kSigverifyRsaKeys[kSigverifyRsaKeysCnt_] = {
     {
         .entry =
             {
-                .key = TEST_KEY_0_RSA_3072_EXP_F4,
+                .key = EARLGREY_A0_TEST_0,
                 .key_type = kSigverifyKeyTypeTest,
             },
     },
     {
         .entry =
             {
-                .key = TEST_KEY_1_RSA_3072_EXP_F4,
+                .key = EARLGREY_A0_TEST_1,
                 .key_type = kSigverifyKeyTypeTest,
             },
     },
     {
         .entry =
             {
-                .key = DEV_KEY_0_RSA_3072_EXP_F4,
+                .key = EARLGREY_A0_DEV_0,
                 .key_type = kSigverifyKeyTypeDev,
             },
     },
     {
         .entry =
             {
-                .key = DEV_KEY_1_RSA_3072_EXP_F4,
+                .key = EARLGREY_A0_DEV_1,
                 .key_type = kSigverifyKeyTypeDev,
             },
     },
     {
         .entry =
             {
-                .key = PROD_KEY_0_RSA_3072_EXP_F4,
+                .key = EARLGREY_A0_PROD_0,
                 .key_type = kSigverifyKeyTypeProd,
             },
     },
     {
         .entry =
             {
-                .key = PROD_KEY_1_RSA_3072_EXP_F4,
+                .key = EARLGREY_A0_PROD_1,
                 .key_type = kSigverifyKeyTypeProd,
             },
     },
     {
         .entry =
             {
-                .key = PROD_KEY_2_RSA_3072_EXP_F4,
+                .key = EARLGREY_A0_PROD_2,
                 .key_type = kSigverifyKeyTypeProd,
             },
     },
