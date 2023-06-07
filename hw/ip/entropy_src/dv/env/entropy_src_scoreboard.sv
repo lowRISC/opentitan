@@ -100,7 +100,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   int                              extht_fail_count;
   int                              extht_fail_in_last_sample;
 
-  // TODO: Add health check failure and clearing to integration tests.
   bit threshold_alert_active = 1'b0;
 
   // Signal to indicate that the main sm is going into the error state
