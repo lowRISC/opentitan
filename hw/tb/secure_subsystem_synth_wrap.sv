@@ -21,6 +21,7 @@ module secure_subsystem_synth_wrap
    parameter OtpCtrlMemInitFile = "../sw/bare-metal/opentitan/otp/otp-img.mem",
    parameter RomCtrlBootRomInitFile = "../sw/bare-metal/opentitan/bootrom/fake_rom.vmem",
    parameter FlashCtrlMemInitFile = "",
+   parameter int unsigned HartIdOffs   = 0,
    parameter int unsigned AXI_ID_WIDTH = 8,
    parameter int unsigned AXI_ADDR_WIDTH = 64,
    parameter int unsigned AXI_DATA_WIDTH = 64,
@@ -265,6 +266,7 @@ module secure_subsystem_synth_wrap
    );
    
    top_earlgrey #(
+    .HartIdOffs(HartIdOffs),
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
     .SramCtrlMainMemInitFile(SramCtrlMainMemInitFile),
     .RomCtrlBootRomInitFile(RomCtrlBootRomInitFile),
