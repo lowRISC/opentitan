@@ -92,6 +92,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   int                              continuous_fail_count;
   bit                              cont_fail_in_last_sample;
 
+  // Predicted value of internal repetition counters.
+  bit [15:0] repcnt_event_cnt;
+  bit [15:0] repcnts_event_cnt;
+
   // Ext. HT counters.
   // Like the continuous tests, these failures can in principle happen many times
   // per window, however only one failure per window gets registered toward the
@@ -385,6 +389,14 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         `uvm_info(`gfn, $sformatf(fmt, test, fips_mode, watermark_val), UVM_HIGH)
       end
     end else begin : high_watermark_check
+      // Update predicted value of internal repetition counter even if the watermark does not
+      // increase.
+      if (test == "repcnt_hi") begin
+        repcnt_event_cnt = value;
+      end else if (test == "repcnts_hi") begin
+        repcnts_event_cnt = value;
+      end
+      // Update predicted watermark value if appropriate.
       if (value > watermark_val) begin
         string fmt;
         fmt = "Predicted HI watermark for \"%s\" test (FIPS? %d): %04h";
@@ -992,6 +1004,30 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       fips_csrng_q.delete();
     end
 
+    // Internal repetition counters and watermark registers are cleared on enable.
+    if (rst_type == Enable) begin
+      fork
+        begin
+          // Clear watermark registers (to 0) and internal repetition counters (to 1).
+          `DV_CHECK_FATAL(ral.repcnt_hi_watermarks.fips_watermark.predict(16'd0))
+          `DV_CHECK_FATAL(ral.repcnt_hi_watermarks.bypass_watermark.predict(16'd0))
+          repcnt_event_cnt = 16'd1;
+          `DV_CHECK_FATAL(ral.repcnts_hi_watermarks.fips_watermark.predict(16'd0))
+          `DV_CHECK_FATAL(ral.repcnts_hi_watermarks.bypass_watermark.predict(16'd0))
+          repcnts_event_cnt = 16'd1;
+          // Wait one clock cycle, then propagate the internal counter to the watermark registers.
+          cfg.clk_rst_vif.wait_clks(1);
+          propagate_repcnt_to_watermark();
+        end
+      join_none
+    end
+
+    // Internal repetition counters are reset to 0 on reset.
+    if (rst_type == HardReset) begin
+      repcnt_event_cnt = '0;
+      repcnts_event_cnt = '0;
+    end
+
     // The SHA3 engine is the one unit that is not always cleared on
     // disable.
     // It clears itself in on disable in normal RNG mode.
@@ -1310,12 +1346,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         threshold_increases = 1;
       end
       "repcnt_hi_watermarks": begin
-        // TODO: KNOWN ISSUE: pending resolution to #9819
-        do_read_check = 1'b0;
       end
       "repcnts_hi_watermarks": begin
-        // TODO: KNOWN ISSUE: pending resolution to #9819
-        do_read_check = 1'b0;
       end
       "adaptp_hi_watermarks": begin
       end
@@ -1545,12 +1577,18 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                                    invalid_threshold_scope);
               check_redundancy_val("conf", "rng_bit_enable", "rng_bit_enable_field_alert",
                                    invalid_rng_bit_enable);
+              // The `fips_enable` field affects the bypass/FIPS mode selection, so we have to
+              // propagate the internal counter to the watermark register.
+              propagate_repcnt_to_watermark();
             end
             "entropy_control": begin
               check_redundancy_val("entropy_control", "es_route", "es_route_field_alert",
                                    invalid_es_route);
               check_redundancy_val("entropy_control", "es_type", "es_type_field_alert",
                                    invalid_es_type);
+              // Both fields affect the bypass/FIPS mode selection, so we have to propagate the
+              // internal counter to the watermark register.
+              propagate_repcnt_to_watermark();
             end
             "alert_threshold": begin
               cov_vif.cg_alert_cnt_sample(item.a_data, 0);
@@ -2096,6 +2134,35 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       end
     end
   endtask
+
+  // Propagate internal repetition counter to watermark register.  Call this function when changing
+  // a setting that influences the switch between bypass and FIPS mode.  This will propagate the
+  // internal repetition counters to the watermark field of the new mode (i.e., bypass or FIPS).
+  function automatic void propagate_repcnt_to_watermark();
+    bit fips_enable, bypass_to_sw, route_to_sw, bypass_mode;
+    // Determine whether FIPS or bypass mode is now active.
+    fips_enable = `gmv(ral.conf.fips_enable) == MuBi4True;
+    bypass_to_sw = `gmv(ral.entropy_control.es_type) == MuBi4True;
+    route_to_sw = `gmv(ral.entropy_control.es_route) == MuBi4True;
+    bypass_mode = ~fips_enable | (bypass_to_sw & route_to_sw);
+    if (bypass_mode) begin
+      // Propagate internal repetition counter to bypass watermark fields.
+      if (repcnt_event_cnt > `gmv(ral.repcnt_hi_watermarks.bypass_watermark)) begin
+        `DV_CHECK_FATAL(ral.repcnt_hi_watermarks.bypass_watermark.predict(repcnt_event_cnt))
+      end
+      if (repcnts_event_cnt > `gmv(ral.repcnts_hi_watermarks.bypass_watermark)) begin
+        `DV_CHECK_FATAL(ral.repcnts_hi_watermarks.bypass_watermark.predict(repcnts_event_cnt))
+      end
+    end else begin
+      // Propagate internal repetition counter to FIPS watermark fields.
+      if (repcnt_event_cnt > `gmv(ral.repcnt_hi_watermarks.fips_watermark)) begin
+        `DV_CHECK_FATAL(ral.repcnt_hi_watermarks.fips_watermark.predict(repcnt_event_cnt))
+      end
+      if (repcnts_event_cnt > `gmv(ral.repcnts_hi_watermarks.fips_watermark)) begin
+        `DV_CHECK_FATAL(ral.repcnts_hi_watermarks.fips_watermark.predict(repcnts_event_cnt))
+      end
+    end
+  endfunction
 
   task health_test_scoring_thread();
     bit [15:0]                window_size;
