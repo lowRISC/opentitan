@@ -34,10 +34,7 @@
 `define BUCKET \
     u_entropy_src_bucket_ht.u_prim_max_tree_bin_cntr_max
 
-interface entropy_src_assert_if
-(
-  input entropy_src_hw_if_i
-);
+interface entropy_src_assert_if ();
 
   task automatic assert_off_alert ();
 
