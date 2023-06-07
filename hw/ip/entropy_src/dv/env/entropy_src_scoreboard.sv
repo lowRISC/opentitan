@@ -1395,9 +1395,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       "fw_ov_wr_data": begin
       end
       "fw_ov_wr_fifo_full": begin
+        // TODO(#18837): need to predict this
       end
       "fw_ov_rd_fifo_overflow": begin
-        // TODO, need to predict this.
+        // TODO(#18837): need to predict this
       end
       "observe_fifo_thresh": begin
         locked_reg_access = dut_reg_locked;

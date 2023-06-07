@@ -373,7 +373,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   //
   // When accessing the observe_fifo via the FW_OV_RD_DATA register the bundle size is
   // programmable and set to be equal to the value set in the OBSERVE_FIFO_DEPTH register
-  // (TODO: What happens if the depth is zero?)
+  // TODO(#18837): What happens if the depth is zero?
   //
   // a. max_bundles bundles have been read
   // b. The intr_state register indicates no more data in entropy_data
