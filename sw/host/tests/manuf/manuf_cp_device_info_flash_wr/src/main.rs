@@ -59,9 +59,9 @@ fn manuf_cp_device_info_flash_wr(opts: &Opts, transport: &TransportWrapper) -> R
     // Load and execute the SRAM program that contains the test code.
     match opts
         .sram_program
-        .load_and_execute(&jtag, ExecutionMode::Call(opts.timeout))?
+        .load_and_execute(&jtag, ExecutionMode::JumpAndWait(opts.timeout))?
     {
-        ExecutionResult::CallReturned => {
+        ExecutionResult::ExecutionDone => {
             log::info!("SRAM program loaded and executed successfully.")
         }
         res => log::info!("SRAM program execution failed: {:?}.", res),

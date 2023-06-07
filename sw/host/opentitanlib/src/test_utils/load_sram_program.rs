@@ -30,18 +30,6 @@ pub struct SramProgramParams {
     /// Address where to load the VMEM file.
     #[structopt(long, parse(try_from_str = ParseInt::from_str))]
     pub load_addr: u32,
-
-    /// Address of the top of the stack.
-    #[structopt(long, parse(try_from_str = ParseInt::from_str))]
-    pub stack_pointer: u32,
-
-    /// Size of the stack.
-    #[structopt(long, parse(try_from_str = ParseInt::from_str))]
-    pub stack_size: u32,
-
-    /// Value of the global pointer
-    #[structopt(long, parse(try_from_str = ParseInt::from_str))]
-    pub global_pointer: u32,
 }
 
 impl SramProgramParams {
@@ -50,15 +38,7 @@ impl SramProgramParams {
         jtag: &Rc<dyn Jtag>,
         exec_mode: ExecutionMode,
     ) -> Result<ExecutionResult> {
-        load_and_execute_sram_program(
-            jtag,
-            &self.vmem,
-            self.load_addr,
-            self.stack_pointer,
-            self.stack_size,
-            self.global_pointer,
-            exec_mode,
-        )
+        load_and_execute_sram_program(jtag, &self.vmem, self.load_addr, exec_mode)
     }
 }
 
@@ -68,9 +48,8 @@ pub enum ExecutionMode {
     Jump,
     /// Jump at the loading address and immediately halt execution.
     JumpAndHalt,
-    /// Make a "call" to the loading address and wait until the function returns
-    /// (or wait forever if None)
-    Call(Duration),
+    /// Jump at the loading address and wait for the core to halt or timeout.
+    JumpAndWait(Duration),
 }
 
 /// Result of execution of a SRAM program.
@@ -80,10 +59,10 @@ pub enum ExecutionResult {
     HaltedAtStart,
     /// (Jump only) Execution is ongoing.
     Executing,
-    /// (Call only) Execution successfully returned.
-    CallReturned,
-    /// (Call only) Execution halted before returning to the caller or because of the timeout.
-    CallFailed,
+    /// (JumpAndWait only) Execution successfully stopped.
+    ExecutionDone,
+    /// (JumpAndWait only) Execution did not finish it time or an error occurred.
+    ExecutionError,
 }
 
 /// Errors related to loading an SRAM program.
@@ -161,21 +140,6 @@ pub fn prepare_epmp_for_sram(jtag: &Rc<dyn Jtag>) -> Result<()> {
     Ok(())
 }
 
-/// Fills the stack with a known value (0xdeadbeef). This can be useful if SRAM scrambling
-/// is enabled to make sure that the core can read from the stack without errors.
-pub fn setup_stack(jtag: &Rc<dyn Jtag>, stack_pointer: u32, stack_size: u32) -> Result<()> {
-    // the stack size must be a multiple of 4
-    assert_eq!(0, stack_size % 4);
-    log::info!(
-        "Setting up stack at [{:x}:{:x}]",
-        stack_pointer - stack_size,
-        stack_pointer
-    );
-    // it's much more efficient to write all the data at once
-    let stack = vec![0xdeadbeefu32; (stack_size / 4) as usize];
-    jtag.write_memory32(stack_pointer - stack_size, &stack)
-}
-
 /// This function loads and execute a SRAM program. It takes care of all the details regarding
 /// the ePMP, the stack and the global pointer. It starts the execution at the beginning of the
 /// SRAM program.
@@ -183,9 +147,6 @@ pub fn load_and_execute_sram_program(
     jtag: &Rc<dyn Jtag>,
     vmem_filename: &PathBuf,
     sram_load_addr: u32,
-    stack_pointer: u32,
-    stack_size: u32,
-    global_pointer: u32,
     exec_mode: ExecutionMode,
 ) -> Result<ExecutionResult> {
     log::info!("Loading VMEM file {}", vmem_filename.display());
@@ -196,18 +157,11 @@ pub fn load_and_execute_sram_program(
     load_sram_program(jtag, &vmem, sram_load_addr)?;
     log::info!("Preparing ePMP for execution");
     prepare_epmp_for_sram(jtag)?;
-    setup_stack(jtag, stack_pointer, stack_size)?;
-    log::info!("set SP to {:x}", stack_pointer);
-    jtag.write_riscv_reg(&RiscvReg::GprByName(RiscvGpr::SP), stack_pointer)?;
-    log::info!("set GP to {:x}", global_pointer);
-    jtag.write_riscv_reg(&RiscvReg::GprByName(RiscvGpr::GP), global_pointer)?;
-    // to avoid unexpected behaviors, we always make sure that the return addreess
-    // points to the bottom of the stack where we insert a ebreak instruction
-    let ret_addr = stack_pointer - stack_size;
+    // To avoid unexpected behaviors, we always make sure that the return addreess
+    // points to an invalid address.
+    let ret_addr = 0xdeadbeefu32;
     log::info!("set RA to {:x}", ret_addr);
     jtag.write_riscv_reg(&RiscvReg::GprByName(RiscvGpr::RA), ret_addr)?;
-    log::info!("write EBEREAK at {:x}", ret_addr);
-    jtag.write_memory32(ret_addr, &[0x100073])?;
     // OpenOCD takes care of invalidating the cache when resuming execution
     match exec_mode {
         ExecutionMode::Jump => {
@@ -220,17 +174,19 @@ pub fn load_and_execute_sram_program(
             jtag.write_riscv_reg(&RiscvReg::CsrByName(RiscvCsr::DPC), sram_load_addr)?;
             Ok(ExecutionResult::HaltedAtStart)
         }
-        ExecutionMode::Call(tmo) => {
+        ExecutionMode::JumpAndWait(tmo) => {
             log::info!("resume execution at {:x}", sram_load_addr);
             jtag.resume_at(sram_load_addr)?;
+            log::info!("wait for execution to stop");
             jtag.wait_halt(tmo)?;
             jtag.halt()?;
-            // read PC to see if it returned or not
-            let pc = jtag.read_riscv_reg(&RiscvReg::CsrByName(RiscvCsr::DPC))?;
-            if pc == ret_addr {
-                Ok(ExecutionResult::CallReturned)
+            // The SRAM's crt has a protocol to notify us that execution returned: it sets
+            // the stack pointer to 0xcafebabe.
+            let sp = jtag.read_riscv_reg(&RiscvReg::GprByName(RiscvGpr::SP))?;
+            if sp == 0xcafebabe {
+                Ok(ExecutionResult::ExecutionDone)
             } else {
-                Ok(ExecutionResult::CallFailed)
+                Ok(ExecutionResult::ExecutionError)
             }
         }
     }
