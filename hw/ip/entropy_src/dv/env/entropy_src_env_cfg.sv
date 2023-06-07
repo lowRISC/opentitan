@@ -297,7 +297,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   endfunction
 
   function void post_randomize();
-    dut_cfg.randomize();
+    void'(dut_cfg.randomize());
     super.post_randomize();
   endfunction
 
