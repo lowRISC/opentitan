@@ -134,7 +134,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     // instantaneous likelihood of failure is designed to be independent of history.
     m_rng_push_seq.reset_rng();
     super.disable_dut();
-  endtask;
+  endtask
 
 
   virtual task try_apply_base_configuration(entropy_src_dut_cfg newcfg,

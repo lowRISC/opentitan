@@ -45,7 +45,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
     super.pre_start();
 
-  endtask;
+  endtask
 
   virtual task dut_init(string reset_kind = "HARD");
     int regwen;
@@ -141,7 +141,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
       check_ht_diagnostics();
       `uvm_info(`gfn, "HT value check complete", UVM_HIGH)
     end
-  endtask;
+  endtask
 
   // Helper function to entropy_src_init. Tries to apply the new configuration
   // Does not check for invalid MuBi or threshold alert values
