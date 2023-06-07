@@ -103,8 +103,11 @@ class sysrst_ctrl_combo_detect_action_obj extends uvm_object;
   endgroup  // sysrst_ctrl_combo_detect_action_cg
 
   function new(string name = "sysrst_ctrl_combo_detect_action_obj");
+    string str_idx;
     super.new(name);
-    sysrst_ctrl_combo_detect_action_cg = new(name);
+    // Get index from argument
+    str_idx = name.substr(name.len - 1, name.len - 1);
+    sysrst_ctrl_combo_detect_action_cg = new(str_idx.atoi());
   endfunction : new
 endclass : sysrst_ctrl_combo_detect_action_obj
 
@@ -307,7 +310,7 @@ class sysrst_ctrl_env_cov extends cip_base_env_cov #(
     debounce_timer_cg["ulp_lid_debounce_ctl"] = new("ulp_lid_debounce_ctl");
 
     for (int i = 0; i <= 3; i++) begin
-      combo_detect_action[i] = new(i);
+      combo_detect_action[i] = new($sformatf("sysrst_ctrl_combo_detect_action_obj_%0d",i));
     end
 
     combo_key_combinations = new();

@@ -132,7 +132,8 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
       "com_det_ctl_0","com_det_ctl_1","com_det_ctl_2","com_det_ctl_3": begin
          if (addr_phase_write) begin
            string csr_name = csr.get_name();
-           string str_idx = csr_name.getc(csr_name.len - 1);
+           // get the last character
+           string str_idx = csr_name.substr(csr_name.len - 1, csr_name.len - 1);
            int idx = str_idx.atoi();
            cov_if.cg_combo_detect_det_sample (idx,
              get_field_val(ral.com_det_ctl[idx].detection_timer, item.a_data)
@@ -239,7 +240,8 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
       "com_pre_det_ctl_0", "com_pre_det_ctl_1", "com_pre_det_ctl_2", "com_pre_det_ctl_3": begin
          if (addr_phase_write) begin
            string csr_name = csr.get_name();
-           string str_idx = csr_name.getc(csr_name.len - 1);
+           // get the last character
+           string str_idx = csr_name.substr(csr_name.len - 1, csr_name.len - 1);
            int idx = str_idx.atoi();
            cov_if.cg_combo_precondition_det_sample (idx,
              get_field_val(ral.com_pre_det_ctl[idx].precondition_timer, item.a_data)
