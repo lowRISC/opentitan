@@ -192,10 +192,9 @@ set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks AON_CLK]
 #####################
 # JTAG clock        #
 #####################
-# TODO: set up constraints for JTAG.
 set JTAG_CLK_PIN IOR3
-# target is 20MHz, overconstrain by factor
-set JTAG_TCK_TARGET_PERIOD 50
+# target is 30MHz, overconstrain by factor
+set JTAG_TCK_TARGET_PERIOD 33.3
 set JTAG_TCK_PERIOD [expr $JTAG_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
 
 create_clock -name JTAG_TCK -period $JTAG_TCK_PERIOD [get_ports $JTAG_CLK_PIN]
@@ -203,33 +202,57 @@ create_clock -name JTAG_TCK -period $JTAG_TCK_PERIOD [get_ports $JTAG_CLK_PIN]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks JTAG_TCK]
 set_propagated_clock JTAG_TCK
 
-create_generated_clock -name lc_jtag_tck -source [get_ports IOR3] -divide_by 1 \
+create_generated_clock -name LC_JTAG_TCK -source [get_ports IOR3] -divide_by 1 \
     [get_pins top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/clk_o]
-create_generated_clock -name rv_jtag_tck -source [get_ports IOR3] -divide_by 1 \
+create_generated_clock -name RV_JTAG_TCK -source [get_ports IOR3] -divide_by 1 \
     [get_pins top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/clk_o]
 
-set lc_jtag_tck_inv_pin \
-  [get_pins -filter {@pin_direction == out} -of_objects \
+set LC_JTAG_TCK_INV_PIN \
+  [get_pins -leaf -filter {@pin_direction == out} -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/clk_i] \
+      [get_pins top_earlgrey/u_lc_ctrl/u_dmi_jtag/i_dmi_jtag_tap/i_tck_inv/clk_no] \
     ] \
   ]
 
-set rv_jtag_tck_inv_pin \
-  [get_pins -filter {@pin_direction == out} -of_objects \
+set RV_JTAG_TCK_INV_PIN \
+  [get_pins -leaf -filter {@pin_direction == out} -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/clk_i] \
+      [get_pins top_earlgrey/u_rv_dm/dap/i_dmi_jtag_tap/i_tck_inv/clk_no] \
     ] \
   ]
 
-set_clock_sense -negative ${lc_jtag_tck_inv_pin}
-set_clock_sense -negative ${rv_jtag_tck_inv_pin}
+set_clock_sense -negative ${LC_JTAG_TCK_INV_PIN}
+set_clock_sense -negative ${RV_JTAG_TCK_INV_PIN}
 
 set_output_delay -add_delay             -clock JTAG_TCK -max  7.0 [get_ports IOR1]
 set_output_delay -add_delay             -clock JTAG_TCK -min -5.0 [get_ports IOR1]
 set_input_delay  -add_delay -clock_fall -clock JTAG_TCK -min  0.0 [get_ports {IOR0 IOR2}]
 set_input_delay  -add_delay -clock_fall -clock JTAG_TCK -max  8.0 [get_ports {IOR0 IOR2}]
 
+# Don't apply these constraints to the DFT TAP. Leave this to the
+# implementation.
+set_clock_sense -logical_stop_propagation -clock JTAG_TCK \
+  [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+    [get_nets -segments -of_objects \
+      [get_pins top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_dft/prim_clock_buf_tck/clk_o] \
+    ] \
+  ]
+
+# Don't carry the JTAG clock through the pinmux.
+set_clock_sense -stop_propagation -clock JTAG_TCK \
+  [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+    [get_nets -segments -of_objects \
+      [get_pins top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/in_core_o[38]] \
+    ] \
+  ]
+set_false_path -hold -from [get_clocks JTAG_TCK] \
+  -to [get_ports IOR1] \
+  -through [get_ports "IOR0 IOR2 IOR3"]  \
+  -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+    [get_nets -segments -of_objects \
+      [get_pins top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/in_core_o*] \
+    ] \
+  ]
 
 #####################
 # AST clock        #
@@ -666,7 +689,7 @@ set_clock_groups -name group1 -async                                  \
     -group [get_clocks {IO_CLK SPI_HOST_CLK}       ] \
     -group [get_clocks IO_DIV2_CLK                                  ] \
     -group [get_clocks IO_DIV4_CLK                                  ] \
-    -group [get_clocks JTAG_TCK                                     ] \
+    -group [get_clocks "JTAG_TCK RV_JTAG_TCK LC_JTAG_TCK"           ] \
     -group [get_clocks AON_CLK                                      ]
 
 # UART loopback path can be considered to be a false path
