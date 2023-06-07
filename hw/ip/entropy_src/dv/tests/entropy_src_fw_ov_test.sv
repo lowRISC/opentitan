@@ -14,7 +14,6 @@ class entropy_src_fw_ov_test extends entropy_src_base_test;
     cfg.alert_max_delay                     = 5;
     cfg.rng_ignores_backpressure            = 1;
 
-    cfg.dut_cfg.boot_mode_retry_limit       = 10;
     cfg.sim_duration                        = 5ms;
     cfg.hard_mtbf                           = 100s;
     cfg.mean_rand_reconfig_time             = 1ms;

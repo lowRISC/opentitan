@@ -14,7 +14,6 @@ class entropy_src_rng_test extends entropy_src_base_test;
     cfg.alert_max_delay             = 5;
     cfg.rng_ignores_backpressure    = 1;
 
-    cfg.dut_cfg.boot_mode_retry_limit       = 10;
     cfg.sim_duration                = 10ms;
     cfg.hard_mtbf                   = 3ms;
     cfg.mean_rand_reconfig_time     = 3ms;
