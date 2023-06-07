@@ -22,6 +22,8 @@ After the handshakes with CSRNG are finished, the above bit should be set and th
 
 ENTROPY_SRC may only be disabled if CSRNG is disabled.
 
+Disabling Entropy Source does not clear the bits in `RECOV_ALERT_STS` (see [*Handling a Recoverable Alert*](#handling-a-recoverable-alert)).
+
 
 ## Firmware Override / Bypass Modes
 
@@ -82,6 +84,14 @@ In addition, firmware has to:
 
 Note that once the field `ES_ROUTE` is set to `kMultiBitBool4True`, no entropy is being passed to the block hardware interface.
 This mode is compatible with [Hardware Conditioning Bypass](#hardware-conditioning-bypass) (enabled by setting the `ES_TYPE` field in [`ENTROPY_CONTROL`](../data/entropy_src.hjson#entropy_control) to `kMultiBitBool4True`).
+
+
+## Handling a Recoverable Alert
+
+Reasons for a recoverable alert are tracked in the [`RECOV_ALERT_STS`](../data/entropy_src.hjson#recov_alert_sts) register.
+Each bit gets set based on the condition in its description.
+To handle a recoverable alert, go through the bits that are set and resolve the underlying problems, then write zero to each bit to clear it.
+Disabling Entropy Source does not clear the bits in `RECOV_ALERT_STS`.
 
 
 ## Error conditions
