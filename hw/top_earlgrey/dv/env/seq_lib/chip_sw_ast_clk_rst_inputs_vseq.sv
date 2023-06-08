@@ -7,11 +7,11 @@ class chip_sw_ast_clk_rst_inputs_vseq extends chip_sw_base_vseq;
 
   `uvm_object_new
 
-  localparam string ADC_CHANNEL_OUT_HDL_PATH = "tb.dut.u_ast.u_adc.adc_d_o[9:0]";
-  localparam string ADC_CHANNEL_IN_SEL_HDL_PATH = "tb.dut.u_ast.u_adc.adc_chnsel_i[1:0]";
+  localparam string ADC_CHANNEL_OUT_HDL_PATH = "tb.dut.u_ast.adc_d_o[9:0]";
+  localparam string ADC_CHANNEL_IN_SEL_HDL_PATH = "tb.dut.u_ast.adc_chnsel_i[1:0]";
 
-  localparam string ADC_DATA_VALID = "tb.dut.u_ast.u_adc.adc_d_val_o";
-  localparam string ADC_POWERDOWN = "tb.dut.u_ast.u_adc.adc_pd_i";
+  localparam string ADC_DATA_VALID = "tb.dut.u_ast.adc_d_val_o";
+  localparam string ADC_POWERDOWN = "tb.dut.u_ast.adc_pd_i";
   localparam string ADC_CTRL_WAKEUP_REQ = "tb.dut.top_earlgrey.u_pwrmgr_aon.wakeups_i[1]";
   localparam uint NUM_ADC_CHANNELS = 2;
   localparam uint NUM_LOW_POWER_SAMPLES = 3;
