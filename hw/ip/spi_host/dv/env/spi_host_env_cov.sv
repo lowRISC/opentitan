@@ -45,8 +45,7 @@ class spi_host_env_cov extends cip_base_env_cov #(.CFG_T(spi_host_env_cfg));
     duplex_cp : coverpoint direction{ ignore_bins unsupported_dir = {None}; }
   endgroup
 
-  covergroup control_cg with function sample(spi_host_ctrl_t spi_ctrl_reg, bit spien,
-                                             bit output_en, bit sw_rst);
+  covergroup control_cg with function sample(spi_host_ctrl_t spi_ctrl_reg, bit active);
     tx_watermark_cp : coverpoint spi_ctrl_reg.tx_watermark{
       bins lower[10] = {[1:30]};
       bins upper[20] = {[31:SPI_HOST_TX_DEPTH]};
@@ -55,9 +54,10 @@ class spi_host_env_cov extends cip_base_env_cov #(.CFG_T(spi_host_env_cfg));
       bins lower[10] = {[1:30]};
       bins upper[20] = {[31:SPI_HOST_RX_DEPTH]};
     }
-    spien_cp : coverpoint spien{ bins spien = {1}; }
-    output_en_cp : coverpoint output_en{ bins output_en = {1}; }
-    sw_rst_cp : coverpoint sw_rst{ bins sw_rst = {1}; }
+    spien_cp : coverpoint spi_ctrl_reg.spien { bins spien = {1}; }
+    output_en_cp : coverpoint spi_ctrl_reg.output_en { bins output_en = {1}; }
+    sw_rst_cp : coverpoint spi_ctrl_reg.sw_rst { bins sw_rst = {1}; }
+    sw_rst_active_cross : cross sw_rst_cp, active;
   endgroup
 
   covergroup status_cg with function sample(spi_host_status_t spi_status_reg);

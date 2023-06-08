@@ -32,7 +32,8 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
   local bit [NumSpiHostIntr-1:0]    intr_enable = 2'b00;
   local bit [NumSpiHostIntr-1:0]    intr_test = 2'b00;
 
-  // hold dut registers
+  // Capture DUT register contents during TL accesses
+  // > Mostly used for coverage.
   local spi_host_command_t          spi_cmd_reg;
   local spi_host_ctrl_t             spi_ctrl_reg;
   local spi_host_status_t           spi_status_reg;
@@ -43,10 +44,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
   local spi_host_intr_enable_t      spi_intr_enable_reg;
   local spi_host_intr_test_t        spi_intr_test_reg;
   spi_host_configopts_t             spi_configopts;
-  // control bits
-  local bit                         spien              = 1'b0;
-  local bit                         output_en          = 1'b0;
-  local bit                         sw_rst             = 1'b0;
+  // Tally-Counters
   int                               in_tx_seg_cnt      = 0;
   int                               checked_tx_seg_cnt = 0;
   int                               in_rx_seq_cnt      = 0;
@@ -251,15 +249,17 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
       case (csr_name)
         // add individual case item for each csr
         "control": begin
-          spien      = bit'(get_field_val(ral.control.spien,      item.a_data));
-          output_en  = bit'(get_field_val(ral.control.output_en,  item.a_data));
-          sw_rst     = bit'(get_field_val(ral.control.sw_rst,     item.a_data));
+          bit active;
+          csr_rd(.ptr(ral.status.active), .value(active), .backdoor(1'b1));
+          spi_ctrl_reg.spien        = get_field_val(ral.control.spien,      item.a_data);
+          spi_ctrl_reg.sw_rst       = get_field_val(ral.control.sw_rst,     item.a_data);
+          spi_ctrl_reg.output_en    = get_field_val(ral.control.output_en,  item.a_data);
           spi_ctrl_reg.tx_watermark = get_field_val(ral.control.tx_watermark, item.a_data);
           spi_ctrl_reg.rx_watermark = get_field_val(ral.control.rx_watermark, item.a_data);
           if (cfg.en_cov) begin
-            cov.control_cg.sample(spi_ctrl_reg,spien,output_en,sw_rst);
+            cov.control_cg.sample(spi_ctrl_reg, active);
           end
-          if (sw_rst) begin
+          if (spi_ctrl_reg.sw_rst) begin
             write_segment_q.delete();
             rx_data_q.delete();
             in_tx_seg_cnt = 0;
@@ -454,8 +454,6 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
     host_wr_segment = new();
     host_rd_segment = new();
     device_item.clear_all();
-    spien  = 1'b0;
-    sw_rst = 1'b0;
   endfunction : reset
 
   function void check_phase(uvm_phase phase);
