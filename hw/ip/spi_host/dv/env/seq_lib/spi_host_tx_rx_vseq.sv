@@ -38,9 +38,12 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
     bit rxempty;
     spi_host_status_t status;
 
-    csr_spinwait(.ptr(ral.status.rxempty), .exp_data(1'b0));
-    forever begin
+    // Wait until not-empty before entering the forever loop.
+    csr_spinwait(.ptr(ral.status.rxempty), .exp_data(1'b0), .backdoor(1));
+    forever begin : read_rxfifo_until_empty_and_inactive
       do begin
+        // Add some delay here so other tb tasks can use the bus while we spin.
+        #($urandom_range(500, 1000) * 1ns)
         csr_rd(.ptr(ral.status), .value(status));
         for (int i = 0; i < status.rx_qd; i++) begin
           access_data_fifo(read_q, RxFifo);
