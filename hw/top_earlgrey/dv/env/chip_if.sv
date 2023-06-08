@@ -824,7 +824,7 @@ interface chip_if;
   // 3. The TL agent interface takes over the tl_d interface on the adapter.
   bit stub_cpu;
   tl_if cpu_d_tl_if(.clk(cpu_clk), .rst_n(cpu_rst_n));
-
+`ifndef GATE_LEVEL
   initial begin
     void'($value$plusargs("stub_cpu=%0b", stub_cpu));
     forever begin
@@ -839,7 +839,6 @@ interface chip_if;
         force `CPU_CORE_HIER.clk_i = 1'b0;
         force `CPU_HIER.u_ibus_trans.rst_ni = 1'b0;
         force `CPU_HIER.u_dbus_trans.rst_ni = 1'b0;
-`ifndef GATE_LEVEL
         force `CPU_TL_ADAPT_D_HIER.tl_out = cpu_d_tl_if.h2d;
         force cpu_d_tl_if.d2h = `CPU_TL_ADAPT_D_HIER.tl_i;
 
@@ -855,23 +854,18 @@ interface chip_if;
             end
           end
         join_none
-`endif
       end else begin
-`ifndef GATE_LEVEL
         // when en_sim_sram == 1, need to make sure the access to sim_sram doesn't appear on
         // cpu_d_tl_if, otherwise, we may have unmapped access as scb doesn't regnize addresses of
         // sim_sram. `CPU_HIER.tl_d_* is the right place to avoid seeing sim_sram accesses
         force cpu_d_tl_if.h2d = `CPU_HIER.cored_tl_h_o;
         force cpu_d_tl_if.d2h = `CPU_HIER.cored_tl_h_i;
-`endif
       end
-`ifndef GATE_LEVEL
       @stub_cpu;
      disable stub_cpu_cmd_intg_thread;
-`endif
     end
   end
-
+`endif
   // Pass interface handles to uvm_config_db.
   //
   // Since the chip_if handle itself will be passed to the chip env, there is no need to set
@@ -1100,7 +1094,19 @@ interface chip_if;
 
   // Signal probe fuction for `fsm_state_q` of ADC_CTRL
   wire [4:0] adc_ctrl_state;
+`ifdef GATE_LEVEL
+`define _ADC_FSM_STATE_Q(i) \
+   `ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q_``i``_
+
+  assign adc_ctrl_state = {`_ADC_FSM_STATE_Q(4),
+                           `_ADC_FSM_STATE_Q(3),
+                           `_ADC_FSM_STATE_Q(2),
+                           1'b0, // JDON need to check later
+                           `_ADC_FSM_STATE_Q(0)};
+`undef _ADC_FSM_STATE_Q
+`else
   assign adc_ctrl_state = `ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q;
+`endif
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_adc_ctrl_fsm_state,
       adc_ctrl_state, 5)
 
