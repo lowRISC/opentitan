@@ -18,7 +18,8 @@ module secure_subsystem_synth_wrap
    import lc_ctrl_pkg::*;
    import secure_subsystem_synth_pkg::*;
    import top_earlgrey_pkg::*;
-#( 
+#(
+   parameter int unsigned HartIdOffs            = 0,
    parameter int unsigned AxiAddrWidth          = SynthAxiAddrWidth,
    parameter int unsigned AxiDataWidth          = SynthAxiDataWidth,
    parameter int unsigned AxiUserWidth          = SynthAxiUserWidth,
@@ -318,6 +319,7 @@ module secure_subsystem_synth_wrap
 
    
    top_earlgrey #(
+      .HartIdOffs(HartIdOffs),
       .axi_req_t(axi_ot_out_req_t),
       .axi_rsp_t(axi_ot_out_resp_t)
    ) u_RoT (
