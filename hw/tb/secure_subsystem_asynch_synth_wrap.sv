@@ -128,12 +128,15 @@ module secure_subsystem_synth_wrap
    
    logic es_rng_fips;
 
+   logic test_en_tieoff;
    logic s_rst_n, s_init_n;
    
    logic fetch_en_sync;
    logic irq_ibex_sync;
-   
    logic axi_isolate_sync;
+
+   wire [1:0] flash_testmode_tieoff;
+   wire otp_ext_tieoff, flash_testvolt_tieoff;
 
    assign dio_in_i[1:0]   = '0;
    assign dio_in_i[15:6]  = '0;
@@ -175,7 +178,8 @@ module secure_subsystem_synth_wrap
    assign jtag_tdo_o     = jtag_o.tdo;
    assign jtag_tdo_oe_o  = jtag_o.tdo_oe;
 
-
+   assign test_en_tieoff = test_enable_i;
+   
    rstgen rstgen_i (
      .clk_i      ( clk_i       ),
      .rst_ni     ( rst_ni      ),
@@ -320,13 +324,13 @@ module secure_subsystem_synth_wrap
       .usb_dn_pullup_en_o(),
       .pwrmgr_ast_req_o(),
       .otp_ctrl_otp_ast_pwr_seq_o(),
-      .otp_ext_voltage_h_io(),
+      .otp_ext_voltage_h_io(otp_ext_tieoff),
       .otp_obs_o(),
       .sensor_ctrl_ast_alert_req_i('0),
       .sensor_ctrl_ast_alert_rsp_o(),
       .sensor_ctrl_ast_status_i('0),
       .ast2pinmux_i('0),
-      .flash_test_mode_a_io(),
+      .flash_test_mode_a_io(flash_testmode_tieoff),
       //.flash_test_voltage_h_io(),
       .ast_init_done_i(lc_ctrl_pkg::On),   
       .sck_monitor_o(),   
@@ -357,7 +361,7 @@ module secure_subsystem_synth_wrap
       .flash_bist_enable_i(lc_ctrl_pkg::Off),
       .flash_power_down_h_i('0),
       .flash_power_ready_h_i(1'b1),
-      .flash_test_voltage_h_io(),
+      .flash_test_voltage_h_io(flash_testvolt_tieoff),
       .dft_hold_tap_sel_i('0),
       .pwrmgr_ast_rsp_i(5'b11111),
       .otp_ctrl_otp_ast_pwr_seq_h_i('0),

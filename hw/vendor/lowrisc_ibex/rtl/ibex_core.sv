@@ -1315,8 +1315,7 @@ module ibex_core import ibex_pkg::*; #(
 
   // Factor in exceptions taken in ID so RVFI tracking picks up flushed instructions that took
   // a trap
-  assign rvfi_id_done = instr_id_done | (id_stage_i.controller_i.rvfi_flush_next &
-                                         id_stage_i.controller_i.id_exception_o);
+  assign rvfi_id_done = instr_id_done | (id_stage_i.controller_i.id_exception_o);
 
   if (WritebackStage) begin : gen_rvfi_wb_stage
     logic unused_instr_new_id;

@@ -668,9 +668,7 @@ module rv_core_ibex
     .spare_req_o (),
     .spare_rsp_i (1'b0),
     .spare_rsp_o ());
-
-`ifndef TARGET_SYNTHESIS
- `ifdef RVFI
+`ifdef RVFI
   ibex_tracer ibex_tracer_i (
     .clk_i,
     .rst_ni,
@@ -701,9 +699,7 @@ module rv_core_ibex
     .rvfi_mem_rdata,
     .rvfi_mem_wdata
   );
- `endif
 `endif
-
   //////////////////////////////////
   // Peripheral functions
   //////////////////////////////////

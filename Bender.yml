@@ -15,7 +15,7 @@ export_include_dirs:
        - hw/ip/lowrisc_ibex/rtl
  
 sources:      
-      
+
 ###### dbg_rv
 
       - hw/vendor/pulp_riscv_dbg/debug_rom/debug_rom.sv
@@ -276,8 +276,14 @@ sources:
       - hw/vendor/lowrisc_ibex/rtl/ibex_if_stage.sv
       - hw/vendor/lowrisc_ibex/rtl/ibex_core.sv
       - hw/vendor/lowrisc_ibex/rtl/ibex_top.sv
+      - target: test
+        defines:
+          RVFI: true
+        files:
+          - hw/vendor/lowrisc_ibex/rtl/ibex_core.sv
+          - hw/vendor/lowrisc_ibex/rtl/ibex_top.sv
 
-#### core wrapper
+##### core wrapper
 
       - hw/top_earlgrey/ip/pwrmgr/rtl/autogen/pwrmgr_reg_pkg.sv
       - hw/top_earlgrey/ip/pwrmgr/rtl/autogen/pwrmgr_reg_top.sv
@@ -285,14 +291,16 @@ sources:
       - hw/ip/rv_core_ibex/rtl/rv_core_ibex_pkg.sv
       - hw/ip/rv_core_ibex/rtl/rv_core_ibex_reg_pkg.sv
       - hw/ip/rv_core_ibex/rtl/rv_core_ibex_cfg_reg_top.sv
+      - hw/ip/rv_core_ibex/rtl/rv_core_addr_trans.sv
+      - hw/ip/rv_core_ibex/rtl/rv_core_ibex.sv
       - target: test
         defines:
-          RVFI: true
+          RVFI: ~
         files:
           - hw/vendor/lowrisc_ibex/rtl/ibex_tracer.sv
           - hw/vendor/lowrisc_ibex/rtl/ibex_top_tracing.sv
-      - hw/ip/rv_core_ibex/rtl/rv_core_addr_trans.sv
-      - hw/ip/rv_core_ibex/rtl/rv_core_ibex.sv
+          - hw/ip/rv_core_ibex/rtl/rv_core_addr_trans.sv
+          - hw/ip/rv_core_ibex/rtl/rv_core_ibex.sv
 
 ##### rv_dm
 

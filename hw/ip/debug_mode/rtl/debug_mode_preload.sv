@@ -105,7 +105,9 @@ module debug_mode_preload import tlul_ot_pkg::*; (
    assign flash_write_o = 1'b1;
    assign flash_wdata_o = {payload_1, payload_2, payload_3[31:20]};
    assign debug_mode_o  = debug_mode;
-   
+
+   assign hw2reg.start.field1 = '0;
+
    always_ff @(posedge clk_i or negedge rst_ni) begin
       if (~rst_ni) 
          state_q  <= IDLE; 
