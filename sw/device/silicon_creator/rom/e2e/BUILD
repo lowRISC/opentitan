@@ -3920,36 +3920,51 @@ test_suite(
 opentitan_functest(
     name = "presigned_fpga_binary",
     cw310 = cw310_params(
-        bitstream = ":bitstream_sigverify_spx_prod_enabled_zero",
+        bitstream = "//hw/bitstream:rom_with_real_keys_otp_test_unlocked0",
     ),
-    ot_flash_binary = "//sw/device/silicon_creator/rom/e2e/presigned_images:presigned",
+    ot_flash_binary = "//sw/device/silicon_creator/rom/e2e/presigned_images:empty_test",
+    # False because we don't want this rule to do the signing; the image is already signed.
     signed = False,
     targets = ["cw310_rom_with_real_keys"],
 )
 
-# TODO(#18686): update to be pres-signed
-opentitan_functest(
+opentitan_flash_binary(
     name = "rom_e2e_self_hash",
+    testonly = True,
     srcs = ["rom_e2e_self_hash_test.c"],
-    cw310 = cw310_params(
-        timeout = "long",
-        bitstream = "//hw/bitstream:rom_with_real_keys_otp_test_unlocked0",
-    ),
-    dv = dv_params(
-        rom = "//sw/device/silicon_creator/rom:rom_with_real_keys",
-    ),
-    key_struct = RSA_ONLY_KEY_STRUCTS[0],
-    signed = True,
-    targets = [
-        "cw310_rom_with_real_keys",
-        "dv",
+    devices = [
+        "fpga_cw310",
+        "sim_dv",
     ],
+    # False because we don't want this rule to do the signing.
+    # This image will be signed via the offline process in
+    # //signing/rom_tests.
+    signed = False,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:chip_info",
+    ],
+)
+
+opentitan_functest(
+    name = "rom_e2e_self_hash_test",
+    cw310 = cw310_params(
+        bitstream = "//hw/bitstream:rom_with_real_keys_otp_test_unlocked0",
+    ),
+    dv = dv_params(
+        rom = "//sw/device/silicon_creator/rom:rom_with_real_keys",
+    ),
+    ot_flash_binary = "//sw/device/silicon_creator/rom/e2e/presigned_images:rom_e2e_self_hash",
+    # False because we don't want this rule to do the signing; the image is already signed.
+    signed = False,
+    targets = [
+        "cw310_rom_with_real_keys",
+        "dv",
     ],
 )

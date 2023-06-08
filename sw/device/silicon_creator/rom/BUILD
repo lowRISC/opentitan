@@ -386,3 +386,31 @@ manual_test(
     ],
     testplan = "//sw/device/silicon_creator/rom/data:rom_manual_testplan.hjson",
 )
+
+genrule(
+    name = "rom_hashes",
+    testonly = True,
+    srcs = [
+        ":rom_with_real_keys",
+    ],
+    outs = ["rom_hashes.txt"],
+    cmd = """
+        echo "SHA256 of rom with real keys" > $@
+	for f in $(locations :rom_with_real_keys); do
+	    if [[ "$$f" == *bin ]]; then
+	        name=$$(basename $$f)
+		echo $$f >> $@
+		size=$$(stat -L -c %s $$f)
+		full=$$(sha256sum $$f | cut -f1 -d' ')
+		without_chip_info=$$(head -c -12 $$f | sha256sum | cut -f1 -d' ')
+		code=$$(echo $$without_chip_info | sed -E s'/(.{8})(.{8})(.{8})(.{8})(.{8})(.{8})(.{8})(.{8})/0x\\8,0x\\7,0x\\6,0x\\5,0x\\4,0x\\3,0x\\2,0x\\1,/g')
+
+		echo "              size: $$size" >> $@
+		echo "     complete hash: $$full" >> $@
+		echo " without chip_info: $$without_chip_info" >> $@
+		echo "w/o chip_info le32: $$code" >> $@
+		echo >> $@
+	    fi
+	done
+    """,
+)

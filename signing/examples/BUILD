@@ -12,6 +12,10 @@ offline_presigning_artifacts(
     srcs = [
         "//sw/device/examples/hello_world:hello_world_bin",
     ],
+    # To sign with real keys, replace the key_file with the label of a real
+    # key (e.g. //sw/device/silicon_creator/rom/keys/real/rsa:earlgrey_a0_test_0).
+    # This is left as a fake key so that the presigning artifacts will be
+    # appropriate for the `fake_sign` rule below.
     key_file = "//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0",
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     tags = ["manual"],
