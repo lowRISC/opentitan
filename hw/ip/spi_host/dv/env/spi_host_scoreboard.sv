@@ -51,6 +51,9 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
   int                               checked_rx_seq_cnt = 0;
   // flag used used for SB when spi tx data is programmed later than command
   local bit wr_cmd = 0;
+  // events
+  event event_sw_rst;
+
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -70,8 +73,9 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
           compare_tx_trans();
           compare_rx_trans();
         join,
-        @(negedge cfg.clk_rst_vif.rst_n),
+        @(negedge cfg.clk_rst_vif.rst_n or event_sw_rst)
       )
+      `uvm_info(`gfn, "Restarting scoreboard checking due to reset event now.", UVM_LOW)
     end
   endtask : run_phase
 
@@ -260,10 +264,25 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
             cov.control_cg.sample(spi_ctrl_reg, active);
           end
           if (spi_ctrl_reg.sw_rst) begin
-            write_segment_q.delete();
-            rx_data_q.delete();
-            in_tx_seg_cnt = 0;
-            checked_tx_seg_cnt = 0;
+            if (active) begin
+              // Zero the checked segment counters here.
+              // 'in_tx_seg_cnt' updates when we drive the stimulus, but 'checked_tx_seg_cnt' only
+              // increments when the monitor sees the transaction on the bus. If the sw_rst is
+              // mid-transaction, the second count will not be updated.
+              // NB. As the segment counter values are only checked at the end of the simulation
+              // (in the check_phase()), if we reset mid-test then all previous transactions will
+              // not be captured in this final count. If the final transaction resets the counters,
+              // they are not very useful. A better solution would be to disable the counters for
+              // tests where they are not valuable, or improve the way we increment them such that
+              // they remain in-sync across a SW_RESET event.
+              // TODO(#18886)
+              // As described above, consider improving segment_cnt check for tests with resets
+              in_tx_seg_cnt = 0;
+              checked_tx_seg_cnt = 0;
+            end
+            // Reset the scoreboard state.
+            reset();
+            ->event_sw_rst;
           end
         end
 
