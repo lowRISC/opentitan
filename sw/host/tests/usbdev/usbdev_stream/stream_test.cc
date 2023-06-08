@@ -54,7 +54,9 @@
 #include <iostream>
 #include <sys/time.h>
 
-#include "usbdev_stream.h"
+#include "usb_device.h"
+#include "usbdev_iso.h"
+#include "usbdev_serial.h"
 #include "usbdev_utils.h"
 
 // Test properties
@@ -81,8 +83,11 @@ TestConfig cfg(false,  // Not verbose
                true,   // Check the retrieved data
                true);  // Send modified data to the device
 
+static USBDevice dev;
+
 // State information for each of the streams
-static USBDevStream streams[STREAMS_MAX];
+static USBDevStream *streams[STREAMS_MAX];
+// static USBDevStream streams[STREAMS_MAX];
 
 // Parse a command line option and return boolean value
 static bool get_bool(const char *p);
@@ -125,7 +130,135 @@ void report_syntax(void) {
       stderr);
 }
 
+static int run_test(USBDevice *dev, unsigned nstreams, uint32_t transfer_bytes,
+                    const char *in_port, const char *out_port) {
+  // We need to modify the port names for each non-initial stream
+  char out_name[FILENAME_MAX];
+  char in_name[FILENAME_MAX];
+
+  // Initialise all streams
+  for (unsigned idx = 0U; idx < nstreams; idx++) {
+    bool opened = false;
+    switch (0) {
+      case 0: {
+        USBDevSerial *s;
+        s = new USBDevSerial(idx, transfer_bytes, cfg.retrieve, cfg.check,
+                             cfg.send, cfg.verbose);
+        if (s) {
+          opened = s->Open(in_port, out_port);
+          if (opened) {
+            streams[idx] = s;
+          }
+        }
+      } break;
+
+      case 1: {
+        USBDevIso *iso;
+        iso = new USBDevIso(dev, idx, transfer_bytes, cfg.retrieve, cfg.check,
+                            cfg.send, cfg.verbose);
+        if (iso) {
+          opened = iso->Open(idx);
+          if (opened) {
+            streams[idx] = iso;
+          }
+        }
+      } break;
+
+        // TODO: I guess we treat Interrupt and Bulk transfers using a single
+        // third case?
+      default:
+        assert(!"");
+        break;
+    }
+
+    if (!opened) {
+      if (idx > 0U) {
+        do {
+          idx--;
+          delete streams[idx];
+        } while (idx > 0U);
+      }
+      return 1;
+    }
+
+    // Modify the port name for the next stream
+    port_next(out_name, sizeof(out_name), out_port);
+    port_next(in_name, sizeof(in_name), in_port);
+    out_port = out_name;
+    in_port = in_name;
+  }
+
+  std::cout << "Streaming...\r" << std::flush;
+
+  int32_t prev_bytes = 0;
+  bool done = false;
+  do {
+    uint32_t total_bytes = 0U;
+    int32_t bytes_sent = 0U;
+    bool failed = false;
+    done = true;
+
+    for (unsigned idx = 0U; idx < nstreams; idx++) {
+      // Service this stream
+      if (!streams[idx]->Service()) {
+        failed = true;
+        break;
+      }
+
+      // Update the running totals
+      total_bytes += streams[idx]->TransferBytes();
+      bytes_sent += (int32_t)streams[idx]->BytesSent();
+
+      // Has the stream completed all its work yet?
+      if (!streams[idx]->Completed()) {
+        done = false;
+      }
+    }
+
+    // Service the USBDevice to keep USB transfers flowing.
+    if (!failed) {
+      failed = !dev->Service();
+    }
+
+    // Tidy up if something went wrong.
+    if (failed) {
+      for (unsigned idx = 0U; idx < nstreams; idx++) {
+        (void)streams[idx]->Close();
+      }
+      return 3;
+    }
+
+    // Down counting of the number of bytes remaining to be transferred
+    if (std::abs(bytes_sent - prev_bytes) >= 0x1000 || done) {
+      std::cout << "Bytes left: 0x" << std::hex << total_bytes - bytes_sent
+                << "         \r" << std::dec << std::flush;
+      //      printf("Bytes left: 0x%x         \r", total_bytes - bytes_sent);
+      //      fflush(stdout);
+      prev_bytes = bytes_sent;
+    }
+  } while (!done);
+
+  uint64_t elapsed_time = time_us() - start_time;
+
+  // Report time elapsed from the start of data transfer
+  for (unsigned idx = 0U; idx < nstreams; idx++) {
+    streams[idx]->Close();
+  }
+
+  // TODO: introduce a crude estimate of the performance being achieved,
+  // for profiling the performance of IN and OUT traffic; totals and individual
+  // endpoints
+
+  double elapsed_secs = elapsed_time / 1e6;
+  printf("Test completed in %.2lf seconds (%" PRIu64 "us)\n", elapsed_secs,
+         elapsed_time);
+
+  return 0;
+}
+
 int main(int argc, char *argv[]) {
+  const uint16_t kVendorID = 0x18d1u;
+  const uint16_t kProductID = 0x503au;
   const char *out_port = NULL;
   const char *in_port = NULL;
   unsigned nstreams = 2U;
@@ -193,80 +326,25 @@ int main(int argc, char *argv[]) {
     printf(" - %u stream(s), 0x%x bytes each\n", nstreams, transfer_bytes);
   }
 
-  // We need to modify the port names for each non-initial stream
-  char out_name[FILENAME_MAX];
-  char in_name[FILENAME_MAX];
+  USBDevice dev(cfg.verbose);
 
-  // Initialise all streams
-  for (unsigned idx = 0U; idx < nstreams; idx++) {
-    if (!streams[idx].Open(idx, in_port, out_port, transfer_bytes, cfg.retrieve,
-                           cfg.check, cfg.send)) {
-      while (idx-- > 0U) {
-        streams[idx].Close();
-      }
-      return 1;
-    }
-
-    // Modify the port name for the next stream
-    port_next(out_name, sizeof(out_name), out_port);
-    port_next(in_name, sizeof(in_name), in_port);
-    out_port = out_name;
-    in_port = in_name;
+  if (!dev.Init(kVendorID, kProductID)) {
+    return 2;
   }
 
-  std::cout << "Streaming...\r" << std::flush;
-
-  int32_t prev_bytes = 0;
-  bool bDone = false;
-  do {
-    uint32_t total_bytes = 0U;
-    int32_t bytes_sent = 0U;
-    bDone = true;
-
-    for (unsigned idx = 0U; idx < nstreams; idx++) {
-      // Service this stream
-      if (!streams[idx].Service()) {
-        while (idx-- > 0U) {
-          streams[idx].Close();
-        }
-        return 2;
-      }
-
-      // Update the running totals
-      total_bytes += streams[idx].TransferBytes();
-      bytes_sent += (int32_t)streams[idx].BytesSent();
-
-      // Has the stream completed all its work yet?
-      if (!streams[idx].Completed()) {
-        bDone = false;
-      }
-    }
-
-    // Down counting of the number of bytes remaining to be transferred
-    if (std::abs(bytes_sent - prev_bytes) >= 0x1000 || bDone) {
-      std::cout << "Bytes left: 0x" << std::hex << total_bytes - bytes_sent
-                << "         \r" << std::flush;
-      //      printf("Bytes left: 0x%x         \r", total_bytes - bytes_sent);
-      //      fflush(stdout);
-      prev_bytes = bytes_sent;
-    }
-
-  } while (!bDone);
-
-  uint64_t elapsed_time = time_us() - start_time;
-
-  // Report time elapsed from the start of data transfer
-  for (unsigned idx = 0U; idx < nstreams; idx++) {
-    streams[idx].Close();
+  if (!dev.Open()) {
+    dev.Fin();
+    return 3;
   }
 
-  // TODO: introduce a crude estimate of the performance being achieved,
-  // for profiling the performance of IN and OUT traffic; totals and individual
-  // endpoints
+  if (!dev.ReadTestDesc()) {
+    dev.Close();
+    return 3;
+  }
 
-  double elapsed_secs = elapsed_time / 1e6;
-  printf("Test completed in %.2lf seconds (%" PRIu64 "us)\n", elapsed_secs,
-         elapsed_time);
+  int rc = run_test(&dev, nstreams, transfer_bytes, in_port, out_port);
 
-  return 0;
+  dev.Fin();
+
+  return rc;
 }
