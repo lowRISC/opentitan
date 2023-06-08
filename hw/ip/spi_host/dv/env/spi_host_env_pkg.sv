@@ -67,6 +67,9 @@ package spi_host_env_pkg;
   } spi_host_configopts_t;
 
   typedef struct {
+    rand bit spien;
+    rand bit output_en;
+    rand bit sw_rst;
     // csid register
     rand bit [31:0] csid;
     // control register fields
