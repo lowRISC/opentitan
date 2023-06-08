@@ -262,8 +262,8 @@ class spi_host_base_vseq extends cip_base_vseq #(
 
 
   // wait dut ready for new command
-  virtual task wait_ready_for_command();
-    csr_spinwait(.ptr(ral.status.ready), .exp_data(1'b1));
+  virtual task wait_ready_for_command(bit backdoor = 1'b0);
+    csr_spinwait(.ptr(ral.status.ready), .exp_data(1'b1), .backdoor(backdoor));
   endtask : wait_ready_for_command
 
 
