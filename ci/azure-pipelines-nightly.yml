@@ -67,6 +67,7 @@ jobs:
   - bash: |
       set -x
       module load "xilinx/vivado/$(VIVADO_VERSION)"
+      bazel sync --configure
       ci/bazelisk.sh test \
         --define DISABLE_VERILATOR_BUILD=true \
         --define bitstream=gcp_splice \
