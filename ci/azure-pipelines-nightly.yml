@@ -73,7 +73,7 @@ jobs:
         --test_tag_filters=-verilator,-dv,-broken \
         --build_tests_only \
         --test_output=errors \
-        //sw/device/tests:gpio_pinmux_test
+        //sw/device/tests:spi_device_ottf_console_test
     displayName: "Run one hyper310 test to check the hardware configuration works"
 
 #- job: bob_tests
