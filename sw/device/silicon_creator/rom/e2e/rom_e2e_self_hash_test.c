@@ -9,6 +9,7 @@
 #include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/silicon_creator/lib/chip_info.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
@@ -36,22 +37,26 @@ enum {
  *    a. one for DV simulations: "rom_with_real_keys_sim_dv.bin", and
  *    b. one for CW310 FPGA: "rom_with_real_keys_fpga_cw310.bin".
  *
- * 2. Query and update the ROM size below (`kGoldenRomSizeBytes`) with:
- *    `stat -c %s <path to *.bin>`
+ * 2. Query the ROM hashes:
+ *    bazel build //sw/device/silicon_creator/rom:rom_hashes
+ *    cat bazel-bin/sw/device/silicon_creator/rom/rom_hashes.txt
  *
- * 3. Compute and update the golden ROM hashes below (`k*GoldenRomHash`) with:
- *    `sha256sum <path to *.bin>`
- *    Note, make sure to reverse the byte order so order is little endian.
+ * 3. Update the size and golden ROM hashes below (`k*GoldenRomHash`) by
+ *    copying the little-endian-32 value arrays from the `rom_hashes.txt`
+ *    report.
  */
-const size_t kGoldenRomSizeBytes = 32648;
+
+const size_t kGoldenRomSizeBytes = 32652 - sizeof(chip_info_t);
 const uint32_t kSimDvGoldenRomHash[kSha256HashSizeIn32BitWords] = {
-    0xa89b5d02, 0x45ac9691, 0x37ecafa7, 0x3feb8e85,
-    0x8856d902, 0x36012a3e, 0x11ca064b, 0xa5358f02,
+    0x5bca0664, 0xa22b197c, 0x3e3c0122, 0x7a2e9af9,
+    0x0ae0d72f, 0xdf59fcb7, 0xf6cf5ee2, 0x712d479f,
 };
 const uint32_t kFpgaCw310GoldenRomHash[kSha256HashSizeIn32BitWords] = {
-    0x40e52a49, 0x81729b5d, 0x05f8221f, 0xab685ed2,
-    0xec153ccc, 0xf372b97f, 0x8f9136bc, 0x0ce5576f,
+    0xcf14b80b, 0x4cd88763, 0xb1785379, 0x31da7bd2,
+    0xf3baf4e8, 0x9ff23cdf, 0x6e2a5d50, 0x96c39393,
 };
+
+extern const char _chip_info_start[];
 
 // We hash the ROM using the SHA256 algorithm and print the hash to the console.
 status_t hash_rom(void) {
@@ -67,6 +72,16 @@ status_t hash_rom(void) {
 
   TRY(otcrypto_hash(input, kHashModeSha256, &output));
   LOG_INFO("ROM Hash: 0x%!x", kSha256HashSizeInBytes, rom_hash);
+  chip_info_t *rom_chip_info = (chip_info_t *)_chip_info_start;
+  LOG_INFO("rom_chip_info @ %p:", rom_chip_info);
+  LOG_INFO("scm_revision = %08x%08x",
+           rom_chip_info->scm_revision.scm_revision_high,
+           rom_chip_info->scm_revision.scm_revision_low);
+  LOG_INFO("version = %08x", rom_chip_info->version);
+
+  // TODO(#18868) Add checks for the chip_info values we expect to see in the
+  // released ROM binary.
+
   if (kDeviceType == kDeviceSimDV) {
     TRY_CHECK_ARRAYS_EQ((uint8_t *)output.data, (uint8_t *)kSimDvGoldenRomHash,
                         sizeof(kSimDvGoldenRomHash));
@@ -75,8 +90,9 @@ status_t hash_rom(void) {
                         (uint8_t *)kFpgaCw310GoldenRomHash,
                         sizeof(kFpgaCw310GoldenRomHash));
   } else {
-    LOG_WARNING("ROM hash not self-checked for this device type: 0x%x",
-                kDeviceType);
+    LOG_ERROR("ROM hash not self-checked for this device type: 0x%x",
+              kDeviceType);
+    return INTERNAL();
   }
 
   return OK_STATUS();
