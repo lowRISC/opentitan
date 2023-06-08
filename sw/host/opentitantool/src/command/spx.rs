@@ -16,8 +16,8 @@ use opentitanlib::util::file::{FromReader, PemSerilizable, ToWriter};
 #[derive(Annotate, serde::Serialize)]
 pub struct SpxPublicKeyInfo {
     pub public_key_num_bits: usize,
-    #[annotate(format=hex)]
-    pub public_key: Vec<u8>,
+    #[annotate(format=hex,comment="Words in little endian order.")]
+    pub public_key: Vec<u32>,
 }
 
 /// Show public information of a SPHINCS+ public key or key pair.
@@ -40,7 +40,11 @@ impl CommandDispatch for SpxKeyShowCommand {
 
         Ok(Some(Box::new(SpxPublicKeyInfo {
             public_key_num_bits: key.pk_len() * 8,
-            public_key: key.pk_as_bytes().to_vec(),
+            public_key: key
+                .pk_as_bytes()
+                .chunks(4)
+                .map(|x| u32::from_le_bytes(x.try_into().unwrap()))
+                .collect(),
         })))
     }
 }
