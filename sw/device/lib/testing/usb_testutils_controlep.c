@@ -412,8 +412,11 @@ status_t usb_testutils_controlep_init(usb_testutils_controlep_ctx_t *ctctx,
   ctctx->cfg_dscr_len = cfg_dscr_len;
   ctctx->test_dscr = test_dscr;
   ctctx->test_dscr_len = test_dscr_len;
-  TRY(dif_usbdev_interface_enable(ctx->dev, kDifToggleEnabled));
   ctctx->device_state = kUsbTestutilsDeviceDefault;
+
+  // Indicate the device presence, at which point we can expect to start
+  // receiving control transfers from the host
+  TRY(dif_usbdev_interface_enable(ctx->dev, kDifToggleEnabled));
 
   return OK_STATUS();
 }
