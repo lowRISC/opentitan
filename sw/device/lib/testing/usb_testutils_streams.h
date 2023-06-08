@@ -82,6 +82,8 @@ typedef struct __attribute__((packed)) usbdev_stream_sig {
   uint32_t head_sig;
   /**
    * Initial value of LFSR
+   * Note: for Isochronous Transfers, this is the initial value of the sender's
+   *       LFSR for _this packet_
    */
   uint8_t init_lfsr;
   /**
@@ -89,12 +91,18 @@ typedef struct __attribute__((packed)) usbdev_stream_sig {
    */
   uint8_t stream;
   /**
-   * Reserved fields; should be zero
+   * Sequence number, low part; for non-Isochronous streams this will always be
+   * zero because a signature is used only at the start of the data stream.
    */
-  uint8_t reserved1;
-  uint8_t reserved2;
+  uint8_t seq_lo;
   /**
-   * Number of bytes to be transferred
+   * Sequence number, high part; for non-Isochronous streams this will always be
+   * zero because a signature is used only at the start of the data stream.
+   */
+  uint8_t seq_hi;
+  /**
+   * Number of bytes to be transferred; for Isochronous streams this
+   * is the count of remaining bytes and it wraps when reaching zero
    */
   uint32_t num_bytes;
   /**
@@ -120,13 +128,21 @@ typedef struct usbdev_stream {
    */
   uint8_t id;
   /**
-   * Has the stream signature been sent yet?
+   * USB transfer type
    */
-  bool sent_sig;
+  usb_testutils_transfer_type_t xfr_type;
+  /**
+   * Is a signature required at the start of the next packet?
+   */
+  bool sig_required;
   /**
    * USB device endpoint being used for data transmission
    */
   uint8_t tx_ep;
+  /**
+   * Transmission Sequence Number (for Isochronous streams)
+   */
+  uint16_t tx_seq;
   /**
    * Transmission Linear Feedback Shift Register (for PRND data generation)
    */
@@ -144,6 +160,10 @@ typedef struct usbdev_stream {
    */
   uint8_t rx_ep;
   /**
+   * Reception Sequence Number (for Isochronous streams)
+   */
+  uint16_t rx_seq;
+  /**
    * Reception-side LFSR state (mirrors USBDPI generation of PRND data)
    */
   uint8_t rx_lfsr;
@@ -155,6 +175,11 @@ typedef struct usbdev_stream {
    * Total number of bytes received from the USB device
    */
   uint32_t rx_bytes;
+  /**
+   * Reception-side LFSR for determination of expected buffer size
+   * (for Isochronous streams where packets may be dropped)
+   */
+  uint8_t rx_buf_size;
   /**
    * Size of transfer in bytes
    */
@@ -275,6 +300,17 @@ status_t usb_testutils_stream_init(usb_testutils_streams_ctx_t *ctx, uint8_t id,
                                    uint8_t ep_in, uint8_t ep_out,
                                    uint32_t num_bytes,
                                    usbdev_stream_flags_t flags, bool verbose);
+
+/**
+ * Specify the number of already-initialized streams, and apportion the
+ * available tx buffers among them. To be called after usb_testutils_stream_init
+ *
+ * @param  ctx       Context state for streaming test.
+ * @param  nstreams  Number of streams.
+ * @return           Success or otherwise of the request.
+ */
+bool usb_testutils_streams_count_set(usb_testutils_streams_ctx_t *ctx,
+                                     unsigned nstreams);
 
 /**
  * Service the given stream, preparing and/or sending any data that we can.
