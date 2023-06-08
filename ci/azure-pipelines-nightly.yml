@@ -61,7 +61,7 @@ jobs:
       set -x
       ci/bazelisk.sh run //sw/host/opentitantool \
         -- \
-        --interface=hyper310 \
+        --interface=hyperdebug_dfu \
         transport update-firmware
     displayName: "Update HyperDebug firmware"
   - bash: |
