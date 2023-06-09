@@ -11,7 +11,8 @@ module pinmux_tb
   import prim_pad_wrapper_pkg::*;
   import top_earlgrey_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  parameter bit SecVolatileRawUnlockEn = 1
 ) (
   input  clk_i,
   input  rst_ni,
@@ -23,6 +24,7 @@ module pinmux_tb
   output logic usb_wkup_req_o,
   input  sleep_en_i,
   input  strap_en_i,
+  input  strap_en_override_i,
   input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_check_byp_en_i,
@@ -78,7 +80,6 @@ module pinmux_tb
   localparam int TrstNPadIdx = 39;
   localparam int TdiPadIdx = 37;
   localparam int TdoPadIdx = 36;
-
   // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
     tck_idx:           TckPadIdx,
@@ -166,7 +167,8 @@ module pinmux_tb
 
   pinmux #(
     .TargetCfg(PinmuxTargetCfg),
-    .AlertAsyncOn(AlertAsyncOn)
+    .AlertAsyncOn(AlertAsyncOn),
+    .SecVolatileRawUnlockEn(SecVolatileRawUnlockEn)
   ) dut_asic (.*);
 
 endmodule : pinmux_tb
