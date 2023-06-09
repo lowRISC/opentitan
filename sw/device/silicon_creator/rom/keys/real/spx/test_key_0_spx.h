@@ -8,14 +8,14 @@
 #define TEST_KEY_0_SPX \
   {                    \
     .data = {          \
-      0x8dbf6ee6,      \
-      0xf48a5bbe,      \
-      0x4b4938e4,      \
-      0x8d45a8a9,      \
-      0x5a37ff35,      \
-      0x5f1df006,      \
-      0xb25e107c,      \
-      0x2a4994a9,      \
+      0x9D629D35,      \
+      0xBE0FA606,      \
+      0xD416672A,      \
+      0xFD0F8D4C,      \
+      0x38E0A97F,      \
+      0x15BA9BB,       \
+      0xCDAFCD22,      \
+      0x2BB062EE       \
     }                  \
   }
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_KEYS_REAL_SPX_TEST_KEY_0_SPX_H_
