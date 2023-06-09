@@ -135,6 +135,17 @@ otbn_binary(
     ],
 )
 
+otbn_binary(
+    name = "run_rsa_modexp",
+    srcs = [
+        "run_rsa_modexp.s",
+    ],
+    deps = [
+        ":modexp",
+        ":montmul",
+    ],
+)
+
 otbn_library(
     name = "rsa_keygen",
     srcs = [
