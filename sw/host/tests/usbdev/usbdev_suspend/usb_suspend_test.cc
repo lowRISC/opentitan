@@ -12,19 +12,16 @@
 
 #include <cctype>
 #include <cerrno>
-#include <iostream>
 #include <cstdbool>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-
 #include <fcntl.h>
-#include <unistd.h>
-
-#include <sys/ioctl.h>
-
+#include <iostream>
 #include <linux/usbdevice_fs.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
 
 #include "libusb.h"
 
@@ -83,8 +80,8 @@ typedef enum usb_testutils_test_number {
 } usb_testutils_test_number_t;
 
 class USBDevice {
-public:
-  USBDevice() : _verbose(false), _manual(false), _devh(nullptr) { }
+ public:
+  USBDevice() : _verbose(false), _manual(false), _devh(nullptr) {}
 
   /**
    * Run test to completion.
@@ -112,12 +109,10 @@ public:
    */
   void ReportSyntax();
 
-  /** 
+  /**
    * Is test progress being directed/controlled manually?
    */
-  inline bool ManualControl() const {
-    return _manual;
-  }
+  inline bool ManualControl() const { return _manual; }
   /**
    * Returns the current phase of the test
    */
@@ -128,7 +123,7 @@ public:
   static inline uint32_t TimeFrames(unsigned frames) { return frames * 1000u; }
   /**
    *
-   */  
+   */
   bool Delay(uint32_t time_us, bool with_traffic = true);
   /**
    * Read Test Descriptor from the DUT using a Vendor-Specific command.
@@ -140,7 +135,7 @@ public:
    * Reset and Reconfigure the DUT.
    *
    * @return true iff the operation was successful.
-   */  
+   */
   bool Reset();
   /**
    * Suspend device.
@@ -182,11 +177,11 @@ public:
   std::string _devPath;
 
   // Current phase within the Suspend-Sleep-Wakeup-Resume testing sequence.
-  usbdev_suspend_phase_t _testPhase;  
+  usbdev_suspend_phase_t _testPhase;
 
-  uint8_t  _testArg[4];
+  uint8_t _testArg[4];
 
-  //TODO: We should introduce a timeout on libusb Control Transfers
+  // TODO: We should introduce a timeout on libusb Control Transfers
   static const unsigned kControlTransferTimeout = 0u;
 
   static const uint16_t kVendorID = 0x18d1u;
@@ -223,7 +218,7 @@ bool USBDevice::Open() {
   do {
     // TODO: sadly this does not work for our requirements?
     if (false) {
-  	  _devh = libusb_open_device_with_vid_pid(ctx, kVendorID, kProductID);
+      _devh = libusb_open_device_with_vid_pid(ctx, kVendorID, kProductID);
     } else {
       // No device handle at present
       _devh = nullptr;
@@ -238,9 +233,13 @@ bool USBDevice::Open() {
         int rc = libusb_get_device_descriptor(dev_list[idx], &_devDesc);
         if (rc >= 0) {
           if (_verbose) {
-            std::cout << "Device: " << "VendorID: " << std::hex << _devDesc.idVendor << " ProductID: " << _devDesc.idProduct << std::dec << std::endl;
+            std::cout << "Device: "
+                      << "VendorID: " << std::hex << _devDesc.idVendor
+                      << " ProductID: " << _devDesc.idProduct << std::dec
+                      << std::endl;
           }
-          if (_devDesc.idVendor == kVendorID && _devDesc.idProduct == kProductID) {
+          if (_devDesc.idVendor == kVendorID &&
+              _devDesc.idProduct == kProductID) {
             break;
           }
         }
@@ -276,7 +275,8 @@ bool USBDevice::Open() {
         // Open a handle to our device
         rc = libusb_open(dev, &_devh);
         if (rc < 0) {
-          std::cerr << "Error opening device: " << libusb_error_name(rc) << std::endl;
+          std::cerr << "Error opening device: " << libusb_error_name(rc)
+                    << std::endl;
           return false;
         }
       }
@@ -284,16 +284,16 @@ bool USBDevice::Open() {
       libusb_free_device_list(dev_list, 1u);
     }
 
-	  if (_devh) {
-	    found = true;
-	  } else if (numTries-- > 0u) {
+    if (_devh) {
+      found = true;
+    } else if (numTries-- > 0u) {
       // Retry a number of times before reporting failure.
       std::cout << '.' << std::flush;
       sleep(1);
     } else {
       std::cerr << "Unable to locate USB device" << std::endl;
       return false;
-	  }
+    }
   } while (!found);
 
   // Report that we have at least found the device.
@@ -306,15 +306,17 @@ bool USBDevice::Open() {
   // control
   int rc = libusb_set_auto_detach_kernel_driver(_devh, 1u);
   if (rc < 0) {
-    std::cerr << "Error detaching kernel driver: " << libusb_error_name(rc) << std::endl;
+    std::cerr << "Error detaching kernel driver: " << libusb_error_name(rc)
+              << std::endl;
     return false;
   }
   rc = libusb_claim_interface(_devh, kInterface);
-	if (rc < 0) {
-    std::cerr << "Error claiming interface: " << libusb_error_name(rc) << std::endl;
+  if (rc < 0) {
+    std::cerr << "Error claiming interface: " << libusb_error_name(rc)
+              << std::endl;
     // TODO: shutdown
     return false;
-	}
+  }
 
   // Read and check the currently active configuration; this should just be 1
   // since our test software sets up only a single configuration.
@@ -363,9 +365,7 @@ const char *USBDevice::PhaseName(usbdev_suspend_phase_t phase) {
 }
 
 // TODO:
-uint16_t get_le16(const uint8_t *p) {
-  return p[0] | (p[1] << 8);
-}
+uint16_t get_le16(const uint8_t *p) { return p[0] | (p[1] << 8); }
 
 bool USBDevice::ReadTestDesc() {
   std::cout << "Reading Test Descriptor" << std::endl;
@@ -376,8 +376,9 @@ bool USBDevice::ReadTestDesc() {
 
   // Send a Vendor-Specific command to read the test descriptor
   uint8_t testDesc[0x10u];
-  int rc = libusb_control_transfer(_devh, 0xc2u, kVendorTestConfig, 0u, 0u,
-                                   testDesc, sizeof(testDesc), kControlTransferTimeout);
+  int rc =
+      libusb_control_transfer(_devh, 0xc2u, kVendorTestConfig, 0u, 0u, testDesc,
+                              sizeof(testDesc), kControlTransferTimeout);
   if (rc < 0) {
     std::cerr << "Error reading test descriptor: " << libusb_error_name(rc)
               << std::endl;
@@ -395,7 +396,8 @@ bool USBDevice::ReadTestDesc() {
   const uint8_t *dp = testDesc;
   if (!memcmp(dp, test_sig_head, 4) && 0x10u == get_le16(&dp[4]) &&
       !memcmp(&dp[12], test_sig_tail, 4)) {
-    usb_testutils_test_number_t testNum = (usb_testutils_test_number_t)get_le16(&dp[6]);
+    usb_testutils_test_number_t testNum =
+        (usb_testutils_test_number_t)get_le16(&dp[6]);
     if (testNum != kUsbTestNumberSuspend) {
       std::cerr << "Unexpected test number: " << (unsigned)testNum << std::endl;
       return false;
@@ -403,7 +405,7 @@ bool USBDevice::ReadTestDesc() {
 
     // Although we needn't retain the test number, having checked it, the test
     // phase does vary and determines the actions we must perform.
-    _testPhase  = (usbdev_suspend_phase_t)dp[8];
+    _testPhase = (usbdev_suspend_phase_t)dp[8];
 
     //  TODO: Retain the test arguments?
     _testArg[0] = dp[8];
@@ -423,7 +425,9 @@ bool USBDevice::Delay(uint32_t time_us, bool with_traffic) {
   while (time_us > 0) {
     uint32_t delay_us = time_us;
     if (_verbose) {
-      std::cout << "Delaying " << time_us << "us " << (with_traffic ? " - with traffic" : "no traffic") << std::endl;
+      std::cout << "Delaying " << time_us << "us "
+                << (with_traffic ? " - with traffic" : "no traffic")
+                << std::endl;
     }
     if (with_traffic) {
       delay_us = 1000u;
@@ -525,7 +529,8 @@ bool USBDevice::ParseArgs(int argc, char *argv[]) {
           break;
         default:
           ReportSyntax();
-          std::cerr << "Unrecognised/invalid option '" << argv[i] << "'" << std::endl;
+          std::cerr << "Unrecognised/invalid option '" << argv[i] << "'"
+                    << std::endl;
           return false;
       }
     }
@@ -545,15 +550,16 @@ bool USBDevice::RunTest() {
     // Wait for a little while...
     if (ManualControl()) {
       // Await keypress
-      std::cout << "Press (D)isconnect, (R)esume, (S)uspend, read (T)est descriptor, X to reset\n"
+      std::cout << "Press (D)isconnect, (R)esume, (S)uspend, read (T)est "
+                   "descriptor, X to reset\n"
                    "Press Q to quit\n"
                 << std::endl;
       int ch = getchar();
       switch (toupper(ch)) {
         // Reset device
-        // Note: this is not just a Bus Reset; it will cause the driver to attempt
-        // to reinstate the previous configuration; our device-side test software
-        // expects this before proceeding.
+        // Note: this is not just a Bus Reset; it will cause the driver to
+        // attempt to reinstate the previous configuration; our device-side test
+        // software expects this before proceeding.
         case 'D':
           Disconnect();
           break;
@@ -601,7 +607,8 @@ bool USBDevice::RunTest() {
           }
           // no break
         case kSuspendPhaseSuspend:
-          if (!Delay(TimeFrames(kFramesUntilSleep + kFramesUntilResume), false)) {
+          if (!Delay(TimeFrames(kFramesUntilSleep + kFramesUntilResume),
+                     false)) {
             return false;
           }
           // Initiate Resume Signaling.
@@ -611,14 +618,16 @@ bool USBDevice::RunTest() {
           break;
         case kSuspendPhaseSleepReset:
         case kSuspendPhaseDeepReset:
-          if (!Delay(TimeFrames(kFramesUntilSleep + kFramesUntilReset), false) ||
+          if (!Delay(TimeFrames(kFramesUntilSleep + kFramesUntilReset),
+                     false) ||
               !Reset()) {
             return false;
           }
           break;
         case kSuspendPhaseSleepDisconnect:
         case kSuspendPhaseDeepDisconnect:
-          if (!Delay(TimeFrames(kFramesUntilSleep + kFramesUntilDisconnect), false) ||
+          if (!Delay(TimeFrames(kFramesUntilSleep + kFramesUntilDisconnect),
+                     false) ||
               !Disconnect()) {
             return false;
           }
@@ -644,8 +653,8 @@ int main(int argc, char **argv) {
   // Initialize libusb
   int rc = libusb_init_context(&ctx, NULL, 0);
   if (rc < 0) {
-  	std::cerr << "Error initializing libusb: " << libusb_error_name(rc)
-		          << std::endl;
+    std::cerr << "Error initializing libusb: " << libusb_error_name(rc)
+              << std::endl;
     return 3;
   }
 

@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/testing/usb_testutils.h"
 
 #include "sw/device/lib/dif/dif_usbdev.h"
+#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -93,48 +93,48 @@ static bool usb_testutils_transfer_next_part(
 }
 
 status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
-static const uint64_t capture_interval = 2000 * 10;  // 2ms, 10MHz FPGA
-static uint64_t next_capture;
-static bool capture = false;
+  static const uint64_t capture_interval = 2000 * 10;  // 2ms, 10MHz FPGA
+  static uint64_t next_capture;
+  static bool capture = false;
   uint32_t istate;
 
   // Collect a set of interrupts
   TRY(dif_usbdev_irq_get_state(ctx->dev, &istate));
 
-// TODO:
-if (capture && ibex_mcycle_read() > next_capture) {
-  // Report the state of the bus periodically, investigating unexpected behaviour
-  // surrounding suspend, resume and reset.
-  dif_usbdev_phy_pins_sense_t sense;
-  TRY(dif_usbdev_get_phy_pins_status(ctx->dev, &sense));
-  uint32_t data = (sense.rx_dp ? 1U : 0) | (sense.rx_dn ? 2U : 0) |
-                  (sense.rx_d ? 4U : 0) | (sense.output_enable ? 8U : 0) |
-                  (sense.vbus_sense ? 0x100U : 0);
-  USBUTILS_FUNCPT(0x5a90, (data << 16) | ctx->frame);
-
-  next_capture = ibex_mcycle_read() + capture_interval;
-}
-
-  if (!istate) {
-    return OK_STATUS();
-  }
-// TODO: simplify the logs for now!
-if (istate == (1u << kDifUsbdevIrqFrame)) {
-  TRY(dif_usbdev_irq_acknowledge_state(ctx->dev, istate));
-
-  if (true) {
-    TRY(dif_usbdev_status_get_frame(ctx->dev, &ctx->frame));
-
+  // TODO:
+  if (capture && ibex_mcycle_read() > next_capture) {
+    // Report the state of the bus periodically, investigating unexpected
+    // behaviour surrounding suspend, resume and reset.
     dif_usbdev_phy_pins_sense_t sense;
     TRY(dif_usbdev_get_phy_pins_status(ctx->dev, &sense));
     uint32_t data = (sense.rx_dp ? 1U : 0) | (sense.rx_dn ? 2U : 0) |
                     (sense.rx_d ? 4U : 0) | (sense.output_enable ? 8U : 0) |
                     (sense.vbus_sense ? 0x100U : 0);
-    USBUTILS_FUNCPT(0x50f0, (data << 16) | ctx->frame);
+    USBUTILS_FUNCPT(0x5a90, (data << 16) | ctx->frame);
+
+    next_capture = ibex_mcycle_read() + capture_interval;
   }
 
+  if (!istate) {
     return OK_STATUS();
-}
+  }
+  // TODO: simplify the logs for now!
+  if (istate == (1u << kDifUsbdevIrqFrame)) {
+    TRY(dif_usbdev_irq_acknowledge_state(ctx->dev, istate));
+
+    if (true) {
+      TRY(dif_usbdev_status_get_frame(ctx->dev, &ctx->frame));
+
+      dif_usbdev_phy_pins_sense_t sense;
+      TRY(dif_usbdev_get_phy_pins_status(ctx->dev, &sense));
+      uint32_t data = (sense.rx_dp ? 1U : 0) | (sense.rx_dn ? 2U : 0) |
+                      (sense.rx_d ? 4U : 0) | (sense.output_enable ? 8U : 0) |
+                      (sense.vbus_sense ? 0x100U : 0);
+      USBUTILS_FUNCPT(0x50f0, (data << 16) | ctx->frame);
+    }
+
+    return OK_STATUS();
+  }
 
   USBUTILS_FUNCPT(0x9011, istate);
 
@@ -250,8 +250,8 @@ if (istate == (1u << kDifUsbdevIrqFrame)) {
   if (istate & (1u << kDifUsbdevIrqLinkReset)) {
     static int cnt = 0;
     USBUTILS_FUNCPT(0x5e57, cnt);
-capture =true;
-next_capture = ibex_mcycle_read() + capture_interval;
+    capture = true;
+    next_capture = ibex_mcycle_read() + capture_interval;
 // LOG_INFO("LR");
 #if 0
 if (++cnt == 3)
@@ -299,8 +299,8 @@ for (unsigned i = 0U; i < 100U; i++) {
     USBUTILS_FUNCPT(0x50f, ctx->frame);
   }
 
-// TODO: We should perhaps record all of these events as concurrent, since we
-// cannot ascertain the temporal ordering
+  // TODO: We should perhaps record all of these events as concurrent, since we
+  // cannot ascertain the temporal ordering
   if (istate & (1u << kDifUsbdevIrqPowered)) {
     USBUTILS_TRACE(0x90e5, "USB: Powered");
   }

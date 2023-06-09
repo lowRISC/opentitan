@@ -76,8 +76,8 @@ void usbutils_funcpt_report(void) {
         // may be the address of a string literal (indicated by MSB being set).
         uint32_t d = usbutils_fpt_log[idx + 3U];
         if (datum >> 31) {
-          LOG_INFO("%u.%uus : %s : 0x%04x (%u) - %s", elapsed_us,
-                   fract_us, file, pt, pt, (const char *)d);
+          LOG_INFO("%u.%uus : %s : 0x%04x (%u) - %s", elapsed_us, fract_us,
+                   file, pt, pt, (const char *)d);
         } else {
           LOG_INFO("%u.%uus : %s : 0x%04x (%u) datum 0x%08x", elapsed_us,
                    fract_us, file, pt, pt, d);
@@ -91,7 +91,8 @@ void usbutils_funcpt_report(void) {
 
 // TODO: Experiment to see whether we can gather packet data from the sense pins
 void usbutils_gather(dif_usbdev_t *dev, uint8_t *buf, size_t n) {
-  volatile uint32_t *psense = (volatile uint32_t *)((uintptr_t)dev->base_addr.base + 0x7cu);
+  volatile uint32_t *psense =
+      (volatile uint32_t *)((uintptr_t)dev->base_addr.base + 0x7cu);
   uint8_t *ep = buf + (n & ~7u);
   uint8_t *p = buf;
 
@@ -116,13 +117,21 @@ void usbutils_gather(dif_usbdev_t *dev, uint8_t *buf, size_t n) {
   for (unsigned i = 0u; i < n; i++) {
     switch (buf[i] & 3u) {
       // Idle (J)
-      case 1u: text[idx] = '-'; break;
+      case 1u:
+        text[idx] = '-';
+        break;
       // K
-      case 2u: text[idx] = '_'; break;
+      case 2u:
+        text[idx] = '_';
+        break;
       // SE
-      case 0U: text[idx] = 'E'; break;
+      case 0U:
+        text[idx] = 'E';
+        break;
       // What?
-      default: text[idx] = 'x'; break;
+      default:
+        text[idx] = 'x';
+        break;
     }
     if (++idx >= sizeof(text) - 1 || i >= n) {
       text[idx] = '\0';
@@ -135,4 +144,3 @@ void usbutils_gather(dif_usbdev_t *dev, uint8_t *buf, size_t n) {
 #if USBUTILS_ENABLE_TRC
 extern void usbutils_log_text(const char *s);
 #endif
-

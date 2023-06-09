@@ -122,9 +122,10 @@ static uint8_t buffer_sig_create(usb_testutils_streams_ctx_t *ctx,
   }
 
   size_t bytes_written;
-// TODO: switch
+  // TODO: switch
   if (write_method == kWriteMethodFaster) {
-    CHECK_DIF_OK(dif_usbdev_buffer_raw_write(ctx->usbdev->dev, buf->id, (uint8_t *)&sig, sizeof(sig)));
+    CHECK_DIF_OK(dif_usbdev_buffer_raw_write(ctx->usbdev->dev, buf->id,
+                                             (uint8_t *)&sig, sizeof(sig)));
     buf->offset += sizeof(sig);
     buf->remaining_bytes -= sizeof(sig);
     bytes_written = sizeof(sig);
@@ -173,17 +174,29 @@ static bool buffer_sig_check(usb_testutils_streams_ctx_t *ctx,
   // Skip past any packets that appear to have been dropped; this is
   // permissible for Isochronous transfers which prioritize service/real-time
   // delivery over reliable transmission.
-  while (rx_seq < seq) {
-    // Determine the length of the missing packet
-    uint8_t len = packet_length(s, s->rx_bytes, &s->rx_buf_size);
-    len -= sizeof(*sig);
-    // Advance the LFSR states to account for the missing packet
-    while (len-- > 0U) {
-      rxtx_lfsr = LFSR_ADVANCE(rxtx_lfsr);
-      rx_lfsr = LFSR_ADVANCE(rx_lfsr);
-    }
-    // The updated host-side LFSR has been supplied in the packet signature
-    rx_seq++;
+  if (rx_seq < seq) {
+    do {
+      // Determine the length of the missing packet
+      uint8_t len = packet_length(s, s->rx_bytes, &s->rx_buf_size);
+      len -= sizeof(*sig);
+      // Advance the LFSR states to account for the missing packet
+      while (len-- > 0U) {
+        rxtx_lfsr = LFSR_ADVANCE(rxtx_lfsr);
+        rx_lfsr = LFSR_ADVANCE(rx_lfsr);
+      }
+      // The updated host-side LFSR has been supplied in the packet signature
+      rx_seq++;
+    } while (rx_seq < seq);
+
+    // Since we do not know where the packet(s) were dropped, we must set our
+    // knowledge of the host-side LFSR to the value indicated in this packet.
+    s->rx_lfsr = sig->init_lfsr;
+  } else if (sig->init_lfsr != s->rx_lfsr) {
+    LOG_INFO(
+        "buffer_sig_check: S%u unexpected host-side LFSR (0x%x but expected "
+        "0x%x)",
+        s->id, sig->init_lfsr, s->rx_lfsr);
+    return false;
   }
 
   // For 'rx_buf_size' to track the 'tx_buf_size' used when the packets were
@@ -251,16 +264,17 @@ static void buffer_fill(usb_testutils_streams_ctx_t *ctx, usbdev_stream_t *s,
   }
 
   size_t bytes_written;
-// TODO: switch
+  // TODO: switch
   if (write_method == kWriteMethodFaster) {
-    CHECK_DIF_OK(dif_usbdev_buffer_raw_write(ctx->usbdev->dev, buf->id, data, num_bytes));
+    CHECK_DIF_OK(dif_usbdev_buffer_raw_write(ctx->usbdev->dev, buf->id, data,
+                                             num_bytes));
     buf->offset = num_bytes;
     buf->remaining_bytes = num_bytes;
     bytes_written = num_bytes;
   } else {
-  CHECK_DIF_OK(dif_usbdev_buffer_write(ctx->usbdev->dev, buf, data, num_bytes,
-                                       &bytes_written));
-  CHECK(bytes_written == num_bytes);
+    CHECK_DIF_OK(dif_usbdev_buffer_write(ctx->usbdev->dev, buf, data, num_bytes,
+                                         &bytes_written));
+    CHECK(bytes_written == num_bytes);
   }
   s->tx_bytes += bytes_written;
 }
@@ -283,15 +297,16 @@ static void buffer_check(usb_testutils_streams_ctx_t *ctx, usbdev_stream_t *s,
     //        only the DIF accesses it directly. when we consume the final bytes
     //        from the read buffer, it is automatically returned to the buffer
     //        pool.
-// TODO: switch
-if (read_method == kReadMethodFaster) {
-  CHECK_DIF_OK(dif_usbdev_buffer_raw_read(usbdev->dev, buf.id, data, len));
-  CHECK_DIF_OK(dif_usbdev_buffer_return(usbdev->dev, usbdev->buffer_pool, &buf));  
-} else {
-    CHECK_DIF_OK(dif_usbdev_buffer_read(usbdev->dev, usbdev->buffer_pool, &buf,
-                                        data, len, &bytes_read));
-    CHECK(bytes_read == len);
-}
+    // TODO: switch
+    if (read_method == kReadMethodFaster) {
+      CHECK_DIF_OK(dif_usbdev_buffer_raw_read(usbdev->dev, buf.id, data, len));
+      CHECK_DIF_OK(
+          dif_usbdev_buffer_return(usbdev->dev, usbdev->buffer_pool, &buf));
+    } else {
+      CHECK_DIF_OK(dif_usbdev_buffer_read(usbdev->dev, usbdev->buffer_pool,
+                                          &buf, data, len, &bytes_read));
+      CHECK(bytes_read == len);
+    }
 
     if (s->verbose && log_traffic) {
       buffer_dump(data, bytes_read);
@@ -324,8 +339,7 @@ if (read_method == kReadMethodFaster) {
         const uint8_t *sp = &data[offset];
         while (sp < esp) {
           // Received data should be the XOR of two LFSR-generated PRND streams
-          // - ours on the
-          //   transmission side, and that of the DPI model
+          // - ours on the transmission side, and that of the DPI model
           uint8_t expected = rxtx_lfsr ^ rx_lfsr;
           CHECK(expected == *sp,
                 "S%u: Unexpected received data 0x%02x : (LFSRs 0x%02x 0x%02x)",

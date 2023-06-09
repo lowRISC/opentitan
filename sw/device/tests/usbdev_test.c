@@ -148,38 +148,37 @@ bool test_main(void) {
     CHECK_STATUS_OK(usb_testutils_poll(&usbdev));
 
 #define USB_EVENT_REPORT LOG_INFO
-if (false) {
-    LOG_INFO("dev addr 0x%x", usbdev_control.new_dev);
-    dif_usbdev_link_state_t link_state;
-    CHECK_DIF_OK(dif_usbdev_status_get_link_state(usbdev.dev, &link_state));
-    switch (link_state) {
-      case kDifUsbdevLinkStateDisconnected:
-        USB_EVENT_REPORT("LinkState: Disconnected");
-        break;
-      case kDifUsbdevLinkStatePowered:
-        USB_EVENT_REPORT("LinkState: Powered");
-        break;
-      case kDifUsbdevLinkStatePoweredSuspended:
-        USB_EVENT_REPORT("LinkState: PoweredSuspended");
-        break;
-      case kDifUsbdevLinkStateActive:
-        USB_EVENT_REPORT("LinkState: Active");
-        break;
-      case kDifUsbdevLinkStateSuspended:
-        USB_EVENT_REPORT("LinkState: Suspended");
-        break;
-      case kDifUsbdevLinkStateActiveNoSof:
-        USB_EVENT_REPORT("LinkState: ActiveNoSof (Resuming no SOF)");
-        break;
-      case kDifUsbdevLinkStateResuming:
-        USB_EVENT_REPORT("LinkState: Resuming");
-        break;
-      default:
-        USB_EVENT_REPORT("LinkState: ***OTHER***");
-        break;
+    if (false) {
+      LOG_INFO("dev addr 0x%x", usbdev_control.new_dev);
+      dif_usbdev_link_state_t link_state;
+      CHECK_DIF_OK(dif_usbdev_status_get_link_state(usbdev.dev, &link_state));
+      switch (link_state) {
+        case kDifUsbdevLinkStateDisconnected:
+          USB_EVENT_REPORT("LinkState: Disconnected");
+          break;
+        case kDifUsbdevLinkStatePowered:
+          USB_EVENT_REPORT("LinkState: Powered");
+          break;
+        case kDifUsbdevLinkStatePoweredSuspended:
+          USB_EVENT_REPORT("LinkState: PoweredSuspended");
+          break;
+        case kDifUsbdevLinkStateActive:
+          USB_EVENT_REPORT("LinkState: Active");
+          break;
+        case kDifUsbdevLinkStateSuspended:
+          USB_EVENT_REPORT("LinkState: Suspended");
+          break;
+        case kDifUsbdevLinkStateActiveNoSof:
+          USB_EVENT_REPORT("LinkState: ActiveNoSof (Resuming no SOF)");
+          break;
+        case kDifUsbdevLinkStateResuming:
+          USB_EVENT_REPORT("LinkState: Resuming");
+          break;
+        default:
+          USB_EVENT_REPORT("LinkState: ***OTHER***");
+          break;
+      }
     }
-}
-
   }
 
   base_printf("\r\n");

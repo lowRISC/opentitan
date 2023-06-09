@@ -516,7 +516,8 @@ static const char *state_name(usbdev_suspend_state_t state) {
 }
 
 // Report any link event(s)
-static void events_report(usbdev_suspend_ctx_t *ctx, uint32_t snapshot, dif_usbdev_link_state_t link_state) {
+static void events_report(usbdev_suspend_ctx_t *ctx, uint32_t snapshot,
+                          dif_usbdev_link_state_t link_state) {
   // Report connection/reset events
   if (snapshot & (1u << kDifUsbdevIrqPowered)) {
     USB_EVENT_REPORT("VBUS Connected");
@@ -662,9 +663,10 @@ static status_t link_callback(void *ctx_v,
   }
 
   if (verbose && snapshot) {
-    LOG_INFO("State %u (%s) - Link events:", ctx->test_state, state_name(ctx->test_state));
+    LOG_INFO("State %u (%s) - Link events:", ctx->test_state,
+             state_name(ctx->test_state));
     events_report(ctx, snapshot, link_state);
-LOG_INFO(" events: 0x%x link 0x%x", snapshot, link_state);
+    LOG_INFO(" events: 0x%x link 0x%x", snapshot, link_state);
   }
 
   // State machine anticipates the behavior of the host/DPI model, checking that
@@ -826,7 +828,7 @@ static status_t timeout_handle(usbdev_suspend_ctx_t *ctx) {
     case kSuspendStateWaitResume:
       if (!host_resumes) {
         LOG_INFO("auto-resuming (host does not support Resume Signaling)");
-timeout_frames_set(ctx, 10000u);
+        timeout_frames_set(ctx, 10000u);
         state_enter(ctx, kSuspendStateWaitBusReset);
         failed = false;
       }
@@ -879,7 +881,11 @@ static void sense_report(usbdev_suspend_ctx_t *ctx) {
                     (sense.rx_d ? 4U : 0) | (sense.output_enable ? 8U : 0) |
                     (sense.vbus_sense ? 0x100U : 0);
     USBUTILS_FUNCPT(0x515, data);
-    LOG_INFO("sense %u : rx_dp %u rx_dn %u rx_d %u : tx_dp %u tx_dn %u tx_d %u tx_se0 %u : oe %u", sense.vbus_sense, sense.rx_dp, sense.rx_dn, sense.rx_d, sense.tx_dp, sense.tx_dn, sense.tx_d, sense.tx_se0, sense.output_enable);
+    LOG_INFO(
+        "sense %u : rx_dp %u rx_dn %u rx_d %u : tx_dp %u tx_dn %u tx_d %u "
+        "tx_se0 %u : oe %u",
+        sense.vbus_sense, sense.rx_dp, sense.rx_dn, sense.rx_d, sense.tx_dp,
+        sense.tx_dn, sense.tx_d, sense.tx_se0, sense.output_enable);
   }
 }
 
@@ -953,10 +959,9 @@ static status_t phase_start_resume(usbdev_suspend_ctx_t *ctx) {
              !ibex_timeout_check(&ctx->timeout)) {
         CHECK_STATUS_OK(usb_testutils_poll(ctx->usbdev));
       }
-while (true)
-{
+      while (true) {
         CHECK_STATUS_OK(usb_testutils_poll(ctx->usbdev));
-}
+      }
 
       // If we're out of step with the DPI model/host, stop the test.
       TRY_CHECK(usbdev_control.device_state == kUsbTestutilsDeviceConfigured);
@@ -1005,7 +1010,7 @@ while (true)
       break;
   }
 
-//  sense_report(ctx);
+  //  sense_report(ctx);
 
   // TODO: This does not relate directly to the Suspend-Resume testing but
   // unexplained behavior is observed on FPGA, and so this is still required
@@ -1277,7 +1282,8 @@ static status_t state_service(usbdev_suspend_ctx_t *ctx) {
         switch (ctx->test_phase) {
           case kSuspendPhaseSleepResume:
           case kSuspendPhaseDeepResume:
-            got_signal = !host_resumes || (!ctx->wake_status.bus_reset && !ctx->wake_status.disconnected);
+            got_signal = !host_resumes || (!ctx->wake_status.bus_reset &&
+                                           !ctx->wake_status.disconnected);
             break;
 
           case kSuspendPhaseSleepReset:
@@ -1289,7 +1295,8 @@ static status_t state_service(usbdev_suspend_ctx_t *ctx) {
             TRY_CHECK(ctx->test_phase == kSuspendPhaseDeepDisconnect);
             // no break
           case kSuspendPhaseSleepDisconnect:
-            got_signal = !host_disconnects || (ctx->wake_status.disconnected != 0);
+            got_signal =
+                !host_disconnects || (ctx->wake_status.disconnected != 0);
             break;
         }
 
@@ -1306,10 +1313,11 @@ static status_t state_service(usbdev_suspend_ctx_t *ctx) {
                        sense ? "" : "de-");
             }
 
-            //TODO: experimental test code! DO NOT MERGE
+            // TODO: experimental test code! DO NOT MERGE
             if (false) {
               static uint8_t buf[4096];
-              extern void usbutils_gather(dif_usbdev_t *dev, uint8_t *buf, size_t n);
+              extern void usbutils_gather(dif_usbdev_t * dev, uint8_t * buf,
+                                          size_t n);
 
               while (!sense) {
                 TRY(dif_usbdev_status_get_sense(ctx->usbdev->dev, &sense));
@@ -1363,7 +1371,8 @@ static status_t state_service(usbdev_suspend_ctx_t *ctx) {
         switch (ctx->test_phase) {
           case kSuspendPhaseSleepDisconnect:
           case kSuspendPhaseDeepDisconnect:
-            state_enter(ctx, host_disconnects ? kSuspendStatePowerOnReset : kSuspendStateNextPhase);
+            state_enter(ctx, host_disconnects ? kSuspendStatePowerOnReset
+                                              : kSuspendStateNextPhase);
             break;
 
           case kSuspendPhaseSleepReset:
@@ -1575,12 +1584,12 @@ bool usbdev_suspend_test(usbdev_suspend_phase_t init_phase,
       // cannot perform Suspend/Resume
       host_suspends = false;
       host_resumes = false;
-// TODO: presently we do not support this; this can be done programmatically
-// with appropriate driver software.
-//    host_resets = false;
-host_disconnects = false;
-host_resumes = true;
-host_suspends = true;
+      // TODO: presently we do not support this; this can be done
+      // programmatically with appropriate driver software.
+      //    host_resets = false;
+      host_disconnects = false;
+      host_resumes = true;
+      host_suspends = true;
 
       with_traffic = false;
       // Presently, the FPGA build is expected to be observed/monitored by a

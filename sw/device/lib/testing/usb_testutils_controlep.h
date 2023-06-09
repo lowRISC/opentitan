@@ -58,7 +58,7 @@ typedef struct usb_testutils_controlep_ctx {
    */
   const uint8_t *test_dscr;
   size_t test_dscr_len;
-  /** 
+  /**
    * Cycle counter time of most recent Bus Reset; device must successfully
    * complete the Status stage of a SetAddress() request within 50ms of the
    * completing the most recent Reset/Resume recovery interval.
