@@ -201,6 +201,11 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
                                                      SPI_HOST_TX_FIFO_END]}) begin
       // write to data fifo
       bit [7:0] tl_byte[TL_DBW];
+      if (cfg.en_cov) begin
+        spi_host_status_t status;
+        csr_rd(.ptr(ral.status), .value(status), .backdoor(1'b1));
+        cov.tx_fifo_overflow_cg.sample(status);
+      end
 
       // packed vector to bytes
       tl_byte = {<< 8{item.a_data}};
@@ -227,6 +232,9 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
       // packed vector to bytes
       tl_byte = {<< 8{item.d_data}};
       if (cfg.en_cov) begin
+        spi_host_status_t status;
+        csr_rd(.ptr(ral.status), .value(status), .backdoor(1'b1));
+        cov.rx_fifo_underflow_cg.sample(status);
         cov.unaligned_data_cg.sample(item.a_mask);
       end
       // store data in data queues
