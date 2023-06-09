@@ -290,10 +290,9 @@ module pinmux_assert_fpv
                                         1 : 0;
   assign mio_pad_attr_mask.pull_en = TargetCfg.mio_pad_type[mio_sel_i] == AnalogIn0 ? 0 : 1;
   assign mio_pad_attr_mask.pull_select = TargetCfg.mio_pad_type[mio_sel_i] == AnalogIn0 ? 0 : 1;
-  assign mio_pad_attr_mask.keep_en = TargetCfg.mio_pad_type[mio_sel_i] inside {bid_pad_types} ?
-                                     1 : 0;
   assign mio_pad_attr_mask.drive_strength[0] = TargetCfg.mio_pad_type[mio_sel_i] inside
                                                {bid_pad_types} ? 1 : 0;
+  assign mio_pad_attr_mask.keep_en = 0;
   assign mio_pad_attr_mask.schmitt_en = 0;
   assign mio_pad_attr_mask.od_en = 0;
   assign mio_pad_attr_mask.slew_rate = '0;
@@ -318,10 +317,9 @@ module pinmux_assert_fpv
                                         1 : 0;
   assign dio_pad_attr_mask.pull_en = TargetCfg.dio_pad_type[dio_sel_i] == AnalogIn0 ? 0 : 1;
   assign dio_pad_attr_mask.pull_select = TargetCfg.dio_pad_type[dio_sel_i] == AnalogIn0 ? 0 : 1;
-  assign dio_pad_attr_mask.keep_en     = TargetCfg.dio_pad_type[dio_sel_i] inside {bid_pad_types} ?
-                                         1 : 0;
   assign dio_pad_attr_mask.drive_strength[0] = TargetCfg.dio_pad_type[dio_sel_i] inside
                                                {bid_pad_types} ? 1 : 0;
+  assign dio_pad_attr_mask.keep_en     = 0;
   assign dio_pad_attr_mask.schmitt_en = 0;
   assign dio_pad_attr_mask.od_en = 0;
   assign dio_pad_attr_mask.slew_rate = '0;
@@ -643,19 +641,19 @@ module pinmux_assert_fpv
           (u_pinmux_strap_sampling.tap_strap == pinmux_pkg::DftTapSel &&
            $past(lc_dft_en_i, 2) == lc_ctrl_pkg::On) || dft_jtag_o == 0)
 
-  `ASSERT(TapStrap_A, ##2 ((!dft_hold_tap_sel_i && $past(lc_dft_en_i, 2) == lc_ctrl_pkg::On) ||
+  `ASSERT(TapStrap_A, ##3 ((!dft_hold_tap_sel_i && $past(lc_dft_en_i, 2) == lc_ctrl_pkg::On) ||
           $past(strap_en_i || SecVolatileRawUnlockEn && $past($rose(strap_en_override_i), 2)) &&
           !dft_hold_tap_sel_i) &&
           u_pinmux_strap_sampling.pinmux_hw_debug_en_q == lc_ctrl_pkg::On |=>
           u_pinmux_strap_sampling.tap_strap ==
           $past({mio_in_i[TargetCfg.tap_strap1_idx], mio_in_i[TargetCfg.tap_strap0_idx]}))
 
-  `ASSERT(TapStrap0_A, ##2 ((!dft_hold_tap_sel_i && $past(lc_dft_en_i, 2) == lc_ctrl_pkg::On) ||
+  `ASSERT(TapStrap0_A, ##3 ((!dft_hold_tap_sel_i && $past(lc_dft_en_i, 2) == lc_ctrl_pkg::On) ||
           $past(strap_en_i || SecVolatileRawUnlockEn && $past($rose(strap_en_override_i), 2)) &&
           !dft_hold_tap_sel_i) |=>
           u_pinmux_strap_sampling.tap_strap[0] == $past(mio_in_i[TargetCfg.tap_strap0_idx]))
 
-  `ASSERT(TapStrapStable_A, ##1 dft_hold_tap_sel_i && !$past(strap_en_i ||
+  `ASSERT(TapStrapStable_A, ##3 dft_hold_tap_sel_i && !$past(strap_en_i ||
           SecVolatileRawUnlockEn && $past($rose(strap_en_override_i), 2)) |=>
           $stable(u_pinmux_strap_sampling.tap_strap))
 
@@ -673,7 +671,7 @@ module pinmux_assert_fpv
                         mio_oe_o[TargetCfg.tdo_idx]})
 
   // ------ DFT strap_test_o assertions ------
-  `ASSERT(DftStrapTestO_A, ##1 strap_en_i || SecVolatileRawUnlockEn &&
+  `ASSERT(DftStrapTestO_A, ##2 strap_en_i || SecVolatileRawUnlockEn &&
           $past($rose(strap_en_override_i), 2) ##1 $past(lc_dft_en_i, 2) == lc_ctrl_pkg::On &&
           !dft_hold_tap_sel_i |=>
           dft_strap_test_o.valid &&
@@ -686,14 +684,12 @@ module pinmux_assert_fpv
                                              mio_in_i[TargetCfg.dft_strap0_idx]})))
 
   // ------ Check USB connectivity ------
-  // TODO: the ones that added ##1 delays have cex, which might related to USB module being
-  // black-boxed. Working on solving these cexs.
   // Note the following assertions only work if the testbench blackboxed u_usbdev_aon_wake module.
   `ASSERT(UsbdevDppullupEnI_A, usbdev_dppullup_en_i <->
-          u_usbdev_aon_wake.usb_dppullup_en_i, clk_aon_i, !rst_aon_ni)
+          u_usbdev_aon_wake.usbdev_dppullup_en_i, clk_aon_i, !rst_aon_ni)
 
   `ASSERT(UsdevbDnpullupEnI_A, usbdev_dnpullup_en_i <->
-          u_usbdev_aon_wake.usb_dnpullup_en_i, clk_aon_i, !rst_aon_ni)
+          u_usbdev_aon_wake.usbdev_dnpullup_en_i, clk_aon_i, !rst_aon_ni)
 
   `ASSERT(UsbDppullupEnO_A, ##1 usb_dppullup_en_o <->
           u_usbdev_aon_wake.usb_dppullup_en_o, clk_aon_i, !rst_aon_ni)
@@ -720,5 +716,12 @@ module pinmux_assert_fpv
   `ASSUME(TriggerAfterAlertInit_S, $stable(rst_ni) == 0 |->
           pinmux.u_reg.intg_err_o == 0 [*10])
   `ASSERT(TlIntgFatalAlert_A, pinmux.u_reg.intg_err_o |-> (##[0:7] (alert_tx_o[0].alert_p)) [*2])
+
+  // Since the USB wake module is blackboxed, we have to add an assumption here since the
+  // ASSERT_KNOWN assertions embedded in pinmux.sv would fail otherwise.
+  `ASSUME_FPV(UsbWkupReqKnownO_M,
+              !$isunknown(u_usbdev_aon_wake.wake_req_aon_o), clk_aon_i, !rst_aon_ni)
+  `ASSUME_FPV(UsbWakeDetectActiveKnownO_M,
+              !$isunknown(u_usbdev_aon_wake.wake_detect_active_aon_o), clk_aon_i, !rst_aon_ni)
 
 endmodule : pinmux_assert_fpv
