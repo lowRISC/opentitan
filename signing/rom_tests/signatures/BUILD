@@ -5,6 +5,11 @@
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
-    name = "signatures",
-    srcs = glob(["*.sig"]),
+    name = "rsa_signatures",
+    srcs = glob(["*.rsa.sig"]),
+)
+
+filegroup(
+    name = "spx_signatures",
+    srcs = glob(["*.spx.sig"]),
 )
