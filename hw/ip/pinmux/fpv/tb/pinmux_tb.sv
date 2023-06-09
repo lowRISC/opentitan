@@ -88,7 +88,6 @@ module pinmux_tb
     tap_strap1_idx:    Tap1PadIdx,
     dft_strap0_idx:    Dft0PadIdx,
     dft_strap1_idx:    Dft1PadIdx,
-    // TODO: check whether there is a better way to pass these USB-specific params
     usb_dp_idx:        DioUsbdevDp,
     usb_dn_idx:        DioUsbdevDn,
     usb_sense_idx:     MioInUsbdevSense,

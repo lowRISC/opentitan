@@ -61,6 +61,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
   // process monitored tl transaction
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg csr;
+    string csr_name;
     bit do_read_check       = 1'b1;
     bit write               = item.is_write();
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
@@ -108,17 +109,22 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
         end
       end
 
+      csr_name = csr.get_name();
       // if incoming access is a write to a valid csr, then make updates right away
       if (write) begin
         // GPIO scoreboard is cycle accurate and will only update `intr_state` mirrored value at
         // the address phase of the next read operation.
         // This is too late for intr_test and intr_test does not need this cycle accurate model,
         // So we use csr predict function right after the write operations.
-        if ((common_seq_type == "intr_test") &&
-            (csr.get_name() inside {"intr_state", "intr_enable", "intr_test"})) begin
+        // The Hjson has auto_split set to "true" for the interrupts, which causes them to
+        // be split into separate registers. Hence, we can't use an exact match here and need to
+        // resort to uvm_re_match instead.
+        if ((common_seq_type == "intr_test") && (uvm_re_match("intr_test*", csr_name) ||
+                                                 uvm_re_match("intr_enable*", csr_name) ||
+                                                 uvm_re_match("intr_state*", csr_name))) begin
           void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
         end
-        if (csr.get_name() == "intr_state") begin
+        if (uvm_re_match("intr_state*", csr_name)) begin
           // As per rtl definition of W1C, hardware must get a chance to make update
           // to interrupt state first, so we need to clear interrupt only after possible
           // interrupt update due to gpio change
@@ -177,7 +183,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
             end
           end
         end else begin
-          if (csr.get_name() == "intr_test") begin
+          if (uvm_re_match("intr_test*", csr_name)) begin
             // Store the written value as it is WO register
             last_intr_test_event = item.a_data;
           end else begin
@@ -217,7 +223,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
           // Checker-2: Check if reg read data matches expected value or not
           `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data)
           // Checker-3: Check value of interrupt pins against predicted value
-          if (csr.get_name() == "intr_state") begin
+          if (uvm_re_match("intr_state*", csr_name)) begin
             bit [TL_DW-1:0] intr_state = (intr_state_update_queue.size() > 0) ?
                                          intr_state_update_queue[$].reg_value :
                                          csr.get_mirrored_value();
