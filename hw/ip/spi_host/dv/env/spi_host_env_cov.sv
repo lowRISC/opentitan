@@ -12,6 +12,22 @@
 class spi_host_env_cov extends cip_base_env_cov #(.CFG_T(spi_host_env_cfg));
   `uvm_component_utils(spi_host_env_cov)
 
+  // Sample this covergroup upon writes to the TXFIFO register window.
+  covergroup tx_fifo_overflow_cg with function sample(spi_host_status_t spi_status_reg);
+    tx_fifo_overflow_txfull_cp : coverpoint spi_status_reg.txfull {
+      // Trying to write to TXFIFO while status.txfull = 1'b1 indicates an overflow event.
+      bins try_overflow = {1};
+    }
+  endgroup : tx_fifo_overflow_cg
+
+  // Sample this covergroup upon reads from the RXFIFO register window.
+  covergroup rx_fifo_underflow_cg with function sample(spi_host_status_t spi_status_reg);
+    rx_fifo_underflow_rxempty_cp : coverpoint spi_status_reg.rxempty {
+      // Trying to read from RXFIFO while status.rxempty = 1'b1 indicates an underflow event.
+      bins try_underflow = {1};
+    }
+  endgroup : rx_fifo_underflow_cg
+
   covergroup config_opts_cg with function sample(spi_host_configopts_t spi_configopts);
     cpol_cp : coverpoint spi_configopts.cpol[SPI_HOST_NUM_CS-1]{ bins cpol[] = {[0:1]}; }
     cpha_cp : coverpoint spi_configopts.cpha[SPI_HOST_NUM_CS-1]{ bins cpha[] = {[0:1]}; }
@@ -25,6 +41,8 @@ class spi_host_env_cov extends cip_base_env_cov #(.CFG_T(spi_host_env_cfg));
     bins csnidle[] = {[0:15]};
     }
     clkdiv_cp : coverpoint spi_configopts.clkdiv[SPI_HOST_NUM_CS-1]{
+    // (Period) T_sck = 2*(clkdiv+1)*T_core
+    // If clkdiv == 16'h00fe, F_sck = F_core / 254
     bins clk_divl = {0};
     bins clk_divm[30] = {[16'h1:16'h00fe]};
     }
@@ -144,6 +162,8 @@ class spi_host_env_cov extends cip_base_env_cov #(.CFG_T(spi_host_env_cfg));
   function new(string name, uvm_component parent);
     super.new(name, parent);
 
+    tx_fifo_overflow_cg = new();
+    rx_fifo_underflow_cg = new();
     config_opts_cg = new();
     unaligned_data_cg = new();
     duplex_cg = new();

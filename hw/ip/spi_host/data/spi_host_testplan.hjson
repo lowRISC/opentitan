@@ -283,27 +283,12 @@
             '''
     }
     {
-      name: long_commands_cg
-      desc: '''
-            Collect coverage to verify that both a read and write command longer than 4 bytes
-            was seen
-            '''
-    }
-    {
       name: config_opts_cg
       desc: '''
             Collect coverage on the config opts register, some important crosses:
 
             -  CPOL and CPHA, check all 4 combinations are tested
             -  CSNLEAD, CSNTRAIL and CSNIDLE
-            '''
-    }
-    {
-      name: cdc_cg
-      desc: '''
-            Collect coverage on the relationship between the core_clk and the spi_sck to verify that
-            both scenarios with both a slow spi_sck, a very fast spi_sck (2x core_clk)
-            and where the two clocks are very close has been tested
             '''
     }
     {
@@ -384,13 +369,6 @@
       desc: '''
             - Check that multiple end points was running at different speeds concurrently.
             - Collect coverage that multiple SPI endpoints was run with different config opts
-            '''
-    }
-    {
-      name: stall_cg
-      desc: '''
-            - Check that the DUT stalls if a command is configured to transmit data but the tx fifo is empty
-            - check that the data is transmitted when written to the TX fifo after a stall
             '''
     }
     {
