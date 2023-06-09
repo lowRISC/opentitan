@@ -21,8 +21,8 @@ use opentitanlib::crypto::spx::{self, SpxKey, SpxKeypair, SpxPublicKeyPart, SpxS
 use opentitanlib::image::image::{self, ImageAssembler};
 use opentitanlib::image::manifest::{
     ManifestExtHeader, ManifestExtSpxKey, ManifestExtSpxSignature, SigverifySpxKey,
-    SigverifySpxSignature, MANIFEST_EXT_ID_SPX_KEY, MANIFEST_EXT_ID_SPX_SIGNATURE,
-    MANIFEST_EXT_NAME_SPX_KEY, MANIFEST_EXT_NAME_SPX_SIGNATURE,
+    MANIFEST_EXT_ID_SPX_KEY, MANIFEST_EXT_ID_SPX_SIGNATURE, MANIFEST_EXT_NAME_SPX_KEY,
+    MANIFEST_EXT_NAME_SPX_SIGNATURE,
 };
 use opentitanlib::image::manifest_def::ManifestSpec;
 use opentitanlib::util::file::{FromReader, ToWriter};
@@ -174,6 +174,12 @@ impl CommandDispatch for ManifestUpdateCommand {
             _align: [],
         };
 
+        // Update `signed_region_end` if it is 0, otherwise it has already been set (i.e., to
+        // support offline signing scenarios).
+        if image.borrow_manifest()?.signed_region_end == 0 {
+            image.update_signed_region_end()?;
+        }
+
         let mut spx_private_key: Option<SpxKeypair> = None;
         if let Some(key) = &self.spx_key {
             let key = spx::load_spx_key(key)?;
@@ -196,18 +202,28 @@ impl CommandDispatch for ManifestUpdateCommand {
             if let SpxKey::Private(private) = key {
                 spx_private_key = Some(private);
             }
+
+            // Update `signed_region_end` after adding all signed extensions (which is just SPX key
+            // extension for now).
+            image.update_signed_region_end()?;
         }
 
-        // Update `signed_region_end` after adding all signed extensions.
-        image.update_signed_region_end()?;
+        if self.spx_key.is_some() {
+            image.set_extension_entry(1, MANIFEST_EXT_ID_SPX_SIGNATURE, image.size as u32)?;
+            image.add_extension_data(
+                ManifestExtSpxSignature {
+                    header: ManifestExtHeader {
+                        identifier: MANIFEST_EXT_ID_SPX_SIGNATURE,
+                        name: MANIFEST_EXT_NAME_SPX_SIGNATURE,
+                    },
+                    ..Default::default()
+                }
+                .as_bytes(),
+            )?;
+        }
 
         // Update `length` to be able to generate signatures.
-        let mut unsigned_ext_size: usize = 0;
-        if self.spx_signature.is_some() || spx_private_key.is_some() {
-            image.set_extension_entry(1, MANIFEST_EXT_ID_SPX_SIGNATURE, image.size as u32)?;
-            unsigned_ext_size += std::mem::size_of::<ManifestExtSpxSignature>();
-        }
-        image.update_length(unsigned_ext_size)?;
+        image.update_length()?;
 
         // Apply the manifest values to the image.
         if let Some(manifest) = &self.manifest {
@@ -229,21 +245,7 @@ impl CommandDispatch for ManifestUpdateCommand {
         };
         if let Some(spx_signature) = spx_signature {
             let sig_bytes = spx_signature.0.to_le_bytes();
-            buf.bytes[0..sig_bytes.len()].copy_from_slice(&sig_bytes);
-            image.add_extension_data(
-                ManifestExtSpxSignature {
-                    header: ManifestExtHeader {
-                        identifier: MANIFEST_EXT_ID_SPX_SIGNATURE,
-                        name: MANIFEST_EXT_NAME_SPX_SIGNATURE,
-                    },
-                    signature: *LayoutVerified::<_, SigverifySpxSignature>::new(
-                        &buf.bytes[0..sig_bytes.len()],
-                    )
-                    .unwrap()
-                    .into_ref(),
-                }
-                .as_bytes(),
-            )?;
+            image.update_extension_data(MANIFEST_EXT_ID_SPX_SIGNATURE, &sig_bytes)?;
         }
 
         if let Some(rsa_signature) = &self.rsa_signature {
