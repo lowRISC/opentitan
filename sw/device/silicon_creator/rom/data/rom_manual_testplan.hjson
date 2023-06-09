@@ -47,5 +47,53 @@
       stage: V2
       tests: ["rom_e2e_c_init"]
     }
+    {
+      name: rom_manual_open_issues_tasks
+      desc: '''Verify that there are no blocking issues on GitHub or tasks in the tracker.'''
+      tags: ["manual"]
+      stage: V2
+      tests: []
+    }
+    {
+      name: rom_manual_e2e_fpga_cw310
+      desc: '''Verify that all ROM e2e tests pass on the FPGA_CW310 device.'''
+      tags: ["manual"]
+      stage: V2
+      tests: []
+    }
+    {
+      name: rom_manual_e2e_sim_dv
+      desc: '''Verify that all ROM e2e tests pass on the SIM_DV device.'''
+      tags: ["manual"]
+      stage: V2
+      tests: []
+    }
+    {
+      name: rom_manual_top_level_sim_dv
+      desc: '''Verify that all top-level SIM_DV tests that use the production ROM pass.'''
+      tags: ["manual"]
+      stage: V2
+      tests: []
+    }
+    {
+      name: rom_manual_hash_check
+      desc: '''Verify that the hash of the unscrambled ROM binary matches the expected value.
+
+            We will use the sim_dv device target for tapeout. Verify the SHA256 digest of ROM by
+            - Comparing the digest of the unscrambled ROM binary with the expected value manually:
+              `./bazelisk.sh build-then "sha256sum %s" //sw/device/silicon_creator/rom:rom_with_real_keys_sim_dv_bin`
+            - Running the relevant tests and comparing their outputs with the expected value.
+            '''
+      tags: ["manual"]
+      stage: V2
+      tests: []
+    }
+    {
+      name: rom_manual_hash_reminder
+      desc: '''Confirm that the digest of ROM will be verified out-of-band with multiple parties before tapeout.'''
+      tags: ["manual"]
+      stage: V2
+      tests: []
+    }
   ]
 }
