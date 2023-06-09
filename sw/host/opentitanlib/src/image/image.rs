@@ -16,7 +16,7 @@ use zerocopy::LayoutVerified;
 use crate::crypto::rsa::Modulus;
 use crate::crypto::rsa::Signature as RsaSignature;
 use crate::crypto::sha256;
-use crate::image::manifest::{Manifest, ManifestExtTableEntry};
+use crate::image::manifest::{Manifest, ManifestExtHeader, ManifestExtTableEntry};
 use crate::image::manifest_def::{ManifestRsaBuffer, ManifestSpec};
 use crate::image::manifest_ext::{ManifestExtEntry, ManifestExtEntrySpec, ManifestExtSpec};
 use crate::util::file::{FromReader, ToWriter};
@@ -99,6 +99,25 @@ impl Image {
         let mut manifest_def: ManifestSpec = (&*manifest).try_into()?;
         manifest_def.overwrite_fields(other);
         *manifest = manifest_def.try_into()?;
+        Ok(())
+    }
+
+    /// Updates the data in a pre-existing extension. Does not update the image size.
+    pub fn update_extension_data(&mut self, id: u32, bytes: &[u8]) -> Result<()> {
+        let entry = self
+            .borrow_manifest()?
+            .extensions
+            .entries
+            .iter()
+            .find(|x| x.identifier == id)
+            .ok_or(ImageError::NoExtensionTableEntry(id))?;
+        let offset = entry.offset as usize + std::mem::size_of::<ManifestExtHeader>();
+        let extension_slice = self
+            .data
+            .bytes
+            .get_mut(offset..offset + bytes.len())
+            .ok_or(ImageError::ExtensionOverflow)?;
+        extension_slice.copy_from_slice(bytes);
         Ok(())
     }
 
@@ -241,12 +260,8 @@ impl Image {
     }
 
     /// Updates the length field in the `Manifest`.
-    /// This method requires `unsigned_ext_size` since the `length` field must be updated before
-    /// the image is signed and unsigned fields are typically signature fields.
-    pub fn update_length(&mut self, unsigned_ext_size: usize) -> Result<usize> {
-        let length = (self.size + unsigned_ext_size) as u32;
-        let m = self.borrow_manifest_mut()?;
-        m.length = length;
+    pub fn update_length(&mut self) -> Result<usize> {
+        self.borrow_manifest_mut()?.length = self.size as u32;
         Ok(self.size)
     }
 
@@ -254,9 +269,8 @@ impl Image {
     /// Note that this method must be called AFTER all signed extensions are added but BEFORE
     /// adding any unsigned extensions.
     pub fn update_signed_region_end(&mut self) -> Result<usize> {
-        let signed_region_end = self.size;
-        self.borrow_manifest_mut()?.signed_region_end = signed_region_end as u32;
-        Ok(signed_region_end)
+        self.borrow_manifest_mut()?.signed_region_end = self.size as u32;
+        Ok(self.size)
     }
 
     /// Operates on the signed region of the image.
