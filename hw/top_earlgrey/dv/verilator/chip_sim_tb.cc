@@ -29,15 +29,23 @@ int main(int argc, char **argv) {
   MemArea ram(top_scope + ".u_ram1p_ram_main." + ram1p_adv_scope, 0x20000 / 4,
               4);
   // Only handle the lower bank of flash for now.
-  MemArea flash(top_scope +
-                    ".u_flash_ctrl.u_eflash.u_flash.gen_generic.u_impl_generic."
-                    "gen_prim_flash_banks[0].u_prim_flash_bank.u_mem."
-                    "gen_generic.u_impl_generic",
-                0x80000 / 8, 8);
+  MemArea flash0(
+      top_scope +
+          ".u_flash_ctrl.u_eflash.u_flash.gen_generic.u_impl_generic."
+          "gen_prim_flash_banks[0].u_prim_flash_bank.u_mem."
+          "gen_generic.u_impl_generic",
+      0x80000 / 8, 8);
+  MemArea flash1(
+      top_scope +
+          ".u_flash_ctrl.u_eflash.u_flash.gen_generic.u_impl_generic."
+          "gen_prim_flash_banks[1].u_prim_flash_bank.u_mem."
+          "gen_generic.u_impl_generic",
+      0x80000 / 8, 8);
   // Start with the flash region erased. Future loads can overwrite.
-  std::vector<uint8_t> all_ones(flash.GetSizeBytes());
+  std::vector<uint8_t> all_ones(flash0.GetSizeBytes());
   std::fill(all_ones.begin(), all_ones.end(), 0xffu);
-  flash.Write(/*word_offset=*/0, all_ones);
+  flash0.Write(/*word_offset=*/0, all_ones);
+  flash1.Write(/*word_offset=*/0, all_ones);
 
   MemArea otp(top_scope + ".u_otp_ctrl.u_otp.gen_generic.u_impl_generic." +
                   ram1p_adv_scope,
@@ -45,7 +53,8 @@ int main(int argc, char **argv) {
 
   memutil.RegisterMemoryArea("rom", 0x8000, &rom);
   memutil.RegisterMemoryArea("ram", 0x10000000u, &ram);
-  memutil.RegisterMemoryArea("flash", 0x20000000u, &flash);
+  memutil.RegisterMemoryArea("flash0", 0x20000000u, &flash0);
+  memutil.RegisterMemoryArea("flash1", 0x20080000u, &flash1);
   memutil.RegisterMemoryArea("otp", 0x40000000u /* (bogus LMA) */, &otp);
   simctrl.RegisterExtension(&memutil);
 

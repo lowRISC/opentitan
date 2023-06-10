@@ -17,8 +17,8 @@ pub struct Options {
     pub executable: String,
     /// The ROM image used to boot the CPU.
     pub rom_image: String,
-    /// The flash image stored in internal flash memory.
-    pub flash_image: String,
+    /// The flash images stored in internal flash memory, one file per bank.
+    pub flash_images: Vec<String>,
     /// The OTP settings.
     pub otp_image: String,
     /// Any extra arguments to verilator.
@@ -41,8 +41,17 @@ impl Subprocess {
         if !options.rom_image.is_empty() {
             args.push(format!("--meminit=rom,{}", options.rom_image));
         }
-        if !options.flash_image.is_empty() {
-            args.push(format!("--meminit=flash,{}", options.flash_image));
+        if !options.flash_images.is_empty() {
+            let re = Regex::new(r"^(?P<fname>.*?)(:(?P<slot>\d+))?$").unwrap();
+            for image in options.flash_images.iter() {
+                let groups = re.captures(image).unwrap();
+                let image_file = groups.name("fname").unwrap().as_str();
+                let slot = match groups.name("slot") {
+                    Some(x) => x.as_str().parse::<u8>().unwrap(),
+                    None => 0,
+                };
+                args.push(format!("--meminit=flash{},{}", slot, image_file));
+            }
         }
         if !options.otp_image.is_empty() {
             args.push(format!("--meminit=otp,{}", options.otp_image));
@@ -118,7 +127,7 @@ mod test {
         let options = Options {
             executable: "/bin/echo".to_owned(),
             rom_image: "".to_owned(),
-            flash_image: "".to_owned(),
+            flash_images: vec!["/dev/null:1".to_owned()],
             otp_image: "".to_owned(),
             extra_args: vec!["abc 123 def 456".to_owned()],
             timeout: Duration::from_secs(5),
