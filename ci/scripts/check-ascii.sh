@@ -19,6 +19,7 @@ allowed_suffixes=(
     der
     vsdx
     elf
+    woff2
 
     md
     html

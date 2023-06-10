@@ -14,7 +14,8 @@ site-url = "guides/getting_started/"
 git-repository-url = "https://github.com/lowrisc/opentitan"
 edit-url-template = "https://github.com/lowrisc/opentitan/edit/master/doc/guides/getting_started/{path}"
 curly-quotes = true
-additional-css = ["book-theme/pagetoc.css"]
+additional-css = ["book-theme/pagetoc.css",
+                  "book-theme/recursive.css"]
 additional-js  = ["book-theme/pagetoc.js"]
 
 [output.html.print]

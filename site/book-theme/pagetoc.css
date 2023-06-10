@@ -21,7 +21,9 @@
         scroll-behavior: smooth;
     }
     .pagetoc {
+        font-family: 'Recursive', sans-serif;
         font-size: 95%;
+        font-weight: 380;
         padding-right: 10px;
         overflow-x: hidden;
         background: white;
