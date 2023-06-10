@@ -97,7 +97,7 @@ def gen_md_window(output: TextIO, win: Window, comp: str, regwidth: int) -> None
     end_addr = start_addr + 4 * win.items - 4
 
     output.write(
-        title(wname, 3) +
+        title(wname, 2) +
         win.desc +
         "\n\n" +
         list_item(
