@@ -10,7 +10,7 @@ package(default_visibility = ["//visibility:public"])
 offline_presigning_artifacts(
     name = "presigning_empty_test",
     testonly = True,
-    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_bin"],
+    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test_sigverify_spx_bin"],
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     rsa_key = "//sw/device/silicon_creator/rom/keys/real/rsa:earlgrey_a0_test_0",
     spx_key = "//sw/device/silicon_creator/rom/keys/real/spx:test_key_0_spx",
@@ -46,6 +46,9 @@ offline_signature_attach(
     ],
     rsa_signatures = [
         "//signing/rom_tests/signatures:rsa_signatures",
+    ],
+    spx_signatures = [
+        "//signing/rom_tests/signatures:spx_signatures",
     ],
     tags = ["manual"],
 )

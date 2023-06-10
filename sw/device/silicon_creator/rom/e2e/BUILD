@@ -3804,6 +3804,7 @@ opentitan_flash_binary(
     devices = [
         "fpga_cw310",
         "sim_dv",
+        "sim_verilator",
     ],
     local_defines = [
         shell.quote("EMPTY_TEST_MSG=\"spx_en=0x%08x, spx_en_otp=0x%08x, spx_key_en=0x%08x%08x\", " +
@@ -3917,10 +3918,28 @@ test_suite(
     ],
 )
 
+otp_image(
+    name = "otp_img_sigverify_spx_rma",
+    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
+    overlays = STD_OTP_OVERLAYS + [
+        ":otp_json_sigverify_spx_enabled_true",
+    ],
+    visibility = ["//visibility:private"],
+)
+
+bitstream_splice(
+    name = "bitstream_sigverify_spx_rma",
+    src = "//hw/bitstream:rom_with_real_keys",
+    data = ":otp_img_sigverify_spx_rma",
+    meminfo = "//hw/bitstream:otp_mmi",
+    update_usr_access = True,
+    visibility = ["//visibility:private"],
+)
+
 opentitan_functest(
     name = "presigned_fpga_binary",
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_real_keys_otp_test_unlocked0",
+        bitstream = ":bitstream_sigverify_spx_rma",
     ),
     ot_flash_binary = "//sw/device/silicon_creator/rom/e2e/presigned_images:empty_test",
     # False because we don't want this rule to do the signing; the image is already signed.
