@@ -333,6 +333,33 @@ impl CommandDispatch for DigestCommand {
     }
 }
 
+/// Compute spx-message command.
+#[derive(Debug, StructOpt)]
+pub struct SpxMessageCommand {
+    #[structopt(
+        name = "IMAGE",
+        help = "Filename for the image to calculate the digest for"
+    )]
+    image: PathBuf,
+    #[structopt(short, long, help = "Filename for an output bin file")]
+    output: PathBuf,
+}
+
+impl CommandDispatch for SpxMessageCommand {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        _transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        let image = image::Image::read_from_file(&self.image)?;
+        let mut output = File::create(&self.output)?;
+        // Note: the closure returns a Result R, and map_signed region
+        // returns Result<R>.  Therefore, double `?` to unwrap both.
+        image.map_signed_region(|buf| output.write_all(buf))??;
+        Ok(None)
+    }
+}
+
 #[derive(Debug, StructOpt, CommandDispatch)]
 /// Manifest manipulation commands.
 pub enum ManifestCommand {
@@ -347,4 +374,5 @@ pub enum Image {
     Assemble(AssembleCommand),
     Manifest(ManifestCommand),
     Digest(DigestCommand),
+    SpxMessage(SpxMessageCommand),
 }
