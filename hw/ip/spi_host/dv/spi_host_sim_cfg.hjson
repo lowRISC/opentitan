@@ -108,7 +108,7 @@
     {
       name: spi_host_status_stall
       uvm_test_seq: spi_host_status_stall_vseq
-      run_opts: ["+test_timeout_ns=1_00_000_000"]
+      run_opts: ["+test_timeout_ns=1_000_000_000"]
     }
     {
       name: spi_host_idlecsbactive

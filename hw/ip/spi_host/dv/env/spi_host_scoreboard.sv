@@ -50,7 +50,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
   int                               in_rx_seq_cnt      = 0;
   int                               checked_rx_seq_cnt = 0;
   // flag used used for SB when spi tx data is programmed later than command
-  local bit wr_cmd = 0;
+  local bit commit_exp_txn_at_txfifo_write = 0;
   // events
   event event_sw_rst;
 
@@ -175,6 +175,8 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
   endtask
 
 
+  // The SPI_HOST hwip block TL-UL interface contains a set of CSRs plus windows into two
+  // fifos (RXFIFO and TXFIFO).
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg csr;
     string csr_name = "";
@@ -184,83 +186,83 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
     spi_segment_item rd_segment;
     spi_segment_item wr_segment;
 
-    bit cmd_phase_write = (write && channel  == AddrChannel);
-    bit data_phase_read  = (!write && channel == DataChannel);
+    bit cmd_phase_write =  (write && channel == AddrChannel);
+    bit data_phase_read = (!write && channel == DataChannel);
 
-    // if access was to a valid csr, get the csr handle
-    if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-      csr = ral.default_map.get_reg_by_offset(csr_addr);
-      `DV_CHECK_NE_FATAL(csr, null)
-      csr_name = csr.get_name();
-
-      // if incoming access is a write to a valid csr, then make updates right away
-      if (cmd_phase_write) begin
-        void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
-      end
-    end else if ((csr_addr & csr_addr_mask) inside {[SPI_HOST_TX_FIFO_START :
-                                                     SPI_HOST_TX_FIFO_END]}) begin
-      // write to data fifo
-      bit [7:0] tl_byte[TL_DBW];
+    // If the access was inside the TXFIFO window...
+    if ((csr_addr & csr_addr_mask) inside {[SPI_HOST_TX_FIFO_START :
+                                            SPI_HOST_TX_FIFO_END]}) begin
+      bit [7:0] tl_byte[TL_DBW] = {<< 8{item.a_data}};
       if (cfg.en_cov) begin
         spi_host_status_t status;
         csr_rd(.ptr(ral.status), .value(status), .backdoor(1'b1));
         cov.tx_fifo_overflow_cg.sample(status);
       end
 
-      // packed vector to bytes
-      tl_byte = {<< 8{item.a_data}};
-      // store data in data queues
-      foreach (tl_byte[i]) begin
-        if (cmd_phase_write) begin
-          // collect write data
-          host_wr_segment.spi_data.push_back(tl_byte[i]);
-        end
+      // Store all write-data into the local transaction item.
+      if (cmd_phase_write) begin
+        foreach (tl_byte[i]) host_wr_segment.spi_data.push_back(tl_byte[i]);
       end
-      if (cfg.tx_stall_check) begin
-        if (wr_cmd) begin
-          `downcast(wr_segment, host_wr_segment.clone());
-          write_segment_q.push_back(wr_segment);
-          wr_cmd = 1'b0;
-          // clear item
-          host_wr_segment = new();
-        end
+      // Based on the value of cfg.tx_stall_check, we push this data into the
+      // expected queue (write_segment_q) for checking by compare_tx_trans() at
+      // one of two times:
+      //   1'b0 - Push when we write to the COMMAND csr (which starts the DUT).
+      //   1'b1 - Push when we write to TXFIFO.
+      // This behaviour allows us to test TX stalling behaviour, which requires
+      // the DUT to be attempting a write operation with no data to be popped off
+      // the TXFIFO.
+      if (commit_exp_txn_at_txfifo_write) begin
+        commit_exp_txn_at_txfifo_write = 1'b0;
+        // If cfg.tx_stall_check == 1'b1, this writes the stimulus to the expected queue
+        // only after a write to the COMMAND csr.
+        `downcast(wr_segment, host_wr_segment.clone());
+        write_segment_q.push_back(wr_segment);
+        host_wr_segment = new();
       end
+
+      return;
+
+    // If the access was inside the RXFIFO window...
     end else if ((csr_addr & csr_addr_mask) inside {[SPI_HOST_RX_FIFO_START :
                                                      SPI_HOST_RX_FIFO_END]}) begin
-      bit [7:0] tl_byte[$];
+      bit [7:0] tl_byte[$] = {<< 8{item.d_data}};
 
-      // packed vector to bytes
-      tl_byte = {<< 8{item.d_data}};
       if (cfg.en_cov) begin
         spi_host_status_t status;
         csr_rd(.ptr(ral.status), .value(status), .backdoor(1'b1));
         cov.rx_fifo_underflow_cg.sample(status);
         cov.unaligned_data_cg.sample(item.a_mask);
       end
-      // store data in data queues
-      foreach (tl_byte[i]) begin
-        if (data_phase_read) begin
-          // collect write data
-          host_rd_segment.spi_data.push_back(tl_byte[i]);
-        end
-      end
 
+      // Store all data that comes out of the RXFIFO into the queue (read_segment_q) for
+      // checking in compare_rx_trans().
       if (data_phase_read) begin
-        //push to queue
+        foreach (tl_byte[i]) host_rd_segment.spi_data.push_back(tl_byte[i]);
         `downcast(rd_segment, host_rd_segment.clone());
         read_segment_q.push_back(rd_segment);
         host_rd_segment = new();
       end
-    end else begin
-      `uvm_fatal(`gfn, $sformatf("\n  scb: access unexpected addr 0x%0h", csr_addr))
-    end
 
-    // process the csr req
-    // for write, update local variable and fifo at address phase
-    // for read, update predication at address phase and compare at data phase
+      return;
+
+    // Process the csr req
+    // For writes, update local variables and fifo at address phase
+    // For reads, update prediction at address phase and compare at data phase
+    end else if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
+      // If access was to a valid csr, get the csr handle
+      csr = ral.default_map.get_reg_by_offset(csr_addr);
+      `DV_CHECK_NE_FATAL(csr, null)
+      // If incoming access is a write to a valid csr, then make updates right away
+      if (cmd_phase_write) begin
+        void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+      end
+      csr_name = csr.get_name();
+
+    end else `uvm_fatal(`gfn, $sformatf("\n  scb: access unexpected addr 0x%0h", csr_addr))
+
     if (cmd_phase_write) begin
       case (csr_name)
-        // add individual case item for each csr
+        default:; // Do nothing
         "control": begin
           bit active;
           csr_rd(.ptr(ral.status.active), .value(active), .backdoor(1'b1));
@@ -333,13 +335,14 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
           host_wr_segment.command_reg.csaat     = spi_cmd_reg.csaat;
           if (write) begin
             `downcast(wr_segment, host_wr_segment.clone());
-            if (cfg.tx_stall_check) begin
-              wr_cmd = 1'b1;
-            end else begin
+            // If cfg.tx_stall_check, we only push the expected transaction into the queue
+            // when the write to the TXFIFO occurs.
+            if (cfg.tx_stall_check) commit_exp_txn_at_txfifo_write = 1'b1;
+            else begin
+              // Push the expected transaction into the queue now.
               write_segment_q.push_back(wr_segment);
               `uvm_info(`gfn, $sformatf("\n  created expeted segment item %s",
                                           wr_segment.convert2string()), UVM_HIGH)
-              // clear item
               host_wr_segment = new();
             end
           end
@@ -407,20 +410,18 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
             cov.event_en_cg.sample(spi_event_enable_reg);
           end
         end
-        default: begin
-         // do nothing
-        end
       endcase
     end
     if (data_phase_read) begin
       case (csr_name)
+        default:; // Do nothing
         "intr_state": begin
            spi_intr_state_reg.spi_event  = bit'(get_field_val(ral.intr_state.spi_event,
                                                               item.a_data));
            spi_intr_state_reg.error      = bit'(get_field_val(ral.intr_state.error, item.a_data));
            if (cfg.en_cov) begin
-             bit [TL_DW-1:0]         intr_en  = `gmv(ral.intr_enable);
-             bit [NumSpiHostIntr-1:0]  intr_exp = `gmv(ral.intr_state);
+             bit [TL_DW-1:0]          intr_en  = `gmv(ral.intr_enable);
+             bit [NumSpiHostIntr-1:0] intr_exp = `gmv(ral.intr_state);
              foreach (intr_exp[i]) begin
                cov.intr_cg.sample(i, intr_en[i], item.d_data);
                cov.intr_pins_cg.sample(i, cfg.intr_vif.pins[i]);
@@ -463,9 +464,6 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
             cov.status_cg.sample(spi_status_reg);
           end
         end
-        default: begin
-         // do nothing
-        end
       endcase
     end
   endtask : process_tl_access
@@ -496,7 +494,9 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(spi_item, host_data_fifo)
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(spi_item, device_data_fifo)
     if((rx_data_q.size() != 0))
-      `uvm_fatal(`gfn, $sformatf("ERROR - RX FIFO in DUT still has data to be read!"))
+      `uvm_fatal(`gfn,
+                 $sformatf("ERROR - RX FIFO in DUT still has data to be read! (rx_data_q = %0d)",
+                           rx_data_q.size()))
   endfunction : check_phase
 
 endclass : spi_host_scoreboard
