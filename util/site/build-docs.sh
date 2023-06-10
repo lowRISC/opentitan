@@ -156,6 +156,11 @@ buildSite () {
     ${book_env} ./bazelisk.sh run --experimental_convenience_symlinks=ignore @crate_index//:mdbook__mdbook -- ${book_args}
     # shellcheck disable=SC2086
     ${gettingstarted_book_env} ./bazelisk.sh run --experimental_convenience_symlinks=ignore @crate_index//:mdbook__mdbook -- ${gettingstarted_book_args}
+    # Copy additional font files to output directory, as currently mdBook does not have a way to specify them as part of the build.
+    local font="Recursive_wght,CASL@300__800,0_5.woff2"
+    cp "${proj_root}/site/book-theme/${font}" "${build_dir}/book/site/book-theme/${font}"
+    cp "${proj_root}/site/book-theme/${font}" "${build_dir}/guides/getting_started/book-theme/${font}"
+
     # shellcheck disable=SC2086
     hugo ${hugo_args}
 
