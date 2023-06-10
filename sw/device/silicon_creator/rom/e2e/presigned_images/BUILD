@@ -22,17 +22,17 @@ filegroup(
 
 filegroup(
     name = "empty_test_fpga_cw310",
-    srcs = ["empty_test_slot_a_fpga_cw310.signed.bin"],
+    srcs = ["empty_test_sigverify_spx_fpga_cw310.signed.bin"],
 )
 
 filegroup(
     name = "empty_test_sim_dv",
-    srcs = ["empty_test_slot_a_sim_dv.signed.bin"],
+    srcs = ["empty_test_sigverify_spx_sim_dv.signed.bin"],
 )
 
 filegroup(
     name = "empty_test_sim_verilator",
-    srcs = ["empty_test_slot_a_sim_verilator.signed.bin"],
+    srcs = ["empty_test_sigverify_spx_sim_verilator.signed.bin"],
 )
 
 filegroup(
