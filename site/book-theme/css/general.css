@@ -87,7 +87,7 @@ h6:target::before {
    https://bugs.webkit.org/show_bug.cgi?id=218076
 */
 :target {
-    scroll-margin-top: calc(var(--menu-bar-height) + 8rem);
+    scroll-margin-top: calc(var(--menu-bar-height) + 20rem);
 }
 
 .page {
