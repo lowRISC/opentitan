@@ -15,7 +15,7 @@
     .sidetoc {
         position: sticky;
         margin: 0 calc(var(--page-padding) + 15px);
-        width: calc(40% - 15vw + 50px);
+        width: calc(40% - 15vw + 100px);
         max-width: 400px;
         top: calc(var(--menu-bar-height) + 8rem);
         scroll-behavior: smooth;
@@ -24,26 +24,29 @@
         font-family: 'Recursive', sans-serif;
         font-size: 95%;
         font-weight: 380;
+        padding-left: 15px;
         padding-right: 10px;
         overflow-x: hidden;
         background: white;
-        box-shadow: #4BC0C8C0 -5px -5px,
-                    #C779D090 -10px -10px,
-                    #FEAC5E60 -15px -15px;
+        box-shadow: 0px 0px 20px 15px white;
+        border-radius: 15px;
     }
     .pagetoc::-webkit-scrollbar {
-        width: 1rem;
+        width: 0.8rem;
     }
     .pagetoc::-webkit-scrollbar-track {
-        margin-top: 4rem;
+        margin-top: 5rem;
     }
     .pagetoc::-webkit-scrollbar-thumb {
-        background-image: linear-gradient(180deg, #4BC0C8 0%, #C779D0 50%, #FEAC5E 100%);
+        background: var(--pagetoc-bg);
+    }
+    .pagetoc::-webkit-scrollbar-thumb:hover {
+        background-image: linear-gradient(180deg, #4BC0C8A0 0%, #C779D0A0 50%, #FEAC5EA0 100%);
         border-radius: 5px;
     }
     .pagetoc a,
     .pagetoc #pagetoc-title {
-        color: var(--fg) !important;
+        color: var(--pagetoc-fg) !important;
         display: block;
         padding-bottom: 5px;
         padding-top: 5px;
@@ -53,19 +56,20 @@
         pointer-events: auto;
     }
     .pagetoc #pagetoc-title {
+        color: var(--fg) !important;
         font-weight: bold;
-        font-size: 130%;
+        font-size: 200%;
         border-bottom: 7px solid var(--pagetoc-bg);
         margin-bottom: 10px;
+        padding-left: unset;
     }
     .pagetoc a:hover,
     .pagetoc a.active {
         background: var(--pagetoc-bg);
-        color: var(--pagetoc-fg) !important;
     }
-    .pagetoc .active {
-        background: var(--pagetoc-bg);
-        color: var(--pagetoc-fg);
+    .pagetoc a:hover{
+        color: var(--pagetoc-fg-hover) !important;
+        font-weight: bold;
     }
     [class^="wrap-W"] {
         pointer-events: none;
@@ -74,13 +78,35 @@
     }
     [class^="wrap-W"]:hover {
         margin-left: 19px;
-        border-left: 1px solid #00000080;
+        border-left: 1px solid #00000070;
+        margin-top: -1px;
+        border-top: 1px solid #00000070;
+    }
+    /* Apply bold-font to any leaf-heading element which is immediately before a hovered-wrap element
+     * Along with the "pointer-events: none" style for wrap elements, this means that all headings
+     * that "contain" the currently-hovered heading will be styled. */
+    [class^="leaf-H"]:has(+ [class^="wrap-W"]:hover) {
+        color: var(--pagetoc-fg-hover) !important;
+        font-weight: bold;
+    }
+    /* Adding a :before element to headings may be a nice-pop, so is left here for future consideration */
+    /* [class^="leaf-H"]:has(+ [class^="wrap-W"]:hover):before { */
+    /*     position: absolute; */
+    /*     content: "»"; */
+    /*     margin-left: -0.7em; */
+    /*     margin-top: -0.4em; */
+    /*     font-size: 1.5em; */
+    /* } */
+    .wrap-W0:hover,
+    .wrap-W1:hover {
+        margin-top: unset;
+        border-top: unset;
     }
     .pagetoc .wrap-W0,
     .pagetoc .wrap-W1 {
-        margin-left: 0;
-        padding-left: 0;
-        border-left: none;
+        margin-left: unset;
+        padding-left: unset;
+        border-left: unset;
     }
     .pagetoc .leaf-H3,
     .pagetoc .leaf-H4{

@@ -23,7 +23,7 @@ var updateDynamicHighlight = function() {
     // Set id == the highest "header" element visible in the window.
     // Define an offset to account for the menubar, and bump the decision-point a
     // bit further down the page, which makes the behaviour feel more natural.
-    const highestVisibleHeaderOffset = 150; // px
+    const highestVisibleHeaderOffset = 350; // px
     Array.prototype.forEach.call(elements, function(el) {
         if ((window.pageYOffset + highestVisibleHeaderOffset) >= el.offsetTop) {
             id = el;
