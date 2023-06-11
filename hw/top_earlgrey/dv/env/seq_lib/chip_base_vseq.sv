@@ -14,17 +14,15 @@ class chip_base_vseq #(
 
   jtag_dmi_reg_block jtag_dmi_ral;
 
-  // knobs to enable pre_start routines
-
-  // knobs to enable post_start routines
-
-  // various knobs to enable certain routines
-
   // Local queue for holding received UART TX data.
   byte uart_tx_data_q[$];
 
   // Indicates the first power up of the chip.
   bit is_first_pwrup = 1'b1;
+
+  // Knob to start cpu_init in pre_start phase
+  // You have to set this knob before or within dut_init task
+  bit early_cpu_init = 0;
 
   `uvm_object_new
 
@@ -160,7 +158,8 @@ class chip_base_vseq #(
     for (int ram_idx = 0; ram_idx < cfg.num_otbn_dmem_tiles; ram_idx++) begin
       cfg.mem_bkdr_util_h[chip_mem_e'(OtbnDmem0 + ram_idx)].clear_mem();
     end
-
+    // Early cpu init
+    if (early_cpu_init) cpu_init();
     // Bring the chip out of reset.
     super.dut_init(reset_kind);
     alert_ping_en_shorten();
@@ -169,6 +168,10 @@ class chip_base_vseq #(
     // Clear once upon the chip exiting the first reset.
     is_first_pwrup = 0;
   endtask
+
+  // Place holder for cpu_init task
+  // initial implementation is in chip_sw_base_vseq.sv
+  virtual task cpu_init();endtask
 
   virtual task dut_shutdown();
     // check for pending chip operations and wait for them to complete
