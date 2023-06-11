@@ -980,7 +980,7 @@ ${bits.msb}\
   );
 
   // update error is transient and must be immediately captured
-  prim_pulse_sync u_${finst_name}_err_update_sync (
+  prim_ot_pulse_sync u_${finst_name}_err_update_sync (
     .clk_src_i(${reg.async_clk.clock}),
     .rst_src_ni(${reg.async_clk.reset}),
     .src_pulse_i(async_${finst_name}_err_update),
