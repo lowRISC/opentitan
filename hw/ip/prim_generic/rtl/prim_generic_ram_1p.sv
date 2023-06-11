@@ -29,6 +29,27 @@ module prim_ram_1p import prim_ram_1p_pkg::*; #(
   input ram_1p_cfg_t       cfg_i
 );
 
+  logic unused_cfg;
+  assign unused_cfg = ^cfg_i;
+  tc_sram #(
+     .NumWords(Depth),
+     .DataWidth(Width),
+     .NumPorts(32'd1),
+     .PrintSimCfg(1)
+  ) ram_primitive (
+     .clk_i,
+     .rst_ni,
+     .req_i,
+     .addr_i,
+     .wdata_i,
+     .rdata_o,
+     .we_i(write_i),
+     .be_i('1)
+  );
+   
+endmodule
+
+/*
 `ifndef TARGET_SYNTHESIS
    
 // For certain synthesis experiments we compile the design with generic models to get an unmapped
@@ -92,82 +113,4 @@ module prim_ram_1p import prim_ram_1p_pkg::*; #(
   `include "prim_util_memload.svh"
  `endif //  `ifndef SYNTHESIS_MEMORY_BLACK_BOXING
 `else // !`ifndef TARGET_SYNTHESIS
-   
-  logic unused_cfg;
-  assign unused_cfg = ^cfg_i;
-/*   
-  if(Otp) begin
-     logic [7:0]                    wea;
-     logic [63:0]                   dina;
-     assign wea  = 8'b00000000;
-     assign dina = 64'h00000000_00000000;
-     xilinx_otp_rom_bank_1024x24 otp_mem_i (
-                                    .clk  (clk_i),
-                                    .a (addr_i[12:3]),
-                                    .spo (rdata_o)
-                                    );
-    // unused = ^req_i & ^write_i & ^wdata_i & ^wmask_i;
-  end else begin*/
-  tc_sram #(
-     .NumWords(Depth),
-     .DataWidth(Width),
-     .NumPorts(32'd1),
-     .PrintSimCfg(PrintSimCfg)
-//   .MemInitFile(MemInitFile)
-  ) ram_primitive (
-     .clk_i,
-     .rst_ni,
-     .req_i,
-     .addr_i,
-     .wdata_i,
-     .rdata_o,
-     .we_i(write_i),
-     .be_i('1)
-  );
-  //end
-`endif
-         
-endmodule
-/*
-  // Width must be fully divisible by DataBitsPerMask
-  `ASSERT_INIT(DataBitsPerMaskCheck_A, (Width % DataBitsPerMask) == 0)
-
-  logic unused_cfg;
-  assign unused_cfg = ^cfg_i;
-
-  // Width of internal write mask. Note wmask_i input into the module is always assumed
-  // to be the full bit mask
-  localparam int MaskWidth = Width / DataBitsPerMask;
-
-  logic [Width-1:0]     mem [Depth];
-  logic [MaskWidth-1:0] wmask;
-
-  for (genvar k = 0; k < MaskWidth; k++) begin : gen_wmask
-    assign wmask[k] = &wmask_i[k*DataBitsPerMask +: DataBitsPerMask];
-
-    // Ensure that all mask bits within a group have the same value for a write
-    `ASSERT(MaskCheck_A, req_i && write_i |->
-        wmask_i[k*DataBitsPerMask +: DataBitsPerMask] inside {{DataBitsPerMask{1'b1}}, '0},
-        clk_i, '0)
-  end
-
-  // using always instead of always_ff to avoid 'ICPD  - illegal combination of drivers' error
-  // thrown when using $readmemh system task to backdoor load an image
-  always @(posedge clk_i) begin
-    if (req_i) begin
-      if (write_i) begin
-        for (int i=0; i < MaskWidth; i = i + 1) begin
-          if (wmask[i]) begin
-            mem[addr_i][i*DataBitsPerMask +: DataBitsPerMask] <=
-              wdata_i[i*DataBitsPerMask +: DataBitsPerMask];
-          end
-        end
-      end else begin
-        rdata_o <= mem[addr_i];
-      end
-    end
-  end
-
-  `include "prim_util_memload.svh"
-endmodule
-*/
+  */ 

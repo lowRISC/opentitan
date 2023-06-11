@@ -36,7 +36,52 @@ module prim_ram_2p import prim_ram_2p_pkg::*; #(
 
   input                    ram_2p_cfg_t cfg_i
 );
+       
+  logic unused_cfg;
+  assign unused_cfg = ^cfg_i;
+
+  parameter type addr_t = logic [Aw-1:0];
+  parameter type data_t = logic [Width-1:0];
+
    
+  logic  [1:0]   req_i;      
+  logic  [1:0]   we_i;   
+  addr_t [1:0]   addr_i;     
+  data_t [1:0]   wdata_i;    
+  data_t [1:0]   rdata_o;
+
+  assign req_i[0]   = a_req_i;
+  assign we_i[0]    = a_write_i;
+  assign addr_i[0]  = a_addr_i;
+  assign wdata_i[0] = a_wdata_i;
+  assign a_rdata_o  = rdata_o[0];
+
+  assign req_i[1]   = b_req_i;
+  assign we_i[1]    = b_write_i;
+  assign addr_i[1]  = b_addr_i;
+  assign wdata_i[1] = b_wdata_i;
+  assign b_rdata_o  = rdata_o[1];
+
+  //port A assignment
+  tc_sram #(
+     .NumWords(Depth),
+     .DataWidth(Width),
+     .NumPorts(32'd2),
+     .PrintSimCfg(1)
+  ) ram_primitive (
+     .clk_i(clk_a_i),
+     .rst_ni,
+     .req_i,
+     .addr_i,
+     .wdata_i,
+     .rdata_o,
+     .we_i,
+     .be_i('1)
+  );
+   
+endmodule
+
+/*
 `ifndef TARGET_SYNTHESIS
 
 // For certain synthesis experiments we compile the design with generic models to get an unmapped
@@ -109,116 +154,5 @@ module prim_ram_2p import prim_ram_2p_pkg::*; #(
   `include "prim_util_memload.svh"
  `endif //  `ifndef SYNTHESIS_MEMORY_BLACK_BOXING
 `else // !`ifndef TARGET_SYNTHESIS
-       
-  logic unused_cfg;
-  assign unused_cfg = ^cfg_i;
+   */
 
-  parameter type addr_t = logic [Aw-1:0];
-  parameter type data_t = logic [Width-1:0];
-
-   
-  logic  [1:0]   req_i;      
-  logic  [1:0]   we_i;   
-  addr_t [1:0]   addr_i;     
-  data_t [1:0]   wdata_i;    
-  data_t [1:0]   rdata_o;
-
-  assign req_i[0]   = a_req_i;
-  assign we_i[0]    = a_write_i;
-  assign addr_i[0]  = a_addr_i;
-  assign wdata_i[0] = a_wdata_i;
-  assign a_rdata_o  = rdata_o[0];
-
-  assign req_i[1]   = b_req_i;
-  assign we_i[1]    = b_write_i;
-  assign addr_i[1]  = b_addr_i;
-  assign wdata_i[1] = b_wdata_i;
-  assign b_rdata_o  = rdata_o[1];
-
-  //port A assignment
-  tc_sram #(
-     .NumWords(Depth),
-     .DataWidth(Width),
-     .NumPorts(32'd2)
-  ) ram_primitive (
-     .clk_i(clk_a_i),
-     .rst_ni,
-     .req_i,
-     .addr_i,
-     .wdata_i,
-     .rdata_o,
-     .we_i,
-     .be_i('1)
-  );
-`endif // !`ifndef TARGET_SYNTHESIS
-    
-
-endmodule
-
-
-
-
-
-
-/*
-  logic unused_cfg;
-  assign unused_cfg = ^cfg_i;
-
-  // Width of internal write mask. Note *_wmask_i input into the module is always assumed
-  // to be the full bit mask.
-  localparam int MaskWidth = Width / DataBitsPerMask;
-
-  logic [Width-1:0]     mem [Depth];
-  logic [MaskWidth-1:0] a_wmask;
-  logic [MaskWidth-1:0] b_wmask;
-
-  for (genvar k = 0; k < MaskWidth; k++) begin : gen_wmask
-    assign a_wmask[k] = &a_wmask_i[k*DataBitsPerMask +: DataBitsPerMask];
-    assign b_wmask[k] = &b_wmask_i[k*DataBitsPerMask +: DataBitsPerMask];
-
-    // Ensure that all mask bits within a group have the same value for a write
-    `ASSERT(MaskCheckPortA_A, a_req_i && a_write_i |->
-        a_wmask_i[k*DataBitsPerMask +: DataBitsPerMask] inside {{DataBitsPerMask{1'b1}}, '0},
-        clk_a_i, '0)
-    `ASSERT(MaskCheckPortB_A, b_req_i && b_write_i |->
-        b_wmask_i[k*DataBitsPerMask +: DataBitsPerMask] inside {{DataBitsPerMask{1'b1}}, '0},
-        clk_b_i, '0)
-  end
-
-  // Xilinx FPGA specific Dual-port RAM coding style
-  // using always instead of always_ff to avoid 'ICPD  - illegal combination of drivers' error
-  // thrown due to 'mem' being driven by two always processes below
-  always @(posedge clk_a_i) begin
-    if (a_req_i) begin
-      if (a_write_i) begin
-        for (int i=0; i < MaskWidth; i = i + 1) begin
-          if (a_wmask[i]) begin
-            mem[a_addr_i][i*DataBitsPerMask +: DataBitsPerMask] <=
-              a_wdata_i[i*DataBitsPerMask +: DataBitsPerMask];
-          end
-        end
-      end else begin
-        a_rdata_o <= mem[a_addr_i];
-      end
-    end
-  end
-
-  always @(posedge clk_b_i) begin
-    if (b_req_i) begin
-      if (b_write_i) begin
-        for (int i=0; i < MaskWidth; i = i + 1) begin
-          if (b_wmask[i]) begin
-            mem[b_addr_i][i*DataBitsPerMask +: DataBitsPerMask] <=
-              b_wdata_i[i*DataBitsPerMask +: DataBitsPerMask];
-          end
-        end
-      end else begin
-        b_rdata_o <= mem[b_addr_i];
-      end
-    end
-  end
-
-  `include "prim_util_memload.svh"
-
-endmodule
-*/

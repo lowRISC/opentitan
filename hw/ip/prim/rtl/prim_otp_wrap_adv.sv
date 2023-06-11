@@ -80,8 +80,7 @@ module prim_otp_wrap_adv import prim_ram_1p_pkg::*; #(
   logic [TotalWidth-1:0]   rdata_sram ;
   logic [1:0]              rerror_q, rerror_d;
  
-`ifdef TARGET_SYNTHESIS
-  `ifdef TARGET_XILINX
+`ifdef TARGET_XILINX
   logic [7:0]                    wea;
   logic [63:0]                   dina;
   logic                          unused;
@@ -94,9 +93,7 @@ module prim_otp_wrap_adv import prim_ram_1p_pkg::*; #(
                                  .spo (rdata_sram)
                                  ) ;
   assign unused = ^req_q & ^write_q & ^wdata_q & ^wmask_q;
-  `endif   
-  `ifdef TARGET_SYNOPSYS
-    `ifdef ALSAQR
+`elsif GF22
   gf22_efuse_wrap #(
     .Depth                (Depth),
     .Width                (TotalWidth),
@@ -114,9 +111,7 @@ module prim_otp_wrap_adv import prim_ram_1p_pkg::*; #(
     .rdata_o    ( rdata_sram ),
     .rvalid_o   (            )
   );
-    `endif 
-  `endif 
- `else // !`ifdef TARGET_SYNTHESIS
+`else // !`ifdef TARGET_SYNTHESIS
   otp_rom #(
     .Width(TotalWidth),
     .Depth(Depth),
