@@ -34,6 +34,12 @@ if {$env(BBOX_CMD) eq "" } {
     -f [glob *.scr]
 }
 
+# analyze additional/overwrite design modules in CS
+if {[info exists ::env(EXT_CS_DES_FILES_TCL)]} {
+  source $env(EXT_CS_DES_FILES_TCL)
+}
+
+
 # Black-box assistant will blackbox the modules which are not needed by looking at
 # the connectivity csv.
 blackbox_assistant -config -connectivity_map $conn_csvs
