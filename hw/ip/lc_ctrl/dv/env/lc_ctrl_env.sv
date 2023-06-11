@@ -19,9 +19,13 @@ class lc_ctrl_env extends cip_base_env #(
   jtag_riscv_reg_adapter m_jtag_riscv_reg_adapter;
   kmac_app_agent m_kmac_app_agent;
 
+  int jtag_to_coreclk_ratio;
+  int unsigned tck_period_ps;
+
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
+
     super.build_phase(phase);
 
     m_jtag_riscv_reg_adapter = jtag_riscv_reg_adapter::type_id::create("m_jtag_riscv_reg_adapter",
@@ -111,6 +115,16 @@ class lc_ctrl_env extends cip_base_env #(
       `uvm_info(`gfn, cfg.ral_models[i].sprint(), UVM_HIGH)
     end
 
+    // Set jtag to coreclk ration between 0.5 to 2
+    jtag_to_coreclk_ratio = $urandom_range(500, 2000);
+
+    tck_period_ps = cfg.clk_rst_vif.clk_period_ps / jtag_to_coreclk_ratio * 1000;
+
+    `uvm_info(`gfn, $sformatf("clk:%0d jtag:%0d ratio:%0d",
+             cfg.clk_rst_vif.clk_period_ps, tck_period_ps, jtag_to_coreclk_ratio),
+              UVM_LOW)
+
+    cfg.m_jtag_riscv_agent_cfg.m_jtag_agent_cfg.vif.set_tck_period_ps(tck_period_ps);
   endfunction
 
 endclass
