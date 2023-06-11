@@ -87,16 +87,11 @@ class chip_sw_lc_ctrl_scrap_vseq extends chip_sw_lc_base_vseq;
     apply_reset();
   endtask : perform_transition_to_scrap
 
-  task cpu_init();
-    super.cpu_init();
-
-    // tell SW whether the transition is done by JTAG or SW
-    sw_symbol_backdoor_overwrite("kPerformTransitionBySW", {perform_transition_via_sw});
-  endtask : cpu_init
-
   virtual task body();
     bit [BUS_DW-1:0] state;
     super.body();
+    // tell SW whether the transition is done by JTAG or SW
+    sw_symbol_backdoor_overwrite("kPerformTransitionBySW", {perform_transition_via_sw});
 
     // perform the transition to SCRAP state
     perform_transition_to_scrap();
