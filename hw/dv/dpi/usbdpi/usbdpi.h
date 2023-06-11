@@ -24,10 +24,11 @@ typedef uint32_t svBitVecVal;
 #include "usbdpi_stream.h"
 
 // Shall we employ a proper simulation of the frame interval (1ms)?
-// TODO - until such time as we can perform multiple control transfers in a
-//        single bus frame, this is impractical because the simulation takes too
-//        long and is apt to time out
-#define FULL_FRAME 0
+// TODO - Because we cannot perform multiple control transfers in a
+//        single bus frame yet, simulation can take a long time and risk timing
+//        out. Users may want to set this to 0 to reduce simulation time. Note
+//        that reducing the frame interval is not spec-compliant.
+#define FULL_FRAME 1
 
 // How many bits in our frame
 //
