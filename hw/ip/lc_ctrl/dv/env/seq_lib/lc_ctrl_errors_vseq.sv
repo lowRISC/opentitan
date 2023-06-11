@@ -182,11 +182,9 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   endtask
 
   virtual task pre_start();
-    if (cfg.jtag_csr) begin
-      bit cdc_instrumentation_enabled;
-      void'($value$plusargs("cdc_instrumentation_enabled=%d", cdc_instrumentation_enabled));
-      if (cdc_instrumentation_enabled) disable_cdc_jtag_assertion = 1;
-    end
+    bit cdc_instrumentation_enabled;
+    void'($value$plusargs("cdc_instrumentation_enabled=%d", cdc_instrumentation_enabled));
+    if (cdc_instrumentation_enabled) disable_cdc_jtag_assertion = 1;
 
     // Align cfg.err_inj with the sequence before body starts
     update_err_inj_cfg();
@@ -938,7 +936,9 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
 
   virtual task run_flash_rma_rsp(bit has_err = 0);
     // Number of lc_flash_rma_ack_i synchronisation FFs
-    const int FLASH_RMA_ACK_SYNC_FFS = 2;
+    // This value can take 2 or 3 cycles after adding cdc instrumentatino
+    // and we take maximum to be conservative.
+    const int FLASH_RMA_ACK_SYNC_FFS = 3;
     // Values to be driven for On and Off
     lc_ctrl_pkg::lc_tx_t on_val = err_inj.flash_rma_rsp_mubi_err ?
         // Get a random value for on
