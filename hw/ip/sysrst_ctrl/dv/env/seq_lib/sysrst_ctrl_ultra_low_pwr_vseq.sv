@@ -100,23 +100,21 @@ class sysrst_ctrl_ultra_low_pwr_vseq extends sysrst_ctrl_base_vseq;
     cfg.vif.lid_open = 0;
    endtask
 
-   virtual task check_z3_wkup_nonblocking();
-     fork
-       forever begin
-         @(posedge cfg.vif.z3_wakeup);
-         cfg.clk_aon_rst_vif.wait_n_clks(1);
-         `DV_CHECK(exp_z3_wakeup, 1)
-       end
-     join_none;
-   endtask
-
    task body();
 
      uvm_reg_data_t rdata, wkup_sts_rdata;
 
      `uvm_info(`gfn, "Starting the body from ultra_low_pwr_vseq", UVM_LOW)
 
-     check_z3_wkup_nonblocking();
+     fork
+       begin: z3_wakeup_check
+         forever begin
+           @(posedge cfg.vif.z3_wakeup);
+           cfg.clk_aon_rst_vif.wait_n_clks(1);
+           `DV_CHECK(exp_z3_wakeup, 1)
+         end
+       end: z3_wakeup_check
+     join_none;
 
      repeat (num_trans) begin
        `DV_CHECK_MEMBER_RANDOMIZE_FATAL(en_ulp)
@@ -233,6 +231,8 @@ class sysrst_ctrl_ultra_low_pwr_vseq extends sysrst_ctrl_base_vseq;
        end
        cfg.clk_aon_rst_vif.wait_clks($urandom_range(0, 10));
      end
+     disable z3_wakeup_check;
+     `uvm_info(`gfn, "Disble Z3 wakeup check", UVM_LOW)
    endtask : body
 
    // A helper function to determine if the set time is long enough to cover the debounce state.
