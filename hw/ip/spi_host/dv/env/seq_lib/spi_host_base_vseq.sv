@@ -182,7 +182,7 @@ class spi_host_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(ral.error_enable), .value(error_enable));
     csr_wr(.ptr(ral.event_enable), .value(event_enable));
     csr_wr(.ptr(ral.intr_enable), .value(intr_enable));
-    // TODO
+    // TODO(#18886)
     update_spi_agent_regs();
   endtask : program_spi_host_regs
 
@@ -385,7 +385,7 @@ class spi_host_base_vseq extends cip_base_vseq #(
     `DV_CHECK_NE_FATAL(fifo, AllFifos)
 
     // Check for free space in the fifo
-    // TODO add interrupt handling if FIFO overflows
+    // TODO(#18886) add interrupt handling if FIFO overflows
     if (fifo_avail_chk) wait_for_fifos_available(fifo);
 
     if (rw == WRITE) begin
