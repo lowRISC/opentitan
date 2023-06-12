@@ -789,7 +789,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     int           alert_threshold;
     bit           main_sm_exp_alert_cond;
 
-    // TODO: If an alert is anticipated, we should check that (if necessary) this seed is
+    // TODO (#18889): If an alert is anticipated, we should check that (if necessary) this seed is
     // stopped and no others are allowed to progress.
     alert_threshold = `gmv(ral.alert_threshold.alert_threshold);
 
