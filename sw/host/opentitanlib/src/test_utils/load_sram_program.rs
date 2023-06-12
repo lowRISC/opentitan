@@ -8,11 +8,14 @@ use std::rc::Rc;
 use std::str::FromStr;
 use std::time::Duration;
 
-use anyhow::Result;
+use anyhow::{bail, Context, Result};
 use bindgen::sram_program::SRAM_MAGIC_SP_EXECUTION_DONE;
+use byteorder::{ByteOrder, LittleEndian};
 use serde::{Deserialize, Serialize};
 use structopt::StructOpt;
 use thiserror::Error;
+
+use object::{Object, ObjectSection, SectionKind};
 
 use crate::impl_serializable_error;
 use crate::io::jtag::{Jtag, RiscvCsr, RiscvGpr, RiscvReg};
@@ -25,21 +28,51 @@ use top_earlgrey::top_earlgrey_memory;
 #[derive(Debug, StructOpt, Clone)]
 pub struct SramProgramParams {
     /// Path to the VMEM file to load.
+    #[structopt(long, conflicts_with = "elf")]
+    pub vmem: Option<PathBuf>,
+
+    /// Path to the ELF file to load.
     #[structopt(long)]
-    pub vmem: PathBuf,
+    pub elf: Option<PathBuf>,
 
     /// Address where to load the VMEM file.
-    #[structopt(long, parse(try_from_str = ParseInt::from_str))]
-    pub load_addr: u32,
+    #[structopt(long, parse(try_from_str = ParseInt::from_str), conflicts_with="elf")]
+    pub load_addr: Option<u32>,
+}
+
+/// Describe a file to load to SRAM.
+#[derive(Debug, Clone)]
+pub enum SramProgramFile {
+    Vmem { path: PathBuf, load_addr: u32 },
+    Elf(PathBuf),
 }
 
 impl SramProgramParams {
+    // Convert the command line parameters into a nicer structure.
+    pub fn get_file(&self) -> SramProgramFile {
+        if let Some(path) = &self.vmem {
+            SramProgramFile::Vmem {
+                path: path.clone(),
+                load_addr: self
+                    .load_addr
+                    .expect("you must provide a load address for a VMEM file"),
+            }
+        } else {
+            SramProgramFile::Elf(
+                self.elf
+                    .as_ref()
+                    .expect("you must provide either an ELF file or a VMEM file")
+                    .clone(),
+            )
+        }
+    }
+
     pub fn load_and_execute(
         &self,
         jtag: &Rc<dyn Jtag>,
         exec_mode: ExecutionMode,
     ) -> Result<ExecutionResult> {
-        load_and_execute_sram_program(jtag, &self.vmem, self.load_addr, exec_mode)
+        load_and_execute_sram_program(jtag, &self.get_file(), exec_mode)
     }
 }
 
@@ -76,17 +109,105 @@ pub enum LoadSramProgramError {
 }
 impl_serializable_error!(LoadSramProgramError);
 
-/// Load a program into SRAM using JTAG.
-pub fn load_sram_program(jtag: &Rc<dyn Jtag>, vmem: &Vmem, addr: u32) -> Result<()> {
+/// Load a program into SRAM using JTAG (VMEM files)
+pub fn load_vmem_sram_program(
+    jtag: &Rc<dyn Jtag>,
+    vmem_filename: &PathBuf,
+    load_addr: u32,
+) -> Result<u32> {
+    log::info!("Loading VMEM file {}", vmem_filename.display());
+    let vmem_content = fs::read_to_string(vmem_filename)?;
+    let mut vmem = Vmem::from_str(&vmem_content)?;
+    vmem.merge_sections();
+    log::info!("Uploading program to SRAM at {:x}", load_addr);
     for section in vmem.sections() {
         log::info!(
             "Load {} words at address {:x}",
             section.data.len(),
-            addr + section.addr
+            load_addr + section.addr
         );
-        jtag.write_memory32(addr + section.addr, &section.data)?;
+        jtag.write_memory32(load_addr + section.addr, &section.data)?;
     }
-    Ok(())
+    Ok(load_addr)
+}
+
+/// Load a program into SRAM using JTAG (ELF files)
+pub fn load_elf_sram_program(jtag: &Rc<dyn Jtag>, elf_filename: &PathBuf) -> Result<u32> {
+    log::info!("Loading ELF file {}", elf_filename.display());
+    let file_data = std::fs::read(elf_filename)
+        .with_context(|| format!("Could not read ELF file {}.", elf_filename.display()))?;
+    let file = object::File::parse(&*file_data)
+        .with_context(|| format!("Could not parse ELF file {}", elf_filename.display()))?;
+    log::info!("Uploading program to SRAM");
+    // The natural thing to do would be to load segments but the GNU linker produces some really
+    // unexpected segments for SRAM programs, where the segments can be strictly larger than the
+    // data because it aligns everything on a page size (which can changed via a CLI switch but
+    // not in the linker file itself). Here is an example:
+    //
+    // Section Headers:
+    //   [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
+    //   [ 0]                   NULL            00000000 000000 000000 00      0   0  0
+    //   [ 1] .text             PROGBITS        10001fc8 000fc8 0064ea 00  AX  0   0  4
+    //   [ 2] .rodata           PROGBITS        100084b8 0074b8 0016de 00   A  0   0  8
+    //   [ 3] .data             PROGBITS        10009b98 008b98 000084 00  WA  0   0  4
+    //   [ 4] .sdata            PROGBITS        10009c1c 008c1c 000000 00   W  0   0  4
+    //   [ 5] .bss              NOBITS          10009c1c 008c1c 001f6c 00  WA  0   0  4
+    //
+    // Program Headers:
+    //   Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
+    //   LOAD           0x000000 0x10001000 0x10001000 0x08c1c 0x0ab88 RWE 0x1000
+    //   GNU_STACK      0x000000 0x00000000 0x00000000 0x00000 0x00000 RW  0x10
+    //
+    // Note that the segment starts at 0x10001000 but .text starts at 0x10001fc8, so loading
+    // the segment would actually overwrite the beginning of the SRAM (static critical data).
+    //
+    // Instead, we elect to load segments that contain loadable data (and not BSS which is cleared
+    // by the SRAM CRT).
+    for section in file.sections() {
+        let section_name = section.name().unwrap_or("<invalid name>");
+        match section.kind() {
+            SectionKind::Text
+            | SectionKind::Data
+            | SectionKind::ReadOnlyData
+            | SectionKind::ReadOnlyString => {
+                log::info!(
+                    "Load section {}: {} bytes at address {:x}",
+                    section_name,
+                    section.size(),
+                    section.address()
+                );
+                // It is must faster to load data word by word instead of bytes by bytes.
+                // The linker script always ensures that we the address and size are multiple of 4.
+                const WORD_SIZE: usize = std::mem::size_of::<u32>();
+                if section.address() % WORD_SIZE as u64 != 0
+                    || section.data()?.len() % WORD_SIZE != 0
+                {
+                    bail!("The SRAM program must only consists of segments whose address and size are a multiple of the word size");
+                }
+                let data32: Vec<u32> = section
+                    .data()?
+                    .chunks(4)
+                    .map(LittleEndian::read_u32)
+                    .collect();
+                jtag.write_memory32(section.address() as u32, &data32)?;
+            }
+            _ => {
+                log::info!(
+                    "Skipping section {}",
+                    section.name().unwrap_or("<invalid name>")
+                );
+            }
+        }
+    }
+    Ok(file.entry() as u32)
+}
+
+/// Load a program into SRAM using JTAG. Returns the address of the entry point.
+pub fn load_sram_program(jtag: &Rc<dyn Jtag>, file: &SramProgramFile) -> Result<u32> {
+    match file {
+        SramProgramFile::Vmem { path, load_addr } => load_vmem_sram_program(jtag, path, *load_addr),
+        SramProgramFile::Elf(path) => load_elf_sram_program(jtag, path),
+    }
 }
 
 /// Set up the ePMP to enable read/write/execute from SRAM.
@@ -146,16 +267,10 @@ pub fn prepare_epmp_for_sram(jtag: &Rc<dyn Jtag>) -> Result<()> {
 /// SRAM program.
 pub fn load_and_execute_sram_program(
     jtag: &Rc<dyn Jtag>,
-    vmem_filename: &PathBuf,
-    sram_load_addr: u32,
+    file: &SramProgramFile,
     exec_mode: ExecutionMode,
 ) -> Result<ExecutionResult> {
-    log::info!("Loading VMEM file {}", vmem_filename.display());
-    let vmem_content = fs::read_to_string(vmem_filename)?;
-    let mut vmem = Vmem::from_str(&vmem_content)?;
-    vmem.merge_sections();
-    log::info!("Uploading program to SRAM at {:x}", sram_load_addr);
-    load_sram_program(jtag, &vmem, sram_load_addr)?;
+    let sram_entry_point = load_sram_program(jtag, file)?;
     log::info!("Preparing ePMP for execution");
     prepare_epmp_for_sram(jtag)?;
     // To avoid unexpected behaviors, we always make sure that the return addreess
@@ -166,18 +281,18 @@ pub fn load_and_execute_sram_program(
     // OpenOCD takes care of invalidating the cache when resuming execution
     match exec_mode {
         ExecutionMode::Jump => {
-            log::info!("resume execution at {:x}", sram_load_addr);
-            jtag.resume_at(sram_load_addr)?;
+            log::info!("resume execution at {:x}", sram_entry_point);
+            jtag.resume_at(sram_entry_point)?;
             Ok(ExecutionResult::Executing)
         }
         ExecutionMode::JumpAndHalt => {
-            log::info!("set DPC to {:x}", sram_load_addr);
-            jtag.write_riscv_reg(&RiscvReg::CsrByName(RiscvCsr::DPC), sram_load_addr)?;
+            log::info!("set DPC to {:x}", sram_entry_point);
+            jtag.write_riscv_reg(&RiscvReg::CsrByName(RiscvCsr::DPC), sram_entry_point)?;
             Ok(ExecutionResult::HaltedAtStart)
         }
         ExecutionMode::JumpAndWait(tmo) => {
-            log::info!("resume execution at {:x}", sram_load_addr);
-            jtag.resume_at(sram_load_addr)?;
+            log::info!("resume execution at {:x}", sram_entry_point);
+            jtag.resume_at(sram_entry_point)?;
             log::info!("wait for execution to stop");
             jtag.wait_halt(tmo)?;
             jtag.halt()?;
