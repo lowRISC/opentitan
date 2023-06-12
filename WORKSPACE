@@ -65,6 +65,15 @@ crate_universe_dependencies(bootstrap = True)
 load("//third_party/rust/crates:crates.bzl", "crate_repositories")
 crate_repositories()
 
+# Tock dependencies.
+load("//third_party/tock:repos.bzl", tock_repos="tock_repos")
+tock_repos(
+    # For developing tock/libtock along side OpenTitan, set these parameters
+    # to your local checkout of tock and libtock-rs respectively.
+    #tock = "../tock",
+    #libtock = "../libtock-rs",
+)
+
 # OpenOCD
 load("//third_party/openocd:repos.bzl", "openocd_repos")
 openocd_repos()
