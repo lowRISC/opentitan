@@ -110,7 +110,7 @@ static bool read_ul_arg(unsigned long *arg_val, const char *arg_name,
 bool VerilatorSimCtrl::ParseCommandArgs(int argc, char **argv, bool &exit_app) {
   const struct option long_options[] = {
       {"term-after-cycles", required_argument, nullptr, 'c'},
-      {"trace", no_argument, nullptr, 't'},
+      {"trace", optional_argument, nullptr, 't'},
       {"help", no_argument, nullptr, 'h'},
       {nullptr, no_argument, nullptr, 0}};
 
@@ -133,6 +133,9 @@ bool VerilatorSimCtrl::ParseCommandArgs(int argc, char **argv, bool &exit_app) {
                     << std::endl;
           exit_app = true;
           return false;
+        }
+        if (optarg != nullptr) {
+          trace_file_path_.assign(optarg);
         }
         TraceOn();
         break;
@@ -226,6 +229,11 @@ void VerilatorSimCtrl::RegisterExtension(SimCtrlExtension *ext) {
 VerilatorSimCtrl::VerilatorSimCtrl()
     : top_(nullptr),
       time_(0),
+#ifdef VM_TRACE_FMT_FST
+      trace_file_path_("sim.fst"),
+#else
+      trace_file_path_("sim.vcd"),
+#endif
       tracing_enabled_(false),
       tracing_enabled_changed_(false),
       tracing_ever_enabled_(false),
@@ -235,7 +243,8 @@ VerilatorSimCtrl::VerilatorSimCtrl()
       request_stop_(false),
       simulation_success_(true),
       tracer_(VerilatedTracer()),
-      term_after_cycles_(0) {}
+      term_after_cycles_(0) {
+}
 
 void VerilatorSimCtrl::RegisterSignalHandler() {
   struct sigaction sigIntHandler;
@@ -269,6 +278,7 @@ void VerilatorSimCtrl::PrintHelp() const {
   std::cout << "Execute a simulation model for " << GetName() << "\n\n";
   if (tracing_possible_) {
     std::cout << "-t|--trace\n"
+                 "   --trace=FILE\n"
                  "  Write a trace file from the start\n\n";
   }
   std::cout << "-c|--term-after-cycles=N\n"
@@ -318,12 +328,8 @@ void VerilatorSimCtrl::PrintStatistics() const {
   }
 }
 
-const char *VerilatorSimCtrl::GetTraceFileName() const {
-#ifdef VM_TRACE_FMT_FST
-  return "sim.fst";
-#else
-  return "sim.vcd";
-#endif
+std::string VerilatorSimCtrl::GetTraceFileName() const {
+  return trace_file_path_;
 }
 
 void VerilatorSimCtrl::Run() {
@@ -455,7 +461,7 @@ void VerilatorSimCtrl::Trace() {
   }
 
   if (!tracer_.isOpen()) {
-    tracer_.open(GetTraceFileName());
+    tracer_.open(GetTraceFileName().c_str());
     std::cout << "Writing simulation traces to " << GetTraceFileName()
               << std::endl;
   }

@@ -127,6 +127,7 @@ class VerilatorSimCtrl {
   CData *sig_rst_;
   VerilatorSimCtrlFlags flags_;
   unsigned long time_;
+  std::string trace_file_path_;
   bool tracing_enabled_;
   bool tracing_enabled_changed_;
   bool tracing_ever_enabled_;
@@ -207,7 +208,7 @@ class VerilatorSimCtrl {
   /**
    * Get the file name of the trace file
    */
-  const char *GetTraceFileName() const;
+  std::string GetTraceFileName() const;
 
   /**
    * Run the main loop of the simulation
