@@ -226,17 +226,23 @@ The output consists of a textual "waveform" representing the SPI signals.
 
 ## Generating waveforms (optional)
 
-TODO(lowRISC/opentitan[#13042](https://github.com/lowRISC/opentitan/issues/13042)): the below does not work with the Bazel test running flow.
-
 With the `--trace` argument the simulation generates a FST signal trace which can be viewed with Gtkwave (only).
+An argument may be provided to `--trace` to specify where the trace file will be saved.
+Note that for automated tests, `opentitantool` interfaces with the simulator, and verilator arguments must be passed via `--verilator-args=<arg>`.
+
+In addition, it may be necessary to adjust the test timeout values when using `bazel test` with waveforms.
 Tracing slows down the simulation by roughly factor of 1000.
+The timeout adjustment may be done via bazel's `--test_timeout` option.
+Putting these all together for the UART smoke test yields the following command line:
 
 ```console
 cd $REPO_TOP
-build/lowrisc_dv_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb \
-  --meminit=rom,build-bin/sw/device/lib/testing/test_rom/test_rom_sim_verilator.scr.39.vmem \
-  --meminit=flash,build-bin/sw/device/examples/hello_world/hello_world_sim_verilator.64.scr.vmem \
-  --meminit=otp,build-bin/sw/device/otp_img/otp_img_sim_verilator.vmem \
-  --trace
-gtkwave sim.fst
+bazel test //sw/device/tests:uart_smoketest_sim_verilator \
+  --test_output=streamed \
+  --test_timeout=1000 \
+  --test_arg=--verilator-args=--trace=/tmp/sim.fst
+gtkwave /tmp/sim.fst
 ```
+
+Without an argument to `--trace`, the waveform file would be named `sim.fst` and be placed in the test's [runfiles](https://bazel.build/reference/test-encyclopedia#runfiles) tree.
+It would appear alongside the simulator's other outputs in the test's working directory.
