@@ -434,7 +434,7 @@
 - [Contributing](./doc/contributing/README.md)
   - [Detailed Contribution Guide](./doc/contributing/detailed_contribution_guide/README.md)
   - [Directory Structure](./doc/contributing/directory_structure.md)
-  - [Continueous Intergration](./doc/contributing/ci/README.md)
+  - [Continuous Intergration](./doc/contributing/ci/README.md)
   - [Top-Level Design and Targets](./doc/contributing/system_list.md)
   - [GitHub Notes](./doc/contributing/github_notes.md)
   - [Bazel Notes](./doc/contributing/bazel_notes.md)
