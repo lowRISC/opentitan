@@ -12,6 +12,7 @@ load(
 load(
     "//rules:opentitan.bzl",
     "OPENTITAN_CPU",
+    "OPENTITAN_PLATFORM",
     "RSA_ONLY_KEY_STRUCTS",
     "filter_key_structs_for_lc_state",
     "opentitan_ram_binary",
@@ -21,6 +22,7 @@ load("//rules:lc.bzl", "lc_raw_unlock_token")
 load("//rules:otp.bzl", "otp_image", "otp_json", "otp_partition")
 load("//rules:splice.bzl", "bitstream_splice")
 load("//rules:linker.bzl", "ld_library")
+load("@crt//rules:transition.bzl", "platform_target")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -74,12 +76,6 @@ _MANUF_LC_TRANSITION_TEST_CMDS = [
 _MANUF_LC_TRANSITION_TEST_CMDS_WBOOTSTRAP = _MANUF_LC_TRANSITION_TEST_CMDS + [
     "--bootstrap=\"$(rootpath {flash})\"",
 ]
-
-# See `sram_program.ld` for details.
-_SRAM_PROGRAM_MAGIC = {
-    # RAM + .static_critical
-    "load_addr": 0x10001fc8,
-}
 
 ld_library(
     name = "sram_program_linker_script",
@@ -464,6 +460,17 @@ opentitan_ram_binary(
     ],
 )
 
+# The way opentitan_ram_binary works, it is a macro that creates an elf file
+# use the native cc_binary that has no transition defined. We want to use this
+# file with opentitan_functest which also a macro with no transition defined.
+# Hence we need to manually created a transition to build the ELF file for the
+# device.
+platform_target(
+    name = "sram_device_info_flash_wr_functest_fpga_cw310_elf",
+    platform = OPENTITAN_PLATFORM,
+    target = ":sram_device_info_flash_wr_functest_fpga_cw310.elf",
+)
+
 [
     opentitan_functest(
         name = "manuf_cp_device_info_flash_wr_{}_to_{}_functest".format(
@@ -479,12 +486,11 @@ opentitan_ram_binary(
                 "--bitstream=\"$(rootpath {bitstream})\"",
                 "--bootstrap=\"$(location {flash})\"",
                 "--target-lc-state=\"{}\"".format(target_lc_state),
-                "--vmem=\"$(rootpath :sram_device_info_flash_wr_functest_fpga_cw310_vmem)\"",
-                "--load-addr={}".format(_SRAM_PROGRAM_MAGIC["load_addr"]),
+                "--elf=\"$(rootpath :sram_device_info_flash_wr_functest_fpga_cw310_elf)\"",
             ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
         ),
         data = [
-            ":sram_device_info_flash_wr_functest_fpga_cw310_vmem",
+            ":sram_device_info_flash_wr_functest_fpga_cw310_elf",
         ] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
         # We select the PROD key since the SRAM test program does an LC transition to DEV.
         key_struct = filter_key_structs_for_lc_state(
@@ -540,6 +546,12 @@ opentitan_ram_binary(
     ],
 )
 
+platform_target(
+    name = "sram_exec_test_fpga_cw310_elf",
+    platform = OPENTITAN_PLATFORM,
+    target = ":sram_exec_test_fpga_cw310.elf",
+)
+
 # We are using a bitstream with disabled execution so the content of the flash
 # does not matter but opentitan_functest() is unhappy if we don't provide one.
 # Additionally, ROM execution is disabled in the OTP image we use so we do not
@@ -554,13 +566,10 @@ opentitan_ram_binary(
             test_cmds = [
                 "--clear-bitstream",
                 "--bitstream=\"$(rootpath {bitstream})\"",
-                "--vmem=\"$(rootpath :sram_exec_test_fpga_cw310_vmem)\"",
-                "--load-addr={}".format(_SRAM_PROGRAM_MAGIC["load_addr"]),
+                "--elf=\"$(rootpath :sram_exec_test_fpga_cw310_elf)\"",
             ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
         ),
-        data = [
-            ":sram_exec_test_fpga_cw310_vmem",
-        ] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
+        data = [":sram_exec_test_fpga_cw310_elf"] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
         targets = ["cw310_rom_with_fake_keys"],
         test_harness = "//sw/host/tests/manuf/manuf_cp_ast_test_execution",
         deps = [
