@@ -146,8 +146,6 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
     completed = 0;
 
-    // TODO: Separate sigmas for bypass and FIPS operation
-
     if (!newcfg.default_ht_thresholds) begin
       // AdaptP thresholds
       `uvm_info(`gfn, "Setting ADAPTP thresholds", UVM_DEBUG)
