@@ -445,8 +445,6 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   // This task is fairly simple it only does two things:
   // 1. It writes to fw_ov_wr_data
   // 2. As needed, it turns the SHA3 conditioning on and off.
-  //    TODO: check that the behavior of this thread matches what is expected
-  //    For boot mode.
   //
   // Runs until the timer thread halts background operations
   task entropy_inject_thread();
