@@ -242,7 +242,9 @@ class spi_device_base_vseq extends cip_base_vseq #(
         `uvm_send(m_spi_host_seq)
         // bit 0 is busy bit
         if (m_spi_host_seq.rsp.payload_q[0][0] === 0) break;
-      end
+      end,
+      "Timed out",
+      default_timeout_ns * 2
     )
   endtask
 

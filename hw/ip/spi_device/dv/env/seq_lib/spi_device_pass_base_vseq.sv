@@ -595,10 +595,64 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     end
   endtask
 
+  virtual task get_flash_status_busy(output bit busy);
+    uvm_reg_data_t rdata;
+    csr_rd(ral.flash_status, rdata);
+    busy = get_field_val(ral.flash_status.busy, rdata);
+  endtask
+
   virtual task clear_flash_busy_bit();
+    bit spi_txn_started = 0;
+    bit tpm_txn_started = 0;
+    bit busy;
     `uvm_info(`gfn, "Clearing flash busy bit", UVM_MEDIUM)
     csr_wr(ral.flash_status.busy, 0);
-    csr_spinwait(ral.flash_status.busy, 0);
+    // Loop to detect SPI transaction and delay read check after end of SPI transaction
+    // The intent here is to check the flash_status until busy is cleared and add a delay if there
+    // is an end of SPI transaction(since flash_status gets update after CSB is deasserted)
+    // CHECK_PHASE1 of the loop is used to detect a start of transaction
+    // CHECK_PHASE2 of the loop is used to detect a end of transaction and also
+    //              check the flash_status
+    // If we do not yet detect the start or end of a transaction,
+    // we fall-through the checking each time to the final `get_flash_status_busy(busy)`,
+    // effectively reading the register in a spinwait loop.
+    `DV_SPINWAIT(
+      while(1) begin
+        // CHECK_PHASE1: Check for start of SPI transaction
+        if (!tpm_txn_started && !cfg.spi_host_agent_cfg.vif.csb[TPM_CSB_ID]) begin
+          `uvm_info(`gfn, "Detected active TPM SPI transaction during spinwait for flash_status",
+            UVM_HIGH)
+          tpm_txn_started = 1;
+        end else if (!spi_txn_started && !cfg.spi_host_agent_cfg.vif.csb[FW_FLASH_CSB_ID]) begin
+          `uvm_info(`gfn, "Detected active SPI transaction during spinwait for flash_status",
+            UVM_HIGH)
+          spi_txn_started = 1;
+        end
+        // CHECK_PHASE2:
+        // Check for end of SPI transaction and wait for status to update
+        if (tpm_txn_started && cfg.spi_host_agent_cfg.vif.csb[TPM_CSB_ID]) begin
+          `uvm_info(`gfn, "Detected end of TPM SPI transaction during spinwait for flash_status",
+            UVM_HIGH)
+          cfg.clk_rst_vif.wait_clks(5);
+          `uvm_info(`gfn, "Wait done after end of TPM SPI transaction", UVM_HIGH)
+          get_flash_status_busy(busy);
+          if (!busy) break;
+        end else if (spi_txn_started && cfg.spi_host_agent_cfg.vif.csb[FW_FLASH_CSB_ID]) begin
+          `uvm_info(`gfn, "Detected end of SPI transaction during spinwait for flash_status",
+            UVM_HIGH)
+          cfg.clk_rst_vif.wait_clks(5);
+          `uvm_info(`gfn, "Wait done after end of SPI transaction", UVM_HIGH)
+          get_flash_status_busy(busy);
+          if (!busy) break;
+        end else begin
+          // FLASH_STATUS gets updated in SPI clock domain so the register should hold the
+          // previous busy status value, read the register, scoreboard checks the value
+          get_flash_status_busy(busy);
+          if (!busy) break;
+        end
+      end
+    )
+    `uvm_info(`gfn, "Cleared flash busy bit", UVM_MEDIUM)
   endtask
 
   // check if 3 upload fifo (cmd, addr, payload) are empty. If so, read all of them
