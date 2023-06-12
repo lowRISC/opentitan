@@ -92,7 +92,7 @@ class dv_base_reg_field extends uvm_reg_field;
     // if kind is UVM_PREDICT_DIRECT or UVM_PREDICT_READ, super.do_predict can handle
     if (kind == UVM_PREDICT_WRITE && is_intr_test_fld) begin
       uvm_reg_field intr_state_fld = get_intr_state_field();
-      bit predict_val;
+      uvm_reg_data_t predict_val;
       if (intr_state_fld.get_access == "RO") begin // status interrupt
         predict_val = field_val;
       end else begin // regular W1C interrupt
