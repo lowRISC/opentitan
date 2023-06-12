@@ -52,7 +52,6 @@
     { name: "wakeup", desc: "Wake from low power state. See wake info for more details" },
   ],
 
-  // Define flash_ctrl <-> flash_phy struct package
   inter_signal_list: [
     { struct:  "pwr_ast",
       type:    "req_rsp",
