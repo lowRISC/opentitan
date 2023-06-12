@@ -83,6 +83,7 @@ SECTIONS {
    * will fit into the instruction encoding.
    */
   .crt : ALIGN(4) {
+    _crt_start = .;
     /* Pad with zeros. */
     FILL(0x0000)
     KEEP(*(.crt))
@@ -90,7 +91,7 @@ SECTIONS {
     ASSERT(
         SIZEOF(.vectors) + SIZEOF(.crt) <= _epmp_reset_rx_size,
         "Error: .crt overflows reset ePMP region");
-    . = MAX(., _epmp_reset_rx_size - SIZEOF(.vectors));
+    . = MAX(., _crt_start + _epmp_reset_rx_size - SIZEOF(.vectors));
   } > rom
 
   /**
