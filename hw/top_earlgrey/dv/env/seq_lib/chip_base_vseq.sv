@@ -20,6 +20,9 @@ class chip_base_vseq #(
   // Indicates the first power up of the chip.
   bit is_first_pwrup = 1'b1;
 
+  // Skip POR_N : required for closed source test
+  bit skip_por_n_during_first_pwrup = 0;
+
   // Knob to start cpu_init in pre_start phase
   // You have to set this knob before or within dut_init task
   bit early_cpu_init = 0;
@@ -37,7 +40,6 @@ class chip_base_vseq #(
   endtask
 
   virtual task apply_reset(string kind = "HARD");
-    bit skip_por_n_during_first_pwrup;
     callback_vseq.pre_apply_reset();
     // Note: The JTAG reset does not have a dedicated pad and is muxed with other chip IOs.
     // These IOs have pad attributes that are driven from registers, and as long as
