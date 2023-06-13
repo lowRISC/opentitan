@@ -290,7 +290,7 @@ class edn_base_vseq extends cip_base_vseq #(
   endtask // force_path_err
 
   // Find the first or last index in the original string that the target character appears
-  function automatic int find_index (string target, string original_str, string which_index);
+  function automatic int find_index (byte target, string original_str, string which_index);
     int        index;
     case (which_index)
       "first": begin
