@@ -127,9 +127,12 @@
     {
       name: reseeding
       desc: '''
-            excercise the different PRNG reseeding configurations
-            for reseeding every 8k blocks the DUT internal block counter will be manually changed to something close to 8k.
-            to provoke the reseeding within reasonable simulation time '''
+            Verify that internal PRNGs are effectively reseeded upon manually triggering a PRNG reseed, and - depending on the configuration - if the initial key changes.
+            Verify that the masking PRNG is reseeded automatically at the correct reseed rate.
+            To reduce simulation time, the block counter triggering the automatic reseeding is manually changed to lower values.
+            Verify that the PRNGs do not get reseeded unexpectedly.
+            Verify that the data received from EDN effectively propagates into the PRNGs.
+            '''
       stage: V2S
       tests: ["aes_reseed"]
     }

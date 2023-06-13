@@ -149,17 +149,6 @@ interface aes_cov_if
     cp_recov_fault: coverpoint alert_test.recov_ctrl_update_err;
   endgroup // aes_alert_cg
 
-
-  ///////////////////////////////////
-  //  Reseed                       //
-  ///////////////////////////////////
-  //TODO V2s
-  // things to cover (req->ack on edn bus)
-  // - write to Trigger.reseed does infact cause a reseed
-  // - if Key_touch_Reseed (enabled) writing a complete key triggers reseeding
-  // - @Sideload_en triggers a reseed
-  // this will be covered by assertion
-
   ///////////////////////////////////
   // transition cover groups       //
   ///////////////////////////////////
