@@ -11,7 +11,7 @@
     {
       name: rom_e2e_smoke
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/silicon_creator/rom/e2e:empty_test_slot_a:1:signed:ot_flash_binary"]
+      sw_images: ["//sw/device/silicon_creator/rom/e2e:empty_test_slot_a:1:ot_flash_binary:signed:fake_rsa_test_key_0"]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: ["+sw_test_timeout_ns=20000000"]
     }
@@ -886,7 +886,7 @@
       name: rom_e2e_self_hash
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:rom_e2e_self_hash:1:signed"
+        "//sw/device/silicon_creator/rom/e2e/presigned_images:rom_e2e_self_hash:1:signed:ot_flash_binary"
         "//hw/ip/otp_ctrl/data:img_test_unlocked0:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_real_keys"]
