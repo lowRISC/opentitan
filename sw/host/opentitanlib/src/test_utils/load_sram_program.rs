@@ -9,6 +9,7 @@ use std::str::FromStr;
 use std::time::Duration;
 
 use anyhow::Result;
+use bindgen::sram_program::SRAM_MAGIC_SP_EXECUTION_DONE;
 use serde::{Deserialize, Serialize};
 use structopt::StructOpt;
 use thiserror::Error;
@@ -181,9 +182,9 @@ pub fn load_and_execute_sram_program(
             jtag.wait_halt(tmo)?;
             jtag.halt()?;
             // The SRAM's crt has a protocol to notify us that execution returned: it sets
-            // the stack pointer to 0xcafebabe.
+            // the stack pointer to a certain value.
             let sp = jtag.read_riscv_reg(&RiscvReg::GprByName(RiscvGpr::SP))?;
-            if sp == 0xcafebabe {
+            if sp == SRAM_MAGIC_SP_EXECUTION_DONE {
                 Ok(ExecutionResult::ExecutionDone)
             } else {
                 Ok(ExecutionResult::ExecutionError)
