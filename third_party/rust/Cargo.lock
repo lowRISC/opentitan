@@ -268,6 +268,12 @@ checksum = "0d261e256854913907f67ed06efbc3338dfe6179796deefc1ff763fc1aee5535"
 
 [[package]]
 name = "byteorder"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0fc10e8cc6b2580fda3f36eb6dc5316657f812a3df879a44a66fc9f0fdbc4855"
+
+[[package]]
+name = "byteorder"
 version = "1.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "14c189c53d098945499cdfa7ecc63567cf3886b3332b312a5b4585d8d3a6a610"
@@ -289,7 +295,7 @@ dependencies = [
  "atty",
  "bitflags 2.1.0",
  "bitvec",
- "byteorder",
+ "byteorder 1.4.3",
  "chrono",
  "clap 4.2.2",
  "crc",
@@ -297,6 +303,7 @@ dependencies = [
  "cryptoki-sys",
  "deser-hjson",
  "directories",
+ "elf",
  "elliptic-curve",
  "env_logger",
  "erased-serde",
@@ -307,6 +314,7 @@ dependencies = [
  "indicatif",
  "lazy_static",
  "libftdi1-sys",
+ "libm",
  "log",
  "mdbook",
  "memoffset",
@@ -343,6 +351,7 @@ dependencies = [
  "structopt",
  "strum",
  "syn 1.0.107",
+ "tar",
  "tempfile",
  "thiserror",
  "typetag",
@@ -770,6 +779,15 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
+]
+
+[[package]]
+name = "elf"
+version = "0.0.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4841de15dbe0e49b9b62a417589299e3be0d557e0900d36acb87e6dae47197f5"
+dependencies = [
+ "byteorder 0.5.3",
 ]
 
 [[package]]
@@ -1479,9 +1497,9 @@ dependencies = [
 
 [[package]]
 name = "libm"
-version = "0.2.6"
+version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "348108ab3fba42ec82ff6e9564fc4ca0247bdccdc68dd8af9764bbc79c3c8ffb"
+checksum = "f7012b1bbb0719e1097c47611d3898568c546d597c2e74d66f6087edd5233ff4"
 
 [[package]]
 name = "libudev"
@@ -1800,7 +1818,7 @@ version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2399c9463abc5f909349d8aa9ba080e0b88b3ce2885389b60b993f39b1a56905"
 dependencies = [
- "byteorder",
+ "byteorder 1.4.3",
  "lazy_static",
  "libm",
  "num-integer",
@@ -2379,7 +2397,7 @@ version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "55a77d189da1fee555ad95b7e50e7457d91c0e089ec68ca69ad2989413bbdab4"
 dependencies = [
- "byteorder",
+ "byteorder 1.4.3",
  "digest",
  "num-bigint-dig",
  "num-integer",
@@ -2836,6 +2854,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "55937e1799185b12863d447f42597ed69d9928686b8d88a1df17376a097d8369"
 
 [[package]]
+name = "tar"
+version = "0.4.38"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4b55807c0344e1e6c04d7c965f5289c39a8d94ae23ed5c0b57aabac549f871c6"
+dependencies = [
+ "filetime",
+ "libc",
+ "xattr",
+]
+
+[[package]]
 name = "target-lexicon"
 version = "0.12.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3077,7 +3106,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "30ee6ab729cd4cf0fd55218530c4522ed30b7b6081752839b68fcec8d0960788"
 dependencies = [
  "base64 0.13.1",
- "byteorder",
+ "byteorder 1.4.3",
  "bytes",
  "http",
  "httparse",
@@ -3524,12 +3553,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "xattr"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6d1526bbe5aaeb5eb06885f4d987bcdfa5e23187055de9b83fe00156a821fabc"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "zerocopy"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5e59ec1d2457bd6c0dd89b50e7d9d6b0b647809bf3f0a59ac85557046950b7b2"
 dependencies = [
- "byteorder",
+ "byteorder 1.4.3",
  "zerocopy-derive",
 ]
 

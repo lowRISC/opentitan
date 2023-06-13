@@ -20,7 +20,7 @@ atty = "0.2"
 bitflags = { version = "2.1", features = ["serde"] }
 bitvec = "1.0.1"
 byteorder = "1.4.3"
-chrono = "0.4"
+chrono = { version = "0.4", features = ["clock", "std"] }
 crc = "3.0"
 deser-hjson = "1.0.2"
 directories = "4.0.1"
@@ -69,7 +69,7 @@ typetag = "0.2"
 zerocopy = "0.5.0"
 
 # hsmtool dependencies
-clap = { version = "4.1", features = ["derive", "env"] }
+clap = { version = "4.1", features = ["derive", "env", "color", "wrap_help"] }
 cryptoki = "0.4.1"
 # Possible tagging/release error in the cryptoki crates. Pin to a version of
 # cryptoki-sys known to work.
@@ -99,3 +99,10 @@ pest_derive = "2.2"
 
 # documentation generation tools
 mdbook = "0.4.28"
+
+# elf2tab dependencies
+tar = "0.4"
+elf = "0.0.10"
+
+# libtock's ninedof API needs libm
+libm = "0.2.7"

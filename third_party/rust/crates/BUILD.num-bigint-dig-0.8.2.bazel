@@ -52,7 +52,7 @@ rust_library(
     deps = [
         "@crate_index__byteorder-1.4.3//:byteorder",
         "@crate_index__lazy_static-1.4.0//:lazy_static",
-        "@crate_index__libm-0.2.6//:libm",
+        "@crate_index__libm-0.2.7//:libm",
         "@crate_index__num-bigint-dig-0.8.2//:build_script_build",
         "@crate_index__num-integer-0.1.45//:num_integer",
         "@crate_index__num-iter-0.1.43//:num_iter",
