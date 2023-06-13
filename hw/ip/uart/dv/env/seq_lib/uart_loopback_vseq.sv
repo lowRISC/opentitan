@@ -100,7 +100,9 @@ class uart_loopback_vseq extends uart_tx_rx_vseq;
     if (en_noise_filter) cfg.clk_rst_vif.wait_clks(3);
 
     ral.ctrl.llpbk.set(0);
+    ral.fifo_ctrl.rxrst.set(1);
     csr_update(ral.ctrl);
+    csr_update(ral.fifo_ctrl);
   endtask
 
 endclass : uart_loopback_vseq
