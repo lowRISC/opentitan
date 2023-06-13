@@ -21,7 +21,7 @@ jobs:
       # a review
       - name: 'Download artifact'
         id: get-artifacts
-        uses: actions/github-script@v3.1.0
+        uses: actions/github-script@v6
         with:
           script: |
             var artifacts = await github.actions.listWorkflowRunArtifacts({
