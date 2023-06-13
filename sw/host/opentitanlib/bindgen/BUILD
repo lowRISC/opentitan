@@ -113,6 +113,20 @@ rust_bindgen_library(
     ],
 )
 
+rust_bindgen_library(
+    name = "sram_program",
+    bindgen_flags = [
+        "--allowlist-var=SRAM_MAGIC_SP_.*",
+    ],
+    cc_lib = "//sw/device/silicon_creator/manuf/lib:sram_start_headers",
+    header = "//sw/device/silicon_creator/manuf/lib:sram_start.h",
+    rustc_flags = [
+        "--allow=non_snake_case",
+        "--allow=non_upper_case_globals",
+        "--allow=non_camel_case_types",
+    ],
+)
+
 rust_library(
     name = "bindgen",
     srcs = ["lib.rs"],
@@ -122,5 +136,6 @@ rust_library(
         ":earlgrey",
         ":hardened",
         ":multibits",
+        ":sram_program",
     ],
 )

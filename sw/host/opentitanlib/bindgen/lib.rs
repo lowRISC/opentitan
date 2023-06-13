@@ -7,3 +7,4 @@ pub use dif;
 pub use earlgrey;
 pub use hardened;
 pub use multibits;
+pub use sram_program;
