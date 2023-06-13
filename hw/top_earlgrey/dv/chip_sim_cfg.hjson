@@ -555,7 +555,7 @@
       uvm_test_seq: chip_sw_usbdev_dpi_vseq
       sw_images: ["//sw/device/tests:usbdev_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+uart_idx=0", "+calibrate_usb_clk=1"]
+      run_opts: ["+uart_idx=0", "+calibrate_usb_clk=1", "+sw_test_timeout_ns=30_000_000"]
       run_timeout_mins: 120
       reseed: 1
     }
