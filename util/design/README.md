@@ -163,11 +163,53 @@ TODO
 
 ## LFSR Coefficient Generator Tool
 
-TODO
+The `get-lfsr-coeffs.py` script is used to fetch a list of primitive polynomials for Galois and Fibonacci type LFSRs.
+
+Galois coefficients are downloaded from [https://users.ece.cmu.edu/~koopman/lfsr/](https://users.ece.cmu.edu/~koopman/lfsr/).
+The script downloads text files containing the first 100 primitive polynomials for LFSR widths ranging from 4 to 64 and places them into a temporary folder.
+The script also produces an output file containing a SystemVerilog template with LFSR polynomials for widths 4 to 64.
+This template contains exactly one polynomial for each LFSR width, which is always the first polynomial listed in the corresponding file.
+
+When used with the `--fib <pdf file>` option, the script outputs polynomials for the XNOR Fibonacci-type LFSR.
+To run this option, the user first needs to download the Xilinx application note from [https://docs.xilinx.com/v/u/en-US/xapp052](https://docs.xilinx.com/v/u/en-US/xapp052).
+The produced output file contains a SystemVerilog template with LFSR polynomials for widths ranging from 3 to 168.
 
 ## LFSR Seed Generator Tool
 
-TODO
+The `gen-lfsr-seed.py` script creates a SystemVerilog template for LFSR parameters, i.e. width, default seed and the permutation of the output bits.
+Switch `-w` is used to specify the LFSR width.
+The other two parameters are generated randomly.
+The seed for the underlying pseudo-random number generator can optionally be passed using the `--seed` parameter.
+An optional name prefix can be specified using the `--prefix` parameter.
+
+For example, running the following command:
+
+```console
+$ cd ${PROJ_ROOT}
+$ ./util/design/gen-lfsr-seed.py -w 8 --prefix "my"
+```
+produces the following parameters for an 8-bit LFSR.
+
+```
+------------------------------------------------
+| COPY PASTE THE CODE TEMPLATE BELOW INTO YOUR |
+| RTL CODE, INLUDING THE COMMENT IN ORDER TO   |
+| EASE AUDITABILITY AND REPRODUCIBILITY.       |
+------------------------------------------------
+
+
+// These LFSR parameters have been generated with
+// $ ./util/design/gen-lfsr-seed.py --width 8 --seed 3816832368 --prefix "my"
+parameter int myLfsrWidth = 8;
+typedef logic [myLfsrWidth-1:0] my_lfsr_seed_t;
+typedef logic [myLfsrWidth-1:0][$clog2(myLfsrWidth)-1:0] my_lfsr_perm_t;
+parameter my_lfsr_seed_t RndCnstmyLfsrSeedDefault = {
+  8'h3a
+};
+parameter my_lfsr_perm_t RndCnstmyLfsrPermDefault = {
+  24'hde9622
+};
+```
 
 ## Sparse FSM State Encoding Tool
 
@@ -176,4 +218,3 @@ TODO
 ## KECCAK Coefficient Generation Tool
 
 TODO
-
