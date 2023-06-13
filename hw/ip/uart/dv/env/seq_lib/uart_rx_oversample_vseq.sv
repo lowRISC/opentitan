@@ -67,8 +67,10 @@ class uart_rx_oversample_vseq extends uart_tx_rx_vseq;
     pattern[0] = ~pattern[0];
     cfg.m_uart_agent_cfg.vif.uart_rx = pattern[0];
     csr_spinwait(.ptr(ral.val.rx), .exp_data(pattern));
+    `uvm_info(`gfn, $sformatf("found matching pattern %x", pattern), UVM_MEDIUM)
     // move 0.4 clk into the clk center, as previous reg read consume some cycles
-    #(get_oversampled_baud_clk_period_ns() *1ns * 0.45);
+    #(get_oversampled_baud_clk_period_ns() *1ns * 0.4);
+    `uvm_info(`gfn, "at center of clock", UVM_MEDIUM)
   endtask
 
   // drive N bits on RX pin based on oversampled clk, then check the reg value
@@ -78,13 +80,21 @@ class uart_rx_oversample_vseq extends uart_tx_rx_vseq;
 
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(data,
                                        data <= ((1 << num_bits) - 1);)
+    `uvm_info(`gfn, $sformatf("Drive data : %x", data), UVM_MEDIUM)
     // Most recent bit is bit 0
     for (int i = num_bits - 1; i >= 0; i--) begin
       cfg.m_uart_agent_cfg.vif.uart_rx = data[i];
       #(get_oversampled_baud_clk_period_ns() * 1ns);
     end
     cfg.m_uart_agent_cfg.vif.uart_rx = 1; // back to default value
-    csr_rd_check(.ptr(ral.val.rx), .compare_value(data), .blocking(0));
+    // launch check in a parallel thread
+    fork
+      begin
+        // Wait for 3 cycles before checking the oversampled value
+        cfg.clk_rst_vif.wait_n_clks(3);
+        csr_rd_check(.ptr(ral.val.rx), .compare_value(data), .blocking(1));
+      end
+    join_none
   endtask
 
   virtual function real get_oversampled_baud_clk_period_ns();
