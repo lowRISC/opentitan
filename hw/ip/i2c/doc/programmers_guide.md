@@ -101,6 +101,32 @@ All other parameters in registers `TIMING2`, `TIMING3`, `TIMING4` are unchanged 
 | TIMING1.T_R     | 0                | 134        | 402            | Atypically high line capacitance             |
 | SCL Period      | 1000             | N/A        | 395            | Forced longer than minimum by long T_R        |
 
+## Writing `n` bytes to a device:
+1. Address the device for writing by writing to:
+   - `FDATA.START` = 1;
+   - `FDATA.FBYTE` = <7-bit address + write bit>.
+2. Fill the TX_FIFO by writing to `FDATA.FBYTE` `n`-1 times.
+3. Send last byte with the stop bit by writing to:
+    - `FDATA.STOP` = 1;
+    - `FDATA.FBYTE` = <last byte>.
+
+<!-- TODO: Fix #18917 and remove the FMT_FIFO empty check before adding the full transaction to the FMT_FIFO -->
+## Reading `n` bytes from a device:
+1. Address the device for reading by writing to:
+   - `FDATA.START` = 1;
+   - `FDATA.FBYTE` = <7-bit address + read bit>.
+2. Wait the write transaction to finish by either checking:
+    - If `STATUS.FMTEMPTY` bit is 1.
+    - **Or** if `INTR_STATE.fmt_threshold` bit is 1 ( as long as `FIFO_CTRL.FMTILVL` is set to 1).
+3. If `INTR_STATE.nak` bit is 1, then go back to step 1, else proceed.
+4. Issue a read transaction by writing to.
+    - `FDATA.READ` = 1;
+    - `FDATA.STOP` = 1;
+    - `FDATA.FBYTE` = <`n`>.
+5. Wait for the read transaction to finish by checking:
+    -  `STATUS.FMTEMPTY` bit is 1.
+6. Retrieve the data from the FIFO by reading `RDATA` `n` times.
+
 ## Device Interface Functions (DIFs)
 
 - [Device Interface Functions](../../../../sw/device/lib/dif/dif_i2c.h)
