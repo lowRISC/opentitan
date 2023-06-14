@@ -120,6 +120,11 @@ pub trait Jtag {
     /// Read/write a RISC-V register
     fn read_riscv_reg(&self, reg: &RiscvReg) -> Result<u32>;
     fn write_riscv_reg(&self, reg: &RiscvReg, val: u32) -> Result<()>;
+
+    /// Set a breakpoint at the given address.
+    fn set_breakpoint(&self, addr: u32, hw: bool) -> Result<()>;
+    fn remove_breakpoint(&self, addr: u32) -> Result<()>;
+    fn remove_all_breakpoints(&self) -> Result<()>;
 }
 
 /// Available JTAG TAPs (software TAPS) in OpenTitan.
