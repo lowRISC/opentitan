@@ -11,16 +11,24 @@ use cryptoki::slot::Slot;
 use serde::de::{Deserialize, Deserializer};
 
 use crate::error::HsmError;
+use acorn::Acorn;
 
 pub struct Module {
     pub pkcs11: Pkcs11,
+    pub acorn: Option<Acorn>,
+    pub token: Option<String>,
 }
 
 impl Module {
-    pub fn initialize(module: &str) -> Result<Self> {
+    pub fn initialize(module: &str, acorn: Option<&str>) -> Result<Self> {
         let mut pkcs11 = Pkcs11::new(module)?;
         pkcs11.initialize(CInitializeArgs::OsThreads)?;
-        Ok(Module { pkcs11 })
+        let acorn = acorn.map(Acorn::new).transpose()?;
+        Ok(Module {
+            pkcs11,
+            acorn,
+            token: None,
+        })
     }
 
     pub fn get_token(&self, label: &str) -> Result<Slot> {
@@ -35,7 +43,7 @@ impl Module {
     }
 
     pub fn connect(
-        &self,
+        &mut self,
         token: &str,
         user: Option<UserType>,
         pin: Option<&str>,
@@ -45,6 +53,7 @@ impl Module {
         if let Some(user) = user {
             session.login(user, pin).context("Failed HSM Login")?;
         }
+        self.token = Some(token.into());
         Ok(session)
     }
 }

@@ -43,6 +43,9 @@ struct Args {
     #[arg(long, env = "HSMTOOL_MODULE", help = "Path to a PKCS11 shared library")]
     module: String,
 
+    #[arg(long, env = "HSMTOOL_ACORN", help = "Path to a `acorn` shared library")]
+    acorn: Option<String>,
+
     #[arg(short, long, env = "HSMTOOL_TOKEN", help = "HSM Token to use")]
     token: Option<String>,
 
@@ -74,7 +77,7 @@ fn main() -> Result<()> {
     env_logger::Builder::from_default_env()
         .filter(None, args.logging)
         .init();
-    let hsm = Module::initialize(&args.module).context(
+    let mut hsm = Module::initialize(&args.module, args.acorn.as_deref()).context(
         "Loading the PKCS11 module usually depends on several environent variables.  Check HSMTOOL_MODULE, SOFTHSM2_CONF or your HSM's documentation.")?;
 
     // Initialize the list of all valid attribute types early.  Disable logging
