@@ -111,6 +111,7 @@ rust_library(
         "src/spiflash/sfdp.rs",
         "src/test_utils/bootstrap.rs",
         "src/test_utils/e2e_command.rs",
+        "src/test_utils/elf_debugger.rs",
         "src/test_utils/epmp.rs",
         "src/test_utils/extclk.rs",
         "src/test_utils/gpio.rs",
