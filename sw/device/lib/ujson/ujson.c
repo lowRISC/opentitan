@@ -397,8 +397,8 @@ status_t ujson_deserialize_status_t(ujson_t *uj, status_t *value) {
 
 status_t ujson_serialize_status_t(ujson_t *uj, const status_t *value) {
   buffer_sink_t out = {
-      .data = uj->io_context,
-      .sink = (size_t(*)(void *, const char *, size_t))uj->putbuf,
+      .data = uj,
+      .sink = (size_t(*)(void *, const char *, size_t))ujson_putbuf,
   };
   base_fprintf(out, "%!r", *value);
   return OK_STATUS();
