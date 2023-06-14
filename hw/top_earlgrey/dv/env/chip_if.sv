@@ -631,7 +631,11 @@ interface chip_if;
 `endif
   clk_rst_if sys_clk_rst_if(.clk(sys_clk), .rst_n(sys_rst_n));
 
+`ifdef GATE_LEVEL
+  wire cpu_clk = `CPU_HIER.u_core.u_ibex_core.load_store_unit_i.ls_fsm_cs_reg_0_.CK;
+`else
   wire cpu_clk = `CPU_HIER.clk_i;
+`endif
   wire cpu_rst_n = `CPU_HIER.rst_ni;
   clk_rst_if cpu_clk_rst_if(.clk(cpu_clk), .rst_n(cpu_rst_n));
 
@@ -1124,7 +1128,14 @@ interface chip_if;
 
   // Signal probe function for `fsm.state_q` of SPI_HOST_1
   wire [2:0] spi_host_1_state;
+`ifdef GATE_LEVEL
+assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.state_q_reg_2_.Q
+                          ,tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.state_q_reg_1_.Q
+                          ,tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.state_q_reg_0_.Q
+                          };
+`else
   assign spi_host_1_state = `SPI_HOST_HIER(1).u_spi_core.u_fsm.state_q;
+`endif
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_spi_host_1_fsm_state,
       spi_host_1_state, 3)
 
@@ -1150,7 +1161,14 @@ interface chip_if;
 
   // Signal probe function for `st_q` of HMAC
   wire [2:0] hmac_fsm_state;
+`ifdef GATE_LEVEL
+  assign hmac_fsm_state = {`HMAC_HIER.u_hmac.st_q_reg_2_.Q
+                          ,`HMAC_HIER.u_hmac.st_q_reg_1_.Q
+                          ,`HMAC_HIER.u_hmac.st_q_reg_0_.Q
+                          };
+`else
   assign hmac_fsm_state = `HMAC_HIER.u_hmac.st_q;
+`endif
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_hmac_fsm_state,
       hmac_fsm_state, 3)
 
