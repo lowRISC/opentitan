@@ -5,7 +5,7 @@
 #![allow(unused_imports)]
 
 use anyhow::{bail, ensure, Result};
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use regex::Regex;
 use serde_annotate::Annotate;
 use serialport::SerialPortType;
@@ -385,7 +385,5 @@ impl GpioPin for VoltagePin {
     }
 }
 
-lazy_static! {
-    pub static ref DEDIPROG_VERSION_REGEX: Regex =
-        Regex::new("^([^ ]+) +V:([0-9]+)\\.([0-9]+)\\.([0-9]+)").unwrap();
-}
+static DEDIPROG_VERSION_REGEX: Lazy<Regex> =
+    Lazy::new(|| Regex::new("^([^ ]+) +V:([0-9]+)\\.([0-9]+)\\.([0-9]+)").unwrap());

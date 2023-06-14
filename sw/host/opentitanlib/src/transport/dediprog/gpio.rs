@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{ensure, Result};
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -78,8 +78,8 @@ impl GpioPin for DediprogPin {
     }
 }
 
-lazy_static! {
-    static ref PIN_NAMES: HashMap<&'static str, u8> = collection! {
+static PIN_NAMES: Lazy<HashMap<&'static str, u8>> = Lazy::new(|| {
+    collection! {
         "IO2" => 0,
         "IO1" => 1,
         "IO3" => 2,
@@ -87,5 +87,5 @@ lazy_static! {
         "PASS_LED" => 8,
         "BUSY_LED" => 9,
         "ERROR_LED" => 10,
-    };
-}
+    }
+});

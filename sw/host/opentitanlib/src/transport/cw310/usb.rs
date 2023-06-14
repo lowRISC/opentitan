@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{ensure, Context, Result};
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use std::cmp;
 use std::collections::HashMap;
 use std::convert::TryFrom;
@@ -608,9 +608,9 @@ impl Backend {
     }
 }
 
-lazy_static! {
-    // Mapping of SAM3 pin names to pin numbers.
-    static ref SAM3X_PIN_NAMES: HashMap<&'static str, u8> = collection! {
+// Mapping of SAM3 pin names to pin numbers.
+static SAM3X_PIN_NAMES: Lazy<HashMap<&'static str, u8>> = Lazy::new(|| {
+    collection! {
         "PA0" =>  0,
         "PA1" =>  1,
         "PA2" =>  2,
@@ -715,9 +715,11 @@ lazy_static! {
         "PD8" =>  104,
         "PD9" =>  105,
         "PD10" => 106
-    };
-    // Mapping of schematic pin names to SAM3 pin names.
-    static ref SCHEMATIC_PIN_NAMES: HashMap<&'static str, &'static str> = collection! {
+    }
+});
+// Mapping of schematic pin names to SAM3 pin names.
+static SCHEMATIC_PIN_NAMES: Lazy<HashMap<&'static str, &'static str>> = Lazy::new(|| {
+    collection! {
         "USBSPARE0" => "PC10",
         "USBSPARE1" => "PC11",
         "USBSPARE2" => "PC12",
@@ -771,5 +773,5 @@ lazy_static! {
         "USB_SPI_COPI" => "PA26",
         "USB_SPI_SCK" => "PA27",
         "USB_SPI_CS" => "PA28"
-    };
-}
+    }
+});

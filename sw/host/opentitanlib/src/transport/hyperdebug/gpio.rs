@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{bail, Result};
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use regex::Regex;
 use std::rc::Rc;
 
@@ -76,9 +76,8 @@ impl GpioPin for HyperdebugGpioPin {
             .inner
             .cmd_one_line_output(&format!("adc {}", &self.pinname))
             .map_err(|_| TransportError::CommunicationError("No output from adc".to_string()))?;
-        lazy_static! {
-            pub static ref ADC_REGEX: Regex = Regex::new("^ +([^ ])+ = ([0-9]+) mV").unwrap();
-        }
+        static ADC_REGEX: Lazy<Regex> =
+            Lazy::new(|| Regex::new("^ +([^ ])+ = ([0-9]+) mV").unwrap());
         if let Some(captures) = ADC_REGEX.captures(&line) {
             let milli_volts: u32 = captures.get(2).unwrap().as_str().parse()?;
             Ok(milli_volts as f32 / 1000.0)
@@ -194,10 +193,9 @@ impl GpioMonitoring for HyperdebugGpioMonitoring {
                     .ok_or(TransportError::InvalidOperation)?,
             );
         }
-        lazy_static! {
-            pub static ref START_TIME_REGEX: Regex = Regex::new("^ +@([0-9]+)").unwrap();
-            pub static ref SIGNAL_REGEX: Regex = Regex::new("^ +([0-9]+) ([^ ])+ ([01])").unwrap();
-        }
+        static START_TIME_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new("^ +@([0-9]+)").unwrap());
+        static SIGNAL_REGEX: Lazy<Regex> =
+            Lazy::new(|| Regex::new("^ +([0-9]+) ([^ ])+ ([01])").unwrap());
         let mut start_time: u64 = 0;
         let mut signals = Vec::new();
         let mut unexpected_output = false;
@@ -240,10 +238,9 @@ impl GpioMonitoring for HyperdebugGpioMonitoring {
                     .ok_or(TransportError::InvalidOperation)?,
             );
         }
-        lazy_static! {
-            pub static ref START_TIME_REGEX: Regex = Regex::new("^ +@([0-9]+)").unwrap();
-            pub static ref EDGE_REGEX: Regex = Regex::new("^ +([0-9]+) (-?[0-9]+) ([RF])").unwrap();
-        }
+        static START_TIME_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new("^ +@([0-9]+)").unwrap());
+        static EDGE_REGEX: Lazy<Regex> =
+            Lazy::new(|| Regex::new("^ +([0-9]+) (-?[0-9]+) ([RF])").unwrap());
         let mut reference_time: u64 = 0;
         let mut events = Vec::new();
         loop {

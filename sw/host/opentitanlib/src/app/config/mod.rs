@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
@@ -57,8 +57,8 @@ pub fn process_config_file(env: &mut TransportWrapperBuilder, conf_file: &Path) 
     env.add_configuration_file(res)
 }
 
-lazy_static! {
-    static ref BUILTINS: HashMap<&'static str, &'static str> = collection! {
+static BUILTINS: Lazy<HashMap<&'static str, &'static str>> = Lazy::new(|| {
+    collection! {
         "/__builtin__/dediprog.json" => include_str!("dediprog.json"),
         "/__builtin__/h1dx_devboard.json" => include_str!("h1dx_devboard.json"),
         "/__builtin__/h1dx_devboard_c2d2.json" => include_str!("h1dx_devboard_c2d2.json"),
@@ -69,5 +69,5 @@ lazy_static! {
         "/__builtin__/hyperdebug_cw310.json" => include_str!("hyperdebug_cw310.json"),
         "/__builtin__/opentitan_ultradebug.json" => include_str!("opentitan_ultradebug.json"),
         "/__builtin__/opentitan_verilator.json" => include_str!("opentitan_verilator.json"),
-    };
-}
+    }
+});

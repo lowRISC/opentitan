@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{ensure, Context, Result};
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use regex::Regex;
 use serde_annotate::Annotate;
 use std::any::Any;
@@ -40,14 +40,16 @@ pub struct Verilator {
 impl Verilator {
     /// Creates a verilator subprocess-hosting transport from `options`.
     pub fn from_options(options: Options) -> Result<Self> {
-        lazy_static! {
-            static ref UART: Regex = Regex::new("UART: Created ([^ ]+) for uart0").unwrap();
-            static ref SPI: Regex = Regex::new("SPI: Created ([^ ]+) for spi0").unwrap();
-            static ref GPIO_RD: Regex =
-                Regex::new(r#"GPIO: FIFO pipes created at ([^ ]+) \(read\) and [^ ]+ \(write\) for 32-bit wide GPIO."#).unwrap();
-            static ref GPIO_WR: Regex =
-                Regex::new(r#"GPIO: FIFO pipes created at [^ ]+ \(read\) and ([^ ]+) \(write\) for 32-bit wide GPIO."#).unwrap();
-        }
+        static UART: Lazy<Regex> =
+            Lazy::new(|| Regex::new("UART: Created ([^ ]+) for uart0").unwrap());
+        static SPI: Lazy<Regex> =
+            Lazy::new(|| Regex::new("SPI: Created ([^ ]+) for spi0").unwrap());
+        static GPIO_RD: Lazy<Regex> = Lazy::new(|| {
+            Regex::new(r#"GPIO: FIFO pipes created at ([^ ]+) \(read\) and [^ ]+ \(write\) for 32-bit wide GPIO."#).unwrap()
+        });
+        static GPIO_WR: Lazy<Regex> = Lazy::new(|| {
+            Regex::new(r#"GPIO: FIFO pipes created at [^ ]+ \(read\) and ([^ ]+) \(write\) for 32-bit wide GPIO."#).unwrap()
+        });
 
         let deadline = Instant::now() + options.timeout;
         let subprocess = Subprocess::from_options(options)?;
