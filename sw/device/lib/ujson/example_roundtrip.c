@@ -39,11 +39,8 @@ status_t roundtrip(const char *name) {
     TRY(ujson_serialize_direction(&uj, &x));
   } else if (!strcmp(name, "fuzzy_bool")) {
     fuzzy_bool x = {0};
-    fprintf(stderr, "-- fuzzy_bool\n");
     TRY(ujson_deserialize_fuzzy_bool(&uj, &x));
-    fprintf(stderr, "-- %d\n", (int)x);
     TRY(ujson_serialize_fuzzy_bool(&uj, &x));
-    fprintf(stderr, "-- done\n");
   } else if (!strcmp(name, "misc")) {
     misc_t x = {0};
     TRY(ujson_deserialize_misc_t(&uj, &x));
