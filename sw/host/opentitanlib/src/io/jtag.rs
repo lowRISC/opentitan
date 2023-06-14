@@ -160,3 +160,15 @@ pub enum RiscvReg {
     /// Control and Status Register
     Csr(RiscvCsr),
 }
+
+impl From<RiscvGpr> for RiscvReg {
+    fn from(gpr: RiscvGpr) -> Self {
+        Self::Gpr(gpr)
+    }
+}
+
+impl From<RiscvCsr> for RiscvReg {
+    fn from(csr: RiscvCsr) -> Self {
+        Self::Csr(csr)
+    }
+}
