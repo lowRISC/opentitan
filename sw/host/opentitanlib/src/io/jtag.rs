@@ -318,6 +318,12 @@ pub enum RiscvCsr {
     MARCHID,
     MIMPID,
     MHARTID,
+
+    // Custom CSRs, those are exposed with "csr_" prefix.
+    #[strum(serialize = "csr_cpuctrl")]
+    CPUCTRL,
+    #[strum(serialize = "csr_secureseed")]
+    SECURESEED,
 }
 
 impl RiscvCsr {
