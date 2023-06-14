@@ -27,12 +27,13 @@ status_t i2c_testutils_write(const dif_i2c_t *i2c, uint8_t addr,
                              bool skip_stop);
 
 /**
- * Construct and issue an I2C read operation as an I2C host.
+ * Construct and issue an I2C read transaction as an I2C host.
  *
  * @param i2c An I2C DIF handle.
  * @param addr The device address for the transaction.
  * @param byte_count The number of bytes to be read.
- * @return The result of the operation.
+ * @return kOk(nak) Where nak indicates whether the device acknowledged the read
+ * transaction (false) or not (true), otherwise an error.
  */
 OT_WARN_UNUSED_RESULT
 status_t i2c_testutils_issue_read(const dif_i2c_t *i2c, uint8_t addr,
@@ -172,4 +173,13 @@ status_t i2c_testutils_set_speed(const dif_i2c_t *i2c, dif_i2c_speed_t speed);
  */
 OT_WARN_UNUSED_RESULT
 status_t i2c_testutils_wait_host_idle(const dif_i2c_t *i2c);
+
+/**
+ * Busy spin until the fmt_fifo gets empty meaning that it has finished the all
+ * the transactions issued.
+ *
+ * @param i2c An I2C DIF handle.
+ * @return The result of the operation.
+ */
+status_t i2c_testutils_wait_transaction_finish(const dif_i2c_t *i2c);
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_I2C_TESTUTILS_H_
