@@ -9,13 +9,13 @@ use std::str::FromStr;
 use std::time::Duration;
 
 use anyhow::{bail, Context, Result};
-use bindgen::sram_program::SRAM_MAGIC_SP_EXECUTION_DONE;
-use byteorder::{ByteOrder, LittleEndian};
+use bindgen::sram_program::{SRAM_MAGIC_SP_CRC_ERROR, SRAM_MAGIC_SP_EXECUTION_DONE};
+use byteorder::{ByteOrder, LittleEndian, WriteBytesExt};
+use crc::Crc;
+use object::{Object, ObjectSection, SectionKind};
 use serde::{Deserialize, Serialize};
 use structopt::StructOpt;
 use thiserror::Error;
-
-use object::{Object, ObjectSection, SectionKind};
 
 use crate::impl_serializable_error;
 use crate::io::jtag::{Jtag, RiscvCsr, RiscvGpr, RiscvReg};
@@ -67,6 +67,10 @@ impl SramProgramParams {
         }
     }
 
+    pub fn load(&self, jtag: &Rc<dyn Jtag>) -> Result<SramProgramInfo> {
+        load_sram_program(jtag, &self.get_file())
+    }
+
     pub fn load_and_execute(
         &self,
         jtag: &Rc<dyn Jtag>,
@@ -86,6 +90,15 @@ pub enum ExecutionMode {
     JumpAndWait(Duration),
 }
 
+/// Detail of execution error of a SRAM program.
+#[derive(Debug, Deserialize, Serialize)]
+pub enum ExecutionError {
+    /// Unknown error.
+    Unknown,
+    /// The SRAM program loader reported a CRC self-check error.
+    CrcMismatch,
+}
+
 /// Result of execution of a SRAM program.
 #[derive(Debug, Deserialize, Serialize)]
 pub enum ExecutionResult {
@@ -96,7 +109,7 @@ pub enum ExecutionResult {
     /// (JumpAndWait only) Execution successfully stopped.
     ExecutionDone,
     /// (JumpAndWait only) Execution did not finish it time or an error occurred.
-    ExecutionError,
+    ExecutionError(ExecutionError),
 }
 
 /// Errors related to loading an SRAM program.
@@ -109,17 +122,27 @@ pub enum LoadSramProgramError {
 }
 impl_serializable_error!(LoadSramProgramError);
 
+/// Information about the loaded SRAM program
+pub struct SramProgramInfo {
+    /// Address of the entry point.
+    pub entry_point: u32,
+    /// CRC32 of the entire data.
+    pub crc32: u32,
+}
+
 /// Load a program into SRAM using JTAG (VMEM files)
 pub fn load_vmem_sram_program(
     jtag: &Rc<dyn Jtag>,
     vmem_filename: &PathBuf,
     load_addr: u32,
-) -> Result<u32> {
+) -> Result<SramProgramInfo> {
     log::info!("Loading VMEM file {}", vmem_filename.display());
     let vmem_content = fs::read_to_string(vmem_filename)?;
     let mut vmem = Vmem::from_str(&vmem_content)?;
     vmem.merge_sections();
     log::info!("Uploading program to SRAM at {:x}", load_addr);
+    let crc = Crc::<u32>::new(&crc::CRC_32_ISO_HDLC);
+    let mut digest = crc.digest();
     for section in vmem.sections() {
         log::info!(
             "Load {} words at address {:x}",
@@ -127,17 +150,32 @@ pub fn load_vmem_sram_program(
             load_addr + section.addr
         );
         jtag.write_memory32(load_addr + section.addr, &section.data)?;
+        // Update CRC
+        let mut data8: Vec<u8> = vec![];
+        for elem in &section.data {
+            data8.write_u32::<LittleEndian>(*elem).unwrap();
+        }
+        digest.update(&data8);
     }
-    Ok(load_addr)
+    Ok(SramProgramInfo {
+        entry_point: load_addr,
+        crc32: digest.finalize(),
+    })
 }
 
 /// Load a program into SRAM using JTAG (ELF files)
-pub fn load_elf_sram_program(jtag: &Rc<dyn Jtag>, elf_filename: &PathBuf) -> Result<u32> {
+pub fn load_elf_sram_program(
+    jtag: &Rc<dyn Jtag>,
+    elf_filename: &PathBuf,
+) -> Result<SramProgramInfo> {
     log::info!("Loading ELF file {}", elf_filename.display());
     let file_data = std::fs::read(elf_filename)
         .with_context(|| format!("Could not read ELF file {}.", elf_filename.display()))?;
     let file = object::File::parse(&*file_data)
         .with_context(|| format!("Could not parse ELF file {}", elf_filename.display()))?;
+    if file.is_64() {
+        bail!("SRAM ELF programs must be 32-bit binaries");
+    }
     log::info!("Uploading program to SRAM");
     // The natural thing to do would be to load segments but the GNU linker produces some really
     // unexpected segments for SRAM programs, where the segments can be strictly larger than the
@@ -160,9 +198,17 @@ pub fn load_elf_sram_program(jtag: &Rc<dyn Jtag>, elf_filename: &PathBuf) -> Res
     //
     // Note that the segment starts at 0x10001000 but .text starts at 0x10001fc8, so loading
     // the segment would actually overwrite the beginning of the SRAM (static critical data).
+    // Also note that there is a 6-byte gap between the end of .text and the beginning of .rodata
+    // because .rodata needs a bigger alignment.
     //
     // Instead, we elect to load segments that contain loadable data (and not BSS which is cleared
-    // by the SRAM CRT).
+    // by the SRAM CRT). Due to the gap between sections, we have to be careful because the CRT will
+    // compute the CRC of the entire data which encompasses all loadable sections but also the gaps
+    // between them! The code below explicitly writes the content of the gaps with known values that
+    // are taken into account in the CRC value.
+    let crc = Crc::<u32>::new(&crc::CRC_32_ISO_HDLC);
+    let mut digest = crc.digest();
+    let mut last_address: Option<(u32, String)> = None;
     for section in file.sections() {
         let section_name = section.name().unwrap_or("<invalid name>");
         match section.kind() {
@@ -170,26 +216,68 @@ pub fn load_elf_sram_program(jtag: &Rc<dyn Jtag>, elf_filename: &PathBuf) -> Res
             | SectionKind::Data
             | SectionKind::ReadOnlyData
             | SectionKind::ReadOnlyString => {
-                log::info!(
-                    "Load section {}: {} bytes at address {:x}",
-                    section_name,
-                    section.size(),
-                    section.address()
-                );
                 // It is must faster to load data word by word instead of bytes by bytes.
                 // The linker script always ensures that we the address and size are multiple of 4.
                 const WORD_SIZE: usize = std::mem::size_of::<u32>();
                 if section.address() % WORD_SIZE as u64 != 0
                     || section.data()?.len() % WORD_SIZE != 0
                 {
-                    bail!("The SRAM program must only consists of segments whose address and size are a multiple of the word size");
+                    bail!("The SRAM program must only consists of sections whose address and size are a multiple of the word size");
                 }
+                // If there is a gap between the last loaded section and this one, fills it and update
+                // the CRC.
+                if let Some((last_addr, last_sec_name)) = last_address {
+                    let gap_size = section.address() as i32 - last_addr as i32;
+                    // Just as a sanity check, make sure that the gap is nonnegative and not stupidly large.
+                    const MAX_GAP_SIZE: i32 = 128;
+                    if gap_size < 0 {
+                        bail!(
+                            "The SRAM program's sections must be ordered by increasing addresses"
+                        );
+                    }
+                    if gap_size > MAX_GAP_SIZE {
+                        bail!("The SRAM program's gap between {} and {} is suspiciously large ({} bytes)",
+                            last_sec_name, section_name, gap_size);
+                    }
+                    let gap_size = gap_size as usize;
+                    // This should ways be true because we check alignment above.
+                    assert!(
+                        gap_size % WORD_SIZE == 0,
+                        "the gap size is not a multiple of the word size"
+                    );
+
+                    if gap_size > 0 {
+                        log::info!(
+                            "Fill gap between section {} and {}: {} bytes at address {:x}",
+                            last_sec_name,
+                            section_name,
+                            gap_size,
+                            last_addr
+                        );
+                        let fill_data8: Vec<u8> = std::iter::repeat(0u8).take(gap_size).collect();
+                        let fill_data32: Vec<u32> =
+                            std::iter::repeat(0u32).take(gap_size / WORD_SIZE).collect();
+                        jtag.write_memory32(last_addr, &fill_data32)?;
+                        digest.update(&fill_data8);
+                    }
+                }
+                log::info!(
+                    "Load section {}: {} bytes at address {:x}",
+                    section_name,
+                    section.size(),
+                    section.address()
+                );
                 let data32: Vec<u32> = section
                     .data()?
                     .chunks(4)
                     .map(LittleEndian::read_u32)
                     .collect();
                 jtag.write_memory32(section.address() as u32, &data32)?;
+                digest.update(section.data()?);
+                last_address = Some((
+                    (section.address() + section.size()) as u32,
+                    section_name.to_string(),
+                ));
             }
             _ => {
                 log::info!(
@@ -199,11 +287,14 @@ pub fn load_elf_sram_program(jtag: &Rc<dyn Jtag>, elf_filename: &PathBuf) -> Res
             }
         }
     }
-    Ok(file.entry() as u32)
+    Ok(SramProgramInfo {
+        entry_point: file.entry() as u32,
+        crc32: digest.finalize(),
+    })
 }
 
 /// Load a program into SRAM using JTAG. Returns the address of the entry point.
-pub fn load_sram_program(jtag: &Rc<dyn Jtag>, file: &SramProgramFile) -> Result<u32> {
+pub fn load_sram_program(jtag: &Rc<dyn Jtag>, file: &SramProgramFile) -> Result<SramProgramInfo> {
     match file {
         SramProgramFile::Vmem { path, load_addr } => load_vmem_sram_program(jtag, path, *load_addr),
         SramProgramFile::Elf(path) => load_elf_sram_program(jtag, path),
@@ -262,48 +353,59 @@ pub fn prepare_epmp_for_sram(jtag: &Rc<dyn Jtag>) -> Result<()> {
     Ok(())
 }
 
-/// This function loads and execute a SRAM program. It takes care of all the details regarding
-/// the ePMP, the stack and the global pointer. It starts the execution at the beginning of the
-/// SRAM program.
-pub fn load_and_execute_sram_program(
+/// Execute an already loaded SRAM program. It takes care of setting up the ePMP.
+pub fn execute_sram_program(
     jtag: &Rc<dyn Jtag>,
-    file: &SramProgramFile,
+    prog_info: &SramProgramInfo,
     exec_mode: ExecutionMode,
 ) -> Result<ExecutionResult> {
-    let sram_entry_point = load_sram_program(jtag, file)?;
-    log::info!("Preparing ePMP for execution");
     prepare_epmp_for_sram(jtag)?;
     // To avoid unexpected behaviors, we always make sure that the return addreess
     // points to an invalid address.
     let ret_addr = 0xdeadbeefu32;
     log::info!("set RA to {:x}", ret_addr);
     jtag.write_riscv_reg(&RiscvReg::GprByName(RiscvGpr::RA), ret_addr)?;
+    // The SRAM program loader expects the CRC32 value in a0
+    log::info!("set A0 to {:x} (crc32)", prog_info.crc32);
+    jtag.write_riscv_reg(&RiscvReg::GprByName(RiscvGpr::A0), prog_info.crc32)?;
     // OpenOCD takes care of invalidating the cache when resuming execution
     match exec_mode {
         ExecutionMode::Jump => {
-            log::info!("resume execution at {:x}", sram_entry_point);
-            jtag.resume_at(sram_entry_point)?;
+            log::info!("resume execution at {:x}", prog_info.entry_point);
+            jtag.resume_at(prog_info.entry_point)?;
             Ok(ExecutionResult::Executing)
         }
         ExecutionMode::JumpAndHalt => {
-            log::info!("set DPC to {:x}", sram_entry_point);
-            jtag.write_riscv_reg(&RiscvReg::CsrByName(RiscvCsr::DPC), sram_entry_point)?;
+            log::info!("set DPC to {:x}", prog_info.entry_point);
+            jtag.write_riscv_reg(&RiscvReg::CsrByName(RiscvCsr::DPC), prog_info.entry_point)?;
             Ok(ExecutionResult::HaltedAtStart)
         }
         ExecutionMode::JumpAndWait(tmo) => {
-            log::info!("resume execution at {:x}", sram_entry_point);
-            jtag.resume_at(sram_entry_point)?;
+            log::info!("resume execution at {:x}", prog_info.entry_point);
+            jtag.resume_at(prog_info.entry_point)?;
             log::info!("wait for execution to stop");
             jtag.wait_halt(tmo)?;
             jtag.halt()?;
             // The SRAM's crt has a protocol to notify us that execution returned: it sets
             // the stack pointer to a certain value.
             let sp = jtag.read_riscv_reg(&RiscvReg::GprByName(RiscvGpr::SP))?;
-            if sp == SRAM_MAGIC_SP_EXECUTION_DONE {
-                Ok(ExecutionResult::ExecutionDone)
-            } else {
-                Ok(ExecutionResult::ExecutionError)
+            match sp {
+                SRAM_MAGIC_SP_EXECUTION_DONE => Ok(ExecutionResult::ExecutionDone),
+                SRAM_MAGIC_SP_CRC_ERROR => {
+                    Ok(ExecutionResult::ExecutionError(ExecutionError::CrcMismatch))
+                }
+                _ => Ok(ExecutionResult::ExecutionError(ExecutionError::Unknown)),
             }
         }
     }
+}
+
+/// Loads and execute a SRAM program. It takes care of setting up the ePMP.
+pub fn load_and_execute_sram_program(
+    jtag: &Rc<dyn Jtag>,
+    file: &SramProgramFile,
+    exec_mode: ExecutionMode,
+) -> Result<ExecutionResult> {
+    let prog_info = load_sram_program(jtag, file)?;
+    execute_sram_program(jtag, &prog_info, exec_mode)
 }

@@ -346,6 +346,7 @@ impl OpenOcdServer {
     fn riscv_reg_name(&self, reg: &RiscvReg) -> &'static str {
         match reg {
             RiscvReg::GprByName(gpr) => match gpr {
+                RiscvGpr::A0 => "a0",
                 RiscvGpr::GP => "gp",
                 RiscvGpr::SP => "sp",
                 RiscvGpr::RA => "ra",
