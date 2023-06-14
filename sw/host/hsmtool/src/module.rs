@@ -12,35 +12,41 @@ use serde::de::{Deserialize, Deserializer};
 
 use crate::error::HsmError;
 
-pub fn initialize(module: &str) -> Result<Pkcs11> {
-    let mut pkcs11 = Pkcs11::new(module)?;
-    pkcs11.initialize(CInitializeArgs::OsThreads)?;
-    Ok(pkcs11)
+pub struct Module {
+    pub pkcs11: Pkcs11,
 }
 
-pub fn get_token(pkcs11: &Pkcs11, label: &str) -> Result<Slot> {
-    let slots = pkcs11.get_slots_with_token()?;
-    for slot in slots {
-        let info = pkcs11.get_token_info(slot)?;
-        if label == info.label() {
-            return Ok(slot);
+impl Module {
+    pub fn initialize(module: &str) -> Result<Self> {
+        let mut pkcs11 = Pkcs11::new(module)?;
+        pkcs11.initialize(CInitializeArgs::OsThreads)?;
+        Ok(Module { pkcs11 })
+    }
+
+    pub fn get_token(&self, label: &str) -> Result<Slot> {
+        let slots = self.pkcs11.get_slots_with_token()?;
+        for slot in slots {
+            let info = self.pkcs11.get_token_info(slot)?;
+            if label == info.label() {
+                return Ok(slot);
+            }
         }
+        Err(HsmError::TokenNotFound(label.into()).into())
     }
-    Err(HsmError::TokenNotFound(label.into()).into())
-}
 
-pub fn connect(
-    pkcs11: &Pkcs11,
-    token: &str,
-    user: Option<UserType>,
-    pin: Option<&str>,
-) -> Result<Session> {
-    let slot = get_token(pkcs11, token)?;
-    let session = pkcs11.open_rw_session(slot)?;
-    if let Some(user) = user {
-        session.login(user, pin).context("Failed HSM Login")?;
+    pub fn connect(
+        &self,
+        token: &str,
+        user: Option<UserType>,
+        pin: Option<&str>,
+    ) -> Result<Session> {
+        let slot = self.get_token(token)?;
+        let session = self.pkcs11.open_rw_session(slot)?;
+        if let Some(user) = user {
+            session.login(user, pin).context("Failed HSM Login")?;
+        }
+        Ok(session)
     }
-    Ok(session)
 }
 
 pub fn parse_user_type(val: &str) -> Result<UserType> {

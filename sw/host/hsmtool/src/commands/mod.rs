@@ -4,12 +4,12 @@
 
 use anyhow::Result;
 use atty::Stream;
-use cryptoki::context::Pkcs11;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
 use serde_annotate::{Annotate, ColorProfile};
 use std::any::Any;
 
+use crate::module::Module;
 use crate::util::attribute::AttrData;
 
 mod exec;
@@ -22,7 +22,7 @@ pub trait Dispatch {
     fn run(
         &self,
         context: &dyn Any,
-        pkcs11: &Pkcs11,
+        hsm: &Module,
         session: Option<&Session>,
     ) -> Result<Box<dyn Annotate>>;
 
@@ -50,14 +50,14 @@ impl Dispatch for Commands {
     fn run(
         &self,
         context: &dyn Any,
-        pkcs11: &Pkcs11,
+        hsm: &Module,
         session: Option<&Session>,
     ) -> Result<Box<dyn Annotate>> {
         match self {
-            Commands::Exec(x) => x.run(context, pkcs11, session),
-            Commands::Object(x) => x.run(context, pkcs11, session),
-            Commands::Rsa(x) => x.run(context, pkcs11, session),
-            Commands::Token(x) => x.run(context, pkcs11, session),
+            Commands::Exec(x) => x.run(context, hsm, session),
+            Commands::Object(x) => x.run(context, hsm, session),
+            Commands::Rsa(x) => x.run(context, hsm, session),
+            Commands::Token(x) => x.run(context, hsm, session),
         }
     }
 

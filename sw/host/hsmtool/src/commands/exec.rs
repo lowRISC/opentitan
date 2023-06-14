@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use cryptoki::context::Pkcs11;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
 use serde_annotate::{Annotate, Document};
@@ -12,6 +11,7 @@ use std::path::PathBuf;
 use thiserror::Error;
 
 use crate::commands::{BasicResult, Dispatch};
+use crate::module::Module;
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
 pub struct Exec {
@@ -36,7 +36,7 @@ impl Dispatch for Exec {
     fn run(
         &self,
         context: &dyn Any,
-        pkcs11: &Pkcs11,
+        hsm: &Module,
         session: Option<&Session>,
     ) -> Result<Box<dyn Annotate>> {
         let commands = std::fs::read_to_string(&self.file)?;
@@ -47,7 +47,7 @@ impl Dispatch for Exec {
         for command in commands {
             let name = command.typetag_name().to_string();
             log::info!("Executing command {name}");
-            match command.run(context, pkcs11, session) {
+            match command.run(context, hsm, session) {
                 Ok(r) => status.push(ExecResult {
                     command: name,
                     result: r,

@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use cryptoki::context::Pkcs11;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
 use serde_annotate::Annotate;
 use std::any::Any;
 
 use crate::commands::Dispatch;
+use crate::module::Module;
 
 pub mod decrypt;
 pub mod encrypt;
@@ -35,17 +35,17 @@ impl Dispatch for Rsa {
     fn run(
         &self,
         context: &dyn Any,
-        pkcs11: &Pkcs11,
+        hsm: &Module,
         session: Option<&Session>,
     ) -> Result<Box<dyn Annotate>> {
         match self {
-            Rsa::Decrypt(x) => x.run(context, pkcs11, session),
-            Rsa::Encrypt(x) => x.run(context, pkcs11, session),
-            Rsa::Generate(x) => x.run(context, pkcs11, session),
-            Rsa::Export(x) => x.run(context, pkcs11, session),
-            Rsa::Import(x) => x.run(context, pkcs11, session),
-            Rsa::Sign(x) => x.run(context, pkcs11, session),
-            Rsa::Verify(x) => x.run(context, pkcs11, session),
+            Rsa::Decrypt(x) => x.run(context, hsm, session),
+            Rsa::Encrypt(x) => x.run(context, hsm, session),
+            Rsa::Generate(x) => x.run(context, hsm, session),
+            Rsa::Export(x) => x.run(context, hsm, session),
+            Rsa::Import(x) => x.run(context, hsm, session),
+            Rsa::Sign(x) => x.run(context, hsm, session),
+            Rsa::Verify(x) => x.run(context, hsm, session),
         }
     }
     fn leaf(&self) -> &dyn Dispatch

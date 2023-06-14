@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use cryptoki::context::Pkcs11;
 use cryptoki::mechanism::Mechanism;
 use cryptoki::object::Attribute;
 use cryptoki::session::Session;
@@ -14,6 +13,7 @@ use std::path::PathBuf;
 
 use crate::commands::{BasicResult, Dispatch};
 use crate::error::HsmError;
+use crate::module::Module;
 use crate::util::attribute::KeyType;
 use crate::util::helper;
 
@@ -33,7 +33,7 @@ impl Dispatch for Encrypt {
     fn run(
         &self,
         _context: &dyn Any,
-        _pkcs11: &Pkcs11,
+        _hsm: &Module,
         session: Option<&Session>,
     ) -> Result<Box<dyn Annotate>> {
         let session = session.ok_or(HsmError::SessionRequired)?;

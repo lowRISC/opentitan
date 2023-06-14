@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use cryptoki::context::Pkcs11;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
 use serde_annotate::Annotate;
 use std::any::Any;
 
 use crate::commands::Dispatch;
+use crate::module::Module;
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
 pub struct List;
@@ -43,12 +43,12 @@ impl Dispatch for List {
     fn run(
         &self,
         _context: &dyn Any,
-        pkcs11: &Pkcs11,
+        hsm: &Module,
         _session: Option<&Session>,
     ) -> Result<Box<dyn Annotate>> {
         let mut response = Box::<ListResponse>::default();
-        for slot in pkcs11.get_slots_with_token()? {
-            let info = pkcs11.get_token_info(slot)?;
+        for slot in hsm.pkcs11.get_slots_with_token()? {
+            let info = hsm.pkcs11.get_token_info(slot)?;
             response.tokens.push(TokenInfo::from(info));
         }
         Ok(response)
@@ -65,11 +65,11 @@ impl Dispatch for Token {
     fn run(
         &self,
         context: &dyn Any,
-        pkcs11: &Pkcs11,
+        hsm: &Module,
         session: Option<&Session>,
     ) -> Result<Box<dyn Annotate>> {
         match self {
-            Token::List(x) => x.run(context, pkcs11, session),
+            Token::List(x) => x.run(context, hsm, session),
         }
     }
 }
