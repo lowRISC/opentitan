@@ -106,24 +106,28 @@ status_t i2c_testutils_issue_read(const dif_i2c_t *i2c, uint8_t addr,
                                   uint8_t byte_count) {
   dif_i2c_fmt_flags_t flags = kDefaultFlags;
   uint8_t data_frame;
-
   // The current function doesn't check for space in the FIFOs
 
-  // First write the address.
+  // First, issue a write the address transaction.
   flags.start = true;
   data_frame = (uint8_t)(addr << 1) | (uint8_t)kI2cRead;
   TRY(dif_i2c_write_byte_raw(i2c, data_frame, flags));
 
-  // Schedule the read transaction by writing flags to the fifo.
-  flags = kDefaultFlags;
-  flags.read = true;
-  flags.stop = true;
-
-  // Inform the controller how many bytes to read overall.
-  TRY(dif_i2c_write_byte_raw(i2c, byte_count, flags));
-
-  // TODO: Check for errors / status.
-  return OK_STATUS();
+  bool nak = false;
+  TRY(i2c_testutils_wait_transaction_finish(i2c));
+  TRY(dif_i2c_irq_is_pending(i2c, kDifI2cIrqNak, &nak));
+  if (!nak) {
+    // We got an ack, schedule the read transaction.
+    flags = kDefaultFlags;
+    flags.read = true;
+    flags.stop = true;
+    // Inform the controller how many bytes to read overall.
+    TRY(dif_i2c_write_byte_raw(i2c, byte_count, flags));
+  } else {
+    // We got a nak, clear the irq and return. The caller my retry later.
+    TRY(dif_i2c_irq_acknowledge(i2c, kDifI2cIrqNak));
+  }
+  return OK_STATUS(nak);
 }
 
 status_t i2c_testutils_fifo_empty(const dif_i2c_t *i2c) {
@@ -135,25 +139,18 @@ status_t i2c_testutils_fifo_empty(const dif_i2c_t *i2c) {
 status_t i2c_testutils_read(const dif_i2c_t *i2c, uint8_t addr,
                             uint8_t byte_count, uint8_t *data, size_t timeout) {
   ibex_timeout_t timer = ibex_timeout_init(timeout);
-  bool nak = false;
 
   // Make sure to start from a clean state.
   TRY(dif_i2c_irq_acknowledge(i2c, kDifI2cIrqNak));
   TRY(dif_i2c_reset_rx_fifo(i2c));
   // Loop until we get an ACK from the device or a timeout.
-  do {
-    TRY(i2c_testutils_issue_read(i2c, addr, byte_count));
-    TRY(i2c_testutils_wait_host_idle(i2c));
-
-    TRY(dif_i2c_irq_is_pending(i2c, kDifI2cIrqNak, &nak));
-    if (nak) {
-      TRY(dif_i2c_irq_acknowledge(i2c, kDifI2cIrqNak));
-      TRY(dif_i2c_reset_rx_fifo(i2c));
-    } else if (ibex_timeout_check(&timer)) {
+  while (TRY(i2c_testutils_issue_read(i2c, addr, byte_count)) == true) {
+    if (ibex_timeout_check(&timer)) {
       return DEADLINE_EXCEEDED();
     }
-  } while (nak);
+  }
 
+  TRY(i2c_testutils_wait_transaction_finish(i2c));
   while (byte_count-- != 0) {
     TRY(dif_i2c_read_byte(i2c, data++));
   }
@@ -315,5 +312,13 @@ status_t i2c_testutils_wait_host_idle(const dif_i2c_t *i2c) {
   do {
     TRY(dif_i2c_get_status(i2c, &status));
   } while (!status.host_idle);
+  return OK_STATUS();
+}
+
+status_t i2c_testutils_wait_transaction_finish(const dif_i2c_t *i2c) {
+  dif_i2c_status_t status;
+  do {
+    TRY(dif_i2c_get_status(i2c, &status));
+  } while (!status.fmt_fifo_empty);
   return OK_STATUS();
 }
