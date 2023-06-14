@@ -179,7 +179,7 @@ mod tests {
 
     use serde_annotate::serialize;
 
-    use lazy_static::lazy_static;
+    use once_cell::sync::Lazy;
 
     const TEST_OTP_JSON: &str = r#"
         {
@@ -216,36 +216,34 @@ mod tests {
             ]
         }"#;
 
-    lazy_static! {
-        static ref TEST_OTP: OtpImg = OtpImg {
-            seed: None,
-            partitions: vec![OtpImgPartition {
-                name: "CREATOR_SW_CFG".to_owned(),
-                items: Some(vec![
-                    OtpImgItem {
-                        name: "CREATOR_SW_CFG_DIGEST".to_owned(),
-                        value: OtpImgValue::Word(0x0),
-                    },
-                    OtpImgItem {
-                        name: "CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN".to_owned(),
-                        value: OtpImgValue::Word(0x739),
-                    },
-                    OtpImgItem {
-                        name: "CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN".to_owned(),
-                        value: OtpImgValue::Word(0x4b4b4b4b4b4ba5a5),
-                    },
-                    OtpImgItem {
-                        name: "CREATOR_RANDOM".to_owned(),
-                        value: OtpImgValue::Random,
-                    },
-                    OtpImgItem {
-                        name: "CREATOR_SEQ".to_owned(),
-                        value: OtpImgValue::Sequence(vec![0xab, 0xcd, 0xef]),
-                    },
-                ]),
-            },],
-        };
-    }
+    static TEST_OTP: Lazy<OtpImg> = Lazy::new(|| OtpImg {
+        seed: None,
+        partitions: vec![OtpImgPartition {
+            name: "CREATOR_SW_CFG".to_owned(),
+            items: Some(vec![
+                OtpImgItem {
+                    name: "CREATOR_SW_CFG_DIGEST".to_owned(),
+                    value: OtpImgValue::Word(0x0),
+                },
+                OtpImgItem {
+                    name: "CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN".to_owned(),
+                    value: OtpImgValue::Word(0x739),
+                },
+                OtpImgItem {
+                    name: "CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN".to_owned(),
+                    value: OtpImgValue::Word(0x4b4b4b4b4b4ba5a5),
+                },
+                OtpImgItem {
+                    name: "CREATOR_RANDOM".to_owned(),
+                    value: OtpImgValue::Random,
+                },
+                OtpImgItem {
+                    name: "CREATOR_SEQ".to_owned(),
+                    value: OtpImgValue::Sequence(vec![0xab, 0xcd, 0xef]),
+                },
+            ]),
+        }],
+    });
 
     #[test]
     fn test_deser() {

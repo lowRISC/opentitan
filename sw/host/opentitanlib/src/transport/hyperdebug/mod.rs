@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{bail, ensure, Context, Result};
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use regex::Regex;
 use serde_annotate::Annotate;
 use serialport::TTYPort;
@@ -703,6 +703,4 @@ impl Flavor for CW310Flavor {
     }
 }
 
-lazy_static! {
-    pub static ref SPI_REGEX: Regex = Regex::new("^ +([0-9]+) ([^ ]+) ([0-9]+)").unwrap();
-}
+static SPI_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new("^ +([0-9]+) ([^ ]+) ([0-9]+)").unwrap());

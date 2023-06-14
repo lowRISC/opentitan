@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{ensure, Context, Result};
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use safe_ftdi as ftdi;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -105,11 +105,11 @@ impl GpioPin for UltradebugGpioPin {
     }
 }
 
-lazy_static! {
-    static ref PIN_NAMES: HashMap<&'static str, u8> = collection! {
+static PIN_NAMES: Lazy<HashMap<&'static str, u8>> = Lazy::new(|| {
+    collection! {
         "SPI_ZB" => 4,
         "RESET_B" => 5,
         "BOOTSTRAP" => 6,
         "TGT_RESET" => 7,
-    };
-}
+    }
+});

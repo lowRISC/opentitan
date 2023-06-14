@@ -40,6 +40,7 @@
 //! Comments that do not begin with `// cryptotest:` are ignored; the rest are parsed
 //! as annotations.
 
+use once_cell::sync::Lazy;
 use regex::Regex;
 
 /// A test vector struct.
@@ -149,24 +150,27 @@ pub enum LenUnit {
 
 // The "grammar" above is designed to be so simple we can parse it with a pile of
 // regular expressions.
-lazy_static::lazy_static! {
-  static ref STRUCT_START: Regex =
-    Regex::new(r"^typedef\s+struct\s+([a-zA-Z_][0-9a-zA-Z_]*)?\s*\{").unwrap();
-  static ref STRUCT_END: Regex =
-    Regex::new(r"^}\s*([a-zA-Z_][0-9a-zA-Z_]*)\s*;").unwrap();
-  static ref INT_FIELD: Regex =
-    Regex::new(r"^([a-zA-Z_][0-9a-zA-Z_]*)\s+([a-zA-Z_][0-9a-zA-Z_]*)\s*;").unwrap();
-  static ref STRING_FIELD: Regex =
-    Regex::new(r"^const\s+char\s*\*\s*([a-zA-Z_][0-9a-zA-Z_]*)\s*;").unwrap();
-  static ref VECTOR_FIELD: Regex =
-    Regex::new(r"^([a-zA-Z_][0-9a-zA-Z_]*)\s+([a-zA-Z_][0-9a-zA-Z_]*)\s*\[\s*(\w+)\s*\]\s*;").unwrap();
-  static ref INT_ARRAY_FIELD: Regex =
-    Regex::new(r"^const\s+([a-zA-Z_][0-9a-zA-Z_]*)\s*\*\s*([a-zA-Z_][0-9a-zA-Z_]*)\s*;").unwrap();
-  static ref STRING_ARRAY_FIELD: Regex =
-    Regex::new(r"^const\s+char\s*\*\s*const\s*\*\s*([a-zA-Z_][0-9a-zA-Z_]*)\s*;").unwrap();
-  static ref VECTOR_ARRAY_FIELD: Regex =
-    Regex::new(r"^const\s+([a-zA-Z_][0-9a-zA-Z_]*)\s*\(\s*\*\s*([a-zA-Z_][0-9a-zA-Z_]*)\s*\)\s*\[\s*(\w+)\s*\]\s*;").unwrap();
-}
+static STRUCT_START: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"^typedef\s+struct\s+([a-zA-Z_][0-9a-zA-Z_]*)?\s*\{").unwrap());
+static STRUCT_END: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"^}\s*([a-zA-Z_][0-9a-zA-Z_]*)\s*;").unwrap());
+static INT_FIELD: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"^([a-zA-Z_][0-9a-zA-Z_]*)\s+([a-zA-Z_][0-9a-zA-Z_]*)\s*;").unwrap());
+static STRING_FIELD: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"^const\s+char\s*\*\s*([a-zA-Z_][0-9a-zA-Z_]*)\s*;").unwrap());
+static VECTOR_FIELD: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r"^([a-zA-Z_][0-9a-zA-Z_]*)\s+([a-zA-Z_][0-9a-zA-Z_]*)\s*\[\s*(\w+)\s*\]\s*;")
+        .unwrap()
+});
+static INT_ARRAY_FIELD: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r"^const\s+([a-zA-Z_][0-9a-zA-Z_]*)\s*\*\s*([a-zA-Z_][0-9a-zA-Z_]*)\s*;").unwrap()
+});
+static STRING_ARRAY_FIELD: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r"^const\s+char\s*\*\s*const\s*\*\s*([a-zA-Z_][0-9a-zA-Z_]*)\s*;").unwrap()
+});
+static VECTOR_ARRAY_FIELD: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(r"^const\s+([a-zA-Z_][0-9a-zA-Z_]*)\s*\(\s*\*\s*([a-zA-Z_][0-9a-zA-Z_]*)\s*\)\s*\[\s*(\w+)\s*\]\s*;").unwrap()
+});
 
 const STRUCT_COMMENT: &str = "// cryptotest:struct\n";
 
