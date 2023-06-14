@@ -4,6 +4,7 @@
 
 pub mod bootstrap;
 pub mod e2e_command;
+pub mod elf_debugger;
 pub mod epmp;
 pub mod extclk;
 pub mod gpio;

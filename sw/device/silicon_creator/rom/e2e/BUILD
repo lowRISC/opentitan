@@ -2356,6 +2356,61 @@ test_suite(
     tests = ["epmp_init_otp_" + lc_state for lc_state, _ in get_lc_items()],
 )
 
+LC_STATES_DEBUG_DISALLOWED = [
+    CONST.LCV.PROD,
+    CONST.LCV.PROD_END,
+]
+
+[
+    opentitan_functest(
+        name = "openocd_debug_test_otp_" + lc_state,
+        srcs = ["empty_test.c"],
+        cw310 = cw310_params(
+            timeout = "moderate",
+            bitstream = ":rom_with_fake_keys_otp_{}_exec_disabled".format(lc_state),
+            test_cmds = [
+                "--bitstream=\"$(rootpath {bitstream})\"",
+                "--elf=\"$(rootpath //sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310_elf)\"",
+            ] + (
+                ["--expect-fail"] if lc_state_val in LC_STATES_DEBUG_DISALLOWED else []
+            ) + OPENTITANTOOL_OPENOCD_TEST_CMDS,
+        ),
+        data = [
+            "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310_elf",
+        ] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
+        targets = ["cw310_rom_with_fake_keys"],
+        test_harness = "//sw/host/tests/rom/e2e_openocd_debug_test",
+        deps = [
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib/drivers:otp",
+            "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+        ],
+    )
+    for lc_state, lc_state_val in get_lc_items(
+        CONST.LCV.TEST_UNLOCKED0,
+        CONST.LCV.DEV,
+        CONST.LCV.RMA,
+        CONST.LCV.PROD,
+        CONST.LCV.PROD_END,
+    )
+]
+
+test_suite(
+    name = "rom_e2e_openocd_debug_test",
+    tags = ["manual"],
+    tests = [
+        "openocd_debug_test_otp_" + lc_state
+        for lc_state, _ in get_lc_items(
+            CONST.LCV.TEST_UNLOCKED0,
+            CONST.LCV.DEV,
+            CONST.LCV.RMA,
+            CONST.LCV.PROD,
+            CONST.LCV.PROD_END,
+        )
+    ],
+)
+
 [
     opentitan_gdb_fpga_cw310_test(
         name = "debug_disallowed_in_prod_fpga_cw310_test_otp_" + lc_state,

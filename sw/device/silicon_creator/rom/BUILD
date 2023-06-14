@@ -12,6 +12,7 @@ load(
 )
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
+load("@crt//rules:transition.bzl", "platform_target")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -162,6 +163,13 @@ opentitan_rom_binary(
         "//sw/device/silicon_creator/rom/keys/fake/rsa",
         "//sw/device/silicon_creator/rom/keys/fake/spx",
     ],
+)
+
+platform_target(
+    name = "rom_with_fake_keys_fpga_cw310_elf",
+    testonly = True,
+    platform = OPENTITAN_PLATFORM,
+    target = ":rom_with_fake_keys_fpga_cw310.elf",
 )
 
 opentitan_rom_binary(
