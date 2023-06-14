@@ -1,57 +1,53 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+
+# GitHub Action to run Verible linting on pull requests and add review comments.
+#
+# See https://github.com/chipsalliance/verible-linter-action.
+
 name: pr-lint-review
 
+# Triggers when there is any activity on a pull request, e.g. opened, updated.
+#
+# The action runs in the context of the _base_ of the pull request, but later we
+# checkout the repository at the pull request's HEAD to run linting.
 on:
-  workflow_run:
-    workflows: ["pr-trigger"]
-    types:
-      - completed
+  pull_request_target:
 
 jobs:
-  review_triggered:
+  verible-lint:
     runs-on: ubuntu-latest
+    # Grant only write permissions for setting checks and adding review comments
+    # to pull requests.
+    permissions:
+      checks: write
+      contents: read
+      pull-requests: write
+    env:
+      verible_config: hw/lint/tools/veriblelint/lowrisc-styleguide.rules.verible_lint
     steps:
       - uses: actions/checkout@v3
-
-      # this workflow does not run in a PR context
-      # download 'event.json' and concatenated verible config files
-      # from a PR-tiggered workflow to mock the PR context and make
-      # a review
-      - name: 'Download artifact'
-        id: get-artifacts
-        uses: actions/github-script@v3.1.0
         with:
-          script: |
-            var artifacts = await github.actions.listWorkflowRunArtifacts({
-               owner: context.repo.owner,
-               repo: context.repo.repo,
-               run_id: ${{github.event.workflow_run.id }},
-            });
-            var matchArtifact = artifacts.data.artifacts.filter((artifact) => {
-              return artifact.name == "verible_input"
-            })[0];
-            var download = await github.actions.downloadArtifact({
-               owner: context.repo.owner,
-               repo: context.repo.repo,
-               artifact_id: matchArtifact.id,
-               archive_format: 'zip',
-            });
-            var fs = require('fs');
-            fs.writeFileSync('${{github.workspace}}/verible_input.zip', Buffer.from(download.data));
-      - run: |
-          unzip verible_input.zip
-      - name: Show config
+          # Because `pull_request_target` runs at the PR's base, we need to
+          # checkout the head of the PR before running the lint.
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Prepare Verible config
         run: |
-          cat verible_config
-      - name: Show waiver
-        run: |
-          cat verible_waiver
+          echo "Concatenating Verible waivers"
+          find . -type f -name '*.vbl' -exec cat {} \; >> verible_waiver
+
+          echo "::group::Verible config"
+          cat "$verible_config"
+          echo "::endgroup::"
+
+          echo "::group::Verible waiver"
+          cat "verible_waiver"
+          echo "::endgroup::"
       - name: Run Verible linter action
         uses: chipsalliance/verible-linter-action@main
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           suggest_fixes: 'false'
-          config_file: 'verible_config'
+          config_file: ${{ env.verible_config }}
           extra_args: "--waiver_files=verible_waiver"
