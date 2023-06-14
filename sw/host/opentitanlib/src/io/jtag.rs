@@ -156,7 +156,7 @@ pub enum RiscvCsr {
 #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 pub enum RiscvReg {
     /// General Purpose Register
-    GprByName(RiscvGpr),
+    Gpr(RiscvGpr),
     /// Control and Status Register
-    CsrByName(RiscvCsr),
+    Csr(RiscvCsr),
 }
