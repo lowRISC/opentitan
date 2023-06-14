@@ -568,4 +568,30 @@ impl Jtag for OpenOcdServer {
         );
         self.write_register(reg.name(), val)
     }
+
+    fn set_breakpoint(&self, address: u32, hw: bool) -> Result<()> {
+        let cmd = format!("bp {:#x} 2{}", address, if hw { " hw" } else { "" });
+        let response = self.send_tcl_cmd(&cmd)?;
+        if !response.starts_with("breakpoint set at ") {
+            bail!("unexpected response: '{response}'");
+        }
+        Ok(())
+    }
+
+    fn remove_breakpoint(&self, addr: u32) -> Result<()> {
+        let cmd = format!("rbp {:#x}", addr);
+        let response = self.send_tcl_cmd(&cmd)?;
+        if !response.is_empty() {
+            bail!("unexpected response: '{response}'");
+        }
+        Ok(())
+    }
+
+    fn remove_all_breakpoints(&self) -> Result<()> {
+        let response = self.send_tcl_cmd("rbp all")?;
+        if !response.is_empty() {
+            bail!("unexpected response: '{response}'");
+        }
+        Ok(())
+    }
 }
