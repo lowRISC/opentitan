@@ -27,6 +27,18 @@ cc_library(
 )
 
 cc_library(
+    name = "rsa_modexp",
+    srcs = ["rsa_modexp.c"],
+    hdrs = ["rsa_modexp.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":rsa_datatypes",
+        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/otbn/crypto:run_rsa_modexp",
+    ],
+)
+
+cc_library(
     name = "rsa_3072_verify",
     srcs = ["rsa_3072_verify.c"],
     hdrs = ["rsa_3072_verify.h"],
