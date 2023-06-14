@@ -164,12 +164,6 @@ alias(
 )
 
 alias(
-    name = "lazy_static",
-    actual = "@crate_index__lazy_static-1.4.0//:lazy_static",
-    tags = ["manual"],
-)
-
-alias(
     name = "libftdi1-sys",
     actual = "@crate_index__libftdi1-sys-1.1.2//:libftdi1_sys",
     tags = ["manual"],

@@ -305,7 +305,6 @@ dependencies = [
  "humantime-serde",
  "indexmap",
  "indicatif",
- "lazy_static",
  "libftdi1-sys",
  "log",
  "mdbook",
