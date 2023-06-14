@@ -433,6 +433,31 @@ cc_library(
 )
 
 opentitan_ram_binary(
+    name = "sram_empty_functest",
+    srcs = ["sram_empty_functest.c"],
+    hdrs = ["sram_empty_functest.h"],
+    archive_symbol_prefix = "sram_empty_functest",
+    deps = [
+        ":sram_program_linker_script",
+        ":sram_start",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:uart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing/test_framework:status",
+    ],
+)
+
+platform_target(
+    name = "sram_empty_functest_fpga_cw310_elf",
+    platform = OPENTITAN_PLATFORM,
+    target = ":sram_empty_functest_fpga_cw310.elf",
+)
+
+opentitan_ram_binary(
     name = "sram_device_info_flash_wr_functest",
     srcs = ["sram_device_info_flash_wr_functest.c"],
     hdrs = ["sram_device_info_flash_wr_functest.h"],
@@ -587,6 +612,45 @@ test_suite(
     tags = ["manual"],
     tests = [
         ":manuf_cp_ast_test_execution_{}_functest".format(lc_state.lower())
+        for lc_state, _ in _TEST_UNLOCKED_LC_ITEMS
+    ],
+)
+
+# We are using a bitstream with disabled execution so the content of the flash
+# does not matter but opentitan_functest() is unhappy if we don't provide one.
+# Additionally, ROM execution is disabled in the OTP image we use so we do not
+# attempt to bootstrap.
+[
+    opentitan_functest(
+        name = "manuf_sram_program_crc_{}_functest".format(lc_state.lower()),
+        srcs = ["idle_functest.c"],
+        cw310 = cw310_params(
+            bitstream = ":bitstream_rom_exec_disabled_test_unlocked0",
+            tags = ["manuf"],
+            test_cmds = [
+                "--clear-bitstream",
+                "--bitstream=\"$(rootpath {bitstream})\"",
+                "--elf=\"$(rootpath :sram_empty_functest_fpga_cw310_elf)\"",
+            ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
+        ),
+        data = [":sram_empty_functest_fpga_cw310_elf"] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
+        targets = ["cw310_rom_with_fake_keys"],
+        test_harness = "//sw/host/tests/manuf/manuf_sram_program_crc_check",
+        deps = [
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing:otp_ctrl_testutils",
+            "//sw/device/lib/testing/test_framework:check",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+        ],
+    )
+    for lc_state, _ in _TEST_UNLOCKED_LC_ITEMS
+]
+
+test_suite(
+    name = "manuf_sram_program_crc_functest",
+    tags = ["manual"],
+    tests = [
+        ":manuf_sram_program_crc_{}_functest".format(lc_state.lower())
         for lc_state, _ in _TEST_UNLOCKED_LC_ITEMS
     ],
 )
