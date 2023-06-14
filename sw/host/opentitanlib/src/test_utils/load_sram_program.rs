@@ -352,12 +352,12 @@ pub fn load_sram_program(jtag: &Rc<dyn Jtag>, file: &SramProgramFile) -> Result<
 /// [3]: https://github.com/lowRISC/opentitan/blob/master/hw/ip/rv_core_ibex/rtl/ibex_pmp_reset.svh
 pub fn prepare_epmp_for_sram(jtag: &Rc<dyn Jtag>) -> Result<()> {
     log::info!("Configure ePMP for SRAM execution");
-    let pmpcfg3 = jtag.read_riscv_reg(&RiscvReg::CsrByName(RiscvCsr::PMPCFG3))?;
+    let pmpcfg3 = jtag.read_riscv_reg(&RiscvReg::Csr(RiscvCsr::PMPCFG3))?;
     log::info!("Old value of pmpcfg3: {:x}", pmpcfg3);
     // write "L NAPOT X W R" to pmp3cfg in pmpcfg3
     let pmpcfg3 = (pmpcfg3 & 0x00ffffffu32) | 0x9f000000;
     log::info!("New value of pmpcfg3: {:x}", pmpcfg3);
-    jtag.write_riscv_reg(&RiscvReg::CsrByName(RiscvCsr::PMPCFG3), pmpcfg3)?;
+    jtag.write_riscv_reg(&RiscvReg::Csr(RiscvCsr::PMPCFG3), pmpcfg3)?;
     // write pmpaddr15 to map the SRAM range
     // hex((0x10000000 >> 2) | ((0x20000 - 1) >> 3)) = 0x4003fff
     let base = top_earlgrey_memory::TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR as u32;
@@ -366,7 +366,7 @@ pub fn prepare_epmp_for_sram(jtag: &Rc<dyn Jtag>) -> Result<()> {
     assert!(size & (size - 1) == 0);
     let pmpaddr15 = (base >> 2) | ((size - 1) >> 3);
     log::info!("New value of pmpaddr15: {:x}", pmpaddr15);
-    jtag.write_riscv_reg(&RiscvReg::CsrByName(RiscvCsr::PMPADDR15), pmpaddr15)?;
+    jtag.write_riscv_reg(&RiscvReg::Csr(RiscvCsr::PMPADDR15), pmpaddr15)?;
     Ok(())
 }
 
@@ -381,10 +381,10 @@ pub fn execute_sram_program(
     // points to an invalid address.
     let ret_addr = 0xdeadbeefu32;
     log::info!("set RA to {:x}", ret_addr);
-    jtag.write_riscv_reg(&RiscvReg::GprByName(RiscvGpr::RA), ret_addr)?;
+    jtag.write_riscv_reg(&RiscvReg::Gpr(RiscvGpr::RA), ret_addr)?;
     // The SRAM program loader expects the CRC32 value in a0
     log::info!("set A0 to {:x} (crc32)", prog_info.crc32);
-    jtag.write_riscv_reg(&RiscvReg::GprByName(RiscvGpr::A0), prog_info.crc32)?;
+    jtag.write_riscv_reg(&RiscvReg::Gpr(RiscvGpr::A0), prog_info.crc32)?;
     // OpenOCD takes care of invalidating the cache when resuming execution
     match exec_mode {
         ExecutionMode::Jump => {
@@ -394,7 +394,7 @@ pub fn execute_sram_program(
         }
         ExecutionMode::JumpAndHalt => {
             log::info!("set DPC to {:x}", prog_info.entry_point);
-            jtag.write_riscv_reg(&RiscvReg::CsrByName(RiscvCsr::DPC), prog_info.entry_point)?;
+            jtag.write_riscv_reg(&RiscvReg::Csr(RiscvCsr::DPC), prog_info.entry_point)?;
             Ok(ExecutionResult::HaltedAtStart)
         }
         ExecutionMode::JumpAndWait(tmo) => {
@@ -405,7 +405,7 @@ pub fn execute_sram_program(
             jtag.halt()?;
             // The SRAM's crt has a protocol to notify us that execution returned: it sets
             // the stack pointer to a certain value.
-            let sp = jtag.read_riscv_reg(&RiscvReg::GprByName(RiscvGpr::SP))?;
+            let sp = jtag.read_riscv_reg(&RiscvReg::Gpr(RiscvGpr::SP))?;
             match sp {
                 SRAM_MAGIC_SP_EXECUTION_DONE => Ok(ExecutionResult::ExecutionDone),
                 SRAM_MAGIC_SP_CRC_ERROR => {
