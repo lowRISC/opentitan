@@ -19,7 +19,7 @@ use thiserror::Error;
 
 use crate::dif::lc_ctrl::LcCtrlReg;
 use crate::impl_serializable_error;
-use crate::io::jtag::{Jtag, JtagError, JtagParams, JtagTap, RiscvCsr, RiscvGpr, RiscvReg};
+use crate::io::jtag::{Jtag, JtagError, JtagParams, JtagTap, RiscvReg};
 use crate::util::parse_int::ParseInt;
 use crate::util::printer;
 
@@ -341,28 +341,6 @@ impl OpenOcdServer {
         }
     }
 
-    // Convert a RISC-V register name into a name that can be used
-    // with read_register32.
-    fn riscv_reg_name(&self, reg: &RiscvReg) -> &'static str {
-        match reg {
-            RiscvReg::Gpr(gpr) => match gpr {
-                RiscvGpr::A0 => "a0",
-                RiscvGpr::GP => "gp",
-                RiscvGpr::SP => "sp",
-                RiscvGpr::RA => "ra",
-            },
-            RiscvReg::Csr(csr) => match csr {
-                RiscvCsr::DPC => "dpc",
-                RiscvCsr::PMPCFG0 => "pmpcfg0",
-                RiscvCsr::PMPCFG1 => "pmpcfg1",
-                RiscvCsr::PMPCFG2 => "pmpcfg2",
-                RiscvCsr::PMPCFG3 => "pmpcfg3",
-                RiscvCsr::PMPADDR0 => "pmpaddr0",
-                RiscvCsr::PMPADDR15 => "pmpaddr15",
-            },
-        }
-    }
-
     /// Read a register: this function does not attempt to translate the
     /// name or number of the register. If force is set, bypass OpenOCD's
     /// register cache.
@@ -580,7 +558,7 @@ impl Jtag for OpenOcdServer {
             matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
             JtagError::Tap(self.jtag_tap.get().unwrap())
         );
-        self.read_register::<u32>(self.riscv_reg_name(reg), true)
+        self.read_register::<u32>(reg.name(), true)
     }
 
     fn write_riscv_reg(&self, reg: &RiscvReg, val: u32) -> Result<()> {
@@ -588,6 +566,6 @@ impl Jtag for OpenOcdServer {
             matches!(self.jtag_tap.get().unwrap(), JtagTap::RiscvTap),
             JtagError::Tap(self.jtag_tap.get().unwrap())
         );
-        self.write_register(self.riscv_reg_name(reg), val)
+        self.write_register(reg.name(), val)
     }
 }

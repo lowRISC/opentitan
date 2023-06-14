@@ -131,25 +131,200 @@ pub enum JtagTap {
     LcTap,
 }
 
-/// List of useful RISC-V general purpose registers
-#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+/// List of RISC-V general purpose registers
+#[derive(Clone, Copy, Debug, Deserialize, Serialize, strum::IntoStaticStr)]
+#[strum(serialize_all = "lowercase")]
 pub enum RiscvGpr {
-    A0,
-    GP,
-    SP,
     RA,
+    SP,
+    GP,
+    TP,
+    T0,
+    T1,
+    T2,
+    FP,
+    S1,
+    A0,
+    A1,
+    A2,
+    A3,
+    A4,
+    A5,
+    A6,
+    A7,
+    S2,
+    S3,
+    S4,
+    S5,
+    S6,
+    S7,
+    S8,
+    S9,
+    S10,
+    S11,
+    T3,
+    T4,
+    T5,
+    T6,
+}
+
+impl RiscvGpr {
+    /// Get the register name as a string.
+    pub fn name(self) -> &'static str {
+        self.into()
+    }
 }
 
 /// List of useful RISC-V control and status registers
-#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Serialize, strum::IntoStaticStr)]
+#[strum(serialize_all = "lowercase")]
+#[non_exhaustive]
 pub enum RiscvCsr {
-    DPC,
+    MSTATUS,
+    MISA,
+    MIE,
+    MTVEC,
+    MCOUNTINHIBIT,
+    MHPMEVENT3,
+    MHPMEVENT4,
+    MHPMEVENT5,
+    MHPMEVENT6,
+    MHPMEVENT7,
+    MHPMEVENT8,
+    MHPMEVENT9,
+    MHPMEVENT10,
+    MHPMEVENT11,
+    MHPMEVENT12,
+    MHPMEVENT13,
+    MHPMEVENT14,
+    MHPMEVENT15,
+    MHPMEVENT16,
+    MHPMEVENT17,
+    MHPMEVENT18,
+    MHPMEVENT19,
+    MHPMEVENT20,
+    MHPMEVENT21,
+    MHPMEVENT22,
+    MHPMEVENT23,
+    MHPMEVENT24,
+    MHPMEVENT25,
+    MHPMEVENT26,
+    MHPMEVENT27,
+    MHPMEVENT28,
+    MHPMEVENT29,
+    MHPMEVENT30,
+    MHPMEVENT31,
+    MSCRATCH,
+    MEPC,
+    MCAUSE,
+    MTVAL,
+    MIP,
     PMPCFG0,
     PMPCFG1,
     PMPCFG2,
     PMPCFG3,
     PMPADDR0,
+    PMPADDR1,
+    PMPADDR2,
+    PMPADDR3,
+    PMPADDR4,
+    PMPADDR5,
+    PMPADDR6,
+    PMPADDR7,
+    PMPADDR8,
+    PMPADDR9,
+    PMPADDR10,
+    PMPADDR11,
+    PMPADDR12,
+    PMPADDR13,
+    PMPADDR14,
     PMPADDR15,
+    SCONTEXT,
+    MSECCFG,
+    MSECCFGH,
+    TSELECT,
+    TDATA1,
+    TDATA2,
+    TDATA3,
+    MCONTEXT,
+    MSCONTEXT,
+    DCSR,
+    DPC,
+    DSCRATCH0,
+    DSCRATCH1,
+    MCYCLE,
+    MINSTRET,
+    MHPMCOUNTER3,
+    MHPMCOUNTER4,
+    MHPMCOUNTER5,
+    MHPMCOUNTER6,
+    MHPMCOUNTER7,
+    MHPMCOUNTER8,
+    MHPMCOUNTER9,
+    MHPMCOUNTER10,
+    MHPMCOUNTER11,
+    MHPMCOUNTER12,
+    MHPMCOUNTER13,
+    MHPMCOUNTER14,
+    MHPMCOUNTER15,
+    MHPMCOUNTER16,
+    MHPMCOUNTER17,
+    MHPMCOUNTER18,
+    MHPMCOUNTER19,
+    MHPMCOUNTER20,
+    MHPMCOUNTER21,
+    MHPMCOUNTER22,
+    MHPMCOUNTER23,
+    MHPMCOUNTER24,
+    MHPMCOUNTER25,
+    MHPMCOUNTER26,
+    MHPMCOUNTER27,
+    MHPMCOUNTER28,
+    MHPMCOUNTER29,
+    MHPMCOUNTER30,
+    MHPMCOUNTER31,
+    MCYCLEH,
+    MINSTRETH,
+    MHPMCOUNTER3H,
+    MHPMCOUNTER4H,
+    MHPMCOUNTER5H,
+    MHPMCOUNTER6H,
+    MHPMCOUNTER7H,
+    MHPMCOUNTER8H,
+    MHPMCOUNTER9H,
+    MHPMCOUNTER10H,
+    MHPMCOUNTER11H,
+    MHPMCOUNTER12H,
+    MHPMCOUNTER13H,
+    MHPMCOUNTER14H,
+    MHPMCOUNTER15H,
+    MHPMCOUNTER16H,
+    MHPMCOUNTER17H,
+    MHPMCOUNTER18H,
+    MHPMCOUNTER19H,
+    MHPMCOUNTER20H,
+    MHPMCOUNTER21H,
+    MHPMCOUNTER22H,
+    MHPMCOUNTER23H,
+    MHPMCOUNTER24H,
+    MHPMCOUNTER25H,
+    MHPMCOUNTER26H,
+    MHPMCOUNTER27H,
+    MHPMCOUNTER28H,
+    MHPMCOUNTER29H,
+    MHPMCOUNTER30H,
+    MHPMCOUNTER31H,
+    MVENDORID,
+    MARCHID,
+    MIMPID,
+    MHARTID,
+}
+
+impl RiscvCsr {
+    /// Get the register name as a string.
+    pub fn name(self) -> &'static str {
+        self.into()
+    }
 }
 
 /// Available registers for RISC-V TAP
@@ -159,6 +334,16 @@ pub enum RiscvReg {
     Gpr(RiscvGpr),
     /// Control and Status Register
     Csr(RiscvCsr),
+}
+
+impl RiscvReg {
+    /// Get the register name as a string.
+    pub fn name(self) -> &'static str {
+        match self {
+            Self::Gpr(gpr) => gpr.name(),
+            Self::Csr(csr) => csr.name(),
+        }
+    }
 }
 
 impl From<RiscvGpr> for RiscvReg {
