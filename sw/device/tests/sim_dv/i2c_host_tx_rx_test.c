@@ -225,36 +225,16 @@ void config_i2c_with_index(void) {
   }
 }
 
-bool test_main(void) {
-  LOG_INFO("Testing I2C index %d", kI2cIdx);
-  CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
-
-  config_i2c_with_index();
-
-  CHECK_DIF_OK(dif_i2c_init(mmio_region_from_addr(i2c_base_addr), &i2c));
-  CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
-
-  en_plic_irqs(&plic);
-
-  // I2C speed parameters.
-  dif_i2c_timing_config_t timing_config = {
-      .lowest_target_device_speed = kDifI2cSpeedFastPlus,
-      .clock_period_nanos = kClockPeriodNanos,
-      .sda_rise_nanos = kI2cRiseFallNanos,
-      .sda_fall_nanos = kI2cRiseFallNanos,
-      .scl_period_nanos = kI2cClockPeriodNanos};
-
-  dif_i2c_config_t config;
-  CHECK_DIF_OK(dif_i2c_compute_timing(timing_config, &config));
-  CHECK_DIF_OK(dif_i2c_configure(&i2c, config));
-  CHECK_DIF_OK(dif_i2c_host_set_enabled(&i2c, kDifToggleEnabled));
-  CHECK_DIF_OK(
-      dif_i2c_set_watermarks(&i2c, kDifI2cLevel30Byte, kDifI2cLevel4Byte));
-
-  en_i2c_irqs(&i2c);
-
+/**
+ * Send a write transaction with random data, followed by a read transaction of
+ * the same length. Check that the read data matches the written data. Ensure
+ * the appropriate IRQs have been triggered.
+ *
+ * @param skip_stop True to use a repeated start to end the write transaction
+ *                  and start the read. False to use a STOP condition to end the
+ *                  write transaction and start the read.
+ */
+void issue_test_transactions(bool skip_stop) {
   // Randomize variables.
   uint8_t byte_count = (uint8_t)rand_testutils_gen32_range(30, 64);
   uint8_t device_addr = (uint8_t)rand_testutils_gen32_range(0, 16);
@@ -269,8 +249,8 @@ bool test_main(void) {
 
   // Write expected data to i2c device.
   CHECK(!fmt_irq_seen);
-  CHECK_STATUS_OK(
-      i2c_testutils_write(&i2c, device_addr, byte_count, expected_data, false));
+  CHECK_STATUS_OK(i2c_testutils_write(&i2c, device_addr, byte_count,
+                                      expected_data, skip_stop));
 
   uint8_t tx_fifo_lvl, rx_fifo_lvl;
 
@@ -303,6 +283,50 @@ bool test_main(void) {
     }
   };
   CHECK(done_irq_seen);
+}
+
+bool test_main(void) {
+  LOG_INFO("Testing I2C index %d", kI2cIdx);
+  CHECK_DIF_OK(dif_pinmux_init(
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+
+  config_i2c_with_index();
+
+  CHECK_DIF_OK(dif_i2c_init(mmio_region_from_addr(i2c_base_addr), &i2c));
+  CHECK_DIF_OK(dif_rv_plic_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
+
+  en_plic_irqs(&plic);
+
+  // I2C speed parameters.
+  dif_i2c_timing_config_t timing_config = {
+      .lowest_target_device_speed = kDifI2cSpeedFastPlus,
+      .clock_period_nanos = kClockPeriodNanos,
+      .sda_rise_nanos = kI2cRiseFallNanos,
+      .sda_fall_nanos = kI2cRiseFallNanos,
+      .scl_period_nanos = kI2cClockPeriodNanos};
+
+  dif_i2c_config_t config;
+  CHECK_DIF_OK(dif_i2c_compute_timing(timing_config, &config));
+  CHECK_DIF_OK(dif_i2c_configure(&i2c, config));
+  CHECK_DIF_OK(dif_i2c_host_set_enabled(&i2c, kDifToggleEnabled));
+  CHECK_DIF_OK(
+      dif_i2c_set_watermarks(&i2c, kDifI2cLevel30Byte, kDifI2cLevel4Byte));
+
+  en_i2c_irqs(&i2c);
+
+  // Round 1: Test with a STOP between the write and read transactions.
+  CHECK(!fmt_irq_seen);
+  CHECK(!rx_irq_seen);
+  CHECK(!done_irq_seen);
+  issue_test_transactions(/*skip_stop=*/false);
+
+  // Round 2: Test without a STOP between the write and read transactions. Use a
+  // repeated start instead.
+  fmt_irq_seen = false;
+  rx_irq_seen = false;
+  done_irq_seen = false;
+  issue_test_transactions(/*skip_stop=*/true);
 
   return true;
 }
