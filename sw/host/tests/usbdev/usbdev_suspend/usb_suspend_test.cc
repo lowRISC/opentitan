@@ -81,7 +81,7 @@ typedef enum usb_testutils_test_number {
 
 class USBDevice {
  public:
-  USBDevice() : _verbose(false), _manual(false), _devh(nullptr) {}
+  USBDevice() : verbose_(false), manual_(false), devh_(nullptr) {}
 
   /**
    * Run test to completion.
@@ -112,7 +112,7 @@ class USBDevice {
   /**
    * Is test progress being directed/controlled manually?
    */
-  inline bool ManualControl() const { return _manual; }
+  inline bool ManualControl() const { return manual_; }
   /**
    * Returns the current phase of the test
    */
@@ -162,13 +162,13 @@ class USBDevice {
   static const char *PhaseName(usbdev_suspend_phase_t phase);
 
   // Verbose logging/reporting.
-  bool _verbose;
+  bool verbose_;
 
   // Test phases/behavior are being directed/controlled manually.
-  bool _manual;
+  bool manual_;
 
   // Device handle
-  libusb_device_handle *_devh;
+  libusb_device_handle *devh_;
 
   // Device descriptor
   libusb_device_descriptor _devDesc;
@@ -207,7 +207,7 @@ static libusb_context *ctx = NULL;
 // Open the device, if not already open.
 bool USBDevice::Open() {
   // Check whether we have already opened the device.
-  if (_devh) {
+  if (devh_) {
     return true;
   }
 
@@ -218,10 +218,10 @@ bool USBDevice::Open() {
   do {
     // TODO: sadly this does not work for our requirements?
     if (false) {
-      _devh = libusb_open_device_with_vid_pid(ctx, kVendorID, kProductID);
+      devh_ = libusb_open_device_with_vid_pid(ctx, kVendorID, kProductID);
     } else {
       // No device handle at present
-      _devh = nullptr;
+      devh_ = nullptr;
 
       // We need to traverse a list of all devices before opening it; since
       // we require the port numbers leading to our device, we cannot take the
@@ -232,7 +232,7 @@ bool USBDevice::Open() {
       for (idx = 0; idx < num_devs; idx++) {
         int rc = libusb_get_device_descriptor(dev_list[idx], &_devDesc);
         if (rc >= 0) {
-          if (_verbose) {
+          if (verbose_) {
             std::cout << "Device: "
                       << "VendorID: " << std::hex << _devDesc.idVendor
                       << " ProductID: " << _devDesc.idProduct << std::dec
@@ -249,7 +249,7 @@ bool USBDevice::Open() {
         // of port numbers
         libusb_device *dev = dev_list[idx];
         uint8_t bus = libusb_get_bus_number(dev);
-        if (_verbose) {
+        if (verbose_) {
           std::cout << "Device path: " << (unsigned)bus << "-";
         }
         _devPath = std::to_string(bus) + '-';
@@ -273,7 +273,7 @@ bool USBDevice::Open() {
         }
 
         // Open a handle to our device
-        rc = libusb_open(dev, &_devh);
+        rc = libusb_open(dev, &devh_);
         if (rc < 0) {
           std::cerr << "Error opening device: " << libusb_error_name(rc)
                     << std::endl;
@@ -284,7 +284,7 @@ bool USBDevice::Open() {
       libusb_free_device_list(dev_list, 1u);
     }
 
-    if (_devh) {
+    if (devh_) {
       found = true;
     } else if (numTries-- > 0u) {
       // Retry a number of times before reporting failure.
@@ -298,19 +298,19 @@ bool USBDevice::Open() {
 
   // Report that we have at least found the device.
   std::cout << "Device found" << std::endl;
-  if (_verbose) {
+  if (verbose_) {
     std::cout << " - Path: " << _devPath << std::endl;
   }
 
   // We need to detach the kernel driver and claim the interface to have maximal
   // control
-  int rc = libusb_set_auto_detach_kernel_driver(_devh, 1u);
+  int rc = libusb_set_auto_detach_kernel_driver(devh_, 1u);
   if (rc < 0) {
     std::cerr << "Error detaching kernel driver: " << libusb_error_name(rc)
               << std::endl;
     return false;
   }
-  rc = libusb_claim_interface(_devh, kInterface);
+  rc = libusb_claim_interface(devh_, kInterface);
   if (rc < 0) {
     std::cerr << "Error claiming interface: " << libusb_error_name(rc)
               << std::endl;
@@ -321,7 +321,7 @@ bool USBDevice::Open() {
   // Read and check the currently active configuration; this should just be 1
   // since our test software sets up only a single configuration.
   int config;
-  rc = libusb_get_configuration(_devh, &config);
+  rc = libusb_get_configuration(devh_, &config);
   if (rc < 0) {
     std::cerr << "Error getting configuration: " << libusb_error_name(rc)
               << std::endl;
@@ -333,9 +333,9 @@ bool USBDevice::Open() {
 
 // Close the device, if open.
 bool USBDevice::Close() {
-  if (_devh) {
-    libusb_close(_devh);
-    _devh = nullptr;
+  if (devh_) {
+    libusb_close(devh_);
+    devh_ = nullptr;
   }
   return true;
 }
@@ -377,7 +377,7 @@ bool USBDevice::ReadTestDesc() {
   // Send a Vendor-Specific command to read the test descriptor
   uint8_t testDesc[0x10u];
   int rc =
-      libusb_control_transfer(_devh, 0xc2u, kVendorTestConfig, 0u, 0u, testDesc,
+      libusb_control_transfer(devh_, 0xc2u, kVendorTestConfig, 0u, 0u, testDesc,
                               sizeof(testDesc), kControlTransferTimeout);
   if (rc < 0) {
     std::cerr << "Error reading test descriptor: " << libusb_error_name(rc)
@@ -424,7 +424,7 @@ bool USBDevice::ReadTestDesc() {
 bool USBDevice::Delay(uint32_t time_us, bool with_traffic) {
   while (time_us > 0) {
     uint32_t delay_us = time_us;
-    if (_verbose) {
+    if (verbose_) {
       std::cout << "Delaying " << time_us << "us "
                 << (with_traffic ? " - with traffic" : "no traffic")
                 << std::endl;
@@ -446,7 +446,7 @@ bool USBDevice::Reset() {
     return false;
   }
 
-  int rc = libusb_reset_device(_devh);
+  int rc = libusb_reset_device(devh_);
   if (rc < 0) {
     return false;
   }
@@ -466,6 +466,7 @@ bool USBDevice::Suspend() {
   int fd = open(filename.c_str(), O_WRONLY);
   if (fd < 0) {
     std::cerr << "Failed to open '" << filename << "'" << std::endl;
+    std::cerr << "  (Note: this requires sudo permissions)" << std::endl;
     return false;
   }
   (void)write(fd, "0", 1);
@@ -522,10 +523,10 @@ bool USBDevice::ParseArgs(int argc, char *argv[]) {
     if (argv[i][0] == '-') {
       switch (tolower(argv[i][1])) {
         case 'm':
-          _manual = true;
+          manual_ = true;
           break;
         case 'v':
-          _verbose = true;
+          verbose_ = true;
           break;
         default:
           ReportSyntax();
@@ -664,7 +665,9 @@ int main(int argc, char **argv) {
 
   bool passed = dev.RunTest();
 
-  std::cout << "Test " << (passed ? "passed" : "failed") << std::endl;
+  if (!dev.ManualControl()) {
+    std::cout << "Test " << (passed ? "passed" : "failed") << std::endl;
+  }
 
   dev.Close();
 
