@@ -10,5 +10,6 @@
  * ebreak.
  */
 #define SRAM_MAGIC_SP_EXECUTION_DONE 0xcafebabe
+#define SRAM_MAGIC_SP_CRC_ERROR 0xbaddcafe
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_SRAM_START_H_

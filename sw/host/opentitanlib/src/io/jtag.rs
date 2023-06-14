@@ -134,6 +134,7 @@ pub enum JtagTap {
 /// List of useful RISC-V general purpose registers
 #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 pub enum RiscvGpr {
+    A0,
     GP,
     SP,
     RA,
