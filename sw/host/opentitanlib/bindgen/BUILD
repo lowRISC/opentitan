@@ -11,10 +11,12 @@ cc_library(
     name = "difs",
     hdrs = ["difs.h"],
     deps = [
+        "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/dif:clkmgr",
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:uart",
     ],
 )
 
@@ -36,6 +38,7 @@ rust_bindgen_library(
 rust_bindgen_library(
     name = "dif",
     bindgen_flags = [
+        "--allowlist-var=AON_TIMER_.*_OFFSET",
         "--allowlist-var=CLKMGR_.*_BIT",
         "--allowlist-var=CLKMGR_.*_REG_OFFSET",
         "--allowlist-var=CLKMGR_.*_MASK",
@@ -48,6 +51,8 @@ rust_bindgen_library(
         "--allowlist-var=OTP_CTRL_.*_OFFSET",
         "--allowlist-var=OTP_CTRL_.*_SIZE",
         "--allowlist-type=dif_rstmgr_reset_info",
+        "--allowlist-var=RSTMGR_.*_OFFSET",
+        "--allowlist-var=UART_.*_OFFSET",
     ],
     cc_lib = ":difs",
     header = "difs.h",
