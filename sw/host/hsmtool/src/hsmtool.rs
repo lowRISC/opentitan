@@ -9,7 +9,7 @@ use log::LevelFilter;
 use std::path::PathBuf;
 
 use hsmtool::commands::{print_command, print_result, Commands, Dispatch, Format};
-use hsmtool::module;
+use hsmtool::module::{self, Module};
 use hsmtool::profile::Profile;
 use hsmtool::util::attribute::AttributeMap;
 
@@ -74,7 +74,7 @@ fn main() -> Result<()> {
     env_logger::Builder::from_default_env()
         .filter(None, args.logging)
         .init();
-    let pkcs11 = module::initialize(&args.module).context(
+    let hsm = Module::initialize(&args.module).context(
         "Loading the PKCS11 module usually depends on several environent variables.  Check HSMTOOL_MODULE, SOFTHSM2_CONF or your HSM's documentation.")?;
 
     // Initialize the list of all valid attribute types early.  Disable logging
@@ -93,23 +93,13 @@ fn main() -> Result<()> {
         let profile = profiles
             .get(profile)
             .ok_or_else(|| anyhow!("Profile {profile:?} not found."))?;
-        Some(module::connect(
-            &pkcs11,
-            &profile.token,
-            Some(profile.user),
-            profile.pin.as_deref(),
-        )?)
+        Some(hsm.connect(&profile.token, Some(profile.user), profile.pin.as_deref())?)
     } else if let Some(token) = &args.token {
-        Some(module::connect(
-            &pkcs11,
-            token,
-            args.user,
-            args.pin.as_deref(),
-        )?)
+        Some(hsm.connect(token, args.user, args.pin.as_deref())?)
     } else {
         None
     };
 
-    let result = args.command.run(&(), &pkcs11, session.as_ref());
+    let result = args.command.run(&(), &hsm, session.as_ref());
     print_result(args.format, args.color, result)
 }

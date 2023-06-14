@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use cryptoki::context::Pkcs11;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
 use serde_annotate::Annotate;
 use std::any::Any;
 
 use crate::commands::Dispatch;
+use crate::module::Module;
 
 mod destroy;
 mod list;
@@ -29,14 +29,14 @@ impl Dispatch for Object {
     fn run(
         &self,
         context: &dyn Any,
-        pkcs11: &Pkcs11,
+        hsm: &Module,
         session: Option<&Session>,
     ) -> Result<Box<dyn Annotate>> {
         match self {
-            Object::Destroy(x) => x.run(context, pkcs11, session),
-            Object::List(x) => x.run(context, pkcs11, session),
-            Object::Show(x) => x.run(context, pkcs11, session),
-            Object::Update(x) => x.run(context, pkcs11, session),
+            Object::Destroy(x) => x.run(context, hsm, session),
+            Object::List(x) => x.run(context, hsm, session),
+            Object::Show(x) => x.run(context, hsm, session),
+            Object::Update(x) => x.run(context, hsm, session),
         }
     }
     fn leaf(&self) -> &dyn Dispatch

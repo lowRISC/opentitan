@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use cryptoki::context::Pkcs11;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
 use serde_annotate::Annotate;
@@ -11,6 +10,7 @@ use std::any::Any;
 
 use crate::commands::{BasicResult, Dispatch};
 use crate::error::HsmError;
+use crate::module::Module;
 use crate::util::helper;
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
@@ -26,7 +26,7 @@ impl Dispatch for Destroy {
     fn run(
         &self,
         _context: &dyn Any,
-        _pkcs11: &Pkcs11,
+        _hsm: &Module,
         session: Option<&Session>,
     ) -> Result<Box<dyn Annotate>> {
         let session = session.ok_or(HsmError::SessionRequired)?;

@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use cryptoki::context::Pkcs11;
 use cryptoki::object::Attribute;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
@@ -13,6 +12,7 @@ use std::path::PathBuf;
 
 use crate::commands::{BasicResult, Dispatch};
 use crate::error::HsmError;
+use crate::module::Module;
 use crate::util::attribute::KeyType;
 use crate::util::helper;
 use crate::util::signing::SignData;
@@ -41,7 +41,7 @@ impl Dispatch for Sign {
     fn run(
         &self,
         _context: &dyn Any,
-        _pkcs11: &Pkcs11,
+        _hsm: &Module,
         session: Option<&Session>,
     ) -> Result<Box<dyn Annotate>> {
         let session = session.ok_or(HsmError::SessionRequired)?;
