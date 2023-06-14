@@ -28,6 +28,9 @@
   uvm_test: tl_agent_base_test
   uvm_test_seq: tl_agent_base_vseq
 
+  // Enable cdc instrumentation.
+  run_opts: ["+cdc_instrumentation_enabled=1"]
+
   // List of test specifications.
   tests: [
     {
