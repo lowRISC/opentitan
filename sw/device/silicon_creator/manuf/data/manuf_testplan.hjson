@@ -436,5 +436,22 @@
       stage: V3
       tests: []
     }
+
+    {
+      name: manuf_sram_program_crc_functest
+      desc: '''Verifies SRAM CRC mechanism.
+
+            SRAM programs are loaded via JTAG which has no data integrity mechanism. To make sure that
+            the program is not corrupted, the SRAM CRT computes the CRC of the entire program at runtime
+            and compares it to the host provided data. This test verifies the CRC check is correctly done
+            by running two tests:
+            - load a SRAM program and make sure that it works as expected (print a message),
+            - corrupt a byte in memory (where the program was loaded), try to re-run it and confirm that
+              the CRT now reports a CRC mismatch error.
+            '''
+      tags: ["fpga", "silicon"]
+      stage: V3
+      tests: []
+    }
   ]
 }
