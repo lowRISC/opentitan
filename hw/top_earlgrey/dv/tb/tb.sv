@@ -246,7 +246,11 @@ module tb;
   );
 
   sim_sram u_sim_sram (
+`ifdef GATE_LEVEL
+    .clk_i (sel_sim_sram ?`CPU_HIER.u_core.u_ibex_core.load_store_unit_i.ls_fsm_cs_reg_0_.CK:1'b0),
+`else
     .clk_i    (sel_sim_sram ? `CPU_HIER.clk_i : 1'b0),
+`endif
     .rst_ni   (`CPU_HIER.rst_ni),
 `ifdef GATE_LEVEL
     .tl_in_i  (tlul_pkg::tl_h2d_t'(gsim_tl_win_h2d_int)),
