@@ -23,14 +23,10 @@ static const uint8_t dev_dscr[] = {
     0x00,  // bDeviceProtocol
     64,    // bMaxPacketSize0
 
-#if 1
     0xd1,  // idVendor[0] 0x18d1 Google Inc.
     0x18,  // idVendor[1]
     0x3a,  // idProduct[0] lowRISC generic FS USB
     0x50,  // idProduct[1] (allocated by Google)
-#else
-    1,    2, 3, 4,
-#endif
 
     0,    // bcdDevice[0]
     0x1,  // bcdDevice[1]

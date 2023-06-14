@@ -30,7 +30,7 @@
 // Implement low-impact tracing of software execution, permitting the software
 //   and hardware behavior to be married, hopefully without modifying the
 //   behavior/performance, particularly in top-level simulation.
-#define USBUTILS_FUNCTION_POINTS 1
+#define USBUTILS_FUNCTION_POINTS 0
 
 // Record the function points to a memory buffer instead, for use where test
 //   hardware is unavailable, eg. FPGA builds.

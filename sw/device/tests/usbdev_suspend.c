@@ -322,13 +322,13 @@ static const uint8_t config_descriptors[] = {
     USB_CFG_DSCR_HEAD(
         USB_CFG_DSCR_LEN + 2 * (USB_INTERFACE_DSCR_LEN + 2 * USB_EP_DSCR_LEN),
         2),
-#if 0
+#if 1
     VEND_INTERFACE_DSCR(0, 2, 0x50, 1),
-    USB_BULK_EP_DSCR(0, 1, 32, 0),
-    USB_BULK_EP_DSCR(1, 1, 32, 4),
+    USB_BULK_EP_DSCR(0, 1, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_BULK_EP_DSCR(1, 1, USBDEV_MAX_PACKET_SIZE, 0),
     VEND_INTERFACE_DSCR(1, 2, 0x50, 1),
-    USB_BULK_EP_DSCR(0, 2, 32, 0),
-    USB_BULK_EP_DSCR(1, 2, 32, 4),
+    USB_BULK_EP_DSCR(0, 2, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_BULK_EP_DSCR(1, 2, USBDEV_MAX_PACKET_SIZE, 0),
 #else
     // Use Isochronous streams to prevent host binding for now
     VEND_INTERFACE_DSCR(0, 2, 0x50, 1),
@@ -959,9 +959,6 @@ static status_t phase_start_resume(usbdev_suspend_ctx_t *ctx) {
              !ibex_timeout_check(&ctx->timeout)) {
         CHECK_STATUS_OK(usb_testutils_poll(ctx->usbdev));
       }
-      while (true) {
-        CHECK_STATUS_OK(usb_testutils_poll(ctx->usbdev));
-      }
 
       // If we're out of step with the DPI model/host, stop the test.
       TRY_CHECK(usbdev_control.device_state == kUsbTestutilsDeviceConfigured);
@@ -1551,9 +1548,6 @@ bool usbdev_suspend_test(usbdev_suspend_phase_t init_phase,
   // DPI model can perform traffic and will deliberately avoid performing
   // traffic during the periods when it stops sending the bus frames
 
-  // TODO: make the DPI model do traffic!
-  with_traffic = false;
-
   // Override any of the above switches according to the build target.
   switch (kDeviceType) {
     case kDeviceSimVerilator:
@@ -1591,7 +1585,6 @@ bool usbdev_suspend_test(usbdev_suspend_phase_t init_phase,
       host_resumes = true;
       host_suspends = true;
 
-      with_traffic = false;
       // Presently, the FPGA build is expected to be observed/monitored by a
       // developer, so verbose reporting is appropriate.
       verbose = true;

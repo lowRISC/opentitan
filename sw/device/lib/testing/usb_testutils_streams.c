@@ -25,13 +25,13 @@ static const enum {
   kReadMethodNone = 0u,  // Just discard the data; do not read it from usbdev
   kReadMethodStandard,   // Use standard dif_usbdev_buffer_read() function
   kReadMethodFaster      // Faster implementation
-} read_method = kReadMethodFaster;
+} read_method = kReadMethodStandard;
 
 static const enum {
   kWriteMethodNone = 0u,
   kWriteMethodStandard,
   kWriteMethodFaster
-} write_method = kWriteMethodFaster;
+} write_method = kWriteMethodStandard;
 
 /**
  * Diagnostic logging; expensive
@@ -219,7 +219,7 @@ static bool buffer_sig_check(usb_testutils_streams_ctx_t *ctx,
     LOG_INFO(
         "buffer_sig_check: S%u unexpected LFSR value (0x%x but expected 0x%x)",
         s->id, sig->init_lfsr, rx_lfsr);
-    return true;
+    return false;
   }
 
   // Expected sequence number of next packet
