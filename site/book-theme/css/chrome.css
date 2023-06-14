@@ -122,13 +122,17 @@ a > .hljs {
 
 .menu-bar,
 .menu-bar:visited,
-.nav-chapters,
 .nav-chapters:visited,
 .mobile-nav-chapters,
 .mobile-nav-chapters:visited,
 .menu-bar .icon-button,
 .menu-bar a i {
     color: var(--icons);
+}
+
+.nav-chapters .fa{
+    opacity: 0;
+    transition: opacity 0.15s;
 }
 
 .menu-bar i:hover,
@@ -164,6 +168,11 @@ a > .hljs {
     text-decoration: none;
     background-color: var(--theme-hover);
     transition: background-color 0.15s, color 0.15s;
+}
+
+.nav-chapters:hover .fa{
+    opacity: 1;
+    transition: opacity 0.15s;
 }
 
 .nav-wrapper {
