@@ -152,6 +152,7 @@ class aes_reseed_vseq extends aes_base_vseq;
   task body();
     bit sideload_valid;
     string sideload_valid_path = "tb.dut.keymgr_key_i.valid";
+    bit sideload_enabled;
     bit sideload_setup_done;
     `uvm_info(`gfn, $sformatf("\n\n\t ----| STARTING AES MAIN SEQUENCE |----\n %s",
                               cfg.convert2string()), UVM_LOW)
@@ -190,6 +191,7 @@ class aes_reseed_vseq extends aes_base_vseq;
       csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
       // Make sure sideload is disabled.
       set_sideload(1'b0);
+      sideload_enabled = 1'b0;
       // Wait for sideload key to be valid before enabling sideload.
       sideload_valid = 0;
       `DV_SPINWAIT_EXIT(
@@ -199,10 +201,24 @@ class aes_reseed_vseq extends aes_base_vseq;
         end,
         cfg.clk_rst_vif.wait_clks(wait_timeout_cycles);,
         "Timeout waiting for valid sideload key")
-      set_sideload(1'b1);
-      // Before sideload could be enabled, the sideload valid bit might have been de-asserted
-      // again. In this case, the key did not get loaded and we have to repeat the setup procedure.
-      uvm_hdl_read(sideload_valid_path, sideload_valid);
+      fork
+        // Enable sideload.
+        begin
+          set_sideload(1'b1);
+          sideload_enabled = 1'b1;
+        end
+        // Detect if the sideload valid bit gets de-asserted while trying to enable sideload.
+        begin
+          while (sideload_valid && !sideload_enabled) begin
+            cfg.clk_rst_vif.wait_clks(1);
+            uvm_hdl_read(sideload_valid_path, sideload_valid);
+          end
+        end
+      join
+
+      // If the sideload valid bit got de-asserted again before fully enabling sideload, the key
+      // did not get loaded and we have to repeat the setup procedure. Otherwise, sideload was
+      // enabled successfully.
       if (sideload_valid) begin
         sideload_setup_done = 1;
       end

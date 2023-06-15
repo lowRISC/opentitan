@@ -9,8 +9,6 @@ class aes_reseed_test extends aes_base_test;
    virtual function void build_phase(uvm_phase phase);
      super.build_phase(phase);
      configure_env();
-     // TODO fix manual mode so we can randomize speeds
-     `DV_CHECK_RANDOMIZE_WITH_FATAL(cfg, cfg.host_resp_speed  == VeryFast;)
   endfunction
 
   virtual function void configure_env();
