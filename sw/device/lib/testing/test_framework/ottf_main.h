@@ -123,7 +123,7 @@ char *ottf_task_get_self_name(void);
     if (status_ok(local_status)) {                                       \
       LOG_INFO("Successfully finished test " #test_function_             \
                " in %u cycles or %u us @ %u MHz.",                       \
-               cycles_, micros, clock_mhz);                              \
+               (uint32_t)cycles_, micros, clock_mhz);                    \
     } else {                                                             \
       result_ = local_status;                                            \
       LOG_ERROR("Finished test " #test_function_ ": %r.", local_status); \
