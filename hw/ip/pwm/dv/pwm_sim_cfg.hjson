@@ -54,7 +54,8 @@
     }
   ]
 
-    run_opts: ["+uvm_set_verbosity={component_a},{id_a},{verbosity_a},{phase_a}"]
+    run_opts: ["+uvm_set_verbosity={component_a},{id_a},{verbosity_a},{phase_a}",
+               "+cdc_instrumentation_enabled=1"]
 
 
   // Default UVM test and seq class name.
