@@ -71,6 +71,42 @@ cc_test(
     ],
 )
 
+cc_library(
+    name = "bootstrap",
+    srcs = ["bootstrap.c"],
+    hdrs = ["bootstrap.h"],
+    deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:bootstrap",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/base:chip",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+    ],
+)
+
+cc_test(
+    name = "bootstrap_unittest",
+    srcs = ["bootstrap_unittest.cc"],
+    deps = [
+        ":bootstrap",
+        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//sw/device/silicon_creator/lib:bootstrap",
+        "//sw/device/silicon_creator/lib:bootstrap_unittest_util",
+        "//sw/device/silicon_creator/lib:error_unittest_util",
+        "//sw/device/silicon_creator/lib/base:chip",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        "//sw/device/silicon_creator/lib/drivers:spi_device",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@com_google_absl//absl/types:span",
+        "@googletest//:gtest_main",
+    ],
+)
+
 ld_library(
     name = "ld_common",
     includes = ["rom_ext_common.ld"],
@@ -144,6 +180,7 @@ cc_library(
     hdrs = ["rom_ext.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":bootstrap",
         ":rom_ext_boot_policy",
         ":rom_ext_epmp",
         ":sigverify_keys",

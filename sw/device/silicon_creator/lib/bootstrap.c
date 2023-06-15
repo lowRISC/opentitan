@@ -4,9 +4,10 @@
 
 #include "sw/device/silicon_creator/lib/bootstrap.h"
 
+#include <assert.h>
 #include <stdalign.h>
+#include <stdint.h>
 
-#include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
@@ -58,23 +59,6 @@ typedef enum bootstrap_state {
    */
   kBootstrapStateProgram = 0xbdd8ca60,
 } bootstrap_state_t;
-
-/**
- * Handles access permissions and erases both data banks of the embedded flash.
- *
- * @return Result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-static rom_error_t bootstrap_chip_erase(void) {
-  flash_ctrl_bank_erase_perms_set(kHardenedBoolTrue);
-  rom_error_t err_0 = flash_ctrl_data_erase(0, kFlashCtrlEraseTypeBank);
-  rom_error_t err_1 = flash_ctrl_data_erase(FLASH_CTRL_PARAM_BYTES_PER_BANK,
-                                            kFlashCtrlEraseTypeBank);
-  flash_ctrl_bank_erase_perms_set(kHardenedBoolFalse);
-
-  HARDENED_RETURN_IF_ERROR(err_0);
-  return err_1;
-}
 
 /**
  * Handles access permissions and erases a 4 KiB region in the data partition of
@@ -262,15 +246,13 @@ OT_WARN_UNUSED_RESULT
 static rom_error_t bootstrap_handle_erase_verify(bootstrap_state_t *state) {
   HARDENED_CHECK_EQ(*state, kBootstrapStateEraseVerify);
 
-  rom_error_t err_0 = flash_ctrl_data_erase_verify(0, kFlashCtrlEraseTypeBank);
-  rom_error_t err_1 = flash_ctrl_data_erase_verify(
-      FLASH_CTRL_PARAM_BYTES_PER_BANK, kFlashCtrlEraseTypeBank);
-  HARDENED_RETURN_IF_ERROR(err_0);
-  HARDENED_RETURN_IF_ERROR(err_1);
+  const rom_error_t err = bootstrap_erase_verify();
+  HARDENED_RETURN_IF_ERROR(err);
+
+  spi_device_flash_status_clear();
 
   *state = kBootstrapStateProgram;
-  spi_device_flash_status_clear();
-  return err_0;
+  return err;
 }
 
 /**
@@ -333,10 +315,7 @@ static rom_error_t bootstrap_handle_program(bootstrap_state_t *state) {
   return error;
 }
 
-rom_error_t enter_bootstrap(hardened_bool_t protect_rom_ext) {
-  // TODO(lowRISC/opentitan#19151): Implement `protect_rom_ext` behavior.
-  HARDENED_CHECK_EQ(protect_rom_ext, kHardenedBoolFalse);
-
+rom_error_t enter_bootstrap(void) {
   spi_device_init();
 
   // Bootstrap event loop.
