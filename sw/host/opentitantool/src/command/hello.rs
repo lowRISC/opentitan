@@ -8,17 +8,17 @@
 //! the command framework for opentitantool.
 
 use anyhow::Result;
+use clap::{Args, Subcommand};
 use serde_annotate::Annotate;
 use std::any::Any;
-use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 /// The `hello world` command accepts an command option of `--cruel`.
 pub struct HelloWorld {
-    #[structopt(short, long)]
+    #[arg(short, long)]
     cruel: bool,
 }
 
@@ -46,11 +46,9 @@ impl CommandDispatch for HelloWorld {
     }
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 /// The `hello people` command takes no additional switches or arguments.
-pub struct HelloPeople {
-    // Unit structs not allowed by StructOpt
-}
+pub struct HelloPeople;
 
 impl CommandDispatch for HelloPeople {
     fn run(
@@ -63,7 +61,7 @@ impl CommandDispatch for HelloPeople {
     }
 }
 
-#[derive(Debug, StructOpt, CommandDispatch)]
+#[derive(Debug, Subcommand, CommandDispatch)]
 /// There are two types of `hello` subcommand; this enum binds them together
 /// so they can both be under the `hello` command.  This enum also derives
 /// `CommandDispatch` which automatically builds a `run` method for this
@@ -73,7 +71,7 @@ pub enum HelloTypes {
     People(HelloPeople),
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 /// The `goodbye` command takes no options or arguments.
 pub struct GoodbyeCommand {}
 
@@ -95,11 +93,12 @@ impl CommandDispatch for GoodbyeCommand {
     }
 }
 
-#[derive(Debug, StructOpt, CommandDispatch)]
+#[derive(Debug, Subcommand, CommandDispatch)]
 /// The [`Greetings`] enum binds the `hello` and `goodbye` command hirarchies
 /// in this module together into a single type which can be included into
 /// the root of the command heirarchy in `main.rs`.
 pub enum Greetings {
+    #[command(subcommand)]
     Hello(HelloTypes),
     Goodbye(GoodbyeCommand),
 }

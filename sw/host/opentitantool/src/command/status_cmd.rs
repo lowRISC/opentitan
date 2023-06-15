@@ -3,18 +3,18 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{bail, Context, Result};
+use clap::{Args, Subcommand};
 use serde_annotate::Annotate;
 use std::any::Any;
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
-use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::util::parse_int::ParseInt;
 use opentitanlib::util::status::{load_elf, Status};
 
-#[derive(Debug, StructOpt, CommandDispatch)]
+#[derive(Debug, Subcommand, CommandDispatch)]
 /// Commands for interacting with status.
 pub enum StatusCommand {
     /// List of status creation records in an ELF file.
@@ -25,12 +25,12 @@ pub enum StatusCommand {
     Decode(DecodeCommand),
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 /// List all records in an ELF file.
 pub struct ListCommand {
-    #[structopt(short, long, help = "Display the raw status create records.")]
+    #[arg(short, long, help = "Display the raw status create records.")]
     raw_records: bool,
-    #[structopt(name = "ELF_FILE", help = "Filename for the executable to analyze.")]
+    #[arg(name = "ELF_FILE", help = "Filename for the executable to analyze.")]
     elf_file: PathBuf,
 }
 
@@ -65,15 +65,15 @@ impl CommandDispatch for ListCommand {
     }
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 /// Lint records in an ELF file.
 pub struct LintCommand {
     // Bazel needs any command to create at least one output file, but we want to
     // print to stderr in this case. This option simplies tells the tool to create
     // an empty file to make bazel happy.
-    #[structopt(short, long, help = "Create an empty file to make bazel happy.")]
+    #[arg(short, long, help = "Create an empty file to make bazel happy.")]
     touch: Option<PathBuf>,
-    #[structopt(name = "ELF_FILES", help = "Filenames of the executable to analyze.")]
+    #[arg(name = "ELF_FILES", help = "Filenames of the executable to analyze.")]
     elf_files: Vec<PathBuf>,
 }
 
@@ -131,12 +131,15 @@ impl CommandDispatch for LintCommand {
     }
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 /// Decode a raw status. Optionally accepts an ELF file to recover the filename.
 pub struct DecodeCommand {
-    #[structopt(help = "Raw status to decode (can be in hexadecimal using 0x).", parse(try_from_str = ParseInt::from_str))]
+    #[arg(
+        help = "Raw status to decode (can be in hexadecimal using 0x).",
+        value_parser = u32::from_str,
+    )]
     raw_status: u32,
-    #[structopt(
+    #[arg(
         long,
         name = "ELF_FILE",
         help = "Filename for the executable to analyze."

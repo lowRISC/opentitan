@@ -5,8 +5,8 @@
 use std::time::Duration;
 
 use anyhow::{anyhow, Result};
+use clap::Parser;
 use regex::Regex;
-use structopt::StructOpt;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::backend;
@@ -20,23 +20,25 @@ use opentitanlib::test_utils::load_sram_program::{
 };
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Parser)]
 struct Opts {
-    #[structopt(flatten)]
+    #[command(flatten)]
     init: InitializeTest,
 
-    #[structopt(flatten)]
+    #[command(flatten)]
     sram_program: SramProgramParams,
 
-    #[structopt(
-        long, parse(try_from_str = DifLcCtrlState::parse_lc_state_str),
+    #[arg(
+        long,
+        value_parser = DifLcCtrlState::parse_lc_state_str,
         default_value = "prod",
         help = "LC state to transition to from TEST_UNLOCKED*."
     )]
     target_lc_state: DifLcCtrlState,
 
-    #[structopt(
-        long, parse(try_from_str=humantime::parse_duration),
+    #[arg(
+        long,
+        value_parser = humantime::parse_duration,
         default_value = "600s",
         help = "Console receive timeout",
     )]
@@ -146,7 +148,7 @@ fn manuf_cp_device_info_flash_wr(opts: &Opts, transport: &TransportWrapper) -> R
 }
 
 fn main() -> Result<()> {
-    let opts = Opts::from_args();
+    let opts = Opts::parse();
     opts.init.init_logging();
 
     // We call the below functions, instead of calling `opts.init.init_target()` since we do not

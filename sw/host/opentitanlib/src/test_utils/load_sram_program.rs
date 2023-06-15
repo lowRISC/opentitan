@@ -11,10 +11,10 @@ use std::time::Duration;
 use anyhow::{bail, Context, Result};
 use bindgen::sram_program::{SRAM_MAGIC_SP_CRC_ERROR, SRAM_MAGIC_SP_EXECUTION_DONE};
 use byteorder::{ByteOrder, LittleEndian, WriteBytesExt};
+use clap::Args;
 use crc::Crc;
 use object::{Object, ObjectSection, SectionKind};
 use serde::{Deserialize, Serialize};
-use structopt::StructOpt;
 use thiserror::Error;
 
 use crate::impl_serializable_error;
@@ -25,18 +25,18 @@ use crate::util::vmem::Vmem;
 use top_earlgrey::top_earlgrey_memory;
 
 /// Command-line parameters.
-#[derive(Debug, StructOpt, Clone)]
+#[derive(Debug, Args, Clone)]
 pub struct SramProgramParams {
     /// Path to the VMEM file to load.
-    #[structopt(long, conflicts_with = "elf")]
+    #[arg(long, conflicts_with = "elf")]
     pub vmem: Option<PathBuf>,
 
     /// Path to the ELF file to load.
-    #[structopt(long)]
+    #[arg(long)]
     pub elf: Option<PathBuf>,
 
     /// Address where to load the VMEM file.
-    #[structopt(long, parse(try_from_str = ParseInt::from_str), conflicts_with="elf")]
+    #[arg(long, value_parser = <u32 as ParseInt>::from_str, conflicts_with="elf")]
     pub load_addr: Option<u32>,
 }
 

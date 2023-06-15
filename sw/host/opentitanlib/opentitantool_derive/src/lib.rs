@@ -20,7 +20,7 @@ use syn::{parse_macro_input, Data, DataEnum, DeriveInput, Fields, Ident, Variant
 /// generate the dispatch layer for this interior node in the command hierarchy:
 ///
 /// ```
-/// #[derive(StructOpt, CommandDispatch)]
+/// #[derive(Subcommand, CommandDispatch)]
 /// pub enum Hello {
 ///     World(World),
 ///     People(People),
