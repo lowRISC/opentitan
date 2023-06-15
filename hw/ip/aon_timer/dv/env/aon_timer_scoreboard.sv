@@ -262,6 +262,11 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
           intr_status_exp[WKUP] = 1'b1;
           // Interrupt should happen N+1 clock ticks after count == wkup_num.
           cfg.aon_clk_rst_vif.wait_clks(prescaler+1);
+          // Wait for 2 extra cycles in AON clock domain to account for CDC randomization delay
+          // since wakeup interrupt is synchronized to AON clock domain
+          if (cfg.en_dv_cdc) begin
+            cfg.aon_clk_rst_vif.wait_clks(2);
+          end
           // Wait a further 5 clocks for the interrupt to propagate through logic in the clk domain
           // to become visible on the top-level pins.
           cfg.clk_rst_vif.wait_clks(5);
