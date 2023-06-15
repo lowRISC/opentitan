@@ -9,9 +9,9 @@ ${helper.file_header.render()}
 
 #![allow(dead_code)]
 
-///! Rust Top-Specific Definitions.
-///!
-///! This file contains const definitions for use within Rust code.
+//! Rust Top-Specific Definitions.
+//!
+//! This file contains const definitions for use within Rust code.
 
 % for m in top["module"]:
   % if "memory" in m:

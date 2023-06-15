@@ -9,9 +9,9 @@
 
 #![allow(dead_code)]
 
-///! Rust Top-Specific Definitions.
-///!
-///! This file contains const definitions for use within Rust code.
+//! Rust Top-Specific Definitions.
+//!
+//! This file contains const definitions for use within Rust code.
 
 /// Memory base for sram_ctrl_ret_aon_ram_ret_aon in top earlgrey.
 pub const TOP_EARLGREY_RAM_RET_AON_BASE_ADDR: usize = 0x40600000;
