@@ -132,8 +132,8 @@ cc_library(
 )
 
 cc_library(
-    name = "error_test_util",
-    hdrs = ["error_test_util.h"],
+    name = "error_unittest_util",
+    hdrs = ["error_unittest_util.h"],
 )
 
 cc_test(
@@ -141,7 +141,7 @@ cc_test(
     srcs = ["error_unittest.cc"],
     deps = [
         ":error",
-        ":error_test_util",
+        ":error_unittest_util",
         "@googletest//:gtest_main",
     ],
 )
@@ -420,5 +420,19 @@ filegroup(
     srcs = [
         "bootstrap.c",
         "bootstrap.h",
+    ],
+)
+
+cc_library(
+    name = "bootstrap_unittest_util",
+    srcs = ["bootstrap_unittest_util.cc"],
+    hdrs = ["bootstrap_unittest_util.h"],
+    deps = [
+        ":bootstrap",
+        "//hw/ip/gpio/data:gpio_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/silicon_creator/lib/base:chip",
     ],
 )

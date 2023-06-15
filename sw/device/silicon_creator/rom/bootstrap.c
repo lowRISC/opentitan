@@ -7,12 +7,33 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
+#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
+#include "flash_ctrl_regs.h"
 #include "gpio_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
+
+rom_error_t bootstrap_chip_erase(void) {
+  flash_ctrl_bank_erase_perms_set(kHardenedBoolTrue);
+  rom_error_t err_0 = flash_ctrl_data_erase(0, kFlashCtrlEraseTypeBank);
+  rom_error_t err_1 = flash_ctrl_data_erase(FLASH_CTRL_PARAM_BYTES_PER_BANK,
+                                            kFlashCtrlEraseTypeBank);
+  flash_ctrl_bank_erase_perms_set(kHardenedBoolFalse);
+
+  HARDENED_RETURN_IF_ERROR(err_0);
+  return err_1;
+}
+
+rom_error_t bootstrap_erase_verify(void) {
+  rom_error_t err_0 = flash_ctrl_data_erase_verify(0, kFlashCtrlEraseTypeBank);
+  rom_error_t err_1 = flash_ctrl_data_erase_verify(
+      FLASH_CTRL_PARAM_BYTES_PER_BANK, kFlashCtrlEraseTypeBank);
+  HARDENED_RETURN_IF_ERROR(err_0);
+  return err_1;
+}
 
 hardened_bool_t bootstrap_requested(void) {
   uint32_t bootstrap_dis =
@@ -42,5 +63,5 @@ rom_error_t bootstrap(void) {
   }
   HARDENED_CHECK_EQ(requested, kHardenedBoolTrue);
 
-  return enter_bootstrap(/*protect_rom_ext=*/kHardenedBoolFalse);
+  return enter_bootstrap();
 }

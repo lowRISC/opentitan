@@ -24,6 +24,7 @@
 #include "sw/device/silicon_creator/lib/rom_print.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
+#include "sw/device/silicon_creator/rom_ext/bootstrap.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_epmp.h"
 #include "sw/device/silicon_creator/rom_ext/sigverify_keys.h"
@@ -186,7 +187,15 @@ static rom_error_t rom_ext_try_boot(void) {
 void rom_ext_main(void) {
   rom_ext_init();
   OT_DISCARD(rom_printf("Starting ROM_EXT\r\n"));
-  shutdown_finalize(rom_ext_try_boot());
+  rom_error_t error = rom_ext_try_boot();
+  // If the boot failed, enter bootstrap if it's enabled.
+  if (launder32(error) != kErrorOk &&
+      launder32(rom_ext_bootstrap_enabled()) == kHardenedBoolTrue) {
+    HARDENED_CHECK_NE(error, kErrorOk);
+    HARDENED_CHECK_EQ(rom_ext_bootstrap_enabled(), kHardenedBoolTrue);
+    shutdown_finalize(rom_ext_bootstrap());
+  }
+  shutdown_finalize(error);
 }
 
 void rom_ext_interrupt_handler(void) { shutdown_finalize(rom_ext_irq_error()); }

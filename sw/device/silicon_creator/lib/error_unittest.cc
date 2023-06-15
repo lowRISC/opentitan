@@ -11,7 +11,7 @@
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/bitfield.h"
-#include "sw/device/silicon_creator/lib/error_test_util.h"
+#include "sw/device/silicon_creator/lib/error_unittest_util.h"
 
 namespace error_unittest {
 namespace {
