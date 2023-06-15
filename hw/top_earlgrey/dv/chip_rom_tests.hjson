@@ -18,7 +18,7 @@
     {
       name: rom_e2e_shutdown_exception_c
       uvm_test_seq: chip_sw_rom_e2e_shutdown_exception_c_vseq
-      sw_images: ["//sw/device/silicon_creator/rom/e2e:rom_e2e_shutdown_exception_c:1:signed"]
+      sw_images: ["//sw/device/silicon_creator/rom/e2e:rom_e2e_shutdown_exception_c:1:signed:fake_rsa_test_key_0"]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: ["+sw_test_timeout_ns=20000000"]
       run_timeout_mins: 120
@@ -678,7 +678,7 @@
     {
       name: rom_e2e_static_critical
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/silicon_creator/rom/e2e:rom_e2e_static_critical:1:signed"]
+      sw_images: ["//sw/device/silicon_creator/rom/e2e:rom_e2e_static_critical:1:signed:fake_rsa_test_key_0"]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: ["+sw_test_timeout_ns=20000000"]
     }
@@ -686,7 +686,7 @@
       name: rom_e2e_keymgr_init_rom_ext_meas
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:rom_e2e_keymgr_init_test:1:signed:ot_flash_binary",
+        "//sw/device/silicon_creator/rom/e2e:rom_e2e_keymgr_init_test:1:signed:fake_rsa_test_key_0:ot_flash_binary",
         "//sw/device/silicon_creator/rom/e2e:otp_img_keymgr_rom_ext_meas:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
@@ -700,7 +700,7 @@
       name: rom_e2e_keymgr_init_rom_ext_no_meas
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:rom_e2e_keymgr_init_test:1:signed:ot_flash_binary",
+        "//sw/device/silicon_creator/rom/e2e:rom_e2e_keymgr_init_test:1:signed:fake_rsa_test_key_0:ot_flash_binary",
         "//sw/device/silicon_creator/rom/e2e:otp_img_keymgr_rom_ext_no_meas:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
@@ -714,7 +714,7 @@
       name: rom_e2e_keymgr_init_rom_ext_invalid_meas
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:rom_e2e_keymgr_init_test:1:signed:ot_flash_binary",
+        "//sw/device/silicon_creator/rom/e2e:rom_e2e_keymgr_init_test:1:signed:fake_rsa_test_key_0:ot_flash_binary",
         "//sw/device/silicon_creator/rom/e2e:otp_img_keymgr_rom_ext_invalid_meas:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
@@ -901,7 +901,7 @@
     {
       name: chip_sw_uart_smoketest_signed
       uvm_test_seq: chip_sw_uart_smoke_vseq
-      sw_images: ["//sw/device/tests:uart_smoketest_signed:1:signed"]
+      sw_images: ["//sw/device/tests:uart_smoketest_signed:1:signed:fake_rsa_test_key_0"]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: ["+sw_test_timeout_ns=20000000"]
       run_timeout_mins: 180
