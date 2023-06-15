@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use clap::ValueEnum;
 use serde::{Deserialize, Serialize};
-use structopt::clap::arg_enum;
 use thiserror::Error;
 
 use crate::impl_serializable_error;
@@ -40,26 +40,36 @@ pub enum GpioError {
 }
 impl_serializable_error!(GpioError);
 
-arg_enum! {
-    /// Mode of I/O pins.
-    #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
-    pub enum PinMode {
-        Input,
-        PushPull,
-        OpenDrain,
-        AnalogInput,
-        AnalogOutput,
-        Alternate, // Pin used for UART/SPI/I2C or something else
+/// Mode of I/O pins.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq, ValueEnum)]
+#[value(rename_all = "verbatim")]
+pub enum PinMode {
+    Input,
+    PushPull,
+    OpenDrain,
+    AnalogInput,
+    AnalogOutput,
+    Alternate, // Pin used for UART/SPI/I2C or something else
+}
+
+impl std::fmt::Display for PinMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Debug::fmt(self, f)
     }
 }
 
-arg_enum! {
-    /// Mode of weak pull (relevant in Input and OpenDrain modes).
-    #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
-    pub enum PullMode {
-        None,
-        PullUp,
-        PullDown,
+/// Mode of weak pull (relevant in Input and OpenDrain modes).
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq, ValueEnum)]
+#[value(rename_all = "verbatim")]
+pub enum PullMode {
+    None,
+    PullUp,
+    PullDown,
+}
+
+impl std::fmt::Display for PullMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Debug::fmt(self, f)
     }
 }
 

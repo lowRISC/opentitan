@@ -17,11 +17,11 @@ rust_binary(
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
+        "@crate_index//:clap",
         "@crate_index//:env_logger",
         "@crate_index//:log",
         "@crate_index//:mio",
         "@crate_index//:num_enum",
-        "@crate_index//:structopt",
     ],
 )
 

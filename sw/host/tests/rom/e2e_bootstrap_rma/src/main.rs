@@ -13,8 +13,8 @@ use std::iter;
 use std::time::Duration;
 
 use anyhow::{bail, Context};
+use clap::Parser;
 use regex::Regex;
-use structopt::StructOpt;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::chip::boolean::MultiBitBool8;
@@ -33,14 +33,14 @@ use opentitanlib::uart::console::{ExitStatus, UartConsole};
 const CONSOLE_TIMEOUT: Duration = Duration::from_secs(5);
 
 /// CLI args for this test.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Parser)]
 struct Opts {
-    #[structopt(flatten)]
+    #[command(flatten)]
     init: InitializeTest,
 }
 
 fn main() -> anyhow::Result<()> {
-    let opts = Opts::from_args();
+    let opts = Opts::parse();
 
     opts.init.init_logging();
 

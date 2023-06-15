@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use clap::Parser;
 use std::time::Duration;
-use structopt::StructOpt;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
@@ -24,19 +24,20 @@ const FLASH_STATUS_WIP: u32 = 0x01;
 const FLASH_STATUS_WEL: u32 = 0x02;
 const FLASH_STATUS_STD_BITS: u32 = FLASH_STATUS_WEL | FLASH_STATUS_WIP;
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Parser)]
 struct Opts {
-    #[structopt(flatten)]
+    #[command(flatten)]
     init: InitializeTest,
 
-    #[structopt(
-        long, parse(try_from_str=humantime::parse_duration),
+    #[arg(
+        long,
+        value_parser = humantime::parse_duration,
         default_value = "600s",
         help = "Console receive timeout",
     )]
     timeout: Duration,
 
-    #[structopt(
+    #[arg(
         long,
         default_value = "BOOTSTRAP",
         help = "Name of the debugger's SPI interface"
@@ -446,7 +447,7 @@ fn test_read_flash(opts: &Opts, transport: &TransportWrapper, mode: ReadMode) ->
 }
 
 fn main() -> Result<()> {
-    let opts = Opts::from_args();
+    let opts = Opts::parse();
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
 

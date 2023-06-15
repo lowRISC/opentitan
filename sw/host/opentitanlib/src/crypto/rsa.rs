@@ -167,7 +167,7 @@ impl RsaPublicKey {
 /// RSA Private Key used in OpenTitan signing operations.
 ///
 /// This is a wrapper for handling RSA priavate keys as they're used in OpenTitan images.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct RsaPrivateKey {
     key: rsa::RsaPrivateKey,
 }

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use clap::{Args, Subcommand};
 use nix::unistd::isatty;
 use raw_tty::TtyModeGuard;
 use serde_annotate::Annotate;
@@ -12,8 +13,8 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::os::unix::io::AsRawFd;
 use std::rc::Rc;
+use std::str::FromStr;
 use std::time::Duration;
-use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
@@ -22,10 +23,10 @@ use opentitanlib::transport::Capability;
 use opentitanlib::util::file;
 use opentitanlib::util::voltage::Voltage;
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 /// Reads a GPIO pin.
 pub struct GpioRead {
-    #[structopt(name = "PIN", help = "The GPIO pin to read")]
+    #[arg(name = "PIN", help = "The GPIO pin to read")]
     pub pin: String,
 }
 
@@ -51,14 +52,14 @@ impl CommandDispatch for GpioRead {
     }
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 /// Writes a GPIO pin.
 pub struct GpioWrite {
-    #[structopt(name = "PIN", help = "The GPIO pin to write")]
+    #[arg(name = "PIN", help = "The GPIO pin to write")]
     pub pin: String,
-    #[structopt(
+    #[arg(
         name = "VALUE",
-        parse(try_from_str),
+        action = clap::ArgAction::Set,
         help = "The value to write to the pin"
     )]
     pub value: bool,
@@ -78,15 +79,15 @@ impl CommandDispatch for GpioWrite {
     }
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 /// Set the I/O mode of a GPIO pin (Input/OpenDrain/PushPull).
 pub struct GpioSetMode {
-    #[structopt(name = "PIN", help = "The GPIO pin to modify")]
+    #[arg(name = "PIN", help = "The GPIO pin to modify")]
     pub pin: String,
-    #[structopt(
+    #[arg(
         name = "MODE",
-        possible_values = &PinMode::variants(),
-        case_insensitive=true,
+        value_enum,
+        ignore_case = true,
         help = "The I/O mode of the pin"
     )]
     pub mode: PinMode,
@@ -105,15 +106,15 @@ impl CommandDispatch for GpioSetMode {
     }
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 /// Set the I/O weak pull mode of a GPIO pin (PullUp/PullDown/None).
 pub struct GpioSetPullMode {
-    #[structopt(name = "PIN", help = "The GPIO pin to modify")]
+    #[arg(name = "PIN", help = "The GPIO pin to modify")]
     pub pin: String,
-    #[structopt(
+    #[arg(
         name = "PULLMODE",
-        possible_values = &PullMode::variants(),
-        case_insensitive=true,
+        value_enum,
+        ignore_case = true,
         help = "The weak pull mode of the pin"
     )]
     pub pull_mode: PullMode,
@@ -132,24 +133,24 @@ impl CommandDispatch for GpioSetPullMode {
     }
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 /// Simultaneously set mode, pull and output value of a GPIO pin.
 pub struct GpioSet {
-    #[structopt(name = "PIN", help = "The GPIO pin to modify")]
+    #[arg(name = "PIN", help = "The GPIO pin to modify")]
     pub pin: String,
-    #[structopt(long, case_insensitive = true, help = "The I/O mode of the pin")]
+    #[arg(long, ignore_case = true, help = "The I/O mode of the pin")]
     pub mode: Option<PinMode>,
-    #[structopt(
+    #[arg(
         long,
-        parse(try_from_str),
+        value_parser = bool::from_str,
         help = "The value to write to the pin, has effect only in PushPull and OpenDrain modes"
     )]
     pub value: Option<bool>,
-    #[structopt(long, case_insensitive = true, help = "The weak pull mode of the pin")]
+    #[arg(long, ignore_case = true, help = "The weak pull mode of the pin")]
     pub pull: Option<PullMode>,
-    #[structopt(
+    #[arg(
         long,
-        parse(try_from_str),
+        value_parser = bool::from_str,
         help = "The analog value to write to the pin in volts, has effect only in AnalogOutput mode"
     )]
     pub voltage: Option<Voltage>,
@@ -174,10 +175,10 @@ impl CommandDispatch for GpioSet {
     }
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 /// Reads a GPIO pin.
 pub struct GpioAnalogRead {
-    #[structopt(name = "PIN", help = "The GPIO pin to read")]
+    #[arg(name = "PIN", help = "The GPIO pin to read")]
     pub pin: String,
 }
 
@@ -203,14 +204,14 @@ impl CommandDispatch for GpioAnalogRead {
     }
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 /// Writes an analog voltage to a GPIO pin.
 pub struct GpioAnalogWrite {
-    #[structopt(name = "PIN", help = "The GPIO pin to write")]
+    #[arg(name = "PIN", help = "The GPIO pin to write")]
     pub pin: String,
-    #[structopt(
+    #[arg(
         name = "VOLTS",
-        parse(try_from_str),
+        value_parser = bool::from_str,
         help = "The analog value to write to the pin in volts, has effect only in AnalogOutput mode"
     )]
     pub volts: f32,
@@ -230,10 +231,10 @@ impl CommandDispatch for GpioAnalogWrite {
     }
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 /// Apply a configuration-named pin strapping
 pub struct GpioApplyStrapping {
-    #[structopt(name = "NAME", help = "The pin strapping to apply")]
+    #[arg(name = "NAME", help = "The pin strapping to apply")]
     pub name: String,
 }
 
@@ -249,17 +250,17 @@ impl CommandDispatch for GpioApplyStrapping {
     }
 }
 
-#[derive(Debug, StructOpt, CommandDispatch)]
+#[derive(Debug, Subcommand, CommandDispatch)]
 pub enum GpioMonitoringCommand {
     Start(GpioMonitoringStart),
     Read(GpioMonitoringRead),
     Vcd(GpioMonitoringVcd),
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 /// Begin logic-analyzer style monitoring of a set of pins.
 pub struct GpioMonitoringStart {
-    #[structopt(
+    #[arg(
         name = "PINS",
         help = "The list of GPIO pins to monitor (space separated)"
     )]
@@ -314,17 +315,17 @@ impl CommandDispatch for GpioMonitoringStart {
     }
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 /// Retrieve logic-analyzer style monitoring events detected so far, on a set of pins.  Optionally
 /// continue monitoring, in which case `monitoring read` must be called again later.
 pub struct GpioMonitoringRead {
-    #[structopt(
+    #[arg(
         name = "PINS",
         help = "The list of GPIO pins being monitored (space separated)"
     )]
     pub pins: Vec<String>,
 
-    #[structopt(long, case_insensitive = true)]
+    #[arg(long, ignore_case = true)]
     pub continue_monitoring: bool,
 }
 
@@ -379,23 +380,23 @@ impl CommandDispatch for GpioMonitoringRead {
     }
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 /// Whereas `monitoring start` and `monitoring read` are meant for use by scripts, this
 /// `monitoring vcd` is intended for manual use by an operator.  It will stay in the foreground,
 /// collecting events until the user presses Ctrl-C.  A transcript will be written in the industry
 /// standard VCD format, which can be loaded into e.g. Pulseview (or probably also Saleae
 /// software), to get a logic analyzer view of what transpired.
 pub struct GpioMonitoringVcd {
-    #[structopt(
+    #[arg(
         name = "PINS",
         help = "The list of GPIO pins to monitor (space separated)"
     )]
     pub pins: Vec<String>,
 
-    #[structopt(short, long, help = "Output file")]
+    #[arg(short, long, help = "Output file")]
     outfile: String,
 
-    #[structopt(short, long, help = "Do not print start end exit messages.")]
+    #[arg(short, long, help = "Do not print start end exit messages.")]
     quiet: bool,
 }
 
@@ -539,10 +540,10 @@ impl CommandDispatch for GpioMonitoringVcd {
     }
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 /// Remove a configuration-named pin strapping
 pub struct GpioRemoveStrapping {
-    #[structopt(name = "NAME", help = "The pin strapping to release")]
+    #[arg(name = "NAME", help = "The pin strapping to release")]
     pub name: String,
 }
 
@@ -558,9 +559,9 @@ impl CommandDispatch for GpioRemoveStrapping {
     }
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct GpioMonitoring {
-    #[structopt(subcommand)]
+    #[command(subcommand)]
     command: GpioMonitoringCommand,
 }
 
@@ -575,7 +576,7 @@ impl CommandDispatch for GpioMonitoring {
 }
 
 /// Commands for manipulating GPIO pins.
-#[derive(Debug, StructOpt, CommandDispatch)]
+#[derive(Debug, Subcommand, CommandDispatch)]
 pub enum GpioCommand {
     Apply(GpioApplyStrapping),
     Remove(GpioRemoveStrapping),

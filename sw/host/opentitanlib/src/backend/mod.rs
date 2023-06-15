@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use clap::Args;
 use std::path::{Path, PathBuf};
-use structopt::StructOpt;
 use thiserror::Error;
 
 use crate::app::config::process_config_file;
@@ -21,33 +21,31 @@ mod ti50emulator;
 mod ultradebug;
 mod verilator;
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct BackendOpts {
-    #[structopt(long, default_value = "", help = "Name of the debug interface")]
+    #[arg(long, default_value = "", help = "Name of the debug interface")]
     pub interface: String,
 
-    #[structopt(long, parse(try_from_str = u16::from_str),
-                help="USB Vendor ID of the interface")]
+    #[arg(long, value_parser = u16::from_str, help = "USB Vendor ID of the interface")]
     pub usb_vid: Option<u16>,
-    #[structopt(long, parse(try_from_str = u16::from_str),
-                help="USB Product ID of the interface")]
+    #[arg(long, value_parser = u16::from_str, help = "USB Product ID of the interface")]
     pub usb_pid: Option<u16>,
-    #[structopt(long, help = "USB serial number of the interface")]
+    #[arg(long, help = "USB serial number of the interface")]
     pub usb_serial: Option<String>,
 
-    #[structopt(flatten)]
+    #[command(flatten)]
     pub cw310_opts: cw310::Cw310Opts,
 
-    #[structopt(flatten)]
+    #[command(flatten)]
     pub verilator_opts: verilator::VerilatorOpts,
 
-    #[structopt(flatten)]
+    #[command(flatten)]
     pub proxy_opts: proxy::ProxyOpts,
 
-    #[structopt(flatten)]
+    #[command(flatten)]
     pub ti50emulator_opts: ti50emulator::Ti50EmulatorOpts,
 
-    #[structopt(long, number_of_values(1), help = "Configuration files")]
+    #[arg(long, number_of_values = 1, help = "Configuration files")]
     pub conf: Vec<PathBuf>,
 }
 

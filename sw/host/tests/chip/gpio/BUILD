@@ -15,10 +15,10 @@ package(default_visibility = ["//visibility:public"])
 #     deps = [
 #         "//sw/host/opentitanlib",
 #         "@crate_index//:anyhow",
+#         "@crate_index//:clap",
 #         "@crate_index//:humantime",
 #         "@crate_index//:log",
 #         "@crate_index//:once_cell",
 #         "@crate_index//:serde_json",
-#         "@crate_index//:structopt",
 #     ],
 # )
