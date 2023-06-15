@@ -368,12 +368,6 @@ alias(
 )
 
 alias(
-    name = "structopt",
-    actual = "@crate_index__structopt-0.3.26//:structopt",
-    tags = ["manual"],
-)
-
-alias(
     name = "strum",
     actual = "@crate_index__strum-0.24.1//:strum",
     tags = ["manual"],
