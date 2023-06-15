@@ -10,7 +10,7 @@
 use std::rc::Rc;
 
 use anyhow::{Context, Result};
-use structopt::StructOpt;
+use clap::Parser;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
@@ -21,9 +21,9 @@ use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition;
 use opentitanlib::test_utils::otp_ctrl::{OtpParam, OtpPartition};
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Parser)]
 struct Opts {
-    #[structopt(flatten)]
+    #[command(flatten)]
     init: InitializeTest,
 }
 
@@ -33,7 +33,7 @@ const TEST_UNLOCK_TOKEN_PREIMAGE: [u32; 4] = [0xAAAAAAAA, 0xAAAAAAAA, 0xAAAAAAAA
 const TEST_UNLOCK_TOKEN_POSTIMAGE: [u32; 4] = [0xc0bb8f81, 0x618ae065, 0x67fd75f3, 0xe6b9ec3f];
 
 fn main() -> Result<()> {
-    let opts = Opts::from_args();
+    let opts = Opts::parse();
     opts.init.init_logging();
 
     let transport = opts.init.init_target()?;

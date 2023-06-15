@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use clap::{Args, Subcommand};
 use serde_annotate::Annotate;
 use std::any::Any;
 use std::fs::{self, File};
 use std::io::{self, Write};
 use std::path::PathBuf;
 use std::time::Duration;
-use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::{StagedProgressBar, TransportWrapper};
@@ -21,16 +21,16 @@ use opentitanlib::transport::Capability;
 use opentitanlib::transport::ProgressIndicator;
 
 /// Read and parse an SFDP table.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct SpiSfdp {
-    #[structopt(
+    #[arg(
         short,
         long,
         help = "Display raw SFDP bytes rather than the parsed struct."
     )]
     raw: Option<usize>,
 
-    #[structopt(
+    #[arg(
         short,
         long,
         help = "Start reading SFDP at offset.  Only valid with --raw."
@@ -97,10 +97,10 @@ impl CommandDispatch for SpiSfdp {
 }
 
 /// Read the JEDEC ID of a SPI EEPROM.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct SpiReadId {
-    #[structopt(
-        short = "n",
+    #[arg(
+        short = 'n',
         long,
         default_value = "15",
         help = "Number of JEDEC ID bytes to read."
@@ -129,29 +129,30 @@ impl CommandDispatch for SpiReadId {
 }
 
 /// Read data from a SPI EEPROM.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
+#[command(disable_help_flag = true)]
 pub struct SpiRead {
-    #[structopt(short, long, default_value = "0", help = "Start offset.")]
+    #[arg(short, long, default_value = "0", help = "Start offset.")]
     start: u32,
-    #[structopt(
-        short = "n",
+    #[arg(
+        short = 'n',
         long,
         default_value = "4096",
         help = "Number of bytes to read."
     )]
     length: usize,
-    #[structopt(
+    #[arg(
         short,
         long,
-        possible_values = &ReadMode::variants(),
-        case_insensitive=true,
+        value_enum,
+        ignore_case = true,
         default_value = "standard",
         help = "Read mode"
     )]
     pub mode: ReadMode,
-    #[structopt(short, long, help = "Hexdump the data.")]
+    #[arg(short, long, help = "Hexdump the data.")]
     hexdump: bool,
-    #[structopt(name = "FILE", default_value = "-")]
+    #[arg(name = "FILE", default_value = "-")]
     filename: PathBuf,
 }
 
@@ -204,24 +205,24 @@ impl CommandDispatch for SpiRead {
 }
 
 /// Erase sectors of a SPI EEPROM.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct SpiErase {
-    #[structopt(short, long, required_unless = "chip", help = "Start offset.")]
+    #[arg(short, long, required_unless_present = "chip", help = "Start offset.")]
     start: Option<u32>,
-    #[structopt(
-        short = "n",
+    #[arg(
+        short = 'n',
         long,
-        required_unless = "chip",
+        required_unless_present = "chip",
         help = "Number of bytes to erase."
     )]
     length: Option<u32>,
-    #[structopt(long, help = "Erase the whole chip.")]
+    #[arg(long, help = "Erase the whole chip.")]
     chip: bool,
-    #[structopt(
+    #[arg(
         short,
         long,
-        possible_values = &EraseMode::variants(),
-        case_insensitive=true,
+        value_enum,
+        ignore_case = true,
         default_value = "standard",
         help = "Erase mode"
     )]
@@ -274,11 +275,11 @@ impl CommandDispatch for SpiErase {
 }
 
 /// Program data into a SPI EEPROM.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct SpiProgram {
-    #[structopt(short, long, default_value = "0", help = "Start offset.")]
+    #[arg(short, long, default_value = "0", help = "Start offset.")]
     start: u32,
-    #[structopt(name = "FILE")]
+    #[arg(name = "FILE")]
     filename: PathBuf,
 }
 
@@ -311,9 +312,9 @@ impl CommandDispatch for SpiProgram {
     }
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct SpiTpm {
-    #[structopt(subcommand)]
+    #[command(subcommand)]
     command: super::tpm::TpmSubCommand,
 }
 
@@ -332,9 +333,9 @@ impl CommandDispatch for SpiTpm {
 }
 
 /// Read plain data bytes from a SPI device (not necessarily SPI EEPROM/flash).
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct SpiRawRead {
-    #[structopt(short = "n", long, help = "Number of bytes to read.")]
+    #[arg(short = 'n', long, help = "Number of bytes to read.")]
     length: usize,
 }
 
@@ -361,9 +362,10 @@ impl CommandDispatch for SpiRawRead {
 }
 
 /// Write plain data bytes to a SPI device (not necessarily SPI EEPROM/flash).
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
+#[command(disable_help_flag = true)]
 pub struct SpiRawWrite {
-    #[structopt(short, long, help = "Hex data bytes to write.")]
+    #[arg(short, long, help = "Hex data bytes to write.")]
     hexdata: String,
 }
 
@@ -382,12 +384,13 @@ impl CommandDispatch for SpiRawWrite {
 }
 
 /// Write data bytes to a SPI device then read data (not necessarily SPI EEPROM/flash).
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
+#[command(disable_help_flag = true)]
 pub struct SpiRawWriteRead {
-    #[structopt(short, long, help = "Hex data bytes to write.")]
+    #[arg(short, long, help = "Hex data bytes to write.")]
     hexdata: String,
 
-    #[structopt(short = "n", long, help = "Number of bytes to read.")]
+    #[arg(short = 'n', long, help = "Number of bytes to read.")]
     length: usize,
 }
 
@@ -412,9 +415,10 @@ impl CommandDispatch for SpiRawWriteRead {
 }
 
 /// Simultaneously write and read plain data bytes to a SPI device (not SPI EEPROM/flash).
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
+#[command(disable_help_flag = true)]
 pub struct SpiRawTransceive {
-    #[structopt(short, long, help = "Hex data bytes to write.")]
+    #[arg(short, long, help = "Hex data bytes to write.")]
     hexdata: String,
 }
 
@@ -437,7 +441,7 @@ impl CommandDispatch for SpiRawTransceive {
 }
 
 /// Commands for interacting with a SPI EEPROM.
-#[derive(Debug, StructOpt, CommandDispatch)]
+#[derive(Debug, Subcommand, CommandDispatch)]
 pub enum InternalSpiCommand {
     Sfdp(SpiSfdp),
     ReadId(SpiReadId),
@@ -451,12 +455,12 @@ pub enum InternalSpiCommand {
     Tpm(SpiTpm),
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct SpiCommand {
-    #[structopt(flatten)]
+    #[command(flatten)]
     params: SpiParams,
 
-    #[structopt(subcommand)]
+    #[command(subcommand)]
     command: InternalSpiCommand,
 }
 

@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use clap::Args;
 use serde::{Deserialize, Serialize};
-use structopt::StructOpt;
 use thiserror::Error;
 
 use std::path::PathBuf;
@@ -15,33 +15,33 @@ use crate::app::TransportWrapper;
 use crate::dif::lc_ctrl::LcCtrlReg;
 use crate::impl_serializable_error;
 
-#[derive(Debug, StructOpt, Clone)]
+#[derive(Debug, Args, Clone)]
 pub struct JtagParams {
     /// OpenOCD binary path.
-    #[structopt(long, default_value = "openocd")]
+    #[arg(long, default_value = "openocd")]
     pub openocd: PathBuf,
 
     /// Path to OpenOCD JTAG adapter config file.
-    #[structopt(long)]
+    #[arg(long)]
     pub openocd_adapter_config: Option<String>,
 
     /// Path to OpenOCD JTAG target config file for the RISC-V TAP.
-    #[structopt(long)]
+    #[arg(long)]
     pub openocd_riscv_target_config: Option<String>,
 
     /// Path to OpenOCD JTAG target config file for the LC TAP.
-    #[structopt(long)]
+    #[arg(long)]
     pub openocd_lc_target_config: Option<String>,
 
     /// Port used to start and connect to OpenOCD over.
-    #[structopt(long, default_value = "6666")]
+    #[arg(long, default_value = "6666")]
     pub openocd_port: u16,
 
     /// Timeout when waiting for OpenOCD to start.
-    #[structopt(long, parse(try_from_str=humantime::parse_duration), default_value = "3s")]
+    #[arg(long, value_parser = humantime::parse_duration, default_value = "3s")]
     pub openocd_timeout: Duration,
 
-    #[structopt(long, default_value = "200")]
+    #[arg(long, default_value = "200")]
     pub adapter_speed_khz: u64,
 }
 

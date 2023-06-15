@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use structopt::StructOpt;
+use clap::Args;
 
 use crate::backend::BackendOpts;
 use crate::transport::cw310::CW310;
 use crate::transport::Transport;
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct Cw310Opts {
-    #[structopt(
+    #[arg(
         long,
         help = "Comma-separated list of CW310 UARTs for non-udev environments. List the console uart first."
     )]

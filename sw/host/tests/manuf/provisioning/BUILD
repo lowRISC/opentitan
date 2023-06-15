@@ -27,12 +27,12 @@ rust_binary(
         "@crate_index//:aes",
         "@crate_index//:anyhow",
         "@crate_index//:arrayvec",
+        "@crate_index//:clap",
         "@crate_index//:elliptic-curve",
         "@crate_index//:humantime",
         "@crate_index//:log",
         "@crate_index//:p256",
         "@crate_index//:serde",
         "@crate_index//:serde_json",
-        "@crate_index//:structopt",
     ],
 )

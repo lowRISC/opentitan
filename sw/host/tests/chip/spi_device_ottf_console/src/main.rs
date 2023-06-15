@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{anyhow, Result};
+use clap::Parser;
 use regex::Regex;
 use std::time::Duration;
-use structopt::StructOpt;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::console::spi::SpiConsoleDevice;
@@ -13,19 +13,20 @@ use opentitanlib::execute_test;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Parser)]
 struct Opts {
-    #[structopt(flatten)]
+    #[command(flatten)]
     init: InitializeTest,
 
-    #[structopt(
-    long, parse(try_from_str=humantime::parse_duration),
+    #[arg(
+    long,
+    value_parser = humantime::parse_duration,
     default_value = "600s",
     help = "Console receive timeout",
     )]
     timeout: Duration,
 
-    #[structopt(
+    #[arg(
         long,
         default_value = "BOOTSTRAP",
         help = "Name of the SPI interface to connect to the OTTF console."
@@ -73,7 +74,7 @@ fn spi_device_console_test(opts: &Opts, transport: &TransportWrapper) -> Result<
 }
 
 fn main() -> Result<()> {
-    let opts = Opts::from_args();
+    let opts = Opts::parse();
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
     execute_test!(spi_device_console_test, &opts, &transport);

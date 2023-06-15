@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use clap::Args;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 use std::str::FromStr;
-use structopt::StructOpt;
 use thiserror::Error;
 
 use super::eeprom;
@@ -14,18 +14,18 @@ use crate::app::TransportWrapper;
 use crate::impl_serializable_error;
 use crate::util::voltage::Voltage;
 
-#[derive(Clone, Debug, StructOpt, Serialize, Deserialize)]
+#[derive(Clone, Debug, Args, Serialize, Deserialize)]
 pub struct SpiParams {
-    #[structopt(long, help = "SPI instance")]
+    #[arg(long, help = "SPI instance")]
     pub bus: Option<String>,
 
-    #[structopt(long, help = "SPI bus speed")]
+    #[arg(long, help = "SPI bus speed")]
     pub speed: Option<u32>,
 
-    #[structopt(long, help = "SPI bus voltage", parse(try_from_str = Voltage::from_str))]
+    #[arg(long, help = "SPI bus voltage")]
     pub voltage: Option<Voltage>,
 
-    #[structopt(long, help = "SPI polarity/phase mode", parse(try_from_str = TransferMode::from_str))]
+    #[arg(long, help = "SPI polarity/phase mode")]
     pub mode: Option<TransferMode>,
 }
 

@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use clap::{Args, Subcommand};
 use serde_annotate::Annotate;
 use std::any::Any;
-use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
@@ -15,12 +15,12 @@ use opentitanlib::transport::Capability;
 use opentitanlib::util::parse_int::ParseInt;
 
 /// Read plain data bytes from a I2C device.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct I2cRawRead {
-    #[structopt(
-        short = "n",
+    #[arg(
+        short = 'n',
         long,
-        parse(try_from_str=usize::from_str),
+        value_parser = usize::from_str,
         help = "Number of bytes to read."
     )]
     length: usize,
@@ -49,9 +49,10 @@ impl CommandDispatch for I2cRawRead {
 }
 
 /// Write plain data bytes to a I2C device.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
+#[command(disable_help_flag = true)]
 pub struct I2cRawWrite {
-    #[structopt(short, long, help = "Hex data bytes to write.")]
+    #[arg(short, long, help = "Hex data bytes to write.")]
     hexdata: String,
 }
 
@@ -73,14 +74,15 @@ impl CommandDispatch for I2cRawWrite {
 }
 
 /// Write data bytes to a I2C device, then read back a response.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
+#[command(disable_help_flag = true)]
 pub struct I2cRawWriteRead {
-    #[structopt(short, long, help = "Hex data bytes to write.")]
+    #[arg(short, long, help = "Hex data bytes to write.")]
     hexdata: String,
-    #[structopt(
-        short = "n",
+    #[arg(
+        short = 'n',
         long,
-        parse(try_from_str=usize::from_str),
+        value_parser = usize::from_str,
         help = "Number of bytes to read."
     )]
     length: usize,
@@ -114,9 +116,9 @@ impl CommandDispatch for I2cRawWriteRead {
     }
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct I2cTpm {
-    #[structopt(subcommand)]
+    #[command(subcommand)]
     command: super::tpm::TpmSubCommand,
 }
 
@@ -134,7 +136,7 @@ impl CommandDispatch for I2cTpm {
 }
 
 /// Commands for interacting with a generic I2C bus.
-#[derive(Debug, StructOpt, CommandDispatch)]
+#[derive(Debug, Subcommand, CommandDispatch)]
 pub enum InternalI2cCommand {
     RawRead(I2cRawRead),
     RawWrite(I2cRawWrite),
@@ -142,20 +144,20 @@ pub enum InternalI2cCommand {
     Tpm(I2cTpm),
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct I2cCommand {
-    #[structopt(flatten)]
+    #[command(flatten)]
     params: I2cParams,
 
-    #[structopt(
+    #[arg(
         short,
         long,
-        parse(try_from_str=u8::from_str),
+        value_parser = u8::from_str,
         help = "7-bit address of I2C device (0..0x7F)."
     )]
     addr: u8,
 
-    #[structopt(subcommand)]
+    #[command(subcommand)]
     command: InternalI2cCommand,
 }
 

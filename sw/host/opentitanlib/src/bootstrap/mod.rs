@@ -3,12 +3,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use clap::{Args, ValueEnum};
 use humantime::parse_duration;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 use std::time::Duration;
-use structopt::clap::arg_enum;
-use structopt::StructOpt;
 use thiserror::Error;
 
 use crate::app::{NoProgressBar, TransportWrapper};
@@ -33,23 +32,21 @@ pub enum BootstrapError {
 }
 impl_serializable_error!(BootstrapError);
 
-arg_enum! {
-    /// `BootstrapProtocol` describes the supported types of bootstrap.
-    /// The `Primitive` SPI protocol is used by OpenTitan during development.
-    /// The `Legacy` SPI protocol is used by previous generations of Google Titan-class chips.
-    /// The `Eeprom` SPI protocol is planned to be implemented for OpenTitan.
-    /// The `Rescue` UART protocol is used by Google Ti50 firmware.
-    /// The 'Emulator' value indicates that this tool has a direct way
-    /// of communicating with the OpenTitan emulator, to replace the
-    /// contents of the emulated flash storage.
-    #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
-    pub enum BootstrapProtocol {
-        Primitive,
-        Legacy,
-        Eeprom,
-        Rescue,
-        Emulator,
-    }
+/// `BootstrapProtocol` describes the supported types of bootstrap.
+/// The `Primitive` SPI protocol is used by OpenTitan during development.
+/// The `Legacy` SPI protocol is used by previous generations of Google Titan-class chips.
+/// The `Eeprom` SPI protocol is planned to be implemented for OpenTitan.
+/// The `Rescue` UART protocol is used by Google Ti50 firmware.
+/// The 'Emulator' value indicates that this tool has a direct way
+/// of communicating with the OpenTitan emulator, to replace the
+/// contents of the emulated flash storage.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq, ValueEnum)]
+pub enum BootstrapProtocol {
+    Primitive,
+    Legacy,
+    Eeprom,
+    Rescue,
+    Emulator,
 }
 
 // Implementations of bootstrap need to implement the `UpdateProtocol` trait.
@@ -76,36 +73,36 @@ trait UpdateProtocol {
 
 /// Options which control bootstrap behavior.
 /// The meaning of each of these values depends on the specific bootstrap protocol being used.
-#[derive(Clone, Debug, StructOpt, Serialize, Deserialize)]
+#[derive(Clone, Debug, Args, Serialize, Deserialize)]
 pub struct BootstrapOptions {
-    #[structopt(flatten)]
+    #[command(flatten)]
     pub uart_params: UartParams,
-    #[structopt(flatten)]
+    #[command(flatten)]
     pub spi_params: SpiParams,
-    #[structopt(
+    #[arg(
         short,
         long,
-        possible_values = &BootstrapProtocol::variants(),
-        case_insensitive = true,
+        value_enum,
+        ignore_case = true,
         default_value = "eeprom",
         help = "Bootstrap protocol to use"
     )]
     pub protocol: BootstrapProtocol,
-    #[structopt(
+    #[arg(
         long,
         help = "Whether to reset target and clear UART RX buffer after bootstrap. For CW310 only."
     )]
     pub clear_uart: Option<bool>,
-    #[structopt(long, parse(try_from_str=parse_duration), default_value = "100ms", help = "Duration of the reset pulse")]
+    #[arg(long, value_parser = parse_duration, default_value = "100ms", help = "Duration of the reset pulse")]
     pub reset_delay: Duration,
-    #[structopt(
+    #[arg(
         long,
         help = "If set, leave the reset signal asserted after completed bootstrapping."
     )]
     pub leave_in_reset: bool,
-    #[structopt(long, parse(try_from_str=parse_duration), help = "Duration of the inter-frame delay")]
+    #[arg(long, value_parser = parse_duration, help = "Duration of the inter-frame delay")]
     pub inter_frame_delay: Option<Duration>,
-    #[structopt(long, parse(try_from_str=parse_duration), help = "Duration of the flash-erase delay")]
+    #[arg(long, value_parser = parse_duration, help = "Duration of the flash-erase delay")]
     pub flash_erase_delay: Option<Duration>,
 }
 

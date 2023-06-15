@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{bail, ensure, Result};
+use clap::ValueEnum;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 use std::thread;
 use std::time::{Duration, Instant};
-use structopt::clap::arg_enum;
 use thiserror::Error;
 
 use crate::io::i2c;
@@ -15,23 +15,22 @@ use crate::io::spi;
 use crate::tpm::access::TpmAccess;
 use crate::tpm::status::TpmStatus;
 
-arg_enum! {
-    /// Tpm registers, can be specified in command line arguments.
-    #[allow(non_camel_case_types)]
-    #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
-    pub enum Register {
-        ACCESS,
-        INT_ENABLE,
-        INT_VECTOR,
-        INT_STATUS,
-        INTF_CAPABILITY,
-        STS,
-        DATA_FIFO,
-        INTERFACE_ID,
-        XDATA_FIFO,
-        DID_VID,
-        RID,
-    }
+/// Tpm registers, can be specified in command line arguments.
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, ValueEnum)]
+#[value(rename_all = "verbatim")]
+pub enum Register {
+    ACCESS,
+    INT_ENABLE,
+    INT_VECTOR,
+    INT_STATUS,
+    INTF_CAPABILITY,
+    STS,
+    DATA_FIFO,
+    INTERFACE_ID,
+    XDATA_FIFO,
+    DID_VID,
+    RID,
 }
 
 impl Register {
