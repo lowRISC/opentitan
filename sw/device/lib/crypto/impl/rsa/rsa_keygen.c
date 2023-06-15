@@ -38,7 +38,7 @@ enum {
   kOtbnRsaMode2048 = 0x3b7,
   kOtbnRsaMode3072 = 0x4fa,
   kOtbnRsaMode4096 = 0x74d,
-}
+};
 
 /**
  * Start the OTBN key generation program.
@@ -46,8 +46,7 @@ enum {
  * @param mode Mode parameter for keygen.
  * @return Result of the operation.
  */
-static status_t
-keygen_start(uint32_t mode) {
+static status_t keygen_start(uint32_t mode) {
   // Load the RSA key generation app. Fails if OTBN is non-idle.
   HARDENED_TRY(otbn_load_app(kOtbnAppRsaKeygen));
 
