@@ -233,6 +233,8 @@ otp_json(
                     C = "0x0, 0x0, 0x0, 0x0",
                     D = "0x0, 0x0, 0x0, 0x0",
                 ),
+                # By default, ROM_EXT's recovery feature should be disabled.
+                "OWNER_SW_CFG_ROM_EXT_RECOVERY_EN": otp_hex(CONST.HARDENED_FALSE),
             },
         ),
     ],
