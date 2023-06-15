@@ -838,6 +838,18 @@
       default: "4",
       local: "true"
     },
+    { name: "OwnerSwCfgRomExtRecoveryEnOffset",
+      desc: "Offset of OWNER_SW_CFG_ROM_EXT_RECOVERY_EN",
+      type: "int",
+      default: "1392",
+      local: "true"
+    },
+    { name: "OwnerSwCfgRomExtRecoveryEnSize",
+      desc: "Size of OWNER_SW_CFG_ROM_EXT_RECOVERY_EN",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
     { name: "OwnerSwCfgDigestOffset",
       desc: "Offset of OWNER_SW_CFG_DIGEST",
       type: "int",
