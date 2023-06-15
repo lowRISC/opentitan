@@ -10,8 +10,8 @@ use crate::spiflash::sfdp::{
 };
 use crate::transport::ProgressIndicator;
 use anyhow::{ensure, Result};
+use clap::ValueEnum;
 use std::convert::TryFrom;
-use structopt::clap::arg_enum;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -37,23 +37,14 @@ impl From<SupportedAddressModes> for AddressMode {
     }
 }
 
-arg_enum! {
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, ValueEnum, Default)]
+#[value(rename_all = "verbatim")]
 pub enum ReadMode {
+    #[default]
     Standard,
     Fast,
     Dual,
     Quad,
-}
-}
-
-// Conflict between deriving Default and the `arg_enum!` macro.
-// The workaround is to manually derive Default.
-#[allow(clippy::derivable_impls)]
-impl Default for ReadMode {
-    fn default() -> Self {
-        ReadMode::Standard
-    }
 }
 
 pub struct ReadTypes {
@@ -117,21 +108,12 @@ impl ReadTypes {
     }
 }
 
-arg_enum! {
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum, Default)]
+#[value(rename_all = "verbatim")]
 pub enum EraseMode {
+    #[default]
     Standard,
     Block,
-}
-}
-
-// Conflict between deriving Default and the `arg_enum!` macro.
-// The workaround is to manually derive Default.
-#[allow(clippy::derivable_impls)]
-impl Default for EraseMode {
-    fn default() -> Self {
-        EraseMode::Standard
-    }
 }
 
 pub struct SpiFlash {

@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{anyhow, bail, ensure, Result};
+use clap::{Args, Subcommand};
 use serde_annotate::Annotate;
 use std::any::Any;
 use std::convert::TryInto;
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use structopt::StructOpt;
 use zerocopy::{AsBytes, LayoutVerified};
 
 use opentitanlib::app::command::CommandDispatch;
@@ -29,29 +29,30 @@ use opentitanlib::util::file::{FromReader, ToWriter};
 use opentitanlib::util::parse_int::ParseInt;
 
 /// Bootstrap the target device.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct AssembleCommand {
-    #[structopt(
+    #[arg(
         short,
         long,
-        parse(try_from_str=usize::from_str),
+        value_parser = usize::from_str,
         default_value="1048576",
         help="The size of the image to assemble"
     )]
     size: usize,
-    #[structopt(
+    #[arg(
         short,
         long,
-        parse(try_from_str),
+        action = clap::ArgAction::Set,
         default_value = "true",
         help = "Whether or not the assembled image is mirrored"
     )]
     mirror: bool,
-    #[structopt(short, long, help = "Filename to write the assembled image to")]
+    #[arg(short, long, help = "Filename to write the assembled image to")]
     output: PathBuf,
-    #[structopt(
+    #[arg(
         name = "FILE",
-        min_values(1),
+        required = true,
+        num_args = 1..,
         help = "One or more filename@offset specifiers to assemble into an image"
     )]
     filename: Vec<String>,
@@ -63,7 +64,7 @@ impl CommandDispatch for AssembleCommand {
         _context: &dyn Any,
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        // The `min_values` structopt attribute should take care of this, but it doesn't.
+        // The `min_values` arg attribute should take care of this, but it doesn't.
         ensure!(
             !self.filename.is_empty(),
             "You must supply at least one filename"
@@ -77,9 +78,9 @@ impl CommandDispatch for AssembleCommand {
 }
 
 /// Manifest show command.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct ManifestShowCommand {
-    #[structopt(name = "IMAGE", help = "Filename for the image to display")]
+    #[arg(name = "IMAGE", help = "Filename for the image to display")]
     image: PathBuf,
 }
 
@@ -96,34 +97,34 @@ impl CommandDispatch for ManifestShowCommand {
 }
 
 /// Manifest update command.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct ManifestUpdateCommand {
-    #[structopt(name = "IMAGE", help = "Filename for the image to update")]
+    #[arg(name = "IMAGE", help = "Filename for the image to update")]
     image: PathBuf,
-    #[structopt(
+    #[arg(
         short,
         long,
         help = "Filename for an HJSON configuration specifying manifest fields"
     )]
     manifest: Option<PathBuf>,
 
-    #[structopt(long, help = "Filename for an external RSA signature file")]
+    #[arg(long, help = "Filename for an external RSA signature file")]
     rsa_signature: Option<PathBuf>,
-    #[structopt(short, long, help = "Filename for an external SPHINCS+ signature file")]
+    #[arg(short, long, help = "Filename for an external SPHINCS+ signature file")]
     spx_signature: Option<PathBuf>,
-    #[structopt(
+    #[arg(
         long,
         help = "Filename for the RSA PKCS8 key corresponding to the signature",
         long_help = "Passing a private key indicates the key will be used for signing."
     )]
     rsa_key: Option<PathBuf>,
-    #[structopt(
+    #[arg(
         long,
         help = "Filename for the SPHINCS+ key corresponding to the signature",
         long_help = "Passing a private key indicates the key will be used for signing."
     )]
     spx_key: Option<PathBuf>,
-    #[structopt(
+    #[arg(
         short,
         long,
         help = "Filename to write the output to instead of updating the input file"
@@ -259,11 +260,11 @@ impl CommandDispatch for ManifestUpdateCommand {
 }
 
 /// Manifest verify command.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct ManifestVerifyCommand {
-    #[structopt(name = "IMAGE", help = "Filename for the image to verify")]
+    #[arg(name = "IMAGE", help = "Filename for the image to verify")]
     image: PathBuf,
-    #[structopt(short, long, help = "Run verification for SPHINCS+")]
+    #[arg(short, long, help = "Run verification for SPHINCS+")]
     spx: bool,
 }
 
@@ -298,14 +299,14 @@ impl CommandDispatch for ManifestVerifyCommand {
 }
 
 /// Compute digest command.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct DigestCommand {
-    #[structopt(
+    #[arg(
         name = "IMAGE",
         help = "Filename for the image to calculate the digest for"
     )]
     image: PathBuf,
-    #[structopt(short, long, help = "Filename for an output bin file")]
+    #[arg(short, long, help = "Filename for an output bin file")]
     bin: Option<PathBuf>,
 }
 
@@ -336,14 +337,14 @@ impl CommandDispatch for DigestCommand {
 }
 
 /// Compute spx-message command.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct SpxMessageCommand {
-    #[structopt(
+    #[arg(
         name = "IMAGE",
         help = "Filename for the image to calculate the digest for"
     )]
     image: PathBuf,
-    #[structopt(short, long, help = "Filename for an output bin file")]
+    #[arg(short, long, help = "Filename for an output bin file")]
     output: PathBuf,
 }
 
@@ -362,7 +363,7 @@ impl CommandDispatch for SpxMessageCommand {
     }
 }
 
-#[derive(Debug, StructOpt, CommandDispatch)]
+#[derive(Debug, Subcommand, CommandDispatch)]
 /// Manifest manipulation commands.
 pub enum ManifestCommand {
     Show(ManifestShowCommand),
@@ -370,10 +371,11 @@ pub enum ManifestCommand {
     Verify(ManifestVerifyCommand),
 }
 
-#[derive(Debug, StructOpt, CommandDispatch)]
+#[derive(Debug, Subcommand, CommandDispatch)]
 /// Image manipulation commands.
 pub enum Image {
     Assemble(AssembleCommand),
+    #[command(subcommand)]
     Manifest(ManifestCommand),
     Digest(DigestCommand),
     SpxMessage(SpxMessageCommand),

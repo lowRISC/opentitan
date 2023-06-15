@@ -11,7 +11,7 @@
 use std::time::Duration;
 
 use anyhow::{Context, Result};
-use structopt::StructOpt;
+use clap::Parser;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg, LcCtrlStatus};
@@ -22,13 +22,14 @@ use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition::wait_for_status;
 use top_earlgrey::top_earlgrey_memory;
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Parser)]
 struct Opts {
-    #[structopt(flatten)]
+    #[command(flatten)]
     init: InitializeTest,
 
-    #[structopt(
-        long, parse(try_from_str = DifLcCtrlState::parse_lc_state_str),
+    #[arg(
+        long,
+        value_parser = DifLcCtrlState::parse_lc_state_str,
         default_value = "test_unlocked0",
         help = "LC state to expect the chip to be initialized in."
     )]
@@ -82,7 +83,7 @@ fn manuf_cp_yield_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
 }
 
 fn main() -> Result<()> {
-    let opts = Opts::from_args();
+    let opts = Opts::parse();
     opts.init.init_logging();
     opts.init.init_target()?;
     let transport = opts.init.init_target()?;

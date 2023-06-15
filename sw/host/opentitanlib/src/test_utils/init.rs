@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use clap::Args;
 use directories::ProjectDirs;
 use log::LevelFilter;
 use serde_annotate::Annotate;
@@ -11,7 +12,7 @@ use std::ffi::OsString;
 use std::io::ErrorKind;
 use std::iter::Iterator;
 use std::path::PathBuf;
-use structopt::StructOpt;
+use std::str::FromStr;
 
 use super::bootstrap::Bootstrap;
 use super::load_bitstream::LoadBitstream;
@@ -20,32 +21,33 @@ use crate::backend;
 use crate::io::jtag::JtagParams;
 // use opentitanlib::io::uart::UartParams;
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct InitializeTest {
-    #[structopt(
+    #[arg(
         long,
+        value_parser = PathBuf::from_str,
         default_value = "config",
         help = "Filename of a default flagsfile.  Relative to $XDG_CONFIG_HOME/opentitantool."
     )]
     pub rcfile: PathBuf,
 
-    #[structopt(long, default_value = "off")]
+    #[arg(long, default_value = "off")]
     pub logging: LevelFilter,
 
-    #[structopt(flatten)]
+    #[command(flatten)]
     pub backend_opts: backend::BackendOpts,
 
     // TODO: Bootstrap::options already has a uart_params (and a spi_params).
     // This probably needs some refactoring.
-    //#[structopt(flatten)]
+    //#[command(flatten)]
     //pub uart_params: UartParams,
-    #[structopt(flatten)]
+    #[command(flatten)]
     pub load_bitstream: LoadBitstream,
 
-    #[structopt(flatten)]
+    #[command(flatten)]
     pub bootstrap: Bootstrap,
 
-    #[structopt(flatten)]
+    #[command(flatten)]
     pub jtag_params: JtagParams,
 }
 

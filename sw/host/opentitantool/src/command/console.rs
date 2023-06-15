@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{anyhow, Result};
+use clap::Args;
 use nix::unistd::isatty;
 use raw_tty::TtyModeGuard;
 use regex::Regex;
@@ -11,7 +12,6 @@ use std::any::Any;
 use std::fs::File;
 use std::os::unix::io::AsRawFd;
 use std::time::Duration;
-use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
@@ -19,34 +19,35 @@ use opentitanlib::io::uart::UartParams;
 use opentitanlib::transport::Capability;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct Console {
-    #[structopt(flatten)]
+    #[command(flatten)]
     params: UartParams,
 
-    #[structopt(short, long, help = "Do not print console start end exit messages.")]
+    #[arg(short, long, help = "Do not print console start end exit messages.")]
     quiet: bool,
 
-    #[structopt(short, long, help = "Log console output to a file")]
+    #[arg(short, long, help = "Log console output to a file")]
     logfile: Option<String>,
 
-    #[structopt(long, help = "Send a string into the console at startup.")]
+    #[arg(long, help = "Send a string into the console at startup.")]
     send: Option<String>,
 
-    #[structopt(
+    #[arg(
         short,
-        long, parse(try_from_str=humantime::parse_duration),
+        long,
+        value_parser = humantime::parse_duration,
         help = "Duration of ROM detection timeout",
     )]
     timeout: Option<Duration>,
 
-    #[structopt(long, help = "Print a timestamp on each line of console output.")]
+    #[arg(long, help = "Print a timestamp on each line of console output.")]
     timestamp: bool,
 
-    #[structopt(long, help = "Exit with success if the specified regex is matched.")]
+    #[arg(long, help = "Exit with success if the specified regex is matched.")]
     exit_success: Option<String>,
 
-    #[structopt(long, help = "Exit with failure if the specified regex is matched.")]
+    #[arg(long, help = "Exit with failure if the specified regex is matched.")]
     exit_failure: Option<String>,
 }
 

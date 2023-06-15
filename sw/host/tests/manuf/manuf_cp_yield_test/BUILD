@@ -15,7 +15,7 @@ rust_binary(
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
+        "@crate_index//:clap",
         "@crate_index//:log",
-        "@crate_index//:structopt",
     ],
 )

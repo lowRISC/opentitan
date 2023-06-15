@@ -3,29 +3,29 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use clap::Args;
 use humantime::parse_duration;
 use std::time::Duration;
-use structopt::StructOpt;
 
 use crate::transport::verilator::{Options, Verilator};
 use crate::transport::Transport;
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct VerilatorOpts {
-    #[structopt(long, default_value)]
+    #[arg(long, default_value_t)]
     verilator_bin: String,
 
-    #[structopt(long, default_value)]
+    #[arg(long, default_value_t)]
     verilator_rom: String,
-    #[structopt(long, required = false)]
+    #[arg(long, required = false)]
     verilator_flash: Vec<String>,
-    #[structopt(long, default_value)]
+    #[arg(long, default_value_t)]
     verilator_otp: String,
 
-    #[structopt(long, required = false)]
+    #[arg(long, required = false)]
     verilator_args: Vec<String>,
 
-    #[structopt(long, parse(try_from_str=parse_duration), default_value="60s", help = "Verilator startup timeout")]
+    #[arg(long, value_parser = parse_duration, default_value = "60s", help = "Verilator startup timeout")]
     verilator_timeout: Duration,
 }
 

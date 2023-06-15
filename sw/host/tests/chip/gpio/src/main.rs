@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use clap::Parser;
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::time::Duration;
-use structopt::StructOpt;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::io::gpio::PinMode;
@@ -21,13 +21,14 @@ use opentitanlib::chip::autogen::earlgrey::{
     PinmuxInsel, PinmuxMioOut, PinmuxOutsel, PinmuxPeripheralIn,
 };
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Parser)]
 struct Opts {
-    #[structopt(flatten)]
+    #[command(flatten)]
     init: InitializeTest,
 
-    #[structopt(
-        long, parse(try_from_str=humantime::parse_duration),
+    #[arg(
+        long,
+        value_parser = humantime::parse_duration,
         default_value = "600s",
         help = "Console receive timeout",
     )]
@@ -288,7 +289,7 @@ fn test_gpio_inputs(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    let opts = Opts::from_args();
+    let opts = Opts::parse();
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
 

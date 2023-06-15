@@ -4,12 +4,12 @@
 #![allow(clippy::bool_assert_comparison)]
 
 use anyhow::{bail, Result};
+use clap::Parser;
 use humantime::parse_duration;
 use regex::Regex;
 use std::matches;
 use std::ops::Drop;
 use std::time::Duration;
-use structopt::StructOpt;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
@@ -21,41 +21,46 @@ use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
 use opentitanlib::util::parse_int::ParseInt;
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Parser)]
 struct Opts {
-    #[structopt(flatten)]
+    #[command(flatten)]
     init: InitializeTest,
 
-    #[structopt(
-        long, parse(try_from_str=humantime::parse_duration),
+    #[arg(
+        long,
+        value_parser = humantime::parse_duration,
         default_value = "5s",
         help = "Bootstrap detection timeout",
     )]
     timeout: Duration,
 
-    #[structopt(
-        long, parse(try_from_str=usize::from_str),
+    #[arg(
+        long,
+        value_parser = usize::from_str,
         default_value = "12",
         help = "JEDEC page of manufacturer",
     )]
     jedec_page: usize,
 
-    #[structopt(
-        long, parse(try_from_str=u8::from_str),
+    #[arg(
+        long,
+        value_parser = u8::from_str,
         default_value = "0xEF",
         help = "JEDEC ID of manufacturer",
     )]
     jedec_id: u8,
 
-    #[structopt(
-        long, parse(try_from_str=u8::from_str),
+    #[arg(
+        long,
+        value_parser = u8::from_str,
         default_value = "0x19",
         help = "JEDEC manufacturer product ID",
     )]
     jedec_product: u8,
 
-    #[structopt(
-        long, parse(try_from_str=u32::from_str),
+    #[arg(
+        long,
+        value_parser = u32::from_str,
         default_value = "0x100000",
         help = "Size of the internal flash",
     )]
@@ -652,7 +657,7 @@ fn test_bootstrap_watchdog_check(opts: &Opts, transport: &TransportWrapper) -> R
 }
 
 fn main() -> Result<()> {
-    let opts = Opts::from_args();
+    let opts = Opts::parse();
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
 

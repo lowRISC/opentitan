@@ -9,11 +9,11 @@ use std::time::Duration;
 use aes::cipher::{generic_array::GenericArray, BlockDecrypt, KeyInit};
 use aes::Aes256Dec;
 use anyhow::Result;
+use clap::Parser;
 use elliptic_curve::ecdh::diffie_hellman;
 use elliptic_curve::pkcs8::DecodePrivateKey;
 use elliptic_curve::{PublicKey, SecretKey};
 use p256::NistP256;
-use structopt::StructOpt;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg, LcCtrlStatus};
@@ -27,19 +27,20 @@ use opentitanlib::uart::console::UartConsole;
 mod provisioning_data;
 use provisioning_data::ManufProvisioning;
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Parser)]
 struct Opts {
-    #[structopt(flatten)]
+    #[command(flatten)]
     init: InitializeTest,
 
-    #[structopt(
-        long, parse(try_from_str=humantime::parse_duration),
+    #[arg(
+        long,
+        value_parser = humantime::parse_duration,
         default_value = "600s",
         help = "Console receive timeout",
     )]
     timeout: Duration,
 
-    #[structopt(long, help = "HSM generated ECDH private key DER file.")]
+    #[arg(long, help = "HSM generated ECDH private key DER file.")]
     hsm_ecdh_sk: PathBuf,
 }
 
@@ -135,7 +136,7 @@ fn provisioning(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    let opts = Opts::from_args();
+    let opts = Opts::parse();
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
 

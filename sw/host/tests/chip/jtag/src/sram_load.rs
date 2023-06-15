@@ -5,8 +5,8 @@
 use std::time::Duration;
 
 use anyhow::Result;
+use clap::Parser;
 use regex::Regex;
-use structopt::StructOpt;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
@@ -17,12 +17,12 @@ use opentitanlib::uart::console::UartConsole;
 
 // use top_earlgrey::top_earlgrey_memory;
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Parser)]
 struct Opts {
-    #[structopt(flatten)]
+    #[command(flatten)]
     init: InitializeTest,
 
-    #[structopt(flatten)]
+    #[command(flatten)]
     sram_program: SramProgramParams,
 }
 
@@ -60,7 +60,7 @@ fn test_sram_load(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    let opts = Opts::from_args();
+    let opts = Opts::parse();
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
 
