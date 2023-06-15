@@ -21,6 +21,7 @@ bitflags = { version = "2.1", features = ["serde"] }
 bitvec = "1.0.1"
 byteorder = "1.4.3"
 chrono = "0.4"
+clap = { version = "4.1", features = ["derive", "env"] }
 crc = "3.0"
 deser-hjson = "1.0.2"
 directories = "4.0.1"
@@ -40,6 +41,7 @@ num-bigint-dig = "0.8"
 num-traits = "0.2.14"
 num_enum = "0.5"
 object = "0.25.3"
+once_cell = "1.17"
 p256 = "0.13.2"
 pem-rfc7468 = { version = "0.7.0", features = ["alloc", "std"] }
 pqcrypto-sphincsplus = "0.6.4"
@@ -60,7 +62,6 @@ serde_json = "1.0.69"
 serialport = "4.2.0"
 sha2 = { version = "0.10", features = ["oid"] }
 shellwords = "1.1.0"
-structopt = "0.3"
 syn = "1.0"
 tempfile = "3.3.0"
 thiserror = "1.0"
@@ -68,7 +69,6 @@ typetag = "0.2"
 zerocopy = "0.5.0"
 
 # hsmtool dependencies
-clap = { version = "4.1", features = ["derive", "env"] }
 cryptoki = "0.4.1"
 # Possible tagging/release error in the cryptoki crates. Pin to a version of
 # cryptoki-sys known to work.
@@ -92,7 +92,6 @@ libftdi1-sys = "1.0.0"
 
 # serde_annotate = { git = "https://github.com/lowRISC/serde-annotate", branch="main"}
 ansi_term = "0.12"
-once_cell = "1.17"
 pest = "2.2"
 pest_derive = "2.2"
 
