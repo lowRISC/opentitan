@@ -28,7 +28,6 @@ hardened_bool_t bootstrap_requested(void);
  *
  * OpenTitan bootstrap uses the typical SPI flash EEPROM commands. A typical
  * bootstrap session involves:
- * - Asserting bootstrap pins to enter bootstrap mode,
  * - Erasing the chip (WREN, CHIP_ERASE, busy loop ...),
  * - Programming the chip (WREN, PAGE_PROGRAM, busy loop ...), and
  * - Resetting the chip (RESET).
