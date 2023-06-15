@@ -58,6 +58,7 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |         |                |            |      32bit       |        OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN        |     0x564      |     4      |
 |         |                |            |      32bit       |               OWNER_SW_CFG_MANUF_STATE                |     0x568      |     4      |
 |         |                |            |      32bit       |            OWNER_SW_CFG_ROM_RSTMGR_INFO_EN            |     0x56C      |     4      |
+|         |                |            |      32bit       |           OWNER_SW_CFG_ROM_EXT_RECOVERY_EN            |     0x570      |     4      |
 |         |                |            |      64bit       |   [OWNER_SW_CFG_DIGEST](#Reg_owner_sw_cfg_digest_0)   |     0x678      |     8      |
 |    3    |     HW_CFG     |     80     |      32bit       |                       DEVICE_ID                       |     0x680      |     32     |
 |         |                |            |      32bit       |                      MANUF_STATE                      |     0x6A0      |     32     |
