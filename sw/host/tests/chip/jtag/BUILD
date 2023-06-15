@@ -16,11 +16,11 @@ rust_binary(
         "//sw/host/opentitanlib",
         "//third_party/rust/crates:regex",
         "@crate_index//:anyhow",
+        "@crate_index//:clap",
         "@crate_index//:humantime",
         "@crate_index//:log",
         "@crate_index//:once_cell",
         "@crate_index//:serde_json",
-        "@crate_index//:structopt",
     ],
 )
 
@@ -34,10 +34,10 @@ rust_binary(
         "//sw/host/opentitanlib",
         "//third_party/rust/crates:regex",
         "@crate_index//:anyhow",
+        "@crate_index//:clap",
         "@crate_index//:humantime",
         "@crate_index//:log",
         "@crate_index//:once_cell",
         "@crate_index//:serde_json",
-        "@crate_index//:structopt",
     ],
 )

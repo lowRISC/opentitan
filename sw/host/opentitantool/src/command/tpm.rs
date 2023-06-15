@@ -3,26 +3,27 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{anyhow, Result};
+use clap::{Args, Subcommand};
 use serde::{Deserialize, Serialize};
 use serde_annotate::Annotate;
 use std::any::Any;
-use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::tpm;
 
 /// Read the value of a given TPM register.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct TpmReadRegister {
-    #[structopt(
+    #[arg(
         name = "REGISTER",
-        case_insensitive = true,
+        value_enum,
+        ignore_case = true,
         help = "The TPM register to inspect"
     )]
     register: tpm::Register,
 
-    #[structopt(long, help = "Number of bytes to read.")]
+    #[arg(long, help = "Number of bytes to read.")]
     length: Option<usize>,
 }
 
@@ -67,31 +68,32 @@ impl CommandDispatch for TpmReadRegister {
 }
 
 /// Write to a given TPM register.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct TpmWriteRegister {
-    #[structopt(
+    #[arg(
         name = "REGISTER",
-        case_insensitive = true,
+        value_enum,
+        ignore_case = true,
         help = "The TPM register to modify"
     )]
     register: tpm::Register,
 
-    #[structopt(
-        short = "d",
+    #[arg(
+        short = 'd',
         long,
         conflicts_with_all=&["uint32", "uint8"],
         help = "Data to write, specify only one kind.",
     )]
     hexdata: Option<String>,
-    #[structopt(
-        short = "w",
+    #[arg(
+        short = 'w',
         long,
         conflicts_with_all=&["hexdata", "uint8"],
         help = "Data to write, specify only one kind.",
     )]
     uint32: Option<u32>,
-    #[structopt(
-        short = "b",
+    #[arg(
+        short = 'b',
         long,
         conflicts_with_all=&["hexdata", "uint32"],
         help = "Data to write, specify only one kind.",
@@ -121,9 +123,10 @@ impl CommandDispatch for TpmWriteRegister {
 }
 
 /// Write to a given TPM register.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
+#[command(disable_help_flag = true)]
 pub struct TpmExecuteCommand {
-    #[structopt(short = "d", long, help = "Hex encoding of TPM command to execute.")]
+    #[arg(short = 'd', long, help = "Hex encoding of TPM command to execute.")]
     hexdata: String,
 }
 
@@ -148,7 +151,7 @@ impl CommandDispatch for TpmExecuteCommand {
 
 /// Commands for interacting with a TPM.  These appear as subcommands of both `opentitantool i2c
 /// tpm` and `opentitantool spi tpm`.
-#[derive(Debug, StructOpt, CommandDispatch)]
+#[derive(Debug, Subcommand, CommandDispatch)]
 pub enum TpmSubCommand {
     ReadRegister(TpmReadRegister),
     WriteRegister(TpmWriteRegister),

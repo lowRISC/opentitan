@@ -5,7 +5,7 @@
 //! This test performs a lifecycle transition from `RAW` to `TEST_UNLOCKED0`.
 
 use anyhow::Context;
-use structopt::StructOpt;
+use clap::Parser;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::dif::otp_ctrl::{DaiParam, Partition};
@@ -14,14 +14,14 @@ use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::otp_ctrl::{OtpParam, OtpPartition};
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Parser)]
 struct Opts {
-    #[structopt(flatten)]
+    #[command(flatten)]
     init: InitializeTest,
 }
 
 fn main() -> anyhow::Result<()> {
-    let opts = Opts::from_args();
+    let opts = Opts::parse();
     opts.init.init_logging();
 
     let transport = opts.init.init_target()?;

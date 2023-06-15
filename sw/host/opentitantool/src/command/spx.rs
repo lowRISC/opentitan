@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use clap::{Args, Subcommand};
 use serde_annotate::Annotate;
 use std::any::Any;
 use std::path::PathBuf;
-use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
@@ -21,9 +21,9 @@ pub struct SpxPublicKeyInfo {
 }
 
 /// Show public information of a SPHINCS+ public key or key pair.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct SpxKeyShowCommand {
-    #[structopt(
+    #[arg(
         name = "KEY_FILE",
         help = "SPHINCS+ key file (either just the public key or full keypair)"
     )]
@@ -52,11 +52,11 @@ impl CommandDispatch for SpxKeyShowCommand {
 /// Generate a SPHINCS+-SHAKE256-128s-simple public private key pair. The full keypair will be
 /// written to <OUTPUT_DIR>/<BASENAME>.key and the public key will be written to
 /// <OUTPUT_DIR>/<BASENAME>.pub.key.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct SpxKeyGenerateCommand {
-    #[structopt(name = "OUTPUT_DIR", help = "Output directory")]
+    #[arg(name = "OUTPUT_DIR", help = "Output directory")]
     output_dir: PathBuf,
-    #[structopt(name = "BASENAME", help = "Basename for the generated key pair")]
+    #[arg(name = "BASENAME", help = "Basename for the generated key pair")]
     basename: String,
 }
 
@@ -79,7 +79,7 @@ impl CommandDispatch for SpxKeyGenerateCommand {
     }
 }
 
-#[derive(Debug, StructOpt, CommandDispatch)]
+#[derive(Debug, Subcommand, CommandDispatch)]
 pub enum SpxKeySubcommands {
     Show(SpxKeyShowCommand),
     Generate(SpxKeyGenerateCommand),
@@ -90,14 +90,14 @@ pub struct SpxSignResult {
     pub signature: String,
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct SpxSignCommand {
-    #[structopt(name = "MESSAGE", help = "The filename for the message to sign")]
+    #[arg(name = "MESSAGE", help = "The filename for the message to sign")]
     message: PathBuf,
 
-    #[structopt(name = "KEY_FILE", help = "The file contianing SPHICS+ keypair")]
+    #[arg(name = "KEY_FILE", help = "The file contianing SPHICS+ keypair")]
     keypair: PathBuf,
-    #[structopt(short, long, help = "The filename to write the signature to")]
+    #[arg(short, long, help = "The filename to write the signature to")]
     output: Option<PathBuf>,
 }
 
@@ -120,16 +120,16 @@ impl CommandDispatch for SpxSignCommand {
     }
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct SpxVerifyCommand {
-    #[structopt(name = "KEY", help = "Key file")]
+    #[arg(name = "KEY", help = "Key file")]
     key_file: PathBuf,
-    #[structopt(
+    #[arg(
         name = "MESSAGE",
         help = "Message file to verify the signature against"
     )]
     message: PathBuf,
-    #[structopt(name = "SIGNATURE", help = "SPHINCS+ signature file to verify")]
+    #[arg(name = "SIGNATURE", help = "SPHINCS+ signature file to verify")]
     signature: PathBuf,
 }
 
@@ -147,10 +147,11 @@ impl CommandDispatch for SpxVerifyCommand {
     }
 }
 
-#[derive(Debug, StructOpt, CommandDispatch)]
+#[derive(Debug, Subcommand, CommandDispatch)]
 /// SPHICS+ commands.
 #[allow(clippy::large_enum_variant)]
 pub enum Spx {
+    #[command(subcommand)]
     Key(SpxKeySubcommands),
     Sign(SpxSignCommand),
     Verify(SpxVerifyCommand),

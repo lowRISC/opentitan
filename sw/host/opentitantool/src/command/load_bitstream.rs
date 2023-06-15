@@ -3,26 +3,36 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use clap::Args;
 use serde_annotate::Annotate;
 use std::any::Any;
 use std::fs;
 use std::path::PathBuf;
 use std::time::Duration;
-use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::{StagedProgressBar, TransportWrapper};
 use opentitanlib::transport::common::fpga::FpgaProgram;
 
 /// Load a bitstream into the FPGA.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct LoadBitstream {
-    #[structopt(name = "FILE")]
+    #[arg(name = "FILE")]
     filename: PathBuf,
 
-    #[structopt(long, parse(try_from_str=humantime::parse_duration), default_value="50ms", help = "Duration of the reset pulse.")]
+    #[arg(
+        long,
+        value_parser = humantime::parse_duration,
+        default_value = "50ms",
+        help = "Duration of the reset pulse."
+    )]
     pub rom_reset_pulse: Duration,
-    #[structopt(long, parse(try_from_str=humantime::parse_duration), default_value="2s", help = "Duration of ROM detection timeout")]
+    #[arg(
+        long,
+        value_parser = humantime::parse_duration,
+        default_value = "2s",
+        help = "Duration of ROM detection timeout"
+    )]
     pub rom_timeout: Duration,
 }
 

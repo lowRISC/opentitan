@@ -4,6 +4,7 @@
 
 #![allow(clippy::bool_assert_comparison)]
 use anyhow::Result;
+use clap::Parser;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
 use opentitanlib::io::gpio::{PinMode, PullMode};
@@ -13,15 +14,15 @@ use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::test_utils::status::Status;
 use opentitanlib::uart::console::UartConsole;
 use std::time::Duration;
-use structopt::StructOpt;
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Parser)]
 struct Opts {
-    #[structopt(flatten)]
+    #[command(flatten)]
     init: InitializeTest,
 
-    #[structopt(
-        long, parse(try_from_str=humantime::parse_duration),
+    #[arg(
+        long,
+        value_parser = humantime::parse_duration,
         default_value = "180s",
         help = "Console receive timeout",
     )]
@@ -71,7 +72,7 @@ fn test_sw_strap_values(opts: &Opts, transport: &TransportWrapper) -> Result<()>
 }
 
 fn main() -> Result<()> {
-    let opts = Opts::from_args();
+    let opts = Opts::parse();
     opts.init.init_logging();
 
     let transport = opts.init.init_target()?;

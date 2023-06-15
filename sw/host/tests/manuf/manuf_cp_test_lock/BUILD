@@ -14,7 +14,7 @@ rust_binary(
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
-        "@crate_index//:structopt",
+        "@crate_index//:clap",
     ],
 )
 

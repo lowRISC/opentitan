@@ -3,16 +3,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use clap::Args;
 use serde_annotate::Annotate;
 use std::any::Any;
-use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::transport::cw310;
 
 /// Resets the SAM3X chip on the CW310 FPGA board.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Args)]
 pub struct ResetSam3x {}
 
 impl CommandDispatch for ResetSam3x {
