@@ -9,7 +9,6 @@ usage()
 {
     echo "Usage: install-package-dependencies.sh --verilator-version V"
     echo "                                       --verible-version V"
-    echo "                                       --rust-version V"
     exit 1
 }
 
@@ -31,7 +30,7 @@ do
     case "$1" in
         --verilator-version) VERILATOR_VERSION="$2"; shift 2 ;;
         --verible-version)   VERIBLE_VERSION="$2";   shift 2 ;;
-        --rust-version)      RUST_VERSION="$2";      shift 2 ;;
+        --rust-version)                              shift 2 ;;
         --) shift; break ;;
         *)  error "getopt / case statement mismatch"
     esac
@@ -40,7 +39,6 @@ done
 # Check that we've seen all the expected versions
 test -n "$VERILATOR_VERSION" || error "Missing --verilator-version"
 test -n "$VERIBLE_VERSION"   || error "Missing --verible-version"
-test -n "$RUST_VERSION"      || error "Missing --rust-version"
 
 # Check that there aren't any positional arguments
 test $# = 0 || error "Unexpected positional arguments"
@@ -136,11 +134,6 @@ sudo mkdir -p /tools/verilator
 sudo chmod 777 /tools/verilator
 tar -C /tools/verilator -xvzf $VERILATOR_TARBALL
 export PATH=/tools/verilator/v$VERILATOR_VERSION/bin:$PATH
-
-# Install Rust
-sw/vendor/rustup/rustup-init.sh -y \
-    --default-toolchain "${RUST_VERSION}"
-export PATH=$HOME/.cargo/bin:$PATH
 
 # Propagate PATH changes to all subsequent steps of the job
 echo "##vso[task.setvariable variable=PATH]$PATH"
