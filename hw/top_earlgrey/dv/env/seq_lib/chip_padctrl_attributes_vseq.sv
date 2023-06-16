@@ -169,9 +169,8 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     // into the peripheral. We hence, disable SVAs in these blocks while the test is running.
     cfg.chip_vif.chip_padctrl_attributes_test_sva_disable = 1;
 
-    // TODO: remove later, once default pulls on straps are refactored.
+    // Remove default pulls on these interfaces.
     cfg.chip_vif.tap_straps_if.disconnect();
-    // TODO: remove later, once default pulls on JTAG IOs are refactored.
     cfg.chip_vif.mios_if.disconnect();
 
     foreach (DioPadType[i]) begin
@@ -188,6 +187,10 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
         cfg.chip_vif.io_div4_clk_rst_if.wait_clks($urandom_range(1, 20));
         pinmux_mio_insel_reset();
       end : mio_test
+      // Note: this tests the USB DIOs as well, even though they are marked as "manual" in the
+      // Hjson. They are only marked as "manual" so that custom connections can be implemented for
+      // the FPGA target. For the ASIC target, these DIOs are connected to the padring in the same
+      // way as regular DIOs.
       begin : dio_test
         bit enable_spi_host_save = cfg.chip_vif.enable_spi_host;
         cfg.chip_vif.cfg_default_weak_pulls_on_dios(0);
@@ -197,7 +200,22 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
         cfg.chip_vif.dios_if.disconnect();
         cfg.chip_vif.cfg_default_weak_pulls_on_dios(1);
       end : dio_test
-      // TODO: Test the "manual" DIO pads as well.
+      // Note: "manual" DIOs other than the USB ones mentioned above are not connected to the pinmux
+      // and their pad attributes are tied off. We only perform a rudimentary pull-up/down/high-z
+      // here since these signals do not have any effect in the open-source (these DIOs are
+      // connected to closed source functionality and hence tested elsewhere in the closed source
+      // DV environment). The POR_N pin is not tested here since that one is tested implicitly by
+      // all tests asserting a reset.
+      begin : manual_dio_test
+        // Make sure nothing drives these pins before testing the pull values.
+        cfg.chip_vif.ast_misc_if.disconnect();
+        cfg.chip_vif.otp_ext_volt_if.disconnect();
+        cfg.chip_vif.flash_test_mode_if.disconnect();
+        cfg.chip_vif.flash_test_volt_if.disconnect();
+        cfg.chip_vif.cc_if.disconnect();
+        cfg.chip_vif.io_div4_clk_rst_if.wait_clks(1);
+        check_manual_dios_pull();
+      end : manual_dio_test
     join
 
     void'(cfg.chip_vif.signal_probe_pinmux_periph_to_mio_oe_i(SignalProbeRelease));
@@ -343,12 +361,12 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
       if (exp_oe && exp_out !== 1'bz) begin
         exp_strength = {mio_pad_attr[i].drive_strength[0] ? "St" : "Pu", $sformatf("%0d", exp_out)};
         `DV_CHECK_EQ(exp_out, cfg.chip_vif.mios_if.pins[i], msg)
-        // TODO: this check fails; address later: `DV_CHECK_STREQ(exp_strength, obs_strength, msg)
+        `DV_CHECK_STREQ(exp_strength, obs_strength, msg)
       end else begin
         if (mio_pad_attr[i].pull_en) begin
           exp_strength = $sformatf("We%0d", mio_pad_attr[i].pull_select);
           `DV_CHECK_EQ(mio_pad_attr[i].pull_select, cfg.chip_vif.mios_if.pins[i], msg)
-          // TODO: this check fails; address later: `DV_CHECK_STREQ(exp_strength, obs_strength, msg)
+          `DV_CHECK_STREQ(exp_strength, obs_strength, msg)
         end else begin
           `DV_CHECK_CASE_EQ(cfg.chip_vif.mios_if.pins[i], 1'bz, msg)
           `DV_CHECK_STREQ(obs_strength, "HiZ", msg)
@@ -572,10 +590,22 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     end
   endfunction
 
-  task post_start();
-    // TODO: remove this hack that prevents base class' post_start from applying a reset.
-    cfg.use_jtag_dmi = 1;
-    super.post_start();
+  task check_manual_dios_pull();
+    string obs_strength;
+    obs_strength = $sformatf("%v", cfg.chip_vif.ast_misc_if.pins[0]);
+    `DV_CHECK_STREQ(obs_strength, "We0", "on AST_MISC")
+    obs_strength = $sformatf("%v", cfg.chip_vif.otp_ext_volt_if.pins[0]);
+    `DV_CHECK_STREQ(obs_strength, "HiZ", "on OTP_EXT_VOLT")
+    obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[0]);
+    `DV_CHECK_STREQ(obs_strength, "HiZ", "on FLASH_TEST_MODE0")
+    obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[0]);
+    `DV_CHECK_STREQ(obs_strength, "HiZ", "on FLASH_TEST_MODE1")
+    obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_volt_if.pins[0]);
+    `DV_CHECK_STREQ(obs_strength, "HiZ", "on FLASH_TEST_VOLT")
+    obs_strength = $sformatf("%v", cfg.chip_vif.cc_if.pins[0]);
+    `DV_CHECK_STREQ(obs_strength, "HiZ", "on CC1")
+    obs_strength = $sformatf("%v", cfg.chip_vif.cc_if.pins[1]);
+    `DV_CHECK_STREQ(obs_strength, "HiZ", "on CC2")
   endtask
 
 endclass
