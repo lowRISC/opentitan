@@ -76,6 +76,11 @@ The following covergroups have been developed to prove that the test intent has 
 * common covergroup for interrupts `hw/dv/sv/cip_lib/cip_base_env_cov.sv`: Cover interrupt value, interrupt enable, intr_test, interrupt pin
 * uart_cg in uart_agent_cov `hw/dv/sv/uart_agent/uart_agent_cov.sv`:       Cover direction, uart data, en_parity, odd_parity and baud rate
 * fifo_level_cg `hw/ip/uart/dv/env/uart_env_cov.sv`:                       Cover all fifo level with fifo reset for both TX and RX
+* tx_watermark_cg / rx_watermark_cg `hw/ip/uart/dv/env/uart_env_cov.sv`: Cover TX/RX watermark interrupt triggered for all watermark levels
+* rx_break_err_cg `hw/ip/uart/dv/env/uart_env_cov.sv`: Cover break interrupt triggered for all break levels
+* rx_timeout_cg `hw/ip/uart/dv/env/uart_env_cov.sv`: Cover timeout interrupt with small ( < 20), medium (20 - 50) and large (50 - 100) timeout values
+* rx_parity_err_cg `hw/ip/uart/dv/env/uart_env_cov.sv`: Cover parity interrupt with both even and odd parity
+* noise_filter_cg `hw/ip/uart/dv/env/uart_env_cov.sv`: Cover all combinations of bits in the noise filter
 
 ### Self-checking strategy
 #### Scoreboard
