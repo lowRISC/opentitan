@@ -12,6 +12,7 @@ filesets:
       - lowrisc:dv:cip_lib
     files:
       - uart_env_pkg.sv
+      - uart_nf_if.sv
       - uart_env_cfg.sv: {is_include_file: true}
       - uart_env_cov.sv: {is_include_file: true}
       - uart_virtual_sequencer.sv: {is_include_file: true}

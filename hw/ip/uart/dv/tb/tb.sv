@@ -33,6 +33,7 @@ module tb;
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk, .rst_n);
   uart_if uart_if();
+  uart_nf_if uart_nf_if(.clk_i(clk), .rst_ni(rst_n));
 
  `DV_ALERT_IF_CONNECT()
 
@@ -73,6 +74,11 @@ module tb;
   assign uart_rx = uart_if.uart_rx;
   assign uart_if.uart_tx = uart_tx;
 
+  assign uart_nf_if.rx_sync    = dut.uart_core.rx_sync;
+  assign uart_nf_if.rx_sync_q1 = dut.uart_core.rx_sync_q1;
+  assign uart_nf_if.rx_sync_q2 = dut.uart_core.rx_sync_q2;
+  assign uart_nf_if.rx_enable  = dut.uart_core.rx_enable;
+
   initial begin
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
@@ -81,6 +87,7 @@ module tb;
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual uart_if)::set(null, "*.env.m_uart_agent*", "vif", uart_if);
+    uvm_config_db#(virtual uart_nf_if)::set(null, "*.scoreboard", "uart_nf_vif", uart_nf_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
