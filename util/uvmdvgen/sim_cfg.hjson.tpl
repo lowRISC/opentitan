@@ -48,8 +48,9 @@
                 "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
 % if has_ral:
                 "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
-                "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson"]
+                "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson"
 % endif
+  ]
 % endif
 
   // Add additional tops for simulation.
