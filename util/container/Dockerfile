@@ -10,7 +10,6 @@ ARG VERILATOR_VERSION=4.210
 ARG VERIBLE_VERSION=v0.0-2135-gb534c1fe
 # The RISCV toolchain version should match the release tag used in GitHub.
 ARG RISCV_TOOLCHAIN_TAR_VERSION=20220210-1
-ARG RUST_VERSION=1.60.0
 # This should match the version in bazelish.sh.
 ARG BAZELISK_VERSION=v1.11.0
 # This should match the version in ci/install-package-dependencies.sh
@@ -23,7 +22,6 @@ FROM ubuntu:20.04 AS opentitan
 ARG VERILATOR_VERSION
 ARG VERIBLE_VERSION
 ARG RISCV_TOOLCHAIN_TAR_VERSION
-ARG RUST_VERSION
 ARG BAZELISK_VERSION
 ARG GCC_VERSION
 ARG CLANG_VERSION
@@ -171,11 +169,6 @@ RUN groupadd dev \
 
 # All subsequent steps are performed as user.
 USER dev:dev
-
-# Install Rust plus packages.
-COPY --chown=dev:dev sw/vendor/rustup/rustup-init.sh /tmp/rustup-init.sh
-RUN /tmp/rustup-init.sh -y --default-toolchain ${RUST_VERSION} \
-    && rm -f /tmp/rustup-init.sh
 
 # Install Python plus packages.
 #
