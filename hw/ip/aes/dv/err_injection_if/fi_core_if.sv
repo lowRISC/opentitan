@@ -63,9 +63,19 @@ interface fi_core_if
   endfunction
 
   function automatic void release_multi_bit(int target);
-    uvm_hdl_release(intf_mul_array[target]);
+
+    //VCS coverage off
+    // pragma coverage off
+
+    if (!uvm_hdl_release(intf_mul_array[target])) begin
+      `uvm_error("fi_core_if", $sformatf("Was not able to release %s", intf_mul_array[target]))
+    end
+
+    //VCS coverage on
+    // pragma coverage on
+
     $asserton(0,"tb.dut");
-  endfunction // release_single_bit
+  endfunction
 
   ///////////////////////////////////
   // Fault inject coverage         //

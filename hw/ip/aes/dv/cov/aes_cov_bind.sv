@@ -6,8 +6,8 @@
 module aes_cov_bind;
 
   bind aes aes_cov_if u_aes_cov_if (
-    .clk_i           (clk_i),
-    .idle_i          (idle_o)
+    .clk_i  (clk_i),
+    .idle_i (idle_o == prim_mubi_pkg::MuBi4True)
   );
 
   bind aes  cip_lc_tx_cov_if u_lc_escalate_en_cov_if (

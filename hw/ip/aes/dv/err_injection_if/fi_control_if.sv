@@ -97,7 +97,9 @@ interface fi_control_if
       value = 0;
     end else begin
       // Read the current value.
-      uvm_hdl_read(intf_array[target], read);
+      if (!uvm_hdl_read(intf_array[target], read)) begin
+        `uvm_error("fi_control_if", $sformatf("Was not able to read %s", intf_array[target]))
+      end
       value = !read;
     end
     // always announce we are forcing something
@@ -115,7 +117,17 @@ interface fi_control_if
 
 
   function automatic void release_single_bit(int target);
-    uvm_hdl_release(intf_array[target]);
+
+    //VCS coverage off
+    // pragma coverage off
+
+    if (!uvm_hdl_release(intf_array[target])) begin
+      `uvm_error("fi_control_if", $sformatf("Was not able to release %s", intf_array[target]))
+    end
+
+    //VCS coverage on
+    // pragma coverage on
+
     $asserton(0,"tb.dut");
   endfunction
 
@@ -133,7 +145,9 @@ interface fi_control_if
       `uvm_fatal("fi_control_if", $sformatf("PATH NOT EXISTING %m"))
     end
     // read the value currently of bit 0
-    uvm_hdl_read(intf_mul_array[target], read);
+    if (!uvm_hdl_read(intf_mul_array[target], read)) begin
+      `uvm_error("fi_control_if", $sformatf("Was not able to read %s", intf_mul_array[target]))
+    end
     // flip bit to make sure we don't force the value currently on bus
     value[0] = !read;
     if (!uvm_hdl_force(intf_mul_array[target], value)) begin
@@ -147,9 +161,19 @@ interface fi_control_if
 
 
   function automatic void release_multi_bit(int target);
-    uvm_hdl_release(intf_mul_array[target]);
+
+    //VCS coverage off
+    // pragma coverage off
+
+    if (!uvm_hdl_release(intf_mul_array[target])) begin
+      `uvm_error("fi_control_if", $sformatf("Was not able to release %s", intf_mul_array[target]))
+    end
+
+    //VCS coverage on
+    // pragma coverage on
+
     $asserton(0,"tb.dut");
-  endfunction // release_single_bit
+  endfunction
 
 
 
