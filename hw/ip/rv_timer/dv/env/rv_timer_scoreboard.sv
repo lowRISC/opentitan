@@ -216,7 +216,6 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
       // Check all interrupts in DataChannel of every Read/Write except when ctimecmp updated
       // during timer active. This scenario is checked in base sequence by reading the intr_state.
       // Ignored checking here because sticky intr_pin update has one cycle delay.
-      // TODO #1464: temp constraint, if support external reg, this can be removed
       if (!ctimecmp_update_on_fly) check_interrupt_pin();
       ctimecmp_update_on_fly = 0;
 
