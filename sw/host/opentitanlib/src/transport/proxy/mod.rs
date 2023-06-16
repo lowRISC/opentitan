@@ -149,7 +149,6 @@ impl Inner {
         let mut conn = self.conn.borrow_mut();
         let mut buf = self.recv_buf.borrow_mut();
         let mut idx: usize = buf.len();
-        #[allow(clippy::never_loop)] // Clippy does not recognize the use of `continue` below.
         loop {
             buf.resize(idx + 2048, 0);
             let rc = conn.read(&mut buf[idx..])?;
