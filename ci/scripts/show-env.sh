@@ -14,7 +14,6 @@ tools=(
     yapf
     isort
     clang-format
-    rustfmt
     flake8
     ninja
     doxygen

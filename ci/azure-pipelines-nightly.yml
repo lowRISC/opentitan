@@ -19,12 +19,11 @@ trigger: none
 pr: none
 
 variables:
-  # If updating VERILATOR_VERSION, TOOLCHAIN_VERSION or RUST_VERSION, update
+  # If updating VERILATOR_VERSION, TOOLCHAIN_VERSION, update
   # the definitions in util/container/Dockerfile as well.
   VERILATOR_VERSION: 4.210
   TOOLCHAIN_PATH: /opt/buildcache/riscv
   VERIBLE_VERSION: v0.0-2135-gb534c1fe
-  RUST_VERSION: 1.60.0
     # Release tag from https://github.com/lowRISC/lowrisc-toolchains/releases
   TOOLCHAIN_VERSION: 20220210-1
     # This controls where builds happen, and gets picked up by build_consts.sh.
