@@ -7,7 +7,8 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
                                                     .COV_T(uart_env_cov));
   `uvm_component_utils(uart_scoreboard)
 
-  virtual uart_if uart_vif;
+  virtual uart_if    uart_vif;
+  virtual uart_nf_if uart_nf_vif;
 
   // local variables
   local bit tx_enabled;
@@ -54,6 +55,10 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     uart_vif = cfg.m_uart_agent_cfg.vif;
+
+    if (!uvm_config_db#(virtual uart_nf_if)::get(this, "", "uart_nf_vif", uart_nf_vif)) begin
+      `uvm_fatal(`gfn, "failed to get uart_nf_if handle from uvm_config_db")
+    end
   endfunction
 
   task run_phase(uvm_phase phase);
@@ -61,8 +66,23 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
     fork
       process_uart_tx_fifo();
       process_uart_rx_fifo();
+      process_nf_cov();
     join_none
   endtask
+
+  virtual task process_nf_cov();
+    if (!cfg.en_cov) begin
+      return;
+    end
+
+    forever begin
+      @(uart_nf_vif.cb);
+      if (uart_nf_vif.cb.rx_enable) begin
+        cov.noise_filter_cg.sample(uart_nf_vif.cb.rx_sync, uart_nf_vif.cb.rx_sync_q1,
+          uart_nf_vif.cb.rx_sync_q2);
+      end
+    end
+  endtask;
 
   virtual task process_uart_tx_fifo();
     uart_item act_item, exp_item;
@@ -402,6 +422,11 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
             if (cfg.en_cov) begin
               cov.intr_cg.sample(intr, intr_en[intr], intr_exp[intr]);
               cov.intr_pins_cg.sample(intr, cfg.intr_vif.pins[intr]);
+              // Check interrupt from intr_status read value rather than expected as RxTimeout and
+              // RxBreakErr aren't predicted here
+              if (item.d_data[i]) begin
+                sample_detail_intr_cov(intr);
+              end
             end
             // don't check it when it's in ignored period
             if (intr inside {TxWatermark, TxEmpty}) begin // TX interrupts
@@ -517,6 +542,19 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
       `uvm_info(`gfn, $sformatf("%s item match!\nexp:\n%0s\nobs:\n%0s",
                                  dir, exp.sprint(), act.sprint()), UVM_HIGH)
     end
+  endfunction
+
+  // Interrupt has occurred, sample relevant covergroup for interrupts that have associated
+  // control/configuration values
+  function void sample_detail_intr_cov(uart_intr_e intr);
+    case (intr)
+      TxWatermark: cov.tx_watermark_cg.sample(ral.fifo_ctrl.txilvl.get_mirrored_value());
+      RxWatermark: cov.rx_watermark_cg.sample(ral.fifo_ctrl.rxilvl.get_mirrored_value());
+      RxBreakErr:  cov.rx_break_err_cg.sample(ral.ctrl.rxblvl.get_mirrored_value());
+      RxTimeout:   cov.rx_timeout_cg.sample(ral.timeout_ctrl.val.get_mirrored_value());
+      RxParityErr: cov.rx_parity_err_cg.sample(ral.ctrl.parity_odd.get_mirrored_value());
+      default: ;
+    endcase
   endfunction
 
   virtual function void reset(string kind = "HARD");
