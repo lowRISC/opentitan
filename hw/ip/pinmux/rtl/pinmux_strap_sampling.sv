@@ -434,12 +434,14 @@ module pinmux_strap_sampling
   `ASSERT_INIT(dft_strap1_idxRange_A, TargetCfg.dft_strap1_idx >= 0 &&
                                       TargetCfg.dft_strap1_idx < NumIOs)
 
-  `ASSERT(RvTapOff0_A, lc_hw_debug_en_i == Off ##3 strap_en_i |=> rv_jtag_o == '0)
+  `ASSERT(RvTapOff0_A, lc_hw_debug_en_i == Off ##2 strap_en_i && pinmux_hw_debug_en_q == Off
+      |=> rv_jtag_o == '0)
   `ASSERT(RvTapOff1_A, pinmux_hw_debug_en[0] == Off |-> rv_jtag_o == '0)
   `ASSERT(DftTapOff0_A, lc_dft_en_i == Off |-> ##2 dft_jtag_o == '0)
 
   // These assumptions are only used in FPV. They will cause failures in simulations.
-  `ASSUME_FPV(RvTapOff2_A, lc_hw_debug_en_i == Off ##3 strap_en_i |=> rv_jtag_i == '0)
+  `ASSUME_FPV(RvTapOff2_A, lc_hw_debug_en_i == Off ##2 strap_en_i && pinmux_hw_debug_en_q == Off
+      |=> rv_jtag_i == '0)
   `ASSUME_FPV(RvTapOff3_A, pinmux_hw_debug_en[0] == Off |-> rv_jtag_i == '0)
   `ASSUME_FPV(DftTapOff1_A, lc_dft_en_i == Off |-> ##2 dft_jtag_i == '0)
 

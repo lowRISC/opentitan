@@ -653,7 +653,7 @@ module pinmux_assert_fpv
           !dft_hold_tap_sel_i) |=>
           u_pinmux_strap_sampling.tap_strap[0] == $past(mio_in_i[TargetCfg.tap_strap0_idx]))
 
-  `ASSERT(TapStrapStable_A, ##3 dft_hold_tap_sel_i && !$past(strap_en_i ||
+  `ASSERT(TapStrapStable_A, ##4 dft_hold_tap_sel_i && !$past(strap_en_i ||
           SecVolatileRawUnlockEn && $past($rose(strap_en_override_i), 2)) |=>
           $stable(u_pinmux_strap_sampling.tap_strap))
 
