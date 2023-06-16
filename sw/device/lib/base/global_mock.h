@@ -54,7 +54,7 @@ class GlobalMock {
          << "` is already instantiated.";
       throw std::runtime_error(std::move(ss).str());
     }
-    instance_ = static_cast<Mock *>(this);
+    instance_ = this;
   }
 
   // Note: Destructors of mock classes must be virtual for `testing::StrictMock`
@@ -67,7 +67,7 @@ class GlobalMock {
       ss << "Mock `" << typeid(GlobalMock).name() << "` not instantiated yet.";
       throw std::runtime_error(std::move(ss).str());
     }
-    return *instance_;
+    return *static_cast<Mock *>(instance_);
   }
 
   GlobalMock(const GlobalMock &) = delete;
@@ -76,10 +76,10 @@ class GlobalMock {
   GlobalMock &operator=(GlobalMock &&) = delete;
 
  private:
-  static Mock *instance_;
+  static GlobalMock<Mock> *instance_;
 };
 template <typename Mock>
-Mock *GlobalMock<Mock>::instance_ = nullptr;
+GlobalMock<Mock> *GlobalMock<Mock>::instance_ = nullptr;
 
 }  // namespace global_mock
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_GLOBAL_MOCK_H_

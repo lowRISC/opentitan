@@ -16,6 +16,27 @@ cc_library(
     hdrs = ["global_mock.h"],
 )
 
+cc_test(
+    name = "global_mock_unittest",
+    srcs = ["global_mock_unittest.cc"],
+    # Enable UBSan by setting copts and linkopts. This is roughly what
+    # `--config=ubsan` does, as defined in `.bazelrc`.
+    copts = [
+        "-fsanitize=undefined",
+        "-g",
+        "-fno-omit-frame-pointer",
+        # Make detected UB fatal. Without this flag, the test would always pass.
+        "-fno-sanitize-recover",
+    ],
+    linkopts = [
+        "-fsanitize=undefined",
+    ],
+    deps = [
+        ":global_mock",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_library(
     name = "stdasm",
     hdrs = ["stdasm.h"],
