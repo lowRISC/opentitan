@@ -681,6 +681,7 @@
       sw_images: ["//sw/device/silicon_creator/rom/e2e:rom_e2e_static_critical:1:signed:fake_rsa_test_key_0"]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: ["+sw_test_timeout_ns=20000000"]
+      run_timeout_mins: 120
     }
     {
       name: rom_e2e_keymgr_init_rom_ext_meas
@@ -870,7 +871,7 @@
       name: rom_volatile_raw_unlock
       uvm_test_seq: chip_sw_lc_volatile_raw_unlock_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a:1:signed:ot_flash_binary",
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a:1:signed:fake_rsa_test_key_0:ot_flash_binary",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
