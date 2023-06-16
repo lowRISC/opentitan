@@ -106,7 +106,9 @@ interface fi_cipher_if
       value = 0;
     end else begin
       // Read the current value.
-      uvm_hdl_read(intf_array[target], read);
+      if (!uvm_hdl_read(intf_array[target], read)) begin
+        `uvm_error("fi_cipher_if", $sformatf("Was not able to read %s", intf_array[target]))
+      end
       value = !read;
     end
     // always announce we are forcing something
@@ -124,7 +126,17 @@ interface fi_cipher_if
 
 
   function automatic void release_single_bit(int target);
-    uvm_hdl_release(intf_array[target]);
+
+    //VCS coverage off
+    // pragma coverage off
+
+    if (!uvm_hdl_release(intf_array[target])) begin
+      `uvm_error("fi_cipher_if", $sformatf("Was not able to release %s", intf_array[target]))
+    end
+
+    //VCS coverage on
+    // pragma coverage on
+
     $asserton(0,"tb.dut");
   endfunction
 
@@ -151,7 +163,9 @@ interface fi_cipher_if
       value = value & 2'h3;
     end else begin
       // Read the current value.
-      uvm_hdl_read(intf_mul_array[target], read);
+      if (!uvm_hdl_read(intf_mul_array[target], read)) begin
+        `uvm_error("fi_cipher_if", $sformatf("Was not able to read %s", intf_mul_array[target]))
+      end
       if (check_target_name(intf_mul_array[target], "sel_o")) begin
         // The selector signals are OR-combined. Flipping one bit in one rail to zero doesn't have
         // an effect and cannot be detected. Therefore, this test forces a least one additional bit
@@ -177,9 +191,19 @@ interface fi_cipher_if
 
 
   function automatic void release_multi_bit(int target);
-    uvm_hdl_release(intf_mul_array[target]);
+
+    //VCS coverage off
+    // pragma coverage off
+
+    if (!uvm_hdl_release(intf_mul_array[target])) begin
+      `uvm_error("fi_cipher_if", $sformatf("Was not able to release %s", intf_mul_array[target]))
+    end
+
+    //VCS coverage on
+    // pragma coverage on
+
     $asserton(0,"tb.dut");
-  endfunction // release_single_bit
+  endfunction
 
 
 

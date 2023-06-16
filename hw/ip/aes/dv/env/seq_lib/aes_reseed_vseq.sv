@@ -105,7 +105,7 @@ class aes_reseed_vseq extends aes_base_vseq;
 
       if (`EN_MASKING) begin
         // Read the block counter.
-        uvm_hdl_read(block_ctr_path, block_ctr);
+        `DV_CHECK_FATAL(uvm_hdl_read(block_ctr_path, block_ctr))
 
         // Force a lower value to get more more action.
         if (block_ctr == 8188 || // Speed up testing of the PER_8K setting.
@@ -114,13 +114,13 @@ class aes_reseed_vseq extends aes_base_vseq;
               block_ctr, block_ctr_set_val), UVM_LOW)
           `DV_CHECK(uvm_hdl_force(block_ctr_path, block_ctr_set_val));
           cfg.clk_rst_vif.wait_clks(1);
-          uvm_hdl_release(block_ctr_path);
+          `DV_CHECK_FATAL(uvm_hdl_release(block_ctr_path))
 
         end else if (block_ctr == 0) begin
           // Check whether the DUT is actually busy. Unless it's doing a block operation, no reseed
           // operation is getting triggered.
           csr_rd(.ptr(ral.status), .value(status), .blocking(1));
-          uvm_hdl_read(cipher_crypt_path, cipher_crypt);
+          `DV_CHECK_FATAL(uvm_hdl_read(cipher_crypt_path, cipher_crypt))
           if (!status.idle && cipher_crypt) begin
             // Check entropy_masking_req to verify the reseeding is actually triggered.
             check_masking_prng_reseed();
@@ -129,8 +129,8 @@ class aes_reseed_vseq extends aes_base_vseq;
             block_done = 0;
             `DV_SPINWAIT_EXIT(
                 while (!block_done) begin
-                  uvm_hdl_read(cipher_out_valid_path, cipher_out_valid);
-                  uvm_hdl_read(cipher_out_ready_path, cipher_out_ready);
+                  `DV_CHECK_FATAL(uvm_hdl_read(cipher_out_valid_path, cipher_out_valid))
+                  `DV_CHECK_FATAL(uvm_hdl_read(cipher_out_ready_path, cipher_out_ready))
                   if (cipher_out_valid && cipher_out_ready) begin
                     block_done = 1;
                   end
@@ -197,7 +197,7 @@ class aes_reseed_vseq extends aes_base_vseq;
       `DV_SPINWAIT_EXIT(
         while (!sideload_valid) begin
           cfg.clk_rst_vif.wait_clks(1);
-          uvm_hdl_read(sideload_valid_path, sideload_valid);
+          `DV_CHECK_FATAL(uvm_hdl_read(sideload_valid_path, sideload_valid))
         end,
         cfg.clk_rst_vif.wait_clks(wait_timeout_cycles);,
         "Timeout waiting for valid sideload key")
@@ -211,7 +211,7 @@ class aes_reseed_vseq extends aes_base_vseq;
         begin
           while (sideload_valid && !sideload_enabled) begin
             cfg.clk_rst_vif.wait_clks(1);
-            uvm_hdl_read(sideload_valid_path, sideload_valid);
+            `DV_CHECK_FATAL(uvm_hdl_read(sideload_valid_path, sideload_valid))
           end
         end
       join

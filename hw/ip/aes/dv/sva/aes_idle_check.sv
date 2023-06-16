@@ -20,5 +20,5 @@ module aes_idle_check
   assign idle = (reg2hw.status.idle.q == 1'b1);
 
   // make sure idle_i always matched the register idle state
-  `ASSERT(IdleNotIdle_A, prim_mubi_pkg::mubi4_bool_to_mubi(idle) == idle_i);
+  `ASSERT(IdleNotIdle_A, prim_mubi_pkg::mubi4_bool_to_mubi(idle) == idle_i)
 endmodule

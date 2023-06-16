@@ -49,7 +49,9 @@ interface fi_ctr_fsm_if
       `uvm_fatal("fi_ctr_fsm_if", $sformatf("PATH NOT EXISTING %m"))
     end
     // read the value currently
-    uvm_hdl_read(intf_array[target], read);
+    if (!uvm_hdl_read(intf_array[target], read)) begin
+      `uvm_error("fi_ctr_fsm_if", $sformatf("Was not able to read %s", intf_array[target]))
+    end
     // always announce we are forcing something
     `uvm_info("if_ctr_fsm_if",
        $sformatf(" I am forcing target %d %s, value %b",target, intf_array[target], !read),UVM_LOW);
@@ -64,7 +66,17 @@ interface fi_ctr_fsm_if
 
 
   function automatic void release_single_bit(int target);
-    uvm_hdl_release(intf_array[target]);
+
+    //VCS coverage off
+    // pragma coverage off
+
+    if (!uvm_hdl_release(intf_array[target])) begin
+      `uvm_error("fi_ctr_fsm_if", $sformatf("Was not able to release %s", intf_array[target]))
+    end
+
+    //VCS coverage on
+    // pragma coverage on
+
     $asserton(0,"tb.dut");
   endfunction
 

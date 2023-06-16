@@ -38,7 +38,7 @@ module tb;
   `DV_EDN_IF_CONNECT
   `DV_ALERT_IF_CONNECT()
 
-  key_sideload_if sideload_if(.clk_i(clk), .rst_ni(rst_n));
+  key_sideload_if sideload_if(.clk_i(clk), .rst_ni(rst_n), .sideload_key());
  //lc_ctrl_pkg::On
   assign lc_escalate_en = lc_escalate[0] ?
                           lc_ctrl_pkg::lc_tx_t'(lc_escalate[$bits(lc_ctrl_pkg::lc_tx_t):1]) :

@@ -35,17 +35,19 @@ interface aes_reseed_if
   assign seed = {buffer_q, entropy_i};
 
   // make sure clearing PRNG LSFR input always matches the EDN input
-  `ASSERT(ClearingPrngInputMatchesEdnInput_A, seed_en |-> ##1 seed == lfsr_q);
+  `ASSERT(ClearingPrngInputMatchesEdnInput_A, seed_en |-> ##1 seed == lfsr_q)
 
   // make sure masking PRNG reseeded at the specified rate
   // check the reseed rate for per_1 reseed rate
-  `ASSERT(MaskingPrngReseedRatePer1_A, (SecMasking && prng_reseed_rate == PER_1 &&
-          block_ctr_decr) |-> ##[1:$] entropy_masking_req);
+  `ASSERT(MaskingPrngReseedRatePer1_A,
+      (SecMasking && prng_reseed_rate == PER_1 && block_ctr_decr) |->
+      ##[1:$] entropy_masking_req)
   // check the reseed rate for per_64 or per_8k reseed rate
-  `ASSERT(MaskingPrngReseedRate_A, ( SecMasking && (prng_reseed_rate == PER_64 |
-          prng_reseed_rate == PER_8K) && block_ctr_expr) |-> ##[1:$] entropy_masking_req);
+  `ASSERT(MaskingPrngReseedRate_A, (SecMasking &&
+      (prng_reseed_rate == PER_64 | prng_reseed_rate == PER_8K) && block_ctr_expr) |->
+      ##[1:$] entropy_masking_req)
   // check the reseed happens after the block counter resets (when control register is updated)
-  `ASSERT(MaskingPrngReseedCorrectAfter_A, (SecMasking && ctrl_we_q && !ctrl_phase_i) |->
-          ##[1:$] entropy_masking_req);
+  `ASSERT(MaskingPrngReseedCorrectAfter_A,
+      (SecMasking && ctrl_we_q && !ctrl_phase_i) |-> ##[1:$] entropy_masking_req)
 
 endinterface // aes_reseed_if

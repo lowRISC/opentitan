@@ -24,10 +24,10 @@ interface force_if
     // pragma coverage off
 
     if (!uvm_hdl_check_path(path)) begin
-      `uvm_fatal("Force_if", $sformatf("PATH NOT EXISTING %m"))
+      `uvm_fatal("force_if", $sformatf("PATH NOT EXISTING %m"))
     end
-    if (!uvm_hdl_force(path,state)) begin
-      `uvm_error("Force_if", $sformatf("Was not able to force %s", state))
+    if (!uvm_hdl_force(path, state)) begin
+      `uvm_error("force_if", $sformatf("Was not able to force %s", path))
     end
 
     //VCS coverage on
@@ -36,7 +36,17 @@ interface force_if
   endfunction
 
   function static void release_state();
-    uvm_hdl_release(path);
+
+    //VCS coverage off
+    // pragma coverage off
+
+    if (!uvm_hdl_release(path)) begin
+      `uvm_error("force_if", $sformatf("Was not able to release %s", path))
+    end
+
+    //VCS coverage on
+    // pragma coverage on
+
     $asserton(0,"tb.dut");
   endfunction
 endinterface
