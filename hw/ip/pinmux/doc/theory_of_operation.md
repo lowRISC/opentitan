@@ -41,6 +41,12 @@ However, only the wakeup detector logic will be actively clocked during sleep in
 
 See the [retention logic](#retention-logic) and [wakeup detectors](#wakeup-detectors) sections for more details about the mux implementation.
 
+### USB Wakeup Detection Module
+
+The USB device in the Earlgrey top-level is not in the AON power domain and hence the associated wakeup detection module is placed inside the pinmux IP in that top-level.
+The USB wakeup module is not connected to any pinmux infrastructure or CSRs except for the `usb_wkup_req` signal going to the power manager.
+See [USB device documentation](../../usbdev/README.md) for more information on the USB wakeup mechanism.
+
 ### Test and Debug Access
 
 The hardware strap sampling and TAP isolation logic provides test and debug access to the chip during specific life cycle states.
