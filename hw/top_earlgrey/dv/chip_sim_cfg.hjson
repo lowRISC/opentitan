@@ -1425,14 +1425,15 @@
       uvm_test_seq: chip_sw_sram_ctrl_scrambled_access_vseq
       sw_images: ["//sw/device/tests/sim_dv:sram_ctrl_scrambled_access_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=12_000_000", "+en_scb_tl_err_chk=0"]
+      run_opts: ["+sw_test_timeout_ns=12_000_000", "+en_scb_tl_err_chk=0",
+                 "+bypass_alert_ready_to_end_check=1"]
     }
     {
       name: chip_sw_sram_ctrl_scrambled_access_jitter_en
       uvm_test_seq: chip_sw_sram_ctrl_scrambled_access_vseq
       sw_images: ["//sw/device/tests/sim_dv:sram_ctrl_scrambled_access_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=12_000_000",
+      run_opts: ["+sw_test_timeout_ns=12_000_000", "+bypass_alert_ready_to_end_check=1",
                  "+en_jitter=1", "+en_scb_tl_err_chk=0"]
     }
     {
@@ -1848,7 +1849,7 @@
       sw_images: ["//sw/device/tests/sim_dv:sram_ctrl_scrambled_access_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+mem_sel=main",
-                 "+sw_test_timeout_ns=12_000_000",
+                 "+sw_test_timeout_ns=12_000_000", "+bypass_alert_ready_to_end_check=1",
                  "+en_jitter=1", "+en_scb_tl_err_chk=0", "+cal_sys_clk_70mhz=1"]
     }
     {

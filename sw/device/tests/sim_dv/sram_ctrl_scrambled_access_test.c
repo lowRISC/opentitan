@@ -397,7 +397,6 @@ bool test_main(void) {
     reference_frame = (scramble_test_frame *)main_sram_addr;
 
     execute_retention_sram_test();
-    CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
     return true;
   }
 
