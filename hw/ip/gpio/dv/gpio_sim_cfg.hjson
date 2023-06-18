@@ -50,6 +50,22 @@
   // Enable cdc instrumentation.
   run_opts: ["+cdc_instrumentation_enabled=1"]
 
+  // Add a second build mode to test the input synchronizers.
+  // Note that since the scoreboard has a cycle accurate model
+  // for GPIO without the synchronizers, the majority of the tests
+  // is run in the default build mode without the CDC prims. The en_cdc_prims
+  // build mode is used to run some additional smoke checks to ensure
+  // that the input paths through the CDC prims are connected correctly.
+  build_modes: [
+    {
+      name: en_cdc_prims
+      build_opts: ["+define+GPIO_ASYNC_ON"]
+    }
+  ]
+
+  en_cdc_prims_vcs_cov_cfg_file: "{default_vcs_cov_cfg_file}"
+  en_cdc_prims_xcelium_cov_cfg_file: "{default_xcelium_cov_cfg_file}"
+
   // List of test specifications.
   tests: [
     {
@@ -151,13 +167,26 @@
       run_opts: ["+do_clear_all_interrupts=0"]
     }
 
+    // Additional smoke checks for second build mode
+    {
+      name: gpio_smoke_en_cdc_prim
+      uvm_test_seq: gpio_smoke_vseq
+      build_mode: en_cdc_prims
+    }
+
+    {
+      name: gpio_smoke_no_pullup_pulldown_en_cdc_prim
+      uvm_test_seq: gpio_smoke_vseq
+      build_mode: en_cdc_prims
+      run_opts: ["+no_pullup_pulldown=1"]
+    }
   ]
 
   // List of regressions.
   regressions: [
     {
       name: smoke
-      tests: ["gpio_smoke"]
+      tests: ["gpio_smoke", "gpio_smoke_en_cdc_prim"]
     }
   ]
 }

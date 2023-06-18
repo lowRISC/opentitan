@@ -27,7 +27,6 @@ class gpio_smoke_vseq extends gpio_base_vseq;
   endtask: dut_init
 
   task body();
-
     // test gpio inputs
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_trans)
     `uvm_info(`gfn, $sformatf("No. of transactions (gpio_i) = %0d", num_trans), UVM_HIGH)
@@ -37,7 +36,14 @@ class gpio_smoke_vseq extends gpio_base_vseq;
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gpio_i)
       `uvm_info(msg_id, $sformatf("gpio_i = %0h", gpio_i), UVM_HIGH)
       cfg.gpio_vif.drive(gpio_i);
-      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
+`ifdef GPIO_ASYNC_ON
+      // If the CDC synchronizer prims are instantiated, it takes 2-3 cycles longer for inputs
+      // to propagate to the register (2 for the sync flops and 0-1 for CDC randomization).
+      `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 1 + 3;)
+`else
+      // Wait at least one clock cycle
+      `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 1;)
+`endif
       cfg.clk_rst_vif.wait_clks(delay);
       // Reading data_in will trigger a check inside scoreboard
       csr_rd(.ptr(ral.data_in), .value(csr_rd_val));
@@ -62,7 +68,8 @@ class gpio_smoke_vseq extends gpio_base_vseq;
       ral.direct_oe.set(gpio_oe);
       csr_update(.csr(ral.direct_out));
       csr_update(.csr(ral.direct_oe));
-      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
+      // Wait at least one clock cycle
+      `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 1;)
       cfg.clk_rst_vif.wait_clks(delay);
       `uvm_info(msg_id, $sformatf("waiting for %0d clock cycles", delay), UVM_HIGH)
     end

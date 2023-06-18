@@ -100,7 +100,7 @@
   //     }
   //   ]
   //
-  // To use a build mode for a specific test, set the 'use_build_mode' key.
+  // To use a build mode for a specific test, set the 'build_mode' key.
   //
   build_modes: []
 
