@@ -335,7 +335,7 @@ interface chip_if;
                                lc_ctrl_pkg::On;
 
 `ifdef GATE_LEVEL
-  wire pwrmgr_fast_pwr_state_strap_en = `PINMUX_HIER.u_pinmux_strap_sampling.test_so1;
+  wire pwrmgr_fast_pwr_state_strap_en = `PINMUX_HIER.u_pinmux_strap_sampling.strap_en_q_reg.Q;
 `else
   wire pwrmgr_fast_pwr_state_strap_en = `PINMUX_HIER.u_pinmux_strap_sampling.strap_en_q;
 `endif
