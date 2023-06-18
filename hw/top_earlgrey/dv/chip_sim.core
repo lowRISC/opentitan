@@ -12,7 +12,6 @@ filesets:
       - "!gatelevel ? (lowrisc:systems:chip_earlgrey_asic)"
       - lowrisc:ibex:ibex_tracer
     files:
-      - "gatelevel ? (../../../../mapped.v)"
     file_type: systemVerilogSource
 
   files_dv:
