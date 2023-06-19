@@ -160,6 +160,11 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/spi_device/dv/lint/{tool}"
              },
+             {    name: sram_ctrl
+                  fusesoc_core: lowrisc:dv:sram_ctrl_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/sram_ctrl/dv/lint/{tool}"
+             },
              {    name: sysrst_ctrl
                   fusesoc_core: lowrisc:dv:sysrst_ctrl_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
