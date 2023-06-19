@@ -17,9 +17,12 @@ interface edn_if(input clk, input rst_n);
     return {core_path, ".", fifo_name, "_", which_path};
   endfunction // fifo_err_path
 
-  function automatic string sm_err_path(string which_sm);
+  function automatic string sm_err_path(string which_sm, int ep_idx = 0);
     case (which_sm)
-      "edn_ack_sm": return {core_path, ".gen_ep_blk[0].u_edn_ack_sm_ep.state_q"};
+      "edn_ack_sm": begin
+        string ep_blk_path = $sformatf(".gen_ep_blk[%0d]", ep_idx);
+        return {core_path, ep_blk_path, ".u_edn_ack_sm_ep.state_q"};
+      end
       "edn_main_sm": return {core_path, ".u_edn_main_sm.state_q"};
       default: `uvm_fatal("edn_if", "Invalid sm name!")
     endcase // case (which_sm)
