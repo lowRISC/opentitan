@@ -97,8 +97,8 @@ module tb;
 
   if (`EN_MASKING) begin : gen_aes_masking_reseed_vif
     initial begin
-      uvm_config_db#(virtual aes_masking_reseed_if)::set(null, "*.env", "aes_masking_reseed_vif",
-        dut.u_aes_core.u_aes_cipher_core.gen_masks.u_aes_prng_masking.u_aes_masking_reseed_if);
+      uvm_config_db#(virtual aes_masking_reseed_if)
+                     ::set(null, "*.env", "aes_masking_reseed_vif", dut.u_aes_masking_reseed_if);
     end
   end
 endmodule
