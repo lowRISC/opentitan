@@ -227,7 +227,8 @@ status_t spi_flash_testutils_erase_block64k(dif_spi_host_t *spih,
 status_t spi_flash_testutils_program_op(dif_spi_host_t *spih, uint8_t opcode,
                                         const void *payload, size_t length,
                                         uint32_t address, bool addr_is_4b,
-                                        dif_spi_host_width_t write_width) {
+                                        dif_spi_host_width_t data_width,
+                                        dif_spi_host_width_t addr_width) {
   TRY_CHECK(spih != NULL);
   TRY_CHECK(payload != NULL);
   TRY_CHECK(length <= 256);  // Length must be less than a page size.
@@ -245,7 +246,7 @@ status_t spi_flash_testutils_program_op(dif_spi_host_t *spih, uint8_t opcode,
           .type = kDifSpiHostSegmentTypeAddress,
           .address =
               {
-                  .width = kDifSpiHostWidthStandard,
+                  .width = addr_width,
                   .mode = addr_mode,
                   .address = address,
               },
@@ -254,7 +255,7 @@ status_t spi_flash_testutils_program_op(dif_spi_host_t *spih, uint8_t opcode,
           .type = kDifSpiHostSegmentTypeTx,
           .tx =
               {
-                  .width = write_width,
+                  .width = data_width,
                   .buf = payload,
                   .length = length,
               },
@@ -269,18 +270,9 @@ status_t spi_flash_testutils_program_op(dif_spi_host_t *spih, uint8_t opcode,
 status_t spi_flash_testutils_program_page(dif_spi_host_t *spih,
                                           const void *payload, size_t length,
                                           uint32_t address, bool addr_is_4b) {
-  return spi_flash_testutils_program_op(spih, kSpiDeviceFlashOpPageProgram,
-                                        payload, length, address, addr_is_4b,
-                                        kDifSpiHostWidthStandard);
-}
-
-status_t spi_flash_testutils_program_page_quad(dif_spi_host_t *spih,
-                                               uint8_t opcode,
-                                               const void *payload,
-                                               size_t length, uint32_t address,
-                                               bool addr_is_4b) {
-  return spi_flash_testutils_program_op(spih, opcode, payload, length, address,
-                                        addr_is_4b, kDifSpiHostWidthQuad);
+  return spi_flash_testutils_program_op(
+      spih, kSpiDeviceFlashOpPageProgram, payload, length, address, addr_is_4b,
+      kDifSpiHostWidthStandard, kDifSpiHostWidthStandard);
 }
 
 status_t spi_flash_testutils_read_op(dif_spi_host_t *spih, uint8_t opcode,
