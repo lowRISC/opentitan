@@ -421,6 +421,7 @@ otp_alert_digest(
 # of OTP is representative of post-silicon scenarios.
 otp_image(
     name = "img_raw",
+    verbose = True,
     src = ":otp_json_raw",
 )
 

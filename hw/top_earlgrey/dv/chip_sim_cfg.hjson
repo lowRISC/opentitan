@@ -1653,6 +1653,19 @@
       run_opts: ["+calibrate_usb_clk=1"]
     }
     {
+      name: chip_sw_clkmgr_uncalibrated
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: [
+          "//sw/device/tests:clkmgr_uncalibrated_test:1",
+//          "//hw/ip/otp_ctrl/data:img_raw:4",
+          "//sw/device/tests:otp_uncalibrated_clocks:4",
+      ]
+      en_run_modes: ["sw_test_mode_test_rom"]
+//      run_opts: ["+src_dec_state=DecLcStTestUnlocked0"]
+      run_opts: ["+use_otp_image=OtpTypeCustom"]
+//      run_opts: ["+calibrate_usb_clk=1"]
+    }
+    {
       name: chip_sw_lc_ctrl_program_error
       uvm_test_seq: chip_sw_lc_ctrl_program_error_vseq
       sw_images: ["sw/device/tests/sim_dv:lc_ctrl_program_error:1"]

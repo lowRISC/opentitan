@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules:const.bzl", "CONST")
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load(
     "//rules:opentitan_test.bzl",
@@ -14,7 +15,7 @@ load(
     "verilator_params",
 )
 load("//rules:splice.bzl", "bitstream_splice")
-load("//rules:otp.bzl", "STD_OTP_OVERLAYS", "otp_image", "otp_json", "otp_partition")
+load("//rules:otp.bzl", "STD_OTP_OVERLAYS", "otp_hex", "otp_image", "otp_json", "otp_partition")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -509,6 +510,53 @@ opentitan_functest(
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
+)
+
+otp_json(
+    name = "otp_json_uncalibrated_clocks",
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {
+                # Enable AST initialization.
+                "CREATOR_SW_CFG_AST_INIT_EN": otp_hex(CONST.MUBI4_FALSE)
+            },
+        ),
+    ],
+)
+
+otp_image(
+    name = "otp_uncalibrated_clocks",
+    verbose = True,
+    src = "//hw/ip/otp_ctrl/data:otp_json_test_unlocked0",
+    overlays = STD_OTP_OVERLAYS + [":otp_json_uncalibrated_clocks"],
+    visibility = ["//visibility:private"],
+)
+
+opentitan_functest(
+    name = "clkmgr_uncalibrated_test",
+    srcs = ["clkmgr_uncalibrated_test.c"],
+    verilator = verilator_params(
+        tags = ["broken"],  # FIXME #16374 test doesn't make progress after enabling PWM
+    ),
+    deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:aon_timer",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/dif:sensor_ctrl",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:clkmgr_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:sensor_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+    dv = dv_params(
+#        otp = "//hw/ip/otp_ctrl/data:img_raw",
+        otp = ":otp_uncalibrated_clocks",
+    ),
 )
 
 cc_library(
