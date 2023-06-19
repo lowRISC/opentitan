@@ -23,25 +23,16 @@ enum {
   kSha256HashSizeIn32BitWords = kSha256HashSizeInBytes / 4,
 };
 
-// TODO(#18686): replace with real golden hashes (when real keys are generated).
 /**
  * The golden ROM size and hashes expected below are generated using the
  * following instructions. If the ROM is updated, these values must also be
  * updated to prevent CI failures.
  *
- * 1. Build the ROM with Bazel using:
- *    `bazel build //sw/device/silicon_creator/rom:rom_with_real_keys`
- *    Note, this will build a separate ROM binary for each device, that can both
- *    be located with `./bazelisk.sh outquery-all
- *    //sw/device/silicon_creator/rom:rom_with_real_keys`, including:
- *    a. one for DV simulations: "rom_with_real_keys_sim_dv.bin", and
- *    b. one for CW310 FPGA: "rom_with_real_keys_fpga_cw310.bin".
- *
- * 2. Query the ROM hashes:
+ * 1. Build the ROM and query the ROM hashes:
  *    bazel build //sw/device/silicon_creator/rom:rom_hashes
  *    cat bazel-bin/sw/device/silicon_creator/rom/rom_hashes.txt
  *
- * 3. Update the size and golden ROM hashes below (`k*GoldenRomHash`) by
+ * 2. Update the size and golden ROM hashes below (`k*GoldenRomHash`) by
  *    copying the little-endian-32 value arrays from the `rom_hashes.txt`
  *    report.
  */

@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_rom_binary")
+load("//rules:opentitan.bzl", "OPENTITAN_CPU", "OPENTITAN_PLATFORM", "elf_to_scrambled_rom_vmem", "opentitan_rom_binary")
 load("//rules:exclude_files.bzl", "exclude_files")
 load("//rules:linker.bzl", "ld_library")
 load(
@@ -165,13 +165,46 @@ opentitan_rom_binary(
 )
 
 opentitan_rom_binary(
-    name = "rom_with_real_keys",
-    # FIXME: remove testonly after adding the real keys
-    testonly = True,
+    name = "rom_with_real_keys_from_src",
     deps = [
         ":rom_without_keys",
         "//sw/device/silicon_creator/rom/keys/real/rsa",
         "//sw/device/silicon_creator/rom/keys/real/spx",
+    ],
+)
+
+_ROM_DEVICES = [
+    "sim_dv",
+    "sim_verilator",
+    "fpga_cw310",
+]
+
+[
+    elf_to_scrambled_rom_vmem(
+        name = "rom_with_real_keys_{}_scr_vmem".format(dev),
+        srcs = ["//sw/device/silicon_creator/rom/binaries:rom_with_real_keys_{}.elf".format(dev)],
+        platform = OPENTITAN_PLATFORM,
+    )
+    for dev in _ROM_DEVICES
+]
+
+# We use a filegroup here that points to the scrambled ROM VMEM file because
+# dvsim invokes a `bazel cquery ...` command to locate the ROM VMEM file it
+# built using the device-specific label name.
+[
+    filegroup(
+        name = "rom_with_real_keys_{}".format(dev),
+        srcs = [":rom_with_real_keys_{}_scr_vmem".format(dev)],
+    )
+    for dev in _ROM_DEVICES
+]
+
+filegroup(
+    name = "rom_with_real_keys",
+    srcs = [
+        ":rom_with_real_keys_fpga_cw310_scr_vmem",
+        ":rom_with_real_keys_sim_dv_scr_vmem",
+        ":rom_with_real_keys_sim_verilator_scr_vmem",
     ],
 )
 
@@ -391,12 +424,12 @@ genrule(
     name = "rom_hashes",
     testonly = True,
     srcs = [
-        ":rom_with_real_keys",
+        ":rom_with_real_keys_from_src",
     ],
     outs = ["rom_hashes.txt"],
     cmd = """
         echo "SHA256 of rom with real keys" > $@
-	for f in $(locations :rom_with_real_keys); do
+	for f in $(locations :rom_with_real_keys_from_src); do
 	    if [[ "$$f" == *bin ]]; then
 	        name=$$(basename $$f)
 		echo $$f >> $@

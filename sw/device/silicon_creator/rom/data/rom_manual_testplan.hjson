@@ -79,10 +79,8 @@
       name: rom_manual_hash_check
       desc: '''Verify that the hash of the unscrambled ROM binary matches the expected value.
 
-            We will use the sim_dv device target for tapeout. Verify the SHA256 digest of ROM by
-            - Comparing the digest of the unscrambled ROM binary with the expected value manually:
-              `./bazelisk.sh build-then "sha256sum %s" //sw/device/silicon_creator/rom:rom_with_real_keys_sim_dv_bin`
-            - Running the relevant tests and comparing their outputs with the expected value.
+            Run the ROM self hash test with:
+            `bazel test //sw/device/silicon_creator/rom/e2e:rom_e2e_self_hash_test_fpga_cw310_rom_with_real_keys --test_output=streamed`
             '''
       tags: ["manual"]
       stage: V2
