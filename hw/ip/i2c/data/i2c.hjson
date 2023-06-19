@@ -396,6 +396,7 @@
       desc: '''
             Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).
             All values are expressed in units of the input clock period.
+            These must be greater than 2 in order for the change in SCL to propagate to the input of the FSM so that acknowledgements are detected correctly.
             '''
       swaccess: "rw"
       hwaccess: "hro"
