@@ -47,11 +47,17 @@ class edn_err_vseq extends edn_base_vseq;
     $assertoff(0, "tb.dut.u_edn_core.u_prim_fifo_sync_gencmd.DataKnown_A");
     cfg.edn_assert_vif.assert_off();
 
-    // Send INS cmd
-    wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::INS), .clen(0), .flags(MuBi4False), .glen(0));
+    // Create background thread that writes the Instantiate and Generate commands to the SW command
+    // register.
+    fork
+      begin
+        // Send INS cmd
+        wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::INS), .clen(0), .flags(MuBi4False), .glen(0));
 
-    // Send GEN cmd w/ GLEN 1 (request single genbits)
-    wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::GEN), .clen(0), .flags(MuBi4False), .glen(1));
+        // Send GEN cmd w/ GLEN 1 (request single genbits)
+        wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::GEN), .clen(0), .flags(MuBi4False), .glen(1));
+      end
+    join_none
 
     // Load genbits data
     m_endpoint_pull_seq = push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)::type_id::
