@@ -50,11 +50,13 @@ class edn_disable_vseq extends edn_base_vseq;
             end
           )
         end
-        wait_no_outstanding_access();
+        // Disable EDN through a backdoor write, which prevents collisions with simultaneous
+        // frontdoor writes that could delay this disable and thereby impede the disablement in the
+        // same clock cycle.
         // TODO: if directly writing to ral.ctrl.edn_enable, sometimes it will override the
         // boot_req_mode to Mubi4False, so I hardcode this ctrl_val for now.
         ctrl_val = {MuBi4False, MuBi4False, MuBi4True, MuBi4False};
-        csr_wr(.ptr(ral.ctrl), .value(ctrl_val));
+        csr_wr(.ptr(ral.ctrl), .value(ctrl_val), .backdoor(1));
         cfg.edn_vif.drive_edn_disable(1);
         cfg.clk_rst_vif.wait_clks($urandom_range(10, 50));
         // Enable edn
