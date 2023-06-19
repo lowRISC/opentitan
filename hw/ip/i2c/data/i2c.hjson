@@ -403,7 +403,7 @@
       fields: [
         { bits: "15:0"
           name: "THIGH"
-          desc: "The actual time to hold SCL high in a given pulse"
+          desc: "The actual time to hold SCL high in a given pulse: in host mode, when there is no stretching this value is 3 cycles longer as tracked in issue #18962"
         }
         { bits: "31:16"
           name: "TLOW"
@@ -425,7 +425,7 @@
         }
         { bits: "31:16"
           name: "T_F"
-          desc: "The nominal fall time to anticipate for the bus (influences SDA hold times)"
+          desc: "The nominal fall time to anticipate for the bus (influences SDA hold times): this is currently counted twice in host mode as tracked in issue #18958"
         }
       ]
     }
