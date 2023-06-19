@@ -139,9 +139,9 @@ class OTBNState:
         # current fsm_state.
         self.cycles_in_this_state = 0
 
-        # RMA request changes state to LOCKED, basically an escalation from lifecycle
-        # controller. Initiates secure wiping through stop_at_end_of_cycle method and
-        # this flag.
+        # RMA request changes state to LOCKED, basically an escalation from
+        # lifecycle controller. Initiates secure wiping through
+        # stop_at_end_of_cycle method and this flag.
         self.rma_req = False
 
     def get_next_pc(self) -> int:
@@ -351,7 +351,8 @@ class OTBNState:
         # might have updated state (either registers, memory or
         # externally-visible registers). We want to roll back any of those
         # changes.
-        if (self._err_bits and self._fsm_state == FsmState.EXEC) or self.rma_req:
+        insn_failed = self._err_bits and self._fsm_state == FsmState.EXEC
+        if insn_failed or self.rma_req:
             self._abort()
 
         # INTR_STATE is the interrupt state register. Bit 0 (which is being
@@ -389,7 +390,8 @@ class OTBNState:
                 # Switch to a 'wiping' state
                 self.set_fsm_state(FsmState.WIPING_BAD if should_lock
                                    else FsmState.WIPING_GOOD)
-            elif self._fsm_state in [FsmState.WIPING_BAD, FsmState.WIPING_GOOD]:
+            elif self._fsm_state in [FsmState.WIPING_BAD,
+                                     FsmState.WIPING_GOOD]:
                 assert should_lock
                 self._next_fsm_state = FsmState.WIPING_BAD
             elif self._init_sec_wipe_state in [InitSecWipeState.IN_PROGRESS]:
