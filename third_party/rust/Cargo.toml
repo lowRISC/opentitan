@@ -37,7 +37,7 @@ log = "0.4"
 memoffset = "0.6.0"
 mio = { version = "0.7.0", features = ["os-poll", "net", "os-ext"] }
 mio-signals = "0.1.5" # mio-signals 0.2.0 exists, but requires mio 0.8.0
-nix = "0.17.0"
+nix = "0.26.1"
 num-bigint-dig = "0.8"
 num-traits = "0.2.14"
 num_enum = "0.5"

@@ -201,7 +201,7 @@ alias(
 
 alias(
     name = "nix",
-    actual = "@crate_index__nix-0.17.0//:nix",
+    actual = "@crate_index__nix-0.26.2//:nix",
     tags = ["manual"],
 )
 

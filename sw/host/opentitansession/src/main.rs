@@ -219,7 +219,7 @@ fn stop_session(run_file_fn: impl FnOnce(u16) -> PathBuf, port: u16) -> Result<B
         // that the target process exists), without actually sending any signal.
         match signal::kill(Pid::from_raw(pid), None) {
             Ok(()) => (), // Process still running, repeat.
-            Err(nix::Error::Sys(nix::errno::Errno::ESRCH)) => {
+            Err(nix::errno::Errno::ESRCH) => {
                 // Process could not be found, meaning that it has terminated, as expected.
                 fs::remove_file(&path)?;
                 return Ok(Box::new(SessionStopResult {}));
