@@ -50,7 +50,9 @@ This adds a one cycle module clock delay to both signals.
 If the module clock is sufficiently faster than I2C line speeds (for example 20MHz), this is not an issue.
 However if the line speeds and the module clock speeds become very close (2x), the 1 cycle delay may have an impact, as the internal state machine may mistakenly think it has sampled an SDA that has not yet been updated.
 
-Therefore, it is recommended that the internal module clock frequency is at least 5-10x the line speeds.
+Therefore, it is recommended that the internal module clock frequency is much higher than the line speeds.
+Another reason to have this higher internal clock frequency is that the timing parameters can be more accurately defined, which helps attain the desired I2C clock rate.
+Since there are currently also a few cycles discrepancy between the specified timings and the actual ones (as described in the Programmer's Guide), it is recommended that the internal module clock frequency is at leat 50x higher than the I2C line speeds.
 
 ### Byte-Formatted Programming Mode
 
@@ -159,7 +161,8 @@ Moreover, since the pin driver fall time is likely to be less then one clock cyc
 - t<sub>SU,STO</sub>: set in register [`TIMING4.TSU_STO`](../data/i2c.hjson#timing4).
 - t<sub>BUF</sub>: set in register [`TIMING4.T_BUF`](../data/i2c.hjson#timing4)
 
-The values programmed into the registers [`TIMING0`](../data/i2c.hjson#timing0) through [`TIMING4`](../data/i2c.hjson#timing4) are to be expressed in units of the bus clock period.
+The values programmed into the registers [`TIMING0`](../data/i2c.hjson#timing0) through [`TIMING4`](../data/i2c.hjson#timing4) are to be expressed in units of the input clock period.
+It is important that the internal clock is at least 50x the bus clock so that the proportions of the timings can be accurately captured.
 Note in order to ensure compliance with the I2C spec, firmware must program these registers with values within the ranges laid out in Table 10 of the specification.
 These values can be directly computed using DIFs given the desired speed standard, the desired operating frequency, and the actual line capacitance.
 These timing parameters are then fed directly to the I2C state machine to control the bus timing.
