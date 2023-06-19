@@ -41,7 +41,7 @@ class uart_env_cov extends cip_base_env_cov #(.CFG_T(uart_env_cfg));
 
   covergroup rx_break_err_cg with function sample(int break_lvl);
     cp_break_level: coverpoint break_lvl {
-      bins all_levels[] = {[0:4]};
+      bins all_levels[] = {[0:3]};
     }
   endgroup
 
