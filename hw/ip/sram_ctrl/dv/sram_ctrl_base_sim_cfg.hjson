@@ -24,7 +24,6 @@
   ral_spec: "{proj_root}/hw/ip/sram_ctrl/data/sram_ctrl.hjson"
 
   // Import additional common sim cfg files.
-  // TODO: remove imported cfgs that do not apply.
   import_cfgs: [// Project wide common sim cfg file
                 "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
                 // Config files to get the correct flags for prim_ram_1p_scr

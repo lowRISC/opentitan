@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name: "sram_ctrl"
-  // TODO: remove the common testplans if not applicable
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
@@ -85,9 +84,6 @@
             This test is the same as the multiple_keys test, except we make sure to sequence some
             memory transactions while a key request to OTP is still pending.
             Verify that these transactions are completely ignored by the memory.
-
-            TODO: Behavior might change in future to throw an error instead of ignore,
-                  should be reflected in TB.
             '''
       stage: V2
       tests: ["{name}_access_during_key_req"]
