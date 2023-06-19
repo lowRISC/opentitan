@@ -9,8 +9,8 @@
  * example curve point and an example scalar. Both scalar and coordinates of
  * the curve point are contained in the .data section below.
  *
- * x and y cordinates of the resulting curve points are copied to wide
- * registers. See comment at the end of the file for expected values.
+ * x coordinate of the resulting curve points is copied to a wide
+ * register.
  */
 
 .section .text.start
@@ -23,9 +23,16 @@ scalar_mult_test:
   /* copy result to wide reg file */
   li       x2, 0
   la       x3, x
-  bn.lid   x2++, 0(x3)
+  bn.lid   x2, 0(x3)
+
+  /* load mask */
+  li       x2, 19
   la       x3, y
   bn.lid   x2, 0(x3)
+
+  /* unmask x coordinate
+     w0 <= dmem[x] + dmem[m_x] mod p */
+  bn.addm    w0, w0, w19
 
   ecall
 
