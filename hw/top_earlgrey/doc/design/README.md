@@ -178,7 +178,7 @@ The base address of the ROM, Flash, and SRAM are given in the address map sectio
 
 ### Secure boot
 
-Earlgrey follows the [Secure Boot](security/specs/secure_boot/index.md) specification. The `ROM` has 3 key slots
+Earlgrey follows the [Secure Boot](../../../../doc/security/specs/secure_boot/README.md) specification. The `ROM` has 3 key slots
 which are allocated as follows:
 
 | Slot | Role | Name |
