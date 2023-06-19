@@ -34,7 +34,7 @@ class edn_disable_vseq extends edn_base_vseq;
           `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wait_disable,
                                              wait_disable inside
                                              { [80:300] };)
-           cfg.clk_rst_vif.wait_clks(wait_disable);
+           cfg.clk_rst_vif.wait_n_clks(wait_disable);
            `uvm_info(`gfn, $sformatf("Wait %0d clk cycles then issue edn disablement",
                      wait_disable), UVM_HIGH)
         end else begin
@@ -43,11 +43,13 @@ class edn_disable_vseq extends edn_base_vseq;
           `uvm_info(`gfn, $sformatf("Wait until %0s state then issue edn disablement",
                     boot_sts[rand_st_idx].name), UVM_HIGH)
           `DV_SPINWAIT(
-              while (state_val != boot_sts[rand_st_idx]) begin
-                `DV_CHECK(uvm_hdl_read(main_sm_d_path, state_val))
-                cfg.clk_rst_vif.wait_clks(1);
-              end)
-         end
+            forever begin
+              cfg.clk_rst_vif.wait_n_clks(1);
+              `DV_CHECK(uvm_hdl_read(main_sm_d_path, state_val))
+              if (state_val == boot_sts[rand_st_idx]) break;
+            end
+          )
+        end
         wait_no_outstanding_access();
         // TODO: if directly writing to ral.ctrl.edn_enable, sometimes it will override the
         // boot_req_mode to Mubi4False, so I hardcode this ctrl_val for now.
