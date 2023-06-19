@@ -22,11 +22,6 @@ class chip_base_test extends cip_base_test #(
 
     super.build_phase(phase);
 
-    // Set the number of RAM tiles (1 each).
-    cfg.num_ram_main_tiles = 1;
-    cfg.num_ram_ret_tiles = 1;
-    cfg.num_otbn_dmem_tiles = 1;
-
     // Knob to select the chip clock source.
     `DV_GET_ENUM_PLUSARG(chip_clock_source_e, cfg.chip_clock_source, chip_clock_source)
     if (cfg.chip_clock_source != ChipClockSourceInternal) begin
