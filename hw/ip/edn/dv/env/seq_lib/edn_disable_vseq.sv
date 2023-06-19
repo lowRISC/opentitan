@@ -30,7 +30,7 @@ class edn_disable_vseq extends edn_base_vseq;
         wait(cfg.clk_rst_vif.rst_n == 1);
 
         // Random delay, disable edn
-        if ($urandom_range(0, 1)) begin
+        if ($urandom_range(1, 10) > 8) begin
           `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wait_disable,
                                              wait_disable inside
                                              { [80:300] };)
