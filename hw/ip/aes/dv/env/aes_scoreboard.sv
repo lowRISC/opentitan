@@ -562,6 +562,16 @@ virtual task rebuild_message();
       end
 
       begin
+        // AES indicates when it's done with processing individual blocks but not when it's done
+        // with processing an entire message. To detect the end of a message, the DV environment
+        // does the following:
+        // - It tracks writes to the main control register. If two successfull writes to this
+        //   shadowed register are observed, this marks the start of a new message.
+        // - DV then knows that the last output data retrieved marks the end of the previous
+        //   message.
+        // This works fine except for the very last message before the test ends. To mark the end
+        // of the last message, the `finish_message` variable is used. It gets set by the
+        // `phase_ready_to_end()` function, see below.
         wait (finish_message)
         `uvm_info(`gfn, $sformatf("\n\t ----| Finish test received adding message item to mg_fifo"),
                                   UVM_MEDIUM)
@@ -642,16 +652,24 @@ virtual task rebuild_message();
     end
   endtask
 
-  // TODO get rid of this and do EOP checks in monitor
   virtual function void phase_ready_to_end(uvm_phase phase);
     if (phase.get_name() != "run") return;
 
-    // the message currently being reassembled is should be sent for scoring
+    // AES indicates when it's done with processing individual blocks but not when it's done
+    // with processing an entire message. To detect the end of a message, the DV environment
+    // does the following:
+    // - It tracks writes to the main control register. If two successfull writes to this
+    //   shadowed register are observed, this marks the start of a new message.
+    // - DV then knows that the last output data retrieved marks the end of the previous
+    //   message.
+    // This works fine except for the very last message before the test ends. To mark the end
+    // of the last message, and trigger its scoring, the `finish_message` variable is set. It
+    // gets read by the `rebuild_message()` task above.
     finish_message = 1;
     `uvm_info(`gfn, $sformatf("Finish message: %b", finish_message), UVM_MEDIUM)
 
-    // AES needs this objection - because PHASE READY TO END
-    // is the only way to know that the very last message is now complete
+    // Don't end the test yet. First, the last message needs to be scored, and all queues and
+    // FIFOs need to be emptied.
     phase.raise_objection(this, "need time to finish last item");
     fork begin
       wait_fifo_empty();
