@@ -69,6 +69,9 @@ $$ \textrm{TIMING0.TLOW}=\textrm{TLOW_MIN} $$
 1. THIGH is then set to satisfy both constraints in the desired SCL period and in the minimum permissible values for t<sub>HIGH</sub>:
 $$ \textrm{TIMING0.THIGH}=\max(\textrm{PERIOD}-\textrm{T_R} - \textrm{TIMING0.TLOW} -\textrm{T_F}, \textrm{THIGH_MIN}) $$
 
+We are aware of two issues with timing calculations.
+First, the fall time (T_F) is counted twice in host mode as is tracked in [issue #18958](https://github.com/lowRISC/opentitan/issues/18958).
+Second, the high time (THIGH) is 3 cycles longer when no clock stretching is detected as tracked in [issue #18962](https://github.com/lowRISC/opentitan/issues/18962).
 
 #### Timing parameter examples
 
