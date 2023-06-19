@@ -26,51 +26,46 @@ _stack_end = ORIGIN(ram_main) + LENGTH(ram_main);
  */
 _dv_log_offset = 0x10000;
 
-/* We do not use this information but it used to prevent the linker from discarding
- * the crt */
 ENTRY(sram_start);
 
 SECTIONS {
-  /**
-   * SRAM programs consist only of a `.data` section that contains all input
-   * `.rodata`, `.data`, `.text`, and `.bss` sections.
-   */
-  .data ORIGIN(ram_main) + _static_critical_size : ALIGN(4) {
+  .text ORIGIN(ram_main) + _static_critical_size : ALIGN(4) {
+    /* Place the entry point of the SRAM program to the start of the main SRAM
+     * so that we don't have to maintain a separate offset from the start of
+     * the RAM to the entry point for VMEM files. */
+    KEEP(*(.sram_start))
+    KEEP(*(.crt))
+    . = ALIGN(4);
+    KEEP(*(.text))
+    KEEP(*(.text.*))
+    . = ALIGN(4);
+  } > ram_main
+
+  .rodata : ALIGN(4) {
+    KEEP(*(.rodata))
+    KEEP(*(.rodata.*))
+    . = ALIGN(4);
+  } > ram_main
+
+  .data : ALIGN(4) {
     /* This will get loaded into `gp`, and the linker will use that register for
      * accessing data within [-2048,2047] of `__global_pointer$`.
      *
      * This is much cheaper (for small data) than materializing the
      * address and loading from that (which will take one extra instruction).
-     *
-     * This must match the value used for functional tests to be able to call
-     * SRAM programs from functional tests. */
+
+     * Since the .data section is small for SRAM programs, it doesn't make a big
+     * difference to distinguish data from small data. */
     __global_pointer$ = . + 2048;
 
-    /* Place the entry point of the SRAM program to the start of the main SRAM
-     * so that we don't have to maintain a separate offset from the start of
-     * the RAM to the entry point. */
-    KEEP(*(.sram_start))
-    KEEP(*(.crt))
-
-    /* Place all input `.rodata`, `.data`, `.text` sections in the main SRAM.
-     *
-     * Small data should come before larger data. This helps to ensure small
-     * globals are within 2048 bytes of the value of `gp`, making their accesses
-     * hopefully only take one instruction. Other data will likely need
-     * multiple instructions to load, so we're less concerned about address
-     * materialisation taking more than one instruction. */
-    KEEP(*(.srodata))
-    KEEP(*(.srodata.*))
-    KEEP(*(.rodata))
-    KEEP(*(.rodata.*))
-    . = ALIGN(4);
-    KEEP(*(.sdata))
-    KEEP(*(.sdata.*))
     KEEP(*(.data))
     KEEP(*(.data.*))
-    . = ALIGN(4);
-    KEEP(*(.text))
-    KEEP(*(.text.*))
+
+    /* Place all small data sections together. */
+    KEEP(*(.srodata))
+    KEEP(*(.srodata.*))
+    KEEP(*(.sdata))
+    KEEP(*(.sdata.*))
     . = ALIGN(4);
   } > ram_main
 
