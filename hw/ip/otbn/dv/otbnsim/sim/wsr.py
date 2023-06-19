@@ -252,7 +252,7 @@ class URNDWSR(WSR):
         return [d_out, c_out, b_out, a_out]
 
     def set_seed(self, value: List[int]) -> None:
-        assert(len(value) == 4)
+        assert len(value) == 4
         self.running = True
         self.state[0] = value
         # Step immediately to update the internal state with the new seed
