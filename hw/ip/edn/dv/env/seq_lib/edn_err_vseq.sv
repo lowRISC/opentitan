@@ -60,10 +60,12 @@ class edn_err_vseq extends edn_base_vseq;
     `DV_CHECK_STD_RANDOMIZE_FATAL(genbits)
     cfg.m_csrng_agent_cfg.m_genbits_push_agent_cfg.add_h_user_data({fips, genbits});
 
-    // Request data
+    // Create background thread that does endpoint requests.
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(endpoint_port,
                                        endpoint_port inside { [0:cfg.num_endpoints - 1] };)
-    m_endpoint_pull_seq.start(p_sequencer.endpoint_sequencer_h[endpoint_port]);
+    fork
+      m_endpoint_pull_seq.start(p_sequencer.endpoint_sequencer_h[endpoint_port]);
+    join_none
 
     reg_name = "err_code";
     csr = ral.get_reg_by_name(reg_name);
