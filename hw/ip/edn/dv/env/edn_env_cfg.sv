@@ -67,6 +67,14 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
 
     num_boot_reqs inside { [min_num_boot_reqs:max_num_boot_reqs] };}
 
+  constraint which_err_code_c {which_err_code dist {
+    // Certain error codes are more interesting for coverage, so give each of them a higher weight.
+    edn_ack_sm_err  :/ 5,
+    edn_main_sm_err :/ 5,
+    edn_cntr_err    :/ 5
+    // All other error codes will implicitly get a weight of 1.
+  };}
+
   // Functions
   function void post_randomize();
     if (use_invalid_mubi) begin
