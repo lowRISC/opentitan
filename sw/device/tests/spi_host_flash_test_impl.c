@@ -119,17 +119,28 @@ status_t test_page_program(dif_spi_host_t *spi) {
   return OK_STATUS();
 }
 
-status_t test_page_program_quad(dif_spi_host_t *spi, uint8_t opcode) {
-  enum {
+status_t test_page_program_quad(dif_spi_host_t *spi, uint8_t opcode,
+                                uint8_t address_width) {
+  enum { kPageSize = 256, kAddress = kPageSize * 10 };
+  TRY_CHECK(address_width == 1 || address_width == 2 || address_width == 4);
+  dif_spi_host_width_t addr_width = kDifSpiHostWidthStandard;
+  switch (address_width) {
+    case 4:
+      addr_width = kDifSpiHostWidthQuad;
+      break;
+    case 2:
+      addr_width = kDifSpiHostWidthDual;
+      break;
+    default:
+      break;
+  }
 
-    kPageSize = 256,
-    kAddress = kPageSize * 10
-  };
   TRY(spi_flash_testutils_erase_sector(spi, kAddress, false));
 
-  TRY(spi_flash_testutils_program_page_quad(
-      spi, opcode, kGettysburgPrelude, sizeof(kGettysburgPrelude),
-      /*address=*/kAddress, /*addr_is_4b=*/false));
+  TRY(spi_flash_testutils_program_op(spi, opcode, kGettysburgPrelude,
+                                     sizeof(kGettysburgPrelude),
+                                     /*address=*/kAddress, /*addr_is_4b=*/false,
+                                     kDifSpiHostWidthQuad, addr_width));
 
   uint8_t buf[256];
   TRY(spi_flash_testutils_read_op(spi, kSpiDeviceFlashOpReadNormal, buf,
