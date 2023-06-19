@@ -17,6 +17,7 @@ class edn_err_vseq extends edn_base_vseq;
   uint                                          endpoint_port;
 
   task body();
+    string        ins_cmd_type, gen_cmd_type;
     bit [5:0]     err_code_test_bit;
     string        path, path1, path2;
     bit           value1, value2;
@@ -47,18 +48,6 @@ class edn_err_vseq extends edn_base_vseq;
     $assertoff(0, "tb.dut.u_edn_core.u_prim_fifo_sync_gencmd.DataKnown_A");
     cfg.edn_assert_vif.assert_off();
 
-    // Create background thread that writes the Instantiate and Generate commands to the SW command
-    // register.
-    fork
-      begin
-        // Send INS cmd
-        wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::INS), .clen(0), .flags(MuBi4False), .glen(0));
-
-        // Send GEN cmd w/ GLEN 1 (request single genbits)
-        wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::GEN), .clen(0), .flags(MuBi4False), .glen(1));
-      end
-    join_none
-
     // Load genbits data
     m_endpoint_pull_seq = push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)::type_id::
         create("m_endpoint_pull_seq");
@@ -71,6 +60,35 @@ class edn_err_vseq extends edn_base_vseq;
                                        endpoint_port inside { [0:cfg.num_endpoints - 1] };)
     fork
       m_endpoint_pull_seq.start(p_sequencer.endpoint_sequencer_h[endpoint_port]);
+    join_none
+
+    // Determine into which CSRs the Instantiate and Generate commands need to be written.
+    if (cfg.boot_req_mode == MuBi4True) begin
+      ins_cmd_type = "boot_ins";
+      gen_cmd_type = "boot_gen";
+    end else if (cfg.auto_req_mode == MuBi4True) begin
+      ins_cmd_type = "sw";
+      gen_cmd_type = "generate";
+    end else begin // SW mode
+      ins_cmd_type = "sw";
+      gen_cmd_type = "sw";
+    end
+
+    // Create background thread that writes the Instantiate and Generate commands to the CSRs.
+    fork
+      begin
+        if (cfg.auto_req_mode == MuBi4True) begin
+          // In Auto mode, minimize number of requests between reseeds and set the reseed command.
+          csr_wr(.ptr(ral.max_num_reqs_between_reseeds), .value(1));
+          wr_cmd(.cmd_type("reseed"), .acmd(csrng_pkg::RES), .clen(0), .flags(MuBi4False));
+        end
+        // Send INS cmd.
+        wr_cmd(.cmd_type(ins_cmd_type),
+               .acmd(csrng_pkg::INS), .clen(0), .flags(MuBi4False), .glen(0));
+        // Send GEN cmd with GLEN = 1 (request single genbits).
+        wr_cmd(.cmd_type(gen_cmd_type),
+               .acmd(csrng_pkg::GEN), .clen(0), .flags(MuBi4False), .glen(1));
+      end
     join_none
 
     reg_name = "err_code";

@@ -98,7 +98,7 @@
 
     {
       name: edn_err
-      uvm_test: edn_intr_test
+      uvm_test: edn_err_test
       uvm_test_seq: edn_err_vseq
     }
 
