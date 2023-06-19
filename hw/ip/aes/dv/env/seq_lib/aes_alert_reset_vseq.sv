@@ -17,6 +17,7 @@ class aes_alert_reset_vseq extends aes_base_vseq;
   rand bit [$bits(lc_ctrl_pkg::lc_tx_t)-1 :0 ]  lc_esc;
 
   task body();
+
     `uvm_info(`gfn, $sformatf("\n\n\t ----| STARTING AES MAIN SEQUENCE |----\n %s",
                               cfg.convert2string()), UVM_LOW)
 
@@ -36,17 +37,12 @@ class aes_alert_reset_vseq extends aes_base_vseq;
                   )) begin
                 `uvm_fatal(`gfn, $sformatf("\n\t ----| PATH NOT FOUND"))
               end else begin
-                $assertoff(0, "tb.dut.u_aes_core.AesModeValid");
-                $assertoff(0, "tb.dut.u_aes_core.u_aes_control.AesModeValid");
                 void'(uvm_hdl_force(
                     "tb.dut.u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_mode.committed_q",
                     mal_error));
                 wait(!cfg.clk_rst_vif.rst_n);
                 void'(uvm_hdl_release(
                     "tb.dut.u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_mode.committed_q"));
-                // turn assertions back on
-                $asserton(0, "tb.dut.u_aes_core.AesModeValid");
-                $asserton(0, "tb.dut.u_aes_core.u_aes_control.AesModeValid");
               end
             end else if (cfg.flip_rst_lc_esc == Pull_reset) begin
               // only do reset injection if we are not already
