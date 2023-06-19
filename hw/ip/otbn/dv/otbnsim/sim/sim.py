@@ -176,8 +176,8 @@ class OTBNSim:
 
         if self.state.init_sec_wipe_is_running():
             # Wait for the URND seed. Once that appears, switch to WIPING_GOOD
-            # unless the FSM state is already LOCKED, in which case we change it
-            # to WIPING_BAD.
+            # unless the FSM state is already LOCKED, in which case we change
+            # it to WIPING_BAD.
             if self.state.wsrs.URND.running:
                 if self.state.get_fsm_state() == FsmState.LOCKED:
                     self.state.set_fsm_state(FsmState.WIPING_BAD)
@@ -301,7 +301,8 @@ class OTBNSim:
 
         # Zero INSN_CNT once if we're in state WIPING_BAD.
         if not is_good and self.state.ext_regs.read('INSN_CNT', True) != 0:
-            if self.state.zero_insn_cnt_next or not self.state.lock_immediately:
+            if ((self.state.zero_insn_cnt_next or
+                 not self.state.lock_immediately)):
                 self.state.ext_regs.write('INSN_CNT', 0, True)
                 self.state.zero_insn_cnt_next = False
             if self.state.lock_immediately:
@@ -327,15 +328,16 @@ class OTBNSim:
         if self.state.wipe_cycles == 0:
             # This is the final clock cycle of a wipe round.
             if self.state.first_round_of_wipe and not self.state.rma_req:
-                # This is the first wipe round and since there's no RMA request,
-                # a second round must follow after URND refresh acknowledgment.
+                # This is the first wipe round and since there's no RMA
+                # request, a second round must follow after URND refresh
+                # acknowledgment.
                 if self.state.wsrs.URND.running:
                     self.state.first_round_of_wipe = False
                     self.state.set_fsm_state(self.state.get_fsm_state())
             else:
-                # This is the second wipe round or the only wipe round during an
-                # RMA request. If the wipe was good, set the next state to IDLE;
-                # otherwise set it to LOCKED.
+                # This is the second wipe round or the only wipe round during
+                # an RMA request. If the wipe was good, set the next state to
+                # IDLE; otherwise set it to LOCKED.
                 if is_good:
                     assert not self.state.rma_req
                     next_state = FsmState.IDLE
@@ -373,7 +375,8 @@ class OTBNSim:
             self.state.ext_regs.write('STATUS', Status.IDLE, True)
             self.state.set_fsm_state(FsmState.IDLE)
 
-    def send_err_escalation(self, err_val: int, lock_immediately: bool) -> None:
+    def send_err_escalation(self,
+                            err_val: int, lock_immediately: bool) -> None:
         '''React to an error escalation'''
         assert err_val & ~ErrBits.MASK == 0
         self.state.injected_err_bits |= err_val
