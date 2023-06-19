@@ -49,7 +49,7 @@ jobs:
 
 - job: build_release
   displayName: "Create the OpenTitan release"
-  timeoutInMinutes: 300
+  timeoutInMinutes: 360
   dependsOn: checkout
   pool: ci-public
   steps:
