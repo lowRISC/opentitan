@@ -52,7 +52,7 @@ However if the line speeds and the module clock speeds become very close (2x), t
 
 Therefore, it is recommended that the internal module clock frequency is much higher than the line speeds.
 Another reason to have this higher internal clock frequency is that the timing parameters can be more accurately defined, which helps attain the desired I2C clock rate.
-Since there are currently also a few cycles discrepancy between the specified timings and the actual ones (as described in the Programmer's Guide), it is recommended that the internal module clock frequency is at leat 50x higher than the I2C line speeds.
+Since there are currently also a few cycles discrepancy between the specified timings and the actual ones (as described in the [Programmer's Guide](./programmers_guide.md#timing-parameter-tuning-algorithm)), it is recommended that the internal module clock frequency is at leat 50x higher than the I2C line speeds.
 
 ### Byte-Formatted Programming Mode
 
@@ -167,7 +167,7 @@ Note in order to ensure compliance with the I2C spec, firmware must program thes
 These values can be directly computed using DIFs given the desired speed standard, the desired operating frequency, and the actual line capacitance.
 These timing parameters are then fed directly to the I2C state machine to control the bus timing.
 
-A detailed description of the algorithm for determining these parameters--as well as a couple of concrete examples--are given in the [Programmers Guide section of this document.](#timing-parameter-tuning-algorithm)
+A detailed description of the algorithm for determining these parameters--as well as a couple of concrete examples--are given in the [Programmer's Guide](./programmers_guide.md#timing-parameter-tuning-algorithm).
 
 ### Timeout Control
 A malfunctioning (or otherwise very slow) target device can hold SCL low indefinitely, stalling the bus.
