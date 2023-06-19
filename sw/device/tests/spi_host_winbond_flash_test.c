@@ -41,10 +41,12 @@ bool test_main(void) {
                "SPI_HOST config failed!");
   CHECK_DIF_OK(dif_spi_host_output_set_enabled(&spi_host, true));
 
-  enum {
+  enum WinbondVendorSpecific {
     kDeviceId = 0x2180,
     kManufactureId = 0xef,
-    kWinbondPageQuadProgramOpcode = 0x32,
+    kPageQuadProgramOpcode = 0x32,
+    // The Winbond flash `4PP` opcode operates in 1-1-4 mode.
+    kPageQuadProgramAddrWidth = 1,
   };
 
   status_t result = OK_STATUS();
@@ -61,7 +63,7 @@ bool test_main(void) {
   EXECUTE_TEST(result, test_dual_read, &spi_host);
   EXECUTE_TEST(result, test_quad_read, &spi_host);
   EXECUTE_TEST(result, test_page_program_quad, &spi_host,
-               kWinbondPageQuadProgramOpcode);
+               kPageQuadProgramOpcode, kPageQuadProgramAddrWidth);
   EXECUTE_TEST(result, test_erase_32k_block, &spi_host);
   EXECUTE_TEST(result, test_erase_64k_block, &spi_host);
 
