@@ -248,6 +248,11 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     // there can also be a pending response in the peripheral.
     // However, the actual ibex data port can only support 1 outstanding item.
     m_tl_agent_cfg.max_outstanding_req = 3;
+
+    // Set the number of RAM tiles (1 each).
+    num_ram_main_tiles = 1;
+    num_ram_ret_tiles = 1;
+    num_otbn_dmem_tiles = 1;
   endfunction
 
   // Disable functional coverage of comportable IP-specific specialized registers.
