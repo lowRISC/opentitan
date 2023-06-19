@@ -12,12 +12,13 @@ module prim_lfsr_tb;
 
   //////////////////////////////////////////////////////
   // Build configurations:
-  // LFSR_TYPE; The type of LFSR used. Choices: "GAL_XOR" or "FIB_XOR"
+  // LFSR_FIB_TYPE; If defined, "FIB_XNOR" is used.
+  //                If not defined, this defaults to "GAL_XOR".
   // MIN_LFSR_DW: Minimum LFSR width tested.
   // MAX_LFSR_DW: Maximum LFSR width tested.
   //////////////////////////////////////////////////////
-`ifdef LFSR_TYPE
-  localparam string           LfsrType   = `LFSR_TYPE;
+`ifdef LFSR_FIB_TYPE
+  localparam string           LfsrType   = "FIB_XNOR";
 `else
   localparam string           LfsrType   = "GAL_XOR";
 `endif
@@ -42,9 +43,14 @@ module prim_lfsr_tb;
   // The StatePerm below is only defined for LFSRs up to 256bit wide.
   `ASSERT_INIT(MaxStateSizeCheck_A, MaxLfsrDw < 256)
 
-  logic [MaxLfsrDw:MinLfsrDw] lfsr_en, err, test_done;
-  logic [MaxLfsrDw:MinLfsrDw][MaxLfsrDw-1:0] state_out;
-  logic [MaxLfsrDw:MinLfsrDw][MaxLfsrDw-1:0] lfsr_periods;
+  logic [MaxLfsrDw:MinLfsrDw] err, test_done;
+  logic                 lfsr_en      [MaxLfsrDw+1];
+  logic                 seed_en      [MaxLfsrDw+1];
+  logic [MaxLfsrDw-1:0] state_out    [MaxLfsrDw+1];
+  logic [MaxLfsrDw-1:0] lfsr_periods [MaxLfsrDw+1];
+  logic [MaxLfsrDw-1:0] entropy      [MaxLfsrDw+1];
+  logic [MaxLfsrDw-1:0] seed         [MaxLfsrDw+1];
+
 
   for (genvar k = MinLfsrDw; k <= MaxLfsrDw; k++) begin : gen_duts
     // This is used to specify an identity permutation via the custom state output
@@ -129,7 +135,7 @@ module prim_lfsr_tb;
    prim_lfsr #(
       .LfsrType    ( LfsrType ),
       .LfsrDw      ( k        ),
-      .EntropyDw   ( 1        ),
+      .EntropyDw   ( k        ),
       .StateOutDw  ( k        ),
       .DefaultSeed ( k'(SEED) ),
       // The case where this is disabled is already tested with FPV.
@@ -142,10 +148,10 @@ module prim_lfsr_tb;
     ) i_prim_lfsr (
       .clk_i         ( clk                 ),
       .rst_ni        ( rst_n               ),
-      .seed_en_i     ( 1'b0                ),
-      .seed_i        ( '0                  ),
+      .seed_en_i     ( seed_en[k]          ),
+      .seed_i        ( seed[k][k-1:0]      ),
       .lfsr_en_i     ( lfsr_en[k]          ),
-      .entropy_i     ( 1'b0                ),
+      .entropy_i     ( entropy[k][k-1:0]   ),
       .state_o       ( state_out[k][k-1:0] )
     );
 
@@ -160,9 +166,12 @@ module prim_lfsr_tb;
     // stimuli application / response checking
     //////////////////////////////////////////////////////
     initial begin : p_stimuli
-      bit [MaxLfsrDw-1:0] actual_default_seed;
+      bit [k-1:0] actual_default_seed;
 
       lfsr_en[k] = 0;
+      seed_en[k] = 0;
+      seed[k] = 0;
+      entropy[k] = 0;
       err[k] = 0;
       test_done[k] = 0;
 
@@ -170,6 +179,10 @@ module prim_lfsr_tb;
       main_clk.set_active();
       main_clk.apply_reset();
       main_clk.wait_clks($urandom_range(2, 20));
+
+      ////////////////////////////////
+      // Smoke Check
+      ////////////////////////////////
 
       // For simulations, we modify prim_lfsr to pick a random default seed for every
       // invocation, instead of going with the DefaultSeed parameter.
@@ -188,7 +201,7 @@ module prim_lfsr_tb;
           if (i == lfsr_periods[k]) begin
             $display("LFSR maxlen test for width %0d passed!", k);
           end else begin
-            $display("LFSR maxlen test for width %0d failed at period %0d!", k, i);
+            $error("LFSR maxlen test for width %0d failed at period %0d!", k, i);
             err[k] = 1'b1;
           end
         end
@@ -199,6 +212,76 @@ module prim_lfsr_tb;
         $error("LFSR with width %0d never got back to the initial state!", k);
         err[k] = 1'b1;
       end
+
+      ////////////////////////////////
+      // Random Vectors
+      ////////////////////////////////
+
+      // Load an invalid seed externally to trigger the lockup condition.
+      lfsr_en[k] = 1;
+
+      // Add some additional toggles for coverage - checking is done within the module using SVAs.
+      repeat ($urandom_range(5000, 10000)) begin
+        // Do random reset sometimes
+        if ($urandom_range(0, 10) == 0) main_clk.apply_reset();
+        randomize(seed[k]);
+        randomize(entropy[k]);
+        randomize(lfsr_en[k]);
+        randomize(seed_en[k]);
+        main_clk.wait_clks(1);
+      end
+
+      ////////////////////////////////
+      // Lockup Check
+      ////////////////////////////////
+
+      lfsr_en[k] = 0;
+      seed_en[k] = 0;
+      seed[k] = 0;
+      entropy[k] = 0;
+
+      // Wait a few cycles
+      main_clk.wait_clks(10);
+
+      // Load an invalid seed externally to trigger the lockup condition.
+      lfsr_en[k] = 1;
+      seed_en[k] = 1;
+
+      if (LfsrType == "GAL_XOR") begin
+        seed[k] = {k{1'b0}};
+      end else begin // "FIB_XNOR"
+        seed[k] = {k{1'b1}};
+      end
+
+       main_clk.wait_clks(1);
+
+       // cover the case where the LFSR is disabled for a cycle.
+       lfsr_en[k] = 0;
+       seed_en[k] = 0;
+       seed[k] = 0;
+
+      if (gen_duts[k].i_prim_lfsr.lockup) begin
+        $display("LFSR with width %0d detected lockup condition!", k);
+      end else begin
+        $error("LFSR with width %0d does not detect lockup condition", k);
+        err[k] = 1'b1;
+      end
+
+      main_clk.wait_clks(1);
+      lfsr_en[k] = 1;
+      main_clk.wait_clks(1);
+
+      // we expect that the LFSR returns to its initial state
+      if (gen_duts[k].i_prim_lfsr.lfsr_q == actual_default_seed) begin
+        $display("LFSR lockup test for width %0d passed!", k);
+      end else begin
+        $error("LFSR with width %0d does not reset to DefaultSeedLocal when lockup is detected", k);
+        err[k] = 1'b1;
+      end
+
+      lfsr_en[k] = 0;
+      main_clk.wait_clks(10);
+
       main_clk.stop_clk();
       test_done[k] = 1;
     end
