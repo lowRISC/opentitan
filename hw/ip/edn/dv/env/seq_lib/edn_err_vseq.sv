@@ -16,6 +16,92 @@ class edn_err_vseq extends edn_base_vseq;
   bit [edn_pkg::ENDPOINT_BUS_WIDTH - 1:0]       edn_bus[MAX_NUM_ENDPOINTS];
   uint                                          endpoint_port;
 
+  // Await a randomly selected state of edn_main_sm that should be reachable in EDN's current mode.
+  // If the state is not reached within `timeout_clks` clock cycles, the task also returns.  This
+  // task returns immediately with a chance of 100 - `await_pct` percent.
+  task await_random_main_sm_state(int timeout_clks = 1_000, int await_pct = 90);
+    string state_path;
+    state_e exp_state;
+    state_path = cfg.edn_vif.sm_err_path("edn_main_sm");
+
+    if ($urandom_range(100, 1) > await_pct) begin
+      // Don't wait if number randomly sampled between 1 and 100 exceeds the await percentage.
+      return;
+    end
+
+    if (cfg.boot_req_mode == MuBi4True) begin
+      // If EDN is configured in Boot mode, randomly select one of the Boot states.
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(exp_state,
+                                         exp_state inside {BootLoadIns, BootLoadGen, BootInsAckWait,
+                                                           BootCaptGenCnt, BootSendGenCmd,
+                                                           BootGenAckWait, BootPulse, BootDone};)
+    end else if (cfg.auto_req_mode == MuBi4True) begin
+      // If instead EDN is configured in Auto mode, randomly select one of the Auto states.
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(exp_state,
+                                         exp_state inside {AutoLoadIns, AutoFirstAckWait,
+                                                           AutoAckWait, AutoDispatch,
+                                                           AutoCaptGenCnt, AutoSendGenCmd,
+                                                           AutoCaptReseedCnt, AutoSendReseedCmd};)
+    end else begin
+      // If EDN is configured neither in Boot nor in Auto mode, select the SW state.
+      exp_state = SWPortMode;
+    end
+
+    `uvm_info(`gfn, $sformatf("Waiting for main_sm to reach state %s", exp_state.name()), UVM_HIGH)
+    `DV_SPINWAIT_EXIT(
+      forever begin
+        uvm_hdl_data_t val;
+        state_e act_state;
+        cfg.clk_rst_vif.wait_n_clks(1);
+        `DV_CHECK(uvm_hdl_read(state_path, val))
+        act_state = state_e'(val);
+        if (act_state == exp_state) break;
+      end
+      `uvm_info(`gfn, $sformatf("State reached"), UVM_HIGH),
+      // Or exit when the timeout (in clock cycles) has been reached.
+      cfg.clk_rst_vif.wait_n_clks(timeout_clks);
+      `uvm_info(`gfn, $sformatf("Timed out waiting for main_sm state %s", exp_state.name()),
+                UVM_HIGH)
+    )
+  endtask
+
+  // Await a randomly selected state of the edn_ack_sm at index `idx`.  If the state is not reached
+  // within `timeout_clks` clock cycles, the task also returns.  This task returns immediately with
+  // a chance of 100 - `await_pct` percent.
+  task await_random_ack_sm_state(int timeout_clks = 1_000, int await_pct = 90);
+    string state_path;
+    logic [8:0] exp_state;
+    state_path = cfg.edn_vif.sm_err_path("edn_ack_sm", endpoint_port);
+
+    if ($urandom_range(100, 1) > await_pct) begin
+      // Don't wait if number randomly sampled between 1 and 100 exceeds the await percentage.
+      return;
+    end
+
+    // TODO(#18968): The FSM states below should not be hardcoded here; instead, they should be
+    // defined in a package (which they currently aren't) and imported from there.
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(exp_state, exp_state inside {9'b110001110,   // EndPointClear
+                                                                    9'b011101011,   // DataWait
+                                                                    9'b000100101};) // AckPls
+
+    `uvm_info(`gfn, $sformatf("Waiting for ack_sm[%0d] to reach state %09b",
+                              endpoint_port, exp_state), UVM_HIGH)
+    `DV_SPINWAIT_EXIT(
+      forever begin
+        uvm_hdl_data_t val;
+        state_e act_state;
+        cfg.clk_rst_vif.wait_n_clks(1);
+        `DV_CHECK(uvm_hdl_read(state_path, val))
+        act_state = state_e'(val);
+        if (act_state == exp_state) break;
+      end
+      `uvm_info(`gfn, $sformatf("State reached"), UVM_HIGH),
+      // Or exit when the timeout (in clock cycles) has been reached.
+      cfg.clk_rst_vif.wait_n_clks(timeout_clks);
+      `uvm_info(`gfn, $sformatf("Timed out waiting for ack_sm state %09b", exp_state), UVM_HIGH)
+    )
+  endtask
+
   task body();
     string        ins_cmd_type, gen_cmd_type;
     bit [5:0]     err_code_test_bit;
@@ -98,6 +184,8 @@ class edn_err_vseq extends edn_base_vseq;
     first_index = find_index("_", fld_name, "first");
     last_index = find_index("_", fld_name, "last");
 
+    // Insert the selected error.
+    `uvm_info(`gfn, $sformatf("which_err_code = %s", cfg.which_err_code.name()), UVM_HIGH)
     case (cfg.which_err_code) inside
       sfifo_rescmd_err, sfifo_gencmd_err: begin
         fld = csr.get_field_by_name(fld_name);
@@ -116,6 +204,13 @@ class edn_err_vseq extends edn_base_vseq;
       edn_ack_sm_err, edn_main_sm_err: begin
         fld = csr.get_field_by_name(fld_name);
         path = cfg.edn_vif.sm_err_path(fld_name.substr(0, last_index-1));
+        if (cfg.which_err_code == edn_ack_sm_err) begin
+          // Errors in ack_sm can be used to trigger transitions to the Error state in main_sm.
+          await_random_main_sm_state();
+        end else begin
+          // Errors in main_sm can be used to trigger transitions to the Error state in ack_sm.
+          await_random_ack_sm_state();
+        end
         force_path_err(path, 6'b0, fld, 1'b1);
         if (cfg.en_cov) begin
           csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
@@ -125,6 +220,13 @@ class edn_err_vseq extends edn_base_vseq;
       edn_cntr_err: begin
         fld = csr.get_field_by_name(fld_name);
         path = cfg.edn_vif.cntr_err_path();
+        // Errors in cntr can be used to trigger transitions to the Error state in main_sm or in
+        // ack_sm.  main_sm is more complex, so the random selection is biased towards it.
+        if ($urandom_range(10, 1) < 8) begin
+          await_random_main_sm_state();
+        end else begin
+          await_random_ack_sm_state();
+        end
         force_path_err(path, 6'b000001, fld, 1'b1);
         // Verify EDN.MAIN_SM.CTR.LOCAL_ESC
         csr_rd_check(.ptr(ral.err_code.edn_cntr_err), .compare_value(1'b1));
