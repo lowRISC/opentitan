@@ -105,8 +105,7 @@ module i2c_protocol_cov(
   always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
       bus_state_q <= Idle;
-    end
-    else begin
+    end else begin
       bus_state_q <= bus_state_d;
     end
   end
@@ -117,7 +116,7 @@ module i2c_protocol_cov(
 // (coverage is sampled on this signal)
 // The values of 'bus_state_d' represent the last event detected on the bus.
 //
-// bus_state_d == Idle -> no active transactions on I2C bus
+// bus_state_d == Idle -> No active transactions on I2C bus
 // bus_state_d == Start -> Detected a Start condition, and are waiting for the next
 //                         bus event. In this case, we are waiting for the next posedge of scl, at
 //                         which point we sample sda as the first bit of the address and move to the
@@ -131,25 +130,25 @@ module i2c_protocol_cov(
 //                        which would represent an ACK or NACK. Upon observing an ACK 'bus_state_d'
 //                        will be updated to ReadAddrACK else Idle.
 // bus_state_d == Write -> Detected a 'Write' event. ('sda' == '0' on posedge_scl() after
-//                        all 7 addr bits). We are now waiting for the next posedge_scl() event,
-//                        which would represent an ACK or NACK. Upon observing an ACK 'bus_state_d'
-//                        will be updated to WriteAddrACK else Idle.
+//                         all 7 addr bits). We are now waiting for the next posedge_scl() event,
+//                         which would represent an ACK or NACK. Upon observing an ACK 'bus_state_d'
+//                         will be updated to WriteAddrACK else Idle.
 // bus_state_d == WriteAddrACK -> Detected a ACK response for Write Address byte and 'bus_state_d'
 //                                will be updated to WriteData.
 // bus_state_d == ReadAddrACK -> Detected a ACK response for Read Address byte and 'bus_state_d' will
 //                               be updated to ReadData.
 // bus_state_d == ReadData -> Sample read data bytes on every posedge_scl() until complete byte is
-//                             captured.
+//                            captured.
 // bus_state_d == WriteData -> Sample write data bytes on every posedge_scl() until complete byte is
 //                             captured.
 // bus_state_d == ReadDataACK -> Detected a ACK response for Read data byte and 'bus_state_d'
-//                                will be updated to ReadData to capture next byte
+//                               will be updated to ReadData to capture next byte
 // bus_state_d == WriteDataACK -> Detected a ACK response for Write data byte and 'bus_state_d'
 //                                will be updated to WriteData to capture next byte
 // bus_state_d == WriteDataNACK -> Detected a NACK response for Write data byte. FSM remains in the
 //                                 state unless Start or Stop condition is detected
 // bus_state_d == ReadDataNACK -> Detected a NACK response for Read data byte. FSM remains in the
-//                                 state unless Start or Stop condition is detected
+//                                state unless Start or Stop condition is detected
 //////////////////////////////////
   always@(scl or sda or scl_q or sda_q) begin
     if(!rst_n) begin
