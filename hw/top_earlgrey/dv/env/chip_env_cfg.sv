@@ -43,7 +43,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
   // A knob that controls whether the AST initialization is done, enabled by default.
   // Can be updated with plusarg.
-  bit do_creator_sw_cfg_ast_cfg = 1;
+  bit do_creator_sw_cfg_ast_cfg = 0;
 
   // sw related
   // In OpenTitan, the same SW test image can be built for DV, Verilator and FPGA. SW build for
