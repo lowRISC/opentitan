@@ -60,9 +60,9 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
                    ((trans_type == ReadOnly)  ? 1'b1 : rw_bit);
           // program address for folowing transaction types
           chained_read = fmt_item.read && fmt_item.rcont;
-          if ((cur_tran == 1'b1) ||    // first read transaction
-              (!fmt_item.read)   ||    // write transactions
-              (!chained_read)) begin   // non-chained read transactions
+          if ((cur_tran == 1'b1) ||  // first read transaction
+              (!fmt_item.read)   ||  // write transactions
+              (!chained_read)) begin // non-chained read transactions
             program_address_to_target();
           end
 
@@ -160,7 +160,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
         csr_rd(.ptr(ral.status.rxfull), .value(rx_full));
         rx_threshold |= (cfg.seq_cfg.en_rx_threshold & rx_full);
       end
-      start_read = rx_smoke    | // read rx_fifo if there is valid data
+      start_read = rx_smoke     | // read rx_fifo if there is valid data
                    rx_threshold | // read rx_fifo after full (ensure intr rx_threshold asserted)
                    rx_overflow;   // read rx_fifo after overflow (ensure intr_rx_overflow asserted)
       if (start_read) begin
@@ -200,7 +200,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
         if (stopbyte && (i == num_wr_bytes)) begin
         fmt_item.fbyte = 8'hee;
         end else begin
-        fmt_item.fbyte = wr_data[i-1];
+        fmt_item.fbyte = wr_data[i - 1];
         end
       end while (!fmt_item.nakok && !fmt_item.rcont && !fmt_item.fbyte);
 
