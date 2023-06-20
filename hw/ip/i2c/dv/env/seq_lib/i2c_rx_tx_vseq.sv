@@ -157,8 +157,6 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
       rx_smoke    = !cfg.seq_cfg.en_rx_threshold & !cfg.seq_cfg.en_rx_overflow;
       rx_overflow |= (cfg.seq_cfg.en_rx_overflow  & cfg.intr_vif.pins[RxOverflow]);
       if (cfg.seq_cfg.en_rx_threshold) begin
-        // TODO: Weicai's comments in PR #3128: consider constraining
-        // rx_fifo_access_dly to test threshold irq (require revise threshold_vseq)
         csr_rd(.ptr(ral.status.rxfull), .value(rx_full));
         rx_threshold |= (cfg.seq_cfg.en_rx_threshold & rx_full);
       end
