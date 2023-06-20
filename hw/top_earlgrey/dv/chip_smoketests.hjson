@@ -61,6 +61,7 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:otbn_smoketest:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+do_creator_sw_cfg_ast_cfg=1"]
     }
     {
       name: chip_sw_otp_ctrl_smoketest

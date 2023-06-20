@@ -481,6 +481,7 @@
           '''
         },
       ]
+      tags: ["excl:CsrNonInitTests:CsrExclCheck"]
     },
 <% aon_freq = clocks.all_srcs['aon'].freq %>\
 % for src in typed_clocks.rg_srcs:
