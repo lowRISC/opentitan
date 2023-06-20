@@ -46,7 +46,7 @@ class i2c_host_fifo_full_vseq extends i2c_rx_tx_vseq;
     `uvm_info(`gfn, "\n--> end of i2c_host_fifo_full_vseq", UVM_DEBUG)
   endtask : body
 
-  // TODO: weicai suggested corner tests: send N + 1 items (N is fifo depth), configure agent
+  // ICEBOX(#18979): weicai suggested corner tests: send N + 1 items (N is fifo depth), configure agent
   // to slow read mode (not able to completely handle one item before N+1 items are written),
   // then check fifo_full bit is
   //   - not asserted when N items are written to fifo (fifo_lvl = N-1)
