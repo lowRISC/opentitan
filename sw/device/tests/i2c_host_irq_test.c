@@ -128,6 +128,25 @@ static status_t nak_irq(void) {
   return OK_STATUS();
 }
 
+static status_t cmd_complete_irq(void) {
+  // Clean any previous state.
+  TRY(dif_i2c_irq_acknowledge(&i2c, kDifI2cIrqCmdComplete));
+  TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqCmdComplete, kDifToggleEnabled));
+
+  irq_global_ctrl(false);
+  irq_fired = kIrqVoid;
+  irq_global_ctrl(true);
+
+  // Write a byte to some random address.
+  const uint8_t kAddr[2] = {0x03, 0x21};
+  TRY(write_byte(kAddr, 0xAB));
+
+  CHECK_IRQ_EQ(kDifI2cIrqCmdComplete);
+
+  TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqCmdComplete, kDifToggleDisabled));
+  return OK_STATUS();
+}
+
 static status_t test_init(void) {
   mmio_region_t base_addr =
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
@@ -165,6 +184,7 @@ bool test_main(void) {
   test_result = OK_STATUS();
   CHECK_STATUS_OK(i2c_testutils_set_speed(&i2c, kDifI2cSpeedStandard));
   EXECUTE_TEST(test_result, nak_irq);
+  EXECUTE_TEST(test_result, cmd_complete_irq);
 
   return status_ok(test_result);
 }
