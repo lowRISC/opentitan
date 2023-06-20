@@ -69,11 +69,13 @@ static status_t take_measurement(void) {
   // Poll until status indicates measurement was taken.
   uint8_t status = 0;
   uint8_t status_reg = kStatusReg;
-  TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &status_reg, true));
   do {
+    TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &status_reg, true));
     TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(status), &status,
                            kDefaultTimeoutMicros));
   } while ((status & kMeasDone) == 0);
+
+  LOG_INFO("Status:%x", status);
 
   // Reading six bytes from Xout Low covers the other "out" registers, too.
   uint8_t read_data[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -120,9 +122,6 @@ bool test_main(void) {
 
   test_result = OK_STATUS();
   for (size_t i = 0; i < ARRAYSIZE(speeds); ++i) {
-    // Allow 50ms for device startup.
-    busy_spin_micros(50000);
-
     CHECK_STATUS_OK(i2c_testutils_set_speed(&i2c, speeds[i]));
     EXECUTE_TEST(test_result, read_product_id);
     EXECUTE_TEST(test_result, take_measurement);
