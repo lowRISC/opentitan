@@ -189,7 +189,7 @@ def main():
             out_files))
 
         if "checklist" in args.only:
-            checklist_template_file = REPO_TOP / "doc/project/sw_checklist.md.tpl"
+            checklist_template_file = REPO_TOP / "doc/project_governance/checklist/sw_checklist.md.tpl"
             checklist_out_file = dif_dir / "dif_{}.md".format(ip.name_snake)
             if checklist_out_file.is_file():
                 raise FileExistsError(
