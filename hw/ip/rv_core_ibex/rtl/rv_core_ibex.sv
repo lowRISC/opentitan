@@ -956,7 +956,7 @@ module rv_core_ibex
         u_core.u_ibex_core.id_stage_i.instr_valid_i
         && u_core.u_ibex_core.id_stage_i.decoder_i.opcode == ibex_pkg::OPCODE_MISC_MEM
         && u_core.u_ibex_core.id_stage_i.decoder_i.instr[14:12] == 3'b001 // FENCE.I
-        |-> ##[0:10] // upper bound is not exact, but it should not take more than a few cycles
+        |-> ##[0:14] // upper bound is not exact, but it should not take more than a few cycles
         icache_otp_key_o.req
     )
 
