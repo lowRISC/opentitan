@@ -102,7 +102,6 @@ module i2c_protocol_cov(
 
   // Flop the state value that was updated on 'scl' or 'sda' events.
   // This ensures that when we sample for coverage, we don't race against new events.
-  // TODO Consider a cleaner way of achieving this.
   always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
       bus_state_q <= Idle;
