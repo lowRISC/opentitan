@@ -319,7 +319,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
               if (exp_wr_item.start && exp_wr_item.bus_op == BusOpWrite) begin
                 // irq is asserted with 2 latency cycles (#3422)
                 cfg.clk_rst_vif.wait_clks(2);
-                // TODO: Gather all irq verification in SCB instead of distribute in vseq
+                // ICEBOX(#18980): Gather all irq verification in SCB instead of distribute in vseq
                 if (cfg.intr_vif.pins[FmtOverflow]) begin
                   exp_wr_item.fmt_ovf_data_q.push_back(fbyte);
                   //wait(!cfg.intr_vif.pins[FmtOverflow]);
