@@ -24,7 +24,7 @@ OTTF_DEFINE_TEST_CONFIG();
  *
  * This has three stages:
  *
- * 1. After the first startup, a illegal memory access is performed.
+ * 1. After the first startup, an illegal memory access is performed.
  *    In the exception handler, a software reset is triggered.
  *
  * 2. After the software reset, the CPU info dump is checked against
@@ -147,14 +147,16 @@ typedef struct rstmgr_cpu_info_test_exp_prev_state {
  * Checks the 'current' section of the cpu info dump against the given expected
  * values.
  *
- * In some cases the PCs may differ from the expected ones due to pipeline
+ * For double faults the PCs may differ from the expected ones due to pipeline
  * stalls.
  *
  * @param obs_state The cpu info crash dump's current state values.
  * @param exp_state The expected values of the current state.
+ * @param double_fault The states correspond to a double fault.
  */
 static void check_state(dif_rv_core_ibex_crash_dump_state_t obs_state,
-                        rstmgr_cpu_info_test_exp_state_t exp_state) {
+                        rstmgr_cpu_info_test_exp_state_t exp_state,
+                        dif_toggle_t double_fault) {
   CHECK(exp_state.mtval == obs_state.mtval,
         "Last Exception Access Addr: Expected 0x%x != Observed 0x%x",
         exp_state.mtval, obs_state.mtval);
@@ -162,10 +164,11 @@ static void check_state(dif_rv_core_ibex_crash_dump_state_t obs_state,
            exp_state.mcpc, exp_state.mnpc, obs_state.mcpc, obs_state.mnpc);
   // Check the current pc is either the expected or expected + 4, since the
   // pipeline may have stalled.
-  CHECK(
-      exp_state.mcpc == obs_state.mcpc || exp_state.mcpc + 4 == obs_state.mcpc,
-      "Current PC: Observed 0x%x not within 4 bytes of Expected 0x%x",
-      obs_state.mcpc, exp_state.mcpc);
+  CHECK(exp_state.mcpc == obs_state.mcpc ||
+            (double_fault == kDifToggleEnabled &&
+             exp_state.mcpc - 4 == obs_state.mcpc),
+        "Current PC: Observed 0x%x not within 4 bytes of Expected 0x%x",
+        obs_state.mcpc, exp_state.mcpc);
   CHECK(exp_state.mnpc == obs_state.mnpc,
         "Next PC: Expected 0x%x != Observed 0x%x", exp_state.mnpc,
         obs_state.mnpc);
@@ -248,7 +251,8 @@ bool test_main(void) {
                       .mdaa = (uint32_t)&addr_val,
                       .mcpc = (uint32_t)kSingleFaultAddrCurrentPc,
                       .mnpc = (uint32_t)kSingleFaultAddrNextPc,
-                  });
+                  },
+                  kDifToggleDisabled);
 
       LOG_INFO("Setting up watch dog and triggering a double fault.");
       uint32_t bark_cycles = 0;
@@ -286,9 +290,9 @@ bool test_main(void) {
 
       // After #15219 was merged, the execution stops more predictably
       // once fetch_en is dropped due to a double fault.
-      // The current pc should now be the instruction that issues the
-      // illegal load or the next instruction, depending on whether the
-      // pipeline stalled.
+      // The current pc should now correspond to the instruction after the
+      // cause of the illegal load or that same instruction, depending on
+      // whether the pipeline stalled.
       // The next pc is always the exception handler, because that's
       // where execution would have gone if it had not halted
       check_state(dump.fault_state,
@@ -297,9 +301,10 @@ bool test_main(void) {
                       .mpec_l = (uint32_t)kDoubleFaultSecondAddrLower,
                       .mpec_u = (uint32_t)kDoubleFaultSecondAddrUpper,
                       .mdaa = (uint32_t)kIllegalAddr2,
-                      .mcpc = (uint32_t)kDoubleFaultSecondAddrLower,
+                      .mcpc = (uint32_t)kDoubleFaultSecondAddrLower + 4,
                       .mnpc = (uint32_t)&_ottf_interrupt_vector,
-                  });
+                  },
+                  kDifToggleEnabled);
 
       check_prev_state(dump.previous_fault_state,
                        (rstmgr_cpu_info_test_exp_prev_state_t){
