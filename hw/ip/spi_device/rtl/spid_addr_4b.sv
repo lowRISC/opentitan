@@ -121,6 +121,17 @@ module spid_addr_4b (
     end
   end
 
+  // This delays spi_csb_asserted_pulse_i by an extra cycle to cover the
+  // potential extra cycle introduced by the synchronizer.
+  logic spi_csb_asserted_pulse_d1;
+  always_ff @(posedge spi_clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni) begin
+      spi_csb_asserted_pulse_d1 <= 1'b 0;
+    end else begin
+      spi_csb_asserted_pulse_d1 <= spi_csb_asserted_pulse_i;
+    end
+  end
+
   always_ff @(posedge spi_clk_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni) begin
       spi_cfg_addr_4b_en_o <= 1'b 0;
@@ -130,7 +141,7 @@ module spid_addr_4b (
     end else if (spi_addr_4b_clr_i) begin
       // EX4B command raises the clear event
       spi_cfg_addr_4b_en_o <= 1'b 0;
-    end else if (spi_csb_asserted_pulse_i & !addr_4b_en_locked &
+    end else if (spi_csb_asserted_pulse_d1 & !addr_4b_en_locked &
                  addr_4b_en_sw_update_condition) begin
       // Update
       spi_cfg_addr_4b_en_o <= spi_reg_cfg_addr_4b_en_sync;
