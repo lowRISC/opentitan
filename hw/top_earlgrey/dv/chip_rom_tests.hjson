@@ -898,6 +898,28 @@
       ]
       run_timeout_mins: 480
     }
+    // This test is commented out in the open-source, but can be uncommented by
+    // back-end designers after they integrate the functional model of the ROM
+    // macro into the netlist.
+    // {
+    //   name: rom_e2e_self_hash_no_bkdr_rom_load
+    //   uvm_test_seq: chip_sw_base_vseq
+    //   sw_images: [
+    //     "//sw/device/silicon_creator/rom/e2e/presigned_images:rom_e2e_self_hash:1:signed:ot_flash_binary"
+    //     "//hw/ip/otp_ctrl/data:img_rma:4",
+    //   ]
+    //   // We purposely use the `sw_test_mode_common` run mode here instead of the
+    //   // run modes that add either ROM image to the list of sw_images to
+    //   // backdoor load, as we only want this test to run with the ROM embedded
+    //   // in the hardware, not the ROM that is backdoor loaded.
+    //   en_run_modes: ["sw_test_mode_common"]
+    //   run_opts: [
+    //     "+en_uart_logger=1",
+    //     "+sw_test_timeout_ns=200_000_000",
+    //     "+use_otp_image=OtpTypeCustom",
+    //   ]
+    //   run_timeout_mins: 480
+    // }
 
     // Signed chip-level tests to be run with ROM, instead of test ROM.
     {
