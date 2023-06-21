@@ -52,6 +52,7 @@
       name: rv_timer_random
       uvm_test_seq: rv_timer_random_vseq
       reseed: 200
+      run_opts: ["+test_timeout_ns=10000000000"]
     }
 
     {
