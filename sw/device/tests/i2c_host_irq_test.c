@@ -172,6 +172,26 @@ static status_t fmt_threshold_irq(void) {
   return OK_STATUS();
 }
 
+static status_t fmt_overflow_irq(void) {
+  // Clean any previous state.
+  TRY(dif_i2c_irq_acknowledge(&i2c, kDifI2cIrqFmtOverflow));
+  TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqFmtOverflow, kDifToggleEnabled));
+
+  irq_global_ctrl(false);
+  irq_fired = kIrqVoid;
+  irq_global_ctrl(true);
+  const uint8_t kAddr[2] = {0x03, 0x21};
+  // Overwhelm the fmt_fifo to generate a Overflow IRQ.
+  for (size_t i = 0; i < 20; ++i) {
+    TRY(write_byte(kAddr, 0xAB));
+  }
+
+  CHECK_IRQ_EQ(kDifI2cIrqFmtOverflow);
+
+  TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqFmtOverflow, kDifToggleDisabled));
+  return OK_STATUS();
+}
+
 static status_t test_init(void) {
   mmio_region_t base_addr =
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
@@ -211,6 +231,7 @@ bool test_main(void) {
   EXECUTE_TEST(test_result, nak_irq);
   EXECUTE_TEST(test_result, cmd_complete_irq);
   EXECUTE_TEST(test_result, fmt_threshold_irq);
+  EXECUTE_TEST(test_result, fmt_overflow_irq);
 
   return status_ok(test_result);
 }
