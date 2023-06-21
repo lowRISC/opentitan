@@ -3504,7 +3504,6 @@
       stage: V2
       tests: ["chip_sw_lc_ctrl_volatile_raw_unlock",
               "chip_sw_lc_ctrl_volatile_raw_unlock_ext_clk_48mhz",
-              "chip_sw_lc_ctrl_volatile_raw_unlock_ext_clk_96mhz",
               "rom_volatile_raw_unlock"]
     }
     {
