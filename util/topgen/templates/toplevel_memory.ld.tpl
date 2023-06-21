@@ -34,13 +34,20 @@ def flags(mem):
 
     return flags_str
 
-def get_virtual_memory_size(top):
+def get_memory_size(top, name):
     for mod in top["module"]:
         if "memory" in mod:
             for _, mem in mod["memory"].items():
-                if mem["label"] == "eflash":
-                    return hex(int(mem["size"], 0) // 2)
+                if mem["label"] == name:
+                    return mem["size"]
     return None
+
+def get_virtual_memory_size(top):
+    return hex(int(get_memory_size(top, "eflash"), 0) // 2)
+
+def get_hack_rom_size(top):
+    return hex(int(get_memory_size(top, "rom"), 0) + 0x1000)
+
 %>\
 
 /**
@@ -52,7 +59,16 @@ MEMORY {
 % for m in top["module"]:
   % if "memory" in m:
     % for key, mem in m["memory"].items():
+      % if mem["label"] == "rom":
+  /*
+   * HACK: the size is actually ${mem["size"]}, but we have ${get_hack_rom_size(top)} here to workaround a LLD bug
+   * https://github.com/lowRISC/opentitan/pull/18765#issuecomment-1582762327.
+   * hw/ip/rom_ctrl/util/mem.py will check that this actually fits.
+   */
+  ${mem["label"]}(${flags(mem)}) : ORIGIN = ${m["base_addrs"][key]}, LENGTH = ${get_hack_rom_size(top)}
+      % else:
   ${mem["label"]}(${flags(mem)}) : ORIGIN = ${m["base_addrs"][key]}, LENGTH = ${mem["size"]}
+      % endif
     % endfor
   % endif
 % endfor
@@ -62,6 +78,8 @@ MEMORY {
   rom_ext_virtual(rx) : ORIGIN = 0x90000000, LENGTH = ${get_virtual_memory_size(top)}
   owner_virtual(rx) : ORIGIN = 0xa0000000, LENGTH = ${get_virtual_memory_size(top)}
 }
+
+_rom_size = ${get_memory_size(top, "rom")};
 
 /**
  * Stack at the top of the main SRAM.
@@ -80,7 +98,7 @@ _static_critical_size = 8136;
  * `.chip_info` at the top of ROM.
  */
 _chip_info_size = 128;
-_chip_info_end   = ORIGIN(rom) + LENGTH(rom);
+_chip_info_end   = ORIGIN(rom) + _rom_size;
 _chip_info_start = _chip_info_end - _chip_info_size;
 
 /**

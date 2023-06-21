@@ -11,10 +11,17 @@ MEMORY {
   ram_ret_aon(rwx) : ORIGIN = 0x40600000, LENGTH = 0x1000
   eflash(rx) : ORIGIN = 0x20000000, LENGTH = 0x100000
   ram_main(rwx) : ORIGIN = 0x10000000, LENGTH = 0x20000
-  rom(rx) : ORIGIN = 0x00008000, LENGTH = 0x8000
+  /*
+   * HACK: the size is actually 0x8000, but we have 0x9000 here to workaround a LLD bug
+   * https://github.com/lowRISC/opentitan/pull/18765#issuecomment-1582762327.
+   * hw/ip/rom_ctrl/util/mem.py will check that this actually fits.
+   */
+  rom(rx) : ORIGIN = 0x00008000, LENGTH = 0x9000
   rom_ext_virtual(rx) : ORIGIN = 0x90000000, LENGTH = 0x80000
   owner_virtual(rx) : ORIGIN = 0xa0000000, LENGTH = 0x80000
 }
+
+_rom_size = 0x8000;
 
 /**
  * Stack at the top of the main SRAM.
@@ -33,7 +40,7 @@ _static_critical_size = 8136;
  * `.chip_info` at the top of ROM.
  */
 _chip_info_size = 128;
-_chip_info_end   = ORIGIN(rom) + LENGTH(rom);
+_chip_info_end   = ORIGIN(rom) + _rom_size;
 _chip_info_start = _chip_info_end - _chip_info_size;
 
 /**

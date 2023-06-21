@@ -40,7 +40,7 @@
  * the log_fields_t struct defined in sw/device/lib/runtime/log.h. The size of
  * each log field is fixed - 20 bytes.
  */
-.logs.fields _dv_log_offset (INFO): {
+.logs.fields (INFO): {
   /* Force this section to always be emitted. The logs extraction script expects
    * this section to be present in the ELF file, but the linker will not emit it
    * if there are no outputs (i.e, the *(.logs.fields) statement) with contents.
