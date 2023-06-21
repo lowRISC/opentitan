@@ -1915,6 +1915,7 @@ opentitan_functest(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:i2c",
+        "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
