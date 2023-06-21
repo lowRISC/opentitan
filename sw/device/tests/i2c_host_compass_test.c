@@ -52,7 +52,6 @@ static dif_pinmux_t pinmux;
 static dif_i2c_t i2c;
 
 static status_t read_product_id(void) {
-  return OK_STATUS();
   uint8_t reg = kProductIdReg, data = 0;
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &reg, true));
   TRY(i2c_testutils_read(&i2c, kDeviceAddr, 1, &data, kDefaultTimeoutMicros));
