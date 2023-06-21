@@ -3,75 +3,105 @@
 # SPDX-License-Identifier: Apache-2.0
 load("@bazel_skylib//lib:paths.bzl", "paths")
 
-PreSigningBinary = provider(fields = ["files"])
+PreSigningBinaryInfo = provider(fields = ["files"])
+
+def _presigning_artifacts(ctx, opentitantool, src, manifest, rsa_key_file, spx_key_file):
+    """Create the pre-signing artifacts for a given input binary.
+
+    Applies he manifest and public components of the keys.  Creates the
+    digests/messages required for signing.
+
+    Args:
+        opentitantool: file; The opentitantool binary.
+        src: file; The source binary
+        manifest: file; The manifest file.
+        rsa_key_file: file; The RSA public key.
+        spx_key_file: file; The SPX+ public key.
+    Returns:
+        struct: A struct containing the pre-signing binary, the digest and spx message files.
+    """
+    pre = ctx.actions.declare_file(paths.replace_extension(src.basename, ".pre-signing"))
+    inputs = [
+        src,
+        manifest,
+        rsa_key_file,
+        opentitantool,
+    ]
+    spx_args = []
+    if spx_key_file:
+        spx_args.append("--spx-key={}".format(spx_key_file.path))
+        inputs.append(spx_key_file)
+    ctx.actions.run(
+        outputs = [pre],
+        inputs = inputs,
+        arguments = [
+            "--rcfile=",
+            "image",
+            "manifest",
+            "update",
+            "--manifest={}".format(ctx.file.manifest.path),
+            "--rsa-key={}".format(ctx.file.rsa_key.path),
+            "--output={}".format(pre.path),
+            src.path,
+        ] + spx_args,
+        executable = opentitantool,
+        mnemonic = "PreSigningArtifacts",
+    )
+
+    # Compute digest to be signed with RSA.
+    digest = ctx.actions.declare_file(paths.replace_extension(src.basename, ".digest"))
+    ctx.actions.run(
+        outputs = [digest],
+        inputs = [pre, opentitantool],
+        arguments = [
+            "--rcfile=",
+            "image",
+            "digest",
+            "--bin={}".format(digest.path),
+            pre.path,
+        ],
+        executable = opentitantool,
+        mnemonic = "PreSigningDigest",
+    )
+
+    # Compute message to be signed with SPX+.
+    spxmsg = None
+    if spx_key_file:
+        spxmsg = ctx.actions.declare_file(paths.replace_extension(src.basename, ".spx-message"))
+        ctx.actions.run(
+            outputs = [spxmsg],
+            inputs = [pre, opentitantool],
+            arguments = [
+                "--rcfile=",
+                "image",
+                "spx-message",
+                "--output={}".format(spxmsg.path),
+                pre.path,
+            ],
+            executable = opentitantool,
+            mnemonic = "PreSigningSpxMessage",
+        )
+    return struct(pre = pre, digest = digest, spxmsg = spxmsg)
 
 def _offline_presigning_artifacts(ctx):
     digests = []
     bins = []
     for src in ctx.files.srcs:
-        pre = ctx.actions.declare_file(paths.replace_extension(src.basename, ".pre-signing"))
-        bins.append(pre)
-        inputs = [
+        artifacts = _presigning_artifacts(
+            ctx,
+            ctx.executable._tool,
             src,
             ctx.file.manifest,
             ctx.file.rsa_key,
-            ctx.executable._tool,
-        ]
-        spx_args = []
-        if ctx.file.spx_key:
-            spx_args.append("--spx-key={}".format(ctx.file.spx_key.path))
-            inputs.append(ctx.file.spx_key)
-        ctx.actions.run(
-            outputs = [pre],
-            inputs = inputs,
-            arguments = [
-                "--rcfile=",
-                "image",
-                "manifest",
-                "update",
-                "--manifest={}".format(ctx.file.manifest.path),
-                "--rsa-key={}".format(ctx.file.rsa_key.path),
-                "--output={}".format(pre.path),
-                src.path,
-            ] + spx_args,
-            executable = ctx.executable._tool,
+            ctx.file.spx_key,
         )
-
-        # Compute digest to be signed with RSA.
-        out = ctx.actions.declare_file(paths.replace_extension(src.basename, ".digest"))
-        digests.append(out)
-        ctx.actions.run(
-            outputs = [out],
-            inputs = [pre, ctx.executable._tool],
-            arguments = [
-                "--rcfile=",
-                "image",
-                "digest",
-                "--bin={}".format(out.path),
-                pre.path,
-            ],
-            executable = ctx.executable._tool,
-        )
-
-        # Compute message to be signed with SPX+.
-        if ctx.file.spx_key:
-            out = ctx.actions.declare_file(paths.replace_extension(src.basename, ".spx-message"))
-            digests.append(out)
-            ctx.actions.run(
-                outputs = [out],
-                inputs = [pre, ctx.executable._tool],
-                arguments = [
-                    "--rcfile=",
-                    "image",
-                    "spx-message",
-                    "--output={}".format(out.path),
-                    pre.path,
-                ],
-                executable = ctx.executable._tool,
-            )
+        bins.append(artifacts.pre)
+        digests.append(artifacts.digest)
+        if artifacts.spxmsg:
+            digests.append(artifacts.spxmsg)
     return [
         DefaultInfo(files = depset(digests), data_runfiles = ctx.runfiles(files = digests)),
-        PreSigningBinary(files = depset(bins)),
+        PreSigningBinaryInfo(files = depset(bins)),
         OutputGroupInfo(digest = depset(digests), binary = depset(bins)),
     ]
 
@@ -135,8 +165,8 @@ offline_fake_rsa_sign = rule(
 def _offline_signature_attach(ctx):
     inputs = {}
     for src in ctx.attr.srcs:
-        if PreSigningBinary in src:
-            for file in src[PreSigningBinary].files.to_list():
+        if PreSigningBinaryInfo in src:
+            for file in src[PreSigningBinaryInfo].files.to_list():
                 f = _strip_all_extensions(file.basename)
                 inputs[f] = {"bin": file}
         elif DefaultInfo in src:
@@ -195,7 +225,7 @@ def _offline_signature_attach(ctx):
 offline_signature_attach = rule(
     implementation = _offline_signature_attach,
     attrs = {
-        "srcs": attr.label_list(allow_files = True, providers = [PreSigningBinary], doc = "Binary files to sign"),
+        "srcs": attr.label_list(allow_files = True, providers = [PreSigningBinaryInfo], doc = "Binary files to sign"),
         "rsa_signatures": attr.label_list(allow_files = True, doc = "RSA signed digest files"),
         "spx_signatures": attr.label_list(allow_files = True, doc = "SPX+ signed digest files"),
         "_tool": attr.label(
