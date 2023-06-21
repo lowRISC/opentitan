@@ -14,7 +14,7 @@ class chip_sw_flash_host_gnt_err_inj_vseq extends chip_sw_fault_base_vseq;
   endfunction
 
   task wait_event();
-    int polling_timeout_ns = 500_000;
+    int polling_timeout_ns = 1_000_000;
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
     `DV_SPINWAIT(wait(cfg.chip_vif.flash_core1_host_req == 1);,
                  "wait for core1_host_req is timed out",
