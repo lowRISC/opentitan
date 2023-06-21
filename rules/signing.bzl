@@ -110,6 +110,41 @@ def _local_rsa_sign(ctx, opentitantool, digest, rsa_key_file):
     )
     return signature
 
+def _post_signing_attach(ctx, opentitantool, pre, rsa_sig, spx_sig):
+    """Attach signatures to an unsigned binary.
+
+    Args:
+      opentitantool: file; The opentitantool binary.
+      pre: file; The pre-signed input binary.
+      rsa_sig: file; The RSA-signed digest of the binary.
+      spx_sig: file; The SPX-signed message of the binary.
+    Returns:
+      file: The signed binary.
+    """
+    signed = ctx.actions.declare_file(paths.replace_extension(pre.basename, ".signed.bin"))
+    inputs = [opentitantool, pre, rsa_sig]
+    args = [
+        "--rcfile=",
+        "image",
+        "manifest",
+        "update",
+        "--rsa-signature={}".format(rsa_sig.path),
+        "--output={}".format(signed.path),
+        pre.path,
+    ]
+    if spx_sig:
+        inputs.append(spx_sig)
+        args.append("--spx-signature={}".format(spx_sig.path))
+
+    ctx.actions.run(
+        outputs = [signed],
+        inputs = inputs,
+        arguments = args,
+        executable = opentitantool,
+        mnemonic = "PostSigningAttach",
+    )
+    return signed
+
 def _offline_presigning_artifacts(ctx):
     digests = []
     bins = []
@@ -208,30 +243,12 @@ def _offline_signature_attach(ctx):
         if inputs[f].get("rsa_sig") == None:
             print("WARNING: No RSA signature file for", f)
             continue
-        out = ctx.actions.declare_file(paths.replace_extension(f, ".signed.bin"))
-        action_deps = [
+        out = _post_signing_attach(
+            ctx,
+            ctx.executable._tool,
             inputs[f]["bin"],
             inputs[f]["rsa_sig"],
-            ctx.executable._tool,
-        ]
-        args = [
-            "--rcfile=",
-            "image",
-            "manifest",
-            "update",
-            "--rsa-signature={}".format(inputs[f]["rsa_sig"].path),
-        ]
-        if inputs[f].get("spx_sig"):
-            action_deps.append(inputs[f]["spx_sig"])
-            args.append("--spx-signature={}".format(inputs[f]["spx_sig"].path))
-        ctx.actions.run(
-            outputs = [out],
-            inputs = action_deps,
-            arguments = args + [
-                "--output={}".format(out.path),
-                inputs[f]["bin"].path,
-            ],
-            executable = ctx.executable._tool,
+            inputs[f].get("spx_sig"),
         )
         outputs.append(out)
     return [DefaultInfo(files = depset(outputs), data_runfiles = ctx.runfiles(files = outputs))]
