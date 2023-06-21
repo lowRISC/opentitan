@@ -52,7 +52,7 @@ module spid_addr_4b (
   logic spi_reg_cfg_addr_4b_en_sync;
   prim_flop_2sync #(
     .Width(1),
-    .ResetValue(1'b1)
+    .ResetValue(1'b0)
   ) u_sys2spi_sync (
     .clk_i  (spi_clk_i                    ),
     .rst_ni (sys_rst_ni                   ), // value to be consistent
