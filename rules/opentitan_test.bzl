@@ -345,15 +345,15 @@ def opentitan_functest(
             # the target. Otherwise, use the provided bitstream argument.
             if cw310_["interface"] == "cw310":
                 DEFAULT_BITSTREAM = {
-                    "cw310_test_rom": "@//hw/bitstream:test_rom",
-                    "cw310_rom_with_fake_keys": "@//hw/bitstream:rom_with_fake_keys",
-                    "cw310_rom_with_real_keys": "@//hw/bitstream:rom_with_real_keys",
+                    "cw310_test_rom": "@//hw/top_earlgrey/bitstream:test_rom",
+                    "cw310_rom_with_fake_keys": "@//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+                    "cw310_rom_with_real_keys": "@//hw/top_earlgrey/bitstream:rom_with_real_keys",
                 }
             else:
                 DEFAULT_BITSTREAM = {
-                    "cw310_test_rom": "@//hw/bitstream/hyperdebug:test_rom",
-                    "cw310_rom_with_fake_keys": "@//hw/bitstream/hyperdebug:rom_with_fake_keys",
-                    "cw310_rom_with_real_keys": "@//hw/bitstream/hyperdebug:rom_with_real_keys",
+                    "cw310_test_rom": "@//hw/top_earlgrey/bitstream/hyperdebug:test_rom",
+                    "cw310_rom_with_fake_keys": "@//hw/top_earlgrey/bitstream/hyperdebug:rom_with_fake_keys",
+                    "cw310_rom_with_real_keys": "@//hw/top_earlgrey/bitstream/hyperdebug:rom_with_real_keys",
                 }
             if (cw310 == None) or (cw310.get("bitstream") == None):
                 cw310_["bitstream"] = DEFAULT_BITSTREAM[target]

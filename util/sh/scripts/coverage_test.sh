@@ -9,7 +9,7 @@ source util/sh/lib/error.sh
 source util/sh/lib/traps.sh
 
 readonly BAZEL="./bazelisk.sh"
-readonly BITSTREAM_TARGET="//hw/bitstream:gcp_spliced_test_rom"
+readonly BITSTREAM_TARGET="//hw/top_earlgrey/bitstream:gcp_spliced_test_rom"
 readonly WORKSPACE_PATH
 WORKSPACE_PATH=$(${BAZEL} info workspace)
 readonly BITSTREAM_PATH

@@ -21,7 +21,7 @@ from common import (
 LLVM_PROFDATA = "llvm-profdata"
 
 # Bazel target for locally spliced test ROM bitstream
-BITSTREAM_TARGET = "//hw/bitstream:gcp_spliced_test_rom"
+BITSTREAM_TARGET = "//hw/top_earlgrey/bitstream:gcp_spliced_test_rom"
 
 
 def handle_libs(device_libs_all: List[str]) -> List[str]:

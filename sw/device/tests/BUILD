@@ -2484,9 +2484,9 @@ otp_image(
 
 bitstream_splice(
     name = "power_virus_systemtest_bitstream",
-    src = "//hw/bitstream:test_rom",
+    src = "//hw/top_earlgrey/bitstream:test_rom",
     data = ":power_virus_systemtest_otp_img_rma",
-    meminfo = "//hw/bitstream:otp_mmi",
+    meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
     update_usr_access = True,
     visibility = ["//visibility:private"],
 )
@@ -2631,7 +2631,8 @@ opentitan_functest(
     name = "openocd_test",
     srcs = ["example_test_from_flash.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_test_unlocked0",
+        bitstream = "//hw/top_earlgrey/bitstream:" +
+                    "rom_with_fake_keys_otp_test_unlocked0",
         test_cmds = [
             "--bitstream=\"$(rootpath {bitstream})\"",
             "--bootstrap=\"$(rootpath {flash})\"",

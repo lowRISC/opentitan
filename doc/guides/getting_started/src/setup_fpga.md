@@ -61,13 +61,13 @@ As mentioned above, we maintain two boot ROM programs, one for testing (_test RO
 To build an FPGA bitstream with the _test ROM_, use:
 ```console
 cd $REPO_TOP
-bazel build //hw/bitstream/vivado:fpga_cw310_test_rom
+bazel build //hw/top_earlgrey/bitstream/vivado:fpga_cw310_test_rom
 ```
 
 To build an FPGA bitstream with the _ROM_, use:
 ```console
 cd $REPO_TOP
-bazel build //hw/bitstream/vivado:fpga_cw310_rom
+bazel build //hw/top_earlgrey/bitstream/vivado:fpga_cw310_rom
 ```
 
 Note, building these bitstreams will require Vivado be installed on your system, with access to the proper licenses, described [here](./install_vivado/README.md).
@@ -233,7 +233,7 @@ cd $REPO_TOP
 bazel run //sw/host/opentitantool fpga load-bitstream /tmp/bitstream-latest/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig
 
 ### If you built the bitstream yourself:
-bazel run //sw/host/opentitantool fpga load-bitstream $(ci/scripts/target-location.sh //hw/bitstream/vivado:fpga_cw310_test_rom)
+bazel run //sw/host/opentitantool fpga load-bitstream $(ci/scripts/target-location.sh //hw/top_earlgrey/bitstream/vivado:fpga_cw310_test_rom)
 ```
 
 Depending on the FPGA device, the flashing itself may take several seconds.

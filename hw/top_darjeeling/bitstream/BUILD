@@ -1,0 +1,171 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+load("//rules:splice.bzl", "bitstream_splice")
+load("//rules:otp.bzl", "get_otp_images")
+load("//rules:const.bzl", "KEY_AUTHENTICITY")
+
+package(default_visibility = ["//visibility:public"])
+
+# By default, targets in this file will use cached artifacts from the GCP bucket
+# instead of building them from scratch.
+#
+# You can control GCP bitstream selection with the BITSTREAM environment
+# variable. See //rules:bitstreams.bzl for more information.
+#
+# Alternatively, you can disable or alter this caching behavior with the
+# "bitstream" config setting.
+#
+# * `--define bitstream=skip` skips loading a bitstream into the FPGA. This is
+#   useful if you already have a bitstream loaded into the FPGA and you don't
+#   want the GCP cache manager to do anything unexpected.
+#
+# * `--define bitstream=vivado` causes these targets to build from scratch with
+#   Vivado. You'll need to have Xilinx Vivado installed and have properly
+#   configured access to a license or license server.
+#
+# * `--define bitstream=gcp_splice` causes these targets to use a cached
+#   bitstream, but splice in a locally-built ROM image or OTP.
+#
+# Downstream targets will see the effects of this caching logic. For example,
+# specifying `--define bitstream=vivado` when testing
+# //sw/device/silicon_creator/lib/drivers:hmac_functest_fpga_cw310 will turn
+# `:test_rom` into a full Vivado bitstream build.
+
+config_setting(
+    name = "bitstream_skip",
+    define_values = {
+        "bitstream": "skip",
+    },
+)
+
+config_setting(
+    name = "bitstream_vivado",
+    define_values = {
+        "bitstream": "vivado",
+    },
+)
+
+config_setting(
+    name = "bitstream_gcp_splice",
+    define_values = {
+        "bitstream": "gcp_splice",
+    },
+)
+
+filegroup(
+    name = "test_rom",
+    testonly = True,
+    srcs = select({
+        "bitstream_skip": ["//hw/bitstream:skip"],
+        "bitstream_vivado": ["//hw/top_darjeeling/bitstream/vivado:fpga_cw310_test_rom"],
+        "bitstream_gcp_splice": [":gcp_spliced_test_rom"],
+        "//conditions:default": [":gcp_spliced_test_rom"],
+    }),
+    tags = ["manual"],
+)
+
+[
+    filegroup(
+        name = "rom_with_{}_keys".format(authenticity),
+        testonly = True,
+        srcs = select({
+            "bitstream_skip": ["//hw/bitstream:skip"],
+            "bitstream_vivado": ["//hw/top_darjeeling/bitstream/vivado:fpga_cw310_rom_with_{}_keys".format(authenticity)],
+            "bitstream_gcp_splice": [":gcp_spliced_rom_with_{}_keys".format(authenticity)],
+            "//conditions:default": [":gcp_spliced_rom_with_{}_keys".format(authenticity)],
+        }),
+        tags = ["manual"],
+    )
+    for authenticity in KEY_AUTHENTICITY
+]
+
+filegroup(
+    name = "rom_mmi",
+    testonly = True,
+    srcs = select({
+        "bitstream_skip": ["//hw/bitstream:skip"],
+        "bitstream_vivado": ["//hw/top_darjeeling/bitstream/vivado:rom_mmi"],
+        "//conditions:default": ["//hw/top_darjeeling/bitstream/vivado:rom_mmi"],
+        # TODO: Reenable when Darjeeling has bitstream cache
+        #        "//conditions:default": ["@bitstreams//:chip_darjeeling_cw310_rom_mmi"],
+    }),
+    tags = ["manual"],
+)
+
+filegroup(
+    name = "otp_mmi",
+    testonly = True,
+    srcs = select({
+        "bitstream_skip": ["//hw/bitstream:skip"],
+        "bitstream_vivado": ["//hw/top_darjeeling/bitstream/vivado:otp_mmi"],
+        "//conditions:default": ["//hw/top_darjeeling/bitstream/vivado:otp_mmi"],
+        # TODO: Reenable when Darjeeling has bitstream cache
+        #        "//conditions:default": ["@bitstreams//:chip_darjeeling_cw310_otp_mmi"],
+    }),
+    tags = ["manual"],
+)
+
+[
+    filegroup(
+        name = "rom_with_{}_keys_otp_{}".format(authenticity, otp_name),
+        testonly = True,
+        srcs = select({
+            "bitstream_skip": ["//hw/bitstream:skip"],
+            "bitstream_vivado": ["//hw/top_darjeeling/bitstream/vivado:fpga_cw310_rom_with_{}_keys_otp_{}".format(authenticity, otp_name)],
+            "bitstream_gcp_splice": [":gcp_spliced_rom_with_{}_keys_otp_{}".format(authenticity, otp_name)],
+            "//conditions:default": [":gcp_spliced_rom_with_{}_keys_otp_{}".format(authenticity, otp_name)],
+        }),
+        tags = ["manual"],
+    )
+    for (otp_name, _) in get_otp_images()
+    for authenticity in KEY_AUTHENTICITY
+]
+
+# Build the Test ROM and splice it into a cached bitstream.
+bitstream_splice(
+    name = "gcp_spliced_test_rom",
+    testonly = True,
+    # TODO: Reenable when Darjeeling has bitstream cache
+    #    src = "@bitstreams//:chip_darjeeling_cw310_bitstream",
+    src = "//hw/top_darjeeling/bitstream/vivado:fpga_cw310_test_rom",
+    data = "//sw/device/lib/testing/test_rom:test_rom_fpga_cw310_scr_vmem",
+    meminfo = ":rom_mmi",
+    tags = ["manual"],
+    update_usr_access = True,
+    visibility = ["//visibility:private"],
+)
+
+# Build the ROM and splice it into a cached bitstream.
+[
+    bitstream_splice(
+        name = "gcp_spliced_rom_with_{}_keys".format(authenticity),
+        testonly = True,
+        # TODO: Reenable when Darjeeling has bitstream cache
+        #        src = "@bitstreams//:chip_darjeeling_cw310_bitstream",
+        src = "//hw/top_darjeeling/bitstream/vivado:fpga_cw310_test_rom",
+        data = "//sw/device/silicon_creator/rom:rom_with_{}_keys_fpga_cw310_scr_vmem".format(authenticity),
+        meminfo = ":rom_mmi",
+        tags = ["manual"],
+        update_usr_access = True,
+        visibility = ["//visibility:private"],
+    )
+    for authenticity in KEY_AUTHENTICITY
+]
+
+# Splice OTP images into the locally-spliced ROM bitstream.
+[
+    bitstream_splice(
+        name = "gcp_spliced_rom_with_{}_keys_otp_{}".format(authenticity, otp_name),
+        testonly = True,
+        src = ":gcp_spliced_rom_with_{}_keys".format(authenticity),
+        data = img_target,
+        meminfo = ":otp_mmi",
+        tags = ["manual"],
+        update_usr_access = True,
+        visibility = ["//visibility:private"],
+    )
+    for (otp_name, img_target) in get_otp_images()
+    for authenticity in KEY_AUTHENTICITY
+]

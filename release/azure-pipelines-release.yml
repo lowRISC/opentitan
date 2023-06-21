@@ -63,9 +63,9 @@ jobs:
         mkdir -p $OBJ_DIR/hw/top_earlgrey/standard-release
         mkdir -p $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug-release/
         cp -rLt $OBJ_DIR/hw/top_earlgrey/standard-release \
-          $($REPO_TOP/bazelisk.sh outquery-all //hw/bitstream/vivado:fpga_cw310)
+          $($REPO_TOP/bazelisk.sh outquery-all //hw/top_earlgrey/bitstream/vivado:fpga_cw310)
         cp -rLt $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug-release/ \
-          $($REPO_TOP/bazelisk.sh outquery-all //hw/bitstream/vivado:fpga_cw310_hyperdebug)
+          $($REPO_TOP/bazelisk.sh outquery-all //hw/top_earlgrey/bitstream/vivado:fpga_cw310_hyperdebug)
       }
 
       . util/build_consts.sh

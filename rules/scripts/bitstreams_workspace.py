@@ -268,14 +268,14 @@ class BitstreamCache(object):
         output_files = dict()
         legacy_files = {
             "lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig": {
-                "buildTarget": "//hw/bitstream/vivado:fpga_cw310",
+                "buildTarget": "//hw/top_earlgrey/bitstream/vivado:fpga_cw310",
                 "outputInfo": {
                     "@type": "bitstreamInfo",
                     "design": "chip_earlgrey_cw310"
                 }
             },
             "otp.mmi": {
-                "buildTarget": "//hw/bitstream/vivado:fpga_cw310",
+                "buildTarget": "//hw/top_earlgrey/bitstream/vivado:fpga_cw310",
                 "outputInfo": {
                     "@type": "memoryMapInfo",
                     "design": "chip_earlgrey_cw310",
@@ -283,7 +283,7 @@ class BitstreamCache(object):
                 }
             },
             "rom.mmi": {
-                "buildTarget": "//hw/bitstream/vivado:fpga_cw310",
+                "buildTarget": "//hw/top_earlgrey/bitstream/vivado:fpga_cw310",
                 "outputInfo": {
                     "@type": "memoryMapInfo",
                     "design": "chip_earlgrey_cw310",
@@ -292,14 +292,14 @@ class BitstreamCache(object):
             },
             "chip_earlgrey_cw310_hyperdebug/"
             "lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.bit": {
-                "buildTarget": "//hw/bitstream/vivado:fpga_cw310_hyperdebug",
+                "buildTarget": "//hw/top_earlgrey/bitstream/vivado:fpga_cw310_hyperdebug",
                 "outputInfo": {
                     "@type": "bitstreamInfo",
                     "design": "chip_earlgrey_cw310_hyperdebug"
                 }
             },
             "chip_earlgrey_cw310_hyperdebug/otp.mmi": {
-                "buildTarget": "//hw/bitstream/vivado:fpga_cw310_hyperdebug",
+                "buildTarget": "//hw/top_earlgrey/bitstream/vivado:fpga_cw310_hyperdebug",
                 "outputInfo": {
                     "@type": "memoryMapInfo",
                     "design": "chip_earlgrey_cw310_hyperdebug",
@@ -307,7 +307,7 @@ class BitstreamCache(object):
                 }
             },
             "chip_earlgrey_cw310_hyperdebug/rom.mmi": {
-                "buildTarget": "//hw/bitstream/vivado:fpga_cw310_hyperdebug",
+                "buildTarget": "//hw/top_earlgrey/bitstream/vivado:fpga_cw310_hyperdebug",
                 "outputInfo": {
                     "@type": "memoryMapInfo",
                     "design": "chip_earlgrey_cw310_hyperdebug",

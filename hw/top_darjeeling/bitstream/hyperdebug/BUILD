@@ -12,9 +12,9 @@ filegroup(
     name = "test_rom",
     testonly = True,
     srcs = select({
-        "//hw/bitstream:bitstream_skip": ["//hw/bitstream:skip.bit"],
-        "//hw/bitstream:bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw310_test_rom"],
-        "//hw/bitstream:bitstream_gcp_splice": [":gcp_spliced_test_rom"],
+        "//hw/top_darjeeling/bitstream:bitstream_skip": ["//hw/bitstream:skip"],
+        "//hw/top_darjeeling/bitstream:bitstream_vivado": ["//hw/top_darjeeling/bitstream/vivado:fpga_cw310_test_rom"],
+        "//hw/top_darjeeling/bitstream:bitstream_gcp_splice": [":gcp_spliced_test_rom"],
         "//conditions:default": [":gcp_spliced_test_rom"],
     }),
     tags = ["manual"],
@@ -25,9 +25,9 @@ filegroup(
         name = "rom_with_{}_keys".format(authenticity),
         testonly = True,
         srcs = select({
-            "//hw/bitstream:bitstream_skip": ["skip.bit"],
-            "//hw/bitstream:bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw310_rom_with_{}_keys".format(authenticity)],
-            "//hw/bitstream:bitstream_gcp_splice": [":gcp_spliced_rom_with_{}_fake_keys".format(authenticity)],
+            "//hw/top_darjeeling/bitstream:bitstream_skip": ["//hw/bitstream:skip"],
+            "//hw/top_darjeeling/bitstream:bitstream_vivado": ["//hw/top_darjeeling/bitstream/vivado:fpga_cw310_rom_with_{}_keys".format(authenticity)],
+            "//hw/top_darjeeling/bitstream:bitstream_gcp_splice": [":gcp_spliced_rom_with_{}_fake_keys".format(authenticity)],
             "//conditions:default": [":gcp_spliced_rom_with_fake_keys"],
         }),
         tags = ["manual"],
@@ -39,9 +39,11 @@ filegroup(
     name = "rom_mmi",
     testonly = True,
     srcs = select({
-        "//hw/bitstream:bitstream_skip": ["skip.bit"],
-        "//hw/bitstream:bitstream_vivado": ["//hw/bitstream/vivado:rom_mmi"],
-        "//conditions:default": ["@bitstreams//:chip_earlgrey_cw310_hyperdebug_rom_mmi"],
+        "//hw/top_darjeeling/bitstream:bitstream_skip": ["//hw/bitstream:skip"],
+        "//hw/top_darjeeling/bitstream:bitstream_vivado": ["//hw/top_darjeeling/bitstream/vivado:rom_mmi"],
+        "//conditions:default": ["//hw/top_darjeeling/bitstream/vivado:rom_mmi"],
+        # TODO: Reenable when Darjeeling has bitstream cache
+        #        "//conditions:default": ["@bitstreams//:chip_darjeeling_cw310_hyperdebug_rom_mmi"],
     }),
     tags = ["manual"],
 )
@@ -50,9 +52,11 @@ filegroup(
     name = "otp_mmi",
     testonly = True,
     srcs = select({
-        "//hw/bitstream:bitstream_skip": ["skip.bit"],
-        "//hw/bitstream:bitstream_vivado": ["//hw/bitstream/vivado:otp_mmi"],
-        "//conditions:default": ["@bitstreams//:chip_earlgrey_cw310_hyperdebug_otp_mmi"],
+        "//hw/top_darjeeling/bitstream:bitstream_skip": ["//hw/bitstream:skip"],
+        "//hw/top_darjeeling/bitstream:bitstream_vivado": ["//hw/top_darjeeling/bitstream/vivado:otp_mmi"],
+        "//conditions:default": ["//hw/top_darjeeling/bitstream/vivado:otp_mmi"],
+        # TODO: Reenable when Darjeeling has bitstream cache
+        #        "//conditions:default": ["@bitstreams//:chip_darjeeling_cw310_hyperdebug_otp_mmi"],
     }),
     tags = ["manual"],
 )
@@ -62,9 +66,9 @@ filegroup(
         name = "rom_with_{}_keys_otp_{}".format(authenticity, otp_name),
         testonly = True,
         srcs = select({
-            "//hw/bitstream:bitstream_skip": ["skip.bit"],
-            "//hw/bitstream:bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw310_rom_with_{}_keys_otp_{}".format(authenticity, otp_name)],
-            "//hw/bitstream:bitstream_gcp_splice": [":gcp_spliced_rom_with_{}_keys_otp_{}".format(authenticity, otp_name)],
+            "//hw/top_darjeeling/bitstream:bitstream_skip": ["//hw/bitstream:skip"],
+            "//hw/top_darjeeling/bitstream:bitstream_vivado": ["//hw/top_darjeeling/bitstream/vivado:fpga_cw310_rom_with_{}_keys_otp_{}".format(authenticity, otp_name)],
+            "//hw/top_darjeeling/bitstream:bitstream_gcp_splice": [":gcp_spliced_rom_with_{}_keys_otp_{}".format(authenticity, otp_name)],
             "//conditions:default": [":gcp_spliced_rom_with_{}_keys_otp_{}".format(authenticity, otp_name)],
         }),
         tags = ["manual"],
@@ -77,7 +81,9 @@ filegroup(
 bitstream_splice(
     name = "gcp_spliced_test_rom",
     testonly = True,
-    src = "@bitstreams//:chip_earlgrey_cw310_hyperdebug_bitstream",
+    # TODO: Reenable when Darjeeling has bitstream cache
+    #    src = "@bitstreams//:chip_darjeeling_cw310_hyperdebug_bitstream",
+    src = "//hw/top_darjeeling/bitstream/vivado:fpga_cw310_test_rom",
     data = "//sw/device/lib/testing/test_rom:test_rom_fpga_cw310_scr_vmem",
     meminfo = ":rom_mmi",
     tags = ["manual"],
@@ -89,7 +95,9 @@ bitstream_splice(
     bitstream_splice(
         name = "gcp_spliced_rom_with_{}_keys".format(authenticity),
         testonly = True,
-        src = "@bitstreams//:chip_earlgrey_cw310_hyperdebug_bitstream",
+        # TODO: Reenable when Darjeeling has bitstream cache
+        #        src = "@bitstreams//:chip_darjeeling_cw310_hyperdebug_bitstream",
+        src = "//hw/top_darjeeling/bitstream/vivado:fpga_cw310_test_rom",
         data = "//sw/device/silicon_creator/rom:rom_with_{}_keys_fpga_cw310_scr_vmem".format(authenticity),
         meminfo = ":rom_mmi",
         tags = ["manual"],

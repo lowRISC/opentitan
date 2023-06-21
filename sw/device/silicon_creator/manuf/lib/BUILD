@@ -141,7 +141,7 @@ opentitan_functest(
     name = "individualize_functest",
     srcs = ["individualize_functest.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_dev_initial",
+        bitstream = "//hw/top_earlgrey/bitstream:rom_with_fake_keys_otp_dev_initial",
         tags = ["manuf"],
     ),
     key_struct = RSA_ONLY_KEY_STRUCTS[1],
@@ -184,7 +184,7 @@ opentitan_functest(
     name = "individualize_preop_functest",
     srcs = ["individualize_preop_functest.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_test_unlocked0",
+        bitstream = "//hw/top_earlgrey/bitstream:rom_with_fake_keys_otp_test_unlocked0",
         tags = ["manuf"],
     ),
     targets = [
@@ -230,7 +230,7 @@ opentitan_functest(
     name = "provisioning_functest",
     srcs = ["provisioning_functest.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_dev_individualized",
+        bitstream = "//hw/top_earlgrey/bitstream:rom_with_fake_keys_otp_dev_individualized",
         tags = ["manuf"],
         test_cmds = [
             "--clear-bitstream",
@@ -279,7 +279,7 @@ lc_raw_unlock_token(
         name = "manuf_scrap_functest_{}".format(lc_state.lower()),
         srcs = ["empty_functest.c"],
         cw310 = cw310_params(
-            bitstream = "//hw/bitstream:rom_with_fake_keys_otp_{}".format(lc_state.lower()),
+            bitstream = "//hw/top_earlgrey/bitstream:rom_with_fake_keys_otp_{}".format(lc_state.lower()),
             tags = ["manuf"],
             test_cmds = (
                 _MANUF_LC_TRANSITION_TEST_CMDS if (
@@ -314,7 +314,7 @@ opentitan_functest(
     name = "manuf_cp_unlock_raw_functest",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_raw",
+        bitstream = "//hw/top_earlgrey/bitstream:rom_with_fake_keys_otp_raw",
         tags = ["manuf"],
         test_cmds = _MANUF_LC_TRANSITION_TEST_CMDS,
     ),
@@ -369,9 +369,9 @@ otp_json(
 [
     bitstream_splice(
         name = "bitstream_rom_exec_disabled_test_unlocked{}".format(i),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
         data = "otp_img_rom_exec_disabled_test_unlocked{}".format(i),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
         update_usr_access = True,
         visibility = ["//visibility:private"],
     )
@@ -663,9 +663,9 @@ otp_image(
 
 bitstream_splice(
     name = "bitstream_otp_ctrl_functest",
-    src = "//hw/bitstream:rom_with_fake_keys",
+    src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
     data = "otp_img_otp_ctrl_functest",
-    meminfo = "//hw/bitstream:otp_mmi",
+    meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
     update_usr_access = True,
     visibility = ["//visibility:private"],
 )

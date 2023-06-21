@@ -230,12 +230,12 @@ So you can ignore this warning, but it's worth keeping in mind *if* you should s
 
 ## Building and splicing bitstreams that include an ILA
 
-With the steps above complete, building a first bitstream that includes the defined ILAs is as simple as `bazel build //hw/bitstream:rom --define bitstream=vivado`.
+With the steps above complete, building a first bitstream that includes the defined ILAs is as simple as `bazel build //hw/top_earlgrey/bitstream:rom --define bitstream=vivado`.
 While synthesis, implementation, and bitstream generation runs (which can easily take 2 h), keep an eye on the logs.
 Especially during RTL elaboration, which happens very early, check the logs for any unexpected warnings.
 The path to the synthesis log file is usually `bazel-out/k8-fastbuild/bin/hw/bitstream/vivado/build.fpga_cw310/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.runs/synth_1/runme.log`.
 
-Once Vivado has successfully generated a bitstream, locate its directory with `dirname $(./bazelisk.sh outquery-all //hw/bitstream:rom --define bitstream=vivado)` (it will usually be `bazel-out/k8-fastbuild/bin/hw/bitstream/vivado`).
+Once Vivado has successfully generated a bitstream, locate its directory with `dirname $(./bazelisk.sh outquery-all //hw/top_earlgrey/bitstream:rom --define bitstream=vivado)` (it will usually be `bazel-out/k8-fastbuild/bin/hw/bitstream/vivado`).
 Append `/build.fpga_cw310/synth-vivado` to that path.
 In the resulting directory, you should find `otp.mmi`, `rom.mmi`, and `lowrisc_systems_chip_earlgrey_cw310_0.1.bit`.
 We will next copy those files into a local bitstream cache that Bazel can use.
@@ -261,8 +261,8 @@ Now instruct Bazel to use a bitstream from the local cache by setting an `--offl
 ```sh
 export BITSTREAM="--offline 2e5a31b7d80b6eb97e114b2ca8f9e132ec7c83a6"
 ```
-Then invoke `bazel build //hw/bitstream:rom_otp_test_unlocked0` to splice the desired ROM and OTP image into the bitstream with an ILA.
-The resulting bitstream can be located with `./bazelisk.sh outquery-all //hw/bitstream:rom_otp_test_unlocked0`.
+Then invoke `bazel build //hw/top_earlgrey/bitstream:rom_otp_test_unlocked0` to splice the desired ROM and OTP image into the bitstream with an ILA.
+The resulting bitstream can be located with `./bazelisk.sh outquery-all //hw/top_earlgrey/bitstream:rom_otp_test_unlocked0`.
 
 
 ## Programming the FPGA, controlling the ILA, and running a test

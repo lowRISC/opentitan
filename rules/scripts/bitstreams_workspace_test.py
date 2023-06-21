@@ -46,14 +46,16 @@ class TestBitstreamCache(unittest.TestCase):
                 "buildId": "abcd",
                 "outputFiles": {
                     BITSTREAM_ORIG: {
-                        "buildTarget": "//hw/bitstream/vivado:fpga_cw310",
+                        "buildTarget": "//hw/top_earlgrey/bitstream/vivado:"
+                                       "fpga_cw310",
                         "outputInfo": {
                             "@type": "bitstreamInfo",
                             "design": "chip_earlgrey_cw310"
                         }
                     },
                     "rom.mmi": {
-                        "buildTarget": "//hw/bitstream/vivado:fpga_cw310",
+                        "buildTarget": "//hw/top_earlgrey/bitstream/vivado:"
+                                       "fpga_cw310",
                         "outputInfo": {
                             "@type": "memoryMapInfo",
                             "design": "chip_earlgrey_cw310",
@@ -61,7 +63,8 @@ class TestBitstreamCache(unittest.TestCase):
                         }
                     },
                     "otp.mmi": {
-                        "buildTarget": "//hw/bitstream/vivado:fpga_cw310",
+                        "buildTarget": "//hw/top_earlgrey/bitstream/vivado:"
+                                       "fpga_cw310",
                         "outputInfo": {
                             "@type": "memoryMapInfo",
                             "design": "chip_earlgrey_cw310",

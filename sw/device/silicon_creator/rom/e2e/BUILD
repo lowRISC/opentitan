@@ -114,9 +114,9 @@ otp_image(
 
 bitstream_splice(
     name = "bitstream_default_otp",
-    src = "//hw/bitstream:rom_with_fake_keys",
+    src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
     data = ":otp_img_default",
-    meminfo = "//hw/bitstream:otp_mmi",
+    meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
     tags = maybe_skip_in_ci(CONST.LCV.RMA),
     update_usr_access = True,
     visibility = ["//visibility:private"],
@@ -208,7 +208,7 @@ opentitan_functest(
 opentitan_functest(
     name = "rom_e2e_smoke",
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys",
+        bitstream = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
     ),
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
@@ -306,9 +306,9 @@ rom_e2e_keymgr_init_configs = [
 [
     bitstream_splice(
         name = "bitstream_keymgr_{}".format(config["name"]),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
         data = ":otp_img_keymgr_{}".format(config["name"]),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
         visibility = ["//visibility:private"],
     )
     for config in rom_e2e_keymgr_init_configs
@@ -378,7 +378,7 @@ opentitan_functest(
 opentitan_functest(
     name = "e2e_bootup_success_otp_dev",
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_dev",
+        bitstream = "//hw/top_earlgrey/bitstream:rom_with_fake_keys_otp_dev",
         # TODO(lowRISC/opentitan#13603): Remove this "manual" tag when the
         # bitstream target can fetch pre-spliced bitstream from GCP.
         tags = ["manual"],
@@ -398,9 +398,9 @@ opentitan_functest(
 [
     bitstream_splice(
         name = "bitstream_e2e_bootstrap_entry_{}".format(lc_state),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
         data = ":otp_img_e2e_bootstrap_entry_{}".format(lc_state),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
         tags = maybe_skip_in_ci(lc_state_val),
         update_usr_access = True,
     )
@@ -482,9 +482,9 @@ otp_image(
 
 bitstream_splice(
     name = "bitstream_bootstrap_rma",
-    src = "//hw/bitstream:rom_with_fake_keys",
+    src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
     data = ":otp_img_bootstrap_rma",
-    meminfo = "//hw/bitstream:otp_mmi",
+    meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
     update_usr_access = True,
     visibility = ["//visibility:private"],
 )
@@ -521,7 +521,7 @@ opentitan_functest(
 opentitan_functest(
     name = "e2e_bootstrap_disabled",
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_bootstrap_disabled",
+        bitstream = "//hw/top_earlgrey/bitstream:rom_with_fake_keys_otp_bootstrap_disabled",
         test_cmds = [
             "--bitstream=\"$(location {bitstream})\"",
         ],
@@ -538,9 +538,9 @@ opentitan_functest(
 [
     bitstream_splice(
         name = "bitstream_chip_specific_startup_{}".format(lc_state),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
         data = ":otp_img_e2e_bootstrap_entry_{}".format(lc_state),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
         tags = maybe_skip_in_ci(lc_state_val),
         update_usr_access = True,
     )
@@ -754,9 +754,9 @@ opentitan_functest(
 [
     bitstream_splice(
         name = "bitstream_shutdown_output_{}".format(lc_state),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
         data = ":otp_img_shutdown_output_{}".format(lc_state),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
         update_usr_access = True,
     )
     for lc_state, _ in get_lc_items()
@@ -881,9 +881,9 @@ BOOT_POLICY_NEWER_CASES = [
 [
     bitstream_splice(
         name = "bitstream_boot_policy_newer_{}".format(lc_state),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
         data = ":otp_img_boot_policy_newer_{}".format(lc_state),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
         update_usr_access = True,
     )
     for lc_state, _ in get_lc_items()
@@ -972,11 +972,11 @@ otp_json(
     name = "bitstream_boot_policy_rollback_{}".format(
         lc_state,
     ),
-    src = "//hw/bitstream:rom_with_fake_keys",
+    src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
     data = ":otp_img_boot_policy_rollback_{}".format(
         lc_state,
     ),
-    meminfo = "//hw/bitstream:otp_mmi",
+    meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
     update_usr_access = True,
     visibility = ["//visibility:private"],
 ) for lc_state, _ in get_lc_items()]
@@ -1050,9 +1050,9 @@ otp_json(
 # Bitstreams with the watchdog-enable OTP images spliced in.
 [bitstream_splice(
     name = "bitstream_watchdog_enable_{}".format(lc_state),
-    src = "//hw/bitstream:rom_with_fake_keys",
+    src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
     data = ":otp_img_watchdog_enable_{}".format(lc_state),
-    meminfo = "//hw/bitstream:otp_mmi",
+    meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
     tags = maybe_skip_in_ci(lc_state_val),
     update_usr_access = True,
 ) for lc_state, lc_state_val in get_lc_items()]
@@ -1104,7 +1104,7 @@ WATCHDOG_TEST_CASES = {
 # tests. The format argument should be replaced with the desired life cycle
 # state.
 WATCHDOG_BITSTREAM = {
-    "disable": "//hw/bitstream:rom_with_fake_keys_otp_{}",
+    "disable": "//hw/top_earlgrey/bitstream:rom_with_fake_keys_otp_{}",
     "enable": ":bitstream_watchdog_enable_{}",
 }
 
@@ -1186,9 +1186,9 @@ ALERT_LC_STATES = get_lc_items(
 
 [bitstream_splice(
     name = "bitstream_alert_{}".format(lc_state),
-    src = "//hw/bitstream:rom_with_fake_keys",
+    src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
     data = ":otp_img_alert_{}".format(lc_state),
-    meminfo = "//hw/bitstream:otp_mmi",
+    meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
     tags = maybe_skip_in_ci(lc_state_val),
     update_usr_access = True,
 ) for lc_state, lc_state_val in ALERT_LC_STATES]
@@ -1322,9 +1322,9 @@ otp_alert_digest(
 
 [bitstream_splice(
     name = "bitstream_shutdown_alert_{}".format(lc_state),
-    src = "//hw/bitstream:rom_with_fake_keys",
+    src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
     data = ":otp_img_shutdown_alert_{}".format(lc_state),
-    meminfo = "//hw/bitstream:otp_mmi",
+    meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
     tags = maybe_skip_in_ci(lc_state_val),
     update_usr_access = True,
 ) for lc_state, lc_state_val in ALERT_LC_STATES]
@@ -1448,12 +1448,12 @@ opentitan_flash_binary(
             lc_state,
             t["name"],
         ),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
         data = ":otp_img_sigverify_mod_exp_{}_{}".format(
             lc_state,
             t["name"],
         ),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
         update_usr_access = True,
         visibility = ["//visibility:private"],
     )
@@ -1711,12 +1711,12 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             lc_state,
             sec_ver,
         ),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
         data = ":otp_img_boot_policy_bad_manifest_{}_sec_ver_{}".format(
             lc_state,
             sec_ver,
         ),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
         update_usr_access = True,
         visibility = ["//visibility:private"],
     )
@@ -1860,12 +1860,12 @@ BOOT_DATA_RECOVERY_CASES = [
         case["lc_state"],
         case["default_boot_data"],
     ),
-    src = "//hw/bitstream:rom_with_fake_keys",
+    src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
     data = ":otp_img_boot_data_recovery_{}_{}".format(
         case["lc_state"],
         case["default_boot_data"],
     ),
-    meminfo = "//hw/bitstream:otp_mmi",
+    meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
     tags = maybe_skip_in_ci(getattr(
         CONST.LCV,
         case["lc_state"].upper(),
@@ -2015,12 +2015,12 @@ SHUTDOWN_WATCHDOG_CASES = [
             t["lc_state"],
             t["bite_threshold"],
         ),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
         data = ":otp_img_shutdown_watchdog_{}_{}".format(
             t["lc_state"],
             t["bite_threshold"],
         ),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
         update_usr_access = True,
         visibility = ["//visibility:private"],
     )
@@ -2184,9 +2184,9 @@ BOOT_POLICY_VALID_CASES = [
 [
     bitstream_splice(
         name = "bitstream_boot_policy_valid_{}".format(lc_state),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
         data = ":otp_img_boot_policy_valid_{}".format(lc_state),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
         update_usr_access = True,
     )
     for lc_state, _ in get_lc_items()
@@ -2247,9 +2247,9 @@ test_suite(
 [
     bitstream_splice(
         name = "rom_with_fake_keys_otp_{}_exec_disabled".format(lc_state),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
         data = "img_{}_exec_disabled".format(lc_state),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
         tags = [
             "manual",
         ],
@@ -2315,7 +2315,7 @@ test_suite(
         name = "epmp_init_otp_" + lc_state,
         srcs = ["epmp_init_test.c"],
         cw310 = cw310_params(
-            bitstream = "//hw/bitstream:rom_with_fake_keys_otp_" + lc_state,
+            bitstream = "//hw/top_earlgrey/bitstream:rom_with_fake_keys_otp_" + lc_state,
             tags = maybe_skip_in_ci(lc_state_val),
         ),
         key_struct = filter_key_structs_for_lc_state(RSA_ONLY_KEY_STRUCTS, lc_state_val)[0],
@@ -2720,12 +2720,12 @@ REDACT.update({"INVALID": 0x0})
             lc_state,
             redact.lower(),
         ),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
         data = ":img_{}_{}".format(
             lc_state,
             redact.lower(),
         ),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
         update_usr_access = True,
         visibility = ["//visibility:private"],
     )
@@ -2875,9 +2875,9 @@ test_suite(
 [
     bitstream_splice(
         name = "bitstream_sigverify_always_{}".format(lc_state),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
         data = ":otp_img_sigverify_always_{}".format(lc_state),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
         tags = maybe_skip_in_ci(lc_state_val),
         update_usr_access = True,
     )
@@ -2971,11 +2971,11 @@ test_suite(
         name = "bitstream_sigverify_key_type_{}".format(
             lc_state,
         ),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
         data = ":otp_img_sigverify_key_type_{}".format(
             lc_state,
         ),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
         tags = maybe_skip_in_ci(lc_state_val),
         update_usr_access = True,
         visibility = ["//visibility:private"],
@@ -3065,11 +3065,11 @@ otp_json(
         name = "bitstream_sigverify_key_validity_{}".format(
             lc_state,
         ),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
         data = ":otp_img_sigverify_key_validity_{}".format(
             lc_state,
         ),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
         tags = maybe_skip_in_ci(lc_state_val),
         update_usr_access = True,
         visibility = ["//visibility:private"],
@@ -3167,9 +3167,9 @@ otp_json(
 
 [bitstream_splice(
     name = "bitstream_sigverify_usage_constraints_{}".format(lc_state),
-    src = "//hw/bitstream:rom_with_fake_keys",
+    src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
     data = ":otp_img_sigverify_usage_constraints_{}".format(lc_state),
-    meminfo = "//hw/bitstream:otp_mmi",
+    meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
     tags = maybe_skip_in_ci(lc_state_val),
     update_usr_access = True,
     visibility = ["//visibility:private"],
@@ -3594,9 +3594,9 @@ otp_image(
 
 bitstream_splice(
     name = "bitstream_reset_ret_ram",
-    src = "//hw/bitstream:rom_with_fake_keys",
+    src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
     data = ":otp_img_reset_ret_ram",
-    meminfo = "//hw/bitstream:otp_mmi",
+    meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
     tags = maybe_skip_in_ci(CONST.LCV.RMA),
     update_usr_access = True,
     visibility = ["//visibility:private"],
@@ -3627,7 +3627,7 @@ opentitan_functest(
     name = "rom_e2e_ret_ram_keep",
     srcs = ["rom_e2e_ret_ram_keep_test.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys",
+        bitstream = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
         tags = maybe_skip_in_ci(CONST.LCV.RMA),
     ),
     signed = True,
@@ -3683,11 +3683,11 @@ otp_json(
         name = "bitstream_rom_ext_upgrade_interrupt_{}".format(
             lc_state,
         ),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
         data = ":otp_img_rom_ext_upgrade_interrupt_{}".format(
             lc_state,
         ),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
         tags = maybe_skip_in_ci(lc_state_val),
         update_usr_access = True,
         visibility = ["//visibility:private"],
@@ -3864,12 +3864,12 @@ opentitan_flash_binary(
             lc_state,
             t["name"],
         ),
-        src = "//hw/bitstream:rom_with_fake_keys",
+        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
         data = ":otp_img_sigverify_spx_{}_{}".format(
             lc_state,
             t["name"],
         ),
-        meminfo = "//hw/bitstream:otp_mmi",
+        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
         update_usr_access = True,
         visibility = ["//visibility:private"],
     )
@@ -3923,9 +3923,9 @@ otp_image(
 
 bitstream_splice(
     name = "bitstream_sigverify_spx_rma",
-    src = "//hw/bitstream:rom_with_real_keys",
+    src = "//hw/top_earlgrey/bitstream:rom_with_real_keys",
     data = ":otp_img_sigverify_spx_rma",
-    meminfo = "//hw/bitstream:otp_mmi",
+    meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
     update_usr_access = True,
     visibility = ["//visibility:private"],
 )
@@ -3967,9 +3967,9 @@ opentitan_flash_binary(
 
 bitstream_splice(
     name = "bitstream_rom_self_hash_test_rma_otbn_mod_exp",
-    src = "//hw/bitstream:rom_with_real_keys",
+    src = "//hw/top_earlgrey/bitstream:rom_with_real_keys",
     data = ":otp_img_sigverify_mod_exp_rma_otbn",
-    meminfo = "//hw/bitstream:otp_mmi",
+    meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
     update_usr_access = True,
     visibility = ["//visibility:private"],
 )
