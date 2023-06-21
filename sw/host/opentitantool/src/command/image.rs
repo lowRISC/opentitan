@@ -107,6 +107,14 @@ pub struct ManifestUpdateCommand {
     )]
     manifest: Option<PathBuf>,
 
+    #[structopt(
+        long,
+        parse(try_from_str),
+        default_value = "true",
+        help = "Automatically compute the image length"
+    )]
+    compute_length: bool,
+
     #[structopt(long, help = "Filename for an external RSA signature file")]
     rsa_signature: Option<PathBuf>,
     #[structopt(short, long, help = "Filename for an external SPHINCS+ signature file")]
@@ -223,7 +231,9 @@ impl CommandDispatch for ManifestUpdateCommand {
         }
 
         // Update `length` to be able to generate signatures.
-        image.update_length()?;
+        if self.compute_length {
+            image.update_length()?;
+        }
 
         // Apply the manifest values to the image.
         if let Some(manifest) = &self.manifest {
