@@ -427,7 +427,8 @@ module otbn_top_sim (
   end
 
   bit err_latched;
-  assign err_latched = model_err_latched | done_mismatch_latched | err_bits_mismatch_latched;
+  assign err_latched = |{done_mismatch_latched, err_bits_mismatch_latched, cnt_mismatch_latched,
+                         model_err_latched};
 
   int bad_cycles;
   always_ff @(negedge IO_CLK or negedge IO_RST_N) begin
