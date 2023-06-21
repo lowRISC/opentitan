@@ -325,8 +325,8 @@ namespace {
     for irq in ip.irqs:
       num_irqs += irq.width
   %>
-    const uint32_t num_irqs = ${num_irqs};
-    const uint32_t irq_mask = (1u << num_irqs) - 1;
+    constexpr uint32_t num_irqs = ${num_irqs};
+    constexpr uint32_t irq_mask = (uint64_t{1} << num_irqs) - 1;
     dif_${ip.name_snake}_irq_state_snapshot_t irq_snapshot = 1;
 
     // Test a few snapshots.
