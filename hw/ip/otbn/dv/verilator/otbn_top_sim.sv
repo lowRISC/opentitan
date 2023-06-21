@@ -348,6 +348,7 @@ module otbn_top_sim (
   bit [31:0] otbn_model_insn_cnt;
   bit        otbn_model_done_rr;
   bit        otbn_model_err;
+  bit        otbn_model_urnd_req;
 
   otbn_core_model #(
     .MemScope        ( ".." ),
@@ -371,7 +372,7 @@ module otbn_top_sim (
     .edn_rnd_cdc_done_i    ( edn_rnd_data_valid ),
 
     .edn_urnd_i            ( urnd_rsp ),
-    .edn_urnd_o            ( ),
+    .edn_urnd_o            ( otbn_model_urnd_req ),
     .edn_urnd_cdc_done_i   ( edn_urnd_data_valid ),
 
     .init_sec_wipe_done_i  ( init_sec_wipe_done_qq ),
@@ -388,7 +389,8 @@ module otbn_top_sim (
     .err_o                 ( otbn_model_err )
   );
 
-  bit done_mismatch_latched, err_bits_mismatch_latched, cnt_mismatch_latched;
+  bit done_mismatch_latched, err_bits_mismatch_latched,
+      cnt_mismatch_latched, urnd_req_mismatch_latched;
   bit model_err_latched, loop_warp_model_err;
 
   // This flag gets set immediately after we've reset for the first time. We use it to make sure
@@ -401,6 +403,7 @@ module otbn_top_sim (
       done_mismatch_latched     <= 1'b0;
       err_bits_mismatch_latched <= 1'b0;
       cnt_mismatch_latched      <= 1'b0;
+      urnd_req_mismatch_latched <= 1'b0;
       model_err_latched         <= 1'b0;
       post_reset                <= 1'b1;
     end else begin
@@ -428,12 +431,18 @@ module otbn_top_sim (
         end
         cnt_mismatch_latched <= 1'b1;
       end
+      if (post_reset && edn_urnd_req != otbn_model_urnd_req && !urnd_req_mismatch_latched) begin
+        $display("ERROR: At time %0t, mismatch between RTL and model urnd_req_o (%d != %d).",
+                 $time, edn_urnd_req, otbn_model_urnd_req);
+        urnd_req_mismatch_latched <= 1'b1;
+      end
       model_err_latched <= model_err_latched | otbn_model_err | loop_warp_model_err;
     end
   end
 
   bit err_latched;
-  assign err_latched = model_err_latched | done_mismatch_latched | err_bits_mismatch_latched;
+  assign err_latched = |{done_mismatch_latched, err_bits_mismatch_latched,
+                         urnd_req_mismatch_latched, model_err_latched};
 
   int bad_cycles;
   always_ff @(negedge IO_CLK or negedge IO_RST_N) begin
