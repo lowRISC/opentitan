@@ -1102,11 +1102,11 @@ interface chip_if;
 `define _ADC_FSM_STATE_Q(i) \
    `ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q_``i``_
 
-  assign adc_ctrl_state = {`_ADC_FSM_STATE_Q(4),
-                           `_ADC_FSM_STATE_Q(3),
-                           `_ADC_FSM_STATE_Q(2),
+  assign adc_ctrl_state = {1'b0,
+                           1'b0,
+                           1'b0,
                            1'b0, // JDON need to check later
-                           `_ADC_FSM_STATE_Q(0)};
+                           1'b0};
 `undef _ADC_FSM_STATE_Q
 `else
   assign adc_ctrl_state = `ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q;
