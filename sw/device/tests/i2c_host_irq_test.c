@@ -219,6 +219,28 @@ static status_t rx_threshold_irq(void) {
   return OK_STATUS();
 }
 
+static status_t rx_overflow_irq(void) {
+  // Clean any previous state.
+  TRY(dif_i2c_irq_acknowledge(&i2c, kDifI2cIrqRxOverflow));
+  TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqRxOverflow, kDifToggleEnabled));
+
+  irq_global_ctrl(false);
+  irq_fired = kIrqVoid;
+  irq_global_ctrl(true);
+
+  const uint8_t kAddr[2] = {0x03, 0x21};
+  uint8_t bytes[I2C_PARAM_FIFO_DEPTH + 1];
+  TRY(i2c_testutils_write(&i2c, kDeviceAddr, 2, kAddr, true));
+  // Try to read more than the fifo depth to trigger the IRQ.
+  TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(bytes), bytes,
+                         kDefaultTimeoutMicros));
+
+  CHECK_IRQ_EQ(kDifI2cIrqRxOverflow);
+
+  TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqRxOverflow, kDifToggleDisabled));
+  return OK_STATUS();
+}
+
 static status_t test_init(void) {
   mmio_region_t base_addr =
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
@@ -260,6 +282,7 @@ bool test_main(void) {
   EXECUTE_TEST(test_result, fmt_threshold_irq);
   EXECUTE_TEST(test_result, fmt_overflow_irq);
   EXECUTE_TEST(test_result, rx_threshold_irq);
+  EXECUTE_TEST(test_result, rx_overflow_irq);
 
   return status_ok(test_result);
 }
