@@ -131,6 +131,36 @@ static status_t nak_irq(void) {
   return OK_STATUS();
 }
 
+static status_t nak_irq_disabled(void) {
+  // Clean any previous state.
+  TRY(dif_i2c_irq_acknowledge(&i2c, kDifI2cIrqNak));
+  TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqNak, kDifToggleEnabled));
+
+  // Write a byte to some random address to be read.
+  const uint8_t kAddr[2] = {0x03, 0x21};
+  TRY(write_byte(kAddr, 0xAB));
+
+  irq_global_ctrl(false);
+  irq_fired = kIrqVoid;
+  irq_global_ctrl(true);
+
+  dif_i2c_fmt_flags_t flags = {.start = true,
+                               .stop = false,
+                               .read = false,
+                               .read_cont = false,
+                               .suppress_nak_irq = true};
+
+  // Address the device to read, which should return a NACK as it needs more
+  // time to be read.
+  TRY(dif_i2c_write_byte_raw(&i2c, kDeviceAddr << 1 | 0x01, flags));
+
+  TRY(i2c_testutils_wait_transaction_finish(&i2c));
+  TRY_CHECK(irq_fired != kDifI2cIrqNak, "Unexpected IRQ %u", irq_fired);
+
+  TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqNak, kDifToggleDisabled));
+  return OK_STATUS();
+}
+
 static status_t cmd_complete_irq(void) {
   // Clean any previous state.
   TRY(dif_i2c_irq_acknowledge(&i2c, kDifI2cIrqCmdComplete));
@@ -278,6 +308,7 @@ bool test_main(void) {
   test_result = OK_STATUS();
   CHECK_STATUS_OK(i2c_testutils_set_speed(&i2c, kDifI2cSpeedStandard));
   EXECUTE_TEST(test_result, nak_irq);
+  EXECUTE_TEST(test_result, nak_irq_disabled);
   EXECUTE_TEST(test_result, cmd_complete_irq);
   EXECUTE_TEST(test_result, fmt_threshold_irq);
   EXECUTE_TEST(test_result, fmt_overflow_irq);
