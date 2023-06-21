@@ -83,6 +83,33 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, rsa_key_file, spx_k
         )
     return struct(pre = pre, digest = digest, spxmsg = spxmsg)
 
+def _local_rsa_sign(ctx, opentitantool, digest, rsa_key_file):
+    """Sign a digest with a local on-disk RSA private key.
+
+    Args:
+      opentitantool: file; The opentitantool binary.
+      digest: file; The digest of the binary to be signed.
+      rsa_key_file: file; The private key.
+    Returns:
+      file: The signature over the digest.
+    """
+    signature = ctx.actions.declare_file(paths.replace_extension(digest.basename, ".sig"))
+    ctx.actions.run(
+        outputs = [signature],
+        inputs = [digest, rsa_key_file, opentitantool],
+        arguments = [
+            "--rcfile=",
+            "rsa",
+            "sign",
+            "--input={}".format(digest.path),
+            "--output={}".format(signature.path),
+            rsa_key_file.path,
+        ],
+        executable = opentitantool,
+        mnemonic = "LocalRsaSign",
+    )
+    return signature
+
 def _offline_presigning_artifacts(ctx):
     digests = []
     bins = []
@@ -131,21 +158,8 @@ def _strip_all_extensions(path):
 def _offline_fake_rsa_sign(ctx):
     outputs = []
     for file in ctx.files.srcs:
-        out = ctx.actions.declare_file(paths.replace_extension(file.basename, ".sig"))
-        ctx.actions.run(
-            outputs = [out],
-            inputs = [file, ctx.file.key_file],
-            arguments = [
-                "--rcfile=",
-                "rsa",
-                "sign",
-                "--input={}".format(file.path),
-                "--output={}".format(out.path),
-                ctx.file.key_file.path,
-            ],
-            executable = ctx.executable._tool,
-        )
-        outputs.append(out)
+        sig = _local_rsa_sign(ctx, ctx.executable._tool, file, ctx.file.key_file)
+        outputs.append(sig)
     return [DefaultInfo(files = depset(outputs), data_runfiles = ctx.runfiles(files = outputs))]
 
 offline_fake_rsa_sign = rule(
