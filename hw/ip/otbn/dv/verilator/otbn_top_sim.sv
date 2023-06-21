@@ -391,31 +391,37 @@ module otbn_top_sim (
   bit done_mismatch_latched, err_bits_mismatch_latched, cnt_mismatch_latched;
   bit model_err_latched, loop_warp_model_err;
 
+  // This flag gets set immediately after we've reset for the first time. We use it to make sure
+  // that we aren't running any RTL vs. model consistency checks when everything is still in an
+  // unknown state at the start of time.
+  bit post_reset = 0;
+
   always_ff @(posedge IO_CLK or negedge IO_RST_N) begin
     if (!IO_RST_N) begin
       done_mismatch_latched     <= 1'b0;
       err_bits_mismatch_latched <= 1'b0;
       cnt_mismatch_latched      <= 1'b0;
       model_err_latched         <= 1'b0;
+      post_reset                <= 1'b1;
     end else begin
       // Check that the 'done_o' output from the RTL matches the 'done_rr_o' output from the model
       // (with two cycles' delay).
-      if (otbn_done_rr && !otbn_model_done_rr) begin
+      if (post_reset && otbn_done_rr && !otbn_model_done_rr) begin
         $display("ERROR: At time %0t, RTL done on previous cycle, but model still busy.", $time);
         done_mismatch_latched <= 1'b1;
       end
-      if (otbn_model_done_rr && !otbn_done_rr) begin
+      if (post_reset && otbn_model_done_rr && !otbn_done_rr) begin
         $display("ERROR: At time %0t, model finished, but RTL not done in time.", $time);
         done_mismatch_latched <= 1'b1;
       end
-      if (otbn_model_done_rr && otbn_done_rr) begin
+      if (post_reset && otbn_model_done_rr && otbn_done_rr) begin
         if (otbn_err_bits_rr != otbn_model_err_bits) begin
           $display("ERROR: At time %0t, otbn_err_bits != otbn_model_err_bits (0x%0x != 0x%0x).",
                    $time, otbn_err_bits_rr, otbn_model_err_bits);
           err_bits_mismatch_latched <= 1'b1;
         end
       end
-      if (insn_cnt != otbn_model_insn_cnt) begin
+      if (post_reset && insn_cnt != otbn_model_insn_cnt) begin
         if (!cnt_mismatch_latched) begin
           $display("ERROR: At time %0t, insn_cnt != otbn_model_insn_cnt (0x%0x != 0x%0x).",
                    $time, insn_cnt, otbn_model_insn_cnt);
