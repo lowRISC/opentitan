@@ -54,7 +54,9 @@ class chip_sw_csrng_lc_hw_debug_en_vseq extends chip_sw_base_vseq;
   virtual task body();
     super.body();
 
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "LC transition in progress.");
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "LC transition in progress.",
+             "wait for lc transition in progress",
+             20_000_000);
 
     wait_for_transition();
     cfg.clk_rst_vif.wait_clks(1000);
