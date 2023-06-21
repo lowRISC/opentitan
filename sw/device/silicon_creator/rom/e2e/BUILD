@@ -1389,10 +1389,7 @@ SIGVERIFY_MOD_EXP_CASES = [
     {
         "name": "invalid",
         "use_sw_rsa_verify": 0,
-        "exit_success": {
-            lc_state: MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.ILLEGAL_INSTRUCTION)) if lc_state_val != CONST.LCV.TEST_UNLOCKED0 else "use_sw_rsa_verify=0x00000000"
-            for lc_state, lc_state_val in get_lc_items()
-        },
+        "exit_success": {lc_state: "use_sw_rsa_verify=0x00000000" for lc_state, lc_state_val in get_lc_items()},
     },
 ]
 
