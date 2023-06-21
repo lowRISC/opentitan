@@ -37,6 +37,9 @@ enum {
   kHart = kTopEarlgreyPlicTargetIbex0,
   kIrqVoid = UINT32_MAX,
   kDeviceAddr = 0x52,
+
+  // Default timeout for i2c reads.
+  kDefaultTimeoutMicros = 5000,
 };
 
 static dif_rv_core_ibex_t rv_core_ibex;
@@ -192,6 +195,30 @@ static status_t fmt_overflow_irq(void) {
   return OK_STATUS();
 }
 
+static status_t rx_threshold_irq(void) {
+  // Clean any previous state.
+  TRY(dif_i2c_irq_acknowledge(&i2c, kDifI2cIrqRxThreshold));
+  TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqRxThreshold, kDifToggleEnabled));
+  TRY(dif_i2c_set_watermarks(&i2c, /*rx_level=*/kDifI2cLevel8Byte,
+                             /*fmt_level=*/kDifI2cLevel4Byte));
+
+  irq_global_ctrl(false);
+  irq_fired = kIrqVoid;
+  irq_global_ctrl(true);
+
+  uint8_t bytes[16];
+  const uint8_t kAddr[2] = {0x03, 0x21};
+  TRY(i2c_testutils_write(&i2c, kDeviceAddr, 2, kAddr, true));
+  // Try to read more than the watermark to trigger the IRQ.
+  TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(bytes), bytes,
+                         kDefaultTimeoutMicros));
+
+  CHECK_IRQ_EQ(kDifI2cIrqRxThreshold);
+
+  TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqRxThreshold, kDifToggleDisabled));
+  return OK_STATUS();
+}
+
 static status_t test_init(void) {
   mmio_region_t base_addr =
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
@@ -232,6 +259,7 @@ bool test_main(void) {
   EXECUTE_TEST(test_result, cmd_complete_irq);
   EXECUTE_TEST(test_result, fmt_threshold_irq);
   EXECUTE_TEST(test_result, fmt_overflow_irq);
+  EXECUTE_TEST(test_result, rx_threshold_irq);
 
   return status_ok(test_result);
 }
