@@ -49,7 +49,10 @@ class chip_sw_i2c_host_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
     // the DUT, but instead is used by the i2c agent to simulate when it should begin
     // driving data.  The i2c agent drives to drive data as late as possible.
     cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tClockLow = half_period_cycles - 2;
-
+    // Drive SDA a cycle early to account for CDC delays
+    if (cfg.en_dv_cdc) begin
+      cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tClockLow--;
+    end
     // tClockPulse needs to be "slightly" longer than the clock period.
     cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tClockPulse = half_period_cycles + 1;
 

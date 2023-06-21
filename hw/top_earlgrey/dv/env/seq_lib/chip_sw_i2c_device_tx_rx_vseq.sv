@@ -97,6 +97,9 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
     cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tSetupStop = half_period_cycles - 2;
     cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tHoldStop = half_period_cycles;
 
+    // Wait for 1 cycles before releasing SDA line to account for CDC delays
+    cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tHoldBit = 1;
+
     // Wait for i2c_device to fill tx_fifo
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "Data written to fifo");
 

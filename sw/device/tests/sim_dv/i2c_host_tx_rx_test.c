@@ -86,6 +86,9 @@ void ottf_external_isr(void) {
       done_irq_seen = true;
       i2c_irq = kDifI2cIrqCmdComplete;
       break;
+    // TODO: remove after #17811 is fixed
+    case kDifI2cIrqSdaInterference:
+      break;
     default:
       LOG_ERROR("Unexpected interrupt (at I2C): %d", i2c_irq);
       break;
