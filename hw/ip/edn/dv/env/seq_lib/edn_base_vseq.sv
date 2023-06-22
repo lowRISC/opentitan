@@ -138,11 +138,6 @@ class edn_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  virtual task dut_shutdown();
-    // check for pending edn operations and wait for them to complete
-    // TODO
-  endtask
-
   virtual task instantiate_csrng();
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
     `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
