@@ -34,7 +34,6 @@ class edn_env extends cip_base_env #(
       cfg.m_endpoint_agent_cfg[i].agent_type = push_pull_agent_pkg::PullAgent;
       cfg.m_endpoint_agent_cfg[i].if_mode    = dv_utils_pkg::Host;
       cfg.m_endpoint_agent_cfg[i].en_cov     = cfg.en_cov;
-      // TODO: Move these
       cfg.m_endpoint_agent_cfg[i].zero_delays = 1'b1;
     end
 
