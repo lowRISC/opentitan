@@ -33,12 +33,46 @@ class i2c_host_stretch_timeout_vseq extends i2c_rx_tx_vseq;
   local uint cnt_rd_stretch;
   local bit  check_wr_stretch;
   local bit  check_rd_stretch;
+  local bit  exit_intr_process = 0;
+
+  virtual task pre_start();
+    super.pre_start();
+    // SCL interference occurs since SCL is pulled low from device side
+    expected_intr[SclInference] = 1;
+    // Stretch timeout occurs since timeout is set to low value
+    expected_intr[StretchTimeout] = 1;
+    expected_intr[CmdComplete] = 1;
+    expected_intr[SdaInference] = 1;
+    // FIFO interrupts can randomly occur depending on FIFO fill rate
+    expected_intr[FmtThreshold] = 1;
+    expected_intr[RxThreshold] = 1;
+    expected_intr[AcqThreshold] = 1;
+    expected_intr[RxOverflow] = 1;
+    expected_intr[SdaUnstable] = 1;
+    expected_intr[TxThreshold] = 1;
+  endtask
+
+  // Clear expected interrupts after end of sequence
+  virtual task post_start();
+    super.post_start();
+    expected_intr[SclInference] = 0;
+    expected_intr[StretchTimeout] = 0;
+    expected_intr[CmdComplete] = 0;
+    expected_intr[SdaInference] = 0;
+    expected_intr[FmtThreshold] = 0;
+    expected_intr[RxThreshold] = 0;
+    expected_intr[AcqThreshold] = 0;
+    expected_intr[RxOverflow] = 0;
+    expected_intr[SdaUnstable] = 0;
+    expected_intr[TxThreshold] = 0;
+  endtask
 
   virtual task body();
     `uvm_info(`gfn, "\n--> start of i2c_host_stretch_timeout_vseq", UVM_DEBUG)
     cfg.m_i2c_agent_cfg.host_stretch_test_mode = 1;
 
     initialization();
+    check_unexpected_interrupts();
     for (int i = 1; i <= num_trans; i++) begin
       cnt_wr_stretch = 0;
       cnt_rd_stretch = 0;
@@ -72,8 +106,29 @@ class i2c_host_stretch_timeout_vseq extends i2c_rx_tx_vseq;
         end
       join
     end
+    exit_intr_process = 1;
     `uvm_info(`gfn, "\n--> end of i2c_host_stretch_timeout_vseq", UVM_DEBUG)
   endtask : body
+
+  // Task to check for unexpected interrupts
+  task check_unexpected_interrupts();
+    fork begin
+      while (!exit_intr_process) begin
+        @(posedge cfg.clk_rst_vif.clk);
+        if (!cfg.under_reset) begin
+          for (int i = 0; i < NumI2cIntr; i++) begin
+            i2c_intr_e my_intr = i2c_intr_e'(i);
+            if (!expected_intr.exists(my_intr)) begin
+              if (cfg.intr_vif.pins[i] !== 0) begin
+                `uvm_error("process_host_interrupts",
+                           $sformatf("Unexpected unterrupt is set %s", my_intr.name))
+              end
+            end
+          end
+        end
+      end
+    end join_none
+  endtask
 
   task process_stretch_timeout_intr();
     bit stretch_timeout;
