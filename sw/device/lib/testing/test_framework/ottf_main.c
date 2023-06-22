@@ -77,17 +77,25 @@ char *ottf_task_get_self_name(void) {
   return pcTaskGetName(/*xTaskToQuery=*/NULL);
 }
 
-// TODO where should this go?
-#define OTTF_STATUS_REPORT_LIST_SIZE 10
-
-// Array holding the report statuses.
-size_t status_report_list_size = 0;
-static status_t status_report_list[OTTF_STATUS_REPORT_LIST_SIZE];
+/* Array holding the report statuses.
+ *
+ * This is a weak symbol which means that the test can override it to change its
+ * size. For this reason, it is important to NOT use its size anywhere. To avoid
+ * any errors, we define it at the bottom of the file so the rest the code uses
+ * this declaration that has no size.
+ */
+extern const size_t kStatusReportListSize;
+extern status_t status_report_list[];
+// This is the count for the number of statuses that have been reported so far.
+// Warning: this may be greater than kStatusReportListSize! When that happens,
+// we simply overwrite previous values (modulo kStatusReportListSize).
+static size_t status_report_list_cnt = 0;
 
 // Override the status report function to store it in the array above.
 void status_report(status_t status) {
-  if (status_report_list_size < OTTF_STATUS_REPORT_LIST_SIZE)
-    status_report_list[status_report_list_size++] = status;
+  // In case of overflow, we overwrite previous values.
+  status_report_list[status_report_list_cnt % kStatusReportListSize] = status;
+  status_report_list_cnt++;
 }
 
 static void report_test_status(bool result) {
@@ -98,11 +106,26 @@ static void report_test_status(bool result) {
     }
     LOG_INFO("Finished %s", kOttfTestConfig.file);
   }
-  // Print the reported status in case of error
+  // Print the reported status in case of error. Beware that
+  // status_report_list_cnt might be greater than kStatusReportListSize which
+  // means we had to overwrite values.
   if (!result) {
     LOG_INFO("Status reported by the test:");
-    for (size_t i = 0; i < status_report_list_size; i++)
-      LOG_INFO("- %r", status_report_list[i]);
+    // Handle overflow.
+    size_t print_cnt = status_report_list_cnt;
+    if (status_report_list_cnt > kStatusReportListSize) {
+      print_cnt = kStatusReportListSize;
+    }
+    // We print the list backwards like a stack (last report event first).
+    for (size_t i = 1; i <= print_cnt; i++) {
+      size_t idx = (status_report_list_cnt - i) % kStatusReportListSize;
+      LOG_INFO("- %r", status_report_list[idx]);
+    }
+    // Warn about overflow.
+    if (status_report_list_cnt > kStatusReportListSize) {
+      LOG_INFO(
+          "Some statuses have been lost due to the limited size of the list.");
+    }
   }
 
   coverage_send_buffer();
@@ -152,3 +175,9 @@ void _ottf_main(void) {
   // Unreachable.
   CHECK(false);
 }
+
+/* Actual declaration of the weak report list. See comment above for context. */
+#define OTTF_STATUS_REPORT_DEFAULT_LIST_SIZE 10
+OT_WEAK const size_t kStatusReportListSize =
+    OTTF_STATUS_REPORT_DEFAULT_LIST_SIZE;
+OT_WEAK status_t status_report_list[OTTF_STATUS_REPORT_DEFAULT_LIST_SIZE];

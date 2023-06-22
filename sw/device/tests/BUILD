@@ -2734,10 +2734,11 @@ opentitan_functest(
 )
 
 _STATUS_REPORT_TEST_MSG = "\r\n".join([
-    ".*ottf_main.c:.* - Ok:654321",
-    ".*ottf_main.c:.* - PermissionDenied:\\[\\\"PSY\\\",2.\\]",
-    ".*ottf_main.c:.* - Aborted:\\[\\\"UNT\\\",4.\\]",
+    ".*ottf_main.c:.* Status reported by the test:",
     ".*ottf_main.c:.* - Aborted:\\[\\\"THK\\\",2.\\]",
+    ".*ottf_main.c:.* - Aborted:\\[\\\"UNT\\\",4.\\]",
+    ".*ottf_main.c:.* - PermissionDenied:\\[\\\"PSY\\\",2.\\]",
+    ".*ottf_main.c:.* - Ok:654321",
     ".*status.c:.* FAIL!",
 ])
 
