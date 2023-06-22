@@ -94,6 +94,7 @@ filesets:
       - seq_lib/chip_sw_lc_ctrl_transition_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_lc_ctrl_scrap_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_lc_walkthrough_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_lc_raw_unlock_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_lc_volatile_raw_unlock_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_lc_walkthrough_testunlocks_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_lc_ctrl_program_error_vseq.sv: {is_include_file: true}
