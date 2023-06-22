@@ -132,6 +132,13 @@ class aes_base_vseq extends cip_base_vseq #(
   endtask
 
 
+  virtual task set_prng_reseed_rate(prs_rate_e reseed_rate);
+    if (ral.ctrl_shadowed.prng_reseed_rate.get_mirrored_value() != reseed_rate) begin
+      ral.ctrl_shadowed.prng_reseed_rate.set(reseed_rate);
+      csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+    end
+  endtask
+
 
   virtual task set_manual_operation(bit manual_operation);
     if (ral.ctrl_shadowed.manual_operation.get_mirrored_value() != manual_operation) begin
@@ -206,13 +213,18 @@ class aes_base_vseq extends cip_base_vseq #(
     bit setup_mode = 0;
     `DV_CHECK_STD_RANDOMIZE_FATAL(setup_mode)
     csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
-    // disable shadow sideload to avoid triggering a reseed unless needed
+    // Any successful update to the shadowed control register marks the start of a new message. If
+    // sideload is enabled and a valid sideload key is available, it may be latched upon the second
+    // write and - depending on KEY_TOUCH_FORCES_RESEED - trigger a reseed operation which prevents
+    // further updates to the control register untile AES becomes idle again. For simplicity, we
+    // just disable sideload here and then update the sideload bit last.
     ral.ctrl_shadowed.sideload.set(0);
     if (!setup_mode) begin
       set_operation(item.operation);
       set_mode(item.aes_mode);
       set_key_len(item.key_len);
       set_manual_operation(item.manual_op);
+      set_prng_reseed_rate(prs_rate_e'(item.reseed_rate));
       set_sideload(item.sideload_en);
     end else begin
       // or write all at once //
