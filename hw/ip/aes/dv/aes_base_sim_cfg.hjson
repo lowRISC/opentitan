@@ -34,7 +34,8 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/shadow_reg_errors_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson"]
-                // TODO: enable stress tests later.
+                // TODO(#19025): Debug and enable stress_all test. Note that aes_stress
+                // covers most the functionality of stress_all already.
                 // "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
 
   // Add additional tops for simulation.
