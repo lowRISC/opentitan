@@ -2757,3 +2757,28 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
+
+_STATUS_REPORT_OVERFLOW_TEST_MSG = "\r\n".join([
+    ".*ottf_main.c:.* Status reported by the test:",
+    ".*ottf_main.c:.* - Aborted.*",
+    ".*ottf_main.c:.* - Unavailable.*",
+    ".*ottf_main.c:.* - Cancelled.*",
+    ".*ottf_main.c:.* Some statuses have been lost.*",
+    ".*status.c:.* FAIL!",
+])
+
+opentitan_functest(
+    name = "status_report_overflow_test",
+    srcs = ["status_report_overflow_test.c"],
+    cw310 = cw310_params(
+        exit_failure = "PASS!",
+        exit_success = _STATUS_REPORT_OVERFLOW_TEST_MSG,
+    ),
+    targets = [
+        "cw310_test_rom",
+    ],
+    deps = [
+        "//sw/device/lib/base:status_report_unittest_c",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
