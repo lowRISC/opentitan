@@ -169,7 +169,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
       RdData: begin
         `uvm_info(`gfn, $sformatf("Send readback data %0x", req.rdata), UVM_MEDIUM)
         for (int i = 7; i >= 0; i--) begin
-          cfg.vif.device_send_bit(cfg.timing_cfg, req.rdata[i]);
+          cfg.vif.device_send_bit(cfg.timing_cfg, req.rdata[i], 1'b0);
         end
         `uvm_info(`gfn, $sformatf("\n  device_driver, trans %0d, byte %0d  %0x",
             req.tran_id, req.num_data+1, rd_data[rd_data_cnt]), UVM_DEBUG)
