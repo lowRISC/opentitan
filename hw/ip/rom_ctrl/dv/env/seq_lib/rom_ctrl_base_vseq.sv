@@ -21,11 +21,6 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
     do_clear_all_interrupts = 1'b0;
   endtask
 
-  virtual task dut_shutdown();
-    // check for pending rom_ctrl operations and wait for them to complete
-    // TODO
-  endtask
-
   virtual task apply_reset(string kind = "HARD");
     // Initialize memory at the beginning of reset since the DUT can come out of reset before this
     // task completes (due to the second RAL clk_rst_if)
