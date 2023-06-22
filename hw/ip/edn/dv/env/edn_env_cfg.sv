@@ -48,7 +48,6 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
   rand invalid_mubi_e   which_invalid_mubi;
 
   // Constraints
-  // TODO: utilize suggestions in PR9535 to generate "other" values when testing alerts
   constraint force_disable_c {force_disable dist {
     1 :/ force_disable_pct,
     0 :/ (100 - force_disable_pct) };}
