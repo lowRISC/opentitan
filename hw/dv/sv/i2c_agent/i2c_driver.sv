@@ -163,13 +163,15 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
           // once scl_o is pulled down longer than TIMEOUT_CTRL.VAL field,
           // intr_stretch_timeout_o is asserted (ref. https://www.i2c-bus.org/clock-stretching)
           cfg.vif.device_stretch_host_clk(cfg.timing_cfg);
-          cfg.vif.device_send_ack(cfg.timing_cfg);
+          cfg.vif.device_send_ack(cfg.timing_cfg, !cfg.stretch_after_ack);
         join
       end
       RdData: begin
         `uvm_info(`gfn, $sformatf("Send readback data %0x", req.rdata), UVM_MEDIUM)
+        cfg.timing_cfg.tStretchHostClock = gen_num_stretch_host_clks(cfg.timing_cfg);
         for (int i = 7; i >= 0; i--) begin
-          cfg.vif.device_send_bit(cfg.timing_cfg, req.rdata[i], 1'b0);
+          bit can_stretch = (i == 0) && cfg.stretch_after_ack;
+          cfg.vif.device_send_bit(cfg.timing_cfg, req.rdata[i], can_stretch);
         end
         `uvm_info(`gfn, $sformatf("\n  device_driver, trans %0d, byte %0d  %0x",
             req.tran_id, req.num_data+1, rd_data[rd_data_cnt]), UVM_DEBUG)
