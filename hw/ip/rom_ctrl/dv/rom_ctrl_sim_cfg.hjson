@@ -24,7 +24,6 @@
   ral_spec: "{proj_root}/hw/ip/rom_ctrl/data/rom_ctrl.hjson"
 
   // Import additional common sim cfg files.
-  // TODO: remove imported cfgs that do not apply.
   import_cfgs: [// Project wide common sim cfg file
                 "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
                 // Config files to get the correct flags for crypto_dpi_prince
@@ -81,8 +80,6 @@
       name: rom_ctrl_kmac_err_chk
       uvm_test_seq: rom_ctrl_kmac_err_chk_vseq
     }
-
-    // TODO: add more tests here
   ]
 
   // List of regressions.
