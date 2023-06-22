@@ -40,8 +40,8 @@ class edn_base_vseq extends cip_base_vseq #(
 
     if (do_edn_init) begin
       // Initialize DUT and start device sequence
-      edn_init();
       device_init();
+      edn_init();
     end
   endtask
 
