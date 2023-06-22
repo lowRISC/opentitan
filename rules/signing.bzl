@@ -44,6 +44,7 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, rsa_key_file, spx_k
         inputs = inputs,
         arguments = [
             "--rcfile=",
+            "--quiet",
             "image",
             "manifest",
             "update",
@@ -63,6 +64,7 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, rsa_key_file, spx_k
         inputs = [pre, opentitantool],
         arguments = [
             "--rcfile=",
+            "--quiet",
             "image",
             "digest",
             "--bin={}".format(digest.path),
@@ -81,6 +83,7 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, rsa_key_file, spx_k
             inputs = [pre, opentitantool],
             arguments = [
                 "--rcfile=",
+                "--quiet",
                 "image",
                 "spx-message",
                 "--output={}".format(spxmsg.path),
@@ -109,6 +112,7 @@ def _local_sign(ctx, opentitantool, digest, rsa_key_file, spxmsg = None, spx_key
         inputs = [digest, rsa_key_file, opentitantool],
         arguments = [
             "--rcfile=",
+            "--quiet",
             "rsa",
             "sign",
             "--input={}".format(digest.path),
@@ -127,6 +131,7 @@ def _local_sign(ctx, opentitantool, digest, rsa_key_file, spxmsg = None, spx_key
             inputs = [spxmsg, spx_key_file, opentitantool],
             arguments = [
                 "--rcfile=",
+                "--quiet",
                 "spx",
                 "sign",
                 "--output={}".format(spx_sig.path),
@@ -155,6 +160,7 @@ def _post_signing_attach(ctx, opentitantool, pre, rsa_sig, spx_sig):
     inputs = [opentitantool, pre, rsa_sig]
     args = [
         "--rcfile=",
+        "--quiet",
         "image",
         "manifest",
         "update",
