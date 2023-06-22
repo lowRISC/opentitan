@@ -81,12 +81,6 @@ class edn_base_vseq extends cip_base_vseq #(
       end
     end
 
-    // Enable edn, set modes
-    ral.ctrl.edn_enable.set(cfg.enable);
-    ral.ctrl.boot_req_mode.set(cfg.boot_req_mode);
-    ral.ctrl.auto_req_mode.set(cfg.auto_req_mode);
-    csr_update(.csr(ral.ctrl));
-
     if (cfg.auto_req_mode == MuBi4True) begin
       // Verify CMD_FIFO_RST bit
       for (int i = 0; i < 13; i++) begin
@@ -118,6 +112,12 @@ class edn_base_vseq extends cip_base_vseq #(
         wr_cmd(.cmd_type("generate"), .cmd_data(cmd_data));
       end
     end
+
+    // Enable edn, set modes
+    ral.ctrl.edn_enable.set(cfg.enable);
+    ral.ctrl.boot_req_mode.set(cfg.boot_req_mode);
+    ral.ctrl.auto_req_mode.set(cfg.auto_req_mode);
+    csr_update(.csr(ral.ctrl));
 
     // If set_regwen is set, write random value to the EDN, and expect the write won't be taken.
     if (set_regwen) begin
