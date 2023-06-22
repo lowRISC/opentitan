@@ -2,10 +2,15 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 load("@bazel_skylib//lib:paths.bzl", "paths")
+load("//rules:rv.bzl", "rv_rule")
 
 PreSigningBinaryInfo = provider(fields = ["files"])
 
-def _presigning_artifacts(ctx, opentitantool, src, manifest, rsa_key_file, spx_key_file):
+def _strip_all_extensions(path):
+    path = path.split(".")[0]
+    return path
+
+def _presigning_artifacts(ctx, opentitantool, src, manifest, rsa_key_file, spx_key_file, basename = None):
     """Create the pre-signing artifacts for a given input binary.
 
     Applies he manifest and public components of the keys.  Creates the
@@ -17,10 +22,13 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, rsa_key_file, spx_k
         manifest: file; The manifest file.
         rsa_key_file: file; The RSA public key.
         spx_key_file: file; The SPX+ public key.
+        basename: srt; Optional basename of the outputs.  Defaults to src.basename.
     Returns:
         struct: A struct containing the pre-signing binary, the digest and spx message files.
     """
-    pre = ctx.actions.declare_file(paths.replace_extension(src.basename, ".pre-signing"))
+    if not basename:
+        basename = _strip_all_extensions(src.basename)
+    pre = ctx.actions.declare_file("{}.pre-signing".format(basename))
     inputs = [
         src,
         manifest,
@@ -49,7 +57,7 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, rsa_key_file, spx_k
     )
 
     # Compute digest to be signed with RSA.
-    digest = ctx.actions.declare_file(paths.replace_extension(src.basename, ".digest"))
+    digest = ctx.actions.declare_file(paths.replace_extension(basename, ".digest"))
     ctx.actions.run(
         outputs = [digest],
         inputs = [pre, opentitantool],
@@ -67,7 +75,7 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, rsa_key_file, spx_k
     # Compute message to be signed with SPX+.
     spxmsg = None
     if spx_key_file:
-        spxmsg = ctx.actions.declare_file(paths.replace_extension(src.basename, ".spx-message"))
+        spxmsg = ctx.actions.declare_file(paths.replace_extension(basename, ".spx-message"))
         ctx.actions.run(
             outputs = [spxmsg],
             inputs = [pre, opentitantool],
@@ -83,32 +91,53 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, rsa_key_file, spx_k
         )
     return struct(pre = pre, digest = digest, spxmsg = spxmsg)
 
-def _local_rsa_sign(ctx, opentitantool, digest, rsa_key_file):
+def _local_sign(ctx, opentitantool, digest, rsa_key_file, spxmsg = None, spx_key_file = None):
     """Sign a digest with a local on-disk RSA private key.
 
     Args:
       opentitantool: file; The opentitantool binary.
       digest: file; The digest of the binary to be signed.
-      rsa_key_file: file; The private key.
+      rsa_key_file: file; The RSA private key.
+      spxmsg: file; The SPX+ message to be signed.
+      spx_key_file: file; The SPX+ private key.
     Returns:
-      file: The signature over the digest.
+      file, file: The RSA and SPX signature files.
     """
-    signature = ctx.actions.declare_file(paths.replace_extension(digest.basename, ".sig"))
+    rsa_sig = ctx.actions.declare_file(paths.replace_extension(digest.basename, ".rsa.sig"))
     ctx.actions.run(
-        outputs = [signature],
+        outputs = [rsa_sig],
         inputs = [digest, rsa_key_file, opentitantool],
         arguments = [
             "--rcfile=",
             "rsa",
             "sign",
             "--input={}".format(digest.path),
-            "--output={}".format(signature.path),
+            "--output={}".format(rsa_sig.path),
             rsa_key_file.path,
         ],
         executable = opentitantool,
         mnemonic = "LocalRsaSign",
     )
-    return signature
+
+    spx_sig = None
+    if spxmsg and spx_key_file:
+        spx_sig = ctx.actions.declare_file(paths.replace_extension(spxmsg.basename, ".spx.sig"))
+        ctx.actions.run(
+            outputs = [spx_sig],
+            inputs = [spxmsg, spx_key_file, opentitantool],
+            arguments = [
+                "--rcfile=",
+                "spx",
+                "sign",
+                "--output={}".format(spx_sig.path),
+                spxmsg.path,
+                spx_key_file.path,
+            ],
+            executable = opentitantool,
+            mnemonic = "LocalSpxSign",
+        )
+
+    return rsa_sig, spx_sig
 
 def _post_signing_attach(ctx, opentitantool, pre, rsa_sig, spx_sig):
     """Attach signatures to an unsigned binary.
@@ -118,6 +147,7 @@ def _post_signing_attach(ctx, opentitantool, pre, rsa_sig, spx_sig):
       pre: file; The pre-signed input binary.
       rsa_sig: file; The RSA-signed digest of the binary.
       spx_sig: file; The SPX-signed message of the binary.
+      manifest: file; Optional manifest file.
     Returns:
       file: The signed binary.
     """
@@ -128,10 +158,12 @@ def _post_signing_attach(ctx, opentitantool, pre, rsa_sig, spx_sig):
         "image",
         "manifest",
         "update",
+        "--update-length=false",
         "--rsa-signature={}".format(rsa_sig.path),
         "--output={}".format(signed.path),
         pre.path,
     ]
+
     if spx_sig:
         inputs.append(spx_sig)
         args.append("--spx-signature={}".format(spx_sig.path))
@@ -186,14 +218,10 @@ offline_presigning_artifacts = rule(
     },
 )
 
-def _strip_all_extensions(path):
-    path = path.split(".")[0]
-    return path
-
 def _offline_fake_rsa_sign(ctx):
     outputs = []
     for file in ctx.files.srcs:
-        sig = _local_rsa_sign(ctx, ctx.executable._tool, file, ctx.file.key_file)
+        sig, _ = _local_sign(ctx, ctx.executable._tool, file, ctx.file.key_file)
         outputs.append(sig)
     return [DefaultInfo(files = depset(outputs), data_runfiles = ctx.runfiles(files = outputs))]
 
@@ -263,6 +291,70 @@ offline_signature_attach = rule(
             default = "//sw/host/opentitantool:opentitantool",
             executable = True,
             cfg = "exec",
+        ),
+    },
+)
+
+def _sign_bin_impl(ctx):
+    if ((ctx.attr.spx_key and not ctx.attr.spx_key_name) or
+        (not ctx.attr.spx_key and ctx.attr.spx_key_name)):
+        fail("Must specify both spx_key and spx_key_name.")
+
+    artifacts = _presigning_artifacts(
+        ctx,
+        ctx.file._tool,
+        ctx.file.bin,
+        ctx.file.manifest,
+        ctx.file.rsa_key,
+        ctx.file.spx_key,
+        basename = ctx.attr.name,
+    )
+    rsa_sig, spx_sig = _local_sign(
+        ctx,
+        ctx.file._tool,
+        artifacts.digest,
+        ctx.file.rsa_key,
+        artifacts.spxmsg,
+        ctx.file.spx_key,
+    )
+    signed = _post_signing_attach(
+        ctx,
+        ctx.file._tool,
+        artifacts.pre,
+        rsa_sig,
+        spx_sig,
+    )
+    return [
+        DefaultInfo(files = depset([signed]), data_runfiles = ctx.runfiles(files = [signed])),
+    ]
+
+sign_bin = rv_rule(
+    implementation = _sign_bin_impl,
+    attrs = {
+        "bin": attr.label(allow_single_file = True),
+        "rsa_key": attr.label(
+            allow_single_file = True,
+            mandatory = True,
+            doc = "The RSA key to be used for signing",
+        ),
+        "rsa_key_name": attr.string(
+            mandatory = True,
+            doc = "The name of the RSA key",
+        ),
+        "spx_key": attr.label(
+            allow_single_file = True,
+            doc = "The SPX+ key to be used for signing",
+        ),
+        "spx_key_name": attr.string(
+            doc = "The name of the SPX+ key",
+        ),
+        "manifest": attr.label(allow_single_file = True, mandatory = True),
+        # TODO(lowRISC/opentitan:#11199): explore other options to side-step the
+        # need for this transition, in order to build the ROM_EXT signer tool.
+        "platform": attr.string(default = "@local_config_platform//:host"),
+        "_tool": attr.label(
+            default = "//sw/host/opentitantool:opentitantool",
+            allow_single_file = True,
         ),
     },
 )
