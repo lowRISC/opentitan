@@ -540,7 +540,7 @@ module i2c_fsm import i2c_pkg::*;
         host_idle_o = 1'b0;
         sda_d = 1'b1;
         scl_d = 1'b1;
-        if (sda_i && !fmt_flag_nak_ok_i) event_nak_o = 1'b1;
+        if (!scl_i_q && scl_i && sda_i && !fmt_flag_nak_ok_i) event_nak_o = 1'b1;
         stretch_en = 1'b1;
         if (scl_i_q && !scl_i)  event_scl_interference_o = 1'b1;
         if (sda_i_q != sda_i)   event_sda_unstable_o = 1'b1;
