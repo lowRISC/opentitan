@@ -48,6 +48,9 @@ class edn_base_vseq extends cip_base_vseq #(
   virtual task device_init();
     csrng_device_seq   m_dev_seq;
 
+    // Let CSRNG agent know that EDN interface is no longer disabled.
+    cfg.edn_vif.drive_edn_disable(0);
+
     m_dev_seq = csrng_device_seq::type_id::create("m_dev_seq");
     fork
       m_dev_seq.start(p_sequencer.csrng_sequencer_h);
