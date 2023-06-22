@@ -25,6 +25,8 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
   // Variables
   uint   reseed_cnt, generate_cnt, generate_between_reseeds_cnt;
 
+  bit abort_sw_cmd = 0;
+
   // Knobs & Weights
   uint   enable_pct, boot_req_mode_pct, auto_req_mode_pct, cmd_fifo_rst_pct,
          force_disable_pct,

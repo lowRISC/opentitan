@@ -189,11 +189,17 @@ class edn_base_vseq extends cip_base_vseq #(
                       additional_data -= 1;
                     end
                     else begin
-                      csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1));
-                      csr_wr(.ptr(ral.sw_cmd_req), .value({glen, flags, clen, 1'b0, acmd}));
-                      additional_data = clen;
+                      `DV_SPINWAIT_EXIT(
+                        csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1));,
+                        wait(cfg.abort_sw_cmd);,
+                        "Aborted SW command"
+                      )
+                      if (!cfg.abort_sw_cmd) begin
+                        csr_wr(.ptr(ral.sw_cmd_req), .value({glen, flags, clen, 1'b0, acmd}));
+                        additional_data = clen;
+                      end
                     end
-                    if (!additional_data) begin
+                    if (!additional_data && !cfg.abort_sw_cmd) begin
                       wait_cmd_req_done();
                     end
                   end
