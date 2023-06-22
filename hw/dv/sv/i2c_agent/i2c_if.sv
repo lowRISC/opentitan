@@ -235,8 +235,8 @@ interface i2c_if(
     sda_o = 1'b1;
   endtask: device_send_bit
 
-  task automatic device_send_ack(ref timing_cfg_t tc);
-    device_send_bit(tc, 1'b0, 1'b1); // special case for ack bit
+  task automatic device_send_ack(ref timing_cfg_t tc, input bit can_stretch);
+    device_send_bit(tc, 1'b0, can_stretch); // special case for ack bit
   endtask: device_send_ack
 
   // when the I2C module is in transmit mode, `scl_interference` interrupt
@@ -334,6 +334,9 @@ interface i2c_if(
     sda_o = 1'b1;
     wait_for_dly(tc.tSetupBit);
     scl_o = 1'b1;
+    // The agent is allowing SCL to go high, but the device might not be. Wait
+    // until the device stops pulling it low.
+    wait(scl_i === 1'b1);
     wait_for_dly(tc.tClockPulse);
     scl_o = 1'b0;
     wait_for_dly(tc.tHoldBit);
