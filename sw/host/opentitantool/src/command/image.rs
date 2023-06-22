@@ -109,6 +109,13 @@ pub struct ManifestUpdateCommand {
         help = "Filename for an HJSON configuration specifying manifest extension fields"
     )]
     manifest_ext: Option<PathBuf>,
+    #[arg(
+        long,
+        action = clap::ArgAction::Set,
+        default_value = "true",
+        help = "Update the length field of the manifest automatically"
+    )]
+    update_length: bool,
     #[arg(long, help = "Filename for an external RSA signature file")]
     rsa_signature: Option<PathBuf>,
     #[arg(short, long, help = "Filename for an external SPHINCS+ signature file")]
@@ -150,7 +157,7 @@ impl CommandDispatch for ManifestUpdateCommand {
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let mut image = image::Image::read_from_file(&self.image)?;
-        let mut update_length = true;
+        let mut update_length = self.update_length;
 
         // Load the manifest HJSON definition and update the image.
         if let Some(manifest) = &self.manifest {
