@@ -87,11 +87,9 @@ class edn_base_vseq extends cip_base_vseq #(
         `DV_CHECK_STD_RANDOMIZE_FATAL(cmd_data)
         csr_wr(.ptr(ral.generate_cmd), .value(cmd_data));
       end
-      ral.ctrl.cmd_fifo_rst.set(MuBi4True);
-      csr_update(.csr(ral.ctrl));
+      csr_wr(.ptr(ral.ctrl.cmd_fifo_rst), .value(MuBi4True));
       // TODO: Verify can't write until reset
-      ral.ctrl.cmd_fifo_rst.set(MuBi4False);
-      csr_update(.csr(ral.ctrl));
+      csr_wr(.ptr(ral.ctrl.cmd_fifo_rst), .value(MuBi4False));
 
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
       `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
