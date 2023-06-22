@@ -212,43 +212,46 @@ interface i2c_if(
   // ack pulse (device_send_ack) the value of the target sda signal does not
   // remain constant over the duration of the scl pulse.
   task automatic device_send_bit(ref timing_cfg_t tc,
-                                 input bit bit_i);
+                                 input bit bit_i,
+                                 input bit can_stretch);
     sda_o = 1'b1;
+    // First, wait for clock stretching to end before driving the bit.
+    // tStretchHostClock represents the extra cycles tacked on from stretching.
+    if (can_stretch) wait_for_dly(tc.tStretchHostClock);
     wait_for_dly(tc.tClockLow);
     `uvm_info(msg_id, "device_send_bit::Drive bit", UVM_HIGH)
     sda_o = bit_i;
-    wait_for_dly(tc.tSetupBit);
+    // Hold the bit steady for the rest of the clock low time.
     @(posedge scl_i);
     `uvm_info(msg_id, "device_send_bit::Value sampled ", UVM_HIGH)
     // flip sda_target2host during the clock pulse of scl_host2target causes sda_unstable irq
     sda_o = ~sda_o;
     wait_for_dly(tc.tSdaUnstable);
     sda_o = ~sda_o;
-    wait_for_dly(tc.tClockPulse + tc.tHoldBit - tc.tSdaUnstable);
 
-    // not release/change sda_o until host clock stretch passes
-    if (tc.enbTimeOut) wait(!scl_i);
+    // Hold the bit past SCL going low, then release.
+    wait(!scl_i);
+    wait_for_dly(tc.tHoldBit);
     sda_o = 1'b1;
   endtask: device_send_bit
 
   task automatic device_send_ack(ref timing_cfg_t tc);
-    device_send_bit(tc, 1'b0); // special case for ack bit
+    device_send_bit(tc, 1'b0, 1'b1); // special case for ack bit
   endtask: device_send_ack
 
   // when the I2C module is in transmit mode, `scl_interference` interrupt
   // will be asserted if the IP identifies that some other device (host or target) on the bus
-  // is forcing scl low and interfering with the transmission.
+  // pulls SCL low after it was allowed to go high (interfering with the transmission).
   task automatic device_stretch_host_clk(ref timing_cfg_t tc);
-    int stretch_cycle = tc.tClockLow + tc.tSetupBit + tc.tStretchHostClock;
-    int data_cycle = tc.tClockLow + tc.tSetupBit + tc.tClockPulse + tc.tHoldBit;
-
-    if (tc.enbTimeOut && tc.tTimeOut > 0 &&
-        stretch_cycle < data_cycle) begin // target can stretch only during data cycle
-      wait_for_dly(tc.tClockLow + tc.tSetupBit + tc.tSclInterference - 1);
+    if (tc.tStretchHostClock > 0) begin
       scl_o = 1'b0;
-      wait_for_dly(tc.tStretchHostClock - tc.tSclInterference + 1);
+      wait_for_dly(tc.tStretchHostClock + tc.tClockLow + tc.tSetupBit);
       scl_o = 1'b1;
     end
+    @(posedge scl_i);
+    scl_o = ~scl_o;
+    wait_for_dly(tc.tSclInterference);
+    scl_o = ~scl_o;
   endtask : device_stretch_host_clk
 
   // when the I2C module is in transmit mode, `sda_interference` interrupt
@@ -258,8 +261,9 @@ interface i2c_if(
                               ref timing_cfg_t tc,
                               output bit bit_o);
     @(posedge scl_i);
+    bit_o = sda_i;
+
     if (src == "host") begin // host transmits data (addr/wr_data)
-      bit_o = sda_i;
       `uvm_info(msg_id, $sformatf("get bit data %d", bit_o), UVM_HIGH)
       // force sda_target2host low during the clock pulse of scl_host2target
       sda_o = 1'b0;
@@ -273,7 +277,6 @@ interface i2c_if(
       @(negedge scl_i);
       wait_for_dly(tc.tHoldBit - tc.tSdaInterference);
     end else begin // target transmits data (rd_data)
-      bit_o = sda_i;
       wait_for_dly(tc.tClockPulse + tc.tHoldBit);
     end
   endtask: get_bit_data
