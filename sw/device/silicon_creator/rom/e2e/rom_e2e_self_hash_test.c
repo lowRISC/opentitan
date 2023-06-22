@@ -39,12 +39,12 @@ enum {
 
 const size_t kGoldenRomSizeBytes = 32652 - sizeof(chip_info_t);
 const uint32_t kSimDvGoldenRomHash[kSha256HashSizeIn32BitWords] = {
-    0x76238644, 0x6509c464, 0x5a598a36, 0xe74a800b,
-    0x4069c647, 0x3eaf3a88, 0x96797302, 0x96993d2e,
+    0x23666ac8, 0x369c59b5, 0x13704245, 0x3cca7872,
+    0x6ffdb69f, 0x40d91feb, 0x21079e09, 0x21a036aa,
 };
 const uint32_t kFpgaCw310GoldenRomHash[kSha256HashSizeIn32BitWords] = {
-    0xeac888af, 0x1f12fade, 0xc0960031, 0xcdf14768,
-    0xfb797390, 0xea6c738b, 0xc47ae33e, 0xd54af879,
+    0xb990c55c, 0x7f327f76, 0x0a7ee6db, 0x8541f96b,
+    0xe3a7c719, 0x6875c88c, 0xbf1c08b4, 0xad5fd883,
 };
 
 extern const char _chip_info_start[];
