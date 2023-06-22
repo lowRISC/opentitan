@@ -883,6 +883,23 @@
       run_timeout_mins: 480
     }
 
+    {
+      name: rom_raw_unlock
+      uvm_test_seq: chip_sw_lc_raw_unlock_vseq
+      sw_images: [
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a:1:signed:fake_rsa_test_key_0:ot_flash_binary",
+      ]
+      en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
+      run_opts: [
+        "+do_creator_sw_cfg_ast_cfg=0",
+        "+sw_test_timeout_ns=200_000_000",
+        "+use_otp_image=OtpTypeLcStRaw",
+        "+chip_clock_source=ChipClockSourceExternal48Mhz",
+        "+rom_prod_mode=1",
+      ]
+      run_timeout_mins: 480
+    }
+
     // ROM self hash test.
     {
       name: rom_e2e_self_hash
