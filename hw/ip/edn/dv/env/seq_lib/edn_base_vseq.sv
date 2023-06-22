@@ -16,7 +16,7 @@ class edn_base_vseq extends cip_base_vseq #(
   bit [entropy_src_pkg::FIPS_BUS_WIDTH - 1:0]   fips;
   mubi4_t                                       flags;
   bit [3:0]                                     clen, additional_data;
-  bit [18:0]                                    glen;
+  bit [11:0]                                    glen;
   bit [csrng_pkg::CSRNG_CMD_WIDTH - 1:0]        cmd_data;
 
   rand bit                                      set_regwen;
