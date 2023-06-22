@@ -90,6 +90,9 @@ struct Opts {
     #[structopt(short, long, parse(try_from_str), help = "Use color in the output")]
     color: Option<bool>,
 
+    #[structopt(short, long, help = "Do not print command results")]
+    quiet: bool,
+
     #[structopt(
         long,
         number_of_values(1),
@@ -169,6 +172,9 @@ fn print_command_result(opts: &Opts, result: Result<Option<Box<dyn Annotate>>>) 
     match result {
         Ok(Some(value)) => {
             log::info!("Command result: success.");
+            if opts.quiet {
+                return Ok(());
+            }
             let profile = if atty::is(Stream::Stdout) && opts.color.unwrap_or(true) {
                 ColorProfile::basic()
             } else {
