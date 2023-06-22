@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:const.bzl", "CONST")
+load("//rules:signing.bzl", "sign_bin")
 load("@rules_cc//cc:action_names.bzl", "ACTION_NAMES")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load(
@@ -380,75 +381,6 @@ bin_to_archive = rv_rule(
     },
     fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type"],
-)
-
-def _sign_bin_impl(ctx):
-    inputs = [
-        ctx.file.bin,
-        ctx.file.rsa_key,
-        ctx.file._opentitantool,
-    ]
-    manifest_args = []
-    if ctx.file.manifest:
-        manifest_args = ["--manifest={}".format(ctx.file.manifest.path)]
-        inputs.append(ctx.file.manifest)
-
-    key_suffix = ctx.attr.rsa_key_name
-    spx_args = []
-    if ctx.file.spx_key:
-        key_suffix = "{0}.{1}".format(ctx.attr.rsa_key_name, ctx.attr.spx_key_name)
-        spx_args = ["--spx-key={}".format(ctx.file.spx_key.path)]
-        inputs.append(ctx.file.spx_key)
-
-    signed_image = ctx.actions.declare_file(
-        "{0}.{1}.signed.bin".format(
-            # Remove ".bin" from file basename.
-            ctx.file.bin.basename.replace("." + ctx.file.bin.extension, ""),
-            key_suffix,
-        ),
-    )
-    outputs = [signed_image]
-
-    ctx.actions.run(
-        outputs = outputs,
-        inputs = inputs,
-        arguments = [
-            "--rcfile=",
-            "image",
-            "manifest",
-            "update",
-            "--rsa-key={}".format(ctx.file.rsa_key.path),
-            "--output={}".format(signed_image.path),
-            ctx.file.bin.path,
-        ] + manifest_args + spx_args,
-        executable = ctx.file._opentitantool.path,
-    )
-    return [DefaultInfo(
-        files = depset(outputs),
-        data_runfiles = ctx.runfiles(files = outputs),
-    )]
-
-sign_bin = rv_rule(
-    implementation = _sign_bin_impl,
-    attrs = {
-        "bin": attr.label(allow_single_file = True),
-        "rsa_key": attr.label(
-            allow_single_file = True,
-        ),
-        "rsa_key_name": attr.string(),
-        "spx_key": attr.label(
-            allow_single_file = True,
-        ),
-        "spx_key_name": attr.string(),
-        "manifest": attr.label(allow_single_file = True),
-        # TODO(lowRISC/opentitan:#11199): explore other options to side-step the
-        # need for this transition, in order to build the ROM_EXT signer tool.
-        "platform": attr.string(default = "@local_config_platform//:host"),
-        "_opentitantool": attr.label(
-            default = "//sw/host/opentitantool:opentitantool",
-            allow_single_file = True,
-        ),
-    },
 )
 
 def _elf_to_disassembly_impl(ctx):
