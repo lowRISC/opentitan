@@ -59,7 +59,7 @@ class edn_common_vseq extends edn_base_vseq;
   virtual task send_edn_requests_during_fatal_alerts();
     push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH) m_endpoint_pull_seq[MAX_NUM_ENDPOINTS];
 
-    // TODO: can only send one request due to TB errors. Fix it.
+    // TODO(#19027): can only send one request due to TB errors. Fix it.
     bit [MAX_NUM_ENDPOINTS-1:0] send_edn_reqs = 1;
     `uvm_info(`gfn, $sformatf("Send %0h EDN reqs during fatal alert", send_edn_reqs), UVM_HIGH)
 
@@ -68,7 +68,7 @@ class edn_common_vseq extends edn_base_vseq;
         automatic int index = i;
         m_endpoint_pull_seq[index] = push_pull_host_seq#(FIPS_ENDPOINT_BUS_WIDTH)::
             type_id::create($sformatf("m_endpoint_pull_seq[%0d]", index));
-        // TODO: investigate why agent will hang if this is set to value > 1.
+        // TODO(#19027): investigate why agent will hang if this is set to value > 1.
         m_endpoint_pull_seq[index].num_trans = 1;
         `uvm_info(`gfn, $sformatf("Send EDN_%0d req during fatal alert", index), UVM_LOW)
 
@@ -79,7 +79,7 @@ class edn_common_vseq extends edn_base_vseq;
       end
     end
 
-    // TODO: add fcov.
+    // TODO(#19027): add fcov.
     cfg.clk_rst_vif.wait_clks($urandom_range(0, 100));
   endtask
 
