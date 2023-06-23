@@ -41,7 +41,7 @@ class csrng_base_vseq extends cip_base_vseq #(
 
   virtual task dut_shutdown();
     // check for pending csrng operations and wait for them to complete
-    // TODO
+    // TODO(#19031): Remove this task once scoreboard checks that its queues are empty.
   endtask
 
   // setup basic csrng features
