@@ -261,7 +261,10 @@
       tests: ["i2c_target_smoke", "i2c_target_stress_wr",
               "i2c_target_stress_rd", "i2c_target_stretch",
               "i2c_target_intr_smoke", "i2c_target_intr_stress_wr",
-              "i2c_target_timeout"]
+              "i2c_target_timeout", "i2c_target_unexp_stop",
+              "i2c_target_glitch", "i2c_target_perf", "i2c_target_tx_ovf",
+              "i2c_target_fifo_reset_acq", "i2c_target_fifo_reset_tx",
+              "i2c_target_bad_addr", "i2c_target_hrst"]
     }
   ]
 }
