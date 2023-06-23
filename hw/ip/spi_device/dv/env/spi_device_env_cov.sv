@@ -191,13 +191,22 @@ class spi_device_env_cov extends cip_base_env_cov #(.CFG_T(spi_device_env_cfg));
 
   covergroup flash_upload_payload_size_cg with function sample(
       bit is_write, int payload_size);
-    cp_is_write: coverpoint is_write;
+    cp_is_write: coverpoint is_write {
+      bins write = {1};
+      bins read = {0};
+    }
     cp_payload_size: coverpoint payload_size {
       bins frequent_use_values[] = {[0:4], 256};
       bins excess_fifo           = {[257:$]};
     }
-
-    cr_all: cross cp_is_write, cp_payload_size;
+    cr_all: cross cp_is_write, cp_payload_size {
+      // In upstream host seq_items, reads don't have a payload
+      // - The read payload is captured in the upstream device seq_item.
+      // - See read_size/payload_q.size() in spi_host_flash_seq.sv for the randomization
+      //   constraints that create this.
+      illegal_bins read_w_nonzero_payload = binsof(cp_is_write.read) &&
+                                            !binsof(cp_payload_size) intersect {0};
+    }
   endgroup
 
   // sample this when receiving a command while busy bit is set
