@@ -320,9 +320,11 @@ interface i2c_if(
     // Ensure SDA Is low before SCL positive edge so a low to high transition can be generated. If
     // SCL is high already SDA will be low already due to check above.
     sda_o = 1'b0;
-    wait(scl_i === 1'b1);
     wait_for_dly(tc.tClockStop);
     scl_o = 1'b1;
+    // The agent is allowing SCL to go high, but the device might not be. Wait
+    // until the device stops pulling it low.
+    wait(scl_i === 1'b1);
     wait_for_dly(tc.tSetupStop);
     sda_o = 1'b1;
     wait_for_dly(tc.tHoldStop);
