@@ -28,7 +28,6 @@ name:
   ]
 
   // Import additional common sim cfg files.
-  // TODO: remove imported cfgs that do not apply.
   import_cfgs: [
       // Project wide common sim cfg file
       "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
