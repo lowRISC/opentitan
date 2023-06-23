@@ -229,7 +229,8 @@
     {
       name: "i2c_target_stress_all_with_rand_reset"
       uvm_test_seq: "i2c_common_vseq"
-      run_opts: ["+run_stress_all_with_rand_reset",
+      run_opts: ["+i2c_agent_mode=Host",
+                 "+run_stress_all_with_rand_reset",
                  "+stress_seq=i2c_target_stress_all_vseq"]
       run_timeout_mins: 20
     }
