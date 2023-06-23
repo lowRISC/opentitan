@@ -361,7 +361,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
 
   function void check_phase(uvm_phase phase);
     super.check_phase(phase);
-    // post test checks - ensure that all local fifos and queues are empty
+    // TODO(#19031): post test checks - ensure that all local fifos and queues are empty
   endfunction
 
   // From NIST.SP.800-90Ar1
