@@ -265,10 +265,9 @@ class OTBNExtRegs:
 
         # Add a fake "STOP_PC" register.
         #
-        # TODO: We might well add something like this to the actual design in
-        # the future (see issue #4327) but, for now, it's just used in
-        # simulation to help track whether RIG-generated binaries finished
-        # where they expected to finish.
+        # This isn't in the hardware, but it's used in simulation to help track
+        # whether RIG-generated binaries finished where they expected to
+        # finish.
         self.regs['STOP_PC'] = make_flag_reg('STOP_PC', True)
 
         # Add a fake "RND_REQ" register to allow us to tell otbn_core_model to
