@@ -501,7 +501,6 @@ class OTBNState:
         self.invalidated_imem = False
 
     def wipe(self) -> None:
-        self.gprs.empty_call_stack()
         self.gprs.wipe()
         self.wdrs.wipe()
         self.wsrs.wipe()
