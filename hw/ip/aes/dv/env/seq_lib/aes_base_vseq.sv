@@ -208,10 +208,17 @@ class aes_base_vseq extends cip_base_vseq #(
 
 
   virtual task setup_dut(aes_seq_item item);
-    //CTRL reg
-    //setup one by one //
+    // Write the shadwoed CTRL register.
+    status_t status;
+    // Setup fields one by one (0) or all fields together (1).
     bit setup_mode = 0;
+    // Trigger a control update error (1) or not (0). Only applicable if setup_mode = 1.
+    bit control_update_error = 0;
+    // Index of the field which shall trigger the control update error.
+    int idx_error_field = 0;
     `DV_CHECK_STD_RANDOMIZE_FATAL(setup_mode)
+    if ($urandom_range(1, 100) > 95) control_update_error = 1;
+    idx_error_field = $urandom_range(0, 5);
     csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
     // Any successful update to the shadowed control register marks the start of a new message. If
     // sideload is enabled and a valid sideload key is available, it may be latched upon the second
@@ -227,14 +234,58 @@ class aes_base_vseq extends cip_base_vseq #(
       set_prng_reseed_rate(prs_rate_e'(item.reseed_rate));
       set_sideload(item.sideload_en);
     end else begin
-      // or write all at once //
+      // Assemble the intended value.
       ral.ctrl_shadowed.operation.set(item.operation);
       ral.ctrl_shadowed.mode.set(item.mode);
       ral.ctrl_shadowed.key_len.set(item.key_len);
       ral.ctrl_shadowed.sideload.set(item.sideload_en);
       ral.ctrl_shadowed.manual_operation.set(item.manual_op);
       ral.ctrl_shadowed.prng_reseed_rate.set(item.reseed_rate);
+      // Trigger a control update error.
+      if (control_update_error) begin
+        `uvm_info(`gfn, $sformatf("Triggering control update error in field %0d", idx_error_field),
+            UVM_MEDIUM)
+        // Perform the first write using the correct data.
+        csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b0), .blocking(1));
+        // Make sure at least one field is flipped.
+        begin
+          unique case (idx_error_field)
+            0: ral.ctrl_shadowed.operation.set(item.operation == AES_DEC ? AES_ENC : AES_DEC);
+            1: ral.ctrl_shadowed.mode.set(item.mode == AES_ECB ? AES_NONE : AES_ECB);
+            2: ral.ctrl_shadowed.key_len.set(item.key_len == AES_128 ? AES_256 : AES_128);
+            3: ral.ctrl_shadowed.sideload.set(item.sideload_en ? 1'b0 : 1'b1);
+            4: ral.ctrl_shadowed.manual_operation.set(item.manual_op ? 1'b0 : 1'b1);
+            5: ral.ctrl_shadowed.prng_reseed_rate.set(item.reseed_rate == PER_64 ? PER_8K : PER_64);
+            default:;
+          endcase
+        end
+        // Perform the second write.
+        csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b0), .blocking(1));
+        // Check that we get the recoverable alert. It's possible that DV inserted a fatal error
+        // condition before the second write could go through. The recovery from the fatal alert
+        // is handled separately.
+        csr_rd(.ptr(ral.status), .value(status), .blocking(1));
+        `DV_CHECK_FATAL(status.alert_recov_ctrl_update_err == 1'b1 ||
+                        status.alert_fatal_fault == 1'b1);
+        // Re-assemble the intended value.
+        ral.ctrl_shadowed.operation.set(item.operation);
+        ral.ctrl_shadowed.mode.set(item.mode);
+        ral.ctrl_shadowed.key_len.set(item.key_len);
+        ral.ctrl_shadowed.sideload.set(item.sideload_en);
+        ral.ctrl_shadowed.manual_operation.set(item.manual_op);
+        ral.ctrl_shadowed.prng_reseed_rate.set(item.reseed_rate);
+      end
+      // Perform the register update without control update error. This will resolve potential
+      // previous update errors.
+      csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+      // Make sure the update went through and there wasn't an update error. It's possible that DV
+      // inserted a fatal error condition before the second write could go through. In this case,
+      // the recoverable alert condition may still be visilbe together with the fatal alert. The
+      // fatal alert is handled separately.
+      csr_rd(.ptr(ral.status), .value(status), .blocking(1));
+      `DV_CHECK_FATAL(status.alert_recov_ctrl_update_err == 1'b0 ||
+                      status.alert_fatal_fault == 1'b1);
     end
   endtask
 
