@@ -1,0 +1,33 @@
+{
+  "interface": "servo_micro",
+  "pins": [
+    {
+      "name": "RESET",
+      "level": true,
+      "alias_of": "XXX" // Change to actual servo micro pin name (if a command other than `gpioset` is required, then further changes to servo_micro.rs are needed, similarly to how c2d2.rs does.)
+    }
+  ],
+  "strappings": [
+    {
+      "name": "RESET",
+      "pins": [
+	{
+	  "name": "RESET",
+	  "level": false
+	}
+      ]
+    },
+    {
+      "name": "ROM_BOOTSTRAP"
+    }
+  ],
+  "uarts": [
+    {
+      "name": "console",
+      "baudrate": 115200,
+      "parity": "None",
+      "stopbits": "Stop1",
+      "alias_of": "CR50" // May need to change to actual USB enpoint name
+    }
+  ]
+}

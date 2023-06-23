@@ -31,15 +31,17 @@ use crate::transport::{
 };
 use crate::util::usb::UsbBackend;
 
-pub mod c2d2;
-pub mod dfu;
-pub mod gpio;
-pub mod i2c;
-pub mod spi;
-pub mod ti50;
+mod c2d2;
+mod dfu;
+mod gpio;
+mod i2c;
+mod servo_micro;
+mod spi;
+mod ti50;
 
 pub use c2d2::C2d2Flavor;
 pub use dfu::HyperdebugDfu;
+pub use servo_micro::ServoMicroFlavor;
 pub use ti50::Ti50Flavor;
 
 /// Implementation of the Transport trait for HyperDebug based on the
