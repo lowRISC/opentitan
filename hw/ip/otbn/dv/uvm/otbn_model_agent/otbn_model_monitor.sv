@@ -22,7 +22,6 @@ class otbn_model_monitor extends dv_base_monitor #(
   protected task collect_trans(uvm_phase phase);
     fork
       collect_status();
-      // TODO: Only run when coverage is enabled.
       collect_insns();
     join
   endtask
