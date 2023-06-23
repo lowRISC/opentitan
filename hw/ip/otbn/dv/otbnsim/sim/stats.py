@@ -269,8 +269,6 @@ class ExecutionStatAnalyzer:
 
         out = ""
 
-        # TODO: Add the start address as function?
-
         # Build function call graphs and a call site index
         # caller-indexed == forward, callee-indexed == reverse
         #
