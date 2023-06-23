@@ -157,10 +157,6 @@ class BadDeepLoop(SnippetGen):
 
             return (snippet, model)
 
-        # TODO: Maybe generate some straight line insns here? Will need to take
-        # space calculations into account (maybe thread them through as
-        # arguments?)
-
         # Our space calculations in gen() should have ensured that this is
         # true.
         assert space_here >= 2
@@ -184,7 +180,6 @@ class BadDeepLoop(SnippetGen):
             gap_lo = random.choice(gap_starts)
 
             jump_ret = self.jump_gen.gen_tgt(model, program, gap_lo)
-            # TODO: Can this fail?
             assert jump_ret is not None
 
             jump_insn, jump_snippet, model = jump_ret
