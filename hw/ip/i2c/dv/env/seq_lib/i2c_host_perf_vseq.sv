@@ -20,19 +20,44 @@ class i2c_host_perf_vseq extends i2c_rx_tx_vseq;
   real                        last_posedge; // Last posedge time of SCL in ns
   uint                        scl_period_observed; // observed SCL period in ns
   uint                        scl_period_expected; // observed SCL period in ns
+  uint                        coerced_scl_period; // Actual SCL period, in cycles
+  uint                        coerced_scl_frequency; // Actual SCL frequency, given parameters
 
   constraint num_trans_c {
     num_trans  == 5;
   }
 
+  // Ensure the input clock frequency is high enough to meet minimum thigh and
+  // tlow cycle counts for a given mode (i.e. 125 ns or 8 MHz)
+  constraint min_peri_clk_period_c {
+    solve cfg.clk_freq_mhz before speed_mode;
+    if (cfg.clk_freq_mhz < 4) {
+      speed_mode == Standard;
+    } else if (cfg.clk_freq_mhz < 8) {
+      // For Fast, need at least 4 MHz's tlow=6, thigh=3, t_r=2, t_f=2 to
+      // satisfy all specs AND have minimum of 3 cycles for tlow and thigh to
+      // satisfy the round-trip time. This yields a nominal i2c frequency of
+      // 325 kHz.
+      speed_mode inside {Standard, Fast};
+    } else {
+      // For FastPlus, need at least tlow=4, thigh=3, t_r=1, t_f=1 to satisfy
+      // all specs with high enough thigh and tlow to satisfy the round-trip
+      // time (both greater than 3 cycles). That is at 8 MHz input clock and
+      // yields a nominal i2c frequency of 889 kHz.
+      speed_mode inside {Standard, Fast, FastPlus};
+    }
+  }
+
+  // Set the nominal frequency. The true, coerced value will be determined in
+  // post_randomize(), along with the coerced_scl_period.
   constraint scl_frequency_c {
     solve speed_mode before scl_frequency;
     if(speed_mode == Standard){
-      scl_frequency inside {100, 50};
+      scl_frequency == 100;
     }else if(speed_mode == Fast) {
-      scl_frequency inside {400, 200};
+      scl_frequency == 400;
     }else if(speed_mode == FastPlus) {
-      scl_frequency inside {1000, 500};
+      scl_frequency == 1000;
     }
   }
 
@@ -66,11 +91,20 @@ class i2c_host_perf_vseq extends i2c_rx_tx_vseq;
     // tlow must be at least 2 greater than the sum of t_r + tsu_dat + thd_dat
     // because the flopped clock (see #15003 below) reduces tClockLow by 1.
 
-    tlow == scl_period - t_r - t_f - thigh;
+    // Due to remainders after dividing each of the four components into the
+    // peripheral clock period, the SCL cycle count may have to float to as
+    // many as four cycles longer than the ideal (an effect of a ceil()
+    // operation on each component).
+    tlow <= 4 + scl_period - t_r - t_f - thigh;
+    tlow >= scl_period - t_r - t_f - thigh;
+
     tlow > (t_r + tsu_dat + thd_dat + 1);
     tlow > thd_dat - t_f;
     t_buf == tsu_sta - t_r + 1;
 
+    // Minimum values to accommodate round-trip latency through the IP.
+    tlow  >= 3;
+    thigh >= 3;
     // Spec minimum value of parameters
     tlow  >= cfg.seq_cfg.get_tlow_min(speed_mode, cfg.clk_rst_vif.clk_period_ps);
     t_r   >= cfg.seq_cfg.get_tr_min(speed_mode, cfg.clk_rst_vif.clk_period_ps);
@@ -114,12 +148,13 @@ class i2c_host_perf_vseq extends i2c_rx_tx_vseq;
   virtual task pre_start();
     super.pre_start();
     `uvm_info(`gfn, $sformatf("speed_mode = %s", speed_mode.name()), UVM_LOW)
-    `uvm_info(`gfn, $sformatf("scl_frequency = %d KHz", scl_frequency), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("scl_frequency = %d KHz", coerced_scl_frequency), UVM_LOW)
     `uvm_info(`gfn, $sformatf("clk_period_ps = %dps", cfg.clk_rst_vif.clk_period_ps), UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("(scl_period/clk_period) = %d ", scl_period), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("(scl_period/clk_period) = %d ", coerced_scl_period), UVM_MEDIUM)
     perf_monitor();
     print_time_property();
   endtask
+
   // Disable randomization of timing parameters after first randomize call
   function void post_randomize();
     tlow.rand_mode(0);
@@ -132,13 +167,18 @@ class i2c_host_perf_vseq extends i2c_rx_tx_vseq;
     t_r.rand_mode(0);
     t_f.rand_mode(0);
     thigh.rand_mode(0);
-    cfg.scl_frequency = scl_frequency;
+    // Coerce value after quantization. Actual frequency is different from the
+    // randomized setting, due to the granularity of the dividers.
+    // TODO(#18492): Remove round-trip latency of 3 cycles and double-counting
+    // of t_f when appropriate fixes go into the RTL.
+    coerced_scl_period = t_r + 2*t_f + thigh + tlow + 3;
+    coerced_scl_frequency = 10**9/(coerced_scl_period*cfg.clk_rst_vif.clk_period_ps);
   endfunction
 
   // Task to calculate the SCL period
   virtual task perf_monitor();
     bit first_scl_posedge = 1;
-    scl_period_expected = ((10**6) / scl_frequency);
+    scl_period_expected = (1e6 / coerced_scl_frequency);
     fork
       forever begin
         @(posedge cfg.m_i2c_agent_cfg.vif.scl_i);
