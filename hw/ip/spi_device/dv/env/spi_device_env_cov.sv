@@ -119,7 +119,10 @@ class spi_device_env_cov extends cip_base_env_cov #(.CFG_T(spi_device_env_cfg));
     cp_opcode: coverpoint opcode {
       bins internal_process_ops[]   = {`ALL_INTERNAL_PROCESS_CMDS};
     }
-    cp_is_write:        coverpoint is_write;
+    cp_is_write:        coverpoint is_write {
+      bins write = {1};
+      bins read = {0};
+    }
     cp_addr_mode:       coverpoint addr_mode;
     cp_addr_swap_en:    coverpoint addr_swap_en;
     cp_payload_swap_en: coverpoint payload_swap_en;
@@ -134,7 +137,11 @@ class spi_device_env_cov extends cip_base_env_cov #(.CFG_T(spi_device_env_cfg));
     }
 
     cr_modeXdirXaddrXswap: cross cp_is_flash, cp_is_write, cp_addr_mode, cp_addr_swap_en,
-                                 cp_payload_swap_en;
+                                 cp_payload_swap_en {
+      // > payload_swap_en only works with write data
+      ignore_bins payload_swap_writes = binsof(cp_is_write.read) &&
+                                        binsof(cp_payload_swap_en) intersect {1};
+    }
     cr_modeXdummyXnum_lanes: cross cp_is_flash, cp_dummy_cycles, cp_num_lanes;
   endgroup
 
