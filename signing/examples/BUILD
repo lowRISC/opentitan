@@ -17,7 +17,9 @@ offline_presigning_artifacts(
     # key (e.g. //sw/device/silicon_creator/rom/keys/real/rsa:earlgrey_a0_test_0).
     # This is left as a fake key so that the presigning artifacts will be
     # appropriate for the `fake_sign` rule below.
-    rsa_key = "//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0",
+    rsa_key = {
+        "//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "fake_test_key_0",
+    },
     tags = ["manual"],
 )
 
@@ -35,7 +37,9 @@ pkg_tar(
 offline_fake_rsa_sign(
     name = "fake",
     srcs = [":presigning"],
-    key_file = "//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0",
+    rsa_key = {
+        "//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "fake_test_key_0",
+    },
     tags = ["manual"],
 )
 

@@ -1122,10 +1122,8 @@ def opentitan_flash_binary(
                     sign_bin(
                         name = signed_bin_name,
                         bin = bin_name,
-                        rsa_key = key_struct.rsa.label,
-                        rsa_key_name = key_struct.rsa.name,
-                        spx_key = key_struct.spx.label,
-                        spx_key_name = key_struct.spx.name,
+                        rsa_key = {key_struct.rsa.label: key_struct.rsa.name},
+                        spx_key = {key_struct.spx.label: key_struct.spx.name},
                         manifest = manifest,
                         testonly = testonly,
                     )
@@ -1137,8 +1135,7 @@ def opentitan_flash_binary(
                     sign_bin(
                         name = signed_bin_name,
                         bin = bin_name,
-                        rsa_key = key_struct.rsa.label,
-                        rsa_key_name = key_struct.rsa.name,
+                        rsa_key = {key_struct.rsa.label: key_struct.rsa.name},
                         manifest = manifest,
                         testonly = testonly,
                     )
