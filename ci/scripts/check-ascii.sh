@@ -47,7 +47,8 @@ allowed_suffixes=(
     hh
 
     # Signature files are binary files.
-    sig
+    rsa_sig
+    spx_sig
 )
 suff_re=""
 for suff in "${allowed_suffixes[@]}"; do
