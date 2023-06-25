@@ -3507,6 +3507,31 @@
               "rom_volatile_raw_unlock"]
     }
     {
+      name: chip_sw_rom_raw_unlock
+      desc: '''Configure RAW_UNLOCK via LC TAP interface and enable CPU execution.
+
+            This test characterizes the DUT initial state before RAW unlock operation, and
+            switches to external clock via clkmgr to ensure the system clock can be switched
+            right after transition into test_unlcoked0 state. The test also verifies that
+            AST is not initialized while CPU is executing code.
+
+             - Pre-load OTP image with RAW lc_state.
+             - Initiate the LC transition to test_unlocked0 state using the
+               RAW_UNLOCK mode of operation.
+             - Switch TAP interface to rv_dm and configure the ROM_EXEC_EN OTP to enable ROM
+               execution.
+             - If running with the production ROM, enable signature verification via OTBN to
+               improve simulation time.
+             - Perform POR to apply OTP changes.
+             - With rv_dm TAP still selected, switch to external clock via clkmgr using extclk
+               slow mode configuration.
+             - Wait for ROM to start executing code.
+             - Check AST init done equal to 0 via sensor_ctrl.
+             '''
+      stage: V2
+      tests: ["rom_raw_unlock"]
+    }
+    {
       name: chip_sw_power_max_load
       desc: '''Concurrency test modeling maximum load conditions.
 
