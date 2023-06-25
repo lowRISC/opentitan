@@ -8,6 +8,7 @@
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
@@ -15,8 +16,10 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "pinmux_regs.h"  // Generated.
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
+// Below includes are generated during compile time.
+#include "flash_ctrl_regs.h"
+#include "pinmux_regs.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -24,6 +27,7 @@ OTTF_DEFINE_TEST_CONFIG();
 static dif_pwrmgr_t pwrmgr;
 static dif_pinmux_t pinmux;
 static dif_rv_plic_t plic;
+static dif_flash_ctrl_state_t flash_ctrl_state;
 
 static const uint32_t kNumDio = 16;  // top_earlgrey has 16 DIOs
 
@@ -40,6 +44,9 @@ static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
     .plic_pwrmgr_start_irq_id = kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
     .expected_irq = kDifPwrmgrIrqWakeup,
     .is_only_irq = true};
+
+// Preserve wakeup_detector_selected over multiple resets
+OT_SECTION(".non_volatile_scratch") uint32_t wakeup_detector_idx;
 
 /**
  * External interrupt handler.
@@ -73,16 +80,35 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
-
-  // Randomly pick one of the wakeup detectors.
-  dif_pinmux_index_t wakeup_detector_selected =
-      rand_testutils_gen32_range(0, PINMUX_PARAM_N_WKUP_DETECT - 1);
+  CHECK_DIF_OK(dif_flash_ctrl_init_state(
+      &flash_ctrl_state,
+      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+  // Enable access to flash for storing info across resets.
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
+                                                 /*rd_en*/ true,
+                                                 /*prog_en*/ true,
+                                                 /*erase_en*/ true,
+                                                 /*scramble_en*/ false,
+                                                 /*ecc_en*/ false,
+                                                 /*he_en*/ false));
+  // Randomly pick one of the wakeup detectors
+  // only after the first boot.
+  dif_pinmux_index_t wakeup_detector_selected = 0;
 
   if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true) {
     LOG_INFO("Test in POR phase");
 
-    LOG_INFO("pinmux_init end");
-
+    // After randomly generated wake detector index,
+    // store to non volatile area to preserve from the reset event.
+    wakeup_detector_selected =
+        rand_testutils_gen32_range(0, PINMUX_PARAM_N_WKUP_DETECT - 1);
+    CHECK_STATUS_OK(flash_ctrl_testutils_write(
+        &flash_ctrl_state,
+        (uint32_t)(&wakeup_detector_idx) -
+            TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+        0, &wakeup_detector_selected, kDifFlashCtrlPartitionTypeData, 1));
+    LOG_INFO("detector %0d is selected", wakeup_detector_selected);
     // TODO(lowrisc/opentitan#15889): The weak pull on IOC3 needs to be
     // disabled for this test. Remove this later.
     dif_pinmux_pad_attr_t out_attr;
@@ -91,6 +117,11 @@ bool test_main(void) {
                                             kDifPinmuxPadKindMio, in_attr,
                                             &out_attr));
 
+    // This print is placed here on purpose.
+    // sv sequence is waiting for this print log followed by
+    // Pad Section. So do not put any other print between
+    // this LOG_INFO and LOG_INFO("Pad Selection");
+    LOG_INFO("pinmux_init end");
     // Random choose low power or deep powerdown
     uint32_t deep_powerdown_en = rand_testutils_gen32_range(0, 1);
 
@@ -163,6 +194,8 @@ bool test_main(void) {
     LOG_INFO("Test in post-sleep pin wakeup phase");
     uint32_t wakeup_cause;
     CHECK_DIF_OK(dif_pinmux_wakeup_cause_get(&pinmux, &wakeup_cause));
+    // Get the wakeup dectector index from stored variable.
+    wakeup_detector_selected = wakeup_detector_idx;
     CHECK(wakeup_cause == 1 << wakeup_detector_selected);
     CHECK_DIF_OK(
         dif_pinmux_wakeup_detector_disable(&pinmux, wakeup_detector_selected));
