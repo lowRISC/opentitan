@@ -201,7 +201,10 @@ module otbn
   if (Stub) begin : gen_stub_rma_ack
     assign lc_rma_ack_o = lc_rma_req;
   end else begin : gen_real_rma_ack
-    assign lc_rma_ack_o = lc_ctrl_pkg::mubi4_to_lc(mubi_rma_ack);
+    // TODO(#19044): uncomment the line below after correcting the usage
+    // of the associated MUBI signals.
+    // assign lc_rma_ack_o = lc_ctrl_pkg::mubi4_to_lc(mubi_rma_ack);
+    assign lc_rma_ack_o = lc_rma_req;
   end
 
   // Interrupts ================================================================
