@@ -61,7 +61,6 @@
       name: aon_timer_jump
       uvm_test_seq: aon_timer_jump_vseq
     }
-    // TODO: add more tests here
   ]
 
   // List of regressions.
