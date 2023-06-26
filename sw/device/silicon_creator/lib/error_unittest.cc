@@ -11,21 +11,12 @@
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/silicon_creator/lib/error_test_util.h"
 
 namespace error_unittest {
 namespace {
 
 constexpr int kMinimumHammingDistance = 6;
-
-const std::map<std::string, uint32_t> &GetErrorMap() {
-#define STRINGIFY(x) #x
-#define ERROR_MAP_INIT(name, value) \
-  { STRINGIFY(name), value }
-  static std::map<std::string, uint32_t> errors = {
-      DEFINE_ERRORS(ERROR_MAP_INIT),
-  };
-  return errors;
-}
 
 rom_error_t ReturnIfError(rom_error_t value) {
   RETURN_IF_ERROR(value);
