@@ -669,7 +669,7 @@ interface chip_if;
 
   wire pwrmgr_low_power = `PWRMGR_HIER.low_power_o;
   wire pwrmgr_cpu_fetch_en = `PWRMGR_HIER.fetch_en_o == lc_ctrl_pkg::On;
-  wire pwrmgr_fast_pwr_state_active = `PWRMGR_HIER.u_fsm.state_q
+  wire pwrmgr_fast_pwr_state_active = `PWRMGR_HIER.u_fsm.u_state_regs.state_o
       == pwrmgr_pkg::FastPwrStateActive;
 
 `ifdef GATE_LEVEL
@@ -719,7 +719,7 @@ interface chip_if;
 `endif
                                           );
   assign pwrmgr_low_power_if.low_power      = `PWRMGR_HIER.low_power_o;
-  assign pwrmgr_low_power_if.in_sleep       = `PWRMGR_HIER.u_fsm.state_q
+  assign pwrmgr_low_power_if.in_sleep       = `PWRMGR_HIER.u_fsm.u_state_regs.state_o
                                             == pwrmgr_pkg::FastPwrStateLowPower;
 `ifdef GATE_LEVEL
   assign pwrmgr_low_power_if.deep_powerdown = 0;
@@ -1174,13 +1174,13 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.stat
 
   // Signal probe function for `st` of KMAC_CORE
   wire [5:0] kmac_fsm_state;
-  assign kmac_fsm_state = `KMAC_HIER.u_kmac_core.st;
+  assign kmac_fsm_state = `KMAC_HIER.u_kmac_core.u_state_regs.state_o;
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_kmac_fsm_state,
       kmac_fsm_state, 6)
 
   // Signal probe function for `state_q` OTBN_START_STOP_CONTROL
   wire [6:0] otbn_fsm_state;
-  assign otbn_fsm_state = `OTBN_HIER.u_otbn_core.u_otbn_start_stop_control.state_q;
+  assign otbn_fsm_state = `OTBN_HIER.u_otbn_core.u_otbn_start_stop_control.u_state_regs.state_o;
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_otbn_fsm_state,
       otbn_fsm_state, 7)
 
