@@ -11,6 +11,7 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
   localparam int unsigned RomIndexWidth = prim_util_pkg::vbits(RomSizeWords);
 
   typedef enum bit [2:0] {
+      LocalEscalation,
       CheckerCtrConsistency,
       CheckerCtrlFlowConsistency,
       CompareCtrlFlowConsistency,
@@ -30,6 +31,29 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
       `uvm_info(`gfn, $sformatf("iteration %0d/%0d, cmd_id = %s", i, num_reps, cm_id.name()),
                  UVM_LOW)
       case (cm_id)
+        // This test tries to cover all possible FSM transitions to the invalid state by triggering
+        // an alert inside the comparison module.
+        LocalEscalation: begin
+          rom_ctrl_pkg::fsm_state_e s;
+          rom_ctrl_pkg::fsm_state_e states_to_visit[$];
+          // This FSM assumes a linear progression through the FSM states.
+          // Make sure the last state is the Invalid state.
+          `DV_CHECK_EQ(s.last(), rom_ctrl_pkg::Invalid)
+          s = s.first();
+          while (s != s.last()) begin
+            states_to_visit.push_back(s);
+            s = s.next();
+          end
+          while (states_to_visit.size() > 0) begin
+            wait_for_fsm_state_inside(states_to_visit);
+            // This is a sparsely encoded FSM, where all-zero is always an invalid state, hence we
+            // can use all-zero to trigger an alert.
+            force_sig("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.state_d", '0);
+            check_for_alert();
+            chk_fsm_state();
+            dut_init();
+          end
+        end
         // Once rom_ctrl has handed control of the mux to the bus, the internal FSM counter should
         // point at the top of ROM. The unexpected_counter_change signal in rom_ctrl_fsm goes high
         // and generates a fatal alert if that counter is perturbed in any way. To test this,
@@ -108,12 +132,12 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
         MuxMubi: begin
           bit [3:0] rand_var;
           pick_err_inj_point();
-          mubi4_test_invalid(rand_var);
+          mubi4_test_invalid(prim_mubi_pkg::mubi4_t'(rand_var));
           force_sig("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.rom_select_bus_o", rand_var);
           check_for_alert();
           dut_init();
           pick_err_inj_point();
-          mubi4_test_invalid(rand_var);
+          mubi4_test_invalid(prim_mubi_pkg::mubi4_t'(rand_var));
           force_sig("tb.dut.u_mux.sel_bus_q", rand_var);
           check_for_alert();
         end
@@ -239,12 +263,26 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
 
   task chk_fsm_state();
     bit rdata_alert;
-    rom_ctrl_pkg::fsm_state_e rdata_state;
+    bit [$bits(rom_ctrl_pkg::fsm_state_e)-1:0] rdata_state;
     uvm_hdl_read("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.alert_o", rdata_alert);
     `DV_CHECK_EQ(rdata_alert, 1)
     uvm_hdl_read("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q", rdata_state);
     `DV_CHECK_EQ(rdata_state, rom_ctrl_pkg::Invalid)
   endtask: chk_fsm_state
+
+  // Wait until FSM state has progressed to a state within the list.
+  // The task removes all previous states including the one that has been reached afterwards.
+  // Note that this assumes no loops and linear progression through the state enum entries.
+  task wait_for_fsm_state_inside(ref rom_ctrl_pkg::fsm_state_e states_to_visit[$]);
+    bit [$bits(rom_ctrl_pkg::fsm_state_e)-1:0] rdata_state;
+    do begin
+      @(negedge cfg.clk_rst_vif.clk);
+      uvm_hdl_read("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q", rdata_state);
+    end while (!(rdata_state inside states_to_visit));
+    `uvm_info(`gfn, $sformatf("reached FSM state %x", rdata_state), UVM_LOW)
+    // Remove previous states from queue, including the one that has been reached.
+    while (states_to_visit.pop_front() != rdata_state);
+  endtask: wait_for_fsm_state_inside
 
   task pick_err_inj_point();
     int wait_clks;
