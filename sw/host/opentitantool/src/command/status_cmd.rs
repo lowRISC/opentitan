@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{bail, Context, Result};
 use serde_annotate::Annotate;
 use std::any::Any;
 use std::collections::{HashMap, HashSet};
@@ -68,6 +68,12 @@ impl CommandDispatch for ListCommand {
 #[derive(Debug, StructOpt)]
 /// Lint records in an ELF file.
 pub struct LintCommand {
+    // Bazel needs any command to create at least one output file, but we want to
+    // print to stderr in this case. This option simplies tells the tool to create
+    // an empty file to make bazel happy.
+    #[structopt(short, long, help = "Create an empty file to make bazel happy.")]
+    touch: Option<PathBuf>,
+    #[structopt(name = "ELF_FILES", help = "Filenames of the executable to analyze.")]
     elf_files: Vec<PathBuf>,
 }
 
@@ -86,6 +92,11 @@ impl CommandDispatch for LintCommand {
         // We group filenames by Module ID, coming from all ELF files at once
         let mut mod_id_map: HashMap<String, HashSet<ModuleIdProvenance>> = HashMap::new();
 
+        if let Some(filename) = &self.touch {
+            let _ = std::fs::File::create(&filename)
+                .context("could not create empty file for bazel")?;
+        }
+
         for elf in &self.elf_files {
             let records = load_elf(elf)?;
             for record in records.records {
@@ -98,19 +109,25 @@ impl CommandDispatch for LintCommand {
                     });
             }
         }
+        let mut contain_collisions = false;
         for (mod_id, prov_set) in mod_id_map.iter() {
             if prov_set.len() > 1 {
-                println!("The following files have the same module ID ({})", mod_id);
+                eprintln!("The following files have the same module ID ({})", mod_id);
                 for prov in prov_set {
                     let explain = match prov.overriden {
                         true => "specified by MAKE_MODULE_ID",
                         false => "computed from filename",
                     };
-                    println!("- {}: {}", prov.filename, explain);
+                    eprintln!("- {}: {}", prov.filename, explain);
                 }
+                contain_collisions = true;
             }
         }
-        Ok(None)
+        if contain_collisions {
+            bail!("Some files contain colliding module ID")
+        } else {
+            Ok(None)
+        }
     }
 }
 
