@@ -73,3 +73,8 @@ targets:
         mode: lint-only
         verilator_options:
           - "-Wall"
+
+  formal:
+    filesets:
+      - files_rtl
+    toplevel: rom_ctrl_fsm
