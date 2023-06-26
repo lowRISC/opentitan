@@ -93,8 +93,8 @@ impl CommandDispatch for LintCommand {
         let mut mod_id_map: HashMap<String, HashSet<ModuleIdProvenance>> = HashMap::new();
 
         if let Some(filename) = &self.touch {
-            let _ = std::fs::File::create(&filename)
-                .context("could not create empty file for bazel")?;
+            let _ =
+                std::fs::File::create(filename).context("could not create empty file for bazel")?;
         }
 
         for elf in &self.elf_files {

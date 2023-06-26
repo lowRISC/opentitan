@@ -336,3 +336,56 @@ html_coverage_report = rule(
     },
     executable = True,
 )
+
+def _modid_check_aspect_impl(target, ctx):
+    """
+    Verify that a binary (ELF file) does not contain conflicting module IDs
+    using opentitantool. The result of this aspect is put is in modid_check
+    output group.
+    """
+
+    # Make sure that the target is a binary, otherwise ignore it.
+    if ctx.rule.kind != "cc_binary":
+        return []
+
+    # We create a file that will not contain anything: this is just to create a "link"
+    # between the run action and the output group info. This way if we ask bazel for this
+    # output group, it will automatically run the action. We could use a validation group
+    # but at least this makes the check more explicit.
+    generated_file = ctx.actions.declare_file("{}.mod-id".format(target.label.name))
+
+    # Call "opentitantool status lint <files>"
+    args = ctx.actions.args()
+    args.add_all(["status", "lint", "--touch", generated_file])
+    args.add_all(target.files)
+    ctx.actions.run(
+        executable = ctx.file._opentitantool,
+        arguments = [args],
+        inputs = target.files,
+        tools = [],
+        outputs = [generated_file],
+        progress_message = "Checking module IDs for %{label}",
+    )
+
+    return [
+        OutputGroupInfo(
+            modid_check = depset(direct = [generated_file]),
+        ),
+    ]
+
+modid_check_aspect = aspect(
+    implementation = _modid_check_aspect_impl,
+    attr_aspects = [],
+    attrs = {
+        # The rules to which we apply the aspect may not depend on opentitantool
+        # so make sure that we depend on it. Make sure that it is built for the
+        # execution platform since this aspect will be applied to targets built
+        # for the OT platform.
+        "_opentitantool": attr.label(
+            default = "//sw/host/opentitantool",
+            allow_single_file = True,
+            executable = True,
+            cfg = "exec",
+        ),
+    },
+)
