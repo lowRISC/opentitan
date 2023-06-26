@@ -25,9 +25,9 @@ extern "C" {
  */
 typedef enum kdf_type {
   // KDF construction with HMAC as a PRF.
-  kKdfTypeHmac = 0xfa3b,
+  kKdfTypeHmac = 0x4f1,
   // KDF construction with KMAC as a PRF.
-  kKdfTypeKmac = 0x0f47,
+  kKdfTypeKmac = 0x754,
 } kdf_type_t;
 
 /**

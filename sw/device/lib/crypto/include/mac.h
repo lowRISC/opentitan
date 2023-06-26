@@ -25,9 +25,9 @@ extern "C" {
  */
 typedef enum kmac_mode {
   // KMAC128 mode.
-  kMacModeKmac128 = 0x69b6,
+  kMacModeKmac128 = 0x336,
   // KMAC256 mode.
-  kMacModeKmac256 = 0xee62,
+  kMacModeKmac256 = 0xec4,
 } kmac_mode_t;
 
 /**
@@ -37,6 +37,7 @@ typedef enum kmac_mode {
  * with #otcrypto_hmac_init.
  */
 typedef struct hmac_context {
+  // Context for the hmac operation.
   uint32_t data[42];
 } hmac_context_t;
 
@@ -60,7 +61,7 @@ crypto_status_t otcrypto_mac_keygen(crypto_blinded_key_t *key);
 /**
  * Performs the HMAC-SHA256 function on the input data.
  *
- * This function computes the required MAC function on the `input_message`
+ * This function computes the HMAC-SHA256 function on the `input_message`
  * using the `key` and returns a `tag`.
  *
  * The caller should allocate 32 bytes of space for the `tag` buffer and set
@@ -81,8 +82,7 @@ crypto_status_t otcrypto_hmac(const crypto_blinded_key_t *key,
  * This function computes the KMAC on the `input_message` using the `key` and
  * returns a `tag` of `required_output_len`. The customization string is passed
  * through `customization_string` parameter. If no customization is desired it
- * can be empty. The `customization_string` and `required_output_len` is only
- * used for KMAC modes and is ignored for the HMAC mode.
+ * can be empty.
  *
  * The caller should allocate `required_output_len` bytes for the `tag` buffer
  * and set the `len` field of `tag` to `required_output_len`. If the user-set
@@ -91,7 +91,7 @@ crypto_status_t otcrypto_hmac(const crypto_blinded_key_t *key,
  *
  * @param key Pointer to the blinded key struct with key shares.
  * @param input_message Input message to be hashed.
- * @param mac_mode Required operation to be performed.
+ * @param mac_mode Required KMAC mode.
  * @param customization_string Customization string.
  * @param required_output_len Required output length, in bytes.
  * @param[out] tag Output authentication tag.

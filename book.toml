@@ -59,6 +59,9 @@ command = "./util/mdbook_otbn.py"
 [preprocessor.dashboard]
 command = "./util/mdbook_dashboard.py"
 
+[preprocessor.code-snippet]
+command = "./util/mdbook_code_snippet.py"
+
 [preprocessor.doxygen]
 command = "./util/mdbook_doxygen.py"
 out-dir = "build-site/gen"
