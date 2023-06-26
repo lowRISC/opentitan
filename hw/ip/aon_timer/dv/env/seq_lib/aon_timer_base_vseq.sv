@@ -13,7 +13,11 @@ class aon_timer_base_vseq extends cip_base_vseq #(
   // If this is set, the AON clock starts first and then the fast clock starts sometime later. If
   // not, they start in parallel. Since the fast clock is *much* quicker, the practical result is
   // that it starts first.
-  // TODO: Issue #6821: temp set to 1 to avoid assertion error.
+  // Currently set to 1 always so AON clock always start first. The testbench doesn't correctly
+  // support AON and fast clock starting together. Within OpenTitan earlgrey the aon clock is always
+  // active before the fast path so the reset_aon_first == 0 mode isn't required. Leaving the
+  // functionality in for now whilst we decide if we want to support reset_aon_first == 0 in the
+  // testbench or remove this functionality entirely.
   // rand bit reset_aon_first;
   bit reset_aon_first = 1;
 
