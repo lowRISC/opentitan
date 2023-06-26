@@ -131,11 +131,17 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "error_test_util",
+    hdrs = ["error_test_util.h"],
+)
+
 cc_test(
     name = "error_unittest",
     srcs = ["error_unittest.cc"],
     deps = [
         ":error",
+        ":error_test_util",
         "@googletest//:gtest_main",
     ],
 )
