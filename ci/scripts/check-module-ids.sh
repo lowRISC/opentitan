@@ -3,17 +3,17 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Checks that all module IDs are unique.
+# Checks that all status_t module IDs are unique.
 
 set -e
 
 # List of all targets that need to be checked: we only consider targets that
 # produce a binary file and that depend on the status library. Since every test
-# is usually built for real targets and dv, we only check for one real target to
+# is usually built for FPGA and simulation targets, we only check for one target to
 # save time.
 query_elfs='
     filter(
-        ".*prog_fpga_cw310.*",
+        ".*fpga_cw310.*",
         kind(
             cc_binary,
             rdeps(
