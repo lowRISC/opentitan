@@ -1,0 +1,27 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+load("@rules_foreign_cc//foreign_cc:configure.bzl", "configure_make")
+
+package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "all_srcs",
+    srcs = glob(["**"]),
+)
+
+configure_make(
+    name = "sc_hsm",
+    autoreconf = True,
+    autoreconf_options = ["-fi"],
+    configure_in_place = True,
+    lib_source = ":all_srcs",
+    out_shared_libs = ["libsc-hsm-pkcs11.so"],
+)
+
+filegroup(
+    name = "gen_dir",
+    srcs = [":sc_hsm"],
+    output_group = "gen_dir",
+)
