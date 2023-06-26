@@ -39,9 +39,9 @@ typedef struct ecc_signature {
  */
 typedef enum eddsa_sign_mode {
   // Signature mode EdDSA.
-  kEddsaSignModeEdDSA = 0x4fd1,
+  kEddsaSignModeEdDSA = 0xae1,
   // Signature mode Hashed EdDSA.
-  kEddsaSignModeHashEdDSA = 0x9bed,
+  kEddsaSignModeHashEdDSA = 0x9a6,
 } eddsa_sign_mode_t;
 
 /**
@@ -85,13 +85,13 @@ typedef struct ecc_domain {
  */
 typedef enum ecc_curve_type {
   // Generic Weierstrass curve, with custom domain parameters.
-  kEccCurveTypeCustom = 0xf93c,
+  kEccCurveTypeCustom = 0xbf7,
   // Named Weierstrass curve - NIST P256.
-  kEccCurveTypeNistP256 = 0xe1e7,
+  kEccCurveTypeNistP256 = 0xec8,
   // Named Weierstrass curve - NIST P384.
-  kEccCurveTypeNistP384 = 0x6a2b,
+  kEccCurveTypeNistP384 = 0x1bc,
   // Named Weierstrass curve - Brainpool P256r1.
-  kEccCurveTypeBrainpoolP256R1 = 0x5e96,
+  kEccCurveTypeBrainpoolP256R1 = 0xc1e,
 } ecc_curve_type_t;
 
 /**

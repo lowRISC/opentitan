@@ -23,9 +23,9 @@ extern "C" {
  */
 typedef enum rsa_padding {
   // Pads input data according to the PKCS#1 (v1.5) scheme.
-  kRsaPaddingPkcs = 0x9f44,
+  kRsaPaddingPkcs = 0x94e,
   // Pads input data according to the PKCS#1-PSS scheme.
-  kRsaPaddingPss = 0x88cf,
+  kRsaPaddingPss = 0x6b1,
 } rsa_padding_t;
 
 /**
@@ -35,13 +35,13 @@ typedef enum rsa_padding {
  */
 typedef enum rsa_hash {
   // SHA2-256 hashing mode for RSA.
-  kRsaHashSha256 = 0xed4b,
+  kRsaHashSha256 = 0x378,
   // SHA2-384 hashing mode for RSA.
-  kRsaHashSha384 = 0x5dd0,
+  kRsaHashSha384 = 0xe8c,
   // SHA2-512 hashing mode for RSA.
-  kRsaHashSha512 = 0x0bab,
+  kRsaHashSha512 = 0xf1b,
   // SHA3-384 hashing mode for RSA.
-  kRsaHashSha3_384 = 0x65b7,
+  kRsaHashSha3_384 = 0x767,
 } rsa_hash_t;
 
 /**
@@ -61,11 +61,11 @@ typedef struct rsa_private_key {
  */
 typedef enum rsa_key_size {
   // 2048-bit RSA key.
-  kRsaKeySize2048 = 0xa74d,
+  kRsaKeySize2048 = 0x5d1,
   // 3072-bit RSA key.
-  kRsaKeySize3072 = 0x7fc6,
+  kRsaKeySize3072 = 0xc35,
   // 4096-bit RSA key.
-  kRsaKeySize4096 = 0xf07a,
+  kRsaKeySize4096 = 0x8da,
 } rsa_key_size_t;
 
 /**
@@ -118,9 +118,9 @@ crypto_status_t otcrypto_rsa_keygen(rsa_key_size_t required_key_len,
  * @param rsa_private_key Pointer to RSA private exponent struct.
  * @param input_message Input message to be signed.
  * @param padding_mode Padding scheme to be used for the data.
- * @param hash_mode Hashing scheme to be used for the signature scheme.
- * @param[out] signature Pointer to generated signature struct.
- * @return The result of the RSA sign generation.
+ * @param hash_mode Hashing mode to be used for the signature.
+ * @param[out] signature Pointer to the generated signature struct.
+ * @return The result of the RSA signature generation.
  */
 crypto_status_t otcrypto_rsa_sign(const rsa_private_key_t *rsa_private_key,
                                   crypto_const_uint8_buf_t input_message,
@@ -137,7 +137,7 @@ crypto_status_t otcrypto_rsa_sign(const rsa_private_key_t *rsa_private_key,
  * @param rsa_public_key Pointer to RSA public exponent struct.
  * @param input_message Input message to be signed for verification.
  * @param padding_mode Padding scheme to be used for the data.
- * @param hash_mode Hashing scheme to be used for the signature scheme.
+ * @param hash_mode Hashing mode to be used for signature verification.
  * @param signature Pointer to the input signature to be verified.
  * @param[out] verification_result Result of signature verification
  * (Pass/Fail).

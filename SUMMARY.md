@@ -492,6 +492,8 @@
 # Security
 
 - [Security](./doc/security/README.md)
+- [Cryptography Library](./doc/security/cryptolib/README.md)
+  - [API Documentation](./doc/security/cryptolib/cryptolib_api.md)
 - [Implementation Guidelines](./doc/security/implementation_guidelines/README.md)
   - [Secure Hardware Design Guidelines](./doc/security/implementation_guidelines/hardware/README.md)
 

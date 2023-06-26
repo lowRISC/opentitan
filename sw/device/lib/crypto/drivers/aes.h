@@ -35,11 +35,11 @@ typedef struct aes_block {
  * API.
  */
 typedef enum aes_cipher_mode {
-  kAesCipherModeEcb = 0x7cae,
-  kAesCipherModeCbc = 0x9736,
-  kAesCipherModeCfb = 0xe378,
-  kAesCipherModeOfb = 0x9cdd,
-  kAesCipherModeCtr = 0x4a1f,
+  kAesCipherModeEcb = 0x533,
+  kAesCipherModeCbc = 0x45d,
+  kAesCipherModeCfb = 0xcd2,
+  kAesCipherModeOfb = 0x39a,
+  kAesCipherModeCtr = 0xd2c,
 } aes_cipher_mode_t;
 
 /**

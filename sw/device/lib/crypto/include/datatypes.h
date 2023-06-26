@@ -22,7 +22,21 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * Enum to handle return values of the crypto API.
+ * Return values for the crypto library.
+ *
+ * The crypto library's return value is defined as OpenTitan's internal
+ * `status_t` in order to simplify testing. However, informally the library
+ * guarantees that the concrete value contained in the status will be one of
+ * the members of the `crypto_status_value` enum below.
+ */
+typedef status_t crypto_status_t;
+
+/**
+ * Possible status values for the cryptolib.
+ *
+ * As long as the OTCRYPTO_STATUS_DEBUG define is unset, all `crypto_status_t`
+ * codes returned by the cryptolib should be bit-by-bit equivalent with one of
+ * the values in this enum.
  *
  * Values are built to be bit-compatible with OpenTitan's internal `status_t`
  * datatypes. The highest (sign) bit indicates if the value is an error (1) or
@@ -43,7 +57,6 @@ extern "C" {
  * without changing all error codes. Remove the seed (-s argument) to generate
  * completely new 11-bit values.
  */
-typedef status_t crypto_status_t;
 typedef enum crypto_status_value {
   // Status is OK; no errors.
   kCryptoStatusOK = (int32_t)0x739,
@@ -92,17 +105,17 @@ typedef struct crypto_const_uint8_buf {
  */
 typedef enum key_type {
   // Key type AES.
-  kKeyTypeAes = 0xb51f,
+  kKeyTypeAes = 0x8e9,
   // Key type HMAC.
-  kKeyTypeHmac = 0x196b,
+  kKeyTypeHmac = 0xe3f,
   // Key type KMAC.
-  kKeyTypeKmac = 0xe769,
+  kKeyTypeKmac = 0xb74,
   // Key type RSA.
-  kKeyTypeRsa = 0x4fb4,
+  kKeyTypeRsa = 0x7ee,
   // Key type ECC.
-  kKeyTypeEcc = 0x3ad6,
+  kKeyTypeEcc = 0x15b,
   // Key type KDF.
-  kKeyTypeKdf = 0xf981,
+  kKeyTypeKdf = 0xb87,
 } key_type_t;
 
 /**
@@ -115,19 +128,19 @@ typedef enum key_type {
  */
 typedef enum aes_key_mode {
   // Mode AES ECB.
-  kAesKeyModeEcb = 0xd9d7,
+  kAesKeyModeEcb = 0x1b6,
   // Mode AES CBC.
-  kAesKeyModeCbc = 0xcf6c,
+  kAesKeyModeCbc = 0xf3a,
   // Mode AES CFB.
-  kAesKeyModeCfb = 0x927a,
+  kAesKeyModeCfb = 0x0f9,
   // Mode AES OFB.
-  kAesKeyModeOfb = 0x629f,
+  kAesKeyModeOfb = 0xb49,
   // Mode AES CTR.
-  kAesKeyModeCtr = 0xf4e1,
+  kAesKeyModeCtr = 0x4ce,
   // Mode AES GCM.
-  kAesKeyModeGcm = 0x3d0e,
+  kAesKeyModeGcm = 0xaa5,
   // Mode AES KWP.
-  kAesKeyModeKwp = 0x2bf1,
+  kAesKeyModeKwp = 0x7d5,
 } aes_key_mode_t;
 
 /**
@@ -140,7 +153,7 @@ typedef enum aes_key_mode {
  */
 typedef enum hmac_key_mode {
   // Mode HMAC SHA256.
-  kHmacKeyModeSha256 = 0x64f1,
+  kHmacKeyModeSha256 = 0xc1d,
 } hmac_key_mode_t;
 
 /**
@@ -153,9 +166,9 @@ typedef enum hmac_key_mode {
  */
 typedef enum kmac_key_mode {
   // Mode KMAC128.
-  kKmacKeyModeKmac128 = 0xde4e,
+  kKmacKeyModeKmac128 = 0xa56,
   // Mode KMAC256.
-  kKmacKeyModeKmac256 = 0x7863,
+  kKmacKeyModeKmac256 = 0x663,
 } kmac_key_mode_t;
 
 /**
@@ -168,9 +181,9 @@ typedef enum kmac_key_mode {
  */
 typedef enum rsa_key_mode {
   // Mode RSA Sign, RSASSA-PKCS.
-  kRsaKeyModeSignPkcs = 0x473f,
+  kRsaKeyModeSignPkcs = 0x9ff,
   // Mode RSA Sign, RSASSA-PSS.
-  kRsaKeyModeSignPss = 0x9cb3,
+  kRsaKeyModeSignPss = 0xa95,
 } rsa_key_mode_t;
 
 /**
@@ -183,13 +196,13 @@ typedef enum rsa_key_mode {
  */
 typedef enum ecc_key_mode {
   // Mode ECDSA.
-  kEccKeyModeEcdsa = 0xca9a,
+  kEccKeyModeEcdsa = 0x4e5,
   // Mode ECDH.
-  kEccKeyModeEcdh = 0xacfd,
+  kEccKeyModeEcdh = 0x6bb,
   // Mode Ed25519.
-  kEccKeyModeEd25519 = 0xf7eb,
+  kEccKeyModeEd25519 = 0xd32,
   // Mode X25519.
-  kEccKeyModeX25519 = 0x50d7,
+  kEccKeyModeX25519 = 0x276,
 } ecc_key_mode_t;
 
 /**
@@ -202,9 +215,9 @@ typedef enum ecc_key_mode {
  */
 typedef enum kdf_key_mode {
   // Mode KDF with HMAC as PRF.
-  kKdfKeyModeHMAC = 0x4e6a,
+  kKdfKeyModeHMAC = 0x5d8,
   // Mode KDF with KMAC as PRF.
-  kKdfKeyModeKMAC = 0x28af,
+  kKdfKeyModeKMAC = 0xb29,
 } kdf_key_mode_t;
 
 /**
@@ -269,11 +282,11 @@ typedef enum key_mode {
  */
 typedef enum crypto_key_security_level {
   // Security level low.
-  kSecurityLevelLow = 0xef61,
+  kSecurityLevelLow = 0x1e9,
   // Security level medium.
-  kSecurityLevelMedium = 0x33db,
+  kSecurityLevelMedium = 0xeab,
   // Security level high.
-  kSecurityLevelHigh = 0xd4bd,
+  kSecurityLevelHigh = 0xa7e,
 } crypto_key_security_level_t;
 
 /**
@@ -288,7 +301,7 @@ typedef enum crypto_key_security_level {
  */
 typedef enum crypto_lib_version {
   // Version 1.
-  kCryptoLibVersion1 = 0x46be,
+  kCryptoLibVersion1 = 0x7f4,
 } crypto_lib_version_t;
 
 /**
