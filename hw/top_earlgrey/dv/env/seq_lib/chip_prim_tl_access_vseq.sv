@@ -46,6 +46,17 @@ class chip_prim_tl_access_vseq extends chip_stub_cpu_base_vseq;
     bit [TL_AW-1:0] addr = csr.get_address();
     bit [TL_DW-1:0] data = $urandom();
     bit [TL_DW-1:0] exp_data;
+
+    csr_excl_item csr_excl = get_excl_item(csr);
+
+    // Apply CsrExclWrite
+    if (!csr_excl.is_excl(csr, CsrExclWrite, CsrAllTests)) begin
+      tl_access(.addr(addr), .write(1), .data(data), .exp_err_rsp(gated));
+      if (!gated) begin
+        void'(csr.predict(.value(data), .kind(UVM_PREDICT_WRITE)));
+      end
+    end
+
     tl_access(.addr(addr), .write(1), .data(data), .exp_err_rsp(gated));
     if (!gated) begin
       void'(csr.predict(.value(data), .kind(UVM_PREDICT_WRITE)));
