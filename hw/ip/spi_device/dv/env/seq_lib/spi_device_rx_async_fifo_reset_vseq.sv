@@ -26,6 +26,8 @@ class spi_device_rx_async_fifo_reset_vseq extends spi_device_txrx_vseq;
     bit [31:0] host_data_exp_q[$];
 
     spi_device_fw_init();
+    // Disable prim_flip_2sync destination pulse assertions
+    fifo_underflow_overflow_sva_control(0);
     `DV_CHECK_STD_RANDOMIZE_FATAL(host_data)
     `DV_CHECK_STD_RANDOMIZE_FATAL(device_data)
     wait_for_tx_avail_bytes(SRAM_WORD_SIZE, SramSpaceAvail, avail_bytes);
@@ -57,6 +59,8 @@ class spi_device_rx_async_fifo_reset_vseq extends spi_device_txrx_vseq;
     for (int i = 0; i < 6; i++) begin
       spi_host_xfer_word(32'h12345678, device_data_exp);
     end
+    // Restore prim_flip_2sync destination pulse assertions
+    fifo_underflow_overflow_sva_control(1);
 
   endtask : body
 

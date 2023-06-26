@@ -516,6 +516,16 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     csr_update(.csr(ral.cmd_info[idx]));
   endtask : add_cmd_info
 
+  // Task to update mirrored value of addr_4b_en after end of SPI transaction
+  virtual task schedule_en_4b_predict(bit value);
+    fork begin
+      @(posedge cfg.spi_host_agent_cfg.vif.csb[FW_FLASH_CSB_ID]);
+      `uvm_info(`gfn, $sformatf("set addr_4b_en = %0b", value), UVM_MEDIUM)
+      cfg.clk_rst_vif.wait_clks(3);
+      void'(ral.cfg.addr_4b_en.predict(.value(value)));
+    end join_none
+  endtask
+
   // transfer in command including opcode, address and payload
   // if byte_addr_q is empty, the host_seq will use a random addr
   virtual task spi_host_xfer_flash_item(bit [7:0] op, uint payload_size,
@@ -546,9 +556,11 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     if (op == `gmv(ral.cmd_info_en4b.opcode) && `gmv(ral.cmd_info_en4b.valid)) begin
       cfg.spi_device_agent_cfg.flash_addr_4b_en = 1;
       cfg.spi_host_agent_cfg.flash_addr_4b_en   = 1;
+      schedule_en_4b_predict(1);
     end else if (op == `gmv(ral.cmd_info_ex4b.opcode) && `gmv(ral.cmd_info_ex4b.valid)) begin
       cfg.spi_device_agent_cfg.flash_addr_4b_en = 0;
       cfg.spi_host_agent_cfg.flash_addr_4b_en   = 0;
+      schedule_en_4b_predict(0);
     end
 
     if (cfg.is_read_buffer_cmd(m_spi_host_seq.rsp)) begin
@@ -723,12 +735,24 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   endtask
 
   virtual task read_and_check_4b_en();
-    cfg.clk_rst_vif.wait_clks(10);
-    // avoid accessing this CSR at the same time as tpm_init
-    cfg.spi_cfg_sema.get();
-    csr_rd_check(.ptr(ral.cfg.addr_4b_en),
-                 .compare_value(cfg.spi_device_agent_cfg.flash_addr_4b_en));
-    cfg.spi_cfg_sema.put();
+      uvm_reg_data_t rdata;
+      // Wait for 10 cycles to allow the reg value to update
+      cfg.clk_rst_vif.wait_clks(10);
+      // avoid accessing this CSR at the same time as tpm_init
+      cfg.spi_cfg_sema.get();
+      // Wait for register to be free
+      `DV_SPINWAIT(
+        while(1) begin
+          if (ral.cfg.is_busy()) begin
+            cfg.clk_rst_vif.wait_clks(1);
+          end else begin
+            break;
+          end
+        end)
+      // Check the contents of addr4b_en
+      csr_rd_check(.ptr(ral.cfg.addr_4b_en),
+             .compare_value(cfg.spi_device_agent_cfg.flash_addr_4b_en));
+      cfg.spi_cfg_sema.put();
   endtask
 
   virtual task random_write_spi_mem(int start_addr, int end_addr, string msg_region = "mem",

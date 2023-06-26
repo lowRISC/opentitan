@@ -104,6 +104,8 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
   virtual task body();
     tx_ptr_sema = new(1);
     rx_ptr_sema = new(1);
+    // Disable prim_flip_2sync destination pulse assertions
+    fifo_underflow_overflow_sva_control(0);
     for (int i = 1; i <= num_trans; i++) begin
       bit done_tx_write, done_rx_read, done_xfer;
       `uvm_info(`gfn, $sformatf("starting sequence %0d/%0d", i, num_trans), UVM_LOW)
@@ -133,6 +135,8 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
       join
       check_for_tx_rx_idle();
     end // for
+    // Restore prim_flip_2sync destination pulse assertions
+    fifo_underflow_overflow_sva_control(1);
   endtask : body
 
   virtual task process_tx_write(uint xfer_bytes);

@@ -17,6 +17,8 @@ class spi_device_tx_async_fifo_reset_vseq extends spi_device_base_vseq;
     bit [31:0] host_data_exp_q[$];
 
     spi_device_fw_init();
+    // Disable prim_flip_2sync destination pulse assertions
+    fifo_underflow_overflow_sva_control(0);
     `DV_CHECK_STD_RANDOMIZE_FATAL(host_data)
     `DV_CHECK_STD_RANDOMIZE_FATAL(device_data)
     // Fill TX SRAM FIFO with some data, which will be transfered to TX async FIFO
@@ -38,6 +40,8 @@ class spi_device_tx_async_fifo_reset_vseq extends spi_device_base_vseq;
     cfg.clk_rst_vif.wait_clks(100);
     spi_host_xfer_word(host_data, device_data_exp);
     `DV_CHECK_CASE_EQ(32'h12345678, device_data_exp)
+    // Restore prim_flip_2sync destination pulse assertions
+    fifo_underflow_overflow_sva_control(1);
 
   endtask : body
 
