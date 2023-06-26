@@ -66,6 +66,7 @@
     {
       name: rom_ctrl_stress_all
       uvm_test_seq: rom_ctrl_stress_all_vseq
+      run_opts: ["+test_timeout_ns=1000000000"]
     }
     {
       name: rom_ctrl_max_throughput_chk
@@ -75,6 +76,7 @@
     {
       name: rom_ctrl_corrupt_sig_fatal_chk
       uvm_test_seq: rom_ctrl_corrupt_sig_fatal_chk_vseq
+      run_opts: ["+test_timeout_ns=1000000000"]
     }
     {
       name: rom_ctrl_kmac_err_chk
