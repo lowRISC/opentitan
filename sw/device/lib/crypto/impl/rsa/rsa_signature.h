@@ -27,9 +27,9 @@ extern "C" {
  */
 typedef enum rsa_signature_padding {
   // EMSA-PKCS1-v1_5 padding (RFC 8017, section 9.2).
-  kRsaSignaturePaddingPkcs1v15 = 0x9f44,
+  kRsaSignaturePaddingPkcs1v15 = 0x94e,
   // EMCS-PSS padding (RFC 8017, section 9.1).
-  kRsaSignaturePaddingPss = 0x88cf,
+  kRsaSignaturePaddingPss = 0x6b1,
 } rsa_signature_padding_t;
 
 /**
@@ -39,9 +39,9 @@ typedef enum rsa_signature_padding {
  * `sw/device/lib/crypto/include/rsa.h`.
  */
 typedef enum rsa_signature_hash {
-  kRsaSignatureHashSha256 = 0xed4b,
-  kRsaSignatureHashSha384 = 0x5dd0,
-  kRsaSignatureHashSha512 = 0x0bab,
+  kRsaSignatureHashSha256 = 0x378,
+  kRsaSignatureHashSha384 = 0xe8c,
+  kRsaSignatureHashSha512 = 0xf1b,
 } rsa_signature_hash_t;
 
 /**

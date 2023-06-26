@@ -23,19 +23,19 @@ extern "C" {
  */
 typedef enum aead_gcm_tag_len {
   // Tag length 128 bits.
-  kAeadGcmTagLen128 = 0xb9ab,
+  kAeadGcmTagLen128 = 0x167,
   // Tag length 120 bits.
-  kAeadGcmTagLen120 = 0xae53,
+  kAeadGcmTagLen120 = 0xabd,
   // Tag length 112 bits.
-  kAeadGcmTagLen112 = 0x175d,
+  kAeadGcmTagLen112 = 0xc1b,
   // Tag length 104 bits.
-  kAeadGcmTagLen104 = 0x68fc,
+  kAeadGcmTagLen104 = 0xbe0,
   // Tag length 96 bits.
-  kAeadGcmTagLen96 = 0x7686,
+  kAeadGcmTagLen96 = 0x35a,
   // Tag length 64 bits.
-  kAeadGcmTagLen64 = 0xc6a9,
+  kAeadGcmTagLen64 = 0x5d4,
   // Tag length 32 bits.
-  kAeadGcmTagLen32 = 0x4b37,
+  kAeadGcmTagLen32 = 0xf06,
 } aead_gcm_tag_len_t;
 
 /**
@@ -45,15 +45,15 @@ typedef enum aead_gcm_tag_len {
  */
 typedef enum block_cipher_mode {
   // AES ECB mode (electronic codebook mode).
-  kBlockCipherModeEcb = 0x7cae,
+  kBlockCipherModeEcb = 0x533,
   // AES CBC mode (cipher block chaining mode).
-  kBlockCipherModeCbc = 0x9736,
+  kBlockCipherModeCbc = 0x45d,
   // AES CFB mode (cipher feedback mode).
-  kBlockCipherModeCfb = 0xe378,
+  kBlockCipherModeCfb = 0xcd2,
   // AES OFB mode (output feedback mode).
-  kBlockCipherModeOfb = 0x9cdd,
+  kBlockCipherModeOfb = 0x39a,
   // AES CTR mode (counter mode).
-  kBlockCipherModeCtr = 0x4a1f,
+  kBlockCipherModeCtr = 0xd2c,
 } block_cipher_mode_t;
 
 /**
@@ -63,9 +63,9 @@ typedef enum block_cipher_mode {
  */
 typedef enum aes_operation {
   // AES operation mode encrypt.
-  kAesOperationEncrypt = 0xdea9,
+  kAesOperationEncrypt = 0x2b6,
   // AES operation mode decrypt.
-  kAesOperationDecrypt = 0x5d5a,
+  kAesOperationDecrypt = 0x5f0,
 } aes_operation_t;
 
 /**
@@ -75,20 +75,21 @@ typedef enum aes_operation {
  */
 typedef enum aes_padding {
   // Pads with value same as the number of padding bytes.
-  kAesPaddingPkcs7 = 0xce99,
+  kAesPaddingPkcs7 = 0xe7f,
   // Pads with 0x80 (10000000), followed by zero bytes.
-  kAesPaddingIso9797M2 = 0xb377,
+  kAesPaddingIso9797M2 = 0xfac,
   // Add no padding.
-  kAesPaddingNull = 0x259f,
+  kAesPaddingNull = 0x8ce,
 } aes_padding_t;
 
 /**
  * Context for GCM GHASH operation.
  *
- * Representation is internal to the hmac implementation; initialize
- * with #otcrypto_gcm_ghash_init.
+ * Representation is internal to the aes-gcm ghash implementation;
+ * initialize with #otcrypto_gcm_ghash_init.
  */
 typedef struct gcm_ghash_context {
+  // Context for the gcm-ghash operation.
   uint32_t ctx[68];
 } gcm_ghash_context_t;
 
@@ -214,6 +215,7 @@ crypto_status_t otcrypto_aes_encrypt_gcm(const crypto_blinded_key_t *key,
  * @param ciphertext Input data to be decrypted.
  * @param iv Initialization vector for the decryption function.
  * @param aad Additional authenticated data.
+ * @param tag_len Length of authentication tag to be generated.
  * @param auth_tag Authentication tag to be verified.
  * @param[out] plaintext Decrypted plaintext data, same len as input data.
  * @param[out] success True if the authentication check passed, otherwise false.
