@@ -205,6 +205,9 @@ module rom_ctrl_fsm
     end
   end
 
+  // Check that the FSM is linear and does not contain any loops
+  `ASSERT_FPV_LINEAR_FSM(SecCmCFILinear_A, state_q, fsm_state_e)
+
   // The in_state_done signal is supposed to be true iff we're in FSM state Done. Grabbing just the
   // bottom 4 bits of state_q is equivalent to "mubi4_bool_to_mubi(state_q == Done)" except that it
   // doesn't have a 1-bit signal on the way.

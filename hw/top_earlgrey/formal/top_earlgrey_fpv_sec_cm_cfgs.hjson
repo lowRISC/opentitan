@@ -253,6 +253,17 @@
                rel_path: "hw/ip/lc_ctrl/fsm/{sub_flow}/{tool}"
                task: "SecCmCFI"
              }
+             //
+             // This testbench verifies once ROM_CTRL goes to terminal state, there is no way to
+             // revert back to functional states.
+             {
+               name: rom_ctrl_sec_cm_fsm
+               dut: rom_ctrl_fsm
+               fusesoc_core: lowrisc:ip:rom_ctrl
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/rom_ctrl/fsm/{sub_flow}/{tool}"
+               task: "SecCmCFI"
+             }
              // This testbench verifies once keymgr goes to terminal state, there is no way to
              // revert back to functional states.
              {
