@@ -495,47 +495,53 @@ class aes_base_vseq extends cip_base_vseq #(
     bit  new_msg            = 1;             // set when starting a new msg
     aes_seq_item read_queue[$];              // queue to hold items waiting for output
 
-    bit           read;
-    bit           write;
-    bit           wait_for_idle = 1;
-    rst_set  = 0;
+    bit read;
+    bit write;
+    bit return_on_idle = 1;
+    rst_set = 0;
     cfg_item = aes_item_queue.pop_back();
 
-
-    // check idle before starting
-
+    // Make sure the DUT is idle before setting it up. Writes to the main control register are only
+    // accpeted when idle.
     status_fsm(cfg_item, data_item, new_msg, manual_operation, sideload_en, 1, 0, status, rst_set);
+    // Configure the main control register.
     setup_dut(cfg_item);
-    // check idle before starting
-    wait_for_idle = 1 ;
+    // For some reason DV just waits for the DUT to be idle but not necessarily for it to accept
+    // new input data before providing the first block. But at the beginning of a message, the DUT
+    // is always ready to accept new input data anyway. Waiting for the DUT to be idle is required
+    // to provide IV and initial key.
+    return_on_idle = 1;
     if (unbalanced == 0 || manual_operation) begin
        data_item = new();
       while ((aes_item_queue.size() > 0) && !rst_set) begin
         status_fsm(cfg_item, data_item, new_msg, manual_operation,
-                   sideload_en, wait_for_idle, 0, status, rst_set);
-        // provide data as fast as the DUT allows
-        wait_for_idle = 0;
+                   sideload_en, return_on_idle, 0, status, rst_set);
+        // From now on, DV always waits for the DUT to be idle and to accept new input data.
+        return_on_idle = 0;
         if (status.input_ready && status.idle) begin
+          // The DUT is ready to accept new input data, as well as updates to IV and initial key
+          // registers (only allowed when idle). The first config_and_transmit() call configures
+          // key and IV.
           data_item = aes_item_queue.pop_back();
           config_and_transmit(cfg_item, data_item, new_msg,
                               manual_operation, sideload_en, 1, rst_set);
           new_msg = 0;
         end else if (cfg_item.mode == AES_NONE) begin
-          status_fsm(cfg_item, data_item, new_msg, manual_operation,
-                   sideload_en, 0, 0, status, rst_set);
-          // just write the data - don't expect and output
+          // The DUT won't produce any output when this mode is configured. Just write the new
+          // input data.
+          data_item = aes_item_queue.pop_back();
           config_and_transmit(cfg_item, data_item, new_msg,
                               manual_operation, sideload_en, 0, rst_set);
         end
       end
-    end else begin
 
+    end else begin
       while (((aes_item_queue.size() > 0) || (read_queue.size() > 0)) && !rst_set) begin
         // get the status to make sure we can provide data - but don't wait for output //
         if (aes_item_queue.size() > 0 ) data_item = new();
         status_fsm(cfg_item, data_item, new_msg,
-                   manual_operation, sideload_en, wait_for_idle, 0, status, rst_set);
-        wait_for_idle = 0;
+                   manual_operation, sideload_en, return_on_idle, 0, status, rst_set);
+        return_on_idle = 0;
         read  = ($urandom_range(0, 100) <= read_prob);
         write = ($urandom_range(0, 100) <= write_prob);
 
@@ -672,7 +678,7 @@ class aes_base_vseq extends cip_base_vseq #(
       csr_rd(.ptr(ral.status), .value(status), .blocking(1));
     end
 
-    while(!done && (cfg_item.mode != AES_NONE) && !global_reset) begin
+    while(!done && !global_reset) begin
       //read the status register to see that we have triggered the operation
       wait(!cfg.under_reset)
       csr_rd(.ptr(ral.status), .value(status), .blocking(1));
@@ -687,7 +693,7 @@ class aes_base_vseq extends cip_base_vseq #(
           try_recover(cfg_item, data_item, manual_operation, sideload_en);
           csr_rd(.ptr(ral.status), .value(status), .blocking(1));
           if ( !status.alert_fatal_fault) begin
-            `uvm_fatal(`gfn, $sformatf("\n\t WAS able to clear FATAL ALERT without reset \n\t %s",
+            `uvm_fatal(`gfn, $sformatf("\n\t Was able to clear FATAL ALERT without reset \n\t %s",
                        status2string(status)))
           end else begin
             wait_for_fatal_alert_and_reset();
@@ -697,6 +703,13 @@ class aes_base_vseq extends cip_base_vseq #(
         end else begin
           `uvm_fatal(`gfn, $sformatf("\n\t Unexpected Fatal alert in AES FSM \n\t %s",
              status2string(status)))
+        end
+      end else if (cfg_item.mode == AES_NONE) begin
+        // In this mode, the DUT is not ever supposed to accept input data or provide output data.
+        // But it can for example trigger a reseed operation upon loading a new initial key. Here,
+        // we just need to wait for the DUT to be idle.
+        if (status.idle) begin
+          done = 1;
         end
       end else begin
         // state 0
@@ -988,13 +1001,13 @@ class aes_base_vseq extends cip_base_vseq #(
 
   function string status2string(status_t status);
     string txt="";
-    txt ={txt, $sformatf("\n\t ---| IDLE:          %0b", status.idle)};
-    txt ={txt, $sformatf("\n\t ---| STALL:         %0b", status.stall)};
+    txt ={txt, $sformatf("\n\t ---| Idle:          %0b", status.idle)};
+    txt ={txt, $sformatf("\n\t ---| Stall:         %0b", status.stall)};
     txt ={txt, $sformatf("\n\t ---| Output Lost:   %0b", status.output_lost)};
     txt ={txt, $sformatf("\n\t ---| Output Valid:  %0b", status.output_valid)};
     txt ={txt, $sformatf("\n\t ---| Input Ready:   %0b", status.input_ready)};
     txt ={txt, $sformatf("\n\t ---| Alert - Recov: %0b", status.alert_recov_ctrl_update_err)};
-    txt ={txt, $sformatf("\n\t ---| Alert -Fatal:  %0b", status.alert_fatal_fault)};
+    txt ={txt, $sformatf("\n\t ---| Alert - Fatal: %0b", status.alert_fatal_fault)};
     return txt;
   endfunction // status2string
 
