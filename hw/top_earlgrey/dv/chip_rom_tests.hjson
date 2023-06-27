@@ -906,7 +906,7 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
         "//sw/device/silicon_creator/rom/e2e/presigned_images:rom_e2e_self_hash:1:signed:ot_flash_binary"
-        "//hw/ip/otp_ctrl/data:img_test_unlocked0:4",
+        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_mod_exp_rma_otbn:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_real_keys"]
       run_opts: [
@@ -923,7 +923,7 @@
     //   uvm_test_seq: chip_sw_base_vseq
     //   sw_images: [
     //     "//sw/device/silicon_creator/rom/e2e/presigned_images:rom_e2e_self_hash:1:signed:ot_flash_binary"
-    //     "//hw/ip/otp_ctrl/data:img_rma:4",
+    //     "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_mod_exp_rma_otbn:4",
     //   ]
     //   // We purposely use the `sw_test_mode_common` run mode here instead of the
     //   // run modes that add either ROM image to the list of sw_images to
