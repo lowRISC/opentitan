@@ -315,7 +315,11 @@ module debug_mode_regs_reg_top (
   prim_ot_subreg #(
     .DW      (1),
     .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
+`ifndef FLASH_PRELOAD                    
     .RESVAL  (1'h1)
+`else
+    .RESVAL  (1'h0)
+`endif
   ) u_debug_mode_debug_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

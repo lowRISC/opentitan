@@ -28,29 +28,8 @@ module prim_ram_1p import prim_ram_1p_pkg::*; #(
   output logic [Width-1:0] rdata_o, // Read data. Data is returned one cycle after req_i is high.
   input ram_1p_cfg_t       cfg_i
 );
-
-  logic unused_cfg;
-  assign unused_cfg = ^cfg_i;
-  tc_sram #(
-     .NumWords(Depth),
-     .DataWidth(Width),
-     .NumPorts(32'd1),
-     .PrintSimCfg(1)
-  ) ram_primitive (
-     .clk_i,
-     .rst_ni,
-     .req_i,
-     .addr_i,
-     .wdata_i,
-     .rdata_o,
-     .we_i(write_i),
-     .be_i('1)
-  );
    
-endmodule
-
-/*
-`ifndef TARGET_SYNTHESIS
+`ifdef FLASH_PRELOAD
    
 // For certain synthesis experiments we compile the design with generic models to get an unmapped
 // netlist (GTECH). In these synthesis experiments, we typically black-box the memory models since
@@ -113,4 +92,25 @@ endmodule
   `include "prim_util_memload.svh"
  `endif //  `ifndef SYNTHESIS_MEMORY_BLACK_BOXING
 `else // !`ifndef TARGET_SYNTHESIS
-  */ 
+   
+  logic unused_cfg;
+  assign unused_cfg = ^cfg_i;
+  tc_sram #(
+     .NumWords(Depth),
+     .DataWidth(Width),
+     .NumPorts(32'd1),
+     .PrintSimCfg(1)
+  ) ram_primitive (
+     .clk_i,
+     .rst_ni,
+     .req_i,
+     .addr_i,
+     .wdata_i,
+     .rdata_o,
+     .we_i(write_i),
+     .be_i('1)
+  );
+
+`endif
+
+endmodule

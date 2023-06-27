@@ -474,13 +474,6 @@
       default:   "2724870391",
       local:     "true"
     },
-    { name:      "MemInitFile",
-      desc:      "VMEM file to initialize the FLASH.",
-      type:      "",
-      default:   '""',
-      expose:    "true",
-      local:     "false",
-    },
 
     { name:      "SecScrambleEn",
       desc:      "Compile-time option to enable flash scrambling",
@@ -489,7 +482,7 @@
       local:     "false",
       expose:    "true",
     },
- 
+
     // Program FIFO depth
     { name:      "ProgFifoDepth",
       desc:      "Depth of program fifo",
@@ -519,7 +512,6 @@
       type:      "int"
       default:   "5",
     },
- 
   ],
 
   regwidth: "32",

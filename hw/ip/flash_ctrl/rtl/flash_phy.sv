@@ -344,8 +344,7 @@ module flash_phy
     .InfoTypesWidth(InfoTypesWidth),
     .PagesPerBank(PagesPerBank),
     .WordsPerPage(WordsPerPage),
-    .DataWidth(flash_phy_pkg::FullDataWidth),
-    .MemInitFile(MemInitFile)
+    .DataWidth(flash_phy_pkg::FullDataWidth)
   ) u_flash (
     .clk_i,
     .rst_ni,
