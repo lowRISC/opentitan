@@ -1237,8 +1237,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       filled_bytes -= SRAM_WORD_SIZE;
     end
     // sample when the fifo is full
-    if (cfg.en_cov && filled_bytes == tx_limit) begin
-      cov.fw_tx_fifo_size_cg.sample(tx_limit);
+    if (cfg.en_cov && filled_bytes == `GET_TX_ALLOCATED_SRAM_SIZE_BYTES) begin
+      cov.fw_tx_fifo_size_cg.sample(`GET_TX_ALLOCATED_SRAM_SIZE_BYTES);
     end
   endfunction
 
@@ -1330,7 +1330,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     end
     // sample when the fifo is full
     if (cfg.en_cov && space_bytes == 0) begin
-      cov.fw_rx_fifo_size_cg.sample(`gmv(ral.rxf_addr.limit));
+      cov.fw_rx_fifo_size_cg.sample(`GET_RX_ALLOCATED_SRAM_SIZE_BYTES);
     end
   endfunction
 
