@@ -35,7 +35,7 @@
  * Allowed bounds for the `length` field of a first owner boot stage manifest.
  */
 #define CHIP_BL0_SIZE_MIN CHIP_MANIFEST_SIZE
-#define CHIP_BL0_SIZE_MAX 0x70000
+#define CHIP_BL0_SIZE_MAX 0x10000
 
 /**
  * Value written to the end of the retention SRAM creator area by `test_rom` to

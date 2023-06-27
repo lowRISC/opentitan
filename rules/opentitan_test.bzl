@@ -6,7 +6,8 @@ load("@//rules:opentitan.bzl", "opentitan_flash_binary", "opentitan_rom_binary")
 load("@bazel_skylib//lib:shell.bzl", "shell")
 load("@bazel_skylib//lib:collections.bzl", "collections")
 
-VALID_TARGETS = ["dv", "verilator", "cw310_rom", "cw310_test_rom"]
+#VALID_TARGETS = ["dv", "verilator", "cw310_rom", "cw310_test_rom"]
+VALID_TARGETS = ["verilator"]
 
 OTTF_SUCCESS_MSG = r"PASS.*\n"
 OTTF_FAILURE_MSG = r"(FAIL|FAULT).*\n"

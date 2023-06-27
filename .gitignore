@@ -116,3 +116,4 @@ compile_commands.json
 /hw/top_earlgrey/sw/tests/mbox_test/mbox_test.d
 /hw/tb/spi_flash/
 /hw/script/struct
+/scripts/compile_preload.tcl
