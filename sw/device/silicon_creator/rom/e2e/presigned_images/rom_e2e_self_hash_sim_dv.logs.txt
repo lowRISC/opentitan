@@ -1,0 +1,364 @@
+addr: 10000
+severity: 0
+file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
+line: 65
+nargs: 2
+format: ROM Hash: 0x%0h[%0d]
+str_arg_idx: 
+addr: 10014
+severity: 0
+file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
+line: 67
+nargs: 1
+format: rom_chip_info @ %0h:
+str_arg_idx: 
+addr: 10028
+severity: 0
+file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
+line: 70
+nargs: 2
+format: scm_revision = %08h%08h
+str_arg_idx: 
+addr: 1003c
+severity: 0
+file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
+line: 71
+nargs: 1
+format: version = %08h
+str_arg_idx: 
+addr: 10050
+severity: 2
+file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
+line: 78
+nargs: 1
+format: CHECK-fail: (uint8_t *)output.data%0smatches (uint8_t *)kSimDvGoldenRomHash
+str_arg_idx: 0
+addr: 10064
+severity: 2
+file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
+line: 78
+nargs: 3
+format: CHECK-fail: [%0d] got: 0x%02h; want: 0x%02h
+str_arg_idx: 
+addr: 10078
+severity: 2
+file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
+line: 82
+nargs: 1
+format: CHECK-fail: (uint8_t *)output.data%0smatches (uint8_t *)kFpgaCw310GoldenRomHash
+str_arg_idx: 0
+addr: 1008c
+severity: 2
+file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
+line: 82
+nargs: 3
+format: CHECK-fail: [%0d] got: 0x%02h; want: 0x%02h
+str_arg_idx: 
+addr: 100a0
+severity: 2
+file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
+line: 85
+nargs: 1
+format: ROM hash not self-checked for this device type: 0x%0h
+str_arg_idx: 
+addr: 100b4
+severity: 0
+file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
+line: 94
+nargs: 0
+format: Starting test hash_rom...
+str_arg_idx: 
+addr: 100c8
+severity: 2
+file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
+line: 94
+nargs: 0
+format: CHECK-fail: cycles_ <= 4294967295U
+str_arg_idx: 
+addr: 100dc
+severity: 2
+file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
+line: 94
+nargs: 0
+format: CHECK-fail:
+str_arg_idx: 
+addr: 100f0
+severity: 0
+file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
+line: 94
+nargs: 3
+format: Successfully finished test hash_rom in %0d cycles or %0d us @ %0d MHz.
+str_arg_idx: 
+addr: 10104
+severity: 2
+file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
+line: 94
+nargs: 1
+format: Finished test hash_rom: %r.
+str_arg_idx: 
+addr: 10118
+severity: 2
+file: in.c
+line: 58
+nargs: 0
+format: OTTF currently only supports use of machine-mode ecall for FreeRTOS context switching.
+str_arg_idx: 
+addr: 1012c
+severity: 0
+file: in.c
+line: 129
+nargs: 1
+format: Running %0s
+str_arg_idx: 0
+addr: 10140
+severity: 2
+file: in.c
+line: 137
+nargs: 1
+format: DIF-fail: dif_rv_core_ibex_init( mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR), &rv_core_ibex) returns %0d
+str_arg_idx: 
+addr: 10154
+severity: 2
+file: in.c
+line: 153
+nargs: 0
+format: CHECK-fail: 0
+str_arg_idx: 
+addr: 10168
+severity: 0
+file: in.c
+line: 99
+nargs: 1
+format: Finished %0s
+str_arg_idx: 0
+addr: 1017c
+severity: 0
+file: in.c
+line: 103
+nargs: 0
+format: Status reported by the test:
+str_arg_idx: 
+addr: 10190
+severity: 0
+file: in.c
+line: 105
+nargs: 1
+format: - %r
+str_arg_idx: 
+addr: 101a4
+severity: 0
+file: w/device/lib/testing/test_framework/freertos_hooks.c
+line: 20
+nargs: 1
+format: %0s
+str_arg_idx: 0
+addr: 101b8
+severity: 0
+file: w/device/lib/testing/test_framework/freertos_hooks.c
+line: 31
+nargs: 1
+format: FreeRTOS stack overflow. Increase stack size of task: %0s
+str_arg_idx: 0
+addr: 101cc
+severity: 2
+file: w/device/lib/testing/test_framework/ottf_console.c
+line: 71
+nargs: 0
+format: CHECK-fail: kOttfTestConfig.console.type == kOttfConsoleUart
+str_arg_idx: 
+addr: 101e0
+severity: 2
+file: w/device/lib/testing/test_framework/ottf_console.c
+line: 75
+nargs: 1
+format: DIF-fail: dif_uart_init(mmio_region_from_addr(base_addr), &ottf_console_uart) returns %0d
+str_arg_idx: 
+addr: 101f4
+severity: 2
+file: w/device/lib/testing/test_framework/ottf_console.c
+line: 76
+nargs: 0
+format: CHECK-fail: kUartBaudrate must fit in uint32_t
+str_arg_idx: 
+addr: 10208
+severity: 2
+file: w/device/lib/testing/test_framework/ottf_console.c
+line: 78
+nargs: 0
+format: CHECK-fail: kClockFreqPeripheralHz must fit in uint32_t
+str_arg_idx: 
+addr: 1021c
+severity: 2
+file: w/device/lib/testing/test_framework/ottf_console.c
+line: 88
+nargs: 1
+format: DIF-fail: dif_uart_configure( &ottf_console_uart, (dif_uart_config_t){ .baudrate = (uint32_t)kUartBaudrate, .clk_freq_hz = (uint32_t)kClockFreqPeripheralHz, .parity_enable = kDifToggleDisabled, .parity = kDifUartParityEven, .tx_enable = kDifToggleEnabled, .rx_enable = kDifToggleEnabled, }) returns %0d
+str_arg_idx: 
+addr: 10230
+severity: 2
+file: w/device/lib/testing/test_framework/ottf_console.c
+line: 99
+nargs: 1
+format: DIF-fail: dif_spi_device_init_handle( mmio_region_from_addr(kOttfTestConfig.console.base_addr), &ottf_console_spi_device) returns %0d
+str_arg_idx: 
+addr: 10244
+severity: 2
+file: w/device/lib/testing/test_framework/ottf_console.c
+line: 117
+nargs: 1
+format: DIF-fail: dif_spi_device_configure( &ottf_console_spi_device, (dif_spi_device_config_t){ .clock_polarity = kDifSpiDeviceEdgePositive, .data_phase = kDifSpiDeviceEdgeNegative, .tx_order = kDifSpiDeviceBitOrderMsbToLsb, .rx_order = kDifSpiDeviceBitOrderMsbToLsb, .device_mode = kDifSpiDeviceModeGeneric, .mode_cfg = { .generic = { .rx_fifo_commit_wait = kSpiDeviceRxCommitWait, .rx_fifo_len = kDifSpiDeviceBufferLen / 2, .tx_fifo_len = kDifSpiDeviceBufferLen / 2, }, }, }) returns %0d
+str_arg_idx: 
+addr: 10258
+severity: 2
+file: w/device/lib/testing/test_framework/ottf_console.c
+line: 121
+nargs: 0
+format: CHECK-fail: unsupported OTTF console interface.
+str_arg_idx: 
+addr: 1026c
+severity: 2
+file: w/device/lib/testing/test_framework/ottf_console.c
+line: 144
+nargs: 1
+format: DIF-fail: dif_rv_plic_init( mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &ottf_plic) returns %0d
+str_arg_idx: 
+addr: 10280
+severity: 2
+file: w/device/lib/testing/test_framework/ottf_console.c
+line: 147
+nargs: 1
+format: DIF-fail: dif_uart_watermark_rx_set(uart, kFlowControlRxWatermark) returns %0d
+str_arg_idx: 
+addr: 10294
+severity: 2
+file: w/device/lib/testing/test_framework/ottf_console.c
+line: 149
+nargs: 1
+format: DIF-fail: dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark, kDifToggleEnabled) returns %0d
+str_arg_idx: 
+addr: 102a8
+severity: 2
+file: w/device/lib/testing/test_framework/ottf_console.c
+line: 153
+nargs: 1
+format: DIF-fail: dif_rv_plic_irq_set_priority( &ottf_plic, get_flow_control_watermark_plic_id(), kDifRvPlicMaxPriority) returns %0d
+str_arg_idx: 
+addr: 102bc
+severity: 2
+file: w/device/lib/testing/test_framework/ottf_console.c
+line: 156
+nargs: 1
+format: DIF-fail: dif_rv_plic_target_set_threshold(&ottf_plic, kPlicTarget, kDifRvPlicMinPriority) returns %0d
+str_arg_idx: 
+addr: 102d0
+severity: 2
+file: w/device/lib/testing/test_framework/ottf_console.c
+line: 160
+nargs: 1
+format: DIF-fail: dif_rv_plic_irq_set_enabled(&ottf_plic, get_flow_control_watermark_plic_id(), kPlicTarget, kDifToggleEnabled) returns %0d
+str_arg_idx: 
+addr: 102e4
+severity: 2
+file: w/device/lib/testing/test_framework/ottf_console.c
+line: 199
+nargs: 1
+format: DIF-fail: dif_uart_irq_is_pending(uart, kDifUartIrqRxWatermark, &rx) returns %0d
+str_arg_idx: 
+addr: 102f8
+severity: 2
+file: w/device/lib/testing/test_framework/ottf_console.c
+line: 202
+nargs: 1
+format: DIF-fail: dif_uart_irq_acknowledge(uart, kDifUartIrqRxWatermark) returns %0d
+str_arg_idx: 
+addr: 1030c
+severity: 2
+file: w/device/lib/testing/test_framework/ottf_console.c
+line: 213
+nargs: 1
+format: DIF-fail: dif_uart_irq_disable_all(uart, &snapshot) returns %0d
+str_arg_idx: 
+addr: 10320
+severity: 2
+file: w/device/lib/testing/test_framework/ottf_console.c
+line: 215
+nargs: 1
+format: DIF-fail: dif_uart_irq_restore_all(uart, &snapshot) returns %0d
+str_arg_idx: 
+addr: 10334
+severity: 2
+file: w/device/lib/testing/test_framework/ottf_console.c
+line: 190
+nargs: 1
+format: DIF-fail: dif_uart_bytes_send(uart, &byte, 1, NULL) returns %0d
+str_arg_idx: 
+addr: 10348
+severity: 2
+file: w/device/lib/testing/test_framework/ottf_isrs.c
+line: 60
+nargs: 4
+format: FAULT: %0s. MCAUSE=%08h MEPC=%08h MTVAL=%08h
+str_arg_idx: 0
+addr: 1035c
+severity: 2
+file: w/device/lib/testing/test_framework/ottf_isrs.c
+line: 159
+nargs: 1
+format: DIF-fail: dif_rv_plic_irq_claim(&ottf_plic, kPlicTarget, &plic_irq_id) returns %0d
+str_arg_idx: 
+addr: 10370
+severity: 2
+file: w/device/lib/testing/test_framework/ottf_isrs.c
+line: 168
+nargs: 1
+format: DIF-fail: dif_rv_plic_irq_complete(&ottf_plic, kPlicTarget, plic_irq_id) returns %0d
+str_arg_idx: 
+addr: 10384
+severity: 2
+file: sw/device/lib/testing/rand_testutils.c
+line: 32
+nargs: 0
+format: CHECK-fail: rv_core_ibex != ((void*)0)
+str_arg_idx: 
+addr: 10398
+severity: 2
+file: sw/device/lib/testing/rand_testutils.c
+line: 82
+nargs: 0
+format: CHECK-fail: max >= min
+str_arg_idx: 
+addr: 103ac
+severity: 2
+file: sw/device/lib/testing/rand_testutils.c
+line: 88
+nargs: 0
+format: CHECK-fail: result >= min && result <= max
+str_arg_idx: 
+addr: 103c0
+severity: 2
+file: sw/device/lib/testing/rand_testutils.c
+line: 55
+nargs: 5
+format: CHECK-STATUS-fail: %0c%0c%0c:%0d = %0s
+str_arg_idx: 4
+addr: 103d4
+severity: 2
+file: sw/device/lib/testing/rand_testutils.c
+line: 55
+nargs: 1
+format: CHECK-STATUS-fail: 0x%08h
+str_arg_idx: 
+addr: 103e8
+severity: 0
+file: sw/device/lib/testing/test_framework/status.c
+line: 28
+nargs: 0
+format: PASS!
+str_arg_idx: 
+addr: 103fc
+severity: 0
+file: sw/device/lib/testing/test_framework/status.c
+line: 34
+nargs: 0
+format: FAIL!
+str_arg_idx:
