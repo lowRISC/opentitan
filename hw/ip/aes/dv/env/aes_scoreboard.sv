@@ -193,10 +193,13 @@ class aes_scoreboard extends cip_base_scoreboard #(
 
   // Handle a write to a named CSR on the A channel
   function void on_addr_channel_write(string csr_name, logic [31:0] wdata);
+    alert_test_t alert_test;
     // add individual case item for each csr
     case (1)
       (!uvm_re_match("alert_test", csr_name)): begin
-        cov_if.cg_alert_test_sample(wdata);
+        alert_test.recov_ctrl_update_err = wdata[0];
+        alert_test.fatal_fault = wdata[1];
+        cov_if.cg_alert_test_sample(alert_test);
       end
 
       (!uvm_re_match("ctrl_shadowed", csr_name)): begin
