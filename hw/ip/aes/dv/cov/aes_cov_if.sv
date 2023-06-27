@@ -333,8 +333,8 @@ interface aes_cov_if
                                aes_prng_reseed);
   endfunction
 
-  function automatic void cg_alert_test_sample(bit [31:0] val);
-    aes_alert_cg_inst.sample(val);
+  function automatic void cg_alert_test_sample(alert_test_t alert_test);
+    aes_alert_cg_inst.sample(alert_test);
   endfunction
 
   function automatic void cg_wr_data_sample(int data_in);
