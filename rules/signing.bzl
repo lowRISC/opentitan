@@ -5,6 +5,11 @@ load("@bazel_skylib//lib:paths.bzl", "paths")
 load("//rules:rv.bzl", "rv_rule")
 
 PreSigningBinaryInfo = provider(fields = ["files"])
+SigningToolInfo = provider(fields = ["tool", "data", "env", "location"])
+KeySetInfo = provider(fields = ["keys", "profile", "sign", "tool"])
+
+def _label_str(label):
+    return "@{}//{}:{}".format(label.workspace_name, label.package, label.name)
 
 def key_from_dict(key, attr_name):
     if len(key) == 0:
@@ -12,7 +17,13 @@ def key_from_dict(key, attr_name):
     if len(key) != 1:
         fail("Expected exactly one key/value pair for attribute", attr_name)
     key, name = key.items()[0]
-    if DefaultInfo in key:
+    if KeySetInfo in key:
+        ksi = key[KeySetInfo]
+        return struct(
+            file = ksi.keys[name],
+            name = name,
+        )
+    elif DefaultInfo in key:
         key_file = key[DefaultInfo].files.to_list()
         if len(key_file) != 1:
             fail("Expected label to refer to exactly one file:", key)
@@ -21,7 +32,22 @@ def key_from_dict(key, attr_name):
             file = key_file[0],
             name = name,
         )
-    return None
+    fail("Expected a KeySetInfo or DefaultInfo provider")
+
+def _signing_tool_info(ctx, key, opentitantool):
+    key, name = key.items()[0]
+    if KeySetInfo in key:
+        ksi = key[KeySetInfo]
+        return ksi.tool, ksi.sign, ksi.profile
+    elif DefaultInfo in key:
+        toolinfo = SigningToolInfo(
+            tool = opentitantool,
+            data = [],
+            env = {},
+            location = "local",
+        )
+        return toolinfo, _local_sign, None
+    fail("Expected a KeySetInfo or DefaultInfo provider")
 
 def key_ext(rsa, spx):
     if spx:
@@ -122,22 +148,23 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, rsa_key, spx_key, b
         )
     return pre, digest, spxmsg
 
-def _local_sign(ctx, opentitantool, digest, rsa_key, spxmsg = None, spx_key = None):
+def _local_sign(ctx, tool, digest, rsa_key, spxmsg = None, spx_key = None, profile = None):
     """Sign a digest with a local on-disk RSA private key.
 
     Args:
-      opentitantool: file; The opentitantool binary.
+      tool: file; A SigningToolInfo provider refering to the opentitantool binary.
       digest: file; The digest of the binary to be signed.
       rsa_key: struct; The RSA private key.
       spxmsg: file; The SPX+ message to be signed.
       spx_key: struct; The SPX+ private key.
+      profile: str; The hsmtool profile.  Not used by this function.
     Returns:
       file, file: The RSA and SPX signature files.
     """
     rsa_sig = ctx.actions.declare_file(paths.replace_extension(digest.basename, ".rsa-sig"))
     ctx.actions.run(
         outputs = [rsa_sig],
-        inputs = [digest, rsa_key.file, opentitantool],
+        inputs = [digest, rsa_key.file, tool.tool] + tool.data,
         arguments = [
             "--rcfile=",
             "--quiet",
@@ -147,7 +174,8 @@ def _local_sign(ctx, opentitantool, digest, rsa_key, spxmsg = None, spx_key = No
             "--output={}".format(rsa_sig.path),
             rsa_key.file.path,
         ],
-        executable = opentitantool,
+        executable = tool.tool,
+        env = tool.env,
         mnemonic = "LocalRsaSign",
     )
 
@@ -156,7 +184,7 @@ def _local_sign(ctx, opentitantool, digest, rsa_key, spxmsg = None, spx_key = No
         spx_sig = ctx.actions.declare_file(paths.replace_extension(spxmsg.basename, ".spx-sig"))
         ctx.actions.run(
             outputs = [spx_sig],
-            inputs = [spxmsg, spx_key.file, opentitantool],
+            inputs = [spxmsg, spx_key.file, tool.tool] + tool.data,
             arguments = [
                 "--rcfile=",
                 "--quiet",
@@ -166,11 +194,53 @@ def _local_sign(ctx, opentitantool, digest, rsa_key, spxmsg = None, spx_key = No
                 spxmsg.path,
                 spx_key.file.path,
             ],
-            executable = opentitantool,
+            executable = tool.tool,
+            env = tool.env,
             mnemonic = "LocalSpxSign",
         )
 
     return rsa_sig, spx_sig
+
+def _hsmtool_sign(ctx, tool, digest, rsa_key, spxmsg = None, spx_key = None, profile = None):
+    """Sign a digest with a local on-disk RSA private key.
+
+    Args:
+      tool: file; A SigningToolInfo provider referring to the hsmtool binary.
+      digest: file; The digest of the binary to be signed.
+      rsa_key: struct; The RSA private key.
+      spxmsg: file; The SPX+ message to be signed.
+      spx_key: struct; The SPX+ private key.
+      profile: str; The hsmtool profile.
+    Returns:
+      file, file: The RSA and SPX signature files.
+    """
+    if spxmsg or spx_key:
+        fail("hsmtool currently does not support SPX+ signing")
+    if not profile:
+        fail("Missing the `hsmtool` profile")
+    rsa_sig = ctx.actions.declare_file(paths.replace_extension(digest.basename, ".rsa-sig"))
+    ctx.actions.run(
+        outputs = [rsa_sig],
+        inputs = [digest, rsa_key.file, tool.tool] + tool.data,
+        arguments = [
+            "--quiet",
+            "--profile={}".format(profile),
+            "rsa",
+            "sign",
+            "--little-endian",
+            "--format=sha256-hash",
+            "--label={}".format(rsa_key.name),
+            "--output={}".format(rsa_sig.path),
+            digest.path,
+        ],
+        executable = tool.tool,
+        execution_requirements = {
+            "no-sandbox": "",
+        },
+        env = tool.env,
+        mnemonic = "HsmtoolRsaSign",
+    )
+    return rsa_sig, None
 
 def _post_signing_attach(ctx, opentitantool, pre, rsa_sig, spx_sig):
     """Attach signatures to an unsigned binary.
@@ -239,11 +309,13 @@ offline_presigning_artifacts = rule(
         "srcs": attr.label_list(allow_files = True, doc = "Binary files to generate digests for"),
         "manifest": attr.label(allow_single_file = True, doc = "Manifest for this image"),
         "rsa_key": attr.label_keyed_string_dict(
+            providers = [[KeySetInfo], [DefaultInfo]],
             allow_files = True,
             mandatory = True,
             doc = "RSA public key to validate this image",
         ),
         "spx_key": attr.label_keyed_string_dict(
+            providers = [[KeySetInfo], [DefaultInfo]],
             allow_files = True,
             doc = "SPX public key to validate this image",
         ),
@@ -258,8 +330,9 @@ offline_presigning_artifacts = rule(
 def _offline_fake_rsa_sign(ctx):
     outputs = []
     rsa_key = key_from_dict(ctx.attr.rsa_key, "rsa_key")
+    tool, _, _ = _signing_tool_info(ctx, ctx.attr.rsa_key, ctx.executable._tool)
     for file in ctx.files.srcs:
-        sig, _ = _local_sign(ctx, ctx.executable._tool, file, rsa_key)
+        sig, _ = _local_sign(ctx, tool, file, rsa_key)
         outputs.append(sig)
     return [DefaultInfo(files = depset(outputs), data_runfiles = ctx.runfiles(files = outputs))]
 
@@ -268,6 +341,7 @@ offline_fake_rsa_sign = rule(
     attrs = {
         "srcs": attr.label_list(allow_files = True, doc = "Digest files to sign"),
         "rsa_key": attr.label_keyed_string_dict(
+            providers = [[KeySetInfo], [DefaultInfo]],
             allow_files = True,
             mandatory = True,
             doc = "RSA private key to sign this image",
@@ -340,6 +414,7 @@ offline_signature_attach = rule(
 def _sign_bin_impl(ctx):
     rsa_key = key_from_dict(ctx.attr.rsa_key, "rsa_key")
     spx_key = key_from_dict(ctx.attr.spx_key, "spx_key")
+    tool, signing_func, profile = _signing_tool_info(ctx, ctx.attr.rsa_key, ctx.file._tool)
 
     pre, digest, spxmsg = _presigning_artifacts(
         ctx,
@@ -350,13 +425,14 @@ def _sign_bin_impl(ctx):
         spx_key,
         keyname_in_filenames = True,
     )
-    rsa_sig, spx_sig = _local_sign(
+    rsa_sig, spx_sig = signing_func(
         ctx,
-        ctx.file._tool,
+        tool,
         digest,
         rsa_key,
         spxmsg,
         spx_key,
+        profile = profile,
     )
     signed = _post_signing_attach(
         ctx,
@@ -374,12 +450,14 @@ sign_bin = rv_rule(
     attrs = {
         "bin": attr.label(allow_single_file = True),
         "rsa_key": attr.label_keyed_string_dict(
+            providers = [[KeySetInfo], [DefaultInfo]],
             allow_files = True,
             mandatory = True,
             doc = "RSA public key to validate this image",
         ),
         "spx_key": attr.label_keyed_string_dict(
             allow_files = True,
+            providers = [[KeySetInfo], [DefaultInfo]],
             doc = "SPX public key to validate this image",
         ),
         "manifest": attr.label(allow_single_file = True, mandatory = True),
@@ -389,6 +467,80 @@ sign_bin = rv_rule(
         "_tool": attr.label(
             default = "//sw/host/opentitantool:opentitantool",
             allow_single_file = True,
+        ),
+    },
+)
+
+def _signing_tool(ctx):
+    env = {k: ctx.expand_location(v, ctx.attr.data) for k, v in ctx.attr.env.items()}
+    return [SigningToolInfo(
+        tool = ctx.executable.tool,
+        data = ctx.files.data,
+        env = env,
+        location = ctx.attr.location,
+    )]
+
+signing_tool = rule(
+    implementation = _signing_tool,
+    attrs = {
+        "tool": attr.label(
+            mandatory = True,
+            executable = True,
+            cfg = "exec",
+            doc = "The signing tool binary",
+        ),
+        "data": attr.label_list(
+            allow_files = True,
+            cfg = "exec",
+            doc = "Additional files needed by the signing tool",
+        ),
+        "env": attr.string_dict(
+            doc = "Environment variables needed by the signing tool",
+        ),
+        "location": attr.string(
+            mandatory = True,
+            values = ["local", "offline"],
+            doc = "The location of private keys.  Local keys are on-disk and are typically used for simulation or emulation (FPGA) test scenarios.  Offline keys are held in an HSM or secure token and are typically used for signing artifacts for real chips.",
+        ),
+    },
+)
+
+def _keyset(ctx):
+    keys = {}
+    for k, v in ctx.attr.keys.items():
+        keyfile = k.files.to_list()
+        if len(keyfile) != 1:
+            fail("keyset key labels must resolve to exactly one file.")
+        keys[v] = keyfile[0]
+
+    tool = ctx.attr.tool[SigningToolInfo]
+    if tool.location == "local" and ctx.attr.profile != "local":
+        print("WARNING: The selected signing tool {} cannot work with keyset profile `{}`.".format(
+            _label_str(ctx.attr.tool.label),
+            ctx.attr.profile,
+        ))
+
+    if ctx.attr.profile == "local":
+        sign = _local_sign
+    else:
+        sign = _hsmtool_sign
+    return [KeySetInfo(keys = keys, profile = ctx.attr.profile, sign = sign, tool = tool)]
+
+keyset = rule(
+    implementation = _keyset,
+    attrs = {
+        "keys": attr.label_keyed_string_dict(
+            allow_files = True,
+            mandatory = True,
+            doc = "A mapping of key files to key names.  When a key file is a public key whose private component is held in an HSM, the name should be the same as the HSM label of that key.",
+        ),
+        "profile": attr.string(
+            mandatory = True,
+            doc = "The hsmtool profile entry (in $XDG_CONFIG_HOME/hsmtool/profiles.json) associated with these keys or the value `local` for on-disk private keys.",
+        ),
+        "tool": attr.label(
+            mandatory = True,
+            providers = [SigningToolInfo],
         ),
     },
 )

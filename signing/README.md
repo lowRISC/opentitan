@@ -1,11 +1,40 @@
-# Demo of offline signing
+# Code Signing
+
+## Online Signing with Secure Tokens
+
+If you are a holder of a secure token with the private keys, signing
+can be performed automatically as part of the build process.
+
+First, define an `hsmtool` profile for your token.  The profile will
+map a profile name to a token name/username/PIN combination.
+
+For example, to create a profile for the `earlgrey_a0` keys, edit
+ the file `$HOME/.config/hsmtool/profiles.json`:
+```json
+{
+  "earlgrey_a0": {
+    "token": "<your Nitrokey's token name>",
+    "user": "user",
+    "pin": "<your PIN>"
+  }
+}
+```
+
+You can then plug in your token and build appropriately configured targets.
+The build process will automatically sign the binaries with the requested key:
+```bash
+$ bazel build //sw/device/examples/hello_world \
+    --define token=earlgrey_a0 --define key=test_0
+```
+
+## Demo of offline signing
 
 This demonstration of the offline signing flow does not use an HSM.
 It uses opentitantool to generate the image digests and to create the
 detached signatures.  Finally, it attaches the signatures to the binaries
 and emits signed artifacts.
 
-## Generate pre-signing artifacts
+### Generate pre-signing artifacts
 
 Generating the pre-signing artifacts builds the requested targets and
 updates the manifest and public key.  Then, SHA256 digests are computed
@@ -34,7 +63,7 @@ opentitantool \
    <pre-signed binary>
 ```
 
-## Generate the detached signatures
+### Generate the detached signatures
 
 Normally, in this step, the pre-signing artifacts would be taken to the
 secure facility and a signing ceremony would be performed to create the
@@ -55,7 +84,7 @@ opentitantool \
    <private key file>
 ```
 
-## Copy the signatures into into `signing/examples/signatures`
+### Copy the signatures into into `signing/examples/signatures`
 
 Normally, in this step, the signatures created in the signing ceremony
 would be copied into the target directory.
@@ -64,7 +93,7 @@ would be copied into the target directory.
 cp -f bazel-bin/signing/examples/*.sig signing/examples/signatures/
 ```
 
-## Attach signatures producing final signed binaries
+### Attach signatures producing final signed binaries
 
 The detached signatures are attached to the pre-signing binaries and
 final signed binaries are produced.
@@ -84,7 +113,7 @@ opentitantool \
    <pre-signed binary>
 ```
 
-## Inspect the signed artifacts (optional)
+### Inspect the signed artifacts (optional)
 
 ```
 cd $REPO_TOP

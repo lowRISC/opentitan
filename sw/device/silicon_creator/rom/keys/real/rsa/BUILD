@@ -4,6 +4,8 @@
 
 package(default_visibility = ["//visibility:public"])
 
+load("//rules:signing.bzl", "keyset")
+
 cc_library(
     name = "rsa",
     srcs = [
@@ -80,4 +82,19 @@ filegroup(
 filegroup(
     name = "earlgrey_a0_prod_2",
     srcs = ["earlgrey_a0_prod_2.der"],
+)
+
+keyset(
+    name = "keyset",
+    keys = {
+        "earlgrey_a0_test_0.der": "earlgrey_a0_test_0",
+        "earlgrey_a0_test_1.der": "earlgrey_a0_test_1",
+        "earlgrey_a0_dev_0.der": "earlgrey_a0_dev_0",
+        "earlgrey_a0_dev_1.der": "earlgrey_a0_dev_1",
+        "earlgrey_a0_prod_0.der": "earlgrey_a0_prod_0",
+        "earlgrey_a0_prod_1.der": "earlgrey_a0_prod_1",
+        "earlgrey_a0_prod_2.der": "earlgrey_a0_prod_2",
+    },
+    profile = "earlgrey_a0",
+    tool = "//signing:hsmtool",
 )

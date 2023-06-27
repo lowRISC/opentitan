@@ -19,6 +19,18 @@ opentitan_flash_binary(
         # Disable the date-time warning only for the hello world program.
         "-Wno-date-time",
     ],
+    signed = True,
+    signing_key_structs = select({
+        "//signing:earlgrey_a0_test_0": {
+            "//sw/device/silicon_creator/rom/keys/real/rsa:keyset": "earlgrey_a0_test_0",
+        },
+        "//signing:earlgrey_a0_dev_0": {
+            "//sw/device/silicon_creator/rom/keys/real/rsa:keyset": "earlgrey_a0_dev_0",
+        },
+        "//conditions:default": {
+            "//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "fake_test_key_0",
+        },
+    }),
     deps = [
         ":hello_world_lib",
         "//sw/device/lib/base:mmio",

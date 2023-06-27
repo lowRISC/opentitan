@@ -1113,40 +1113,78 @@ def opentitan_flash_binary(
         if signed:
             if manifest == None:
                 fail("A 'manifest' must be provided in order to sign flash images.")
-            for key_struct in signing_key_structs:
-                if key_struct.spx:
-                    # Sign the binary using RSA and SPX+.
-                    key_name = "{}_{}".format(key_struct.rsa.name, key_struct.spx.name)
-                    signed_bin_name = "{}_bin_signed_{}".format(devname, key_name)
-                    dev_targets.append(":" + signed_bin_name)
-                    sign_bin(
-                        name = signed_bin_name,
-                        bin = bin_name,
-                        rsa_key = {key_struct.rsa.label: key_struct.rsa.name},
-                        spx_key = {key_struct.spx.label: key_struct.spx.name},
-                        manifest = manifest,
-                        testonly = testonly,
-                    )
-                else:
-                    # Sign the binary using RSA only.
-                    key_name = "{}".format(key_struct.rsa.name)
-                    signed_bin_name = "{}_bin_signed_{}".format(devname, key_name)
-                    dev_targets.append(":" + signed_bin_name)
-                    sign_bin(
-                        name = signed_bin_name,
-                        bin = bin_name,
-                        rsa_key = {key_struct.rsa.label: key_struct.rsa.name},
-                        manifest = manifest,
-                        testonly = testonly,
-                    )
+            if type(signing_key_structs) == "list":
+                for key_struct in signing_key_structs:
+                    if key_struct.spx:
+                        # Sign the binary using RSA and SPX+.
+                        key_name = "{}_{}".format(key_struct.rsa.name, key_struct.spx.name)
+                        signed_bin_name = "{}_bin_signed_{}".format(devname, key_name)
+                        dev_targets.append(":" + signed_bin_name)
+                        sign_bin(
+                            name = signed_bin_name,
+                            bin = bin_name,
+                            rsa_key = {key_struct.rsa.label: key_struct.rsa.name},
+                            spx_key = {key_struct.spx.label: key_struct.spx.name},
+                            manifest = manifest,
+                            testonly = testonly,
+                        )
+                    else:
+                        # Sign the binary using RSA only.
+                        key_name = "{}".format(key_struct.rsa.name)
+                        signed_bin_name = "{}_bin_signed_{}".format(devname, key_name)
+                        dev_targets.append(":" + signed_bin_name)
+                        sign_bin(
+                            name = signed_bin_name,
+                            bin = bin_name,
+                            rsa_key = {key_struct.rsa.label: key_struct.rsa.name},
+                            manifest = manifest,
+                            testonly = testonly,
+                        )
+
+                    # We only need to generate VMEM files for sim devices.
+                    if device in ["sim_dv", "sim_verilator"]:
+                        # Generate a VMEM64 from the signed binary.
+                        signed_vmem_name = "{}_vmem64_signed_{}".format(
+                            devname,
+                            key_name,
+                        )
+                        dev_targets.append(":" + signed_vmem_name)
+                        bin_to_vmem(
+                            name = signed_vmem_name,
+                            bin = signed_bin_name,
+                            platform = platform,
+                            testonly = testonly,
+                            word_size = 64,  # Backdoor-load VMEM image uses 64-bit words
+                        )
+
+                        # Scramble / compute ECC for signed VMEM64.
+                        scr_signed_vmem_name = "{}_scr_vmem64_signed_{}".format(
+                            devname,
+                            key_name,
+                        )
+                        dev_targets.append(":" + scr_signed_vmem_name)
+                        scramble_flash_vmem(
+                            name = scr_signed_vmem_name,
+                            otp = sim_otp,
+                            vmem = signed_vmem_name,
+                            platform = platform,
+                            testonly = testonly,
+                        )
+            else:
+                signed_bin_name = "{}_bin_signed".format(devname)
+                dev_targets.append(":" + signed_bin_name)
+                sign_bin(
+                    name = signed_bin_name,
+                    bin = bin_name,
+                    rsa_key = signing_key_structs,
+                    manifest = manifest,
+                    testonly = testonly,
+                )
 
                 # We only need to generate VMEM files for sim devices.
                 if device in ["sim_dv", "sim_verilator"]:
                     # Generate a VMEM64 from the signed binary.
-                    signed_vmem_name = "{}_vmem64_signed_{}".format(
-                        devname,
-                        key_name,
-                    )
+                    signed_vmem_name = "{}_vmem64_signed".format(devname)
                     dev_targets.append(":" + signed_vmem_name)
                     bin_to_vmem(
                         name = signed_vmem_name,
@@ -1157,10 +1195,7 @@ def opentitan_flash_binary(
                     )
 
                     # Scramble / compute ECC for signed VMEM64.
-                    scr_signed_vmem_name = "{}_scr_vmem64_signed_{}".format(
-                        devname,
-                        key_name,
-                    )
+                    scr_signed_vmem_name = "{}_scr_vmem64_signed".format(devname)
                     dev_targets.append(":" + scr_signed_vmem_name)
                     scramble_flash_vmem(
                         name = scr_signed_vmem_name,

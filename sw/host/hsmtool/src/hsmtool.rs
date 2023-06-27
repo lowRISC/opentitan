@@ -30,6 +30,9 @@ struct Args {
     #[arg(short, long, help = "Use color in the output")]
     color: Option<bool>,
 
+    #[arg(short, long, help = "Do not print command results")]
+    quiet: bool,
+
     #[arg(
         long,
         default_value = "profiles.json",
@@ -101,5 +104,5 @@ fn main() -> Result<()> {
     };
 
     let result = args.command.run(&(), &hsm, session.as_ref());
-    print_result(args.format, args.color, result)
+    print_result(args.format, args.color, args.quiet, result)
 }
