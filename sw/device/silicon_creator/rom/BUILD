@@ -124,7 +124,7 @@ cc_library(
         ":boot_policy",
         ":bootstrap",
         ":rom_epmp",
-        ":alsaqr-print",
+        ":alsaqr_print",
         ":sigverify_keys",
         "//hw/ip/aon_timer/data:aon_timer_regs",
         "//sw/device/lib/arch:device",
