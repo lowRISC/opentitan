@@ -29,14 +29,22 @@ _dv_log_offset = 0x10000;
 ENTRY(sram_start);
 
 SECTIONS {
-  .text ORIGIN(ram_main) + _static_critical_size : ALIGN(4) {
+  /* The ELF SRAM program loader will automatically read back the data of the section
+   * containing the entry point to verify that it is correct. The expectation is that
+   * this section is very small and only contains the code that computes the CRC of
+   * everything else. For this reason, we separate the sram start+crt code from the
+   * rest. */
+  .sram_start ORIGIN(ram_main) + _static_critical_size : ALIGN(4) {
     _crc_start = .;
     /* Place the entry point of the SRAM program to the start of the main SRAM
      * so that we don't have to maintain a separate offset from the start of
      * the RAM to the entry point for VMEM files. */
     KEEP(*(.sram_start))
-    KEEP(*(.crt))
     . = ALIGN(4);
+  } > ram_main
+
+  .text : ALIGN(4) {
+    KEEP(*(.crt))
     KEEP(*(.text))
     KEEP(*(.text.*))
     . = ALIGN(4);
