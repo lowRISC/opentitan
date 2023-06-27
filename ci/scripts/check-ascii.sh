@@ -64,6 +64,7 @@ excl_paths=(
     hw/ip/usbdev/pmod/tusb1106pmod-kicad/fp-info-cache
     'signing/softhsm/tokens/.*'
     site/landing/data/partner_quotes.json
+    'sw/device/silicon_creator/rom/e2e/presigned_images/rom_e2e_self_hash_sim_dv.*'
 )
 excl_re=""
 for excl in "${excl_paths[@]}"; do
