@@ -8,7 +8,7 @@ class rom_ctrl_kmac_err_chk_vseq extends rom_ctrl_base_vseq;
   `uvm_object_new
 
   task body();
-    rom_ctrl_pkg::fsm_state_e rdata_state;
+    bit [$bits(rom_ctrl_pkg::fsm_state_e)-1:0] rdata_state;
     uvm_reg_data_t act_val;
 
     cfg.m_kmac_agent_cfg.error_rsp_pct = 100;

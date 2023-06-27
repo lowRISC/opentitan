@@ -278,7 +278,7 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
     do begin
       @(negedge cfg.clk_rst_vif.clk);
       uvm_hdl_read("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q", rdata_state);
-    end while (!(rdata_state inside states_to_visit));
+    end while (!(rdata_state inside {states_to_visit}));
     `uvm_info(`gfn, $sformatf("reached FSM state %x", rdata_state), UVM_LOW)
     // Remove previous states from queue, including the one that has been reached.
     while (states_to_visit.pop_front() != rdata_state);
