@@ -16,6 +16,11 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
   // Enables/disable all protocol delays.
   rand bit zero_delays;
 
+  // Default is 10ms (see default_spinwait_timeout_ns in csr_utils_pkg.sv)
+  // We have to increase this here since the ROM check may actually take longer than that,
+  // which sometimes causes blocked TL accesses to time out.
+  uint tl_access_timeout_ns = 40_000_000; // 40ms
+
   // Bias randomization in favor of enabling zero delays less often.
   constraint zero_delays_c {
     zero_delays dist { 0 := 8,
