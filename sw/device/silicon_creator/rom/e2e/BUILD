@@ -3965,10 +3965,19 @@ opentitan_flash_binary(
     ],
 )
 
+bitstream_splice(
+    name = "bitstream_rom_self_hash_test_rma_otbn_mod_exp",
+    src = "//hw/bitstream:rom_with_real_keys",
+    data = ":otp_img_sigverify_mod_exp_rma_otbn",
+    meminfo = "//hw/bitstream:otp_mmi",
+    update_usr_access = True,
+    visibility = ["//visibility:private"],
+)
+
 opentitan_functest(
     name = "rom_e2e_self_hash_test",
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_real_keys_otp_test_unlocked0",
+        bitstream = ":bitstream_rom_self_hash_test_rma_otbn_mod_exp",
     ),
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom:rom_with_real_keys",
