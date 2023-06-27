@@ -327,7 +327,8 @@ interface chip_if;
   //
   // The pinmux version of lc_dft_en is used below because it goes through synchronizers.
 `ifdef GATE_LEVEL
-  wire pinmux_lc_dft_en = (`PINMUX_HIER.u_pinmux_strap_sampling.lc_dft_en[3:0] == lc_ctrl_pkg::On);
+  wire pinmux_lc_dft_en =
+  (`PINMUX_HIER.u_pinmux_strap_sampling.u_prim_lc_sync_lc_dft_en.lc_en_o[3:0] == lc_ctrl_pkg::On);
 `else
   wire pinmux_lc_dft_en = (`PINMUX_HIER.u_pinmux_strap_sampling.lc_dft_en[0] == lc_ctrl_pkg::On);
 `endif
