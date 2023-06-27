@@ -130,7 +130,7 @@ pub struct SramProgramInfo {
     pub crc32: u32,
 }
 
-/// Load a program into SRAM using JTAG (VMEM files)
+/// Load a program into SRAM using JTAG (VMEM files).
 pub fn load_vmem_sram_program(
     jtag: &Rc<dyn Jtag>,
     vmem_filename: &PathBuf,
@@ -163,7 +163,7 @@ pub fn load_vmem_sram_program(
     })
 }
 
-/// Load a program into SRAM using JTAG (ELF files)
+/// Load a program into SRAM using JTAG (ELF files).
 pub fn load_elf_sram_program(
     jtag: &Rc<dyn Jtag>,
     elf_filename: &PathBuf,
@@ -206,6 +206,11 @@ pub fn load_elf_sram_program(
     // compute the CRC of the entire data which encompasses all loadable sections but also the gaps
     // between them! The code below explicitly writes the content of the gaps with known values that
     // are taken into account in the CRC value.
+    //
+    // We also verify (read back and compare) the data from the section that contains the entry point.
+    // The rationale is that if the CRC code is corrupted, it could execute the SRAM program even though
+    // it should not. By verifying just the tiny bit of code that checks the CRC, we can ensure that the
+    // entire program is validated.
     let crc = Crc::<u32>::new(&crc::CRC_32_ISO_HDLC);
     let mut digest = crc.digest();
     let mut last_address: Option<(u32, String)> = None;
@@ -261,6 +266,7 @@ pub fn load_elf_sram_program(
                         digest.update(&fill_data8);
                     }
                 }
+                // Write section's data.
                 log::info!(
                     "Load section {}: {} bytes at address {:x}",
                     section_name,
@@ -274,6 +280,17 @@ pub fn load_elf_sram_program(
                     .collect();
                 jtag.write_memory32(section.address() as u32, &data32)?;
                 digest.update(section.data()?);
+                // If this section contains the entry point, read back the data and compare.
+                if (section.address()..(section.address() + section.size())).contains(&file.entry())
+                {
+                    let mut read_data32 = vec![0u32; data32.len()];
+                    log::info!("Read back data to verify");
+                    jtag.read_memory32(section.address() as u32, &mut read_data32)?;
+                    if data32 != read_data32 {
+                        bail!("Verification failed: the data loaded in the SRAM was corrupted.");
+                    }
+                }
+
                 last_address = Some((
                     (section.address() + section.size()) as u32,
                     section_name.to_string(),
