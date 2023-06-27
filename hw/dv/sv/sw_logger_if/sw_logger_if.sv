@@ -155,8 +155,9 @@ interface sw_logger_if #(
       fd = $fopen(sw_log_db_files[sw], "r");
       if (!fd) begin
         `dv_info($sformatf("Failed to open sw log db file %s.", sw_log_db_files[sw]))
-        return 1'b0;
+        continue;
       end
+      `dv_info($sformatf("Loading sw log db file %s ...", sw_log_db_files[sw]))
 
       while (!$feof(fd)) begin
         string        field;
