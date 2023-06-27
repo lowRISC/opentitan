@@ -9,6 +9,7 @@
 #include "sw/device/lib/testing/hmac_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/silicon_creator/rom/string_lib.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

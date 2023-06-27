@@ -105,6 +105,9 @@
  */
 #define TOP_EARLGREY_UART2_BASE_ADDR 0xC0020000
 
+
+#define DEBUG_MODE_REG_ADDR 0xff000014
+
 /**
  * Peripheral size for uart2 in top earlgrey.
  *

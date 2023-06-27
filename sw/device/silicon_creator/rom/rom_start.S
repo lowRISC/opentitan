@@ -141,6 +141,11 @@ _rom_shadow_stack:
   .global _rom_start_boot
   .type _rom_start_boot, @function
 _rom_start_boot:
+  // check whether debug mode or not
+  li a0, 0xff000000
+  lw t0, 0x14(a0)
+  bnez t0, .L_halt_loop
+
   // Set up the global pointer and re-enable linker relaxations.
   la gp, __global_pointer$
   .option pop

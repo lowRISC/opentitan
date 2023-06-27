@@ -23,7 +23,7 @@ opentitan_ram_binary(
     hdrs = [
         "hmac_test.h",
     ],
-    archive_symbol_prefix = "preboot_code",
+    archive_symbol_prefix = "hmac_test",
     testonly = True,
     deps = [
         "//hw/top_earlgrey/sw/tests/common:common",

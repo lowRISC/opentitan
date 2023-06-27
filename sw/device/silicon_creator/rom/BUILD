@@ -105,19 +105,26 @@ cc_library(
 )
 
 cc_library(
+    name = "alsaqr_print",
+    srcs = [
+    	"uart.h",
+	"uart.c",
+    	"string_lib.h",
+    	"string_lib.c",
+    ],
+)
+
+cc_library(
     name = "rom_common",
     srcs = [
         "rom.c",
         "rom.h",
-	"string_lib.c",
-	"string_lib.h",
-	"uart.h",
-	"uart.c"
     ],
     deps = [
         ":boot_policy",
         ":bootstrap",
         ":rom_epmp",
+        ":alsaqr-print",
         ":sigverify_keys",
         "//hw/ip/aon_timer/data:aon_timer_regs",
         "//sw/device/lib/arch:device",
