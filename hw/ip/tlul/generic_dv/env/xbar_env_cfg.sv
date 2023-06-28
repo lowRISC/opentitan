@@ -31,6 +31,8 @@ class xbar_env_cfg extends dv_base_env_cfg;
   uint               min_device_rsp_delay = 0;
   uint               max_device_rsp_delay = 20;
 
+  // option to run short iteration
+  bit short_xbar_test = 0;
   `uvm_object_utils_begin(xbar_env_cfg)
     `uvm_field_array_object(host_agent_cfg,    UVM_DEFAULT)
     `uvm_field_array_object(device_agent_cfg,  UVM_DEFAULT)
