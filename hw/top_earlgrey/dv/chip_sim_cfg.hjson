@@ -152,6 +152,13 @@
       name: en_ibex_tracer
       build_opts: ["+define+RVFI=1"]
     }
+    // Build mode that configures a testbench in a manner suitable for pad
+    // testing. For example, the testbench may need to have different agents
+    // or interfaces connected to the pads for marked tests.
+    {
+      name: pad_ctrl_test_mode
+      build_opts: ["+define+PADTEST"]
+    }
     // Sim mode that enables build randomization. See the `build_seed` mode
     // defined in `hw/dv/tools/dvsim/common_modes.hjson` for more details.
     {
@@ -1780,6 +1787,7 @@
     }
     {
       name: chip_padctrl_attributes
+      build_mode: "pad_ctrl_test_mode"
       uvm_test_seq: chip_padctrl_attributes_vseq
       en_run_modes: ["stub_cpu_mode"]
       // Starting the chip in prod LC state frees up all MIOs for this test.
