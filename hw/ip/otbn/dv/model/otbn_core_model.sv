@@ -170,10 +170,10 @@ module otbn_core_model
   end
 
   // EDN URND Seed Request Logic
-  logic start_q, start_d;
+  logic start;
   bit is_idle;
 
-  assign start_d = (cmd == CmdExecute) & is_idle;
+  assign start = (cmd == CmdExecute) & is_idle;
   assign is_idle = otbn_pkg::status_e'(status_o) == StatusIdle;
 
   // URND Reseeding is done twice as part of every secure wipe: once before the secure wipe and once
@@ -228,7 +228,7 @@ module otbn_core_model
       end
 
       OtbnCoreModelUrndStateAwaitStart: begin
-        if (start_q) begin
+        if (start) begin
           urnd_state_d = OtbnCoreModelUrndStateAwaitPostStartAck;
         end
       end
@@ -259,11 +259,9 @@ module otbn_core_model
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      start_q            <= 1'b0;
       urnd_state_q       <= OtbnCoreModelUrndStateReset;
       wipe_cyc_cnt_q     <= '0;
     end else begin
-      start_q        <= start_d;
       urnd_state_q   <= urnd_state_d;
       wipe_cyc_cnt_q <= wipe_cyc_cnt_d;
     end
