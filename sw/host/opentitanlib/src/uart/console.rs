@@ -131,6 +131,8 @@ impl UartConsole {
                     // `mio` convention demands that we keep reading until a read returns zero
                     // bytes, otherwise next `poll()` is not guaranteed to notice more data.
                     while self.uart_read(device, Duration::from_millis(1), &mut stdout)? {
+                        log::info!("console: buffer is {:?}", self.buffer);
+                        log::info!("console: buffer is {:?}", self.buffer.as_bytes());
                         if self
                             .exit_success
                             .as_ref()

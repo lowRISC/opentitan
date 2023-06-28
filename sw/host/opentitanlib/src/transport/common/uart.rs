@@ -76,6 +76,7 @@ impl SerialPortUart {
             }
             self.rxbuf.borrow_mut().push_back(ch);
         }
+        //log::info!("uart push: {:?}={}", &buf[..len], String::from_utf8_lossy(&buf[..len]).to_string());
         port.set_timeout(Self::FOREVER).context("UART read error")?;
         Ok(())
     }
