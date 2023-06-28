@@ -62,15 +62,29 @@ class chip_sw_lc_raw_unlock_vseq extends chip_sw_base_vseq;
     // Since super.body only does backdoor operation,
     // add wait for clock task before the test uses jtag polling task.
     wait_rom_check_done();
-    wait_lc_ready(1);
+    wait_lc_ready();
 
     // Switch to external clock via lc_ctrl TAP, and perform RAW unlock. This
     // requires a reset to apply the transition.
     switch_to_external_clock();
     jtag_lc_state_transition(DecLcStRaw, DecLcStTestUnlocked0);
-
-    cfg.chip_vif.tap_straps_if.drive(JtagTapRvDm);
+    // Complete state transition
     apply_reset();
+    wait_lc_ready();
+
+    // After reset, clock bypass back to 'off'.
+    // Resume external clock before switch jtag_tap, otherwise,
+    // external clock is disconnected.
+    claim_transition_interface();
+    jtag_riscv_agent_pkg::jtag_write_csr(
+                                         ral.lc_ctrl.transition_ctrl.get_offset(),
+                                         p_sequencer.jtag_sequencer_h,
+                                         1);
+    // Add some delay until clock bypass is turned on.
+    cfg.chip_vif.ext_clk_if.wait_clks(10);
+
+    // Switch tap to rvdm
+    cfg.chip_vif.tap_straps_if.drive(JtagTapRvDm);
     reset_jtag_tap();
 
     if (rom_prod_mode) begin
