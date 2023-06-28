@@ -28,6 +28,10 @@ _dv_log_offset = 0x10000;
 
 ENTRY(sram_start);
 
+/* NOTE This linker script assumes non-page-aligned segments because we skip
+ * the first _static_critical_size bytes of the SRAM and we do not want the
+ * ELF segments to containt the headers as this would overwrite the content
+ * of static critical data */
 SECTIONS {
   /* The ELF SRAM program loader will automatically read back the data of the section
    * containing the entry point to verify that it is correct. The expectation is that
