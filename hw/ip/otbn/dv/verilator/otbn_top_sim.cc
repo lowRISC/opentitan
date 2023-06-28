@@ -249,6 +249,15 @@ extern "C" void OtbnTopApplyLoopWarp() {
     loop_count_stack.push_back(loop_controller->loop_iterations_i);
   }
 
+  // We only have work to do if the RTL actually thinks that it's
+  // currently in a loop. This normally matches the model, but they
+  // disagree if we finish an execution while still running loop
+  // iterations. In that case, we don't need to do any fixing up:
+  // we've stopped anyway.
+  if (!loop_controller->current_loop_valid) {
+    return;
+  }
+
   if (!loop_count_stack.empty()) {
     // There is a loop that's currently active. Its iteration count for the
     // next cycle is provided to the prefetcher via `prefetch_loop_iterations_o`
