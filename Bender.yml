@@ -280,6 +280,7 @@ sources:
         defines:
           RVFI: true
         files:
+          - hw/vendor/lowrisc_ibex/rtl/ibex_lockstep.sv
           - hw/vendor/lowrisc_ibex/rtl/ibex_core.sv
           - hw/vendor/lowrisc_ibex/rtl/ibex_top.sv
 

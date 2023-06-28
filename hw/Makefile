@@ -129,7 +129,12 @@ clean-regs-header:
 
 top-hjson = $(PRJ_DIR)/hw/$*/data/$*.hjson
 
-top: $(tops_gen) $(tops_reg)
+top: $(tops_gen) $(tops_reg) rename
+
+rename:
+	grep -rl "rv_plic_reg_top" top_earlgrey/ip_autogen/rv_plic/* | xargs sed -i 's/rv_plic_reg_top/rv_plic_ot_reg_top/g'
+	grep -rl "rv_plic_reg_pkg" top_earlgrey/ip_autogen/rv_plic/* | xargs sed -i 's/rv_plic_reg_pkg/rv_plic_ot_reg_pkg/g'
+
 $(tops_gen): %_gen:
 	${PRJ_DIR}/util/topgen.py -t $(top-hjson) -o ${PRJ_DIR}/hw/$*/ ${toolflags}
 

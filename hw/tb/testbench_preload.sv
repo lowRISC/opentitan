@@ -293,10 +293,14 @@ module testbench_preload ();
       .ibex_uart_tx_o   ( ibex_uart_tx  ),
    // SPI host 
       .spi_host_SCK_o   (               ),
+      .spi_host_SCK_en_o(               ),
       .spi_host_CSB_o   (               ),
+      .spi_host_CSB_en_o(               ),
       .spi_host_SD_o    (               ),
       .spi_host_SD_i    ( '0            ),
-      .spi_host_SD_en_o (               )        
+      .spi_host_SD_en_o (               ),
+      .axi_isolated_o   (               ),
+      .axi_isolate_i    ( '0            ) 
   );
 
 ///////////////////////// Processes ///////////////////////////////

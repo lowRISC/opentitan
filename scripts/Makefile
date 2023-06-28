@@ -18,7 +18,9 @@ ifdef jtag
   VLOG_ARGS += +define+IBEX_JTAG
 endif
 
-VLOG_ARGS += -incr -64 -nologo -quiet -suppress vlog-2583 -suppress vlog-13314 -suppress vlog-13198 -suppress vlog-7033 +nospecify +define+ +notimingchecks  -suppress vopt-13276 -suppress vlog-13233 -timescale \"1 ns / 1 ps\" 
+# -suppress vlog-13198 -suppress vlog-7033 -suppress vopt-13276 -suppress vlog-13233
+
+VLOG_ARGS += -incr -64 -nologo -quiet -suppress vlog-2583 -suppress vlog-13314  +nospecify +notimingchecks  -timescale \"1 ns / 1 ps\" 
 XVLOG_ARGS += -64bit -compile -vtimescale 1ns/1ns -quiet +nospecify +notimingchecks
 
 define generate_vsim

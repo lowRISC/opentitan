@@ -72,7 +72,7 @@ module rv_plic_ot import rv_plic_ot_reg_pkg::*; #(
 
   logic [PRIOW-1:0] threshold [NumTarget];
 
-  // Glue logic between rv_plic_reg_top and others
+  // Glue logic between rv_plic_ot_reg_top and others
   assign cc_id = irq_id_o;
 
   always_comb begin
