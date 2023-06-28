@@ -39,7 +39,7 @@
 /**
  * Memory size for flash_ctrl_eflash in top earlgrey.
  */
-#define TOP_EARLGREY_EFLASH_SIZE_BYTES 0x100000
+#define TOP_EARLGREY_EFLASH_SIZE_BYTES 0x10000
 
 /**
  * Memory base for sram_ctrl_main_ram_main in top earlgrey.
@@ -104,9 +104,6 @@
  * registers associated with the peripheral (usually via a DIF).
  */
 #define TOP_EARLGREY_UART2_BASE_ADDR 0xC0020000
-
-
-#define DEBUG_MODE_REG_ADDR 0xff000014
 
 /**
  * Peripheral size for uart2 in top earlgrey.
@@ -643,7 +640,7 @@
  * address between #TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR and
  * `TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES 0x100000
+#define TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES 0x10000
 /**
  * Peripheral base address for regs device on rv_dm in top earlgrey.
  *

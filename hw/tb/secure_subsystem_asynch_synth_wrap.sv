@@ -92,6 +92,13 @@ module secure_subsystem_synth_wrap
    // OT peripherals
    input logic                           ibex_uart_rx_i,
    output logic                          ibex_uart_tx_o,
+   // GPIO
+   output logic                          gpio_0_o,
+   output logic                          gpio_0_oe_o,
+   output logic                          gpio_1_o,
+   output logic                          gpio_1_oe_o,
+   input  logic                          gpio_0_i,
+   input  logic                          gpio_1_i,
    // SPI Host
    output logic                          spi_host_SCK_o,
    output logic                          spi_host_SCK_en_o,
@@ -140,8 +147,11 @@ module secure_subsystem_synth_wrap
 
    assign dio_in_i[1:0]   = '0;
    assign dio_in_i[15:6]  = '0;
- 
-   assign mio_in_i[25:0]  = '0;
+
+   assign mio_in_i[0] = gpio_0_i ;
+   assign mio_in_i[1] = gpio_1_i ;
+   
+   assign mio_in_i[25:2]  = '0;
    assign mio_in_i[46:27] = '0;
 
    assign spi_host_SCK_o  = dio_out_o[DioSpiHost0Sck];
@@ -167,7 +177,13 @@ module secure_subsystem_synth_wrap
    
    assign mio_in_i[26]  = ibex_uart_rx_i;
    assign ibex_uart_tx_o = mio_out_o[26];
-   
+
+   assign gpio_0_o = mio_out_o[0];
+   assign gpio_1_o = mio_out_o[1];
+
+   assign gpio_0_oe_o = mio_oe_o[0];
+   assign gpio_1_oe_o = mio_oe_o[1];
+
    //Unwrapping JTAG strucutres
 
    assign jtag_i.tck     = jtag_tck_i;

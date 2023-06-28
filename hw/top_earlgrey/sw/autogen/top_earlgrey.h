@@ -635,7 +635,7 @@ extern "C" {
  * address between #TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR and
  * `TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES 0x100000u
+#define TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES 0x10000u
 
 /**
  * Peripheral base address for regs device on rv_dm in top earlgrey.
@@ -962,7 +962,7 @@ extern "C" {
 /**
  * Memory size for eflash in top earlgrey.
  */
-#define TOP_EARLGREY_EFLASH_SIZE_BYTES 0x100000u
+#define TOP_EARLGREY_EFLASH_SIZE_BYTES 0x10000u
 
 /**
  * Memory base address for ram_main in top earlgrey.

@@ -48,7 +48,7 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_USBDEV               = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_FLASH_CTRL__CORE     = 32'h 000001ff;
   localparam logic [31:0] ADDR_MASK_FLASH_CTRL__PRIM     = 32'h 0000007f;
-  localparam logic [31:0] ADDR_MASK_FLASH_CTRL__MEM      = 32'h 000fffff;
+  localparam logic [31:0] ADDR_MASK_FLASH_CTRL__MEM      = 32'h 0000ffff;
   localparam logic [31:0] ADDR_MASK_HMAC                 = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_KMAC                 = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_AES                  = 32'h 000000ff;

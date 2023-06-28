@@ -4,13 +4,13 @@
 
 module rv_plic_bind_fpv;
 
-  import rv_plic_reg_pkg::*;
+  import rv_plic_ot_reg_pkg::*;
 
   bind rv_plic rv_plic_assert_fpv #(
-    .NumSrc(rv_plic_reg_pkg::NumSrc),
-    .NumTarget(rv_plic_reg_pkg::NumTarget),
-    .NumAlerts(rv_plic_reg_pkg::NumAlerts),
-    .PRIOW(rv_plic_reg_pkg::PrioWidth)
+    .NumSrc(rv_plic_ot_reg_pkg::NumSrc),
+    .NumTarget(rv_plic_ot_reg_pkg::NumTarget),
+    .NumAlerts(rv_plic_ot_reg_pkg::NumAlerts),
+    .PRIOW(rv_plic_ot_reg_pkg::PrioWidth)
   ) rv_plic_assert_fpv(
     .clk_i,
     .rst_ni,

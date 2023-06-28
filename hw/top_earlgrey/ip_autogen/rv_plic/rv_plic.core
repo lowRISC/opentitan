@@ -12,8 +12,8 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:prim:subreg
     files:
-      - rtl/rv_plic_reg_pkg.sv
-      - rtl/rv_plic_reg_top.sv
+      - rtl/rv_plic_ot_reg_pkg.sv
+      - rtl/rv_plic_ot_reg_top.sv
       - rtl/rv_plic.sv
     file_type: systemVerilogSource
 

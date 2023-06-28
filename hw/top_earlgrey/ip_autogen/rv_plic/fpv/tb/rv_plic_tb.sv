@@ -4,7 +4,7 @@
 //
 // Testbench module for rv_plic. Intended to use with a formal tool.
 
-module rv_plic_tb import rv_plic_reg_pkg::*; #(
+module rv_plic_tb import rv_plic_ot_reg_pkg::*; #(
   // test all implementations
   localparam int unsigned NumInstances = 1
 ) (

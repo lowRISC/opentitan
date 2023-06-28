@@ -4722,14 +4722,14 @@
           config:
           {
             banks: 2
-            pages_per_bank: 256
+            pages_per_bank: 16
             program_resolution: 8
             pgm_resolution_bytes: 64
             bytes_per_page: 2048
-            bytes_per_bank: 524288
-            size: 0x100000
+            bytes_per_bank: 32768
+            size: 0x10000
           }
-          size: 0x100000
+          size: 0x10000
         }
       }
       attr: templated
@@ -8981,7 +8981,7 @@
           [
             {
               base_addr: 0xf0000000
-              size_byte: 0x100000
+              size_byte: 0x10000
             }
           ]
           xbar: false

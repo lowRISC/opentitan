@@ -25,8 +25,7 @@ module flash_ctrl
   parameter lfsr_perm_t           RndCnstLfsrPerm = RndCnstLfsrPermDefault,
   parameter int                   ProgFifoDepth   = MaxFifoDepth,
   parameter int                   RdFifoDepth     = MaxFifoDepth,
-  parameter bit                   SecScrambleEn   = 1'b1,
-  parameter                       MemInitFile     = ""
+  parameter bit                   SecScrambleEn   = 1'b1
 ) (
   input        clk_i,
   input        rst_ni,
@@ -53,6 +52,11 @@ module flash_ctrl
   input        tlul_ot_pkg::tl_h2d_t mem_tl_i,
   output       tlul_ot_pkg::tl_d2h_t mem_tl_o,
 
+  input        tlul_ot_pkg::tl_h2d_t dbg_tl_i,
+  output       tlul_ot_pkg::tl_d2h_t dbg_tl_o,
+
+  output logic dbg_mode,
+  
   // otp/lc/pwrmgr/keymgr Interface
   // SEC_CM: SCRAMBLE.KEY.SIDELOAD
   output       otp_ctrl_pkg::flash_otp_key_req_t otp_o,
@@ -299,6 +303,14 @@ module flash_ctrl
   // interface to flash phy
   flash_rsp_t flash_phy_rsp;
   flash_req_t flash_phy_req;
+
+  // Interface to the debug mode preloader
+  logic        debug_mode;
+  logic        debug_flash_write;
+  logic        debug_flash_req;
+  logic [15:0] debug_flash_addr;
+  logic [75:0] debug_flash_wdata;
+  logic [75:0] debug_flash_wmask;
 
   // import commonly used routines
   import lc_ctrl_pkg::lc_tx_test_true_strict;
@@ -1339,10 +1351,22 @@ module flash_ctrl
     .rvalid_i    (flash_host_req_done),
     .rerror_i    ({flash_host_rderr,1'b0})
   );
-
+  
+  debug_mode_preload debug_preload (
+    .clk_i,
+    .rst_ni,
+    .dbg_tl_i,
+    .dbg_tl_o,
+    .flash_write_o(debug_flash_write),
+    .flash_req_o(debug_flash_req),
+    .flash_addr_o(debug_flash_addr),
+    .flash_wdata_o(debug_flash_wdata),
+    .flash_wmask_o(debug_flash_wmask),
+    .debug_mode_o(debug_mode)
+  );
+  
   flash_phy #(
-    .SecScrambleEn(SecScrambleEn),
-    .MemInitFile(MemInitFile)
+    .SecScrambleEn(SecScrambleEn)
   ) u_eflash (
     .clk_i,
     .rst_ni,
@@ -1366,6 +1390,13 @@ module flash_ctrl
     .flash_test_voltage_h_io,
     .fatal_prim_flash_alert_o(fatal_prim_flash_alert),
     .recov_prim_flash_alert_o(recov_prim_flash_alert),
+    //Debug mode interface
+    .debug_flash_write_i (debug_flash_write),
+    .debug_flash_req_i   (debug_flash_req),
+    .debug_flash_addr_i  (debug_flash_addr),
+    .debug_flash_wdata_i (debug_flash_wdata),
+    .debug_flash_wmask_i (debug_flash_wmask),
+    .debug_mode_i        (debug_mode),
     .scanmode_i,
     .scan_en_i,
     .scan_rst_ni

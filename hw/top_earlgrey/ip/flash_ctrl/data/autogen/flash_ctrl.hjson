@@ -386,7 +386,7 @@
     { name: "RegPagesPerBank",
       desc: "Number of pages per bank",
       type: "int",
-      default: "256",
+      default: "16",
       local: "true"
     },
 
@@ -400,7 +400,7 @@
     { name: "RegPageWidth",
       desc: "Number of bits needed to represent the pages within a bank",
       type: "int",
-      default: "8",
+      default: "4",
       local: "true"
     },
 
@@ -469,7 +469,7 @@
     { name: "BytesPerBank",
       desc: "Number of bytes per bank",
       type: "int",
-      default: "524288",
+      default: "32768",
       local: "true"
     },
 
@@ -747,7 +747,7 @@
         regwen: "CTRL_REGWEN",
         resval: "0",
         fields: [
-          { bits: "19:0",
+          { bits: "15:0",
             name: "START",
             desc: '''
               Start address of a flash transaction.  This is a byte address relative to the flash
@@ -931,14 +931,14 @@
           update_err_alert: "recov_err",
           storage_err_alert: "fatal_err",
           fields: [
-            { bits: "8:0",
+            { bits: "4:0",
               name: "BASE",
               desc: '''
                 Region base page. Note the granularity is page, not byte or word
               ''',
               resval: "0"
             },
-            { bits: "18:9",
+            { bits: "10:5",
               name: "SIZE",
               desc: '''
                 Region size in number of pages.
@@ -1984,7 +1984,7 @@
         swaccess: "ro",
         hwaccess: "hwo",
         fields: [
-          { bits: "19:0",
+          { bits: "15:0",
             resval: 0,
           },
         ]
@@ -2015,7 +2015,7 @@
           hwaccess: "hwo",
           compact: false,
           fields: [
-            { bits: "19:0",
+            { bits: "15:0",
               desc: "Latest single error address for this bank",
               resval: 0,
             },

@@ -39,7 +39,7 @@ tl_device_t xbar_devices[$] = '{
         '{32'hc1008000, 32'hc100807f}
     }},
     '{"flash_ctrl__mem", '{
-        '{32'hf0000000, 32'hf00fffff}
+        '{32'hf0000000, 32'hf000ffff}
     }},
     '{"hmac", '{
         '{32'hc1110000, 32'hc1110fff}

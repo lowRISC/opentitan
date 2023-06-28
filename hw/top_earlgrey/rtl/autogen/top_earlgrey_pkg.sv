@@ -348,7 +348,7 @@ package top_earlgrey_pkg;
   /**
    * Peripheral size in bytes for mem device on flash_ctrl in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES = 32'h100000;
+  parameter int unsigned TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES = 32'h10000;
 
   /**
    * Peripheral base address for regs device on rv_dm in top earlgrey.
@@ -538,7 +538,7 @@ package top_earlgrey_pkg;
   /**
    * Memory size for eflash in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_EFLASH_SIZE_BYTES = 32'h100000;
+  parameter int unsigned TOP_EARLGREY_EFLASH_SIZE_BYTES = 32'h10000;
 
   /**
    * Memory base address for ram_main in top earlgrey.

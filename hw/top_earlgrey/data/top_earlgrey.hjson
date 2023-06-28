@@ -607,7 +607,7 @@
           config: {
             type: "flash",
             banks: 2,
-            pages_per_bank: 256,
+            pages_per_bank: 16,
             program_resolution: 8, // maximum number of flash words allowed to program at one time
           }
         }

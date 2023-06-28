@@ -58,7 +58,6 @@ module top_earlgrey #(
   parameter SramCtrlRetAonMemInitFile = "",
   parameter bit SramCtrlRetAonInstrExec = 0,
   // parameters for flash_ctrl
-  parameter     FlashCtrlMemInitFile = "",
   parameter bit SecFlashCtrlScrambleEn = 1,
   parameter int FlashCtrlProgFifoDepth = 4,
   parameter int FlashCtrlRdFifoDepth = 16,
@@ -116,7 +115,7 @@ module top_earlgrey #(
       tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm_ot::HaltAddress[31:0],
   parameter int unsigned RvCoreIbexDmExceptionAddr =
       tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm_ot::ExceptionAddress[31:0],
-  parameter bit RvCoreIbexPipeLine = 1
+  parameter bit RvCoreIbexPipeLine = 0
 ) (
   // Multiplexed I/O
   input        [46:0] mio_in_i,
@@ -2084,7 +2083,6 @@ module top_earlgrey #(
     .RndCnstLfsrSeed(RndCnstFlashCtrlLfsrSeed),
     .RndCnstLfsrPerm(RndCnstFlashCtrlLfsrPerm),
     .SecScrambleEn(SecFlashCtrlScrambleEn),
-    .MemInitFile(FlashCtrlMemInitFile),
     .ProgFifoDepth(FlashCtrlProgFifoDepth),
     .RdFifoDepth(FlashCtrlRdFifoDepth)
   ) u_flash_ctrl (
@@ -2182,7 +2180,7 @@ module top_earlgrey #(
       .clk_i (clkmgr_aon_clocks.clk_main_infra),
       .rst_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel])
   );
-  rv_plic_ot #(
+  rv_plic #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[41:41])
   ) u_rv_plic (
       // [41]: fatal_fault

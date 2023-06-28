@@ -300,7 +300,13 @@ module testbench_asynch ();
       .spi_host_SD_i    ( '0            ),
       .spi_host_SD_en_o (               ),
       .axi_isolated_o   (               ),
-      .axi_isolate_i    ( '0            )
+      .axi_isolate_i    ( '0            ),
+      .gpio_0_i         ( '0            ), 
+      .gpio_1_i         ( '0            ),
+      .gpio_0_o         (               ), 
+      .gpio_1_o         (               ),
+      .gpio_0_oe_o      (               ), 
+      .gpio_1_oe_o      (               )
   );
 
 ///////////////////////// Processes ///////////////////////////////

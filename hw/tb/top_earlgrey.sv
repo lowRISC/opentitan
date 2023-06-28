@@ -2521,7 +2521,7 @@ module top_earlgrey #(
     .MemInitFile(SramCtrlMainMemInitFile),
     .RndCnstLfsrSeed(RndCnstSramCtrlMainLfsrSeed),
     .RndCnstLfsrPerm(RndCnstSramCtrlMainLfsrPerm),
-    .MemSizeRam(131072),
+    .MemSizeRam(32768),
     .InstrExec(SramCtrlMainInstrExec)
   ) u_sram_ctrl_main (
       // [59]: fatal_error
