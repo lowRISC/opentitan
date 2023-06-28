@@ -15,6 +15,10 @@ def _ld_library_impl(ctx):
             "-Wl,--defsym=no_ottf_nv_scratch=1",
             "-Wl,--defsym=no_ottf_nv_counter=1",
         ]
+    if ctx.attr.non_page_aligned_segments:
+        user_link_flags += [
+            "-Wl,-nmagic",
+        ]
 
     if ctx.file.script:
         files += ctx.files.script
@@ -48,6 +52,11 @@ ld_library = rule(
     as the linker script for that binary.
 
     At most one ld_library in a cc_binary's dependencies may have a script.
+
+    If non_page_aligned_segments is used, instruct the linker to turn off page
+    alignment for segments and not to include the headers in the first segment
+    (this is the -nmagic option of GNU ld). See https://reviews.llvm.org/D61201
+    for more details.
     """,
     attrs = {
         "script": attr.label(allow_single_file = True),
@@ -58,6 +67,9 @@ ld_library = rule(
         "deps": attr.label_list(
             default = [],
             providers = [CcInfo],
+        ),
+        "non_page_aligned_segments": attr.bool(
+            default = False,
         ),
     },
 )
