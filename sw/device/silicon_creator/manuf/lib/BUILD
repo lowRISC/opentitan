@@ -80,6 +80,10 @@ _MANUF_LC_TRANSITION_TEST_CMDS_WBOOTSTRAP = _MANUF_LC_TRANSITION_TEST_CMDS + [
 ld_library(
     name = "sram_program_linker_script",
     script = "sram_program.ld",
+    # We want to avoid page alignment since the SRAM program is not loaded at the beginning of the
+    # SRAM and we the generated ELF segment should not contain any headers (as this could overwrite
+    # some SRAM content)
+    non_page_aligned_segments = True,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
         "//sw/device:info_sections",
