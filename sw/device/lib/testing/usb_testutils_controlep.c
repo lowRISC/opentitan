@@ -123,7 +123,7 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
         if (wLength < len) {
           len = wLength;
         }
-        USBUTILS_FUNCPT(0xdede, (wLength << 16) | len);
+        USBUTILS_FUNCPT(0xdede, ((uint32_t)wLength << 16) | len);
         CHECK_DIF_OK(dif_usbdev_buffer_write(ctx->dev, &buffer, dev_dscr, len,
                                              &bytes_written));
         CHECK(bytes_written == len);
@@ -161,6 +161,32 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
 
     case kUsbSetupReqSetAddress:
       TRC_S("SA");
+
+#if HAVE_TOGGLE_STATE
+      // Basic initial check of modified data toggle set/clear/read/restore
+      //
+      // Note: we presently need the link to be active otherwise the
+      //       toggles become reset by the hardware, hence shoehorned in here,
+      //       BUT NOTE THAT THIS WILL PROBABLY PREVENT DEVICE CONFIGURATION
+      if (false) {
+        static_assert(USBDEV_NUM_ENDPOINTS <= UINT8_MAX,
+                      "USBDEV_NUM_ENDPOINTS must fit into uint8_t");
+        for (uint8_t ep = 0U; ep < USBDEV_NUM_ENDPOINTS; ep++) {
+          CHECK_DIF_OK(dif_usbdev_clear_data_toggle(ctx->dev, ep));
+        }
+        CHECK_DIF_OK(
+            dif_usbdev_data_toggle_out_write(ctx->dev, 0xFF0U, 0xAAAU));
+        CHECK_DIF_OK(dif_usbdev_data_toggle_in_write(ctx->dev, 0xFU, 0x555U));
+        CHECK_DIF_OK(dif_usbdev_data_toggle_out_write(ctx->dev, 0xFU, 0x9U));
+        CHECK_DIF_OK(dif_usbdev_data_toggle_in_write(ctx->dev, 0xFF0U, 0x960U));
+        uint16_t out_toggle, in_toggle;
+        CHECK_DIF_OK(dif_usbdev_data_toggle_out_read(ctx->dev, &out_toggle));
+        CHECK_DIF_OK(dif_usbdev_data_toggle_in_read(ctx->dev, &in_toggle));
+        LOG_INFO("out_toggle 0x%x in_toggle 0x%x", out_toggle, in_toggle);
+        CHECK(in_toggle == 0x965U);
+        CHECK(out_toggle == 0xAA9U);
+      }
+#endif
       ctctx->new_dev = (uint8_t)(wValue & 0x7fU);
       // send zero length packet for status phase
       CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
@@ -173,16 +199,10 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
     case kUsbSetupReqSetConfiguration:
       TRC_S("SC");
       // only ever expect this to be 1 since there is one config descriptor
-      ctctx->usb_config = (uint8_t)wValue;
+      ctctx->new_config = (uint8_t)wValue;
       // send zero length packet for status phase
       CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
-      if (wValue) {
-        ctctx->device_state = kUsbTestutilsDeviceConfigured;
-      } else {
-        // Device deconfigured
-        ctctx->device_state = kUsbTestutilsDeviceAddressed;
-      }
-      return kUsbTestutilsCtStatIn;
+      return kUsbTestutilsCtCfgStatIn;
 
     case kUsbSetupReqGetConfiguration:
       len = sizeof(ctctx->usb_config);
@@ -232,7 +252,8 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
       if (wLength < len) {
         len = wLength;
       }
-      // return the value that was set
+      // LOG_INFO("gs %u %u", type, len);
+      //  return the value that was set
       CHECK_DIF_OK(dif_usbdev_buffer_write(ctx->dev, &buffer, (uint8_t *)&stat,
                                            len, &bytes_written));
       CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
@@ -304,15 +325,32 @@ static status_t ctrl_tx_done(void *ctctx_v, usb_testutils_xfr_result_t result) {
   TRC_C('A' + ctctx->ctrlstate);
   switch (ctctx->ctrlstate) {
     case kUsbTestutilsCtAddrStatIn:
-      // Now the status was sent on device 0 can switch to new device ID
+      // Now the Status was sent on Endpoint Zero, the device can switch to new
+      // Device Address
       TRY(dif_usbdev_address_set(ctx->dev, ctctx->new_dev));
       // We are required to respond to the new device address within 2ms of the
       // the zero length Status packet being ACKnowledged by the host.
+      if (ibex_timeout_check(&ctctx->time_setaddr)) {
+        LOG_INFO("TIMED OUT!");
+        usbutils_funcpt_report();
+      }
+
       TRY_CHECK(!ibex_timeout_check(&ctctx->time_setaddr));
       TRC_I(ctctx->new_dev, 8);
       ctctx->ctrlstate = kUsbTestutilsCtIdle;
       // We now have a device address on the USB
       ctctx->device_state = kUsbTestutilsDeviceAddressed;
+      return OK_STATUS();
+    case kUsbTestutilsCtCfgStatIn:
+      // Now the Status was sent on Endpoint Zero, the new configuration has
+      // been (de)selected.
+      ctctx->usb_config = ctctx->new_config;
+      if (ctctx->new_config) {
+        ctctx->device_state = kUsbTestutilsDeviceConfigured;
+      } else {
+        // Device deconfigured
+        ctctx->device_state = kUsbTestutilsDeviceAddressed;
+      }
       return OK_STATUS();
     case kUsbTestutilsCtStatIn:
       ctctx->ctrlstate = kUsbTestutilsCtIdle;
@@ -406,11 +444,11 @@ static status_t ctrl_rx(void *ctctx_v, dif_usbdev_rx_packet_info_t packet_info,
   TRY(dif_usbdev_endpoint_stall_enable(ctx->dev, endpoint, kDifToggleEnabled));
 
   TRC_S("USB: unCT ");
-  TRC_I((ctctx->ctrlstate << 24) | ((int)packet_info.is_setup << 16) |
+  TRC_I((ctctx->ctrlstate << 24) | ((uint32_t)packet_info.is_setup << 16) |
             packet_info.length,
         32);
   USBUTILS_FUNCPT(0x57A1, (ctctx->ctrlstate << 24) |
-                              ((int)packet_info.is_setup << 16) |
+                              ((uint32_t)packet_info.is_setup << 16) |
                               packet_info.length);
 
   if (buffer.type != kDifUsbdevBufferTypeStale) {

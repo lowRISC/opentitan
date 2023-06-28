@@ -25,12 +25,14 @@
 //   (the standard dif_usbdev_buffer_write/read functionality should normally be
 //    employed, but it is inefficient; the replacement routines better model the
 //    attainable performance.)
+#ifndef USBUTILS_MEM_FASTER
 #define USBUTILS_MEM_FASTER 0
+#endif
 
 // Implement low-impact tracing of software execution, permitting the software
 //   and hardware behavior to be married, hopefully without modifying the
 //   behavior/performance, particularly in top-level simulation.
-#define USBUTILS_FUNCTION_POINTS 0
+#define USBUTILS_FUNCTION_POINTS 1
 
 // Record the function points to a memory buffer instead, for use where test
 //   hardware is unavailable, eg. FPGA builds.

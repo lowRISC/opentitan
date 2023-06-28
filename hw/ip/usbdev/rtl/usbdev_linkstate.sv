@@ -34,9 +34,11 @@ module usbdev_linkstate (
 );
 
 // TODO: TODO: TODO:
+`ifdef SIMULATION
 // NOTE: This is a development/simulation aid; in order to reduce the simulation
 // time we make the device enter suspend much sooner..
 `define AML_HACK
+`endif
 
 
 // TODO: This should NOT go anywhere near the repo!

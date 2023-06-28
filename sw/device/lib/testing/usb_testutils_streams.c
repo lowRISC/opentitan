@@ -280,6 +280,7 @@ static void buffer_fill(usb_testutils_streams_ctx_t *ctx, usbdev_stream_t *s,
 }
 
 // Check the contents of a received buffer
+// TODO: this should return a status_t
 static void buffer_check(usb_testutils_streams_ctx_t *ctx, usbdev_stream_t *s,
                          dif_usbdev_rx_packet_info_t packet_info,
                          dif_usbdev_buffer_t buf) {
@@ -337,6 +338,7 @@ static void buffer_check(usb_testutils_streams_ctx_t *ctx, usbdev_stream_t *s,
 
         const uint8_t *esp = &data[bytes_read];
         const uint8_t *sp = &data[offset];
+
         while (sp < esp) {
           // Received data should be the XOR of two LFSR-generated PRND streams
           // - ours on the transmission side, and that of the DPI model

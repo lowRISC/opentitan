@@ -23,6 +23,11 @@
 extern "C" {
 #endif  // __cplusplus
 
+#define AML_HACK 0
+
+// TODO: Switch to include toggle save/restare code
+#define HAVE_TOGGLE_STATE 1
+
 /**
  * Hardware constants.
  */
@@ -146,6 +151,12 @@ typedef struct dif_usbdev_config {
    */
   dif_toggle_t clock_sync_signals;
 } dif_usbdev_config_t;
+
+#if AML_HACK
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_log(const dif_usbdev_t *usbdev, void (*log)(void));
+
+#endif
 
 /**
  * Configures a USB device with runtime information.
@@ -612,9 +623,60 @@ dif_result_t dif_usbdev_address_set(const dif_usbdev_t *usbdev, uint8_t addr);
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_usbdev_address_get(const dif_usbdev_t *usbdev, uint8_t *addr);
+#if HAVE_TOGGLE_STATE
+/**
+ * Read the data toggle bits of the OUT endpoints.
+ *
+ * @param usbdev A USB device.
+ * @param[out]toggles Current state of OUT data toggle bits.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_data_toggle_out_read(const dif_usbdev_t *usbdev,
+                                             uint16_t *toggles);
 
 /**
+ * Read the data toggle bits of the IN endpoints.
+ *
+ * @param usbdev A USB device.
+ * @param[out]toggles Current state of IN data toggle bits.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_data_toggle_in_read(const dif_usbdev_t *usbdev,
+                                            uint16_t *toggles);
+
+/**
+ * Write to the data toggle bits of a subset of the OUT endpoints.
+ * Set 1 in `mask` to change the data toggle bit of an OUT endpoint to the value
+ * of the corresponding bit in `state`.
+ *
+ * @param usbdev A USB device.
+ * @param mask Mask of OUT endpoint data toggles to be changed.
+ * @param state New states of that OUT endpoint data toggles being changed.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_data_toggle_out_write(const dif_usbdev_t *usbdev,
+                                              uint16_t mask, uint16_t state);
+
+/**
+ * Write to the data toggle bits of a subset of the IN endpoints.
+ * Set 1 in `mask` to change the data toggle bit of an IN endpoint to the value
+ * of the corresponding bit in `state`.
+ *
+ * @param usbdev A USB device.
+ * @param mask Mask of IN endpoint data toggles to be changed.
+ * @param state New states of that IN endpoint data toggles being changed.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_data_toggle_in_write(const dif_usbdev_t *usbdev,
+                                             uint16_t mask, uint16_t state);
+#endif
+/**
  * Clear the data toggle bits for the selected endpoint.
+ * TODO: Decide whether we want to keep this
  *
  * @param usbdev A USB device.
  * @param endpoint An endpoint number.

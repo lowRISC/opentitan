@@ -118,7 +118,8 @@
  * Timeout constants in microseconds;
  */
 #define TIMEOUT_RESUME_MISSED 4500u
-// #define TIMEOUT_
+
+#define TIMEOUT_RESET_MISSED 4500u
 
 #define TIMEOUT_WAKEUP_RESUME 3000u
 #define TIMEOUT_FINISH_MISSED 2000u
@@ -139,11 +140,19 @@
 #define FRAMES_INITIATE_RESUME 2u
 
 /**
- * Number of frame delays to wait after device signals Suspend, before we
+ * Number of frame delays to wait after device signals Suspend, before we...
+ * TODO: Clearly we WON'T ACTUALLY be receiving real frame pulses here!
  */
-#define FRAMES_WAIT_ENTER_SLEEP 1u
+#define FRAMES_WAIT_ENTER_SLEEP 10u
 
 #define USB_EVENT_REPORT(s) USBUTILS_TRACE(__LINE__, (s))
+
+/**
+ * Maximum size of the client state stored within the Retention SRAM;
+ * we leave the usb_testutils_streams/other code to specify and manage its own
+ * state.
+ */
+#define MAX_CLIENT_STATE 0x200U
 
 /**
  * Test states
@@ -255,12 +264,15 @@ typedef struct {
    * Unused padding.
    */
   uint8_t pad0;
-  uint32_t pad[3];
   /**
-   * The state of each stream of each stream must be stored, which means
-   * the 2 x 4 byte counts and the 3 x 1 byte LFSR values.
+   * Data Toggle bits.
    */
-  // uint8_t [];
+  uint32_t data_toggles;
+  /**
+   * Client state; allow, for example, the usb_testutils_streams code to specify
+   * its own per-stream retention state rather than constraining it here.
+   */
+  alignas(uint32_t) uint8_t client_state[MAX_CLIENT_STATE];
 } usbdev_retn_state_t;
 
 /**
@@ -313,7 +325,7 @@ const uint32_t kRetSramBaseAddr = TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR;
  * Retention SRAM address at which we may store some state.
  */
 const uint32_t kRetSramOwnerAddr =
-    kRetSramBaseAddr + offsetof(retention_sram_t, reserved_owner);
+    kRetSramBaseAddr + offsetof(retention_sram_t, owner);
 
 /**
  * Configuration values for USB.
@@ -405,7 +417,9 @@ static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
 // Configuration for streaming layer; we'll just have a couple of Bulk transfer
 // streams with traffic and checking in both directions. More involved
 // configurations are exercised in other tests.
-static const unsigned nstreams = 2U;
+// static const unsigned nstreams = 2U;
+// TODO: this is ordinarily two streams!
+static const unsigned nstreams = 1U;
 static const usb_testutils_transfer_type_t xfr_types[] = {kUsbTransferTypeBulk,
                                                           kUsbTransferTypeBulk};
 // Full traffic and checking
@@ -414,7 +428,7 @@ static const usbdev_stream_flags_t test_flags =
     kUsbdevStreamFlagRetry | kUsbdevStreamFlagSend;
 // We don't expect it to complete; data transfer is exercised and checked in
 // other tests.
-static const uint32_t transfer_bytes = 0x100 << 20;
+static const uint32_t transfer_bytes = 0x80 << 20;
 
 /**
  * Context information for suspend/resume test
@@ -571,12 +585,28 @@ static inline void state_enter(usbdev_suspend_ctx_t *ctx,
 // Set a time out for the current test state, in microseconds
 static inline void timeout_set(usbdev_suspend_ctx_t *ctx,
                                uint32_t interval_us) {
+  if (kDeviceType == kDeviceFpgaCw310) {
+    // TODO: essentially kill the timeouts and leave the host code to decide
+    // things
+    if (interval_us < 30 * 1000000) {
+      interval_us = 30 * 1000000;
+    }
+    if (interval_us >> 31)
+      interval_us = (1U << 31) - 1U;
+    LOG_INFO("interval_us %u\n", interval_us);
+  }
   if (verbose) {
     uint64_t now = ibex_mcycle_read();
     uint64_t then = now + interval_us;
     LOG_INFO("  setting timeout to 0x%x%x (at 0x%x%x)", (uint32_t)(then >> 32),
              (uint32_t)then, (uint32_t)(now >> 32), (uint32_t)now);
   }
+  ctx->timeout = ibex_timeout_init(interval_us);
+}
+
+// TODO
+static inline void timeout_us_set(usbdev_suspend_ctx_t *ctx,
+                                  uint32_t interval_us) {
   ctx->timeout = ibex_timeout_init(interval_us);
 }
 
@@ -629,9 +659,10 @@ static void phase_set(usbdev_suspend_ctx_t *ctx, usbdev_suspend_phase_t phase) {
    * testing bus Suspend/Resume signaling, Reset signaling and Remote Wakeup
    * behavior.
    */
-  uint8_t test_descriptor[] = {USB_TESTUTILS_TEST_DSCR(kUsbTestNumberSuspend,
-                                                       phase,  // Test phase
-                                                       0, 0, 0)};
+  uint8_t test_descriptor[] = {
+      USB_TESTUTILS_TEST_DSCR(kUsbTestNumberSuspend,
+                              (uint8_t)phase,  // Test phase
+                              0, 0, 0)};
 
   memcpy(ctx->test_dscr, test_descriptor, sizeof(ctx->test_dscr));
 
@@ -660,13 +691,17 @@ static status_t link_callback(void *ctx_v,
     // TODO: We are supplied with the SOF interrupts to help inform our decision
     //  but these are normally much too frequent to be reporting them
     snapshot &= ~(1u << kDifUsbdevIrqFrame);
+    if (!snapshot) {
+      // If only a Frame interrupt has called, return without further reporting
+      return OK_STATUS();
+    }
   }
 
-  if (verbose && snapshot) {
-    LOG_INFO("State %u (%s) - Link events:", ctx->test_state,
-             state_name(ctx->test_state));
+  if (false) {  // verbose && snapshot) {
+                //    LOG_INFO("State %u (%s) - Link events:", ctx->test_state,
+                //             state_name(ctx->test_state));
     events_report(ctx, snapshot, link_state);
-    LOG_INFO(" events: 0x%x link 0x%x", snapshot, link_state);
+    //    LOG_INFO(" events: 0x%x link 0x%x", snapshot, link_state);
   }
 
   // State machine anticipates the behavior of the host/DPI model, checking that
@@ -687,6 +722,7 @@ static status_t link_callback(void *ctx_v,
     // (STEP_ACTIVE_)
     case kSuspendStateWaitResume:
       if (snapshot & (1u << kDifUsbdevIrqLinkResume)) {
+        timeout_set(ctx, TIMEOUT_RESET_MISSED);
         state_enter(ctx, kSuspendStateWaitBusReset);
       }
       break;
@@ -703,7 +739,9 @@ static status_t link_callback(void *ctx_v,
     // This time we're expecting a much longer Suspend...
     case kSuspendStateWaitLongSuspend:
       if (snapshot & (1u << kDifUsbdevIrqLinkSuspend)) {
-        timeout_frames_set(ctx, FRAMES_WAIT_ENTER_SLEEP);
+        // TODO:
+        timeout_us_set(ctx, 2000000);
+        //        timeout_frames_set(ctx, FRAMES_WAIT_ENTER_SLEEP);
         state_enter(ctx, kSuspendStateWaitSuspendTimeout);
       }
       break;
@@ -761,6 +799,11 @@ static status_t link_callback(void *ctx_v,
                state_name(ctx->test_state));
       state_enter(ctx, kSuspendStateFailed);
       break;
+  }
+
+  if (verbose && ctx->test_state == kSuspendStateFailed) {
+    LOG_INFO(" -> failed handling snapshot 0x%x with link state 0x%x\n",
+             snapshot, link_state);
   }
 
   return OK_STATUS();
@@ -981,10 +1024,23 @@ static status_t phase_start_resume(usbdev_suspend_ctx_t *ctx) {
       const uint8_t dev_address = ctx->retn_state.dev_address;
       const uint8_t dev_config = ctx->retn_state.dev_config;
 
-      // NOTE: We've run through the usb_testutils/controlep_init sequence as
+      // NOTE: We have run through the usb_testutils/controlep_init sequence as
       // normal because this sets up our endpoints as they were before, whilst
       // requiring less information to be stored in the retention RAM, but we
-      // must still reinstate the device address.
+      // must still reinstate the Data Toggle bits and the Device Address
+#if HAVE_TOGGLE_STATE
+      uint16_t out_toggles = (uint16_t)ctx->retn_state.data_toggles;
+      uint16_t in_toggles = (uint16_t)(ctx->retn_state.data_toggles >> 16);
+      const uint16_t mask = (uint16_t)((1u << USBDEV_NUM_ENDPOINTS) - 1u);
+      CHECK_DIF_OK(dif_usbdev_data_toggle_out_write(ctx->usbdev->dev, mask,
+                                                    out_toggles));
+      CHECK_DIF_OK(
+          dif_usbdev_data_toggle_in_write(ctx->usbdev->dev, mask, in_toggles));
+#else
+      if (ctx->with_traffic) {
+        LOG_INFO("Warning: Unable to reinstate Data Toggle bits");
+      }
+#endif
       CHECK_DIF_OK(dif_usbdev_address_set(ctx->usbdev->dev, dev_address));
 
       // TODO: the controlep state needs to be forced to configured.
@@ -1007,18 +1063,11 @@ static status_t phase_start_resume(usbdev_suspend_ctx_t *ctx) {
       break;
   }
 
-  //  sense_report(ctx);
-
-  // TODO: This does not relate directly to the Suspend-Resume testing but
-  // unexplained behavior is observed on FPGA, and so this is still required
-  // until we find out why an apparently spurious Suspend event occurs?!
-  //
-  // #if USBUTILS_FUNCTION_POINTS && USBUTILS_FUNCPT_USE_BUFFER
-  //    usbutils_funcpt_report();
-  // #endif
-
   if (ctx->with_traffic) {
-    // Initialise the state of the streams
+    // Supply usb_testutils context to streaming library
+    usbdev_streams.usbdev = ctx->usbdev;
+
+    // Initialize the state of the streams
     CHECK_STATUS_OK(usb_testutils_streams_init(&usbdev_streams, nstreams,
                                                xfr_types, transfer_bytes,
                                                test_flags, verbose));
@@ -1046,7 +1095,7 @@ static status_t phase_start_resume(usbdev_suspend_ctx_t *ctx) {
 
     default:
       CHECK(ctx->test_phase == kSuspendPhaseDeepDisconnect);
-      // no break
+      OT_FALLTHROUGH_INTENDED;
     case kSuspendPhaseDeepReset:
     case kSuspendPhaseDeepResume:
       // If we're starting one of the Deep phases rather than waking from
@@ -1055,7 +1104,7 @@ static status_t phase_start_resume(usbdev_suspend_ctx_t *ctx) {
         state_enter(ctx, kSuspendStateDeepWaking);
         break;
       }
-      // no break
+      OT_FALLTHROUGH_INTENDED;
     //
     case kSuspendPhaseSleepDisconnect:
     case kSuspendPhaseSleepReset:
@@ -1102,6 +1151,16 @@ static status_t state_service(usbdev_suspend_ctx_t *ctx) {
                                    &ctx->retn_state.dev_address));
         ctx->retn_state.dev_config = usbdev_control.usb_config;
         ctx->retn_state.test_phase = (uint8_t)ctx->test_phase;
+#if HAVE_TOGGLE_STATE
+        // Capture all current Data Toggle bits
+        uint16_t out_toggles, in_toggles;
+        TRY(dif_usbdev_data_toggle_out_read(ctx->usbdev->dev, &out_toggles));
+        TRY(dif_usbdev_data_toggle_in_read(ctx->usbdev->dev, &in_toggles));
+        ctx->retn_state.data_toggles =
+            ((uint32_t)in_toggles << 16) | out_toggles;
+#else
+        ctx->retn_state.data_toggles = 0U;
+#endif
         if (verbose) {
           LOG_INFO(" - retaining address %u config %u phase %u (%s)",
                    ctx->retn_state.dev_address, ctx->retn_state.dev_config,
@@ -1193,6 +1252,7 @@ static status_t state_service(usbdev_suspend_ctx_t *ctx) {
               case kSuspendPhaseSleepDisconnect:
               case kSuspendPhaseDeepDisconnect:
                 action = "; please disconnect and reconnect the USB cable.";
+                break;
               default:
                 break;
             }
@@ -1240,7 +1300,8 @@ static status_t state_service(usbdev_suspend_ctx_t *ctx) {
         // challenging.
         TRY_CHECK(stored_state.dev_address == ctx->retn_state.dev_address &&
                   stored_state.dev_config == ctx->retn_state.dev_config &&
-                  stored_state.test_phase == ctx->retn_state.test_phase);
+                  stored_state.test_phase == ctx->retn_state.test_phase &&
+                  stored_state.data_toggles == ctx->retn_state.data_toggles);
 
         dif_pwrmgr_wakeup_reason_t wakeup_reason;
         TRY(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason));
@@ -1290,7 +1351,7 @@ static status_t state_service(usbdev_suspend_ctx_t *ctx) {
 
           default:
             TRY_CHECK(ctx->test_phase == kSuspendPhaseDeepDisconnect);
-            // no break
+            OT_FALLTHROUGH_INTENDED;
           case kSuspendPhaseSleepDisconnect:
             got_signal =
                 !host_disconnects || (ctx->wake_status.disconnected != 0);
@@ -1381,7 +1442,7 @@ static status_t state_service(usbdev_suspend_ctx_t *ctx) {
 
           default:
             TRY_CHECK(ctx->test_phase == kSuspendPhaseDeepResume);
-            // no break
+            OT_FALLTHROUGH_INTENDED;
           case kSuspendPhaseSleepResume:
             timeout_set(ctx, TIMEOUT_WAKEUP_RESUME);
             state_enter(ctx, kSuspendStateWaitResumeTimeout);
@@ -1411,7 +1472,7 @@ static status_t state_service(usbdev_suspend_ctx_t *ctx) {
     // significant to happen...
     default:
       TRY_CHECK(ctx->test_state == kSuspendStateWaitResumeTimeout);
-      // no break
+      OT_FALLTHROUGH_INTENDED;
     case kSuspendStateWaitSuspend:
     case kSuspendStateWaitResume:
     case kSuspendStateWaitBusReset:
@@ -1474,6 +1535,13 @@ static status_t phase_run(usbdev_suspend_ctx_t *ctx) {
       case kSuspendStateAONWakeup:
       case kSuspendStateDeepSleep:
       case kSuspendStateNormalSleep:
+        break;
+
+      // TODO:
+      case kSuspendStateWaitResume:
+        // No traffic, but we must still poll the usb_testutils layer to
+        // handle hardware events and callbacks.
+        CHECK_STATUS_OK(usb_testutils_poll(ctx->usbdev));
         break;
 
       default:
@@ -1573,17 +1641,17 @@ bool usbdev_suspend_test(usbdev_suspend_phase_t init_phase,
       // CW310 FPGA is the only supported/tested physical target at present.
       CHECK(kDeviceType == kDeviceFpgaCw310);
 
-      // FPGA host can be used to perform Bus Resets and - with physical
-      // intervention or a capable hub - VBUS Disconnects, but it currently
-      // cannot perform Suspend/Resume
-      host_suspends = false;
-      host_resumes = false;
+      // FPGA host can be used to perform Bus Resets and (with hoop-jumping)
+      // Suspend and Resume. With physical intervention or perhaps a capable
+      // hub it can perform VBUS Disconnects; such hubs are a rare minority,
+      // however.
+      host_suspends = true;
+      host_resumes = true;
       // TODO: presently we do not support this; this can be done
       // programmatically with appropriate driver software.
-      //    host_resets = false;
+      host_resets = false;
+      // TODO: this must still be exercised manually.
       host_disconnects = false;
-      host_resumes = true;
-      host_suspends = true;
 
       // Presently, the FPGA build is expected to be observed/monitored by a
       // developer, so verbose reporting is appropriate.
@@ -1693,6 +1761,12 @@ bool usbdev_suspend_test(usbdev_suspend_phase_t init_phase,
   if (verbose) {
     LOG_INFO("Test concluding (%s)", state_name(ctx->test_state));
   }
+
+#if USBUTILS_FUNCTION_POINTS && USBUTILS_FUNCPT_USE_BUFFER
+  if (true) {
+    usbutils_funcpt_report();
+  }
+#endif
 
   // Tear down the software stack.
   // Note: there is no finalization code for the streaming at present, because

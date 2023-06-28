@@ -8,8 +8,145 @@
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
+// TODO - AML for diags
+// #include "sw/device/lib/testing/test_framework/check.h"
 
 #include "usbdev_regs.h"  // Generated.
+#if AML_HACK
+
+typedef enum log_severity {
+  kLogSeverityInfo,
+  kLogSeverityWarn,
+  kLogSeverityError,
+  kLogSeverityFatal,
+} log_severity_t;
+
+typedef struct log_fields {
+  /**
+   * Indicates the severity of the LOG.
+   */
+  log_severity_t severity;
+  /**
+   * Name of the file at which a LOG line occurs, e.g. `__FILE__`. There
+   * are no requirements for this string, other than that it be some kind of
+   * UNIX-like pathname.
+   */
+  const char *file_name;
+  /**
+   * Indicates the line number at which the LOG line occurs, e.g., `__LINE__`.
+   */
+  uint32_t line;
+  /**
+   * Indicates the number of arguments passed to the format string.
+   *
+   * This value used only in DV mode, and is ignored by non-DV logging.
+   */
+  uint32_t nargs;
+  /**
+   * The actual format string.
+   */
+  const char *format;
+} log_fields_t;
+
+// Internal functions exposed only for access by macros. Their
+// real doxygen can be found in log.c.
+/**
+ * Implementation detail.
+ */
+static void (*base_log_internal_core)(log_fields_t log, ...);
+OT_WARN_UNUSED_RESULT
+static uint32_t get_buffer_addr(uint8_t buffer_id, size_t offset);
+
+dif_result_t dif_usbdev_log(const dif_usbdev_t *usbdev, void (*log)(void)) {
+  base_log_internal_core = (void (*)(log_fields_t log, ...))log;
+  return kDifOk;
+}
+
+dif_result_t dif_usbdev_mem_read(const dif_usbdev_t *usbdev,
+                                 dif_usbdev_buffer_t *buffer, uint8_t *dst,
+                                 size_t dst_len) {
+  const uint32_t buffer_addr = get_buffer_addr(buffer->id, buffer->offset);
+  mmio_region_memcpy_from_mmio32(usbdev->base_addr, buffer_addr, dst, dst_len);
+  return kDifOk;
+}
+
+dif_result_t dif_usbdev_mem_write(const dif_usbdev_t *usbdev,
+                                  dif_usbdev_buffer_t *buffer,
+                                  const uint8_t *src, size_t src_len) {
+  const uint32_t buffer_addr = get_buffer_addr(buffer->id, buffer->offset);
+  mmio_region_memcpy_to_mmio32(usbdev->base_addr, buffer_addr, src, src_len);
+  return kDifOk;
+}
+
+#define OT_VA_ARGS_COUNT(dummy, ...)                                          \
+  OT_SHIFT_N_VARIABLE_ARGS_(dummy, ##__VA_ARGS__, 31, 30, 29, 28, 27, 26, 25, \
+                            24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13,   \
+                            12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
+
+// Implementation details for `OT_VA_ARGS_COUNT()`.
+#define OT_SHIFT_N_VARIABLE_ARGS_(...) OT_GET_NTH_VARIABLE_ARG_(__VA_ARGS__)
+#define OT_GET_NTH_VARIABLE_ARG_(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, \
+                                 x11, x12, x13, x14, x15, x16, x17, x18, x19, \
+                                 x20, x21, x22, x23, x24, x25, x26, x27, x28, \
+                                 x29, x30, x31, n, ...)                       \
+  n
+
+#define LOG_MAKE_FIELDS_(_severity, _format, ...)                         \
+  {                                                                       \
+    .severity = _severity, .file_name = "" __FILE__ "", .line = __LINE__, \
+    .nargs = OT_VA_ARGS_COUNT(_format, ##__VA_ARGS__), .format = _format, \
+  }
+
+#if 1
+#define LOG_INFO(...) LOG(kLogSeverityInfo, __VA_ARGS__)
+#else
+#define LOG_INFO(...)
+#endif
+
+#define LOG(severity, format, ...)                         \
+  {                                                        \
+    log_fields_t log_fields =                              \
+        LOG_MAKE_FIELDS_(severity, format, ##__VA_ARGS__); \
+    base_log_internal_core(log_fields, ##__VA_ARGS__);     \
+  }
+
+void dump_bytes(const uint8_t *data, unsigned n) {
+  static const char hex_digits[] = "0123456789abcdef";
+  const unsigned ncols = 0x10u;
+  char buf[ncols * 4u + 2u];
+
+  // Note: we have no generic printf functionality and must use LOG_INFO()
+  while (n > 0u) {
+    const unsigned chunk = (n > ncols) ? ncols : (unsigned)n;
+    const uint8_t *row = data;
+    unsigned idx = 0u;
+    char *dp = buf;
+
+    // Columns of hexadecimal bytes
+    while (idx < chunk) {
+      dp[0] = hex_digits[row[idx] >> 4];
+      dp[1] = hex_digits[row[idx++] & 0xfu];
+      dp[2] = ' ';
+      dp += 3;
+    }
+    while (idx++ < ncols) {
+      dp[2] = dp[1] = dp[0] = ' ';
+      dp += 3;
+    }
+
+    // Printable ASCII characters
+    for (unsigned idx = 0u; idx < chunk; idx++) {
+      char ch = row[idx];
+      *dp++ = (ch < ' ' || ch >= 0x80u) ? '.' : ch;
+    }
+    *dp = '\0';
+    LOG_INFO("%s", buf);
+    data += chunk;
+    n -= chunk;
+  }
+}
+
+#endif
 
 /**
  * Definition in the header file (and probably other places) must be updated if
@@ -274,6 +411,9 @@ dif_result_t dif_usbdev_fill_available_fifo(
     if (!buffer_pool_remove(buffer_pool, &buffer_id)) {
       return kDifError;
     }
+#if AML_HACK
+    LOG_INFO("avail <- %u", buffer_id);
+#endif
     uint32_t reg_val =
         bitfield_field32_write(0, USBDEV_AVBUFFER_BUFFER_FIELD, buffer_id);
     mmio_region_write32(usbdev->base_addr, USBDEV_AVBUFFER_REG_OFFSET, reg_val);
@@ -397,6 +537,10 @@ dif_result_t dif_usbdev_recv(const dif_usbdev_t *usbdev,
       .length =
           (uint8_t)bitfield_field32_read(fifo_entry, USBDEV_RXFIFO_SIZE_FIELD),
   };
+#if AML_HACK
+  LOG_INFO("dif_usbdev_recv ep %u setup %c length %u", info->endpoint,
+           info->is_setup ? 'Y' : 'N', info->length);
+#endif
   // Init buffer struct
   *buffer = (dif_usbdev_buffer_t){
       .id = (uint8_t)bitfield_field32_read(fifo_entry,
@@ -539,6 +683,11 @@ dif_result_t dif_usbdev_send(const dif_usbdev_t *usbdev, uint8_t endpoint,
     return kDifBadArg;
   }
 
+#if AML_HACK
+  LOG_INFO("dif_usbdev_send buffer %u ep %u buffer of %u byte(s)", buffer->id,
+           endpoint, buffer->offset);
+#endif
+
   // Get the configin register offset of the endpoint.
   const uint32_t config_in_reg_offset =
       kEndpointHwInfos[endpoint].config_in_reg_offset;
@@ -668,6 +817,78 @@ dif_result_t dif_usbdev_address_get(const dif_usbdev_t *usbdev, uint8_t *addr) {
   return kDifOk;
 }
 
+#if HAVE_TOGGLE_STATE
+dif_result_t dif_usbdev_data_toggle_out_read(const dif_usbdev_t *usbdev,
+                                             uint16_t *toggles) {
+  if (usbdev == NULL || toggles == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg_val =
+      mmio_region_read32(usbdev->base_addr, USBDEV_OUT_DATA_TOGGLE_REG_OFFSET);
+  // Note: only 12 OUT endpoints defined.
+  *toggles = (uint16_t)reg_val;
+
+  return kDifOk;
+}
+
+dif_result_t dif_usbdev_data_toggle_in_read(const dif_usbdev_t *usbdev,
+                                            uint16_t *toggles) {
+  if (usbdev == NULL || toggles == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg_val =
+      mmio_region_read32(usbdev->base_addr, USBDEV_IN_DATA_TOGGLE_REG_OFFSET);
+  // Note: only 12 OUT endpoints defined.
+  *toggles = (uint16_t)reg_val;
+
+  return kDifOk;
+}
+
+dif_result_t dif_usbdev_data_toggle_out_write(const dif_usbdev_t *usbdev,
+                                              uint16_t mask, uint16_t state) {
+  if (usbdev == NULL) {
+    return kDifBadArg;
+  }
+
+  // Note: only 12 OUT endpoints defined.
+  mmio_region_write32(usbdev->base_addr, USBDEV_OUT_DATA_TOGGLE_REG_OFFSET,
+                      ((uint32_t)mask << 16) | state);
+
+  return kDifOk;
+}
+
+dif_result_t dif_usbdev_data_toggle_in_write(const dif_usbdev_t *usbdev,
+                                             uint16_t mask, uint16_t state) {
+  if (usbdev == NULL) {
+    return kDifBadArg;
+  }
+
+  // Note: only 12 OUT endpoints defined.
+  mmio_region_write32(usbdev->base_addr, USBDEV_IN_DATA_TOGGLE_REG_OFFSET,
+                      ((uint32_t)mask << 16) | state);
+
+  return kDifOk;
+}
+
+dif_result_t dif_usbdev_clear_data_toggle(const dif_usbdev_t *usbdev,
+                                          uint8_t endpoint) {
+  if (usbdev == NULL) {
+    return kDifBadArg;
+  }
+  //  mmio_region_write32(usbdev->base_addr,
+  //  USBDEV_DATA_TOGGLE_CLEAR_REG_OFFSET,
+  //                      1u << endpoint);
+  uint32_t reg_val = (uint32_t)1u << (endpoint + 16u);
+  mmio_region_write32(usbdev->base_addr, USBDEV_OUT_DATA_TOGGLE_REG_OFFSET,
+                      reg_val);
+  mmio_region_write32(usbdev->base_addr, USBDEV_IN_DATA_TOGGLE_REG_OFFSET,
+                      reg_val);
+
+  return kDifOk;
+}
+#else
 dif_result_t dif_usbdev_clear_data_toggle(const dif_usbdev_t *usbdev,
                                           uint8_t endpoint) {
   if (usbdev == NULL) {
@@ -677,6 +898,7 @@ dif_result_t dif_usbdev_clear_data_toggle(const dif_usbdev_t *usbdev,
                       1u << endpoint);
   return kDifOk;
 }
+#endif
 
 dif_result_t dif_usbdev_status_get_frame(const dif_usbdev_t *usbdev,
                                          uint16_t *frame_index) {
@@ -688,7 +910,7 @@ dif_result_t dif_usbdev_status_get_frame(const dif_usbdev_t *usbdev,
       mmio_region_read32(usbdev->base_addr, USBDEV_USBSTAT_REG_OFFSET);
   // Note: size of frame index is 11 bits.
   *frame_index =
-      (uint8_t)bitfield_field32_read(reg_val, USBDEV_USBSTAT_FRAME_FIELD);
+      (uint16_t)bitfield_field32_read(reg_val, USBDEV_USBSTAT_FRAME_FIELD);
 
   return kDifOk;
 }
@@ -971,9 +1193,9 @@ dif_result_t dif_usbdev_buffer_raw_write(const dif_usbdev_t *usbdev, uint8_t id,
       const uint8_t *restrict bs = (uint8_t *)ws;
       uint32_t d = bs[0];
       if (src_len > 1) {
-        d |= (bs[1] << 8);
+        d |= ((uint32_t)bs[1] << 8);
         if (src_len > 2) {
-          d |= (bs[2] << 16);
+          d |= ((uint32_t)bs[2] << 16);
         }
       }
       // Note: we can only perform full 32-bit writes to the packet buffer but

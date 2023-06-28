@@ -221,26 +221,46 @@ module tb;
   );
 `endif
 
-  // TODO: Introduce our local 48MHz clock and reset, because otherwise they will disappear!
+  // TODO: See whether we can use a clk_rst_if for this
   localparam real USBDPI_CLK_PERIOD = (1000000.0 / 48) / 1000.0;
+  // USB DPI model runs on its own clock for two reasons
+  // - it must remain operable when the chip enters Deep Sleep, so that it
+  //   may provide the Wakeup stimulus.
+  // - operating at the opposite frequency extreme permits us to exercise the
+  //   synchronization and bitstream extraction.
+  real usbdpi_clk_hperiod;
   logic usbdpi_clk;
   logic usbdpi_rst_n;
+  logic usbdpi_clk_enabled;
+  int usbdpi_clk_freq_delta;
   initial
-  begin
+  begin : usbdpi_clk_setup
+    real period_us;
+    real freq;
+    // Read the frequency delta of the usbdpi model relative to usb_clk
+    if (!$value$plusargs("usbdpi_clk_freq_delta=%d", usbdpi_clk_freq_delta)) begin
+      usbdpi_clk_freq_delta = 0;
+    end
+    // Calculate the clock period
+    freq = (48000000 + usbdpi_clk_freq_delta) / 1000000.0;
+    period_us = (1000000.0 / freq);
+    usbdpi_clk_hperiod = period_us / 2000.0;
+    // Enable the clock now that we have a defined period
+    usbdpi_clk_enabled = 1'b1;
     usbdpi_clk = 1'b1;
     usbdpi_rst_n = 1'b0;
     # 1000000
     usbdpi_rst_n = 1'b1;
   end
   always begin
-    #(USBDPI_CLK_PERIOD/2) usbdpi_clk = ~usbdpi_clk;
+    if (usbdpi_clk_enabled) begin
+      #(usbdpi_clk_hperiod) usbdpi_clk = ~usbdpi_clk;
+    end
   end
 
   // Interface presently just permits the DPI model to be easily connected and
   // disconnected as required, since SENSE pin is a MIO with other uses.
   usb20_if u_usb20_if (
-//    .clk_i            (dut.chip_if.usb_clk),
-//    .rst_ni           (dut.chip_if.usb_rst_n),
     .clk_i            (usbdpi_clk),
     .rst_ni           (usbdpi_rst_n),
 
@@ -251,8 +271,6 @@ module tb;
 
   // Instantiate & connect the USB DPI model for top-level testing.
   usb20_usbdpi u_usb20_usbdpi (
-//    .clk_i            (dut.chip_if.usb_clk),
-//    .rst_ni           (dut.chip_if.usb_rst_n),
     .clk_i            (usbdpi_clk),
     .rst_ni           (usbdpi_rst_n),
 

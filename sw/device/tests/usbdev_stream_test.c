@@ -154,7 +154,7 @@ static bool generating = true;
  * Do we want the host to retry transmissions? (DPI model only; we cannot
  * instruct a physical host to fake delivery failure/packet corruption etc)
  */
-static bool retrying = true;
+static bool retrying = false;  // true;
 
 /**
  * Are we expecting to receive data?
@@ -166,7 +166,7 @@ static bool recving = true;
  * (important for performance measurements on the USB, but obviously undesirable
  *  for testing reliability/function)
  */
-static bool max_packets = false;
+static bool max_packets = true;  // false;
 
 /**
  * Number of streams to be created

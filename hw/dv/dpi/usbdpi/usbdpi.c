@@ -161,52 +161,12 @@ static void bus_resume(usbdpi_ctx_t *ctx) {
   ctx->bus_state = kUsbIdle;
 }
 
-/**
- * Create a USB DPI instance, returning a 'chandle' for later use
- */
-void *usbdpi_create(const char *name, int loglevel) {
-  // Use calloc for zero-initialisation
-  usbdpi_ctx_t *ctx = (usbdpi_ctx_t *)calloc(1, sizeof(usbdpi_ctx_t));
-  assert(ctx);
-
-  // Note: calloc has initialized most of the fields for us
-  // ctx->tick = 0;
-  // ctx->tick_bits = 0;
-  // ctx->frame = 0;
-  // ctx->framepend = false;
-  // ctx->frame_start = 0;
-  // ctx->last_pu = 0;
-  // ctx->driving = 0;
-  // ctx->baudrate_set_successfully = 0;
-
-  ctx->loglevel = loglevel;
-
-  bus_disconnect(ctx, SENSE_AT);
-
-  char cwd[FILENAME_MAX];
-  char *cwd_rv;
-  cwd_rv = getcwd(cwd, sizeof(cwd));
-  assert(cwd_rv != NULL);
-
-  // Monitor log file
-  int rv = snprintf(ctx->mon_pathname, FILENAME_MAX, "%s/%s.log", cwd, name);
-  assert(rv <= FILENAME_MAX && rv > 0);
-
-  ctx->mon = usb_monitor_init(ctx->mon_pathname, usbdpi_data_callback, ctx);
-
-  // Prepare the transfer descriptors for use
-  usb_transfer_setup(ctx);
-
-  return (void *)ctx;
-}
-
-void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
-  usbdpi_ctx_t *ctx = (usbdpi_ctx_t *)ctx_void;
+// Sample the bus signals
+static bool bus_sample(usbdpi_ctx_t *ctx, unsigned *pdp, unsigned *pdn,
+                       uint32_t d2p) {
   assert(ctx);
 
   // Ascertain the state of the D+/D- signals from the device
-  // TODO - migrate to a simple function
-  uint32_t d2p = usb_d2p[0];
   unsigned dp, dn;
   if (d2p & D2P_TX_USE_D_SE0) {
     // Single-ended mode uses D and SE0
@@ -236,6 +196,110 @@ void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
            (!(d2p & D2P_DP_EN) && (d2p & D2P_DPPU));
       dn = (d2p & D2P_DN_EN) && (d2p & D2P_DN);
     }
+  }
+
+  // Return state of DP/DN signals
+  if (pdp)
+    *pdp = dp;
+  if (pdn)
+    *pdn = dn;
+
+  // If the bus is idle but we've detected a non-idle state,
+  // adjust the sampling phase
+  if (ctx->state == ST_IDLE) {
+    // [DP,DN] so 2'b10 is the Idle state, making 00 and 11 transition states,
+    // if transmission is commencing.
+    switch ((dp << 1) | dn) {
+      // Both signals transitioned simultaneously.
+      case 1U:
+        // Aim for the middle of the Eye
+        ctx->tick_sample = (ctx->tick + 1U) & 3U;
+        break;
+      // Idle state, nothing to do.
+      case 2U:
+        break;
+      // These are anticipated to be transmission states; in the event that
+      // the propagation delays are different on DP and DN (unikely in
+      // simulation!)
+      case 0U:
+      case 3U:
+        ctx->tick_sample = (ctx->tick_bits + 2U) & 3U;
+        break;
+    }
+  }
+
+  // TODO: retain our decisions for monitoring in the waveforms during bring up
+  ctx->sampled_dp = dp;
+  ctx->sampled_dn = dn;
+  ctx->sampled_bus = ((ctx->tick & 3U) == ctx->tick_sample);
+
+  return ((ctx->tick & 3U) == ctx->tick_sample);
+}
+
+/**
+ * Create a USB DPI instance, returning a 'chandle' for later use
+ */
+void *usbdpi_create(const char *name, int loglevel) {
+  // Use calloc for zero-initialisation
+  usbdpi_ctx_t *ctx = (usbdpi_ctx_t *)calloc(1, sizeof(usbdpi_ctx_t));
+  assert(ctx);
+
+  // Note: calloc has initialized most of the fields for us
+  // ctx->tick = 0;
+  // ctx->tick_bits = 0;
+  // ctx->frame = 0;
+  // ctx->framepend = false;
+  // ctx->frame_start = 0;
+  // ctx->last_pu = 0;
+  // ctx->driving = 0;
+  // ctx->baudrate_set_successfully = 0;
+
+  // Sample on the final phase of the 4 times oversampling; we'll adjust this
+  // whenever we detect packet transmission from the device.
+  ctx->tick_sample = 3U;
+
+  ctx->loglevel = loglevel;
+
+  bus_disconnect(ctx, SENSE_AT);
+
+  char cwd[FILENAME_MAX];
+  char *cwd_rv;
+  cwd_rv = getcwd(cwd, sizeof(cwd));
+  assert(cwd_rv != NULL);
+
+  // Monitor log file
+  int rv = snprintf(ctx->mon_pathname, FILENAME_MAX, "%s/%s.log", cwd, name);
+  assert(rv <= FILENAME_MAX && rv > 0);
+
+  ctx->mon = usb_monitor_init(ctx->mon_pathname, usbdpi_data_callback, ctx);
+
+  // Prepare the transfer descriptors for use
+  usb_transfer_setup(ctx);
+
+  return (void *)ctx;
+}
+
+// Device-to-Host transmission
+// - this function samples the data arriving from the device, tracking EOP
+//   transitions and providing the bus traffic to the usb_monitor for decoding
+//   and recording.
+void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
+  usbdpi_ctx_t *ctx = (usbdpi_ctx_t *)ctx_void;
+  assert(ctx);
+
+  // New clock tick; 4 times oversampling of the 12Mbps Full Speed, so we're
+  // operating at 48MHz. A new bit interval occurs every 4 clock cycles
+  ctx->tick++;
+  ctx->tick_bits = ctx->tick >> 2;
+
+  // Ascertain the state of the DP/DN signals from the device; we use the
+  // the transitions from Idle to adjust the sampling phase, which allows us to
+  // model a frequency difference between the device and the (DPI) host.
+  uint32_t d2p = usb_d2p[0];
+  unsigned dp, dn;
+  if (!bus_sample(ctx, &dp, &dn, d2p)) {
+    // Not sampling on this clock phase.
+    return;
   }
 
   // TODO: check the timing of the device responses to ensure compliance with
@@ -1197,6 +1261,9 @@ static void frame_start(usbdpi_ctx_t *ctx) {
   ctx->framepend = true;
 }
 
+// Host-to-Device Transmission
+// - this function does most of the work of keeping track of the host state,
+//   and handling communication with the device.
 uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
   usbdpi_ctx_t *ctx = (usbdpi_ctx_t *)ctx_void;
   assert(ctx);
@@ -1206,17 +1273,13 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
   int dat;
 
   // The 48MHz clock runs at 4 times the bus clock for a full speed (12Mbps)
-  // device
-  //
-  // TODO - vary the phase over the duration of the test to check device
-  //        synchronization
-  ctx->tick++;
-  ctx->tick_bits = ctx->tick >> 2;
-  if (ctx->tick & 3) {
+  // device and the sampling phase is adjusted according to observed transitions
+  // on the device signal (see usbdpi_device_to_host)
+  if ((ctx->tick & 3U) != ctx->tick_sample) {
     return ctx->driving;
   }
 
-  // Monitor, analyse and record USB bus activity
+  // Monitor, analyze and record USB bus activity
   usb_monitor(ctx->mon, ctx->loglevel, ctx->tick_bits,
               (ctx->state != ST_IDLE) && (ctx->state != ST_GET), ctx->driving,
               d2p, &(ctx->lastrxpid));
@@ -1607,7 +1670,11 @@ void usbdpi_diags(void *ctx_void, svBitVecVal *diags) {
 
 #if 1
   diags[3] = usb_monitor_diags(ctx->mon);
-  diags[2] = (ctx->substep & 0xfU);
+  diags[2] =  // TODO: perhaps temporary to assist in sampling bring up
+      (ctx->tick_sample << 8) | (ctx->sampled_dn << 12) |
+      (ctx->sampled_dp << 13) | (ctx->sampled_bus << 16) |
+      // ODOT:
+      (ctx->substep & 0xfU);
   diags[1] =
       (ctx->step << 25) | (ctx->bus_state << 20) | (ctx->tick_bits >> 12);
   diags[0] = (ctx->tick_bits << 20) | ((ctx->frame & 0x7ffU) << 9) |

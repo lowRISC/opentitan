@@ -92,6 +92,8 @@ static bool usb_testutils_transfer_next_part(
   return true;
 }
 
+volatile dif_result_t recv_res;
+
 status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
   static const uint64_t capture_interval = 2000 * 10;  // 2ms, 10MHz FPGA
   static uint64_t next_capture;
@@ -138,7 +140,7 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
 
   USBUTILS_FUNCPT(0x9011, istate);
 
-  if (true) {
+  if (false) {
     dif_usbdev_link_state_t link_state;
     TRY(dif_usbdev_status_get_link_state(ctx->dev, &link_state));
     switch (link_state) {
@@ -168,7 +170,7 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
         break;
     }
   }
-  if (true) {
+  if (false) {
     dif_usbdev_phy_pins_sense_t sense;
     TRY(dif_usbdev_get_phy_pins_status(ctx->dev, &sense));
     uint32_t data = (sense.rx_dp ? 1U : 0) | (sense.rx_dn ? 2U : 0) |
@@ -236,6 +238,8 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
       dif_usbdev_buffer_t buffer;
       TRY(dif_usbdev_recv(ctx->dev, &packet_info, &buffer));
 
+      // LOG_INFO("rx %u ln %u st %u id %u", packet_info.endpoint,
+      // packet_info.length, packet_info.is_setup, buffer.id);
       unsigned ep = packet_info.endpoint;
       if (ctx->out[ep].rx_callback) {
         TRY(ctx->out[ep].rx_callback(ctx->out[ep].ep_ctx, packet_info, buffer));
@@ -250,8 +254,8 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
   if (istate & (1u << kDifUsbdevIrqLinkReset)) {
     static int cnt = 0;
     USBUTILS_FUNCPT(0x5e57, cnt);
-    capture = true;
-    next_capture = ibex_mcycle_read() + capture_interval;
+//    capture = true;
+//    next_capture = ibex_mcycle_read() + capture_interval;
 // LOG_INFO("LR");
 #if 0
 if (++cnt == 3)
@@ -299,25 +303,27 @@ for (unsigned i = 0U; i < 100U; i++) {
     USBUTILS_FUNCPT(0x50f, ctx->frame);
   }
 
-  // TODO: We should perhaps record all of these events as concurrent, since we
-  // cannot ascertain the temporal ordering
-  if (istate & (1u << kDifUsbdevIrqPowered)) {
-    USBUTILS_TRACE(0x90e5, "USB: Powered");
-  }
-  if (istate & (1u << kDifUsbdevIrqDisconnected)) {
-    USBUTILS_TRACE(0xd15c, "USB: Disconnected");
-  }
-  if (istate & (1u << kDifUsbdevIrqHostLost)) {
-    USBUTILS_TRACE(0x7057, "USB: Host Lost");
-  }
-  if (istate & (1u << kDifUsbdevIrqLinkSuspend)) {
-    USBUTILS_TRACE(0x559e, "USB: Link Suspend");
-  }
-  if (istate & (1u << kDifUsbdevIrqLinkResume)) {
-    USBUTILS_TRACE(0x5e56, "USB: Link Resume");
-  }
-  if (istate & (1u << kDifUsbdevIrqLinkReset)) {
-    USBUTILS_TRACE(0x5e5e, "USB: Link Reset");
+  if (false) {
+    // TODO: We should perhaps record all of these events as concurrent, since
+    // we cannot ascertain the temporal ordering
+    if (istate & (1u << kDifUsbdevIrqPowered)) {
+      USBUTILS_TRACE(0x90e5, "USB: Powered");
+    }
+    if (istate & (1u << kDifUsbdevIrqDisconnected)) {
+      USBUTILS_TRACE(0xd15c, "USB: Disconnected");
+    }
+    if (istate & (1u << kDifUsbdevIrqHostLost)) {
+      USBUTILS_TRACE(0x7057, "USB: Host Lost");
+    }
+    if (istate & (1u << kDifUsbdevIrqLinkSuspend)) {
+      USBUTILS_TRACE(0x559e, "USB: Link Suspend");
+    }
+    if (istate & (1u << kDifUsbdevIrqLinkResume)) {
+      USBUTILS_TRACE(0x5e56, "USB: Link Resume");
+    }
+    if (istate & (1u << kDifUsbdevIrqLinkReset)) {
+      USBUTILS_TRACE(0x5e5e, "USB: Link Reset");
+    }
   }
 
   // Report all link events to the registered callback handler, if any
@@ -329,13 +335,13 @@ for (unsigned i = 0U; i < 100U; i++) {
         (1u << kDifUsbdevIrqFrame);
     if (istate & irqs_link) {
       // Retrieve and report the current link state, since this should help
-      // resolve any confusion could by delayed reporting of earlier link events
-      // (eg. disconnect/powered, suspend/resume)
+      // resolve any confusion caused by delayed reporting of earlier link
+      // events (eg. disconnect/powered, suspend/resume)
       dif_usbdev_link_state_t link_state;
-
       TRY(dif_usbdev_status_get_link_state(ctx->dev, &link_state));
 
-      TRY(ctx->link_callback(ctx->ctx_link, istate, link_state));
+      // Indicate only the link-related interrupts
+      TRY(ctx->link_callback(ctx->ctx_link, istate & irqs_link, link_state));
     }
   }
 
@@ -362,8 +368,7 @@ for (unsigned i = 0U; i < 100U; i++) {
     if (istate &
         ((1u << kDifUsbdevIrqRxFull) | (1u << kDifUsbdevIrqAvOverflow) |
          (1u << kDifUsbdevIrqLinkInErr) | (1u << kDifUsbdevIrqRxCrcErr) |
-         (1u << kDifUsbdevIrqRxPidErr) | (1u << kDifUsbdevIrqRxBitstuffErr) |
-         (1u << kDifUsbdevIrqLinkOutErr))) {
+         (1u << kDifUsbdevIrqRxPidErr))) {
       LOG_INFO("USB: Unexpected interrupts: 0x%08x", istate);
     } else {
       // Other events are optionally reported
@@ -572,6 +577,11 @@ status_t usb_testutils_endpoint_remove(usb_testutils_ctx_t *ctx, uint8_t ep) {
 
 status_t usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
                             bool en_diff_rcvr, bool tx_use_d_se0) {
+#if AML_HACK
+  LOG_INFO("****** AML HACK ******\n");
+  CHECK_DIF_OK(dif_usbdev_log(&usbdev, (void (*)(void))base_log_internal_core));
+#endif
+
   TRY_CHECK(ctx != NULL);
   ctx->dev = &usbdev;
   ctx->buffer_pool = &buffer_pool;

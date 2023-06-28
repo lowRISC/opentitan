@@ -28,6 +28,8 @@ typedef enum usb_testutils_ctstate {
   kUsbTestutilsCtStatOut,     // Waiting for OUT status stage
   kUsbTestutilsCtAddrStatIn,  // Queued status stage, waiting ack.
                               // After which, set dev_addr
+  kUsbTestutilsCtCfgStatIn,   // Queued status stage, waiting ack.
+                              // After which, set usb_config
   kUsbTestutilsCtStatIn,      // Queued status stage, waiting ack
   kUsbTestutilsCtError        // Something bad
 } usb_testutils_ctstate_t;
@@ -46,7 +48,17 @@ typedef struct usb_testutils_controlep_ctx {
   uint8_t ep;
   usb_testutils_ctstate_t ctrlstate;
   usb_testutils_device_state_t device_state;
+  /**
+   * New Device Address, to be set upon successful Status stage
+   */
   uint8_t new_dev;
+  /**
+   * New Device Configuration, to be set upon successful Status stage
+   */
+  uint8_t new_config;
+  /**
+   * Current Device Configuration
+   */
   uint8_t usb_config;
   /**
    * USB configuration descriptor
