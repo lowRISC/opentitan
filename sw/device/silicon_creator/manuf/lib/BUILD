@@ -20,6 +20,10 @@ package(default_visibility = ["//visibility:public"])
 
 ld_library(
     name = "sram_program_linker_script",
+    # We want to avoid page alignment since the SRAM program is not loaded at the beginning of the
+    # SRAM and we the generated ELF segment should not contain any headers (as this could overwrite
+    # some SRAM content)
+    non_page_aligned_segments = True,
     script = "sram_program.ld",
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
