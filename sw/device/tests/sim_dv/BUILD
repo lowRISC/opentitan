@@ -940,6 +940,7 @@ opentitan_functest(
         "//sw/device/lib/base:stdasm",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:sram_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
