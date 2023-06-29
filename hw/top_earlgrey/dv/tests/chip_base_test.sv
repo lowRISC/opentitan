@@ -73,6 +73,9 @@ class chip_base_test extends cip_base_test #(
                     $sformatf({"Unsupported plusarg value: +use_otp_image=%0s. An image associated",
                                "with this LC state needs to be created first."}, cfg.use_otp_image))
 
+    // Knob to skip ROM backdoor logging (for sims that use ROM macro).
+    void'($value$plusargs("skip_rom_bkdr_load=%0b", cfg.skip_rom_bkdr_load));
+
     // Set the test timeout value to be sufficiently large.
     test_timeout_ns = 50_000_000;
     test_timeout_ns = `DV_MAX2(test_timeout_ns, 5 * cfg.sw_test_timeout_ns);
