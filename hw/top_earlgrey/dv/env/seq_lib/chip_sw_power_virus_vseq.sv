@@ -134,7 +134,7 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
   // A local define to probe the state of an IP and to check if it is IDLE.
   `define _DV_PROBE_AND_CHECK_IDLE(SIGNAL_NAME, IDLE_VAL)          \
       SIGNAL_NAME = cfg.chip_vif.signal_probe_``SIGNAL_NAME``(SignalProbeSample); \
-      `uvm_info(`gfn, $sformatf("adc_ctrl_state = 0x%0x", SIGNAL_NAME), UVM_LOW); \
+      `uvm_info(`gfn, $sformatf("%s = 0x%0x", `"SIGNAL_NAME`", SIGNAL_NAME), UVM_LOW); \
       `DV_CHECK_NE(SIGNAL_NAME, IDLE_VAL);
 
   // A utility function to check the FSM states of the IPs.
@@ -143,8 +143,8 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
     logic spi_device_cio_csb_i;
     logic spi_host_0_cio_csb_o;
     logic [2:0] spi_host_1_fsm_state;
-    logic [csrng_pkg::MainSmStateWidth-1:0] csrng_main_fsm_state;
-    logic [5:0] aes_ctrl_fsm_state;
+    logic [2:0] csrng_acmd_q;
+    logic [3:0] aes_ctrl_rnd_ctr;
     logic [2:0] hmac_fsm_state;
     logic [5:0] kmac_fsm_state;
     logic [6:0] otbn_fsm_state;
@@ -163,8 +163,7 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
     `_DV_PROBE_AND_CHECK_IDLE(spi_device_cio_csb_i, 1'b1)
     `_DV_PROBE_AND_CHECK_IDLE(spi_host_0_cio_csb_o, 1'b1)
     `_DV_PROBE_AND_CHECK_IDLE(spi_host_1_fsm_state, 3'b000)
-    `_DV_PROBE_AND_CHECK_IDLE(csrng_main_fsm_state, csrng_pkg::MainSmIdle)
-    `_DV_PROBE_AND_CHECK_IDLE(aes_ctrl_fsm_state, aes_pkg::CTRL_IDLE)
+    `_DV_PROBE_AND_CHECK_IDLE(aes_ctrl_rnd_ctr, 4'b0000)
     `_DV_PROBE_AND_CHECK_IDLE(hmac_fsm_state, 3'b000)
     `_DV_PROBE_AND_CHECK_IDLE(kmac_fsm_state, 6'b011000)
     `_DV_PROBE_AND_CHECK_IDLE(otbn_fsm_state, otbn_pkg::OtbnStartStopStateInitial)
@@ -173,6 +172,10 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
     `_DV_PROBE_AND_CHECK_IDLE(entropy_src_fsm_state, entropy_src_main_sm_pkg::Idle)
     `_DV_PROBE_AND_CHECK_IDLE(pattgen_chan_1_0_enable, 2'b00)
     `_DV_PROBE_AND_CHECK_IDLE(pwm_core_cntr_en, 1'b0)
+
+    csrng_acmd_q = cfg.chip_vif.signal_probe_csrng_acmd_q(SignalProbeSample);
+    `uvm_info(`gfn, $sformatf("%s = 0x%0x", "csrng_acmd_q",csrng_acmd_q), UVM_LOW);
+    `DV_CHECK_GE(csrng_acmd_q, 2);
   endtask
 
   task pre_start();
