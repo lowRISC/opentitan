@@ -931,7 +931,7 @@
     //   // in the hardware, not the ROM that is backdoor loaded.
     //   en_run_modes: ["sw_test_mode_common"]
     //   run_opts: [
-    //     "+en_uart_logger=1",
+    //     "+skip_rom_bkdr_load=1",
     //     "+sw_test_timeout_ns=200_000_000",
     //     "+use_otp_image=OtpTypeCustom",
     //   ]

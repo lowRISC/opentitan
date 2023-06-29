@@ -17,6 +17,9 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // use spi or backdoor to load bootstrap on the next boot
   bit                 use_spi_load_bootstrap = 0;
 
+  // skip ROM backdoor loading (when using ROM macro block)
+  bit                 skip_rom_bkdr_load = 0;
+
   // chip top interfaces
   virtual chip_if       chip_vif;
 

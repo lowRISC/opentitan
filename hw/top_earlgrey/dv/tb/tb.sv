@@ -193,6 +193,9 @@ module tb;
 
   `define SIM_SRAM_IF u_sim_sram.u_sim_sram_if
 
+  // Knob to skip ROM backdoor logging (for sims that use ROM macro). Set below.
+  logic skip_rom_bkdr_load;
+
   // Instantiate & connect the simulation SRAM inside the CPU (rv_core_ibex) using forces.
   bit en_sim_sram = 1'b1;
   wire sel_sim_sram = !dut.chip_if.stub_cpu & en_sim_sram;
@@ -453,7 +456,12 @@ module tb;
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
 `endif
           .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_ROM_BASE_ADDR));
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Rom], `ROM_MEM_HIER)
+
+      // Knob to skip ROM backdoor logging (for sims that use ROM macro).
+      if (!$value$plusargs("skip_rom_bkdr_load=%0b", skip_rom_bkdr_load)) skip_rom_bkdr_load = 0;
+      if (!skip_rom_bkdr_load) begin
+        `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Rom], `ROM_MEM_HIER)
+      end
 
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for OTBN IMEM", UVM_MEDIUM)
       m_mem_bkdr_util[OtbnImem] = new(.name  ("mem_bkdr_util[OtbnImem]"),
