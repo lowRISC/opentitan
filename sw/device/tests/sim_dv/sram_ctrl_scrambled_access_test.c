@@ -224,16 +224,16 @@ static void prepare_sram_for_scrambling(void) {
       (uint32_t)reference_frame->pattern,
       (sram_ctrl_testutils_data_t){.words = kRamTestPattern2,
                                    .len = kTestBufferSizeWords});
-  LOG_INFO("Checking addr 0x%x", reference_frame);
+  LOG_INFO("Checking addr 0x%x", reference_frame->pattern);
   CHECK_ARRAYS_EQ(reference_frame->pattern, kRamTestPattern2,
                   kTestBufferSizeWords);
 }
 
 static void execute_main_sram_test(void) {
-  LOG_INFO("ut_backdoor: %x,ut_patternt: %x,ut_ecc_error_counter: %x",
+  LOG_INFO("ut_backdoor: %x,ut_pattern: %x,ut_ecc_error_counter: %x",
            scrambling_frame->backdoor, scrambling_frame->pattern,
            &scrambling_frame->ecc_error_counter);
-  LOG_INFO("ref_backdoor: %x,ref_patternt: %x,ref_ecc_error_counter: %x",
+  LOG_INFO("ref_backdoor: %x,ref_pattern: %x,ref_ecc_error_counter: %x",
            reference_frame->backdoor, reference_frame->pattern,
            &reference_frame->ecc_error_counter);
   // Reset the Ecc error count.
