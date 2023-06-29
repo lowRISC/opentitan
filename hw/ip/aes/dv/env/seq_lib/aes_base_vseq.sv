@@ -51,12 +51,14 @@ class aes_base_vseq extends cip_base_vseq #(
     wait(cfg.clk_rst_vif.rst_n);
   endtask // aes_reset
 
+
   // setup basic aes features
   virtual task aes_init();
-
-    bit [31:0] aes_ctrl    = '0;
+    bit [31:0] aes_ctrl = '0;
+    bit [31:0] aes_ctrl_aux = '0;
     bit [31:0] aes_trigger = '0;
-
+    // Lock and check locking of auxiliary control register (1) or not (0).
+    bit lock_ctrl_aux = $urandom_range(0, 1);
     `uvm_info(`gfn, $sformatf("\n\t ----| CHECKING FOR IDLE"), UVM_HIGH)
     csr_spinwait(.ptr(ral.status.idle) , .exp_data(1'b1));
     // initialize control register
@@ -64,9 +66,33 @@ class aes_base_vseq extends cip_base_vseq #(
     aes_ctrl[7:2]  = aes_pkg::AES_ECB;   // 6'b00_0001
     aes_ctrl[10:8] = aes_pkg::AES_128;   // 3'b001
     csr_wr(.ptr(ral.ctrl_shadowed), .value(aes_ctrl), .en_shadow_wr(1'b1), .blocking(1));
-    // set key touch force //
+    // Write auxiliary control register and make sure the update went through, i.e., the register
+    // isn't locked already.
     csr_wr(.ptr(ral.ctrl_aux_shadowed.key_touch_forces_reseed), .value(cfg.do_reseed),
         .en_shadow_wr(1'b1), .blocking(1));
+    csr_rd(.ptr(ral.ctrl_aux_shadowed), .value(aes_ctrl_aux), .blocking(1));
+    `DV_CHECK_FATAL(aes_ctrl_aux[0] == cfg.do_reseed);
+    // Lock auxiliary control register and try overwriting it afterwards.
+    if (lock_ctrl_aux) begin
+      `uvm_info(`gfn, "Locking auxiliary control register", UVM_MEDIUM)
+      set_regwen(0);
+      `uvm_info(`gfn, "Try overwriting locked auxiliary control register", UVM_MEDIUM)
+      csr_wr(.ptr(ral.ctrl_aux_shadowed.key_touch_forces_reseed), .value(!cfg.do_reseed),
+          .en_shadow_wr(1'b1), .blocking(1));
+      // Read the current value back to ensure the contents of the register didn't change.
+      csr_rd(.ptr(ral.ctrl_aux_shadowed), .value(aes_ctrl_aux), .blocking(1));
+      `DV_CHECK_FATAL(aes_ctrl_aux[0] == cfg.do_reseed);
+      // Try unlocking the auxiliary control register and overwriting it afterwards. This is not
+      // possible either as the lock persists until the next reset.
+      set_regwen(1);
+      csr_wr(.ptr(ral.ctrl_aux_shadowed.key_touch_forces_reseed), .value(!cfg.do_reseed),
+          .en_shadow_wr(1'b1), .blocking(1));
+      csr_rd(.ptr(ral.ctrl_aux_shadowed), .value(aes_ctrl_aux), .blocking(1));
+      `DV_CHECK_FATAL(aes_ctrl_aux[0] == cfg.do_reseed);
+    end else begin
+      // Don't lock it. This is the default value after reset. The write is mostly for coverage.
+      set_regwen(1);
+    end
   endtask // aes_init
 
 
@@ -89,9 +115,7 @@ class aes_base_vseq extends cip_base_vseq #(
     csr_update(ral.trigger);
   endtask // clear_registers
 
-  virtual task set_ctrl_aux_shadowed(bit val);
-    csr_wr(.ptr(ral.ctrl_aux_shadowed), .value(val), .en_shadow_wr(1'b1), .blocking(1));
-  endtask // set_ctrl_aux_shadowed
+
   virtual task prng_reseed();
     bit [TL_DW:0] reg_val = '0;
     reg_val[3] = 1'b1;
