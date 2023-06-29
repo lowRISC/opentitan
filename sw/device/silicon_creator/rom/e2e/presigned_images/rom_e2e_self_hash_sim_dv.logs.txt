@@ -1,98 +1,98 @@
 addr: 10000
 severity: 0
 file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
-line: 65
-nargs: 2
-format: ROM Hash: 0x%0h[%0d]
+line: 67
+nargs: 8
+format: ROM Hash: 0x%08h%08h%08h%08h%08h%08h%08h%08h
 str_arg_idx: 
 addr: 10014
 severity: 0
 file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
-line: 67
+line: 69
 nargs: 1
 format: rom_chip_info @ %0h:
 str_arg_idx: 
 addr: 10028
 severity: 0
 file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
-line: 70
+line: 72
 nargs: 2
 format: scm_revision = %08h%08h
 str_arg_idx: 
 addr: 1003c
 severity: 0
 file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
-line: 71
+line: 73
 nargs: 1
 format: version = %08h
 str_arg_idx: 
 addr: 10050
 severity: 2
 file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
-line: 78
+line: 80
 nargs: 1
 format: CHECK-fail: (uint8_t *)output.data%0smatches (uint8_t *)kSimDvGoldenRomHash
 str_arg_idx: 0
 addr: 10064
 severity: 2
 file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
-line: 78
+line: 80
 nargs: 3
 format: CHECK-fail: [%0d] got: 0x%02h; want: 0x%02h
 str_arg_idx: 
 addr: 10078
 severity: 2
 file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
-line: 82
+line: 84
 nargs: 1
 format: CHECK-fail: (uint8_t *)output.data%0smatches (uint8_t *)kFpgaCw310GoldenRomHash
 str_arg_idx: 0
 addr: 1008c
 severity: 2
 file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
-line: 82
+line: 84
 nargs: 3
 format: CHECK-fail: [%0d] got: 0x%02h; want: 0x%02h
 str_arg_idx: 
 addr: 100a0
 severity: 2
 file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
-line: 85
+line: 87
 nargs: 1
 format: ROM hash not self-checked for this device type: 0x%0h
 str_arg_idx: 
 addr: 100b4
 severity: 0
 file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
-line: 94
+line: 96
 nargs: 0
 format: Starting test hash_rom...
 str_arg_idx: 
 addr: 100c8
 severity: 2
 file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
-line: 94
+line: 96
 nargs: 0
 format: CHECK-fail: cycles_ <= 4294967295U
 str_arg_idx: 
 addr: 100dc
 severity: 2
 file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
-line: 94
+line: 96
 nargs: 0
 format: CHECK-fail:
 str_arg_idx: 
 addr: 100f0
 severity: 0
 file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
-line: 94
+line: 96
 nargs: 3
 format: Successfully finished test hash_rom in %0d cycles or %0d us @ %0d MHz.
 str_arg_idx: 
 addr: 10104
 severity: 2
 file: sw/device/silicon_creator/rom/e2e/rom_e2e_self_hash_test.c
-line: 94
+line: 96
 nargs: 1
 format: Finished test hash_rom: %r.
 str_arg_idx: 
