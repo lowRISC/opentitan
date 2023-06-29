@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_python//python:defs.bzl", "py_binary")
-load("@ot_python_deps//:requirements.bzl", "requirement")
+load("@ot_python_deps//:requirements.bzl", "all_requirements", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -93,4 +93,10 @@ py_binary(
         requirement("rich"),
         requirement("pluralizer"),
     ],
+)
+
+py_binary(
+    name = "fusesoc_build",
+    srcs = ["fusesoc_build.py"],
+    deps = all_requirements,
 )
