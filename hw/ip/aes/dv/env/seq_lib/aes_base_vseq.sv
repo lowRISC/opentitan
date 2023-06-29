@@ -122,10 +122,12 @@ class aes_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(ral.trigger), .value(reg_val));
   endtask // prng_reseed
 
+
   virtual task set_regwen(bit val);
     ral.ctrl_aux_regwen.set(val);
-    csr_update(.csr(ral.ctrl_aux_regwen), .en_shadow_wr(1'b0), .blocking(1));
+    csr_wr(.ptr(ral.ctrl_aux_regwen), .value(val), .blocking(1));
   endtask // set_regwen
+
 
   virtual task set_operation(bit [1:0] operation);
       ral.ctrl_shadowed.operation.set(operation);
@@ -147,6 +149,7 @@ class aes_base_vseq extends cip_base_vseq #(
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
     end
   endtask // set_key_len
+
 
   virtual task set_sideload(bit sideload);
     if (ral.ctrl_shadowed.sideload.get_mirrored_value() != sideload) begin
