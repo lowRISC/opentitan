@@ -105,7 +105,7 @@ fusesoc_build = rule(
         "verilator_options": attr.label(),
         "make_options": attr.label(),
         "_fusesoc": attr.label(
-            default = entry_point("fusesoc"),
+            default = "//util:fusesoc_build",
             executable = True,
             cfg = "exec",
         ),
