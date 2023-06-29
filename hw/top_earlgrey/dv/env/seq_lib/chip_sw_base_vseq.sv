@@ -101,11 +101,13 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     `uvm_info(`gfn, "Initializing ROM", UVM_MEDIUM)
     // Backdoor load memories with sw images.
+    if (cfg.skip_rom_bkdr_load == 0) begin
 `ifdef DISABLE_ROM_INTEGRITY_CHECK
-    cfg.mem_bkdr_util_h[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".32.vmem"});
+      cfg.mem_bkdr_util_h[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".32.vmem"});
 `else
-    cfg.mem_bkdr_util_h[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".39.scr.vmem"});
+      cfg.mem_bkdr_util_h[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".39.scr.vmem"});
 `endif
+    end
 
     if (cfg.sw_images.exists(SwTypeTestSlotA)) begin
       if (cfg.use_spi_load_bootstrap) begin
