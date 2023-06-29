@@ -17,7 +17,7 @@ pr:
   branches:
     include:
     - '*'
-  draft: false
+  drafts: false
 
 # The runner used for private CI enforces the use of the template below. All
 # build steps need to be placed into the template.
