@@ -170,6 +170,8 @@ pub fn trigger_lc_transition(
     jtag.disconnect()?;
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
     transport.reset_target(reset_delay, true)?;
+    // Extra delay to make sure that JTAG is ready after the transition
+    std::thread::sleep(Duration::from_millis(500));
     jtag.connect(JtagTap::LcTap)?;
 
     Ok(())
