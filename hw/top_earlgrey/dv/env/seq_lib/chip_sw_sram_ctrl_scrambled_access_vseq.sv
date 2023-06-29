@@ -60,6 +60,13 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
   bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] sram_main_nonce;
   bit [  sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0] sram_main_key;
 
+  typedef enum {
+    PhaseSetup           = 0,
+    kTestPhaseMainSram   = 1,
+    kTestPhaseRetSram    = 2,
+    PhaseDone            = 3
+  } test_phases_e;
+
   virtual task check_hdl_paths();
     int retval;
     retval = uvm_hdl_check_path(RET_NONCE_PATH);
@@ -199,9 +206,11 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
     end
   endtask: cpu_init
 
-  virtual task sync_with_sw();
+  virtual task sync_with_sw(input test_phases_e phase);
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
+
+     sw_symbol_backdoor_overwrite("kTestPhase", {<<8{phase}});
   endtask:sync_with_sw
 
   virtual task body();
@@ -218,7 +227,7 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
 
     sw_symbol_backdoor_overwrite("kBackdoorExpectedBytes", backdoor_data);
 
-    sync_with_sw();
+    sync_with_sw(kTestPhaseMainSram);
     ret_sram_offset = int'(cfg.sw_logger_vif.printed_arg[0]);
     main_sram_offset = int'(cfg.sw_logger_vif.printed_arg[1]);
 
@@ -228,7 +237,7 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
       main_backdoor_write(main_sram_offset);
     join_none
 
-    sync_with_sw();
+    sync_with_sw(kTestPhaseRetSram);
     ret_sram_offset = int'(cfg.sw_logger_vif.printed_arg[0]);
     main_sram_offset = int'(cfg.sw_logger_vif.printed_arg[1]);
 

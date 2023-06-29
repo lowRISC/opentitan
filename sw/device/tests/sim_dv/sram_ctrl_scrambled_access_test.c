@@ -11,6 +11,7 @@
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/sram_ctrl_testutils.h"
@@ -100,6 +101,7 @@ static scramble_test_frame *reference_frame;
 
 static dif_sram_ctrl_t ret_sram;
 static dif_rstmgr_t rstmgr;
+static dif_flash_ctrl_state_t flash;
 
 /**
  * Test pattern to be written and read from SRAM.
@@ -309,11 +311,26 @@ void ottf_internal_isr(void) {
   reference_frame->ecc_error_counter++;
 }
 
-static void sync_testbench(void) {
+typedef enum test_phases {
+  kTestPhaseSetup = 0,
+  kTestPhaseMainSram,
+  kTestPhaseRetSram,
+  kTestPhaseDone,
+} test_phases_t;
+
+// Test phase written by testbench.
+static volatile const test_phases_t kTestPhase = kTestPhaseSetup;
+const uint32_t kTestPhaseTimeoutUsec = 2500;
+static void sync_testbench(test_phases_t expected_phase) {
   // Set WFI status for testbench synchronization,
   // no actual WFI instruction is issued.
   test_status_set(kTestStatusInWfi);
   test_status_set(kTestStatusInTest);
+
+  CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_wait_update(
+      &flash, (uintptr_t)&kTestPhase, kTestPhaseTimeoutUsec));
+  LOG_INFO("Test phase = %d", kTestPhase);
+  CHECK(expected_phase == kTestPhase);
 }
 
 /**
@@ -362,6 +379,8 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR),
       &ret_sram));
 
+  CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_init(&flash));
+
   main_sram_addr = OT_ALIGN_MEM(rand_testutils_gen32_range(
       (uintptr_t)_freertos_heap_start,
       (uintptr_t)_stack_start - sizeof(scramble_test_frame)));
@@ -377,7 +396,7 @@ bool test_main(void) {
 
   dif_rstmgr_reset_info_bitfield_t info = rstmgr_testutils_reason_get();
   if (info == kDifRstmgrResetInfoPor) {
-    sync_testbench();
+    sync_testbench(kTestPhaseMainSram);
     LOG_INFO("First boot, testing main sram");
     // First boot, start with ret sram.
     execute_main_sram_test();
@@ -391,7 +410,7 @@ bool test_main(void) {
         kRetSramBaseAddr, kRetRamLastAddr - sizeof(scramble_test_frame)));
     LOG_INFO("RET_SRAM addr: %x MAIN_SRAM addr: %x", ret_sram_addr,
              main_sram_addr);
-    sync_testbench();
+    sync_testbench(kTestPhaseRetSram);
 
     scrambling_frame = (scramble_test_frame *)ret_sram_addr;
     reference_frame = (scramble_test_frame *)main_sram_addr;
