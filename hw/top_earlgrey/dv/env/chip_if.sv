@@ -1140,25 +1140,25 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.stat
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_spi_host_1_fsm_state,
       spi_host_1_state, 3)
 
-  // Signal probe function for `state_q` of CSRNG main FSM
-  wire [csrng_pkg::MainSmStateWidth-1:0] csrng_main_state;
+  // Signal probe function for `acmd_q` of CSRNG core
+  wire [2:0] csrng_acmd_q;
 `ifdef GATE_LEVEL
-  assign csrng_main_state = 0;
+  assign csrng_acmd_q = 0;
 `else
-  assign csrng_main_state = `CSRNG_HIER.u_csrng_core.u_csrng_main_sm.state_q;
+  assign csrng_acmd_q = `CSRNG_HIER.u_csrng_core.acmd_q;
 `endif
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_csrng_main_fsm_state,
-      csrng_main_state, csrng_pkg::MainSmStateWidth)
-  // Signal probe function for `aes_ctrl_cs` of AES_CTRL_FSM
-  wire [5:0] aes_ctrl_fsm_state;
-  assign aes_ctrl_fsm_state =
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_csrng_acmd_q,
+      csrng_acmd_q, 3)
+  // Signal probe function for `rnd_ctr` of AES_CIPHER_CTRL
+  wire [3:0] aes_ctrl_rnd_ctr;
+  assign aes_ctrl_rnd_ctr =
 `ifdef GATE_LEVEL
                              0;
 `else
-      `AES_CONTROL_HIER.gen_fsm[0].gen_fsm_p.u_aes_control_fsm_i.u_aes_control_fsm.aes_ctrl_cs;
+      `AES_HIER.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.rnd_ctr;
 `endif
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_aes_ctrl_fsm_state,
-      aes_ctrl_fsm_state, 6)
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_aes_ctrl_rnd_ctr,
+      aes_ctrl_rnd_ctr, 4)
 
   // Signal probe function for `st_q` of HMAC
   wire [2:0] hmac_fsm_state;
