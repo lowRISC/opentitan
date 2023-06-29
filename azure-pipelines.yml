@@ -32,6 +32,7 @@ pr:
   branches:
     include:
     - "*"
+  draft: false # prevents the CI from triggering on draft PR
 
 jobs:
 - job: checkout
