@@ -62,7 +62,9 @@ status_t hash_rom(void) {
   };
 
   TRY(otcrypto_hash(input, kHashModeSha256, &output));
-  LOG_INFO("ROM Hash: 0x%!x", kSha256HashSizeInBytes, rom_hash);
+  LOG_INFO("ROM Hash: 0x%08x%08x%08x%08x%08x%08x%08x%08x", rom_hash[7],
+           rom_hash[6], rom_hash[5], rom_hash[4], rom_hash[3], rom_hash[2],
+           rom_hash[1], rom_hash[0]);
   chip_info_t *rom_chip_info = (chip_info_t *)_chip_info_start;
   LOG_INFO("rom_chip_info @ %p:", rom_chip_info);
   LOG_INFO("scm_revision = %08x%08x",
