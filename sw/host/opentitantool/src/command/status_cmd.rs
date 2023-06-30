@@ -79,7 +79,7 @@ pub struct LintCommand {
 
 #[derive(PartialEq, Eq, Hash, Debug, serde::Serialize)]
 struct ModuleIdProvenance {
-    filename: String,
+    filename: PathBuf,
     overriden: bool,
 }
 
@@ -104,7 +104,7 @@ impl CommandDispatch for LintCommand {
                     .entry(record.get_module_id()?)
                     .or_insert_with(HashSet::new)
                     .insert(ModuleIdProvenance {
-                        filename: record.filename,
+                        filename: record.filename.into(),
                         overriden: record.module_id.is_some(),
                     });
             }
@@ -118,7 +118,7 @@ impl CommandDispatch for LintCommand {
                         true => "specified by MAKE_MODULE_ID",
                         false => "computed from filename",
                     };
-                    eprintln!("- {}: {}", prov.filename, explain);
+                    eprintln!("- {}: {}", prov.filename.display(), explain);
                 }
                 contain_collisions = true;
             }
