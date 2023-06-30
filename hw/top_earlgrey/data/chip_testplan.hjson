@@ -318,7 +318,7 @@
             - Check interrupts (connected, pkt_received, pkt_sent, av_empty, rx_full) are triggered
               correcly.
             '''
-      stage: V3
+      stage: V2
       tests: ["chip_sw_usbdev_stream"]
     }
     {
@@ -376,7 +376,8 @@
               correctly.
             '''
       stage: V3
-      tests: []
+      tests: ["chip_sw_usbdev_hiclk_stream",
+              "chip_sw_usbdev_loclk_stream"]
     }
     {
       name: chip_usb_wake_debug

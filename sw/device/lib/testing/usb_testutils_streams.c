@@ -159,17 +159,29 @@ static bool buffer_sig_check(usb_testutils_streams_ctx_t *ctx,
   // Skip past any packets that appear to have been dropped; this is
   // permissible for Isochronous transfers which prioritize service/real-time
   // delivery over reliable transmission.
-  while (rx_seq < seq) {
-    // Determine the length of the missing packet
-    uint8_t len = packet_length(s, s->rx_bytes, &s->rx_buf_size);
-    len -= sizeof(*sig);
-    // Advance the LFSR states to account for the missing packet
-    while (len-- > 0U) {
-      rxtx_lfsr = LFSR_ADVANCE(rxtx_lfsr);
-      rx_lfsr = LFSR_ADVANCE(rx_lfsr);
-    }
-    // The updated host-side LFSR has been supplied in the packet signature
-    rx_seq++;
+  if (rx_seq < seq) {
+    do {
+      // Determine the length of the missing packet
+      uint8_t len = packet_length(s, s->rx_bytes, &s->rx_buf_size);
+      len -= sizeof(*sig);
+      // Advance the LFSR states to account for the missing packet
+      while (len-- > 0U) {
+        rxtx_lfsr = LFSR_ADVANCE(rxtx_lfsr);
+        rx_lfsr = LFSR_ADVANCE(rx_lfsr);
+      }
+      // The updated host-side LFSR has been supplied in the packet signature
+      rx_seq++;
+    } while (rx_seq < seq);
+
+    // Since we do not know where the packet(s) were dropped, we must set our
+    // knowledge of the host-side LFSR to the value indicated in this packet.
+    s->rx_lfsr = sig->init_lfsr;
+  } else if (sig->init_lfsr != s->rx_lfsr) {
+    LOG_INFO(
+        "buffer_sig_check: S%u unexpected host-side LFSR (0x%x but expected "
+        "0x%x)",
+        s->id, sig->init_lfsr, s->rx_lfsr);
+    return false;
   }
 
   // For 'rx_buf_size' to track the 'tx_buf_size' used when the packets were
@@ -192,7 +204,7 @@ static bool buffer_sig_check(usb_testutils_streams_ctx_t *ctx,
     LOG_INFO(
         "buffer_sig_check: S%u unexpected LFSR value (0x%x but expected 0x%x)",
         s->id, sig->init_lfsr, rx_lfsr);
-    return true;
+    return false;
   }
 
   // Expected sequence number of next packet
@@ -297,8 +309,7 @@ static void buffer_check(usb_testutils_streams_ctx_t *ctx, usbdev_stream_t *s,
         const uint8_t *sp = &data[offset];
         while (sp < esp) {
           // Received data should be the XOR of two LFSR-generated PRND streams
-          // - ours on the
-          //   transmission side, and that of the DPI model
+          // - ours on the transmission side, and that of the DPI model
           uint8_t expected = rxtx_lfsr ^ rx_lfsr;
           CHECK(expected == *sp,
                 "S%u: Unexpected received data 0x%02x : (LFSRs 0x%02x 0x%02x)",
