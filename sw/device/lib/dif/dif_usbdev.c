@@ -667,13 +667,72 @@ dif_result_t dif_usbdev_address_get(const dif_usbdev_t *usbdev, uint8_t *addr) {
   return kDifOk;
 }
 
+dif_result_t dif_usbdev_data_toggle_out_read(const dif_usbdev_t *usbdev,
+                                             uint16_t *toggles) {
+  if (usbdev == NULL || toggles == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg_val =
+      mmio_region_read32(usbdev->base_addr, USBDEV_OUT_DATA_TOGGLE_REG_OFFSET);
+  // Note: only 12 OUT endpoints defined.
+  *toggles = (uint16_t)reg_val;
+
+  return kDifOk;
+}
+
+dif_result_t dif_usbdev_data_toggle_in_read(const dif_usbdev_t *usbdev,
+                                            uint16_t *toggles) {
+  if (usbdev == NULL || toggles == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg_val =
+      mmio_region_read32(usbdev->base_addr, USBDEV_IN_DATA_TOGGLE_REG_OFFSET);
+  // Note: only 12 OUT endpoints defined.
+  *toggles = (uint16_t)reg_val;
+
+  return kDifOk;
+}
+
+dif_result_t dif_usbdev_data_toggle_out_write(const dif_usbdev_t *usbdev,
+                                              uint16_t mask, uint16_t state) {
+  if (usbdev == NULL) {
+    return kDifBadArg;
+  }
+
+  // Note: only 12 OUT endpoints defined.
+  mmio_region_write32(usbdev->base_addr, USBDEV_OUT_DATA_TOGGLE_REG_OFFSET,
+                      ((uint32_t)mask << 16) | state);
+
+  return kDifOk;
+}
+
+dif_result_t dif_usbdev_data_toggle_in_write(const dif_usbdev_t *usbdev,
+                                             uint16_t mask, uint16_t state) {
+  if (usbdev == NULL) {
+    return kDifBadArg;
+  }
+
+  // Note: only 12 OUT endpoints defined.
+  mmio_region_write32(usbdev->base_addr, USBDEV_IN_DATA_TOGGLE_REG_OFFSET,
+                      ((uint32_t)mask << 16) | state);
+
+  return kDifOk;
+}
+
 dif_result_t dif_usbdev_clear_data_toggle(const dif_usbdev_t *usbdev,
                                           uint8_t endpoint) {
   if (usbdev == NULL) {
     return kDifBadArg;
   }
-  mmio_region_write32(usbdev->base_addr, USBDEV_DATA_TOGGLE_CLEAR_REG_OFFSET,
-                      1u << endpoint);
+
+  uint32_t reg_val = (uint32_t)1u << (endpoint + 16u);
+  mmio_region_write32(usbdev->base_addr, USBDEV_OUT_DATA_TOGGLE_REG_OFFSET,
+                      reg_val);
+  mmio_region_write32(usbdev->base_addr, USBDEV_IN_DATA_TOGGLE_REG_OFFSET,
+                      reg_val);
+
   return kDifOk;
 }
 

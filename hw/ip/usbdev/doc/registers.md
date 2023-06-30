@@ -3,45 +3,46 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/usbdev/data/usbdev.hjson -->
 ## Summary
 
-| Name                                             | Offset   |   Length | Description                                                                |
-|:-------------------------------------------------|:---------|---------:|:---------------------------------------------------------------------------|
-| usbdev.[`INTR_STATE`](#intr_state)               | 0x0      |        4 | Interrupt State Register                                                   |
-| usbdev.[`INTR_ENABLE`](#intr_enable)             | 0x4      |        4 | Interrupt Enable Register                                                  |
-| usbdev.[`INTR_TEST`](#intr_test)                 | 0x8      |        4 | Interrupt Test Register                                                    |
-| usbdev.[`ALERT_TEST`](#alert_test)               | 0xc      |        4 | Alert Test Register                                                        |
-| usbdev.[`usbctrl`](#usbctrl)                     | 0x10     |        4 | USB Control                                                                |
-| usbdev.[`ep_out_enable`](#ep_out_enable)         | 0x14     |        4 | Enable an endpoint to respond to transactions in the downstream direction. |
-| usbdev.[`ep_in_enable`](#ep_in_enable)           | 0x18     |        4 | Enable an endpoint to respond to transactions in the upstream direction.   |
-| usbdev.[`usbstat`](#usbstat)                     | 0x1c     |        4 | USB Status                                                                 |
-| usbdev.[`avbuffer`](#avbuffer)                   | 0x20     |        4 | Available Buffer FIFO                                                      |
-| usbdev.[`rxfifo`](#rxfifo)                       | 0x24     |        4 | Received Buffer FIFO                                                       |
-| usbdev.[`rxenable_setup`](#rxenable_setup)       | 0x28     |        4 | Receive SETUP transaction enable                                           |
-| usbdev.[`rxenable_out`](#rxenable_out)           | 0x2c     |        4 | Receive OUT transaction enable                                             |
-| usbdev.[`set_nak_out`](#set_nak_out)             | 0x30     |        4 | Set NAK after OUT transactions                                             |
-| usbdev.[`in_sent`](#in_sent)                     | 0x34     |        4 | IN Transaction Sent                                                        |
-| usbdev.[`out_stall`](#out_stall)                 | 0x38     |        4 | OUT Endpoint STALL control                                                 |
-| usbdev.[`in_stall`](#in_stall)                   | 0x3c     |        4 | IN Endpoint STALL control                                                  |
-| usbdev.[`configin_0`](#configin)                 | 0x40     |        4 | Configure IN Transaction                                                   |
-| usbdev.[`configin_1`](#configin)                 | 0x44     |        4 | Configure IN Transaction                                                   |
-| usbdev.[`configin_2`](#configin)                 | 0x48     |        4 | Configure IN Transaction                                                   |
-| usbdev.[`configin_3`](#configin)                 | 0x4c     |        4 | Configure IN Transaction                                                   |
-| usbdev.[`configin_4`](#configin)                 | 0x50     |        4 | Configure IN Transaction                                                   |
-| usbdev.[`configin_5`](#configin)                 | 0x54     |        4 | Configure IN Transaction                                                   |
-| usbdev.[`configin_6`](#configin)                 | 0x58     |        4 | Configure IN Transaction                                                   |
-| usbdev.[`configin_7`](#configin)                 | 0x5c     |        4 | Configure IN Transaction                                                   |
-| usbdev.[`configin_8`](#configin)                 | 0x60     |        4 | Configure IN Transaction                                                   |
-| usbdev.[`configin_9`](#configin)                 | 0x64     |        4 | Configure IN Transaction                                                   |
-| usbdev.[`configin_10`](#configin)                | 0x68     |        4 | Configure IN Transaction                                                   |
-| usbdev.[`configin_11`](#configin)                | 0x6c     |        4 | Configure IN Transaction                                                   |
-| usbdev.[`out_iso`](#out_iso)                     | 0x70     |        4 | OUT Endpoint isochronous setting                                           |
-| usbdev.[`in_iso`](#in_iso)                       | 0x74     |        4 | IN Endpoint isochronous setting                                            |
-| usbdev.[`data_toggle_clear`](#data_toggle_clear) | 0x78     |        4 | Clear the data toggle flag                                                 |
-| usbdev.[`phy_pins_sense`](#phy_pins_sense)       | 0x7c     |        4 | USB PHY pins sense.                                                        |
-| usbdev.[`phy_pins_drive`](#phy_pins_drive)       | 0x80     |        4 | USB PHY pins drive.                                                        |
-| usbdev.[`phy_config`](#phy_config)               | 0x84     |        4 | USB PHY Configuration                                                      |
-| usbdev.[`wake_control`](#wake_control)           | 0x88     |        4 | USB wake module control for suspend / resume                               |
-| usbdev.[`wake_events`](#wake_events)             | 0x8c     |        4 | USB wake module events and debug                                           |
-| usbdev.[`buffer`](#buffer)                       | 0x800    |     2048 | 2 kB packet buffer. Divided into 32 64-byte buffers.                       |
+| Name                                         | Offset   |   Length | Description                                                                |
+|:---------------------------------------------|:---------|---------:|:---------------------------------------------------------------------------|
+| usbdev.[`INTR_STATE`](#intr_state)           | 0x0      |        4 | Interrupt State Register                                                   |
+| usbdev.[`INTR_ENABLE`](#intr_enable)         | 0x4      |        4 | Interrupt Enable Register                                                  |
+| usbdev.[`INTR_TEST`](#intr_test)             | 0x8      |        4 | Interrupt Test Register                                                    |
+| usbdev.[`ALERT_TEST`](#alert_test)           | 0xc      |        4 | Alert Test Register                                                        |
+| usbdev.[`usbctrl`](#usbctrl)                 | 0x10     |        4 | USB Control                                                                |
+| usbdev.[`ep_out_enable`](#ep_out_enable)     | 0x14     |        4 | Enable an endpoint to respond to transactions in the downstream direction. |
+| usbdev.[`ep_in_enable`](#ep_in_enable)       | 0x18     |        4 | Enable an endpoint to respond to transactions in the upstream direction.   |
+| usbdev.[`usbstat`](#usbstat)                 | 0x1c     |        4 | USB Status                                                                 |
+| usbdev.[`avbuffer`](#avbuffer)               | 0x20     |        4 | Available Buffer FIFO                                                      |
+| usbdev.[`rxfifo`](#rxfifo)                   | 0x24     |        4 | Received Buffer FIFO                                                       |
+| usbdev.[`rxenable_setup`](#rxenable_setup)   | 0x28     |        4 | Receive SETUP transaction enable                                           |
+| usbdev.[`rxenable_out`](#rxenable_out)       | 0x2c     |        4 | Receive OUT transaction enable                                             |
+| usbdev.[`set_nak_out`](#set_nak_out)         | 0x30     |        4 | Set NAK after OUT transactions                                             |
+| usbdev.[`in_sent`](#in_sent)                 | 0x34     |        4 | IN Transaction Sent                                                        |
+| usbdev.[`out_stall`](#out_stall)             | 0x38     |        4 | OUT Endpoint STALL control                                                 |
+| usbdev.[`in_stall`](#in_stall)               | 0x3c     |        4 | IN Endpoint STALL control                                                  |
+| usbdev.[`configin_0`](#configin)             | 0x40     |        4 | Configure IN Transaction                                                   |
+| usbdev.[`configin_1`](#configin)             | 0x44     |        4 | Configure IN Transaction                                                   |
+| usbdev.[`configin_2`](#configin)             | 0x48     |        4 | Configure IN Transaction                                                   |
+| usbdev.[`configin_3`](#configin)             | 0x4c     |        4 | Configure IN Transaction                                                   |
+| usbdev.[`configin_4`](#configin)             | 0x50     |        4 | Configure IN Transaction                                                   |
+| usbdev.[`configin_5`](#configin)             | 0x54     |        4 | Configure IN Transaction                                                   |
+| usbdev.[`configin_6`](#configin)             | 0x58     |        4 | Configure IN Transaction                                                   |
+| usbdev.[`configin_7`](#configin)             | 0x5c     |        4 | Configure IN Transaction                                                   |
+| usbdev.[`configin_8`](#configin)             | 0x60     |        4 | Configure IN Transaction                                                   |
+| usbdev.[`configin_9`](#configin)             | 0x64     |        4 | Configure IN Transaction                                                   |
+| usbdev.[`configin_10`](#configin)            | 0x68     |        4 | Configure IN Transaction                                                   |
+| usbdev.[`configin_11`](#configin)            | 0x6c     |        4 | Configure IN Transaction                                                   |
+| usbdev.[`out_iso`](#out_iso)                 | 0x70     |        4 | OUT Endpoint isochronous setting                                           |
+| usbdev.[`in_iso`](#in_iso)                   | 0x74     |        4 | IN Endpoint isochronous setting                                            |
+| usbdev.[`out_data_toggle`](#out_data_toggle) | 0x78     |        4 | OUT Endpoints Data Toggles                                                 |
+| usbdev.[`in_data_toggle`](#in_data_toggle)   | 0x7c     |        4 | IN Endpoints Data Toggles                                                  |
+| usbdev.[`phy_pins_sense`](#phy_pins_sense)   | 0x80     |        4 | USB PHY pins sense.                                                        |
+| usbdev.[`phy_pins_drive`](#phy_pins_drive)   | 0x84     |        4 | USB PHY pins drive.                                                        |
+| usbdev.[`phy_config`](#phy_config)           | 0x88     |        4 | USB PHY Configuration                                                      |
+| usbdev.[`wake_control`](#wake_control)       | 0x8c     |        4 | USB wake module control for suspend / resume                               |
+| usbdev.[`wake_events`](#wake_events)         | 0x90     |        4 | USB wake module events and debug                                           |
+| usbdev.[`buffer`](#buffer)                   | 0x800    |     2048 | 2 kB packet buffer. Divided into 32 64-byte buffers.                       |
 
 ## INTR_STATE
 Interrupt State Register
@@ -1093,39 +1094,49 @@ No handshake packet will be expected for an IN transaction.
 Note that if a rxenable_setup is set for this endpoint's number, this bit will not take effect.
 Control endpoint configuration trumps isochronous endpoint configuration.
 
-## data_toggle_clear
-Clear the data toggle flag
+## out_data_toggle
+OUT Endpoints Data Toggles
 - Offset: `0x78`
 - Reset default: `0x0`
-- Reset mask: `0xfff`
+- Reset mask: `0xfff0fff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "clear_0", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "clear_1", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "clear_2", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "clear_3", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "clear_4", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "clear_5", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "clear_6", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "clear_7", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "clear_8", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "clear_9", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "clear_10", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "clear_11", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 20}], "config": {"lanes": 1, "fontsize": 10, "vspace": 100}}
+{"reg": [{"name": "status", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 4}, {"name": "mask", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name     | Description                                                                                                                                                         |
-|:------:|:------:|:-------:|:---------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:12  |        |         |          | Reserved                                                                                                                                                            |
-|   11   |   wo   |   0x0   | clear_11 | Writing 1 to this bit will clear the data toggle bit for this endpoint to Data0 in both IN and OUT directions. The register must no be written again within 200 ns. |
-|   10   |   wo   |   0x0   | clear_10 | Writing 1 to this bit will clear the data toggle bit for this endpoint to Data0 in both IN and OUT directions. The register must no be written again within 200 ns. |
-|   9    |   wo   |   0x0   | clear_9  | Writing 1 to this bit will clear the data toggle bit for this endpoint to Data0 in both IN and OUT directions. The register must no be written again within 200 ns. |
-|   8    |   wo   |   0x0   | clear_8  | Writing 1 to this bit will clear the data toggle bit for this endpoint to Data0 in both IN and OUT directions. The register must no be written again within 200 ns. |
-|   7    |   wo   |   0x0   | clear_7  | Writing 1 to this bit will clear the data toggle bit for this endpoint to Data0 in both IN and OUT directions. The register must no be written again within 200 ns. |
-|   6    |   wo   |   0x0   | clear_6  | Writing 1 to this bit will clear the data toggle bit for this endpoint to Data0 in both IN and OUT directions. The register must no be written again within 200 ns. |
-|   5    |   wo   |   0x0   | clear_5  | Writing 1 to this bit will clear the data toggle bit for this endpoint to Data0 in both IN and OUT directions. The register must no be written again within 200 ns. |
-|   4    |   wo   |   0x0   | clear_4  | Writing 1 to this bit will clear the data toggle bit for this endpoint to Data0 in both IN and OUT directions. The register must no be written again within 200 ns. |
-|   3    |   wo   |   0x0   | clear_3  | Writing 1 to this bit will clear the data toggle bit for this endpoint to Data0 in both IN and OUT directions. The register must no be written again within 200 ns. |
-|   2    |   wo   |   0x0   | clear_2  | Writing 1 to this bit will clear the data toggle bit for this endpoint to Data0 in both IN and OUT directions. The register must no be written again within 200 ns. |
-|   1    |   wo   |   0x0   | clear_1  | Writing 1 to this bit will clear the data toggle bit for this endpoint to Data0 in both IN and OUT directions. The register must no be written again within 200 ns. |
-|   0    |   wo   |   0x0   | clear_0  | Writing 1 to this bit will clear the data toggle bit for this endpoint to Data0 in both IN and OUT directions. The register must no be written again within 200 ns. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                           |
+|:------:|:------:|:-------:|:-------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:28  |        |         |        | Reserved                                                                                                                                                                                              |
+| 27:16  |   rw   |    x    | mask   | Reads as zero. When writing, a set bit will cause the Data Toggle flag of the corresponding OUT endpoint to be updated. A clear bit will leave the flag for the corresponding endpoint unchanged.     |
+| 15:12  |        |         |        | Reserved                                                                                                                                                                                              |
+|  11:0  |   rw   |    x    | status | Reading returns the current state of the OUT endpoint Data Toggle flags. Writing sets the Data Toggle flag for each endpoint if the corresponding mask bit in the upper half of this register is set. |
+
+## in_data_toggle
+IN Endpoints Data Toggles
+- Offset: `0x7c`
+- Reset default: `0x0`
+- Reset mask: `0xfff0fff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "status", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 4}, {"name": "mask", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                          |
+|:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:28  |        |         |        | Reserved                                                                                                                                                                                             |
+| 27:16  |   rw   |    x    | mask   | Reads as zero. When writing, a set bit will cause the Data Toggle flag of the corresponding IN endpoint to be updated. A clear bit will leave the flag for the corresponding endpoint unchanged.     |
+| 15:12  |        |         |        | Reserved                                                                                                                                                                                             |
+|  11:0  |   rw   |    x    | status | Reading returns the current state of the IN endpoint Data Toggle flags. Writing sets the Data Toggle flag for each endpoint if the corresponding mask bit in the upper half of this register is set. |
 
 ## phy_pins_sense
 USB PHY pins sense.
 This register can be used to read out the state of the USB device inputs and outputs from software.
 This is designed to be used for debugging purposes or during chip testing.
-- Offset: `0x7c`
+- Offset: `0x80`
 - Reset default: `0x0`
 - Reset mask: `0x11f07`
 
@@ -1154,7 +1165,7 @@ This is designed to be used for debugging purposes or during chip testing.
 USB PHY pins drive.
 This register can be used to control the USB device inputs and outputs from software.
 This is designed to be used for debugging purposes or during chip testing.
-- Offset: `0x80`
+- Offset: `0x84`
 - Reset default: `0x0`
 - Reset mask: `0x100ff`
 
@@ -1180,7 +1191,7 @@ This is designed to be used for debugging purposes or during chip testing.
 
 ## phy_config
 USB PHY Configuration
-- Offset: `0x84`
+- Offset: `0x88`
 - Reset default: `0x4`
 - Reset mask: `0xe7`
 
@@ -1235,7 +1246,7 @@ This bit also feeds the rx_enable pin, activating the receiver when the device i
 
 ## wake_control
 USB wake module control for suspend / resume
-- Offset: `0x88`
+- Offset: `0x8c`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 
@@ -1269,7 +1280,7 @@ Activation may not happen immediately, and its status can be verified by checkin
 
 ## wake_events
 USB wake module events and debug
-- Offset: `0x8c`
+- Offset: `0x90`
 - Reset default: `0x0`
 - Reset mask: `0x301`
 

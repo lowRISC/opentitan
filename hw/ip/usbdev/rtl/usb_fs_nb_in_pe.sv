@@ -47,7 +47,10 @@ module usb_fs_nb_in_pe #(
   input  logic [NumInEps-1:0]   in_ep_data_done_i, // Set when out of data
   input  logic [NumInEps-1:0]   in_ep_iso_i, // Configure endpoint in isochronous mode
 
-  input  logic [NumInEps-1:0]   data_toggle_clear_i, // Clear the data toggles for an EP
+  output logic [NumInEps-1:0]   in_data_toggle_o, // Current state of IN data toggles
+  input  logic                  in_datatog_we_i, // IN data toggles write strobe from software
+  input  logic [NumInEps-1:0]   in_datatog_status_i, // New state of selected IN data toggles
+  input  logic [NumInEps-1:0]   in_datatog_mask_i, // Which IN EP data toggles to modify
 
   ////////////////////
   // rx path
@@ -320,6 +323,7 @@ module usb_fs_nb_in_pe #(
     end
   end
 
+  // Updating of data toggles
   always_comb begin : proc_data_toggle_d
     data_toggle_d = data_toggle_q;
 
@@ -328,9 +332,14 @@ module usb_fs_nb_in_pe #(
     end else if ((in_xact_state == StWaitAck) && ack_received) begin
       data_toggle_d[in_ep_index] = ~data_toggle_q[in_ep_index];
     end
-
-    data_toggle_d = data_toggle_d & ~data_toggle_clear_i;
+    // Selective modification by software
+    if (in_datatog_we_i) begin
+      data_toggle_d = (data_toggle_d & ~in_datatog_mask_i) |
+                      (in_datatog_status_i & in_datatog_mask_i);
+    end
   end
+  // Supply current data toggles to register interface
+  assign in_data_toggle_o = data_toggle_q;
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin

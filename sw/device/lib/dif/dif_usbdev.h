@@ -614,6 +614,56 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_usbdev_address_get(const dif_usbdev_t *usbdev, uint8_t *addr);
 
 /**
+ * Read the data toggle bits of the OUT endpoints.
+ *
+ * @param usbdev A USB device.
+ * @param[out]toggles Current state of OUT data toggle bits.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_data_toggle_out_read(const dif_usbdev_t *usbdev,
+                                             uint16_t *toggles);
+
+/**
+ * Read the data toggle bits of the IN endpoints.
+ *
+ * @param usbdev A USB device.
+ * @param[out]toggles Current state of IN data toggle bits.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_data_toggle_in_read(const dif_usbdev_t *usbdev,
+                                            uint16_t *toggles);
+
+/**
+ * Write to the data toggle bits of a subset of the OUT endpoints.
+ * Set 1 in `mask` to change the data toggle bit of an OUT endpoint to the value
+ * of the corresponding bit in `state`.
+ *
+ * @param usbdev A USB device.
+ * @param mask Mask of OUT endpoint data toggles to be changed.
+ * @param state New states of that OUT endpoint data toggles being changed.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_data_toggle_out_write(const dif_usbdev_t *usbdev,
+                                              uint16_t mask, uint16_t state);
+
+/**
+ * Write to the data toggle bits of a subset of the IN endpoints.
+ * Set 1 in `mask` to change the data toggle bit of an IN endpoint to the value
+ * of the corresponding bit in `state`.
+ *
+ * @param usbdev A USB device.
+ * @param mask Mask of IN endpoint data toggles to be changed.
+ * @param state New states of that IN endpoint data toggles being changed.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_data_toggle_in_write(const dif_usbdev_t *usbdev,
+                                             uint16_t mask, uint16_t state);
+
+/**
  * Clear the data toggle bits for the selected endpoint.
  *
  * @param usbdev A USB device.

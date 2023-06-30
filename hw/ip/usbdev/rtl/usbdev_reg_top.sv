@@ -59,9 +59,9 @@ module usbdev_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [35:0] reg_we_check;
+  logic [36:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(36)
+    .OneHotWidth(37)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -642,19 +642,18 @@ module usbdev_reg_top (
   logic in_iso_iso_10_wd;
   logic in_iso_iso_11_qs;
   logic in_iso_iso_11_wd;
-  logic data_toggle_clear_we;
-  logic data_toggle_clear_clear_0_wd;
-  logic data_toggle_clear_clear_1_wd;
-  logic data_toggle_clear_clear_2_wd;
-  logic data_toggle_clear_clear_3_wd;
-  logic data_toggle_clear_clear_4_wd;
-  logic data_toggle_clear_clear_5_wd;
-  logic data_toggle_clear_clear_6_wd;
-  logic data_toggle_clear_clear_7_wd;
-  logic data_toggle_clear_clear_8_wd;
-  logic data_toggle_clear_clear_9_wd;
-  logic data_toggle_clear_clear_10_wd;
-  logic data_toggle_clear_clear_11_wd;
+  logic out_data_toggle_re;
+  logic out_data_toggle_we;
+  logic [11:0] out_data_toggle_status_qs;
+  logic [11:0] out_data_toggle_status_wd;
+  logic [11:0] out_data_toggle_mask_qs;
+  logic [11:0] out_data_toggle_mask_wd;
+  logic in_data_toggle_re;
+  logic in_data_toggle_we;
+  logic [11:0] in_data_toggle_status_qs;
+  logic [11:0] in_data_toggle_status_wd;
+  logic [11:0] in_data_toggle_mask_qs;
+  logic [11:0] in_data_toggle_mask_wd;
   logic phy_pins_sense_re;
   logic phy_pins_sense_rx_dp_i_qs;
   logic phy_pins_sense_rx_dn_i_qs;
@@ -6928,354 +6927,78 @@ module usbdev_reg_top (
   );
 
 
-  // Subregister 0 of Multireg data_toggle_clear
-  // R[data_toggle_clear]: V(False)
-  logic data_toggle_clear_qe;
-  logic [11:0] data_toggle_clear_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_data_toggle_clear0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&data_toggle_clear_flds_we),
-    .q_o(data_toggle_clear_qe)
-  );
-  //   F[clear_0]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_data_toggle_clear_clear_0 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (data_toggle_clear_we),
-    .wd     (data_toggle_clear_clear_0_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (data_toggle_clear_flds_we[0]),
-    .q      (reg2hw.data_toggle_clear[0].q),
+  // R[out_data_toggle]: V(True)
+  logic out_data_toggle_qe;
+  logic [1:0] out_data_toggle_flds_we;
+  assign out_data_toggle_qe = &out_data_toggle_flds_we;
+  //   F[status]: 11:0
+  prim_subreg_ext #(
+    .DW    (12)
+  ) u_out_data_toggle_status (
+    .re     (out_data_toggle_re),
+    .we     (out_data_toggle_we),
+    .wd     (out_data_toggle_status_wd),
+    .d      (hw2reg.out_data_toggle.status.d),
+    .qre    (),
+    .qe     (out_data_toggle_flds_we[0]),
+    .q      (reg2hw.out_data_toggle.status.q),
     .ds     (),
-
-    // to register interface (read)
-    .qs     ()
+    .qs     (out_data_toggle_status_qs)
   );
-  assign reg2hw.data_toggle_clear[0].qe = data_toggle_clear_qe;
+  assign reg2hw.out_data_toggle.status.qe = out_data_toggle_qe;
 
-  //   F[clear_1]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_data_toggle_clear_clear_1 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (data_toggle_clear_we),
-    .wd     (data_toggle_clear_clear_1_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (data_toggle_clear_flds_we[1]),
-    .q      (reg2hw.data_toggle_clear[1].q),
+  //   F[mask]: 27:16
+  prim_subreg_ext #(
+    .DW    (12)
+  ) u_out_data_toggle_mask (
+    .re     (out_data_toggle_re),
+    .we     (out_data_toggle_we),
+    .wd     (out_data_toggle_mask_wd),
+    .d      (hw2reg.out_data_toggle.mask.d),
+    .qre    (),
+    .qe     (out_data_toggle_flds_we[1]),
+    .q      (reg2hw.out_data_toggle.mask.q),
     .ds     (),
-
-    // to register interface (read)
-    .qs     ()
+    .qs     (out_data_toggle_mask_qs)
   );
-  assign reg2hw.data_toggle_clear[1].qe = data_toggle_clear_qe;
+  assign reg2hw.out_data_toggle.mask.qe = out_data_toggle_qe;
 
-  //   F[clear_2]: 2:2
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_data_toggle_clear_clear_2 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
 
-    // from register interface
-    .we     (data_toggle_clear_we),
-    .wd     (data_toggle_clear_clear_2_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (data_toggle_clear_flds_we[2]),
-    .q      (reg2hw.data_toggle_clear[2].q),
+  // R[in_data_toggle]: V(True)
+  logic in_data_toggle_qe;
+  logic [1:0] in_data_toggle_flds_we;
+  assign in_data_toggle_qe = &in_data_toggle_flds_we;
+  //   F[status]: 11:0
+  prim_subreg_ext #(
+    .DW    (12)
+  ) u_in_data_toggle_status (
+    .re     (in_data_toggle_re),
+    .we     (in_data_toggle_we),
+    .wd     (in_data_toggle_status_wd),
+    .d      (hw2reg.in_data_toggle.status.d),
+    .qre    (),
+    .qe     (in_data_toggle_flds_we[0]),
+    .q      (reg2hw.in_data_toggle.status.q),
     .ds     (),
-
-    // to register interface (read)
-    .qs     ()
+    .qs     (in_data_toggle_status_qs)
   );
-  assign reg2hw.data_toggle_clear[2].qe = data_toggle_clear_qe;
+  assign reg2hw.in_data_toggle.status.qe = in_data_toggle_qe;
 
-  //   F[clear_3]: 3:3
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_data_toggle_clear_clear_3 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (data_toggle_clear_we),
-    .wd     (data_toggle_clear_clear_3_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (data_toggle_clear_flds_we[3]),
-    .q      (reg2hw.data_toggle_clear[3].q),
+  //   F[mask]: 27:16
+  prim_subreg_ext #(
+    .DW    (12)
+  ) u_in_data_toggle_mask (
+    .re     (in_data_toggle_re),
+    .we     (in_data_toggle_we),
+    .wd     (in_data_toggle_mask_wd),
+    .d      (hw2reg.in_data_toggle.mask.d),
+    .qre    (),
+    .qe     (in_data_toggle_flds_we[1]),
+    .q      (reg2hw.in_data_toggle.mask.q),
     .ds     (),
-
-    // to register interface (read)
-    .qs     ()
+    .qs     (in_data_toggle_mask_qs)
   );
-  assign reg2hw.data_toggle_clear[3].qe = data_toggle_clear_qe;
-
-  //   F[clear_4]: 4:4
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_data_toggle_clear_clear_4 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (data_toggle_clear_we),
-    .wd     (data_toggle_clear_clear_4_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (data_toggle_clear_flds_we[4]),
-    .q      (reg2hw.data_toggle_clear[4].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     ()
-  );
-  assign reg2hw.data_toggle_clear[4].qe = data_toggle_clear_qe;
-
-  //   F[clear_5]: 5:5
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_data_toggle_clear_clear_5 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (data_toggle_clear_we),
-    .wd     (data_toggle_clear_clear_5_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (data_toggle_clear_flds_we[5]),
-    .q      (reg2hw.data_toggle_clear[5].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     ()
-  );
-  assign reg2hw.data_toggle_clear[5].qe = data_toggle_clear_qe;
-
-  //   F[clear_6]: 6:6
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_data_toggle_clear_clear_6 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (data_toggle_clear_we),
-    .wd     (data_toggle_clear_clear_6_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (data_toggle_clear_flds_we[6]),
-    .q      (reg2hw.data_toggle_clear[6].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     ()
-  );
-  assign reg2hw.data_toggle_clear[6].qe = data_toggle_clear_qe;
-
-  //   F[clear_7]: 7:7
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_data_toggle_clear_clear_7 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (data_toggle_clear_we),
-    .wd     (data_toggle_clear_clear_7_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (data_toggle_clear_flds_we[7]),
-    .q      (reg2hw.data_toggle_clear[7].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     ()
-  );
-  assign reg2hw.data_toggle_clear[7].qe = data_toggle_clear_qe;
-
-  //   F[clear_8]: 8:8
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_data_toggle_clear_clear_8 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (data_toggle_clear_we),
-    .wd     (data_toggle_clear_clear_8_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (data_toggle_clear_flds_we[8]),
-    .q      (reg2hw.data_toggle_clear[8].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     ()
-  );
-  assign reg2hw.data_toggle_clear[8].qe = data_toggle_clear_qe;
-
-  //   F[clear_9]: 9:9
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_data_toggle_clear_clear_9 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (data_toggle_clear_we),
-    .wd     (data_toggle_clear_clear_9_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (data_toggle_clear_flds_we[9]),
-    .q      (reg2hw.data_toggle_clear[9].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     ()
-  );
-  assign reg2hw.data_toggle_clear[9].qe = data_toggle_clear_qe;
-
-  //   F[clear_10]: 10:10
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_data_toggle_clear_clear_10 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (data_toggle_clear_we),
-    .wd     (data_toggle_clear_clear_10_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (data_toggle_clear_flds_we[10]),
-    .q      (reg2hw.data_toggle_clear[10].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     ()
-  );
-  assign reg2hw.data_toggle_clear[10].qe = data_toggle_clear_qe;
-
-  //   F[clear_11]: 11:11
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_data_toggle_clear_clear_11 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (data_toggle_clear_we),
-    .wd     (data_toggle_clear_clear_11_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (data_toggle_clear_flds_we[11]),
-    .q      (reg2hw.data_toggle_clear[11].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     ()
-  );
-  assign reg2hw.data_toggle_clear[11].qe = data_toggle_clear_qe;
+  assign reg2hw.in_data_toggle.mask.qe = in_data_toggle_qe;
 
 
   // R[phy_pins_sense]: V(True)
@@ -7947,7 +7670,7 @@ module usbdev_reg_top (
 
 
 
-  logic [35:0] addr_hit;
+  logic [36:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == USBDEV_INTR_STATE_OFFSET);
@@ -7980,12 +7703,13 @@ module usbdev_reg_top (
     addr_hit[27] = (reg_addr == USBDEV_CONFIGIN_11_OFFSET);
     addr_hit[28] = (reg_addr == USBDEV_OUT_ISO_OFFSET);
     addr_hit[29] = (reg_addr == USBDEV_IN_ISO_OFFSET);
-    addr_hit[30] = (reg_addr == USBDEV_DATA_TOGGLE_CLEAR_OFFSET);
-    addr_hit[31] = (reg_addr == USBDEV_PHY_PINS_SENSE_OFFSET);
-    addr_hit[32] = (reg_addr == USBDEV_PHY_PINS_DRIVE_OFFSET);
-    addr_hit[33] = (reg_addr == USBDEV_PHY_CONFIG_OFFSET);
-    addr_hit[34] = (reg_addr == USBDEV_WAKE_CONTROL_OFFSET);
-    addr_hit[35] = (reg_addr == USBDEV_WAKE_EVENTS_OFFSET);
+    addr_hit[30] = (reg_addr == USBDEV_OUT_DATA_TOGGLE_OFFSET);
+    addr_hit[31] = (reg_addr == USBDEV_IN_DATA_TOGGLE_OFFSET);
+    addr_hit[32] = (reg_addr == USBDEV_PHY_PINS_SENSE_OFFSET);
+    addr_hit[33] = (reg_addr == USBDEV_PHY_PINS_DRIVE_OFFSET);
+    addr_hit[34] = (reg_addr == USBDEV_PHY_CONFIG_OFFSET);
+    addr_hit[35] = (reg_addr == USBDEV_WAKE_CONTROL_OFFSET);
+    addr_hit[36] = (reg_addr == USBDEV_WAKE_EVENTS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -8028,7 +7752,8 @@ module usbdev_reg_top (
                (addr_hit[32] & (|(USBDEV_PERMIT[32] & ~reg_be))) |
                (addr_hit[33] & (|(USBDEV_PERMIT[33] & ~reg_be))) |
                (addr_hit[34] & (|(USBDEV_PERMIT[34] & ~reg_be))) |
-               (addr_hit[35] & (|(USBDEV_PERMIT[35] & ~reg_be)))));
+               (addr_hit[35] & (|(USBDEV_PERMIT[35] & ~reg_be))) |
+               (addr_hit[36] & (|(USBDEV_PERMIT[36] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -8510,33 +8235,20 @@ module usbdev_reg_top (
   assign in_iso_iso_10_wd = reg_wdata[10];
 
   assign in_iso_iso_11_wd = reg_wdata[11];
-  assign data_toggle_clear_we = addr_hit[30] & reg_we & !reg_error;
+  assign out_data_toggle_re = addr_hit[30] & reg_re & !reg_error;
+  assign out_data_toggle_we = addr_hit[30] & reg_we & !reg_error;
 
-  assign data_toggle_clear_clear_0_wd = reg_wdata[0];
+  assign out_data_toggle_status_wd = reg_wdata[11:0];
 
-  assign data_toggle_clear_clear_1_wd = reg_wdata[1];
+  assign out_data_toggle_mask_wd = reg_wdata[27:16];
+  assign in_data_toggle_re = addr_hit[31] & reg_re & !reg_error;
+  assign in_data_toggle_we = addr_hit[31] & reg_we & !reg_error;
 
-  assign data_toggle_clear_clear_2_wd = reg_wdata[2];
+  assign in_data_toggle_status_wd = reg_wdata[11:0];
 
-  assign data_toggle_clear_clear_3_wd = reg_wdata[3];
-
-  assign data_toggle_clear_clear_4_wd = reg_wdata[4];
-
-  assign data_toggle_clear_clear_5_wd = reg_wdata[5];
-
-  assign data_toggle_clear_clear_6_wd = reg_wdata[6];
-
-  assign data_toggle_clear_clear_7_wd = reg_wdata[7];
-
-  assign data_toggle_clear_clear_8_wd = reg_wdata[8];
-
-  assign data_toggle_clear_clear_9_wd = reg_wdata[9];
-
-  assign data_toggle_clear_clear_10_wd = reg_wdata[10];
-
-  assign data_toggle_clear_clear_11_wd = reg_wdata[11];
-  assign phy_pins_sense_re = addr_hit[31] & reg_re & !reg_error;
-  assign phy_pins_drive_we = addr_hit[32] & reg_we & !reg_error;
+  assign in_data_toggle_mask_wd = reg_wdata[27:16];
+  assign phy_pins_sense_re = addr_hit[32] & reg_re & !reg_error;
+  assign phy_pins_drive_we = addr_hit[33] & reg_we & !reg_error;
 
   assign phy_pins_drive_dp_o_wd = reg_wdata[0];
 
@@ -8555,7 +8267,7 @@ module usbdev_reg_top (
   assign phy_pins_drive_dn_pullup_en_o_wd = reg_wdata[7];
 
   assign phy_pins_drive_en_wd = reg_wdata[16];
-  assign phy_config_we = addr_hit[33] & reg_we & !reg_error;
+  assign phy_config_we = addr_hit[34] & reg_we & !reg_error;
 
   assign phy_config_use_diff_rcvr_wd = reg_wdata[0];
 
@@ -8568,7 +8280,7 @@ module usbdev_reg_top (
   assign phy_config_usb_ref_disable_wd = reg_wdata[6];
 
   assign phy_config_tx_osc_test_mode_wd = reg_wdata[7];
-  assign wake_control_we = addr_hit[34] & reg_we & !reg_error;
+  assign wake_control_we = addr_hit[35] & reg_we & !reg_error;
 
 
 
@@ -8605,12 +8317,13 @@ module usbdev_reg_top (
     reg_we_check[27] = configin_11_we;
     reg_we_check[28] = out_iso_we;
     reg_we_check[29] = in_iso_we;
-    reg_we_check[30] = data_toggle_clear_we;
-    reg_we_check[31] = 1'b0;
-    reg_we_check[32] = phy_pins_drive_we;
-    reg_we_check[33] = phy_config_we;
-    reg_we_check[34] = wake_control_we;
-    reg_we_check[35] = 1'b0;
+    reg_we_check[30] = out_data_toggle_we;
+    reg_we_check[31] = in_data_toggle_we;
+    reg_we_check[32] = 1'b0;
+    reg_we_check[33] = phy_pins_drive_we;
+    reg_we_check[34] = phy_config_we;
+    reg_we_check[35] = wake_control_we;
+    reg_we_check[36] = 1'b0;
   end
 
   // Read data return
@@ -8944,21 +8657,16 @@ module usbdev_reg_top (
       end
 
       addr_hit[30]: begin
-        reg_rdata_next[0] = '0;
-        reg_rdata_next[1] = '0;
-        reg_rdata_next[2] = '0;
-        reg_rdata_next[3] = '0;
-        reg_rdata_next[4] = '0;
-        reg_rdata_next[5] = '0;
-        reg_rdata_next[6] = '0;
-        reg_rdata_next[7] = '0;
-        reg_rdata_next[8] = '0;
-        reg_rdata_next[9] = '0;
-        reg_rdata_next[10] = '0;
-        reg_rdata_next[11] = '0;
+        reg_rdata_next[11:0] = out_data_toggle_status_qs;
+        reg_rdata_next[27:16] = out_data_toggle_mask_qs;
       end
 
       addr_hit[31]: begin
+        reg_rdata_next[11:0] = in_data_toggle_status_qs;
+        reg_rdata_next[27:16] = in_data_toggle_mask_qs;
+      end
+
+      addr_hit[32]: begin
         reg_rdata_next[0] = phy_pins_sense_rx_dp_i_qs;
         reg_rdata_next[1] = phy_pins_sense_rx_dn_i_qs;
         reg_rdata_next[2] = phy_pins_sense_rx_d_i_qs;
@@ -8970,7 +8678,7 @@ module usbdev_reg_top (
         reg_rdata_next[16] = phy_pins_sense_pwr_sense_qs;
       end
 
-      addr_hit[32]: begin
+      addr_hit[33]: begin
         reg_rdata_next[0] = phy_pins_drive_dp_o_qs;
         reg_rdata_next[1] = phy_pins_drive_dn_o_qs;
         reg_rdata_next[2] = phy_pins_drive_d_o_qs;
@@ -8982,7 +8690,7 @@ module usbdev_reg_top (
         reg_rdata_next[16] = phy_pins_drive_en_qs;
       end
 
-      addr_hit[33]: begin
+      addr_hit[34]: begin
         reg_rdata_next[0] = phy_config_use_diff_rcvr_qs;
         reg_rdata_next[1] = phy_config_tx_use_d_se0_qs;
         reg_rdata_next[2] = phy_config_eop_single_bit_qs;
@@ -8991,10 +8699,10 @@ module usbdev_reg_top (
         reg_rdata_next[7] = phy_config_tx_osc_test_mode_qs;
       end
 
-      addr_hit[34]: begin
+      addr_hit[35]: begin
         reg_rdata_next = DW'(wake_control_qs);
       end
-      addr_hit[35]: begin
+      addr_hit[36]: begin
         reg_rdata_next = DW'(wake_events_qs);
       end
       default: begin
@@ -9013,10 +8721,10 @@ module usbdev_reg_top (
   always_comb begin
     reg_busy_sel = '0;
     unique case (1'b1)
-      addr_hit[34]: begin
+      addr_hit[35]: begin
         reg_busy_sel = wake_control_busy;
       end
-      addr_hit[35]: begin
+      addr_hit[36]: begin
         reg_busy_sel = wake_events_busy;
       end
       default: begin
