@@ -11,6 +11,8 @@
 extern "C" {
 #endif
 
+#define MODULE_ID MAKE_MODULE_ID('j', 'p', 'd')
+
 /**
  * Wrapped (encrypted) RMA unlock token.
  *
@@ -44,6 +46,8 @@ UJSON_SERDE_STRUCT(WrappedRmaUnlockToken, \
 UJSON_SERDE_STRUCT(ManufProvisioning, \
                    manuf_provisioning_t, \
                    STRUCT_MANUF_PROVISIONING);
+
+#undef MODULE_ID
 // clang-format on
 
 #ifdef __cplusplus

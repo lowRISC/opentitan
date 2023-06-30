@@ -19,6 +19,8 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "i2c_regs.h"  // Generated.
 
+#define MODULE_ID MAKE_MODULE_ID('i', 'i', 't')
+
 enum {
   kI2cWrite = 0,
   kI2cRead = 1,

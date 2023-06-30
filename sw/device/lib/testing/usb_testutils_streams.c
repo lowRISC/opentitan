@@ -18,6 +18,8 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/usb_testutils_diags.h"
 
+#define MODULE_ID MAKE_MODULE_ID('u', 't', 's')
+
 /**
  * Read method to be employed
  */

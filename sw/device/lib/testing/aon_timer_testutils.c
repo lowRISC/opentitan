@@ -15,6 +15,8 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+#define MODULE_ID MAKE_MODULE_ID('a', 'o', 't')
+
 status_t aon_timer_testutils_get_aon_cycles_from_us(uint64_t microseconds,
                                                     uint32_t *cycles) {
   uint64_t cycles_ = udiv64_slow(microseconds * kClockFreqAonHz, 1000000,

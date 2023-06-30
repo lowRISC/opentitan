@@ -12,6 +12,8 @@
 
 #include "alert_handler_regs.h"  // Generated
 
+#define MODULE_ID MAKE_MODULE_ID('a', 'h', 't')
+
 /**
  * This is used to traverse the dump treating it as an array of bits, and
  * extract a number of bits placing them in a uint32_t. The word and bit index

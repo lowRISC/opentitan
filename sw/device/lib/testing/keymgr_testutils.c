@@ -21,6 +21,8 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+#define MODULE_ID MAKE_MODULE_ID('k', 'm', 't')
+
 enum {
   /** Flash Secret partition ID. */
   kFlashInfoPartitionId = 0,

@@ -17,6 +17,8 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+#define MODULE_ID MAKE_MODULE_ID('s', 'h', 'f')
+
 // A data pattern to program into the chip:
 // From: http://www.abrahamlincolnonline.org/lincoln/speeches/gettysburg.htm
 static const char kGettysburgPrelude[256] =

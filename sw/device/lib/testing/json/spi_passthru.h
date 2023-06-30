@@ -10,6 +10,8 @@ extern "C" {
 #endif
 // clang-format off
 
+#define MODULE_ID MAKE_MODULE_ID('j', 's', 'p')
+
 #define STRUCT_CONFIG_JEDEC_ID(field, string) \
     field(device_id, uint16_t) \
     field(manufacturer_id, uint8_t) \
@@ -77,6 +79,8 @@ UJSON_SERDE_STRUCT(SpiFlashWrite, spi_flash_write_t, STRUCT_SPI_FLASH_WRITE);
     field(mask, uint32_t) \
     field(value, uint32_t)
 UJSON_SERDE_STRUCT(SpiPassthruSwapMap, spi_passthru_swap_map_t, STRUCT_SPI_PASSTHRU_SWAP_MAP);
+
+#undef MODULE_ID
 
 // clang-format on
 #ifdef __cplusplus

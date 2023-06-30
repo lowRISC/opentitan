@@ -12,6 +12,8 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
+#define MODULE_ID MAKE_MODULE_ID('r', 'm', 'g')
+
 status_t rstmgr_testutils_is_reset_info(const dif_rstmgr_t *rstmgr,
                                         dif_rstmgr_reset_info_bitfield_t info) {
   dif_rstmgr_reset_info_bitfield_t actual_info;

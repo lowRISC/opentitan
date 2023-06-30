@@ -30,6 +30,8 @@
 // TODO: make this toplevel agnostic.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+#define MODULE_ID MAKE_MODULE_ID('o', 't', 'm')
+
 // Check layout of test configuration struct since OTTF ISR asm code requires a
 // specific layout.
 OT_ASSERT_MEMBER_OFFSET(ottf_test_config_t, enable_concurrency, 0);

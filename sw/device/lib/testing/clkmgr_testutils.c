@@ -7,6 +7,8 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
 
+#define MODULE_ID MAKE_MODULE_ID('c', 'm', 't')
+
 static const char *measure_clock_names[kDifClkmgrMeasureClockUsb + 1] = {
     "io_clk", "io_div2_clk", "io_div4_clk", "main_clk", "usb_clk"};
 

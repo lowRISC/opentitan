@@ -10,6 +10,8 @@ extern "C" {
 #endif
 // clang-format off
 
+#define MODULE_ID MAKE_MODULE_ID('j', 'g', 'h')
+
 #define ENUM_GPIO_SET_ACTION(_, value) \
     value(_, Write) \
     value(_, WriteAll) \
@@ -36,6 +38,8 @@ UJSON_SERDE_STRUCT(GpioGet, gpio_get_t, STRUCT_GPIO_GET);
 status_t gpio_set(ujson_t *uj, const dif_gpio_t *gpio);
 status_t gpio_get(ujson_t *uj, const dif_gpio_t *gpio);
 #endif
+
+#undef MODULE_ID
 
 // clang-format on
 #ifdef __cplusplus

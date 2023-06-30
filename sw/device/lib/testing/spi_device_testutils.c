@@ -7,6 +7,8 @@
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
+#define MODULE_ID MAKE_MODULE_ID('s', 'd', 't')
+
 status_t spi_device_testutils_configure_passthrough(
     dif_spi_device_handle_t *spi_device, uint32_t filters,
     bool upload_write_commands) {

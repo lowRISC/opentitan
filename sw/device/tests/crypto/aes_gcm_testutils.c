@@ -12,6 +12,8 @@
 #include "sw/device/lib/testing/profile.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
+#define MODULE_ID MAKE_MODULE_ID('a', 'g', 't')
+
 /**
  * Static mask to use for testing.
  */

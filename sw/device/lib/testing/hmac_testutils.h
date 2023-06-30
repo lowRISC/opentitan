@@ -14,6 +14,8 @@
 #include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
+#define MODULE_ID MAKE_MODULE_ID('h', 'm', 'h')
+
 /**
  * Timeouts to be used for different HMAC operations.
  *
@@ -155,5 +157,7 @@ status_t hmac_testutils_finish_and_check_polled(
 OT_WARN_UNUSED_RESULT
 status_t hmac_testutils_push_message(const dif_hmac_t *hmac, const char *data,
                                      size_t len);
+
+#undef MODULE_ID
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_HMAC_TESTUTILS_H_

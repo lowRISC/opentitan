@@ -12,6 +12,8 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+#define MODULE_ID MAKE_MODULE_ID('e', 'n', 'y')
+
 static status_t setup_entropy_src(const dif_entropy_src_t *entropy_src) {
   CHECK_DIF_OK(dif_entropy_src_configure(
       entropy_src, entropy_testutils_config_default(), kDifToggleEnabled));
