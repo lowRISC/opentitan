@@ -19,9 +19,6 @@ class chip_sw_otp_ctrl_vendor_test_csr_access_vseq extends chip_sw_base_vseq;
     lc_state dist {
         LcStRaw :/ 1,
         [LcStTestUnlocked0 : LcStTestUnlocked7] :/ 4,
-        LcStDev :/ 1,
-        LcStProd :/ 1,
-        LcStProdEnd :/ 1,
         LcStRma :/ 1
     };
   }
@@ -70,7 +67,8 @@ class chip_sw_otp_ctrl_vendor_test_csr_access_vseq extends chip_sw_base_vseq;
 
     // In open source prim_otp module, the vendor_test_status output is tied to 0.
     // For closed source module, cfg.otp_test_stastatus needs to be updated
-    // at cfg::initialize()
+    // by cfg::update_otp_test_status() before checking.
+    cfg.update_otp_test_status();
     `DV_CHECK_EQ(otp_vendor_test_status, cfg.otp_test_status)
 
     // Probe vendor_test_ctrl from OTP_CTRL port to ensure that in certain lc states, the

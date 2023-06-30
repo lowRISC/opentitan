@@ -472,4 +472,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     return 0;
   endfunction
 
+  virtual function void update_otp_test_status();
+    otp_test_status = 0;
+  endfunction
 endclass
