@@ -815,12 +815,64 @@ TEST_F(UsbdevTest, DeviceAddresses) {
 }
 
 TEST_F(UsbdevTest, Status) {
-  EXPECT_WRITE32(USBDEV_DATA_TOGGLE_CLEAR_REG_OFFSET,
-                 {{USBDEV_DATA_TOGGLE_CLEAR_CLEAR_3_BIT, 1}});
+  // dif_usbdev_clear_data_toggle compatibility with earlier implementations
+  EXPECT_WRITE32(USBDEV_OUT_DATA_TOGGLE_REG_OFFSET,
+                 {
+                     {USBDEV_OUT_DATA_TOGGLE_STATUS_OFFSET, 0u},
+                     {USBDEV_OUT_DATA_TOGGLE_MASK_OFFSET, 1u << 3},
+                 });
+  EXPECT_WRITE32(USBDEV_IN_DATA_TOGGLE_REG_OFFSET,
+                 {
+                     {USBDEV_IN_DATA_TOGGLE_STATUS_OFFSET, 0u},
+                     {USBDEV_IN_DATA_TOGGLE_MASK_OFFSET, 1u << 3},
+                 });
   EXPECT_DIF_OK(dif_usbdev_clear_data_toggle(&usbdev_, /*endpoint=*/3));
-  EXPECT_WRITE32(USBDEV_DATA_TOGGLE_CLEAR_REG_OFFSET,
-                 {{USBDEV_DATA_TOGGLE_CLEAR_CLEAR_9_BIT, 1}});
+  EXPECT_WRITE32(USBDEV_OUT_DATA_TOGGLE_REG_OFFSET,
+                 {
+                     {USBDEV_OUT_DATA_TOGGLE_STATUS_OFFSET, 0u},
+                     {USBDEV_OUT_DATA_TOGGLE_MASK_OFFSET, 1u << 9},
+                 });
+  EXPECT_WRITE32(USBDEV_IN_DATA_TOGGLE_REG_OFFSET,
+                 {
+                     {USBDEV_IN_DATA_TOGGLE_STATUS_OFFSET, 0u},
+                     {USBDEV_IN_DATA_TOGGLE_MASK_OFFSET, 1u << 9},
+                 });
   EXPECT_DIF_OK(dif_usbdev_clear_data_toggle(&usbdev_, /*endpoint=*/9));
+  // Setting of all data toggles to known values; eg. restoring after Deep Sleep
+  const uint16_t all_endpoints = (1u << USBDEV_NUM_ENDPOINTS) - 1u;
+  const uint16_t even_endpoints = (0x40000000u / 3) & all_endpoints;
+  const uint16_t odd_endpoints = even_endpoints << 1;
+  EXPECT_WRITE32(USBDEV_OUT_DATA_TOGGLE_REG_OFFSET,
+                 {
+                     {USBDEV_OUT_DATA_TOGGLE_STATUS_OFFSET, even_endpoints},
+                     {USBDEV_OUT_DATA_TOGGLE_MASK_OFFSET, all_endpoints},
+                 });
+  EXPECT_DIF_OK(dif_usbdev_data_toggle_out_write(&usbdev_, all_endpoints,
+                                                 even_endpoints));
+  EXPECT_WRITE32(USBDEV_IN_DATA_TOGGLE_REG_OFFSET,
+                 {
+                     {USBDEV_IN_DATA_TOGGLE_STATUS_OFFSET, odd_endpoints},
+                     {USBDEV_IN_DATA_TOGGLE_MASK_OFFSET, all_endpoints},
+                 });
+  EXPECT_DIF_OK(
+      dif_usbdev_data_toggle_in_write(&usbdev_, all_endpoints, odd_endpoints));
+  // Saving of data toggles; eg. capturing at entry to Deep Sleep
+  uint16_t out_toggles;
+  EXPECT_READ32(USBDEV_OUT_DATA_TOGGLE_REG_OFFSET,
+                {
+                    {USBDEV_OUT_DATA_TOGGLE_STATUS_OFFSET, odd_endpoints},
+                    {USBDEV_OUT_DATA_TOGGLE_MASK_OFFSET, 0u},  // Reads as zero
+                });
+  EXPECT_DIF_OK(dif_usbdev_data_toggle_out_read(&usbdev_, &out_toggles));
+  EXPECT_EQ(out_toggles, odd_endpoints);
+  uint16_t in_toggles;
+  EXPECT_READ32(USBDEV_IN_DATA_TOGGLE_REG_OFFSET,
+                {
+                    {USBDEV_IN_DATA_TOGGLE_STATUS_OFFSET, even_endpoints},
+                    {USBDEV_OUT_DATA_TOGGLE_MASK_OFFSET, 0u},  // Reads as zero
+                });
+  EXPECT_DIF_OK(dif_usbdev_data_toggle_in_read(&usbdev_, &in_toggles));
+  EXPECT_EQ(in_toggles, even_endpoints);
 
   uint16_t frame;
   EXPECT_READ32(USBDEV_USBSTAT_REG_OFFSET,

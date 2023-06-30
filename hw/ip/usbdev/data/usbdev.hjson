@@ -858,25 +858,67 @@
         ]
       }
     }
-    { multireg: {
-        name: "data_toggle_clear",
-        count: "NEndpoints"
-        cname: "Endpoint"
-        desc: "Clear the data toggle flag",
-        swaccess: "wo",
-        hwaccess: "hro",
-        hwqe: "true",
-        fields: [
-          {
-            bits: "0",
-            name: "clear",
-            desc: '''
-                  Writing 1 to this bit will clear the data toggle bit for this endpoint to Data0 in both IN and OUT directions.
-                  The register must no be written again within 200 ns.
-                  '''
-          }
-        ]
-      }
+    {
+      name: "out_data_toggle",
+      desc: "OUT Endpoints Data Toggles",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      fields: [
+        {
+          bits: "11:0",
+          name: "status",
+          desc: '''
+                Reading returns the current state of the OUT endpoint Data Toggle flags.
+                Writing sets the Data Toggle flag for each endpoint if the corresponding mask bit
+                in the upper half of this register is set.
+                '''
+        }
+        {
+          bits: "27:16",
+          name: "mask",
+          desc: '''
+                Reads as zero.
+                When writing, a set bit will cause the Data Toggle flag of the corresponding
+                OUT endpoint to be updated. A clear bit will leave the flag for the corresponding
+                endpoint unchanged.
+                '''
+        }
+      ],
+      tags: [// This CSR has mask bits that gate writes.
+             "excl:CsrNonInitTests:CsrExclWrite"]
+    }
+    {
+      name: "in_data_toggle",
+      desc: "IN Endpoints Data Toggles",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      fields: [
+        {
+          bits: "11:0",
+          name: "status",
+          desc: '''
+                Reading returns the current state of the IN endpoint Data Toggle flags.
+                Writing sets the Data Toggle flag for each endpoint if the corresponding mask bit
+                in the upper half of this register is set.
+                '''
+        }
+        {
+          bits: "27:16",
+          name: "mask",
+          desc: '''
+                Reads as zero.
+                When writing, a set bit will cause the Data Toggle flag of the corresponding
+                IN endpoint to be updated. A clear bit will leave the flag for the corresponding
+                endpoint unchanged.
+                '''
+        }
+      ],
+      tags: [// This CSR has mask bits that gate writes.
+             "excl:CsrNonInitTests:CsrExclWrite"]
     }
     { name: "phy_pins_sense",
       desc: '''

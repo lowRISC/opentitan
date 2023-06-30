@@ -156,8 +156,21 @@ module usbdev
   logic              connect_en;
   logic              resume_link_active;
 
-  logic [NEndpoints-1:0] data_toggle_clear;
+  // Current state of OUT data toggles
+  logic [NEndpoints-1:0] out_data_toggle;
+  // Write strobe from register interface
+  logic                  out_datatog_we;
+  // Write data from register interface
+  logic [NEndpoints-1:0] out_datatog_status;
+  logic [NEndpoints-1:0] out_datatog_mask;
 
+  // Current state of IN data toggles
+  logic [NEndpoints-1:0] in_data_toggle;
+  // Write strobe from register interface
+  logic                  in_datatog_we;
+  // Write data from register interface
+  logic [NEndpoints-1:0] in_datatog_status;
+  logic [NEndpoints-1:0] in_datatog_mask;
 
   /////////////////////////////////
   // USB RX after CDC & muxing   //
@@ -343,12 +356,23 @@ module usbdev
     end
   end
 
-  always_comb begin : proc_data_toggle_clear
-    data_toggle_clear = '0;
-    for (int i = 0; i < NEndpoints; i++) begin
-      data_toggle_clear[i] = reg2hw.data_toggle_clear[i].q & reg2hw.data_toggle_clear[i].qe;
-    end
-  end
+  // OUT data toggles are maintained with the packet engine but may be set or
+  // cleared by software
+  assign out_datatog_we = reg2hw.out_data_toggle.status.qe & reg2hw.out_data_toggle.mask.qe;
+  assign out_datatog_status = reg2hw.out_data_toggle.status.q;
+  assign out_datatog_mask = reg2hw.out_data_toggle.mask.q;
+  // Software may read tham at any time
+  assign hw2reg.out_data_toggle.status.d = out_data_toggle;
+  assign hw2reg.out_data_toggle.mask.d = {NEndpoints{1'b0}};
+
+  // IN data toggles are maintained with the packet engine but may be set or
+  // cleared by software
+  assign in_datatog_we = reg2hw.in_data_toggle.status.qe & reg2hw.in_data_toggle.mask.qe;
+  assign in_datatog_status = reg2hw.in_data_toggle.status.q;
+  assign in_datatog_mask = reg2hw.in_data_toggle.mask.q;
+  // Software may read them at any time
+  assign hw2reg.in_data_toggle.status.d = in_data_toggle;
+  assign hw2reg.in_data_toggle.mask.d = {NEndpoints{1'b0}};
 
   always_comb begin
     set_sentbit = '0;
@@ -504,7 +528,15 @@ module usbdev
     .tx_osc_test_mode_i   (reg2hw.phy_config.tx_osc_test_mode.q), // cdc ok: quasi-static
     .cfg_use_diff_rcvr_i  (usb_rx_enable_o),
     .cfg_pinflip_i        (cfg_pinflip),
-    .data_toggle_clear_i  (data_toggle_clear),
+    .out_data_toggle_o    (out_data_toggle),
+    .out_datatog_we_i     (out_datatog_we),
+    .out_datatog_status_i (out_datatog_status),
+    .out_datatog_mask_i   (out_datatog_mask),
+    .in_data_toggle_o     (in_data_toggle),
+    .in_datatog_we_i      (in_datatog_we),
+    .in_datatog_status_i  (in_datatog_status),
+    .in_datatog_mask_i    (in_datatog_mask),
+
     .resume_link_active_i (resume_link_active),
 
     // status
