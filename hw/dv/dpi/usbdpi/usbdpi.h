@@ -329,6 +329,11 @@ struct usbdpi_ctx {
   uint8_t lastrxpid;
 
   /**
+   * Phase (0-3) within 4 times oversampling at which the signals from the
+   * device shall be sampled.
+   */
+  uint8_t tick_sample;
+  /**
    * Count of clock cycles
    */
   uint32_t tick;

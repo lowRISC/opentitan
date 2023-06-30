@@ -102,6 +102,77 @@ static void bus_reset(usbdpi_ctx_t *ctx) {
 static void usbdpi_data_callback(void *ctx_v, usbmon_data_type_t type,
                                  uint8_t d);
 
+// Sample the bus signals
+static bool bus_sample(usbdpi_ctx_t *ctx, unsigned *pdp, unsigned *pdn,
+                       uint32_t d2p) {
+  assert(ctx);
+
+  // Ascertain the state of the D+/D- signals from the device
+  unsigned dp, dn;
+  if (d2p & D2P_TX_USE_D_SE0) {
+    // Single-ended mode uses D and SE0
+    if (d2p & D2P_D_EN) {
+      if (d2p & D2P_DNPU) {
+        // Pullup says swap i.e. D is inverted
+        dp = (d2p & D2P_SE0) ? 0 : ((d2p & D2P_D) ? 0 : 1);
+        dn = (d2p & D2P_SE0) ? 0 : ((d2p & D2P_D) ? 1 : 0);
+      } else {
+        dp = (d2p & D2P_SE0) ? 0 : ((d2p & D2P_D) ? 1 : 0);
+        dn = (d2p & D2P_SE0) ? 0 : ((d2p & D2P_D) ? 0 : 1);
+      }
+    } else {
+      dp = (d2p & D2P_PU) ? 1 : 0;
+      dn = 0;
+    }
+  } else {
+    // Normal D+/D- mode
+    if (d2p & D2P_DNPU) {
+      // Assertion of DN pullup suggests DP and DN are swapped
+      dp = ((d2p & D2P_DN_EN) && (d2p & D2P_DN)) ||
+           (!(d2p & D2P_DN_EN) && (d2p & D2P_DNPU));
+      dn = (d2p & D2P_DP_EN) && (d2p & D2P_DP);
+    } else {
+      // No DN pullup so normal orientation
+      dp = ((d2p & D2P_DP_EN) && (d2p & D2P_DP)) ||
+           (!(d2p & D2P_DP_EN) && (d2p & D2P_DPPU));
+      dn = (d2p & D2P_DN_EN) && (d2p & D2P_DN);
+    }
+  }
+
+  // Return state of DP/DN signals
+  if (pdp)
+    *pdp = dp;
+  if (pdn)
+    *pdn = dn;
+
+  // If the bus is idle but we've detected a non-idle state, adjust the sampling
+  // phase; this synchronization mimics that of the usbdev logic, although we
+  // could potentially do something more sophisticated over the 6 or 8 bit
+  // intervals of the known SYNC (KJKJKJKK) sequence that starts each packet.
+  if (ctx->state == ST_IDLE) {
+    // [DP,DN] so 2'b10 is the Idle state, making 00 and 11 transition states,
+    // if transmission is commencing.
+    switch ((dp << 1) | dn) {
+      // Both signals transitioned simultaneously.
+      case 1U:
+        // Aim for the middle of the Eye
+        ctx->tick_sample = (ctx->tick + 1U) & 3U;
+        break;
+      // Idle state, nothing to do.
+      case 2U:
+        break;
+      // These are regarded as transmission states, in the event that the
+      // propagation delays are different on DP and DN; unikely in simulation.
+      case 0U:
+      case 3U:
+        ctx->tick_sample = (ctx->tick + 2U) & 3U;
+        break;
+    }
+  }
+
+  return ((ctx->tick & 3U) == ctx->tick_sample);
+}
+
 /**
  * Create a USB DPI instance, returning a 'chandle' for later use
  */
@@ -140,42 +211,27 @@ void *usbdpi_create(const char *name, int loglevel) {
   return (void *)ctx;
 }
 
+// Device-to-Host transmission
+// - this function samples the data arriving from the device, tracking EOP
+//   transitions and providing the bus traffic to the usb_monitor for decoding
+//   and recording.
 void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
   usbdpi_ctx_t *ctx = (usbdpi_ctx_t *)ctx_void;
   assert(ctx);
 
-  // Ascertain the state of the D+/D- signals from the device
-  // TODO - migrate to a simple function
+  // New clock tick; 4 times oversampling of the 12Mbps Full Speed, so we're
+  // operating at 48MHz. A new bit interval occurs every 4 clock cycles
+  ctx->tick++;
+  ctx->tick_bits = ctx->tick >> 2;
+
+  // Ascertain the state of the DP/DN signals from the device; we use the
+  // the transitions from Idle to adjust the sampling phase, which allows us to
+  // model a frequency difference between the device and the (DPI) host.
   uint32_t d2p = usb_d2p[0];
   unsigned dp, dn;
-  if (d2p & D2P_TX_USE_D_SE0) {
-    // Single-ended mode uses D and SE0
-    if (d2p & D2P_D_EN) {
-      if (d2p & D2P_DNPU) {
-        // Pullup says swap i.e. D is inverted
-        dp = (d2p & D2P_SE0) ? 0 : ((d2p & D2P_D) ? 0 : 1);
-        dn = (d2p & D2P_SE0) ? 0 : ((d2p & D2P_D) ? 1 : 0);
-      } else {
-        dp = (d2p & D2P_SE0) ? 0 : ((d2p & D2P_D) ? 1 : 0);
-        dn = (d2p & D2P_SE0) ? 0 : ((d2p & D2P_D) ? 0 : 1);
-      }
-    } else {
-      dp = (d2p & D2P_PU) ? 1 : 0;
-      dn = 0;
-    }
-  } else {
-    // Normal D+/D- mode
-    if (d2p & D2P_DNPU) {
-      // Assertion of DN pullup suggests DP and DN are swapped
-      dp = ((d2p & D2P_DN_EN) && (d2p & D2P_DN)) ||
-           (!(d2p & D2P_DN_EN) && (d2p & D2P_DNPU));
-      dn = (d2p & D2P_DP_EN) && (d2p & D2P_DP);
-    } else {
-      // No DN pullup so normal orientation
-      dp = ((d2p & D2P_DP_EN) && (d2p & D2P_DP)) ||
-           (!(d2p & D2P_DP_EN) && (d2p & D2P_DPPU));
-      dn = (d2p & D2P_DN_EN) && (d2p & D2P_DN);
-    }
+  if (!bus_sample(ctx, &dp, &dn, d2p)) {
+    // Not sampling on this clock phase.
+    return;
   }
 
   // TODO - check the timing of the device responses to ensure compliance with
@@ -1112,6 +1168,9 @@ uint32_t inv_driving(usbdpi_ctx_t *ctx, uint32_t d2p) {
   return ctx->driving ^ (P2D_DP | P2D_DN | P2D_D);
 }
 
+// Host-to-Device Transmission
+// - this function does most of the work of keeping track of the host state,
+//   and handling communication with the device.
 uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
   usbdpi_ctx_t *ctx = (usbdpi_ctx_t *)ctx_void;
   assert(ctx);
@@ -1120,14 +1179,15 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
   int force_stat = 0;
   int dat;
 
+  // The point at which we raise the VBUS/SENSE signal
+  if (ctx->tick_bits == SENSE_AT) {
+    ctx->driving |= P2D_SENSE;
+  }
+
   // The 48MHz clock runs at 4 times the bus clock for a full speed (12Mbps)
-  // device
-  //
-  // TODO - vary the phase over the duration of the test to check device
-  //        synchronization
-  ctx->tick++;
-  ctx->tick_bits = ctx->tick >> 2;
-  if (ctx->tick & 3) {
+  // device and the sampling phase is adjusted according to observed transitions
+  // on the device signal (see usbdpi_device_to_host)
+  if ((ctx->tick & 3U) != ctx->tick_sample) {
     return ctx->driving;
   }
 
@@ -1135,10 +1195,6 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
   usb_monitor(ctx->mon, ctx->loglevel, ctx->tick_bits,
               (ctx->state != ST_IDLE) && (ctx->state != ST_GET), ctx->driving,
               d2p, &(ctx->lastrxpid));
-
-  if (ctx->tick_bits == SENSE_AT) {
-    ctx->driving |= P2D_SENSE;
-  }
 
   if ((d2p & D2P_PU) == 0) {
     // In the event that the device disconnected, we must start anew in

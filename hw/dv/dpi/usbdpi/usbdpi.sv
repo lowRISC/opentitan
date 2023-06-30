@@ -212,7 +212,6 @@ module usbdpi #(
                        c_state});
 
   logic [10:0] d2p;
-  logic [10:0] d2p_r;
   logic       unused_dummy;
   logic       unused_clk = clk_i;
   logic       unused_rst = rst_ni;
@@ -245,10 +244,7 @@ module usbdpi #(
         dn_int <= p2d[1];
         sense_p2d <= p2d[0];
         unused_dummy <= |p2d[7:5];
-        d2p_r <= d2p;
-        if (d2p_r != d2p) begin
-          usbdpi_device_to_host(ctx, d2p);
-        end
+        usbdpi_device_to_host(ctx, d2p);
       end else begin
         d_last <= 0;
         dp_int <= 0;

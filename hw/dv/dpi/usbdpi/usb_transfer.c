@@ -213,6 +213,7 @@ void transfer_dump(const usbdpi_transfer_t *transfer, FILE *out) {
 // `extern` declarations to give the inline functions in the
 // corresponding header a link location.
 
+extern bool transfer_data_drop(usbdpi_transfer_t *transfer, size_t n);
 extern uint8_t *transfer_data_field(usbdpi_transfer_t *transfer);
 extern uint8_t transfer_data_pid(usbdpi_transfer_t *transfer);
 extern uint32_t transfer_length(const usbdpi_transfer_t *transfer);
