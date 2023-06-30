@@ -54,6 +54,10 @@ impl CommandDispatch for I2cRawRead {
 pub struct I2cRawWrite {
     #[arg(short, long, help = "Hex data bytes to write.")]
     hexdata: String,
+
+    // `disable_help_flag` disable both short and long help flags. Add long help back.
+    #[arg(long, action = clap::ArgAction::Help, help = "Print help")]
+    help: bool,
 }
 
 impl CommandDispatch for I2cRawWrite {
@@ -86,6 +90,10 @@ pub struct I2cRawWriteRead {
         help = "Number of bytes to read."
     )]
     length: usize,
+
+    // `disable_help_flag` disable both short and long help flags. Add long help back.
+    #[arg(long, action = clap::ArgAction::Help, help = "Print help")]
+    help: bool,
 }
 
 #[derive(Debug, serde::Serialize)]
