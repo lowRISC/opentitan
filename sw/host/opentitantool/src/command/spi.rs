@@ -154,6 +154,10 @@ pub struct SpiRead {
     hexdump: bool,
     #[arg(name = "FILE", default_value = "-")]
     filename: PathBuf,
+
+    // `disable_help_flag` disable both short and long help flags. Add long help back.
+    #[arg(long, action = clap::ArgAction::Help, help = "Print help")]
+    help: bool,
 }
 
 #[derive(Debug, serde::Serialize)]
@@ -367,6 +371,10 @@ impl CommandDispatch for SpiRawRead {
 pub struct SpiRawWrite {
     #[arg(short, long, help = "Hex data bytes to write.")]
     hexdata: String,
+
+    // `disable_help_flag` disable both short and long help flags. Add long help back.
+    #[arg(long, action = clap::ArgAction::Help, help = "Print help")]
+    help: bool,
 }
 
 impl CommandDispatch for SpiRawWrite {
@@ -392,6 +400,10 @@ pub struct SpiRawWriteRead {
 
     #[arg(short = 'n', long, help = "Number of bytes to read.")]
     length: usize,
+
+    // `disable_help_flag` disable both short and long help flags. Add long help back.
+    #[arg(long, action = clap::ArgAction::Help, help = "Print help")]
+    help: bool,
 }
 
 impl CommandDispatch for SpiRawWriteRead {
@@ -420,6 +432,10 @@ impl CommandDispatch for SpiRawWriteRead {
 pub struct SpiRawTransceive {
     #[arg(short, long, help = "Hex data bytes to write.")]
     hexdata: String,
+
+    // `disable_help_flag` disable both short and long help flags. Add long help back.
+    #[arg(long, action = clap::ArgAction::Help, help = "Print help")]
+    help: bool,
 }
 
 impl CommandDispatch for SpiRawTransceive {
