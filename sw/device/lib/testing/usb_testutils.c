@@ -9,6 +9,8 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+#define MODULE_ID MAKE_MODULE_ID('u', 's', 't')
+
 #define USBDEV_BASE_ADDR TOP_EARLGREY_USBDEV_BASE_ADDR
 
 static dif_usbdev_t usbdev;

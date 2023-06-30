@@ -10,6 +10,8 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
+#define MODULE_ID MAKE_MODULE_ID('s', 'c', 't')
+
 void sram_ctrl_testutils_write(uintptr_t address,
                                const sram_ctrl_testutils_data_t data) {
   mmio_region_t region = mmio_region_from_addr(address);

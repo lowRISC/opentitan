@@ -13,6 +13,8 @@
 #include "sw/device/lib/testing/spi_device_testutils.h"
 #include "sw/device/lib/testing/spi_flash_testutils.h"
 
+#define MODULE_ID MAKE_MODULE_ID('s', 'f', 'e')
+
 enum {
   // JEDEC standard continuation code.
   kJedecContCode = 0x7f,

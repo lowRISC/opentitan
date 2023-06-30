@@ -22,6 +22,8 @@
 // TODO: make this toplevel agnostic.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+#define MODULE_ID MAKE_MODULE_ID('o', 't', 'c')
+
 /**
  * OTTF console configuration parameters.
  */

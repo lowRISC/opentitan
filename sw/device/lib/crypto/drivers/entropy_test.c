@@ -14,6 +14,8 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+#define MODULE_ID MAKE_MODULE_ID('e', 'n', 't')
+
 OTTF_DEFINE_TEST_CONFIG();
 
 static void entropy_complex_init_test(void) {

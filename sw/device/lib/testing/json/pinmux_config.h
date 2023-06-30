@@ -9,6 +9,8 @@
 extern "C" {
 #endif
 
+#define MODULE_ID MAKE_MODULE_ID('j', 'p', 'x')
+
 //  Dependencies between usjon structure definitions can be a little tricky:
 //  - If not generating an implementation, we can just include the dependency.
 //  - If generating an implementation, we instead include the dependency in
@@ -36,6 +38,8 @@ UJSON_SERDE_STRUCT(PinmuxOutputSelection, pinmux_output_selection_t,
     field(input, pinmux_input_selection_t)  \
     field(output, pinmux_output_selection_t)
 UJSON_SERDE_STRUCT(PinmuxConfig, pinmux_config_t, STRUCT_PINMUX_CONFIG);
+
+#undef MODULE_ID
 
 // clang-format on
 #ifndef RUST_PREPROCESSOR_EMIT

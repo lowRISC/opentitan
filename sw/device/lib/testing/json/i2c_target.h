@@ -10,6 +10,8 @@ extern "C" {
 #endif
 // clang-format off
 
+#define MODULE_ID MAKE_MODULE_ID('j', 'i', 'i')
+
 #define STRUCT_I2C_TARGET_ADDRESS(field, string) \
     field(id0, uint8_t) \
     field(mask0, uint8_t) \
@@ -28,6 +30,8 @@ UJSON_SERDE_STRUCT(I2cTransaction, i2c_transaction_t, STRUCT_I2C_TRANSACTION);
     field(address, uint8_t) \
     field(continuation, uint8_t)
 UJSON_SERDE_STRUCT(I2cRxResult, i2c_rx_result_t, STRUCT_I2C_RX_RESULT);
+
+#undef MODULE_ID
 
 // clang-format on
 #ifdef __cplusplus

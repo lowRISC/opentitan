@@ -11,6 +11,8 @@
 
 #include "csrng_regs.h"  // Generated
 
+#define MODULE_ID MAKE_MODULE_ID('r', 'n', 't')
+
 enum {
   kNumOutputWordsMax = 16,
 };

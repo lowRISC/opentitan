@@ -8,6 +8,8 @@
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 
+#define MODULE_ID MAKE_MODULE_ID('j', 'g', 'p')
+
 status_t gpio_set(ujson_t *uj, const dif_gpio_t *gpio) {
   gpio_set_t op;
   TRY(ujson_deserialize_gpio_set_t(uj, &op));

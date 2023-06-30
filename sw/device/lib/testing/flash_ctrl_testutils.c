@@ -18,6 +18,8 @@
 #include "flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+#define MODULE_ID MAKE_MODULE_ID('f', 'c', 't')
+
 status_t flash_ctrl_testutils_wait_for_init(
     dif_flash_ctrl_state_t *flash_state) {
   dif_flash_ctrl_status_t status;

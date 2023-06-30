@@ -10,6 +10,8 @@
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
+#define MODULE_ID MAKE_MODULE_ID('h', 'm', 't')
+
 const char kHmacRefData[34] = "Sample message for keylen=blocklen";
 
 const uint8_t kHmacRefLongKey[100] = {

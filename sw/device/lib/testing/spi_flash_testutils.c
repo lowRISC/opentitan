@@ -10,6 +10,8 @@
 #include "sw/device/lib/testing/spi_device_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
+#define MODULE_ID MAKE_MODULE_ID('s', 'f', 't')
+
 status_t spi_flash_testutils_read_id(dif_spi_host_t *spih,
                                      spi_flash_testutils_jedec_id_t *id) {
   TRY_CHECK(spih != NULL);
