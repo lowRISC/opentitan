@@ -2011,7 +2011,7 @@ C.get()  // value = 0, because `set` modified an inlined copy.
 Note that the memory behind `S` changed, so it must be allocated in a `.data` or `.bss` section.
 This illustrates another property of `UnsafeCell`: it causes data that is otherwise declared as immutable to be allocated as mutable.
 
-See [https://doc.rust-lang.org/std/cell/index.html](https://doc.rust-lang.org/std/cell/index.html) for more details; as with all aliasing-related topics, it requires careful attention t detail, and this section is far from exhaustive.
+See [https://doc.rust-lang.org/std/cell/index.html](https://doc.rust-lang.org/std/cell/index.html) for more details; as with all aliasing-related topics, it requires careful attention to detail, and this section is far from exhaustive.
 
 
 ### Unsafe Rust
