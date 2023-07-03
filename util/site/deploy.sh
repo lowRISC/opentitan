@@ -102,7 +102,18 @@ deploy_staging () {
     rm -rf ${build_dir}
     ${proj_root}/util/site/build-docs.sh build-staging
     remove_cruft
-    gcloud storage cp -R --gzip-in-flight-all ${build_dir}/* gs://${PROJECT}-staging
+
+    # First, upload all (uncompressed) files
+    # - Note that --gzip-in-flight is only compressing files when copying to the bucket,
+    #   and will be served uncompressed.
+    BUCKET="${PROJECT}-staging"
+    gcloud storage cp -R --gzip-in-flight=js,css,html ${build_dir}/* gs://${BUCKET}
+    # Next, compress and then upload the search index files (which are large, hence worth compressing here.)
+    _upload_br "${BUCKET}"
+
+    # Finally, invalidate the CDN cache
+    LOAD_BALANCER_NAME="staging-dot-opentitan-dot-org"
+    gcloud compute url-maps invalidate-cdn-cache "${LOAD_BALANCER_NAME}" --path "/*" --async
 }
 
 deploy_prod () {
@@ -112,7 +123,40 @@ deploy_prod () {
     rm -rf ${build_dir}
     ${proj_root}/util/site/build-docs.sh build
     remove_cruft
-    gcloud storage cp -R --gzip-in-flight-all ${build_dir}/* gs://${PROJECT}-prod
+
+    BUCKET="${PROJECT}-prod"
+    # First, upload all (uncompressed) files
+    # - Note that --gzip-in-flight is only compressing files when copying to the bucket,
+    #   and will be served uncompressed.
+    gcloud storage cp -R --gzip-in-flight=js,css,html ${build_dir}/* gs://${BUCKET}
+    # Next, compress and then upload the search index files (which are large, hence worth compressing here.)
+    _upload_br "${BUCKET}"
+
+    # Finally, invalidate the CDN cache
+    LOAD_BALANCER_NAME="opentitan-dot-org"
+    gcloud compute url-maps invalidate-cdn-cache "${LOAD_BALANCER_NAME}" --path "/*" --async
+}
+
+_upload_br () {
+    BUCKET="$1"
+    search_indexes=$(find "${build_dir}" -type f -name '*searchindex.json')
+
+    # TODO pass file paths to this script as parameters
+    # NB. cloudbuild YAML makes this awkward.
+    ${proj_root}/util/site/post-build.sh compress_br
+
+    for f in $search_indexes; do
+        # Get directory of file, relative to the build directory.
+        # - var=${var#*//} # removes stuff from the begining up to //
+        dir=$(dirname "${f#*"${build_dir}"/}")
+        # When serving from gcloud buckets, file should be uploaded with an identical name as the
+        # original, but compressed and with the matching 'content-encoding' and 'content-type' tags applied.
+        gcloud storage cp \
+               --content-encoding=br \
+               --content-type=application/json \
+               -R \
+               "$f" "gs://${BUCKET}/${dir}/"
+    done
 }
 
 # Remove additional files from build directory that we don't need
