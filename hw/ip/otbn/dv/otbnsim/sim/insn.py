@@ -261,7 +261,7 @@ class LW(OTBNInsn):
         result = state.dmem.load_u32(addr)
 
         # Stall for a single cycle for memory to respond
-        yield
+        yield None
 
         if result is None:
             state.stop_at_end_of_cycle(ErrBits.DMEM_INTG_VIOLATION)
@@ -432,7 +432,7 @@ class CSRRS(OTBNInsn):
             # value is available, it returns True.
             while not state.wsrs.RND.request_value():
                 # There's a pending EDN request. Stall for a cycle.
-                yield
+                yield None
 
         # At this point, the CSR is ready. Read, update and write back to grs1.
         old_val = state.read_csr(self.csr)
@@ -468,7 +468,7 @@ class CSRRW(OTBNInsn):
             # value is available, it returns True.
             while not state.wsrs.RND.request_value():
                 # There's a pending EDN request. Stall for a cycle.
-                yield
+                yield None
 
         # At this point, the CSR is either ready or unneeded. Read it if
         # necessary and write to grd, then overwrite with new_val.
@@ -1083,7 +1083,7 @@ class BNLID(OTBNInsn):
             state.gprs.get_reg(self.grs1).write_unsigned(new_grs1_val)
 
         # Stall for a single cycle for memory to respond
-        yield
+        yield None
 
         if value is None:
             state.stop_at_end_of_cycle(ErrBits.DMEM_INTG_VIOLATION)
@@ -1140,7 +1140,7 @@ class BNSID(OTBNInsn):
             new_grs2_val = grs2_val + 1
             state.gprs.get_reg(self.grs2).write_unsigned(new_grs2_val)
 
-        yield
+        yield None
 
         wrs = grs2_val & 0x1f
         wrs_val = state.wdrs.get_reg(wrs).read_unsigned()
@@ -1210,7 +1210,7 @@ class BNMOVR(OTBNInsn):
             new_grs_val = grs_val + 1
             state.gprs.get_reg(self.grs).write_unsigned(new_grs_val)
 
-        yield
+        yield None
 
         value = state.wdrs.get_reg(wrs).read_unsigned()
         state.wdrs.get_reg(wrd).write_unsigned(value)
@@ -1237,7 +1237,7 @@ class BNWSRR(OTBNInsn):
             # value is available, it returns True.
             while not state.wsrs.RND.request_value():
                 # There's a pending EDN request. Stall for a cycle.
-                yield
+                yield None
 
         # At this point, the WSR is ready. Does it have a valid value? (It
         # might not if this is a sideload key register and keymgr hasn't
