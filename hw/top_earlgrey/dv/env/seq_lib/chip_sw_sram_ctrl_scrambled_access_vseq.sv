@@ -118,7 +118,8 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
         retval = uvm_hdl_read(RET_KEY_PATH, sram_ret_key);
         `DV_CHECK_EQ(retval, 1, $sformatf("uvm_hdl_read failed for %0s", RET_KEY_PATH))
       end
-      cfg.clk_rst_vif.wait_clks(1);
+      // The sampling cycle should be faster then otp clock.
+      #1ns;
     end
   endtask
 
@@ -137,7 +138,8 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
         retval = uvm_hdl_read(MAIN_KEY_PATH, sram_main_key);
         `DV_CHECK_EQ(retval, 1, $sformatf("uvm_hdl_read failed for %0s", MAIN_KEY_PATH))
       end
-      cfg.clk_rst_vif.wait_clks(1);
+      // The sampling cycle should be fater then otp clock.
+      #1ns;
     end
   endtask
 
@@ -164,7 +166,7 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
         end
         break;
       end
-      cfg.clk_rst_vif.wait_clks(1);
+      #1ns;
     end
   endtask
 
@@ -191,7 +193,7 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
         end
         break;
       end
-      cfg.clk_rst_vif.wait_clks(1);
+      #1ns;
     end
   endtask
 
