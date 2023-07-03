@@ -101,8 +101,10 @@ static MemImageType GetMemImageTypeByName(const std::string &name) {
 // Return a MemImageType for the file at filepath or throw a std::runtime_error.
 // Never returns kMemImageUnknown.
 static MemImageType DetectMemImageType(const std::string &filepath) {
+  size_t stem_pos = filepath.find_last_of("/");
   size_t ext_pos = filepath.find_last_of(".");
-  if (ext_pos == std::string::npos) {
+  if (ext_pos == std::string::npos ||
+      (stem_pos != std::string::npos && ext_pos < stem_pos)) {
     // Assume ELF files if no file extension is given.
     // TODO: Make this more robust by actually checking the file contents.
     return kMemImageElf;
