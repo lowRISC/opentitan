@@ -105,8 +105,6 @@ class strong_random():
         for i in range(n_seq + 1):
             seq_start.append(i * self.SEQ_SIZE_BYTES)
 
-        results = []
-
         for j in range(n_seq):
             n_runs = [[0 for i in range(6)] for j in range(2)]
 
@@ -134,14 +132,14 @@ class strong_random():
                 i += 1
             # The runs test passes only if all numbers of runs are within
             # specified limits
-            result = (all(n_runs[0][k] >= self.RUNS_LOW_THRESHOLD[k]) and
-                      all(n_runs[1][k] >= self.RUNS_LOW_THRESHOLD[k]) and
-                      all(n_runs[0][k] <= self.RUNS_HIGH_THRESHOLD[k]) and
-                      all(n_runs[1][k] <= self.RUNS_HIGH_THRESHOLD[k])
-                      for k in range(6))
+            for k in range(6):
+                lo = self.RUNS_LOW_THRESHOLD[k]
+                hi = self.RUNS_HIGH_THRESHOLD[k]
+                if not (lo <= n_runs[0][k] <= hi and
+                        lo <= n_runs[1][k] <= hi):
+                    return False
 
-            results.append(result)
-        return all(results)
+        return True
 
     def test_long_run(self):
         """ Perform Runs test on buffered data
