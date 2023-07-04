@@ -1147,7 +1147,7 @@ module otbn
   // Collect up the error bits that don't come from the core itself and latch them so that they'll
   // be available when an operation finishes.
   assign non_core_err_bits = '{
-    lifecycle_escalation: lc_escalate_en[0] != lc_ctrl_pkg::Off,
+    lifecycle_escalation: lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en[0]),
     illegal_bus_access:   illegal_bus_access_q,
     bad_internal_state:   otbn_scramble_state_error | missed_gnt_error_q | mubi_err,
     bus_intg_violation:   bus_intg_violation

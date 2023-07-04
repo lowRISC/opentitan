@@ -312,7 +312,7 @@ module otp_ctrl_part_unbuf
       end
     end
     // SEC_CM: PART.FSM.GLOBAL_ESC
-    if (escalate_en_i != lc_ctrl_pkg::Off) begin
+    if (lc_ctrl_pkg::lc_tx_test_true_loose(escalate_en_i)) begin
       state_d = ErrorSt;
       fsm_err_o = 1'b1;
       if (state_q != ErrorSt) begin

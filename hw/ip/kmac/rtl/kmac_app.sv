@@ -580,7 +580,7 @@ module kmac_app
     // SEC_CM: FSM.GLOBAL_ESC, FSM.LOCAL_ESC
     // Unconditionally jump into the terminal error state
     // if the life cycle controller triggers an escalation.
-    if (lc_escalate_en_i != lc_ctrl_pkg::Off) begin
+    if (lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i)) begin
       st_d = StTerminalError;
     end
   end
@@ -711,7 +711,8 @@ module kmac_app
   always_comb begin
     reg_state_valid = 1'b 0;
     reg_state_o = '{default:'0};
-    if ((mux_sel_buf_output == SelSw) && (lc_escalate_en_i == lc_ctrl_pkg::Off)) begin
+    if ((mux_sel_buf_output == SelSw) &&
+         lc_ctrl_pkg::lc_tx_test_false_strict(lc_escalate_en_i)) begin
       reg_state_valid = keccak_state_valid_i;
       reg_state_o = keccak_state_i;
       // If key is sideloaded and KMAC is SW initiated
@@ -736,7 +737,7 @@ module kmac_app
     app_digest_done = 1'b 0;
     app_digest = '{default:'0};
     if (st == StAppWait && prim_mubi_pkg::mubi4_test_true_strict(absorbed_i) &&
-        lc_escalate_en_i == lc_ctrl_pkg::Off) begin
+       lc_ctrl_pkg::lc_tx_test_false_strict(lc_escalate_en_i)) begin
       // SHA3 engine has calculated the hash. Return the data to KeyMgr
       app_digest_done = 1'b 1;
 
