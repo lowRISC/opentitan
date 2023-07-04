@@ -115,6 +115,12 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // Add otp_ctrl test status value
   logic [TL_DW-1:0] otp_test_status = 0;
 
+  // Add flash write latency
+  // to compensate vendor flash model
+  // use run_opts: "+flash_write_latency_in_us=<value>"
+  // it will be updated in chip_base_test::build
+  uint flash_write_latency_in_us = 0;
+
   // NOTE: The clk_freq_mhz variable created in the base class was meant to be used by clk_rst_vif
   // interface that is passed by default by the testbench (retrieved by dv_base_env class). It was
   // meant for a CIP-compliant testbench to drive the clock and reset to the DUT. The chip level
