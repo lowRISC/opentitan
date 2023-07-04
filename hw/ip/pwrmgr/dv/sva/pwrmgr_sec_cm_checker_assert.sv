@@ -38,46 +38,42 @@ module pwrmgr_sec_cm_checker_assert
   always_comb esc_reset_or_disable = !rst_esc_ni || disable_sva;
   always_comb slow_reset_or_disable = !rst_slow_ni || disable_sva;
 
-  `define ASYNC_ASSERT(_name, _prop, _sigs, _rst)                         \
-    _name: assert property (@(_sigs) disable iff ((_rst) !== '0) (_prop)) \
-           else begin                                                     \
-             `ASSERT_ERROR(_name)                                         \
-           end
-
-  // Assuming lc_dft_en_i and lc_hw_debug_en_i are asynchronous
   // rom_intg_chk_dis only allows two states.
-  `ASYNC_ASSERT(RomIntgChkDisTrue_A,
-                rom_intg_chk_dis == prim_mubi_pkg::MuBi4True |->
-                (lc_dft_en_i == lc_ctrl_pkg::On && lc_hw_debug_en_i == lc_ctrl_pkg::On),
-                (rom_intg_chk_dis | lc_dft_en_i | lc_hw_debug_en_i), reset_or_disable)
+  // Note that lc_dft_en_i and lc_hw_debug_en_i are already synchronized to clk_i at this
+  // hierarchy level.
+  `ASSERT(RomIntgChkDisTrue_A,
+          rom_intg_chk_dis == prim_mubi_pkg::MuBi4True |->
+          (lc_dft_en_i == lc_ctrl_pkg::On &&
+           lc_hw_debug_en_i == lc_ctrl_pkg::On),
+          clk_i,
+          reset_or_disable)
 
-  `ASYNC_ASSERT(RomIntgChkDisFalse_A,
-                rom_intg_chk_dis == prim_mubi_pkg::MuBi4False |->
-                (lc_dft_en_i !== lc_ctrl_pkg::On || lc_hw_debug_en_i !== lc_ctrl_pkg::On),
-                (rom_intg_chk_dis | lc_dft_en_i | lc_hw_debug_en_i), reset_or_disable)
+  `ASSERT(RomIntgChkDisFalse_A,
+          rom_intg_chk_dis == prim_mubi_pkg::MuBi4False |->
+          (lc_dft_en_i !== lc_ctrl_pkg::On ||
+           lc_hw_debug_en_i !== lc_ctrl_pkg::On),
+          clk_i,
+          reset_or_disable)
 
   // check rom_intg_chk_ok
-  // rom_ctrl_i go through cdc. So use synchronous assertion.
   // rom_intg_chk_ok can be any values.
-  `ASYNC_ASSERT(RomIntgChkOkTrue_A,
-                rom_intg_chk_ok == prim_mubi_pkg::MuBi4True |->
-                (rom_intg_chk_dis == prim_mubi_pkg::MuBi4True &&
-                 rom_ctrl_done_i == prim_mubi_pkg::MuBi4True) ||
-                (rom_ctrl_done_i == prim_mubi_pkg::MuBi4True &&
-                 rom_ctrl_good_i == prim_mubi_pkg::MuBi4True),
-                (rom_intg_chk_ok | rom_intg_chk_dis | rom_ctrl_done_i | rom_ctrl_good_i),
-                reset_or_disable)
+  `ASSERT(RomIntgChkOkTrue_A,
+          rom_intg_chk_ok == prim_mubi_pkg::MuBi4True |->
+          (rom_intg_chk_dis == prim_mubi_pkg::MuBi4True &&
+           rom_ctrl_done_i == prim_mubi_pkg::MuBi4True) ||
+          (rom_ctrl_done_i == prim_mubi_pkg::MuBi4True &&
+           rom_ctrl_good_i == prim_mubi_pkg::MuBi4True),
+          clk_i,
+          reset_or_disable)
 
-  `ASYNC_ASSERT(RomIntgChkOkFalse_A,
-                rom_intg_chk_ok != prim_mubi_pkg::MuBi4True |->
-                (rom_intg_chk_dis == prim_mubi_pkg::MuBi4False ||
-                 rom_ctrl_done_i != prim_mubi_pkg::MuBi4True) &&
-                (rom_ctrl_done_i != prim_mubi_pkg::MuBi4True ||
-                 rom_ctrl_good_i != prim_mubi_pkg::MuBi4True),
-                (rom_intg_chk_ok | rom_intg_chk_dis | rom_ctrl_done_i | rom_ctrl_good_i),
-                reset_or_disable)
-
-  `undef ASYNC_ASSERT
+  `ASSERT(RomIntgChkOkFalse_A,
+          rom_intg_chk_ok != prim_mubi_pkg::MuBi4True |->
+          (rom_intg_chk_dis == prim_mubi_pkg::MuBi4False ||
+           rom_ctrl_done_i != prim_mubi_pkg::MuBi4True) &&
+          (rom_ctrl_done_i != prim_mubi_pkg::MuBi4True ||
+           rom_ctrl_good_i != prim_mubi_pkg::MuBi4True),
+          clk_i,
+          reset_or_disable)
 
   // pwr_rst_o.rstreqs checker
   // sec_cm_esc_rx_clk_bkgn_chk, sec_cm_esc_rx_clk_local_esc

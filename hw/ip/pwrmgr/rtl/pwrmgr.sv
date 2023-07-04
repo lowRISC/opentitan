@@ -537,6 +537,21 @@ module pwrmgr
     .ast_o                (pwr_ast_o)
   );
 
+  lc_ctrl_pkg::lc_tx_t lc_dft_en;
+  prim_lc_sync u_prim_lc_sync_dft_en (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_dft_en_i),
+    .lc_en_o({lc_dft_en})
+  );
+
+  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en;
+  prim_lc_sync u_prim_lc_sync_hw_debug_en (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_hw_debug_en_i),
+    .lc_en_o({lc_hw_debug_en})
+  );
 
   ////////////////////////////
   ///  clk FSM
@@ -590,8 +605,8 @@ module pwrmgr
     .lc_init_o         (pwr_lc_o.lc_init),
     .lc_done_i         (pwr_lc_i.lc_done),
     .lc_idle_i         (pwr_lc_i.lc_idle),
-    .lc_dft_en_i,
-    .lc_hw_debug_en_i,
+    .lc_dft_en_i       (lc_dft_en),
+    .lc_hw_debug_en_i  (lc_hw_debug_en),
 
     // flash
     .flash_idle_i      (flash_rsp.flash_idle),
