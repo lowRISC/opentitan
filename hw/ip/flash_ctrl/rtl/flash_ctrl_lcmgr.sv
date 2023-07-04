@@ -515,7 +515,7 @@ module flash_ctrl_lcmgr
           // first check for error status
           // If error status is set, go directly to invalid terminal state
           // If error status is good, go to second check
-          state_d = (err_sts_q != lc_ctrl_pkg::On) ? StInvalid : StRmaRsp;
+          state_d = lc_ctrl_pkg::lc_tx_test_false_loose(err_sts_q) ? StInvalid : StRmaRsp;
         end else if (rma_wipe_done) begin
           rma_wipe_idx_incr = 1;
         end
@@ -528,7 +528,7 @@ module flash_ctrl_lcmgr
       StRmaRsp: begin
         phase = PhaseRma;
         dis_access_o = lc_ctrl_pkg::On;
-        if (err_sts_q != lc_ctrl_pkg::On) begin
+        if (lc_ctrl_pkg::lc_tx_test_false_loose(err_sts_q)) begin
           state_d = StInvalid;
         end else begin
           rma_ack_d = err_sts_q;
@@ -707,7 +707,8 @@ module flash_ctrl_lcmgr
   // Off - errors were observed
   logic [lc_ctrl_pkg::TxWidth-1:0] err_sts_raw_q;
   assign err_sts_q = lc_tx_t'(err_sts_raw_q);
-  assign err_sts_d = err_sts_set && (err_sts_q != lc_ctrl_pkg::Off) ? lc_ctrl_pkg::Off : err_sts_q;
+  assign err_sts_d = err_sts_set && lc_ctrl_pkg::lc_tx_test_true_loose(err_sts_q) ?
+                     lc_ctrl_pkg::Off : err_sts_q;
   // This primitive is used to place a size-only constraint on the flops in order to prevent
   // optimizations. Without this Vivado may infer combo loops. For details, see
   // https://github.com/lowRISC/opentitan/issues/10204

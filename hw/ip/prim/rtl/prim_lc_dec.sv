@@ -23,6 +23,6 @@ for (genvar k = 0; k < lc_ctrl_pkg::TxWidth; k++) begin : gen_bits
   );
 end
 
-assign lc_en_dec_o = (lc_en_out == lc_ctrl_pkg::On);
+assign lc_en_dec_o = lc_ctrl_pkg::lc_tx_test_true_strict(lc_en_out);
 
 endmodule : prim_lc_dec

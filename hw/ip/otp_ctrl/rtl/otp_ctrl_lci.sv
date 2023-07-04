@@ -219,7 +219,7 @@ module otp_ctrl_lci
 
     // Unconditionally jump into the terminal error state in case of escalation.
     // SEC_CM: LCI.FSM.LOCAL_ESC, LCI.FSM.GLOBAL_ESC
-    if (escalate_en_i != lc_ctrl_pkg::Off || cnt_err) begin
+    if (lc_ctrl_pkg::lc_tx_test_true_loose(escalate_en_i) || cnt_err) begin
       state_d = ErrorSt;
       fsm_err_o = 1'b1;
       if (error_q == NoError) begin
