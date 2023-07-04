@@ -10,7 +10,7 @@
 
 module clkmgr import clkmgr_pkg::*; (
   // Primary module clocks
-  input clk_i,
+  input clk_i,    
   input rst_ni,
   input clk_main_i,
   input rst_main_ni,
