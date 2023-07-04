@@ -41,9 +41,13 @@ class key_sideload_driver#(
         cfg.vif.sideload_key.key[0] = 'x;
         cfg.vif.sideload_key.key[1] = 'x;
       end
+      // Always wait for one clock cycle. Otherwise, this task may consume zero time while the
+      // reset is active. This would be problematic as it would cause the key sideload interface
+      // to be updated endlessly and the DV environment to hang.
+      cfg.vif.wait_clks(1);
       // send rsp back to seq
       `uvm_info(`gfn, "item sent", UVM_HIGH)
-      cfg.vif.wait_clks(req.rsp_delay);
+      cfg.vif.wait_clks_or_rst(req.rsp_delay);
       seq_item_port.item_done(req);
     end
   endtask
