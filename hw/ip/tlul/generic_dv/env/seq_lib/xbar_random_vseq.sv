@@ -12,8 +12,15 @@ class xbar_random_vseq extends xbar_base_vseq;
   virtual function void update_host_seq();
   endfunction
 
+  virtual task pre_start();
+    super.pre_start();
+    if (cfg.short_xbar_test) begin
+      num_trans_c.constraint_mode(0);
+      num_trans = $urandom_range(1, 3);
+    end
+  endtask
+
   virtual task body();
-    if (cfg.short_xbar_test) num_trans = $urandom_range(1, 3);
     run_all_device_seq_nonblocking();
     for (int i = 1; i <= num_trans; i++) begin
       update_host_seq();
