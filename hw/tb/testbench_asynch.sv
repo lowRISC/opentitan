@@ -120,8 +120,8 @@ module testbench_asynch ();
    typedef axi_test::axi_rand_slave #(  
      .AW( AxiAddrWidth  ),
      .DW( AxiDataWidth  ),
-     .IW( AxiUserWidth  ),
-     .UW( AxiOutIdWidth ),
+     .IW( AxiOutIdWidth ),
+     .UW( AxiUserWidth  ),
      .TA(TA),
      .TT(TT),
      .RAND_RESP(RAND_RESP),
@@ -136,15 +136,15 @@ module testbench_asynch ();
    AXI_BUS #(
     .AXI_ADDR_WIDTH ( AxiAddrWidth  ),
     .AXI_DATA_WIDTH ( AxiDataWidth  ),
-    .AXI_ID_WIDTH   ( AxiUserWidth  ),
-    .AXI_USER_WIDTH ( AxiOutIdWidth )
+    .AXI_ID_WIDTH   ( AxiOutIdWidth ),
+    .AXI_USER_WIDTH ( AxiUserWidth  )
    ) axi_slave();
 
    AXI_BUS_DV #(
     .AXI_ADDR_WIDTH ( AxiAddrWidth  ),
     .AXI_DATA_WIDTH ( AxiDataWidth  ),
-    .AXI_ID_WIDTH   ( AxiUserWidth  ),
-    .AXI_USER_WIDTH ( AxiOutIdWidth )
+    .AXI_ID_WIDTH   ( AxiOutIdWidth ),
+    .AXI_USER_WIDTH ( AxiUserWidth  )
    ) axi (clk_sys);
    
    typedef jtag_ot_test::riscv_dbg #(
