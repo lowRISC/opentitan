@@ -94,7 +94,7 @@
 #define SPI_HOST_STATUS_READY_BIT 31
 #define DATA_SET_SIZE 16
 #define MSG 0xbaadc0de
-#define TARGET_SYNTHESIS
+//#define TARGET_SYNTHESIS
 // Define counters and constant values required by the CFI counter macros.
 CFI_DEFINE_COUNTERS(rom_counters, ROM_CFI_FUNC_COUNTERS_TABLE);
 
@@ -157,7 +157,7 @@ static void rom_bootstrap_message(void) {
   uart_putchar('!');
   uart_putchar('\r');
   uart_putchar('\n');
-  // printf("secure boot ongoing!\r\n");
+  printf("Bootin some fresh cochina!\r\n");
 }
 
 /**
@@ -170,15 +170,15 @@ static rom_error_t rom_init(void) {
   pinmux_init();
   // Configure UART0 as stdout.
   uart_init(kUartNCOValue);
-  //#ifdef TARGET_SYNTHESIS                
-  //int baud_rate = 115200;
-  //int test_freq = 40000000;
-  //#else
-  ////set_flls();
-  //int baud_rate = 115200;
-  //int test_freq = 100000000;
-  //#endif
-  //uart_set_cfg(0,(test_freq/baud_rate)>>4);
+  #ifdef TARGET_SYNTHESIS                
+  int baud_rate = 115200;
+  int test_freq = 50000000;
+  #else
+  //set_flls();
+  int baud_rate = 115200;
+  int test_freq = 100000000;
+  #endif
+  uart_set_cfg(0,(test_freq/baud_rate)>>4);
 
   // There are no conditional checks before writing to this CSR because it is
   // expected that if relevant Ibex countermeasures are disabled, this will

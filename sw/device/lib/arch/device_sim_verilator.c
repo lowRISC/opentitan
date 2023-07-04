@@ -48,7 +48,7 @@ const uint32_t kAstCheckPollCpuCycles =
     CALCULATE_AST_CHECK_POLL_CPU_CYCLES(kClockFreqCpuHz);
 
 // Defined in `hw/top_earlgrey/chip_earlgrey_verilator.core`
-const uintptr_t kDeviceTestStatusAddress = 0xC11f0080;
+const uintptr_t kDeviceTestStatusAddress = 0x1C000000;
 
 const uintptr_t kDeviceLogBypassUartAddress = 0;
 
