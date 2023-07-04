@@ -82,7 +82,7 @@ module clkmgr_byp
 
   // life cycle handling
   mubi4_t io_clk_byp_req_d;
-  assign io_clk_byp_req_d = (lc_clk_byp_req[LcClkBypReqIoReq] == lc_ctrl_pkg::On) ?
+  assign io_clk_byp_req_d = lc_ctrl_pkg::lc_tx_test_true_strict(lc_clk_byp_req[LcClkBypReqIoReq]) ?
                             MuBi4True :
                             MuBi4False;
 

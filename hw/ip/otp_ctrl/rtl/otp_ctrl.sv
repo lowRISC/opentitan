@@ -336,7 +336,7 @@ module otp_ctrl
       part_access_pre[OwnerSwCfgIdx].read_lock = MuBi8True;
     end
     // The SECRET2 partition can only be accessed (write&read) when provisioning is enabled.
-    if (lc_creator_seed_sw_rw_en != lc_ctrl_pkg::On) begin
+    if (lc_ctrl_pkg::lc_tx_test_false_loose(lc_creator_seed_sw_rw_en)) begin
       part_access_pre[Secret2Idx] = {2{MuBi8True}};
     end
   end
@@ -459,7 +459,7 @@ module otp_ctrl
       if (fatal_macro_error_q || fatal_check_error_q) begin
         lc_escalate_en[k] = lc_ctrl_pkg::On;
       end
-      if (lc_escalate_en[k] == lc_ctrl_pkg::On) begin
+      if (lc_ctrl_pkg::lc_tx_test_true_strict(lc_escalate_en[k])) begin
         lc_escalate_en_any = 1'b1;
       end
     end
@@ -1303,12 +1303,12 @@ module otp_ctrl
   logic otp_keymgr_key_valid_d, otp_keymgr_key_valid_q; // need to latch valid
   assign otp_keymgr_key_valid_d = part_digest[Secret2Idx] != '0;
   assign otp_keymgr_key_o.valid = otp_keymgr_key_valid_q;
-  assign otp_keymgr_key_o.key_share0 = (lc_seed_hw_rd_en == lc_ctrl_pkg::On) ?
+  assign otp_keymgr_key_o.key_share0 = (lc_ctrl_pkg::lc_tx_test_true_strict(lc_seed_hw_rd_en)) ?
                                        part_buf_data[CreatorRootKeyShare0Offset +:
                                                      CreatorRootKeyShare0Size] :
                                        PartInvDefault[CreatorRootKeyShare0Offset*8 +:
                                                       CreatorRootKeyShare0Size*8];
-  assign otp_keymgr_key_o.key_share1 = (lc_seed_hw_rd_en == lc_ctrl_pkg::On) ?
+  assign otp_keymgr_key_o.key_share1 = (lc_ctrl_pkg::lc_tx_test_true_strict(lc_seed_hw_rd_en)) ?
                                        part_buf_data[CreatorRootKeyShare1Offset +:
                                                      CreatorRootKeyShare1Size] :
                                        PartInvDefault[CreatorRootKeyShare1Offset*8 +:
@@ -1327,7 +1327,7 @@ module otp_ctrl
   `ASSERT(LcSeedHwRdEnStable_A,
     $rose(otp_keymgr_key_valid_q) |=> $stable(lc_seed_hw_rd_en) [*1:$],
     clk_i,
-    !rst_ni || (lc_escalate_en_i == lc_ctrl_pkg::On) // Disable assertion if esc is high
+    !rst_ni || lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i) // Disable if esc asserted
   )
 
   // Scrambling Keys

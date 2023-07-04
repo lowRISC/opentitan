@@ -623,7 +623,7 @@ module aes_control_fsm
     // Unconditionally jump into the terminal error state in case a mux selector or a sparsely
     // encoded signal becomes invalid, or if the life cycle controller triggers an escalation.
     if (mux_sel_err_i || sp_enc_err_i || cipher_op_err ||
-            lc_escalate_en_i != lc_ctrl_pkg::Off) begin
+            lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i)) begin
       aes_ctrl_ns = CTRL_ERROR;
     end
   end

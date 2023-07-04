@@ -162,7 +162,7 @@ module pwrmgr
 `else
   `ASSERT(PwrmgrSecCmEscToSlowResetReq_A,
           esc_rst_req_d |-> ##[2:3] (
-              (!esc_rst_req_d && (fetch_en_o != lc_ctrl_pkg::On)) ||
+              (!esc_rst_req_d && lc_ctrl_pkg::lc_tx_test_false_loose(fetch_en_o)) ||
               slow_peri_reqs_masked.rstreqs[ResetEscIdx]
           ), clk_slow_i, !rst_slow_ni)
   `ASSERT(PwrmgrSlowResetReqToFsmResetReq_A,

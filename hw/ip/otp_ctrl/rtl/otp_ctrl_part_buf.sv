@@ -104,8 +104,8 @@ module otp_ctrl_part_buf
 
   // This feature is only supposed to be used with partitions that are not scrambled
   // and that do not have a digest.
-  `ASSERT(BypassEnable0_A, Info.secret    |-> check_byp_en_i == lc_ctrl_pkg::Off)
-  `ASSERT(BypassEnable1_A, Info.hw_digest |-> check_byp_en_i == lc_ctrl_pkg::Off)
+  `ASSERT(BypassEnable0_A, Info.secret    |-> lc_ctrl_pkg::lc_tx_test_false_strict(check_byp_en_i))
+  `ASSERT(BypassEnable1_A, Info.hw_digest |-> lc_ctrl_pkg::lc_tx_test_false_strict(check_byp_en_i))
 
   ///////////////////////
   // OTP Partition FSM //
@@ -372,7 +372,8 @@ module otp_ctrl_part_buf
             end else begin
               // Check whether the read data corresponds with the data buffered in regs.
               // Note that this particular check can be bypassed in case a transition is ongoing.
-              if (scrmbl_data_o == data_mux || check_byp_en_i == lc_ctrl_pkg::On) begin
+              if (scrmbl_data_o == data_mux ||
+                  lc_ctrl_pkg::lc_tx_test_true_strict(check_byp_en_i)) begin
                 // Can go back to idle and acknowledge the
                 // request if this is the last block.
                 if (cnt == LastScrmblBlock) begin
@@ -596,7 +597,7 @@ module otp_ctrl_part_buf
       end
     end
     // SEC_CM: PART.FSM.LOCAL_ESC, PART.FSM.GLOBAL_ESC
-    if (escalate_en_i != lc_ctrl_pkg::Off || cnt_err) begin
+    if (lc_ctrl_pkg::lc_tx_test_true_loose(escalate_en_i) || cnt_err) begin
       state_d = ErrorSt;
       fsm_err_o = 1'b1;
       if (state_q != ErrorSt) begin

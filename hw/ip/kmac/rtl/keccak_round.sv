@@ -298,7 +298,7 @@ module keccak_round
     // SEC_CM: FSM.GLOBAL_ESC, FSM.LOCAL_ESC
     // Unconditionally jump into the terminal error state
     // if the life cycle controller triggers an escalation.
-    if (lc_escalate_en_i != lc_ctrl_pkg::Off) begin
+    if (lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i)) begin
       keccak_st_d = KeccakStTerminalError;
     end
   end
