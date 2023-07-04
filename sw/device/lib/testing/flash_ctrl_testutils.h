@@ -255,6 +255,15 @@ status_t flash_ctrl_testutils_backdoor_init(
  * a workaround to invalidate the cache and force it to update. Before using
  * this function `flash_ctrl_testutils_backdoor_init` should be called.
  *
+ * Note:
+ * Given typical flash write latency (a few 10s of us),
+ * this api can causes following misbehavior with real flash model.
+ *
+ * While flash write with all 1's in progress, backdoor write from
+ * sv finished. When that happens, this function can complete without
+ * detecting proper backdoor update value. So it is highly discouraged to use
+ * this api without opensource flash model.
+ *
  * @param flash_state A flash_ctrl handle.
  * @param addr The address to a `const uint32_t` variable where the testbench
  * will write to.
