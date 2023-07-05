@@ -11,9 +11,9 @@ class key_sideload_item #(
   rand bit                valid;
   rand bit [KeyWidth-1:0] key0;
   rand bit [KeyWidth-1:0] key1;
-  rand int unsigned       rsp_delay = 1;
+  rand int unsigned       rsp_delay = 0;
 
-  constraint rsp_delay_constraint_c {rsp_delay inside {[1:10]};}
+  constraint rsp_delay_constraint_c {rsp_delay inside {[0:9]};}
 
   `uvm_object_utils_begin(key_sideload_item#(KEY_T))
     `uvm_field_int(valid, UVM_DEFAULT)

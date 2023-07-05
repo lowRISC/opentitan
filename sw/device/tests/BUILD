@@ -1803,6 +1803,34 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "spi_host_gigadevice256Mb_flash_test",
+    srcs = ["spi_host_gigadevice256Mb_flash_test.c"],
+    cw310 = cw310_params(
+        tags = [
+            "bob",
+            "manual",
+        ],  # Requires the BoB in CI.
+    ),
+    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
+    deps = [
+        ":spi_host_flash_test_impl",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:spi_host",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:spi_device_testutils",
+        "//sw/device/lib/testing:spi_flash_testutils",
+        "//sw/device/lib/testing:spi_host_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "spi_host_irq_test",
     srcs = ["spi_host_irq_test.c"],
     targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
@@ -2734,10 +2762,11 @@ opentitan_functest(
 )
 
 _STATUS_REPORT_TEST_MSG = "\r\n".join([
-    ".*ottf_main.c:.* - Ok:654321",
-    ".*ottf_main.c:.* - PermissionDenied:\\[\\\"PSY\\\",2.\\]",
-    ".*ottf_main.c:.* - Aborted:\\[\\\"UNT\\\",4.\\]",
+    ".*ottf_main.c:.* Status reported by the test:",
     ".*ottf_main.c:.* - Aborted:\\[\\\"THK\\\",2.\\]",
+    ".*ottf_main.c:.* - Aborted:\\[\\\"UNT\\\",4.\\]",
+    ".*ottf_main.c:.* - PermissionDenied:\\[\\\"PSY\\\",2.\\]",
+    ".*ottf_main.c:.* - Ok:654321",
     ".*status.c:.* FAIL!",
 ])
 
@@ -2747,6 +2776,31 @@ opentitan_functest(
     cw310 = cw310_params(
         exit_failure = "PASS!",
         exit_success = _STATUS_REPORT_TEST_MSG,
+    ),
+    targets = [
+        "cw310_test_rom",
+    ],
+    deps = [
+        "//sw/device/lib/base:status_report_unittest_c",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+_STATUS_REPORT_OVERFLOW_TEST_MSG = "\r\n".join([
+    ".*ottf_main.c:.* Status reported by the test:",
+    ".*ottf_main.c:.* - Aborted.*",
+    ".*ottf_main.c:.* - Unavailable.*",
+    ".*ottf_main.c:.* - Cancelled.*",
+    ".*ottf_main.c:.* Some statuses have been lost.*",
+    ".*status.c:.* FAIL!",
+])
+
+opentitan_functest(
+    name = "status_report_overflow_test",
+    srcs = ["status_report_overflow_test.c"],
+    cw310 = cw310_params(
+        exit_failure = "PASS!",
+        exit_success = _STATUS_REPORT_OVERFLOW_TEST_MSG,
     ),
     targets = [
         "cw310_test_rom",
