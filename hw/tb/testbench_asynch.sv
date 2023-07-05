@@ -369,13 +369,13 @@ module testbench_asynch ();
      if ( $value$plusargs ("SRAM=%s", SRAM));
         $display("Testing %s", SRAM);
    
-     repeat(150000)
+     repeat(10000)
          @(posedge clk_sys); 
      debug_module_init();
      load_binary(SRAM);
      jtag_data_preload();
      jtag_ibex_wakeup(32'h e0000080); //preload the flash
-     repeat(400000)
+     repeat(210000)
         @(posedge clk_sys);
      jtag_ibex_wakeup(32'h d0008080); //secure boot
      

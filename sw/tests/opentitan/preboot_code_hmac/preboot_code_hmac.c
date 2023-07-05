@@ -9,7 +9,7 @@
 // specific language governing permissions and limitations under the License.
 //
 //
-#include "hmac_smoketest_code.h"
+#include "../hmac_smoketest/hmac_smoketest32.h"
 #include "../common/utils.h"
 #include <stdbool.h>
 
@@ -31,9 +31,9 @@ int main(int argc, char **argv) {
   
   for(int i = 0; i < buffer_size; i += 3) {
      if(i + 2 < buffer_size) {
-        *payload_1 = hmac_smoketest[i];
-        *payload_2 = hmac_smoketest[i+1];
-        *payload_3 = hmac_smoketest[i+2];
+        *payload_1 = HMAC_SMOKETEST[i];
+        *payload_2 = HMAC_SMOKETEST[i+1];
+        *payload_3 = HMAC_SMOKETEST[i+2];
         *address = i/3;
         *start = 0x1;
      }
