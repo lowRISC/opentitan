@@ -99,7 +99,8 @@ module prim_ram_1p import prim_ram_1p_pkg::*; #(
      .NumWords(Depth),
      .DataWidth(Width),
      .NumPorts(32'd1),
-     .PrintSimCfg(1)
+     .PrintSimCfg(1),
+     .SimInit("zeros")
   ) ram_primitive (
      .clk_i,
      .rst_ni,
