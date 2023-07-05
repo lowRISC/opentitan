@@ -35,14 +35,11 @@ for line in lines:
     for i in range(len(data)):
         # Create a new line for each element in the row
         output_line = data[i]
-        if i == len(data)-1 and line == lines[-1]:
-            output_lines.append(output_line + ';')
-        else:
-            output_lines.append(output_line + ',')
-
+        output_lines.append(output_line + ',')
+            
 # Join the output lines into a string
 output_contents = '\n'.join(output_lines)
-
+output_contents = (output_contents[:-1] + ';')
 # Open the output file for writing
 with open(output_file_path, 'w') as f:
     # Write the output string to the file

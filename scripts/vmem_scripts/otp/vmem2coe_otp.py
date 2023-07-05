@@ -30,20 +30,16 @@ for i, line in enumerate(lines):
     
     # Otherwise, this line represents a new memory address
     data = line.split()[1]
-    
-    # Add a comma after each line, except for the last one
-    if i < len(lines) - 1:
-        data += ','
+    data += ','
     
     # Add the data to the output
     output_lines.append(data)
 
 # Add a semicolon after the last line
-output_lines[-1] += ';'
 
 # Join the output lines into a string
 output_contents = '\n'.join(output_lines)
-
+output_contents = (output_contents[:-1] + ';')
 # Open the output file for writing
 with open(output_file_path, 'w') as f:
     # Write the output string to the file
