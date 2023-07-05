@@ -23,7 +23,7 @@ class pwrmgr_sw_reset_vseq extends pwrmgr_base_vseq;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       setup_interrupt(.enable(en_intr));
 
-      cfg.pwrmgr_vif.sw_rst_req_i = $urandom_range(0, 15);
+      cfg.pwrmgr_vif.sw_rst_req_i = prim_mubi_pkg::mubi4_t'($urandom_range(0, 15));
       exp_rst = (cfg.pwrmgr_vif.sw_rst_req_i == prim_mubi_pkg::MuBi4True);
       cfg.slow_clk_rst_vif.wait_clks(4);
 

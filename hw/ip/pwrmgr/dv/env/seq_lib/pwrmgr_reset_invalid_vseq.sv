@@ -68,13 +68,13 @@ class pwrmgr_reset_invalid_vseq extends pwrmgr_base_vseq;
       `uvm_info(`gfn, "All good, resetting for next round", UVM_MEDIUM)
       repeat (10) @cfg.clk_rst_vif.cb;
       apply_reset();
-      reset_index++;
+      reset_index=reset_index.next();
       wait_for_fast_fsm_active();
     end
   endtask
 
   task create_any_reset_event();
-    resets_t enabled_resets = resets_en & resets;
+    resets_t enabled_resets = resets_t'(resets_en & resets);
     `uvm_info(`gfn, $sformatf(
               "Enabled resets=0x%x, power_reset=%b, escalation=%b, sw_reset=%b, ndm_reset=%b",
               enabled_resets,
