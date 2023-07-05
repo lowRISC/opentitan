@@ -30,6 +30,14 @@ build --workspace_status_command=util/get_workspace_status.sh
 # --config=riscv32
 build:riscv32 --platforms=@crt//platforms/riscv32:opentitan
 
+# These options are required to build `cc_fuzz_test` targets. Enable with
+# --config=asan-libfuzzer
+build:asan-libfuzzer --action_env=CC=clang
+build:asan-libfuzzer --action_env=CXX=clang++
+build:asan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine=@rules_fuzzing//fuzzing/engines:libfuzzer
+build:asan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine_instrumentation=libfuzzer
+build:asan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine_sanitizer=asan
+
 # Shared configuration for clang's source-based coverage instrumentation.
 # Bazel seems to support this only partially, thus we have to perform some
 # additional processing. See

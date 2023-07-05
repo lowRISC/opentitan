@@ -25,6 +25,7 @@ class MockRstmgr : public global_mock::GlobalMock<MockRstmgr> {
 }  // namespace internal
 
 using MockRstmgr = testing::StrictMock<internal::MockRstmgr>;
+using NiceMockRstmgr = testing::NiceMock<internal::MockRstmgr>;
 
 }  // namespace rom_test
 
