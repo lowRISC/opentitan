@@ -31,13 +31,13 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
 
   virtual task apply_reset(string kind = "HARD");
     cfg.lc_vif.init();
+    cfg.exec_vif.init();
     fork
       super.apply_reset(kind);
       if (kind == "HARD") begin
         cfg.otp_clk_rst_vif.apply_reset();
       end
     join
-    cfg.exec_vif.init();
   endtask
 
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
