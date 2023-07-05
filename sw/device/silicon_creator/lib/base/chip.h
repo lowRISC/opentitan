@@ -38,6 +38,11 @@
 #define CHIP_ROM_EXT_SIZE_MAX 0x10000
 
 /**
+ * Size of the header of a boot services message.
+ */
+#define CHIP_BOOT_SVC_MSG_HEADER_SIZE 44
+
+/**
  * First owner boot stage, e.g. BL0, manifest identifier (ASCII "OTB0").
  */
 #define CHIP_BL0_IDENTIFIER 0x3042544f
