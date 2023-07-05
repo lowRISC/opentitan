@@ -323,21 +323,42 @@ module sram_ctrl
   ////////////////////
 
   import prim_mubi_pkg::mubi4_t;
+  import prim_mubi_pkg::mubi8_t;
   import prim_mubi_pkg::MuBi4True;
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::mubi8_test_true_strict;
 
   mubi4_t en_ifetch;
   if (InstrExec) begin : gen_instr_ctrl
+    lc_tx_t lc_hw_debug_en;
+    prim_lc_sync #(
+      .NumCopies (1)
+    ) u_prim_lc_sync_hw_debug_en (
+      .clk_i,
+      .rst_ni,
+      .lc_en_i (lc_hw_debug_en_i),
+      .lc_en_o ({lc_hw_debug_en})
+    );
+
+    mubi8_t otp_en_sram_ifetch;
+    prim_mubi8_sync #(
+      .NumCopies (1)
+    ) u_prim_mubi8_sync_otp_en_sram_ifetch (
+      .clk_i,
+      .rst_ni,
+      .mubi_i(otp_en_sram_ifetch_i),
+      .mubi_o({otp_en_sram_ifetch})
+    );
+
     mubi4_t lc_ifetch_en;
     mubi4_t reg_ifetch_en;
     // SEC_CM: INSTR.BUS.LC_GATED
-    assign lc_ifetch_en = lc_to_mubi4(lc_hw_debug_en_i);
+    assign lc_ifetch_en = lc_to_mubi4(lc_hw_debug_en);
     // SEC_CM: EXEC.CONFIG.MUBI
     assign reg_ifetch_en = mubi4_t'(reg2hw.exec.q);
     // SEC_CM: EXEC.INTERSIG.MUBI
-    assign en_ifetch = (mubi8_test_true_strict(otp_en_sram_ifetch_i)) ? reg_ifetch_en :
-                                                                        lc_ifetch_en;
+    assign en_ifetch = (mubi8_test_true_strict(otp_en_sram_ifetch)) ? reg_ifetch_en :
+                                                                      lc_ifetch_en;
   end else begin : gen_tieoff
     assign en_ifetch = MuBi4False;
 
