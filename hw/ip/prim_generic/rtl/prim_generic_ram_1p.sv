@@ -29,7 +29,7 @@ module prim_ram_1p import prim_ram_1p_pkg::*; #(
   input ram_1p_cfg_t       cfg_i
 );
    
-`ifdef FLASH_PRELOAD
+`ifndef TARGET_SYNTHESIS
    
 // For certain synthesis experiments we compile the design with generic models to get an unmapped
 // netlist (GTECH). In these synthesis experiments, we typically black-box the memory models since
@@ -99,8 +99,7 @@ module prim_ram_1p import prim_ram_1p_pkg::*; #(
      .NumWords(Depth),
      .DataWidth(Width),
      .NumPorts(32'd1),
-     .PrintSimCfg(1),
-     .SimInit("zeros")
+     .PrintSimCfg(1)
   ) ram_primitive (
      .clk_i,
      .rst_ni,

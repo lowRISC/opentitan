@@ -83,7 +83,11 @@ module prim_flash_bank #(
   localparam int WordsPerBank  = PagesPerBank * WordsPerPage;
   localparam int WordsPerInfoBank = InfosPerBank * WordsPerPage;
   localparam int InfoAddrW = $clog2(WordsPerInfoBank);
-  parameter      MemInitFile = "../sw/tests/opentitan/hmac_smoketest/hmac_smoketest.vmem";                
+`ifdef IBEX_JTAG  
+  parameter      MemInitFile = "../sw/tests/opentitan/hmac_smoketest/hmac_smoketest.vmem";        
+`else
+  parameter      MemInitFile = "";        
+`endif        
   typedef enum logic [2:0] {
     StReset     = 'h0,
     StInit      = 'h1,
