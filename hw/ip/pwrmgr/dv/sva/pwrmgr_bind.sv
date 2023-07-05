@@ -75,7 +75,7 @@ module pwrmgr_bind;
     .fast_fsm_invalid(u_fsm.u_state_regs.unused_err_o),
     .rom_intg_chk_dis(u_fsm.rom_intg_chk_dis),
     .rom_intg_chk_ok(prim_mubi_pkg::mubi4_and_hi(u_fsm.rom_intg_chk_done, u_fsm.rom_intg_chk_good)),
-    .lc_dft_en_i(u_fsm.lc_hw_debug_en_i),
+    .lc_dft_en_i(u_fsm.lc_dft_en_i),
     .lc_hw_debug_en_i(u_fsm.lc_hw_debug_en_i),
     .main_pd_ni(u_slow_fsm.main_pd_ni),
     .rom_ctrl_done_i(u_fsm.rom_ctrl_done_i),
