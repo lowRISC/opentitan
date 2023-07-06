@@ -1,0 +1,21 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for dma
+
+# TODO: Remove waivers when logic in dma is implemented
+waive -rules NOT_READ -location {dma.sv} -regexp {Signal 'reg2hw.*' is not read from} \
+      -comment "Registers are not used in empty skeleton implementation"
+waive -rules HIER_NET_NOT_READ -location {dma.sv} -regexp {Net 'reg2hw.*' is not read from} \
+      -comment "Registers are not used in empty skeleton implementation"
+waive -rules INPUT_NOT_READ -location {dma.sv} -regexp {Input port} \
+      -comment "Inputs are not used in empty skeleton implementation"
+waive -rules NOT_DRIVEN -location {dma.sv} -regexp {Signal 'hw2reg' has no driver} \
+      -comment "Registers are not used in empty skeleton implementation"
+waive -rules HIER_NET_NOT_DRIVEN -location {dma.sv} -regexp {Net 'hw2reg.*' is not driven} \
+      -comment "Registers are not used in empty skeleton implementation"
+waive -rules OUTPUT_NOT_DRIVEN -location {dma.sv} -regexp {Output port} \
+      -comment "Outputs are not used in empty skeleton implementation"
+waive -rules PARAM_NOT_USED -location {dma.sv} -regexp {Parameter} \
+      -comment "Parameters are not used in empty skeleton implementation"

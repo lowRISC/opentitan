@@ -1,0 +1,17 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:dma_pkg:0.1"
+description: "DMA Engine Package"
+
+filesets:
+  files_rtl:
+    files:
+      - rtl/dma_pkg.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl
