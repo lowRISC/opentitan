@@ -9,6 +9,7 @@
 | [`aon_timer`]    | Wakeup and watchdog timers running on a low-power, always-on clock                                                                |
 | [`clkmgr`]       | Derives and monitors on-chip clock signals, handles clock gating requests from power manager and software                         |
 | [`csrng`]        | Takes entropy bits to produce cryptographically secure random numbers for consumption by hardware blocks and by software          |
+| [`dma`]          | DMA Controller for the integrated OpenTitan.                                                                                      |
 | [`edn`]          | Distributes random numbers produced by CSRNG to hardware blocks                                                                   |
 | [`entropy_src`]  | Filters and checks raw entropy bits from a random noise source and forwards them to CSRNG                                         |
 | [`flash_ctrl`]   | Interfaces and manages integrated non-volatile flash memory; supports scrambling, integrity, and secure wipe                      |
@@ -44,6 +45,7 @@
 [`aon_timer`]: ./aon_timer/README.md
 [`clkmgr`]: ./clkmgr/README.md
 [`csrng`]: ./csrng/README.md
+[`dma`]: ./dma/README.md
 [`edn`]: ./edn/README.md
 [`entropy_src`]: ./entropy_src/README.md
 [`flash_ctrl`]: ./flash_ctrl/README.md
