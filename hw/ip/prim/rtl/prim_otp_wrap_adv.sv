@@ -93,7 +93,7 @@ module prim_otp_wrap_adv import prim_ram_1p_pkg::*; #(
                                  .spo (rdata_sram)
                                  ) ;
   assign unused = ^req_q & ^write_q & ^wdata_q & ^wmask_q;
-`elsif GF22
+/*`elsif GF22
   gf22_efuse_wrap #(
     .Depth                (Depth),
     .Width                (TotalWidth),
@@ -110,7 +110,7 @@ module prim_otp_wrap_adv import prim_ram_1p_pkg::*; #(
     .wdata_i    ( wdata_q    ),
     .rdata_o    ( rdata_sram ),
     .rvalid_o   (            )
-  );
+  );*/
 `else // !`ifdef TARGET_SYNTHESIS
   otp_rom #(
     .Width(TotalWidth),
@@ -125,23 +125,6 @@ module prim_otp_wrap_adv import prim_ram_1p_pkg::*; #(
   );
   logic  unused;
   assign unused = ^wdata_q & ^wmask_q & ^write_q;
-  /*prim_ram_1p #(
-    .MemInitFile     (MemInitFile),
-    .Width           (TotalWidth),
-    .Depth           (Depth),
-    .DataBitsPerMask (LocalDataBitsPerMask),
-    .Otp(Otp)
-  ) u_mem (
-    .clk_i,
-    .rst_ni,
-    .req_i    (req_q),
-    .write_i  (write_q),
-    .addr_i   (addr_q),
-    .wdata_i  (wdata_q),
-    .wmask_i  (wmask_q),
-    .rdata_o  (rdata_sram),
-    .cfg_i
-  );*/
 `endif 
  
   always_ff @(posedge clk_i or negedge rst_ni) begin

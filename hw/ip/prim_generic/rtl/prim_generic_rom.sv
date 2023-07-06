@@ -21,7 +21,6 @@ module prim_rom import prim_rom_pkg::*; #(
 );
    
 `ifdef TARGET_XILINX
-
   xilinx_rom_bank_8192x40 rom_mem_i (
                                     .clk  (clk_i),
                                     .a (addr_i),
@@ -44,38 +43,5 @@ module prim_rom import prim_rom_pkg::*; #(
   );  
 
 `endif
-/*
-
-  logic unused_cfg;
-  assign unused_cfg = ^cfg_i;
-
-  logic [Width-1:0] mem [Depth];
-
-  always_ff @(posedge clk_i) begin
-    rdata_o <= '0;
-    if (req_i) begin
-      rdata_o <= mem[addr_i];
-    end
-  end
-
-  initial begin
-
-     for(int i=0; i< Depth; i++) begin
-
-        mem[i] = '0;
-        
-     end
-     
-  end
-
-  `include "prim_util_memload.svh"
-
-  ////////////////
-  // ASSERTIONS //
-  ////////////////
-
-  // Control Signals should never be X
-  `ASSERT(noXOnCsI, !$isunknown(req_i), clk_i, '0)
-*/
 
 endmodule
