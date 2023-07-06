@@ -9,6 +9,7 @@
 | [`aon_timer`]    | Wakeup and watchdog timers running on a low-power, always-on clock                                                                |
 | [`ascon`]        | Ascon authenticated encryption and decryption engine                                                                              |
 | [`csrng`]        | Takes entropy bits to produce cryptographically secure random numbers for consumption by hardware blocks and by software          |
+| [`dma`]          | DMA Controller for the integrated OpenTitan.                                                                                      |
 | [`edn`]          | Distributes random numbers produced by CSRNG to hardware blocks                                                                   |
 | [`entropy_src`]  | Filters and checks raw entropy bits from a random noise source and forwards them to CSRNG                                         |
 | [`gpio`]         | General-purpose I/O pin control interface for software                                                                            |
@@ -41,6 +42,7 @@
 [`aon_timer`]: ./aon_timer/README.md
 [`ascon`]: ./ascon/README.md
 [`csrng`]: ./csrng/README.md
+[`dma`]: ./dma/README.md
 [`edn`]: ./edn/README.md
 [`entropy_src`]: ./entropy_src/README.md
 [`gpio`]: ./gpio/README.md
