@@ -323,6 +323,8 @@ typedef struct spi_device_cmd {
   uint32_t address;
   /**
    * Payload size in bytes.
+   *
+   * This value must never exceed `kSpiDevicePayloadAreaNumBytes`.
    */
   size_t payload_byte_count;
   /**
