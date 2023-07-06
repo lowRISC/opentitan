@@ -6,7 +6,7 @@ compile_script := compile.tcl
 compile_script_preload := compile_preload.tcl
 run_script := start.tcl
 run_script_preload := start_preload.tcl
-
+SRAM ?=
 # Ensure half-built targets are purged
 .DELETE_ON_ERROR:
 
@@ -16,6 +16,12 @@ run_script_preload := start_preload.tcl
 
 ifdef jtag
   VLOG_ARGS += +define+IBEX_JTAG
+endif
+ifdef preload_flash
+  VLOG_ARGS += +define+PRELOAD_FLASH
+endif
+ifdef secure
+  VLOG_ARGS += +define+SECURE
 endif
 
 # -suppress vlog-13198 -suppress vlog-7033 -suppress vopt-13276 -suppress vlog-13233
@@ -42,7 +48,7 @@ build_preload: compile_preload.tcl
 	vsim -c -do 'source $(compile_script_preload); quit'
 
 run: build
-	vsim -do 'source $(run_script)'
+	vsim -do 'set SRAM ${SRAM}; source $(run_script)'
 
 run_preload: build_preload
 	vsim -do 'source $(run_script_preload)'

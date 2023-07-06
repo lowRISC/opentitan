@@ -364,24 +364,24 @@ module testbench_asynch ();
     //dm_ot::dtm_op_status_e op;
     automatic int dmi_wait_cycles = 10;
 
-      riscv_dbg.reset_master();
-`ifdef IBEX_JTAG
-     if ( $value$plusargs ("SRAM=%s", SRAM));
-        $display("Testing %s", SRAM);
-   
-     repeat(10000)
-         @(posedge clk_sys); 
-     debug_module_init();
-     load_binary(SRAM);
-     jtag_data_preload();
-     jtag_ibex_wakeup(32'h e0000080); //preload the flash
-     repeat(210000)
-        @(posedge clk_sys);
-     jtag_ibex_wakeup(32'h d0008080); //secure boot
-     
-     
-`endif               
-  end // block: local_jtag_preload
+    riscv_dbg.reset_master();     
+    if(!$value$plusargs("SRAM=%s", SRAM))
+         $display("Testing %s", SRAM);
+
+    if (SRAM != "") begin
+         repeat(10000)
+           @(posedge clk_sys); 
+         debug_module_init();
+         load_binary(SRAM);
+         jtag_data_preload();
+         jtag_ibex_wakeup(32'h e0000080); //preload the flash
+    `ifdef SECURE
+         repeat(210000)
+           @(posedge clk_sys);
+         jtag_ibex_wakeup(32'h d0008080); //secure boot
+    `endif       
+   end
+ end // block: local_jtag_preload
    
 ///////////////////////////// Tasks ///////////////////////////////
    
