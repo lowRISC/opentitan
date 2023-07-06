@@ -14,8 +14,8 @@ SRAM ?= ""
 # RTL SIMULATION
 # --------------
 
-ifdef preload_flash
-  VLOG_ARGS += +define+PRELOAD_FLASH
+ifdef flash_preload
+  VLOG_ARGS += +define+FLASH_PRELOAD
 endif
 ifdef secure
   VLOG_ARGS += +define+SECURE
@@ -32,27 +32,13 @@ define generate_vsim
 	echo >> $1
 endef
 
-define generate_vsim_preload
-	echo 'set ROOT [file normalize [file dirname [info script]]/$3]' > $1
-	bender script $(VSIM) --vlog-arg="$(VLOG_ARGS) +define+FLASH_PRELOAD" $2 | grep -v "set ROOT" >> $1
-	echo >> $1
-endef
-
 build: compile.tcl
 	vsim -c -do 'source $(compile_script); quit'
-
-build_preload: compile_preload.tcl
-	vsim -c -do 'source $(compile_script_preload); quit'
 
 run: build
 	vsim -do 'set SRAM ${SRAM}; source $(run_script)'
 
-run_preload: build_preload
-	vsim -do 'source $(run_script_preload)'
-
 sim: build run
-
-preload_sim: build_preload run_preload
 
 update:
 	bender update
@@ -69,5 +55,3 @@ clean:
 compile.tcl: ../Bender.yml
 	$(call generate_vsim, $@, -t rtl -t test,..)
 
-compile_preload.tcl: ../Bender.yml
-	$(call generate_vsim_preload, $@, -t rtl -t test,..)

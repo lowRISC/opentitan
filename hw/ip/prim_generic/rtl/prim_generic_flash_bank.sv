@@ -83,7 +83,7 @@ module prim_flash_bank #(
   localparam int WordsPerBank  = PagesPerBank * WordsPerPage;
   localparam int WordsPerInfoBank = InfosPerBank * WordsPerPage;
   localparam int InfoAddrW = $clog2(WordsPerInfoBank);
-`ifdef PRELOAD_FLASH  
+`ifdef FLASH_PRELOAD
   parameter      MemInitFile = "../sw/tests/opentitan/hmac_smoketest/hmac_smoketest.vmem";        
 `else
   parameter      MemInitFile = "";        
