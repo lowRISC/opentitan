@@ -98,6 +98,27 @@ def _manifest_impl(ctx):
 
     mf["usage_constraints"] = uc
 
+    if ctx.attr.extensions:
+        mf["extensions"] = ctx.attr.extensions
+    else:
+        mf["extensions"] = [
+            "spx_key",
+            "spx_signature",
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+        ]
+
     file = ctx.actions.declare_file("{}.json".format(ctx.attr.name))
     ctx.actions.write(file, json.encode_indent(mf))
     return DefaultInfo(
@@ -129,6 +150,7 @@ _manifest = rule(
         "code_start": attr.string(doc = "Start offset of the executable region in the image as a 0x-prefixed hex-encoded string"),
         "code_end": attr.string(doc = "End offset of the executable region in the image as a 0x-prefixed hex-encoded string"),
         "entry_point": attr.string(doc = "Offset of the first instruction in the image as a 0x-prefixed hex-encoded string"),
+        "extensions": attr.string_list(doc = "Names of the manifest extensions as an array of strings"),
     },
 )
 

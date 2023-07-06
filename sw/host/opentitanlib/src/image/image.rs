@@ -4,6 +4,7 @@
 
 use anyhow::{ensure, Result};
 use memoffset::offset_of;
+use std::collections::HashSet;
 use std::convert::TryInto;
 use std::fs::File;
 use std::io::{Read, Write};
@@ -16,7 +17,7 @@ use zerocopy::LayoutVerified;
 use crate::crypto::rsa::Modulus;
 use crate::crypto::rsa::Signature as RsaSignature;
 use crate::crypto::sha256;
-use crate::image::manifest::{Manifest, ManifestExtHeader, ManifestExtTableEntry};
+use crate::image::manifest::Manifest;
 use crate::image::manifest_def::{ManifestRsaBuffer, ManifestSpec};
 use crate::image::manifest_ext::{ManifestExtEntry, ManifestExtSpec};
 use crate::util::file::{FromReader, ToWriter};
@@ -105,6 +106,10 @@ impl Image {
     }
 
     /// Adds an extension to the signed region of this `Image`.
+    ///
+    /// This will take all the extensions in `spec.signed_region` and append them to the image.
+    /// This should be called before adding any unsigned extensions to ensure all extensions that
+    /// are a part of the signature exist within the contiguous signed region of the image.
     pub fn add_signed_manifest_extensions(&mut self, spec: &ManifestExtSpec) -> Result<()> {
         for entry_spec in &spec.signed_region {
             self.add_manifest_extension(ManifestExtEntry::from_spec(
@@ -116,6 +121,9 @@ impl Image {
     }
 
     /// Adds an extension to the unsigned region of this `Image`.
+    ///
+    /// This will take all the extensions in `spec.unsigned_region` and append them to the image.
+    /// This should only be called once all signed extensions have been added.
     pub fn add_unsigned_manifest_extensions(&mut self, spec: &ManifestExtSpec) -> Result<()> {
         for entry_spec in &spec.unsigned_region {
             self.add_manifest_extension(ManifestExtEntry::from_spec(
@@ -144,28 +152,28 @@ impl Image {
         // If the extension already exists, overwrite it, else append it to the end of the
         // image.
         let offset = if ext_table_entry.offset != 0 {
-            ext_table_entry.offset as usize
+            ext_table_entry.offset
         } else {
             ensure!(
                 self.size % align_of::<u32>() == 0,
                 ImageError::BadExtensionAlignment(entry_id)
             );
-            self.size
+            self.size.try_into()?
         };
-        ext_table_entry.offset = offset as u32;
+        ext_table_entry.offset = offset;
 
         // Write the extension to the end of the image.
         let ext_bytes = entry.to_vec();
         let end_index = offset
-            .checked_add(ext_bytes.len())
+            .checked_add(ext_bytes.len().try_into()?)
             .ok_or(ImageError::ExtensionOverflow)?;
         let extension_slice = self
             .data
             .bytes
-            .get_mut(offset..end_index)
+            .get_mut(offset as usize..end_index as usize)
             .ok_or(ImageError::ExtensionOverflow)?;
         extension_slice.copy_from_slice(ext_bytes.as_slice());
-        self.size = std::cmp::max(end_index, self.size);
+        self.size = std::cmp::max(end_index as usize, self.size);
 
         let mut manifest = self.borrow_manifest_mut()?;
         manifest.extensions.entries = ext_table;
@@ -261,12 +269,12 @@ impl Image {
     ///
     /// The end of the signed region is computed as the offset of the first extension that is not
     /// in `signed_ids` or the size of the image if there is no such extension.
-    pub fn update_signed_region(&mut self, signed_ids: &[u32]) -> Result<()> {
+    pub fn update_signed_region(&mut self, signed_ids: &HashSet<u32>) -> Result<()> {
         let image_size = self.size as u32;
         let mut first_unsigned_ext = 0u32;
         let manifest = self.borrow_manifest_mut()?;
 
-        let mut ext_table = manifest.extensions.entries.clone();
+        let mut ext_table = manifest.extensions.entries;
         ext_table.sort_by(|a, b| a.offset.cmp(&b.offset));
         for e in ext_table {
             // Ignore any extensions that haven't been added to the image.

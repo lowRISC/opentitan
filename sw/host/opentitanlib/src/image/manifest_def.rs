@@ -118,6 +118,10 @@ impl ManifestSpec {
     pub fn rsa_modulus(&self) -> Option<&ManifestRsaBuffer> {
         self.rsa_modulus.0.as_ref().map(|v| &v.0)
     }
+
+    pub fn has_length(&self) -> bool {
+        self.length.0.is_some()
+    }
 }
 
 trait ManifestPacked<T> {
