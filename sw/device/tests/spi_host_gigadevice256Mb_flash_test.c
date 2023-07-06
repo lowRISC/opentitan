@@ -15,6 +15,7 @@
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/spi_device_testutils.h"
 #include "sw/device/lib/testing/spi_flash_testutils.h"
+#include "sw/device/lib/testing/spi_host_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -25,44 +26,13 @@ static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
 
 OTTF_DEFINE_TEST_CONFIG();
 
-static status_t spi_host1_pinmux_connect_to_bob(const dif_pinmux_t *pinmux,
-                                                dif_pinmux_index_t csb_outsel) {
-  // CSB.
-  TRY(dif_pinmux_output_select(pinmux, csb_outsel,
-                               kTopEarlgreyPinmuxOutselSpiHost1Csb));
-  // SCLK.
-  TRY(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoa3,
-                               kTopEarlgreyPinmuxOutselSpiHost1Sck));
-  // SD0.
-  TRY(dif_pinmux_input_select(pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd0,
-                              kTopEarlgreyPinmuxInselIoa5));
-  TRY(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoa5,
-                               kTopEarlgreyPinmuxOutselSpiHost1Sd0));
-
-  // SD1.
-  TRY(dif_pinmux_input_select(pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd1,
-                              kTopEarlgreyPinmuxInselIoa4));
-  TRY(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoa4,
-                               kTopEarlgreyPinmuxOutselSpiHost1Sd1));
-  // SD2.
-  TRY(dif_pinmux_input_select(pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd2,
-                              kTopEarlgreyPinmuxInselIoa8));
-  TRY(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoa8,
-                               kTopEarlgreyPinmuxOutselSpiHost1Sd2));
-  // SD3.
-  TRY(dif_pinmux_input_select(pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd3,
-                              kTopEarlgreyPinmuxInselIoa7));
-  TRY(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoa7,
-                               kTopEarlgreyPinmuxOutselSpiHost1Sd3));
-  return OK_STATUS();
-}
-
 static void init_test(dif_spi_host_t *spi_host) {
   dif_pinmux_t pinmux;
   mmio_region_t base_addr =
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux));
-  spi_host1_pinmux_connect_to_bob(&pinmux, kTopEarlgreyPinmuxMioOutIoc11);
+  CHECK_STATUS_OK(
+      spi_host1_pinmux_connect_to_bob(&pinmux, kTopEarlgreyPinmuxMioOutIoc11));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_SPI_HOST1_BASE_ADDR);
   CHECK_DIF_OK(dif_spi_host_init(base_addr, spi_host));
