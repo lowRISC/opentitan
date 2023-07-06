@@ -6,7 +6,7 @@ compile_script := compile.tcl
 compile_script_preload := compile_preload.tcl
 run_script := start.tcl
 run_script_preload := start_preload.tcl
-SRAM ?=
+SRAM ?= ""
 # Ensure half-built targets are purged
 .DELETE_ON_ERROR:
 
