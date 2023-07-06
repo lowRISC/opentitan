@@ -6,6 +6,7 @@ use anyhow::{anyhow, bail, ensure, Result};
 use clap::{Args, Subcommand};
 use serde_annotate::Annotate;
 use std::any::Any;
+use std::collections::HashSet;
 use std::convert::TryInto;
 use std::fs::File;
 use std::io::Write;
@@ -149,10 +150,12 @@ impl CommandDispatch for ManifestUpdateCommand {
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let mut image = image::Image::read_from_file(&self.image)?;
+        let mut update_length = true;
 
         // Apply the manifest values to the image.
         if let Some(manifest) = &self.manifest {
             let def = ManifestSpec::read_from_file(manifest)?;
+            update_length = !def.has_length();
             image.overwrite_manifest(def)?;
         }
 
@@ -178,7 +181,6 @@ impl CommandDispatch for ManifestUpdateCommand {
 
         let mut spx_private_key: Option<SpxKeypair> = None;
         if let Some(key) = &self.spx_key {
-            ext.check_for_duplicates(ManifestExtId::spx_key)?;
             let key = spx::load_spx_key(key)?;
             let key_ext = ManifestExtEntry::new_spx_key_entry(&key)?;
             image.add_manifest_extension(key_ext)?;
@@ -188,29 +190,38 @@ impl CommandDispatch for ManifestUpdateCommand {
             }
         }
 
-        // Determine if an SPX+ signature will be added and preallocate the extension.
-        if self.spx_signature.is_some() || spx_private_key.is_some() {
-            ext.check_for_duplicates(ManifestExtId::spx_signature)?;
+        // If SPX+ is being used the `spx_signature` extensions needs to be allocated so manifest
+        // values are correct for offline signing.
+        if self.spx_signature.is_some() || self.spx_key.is_some() {
             image.allocate_manifest_extension(
                 ManifestExtId::spx_signature.into(),
                 std::mem::size_of::<ManifestExtSpxSignature>(),
             )?;
         }
 
+        // Add any unsigned extensions defined in `ext`.
+        // These extensions will come after `signed_region_end`.
+        image.add_unsigned_manifest_extensions(&ext)?;
+
         // Update `length` to be able to generate signatures.
-        image.update_length()?;
+        // This is done by default, and will only be skipped if the `length` field is specified in
+        // the manifest HJSON, typically during negative tests.
+        if update_length {
+            image.update_length()?;
+        }
 
         // List out all signed extensions and set the bounds of the signed region.
-        // The `spx_key` extension may appear in this list twice, but that doesn't change the
-        // semantics of `update_signed_region()`.
         let signed_ids = ext
             .signed_region
             .iter()
             .map(|e| e.id())
             .chain(vec![ManifestExtId::spx_key.into()])
-            .collect::<Vec<u32>>();
+            .collect::<HashSet<u32>>();
         image.update_signed_region(&signed_ids)?;
 
+        // Remove any extensions in the table that reference extension data.
+        // This allows the entries in the extension table to be present in the manifest even if
+        // the extensions end up not being used.
         image.drop_null_extensions()?;
 
         // Sign the image

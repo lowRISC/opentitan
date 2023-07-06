@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Result};
+use anyhow::Result;
 use serde::{self, Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
@@ -92,18 +92,6 @@ impl ManifestExtSpec {
     /// The partent of the path that was provided when loading this spec.
     pub fn source_path(&self) -> Option<&Path> {
         self.relative_path.as_deref()
-    }
-
-    pub fn check_for_duplicates(&self, id: ManifestExtId) -> Result<()> {
-        ensure!(
-            !self
-                .signed_region
-                .iter()
-                .chain(self.unsigned_region.iter())
-                .any(|e| e.id() == u32::from(ManifestExtId::spx_key)),
-            ManifestExtError::DuplicateEntry(id.into())
-        );
-        Ok(())
     }
 }
 
