@@ -1,0 +1,483 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+# DMA register template
+{
+  name:               "dma"
+  human_name:         "DMA Controller"
+  one_line_desc:      "DMA Controller for the integrated OpenTitan."
+  one_paragraph_desc: '''
+  The secure DMA controller provides OpenTitan with the ability to move data blobs securely in and out of the OpenTitan memory while offloading the Ibex core to focus on security critical tasks.
+  The secure DMA provides an hardware isolation layer between OpenTitan and the rest of the SoC.
+  It provides the hardware enforcement of security properties through well defined isolation & access control techniques, hardware based checking and other protection mechanisms.
+  Note that depending upon use case, it is expected that the SoC provides proper security mechanisms for code / data protections such as access control mechanisms, encrypted (w/integrity protection) memory regions etc.
+  '''
+  design_spec:        "../doc"
+  dv_doc:             "../doc/dv"
+  version:            "0.1"
+
+  clocking: [{clock: "clk_i", reset: "rst_ni", primary: true}]
+  scan: "true"        // Enable `scanmode_i` port
+  scan_reset: "true"  // Enable `scan_rst_ni` port
+  scan_en: "true"     // Enable `scan_en_i` port
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device", hier_path: "u_dma_reg" }
+    { protocol: "tlul", direction: "host", name: "host" }
+    { protocol: "tlul", direction: "host", name: "xbar" }
+  ]
+
+   interrupt_list: [
+    { name: "dma_done"
+      desc: "DMA operation has been completed."
+    }
+    { name: "dma_error"
+      desc: "DMA error has occurred. DMA_STATUS.error_code register shows the details."
+    }
+    { name: "dma_memory_buffer_limit"
+      desc: "Memory buffer limit address reached."
+    }
+  ]
+  alert_list: [
+    { name: "fatal_fault"
+      desc: '''
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
+      '''
+    }
+  ]
+  countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    }
+  ]
+
+  regwidth: "32"
+  registers: [
+    { name: "SOURCE_ADDRESS_LO"
+      desc: "Lower 32 bits of 4 byte aligned physical or virtual address of memory location within SOC memory address map or physical address within OT non-secure memory space."
+      swaccess: "rw"
+      hwaccess: "hrw"
+      hwqe: "true"
+      fields: [
+        { bits: "31:0"
+          name: "source_address_lo"
+          resval: 0x0
+          desc: "Lower 32 bits of 4 byte aligned source address."
+        }
+      ]
+    }
+    { name: "SOURCE_ADDRESS_HI"
+      desc: "Upper 32 bits of 4 byte aligned source address."
+      swaccess: "rw"
+      hwaccess: "hrw"
+      hwqe: "true"
+      fields: [
+        { bits: "31:0"
+          name: "source_address_hi"
+          resval: 0x0
+          desc: "Upper 32 bits of 4 byte aligned physical or virtual address of memory location within SOC memory address map or physical address within OT non-secure memory space."
+        }
+      ]
+    }
+    { name: "DESTINATION_ADDRESS_LO"
+      desc: "Lower 32 bits of 4 byte aligned physical or virtual address of memory location within SOC memory address map or physical address within OT non-secure memory space."
+      swaccess: "rw"
+      hwaccess: "hrw"
+      hwqe: "true"
+      fields: [
+        { bits: "31:0"
+          name: "destination_address_lo"
+          resval: 0x0
+          desc: "Lower 32 bits of 4 byte aligned destination address."
+        }
+      ]
+    }
+    { name: "DESTINATION_ADDRESS_HI"
+      desc: "Upper 32 bits of 4 byte aligned destination address."
+      swaccess: "rw"
+      hwaccess: "hrw"
+      hwqe: "true"
+      fields: [
+        { bits: "31:0"
+          name: "destination_address_hi"
+          resval: 0x0
+          desc: "Upper 32 bits of 4 byte aligned physical or virtual address of memory location within SOC memory address map or physical address within OT non-secure memory space."
+        }
+      ]
+    }
+    { name: "ADDRESS_SPACE_ID"
+      desc: "Address space that source and destination pointers refer to."
+      swaccess: "rw"
+      hwqe: "true"
+      fields: [
+        { bits: "1:0"
+          name: "source_asid"
+          resval: 0x0
+          desc: "Target address space that the source address pointer refers to."
+          enum: [
+            { value: "0"
+              name: "OT_ADDR"
+              desc: "OpenTitan 32-bit internal bus."
+            }
+            { value: "1"
+              name: "SOC_ADDR"
+              desc: "SoC control register bus using 32-bit (or 64 bits if configured by an SoC) control port."
+            }
+            { value: "2"
+              name: SYS_ADDR"
+              desc: "SoC system address bus using 64 bit SYS port."
+            }
+            { value: "3"
+              name: "FLASH_ADDR"
+              desc: "Integrated OpenTitan external flash address space."
+            }
+          ]
+        }
+        { bits: "3:2"
+          name: "destination_asid"
+          resval: 0x0
+          desc: "Target address space that the destination address pointer refers to."
+          enum: [
+            { value: "0"
+              name: "OT_ADDR"
+              desc: "OpenTitan 32-bit internal bus."
+            }
+            { value: "1"
+              name: "SOC_ADDR"
+              desc: "SoC control register bus using 32-bit (or 64 bits if configured by an SoC) control port."
+            }
+            { value: "2"
+              name: SYS_ADDR"
+              desc: "SoC system address bus using 64 bit SYS port."
+            }
+            { value: "3"
+              name: "FLASH_ADDR"
+              desc: "Integrated OpenTitan external flash address space."
+            }
+          ]
+        }
+      ]
+    }
+    { name: "ENABLED_MEMORY_RANGE_BASE"
+      desc: "Base Address to mark the start of the DMA enabled memory range within the OT internal memory space."
+      swaccess: "rw"
+      hwqe: "true"
+      regwen: "RANGE_UNLOCK_REGWEN"
+      fields: [
+        { bits: "31:0"
+          name: "base"
+          resval: 0x0
+          desc: "Base Address to mark the start of the DMA enabled memory range within the OT internal memory space."
+        }
+      ]
+    }
+    { name: "ENABLED_MEMORY_RANGE_LIMIT"
+      desc: "Limit Address to mark the end of the DMA enabled memory range within the OT internal memory space."
+      swaccess: "rw"
+      hwqe: "true"
+      regwen: "RANGE_UNLOCK_REGWEN"
+      fields: [
+        { bits: "31:0"
+          name: "limit"
+          resval: 0x0
+          desc: "Limit Address to mark the end of the DMA enabled memory range within the OT internal memory space."
+        }
+      ]
+    }
+    { name: "RANGE_UNLOCK_REGWEN"
+      desc: "Used to lock the DMA enabled memory range configuration registers."
+      swaccess: "rw0c"
+      fields: [
+        { bits: "0"
+          name: "unlock"
+          resval: 0x1
+          desc: '''Used by firmware to lock the DMA enabled memory range configuration registers from further modification.
+                This bit once cleared can be set only upon a reset event.
+
+                Default Value = 1 -> Unlocked at reset.
+                '''
+        }
+      ]
+    }
+    { name: "TOTAL_DATA_SIZE"
+      desc: "Total size of the data blob involved in DMA movement."
+      swaccess: "rw"
+      hwqe: "true"
+      fields: [
+        { bits: "31:0"
+          name: "data_size"
+          resval: 0x0
+          desc: '''Total size of the data blob involved in DMA movement.
+
+                Minimum: 1 byte.
+                Maximum: may be restricted to a maximum pre-defined size based on OT DMA enabled memory space allocation.
+                Works in conjunction with Transfer size register.
+          '''
+        }
+      ]
+    }
+    { name: "TRANSFER_SIZE"
+      desc: "Denotes the size of each transaction that the DMA shall issue."
+      swaccess: "rw"
+      hwqe: "true"
+      fields: [
+        { bits: "1:0"
+          name: "transaction_size"
+          resval: 0x3
+          desc: '''Denotes the size of each transaction that the DMA shall issue during the data movement.
+
+                Multiple transactions of transfer size each will be issued until total size number of bytes are reached.
+                Note that firmware may need to set a different value if a receiving IP supports a read / write transaction size that is less than 1 DWORD.
+                This does not affect the wrap-around mechanism.
+                '''
+          enum: [
+            { value: "0",
+              name: "ONE_BYTE"
+              desc: "One byte per transaction."
+            }
+            { value: "1",
+              name: TWO_BYTE",
+              desc: "Two bytes per transaction."
+
+            }
+            { value: "2",
+              name: "THREE_BYTE",
+              desc: "Three bytes per transaction."
+
+            }
+            { value: "3",
+              name: "FOUR_BYTE",
+              desc: '''Four bytes per transaction.
+                    Default value after reset.
+                    '''
+            }
+          ]
+        }
+      ]
+    }
+    { name: "DESTINATION_ADDRESS_LIMIT_LO"
+      desc: "Lower 32 bits of DMA memory buffer limit address."
+      swaccess: "rw"
+      hwaccess: "hro"
+      hwqe: "true"
+      fields: [
+        { bits: "31:0"
+          name: "address_limit_lo"
+          resval: 0x0
+          desc: '''Limit address configuration.
+
+                Used in conjunction with the address auto-increment mode for hardware handshake operation to
+                generate an interrupt when memory buffer address approaches memory buffer address limit.
+                This field is optional.
+                However this field is expected to be implicitly valid if the CONTROL.memory_buffer_auto_increment_enable register (bit 7) is set.
+                '''
+        }
+      ]
+    }
+    { name: "DESTINATION_ADDRESS_LIMIT_HI"
+      desc: "Upper 32 bits of DMA memory buffer limit address."
+      swaccess: "rw"
+      hwaccess: "hro"
+      hwqe: "true"
+      fields: [
+        { bits: "31:0"
+          name: "address_limit_hi"
+          resval: 0x0
+          desc: '''Limit address configuration.
+
+                Used in conjunction with the address auto-increment mode for hardware handshake operation to
+                generate an interrupt when memory buffer address approaches memory buffer address limit.
+                This field is optional.
+                However this field is expected to be implicitly valid if the CONTROL.memory_buffer_auto_increment_enable register (bit 7) is set.
+                '''
+        }
+      ]
+    }
+    { name: "DESTINATION_ADDRESS_ALMOST_LIMIT_LO"
+      desc: "Lower 32 bits of DMA memory buffer limit address."
+      swaccess: "rw"
+      hwaccess: "hro"
+      hwqe: "true"
+      fields: [
+        { bits: "31:0"
+          name: "address_limit_lo"
+          resval: 0x0
+          desc: '''Threshold for detecting that the buffer limit is approaching so as to prevent destination buffer overflow.
+                Used in conjunction with the address auto-increment mode for hardware handshake operation to generate an
+                interrupt when the buffer address approaches close to the buffer (i.e. reaches this threshold) address limit.
+                Enables firmware to take appropriate action prior to reaching the final limit.
+                This field is optional.
+                However this field is expected to be implicitly valid if the CONTROL.memory_buffer_auto_increment_enable register (bit 7) is set.
+                '''
+        }
+      ]
+    }
+    { name: "DESTINATION_ADDRESS_ALMOST_LIMIT_HI"
+      desc: "Upper 32 bits of DMA memory buffer limit address."
+      swaccess: "rw"
+      hwaccess: "hro"
+      hwqe: "true"
+      fields: [
+        { bits: "31:0"
+          name: "address_limit_hi"
+          resval: 0x0
+          desc: '''Threshold for detecting that the buffer limit is approaching so as to prevent destination buffer overflow.
+                Used in conjunction with the address auto-increment mode for hardware handshake operation to generate an
+                interrupt when the buffer address approaches close to the buffer (i.e. reaches this threshold) address limit.
+                Enables firmware to take appropriate action prior to reaching the final limit.
+                This field is optional.
+                However this field is expected to be implicitly valid if the CONTROL.memory_buffer_auto_increment_enable register (bit 7) is set.
+                '''
+        }
+      ]
+    }
+    { name: "CONTROL"
+      desc: "Control register for DMA data movement."
+      swaccess: "rw"
+      hwaccess: "hrw"
+      hwqe: "true"
+      fields: [
+        { bits: "5:2"
+          name: "opcode"
+          resval: 0x0
+          desc: '''Defines the type of DMA operations.
+
+                0: Copy Operation, Simple copy from source to destination.
+                '''
+        }
+        { bits: "6"
+          name: "hardware_handshake_enable"
+          resval: 0x0
+          desc: '''Enable hardware handshake mode.
+                Used to clear FIFOs from low speed IO peripherals receiving data, e.g., I3C receive buffer.
+                  Listen to an input trigger signal.
+                  Read data from source address location.
+                  Copy to destination address.
+                  Number of bytes specified in size register.
+                  Note assumption is the peripheral lowers input once FIFO is cleared.
+                No explicit clearing necessary.
+                '''
+        }
+        { bits: "7"
+          name: "memory_buffer_auto_increment_enable"
+          resval: 0x0
+          desc: '''Used in conjunction with the hardware handshake mode of operation.
+                Auto Increments the memory buffer address register by data size to point to the next memory buffer address.
+                Generate a warning (assert interrupt) if the auto-incremented address reaches close to the value set in.
+                limit address register to prevent destination buffer overflow.
+                '''
+        }
+        { bits: "8"
+          name: "fifo_auto_increment_enable"
+          resval: 0x0
+          desc: '''Used in conjunction with the hardware handshake mode of operation.
+                If set, reads/writes from/to incremental addresses for FIFO data register addresses.
+                Else uses the same address for subsequent transactions.
+                '''
+        }
+        { bits: "9"
+          name: "data_direction"
+          resval: 0x0
+          desc: '''Used in conjunction with the hardware handshake enable.
+                0: Receive data from LSIO FIFO to memory buffer.
+                1: Send data from memory buffer to LSIO FIFO.
+                '''
+        }
+        { bits: "27"
+          name: "abort"
+          swaccess: "wo"
+          resval: 0x0
+          desc: '''Aborts the DMA operation if this bit is set.
+                Sets the corresponding bit in the status register once abort operation is complete.
+                '''
+        }
+        { bits: "31"
+          name: "go"
+          resval: 0x0
+          desc: '''Trigger the DMA operation when the Go bit is set.
+                For normal operation, DMA engine clears the GO bit automatically after the configured operation is complete.
+                For Hardware handshake operation, DMA engine does not auto clear the Go bit.
+                Firmware shall clear the Go bit when it intends to stop the hardware handshake operation.
+                '''
+        }
+      ]
+    }
+    { name: "STATUS"
+      desc: "Status indication for DMA data movement."
+      swaccess: "rw1c"
+      hwaccess: "hrw"
+      hwqe: "true"
+      fields: [
+        { bits: "0"
+          name: "busy"
+          resval: 0x0
+          desc: '''DMA operation is active if this bit is set.
+                DMA engine clears this bit when operation is complete.
+                This bit may be set as long as hardware handshake mode is active and triggered.
+                '''
+        }
+        { bits: "1"
+          name: "done"
+          resval: 0x0
+          desc: "Configured DMA operation is complete."
+        }
+        { bits: "2"
+          name: "aborted"
+          resval: 0x0
+          desc: "Set once aborted operation drains."
+        }
+        { bits: "3"
+          name: "error"
+          resval: 0x0
+          desc: '''Error occurred during the operation.
+                error_code denotes the source of the error.
+                '''
+        }
+        { bits: "10:4"
+          name: "error_code"
+          resval: 0x0
+          desc: '''Denotes the source of the operational error.
+
+                Bit 0: Source address error.
+                Bit 1: Destination address error.
+                Bit 2: Opcode error.
+                Bit 3: Size error.
+                Bit 4: Completion error.
+                Bit 5: DMA enabled memory config error.
+                Bit 6: Register config unlocked.
+                '''
+        }
+      ]
+    }
+    { name: "CLEAR_STATE"
+      desc: "Clear the DMA state."
+      swaccess: "rw"
+      hwaccess: "hrw"
+      hwqe: "true"
+      fields: [
+        { bits: "0"
+          name: "clear"
+          resval: 0x0
+          desc: '''A write to this register (value is a don't care) clears the following DMA controller state:
+                    Done Status
+                    Error Status
+                    Error Code
+                    Done Interrupt
+          '''
+        }
+      ]
+    }
+    { name: "HANDSHAKE_INTERRUPT_ENABLE"
+      desc: "Enable bits for incoming handshake interrupt wires."
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0"
+          name: "mask"
+          resval: 0xFFFF
+          desc: "Enable bits for incoming handshake interrupt wires."
+        }
+      ]
+    }
+  ]
+}
