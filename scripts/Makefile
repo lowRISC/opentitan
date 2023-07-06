@@ -14,9 +14,6 @@ SRAM ?= ""
 # RTL SIMULATION
 # --------------
 
-ifdef jtag
-  VLOG_ARGS += +define+IBEX_JTAG
-endif
 ifdef preload_flash
   VLOG_ARGS += +define+PRELOAD_FLASH
 endif
