@@ -352,11 +352,6 @@ module testbench_asynch ();
   
   end
    
-  initial begin
-    @(negedge rst_sys_n);
-    riscv_dbg.reset_master();     
-  end
-   
   initial  begin : local_jtag_preload
       automatic dm_ot::sbcs_t sbcs = '{
        sbautoincrement: 1'b1,
@@ -373,7 +368,7 @@ module testbench_asynch ();
        SRAM="";
        $display("Testing %s", SRAM);
     end
-       
+    riscv_dbg.reset_master();     
     if (SRAM != "") begin
          repeat(10000)
            @(posedge clk_sys); 
