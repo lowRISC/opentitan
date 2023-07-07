@@ -268,5 +268,6 @@ extern uint32_t read_32(const void *);
 extern void write_32(uint32_t, void *);
 extern uint64_t read_64(const void *);
 extern void write_64(uint64_t, void *);
+extern size_t compute_padding(size_t, size_t);
 
 #undef OT_PREFIX_IF_NOT_RV32

@@ -375,5 +375,56 @@ TEST_P(MemChrTest, RepeatedBytes) {
             reverse ? kBuf + 27 : kBuf + 24);
 }
 
+TEST(ComputePadding, PaddingEight) {
+  EXPECT_EQ(compute_padding(0, 8), 0);
+  EXPECT_EQ(compute_padding(1, 8), 7);
+  EXPECT_EQ(compute_padding(2, 8), 6);
+  EXPECT_EQ(compute_padding(3, 8), 5);
+  EXPECT_EQ(compute_padding(4, 8), 4);
+  EXPECT_EQ(compute_padding(5, 8), 3);
+  EXPECT_EQ(compute_padding(6, 8), 2);
+  EXPECT_EQ(compute_padding(7, 8), 1);
+  EXPECT_EQ(compute_padding(8, 8), 0);
+  EXPECT_EQ(compute_padding(9, 8), 7);
+}
+
+TEST(ComputePadding, Padding256) {
+  EXPECT_EQ(compute_padding(0, 256), 0);
+  EXPECT_EQ(compute_padding(1, 256), 255);
+  EXPECT_EQ(compute_padding(2, 256), 254);
+  EXPECT_EQ(compute_padding(3, 256), 253);
+  EXPECT_EQ(compute_padding(4, 256), 252);
+  EXPECT_EQ(compute_padding(5, 256), 251);
+  EXPECT_EQ(compute_padding(6, 256), 250);
+  EXPECT_EQ(compute_padding(7, 256), 249);
+  EXPECT_EQ(compute_padding(8, 256), 248);
+  EXPECT_EQ(compute_padding(9, 256), 247);
+  EXPECT_EQ(compute_padding(253, 256), 3);
+  EXPECT_EQ(compute_padding(254, 256), 2);
+  EXPECT_EQ(compute_padding(255, 256), 1);
+  EXPECT_EQ(compute_padding(256, 256), 0);
+  EXPECT_EQ(compute_padding(257, 256), 255);
+}
+
+constexpr size_t compute_padding_reference(size_t size, size_t block_size) {
+  const size_t mask = block_size - 1;
+  const size_t misalignment = size & mask;
+  if (misalignment > 0) {
+    return block_size - misalignment;
+  }
+  return 0;
+}
+
+TEST(ComputePadding, CompareWithReferenceImpl) {
+  constexpr size_t kBlockSizes[] = {8, 16, 256, 512, 1024};
+  for (size_t block_size : kBlockSizes) {
+    SCOPED_TRACE(::testing::Message() << "block_size = " << block_size);
+    for (size_t size = 0; size < 2 * block_size; ++size) {
+      ASSERT_EQ(compute_padding(size, block_size),
+                compute_padding_reference(size, block_size));
+    }
+  }
+}
+
 }  // namespace
 }  // namespace memory_unittest
