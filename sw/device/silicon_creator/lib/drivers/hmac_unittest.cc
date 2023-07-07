@@ -22,6 +22,53 @@ using ::testing::ElementsAreArray;
 
 class HmacTest : public rom_test::RomTest {
  protected:
+  void ExpectInit() {
+    EXPECT_ABS_WRITE32(base_ + HMAC_CFG_REG_OFFSET, 0u);
+    EXPECT_ABS_WRITE32(base_ + HMAC_INTR_ENABLE_REG_OFFSET, 0u);
+    EXPECT_ABS_WRITE32(base_ + HMAC_INTR_STATE_REG_OFFSET,
+                       std::numeric_limits<uint32_t>::max());
+    EXPECT_ABS_WRITE32(base_ + HMAC_CFG_REG_OFFSET,
+                       {
+                           {HMAC_CFG_DIGEST_SWAP_BIT, false},
+                           {HMAC_CFG_ENDIAN_SWAP_BIT, false},
+                           {HMAC_CFG_SHA_EN_BIT, true},
+                           {HMAC_CFG_HMAC_EN_BIT, false},
+                       });
+    EXPECT_ABS_WRITE32(base_ + HMAC_CMD_REG_OFFSET,
+                       {{HMAC_CMD_HASH_START_BIT, true}});
+  }
+
+  void ExpectDigest(const std::array<uint32_t, 8> &digest) {
+    // Request digest.
+    EXPECT_ABS_WRITE32(base_ + HMAC_CMD_REG_OFFSET,
+                       {{HMAC_CMD_HASH_PROCESS_BIT, true}});
+
+    // Poll a couple of times before returning the result
+    EXPECT_ABS_READ32(base_ + HMAC_INTR_STATE_REG_OFFSET,
+                      {
+                          {HMAC_INTR_STATE_HMAC_DONE_BIT, false},
+                      });
+    EXPECT_ABS_READ32(base_ + HMAC_INTR_STATE_REG_OFFSET,
+                      {
+                          {HMAC_INTR_STATE_HMAC_DONE_BIT, true},
+                      });
+    EXPECT_ABS_WRITE32(base_ + HMAC_INTR_STATE_REG_OFFSET,
+                       {
+                           {HMAC_INTR_STATE_HMAC_DONE_BIT, true},
+                       });
+
+    // Set expectations explicitly to ensure that the registers
+    // are contiguous.
+    EXPECT_ABS_READ32(base_ + HMAC_DIGEST_7_REG_OFFSET, digest[0]);
+    EXPECT_ABS_READ32(base_ + HMAC_DIGEST_6_REG_OFFSET, digest[1]);
+    EXPECT_ABS_READ32(base_ + HMAC_DIGEST_5_REG_OFFSET, digest[2]);
+    EXPECT_ABS_READ32(base_ + HMAC_DIGEST_4_REG_OFFSET, digest[3]);
+    EXPECT_ABS_READ32(base_ + HMAC_DIGEST_3_REG_OFFSET, digest[4]);
+    EXPECT_ABS_READ32(base_ + HMAC_DIGEST_2_REG_OFFSET, digest[5]);
+    EXPECT_ABS_READ32(base_ + HMAC_DIGEST_1_REG_OFFSET, digest[6]);
+    EXPECT_ABS_READ32(base_ + HMAC_DIGEST_0_REG_OFFSET, digest[7]);
+  }
+
   uint32_t base_ = TOP_EARLGREY_HMAC_BASE_ADDR;
   rom_test::MockAbsMmio mmio_;
 };
@@ -29,19 +76,8 @@ class HmacTest : public rom_test::RomTest {
 class Sha256InitTest : public HmacTest {};
 
 TEST_F(Sha256InitTest, Initialize) {
-  EXPECT_ABS_WRITE32(base_ + HMAC_CFG_REG_OFFSET, 0u);
-  EXPECT_ABS_WRITE32(base_ + HMAC_INTR_ENABLE_REG_OFFSET, 0u);
-  EXPECT_ABS_WRITE32(base_ + HMAC_INTR_STATE_REG_OFFSET,
-                     std::numeric_limits<uint32_t>::max());
-  EXPECT_ABS_WRITE32(base_ + HMAC_CFG_REG_OFFSET,
-                     {
-                         {HMAC_CFG_DIGEST_SWAP_BIT, false},
-                         {HMAC_CFG_ENDIAN_SWAP_BIT, false},
-                         {HMAC_CFG_SHA_EN_BIT, true},
-                         {HMAC_CFG_HMAC_EN_BIT, false},
-                     });
-  EXPECT_ABS_WRITE32(base_ + HMAC_CMD_REG_OFFSET,
-                     {{HMAC_CMD_HASH_START_BIT, true}});
+  ExpectInit();
+
   hmac_sha256_init();
 }
 
@@ -78,39 +114,32 @@ TEST_F(Sha256FinalTest, GetDigest) {
       0x00000000, 0x11111111, 0x22222222, 0x33333333,
       0x44444444, 0x55555555, 0x66666666, 0x77777777,
   };
-
-  // Request digest.
-  EXPECT_ABS_WRITE32(base_ + HMAC_CMD_REG_OFFSET,
-                     {{HMAC_CMD_HASH_PROCESS_BIT, true}});
-
-  // Poll a couple of times before returning the result
-  EXPECT_ABS_READ32(base_ + HMAC_INTR_STATE_REG_OFFSET,
-                    {
-                        {HMAC_INTR_STATE_HMAC_DONE_BIT, false},
-                    });
-  EXPECT_ABS_READ32(base_ + HMAC_INTR_STATE_REG_OFFSET,
-                    {
-                        {HMAC_INTR_STATE_HMAC_DONE_BIT, true},
-                    });
-  EXPECT_ABS_WRITE32(base_ + HMAC_INTR_STATE_REG_OFFSET,
-                     {
-                         {HMAC_INTR_STATE_HMAC_DONE_BIT, true},
-                     });
-
-  // Set expectations explicitly to ensure that the registers
-  // are contiguous.
-  EXPECT_ABS_READ32(base_ + HMAC_DIGEST_7_REG_OFFSET, kExpectedDigest[0]);
-  EXPECT_ABS_READ32(base_ + HMAC_DIGEST_6_REG_OFFSET, kExpectedDigest[1]);
-  EXPECT_ABS_READ32(base_ + HMAC_DIGEST_5_REG_OFFSET, kExpectedDigest[2]);
-  EXPECT_ABS_READ32(base_ + HMAC_DIGEST_4_REG_OFFSET, kExpectedDigest[3]);
-  EXPECT_ABS_READ32(base_ + HMAC_DIGEST_3_REG_OFFSET, kExpectedDigest[4]);
-  EXPECT_ABS_READ32(base_ + HMAC_DIGEST_2_REG_OFFSET, kExpectedDigest[5]);
-  EXPECT_ABS_READ32(base_ + HMAC_DIGEST_1_REG_OFFSET, kExpectedDigest[6]);
-  EXPECT_ABS_READ32(base_ + HMAC_DIGEST_0_REG_OFFSET, kExpectedDigest[7]);
+  ExpectDigest(kExpectedDigest);
 
   hmac_digest_t got_digest;
   hmac_sha256_final(&got_digest);
   EXPECT_THAT(got_digest.digest, ElementsAreArray(kExpectedDigest));
+}
+
+class Sha256Test : public HmacTest {};
+
+TEST_F(Sha256Test, Sha256) {
+  constexpr std::array<uint32_t, 2> kData = {
+      0x0a0b0c0d,
+      0x01020304,
+  };
+  constexpr std::array<uint32_t, 8> kExpectedDigest = {
+      0x00000000, 0x11111111, 0x22222222, 0x33333333,
+      0x44444444, 0x55555555, 0x66666666, 0x77777777,
+  };
+  ExpectInit();
+  EXPECT_ABS_WRITE32(base_ + HMAC_MSG_FIFO_REG_OFFSET, 0x0a0b0c0d);
+  EXPECT_ABS_WRITE32(base_ + HMAC_MSG_FIFO_REG_OFFSET, 0x01020304);
+  ExpectDigest(kExpectedDigest);
+
+  hmac_digest_t act_digest;
+  hmac_sha256(&kData, sizeof(kData), &act_digest);
+  EXPECT_THAT(act_digest.digest, ElementsAreArray(kExpectedDigest));
 }
 
 }  // namespace

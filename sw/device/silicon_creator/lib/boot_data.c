@@ -68,10 +68,8 @@ static void boot_data_digest_compute(const void *boot_data,
   static_assert(offsetof(boot_data_t, digest) == 0,
                 "`digest` must be the first field of `boot_data_t`.");
 
-  hmac_sha256_init();
-  hmac_sha256_update((const char *)boot_data + kDigestRegionOffset,
-                     kDigestRegionSize);
-  hmac_sha256_final(digest);
+  hmac_sha256((const char *)boot_data + kDigestRegionOffset, kDigestRegionSize,
+              digest);
 }
 
 /**

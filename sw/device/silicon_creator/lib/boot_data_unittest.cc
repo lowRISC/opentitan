@@ -165,27 +165,25 @@ class BootDataTest : public rom_test::RomTest {
     constexpr size_t kDigestRegionSize =
         sizeof(boot_data_t) - kDigestRegionOffset;
 
-    EXPECT_CALL(hmac_, sha256_init());
-
-    // Check the post-digest data we're computing with matches what's given.
-    EXPECT_CALL(hmac_, sha256_update(_, kDigestRegionSize))
-        .WillOnce(DoAll([boot_data](const void *digest_region, size_t size) {
-          int digest_region_cmp = std::memcmp(
-              digest_region,
-              reinterpret_cast<const char *>(&boot_data) + kDigestRegionOffset,
-              kDigestRegionSize);
-          EXPECT_EQ(digest_region_cmp, 0);
-          return kErrorOk;
-        }));
-
     // If mocking as invalid, break the digest.
     hmac_digest_t digest = boot_data.digest;
     if (!valid) {
       digest.digest[0] += 1;
     }
 
-    EXPECT_CALL(hmac_, sha256_final(_))
-        .WillOnce(DoAll(SetArgPointee<0>(digest), Return(kErrorOk)));
+    // Check the post-digest data we're computing with matches what's given.
+    EXPECT_CALL(hmac_, sha256(_, kDigestRegionSize, _))
+        .WillOnce(DoAll([boot_data, kDigestRegionSize, digest](
+                            const void *digest_region, size_t size,
+                            hmac_digest_t *digest_) {
+          int digest_region_cmp = std::memcmp(
+              digest_region,
+              reinterpret_cast<const char *>(&boot_data) + kDigestRegionOffset,
+              kDigestRegionSize);
+          EXPECT_EQ(digest_region_cmp, 0);
+          EXPECT_EQ(size, kDigestRegionSize);
+          *digest_ = digest;
+        }));
   }
 
   /**
