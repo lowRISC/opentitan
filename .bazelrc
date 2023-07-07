@@ -13,27 +13,7 @@ build --strip='never'
 
 # Override default enablement of flags from @crt//common to control C compiler
 # warnings.
-#
-# TODO(#12553) Remove these explicit feature flags once the features in @crt//
-# are enabled by default.
 build --features=-pedantic_warnings
-build --features=strict_prototypes_warnings
-build --features=covered_switch_default_warnings
-build --features=extra_warnings
-build --features=clang_covered_switch_default_warnings
-build --features=implicit_conversion_warnings
-build --features=implicit_fallthrough_warnings
-build --features=invalid_pch_warnings
-build --features=switch_default_warnings
-build --features=no_missing_field_initializers_warning
-build --features=no_sign_compare_warning
-build --features=no_unused_function_warning
-build --features=no_unused_parameter_warning
-# Override default enablement of flags from @crt//embedded to control C compiler
-# warnings.
-build --features=clang_gnu_warnings
-build --features=no_gnu_zero_variadic_macro_arguments_warning
-build --features=no_gnu_statement_expression_from_macro_expansion
 
 # Enable toolchain hardening features.
 # `guards` adds `unimp` guard instructions after unconditional jumps.
