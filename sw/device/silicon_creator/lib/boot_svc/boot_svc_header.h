@@ -15,6 +15,15 @@
 extern "C" {
 #endif  // __cplusplus
 
+enum {
+  /**
+   * Common identifier shared by all boot services messages.
+   *
+   * ASCII "BSVC".
+   */
+  kBootSvcIdentifier = 0x43565342,
+};
+
 /**
  * Boot services message header.
  *
@@ -52,14 +61,21 @@ OT_ASSERT_MEMBER_OFFSET(boot_svc_header_t, type, 36);
 OT_ASSERT_MEMBER_OFFSET(boot_svc_header_t, length, 40);
 OT_ASSERT_SIZE(boot_svc_header_t, CHIP_BOOT_SVC_MSG_HEADER_SIZE);
 
-enum {
-  /**
-   * Common identifier shared by all boot services messages.
-   *
-   * ASCII "BSVC".
-   */
-  kBootSvcIdentifier = 0x43565342,
-};
+/**
+ * Initialize the header of a boot services message.
+ *
+ * This function assumes that message payload starts immediately after the
+ * header and is exactly `length - sizeof(boot_svc_header_t)` bytes for digest
+ * computation. Since this function also intializes the message digest as part
+ * of header initialization, it must be called after the message payload is
+ * initialized.
+ *
+ * @param type Message type.
+ * @param length Total length of the message in bytes.
+ * @param[out] header Output buffer for the message.
+ */
+void boot_svc_header_finalize(uint32_t type, uint32_t length,
+                              boot_svc_header_t *header);
 
 #ifdef __cplusplus
 }  // extern "C"
