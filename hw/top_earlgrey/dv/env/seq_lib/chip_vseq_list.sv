@@ -10,6 +10,7 @@
 `include "chip_jtag_mem_vseq.sv"
 // This needs to be listed prior to all sequences that derive from it.
 `include "chip_sw_base_vseq.sv"
+`include "chip_sw_uart_tx_vseq.sv"
 `include "chip_sw_lc_base_vseq.sv"
 `include "chip_sw_uart_smoke_vseq.sv"
 `include "chip_jtag_base_vseq.sv"
