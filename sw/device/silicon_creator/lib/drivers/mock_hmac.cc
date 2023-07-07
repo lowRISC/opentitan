@@ -15,5 +15,9 @@ void hmac_sha256_update(const void *data, size_t len) {
 void hmac_sha256_final(hmac_digest_t *digest) {
   MockHmac::Instance().sha256_final(digest);
 }
+
+void hmac_sha256(const void *data, size_t len, hmac_digest_t *digest) {
+  MockHmac::Instance().sha256(data, len, digest);
+}
 }  // extern "C"
 }  // namespace rom_test

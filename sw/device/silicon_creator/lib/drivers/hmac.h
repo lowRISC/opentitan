@@ -44,7 +44,7 @@ void hmac_sha256_init(void);
  * polling for FIFO status is equivalent to stalling on FIFO write.
  *
  * @param data Buffer to copy data from.
- * @param len size of the `data` buffer.
+ * @param len Size of the `data` buffer in bytes.
  */
 void hmac_sha256_update(const void *data, size_t len);
 
@@ -54,6 +54,15 @@ void hmac_sha256_update(const void *data, size_t len);
  * @param[out] digest Buffer to copy digest to.
  */
 void hmac_sha256_final(hmac_digest_t *digest);
+
+/**
+ * Convenience function for computing the SHA-256 digest of a contiguous buffer.
+ *
+ * @param data Buffer to copy data from.
+ * @param len Size of the `data` buffer in bytes.
+ * @param[out] digest Buffer to copy digest to.
+ */
+void hmac_sha256(const void *data, size_t len, hmac_digest_t *digest);
 
 #ifdef __cplusplus
 }
