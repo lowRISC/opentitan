@@ -39,3 +39,25 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_library(
+    name = "boot_svc_empty",
+    srcs = ["boot_svc_empty.c"],
+    hdrs = ["boot_svc_empty.h"],
+    deps = [
+        ":boot_svc_header",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib/base:chip",
+        "//sw/device/silicon_creator/lib/drivers:rnd",
+    ],
+)
+
+cc_test(
+    name = "boot_svc_empty_unittest",
+    srcs = ["boot_svc_empty_unittest.cc"],
+    deps = [
+        ":boot_svc_empty",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
+    ],
+)

@@ -43,6 +43,18 @@
 #define CHIP_BOOT_SVC_MSG_HEADER_SIZE 44
 
 /**
+ * Maximum payload size for a boot services message.
+ */
+#define CHIP_BOOT_SVC_MSG_PAYLOAD_SIZE_MAX 256
+
+/**
+ * Maximum size of a boot services message.
+ */
+// TODO: Has to be a literal because of OT_ASSERT_SIZE. Add an assertion that
+// checks if this is equal to header + max_payload.
+#define CHIP_BOOT_SVC_MSG_SIZE_MAX 300
+
+/**
  * First owner boot stage, e.g. BL0, manifest identifier (ASCII "OTB0").
  */
 #define CHIP_BL0_IDENTIFIER 0x3042544f
