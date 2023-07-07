@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
@@ -168,14 +169,11 @@ static rom_error_t bootstrap_page_program(uint32_t addr, size_t byte_count,
   }
 
   // Round up to next flash word and fill missing bytes with `0xff`.
-  size_t flash_word_misalignment = byte_count & kFlashWordMask;
-  if (flash_word_misalignment > 0) {
-    size_t padding_byte_count =
-        FLASH_CTRL_PARAM_BYTES_PER_WORD - flash_word_misalignment;
-    for (size_t i = 0; i < padding_byte_count; ++i) {
-      data[byte_count++] = 0xff;
-    }
-  }
+  size_t padding_byte_count =
+      compute_padding(byte_count, FLASH_CTRL_PARAM_BYTES_PER_WORD);
+  memset(&data[byte_count], 0xff, padding_byte_count);
+  byte_count += padding_byte_count;
+
   size_t rem_word_count = byte_count / sizeof(uint32_t);
 
   flash_ctrl_data_default_perms_set((flash_ctrl_perms_t){
@@ -186,16 +184,15 @@ static rom_error_t bootstrap_page_program(uint32_t addr, size_t byte_count,
   // Perform two writes if the start address is not page-aligned (256 bytes).
   // Note: Address is flash-word-aligned (8 bytes) due to the check above.
   rom_error_t err_0 = kErrorOk;
-  size_t prog_page_misalignment = addr & kFlashProgPageMask;
-  if (prog_page_misalignment > 0) {
-    size_t word_count =
-        (kFlashProgPageSize - prog_page_misalignment) / sizeof(uint32_t);
+  size_t prog_page_padding = compute_padding(addr, kFlashProgPageSize);
+  if (prog_page_padding > 0) {
+    size_t word_count = prog_page_padding / sizeof(uint32_t);
     if (word_count > rem_word_count) {
       word_count = rem_word_count;
     }
     err_0 = flash_ctrl_data_write(addr, word_count, data);
     rem_word_count -= word_count;
-    data += word_count * sizeof(uint32_t);
+    data += prog_page_padding;
     // Wrap to the beginning of the current page since PAGE_PROGRAM modifies
     // a single page only.
     addr &= ~(uint32_t)kFlashProgPageMask;
