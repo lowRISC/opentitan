@@ -78,3 +78,9 @@ void hmac_sha256_final(hmac_digest_t *digest) {
                         (i * sizeof(uint32_t)));
   }
 }
+
+void hmac_sha256(const void *data, size_t len, hmac_digest_t *digest) {
+  hmac_sha256_init();
+  hmac_sha256_update(data, len);
+  hmac_sha256_final(digest);
+}
