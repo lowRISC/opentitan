@@ -1481,7 +1481,7 @@
     }
     {
       name: chip_sw_coremark
-      uvm_test_seq: chip_sw_base_vseq
+      uvm_test_seq: chip_sw_uart_tx_vseq
       sw_images: ["//third_party/coremark/top_earlgrey:coremark_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+en_uart_logger=1",
