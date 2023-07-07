@@ -90,6 +90,6 @@ interface prim_sparse_fsm_flop_if #(
     if_proxy.path = path;
     sec_cm_pkg::sec_cm_if_proxy_q.push_back(if_proxy);
 
-    `uvm_info(msg_id, $sformatf("Interface proxy class is added for %s", path), UVM_MEDIUM)
+    `uvm_info(msg_id, $sformatf("Interface proxy class is added for %s", path), UVM_HIGH)
   end
 endinterface
