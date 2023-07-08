@@ -2,23 +2,38 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
+
 package(default_visibility = ["//visibility:public"])
 
-cc_library(
+dual_cc_library(
     name = "boot_svc_header",
-    srcs = ["boot_svc_header.c"],
-    hdrs = ["boot_svc_header.h"],
-    deps = [
-        "//sw/device/silicon_creator/lib/base:chip",
-        "//sw/device/silicon_creator/lib/drivers:hmac",
-    ],
+    srcs = dual_inputs(
+        device = ["boot_svc_header.c"],
+        host = ["mock_boot_svc_header.cc"],
+    ),
+    hdrs = dual_inputs(
+        host = ["mock_boot_svc_header.h"],
+        shared = ["boot_svc_header.h"],
+    ),
+    deps = dual_inputs(
+        host = [
+            "//sw/device/lib/base:global_mock",
+            "//sw/device/silicon_creator/testing:rom_test",
+            "@googletest//:gtest",
+        ],
+        shared = [
+            "//sw/device/silicon_creator/lib/base:chip",
+            "//sw/device/silicon_creator/lib/drivers:hmac",
+        ],
+    ),
 )
 
 cc_test(
     name = "boot_svc_header_unittest",
     srcs = ["boot_svc_header_unittest.cc"],
     deps = [
-        ":boot_svc_header",
+        dual_cc_device_library_of(":boot_svc_header"),
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
