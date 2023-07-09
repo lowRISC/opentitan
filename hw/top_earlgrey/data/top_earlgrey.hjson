@@ -28,7 +28,7 @@
 
   // This is the clock data structure of the design.
   // The hier path refers to the clock reference path (struct / port)
-  //   - The top/ext desgination follows the same scheme as inter-module
+  //   - The top/ext designation follows the same scheme as inter-module
   // The src key indicates the raw clock sources in the design
   // The groups key indicates the various clock groupings in the design
   clocks: {
@@ -42,7 +42,7 @@
     // Clock Source attributes
     // name: Name of group.
     // aon:  Whether the clock is free running all the time.
-    //       If it is, the clock is not hanlded by clkmgr.
+    //       If it is, the clock is not handled by clkmgr.
     // freq: Absolute frequency of clk in Hz
     // ref: indicates the clock is used as a reference for measurement.
     srcs: [
@@ -55,7 +55,7 @@
     // Derived clock source attributes
     // name: Name of group.
     // aon:  Whether the clock is free running all the time.
-    //       If it is, the clock is not hanlded by clkmgr.
+    //       If it is, the clock is not handled by clkmgr.
     // freq: Absolute frequency of clk in Hz
     // src:  From which clock source is the clock derived
     // div:  Ratio between derived clock and source clock
