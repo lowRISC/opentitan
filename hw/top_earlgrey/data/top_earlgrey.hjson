@@ -10,7 +10,7 @@
   // Seed for compile-time random constants                  //
   // NOTE: REPLACE THIS WITH A NEW VALUE BEFORE THE TAPEOUT  //
   /////////////////////////////////////////////////////////////
-  rnd_cnst_seed: 4881560218908238235
+  rnd_cnst_seed: 4881560218908238235,
 
   // 32-bit datawidth
   datawidth: "32",
@@ -46,9 +46,9 @@
     // freq: Absolute frequency of clk in Hz
     // ref: indicates the clock is used as a reference for measurement.
     srcs: [
-      { name: "main", aon: "no",  freq: "100000000" }
-      { name: "io",   aon: "no",  freq: "96000000" }
-      { name: "usb",  aon: "no",  freq: "48000000" }
+      { name: "main", aon: "no",  freq: "100000000" },
+      { name: "io",   aon: "no",  freq: "96000000" },
+      { name: "usb",  aon: "no",  freq: "48000000" },
       { name: "aon",  aon: "yes", freq: "200000", ref: true}
     ],
 
@@ -60,7 +60,7 @@
     // src:  From which clock source is the clock derived
     // div:  Ratio between derived clock and source clock
     derived_srcs: [
-      { name: "io_div2", aon: "no", div: 2, src: "io", freq: "48000000" }
+      { name: "io_div2", aon: "no", div: 2, src: "io", freq: "48000000" },
       { name: "io_div4", aon: "no", div: 4, src: "io", freq: "24000000" }
     ],
 
@@ -88,12 +88,12 @@
 
     groups: [
       // the powerup group is used exclusively by clk/pwr/rstmgr/pinmux
-      { name: "ast",     src:"ext", sw_cg: "no"                   }
-      { name: "powerup", src:"top", sw_cg: "no"                   }
-      { name: "trans",   src:"top", sw_cg: "hint", unique: "yes", }
-      { name: "infra",   src:"top", sw_cg: "no",                  }
-      { name: "secure",  src:"top", sw_cg: "no"                   }
-      { name: "peri",    src:"top", sw_cg: "yes",  unique: "no"   }
+      { name: "ast",     src:"ext", sw_cg: "no"                   },
+      { name: "powerup", src:"top", sw_cg: "no"                   },
+      { name: "trans",   src:"top", sw_cg: "hint", unique: "yes", },
+      { name: "infra",   src:"top", sw_cg: "no",                  },
+      { name: "secure",  src:"top", sw_cg: "no"                   },
+      { name: "peri",    src:"top", sw_cg: "yes",  unique: "no"   },
       { name: "timers",  src:"top", sw_cg: "no"                   }
     ],
   },
@@ -136,32 +136,32 @@
     // likely external or generated from a voltage comparator
     //
     nodes: [
-      { name: "por_aon",        gen: false, type: "top",                    clk: "aon"     }
-      { name: "lc_src",         gen: false, type: "int",                    clk: "io_div4" }
-      { name: "sys_src",        gen: false, type: "int",                    clk: "io_div4" }
-      { name: "por",            gen: true,  type: "top", parent: "por_aon", clk: "main"    }
-      { name: "por_io",         gen: true,  type: "top", parent: "por_aon", clk: "io"      }
-      { name: "por_io_div2",    gen: true , type: "top", parent: "por_aon", clk: "io_div2" }
-      { name: "por_io_div4",    gen: true , type: "top", parent: "por_aon", clk: "io_div4" }
-      { name: "por_usb",        gen: true , type: "top", parent: "por_aon", clk: "usb" }
-      { name: "lc",             gen: true,  type: "top", parent: "lc_src",  clk: "main"    }
-      { name: "lc_aon",         gen: true,  type: "top", parent: "lc_src",  clk: "aon"     }
-      { name: "lc_io",          gen: true,  type: "top", parent: "lc_src",  clk: "io"      }
-      { name: "lc_io_div2",     gen: true,  type: "top", parent: "lc_src",  clk: "io_div2" }
-      { name: "lc_io_div4",     gen: true,  type: "top", parent: "lc_src",  clk: "io_div4" }
-      { name: "lc_usb",         gen: true,  type: "top", parent: "lc_src",  clk: "usb"     }
-      { name: "sys",            gen: true,  type: "top", parent: "sys_src", clk: "main"    }
-      { name: "sys_io_div4",    gen: true,  type: "top", parent: "sys_src", clk: "io_div4" }
-      { name: "spi_device",     gen: true,  type: "top", parent: "lc_src", clk: "io_div4", sw: true }
-      { name: "spi_host0",      gen: true,  type: "top", parent: "lc_src", clk: "io",      sw: true }
-      { name: "spi_host1",      gen: true,  type: "top", parent: "lc_src", clk: "io_div2", sw: true }
-      { name: "usb",            gen: true,  type: "top", parent: "lc_src", clk: "usb",     sw: true }
-      { name: "usb_aon",        gen: true,  type: "top", parent: "lc_src", clk: "aon",     sw: true }
+      { name: "por_aon",        gen: false, type: "top",                    clk: "aon"     },
+      { name: "lc_src",         gen: false, type: "int",                    clk: "io_div4" },
+      { name: "sys_src",        gen: false, type: "int",                    clk: "io_div4" },
+      { name: "por",            gen: true,  type: "top", parent: "por_aon", clk: "main"    },
+      { name: "por_io",         gen: true,  type: "top", parent: "por_aon", clk: "io"      },
+      { name: "por_io_div2",    gen: true , type: "top", parent: "por_aon", clk: "io_div2" },
+      { name: "por_io_div4",    gen: true , type: "top", parent: "por_aon", clk: "io_div4" },
+      { name: "por_usb",        gen: true , type: "top", parent: "por_aon", clk: "usb" },
+      { name: "lc",             gen: true,  type: "top", parent: "lc_src",  clk: "main"    },
+      { name: "lc_aon",         gen: true,  type: "top", parent: "lc_src",  clk: "aon"     },
+      { name: "lc_io",          gen: true,  type: "top", parent: "lc_src",  clk: "io"      },
+      { name: "lc_io_div2",     gen: true,  type: "top", parent: "lc_src",  clk: "io_div2" },
+      { name: "lc_io_div4",     gen: true,  type: "top", parent: "lc_src",  clk: "io_div4" },
+      { name: "lc_usb",         gen: true,  type: "top", parent: "lc_src",  clk: "usb"     },
+      { name: "sys",            gen: true,  type: "top", parent: "sys_src", clk: "main"    },
+      { name: "sys_io_div4",    gen: true,  type: "top", parent: "sys_src", clk: "io_div4" },
+      { name: "spi_device",     gen: true,  type: "top", parent: "lc_src", clk: "io_div4", sw: true },
+      { name: "spi_host0",      gen: true,  type: "top", parent: "lc_src", clk: "io",      sw: true },
+      { name: "spi_host1",      gen: true,  type: "top", parent: "lc_src", clk: "io_div2", sw: true },
+      { name: "usb",            gen: true,  type: "top", parent: "lc_src", clk: "usb",     sw: true },
+      { name: "usb_aon",        gen: true,  type: "top", parent: "lc_src", clk: "aon",     sw: true },
       { name: "i2c0",           gen: true,  type: "top", parent: "lc_src", clk: "io_div4", sw: true },
       { name: "i2c1",           gen: true,  type: "top", parent: "lc_src", clk: "io_div4", sw: true },
       { name: "i2c2",           gen: true,  type: "top", parent: "lc_src", clk: "io_div4", sw: true },
     ]
-  }
+  },
 
   // Number of cores: used in rv_plic and timer
   num_cores: "1",
@@ -247,7 +247,7 @@
       param_decl: {
         GpioAsyncOn: "1"
       }
-    }
+    },
     { name: "spi_device",
       type: "spi_device",
       clock_srcs: {clk_i: "io_div4", scan_clk_i: "io_div2"},
@@ -381,7 +381,7 @@
           name: "por_aon",
           domain: "Aon",
         },
-      }
+      },
       domain: ["Aon", "0"],
       base_addr: "0x40400000",
       attr: "templated",
@@ -407,7 +407,7 @@
           name: "por_io_div4",
           domain: "Aon"
         },
-      }
+      },
       domain: ["Aon", "0"],
       base_addr: "0x40410000",
       attr: "templated",
@@ -435,7 +435,7 @@
       },
       clock_group: "powerup",
       reset_connections: {rst_ni: "lc_io_div4",
-                          rst_aon_ni: "lc_aon"
+                          rst_aon_ni: "lc_aon",
                           rst_io_ni: "lc_io",
                           rst_io_div2_ni: "lc_io_div2",
                           rst_io_div4_ni: "lc_io_div4",
@@ -516,15 +516,15 @@
         clk_ast_alert_i: {
           clock: "io_div4",
           group: "secure"
-        }
+        },
         clk_ast_es_i: {
           clock: "main",
           group: "secure"
-        }
+        },
         clk_ast_rng_i: {
           clock: "main",
           group: "secure"
-        }
+        },
         clk_ast_usb_i: {
       	  clock: "usb",
       	  group: "peri"
@@ -535,7 +535,7 @@
         rst_ast_tlul_ni: {
           name: "lc_io_div4",
           domain: "0",
-        }
+        },
         rst_ast_adc_ni: {
           name: "lc_aon",
           domain: "Aon"
@@ -574,11 +574,11 @@
       type: "sram_ctrl",
       clock_srcs: {clk_i: "io_div4", clk_otp_i: "io_div4"},
       clock_group: "infra",
-      reset_connections: {rst_ni: "lc_io_div4", rst_otp_ni: "lc_io_div4"}
+      reset_connections: {rst_ni: "lc_io_div4", rst_otp_ni: "lc_io_div4"},
       domain: ["Aon"],
       param_decl: {
         InstrExec: "0",
-      }
+      },
       base_addrs: {regs: "0x40500000", ram: "0x40600000"},
       // Memory regions must be associated with a dedicated
       // TL-UL device interface.
@@ -598,10 +598,10 @@
       clock_srcs: {clk_i: "main", clk_otp_i: "io_div4"},
       clock_group: "infra",
       reset_connections: {rst_ni: "lc", rst_otp_ni: "lc_io_div4"},
-      base_addrs: {core: "0x41000000", prim: "0x41008000", mem: "0x20000000"}
+      base_addrs: {core: "0x41000000", prim: "0x41008000", mem: "0x20000000"},
       param_decl: {
         ProgFifoDepth: "4",
-      }
+      },
       memory: {
         mem: {
           label:      "eflash",
@@ -616,7 +616,7 @@
             program_resolution: 8, // maximum number of flash words allowed to program at one time
           }
         }
-      }
+      },
       attr: "templated",
     },
     { name: "rv_dm",
@@ -626,7 +626,7 @@
       reset_connections: {rst_ni: "sys"},
       param_decl: {
         IdcodeValue: "jtag_id_pkg::RV_DM_JTAG_IDCODE",
-      }
+      },
       // Note that this module also contains a bus host.
       base_addrs: {mem: "0x00010000", regs: "0x41200000"}
     },
@@ -646,7 +646,7 @@
       param_decl: {
         SecMasking: "1",
         SecSBoxImpl: "aes_pkg::SBoxImplDom"
-      }
+      },
       base_addr: "0x41100000",
     },
     { name: "hmac",
@@ -660,11 +660,11 @@
       type: "kmac",
       param_decl: {
         EnMasking: "1",
-      }
-      clock_srcs: {clk_i: "main", clk_edn_i: "main"}
-      clock_group: "trans"
-      reset_connections: {rst_ni: "lc", rst_edn_ni: "lc"}
-      base_addr: "0x41120000"
+      },
+      clock_srcs: {clk_i: "main", clk_edn_i: "main"},
+      clock_group: "trans",
+      reset_connections: {rst_ni: "lc", rst_edn_ni: "lc"},
+      base_addr: "0x41120000",
     },
     { name: "otbn",
       type: "otbn",
@@ -728,7 +728,7 @@
       reset_connections: {rst_ni: "lc", rst_otp_ni: "lc_io_div4"},
       param_decl: {
         InstrExec: "1",
-      }
+      },
       base_addrs: {regs: "0x411C0000", ram: "0x10000000"},
       // Memory regions must be associated with a dedicated
       // TL-UL device interface.
@@ -748,7 +748,7 @@
       clock_srcs: {clk_i: "main"},
       clock_group: "infra",
       reset_connections: {rst_ni: "lc"},
-      base_addrs: {rom: "0x00008000", regs: "0x411e0000"}
+      base_addrs: {rom: "0x00008000", regs: "0x411e0000"},
       memory: {
         rom: {
           label:              "rom",
@@ -756,7 +756,7 @@
           data_intg_passthru: "true",
           exec:               "True",
           byte_write:         "False",
-          size:               "0x8000"
+          size:               "0x8000",
           data_intg_passthru: "True"
         }
       },
@@ -794,7 +794,7 @@
         clk_esc_i: {
           clock: "io_div4",
           group: "secure",
-        }
+        },
         clk_otp_i: {
           clock: "io_div4",
           group: "secure",
@@ -807,7 +807,7 @@
                           rst_otp_ni: "lc_io_div4"},
       base_addr: "0x411F0000",
     },
-  ]
+  ],
 
   // All memories wrapped up in relevant controllers
   memory: [],
@@ -871,7 +871,7 @@
           // The activity direction for a port inter-signal is "opposite" of
           // what the external module actually needs.
           act:     "rcv"
-        }
+        },
 
         { struct: "ast_obs_ctrl",
           type: "uni",
@@ -883,7 +883,7 @@
         },
       ]
     },
-  ]
+  ],
 
   // Inter-module Connection.
   // format:
@@ -894,7 +894,7 @@
   inter_module: {
     'connect': {
       'ast.obs_ctrl'            : ['flash_ctrl.obs_ctrl',
-                                   'otp_ctrl.obs_ctrl']
+                                   'otp_ctrl.obs_ctrl'],
       'ast.ram_1p_cfg'          : ['otbn.ram_cfg',
                                    'sram_ctrl_main.cfg',
                                    'sram_ctrl_ret_aon.cfg',
@@ -905,13 +905,13 @@
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
       'alert_handler.esc_rx'    : ['rv_core_ibex.esc_rx',
                                    'lc_ctrl.esc_scrap_state0_rx',
-                                   'lc_ctrl.esc_scrap_state1_rx'
+                                   'lc_ctrl.esc_scrap_state1_rx',
                                    'pwrmgr_aon.esc_rst_rx'],
       'alert_handler.esc_tx'    : ['rv_core_ibex.esc_tx',
                                    'lc_ctrl.esc_scrap_state0_tx',
                                    'lc_ctrl.esc_scrap_state1_tx',
                                    'pwrmgr_aon.esc_rst_tx'],
-      'aon_timer_aon.nmi_wdog_timer_bark' : ['rv_core_ibex.nmi_wdog']
+      'aon_timer_aon.nmi_wdog_timer_bark' : ['rv_core_ibex.nmi_wdog'],
       'csrng.csrng_cmd'         : ['edn0.csrng_cmd', 'edn1.csrng_cmd'],
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
       'csrng.cs_aes_halt'       : ['entropy_src.cs_aes_halt'],
@@ -919,8 +919,8 @@
       'flash_ctrl.otp'          : ['otp_ctrl.flash_otp_key'],
       'flash_ctrl.rma_seed'     : ['lc_ctrl.lc_flash_rma_seed'],
       'otp_ctrl.sram_otp_key'   : ['sram_ctrl_main.sram_otp_key',
-                                   'sram_ctrl_ret_aon.sram_otp_key'
-                                   'rv_core_ibex.icache_otp_key']
+                                   'sram_ctrl_ret_aon.sram_otp_key',
+                                   'rv_core_ibex.icache_otp_key'],
       'pwrmgr_aon.pwr_flash'    : ['flash_ctrl.pwrmgr'],
       'pwrmgr_aon.pwr_rst'      : ['rstmgr_aon.pwr'],
       'pwrmgr_aon.pwr_clk'      : ['clkmgr_aon.pwr'],
@@ -969,7 +969,7 @@
       'kmac.app'                : ['keymgr.kmac_data',    // Keymgr needs to be at index 0
                                    'lc_ctrl.kmac_data',   // LC needs to be at index 1
                                    'rom_ctrl.kmac_data'], // ROM needs to be at index 2
-      'kmac.en_masking'         : ['keymgr.kmac_en_masking']
+      'kmac.en_masking'         : ['keymgr.kmac_en_masking'],
 
       // The idle connection is automatically connected through topgen.
       // The user does not need to explicitly declare anything other than
@@ -1047,14 +1047,14 @@
       'rv_core_ibex.pwrmgr'     : ['pwrmgr_aon.pwr_cpu'],
 
       // spi passthrough connection
-      'spi_device.passthrough'     : ['spi_host0.passthrough']
+      'spi_device.passthrough'     : ['spi_host0.passthrough'],
 
       // Debug module reset request to power manager
       'rv_dm.ndmreset_req' : ['pwrmgr_aon.ndmreset_req'],
 
       // Reset manager software reset request to pwrmgr
       'rstmgr_aon.sw_rst_req' : ['pwrmgr_aon.sw_rst_req'],
-    }
+    },
 
     // top is to connect to top net/struct.
     // It defines the signal in the top and connect from the module,
@@ -1098,7 +1098,7 @@
 
     // ext is to create port in the top.
     'external': {
-        'adc_ctrl_aon.adc'                : 'adc'
+        'adc_ctrl_aon.adc'                : 'adc',
         'ast.edn'                         : '',
         'ast.lc_dft_en'                   : '',
         'ast.obs_ctrl'                    : 'obs_ctrl',
@@ -1123,7 +1123,7 @@
         'entropy_src.entropy_src_rng'     : 'es_rng',
         'entropy_src.rng_fips'            : 'es_rng_fips',
         'peri.tl_ast'                     : 'ast_tl',
-        'pinmux_aon.dft_strap_test'       : 'dft_strap_test'
+        'pinmux_aon.dft_strap_test'       : 'dft_strap_test',
         'pinmux_aon.dft_hold_tap_sel'     : 'dft_hold_tap_sel',
         'pinmux_aon.usb_dppullup_en'      : 'usb_dp_pullup_en',
         'pinmux_aon.usb_dnpullup_en'      : 'usb_dn_pullup_en',
@@ -1132,8 +1132,8 @@
         'otp_ctrl.otp_ast_pwr_seq_h'      : '',
         'otp_ctrl.otp_ext_voltage_h'      : 'otp_ext_voltage_h',
         'otp_ctrl.otp_obs'                : 'otp_obs',
-        'rstmgr_aon.por_n'                : 'por_n'
-        'rv_core_ibex.fpga_info'          : 'fpga_info'
+        'rstmgr_aon.por_n'                : 'por_n',
+        'rv_core_ibex.fpga_info'          : 'fpga_info',
         'sensor_ctrl_aon.ast_alert'       : 'sensor_ctrl_ast_alert',
         'sensor_ctrl_aon.ast_status'      : 'sensor_ctrl_ast_status',
         'sensor_ctrl_aon.ast2pinmux'      : 'ast2pinmux',
@@ -1281,7 +1281,7 @@
       { name: 'IOR12'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOR13'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
     ]
-  }
+  },
 
   pinmux: {
     // Signal to pinmux/pad mapping.
@@ -1372,9 +1372,9 @@
       { instance: 'usbdev',          port: 'sense',          connection: 'muxed' , pad: ''             , desc: ''},
     ],
 
-    num_wkup_detect: 8
+    num_wkup_detect: 8,
     wkup_cnt_width:  8
-  }
+  },
 
   // Implementation targets.
   // This defines the configuration of the target-specific chip-levels  to
@@ -1456,28 +1456,28 @@
         remove_ports: [],
         remove_pads: [
           'CC1', 'CC2',
-          'FLASH_TEST_VOLT', 'OTP_EXT_VOLT'
+          'FLASH_TEST_VOLT', 'OTP_EXT_VOLT',
           'FLASH_TEST_MODE0', 'FLASH_TEST_MODE1',
           'USB_P', 'USB_N'
         ],
 
         add_pads: [
           // Additional infrastructure pads
-          { name: 'IO_CLK',           type: 'InputStd', bank: 'VCC', connection: 'manual', desc: 'Extra clock input for FPGA target'}
-          { name: 'POR_BUTTON_N',     type: 'InputStd', bank: 'VCC', connection: 'manual', desc: 'Power-on reset button input'}
+          { name: 'IO_CLK',           type: 'InputStd', bank: 'VCC', connection: 'manual', desc: 'Extra clock input for FPGA target'},
+          { name: 'POR_BUTTON_N',     type: 'InputStd', bank: 'VCC', connection: 'manual', desc: 'Power-on reset button input'},
           // Custom USB pads
-          { name: 'IO_USB_CONNECT',  type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_USB_DP_TX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_USB_DN_TX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_USB_D_RX',     type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_USB_DP_RX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_USB_DN_RX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_USB_OE_N',     type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_USB_SPEED',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_USB_SUSPEND',  type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
+          { name: 'IO_USB_CONNECT',  type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'},
+          { name: 'IO_USB_DP_TX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'},
+          { name: 'IO_USB_DN_TX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'},
+          { name: 'IO_USB_D_RX',     type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'},
+          { name: 'IO_USB_DP_RX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'},
+          { name: 'IO_USB_DN_RX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'},
+          { name: 'IO_USB_OE_N',     type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'},
+          { name: 'IO_USB_SPEED',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'},
+          { name: 'IO_USB_SUSPEND',  type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'},
           // ChipWhisperer IO
-          { name: 'IO_CLKOUT',        type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual clock output for SCA setup'}
-          { name: 'IO_TRIGGER',       type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual trigger output for SCA setup'}
+          { name: 'IO_CLKOUT',        type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual clock output for SCA setup'},
+          { name: 'IO_TRIGGER',       type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual trigger output for SCA setup'},
         ],
       },
 
