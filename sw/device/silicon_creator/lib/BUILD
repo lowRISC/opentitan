@@ -408,3 +408,11 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:spi_device",
     ],
 )
+
+filegroup(
+    name = "bootstrap_srcs",
+    srcs = [
+        "bootstrap.c",
+        "bootstrap.h",
+    ],
+)

@@ -276,6 +276,7 @@ filegroup(
     srcs = [
         "bootstrap.c",
         "bootstrap.h",
+        "//sw/device/silicon_creator/lib:bootstrap_srcs",
     ],
 )
 
