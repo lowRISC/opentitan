@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/rom/bootstrap.h"
-
 #include <stdalign.h>
 
 #include "sw/device/lib/base/abs_mmio.h"
@@ -15,6 +13,7 @@
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/spi_device.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/rom/bootstrap.h"
 
 #include "flash_ctrl_regs.h"
 #include "gpio_regs.h"

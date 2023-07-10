@@ -9,6 +9,8 @@ load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library
 
 package(default_visibility = ["//visibility:public"])
 
+exports_files(["bootstrap.c"])
+
 dual_cc_library(
     name = "boot_data",
     srcs = dual_inputs(
