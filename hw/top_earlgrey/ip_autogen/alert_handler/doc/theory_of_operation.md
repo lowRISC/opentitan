@@ -22,14 +22,14 @@ The following table lists the main parameters used throughout the alert handler 
 Note that the alert handler is generated based on the system configuration, and hence these parameters are placed into a package as "localparams".
 The parameterization rules are explained in more detail in the architectural description.
 
-Localparam     | Default (Max)         | Top Earlgrey | Description
----------------|-----------------------|--------------|---------------
-`NAlerts`      | 8 (248)               | see RTL      | Number of alert instances. Maximum number bounded by LFSR implementation that generates ping timing.
-`NLpg`         | 1                     | see RTL      | Number of unique low-power groups as determined by topgen.
-`LpgMap`       | {0}                   | see RTL      | Array mapping each alert to a unique low-power group as determined by topgen.
-`EscCntWidth`  | 32 (32)               | 32           | Width of the escalation counters in bit.
-`AccuCntWidth` | 16 (32)               | 16           | Width of the alert accumulation counters in bit.
-`AsyncOn`      | '0 (2^`NAlerts`-1)    | see RTL      | This is a bit array specifying whether a certain alert sender / receiver pair goes across an asynchronous boundary or not.
+Localparam     | Default (Max)         | This Core      | Description
+---------------|-----------------------|----------------|---------------
+`NAlerts`      | 8 (248)               | 65    | Number of alert instances. Maximum number bounded by LFSR implementation that generates ping timing.
+`NLpg`         | 1                     | 24       | Number of unique low-power groups as determined by topgen.
+`LpgMap`       | {0}                   | see RTL        | Array mapping each alert to a unique low-power group as determined by topgen.
+`EscCntWidth`  | 32 (32)               | 32             | Width of the escalation counters in bit.
+`AccuCntWidth` | 16 (32)               | 16 | Width of the alert accumulation counters in bit.
+`AsyncOn`      | '0 (2^`NAlerts`-1)    | see RTL        | This is a bit array specifying whether a certain alert sender / receiver pair goes across an asynchronous boundary or not.
 
 The next table lists free parameters in the `prim_alert_sender` and
 `prim_alert receiver` submodules.
