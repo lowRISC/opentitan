@@ -186,10 +186,8 @@ void handle_write_status(uint32_t status, uint8_t offset, uint8_t opcode) {
   CHECK_STATUS_OK(spi_flash_testutils_issue_write_enable(&spi_host0));
 
   dif_spi_host_segment_t transaction[] = {
-      {
-          .type = kDifSpiHostSegmentTypeOpcode,
-          .opcode = opcode,
-      },
+      {.type = kDifSpiHostSegmentTypeOpcode,
+       .opcode = {.opcode = opcode, .width = kDifSpiHostWidthStandard}},
       {
           .type = kDifSpiHostSegmentTypeTx,
           .tx =

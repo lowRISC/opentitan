@@ -7,6 +7,7 @@
 
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_spi_host.h"
+#include "sw/device/lib/testing/spi_flash_testutils.h"
 
 /**
  * Send the sw_reset command.
@@ -105,11 +106,13 @@ status_t test_4bytes_address(dif_spi_host_t *spi);
  *
  * @param spi A spi host handler.
  * @param opcode The opcode used by the part-number for quad page program.
- * @param addr_width The width of the transaction addressing section.
+ * @param page_program_mode The width of the transaction sections (opcode,
+ * address and data).
  * @return status_t containing either OK or an error.
  */
-status_t test_page_program_quad(dif_spi_host_t *spi, uint8_t opcode,
-                                uint8_t address_width);
+status_t test_page_program_quad(
+    dif_spi_host_t *spi, uint8_t opcode,
+    spi_flash_testutils_transaction_width_mode_t page_program_mode);
 
 /**
  * Erase a 32kB block and read it back to check if was erased.

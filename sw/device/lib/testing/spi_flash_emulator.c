@@ -167,8 +167,7 @@ status_t spi_flash_emulator(dif_spi_host_t *spih,
         TRY(spi_flash_testutils_program_op(
             spih, kSpiDeviceFlashOpPageProgram4b, info.data, info.data_len,
             info.address,
-            /*addr_is_4b=*/true, kDifSpiHostWidthStandard,
-            kDifSpiHostWidthStandard));
+            /*addr_is_4b=*/true, kTransactionWidthMode111));
         break;
       case kSpiDeviceFlashOpReset:
         running = false;

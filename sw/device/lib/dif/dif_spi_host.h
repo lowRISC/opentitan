@@ -116,7 +116,10 @@ typedef struct dif_spi_host_segment {
   /** The segment type for this segment. */
   dif_spi_host_segment_type_t type;
   union {
-    uint8_t opcode;
+    struct {
+      dif_spi_host_width_t width;
+      uint8_t opcode;
+    } opcode;
     struct {
       dif_spi_host_width_t width;
       dif_spi_host_addr_mode_t mode;

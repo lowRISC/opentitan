@@ -45,8 +45,6 @@ bool test_main(void) {
     kDeviceId = 0x2180,
     kManufactureId = 0xef,
     kPageQuadProgramOpcode = 0x32,
-    // The Winbond flash `4PP` opcode operates in 1-1-4 mode.
-    kPageQuadProgramAddrWidth = 1,
   };
 
   status_t result = OK_STATUS();
@@ -62,8 +60,9 @@ bool test_main(void) {
   EXECUTE_TEST(result, test_fast_read, &spi_host);
   EXECUTE_TEST(result, test_dual_read, &spi_host);
   EXECUTE_TEST(result, test_quad_read, &spi_host);
+  // The Winbond flash `4PP` opcode operates in 1-1-4 mode.
   EXECUTE_TEST(result, test_page_program_quad, &spi_host,
-               kPageQuadProgramOpcode, kPageQuadProgramAddrWidth);
+               kPageQuadProgramOpcode, kTransactionWidthMode114);
   EXECUTE_TEST(result, test_erase_32k_block, &spi_host);
   EXECUTE_TEST(result, test_erase_64k_block, &spi_host);
 

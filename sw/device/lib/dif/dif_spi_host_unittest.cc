@@ -287,7 +287,8 @@ class TransactionTest : public SpiHostTest {
 TEST_F(TransactionTest, IssueOpcode) {
   dif_spi_host_segment segment;
   segment.type = kDifSpiHostSegmentTypeOpcode;
-  segment.opcode = 0x5a;
+  segment.opcode.opcode = 0x5a;
+  segment.opcode.width = kDifSpiHostWidthStandard;
 
   EXPECT_WRITE32(SPI_HOST_CSID_REG_OFFSET, 0);
   EXPECT_READY(true);
