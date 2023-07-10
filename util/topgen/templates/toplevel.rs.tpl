@@ -27,8 +27,8 @@ use core::convert::TryFrom;
     hex_base_addr = "0x{:X}".format(region.base_addr)
     hex_size_bytes = "0x{:X}".format(region.size_bytes)
 
-    base_addr_name = region.base_addr_name().as_c_define()
-    size_bytes_name = region.size_bytes_name().as_c_define()
+    base_addr_name = region.base_addr_name(short=True).as_rust_const()
+    size_bytes_name = region.size_bytes_name(short=True).as_rust_const()
 
 %>\
 /// Peripheral base address for ${if_desc} in top ${top["name"]}.
@@ -51,8 +51,8 @@ pub const ${size_bytes_name}: usize = ${hex_size_bytes};
     hex_base_addr = "0x{:X}".format(region.base_addr)
     hex_size_bytes = "0x{:X}".format(region.size_bytes)
 
-    base_addr_name = region.base_addr_name().as_c_define()
-    size_bytes_name = region.size_bytes_name().as_c_define()
+    base_addr_name = region.base_addr_name(short=True).as_rust_const()
+    size_bytes_name = region.size_bytes_name(short=True).as_rust_const()
 
 %>\
 /// Memory base address for ${name} in top ${top["name"]}.
@@ -94,14 +94,14 @@ ${helper.alert_alerts.render(gen_cast=True)}
 
 /// PLIC Interrupt Source to Peripheral Map
 ///
-/// This array is a mapping from `${helper.plic_interrupts.name.as_rust_type()}` to
-/// `${helper.plic_sources.name.as_rust_type()}`.
+/// This array is a mapping from `${helper.plic_interrupts.short_name.as_rust_type()}` to
+/// `${helper.plic_sources.short_name.as_rust_type()}`.
 ${helper.plic_mapping.render_definition()}
 
 /// Alert Handler Alert Source to Peripheral Map
 ///
-/// This array is a mapping from `${helper.alert_alerts.name.as_rust_type()}` to
-/// `${helper.alert_sources.name.as_rust_type()}`.
+/// This array is a mapping from `${helper.alert_alerts.short_name.as_rust_type()}` to
+/// `${helper.alert_sources.short_name.as_rust_type()}`.
 ${helper.alert_mapping.render_definition()}
 
 // PERIPH_INSEL ranges from 0 to NUM_MIO_PADS + 2 -1}
@@ -157,5 +157,5 @@ ${helper.clkmgr_hintable_clocks.render()}
 /// MMIO region excludes any memory that is separate from the module
 /// configuration space, i.e. ROM, main SRAM, and flash are excluded but
 /// retention SRAM, spi_device memory, or usbdev memory are included.
-pub const ${helper.mmio.base_addr_name().as_rust_const()}: usize = ${"0x{:X}".format(helper.mmio.base_addr)};
-pub const ${helper.mmio.size_bytes_name().as_rust_const()}: usize = ${"0x{:X}".format(helper.mmio.size_bytes)};
+pub const ${helper.mmio.base_addr_name(short=True).as_rust_const()}: usize = ${"0x{:X}".format(helper.mmio.base_addr)};
+pub const ${helper.mmio.size_bytes_name(short=True).as_rust_const()}: usize = ${"0x{:X}".format(helper.mmio.size_bytes)};

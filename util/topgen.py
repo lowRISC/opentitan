@@ -764,8 +764,7 @@ def generete_rust(topname, completecfg, name_to_block, out_path, version_stamp,
     rs_helper = TopGenRust(completecfg, name_to_block, version_stamp)
 
     rust_files = [("toplevel_mod.rs.tpl", "mod.rs"),
-                  ("toplevel.rs.tpl", f"top_{topname}.rs"),
-                  ("toplevel_memory.rs.tpl", f"top_{topname}_memory.rs")]
+                  ("toplevel.rs.tpl", f"top_{topname}.rs")]
 
     # Creating Rust output directory
     rsformat_dir = out_path / "sw/autogen/chip/"

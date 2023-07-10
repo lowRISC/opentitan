@@ -3,4 +3,3 @@
 // SPDX-License-Identifier: Apache-2.0
 
 pub mod top_earlgrey;
-pub mod top_earlgrey_memory;

@@ -16,7 +16,7 @@ use opentitanlib::io::jtag::{JtagTap, RiscvCsr, RiscvGpr, RiscvReg};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
 
-use top_earlgrey::top_earlgrey_memory;
+use top_earlgrey::top_earlgrey;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -63,7 +63,7 @@ fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     jtag.connect(JtagTap::RiscvTap)?;
     jtag.halt()?;
     // Definitions for hardware registers
-    let lc_ctrl_base_addr = top_earlgrey_memory::TOP_EARLGREY_LC_CTRL_BASE_ADDR as u32;
+    let lc_ctrl_base_addr = top_earlgrey::LC_CTRL_BASE_ADDR as u32;
     let lc_ctrl_transition_if_addr = lc_ctrl_base_addr + LcCtrlReg::ClaimTransitionIf.byte_offset();
     let lc_ctrl_state_addr = lc_ctrl_base_addr + LcCtrlReg::LcState.byte_offset();
     let lc_ctrl_transition_regwen_addr =
@@ -122,7 +122,7 @@ fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     // Test bulk read/writes by reading the content of the RAM, then overwrite it with
     // known values and try to read-back, we restore the content afterwards
-    let test_ram_addr = top_earlgrey_memory::TOP_EARLGREY_RAM_RET_AON_BASE_ADDR as u32;
+    let test_ram_addr = top_earlgrey::RAM_RET_AON_BASE_ADDR as u32;
     const SIZE: usize = 20;
     let mut ram = [0u8; SIZE];
     assert_eq!(jtag.read_memory(test_ram_addr, &mut ram)?, SIZE);

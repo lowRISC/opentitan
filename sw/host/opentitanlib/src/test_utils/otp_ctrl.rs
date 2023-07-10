@@ -14,7 +14,7 @@ use std::time::Duration;
 use anyhow::{bail, Context};
 use thiserror::Error;
 
-use top_earlgrey::top_earlgrey_memory;
+use top_earlgrey::top_earlgrey;
 
 use crate::dif::otp_ctrl::{
     DaiParam, DirectAccessCmd, Granularity, OtpCtrlReg, OtpCtrlStatus, OtpParamMmap, Partition,
@@ -120,8 +120,7 @@ impl OtpPartition {
 struct OtpDai;
 impl OtpDai {
     /// Base address of the OTP controller in memory.
-    const OTP_CTRL_BASE_ADDR: u32 =
-        top_earlgrey_memory::TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR as u32;
+    const OTP_CTRL_BASE_ADDR: u32 = top_earlgrey::OTP_CTRL_CORE_BASE_ADDR as u32;
 
     // Polling timeout and delay while waiting on statuses.
     const POLL_TIMEOUT: Duration = Duration::from_millis(500);

@@ -15,7 +15,7 @@ use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::load_sram_program::{ExecutionMode, SramProgramParams};
 use opentitanlib::uart::console::UartConsole;
 
-// use top_earlgrey::top_earlgrey_memory;
+// use top_earlgrey::top_earlgrey;
 
 #[derive(Debug, Parser)]
 struct Opts {

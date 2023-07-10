@@ -22,7 +22,7 @@ use crate::io::jtag::{Jtag, RiscvCsr, RiscvGpr, RiscvReg};
 use crate::util::parse_int::ParseInt;
 use crate::util::vmem::Vmem;
 
-use top_earlgrey::top_earlgrey_memory;
+use top_earlgrey::top_earlgrey;
 
 /// Command-line parameters.
 #[derive(Debug, Args, Clone)]
@@ -360,8 +360,8 @@ pub fn prepare_epmp_for_sram(jtag: &Rc<dyn Jtag>) -> Result<()> {
     jtag.write_riscv_reg(&RiscvReg::Csr(RiscvCsr::PMPCFG3), pmpcfg3)?;
     // write pmpaddr15 to map the SRAM range
     // hex((0x10000000 >> 2) | ((0x20000 - 1) >> 3)) = 0x4003fff
-    let base = top_earlgrey_memory::TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR as u32;
-    let size = top_earlgrey_memory::TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES as u32;
+    let base = top_earlgrey::SRAM_CTRL_MAIN_RAM_BASE_ADDR as u32;
+    let size = top_earlgrey::SRAM_CTRL_MAIN_RAM_SIZE_BYTES as u32;
     // make sure that this is a power of two
     assert!(size & (size - 1) == 0);
     let pmpaddr15 = (base >> 2) | ((size - 1) >> 3);
