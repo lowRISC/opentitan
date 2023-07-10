@@ -23,7 +23,7 @@
 
 # Hardware
 
-- [Introduction](./hw/README.md)
+- [HW Homepage](./hw/README.md)
 
 - [Tops](./doc/tops.md)
   - [Earl Grey](./hw/top_earlgrey/README.md)
@@ -32,35 +32,17 @@
     - [Design Verification](./hw/top_earlgrey/dv/README.md)
       - [Chip Testplan](./hw/top_earlgrey/data/chip_testplan.hjson)
     - [Top Generation](./hw/top_earlgrey/doc/design/top_generation.md)
-    - [Earl Grey HWIP]()
+    - [Earl Grey HWIP](./hw/top_earlgrey/doc/design/hwip.md)
       - [Analog Sensor Top](./hw/top_earlgrey/ip/ast/README.md)
-      - [Alert Handler](./hw/top_earlgrey/ip_autogen/alert_handler/README.md)
-        - [Theory of Operation](./hw/top_earlgrey/ip_autogen/alert_handler/doc/theory_of_operation.md)
-        - [Design Verification](./hw/top_earlgrey/ip_autogen/alert_handler/dv/README.md)
-          - [Testplan](./hw/top_earlgrey/ip_autogen/alert_handler/data/alert_handler_testplan.hjson)
-        - [Programmer's Guide](./hw/top_earlgrey/ip_autogen/alert_handler/doc/programmers_guide.md)
-        - [Interface and Registers](./hw/top_earlgrey/ip_autogen/alert_handler/data/alert_handler.hjson)
-        - [Device Interface Functions](./sw/device/lib/dif/dif_alert_handler.h)
-        - [Checklist](./hw/top_earlgrey/ip_autogen/alert_handler/doc/checklist.md)
-      - [Interrupt Controller](./hw/top_earlgrey/ip_autogen/rv_plic/README.md)
-        - [Theory of Operation](./hw/top_earlgrey/ip_autogen/rv_plic/doc/theory_of_operation.md)
-        - [Design Verification](./hw/top_earlgrey/ip_autogen/rv_plic/doc/dv/README.md)
-          - [Testplan](./hw/top_earlgrey/ip_autogen/rv_plic/data/rv_plic_fpv_testplan.hjson)
-        - [Programmer's Guide](./hw/top_earlgrey/ip_autogen/rv_plic/doc/programmers_guide.md)
-        - [Interface and Registers](./hw/top_earlgrey/ip_autogen/rv_plic/data/rv_plic.hjson)
-        - [Device Interface Functions](./sw/device/lib/dif/dif_rv_plic.h)
-        - [Checklist](./hw/top_earlgrey/ip_autogen/rv_plic/doc/checklist.md)
       - [Sensor Control](./hw/top_earlgrey/ip/sensor_ctrl/README.md)
         - [Theory of Operation](./hw/top_earlgrey/ip/sensor_ctrl/doc/theory_of_operation.md)
         - [Programmer's Guide](./hw/top_earlgrey/ip/sensor_ctrl/doc/programmers_guide.md)
         - [Interface and Registers](./hw/top_earlgrey/ip/sensor_ctrl/data/sensor_ctrl.hjson)
         - [Device Interface Functions](./sw/device/lib/dif/dif_sensor_ctrl.h)
         - [Checklist](./hw/top_earlgrey/ip/sensor_ctrl/doc/checklist.md)
-      - [TL-UL Checklist](./hw/top_earlgrey/ip/xbar/doc/checklist.md)
-      - [Pinmux]()
-        - [Pinmux Targets](./hw/top_earlgrey/ip/pinmux/doc/autogen/targets.md)
-          - [ASIC Target Pinout and Pinmux Connectivity](./hw/top_earlgrey/ip/pinmux/doc/autogen/pinout_asic.md)
-          - [CW310 Target Pinout and Pinmux Connectivity](./hw/top_earlgrey/ip/pinmux/doc/autogen/pinout_cw310.md)
+      - [Pinmux Targets](./hw/top_earlgrey/ip/pinmux/doc/autogen/targets.md)
+        - [ASIC Target Pinout and Pinmux Connectivity](./hw/top_earlgrey/ip/pinmux/doc/autogen/pinout_asic.md)
+        - [CW310 Target Pinout and Pinmux Connectivity](./hw/top_earlgrey/ip/pinmux/doc/autogen/pinout_cw310.md)
 
 - [Cores](./hw/doc/cores.md)
   - [Ibex RISC-V Core Wrapper](./hw/ip/rv_core_ibex/README.md)
@@ -117,6 +99,14 @@
     - [Registers](./hw/ip/aes/doc/registers.md)
     - [Device Interface Functions](./sw/device/lib/dif/dif_aes.h)
     - [Checklist](./hw/ip/aes/doc/checklist.md)
+  - [Alert Handler](./hw/top_earlgrey/ip_autogen/alert_handler/README.md)
+    - [Theory of Operation](./hw/top_earlgrey/ip_autogen/alert_handler/doc/theory_of_operation.md)
+    - [Design Verification](./hw/top_earlgrey/ip_autogen/alert_handler/dv/README.md)
+      - [Testplan](./hw/top_earlgrey/ip_autogen/alert_handler/data/alert_handler_testplan.hjson)
+    - [Programmer's Guide](./hw/top_earlgrey/ip_autogen/alert_handler/doc/programmers_guide.md)
+    - [Interface and Registers](./hw/top_earlgrey/ip_autogen/alert_handler/data/alert_handler.hjson)
+    - [Device Interface Functions](./sw/device/lib/dif/dif_alert_handler.h)
+    - [Checklist](./hw/top_earlgrey/ip_autogen/alert_handler/doc/checklist.md)
   - [AON Timer](./hw/ip/aon_timer/README.md)
     - [Theory of Operation](./hw/ip/aon_timer/doc/theory_of_operation.md)
     - [Design Verification](./hw/ip/aon_timer/dv/README.md)
@@ -352,6 +342,7 @@
     - [Design Verification](./hw/ip/tlul/doc/dv/README.md)
       - [Testplan](./hw/ip/tlul/data/tlul_testplan.hjson)
       - [Protocol Checker](./hw/ip/tlul/doc/TlulProtocolChecker.md)
+      - [TL-UL Checklist](./hw/top_earlgrey/ip/xbar/doc/checklist.md)
   - [UART](./hw/ip/uart/README.md)
     - [Theory of Operation](./hw/ip/uart/doc/theory_of_operation.md)
     - [Design Verification](./hw/ip/uart/dv/README.md)
@@ -407,7 +398,7 @@
 
 
 # Software
-- [Introduction](./sw/README.md)
+- [SW Homepage](./sw/README.md)
 - [Build Software](./sw/doc/build_software.md)
 
 - [Device Software](./sw/device/README.md)
@@ -473,10 +464,7 @@
 
 # Security
 
-- [Security](./doc/security/README.md)
-- [Implementation Guidelines](./doc/security/implementation_guidelines/README.md)
-  - [Secure Hardware Design Guidelines](./doc/security/implementation_guidelines/hardware/README.md)
-
+- [Security in OpenTitan](./doc/security/README.md)
 - [Logical Security Model](./doc/security/logical_security_model/README.md)
 - [Security Model Specification](./doc/security/specs/README.md)
   - [Device Attestation](./doc/security/specs/attestation/README.md)
@@ -486,8 +474,15 @@
   - [Identities and Root Keys](./doc/security/specs/identities_and_root_keys/README.md)
   - [Ownership Transfer](./doc/security/specs/ownership_transfer/README.md)
   - [Secure Boot](./doc/security/specs/secure_boot/README.md)
-
 - [Lightweight Threat Model](./doc/security/threat_model/README.md)
+- [Secure Hardware Design Guidelines](./doc/security/implementation_guidelines/hardware/README.md)
+
+# Use Cases
+
+- [Use Cases](./doc/use_cases/README.md)
+- [Platform Integrity Module](./doc/use_cases/platform_integrity_module/README.md)
+- [Trusted Platform Module](./doc/use_cases/tpm/README.md)
+- [Universal 2nd-Factor Security Key](./doc/use_cases/u2f/README.md)
 
 # Contributing
 
@@ -564,13 +559,6 @@
 - [Other Tooling]()
   - [vendor: Vendoring In Tool](./util/doc/vendor.md)
   - [i2csvg: Generate SVGs of I2C Commands](./util/i2csvg/README.md)
-
-# Use Cases
-
-- [Use Cases](./doc/use_cases/README.md)
-- [Platform Integrity Module](./doc/use_cases/platform_integrity_module/README.md)
-- [Trusted Platform Module](./doc/use_cases/tpm/README.md)
-- [Universal 2nd-Factor Security Key](./doc/use_cases/u2f/README.md)
 
 # Rust for C Developers
 
