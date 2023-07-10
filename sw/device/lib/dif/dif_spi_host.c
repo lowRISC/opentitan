@@ -301,9 +301,9 @@ static void issue_opcode(const dif_spi_host_t *spi_host,
                          dif_spi_host_segment_t *segment, bool last_segment) {
   wait_tx_fifo(spi_host);
   mmio_region_write8(spi_host->base_addr, SPI_HOST_TXDATA_REG_OFFSET,
-                     segment->opcode);
-  write_command_reg(spi_host, 1, kDifSpiHostWidthStandard,
-                    kDifSpiHostDirectionTx, last_segment);
+                     segment->opcode.opcode);
+  write_command_reg(spi_host, 1, segment->opcode.width, kDifSpiHostDirectionTx,
+                    last_segment);
 }
 
 static void issue_address(const dif_spi_host_t *spi_host,

@@ -23,6 +23,30 @@ enum {
   kSfdpSignature = 0x50444653,
 };
 
+/**
+ * Transaction width mode.
+ */
+typedef enum spi_flash_testutils_transaction_width_mode {
+  /* Use 1 channel for opcode, 1 channel for address and 1 channel for data. */
+  kTransactionWidthMode111 = 0,
+  /* Use 1 channel for opcode, 1 channel for address and 2 channels for data. */
+  kTransactionWidthMode112,
+  /* Use 1 channel for opcode, 2 channels for address and 2 channels for data.
+   */
+  kTransactionWidthMode122,
+  /* Use 2 channels for opcode, 2 channels for address and 2 channels for data.
+   */
+  kTransactionWidthMode222,
+  /* Use 1 channel for opcode, 1 channel for address and 4 channel for data. */
+  kTransactionWidthMode114,
+  /* Use 1 channel for opcode, 4 channels for address and 4 channels for data.
+   */
+  kTransactionWidthMode144,
+  /* Use 4 channels for opcode, 4 channels for address and 4 channels for data.
+   */
+  kTransactionWidthMode444,
+} spi_flash_testutils_transaction_width_mode_t;
+
 typedef struct spi_flash_testutils_sfdp_header {
   uint32_t signature;
   uint8_t minor;
@@ -217,16 +241,15 @@ status_t spi_flash_testutils_erase_block64k(dif_spi_host_t *spih,
  *                Note that an address + length that crosses a page boundary may
  *                wrap around to the start of the page.
  * @param addr_is_4b True if `address` is 4 bytes long, else 3 bytes.
- * @param data_width The width of the transaction data section.
- * @param addr_width The width of the transaction addressing section.
+ * @param page_program_mode The width of the transaction sections (opcode,
+ * address and data).
  * @return status_t containing either OK or an error.
  */
 OT_WARN_UNUSED_RESULT
-status_t spi_flash_testutils_program_op(dif_spi_host_t *spih, uint8_t opcode,
-                                        const void *payload, size_t length,
-                                        uint32_t address, bool addr_is_4b,
-                                        dif_spi_host_width_t data_width,
-                                        dif_spi_host_width_t addr_width);
+status_t spi_flash_testutils_program_op(
+    dif_spi_host_t *spih, uint8_t opcode, const void *payload, size_t length,
+    uint32_t address, bool addr_is_4b,
+    spi_flash_testutils_transaction_width_mode_t page_program_mode);
 
 /**
  * Perform full Page Program sequence via the standard page program opcode.
@@ -325,4 +348,67 @@ status_t spi_flash_testutils_enter_4byte_address_mode(dif_spi_host_t *spih);
  */
 OT_WARN_UNUSED_RESULT
 status_t spi_flash_testutils_exit_4byte_address_mode(dif_spi_host_t *spih);
+
+/**
+ * Get the opcode width of a transaction mode.
+ *
+ * @param width_mode The transaction width mode.
+ * @return The opcode width
+ */
+inline static dif_spi_host_width_t spi_flash_testutils_get_opcode_width(
+    spi_flash_testutils_transaction_width_mode_t width_mode) {
+  switch (width_mode) {
+    case kTransactionWidthMode222:
+      return kDifSpiHostWidthDual;
+    case kTransactionWidthMode444:
+      return kDifSpiHostWidthQuad;
+    default:
+      return kDifSpiHostWidthStandard;
+  }
+};
+
+/**
+ * Get the address width of a transaction mode.
+ *
+ * @param width_mode The transaction width mode.
+ * @return The address width
+ */
+inline static dif_spi_host_width_t spi_flash_testutils_get_address_width(
+    spi_flash_testutils_transaction_width_mode_t width_mode) {
+  switch (width_mode) {
+    case kTransactionWidthMode122:
+      return kDifSpiHostWidthDual;
+    case kTransactionWidthMode222:
+      return kDifSpiHostWidthDual;
+    case kTransactionWidthMode144:
+      return kDifSpiHostWidthQuad;
+    case kTransactionWidthMode444:
+      return kDifSpiHostWidthQuad;
+    default:
+      return kDifSpiHostWidthStandard;
+  }
+};
+
+/**
+ * Get the data width of a transaction mode.
+ *
+ * @param width_mode The transaction width mode.
+ * @return The data width
+ */
+inline static dif_spi_host_width_t spi_flash_testutils_get_data_width(
+    spi_flash_testutils_transaction_width_mode_t width_mode) {
+  switch (width_mode) {
+    case kTransactionWidthMode111:
+      return kDifSpiHostWidthStandard;
+    case kTransactionWidthMode112:
+      return kDifSpiHostWidthDual;
+    case kTransactionWidthMode122:
+      return kDifSpiHostWidthDual;
+    case kTransactionWidthMode222:
+      return kDifSpiHostWidthDual;
+    default:
+      return kDifSpiHostWidthQuad;
+  }
+};
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_SPI_FLASH_TESTUTILS_H_

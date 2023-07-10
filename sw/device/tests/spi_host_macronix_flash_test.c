@@ -58,8 +58,6 @@ bool test_main(void) {
     kDeviceId = 0x1B20,
     kManufactureId = 0xC2,
     kPageQuadProgramOpcode = 0x38,
-    // The Macronix flash `4PP` opcode operates in 1-4-4 mode.
-    kPageQuadProgramAddrWidth = 4,
   };
 
   status_t result = OK_STATUS();
@@ -75,8 +73,9 @@ bool test_main(void) {
   EXECUTE_TEST(result, test_fast_read, &spi_host);
   EXECUTE_TEST(result, test_dual_read, &spi_host);
   EXECUTE_TEST(result, test_quad_read, &spi_host);
+  // The Macronix flash `4PP` opcode operates in 1-4-4 mode.
   EXECUTE_TEST(result, test_page_program_quad, &spi_host,
-               kPageQuadProgramOpcode, kPageQuadProgramAddrWidth);
+               kPageQuadProgramOpcode, kTransactionWidthMode144);
   EXECUTE_TEST(result, test_erase_32k_block, &spi_host);
   EXECUTE_TEST(result, test_erase_64k_block, &spi_host);
 

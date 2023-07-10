@@ -17,10 +17,9 @@ status_t spi_flash_testutils_read_id(dif_spi_host_t *spih,
 
   uint8_t buffer[32];
   dif_spi_host_segment_t transaction[] = {
-      {
-          .type = kDifSpiHostSegmentTypeOpcode,
-          .opcode = kSpiDeviceFlashOpReadJedec,
-      },
+      {.type = kDifSpiHostSegmentTypeOpcode,
+       .opcode = {.opcode = kSpiDeviceFlashOpReadJedec,
+                  .width = kDifSpiHostWidthStandard}},
       {
           .type = kDifSpiHostSegmentTypeRx,
           .rx =
@@ -53,10 +52,9 @@ status_t spi_flash_testutils_read_sfdp(dif_spi_host_t *spih, uint32_t address,
   TRY_CHECK(buffer != NULL);
 
   dif_spi_host_segment_t transaction[] = {
-      {
-          .type = kDifSpiHostSegmentTypeOpcode,
-          .opcode = kSpiDeviceFlashOpReadSfdp,
-      },
+      {.type = kDifSpiHostSegmentTypeOpcode,
+       .opcode = {.opcode = kSpiDeviceFlashOpReadSfdp,
+                  .width = kDifSpiHostWidthStandard}},
       {
           .type = kDifSpiHostSegmentTypeAddress,
           .address =
@@ -95,10 +93,8 @@ status_t spi_flash_testutils_read_status(dif_spi_host_t *spih, uint8_t opcode,
   TRY_CHECK(length <= 3);
   uint32_t status = 0;
   dif_spi_host_segment_t transaction[] = {
-      {
-          .type = kDifSpiHostSegmentTypeOpcode,
-          .opcode = opcode,
-      },
+      {.type = kDifSpiHostSegmentTypeOpcode,
+       .opcode = {.opcode = opcode, .width = kDifSpiHostWidthStandard}},
       {
           .type = kDifSpiHostSegmentTypeRx,
           .rx =
@@ -120,10 +116,8 @@ status_t spi_flash_testutils_write_status(dif_spi_host_t *spih, uint8_t opcode,
   TRY_CHECK(length <= 3);
   TRY(spi_flash_testutils_issue_write_enable(spih));
   dif_spi_host_segment_t transaction[] = {
-      {
-          .type = kDifSpiHostSegmentTypeOpcode,
-          .opcode = opcode,
-      },
+      {.type = kDifSpiHostSegmentTypeOpcode,
+       .opcode = {.opcode = opcode, .width = kDifSpiHostWidthStandard}},
       {
           .type = kDifSpiHostSegmentTypeTx,
           .tx =
@@ -153,10 +147,9 @@ status_t spi_flash_testutils_wait_until_not_busy(dif_spi_host_t *spih) {
 status_t spi_flash_testutils_issue_write_enable(dif_spi_host_t *spih) {
   TRY_CHECK(spih != NULL);
   dif_spi_host_segment_t transaction[] = {
-      {
-          .type = kDifSpiHostSegmentTypeOpcode,
-          .opcode = kSpiDeviceFlashOpWriteEnable,
-      },
+      {.type = kDifSpiHostSegmentTypeOpcode,
+       .opcode = {.opcode = kSpiDeviceFlashOpWriteEnable,
+                  .width = kDifSpiHostWidthStandard}},
   };
   TRY(dif_spi_host_transaction(spih, /*csid=*/0, transaction,
                                ARRAYSIZE(transaction)));
@@ -168,10 +161,9 @@ status_t spi_flash_testutils_erase_chip(dif_spi_host_t *spih) {
   TRY(spi_flash_testutils_issue_write_enable(spih));
 
   dif_spi_host_segment_t transaction[] = {
-      {
-          .type = kDifSpiHostSegmentTypeOpcode,
-          .opcode = kSpiDeviceFlashOpChipErase,
-      },
+      {.type = kDifSpiHostSegmentTypeOpcode,
+       .opcode = {.opcode = kSpiDeviceFlashOpChipErase,
+                  .width = kDifSpiHostWidthStandard}},
   };
   TRY(dif_spi_host_transaction(spih, /*csid=*/0, transaction,
                                ARRAYSIZE(transaction)));
@@ -186,10 +178,8 @@ status_t spi_flash_testutils_erase_op(dif_spi_host_t *spih, uint8_t opcode,
   dif_spi_host_addr_mode_t addr_mode =
       addr_is_4b ? kDifSpiHostAddrMode4b : kDifSpiHostAddrMode3b;
   dif_spi_host_segment_t transaction[] = {
-      {
-          .type = kDifSpiHostSegmentTypeOpcode,
-          .opcode = opcode,
-      },
+      {.type = kDifSpiHostSegmentTypeOpcode,
+       .opcode = {.opcode = opcode, .width = kDifSpiHostWidthStandard}},
       {
           .type = kDifSpiHostSegmentTypeAddress,
           .address =
@@ -224,11 +214,10 @@ status_t spi_flash_testutils_erase_block64k(dif_spi_host_t *spih,
                                       address, addr_is_4b);
 }
 
-status_t spi_flash_testutils_program_op(dif_spi_host_t *spih, uint8_t opcode,
-                                        const void *payload, size_t length,
-                                        uint32_t address, bool addr_is_4b,
-                                        dif_spi_host_width_t data_width,
-                                        dif_spi_host_width_t addr_width) {
+status_t spi_flash_testutils_program_op(
+    dif_spi_host_t *spih, uint8_t opcode, const void *payload, size_t length,
+    uint32_t address, bool addr_is_4b,
+    spi_flash_testutils_transaction_width_mode_t page_program_mode) {
   TRY_CHECK(spih != NULL);
   TRY_CHECK(payload != NULL);
   TRY_CHECK(length <= 256);  // Length must be less than a page size.
@@ -238,15 +227,16 @@ status_t spi_flash_testutils_program_op(dif_spi_host_t *spih, uint8_t opcode,
   dif_spi_host_addr_mode_t addr_mode =
       addr_is_4b ? kDifSpiHostAddrMode4b : kDifSpiHostAddrMode3b;
   dif_spi_host_segment_t transaction[] = {
-      {
-          .type = kDifSpiHostSegmentTypeOpcode,
-          .opcode = opcode,
-      },
+      {.type = kDifSpiHostSegmentTypeOpcode,
+       .opcode = {.opcode = opcode,
+                  .width =
+                      spi_flash_testutils_get_opcode_width(page_program_mode)}},
       {
           .type = kDifSpiHostSegmentTypeAddress,
           .address =
               {
-                  .width = addr_width,
+                  .width =
+                      spi_flash_testutils_get_address_width(page_program_mode),
                   .mode = addr_mode,
                   .address = address,
               },
@@ -255,7 +245,8 @@ status_t spi_flash_testutils_program_op(dif_spi_host_t *spih, uint8_t opcode,
           .type = kDifSpiHostSegmentTypeTx,
           .tx =
               {
-                  .width = data_width,
+                  .width =
+                      spi_flash_testutils_get_data_width(page_program_mode),
                   .buf = payload,
                   .length = length,
               },
@@ -270,9 +261,9 @@ status_t spi_flash_testutils_program_op(dif_spi_host_t *spih, uint8_t opcode,
 status_t spi_flash_testutils_program_page(dif_spi_host_t *spih,
                                           const void *payload, size_t length,
                                           uint32_t address, bool addr_is_4b) {
-  return spi_flash_testutils_program_op(
-      spih, kSpiDeviceFlashOpPageProgram, payload, length, address, addr_is_4b,
-      kDifSpiHostWidthStandard, kDifSpiHostWidthStandard);
+  return spi_flash_testutils_program_op(spih, kSpiDeviceFlashOpPageProgram,
+                                        payload, length, address, addr_is_4b,
+                                        kTransactionWidthMode111);
 }
 
 status_t spi_flash_testutils_read_op(dif_spi_host_t *spih, uint8_t opcode,
@@ -291,10 +282,8 @@ status_t spi_flash_testutils_read_op(dif_spi_host_t *spih, uint8_t opcode,
                                                  : kDifSpiHostWidthQuad;
 
   dif_spi_host_segment_t transaction[4] = {
-      {
-          .type = kDifSpiHostSegmentTypeOpcode,
-          .opcode = opcode,
-      },
+      {.type = kDifSpiHostSegmentTypeOpcode,
+       .opcode = {.opcode = opcode, .width = kDifSpiHostWidthStandard}},
       {
           .type = kDifSpiHostSegmentTypeAddress,
           .address =
@@ -405,17 +394,16 @@ status_t spi_flash_testutils_quad_enable(dif_spi_host_t *spih, uint8_t method,
 status_t spi_flash_testutils_enter_4byte_address_mode(dif_spi_host_t *spih) {
   dif_spi_host_segment_t op = {
       .type = kDifSpiHostSegmentTypeOpcode,
-      .opcode = kSpiDeviceFlashOpEnter4bAddr,
-  };
+      .opcode = {.opcode = kSpiDeviceFlashOpEnter4bAddr,
+                 .width = kDifSpiHostWidthStandard}};
   TRY(dif_spi_host_transaction(spih, /*cs_id=*/0, &op, 1));
   return OK_STATUS();
 }
 
 status_t spi_flash_testutils_exit_4byte_address_mode(dif_spi_host_t *spih) {
-  dif_spi_host_segment_t op = {
-      .type = kDifSpiHostSegmentTypeOpcode,
-      .opcode = kSpiDeviceFlashOpExit4bAddr,
-  };
+  dif_spi_host_segment_t op = {.type = kDifSpiHostSegmentTypeOpcode,
+                               .opcode = {.opcode = kSpiDeviceFlashOpExit4bAddr,
+                                          .width = kDifSpiHostWidthStandard}};
   TRY(dif_spi_host_transaction(spih, /*cs_id=*/0, &op, 1));
   return OK_STATUS();
 }

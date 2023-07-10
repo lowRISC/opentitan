@@ -42,11 +42,10 @@ status_t test_software_reset(dif_spi_host_t *spi) {
   // The software reset sequence is two transactions: RSTEN followed by RST.
   dif_spi_host_segment_t op = {
       .type = kDifSpiHostSegmentTypeOpcode,
-      .opcode = kSpiDeviceFlashOpResetEnable,
-  };
+      .opcode = {.opcode = kSpiDeviceFlashOpResetEnable,
+                 .width = kDifSpiHostWidthStandard}};
   TRY(dif_spi_host_transaction(spi, /*cs_id=*/0, &op, 1));
 
-  op.opcode = kSpiDeviceFlashOpResetEnable;
   TRY(dif_spi_host_transaction(spi, /*cs_id=*/0, &op, 1));
   return OK_STATUS();
 }
@@ -119,28 +118,16 @@ status_t test_page_program(dif_spi_host_t *spi) {
   return OK_STATUS();
 }
 
-status_t test_page_program_quad(dif_spi_host_t *spi, uint8_t opcode,
-                                uint8_t address_width) {
+status_t test_page_program_quad(
+    dif_spi_host_t *spi, uint8_t opcode,
+    spi_flash_testutils_transaction_width_mode_t page_program_mode) {
   enum { kPageSize = 256, kAddress = kPageSize * 10 };
-  TRY_CHECK(address_width == 1 || address_width == 2 || address_width == 4);
-  dif_spi_host_width_t addr_width = kDifSpiHostWidthStandard;
-  switch (address_width) {
-    case 4:
-      addr_width = kDifSpiHostWidthQuad;
-      break;
-    case 2:
-      addr_width = kDifSpiHostWidthDual;
-      break;
-    default:
-      break;
-  }
 
   TRY(spi_flash_testutils_erase_sector(spi, kAddress, false));
 
-  TRY(spi_flash_testutils_program_op(spi, opcode, kGettysburgPrelude,
-                                     sizeof(kGettysburgPrelude),
-                                     /*address=*/kAddress, /*addr_is_4b=*/false,
-                                     kDifSpiHostWidthQuad, addr_width));
+  TRY(spi_flash_testutils_program_op(
+      spi, opcode, kGettysburgPrelude, sizeof(kGettysburgPrelude),
+      /*address=*/kAddress, /*addr_is_4b=*/false, page_program_mode));
 
   uint8_t buf[256];
   TRY(spi_flash_testutils_read_op(spi, kSpiDeviceFlashOpReadNormal, buf,
