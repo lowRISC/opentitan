@@ -9,8 +9,6 @@ load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library
 
 package(default_visibility = ["//visibility:public"])
 
-exports_files(["bootstrap.c"])
-
 dual_cc_library(
     name = "boot_data",
     srcs = dual_inputs(
@@ -394,5 +392,19 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ottf_test_config",
+    ],
+)
+
+cc_library(
+    name = "bootstrap",
+    srcs = ["bootstrap.c"],
+    hdrs = ["bootstrap.h"],
+    deps = [
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        "//sw/device/silicon_creator/lib/drivers:spi_device",
     ],
 )
