@@ -1,15 +1,26 @@
-<div id="blocks-dashboard" class="dashboard-table"></div>
+<div id="chips-dashboard" class="dashboard-table">
+    <h2>Chip-Level</h2>
+</div>
+<div id="blocks-dashboard" class="dashboard-table">
+    <h2>Block-Level</h2>
+</div>
 <script src="/js/dashboard.js"></script>
 <script src="/js/ot-nightly-results.js"></script>
 <script>
-  function produce_results_table(results) {
+  function produce_results_table(results, table_id) {
     let block_result_collection = new BlockLevelResultsCollection();
     results.map((result) => block_result_collection.add_results(result));
 
-    var dashboard_table_toplevel = document.querySelector("#blocks-dashboard");
+    var dashboard_table_toplevel = document.querySelector(table_id);
     var results_table = block_result_collection.make_results_table();
     results_table.render(dashboard_table_toplevel);
   }
 
-  fetch_all_results().then(produce_results_table);
+  fetch_results(chip_level_urls, true).then(function(results) {
+    produce_results_table(results, "#chips-dashboard")
+  });
+
+  fetch_results(block_level_urls).then(function(results) {
+    produce_results_table(results, "#blocks-dashboard")
+  });
 </script>
