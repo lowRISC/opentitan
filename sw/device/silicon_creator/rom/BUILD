@@ -281,7 +281,7 @@ filegroup(
 
 cc_library(
     name = "bootstrap",
-    srcs = ["//sw/device/silicon_creator/lib:bootstrap.c"],
+    srcs = ["bootstrap.c"],
     hdrs = ["bootstrap.h"],
     deps = [
         "//hw/ip/gpio/data:gpio_regs",
@@ -291,6 +291,7 @@ cc_library(
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib:bootstrap",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
