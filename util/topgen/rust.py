@@ -15,28 +15,41 @@ RUST_FILE_EXTENSIONS = (".rs")
 
 
 class MemoryRegion(object):
-    def __init__(self, name: Name, base_addr: int, size_bytes: int):
+    def __init__(self, top_name: Name, name: Name, base_addr: int, size_bytes: int):
         assert isinstance(base_addr, int)
-        self.name = name
+        self.name = top_name + name
+        self.short_name = name
         self.base_addr = base_addr
         self.size_bytes = size_bytes
         self.size_words = (size_bytes + 3) // 4
 
-    def base_addr_name(self):
-        return self.name + Name(["base", "addr"])
+    def base_addr_name(self, short=False):
+        if short:
+            return self.short_name + Name(["base", "addr"])
+        else:
+            return self.name + Name(["base", "addr"])
 
-    def offset_name(self):
-        return self.name + Name(["offset"])
+    def offset_name(self, short=False):
+        if short:
+            return self.short_name + Name(["offset"])
+        else:
+            return self.name + Name(["offset"])
 
-    def size_bytes_name(self):
-        return self.name + Name(["size", "bytes"])
+    def size_bytes_name(self, short=False):
+        if short:
+            return self.short_name + Name(["size", "bytes"])
+        else:
+            return self.name + Name(["size", "bytes"])
 
-    def size_words_name(self):
-        return self.name + Name(["size", "words"])
+    def size_words_name(self, short=False):
+        if short:
+            return self.short_name + Name(["size", "words"])
+        else:
+            return self.name + Name(["size", "words"])
 
 
 class RustEnum(object):
-    def __init__(self, top_name, name, repr_type=None):
+    def __init__(self, top_name, name, repr_type=None, derive_list=["Copy", "Clone"]):
         self.name = top_name + name
         self.short_name = name
         self.enum_counter = 0
@@ -45,6 +58,7 @@ class RustEnum(object):
         self.last_value = None
         self.last_value_docstring = None
         self.repr_type = repr_type
+        self.derive_list = derive_list
         self.constants = []
         # todo add flag for doc strings
 
@@ -55,6 +69,12 @@ class RustEnum(object):
             return "u32"
         else:
             return self.repr_type
+
+    def derive(self) -> str:
+        if isinstance(self.derive_list, list):
+            if len(self.derive_list) > 0:
+                return "#[derive({})]\n".format(", ".join(self.derive_list))
+        return ""
 
     def add_constant(self, constant_name, docstring=""):
         assert not self.finalized
@@ -91,10 +111,13 @@ class RustEnum(object):
                 "    }")
         return Template(body).render(enum=self)
 
-    def render(self, gen_range=False, gen_cast=False):
+    def render(self, gen_range=False, gen_cast=False, derive_list=None):
+        if derive_list is not None:
+            self.derive_list = derive_list
         self.calculate_range()
-        body = ("#[repr(${enum.repr()})]\n"
-                "pub enum ${enum.name.as_rust_type()} {\n"
+        body = ("${enum.derive()}"
+                "#[repr(${enum.repr()})]\n"
+                "pub enum ${enum.short_name.as_rust_type()} {\n"
                 "% for name, value, docstring in enum.constants:\n"
                 "    % if len(docstring) > 0 : \n"
                 "    /// ${docstring}\n"
@@ -104,7 +127,7 @@ class RustEnum(object):
                 "}")
 
         impl = ("\n\n"
-                "impl ${enum.name.as_rust_type()} {\n"
+                "impl ${enum.short_name.as_rust_type()} {\n"
                 "    % if enum.last_value_docstring:\n"
                 "    /// ${enum.last_value_docstring}\n"
                 "    % else: \n"
@@ -121,7 +144,7 @@ class RustEnum(object):
 
         cast = ("\n\n"
                 "impl TryFrom<${enum.repr()}> for "
-                "${enum.name.as_rust_type()} {\n"
+                "${enum.short_name.as_rust_type()} {\n"
                 "    type Error = ${enum.repr()};\n"
                 "    fn try_from(val: ${enum.repr()}) -> Result<Self, Self::Error> {\n"
                 "        match val {\n"
@@ -141,8 +164,9 @@ class RustEnum(object):
 
 
 class RustArrayMapping(object):
-    def __init__(self, name, output_type_name):
-        self.name = name
+    def __init__(self, top_name, name, output_type_name):
+        self.name = top_name + name
+        self.short_name = name
         self.output_type_name = output_type_name
 
         self.mapping = OrderedDict()
@@ -151,7 +175,7 @@ class RustArrayMapping(object):
         self.mapping[in_name] = out_name
 
     def render_definition(self):
-        template = ("pub const ${mapping.name.as_rust_const()}: "
+        template = ("pub const ${mapping.short_name.as_rust_const()}: "
                     "[${mapping.output_type_name.as_rust_type()}; ${len(mapping.mapping)}] = [\n"
                     "% for in_name, out_name in mapping.mapping.items():\n"
                     "    // ${in_name.as_rust_enum()} ->"
@@ -235,11 +259,11 @@ class TopGenRust:
                 if if_name is not None:
                     full_if_name += Name.from_snake_case(if_name)
 
-                name = self._top_name + full_if_name
+                name = full_if_name
                 base, size = get_base_and_size(self._name_to_block,
                                                inst, if_name)
 
-                region = MemoryRegion(name, base, size)
+                region = MemoryRegion(self._top_name, name, base, size)
                 self.device_regions[inst['name']].update({if_name: region})
                 ret.append((full_if, region))
 
@@ -249,7 +273,7 @@ class TopGenRust:
         ret = []
         for m in self.top["memory"]:
             ret.append((m["name"],
-                        MemoryRegion(self._top_name +
+                        MemoryRegion(self._top_name,
                                      Name.from_snake_case(m["name"]),
                                      int(m["base_addr"], 0),
                                      int(m["size"], 0))))
@@ -260,9 +284,8 @@ class TopGenRust:
                     base, size = get_base_and_size(self._name_to_block,
                                                    inst, if_name)
 
-                    # name = self._top_name + Name.from_snake_case(val["label"])
                     name = Name.from_snake_case(val["label"])
-                    region = MemoryRegion(name, base, size)
+                    region = MemoryRegion(self._top_name, name, base, size)
                     ret.append((val["label"], region))
 
         return ret
@@ -296,8 +319,8 @@ class TopGenRust:
         sources = RustEnum(self._top_name, Name(["plic", "peripheral"]), self.regwidth)
         interrupts = RustEnum(self._top_name, Name(["plic", "irq", "id"]), self.regwidth)
         plic_mapping = RustArrayMapping(
-            self._top_name + Name(["plic", "interrupt", "for", "peripheral"]),
-            sources.name)
+            self._top_name, Name(["plic", "interrupt", "for", "peripheral"]),
+            sources.short_name)
 
         unknown_source = sources.add_constant(Name(["unknown"]),
                                               docstring="Unknown Peripheral")
@@ -311,6 +334,7 @@ class TopGenRust:
         source_name_map = {}
 
         for name in self.top["interrupt_module"]:
+
             source_name = sources.add_constant(Name.from_snake_case(name),
                                                docstring=name)
             source_name_map[name] = source_name
@@ -362,8 +386,8 @@ class TopGenRust:
         sources = RustEnum(self._top_name, Name(["alert", "peripheral"]), self.regwidth)
         alerts = RustEnum(self._top_name, Name(["alert", "id"]), self.regwidth)
         alert_mapping = RustArrayMapping(
-            self._top_name + Name(["alert", "for", "peripheral"]),
-            sources.name)
+            self._top_name, Name(["alert", "for", "peripheral"]),
+            sources.short_name)
 
         # When we generate the `alerts` enum, the only info we have about the
         # source is the module name. We'll use `source_name_map` to map a short
@@ -609,5 +633,5 @@ class TopGenRust:
         # which we prefer since it reduces the number of ePMP regions we need.
         mmio = range(min([r.base_addr for r in regions]),
                      max([r.base_addr + r.size_bytes for r in regions]))
-        self.mmio = MemoryRegion(self._top_name + Name(["mmio"]), mmio.start,
+        self.mmio = MemoryRegion(self._top_name, Name(["mmio"]), mmio.start,
                                  mmio.stop - mmio.start)

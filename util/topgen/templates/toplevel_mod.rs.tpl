@@ -3,4 +3,3 @@
 // SPDX-License-Identifier: Apache-2.0
 
 pub mod top_${top["name"]};
-pub mod top_${top["name"]}_memory;
