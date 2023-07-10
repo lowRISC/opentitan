@@ -79,7 +79,7 @@ class DashboardSingleEntry {
 class DashboardSingleEntryCollection {
   constructor(entries, title = null, report_url = null) {
     this.entries = entries;
-    this.report_url = report_url
+    this.report_url = report_url;
     this.title = title;
   }
 
@@ -147,18 +147,23 @@ class DashboardTable {
 }
 
 class BlockLevelResults {
-  constructor(json, report_url) {
+  constructor(name, json, report_url) {
+    this.name = name;
     this.process_report(json);
     this.report_url = report_url;
   }
 
   process_report(report) {
-    this.block_name = report.block_name;
+    if (!this.name) {
+      this.block_name = report.block_name;
+    } else {
+      this.block_name = this.name;
+    }
     if ("block_variant" in report && report.block_variant != null) {
       this.block_name += '/' + report.block_variant;
     }
 
-    this.coverage = report.results.coverage
+    this.coverage = report.results.coverage;
     this.calculate_summary_coverage(report.tool);
 
     this.tests = 0;
@@ -268,7 +273,7 @@ class BlockLevelResultsCollection {
       "Toggle Coverage",
       "Assert Coverage",
       "Functional Coverage"
-    ]
+    ];
 
     let kinds = [
       DashValueKindLink,
