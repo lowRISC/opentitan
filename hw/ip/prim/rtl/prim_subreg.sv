@@ -61,6 +61,13 @@ module prim_subreg
   // feed back out for consolidation
   assign ds = wr_en ? wr_data : qs;
   assign qe = wr_en;
-  assign qs = q;
+
+  if (SwAccess == SwAccessRC) begin : gen_rc
+    // In case of a SW RC colliding with a HW write, SW gets the value written by HW
+    // but the register is cleared to 0. See #5416 for a discussion.
+    assign qs = de && we ? d : q;
+  end else begin : gen_no_rc
+    assign qs = q;
+  end
 
 endmodule
