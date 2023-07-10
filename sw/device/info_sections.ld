@@ -47,7 +47,7 @@
    *
    * However, almost any assignment will implicitly create even an empty section,
    * including the very silly . = . (set the program counter to itself).
-   * 
+   *
    * See https://sourceware.org/binutils/docs-2.29/ld/Output-Section-Discarding.html. */
   . = .;
   *(.logs.fields)
@@ -79,6 +79,21 @@
 .debug_rnglists 0x0 : { *(.debug_rnglists) }
 .debug_addr 0x0 : { *(.debug_addr) }
 .debug_str_offsets 0x0 : { *(.debug_str_offsets) }
+
+/**
+ * Status create recording section.
+ *
+ * This section contains status_create_record_t entries that are used to provide better status_t
+ * decoding and needs to be accessible by tools. This section is not needed for the execution
+ * on the target and can safely be discarded.
+ */
+.ot.status_create_record 0x0 (INFO) : {
+  /* Make sure the section is always present */
+  . = .;
+  /* The variables created in this section are not referenced by anything so we need to prevent
+   * garbage collection from removing them */
+  KEEP(*(.ot.status_create_record))
+}
 
 /* Discarded Sections (Not needed in device images). */
 /DISCARD/ : {

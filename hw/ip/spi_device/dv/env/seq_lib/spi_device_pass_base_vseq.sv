@@ -516,6 +516,16 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     csr_update(.csr(ral.cmd_info[idx]));
   endtask : add_cmd_info
 
+  // Task to update mirrored value of addr_4b_en after end of SPI transaction
+  virtual task schedule_en_4b_predict(bit value);
+    fork begin
+      @(posedge cfg.spi_host_agent_cfg.vif.csb[FW_FLASH_CSB_ID]);
+      `uvm_info(`gfn, $sformatf("set addr_4b_en = %0b", value), UVM_MEDIUM)
+      cfg.clk_rst_vif.wait_clks(3);
+      void'(ral.cfg.addr_4b_en.predict(.value(value)));
+    end join_none
+  endtask
+
   // transfer in command including opcode, address and payload
   // if byte_addr_q is empty, the host_seq will use a random addr
   virtual task spi_host_xfer_flash_item(bit [7:0] op, uint payload_size,
@@ -546,9 +556,11 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     if (op == `gmv(ral.cmd_info_en4b.opcode) && `gmv(ral.cmd_info_en4b.valid)) begin
       cfg.spi_device_agent_cfg.flash_addr_4b_en = 1;
       cfg.spi_host_agent_cfg.flash_addr_4b_en   = 1;
+      schedule_en_4b_predict(1);
     end else if (op == `gmv(ral.cmd_info_ex4b.opcode) && `gmv(ral.cmd_info_ex4b.valid)) begin
       cfg.spi_device_agent_cfg.flash_addr_4b_en = 0;
       cfg.spi_host_agent_cfg.flash_addr_4b_en   = 0;
+      schedule_en_4b_predict(0);
     end
 
     if (cfg.is_read_buffer_cmd(m_spi_host_seq.rsp)) begin
@@ -599,59 +611,35 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     uvm_reg_data_t rdata;
     csr_rd(ral.flash_status, rdata);
     busy = get_field_val(ral.flash_status.busy, rdata);
+    `uvm_info(`gfn, $sformatf("read complete, flash_status: %x", rdata), UVM_HIGH)
   endtask
 
   virtual task clear_flash_busy_bit();
-    bit spi_txn_started = 0;
-    bit tpm_txn_started = 0;
     bit busy;
+    uint wait_txn_count = 1;
     `uvm_info(`gfn, "Clearing flash busy bit", UVM_MEDIUM)
-    csr_wr(ral.flash_status.busy, 0);
-    // Loop to detect SPI transaction and delay read check after end of SPI transaction
-    // The intent here is to check the flash_status until busy is cleared and add a delay if there
-    // is an end of SPI transaction(since flash_status gets update after CSB is deasserted)
-    // CHECK_PHASE1 of the loop is used to detect a start of transaction
-    // CHECK_PHASE2 of the loop is used to detect a end of transaction and also
-    //              check the flash_status
-    // If we do not yet detect the start or end of a transaction,
-    // we fall-through the checking each time to the final `get_flash_status_busy(busy)`,
-    // effectively reading the register in a spinwait loop.
-    `DV_SPINWAIT(
-      while(1) begin
-        // CHECK_PHASE1: Check for start of SPI transaction
-        if (!tpm_txn_started && !cfg.spi_host_agent_cfg.vif.csb[TPM_CSB_ID]) begin
-          `uvm_info(`gfn, "Detected active TPM SPI transaction during spinwait for flash_status",
-            UVM_HIGH)
-          tpm_txn_started = 1;
-        end else if (!spi_txn_started && !cfg.spi_host_agent_cfg.vif.csb[FW_FLASH_CSB_ID]) begin
-          `uvm_info(`gfn, "Detected active SPI transaction during spinwait for flash_status",
-            UVM_HIGH)
-          spi_txn_started = 1;
-        end
-        // CHECK_PHASE2:
-        // Check for end of SPI transaction and wait for status to update
-        if (tpm_txn_started && cfg.spi_host_agent_cfg.vif.csb[TPM_CSB_ID]) begin
-          `uvm_info(`gfn, "Detected end of TPM SPI transaction during spinwait for flash_status",
-            UVM_HIGH)
-          cfg.clk_rst_vif.wait_clks(5);
-          `uvm_info(`gfn, "Wait done after end of TPM SPI transaction", UVM_HIGH)
-          get_flash_status_busy(busy);
-          if (!busy) break;
-        end else if (spi_txn_started && cfg.spi_host_agent_cfg.vif.csb[FW_FLASH_CSB_ID]) begin
-          `uvm_info(`gfn, "Detected end of SPI transaction during spinwait for flash_status",
-            UVM_HIGH)
-          cfg.clk_rst_vif.wait_clks(5);
-          `uvm_info(`gfn, "Wait done after end of SPI transaction", UVM_HIGH)
-          get_flash_status_busy(busy);
-          if (!busy) break;
-        end else begin
-          // FLASH_STATUS gets updated in SPI clock domain so the register should hold the
-          // previous busy status value, read the register, scoreboard checks the value
-          get_flash_status_busy(busy);
-          if (!busy) break;
-        end
-      end
-    )
+    // Check if there is any ongoing SPI transaction
+    if (!cfg.spi_host_agent_cfg.vif.csb[FW_FLASH_CSB_ID]) begin
+      wait_txn_count++;
+    end
+    // clear busy bit
+    ral.flash_status.busy.set(0);
+    csr_update(ral.flash_status);
+    // The intent here is to check the flash_status after csr_wr and then read the register
+    // after end of SPI transaction (since flash_status gets update after CSB is deasserted)
+    // Wait for end of SPI transaction
+    repeat (wait_txn_count) begin
+      @(posedge cfg.spi_host_agent_cfg.vif.csb[FW_FLASH_CSB_ID]);
+      `uvm_info(`gfn, "Detected end of SPI transaction", UVM_HIGH)
+    end
+    // Wait for 5 cycles after deassertion of CSB to allow for flash_status to get updated
+    cfg.clk_rst_vif.wait_clks(5);
+    get_flash_status_busy(busy);
+    // If busy bit is not cleared, check once more else raise an error
+    if (busy) begin
+      get_flash_status_busy(busy);
+      `DV_CHECK_EQ(busy, 0, "flash_status.busy == 1 expected to be 0")
+    end
     `uvm_info(`gfn, "Cleared flash busy bit", UVM_MEDIUM)
   endtask
 
@@ -747,12 +735,24 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   endtask
 
   virtual task read_and_check_4b_en();
-    cfg.clk_rst_vif.wait_clks(10);
-    // avoid accessing this CSR at the same time as tpm_init
-    cfg.spi_cfg_sema.get();
-    csr_rd_check(.ptr(ral.cfg.addr_4b_en),
-                 .compare_value(cfg.spi_device_agent_cfg.flash_addr_4b_en));
-    cfg.spi_cfg_sema.put();
+      uvm_reg_data_t rdata;
+      // Wait for 10 cycles to allow the reg value to update
+      cfg.clk_rst_vif.wait_clks(10);
+      // avoid accessing this CSR at the same time as tpm_init
+      cfg.spi_cfg_sema.get();
+      // Wait for register to be free
+      `DV_SPINWAIT(
+        while(1) begin
+          if (ral.cfg.is_busy()) begin
+            cfg.clk_rst_vif.wait_clks(1);
+          end else begin
+            break;
+          end
+        end)
+      // Check the contents of addr4b_en
+      csr_rd_check(.ptr(ral.cfg.addr_4b_en),
+             .compare_value(cfg.spi_device_agent_cfg.flash_addr_4b_en));
+      cfg.spi_cfg_sema.put();
   endtask
 
   virtual task random_write_spi_mem(int start_addr, int end_addr, string msg_region = "mem",

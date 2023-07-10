@@ -33,8 +33,7 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
-                // TODO: comment out for V2
-                //"{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson",
+                //"{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson", // TODO(#18886): enable for V3
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson"]
 
   // Add additional tops for simulation.

@@ -1389,10 +1389,7 @@ SIGVERIFY_MOD_EXP_CASES = [
     {
         "name": "invalid",
         "use_sw_rsa_verify": 0,
-        "exit_success": {
-            lc_state: MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.ILLEGAL_INSTRUCTION)) if lc_state_val != CONST.LCV.TEST_UNLOCKED0 else "use_sw_rsa_verify=0x00000000"
-            for lc_state, lc_state_val in get_lc_items()
-        },
+        "exit_success": {lc_state: "use_sw_rsa_verify=0x00000000" for lc_state, lc_state_val in get_lc_items()},
     },
 ]
 
@@ -2279,9 +2276,6 @@ test_suite(
                 "--vmem=\"$(rootpath //sw/device/examples/sram_program:sram_program_fpga_cw310_vmem)\"",
                 # the following values come from the sram linker script
                 "--load-addr=0x10001fc4",
-                "--stack-pointer=0x10020000",
-                "--stack-size=1024",
-                "--global-pointer=0x100027C4",  # sram_load_addr + 2048;
             ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
         ),
         data = [
@@ -3971,10 +3965,19 @@ opentitan_flash_binary(
     ],
 )
 
+bitstream_splice(
+    name = "bitstream_rom_self_hash_test_rma_otbn_mod_exp",
+    src = "//hw/bitstream:rom_with_real_keys",
+    data = ":otp_img_sigverify_mod_exp_rma_otbn",
+    meminfo = "//hw/bitstream:otp_mmi",
+    update_usr_access = True,
+    visibility = ["//visibility:private"],
+)
+
 opentitan_functest(
     name = "rom_e2e_self_hash_test",
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_real_keys_otp_test_unlocked0",
+        bitstream = ":bitstream_rom_self_hash_test_rma_otbn_mod_exp",
     ),
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom:rom_with_real_keys",

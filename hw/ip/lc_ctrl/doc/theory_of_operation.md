@@ -12,8 +12,9 @@ Note during OTP sensing, the life cycle controller does not perform any redundan
 
 Once the state values are correctly sensed, the life cycle controller performs checks on state consistency and dependencies, and if correct, broadcasts both the raw state value as well as the decoded functional outputs to the rest of the device.
 
-Once the broadcast is complete and signals stable, modules held under reset by ["sys_rst_n"](../../rstmgr/README.md) are then released from reset to begin mission mode operations (this includes the processor).
+Once the broadcast is complete and signals stable, the pinmux straps are sampled and the ROM check is started.
 Note this point is also when it is safe for DFT to commence operations, as DFT functions may be blocked until life cycle completes its broadcast.
+Once the ROM check completes, the CPU fetch enable is released.
 
 The following diagram illustrates this power-up sequence.
 Note the sequence is not designed into one specific module, but rather a result of coordination between the OTP controller, life cycle controller and the reset / power controllers.
@@ -391,6 +392,8 @@ For better security, all the [life cycle control signals](#life-cycle-decoded-ou
 The active ON state for every signal is broadcast as `4'b1010`, while the inactive OFF state is encoded as `4'b0101`.
 For all life cycle signals except the escalation signal ESCALATE_EN, all values different from ON must be interpreted as OFF in RTL.
 In case of ESCALATE_EN, all values different from OFF must be interpreted as ON in RTL.
+To that end the functions `lc_tx_test_true_strict()`, `lc_tx_test_true_loose()`, `lc_tx_test_false_strict()` and `lc_tx_test_false_loose()` in the `lc_ctrl_pkg` must be employed unless there is a strong reason not to.
+The reason must be documented and agreed at block sign-off.
 
 Since many signals cross clock boundaries, their synchronization needs to be taken into account.
 However, since the ON / OFF encoding above has been chosen such that **all bits toggle exactly once** for a transition from OFF to ON (and vice-versa), all that needs to be done is guard against metastability using a two-stage synchronizer, as illustrated below.
@@ -398,6 +401,8 @@ However, since the ON / OFF encoding above has been chosen such that **all bits 
 ![Multibit Sync](../doc/lc_ctrl_multibit_sync.svg)
 
 In other words, since each bit in the encoding flips exactly once upon an OFF -> ON or ON -> OFF transition, we can guarantee that there are no transient patterns toggling back and forth between enabling and disabling a function.
+It is crucial however that the design follows the guidance above and interprets all undefined values as either ON or OFF in order to avoid issues due to staggered bits after synchronization.
+
 Note that even though synchronization can be achieved with a simple two-stage synchronizer, designs **must** use the `prim_lc_sync` primitive.
 This primitive has additional LC-specific assertions and provides a parametric amount of separately buffered copies of the life cycle signal to prevent logic optimization by the synthesis tool (buffers have a 'size_only' constraint in synthesis).
 For all signals except ESCALATE_EN, it is recommended to structure the design such that at least two separately buffered copies of the life cycle signals have to be consumed in order to unlock a certain function.

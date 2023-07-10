@@ -13,14 +13,44 @@ steps:
       - |
         chown -R dev:dev /workspace
         exec gosu dev:dev /bin/bash -c "./util/site/build-docs.sh build"
-# Copy the build artifacts to the bucket where the site is hosted
-  - name: 'gcr.io/cloud-builders/gsutil'
+  - name: 'gcr.io/cloud-builders/gcloud'
+    env:
+    - 'PROJECT=gold-hybrid-255313'
+    script: |
+      #!/usr/bin/env bash
+      build_dir="/workspace/build-site"
+
+      # First, upload all (uncompressed) files
+      gcloud storage cp -R --gzip-in-flight=js,css,html "${build_dir}/*" gs://${PROJECT}-prod
+  - name: 'gcr.io/gold-hybrid-255313/builder'
+    entrypoint: bash
     args:
-      - '-m'
-      - 'rsync'
-      - '-r'
-      - '-d'
-      - '/workspace/build-site/'
-      - 'gs://gold-hybrid-255313-prod'
+      - '-c'
+      - |
+        # This script compresses the searchindex files, replacing the originals in-place.
+        # (This is how 'content-encoding'-tagged files should be uploaded to gcloud buckets)
+        exec gosu dev:dev /bin/bash -c "./util/site/post-build.sh compress_br"
+  - name: 'gcr.io/cloud-builders/gcloud'
+    env:
+    - 'PROJECT=gold-hybrid-255313'
+    script: |
+      #!/usr/bin/env bash
+      build_dir="/workspace/build-site"
+
+      # Next, upload the brotli-compressed files.
+      search_indexes=$(find ${build_dir}/ -type f -name '*searchindex.json')
+      for f in $search_indexes; do
+          echo "Uploading compressed file ${f}"
+          # Get directory of file, relative to the build directory.
+          # - var=${var#*//} # removes stuff from the begining up to //
+          dir=$(dirname "${f#*"${build_dir}"/}")
+          # When serving from gcloud buckets, file should be uploaded with an identical name as the
+          # original, but compressed and with the matching 'content-encoding' and 'content-type' tags applied.
+          gcloud storage cp \
+                 --content-encoding=br \
+                 --content-type=application/json \
+                 -R \
+                 "$f" "gs://${PROJECT}-prod/${dir}/"
+      done
 options:
   machineType: 'N1_HIGHCPU_8'

@@ -61,7 +61,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
   endtask // test_cs_entropy_req
 
   task test_cs_sw_cmd_sts();
-    // TODO: Instead of forcing ack_sts, find a way to actually generate the csrng_rsp_sts
+    // TODO(#16516): Instead of forcing ack_sts, find a way to actually generate the csrng_rsp_sts
     // response as described in the documentation
     // 1. Failure of the entropy source
     // 2. Attempts to use an instance which has not been properly instantiated, or
@@ -79,7 +79,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
   endtask
 
   task test_cs_hw_inst_exc();
-    // TODO: Instead of forcing ack_sts, find a way to actually generate the csrng_rsp_sts
+    // TODO(#16516): Instead of forcing ack_sts, find a way to actually generate the csrng_rsp_sts
     // response as described in the documentation
     // 1. Failure of the entropy source
     // 2. Attempts to use an instance which has not been properly instantiated, or

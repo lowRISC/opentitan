@@ -22,13 +22,13 @@ class uart_logger extends uvm_component;
     string fname = {`gfn, ".log"};
     if (cfg.write_logs_to_file) begin
       logs_output_fd = $fopen(fname, "w");
-      `DV_CHECK_FATAL(!logs_output_fd, $sformatf("Failed to open %s for writing", fname))
+      `DV_CHECK_FATAL((logs_output_fd !=0), $sformatf("Failed to open %s for writing", fname))
     end
     capture_logs();
   endtask
 
   virtual function void final_phase(uvm_phase phase);
-    if (logs_output_fd) $fclose(logs_output_fd);
+    if (logs_output_fd != 0) $fclose(logs_output_fd);
   endfunction
 
   // Captures bytes received from UART TX port and constructs the logs for printing.
@@ -36,8 +36,8 @@ class uart_logger extends uvm_component;
     uart_item item;
     string    char;
     string    log;
-    byte      lf = 8'ha;
-    byte      cr = 8'hd;
+    byte      lf = 8'ha;   // \n
+    byte      cr = 8'hd;   // \r
 
     fork
       forever begin
@@ -90,7 +90,7 @@ class uart_logger extends uvm_component;
         `uvm_info(`gfn, log, UVM_LOW)
       end
     endcase
-    if (logs_output_fd) begin
+    if (logs_output_fd != 0) begin
       $fwrite(logs_output_fd, "[%15t]: %0s\n", $time, log);
     end
   endfunction

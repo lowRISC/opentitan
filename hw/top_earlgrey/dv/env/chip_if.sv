@@ -327,7 +327,8 @@ interface chip_if;
   //
   // The pinmux version of lc_dft_en is used below because it goes through synchronizers.
 `ifdef GATE_LEVEL
-  wire pinmux_lc_dft_en = (`PINMUX_HIER.u_pinmux_strap_sampling.lc_dft_en[3:0] == lc_ctrl_pkg::On);
+  wire pinmux_lc_dft_en =
+  (`PINMUX_HIER.u_pinmux_strap_sampling.u_prim_lc_sync_lc_dft_en.lc_en_o[3:0] == lc_ctrl_pkg::On);
 `else
   wire pinmux_lc_dft_en = (`PINMUX_HIER.u_pinmux_strap_sampling.lc_dft_en[0] == lc_ctrl_pkg::On);
 `endif
@@ -335,7 +336,7 @@ interface chip_if;
                                lc_ctrl_pkg::On;
 
 `ifdef GATE_LEVEL
-  wire pwrmgr_fast_pwr_state_strap_en = `PINMUX_HIER.u_pinmux_strap_sampling.test_so1;
+  wire pwrmgr_fast_pwr_state_strap_en = `PINMUX_HIER.u_pinmux_strap_sampling.strap_en_q_reg.Q;
 `else
   wire pwrmgr_fast_pwr_state_strap_en = `PINMUX_HIER.u_pinmux_strap_sampling.strap_en_q;
 `endif
@@ -669,7 +670,7 @@ interface chip_if;
 
   wire pwrmgr_low_power = `PWRMGR_HIER.low_power_o;
   wire pwrmgr_cpu_fetch_en = `PWRMGR_HIER.fetch_en_o == lc_ctrl_pkg::On;
-  wire pwrmgr_fast_pwr_state_active = `PWRMGR_HIER.u_fsm.state_q
+  wire pwrmgr_fast_pwr_state_active = `PWRMGR_HIER.u_fsm.u_state_regs.state_o
       == pwrmgr_pkg::FastPwrStateActive;
 
 `ifdef GATE_LEVEL
@@ -719,7 +720,7 @@ interface chip_if;
 `endif
                                           );
   assign pwrmgr_low_power_if.low_power      = `PWRMGR_HIER.low_power_o;
-  assign pwrmgr_low_power_if.in_sleep       = `PWRMGR_HIER.u_fsm.state_q
+  assign pwrmgr_low_power_if.in_sleep       = `PWRMGR_HIER.u_fsm.u_state_regs.state_o
                                             == pwrmgr_pkg::FastPwrStateLowPower;
 `ifdef GATE_LEVEL
   assign pwrmgr_low_power_if.deep_powerdown = 0;
@@ -1102,11 +1103,11 @@ interface chip_if;
 `define _ADC_FSM_STATE_Q(i) \
    `ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q_``i``_
 
-  assign adc_ctrl_state = {`_ADC_FSM_STATE_Q(4),
-                           `_ADC_FSM_STATE_Q(3),
-                           `_ADC_FSM_STATE_Q(2),
+  assign adc_ctrl_state = {1'b0,
+                           1'b0,
+                           1'b0,
                            1'b0, // JDON need to check later
-                           `_ADC_FSM_STATE_Q(0)};
+                           1'b0};
 `undef _ADC_FSM_STATE_Q
 `else
   assign adc_ctrl_state = `ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q;
@@ -1139,25 +1140,25 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.stat
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_spi_host_1_fsm_state,
       spi_host_1_state, 3)
 
-  // Signal probe function for `state_q` of CSRNG main FSM
-  wire [csrng_pkg::MainSmStateWidth-1:0] csrng_main_state;
+  // Signal probe function for `acmd_q` of CSRNG core
+  wire [2:0] csrng_acmd_q;
 `ifdef GATE_LEVEL
-  assign csrng_main_state = 0;
+  assign csrng_acmd_q = 0;
 `else
-  assign csrng_main_state = `CSRNG_HIER.u_csrng_core.u_csrng_main_sm.state_q;
+  assign csrng_acmd_q = `CSRNG_HIER.u_csrng_core.acmd_q;
 `endif
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_csrng_main_fsm_state,
-      csrng_main_state, csrng_pkg::MainSmStateWidth)
-  // Signal probe function for `aes_ctrl_cs` of AES_CTRL_FSM
-  wire [5:0] aes_ctrl_fsm_state;
-  assign aes_ctrl_fsm_state =
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_csrng_acmd_q,
+      csrng_acmd_q, 3)
+  // Signal probe function for `rnd_ctr` of AES_CIPHER_CTRL
+  wire [3:0] aes_ctrl_rnd_ctr;
+  assign aes_ctrl_rnd_ctr =
 `ifdef GATE_LEVEL
                              0;
 `else
-      `AES_CONTROL_HIER.gen_fsm[0].gen_fsm_p.u_aes_control_fsm_i.u_aes_control_fsm.aes_ctrl_cs;
+      `AES_HIER.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.rnd_ctr;
 `endif
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_aes_ctrl_fsm_state,
-      aes_ctrl_fsm_state, 6)
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_aes_ctrl_rnd_ctr,
+      aes_ctrl_rnd_ctr, 4)
 
   // Signal probe function for `st_q` of HMAC
   wire [2:0] hmac_fsm_state;
@@ -1174,13 +1175,13 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.stat
 
   // Signal probe function for `st` of KMAC_CORE
   wire [5:0] kmac_fsm_state;
-  assign kmac_fsm_state = `KMAC_HIER.u_kmac_core.st;
+  assign kmac_fsm_state = `KMAC_HIER.u_kmac_core.u_state_regs.state_o;
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_kmac_fsm_state,
       kmac_fsm_state, 6)
 
   // Signal probe function for `state_q` OTBN_START_STOP_CONTROL
   wire [6:0] otbn_fsm_state;
-  assign otbn_fsm_state = `OTBN_HIER.u_otbn_core.u_otbn_start_stop_control.state_q;
+  assign otbn_fsm_state = `OTBN_HIER.u_otbn_core.u_otbn_start_stop_control.u_state_regs.state_o;
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_otbn_fsm_state,
       otbn_fsm_state, 7)
 

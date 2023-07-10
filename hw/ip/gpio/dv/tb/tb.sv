@@ -42,10 +42,13 @@ module tb;
 
   // dut
   gpio #(
-    // TODO: The scoreboard does not handle the 2 cycle delay yet, hence we disable the 2-flop
-    // synchronizers in the block level TB (they are enabled at the top). This should be aligned,
-    // so that synchronizers are always enabled.
+    // We have two build modes in this testbench: one with CDC synchronizers enabled, and one
+    // where they are disabled.
+`ifdef GPIO_ASYNC_ON
+    .GpioAsyncOn(1)
+`else
     .GpioAsyncOn(0)
+`endif
   ) dut (
     .clk_i (clk),
     .rst_ni(rst_n),

@@ -351,7 +351,8 @@ module otp_ctrl_lfsr_timer
     // Unconditionally jump into the terminal error state in case of escalation,
     // or if the two LFSR or counter states do not agree.
     // SEC_CM: TIMER.FSM.LOCAL_ESC, TIMER.FSM.GLOBAL_ESC
-    if (lfsr_err || integ_cnt_err || cnsty_cnt_err || escalate_en_i != lc_ctrl_pkg::Off) begin
+    if (lfsr_err || integ_cnt_err || cnsty_cnt_err ||
+        lc_ctrl_pkg::lc_tx_test_true_loose(escalate_en_i)) begin
        state_d = ErrorSt;
        fsm_err_o = 1'b1;
     end

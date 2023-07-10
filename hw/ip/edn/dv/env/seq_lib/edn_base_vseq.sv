@@ -16,7 +16,7 @@ class edn_base_vseq extends cip_base_vseq #(
   bit [entropy_src_pkg::FIPS_BUS_WIDTH - 1:0]   fips;
   mubi4_t                                       flags;
   bit [3:0]                                     clen, additional_data;
-  bit [18:0]                                    glen;
+  bit [11:0]                                    glen;
   bit [csrng_pkg::CSRNG_CMD_WIDTH - 1:0]        cmd_data;
 
   rand bit                                      set_regwen;
@@ -40,13 +40,16 @@ class edn_base_vseq extends cip_base_vseq #(
 
     if (do_edn_init) begin
       // Initialize DUT and start device sequence
-      edn_init();
       device_init();
+      edn_init();
     end
   endtask
 
   virtual task device_init();
     csrng_device_seq   m_dev_seq;
+
+    // Let CSRNG agent know that EDN interface is no longer disabled.
+    cfg.edn_vif.drive_edn_disable(0);
 
     m_dev_seq = csrng_device_seq::type_id::create("m_dev_seq");
     fork
@@ -55,6 +58,8 @@ class edn_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task edn_init(string reset_kind = "HARD");
+
+    additional_data = 0;
 
     if (cfg.use_invalid_mubi) begin
       // Turn off DUT assertions so that the corresponding alert can fire
@@ -76,23 +81,14 @@ class edn_base_vseq extends cip_base_vseq #(
       end
     end
 
-    // Enable edn, set modes
-    ral.ctrl.edn_enable.set(cfg.enable);
-    ral.ctrl.boot_req_mode.set(cfg.boot_req_mode);
-    ral.ctrl.auto_req_mode.set(cfg.auto_req_mode);
-    csr_update(.csr(ral.ctrl));
-
     if (cfg.auto_req_mode == MuBi4True) begin
       // Verify CMD_FIFO_RST bit
       for (int i = 0; i < 13; i++) begin
         `DV_CHECK_STD_RANDOMIZE_FATAL(cmd_data)
         csr_wr(.ptr(ral.generate_cmd), .value(cmd_data));
       end
-      ral.ctrl.cmd_fifo_rst.set(MuBi4True);
-      csr_update(.csr(ral.ctrl));
-      // TODO: Verify can't write until reset
-      ral.ctrl.cmd_fifo_rst.set(MuBi4False);
-      csr_update(.csr(ral.ctrl));
+      csr_wr(.ptr(ral.ctrl.cmd_fifo_rst), .value(MuBi4True));
+      csr_wr(.ptr(ral.ctrl.cmd_fifo_rst), .value(MuBi4False));
 
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
       `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
@@ -114,6 +110,12 @@ class edn_base_vseq extends cip_base_vseq #(
       end
     end
 
+    // Enable edn, set modes
+    ral.ctrl.edn_enable.set(cfg.enable);
+    ral.ctrl.boot_req_mode.set(cfg.boot_req_mode);
+    ral.ctrl.auto_req_mode.set(cfg.auto_req_mode);
+    csr_update(.csr(ral.ctrl));
+
     // If set_regwen is set, write random value to the EDN, and expect the write won't be taken.
     if (set_regwen) begin
       csr_wr(.ptr(ral.regwen), .value(0));
@@ -134,11 +136,6 @@ class edn_base_vseq extends cip_base_vseq #(
            EdnFifoStateErrTest});)
       csr_update(ral.err_code_test);
     end
-  endtask
-
-  virtual task dut_shutdown();
-    // check for pending edn operations and wait for them to complete
-    // TODO
   endtask
 
   virtual task instantiate_csrng();
@@ -186,11 +183,17 @@ class edn_base_vseq extends cip_base_vseq #(
                       additional_data -= 1;
                     end
                     else begin
-                      csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1));
-                      csr_wr(.ptr(ral.sw_cmd_req), .value({glen, flags, clen, 1'b0, acmd}));
-                      additional_data = clen;
+                      `DV_SPINWAIT_EXIT(
+                        csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1));,
+                        wait(cfg.abort_sw_cmd);,
+                        "Aborted SW command"
+                      )
+                      if (!cfg.abort_sw_cmd) begin
+                        csr_wr(.ptr(ral.sw_cmd_req), .value({glen, flags, clen, 1'b0, acmd}));
+                        additional_data = clen;
+                      end
                     end
-                    if (!additional_data) begin
+                    if (!additional_data && !cfg.abort_sw_cmd) begin
                       wait_cmd_req_done();
                     end
                   end
@@ -290,7 +293,7 @@ class edn_base_vseq extends cip_base_vseq #(
   endtask // force_path_err
 
   // Find the first or last index in the original string that the target character appears
-  function automatic int find_index (string target, string original_str, string which_index);
+  function automatic int find_index (byte target, string original_str, string which_index);
     int        index;
     case (which_index)
       "first": begin

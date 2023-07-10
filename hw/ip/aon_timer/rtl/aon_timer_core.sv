@@ -36,7 +36,8 @@ module aon_timer_core import aon_timer_reg_pkg::*; (
 
   // Prescaler counter
   assign prescale_count_d = wkup_incr ? 12'h000 : (prescale_count_q + 12'h001);
-  assign prescale_en      = reg2hw_i.wkup_ctrl.enable.q & (lc_escalate_en_i[0] == lc_ctrl_pkg::Off);
+  assign prescale_en      = reg2hw_i.wkup_ctrl.enable.q &
+                            lc_ctrl_pkg::lc_tx_test_false_strict(lc_escalate_en_i[0]);
 
   always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
     if (!rst_aon_ni) begin
@@ -47,7 +48,8 @@ module aon_timer_core import aon_timer_reg_pkg::*; (
   end
 
   // Wakeup timer count
-  assign wkup_incr = (lc_escalate_en_i[1] == lc_ctrl_pkg::Off) & reg2hw_i.wkup_ctrl.enable.q &
+  assign wkup_incr = lc_ctrl_pkg::lc_tx_test_false_strict(lc_escalate_en_i[1]) &
+                     reg2hw_i.wkup_ctrl.enable.q &
                      (prescale_count_q == reg2hw_i.wkup_ctrl.prescaler.q);
 
   assign wkup_count_reg_wr_o  = wkup_incr;
@@ -61,7 +63,8 @@ module aon_timer_core import aon_timer_reg_pkg::*; (
   ////////////////////
 
   // Watchdog timer count
-  assign wdog_incr = reg2hw_i.wdog_ctrl.enable.q & (lc_escalate_en_i[2] == lc_ctrl_pkg::Off) &
+  assign wdog_incr = reg2hw_i.wdog_ctrl.enable.q &
+                     lc_ctrl_pkg::lc_tx_test_false_strict(lc_escalate_en_i[2]) &
                      ~(sleep_mode_i & reg2hw_i.wdog_ctrl.pause_in_sleep.q);
 
   assign wdog_count_reg_wr_o  = wdog_incr;

@@ -15,7 +15,6 @@ class edn_disable_vseq extends edn_base_vseq;
     // The edn_init is done in dut_init. So adding this disablement in pre_start in order to hit
     // certain boot init states.
     string main_sm_d_path = "tb.dut.u_edn_core.u_edn_main_sm.state_d";
-    // TODO: This disable sequence targets at the boot mode only.
     state_e boot_sts[$] = {BootLoadIns, BootLoadGen, BootInsAckWait, BootCaptGenCnt,
                            BootSendGenCmd, BootGenAckWait, BootPulse, BootDone};
 
@@ -30,11 +29,11 @@ class edn_disable_vseq extends edn_base_vseq;
         wait(cfg.clk_rst_vif.rst_n == 1);
 
         // Random delay, disable edn
-        if ($urandom_range(0, 1)) begin
+        if ($urandom_range(1, 10) > 8) begin
           `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wait_disable,
                                              wait_disable inside
                                              { [80:300] };)
-           cfg.clk_rst_vif.wait_clks(wait_disable);
+           cfg.clk_rst_vif.wait_n_clks(wait_disable);
            `uvm_info(`gfn, $sformatf("Wait %0d clk cycles then issue edn disablement",
                      wait_disable), UVM_HIGH)
         end else begin
@@ -43,16 +42,20 @@ class edn_disable_vseq extends edn_base_vseq;
           `uvm_info(`gfn, $sformatf("Wait until %0s state then issue edn disablement",
                     boot_sts[rand_st_idx].name), UVM_HIGH)
           `DV_SPINWAIT(
-              while (state_val != boot_sts[rand_st_idx]) begin
-                `DV_CHECK(uvm_hdl_read(main_sm_d_path, state_val))
-                cfg.clk_rst_vif.wait_clks(1);
-              end)
-         end
-        wait_no_outstanding_access();
-        // TODO: if directly writing to ral.ctrl.edn_enable, sometimes it will override the
+            forever begin
+              cfg.clk_rst_vif.wait_n_clks(1);
+              `DV_CHECK(uvm_hdl_read(main_sm_d_path, state_val))
+              if (state_val == boot_sts[rand_st_idx]) break;
+            end
+          )
+        end
+        // Disable EDN through a backdoor write, which prevents collisions with simultaneous
+        // frontdoor writes that could delay this disable and thereby impede the disablement in the
+        // same clock cycle.
+        // If directly writing to ral.ctrl.edn_enable, sometimes it will override the
         // boot_req_mode to Mubi4False, so I hardcode this ctrl_val for now.
         ctrl_val = {MuBi4False, MuBi4False, MuBi4True, MuBi4False};
-        csr_wr(.ptr(ral.ctrl), .value(ctrl_val));
+        csr_wr(.ptr(ral.ctrl), .value(ctrl_val), .backdoor(1));
         cfg.edn_vif.drive_edn_disable(1);
         cfg.clk_rst_vif.wait_clks($urandom_range(10, 50));
         // Enable edn

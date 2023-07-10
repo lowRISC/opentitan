@@ -152,65 +152,25 @@ static rom_error_t sigverify_encoded_message_check(
   return kErrorSigverifyBadRsaSignature;
 }
 
-/**
- * Determines whether the software implementation should be used for signature
- * verification.
- *
- * During manufacturing (TEST_UNLOCKED*), software implementation is used by
- * default since OTP may not have been programmed yet. The implementation to use
- * after manufacturing (PROD, PROD_END, DEV, RMA) is determined by the OTP
- * value.
- *
- * @param lc_state Life cycle state of the device.
- * @return Whether to use software implementation for signature verification.
- */
-OT_WARN_UNUSED_RESULT
-static hardened_bool_t sigverify_use_sw_rsa_verify(lifecycle_state_t lc_state) {
-  switch (launder32(lc_state)) {
-    case kLcStateTest:
-      HARDENED_CHECK_EQ(lc_state, kLcStateTest);
-      // Don't read from OTP during manufacturing. Use software
-      // implementation by default.
-      return kHardenedBoolTrue;
-    case kLcStateDev:
-      HARDENED_CHECK_EQ(lc_state, kLcStateDev);
-      return otp_read32(
-          OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN_OFFSET);
-    case kLcStateProd:
-      HARDENED_CHECK_EQ(lc_state, kLcStateProd);
-      return otp_read32(
-          OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN_OFFSET);
-    case kLcStateProdEnd:
-      HARDENED_CHECK_EQ(lc_state, kLcStateProdEnd);
-      return otp_read32(
-          OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN_OFFSET);
-    case kLcStateRma:
-      HARDENED_CHECK_EQ(lc_state, kLcStateRma);
-      return otp_read32(
-          OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN_OFFSET);
-    default:
-      HARDENED_TRAP();
-      OT_UNREACHABLE();
-  }
-}
-
 rom_error_t sigverify_rsa_verify(const sigverify_rsa_buffer_t *signature,
                                  const sigverify_rsa_key_t *key,
                                  const hmac_digest_t *act_digest,
                                  lifecycle_state_t lc_state,
                                  uint32_t *flash_exec) {
-  hardened_bool_t use_sw = sigverify_use_sw_rsa_verify(lc_state);
+  uint32_t sw_en = otp_read32(
+      OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN_OFFSET);
   sigverify_rsa_buffer_t enc_msg;
   rom_error_t error = kErrorSigverifyBadRsaSignature;
-  switch (use_sw) {
-    case kHardenedBoolTrue:
-      error = sigverify_mod_exp_ibex(key, signature, &enc_msg);
-      break;
+  // If OTP is not initialized, we default to Ibex signature verification.
+  switch (launder32(sw_en)) {
     case kHardenedBoolFalse:
+      HARDENED_CHECK_EQ(sw_en, kHardenedBoolFalse);
       error = sigverify_mod_exp_otbn(key, signature, &enc_msg);
       break;
     default:
-      HARDENED_TRAP();
+      HARDENED_CHECK_NE(sw_en, kHardenedBoolFalse);
+      error = sigverify_mod_exp_ibex(key, signature, &enc_msg);
+      break;
   }
   if (launder32(error) != kErrorOk) {
     *flash_exec ^= UINT32_MAX;

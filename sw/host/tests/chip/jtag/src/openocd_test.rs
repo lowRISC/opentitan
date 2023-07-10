@@ -139,47 +139,38 @@ fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     //
     // Test register read/writes
     //
-    let orig_sp = jtag.read_riscv_reg(&RiscvReg::GprByName(RiscvGpr::SP))?;
+    let orig_sp = jtag.read_riscv_reg(&RiscvReg::Gpr(RiscvGpr::SP))?;
     log::info!("SP: {:x}", orig_sp);
-    let orig_pc = jtag.read_riscv_reg(&RiscvReg::CsrByName(RiscvCsr::DPC))?;
+    let orig_pc = jtag.read_riscv_reg(&RiscvReg::Csr(RiscvCsr::DPC))?;
     log::info!("PC: {:x}", orig_pc);
-    jtag.write_riscv_reg(&RiscvReg::GprByName(RiscvGpr::SP), 0xdeadbeef)?;
-    jtag.write_riscv_reg(&RiscvReg::CsrByName(RiscvCsr::DPC), 0xcc00ffee)?;
+    jtag.write_riscv_reg(&RiscvReg::Gpr(RiscvGpr::SP), 0xdeadbeef)?;
+    jtag.write_riscv_reg(&RiscvReg::Csr(RiscvCsr::DPC), 0xcc00ffee)?;
     log::info!(
         "SP: {:x}",
-        jtag.read_riscv_reg(&RiscvReg::GprByName(RiscvGpr::SP))?
+        jtag.read_riscv_reg(&RiscvReg::Gpr(RiscvGpr::SP))?
     );
     log::info!(
         "PC: {:x}",
-        jtag.read_riscv_reg(&RiscvReg::CsrByName(RiscvCsr::DPC))?
+        jtag.read_riscv_reg(&RiscvReg::Csr(RiscvCsr::DPC))?
     );
     // restore
-    jtag.write_riscv_reg(&RiscvReg::GprByName(RiscvGpr::SP), orig_sp)?;
-    jtag.write_riscv_reg(&RiscvReg::CsrByName(RiscvCsr::DPC), orig_pc)?;
+    jtag.write_riscv_reg(&RiscvReg::Gpr(RiscvGpr::SP), orig_sp)?;
+    jtag.write_riscv_reg(&RiscvReg::Csr(RiscvCsr::DPC), orig_pc)?;
 
     //
     // Test reset
     //
     jtag.reset(/* run */ false)?;
     // the reset address is 0x8080
-    assert_eq!(
-        jtag.read_riscv_reg(&RiscvReg::CsrByName(RiscvCsr::DPC))?,
-        0x8080
-    );
+    assert_eq!(jtag.read_riscv_reg(&RiscvReg::Csr(RiscvCsr::DPC))?, 0x8080);
     jtag.step()?;
     // the first instruction is a jump to 0x8180
-    assert_eq!(
-        jtag.read_riscv_reg(&RiscvReg::CsrByName(RiscvCsr::DPC))?,
-        0x8180
-    );
+    assert_eq!(jtag.read_riscv_reg(&RiscvReg::Csr(RiscvCsr::DPC))?, 0x8180);
     jtag.reset(/* run */ true)?;
     jtag.halt()?;
     // at this point the target must have execute at least one instruction so it should
     // not be at the reset vector anymore
-    assert_ne!(
-        jtag.read_riscv_reg(&RiscvReg::CsrByName(RiscvCsr::DPC))?,
-        0x8080
-    );
+    assert_ne!(jtag.read_riscv_reg(&RiscvReg::Csr(RiscvCsr::DPC))?, 0x8080);
     jtag.resume()?;
 
     jtag.disconnect()?;

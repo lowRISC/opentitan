@@ -200,7 +200,7 @@ class aes_message_item extends uvm_sequence_item;
   constraint config_error_type_c {
     solve has_config_error before cfg_error_type;
     solve sideload_en before cfg_error_type;
-    if (has_config_error & !sideload_en) {
+    if (has_config_error) {
       cfg_error_type inside {[1:7]};
       config_error_type_en[0] -> cfg_error_type[0] == 0;
       config_error_type_en[1] -> cfg_error_type[1] == 0;

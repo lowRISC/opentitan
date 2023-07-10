@@ -105,9 +105,11 @@ status_t test_4bytes_address(dif_spi_host_t *spi);
  *
  * @param spi A spi host handler.
  * @param opcode The opcode used by the part-number for quad page program.
+ * @param addr_width The width of the transaction addressing section.
  * @return status_t containing either OK or an error.
  */
-status_t test_page_program_quad(dif_spi_host_t *spi, uint8_t opcode);
+status_t test_page_program_quad(dif_spi_host_t *spi, uint8_t opcode,
+                                uint8_t address_width);
 
 /**
  * Erase a 32kB block and read it back to check if was erased.

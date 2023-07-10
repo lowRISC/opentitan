@@ -95,6 +95,11 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
     super.cpu_init();
     // Let SW know which lc state we picked.
     sw_symbol_backdoor_overwrite("kSrcLcState", state, SwTypeRom);
+    if (cfg.en_small_rma) begin
+      bit [7:0] en_short_rma[1];
+      en_short_rma[0] = 1;
+      sw_symbol_backdoor_overwrite("kShortRma", en_short_rma, SwTypeRom);
+    end
   endtask
 
   virtual task check_lc_state(dec_lc_state_e exp_state);

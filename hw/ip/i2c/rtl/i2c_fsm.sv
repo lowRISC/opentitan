@@ -540,7 +540,7 @@ module i2c_fsm import i2c_pkg::*;
         host_idle_o = 1'b0;
         sda_d = 1'b1;
         scl_d = 1'b1;
-        if (sda_i && !fmt_flag_nak_ok_i) event_nak_o = 1'b1;
+        if (!scl_i_q && scl_i && sda_i && !fmt_flag_nak_ok_i) event_nak_o = 1'b1;
         stretch_en = 1'b1;
         if (scl_i_q && !scl_i)  event_scl_interference_o = 1'b1;
         if (sda_i_q != sda_i)   event_sda_unstable_o = 1'b1;
@@ -1228,7 +1228,7 @@ module i2c_fsm import i2c_pkg::*;
           tcount_sel = tClockStart;
         end
       end
-      // AcquireAckHold: target pulls SDA low whilREe SCL is pulled low
+      // AcquireAckHold: target pulls SDA low while SCL is pulled low
       AcquireAckHold : begin
         if (tcount_q == 20'd1) begin
           // If there is no space for the current entry, stretch clocks and
@@ -1299,7 +1299,7 @@ module i2c_fsm import i2c_pkg::*;
 
     // When a start is detected, always go to the acquire start state.
     // Differences in repeated start / start handling are done in the
-    // other fsm.
+    // other FSM.
     if (!target_idle && !target_enable_i) begin
       // If the target function is currently not idle but target_enable is suddenly dropped,
       // (maybe because the host locked up and we want to cycle back to an initial state),

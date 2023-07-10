@@ -23,37 +23,28 @@ enum {
   kSha256HashSizeIn32BitWords = kSha256HashSizeInBytes / 4,
 };
 
-// TODO(#18686): replace with real golden hashes (when real keys are generated).
 /**
  * The golden ROM size and hashes expected below are generated using the
  * following instructions. If the ROM is updated, these values must also be
  * updated to prevent CI failures.
  *
- * 1. Build the ROM with Bazel using:
- *    `bazel build //sw/device/silicon_creator/rom:rom_with_real_keys`
- *    Note, this will build a separate ROM binary for each device, that can both
- *    be located with `./bazelisk.sh outquery-all
- *    //sw/device/silicon_creator/rom:rom_with_real_keys`, including:
- *    a. one for DV simulations: "rom_with_real_keys_sim_dv.bin", and
- *    b. one for CW310 FPGA: "rom_with_real_keys_fpga_cw310.bin".
- *
- * 2. Query the ROM hashes:
+ * 1. Build the ROM and query the ROM hashes:
  *    bazel build //sw/device/silicon_creator/rom:rom_hashes
  *    cat bazel-bin/sw/device/silicon_creator/rom/rom_hashes.txt
  *
- * 3. Update the size and golden ROM hashes below (`k*GoldenRomHash`) by
+ * 2. Update the size and golden ROM hashes below (`k*GoldenRomHash`) by
  *    copying the little-endian-32 value arrays from the `rom_hashes.txt`
  *    report.
  */
 
 const size_t kGoldenRomSizeBytes = 32652 - sizeof(chip_info_t);
 const uint32_t kSimDvGoldenRomHash[kSha256HashSizeIn32BitWords] = {
-    0x76238644, 0x6509c464, 0x5a598a36, 0xe74a800b,
-    0x4069c647, 0x3eaf3a88, 0x96797302, 0x96993d2e,
+    0x23666ac8, 0x369c59b5, 0x13704245, 0x3cca7872,
+    0x6ffdb69f, 0x40d91feb, 0x21079e09, 0x21a036aa,
 };
 const uint32_t kFpgaCw310GoldenRomHash[kSha256HashSizeIn32BitWords] = {
-    0xeac888af, 0x1f12fade, 0xc0960031, 0xcdf14768,
-    0xfb797390, 0xea6c738b, 0xc47ae33e, 0xd54af879,
+    0xb990c55c, 0x7f327f76, 0x0a7ee6db, 0x8541f96b,
+    0xe3a7c719, 0x6875c88c, 0xbf1c08b4, 0xad5fd883,
 };
 
 extern const char _chip_info_start[];
@@ -71,7 +62,9 @@ status_t hash_rom(void) {
   };
 
   TRY(otcrypto_hash(input, kHashModeSha256, &output));
-  LOG_INFO("ROM Hash: 0x%!x", kSha256HashSizeInBytes, rom_hash);
+  LOG_INFO("ROM Hash: 0x%08x%08x%08x%08x%08x%08x%08x%08x", rom_hash[7],
+           rom_hash[6], rom_hash[5], rom_hash[4], rom_hash[3], rom_hash[2],
+           rom_hash[1], rom_hash[0]);
   chip_info_t *rom_chip_info = (chip_info_t *)_chip_info_start;
   LOG_INFO("rom_chip_info @ %p:", rom_chip_info);
   LOG_INFO("scm_revision = %08x%08x",

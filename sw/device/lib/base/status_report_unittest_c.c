@@ -32,7 +32,12 @@ status_t think(void) {
 #undef MODULE_ID
 
 #define MODULE_ID MAKE_MODULE_ID('u', 'n', 't')
+
 status_t status_report_unittest_c(void) {
+  // Artificially report an OK status just to make sure that the status printer
+  // can handle those as well. The value is very large on purpose to exercise
+  // the fact that the status code of Ok can use a lot more bits than error.
+  status_report(OK_STATUS(654321));
   TRY(think());
   return OK_STATUS();
 }

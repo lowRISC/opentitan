@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:const.bzl", "CONST", "lcv_hw_to_sw")
+load("//rules:const.bzl", "CONST")
 load("@rules_cc//cc:action_names.bzl", "ACTION_NAMES")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load(
@@ -528,6 +528,7 @@ elf_to_scrambled_rom_vmem = rv_rule(
     implementation = _elf_to_scrambled_rom_impl,
     attrs = {
         "srcs": attr.label_list(allow_files = True),
+        "data": attr.label_list(allow_files = True),
         "_scramble_tool": attr.label(
             default = "@//hw/ip/rom_ctrl/util:scramble_image",
             executable = True,

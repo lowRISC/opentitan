@@ -51,12 +51,14 @@ class aes_base_vseq extends cip_base_vseq #(
     wait(cfg.clk_rst_vif.rst_n);
   endtask // aes_reset
 
+
   // setup basic aes features
   virtual task aes_init();
-
-    bit [31:0] aes_ctrl    = '0;
+    bit [31:0] aes_ctrl = '0;
+    bit [31:0] aes_ctrl_aux = '0;
     bit [31:0] aes_trigger = '0;
-
+    // Lock and check locking of auxiliary control register (1) or not (0).
+    bit lock_ctrl_aux = $urandom_range(0, 1);
     `uvm_info(`gfn, $sformatf("\n\t ----| CHECKING FOR IDLE"), UVM_HIGH)
     csr_spinwait(.ptr(ral.status.idle) , .exp_data(1'b1));
     // initialize control register
@@ -64,9 +66,33 @@ class aes_base_vseq extends cip_base_vseq #(
     aes_ctrl[7:2]  = aes_pkg::AES_ECB;   // 6'b00_0001
     aes_ctrl[10:8] = aes_pkg::AES_128;   // 3'b001
     csr_wr(.ptr(ral.ctrl_shadowed), .value(aes_ctrl), .en_shadow_wr(1'b1), .blocking(1));
-    // set key touch force //
+    // Write auxiliary control register and make sure the update went through, i.e., the register
+    // isn't locked already.
     csr_wr(.ptr(ral.ctrl_aux_shadowed.key_touch_forces_reseed), .value(cfg.do_reseed),
         .en_shadow_wr(1'b1), .blocking(1));
+    csr_rd(.ptr(ral.ctrl_aux_shadowed), .value(aes_ctrl_aux), .blocking(1));
+    `DV_CHECK_FATAL(aes_ctrl_aux[0] == cfg.do_reseed);
+    // Lock auxiliary control register and try overwriting it afterwards.
+    if (lock_ctrl_aux) begin
+      `uvm_info(`gfn, "Locking auxiliary control register", UVM_MEDIUM)
+      set_regwen(0);
+      `uvm_info(`gfn, "Try overwriting locked auxiliary control register", UVM_MEDIUM)
+      csr_wr(.ptr(ral.ctrl_aux_shadowed.key_touch_forces_reseed), .value(!cfg.do_reseed),
+          .en_shadow_wr(1'b1), .blocking(1));
+      // Read the current value back to ensure the contents of the register didn't change.
+      csr_rd(.ptr(ral.ctrl_aux_shadowed), .value(aes_ctrl_aux), .blocking(1));
+      `DV_CHECK_FATAL(aes_ctrl_aux[0] == cfg.do_reseed);
+      // Try unlocking the auxiliary control register and overwriting it afterwards. This is not
+      // possible either as the lock persists until the next reset.
+      set_regwen(1);
+      csr_wr(.ptr(ral.ctrl_aux_shadowed.key_touch_forces_reseed), .value(!cfg.do_reseed),
+          .en_shadow_wr(1'b1), .blocking(1));
+      csr_rd(.ptr(ral.ctrl_aux_shadowed), .value(aes_ctrl_aux), .blocking(1));
+      `DV_CHECK_FATAL(aes_ctrl_aux[0] == cfg.do_reseed);
+    end else begin
+      // Don't lock it. This is the default value after reset. The write is mostly for coverage.
+      set_regwen(1);
+    end
   endtask // aes_init
 
 
@@ -89,19 +115,19 @@ class aes_base_vseq extends cip_base_vseq #(
     csr_update(ral.trigger);
   endtask // clear_registers
 
-  virtual task set_ctrl_aux_shadowed(bit val);
-    csr_wr(.ptr(ral.ctrl_aux_shadowed), .value(val), .en_shadow_wr(1'b1), .blocking(1));
-  endtask // set_ctrl_aux_shadowed
+
   virtual task prng_reseed();
     bit [TL_DW:0] reg_val = '0;
     reg_val[3] = 1'b1;
     csr_wr(.ptr(ral.trigger), .value(reg_val));
   endtask // prng_reseed
 
+
   virtual task set_regwen(bit val);
     ral.ctrl_aux_regwen.set(val);
-    csr_update(.csr(ral.ctrl_aux_regwen), .en_shadow_wr(1'b0), .blocking(1));
+    csr_wr(.ptr(ral.ctrl_aux_regwen), .value(val), .blocking(1));
   endtask // set_regwen
+
 
   virtual task set_operation(bit [1:0] operation);
       ral.ctrl_shadowed.operation.set(operation);
@@ -124,6 +150,7 @@ class aes_base_vseq extends cip_base_vseq #(
     end
   endtask // set_key_len
 
+
   virtual task set_sideload(bit sideload);
     if (ral.ctrl_shadowed.sideload.get_mirrored_value() != sideload) begin
       ral.ctrl_shadowed.sideload.set(sideload);
@@ -131,6 +158,13 @@ class aes_base_vseq extends cip_base_vseq #(
     end
   endtask
 
+
+  virtual task set_prng_reseed_rate(prs_rate_e reseed_rate);
+    if (ral.ctrl_shadowed.prng_reseed_rate.get_mirrored_value() != reseed_rate) begin
+      ral.ctrl_shadowed.prng_reseed_rate.set(reseed_rate);
+      csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+    end
+  endtask
 
 
   virtual task set_manual_operation(bit manual_operation);
@@ -201,28 +235,84 @@ class aes_base_vseq extends cip_base_vseq #(
 
 
   virtual task setup_dut(aes_seq_item item);
-    //CTRL reg
-    //setup one by one //
+    // Write the shadwoed CTRL register.
+    status_t status;
+    // Setup fields one by one (0) or all fields together (1).
     bit setup_mode = 0;
+    // Trigger a control update error (1) or not (0). Only applicable if setup_mode = 1.
+    bit control_update_error = 0;
+    // Index of the field which shall trigger the control update error.
+    int idx_error_field = 0;
     `DV_CHECK_STD_RANDOMIZE_FATAL(setup_mode)
+    if ($urandom_range(1, 100) > 95) control_update_error = 1;
+    idx_error_field = $urandom_range(0, 5);
     csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
-    // disable shadow sideload to avoid triggering a reseed unless needed
+    // Any successful update to the shadowed control register marks the start of a new message. If
+    // sideload is enabled and a valid sideload key is available, it may be latched upon the second
+    // write and - depending on KEY_TOUCH_FORCES_RESEED - trigger a reseed operation which prevents
+    // further updates to the control register untile AES becomes idle again. For simplicity, we
+    // just disable sideload here and then update the sideload bit last.
     ral.ctrl_shadowed.sideload.set(0);
     if (!setup_mode) begin
       set_operation(item.operation);
       set_mode(item.aes_mode);
       set_key_len(item.key_len);
       set_manual_operation(item.manual_op);
+      set_prng_reseed_rate(prs_rate_e'(item.reseed_rate));
       set_sideload(item.sideload_en);
     end else begin
-      // or write all at once //
+      // Assemble the intended value.
       ral.ctrl_shadowed.operation.set(item.operation);
       ral.ctrl_shadowed.mode.set(item.mode);
       ral.ctrl_shadowed.key_len.set(item.key_len);
       ral.ctrl_shadowed.sideload.set(item.sideload_en);
       ral.ctrl_shadowed.manual_operation.set(item.manual_op);
       ral.ctrl_shadowed.prng_reseed_rate.set(item.reseed_rate);
+      // Trigger a control update error.
+      if (control_update_error) begin
+        `uvm_info(`gfn, $sformatf("Triggering control update error in field %0d", idx_error_field),
+            UVM_MEDIUM)
+        // Perform the first write using the correct data.
+        csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b0), .blocking(1));
+        // Make sure at least one field is flipped.
+        begin
+          unique case (idx_error_field)
+            0: ral.ctrl_shadowed.operation.set(item.operation == AES_DEC ? AES_ENC : AES_DEC);
+            1: ral.ctrl_shadowed.mode.set(item.mode == AES_ECB ? AES_NONE : AES_ECB);
+            2: ral.ctrl_shadowed.key_len.set(item.key_len == AES_128 ? AES_256 : AES_128);
+            3: ral.ctrl_shadowed.sideload.set(item.sideload_en ? 1'b0 : 1'b1);
+            4: ral.ctrl_shadowed.manual_operation.set(item.manual_op ? 1'b0 : 1'b1);
+            5: ral.ctrl_shadowed.prng_reseed_rate.set(item.reseed_rate == PER_64 ? PER_8K : PER_64);
+            default:;
+          endcase
+        end
+        // Perform the second write.
+        csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b0), .blocking(1));
+        // Check that we get the recoverable alert. It's possible that DV inserted a fatal error
+        // condition before the second write could go through. The recovery from the fatal alert
+        // is handled separately.
+        csr_rd(.ptr(ral.status), .value(status), .blocking(1));
+        `DV_CHECK_FATAL(status.alert_recov_ctrl_update_err == 1'b1 ||
+                        status.alert_fatal_fault == 1'b1);
+        // Re-assemble the intended value.
+        ral.ctrl_shadowed.operation.set(item.operation);
+        ral.ctrl_shadowed.mode.set(item.mode);
+        ral.ctrl_shadowed.key_len.set(item.key_len);
+        ral.ctrl_shadowed.sideload.set(item.sideload_en);
+        ral.ctrl_shadowed.manual_operation.set(item.manual_op);
+        ral.ctrl_shadowed.prng_reseed_rate.set(item.reseed_rate);
+      end
+      // Perform the register update without control update error. This will resolve potential
+      // previous update errors.
+      csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+      // Make sure the update went through and there wasn't an update error. It's possible that DV
+      // inserted a fatal error condition before the second write could go through. In this case,
+      // the recoverable alert condition may still be visilbe together with the fatal alert. The
+      // fatal alert is handled separately.
+      csr_rd(.ptr(ral.status), .value(status), .blocking(1));
+      `DV_CHECK_FATAL(status.alert_recov_ctrl_update_err == 1'b0 ||
+                      status.alert_fatal_fault == 1'b1);
     end
   endtask
 
@@ -432,47 +522,53 @@ class aes_base_vseq extends cip_base_vseq #(
     bit  new_msg            = 1;             // set when starting a new msg
     aes_seq_item read_queue[$];              // queue to hold items waiting for output
 
-    bit           read;
-    bit           write;
-    bit           wait_for_idle = 1;
-    rst_set  = 0;
+    bit read;
+    bit write;
+    bit return_on_idle = 1;
+    rst_set = 0;
     cfg_item = aes_item_queue.pop_back();
 
-
-    // check idle before starting
-
+    // Make sure the DUT is idle before setting it up. Writes to the main control register are only
+    // accpeted when idle.
     status_fsm(cfg_item, data_item, new_msg, manual_operation, sideload_en, 1, 0, status, rst_set);
+    // Configure the main control register.
     setup_dut(cfg_item);
-    // check idle before starting
-    wait_for_idle = 1 ;
+    // For some reason DV just waits for the DUT to be idle but not necessarily for it to accept
+    // new input data before providing the first block. But at the beginning of a message, the DUT
+    // is always ready to accept new input data anyway. Waiting for the DUT to be idle is required
+    // to provide IV and initial key.
+    return_on_idle = 1;
     if (unbalanced == 0 || manual_operation) begin
        data_item = new();
       while ((aes_item_queue.size() > 0) && !rst_set) begin
         status_fsm(cfg_item, data_item, new_msg, manual_operation,
-                   sideload_en, wait_for_idle, 0, status, rst_set);
-        // provide data as fast as the DUT allows
-        wait_for_idle = 0;
+                   sideload_en, return_on_idle, 0, status, rst_set);
+        // From now on, DV always waits for the DUT to be idle and to accept new input data.
+        return_on_idle = 0;
         if (status.input_ready && status.idle) begin
+          // The DUT is ready to accept new input data, as well as updates to IV and initial key
+          // registers (only allowed when idle). The first config_and_transmit() call configures
+          // key and IV.
           data_item = aes_item_queue.pop_back();
           config_and_transmit(cfg_item, data_item, new_msg,
                               manual_operation, sideload_en, 1, rst_set);
           new_msg = 0;
         end else if (cfg_item.mode == AES_NONE) begin
-          status_fsm(cfg_item, data_item, new_msg, manual_operation,
-                   sideload_en, 0, 0, status, rst_set);
-          // just write the data - don't expect and output
+          // The DUT won't produce any output when this mode is configured. Just write the new
+          // input data.
+          data_item = aes_item_queue.pop_back();
           config_and_transmit(cfg_item, data_item, new_msg,
                               manual_operation, sideload_en, 0, rst_set);
         end
       end
-    end else begin
 
+    end else begin
       while (((aes_item_queue.size() > 0) || (read_queue.size() > 0)) && !rst_set) begin
         // get the status to make sure we can provide data - but don't wait for output //
         if (aes_item_queue.size() > 0 ) data_item = new();
         status_fsm(cfg_item, data_item, new_msg,
-                   manual_operation, sideload_en, wait_for_idle, 0, status, rst_set);
-        wait_for_idle = 0;
+                   manual_operation, sideload_en, return_on_idle, 0, status, rst_set);
+        return_on_idle = 0;
         read  = ($urandom_range(0, 100) <= read_prob);
         write = ($urandom_range(0, 100) <= write_prob);
 
@@ -609,7 +705,7 @@ class aes_base_vseq extends cip_base_vseq #(
       csr_rd(.ptr(ral.status), .value(status), .blocking(1));
     end
 
-    while(!done && (cfg_item.mode != AES_NONE) && !global_reset) begin
+    while(!done && !global_reset) begin
       //read the status register to see that we have triggered the operation
       wait(!cfg.under_reset)
       csr_rd(.ptr(ral.status), .value(status), .blocking(1));
@@ -624,7 +720,7 @@ class aes_base_vseq extends cip_base_vseq #(
           try_recover(cfg_item, data_item, manual_operation, sideload_en);
           csr_rd(.ptr(ral.status), .value(status), .blocking(1));
           if ( !status.alert_fatal_fault) begin
-            `uvm_fatal(`gfn, $sformatf("\n\t WAS able to clear FATAL ALERT without reset \n\t %s",
+            `uvm_fatal(`gfn, $sformatf("\n\t Was able to clear FATAL ALERT without reset \n\t %s",
                        status2string(status)))
           end else begin
             wait_for_fatal_alert_and_reset();
@@ -634,6 +730,13 @@ class aes_base_vseq extends cip_base_vseq #(
         end else begin
           `uvm_fatal(`gfn, $sformatf("\n\t Unexpected Fatal alert in AES FSM \n\t %s",
              status2string(status)))
+        end
+      end else if (cfg_item.mode == AES_NONE) begin
+        // In this mode, the DUT is not ever supposed to accept input data or provide output data.
+        // But it can for example trigger a reseed operation upon loading a new initial key. Here,
+        // we just need to wait for the DUT to be idle.
+        if (status.idle) begin
+          done = 1;
         end
       end else begin
         // state 0
@@ -925,13 +1028,13 @@ class aes_base_vseq extends cip_base_vseq #(
 
   function string status2string(status_t status);
     string txt="";
-    txt ={txt, $sformatf("\n\t ---| IDLE:          %0b", status.idle)};
-    txt ={txt, $sformatf("\n\t ---| STALL:         %0b", status.stall)};
+    txt ={txt, $sformatf("\n\t ---| Idle:          %0b", status.idle)};
+    txt ={txt, $sformatf("\n\t ---| Stall:         %0b", status.stall)};
     txt ={txt, $sformatf("\n\t ---| Output Lost:   %0b", status.output_lost)};
     txt ={txt, $sformatf("\n\t ---| Output Valid:  %0b", status.output_valid)};
     txt ={txt, $sformatf("\n\t ---| Input Ready:   %0b", status.input_ready)};
     txt ={txt, $sformatf("\n\t ---| Alert - Recov: %0b", status.alert_recov_ctrl_update_err)};
-    txt ={txt, $sformatf("\n\t ---| Alert -Fatal:  %0b", status.alert_fatal_fault)};
+    txt ={txt, $sformatf("\n\t ---| Alert - Fatal: %0b", status.alert_fatal_fault)};
     return txt;
   endfunction // status2string
 

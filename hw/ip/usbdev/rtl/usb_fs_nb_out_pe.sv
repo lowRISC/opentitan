@@ -328,6 +328,11 @@ module usb_fs_nb_out_pe #(
     end
   end
 
+  // TODO(#18940): Use the link state to prevent the FSM from responding to
+  // packets until software is ready.
+  logic unused_link_active_i;
+  assign unused_link_active_i = ^link_active_i;
+
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
       out_xact_state <= StIdle;
@@ -351,7 +356,7 @@ module usb_fs_nb_out_pe #(
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
       data_toggle_q <= '0; // All endpoints
-    end else if (link_reset_i || !link_active_i) begin
+    end else if (link_reset_i) begin
       data_toggle_q <= '0; // All endpoints
     end else begin
       data_toggle_q <= data_toggle_d;

@@ -130,4 +130,13 @@ char *ottf_task_get_self_name(void);
     }                                                                    \
   } while (0)
 
+/**
+ * Override the default status report list size. This list is used to store
+ * error statuses in case of failed TRY() and are reported when the test
+ * fails. This must be used at the global scope.
+ */
+#define OTTF_OVERRIDE_STATUS_REPORT_LIST(list_size) \
+  const size_t kStatusReportListSize = list_size;   \
+  status_t status_report_list[list_size];
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_MAIN_H_

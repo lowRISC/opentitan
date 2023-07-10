@@ -145,9 +145,9 @@ enum {
   // is noted with @ below.
   // @0 us -> in this phase we will not do anything so that the exception
   // handlers have time to execute.
-  kEscalationPhase0Micros = 200,
+  kEscalationPhase0Micros = 400,
   // @200 us -> in this phase we will raise an NMI
-  kEscalationPhase1Micros = 200,
+  kEscalationPhase1Micros = 400,
   // @400 us -> in this phase we will assert lc_escalate_en
   kEscalationPhase2Micros = 200,
   // @600 us -> in this phase we will reset the chip
@@ -156,8 +156,8 @@ enum {
   // protocol, which asserts lc_escalate_en. That should prevent the Wdog
   // from running and sending out an NMI on its own (we check in the NMI
   // handler below that this does not happen).
-  kWdogBarkMicros = 450,
-  kWdogBiteMicros = 500,
+  kWdogBarkMicros = 850,
+  kWdogBiteMicros = 900,
   // We expect exactly one reset
   kMaxResets = 1,
   kMaxInterrupts = 30,

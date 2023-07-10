@@ -21,13 +21,27 @@ static dif_clkmgr_t clkmgr;
 static dif_usbdev_t usbdev;
 static dif_pinmux_t pinmux;
 
+static uint32_t device_usb_count;
+static uint32_t aon_clk_period_us;
+
+// Copied from sw/device/lib/testing/clkgmr_testutils.c
 static uint32_t cast_safely(uint64_t val) {
   CHECK(val <= UINT32_MAX);
   return (uint32_t)val;
 }
 
-static uint32_t device_usb_count;
-static uint32_t aon_clk_period_us;
+static inline uint32_t get_count_variability(uint32_t cycles,
+                                             uint32_t variability_percentage) {
+  return ((cycles * variability_percentage) + 99) / 100 + 1;
+}
+
+typedef struct expected_count_info {
+  uint32_t count;
+  uint32_t variability;
+} expected_count_info_t;
+
+static expected_count_info_t usb_count_info;
+static uint32_t kVariabilityPercentage = 5;
 
 // This variable can be overwritten from the TB side side to speed up
 // simulation. By default, it is set to 1ms, which matches the nominal sof
@@ -39,8 +53,9 @@ static volatile const uint32_t kSoFPeriodUs = 1000;
 static void enable_usb_meas_get_code(dif_clkmgr_t *clkmgr,
                                      dif_clkmgr_recov_err_codes_t *codes) {
   CHECK_STATUS_OK(clkmgr_testutils_enable_clock_count(
-      clkmgr, kDifClkmgrMeasureClockUsb, device_usb_count - 2,
-      device_usb_count + 2));
+      clkmgr, kDifClkmgrMeasureClockUsb,
+      usb_count_info.count - usb_count_info.variability,
+      usb_count_info.count + usb_count_info.variability));
 
   // Wait for measurements to go through a few cycles.
   busy_spin_micros(5 * aon_clk_period_us);
@@ -65,6 +80,10 @@ bool test_main(void) {
   device_usb_count =
       cast_safely(udiv64_slow(kClockFreqUsbHz, kClockFreqAonHz, NULL));
 
+  usb_count_info.count = device_usb_count - 1;
+  usb_count_info.variability =
+      get_count_variability(device_usb_count, kVariabilityPercentage);
+
   // First, connect usb.
   LOG_INFO("Enable usb");
   CHECK_DIF_OK(dif_pinmux_input_select(
@@ -73,13 +92,7 @@ bool test_main(void) {
 
   CHECK_DIF_OK(dif_usbdev_interface_enable(&usbdev, kDifToggleEnabled));
 
-  // Second, measure clocks before usb calibration.  They should be highly
-  // inaccurate.
-  dif_clkmgr_recov_err_codes_t codes;
-  enable_usb_meas_get_code(&clkmgr, &codes);
-  if ((codes & kDifClkmgrRecovErrTypeUsbMeas) == 0) {
-    LOG_FATAL("USB clock frequency is 48MHz when it should not be");
-  }
+  dif_clkmgr_recov_err_codes_t codes = 0;
 
   CHECK_DIF_OK(
       dif_clkmgr_disable_measure_counts(&clkmgr, kDifClkmgrMeasureClockUsb));

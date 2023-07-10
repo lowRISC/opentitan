@@ -10,7 +10,7 @@ load(
 
 package(default_visibility = ["//visibility:public"])
 
-# Pre-signed empty test binaries and aliases.
+# Empty test binaries and aliases.
 _EMPTY_TEST_DEVICES = [
     "sim_dv",
     "sim_verilator",
@@ -52,8 +52,10 @@ scramble_flash_vmem(
         srcs = [
             "rom_e2e_self_hash_{}.signed.bin".format(dev),
         ] + [] if dev == "fpga_cw310" else [
-            ":rom_e2e_self_hash_{}_scr_vmem64".format(dev),
-            ":rom_e2e_self_hash_{}_vmem64".format(dev),
+            ":rom_e2e_self_hash_sim_dv.logs.txt",
+            ":rom_e2e_self_hash_sim_dv.rodata.txt",
+            ":rom_e2e_self_hash_sim_dv_scr_vmem64",
+            ":rom_e2e_self_hash_sim_dv_vmem64",
         ],
     )
     for dev in [

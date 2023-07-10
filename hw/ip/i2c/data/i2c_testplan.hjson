@@ -236,7 +236,7 @@
             Host mode: disable host mode during host mode sequence
 
             Stimulus:
-              - Host sends an address and data but receives NAK response
+              - Host sends an address and data but receives NACK response
                 since agent is reset before transaction is complete and
                 host mode is disabled
             Checking:
@@ -587,10 +587,10 @@
             * Write address transmission with NAKOK
             * Data transmission with NAKOK
             * Stop data with NAKOK
-            Cross bytes with NAK from Target
-            * Cross data byte with NAKOK and NAK from Target
-            * Cross address byte with NAKOK and NAK from Target
-            * Cross data byte with NAKOK and NAK from Target
+            Cross bytes with NACK from Target
+            * Cross data byte with NAKOK and NACK from Target
+            * Cross address byte with NAKOK and NACK from Target
+            * Cross data byte with NAKOK and NACK from Target
             '''
     }
     {
@@ -601,9 +601,9 @@
             * Read address byte
             * Data byte
             * ACK before STOP
-            * NAK before STOP
+            * NACK before STOP
             * RSTART with previous ACK for READ
-            * RSTART with previous NAK for READ
+            * RSTART with previous NACK for READ
             '''
     }
     {

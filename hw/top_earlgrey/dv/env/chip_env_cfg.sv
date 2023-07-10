@@ -17,6 +17,9 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // use spi or backdoor to load bootstrap on the next boot
   bit                 use_spi_load_bootstrap = 0;
 
+  // skip ROM backdoor loading (when using ROM macro block)
+  bit                 skip_rom_bkdr_load = 0;
+
   // chip top interfaces
   virtual chip_if       chip_vif;
 
@@ -108,6 +111,15 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
   // Run small page rma
   bit   en_small_rma = 0;
+
+  // Add otp_ctrl test status value
+  logic [TL_DW-1:0] otp_test_status = 0;
+
+  // Add flash write latency
+  // to compensate vendor flash model
+  // use run_opts: "+flash_write_latency_in_us=<value>"
+  // it will be updated in chip_base_test::build
+  uint flash_write_latency_in_us = 0;
 
   // NOTE: The clk_freq_mhz variable created in the base class was meant to be used by clk_rst_vif
   // interface that is passed by default by the testbench (retrieved by dv_base_env class). It was
@@ -248,6 +260,11 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     // there can also be a pending response in the peripheral.
     // However, the actual ibex data port can only support 1 outstanding item.
     m_tl_agent_cfg.max_outstanding_req = 3;
+
+    // Set the number of RAM tiles (1 each).
+    num_ram_main_tiles = 1;
+    num_ram_ret_tiles = 1;
+    num_otbn_dmem_tiles = 1;
   endfunction
 
   // Disable functional coverage of comportable IP-specific specialized registers.
@@ -464,4 +481,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     return 0;
   endfunction
 
+  virtual function void update_otp_test_status();
+    otp_test_status = 0;
+  endfunction
 endclass

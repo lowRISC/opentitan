@@ -18,10 +18,15 @@
             - Configures all gpio pins as inputs, drives random value on cio_gpio_i signal and
               reads data_in register after random delay
             - Configures all gpio pins as outputs, programs direct_out and direct_oe registers to
-              random values and reads data_in register after random delay'''
+              random values and reads data_in register after random delay
+            The test is also run in a second build mode that enables the input synchronizers in
+            order to cover the input paths through these primitives.
+            '''
       stage: V1
       tests: ["gpio_smoke",
-              "gpio_smoke_no_pullup_pulldown"]
+              "gpio_smoke_no_pullup_pulldown",
+              "gpio_smoke_en_cdc_prim",
+              "gpio_smoke_no_pullup_pulldown_en_cdc_prim"]
     }
     {
       name: direct_and_masked_out

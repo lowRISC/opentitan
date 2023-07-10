@@ -32,6 +32,8 @@ static dif_lc_ctrl_t lc;
 static volatile const uint8_t kTestPhase = 0;
 static volatile const uint8_t kSrcLcState = 0;
 
+// Closed source short rma support
+static volatile const uint8_t kShortRma = 0;
 enum {
   kFlashInfoPageIdCreatorSecret = 1,
   kFlashInfoPageIdOwnerSecret = 2,
@@ -145,17 +147,26 @@ static void write_data_test_phase(void) {
   CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc, &curr_state));
   CHECK(curr_state == kSrcLcState);
 
+  uint32_t write_idx = 0;
   write_info_page_scrambled(kFlashInfoPageIdCreatorSecret, kRandomData[0]);
   write_info_page_scrambled(kFlashInfoPageIdOwnerSecret, kRandomData[1]);
   write_info_page_scrambled(kFlashInfoPageIdIsoPart, kRandomData[2]);
   write_data_page_scrambled(kRegionBaseBank0Page0Index,
                             kFlashBank0Page0DataRegion, kRandomData[3]);
-  write_data_page_scrambled(kRegionBaseBank0Page255Index,
-                            kFlashBank0Page255DataRegion, kRandomData[4]);
+  if (kShortRma)
+    write_idx = (kRegionBaseBank0Page0Index + 1);
+  else
+    write_idx = kRegionBaseBank0Page255Index;
+  write_data_page_scrambled(write_idx, kFlashBank0Page255DataRegion,
+                            kRandomData[4]);
   write_data_page_scrambled(kRegionBaseBank1Page0Index,
                             kFlashBank1Page0DataRegion, kRandomData[5]);
-  write_data_page_scrambled(kRegionBaseBank1Page255Index,
-                            kFlashBank1Page255DataRegion, kRandomData[6]);
+  if (kShortRma)
+    write_idx = (kRegionBaseBank1Page0Index + 1);
+  else
+    write_idx = kRegionBaseBank1Page255Index;
+  write_data_page_scrambled(write_idx, kFlashBank1Page255DataRegion,
+                            kRandomData[6]);
 
   LOG_INFO("Write data test complete - waiting for TB");
   // Going into WFI which will be detected by the testbench
@@ -176,21 +187,28 @@ static void enter_rma_test_phase(void) {
   dif_lc_ctrl_state_t curr_state;
   CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc, &curr_state));
   CHECK(curr_state == kSrcLcState);
+  uint32_t read_idx = 0;
 
   read_and_check_info_page_scrambled(true, kFlashInfoPageIdOwnerSecret,
                                      kRandomData[1]);
   read_and_check_data_page_scrambled(true, kRegionBaseBank0Page0Index,
                                      kFlashBank0Page0DataRegion,
                                      kRandomData[3]);
-  read_and_check_data_page_scrambled(true, kRegionBaseBank0Page255Index,
-                                     kFlashBank0Page255DataRegion,
-                                     kRandomData[4]);
+  if (kShortRma)
+    read_idx = (kRegionBaseBank0Page0Index + 1);
+  else
+    read_idx = kRegionBaseBank0Page255Index;
+  read_and_check_data_page_scrambled(
+      true, read_idx, kFlashBank0Page255DataRegion, kRandomData[4]);
   read_and_check_data_page_scrambled(true, kRegionBaseBank1Page0Index,
                                      kFlashBank1Page0DataRegion,
                                      kRandomData[5]);
-  read_and_check_data_page_scrambled(true, kRegionBaseBank1Page255Index,
-                                     kFlashBank1Page255DataRegion,
-                                     kRandomData[6]);
+  if (kShortRma)
+    read_idx = (kRegionBaseBank1Page0Index + 1);
+  else
+    read_idx = kRegionBaseBank1Page255Index;
+  read_and_check_data_page_scrambled(
+      true, read_idx, kFlashBank1Page255DataRegion, kRandomData[6]);
 
   LOG_INFO("Enter RMA test complete - waiting for TB");
   // Enter WFI for detection in the testbench.
@@ -205,6 +223,7 @@ static void check_wipe_test_phase(void) {
   dif_lc_ctrl_state_t curr_state;
   CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc, &curr_state));
   CHECK(curr_state == kDifLcCtrlStateRma);
+  uint32_t read_idx = 0;
 
   read_and_check_info_page_scrambled(false, kFlashInfoPageIdCreatorSecret,
                                      kRandomData[0]);
@@ -215,15 +234,21 @@ static void check_wipe_test_phase(void) {
   read_and_check_data_page_scrambled(false, kRegionBaseBank0Page0Index,
                                      kFlashBank0Page0DataRegion,
                                      kRandomData[3]);
-  read_and_check_data_page_scrambled(false, kRegionBaseBank0Page255Index,
-                                     kFlashBank0Page255DataRegion,
-                                     kRandomData[4]);
+  if (kShortRma)
+    read_idx = (kRegionBaseBank0Page0Index + 1);
+  else
+    read_idx = kRegionBaseBank0Page255Index;
+  read_and_check_data_page_scrambled(
+      false, read_idx, kFlashBank0Page255DataRegion, kRandomData[4]);
   read_and_check_data_page_scrambled(false, kRegionBaseBank1Page0Index,
                                      kFlashBank1Page0DataRegion,
                                      kRandomData[5]);
-  read_and_check_data_page_scrambled(false, kRegionBaseBank1Page255Index,
-                                     kFlashBank1Page255DataRegion,
-                                     kRandomData[6]);
+  if (kShortRma)
+    read_idx = (kRegionBaseBank1Page0Index + 1);
+  else
+    read_idx = kRegionBaseBank1Page255Index;
+  read_and_check_data_page_scrambled(
+      false, read_idx, kFlashBank1Page255DataRegion, kRandomData[6]);
   LOG_INFO("Wipe test complete - done");
 }
 

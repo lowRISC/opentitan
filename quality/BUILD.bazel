@@ -64,6 +64,8 @@ licence_test(
         "sw/otbn/crypto/sha512.s",
         # Mersenne Twister PRNG
         "sw/device/sca/lib/prng.c",
+        # SPHINCS+ known-answer test data
+        "sw/device/tests/crypto/testvectors/sphincsplus_kat/*.hjson",
         # Alma testbench files
         "hw/ip/aes/pre_sca/alma/cpp/testbench.h",
         "hw/ip/aes/pre_sca/alma/cpp/verilator_tb_aes_sbox.cpp",

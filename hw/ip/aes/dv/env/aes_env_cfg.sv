@@ -102,7 +102,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   int                inj_max_delay              = 1000;
   rand int           inj_delay;
 
-  rand flip_rst_lc_esc_e    flip_rst_lc_esc;
+  rand alert_reset_trigger_e alert_reset_trigger;
 
   // number of messages that was selected to be corrupt
   // these should be excluded from the num_messages count
@@ -154,14 +154,16 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
 
   constraint inj_delay_c    {inj_delay    inside {[inj_min_delay : inj_max_delay]};}
 
-  constraint flip_rst_lc_esc_c { if ( |error_types[3:1]) {
-                                   flip_rst_lc_esc dist { Flip_bits   :/ error_types.mal_inject,
-                                                          Pull_reset  :/ error_types.reset,
-                                                          Lc_escalate :/ error_types.lc_esc};
-                                 } else {
-                                   flip_rst_lc_esc == Flip_bits;
-                                 }
-                               }
+  constraint alert_reset_trigger_c {
+      if ( |error_types[3:1]) {
+          alert_reset_trigger dist { ShadowRegStorageErr :/ 4 * error_types.mal_inject,
+                                     PullReset           :/ 4 * error_types.reset,
+                                     LcEscalate          :/ 4 * error_types.lc_esc,
+                                     AlertTest           :/     error_types.mal_inject};
+        } else {
+          alert_reset_trigger == ShadowRegStorageErr;
+        }
+      }
 
   constraint reseed_rate_c {reseed_rate dist { 3'b001 :/ 1,
                                                3'b010 :/ 1,

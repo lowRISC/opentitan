@@ -54,6 +54,7 @@ filesets:
       - seq_lib/chip_prim_tl_access_vseq.sv: {is_include_file: true}
       - seq_lib/chip_tap_straps_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_base_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_uart_tx_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_lc_base_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_uart_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/chip_jtag_base_vseq.sv: {is_include_file: true}
@@ -94,6 +95,7 @@ filesets:
       - seq_lib/chip_sw_lc_ctrl_transition_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_lc_ctrl_scrap_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_lc_walkthrough_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_lc_raw_unlock_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_lc_volatile_raw_unlock_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_lc_walkthrough_testunlocks_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_lc_ctrl_program_error_vseq.sv: {is_include_file: true}

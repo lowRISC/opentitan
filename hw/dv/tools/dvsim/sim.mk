@@ -95,6 +95,7 @@ ifneq (${sw_images},)
 			cp ${proj_root}/$${prebuilt_path} $${run_dir}/`basename $${prebuilt_path}`; \
 		else \
 			echo "Building SW image \"$${bazel_label}\"."; \
+			bazel_airgapped_opts=""; \
 			bazel_opts="${sw_build_opts} --define DISABLE_VERILATOR_BUILD=true"; \
 			bazel_opts+=" --//hw/ip/otp_ctrl/data:img_seed=${seed}"; \
 			if [[ "${build_seed}" != "None" ]]; then \
@@ -109,20 +110,21 @@ ifneq (${sw_images},)
 				bazel_cmd="./bazelisk.sh"; \
 			else \
 				echo "Building \"$${bazel_label}\" on air-gapped machine."; \
-				bazel_opts+=" --define SPECIFY_BINDGEN_LIBSTDCXX=true"; \
-				bazel_opts+=" --distdir=$${BAZEL_DISTDIR} --repository_cache=$${BAZEL_CACHE}"; \
+				bazel_airgapped_opts+=" --define SPECIFY_BINDGEN_LIBSTDCXX=true"; \
+				bazel_airgapped_opts+=" --distdir=$${BAZEL_DISTDIR}"; \
+				bazel_airgapped_opts+=" --repository_cache=$${BAZEL_CACHE}"; \
 				bazel_cmd="bazel"; \
 			fi; \
 			echo "Building with command: $${bazel_cmd} build $${bazel_opts} $${bazel_label}"; \
-			$${bazel_cmd} build $${bazel_opts} $${bazel_label}; \
-			for dep in $$($${bazel_cmd} cquery \
+			$${bazel_cmd} build $${bazel_airgapped_opts} $${bazel_opts} $${bazel_label}; \
+			for dep in $$($${bazel_cmd} cquery $${bazel_airgapped_opts} \
 				$${bazel_cquery} \
 				--ui_event_filters=-info \
 				--noshow_progress \
 				--output=starlark); do \
 				if [[ $$dep == //hw/ip/otp_ctrl/data* ]] || \
 				  ([[ $$dep != //hw* ]] && [[ $$dep != //util* ]] && [[ $$dep != //sw/host* ]]); then \
-					for artifact in $$($${bazel_cmd} cquery $${dep} \
+					for artifact in $$($${bazel_cmd} cquery $${bazel_airgapped_opts} $${dep} \
 						--ui_event_filters=-info \
 						--noshow_progress \
 						--output=starlark \

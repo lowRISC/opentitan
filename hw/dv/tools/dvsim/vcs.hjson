@@ -12,6 +12,7 @@
   //  - Force capability on registers, variables, and nets
   // TODO Trim this flag since +f hurts performance.
   vcs_build_opt_debug_access: "-debug_access+f"
+  vcs_build_opt_debug_region: "-debug_region=cell+lib"
   post_flist_opts: ""
   build_opts: ["-sverilog -full64 -licqueue -ntb_opts uvm-1.2",
                "-timescale={timescale}",
@@ -55,7 +56,7 @@
                // .../libvcsnew.so: undefined reference to `snpsGetMemBytes'
                "-LDFLAGS -Wl,--no-as-needed",
                // This option is needed for uvm_hdl_*, when it accesses the array under `celldefine
-               "-debug_region=cell+lib",
+               "{vcs_build_opt_debug_region}",
                "{vcs_build_opt_debug_access}",
                // Use this to conditionally compile for VCS (example: LRM interpretations differ
                // across tools).

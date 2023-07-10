@@ -11,6 +11,8 @@ load(
 )
 load(
     "//rules:opentitan.bzl",
+    "OPENTITAN_CPU",
+    "OPENTITAN_PLATFORM",
     "RSA_ONLY_KEY_STRUCTS",
     "filter_key_structs_for_lc_state",
     "opentitan_ram_binary",
@@ -19,6 +21,8 @@ load("//rules:const.bzl", "CONST", "get_lc_items")
 load("//rules:lc.bzl", "lc_raw_unlock_token")
 load("//rules:otp.bzl", "otp_image", "otp_json", "otp_partition")
 load("//rules:splice.bzl", "bitstream_splice")
+load("//rules:linker.bzl", "ld_library")
+load("@crt//rules:transition.bzl", "platform_target")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -73,17 +77,30 @@ _MANUF_LC_TRANSITION_TEST_CMDS_WBOOTSTRAP = _MANUF_LC_TRANSITION_TEST_CMDS + [
     "--bootstrap=\"$(rootpath {flash})\"",
 ]
 
-# See `sram_program.ld` for details.
-_SRAM_PROGRAM_MAGIC = {
-    # RAM + .static_critical
-    "load_addr": 0x10001fc8,
-    # Arbitrary
-    "stack_size": 1024,
-    # End of RAM - stack size
-    "stack_pointer": 0x1001fc00,
-    # RAM + .static_critical + 2048
-    "global_pointer": 0x100027c8,
-}
+ld_library(
+    name = "sram_program_linker_script",
+    script = "sram_program.ld",
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//sw/device:info_sections",
+        "//sw/device/silicon_creator/lib/base:static_critical_sections",
+    ],
+)
+
+cc_library(
+    name = "sram_start_headers",
+    hdrs = ["sram_start.h"],
+)
+
+cc_library(
+    name = "sram_start",
+    srcs = ["sram_start.S"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":sram_start_headers",
+        "//sw/device/lib/crt",
+    ],
+)
 
 cc_library(
     name = "otp_img_types",
@@ -416,6 +433,31 @@ cc_library(
 )
 
 opentitan_ram_binary(
+    name = "sram_empty_functest",
+    srcs = ["sram_empty_functest.c"],
+    hdrs = ["sram_empty_functest.h"],
+    archive_symbol_prefix = "sram_empty_functest",
+    deps = [
+        ":sram_program_linker_script",
+        ":sram_start",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:uart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing/test_framework:status",
+    ],
+)
+
+platform_target(
+    name = "sram_empty_functest_fpga_cw310_elf",
+    platform = OPENTITAN_PLATFORM,
+    target = ":sram_empty_functest_fpga_cw310.elf",
+)
+
+opentitan_ram_binary(
     name = "sram_device_info_flash_wr_functest",
     srcs = ["sram_device_info_flash_wr_functest.c"],
     hdrs = ["sram_device_info_flash_wr_functest.h"],
@@ -423,10 +465,11 @@ opentitan_ram_binary(
     deps = [
         ":individualize_preop",
         ":isolated_flash_partition",
+        ":sram_program_linker_script",
+        ":sram_start",
         ":test_wafer_auth_secret",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/examples/sram_program:sram_program_linker_script",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:flash_ctrl",
@@ -440,6 +483,17 @@ opentitan_ram_binary(
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
     ],
+)
+
+# The way opentitan_ram_binary works, it is a macro that creates an elf file
+# use the native cc_binary that has no transition defined. We want to use this
+# file with opentitan_functest which also a macro with no transition defined.
+# Hence we need to manually created a transition to build the ELF file for the
+# device.
+platform_target(
+    name = "sram_device_info_flash_wr_functest_fpga_cw310_elf",
+    platform = OPENTITAN_PLATFORM,
+    target = ":sram_device_info_flash_wr_functest_fpga_cw310.elf",
 )
 
 [
@@ -457,15 +511,11 @@ opentitan_ram_binary(
                 "--bitstream=\"$(rootpath {bitstream})\"",
                 "--bootstrap=\"$(location {flash})\"",
                 "--target-lc-state=\"{}\"".format(target_lc_state),
-                "--vmem=\"$(rootpath :sram_device_info_flash_wr_functest_fpga_cw310_vmem)\"",
-                "--load-addr={}".format(_SRAM_PROGRAM_MAGIC["load_addr"]),
-                "--stack-pointer={}".format(_SRAM_PROGRAM_MAGIC["stack_pointer"]),
-                "--stack-size={}".format(_SRAM_PROGRAM_MAGIC["stack_size"]),
-                "--global-pointer={}".format(_SRAM_PROGRAM_MAGIC["global_pointer"]),
+                "--elf=\"$(rootpath :sram_device_info_flash_wr_functest_fpga_cw310_elf)\"",
             ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
         ),
         data = [
-            ":sram_device_info_flash_wr_functest_fpga_cw310_vmem",
+            ":sram_device_info_flash_wr_functest_fpga_cw310_elf",
         ] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
         # We select the PROD key since the SRAM test program does an LC transition to DEV.
         key_struct = filter_key_structs_for_lc_state(
@@ -506,9 +556,10 @@ opentitan_ram_binary(
     hdrs = ["sram_exec_test.h"],
     archive_symbol_prefix = "sram_exec_test",
     deps = [
+        ":sram_program_linker_script",
+        ":sram_start",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/examples/sram_program:sram_program_linker_script",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:otp_ctrl",
@@ -518,6 +569,12 @@ opentitan_ram_binary(
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
     ],
+)
+
+platform_target(
+    name = "sram_exec_test_fpga_cw310_elf",
+    platform = OPENTITAN_PLATFORM,
+    target = ":sram_exec_test_fpga_cw310.elf",
 )
 
 # We are using a bitstream with disabled execution so the content of the flash
@@ -534,16 +591,10 @@ opentitan_ram_binary(
             test_cmds = [
                 "--clear-bitstream",
                 "--bitstream=\"$(rootpath {bitstream})\"",
-                "--vmem=\"$(rootpath :sram_exec_test_fpga_cw310_vmem)\"",
-                "--load-addr={}".format(_SRAM_PROGRAM_MAGIC["load_addr"]),
-                "--stack-pointer={}".format(_SRAM_PROGRAM_MAGIC["stack_pointer"]),
-                "--stack-size={}".format(_SRAM_PROGRAM_MAGIC["stack_size"]),
-                "--global-pointer={}".format(_SRAM_PROGRAM_MAGIC["global_pointer"]),
+                "--elf=\"$(rootpath :sram_exec_test_fpga_cw310_elf)\"",
             ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
         ),
-        data = [
-            ":sram_exec_test_fpga_cw310_vmem",
-        ] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
+        data = [":sram_exec_test_fpga_cw310_elf"] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
         targets = ["cw310_rom_with_fake_keys"],
         test_harness = "//sw/host/tests/manuf/manuf_cp_ast_test_execution",
         deps = [
@@ -561,6 +612,45 @@ test_suite(
     tags = ["manual"],
     tests = [
         ":manuf_cp_ast_test_execution_{}_functest".format(lc_state.lower())
+        for lc_state, _ in _TEST_UNLOCKED_LC_ITEMS
+    ],
+)
+
+# We are using a bitstream with disabled execution so the content of the flash
+# does not matter but opentitan_functest() is unhappy if we don't provide one.
+# Additionally, ROM execution is disabled in the OTP image we use so we do not
+# attempt to bootstrap.
+[
+    opentitan_functest(
+        name = "manuf_sram_program_crc_{}_functest".format(lc_state.lower()),
+        srcs = ["idle_functest.c"],
+        cw310 = cw310_params(
+            bitstream = ":bitstream_rom_exec_disabled_test_unlocked0",
+            tags = ["manuf"],
+            test_cmds = [
+                "--clear-bitstream",
+                "--bitstream=\"$(rootpath {bitstream})\"",
+                "--elf=\"$(rootpath :sram_empty_functest_fpga_cw310_elf)\"",
+            ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
+        ),
+        data = [":sram_empty_functest_fpga_cw310_elf"] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
+        targets = ["cw310_rom_with_fake_keys"],
+        test_harness = "//sw/host/tests/manuf/manuf_sram_program_crc_check",
+        deps = [
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing:otp_ctrl_testutils",
+            "//sw/device/lib/testing/test_framework:check",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+        ],
+    )
+    for lc_state, _ in _TEST_UNLOCKED_LC_ITEMS
+]
+
+test_suite(
+    name = "manuf_sram_program_crc_functest",
+    tags = ["manual"],
+    tests = [
+        ":manuf_sram_program_crc_{}_functest".format(lc_state.lower())
         for lc_state, _ in _TEST_UNLOCKED_LC_ITEMS
     ],
 )

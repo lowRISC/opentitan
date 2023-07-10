@@ -55,12 +55,10 @@ interface prim_onehot_check_if #(
       }
       cp_onehot_enable_fault: coverpoint onehot_fault_type {
         option.weight = EnableCheck;  // set to 0 to disable it if it's not supported
-        option.at_least = EnableCheck; // If 0, we expect 0 hits.
         bins hit = {OnehotEnableFault};
       }
       cp_onehot_addr_fault: coverpoint onehot_fault_type {
         option.weight = AddrCheck;  // set to 0 to disable it if it's not supported
-        option.at_least = AddrCheck; // If 0, we expect 0 hits.
         bins hit = {OnehotAddrFault};
       }
     endgroup
@@ -161,6 +159,6 @@ interface prim_onehot_check_if #(
     if_proxy.path = path;
     sec_cm_pkg::sec_cm_if_proxy_q.push_back(if_proxy);
 
-    `uvm_info(msg_id, $sformatf("Interface proxy class is added for %s", path), UVM_MEDIUM)
+    `uvm_info(msg_id, $sformatf("Interface proxy class is added for %s", path), UVM_HIGH)
   end
 endinterface

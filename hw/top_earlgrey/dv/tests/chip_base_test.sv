@@ -22,11 +22,6 @@ class chip_base_test extends cip_base_test #(
 
     super.build_phase(phase);
 
-    // Set the number of RAM tiles (1 each).
-    cfg.num_ram_main_tiles = 1;
-    cfg.num_ram_ret_tiles = 1;
-    cfg.num_otbn_dmem_tiles = 1;
-
     // Knob to select the chip clock source.
     `DV_GET_ENUM_PLUSARG(chip_clock_source_e, cfg.chip_clock_source, chip_clock_source)
     if (cfg.chip_clock_source != ChipClockSourceInternal) begin
@@ -77,6 +72,12 @@ class chip_base_test extends cip_base_test #(
     `DV_CHECK_FATAL(cfg.otp_images.exists(cfg.use_otp_image),
                     $sformatf({"Unsupported plusarg value: +use_otp_image=%0s. An image associated",
                                "with this LC state needs to be created first."}, cfg.use_otp_image))
+
+    // Knob to skip ROM backdoor logging (for sims that use ROM macro).
+    void'($value$plusargs("skip_rom_bkdr_load=%0b", cfg.skip_rom_bkdr_load));
+
+    // Knob to add vendor flash write latency
+    void'($value$plusargs("flash_write_latency_in_us=%d", cfg.flash_write_latency_in_us));
 
     // Set the test timeout value to be sufficiently large.
     test_timeout_ns = 50_000_000;

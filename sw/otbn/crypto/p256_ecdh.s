@@ -212,15 +212,15 @@ shared_key_from_seed:
 secret_key_from_seed:
   /* Load keymgr seeds from WSRs.
        w20,w21 <= seed0
-       w22,w23 <= seed1 */
+       w10,w11 <= seed1 */
   bn.wsrr  w20, 0x4 /* KEY_S0_L */
   bn.wsrr  w21, 0x5 /* KEY_S0_H */
-  bn.wsrr  w22, 0x6 /* KEY_S1_L */
-  bn.wsrr  w23, 0x7 /* KEY_S1_H */
+  bn.wsrr  w10, 0x6 /* KEY_S1_L */
+  bn.wsrr  w11, 0x7 /* KEY_S1_H */
 
   /* Generate secret key shares.
        w20, w21 <= d0
-       w22, w23 <= d1 */
+       w10, w11 <= d1 */
   jal      x1, p256_key_from_seed
 
   /* Store secret key shares.
@@ -230,7 +230,8 @@ secret_key_from_seed:
   la       x3, d0
   bn.sid   x2++, 0(x3)
   bn.sid   x2++, 32(x3)
-  la       x3, d0
+  li       x2, 10
+  la       x3, d1
   bn.sid   x2++, 0(x3)
   bn.sid   x2, 32(x3)
 

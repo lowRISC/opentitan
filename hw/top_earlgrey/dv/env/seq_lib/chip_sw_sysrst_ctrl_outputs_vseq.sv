@@ -75,7 +75,7 @@ class chip_sw_sysrst_ctrl_outputs_vseq extends chip_sw_base_vseq;
   virtual task check_loopback_pattern();
     for (int i = 0; i < LOOPBACK_PATTERN_LENGTH; i++) begin
       set_loopback_pads(i);
-      #1;
+      #5ns;
       read_loopback_pads();
       `DV_CHECK_EQ_FATAL(loopback_pad_read_values, i);
     end
@@ -83,7 +83,7 @@ class chip_sw_sysrst_ctrl_outputs_vseq extends chip_sw_base_vseq;
 
   virtual task check_loopback_single();
     set_loopback_pads(LOOPBACK_PARTIAL_SET);
-    #1;
+    #5ns;
     read_loopback_pads();
     `DV_CHECK_EQ_FATAL(loopback_pad_read_values, LOOPBACK_PARTIAL_SET);
   endtask

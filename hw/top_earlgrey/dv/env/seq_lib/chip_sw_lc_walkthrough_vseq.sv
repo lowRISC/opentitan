@@ -70,6 +70,13 @@ class chip_sw_lc_walkthrough_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "Waiting for LC transition done and reboot.",,
              50_000_000)
     // Wait for a large number of cycles to transit to RMA state.
+    if (dest_dec_state == DecLcStRma) begin
+      if (cfg.en_small_rma) begin
+        `uvm_info(`gfn, "small_rma mode is enabled", UVM_LOW)
+        enable_small_rma();
+      end
+    end
+
     wait_lc_status(LcTransitionSuccessful, 50_000);
     apply_reset();
 

@@ -21,7 +21,7 @@
       version:            "1.0",
       life_stage:         "L1",
       design_stage:       "D2S",
-      verification_stage: "V1",
+      verification_stage: "V2",
       dif_stage:          "S2",
       notes:              ""
     }
@@ -236,7 +236,7 @@
         }
         { bits: "11"
           name: "RCONT"
-          desc: "Do not NAK the last byte read, let the read operation continue"
+          desc: "Do not NACK the last byte read, let the read operation continue"
         }
         { bits: "12"
           name: "NAKOK"
@@ -396,13 +396,14 @@
       desc: '''
             Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).
             All values are expressed in units of the input clock period.
+            These must be greater than 2 in order for the change in SCL to propagate to the input of the FSM so that acknowledgements are detected correctly.
             '''
       swaccess: "rw"
       hwaccess: "hro"
       fields: [
         { bits: "15:0"
           name: "THIGH"
-          desc: "The actual time to hold SCL high in a given pulse"
+          desc: "The actual time to hold SCL high in a given pulse: in host mode, when there is no stretching this value is 3 cycles longer as tracked in issue #18962"
         }
         { bits: "31:16"
           name: "TLOW"
@@ -424,7 +425,7 @@
         }
         { bits: "31:16"
           name: "T_F"
-          desc: "The nominal fall time to anticipate for the bus (influences SDA hold times)"
+          desc: "The nominal fall time to anticipate for the bus (influences SDA hold times): this is currently counted twice in host mode as tracked in issue #18958"
         }
       ]
     }

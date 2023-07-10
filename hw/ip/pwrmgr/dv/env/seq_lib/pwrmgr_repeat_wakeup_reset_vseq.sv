@@ -56,8 +56,8 @@ class pwrmgr_repeat_wakeup_reset_vseq extends pwrmgr_wakeup_reset_vseq;
   task drv_lc_ctrl();
     int delay;
 
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(cycles_from_reset, {cycles_from_reset inside {[2 : 8]};})
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(micros_to_release, {micros_to_release inside {[2 : 4]};})
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(cycles_from_reset, cycles_from_reset inside {[2 : 8]};)
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(micros_to_release, micros_to_release inside {[2 : 4]};)
 
     repeat (50) begin
       wait(cfg.esc_clk_rst_vif.rst_n);

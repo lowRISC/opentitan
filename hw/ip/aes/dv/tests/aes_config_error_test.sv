@@ -29,7 +29,7 @@ class aes_config_error_test extends aes_base_test;
 
     cfg.message_len_min          = 16;    // one block (16bytes=128bits)
     cfg.message_len_max          = 32;    //
-    cfg.manual_operation_pct     = 0;
+    cfg.manual_operation_pct     = 5;
     cfg.use_key_mask             = 0;
 
     cfg.fixed_data_en            = 0;

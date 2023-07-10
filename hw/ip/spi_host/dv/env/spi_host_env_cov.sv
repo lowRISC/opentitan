@@ -7,7 +7,7 @@
  * only in build_phase can be defined here
  * Covergroups may also be wrapped inside helper classes if needed.
  */
-//TODO we only support SPI_HOST_NUM_CS=1
+//TODO(#18886) we only support SPI_HOST_NUM_CS=1
 
 class spi_host_env_cov extends cip_base_env_cov #(.CFG_T(spi_host_env_cfg));
   `uvm_component_utils(spi_host_env_cov)

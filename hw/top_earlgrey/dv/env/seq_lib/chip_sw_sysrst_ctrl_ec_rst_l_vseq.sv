@@ -82,8 +82,8 @@ class chip_sw_sysrst_ctrl_ec_rst_l_vseq extends chip_sw_base_vseq;
       end else begin
         break;
       end
-      // Some amount of delay between samples of ec_rst.
-      #(AON_CYCLE_PERIOD);
+      // Use 1 cycle delay (AON CLK) between samples of ec_rst.
+      cfg.chip_vif.aon_clk_por_rst_if.wait_clks(1);
     end
     `DV_CHECK(timeout_count > min_exp_cycles) // check ec_rst length
   endtask

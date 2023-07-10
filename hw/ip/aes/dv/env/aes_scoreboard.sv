@@ -193,10 +193,13 @@ class aes_scoreboard extends cip_base_scoreboard #(
 
   // Handle a write to a named CSR on the A channel
   function void on_addr_channel_write(string csr_name, logic [31:0] wdata);
+    alert_test_t alert_test;
     // add individual case item for each csr
     case (1)
       (!uvm_re_match("alert_test", csr_name)): begin
-        cov_if.cg_alert_test_sample(wdata);
+        alert_test.recov_ctrl_update_err = wdata[0];
+        alert_test.fatal_fault = wdata[1];
+        cov_if.cg_alert_test_sample(alert_test);
       end
 
       (!uvm_re_match("ctrl_shadowed", csr_name)): begin
@@ -275,116 +278,57 @@ class aes_scoreboard extends cip_base_scoreboard #(
         end
         case (input_item.mode)
           AES_ECB: begin
-            `uvm_info(`gfn, $sformatf("\n\t ----| ECB mode"), UVM_FULL)
+            `uvm_info(`gfn, $sformatf("\n\t ----| AES Mode: %0s", input_item.mode.name()),
+               UVM_MEDIUM)
             if (input_item.start_item) begin
-              // verify that all 4 data_in and all 8 key have been updated
-              if (input_item.data_in_valid() && input_item.key_clean(0,0)) begin
-                //clone and add to ref and rec data fifo
-                ok_to_fwd    = 1;
+              // Verify that all 4 data_in and all 8 initial key registers have been updated.
+              if (input_item.data_in_valid() && input_item.key_clean(0, 0)) begin
+                // Clone and add to ref and rec data FIFO.
+                ok_to_fwd = 1;
                 input_item.start_item = 0;
               end
             end else begin
-              // verify that all 4 data_in and all 8 key are clean
-              `uvm_info(`gfn, $sformatf("\n\t ----|data_inv_vld?  %b, key clean ? %b",
-                        input_item.data_in_valid(), input_item.key_clean(1,0)), UVM_MEDIUM)
-
-              if (input_item.data_in_valid() && input_item.key_clean(1,0)) begin
-                //clone and add to ref and rec data fifo
+              // Verify that all 4 data_in and all initial 8 key registers are clean.
+              `uvm_info(`gfn, $sformatf("\n\t ----| data_in_vld? %b, key clean? %b",
+                  input_item.data_in_valid(), input_item.key_clean(1, 0)), UVM_MEDIUM)
+              if (input_item.data_in_valid() && input_item.key_clean(1, 0)) begin
+                // Clone and add to ref and rec data FIFO.
                 ok_to_fwd = 1;
               end
             end
           end
 
-          AES_CBC: begin
-            `uvm_info(`gfn, $sformatf("\n\t ----| CBC mode"), UVM_FULL)
-            if (input_item.start_item) begin
-              // verify that all 4 data_in and all 8 key and all 4 IV have been updated
-              if (input_item.data_in_valid() && input_item.key_clean(0,0)
-                   && input_item.iv_clean(0,0)) begin
-                //clone and add to ref and rec data fifo
-                ok_to_fwd    = 1;
-                input_item.start_item = 0;
-              end
-            end else begin
-              // verify that all 4 data_in and all 8 key  and all 4 IV are clean
-              `uvm_info(`gfn, $sformatf("\n\t ----|data_inv_vld?  %b, key clean ? %b",
-                                input_item.data_in_valid(), input_item.key_clean(1,0)), UVM_MEDIUM)
-
-              if (input_item.data_in_valid() && input_item.key_clean(1,0)
-                   && input_item.iv_clean(1,0)) begin
-                //clone and add to ref and rec data fifo
-                ok_to_fwd = 1;
-              end
-            end
-          end
-
-          AES_CFB: begin
-            if (input_item.start_item) begin
-              // verify that all 4 data_in and all 8 key and all 4 IV have been updated
-              if (input_item.data_in_valid() && input_item.key_clean(0,0)
-                   && input_item.iv_clean(0,0)) begin
-                //clone and add to ref and rec data fifo
-                ok_to_fwd    = 1;
-                input_item.start_item = 0;
-              end
-            end else begin
-              // verify that all 4 data_in and all 8 key  and all 4 IV are clean
-              if (input_item.data_in_valid() && input_item.key_clean(1,0)
-                   && input_item.iv_clean(1,0)) begin
-                //clone and add to ref and rec data fifo
-                ok_to_fwd = 1;
-              end
-            end
-          end
-
-          AES_OFB: begin
-            if (input_item.start_item) begin
-              // verify that all 4 data_in and all 8 key and all 4 IV have been updated
-              if (input_item.data_in_valid() && input_item.key_clean(0,0)
-                   && input_item.iv_clean(0,0)) begin
-                //clone and add to ref and rec data fifo
-                ok_to_fwd    = 1;
-                input_item.start_item = 0;
-              end
-            end else begin
-              // verify that all 4 data_in and all 8 key  and all 4 IV are clean
-              `uvm_info(`gfn, $sformatf("\n\t ----|data_inv_vld?  %b, key clean ? %b",
-                                input_item.data_in_valid(), input_item.key_clean(1,0)), UVM_HIGH)
-
-              if (input_item.data_in_valid() && input_item.key_clean(1,0)
-                   && input_item.iv_clean(1,0)) begin
-                //clone and add to ref and rec data fifo
-                ok_to_fwd = 1;
-              end
-            end
-          end
-
+          AES_CBC,
+          AES_CFB,
+          AES_OFB,
           AES_CTR: begin
-            `uvm_info(`gfn, $sformatf("\n\t ----| CTR mode"), UVM_FULL)
+            `uvm_info(`gfn, $sformatf("\n\t ----| AES Mode: %0s", input_item.mode.name()),
+                UVM_MEDIUM)
             if (input_item.start_item) begin
-              // verify that all 4 data_in and all 8 key and all 4 IV have been updated
-              if (input_item.data_in_valid() && input_item.key_clean(0,0)
-                   && input_item.iv_clean(0,0)) begin
-                //clone and add to ref and rec data fifo
-                ok_to_fwd    = 1;
+              // Verify that all 4 data_in, all 8 initial key, and all 4 IV registers have been
+              // updated.
+              if (input_item.data_in_valid() && input_item.key_clean(0, 0)
+                   && input_item.iv_clean(0, 0)) begin
+                // Clone and add to ref and rec data FIFO.
+                ok_to_fwd = 1;
                 input_item.start_item = 0;
               end
             end else begin
-              // verify that all 4 data_in and all 8 and all 4 IV  key are clean
-              `uvm_info(`gfn, $sformatf("\n\t ----|data_inv_vld?  %b, key clean ? %b",
-                              input_item.data_in_valid(),
-                              input_item.key_clean(1,0)),UVM_MEDIUM)
-              if (input_item.data_in_valid() && input_item.key_clean(1,0)
-                   && input_item.iv_clean(1,0)) begin
-                //clone and add to ref and rec data fifo
+              // Verify that all 4 data_in, all 8 initial key, and all 4 IV registers are clean.
+              `uvm_info(`gfn, $sformatf("\n\t ----| data_in_vld? %b, key clean? %b, IV clean? %b",
+                  input_item.data_in_valid(), input_item.key_clean(1, 0),
+                  input_item.iv_clean(1, 0)), UVM_MEDIUM)
+              if (input_item.data_in_valid() && input_item.key_clean(1, 0)
+                   && input_item.iv_clean(1, 0)) begin
+                // Clone and add to ref and rec data FIFO.
                 ok_to_fwd = 1;
               end
             end
           end
+
           default: begin
-            `uvm_info(`gfn,
-                 $sformatf("\n\t ----| Received illegal AES_MODE setting reverting to AES_NONE "),
-                                      UVM_HIGH)
+            `uvm_info(`gfn, "\n\t ----| Received illegal AES_MODE setting, reverting to AES_NONE",
+                UVM_MEDIUM)
           end
         endcase // case (input_item.mode)
       end // if (input_item.valid)
@@ -562,6 +506,16 @@ virtual task rebuild_message();
       end
 
       begin
+        // AES indicates when it's done with processing individual blocks but not when it's done
+        // with processing an entire message. To detect the end of a message, the DV environment
+        // does the following:
+        // - It tracks writes to the main control register. If two successfull writes to this
+        //   shadowed register are observed, this marks the start of a new message.
+        // - DV then knows that the last output data retrieved marks the end of the previous
+        //   message.
+        // This works fine except for the very last message before the test ends. To mark the end
+        // of the last message, the `finish_message` variable is used. It gets set by the
+        // `phase_ready_to_end()` function, see below.
         wait (finish_message)
         `uvm_info(`gfn, $sformatf("\n\t ----| Finish test received adding message item to mg_fifo"),
                                   UVM_MEDIUM)
@@ -642,16 +596,24 @@ virtual task rebuild_message();
     end
   endtask
 
-  // TODO get rid of this and do EOP checks in monitor
   virtual function void phase_ready_to_end(uvm_phase phase);
     if (phase.get_name() != "run") return;
 
-    // the message currently being reassembled is should be sent for scoring
+    // AES indicates when it's done with processing individual blocks but not when it's done
+    // with processing an entire message. To detect the end of a message, the DV environment
+    // does the following:
+    // - It tracks writes to the main control register. If two successfull writes to this
+    //   shadowed register are observed, this marks the start of a new message.
+    // - DV then knows that the last output data retrieved marks the end of the previous
+    //   message.
+    // This works fine except for the very last message before the test ends. To mark the end
+    // of the last message, and trigger its scoring, the `finish_message` variable is set. It
+    // gets read by the `rebuild_message()` task above.
     finish_message = 1;
     `uvm_info(`gfn, $sformatf("Finish message: %b", finish_message), UVM_MEDIUM)
 
-    // AES needs this objection - because PHASE READY TO END
-    // is the only way to know that the very last message is now complete
+    // Don't end the test yet. First, the last message needs to be scored, and all queues and
+    // FIFOs need to be emptied.
     phase.raise_objection(this, "need time to finish last item");
     fork begin
       wait_fifo_empty();

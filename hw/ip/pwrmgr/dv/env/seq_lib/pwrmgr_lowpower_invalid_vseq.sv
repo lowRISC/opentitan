@@ -74,7 +74,7 @@ class pwrmgr_lowpower_invalid_vseq extends pwrmgr_base_vseq;
       repeat (10) @cfg.clk_rst_vif.cb;
 
       apply_reset();
-      reset_index++;
+      reset_index=reset_index.next();
       wait_for_fast_fsm_active();
     end  // for (int i = 0; i < 4; ++i)
   endtask

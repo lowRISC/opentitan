@@ -31,6 +31,7 @@ enum {
   kDeviceIdReg = 0x00,
   kThreshTapReg = 0x1D,
   kPowerCtrlReg = 0x2D,
+  kIntSourceReg = 0x30,
   kDataX0Reg = 0x32,
   kDataX1Reg = 0x33,
   kDataY0Reg = 0x34,
@@ -42,8 +43,12 @@ enum {
   kDeviceId = 0xE5,
   kMeasure = 0x08,
 
-  // Other
+  // kIntSourceReg masks
+  kIntSourceDataReadyBit = 0x01 << 7,
+
+  // Timing specification.
   kDefaultTimeoutMicros = 5000,
+  kTurnOnTimeMicros = 11000,
 };
 
 static dif_rv_core_ibex_t rv_core_ibex;
@@ -76,11 +81,23 @@ static status_t read_write_thresh_tap(void) {
   return OK_STATUS();
 }
 
+static status_t read_register(uint8_t reg) {
+  uint8_t data = 0;
+  TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &reg, true));
+  TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(data), &data,
+                         kDefaultTimeoutMicros));
+  return OK_STATUS(data);
+}
+
 static status_t take_measurement(void) {
   // Set the power mode to enable measurements.
   uint8_t write_data[2] = {kPowerCtrlReg, kMeasure};
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, sizeof(write_data), write_data,
                           false));
+
+  IBEX_SPIN_FOR(
+      (uint8_t)TRY(read_register(kIntSourceReg)) & kIntSourceDataReadyBit,
+      kTurnOnTimeMicros);
 
   // Read all six data measurements starting from DATAX0.
   uint8_t data_x_reg = kDataX0Reg;

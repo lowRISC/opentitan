@@ -8,8 +8,14 @@ class chip_sw_sensor_ctrl_status_intr_vseq extends chip_sw_base_vseq;
   `uvm_object_new
 
   localparam int TOTAL_IO = 2;
-  localparam string VIOA_POK_PATH = "tb.dut.u_ast.u_vioa_pok.vio_pok_o";
-  localparam string VIOB_POK_PATH = "tb.dut.u_ast.u_viob_pok.vio_pok_o";
+  `ifdef GATE_LEVEL
+    localparam string VIOA_POK_PATH = "`AST_TOP.ast_pwst_o_io_pok_0_";
+    localparam string VIOB_POK_PATH = "`AST_TOP.ast_pwst_o_io_pok_1_";
+  `else
+    localparam string VIOA_POK_PATH = "tb.dut.u_ast.ast_pwst_o.io_pok[0]";
+    localparam string VIOB_POK_PATH = "tb.dut.u_ast.ast_pwst_o.io_pok[1]";
+  `endif
+
   localparam string SLEEPING_PATH = "tb.dut.top_earlgrey.u_rv_core_ibex.u_core_sleeping_buf.out_o";
   string io_paths[2] = '{VIOA_POK_PATH, VIOB_POK_PATH};
   int iterations = 10;
@@ -32,7 +38,7 @@ class chip_sw_sensor_ctrl_status_intr_vseq extends chip_sw_base_vseq;
     end
 
     test_idx = $urandom_range(0, TOTAL_IO-1);
-     `uvm_info(`gfn, $sformatf("Forcing IO %d to a different value", test_idx), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("Forcing IO %d to a different value", test_idx), UVM_HIGH)
     `DV_CHECK_FATAL(uvm_hdl_force(io_paths[test_idx], ~cur_val[test_idx]));
 
   endtask

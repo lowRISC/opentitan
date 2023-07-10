@@ -37,6 +37,7 @@ OTTF_DEFINE_TEST_CONFIG();
 static volatile const uint8_t kClockPeriodNanos = 0;
 static volatile const uint8_t kI2cRiseFallNanos = 0;
 static volatile const uint32_t kI2cClockPeriodNanos = 0;
+static volatile const uint8_t kI2cCdcInstrumentationEnabled = 0;
 
 /**
  * This symbol is meant to be backdoor loaded by the testbench.
@@ -308,6 +309,12 @@ bool test_main(void) {
 
   dif_i2c_config_t config;
   CHECK_DIF_OK(dif_i2c_compute_timing(timing_config, &config));
+  if (kI2cCdcInstrumentationEnabled) {
+    // Increase rise cycles to accommodate CDC incorrectly delaying the data
+    // change. Without this, the SDA interference interrupt will be triggered
+    // when the prim_flop_2sync randomly adds an extra cycle of delay.
+    config.rise_cycles++;
+  }
   CHECK_DIF_OK(dif_i2c_configure(&i2c, config));
   CHECK_DIF_OK(dif_i2c_host_set_enabled(&i2c, kDifToggleEnabled));
   CHECK_DIF_OK(

@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_i2c.h"
+#include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
@@ -52,7 +53,6 @@ static dif_pinmux_t pinmux;
 static dif_i2c_t i2c;
 
 static status_t read_product_id(void) {
-  return OK_STATUS();
   uint8_t reg = kProductIdReg, data = 0;
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &reg, true));
   TRY(i2c_testutils_read(&i2c, kDeviceAddr, 1, &data, kDefaultTimeoutMicros));
@@ -69,11 +69,13 @@ static status_t take_measurement(void) {
   // Poll until status indicates measurement was taken.
   uint8_t status = 0;
   uint8_t status_reg = kStatusReg;
-  TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &status_reg, true));
   do {
+    TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &status_reg, true));
     TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(status), &status,
                            kDefaultTimeoutMicros));
   } while ((status & kMeasDone) == 0);
+
+  LOG_INFO("Status:%x", status);
 
   // Reading six bytes from Xout Low covers the other "out" registers, too.
   uint8_t read_data[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -112,6 +114,22 @@ static status_t test_init(void) {
   return OK_STATUS();
 }
 
+static status_t reset_i2c_and_check(void) {
+  dif_rstmgr_t rstmgr;
+  TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR),
+                      &rstmgr));
+
+  TRY(dif_rstmgr_software_reset(&rstmgr, kTopEarlgreyResetManagerSwResetsI2c2,
+                                kDifRstmgrSoftwareReset));
+
+  dif_i2c_status_t i2c_status;
+  TRY(dif_i2c_get_status(&i2c, &i2c_status));
+  TRY_CHECK(!i2c_status.enable_host, "I2C doesn't appear to have been reset.");
+
+  TRY(dif_i2c_host_set_enabled(&i2c, kDifToggleEnabled));
+  return OK_STATUS();
+}
+
 bool test_main(void) {
   status_t test_result;
   CHECK_STATUS_OK(test_init());
@@ -120,13 +138,16 @@ bool test_main(void) {
 
   test_result = OK_STATUS();
   for (size_t i = 0; i < ARRAYSIZE(speeds); ++i) {
-    // Allow 50ms for device startup.
-    busy_spin_micros(50000);
-
     CHECK_STATUS_OK(i2c_testutils_set_speed(&i2c, speeds[i]));
     EXECUTE_TEST(test_result, read_product_id);
     EXECUTE_TEST(test_result, take_measurement);
   }
+
+  // Reset the i2c peripheral and re-run a test
+  // to check the peripheral works after reset.
+  CHECK_STATUS_OK(reset_i2c_and_check());
+  CHECK_STATUS_OK(i2c_testutils_set_speed(&i2c, kDifI2cSpeedFast));
+  EXECUTE_TEST(test_result, read_product_id);
 
   return status_ok(test_result);
 }

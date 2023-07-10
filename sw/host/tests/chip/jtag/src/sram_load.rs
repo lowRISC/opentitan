@@ -53,8 +53,6 @@ fn test_sram_load(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     };
     let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
     log::info!("result: {:?}", result);
-    // TODO at the moment the sram_main just returns from the call which is BAD since it returns to nowhere
-    // probably should setup the stack to return to someplace safe and stop the CPU
     jtag.halt()?;
     jtag.disconnect()?;
 

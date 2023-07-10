@@ -70,6 +70,7 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
 
   virtual task body();
     bit [7:0] i2c_device_tx_data[$];
+    int tSetupBit;
     super.body();
 
     // enable the monitor
@@ -79,23 +80,35 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
     // Enbale appropriate interface
     cfg.chip_vif.enable_i2c(.inst_num(i2c_idx), .enable(1));
 
-    // tClockLow needs to be "slightly" shorter than the actual clock low period
-    cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tClockLow = half_period_cycles - 2;
+    // tSetupBit need to be non-zero to detect the data bits. This represents
+    // the delay through the synchronizers.
+    tSetupBit = 2;
+    // Nullify the CDC instrumentation delays on the input synchronizers,
+    // since SDA never truly changes simultaneously with SCL. Their happening
+    // on the same cycle in simulation is due to time/cycle quantization.
+    // Drive SDA a cycle early to account for CDC delays, if CDC is enabled.
+    // Hold SDA a cycle longer to account for CDC delays, if CDC is enabled.
+    if (cfg.en_dv_cdc) begin
+      tSetupBit++;
+      cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tHoldBit = 1;
+    end
+    cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tSetupBit = tSetupBit;
+    cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tClockLow = half_period_cycles - tSetupBit;
 
     // tClockPulse needs to be "slightly" longer than the clock period.
-    cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tClockPulse = half_period_cycles + 1;
+    cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tClockPulse = half_period_cycles;
 
     // tHoldStart and tClockStart need to be non-zero to make the start condition detectable.
     cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tHoldStart = half_period_cycles;
     cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tClockStart = half_period_cycles;
-    // tSetupBit need to be non-zero to detect the data bits
-    cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tSetupBit = half_period_cycles / 2;
 
     // tClockStop, tSetupStop, and tHoldStop have to be non-zero to make the stop condition
     // detectable.
-    cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tClockStop = half_period_cycles;
-    cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tSetupStop = half_period_cycles - 2;
+    cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tClockStop = tSetupBit;
+    cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tSetupStop = half_period_cycles;
     cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tHoldStop = half_period_cycles;
+
+    print_i2c_timing_cfg(i2c_idx);
 
     // Wait for i2c_device to fill tx_fifo
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "Data written to fifo");

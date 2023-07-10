@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name: "aon_timer"
-  // TODO: remove the common testplans if not applicable
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",

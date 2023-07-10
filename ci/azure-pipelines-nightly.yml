@@ -85,5 +85,5 @@ jobs:
         --define bitstream=gcp_splice \
         --build_tests_only \
         --test_output=errors \
-        $(bazel query 'attr("tags", "[\[ ]bob[,\]]", attr("tags", "[\[ ]cw310[,\]]", tests(//...)))')
+        $(bash ./bazelisk.sh query 'attr("tags", "[\[ ]bob[,\]]", attr("tags", "[\[ ]cw310[,\]]", tests(//...)))')
     displayName: "Run all the SPI and I2C Tests with BoB"

@@ -25,6 +25,8 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
   // Variables
   uint   reseed_cnt, generate_cnt, generate_between_reseeds_cnt;
 
+  bit abort_sw_cmd = 0;
+
   // Knobs & Weights
   uint   enable_pct, boot_req_mode_pct, auto_req_mode_pct, cmd_fifo_rst_pct,
          force_disable_pct,
@@ -46,7 +48,6 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
   rand invalid_mubi_e   which_invalid_mubi;
 
   // Constraints
-  // TODO: utilize suggestions in PR9535 to generate "other" values when testing alerts
   constraint force_disable_c {force_disable dist {
     1 :/ force_disable_pct,
     0 :/ (100 - force_disable_pct) };}
@@ -66,6 +67,14 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
     {MuBi4False, MuBi4False} :/ (100 - boot_req_mode_pct - auto_req_mode_pct) };
 
     num_boot_reqs inside { [min_num_boot_reqs:max_num_boot_reqs] };}
+
+  constraint which_err_code_c {which_err_code dist {
+    // Certain error codes are more interesting for coverage, so give each of them a higher weight.
+    edn_ack_sm_err  :/ 5,
+    edn_main_sm_err :/ 5,
+    edn_cntr_err    :/ 5
+    // All other error codes will implicitly get a weight of 1.
+  };}
 
   // Functions
   function void post_randomize();

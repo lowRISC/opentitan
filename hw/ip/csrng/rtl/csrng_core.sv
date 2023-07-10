@@ -1467,7 +1467,7 @@ module csrng_core import csrng_pkg::*; #(
   );
 
   for (genvar i = 0; i < LcHwDebugCopies; i = i+1) begin : gen_lc_dbg_copies
-    assign lc_hw_debug_on_fo[i] = (lc_hw_debug_en_out[i] == lc_ctrl_pkg::On);
+    assign lc_hw_debug_on_fo[i] = lc_ctrl_pkg::lc_tx_test_true_strict(lc_hw_debug_en_out[i]);
   end : gen_lc_dbg_copies
 
 
