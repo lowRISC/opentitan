@@ -70,7 +70,7 @@ Alert Test Register
 |   1    |   wo   |   0x0   | fatal_fault           | Write 1 to trigger one alert event of this kind. |
 |   0    |   wo   |   0x0   | recov_ctrl_update_err | Write 1 to trigger one alert event of this kind. |
 
-## KEY_SHARE0
+## KEY_SHARE0_0
 Initial Key Registers Share 0.
 
 The actual initial key corresponds to Initial Key Registers Share 0 XORed with Initial Key Registers Share 1.
@@ -80,34 +80,189 @@ The order in which the registers are updated does not matter.
 Can only be updated when the AES unit is idle.
 If the AES unit is non-idle, writes to these registers are ignored.
 Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0x4`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
-
-### Instances
-
-| Name         | Offset   |
-|:-------------|:---------|
-| KEY_SHARE0_0 | 0x4      |
-| KEY_SHARE0_1 | 0x8      |
-| KEY_SHARE0_2 | 0xc      |
-| KEY_SHARE0_3 | 0x10     |
-| KEY_SHARE0_4 | 0x14     |
-| KEY_SHARE0_5 | 0x18     |
-| KEY_SHARE0_6 | 0x1c     |
-| KEY_SHARE0_7 | 0x20     |
-
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "key_share0", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "key_share0_0", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name       | Description         |
-|:------:|:------:|:-------:|:-----------|:--------------------|
-|  31:0  |   wo   |   0x0   | key_share0 | Initial Key Share 0 |
+|  Bits  |  Type  |  Reset  | Name         | Description         |
+|:------:|:------:|:-------:|:-------------|:--------------------|
+|  31:0  |   wo   |   0x0   | key_share0_0 | Initial Key Share 0 |
 
-## KEY_SHARE1
+## KEY_SHARE0_1
+Initial Key Registers Share 0.
+
+The actual initial key corresponds to Initial Key Registers Share 0 XORed with Initial Key Registers Share 1.
+Loaded into the internal Full Key register upon starting encryption/decryption of the next block.
+All key registers (Share 0 and Share 1) must be written at least once when the key is changed, regardless of key length (write random data for unused bits).
+The order in which the registers are updated does not matter.
+Can only be updated when the AES unit is idle.
+If the AES unit is non-idle, writes to these registers are ignored.
+Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0x8`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "key_share0_1", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name         | Description     |
+|:------:|:------:|:-------:|:-------------|:----------------|
+|  31:0  |   wo   |   0x0   | key_share0_1 | For KEY_SHARE01 |
+
+## KEY_SHARE0_2
+Initial Key Registers Share 0.
+
+The actual initial key corresponds to Initial Key Registers Share 0 XORed with Initial Key Registers Share 1.
+Loaded into the internal Full Key register upon starting encryption/decryption of the next block.
+All key registers (Share 0 and Share 1) must be written at least once when the key is changed, regardless of key length (write random data for unused bits).
+The order in which the registers are updated does not matter.
+Can only be updated when the AES unit is idle.
+If the AES unit is non-idle, writes to these registers are ignored.
+Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0xc`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "key_share0_2", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name         | Description     |
+|:------:|:------:|:-------:|:-------------|:----------------|
+|  31:0  |   wo   |   0x0   | key_share0_2 | For KEY_SHARE02 |
+
+## KEY_SHARE0_3
+Initial Key Registers Share 0.
+
+The actual initial key corresponds to Initial Key Registers Share 0 XORed with Initial Key Registers Share 1.
+Loaded into the internal Full Key register upon starting encryption/decryption of the next block.
+All key registers (Share 0 and Share 1) must be written at least once when the key is changed, regardless of key length (write random data for unused bits).
+The order in which the registers are updated does not matter.
+Can only be updated when the AES unit is idle.
+If the AES unit is non-idle, writes to these registers are ignored.
+Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0x10`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "key_share0_3", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name         | Description     |
+|:------:|:------:|:-------:|:-------------|:----------------|
+|  31:0  |   wo   |   0x0   | key_share0_3 | For KEY_SHARE03 |
+
+## KEY_SHARE0_4
+Initial Key Registers Share 0.
+
+The actual initial key corresponds to Initial Key Registers Share 0 XORed with Initial Key Registers Share 1.
+Loaded into the internal Full Key register upon starting encryption/decryption of the next block.
+All key registers (Share 0 and Share 1) must be written at least once when the key is changed, regardless of key length (write random data for unused bits).
+The order in which the registers are updated does not matter.
+Can only be updated when the AES unit is idle.
+If the AES unit is non-idle, writes to these registers are ignored.
+Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0x14`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "key_share0_4", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name         | Description     |
+|:------:|:------:|:-------:|:-------------|:----------------|
+|  31:0  |   wo   |   0x0   | key_share0_4 | For KEY_SHARE04 |
+
+## KEY_SHARE0_5
+Initial Key Registers Share 0.
+
+The actual initial key corresponds to Initial Key Registers Share 0 XORed with Initial Key Registers Share 1.
+Loaded into the internal Full Key register upon starting encryption/decryption of the next block.
+All key registers (Share 0 and Share 1) must be written at least once when the key is changed, regardless of key length (write random data for unused bits).
+The order in which the registers are updated does not matter.
+Can only be updated when the AES unit is idle.
+If the AES unit is non-idle, writes to these registers are ignored.
+Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0x18`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "key_share0_5", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name         | Description     |
+|:------:|:------:|:-------:|:-------------|:----------------|
+|  31:0  |   wo   |   0x0   | key_share0_5 | For KEY_SHARE05 |
+
+## KEY_SHARE0_6
+Initial Key Registers Share 0.
+
+The actual initial key corresponds to Initial Key Registers Share 0 XORed with Initial Key Registers Share 1.
+Loaded into the internal Full Key register upon starting encryption/decryption of the next block.
+All key registers (Share 0 and Share 1) must be written at least once when the key is changed, regardless of key length (write random data for unused bits).
+The order in which the registers are updated does not matter.
+Can only be updated when the AES unit is idle.
+If the AES unit is non-idle, writes to these registers are ignored.
+Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0x1c`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "key_share0_6", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name         | Description     |
+|:------:|:------:|:-------:|:-------------|:----------------|
+|  31:0  |   wo   |   0x0   | key_share0_6 | For KEY_SHARE06 |
+
+## KEY_SHARE0_7
+Initial Key Registers Share 0.
+
+The actual initial key corresponds to Initial Key Registers Share 0 XORed with Initial Key Registers Share 1.
+Loaded into the internal Full Key register upon starting encryption/decryption of the next block.
+All key registers (Share 0 and Share 1) must be written at least once when the key is changed, regardless of key length (write random data for unused bits).
+The order in which the registers are updated does not matter.
+Can only be updated when the AES unit is idle.
+If the AES unit is non-idle, writes to these registers are ignored.
+Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0x20`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "key_share0_7", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name         | Description     |
+|:------:|:------:|:-------:|:-------------|:----------------|
+|  31:0  |   wo   |   0x0   | key_share0_7 | For KEY_SHARE07 |
+
+## KEY_SHARE1_0
 Initial Key Registers Share 1.
 
 The actual initial key corresponds to Initial Key Registers Share 0 XORed with Initial Key Registers Share 1.
@@ -117,34 +272,189 @@ The order in which the registers are updated does not matter.
 Can only be updated when the AES unit is idle.
 If the AES unit is non-idle, writes to these registers are ignored.
 Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0x24`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
-
-### Instances
-
-| Name         | Offset   |
-|:-------------|:---------|
-| KEY_SHARE1_0 | 0x24     |
-| KEY_SHARE1_1 | 0x28     |
-| KEY_SHARE1_2 | 0x2c     |
-| KEY_SHARE1_3 | 0x30     |
-| KEY_SHARE1_4 | 0x34     |
-| KEY_SHARE1_5 | 0x38     |
-| KEY_SHARE1_6 | 0x3c     |
-| KEY_SHARE1_7 | 0x40     |
-
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "key_share1", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "key_share1_0", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name       | Description         |
-|:------:|:------:|:-------:|:-----------|:--------------------|
-|  31:0  |   wo   |   0x0   | key_share1 | Initial Key Share 1 |
+|  Bits  |  Type  |  Reset  | Name         | Description         |
+|:------:|:------:|:-------:|:-------------|:--------------------|
+|  31:0  |   wo   |   0x0   | key_share1_0 | Initial Key Share 1 |
 
-## IV
+## KEY_SHARE1_1
+Initial Key Registers Share 1.
+
+The actual initial key corresponds to Initial Key Registers Share 0 XORed with Initial Key Registers Share 1.
+Loaded into the internal Full Key register upon starting encryption/decryption of the next block.
+All key registers (Share 0 and Share 1) must be written at least once when the key is changed, regardless of key length (write random data for unused bits).
+The order in which the registers are updated does not matter.
+Can only be updated when the AES unit is idle.
+If the AES unit is non-idle, writes to these registers are ignored.
+Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0x28`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "key_share1_1", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name         | Description     |
+|:------:|:------:|:-------:|:-------------|:----------------|
+|  31:0  |   wo   |   0x0   | key_share1_1 | For KEY_SHARE11 |
+
+## KEY_SHARE1_2
+Initial Key Registers Share 1.
+
+The actual initial key corresponds to Initial Key Registers Share 0 XORed with Initial Key Registers Share 1.
+Loaded into the internal Full Key register upon starting encryption/decryption of the next block.
+All key registers (Share 0 and Share 1) must be written at least once when the key is changed, regardless of key length (write random data for unused bits).
+The order in which the registers are updated does not matter.
+Can only be updated when the AES unit is idle.
+If the AES unit is non-idle, writes to these registers are ignored.
+Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0x2c`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "key_share1_2", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name         | Description     |
+|:------:|:------:|:-------:|:-------------|:----------------|
+|  31:0  |   wo   |   0x0   | key_share1_2 | For KEY_SHARE12 |
+
+## KEY_SHARE1_3
+Initial Key Registers Share 1.
+
+The actual initial key corresponds to Initial Key Registers Share 0 XORed with Initial Key Registers Share 1.
+Loaded into the internal Full Key register upon starting encryption/decryption of the next block.
+All key registers (Share 0 and Share 1) must be written at least once when the key is changed, regardless of key length (write random data for unused bits).
+The order in which the registers are updated does not matter.
+Can only be updated when the AES unit is idle.
+If the AES unit is non-idle, writes to these registers are ignored.
+Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0x30`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "key_share1_3", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name         | Description     |
+|:------:|:------:|:-------:|:-------------|:----------------|
+|  31:0  |   wo   |   0x0   | key_share1_3 | For KEY_SHARE13 |
+
+## KEY_SHARE1_4
+Initial Key Registers Share 1.
+
+The actual initial key corresponds to Initial Key Registers Share 0 XORed with Initial Key Registers Share 1.
+Loaded into the internal Full Key register upon starting encryption/decryption of the next block.
+All key registers (Share 0 and Share 1) must be written at least once when the key is changed, regardless of key length (write random data for unused bits).
+The order in which the registers are updated does not matter.
+Can only be updated when the AES unit is idle.
+If the AES unit is non-idle, writes to these registers are ignored.
+Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0x34`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "key_share1_4", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name         | Description     |
+|:------:|:------:|:-------:|:-------------|:----------------|
+|  31:0  |   wo   |   0x0   | key_share1_4 | For KEY_SHARE14 |
+
+## KEY_SHARE1_5
+Initial Key Registers Share 1.
+
+The actual initial key corresponds to Initial Key Registers Share 0 XORed with Initial Key Registers Share 1.
+Loaded into the internal Full Key register upon starting encryption/decryption of the next block.
+All key registers (Share 0 and Share 1) must be written at least once when the key is changed, regardless of key length (write random data for unused bits).
+The order in which the registers are updated does not matter.
+Can only be updated when the AES unit is idle.
+If the AES unit is non-idle, writes to these registers are ignored.
+Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0x38`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "key_share1_5", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name         | Description     |
+|:------:|:------:|:-------:|:-------------|:----------------|
+|  31:0  |   wo   |   0x0   | key_share1_5 | For KEY_SHARE15 |
+
+## KEY_SHARE1_6
+Initial Key Registers Share 1.
+
+The actual initial key corresponds to Initial Key Registers Share 0 XORed with Initial Key Registers Share 1.
+Loaded into the internal Full Key register upon starting encryption/decryption of the next block.
+All key registers (Share 0 and Share 1) must be written at least once when the key is changed, regardless of key length (write random data for unused bits).
+The order in which the registers are updated does not matter.
+Can only be updated when the AES unit is idle.
+If the AES unit is non-idle, writes to these registers are ignored.
+Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0x3c`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "key_share1_6", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name         | Description     |
+|:------:|:------:|:-------:|:-------------|:----------------|
+|  31:0  |   wo   |   0x0   | key_share1_6 | For KEY_SHARE16 |
+
+## KEY_SHARE1_7
+Initial Key Registers Share 1.
+
+The actual initial key corresponds to Initial Key Registers Share 0 XORed with Initial Key Registers Share 1.
+Loaded into the internal Full Key register upon starting encryption/decryption of the next block.
+All key registers (Share 0 and Share 1) must be written at least once when the key is changed, regardless of key length (write random data for unused bits).
+The order in which the registers are updated does not matter.
+Can only be updated when the AES unit is idle.
+If the AES unit is non-idle, writes to these registers are ignored.
+Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0x40`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "key_share1_7", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name         | Description     |
+|:------:|:------:|:-------:|:-------------|:----------------|
+|  31:0  |   wo   |   0x0   | key_share1_7 | For KEY_SHARE17 |
+
+## IV_0
 Initialization Vector Registers.
 
 The initialization vector (IV) or initial counter value must be written to these registers when starting a new message in CBC or CTR mode (see Control Register), respectively.
@@ -156,30 +466,99 @@ Whenever starting a new message, the corresponding IV value must be provided by 
 Once started, the AES unit automatically updates the contents of these registers.
 In ECB mode, the IV registers are not used and do not need to be configured.
 Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0x44`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
-
-### Instances
-
-| Name   | Offset   |
-|:-------|:---------|
-| IV_0   | 0x44     |
-| IV_1   | 0x48     |
-| IV_2   | 0x4c     |
-| IV_3   | 0x50     |
-
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "iv", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "iv_0", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name   | Description           |
 |:------:|:------:|:-------:|:-------|:----------------------|
-|  31:0  |   rw   |   0x0   | iv     | Initialization Vector |
+|  31:0  |   rw   |   0x0   | iv_0   | Initialization Vector |
 
-## DATA_IN
+## IV_1
+Initialization Vector Registers.
+
+The initialization vector (IV) or initial counter value must be written to these registers when starting a new message in CBC or CTR mode (see Control Register), respectively.
+In CBC and CTR modes, the AES unit does not start encryption/decryption with a partially updated IV.
+Each register has to be written at least once.
+The order in which the registers are written does not matter.
+If the AES unit is non-idle, writes to these registers are ignored.
+Whenever starting a new message, the corresponding IV value must be provided by the processor.
+Once started, the AES unit automatically updates the contents of these registers.
+In ECB mode, the IV registers are not used and do not need to be configured.
+Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0x48`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "iv_1", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   rw   |   0x0   | iv_1   | For IV1       |
+
+## IV_2
+Initialization Vector Registers.
+
+The initialization vector (IV) or initial counter value must be written to these registers when starting a new message in CBC or CTR mode (see Control Register), respectively.
+In CBC and CTR modes, the AES unit does not start encryption/decryption with a partially updated IV.
+Each register has to be written at least once.
+The order in which the registers are written does not matter.
+If the AES unit is non-idle, writes to these registers are ignored.
+Whenever starting a new message, the corresponding IV value must be provided by the processor.
+Once started, the AES unit automatically updates the contents of these registers.
+In ECB mode, the IV registers are not used and do not need to be configured.
+Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0x4c`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "iv_2", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   rw   |   0x0   | iv_2   | For IV2       |
+
+## IV_3
+Initialization Vector Registers.
+
+The initialization vector (IV) or initial counter value must be written to these registers when starting a new message in CBC or CTR mode (see Control Register), respectively.
+In CBC and CTR modes, the AES unit does not start encryption/decryption with a partially updated IV.
+Each register has to be written at least once.
+The order in which the registers are written does not matter.
+If the AES unit is non-idle, writes to these registers are ignored.
+Whenever starting a new message, the corresponding IV value must be provided by the processor.
+Once started, the AES unit automatically updates the contents of these registers.
+In ECB mode, the IV registers are not used and do not need to be configured.
+Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0x50`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "iv_3", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   rw   |   0x0   | iv_3   | For IV3       |
+
+## DATA_IN_0
 Input Data Registers.
 
 If MANUAL_OPERATION=0 (see Control Register), the AES unit automatically starts encryption/decryption after all Input Data registers have been written.
@@ -188,30 +567,90 @@ The order in which the registers are written does not matter.
 Loaded into the internal State register upon starting encryption/decryption of the next block.
 After that, the processor can update the Input Data registers (See INPUT_READY field of Status Register).
 Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0x54`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
-
-### Instances
-
-| Name      | Offset   |
-|:----------|:---------|
-| DATA_IN_0 | 0x54     |
-| DATA_IN_1 | 0x58     |
-| DATA_IN_2 | 0x5c     |
-| DATA_IN_3 | 0x60     |
-
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "data_in", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "data_in_0", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name    | Description   |
-|:------:|:------:|:-------:|:--------|:--------------|
-|  31:0  |   wo   |   0x0   | data_in | Input Data    |
+|  Bits  |  Type  |  Reset  | Name      | Description   |
+|:------:|:------:|:-------:|:----------|:--------------|
+|  31:0  |   wo   |   0x0   | data_in_0 | Input Data    |
 
-## DATA_OUT
+## DATA_IN_1
+Input Data Registers.
+
+If MANUAL_OPERATION=0 (see Control Register), the AES unit automatically starts encryption/decryption after all Input Data registers have been written.
+Each register has to be written at least once.
+The order in which the registers are written does not matter.
+Loaded into the internal State register upon starting encryption/decryption of the next block.
+After that, the processor can update the Input Data registers (See INPUT_READY field of Status Register).
+Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0x58`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "data_in_1", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name      | Description   |
+|:------:|:------:|:-------:|:----------|:--------------|
+|  31:0  |   wo   |   0x0   | data_in_1 | For DATA_IN1  |
+
+## DATA_IN_2
+Input Data Registers.
+
+If MANUAL_OPERATION=0 (see Control Register), the AES unit automatically starts encryption/decryption after all Input Data registers have been written.
+Each register has to be written at least once.
+The order in which the registers are written does not matter.
+Loaded into the internal State register upon starting encryption/decryption of the next block.
+After that, the processor can update the Input Data registers (See INPUT_READY field of Status Register).
+Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0x5c`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "data_in_2", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name      | Description   |
+|:------:|:------:|:-------:|:----------|:--------------|
+|  31:0  |   wo   |   0x0   | data_in_2 | For DATA_IN2  |
+
+## DATA_IN_3
+Input Data Registers.
+
+If MANUAL_OPERATION=0 (see Control Register), the AES unit automatically starts encryption/decryption after all Input Data registers have been written.
+Each register has to be written at least once.
+The order in which the registers are written does not matter.
+Loaded into the internal State register upon starting encryption/decryption of the next block.
+After that, the processor can update the Input Data registers (See INPUT_READY field of Status Register).
+Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0x60`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "data_in_3", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name      | Description   |
+|:------:|:------:|:-------:|:----------|:--------------|
+|  31:0  |   wo   |   0x0   | data_in_3 | For DATA_IN3  |
+
+## DATA_OUT_0
 Output Data Register.
 
 Holds the output data produced by the AES unit during the last encryption/decryption operation.
@@ -219,28 +658,85 @@ If MANUAL_OPERATION=0 (see Control Register), the AES unit is stalled when the p
 Each register has to be read at least once.
 The order in which the registers are read does not matter.
 Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0x64`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
-
-### Instances
-
-| Name       | Offset   |
-|:-----------|:---------|
-| DATA_OUT_0 | 0x64     |
-| DATA_OUT_1 | 0x68     |
-| DATA_OUT_2 | 0x6c     |
-| DATA_OUT_3 | 0x70     |
-
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "data_out", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "data_out_0", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name     | Description   |
-|:------:|:------:|:-------:|:---------|:--------------|
-|  31:0  |   ro   |   0x0   | data_out | Output Data   |
+|  Bits  |  Type  |  Reset  | Name       | Description   |
+|:------:|:------:|:-------:|:-----------|:--------------|
+|  31:0  |   ro   |   0x0   | data_out_0 | Output Data   |
+
+## DATA_OUT_1
+Output Data Register.
+
+Holds the output data produced by the AES unit during the last encryption/decryption operation.
+If MANUAL_OPERATION=0 (see Control Register), the AES unit is stalled when the previous output data has not yet been read and is about to be overwritten.
+Each register has to be read at least once.
+The order in which the registers are read does not matter.
+Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0x68`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "data_out_1", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name       | Description   |
+|:------:|:------:|:-------:|:-----------|:--------------|
+|  31:0  |   ro   |   0x0   | data_out_1 | For DATA_OUT1 |
+
+## DATA_OUT_2
+Output Data Register.
+
+Holds the output data produced by the AES unit during the last encryption/decryption operation.
+If MANUAL_OPERATION=0 (see Control Register), the AES unit is stalled when the previous output data has not yet been read and is about to be overwritten.
+Each register has to be read at least once.
+The order in which the registers are read does not matter.
+Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0x6c`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "data_out_2", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name       | Description   |
+|:------:|:------:|:-------:|:-----------|:--------------|
+|  31:0  |   ro   |   0x0   | data_out_2 | For DATA_OUT2 |
+
+## DATA_OUT_3
+Output Data Register.
+
+Holds the output data produced by the AES unit during the last encryption/decryption operation.
+If MANUAL_OPERATION=0 (see Control Register), the AES unit is stalled when the previous output data has not yet been read and is about to be overwritten.
+Each register has to be read at least once.
+The order in which the registers are read does not matter.
+Upon reset, these registers are cleared with pseudo-random data.
+- Offset: `0x70`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "data_out_3", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name       | Description   |
+|:------:|:------:|:-------:|:-----------|:--------------|
+|  31:0  |   ro   |   0x0   | data_out_3 | For DATA_OUT3 |
 
 ## CTRL_SHADOWED
 Control Register.

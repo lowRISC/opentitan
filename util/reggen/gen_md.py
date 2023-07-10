@@ -118,33 +118,8 @@ def gen_md_window(output: TextIO, win: Window, comp: str, regwidth: int) -> None
 
 
 def gen_md_multiregister(output: TextIO, mreg: MultiRegister, comp: str, width: int) -> None:
-    # The general definition of the registers making up this multiregister block.
-    reg_def = mreg.reg
-
-    # Information
-    output.write(
-        title(reg_def.name, 2) +
-        regref_to_link(reg_def.desc) +
-        "\n" +
-        list_item("Reset default: " + mono(f"{reg_def.resval:#x}")) +
-        list_item("Reset mask: " + mono(f"{reg_def.resmask:#x}"))
-    )
-
-    # Instances
-    output.write("\n" + title("Instances", 3))
-    output.write(table(
-        ["Name", "Offset"],
-        [[reg.name, hex(reg.offset)] for reg in mreg.regs],
-    ))
-
-    # Fields
-    output.write("\n" + title("Fields", 3))
-
-    # Generate bit-field wavejson.
-    gen_md_reg_picture(output, reg_def, width)
-
-    # Generate fields
-    gen_md_reg_fields(output, reg_def, width)
+    for reg in mreg.regs:
+        gen_md_register(output, reg, comp, width)
 
 
 def gen_md_register(output: TextIO, reg: Register, comp: str, width: int) -> None:
