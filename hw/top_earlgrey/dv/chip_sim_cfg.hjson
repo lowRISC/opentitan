@@ -125,6 +125,12 @@
                        "{top_dv_path}/cov/spi_host_device_unr_tied_off.el"
                        ]
 
+
+  // Map build mode specific cov file to default
+  pad_ctrl_test_mode_vcs_cov_cfg_file: "-cm_hier {top_dv_path}/cov/chip_cover.cfg+{top_dv_path}/autogen/xbar_tgl_excl.cfg+{top_dv_path}/autogen/rstmgr_tgl_excl.cfg+{top_dv_path}/cov/clkmgr_tgl_excl.cfg+{top_dv_path}/cov/pwrmgr_tgl_excl.cfg -cm_fsmcfg {top_dv_path}/cov/chip_fsm.cfg"
+  pad_ctrl_test_mode_xcelium_cov_cfg_file: "{dv_root}/tools/xcelium/cover.ccf"
+
+
   // Default iterations for all tests - each test entry can override this.
   reseed: 3
 
@@ -158,6 +164,7 @@
     {
       name: pad_ctrl_test_mode
       build_opts: ["+define+PADTEST"]
+      is_sim_mode: 1
     }
     // Sim mode that enables build randomization. See the `build_seed` mode
     // defined in `hw/dv/tools/dvsim/common_modes.hjson` for more details.
