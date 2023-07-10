@@ -37,9 +37,9 @@ Finally, we provide the same set of information for all available [top level des
 
 ## Earl Grey chip-level results
 
-* [Datasheet](./top_earlgrey/doc/specification.md)
-* [Specification](./top_earlgrey/doc/design/README.md)
-* [DV Document](./top_earlgrey/dv/README.md)
+* [Datasheet](./top_earlgrey/doc/datasheet.md)
+* [Design Specification](./top_earlgrey/doc/design/README.md)
+* [Design Verification](./top_earlgrey/dv/README.md)
 * [DV simulation results, with coverage (nightly)](https://reports.opentitan.org/hw/top_earlgrey/dv/latest/report.html)
 * [Connectivity results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/conn/jaspergold/latest/report.html)
 * [AscentLint results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/ascentlint/latest/report.html)

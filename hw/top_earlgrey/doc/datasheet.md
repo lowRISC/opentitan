@@ -1,17 +1,17 @@
 # OpenTitan Earl Grey Chip Datasheet
 
-# Overview
+The OpenTitan Earl Grey chip is a low-power secure microcontroller that is designed for several use cases requiring hardware security.
+The block diagram below shows the system configuration, including the Ibex processor and all of the memories and [OpenTitan hardware blocks](../../ip/README.md).
 
 ![Top Level Block Diagram](top_earlgrey_block_diagram.svg)
 
-The OpenTitan Earl Grey chip is a low-power secure microcontroller that is designed for several use cases requiring hardware security.
-The block diagram is shown above and shows the system configuration, including the Ibex processor and all of the memories and comportable IPs.
+The system is split into a fast processor core domain that runs on a 100MHz jittery clock, and a slower peripheral domain that runs at 24MHz.
 
-As can be seen in the block diagram, the system is split into a fast processor core domain that runs on a 100MHz jittery clock, and a peripheral domain that runs at 24MHz.
-Further, a portion of the peripheral domain, the analog sensor top and the padring can stay always-on.
-The rest of the system can be shut off as part of the sleep mode.
+Furthermore, a subsection of the peripheral domain that contains the analog sensor top and the padring has always-on capabilites.
+The rest of the system can be powered-down to enter a low-power sleep state.
 
-The OpenTitan Earl Grey chip provides the following features:
+- [Earl Grey Design Specification](./design/README.md) : Detailed docs including the pinout and system address map.
+- [Earl Grey DV Document](../dv/README.md) : Design Verification environment and test plan at the chip-level.
 
 <table>
 <thead style='font-size:100%'>
@@ -108,8 +108,3 @@ The OpenTitan Earl Grey chip provides the following features:
   </tr>
 </tbody>
 </table>
-
-# Detailed Specification
-
-For more detailed documentation including the pinout and system address map, see [OpenTitan Earl Grey Chip Specification](./design/README.md).
-The [OpenTitan Earl Grey Chip DV Document](../dv/README.md) describes the chip-level DV environment and contains the chip-level test plan.

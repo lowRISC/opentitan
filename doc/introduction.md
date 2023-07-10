@@ -23,7 +23,7 @@ For questions about how the project is organized, see the [project](./project_go
 
 ## Datasheets
 
-* [OpenTitan Earl Grey Chip Datasheet](../hw/top_earlgrey/doc/specification.md)
+* [OpenTitan Earl Grey Chip Datasheet](../hw/top_earlgrey/doc/datasheet.md)
 
 ## Documentation
 

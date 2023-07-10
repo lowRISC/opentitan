@@ -26,7 +26,7 @@
 - [Introduction](./hw/README.md)
 
 - [Top Earlgrey](./hw/top_earlgrey/README.md)
-  - [Datasheet](./hw/top_earlgrey/doc/specification.md)
+  - [Datasheet](./hw/top_earlgrey/doc/datasheet.md)
   - [Design](./hw/top_earlgrey/doc/design/README.md)
   - [Design Verification](./hw/top_earlgrey/dv/README.md)
     - [Chip Testplan](./hw/top_earlgrey/data/chip_testplan.hjson)
