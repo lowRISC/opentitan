@@ -19,7 +19,7 @@ use crate::impl_serializable_error;
 use crate::io::jtag::{Jtag, JtagTap};
 use crate::test_utils::poll;
 
-use top_earlgrey::top_earlgrey_memory;
+use top_earlgrey::top_earlgrey;
 
 /// Errors related to performing an LcTransition.
 #[derive(Error, Debug, Deserialize, Serialize)]
@@ -185,8 +185,7 @@ pub fn wait_for_status(jtag: &Rc<dyn Jtag>, timeout: Duration, status: LcCtrlSta
             JtagTap::RiscvTap => {
                 let mut status = [0u32];
                 jtag.read_memory32(
-                    top_earlgrey_memory::TOP_EARLGREY_LC_CTRL_BASE_ADDR as u32
-                        + LcCtrlReg::Status as u32,
+                    top_earlgrey::LC_CTRL_BASE_ADDR as u32 + LcCtrlReg::Status as u32,
                     &mut status,
                 )?;
                 status[0]

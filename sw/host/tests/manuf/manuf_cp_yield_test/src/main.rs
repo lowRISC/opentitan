@@ -20,7 +20,7 @@ use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::extclk::{ClockSpeed, ExternalClock};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition::wait_for_status;
-use top_earlgrey::top_earlgrey_memory;
+use top_earlgrey::top_earlgrey;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -56,7 +56,7 @@ fn manuf_cp_yield_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
     wait_for_status(&jtag, Duration::from_secs(3), LcCtrlStatus::INITIALIZED)?;
     let mut encoded_lc_state = [0u32];
     jtag.read_memory32(
-        top_earlgrey_memory::TOP_EARLGREY_LC_CTRL_BASE_ADDR as u32 + LcCtrlReg::LcState as u32,
+        top_earlgrey::LC_CTRL_BASE_ADDR as u32 + LcCtrlReg::LcState as u32,
         &mut encoded_lc_state,
     )?;
     assert_eq!(

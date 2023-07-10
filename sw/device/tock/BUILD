@@ -62,7 +62,6 @@ filegroup(
     srcs = [
         "//hw/top_earlgrey/sw/autogen/chip:mod.rs",
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey.rs",
-        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey_memory.rs",
     ],
 )
 
