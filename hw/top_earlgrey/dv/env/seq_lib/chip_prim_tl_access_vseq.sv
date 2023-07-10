@@ -49,6 +49,10 @@ class chip_prim_tl_access_vseq extends chip_stub_cpu_base_vseq;
 
     csr_excl_item csr_excl = get_excl_item(csr);
 
+    // If CsrExclAll, skip the test
+    if (csr_excl.is_excl(csr, CsrExclAll, CsrAllTests)) begin
+      return;
+    end
     // Apply CsrExclWrite
     if (!csr_excl.is_excl(csr, CsrExclWrite, CsrAllTests)) begin
       tl_access(.addr(addr), .write(1), .data(data), .exp_err_rsp(gated));
@@ -62,8 +66,8 @@ class chip_prim_tl_access_vseq extends chip_stub_cpu_base_vseq;
       void'(csr.predict(.value(data), .kind(UVM_PREDICT_WRITE)));
     end
     exp_data = gated ? '1 : `gmv(csr);
-    `uvm_info(`gfn, $sformatf("Write addr %0h, write adata %0h, expect data %0h",
-              addr, data, exp_data), UVM_HIGH);
+    `uvm_info(`gfn, $sformatf("%s: Write addr %0h, write adata %0h, expect data %0h gated:%0b",
+              csr.get_full_name(), addr, data, exp_data, gated), UVM_MEDIUM);
     tl_access(.addr(addr), .write(0), .data(data), .exp_err_rsp(gated), .exp_data(exp_data),
               .check_exp_data(1));
   endtask
