@@ -77,7 +77,7 @@ impl CommandDispatch for AssembleCommand {
 /// Manifest show command.
 #[derive(Debug, Args)]
 pub struct ManifestShowCommand {
-    #[arg(name = "IMAGE", help = "Filename for the image to display")]
+    #[arg(help = "Filename for the image to display")]
     image: PathBuf,
 }
 
@@ -96,7 +96,7 @@ impl CommandDispatch for ManifestShowCommand {
 /// Manifest update command.
 #[derive(Debug, Args)]
 pub struct ManifestUpdateCommand {
-    #[arg(name = "IMAGE", help = "Filename for the image to update")]
+    #[arg(help = "Filename for the image to update")]
     image: PathBuf,
     #[arg(
         short,
@@ -258,7 +258,7 @@ impl CommandDispatch for ManifestUpdateCommand {
 /// Manifest verify command.
 #[derive(Debug, Args)]
 pub struct ManifestVerifyCommand {
-    #[arg(name = "IMAGE", help = "Filename for the image to verify")]
+    #[arg(help = "Filename for the image to verify")]
     image: PathBuf,
     #[arg(short, long, help = "Run verification for SPHINCS+")]
     spx: bool,
@@ -297,10 +297,7 @@ impl CommandDispatch for ManifestVerifyCommand {
 /// Compute digest command.
 #[derive(Debug, Args)]
 pub struct DigestCommand {
-    #[arg(
-        name = "IMAGE",
-        help = "Filename for the image to calculate the digest for"
-    )]
+    #[arg(help = "Filename for the image to calculate the digest for")]
     image: PathBuf,
     #[arg(short, long, help = "Filename for an output bin file")]
     bin: Option<PathBuf>,
@@ -335,10 +332,7 @@ impl CommandDispatch for DigestCommand {
 /// Compute spx-message command.
 #[derive(Debug, Args)]
 pub struct SpxMessageCommand {
-    #[arg(
-        name = "IMAGE",
-        help = "Filename for the image to calculate the digest for"
-    )]
+    #[arg(help = "Filename for the image to calculate the digest for")]
     image: PathBuf,
     #[arg(short, long, help = "Filename for an output bin file")]
     output: PathBuf,

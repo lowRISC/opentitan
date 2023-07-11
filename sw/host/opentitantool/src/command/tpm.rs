@@ -15,12 +15,7 @@ use opentitanlib::tpm;
 /// Read the value of a given TPM register.
 #[derive(Debug, Args)]
 pub struct TpmReadRegister {
-    #[arg(
-        name = "REGISTER",
-        value_enum,
-        ignore_case = true,
-        help = "The TPM register to inspect"
-    )]
+    #[arg(value_enum, ignore_case = true, help = "The TPM register to inspect")]
     register: tpm::Register,
 
     #[arg(long, help = "Number of bytes to read.")]
@@ -70,12 +65,7 @@ impl CommandDispatch for TpmReadRegister {
 /// Write to a given TPM register.
 #[derive(Debug, Args)]
 pub struct TpmWriteRegister {
-    #[arg(
-        name = "REGISTER",
-        value_enum,
-        ignore_case = true,
-        help = "The TPM register to modify"
-    )]
+    #[arg(value_enum, ignore_case = true, help = "The TPM register to modify")]
     register: tpm::Register,
 
     #[arg(

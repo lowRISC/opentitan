@@ -56,10 +56,7 @@ pub struct RsaKeyInfoInWords {
 /// Show public information of a private or public RSA key
 #[derive(Debug, Args)]
 pub struct RsaKeyShowCommand {
-    #[arg(
-        name = "DER_FILE",
-        help = "RSA public or private key file in DER format"
-    )]
+    #[arg(help = "RSA public or private key file in DER format")]
     der_file: PathBuf,
 }
 
@@ -86,9 +83,9 @@ impl CommandDispatch for RsaKeyShowCommand {
 /// <OUTPUT_DIR>/<BASENAME>.pub.der
 #[derive(Debug, Args)]
 pub struct RsaKeyGenerateCommand {
-    #[arg(name = "OUTPUT_DIR", help = "Output directory")]
+    #[arg(help = "Output directory")]
     output_dir: PathBuf,
-    #[arg(name = "BASENAME", help = "Basename for the generated key pair")]
+    #[arg(help = "Basename for the generated key pair")]
     basename: String,
 }
 
@@ -115,12 +112,9 @@ impl CommandDispatch for RsaKeyGenerateCommand {
 /// to a C header that can be used in the ROM or ROM_EXT
 #[derive(Debug, Args)]
 pub struct RsaKeyExportCommand {
-    #[arg(
-        name = "DER_FILE",
-        help = "RSA public or private key file in DER format"
-    )]
+    #[arg(help = "RSA public or private key file in DER format")]
     der_file: PathBuf,
-    #[arg(name = "OUTPUT_FILE", help = "output header file to generate")]
+    #[arg(help = "output header file to generate")]
     output_file: Option<PathBuf>,
 }
 
@@ -314,10 +308,7 @@ pub struct RsaVerifyCommand {
         help = "SHA256 digest of the message as a hex string (big-endian), i.e. 0x..."
     )]
     digest: String,
-    #[arg(
-        name = "SIGNATURE",
-        help = "Signature to be verified as a hex string (big-endian), i.e. 0x..."
-    )]
+    #[arg(help = "Signature to be verified as a hex string (big-endian), i.e. 0x...")]
     signature: String,
 }
 
