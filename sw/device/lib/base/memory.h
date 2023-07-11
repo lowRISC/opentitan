@@ -59,6 +59,31 @@ inline ptrdiff_t misalignment32_of(uintptr_t addr) {
 }
 
 /**
+ * Computes how many bytes of padding must be added to `size` to reach an
+ * integer multiple of `block_size`.
+ *
+ * @param size The size of the unpadded region.
+ * @param block_size The size we're padding up to. Must be a power of two.
+ * @return Minimal number of padding bytes.
+ */
+OT_WARN_UNUSED_RESULT
+inline size_t compute_padding(size_t size, size_t block_size) {
+  // If we accept that `p(n, b) = (n * (b - 1)) % b` computes the desired
+  // padding, we can prove that it's equivalent to `q(n,b) = -n % b`.
+  //
+  //   p(n, b) = (n * (b - 1)) % b
+  //           = (nb - n) % b
+  //           = (nb % b - n % b) % b
+  //           = (0 - n % b) % b
+  //           = (0 - n) % b
+  //           = -n % b
+  //           = q(n, b)
+  //
+  // Clang clang compiles this into RISC-V `neg` followed by `and`.
+  return -size % block_size;
+}
+
+/**
  * Load a word from memory directly, bypassing aliasing rules.
  *
  * ISO C forbids, in general, casting a pointer to non-character types and
