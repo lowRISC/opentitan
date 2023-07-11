@@ -39,6 +39,7 @@ function render_dashboard_value(value, kind, node) {
         g_colour.toString() + ",0)";
 
       node.style.backgroundColor = color_str;
+      node.style.color = "#3D1067";
 
       break;
     case DashValueKindLink:
