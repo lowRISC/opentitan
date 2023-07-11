@@ -30,7 +30,7 @@ pub enum StatusCommand {
 pub struct ListCommand {
     #[arg(short, long, help = "Display the raw status create records.")]
     raw_records: bool,
-    #[arg(name = "ELF_FILE", help = "Filename for the executable to analyze.")]
+    #[arg(help = "Filename for the executable to analyze.")]
     elf_file: PathBuf,
 }
 
@@ -73,7 +73,7 @@ pub struct LintCommand {
     // an empty file to make bazel happy.
     #[arg(short, long, help = "Create an empty file to make bazel happy.")]
     touch: Option<PathBuf>,
-    #[arg(name = "ELF_FILES", help = "Filenames of the executable to analyze.")]
+    #[arg(help = "Filenames of the executable to analyze.")]
     elf_files: Vec<PathBuf>,
 }
 
