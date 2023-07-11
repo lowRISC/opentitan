@@ -146,6 +146,7 @@ rust_library(
         "src/transport/hyperdebug/gpio.rs",
         "src/transport/hyperdebug/i2c.rs",
         "src/transport/hyperdebug/mod.rs",
+        "src/transport/hyperdebug/servo_micro.rs",
         "src/transport/hyperdebug/spi.rs",
         "src/transport/hyperdebug/ti50.rs",
         "src/transport/ioexpander/mod.rs",

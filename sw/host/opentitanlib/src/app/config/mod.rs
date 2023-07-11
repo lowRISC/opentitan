@@ -62,6 +62,7 @@ static BUILTINS: Lazy<HashMap<&'static str, &'static str>> = Lazy::new(|| {
         "/__builtin__/dediprog.json" => include_str!("dediprog.json"),
         "/__builtin__/h1dx_devboard.json" => include_str!("h1dx_devboard.json"),
         "/__builtin__/h1dx_devboard_c2d2.json" => include_str!("h1dx_devboard_c2d2.json"),
+        "/__builtin__/servo_micro.json" => include_str!("servo_micro.json"),
         "/__builtin__/h1dx_devboard_ultradebug.json" => include_str!("h1dx_devboard_ultradebug.json"),
         "/__builtin__/ti50emulator.json" => include_str!("ti50emulator.json"),
         "/__builtin__/opentitan_cw310.json" => include_str!("opentitan_cw310.json"),

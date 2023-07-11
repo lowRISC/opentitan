@@ -35,11 +35,13 @@ pub mod c2d2;
 pub mod dfu;
 pub mod gpio;
 pub mod i2c;
+pub mod servo_micro;
 pub mod spi;
 pub mod ti50;
 
 pub use c2d2::C2d2Flavor;
 pub use dfu::HyperdebugDfu;
+pub use servo_micro::ServoMicroFlavor;
 pub use ti50::Ti50Flavor;
 
 /// Implementation of the Transport trait for HyperDebug based on the
@@ -178,8 +180,8 @@ impl<T: Flavor> Hyperdebug<T> {
                     };
                     if interface_name.ends_with("Shell") {
                         // We found the "main" control interface of HyperDebug, allowing textual
-                        // commands to be sent, to e.g. manipoulate GPIOs.
-                        console_tty = Some(Self::find_tty(&interface_path)?)
+                        // commands to be sent, to e.g. manipulate GPIOs.
+                        console_tty = Some(Self::find_tty(&interface_path)?);
                     } else {
                         // We found an UART forwarding USB interface.
                         uart_ttys
