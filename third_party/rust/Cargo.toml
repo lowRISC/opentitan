@@ -21,7 +21,7 @@ bitvec = "1.0.1"
 byteorder = "1.4.3"
 chrono = "0.4"
 # We're hitting a rustc bug in the nightly version we use that's exposed by clap >= 4.3
-clap = { version = "4.1, <=4.2.7", features = ["derive", "env"] }
+clap = { version = "4.1, <=4.2.7", features = ["derive", "env", "deprecated"] }
 crc = "3.0"
 deser-hjson = "1.0.2"
 directories = "4.0.1"

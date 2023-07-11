@@ -30,6 +30,7 @@ rust_proc_macro(
     ),
     crate_features = [
         "default",
+        "deprecated",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
