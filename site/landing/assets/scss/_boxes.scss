@@ -37,3 +37,7 @@
 .tile:visited {
     color: var(--text-color);
 }
+
+.tile:hover {
+    background: var(--background-hover);
+}

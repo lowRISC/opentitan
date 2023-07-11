@@ -24,6 +24,7 @@ $m-s: calc(1em + 1vw);
   --rainbow-dark: linear-gradient(90deg, rgba(29,0,55,0.4),  rgba(29,0,55,0.4) 100%), linear-gradient(90deg, #4BC0C8 0%, #C779D0 50%, #FEAC5E 100%);
   --rainbow: linear-gradient(90deg, #4BC0C8 0%, #C779D0 50%, #FEAC5E 100%);
   --background: #fff;
+  --background-hover: #f2f2f2;
   --text-color: #3D1067;
   --text-second: #68688B;
   --text-third: #1683B5;
@@ -37,6 +38,7 @@ $m-s: calc(1em + 1vw);
 
   :root:not([data-user-color-scheme]) {
     --background: var(--black);
+    --background-hover: #2d0056;
     --text-color: var(--light-purple);
     --text-second: #88a;
     --text-third: #1683B5;
@@ -64,6 +66,7 @@ $m-s: calc(1em + 1vw);
 
 [data-user-color-scheme='dark'] {
   --background: var(--black);
+  --background-hover: #2d0056;
   --text-color: var(--light-purple);
   --text-second: #88a;
   --rainbow: var(--rainbow-dark);
