@@ -18846,6 +18846,7 @@ module spi_device_reg_top (
   // R[tpm_cmd_addr]: V(True)
   logic tpm_cmd_addr_qe;
   logic [1:0] tpm_cmd_addr_flds_we;
+  // In case all fields are read-only the aggregated register QE will be zero as well.
   assign tpm_cmd_addr_qe = &tpm_cmd_addr_flds_we;
   //   F[addr]: 23:0
   prim_subreg_ext #(
@@ -18903,6 +18904,7 @@ module spi_device_reg_top (
   // R[tpm_write_fifo]: V(True)
   logic tpm_write_fifo_qe;
   logic [0:0] tpm_write_fifo_flds_we;
+  // In case all fields are read-only the aggregated register QE will be zero as well.
   assign tpm_write_fifo_qe = &tpm_write_fifo_flds_we;
   prim_subreg_ext #(
     .DW    (8)
