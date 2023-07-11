@@ -262,13 +262,13 @@ pub struct RsaSignCommand {
     output: Option<PathBuf>,
 
     #[arg(
-        name = "DER_FILE",
+        value_name = "DER_FILE",
         value_parser = load_priv_key,
         help = "RSA private key file in PKCS#1 DER format"
     )]
     private_key: RsaPrivateKey,
     #[arg(
-        name = "SHA256_DIGEST",
+        value_name = "SHA256_DIGEST",
         value_parser = Sha256Digest::from_str,
         required_unless_present = "input",
         help = "SHA256 digest of the message"
@@ -301,10 +301,10 @@ impl CommandDispatch for RsaSignCommand {
 
 #[derive(Debug, Args)]
 pub struct RsaVerifyCommand {
-    #[arg(name = "KEY", help = "Key file in DER format")]
+    #[arg(value_name = "KEY", help = "Key file in DER format")]
     der_file: PathBuf,
     #[arg(
-        name = "SHA256_DIGEST",
+        value_name = "SHA256_DIGEST",
         help = "SHA256 digest of the message as a hex string (big-endian), i.e. 0x..."
     )]
     digest: String,

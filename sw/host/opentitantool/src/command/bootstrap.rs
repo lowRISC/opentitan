@@ -35,7 +35,7 @@ pub struct BootstrapCommand {
     )]
     mirror: bool,
     #[arg(
-        name = "FILE",
+        value_name = "FILE",
         required = true,
         num_args = 1..,
         help = "An image to bootstrap or multiple filename@offset specifiers to assemble into a bootstrap image."

@@ -48,7 +48,7 @@ pub struct BackendOpts {
     #[command(flatten)]
     pub ti50emulator_opts: ti50emulator::Ti50EmulatorOpts,
 
-    #[arg(long, number_of_values = 1, help = "Configuration files")]
+    #[arg(long, num_args = 1, help = "Configuration files")]
     pub conf: Vec<PathBuf>,
 }
 

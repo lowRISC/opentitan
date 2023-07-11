@@ -141,7 +141,7 @@ pub struct DecodeCommand {
     raw_status: u32,
     #[arg(
         long,
-        name = "ELF_FILE",
+        value_name = "ELF_FILE",
         help = "Filename for the executable to analyze."
     )]
     elf: Option<PathBuf>,

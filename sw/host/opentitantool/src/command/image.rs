@@ -47,7 +47,7 @@ pub struct AssembleCommand {
     #[arg(short, long, help = "Filename to write the assembled image to")]
     output: PathBuf,
     #[arg(
-        name = "FILE",
+        value_name = "FILE",
         required = true,
         num_args = 1..,
         help = "One or more filename@offset specifiers to assemble into an image"
