@@ -10,7 +10,9 @@ use thiserror::Error;
 use crate::app::config::process_config_file;
 use crate::app::{TransportWrapper, TransportWrapperBuilder};
 use crate::transport::dediprog::Dediprog;
-use crate::transport::hyperdebug::{C2d2Flavor, CW310Flavor, StandardFlavor, Ti50Flavor};
+use crate::transport::hyperdebug::{
+    C2d2Flavor, CW310Flavor, ServoMicroFlavor, StandardFlavor, Ti50Flavor,
+};
 use crate::transport::{EmptyTransport, Transport};
 use crate::util::parse_int::ParseInt;
 
@@ -87,6 +89,10 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
         "c2d2" => (
             hyperdebug::create::<C2d2Flavor>(args)?,
             Some(Path::new("/__builtin__/h1dx_devboard_c2d2.json")),
+        ),
+        "servo_micro" => (
+            hyperdebug::create::<ServoMicroFlavor>(args)?,
+            Some(Path::new("/__builtin__/servo_micro.json")),
         ),
         "ti50" => (hyperdebug::create::<Ti50Flavor>(args)?, None),
         "cw310" => (

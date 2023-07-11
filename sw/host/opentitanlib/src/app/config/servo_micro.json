@@ -1,0 +1,33 @@
+{
+  "interface": "servo_micro",
+  "pins": [
+    {
+      "name": "RESET",
+      "level": true,
+      "alias_of": "IO_EXP_16"
+    }
+  ],
+  "strappings": [
+    {
+      "name": "RESET",
+      "pins": [
+        {
+          "name": "RESET",
+          "level": false
+        }
+      ]
+    },
+    {
+      "name": "ROM_BOOTSTRAP"
+    }
+  ],
+  "uarts": [
+    {
+      "name": "console",
+      "baudrate": 115200,
+      "parity": "None",
+      "stopbits": "Stop1",
+      "alias_of": "UART3"
+    }
+  ]
+}
