@@ -559,18 +559,36 @@ ${reg_hdr}
       % if sr.needs_int_qe():
   logic [${len(sr.fields)-1}:0] ${sr_name}_flds_we;
       % endif
-      % if sr.needs_qe() and sr.hwext:
-  assign ${sr_name}_qe = &${sr_name}_flds_we;
-      % elif sr.needs_qe():
+      % if sr.needs_qe():
+<%
+      flds_no_we = 0
+      for f_idx, f in enumerate(sr.fields):
+        flds_no_we |= (not f.swaccess.needs_we()) << f_idx
+      if flds_no_we != 0:
+        flds_we_masked = f"&({sr_name}_flds_we | {len(sr.fields)}'h{flds_no_we:x})"
+      else:
+        flds_we_masked = f"&{sr_name}_flds_we"
+      f"" if flds_no_we != 0 else ""
+%>\
+        % if sr.hwext and flds_no_we != 2**len(sr.fields)-1:
+          % if flds_no_we != 0:
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+          % endif
+  assign ${sr_name}_qe = ${flds_we_masked};
+        % elif flds_no_we != 2**len(sr.fields)-1:
   prim_flop #(
     .Width(1),
     .ResetValue(0)
   ) u_${reg_name}${sr_idx}_qe (
     .clk_i(${clk_expr}),
     .rst_ni(${rst_expr}),
-    .d_i(&${sr_name}_flds_we),
+    .d_i(${flds_we_masked}),
     .q_o(${sr_name}_qe)
   );
+        % else:
+  // In case all fields are read-only the aggregated register QE will be zero as well.
+  assign ${sr_name}_qe = &${sr_name}_flds_we;
+        % endif
       % endif
 <%
   # We usually use the REG_we signal, but use REG_re for RC fields
