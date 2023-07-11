@@ -17,10 +17,10 @@ use opentitanlib::util::usr_access::{usr_access_crc32, usr_access_set};
 /// Update the USR_ACCESS value of an FPGA bitstream with the current timestamp.
 #[derive(Debug, Args)]
 pub struct UpdateUsrAccess {
-    #[arg(name = "INPUT_FILE")]
+    #[arg(value_name = "INPUT_FILE")]
     input: PathBuf,
 
-    #[arg(name = "OUTPUT_FILE")]
+    #[arg(value_name = "OUTPUT_FILE")]
     output: PathBuf,
 
     #[arg(

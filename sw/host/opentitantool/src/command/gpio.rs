@@ -106,7 +106,7 @@ pub struct GpioSetPullMode {
     #[arg(help = "The GPIO pin to modify")]
     pub pin: String,
     #[arg(
-        name = "PULLMODE",
+        value_name = "PULLMODE",
         value_enum,
         ignore_case = true,
         help = "The weak pull mode of the pin"

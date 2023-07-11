@@ -17,7 +17,7 @@ use opentitanlib::transport::common::fpga::FpgaProgram;
 /// Load a bitstream into the FPGA.
 #[derive(Debug, Args)]
 pub struct LoadBitstream {
-    #[arg(name = "FILE")]
+    #[arg(value_name = "FILE")]
     filename: PathBuf,
 
     #[arg(

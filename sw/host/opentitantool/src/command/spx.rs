@@ -92,7 +92,7 @@ pub struct SpxSignCommand {
     #[arg(help = "The filename for the message to sign")]
     message: PathBuf,
 
-    #[arg(name = "KEY_FILE", help = "The file contianing SPHICS+ keypair")]
+    #[arg(value_name = "KEY_FILE", help = "The file contianing SPHICS+ keypair")]
     keypair: PathBuf,
     #[arg(short, long, help = "The filename to write the signature to")]
     output: Option<PathBuf>,
@@ -119,7 +119,7 @@ impl CommandDispatch for SpxSignCommand {
 
 #[derive(Debug, Args)]
 pub struct SpxVerifyCommand {
-    #[arg(name = "KEY", help = "Key file")]
+    #[arg(value_name = "KEY", help = "Key file")]
     key_file: PathBuf,
     #[arg(help = "Message file to verify the signature against")]
     message: PathBuf,
