@@ -25,9 +25,17 @@ def go_deps():
                 "go1.19.1.linux-amd64.tar.gz",
                 "acc512fbab4f716a8f97a8b3fbaa9ddd39606a28be6c2515ef7c6c6311acffde",
             ),
+            "linux_arm64": (
+                "go1.19.1.linux-arm64.tar.gz",
+                "49960821948b9c6b14041430890eccee58c76b52e2dbaafce971c3c38d43df9f",
+            ),
             "darwin_amd64": (
                 "go1.19.1.darwin-amd64.tar.gz",
                 "b2828a2b05f0d2169afc74c11ed010775bf7cf0061822b275697b2f470495fb7",
+            ),
+            "darwin_arm64": (
+                "go1.19.1.darwin-arm64.tar.gz",
+                "e46aecce83a9289be16ce4ba9b8478a5b89b8aa0230171d5c6adbc0c66640548",
             ),
         },
     )
