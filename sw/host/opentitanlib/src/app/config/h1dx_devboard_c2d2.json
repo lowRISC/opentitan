@@ -12,7 +12,13 @@
   ],
   "strappings": [
     {
-      "name": "RESET"
+      "name": "RESET",
+      "pins": [
+        {
+          "name": "RESET",
+          "level": false
+        }
+      ]
     },
     {
       "name": "ROM_BOOTSTRAP"
