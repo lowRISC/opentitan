@@ -21,69 +21,69 @@ BLOCKFILE
 ci/scripts/check-pr-changes-allowed.py
 
 # Earlgrey related RTL
-hw/ip/*/rtl/*
-hw/ip_templates/*/rtl/*
-hw/top_earlgrey/ip/*/rtl/*
-hw/top_earlgrey/ip_autogen/*/rtl/*
+## hw/ip/*/rtl/*
+## hw/ip_templates/*/rtl/*
+## hw/top_earlgrey/ip/*/rtl/*
+## hw/top_earlgrey/ip_autogen/*/rtl/*
 
 # Vendored IP
-hw/vendor/lowrisc_ibex/rtl/*
-hw/vendor/pulp_riscv_dbg/src/*
-hw/vendor/pulp_riscv_dbg/debug_rom/*
+## hw/vendor/lowrisc_ibex/rtl/*
+## hw/vendor/pulp_riscv_dbg/src/*
+## hw/vendor/pulp_riscv_dbg/debug_rom/*
 
 # Individual HJSON files that effect RTL generation (no wildcard as it's
 # too broad and will also block DV-only files)
-hw/ip/pwrmgr/data/pwrmgr.hjson
-hw/ip/lc_ctrl/data/lc_ctrl.hjson
-hw/ip/rv_timer/data/rv_timer.hjson
-hw/ip/clkmgr/data/clkmgr.hjson
-hw/ip/pinmux/data/pinmux.hjson
-hw/ip/spi_host/data/spi_host.hjson
-hw/ip/spi_device/data/spi_device.hjson
-hw/ip/adc_ctrl/data/adc_ctrl.hjson
-hw/ip/pattgen/data/pattgen.hjson
-hw/ip/keymgr/data/keymgr.hjson
-hw/ip/edn/data/edn.hjson
-hw/ip/csrng/data/csrng.hjson
-hw/ip/usbdev/data/usbdev.hjson
-hw/ip/uart/data/uart.hjson
-hw/ip/flash_ctrl/data/flash_ctrl.hjson
-hw/ip/rstmgr/data/rstmgr.hjson
-hw/ip/sram_ctrl/data/sram_ctrl.hjson
-hw/ip/rom_ctrl/data/rom_ctrl.hjson
-hw/ip/hmac/data/hmac.hjson
-hw/ip/rv_dm/data/rv_dm.hjson
-hw/ip/kmac/data/kmac.hjson
-hw/ip/sysrst_ctrl/data/sysrst_ctrl.hjson
-hw/ip/gpio/data/gpio.hjson
-hw/ip/otbn/data/otbn.hjson
-hw/ip/entropy_src/data/entropy_src.hjson
-hw/ip/aes/data/aes.hjson
-hw/ip/i2c/data/i2c.hjson
-hw/ip/otp_ctrl/data/otp_ctrl.hjson
-hw/ip/otp_ctrl/data/otp_ctrl_img_rma.hjson
-hw/ip/otp_ctrl/data/otp_ctrl_img_dev.hjson
-hw/ip/otp_ctrl/data/otp_ctrl_img_test_locked0.hjson
-hw/ip/otp_ctrl/data/otp_ctrl_img_test_locked1.hjson
-hw/ip/otp_ctrl/data/otp_ctrl_img_test_unlocked0.hjson
-hw/ip/otp_ctrl/data/otp_ctrl_img_creator_sw_cfg.hjson
-hw/ip/otp_ctrl/data/otp_ctrl_img_hw_cfg.hjson
-hw/ip/otp_ctrl/data/otp_ctrl_img_raw.hjson
-hw/ip/otp_ctrl/data/otp_ctrl_mmap.hjson
-hw/ip/otp_ctrl/data/otp_ctrl_img_test_unlocked1.hjson
-hw/ip/otp_ctrl/data/otp_ctrl_img_prod.hjson
-hw/ip/otp_ctrl/data/otp_ctrl_img_test_unlocked2.hjson
-hw/ip/rv_core_ibex/data/rv_core_ibex.hjson
-hw/ip/pwm/data/pwm.hjson
-hw/ip/aon_timer/data/aon_timer.hjson
+## hw/ip/pwrmgr/data/pwrmgr.hjson
+## hw/ip/lc_ctrl/data/lc_ctrl.hjson
+## hw/ip/rv_timer/data/rv_timer.hjson
+## hw/ip/clkmgr/data/clkmgr.hjson
+## hw/ip/pinmux/data/pinmux.hjson
+## hw/ip/spi_host/data/spi_host.hjson
+## hw/ip/spi_device/data/spi_device.hjson
+## hw/ip/adc_ctrl/data/adc_ctrl.hjson
+## hw/ip/pattgen/data/pattgen.hjson
+## hw/ip/keymgr/data/keymgr.hjson
+## hw/ip/edn/data/edn.hjson
+## hw/ip/csrng/data/csrng.hjson
+## hw/ip/usbdev/data/usbdev.hjson
+## hw/ip/uart/data/uart.hjson
+## hw/ip/flash_ctrl/data/flash_ctrl.hjson
+## hw/ip/rstmgr/data/rstmgr.hjson
+## hw/ip/sram_ctrl/data/sram_ctrl.hjson
+## hw/ip/rom_ctrl/data/rom_ctrl.hjson
+## hw/ip/hmac/data/hmac.hjson
+## hw/ip/rv_dm/data/rv_dm.hjson
+## hw/ip/kmac/data/kmac.hjson
+## hw/ip/sysrst_ctrl/data/sysrst_ctrl.hjson
+## hw/ip/gpio/data/gpio.hjson
+## hw/ip/otbn/data/otbn.hjson
+## hw/ip/entropy_src/data/entropy_src.hjson
+## hw/ip/aes/data/aes.hjson
+## hw/ip/i2c/data/i2c.hjson
+## hw/ip/otp_ctrl/data/otp_ctrl.hjson
+## hw/ip/otp_ctrl/data/otp_ctrl_img_rma.hjson
+## hw/ip/otp_ctrl/data/otp_ctrl_img_dev.hjson
+## hw/ip/otp_ctrl/data/otp_ctrl_img_test_locked0.hjson
+## hw/ip/otp_ctrl/data/otp_ctrl_img_test_locked1.hjson
+## hw/ip/otp_ctrl/data/otp_ctrl_img_test_unlocked0.hjson
+## hw/ip/otp_ctrl/data/otp_ctrl_img_creator_sw_cfg.hjson
+## hw/ip/otp_ctrl/data/otp_ctrl_img_hw_cfg.hjson
+## hw/ip/otp_ctrl/data/otp_ctrl_img_raw.hjson
+## hw/ip/otp_ctrl/data/otp_ctrl_mmap.hjson
+## hw/ip/otp_ctrl/data/otp_ctrl_img_test_unlocked1.hjson
+## hw/ip/otp_ctrl/data/otp_ctrl_img_prod.hjson
+## hw/ip/otp_ctrl/data/otp_ctrl_img_test_unlocked2.hjson
+## hw/ip/rv_core_ibex/data/rv_core_ibex.hjson
+## hw/ip/pwm/data/pwm.hjson
+## hw/ip/aon_timer/data/aon_timer.hjson
 
-hw/ip_templates/alert_handler/data/alert_handler.hjson.tpl
-hw/ip_templates/rv_plic/data/rv_plic.hjson.tpl
+## hw/ip_templates/alert_handler/data/alert_handler.hjson.tpl
+## hw/ip_templates/rv_plic/data/rv_plic.hjson.tpl
 
-hw/top_earlgrey/ip/ast/data/ast.hjson
-hw/top_earlgrey/ip_autogen/alert_handler/data/alert_handler.hjson
-hw/top_earlgrey/ip_autogen/rv_plic/data/rv_plic.hjson
+## hw/top_earlgrey/ip/ast/data/ast.hjson
+## hw/top_earlgrey/ip_autogen/alert_handler/data/alert_handler.hjson
+## hw/top_earlgrey/ip_autogen/rv_plic/data/rv_plic.hjson
 
-hw/top_earlgrey/data/top_earlgrey.hjson
-hw/top_earlgrey/data/xbar_main.hjson
-hw/top_earlgrey/data/xbar_peri.hjson
+## hw/top_earlgrey/data/top_earlgrey.hjson
+## hw/top_earlgrey/data/xbar_main.hjson
+## hw/top_earlgrey/data/xbar_peri.hjson
