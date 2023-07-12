@@ -39,6 +39,7 @@ class chip_sw_otp_ctrl_vendor_test_csr_access_vseq extends chip_sw_base_vseq;
   endtask
 
   virtual task body();
+    int wait_timeout_ns = 1_000_000;
     super.body();
 
     // Before issuing jtag access (from wait_lc_ready),
@@ -46,6 +47,14 @@ class chip_sw_otp_ctrl_vendor_test_csr_access_vseq extends chip_sw_base_vseq;
     wait_rom_check_done();
     wait_lc_ready(.allow_err(1));
 
+    // When cpu is enabled, tlul transactions are generated.
+    // This may collide with otp_vendor_test.
+    // So wait until initial tlul transactions are complete.
+    if (is_cpu_enabled_lc_state(lc_state)) begin
+      `DV_WAIT(cfg.sw_logger_vif.printed_log == "init peripheral is done",,
+               wait_timeout_ns,
+               "Waiting for peripheral init is done")
+    end
     // Claim the mux interface via JTAG.
     jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.claim_transition_if.get_offset(),
                                          p_sequencer.jtag_sequencer_h,
