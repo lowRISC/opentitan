@@ -30,7 +30,9 @@ package usb_consts_pkg;
     UsbPidAck   = 4'b0010,
     UsbPidNak   = 4'b1010,
     UsbPidStall = 4'b1110,
-    UsbPidNyet  = 4'b0110
+    UsbPidNyet  = 4'b0110,
+    // SPECIAL
+    UsbPidPre   = 4'b1100
   } usb_pid_e;
 
 
