@@ -40,5 +40,7 @@ static void init_peripherals(void) {
  */
 bool test_main(void) {
   init_peripherals();
+  // This is an anker for sv wait
+  LOG_INFO("init peripheral is done");
   return true;
 }
