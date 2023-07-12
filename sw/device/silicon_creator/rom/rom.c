@@ -137,7 +137,7 @@ void spi_flash_load_data(void){
   volatile int * debug_mode;
   volatile int * address, * start, * payload_1, * payload_2, * payload_3; 
 
-  int num_iter = 3120;
+  int num_iter = 160;
   int buf_size = 63;
   uint32_t buf[buf_size];
   dif_spi_host_segment_t segments[3];

@@ -40,8 +40,10 @@ for line in lines:
     
     # Otherwise, this line represents a new memory address
     address = line.split()[0]
-    address_int = int(address[1:], 16) * 3
-    address = '@{:0>8X}'.format(address_int)
+    address_int  = int(address[1:], 16) * 3
+    address8_int = int(address[1:], 16) * 3 * 4
+    address  = '@{:0>8X}'.format(address_int)
+    address8 = '@{:0>8X}'.format(address8_int)
     data = line.split()[1:]
     
     # Convert the data from 76-bit words to 32-bit words
@@ -83,7 +85,7 @@ for line in lines:
         lower_bits = word[16:]
         
         # Pad the lower 12 bits with zeros
-        lower_bits = lower_bits.ljust(4, '0')
+        lower_bits = lower_bits.ljust(8, '0')
         
         # Convert the 76-bit word to 8-bit words
         new_data8 += ' ' + ' '.join([upper_bits1[i:i+2] for i in range(0, len(upper_bits1), 2)])
@@ -91,7 +93,7 @@ for line in lines:
         new_data8 += ' ' + ' '.join([lower_bits[i:i+2] for i in range(0, len(lower_bits), 2)])
     
     # Construct the new line of output for the .vmem file (8-bit words)
-    new_line8 = address + new_data8
+    new_line8 = address8 + new_data8
     
     # Add the new line to the output list for the .vmem file (8-bit words)
     vmem8_output_lines.append(new_line8)
