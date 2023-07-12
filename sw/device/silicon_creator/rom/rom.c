@@ -50,16 +50,6 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 
-/*
-#include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/dif/dif_spi_host.h"
-#include "sw/device/lib/runtime/hart.h"
-#include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/runtime/print.h"
-#include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/lib/testing/test_framework/ottf_main.h"
-*/
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
 
@@ -90,20 +80,18 @@
   X(kCfiRomPreBootCheck, 0x43a) \
   X(kCfiRomBoot,         0x2e2)
 // clang-format
-#define SPI_HOST_STATUS_REG_OFFSET 0x14
-#define SPI_HOST_STATUS_READY_BIT 31
-#define DATA_SET_SIZE 16
-#define MSG 0xbaadc0de
-//#define TARGET_SYNTHESIS
+
+#define TARGET_SYNTHESIS
+
 // Define counters and constant values required by the CFI counter macros.
 CFI_DEFINE_COUNTERS(rom_counters, ROM_CFI_FUNC_COUNTERS_TABLE);
 
 // Life cycle state of the chip.
 lifecycle_state_t lc_state = (lifecycle_state_t)0;
-// Boot data from flash.
-boot_data_t boot_data = {0};
+// Spi Host handler
 static dif_spi_host_t spi_host;
 
+boot_data_t boot_data = {0};
 OT_ALWAYS_INLINE
 static rom_error_t rom_irq_error(void) {
   uint32_t mcause;
@@ -126,40 +114,95 @@ static rom_error_t rom_irq_error(void) {
  * Prints a status message indicating that the ROM is entering bootstrap mode.
  */
 static void rom_bootstrap_message(void) {
-  uart_putchar('c');
-  uart_putchar('o');
-  uart_putchar('c');
-  uart_putchar('h');
-  uart_putchar('i');
-  uart_putchar('n');
-  uart_putchar('a');
-  uart_putchar('?');
-  uart_putchar('\r');
-  uart_putchar('\n');
-  uart_putchar('a');
-  uart_putchar('a');
-  uart_putchar('a');
-  uart_putchar('h');
-  uart_putchar(',');
-  uart_putchar(' ');
-  uart_putchar('b');
-  uart_putchar('e');
-  uart_putchar('l');
-  uart_putchar('l');
-  uart_putchar('a');
-  uart_putchar(' ');
-  uart_putchar('f');
-  uart_putchar('r');
-  uart_putchar('e');
-  uart_putchar('s');
-  uart_putchar('c');
-  uart_putchar('a');
-  uart_putchar('!');
-  uart_putchar('\r');
-  uart_putchar('\n');
+  rom_printf("Bootin some fresh cochina!\r\n");
   printf("Bootin some fresh cochina!\r\n");
 }
 
+void init_spi_host(dif_spi_host_t *spi_host,
+                   uint32_t peripheral_clock_freq_hz) {
+  dif_spi_host_config_t config = {
+      .spi_clock = peripheral_clock_freq_hz / 2,
+      .peripheral_clock_freq_hz = peripheral_clock_freq_hz,
+      .chip_select = {.idle = 2, .trail = 2, .lead = 2},
+      .full_cycle = true,
+      .cpha = true,
+      .cpol = true,
+  };
+  CHECK_DIF_OK(dif_spi_host_configure(spi_host, config));
+  CHECK_DIF_OK(dif_spi_host_output_set_enabled(spi_host, /*enabled=*/true));
+}
+
+void spi_flash_load_data(void){
+
+  volatile int * debug_mode;
+  volatile int * address, * start, * payload_1, * payload_2, * payload_3; 
+
+  int num_iter = 3120;
+  int buf_size = 63;
+  uint32_t buf[buf_size];
+  dif_spi_host_segment_t segments[3];
+  uint32_t addr = 0;
+  uint32_t addr_swap = 0;
+  int index = 0;
+  uintptr_t base_addr = TOP_EARLGREY_SPI_HOST0_BASE_ADDR;
+  uint64_t clkHz = 10000000;
+  
+  payload_1  = (int *) 0xff000000;
+  payload_2  = (int *) 0xff000004;
+  payload_3  = (int *) 0xff000008;
+  address    = (int *) 0xff00000C;
+  start      = (int *) 0xff000010;
+  debug_mode = (int *) 0xff000014;
+   
+  CHECK_DIF_OK(dif_spi_host_init(mmio_region_from_addr(base_addr), &spi_host));
+  init_spi_host(&spi_host, (uint32_t)clkHz);
+    
+  *address = 0;
+  // load data from SPI flash
+  for(int j=0;j<num_iter;j++){
+     addr = j*sizeof(buf);
+     addr_swap = bitfield_byteswap32(addr);
+     segments[0] = (dif_spi_host_segment_t) {
+                   .type = kDifSpiHostSegmentTypeOpcode,
+                   .opcode = 0x13,
+     };
+     segments[1] = (dif_spi_host_segment_t) {
+                   .type = kDifSpiHostSegmentTypeAddress,
+                   .address =
+                      {
+                          .width = kDifSpiHostWidthStandard,
+                          .mode = kDifSpiHostAddrMode4b,
+                          .address = addr_swap,
+                      },
+     }; 
+     segments[2] = (dif_spi_host_segment_t) {
+                   .type = kDifSpiHostSegmentTypeRx,
+                   .rx =
+                      {
+                          .width = kDifSpiHostWidthStandard,
+                          .buf = buf,
+                          .length= sizeof(buf),
+                      },
+     };
+
+     CHECK_DIF_OK(
+          dif_spi_host_transaction(&spi_host, 0, segments, ARRAYSIZE(segments)));
+     // write data to embdedded emulated flash
+     for(int i = 0; i < buf_size; i += 3) {
+       if(i + 2 < buf_size) {
+         *payload_1 = buf[i];
+         *payload_2 = buf[i+1];
+         *payload_3 = buf[i+2];
+	 *address   = index;
+         *start = 0x1;
+	 index++;
+       }
+     }
+  }
+  
+  CHECK_DIF_OK(dif_spi_host_output_set_enabled(&spi_host, false));
+}
+  
 /**
  * Performs once-per-boot initialization of ROM modules and peripherals.
  */
@@ -490,13 +533,24 @@ static rom_error_t rom_try_boot(void) {
 }
 
 void rom_main(void) {
-
+  int * debug_mode;
+  debug_mode=(int *)0xff000014;
+  
+  // Device init performance counters
   CFI_FUNC_COUNTER_INIT(rom_counters, kCfiRomMain);
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomMain, 1, kCfiRomInit);
+  // Device initialization
   SHUTDOWN_IF_ERROR(rom_init());
   
-  rom_bootstrap_message();
+  // Populate embedded emulated Flash (bank 0)
+  rom_printf("Loading rom_ext from extenal SPI flash\r\n");
+  printf("Loading rom_ext from extenal SPI flash\r\n");
+  *debug_mode=0x1;
+  spi_flash_load_data();
+  *debug_mode=0x0;
 
+  rom_bootstrap_message();
+  
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomMain, 3);
   CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomInit, 3);
 
