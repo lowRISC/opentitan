@@ -8,12 +8,12 @@ use std::rc::Rc;
 use std::str::FromStr;
 use std::time::Duration;
 
-use anyhow::{bail, Context, Result};
+use anyhow::{ensure, Context, Result};
 use bindgen::sram_program::{SRAM_MAGIC_SP_CRC_ERROR, SRAM_MAGIC_SP_EXECUTION_DONE};
 use byteorder::{ByteOrder, LittleEndian, WriteBytesExt};
 use clap::Args;
 use crc::Crc;
-use object::{Object, ObjectSection, SectionKind};
+use object::{Object, ObjectSection, ObjectSegment, SectionKind};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -115,8 +115,20 @@ pub enum ExecutionResult {
 /// Errors related to loading an SRAM program.
 #[derive(Error, Debug, Deserialize, Serialize)]
 pub enum LoadSramProgramError {
-    #[error("SRAM program execution timed out")]
-    Executiontimeout,
+    #[error("SRAM ELF programs must be 32-bit binaries")]
+    Not32Bit,
+    #[error(
+        "SRAM program contains segments whose address or size is not a multiple of the word size"
+    )]
+    SegmentNotWordAligned,
+    #[error("SRAM program must be compiled with the `-nmagic` flag")]
+    NotCompiledWithNmagic,
+    #[error("SRAM program's segments must be consecutive")]
+    GapBetweenSegments,
+    #[error("Data readback from the SRAM mismatches from the data loaded")]
+    ReadbackMismatch,
+    #[error("SRAM program entry point is not contained in any text section")]
+    EntryPointNotFound,
     #[error("Generic error {0}")]
     Generic(String),
 }
@@ -173,14 +185,14 @@ pub fn load_elf_sram_program(
         .with_context(|| format!("Could not read ELF file {}.", elf_filename.display()))?;
     let file = object::File::parse(&*file_data)
         .with_context(|| format!("Could not parse ELF file {}", elf_filename.display()))?;
-    if file.is_64() {
-        bail!("SRAM ELF programs must be 32-bit binaries");
-    }
+    ensure!(!file.is_64(), LoadSramProgramError::Not32Bit);
     log::info!("Uploading program to SRAM");
-    // The natural thing to do would be to load segments but the GNU linker produces some really
-    // unexpected segments for SRAM programs, where the segments can be strictly larger than the
-    // data because it aligns everything on a page size (which can changed via a CLI switch but
-    // not in the linker file itself). Here is an example:
+
+    // By default, linkers produces ELF files where all segments are aligned to the page size,
+    // so the operating system can use mmap to load the program into memory (known as demand
+    // paging).
+    //
+    // Here is an example:
     //
     // Section Headers:
     //   [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
@@ -201,109 +213,85 @@ pub fn load_elf_sram_program(
     // Also note that there is a 6-byte gap between the end of .text and the beginning of .rodata
     // because .rodata needs a bigger alignment.
     //
-    // Instead, we elect to load segments that contain loadable data (and not BSS which is cleared
-    // by the SRAM CRT). Due to the gap between sections, we have to be careful because the CRT will
-    // compute the CRC of the entire data which encompasses all loadable sections but also the gaps
-    // between them! The code below explicitly writes the content of the gaps with known values that
-    // are taken into account in the CRC value.
+    // Demand paging has no use in embedded environment, and as shown above, if we load the
+    // program using the segments we could overwrite data unintentionally. Furthermore there will
+    // be an inconsistency between data loaded this way and data loaded via VMEM because the gap
+    // at the beginning is ignored by objcopy and is not covered by the CRC.
     //
-    // We also verify (read back and compare) the data from the section that contains the entry point.
+    // Fortunately there is a flag, confusingly named as `nmagic`, that changes the behaviour and
+    // disables this excessive alignment. The code below has a sanity check to ensure that the
+    // program is indeed compiled with `nmagic` enabeld by making sure tha the alignment does not
+    // exceed 8.
+    let crc = Crc::<u32>::new(&crc::CRC_32_ISO_HDLC);
+    let mut digest = crc.digest();
+    let mut last_address: Option<u32> = None;
+    for segment in file.segments() {
+        let address = segment.address();
+        let data = segment.data()?;
+
+        if data.is_empty() {
+            continue;
+        }
+
+        // It is much faster to load data word by word instead of bytes by bytes.
+        // The linker script always ensures that we the address and size are multiple of 4.
+        const WORD_SIZE: usize = std::mem::size_of::<u32>();
+        ensure!(
+            address % WORD_SIZE as u64 == 0 && data.len() % WORD_SIZE == 0,
+            LoadSramProgramError::SegmentNotWordAligned
+        );
+        ensure!(
+            segment.align() <= 8,
+            LoadSramProgramError::NotCompiledWithNmagic
+        );
+        // A sanity check to ensure that there are no gaps between segments.
+        if let Some(last_addr) = last_address {
+            let gap_size = address as i32 - last_addr as i32;
+            ensure!(gap_size == 0, LoadSramProgramError::GapBetweenSegments);
+        }
+        // Write segment's data.
+        log::info!(
+            "Load segment: {} bytes at address {:x}",
+            data.len(),
+            address
+        );
+        let data32: Vec<u32> = data.chunks(4).map(LittleEndian::read_u32).collect();
+        jtag.write_memory32(address as u32, &data32)?;
+        digest.update(data);
+
+        last_address = Some((address + data.len() as u64) as u32);
+    }
+
+    // We verify (read back and compare) the data from the section that contains the entry point.
     // The rationale is that if the CRC code is corrupted, it could execute the SRAM program even though
     // it should not. By verifying just the tiny bit of code that checks the CRC, we can ensure that the
     // entire program is validated.
-    let crc = Crc::<u32>::new(&crc::CRC_32_ISO_HDLC);
-    let mut digest = crc.digest();
-    let mut last_address: Option<(u32, String)> = None;
+    let mut entry_found = false;
     for section in file.sections() {
-        let section_name = section.name().unwrap_or("<invalid name>");
-        match section.kind() {
-            SectionKind::Text
-            | SectionKind::Data
-            | SectionKind::ReadOnlyData
-            | SectionKind::ReadOnlyString => {
-                // It is must faster to load data word by word instead of bytes by bytes.
-                // The linker script always ensures that we the address and size are multiple of 4.
-                const WORD_SIZE: usize = std::mem::size_of::<u32>();
-                if section.address() % WORD_SIZE as u64 != 0
-                    || section.data()?.len() % WORD_SIZE != 0
-                {
-                    bail!("The SRAM program must only consists of sections whose address and size are a multiple of the word size");
-                }
-                // If there is a gap between the last loaded section and this one, fills it and update
-                // the CRC.
-                if let Some((last_addr, last_sec_name)) = last_address {
-                    let gap_size = section.address() as i32 - last_addr as i32;
-                    // Just as a sanity check, make sure that the gap is nonnegative and not stupidly large.
-                    const MAX_GAP_SIZE: i32 = 128;
-                    if gap_size < 0 {
-                        bail!(
-                            "The SRAM program's sections must be ordered by increasing addresses"
-                        );
-                    }
-                    if gap_size > MAX_GAP_SIZE {
-                        bail!("The SRAM program's gap between {} and {} is suspiciously large ({} bytes)",
-                            last_sec_name, section_name, gap_size);
-                    }
-                    let gap_size = gap_size as usize;
-                    // This should ways be true because we check alignment above.
-                    assert!(
-                        gap_size % WORD_SIZE == 0,
-                        "the gap size is not a multiple of the word size"
-                    );
+        if section.kind() != SectionKind::Text {
+            continue;
+        }
 
-                    if gap_size > 0 {
-                        log::info!(
-                            "Fill gap between section {} and {}: {} bytes at address {:x}",
-                            last_sec_name,
-                            section_name,
-                            gap_size,
-                            last_addr
-                        );
-                        let fill_data8: Vec<u8> = std::iter::repeat(0u8).take(gap_size).collect();
-                        let fill_data32: Vec<u32> =
-                            std::iter::repeat(0u32).take(gap_size / WORD_SIZE).collect();
-                        jtag.write_memory32(last_addr, &fill_data32)?;
-                        digest.update(&fill_data8);
-                    }
-                }
-                // Write section's data.
-                log::info!(
-                    "Load section {}: {} bytes at address {:x}",
-                    section_name,
-                    section.size(),
-                    section.address()
-                );
-                let data32: Vec<u32> = section
-                    .data()?
-                    .chunks(4)
-                    .map(LittleEndian::read_u32)
-                    .collect();
-                jtag.write_memory32(section.address() as u32, &data32)?;
-                digest.update(section.data()?);
-                // If this section contains the entry point, read back the data and compare.
-                if (section.address()..(section.address() + section.size())).contains(&file.entry())
-                {
-                    let mut read_data32 = vec![0u32; data32.len()];
-                    log::info!("Read back data to verify");
-                    jtag.read_memory32(section.address() as u32, &mut read_data32)?;
-                    if data32 != read_data32 {
-                        bail!("Verification failed: the data loaded in the SRAM was corrupted.");
-                    }
-                }
+        // If this section contains the entry point, read back the data and compare.
+        if (section.address()..(section.address() + section.size())).contains(&file.entry()) {
+            entry_found = true;
 
-                last_address = Some((
-                    (section.address() + section.size()) as u32,
-                    section_name.to_string(),
-                ));
-            }
-            _ => {
-                log::info!(
-                    "Skipping section {}",
-                    section.name().unwrap_or("<invalid name>")
-                );
-            }
+            let data32: Vec<u32> = section
+                .data()?
+                .chunks(4)
+                .map(LittleEndian::read_u32)
+                .collect();
+            let mut read_data32 = vec![0u32; data32.len()];
+            log::info!("Read back data to verify");
+            jtag.read_memory32(section.address() as u32, &mut read_data32)?;
+            ensure!(
+                data32 == read_data32,
+                LoadSramProgramError::ReadbackMismatch
+            );
         }
     }
+    ensure!(entry_found, LoadSramProgramError::EntryPointNotFound);
+
     Ok(SramProgramInfo {
         entry_point: file.entry() as u32,
         crc32: digest.finalize(),
