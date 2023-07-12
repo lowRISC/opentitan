@@ -258,6 +258,7 @@ module rv_dm
     .gnt_o        (host_gnt),
     .addr_i       (host_add),
     .we_i         (host_we),
+    .user_rsvd_i  ('0),
     .wdata_i      (host_wdata),
     .wdata_intg_i ('0),
     .be_i         (host_be),
