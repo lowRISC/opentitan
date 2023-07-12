@@ -90,7 +90,7 @@ class SWAccess:
         '''Return a UVM access string as used by uvm_field::set_access().'''
         if self.key == 'r0w1c':
             return 'W1C'
-        return self.value[1].name
+        return str(self.value[1].name)
 
     def swrd(self) -> SwRdAccess:
         return self.value[3]
