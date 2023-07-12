@@ -56,6 +56,8 @@ module usb_fs_rx (
   output logic bitstuff_error_o
 );
 
+  import usb_consts_pkg::*;
+
   logic [6:0] bitstuff_history_q, bitstuff_history_d;
   logic       bitstuff_error;
   logic       bitstuff_error_q, bitstuff_error_d;
@@ -267,7 +269,7 @@ module usb_fs_rx (
 
   logic [11:0] line_history_q, line_history_d;
   logic packet_valid_q, packet_valid_d;
-  logic see_sop, see_eop, packet_start, packet_end;
+  logic see_sop, see_eop, see_preamble, packet_start, packet_end;
   logic in_packet_d, in_packet_q;
 
   // A bit of a misnomer: packet_start pulses when the PID begins, not SOP.
@@ -276,9 +278,9 @@ module usb_fs_rx (
 
   // EOP detection is configurable for 1/2 bit periods of SE0.
   // The standard (Table 7-7) mandates min = 82 ns = 1 bit period.
-  // We also trigger an EOP on seeing a bitstuff error.
+  // We also trigger an EOP on seeing a bitstuff error or a PRE PID.
   assign see_eop = (cfg_eop_single_bit_i && line_history_q[1:0] == 2'b00)
-    || (line_history_q[3:0] == 4'b0000) || bitstuff_error_q;
+    || (line_history_q[3:0] == 4'b0000) || bitstuff_error_q || see_preamble;
 
   // SOP is the transition from idle (J) to K
   assign see_sop = (line_history_q[3:0] == 4'b1001) & ~tx_en_i & ~in_packet_q;
@@ -514,6 +516,9 @@ module usb_fs_rx (
   assign pkt_is_token     = full_pid_q[2:1] == 2'b01;
   assign pkt_is_data      = full_pid_q[2:1] == 2'b11;
   assign pkt_is_handshake = full_pid_q[2:1] == 2'b10;
+
+  assign see_preamble = packet_valid_q & pid_valid & pid_complete &&
+                        (usb_pid_e'(full_pid_q[4:1]) == UsbPidPre);
 
 
   assign valid_packet_o = pid_valid && !bitstuff_error_q &&
