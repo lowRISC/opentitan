@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 r"""Converts mubi mako templates
 """
-from mako.template import Template
+from mako.template import Template  # type: ignore
 
 MUBI_PKG_TPL_PATH = "util/design/data/prim_mubi_pkg.sv.tpl"
 MUBI_CORE_TPL_PATH = "util/design/data/prim_mubi.core.tpl"
@@ -25,11 +25,11 @@ MUBI_SW_ASM_OUT_PATH = "sw/device/lib/base/multibits_asm.h"
 N_MAX_NIBBLES = 4
 
 
-def is_width_valid(width):
+def is_width_valid(width: int) -> bool:
     return (width % 4 == 0) and (width // 4 <= N_MAX_NIBBLES) and (width > 0)
 
 
-def mubi_value_as_hexstr(sel: bool, width: int):
+def mubi_value_as_hexstr(sel: bool, width: int) -> str:
 
     if is_width_valid(width):
         nibble = int(width / 4)
@@ -48,15 +48,15 @@ def mubi_value_as_hexstr(sel: bool, width: int):
     return true_val if sel else false_val
 
 
-def mubi_value_as_int(sel: bool, width: int):
+def mubi_value_as_int(sel: bool, width: int) -> int:
     return int(mubi_value_as_hexstr(sel, width), 16)
 
 
-def get_c_path():
+def get_c_path() -> str:
     return MUBI_SW_OUT_PATH
 
 
-def gen():
+def gen() -> None:
 
     tpls = [
         (MUBI_PKG_TPL_PATH, MUBI_PKG_OUT_PATH),

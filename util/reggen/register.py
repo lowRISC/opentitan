@@ -200,7 +200,7 @@ class Register(RegBase):
         for field in self.fields:
             if field.swaccess.key == 'rc':
                 rc_fields.append(field.name)
-            elif field.swaccess.allows_write:
+            elif field.swaccess.allows_write():
                 we_fields.append(field.name)
         if rc_fields and we_fields:
             raise ValueError("Register {} has both software writable fields "
