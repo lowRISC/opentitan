@@ -812,4 +812,3 @@ sources:
            - hw/vendor/common_pads/src/pad_alsaqr.sv
            - hw/tb/testbench.sv
            - hw/tb/testbench_asynch.sv          
-           - hw/tb/testbench_preload.sv
