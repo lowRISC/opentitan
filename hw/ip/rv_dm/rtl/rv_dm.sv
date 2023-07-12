@@ -398,6 +398,7 @@ module rv_dm
     .wdata_i      (host_wdata),
     .wdata_intg_i ('0),
     .be_i         (host_be),
+    .user_rsvd_i  ('0),
     .valid_o      (host_r_valid),
     .rdata_o      (host_r_rdata),
     .rdata_intg_o (),
