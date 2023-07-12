@@ -76,8 +76,14 @@ def gen_md_register_summary(output: TextIO, entries: List[object],
         ])
     for entry in entries:
         if isinstance(entry, MultiRegister):
+            is_compact = multireg_is_compact(entry, width)
             for reg in entry.regs:
-                add_row(reg.name, entry.name.lower(), reg.offset, bytew, reg.desc)
+                # If multiregisters are compact, each register has it's own section,
+                # so the anchor should link to a section with the individual register name(s).
+                # Otherwise, there is one section for the whole multiregister,
+                # so the anchor should link to a section with the multiregister name.
+                anchor = reg.name if is_compact else entry.name.lower()
+                add_row(reg.name, anchor, reg.offset, bytew, reg.desc)
         elif isinstance(entry, Window):
             length = bytew * entry.items
             add_row(entry.name, entry.name.lower(), entry.offset, length, entry.desc)
@@ -117,7 +123,19 @@ def gen_md_window(output: TextIO, win: Window, comp: str, regwidth: int) -> None
     )
 
 
+def multireg_is_compact(mreg: MultiRegister, width: int) -> bool:
+    # Note that validation guarantees that compacted multiregs only ever have one field.
+    return mreg.compact and (mreg.reg.fields[0].bits.msb + 1) <= width // 2
+
+
 def gen_md_multiregister(output: TextIO, mreg: MultiRegister, comp: str, width: int) -> None:
+    # Check whether this is a compacted multireg, in which case we cannot use
+    # the general definition of the first register as an example for all other instances.
+    if multireg_is_compact(mreg, width):
+        for reg in mreg.regs:
+            gen_md_register(output, reg, comp, width)
+        return
+
     # The general definition of the registers making up this multiregister block.
     reg_def = mreg.reg
 
