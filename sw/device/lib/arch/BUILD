@@ -37,11 +37,19 @@ cc_library(
 cc_library(
     name = "sim_dv",
     srcs = ["device_sim_dv.c"],
-    deps = [":device"],
+    deps = [
+        ":device",
+        "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+    ],
 )
 
 cc_library(
     name = "sim_verilator",
     srcs = ["device_sim_verilator.c"],
-    deps = [":device"],
+    deps = [
+        ":device",
+        "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+    ],
 )
