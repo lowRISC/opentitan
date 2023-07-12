@@ -7,6 +7,9 @@
 
 #include "sw/device/lib/arch/device.h"
 
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "rv_core_ibex_regs.h"
+
 /**
  * @file
  * @brief Device-specific symbol definitions for the Verilator device.
@@ -47,8 +50,9 @@ const uint32_t kUartTxFifoCpuCycles =
 const uint32_t kAstCheckPollCpuCycles =
     CALCULATE_AST_CHECK_POLL_CPU_CYCLES(kClockFreqCpuHz);
 
-// Defined in `hw/top_earlgrey/chip_earlgrey_verilator.core`
-const uintptr_t kDeviceTestStatusAddress = 0x411f0080;
+const uintptr_t kDeviceTestStatusAddress =
+    TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR +
+    RV_CORE_IBEX_DV_SIM_WINDOW_REG_OFFSET;
 
 const uintptr_t kDeviceLogBypassUartAddress = 0;
 
