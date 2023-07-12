@@ -33,7 +33,7 @@ class chip_sw_csrng_lc_hw_debug_en_vseq extends chip_sw_base_vseq;
    `DV_SPINWAIT(while (transition_success == 0) begin
                   retval = uvm_hdl_read(LC_CTRL_TRANS_SUCCESS_PATH, transition_success);
                   `DV_CHECK_EQ(retval, 1, $sformatf("uvm_hdl_read failed for %0s", LC_CTRL_TRANS_SUCCESS_PATH))
-                  cfg.clk_rst_vif.wait_clks(1);
+                  #1ns;
                 end,
                 "timeout while wait for test exit complete",
                 lc_test_exit_timeout_ns)
