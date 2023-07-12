@@ -6,6 +6,9 @@
 
 #include "sw/device/lib/arch/device.h"
 
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "rv_core_ibex_regs.h"
+
 /**
  * Device-specific symbol definitions for the DV simulation device.
  */
@@ -40,11 +43,13 @@ const uint32_t kUartTxFifoCpuCycles =
 const uint32_t kAstCheckPollCpuCycles =
     CALCULATE_AST_CHECK_POLL_CPU_CYCLES(kClockFreqCpuHz);
 
-// Defined in `hw/top_earlgrey/dv/env/chip_env_pkg.sv`
-const uintptr_t kDeviceTestStatusAddress = 0x411f0080;
+const uintptr_t kDeviceTestStatusAddress =
+    TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR +
+    RV_CORE_IBEX_DV_SIM_WINDOW_REG_OFFSET;
 
-// Defined in `hw/top_earlgrey/dv/env/chip_env_pkg.sv`
-const uintptr_t kDeviceLogBypassUartAddress = 0x411f0084;
+const uintptr_t kDeviceLogBypassUartAddress =
+    TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR +
+    RV_CORE_IBEX_DV_SIM_WINDOW_REG_OFFSET + 0x04;
 
 const bool kJitterEnabled = false;
 
