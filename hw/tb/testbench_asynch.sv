@@ -92,7 +92,7 @@ module testbench_asynch ();
    logic dbg_mode;
    logic es_rng_fips;
    logic SCK, CSNeg;
-   logic [15:0] spi_i, spi_o, spi_oe_o;
+   logic [3:0] SPIdata_i, SPIdata_o, SPIdata_oe_o;
    
    wire  I0, I1, I2, I3, WPNeg, RESETNeg;
    wire  PWROK_S, IOPWROK_S, BIAS_S, RETC_S;
@@ -179,25 +179,21 @@ module testbench_asynch ();
    assign jtag_i.tdi        = jtag_mst.tdi;
    assign jtag_mst.tdo      = jtag_o.tdo;
    
-
-   assign SCK      = spi_o[DioSpiHost0Sck];
-   assign CSNeg    = spi_o[DioSpiHost0Csb];
    assign RESETNeg = 1'b1;
    assign WPNeg    = 1'b0;
 
    assign ibex_uart_rx = '0;
    
-   /*
-   pad_alsaqr i_I0 ( .OEN(~spi_oe_o[DioSpiHost0Sd0]), .I(spi_o[DioSpiHost0Sd0]), .O(), .PUEN(1'b1), .PAD(I0), 
-                     .DRV(2'b00), .SLW(1'b0), .SMT(1'b0), .PWROK(PWROK_S), .IOPWROK(IOPWROK_S), .BIAS(BIAS_S), .RETC(RETC_S)   );
- 
-   pad_alsaqr i_I1 ( .OEN(~spi_oe_o[DioSpiHost0Sd1]), .I(), .O(spi_i[DioSpiHost0Sd1]), .PUEN(1'b1), .PAD(I1), 
-                     .DRV(2'b00), .SLW(1'b0), .SMT(1'b0), .PWROK(PWROK_S), .IOPWROK(IOPWROK_S), .BIAS(BIAS_S), .RETC(RETC_S)   );
-
-   
+`ifdef VIPS
+   pad_alsaqr i_I0 ( .OEN(~SPIdata_oe_o[0]), .I(SPIdata_o[0]), .O(), .PUEN(1'b1), .PAD(I0), 
+                     .DRV(2'b00), .SLW(1'b0), .SMT(1'b0), .PWROK(PWROK_S), 
+                     .IOPWROK(IOPWROK_S), .BIAS(BIAS_S), .RETC(RETC_S)   );
+   pad_alsaqr i_I1 ( .OEN(~SPIdata_oe_o[1]), .I(), .O(SPIdata_i[1]), .PUEN(1'b1), .PAD(I1), 
+                     .DRV(2'b00), .SLW(1'b0), .SMT(1'b0), .PWROK(PWROK_S), .IOPWROK(IOPWROK_S),
+                     .BIAS(BIAS_S), .RETC(RETC_S)   );
    s25fs256s #(
     .TimingModel   ( "S25FS256SAGMFI000_F_30pF" ),
-    .mem_file_name ( "/scratch/mciani/he-soc/hardware/working_dir/opentitan/scripts/vmem_scripts/outputs/baadcode.vmem" ),
+    .mem_file_name ( "../sw/tests/opentitan/hmac_smoketest/hmac_smoketest8.vmem" ),
     .UserPreload   ( 1 )
    ) i_spi_flash_csn0 (
     .SI       ( I0 ),
@@ -206,23 +202,9 @@ module testbench_asynch ();
     .CSNeg,    
     .WPNeg    (    ),
     .RESETNeg (    )
-   );*/
-
-   // Entropy Src
- /*  rng #(
-    .EntropyStreams ( 4 )
-   ) u_rng (
-    .clk_i          ( clk_sys               ),
-    .rst_ni         ( rst_sys_n             ),
-    .clk_ast_rng_i  ( clk_sys               ),
-    .rst_ast_rng_ni ( rst_sys_n             ),
-    .rng_en_i       ( es_rng_req.rng_enable ),
-    .rng_fips_i     ( es_rng_fips           ),
-    .scan_mode_i    ( '0                    ),
-    .rng_b_o        ( es_rng_rsp.rng_b      ),
-    .rng_val_o      ( es_rng_rsp.rng_valid  )
-  );*/
-
+   );
+`endif //  `ifdef VIPS
+   
   axi_cdc_dst #(
     .LogDepth   ( LogDepth         ),
     .aw_chan_t  ( axi_out_aw_chan_t ),
@@ -291,7 +273,16 @@ module testbench_asynch ();
    // Uart   
       .ibex_uart_rx_i   ( ibex_uart_rx  ),
       .ibex_uart_tx_o   ( ibex_uart_tx  ),
-   // SPI host 
+   // SPI host   
+`ifdef VIPS                        
+      .spi_host_SCK_o   ( SCK           ),
+      .spi_host_SCK_en_o(               ),
+      .spi_host_CSB_o   ( CSNeg         ),
+      .spi_host_CSB_en_o(               ),
+      .spi_host_SD_o    ( SPIdata_o     ),
+      .spi_host_SD_i    ( SPIdata_i     ),
+      .spi_host_SD_en_o ( SPIdata_oe_o  ),            
+`else
       .spi_host_SCK_o   (               ),
       .spi_host_SCK_en_o(               ),
       .spi_host_CSB_o   (               ),
@@ -299,6 +290,7 @@ module testbench_asynch ();
       .spi_host_SD_o    (               ),
       .spi_host_SD_i    ( '0            ),
       .spi_host_SD_en_o (               ),
+`endif
       .axi_isolated_o   (               ),
       .axi_isolate_i    ( '0            ),
       .gpio_0_i         ( '0            ), 
@@ -368,7 +360,8 @@ module testbench_asynch ();
        SRAM="";
        $display("Testing %s", SRAM);
     end
-    riscv_dbg.reset_master();     
+    riscv_dbg.reset_master();
+         
     if (SRAM != "") begin
          repeat(10000)
            @(posedge clk_sys); 
@@ -376,8 +369,8 @@ module testbench_asynch ();
          load_secd_binary(SRAM);
          jtag_secd_data_preload();
          jtag_secd_wakeup(32'h e0000080); //preload the flash
-    `ifdef SECURE
-         repeat(210000)
+    `ifdef SECURE_JTAG
+         repeat(410000)
            @(posedge clk_sys);
          jtag_secd_wakeup(32'h d0008080); //secure boot
     `endif       

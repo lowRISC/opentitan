@@ -2,11 +2,9 @@ GIT ?= git
 BENDER ?= bender
 VSIM ?= vsim
 DPI-LIB ?= work-dpi
-compile_script := compile.tcl
-compile_script_preload := compile_preload.tcl
 run_script := start.tcl
-run_script_preload := start_preload.tcl
 SRAM ?= ""
+
 # Ensure half-built targets are purged
 .DELETE_ON_ERROR:
 
@@ -15,13 +13,22 @@ SRAM ?= ""
 # --------------
 
 ifdef flash_preload
-  VLOG_ARGS += +define+FLASH_PRELOAD
+  VLOG_ARGS += +define+SECURE +define+FLASH_PRELOAD
 endif
+
+ifdef secure_jtag
+  VLOG_ARGS += +define+SECURE_JTAG
+endif
+
 ifdef secure
   VLOG_ARGS += +define+SECURE
 endif
 
-# -suppress vlog-13198 -suppress vlog-7033 -suppress vopt-13276 -suppress vlog-13233
+ifdef vip
+compile_script := compile_vip.tcl
+else
+compile_script := compile.tcl
+endif
 
 VLOG_ARGS += -incr -64 -nologo -quiet -suppress vlog-2583 -suppress vlog-13314  +nospecify +notimingchecks  -timescale \"1 ns / 1 ps\" 
 XVLOG_ARGS += -64bit -compile -vtimescale 1ns/1ns -quiet +nospecify +notimingchecks
@@ -32,7 +39,7 @@ define generate_vsim
 	echo >> $1
 endef
 
-build: compile.tcl
+build: compile.tcl compile_vip.tcl
 	vsim -c -do 'source $(compile_script); quit'
 
 run: build
@@ -53,5 +60,8 @@ clean:
 	rm -rf uart
 
 compile.tcl: ../Bender.yml
-	$(call generate_vsim, $@, -t rtl -t test,..)
+	$(call generate_vsim, $@, -t rtl -t test ,..)
+
+compile_vip.tcl: ../Bender.yml
+	$(call generate_vsim, $@, -t rtl -t test_vip ,..)
 

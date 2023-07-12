@@ -4,8 +4,8 @@ package:
   
 dependencies:
 
- axi:         { git: "https://github.com/pulp-platform/axi.git", version: =0.39.0-beta.4  } 
-
+ axi:         { git: "https://github.com/pulp-platform/axi.git", version: =0.39.0-beta.4  }
+ 
 export_include_dirs:
        - hw/ip/prim/rtl
        - hw/ip/tlul/rtl
@@ -794,9 +794,22 @@ sources:
       -  target: test
          files:
            - hw/tb/uart.sv
-#          - hw/tb/spi_flash/S25fs256s/model/s25fs256s.v
            - hw/tb/jtag_intf.sv
            - hw/vendor/pulp_riscv_dbg/src/jtag_test.sv
+           - hw/vendor/common_padr/src/pad_alsaqr.sv
+           - hw/tb/testbench.sv
+           - hw/tb/testbench_asynch.sv          
+           - hw/tb/testbench_preload.sv
+
+      -  target: test_vip
+         defines:
+           VIPS: ~
+         files:
+           - hw/tb/uart.sv
+           - hw/tb/spi_flash/S25fs256s/model/s25fs256s.v
+           - hw/tb/jtag_intf.sv
+           - hw/vendor/pulp_riscv_dbg/src/jtag_test.sv
+           - hw/vendor/common_pads/src/pad_alsaqr.sv
            - hw/tb/testbench.sv
            - hw/tb/testbench_asynch.sv          
            - hw/tb/testbench_preload.sv

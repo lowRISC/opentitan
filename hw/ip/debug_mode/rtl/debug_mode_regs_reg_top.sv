@@ -315,7 +315,7 @@ module debug_mode_regs_reg_top (
   prim_ot_subreg #(
     .DW      (1),
     .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
-`ifndef FLASH_PRELOAD                    
+`ifndef SECURE                    
     .RESVAL  (1'h1)
 `else
     .RESVAL  (1'h0)
