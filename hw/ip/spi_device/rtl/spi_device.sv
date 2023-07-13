@@ -953,59 +953,8 @@ module spi_device
   );
 
   // SRAM clock
-  // If FwMode, SRAM clock for B port uses peripheral clock (clk_i)
-  // If FlashMode or PassThrough, SRAM clock for B port uses SPI_CLK
-  // To remove glitch, CG cell is put after clock mux
-  // The enable signal is not synchronized to SRAM_CLK when clock is
-  // switched into SPI_CLK. So, change the clock only when SPI_CLK is
-  // not toggle.
-  //
-  // Programming sequence:
-  // Change to SPI_CLK
-  //  1. Check if SPI line is idle.
-  //  2. Clear sram_clk_en to 0.
-  //  3. Change mode to FlashMode or PassThrough
-  //  4. Set sram_clk_en to 1.
-  // Change to peripheral clk
-  //  1. Check if SPI_CLK is idle
-  //  2. Clear sram_clk_en to 0.
-  //  3. Change mode to FwMode
-  //  4. Set sram_clk_en to 1.
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_sram_clk_sel (
-    .clk0_i (clk_spi_in_buf),
-    .clk1_i (clk_i),
-    .sel_i  (spi_mode == FwMode),
-    .clk_o  (sram_clk_ungated)
-  );
-
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_sram_clk_scan (
-    .clk0_i (sram_clk_ungated),
-    .clk1_i (scan_clk_i),
-    .sel_i  ((prim_mubi_pkg::mubi4_test_true_strict(scanmode[ClkSramSel]) | mbist_en_i)),
-    .clk_o  (sram_clk_muxed)
-  );
-
-  prim_clock_gating #(
-    .FpgaBufGlobal(1'b0)
-  ) u_sram_clk_cg (
-    .clk_i  (sram_clk_muxed),
-    .en_i   (sram_clk_en),
-    .test_en_i ((prim_mubi_pkg::mubi4_test_true_strict(scanmode[ClkSramSel]) | mbist_en_i)),
-    .clk_o  (sram_clk)
-  );
-
-  prim_clock_mux2 #(
-    .NoFpgaBufG (1'b1)
-  ) u_sram_rst_sel (
-    .clk0_i (rst_spi_n),
-    .clk1_i (rst_ni),
-    .sel_i  (spi_mode == FwMode),
-    .clk_o  (sram_rst_n_noscan)
-  );
+  assign sram_clk = clk_spi_in_buf;
+  assign sram_rst_n_noscan = rst_spi_n;
 
   prim_clock_mux2 #(
     .NoFpgaBufG (1'b1)
@@ -1225,19 +1174,6 @@ module spi_device
     };
 
     unique case (spi_mode)
-      FwMode: begin
-        io_mode = sub_iomode[IoModeFw];
-
-        p2s_valid = sub_p2s_valid[IoModeFw];
-        p2s_data  = sub_p2s_data[IoModeFw];
-        sub_p2s_sent[IoModeFw] = p2s_sent;
-
-        // SRAM:: Remember this has glitch
-        // switch should happen only when clock gate is disabled.
-        mem_b_l2m = sub_sram_l2m[IoModeFw];
-        sub_sram_m2l[IoModeFw] = mem_b_m2l;
-      end
-
       FlashMode, PassThrough: begin
         // SRAM comb logic is in SCK clock domain
         mem_b_l2m = flash_sram_l2m;
@@ -1309,7 +1245,7 @@ module spi_device
     end else begin : spi_out_flash_passthrough
       // SPI Generic, Flash, Passthrough modes
       unique case (spi_mode)
-        FwMode, FlashMode: begin
+        FlashMode: begin
           cio_sd_o    = internal_sd;
           cio_sd_en_o = internal_sd_en;
         end
@@ -1379,75 +1315,22 @@ module spi_device
     .io_mode_i    (io_mode_outclk)
   );
 
-  /////////////
-  // FW Mode //
-  /////////////
-  spi_fwmode #(
-    .FifoWidth (FifoWidth),
-    .FifoDepth (FifoDepth)
-  ) u_fwmode (
-    .clk_i    (sram_clk),
-    .rst_ni   (sram_rst_n),
-
-    .clk_spi_in_i  (clk_spi_in_buf),
-    .rst_rxfifo_ni (rst_rxfifo_n),
-    .clk_spi_out_i (clk_spi_out_buf),
-    .rst_txfifo_ni (rst_txfifo_n),
-
-    // Mode
-    .spi_mode_i (spi_mode),
-
-    .rxf_overflow_o  (rxf_overflow),
-    .txf_underflow_o (txf_underflow),
-
-    // SRAM interface
-    .fwm_req_o    (sub_sram_l2m[IoModeFw].req    ),
-    .fwm_write_o  (sub_sram_l2m[IoModeFw].we     ),
-    .fwm_addr_o   (sub_sram_l2m[IoModeFw].addr   ),
-    .fwm_wdata_o  (sub_sram_l2m[IoModeFw].wdata  ),
-    .fwm_wstrb_o  (sub_sram_l2m[IoModeFw].wstrb  ),
-    .fwm_rvalid_i (sub_sram_m2l[IoModeFw].rvalid ),
-    .fwm_rdata_i  (sub_sram_m2l[IoModeFw].rdata  ),
-    .fwm_rerror_i (sub_sram_m2l[IoModeFw].rerror ),
-
-    // Input from S2P
-    .rx_data_valid_i (s2p_data_valid),
-    .rx_data_i       (s2p_data),
-
-    // Output to S2P (mode select)
-    .io_mode_o       (sub_iomode[IoModeFw]),
-
-    // P2S
-    .tx_wvalid_o (sub_p2s_valid [IoModeFw]),
-    .tx_data_o   (sub_p2s_data  [IoModeFw]),
-    .tx_wready_i (sub_p2s_sent  [IoModeFw]),
-
-    // CSRs
-    .timer_v_i   (timer_v),
-    .sram_rxf_bindex_i (sram_rxf_bindex),
-    .sram_txf_bindex_i (sram_txf_bindex),
-    .sram_rxf_lindex_i (sram_rxf_lindex),
-    .sram_txf_lindex_i (sram_txf_lindex),
-
-    .abort_i (abort),
-
-    .sram_rxf_rptr_i  (sram_rxf_rptr ),
-    .sram_rxf_wptr_o  (sram_rxf_wptr ),
-    .sram_txf_rptr_o  (sram_txf_rptr ),
-    .sram_txf_wptr_i  (sram_txf_wptr ),
-    .sram_rxf_depth_o (sram_rxf_depth),
-    .sram_txf_depth_o (sram_txf_depth),
-    .sram_rxf_full_o  (sram_rxf_full ),
-
-    .as_txfifo_depth_o (as_txfifo_depth),
-    .as_rxfifo_depth_o (as_rxfifo_depth),
-
-    .rxf_empty_o (rxf_empty),
-    .rxf_full_o  (rxf_full),
-    .txf_empty_o (txf_empty),
-    .txf_full_o  (txf_full)
-
-  );
+  ////////////////////////////////////////
+  // FW Mode is deprecated and disabled //
+  ////////////////////////////////////////
+  assign rxf_overflow = 1'b0;
+  assign txf_underflow = 1'b0;
+  assign sram_rxf_wptr = '0;
+  assign sram_txf_rptr = '0;
+  assign sram_rxf_depth = '0;
+  assign sram_txf_depth = '0;
+  assign sram_rxf_full = '0;
+  assign as_txfifo_depth = '0;
+  assign as_rxfifo_depth = '0;
+  assign rxf_empty = '1;
+  assign rxf_full = '0;
+  assign txf_empty = '1;
+  assign txf_full = '0;
 
   ////////////////////
   // SPI Flash Mode //
