@@ -8,10 +8,10 @@ use cryptoki::session::Session;
 use indexmap::IndexMap;
 use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
 use std::str::FromStr;
 use strum::IntoEnumIterator;
 
-use super::AttrData;
 use super::AttributeError;
 use super::AttributeType;
 use super::CertificateType;
@@ -19,6 +19,7 @@ use super::Date;
 use super::KeyType;
 use super::MechanismType;
 use super::ObjectClass;
+use super::{AttrData, Redacted};
 
 /// Converts a cryptoki `Attribute` into a key-value pair of
 /// `(AttributeType, AttrData)`.  This allows converting HSM
@@ -285,6 +286,14 @@ impl AttributeMap {
         }
     }
 
+    pub fn redact(&mut self, redactions: &HashSet<AttributeType>) {
+        for (k, v) in self.0.iter_mut() {
+            if redactions.contains(k) && !matches!(v, AttrData::Redacted(_)) {
+                *v = AttrData::Redacted(Redacted::RedactedByTool);
+            }
+        }
+    }
+
     /// Retrieves an object from the PKCS#11 interface as an `AttributeMap`.
     pub fn from_object(session: &Session, object: ObjectHandle) -> Result<Self> {
         let all = Self::all();
@@ -299,7 +308,7 @@ impl AttributeMap {
         let mut map = AttributeMap::from(attrs.as_slice());
         for (&a, i) in all.iter().zip(info.iter()) {
             if matches!(i, AttributeInfo::Sensitive) {
-                map.insert(a.into(), AttrData::None);
+                map.insert(a.into(), AttrData::Redacted(Redacted::RedactedByHsm));
             }
         }
         Ok(map)

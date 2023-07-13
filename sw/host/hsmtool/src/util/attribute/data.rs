@@ -13,6 +13,12 @@ use crate::util::attribute::{
 };
 use crate::util::escape::{as_hex, escape, unescape};
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub enum Redacted {
+    RedactedByHsm,
+    RedactedByTool,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
 #[serde(untagged)]
 pub enum AttrData {
@@ -24,6 +30,7 @@ pub enum AttrData {
     KeyType(KeyType),
     MechanismType(MechanismType),
     ObjectClass(ObjectClass),
+    Redacted(Redacted),
     Str(String),
     List(Vec<AttrData>),
 }
