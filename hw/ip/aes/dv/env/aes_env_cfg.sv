@@ -104,11 +104,6 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
 
   rand alert_reset_trigger_e alert_reset_trigger;
 
-  // number of messages that was selected to be corrupt
-  // these should be excluded from the num_messages count
-  // when checking that all messages was processed
-  int                num_corrupt_messages       = 0;
-
   // clear register percentage
   // percentage of items that will try to clear
   // one or more registers
@@ -128,7 +123,20 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   // dont touch updated by env //
   ///////////////////////////////
 
-  // keep track of how many packets was split
+  // keep track of:
+  // - total number of expected messages
+  int                num_messages_tot           = 0;
+  // - number of messages that was selected to be corrupt
+  //   these should be excluded from the num_messages count
+  //   when checking that all messages was processed
+  int                num_corrupt_messages       = 0;
+  // - number of good messages
+  int                good_cnt                   = 0;
+  // - number of aes_mode errors seen
+  int                corrupt_cnt                = 0;
+  // - number of skipped messages
+  int                skipped_cnt                = 0;
+  // - number of packets that were split
   int                split_cnt                  = 0;
 
   // rand variables
