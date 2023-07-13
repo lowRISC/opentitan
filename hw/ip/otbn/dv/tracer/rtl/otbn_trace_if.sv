@@ -332,7 +332,7 @@ interface otbn_trace_if
         ((u_otbn_alu_bignum.alu_predec_bignum_i.flags_adder_update[i_fg] |
           u_otbn_alu_bignum.alu_predec_bignum_i.flags_logic_update[i_fg] |
           u_otbn_alu_bignum.alu_predec_bignum_i.flags_mac_update[i_fg] |
-          |u_otbn_alu_bignum.alu_predec_bignum_i.flags_ispr_wr) &
+          (|u_otbn_alu_bignum.alu_predec_bignum_i.flags_ispr_wr)) &
           u_otbn_alu_bignum.operation_commit_i)) & ~ispr_init;
     assign flags_write_data[i_fg] = u_otbn_alu_bignum.flags_d[i_fg];
 
