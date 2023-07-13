@@ -44,6 +44,7 @@ enum module_ {
   kModuleAst =          MODULE_CODE('A', 'S'),
   kModuleRstmgr =       MODULE_CODE('R', 'S'),
   KModuleRnd =          MODULE_CODE('R', 'N'),
+  kModuleBootSvc =      MODULE_CODE('B', 'C'),
   // clang-format on
 };
 
@@ -141,7 +142,9 @@ enum module_ {
   \
   X(kErrorRstmgrBadInit,              ERROR_(1, kModuleRstmgr, kInternal)), \
   \
-  X(kErrorRndBadCrc32,                ERROR_(1, KModuleRnd, kInvalidArgument))
+  X(kErrorRndBadCrc32,                ERROR_(1, KModuleRnd, kInvalidArgument)), \
+  \
+  X(kErrorBootSvcBadHeader,           ERROR_(1, kModuleBootSvc, kInternal))
 // clang-format on
 
 #define ERROR_ENUM_INIT(name_, value_) name_ = value_
