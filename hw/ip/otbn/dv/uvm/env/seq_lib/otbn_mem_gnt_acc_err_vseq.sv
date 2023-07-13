@@ -35,7 +35,8 @@ class otbn_mem_gnt_acc_err_vseq extends otbn_single_vseq;
         `DV_SPINWAIT(
           do begin
             @(cfg.clk_rst_vif.cb);
-            uvm_hdl_read("tb.dut.u_dmem.req_i", req);
+            if (!uvm_hdl_read("tb.dut.u_dmem.req_i", req))
+              `uvm_fatal(`gfn, "failed to read u_dmem.req_i");
           end while(!req);
         )
         `DV_CHECK_FATAL(uvm_hdl_force(gnt_path, 0) == 1)
@@ -45,7 +46,8 @@ class otbn_mem_gnt_acc_err_vseq extends otbn_single_vseq;
         `DV_SPINWAIT(
           do begin
             @(cfg.clk_rst_vif.cb);
-            uvm_hdl_read("tb.dut.u_imem.req_i", req);
+            if (!uvm_hdl_read("tb.dut.u_imem.req_i", req))
+              `uvm_fatal(`gfn, "failed to read u_imem.req_i");
           end while(!req);
         )
         `DV_CHECK_FATAL(uvm_hdl_force(gnt_path, 0) == 1)
