@@ -1,5 +1,7 @@
 # lowRISC Hardware Primitives
 
+{{#block-dashboard prim}}
+
 ## Concepts
 
 This directory contains basic building blocks to create a hardware design,
