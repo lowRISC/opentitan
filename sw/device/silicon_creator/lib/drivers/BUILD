@@ -480,6 +480,7 @@ cc_library(
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
     ],
 )
 

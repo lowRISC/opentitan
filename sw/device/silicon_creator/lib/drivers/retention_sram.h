@@ -5,7 +5,10 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_RETENTION_SRAM_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_RETENTION_SRAM_H_
 
+#include <stdint.h>
+
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #ifdef __cplusplus
@@ -22,9 +25,22 @@ typedef struct retention_sram_creator {
    */
   uint32_t reset_reasons;
   /**
-   * Space reserved for future allocation by the silicon creator.
+   * Boot services message area.
+   *
+   * This is the shared buffer through which ROM_EXT and silicon owner code
+   * communicate with each other.
    */
-  uint32_t reserved[2048 / sizeof(uint32_t) - 2];
+  boot_svc_msg_t boot_svc_msg;
+  /**
+   * Space reserved for future allocation by the silicon creator.
+   *
+   * The first half of the retention SRAM is reserved for the silicon creator
+   * except for the first word that stores the format version. Hence the total
+   * size of this struct must be 2044 bytes. Remaining space is reserved for
+   * future use.
+   */
+  uint32_t reserved[(2044 - sizeof(uint32_t) - sizeof(boot_svc_msg_t)) /
+                    sizeof(uint32_t)];
 } retention_sram_creator_t;
 OT_ASSERT_SIZE(retention_sram_creator_t, 2044);
 
@@ -54,7 +70,7 @@ typedef struct retention_sram {
   /**
    * Retention SRAM format version.
    *
-   * ROM sets this field to `kRetentionSramVersion1` only after PoR and
+   * ROM sets this field to `kRetentionSramVersion2` only after PoR and
    * does not modify it otherwise. ROM_EXT can use this information for backward
    * compatibility and set this field to a different value after migrating to a
    * different layout if needed.
@@ -75,7 +91,14 @@ OT_ASSERT_MEMBER_OFFSET(retention_sram_t, owner, 2048);
 OT_ASSERT_SIZE(retention_sram_t, 4096);
 
 enum {
+  /**
+   * Engineering sample version.
+   */
   kRetentionSramVersion1 = 0x72f4eb2e,
+  /**
+   * Includes the `boot_svc_msg` field in the silicon creator area.
+   */
+  kRetentionSramVersion2 = 0x5b89bd6d,
 };
 
 /**
