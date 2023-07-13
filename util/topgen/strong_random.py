@@ -58,15 +58,16 @@ class strong_random():
         """
         n_seq = self.size() // self.SEQ_SIZE_BYTES
 
-        results = []
         for j in range(n_seq):
             n_ones = sum(self.bit_count(i) for i in
                          self.buffer[j * self.SEQ_SIZE_BYTES:
                          (j + 1) * self.SEQ_SIZE_BYTES])
             X = abs(n_ones - self.SEQ_SIZE_BITS // 2)
 
-            results.append(X < self.MONOBIT_THRESHOLD)
-        return all(results)
+            if X >= self.MONOBIT_THRESHOLD:
+                return False
+
+        return True
 
     def test_poker(self):
         """ Perform Poker test on buffered data
@@ -80,7 +81,6 @@ class strong_random():
         for i in range(n_seq + 1):
             seq_start.append(i * self.SEQ_SIZE_BYTES)
 
-        results = []
         n_blocks = 5000
 
         for j in range(n_seq):
@@ -91,9 +91,10 @@ class strong_random():
             assert sum(n_patterns) == n_blocks
 
             X = sum(i * i for i in n_patterns) * 16 / n_blocks - n_blocks
-            results.append((X > self.POKER_LOW_THRESHOLD) and
-                           (X < self.POKER_HIGH_THRESHOLD))
-        return all(results)
+            if not (self.POKER_LOW_THRESHOLD < X < self.POKER_HIGH_THRESHOLD):
+                return False
+
+        return True
 
     def test_runs(self):
         """ Perform Runs test on buffered data
@@ -151,8 +152,6 @@ class strong_random():
         for i in range(n_seq + 1):
             seq_start.append(i * self.SEQ_SIZE_BYTES)
 
-        results = []
-
         for j in range(n_seq):
             b = ""
             for i in self.buffer[seq_start[j]: seq_start[j + 1]]:
@@ -160,7 +159,6 @@ class strong_random():
             assert len(b) == self.SEQ_SIZE_BITS
 
             current_run_len = 1
-            max_run_len = 1
             i = 0
             while i < self.SEQ_SIZE_BITS - 1:
                 if b[i] == b[i + 1]:
@@ -168,11 +166,10 @@ class strong_random():
                 else:
                     current_run_len = 1
                 i += 1
-                if max_run_len < current_run_len:
-                    max_run_len = current_run_len
+                if current_run_len >= self.LONG_RUN_THRESHOLD:
+                    return False
 
-            results.append(max_run_len < self.LONG_RUN_THRESHOLD)
-        return all(results)
+        return True
 
     def load(self, input_file):
         """Load entropy buffer from an external file.
