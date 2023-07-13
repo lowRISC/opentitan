@@ -46,7 +46,7 @@ mod mechanism_type;
 mod object_class;
 
 pub use attr::AttributeMap;
-pub use data::AttrData;
+pub use data::{AttrData, Redacted};
 pub use error::AttributeError;
 
 pub use attribute_type::AttributeType;

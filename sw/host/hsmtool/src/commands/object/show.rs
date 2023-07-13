@@ -7,11 +7,12 @@ use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
 use serde_annotate::Annotate;
 use std::any::Any;
+use std::collections::HashSet;
 
 use crate::commands::Dispatch;
 use crate::error::HsmError;
 use crate::module::Module;
-use crate::util::attribute::AttributeMap;
+use crate::util::attribute::{AttributeMap, AttributeType};
 use crate::util::helper;
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
@@ -20,11 +21,32 @@ pub struct Show {
     id: Option<String>,
     #[arg(short, long)]
     label: Option<String>,
+    #[arg(long,
+        action = clap::ArgAction::Set,
+        default_value = "true",
+        help="Redact senitive data",
+    )]
+    redact: bool,
 }
 
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub struct ShowResult {
     pub objects: Vec<AttributeMap>,
+}
+
+impl Show {
+    fn redactions() -> HashSet<AttributeType> {
+        // TODO: Add attributes to this list depending on the type of
+        // object being shown.
+        HashSet::from([
+            AttributeType::PrivateExponent,
+            AttributeType::Prime1,
+            AttributeType::Prime2,
+            AttributeType::Exponent1,
+            AttributeType::Exponent2,
+            AttributeType::Coefficient,
+        ])
+    }
 }
 
 #[typetag::serde(name = "object-show")]
@@ -40,7 +62,10 @@ impl Dispatch for Show {
         let objects = session.find_objects(&attr)?;
         let mut result = Box::<ShowResult>::default();
         for object in objects {
-            let map = AttributeMap::from_object(session, object)?;
+            let mut map = AttributeMap::from_object(session, object)?;
+            if self.redact {
+                map.redact(&Self::redactions());
+            }
             result.objects.push(map);
         }
         Ok(result)
