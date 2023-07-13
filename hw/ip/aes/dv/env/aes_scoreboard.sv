@@ -20,8 +20,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
   aes_seq_item complete_item;                 // merge of input and output items
   aes_seq_item key_item;                      // sequence item holding last sideload valid key
   bit          ok_to_fwd          = 0;        // 0: item is not ready to forward
-  bit          finish_message     = 0;        // set when test is trying to end
-  bit          reset_compare      = 0;        // reset compare task
+  bit          reset_rebuilding   = 0;        // reset message rebuilding task
   bit          exp_clear          = 0;        // if using sideload - we are expecting a clear
   keymgr_pkg::hw_key_req_t sideload_key = 0;  // will hold the key from sideload
   uvm_tlm_analysis_fifo #(key_sideload_item)  key_manager_fifo;
@@ -452,48 +451,71 @@ class aes_scoreboard extends cip_base_scoreboard #(
 
   // takes items from the item queue and builds full
   // aes_messages with both input data and output data.
-virtual task rebuild_message();
-    typedef enum { MSG_START,MSG_RUN } aes_message_stat_t;
-
-    aes_message_item   message, msg_clone;
-    aes_seq_item       full_item;
-    aes_message_stat_t msg_state = MSG_START;
-
+  virtual task rebuild_message();
+    typedef enum {
+      MSG_IDLE,
+      MSG_START,
+      MSG_RUN
+    } aes_message_stat_t;
+    aes_message_stat_t msg_state = MSG_IDLE;
+    aes_message_item message, msg_clone;
+    aes_seq_item full_item;
+    string txt =  "";
 
     message = new();
 
     fork
-      begin
+      begin : rebuild_messages
         forever begin
           item_fifo.get(full_item);
+          if (msg_state == MSG_IDLE) begin
+            // We have just received the very first item after a reset and can now start the regular
+            // processing.
+            msg_state = MSG_START;
+          end
           case (msg_state)
             MSG_START: begin
-              `uvm_info(`gfn, $sformatf("\t ----| got item from item fifo"), UVM_MEDIUM)
               if (!full_item.message_start()) begin
-                // check if start trigger was fired prematurely
+                // Check if e.g. the start trigger got fired prematurely and skip this message if
+                // needed.
                 if (full_item.start_item && full_item.manual_op) begin
+                  `uvm_info(`gfn, "setting skip_msg", UVM_MEDIUM)
                   message.skip_msg = 1;
-                  `uvm_info(`gfn, $sformatf("\n setting skip msg"), UVM_MEDIUM)
                 end else begin
                   `uvm_fatal(`gfn,
                       $sformatf("\n\t ----| FIRST ITEM DID NOT HAVE MESSAGE START/CONFIG SETTINGS"))
                 end
               end
+              `uvm_info(`gfn, $sformatf("rebuilding %s message, adding start item",
+                  full_item.mode.name()), UVM_MEDIUM)
               message.add_start_msg_item(full_item);
               msg_state = MSG_RUN;
             end
 
             MSG_RUN: begin
               if (full_item.message_start() || (full_item.start_item && full_item.manual_op)) begin
+                // The current item marks the start of a new message. End the previous message and
+                // add it to the message FIFO for scoring.
                 `downcast(msg_clone, message.clone());
+                `uvm_info(`gfn, $sformatf("adding %s message item of size %0d to msg_fifo",
+                    msg_clone.aes_mode.name(), msg_clone.output_msg.size()), UVM_MEDIUM)
                 msg_fifo.put(msg_clone);
                 message = new();
                 if (full_item.start_item && full_item.manual_op) begin
-                  // only set skip if this is not a real start message
-                  message.skip_msg = ~full_item.message_start() || ~full_item.data_in_valid();
+                  // Skip the message if this is item not really marks the start of a message.
+                  if (!full_item.message_start() || !full_item.data_in_valid()) begin
+                    `uvm_info(`gfn, $sformatf("setting skip_msg"), UVM_MEDIUM)
+                    message.skip_msg = 1;
+                  end else begin
+                    message.skip_msg = 0;
+                  end
                 end
+                `uvm_info(`gfn, $sformatf("rebuilding %s message, adding start item",
+                    full_item.mode.name()), UVM_MEDIUM)
                 message.add_start_msg_item(full_item);
               end else begin
+                `uvm_info(`gfn, $sformatf("rebuilding %s message, adding data block #%0d",
+                    full_item.mode.name(), message.output_msg.size()/16), UVM_MEDIUM)
                 message.add_data_item(full_item);
               end
             end
@@ -501,30 +523,48 @@ virtual task rebuild_message();
         end
       end
 
-      begin
-        // AES indicates when it's done with processing individual blocks but not when it's done
-        // with processing an entire message. To detect the end of a message, the DV environment
-        // does the following:
-        // - It tracks writes to the main control register. If two successfull writes to this
-        //   shadowed register are observed, this marks the start of a new message.
-        // - DV then knows that the last output data retrieved marks the end of the previous
-        //   message.
-        // This works fine except for the very last message before the test ends. To mark the end
-        // of the last message, the `finish_message` variable is used. It gets set by the
-        // `phase_ready_to_end()` function, see below.
-        wait (finish_message)
-        `uvm_info(`gfn, $sformatf("\n\t ----| Finish test received adding message item to mg_fifo"),
-                                  UVM_MEDIUM)
-        `downcast(msg_clone, message.clone());
-        msg_fifo.put(msg_clone);
+      begin : finish_last_message
+        forever begin
+          // AES indicates when it's done with processing individual blocks but not when it's done
+          // with processing an entire message. To detect the end of a message, the DV environment
+          // does the following:
+          // - It tracks writes to the main control register. If two successfull writes to this
+          //   shadowed register are observed, this marks the start of a new message.
+          // - DV then knows that the last output data retrieved marks the end of the previous
+          //   message.
+          // This works fine except for the very last message before the sequence ends. To mark the
+          // end of the last message, the `finish_message` variable is used. It gets set by the
+          // `post_body()` task defined in the base vseq.
+          wait (cfg.finish_message)
+          `uvm_info(`gfn, $sformatf("finish_message received"), UVM_MEDIUM)
+          if (msg_state != MSG_IDLE) begin
+            // The message rebuilding thread isn't idle, i.e., there was some activity since the
+            // last reset.
+            `downcast(msg_clone, message.clone());
+            `uvm_info(`gfn, $sformatf("adding %s message item of size %0d to msg_fifo",
+                msg_clone.aes_mode.name(), msg_clone.output_msg.size()), UVM_MEDIUM)
+            msg_fifo.put(msg_clone);
+            // Reset the message rebuilding thread.
+            reset_rebuilding = 1;
+          end
+          // Increment counter for total number of messages seen. If the message rebuilding thread
+          // is still idle, no message did actually go through the DUT and we can skip incrementing
+          // the counter. The only exception is if all messages were corrupted. The DUT doesn't
+          // produce any output in this case.
+          if ((msg_state != MSG_IDLE) || (cfg.num_messages == cfg.num_corrupt_messages)) begin
+            cfg.num_messages_tot += cfg.num_messages;
+          end
+          wait_fifo_empty();
+          cfg.finish_message = 0;
+        end
       end
 
-      begin: check_for_reset
+      begin: reset_rebuild_messages
         forever begin
-          wait (reset_compare);
-          msg_state = MSG_START;
+          wait (reset_rebuilding);
+          msg_state = MSG_IDLE;
           message = new();
-          reset_compare = 0;
+          reset_rebuilding = 0;
         end
       end
     join
@@ -592,21 +632,9 @@ virtual task rebuild_message();
     end
   endtask
 
+
   virtual function void phase_ready_to_end(uvm_phase phase);
     if (phase.get_name() != "run") return;
-
-    // AES indicates when it's done with processing individual blocks but not when it's done
-    // with processing an entire message. To detect the end of a message, the DV environment
-    // does the following:
-    // - It tracks writes to the main control register. If two successfull writes to this
-    //   shadowed register are observed, this marks the start of a new message.
-    // - DV then knows that the last output data retrieved marks the end of the previous
-    //   message.
-    // This works fine except for the very last message before the test ends. To mark the end
-    // of the last message, and trigger its scoring, the `finish_message` variable is set. It
-    // gets read by the `rebuild_message()` task above.
-    finish_message = 1;
-    `uvm_info(`gfn, $sformatf("Finish message: %b", finish_message), UVM_MEDIUM)
 
     // Don't end the test yet. First, the last message needs to be scored, and all queues and
     // FIFOs need to be emptied.
@@ -646,7 +674,7 @@ virtual task rebuild_message();
     // if split is set before reset make sure to cancel
     input_item.split_item = 0;
     // reset compare task to start
-    reset_compare = 1;
+    reset_rebuilding = 1;
   endfunction
 
 

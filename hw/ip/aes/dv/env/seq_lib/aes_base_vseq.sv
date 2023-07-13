@@ -933,6 +933,30 @@ class aes_base_vseq extends cip_base_vseq #(
     end
   endtask // send_msg_queue
 
+  virtual task post_body();
+
+    // AES indicates when it's done with processing individual blocks but not when it's done
+    // with processing an entire message. To detect the end of a message, the DV environment
+    // does the following:
+    // - It tracks writes to the main control register. If two successfull writes to this
+    //   shadowed register are observed, this marks the start of a new message.
+    // - DV then knows that the last output data retrieved marks the end of the previous
+    //   message.
+    // This works fine except for the very last message before the sequence ends. To mark the
+    // end of the last message, and trigger its scoring, the `finish_message` variable is set.
+    // It gets read by the `rebuild_message()` task in the scoreboard.
+    //
+    // Before doing this, wait for the DUT to become idle and final output to be read.
+    `uvm_info(`gfn, "waiting for DUT to become idle and final output to be read", UVM_MEDIUM)
+    csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
+    csr_spinwait(.ptr(ral.status.output_valid), .exp_data(1'b0));
+    `uvm_info(`gfn, "sending finish_message", UVM_MEDIUM)
+    cfg.finish_message = 1;
+
+    super.post_body();
+
+  endtask
+
 
   ///////////////////////////////////////////////////////////
   ///////////////        FUNCTIONS       ////////////////////

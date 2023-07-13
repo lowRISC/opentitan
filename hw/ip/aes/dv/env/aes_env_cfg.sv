@@ -139,6 +139,9 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   // - number of packets that were split
   int                split_cnt                  = 0;
 
+  // set when test is trying to end to indicate the last message is finished
+  bit                finish_message             = 0;
+
   // rand variables
   // 0: C model 1: OPEN_SSL/BORING_SSL
   rand bit           ref_model;
