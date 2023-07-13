@@ -4,7 +4,7 @@
 
 `include "prim_assert.sv"
 
-module prim_clock_div #(
+module prim_generic_clock_div #(
   parameter int unsigned Divisor = 2,
   parameter logic ResetValue = 0
 ) (
