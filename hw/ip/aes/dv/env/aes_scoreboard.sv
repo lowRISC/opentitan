@@ -21,10 +21,6 @@ class aes_scoreboard extends cip_base_scoreboard #(
   aes_seq_item key_item;                      // sequence item holding last sideload valid key
   bit          ok_to_fwd          = 0;        // 0: item is not ready to forward
   bit          finish_message     = 0;        // set when test is trying to end
-                                              // - to indicate the last message is finished
-  int          good_cnt           = 0;        // number of good messages
-  int          corrupt_cnt        = 0;        // number of aes_mode errors seen
-  int          skipped_cnt        = 0;        // number of skipped messages
   bit          reset_compare      = 0;        // reset compare task
   bit          exp_clear          = 0;        // if using sideload - we are expecting a clear
   keymgr_pkg::hw_key_req_t sideload_key = 0;  // will hold the key from sideload
@@ -572,25 +568,25 @@ virtual task rebuild_message();
             txt = {txt,
                  $sformatf("\n\t ----| FAILED AT BYTE #%0d \t ACTUAL: 0x%h \t PREDICTED: 0x%h ",
                                   n, msg.output_msg[n], msg.predicted_msg[n])};
-          `uvm_fatal(`gfn, $sformatf(" # %0d  \n\t %s \n", good_cnt, txt))
+          `uvm_fatal(`gfn, $sformatf(" # %0d  \n\t %s \n", cfg.good_cnt, txt))
           end
         end
-        `uvm_info(`gfn, $sformatf("\n\t ----|   MESSAGE #%0d MATCHED  %s  |-----",
-                      good_cnt, msg.aes_mode.name() ),
-                                  UVM_MEDIUM)
-        good_cnt++;
+        `uvm_info(`gfn,
+            $sformatf("\n\t ----|   MESSAGE #%0d MATCHED  %s  |-----",
+                cfg.good_cnt, msg.aes_mode.name()), UVM_MEDIUM)
+        cfg.good_cnt++;
       end else begin
         if (msg.aes_mode == AES_NONE) begin
           `uvm_info(`gfn,
-                    $sformatf("\n\t ----| MESSAGE #%0d HAS ILLEGAL MODE MESSAGE IGNORED     |-----",
-                    good_cnt), UVM_MEDIUM)
-          corrupt_cnt++;
+              $sformatf("\n\t ----| MESSAGE #%0d HAS ILLEGAL MODE MESSAGE IGNORED     |-----",
+                  cfg.good_cnt), UVM_MEDIUM)
+          cfg.corrupt_cnt++;
         end
         if (msg.skip_msg) begin
           `uvm_info(`gfn,
-                 $sformatf("\n\t ----| MESSAGE #%0d was skipped due to start triggered prematurely",
-                  good_cnt), UVM_MEDIUM)
-          skipped_cnt++;
+              $sformatf("\n\t ----| MESSAGE #%0d was skipped due to start triggered prematurely",
+                  cfg.good_cnt), UVM_MEDIUM)
+          cfg.skipped_cnt++;
         end
       end
     end
@@ -642,8 +638,10 @@ virtual task rebuild_message();
     while (item_fifo.try_get(seq_item));
     while (msg_fifo.try_get(msg_item));
 
-    skipped_cnt   = 0;
-    good_cnt      = 0;
+    cfg.num_messages_tot = 0;
+    cfg.good_cnt = 0;
+    cfg.corrupt_cnt = 0;
+    cfg.skipped_cnt = 0;
     cfg.split_cnt = 0;
     // if split is set before reset make sure to cancel
     input_item.split_item = 0;
@@ -652,71 +650,72 @@ virtual task rebuild_message();
   endfunction
 
 
-  function void check_phase(uvm_phase phase);
-    string txt =  "";
-    uvm_report_server rpt_srvr;
+  function string counters2string(string txt);
+      txt = { txt, $sformatf("\n\t ----| Expected:           %0d", cfg.num_messages_tot)};
+      txt = { txt, $sformatf("\n\t ----| Seen:               %0d", cfg.good_cnt)};
+      txt = { txt, $sformatf("\n\t ----| Expected corrupted: %0d", cfg.num_corrupt_messages)};
+      txt = { txt, $sformatf("\n\t ----| Seen corrupted:     %0d", cfg.corrupt_cnt)};
+      txt = { txt, $sformatf("\n\t ----| Skipped:            %0d", cfg.skipped_cnt)};
+      txt = { txt, $sformatf("\n\t ----| Split:              %0d", cfg.split_cnt)};
+      return txt;
+  endfunction
 
+
+  function void check_message_counters();
+    uvm_report_server rpt_srvr;
+    string txt = "";
+    // check that we saw all messages
+    // if there is more than expected check split count
+    if (cfg.good_cnt <
+        (cfg.num_messages_tot - cfg.num_corrupt_messages - cfg.skipped_cnt)) begin
+      rpt_srvr = uvm_report_server::get_server();
+      if (rpt_srvr.get_severity_count(UVM_FATAL)
+           + rpt_srvr.get_severity_count(UVM_ERROR) == 0) begin
+        txt = "\n\t ----| NO FAILURES BUT NUMBER OF EXPECTED MESSAGES DOES NOT MATCH ACTUAL";
+      end else begin
+        txt = "\n\t ----| TEST FAILED";
+      end
+      txt = counters2string(txt);
+      `uvm_fatal(`gfn, $sformatf("%s", txt))
+    end
+    if ((cfg.good_cnt >
+        (cfg.num_messages_tot - cfg.num_corrupt_messages - cfg.skipped_cnt))
+        && (cfg.split_cnt == 0)) begin
+      txt = "\n\t ----| SAW TOO MANY MESSAGES AND NONE WAS SPLIT";
+      txt = counters2string(txt);
+      `uvm_fatal(`gfn, $sformatf("%s", txt))
+    end
+  endfunction
+
+
+  function void check_phase(uvm_phase phase);
     if (cfg.en_scb) begin
       super.check_phase(phase);
       `DV_EOT_PRINT_MAILBOX_CONTENTS(aes_message_item, msg_fifo)
       `DV_EOT_PRINT_MAILBOX_CONTENTS(aes_seq_item, item_fifo)
       `DV_EOT_PRINT_Q_CONTENTS(aes_seq_item, rcv_item_q)
-      // check that we saw all messages
-      // if there is more than expected check split count
-      if (good_cnt <
-             (cfg.num_messages - cfg.num_corrupt_messages - skipped_cnt)) begin
-        rpt_srvr = uvm_report_server::get_server();
-        if (rpt_srvr.get_severity_count(UVM_FATAL)
-             + rpt_srvr.get_severity_count(UVM_ERROR) == 0) begin
-          txt = "\n\t ----| NO FAILURES BUT NUMBER OF EXPECTED MESSAGES DOES NOT MATCH ACTUAL";
-        end else begin
-          txt = "\n\t ----| TEST FAILED";
-        end
-
-        txt = { txt, $sformatf(" \n\t ----| Expected:\t %d", cfg.num_messages)};
-        txt = { txt, $sformatf(" \n\t ----| Seen: \t%d",  good_cnt)};
-        txt = { txt, $sformatf(" \n\t ----| Expected corrupted: \t%d", cfg.num_corrupt_messages)};
-        txt = { txt, $sformatf(" \n\t ----| Seen corrupted: \t%d", corrupt_cnt)};
-        txt = { txt, $sformatf(" \n\t ----| Skipped: \t%d", skipped_cnt)};
-        txt = { txt, $sformatf(" \n\t ----| Split: \t%d", cfg.split_cnt)};
-        `uvm_fatal(`gfn, $sformatf("%s", txt) )
-      end
-      if ((good_cnt > (cfg.num_messages - cfg.num_corrupt_messages - skipped_cnt))
-           && (cfg.split_cnt == 0)) begin
-        txt = " SAW TOO MANY MESSAGES AND NONE WAS SPLIT";
-        txt = { txt, $sformatf(" \n\t ----| Expected:\t %d", cfg.num_messages)};
-        txt = { txt, $sformatf(" \n\t ----| Seen: \t%d",  good_cnt)};
-        txt = { txt, $sformatf(" \n\t ----| Expected corrupted: \t%d", cfg.num_corrupt_messages)};
-        txt = { txt, $sformatf(" \n\t ----| Seen corrupted: \t%d", corrupt_cnt)};
-        txt = { txt, $sformatf(" \n\t ----| Skipped: \t%d", skipped_cnt)};
-        txt = { txt, $sformatf(" \n\t ----| Split: \t%d", cfg.split_cnt)};
-        `uvm_fatal(`gfn, $sformatf("%s", txt))
-      end
+      check_message_counters();
     end
   endfunction
 
 
   function void report_phase(uvm_phase phase);
     uvm_report_server rpt_srvr;
-    string txt="";
+    string txt = "";
 
     super.report_phase(phase);
-    txt = $sformatf("\n\t ----|        TEST FINISHED        |----");
-    txt = { txt, $sformatf("\n\t Saw %d Good messages  ", good_cnt)};
-    txt = { txt, $sformatf("\n\t Skipped %d messages  " , skipped_cnt)};
-    txt = { txt, $sformatf("\n\t Split %d messages  "   , cfg.split_cnt)};
-    txt = { txt, $sformatf("\n\t Expected %d messages  ", cfg.num_messages)};
-    txt = { txt, $sformatf("\n\t Expected %d corrupted ", cfg.num_corrupt_messages)};
+    txt = "\n\t ----|        TEST FINISHED        |----";
+    txt = counters2string(txt);
     rpt_srvr = uvm_report_server::get_server();
-    if (rpt_srvr.get_severity_count(UVM_FATAL)+rpt_srvr.get_severity_count(UVM_ERROR)>0) begin
+    if (rpt_srvr.get_severity_count(UVM_FATAL) + rpt_srvr.get_severity_count(UVM_ERROR) > 0) begin
       `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_LOW)
-      txt = { txt,"\n\t---------------------------------------"};
-      txt = { txt,"\n\t----            TEST FAILED        ----"};
-      txt = { txt,"\n\t---------------------------------------"};
+      txt = {txt, "\n\t ---------------------------------------"};
+      txt = {txt, "\n\t ----            TEST FAILED        ----"};
+      txt = {txt, "\n\t ---------------------------------------"};
     end else begin
-      txt = {txt, "\n\t---------------------------------------"};
-      txt = { txt,"\n\t----            TEST PASSED        ----"};
-      txt = { txt,"\n\t---------------------------------------"};
+      txt = {txt, "\n\t ---------------------------------------"};
+      txt = {txt, "\n\t ----            TEST PASSED        ----"};
+      txt = {txt, "\n\t ---------------------------------------"};
     end
     `uvm_info(`gfn, $sformatf("%s", txt), UVM_MEDIUM)
 
