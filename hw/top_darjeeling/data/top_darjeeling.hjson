@@ -310,8 +310,8 @@
         SecVolatileRawUnlockEn: "top_pkg::SecVolatileRawUnlockEn",
         // The following three values get exposed in the life cycle CSRs
         // that are also readable via the TAP.
-        SiliconCreatorId: "16'h 4001", // Creator ID for Darjeeling discrete integration
-        ProductId: "16'h 0001", // Darjeeling engineering sample
+        SiliconCreatorId: "16'h 0001", // OpenTitan project
+        ProductId: "16'h 4000", // Darjeeling
         RevisionId: "8'h 01",   // First tapeout
         IdcodeValue: "jtag_id_pkg::LC_CTRL_JTAG_IDCODE",
       },

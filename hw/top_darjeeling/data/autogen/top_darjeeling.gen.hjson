@@ -1534,8 +1534,8 @@
       param_decl:
       {
         SecVolatileRawUnlockEn: top_pkg::SecVolatileRawUnlockEn
-        SiliconCreatorId: 16'h 4001
-        ProductId: 16'h 0001
+        SiliconCreatorId: 16'h 0001
+        ProductId: 16'h 4000
         RevisionId: 8'h 01
         IdcodeValue: jtag_id_pkg::LC_CTRL_JTAG_IDCODE
       }
@@ -1613,7 +1613,7 @@
           name: SiliconCreatorId
           desc: Chip generation number.
           type: logic [15:0]
-          default: 16'h 4001
+          default: 16'h 0001
           expose: "true"
           name_top: LcCtrlSiliconCreatorId
         }
@@ -1621,7 +1621,7 @@
           name: ProductId
           desc: Chip revision number.
           type: logic [15:0]
-          default: 16'h 0001
+          default: 16'h 4000
           expose: "true"
           name_top: LcCtrlProductId
         }
