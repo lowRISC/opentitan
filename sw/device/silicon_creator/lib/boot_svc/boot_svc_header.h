@@ -10,6 +10,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
+#include "sw/device/silicon_creator/lib/error.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -76,6 +77,20 @@ OT_ASSERT_SIZE(boot_svc_header_t, CHIP_BOOT_SVC_MSG_HEADER_SIZE);
  */
 void boot_svc_header_finalize(uint32_t type, uint32_t length,
                               boot_svc_header_t *header);
+
+/**
+ * Checks the header of a boot services message.
+ *
+ * This function checks the identifier, digest, and length fields of a boot
+ * services message. Similar to the `boot_svc_header_finalize()` function above,
+ * this function also assumes that message payload starts immediately after the
+ * header and is exactly `length - sizeof(boot_svc_header_t)` bytes for digest
+ * computation.
+ *
+ * @param header Header of a boot services message.
+ * @return Whether the header is valid.
+ */
+rom_error_t boot_svc_header_check(const boot_svc_header_t *header);
 
 #ifdef __cplusplus
 }  // extern "C"

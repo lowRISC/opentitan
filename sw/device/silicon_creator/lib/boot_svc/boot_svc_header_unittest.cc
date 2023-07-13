@@ -53,5 +53,113 @@ TEST_F(BootSvcHeaderTest, Init) {
   EXPECT_EQ(fake_msg.header.length, sizeof(fake_msg));
 }
 
+struct BootSvcTestMsg {
+  boot_svc_header_t header;
+  uint32_t payload;
+};
+
+struct BootSvcHeaderCheckTestCase {
+  BootSvcTestMsg msg;
+  rom_error_t exp_error;
+};
+
+class BootSvcHeaderCheckTest
+    : public BootSvcHeaderTest,
+      public testing::WithParamInterface<BootSvcHeaderCheckTestCase> {};
+
+constexpr std::array<BootSvcHeaderCheckTestCase, 7> kHeaderCheckTestCases{{
+    // A valid message.
+    {
+        .msg = {.header =
+                    {
+                        .digest = {},
+                        .identifier = kBootSvcIdentifier,
+                        .type = 0,
+                        .length = sizeof(BootSvcTestMsg),
+                    }},
+        .exp_error = kErrorOk,
+    },
+    // Valid message, lower bound of length.
+    {
+        .msg = {.header =
+                    {
+                        .digest = {},
+                        .identifier = kBootSvcIdentifier,
+                        .type = 0,
+                        .length = CHIP_BOOT_SVC_MSG_HEADER_SIZE,
+                    }},
+        .exp_error = kErrorOk,
+    },
+    // Valid message, upper bound of length.
+    {
+        .msg = {.header =
+                    {
+                        .digest = {},
+                        .identifier = kBootSvcIdentifier,
+                        .type = 0,
+                        .length = CHIP_BOOT_SVC_MSG_SIZE_MAX,
+                    }},
+        .exp_error = kErrorOk,
+    },
+    // Bad digest.
+    {
+        .msg = {.header =
+                    {
+                        .digest = {0x8aadda7a},
+                        .identifier = kBootSvcIdentifier,
+                        .type = 0,
+                        .length = sizeof(BootSvcTestMsg),
+                    }},
+        .exp_error = kErrorBootSvcBadHeader,
+    },
+    // Bad identifier.
+    {
+        .msg = {.header =
+                    {
+                        .digest = {},
+                        .identifier = 0x8aadda7a,
+                        .type = 0,
+                        .length = sizeof(BootSvcTestMsg),
+                    }},
+        .exp_error = kErrorBootSvcBadHeader,
+    },
+    // Bad length (too small).
+    {
+        .msg = {.header =
+                    {
+                        .digest = {},
+                        .identifier = kBootSvcIdentifier,
+                        .type = 0,
+                        .length = CHIP_BOOT_SVC_MSG_HEADER_SIZE - 1,
+                    }},
+        .exp_error = kErrorBootSvcBadHeader,
+    },
+    // Bad length (too big).
+    {
+        .msg = {.header =
+                    {
+                        .digest = {},
+                        .identifier = kBootSvcIdentifier,
+                        .type = 0,
+                        .length = CHIP_BOOT_SVC_MSG_SIZE_MAX + 1,
+                    }},
+        .exp_error = kErrorBootSvcBadHeader,
+    },
+}};
+
+TEST_P(BootSvcHeaderCheckTest, Check) {
+  // Use an all-zero digest by default.
+  EXPECT_CALL(hmac_,
+              sha256(&GetParam().msg.header.identifier,
+                     GetParam().msg.header.length - sizeof(hmac_digest_t), _))
+      .WillOnce(SetArgPointee<2>(hmac_digest_t{}));
+
+  EXPECT_EQ(boot_svc_header_check(&GetParam().msg.header),
+            GetParam().exp_error);
+}
+
+INSTANTIATE_TEST_SUITE_P(HeaderCheckTestCases, BootSvcHeaderCheckTest,
+                         testing::ValuesIn(kHeaderCheckTestCases));
+
 }  // namespace
 }  // namespace boot_svc_header_unittest
