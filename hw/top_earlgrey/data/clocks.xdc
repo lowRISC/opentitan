@@ -21,16 +21,16 @@ set clks_aon_unbuf [get_clocks -of_objects [get_pin clkgen/pll/CLKOUT4]]
 ## destination flops few enough.
 
 set u_pll clkgen/pll
-set u_div2 top_*/u_clkmgr_aon/u_no_scan_io_div2_div
+set u_div2 top_*/u_clkmgr_aon/u_no_scan_io_div2_div/gen_generic.u_impl_generic
 create_generated_clock -name clk_io_div2 -source [get_pins ${u_pll}/CLKOUT0] -divide_by 2 [get_pin ${u_div2}/gen_div2.u_div2/gen_xilinx.u_impl_xilinx/q_o[0]]
 
 # TODO: Use pin names explicitly exist from the source instead of the ones
 # after synthesis.
-set u_div4 top_*/u_clkmgr_aon/u_no_scan_io_div4_div
+set u_div4 top_*/u_clkmgr_aon/u_no_scan_io_div4_div/gen_generic.u_impl_generic
 create_generated_clock -name clk_io_div4 -divide_by 4 -source [get_pins ${u_div4}/gen_div.clk_int_reg/C] [get_pins ${u_div4}/gen_div.clk_int_reg/Q]
 
 
-set ast_src_io u_ast/u_ast_clks_byp/u_no_scan_clk_src_io_d1ord2
+set ast_src_io u_ast/u_ast_clks_byp/u_no_scan_clk_src_io_d1ord2/gen_generic.u_impl_generic
 #create_generated_clock -name clk_src_io -divide_by 1 -source [get_pins ${u_pll}/CLKOUT0] \
 #  [get_pins ${ast_src_io}/gen_div2.u_div2/gen_xilinx.u_impl_xilinx/q_o[0]]
 
@@ -48,7 +48,7 @@ set_clock_sense -positive \
 set_clock_sense -positive \
   [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_*/u_clkmgr_aon/u_no_scan_io_div2_div/u_clk_div_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/I] \
+      [get_pins top_*/u_clkmgr_aon/u_no_scan_io_div2_div/gen_generic.u_impl_generic/u_clk_div_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/I] \
     ] \
   ]
 

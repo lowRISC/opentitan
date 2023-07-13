@@ -1,0 +1,31 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:prim_generic:clock_div"
+description: "Generic clock divide"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:prim_pkg
+      - lowrisc:prim:flop
+      - lowrisc:prim:clock_inv
+      - lowrisc:prim:clock_buf
+    files:
+      - rtl/prim_generic_clock_div.sv
+    file_type: systemVerilogSource
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+    files:
+      - lint/prim_generic_clock_div.waiver
+    file_type: waiver
+
+targets:
+  default:
+    filesets:
+      - tool_ascentlint ? (files_ascentlint_waiver)
+      - files_rtl
