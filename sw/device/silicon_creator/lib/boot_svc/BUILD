@@ -61,3 +61,13 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_library(
+    name = "boot_svc_msg",
+    hdrs = ["boot_svc_msg.h"],
+    deps = [
+        ":boot_svc_empty",
+        ":boot_svc_header",
+        "//sw/device/lib/base:macros",
+    ],
+)
