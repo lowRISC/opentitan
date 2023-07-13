@@ -67,7 +67,7 @@ static void hmac_init(hardened_bool_t enable_hmac) {
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CMD_REG_OFFSET, cmd);
 }
 
-void hmac_sha256_init(void) {
+void hmac_sha_init(void) {
   // Stop any currently in-progress operation.
   hmac_halt();
 

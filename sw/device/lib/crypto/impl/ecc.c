@@ -370,7 +370,7 @@ static status_t internal_ecdsa_p256_sign_start(
   memcpy(sk.share1, share1, sizeof(sk.share1));
 
   // Get the SHA256 digest of the message.
-  hmac_sha256_init();
+  hmac_sha_init();
   hmac_update(input_message.data, input_message.len);
   hmac_digest_t digest;
   hmac_final(&digest);
@@ -515,7 +515,7 @@ static status_t internal_ecdsa_p256_verify_start(
   memcpy(sig.s, signature->s, sizeof(sig.s));
 
   // Get the SHA256 digest of the message.
-  hmac_sha256_init();
+  hmac_sha_init();
   hmac_update(input_message.data, input_message.len);
   hmac_digest_t digest;
   hmac_final(&digest);

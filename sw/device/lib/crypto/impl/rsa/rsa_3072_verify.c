@@ -79,7 +79,7 @@ status_t rsa_3072_encode_sha256(const uint8_t *msg, size_t msgLen,
   result->data[kRsa3072NumWords - 1] = 0x0001ffff;
 
   // Compute the SHA-256 message digest.
-  hmac_sha256_init();
+  hmac_sha_init();
   hmac_update(msg, msgLen);
   hmac_digest_t digest;
   hmac_final(&digest);

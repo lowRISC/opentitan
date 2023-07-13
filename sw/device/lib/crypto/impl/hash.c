@@ -179,7 +179,7 @@ static status_t hmac_sha256(crypto_const_uint8_buf_t message,
   HARDENED_CHECK_EQ(digest->len, kHmacDigestNumBytes);
 
   // Initialize the hardware.
-  hmac_sha256_init();
+  hmac_sha_init();
 
   // Pass the message and check the length.
   hmac_update(message.data, message.len);
