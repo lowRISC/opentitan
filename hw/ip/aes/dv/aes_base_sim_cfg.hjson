@@ -101,6 +101,7 @@
 
   // List of test specifications.
   tests: [
+    // (basic) Directed tests for which the scoreboard is disabled.
     {
       name: aes_wake_up
       uvm_test: aes_wake_up_test
@@ -113,6 +114,22 @@
       uvm_test_seq: aes_nist_vectors_vseq
       reseed: 1
     }
+    {
+      name: aes_deinit
+      uvm_test: aes_deinit_test
+      uvm_test_seq: aes_deinit_vseq
+    }
+    {
+      name: aes_man_cfg_err
+      uvm_test: aes_manual_config_err_test
+      uvm_test_seq: aes_manual_config_err_vseq
+    }
+    {
+      name: aes_readability
+      uvm_test: aes_fi_test
+      uvm_test_seq: aes_readability_vseq
+    }
+    // Regular tests for which the scoreboard is active.
     {
       name: aes_smoke
       uvm_test: aes_smoke_test
@@ -149,20 +166,11 @@
       uvm_test_seq: aes_stress_vseq
     }
     {
-      name: aes_deinit
-      uvm_test: aes_deinit_test
-      uvm_test_seq: aes_deinit_vseq
-    }
-    {
-      name: aes_man_cfg_err
-      uvm_test: aes_manual_config_err_test
-      uvm_test_seq: aes_manual_config_err_vseq
-    }
-    {
       name: aes_reseed
       uvm_test: aes_reseed_test
       uvm_test_seq: aes_reseed_vseq
     }
+    // FI tests for which the scoreboard is disabled.
     {
       name: aes_fi
       uvm_test: aes_alert_reset_test
@@ -193,11 +201,6 @@
       uvm_test: aes_fi_test
       uvm_test_seq: aes_core_fi_vseq
       reseed: 70 // Test must cover 35 bins. Overseed by 2x to get reasonable coverage.
-    }
-    {
-      name: aes_readability
-      uvm_test: aes_fi_test
-      uvm_test_seq: aes_readability_vseq
     }
   ]
 
