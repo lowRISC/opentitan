@@ -19,13 +19,15 @@
   For example, the idle status of relevant hardware blocks is tracked and clock gating requests from software are ignored as long as these blocks are active.
   Further security features include switchable clock jitter, continuous monitoring of clock frequencies, and various countermeasures to deter fault injection (FI) attacks.
   '''
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "4",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_clkmgr",
   revisions: [
     {
-      version:            "1.0",
+      version:            "2.0.0",
       life_stage:         "L1",
       design_stage:       "D1",
       verification_stage: "V1",

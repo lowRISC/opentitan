@@ -11,7 +11,7 @@ package pwrmgr_reg_pkg;
   parameter int NumRstReqs = 1;
 
   // Address widths within the block
-  parameter int BlockAw = 6;
+  parameter int BlockAw = 7;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -151,20 +151,25 @@ package pwrmgr_reg_pkg;
   } pwrmgr_hw2reg_t;
 
   // Register offsets
-  parameter logic [BlockAw-1:0] PWRMGR_INTR_STATE_OFFSET = 6'h 0;
-  parameter logic [BlockAw-1:0] PWRMGR_INTR_ENABLE_OFFSET = 6'h 4;
-  parameter logic [BlockAw-1:0] PWRMGR_INTR_TEST_OFFSET = 6'h 8;
-  parameter logic [BlockAw-1:0] PWRMGR_CTRL_CFG_REGWEN_OFFSET = 6'h c;
-  parameter logic [BlockAw-1:0] PWRMGR_CONTROL_OFFSET = 6'h 10;
-  parameter logic [BlockAw-1:0] PWRMGR_CFG_CDC_SYNC_OFFSET = 6'h 14;
-  parameter logic [BlockAw-1:0] PWRMGR_WAKEUP_EN_REGWEN_OFFSET = 6'h 18;
-  parameter logic [BlockAw-1:0] PWRMGR_WAKEUP_EN_OFFSET = 6'h 1c;
-  parameter logic [BlockAw-1:0] PWRMGR_WAKE_STATUS_OFFSET = 6'h 20;
-  parameter logic [BlockAw-1:0] PWRMGR_RESET_EN_REGWEN_OFFSET = 6'h 24;
-  parameter logic [BlockAw-1:0] PWRMGR_RESET_EN_OFFSET = 6'h 28;
-  parameter logic [BlockAw-1:0] PWRMGR_RESET_STATUS_OFFSET = 6'h 2c;
-  parameter logic [BlockAw-1:0] PWRMGR_WAKE_INFO_CAPTURE_DIS_OFFSET = 6'h 30;
-  parameter logic [BlockAw-1:0] PWRMGR_WAKE_INFO_OFFSET = 6'h 34;
+  parameter logic [BlockAw-1:0] PWRMGR_CIP_ID_OFFSET = 7'h 0;
+  parameter logic [BlockAw-1:0] PWRMGR_REVISION_OFFSET = 7'h 4;
+  parameter logic [BlockAw-1:0] PWRMGR_PARAMETER_BLOCK_TYPE_OFFSET = 7'h 8;
+  parameter logic [BlockAw-1:0] PWRMGR_PARAMETER_BLOCK_LENGTH_OFFSET = 7'h c;
+  parameter logic [BlockAw-1:0] PWRMGR_NEXT_PARAMETER_BLOCK_OFFSET = 7'h 10;
+  parameter logic [BlockAw-1:0] PWRMGR_INTR_STATE_OFFSET = 7'h 40;
+  parameter logic [BlockAw-1:0] PWRMGR_INTR_ENABLE_OFFSET = 7'h 44;
+  parameter logic [BlockAw-1:0] PWRMGR_INTR_TEST_OFFSET = 7'h 48;
+  parameter logic [BlockAw-1:0] PWRMGR_CTRL_CFG_REGWEN_OFFSET = 7'h 4c;
+  parameter logic [BlockAw-1:0] PWRMGR_CONTROL_OFFSET = 7'h 50;
+  parameter logic [BlockAw-1:0] PWRMGR_CFG_CDC_SYNC_OFFSET = 7'h 54;
+  parameter logic [BlockAw-1:0] PWRMGR_WAKEUP_EN_REGWEN_OFFSET = 7'h 58;
+  parameter logic [BlockAw-1:0] PWRMGR_WAKEUP_EN_OFFSET = 7'h 5c;
+  parameter logic [BlockAw-1:0] PWRMGR_WAKE_STATUS_OFFSET = 7'h 60;
+  parameter logic [BlockAw-1:0] PWRMGR_RESET_EN_REGWEN_OFFSET = 7'h 64;
+  parameter logic [BlockAw-1:0] PWRMGR_RESET_EN_OFFSET = 7'h 68;
+  parameter logic [BlockAw-1:0] PWRMGR_RESET_STATUS_OFFSET = 7'h 6c;
+  parameter logic [BlockAw-1:0] PWRMGR_WAKE_INFO_CAPTURE_DIS_OFFSET = 7'h 70;
+  parameter logic [BlockAw-1:0] PWRMGR_WAKE_INFO_OFFSET = 7'h 74;
 
   // Reset values for hwext registers and their fields
   parameter logic [0:0] PWRMGR_INTR_TEST_RESVAL = 1'h 0;
@@ -178,6 +183,11 @@ package pwrmgr_reg_pkg;
 
   // Register index
   typedef enum int {
+    PWRMGR_CIP_ID,
+    PWRMGR_REVISION,
+    PWRMGR_PARAMETER_BLOCK_TYPE,
+    PWRMGR_PARAMETER_BLOCK_LENGTH,
+    PWRMGR_NEXT_PARAMETER_BLOCK,
     PWRMGR_INTR_STATE,
     PWRMGR_INTR_ENABLE,
     PWRMGR_INTR_TEST,
@@ -195,21 +205,26 @@ package pwrmgr_reg_pkg;
   } pwrmgr_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] PWRMGR_PERMIT [14] = '{
-    4'b 0001, // index[ 0] PWRMGR_INTR_STATE
-    4'b 0001, // index[ 1] PWRMGR_INTR_ENABLE
-    4'b 0001, // index[ 2] PWRMGR_INTR_TEST
-    4'b 0001, // index[ 3] PWRMGR_CTRL_CFG_REGWEN
-    4'b 0011, // index[ 4] PWRMGR_CONTROL
-    4'b 0001, // index[ 5] PWRMGR_CFG_CDC_SYNC
-    4'b 0001, // index[ 6] PWRMGR_WAKEUP_EN_REGWEN
-    4'b 0001, // index[ 7] PWRMGR_WAKEUP_EN
-    4'b 0001, // index[ 8] PWRMGR_WAKE_STATUS
-    4'b 0001, // index[ 9] PWRMGR_RESET_EN_REGWEN
-    4'b 0001, // index[10] PWRMGR_RESET_EN
-    4'b 0001, // index[11] PWRMGR_RESET_STATUS
-    4'b 0001, // index[12] PWRMGR_WAKE_INFO_CAPTURE_DIS
-    4'b 0001  // index[13] PWRMGR_WAKE_INFO
+  parameter logic [3:0] PWRMGR_PERMIT [19] = '{
+    4'b 1111, // index[ 0] PWRMGR_CIP_ID
+    4'b 1111, // index[ 1] PWRMGR_REVISION
+    4'b 1111, // index[ 2] PWRMGR_PARAMETER_BLOCK_TYPE
+    4'b 1111, // index[ 3] PWRMGR_PARAMETER_BLOCK_LENGTH
+    4'b 1111, // index[ 4] PWRMGR_NEXT_PARAMETER_BLOCK
+    4'b 0001, // index[ 5] PWRMGR_INTR_STATE
+    4'b 0001, // index[ 6] PWRMGR_INTR_ENABLE
+    4'b 0001, // index[ 7] PWRMGR_INTR_TEST
+    4'b 0001, // index[ 8] PWRMGR_CTRL_CFG_REGWEN
+    4'b 0011, // index[ 9] PWRMGR_CONTROL
+    4'b 0001, // index[10] PWRMGR_CFG_CDC_SYNC
+    4'b 0001, // index[11] PWRMGR_WAKEUP_EN_REGWEN
+    4'b 0001, // index[12] PWRMGR_WAKEUP_EN
+    4'b 0001, // index[13] PWRMGR_WAKE_STATUS
+    4'b 0001, // index[14] PWRMGR_RESET_EN_REGWEN
+    4'b 0001, // index[15] PWRMGR_RESET_EN
+    4'b 0001, // index[16] PWRMGR_RESET_STATUS
+    4'b 0001, // index[17] PWRMGR_WAKE_INFO_CAPTURE_DIS
+    4'b 0001  // index[18] PWRMGR_WAKE_INFO
   };
 
 endpackage

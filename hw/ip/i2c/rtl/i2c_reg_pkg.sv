@@ -11,7 +11,7 @@ package i2c_reg_pkg;
   parameter int NumAlerts = 1;
 
   // Address widths within the block
-  parameter int BlockAw = 7;
+  parameter int BlockAw = 8;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -520,28 +520,33 @@ package i2c_reg_pkg;
   } i2c_hw2reg_t;
 
   // Register offsets
-  parameter logic [BlockAw-1:0] I2C_INTR_STATE_OFFSET = 7'h 0;
-  parameter logic [BlockAw-1:0] I2C_INTR_ENABLE_OFFSET = 7'h 4;
-  parameter logic [BlockAw-1:0] I2C_INTR_TEST_OFFSET = 7'h 8;
-  parameter logic [BlockAw-1:0] I2C_ALERT_TEST_OFFSET = 7'h c;
-  parameter logic [BlockAw-1:0] I2C_CTRL_OFFSET = 7'h 10;
-  parameter logic [BlockAw-1:0] I2C_STATUS_OFFSET = 7'h 14;
-  parameter logic [BlockAw-1:0] I2C_RDATA_OFFSET = 7'h 18;
-  parameter logic [BlockAw-1:0] I2C_FDATA_OFFSET = 7'h 1c;
-  parameter logic [BlockAw-1:0] I2C_FIFO_CTRL_OFFSET = 7'h 20;
-  parameter logic [BlockAw-1:0] I2C_FIFO_STATUS_OFFSET = 7'h 24;
-  parameter logic [BlockAw-1:0] I2C_OVRD_OFFSET = 7'h 28;
-  parameter logic [BlockAw-1:0] I2C_VAL_OFFSET = 7'h 2c;
-  parameter logic [BlockAw-1:0] I2C_TIMING0_OFFSET = 7'h 30;
-  parameter logic [BlockAw-1:0] I2C_TIMING1_OFFSET = 7'h 34;
-  parameter logic [BlockAw-1:0] I2C_TIMING2_OFFSET = 7'h 38;
-  parameter logic [BlockAw-1:0] I2C_TIMING3_OFFSET = 7'h 3c;
-  parameter logic [BlockAw-1:0] I2C_TIMING4_OFFSET = 7'h 40;
-  parameter logic [BlockAw-1:0] I2C_TIMEOUT_CTRL_OFFSET = 7'h 44;
-  parameter logic [BlockAw-1:0] I2C_TARGET_ID_OFFSET = 7'h 48;
-  parameter logic [BlockAw-1:0] I2C_ACQDATA_OFFSET = 7'h 4c;
-  parameter logic [BlockAw-1:0] I2C_TXDATA_OFFSET = 7'h 50;
-  parameter logic [BlockAw-1:0] I2C_HOST_TIMEOUT_CTRL_OFFSET = 7'h 54;
+  parameter logic [BlockAw-1:0] I2C_CIP_ID_OFFSET = 8'h 0;
+  parameter logic [BlockAw-1:0] I2C_REVISION_OFFSET = 8'h 4;
+  parameter logic [BlockAw-1:0] I2C_PARAMETER_BLOCK_TYPE_OFFSET = 8'h 8;
+  parameter logic [BlockAw-1:0] I2C_PARAMETER_BLOCK_LENGTH_OFFSET = 8'h c;
+  parameter logic [BlockAw-1:0] I2C_NEXT_PARAMETER_BLOCK_OFFSET = 8'h 10;
+  parameter logic [BlockAw-1:0] I2C_INTR_STATE_OFFSET = 8'h 40;
+  parameter logic [BlockAw-1:0] I2C_INTR_ENABLE_OFFSET = 8'h 44;
+  parameter logic [BlockAw-1:0] I2C_INTR_TEST_OFFSET = 8'h 48;
+  parameter logic [BlockAw-1:0] I2C_ALERT_TEST_OFFSET = 8'h 4c;
+  parameter logic [BlockAw-1:0] I2C_CTRL_OFFSET = 8'h 50;
+  parameter logic [BlockAw-1:0] I2C_STATUS_OFFSET = 8'h 54;
+  parameter logic [BlockAw-1:0] I2C_RDATA_OFFSET = 8'h 58;
+  parameter logic [BlockAw-1:0] I2C_FDATA_OFFSET = 8'h 5c;
+  parameter logic [BlockAw-1:0] I2C_FIFO_CTRL_OFFSET = 8'h 60;
+  parameter logic [BlockAw-1:0] I2C_FIFO_STATUS_OFFSET = 8'h 64;
+  parameter logic [BlockAw-1:0] I2C_OVRD_OFFSET = 8'h 68;
+  parameter logic [BlockAw-1:0] I2C_VAL_OFFSET = 8'h 6c;
+  parameter logic [BlockAw-1:0] I2C_TIMING0_OFFSET = 8'h 70;
+  parameter logic [BlockAw-1:0] I2C_TIMING1_OFFSET = 8'h 74;
+  parameter logic [BlockAw-1:0] I2C_TIMING2_OFFSET = 8'h 78;
+  parameter logic [BlockAw-1:0] I2C_TIMING3_OFFSET = 8'h 7c;
+  parameter logic [BlockAw-1:0] I2C_TIMING4_OFFSET = 8'h 80;
+  parameter logic [BlockAw-1:0] I2C_TIMEOUT_CTRL_OFFSET = 8'h 84;
+  parameter logic [BlockAw-1:0] I2C_TARGET_ID_OFFSET = 8'h 88;
+  parameter logic [BlockAw-1:0] I2C_ACQDATA_OFFSET = 8'h 8c;
+  parameter logic [BlockAw-1:0] I2C_TXDATA_OFFSET = 8'h 90;
+  parameter logic [BlockAw-1:0] I2C_HOST_TIMEOUT_CTRL_OFFSET = 8'h 94;
 
   // Reset values for hwext registers and their fields
   parameter logic [14:0] I2C_INTR_TEST_RESVAL = 15'h 0;
@@ -576,6 +581,11 @@ package i2c_reg_pkg;
 
   // Register index
   typedef enum int {
+    I2C_CIP_ID,
+    I2C_REVISION,
+    I2C_PARAMETER_BLOCK_TYPE,
+    I2C_PARAMETER_BLOCK_LENGTH,
+    I2C_NEXT_PARAMETER_BLOCK,
     I2C_INTR_STATE,
     I2C_INTR_ENABLE,
     I2C_INTR_TEST,
@@ -601,29 +611,34 @@ package i2c_reg_pkg;
   } i2c_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] I2C_PERMIT [22] = '{
-    4'b 0011, // index[ 0] I2C_INTR_STATE
-    4'b 0011, // index[ 1] I2C_INTR_ENABLE
-    4'b 0011, // index[ 2] I2C_INTR_TEST
-    4'b 0001, // index[ 3] I2C_ALERT_TEST
-    4'b 0001, // index[ 4] I2C_CTRL
-    4'b 0011, // index[ 5] I2C_STATUS
-    4'b 0001, // index[ 6] I2C_RDATA
-    4'b 0011, // index[ 7] I2C_FDATA
-    4'b 0011, // index[ 8] I2C_FIFO_CTRL
-    4'b 1111, // index[ 9] I2C_FIFO_STATUS
-    4'b 0001, // index[10] I2C_OVRD
-    4'b 1111, // index[11] I2C_VAL
-    4'b 1111, // index[12] I2C_TIMING0
-    4'b 1111, // index[13] I2C_TIMING1
-    4'b 1111, // index[14] I2C_TIMING2
-    4'b 1111, // index[15] I2C_TIMING3
-    4'b 1111, // index[16] I2C_TIMING4
-    4'b 1111, // index[17] I2C_TIMEOUT_CTRL
-    4'b 1111, // index[18] I2C_TARGET_ID
-    4'b 0011, // index[19] I2C_ACQDATA
-    4'b 0001, // index[20] I2C_TXDATA
-    4'b 1111  // index[21] I2C_HOST_TIMEOUT_CTRL
+  parameter logic [3:0] I2C_PERMIT [27] = '{
+    4'b 1111, // index[ 0] I2C_CIP_ID
+    4'b 1111, // index[ 1] I2C_REVISION
+    4'b 1111, // index[ 2] I2C_PARAMETER_BLOCK_TYPE
+    4'b 1111, // index[ 3] I2C_PARAMETER_BLOCK_LENGTH
+    4'b 1111, // index[ 4] I2C_NEXT_PARAMETER_BLOCK
+    4'b 0011, // index[ 5] I2C_INTR_STATE
+    4'b 0011, // index[ 6] I2C_INTR_ENABLE
+    4'b 0011, // index[ 7] I2C_INTR_TEST
+    4'b 0001, // index[ 8] I2C_ALERT_TEST
+    4'b 0001, // index[ 9] I2C_CTRL
+    4'b 0011, // index[10] I2C_STATUS
+    4'b 0001, // index[11] I2C_RDATA
+    4'b 0011, // index[12] I2C_FDATA
+    4'b 0011, // index[13] I2C_FIFO_CTRL
+    4'b 1111, // index[14] I2C_FIFO_STATUS
+    4'b 0001, // index[15] I2C_OVRD
+    4'b 1111, // index[16] I2C_VAL
+    4'b 1111, // index[17] I2C_TIMING0
+    4'b 1111, // index[18] I2C_TIMING1
+    4'b 1111, // index[19] I2C_TIMING2
+    4'b 1111, // index[20] I2C_TIMING3
+    4'b 1111, // index[21] I2C_TIMING4
+    4'b 1111, // index[22] I2C_TIMEOUT_CTRL
+    4'b 1111, // index[23] I2C_TARGET_ID
+    4'b 0011, // index[24] I2C_ACQDATA
+    4'b 0001, // index[25] I2C_TXDATA
+    4'b 1111  // index[26] I2C_HOST_TIMEOUT_CTRL
   };
 
 endpackage

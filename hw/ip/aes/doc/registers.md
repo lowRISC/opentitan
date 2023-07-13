@@ -15,46 +15,134 @@ For a detailed overview of the register tool, please refer to the [Register Tool
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/aes/data/aes.hjson -->
 ## Summary
 
-| Name                                          | Offset   |   Length | Description                              |
-|:----------------------------------------------|:---------|---------:|:-----------------------------------------|
-| aes.[`ALERT_TEST`](#alert_test)               | 0x0      |        4 | Alert Test Register                      |
-| aes.[`KEY_SHARE0_0`](#key_share0)             | 0x4      |        4 | Initial Key Registers Share 0.           |
-| aes.[`KEY_SHARE0_1`](#key_share0)             | 0x8      |        4 | Initial Key Registers Share 0.           |
-| aes.[`KEY_SHARE0_2`](#key_share0)             | 0xc      |        4 | Initial Key Registers Share 0.           |
-| aes.[`KEY_SHARE0_3`](#key_share0)             | 0x10     |        4 | Initial Key Registers Share 0.           |
-| aes.[`KEY_SHARE0_4`](#key_share0)             | 0x14     |        4 | Initial Key Registers Share 0.           |
-| aes.[`KEY_SHARE0_5`](#key_share0)             | 0x18     |        4 | Initial Key Registers Share 0.           |
-| aes.[`KEY_SHARE0_6`](#key_share0)             | 0x1c     |        4 | Initial Key Registers Share 0.           |
-| aes.[`KEY_SHARE0_7`](#key_share0)             | 0x20     |        4 | Initial Key Registers Share 0.           |
-| aes.[`KEY_SHARE1_0`](#key_share1)             | 0x24     |        4 | Initial Key Registers Share 1.           |
-| aes.[`KEY_SHARE1_1`](#key_share1)             | 0x28     |        4 | Initial Key Registers Share 1.           |
-| aes.[`KEY_SHARE1_2`](#key_share1)             | 0x2c     |        4 | Initial Key Registers Share 1.           |
-| aes.[`KEY_SHARE1_3`](#key_share1)             | 0x30     |        4 | Initial Key Registers Share 1.           |
-| aes.[`KEY_SHARE1_4`](#key_share1)             | 0x34     |        4 | Initial Key Registers Share 1.           |
-| aes.[`KEY_SHARE1_5`](#key_share1)             | 0x38     |        4 | Initial Key Registers Share 1.           |
-| aes.[`KEY_SHARE1_6`](#key_share1)             | 0x3c     |        4 | Initial Key Registers Share 1.           |
-| aes.[`KEY_SHARE1_7`](#key_share1)             | 0x40     |        4 | Initial Key Registers Share 1.           |
-| aes.[`IV_0`](#iv)                             | 0x44     |        4 | Initialization Vector Registers.         |
-| aes.[`IV_1`](#iv)                             | 0x48     |        4 | Initialization Vector Registers.         |
-| aes.[`IV_2`](#iv)                             | 0x4c     |        4 | Initialization Vector Registers.         |
-| aes.[`IV_3`](#iv)                             | 0x50     |        4 | Initialization Vector Registers.         |
-| aes.[`DATA_IN_0`](#data_in)                   | 0x54     |        4 | Input Data Registers.                    |
-| aes.[`DATA_IN_1`](#data_in)                   | 0x58     |        4 | Input Data Registers.                    |
-| aes.[`DATA_IN_2`](#data_in)                   | 0x5c     |        4 | Input Data Registers.                    |
-| aes.[`DATA_IN_3`](#data_in)                   | 0x60     |        4 | Input Data Registers.                    |
-| aes.[`DATA_OUT_0`](#data_out)                 | 0x64     |        4 | Output Data Register.                    |
-| aes.[`DATA_OUT_1`](#data_out)                 | 0x68     |        4 | Output Data Register.                    |
-| aes.[`DATA_OUT_2`](#data_out)                 | 0x6c     |        4 | Output Data Register.                    |
-| aes.[`DATA_OUT_3`](#data_out)                 | 0x70     |        4 | Output Data Register.                    |
-| aes.[`CTRL_SHADOWED`](#ctrl_shadowed)         | 0x74     |        4 | Control Register.                        |
-| aes.[`CTRL_AUX_SHADOWED`](#ctrl_aux_shadowed) | 0x78     |        4 | Auxiliary Control Register.              |
-| aes.[`CTRL_AUX_REGWEN`](#ctrl_aux_regwen)     | 0x7c     |        4 | Lock bit for Auxiliary Control Register. |
-| aes.[`TRIGGER`](#trigger)                     | 0x80     |        4 | Trigger Register.                        |
-| aes.[`STATUS`](#status)                       | 0x84     |        4 | Status Register                          |
+| Name                                                    | Offset   |   Length | Description                              |
+|:--------------------------------------------------------|:---------|---------:|:-----------------------------------------|
+| aes.[`CIP_ID`](#cip_id)                                 | 0x0      |        4 | Comportable IP ID.                       |
+| aes.[`REVISION`](#revision)                             | 0x4      |        4 | Comportable IP semantic version.         |
+| aes.[`PARAMETER_BLOCK_TYPE`](#parameter_block_type)     | 0x8      |        4 | Parameter block type.                    |
+| aes.[`PARAMETER_BLOCK_LENGTH`](#parameter_block_length) | 0xc      |        4 | Parameter block length.                  |
+| aes.[`NEXT_PARAMETER_BLOCK`](#next_parameter_block)     | 0x10     |        4 | Next parameter block offset.             |
+| aes.[`ALERT_TEST`](#alert_test)                         | 0x40     |        4 | Alert Test Register                      |
+| aes.[`KEY_SHARE0_0`](#key_share0)                       | 0x44     |        4 | Initial Key Registers Share 0.           |
+| aes.[`KEY_SHARE0_1`](#key_share0)                       | 0x48     |        4 | Initial Key Registers Share 0.           |
+| aes.[`KEY_SHARE0_2`](#key_share0)                       | 0x4c     |        4 | Initial Key Registers Share 0.           |
+| aes.[`KEY_SHARE0_3`](#key_share0)                       | 0x50     |        4 | Initial Key Registers Share 0.           |
+| aes.[`KEY_SHARE0_4`](#key_share0)                       | 0x54     |        4 | Initial Key Registers Share 0.           |
+| aes.[`KEY_SHARE0_5`](#key_share0)                       | 0x58     |        4 | Initial Key Registers Share 0.           |
+| aes.[`KEY_SHARE0_6`](#key_share0)                       | 0x5c     |        4 | Initial Key Registers Share 0.           |
+| aes.[`KEY_SHARE0_7`](#key_share0)                       | 0x60     |        4 | Initial Key Registers Share 0.           |
+| aes.[`KEY_SHARE1_0`](#key_share1)                       | 0x64     |        4 | Initial Key Registers Share 1.           |
+| aes.[`KEY_SHARE1_1`](#key_share1)                       | 0x68     |        4 | Initial Key Registers Share 1.           |
+| aes.[`KEY_SHARE1_2`](#key_share1)                       | 0x6c     |        4 | Initial Key Registers Share 1.           |
+| aes.[`KEY_SHARE1_3`](#key_share1)                       | 0x70     |        4 | Initial Key Registers Share 1.           |
+| aes.[`KEY_SHARE1_4`](#key_share1)                       | 0x74     |        4 | Initial Key Registers Share 1.           |
+| aes.[`KEY_SHARE1_5`](#key_share1)                       | 0x78     |        4 | Initial Key Registers Share 1.           |
+| aes.[`KEY_SHARE1_6`](#key_share1)                       | 0x7c     |        4 | Initial Key Registers Share 1.           |
+| aes.[`KEY_SHARE1_7`](#key_share1)                       | 0x80     |        4 | Initial Key Registers Share 1.           |
+| aes.[`IV_0`](#iv)                                       | 0x84     |        4 | Initialization Vector Registers.         |
+| aes.[`IV_1`](#iv)                                       | 0x88     |        4 | Initialization Vector Registers.         |
+| aes.[`IV_2`](#iv)                                       | 0x8c     |        4 | Initialization Vector Registers.         |
+| aes.[`IV_3`](#iv)                                       | 0x90     |        4 | Initialization Vector Registers.         |
+| aes.[`DATA_IN_0`](#data_in)                             | 0x94     |        4 | Input Data Registers.                    |
+| aes.[`DATA_IN_1`](#data_in)                             | 0x98     |        4 | Input Data Registers.                    |
+| aes.[`DATA_IN_2`](#data_in)                             | 0x9c     |        4 | Input Data Registers.                    |
+| aes.[`DATA_IN_3`](#data_in)                             | 0xa0     |        4 | Input Data Registers.                    |
+| aes.[`DATA_OUT_0`](#data_out)                           | 0xa4     |        4 | Output Data Register.                    |
+| aes.[`DATA_OUT_1`](#data_out)                           | 0xa8     |        4 | Output Data Register.                    |
+| aes.[`DATA_OUT_2`](#data_out)                           | 0xac     |        4 | Output Data Register.                    |
+| aes.[`DATA_OUT_3`](#data_out)                           | 0xb0     |        4 | Output Data Register.                    |
+| aes.[`CTRL_SHADOWED`](#ctrl_shadowed)                   | 0xb4     |        4 | Control Register.                        |
+| aes.[`CTRL_AUX_SHADOWED`](#ctrl_aux_shadowed)           | 0xb8     |        4 | Auxiliary Control Register.              |
+| aes.[`CTRL_AUX_REGWEN`](#ctrl_aux_regwen)               | 0xbc     |        4 | Lock bit for Auxiliary Control Register. |
+| aes.[`TRIGGER`](#trigger)                               | 0xc0     |        4 | Trigger Register.                        |
+| aes.[`STATUS`](#status)                                 | 0xc4     |        4 | Status Register                          |
+
+## CIP_ID
+Comportable IP ID.
+- Offset: `0x0`
+- Reset default: `0x2`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "CIP_ID", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description                                       |
+|:------:|:------:|:-------:|:-------|:--------------------------------------------------|
+|  31:0  |   ro   |   0x2   | CIP_ID | This value is a unique comportable IP identifier. |
+
+## REVISION
+Comportable IP semantic version.
+- Offset: `0x4`
+- Reset default: `0x2000000`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "RESERVED", "bits": 8, "attr": ["ro"], "rotate": 0}, {"name": "SUBMINOR", "bits": 8, "attr": ["ro"], "rotate": 0}, {"name": "MINOR", "bits": 8, "attr": ["ro"], "rotate": 0}, {"name": "MAJOR", "bits": 8, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name     | Description                      |
+|:------:|:------:|:-------:|:---------|:---------------------------------|
+| 31:24  |   ro   |   0x2   | MAJOR    | Major version number.            |
+| 23:16  |   ro   |   0x0   | MINOR    | Minor version number.            |
+|  15:8  |   ro   |   0x0   | SUBMINOR | Subminor (patch) version number. |
+|  7:0   |   ro   |   0x0   | RESERVED | Reserved version number.         |
+
+## PARAMETER_BLOCK_TYPE
+Parameter block type.
+- Offset: `0x8`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "BLOCK_TYPE", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name       | Description           |
+|:------:|:------:|:-------:|:-----------|:----------------------|
+|  31:0  |   ro   |   0x0   | BLOCK_TYPE | Parameter block type. |
+
+## PARAMETER_BLOCK_LENGTH
+Parameter block length.
+- Offset: `0xc`
+- Reset default: `0xc`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "BLOCK_LENGTH", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name         | Description                      |
+|:------:|:------:|:-------:|:-------------|:---------------------------------|
+|  31:0  |   ro   |   0xc   | BLOCK_LENGTH | Parameter block length in bytes. |
+
+## NEXT_PARAMETER_BLOCK
+Next parameter block offset.
+- Offset: `0x10`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "BLOCK_OFFSET", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name         | Description                                                                             |
+|:------:|:------:|:-------:|:-------------|:----------------------------------------------------------------------------------------|
+|  31:0  |   ro   |   0x0   | BLOCK_OFFSET | This offset value is zero if there is no other                         parameter block. |
 
 ## ALERT_TEST
 Alert Test Register
-- Offset: `0x0`
+- Offset: `0x40`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 
@@ -87,14 +175,14 @@ Upon reset, these registers are cleared with pseudo-random data.
 
 | Name         | Offset   |
 |:-------------|:---------|
-| KEY_SHARE0_0 | 0x4      |
-| KEY_SHARE0_1 | 0x8      |
-| KEY_SHARE0_2 | 0xc      |
-| KEY_SHARE0_3 | 0x10     |
-| KEY_SHARE0_4 | 0x14     |
-| KEY_SHARE0_5 | 0x18     |
-| KEY_SHARE0_6 | 0x1c     |
-| KEY_SHARE0_7 | 0x20     |
+| KEY_SHARE0_0 | 0x44     |
+| KEY_SHARE0_1 | 0x48     |
+| KEY_SHARE0_2 | 0x4c     |
+| KEY_SHARE0_3 | 0x50     |
+| KEY_SHARE0_4 | 0x54     |
+| KEY_SHARE0_5 | 0x58     |
+| KEY_SHARE0_6 | 0x5c     |
+| KEY_SHARE0_7 | 0x60     |
 
 
 ### Fields
@@ -124,14 +212,14 @@ Upon reset, these registers are cleared with pseudo-random data.
 
 | Name         | Offset   |
 |:-------------|:---------|
-| KEY_SHARE1_0 | 0x24     |
-| KEY_SHARE1_1 | 0x28     |
-| KEY_SHARE1_2 | 0x2c     |
-| KEY_SHARE1_3 | 0x30     |
-| KEY_SHARE1_4 | 0x34     |
-| KEY_SHARE1_5 | 0x38     |
-| KEY_SHARE1_6 | 0x3c     |
-| KEY_SHARE1_7 | 0x40     |
+| KEY_SHARE1_0 | 0x64     |
+| KEY_SHARE1_1 | 0x68     |
+| KEY_SHARE1_2 | 0x6c     |
+| KEY_SHARE1_3 | 0x70     |
+| KEY_SHARE1_4 | 0x74     |
+| KEY_SHARE1_5 | 0x78     |
+| KEY_SHARE1_6 | 0x7c     |
+| KEY_SHARE1_7 | 0x80     |
 
 
 ### Fields
@@ -163,10 +251,10 @@ Upon reset, these registers are cleared with pseudo-random data.
 
 | Name   | Offset   |
 |:-------|:---------|
-| IV_0   | 0x44     |
-| IV_1   | 0x48     |
-| IV_2   | 0x4c     |
-| IV_3   | 0x50     |
+| IV_0   | 0x84     |
+| IV_1   | 0x88     |
+| IV_2   | 0x8c     |
+| IV_3   | 0x90     |
 
 
 ### Fields
@@ -195,10 +283,10 @@ Upon reset, these registers are cleared with pseudo-random data.
 
 | Name      | Offset   |
 |:----------|:---------|
-| DATA_IN_0 | 0x54     |
-| DATA_IN_1 | 0x58     |
-| DATA_IN_2 | 0x5c     |
-| DATA_IN_3 | 0x60     |
+| DATA_IN_0 | 0x94     |
+| DATA_IN_1 | 0x98     |
+| DATA_IN_2 | 0x9c     |
+| DATA_IN_3 | 0xa0     |
 
 
 ### Fields
@@ -226,10 +314,10 @@ Upon reset, these registers are cleared with pseudo-random data.
 
 | Name       | Offset   |
 |:-----------|:---------|
-| DATA_OUT_0 | 0x64     |
-| DATA_OUT_1 | 0x68     |
-| DATA_OUT_2 | 0x6c     |
-| DATA_OUT_3 | 0x70     |
+| DATA_OUT_0 | 0xa4     |
+| DATA_OUT_1 | 0xa8     |
+| DATA_OUT_2 | 0xac     |
+| DATA_OUT_3 | 0xb0     |
 
 
 ### Fields
@@ -253,7 +341,7 @@ A read operation clears the internal phase tracking: The next write operation is
 Any write operation to this register will clear the status tracking required for automatic mode (See MANUAL_OPERATION field).
 A write to the Control Register is considered the start of a new message.
 Hence, software needs to provide new key, IV and input data afterwards.
-- Offset: `0x74`
+- Offset: `0xb4`
 - Reset default: `0x1181`
 - Reset mask: `0xffff`
 
@@ -340,7 +428,7 @@ Auxiliary Control Register.
 This register is shadowed, meaning two subsequent write operations are required to change its content.
 If the two write operations try to set a different value, a recoverable alert is triggered (See Status Register).
 A read operation clears the internal phase tracking: The next write operation is always considered a first write operation of an update sequence.
-- Offset: `0x78`
+- Offset: `0xb8`
 - Reset default: `0x1`
 - Reset mask: `0x3`
 - Register enable: [`CTRL_AUX_REGWEN`](#ctrl_aux_regwen)
@@ -369,7 +457,7 @@ Controls whether providing a new key triggers the reseeding of internal pseudo-r
 
 ## CTRL_AUX_REGWEN
 Lock bit for Auxiliary Control Register.
-- Offset: `0x7c`
+- Offset: `0xbc`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
@@ -392,7 +480,7 @@ While executing any of the triggered operations, the AES unit will set the IDLE 
 The processor must check the Status Register before triggering further actions.
 For example, writes to Initial Key and IV Registers are ignored while the AES unit is busy.
 Writes to the Input Data Registers are not ignored but the data will be cleared if a KEY_IV_DATA_IN_CLEAR operation is pending.
-- Offset: `0x80`
+- Offset: `0xc0`
 - Reset default: `0xe`
 - Reset mask: `0xf`
 
@@ -426,7 +514,7 @@ This trigger is cleared to `0` if MANUAL_OPERATION=0 or if MODE=AES_NONE (see Co
 
 ## STATUS
 Status Register
-- Offset: `0x84`
+- Offset: `0xc4`
 - Reset default: `0x0`
 - Reset mask: `0x7f`
 

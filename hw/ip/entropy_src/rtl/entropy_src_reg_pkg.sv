@@ -11,7 +11,7 @@ package entropy_src_reg_pkg;
   parameter int NumAlerts = 2;
 
   // Address widths within the block
-  parameter int BlockAw = 8;
+  parameter int BlockAw = 9;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -764,63 +764,68 @@ package entropy_src_reg_pkg;
   } entropy_src_hw2reg_t;
 
   // Register offsets
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_INTR_STATE_OFFSET = 8'h 0;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_INTR_ENABLE_OFFSET = 8'h 4;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_INTR_TEST_OFFSET = 8'h 8;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_ALERT_TEST_OFFSET = 8'h c;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_ME_REGWEN_OFFSET = 8'h 10;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_SW_REGUPD_OFFSET = 8'h 14;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_REGWEN_OFFSET = 8'h 18;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_REV_OFFSET = 8'h 1c;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_MODULE_ENABLE_OFFSET = 8'h 20;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_CONF_OFFSET = 8'h 24;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_ENTROPY_CONTROL_OFFSET = 8'h 28;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_ENTROPY_DATA_OFFSET = 8'h 2c;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_HEALTH_TEST_WINDOWS_OFFSET = 8'h 30;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_REPCNT_THRESHOLDS_OFFSET = 8'h 34;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_REPCNTS_THRESHOLDS_OFFSET = 8'h 38;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_ADAPTP_HI_THRESHOLDS_OFFSET = 8'h 3c;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_ADAPTP_LO_THRESHOLDS_OFFSET = 8'h 40;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_BUCKET_THRESHOLDS_OFFSET = 8'h 44;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_MARKOV_HI_THRESHOLDS_OFFSET = 8'h 48;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_MARKOV_LO_THRESHOLDS_OFFSET = 8'h 4c;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_EXTHT_HI_THRESHOLDS_OFFSET = 8'h 50;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_EXTHT_LO_THRESHOLDS_OFFSET = 8'h 54;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_REPCNT_HI_WATERMARKS_OFFSET = 8'h 58;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_REPCNTS_HI_WATERMARKS_OFFSET = 8'h 5c;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_ADAPTP_HI_WATERMARKS_OFFSET = 8'h 60;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_ADAPTP_LO_WATERMARKS_OFFSET = 8'h 64;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_EXTHT_HI_WATERMARKS_OFFSET = 8'h 68;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_EXTHT_LO_WATERMARKS_OFFSET = 8'h 6c;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_BUCKET_HI_WATERMARKS_OFFSET = 8'h 70;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_MARKOV_HI_WATERMARKS_OFFSET = 8'h 74;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_MARKOV_LO_WATERMARKS_OFFSET = 8'h 78;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_REPCNT_TOTAL_FAILS_OFFSET = 8'h 7c;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_REPCNTS_TOTAL_FAILS_OFFSET = 8'h 80;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_ADAPTP_HI_TOTAL_FAILS_OFFSET = 8'h 84;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_ADAPTP_LO_TOTAL_FAILS_OFFSET = 8'h 88;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_BUCKET_TOTAL_FAILS_OFFSET = 8'h 8c;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_MARKOV_HI_TOTAL_FAILS_OFFSET = 8'h 90;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_MARKOV_LO_TOTAL_FAILS_OFFSET = 8'h 94;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_EXTHT_HI_TOTAL_FAILS_OFFSET = 8'h 98;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_EXTHT_LO_TOTAL_FAILS_OFFSET = 8'h 9c;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_ALERT_THRESHOLD_OFFSET = 8'h a0;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_ALERT_SUMMARY_FAIL_COUNTS_OFFSET = 8'h a4;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_ALERT_FAIL_COUNTS_OFFSET = 8'h a8;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_EXTHT_FAIL_COUNTS_OFFSET = 8'h ac;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_FW_OV_CONTROL_OFFSET = 8'h b0;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_FW_OV_SHA3_START_OFFSET = 8'h b4;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_FW_OV_WR_FIFO_FULL_OFFSET = 8'h b8;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_FW_OV_RD_FIFO_OVERFLOW_OFFSET = 8'h bc;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_FW_OV_RD_DATA_OFFSET = 8'h c0;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_FW_OV_WR_DATA_OFFSET = 8'h c4;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_OBSERVE_FIFO_THRESH_OFFSET = 8'h c8;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_OBSERVE_FIFO_DEPTH_OFFSET = 8'h cc;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_DEBUG_STATUS_OFFSET = 8'h d0;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_RECOV_ALERT_STS_OFFSET = 8'h d4;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_ERR_CODE_OFFSET = 8'h d8;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_ERR_CODE_TEST_OFFSET = 8'h dc;
-  parameter logic [BlockAw-1:0] ENTROPY_SRC_MAIN_SM_STATE_OFFSET = 8'h e0;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_CIP_ID_OFFSET = 9'h 0;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_REVISION_OFFSET = 9'h 4;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_PARAMETER_BLOCK_TYPE_OFFSET = 9'h 8;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_PARAMETER_BLOCK_LENGTH_OFFSET = 9'h c;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_NEXT_PARAMETER_BLOCK_OFFSET = 9'h 10;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_INTR_STATE_OFFSET = 9'h 40;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_INTR_ENABLE_OFFSET = 9'h 44;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_INTR_TEST_OFFSET = 9'h 48;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_ALERT_TEST_OFFSET = 9'h 4c;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_ME_REGWEN_OFFSET = 9'h 50;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_SW_REGUPD_OFFSET = 9'h 54;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_REGWEN_OFFSET = 9'h 58;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_REV_OFFSET = 9'h 5c;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_MODULE_ENABLE_OFFSET = 9'h 60;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_CONF_OFFSET = 9'h 64;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_ENTROPY_CONTROL_OFFSET = 9'h 68;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_ENTROPY_DATA_OFFSET = 9'h 6c;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_HEALTH_TEST_WINDOWS_OFFSET = 9'h 70;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_REPCNT_THRESHOLDS_OFFSET = 9'h 74;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_REPCNTS_THRESHOLDS_OFFSET = 9'h 78;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_ADAPTP_HI_THRESHOLDS_OFFSET = 9'h 7c;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_ADAPTP_LO_THRESHOLDS_OFFSET = 9'h 80;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_BUCKET_THRESHOLDS_OFFSET = 9'h 84;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_MARKOV_HI_THRESHOLDS_OFFSET = 9'h 88;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_MARKOV_LO_THRESHOLDS_OFFSET = 9'h 8c;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_EXTHT_HI_THRESHOLDS_OFFSET = 9'h 90;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_EXTHT_LO_THRESHOLDS_OFFSET = 9'h 94;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_REPCNT_HI_WATERMARKS_OFFSET = 9'h 98;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_REPCNTS_HI_WATERMARKS_OFFSET = 9'h 9c;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_ADAPTP_HI_WATERMARKS_OFFSET = 9'h a0;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_ADAPTP_LO_WATERMARKS_OFFSET = 9'h a4;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_EXTHT_HI_WATERMARKS_OFFSET = 9'h a8;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_EXTHT_LO_WATERMARKS_OFFSET = 9'h ac;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_BUCKET_HI_WATERMARKS_OFFSET = 9'h b0;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_MARKOV_HI_WATERMARKS_OFFSET = 9'h b4;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_MARKOV_LO_WATERMARKS_OFFSET = 9'h b8;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_REPCNT_TOTAL_FAILS_OFFSET = 9'h bc;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_REPCNTS_TOTAL_FAILS_OFFSET = 9'h c0;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_ADAPTP_HI_TOTAL_FAILS_OFFSET = 9'h c4;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_ADAPTP_LO_TOTAL_FAILS_OFFSET = 9'h c8;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_BUCKET_TOTAL_FAILS_OFFSET = 9'h cc;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_MARKOV_HI_TOTAL_FAILS_OFFSET = 9'h d0;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_MARKOV_LO_TOTAL_FAILS_OFFSET = 9'h d4;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_EXTHT_HI_TOTAL_FAILS_OFFSET = 9'h d8;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_EXTHT_LO_TOTAL_FAILS_OFFSET = 9'h dc;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_ALERT_THRESHOLD_OFFSET = 9'h e0;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_ALERT_SUMMARY_FAIL_COUNTS_OFFSET = 9'h e4;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_ALERT_FAIL_COUNTS_OFFSET = 9'h e8;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_EXTHT_FAIL_COUNTS_OFFSET = 9'h ec;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_FW_OV_CONTROL_OFFSET = 9'h f0;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_FW_OV_SHA3_START_OFFSET = 9'h f4;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_FW_OV_WR_FIFO_FULL_OFFSET = 9'h f8;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_FW_OV_RD_FIFO_OVERFLOW_OFFSET = 9'h fc;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_FW_OV_RD_DATA_OFFSET = 9'h 100;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_FW_OV_WR_DATA_OFFSET = 9'h 104;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_OBSERVE_FIFO_THRESH_OFFSET = 9'h 108;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_OBSERVE_FIFO_DEPTH_OFFSET = 9'h 10c;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_DEBUG_STATUS_OFFSET = 9'h 110;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_RECOV_ALERT_STS_OFFSET = 9'h 114;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_ERR_CODE_OFFSET = 9'h 118;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_ERR_CODE_TEST_OFFSET = 9'h 11c;
+  parameter logic [BlockAw-1:0] ENTROPY_SRC_MAIN_SM_STATE_OFFSET = 9'h 120;
 
   // Reset values for hwext registers and their fields
   parameter logic [3:0] ENTROPY_SRC_INTR_TEST_RESVAL = 4'h 0;
@@ -895,6 +900,11 @@ package entropy_src_reg_pkg;
 
   // Register index
   typedef enum int {
+    ENTROPY_SRC_CIP_ID,
+    ENTROPY_SRC_REVISION,
+    ENTROPY_SRC_PARAMETER_BLOCK_TYPE,
+    ENTROPY_SRC_PARAMETER_BLOCK_LENGTH,
+    ENTROPY_SRC_NEXT_PARAMETER_BLOCK,
     ENTROPY_SRC_INTR_STATE,
     ENTROPY_SRC_INTR_ENABLE,
     ENTROPY_SRC_INTR_TEST,
@@ -955,64 +965,69 @@ package entropy_src_reg_pkg;
   } entropy_src_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] ENTROPY_SRC_PERMIT [57] = '{
-    4'b 0001, // index[ 0] ENTROPY_SRC_INTR_STATE
-    4'b 0001, // index[ 1] ENTROPY_SRC_INTR_ENABLE
-    4'b 0001, // index[ 2] ENTROPY_SRC_INTR_TEST
-    4'b 0001, // index[ 3] ENTROPY_SRC_ALERT_TEST
-    4'b 0001, // index[ 4] ENTROPY_SRC_ME_REGWEN
-    4'b 0001, // index[ 5] ENTROPY_SRC_SW_REGUPD
-    4'b 0001, // index[ 6] ENTROPY_SRC_REGWEN
-    4'b 0111, // index[ 7] ENTROPY_SRC_REV
-    4'b 0001, // index[ 8] ENTROPY_SRC_MODULE_ENABLE
-    4'b 1111, // index[ 9] ENTROPY_SRC_CONF
-    4'b 0001, // index[10] ENTROPY_SRC_ENTROPY_CONTROL
-    4'b 1111, // index[11] ENTROPY_SRC_ENTROPY_DATA
-    4'b 1111, // index[12] ENTROPY_SRC_HEALTH_TEST_WINDOWS
-    4'b 1111, // index[13] ENTROPY_SRC_REPCNT_THRESHOLDS
-    4'b 1111, // index[14] ENTROPY_SRC_REPCNTS_THRESHOLDS
-    4'b 1111, // index[15] ENTROPY_SRC_ADAPTP_HI_THRESHOLDS
-    4'b 1111, // index[16] ENTROPY_SRC_ADAPTP_LO_THRESHOLDS
-    4'b 1111, // index[17] ENTROPY_SRC_BUCKET_THRESHOLDS
-    4'b 1111, // index[18] ENTROPY_SRC_MARKOV_HI_THRESHOLDS
-    4'b 1111, // index[19] ENTROPY_SRC_MARKOV_LO_THRESHOLDS
-    4'b 1111, // index[20] ENTROPY_SRC_EXTHT_HI_THRESHOLDS
-    4'b 1111, // index[21] ENTROPY_SRC_EXTHT_LO_THRESHOLDS
-    4'b 1111, // index[22] ENTROPY_SRC_REPCNT_HI_WATERMARKS
-    4'b 1111, // index[23] ENTROPY_SRC_REPCNTS_HI_WATERMARKS
-    4'b 1111, // index[24] ENTROPY_SRC_ADAPTP_HI_WATERMARKS
-    4'b 1111, // index[25] ENTROPY_SRC_ADAPTP_LO_WATERMARKS
-    4'b 1111, // index[26] ENTROPY_SRC_EXTHT_HI_WATERMARKS
-    4'b 1111, // index[27] ENTROPY_SRC_EXTHT_LO_WATERMARKS
-    4'b 1111, // index[28] ENTROPY_SRC_BUCKET_HI_WATERMARKS
-    4'b 1111, // index[29] ENTROPY_SRC_MARKOV_HI_WATERMARKS
-    4'b 1111, // index[30] ENTROPY_SRC_MARKOV_LO_WATERMARKS
-    4'b 1111, // index[31] ENTROPY_SRC_REPCNT_TOTAL_FAILS
-    4'b 1111, // index[32] ENTROPY_SRC_REPCNTS_TOTAL_FAILS
-    4'b 1111, // index[33] ENTROPY_SRC_ADAPTP_HI_TOTAL_FAILS
-    4'b 1111, // index[34] ENTROPY_SRC_ADAPTP_LO_TOTAL_FAILS
-    4'b 1111, // index[35] ENTROPY_SRC_BUCKET_TOTAL_FAILS
-    4'b 1111, // index[36] ENTROPY_SRC_MARKOV_HI_TOTAL_FAILS
-    4'b 1111, // index[37] ENTROPY_SRC_MARKOV_LO_TOTAL_FAILS
-    4'b 1111, // index[38] ENTROPY_SRC_EXTHT_HI_TOTAL_FAILS
-    4'b 1111, // index[39] ENTROPY_SRC_EXTHT_LO_TOTAL_FAILS
-    4'b 1111, // index[40] ENTROPY_SRC_ALERT_THRESHOLD
-    4'b 0011, // index[41] ENTROPY_SRC_ALERT_SUMMARY_FAIL_COUNTS
-    4'b 1111, // index[42] ENTROPY_SRC_ALERT_FAIL_COUNTS
-    4'b 0001, // index[43] ENTROPY_SRC_EXTHT_FAIL_COUNTS
-    4'b 0001, // index[44] ENTROPY_SRC_FW_OV_CONTROL
-    4'b 0001, // index[45] ENTROPY_SRC_FW_OV_SHA3_START
-    4'b 0001, // index[46] ENTROPY_SRC_FW_OV_WR_FIFO_FULL
-    4'b 0001, // index[47] ENTROPY_SRC_FW_OV_RD_FIFO_OVERFLOW
-    4'b 1111, // index[48] ENTROPY_SRC_FW_OV_RD_DATA
-    4'b 1111, // index[49] ENTROPY_SRC_FW_OV_WR_DATA
-    4'b 0001, // index[50] ENTROPY_SRC_OBSERVE_FIFO_THRESH
-    4'b 0001, // index[51] ENTROPY_SRC_OBSERVE_FIFO_DEPTH
-    4'b 0111, // index[52] ENTROPY_SRC_DEBUG_STATUS
-    4'b 0111, // index[53] ENTROPY_SRC_RECOV_ALERT_STS
-    4'b 1111, // index[54] ENTROPY_SRC_ERR_CODE
-    4'b 0001, // index[55] ENTROPY_SRC_ERR_CODE_TEST
-    4'b 0011  // index[56] ENTROPY_SRC_MAIN_SM_STATE
+  parameter logic [3:0] ENTROPY_SRC_PERMIT [62] = '{
+    4'b 1111, // index[ 0] ENTROPY_SRC_CIP_ID
+    4'b 1111, // index[ 1] ENTROPY_SRC_REVISION
+    4'b 1111, // index[ 2] ENTROPY_SRC_PARAMETER_BLOCK_TYPE
+    4'b 1111, // index[ 3] ENTROPY_SRC_PARAMETER_BLOCK_LENGTH
+    4'b 1111, // index[ 4] ENTROPY_SRC_NEXT_PARAMETER_BLOCK
+    4'b 0001, // index[ 5] ENTROPY_SRC_INTR_STATE
+    4'b 0001, // index[ 6] ENTROPY_SRC_INTR_ENABLE
+    4'b 0001, // index[ 7] ENTROPY_SRC_INTR_TEST
+    4'b 0001, // index[ 8] ENTROPY_SRC_ALERT_TEST
+    4'b 0001, // index[ 9] ENTROPY_SRC_ME_REGWEN
+    4'b 0001, // index[10] ENTROPY_SRC_SW_REGUPD
+    4'b 0001, // index[11] ENTROPY_SRC_REGWEN
+    4'b 0111, // index[12] ENTROPY_SRC_REV
+    4'b 0001, // index[13] ENTROPY_SRC_MODULE_ENABLE
+    4'b 1111, // index[14] ENTROPY_SRC_CONF
+    4'b 0001, // index[15] ENTROPY_SRC_ENTROPY_CONTROL
+    4'b 1111, // index[16] ENTROPY_SRC_ENTROPY_DATA
+    4'b 1111, // index[17] ENTROPY_SRC_HEALTH_TEST_WINDOWS
+    4'b 1111, // index[18] ENTROPY_SRC_REPCNT_THRESHOLDS
+    4'b 1111, // index[19] ENTROPY_SRC_REPCNTS_THRESHOLDS
+    4'b 1111, // index[20] ENTROPY_SRC_ADAPTP_HI_THRESHOLDS
+    4'b 1111, // index[21] ENTROPY_SRC_ADAPTP_LO_THRESHOLDS
+    4'b 1111, // index[22] ENTROPY_SRC_BUCKET_THRESHOLDS
+    4'b 1111, // index[23] ENTROPY_SRC_MARKOV_HI_THRESHOLDS
+    4'b 1111, // index[24] ENTROPY_SRC_MARKOV_LO_THRESHOLDS
+    4'b 1111, // index[25] ENTROPY_SRC_EXTHT_HI_THRESHOLDS
+    4'b 1111, // index[26] ENTROPY_SRC_EXTHT_LO_THRESHOLDS
+    4'b 1111, // index[27] ENTROPY_SRC_REPCNT_HI_WATERMARKS
+    4'b 1111, // index[28] ENTROPY_SRC_REPCNTS_HI_WATERMARKS
+    4'b 1111, // index[29] ENTROPY_SRC_ADAPTP_HI_WATERMARKS
+    4'b 1111, // index[30] ENTROPY_SRC_ADAPTP_LO_WATERMARKS
+    4'b 1111, // index[31] ENTROPY_SRC_EXTHT_HI_WATERMARKS
+    4'b 1111, // index[32] ENTROPY_SRC_EXTHT_LO_WATERMARKS
+    4'b 1111, // index[33] ENTROPY_SRC_BUCKET_HI_WATERMARKS
+    4'b 1111, // index[34] ENTROPY_SRC_MARKOV_HI_WATERMARKS
+    4'b 1111, // index[35] ENTROPY_SRC_MARKOV_LO_WATERMARKS
+    4'b 1111, // index[36] ENTROPY_SRC_REPCNT_TOTAL_FAILS
+    4'b 1111, // index[37] ENTROPY_SRC_REPCNTS_TOTAL_FAILS
+    4'b 1111, // index[38] ENTROPY_SRC_ADAPTP_HI_TOTAL_FAILS
+    4'b 1111, // index[39] ENTROPY_SRC_ADAPTP_LO_TOTAL_FAILS
+    4'b 1111, // index[40] ENTROPY_SRC_BUCKET_TOTAL_FAILS
+    4'b 1111, // index[41] ENTROPY_SRC_MARKOV_HI_TOTAL_FAILS
+    4'b 1111, // index[42] ENTROPY_SRC_MARKOV_LO_TOTAL_FAILS
+    4'b 1111, // index[43] ENTROPY_SRC_EXTHT_HI_TOTAL_FAILS
+    4'b 1111, // index[44] ENTROPY_SRC_EXTHT_LO_TOTAL_FAILS
+    4'b 1111, // index[45] ENTROPY_SRC_ALERT_THRESHOLD
+    4'b 0011, // index[46] ENTROPY_SRC_ALERT_SUMMARY_FAIL_COUNTS
+    4'b 1111, // index[47] ENTROPY_SRC_ALERT_FAIL_COUNTS
+    4'b 0001, // index[48] ENTROPY_SRC_EXTHT_FAIL_COUNTS
+    4'b 0001, // index[49] ENTROPY_SRC_FW_OV_CONTROL
+    4'b 0001, // index[50] ENTROPY_SRC_FW_OV_SHA3_START
+    4'b 0001, // index[51] ENTROPY_SRC_FW_OV_WR_FIFO_FULL
+    4'b 0001, // index[52] ENTROPY_SRC_FW_OV_RD_FIFO_OVERFLOW
+    4'b 1111, // index[53] ENTROPY_SRC_FW_OV_RD_DATA
+    4'b 1111, // index[54] ENTROPY_SRC_FW_OV_WR_DATA
+    4'b 0001, // index[55] ENTROPY_SRC_OBSERVE_FIFO_THRESH
+    4'b 0001, // index[56] ENTROPY_SRC_OBSERVE_FIFO_DEPTH
+    4'b 0111, // index[57] ENTROPY_SRC_DEBUG_STATUS
+    4'b 0111, // index[58] ENTROPY_SRC_RECOV_ALERT_STS
+    4'b 1111, // index[59] ENTROPY_SRC_ERR_CODE
+    4'b 0001, // index[60] ENTROPY_SRC_ERR_CODE_TEST
+    4'b 0011  // index[61] ENTROPY_SRC_MAIN_SM_STATE
   };
 
 endpackage

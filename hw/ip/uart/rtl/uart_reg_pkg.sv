@@ -10,7 +10,7 @@ package uart_reg_pkg;
   parameter int NumAlerts = 1;
 
   // Address widths within the block
-  parameter int BlockAw = 6;
+  parameter int BlockAw = 7;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -324,19 +324,24 @@ package uart_reg_pkg;
   } uart_hw2reg_t;
 
   // Register offsets
-  parameter logic [BlockAw-1:0] UART_INTR_STATE_OFFSET = 6'h 0;
-  parameter logic [BlockAw-1:0] UART_INTR_ENABLE_OFFSET = 6'h 4;
-  parameter logic [BlockAw-1:0] UART_INTR_TEST_OFFSET = 6'h 8;
-  parameter logic [BlockAw-1:0] UART_ALERT_TEST_OFFSET = 6'h c;
-  parameter logic [BlockAw-1:0] UART_CTRL_OFFSET = 6'h 10;
-  parameter logic [BlockAw-1:0] UART_STATUS_OFFSET = 6'h 14;
-  parameter logic [BlockAw-1:0] UART_RDATA_OFFSET = 6'h 18;
-  parameter logic [BlockAw-1:0] UART_WDATA_OFFSET = 6'h 1c;
-  parameter logic [BlockAw-1:0] UART_FIFO_CTRL_OFFSET = 6'h 20;
-  parameter logic [BlockAw-1:0] UART_FIFO_STATUS_OFFSET = 6'h 24;
-  parameter logic [BlockAw-1:0] UART_OVRD_OFFSET = 6'h 28;
-  parameter logic [BlockAw-1:0] UART_VAL_OFFSET = 6'h 2c;
-  parameter logic [BlockAw-1:0] UART_TIMEOUT_CTRL_OFFSET = 6'h 30;
+  parameter logic [BlockAw-1:0] UART_CIP_ID_OFFSET = 7'h 0;
+  parameter logic [BlockAw-1:0] UART_REVISION_OFFSET = 7'h 4;
+  parameter logic [BlockAw-1:0] UART_PARAMETER_BLOCK_TYPE_OFFSET = 7'h 8;
+  parameter logic [BlockAw-1:0] UART_PARAMETER_BLOCK_LENGTH_OFFSET = 7'h c;
+  parameter logic [BlockAw-1:0] UART_NEXT_PARAMETER_BLOCK_OFFSET = 7'h 10;
+  parameter logic [BlockAw-1:0] UART_INTR_STATE_OFFSET = 7'h 40;
+  parameter logic [BlockAw-1:0] UART_INTR_ENABLE_OFFSET = 7'h 44;
+  parameter logic [BlockAw-1:0] UART_INTR_TEST_OFFSET = 7'h 48;
+  parameter logic [BlockAw-1:0] UART_ALERT_TEST_OFFSET = 7'h 4c;
+  parameter logic [BlockAw-1:0] UART_CTRL_OFFSET = 7'h 50;
+  parameter logic [BlockAw-1:0] UART_STATUS_OFFSET = 7'h 54;
+  parameter logic [BlockAw-1:0] UART_RDATA_OFFSET = 7'h 58;
+  parameter logic [BlockAw-1:0] UART_WDATA_OFFSET = 7'h 5c;
+  parameter logic [BlockAw-1:0] UART_FIFO_CTRL_OFFSET = 7'h 60;
+  parameter logic [BlockAw-1:0] UART_FIFO_STATUS_OFFSET = 7'h 64;
+  parameter logic [BlockAw-1:0] UART_OVRD_OFFSET = 7'h 68;
+  parameter logic [BlockAw-1:0] UART_VAL_OFFSET = 7'h 6c;
+  parameter logic [BlockAw-1:0] UART_TIMEOUT_CTRL_OFFSET = 7'h 70;
 
   // Reset values for hwext registers and their fields
   parameter logic [7:0] UART_INTR_TEST_RESVAL = 8'h 0;
@@ -361,6 +366,11 @@ package uart_reg_pkg;
 
   // Register index
   typedef enum int {
+    UART_CIP_ID,
+    UART_REVISION,
+    UART_PARAMETER_BLOCK_TYPE,
+    UART_PARAMETER_BLOCK_LENGTH,
+    UART_NEXT_PARAMETER_BLOCK,
     UART_INTR_STATE,
     UART_INTR_ENABLE,
     UART_INTR_TEST,
@@ -377,20 +387,25 @@ package uart_reg_pkg;
   } uart_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] UART_PERMIT [13] = '{
-    4'b 0001, // index[ 0] UART_INTR_STATE
-    4'b 0001, // index[ 1] UART_INTR_ENABLE
-    4'b 0001, // index[ 2] UART_INTR_TEST
-    4'b 0001, // index[ 3] UART_ALERT_TEST
-    4'b 1111, // index[ 4] UART_CTRL
-    4'b 0001, // index[ 5] UART_STATUS
-    4'b 0001, // index[ 6] UART_RDATA
-    4'b 0001, // index[ 7] UART_WDATA
-    4'b 0001, // index[ 8] UART_FIFO_CTRL
-    4'b 0111, // index[ 9] UART_FIFO_STATUS
-    4'b 0001, // index[10] UART_OVRD
-    4'b 0011, // index[11] UART_VAL
-    4'b 1111  // index[12] UART_TIMEOUT_CTRL
+  parameter logic [3:0] UART_PERMIT [18] = '{
+    4'b 1111, // index[ 0] UART_CIP_ID
+    4'b 1111, // index[ 1] UART_REVISION
+    4'b 1111, // index[ 2] UART_PARAMETER_BLOCK_TYPE
+    4'b 1111, // index[ 3] UART_PARAMETER_BLOCK_LENGTH
+    4'b 1111, // index[ 4] UART_NEXT_PARAMETER_BLOCK
+    4'b 0001, // index[ 5] UART_INTR_STATE
+    4'b 0001, // index[ 6] UART_INTR_ENABLE
+    4'b 0001, // index[ 7] UART_INTR_TEST
+    4'b 0001, // index[ 8] UART_ALERT_TEST
+    4'b 1111, // index[ 9] UART_CTRL
+    4'b 0001, // index[10] UART_STATUS
+    4'b 0001, // index[11] UART_RDATA
+    4'b 0001, // index[12] UART_WDATA
+    4'b 0001, // index[13] UART_FIFO_CTRL
+    4'b 0111, // index[14] UART_FIFO_STATUS
+    4'b 0001, // index[15] UART_OVRD
+    4'b 0011, // index[16] UART_VAL
+    4'b 1111  // index[17] UART_TIMEOUT_CTRL
   };
 
 endpackage

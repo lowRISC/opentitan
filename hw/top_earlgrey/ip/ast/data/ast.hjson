@@ -6,11 +6,15 @@
 // *Module Description: Analog Sensors Top Registers
 //#############################################################################
 { name:               "ast",
+  no_auto_id_regs:    "True", # TODO: these regs should be added
+  no_auto_feat_regs:  "True", # TODO: these regs should be added
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "34",
   design_spec:        "../doc",
   dv_doc:             "",
   hw_checklist:       "",
   sw_checklist:       "",
-  version:            "1.0",
+  version:            "2.0.0",
   life_stage:         "L1",
   design_stage:       "D2",
   verification_stage: "V2S",

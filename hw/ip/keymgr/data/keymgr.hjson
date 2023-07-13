@@ -14,13 +14,15 @@
 
   [pigweed-open-dice]: https://pigweed.googlesource.com/open-dice/+/HEAD/docs/specification.md#Open-Profile-for-DICE
   '''
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "12",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_keymgr",
   revisions: [
     {
-      version:            "1.0",
+      version:            "2.0.0",
       life_stage:         "L1",
       design_stage:       "D2S",
       verification_stage: "V2S",

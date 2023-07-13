@@ -13,13 +13,15 @@
   RISC-V Timer provides TileLink Uncached Light (TL-UL) memory-mapped registers `mtime` and `mtimecmp` which can be used as the machine-mode timer registers as defined in the RISC-V privileged spec v1.12.
   Additional parameters can be used to add optional features, such as prescaler, step increment size, threshold-triggered interrupts, additional 64-bit timers, and support for multiple independent harts.
   '''
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "25",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "sw/device/lib/dif/dif_rv_timer",
   revisions: [
     {
-      version:            "0.5",
+      version:            "0.5.0",
       life_stage:         "L2",
       design_stage:       "D3",
       verification_stage: "V3",
@@ -27,7 +29,7 @@
       notes:              ""
     }
     {
-      version:            "1.0",
+      version:            "2.0.0",
       life_stage:         "L1",
       design_stage:       "D3",
       verification_stage: "V2",

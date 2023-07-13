@@ -10,11 +10,13 @@
   It is programmable to accommodate actions triggered by presses of buttons and keyboard key combinations, to control the duration of reset pulses, and to trigger reset or wake-up requests that go to Reset Manager and to Power Manager.
   System Reset Controller is part of the always-on power and clock domain.
   '''
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "29",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_sysrst_ctrl",
-  version:            "1.0",
+  version:            "2.0.0",
   life_stage:         "L1",
   design_stage:       "D3",
   verification_stage: "V2S",

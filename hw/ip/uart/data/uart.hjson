@@ -12,13 +12,15 @@
   For compatibility with a variety of different targets and applications, the baud rate is software programmable and bit rates of up to 1 Mbit/s are supported.
   The data format is restricted to 8 bits, reducing the complexity and cost, with optional parity for robustness against transmission errors.
   '''
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "30",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_uart",
   revisions: [
   {
-    version:            "1.0",
+    version:            "1.0.0",
     life_stage:         "L2",
     design_stage:       "D3",
     verification_stage: "V3",
@@ -26,7 +28,7 @@
     notes:              ""
   }
   {
-    version:            "1.1",
+    version:            "2.0.0",
     life_stage:         "L1",
     design_stage:       "D3",
     verification_stage: "V2S",

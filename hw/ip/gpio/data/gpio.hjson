@@ -11,13 +11,15 @@
   In the input direction, software can read the contents of any of the GPIO peripheral inputs, and it can request the detection of an interrupt event for any of the 32 bits in a configurable manner for detecting rising edge, falling edge, or active low/high input.
   A noise filter is available through configuration for any of the inputs.
   '''
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "9",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_gpio",
   revisions: [
     {
-      version:            "1.0",
+      version:            "1.0.0",
       life_stage:         "L2",
       design_stage:       "D3",
       verification_stage: "V3",
@@ -25,7 +27,7 @@
       notes:              "",
     }
     {
-      version:            "1.1",
+      version:            "2.0.0",
       life_stage:         "L1",
       design_stage:       "D3",
       verification_stage: "V2S",

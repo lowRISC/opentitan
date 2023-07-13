@@ -13,7 +13,7 @@ package sensor_ctrl_reg_pkg;
   parameter int NumIoRails = 2;
 
   // Address widths within the block
-  parameter int BlockAw = 6;
+  parameter int BlockAw = 7;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -128,16 +128,21 @@ package sensor_ctrl_reg_pkg;
   } sensor_ctrl_hw2reg_t;
 
   // Register offsets
-  parameter logic [BlockAw-1:0] SENSOR_CTRL_INTR_STATE_OFFSET = 6'h 0;
-  parameter logic [BlockAw-1:0] SENSOR_CTRL_INTR_ENABLE_OFFSET = 6'h 4;
-  parameter logic [BlockAw-1:0] SENSOR_CTRL_INTR_TEST_OFFSET = 6'h 8;
-  parameter logic [BlockAw-1:0] SENSOR_CTRL_ALERT_TEST_OFFSET = 6'h c;
-  parameter logic [BlockAw-1:0] SENSOR_CTRL_CFG_REGWEN_OFFSET = 6'h 10;
-  parameter logic [BlockAw-1:0] SENSOR_CTRL_ALERT_TRIG_OFFSET = 6'h 14;
-  parameter logic [BlockAw-1:0] SENSOR_CTRL_FATAL_ALERT_EN_OFFSET = 6'h 18;
-  parameter logic [BlockAw-1:0] SENSOR_CTRL_RECOV_ALERT_OFFSET = 6'h 1c;
-  parameter logic [BlockAw-1:0] SENSOR_CTRL_FATAL_ALERT_OFFSET = 6'h 20;
-  parameter logic [BlockAw-1:0] SENSOR_CTRL_STATUS_OFFSET = 6'h 24;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_CIP_ID_OFFSET = 7'h 0;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_REVISION_OFFSET = 7'h 4;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_PARAMETER_BLOCK_TYPE_OFFSET = 7'h 8;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_PARAMETER_BLOCK_LENGTH_OFFSET = 7'h c;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_NEXT_PARAMETER_BLOCK_OFFSET = 7'h 10;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_INTR_STATE_OFFSET = 7'h 40;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_INTR_ENABLE_OFFSET = 7'h 44;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_INTR_TEST_OFFSET = 7'h 48;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_ALERT_TEST_OFFSET = 7'h 4c;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_CFG_REGWEN_OFFSET = 7'h 50;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_ALERT_TRIG_OFFSET = 7'h 54;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_FATAL_ALERT_EN_OFFSET = 7'h 58;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_RECOV_ALERT_OFFSET = 7'h 5c;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_FATAL_ALERT_OFFSET = 7'h 60;
+  parameter logic [BlockAw-1:0] SENSOR_CTRL_STATUS_OFFSET = 7'h 64;
 
   // Reset values for hwext registers and their fields
   parameter logic [1:0] SENSOR_CTRL_INTR_TEST_RESVAL = 2'h 0;
@@ -149,6 +154,11 @@ package sensor_ctrl_reg_pkg;
 
   // Register index
   typedef enum int {
+    SENSOR_CTRL_CIP_ID,
+    SENSOR_CTRL_REVISION,
+    SENSOR_CTRL_PARAMETER_BLOCK_TYPE,
+    SENSOR_CTRL_PARAMETER_BLOCK_LENGTH,
+    SENSOR_CTRL_NEXT_PARAMETER_BLOCK,
     SENSOR_CTRL_INTR_STATE,
     SENSOR_CTRL_INTR_ENABLE,
     SENSOR_CTRL_INTR_TEST,
@@ -162,17 +172,22 @@ package sensor_ctrl_reg_pkg;
   } sensor_ctrl_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] SENSOR_CTRL_PERMIT [10] = '{
-    4'b 0001, // index[0] SENSOR_CTRL_INTR_STATE
-    4'b 0001, // index[1] SENSOR_CTRL_INTR_ENABLE
-    4'b 0001, // index[2] SENSOR_CTRL_INTR_TEST
-    4'b 0001, // index[3] SENSOR_CTRL_ALERT_TEST
-    4'b 0001, // index[4] SENSOR_CTRL_CFG_REGWEN
-    4'b 0011, // index[5] SENSOR_CTRL_ALERT_TRIG
-    4'b 0011, // index[6] SENSOR_CTRL_FATAL_ALERT_EN
-    4'b 0011, // index[7] SENSOR_CTRL_RECOV_ALERT
-    4'b 0011, // index[8] SENSOR_CTRL_FATAL_ALERT
-    4'b 0001  // index[9] SENSOR_CTRL_STATUS
+  parameter logic [3:0] SENSOR_CTRL_PERMIT [15] = '{
+    4'b 1111, // index[ 0] SENSOR_CTRL_CIP_ID
+    4'b 1111, // index[ 1] SENSOR_CTRL_REVISION
+    4'b 1111, // index[ 2] SENSOR_CTRL_PARAMETER_BLOCK_TYPE
+    4'b 1111, // index[ 3] SENSOR_CTRL_PARAMETER_BLOCK_LENGTH
+    4'b 1111, // index[ 4] SENSOR_CTRL_NEXT_PARAMETER_BLOCK
+    4'b 0001, // index[ 5] SENSOR_CTRL_INTR_STATE
+    4'b 0001, // index[ 6] SENSOR_CTRL_INTR_ENABLE
+    4'b 0001, // index[ 7] SENSOR_CTRL_INTR_TEST
+    4'b 0001, // index[ 8] SENSOR_CTRL_ALERT_TEST
+    4'b 0001, // index[ 9] SENSOR_CTRL_CFG_REGWEN
+    4'b 0011, // index[10] SENSOR_CTRL_ALERT_TRIG
+    4'b 0011, // index[11] SENSOR_CTRL_FATAL_ALERT_EN
+    4'b 0011, // index[12] SENSOR_CTRL_RECOV_ALERT
+    4'b 0011, // index[13] SENSOR_CTRL_FATAL_ALERT
+    4'b 0001  // index[14] SENSOR_CTRL_STATUS
   };
 
 endpackage

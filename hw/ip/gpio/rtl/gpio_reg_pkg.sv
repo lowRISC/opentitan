@@ -10,7 +10,7 @@ package gpio_reg_pkg;
   parameter int NumAlerts = 1;
 
   // Address widths within the block
-  parameter int BlockAw = 6;
+  parameter int BlockAw = 7;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -194,22 +194,27 @@ package gpio_reg_pkg;
   } gpio_hw2reg_t;
 
   // Register offsets
-  parameter logic [BlockAw-1:0] GPIO_INTR_STATE_OFFSET = 6'h 0;
-  parameter logic [BlockAw-1:0] GPIO_INTR_ENABLE_OFFSET = 6'h 4;
-  parameter logic [BlockAw-1:0] GPIO_INTR_TEST_OFFSET = 6'h 8;
-  parameter logic [BlockAw-1:0] GPIO_ALERT_TEST_OFFSET = 6'h c;
-  parameter logic [BlockAw-1:0] GPIO_DATA_IN_OFFSET = 6'h 10;
-  parameter logic [BlockAw-1:0] GPIO_DIRECT_OUT_OFFSET = 6'h 14;
-  parameter logic [BlockAw-1:0] GPIO_MASKED_OUT_LOWER_OFFSET = 6'h 18;
-  parameter logic [BlockAw-1:0] GPIO_MASKED_OUT_UPPER_OFFSET = 6'h 1c;
-  parameter logic [BlockAw-1:0] GPIO_DIRECT_OE_OFFSET = 6'h 20;
-  parameter logic [BlockAw-1:0] GPIO_MASKED_OE_LOWER_OFFSET = 6'h 24;
-  parameter logic [BlockAw-1:0] GPIO_MASKED_OE_UPPER_OFFSET = 6'h 28;
-  parameter logic [BlockAw-1:0] GPIO_INTR_CTRL_EN_RISING_OFFSET = 6'h 2c;
-  parameter logic [BlockAw-1:0] GPIO_INTR_CTRL_EN_FALLING_OFFSET = 6'h 30;
-  parameter logic [BlockAw-1:0] GPIO_INTR_CTRL_EN_LVLHIGH_OFFSET = 6'h 34;
-  parameter logic [BlockAw-1:0] GPIO_INTR_CTRL_EN_LVLLOW_OFFSET = 6'h 38;
-  parameter logic [BlockAw-1:0] GPIO_CTRL_EN_INPUT_FILTER_OFFSET = 6'h 3c;
+  parameter logic [BlockAw-1:0] GPIO_CIP_ID_OFFSET = 7'h 0;
+  parameter logic [BlockAw-1:0] GPIO_REVISION_OFFSET = 7'h 4;
+  parameter logic [BlockAw-1:0] GPIO_PARAMETER_BLOCK_TYPE_OFFSET = 7'h 8;
+  parameter logic [BlockAw-1:0] GPIO_PARAMETER_BLOCK_LENGTH_OFFSET = 7'h c;
+  parameter logic [BlockAw-1:0] GPIO_NEXT_PARAMETER_BLOCK_OFFSET = 7'h 10;
+  parameter logic [BlockAw-1:0] GPIO_INTR_STATE_OFFSET = 7'h 40;
+  parameter logic [BlockAw-1:0] GPIO_INTR_ENABLE_OFFSET = 7'h 44;
+  parameter logic [BlockAw-1:0] GPIO_INTR_TEST_OFFSET = 7'h 48;
+  parameter logic [BlockAw-1:0] GPIO_ALERT_TEST_OFFSET = 7'h 4c;
+  parameter logic [BlockAw-1:0] GPIO_DATA_IN_OFFSET = 7'h 50;
+  parameter logic [BlockAw-1:0] GPIO_DIRECT_OUT_OFFSET = 7'h 54;
+  parameter logic [BlockAw-1:0] GPIO_MASKED_OUT_LOWER_OFFSET = 7'h 58;
+  parameter logic [BlockAw-1:0] GPIO_MASKED_OUT_UPPER_OFFSET = 7'h 5c;
+  parameter logic [BlockAw-1:0] GPIO_DIRECT_OE_OFFSET = 7'h 60;
+  parameter logic [BlockAw-1:0] GPIO_MASKED_OE_LOWER_OFFSET = 7'h 64;
+  parameter logic [BlockAw-1:0] GPIO_MASKED_OE_UPPER_OFFSET = 7'h 68;
+  parameter logic [BlockAw-1:0] GPIO_INTR_CTRL_EN_RISING_OFFSET = 7'h 6c;
+  parameter logic [BlockAw-1:0] GPIO_INTR_CTRL_EN_FALLING_OFFSET = 7'h 70;
+  parameter logic [BlockAw-1:0] GPIO_INTR_CTRL_EN_LVLHIGH_OFFSET = 7'h 74;
+  parameter logic [BlockAw-1:0] GPIO_INTR_CTRL_EN_LVLLOW_OFFSET = 7'h 78;
+  parameter logic [BlockAw-1:0] GPIO_CTRL_EN_INPUT_FILTER_OFFSET = 7'h 7c;
 
   // Reset values for hwext registers and their fields
   parameter logic [31:0] GPIO_INTR_TEST_RESVAL = 32'h 0;
@@ -225,6 +230,11 @@ package gpio_reg_pkg;
 
   // Register index
   typedef enum int {
+    GPIO_CIP_ID,
+    GPIO_REVISION,
+    GPIO_PARAMETER_BLOCK_TYPE,
+    GPIO_PARAMETER_BLOCK_LENGTH,
+    GPIO_NEXT_PARAMETER_BLOCK,
     GPIO_INTR_STATE,
     GPIO_INTR_ENABLE,
     GPIO_INTR_TEST,
@@ -244,23 +254,28 @@ package gpio_reg_pkg;
   } gpio_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] GPIO_PERMIT [16] = '{
-    4'b 1111, // index[ 0] GPIO_INTR_STATE
-    4'b 1111, // index[ 1] GPIO_INTR_ENABLE
-    4'b 1111, // index[ 2] GPIO_INTR_TEST
-    4'b 0001, // index[ 3] GPIO_ALERT_TEST
-    4'b 1111, // index[ 4] GPIO_DATA_IN
-    4'b 1111, // index[ 5] GPIO_DIRECT_OUT
-    4'b 1111, // index[ 6] GPIO_MASKED_OUT_LOWER
-    4'b 1111, // index[ 7] GPIO_MASKED_OUT_UPPER
-    4'b 1111, // index[ 8] GPIO_DIRECT_OE
-    4'b 1111, // index[ 9] GPIO_MASKED_OE_LOWER
-    4'b 1111, // index[10] GPIO_MASKED_OE_UPPER
-    4'b 1111, // index[11] GPIO_INTR_CTRL_EN_RISING
-    4'b 1111, // index[12] GPIO_INTR_CTRL_EN_FALLING
-    4'b 1111, // index[13] GPIO_INTR_CTRL_EN_LVLHIGH
-    4'b 1111, // index[14] GPIO_INTR_CTRL_EN_LVLLOW
-    4'b 1111  // index[15] GPIO_CTRL_EN_INPUT_FILTER
+  parameter logic [3:0] GPIO_PERMIT [21] = '{
+    4'b 1111, // index[ 0] GPIO_CIP_ID
+    4'b 1111, // index[ 1] GPIO_REVISION
+    4'b 1111, // index[ 2] GPIO_PARAMETER_BLOCK_TYPE
+    4'b 1111, // index[ 3] GPIO_PARAMETER_BLOCK_LENGTH
+    4'b 1111, // index[ 4] GPIO_NEXT_PARAMETER_BLOCK
+    4'b 1111, // index[ 5] GPIO_INTR_STATE
+    4'b 1111, // index[ 6] GPIO_INTR_ENABLE
+    4'b 1111, // index[ 7] GPIO_INTR_TEST
+    4'b 0001, // index[ 8] GPIO_ALERT_TEST
+    4'b 1111, // index[ 9] GPIO_DATA_IN
+    4'b 1111, // index[10] GPIO_DIRECT_OUT
+    4'b 1111, // index[11] GPIO_MASKED_OUT_LOWER
+    4'b 1111, // index[12] GPIO_MASKED_OUT_UPPER
+    4'b 1111, // index[13] GPIO_DIRECT_OE
+    4'b 1111, // index[14] GPIO_MASKED_OE_LOWER
+    4'b 1111, // index[15] GPIO_MASKED_OE_UPPER
+    4'b 1111, // index[16] GPIO_INTR_CTRL_EN_RISING
+    4'b 1111, // index[17] GPIO_INTR_CTRL_EN_FALLING
+    4'b 1111, // index[18] GPIO_INTR_CTRL_EN_LVLHIGH
+    4'b 1111, // index[19] GPIO_INTR_CTRL_EN_LVLLOW
+    4'b 1111  // index[20] GPIO_CTRL_EN_INPUT_FILTER
   };
 
 endpackage
