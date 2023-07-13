@@ -14,8 +14,11 @@ class aes_alert_reset_vseq extends aes_base_vseq;
   status_t aes_status;
   bit finished_all_msgs = 0;
   rand bit [$bits(aes_mode_e)-1:0] mal_error;
+  constraint mal_error_c { $countones(mal_error) > 1; }
   rand bit [$bits(lc_ctrl_pkg::lc_tx_t)-1:0] lc_esc;
+  constraint lc_esc_c { lc_esc != lc_ctrl_pkg::Off; }
   rand alert_test_t alert_test_value;
+  constraint alert_test_value_c { $countones(alert_test_value) > 1; }
 
   task body();
 
@@ -34,9 +37,6 @@ class aes_alert_reset_vseq extends aes_base_vseq;
             if (cfg.alert_reset_trigger == ShadowRegStorageErr) begin
               `uvm_info(`gfn, "Injecting storage error into shadowed main control register",
                   UVM_MEDIUM)
-              if (!(randomize(mal_error) with { $countones(mal_error) > 1; })) begin
-                `uvm_fatal(`gfn, "Randomization failed")
-              end
               if (!uvm_hdl_check_path(
                   "tb.dut.u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_mode.committed_q"
                   )) begin
@@ -56,17 +56,11 @@ class aes_alert_reset_vseq extends aes_base_vseq;
               wait(!cfg.under_reset);
             end else if (cfg.alert_reset_trigger == LcEscalate) begin
               `uvm_info(`gfn, "Triggering life cycle escalation", UVM_MEDIUM)
-              if (!(randomize(lc_esc) with { lc_esc != lc_ctrl_pkg::Off; })) begin
-                `uvm_fatal(`gfn, "Randomization failed")
-              end
                cfg.lc_escalate_vif.drive({lc_esc,1'b1});
                wait(!cfg.clk_rst_vif.rst_n);
                cfg.lc_escalate_vif.drive('0);
             end else if (cfg.alert_reset_trigger == AlertTest) begin
               `uvm_info(`gfn, "Writing alert test CSR", UVM_MEDIUM)
-              if (!(randomize(alert_test_value) with { $countones(alert_test_value) > 1; })) begin
-                `uvm_fatal(`gfn, "Randomization failed")
-              end
               csr_wr(.ptr(ral.alert_test), .value(alert_test_value), .blocking(1));
               // Wait to see the actual alert signal. Note that the DUT doesn't block even if the
               // fatal_fault alert has been triggered.
