@@ -43,6 +43,7 @@ filesets:
       - seq_lib/aes_ctr_fi_vseq.sv: {is_include_file: true}
       - seq_lib/aes_core_fi_vseq.sv: {is_include_file: true}
       - seq_lib/aes_readability_vseq.sv: {is_include_file: true}
+      - seq_lib/aes_stress_all_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

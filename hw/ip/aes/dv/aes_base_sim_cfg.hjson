@@ -33,10 +33,8 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/shadow_reg_errors_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
-                "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson"]
-                // TODO(#19025): Debug and enable stress_all test. Note that aes_stress
-                // covers most the functionality of stress_all already.
-                // "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
+                "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
 
   // Add additional tops for simulation.
   sim_tops: [ "aes_bind",
@@ -201,6 +199,18 @@
       uvm_test: aes_fi_test
       uvm_test_seq: aes_core_fi_vseq
       reseed: 70 // Test must cover 35 bins. Overseed by 2x to get reasonable coverage.
+    }
+    // This test runs several sequences back-to-back with random resets between the individual
+    // sequences. We shouldn't need many seeds here because aes_stress is the real stress test.
+    {
+      name: "aes_stress_all"
+      uvm_test_seq: "aes_stress_all_vseq"
+      reseed: 10
+    }
+    // A combination of aes_stress_all with random resets injected into the actual sequences.
+    {
+      name: "aes_stress_all_with_rand_reset"
+      reseed: 10
     }
   ]
 
