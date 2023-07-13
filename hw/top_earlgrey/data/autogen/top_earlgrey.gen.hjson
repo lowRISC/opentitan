@@ -7,7 +7,6 @@
 //
 // util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson \
 //                -o hw/top_earlgrey/ \
-//                --hjson-only \
 //                --rnd_cnst_seed 4881560218908238235
 {
   name: earlgrey
