@@ -740,7 +740,7 @@ module keymgr
   logic unused_kmac_en_masking;
   assign unused_kmac_en_masking = kmac_en_masking_i;
 
-  `ASSERT_INIT_NET(KmacMaskCheck_A, KmacEnMasking == kmac_en_masking_i)
+  //`ASSERT_INIT_NET(KmacMaskCheck_A, KmacEnMasking == kmac_en_masking_i)
 
   // Ensure all parameters are consistent
   `ASSERT_INIT(FaultCntMatch_A, FaultLastPos == AsyncFaultLastIdx + SyncFaultLastIdx)

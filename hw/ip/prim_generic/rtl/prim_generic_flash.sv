@@ -47,7 +47,7 @@ module prim_flash #(
   input logic [15:0] debug_flash_addr_i,
   input logic [75:0] debug_flash_wdata_i,
   input logic [75:0] debug_flash_wmask_i,
-  input logic        debug_mode_i, 
+  input logic        datapath_i, 
   output logic [7:0] fla_obs_o,
   input  devmode_i
 );
@@ -62,21 +62,21 @@ module prim_flash #(
   logic [NumBanks-1:0] init_busy;
   assign init_busy_o = |init_busy;
 
-  logic [NumBanks-1:0]       debug_mode;
+  logic [NumBanks-1:0]       datapath;
   logic [NumBanks-1:0]       debug_flash_write;
   logic [NumBanks-1:0]       debug_flash_req;
   logic [NumBanks-1:0][15:0] debug_flash_addr;
   logic [NumBanks-1:0][75:0] debug_flash_wdata;
   logic [NumBanks-1:0][75:0] debug_flash_wmask;
 
-  assign debug_mode[0]        = debug_mode_i;
+  assign datapath[0]          = datapath_i;
   assign debug_flash_write[0] = debug_flash_write_i;
   assign debug_flash_req[0]   = debug_flash_req_i;
   assign debug_flash_addr[0]  = debug_flash_addr_i;
   assign debug_flash_wdata[0] = debug_flash_wdata_i;
   assign debug_flash_wmask[0] = debug_flash_wmask_i;
 
-  assign debug_mode[1]        = '0;
+  assign datapath[1]          = '0;
   assign debug_flash_write[1] = '0;
   assign debug_flash_req[1]   = '0;
   assign debug_flash_addr[1]  = '0;
@@ -122,7 +122,7 @@ module prim_flash #(
       .debug_flash_addr_i(debug_flash_addr[bank]),  
       .debug_flash_wdata_i(debug_flash_wdata[bank]),
       .debug_flash_wmask_i(debug_flash_wmask[bank]), 
-      .debug_mode_i(debug_mode[bank]),
+      .datapath_i(datapath[bank]),
       .flash_power_ready_h_i,
       .flash_power_down_h_i
     );

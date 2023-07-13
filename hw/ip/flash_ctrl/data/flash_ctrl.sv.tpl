@@ -46,11 +46,6 @@ module flash_ctrl
   input        tlul_ot_pkg::tl_h2d_t mem_tl_i,
   output       tlul_ot_pkg::tl_d2h_t mem_tl_o,
 
-  input        tlul_ot_pkg::tl_h2d_t dbg_tl_i,
-  output       tlul_ot_pkg::tl_d2h_t dbg_tl_o,
-
-  output logic dbg_mode,
-  
   // otp/lc/pwrmgr/keymgr Interface
   // SEC_CM: SCRAMBLE.KEY.SIDELOAD
   output       otp_ctrl_pkg::flash_otp_key_req_t otp_o,

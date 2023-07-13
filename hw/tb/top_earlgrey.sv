@@ -193,7 +193,6 @@ module top_earlgrey #(
   output logic       usbdev_usb_rx_enable_o,
   output logic       usbdev_usb_ref_val_o,
   output logic       usbdev_usb_ref_pulse_o,
-  output logic       dbg_mode,
 
   // All externally supplied clocks
   input clk_main_i,
@@ -201,8 +200,9 @@ module top_earlgrey #(
   input clk_usb_i,
   input clk_aon_i,
 
-  input logic fetch_en,
-
+  //Bootmode
+  input logic [1:0] bootmode_i,
+  input logic fetch_en_i,
   // All clocks forwarded to ast
   output clkmgr_pkg::clkmgr_out_t clks_ast_o,
   output rstmgr_pkg::rstmgr_out_t rsts_ast_o,
@@ -581,6 +581,14 @@ module top_earlgrey #(
   logic       usbdev_usb_aon_bus_reset;
   logic       usbdev_usb_aon_sense_lost;
   logic       pinmux_aon_usbdev_wake_detect_active;
+   
+  logic        datapath_o; 
+  logic        debug_flash_write;
+  logic        debug_flash_req;
+  logic [15:0] debug_flash_addr;
+  logic [75:0] debug_flash_wdata;
+  logic [75:0] debug_flash_wmask;
+   
   edn_pkg::edn_req_t [7:0] edn0_edn_req;
   edn_pkg::edn_rsp_t [7:0] edn0_edn_rsp;
   edn_pkg::edn_req_t [7:0] edn1_edn_req;
@@ -737,8 +745,8 @@ module top_earlgrey #(
   tlul_ot_pkg::tl_d2h_t       sysrst_ctrl_aon_tl_rsp;
   tlul_ot_pkg::tl_h2d_t       adc_ctrl_aon_tl_req;
   tlul_ot_pkg::tl_d2h_t       adc_ctrl_aon_tl_rsp;
-  tlul_ot_pkg::tl_h2d_t       dbg_mode_tl_req;
-  tlul_ot_pkg::tl_d2h_t       dbg_mode_tl_rsp;
+  tlul_ot_pkg::tl_h2d_t       bootmode_tl_req;
+  tlul_ot_pkg::tl_d2h_t       bootmode_tl_rsp;
   clkmgr_pkg::clkmgr_out_t       clkmgr_aon_clocks;
   clkmgr_pkg::clkmgr_cg_en_t       clkmgr_aon_cg_en;
   rstmgr_pkg::rstmgr_out_t       rstmgr_aon_resets;
@@ -2085,7 +2093,20 @@ module top_earlgrey #(
       .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
       .rst_otp_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel])
   );
-  flash_ctrl #(
+  boot_manager boot_manager (
+    .clk_i (clkmgr_aon_clocks.clk_main_secure),
+    .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
+    .bootmode_tl_i(bootmode_tl_req),
+    .bootmode_tl_o(bootmode_tl_rsp),
+    .flash_write_o(debug_flash_write),
+    .flash_req_o(debug_flash_req),
+    .flash_addr_o(debug_flash_addr),
+    .flash_wdata_o(debug_flash_wdata),
+    .flash_wmask_o(debug_flash_wmask),
+    .bootmode_i,
+    .datapath_o
+  ); 
+  flash_ctrl #(               
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[39:35]),
     .RndCnstAddrKey(RndCnstFlashCtrlAddrKey),
     .RndCnstDataKey(RndCnstFlashCtrlDataKey),
@@ -2148,15 +2169,17 @@ module top_earlgrey #(
       .core_tl_o(flash_ctrl_core_tl_rsp),
       .prim_tl_i(flash_ctrl_prim_tl_req),
       .prim_tl_o(flash_ctrl_prim_tl_rsp),
-      .dbg_tl_i(dbg_mode_tl_req),
-      .dbg_tl_o(dbg_mode_tl_rsp),
       .mem_tl_i(flash_ctrl_mem_tl_req),
       .mem_tl_o(flash_ctrl_mem_tl_rsp),
-      .dbg_mode,
       .scanmode_i,
       .scan_rst_ni,
       .scan_en_i,
-
+      .debug_flash_write,
+      .debug_flash_req,
+      .debug_flash_addr,
+      .debug_flash_wdata,
+      .debug_flash_wmask,
+      .datapath_i(datapath_o),
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_infra),
       .clk_otp_i (clkmgr_aon_clocks.clk_io_div4_infra),
@@ -2567,7 +2590,6 @@ module top_earlgrey #(
       .regs_tl_o(rom_ctrl_regs_tl_rsp),
       .rom_tl_i(rom_ctrl_rom_tl_req),
       .rom_tl_o(rom_ctrl_rom_tl_rsp),
-      .dbg_mode,
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_infra),
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
@@ -2620,7 +2642,7 @@ module top_earlgrey #(
       .debug_req_i(rv_dm_debug_req),
       .crash_dump_o(rv_core_ibex_crash_dump),
       .lc_cpu_en_i(lc_ctrl_lc_cpu_en),
-      .ext_cpu_en_i(fetch_en),
+      .ext_cpu_en_i(fetch_en_i),
       .pwrmgr_cpu_en_i(pwrmgr_aon_fetch_en),
       .pwrmgr_o(rv_core_ibex_pwrmgr),
       .nmi_wdog_i(aon_timer_aon_nmi_wdog_timer_bark),
@@ -2845,8 +2867,8 @@ module top_earlgrey #(
     .tl_rom_ctrl__rom_i(rom_ctrl_rom_tl_rsp),
 
     // debug mode interface
-    .tl_dbg_mode_o(dbg_mode_tl_req),
-    .tl_dbg_mode_i(dbg_mode_tl_rsp),
+    .tl_dbg_mode_o(bootmode_tl_req),
+    .tl_dbg_mode_i(bootmode_tl_rsp),
                          
     // port: tl_rom_ctrl__regs
     .tl_rom_ctrl__regs_o(rom_ctrl_regs_tl_req),

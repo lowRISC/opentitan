@@ -56,7 +56,6 @@ module testbench ();
    logic io_clk = 1'b0;
    logic usb_clk = 1'b0;
    logic rst_sys_n;
-   logic dbg_mode;
    logic es_rng_fips;
    logic SCK, CSNeg;
    logic [15:0] spi_i, spi_o, spi_oe_o;

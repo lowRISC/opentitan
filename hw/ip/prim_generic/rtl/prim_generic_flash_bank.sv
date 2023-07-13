@@ -43,7 +43,7 @@ module prim_flash_bank #(
   input logic [15:0]           debug_flash_addr_i,
   input logic [75:0]           debug_flash_wdata_i,
   input logic [75:0]           debug_flash_wmask_i,
-  input logic                  debug_mode_i, 
+  input logic                  datapath_i, 
   input                        flash_power_ready_h_i,
   input                        flash_power_down_h_i
 );
@@ -420,11 +420,11 @@ module prim_flash_bank #(
   logic [75:0]      debug_flash_wdata;
   logic [75:0]      debug_flash_wmask;
 
-  assign debug_flash_write = debug_mode_i ? debug_flash_write_i : mem_wr;
-  assign debug_flash_req = debug_mode_i ? debug_flash_req_i : data_mem_req;
-  assign debug_flash_addr = debug_mode_i ? debug_flash_addr_i : mem_addr;
-  assign debug_flash_wdata = debug_mode_i ? debug_flash_wdata_i : mem_wdata;
-  assign debug_flash_wmask = debug_mode_i ? debug_flash_wmask_i : {DataWidth{1'b1}}; 
+  assign debug_flash_write = datapath_i ?  debug_flash_write_i : mem_wr            ;
+  assign debug_flash_req   = datapath_i ?  debug_flash_req_i   : data_mem_req      ;
+  assign debug_flash_addr  = datapath_i ?  debug_flash_addr_i  : mem_addr          ;
+  assign debug_flash_wdata = datapath_i ?  debug_flash_wdata_i : mem_wdata         ;
+  assign debug_flash_wmask = datapath_i ?  debug_flash_wmask_i : {DataWidth{1'b1}} ; 
   
 
   prim_ram_1p #(
