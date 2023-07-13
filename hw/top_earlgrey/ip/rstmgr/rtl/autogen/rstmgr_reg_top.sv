@@ -26,7 +26,7 @@ module rstmgr_reg_top (
 
   import rstmgr_reg_pkg::* ;
 
-  localparam int AW = 7;
+  localparam int AW = 8;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -57,9 +57,9 @@ module rstmgr_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [27:0] reg_we_check;
+  logic [32:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(28)
+    .OneHotWidth(33)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -126,6 +126,14 @@ module rstmgr_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic [31:0] cip_id_qs;
+  logic [7:0] revision_reserved_qs;
+  logic [7:0] revision_subminor_qs;
+  logic [7:0] revision_minor_qs;
+  logic [7:0] revision_major_qs;
+  logic [31:0] parameter_block_type_qs;
+  logic [31:0] parameter_block_length_qs;
+  logic [31:0] next_parameter_block_qs;
   logic alert_test_we;
   logic alert_test_fatal_fault_wd;
   logic alert_test_fatal_cnsty_fault_wd;
@@ -220,6 +228,44 @@ module rstmgr_reg_top (
   // CDC handling is done on a per-reg instead of per-field boundary.
 
   // Register instances
+  // R[cip_id]: V(False)
+  // constant-only read
+  assign cip_id_qs = 32'h16;
+
+
+  // R[revision]: V(False)
+  //   F[reserved]: 7:0
+  // constant-only read
+  assign revision_reserved_qs = 8'h0;
+
+  //   F[subminor]: 15:8
+  // constant-only read
+  assign revision_subminor_qs = 8'h0;
+
+  //   F[minor]: 23:16
+  // constant-only read
+  assign revision_minor_qs = 8'h0;
+
+  //   F[major]: 31:24
+  // constant-only read
+  assign revision_major_qs = 8'h2;
+
+
+  // R[parameter_block_type]: V(False)
+  // constant-only read
+  assign parameter_block_type_qs = 32'h0;
+
+
+  // R[parameter_block_length]: V(False)
+  // constant-only read
+  assign parameter_block_length_qs = 32'hc;
+
+
+  // R[next_parameter_block]: V(False)
+  // constant-only read
+  assign next_parameter_block_qs = 32'h0;
+
+
   // R[alert_test]: V(True)
   logic alert_test_qe;
   logic [1:0] alert_test_flds_we;
@@ -1183,37 +1229,42 @@ module rstmgr_reg_top (
 
 
 
-  logic [27:0] addr_hit;
+  logic [32:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[ 0] = (reg_addr == RSTMGR_ALERT_TEST_OFFSET);
-    addr_hit[ 1] = (reg_addr == RSTMGR_RESET_REQ_OFFSET);
-    addr_hit[ 2] = (reg_addr == RSTMGR_RESET_INFO_OFFSET);
-    addr_hit[ 3] = (reg_addr == RSTMGR_ALERT_REGWEN_OFFSET);
-    addr_hit[ 4] = (reg_addr == RSTMGR_ALERT_INFO_CTRL_OFFSET);
-    addr_hit[ 5] = (reg_addr == RSTMGR_ALERT_INFO_ATTR_OFFSET);
-    addr_hit[ 6] = (reg_addr == RSTMGR_ALERT_INFO_OFFSET);
-    addr_hit[ 7] = (reg_addr == RSTMGR_CPU_REGWEN_OFFSET);
-    addr_hit[ 8] = (reg_addr == RSTMGR_CPU_INFO_CTRL_OFFSET);
-    addr_hit[ 9] = (reg_addr == RSTMGR_CPU_INFO_ATTR_OFFSET);
-    addr_hit[10] = (reg_addr == RSTMGR_CPU_INFO_OFFSET);
-    addr_hit[11] = (reg_addr == RSTMGR_SW_RST_REGWEN_0_OFFSET);
-    addr_hit[12] = (reg_addr == RSTMGR_SW_RST_REGWEN_1_OFFSET);
-    addr_hit[13] = (reg_addr == RSTMGR_SW_RST_REGWEN_2_OFFSET);
-    addr_hit[14] = (reg_addr == RSTMGR_SW_RST_REGWEN_3_OFFSET);
-    addr_hit[15] = (reg_addr == RSTMGR_SW_RST_REGWEN_4_OFFSET);
-    addr_hit[16] = (reg_addr == RSTMGR_SW_RST_REGWEN_5_OFFSET);
-    addr_hit[17] = (reg_addr == RSTMGR_SW_RST_REGWEN_6_OFFSET);
-    addr_hit[18] = (reg_addr == RSTMGR_SW_RST_REGWEN_7_OFFSET);
-    addr_hit[19] = (reg_addr == RSTMGR_SW_RST_CTRL_N_0_OFFSET);
-    addr_hit[20] = (reg_addr == RSTMGR_SW_RST_CTRL_N_1_OFFSET);
-    addr_hit[21] = (reg_addr == RSTMGR_SW_RST_CTRL_N_2_OFFSET);
-    addr_hit[22] = (reg_addr == RSTMGR_SW_RST_CTRL_N_3_OFFSET);
-    addr_hit[23] = (reg_addr == RSTMGR_SW_RST_CTRL_N_4_OFFSET);
-    addr_hit[24] = (reg_addr == RSTMGR_SW_RST_CTRL_N_5_OFFSET);
-    addr_hit[25] = (reg_addr == RSTMGR_SW_RST_CTRL_N_6_OFFSET);
-    addr_hit[26] = (reg_addr == RSTMGR_SW_RST_CTRL_N_7_OFFSET);
-    addr_hit[27] = (reg_addr == RSTMGR_ERR_CODE_OFFSET);
+    addr_hit[ 0] = (reg_addr == RSTMGR_CIP_ID_OFFSET);
+    addr_hit[ 1] = (reg_addr == RSTMGR_REVISION_OFFSET);
+    addr_hit[ 2] = (reg_addr == RSTMGR_PARAMETER_BLOCK_TYPE_OFFSET);
+    addr_hit[ 3] = (reg_addr == RSTMGR_PARAMETER_BLOCK_LENGTH_OFFSET);
+    addr_hit[ 4] = (reg_addr == RSTMGR_NEXT_PARAMETER_BLOCK_OFFSET);
+    addr_hit[ 5] = (reg_addr == RSTMGR_ALERT_TEST_OFFSET);
+    addr_hit[ 6] = (reg_addr == RSTMGR_RESET_REQ_OFFSET);
+    addr_hit[ 7] = (reg_addr == RSTMGR_RESET_INFO_OFFSET);
+    addr_hit[ 8] = (reg_addr == RSTMGR_ALERT_REGWEN_OFFSET);
+    addr_hit[ 9] = (reg_addr == RSTMGR_ALERT_INFO_CTRL_OFFSET);
+    addr_hit[10] = (reg_addr == RSTMGR_ALERT_INFO_ATTR_OFFSET);
+    addr_hit[11] = (reg_addr == RSTMGR_ALERT_INFO_OFFSET);
+    addr_hit[12] = (reg_addr == RSTMGR_CPU_REGWEN_OFFSET);
+    addr_hit[13] = (reg_addr == RSTMGR_CPU_INFO_CTRL_OFFSET);
+    addr_hit[14] = (reg_addr == RSTMGR_CPU_INFO_ATTR_OFFSET);
+    addr_hit[15] = (reg_addr == RSTMGR_CPU_INFO_OFFSET);
+    addr_hit[16] = (reg_addr == RSTMGR_SW_RST_REGWEN_0_OFFSET);
+    addr_hit[17] = (reg_addr == RSTMGR_SW_RST_REGWEN_1_OFFSET);
+    addr_hit[18] = (reg_addr == RSTMGR_SW_RST_REGWEN_2_OFFSET);
+    addr_hit[19] = (reg_addr == RSTMGR_SW_RST_REGWEN_3_OFFSET);
+    addr_hit[20] = (reg_addr == RSTMGR_SW_RST_REGWEN_4_OFFSET);
+    addr_hit[21] = (reg_addr == RSTMGR_SW_RST_REGWEN_5_OFFSET);
+    addr_hit[22] = (reg_addr == RSTMGR_SW_RST_REGWEN_6_OFFSET);
+    addr_hit[23] = (reg_addr == RSTMGR_SW_RST_REGWEN_7_OFFSET);
+    addr_hit[24] = (reg_addr == RSTMGR_SW_RST_CTRL_N_0_OFFSET);
+    addr_hit[25] = (reg_addr == RSTMGR_SW_RST_CTRL_N_1_OFFSET);
+    addr_hit[26] = (reg_addr == RSTMGR_SW_RST_CTRL_N_2_OFFSET);
+    addr_hit[27] = (reg_addr == RSTMGR_SW_RST_CTRL_N_3_OFFSET);
+    addr_hit[28] = (reg_addr == RSTMGR_SW_RST_CTRL_N_4_OFFSET);
+    addr_hit[29] = (reg_addr == RSTMGR_SW_RST_CTRL_N_5_OFFSET);
+    addr_hit[30] = (reg_addr == RSTMGR_SW_RST_CTRL_N_6_OFFSET);
+    addr_hit[31] = (reg_addr == RSTMGR_SW_RST_CTRL_N_7_OFFSET);
+    addr_hit[32] = (reg_addr == RSTMGR_ERR_CODE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1248,19 +1299,24 @@ module rstmgr_reg_top (
                (addr_hit[24] & (|(RSTMGR_PERMIT[24] & ~reg_be))) |
                (addr_hit[25] & (|(RSTMGR_PERMIT[25] & ~reg_be))) |
                (addr_hit[26] & (|(RSTMGR_PERMIT[26] & ~reg_be))) |
-               (addr_hit[27] & (|(RSTMGR_PERMIT[27] & ~reg_be)))));
+               (addr_hit[27] & (|(RSTMGR_PERMIT[27] & ~reg_be))) |
+               (addr_hit[28] & (|(RSTMGR_PERMIT[28] & ~reg_be))) |
+               (addr_hit[29] & (|(RSTMGR_PERMIT[29] & ~reg_be))) |
+               (addr_hit[30] & (|(RSTMGR_PERMIT[30] & ~reg_be))) |
+               (addr_hit[31] & (|(RSTMGR_PERMIT[31] & ~reg_be))) |
+               (addr_hit[32] & (|(RSTMGR_PERMIT[32] & ~reg_be)))));
   end
 
   // Generate write-enables
-  assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
+  assign alert_test_we = addr_hit[5] & reg_we & !reg_error;
 
   assign alert_test_fatal_fault_wd = reg_wdata[0];
 
   assign alert_test_fatal_cnsty_fault_wd = reg_wdata[1];
-  assign reset_req_we = addr_hit[1] & reg_we & !reg_error;
+  assign reset_req_we = addr_hit[6] & reg_we & !reg_error;
 
   assign reset_req_wd = reg_wdata[3:0];
-  assign reset_info_we = addr_hit[2] & reg_we & !reg_error;
+  assign reset_info_we = addr_hit[7] & reg_we & !reg_error;
 
   assign reset_info_por_wd = reg_wdata[0];
 
@@ -1269,106 +1325,111 @@ module rstmgr_reg_top (
   assign reset_info_sw_reset_wd = reg_wdata[2];
 
   assign reset_info_hw_req_wd = reg_wdata[7:3];
-  assign alert_regwen_we = addr_hit[3] & reg_we & !reg_error;
+  assign alert_regwen_we = addr_hit[8] & reg_we & !reg_error;
 
   assign alert_regwen_wd = reg_wdata[0];
-  assign alert_info_ctrl_we = addr_hit[4] & reg_we & !reg_error;
+  assign alert_info_ctrl_we = addr_hit[9] & reg_we & !reg_error;
 
   assign alert_info_ctrl_en_wd = reg_wdata[0];
 
   assign alert_info_ctrl_index_wd = reg_wdata[7:4];
-  assign alert_info_attr_re = addr_hit[5] & reg_re & !reg_error;
-  assign alert_info_re = addr_hit[6] & reg_re & !reg_error;
-  assign cpu_regwen_we = addr_hit[7] & reg_we & !reg_error;
+  assign alert_info_attr_re = addr_hit[10] & reg_re & !reg_error;
+  assign alert_info_re = addr_hit[11] & reg_re & !reg_error;
+  assign cpu_regwen_we = addr_hit[12] & reg_we & !reg_error;
 
   assign cpu_regwen_wd = reg_wdata[0];
-  assign cpu_info_ctrl_we = addr_hit[8] & reg_we & !reg_error;
+  assign cpu_info_ctrl_we = addr_hit[13] & reg_we & !reg_error;
 
   assign cpu_info_ctrl_en_wd = reg_wdata[0];
 
   assign cpu_info_ctrl_index_wd = reg_wdata[7:4];
-  assign cpu_info_attr_re = addr_hit[9] & reg_re & !reg_error;
-  assign cpu_info_re = addr_hit[10] & reg_re & !reg_error;
-  assign sw_rst_regwen_0_we = addr_hit[11] & reg_we & !reg_error;
+  assign cpu_info_attr_re = addr_hit[14] & reg_re & !reg_error;
+  assign cpu_info_re = addr_hit[15] & reg_re & !reg_error;
+  assign sw_rst_regwen_0_we = addr_hit[16] & reg_we & !reg_error;
 
   assign sw_rst_regwen_0_wd = reg_wdata[0];
-  assign sw_rst_regwen_1_we = addr_hit[12] & reg_we & !reg_error;
+  assign sw_rst_regwen_1_we = addr_hit[17] & reg_we & !reg_error;
 
   assign sw_rst_regwen_1_wd = reg_wdata[0];
-  assign sw_rst_regwen_2_we = addr_hit[13] & reg_we & !reg_error;
+  assign sw_rst_regwen_2_we = addr_hit[18] & reg_we & !reg_error;
 
   assign sw_rst_regwen_2_wd = reg_wdata[0];
-  assign sw_rst_regwen_3_we = addr_hit[14] & reg_we & !reg_error;
+  assign sw_rst_regwen_3_we = addr_hit[19] & reg_we & !reg_error;
 
   assign sw_rst_regwen_3_wd = reg_wdata[0];
-  assign sw_rst_regwen_4_we = addr_hit[15] & reg_we & !reg_error;
+  assign sw_rst_regwen_4_we = addr_hit[20] & reg_we & !reg_error;
 
   assign sw_rst_regwen_4_wd = reg_wdata[0];
-  assign sw_rst_regwen_5_we = addr_hit[16] & reg_we & !reg_error;
+  assign sw_rst_regwen_5_we = addr_hit[21] & reg_we & !reg_error;
 
   assign sw_rst_regwen_5_wd = reg_wdata[0];
-  assign sw_rst_regwen_6_we = addr_hit[17] & reg_we & !reg_error;
+  assign sw_rst_regwen_6_we = addr_hit[22] & reg_we & !reg_error;
 
   assign sw_rst_regwen_6_wd = reg_wdata[0];
-  assign sw_rst_regwen_7_we = addr_hit[18] & reg_we & !reg_error;
+  assign sw_rst_regwen_7_we = addr_hit[23] & reg_we & !reg_error;
 
   assign sw_rst_regwen_7_wd = reg_wdata[0];
-  assign sw_rst_ctrl_n_0_we = addr_hit[19] & reg_we & !reg_error;
+  assign sw_rst_ctrl_n_0_we = addr_hit[24] & reg_we & !reg_error;
 
   assign sw_rst_ctrl_n_0_wd = reg_wdata[0];
-  assign sw_rst_ctrl_n_1_we = addr_hit[20] & reg_we & !reg_error;
+  assign sw_rst_ctrl_n_1_we = addr_hit[25] & reg_we & !reg_error;
 
   assign sw_rst_ctrl_n_1_wd = reg_wdata[0];
-  assign sw_rst_ctrl_n_2_we = addr_hit[21] & reg_we & !reg_error;
+  assign sw_rst_ctrl_n_2_we = addr_hit[26] & reg_we & !reg_error;
 
   assign sw_rst_ctrl_n_2_wd = reg_wdata[0];
-  assign sw_rst_ctrl_n_3_we = addr_hit[22] & reg_we & !reg_error;
+  assign sw_rst_ctrl_n_3_we = addr_hit[27] & reg_we & !reg_error;
 
   assign sw_rst_ctrl_n_3_wd = reg_wdata[0];
-  assign sw_rst_ctrl_n_4_we = addr_hit[23] & reg_we & !reg_error;
+  assign sw_rst_ctrl_n_4_we = addr_hit[28] & reg_we & !reg_error;
 
   assign sw_rst_ctrl_n_4_wd = reg_wdata[0];
-  assign sw_rst_ctrl_n_5_we = addr_hit[24] & reg_we & !reg_error;
+  assign sw_rst_ctrl_n_5_we = addr_hit[29] & reg_we & !reg_error;
 
   assign sw_rst_ctrl_n_5_wd = reg_wdata[0];
-  assign sw_rst_ctrl_n_6_we = addr_hit[25] & reg_we & !reg_error;
+  assign sw_rst_ctrl_n_6_we = addr_hit[30] & reg_we & !reg_error;
 
   assign sw_rst_ctrl_n_6_wd = reg_wdata[0];
-  assign sw_rst_ctrl_n_7_we = addr_hit[26] & reg_we & !reg_error;
+  assign sw_rst_ctrl_n_7_we = addr_hit[31] & reg_we & !reg_error;
 
   assign sw_rst_ctrl_n_7_wd = reg_wdata[0];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
-    reg_we_check[0] = alert_test_we;
-    reg_we_check[1] = reset_req_we;
-    reg_we_check[2] = reset_info_we;
-    reg_we_check[3] = alert_regwen_we;
-    reg_we_check[4] = alert_info_ctrl_gated_we;
-    reg_we_check[5] = 1'b0;
-    reg_we_check[6] = 1'b0;
-    reg_we_check[7] = cpu_regwen_we;
-    reg_we_check[8] = cpu_info_ctrl_gated_we;
-    reg_we_check[9] = 1'b0;
+    reg_we_check[0] = 1'b0;
+    reg_we_check[1] = 1'b0;
+    reg_we_check[2] = 1'b0;
+    reg_we_check[3] = 1'b0;
+    reg_we_check[4] = 1'b0;
+    reg_we_check[5] = alert_test_we;
+    reg_we_check[6] = reset_req_we;
+    reg_we_check[7] = reset_info_we;
+    reg_we_check[8] = alert_regwen_we;
+    reg_we_check[9] = alert_info_ctrl_gated_we;
     reg_we_check[10] = 1'b0;
-    reg_we_check[11] = sw_rst_regwen_0_we;
-    reg_we_check[12] = sw_rst_regwen_1_we;
-    reg_we_check[13] = sw_rst_regwen_2_we;
-    reg_we_check[14] = sw_rst_regwen_3_we;
-    reg_we_check[15] = sw_rst_regwen_4_we;
-    reg_we_check[16] = sw_rst_regwen_5_we;
-    reg_we_check[17] = sw_rst_regwen_6_we;
-    reg_we_check[18] = sw_rst_regwen_7_we;
-    reg_we_check[19] = sw_rst_ctrl_n_0_gated_we;
-    reg_we_check[20] = sw_rst_ctrl_n_1_gated_we;
-    reg_we_check[21] = sw_rst_ctrl_n_2_gated_we;
-    reg_we_check[22] = sw_rst_ctrl_n_3_gated_we;
-    reg_we_check[23] = sw_rst_ctrl_n_4_gated_we;
-    reg_we_check[24] = sw_rst_ctrl_n_5_gated_we;
-    reg_we_check[25] = sw_rst_ctrl_n_6_gated_we;
-    reg_we_check[26] = sw_rst_ctrl_n_7_gated_we;
-    reg_we_check[27] = 1'b0;
+    reg_we_check[11] = 1'b0;
+    reg_we_check[12] = cpu_regwen_we;
+    reg_we_check[13] = cpu_info_ctrl_gated_we;
+    reg_we_check[14] = 1'b0;
+    reg_we_check[15] = 1'b0;
+    reg_we_check[16] = sw_rst_regwen_0_we;
+    reg_we_check[17] = sw_rst_regwen_1_we;
+    reg_we_check[18] = sw_rst_regwen_2_we;
+    reg_we_check[19] = sw_rst_regwen_3_we;
+    reg_we_check[20] = sw_rst_regwen_4_we;
+    reg_we_check[21] = sw_rst_regwen_5_we;
+    reg_we_check[22] = sw_rst_regwen_6_we;
+    reg_we_check[23] = sw_rst_regwen_7_we;
+    reg_we_check[24] = sw_rst_ctrl_n_0_gated_we;
+    reg_we_check[25] = sw_rst_ctrl_n_1_gated_we;
+    reg_we_check[26] = sw_rst_ctrl_n_2_gated_we;
+    reg_we_check[27] = sw_rst_ctrl_n_3_gated_we;
+    reg_we_check[28] = sw_rst_ctrl_n_4_gated_we;
+    reg_we_check[29] = sw_rst_ctrl_n_5_gated_we;
+    reg_we_check[30] = sw_rst_ctrl_n_6_gated_we;
+    reg_we_check[31] = sw_rst_ctrl_n_7_gated_we;
+    reg_we_check[32] = 1'b0;
   end
 
   // Read data return
@@ -1376,120 +1437,143 @@ module rstmgr_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
+        reg_rdata_next[31:0] = cip_id_qs;
+      end
+
+      addr_hit[1]: begin
+        reg_rdata_next[7:0] = revision_reserved_qs;
+        reg_rdata_next[15:8] = revision_subminor_qs;
+        reg_rdata_next[23:16] = revision_minor_qs;
+        reg_rdata_next[31:24] = revision_major_qs;
+      end
+
+      addr_hit[2]: begin
+        reg_rdata_next[31:0] = parameter_block_type_qs;
+      end
+
+      addr_hit[3]: begin
+        reg_rdata_next[31:0] = parameter_block_length_qs;
+      end
+
+      addr_hit[4]: begin
+        reg_rdata_next[31:0] = next_parameter_block_qs;
+      end
+
+      addr_hit[5]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
       end
 
-      addr_hit[1]: begin
+      addr_hit[6]: begin
         reg_rdata_next[3:0] = reset_req_qs;
       end
 
-      addr_hit[2]: begin
+      addr_hit[7]: begin
         reg_rdata_next[0] = reset_info_por_qs;
         reg_rdata_next[1] = reset_info_low_power_exit_qs;
         reg_rdata_next[2] = reset_info_sw_reset_qs;
         reg_rdata_next[7:3] = reset_info_hw_req_qs;
       end
 
-      addr_hit[3]: begin
+      addr_hit[8]: begin
         reg_rdata_next[0] = alert_regwen_qs;
       end
 
-      addr_hit[4]: begin
+      addr_hit[9]: begin
         reg_rdata_next[0] = alert_info_ctrl_en_qs;
         reg_rdata_next[7:4] = alert_info_ctrl_index_qs;
       end
 
-      addr_hit[5]: begin
+      addr_hit[10]: begin
         reg_rdata_next[3:0] = alert_info_attr_qs;
       end
 
-      addr_hit[6]: begin
+      addr_hit[11]: begin
         reg_rdata_next[31:0] = alert_info_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[12]: begin
         reg_rdata_next[0] = cpu_regwen_qs;
       end
 
-      addr_hit[8]: begin
+      addr_hit[13]: begin
         reg_rdata_next[0] = cpu_info_ctrl_en_qs;
         reg_rdata_next[7:4] = cpu_info_ctrl_index_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[14]: begin
         reg_rdata_next[3:0] = cpu_info_attr_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[15]: begin
         reg_rdata_next[31:0] = cpu_info_qs;
       end
 
-      addr_hit[11]: begin
+      addr_hit[16]: begin
         reg_rdata_next[0] = sw_rst_regwen_0_qs;
       end
 
-      addr_hit[12]: begin
+      addr_hit[17]: begin
         reg_rdata_next[0] = sw_rst_regwen_1_qs;
       end
 
-      addr_hit[13]: begin
+      addr_hit[18]: begin
         reg_rdata_next[0] = sw_rst_regwen_2_qs;
       end
 
-      addr_hit[14]: begin
+      addr_hit[19]: begin
         reg_rdata_next[0] = sw_rst_regwen_3_qs;
       end
 
-      addr_hit[15]: begin
+      addr_hit[20]: begin
         reg_rdata_next[0] = sw_rst_regwen_4_qs;
       end
 
-      addr_hit[16]: begin
+      addr_hit[21]: begin
         reg_rdata_next[0] = sw_rst_regwen_5_qs;
       end
 
-      addr_hit[17]: begin
+      addr_hit[22]: begin
         reg_rdata_next[0] = sw_rst_regwen_6_qs;
       end
 
-      addr_hit[18]: begin
+      addr_hit[23]: begin
         reg_rdata_next[0] = sw_rst_regwen_7_qs;
       end
 
-      addr_hit[19]: begin
+      addr_hit[24]: begin
         reg_rdata_next[0] = sw_rst_ctrl_n_0_qs;
       end
 
-      addr_hit[20]: begin
+      addr_hit[25]: begin
         reg_rdata_next[0] = sw_rst_ctrl_n_1_qs;
       end
 
-      addr_hit[21]: begin
+      addr_hit[26]: begin
         reg_rdata_next[0] = sw_rst_ctrl_n_2_qs;
       end
 
-      addr_hit[22]: begin
+      addr_hit[27]: begin
         reg_rdata_next[0] = sw_rst_ctrl_n_3_qs;
       end
 
-      addr_hit[23]: begin
+      addr_hit[28]: begin
         reg_rdata_next[0] = sw_rst_ctrl_n_4_qs;
       end
 
-      addr_hit[24]: begin
+      addr_hit[29]: begin
         reg_rdata_next[0] = sw_rst_ctrl_n_5_qs;
       end
 
-      addr_hit[25]: begin
+      addr_hit[30]: begin
         reg_rdata_next[0] = sw_rst_ctrl_n_6_qs;
       end
 
-      addr_hit[26]: begin
+      addr_hit[31]: begin
         reg_rdata_next[0] = sw_rst_ctrl_n_7_qs;
       end
 
-      addr_hit[27]: begin
+      addr_hit[32]: begin
         reg_rdata_next[0] = err_code_reg_intg_err_qs;
         reg_rdata_next[1] = err_code_reset_consistency_err_qs;
         reg_rdata_next[2] = err_code_fsm_err_qs;

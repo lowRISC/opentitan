@@ -10,7 +10,7 @@ package sram_ctrl_reg_pkg;
   parameter int NumAlerts = 1;
 
   // Address widths within the block
-  parameter int RegsAw = 5;
+  parameter int RegsAw = 7;
   parameter int RamAw = 1;
 
   ///////////////////////////////////////////////
@@ -96,12 +96,17 @@ package sram_ctrl_reg_pkg;
   } sram_ctrl_regs_hw2reg_t;
 
   // Register offsets for regs interface
-  parameter logic [RegsAw-1:0] SRAM_CTRL_ALERT_TEST_OFFSET = 5'h 0;
-  parameter logic [RegsAw-1:0] SRAM_CTRL_STATUS_OFFSET = 5'h 4;
-  parameter logic [RegsAw-1:0] SRAM_CTRL_EXEC_REGWEN_OFFSET = 5'h 8;
-  parameter logic [RegsAw-1:0] SRAM_CTRL_EXEC_OFFSET = 5'h c;
-  parameter logic [RegsAw-1:0] SRAM_CTRL_CTRL_REGWEN_OFFSET = 5'h 10;
-  parameter logic [RegsAw-1:0] SRAM_CTRL_CTRL_OFFSET = 5'h 14;
+  parameter logic [RegsAw-1:0] SRAM_CTRL_CIP_ID_OFFSET = 7'h 0;
+  parameter logic [RegsAw-1:0] SRAM_CTRL_REVISION_OFFSET = 7'h 4;
+  parameter logic [RegsAw-1:0] SRAM_CTRL_PARAMETER_BLOCK_TYPE_OFFSET = 7'h 8;
+  parameter logic [RegsAw-1:0] SRAM_CTRL_PARAMETER_BLOCK_LENGTH_OFFSET = 7'h c;
+  parameter logic [RegsAw-1:0] SRAM_CTRL_NEXT_PARAMETER_BLOCK_OFFSET = 7'h 10;
+  parameter logic [RegsAw-1:0] SRAM_CTRL_ALERT_TEST_OFFSET = 7'h 40;
+  parameter logic [RegsAw-1:0] SRAM_CTRL_STATUS_OFFSET = 7'h 44;
+  parameter logic [RegsAw-1:0] SRAM_CTRL_EXEC_REGWEN_OFFSET = 7'h 48;
+  parameter logic [RegsAw-1:0] SRAM_CTRL_EXEC_OFFSET = 7'h 4c;
+  parameter logic [RegsAw-1:0] SRAM_CTRL_CTRL_REGWEN_OFFSET = 7'h 50;
+  parameter logic [RegsAw-1:0] SRAM_CTRL_CTRL_OFFSET = 7'h 54;
 
   // Reset values for hwext registers and their fields for regs interface
   parameter logic [0:0] SRAM_CTRL_ALERT_TEST_RESVAL = 1'h 0;
@@ -109,6 +114,11 @@ package sram_ctrl_reg_pkg;
 
   // Register index for regs interface
   typedef enum int {
+    SRAM_CTRL_CIP_ID,
+    SRAM_CTRL_REVISION,
+    SRAM_CTRL_PARAMETER_BLOCK_TYPE,
+    SRAM_CTRL_PARAMETER_BLOCK_LENGTH,
+    SRAM_CTRL_NEXT_PARAMETER_BLOCK,
     SRAM_CTRL_ALERT_TEST,
     SRAM_CTRL_STATUS,
     SRAM_CTRL_EXEC_REGWEN,
@@ -118,13 +128,18 @@ package sram_ctrl_reg_pkg;
   } sram_ctrl_regs_id_e;
 
   // Register width information to check illegal writes for regs interface
-  parameter logic [3:0] SRAM_CTRL_REGS_PERMIT [6] = '{
-    4'b 0001, // index[0] SRAM_CTRL_ALERT_TEST
-    4'b 0001, // index[1] SRAM_CTRL_STATUS
-    4'b 0001, // index[2] SRAM_CTRL_EXEC_REGWEN
-    4'b 0001, // index[3] SRAM_CTRL_EXEC
-    4'b 0001, // index[4] SRAM_CTRL_CTRL_REGWEN
-    4'b 0001  // index[5] SRAM_CTRL_CTRL
+  parameter logic [3:0] SRAM_CTRL_REGS_PERMIT [11] = '{
+    4'b 1111, // index[ 0] SRAM_CTRL_CIP_ID
+    4'b 1111, // index[ 1] SRAM_CTRL_REVISION
+    4'b 1111, // index[ 2] SRAM_CTRL_PARAMETER_BLOCK_TYPE
+    4'b 1111, // index[ 3] SRAM_CTRL_PARAMETER_BLOCK_LENGTH
+    4'b 1111, // index[ 4] SRAM_CTRL_NEXT_PARAMETER_BLOCK
+    4'b 0001, // index[ 5] SRAM_CTRL_ALERT_TEST
+    4'b 0001, // index[ 6] SRAM_CTRL_STATUS
+    4'b 0001, // index[ 7] SRAM_CTRL_EXEC_REGWEN
+    4'b 0001, // index[ 8] SRAM_CTRL_EXEC
+    4'b 0001, // index[ 9] SRAM_CTRL_CTRL_REGWEN
+    4'b 0001  // index[10] SRAM_CTRL_CTRL
   };
 
 endpackage

@@ -24,7 +24,7 @@ module uart_reg_top (
 
   import uart_reg_pkg::* ;
 
-  localparam int AW = 6;
+  localparam int AW = 7;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -55,9 +55,9 @@ module uart_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [12:0] reg_we_check;
+  logic [17:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(13)
+    .OneHotWidth(18)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -124,6 +124,14 @@ module uart_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic [31:0] cip_id_qs;
+  logic [7:0] revision_reserved_qs;
+  logic [7:0] revision_subminor_qs;
+  logic [7:0] revision_minor_qs;
+  logic [7:0] revision_major_qs;
+  logic [31:0] parameter_block_type_qs;
+  logic [31:0] parameter_block_length_qs;
+  logic [31:0] next_parameter_block_qs;
   logic intr_state_we;
   logic intr_state_tx_watermark_qs;
   logic intr_state_tx_watermark_wd;
@@ -223,6 +231,44 @@ module uart_reg_top (
   logic timeout_ctrl_en_wd;
 
   // Register instances
+  // R[cip_id]: V(False)
+  // constant-only read
+  assign cip_id_qs = 32'h1e;
+
+
+  // R[revision]: V(False)
+  //   F[reserved]: 7:0
+  // constant-only read
+  assign revision_reserved_qs = 8'h0;
+
+  //   F[subminor]: 15:8
+  // constant-only read
+  assign revision_subminor_qs = 8'h0;
+
+  //   F[minor]: 23:16
+  // constant-only read
+  assign revision_minor_qs = 8'h0;
+
+  //   F[major]: 31:24
+  // constant-only read
+  assign revision_major_qs = 8'h2;
+
+
+  // R[parameter_block_type]: V(False)
+  // constant-only read
+  assign parameter_block_type_qs = 32'h0;
+
+
+  // R[parameter_block_length]: V(False)
+  // constant-only read
+  assign parameter_block_length_qs = 32'hc;
+
+
+  // R[next_parameter_block]: V(False)
+  // constant-only read
+  assign next_parameter_block_qs = 32'h0;
+
+
   // R[intr_state]: V(False)
   //   F[tx_watermark]: 0:0
   prim_subreg #(
@@ -1457,22 +1503,27 @@ module uart_reg_top (
 
 
 
-  logic [12:0] addr_hit;
+  logic [17:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[ 0] = (reg_addr == UART_INTR_STATE_OFFSET);
-    addr_hit[ 1] = (reg_addr == UART_INTR_ENABLE_OFFSET);
-    addr_hit[ 2] = (reg_addr == UART_INTR_TEST_OFFSET);
-    addr_hit[ 3] = (reg_addr == UART_ALERT_TEST_OFFSET);
-    addr_hit[ 4] = (reg_addr == UART_CTRL_OFFSET);
-    addr_hit[ 5] = (reg_addr == UART_STATUS_OFFSET);
-    addr_hit[ 6] = (reg_addr == UART_RDATA_OFFSET);
-    addr_hit[ 7] = (reg_addr == UART_WDATA_OFFSET);
-    addr_hit[ 8] = (reg_addr == UART_FIFO_CTRL_OFFSET);
-    addr_hit[ 9] = (reg_addr == UART_FIFO_STATUS_OFFSET);
-    addr_hit[10] = (reg_addr == UART_OVRD_OFFSET);
-    addr_hit[11] = (reg_addr == UART_VAL_OFFSET);
-    addr_hit[12] = (reg_addr == UART_TIMEOUT_CTRL_OFFSET);
+    addr_hit[ 0] = (reg_addr == UART_CIP_ID_OFFSET);
+    addr_hit[ 1] = (reg_addr == UART_REVISION_OFFSET);
+    addr_hit[ 2] = (reg_addr == UART_PARAMETER_BLOCK_TYPE_OFFSET);
+    addr_hit[ 3] = (reg_addr == UART_PARAMETER_BLOCK_LENGTH_OFFSET);
+    addr_hit[ 4] = (reg_addr == UART_NEXT_PARAMETER_BLOCK_OFFSET);
+    addr_hit[ 5] = (reg_addr == UART_INTR_STATE_OFFSET);
+    addr_hit[ 6] = (reg_addr == UART_INTR_ENABLE_OFFSET);
+    addr_hit[ 7] = (reg_addr == UART_INTR_TEST_OFFSET);
+    addr_hit[ 8] = (reg_addr == UART_ALERT_TEST_OFFSET);
+    addr_hit[ 9] = (reg_addr == UART_CTRL_OFFSET);
+    addr_hit[10] = (reg_addr == UART_STATUS_OFFSET);
+    addr_hit[11] = (reg_addr == UART_RDATA_OFFSET);
+    addr_hit[12] = (reg_addr == UART_WDATA_OFFSET);
+    addr_hit[13] = (reg_addr == UART_FIFO_CTRL_OFFSET);
+    addr_hit[14] = (reg_addr == UART_FIFO_STATUS_OFFSET);
+    addr_hit[15] = (reg_addr == UART_OVRD_OFFSET);
+    addr_hit[16] = (reg_addr == UART_VAL_OFFSET);
+    addr_hit[17] = (reg_addr == UART_TIMEOUT_CTRL_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1492,11 +1543,16 @@ module uart_reg_top (
                (addr_hit[ 9] & (|(UART_PERMIT[ 9] & ~reg_be))) |
                (addr_hit[10] & (|(UART_PERMIT[10] & ~reg_be))) |
                (addr_hit[11] & (|(UART_PERMIT[11] & ~reg_be))) |
-               (addr_hit[12] & (|(UART_PERMIT[12] & ~reg_be)))));
+               (addr_hit[12] & (|(UART_PERMIT[12] & ~reg_be))) |
+               (addr_hit[13] & (|(UART_PERMIT[13] & ~reg_be))) |
+               (addr_hit[14] & (|(UART_PERMIT[14] & ~reg_be))) |
+               (addr_hit[15] & (|(UART_PERMIT[15] & ~reg_be))) |
+               (addr_hit[16] & (|(UART_PERMIT[16] & ~reg_be))) |
+               (addr_hit[17] & (|(UART_PERMIT[17] & ~reg_be)))));
   end
 
   // Generate write-enables
-  assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
+  assign intr_state_we = addr_hit[5] & reg_we & !reg_error;
 
   assign intr_state_tx_watermark_wd = reg_wdata[0];
 
@@ -1513,7 +1569,7 @@ module uart_reg_top (
   assign intr_state_rx_timeout_wd = reg_wdata[6];
 
   assign intr_state_rx_parity_err_wd = reg_wdata[7];
-  assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
+  assign intr_enable_we = addr_hit[6] & reg_we & !reg_error;
 
   assign intr_enable_tx_watermark_wd = reg_wdata[0];
 
@@ -1530,7 +1586,7 @@ module uart_reg_top (
   assign intr_enable_rx_timeout_wd = reg_wdata[6];
 
   assign intr_enable_rx_parity_err_wd = reg_wdata[7];
-  assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
+  assign intr_test_we = addr_hit[7] & reg_we & !reg_error;
 
   assign intr_test_tx_watermark_wd = reg_wdata[0];
 
@@ -1547,10 +1603,10 @@ module uart_reg_top (
   assign intr_test_rx_timeout_wd = reg_wdata[6];
 
   assign intr_test_rx_parity_err_wd = reg_wdata[7];
-  assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
+  assign alert_test_we = addr_hit[8] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
-  assign ctrl_we = addr_hit[4] & reg_we & !reg_error;
+  assign ctrl_we = addr_hit[9] & reg_we & !reg_error;
 
   assign ctrl_tx_wd = reg_wdata[0];
 
@@ -1569,12 +1625,12 @@ module uart_reg_top (
   assign ctrl_rxblvl_wd = reg_wdata[9:8];
 
   assign ctrl_nco_wd = reg_wdata[31:16];
-  assign status_re = addr_hit[5] & reg_re & !reg_error;
-  assign rdata_re = addr_hit[6] & reg_re & !reg_error;
-  assign wdata_we = addr_hit[7] & reg_we & !reg_error;
+  assign status_re = addr_hit[10] & reg_re & !reg_error;
+  assign rdata_re = addr_hit[11] & reg_re & !reg_error;
+  assign wdata_we = addr_hit[12] & reg_we & !reg_error;
 
   assign wdata_wd = reg_wdata[7:0];
-  assign fifo_ctrl_we = addr_hit[8] & reg_we & !reg_error;
+  assign fifo_ctrl_we = addr_hit[13] & reg_we & !reg_error;
 
   assign fifo_ctrl_rxrst_wd = reg_wdata[0];
 
@@ -1583,14 +1639,14 @@ module uart_reg_top (
   assign fifo_ctrl_rxilvl_wd = reg_wdata[4:2];
 
   assign fifo_ctrl_txilvl_wd = reg_wdata[7:5];
-  assign fifo_status_re = addr_hit[9] & reg_re & !reg_error;
-  assign ovrd_we = addr_hit[10] & reg_we & !reg_error;
+  assign fifo_status_re = addr_hit[14] & reg_re & !reg_error;
+  assign ovrd_we = addr_hit[15] & reg_we & !reg_error;
 
   assign ovrd_txen_wd = reg_wdata[0];
 
   assign ovrd_txval_wd = reg_wdata[1];
-  assign val_re = addr_hit[11] & reg_re & !reg_error;
-  assign timeout_ctrl_we = addr_hit[12] & reg_we & !reg_error;
+  assign val_re = addr_hit[16] & reg_re & !reg_error;
+  assign timeout_ctrl_we = addr_hit[17] & reg_we & !reg_error;
 
   assign timeout_ctrl_val_wd = reg_wdata[23:0];
 
@@ -1599,19 +1655,24 @@ module uart_reg_top (
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
-    reg_we_check[0] = intr_state_we;
-    reg_we_check[1] = intr_enable_we;
-    reg_we_check[2] = intr_test_we;
-    reg_we_check[3] = alert_test_we;
-    reg_we_check[4] = ctrl_we;
-    reg_we_check[5] = 1'b0;
-    reg_we_check[6] = 1'b0;
-    reg_we_check[7] = wdata_we;
-    reg_we_check[8] = fifo_ctrl_we;
-    reg_we_check[9] = 1'b0;
-    reg_we_check[10] = ovrd_we;
+    reg_we_check[0] = 1'b0;
+    reg_we_check[1] = 1'b0;
+    reg_we_check[2] = 1'b0;
+    reg_we_check[3] = 1'b0;
+    reg_we_check[4] = 1'b0;
+    reg_we_check[5] = intr_state_we;
+    reg_we_check[6] = intr_enable_we;
+    reg_we_check[7] = intr_test_we;
+    reg_we_check[8] = alert_test_we;
+    reg_we_check[9] = ctrl_we;
+    reg_we_check[10] = 1'b0;
     reg_we_check[11] = 1'b0;
-    reg_we_check[12] = timeout_ctrl_we;
+    reg_we_check[12] = wdata_we;
+    reg_we_check[13] = fifo_ctrl_we;
+    reg_we_check[14] = 1'b0;
+    reg_we_check[15] = ovrd_we;
+    reg_we_check[16] = 1'b0;
+    reg_we_check[17] = timeout_ctrl_we;
   end
 
   // Read data return
@@ -1619,6 +1680,29 @@ module uart_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
+        reg_rdata_next[31:0] = cip_id_qs;
+      end
+
+      addr_hit[1]: begin
+        reg_rdata_next[7:0] = revision_reserved_qs;
+        reg_rdata_next[15:8] = revision_subminor_qs;
+        reg_rdata_next[23:16] = revision_minor_qs;
+        reg_rdata_next[31:24] = revision_major_qs;
+      end
+
+      addr_hit[2]: begin
+        reg_rdata_next[31:0] = parameter_block_type_qs;
+      end
+
+      addr_hit[3]: begin
+        reg_rdata_next[31:0] = parameter_block_length_qs;
+      end
+
+      addr_hit[4]: begin
+        reg_rdata_next[31:0] = next_parameter_block_qs;
+      end
+
+      addr_hit[5]: begin
         reg_rdata_next[0] = intr_state_tx_watermark_qs;
         reg_rdata_next[1] = intr_state_rx_watermark_qs;
         reg_rdata_next[2] = intr_state_tx_empty_qs;
@@ -1629,7 +1713,7 @@ module uart_reg_top (
         reg_rdata_next[7] = intr_state_rx_parity_err_qs;
       end
 
-      addr_hit[1]: begin
+      addr_hit[6]: begin
         reg_rdata_next[0] = intr_enable_tx_watermark_qs;
         reg_rdata_next[1] = intr_enable_rx_watermark_qs;
         reg_rdata_next[2] = intr_enable_tx_empty_qs;
@@ -1640,7 +1724,7 @@ module uart_reg_top (
         reg_rdata_next[7] = intr_enable_rx_parity_err_qs;
       end
 
-      addr_hit[2]: begin
+      addr_hit[7]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
         reg_rdata_next[2] = '0;
@@ -1651,11 +1735,11 @@ module uart_reg_top (
         reg_rdata_next[7] = '0;
       end
 
-      addr_hit[3]: begin
+      addr_hit[8]: begin
         reg_rdata_next[0] = '0;
       end
 
-      addr_hit[4]: begin
+      addr_hit[9]: begin
         reg_rdata_next[0] = ctrl_tx_qs;
         reg_rdata_next[1] = ctrl_rx_qs;
         reg_rdata_next[2] = ctrl_nf_qs;
@@ -1667,7 +1751,7 @@ module uart_reg_top (
         reg_rdata_next[31:16] = ctrl_nco_qs;
       end
 
-      addr_hit[5]: begin
+      addr_hit[10]: begin
         reg_rdata_next[0] = status_txfull_qs;
         reg_rdata_next[1] = status_rxfull_qs;
         reg_rdata_next[2] = status_txempty_qs;
@@ -1676,36 +1760,36 @@ module uart_reg_top (
         reg_rdata_next[5] = status_rxempty_qs;
       end
 
-      addr_hit[6]: begin
+      addr_hit[11]: begin
         reg_rdata_next[7:0] = rdata_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[12]: begin
         reg_rdata_next[7:0] = '0;
       end
 
-      addr_hit[8]: begin
+      addr_hit[13]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
         reg_rdata_next[4:2] = fifo_ctrl_rxilvl_qs;
         reg_rdata_next[7:5] = fifo_ctrl_txilvl_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[14]: begin
         reg_rdata_next[7:0] = fifo_status_txlvl_qs;
         reg_rdata_next[23:16] = fifo_status_rxlvl_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[15]: begin
         reg_rdata_next[0] = ovrd_txen_qs;
         reg_rdata_next[1] = ovrd_txval_qs;
       end
 
-      addr_hit[11]: begin
+      addr_hit[16]: begin
         reg_rdata_next[15:0] = val_qs;
       end
 
-      addr_hit[12]: begin
+      addr_hit[17]: begin
         reg_rdata_next[23:0] = timeout_ctrl_val_qs;
         reg_rdata_next[31] = timeout_ctrl_en_qs;
       end

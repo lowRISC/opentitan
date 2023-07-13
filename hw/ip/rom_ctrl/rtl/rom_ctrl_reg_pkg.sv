@@ -10,7 +10,7 @@ package rom_ctrl_reg_pkg;
   parameter int NumAlerts = 1;
 
   // Address widths within the block
-  parameter int RegsAw = 7;
+  parameter int RegsAw = 8;
   parameter int RomAw = 15;
 
   ///////////////////////////////////////////////
@@ -66,24 +66,29 @@ package rom_ctrl_reg_pkg;
   } rom_ctrl_regs_hw2reg_t;
 
   // Register offsets for regs interface
-  parameter logic [RegsAw-1:0] ROM_CTRL_ALERT_TEST_OFFSET = 7'h 0;
-  parameter logic [RegsAw-1:0] ROM_CTRL_FATAL_ALERT_CAUSE_OFFSET = 7'h 4;
-  parameter logic [RegsAw-1:0] ROM_CTRL_DIGEST_0_OFFSET = 7'h 8;
-  parameter logic [RegsAw-1:0] ROM_CTRL_DIGEST_1_OFFSET = 7'h c;
-  parameter logic [RegsAw-1:0] ROM_CTRL_DIGEST_2_OFFSET = 7'h 10;
-  parameter logic [RegsAw-1:0] ROM_CTRL_DIGEST_3_OFFSET = 7'h 14;
-  parameter logic [RegsAw-1:0] ROM_CTRL_DIGEST_4_OFFSET = 7'h 18;
-  parameter logic [RegsAw-1:0] ROM_CTRL_DIGEST_5_OFFSET = 7'h 1c;
-  parameter logic [RegsAw-1:0] ROM_CTRL_DIGEST_6_OFFSET = 7'h 20;
-  parameter logic [RegsAw-1:0] ROM_CTRL_DIGEST_7_OFFSET = 7'h 24;
-  parameter logic [RegsAw-1:0] ROM_CTRL_EXP_DIGEST_0_OFFSET = 7'h 28;
-  parameter logic [RegsAw-1:0] ROM_CTRL_EXP_DIGEST_1_OFFSET = 7'h 2c;
-  parameter logic [RegsAw-1:0] ROM_CTRL_EXP_DIGEST_2_OFFSET = 7'h 30;
-  parameter logic [RegsAw-1:0] ROM_CTRL_EXP_DIGEST_3_OFFSET = 7'h 34;
-  parameter logic [RegsAw-1:0] ROM_CTRL_EXP_DIGEST_4_OFFSET = 7'h 38;
-  parameter logic [RegsAw-1:0] ROM_CTRL_EXP_DIGEST_5_OFFSET = 7'h 3c;
-  parameter logic [RegsAw-1:0] ROM_CTRL_EXP_DIGEST_6_OFFSET = 7'h 40;
-  parameter logic [RegsAw-1:0] ROM_CTRL_EXP_DIGEST_7_OFFSET = 7'h 44;
+  parameter logic [RegsAw-1:0] ROM_CTRL_CIP_ID_OFFSET = 8'h 0;
+  parameter logic [RegsAw-1:0] ROM_CTRL_REVISION_OFFSET = 8'h 4;
+  parameter logic [RegsAw-1:0] ROM_CTRL_PARAMETER_BLOCK_TYPE_OFFSET = 8'h 8;
+  parameter logic [RegsAw-1:0] ROM_CTRL_PARAMETER_BLOCK_LENGTH_OFFSET = 8'h c;
+  parameter logic [RegsAw-1:0] ROM_CTRL_NEXT_PARAMETER_BLOCK_OFFSET = 8'h 10;
+  parameter logic [RegsAw-1:0] ROM_CTRL_ALERT_TEST_OFFSET = 8'h 40;
+  parameter logic [RegsAw-1:0] ROM_CTRL_FATAL_ALERT_CAUSE_OFFSET = 8'h 44;
+  parameter logic [RegsAw-1:0] ROM_CTRL_DIGEST_0_OFFSET = 8'h 48;
+  parameter logic [RegsAw-1:0] ROM_CTRL_DIGEST_1_OFFSET = 8'h 4c;
+  parameter logic [RegsAw-1:0] ROM_CTRL_DIGEST_2_OFFSET = 8'h 50;
+  parameter logic [RegsAw-1:0] ROM_CTRL_DIGEST_3_OFFSET = 8'h 54;
+  parameter logic [RegsAw-1:0] ROM_CTRL_DIGEST_4_OFFSET = 8'h 58;
+  parameter logic [RegsAw-1:0] ROM_CTRL_DIGEST_5_OFFSET = 8'h 5c;
+  parameter logic [RegsAw-1:0] ROM_CTRL_DIGEST_6_OFFSET = 8'h 60;
+  parameter logic [RegsAw-1:0] ROM_CTRL_DIGEST_7_OFFSET = 8'h 64;
+  parameter logic [RegsAw-1:0] ROM_CTRL_EXP_DIGEST_0_OFFSET = 8'h 68;
+  parameter logic [RegsAw-1:0] ROM_CTRL_EXP_DIGEST_1_OFFSET = 8'h 6c;
+  parameter logic [RegsAw-1:0] ROM_CTRL_EXP_DIGEST_2_OFFSET = 8'h 70;
+  parameter logic [RegsAw-1:0] ROM_CTRL_EXP_DIGEST_3_OFFSET = 8'h 74;
+  parameter logic [RegsAw-1:0] ROM_CTRL_EXP_DIGEST_4_OFFSET = 8'h 78;
+  parameter logic [RegsAw-1:0] ROM_CTRL_EXP_DIGEST_5_OFFSET = 8'h 7c;
+  parameter logic [RegsAw-1:0] ROM_CTRL_EXP_DIGEST_6_OFFSET = 8'h 80;
+  parameter logic [RegsAw-1:0] ROM_CTRL_EXP_DIGEST_7_OFFSET = 8'h 84;
 
   // Reset values for hwext registers and their fields for regs interface
   parameter logic [0:0] ROM_CTRL_ALERT_TEST_RESVAL = 1'h 0;
@@ -91,6 +96,11 @@ package rom_ctrl_reg_pkg;
 
   // Register index for regs interface
   typedef enum int {
+    ROM_CTRL_CIP_ID,
+    ROM_CTRL_REVISION,
+    ROM_CTRL_PARAMETER_BLOCK_TYPE,
+    ROM_CTRL_PARAMETER_BLOCK_LENGTH,
+    ROM_CTRL_NEXT_PARAMETER_BLOCK,
     ROM_CTRL_ALERT_TEST,
     ROM_CTRL_FATAL_ALERT_CAUSE,
     ROM_CTRL_DIGEST_0,
@@ -112,25 +122,30 @@ package rom_ctrl_reg_pkg;
   } rom_ctrl_regs_id_e;
 
   // Register width information to check illegal writes for regs interface
-  parameter logic [3:0] ROM_CTRL_REGS_PERMIT [18] = '{
-    4'b 0001, // index[ 0] ROM_CTRL_ALERT_TEST
-    4'b 0001, // index[ 1] ROM_CTRL_FATAL_ALERT_CAUSE
-    4'b 1111, // index[ 2] ROM_CTRL_DIGEST_0
-    4'b 1111, // index[ 3] ROM_CTRL_DIGEST_1
-    4'b 1111, // index[ 4] ROM_CTRL_DIGEST_2
-    4'b 1111, // index[ 5] ROM_CTRL_DIGEST_3
-    4'b 1111, // index[ 6] ROM_CTRL_DIGEST_4
-    4'b 1111, // index[ 7] ROM_CTRL_DIGEST_5
-    4'b 1111, // index[ 8] ROM_CTRL_DIGEST_6
-    4'b 1111, // index[ 9] ROM_CTRL_DIGEST_7
-    4'b 1111, // index[10] ROM_CTRL_EXP_DIGEST_0
-    4'b 1111, // index[11] ROM_CTRL_EXP_DIGEST_1
-    4'b 1111, // index[12] ROM_CTRL_EXP_DIGEST_2
-    4'b 1111, // index[13] ROM_CTRL_EXP_DIGEST_3
-    4'b 1111, // index[14] ROM_CTRL_EXP_DIGEST_4
-    4'b 1111, // index[15] ROM_CTRL_EXP_DIGEST_5
-    4'b 1111, // index[16] ROM_CTRL_EXP_DIGEST_6
-    4'b 1111  // index[17] ROM_CTRL_EXP_DIGEST_7
+  parameter logic [3:0] ROM_CTRL_REGS_PERMIT [23] = '{
+    4'b 1111, // index[ 0] ROM_CTRL_CIP_ID
+    4'b 1111, // index[ 1] ROM_CTRL_REVISION
+    4'b 1111, // index[ 2] ROM_CTRL_PARAMETER_BLOCK_TYPE
+    4'b 1111, // index[ 3] ROM_CTRL_PARAMETER_BLOCK_LENGTH
+    4'b 1111, // index[ 4] ROM_CTRL_NEXT_PARAMETER_BLOCK
+    4'b 0001, // index[ 5] ROM_CTRL_ALERT_TEST
+    4'b 0001, // index[ 6] ROM_CTRL_FATAL_ALERT_CAUSE
+    4'b 1111, // index[ 7] ROM_CTRL_DIGEST_0
+    4'b 1111, // index[ 8] ROM_CTRL_DIGEST_1
+    4'b 1111, // index[ 9] ROM_CTRL_DIGEST_2
+    4'b 1111, // index[10] ROM_CTRL_DIGEST_3
+    4'b 1111, // index[11] ROM_CTRL_DIGEST_4
+    4'b 1111, // index[12] ROM_CTRL_DIGEST_5
+    4'b 1111, // index[13] ROM_CTRL_DIGEST_6
+    4'b 1111, // index[14] ROM_CTRL_DIGEST_7
+    4'b 1111, // index[15] ROM_CTRL_EXP_DIGEST_0
+    4'b 1111, // index[16] ROM_CTRL_EXP_DIGEST_1
+    4'b 1111, // index[17] ROM_CTRL_EXP_DIGEST_2
+    4'b 1111, // index[18] ROM_CTRL_EXP_DIGEST_3
+    4'b 1111, // index[19] ROM_CTRL_EXP_DIGEST_4
+    4'b 1111, // index[20] ROM_CTRL_EXP_DIGEST_5
+    4'b 1111, // index[21] ROM_CTRL_EXP_DIGEST_6
+    4'b 1111  // index[22] ROM_CTRL_EXP_DIGEST_7
   };
 
   // Window parameters for rom interface

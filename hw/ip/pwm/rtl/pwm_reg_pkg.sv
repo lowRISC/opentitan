@@ -11,7 +11,7 @@ package pwm_reg_pkg;
   parameter int NumAlerts = 1;
 
   // Address widths within the block
-  parameter int BlockAw = 7;
+  parameter int BlockAw = 8;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -96,29 +96,34 @@ package pwm_reg_pkg;
   } pwm_reg2hw_t;
 
   // Register offsets
-  parameter logic [BlockAw-1:0] PWM_ALERT_TEST_OFFSET = 7'h 0;
-  parameter logic [BlockAw-1:0] PWM_REGWEN_OFFSET = 7'h 4;
-  parameter logic [BlockAw-1:0] PWM_CFG_OFFSET = 7'h 8;
-  parameter logic [BlockAw-1:0] PWM_PWM_EN_OFFSET = 7'h c;
-  parameter logic [BlockAw-1:0] PWM_INVERT_OFFSET = 7'h 10;
-  parameter logic [BlockAw-1:0] PWM_PWM_PARAM_0_OFFSET = 7'h 14;
-  parameter logic [BlockAw-1:0] PWM_PWM_PARAM_1_OFFSET = 7'h 18;
-  parameter logic [BlockAw-1:0] PWM_PWM_PARAM_2_OFFSET = 7'h 1c;
-  parameter logic [BlockAw-1:0] PWM_PWM_PARAM_3_OFFSET = 7'h 20;
-  parameter logic [BlockAw-1:0] PWM_PWM_PARAM_4_OFFSET = 7'h 24;
-  parameter logic [BlockAw-1:0] PWM_PWM_PARAM_5_OFFSET = 7'h 28;
-  parameter logic [BlockAw-1:0] PWM_DUTY_CYCLE_0_OFFSET = 7'h 2c;
-  parameter logic [BlockAw-1:0] PWM_DUTY_CYCLE_1_OFFSET = 7'h 30;
-  parameter logic [BlockAw-1:0] PWM_DUTY_CYCLE_2_OFFSET = 7'h 34;
-  parameter logic [BlockAw-1:0] PWM_DUTY_CYCLE_3_OFFSET = 7'h 38;
-  parameter logic [BlockAw-1:0] PWM_DUTY_CYCLE_4_OFFSET = 7'h 3c;
-  parameter logic [BlockAw-1:0] PWM_DUTY_CYCLE_5_OFFSET = 7'h 40;
-  parameter logic [BlockAw-1:0] PWM_BLINK_PARAM_0_OFFSET = 7'h 44;
-  parameter logic [BlockAw-1:0] PWM_BLINK_PARAM_1_OFFSET = 7'h 48;
-  parameter logic [BlockAw-1:0] PWM_BLINK_PARAM_2_OFFSET = 7'h 4c;
-  parameter logic [BlockAw-1:0] PWM_BLINK_PARAM_3_OFFSET = 7'h 50;
-  parameter logic [BlockAw-1:0] PWM_BLINK_PARAM_4_OFFSET = 7'h 54;
-  parameter logic [BlockAw-1:0] PWM_BLINK_PARAM_5_OFFSET = 7'h 58;
+  parameter logic [BlockAw-1:0] PWM_CIP_ID_OFFSET = 8'h 0;
+  parameter logic [BlockAw-1:0] PWM_REVISION_OFFSET = 8'h 4;
+  parameter logic [BlockAw-1:0] PWM_PARAMETER_BLOCK_TYPE_OFFSET = 8'h 8;
+  parameter logic [BlockAw-1:0] PWM_PARAMETER_BLOCK_LENGTH_OFFSET = 8'h c;
+  parameter logic [BlockAw-1:0] PWM_NEXT_PARAMETER_BLOCK_OFFSET = 8'h 10;
+  parameter logic [BlockAw-1:0] PWM_ALERT_TEST_OFFSET = 8'h 40;
+  parameter logic [BlockAw-1:0] PWM_REGWEN_OFFSET = 8'h 44;
+  parameter logic [BlockAw-1:0] PWM_CFG_OFFSET = 8'h 48;
+  parameter logic [BlockAw-1:0] PWM_PWM_EN_OFFSET = 8'h 4c;
+  parameter logic [BlockAw-1:0] PWM_INVERT_OFFSET = 8'h 50;
+  parameter logic [BlockAw-1:0] PWM_PWM_PARAM_0_OFFSET = 8'h 54;
+  parameter logic [BlockAw-1:0] PWM_PWM_PARAM_1_OFFSET = 8'h 58;
+  parameter logic [BlockAw-1:0] PWM_PWM_PARAM_2_OFFSET = 8'h 5c;
+  parameter logic [BlockAw-1:0] PWM_PWM_PARAM_3_OFFSET = 8'h 60;
+  parameter logic [BlockAw-1:0] PWM_PWM_PARAM_4_OFFSET = 8'h 64;
+  parameter logic [BlockAw-1:0] PWM_PWM_PARAM_5_OFFSET = 8'h 68;
+  parameter logic [BlockAw-1:0] PWM_DUTY_CYCLE_0_OFFSET = 8'h 6c;
+  parameter logic [BlockAw-1:0] PWM_DUTY_CYCLE_1_OFFSET = 8'h 70;
+  parameter logic [BlockAw-1:0] PWM_DUTY_CYCLE_2_OFFSET = 8'h 74;
+  parameter logic [BlockAw-1:0] PWM_DUTY_CYCLE_3_OFFSET = 8'h 78;
+  parameter logic [BlockAw-1:0] PWM_DUTY_CYCLE_4_OFFSET = 8'h 7c;
+  parameter logic [BlockAw-1:0] PWM_DUTY_CYCLE_5_OFFSET = 8'h 80;
+  parameter logic [BlockAw-1:0] PWM_BLINK_PARAM_0_OFFSET = 8'h 84;
+  parameter logic [BlockAw-1:0] PWM_BLINK_PARAM_1_OFFSET = 8'h 88;
+  parameter logic [BlockAw-1:0] PWM_BLINK_PARAM_2_OFFSET = 8'h 8c;
+  parameter logic [BlockAw-1:0] PWM_BLINK_PARAM_3_OFFSET = 8'h 90;
+  parameter logic [BlockAw-1:0] PWM_BLINK_PARAM_4_OFFSET = 8'h 94;
+  parameter logic [BlockAw-1:0] PWM_BLINK_PARAM_5_OFFSET = 8'h 98;
 
   // Reset values for hwext registers and their fields
   parameter logic [0:0] PWM_ALERT_TEST_RESVAL = 1'h 0;
@@ -126,6 +131,11 @@ package pwm_reg_pkg;
 
   // Register index
   typedef enum int {
+    PWM_CIP_ID,
+    PWM_REVISION,
+    PWM_PARAMETER_BLOCK_TYPE,
+    PWM_PARAMETER_BLOCK_LENGTH,
+    PWM_NEXT_PARAMETER_BLOCK,
     PWM_ALERT_TEST,
     PWM_REGWEN,
     PWM_CFG,
@@ -152,30 +162,35 @@ package pwm_reg_pkg;
   } pwm_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] PWM_PERMIT [23] = '{
-    4'b 0001, // index[ 0] PWM_ALERT_TEST
-    4'b 0001, // index[ 1] PWM_REGWEN
-    4'b 1111, // index[ 2] PWM_CFG
-    4'b 0001, // index[ 3] PWM_PWM_EN
-    4'b 0001, // index[ 4] PWM_INVERT
-    4'b 1111, // index[ 5] PWM_PWM_PARAM_0
-    4'b 1111, // index[ 6] PWM_PWM_PARAM_1
-    4'b 1111, // index[ 7] PWM_PWM_PARAM_2
-    4'b 1111, // index[ 8] PWM_PWM_PARAM_3
-    4'b 1111, // index[ 9] PWM_PWM_PARAM_4
-    4'b 1111, // index[10] PWM_PWM_PARAM_5
-    4'b 1111, // index[11] PWM_DUTY_CYCLE_0
-    4'b 1111, // index[12] PWM_DUTY_CYCLE_1
-    4'b 1111, // index[13] PWM_DUTY_CYCLE_2
-    4'b 1111, // index[14] PWM_DUTY_CYCLE_3
-    4'b 1111, // index[15] PWM_DUTY_CYCLE_4
-    4'b 1111, // index[16] PWM_DUTY_CYCLE_5
-    4'b 1111, // index[17] PWM_BLINK_PARAM_0
-    4'b 1111, // index[18] PWM_BLINK_PARAM_1
-    4'b 1111, // index[19] PWM_BLINK_PARAM_2
-    4'b 1111, // index[20] PWM_BLINK_PARAM_3
-    4'b 1111, // index[21] PWM_BLINK_PARAM_4
-    4'b 1111  // index[22] PWM_BLINK_PARAM_5
+  parameter logic [3:0] PWM_PERMIT [28] = '{
+    4'b 1111, // index[ 0] PWM_CIP_ID
+    4'b 1111, // index[ 1] PWM_REVISION
+    4'b 1111, // index[ 2] PWM_PARAMETER_BLOCK_TYPE
+    4'b 1111, // index[ 3] PWM_PARAMETER_BLOCK_LENGTH
+    4'b 1111, // index[ 4] PWM_NEXT_PARAMETER_BLOCK
+    4'b 0001, // index[ 5] PWM_ALERT_TEST
+    4'b 0001, // index[ 6] PWM_REGWEN
+    4'b 1111, // index[ 7] PWM_CFG
+    4'b 0001, // index[ 8] PWM_PWM_EN
+    4'b 0001, // index[ 9] PWM_INVERT
+    4'b 1111, // index[10] PWM_PWM_PARAM_0
+    4'b 1111, // index[11] PWM_PWM_PARAM_1
+    4'b 1111, // index[12] PWM_PWM_PARAM_2
+    4'b 1111, // index[13] PWM_PWM_PARAM_3
+    4'b 1111, // index[14] PWM_PWM_PARAM_4
+    4'b 1111, // index[15] PWM_PWM_PARAM_5
+    4'b 1111, // index[16] PWM_DUTY_CYCLE_0
+    4'b 1111, // index[17] PWM_DUTY_CYCLE_1
+    4'b 1111, // index[18] PWM_DUTY_CYCLE_2
+    4'b 1111, // index[19] PWM_DUTY_CYCLE_3
+    4'b 1111, // index[20] PWM_DUTY_CYCLE_4
+    4'b 1111, // index[21] PWM_DUTY_CYCLE_5
+    4'b 1111, // index[22] PWM_BLINK_PARAM_0
+    4'b 1111, // index[23] PWM_BLINK_PARAM_1
+    4'b 1111, // index[24] PWM_BLINK_PARAM_2
+    4'b 1111, // index[25] PWM_BLINK_PARAM_3
+    4'b 1111, // index[26] PWM_BLINK_PARAM_4
+    4'b 1111  // index[27] PWM_BLINK_PARAM_5
   };
 
 endpackage

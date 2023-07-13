@@ -60,9 +60,9 @@ module rv_core_ibex_cfg_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [24:0] reg_we_check;
+  logic [29:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(25)
+    .OneHotWidth(30)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -131,7 +131,7 @@ module rv_core_ibex_cfg_reg_top (
   // Create steering logic
   always_comb begin
     reg_steer =
-        tl_i.a_address[AW-1:0] inside {[128:159]} ? 1'd0 :
+        tl_i.a_address[AW-1:0] inside {[192:223]} ? 1'd0 :
         // Default set to register
         1'd1;
 
@@ -173,6 +173,14 @@ module rv_core_ibex_cfg_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic [31:0] cip_id_qs;
+  logic [7:0] revision_reserved_qs;
+  logic [7:0] revision_subminor_qs;
+  logic [7:0] revision_minor_qs;
+  logic [7:0] revision_major_qs;
+  logic [31:0] parameter_block_type_qs;
+  logic [31:0] parameter_block_length_qs;
+  logic [31:0] next_parameter_block_qs;
   logic alert_test_we;
   logic alert_test_fatal_sw_err_wd;
   logic alert_test_recov_sw_err_wd;
@@ -260,6 +268,44 @@ module rv_core_ibex_cfg_reg_top (
   logic [31:0] fpga_info_qs;
 
   // Register instances
+  // R[cip_id]: V(False)
+  // constant-only read
+  assign cip_id_qs = 32'h17;
+
+
+  // R[revision]: V(False)
+  //   F[reserved]: 7:0
+  // constant-only read
+  assign revision_reserved_qs = 8'h0;
+
+  //   F[subminor]: 15:8
+  // constant-only read
+  assign revision_subminor_qs = 8'h0;
+
+  //   F[minor]: 23:16
+  // constant-only read
+  assign revision_minor_qs = 8'h0;
+
+  //   F[major]: 31:24
+  // constant-only read
+  assign revision_major_qs = 8'h2;
+
+
+  // R[parameter_block_type]: V(False)
+  // constant-only read
+  assign parameter_block_type_qs = 32'h0;
+
+
+  // R[parameter_block_length]: V(False)
+  // constant-only read
+  assign parameter_block_length_qs = 32'hc;
+
+
+  // R[next_parameter_block]: V(False)
+  // constant-only read
+  assign next_parameter_block_qs = 32'h0;
+
+
   // R[alert_test]: V(True)
   logic alert_test_qe;
   logic [3:0] alert_test_flds_we;
@@ -1146,34 +1192,39 @@ module rv_core_ibex_cfg_reg_top (
 
 
 
-  logic [24:0] addr_hit;
+  logic [29:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[ 0] = (reg_addr == RV_CORE_IBEX_ALERT_TEST_OFFSET);
-    addr_hit[ 1] = (reg_addr == RV_CORE_IBEX_SW_RECOV_ERR_OFFSET);
-    addr_hit[ 2] = (reg_addr == RV_CORE_IBEX_SW_FATAL_ERR_OFFSET);
-    addr_hit[ 3] = (reg_addr == RV_CORE_IBEX_IBUS_REGWEN_0_OFFSET);
-    addr_hit[ 4] = (reg_addr == RV_CORE_IBEX_IBUS_REGWEN_1_OFFSET);
-    addr_hit[ 5] = (reg_addr == RV_CORE_IBEX_IBUS_ADDR_EN_0_OFFSET);
-    addr_hit[ 6] = (reg_addr == RV_CORE_IBEX_IBUS_ADDR_EN_1_OFFSET);
-    addr_hit[ 7] = (reg_addr == RV_CORE_IBEX_IBUS_ADDR_MATCHING_0_OFFSET);
-    addr_hit[ 8] = (reg_addr == RV_CORE_IBEX_IBUS_ADDR_MATCHING_1_OFFSET);
-    addr_hit[ 9] = (reg_addr == RV_CORE_IBEX_IBUS_REMAP_ADDR_0_OFFSET);
-    addr_hit[10] = (reg_addr == RV_CORE_IBEX_IBUS_REMAP_ADDR_1_OFFSET);
-    addr_hit[11] = (reg_addr == RV_CORE_IBEX_DBUS_REGWEN_0_OFFSET);
-    addr_hit[12] = (reg_addr == RV_CORE_IBEX_DBUS_REGWEN_1_OFFSET);
-    addr_hit[13] = (reg_addr == RV_CORE_IBEX_DBUS_ADDR_EN_0_OFFSET);
-    addr_hit[14] = (reg_addr == RV_CORE_IBEX_DBUS_ADDR_EN_1_OFFSET);
-    addr_hit[15] = (reg_addr == RV_CORE_IBEX_DBUS_ADDR_MATCHING_0_OFFSET);
-    addr_hit[16] = (reg_addr == RV_CORE_IBEX_DBUS_ADDR_MATCHING_1_OFFSET);
-    addr_hit[17] = (reg_addr == RV_CORE_IBEX_DBUS_REMAP_ADDR_0_OFFSET);
-    addr_hit[18] = (reg_addr == RV_CORE_IBEX_DBUS_REMAP_ADDR_1_OFFSET);
-    addr_hit[19] = (reg_addr == RV_CORE_IBEX_NMI_ENABLE_OFFSET);
-    addr_hit[20] = (reg_addr == RV_CORE_IBEX_NMI_STATE_OFFSET);
-    addr_hit[21] = (reg_addr == RV_CORE_IBEX_ERR_STATUS_OFFSET);
-    addr_hit[22] = (reg_addr == RV_CORE_IBEX_RND_DATA_OFFSET);
-    addr_hit[23] = (reg_addr == RV_CORE_IBEX_RND_STATUS_OFFSET);
-    addr_hit[24] = (reg_addr == RV_CORE_IBEX_FPGA_INFO_OFFSET);
+    addr_hit[ 0] = (reg_addr == RV_CORE_IBEX_CIP_ID_OFFSET);
+    addr_hit[ 1] = (reg_addr == RV_CORE_IBEX_REVISION_OFFSET);
+    addr_hit[ 2] = (reg_addr == RV_CORE_IBEX_PARAMETER_BLOCK_TYPE_OFFSET);
+    addr_hit[ 3] = (reg_addr == RV_CORE_IBEX_PARAMETER_BLOCK_LENGTH_OFFSET);
+    addr_hit[ 4] = (reg_addr == RV_CORE_IBEX_NEXT_PARAMETER_BLOCK_OFFSET);
+    addr_hit[ 5] = (reg_addr == RV_CORE_IBEX_ALERT_TEST_OFFSET);
+    addr_hit[ 6] = (reg_addr == RV_CORE_IBEX_SW_RECOV_ERR_OFFSET);
+    addr_hit[ 7] = (reg_addr == RV_CORE_IBEX_SW_FATAL_ERR_OFFSET);
+    addr_hit[ 8] = (reg_addr == RV_CORE_IBEX_IBUS_REGWEN_0_OFFSET);
+    addr_hit[ 9] = (reg_addr == RV_CORE_IBEX_IBUS_REGWEN_1_OFFSET);
+    addr_hit[10] = (reg_addr == RV_CORE_IBEX_IBUS_ADDR_EN_0_OFFSET);
+    addr_hit[11] = (reg_addr == RV_CORE_IBEX_IBUS_ADDR_EN_1_OFFSET);
+    addr_hit[12] = (reg_addr == RV_CORE_IBEX_IBUS_ADDR_MATCHING_0_OFFSET);
+    addr_hit[13] = (reg_addr == RV_CORE_IBEX_IBUS_ADDR_MATCHING_1_OFFSET);
+    addr_hit[14] = (reg_addr == RV_CORE_IBEX_IBUS_REMAP_ADDR_0_OFFSET);
+    addr_hit[15] = (reg_addr == RV_CORE_IBEX_IBUS_REMAP_ADDR_1_OFFSET);
+    addr_hit[16] = (reg_addr == RV_CORE_IBEX_DBUS_REGWEN_0_OFFSET);
+    addr_hit[17] = (reg_addr == RV_CORE_IBEX_DBUS_REGWEN_1_OFFSET);
+    addr_hit[18] = (reg_addr == RV_CORE_IBEX_DBUS_ADDR_EN_0_OFFSET);
+    addr_hit[19] = (reg_addr == RV_CORE_IBEX_DBUS_ADDR_EN_1_OFFSET);
+    addr_hit[20] = (reg_addr == RV_CORE_IBEX_DBUS_ADDR_MATCHING_0_OFFSET);
+    addr_hit[21] = (reg_addr == RV_CORE_IBEX_DBUS_ADDR_MATCHING_1_OFFSET);
+    addr_hit[22] = (reg_addr == RV_CORE_IBEX_DBUS_REMAP_ADDR_0_OFFSET);
+    addr_hit[23] = (reg_addr == RV_CORE_IBEX_DBUS_REMAP_ADDR_1_OFFSET);
+    addr_hit[24] = (reg_addr == RV_CORE_IBEX_NMI_ENABLE_OFFSET);
+    addr_hit[25] = (reg_addr == RV_CORE_IBEX_NMI_STATE_OFFSET);
+    addr_hit[26] = (reg_addr == RV_CORE_IBEX_ERR_STATUS_OFFSET);
+    addr_hit[27] = (reg_addr == RV_CORE_IBEX_RND_DATA_OFFSET);
+    addr_hit[28] = (reg_addr == RV_CORE_IBEX_RND_STATUS_OFFSET);
+    addr_hit[29] = (reg_addr == RV_CORE_IBEX_FPGA_INFO_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1205,11 +1256,16 @@ module rv_core_ibex_cfg_reg_top (
                (addr_hit[21] & (|(RV_CORE_IBEX_CFG_PERMIT[21] & ~reg_be))) |
                (addr_hit[22] & (|(RV_CORE_IBEX_CFG_PERMIT[22] & ~reg_be))) |
                (addr_hit[23] & (|(RV_CORE_IBEX_CFG_PERMIT[23] & ~reg_be))) |
-               (addr_hit[24] & (|(RV_CORE_IBEX_CFG_PERMIT[24] & ~reg_be)))));
+               (addr_hit[24] & (|(RV_CORE_IBEX_CFG_PERMIT[24] & ~reg_be))) |
+               (addr_hit[25] & (|(RV_CORE_IBEX_CFG_PERMIT[25] & ~reg_be))) |
+               (addr_hit[26] & (|(RV_CORE_IBEX_CFG_PERMIT[26] & ~reg_be))) |
+               (addr_hit[27] & (|(RV_CORE_IBEX_CFG_PERMIT[27] & ~reg_be))) |
+               (addr_hit[28] & (|(RV_CORE_IBEX_CFG_PERMIT[28] & ~reg_be))) |
+               (addr_hit[29] & (|(RV_CORE_IBEX_CFG_PERMIT[29] & ~reg_be)))));
   end
 
   // Generate write-enables
-  assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
+  assign alert_test_we = addr_hit[5] & reg_we & !reg_error;
 
   assign alert_test_fatal_sw_err_wd = reg_wdata[0];
 
@@ -1218,71 +1274,71 @@ module rv_core_ibex_cfg_reg_top (
   assign alert_test_fatal_hw_err_wd = reg_wdata[2];
 
   assign alert_test_recov_hw_err_wd = reg_wdata[3];
-  assign sw_recov_err_we = addr_hit[1] & reg_we & !reg_error;
+  assign sw_recov_err_we = addr_hit[6] & reg_we & !reg_error;
 
   assign sw_recov_err_wd = reg_wdata[3:0];
-  assign sw_fatal_err_we = addr_hit[2] & reg_we & !reg_error;
+  assign sw_fatal_err_we = addr_hit[7] & reg_we & !reg_error;
 
   assign sw_fatal_err_wd = reg_wdata[3:0];
-  assign ibus_regwen_0_we = addr_hit[3] & reg_we & !reg_error;
+  assign ibus_regwen_0_we = addr_hit[8] & reg_we & !reg_error;
 
   assign ibus_regwen_0_wd = reg_wdata[0];
-  assign ibus_regwen_1_we = addr_hit[4] & reg_we & !reg_error;
+  assign ibus_regwen_1_we = addr_hit[9] & reg_we & !reg_error;
 
   assign ibus_regwen_1_wd = reg_wdata[0];
-  assign ibus_addr_en_0_we = addr_hit[5] & reg_we & !reg_error;
+  assign ibus_addr_en_0_we = addr_hit[10] & reg_we & !reg_error;
 
   assign ibus_addr_en_0_wd = reg_wdata[0];
-  assign ibus_addr_en_1_we = addr_hit[6] & reg_we & !reg_error;
+  assign ibus_addr_en_1_we = addr_hit[11] & reg_we & !reg_error;
 
   assign ibus_addr_en_1_wd = reg_wdata[0];
-  assign ibus_addr_matching_0_we = addr_hit[7] & reg_we & !reg_error;
+  assign ibus_addr_matching_0_we = addr_hit[12] & reg_we & !reg_error;
 
   assign ibus_addr_matching_0_wd = reg_wdata[31:0];
-  assign ibus_addr_matching_1_we = addr_hit[8] & reg_we & !reg_error;
+  assign ibus_addr_matching_1_we = addr_hit[13] & reg_we & !reg_error;
 
   assign ibus_addr_matching_1_wd = reg_wdata[31:0];
-  assign ibus_remap_addr_0_we = addr_hit[9] & reg_we & !reg_error;
+  assign ibus_remap_addr_0_we = addr_hit[14] & reg_we & !reg_error;
 
   assign ibus_remap_addr_0_wd = reg_wdata[31:0];
-  assign ibus_remap_addr_1_we = addr_hit[10] & reg_we & !reg_error;
+  assign ibus_remap_addr_1_we = addr_hit[15] & reg_we & !reg_error;
 
   assign ibus_remap_addr_1_wd = reg_wdata[31:0];
-  assign dbus_regwen_0_we = addr_hit[11] & reg_we & !reg_error;
+  assign dbus_regwen_0_we = addr_hit[16] & reg_we & !reg_error;
 
   assign dbus_regwen_0_wd = reg_wdata[0];
-  assign dbus_regwen_1_we = addr_hit[12] & reg_we & !reg_error;
+  assign dbus_regwen_1_we = addr_hit[17] & reg_we & !reg_error;
 
   assign dbus_regwen_1_wd = reg_wdata[0];
-  assign dbus_addr_en_0_we = addr_hit[13] & reg_we & !reg_error;
+  assign dbus_addr_en_0_we = addr_hit[18] & reg_we & !reg_error;
 
   assign dbus_addr_en_0_wd = reg_wdata[0];
-  assign dbus_addr_en_1_we = addr_hit[14] & reg_we & !reg_error;
+  assign dbus_addr_en_1_we = addr_hit[19] & reg_we & !reg_error;
 
   assign dbus_addr_en_1_wd = reg_wdata[0];
-  assign dbus_addr_matching_0_we = addr_hit[15] & reg_we & !reg_error;
+  assign dbus_addr_matching_0_we = addr_hit[20] & reg_we & !reg_error;
 
   assign dbus_addr_matching_0_wd = reg_wdata[31:0];
-  assign dbus_addr_matching_1_we = addr_hit[16] & reg_we & !reg_error;
+  assign dbus_addr_matching_1_we = addr_hit[21] & reg_we & !reg_error;
 
   assign dbus_addr_matching_1_wd = reg_wdata[31:0];
-  assign dbus_remap_addr_0_we = addr_hit[17] & reg_we & !reg_error;
+  assign dbus_remap_addr_0_we = addr_hit[22] & reg_we & !reg_error;
 
   assign dbus_remap_addr_0_wd = reg_wdata[31:0];
-  assign dbus_remap_addr_1_we = addr_hit[18] & reg_we & !reg_error;
+  assign dbus_remap_addr_1_we = addr_hit[23] & reg_we & !reg_error;
 
   assign dbus_remap_addr_1_wd = reg_wdata[31:0];
-  assign nmi_enable_we = addr_hit[19] & reg_we & !reg_error;
+  assign nmi_enable_we = addr_hit[24] & reg_we & !reg_error;
 
   assign nmi_enable_alert_en_wd = reg_wdata[0];
 
   assign nmi_enable_wdog_en_wd = reg_wdata[1];
-  assign nmi_state_we = addr_hit[20] & reg_we & !reg_error;
+  assign nmi_state_we = addr_hit[25] & reg_we & !reg_error;
 
   assign nmi_state_alert_wd = reg_wdata[0];
 
   assign nmi_state_wdog_wd = reg_wdata[1];
-  assign err_status_we = addr_hit[21] & reg_we & !reg_error;
+  assign err_status_we = addr_hit[26] & reg_we & !reg_error;
 
   assign err_status_reg_intg_err_wd = reg_wdata[0];
 
@@ -1291,38 +1347,43 @@ module rv_core_ibex_cfg_reg_top (
   assign err_status_fatal_core_err_wd = reg_wdata[9];
 
   assign err_status_recov_core_err_wd = reg_wdata[10];
-  assign rnd_data_re = addr_hit[22] & reg_re & !reg_error;
-  assign rnd_status_re = addr_hit[23] & reg_re & !reg_error;
-  assign fpga_info_re = addr_hit[24] & reg_re & !reg_error;
+  assign rnd_data_re = addr_hit[27] & reg_re & !reg_error;
+  assign rnd_status_re = addr_hit[28] & reg_re & !reg_error;
+  assign fpga_info_re = addr_hit[29] & reg_re & !reg_error;
 
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
-    reg_we_check[0] = alert_test_we;
-    reg_we_check[1] = sw_recov_err_we;
-    reg_we_check[2] = sw_fatal_err_we;
-    reg_we_check[3] = ibus_regwen_0_we;
-    reg_we_check[4] = ibus_regwen_1_we;
-    reg_we_check[5] = ibus_addr_en_0_gated_we;
-    reg_we_check[6] = ibus_addr_en_1_gated_we;
-    reg_we_check[7] = ibus_addr_matching_0_gated_we;
-    reg_we_check[8] = ibus_addr_matching_1_gated_we;
-    reg_we_check[9] = ibus_remap_addr_0_gated_we;
-    reg_we_check[10] = ibus_remap_addr_1_gated_we;
-    reg_we_check[11] = dbus_regwen_0_we;
-    reg_we_check[12] = dbus_regwen_1_we;
-    reg_we_check[13] = dbus_addr_en_0_gated_we;
-    reg_we_check[14] = dbus_addr_en_1_gated_we;
-    reg_we_check[15] = dbus_addr_matching_0_gated_we;
-    reg_we_check[16] = dbus_addr_matching_1_gated_we;
-    reg_we_check[17] = dbus_remap_addr_0_gated_we;
-    reg_we_check[18] = dbus_remap_addr_1_gated_we;
-    reg_we_check[19] = nmi_enable_we;
-    reg_we_check[20] = nmi_state_we;
-    reg_we_check[21] = err_status_we;
-    reg_we_check[22] = 1'b0;
-    reg_we_check[23] = 1'b0;
-    reg_we_check[24] = 1'b0;
+    reg_we_check[0] = 1'b0;
+    reg_we_check[1] = 1'b0;
+    reg_we_check[2] = 1'b0;
+    reg_we_check[3] = 1'b0;
+    reg_we_check[4] = 1'b0;
+    reg_we_check[5] = alert_test_we;
+    reg_we_check[6] = sw_recov_err_we;
+    reg_we_check[7] = sw_fatal_err_we;
+    reg_we_check[8] = ibus_regwen_0_we;
+    reg_we_check[9] = ibus_regwen_1_we;
+    reg_we_check[10] = ibus_addr_en_0_gated_we;
+    reg_we_check[11] = ibus_addr_en_1_gated_we;
+    reg_we_check[12] = ibus_addr_matching_0_gated_we;
+    reg_we_check[13] = ibus_addr_matching_1_gated_we;
+    reg_we_check[14] = ibus_remap_addr_0_gated_we;
+    reg_we_check[15] = ibus_remap_addr_1_gated_we;
+    reg_we_check[16] = dbus_regwen_0_we;
+    reg_we_check[17] = dbus_regwen_1_we;
+    reg_we_check[18] = dbus_addr_en_0_gated_we;
+    reg_we_check[19] = dbus_addr_en_1_gated_we;
+    reg_we_check[20] = dbus_addr_matching_0_gated_we;
+    reg_we_check[21] = dbus_addr_matching_1_gated_we;
+    reg_we_check[22] = dbus_remap_addr_0_gated_we;
+    reg_we_check[23] = dbus_remap_addr_1_gated_we;
+    reg_we_check[24] = nmi_enable_we;
+    reg_we_check[25] = nmi_state_we;
+    reg_we_check[26] = err_status_we;
+    reg_we_check[27] = 1'b0;
+    reg_we_check[28] = 1'b0;
+    reg_we_check[29] = 1'b0;
   end
 
   // Read data return
@@ -1330,111 +1391,134 @@ module rv_core_ibex_cfg_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
+        reg_rdata_next[31:0] = cip_id_qs;
+      end
+
+      addr_hit[1]: begin
+        reg_rdata_next[7:0] = revision_reserved_qs;
+        reg_rdata_next[15:8] = revision_subminor_qs;
+        reg_rdata_next[23:16] = revision_minor_qs;
+        reg_rdata_next[31:24] = revision_major_qs;
+      end
+
+      addr_hit[2]: begin
+        reg_rdata_next[31:0] = parameter_block_type_qs;
+      end
+
+      addr_hit[3]: begin
+        reg_rdata_next[31:0] = parameter_block_length_qs;
+      end
+
+      addr_hit[4]: begin
+        reg_rdata_next[31:0] = next_parameter_block_qs;
+      end
+
+      addr_hit[5]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
         reg_rdata_next[2] = '0;
         reg_rdata_next[3] = '0;
       end
 
-      addr_hit[1]: begin
+      addr_hit[6]: begin
         reg_rdata_next[3:0] = sw_recov_err_qs;
       end
 
-      addr_hit[2]: begin
+      addr_hit[7]: begin
         reg_rdata_next[3:0] = sw_fatal_err_qs;
       end
 
-      addr_hit[3]: begin
+      addr_hit[8]: begin
         reg_rdata_next[0] = ibus_regwen_0_qs;
       end
 
-      addr_hit[4]: begin
+      addr_hit[9]: begin
         reg_rdata_next[0] = ibus_regwen_1_qs;
       end
 
-      addr_hit[5]: begin
+      addr_hit[10]: begin
         reg_rdata_next[0] = ibus_addr_en_0_qs;
       end
 
-      addr_hit[6]: begin
+      addr_hit[11]: begin
         reg_rdata_next[0] = ibus_addr_en_1_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[12]: begin
         reg_rdata_next[31:0] = ibus_addr_matching_0_qs;
       end
 
-      addr_hit[8]: begin
+      addr_hit[13]: begin
         reg_rdata_next[31:0] = ibus_addr_matching_1_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[14]: begin
         reg_rdata_next[31:0] = ibus_remap_addr_0_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[15]: begin
         reg_rdata_next[31:0] = ibus_remap_addr_1_qs;
       end
 
-      addr_hit[11]: begin
+      addr_hit[16]: begin
         reg_rdata_next[0] = dbus_regwen_0_qs;
       end
 
-      addr_hit[12]: begin
+      addr_hit[17]: begin
         reg_rdata_next[0] = dbus_regwen_1_qs;
       end
 
-      addr_hit[13]: begin
+      addr_hit[18]: begin
         reg_rdata_next[0] = dbus_addr_en_0_qs;
       end
 
-      addr_hit[14]: begin
+      addr_hit[19]: begin
         reg_rdata_next[0] = dbus_addr_en_1_qs;
       end
 
-      addr_hit[15]: begin
+      addr_hit[20]: begin
         reg_rdata_next[31:0] = dbus_addr_matching_0_qs;
       end
 
-      addr_hit[16]: begin
+      addr_hit[21]: begin
         reg_rdata_next[31:0] = dbus_addr_matching_1_qs;
       end
 
-      addr_hit[17]: begin
+      addr_hit[22]: begin
         reg_rdata_next[31:0] = dbus_remap_addr_0_qs;
       end
 
-      addr_hit[18]: begin
+      addr_hit[23]: begin
         reg_rdata_next[31:0] = dbus_remap_addr_1_qs;
       end
 
-      addr_hit[19]: begin
+      addr_hit[24]: begin
         reg_rdata_next[0] = nmi_enable_alert_en_qs;
         reg_rdata_next[1] = nmi_enable_wdog_en_qs;
       end
 
-      addr_hit[20]: begin
+      addr_hit[25]: begin
         reg_rdata_next[0] = nmi_state_alert_qs;
         reg_rdata_next[1] = nmi_state_wdog_qs;
       end
 
-      addr_hit[21]: begin
+      addr_hit[26]: begin
         reg_rdata_next[0] = err_status_reg_intg_err_qs;
         reg_rdata_next[8] = err_status_fatal_intg_err_qs;
         reg_rdata_next[9] = err_status_fatal_core_err_qs;
         reg_rdata_next[10] = err_status_recov_core_err_qs;
       end
 
-      addr_hit[22]: begin
+      addr_hit[27]: begin
         reg_rdata_next[31:0] = rnd_data_qs;
       end
 
-      addr_hit[23]: begin
+      addr_hit[28]: begin
         reg_rdata_next[0] = rnd_status_rnd_data_valid_qs;
         reg_rdata_next[1] = rnd_status_rnd_data_fips_qs;
       end
 
-      addr_hit[24]: begin
+      addr_hit[29]: begin
         reg_rdata_next[31:0] = fpga_info_qs;
       end
 

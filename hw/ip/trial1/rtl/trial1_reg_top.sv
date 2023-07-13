@@ -55,9 +55,9 @@ module trial1_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [19:0] reg_we_check;
+  logic [24:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(20)
+    .OneHotWidth(25)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -124,6 +124,14 @@ module trial1_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic [31:0] cip_id_qs;
+  logic [7:0] revision_reserved_qs;
+  logic [7:0] revision_subminor_qs;
+  logic [7:0] revision_minor_qs;
+  logic [7:0] revision_major_qs;
+  logic [31:0] parameter_block_type_qs;
+  logic [31:0] parameter_block_length_qs;
+  logic [31:0] next_parameter_block_qs;
   logic rwtype0_we;
   logic [31:0] rwtype0_qs;
   logic [31:0] rwtype0_wd;
@@ -205,6 +213,44 @@ module trial1_reg_top (
   logic [31:0] rwtype7_wd;
 
   // Register instances
+  // R[cip_id]: V(False)
+  // constant-only read
+  assign cip_id_qs = 32'h0;
+
+
+  // R[revision]: V(False)
+  //   F[reserved]: 7:0
+  // constant-only read
+  assign revision_reserved_qs = 8'h0;
+
+  //   F[subminor]: 15:8
+  // constant-only read
+  assign revision_subminor_qs = 8'h0;
+
+  //   F[minor]: 23:16
+  // constant-only read
+  assign revision_minor_qs = 8'h0;
+
+  //   F[major]: 31:24
+  // constant-only read
+  assign revision_major_qs = 8'h2;
+
+
+  // R[parameter_block_type]: V(False)
+  // constant-only read
+  assign parameter_block_type_qs = 32'h0;
+
+
+  // R[parameter_block_length]: V(False)
+  // constant-only read
+  assign parameter_block_length_qs = 32'hc;
+
+
+  // R[next_parameter_block]: V(False)
+  // constant-only read
+  assign next_parameter_block_qs = 32'h0;
+
+
   // R[rwtype0]: V(False)
   prim_subreg #(
     .DW      (32),
@@ -1070,29 +1116,34 @@ module trial1_reg_top (
 
 
 
-  logic [19:0] addr_hit;
+  logic [24:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[ 0] = (reg_addr == TRIAL1_RWTYPE0_OFFSET);
-    addr_hit[ 1] = (reg_addr == TRIAL1_RWTYPE1_OFFSET);
-    addr_hit[ 2] = (reg_addr == TRIAL1_RWTYPE2_OFFSET);
-    addr_hit[ 3] = (reg_addr == TRIAL1_RWTYPE3_OFFSET);
-    addr_hit[ 4] = (reg_addr == TRIAL1_RWTYPE4_OFFSET);
-    addr_hit[ 5] = (reg_addr == TRIAL1_ROTYPE0_OFFSET);
-    addr_hit[ 6] = (reg_addr == TRIAL1_W1CTYPE0_OFFSET);
-    addr_hit[ 7] = (reg_addr == TRIAL1_W1CTYPE1_OFFSET);
-    addr_hit[ 8] = (reg_addr == TRIAL1_W1CTYPE2_OFFSET);
-    addr_hit[ 9] = (reg_addr == TRIAL1_W1STYPE2_OFFSET);
-    addr_hit[10] = (reg_addr == TRIAL1_W0CTYPE2_OFFSET);
-    addr_hit[11] = (reg_addr == TRIAL1_R0W1CTYPE2_OFFSET);
-    addr_hit[12] = (reg_addr == TRIAL1_RCTYPE0_OFFSET);
-    addr_hit[13] = (reg_addr == TRIAL1_WOTYPE0_OFFSET);
-    addr_hit[14] = (reg_addr == TRIAL1_MIXTYPE0_OFFSET);
-    addr_hit[15] = (reg_addr == TRIAL1_RWTYPE5_OFFSET);
-    addr_hit[16] = (reg_addr == TRIAL1_RWTYPE6_OFFSET);
-    addr_hit[17] = (reg_addr == TRIAL1_ROTYPE1_OFFSET);
-    addr_hit[18] = (reg_addr == TRIAL1_ROTYPE2_OFFSET);
-    addr_hit[19] = (reg_addr == TRIAL1_RWTYPE7_OFFSET);
+    addr_hit[ 0] = (reg_addr == TRIAL1_CIP_ID_OFFSET);
+    addr_hit[ 1] = (reg_addr == TRIAL1_REVISION_OFFSET);
+    addr_hit[ 2] = (reg_addr == TRIAL1_PARAMETER_BLOCK_TYPE_OFFSET);
+    addr_hit[ 3] = (reg_addr == TRIAL1_PARAMETER_BLOCK_LENGTH_OFFSET);
+    addr_hit[ 4] = (reg_addr == TRIAL1_NEXT_PARAMETER_BLOCK_OFFSET);
+    addr_hit[ 5] = (reg_addr == TRIAL1_RWTYPE0_OFFSET);
+    addr_hit[ 6] = (reg_addr == TRIAL1_RWTYPE1_OFFSET);
+    addr_hit[ 7] = (reg_addr == TRIAL1_RWTYPE2_OFFSET);
+    addr_hit[ 8] = (reg_addr == TRIAL1_RWTYPE3_OFFSET);
+    addr_hit[ 9] = (reg_addr == TRIAL1_RWTYPE4_OFFSET);
+    addr_hit[10] = (reg_addr == TRIAL1_ROTYPE0_OFFSET);
+    addr_hit[11] = (reg_addr == TRIAL1_W1CTYPE0_OFFSET);
+    addr_hit[12] = (reg_addr == TRIAL1_W1CTYPE1_OFFSET);
+    addr_hit[13] = (reg_addr == TRIAL1_W1CTYPE2_OFFSET);
+    addr_hit[14] = (reg_addr == TRIAL1_W1STYPE2_OFFSET);
+    addr_hit[15] = (reg_addr == TRIAL1_W0CTYPE2_OFFSET);
+    addr_hit[16] = (reg_addr == TRIAL1_R0W1CTYPE2_OFFSET);
+    addr_hit[17] = (reg_addr == TRIAL1_RCTYPE0_OFFSET);
+    addr_hit[18] = (reg_addr == TRIAL1_WOTYPE0_OFFSET);
+    addr_hit[19] = (reg_addr == TRIAL1_MIXTYPE0_OFFSET);
+    addr_hit[20] = (reg_addr == TRIAL1_RWTYPE5_OFFSET);
+    addr_hit[21] = (reg_addr == TRIAL1_RWTYPE6_OFFSET);
+    addr_hit[22] = (reg_addr == TRIAL1_ROTYPE1_OFFSET);
+    addr_hit[23] = (reg_addr == TRIAL1_ROTYPE2_OFFSET);
+    addr_hit[24] = (reg_addr == TRIAL1_RWTYPE7_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1119,14 +1170,19 @@ module trial1_reg_top (
                (addr_hit[16] & (|(TRIAL1_PERMIT[16] & ~reg_be))) |
                (addr_hit[17] & (|(TRIAL1_PERMIT[17] & ~reg_be))) |
                (addr_hit[18] & (|(TRIAL1_PERMIT[18] & ~reg_be))) |
-               (addr_hit[19] & (|(TRIAL1_PERMIT[19] & ~reg_be)))));
+               (addr_hit[19] & (|(TRIAL1_PERMIT[19] & ~reg_be))) |
+               (addr_hit[20] & (|(TRIAL1_PERMIT[20] & ~reg_be))) |
+               (addr_hit[21] & (|(TRIAL1_PERMIT[21] & ~reg_be))) |
+               (addr_hit[22] & (|(TRIAL1_PERMIT[22] & ~reg_be))) |
+               (addr_hit[23] & (|(TRIAL1_PERMIT[23] & ~reg_be))) |
+               (addr_hit[24] & (|(TRIAL1_PERMIT[24] & ~reg_be)))));
   end
 
   // Generate write-enables
-  assign rwtype0_we = addr_hit[0] & reg_we & !reg_error;
+  assign rwtype0_we = addr_hit[5] & reg_we & !reg_error;
 
   assign rwtype0_wd = reg_wdata[31:0];
-  assign rwtype1_we = addr_hit[1] & reg_we & !reg_error;
+  assign rwtype1_we = addr_hit[6] & reg_we & !reg_error;
 
   assign rwtype1_field0_wd = reg_wdata[0];
 
@@ -1135,46 +1191,46 @@ module trial1_reg_top (
   assign rwtype1_field4_wd = reg_wdata[4];
 
   assign rwtype1_field15_8_wd = reg_wdata[15:8];
-  assign rwtype2_we = addr_hit[2] & reg_we & !reg_error;
+  assign rwtype2_we = addr_hit[7] & reg_we & !reg_error;
 
   assign rwtype2_wd = reg_wdata[31:0];
-  assign rwtype3_we = addr_hit[3] & reg_we & !reg_error;
+  assign rwtype3_we = addr_hit[8] & reg_we & !reg_error;
 
   assign rwtype3_field0_wd = reg_wdata[15:0];
 
   assign rwtype3_field1_wd = reg_wdata[31:16];
-  assign rwtype4_we = addr_hit[4] & reg_we & !reg_error;
+  assign rwtype4_we = addr_hit[9] & reg_we & !reg_error;
 
   assign rwtype4_field0_wd = reg_wdata[15:0];
 
   assign rwtype4_field1_wd = reg_wdata[31:16];
-  assign w1ctype0_we = addr_hit[6] & reg_we & !reg_error;
+  assign w1ctype0_we = addr_hit[11] & reg_we & !reg_error;
 
   assign w1ctype0_wd = reg_wdata[31:0];
-  assign w1ctype1_we = addr_hit[7] & reg_we & !reg_error;
+  assign w1ctype1_we = addr_hit[12] & reg_we & !reg_error;
 
   assign w1ctype1_field0_wd = reg_wdata[15:0];
 
   assign w1ctype1_field1_wd = reg_wdata[31:16];
-  assign w1ctype2_we = addr_hit[8] & reg_we & !reg_error;
+  assign w1ctype2_we = addr_hit[13] & reg_we & !reg_error;
 
   assign w1ctype2_wd = reg_wdata[31:0];
-  assign w1stype2_we = addr_hit[9] & reg_we & !reg_error;
+  assign w1stype2_we = addr_hit[14] & reg_we & !reg_error;
 
   assign w1stype2_wd = reg_wdata[31:0];
-  assign w0ctype2_we = addr_hit[10] & reg_we & !reg_error;
+  assign w0ctype2_we = addr_hit[15] & reg_we & !reg_error;
 
   assign w0ctype2_wd = reg_wdata[31:0];
-  assign r0w1ctype2_we = addr_hit[11] & reg_we & !reg_error;
+  assign r0w1ctype2_we = addr_hit[16] & reg_we & !reg_error;
 
   assign r0w1ctype2_wd = reg_wdata[31:0];
-  assign rctype0_re = addr_hit[12] & reg_re & !reg_error;
+  assign rctype0_re = addr_hit[17] & reg_re & !reg_error;
 
   assign rctype0_wd = '1;
-  assign wotype0_we = addr_hit[13] & reg_we & !reg_error;
+  assign wotype0_we = addr_hit[18] & reg_we & !reg_error;
 
   assign wotype0_wd = reg_wdata[31:0];
-  assign mixtype0_we = addr_hit[14] & reg_we & !reg_error;
+  assign mixtype0_we = addr_hit[19] & reg_we & !reg_error;
 
   assign mixtype0_field0_wd = reg_wdata[3:0];
 
@@ -1187,41 +1243,46 @@ module trial1_reg_top (
   assign mixtype0_field6_wd = reg_wdata[27:24];
 
   assign mixtype0_field7_wd = reg_wdata[31:28];
-  assign rwtype5_we = addr_hit[15] & reg_we & !reg_error;
+  assign rwtype5_we = addr_hit[20] & reg_we & !reg_error;
 
   assign rwtype5_wd = reg_wdata[31:0];
-  assign rwtype6_re = addr_hit[16] & reg_re & !reg_error;
-  assign rwtype6_we = addr_hit[16] & reg_we & !reg_error;
+  assign rwtype6_re = addr_hit[21] & reg_re & !reg_error;
+  assign rwtype6_we = addr_hit[21] & reg_we & !reg_error;
 
   assign rwtype6_wd = reg_wdata[31:0];
-  assign rotype1_re = addr_hit[17] & reg_re & !reg_error;
-  assign rwtype7_we = addr_hit[19] & reg_we & !reg_error;
+  assign rotype1_re = addr_hit[22] & reg_re & !reg_error;
+  assign rwtype7_we = addr_hit[24] & reg_we & !reg_error;
 
   assign rwtype7_wd = reg_wdata[31:0];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
-    reg_we_check[0] = rwtype0_we;
-    reg_we_check[1] = rwtype1_we;
-    reg_we_check[2] = rwtype2_we;
-    reg_we_check[3] = rwtype3_we;
-    reg_we_check[4] = rwtype4_we;
-    reg_we_check[5] = 1'b0;
-    reg_we_check[6] = w1ctype0_we;
-    reg_we_check[7] = w1ctype1_we;
-    reg_we_check[8] = w1ctype2_we;
-    reg_we_check[9] = w1stype2_we;
-    reg_we_check[10] = w0ctype2_we;
-    reg_we_check[11] = r0w1ctype2_we;
-    reg_we_check[12] = 1'b0;
-    reg_we_check[13] = wotype0_we;
-    reg_we_check[14] = mixtype0_we;
-    reg_we_check[15] = rwtype5_we;
-    reg_we_check[16] = rwtype6_we;
+    reg_we_check[0] = 1'b0;
+    reg_we_check[1] = 1'b0;
+    reg_we_check[2] = 1'b0;
+    reg_we_check[3] = 1'b0;
+    reg_we_check[4] = 1'b0;
+    reg_we_check[5] = rwtype0_we;
+    reg_we_check[6] = rwtype1_we;
+    reg_we_check[7] = rwtype2_we;
+    reg_we_check[8] = rwtype3_we;
+    reg_we_check[9] = rwtype4_we;
+    reg_we_check[10] = 1'b0;
+    reg_we_check[11] = w1ctype0_we;
+    reg_we_check[12] = w1ctype1_we;
+    reg_we_check[13] = w1ctype2_we;
+    reg_we_check[14] = w1stype2_we;
+    reg_we_check[15] = w0ctype2_we;
+    reg_we_check[16] = r0w1ctype2_we;
     reg_we_check[17] = 1'b0;
-    reg_we_check[18] = 1'b0;
-    reg_we_check[19] = rwtype7_we;
+    reg_we_check[18] = wotype0_we;
+    reg_we_check[19] = mixtype0_we;
+    reg_we_check[20] = rwtype5_we;
+    reg_we_check[21] = rwtype6_we;
+    reg_we_check[22] = 1'b0;
+    reg_we_check[23] = 1'b0;
+    reg_we_check[24] = rwtype7_we;
   end
 
   // Read data return
@@ -1229,68 +1290,91 @@ module trial1_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[31:0] = rwtype0_qs;
+        reg_rdata_next[31:0] = cip_id_qs;
       end
 
       addr_hit[1]: begin
+        reg_rdata_next[7:0] = revision_reserved_qs;
+        reg_rdata_next[15:8] = revision_subminor_qs;
+        reg_rdata_next[23:16] = revision_minor_qs;
+        reg_rdata_next[31:24] = revision_major_qs;
+      end
+
+      addr_hit[2]: begin
+        reg_rdata_next[31:0] = parameter_block_type_qs;
+      end
+
+      addr_hit[3]: begin
+        reg_rdata_next[31:0] = parameter_block_length_qs;
+      end
+
+      addr_hit[4]: begin
+        reg_rdata_next[31:0] = next_parameter_block_qs;
+      end
+
+      addr_hit[5]: begin
+        reg_rdata_next[31:0] = rwtype0_qs;
+      end
+
+      addr_hit[6]: begin
         reg_rdata_next[0] = rwtype1_field0_qs;
         reg_rdata_next[1] = rwtype1_field1_qs;
         reg_rdata_next[4] = rwtype1_field4_qs;
         reg_rdata_next[15:8] = rwtype1_field15_8_qs;
       end
 
-      addr_hit[2]: begin
+      addr_hit[7]: begin
         reg_rdata_next[31:0] = rwtype2_qs;
       end
 
-      addr_hit[3]: begin
+      addr_hit[8]: begin
         reg_rdata_next[15:0] = rwtype3_field0_qs;
         reg_rdata_next[31:16] = rwtype3_field1_qs;
       end
 
-      addr_hit[4]: begin
+      addr_hit[9]: begin
         reg_rdata_next[15:0] = rwtype4_field0_qs;
         reg_rdata_next[31:16] = rwtype4_field1_qs;
       end
 
-      addr_hit[5]: begin
+      addr_hit[10]: begin
         reg_rdata_next[31:0] = rotype0_qs;
       end
 
-      addr_hit[6]: begin
+      addr_hit[11]: begin
         reg_rdata_next[31:0] = w1ctype0_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[12]: begin
         reg_rdata_next[15:0] = w1ctype1_field0_qs;
         reg_rdata_next[31:16] = w1ctype1_field1_qs;
       end
 
-      addr_hit[8]: begin
+      addr_hit[13]: begin
         reg_rdata_next[31:0] = w1ctype2_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[14]: begin
         reg_rdata_next[31:0] = w1stype2_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[15]: begin
         reg_rdata_next[31:0] = w0ctype2_qs;
       end
 
-      addr_hit[11]: begin
+      addr_hit[16]: begin
         reg_rdata_next[31:0] = '0;
       end
 
-      addr_hit[12]: begin
+      addr_hit[17]: begin
         reg_rdata_next[31:0] = rctype0_qs;
       end
 
-      addr_hit[13]: begin
+      addr_hit[18]: begin
         reg_rdata_next[31:0] = '0;
       end
 
-      addr_hit[14]: begin
+      addr_hit[19]: begin
         reg_rdata_next[3:0] = mixtype0_field0_qs;
         reg_rdata_next[7:4] = mixtype0_field1_qs;
         reg_rdata_next[11:8] = mixtype0_field2_qs;
@@ -1301,25 +1385,25 @@ module trial1_reg_top (
         reg_rdata_next[31:28] = '0;
       end
 
-      addr_hit[15]: begin
+      addr_hit[20]: begin
         reg_rdata_next[31:0] = rwtype5_qs;
       end
 
-      addr_hit[16]: begin
+      addr_hit[21]: begin
         reg_rdata_next[31:0] = rwtype6_qs;
       end
 
-      addr_hit[17]: begin
+      addr_hit[22]: begin
         reg_rdata_next[31:0] = rotype1_qs;
       end
 
-      addr_hit[18]: begin
+      addr_hit[23]: begin
         reg_rdata_next[7:0] = rotype2_field0_qs;
         reg_rdata_next[15:8] = rotype2_field1_qs;
         reg_rdata_next[31:20] = rotype2_field2_qs;
       end
 
-      addr_hit[19]: begin
+      addr_hit[24]: begin
         reg_rdata_next[31:0] = rwtype7_qs;
       end
 

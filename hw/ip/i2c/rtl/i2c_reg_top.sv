@@ -24,7 +24,7 @@ module i2c_reg_top (
 
   import i2c_reg_pkg::* ;
 
-  localparam int AW = 7;
+  localparam int AW = 8;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -55,9 +55,9 @@ module i2c_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [21:0] reg_we_check;
+  logic [26:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(22)
+    .OneHotWidth(27)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -124,6 +124,14 @@ module i2c_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic [31:0] cip_id_qs;
+  logic [7:0] revision_reserved_qs;
+  logic [7:0] revision_subminor_qs;
+  logic [7:0] revision_minor_qs;
+  logic [7:0] revision_major_qs;
+  logic [31:0] parameter_block_type_qs;
+  logic [31:0] parameter_block_length_qs;
+  logic [31:0] next_parameter_block_qs;
   logic intr_state_we;
   logic intr_state_fmt_threshold_qs;
   logic intr_state_fmt_threshold_wd;
@@ -302,6 +310,44 @@ module i2c_reg_top (
   logic [31:0] host_timeout_ctrl_wd;
 
   // Register instances
+  // R[cip_id]: V(False)
+  // constant-only read
+  assign cip_id_qs = 32'hb;
+
+
+  // R[revision]: V(False)
+  //   F[reserved]: 7:0
+  // constant-only read
+  assign revision_reserved_qs = 8'h0;
+
+  //   F[subminor]: 15:8
+  // constant-only read
+  assign revision_subminor_qs = 8'h0;
+
+  //   F[minor]: 23:16
+  // constant-only read
+  assign revision_minor_qs = 8'h0;
+
+  //   F[major]: 31:24
+  // constant-only read
+  assign revision_major_qs = 8'h2;
+
+
+  // R[parameter_block_type]: V(False)
+  // constant-only read
+  assign parameter_block_type_qs = 32'h0;
+
+
+  // R[parameter_block_length]: V(False)
+  // constant-only read
+  assign parameter_block_length_qs = 32'hc;
+
+
+  // R[next_parameter_block]: V(False)
+  // constant-only read
+  assign next_parameter_block_qs = 32'h0;
+
+
   // R[intr_state]: V(False)
   //   F[fmt_threshold]: 0:0
   prim_subreg #(
@@ -2652,31 +2698,36 @@ module i2c_reg_top (
 
 
 
-  logic [21:0] addr_hit;
+  logic [26:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[ 0] = (reg_addr == I2C_INTR_STATE_OFFSET);
-    addr_hit[ 1] = (reg_addr == I2C_INTR_ENABLE_OFFSET);
-    addr_hit[ 2] = (reg_addr == I2C_INTR_TEST_OFFSET);
-    addr_hit[ 3] = (reg_addr == I2C_ALERT_TEST_OFFSET);
-    addr_hit[ 4] = (reg_addr == I2C_CTRL_OFFSET);
-    addr_hit[ 5] = (reg_addr == I2C_STATUS_OFFSET);
-    addr_hit[ 6] = (reg_addr == I2C_RDATA_OFFSET);
-    addr_hit[ 7] = (reg_addr == I2C_FDATA_OFFSET);
-    addr_hit[ 8] = (reg_addr == I2C_FIFO_CTRL_OFFSET);
-    addr_hit[ 9] = (reg_addr == I2C_FIFO_STATUS_OFFSET);
-    addr_hit[10] = (reg_addr == I2C_OVRD_OFFSET);
-    addr_hit[11] = (reg_addr == I2C_VAL_OFFSET);
-    addr_hit[12] = (reg_addr == I2C_TIMING0_OFFSET);
-    addr_hit[13] = (reg_addr == I2C_TIMING1_OFFSET);
-    addr_hit[14] = (reg_addr == I2C_TIMING2_OFFSET);
-    addr_hit[15] = (reg_addr == I2C_TIMING3_OFFSET);
-    addr_hit[16] = (reg_addr == I2C_TIMING4_OFFSET);
-    addr_hit[17] = (reg_addr == I2C_TIMEOUT_CTRL_OFFSET);
-    addr_hit[18] = (reg_addr == I2C_TARGET_ID_OFFSET);
-    addr_hit[19] = (reg_addr == I2C_ACQDATA_OFFSET);
-    addr_hit[20] = (reg_addr == I2C_TXDATA_OFFSET);
-    addr_hit[21] = (reg_addr == I2C_HOST_TIMEOUT_CTRL_OFFSET);
+    addr_hit[ 0] = (reg_addr == I2C_CIP_ID_OFFSET);
+    addr_hit[ 1] = (reg_addr == I2C_REVISION_OFFSET);
+    addr_hit[ 2] = (reg_addr == I2C_PARAMETER_BLOCK_TYPE_OFFSET);
+    addr_hit[ 3] = (reg_addr == I2C_PARAMETER_BLOCK_LENGTH_OFFSET);
+    addr_hit[ 4] = (reg_addr == I2C_NEXT_PARAMETER_BLOCK_OFFSET);
+    addr_hit[ 5] = (reg_addr == I2C_INTR_STATE_OFFSET);
+    addr_hit[ 6] = (reg_addr == I2C_INTR_ENABLE_OFFSET);
+    addr_hit[ 7] = (reg_addr == I2C_INTR_TEST_OFFSET);
+    addr_hit[ 8] = (reg_addr == I2C_ALERT_TEST_OFFSET);
+    addr_hit[ 9] = (reg_addr == I2C_CTRL_OFFSET);
+    addr_hit[10] = (reg_addr == I2C_STATUS_OFFSET);
+    addr_hit[11] = (reg_addr == I2C_RDATA_OFFSET);
+    addr_hit[12] = (reg_addr == I2C_FDATA_OFFSET);
+    addr_hit[13] = (reg_addr == I2C_FIFO_CTRL_OFFSET);
+    addr_hit[14] = (reg_addr == I2C_FIFO_STATUS_OFFSET);
+    addr_hit[15] = (reg_addr == I2C_OVRD_OFFSET);
+    addr_hit[16] = (reg_addr == I2C_VAL_OFFSET);
+    addr_hit[17] = (reg_addr == I2C_TIMING0_OFFSET);
+    addr_hit[18] = (reg_addr == I2C_TIMING1_OFFSET);
+    addr_hit[19] = (reg_addr == I2C_TIMING2_OFFSET);
+    addr_hit[20] = (reg_addr == I2C_TIMING3_OFFSET);
+    addr_hit[21] = (reg_addr == I2C_TIMING4_OFFSET);
+    addr_hit[22] = (reg_addr == I2C_TIMEOUT_CTRL_OFFSET);
+    addr_hit[23] = (reg_addr == I2C_TARGET_ID_OFFSET);
+    addr_hit[24] = (reg_addr == I2C_ACQDATA_OFFSET);
+    addr_hit[25] = (reg_addr == I2C_TXDATA_OFFSET);
+    addr_hit[26] = (reg_addr == I2C_HOST_TIMEOUT_CTRL_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -2705,11 +2756,16 @@ module i2c_reg_top (
                (addr_hit[18] & (|(I2C_PERMIT[18] & ~reg_be))) |
                (addr_hit[19] & (|(I2C_PERMIT[19] & ~reg_be))) |
                (addr_hit[20] & (|(I2C_PERMIT[20] & ~reg_be))) |
-               (addr_hit[21] & (|(I2C_PERMIT[21] & ~reg_be)))));
+               (addr_hit[21] & (|(I2C_PERMIT[21] & ~reg_be))) |
+               (addr_hit[22] & (|(I2C_PERMIT[22] & ~reg_be))) |
+               (addr_hit[23] & (|(I2C_PERMIT[23] & ~reg_be))) |
+               (addr_hit[24] & (|(I2C_PERMIT[24] & ~reg_be))) |
+               (addr_hit[25] & (|(I2C_PERMIT[25] & ~reg_be))) |
+               (addr_hit[26] & (|(I2C_PERMIT[26] & ~reg_be)))));
   end
 
   // Generate write-enables
-  assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
+  assign intr_state_we = addr_hit[5] & reg_we & !reg_error;
 
   assign intr_state_fmt_threshold_wd = reg_wdata[0];
 
@@ -2736,7 +2792,7 @@ module i2c_reg_top (
   assign intr_state_unexp_stop_wd = reg_wdata[13];
 
   assign intr_state_host_timeout_wd = reg_wdata[14];
-  assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
+  assign intr_enable_we = addr_hit[6] & reg_we & !reg_error;
 
   assign intr_enable_fmt_threshold_wd = reg_wdata[0];
 
@@ -2767,7 +2823,7 @@ module i2c_reg_top (
   assign intr_enable_unexp_stop_wd = reg_wdata[13];
 
   assign intr_enable_host_timeout_wd = reg_wdata[14];
-  assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
+  assign intr_test_we = addr_hit[7] & reg_we & !reg_error;
 
   assign intr_test_fmt_threshold_wd = reg_wdata[0];
 
@@ -2798,19 +2854,19 @@ module i2c_reg_top (
   assign intr_test_unexp_stop_wd = reg_wdata[13];
 
   assign intr_test_host_timeout_wd = reg_wdata[14];
-  assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
+  assign alert_test_we = addr_hit[8] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
-  assign ctrl_we = addr_hit[4] & reg_we & !reg_error;
+  assign ctrl_we = addr_hit[9] & reg_we & !reg_error;
 
   assign ctrl_enablehost_wd = reg_wdata[0];
 
   assign ctrl_enabletarget_wd = reg_wdata[1];
 
   assign ctrl_llpbk_wd = reg_wdata[2];
-  assign status_re = addr_hit[5] & reg_re & !reg_error;
-  assign rdata_re = addr_hit[6] & reg_re & !reg_error;
-  assign fdata_we = addr_hit[7] & reg_we & !reg_error;
+  assign status_re = addr_hit[10] & reg_re & !reg_error;
+  assign rdata_re = addr_hit[11] & reg_re & !reg_error;
+  assign fdata_we = addr_hit[12] & reg_we & !reg_error;
 
   assign fdata_fbyte_wd = reg_wdata[7:0];
 
@@ -2823,7 +2879,7 @@ module i2c_reg_top (
   assign fdata_rcont_wd = reg_wdata[11];
 
   assign fdata_nakok_wd = reg_wdata[12];
-  assign fifo_ctrl_we = addr_hit[8] & reg_we & !reg_error;
+  assign fifo_ctrl_we = addr_hit[13] & reg_we & !reg_error;
 
   assign fifo_ctrl_rxrst_wd = reg_wdata[0];
 
@@ -2836,46 +2892,46 @@ module i2c_reg_top (
   assign fifo_ctrl_acqrst_wd = reg_wdata[7];
 
   assign fifo_ctrl_txrst_wd = reg_wdata[8];
-  assign fifo_status_re = addr_hit[9] & reg_re & !reg_error;
-  assign ovrd_we = addr_hit[10] & reg_we & !reg_error;
+  assign fifo_status_re = addr_hit[14] & reg_re & !reg_error;
+  assign ovrd_we = addr_hit[15] & reg_we & !reg_error;
 
   assign ovrd_txovrden_wd = reg_wdata[0];
 
   assign ovrd_sclval_wd = reg_wdata[1];
 
   assign ovrd_sdaval_wd = reg_wdata[2];
-  assign val_re = addr_hit[11] & reg_re & !reg_error;
-  assign timing0_we = addr_hit[12] & reg_we & !reg_error;
+  assign val_re = addr_hit[16] & reg_re & !reg_error;
+  assign timing0_we = addr_hit[17] & reg_we & !reg_error;
 
   assign timing0_thigh_wd = reg_wdata[15:0];
 
   assign timing0_tlow_wd = reg_wdata[31:16];
-  assign timing1_we = addr_hit[13] & reg_we & !reg_error;
+  assign timing1_we = addr_hit[18] & reg_we & !reg_error;
 
   assign timing1_t_r_wd = reg_wdata[15:0];
 
   assign timing1_t_f_wd = reg_wdata[31:16];
-  assign timing2_we = addr_hit[14] & reg_we & !reg_error;
+  assign timing2_we = addr_hit[19] & reg_we & !reg_error;
 
   assign timing2_tsu_sta_wd = reg_wdata[15:0];
 
   assign timing2_thd_sta_wd = reg_wdata[31:16];
-  assign timing3_we = addr_hit[15] & reg_we & !reg_error;
+  assign timing3_we = addr_hit[20] & reg_we & !reg_error;
 
   assign timing3_tsu_dat_wd = reg_wdata[15:0];
 
   assign timing3_thd_dat_wd = reg_wdata[31:16];
-  assign timing4_we = addr_hit[16] & reg_we & !reg_error;
+  assign timing4_we = addr_hit[21] & reg_we & !reg_error;
 
   assign timing4_tsu_sto_wd = reg_wdata[15:0];
 
   assign timing4_t_buf_wd = reg_wdata[31:16];
-  assign timeout_ctrl_we = addr_hit[17] & reg_we & !reg_error;
+  assign timeout_ctrl_we = addr_hit[22] & reg_we & !reg_error;
 
   assign timeout_ctrl_val_wd = reg_wdata[30:0];
 
   assign timeout_ctrl_en_wd = reg_wdata[31];
-  assign target_id_we = addr_hit[18] & reg_we & !reg_error;
+  assign target_id_we = addr_hit[23] & reg_we & !reg_error;
 
   assign target_id_address0_wd = reg_wdata[6:0];
 
@@ -2884,39 +2940,44 @@ module i2c_reg_top (
   assign target_id_address1_wd = reg_wdata[20:14];
 
   assign target_id_mask1_wd = reg_wdata[27:21];
-  assign acqdata_re = addr_hit[19] & reg_re & !reg_error;
-  assign txdata_we = addr_hit[20] & reg_we & !reg_error;
+  assign acqdata_re = addr_hit[24] & reg_re & !reg_error;
+  assign txdata_we = addr_hit[25] & reg_we & !reg_error;
 
   assign txdata_wd = reg_wdata[7:0];
-  assign host_timeout_ctrl_we = addr_hit[21] & reg_we & !reg_error;
+  assign host_timeout_ctrl_we = addr_hit[26] & reg_we & !reg_error;
 
   assign host_timeout_ctrl_wd = reg_wdata[31:0];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
-    reg_we_check[0] = intr_state_we;
-    reg_we_check[1] = intr_enable_we;
-    reg_we_check[2] = intr_test_we;
-    reg_we_check[3] = alert_test_we;
-    reg_we_check[4] = ctrl_we;
-    reg_we_check[5] = 1'b0;
-    reg_we_check[6] = 1'b0;
-    reg_we_check[7] = fdata_we;
-    reg_we_check[8] = fifo_ctrl_we;
-    reg_we_check[9] = 1'b0;
-    reg_we_check[10] = ovrd_we;
+    reg_we_check[0] = 1'b0;
+    reg_we_check[1] = 1'b0;
+    reg_we_check[2] = 1'b0;
+    reg_we_check[3] = 1'b0;
+    reg_we_check[4] = 1'b0;
+    reg_we_check[5] = intr_state_we;
+    reg_we_check[6] = intr_enable_we;
+    reg_we_check[7] = intr_test_we;
+    reg_we_check[8] = alert_test_we;
+    reg_we_check[9] = ctrl_we;
+    reg_we_check[10] = 1'b0;
     reg_we_check[11] = 1'b0;
-    reg_we_check[12] = timing0_we;
-    reg_we_check[13] = timing1_we;
-    reg_we_check[14] = timing2_we;
-    reg_we_check[15] = timing3_we;
-    reg_we_check[16] = timing4_we;
-    reg_we_check[17] = timeout_ctrl_we;
-    reg_we_check[18] = target_id_we;
-    reg_we_check[19] = 1'b0;
-    reg_we_check[20] = txdata_we;
-    reg_we_check[21] = host_timeout_ctrl_we;
+    reg_we_check[12] = fdata_we;
+    reg_we_check[13] = fifo_ctrl_we;
+    reg_we_check[14] = 1'b0;
+    reg_we_check[15] = ovrd_we;
+    reg_we_check[16] = 1'b0;
+    reg_we_check[17] = timing0_we;
+    reg_we_check[18] = timing1_we;
+    reg_we_check[19] = timing2_we;
+    reg_we_check[20] = timing3_we;
+    reg_we_check[21] = timing4_we;
+    reg_we_check[22] = timeout_ctrl_we;
+    reg_we_check[23] = target_id_we;
+    reg_we_check[24] = 1'b0;
+    reg_we_check[25] = txdata_we;
+    reg_we_check[26] = host_timeout_ctrl_we;
   end
 
   // Read data return
@@ -2924,6 +2985,29 @@ module i2c_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
+        reg_rdata_next[31:0] = cip_id_qs;
+      end
+
+      addr_hit[1]: begin
+        reg_rdata_next[7:0] = revision_reserved_qs;
+        reg_rdata_next[15:8] = revision_subminor_qs;
+        reg_rdata_next[23:16] = revision_minor_qs;
+        reg_rdata_next[31:24] = revision_major_qs;
+      end
+
+      addr_hit[2]: begin
+        reg_rdata_next[31:0] = parameter_block_type_qs;
+      end
+
+      addr_hit[3]: begin
+        reg_rdata_next[31:0] = parameter_block_length_qs;
+      end
+
+      addr_hit[4]: begin
+        reg_rdata_next[31:0] = next_parameter_block_qs;
+      end
+
+      addr_hit[5]: begin
         reg_rdata_next[0] = intr_state_fmt_threshold_qs;
         reg_rdata_next[1] = intr_state_rx_threshold_qs;
         reg_rdata_next[2] = intr_state_fmt_overflow_qs;
@@ -2941,7 +3025,7 @@ module i2c_reg_top (
         reg_rdata_next[14] = intr_state_host_timeout_qs;
       end
 
-      addr_hit[1]: begin
+      addr_hit[6]: begin
         reg_rdata_next[0] = intr_enable_fmt_threshold_qs;
         reg_rdata_next[1] = intr_enable_rx_threshold_qs;
         reg_rdata_next[2] = intr_enable_fmt_overflow_qs;
@@ -2959,7 +3043,7 @@ module i2c_reg_top (
         reg_rdata_next[14] = intr_enable_host_timeout_qs;
       end
 
-      addr_hit[2]: begin
+      addr_hit[7]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
         reg_rdata_next[2] = '0;
@@ -2977,17 +3061,17 @@ module i2c_reg_top (
         reg_rdata_next[14] = '0;
       end
 
-      addr_hit[3]: begin
+      addr_hit[8]: begin
         reg_rdata_next[0] = '0;
       end
 
-      addr_hit[4]: begin
+      addr_hit[9]: begin
         reg_rdata_next[0] = ctrl_enablehost_qs;
         reg_rdata_next[1] = ctrl_enabletarget_qs;
         reg_rdata_next[2] = ctrl_llpbk_qs;
       end
 
-      addr_hit[5]: begin
+      addr_hit[10]: begin
         reg_rdata_next[0] = status_fmtfull_qs;
         reg_rdata_next[1] = status_rxfull_qs;
         reg_rdata_next[2] = status_fmtempty_qs;
@@ -3000,11 +3084,11 @@ module i2c_reg_top (
         reg_rdata_next[9] = status_acqempty_qs;
       end
 
-      addr_hit[6]: begin
+      addr_hit[11]: begin
         reg_rdata_next[7:0] = rdata_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[12]: begin
         reg_rdata_next[7:0] = '0;
         reg_rdata_next[8] = '0;
         reg_rdata_next[9] = '0;
@@ -3013,7 +3097,7 @@ module i2c_reg_top (
         reg_rdata_next[12] = '0;
       end
 
-      addr_hit[8]: begin
+      addr_hit[13]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
         reg_rdata_next[4:2] = fifo_ctrl_rxilvl_qs;
@@ -3022,71 +3106,71 @@ module i2c_reg_top (
         reg_rdata_next[8] = '0;
       end
 
-      addr_hit[9]: begin
+      addr_hit[14]: begin
         reg_rdata_next[6:0] = fifo_status_fmtlvl_qs;
         reg_rdata_next[14:8] = fifo_status_txlvl_qs;
         reg_rdata_next[22:16] = fifo_status_rxlvl_qs;
         reg_rdata_next[30:24] = fifo_status_acqlvl_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[15]: begin
         reg_rdata_next[0] = ovrd_txovrden_qs;
         reg_rdata_next[1] = ovrd_sclval_qs;
         reg_rdata_next[2] = ovrd_sdaval_qs;
       end
 
-      addr_hit[11]: begin
+      addr_hit[16]: begin
         reg_rdata_next[15:0] = val_scl_rx_qs;
         reg_rdata_next[31:16] = val_sda_rx_qs;
       end
 
-      addr_hit[12]: begin
+      addr_hit[17]: begin
         reg_rdata_next[15:0] = timing0_thigh_qs;
         reg_rdata_next[31:16] = timing0_tlow_qs;
       end
 
-      addr_hit[13]: begin
+      addr_hit[18]: begin
         reg_rdata_next[15:0] = timing1_t_r_qs;
         reg_rdata_next[31:16] = timing1_t_f_qs;
       end
 
-      addr_hit[14]: begin
+      addr_hit[19]: begin
         reg_rdata_next[15:0] = timing2_tsu_sta_qs;
         reg_rdata_next[31:16] = timing2_thd_sta_qs;
       end
 
-      addr_hit[15]: begin
+      addr_hit[20]: begin
         reg_rdata_next[15:0] = timing3_tsu_dat_qs;
         reg_rdata_next[31:16] = timing3_thd_dat_qs;
       end
 
-      addr_hit[16]: begin
+      addr_hit[21]: begin
         reg_rdata_next[15:0] = timing4_tsu_sto_qs;
         reg_rdata_next[31:16] = timing4_t_buf_qs;
       end
 
-      addr_hit[17]: begin
+      addr_hit[22]: begin
         reg_rdata_next[30:0] = timeout_ctrl_val_qs;
         reg_rdata_next[31] = timeout_ctrl_en_qs;
       end
 
-      addr_hit[18]: begin
+      addr_hit[23]: begin
         reg_rdata_next[6:0] = target_id_address0_qs;
         reg_rdata_next[13:7] = target_id_mask0_qs;
         reg_rdata_next[20:14] = target_id_address1_qs;
         reg_rdata_next[27:21] = target_id_mask1_qs;
       end
 
-      addr_hit[19]: begin
+      addr_hit[24]: begin
         reg_rdata_next[7:0] = acqdata_abyte_qs;
         reg_rdata_next[9:8] = acqdata_signal_qs;
       end
 
-      addr_hit[20]: begin
+      addr_hit[25]: begin
         reg_rdata_next[7:0] = '0;
       end
 
-      addr_hit[21]: begin
+      addr_hit[26]: begin
         reg_rdata_next[31:0] = host_timeout_ctrl_qs;
       end
 

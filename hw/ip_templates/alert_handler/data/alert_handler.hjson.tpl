@@ -9,11 +9,13 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 %>
 {
   name:               "alert_handler",
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "32",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_alert_handler"
-  version:            "1.0",
+  version:            "2.0.0",
   life_stage:         "L1",
   design_stage:       "D3",
   verification_stage: "V2S",

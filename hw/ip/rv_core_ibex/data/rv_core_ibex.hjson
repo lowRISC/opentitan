@@ -13,11 +13,13 @@
   In addition, RISC-V Core Wrapper for Ibex handles the forwarding of crash dump data.
   Debug support is enabled through RISC-V Debug Module.
   '''
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "23",
   design_spec:        "../doc",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_rv_core_ibex",
   dv_doc:             "../doc/dv",
-  version:            "1.0",
+  version:            "2.0.0",
   life_stage:         "L1",
   design_stage:       "D2S",
   verification_stage: "V2S",

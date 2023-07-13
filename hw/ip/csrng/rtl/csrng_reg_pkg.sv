@@ -10,7 +10,7 @@ package csrng_reg_pkg;
   parameter int NumAlerts = 2;
 
   // Address widths within the block
-  parameter int BlockAw = 7;
+  parameter int BlockAw = 8;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -332,23 +332,28 @@ package csrng_reg_pkg;
   } csrng_hw2reg_t;
 
   // Register offsets
-  parameter logic [BlockAw-1:0] CSRNG_INTR_STATE_OFFSET = 7'h 0;
-  parameter logic [BlockAw-1:0] CSRNG_INTR_ENABLE_OFFSET = 7'h 4;
-  parameter logic [BlockAw-1:0] CSRNG_INTR_TEST_OFFSET = 7'h 8;
-  parameter logic [BlockAw-1:0] CSRNG_ALERT_TEST_OFFSET = 7'h c;
-  parameter logic [BlockAw-1:0] CSRNG_REGWEN_OFFSET = 7'h 10;
-  parameter logic [BlockAw-1:0] CSRNG_CTRL_OFFSET = 7'h 14;
-  parameter logic [BlockAw-1:0] CSRNG_CMD_REQ_OFFSET = 7'h 18;
-  parameter logic [BlockAw-1:0] CSRNG_SW_CMD_STS_OFFSET = 7'h 1c;
-  parameter logic [BlockAw-1:0] CSRNG_GENBITS_VLD_OFFSET = 7'h 20;
-  parameter logic [BlockAw-1:0] CSRNG_GENBITS_OFFSET = 7'h 24;
-  parameter logic [BlockAw-1:0] CSRNG_INT_STATE_NUM_OFFSET = 7'h 28;
-  parameter logic [BlockAw-1:0] CSRNG_INT_STATE_VAL_OFFSET = 7'h 2c;
-  parameter logic [BlockAw-1:0] CSRNG_HW_EXC_STS_OFFSET = 7'h 30;
-  parameter logic [BlockAw-1:0] CSRNG_RECOV_ALERT_STS_OFFSET = 7'h 34;
-  parameter logic [BlockAw-1:0] CSRNG_ERR_CODE_OFFSET = 7'h 38;
-  parameter logic [BlockAw-1:0] CSRNG_ERR_CODE_TEST_OFFSET = 7'h 3c;
-  parameter logic [BlockAw-1:0] CSRNG_MAIN_SM_STATE_OFFSET = 7'h 40;
+  parameter logic [BlockAw-1:0] CSRNG_CIP_ID_OFFSET = 8'h 0;
+  parameter logic [BlockAw-1:0] CSRNG_REVISION_OFFSET = 8'h 4;
+  parameter logic [BlockAw-1:0] CSRNG_PARAMETER_BLOCK_TYPE_OFFSET = 8'h 8;
+  parameter logic [BlockAw-1:0] CSRNG_PARAMETER_BLOCK_LENGTH_OFFSET = 8'h c;
+  parameter logic [BlockAw-1:0] CSRNG_NEXT_PARAMETER_BLOCK_OFFSET = 8'h 10;
+  parameter logic [BlockAw-1:0] CSRNG_INTR_STATE_OFFSET = 8'h 40;
+  parameter logic [BlockAw-1:0] CSRNG_INTR_ENABLE_OFFSET = 8'h 44;
+  parameter logic [BlockAw-1:0] CSRNG_INTR_TEST_OFFSET = 8'h 48;
+  parameter logic [BlockAw-1:0] CSRNG_ALERT_TEST_OFFSET = 8'h 4c;
+  parameter logic [BlockAw-1:0] CSRNG_REGWEN_OFFSET = 8'h 50;
+  parameter logic [BlockAw-1:0] CSRNG_CTRL_OFFSET = 8'h 54;
+  parameter logic [BlockAw-1:0] CSRNG_CMD_REQ_OFFSET = 8'h 58;
+  parameter logic [BlockAw-1:0] CSRNG_SW_CMD_STS_OFFSET = 8'h 5c;
+  parameter logic [BlockAw-1:0] CSRNG_GENBITS_VLD_OFFSET = 8'h 60;
+  parameter logic [BlockAw-1:0] CSRNG_GENBITS_OFFSET = 8'h 64;
+  parameter logic [BlockAw-1:0] CSRNG_INT_STATE_NUM_OFFSET = 8'h 68;
+  parameter logic [BlockAw-1:0] CSRNG_INT_STATE_VAL_OFFSET = 8'h 6c;
+  parameter logic [BlockAw-1:0] CSRNG_HW_EXC_STS_OFFSET = 8'h 70;
+  parameter logic [BlockAw-1:0] CSRNG_RECOV_ALERT_STS_OFFSET = 8'h 74;
+  parameter logic [BlockAw-1:0] CSRNG_ERR_CODE_OFFSET = 8'h 78;
+  parameter logic [BlockAw-1:0] CSRNG_ERR_CODE_TEST_OFFSET = 8'h 7c;
+  parameter logic [BlockAw-1:0] CSRNG_MAIN_SM_STATE_OFFSET = 8'h 80;
 
   // Reset values for hwext registers and their fields
   parameter logic [3:0] CSRNG_INTR_TEST_RESVAL = 4'h 0;
@@ -365,6 +370,11 @@ package csrng_reg_pkg;
 
   // Register index
   typedef enum int {
+    CSRNG_CIP_ID,
+    CSRNG_REVISION,
+    CSRNG_PARAMETER_BLOCK_TYPE,
+    CSRNG_PARAMETER_BLOCK_LENGTH,
+    CSRNG_NEXT_PARAMETER_BLOCK,
     CSRNG_INTR_STATE,
     CSRNG_INTR_ENABLE,
     CSRNG_INTR_TEST,
@@ -385,24 +395,29 @@ package csrng_reg_pkg;
   } csrng_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] CSRNG_PERMIT [17] = '{
-    4'b 0001, // index[ 0] CSRNG_INTR_STATE
-    4'b 0001, // index[ 1] CSRNG_INTR_ENABLE
-    4'b 0001, // index[ 2] CSRNG_INTR_TEST
-    4'b 0001, // index[ 3] CSRNG_ALERT_TEST
-    4'b 0001, // index[ 4] CSRNG_REGWEN
-    4'b 0011, // index[ 5] CSRNG_CTRL
-    4'b 1111, // index[ 6] CSRNG_CMD_REQ
-    4'b 0001, // index[ 7] CSRNG_SW_CMD_STS
-    4'b 0001, // index[ 8] CSRNG_GENBITS_VLD
-    4'b 1111, // index[ 9] CSRNG_GENBITS
-    4'b 0001, // index[10] CSRNG_INT_STATE_NUM
-    4'b 1111, // index[11] CSRNG_INT_STATE_VAL
-    4'b 0011, // index[12] CSRNG_HW_EXC_STS
-    4'b 0011, // index[13] CSRNG_RECOV_ALERT_STS
-    4'b 1111, // index[14] CSRNG_ERR_CODE
-    4'b 0001, // index[15] CSRNG_ERR_CODE_TEST
-    4'b 0001  // index[16] CSRNG_MAIN_SM_STATE
+  parameter logic [3:0] CSRNG_PERMIT [22] = '{
+    4'b 1111, // index[ 0] CSRNG_CIP_ID
+    4'b 1111, // index[ 1] CSRNG_REVISION
+    4'b 1111, // index[ 2] CSRNG_PARAMETER_BLOCK_TYPE
+    4'b 1111, // index[ 3] CSRNG_PARAMETER_BLOCK_LENGTH
+    4'b 1111, // index[ 4] CSRNG_NEXT_PARAMETER_BLOCK
+    4'b 0001, // index[ 5] CSRNG_INTR_STATE
+    4'b 0001, // index[ 6] CSRNG_INTR_ENABLE
+    4'b 0001, // index[ 7] CSRNG_INTR_TEST
+    4'b 0001, // index[ 8] CSRNG_ALERT_TEST
+    4'b 0001, // index[ 9] CSRNG_REGWEN
+    4'b 0011, // index[10] CSRNG_CTRL
+    4'b 1111, // index[11] CSRNG_CMD_REQ
+    4'b 0001, // index[12] CSRNG_SW_CMD_STS
+    4'b 0001, // index[13] CSRNG_GENBITS_VLD
+    4'b 1111, // index[14] CSRNG_GENBITS
+    4'b 0001, // index[15] CSRNG_INT_STATE_NUM
+    4'b 1111, // index[16] CSRNG_INT_STATE_VAL
+    4'b 0011, // index[17] CSRNG_HW_EXC_STS
+    4'b 0011, // index[18] CSRNG_RECOV_ALERT_STS
+    4'b 1111, // index[19] CSRNG_ERR_CODE
+    4'b 0001, // index[20] CSRNG_ERR_CODE_TEST
+    4'b 0001  // index[21] CSRNG_MAIN_SM_STATE
   };
 
 endpackage

@@ -10,7 +10,7 @@ package aon_timer_reg_pkg;
   parameter int NumAlerts = 1;
 
   // Address widths within the block
-  parameter int BlockAw = 6;
+  parameter int BlockAw = 7;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -133,18 +133,23 @@ package aon_timer_reg_pkg;
   } aon_timer_hw2reg_t;
 
   // Register offsets
-  parameter logic [BlockAw-1:0] AON_TIMER_ALERT_TEST_OFFSET = 6'h 0;
-  parameter logic [BlockAw-1:0] AON_TIMER_WKUP_CTRL_OFFSET = 6'h 4;
-  parameter logic [BlockAw-1:0] AON_TIMER_WKUP_THOLD_OFFSET = 6'h 8;
-  parameter logic [BlockAw-1:0] AON_TIMER_WKUP_COUNT_OFFSET = 6'h c;
-  parameter logic [BlockAw-1:0] AON_TIMER_WDOG_REGWEN_OFFSET = 6'h 10;
-  parameter logic [BlockAw-1:0] AON_TIMER_WDOG_CTRL_OFFSET = 6'h 14;
-  parameter logic [BlockAw-1:0] AON_TIMER_WDOG_BARK_THOLD_OFFSET = 6'h 18;
-  parameter logic [BlockAw-1:0] AON_TIMER_WDOG_BITE_THOLD_OFFSET = 6'h 1c;
-  parameter logic [BlockAw-1:0] AON_TIMER_WDOG_COUNT_OFFSET = 6'h 20;
-  parameter logic [BlockAw-1:0] AON_TIMER_INTR_STATE_OFFSET = 6'h 24;
-  parameter logic [BlockAw-1:0] AON_TIMER_INTR_TEST_OFFSET = 6'h 28;
-  parameter logic [BlockAw-1:0] AON_TIMER_WKUP_CAUSE_OFFSET = 6'h 2c;
+  parameter logic [BlockAw-1:0] AON_TIMER_CIP_ID_OFFSET = 7'h 0;
+  parameter logic [BlockAw-1:0] AON_TIMER_REVISION_OFFSET = 7'h 4;
+  parameter logic [BlockAw-1:0] AON_TIMER_PARAMETER_BLOCK_TYPE_OFFSET = 7'h 8;
+  parameter logic [BlockAw-1:0] AON_TIMER_PARAMETER_BLOCK_LENGTH_OFFSET = 7'h c;
+  parameter logic [BlockAw-1:0] AON_TIMER_NEXT_PARAMETER_BLOCK_OFFSET = 7'h 10;
+  parameter logic [BlockAw-1:0] AON_TIMER_ALERT_TEST_OFFSET = 7'h 40;
+  parameter logic [BlockAw-1:0] AON_TIMER_WKUP_CTRL_OFFSET = 7'h 44;
+  parameter logic [BlockAw-1:0] AON_TIMER_WKUP_THOLD_OFFSET = 7'h 48;
+  parameter logic [BlockAw-1:0] AON_TIMER_WKUP_COUNT_OFFSET = 7'h 4c;
+  parameter logic [BlockAw-1:0] AON_TIMER_WDOG_REGWEN_OFFSET = 7'h 50;
+  parameter logic [BlockAw-1:0] AON_TIMER_WDOG_CTRL_OFFSET = 7'h 54;
+  parameter logic [BlockAw-1:0] AON_TIMER_WDOG_BARK_THOLD_OFFSET = 7'h 58;
+  parameter logic [BlockAw-1:0] AON_TIMER_WDOG_BITE_THOLD_OFFSET = 7'h 5c;
+  parameter logic [BlockAw-1:0] AON_TIMER_WDOG_COUNT_OFFSET = 7'h 60;
+  parameter logic [BlockAw-1:0] AON_TIMER_INTR_STATE_OFFSET = 7'h 64;
+  parameter logic [BlockAw-1:0] AON_TIMER_INTR_TEST_OFFSET = 7'h 68;
+  parameter logic [BlockAw-1:0] AON_TIMER_WKUP_CAUSE_OFFSET = 7'h 6c;
 
   // Reset values for hwext registers and their fields
   parameter logic [0:0] AON_TIMER_ALERT_TEST_RESVAL = 1'h 0;
@@ -153,6 +158,11 @@ package aon_timer_reg_pkg;
 
   // Register index
   typedef enum int {
+    AON_TIMER_CIP_ID,
+    AON_TIMER_REVISION,
+    AON_TIMER_PARAMETER_BLOCK_TYPE,
+    AON_TIMER_PARAMETER_BLOCK_LENGTH,
+    AON_TIMER_NEXT_PARAMETER_BLOCK,
     AON_TIMER_ALERT_TEST,
     AON_TIMER_WKUP_CTRL,
     AON_TIMER_WKUP_THOLD,
@@ -168,19 +178,24 @@ package aon_timer_reg_pkg;
   } aon_timer_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] AON_TIMER_PERMIT [12] = '{
-    4'b 0001, // index[ 0] AON_TIMER_ALERT_TEST
-    4'b 0011, // index[ 1] AON_TIMER_WKUP_CTRL
-    4'b 1111, // index[ 2] AON_TIMER_WKUP_THOLD
-    4'b 1111, // index[ 3] AON_TIMER_WKUP_COUNT
-    4'b 0001, // index[ 4] AON_TIMER_WDOG_REGWEN
-    4'b 0001, // index[ 5] AON_TIMER_WDOG_CTRL
-    4'b 1111, // index[ 6] AON_TIMER_WDOG_BARK_THOLD
-    4'b 1111, // index[ 7] AON_TIMER_WDOG_BITE_THOLD
-    4'b 1111, // index[ 8] AON_TIMER_WDOG_COUNT
-    4'b 0001, // index[ 9] AON_TIMER_INTR_STATE
-    4'b 0001, // index[10] AON_TIMER_INTR_TEST
-    4'b 0001  // index[11] AON_TIMER_WKUP_CAUSE
+  parameter logic [3:0] AON_TIMER_PERMIT [17] = '{
+    4'b 1111, // index[ 0] AON_TIMER_CIP_ID
+    4'b 1111, // index[ 1] AON_TIMER_REVISION
+    4'b 1111, // index[ 2] AON_TIMER_PARAMETER_BLOCK_TYPE
+    4'b 1111, // index[ 3] AON_TIMER_PARAMETER_BLOCK_LENGTH
+    4'b 1111, // index[ 4] AON_TIMER_NEXT_PARAMETER_BLOCK
+    4'b 0001, // index[ 5] AON_TIMER_ALERT_TEST
+    4'b 0011, // index[ 6] AON_TIMER_WKUP_CTRL
+    4'b 1111, // index[ 7] AON_TIMER_WKUP_THOLD
+    4'b 1111, // index[ 8] AON_TIMER_WKUP_COUNT
+    4'b 0001, // index[ 9] AON_TIMER_WDOG_REGWEN
+    4'b 0001, // index[10] AON_TIMER_WDOG_CTRL
+    4'b 1111, // index[11] AON_TIMER_WDOG_BARK_THOLD
+    4'b 1111, // index[12] AON_TIMER_WDOG_BITE_THOLD
+    4'b 1111, // index[13] AON_TIMER_WDOG_COUNT
+    4'b 0001, // index[14] AON_TIMER_INTR_STATE
+    4'b 0001, // index[15] AON_TIMER_INTR_TEST
+    4'b 0001  // index[16] AON_TIMER_WKUP_CAUSE
   };
 
 endpackage

@@ -11,13 +11,15 @@
   TPM over SPI operates in compliance with TPM PC Client Platform, unloading this protocol from a software solution.
   SPI Flash emulation mode supports many JEDEC standard commands such as Read Status, Read JEDEC ID, Read SFDP, EN4B/EX4B, and multiple other read commands, allowing OpenTitan to provide, for example, verified boot firmware to other external devices.
   '''
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "26",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_spi_device",
   revisions: [
     {
-      version:            "0.5",
+      version:            "0.5.0",
       life_stage:         "L1",
       design_stage:       "D1",
       verification_stage: "V1",
@@ -25,7 +27,7 @@
       commit_id:          "553ca956e0204e5b67b3bbea47f2e067f60b5510",
       notes:              ""
     }
-    { version:            "1.0",
+    { version:            "2.0.0",
       life_stage:         "L1",
       design_stage:       "D2S",
       verification_stage: "V2S",
