@@ -32,13 +32,16 @@ class otbn_pc_ctrl_flow_redun_vseq extends otbn_single_vseq;
 
     do begin
       @(cfg.clk_rst_vif.cb);
-      uvm_hdl_read("tb.dut.u_otbn_core.u_otbn_instruction_fetch.imem_rvalid_i", imem_rvalid);
-      uvm_hdl_read("tb.dut.u_otbn_core.u_otbn_instruction_fetch.insn_fetch_req_valid_raw_i",
-                    insn_fetch_req_valid);
-      uvm_hdl_read("tb.dut.u_otbn_core.u_otbn_instruction_fetch.prefetch_ignore_errs_i",
-                    prefetch_ignore_err);
+      if (!uvm_hdl_read("tb.dut.u_otbn_core.u_otbn_instruction_fetch.imem_rvalid_i", imem_rvalid))
+        `uvm_fatal(`gfn, "failed to read imem_rvalid_i");
+      if (!uvm_hdl_read("tb.dut.u_otbn_core.u_otbn_instruction_fetch.insn_fetch_req_valid_raw_i",
+                        insn_fetch_req_valid))
+        `uvm_fatal(`gfn, "failed to read insn_fetch_req_valid_raw_i");
+      if (!uvm_hdl_read("tb.dut.u_otbn_core.u_otbn_instruction_fetch.prefetch_ignore_errs_i",
+                        prefetch_ignore_err))
+        `uvm_fatal(`gfn, "failed to read prefetch_ignore_errs_i");
     end while(!(imem_rvalid & insn_fetch_req_valid & !prefetch_ignore_err));
-    uvm_hdl_read(addr_path, good_addr);
+    `DV_CHECK_FATAL(uvm_hdl_read(addr_path, good_addr));
     // Mask to corrupt 1 to 2 bits of the prefetch addr
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask, $countones(mask) inside {[1:2]};)
     bad_addr = good_addr ^ mask;
