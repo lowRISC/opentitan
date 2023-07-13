@@ -1256,14 +1256,12 @@ def main():
         gencmd = """//
 // util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson \\
 //                -o hw/top_{topname}/ \\
-//                --hjson-only \\
 //                --entropy-buffer {path}
 """.format(topname=topname, path = args.entropy_buffer)
     else:
         gencmd = """//
 // util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson \\
 //                -o hw/top_{topname}/ \\
-//                --hjson-only \\
 //                --rnd_cnst_seed {seed}
 """.format(topname=topname, seed=completecfg["rnd_cnst_seed"])
 
