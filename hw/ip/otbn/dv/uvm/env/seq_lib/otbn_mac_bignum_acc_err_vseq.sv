@@ -10,14 +10,14 @@ class otbn_mac_bignum_acc_err_vseq extends otbn_intg_err_vseq;
 
   `uvm_object_new
 
-  task await_use(output bit [otbn_pkg::BaseWordsPerWLEN-1:0] used_words);
+  protected task await_use(output bit [otbn_pkg::BaseWordsPerWLEN-1:0] used_words);
     used_words = '0;
     `uvm_info(`gfn, "Waiting for `acc_intg_q` to be used", UVM_LOW)
     cfg.mac_bignum_vif.wait_for_acc_used(200, used_words);
   endtask
 
-  task inject_errors(input  bit [otbn_pkg::BaseWordsPerWLEN-1:0] used_words,
-                     output bit [otbn_pkg::BaseWordsPerWLEN-1:0] corrupted_words);
+  protected task inject_errors(input  bit [otbn_pkg::BaseWordsPerWLEN-1:0] used_words,
+                               output bit [otbn_pkg::BaseWordsPerWLEN-1:0] corrupted_words);
     bit [otbn_pkg::ExtWLEN-1:0] new_data = corrupt_data(cfg.mac_bignum_vif.acc_intg_q,
                                                         '{default: 50},
                                                         corrupted_words);
@@ -29,7 +29,7 @@ class otbn_mac_bignum_acc_err_vseq extends otbn_intg_err_vseq;
     end
   endtask
 
-  task release_force();
+  protected task release_force();
     cfg.mac_bignum_vif.release_acc_intg_q();
   endtask
 
