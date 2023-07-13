@@ -30,7 +30,7 @@ module top_earlgrey #(
   // parameters for lc_ctrl
   parameter bit SecLcCtrlVolatileRawUnlockEn = top_pkg::SecVolatileRawUnlockEn,
   parameter logic [15:0] LcCtrlSiliconCreatorId = 16'h 4001,
-  parameter logic [15:0] LcCtrlProductId = 16'h 0001,
+  parameter logic [15:0] LcCtrlProductId = 16'h 0002,
   parameter logic [7:0] LcCtrlRevisionId = 8'h 01,
   parameter logic [31:0] LcCtrlIdcodeValue = jtag_id_pkg::LC_CTRL_JTAG_IDCODE,
   // parameters for alert_handler
