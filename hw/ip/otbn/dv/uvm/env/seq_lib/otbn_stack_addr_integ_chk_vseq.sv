@@ -53,11 +53,11 @@ class otbn_stack_addr_integ_chk_vseq extends otbn_single_vseq;
     `DV_SPINWAIT(
       do begin
         @(cfg.clk_rst_vif.cb);
-        uvm_hdl_read(top_valid_path, top_valid);
+        `DV_CHECK_FATAL(uvm_hdl_read(top_valid_path, top_valid));
       end while (!top_valid);
     )
     cfg.clk_rst_vif.wait_clks($urandom_range(10, 100));
-    uvm_hdl_read(top_valid_path, top_valid);
+    `DV_CHECK_FATAL(uvm_hdl_read(top_valid_path, top_valid));
     if (top_valid) begin
       fork
         begin: isolation_fork
@@ -67,7 +67,7 @@ class otbn_stack_addr_integ_chk_vseq extends otbn_single_vseq;
                 `DV_SPINWAIT(
                   do begin
                     @(cfg.clk_rst_vif.cb);
-                    uvm_hdl_read(stack_read_path, stack_read);
+                    `DV_CHECK_FATAL(uvm_hdl_read(stack_read_path, stack_read));
                   end while (!stack_read);
                 )
                 cfg.model_agent_cfg.vif.send_err_escalation(err_val);
@@ -84,7 +84,7 @@ class otbn_stack_addr_integ_chk_vseq extends otbn_single_vseq;
                 `DV_SPINWAIT(
                   do begin
                     @(cfg.clk_rst_vif.cb);
-                    uvm_hdl_read(stack_write_path, stack_write);
+                    `DV_CHECK_FATAL(uvm_hdl_read(stack_write_path, stack_write));
                   end while (!stack_write);
                 )
                 @(cfg.clk_rst_vif.cb);
@@ -107,18 +107,18 @@ class otbn_stack_addr_integ_chk_vseq extends otbn_single_vseq;
     bit [38:0] bad_data;
     bit [31:0] mask;
     bit [31:0] err_val = 32'd1 << 20;
-    uvm_hdl_read(stack_wr_idx_path, stack_wr_idx);
+    `DV_CHECK_FATAL(uvm_hdl_read(stack_wr_idx_path, stack_wr_idx));
     if (stack_wr_idx != 0) begin
       if (err_type) begin
         $sformat(err_path, "tb.dut.u_otbn_core.u_otbn_rf_base.u_call_stack.stack_storage[%0d]",
                  (stack_wr_idx-1));
       end else begin
-        uvm_hdl_read(stack_wr_idx_path, stack_wr_idx);
+        `DV_CHECK_FATAL(uvm_hdl_read(stack_wr_idx_path, stack_wr_idx));
         $sformat(err_path,
     "tb.dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller.loop_info_stack.stack_storage[%0d]"
                  , (stack_wr_idx - 1));
       end
-      uvm_hdl_read(err_path, good_data);
+      `DV_CHECK_FATAL(uvm_hdl_read(err_path, good_data));
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask, $countones(mask) inside {[1:2]};)
       bad_data = good_data ^ mask;
       `DV_CHECK_FATAL(uvm_hdl_force(err_path, bad_data))

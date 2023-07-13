@@ -42,7 +42,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
       0: begin
         err_path = "tb.dut.u_otbn_core.u_otbn_alu_bignum.ispr_addr_i";
         wait_for_flag("tb.dut.u_otbn_core.u_otbn_alu_bignum.ispr_wr_en");
-        uvm_hdl_read(err_path, good_addr);
+        `DV_CHECK_FATAL(uvm_hdl_read(err_path, good_addr));
         // Mask to corrupt 1 to 2 bits of the ispr addr
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask, $countones(mask) inside {[1:2]};)
         bad_addr = good_addr ^ mask;
@@ -52,7 +52,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
       1: begin
         err_path = "tb.dut.u_otbn_core.u_otbn_alu_bignum.ispr_addr_i";
         wait_for_flag("tb.dut.u_otbn_core.u_otbn_alu_bignum.ispr_rd_en_i");
-        uvm_hdl_read(err_path, good_addr);
+        `DV_CHECK_FATAL(uvm_hdl_read(err_path, good_addr));
         // Mask to corrupt 1 to 2 bits of the ispr addr
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask, $countones(mask) inside {[1:2]};)
         bad_addr = good_addr ^ mask;
@@ -63,7 +63,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
         logic [3:0] good_op, bad_op;
         err_path = "tb.dut.u_otbn_core.u_otbn_alu_bignum.operation_i.op";
         wait_for_flag("tb.dut.u_otbn_core.alu_bignum_operation_valid");
-        uvm_hdl_read(err_path, good_op);
+        `DV_CHECK_FATAL(uvm_hdl_read(err_path, good_op));
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bad_op,
                                            bad_op != good_op;
                                            bad_op != otbn_pkg::AluOpBignumNone;);
@@ -75,7 +75,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
         otbn_pkg::insn_dec_shared_t insn_dec_shared_i;
         err_path = "tb.dut.u_otbn_core.u_otbn_controller.insn_dec_shared_i";
         wait_for_flag("tb.dut.u_otbn_core.u_otbn_controller.insn_valid_i");
-        uvm_hdl_read(err_path, insn_dec_shared_i);
+        `DV_CHECK_FATAL(uvm_hdl_read(err_path, insn_dec_shared_i));
         `DV_CHECK_STD_RANDOMIZE_FATAL(choose_err)
         case(choose_err)
           0: begin
@@ -101,7 +101,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
             bit [31:0] bad_rf_ren_a;
             bit [31:0] good_rf_ren_a;
             err_path = "tb.dut.u_otbn_core.rf_predec_bignum.rf_ren_a";
-            uvm_hdl_read(err_path, good_rf_ren_a);
+            `DV_CHECK_FATAL(uvm_hdl_read(err_path, good_rf_ren_a));
             `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bad_rf_ren_a,  $countones(bad_rf_ren_a) == 1;
                                                bad_rf_ren_a != good_rf_ren_a;)
             `DV_CHECK_FATAL(uvm_hdl_force(err_path, bad_rf_ren_a) == 1);
@@ -110,7 +110,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
             bit [31:0] bad_rf_ren_b;
             bit [31:0] good_rf_ren_b;
             err_path = "tb.dut.u_otbn_core.rf_predec_bignum.rf_ren_b";
-            uvm_hdl_read(err_path, good_rf_ren_b);
+            `DV_CHECK_FATAL(uvm_hdl_read(err_path, good_rf_ren_b));
             `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bad_rf_ren_b,  $countones(bad_rf_ren_b) == 1;
                                                bad_rf_ren_b != good_rf_ren_b;)
             `DV_CHECK_FATAL(uvm_hdl_force(err_path, bad_rf_ren_b) == 1);
@@ -119,7 +119,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
             bit [8:0] bad_ispr_rd_en;
             bit [8:0] good_ispr_rd_en;
             err_path = "tb.dut.u_otbn_core.ispr_predec_bignum.ispr_rd_en";
-            uvm_hdl_read(err_path, good_ispr_rd_en);
+            `DV_CHECK_FATAL(uvm_hdl_read(err_path, good_ispr_rd_en));
             `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bad_ispr_rd_en,  $countones(bad_ispr_rd_en) == 1;
                                                bad_ispr_rd_en != good_ispr_rd_en;)
             `DV_CHECK_FATAL(uvm_hdl_force(err_path, bad_ispr_rd_en) == 1);
@@ -142,14 +142,14 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
         case(choose_err)
           0: begin
             err_path = "tb.dut.u_otbn_core.u_otbn_mac_bignum.mac_en_i";
-            uvm_hdl_read(err_path, mac_en);
+            `DV_CHECK_FATAL(uvm_hdl_read(err_path, mac_en));
             `DV_CHECK_FATAL(uvm_hdl_force(err_path, !mac_en) == 1);
           end
           1: begin
             bit zero_acc;
             err_path = "tb.dut.u_otbn_core.u_otbn_mac_bignum.operation_i.zero_acc";
             wait_for_flag("tb.dut.u_otbn_core.u_otbn_mac_bignum.mac_en_i");
-            uvm_hdl_read(err_path, zero_acc);
+            `DV_CHECK_FATAL(uvm_hdl_read(err_path, zero_acc));
             `DV_CHECK_FATAL(uvm_hdl_force(err_path, !zero_acc) == 1);
           end
           default: begin
@@ -167,7 +167,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
           0: begin
             err_path = "tb.dut.u_otbn_core.u_otbn_rf_bignum.wr_addr_i[4:0]";
             wait_for_flag("tb.dut.u_otbn_core.u_otbn_rf_bignum.wr_en_i[1:0]");
-            uvm_hdl_read(err_path, addr);
+            `DV_CHECK_FATAL(uvm_hdl_read(err_path, addr));
             `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask, $countones(mask) inside {[1:2]};)
             addr = addr ^ mask;
             `DV_CHECK_FATAL(uvm_hdl_force(err_path, addr) == 1);
@@ -175,7 +175,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
           1: begin
             err_path = "tb.dut.u_otbn_core.u_otbn_rf_bignum.rd_addr_a_i";
             wait_for_flag("tb.dut.u_otbn_core.u_otbn_rf_bignum.rd_en_a_i");
-            uvm_hdl_read(err_path, addr);
+            `DV_CHECK_FATAL(uvm_hdl_read(err_path, addr));
             `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask, $countones(mask) inside {[1:2]};)
             addr = addr ^ mask;
             `DV_CHECK_FATAL(uvm_hdl_force(err_path, addr) == 1);
@@ -183,7 +183,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
           2: begin
             err_path = "tb.dut.u_otbn_core.u_otbn_rf_bignum.rd_addr_b_i";
             wait_for_flag("tb.dut.u_otbn_core.u_otbn_rf_bignum.rd_en_b_i");
-            uvm_hdl_read(err_path, addr);
+            `DV_CHECK_FATAL(uvm_hdl_read(err_path, addr));
             `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask, $countones(mask) inside {[1:2]};)
             addr = addr ^ mask;
             `DV_CHECK_FATAL(uvm_hdl_force(err_path, addr) == 1);
