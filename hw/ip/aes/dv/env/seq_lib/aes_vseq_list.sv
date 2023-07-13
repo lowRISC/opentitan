@@ -17,3 +17,4 @@
 `include "aes_ctr_fi_vseq.sv"
 `include "aes_core_fi_vseq.sv"
 `include "aes_readability_vseq.sv"
+`include "aes_stress_all_vseq.sv"

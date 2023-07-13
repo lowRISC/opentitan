@@ -7,6 +7,7 @@
                      "hw/dv/tools/dvsim/testplans/shadow_reg_errors_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
                      "aes_sec_cm_testplan.hjson"]
   testpoints: [
    // {
@@ -123,6 +124,14 @@
             Make sure that there is no residual data from latest operation. '''
       stage: V2
       tests: ["aes_deinit"]
+    }
+    {
+      name: stress_all
+      desc: '''
+            Run assorted sequences back-to-back.
+            '''
+      stage: V2
+      tests: ["aes_stress_all"]
     }
     {
       name: reseeding
