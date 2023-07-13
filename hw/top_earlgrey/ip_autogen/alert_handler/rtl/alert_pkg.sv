@@ -99,5 +99,3 @@ package alert_pkg;
   } reg2hw_wrap_t;
 
 endpackage : alert_pkg
-
-
