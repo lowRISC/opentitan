@@ -11,7 +11,7 @@ class otbn_rf_bignum_intg_err_vseq extends otbn_intg_err_vseq;
   `uvm_object_new
   rand bit insert_intg_err_to_a;
 
-  task await_use(output bit [otbn_pkg::BaseWordsPerWLEN-1:0] used_words);
+  protected task await_use(output bit [otbn_pkg::BaseWordsPerWLEN-1:0] used_words);
     logic rd_en;
     used_words = '0;
     `uvm_info(`gfn, "Waiting for selected RF to be used", UVM_LOW)
@@ -26,8 +26,8 @@ class otbn_rf_bignum_intg_err_vseq extends otbn_intg_err_vseq;
     )
   endtask
 
-  task inject_errors(input  bit [otbn_pkg::BaseWordsPerWLEN-1:0] used_words,
-                     output bit [otbn_pkg::BaseWordsPerWLEN-1:0] corrupted_words);
+  protected task inject_errors(input  bit [otbn_pkg::BaseWordsPerWLEN-1:0] used_words,
+                               output bit [otbn_pkg::BaseWordsPerWLEN-1:0] corrupted_words);
     logic [otbn_pkg::ExtWLEN-1:0] orig_data;
     bit   [otbn_pkg::ExtWLEN-1:0] new_data;
 
@@ -47,7 +47,7 @@ class otbn_rf_bignum_intg_err_vseq extends otbn_intg_err_vseq;
     end
   endtask
 
-  task release_force();
+  protected task release_force();
     if (insert_intg_err_to_a) begin
       cfg.trace_vif.release_rf_bignum_rd_data_a_intg();
     end else begin
