@@ -18,7 +18,7 @@
 static void compute_digest(size_t msg_len, const uint8_t *msg,
                            hmac_digest_t *digest) {
   // Compute the SHA-256 digest using the HMAC device.
-  hmac_sha256_init();
+  hmac_sha_init();
   hmac_update(msg, msg_len);
   hmac_final(digest);
 }

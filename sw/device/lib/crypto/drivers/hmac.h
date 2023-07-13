@@ -52,7 +52,7 @@ typedef struct hmac_key {
  * It then configures the HMAC block in SHA256 mode with little endian
  * data input and digest output.
  */
-void hmac_sha256_init(void);
+void hmac_sha_init(void);
 
 /**
  * Initializes the HMAC block in HMAC mode.
