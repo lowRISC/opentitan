@@ -311,7 +311,7 @@
         // The following three values get exposed in the life cycle CSRs
         // that are also readable via the TAP.
         SiliconCreatorId: "16'h 4001", // Creator ID for Earlgrey discrete integration
-        ProductId: "16'h 0001", // Earlgrey engineering sample
+        ProductId: "16'h 0002", // Earlgrey PROD
         RevisionId: "8'h 01",   // First tapeout
         IdcodeValue: "jtag_id_pkg::LC_CTRL_JTAG_IDCODE",
       },
