@@ -44,8 +44,8 @@ rust_library(
     deps = [
         "@crate_index__pest-2.5.5//:pest",
         "@crate_index__pest_meta-2.5.5//:pest_meta",
-        "@crate_index__proc-macro2-1.0.56//:proc_macro2",
-        "@crate_index__quote-1.0.26//:quote",
+        "@crate_index__proc-macro2-1.0.64//:proc_macro2",
+        "@crate_index__quote-1.0.29//:quote",
         "@crate_index__syn-1.0.107//:syn",
     ],
 )

@@ -11,11 +11,11 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # MIT
+#     "TODO",  # MIT OR Apache-2.0
 # ])
 
 rust_library(
-    name = "mio_signals",
+    name = "regex",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -27,20 +27,40 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
+    crate_features = [
+        "default",
+        "perf",
+        "perf-backtrack",
+        "perf-cache",
+        "perf-dfa",
+        "perf-inline",
+        "perf-literal",
+        "perf-onepass",
+        "std",
+        "unicode",
+        "unicode-age",
+        "unicode-bool",
+        "unicode-case",
+        "unicode-gencat",
+        "unicode-perl",
+        "unicode-script",
+        "unicode-segment",
+    ],
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2021",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=mio-signals",
+        "crate-name=regex",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "0.1.5",
+    version = "1.9.1",
     deps = [
-        "@crate_index__libc-0.2.147//:libc",
-        "@crate_index__log-0.4.17//:log",
-        "@crate_index__mio-0.7.14//:mio",
+        "@crate_index__aho-corasick-1.0.2//:aho_corasick",
+        "@crate_index__memchr-2.5.0//:memchr",
+        "@crate_index__regex-automata-0.3.3//:regex_automata",
+        "@crate_index__regex-syntax-0.7.4//:regex_syntax",
     ],
 )

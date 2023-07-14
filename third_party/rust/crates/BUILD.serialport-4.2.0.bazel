@@ -73,7 +73,7 @@ rust_library(
             "@crate_index__nix-0.24.3//:nix",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crate_index__regex-1.7.1//:regex",  # cfg(windows)
+            "@crate_index__regex-1.9.1//:regex",  # cfg(windows)
             "@crate_index__winapi-0.3.9//:winapi",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
@@ -113,7 +113,7 @@ rust_library(
             "@crate_index__nix-0.24.3//:nix",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:i686-pc-windows-msvc": [
-            "@crate_index__regex-1.7.1//:regex",  # cfg(windows)
+            "@crate_index__regex-1.9.1//:regex",  # cfg(windows)
             "@crate_index__winapi-0.3.9//:winapi",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:i686-unknown-freebsd": [
@@ -161,7 +161,7 @@ rust_library(
             "@crate_index__nix-0.24.3//:nix",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crate_index__regex-1.7.1//:regex",  # cfg(windows)
+            "@crate_index__regex-1.9.1//:regex",  # cfg(windows)
             "@crate_index__winapi-0.3.9//:winapi",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:x86_64-unknown-freebsd": [

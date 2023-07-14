@@ -62,7 +62,7 @@ rust_library(
         "@crate_index__itoa-1.0.5//:itoa",
         "@crate_index__pin-project-lite-0.2.9//:pin_project_lite",
         "@crate_index__socket2-0.4.9//:socket2",
-        "@crate_index__tokio-1.27.0//:tokio",
+        "@crate_index__tokio-1.29.1//:tokio",
         "@crate_index__tower-service-0.3.2//:tower_service",
         "@crate_index__tracing-0.1.37//:tracing",
         "@crate_index__want-0.3.0//:want",

@@ -45,6 +45,6 @@ rust_library(
         "@crate_index__erased-serde-0.3.24//:erased_serde",
         "@crate_index__inventory-0.3.5//:inventory",
         "@crate_index__once_cell-1.17.1//:once_cell",
-        "@crate_index__serde-1.0.152//:serde",
+        "@crate_index__serde-1.0.171//:serde",
     ],
 )

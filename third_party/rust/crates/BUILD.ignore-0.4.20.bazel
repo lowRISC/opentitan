@@ -11,11 +11,11 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # MIT/Apache-2.0
+#     "TODO",  # Unlicense OR MIT
 # ])
 
 rust_library(
-    name = "chrono",
+    name = "ignore",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -27,47 +27,35 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "clock",
-        "default",
-        "iana-time-zone",
-        "js-sys",
-        "oldtime",
-        "std",
-        "time",
-        "wasm-bindgen",
-        "wasmbind",
-        "winapi",
-    ],
     crate_root = "src/lib.rs",
     edition = "2018",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=chrono",
+        "crate-name=ignore",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "0.4.23",
+    version = "0.4.20",
     deps = [
-        "@crate_index__iana-time-zone-0.1.53//:iana_time_zone",
-        "@crate_index__num-integer-0.1.45//:num_integer",
-        "@crate_index__num-traits-0.2.15//:num_traits",
-        "@crate_index__time-0.1.45//:time",
+        "@crate_index__globset-0.4.11//:globset",
+        "@crate_index__lazy_static-1.4.0//:lazy_static",
+        "@crate_index__log-0.4.17//:log",
+        "@crate_index__memchr-2.5.0//:memchr",
+        "@crate_index__regex-1.9.1//:regex",
+        "@crate_index__same-file-1.0.6//:same_file",
+        "@crate_index__thread_local-1.1.7//:thread_local",
+        "@crate_index__walkdir-2.3.3//:walkdir",
     ] + select({
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crate_index__winapi-0.3.9//:winapi",  # cfg(windows)
+            "@crate_index__winapi-util-0.1.5//:winapi_util",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:i686-pc-windows-msvc": [
-            "@crate_index__winapi-0.3.9//:winapi",  # cfg(windows)
-        ],
-        "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "@crate_index__js-sys-0.3.61//:js_sys",  # cfg(all(target_arch = "wasm32", not(any(target_os = "emscripten", target_os = "wasi"))))
-            "@crate_index__wasm-bindgen-0.2.84//:wasm_bindgen",  # cfg(all(target_arch = "wasm32", not(any(target_os = "emscripten", target_os = "wasi"))))
+            "@crate_index__winapi-util-0.1.5//:winapi_util",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crate_index__winapi-0.3.9//:winapi",  # cfg(windows)
+            "@crate_index__winapi-util-0.1.5//:winapi_util",  # cfg(windows)
         ],
         "//conditions:default": [],
     }),

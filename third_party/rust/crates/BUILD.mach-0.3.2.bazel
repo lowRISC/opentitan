@@ -43,22 +43,22 @@ rust_library(
     version = "0.3.2",
     deps = select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crate_index__libc-0.2.139//:libc",  # cfg(any(target_os = "macos", target_os = "ios"))
+            "@crate_index__libc-0.2.147//:libc",  # cfg(any(target_os = "macos", target_os = "ios"))
         ],
         "@rules_rust//rust/platform:aarch64-apple-ios": [
-            "@crate_index__libc-0.2.139//:libc",  # cfg(any(target_os = "macos", target_os = "ios"))
+            "@crate_index__libc-0.2.147//:libc",  # cfg(any(target_os = "macos", target_os = "ios"))
         ],
         "@rules_rust//rust/platform:aarch64-apple-ios-sim": [
-            "@crate_index__libc-0.2.139//:libc",  # cfg(any(target_os = "macos", target_os = "ios"))
+            "@crate_index__libc-0.2.147//:libc",  # cfg(any(target_os = "macos", target_os = "ios"))
         ],
         "@rules_rust//rust/platform:i686-apple-darwin": [
-            "@crate_index__libc-0.2.139//:libc",  # cfg(any(target_os = "macos", target_os = "ios"))
+            "@crate_index__libc-0.2.147//:libc",  # cfg(any(target_os = "macos", target_os = "ios"))
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crate_index__libc-0.2.139//:libc",  # cfg(any(target_os = "macos", target_os = "ios"))
+            "@crate_index__libc-0.2.147//:libc",  # cfg(any(target_os = "macos", target_os = "ios"))
         ],
         "@rules_rust//rust/platform:x86_64-apple-ios": [
-            "@crate_index__libc-0.2.139//:libc",  # cfg(any(target_os = "macos", target_os = "ios"))
+            "@crate_index__libc-0.2.147//:libc",  # cfg(any(target_os = "macos", target_os = "ios"))
         ],
         "//conditions:default": [],
     }),

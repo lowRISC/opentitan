@@ -46,7 +46,7 @@ rust_library(
     deps = [
         "@crate_index__hashbrown-0.12.3//:hashbrown",
         "@crate_index__indexmap-1.9.2//:build_script_build",
-        "@crate_index__serde-1.0.152//:serde",
+        "@crate_index__serde-1.0.171//:serde",
     ],
 )
 
