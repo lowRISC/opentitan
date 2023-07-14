@@ -40,25 +40,37 @@ class aes_manual_config_err_vseq extends aes_base_vseq;
 
       cfg_item = aes_item_queue.pop_back();
 
-      // wait for DUT IDLE
+      // Wait until the DUT is idle. This is required to start the configuration.
       csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
-      // configure dut
+      // Configure the DUT. Depending on the configuration, this might trigger a PRNG reseed
+      // operation.
       setup_dut(cfg_item);
-      csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
 
-      // program illegal mode
+      // Wait until the DUT is idle. This is required to provide key and IV.
+      csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
+      // Provide key, IV and data. This will also reconfigure the DUT with the illegal mode
+      // setting. This might trigger a PRNG reseed operation again. The test configures the DUT
+      // in automatic mode, i.e., upon providing key, IV and data, it would automatically start
+      // to produce output if the configuration was valid.
       data_item = aes_item_queue.pop_back();
-      write_data_key_iv(cfg_item, data_item, 1,
-                        0, 0, 0, rst_set);
+      write_data_key_iv(cfg_item, data_item, 1, 0, 0, 0, rst_set);
 
+      // Wait until the DUT is idle.
       csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
-      trigger();
-      for (int nn = 0; nn <10; nn++) begin
-        csr_rd(.ptr(ral.status), .value(status), .blocking(1));
-        if (!status.idle && !status.alert_fatal_fault)
-          `uvm_fatal(`gfn, $sformatf("WAS ABLE TO TRIGGER OPERATION WITH ILLEGAL MODE"))
 
-        cfg.clk_rst_vif.wait_clks(25);
+      // Try to manually start the DUT. As it's configured in automatic mode, this should have
+      // no effect.
+      trigger();
+
+      // Check that during a fixed time window, the DUT does not become busy and doesn't not
+      // produce valid output. Both would mean that we were able to trigger an encryption or
+      // decryption operation with an illegal mode setting.
+      for (int nn = 0; nn < 20; nn++) begin
+        csr_rd(.ptr(ral.status), .value(status), .blocking(1));
+        if (!status.idle || status.output_valid) begin
+          `uvm_fatal(`gfn, $sformatf("WAS ABLE TO TRIGGER OPERATION WITH ILLEGAL MODE"))
+        end
+        cfg.clk_rst_vif.wait_clks(5);
       end
     end
   endtask : body
