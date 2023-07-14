@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_TESTS_USBDEV_SUSPEND_H_
 #define OPENTITAN_SW_DEVICE_TESTS_USBDEV_SUSPEND_H_
 #include <stdbool.h>
+#include <stdint.h>
 
 // USB suspend/resume test
 //
@@ -19,6 +20,9 @@
 // phases/states is prohibitive for a single simulation. Individual top-level
 // tests therefore specify a range of test phases, and it is expected that the
 // full sequence shall only ever be exercised on FPGA with a physical host.
+
+// Iteration count that denotes looping indefinitely
+#define USBDEV_SUSPEND_ETERNAL 0U
 
 /**
  * Test phases; named according to the event that we are expecting to occur.
@@ -69,10 +73,12 @@ typedef enum {
  *
  * @param init_phase   Initial phase of test (inclusive).
  * @param fin_phase    Final phase of test (inclusive).
+ * @param num_iters    Number of iterations of the phase sequence. (0 = eternal)
  * @param with_traffic Perform streaming throughout test.
  * @param return       Successful completion of test.
  */
 bool usbdev_suspend_test(usbdev_suspend_phase_t init_phase,
-                         usbdev_suspend_phase_t fin_phase, bool with_traffic);
+                         usbdev_suspend_phase_t fin_phase, uint32_t num_iters,
+                         bool with_traffic);
 
 #endif  // OPENTITAN_SW_DEVICE_TESTS_USBDEV_SUSPEND_H_

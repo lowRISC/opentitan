@@ -139,11 +139,17 @@ static size_t base_dev_spi_device(void *data, const char *buf, size_t len) {
   return len;
 }
 
+static bool base_logging = true;
+
+void base_logging_set(bool enable) { base_logging = enable; }
+
 static size_t base_dev_uart(void *data, const char *buf, size_t len) {
-  const dif_uart_t *uart = (const dif_uart_t *)data;
-  for (size_t i = 0; i < len; ++i) {
-    if (dif_uart_byte_send_polled(uart, (uint8_t)buf[i]) != kDifOk) {
-      return i;
+  if (base_logging) {
+    const dif_uart_t *uart = (const dif_uart_t *)data;
+    for (size_t i = 0; i < len; ++i) {
+      if (dif_uart_byte_send_polled(uart, (uint8_t)buf[i]) != kDifOk) {
+        return i;
+      }
     }
   }
   return len;

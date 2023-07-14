@@ -382,9 +382,7 @@ static status_t strm_tx_done(void *cb_v, usb_testutils_xfr_result_t result) {
   uint8_t tx_ep = s->tx_ep;
   uint8_t nqueued = ctx->tx_bufs_queued[tx_ep];
 
-  // TODO
-  // s->verbose = true;
-  // log_traffic = true;
+  // TODO: this is for suspend-resume testing
   base_logging_set(true);
 
   if (s->verbose) {

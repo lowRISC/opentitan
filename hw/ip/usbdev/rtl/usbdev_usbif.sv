@@ -84,7 +84,14 @@ module usbdev_usbif  #(
   input  logic                     cfg_pinflip_i, // 1: Treat outputs and inputs as though D+/D-
                                                   // are flipped
   input  logic                     tx_osc_test_mode_i, // Oscillator test mode: constant JK output
-  input  logic [NEndpoints-1:0]    data_toggle_clear_i, // Clear the data toggles for an EP
+  output logic [NEndpoints-1:0]    out_data_toggle_o, // Current state of OUT data toggles
+  output logic                     out_data_toggle_de_o, // Pulse indicating OUT data toggle(s) change
+  input  logic [NEndpoints-1:0]    out_datatog_clear_i, // Clear the data toggles for an OUT EP
+  input  logic [NEndpoints-1:0]    out_datatog_set_i, // Set the data toggles for an OUT EP
+  output logic [NEndpoints-1:0]    in_data_toggle_o, // Current state of IN data toggles
+  output logic                     in_data_toggle_de_o, // Pulse indicating IN data toggle(s) change
+  input  logic [NEndpoints-1:0]    in_datatog_clear_i, // Clear the data toggles for an IN EP
+  input  logic [NEndpoints-1:0]    in_datatog_set_i, // Set an EP
   input  logic                     resume_link_active_i, // Jump from LinkPowered to LinkResuming
 
   // status
@@ -282,7 +289,14 @@ module usbdev_usbif  #(
     .cfg_use_diff_rcvr_i   (cfg_use_diff_rcvr_i),
     .cfg_pinflip_i         (cfg_pinflip_i),
     .tx_osc_test_mode_i    (tx_osc_test_mode_i),
-    .data_toggle_clear_i   (data_toggle_clear_i),
+    .out_data_toggle_o     (out_data_toggle_o),
+    .out_data_toggle_de_o  (out_data_toggle_de_o),
+    .out_datatog_clear_i   (out_datatog_clear_i),
+    .out_datatog_set_i     (out_datatog_set_i),
+    .in_data_toggle_o      (in_data_toggle_o),
+    .in_data_toggle_de_o   (in_data_toggle_de_o),
+    .in_datatog_clear_i    (in_datatog_clear_i),
+    .in_datatog_set_i      (in_datatog_set_i),
     .diff_rx_ok_i          (diff_rx_ok_i),
 
     .usb_d_i               (usb_d_i),

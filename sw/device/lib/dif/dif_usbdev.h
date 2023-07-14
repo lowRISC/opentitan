@@ -931,6 +931,9 @@ dif_result_t dif_usbdev_set_phy_pins_state(
     const dif_usbdev_t *usbdev, dif_toggle_t override_enable,
     dif_usbdev_phy_pins_drive_t overrides);
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_regs_dump(const dif_usbdev_t *usbdev);
+
 /**
  * Raw data transfer directly to the packet buffer memory. This is a faster
  * implementation of the generic `mmio_memcpy_to_mmio32` that is specialized for

@@ -1155,6 +1155,20 @@ dif_result_t dif_usbdev_set_phy_pins_state(
   return kDifOk;
 }
 
+dif_result_t dif_usbdev_regs_dump(const dif_usbdev_t *usbdev) {
+#if AML_HACK
+  for (unsigned offset = 0u; offset < 0x90u; offset += 4u) {
+    // Skip any read-sensitive addresses!
+    if (offset == 0x20u || offset == 0x24u || offset == 0x78u) {
+      continue;
+    }
+    uint32_t reg_val = mmio_region_read32(usbdev->base_addr, (int)offset);
+    LOG_INFO("0x%x: 0x%08x", offset, reg_val);
+  }
+#endif
+  return kDifOk;
+}
+
 dif_result_t dif_usbdev_buffer_raw_write(const dif_usbdev_t *usbdev, uint8_t id,
                                          const uint8_t *src, size_t src_len) {
   if (usbdev == NULL || src == NULL || misalignment32_of((uintptr_t)src) ||

@@ -11,6 +11,6 @@ bool test_main(void) {
   // Execute the entire test sequence; all test phases.
   // Note: This is impractical in simulation, and should be used only on FPGA
   // with a physical host.
-  return usbdev_suspend_test(kSuspendPhaseSuspend, kSuspendPhaseShutdown,
+  return usbdev_suspend_test(kSuspendPhaseSuspend, kSuspendPhaseShutdown, 1u,
                              false);
 }

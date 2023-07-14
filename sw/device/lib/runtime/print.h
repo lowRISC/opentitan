@@ -300,4 +300,6 @@ void base_spi_device_stdout(const dif_spi_device_handle_t *spi_device);
  */
 void base_uart_stdout(const dif_uart_t *uart);
 
+void base_logging_set(bool enable);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_PRINT_H_

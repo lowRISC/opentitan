@@ -154,8 +154,17 @@ module usbdev
   logic              connect_en;
   logic              resume_link_active;
 
-  logic [NEndpoints-1:0] data_toggle_clear;
+  logic [NEndpoints-1:0] out_data_toggle;
+  logic                  out_data_toggle_de;
+  // Pulse strobes from register interface
+  logic [NEndpoints-1:0] out_datatog_clear;
+  logic [NEndpoints-1:0] out_datatog_set;
 
+  logic [NEndpoints-1:0] in_data_toggle;
+  logic                  in_data_toggle_de;
+  // Pulse strobes from register interface
+  logic [NEndpoints-1:0] in_datatog_clear;
+  logic [NEndpoints-1:0] in_datatog_set;
 
   /////////////////////////////////
   // USB RX after CDC & muxing   //
@@ -341,11 +350,42 @@ module usbdev
     end
   end
 
-  always_comb begin : proc_data_toggle_clear
-    data_toggle_clear = '0;
-    for (int i = 0; i < NEndpoints; i++) begin
-      data_toggle_clear[i] = reg2hw.data_toggle_clear[i].q & reg2hw.data_toggle_clear[i].qe;
+  // Single-cycle strobes for modifying OUT data toggles
+  always_comb begin : proc_out_data_toggle
+    out_datatog_clear = '0;
+    out_datatog_set = '0;
+    if (reg2hw.out_data_toggle.mask.qe & reg2hw.out_data_toggle.status.qe) begin
+      out_datatog_clear = reg2hw.out_data_toggle.mask.q & ~reg2hw.out_data_toggle.status.q;
+      out_datatog_set = reg2hw.out_data_toggle.mask.q & reg2hw.out_data_toggle.status.q;
     end
+  end
+
+  // Single-cycle strobes for modifying IN data toggles
+  always_comb begin : proc_in_data_toggle
+    in_datatog_clear = '0;
+    in_datatog_set = '0;
+    if (reg2hw.in_data_toggle.mask.qe & reg2hw.in_data_toggle.status.qe) begin
+      in_datatog_clear = reg2hw.in_data_toggle.mask.q & ~reg2hw.in_data_toggle.status.q;
+      in_datatog_set = reg2hw.in_data_toggle.mask.q & reg2hw.in_data_toggle.status.q;
+    end
+  end
+
+  // Update the OUT data toggles in the register interface
+  always_comb begin
+    hw2reg.out_data_toggle.status.d = out_data_toggle;
+    hw2reg.out_data_toggle.status.de = out_data_toggle_de;
+    // TODO: no need for register bits
+    hw2reg.out_data_toggle.mask.d = '0;
+    hw2reg.out_data_toggle.mask.de = out_data_toggle_de;
+  end
+
+  // Update the IN data toggles in the register interface
+  always_comb begin
+    hw2reg.in_data_toggle.status.d = in_data_toggle;
+    hw2reg.in_data_toggle.status.de = in_data_toggle_de;
+    // TODO: no need for register bits
+    hw2reg.in_data_toggle.mask.d = '0;
+    hw2reg.in_data_toggle.mask.de = in_data_toggle_de;
   end
 
   always_comb begin
@@ -501,7 +541,14 @@ module usbdev
     .tx_osc_test_mode_i   (reg2hw.phy_config.tx_osc_test_mode.q), // cdc ok: quasi-static
     .cfg_use_diff_rcvr_i  (usb_rx_enable_o),
     .cfg_pinflip_i        (cfg_pinflip),
-    .data_toggle_clear_i  (data_toggle_clear),
+    .out_data_toggle_o    (out_data_toggle),
+    .out_data_toggle_de_o (out_data_toggle_de),
+    .out_datatog_clear_i  (out_datatog_clear),
+    .out_datatog_set_i    (out_datatog_set),
+    .in_data_toggle_o     (in_data_toggle),
+    .in_data_toggle_de_o  (in_data_toggle_de),
+    .in_datatog_clear_i   (in_datatog_clear),
+    .in_datatog_set_i     (in_datatog_set),
     .resume_link_active_i (resume_link_active),
 
     // status

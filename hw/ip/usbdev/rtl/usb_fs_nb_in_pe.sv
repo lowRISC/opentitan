@@ -47,7 +47,10 @@ module usb_fs_nb_in_pe #(
   input  logic [NumInEps-1:0]   in_ep_data_done_i, // Set when out of data
   input  logic [NumInEps-1:0]   in_ep_iso_i, // Configure endpoint in isochronous mode
 
-  input  logic [NumInEps-1:0]   data_toggle_clear_i, // Clear the data toggles for an EP
+  output logic [NumInEps-1:0]   in_data_toggle_o, // Current state of IN data toggles
+  output logic                  in_data_toggle_de_o, // Pulse indicating IN data toggle(s) change
+  input  logic [NumInEps-1:0]   in_datatog_clear_i, // Clear the data toggles for EP(s)
+  input  logic [NumInEps-1:0]   in_datatog_set_i, // Set the data toggles for EP(s)
 
   ////////////////////
   // rx path
@@ -322,14 +325,21 @@ module usb_fs_nb_in_pe #(
 
   always_comb begin : proc_data_toggle_d
     data_toggle_d = data_toggle_q;
+    in_data_toggle_de_o = 1'b0;
 
     if (setup_token_received && ep_active) begin
       data_toggle_d[in_ep_index_d] = 1'b1;
+      in_data_toggle_de_o = 1'b1;
     end else if ((in_xact_state == StWaitAck) && ack_received) begin
       data_toggle_d[in_ep_index] = ~data_toggle_q[in_ep_index];
+      in_data_toggle_de_o = 1'b1;
     end
 
-    data_toggle_d = data_toggle_d & ~data_toggle_clear_i;
+    data_toggle_d = (data_toggle_d | in_datatog_set_i) & ~in_datatog_clear_i;
+
+    // Single-cycle pulse whenever register bit must be updated
+    in_data_toggle_de_o = |{in_data_toggle_de_o, in_datatog_set_i, in_datatog_clear_i};
+    in_data_toggle_o = data_toggle_d;
   end
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin

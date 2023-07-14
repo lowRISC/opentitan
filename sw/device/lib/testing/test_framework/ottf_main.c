@@ -149,7 +149,7 @@ void _ottf_main(void) {
   // Initialize the console to enable logging for non-DV simulation platforms.
   if (kDeviceType != kDeviceSimDV) {
     ottf_console_init();
-    LOG_INFO("Running %s", kOttfTestConfig.file);
+    //    LOG_INFO("Running %s", kOttfTestConfig.file);
   }
 
   // Initialize a global random number generator testutil context to provide

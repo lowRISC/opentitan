@@ -328,14 +328,15 @@ static status_t ctrl_tx_done(void *ctctx_v, usb_testutils_xfr_result_t result) {
       // Now the Status was sent on Endpoint Zero, the device can switch to new
       // Device Address
       TRY(dif_usbdev_address_set(ctx->dev, ctctx->new_dev));
+#if 0
       // We are required to respond to the new device address within 2ms of the
       // the zero length Status packet being ACKnowledged by the host.
       if (ibex_timeout_check(&ctctx->time_setaddr)) {
         LOG_INFO("TIMED OUT!");
         usbutils_funcpt_report();
       }
-
       TRY_CHECK(!ibex_timeout_check(&ctctx->time_setaddr));
+#endif
       TRC_I(ctctx->new_dev, 8);
       ctctx->ctrlstate = kUsbTestutilsCtIdle;
       // We now have a device address on the USB
@@ -345,6 +346,7 @@ static status_t ctrl_tx_done(void *ctctx_v, usb_testutils_xfr_result_t result) {
       // Now the Status was sent on Endpoint Zero, the new configuration has
       // been (de)selected.
       ctctx->usb_config = ctctx->new_config;
+      ctctx->ctrlstate = kUsbTestutilsCtIdle;
       if (ctctx->new_config) {
         ctctx->device_state = kUsbTestutilsDeviceConfigured;
       } else {

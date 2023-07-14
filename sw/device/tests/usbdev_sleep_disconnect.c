@@ -9,5 +9,5 @@ OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   return usbdev_suspend_test(kSuspendPhaseSleepDisconnect,
-                             kSuspendPhaseDeepResume, false);
+                             kSuspendPhaseDeepResume, 1u, false);
 }

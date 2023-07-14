@@ -6,9 +6,15 @@
 
 #include "sw/device/lib/dif/dif_usbdev.h"
 #include "sw/device/lib/runtime/ibex.h"
+#include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
+// TODO:  With Low Speed traffic but not the RTL change, we must ignore the
+// reports of RxBitstuffErr because these occur spuriously after receipt of PRE
+// PID which we do not recognise
+#define IGNORE_BITSTUFF_ERRORS 0
 
 #define USBDEV_BASE_ADDR TOP_EARLGREY_USBDEV_BASE_ADDR
 
@@ -103,6 +109,12 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
   // Collect a set of interrupts
   TRY(dif_usbdev_irq_get_state(ctx->dev, &istate));
 
+#if IGNORE_BITSTUFF_ERRORS
+  // TODO: ignore the bit stuff errors which are known to occur in the presence
+  // of Low Speed traffic
+  istate &= ~(1u << kDifUsbdevIrqRxBitstuffErr);
+#endif
+
   // TODO:
   if (capture && ibex_mcycle_read() > next_capture) {
     // Report the state of the bus periodically, investigating unexpected
@@ -122,8 +134,11 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
   }
   // TODO: simplify the logs for now!
   if (istate == (1u << kDifUsbdevIrqFrame)) {
+#if IGNORE_BITSTUFF_ERRORS
+    TRY(dif_usbdev_irq_acknowledge_state(ctx->dev, istate | (1u << kDifUsbdevIrqRxBitstuffErr));
+#else
     TRY(dif_usbdev_irq_acknowledge_state(ctx->dev, istate));
-
+#endif
     if (true) {
       TRY(dif_usbdev_status_get_frame(ctx->dev, &ctx->frame));
 
@@ -178,6 +193,13 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
                     (sense.vbus_sense ? 0x100U : 0);
     USBUTILS_FUNCPT(0x515, data);
   }
+
+#if 0
+if (istate & ((1u << kDifUsbdevIrqPktSent) | (1u << kDifUsbdevIrqPktReceived))) {
+  base_logging_set(true);
+LOG_INFO("istate 0x%08x", istate);
+}
+#endif
 
   // Process IN completions first so we get the fact that send completed
   // before processing a response to that transmission
@@ -289,7 +311,11 @@ for (unsigned i = 0U; i < 100U; i++) {
   }
 
   // Clear the interrupts that we've received and handled
+#if IGNORE_BITSTUFF_ERRORS
+  TRY(dif_usbdev_irq_acknowledge_state(ctx->dev, istate | (1u << kDifUsbdevIrqRxBitstuffErr));
+#else
   TRY(dif_usbdev_irq_acknowledge_state(ctx->dev, istate));
+#endif
 
   // Record bus frame
   if ((istate & (1u << kDifUsbdevIrqFrame))) {
@@ -368,7 +394,7 @@ for (unsigned i = 0U; i < 100U; i++) {
     if (istate &
         ((1u << kDifUsbdevIrqRxFull) | (1u << kDifUsbdevIrqAvOverflow) |
          (1u << kDifUsbdevIrqLinkInErr) | (1u << kDifUsbdevIrqRxCrcErr) |
-         (1u << kDifUsbdevIrqRxPidErr))) {
+         (1u << kDifUsbdevIrqRxPidErr) | (1u << kDifUsbdevIrqRxBitstuffErr))) {
       LOG_INFO("USB: Unexpected interrupts: 0x%08x", istate);
     } else {
       // Other events are optionally reported
@@ -595,6 +621,10 @@ status_t usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
   ctx->link_callback = NULL;
 
   TRY(dif_usbdev_init(mmio_region_from_addr(USBDEV_BASE_ADDR), ctx->dev));
+
+  if (true) {
+    TRY(dif_usbdev_regs_dump(ctx->dev));
+  }
 
   dif_usbdev_config_t config = {
       .have_differential_receiver = dif_bool_to_toggle(en_diff_rcvr),

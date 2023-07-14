@@ -106,6 +106,15 @@
 // Set up the recording of function points for this module
 #define USBUTILS_FUNCPT_FILE USBUTILS_FUNCPT_FILE_USBDEV_SUSP_TEST
 
+// The number of streams to be employed if testing with traffic
+#define NUM_STREAMS 6U  // USBUTILS_STREAMS_MAX
+
+// Are we using purely Isochronous streams for testing?
+#define USE_ISO_STREAMS 0
+// Are we using purely Bulk streams for testing?
+#define USE_BULK_STREAMS 1
+// Otherwise, we'll use a mixture
+
 // Are we expecting a full frame interval?
 // Note: this must match the setting in the DPI model, but we do not have the
 // ability to share header files.
@@ -152,7 +161,7 @@
  * we leave the usb_testutils_streams/other code to specify and manage its own
  * state.
  */
-#define MAX_CLIENT_STATE 0x200U
+#define MAX_CLIENT_STATE 0x400U
 
 /**
  * Test states
@@ -269,6 +278,10 @@ typedef struct {
    */
   uint32_t data_toggles;
   /**
+   * Used bytes of client state.
+   */
+  uint32_t client_used;
+  /**
    * Client state; allow, for example, the usb_testutils_streams code to specify
    * its own per-stream retention state rather than constraining it here.
    */
@@ -292,9 +305,21 @@ typedef struct usbdev_suspend_ctx {
    */
   usbdev_suspend_phase_t test_phase;
   /**
+   * Initial test phase (inclusive)
+   */
+  usbdev_suspend_phase_t init_phase;
+  /**
    * Final test phase (inclusive)
    */
   usbdev_suspend_phase_t fin_phase;
+  /**
+   * Number of iterations remaining (including the present iteration).
+   */
+  uint32_t num_iters;
+// Q: do we need this after all? It was intended to help avoid reinitialising
+// the device when looping in DeepResume test.
+  bool first_iter;
+
   /**
    * Streaming traffic throughout test?
    */
@@ -332,17 +357,12 @@ const uint32_t kRetSramOwnerAddr =
  */
 static const uint8_t config_descriptors[] = {
     USB_CFG_DSCR_HEAD(
-        USB_CFG_DSCR_LEN + 2 * (USB_INTERFACE_DSCR_LEN + 2 * USB_EP_DSCR_LEN),
+        USB_CFG_DSCR_LEN + NUM_STREAMS * (USB_INTERFACE_DSCR_LEN + NUM_STREAMS * USB_EP_DSCR_LEN),
         2),
-#if 1
-    VEND_INTERFACE_DSCR(0, 2, 0x50, 1),
-    USB_BULK_EP_DSCR(0, 1, USBDEV_MAX_PACKET_SIZE, 0),
-    USB_BULK_EP_DSCR(1, 1, USBDEV_MAX_PACKET_SIZE, 0),
-    VEND_INTERFACE_DSCR(1, 2, 0x50, 1),
-    USB_BULK_EP_DSCR(0, 2, USBDEV_MAX_PACKET_SIZE, 0),
-    USB_BULK_EP_DSCR(1, 2, USBDEV_MAX_PACKET_SIZE, 0),
-#else
+#if USE_ISO_STREAMS
     // Use Isochronous streams to prevent host binding for now
+    // Up to 11 interfaces and NUM_STREAMS in the descriptor head specifies how
+    // many of the interfaces will be declared to the host
     VEND_INTERFACE_DSCR(0, 2, 0x50, 1),
     USB_EP_DSCR(0, 1U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 1),
     USB_EP_DSCR(1, 1U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 1),
@@ -350,6 +370,90 @@ static const uint8_t config_descriptors[] = {
     VEND_INTERFACE_DSCR(1, 2, 0x50, 1),
     USB_EP_DSCR(0, 2U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 1),
     USB_EP_DSCR(1, 2U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 1),
+
+    VEND_INTERFACE_DSCR(2, 2, 0x50, 1),
+    USB_EP_DSCR(0, 3U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 1),
+    USB_EP_DSCR(1, 3U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 1),
+
+    VEND_INTERFACE_DSCR(3, 2, 0x50, 1),
+    USB_EP_DSCR(0, 4U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 1),
+    USB_EP_DSCR(1, 4U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 1),
+
+    VEND_INTERFACE_DSCR(4, 2, 0x50, 1),
+    USB_EP_DSCR(0, 5U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 1),
+    USB_EP_DSCR(1, 5U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 1),
+
+    VEND_INTERFACE_DSCR(5, 2, 0x50, 1),
+    USB_EP_DSCR(0, 6U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 1),
+    USB_EP_DSCR(1, 6U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 1),
+
+    VEND_INTERFACE_DSCR(6, 2, 0x50, 1),
+    USB_EP_DSCR(0, 7U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 1),
+    USB_EP_DSCR(1, 7U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 1),
+
+    VEND_INTERFACE_DSCR(7, 2, 0x50, 1),
+    USB_EP_DSCR(0, 8U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 1),
+    USB_EP_DSCR(1, 8U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 1),
+
+    VEND_INTERFACE_DSCR(8, 2, 0x50, 1),
+    USB_EP_DSCR(0, 9U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 1),
+    USB_EP_DSCR(1, 9U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 1),
+
+    VEND_INTERFACE_DSCR(9, 2, 0x50, 1),
+    USB_EP_DSCR(0, 10U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 1),
+    USB_EP_DSCR(1, 10U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 1),
+
+    VEND_INTERFACE_DSCR(10, 2, 0x50, 1),
+    USB_EP_DSCR(0, 11U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 1),
+    USB_EP_DSCR(1, 11U, kUsbTransferTypeIsochronous, USBDEV_MAX_PACKET_SIZE, 1),
+#elif USE_BULK_STREAMS
+    // Up to 11 interfaces and NUM_STREAMS in the descriptor head specifies how
+    // many of the interfaces will be declared to the host
+    VEND_INTERFACE_DSCR(0, 2, 0x50, 1),
+    USB_BULK_EP_DSCR(0, 1U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_BULK_EP_DSCR(1, 1U, USBDEV_MAX_PACKET_SIZE, 0),
+
+    VEND_INTERFACE_DSCR(1, 2, 0x50, 1),
+    USB_BULK_EP_DSCR(0, 2U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_BULK_EP_DSCR(1, 2U, USBDEV_MAX_PACKET_SIZE, 0),
+
+    VEND_INTERFACE_DSCR(2, 2, 0x50, 1),
+    USB_BULK_EP_DSCR(0, 3U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_BULK_EP_DSCR(1, 3U, USBDEV_MAX_PACKET_SIZE, 0),
+
+    VEND_INTERFACE_DSCR(3, 2, 0x50, 1),
+    USB_BULK_EP_DSCR(0, 4U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_BULK_EP_DSCR(1, 4U, USBDEV_MAX_PACKET_SIZE, 0),
+
+    VEND_INTERFACE_DSCR(4, 2, 0x50, 1),
+    USB_BULK_EP_DSCR(0, 5U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_BULK_EP_DSCR(1, 5U, USBDEV_MAX_PACKET_SIZE, 0),
+
+    VEND_INTERFACE_DSCR(5, 2, 0x50, 1),
+    USB_BULK_EP_DSCR(0, 6U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_BULK_EP_DSCR(1, 6U, USBDEV_MAX_PACKET_SIZE, 0),
+
+    VEND_INTERFACE_DSCR(6, 2, 0x50, 1),
+    USB_BULK_EP_DSCR(0, 7U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_BULK_EP_DSCR(1, 7U, USBDEV_MAX_PACKET_SIZE, 0),
+
+    VEND_INTERFACE_DSCR(7, 2, 0x50, 1),
+    USB_BULK_EP_DSCR(0, 8U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_BULK_EP_DSCR(1, 8U, USBDEV_MAX_PACKET_SIZE, 0),
+
+    VEND_INTERFACE_DSCR(8, 2, 0x50, 1),
+    USB_BULK_EP_DSCR(0, 9U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_BULK_EP_DSCR(1, 9U, USBDEV_MAX_PACKET_SIZE, 0),
+
+    VEND_INTERFACE_DSCR(9, 2, 0x50, 1),
+    USB_BULK_EP_DSCR(0, 10U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_BULK_EP_DSCR(1, 10U, USBDEV_MAX_PACKET_SIZE, 0),
+
+    VEND_INTERFACE_DSCR(10, 2, 0x50, 1),
+    USB_BULK_EP_DSCR(0, 11U, USBDEV_MAX_PACKET_SIZE, 0),
+    USB_BULK_EP_DSCR(1, 11U, USBDEV_MAX_PACKET_SIZE, 0),
+#else
+#error No configuration for mixed stream types currently
 #endif
 };
 
@@ -417,11 +521,24 @@ static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
 // Configuration for streaming layer; we'll just have a couple of Bulk transfer
 // streams with traffic and checking in both directions. More involved
 // configurations are exercised in other tests.
-// static const unsigned nstreams = 2U;
-// TODO: this is ordinarily two streams!
-static const unsigned nstreams = 1U;
-static const usb_testutils_transfer_type_t xfr_types[] = {kUsbTransferTypeBulk,
-                                                          kUsbTransferTypeBulk};
+static const unsigned nstreams = NUM_STREAMS;
+#if USE_ISO_STREAMS
+static const usb_testutils_transfer_type_t xfr_types[] = {
+    kUsbTransferTypeIsochronous, kUsbTransferTypeIsochronous,
+    kUsbTransferTypeIsochronous, kUsbTransferTypeIsochronous,
+    kUsbTransferTypeIsochronous, kUsbTransferTypeIsochronous,
+    kUsbTransferTypeIsochronous, kUsbTransferTypeIsochronous,
+    kUsbTransferTypeIsochronous, kUsbTransferTypeIsochronous,
+    kUsbTransferTypeIsochronous};
+#elif USE_BULK_STREAMS
+static const usb_testutils_transfer_type_t xfr_types[] = {
+  kUsbTransferTypeBulk, kUsbTransferTypeBulk, kUsbTransferTypeBulk,
+  kUsbTransferTypeBulk, kUsbTransferTypeBulk, kUsbTransferTypeBulk,
+  kUsbTransferTypeBulk, kUsbTransferTypeBulk, kUsbTransferTypeBulk,
+  kUsbTransferTypeBulk, kUsbTransferTypeBulk};
+#else
+#error No configuration for mixed stream types currently
+#endif
 // Full traffic and checking
 static const usbdev_stream_flags_t test_flags =
     kUsbdevStreamFlagRetrieve | kUsbdevStreamFlagCheck |
@@ -588,8 +705,8 @@ static inline void timeout_set(usbdev_suspend_ctx_t *ctx,
   if (kDeviceType == kDeviceFpgaCw310) {
     // TODO: essentially kill the timeouts and leave the host code to decide
     // things
-    if (interval_us < 30 * 1000000) {
-      interval_us = 30 * 1000000;
+    if (interval_us < 7 * 1000000) {
+      interval_us = 7 * 1000000;
     }
     if (interval_us >> 31)
       interval_us = (1U << 31) - 1U;
@@ -812,8 +929,10 @@ static status_t link_callback(void *ctx_v,
 // TODO: redirect logging information in Verilator t-l sim because any attempt
 // to use the UART will introduce long delays and break the test.
 static size_t base_dev_uart(void *data, const char *buf, size_t len) {
-  for (size_t i = 0; i < len; ++i) {
-    *(uint32_t *)0x411f0084 = ((uint8_t *)buf)[i];
+  if (kDeviceType == kDeviceSimVerilator) {
+    for (size_t i = 0; i < len; ++i) {
+      *(uint32_t *)0x411f0084 = ((uint8_t *)buf)[i];
+    }
   }
   return len;
 }
@@ -944,17 +1063,16 @@ static status_t software_init(usbdev_suspend_ctx_t *ctx) {
   // Note: when we exit a Deep Sleep via Resume Signaling we are relying
   // upon being able to set up the state of the endpoints and device
   // registers again, rather than retaining the full software state in SRAM
-  CHECK_STATUS_OK(usb_testutils_init(ctx->usbdev, /*pinflip=*/false,
-                                     /*en_diff_rcvr=*/true,
-                                     /*tx_use_d_se0=*/false));
+  TRY(usb_testutils_init(ctx->usbdev, /*pinflip=*/false,
+                         /*en_diff_rcvr=*/true,
+                         /*tx_use_d_se0=*/false));
 
   // Register our interest in link events
-  CHECK_STATUS_OK(
-      usb_testutils_link_callback_register(ctx->usbdev, link_callback, ctx));
+  TRY(usb_testutils_link_callback_register(ctx->usbdev, link_callback, ctx));
 
   // Set up Endpoint Zero for Control Transfers, at which point the
   // interface becomes enabled and we must be responsive to USB traffic.
-  CHECK_STATUS_OK(usb_testutils_controlep_init(
+  TRY(usb_testutils_controlep_init(
       &usbdev_control, ctx->usbdev, 0, config_descriptors,
       sizeof(config_descriptors), ctx->test_dscr, sizeof(ctx->test_dscr)));
 
@@ -1000,7 +1118,7 @@ static status_t phase_start_resume(usbdev_suspend_ctx_t *ctx) {
 
       while (usbdev_control.device_state != kUsbTestutilsDeviceConfigured &&
              !ibex_timeout_check(&ctx->timeout)) {
-        CHECK_STATUS_OK(usb_testutils_poll(ctx->usbdev));
+        TRY(usb_testutils_poll(ctx->usbdev));
       }
 
       // If we're out of step with the DPI model/host, stop the test.
@@ -1063,20 +1181,40 @@ static status_t phase_start_resume(usbdev_suspend_ctx_t *ctx) {
       break;
   }
 
-  if (ctx->with_traffic) {
-    // Supply usb_testutils context to streaming library
-    usbdev_streams.usbdev = ctx->usbdev;
+  // TODO: is this always appropriate?
+  if (ctx->test_state != kSuspendStateNextPhase) {
+    if (ctx->with_traffic) {
+      // Supply usb_testutils context to streaming library
+      usbdev_streams.usbdev = ctx->usbdev;
 
-    // Initialize the state of the streams
-    CHECK_STATUS_OK(usb_testutils_streams_init(&usbdev_streams, nstreams,
-                                               xfr_types, transfer_bytes,
-                                               test_flags, verbose));
-    if (verbose) {
-      LOG_INFO("Configured; starting streaming...");
-    }
-  } else {
-    if (verbose) {
-      LOG_INFO("Configured; not trying to stream...");
+      // TODO: may want to set this independently of the suspend-resume 'verbose'
+      bool s_verbose = false;
+
+      // Initialize the state of the streams; do this before resuming.
+      TRY(usb_testutils_streams_init(&usbdev_streams, nstreams, xfr_types,
+                                     transfer_bytes, test_flags, s_verbose));
+
+      if (ctx->test_state == kSuspendStateDeepSleep) {
+        // Reinstate the stream information, now that we've set up the basic
+        // software structures for streaming.
+        TRY_CHECK(ctx->retn_state.client_used <=
+                  sizeof(ctx->retn_state.client_state));
+        TRY(usb_testutils_streams_resume(&usbdev_streams,
+                                         ctx->retn_state.client_state,
+                                         ctx->retn_state.client_used));
+
+        if (verbose) {
+          LOG_INFO("Resuming streaming...");
+        }
+      } else {
+        if (verbose) {
+          LOG_INFO("Configured; starting streaming...");
+        }
+      }
+    } else {
+      if (verbose) {
+        LOG_INFO("Configured; not trying to stream...");
+      }
     }
   }
 
@@ -1098,12 +1236,12 @@ static status_t phase_start_resume(usbdev_suspend_ctx_t *ctx) {
       OT_FALLTHROUGH_INTENDED;
     case kSuspendPhaseDeepReset:
     case kSuspendPhaseDeepResume:
-      // If we're starting one of the Deep phases rather than waking from
-      // DeepSleep then it's the same as starting a Sleep phase.
       if (ctx->test_state == kSuspendStateDeepSleep) {
         state_enter(ctx, kSuspendStateDeepWaking);
         break;
       }
+      // If we're starting one of the Deep phases rather than waking from
+      // DeepSleep then it's the same as starting a normal Sleep phase.
       OT_FALLTHROUGH_INTENDED;
     //
     case kSuspendPhaseSleepDisconnect:
@@ -1166,6 +1304,16 @@ static status_t state_service(usbdev_suspend_ctx_t *ctx) {
                    ctx->retn_state.dev_address, ctx->retn_state.dev_config,
                    ctx->retn_state.test_phase,
                    phase_name(ctx->retn_state.test_phase));
+        }
+
+        if (ctx->with_traffic) {
+          // Store any state information that is necessary to resume streaming.
+          unsigned used;
+          TRY(usb_testutils_streams_suspend(
+              &usbdev_streams, ctx->retn_state.client_state,
+              sizeof(ctx->retn_state.client_state), &used));
+          TRY_CHECK(used <= sizeof(ctx->retn_state.client_state));
+          ctx->retn_state.client_used = used;
         }
 
         retention_sram_store(&ctx->retn_state);
@@ -1493,7 +1641,7 @@ static status_t phase_run(usbdev_suspend_ctx_t *ctx) {
 
   // Handle the phase-initial state or resuming from Deep Sleep and continuing
   // in the present phase.
-  CHECK_STATUS_OK(phase_start_resume(ctx));
+  TRY(phase_start_resume(ctx));
 
   switch (ctx->test_state) {
     case kSuspendStateBusReset:
@@ -1541,7 +1689,7 @@ static status_t phase_run(usbdev_suspend_ctx_t *ctx) {
       case kSuspendStateWaitResume:
         // No traffic, but we must still poll the usb_testutils layer to
         // handle hardware events and callbacks.
-        CHECK_STATUS_OK(usb_testutils_poll(ctx->usbdev));
+        TRY(usb_testutils_poll(ctx->usbdev));
         break;
 
       default:
@@ -1551,11 +1699,11 @@ static status_t phase_run(usbdev_suspend_ctx_t *ctx) {
           // TODO: streaming code has been integrated, but it would probably be
           // quite useful to be able to see the device streaming activity too,
           // not just that of the host side?
-          CHECK_STATUS_OK(usb_testutils_streams_service(&usbdev_streams));
+          TRY(usb_testutils_streams_service(&usbdev_streams));
         } else {
           // No traffic, but we must still poll the usb_testutils layer to
           // handle hardware events and callbacks.
-          CHECK_STATUS_OK(usb_testutils_poll(ctx->usbdev));
+          TRY(usb_testutils_poll(ctx->usbdev));
         }
         break;
     }
@@ -1566,14 +1714,34 @@ static status_t phase_run(usbdev_suspend_ctx_t *ctx) {
   switch (ctx->test_state) {
     case kSuspendStatePowerOnReset:
     case kSuspendStateBusReset:
-    case kSuspendStateNextPhase:
+    case kSuspendStateNextPhase: {
       // Was this the final phase of the test?
+      usbdev_suspend_phase_t next_phase = (usbdev_suspend_phase_t)(ctx->test_phase + 1u);
+      bool completed = false;
       if (ctx->test_phase == ctx->fin_phase) {
+        if (ctx->num_iters == USBDEV_SUSPEND_ETERNAL ||
+            --ctx->num_iters > 0u) {
+          if (verbose) {
+            LOG_INFO("Rewinding to initial phase");
+            if (ctx->num_iters > 0u) {
+              LOG_INFO(" - %u iteration(s) remaining", ctx->num_iters);
+            }
+          }
+          // Not the first iteration of the phase sequence.
+          ctx->first_iter = false;
+          next_phase = ctx->init_phase;
+        } else {
+          completed = true;
+        }
+      }
+      // Have we completed the entire test?
+      if (completed) {
         state_enter(ctx, kSuspendStateComplete);
       } else {
-        phase_set(ctx, (usbdev_suspend_phase_t)(ctx->test_phase + 1u));
+        // Advance to the next test phase, or rewind for the next iteration.
+        phase_set(ctx, next_phase);
       }
-      break;
+    } break;
 
     default:
       TRY_CHECK(ctx->test_state == kSuspendStateComplete ||
@@ -1585,7 +1753,8 @@ static status_t phase_run(usbdev_suspend_ctx_t *ctx) {
 }
 
 bool usbdev_suspend_test(usbdev_suspend_phase_t init_phase,
-                         usbdev_suspend_phase_t fin_phase, bool with_traffic) {
+                         usbdev_suspend_phase_t fin_phase, uint32_t num_iters,
+                         bool with_traffic) {
   usbdev_suspend_ctx_t *ctx = &suspend_ctx;
 
   // Wipe out any memory from the previous test phase, just to be more confident
@@ -1596,7 +1765,10 @@ bool usbdev_suspend_test(usbdev_suspend_phase_t init_phase,
   // has defined values for the unused padding fields.
   memset(ctx, 0, sizeof(*ctx));
 
-  LOG_INFO("Running USBDEV_SUSPEND test");
+  // verbose = false;
+  if (verbose) {
+    LOG_INFO("Running USBDEV_SUSPEND test");
+  }
 
   // Enable global and external IRQ at Ibex.
   irq_global_ctrl(true);
@@ -1604,7 +1776,10 @@ bool usbdev_suspend_test(usbdev_suspend_phase_t init_phase,
 
   // Remember the phase in which we are to stop.
   CHECK(fin_phase >= init_phase);
+  ctx->init_phase = init_phase;
   ctx->fin_phase = fin_phase;
+  ctx->num_iters = num_iters;
+  ctx->first_iter = false;
 
   // Default behavior - for simulation with the DPI - is that all types of
   // signaling can be performed, in response to reading the test description.
@@ -1661,8 +1836,17 @@ bool usbdev_suspend_test(usbdev_suspend_phase_t init_phase,
 
   ctx->with_traffic = with_traffic;
 
-  LOG_INFO("  (seq: %s to %s with%s traffic)", phase_name(init_phase),
-           phase_name(ctx->fin_phase), ctx->with_traffic ? "" : "out");
+  if (verbose) {
+    // Report the iteration count
+    static char buf[20];
+    const char *iters = "eternally";
+    if (num_iters != USBDEV_SUSPEND_ETERNAL) {
+      base_snprintf(buf, sizeof(buf), "%u times", num_iters);
+      iters = buf;
+    }
+    LOG_INFO("  (seq: %s to %s %s with%s traffic)", phase_name(init_phase),
+             phase_name(ctx->fin_phase), iters, ctx->with_traffic ? "" : "out");
+  }
 
   // Initialize pinmux.
   CHECK_DIF_OK(dif_pinmux_init(
@@ -1706,10 +1890,17 @@ bool usbdev_suspend_test(usbdev_suspend_phase_t init_phase,
   if (rst_info == kDifRstmgrResetInfoPor) {
     // Power On Reset
     LOG_INFO("Booting for the first time");
+    // Therefore this must be the first iteration of the phase sequence.
+    ctx->first_iter = true;
 
     phase_set(ctx, init_phase);
     state_enter(ctx, kSuspendStatePowerOnReset);
   } else {
+    // TODO: We must observe silent running!
+    if (true)
+      base_logging_set(false);
+    //
+
     LOG_INFO("Resuming from power down!");
 
     // Recover state from the retention RAM
@@ -1762,16 +1953,16 @@ bool usbdev_suspend_test(usbdev_suspend_phase_t init_phase,
     LOG_INFO("Test concluding (%s)", state_name(ctx->test_state));
   }
 
-#if USBUTILS_FUNCTION_POINTS && USBUTILS_FUNCPT_USE_BUFFER
-  if (true) {
-    usbutils_funcpt_report();
-  }
-#endif
-
   // Tear down the software stack.
   // Note: there is no finalization code for the streaming at present, because
   // it has no resources to release.
   CHECK_STATUS_OK(usb_testutils_fin(ctx->usbdev));
+
+#if USBUTILS_FUNCTION_POINTS && USBUTILS_FUNCPT_USE_BUFFER
+  if (false) {
+    usbutils_funcpt_report();
+  }
+#endif
 
   return (ctx->test_state == kSuspendStateComplete);
 }
