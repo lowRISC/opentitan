@@ -570,13 +570,13 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     end
     else `uvm_fatal(`gfn, $sformatf("Bad alert name: %0s", alert_name));
 
-    // Wait up to 400 cycles for the prediction to come through (giving up on reset).  This is a
-    // long time, but that's needed because an error that comes in when we're running will cause an
-    // immediate alert but the status change will only appear after secure wipe is done.  A secure
-    // wipe includes a reseed of the URND, and the time for that depends on the EDN.  Note that
-    // the alert might be here already, in which case `wait_for_expected_alert` will take zero time.
+    // Wait some time for the prediction to come through (giving up on reset). We have to wait quite
+    // a while, but that's needed because an error that comes in when we're running will cause an
+    // immediate alert but the status change will only appear after secure wipe is done. A secure
+    // wipe includes a reseed of the URND, and the time for that depends on the EDN. Note that the
+    // alert might be here already, in which case `wait_for_expected_alert` will take zero time.
     fork
-      wait_for_expected_alert(alert_name, 400);
+      wait_for_expected_alert(alert_name, 4000);
     join_none
   endfunction
 
