@@ -4,7 +4,7 @@
 
 use anyhow::Result;
 use clap::{Args, Subcommand};
-use nix::unistd::isatty;
+use is_terminal::IsTerminal;
 use raw_tty::TtyModeGuard;
 use serde_annotate::Annotate;
 use std::any::Any;
@@ -423,7 +423,7 @@ impl CommandDispatch for GpioMonitoringVcd {
         // package is not compatible with the way that our rusb library uses background threads.)
         // The tty guard will restore the console settings when it goes out of scope.
         let mut stdin = std::io::stdin();
-        let _stdin_guard = if isatty(stdin.as_raw_fd())? {
+        let _stdin_guard = if stdin.is_terminal() {
             let mut guard = TtyModeGuard::new(stdin.as_raw_fd())?;
             guard.set_raw_mode()?;
             Some(guard)

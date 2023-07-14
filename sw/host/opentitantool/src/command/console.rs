@@ -4,7 +4,7 @@
 
 use anyhow::{anyhow, Result};
 use clap::Args;
-use nix::unistd::isatty;
+use is_terminal::IsTerminal;
 use raw_tty::TtyModeGuard;
 use regex::Regex;
 use serde_annotate::Annotate;
@@ -88,14 +88,14 @@ impl CommandDispatch for Console {
         let status = {
             // Put the terminal into raw mode.  The tty guard will restore the
             // console settings when it goes out of scope.
-            let _stdin_guard = if isatty(stdin.as_raw_fd())? {
+            let _stdin_guard = if stdin.is_terminal() {
                 let mut guard = TtyModeGuard::new(stdin.as_raw_fd())?;
                 guard.set_raw_mode()?;
                 Some(guard)
             } else {
                 None
             };
-            let _stdout_guard = if isatty(stdout.as_raw_fd())? {
+            let _stdout_guard = if stdin.is_terminal() {
                 let mut guard = TtyModeGuard::new(stdout.as_raw_fd())?;
                 guard.set_raw_mode()?;
                 Some(guard)

@@ -295,7 +295,6 @@ _NORMAL_DEPENDENCIES = {
             "ansi_term": "@crate_index__ansi_term-0.12.1//:ansi_term",
             "anyhow": "@crate_index__anyhow-1.0.71//:anyhow",
             "arrayvec": "@crate_index__arrayvec-0.7.2//:arrayvec",
-            "atty": "@crate_index__atty-0.2.14//:atty",
             "bitflags": "@crate_index__bitflags-2.1.0//:bitflags",
             "bitvec": "@crate_index__bitvec-1.0.1//:bitvec",
             "byteorder": "@crate_index__byteorder-1.4.3//:byteorder",
@@ -314,6 +313,7 @@ _NORMAL_DEPENDENCIES = {
             "humantime-serde": "@crate_index__humantime-serde-1.1.1//:humantime_serde",
             "indexmap": "@crate_index__indexmap-1.9.2//:indexmap",
             "indicatif": "@crate_index__indicatif-0.16.2//:indicatif",
+            "is-terminal": "@crate_index__is-terminal-0.4.5//:is_terminal",
             "libftdi1-sys": "@crate_index__libftdi1-sys-1.1.2//:libftdi1_sys",
             "log": "@crate_index__log-0.4.17//:log",
             "mdbook": "@crate_index__mdbook-0.4.31//:mdbook",
@@ -649,16 +649,6 @@ def crate_repositories():
         urls = ["https://crates.io/api/v1/crates/arrayvec/0.7.2/download"],
         strip_prefix = "arrayvec-0.7.2",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.arrayvec-0.7.2.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "crate_index__atty-0.2.14",
-        sha256 = "d9b39be18770d11421cdb1b9947a45dd3f37e93092cbf377614828a319d5fee8",
-        type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/atty/0.2.14/download"],
-        strip_prefix = "atty-0.2.14",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.atty-0.2.14.bazel"),
     )
 
     maybe(
@@ -1556,16 +1546,6 @@ def crate_repositories():
         urls = ["https://crates.io/api/v1/crates/heck/0.4.1/download"],
         strip_prefix = "heck-0.4.1",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.heck-0.4.1.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "crate_index__hermit-abi-0.1.19",
-        sha256 = "62b467343b94ba476dcb2500d242dadbb39557df889310ac77c5d99100aaac33",
-        type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/hermit-abi/0.1.19/download"],
-        strip_prefix = "hermit-abi-0.1.19",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.hermit-abi-0.1.19.bazel"),
     )
 
     maybe(
