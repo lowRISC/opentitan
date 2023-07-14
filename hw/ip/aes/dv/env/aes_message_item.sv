@@ -202,9 +202,9 @@ class aes_message_item extends uvm_sequence_item;
     solve sideload_en before cfg_error_type;
     if (has_config_error) {
       cfg_error_type inside {[1:7]};
-      config_error_type_en[0] -> cfg_error_type[0] == 0;
-      config_error_type_en[1] -> cfg_error_type[1] == 0;
-      config_error_type_en[2] -> cfg_error_type[2] == 0;
+      config_error_type_en[0] == 0 -> cfg_error_type[0] == 0;
+      config_error_type_en[1] == 0 -> cfg_error_type[1] == 0;
+      config_error_type_en[2] == 0 -> cfg_error_type[2] == 0;
     } else {
       cfg_error_type == 3'b000;
     }

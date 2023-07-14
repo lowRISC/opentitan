@@ -93,7 +93,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   //   [2]: reseed error
   //   [1]: mode error
   //   [0]: key_len
-  cfg_error_type_t   config_error_type          = 3'b000;
+  cfg_error_type_t   config_error_type          = 3'b111;
   int                config_error_pct           = 30;
 
   // min and max wait (clk) before an error injection

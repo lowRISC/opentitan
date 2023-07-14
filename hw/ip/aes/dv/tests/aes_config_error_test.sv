@@ -18,6 +18,7 @@ class aes_config_error_test extends aes_base_test;
 
     cfg.error_types              = 4'b0001;
     cfg.config_error_pct         = 75;
+    cfg.config_error_type        = 3'b111;
     cfg.num_messages_min         = 3;
     cfg.num_messages_max         = 10;
     // message related knobs
