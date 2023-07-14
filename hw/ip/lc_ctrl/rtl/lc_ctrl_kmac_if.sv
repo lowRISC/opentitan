@@ -106,6 +106,18 @@ module lc_ctrl_kmac_if
   // Stop requesting tokens upon latching on LC side.
   assign token_hash_req = token_hash_req_i & ~token_hash_ack_q;
 
+  // Need to synchronize this error signal separately.
+  logic kmac_fsm_err_d, kmac_fsm_err_q;
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_prim_flop_2sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(kmac_fsm_err_q),
+    .q_o(token_if_fsm_err_o)
+  );
+
   /////////////////////////////////////////////
   // Serialization FSM Running on KMAC Clock //
   /////////////////////////////////////////////
@@ -147,7 +159,7 @@ module lc_ctrl_kmac_if
     state_d = state_q;
     kmac_data_o = '0;
     kmac_ack = 1'b0;
-    token_if_fsm_err_o = 1'b0;
+    kmac_fsm_err_d = 1'b0;
 
     unique case (state_q)
       // Wait for request and transfer first half of
@@ -183,11 +195,19 @@ module lc_ctrl_kmac_if
       // one token hashing operation per reset cycle).
       DoneSt: ;
       default: begin
-        token_if_fsm_err_o = 1'b1;
+        kmac_fsm_err_d = 1'b1;
       end
     endcase // state_q
   end
 
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, FirstSt, clk_kmac_i, rst_kmac_ni)
+
+  always_ff @(posedge clk_kmac_i or negedge rst_kmac_ni) begin : p_kmac_fsm_err
+    if (!rst_kmac_ni) begin
+      kmac_fsm_err_q <= 1'b0;
+    end else begin
+      kmac_fsm_err_q <= kmac_fsm_err_d;
+    end
+  end
 
 endmodule : lc_ctrl_kmac_if
