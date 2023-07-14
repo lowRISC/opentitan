@@ -47,7 +47,7 @@ rust_library(
         "@crate_index__addr2line-0.19.0//:addr2line",
         "@crate_index__backtrace-0.3.67//:build_script_build",
         "@crate_index__cfg-if-1.0.0//:cfg_if",
-        "@crate_index__libc-0.2.139//:libc",
+        "@crate_index__libc-0.2.147//:libc",
         "@crate_index__miniz_oxide-0.6.2//:miniz_oxide",
         "@crate_index__object-0.30.3//:object",
         "@crate_index__rustc-demangle-0.1.21//:rustc_demangle",

@@ -39,7 +39,7 @@ rust_proc_macro(
     ],
     version = "0.2.0",
     deps = [
-        "@crate_index__quote-1.0.26//:quote",
-        "@crate_index__syn-2.0.15//:syn",
+        "@crate_index__quote-1.0.29//:quote",
+        "@crate_index__syn-2.0.25//:syn",
     ],
 )

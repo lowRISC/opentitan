@@ -1,5 +1,5 @@
 diff --git a/src/renderer/html_handlebars/hbs_renderer.rs b/src/renderer/html_handlebars/hbs_renderer.rs
-index e170e2f..0514996 100644
+index 709aa06..2714576 100644
 --- a/src/renderer/html_handlebars/hbs_renderer.rs
 +++ b/src/renderer/html_handlebars/hbs_renderer.rs
 @@ -32,12 +32,12 @@ impl HtmlHandlebars {
@@ -26,7 +26,7 @@ index e170e2f..0514996 100644
              // Add page break between chapters
              // See https://developer.mozilla.org/en-US/docs/Web/CSS/break-before and https://developer.mozilla.org/en-US/docs/Web/CSS/page-break-before
              // Add both two CSS properties because of the compatibility issue
-@@ -116,18 +116,7 @@ impl HtmlHandlebars {
+@@ -121,22 +121,7 @@ impl HtmlHandlebars {
          debug!("Creating {}", filepath.display());
          utils::fs::write_file(&ctx.destination, &filepath, rendered.as_bytes())?;
  
@@ -35,8 +35,12 @@ index e170e2f..0514996 100644
 -            ctx.data.insert("path_to_root".to_owned(), json!(""));
 -            ctx.data.insert("is_index".to_owned(), json!(true));
 -            let rendered_index = ctx.handlebars.render("index", &ctx.data)?;
--            let rendered_index =
--                self.post_process(rendered_index, &ctx.html_config.playground, ctx.edition);
+-            let rendered_index = self.post_process(
+-                rendered_index,
+-                &ctx.html_config.playground,
+-                &ctx.html_config.code,
+-                ctx.edition,
+-            );
 -            debug!("Creating index.html from {}", ctx_path);
 -            utils::fs::write_file(&ctx.destination, "index.html", rendered_index.as_bytes())?;
 -        }
@@ -46,7 +50,7 @@ index e170e2f..0514996 100644
      }
  
      fn render_404(
-@@ -495,7 +484,7 @@ impl Renderer for HtmlHandlebars {
+@@ -504,7 +489,7 @@ impl Renderer for HtmlHandlebars {
  
      fn render(&self, ctx: &RenderContext) -> Result<()> {
          let book_config = &ctx.config.book;
@@ -55,8 +59,8 @@ index e170e2f..0514996 100644
          let src_dir = ctx.root.join(&ctx.config.book.src);
          let destination = &ctx.destination;
          let book = &ctx.book;
-@@ -556,21 +545,36 @@ impl Renderer for HtmlHandlebars {
-         fs::create_dir_all(&destination)
+@@ -565,21 +550,36 @@ impl Renderer for HtmlHandlebars {
+         fs::create_dir_all(destination)
              .with_context(|| "Unexpected error when constructing destination path")?;
  
 -        let mut is_index = true;
@@ -97,7 +101,7 @@ index e170e2f..0514996 100644
          }
  
          // Render 404 page
-@@ -983,7 +987,7 @@ struct RenderItemContext<'a> {
+@@ -1079,7 +1079,7 @@ struct RenderItemContext<'a> {
      handlebars: &'a Handlebars<'a>,
      destination: PathBuf,
      data: serde_json::Map<String, serde_json::Value>,
@@ -107,10 +111,10 @@ index e170e2f..0514996 100644
      html_config: HtmlConfig,
      edition: Option<RustEdition>,
 diff --git a/tests/rendered_output.rs b/tests/rendered_output.rs
-index a279c4f..cc76916 100644
+index 7626b9e..a83eefd 100644
 --- a/tests/rendered_output.rs
 +++ b/tests/rendered_output.rs
-@@ -466,7 +466,7 @@ fn by_default_mdbook_use_index_preprocessor_to_convert_readme_to_index() {
+@@ -467,7 +467,7 @@ fn by_default_mdbook_use_index_preprocessor_to_convert_readme_to_index() {
  }
  
  #[test]
@@ -119,7 +123,7 @@ index a279c4f..cc76916 100644
      let temp = DummyBook::new().build().unwrap();
      let mut cfg = Config::default();
      cfg.set("book.src", "index_html_test")
-@@ -475,9 +475,9 @@ fn first_chapter_is_copied_as_index_even_if_not_first_elem() {
+@@ -476,9 +476,9 @@ fn first_chapter_is_copied_as_index_even_if_not_first_elem() {
      md.build().unwrap();
  
      let root = temp.path().join("book");
@@ -131,7 +135,7 @@ index a279c4f..cc76916 100644
  }
  
  #[test]
-@@ -870,7 +870,7 @@ fn custom_fonts() {
+@@ -874,7 +874,7 @@ fn custom_fonts() {
          actual
      };
      let has_fonts_css = |path: &Path| -> bool {
