@@ -3930,16 +3930,17 @@ bitstream_splice(
     visibility = ["//visibility:private"],
 )
 
-opentitan_functest(
-    name = "presigned_fpga_binary",
-    cw310 = cw310_params(
-        bitstream = ":bitstream_sigverify_spx_rma",
-    ),
-    ot_flash_binary = "//sw/device/silicon_creator/rom/e2e/presigned_images:empty_test",
-    # False because we don't want this rule to do the signing; the image is already signed.
-    signed = False,
-    targets = ["cw310_rom_with_real_keys"],
-)
+# TODO(#19199): reactivate this test when doing a ROM release.
+# opentitan_functest(
+#     name = "presigned_fpga_binary",
+#     cw310 = cw310_params(
+#         bitstream = ":bitstream_sigverify_spx_rma",
+#     ),
+#     ot_flash_binary = "//sw/device/silicon_creator/rom/e2e/presigned_images:empty_test",
+#     # False because we don't want this rule to do the signing; the image is already signed.
+#     signed = False,
+#     targets = ["cw310_rom_with_real_keys"],
+# )
 
 opentitan_flash_binary(
     name = "rom_e2e_self_hash",
@@ -3974,19 +3975,20 @@ bitstream_splice(
     visibility = ["//visibility:private"],
 )
 
-opentitan_functest(
-    name = "rom_e2e_self_hash_test",
-    cw310 = cw310_params(
-        bitstream = ":bitstream_rom_self_hash_test_rma_otbn_mod_exp",
-    ),
-    dv = dv_params(
-        rom = "//sw/device/silicon_creator/rom:rom_with_real_keys",
-    ),
-    ot_flash_binary = "//sw/device/silicon_creator/rom/e2e/presigned_images:rom_e2e_self_hash",
-    # False because we don't want this rule to do the signing; the image is already signed.
-    signed = False,
-    targets = [
-        "cw310_rom_with_real_keys",
-        "dv",
-    ],
-)
+# TODO(#19199): reactivate this test when doing a ROM release.
+# opentitan_functest(
+#     name = "rom_e2e_self_hash_test",
+#     cw310 = cw310_params(
+#         bitstream = ":bitstream_rom_self_hash_test_rma_otbn_mod_exp",
+#     ),
+#     dv = dv_params(
+#         rom = "//sw/device/silicon_creator/rom:rom_with_real_keys",
+#     ),
+#     ot_flash_binary = "//sw/device/silicon_creator/rom/e2e/presigned_images:rom_e2e_self_hash",
+#     # False because we don't want this rule to do the signing; the image is already signed.
+#     signed = False,
+#     targets = [
+#         "cw310_rom_with_real_keys",
+#         "dv",
+#     ],
+# )
