@@ -50,12 +50,6 @@ alias(
 )
 
 alias(
-    name = "atty",
-    actual = "@crate_index__atty-0.2.14//:atty",
-    tags = ["manual"],
-)
-
-alias(
     name = "bitflags",
     actual = "@crate_index__bitflags-2.1.0//:bitflags",
     tags = ["manual"],
@@ -160,6 +154,12 @@ alias(
 alias(
     name = "indicatif",
     actual = "@crate_index__indicatif-0.16.2//:indicatif",
+    tags = ["manual"],
+)
+
+alias(
+    name = "is-terminal",
+    actual = "@crate_index__is-terminal-0.4.5//:is_terminal",
     tags = ["manual"],
 )
 

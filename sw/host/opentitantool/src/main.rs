@@ -4,9 +4,9 @@
 
 #![feature(min_specialization)]
 use anyhow::Result;
-use atty::Stream;
 use clap::{Parser, ValueEnum};
 use directories::ProjectDirs;
+use is_terminal::IsTerminal;
 use log::LevelFilter;
 use serde_annotate::Annotate;
 use serde_annotate::ColorProfile;
@@ -184,7 +184,7 @@ fn print_command_result(opts: &Opts, result: Result<Option<Box<dyn Annotate>>>) 
             if opts.quiet {
                 return Ok(());
             }
-            let profile = if atty::is(Stream::Stdout) && opts.color.unwrap_or(true) {
+            let profile = if std::io::stdout().is_terminal() && opts.color.unwrap_or(true) {
                 ColorProfile::basic()
             } else {
                 ColorProfile::default()
