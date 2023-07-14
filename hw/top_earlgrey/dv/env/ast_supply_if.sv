@@ -57,19 +57,19 @@ interface ast_supply_if (
 
   task static force_vcmain_pok(bit value);
 `ifndef GATE_LEVEL
-    `uvm_info("ast_supply_if", $sformatf("forcing vcmain_pok_h_o to %b", value), UVM_MEDIUM)
+    `uvm_info("ast_supply_if", $sformatf("forcing ast_pwst_o.vcmain_pok to %b", value), UVM_MEDIUM)
     if (!value) begin
       `uvm_info("ast_supply_if", "disabling vcmain_supp_i related SVA", UVM_MEDIUM)
       $assertoff(1, top_earlgrey.u_pwrmgr_aon.u_slow_fsm.IntRstReq_A);
     end
-    force u_ast.u_rglts_pdm_3p3v.vcmain_pok_h_o = value;
+    force u_ast.ast_pwst_o.main_pok = value;
 `endif
   endtask
 
 `define GLITCH_VCMAIN_POK                 \
     force_vcmain_pok(1'b0);               \
-    repeat (GlitchCycles) @(posedge clk); \
-    force_vcmain_pok(1'b1)
+    #1ps; \
+    release u_ast.ast_pwst_o.main_pok;
 
   // Create glitch in vcmain_pok_h_o some cycles after core_sleeping trigger transitions high.
   // This is useful for non-deep sleep-related triggers.
