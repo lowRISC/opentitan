@@ -333,7 +333,7 @@
                     size: "4"
                 }
                 {
-                    name: "OWNER_SW_CFG_ROM_EXT_RECOVERY_EN",
+                    name: "OWNER_SW_CFG_ROM_EXT_BOOTSTRAP_EN",
                     size: "4"
                 }
             ],
