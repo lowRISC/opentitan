@@ -147,7 +147,6 @@ module lc_ctrl_kmac_if
     state_d = state_q;
     kmac_data_o = '0;
     kmac_ack = 1'b0;
-    token_if_fsm_err_o = 1'b0;
 
     unique case (state_q)
       // Wait for request and transfer first half of
@@ -183,11 +182,25 @@ module lc_ctrl_kmac_if
       // one token hashing operation per reset cycle).
       DoneSt: ;
       default: begin
-        token_if_fsm_err_o = 1'b1;
       end
     endcase // state_q
   end
 
-  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, FirstSt, clk_kmac_i, rst_kmac_ni)
+  // TODO(#19200): Due to the ECO hack we're disabling the SVA.
+  // `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, FirstSt, clk_kmac_i,
+  // rst_kmac_ni)
+  logic [StateWidth-1:0] state_raw;
+  prim_flop #(
+    .Width(StateWidth),
+    .ResetValue(StateWidth'(FirstSt))
+  ) u_state_flop (
+    .clk_i(clk_kmac_i),
+    .rst_ni(rst_kmac_ni),
+    .d_i(StateWidth'(state_d)),
+    .q_o(state_raw)
+  );
+  assign state_q = state_e'(state_raw);
 
+  // TODO(#19200): This is an ECO hack which will be implemented in a nice way on master.
+  assign token_if_fsm_err_o = 1'b0;
 endmodule : lc_ctrl_kmac_if

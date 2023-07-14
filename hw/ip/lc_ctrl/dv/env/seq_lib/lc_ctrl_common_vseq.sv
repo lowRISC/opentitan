@@ -18,7 +18,8 @@ class lc_ctrl_common_vseq extends lc_ctrl_base_vseq;
         `DV_ASSERT_CTRL_REQ("StateRegs_A", enable)
         `DV_ASSERT_CTRL_REQ("CountRegs_A", enable)
         `DV_ASSERT_CTRL_REQ("FsmStateRegs_A", enable)
-        `DV_ASSERT_CTRL_REQ("KmacFsmStateRegs_A", enable)
+        // TODO(#19200): Due to the ECO hack we're removing this.
+        // `DV_ASSERT_CTRL_REQ("KmacFsmStateRegs_A", enable)
         `DV_ASSERT_CTRL_REQ("SecCmCFILinear_A", enable)
       end
       SecCmPrimOnehot: begin

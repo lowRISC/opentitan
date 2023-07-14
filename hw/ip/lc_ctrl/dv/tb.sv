@@ -283,7 +283,8 @@ module tb;
   `DV_ASSERT_CTRL("FsmStateRegs_A", tb.dut.FpvSecCmCtrlLcFsmCheck_A)
   `DV_ASSERT_CTRL("CountRegs_A", tb.dut.u_lc_ctrl_fsm.u_cnt_regs_A)
   `DV_ASSERT_CTRL("CountRegs_A", tb.dut.FpvSecCmCtrlLcCntCheck_A)
-  `DV_ASSERT_CTRL("KmacFsmStateRegs_A", tb.dut.u_lc_ctrl_kmac_if.u_state_regs_A)
-  `DV_ASSERT_CTRL("KmacFsmStateRegs_A", tb.dut.FpvSecCmCtrlKmacIfFsmCheck_A)
+  // TODO(#19200): Due to the ECO hack we're disabling the SVA.
+  // `DV_ASSERT_CTRL("KmacFsmStateRegs_A", tb.dut.u_lc_ctrl_kmac_if.u_state_regs_A)
+  // `DV_ASSERT_CTRL("KmacFsmStateRegs_A", tb.dut.FpvSecCmCtrlKmacIfFsmCheck_A)
   `DV_ASSERT_CTRL("EscStaysOnOnceAsserted_A", tb.dut.u_lc_ctrl_fsm.EscStaysOnOnceAsserted_A)
 endmodule
