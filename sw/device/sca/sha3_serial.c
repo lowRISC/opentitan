@@ -71,6 +71,20 @@ enum {
 static dif_kmac_t kmac;
 
 /**
+ * The KMAC config.
+ */
+static dif_kmac_config_t config = (dif_kmac_config_t){
+    .entropy_mode = kDifKmacEntropyModeSoftware,
+    .entropy_fast_process = kDifToggleDisabled,
+    .entropy_seed = {0xaa25b4bf, 0x48ce8fff, 0x5a78282a, 0x48465647,
+                     0x70410fef},
+    .message_big_endian = kDifToggleDisabled,
+    .output_big_endian = kDifToggleDisabled,
+    .sideload = kDifToggleDisabled,
+    .msg_mask = kDifToggleEnabled,
+};
+
+/**
  * KMAC operation state.
  */
 static dif_kmac_operation_state_t kmac_operation_state;
@@ -344,14 +358,6 @@ static void kmac_init(void) {
   SS_CHECK_DIF_OK(dif_kmac_init(
       mmio_region_from_addr(TOP_DARJEELING_KMAC_BASE_ADDR), &kmac));
 
-  dif_kmac_config_t config = (dif_kmac_config_t){
-      .entropy_mode = kDifKmacEntropyModeSoftware,
-      .entropy_seed = {0xaa25b4bf, 0x48ce8fff, 0x5a78282a, 0x48465647,
-                       0x70410fef},
-      .entropy_fast_process = false,
-      .msg_mask = true,
-  };
-
   SS_CHECK_DIF_OK(dif_kmac_configure(&kmac, config));
 
   kmac_block_until_idle();
@@ -367,14 +373,13 @@ static void kmac_disable_masking(const uint8_t *masks_off, size_t off_len) {
   SS_CHECK_DIF_OK(dif_kmac_init(
       mmio_region_from_addr(TOP_DARJEELING_KMAC_BASE_ADDR), &kmac));
 
-  dif_kmac_config_t config;
   if (masks_off[0]) {
-    config.entropy_fast_process = true;
-    config.msg_mask = false;
+    config.entropy_fast_process = kDifToggleEnabled;
+    config.msg_mask = kDifToggleDisabled;
     LOG_INFO("Initializing the KMAC peripheral with masking disabled.");
   } else {
-    config.entropy_fast_process = false;
-    config.msg_mask = true;
+    config.entropy_fast_process = kDifToggleDisabled;
+    config.msg_mask = kDifToggleEnabled;
     LOG_INFO("Initializing the KMAC peripheral with masking enabled.");
   }
   SS_CHECK_DIF_OK(dif_kmac_configure(&kmac, config));
