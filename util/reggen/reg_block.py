@@ -4,6 +4,7 @@
 '''Code representing the registers, windows etc. for a block'''
 
 import re
+from semantic_version import Version
 from typing import Callable, Dict, List, Optional, Sequence, Union
 
 from reggen.alert import Alert
@@ -578,6 +579,149 @@ class RegBlock:
                                  ('Write 1 to trigger '
                                   'one alert event of this kind.'), 'wo',
                                  'hro', True, [])
+
+    def make_reserved_regs(self, num: int) -> None:
+        '''Helper function to create a reserved register'''
+        self._handle_reserved('RegBlock.make_reserved_regs()', num, None, False)
+
+    def make_ro_regs(self,
+                     reg_name: str,
+                     reg_desc: str,
+                     reg_fields: List[Dict[str, object]]) -> None:
+        '''Helper function to create a read-only register'''
+
+        swaccess_obj = SWAccess('RegBlock.make_reserved_regs()', 'ro')
+        hwaccess_obj = HWAccess('RegBlock.make_reserved_regs()', 'none')
+
+        field_objs = []
+        for k, field in enumerate(reg_fields):
+            field_objs.append(Field.from_raw(reg_name=reg_name,
+                                             field_idx=k,
+                                             num_fields=len(reg_fields),
+                                             default_swaccess=swaccess_obj,
+                                             default_hwaccess=hwaccess_obj,
+                                             reg_resval=None,
+                                             reg_width=self._reg_width,
+                                             params=self._params,
+                                             hwext=False,
+                                             default_hwqe=False,
+                                             shadowed=False,
+                                             is_alias=False,
+                                             raw=field))
+
+        reg = Register(self.offset,
+                       reg_name,
+                       None,  # no alias target
+                       reg_desc,
+                       async_name="",
+                       async_clk=None,
+                       sync_name="",
+                       sync_clk=None,
+                       hwext=False,
+                       hwqe=False,
+                       hwre=False,
+                       regwen=None,
+                       tags=[],
+                       resval=None,
+                       shadowed=False,
+                       fields=field_objs,
+                       update_err_alert=None,
+                       storage_err_alert=None)
+
+        self.add_register(reg)
+
+    def make_id_regs(self,
+                     cip_id: int,
+                     version: Version,
+                     where: str) -> None:
+        '''Insert CIP_ID and VERSION registers
+
+        The CIP_ID is a 32bit integer, and the VERSION a semantic version
+        object. The semantic version format x.y.z[+res#] is broken up into four
+        subsequent registers with values x, y, z and #. The "res#" tag is
+        optional and may be omitted.
+        '''
+
+        reg_name = "CIP_ID"
+        reg_desc = "Comportable IP ID."
+        reg_fields = [
+            {"bits": "31:0",
+             "name": "CIP_ID",
+             "desc": "This value is a unique comportable IP identifier.",
+             "resval": cip_id},
+        ]
+        self.make_ro_regs(reg_name, reg_desc, reg_fields)
+
+        # parse out build tags of the form "+res#""
+        reserved_version = 0
+        for build in version.build:
+            if re.match('res[0-9]+', build):
+                reserved_version = int(build[3:])
+
+        reg_name = "REVISION"
+        reg_desc = "Comportable IP semantic version."
+        reg_fields = [
+            {"bits": "31:24",
+             "name": "MAJOR",
+             "desc": "Major version number.",
+             "resval": version.major},
+            {"bits": "23:16",
+             "name": "MINOR",
+             "desc": "Minor version number.",
+             "resval": version.minor},
+            {"bits": "15:8",
+             "name": "SUBMINOR",
+             "desc": "Subminor (patch) version number.",
+             "resval": version.patch},
+            {"bits": "7:0",
+             "name": "RESERVED",
+             "desc": "Reserved version number.",
+             "resval": reserved_version},
+        ]
+
+        self.make_ro_regs(reg_name, reg_desc, reg_fields)
+
+    def make_feat_regs(self, what: str) -> None:
+        '''Insert parameter block with feature registers
+
+        This function currently inserts an empty parameter block and reserves
+        space for up to 11 feature registers so that the CIP_ID, REVISION,
+        PARAMETER_BLOCK* and reserved registers occupy a block of 16 words.
+        This will be extended in the future.
+        '''
+        reg_name = "PARAMETER_BLOCK_TYPE"
+        reg_desc = "Parameter block type."
+        reg_fields = [
+            {"bits": "31:0",
+             "name": "BLOCK_TYPE",
+             "desc": "Parameter block type.",
+             "resval": 0},
+        ]
+        self.make_ro_regs(reg_name, reg_desc, reg_fields)
+
+        reg_name = "PARAMETER_BLOCK_LENGTH"
+        reg_desc = "Parameter block length."
+        reg_fields = [
+            {"bits": "31:0",
+             "name": "BLOCK_LENGTH",
+             "desc": "Parameter block length in bytes.",
+             "resval": 3 * self._reg_width // 8},
+        ]
+        self.make_ro_regs(reg_name, reg_desc, reg_fields)
+
+        reg_name = "NEXT_PARAMETER_BLOCK"
+        reg_desc = "Next parameter block offset."
+        reg_fields = [
+            {"bits": "31:0",
+             "name": "BLOCK_OFFSET",
+             "desc": '''This offset value is zero if there is no other
+                        parameter block.''',
+             "resval": 0},
+        ]
+        self.make_ro_regs(reg_name, reg_desc, reg_fields)
+
+        # Reserve space for 11 feature registers.
+        self.make_reserved_regs(11)
 
     def get_addr_width(self) -> int:
         '''Calculate the number of bits to address every byte of the block'''

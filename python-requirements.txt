@@ -15,6 +15,7 @@ pyelftools==0.29
 pytest==7.0.1
 pytest-timeout==2.1.0
 rich==13.3.5
+semantic_version==2.10.0
 pyyaml==6.0
 tabulate==0.8.10
 typer==0.6.1
