@@ -786,9 +786,10 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   // Flip bits in KMAC FSM registers
   protected virtual task kmac_fsm_backdoor_err_inj();
     logic [KMAC_FSM_WIDTH-1:0] state;
-    sec_cm_base_if_proxy if_proxy = sec_cm_pkg::find_sec_cm_if_proxy(
-        "tb.dut.u_lc_ctrl_kmac_if.u_state_regs");
-    if_proxy.inject_fault();
+    // TODO(#19200): Due to the ECO hack we're removing this.
+    // sec_cm_base_if_proxy if_proxy = sec_cm_pkg::find_sec_cm_if_proxy(
+    //     "tb.dut.u_lc_ctrl_kmac_if.u_state_regs");
+    // if_proxy.inject_fault();
   endtask
 
   // Flip bits in OTP State input

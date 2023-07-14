@@ -9,6 +9,8 @@ class lc_ctrl_state_post_trans_vseq extends lc_ctrl_errors_vseq;
 
   constraint num_trans_c {num_trans inside {[10 : 15]};}
   constraint post_trans_c {
+    // TODO(#19200): Due to the ECO hack we're disabling error injection on this FSM.
+    err_inj.kmac_fsm_backdoor_err == 0;
     err_inj.post_trans_err == 1;
     // Allow for post_trans_err plus one other error
     // 50% just post_trans_err

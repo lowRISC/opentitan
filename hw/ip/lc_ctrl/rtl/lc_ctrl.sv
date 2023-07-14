@@ -813,11 +813,12 @@ module lc_ctrl
       u_lc_ctrl_fsm.fsm_state_q inside {ResetSt, EscalateSt, PostTransSt, InvalidSt, ScrapSt} ||
       u_lc_ctrl_fsm.esc_scrap_state0_i ||
       u_lc_ctrl_fsm.esc_scrap_state1_i)
- `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlKmacIfFsmCheck_A,
-      u_lc_ctrl_kmac_if.u_state_regs, alert_tx_o[1],
-      u_lc_ctrl_fsm.fsm_state_q inside {EscalateSt} ||
-      u_lc_ctrl_fsm.esc_scrap_state0_i ||
-      u_lc_ctrl_fsm.esc_scrap_state1_i)
+  // TODO(#19200): Due to the ECO hack we're disabling the SVA.
+  // `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlKmacIfFsmCheck_A,
+  //      u_lc_ctrl_kmac_if.u_state_regs, alert_tx_o[1],
+  //      u_lc_ctrl_fsm.fsm_state_q inside {EscalateSt} ||
+  //      u_lc_ctrl_fsm.esc_scrap_state0_i ||
+  //      u_lc_ctrl_fsm.esc_scrap_state1_i)
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[2])
