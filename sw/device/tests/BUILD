@@ -2369,8 +2369,13 @@ opentitan_functest(
 opentitan_functest(
     name = "usbdev_mixed_test",
     srcs = ["usbdev_mixed_test.c"],
+    cw310 = cw310_params(
+        timeout = "eternal",
+        tags = ["manual"],
+    ),
     targets = [
         "verilator",
+        "cw310_test_rom",
         "dv",
     ],
     verilator = verilator_params(
@@ -2391,8 +2396,13 @@ opentitan_functest(
 opentitan_functest(
     name = "usbdev_iso_test",
     srcs = ["usbdev_iso_test.c"],
+    cw310 = cw310_params(
+        timeout = "eternal",
+        tags = ["manual"],
+    ),
     targets = [
         "verilator",
+        "cw310_test_rom",
         "dv",
     ],
     verilator = verilator_params(

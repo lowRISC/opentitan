@@ -165,6 +165,10 @@ typedef struct usbdev_stream {
    */
   usbdev_stream_tx_t tx;
   /**
+   * Committed transmission state.
+   */
+  usbdev_stream_tx_t tx_cmt;
+  /**
    * USB device endpoint being used for data reception
    */
   uint8_t rx_ep;
@@ -227,7 +231,7 @@ typedef struct {
    * Pointer to the stream itself.
    */
   usbdev_stream_t *s;
-} usbdev_stream_cb_t;
+} usbdev_stream_cb_ctx_t;
 
 /**
  * Context state for streaming test
@@ -248,7 +252,7 @@ struct usb_testutils_streams_ctx {
   /**
    * Callback information for each of the test streamms
    */
-  usbdev_stream_cb_t cb[USBUTILS_STREAMS_MAX];
+  usbdev_stream_cb_ctx_t cb[USBUTILS_STREAMS_MAX];
   /**
    * Per-endpoint limits on the number of buffers that may be queued for
    * transmission
@@ -266,7 +270,16 @@ struct usb_testutils_streams_ctx {
    * Buffers that have been filled but cannot yet be presented for transmission
    */
   // 12 X 24 X 4 (or 8?)( BYTES... could perhaps simplify this at some point
-  dif_usbdev_buffer_t tx_bufs[USBDEV_NUM_ENDPOINTS][USBUTILS_STREAMS_TXBUF_MAX];
+  struct {
+    /**
+     *  USB device packet buffer
+     */
+    dif_usbdev_buffer_t buf;
+    /**
+     * Transmission state _after_ this buffer was filled.
+     */
+    usbdev_stream_tx_t tx;
+  } tx_bufs[USBDEV_NUM_ENDPOINTS][USBUTILS_STREAMS_TXBUF_MAX];
 };
 
 /**
@@ -354,6 +367,53 @@ bool usb_testutils_streams_count_set(usb_testutils_streams_ctx_t *ctx,
 OT_WARN_UNUSED_RESULT
 status_t usb_testutils_stream_service(usb_testutils_streams_ctx_t *ctx,
                                       uint8_t id);
+
+/**
+ * Save the current state of the streams into the supplied buffer for resuming
+ * after sleep. Additionally, prevent further state changes that would
+ * invalidate the stored state.
+ *
+ * The format/content of the stored state is opaque to the caller.
+ *
+ * @param  ctx       Context state for streaming test.
+ * @param  buf       Buffer for receiving streaming state.
+ * @param  size      Size of supplied buffer (maximum size of stored state).
+ * @param  used      Receives the size in bytes of the streaming state.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t usb_testutils_streams_suspend(usb_testutils_streams_ctx_t *ctx,
+                                       uint8_t *buf, unsigned size,
+                                       unsigned *used);
+
+/**
+ * Restore the state of the streams from the supplied data.
+ *
+ * The format/content of the stored state is opaque to the caller.
+ *
+ * @param  ctx       Context state for streaming test.
+ * @param  data      Stored streaming state.
+ * @param  len       Size in bytes of the stored streaming state.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t usb_testutils_streams_resume(usb_testutils_streams_ctx_t *ctx,
+                                      const uint8_t *data, unsigned len);
+
+/**
+ * Return the current progress/status of the given stream.
+ *
+ * @param  ctx       Context state for streaming test.
+ * @param  id        Stream IDentifier (0-based).
+ * @param  num_bytes Receives number of bytes to be transferred by this stream.
+ * @param  tx_bytes  Receives number of bytes transmitted.
+ * @param  rx_bytes  Receives number of bytes received.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t usb_testutils_stream_status(usb_testutils_streams_ctx_t *ctx,
+                                     uint8_t id, uint32_t *num_bytes,
+                                     uint32_t *tx_bytes, uint32_t *rx_bytes);
 
 /**
  * Returns an indication of whether a stream has completed its data transfer.
