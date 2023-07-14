@@ -30,7 +30,7 @@ rust_library(
     crate_root = "src/lib.rs",
     edition = "2018",
     proc_macro_deps = [
-        "@crate_index__serde_derive-1.0.152//:serde_derive",
+        "@crate_index__serde_derive-1.0.171//:serde_derive",
     ],
     rustc_flags = ["--cap-lints=allow"],
     tags = [
@@ -42,8 +42,8 @@ rust_library(
     ],
     version = "3.0.2",
     deps = [
-        "@crate_index__regex-1.7.1//:regex",
-        "@crate_index__serde-1.0.152//:serde",
-        "@crate_index__serde_json-1.0.93//:serde_json",
+        "@crate_index__regex-1.9.1//:regex",
+        "@crate_index__serde-1.0.171//:serde",
+        "@crate_index__serde_json-1.0.102//:serde_json",
     ],
 )

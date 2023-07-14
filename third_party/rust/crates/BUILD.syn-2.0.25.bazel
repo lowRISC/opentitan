@@ -15,7 +15,7 @@ package(default_visibility = ["//visibility:public"])
 # ])
 
 rust_library(
-    name = "bstr",
+    name = "syn",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -28,26 +28,29 @@ rust_library(
         ],
     ),
     crate_features = [
-        "alloc",
+        "clone-impls",
         "default",
-        "std",
-        "unicode",
+        "derive",
+        "full",
+        "parsing",
+        "printing",
+        "proc-macro",
+        "quote",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=bstr",
+        "crate-name=syn",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "1.4.0",
+    version = "2.0.25",
     deps = [
-        "@crate_index__memchr-2.5.0//:memchr",
-        "@crate_index__once_cell-1.17.1//:once_cell",
-        "@crate_index__regex-automata-0.1.10//:regex_automata",
-        "@crate_index__serde-1.0.152//:serde",
+        "@crate_index__proc-macro2-1.0.64//:proc_macro2",
+        "@crate_index__quote-1.0.29//:quote",
+        "@crate_index__unicode-ident-1.0.6//:unicode_ident",
     ],
 )

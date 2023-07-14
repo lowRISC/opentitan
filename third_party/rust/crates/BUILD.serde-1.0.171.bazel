@@ -16,7 +16,7 @@ package(default_visibility = ["//visibility:public"])
 # ])
 
 rust_library(
-    name = "proc_macro2",
+    name = "serde",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -29,34 +29,40 @@ rust_library(
         ],
     ),
     crate_features = [
+        "alloc",
         "default",
-        "proc-macro",
-        "span-locations",
+        "derive",
+        "serde_derive",
+        "std",
     ],
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2015",
+    proc_macro_deps = [
+        "@crate_index__serde_derive-1.0.171//:serde_derive",
+    ],
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=proc-macro2",
+        "crate-name=serde",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "1.0.56",
+    version = "1.0.171",
     deps = [
-        "@crate_index__proc-macro2-1.0.56//:build_script_build",
-        "@crate_index__unicode-ident-1.0.6//:unicode_ident",
+        "@crate_index__serde-1.0.171//:build_script_build",
     ],
 )
 
 cargo_build_script(
-    name = "proc-macro2_build_script",
+    name = "serde_build_script",
     srcs = glob(["**/*.rs"]),
     crate_features = [
+        "alloc",
         "default",
-        "proc-macro",
-        "span-locations",
+        "derive",
+        "serde_derive",
+        "std",
     ],
     crate_name = "build_script_build",
     crate_root = "build.rs",
@@ -70,23 +76,23 @@ cargo_build_script(
             "WORKSPACE.bazel",
         ],
     ),
-    edition = "2018",
+    edition = "2015",
     rustc_flags = [
         "--cap-lints=allow",
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=proc-macro2",
+        "crate-name=serde",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "1.0.56",
+    version = "1.0.171",
     visibility = ["//visibility:private"],
 )
 
 alias(
     name = "build_script_build",
-    actual = "proc-macro2_build_script",
+    actual = "serde_build_script",
     tags = ["manual"],
 )

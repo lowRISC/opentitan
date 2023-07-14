@@ -58,7 +58,7 @@ rust_library(
         "@crate_index__num-iter-0.1.43//:num_iter",
         "@crate_index__num-traits-0.2.15//:num_traits",
         "@crate_index__rand-0.8.5//:rand",
-        "@crate_index__serde-1.0.152//:serde",
+        "@crate_index__serde-1.0.171//:serde",
         "@crate_index__smallvec-1.10.0//:smallvec",
         "@crate_index__zeroize-1.6.0//:zeroize",
     ],

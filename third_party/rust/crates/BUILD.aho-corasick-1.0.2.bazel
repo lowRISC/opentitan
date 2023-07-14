@@ -11,11 +11,11 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # MIT OR Apache-2.0
+#     "TODO",  # Unlicense OR MIT
 # ])
 
 rust_library(
-    name = "regex",
+    name = "aho_corasick",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -28,38 +28,22 @@ rust_library(
         ],
     ),
     crate_features = [
-        "aho-corasick",
         "default",
-        "memchr",
-        "perf",
-        "perf-cache",
-        "perf-dfa",
-        "perf-inline",
         "perf-literal",
         "std",
-        "unicode",
-        "unicode-age",
-        "unicode-bool",
-        "unicode-case",
-        "unicode-gencat",
-        "unicode-perl",
-        "unicode-script",
-        "unicode-segment",
     ],
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2021",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=regex",
+        "crate-name=aho-corasick",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "1.7.1",
+    version = "1.0.2",
     deps = [
-        "@crate_index__aho-corasick-0.7.20//:aho_corasick",
         "@crate_index__memchr-2.5.0//:memchr",
-        "@crate_index__regex-syntax-0.6.28//:regex_syntax",
     ],
 )

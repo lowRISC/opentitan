@@ -40,6 +40,6 @@ rust_library(
     version = "1.0.7",
     deps = [
         "@crate_index__kqueue-sys-1.0.3//:kqueue_sys",
-        "@crate_index__libc-0.2.139//:libc",
+        "@crate_index__libc-0.2.147//:libc",
     ],
 )
