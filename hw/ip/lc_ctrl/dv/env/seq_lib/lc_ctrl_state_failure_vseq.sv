@@ -9,6 +9,8 @@ class lc_ctrl_state_failure_vseq extends lc_ctrl_errors_vseq;
 
   constraint num_trans_c {num_trans inside {[50 : 100]};}
 
+  // TODO(#19200): Removed due to ECO.
+  // err_inj.kmac_fsm_backdoor_err,
   constraint lc_state_failure_c {
     $onehot(
         {
@@ -19,7 +21,6 @@ class lc_ctrl_state_failure_vseq extends lc_ctrl_errors_vseq;
           err_inj.count_illegal_err,
           err_inj.count_backdoor_err,
           err_inj.lc_fsm_backdoor_err,
-          err_inj.kmac_fsm_backdoor_err,
           err_inj.otp_lc_data_i_valid_err
         }
     );
