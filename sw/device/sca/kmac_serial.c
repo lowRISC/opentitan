@@ -429,10 +429,13 @@ static void kmac_init(void) {
 
   dif_kmac_config_t config = (dif_kmac_config_t){
       .entropy_mode = kDifKmacEntropyModeSoftware,
+      .entropy_fast_process = kDifToggleDisabled,
       .entropy_seed = {0xaa25b4bf, 0x48ce8fff, 0x5a78282a, 0x48465647,
                        0x70410fef},
-      .entropy_fast_process = false,
-      .msg_mask = true,
+      .message_big_endian = kDifToggleDisabled,
+      .output_big_endian = kDifToggleDisabled,
+      .sideload = kDifToggleDisabled,
+      .msg_mask = kDifToggleEnabled,
   };
   SS_CHECK_DIF_OK(dif_kmac_configure(&kmac, config));
 
