@@ -343,7 +343,7 @@ _NORMAL_DEPENDENCIES = {
             "serde": "@crate_index__serde-1.0.171//:serde",
             "serde_bytes": "@crate_index__serde_bytes-0.11.9//:serde_bytes",
             "serde_json": "@crate_index__serde_json-1.0.102//:serde_json",
-            "serialport": "@crate_index__serialport-4.2.0//:serialport",
+            "serialport": "@crate_index__serialport-4.2.1//:serialport",
             "sha2": "@crate_index__sha2-0.10.6//:sha2",
             "shellwords": "@crate_index__shellwords-1.1.0//:shellwords",
             "strum": "@crate_index__strum-0.24.1//:strum",
@@ -2036,12 +2036,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "crate_index__mach-0.3.2",
-        sha256 = "b823e83b2affd8f40a9ee8c29dbc56404c1e34cd2710921f2801e2cf29527afa",
+        name = "crate_index__mach2-0.4.1",
+        sha256 = "6d0d1830bcd151a6fc4aea1369af235b36c1528fe976b8ff678683c9995eade8",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/mach/0.3.2/download"],
-        strip_prefix = "mach-0.3.2",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.mach-0.3.2.bazel"),
+        urls = ["https://crates.io/api/v1/crates/mach2/0.4.1/download"],
+        strip_prefix = "mach2-0.4.1",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.mach2-0.4.1.bazel"),
     )
 
     maybe(
@@ -2188,16 +2188,6 @@ def crate_repositories():
         urls = ["https://crates.io/api/v1/crates/new_debug_unreachable/1.0.4/download"],
         strip_prefix = "new_debug_unreachable-1.0.4",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.new_debug_unreachable-1.0.4.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "crate_index__nix-0.24.3",
-        sha256 = "fa52e972a9a719cecb6864fb88568781eb706bac2cd1d4f04a648542dbf78069",
-        type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/nix/0.24.3/download"],
-        strip_prefix = "nix-0.24.3",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.nix-0.24.3.bazel"),
     )
 
     maybe(
@@ -3082,18 +3072,18 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "crate_index__serialport-4.2.0",
+        name = "crate_index__serialport-4.2.1",
         patch_args = [
             "-p1",
         ],
         patches = [
             "@//third_party/rust/patches:serialport-pci-workaround.patch",
         ],
-        sha256 = "aab92efb5cf60ad310548bc3f16fa6b0d950019cb7ed8ff41968c3d03721cf12",
+        sha256 = "353dc2cbfc67c9a14a89a1292a9d8e819bd51066b083e08c1974ba08e3f48c62",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/serialport/4.2.0/download"],
-        strip_prefix = "serialport-4.2.0",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.serialport-4.2.0.bazel"),
+        urls = ["https://crates.io/api/v1/crates/serialport/4.2.1/download"],
+        strip_prefix = "serialport-4.2.1",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.serialport-4.2.1.bazel"),
     )
 
     maybe(

@@ -11,11 +11,11 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # BSD-2-Clause
+#     "TODO",  # BSD-2-Clause OR MIT OR Apache-2.0
 # ])
 
 rust_library(
-    name = "mach",
+    name = "mach2",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -35,12 +35,12 @@ rust_library(
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=mach",
+        "crate-name=mach2",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "0.3.2",
+    version = "0.4.1",
     deps = select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
             "@crate_index__libc-0.2.147//:libc",  # cfg(any(target_os = "macos", target_os = "ios"))

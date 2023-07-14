@@ -1,8 +1,8 @@
 diff --git a/src/posix/enumerate.rs b/src/posix/enumerate.rs
-index 65c42bb..ee50f55 100644
+index bec8f86..0000000 100644
 --- a/src/posix/enumerate.rs
 +++ b/src/posix/enumerate.rs
-@@ -62,6 +62,30 @@ fn udev_hex_property_as_u16(d: &libudev::Device, key: &str) -> Result<u16> {
+@@ -69,6 +69,32 @@
      }
  }
  
@@ -22,19 +22,21 @@ index 65c42bb..ee50f55 100644
 +        Some("pci")
 +    );
 +    Ok(SerialPortType::UsbPort(UsbPortInfo {
-+        vid: udev_hex_property_as_u16(d, "ID_USB_VENDOR_ID")?,
-+        pid: udev_hex_property_as_u16(d, "ID_USB_MODEL_ID")?,
++        vid: udev_hex_property_as_int(d, "ID_USB_VENDOR_ID", &u16::from_str_radix)?,
++        pid: udev_hex_property_as_int(d, "ID_USB_MODEL_ID", &u16::from_str_radix)?,
 +        serial_number: udev_property_as_string(d, "ID_USB_SERIAL_SHORT"),
 +        manufacturer: udev_property_as_string(d, "ID_USB_VENDOR"),
 +        product: udev_property_as_string(d, "ID_USB_MODEL"),
++        #[cfg(feature = "usbportinfo-interface")]
++        interface: udev_hex_property_as_int(d, "ID_USB_INTERFACE_NUM", &u8::from_str_radix).ok(),
 +    }))
 +}
 +
  #[cfg(all(target_os = "linux", not(target_env = "musl"), feature = "libudev"))]
  fn port_type(d: &libudev::Device) -> Result<SerialPortType> {
      match d.property_value("ID_BUS").and_then(OsStr::to_str) {
-@@ -77,7 +101,7 @@ fn port_type(d: &libudev::Device) -> Result<SerialPortType> {
-                     .or_else(|| udev_property_as_string(d, "ID_MODEL")),
+@@ -87,7 +113,7 @@
+                     .ok(),
              }))
          }
 -        Some("pci") => Ok(SerialPortType::PciPort),
