@@ -196,7 +196,7 @@ module testbench_asynch ();
    s25fs256s #(
     .TimingModel   ( "S25FS256SAGMFI000_F_30pF" ),
     .mem_file_name ( "./sw/tests/opentitan/flash_hmac_smoketest/bazel-out/flash_hmac_smoketest_signed8.vmem" ),
-    .UserPreload   ( 0 )
+    .UserPreload   ( 1 )
    ) i_spi_flash_csn0 (
     .SI       ( I0 ),
     .SO       ( I1 ),
@@ -207,102 +207,102 @@ module testbench_asynch ();
    );
 `endif //  `ifdef VIPS
    
-  axi_cdc_dst #(
-    .LogDepth   ( LogDepth         ),
-    .aw_chan_t  ( axi_out_aw_chan_t ),
-    .w_chan_t   ( axi_out_w_chan_t  ),
-    .b_chan_t   ( axi_out_b_chan_t  ),
-    .ar_chan_t  ( axi_out_ar_chan_t ),
-    .r_chan_t   ( axi_out_r_chan_t  ),
-    .axi_req_t  ( axi_out_req_t     ),
-    .axi_resp_t ( axi_out_resp_t    )
-  ) i_cdc_in (
-    .async_data_slave_aw_data_i( async_axi_out_aw_data_o ),
-    .async_data_slave_aw_wptr_i( async_axi_out_aw_wptr_o ),
-    .async_data_slave_aw_rptr_o( async_axi_out_aw_rptr_i ),
-    .async_data_slave_w_data_i ( async_axi_out_w_data_o  ),
-    .async_data_slave_w_wptr_i ( async_axi_out_w_wptr_o  ),
-    .async_data_slave_w_rptr_o ( async_axi_out_w_rptr_i  ),
-    .async_data_slave_b_data_o ( async_axi_out_b_data_i  ),
-    .async_data_slave_b_wptr_o ( async_axi_out_b_wptr_i  ),
-    .async_data_slave_b_rptr_i ( async_axi_out_b_rptr_o  ),
-    .async_data_slave_ar_data_i( async_axi_out_ar_data_o ),
-    .async_data_slave_ar_wptr_i( async_axi_out_ar_wptr_o ),
-    .async_data_slave_ar_rptr_o( async_axi_out_ar_rptr_i ),
-    .async_data_slave_r_data_o ( async_axi_out_r_data_i  ),
-    .async_data_slave_r_wptr_o ( async_axi_out_r_wptr_i  ),
-    .async_data_slave_r_rptr_i ( async_axi_out_r_rptr_o  ),
-    .dst_clk_i                 ( clk_sys   ),
-    .dst_rst_ni                ( rst_sys_n ),
-    .dst_req_o                 ( ot_axi_req ),
-    .dst_resp_i                ( ot_axi_rsp )
-  );
+   axi_cdc_dst #(
+     .LogDepth   ( LogDepth         ),
+     .aw_chan_t  ( axi_out_aw_chan_t ),
+     .w_chan_t   ( axi_out_w_chan_t  ),
+     .b_chan_t   ( axi_out_b_chan_t  ),
+     .ar_chan_t  ( axi_out_ar_chan_t ),
+     .r_chan_t   ( axi_out_r_chan_t  ),
+     .axi_req_t  ( axi_out_req_t     ),
+     .axi_resp_t ( axi_out_resp_t    )
+   ) i_cdc_in (
+     .async_data_slave_aw_data_i( async_axi_out_aw_data_o ),
+     .async_data_slave_aw_wptr_i( async_axi_out_aw_wptr_o ),
+     .async_data_slave_aw_rptr_o( async_axi_out_aw_rptr_i ),
+     .async_data_slave_w_data_i ( async_axi_out_w_data_o  ),
+     .async_data_slave_w_wptr_i ( async_axi_out_w_wptr_o  ),
+     .async_data_slave_w_rptr_o ( async_axi_out_w_rptr_i  ),
+     .async_data_slave_b_data_o ( async_axi_out_b_data_i  ),
+     .async_data_slave_b_wptr_o ( async_axi_out_b_wptr_i  ),
+     .async_data_slave_b_rptr_i ( async_axi_out_b_rptr_o  ),
+     .async_data_slave_ar_data_i( async_axi_out_ar_data_o ),
+     .async_data_slave_ar_wptr_i( async_axi_out_ar_wptr_o ),
+     .async_data_slave_ar_rptr_o( async_axi_out_ar_rptr_i ),
+     .async_data_slave_r_data_o ( async_axi_out_r_data_i  ),
+     .async_data_slave_r_wptr_o ( async_axi_out_r_wptr_i  ),
+     .async_data_slave_r_rptr_i ( async_axi_out_r_rptr_o  ),
+     .dst_clk_i                 ( clk_sys   ),
+     .dst_rst_ni                ( rst_sys_n ),
+     .dst_req_o                 ( ot_axi_req ),
+     .dst_resp_i                ( ot_axi_rsp )
+   );
 
 /////////////////////////////// DUT ///////////////////////////////
-  
-  secure_subsystem_synth_wrap dut (
-      .clk_i            ( clk_sys       ),
-      .clk_ref_i        ( clk_sys       ),
-      .rst_ni           ( rst_sys_n     ),
-      .pwr_on_rst_ni    ( rst_sys_n     ),
-      .fetch_en_i       ( '0            ),
-      .bootmode_i       ( bootmode      ),
-      .test_enable_i    ( '0            ),
-      .irq_ibex_i       ( '0            ),
-   // JTAG port
-      .jtag_tck_i       ( jtag_i.tck    ),
-      .jtag_tms_i       ( jtag_i.tms    ),
-      .jtag_trst_n_i    ( jtag_i.trst_n ),
-      .jtag_tdi_i       ( jtag_i.tdi    ),
-      .jtag_tdo_o       ( jtag_o.tdo    ),
-      .jtag_tdo_oe_o    (               ),
-   // Asynch axi port
-      .async_axi_out_aw_data_o,
-      .async_axi_out_aw_wptr_o,
-      .async_axi_out_aw_rptr_i,
-      .async_axi_out_w_data_o,
-      .async_axi_out_w_wptr_o,
-      .async_axi_out_w_rptr_i,
-      .async_axi_out_b_data_i,
-      .async_axi_out_b_wptr_i,
-      .async_axi_out_b_rptr_o,
-      .async_axi_out_ar_data_o,
-      .async_axi_out_ar_wptr_o,
-      .async_axi_out_ar_rptr_i,
-      .async_axi_out_r_data_i,
-      .async_axi_out_r_wptr_i,
-      .async_axi_out_r_rptr_o,      
-   // Uart   
-      .ibex_uart_rx_i   ( ibex_uart_rx  ),
-      .ibex_uart_tx_o   ( ibex_uart_tx  ),
-   // SPI host   
-`ifdef VIPS                        
-      .spi_host_SCK_o   ( SCK           ),
-      .spi_host_SCK_en_o(               ),
-      .spi_host_CSB_o   ( CSNeg         ),
-      .spi_host_CSB_en_o(               ),
-      .spi_host_SD_o    ( SPIdata_o     ),
-      .spi_host_SD_i    ( SPIdata_i     ),
-      .spi_host_SD_en_o ( SPIdata_oe_o  ),            
-`else
-      .spi_host_SCK_o   (               ),
-      .spi_host_SCK_en_o(               ),
-      .spi_host_CSB_o   (               ),
-      .spi_host_CSB_en_o(               ),
-      .spi_host_SD_o    (               ),
-      .spi_host_SD_i    ( '0            ),
-      .spi_host_SD_en_o (               ),
-`endif
-      .axi_isolated_o   (               ),
-      .axi_isolate_i    ( '0            ),
-      .gpio_0_i         ( '0            ), 
-      .gpio_1_i         ( '0            ),
-      .gpio_0_o         (               ), 
-      .gpio_1_o         (               ),
-      .gpio_0_oe_o      (               ), 
-      .gpio_1_oe_o      (               )
-  );
 
+   secure_subsystem_synth_wrap dut (
+       .clk_i            ( clk_sys       ),
+       .clk_ref_i        ( clk_sys       ),
+       .rst_ni           ( rst_sys_n     ),
+       .pwr_on_rst_ni    ( rst_sys_n     ),
+       .fetch_en_i       ( '0            ),
+       .bootmode_i       ( bootmode      ),
+       .test_enable_i    ( '0            ),
+       .irq_ibex_i       ( '0            ),
+    // JTAG port
+       .jtag_tck_i       ( jtag_i.tck    ),
+       .jtag_tms_i       ( jtag_i.tms    ),
+       .jtag_trst_n_i    ( jtag_i.trst_n ),
+       .jtag_tdi_i       ( jtag_i.tdi    ),
+       .jtag_tdo_o       ( jtag_o.tdo    ),
+       .jtag_tdo_oe_o    (               ),
+    // Asynch axi port
+       .async_axi_out_aw_data_o,
+       .async_axi_out_aw_wptr_o,
+       .async_axi_out_aw_rptr_i,
+       .async_axi_out_w_data_o,
+       .async_axi_out_w_wptr_o,
+       .async_axi_out_w_rptr_i,
+       .async_axi_out_b_data_i,
+       .async_axi_out_b_wptr_i,
+       .async_axi_out_b_rptr_o,
+       .async_axi_out_ar_data_o,
+       .async_axi_out_ar_wptr_o,
+       .async_axi_out_ar_rptr_i,
+       .async_axi_out_r_data_i,
+       .async_axi_out_r_wptr_i,
+       .async_axi_out_r_rptr_o,      
+    // Uart   
+       .ibex_uart_rx_i   ( ibex_uart_rx  ),
+       .ibex_uart_tx_o   ( ibex_uart_tx  ),
+    // SPI host   
+ `ifdef VIPS                        
+       .spi_host_SCK_o   ( SCK           ),
+       .spi_host_SCK_en_o(               ),
+       .spi_host_CSB_o   ( CSNeg         ),
+       .spi_host_CSB_en_o(               ),
+       .spi_host_SD_o    ( SPIdata_o     ),
+       .spi_host_SD_i    ( SPIdata_i     ),
+       .spi_host_SD_en_o ( SPIdata_oe_o  ),            
+ `else
+       .spi_host_SCK_o   (               ),
+       .spi_host_SCK_en_o(               ),
+       .spi_host_CSB_o   (               ),
+       .spi_host_CSB_en_o(               ),
+       .spi_host_SD_o    (               ),
+       .spi_host_SD_i    ( '0            ),
+       .spi_host_SD_en_o (               ),
+ `endif
+       .axi_isolated_o   (               ),
+       .axi_isolate_i    ( '0            ),
+       .gpio_0_i         ( '0            ), 
+       .gpio_1_i         ( '0            ),
+       .gpio_0_o         (               ), 
+       .gpio_1_o         (               ),
+       .gpio_0_oe_o      (               ), 
+       .gpio_1_oe_o      (               )
+   );
+ 
 ///////////////////////// Processes ///////////////////////////////
 
   
