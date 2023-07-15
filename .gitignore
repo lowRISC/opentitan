@@ -76,44 +76,17 @@ rust-project.json
 
 # Bazel-related cache and output directories
 bazel-*
-
+.bin
 # Site-specific bazel configuration
 .bazelrc-site
-
-# Compilation database generated from build system
-compile_commands.json
-
-# Local binaries that should not be committed to the codebase
-.bin/
-/.bender/
-/Bender.lock
-/external/
-/gen_sw_headers.sh
-/scripts/compile.tcl
-/scripts/modelsim.ini
-/scripts/transcript
-/scripts/vsim.wlf
-/scripts/work/
-/hw/top_earlgrey/sw/tests/common/crt0.d
-/hw/top_earlgrey/sw/tests/common/simple_system_common.o
-/hw/top_earlgrey/sw/tests/crypto/crypto_test.bin
-/hw/top_earlgrey/sw/tests/crypto/crypto_test.d
-/hw/top_earlgrey/sw/tests/crypto/crypto_test.dis
-/hw/top_earlgrey/sw/tests/crypto/crypto_test.elf
-/hw/top_earlgrey/sw/tests/crypto/crypto_test.o
-/hw/top_earlgrey/sw/tests/crypto/crypto_test.vmem
-/hw/top_earlgrey/sw/tests/mbox_test/mbox_test.bin
-/hw/top_earlgrey/sw/tests/mbox_test/mbox_test.dis
-/hw/top_earlgrey/sw/tests/mbox_test/mbox_test.elf
-/hw/top_earlgrey/sw/tests/mbox_test/mbox_test.o
-/hw/top_earlgrey/sw/tests/mbox_test/mbox_test.vmem
-/hw/top_earlgrey/sw/tests/test_rom.vmem
-/scripts/wlftqUHhaY
-/sw/device/tests/crypto_test.c
-/sw/device/tests/simple_system_common.c
-/hw/top_earlgrey/sw/tests/common/crt0.o
-/scripts/uart
-/hw/top_earlgrey/sw/tests/mbox_test/mbox_test.d
-/hw/tb/spi_flash/
-/hw/script/struct
-/scripts/compile_preload.tcl
+.bender/
+hw/tb/vip/
+modelsim.ini
+scripts/compile_opentitan.tcl
+scripts/compile_opentitan_vip.tcl
+setup.sh
+transcript
+uart
+vsim.wlf
+work/
+hw/tb/vips

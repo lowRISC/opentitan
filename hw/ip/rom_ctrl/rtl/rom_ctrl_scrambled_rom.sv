@@ -54,7 +54,6 @@ module rom_ctrl_scrambled_rom
   output logic             rvalid_o,
   output logic [Width-1:0] scr_rdata_o,
   output logic [Width-1:0] clr_rdata_o,
-  input  logic             dbg_mode,
   input rom_cfg_t          cfg_i
 );
 
@@ -139,7 +138,6 @@ module rom_ctrl_scrambled_rom
   ) u_rom (
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
-    .dbg_mode (dbg_mode),
     .req_i    (req_i),
     .addr_i   (addr_scr),
     .rvalid_o (rvalid_o),

@@ -283,6 +283,13 @@ sources:
           - hw/vendor/lowrisc_ibex/rtl/ibex_lockstep.sv
           - hw/vendor/lowrisc_ibex/rtl/ibex_core.sv
           - hw/vendor/lowrisc_ibex/rtl/ibex_top.sv
+      - target: test_ot_vip
+        defines:
+          RVFI: true
+        files:
+          - hw/vendor/lowrisc_ibex/rtl/ibex_lockstep.sv
+          - hw/vendor/lowrisc_ibex/rtl/ibex_core.sv
+          - hw/vendor/lowrisc_ibex/rtl/ibex_top.sv
 
 ##### core wrapper
 
@@ -295,6 +302,14 @@ sources:
       - hw/ip/rv_core_ibex/rtl/rv_core_addr_trans.sv
       - hw/ip/rv_core_ibex/rtl/rv_core_ibex.sv
       - target: test
+        defines:
+          RVFI: ~
+        files:
+          - hw/vendor/lowrisc_ibex/rtl/ibex_tracer.sv
+          - hw/vendor/lowrisc_ibex/rtl/ibex_top_tracing.sv
+          - hw/ip/rv_core_ibex/rtl/rv_core_addr_trans.sv
+          - hw/ip/rv_core_ibex/rtl/rv_core_ibex.sv
+      - target: test_ot_vip
         defines:
           RVFI: ~
         files:
@@ -332,10 +347,10 @@ sources:
 
 ##### debug_mode_preload
 
-      - hw/ip/debug_mode/rtl/debug_mode_regs_reg_pkg.sv
-      - hw/ip/debug_mode/rtl/debug_mode_regs_reg_top.sv
-      - hw/ip/debug_mode/rtl/debug_mode_preload.sv
-      
+      - hw/ip/boot_manager/rtl/boot_manager_regs_reg_pkg.sv
+      - hw/ip/boot_manager/rtl/boot_manager_regs_reg_top.sv
+      - hw/ip/boot_manager/rtl/boot_manager.sv
+
 ##### rom_ctrl
 
       - hw/ip/rom_ctrl/rtl/boot_rom.sv
@@ -769,6 +784,10 @@ sources:
         files:
           - hw/ip/tlul2axi/test/tlul_functions.sv
           - hw/ip/tlul2axi/test/tlul2axi_testbench.sv
+      - target: test_ot_vip
+        files:
+          - hw/ip/tlul2axi/test/tlul_functions.sv
+          - hw/ip/tlul2axi/test/tlul2axi_testbench.sv
 
 ##### pwm
 
@@ -783,31 +802,28 @@ sources:
       - hw/top_earlgrey/rtl/autogen/top_earlgrey_pkg.sv
       - hw/top_earlgrey/rtl/autogen/top_earlgrey_rnd_cnst_pkg.sv    
       - hw/top_earlgrey/rtl/jtag_id_pkg.sv
-#     - hw/top_earlgrey/rtl/autogen/top_earlgrey.sv
-      - hw/tb/top_earlgrey.sv
-      - hw/tb/secure_subsystem_synth_pkg.sv
-#      - hw/tb/secure_subsystem_synth_wrap.sv
-      - hw/tb/secure_subsystem_asynch_synth_wrap.sv
+      - hw/top_earlgrey/top/top_earlgrey.sv
+      - hw/top_earlgrey/top/secure_subsystem_synth_pkg.sv
+      - hw/top_earlgrey/top/secure_subsystem_asynch_synth_wrap.sv
 
 ##### testbench
 
       -  target: test
          files:
-           - hw/tb/uart.sv
-           - hw/tb/jtag_intf.sv
+           - hw/tb/util/uart.sv
+           - hw/tb/util/jtag_intf.sv
            - hw/vendor/pulp_riscv_dbg/src/jtag_test.sv
-           - hw/vendor/common_padr/src/pad_alsaqr.sv
+           - hw/vendor/common_pads/src/pad_alsaqr.sv
            - hw/tb/testbench.sv
-           - hw/tb/testbench_asynch.sv          
-           - hw/tb/testbench_preload.sv
+           - hw/tb/testbench_asynch.sv
 
-      -  target: test_vip
+      -  target: test_ot_vip
          defines:
            VIPS: ~
          files:
-           - hw/tb/uart.sv
-           - hw/tb/spi_flash/S25fs256s/model/s25fs256s.v
-           - hw/tb/jtag_intf.sv
+           - hw/tb/util/uart.sv
+           - hw/tb/vips/s25fs256s.v
+           - hw/tb/util/jtag_intf.sv
            - hw/vendor/pulp_riscv_dbg/src/jtag_test.sv
            - hw/vendor/common_pads/src/pad_alsaqr.sv
            - hw/tb/testbench.sv

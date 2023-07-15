@@ -533,9 +533,9 @@ static rom_error_t rom_try_boot(void) {
 }
 
 void rom_main(void) {
-  int * debug_mode;
-  debug_mode=(int *)0xff000014;
-  
+  int * pad_bootmode;
+  pad_bootmode = (int *)0xff000014;
+
   // Device init performance counters
   CFI_FUNC_COUNTER_INIT(rom_counters, kCfiRomMain);
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomMain, 1, kCfiRomInit);
@@ -543,12 +543,12 @@ void rom_main(void) {
   SHUTDOWN_IF_ERROR(rom_init());
   
   // Populate embedded emulated Flash (bank 0)
-  rom_printf("Loading rom_ext from extenal SPI flash\r\n");
-  printf("Loading rom_ext from extenal SPI flash\r\n");
-  *debug_mode=0x1;
-  spi_flash_load_data();
-  *debug_mode=0x0;
-
+  if(*pad_bootmode == 0x1){
+    rom_printf("Loading rom_ext from extenal SPI flash\r\n");
+    printf("Loading rom_ext from extenal SPI flash\r\n");
+    spi_flash_load_data();
+  }
+  
   rom_bootstrap_message();
   
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomMain, 3);

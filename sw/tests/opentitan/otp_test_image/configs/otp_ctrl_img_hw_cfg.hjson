@@ -1,0 +1,43 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Use the gen-otp-img.py script to convert this configuration into
+// a MEM file for preloading the OTP in FPGA synthesis or simulation.
+//
+
+{
+    // The partition and item names must correspond with the OTP memory map.
+    partitions: [
+        {
+            name:  "HW_CFG",
+            // If set to true, this computes the HW digest value
+            // and locks the partition.
+            lock:  "True",
+            items: [
+                {
+                    name:  "DEVICE_ID",
+                    value: "<random>",
+                },
+                {
+                    // Cryptolib and chip-level tests require access to the
+                    // CSRNG software interfaces.
+                    name:  "EN_CSRNG_SW_APP_READ",
+                    value: true,
+                },
+                {
+                    // Cryptolib and chip-level tests require access to the
+                    // entropy_src FW data interface.
+                    name:  "EN_ENTROPY_SRC_FW_READ",
+                    value: true,
+                },
+                {
+                    // Cryptolib and chip-level tests require access to the
+                    // entropy_src FW override interface.
+                    name: "EN_ENTROPY_SRC_FW_OVER",
+                    value: true,
+                }
+            ],
+        }
+    ]
+}

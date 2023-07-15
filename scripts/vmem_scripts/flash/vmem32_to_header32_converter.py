@@ -74,7 +74,7 @@ static const uint32_t {file_name}[{num_elements}] = {{
 '''.format(file_name=file_name.upper(), num_elements=num_elements, h_output_lines='\n'.join(h_output_lines))
 
 # Construct the output file paths
-vmem_output_file = os.path.join(output_path, f'{file_name}.vmem')
+vmem_output_file = os.path.join(output_path, f'{file_name}_clear32.vmem')
 h_output_file = os.path.join(output_path, f'{file_name}.h')
 
 # Write the output string for the .vmem file to a file

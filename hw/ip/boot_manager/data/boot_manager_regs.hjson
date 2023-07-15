@@ -1,0 +1,98 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "boot_manager_regs",
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true},
+  ]
+  bus_interfaces: [
+        { protocol: "tlul", direction: "device"}
+    ],
+  regwidth: "32",
+  registers: [
+    { name: "Payload_1",
+      desc: "[76:44] payload bits",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0" }
+      ],
+    },
+    { name: "Payload_2",
+      desc: "[43:11] payload bits",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0" },
+      ],
+    },
+    { name: "Payload_3",
+      desc: "[10:0] payload bits + 0 padding",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0" }
+      ],
+    },
+    { name: "Address",
+      desc: "Destination address of Payload",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0" }
+      ],
+    },
+    { name: "Start",
+      desc: "Start bit to initialize write into phy flash",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      fields: [
+        { bits: "31:1" },
+        { bits: "0",
+          name: "start",
+          desc: "Start physical write",
+        }
+      ],
+    },
+    { name: "Pad_bootmode",
+      desc: "If 0 debug mode, 1 secure mode",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "31:1" },
+        { bits: "0",
+          name: "pad_bootmode",
+          resval: "0",
+          desc: "if 1'b0: debug jtag mode, if 1'b1 secure boot mode",
+        }
+      ],
+    },
+    { name: "Sw_bootmode",
+      desc: "If 0 jtag debug, 1 secure boot",
+      swaccess: "rw",
+      hwaccess: "none",
+      fields: [
+        { bits: "31:1" },
+        { bits: "0",
+          name: "sw_bootmode",
+          resval: "0",
+          desc: "if 1'b0: debug jtag boot, if 1'b1 secure boot ",
+        }
+      ],
+    },
+    { name: "Datapath",
+      desc: "If 0 original datapath, 1 jtag datapath",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:1" },
+        { bits: "0",
+          name: "datapath",
+          resval: "0",
+          desc: "if 0: original datapaht, if 1 jtag datapath",
+        }
+      ],
+    },
+  ],
+}

@@ -1,10 +1,7 @@
 *.a
 *.bin
 *.d
-*.dis
-*.elf
 *.map
 *.o
-*.vmem
 *_regs.h
 *.map

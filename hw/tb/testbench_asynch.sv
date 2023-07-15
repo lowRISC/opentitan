@@ -82,14 +82,16 @@ module testbench_asynch ();
    
    int          secd_sections [bit [31:0]];
    logic [31:0] secd_memory[bit [31:0]];
-   string       SRAM;
+   string       sram;
+   logic [1:0]  boot_mode;
+
+   logic [1:0]  bootmode;
    
    logic clk_sys = 1'b0;
    logic aon_clk = 1'b0;
    logic io_clk = 1'b0;
    logic usb_clk = 1'b0;
    logic rst_sys_n;
-   logic dbg_mode;
    logic es_rng_fips;
    logic SCK, CSNeg;
    logic [3:0] SPIdata_i, SPIdata_o, SPIdata_oe_o;
@@ -193,8 +195,8 @@ module testbench_asynch ();
                      .BIAS(BIAS_S), .RETC(RETC_S)   );
    s25fs256s #(
     .TimingModel   ( "S25FS256SAGMFI000_F_30pF" ),
-    .mem_file_name ( "../sw/tests/opentitan/hmac_smoketest/hmac_smoketest8.vmem" ),
-    .UserPreload   ( 1 )
+    .mem_file_name ( "./sw/tests/opentitan/flash_hmac_smoketest/bazel-out/flash_hmac_smoketest_signed8.vmem" ),
+    .UserPreload   ( 0 )
    ) i_spi_flash_csn0 (
     .SI       ( I0 ),
     .SO       ( I1 ),
@@ -244,7 +246,7 @@ module testbench_asynch ();
       .rst_ni           ( rst_sys_n     ),
       .pwr_on_rst_ni    ( rst_sys_n     ),
       .fetch_en_i       ( '0            ),
-      .bootmode_i       ( '0            ),
+      .bootmode_i       ( bootmode      ),
       .test_enable_i    ( '0            ),
       .irq_ibex_i       ( '0            ),
    // JTAG port
@@ -344,42 +346,49 @@ module testbench_asynch ();
   
   end
    
-  initial  begin : local_jtag_preload
-      automatic dm_ot::sbcs_t sbcs = '{
-       sbautoincrement: 1'b1,
-       sbreadondata   : 1'b1,
-       sbaccess       : 3'h2,
-       default        : 1'b0
-     };
+  initial  begin : bootmodes
 
-    logic [31:0] dm_status;
-    //dm_ot::dtm_op_status_e op;
-    automatic int dmi_wait_cycles = 10;
-
-    if(!$value$plusargs("SRAM=%s", SRAM)) begin
-       SRAM="";
-       $display("Testing %s", SRAM);
+    if(!$value$plusargs("BOOTMODE=%d", boot_mode)) begin
+       boot_mode=0;
+       $display("BOOTMODE: %d", boot_mode);
     end
-    riscv_dbg.reset_master();
-         
-    if (SRAM != "") begin
-         repeat(10000)
-           @(posedge clk_sys); 
-         debug_secd_module_init();
-         load_secd_binary(SRAM);
-         jtag_secd_data_preload();
-         jtag_secd_wakeup(32'h e0000080); //preload the flash
-    `ifdef SECURE_JTAG
-         repeat(410000)
-           @(posedge clk_sys);
-         jtag_secd_wakeup(32'h d0008080); //secure boot
-    `endif       
-   end
- end // block: local_jtag_preload
-   
+    if(!$value$plusargs("SRAM=%s", sram)) begin
+       sram="";
+       $display("Loading to SRAM: %s", sram);
+    end
+     
+    case(boot_mode)
+        0:begin
+          bootmode = 2'b00;
+          riscv_dbg.reset_master();     
+          if (sram != "") begin
+               repeat(10000)
+                 @(posedge clk_sys); 
+               debug_secd_module_init();
+               load_secd_binary(sram);
+               jtag_secd_data_preload();
+               jtag_secd_wakeup(32'h e0000080); //preload the flashif
+          `ifdef JTAG_SEC_BOOT             
+               repeat(250000)
+                 @(posedge clk_sys);
+               jtag_secd_wakeup(32'h d0008080); //secure boot
+          `endif
+          end
+        end
+        1:begin
+          bootmode = 2'b01;
+          riscv_dbg.reset_master();     
+        end
+        default:begin
+          bootmode = 2'b00;
+          $fatal("Unsupported bootmode");
+        end
+    endcase // case (boot_mode)
+  end // block: bootmodes
+      
 ///////////////////////////// Tasks ///////////////////////////////
    
-   task debug_secd_module_init;
+  task debug_secd_module_init;
      logic [31:0]  idcode;
      automatic dm_ot::sbcs_t sbcs = '{
        sbautoincrement: 1'b1,
@@ -512,6 +521,5 @@ module testbench_asynch ();
       end
     end
 
-  endtask
-
+  endtask // load_secd_binary
 endmodule

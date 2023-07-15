@@ -38,8 +38,7 @@ module rom_ctrl
   output rom_ctrl_pkg::pwrmgr_data_t pwrmgr_data_o,
   output rom_ctrl_pkg::keymgr_data_t keymgr_data_o,
   input  kmac_pkg::app_rsp_t         kmac_data_i,
-  output kmac_pkg::app_req_t         kmac_data_o,
-  input logic dbg_mode
+  output kmac_pkg::app_req_t         kmac_data_o
 );
 
   import rom_ctrl_pkg::*;
@@ -282,7 +281,6 @@ module rom_ctrl
     ) u_rom (
       .clk_i,
       .rst_ni,
-      .dbg_mode,
       .req_i         (rom_req),
       .rom_addr_i    (rom_rom_index),
       .prince_addr_i (rom_prince_index),
@@ -305,7 +303,6 @@ module rom_ctrl
     ) u_rom (
       .clk_i,
       .rst_ni,
-      .dbg_mode,
       .req_i    (rom_req),
       .addr_i   (rom_rom_index),
       .rvalid_o (rom_rvalid),
