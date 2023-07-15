@@ -134,7 +134,7 @@ void init_spi_host(dif_spi_host_t *spi_host,
 
 void spi_flash_load_data(void){
 
-  volatile int * debug_mode;
+  volatile int * datapath;
   volatile int * address, * start, * payload_1, * payload_2, * payload_3; 
 
   int num_iter = 154;
@@ -152,11 +152,12 @@ void spi_flash_load_data(void){
   payload_3  = (int *) 0xff000008;
   address    = (int *) 0xff00000C;
   start      = (int *) 0xff000010;
-  debug_mode = (int *) 0xff000014;
+  datapath   = (int *) 0xff00001C;
    
   CHECK_DIF_OK(dif_spi_host_init(mmio_region_from_addr(base_addr), &spi_host));
   init_spi_host(&spi_host, (uint32_t)clkHz);
-    
+
+  *datapath = 1;
   *address = 0;
   // load data from SPI flash
   for(int j=0;j<num_iter;j++){
@@ -193,13 +194,14 @@ void spi_flash_load_data(void){
          *payload_1 = buf[i];
          *payload_2 = buf[i+1];
          *payload_3 = buf[i+2];
-	 *address   = index;
+	       *address   = index;
          *start = 0x1;
 	 index++;
        }
      }
   }
-  
+
+  *datapath = 0;
   CHECK_DIF_OK(dif_spi_host_output_set_enabled(&spi_host, false));
 }
   
