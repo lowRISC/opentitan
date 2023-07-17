@@ -195,6 +195,7 @@ bool test_main(void) {
       &sysrst_ctrl, kDifSysrstCtrlPinEcResetInOut, kDifToggleDisabled));
 
   while (kTestPhase < kTestPhaseDone) {
+    LOG_INFO("Running test phase %d", kTestPhase);
     switch (kTestPhase) {
       case kTestPhaseSetup:
         CHECK(rstmgr_reset_info == kDifRstmgrResetInfoPor);
