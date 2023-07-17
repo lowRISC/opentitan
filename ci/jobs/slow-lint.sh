@@ -18,7 +18,7 @@ echo -e "\n### Ensure bazel doesn't use 'git_repository's"
 ci/scripts/check-bazel-banned-rules.sh
 
 echo -e "\n### Ensure all generated files are clean and up-to-date"
-ci/scripts/check-generated.sh top_darjeeling
+ci/scripts/check-generated.sh top_earlgrey
 
 echo -e "\n### Use buiildifier to check Bazel coding style"
 bazel test //quality:buildifier_check --test_output=streamed
