@@ -4,6 +4,8 @@
 
 #ifndef OPENTITAN_HW_DV_DPI_USBDPI_USB_TRANSFER_H_
 #define OPENTITAN_HW_DV_DPI_USBDPI_USB_TRANSFER_H_
+#include <assert.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -219,6 +221,23 @@ void transfer_status(usbdpi_ctx_t *ctx, usbdpi_transfer_t *transfer,
 
 inline uint32_t transfer_length(const usbdpi_transfer_t *transfer) {
   return transfer->num_bytes;
+}
+
+/**
+ * Drop the specified number of data bytes from the given transfer.
+ *
+ * @param  transfer  Transfer descriptor
+ * @param  n         The number of bytes to be dropped
+ * @return The success of the operation
+ */
+inline bool transfer_data_drop(usbdpi_transfer_t *transfer, size_t n) {
+  assert(transfer);
+  if ((size_t)transfer->num_bytes - transfer->data_start < n) {
+    return false;
+  }
+  transfer->data_start += n;
+  transfer->num_bytes -= n;
+  return true;
 }
 
 /**
