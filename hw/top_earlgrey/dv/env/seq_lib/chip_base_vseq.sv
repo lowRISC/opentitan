@@ -23,10 +23,6 @@ class chip_base_vseq #(
   // Skip POR_N : required for closed source test
   bit skip_por_n_during_first_pwrup = 0;
 
-  // Knob to start cpu_init in pre_start phase
-  // You have to set this knob before or within dut_init task
-  bit early_cpu_init = 0;
-
   `uvm_object_new
 
   virtual function void set_handles();
@@ -161,7 +157,7 @@ class chip_base_vseq #(
       cfg.mem_bkdr_util_h[chip_mem_e'(OtbnDmem0 + ram_idx)].clear_mem();
     end
     // Early cpu init
-    if (early_cpu_init) cpu_init();
+    if (cfg.early_cpu_init) cpu_init();
     // Bring the chip out of reset.
     super.dut_init(reset_kind);
     alert_ping_en_shorten();

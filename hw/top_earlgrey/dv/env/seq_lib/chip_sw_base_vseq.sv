@@ -222,7 +222,13 @@ class chip_sw_base_vseq extends chip_base_vseq;
   virtual task body();
     cfg.sw_test_status_vif.set_num_iterations(num_trans);
     // Initialize the CPU to kick off the sw test. TODO: Should be called in pre_start() instead.
-    cpu_init();
+    if (cfg.early_cpu_init) begin
+      // if early_cpu_init is set, cpu_init is called from
+      // dut_init
+      `uvm_info(`gfn, "early_cpu_init is set. cpu_init is called during dut init", UVM_LOW)
+    end else begin
+      cpu_init();
+    end
   endtask
 
   virtual task post_start();
