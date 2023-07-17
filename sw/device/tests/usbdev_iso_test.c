@@ -257,7 +257,7 @@ bool test_main(void) {
   uint32_t tx_bytes = 0U;
   uint32_t rx_bytes = 0U;
   for (unsigned s = 0U; s < nstreams; s++) {
-    tx_bytes += ctx->streams[s].tx_bytes;
+    tx_bytes += ctx->streams[s].tx.bytes;
     rx_bytes += ctx->streams[s].rx_bytes;
   }
 
