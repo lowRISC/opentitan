@@ -5,6 +5,7 @@
 load("//rules:splice.bzl", "bitstream_splice")
 load("//rules:otp.bzl", "get_otp_images")
 load("//rules:const.bzl", "KEY_AUTHENTICITY")
+load("//rules:bitstreams.bzl", "bitstream_fragment_from_manifest")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -161,3 +162,28 @@ bitstream_splice(
     for (otp_name, img_target) in get_otp_images()
     for authenticity in KEY_AUTHENTICITY
 ]
+
+# Create manifest fragments for all the cached bitstreams
+bitstream_fragment_from_manifest(
+    name = "chip_earlgrey_cw310_cached_fragment",
+    srcs = [
+        "@bitstreams//:chip_earlgrey_cw310_bitstream",
+        "@bitstreams//:chip_earlgrey_cw310_otp_mmi",
+        "@bitstreams//:chip_earlgrey_cw310_rom_mmi",
+    ],
+    design = "chip_earlgrey_cw310",
+    manifest = "@bitstreams//:manifest",
+    tags = ["manual"],
+)
+
+bitstream_fragment_from_manifest(
+    name = "chip_earlgrey_cw310_hyperdebug_cached_fragment",
+    srcs = [
+        "@bitstreams//:chip_earlgrey_cw310_hyperdebug_bitstream",
+        "@bitstreams//:chip_earlgrey_cw310_hyperdebug_otp_mmi",
+        "@bitstreams//:chip_earlgrey_cw310_hyperdebug_rom_mmi",
+    ],
+    design = "chip_earlgrey_cw310_hyperdebug",
+    manifest = "@bitstreams//:manifest",
+    tags = ["manual"],
+)

@@ -3,11 +3,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("//rules:const.bzl", "KEY_AUTHENTICITY")
 load("//rules:fusesoc.bzl", "fusesoc_build")
 load("//rules:otp.bzl", "get_otp_images")
 load("//rules:splice.bzl", "bitstream_splice")
 load("//rules:const.bzl", "KEY_AUTHENTICITY")
+load("//rules:bitstreams.bzl", "bitstream_manifest_fragment")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -151,6 +153,53 @@ filegroup(
     testonly = True,
     srcs = [":fpga_cw310_hyperdebug"],
     output_group = "otp_mmi",
+    tags = ["manual"],
+)
+
+# Bitstream cache manifest fragment targets
+bitstream_manifest_fragment(
+    name = "earlgrey_cw310_manifest",
+    testonly = True,
+    srcs = [":fpga_cw310"],
+    bitstream = "bitstream",
+    design = "chip_earlgrey_cw310",
+    memory_maps = {
+        "rom_mmi": "rom",
+        "otp_mmi": "otp",
+    },
+    tags = ["manual"],
+)
+
+pkg_tar(
+    name = "earlgrey_cw310_archive",
+    testonly = True,
+    mode = "0444",
+    srcs = [":earlgrey_cw310_manifest"],
+    strip_prefix = "/hw/bitstream/vivado/earlgrey_cw310_manifest",
+    package_dir = "build-bin/hw/top_earlgrey/chip_earlgrey_cw310",
+    tags = ["manual"],
+)
+
+bitstream_manifest_fragment(
+    name = "earlgrey_cw310_hyperdebug_manifest",
+    testonly = True,
+    srcs = [":fpga_cw310_hyperdebug"],
+    bitstream = "bitstream",
+    design = "chip_earlgrey_cw310_hyperdebug",
+    memory_maps = {
+        "rom_mmi": "rom",
+        "otp_mmi": "otp",
+    },
+    tags = ["manual"],
+)
+
+pkg_tar(
+    name = "earlgrey_cw310_hyperdebug_archive",
+    testonly = True,
+    mode = "0444",
+    srcs = [":earlgrey_cw310_hyperdebug_manifest"],
+    strip_prefix = "/hw/bitstream/vivado/earlgrey_cw310_hyperdebug_manifest",
+    package_dir = "build-bin/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug",
     tags = ["manual"],
 )
 
