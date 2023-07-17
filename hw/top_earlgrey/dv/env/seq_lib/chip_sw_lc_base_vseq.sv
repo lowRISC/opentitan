@@ -29,7 +29,7 @@ class chip_sw_lc_base_vseq extends chip_sw_base_vseq;
   endfunction : backdoor_override_otp
 
   virtual task dut_init(string reset_kind = "HARD");
-    early_cpu_init = 1;
+    cfg.early_cpu_init = 1;
     super.dut_init(reset_kind);
 
     // If init state is not reset state (DecLcStInvalid),

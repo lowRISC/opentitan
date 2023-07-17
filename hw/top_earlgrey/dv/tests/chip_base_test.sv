@@ -79,6 +79,9 @@ class chip_base_test extends cip_base_test #(
     // Knob to add vendor flash write latency
     void'($value$plusargs("flash_write_latency_in_us=%d", cfg.flash_write_latency_in_us));
 
+    // Knob to set early_cpu_init
+    void'($value$plusargs("early_cpu_init=%b", cfg.early_cpu_init));
+
     // Set the test timeout value to be sufficiently large.
     test_timeout_ns = 50_000_000;
     test_timeout_ns = `DV_MAX2(test_timeout_ns, 5 * cfg.sw_test_timeout_ns);
