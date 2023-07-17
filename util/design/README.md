@@ -176,4 +176,3 @@ TODO
 ## KECCAK Coefficient Generation Tool
 
 TODO
-

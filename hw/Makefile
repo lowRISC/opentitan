@@ -44,7 +44,7 @@ IPS ?= aes           \
        uart          \
        usbdev
 
-TOPS ?= top_earlgrey
+TOPS ?= top_earlgrey top_darjeeling
 
 USE_BUFFER ?= 0
 
@@ -77,7 +77,8 @@ ips_reg_rust   = $(foreach ip,$(local_ips),$(REG_OUTPUT_SW_DIR)/$(ip)_reg_consta
 # Per-top targets (all phonies)
 tops_gen = $(addsuffix _gen,$(TOPS))
 tops_reg = $(addsuffix _reg,$(TOPS))
-tops_rust_gen = $(addsuffix _gen,$(TOPS))
+tops_rust_gen = $(addsuffix _rust_gen,$(TOPS))
+tops_rust_pkg_gen = $(addsuffix _rust_pkg_gen,$(TOPS))
 
 # Targets for installing files into TOCK_ROOT (empty if TOCK_ROOT is not defined)
 ifneq ($(TOCK_ROOT),)
@@ -88,7 +89,7 @@ $(tock_rust_destdir):
 	mkdir -p $@
 endif
 
-.PHONY: $(ips_reg) $(ips_reg_header) $(ips_reg_rust) $(tops_gen) $(tops_reg)
+.PHONY: $(ips_reg) $(ips_reg_header) $(ips_reg_rust) $(tops_gen) $(tops_reg) $(tops_rust_gen) $(tops_rust_pkg_gen)
 
 all: $(ips_reg) $(tops_gen) $(tops_reg)
 
@@ -140,7 +141,6 @@ clean-regs-header:
 top-hjson = $(PRJ_DIR)/hw/$*/data/$*.hjson
 version_out_dir = $(PRJ_DIR)/build
 version_path = $(version_out_dir)/workspace_status.txt
-top_chip_hjson = $(PRJ_DIR)/hw/$(TOPS)/data/$(TOPS).hjson
 
 $(version_out_dir):
 	mkdir -p $@
@@ -148,14 +148,19 @@ $(version_out_dir):
 workspace_status: $(version_out_dir)
 	${PRJ_DIR}/util/get_workspace_status.sh > ${version_path}
 
-topgen_rust: workspace_status
-	mkdir -p ${REG_OUTPUT_AUTOGEN_DIR}
-	${PRJ_DIR}/util/topgen.py -t $(top_chip_hjson) --rust-only -o ${REG_OUTPUT_AUTOGEN_DIR}/ --version-stamp ${version_path} ${toolflags}
+topgen_rust: workspace_status $(tops_rust_gen)
 
-topgen_rust_pkg: topgen_rust
-	tar -C ${REG_OUTPUT_AUTOGEN_DIR}/sw/autogen/ -cvf ${REG_OUTPUT_AUTOGEN_DIR}/chip_${TOPS}.tar chip
+$(tops_rust_gen): %_rust_gen:
+	mkdir -p ${REG_OUTPUT_AUTOGEN_DIR}
+	${PRJ_DIR}/util/topgen.py -t $(PRJ_DIR)/hw/$*/data/$*.hjson --rust-only -o ${REG_OUTPUT_AUTOGEN_DIR}/ --version-stamp ${version_path} ${toolflags}
+
+topgen_rust_pkg: topgen_rust $(tops_rust_pkg_gen)
+
+$(tops_rust_pkg_gen): %_rust_pkg_gen:
+	tar -C ${REG_OUTPUT_AUTOGEN_DIR}/sw/autogen/ -cvf ${REG_OUTPUT_AUTOGEN_DIR}/chip_$*.tar chip
 
 top: $(tops_gen) $(tops_reg)
+
 $(tops_gen): %_gen:
 	${PRJ_DIR}/util/topgen.py -t $(top-hjson) -o ${PRJ_DIR}/hw/$*/ ${toolflags} ${ENTROPY_BUFFER}
 
