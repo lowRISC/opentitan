@@ -1,0 +1,59 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Azure template for building a CW310 bitstream
+
+parameters:
+- name: top_name
+  type: string
+
+steps:
+- template: ./checkout-template.yml
+- template: ./install-package-dependencies.yml
+- bash: |
+    ci/scripts/get-bitstream-strategy.sh "@bitstreams//:chip_${{ parameters.top_name }}_cw310_bitstream" ':!/sw/' ':!/*testplan.hjson' ':!/site/' ':!/doc/' ':!/COMMITTERS' ':!/CLA' ':!/*.md' ':!/hw/**/dv/*'
+  displayName: Configure bitstream strategy
+- bash: |
+    set -ex
+    module load "xilinx/vivado/$(VIVADO_VERSION)"
+    ci/scripts/prepare-cached-bitstream.sh
+  condition: eq(variables.bitstreamStrategy, 'cached')
+  displayName: Splice cached bitstream
+- bash: |
+    set -ex
+    trap 'get_logs' EXIT
+    get_logs() {
+      SUB_PATH="hw/top_${{ parameters.top_name }}"
+      mkdir -p "$OBJ_DIR/$SUB_PATH" "$BIN_DIR/$SUB_PATH"
+      cp -rLvt "$OBJ_DIR/$SUB_PATH/" \
+        $($REPO_TOP/bazelisk.sh outquery-all //hw/top_${{ parameters.top_name }}/bitstream/vivado:fpga_cw310)
+      cp -rLvt "$BIN_DIR/$SUB_PATH/" \
+        $($REPO_TOP/bazelisk.sh outquery-all //hw/top_${{ parameters.top_name }}/bitstream/vivado:standard)
+      # Rename bitstreams to be compatible with subsequent steps
+      # TODO(#13807): replace this after choosing a naming scheme
+      mv "$BIN_DIR/$SUB_PATH/lowrisc_systems_chip_${{ parameters.top_name }}_cw310_0.1.bit" "$BIN_DIR/$SUB_PATH/lowrisc_systems_chip_${{ parameters.top_name }}_cw310_0.1.bit.orig"
+    }
+
+    . util/build_consts.sh
+    module load "xilinx/vivado/$(VIVADO_VERSION)"
+    ci/bazelisk.sh build //hw/top_${{ parameters.top_name }}/bitstream/vivado:standard
+  condition: ne(variables.bitstreamStrategy, 'cached')
+  displayName: Build and splice bitstream with Vivado
+- bash: |
+    . util/build_consts.sh
+    echo "Synthesis log"
+    cat $OBJ_DIR/hw/top_${{ parameters.top_name }}/build.fpga_cw310/synth-vivado/lowrisc_systems_chip_${{ parameters.top_name }}_cw310_0.1.runs/synth_1/runme.log || true
+
+    echo "Implementation log"
+    cat $OBJ_DIR/hw/top_${{ parameters.top_name }}/build.fpga_cw310/synth-vivado/lowrisc_systems_chip_${{ parameters.top_name }}_cw310_0.1.runs/impl_1/runme.log || true
+  condition: ne(variables.bitstreamStrategy, 'cached')
+  displayName: Display synthesis & implementation logs
+- template: ./upload-artifacts-template.yml
+  parameters:
+    includePatterns:
+      - "/hw/***"
+- publish: "$(Build.ArtifactStagingDirectory)"
+  artifact: chip_${{ parameters.top_name }}_cw310-build-out
+  displayName: Upload artifacts for CW310
+  condition: failed()
