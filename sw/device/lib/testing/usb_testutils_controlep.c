@@ -10,7 +10,7 @@
 #include "sw/device/lib/testing/usb_testutils.h"
 
 // Device descriptor
-static uint8_t dev_dscr[] = {
+static const uint8_t kDevDscr[] = {
     18,    // bLength
     1,     // bDescriptorType
     0x00,  // bcdUSB[0]
@@ -116,12 +116,13 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
     case kUsbSetupReqGetDescriptor:
       if ((wValue & 0xff00) == 0x100) {
         // Device descriptor
-        len = sizeof(dev_dscr);
+        len = sizeof(kDevDscr);
         if (wLength < len) {
           len = wLength;
         }
-        CHECK_DIF_OK(dif_usbdev_buffer_write(ctx->dev, &buffer, dev_dscr, len,
+        CHECK_DIF_OK(dif_usbdev_buffer_write(ctx->dev, &buffer, kDevDscr, len,
                                              &bytes_written));
+        CHECK(bytes_written == len);
         CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
         return kUsbTestutilsCtWaitIn;
       } else if ((wValue & 0xff00) == 0x200) {
@@ -164,16 +165,10 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
     case kUsbSetupReqSetConfiguration:
       TRC_S("SC");
       // only ever expect this to be 1 since there is one config descriptor
-      ctctx->usb_config = (uint8_t)wValue;
+      ctctx->new_config = (uint8_t)wValue;
       // send zero length packet for status phase
       CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
-      if (wValue) {
-        ctctx->device_state = kUsbTestutilsDeviceConfigured;
-      } else {
-        // Device deconfigured
-        ctctx->device_state = kUsbTestutilsDeviceAddressed;
-      }
-      return kUsbTestutilsCtStatIn;
+      return kUsbTestutilsCtCfgStatIn;
 
     case kUsbSetupReqGetConfiguration:
       len = sizeof(ctctx->usb_config);
@@ -202,8 +197,10 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
                                                       kDifToggleDisabled));
         // send zero length packet for status phase
         CHECK_DIF_OK(dif_usbdev_send(ctx->dev, ctctx->ep, &buffer));
+        return kUsbTestutilsCtStatIn;
       }
-      return kUsbTestutilsCtStatIn;
+      // We must return a Request Error (STALL in response to Status stage)
+      return kUsbTestutilsCtError;  // unknown
 
     case kUsbSetupReqGetStatus:
       len = 2;
@@ -293,12 +290,25 @@ static status_t ctrl_tx_done(void *ctctx_v, usb_testutils_xfr_result_t result) {
   TRC_C('A' + ctctx->ctrlstate);
   switch (ctctx->ctrlstate) {
     case kUsbTestutilsCtAddrStatIn:
-      // Now the status was sent on device 0 can switch to new device ID
+      // Now the Status was sent on Endpoint Zero, the device can switch to new
+      // Device Address
       TRY(dif_usbdev_address_set(ctx->dev, ctctx->new_dev));
       TRC_I(ctctx->new_dev, 8);
       ctctx->ctrlstate = kUsbTestutilsCtIdle;
       // We now have a device address on the USB
       ctctx->device_state = kUsbTestutilsDeviceAddressed;
+      return OK_STATUS();
+    case kUsbTestutilsCtCfgStatIn:
+      // Now the Status was sent on Endpoint Zero, the new configuration has
+      // been (de)selected.
+      ctctx->usb_config = ctctx->new_config;
+      ctctx->ctrlstate = kUsbTestutilsCtIdle;
+      if (ctctx->new_config) {
+        ctctx->device_state = kUsbTestutilsDeviceConfigured;
+      } else {
+        // Device deconfigured
+        ctctx->device_state = kUsbTestutilsDeviceAddressed;
+      }
       return OK_STATUS();
     case kUsbTestutilsCtStatIn:
       ctctx->ctrlstate = kUsbTestutilsCtIdle;
@@ -376,8 +386,9 @@ static status_t ctrl_rx(void *ctctx_v, dif_usbdev_rx_packet_info_t packet_info,
   TRY(dif_usbdev_endpoint_stall_enable(ctx->dev, endpoint, kDifToggleEnabled));
   endpoint.direction = USBDEV_ENDPOINT_DIR_OUT;
   TRY(dif_usbdev_endpoint_stall_enable(ctx->dev, endpoint, kDifToggleEnabled));
+
   TRC_S("USB: unCT ");
-  TRC_I((ctctx->ctrlstate << 24) | ((int)packet_info.is_setup << 16) |
+  TRC_I((ctctx->ctrlstate << 24) | ((uint32_t)packet_info.is_setup << 16) |
             packet_info.length,
         32);
   if (buffer.type != kDifUsbdevBufferTypeStale) {
@@ -393,6 +404,9 @@ static status_t ctrl_reset(void *ctctx_v) {
   usb_testutils_controlep_ctx_t *ctctx =
       (usb_testutils_controlep_ctx_t *)ctctx_v;
   ctctx->ctrlstate = kUsbTestutilsCtIdle;
+  // We have lost any device address that we were assigned; the device has
+  // cleared its own copy of the device address automatically.
+  ctctx->device_state = kUsbTestutilsDeviceDefault;
   return OK_STATUS();
 }
 
