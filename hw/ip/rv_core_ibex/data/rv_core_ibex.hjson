@@ -393,7 +393,7 @@
     { name: "NumRegions",
       desc: "Number of translatable regions per ibex bus",
       type: "int",
-      default: "2",
+      default: "32",
       local: "true"
     },
     { name:    "NumScratchWords",

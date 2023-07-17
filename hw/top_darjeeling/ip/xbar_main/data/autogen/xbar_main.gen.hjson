@@ -574,7 +574,7 @@
       [
         {
           base_addr: 0x411f0000
-          size_byte: 0x100
+          size_byte: 0x800
         }
       ]
       xbar: false

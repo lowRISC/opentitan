@@ -670,7 +670,7 @@ pub const TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR: usize = 0x411F0000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR and
 /// `TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR + TOP_DARJEELING_RV_CORE_IBEX_CFG_SIZE_BYTES`.
-pub const TOP_DARJEELING_RV_CORE_IBEX_CFG_SIZE_BYTES: usize = 0x100;
+pub const TOP_DARJEELING_RV_CORE_IBEX_CFG_SIZE_BYTES: usize = 0x800;
 
 /// Memory base address for ram_ret_aon in top darjeeling.
 pub const RAM_RET_AON_BASE_ADDR: usize = 0x40600000;

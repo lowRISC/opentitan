@@ -508,7 +508,7 @@ package top_darjeeling_pkg;
   /**
    * Peripheral size in bytes for cfg device on rv_core_ibex in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_RV_CORE_IBEX_CFG_SIZE_BYTES = 32'h100;
+  parameter int unsigned TOP_DARJEELING_RV_CORE_IBEX_CFG_SIZE_BYTES = 32'h800;
 
   /**
    * Memory base address for ram_ret_aon in top darjeeling.

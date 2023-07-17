@@ -508,7 +508,7 @@ package top_earlgrey_pkg;
   /**
    * Peripheral size in bytes for cfg device on rv_core_ibex in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_RV_CORE_IBEX_CFG_SIZE_BYTES = 32'h100;
+  parameter int unsigned TOP_EARLGREY_RV_CORE_IBEX_CFG_SIZE_BYTES = 32'h800;
 
   /**
    * Memory base address for ram_ret_aon in top earlgrey.
