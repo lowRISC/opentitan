@@ -10,7 +10,8 @@ The memory map definition file for top_earlgrey is currently located at `hw/ip/o
 The script can either be invoked via the makefile
 ```console
 $ cd ${PROJ_ROOT}
-$ make -C hw otp-mmap TOP=top_earlgrey
+$ make -C hw otp-mmap
+
 ```
 
 or directly using the command
@@ -31,7 +32,7 @@ The life cycle definition file for top_earlgrey is currently located at `hw/ip/l
 The script can either be invoked via the makefile
 ```console
 $ cd ${PROJ_ROOT}
-$ make -C hw lc-state-enc TOP=top_earlgrey
+$ make -C hw lc-state-enc
 
 ```
 
@@ -175,3 +176,4 @@ TODO
 ## KECCAK Coefficient Generation Tool
 
 TODO
+

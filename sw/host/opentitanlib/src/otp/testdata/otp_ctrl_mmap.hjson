@@ -10,7 +10,7 @@
 // Make sure to regenerate the CSRs after converting the memory map:
 //
 // $ cd ${PROJ_ROOT}
-// $ make -C hw regs TOP=<select_top_here>
+// $ make -C hw regs
 //
 
 {

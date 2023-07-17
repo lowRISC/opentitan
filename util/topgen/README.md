@@ -72,7 +72,7 @@ This can be done through direct invocation, or the `${REPO_TOP}/hw` makefile.
 The example below shows the latter:
 ```console
 $ cd ${REPO_TOP}
-$ make -C hw top TOP=top_earlgrey
+$ make -C hw top
 
 ```
 

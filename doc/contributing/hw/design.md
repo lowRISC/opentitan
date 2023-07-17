@@ -104,7 +104,7 @@ The sections below show how to do items 2-4.
 ### Update TOP
 
 ```console
-$ make -C hw top TOP=top_earlgrey
+$ make -C hw top
 ```
 
 After you revise the IP `.hjson`, IP top module, IP register interface, and DV testbench `tb.sv`, you can re-generate top-levels with the command above.

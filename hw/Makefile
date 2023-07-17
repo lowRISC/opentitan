@@ -44,11 +44,7 @@ IPS ?= aes           \
        uart          \
        usbdev
 
-TOP ?= ""
-ifeq ($(TOP),"")
-	INVALID_TOP := "Must select a valid top-level as TOP=%s {top_earlgrey,top_darjeeling}"
-  $(error ERROR: $(INVALID_TOP))
-endif
+TOPS ?= top_earlgrey
 
 USE_BUFFER ?= 0
 
@@ -79,9 +75,9 @@ ips_reg_header = $(addsuffix _reg_header, $(local_ips))
 ips_reg_rust   = $(foreach ip,$(local_ips),$(REG_OUTPUT_SW_DIR)/$(ip)_reg_constants.rs)
 
 # Per-top targets (all phonies)
-tops_gen = $(addsuffix _gen,$(TOP))
-tops_reg = $(addsuffix _reg,$(TOP))
-tops_rust_gen = $(addsuffix _gen,$(TOP))
+tops_gen = $(addsuffix _gen,$(TOPS))
+tops_reg = $(addsuffix _reg,$(TOPS))
+tops_rust_gen = $(addsuffix _gen,$(TOPS))
 
 # Targets for installing files into TOCK_ROOT (empty if TOCK_ROOT is not defined)
 ifneq ($(TOCK_ROOT),)
@@ -144,7 +140,7 @@ clean-regs-header:
 top-hjson = $(PRJ_DIR)/hw/$*/data/$*.hjson
 version_out_dir = $(PRJ_DIR)/build
 version_path = $(version_out_dir)/workspace_status.txt
-top_chip_hjson = $(PRJ_DIR)/hw/$(TOP)/data/$(TOP).hjson
+top_chip_hjson = $(PRJ_DIR)/hw/$(TOPS)/data/$(TOPS).hjson
 
 $(version_out_dir):
 	mkdir -p $@
@@ -157,7 +153,7 @@ topgen_rust: workspace_status
 	${PRJ_DIR}/util/topgen.py -t $(top_chip_hjson) --rust-only -o ${REG_OUTPUT_AUTOGEN_DIR}/ --version-stamp ${version_path} ${toolflags}
 
 topgen_rust_pkg: topgen_rust
-	tar -C ${REG_OUTPUT_AUTOGEN_DIR}/sw/autogen/ -cvf ${REG_OUTPUT_AUTOGEN_DIR}/chip_${TOP}.tar chip
+	tar -C ${REG_OUTPUT_AUTOGEN_DIR}/sw/autogen/ -cvf ${REG_OUTPUT_AUTOGEN_DIR}/chip_${TOPS}.tar chip
 
 top: $(tops_gen) $(tops_reg)
 $(tops_gen): %_gen:

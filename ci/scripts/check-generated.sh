@@ -3,8 +3,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-TOP=$1
-
 # Returns 0 if there are no changes or untracked files, 1 otherwise.
 # Show the diff on STDOUT if there's deviation.
 is_clean() {
@@ -45,7 +43,7 @@ gen_and_check_clean() {
 
 # A specialized version of gen_and_check_clean for targets of the Makefile in hw
 gen_hw_and_check_clean() {
-    gen_and_check_clean "$1" make -k -C hw "$2" "TOP=${TOP}"
+    gen_and_check_clean "$1" make -k -C hw "$2"
 }
 
 # Check generated files are up to date
