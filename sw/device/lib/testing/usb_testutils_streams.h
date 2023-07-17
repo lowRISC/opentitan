@@ -116,13 +116,38 @@ static_assert(sizeof(usbdev_stream_sig_t) == 0x10U,
               "Host-side code relies upon signature structure");
 
 /**
+ * Transmission state.
+ */
+typedef struct usbdev_stream_tx {
+  /**
+   * Is a signature required at the start of the next packet?
+   */
+  bool sig_required;
+  /**
+   * Transmission Sequence Number (for Isochronous streams)
+   */
+  uint16_t seq;
+  /**
+   * Transmission Linear Feedback Shift Register (for PRND data generation)
+   */
+  uint8_t lfsr;
+  /**
+   * Total number of bytes presented to the USB device for transmission
+   */
+  uint32_t bytes;
+  /**
+   * Transmission-side LFSR for selection of buffer size
+   */
+  uint8_t buf_size;
+} usbdev_stream_tx_t;
+
+/**
  * Context state for a single stream
+ *
+ * Note: this state information is stored/loaded as-is over suspend/resume
+ *       operations.
  */
 typedef struct usbdev_stream {
-  /**
-   * Pointer to test context; callback functions receive only stream pointer
-   */
-  usb_testutils_streams_ctx_t *ctx;
   /**
    * Stream IDentifier
    */
@@ -132,29 +157,13 @@ typedef struct usbdev_stream {
    */
   usb_testutils_transfer_type_t xfr_type;
   /**
-   * Is a signature required at the start of the next packet?
-   */
-  bool sig_required;
-  /**
    * USB device endpoint being used for data transmission
    */
   uint8_t tx_ep;
   /**
-   * Transmission Sequence Number (for Isochronous streams)
+   * Current transmission state.
    */
-  uint16_t tx_seq;
-  /**
-   * Transmission Linear Feedback Shift Register (for PRND data generation)
-   */
-  uint8_t tx_lfsr;
-  /**
-   * Total number of bytes presented to the USB device for transmission
-   */
-  uint32_t tx_bytes;
-  /**
-   * Transmission-side LFSR for selection of buffer size
-   */
-  uint8_t tx_buf_size;
+  usbdev_stream_tx_t tx;
   /**
    * USB device endpoint being used for data reception
    */
@@ -205,6 +214,22 @@ typedef struct usbdev_stream {
 } usbdev_stream_t;
 
 /**
+ * Context state for callback function; callback is stream-specific but also
+ * needs to locate the enclosing streaming context.
+ */
+typedef struct {
+  /**
+   * Pointer to the enclosing streaming context; callback functions receive
+   * only per-stream pointer
+   */
+  usb_testutils_streams_ctx_t *ctx;
+  /**
+   * Pointer to the stream itself.
+   */
+  usbdev_stream_t *s;
+} usbdev_stream_cb_t;
+
+/**
  * Context state for streaming test
  */
 struct usb_testutils_streams_ctx {
@@ -220,6 +245,10 @@ struct usb_testutils_streams_ctx {
    * State information for each of the test streams
    */
   usbdev_stream_t streams[USBUTILS_STREAMS_MAX];
+  /**
+   * Callback information for each of the test streamms
+   */
+  usbdev_stream_cb_t cb[USBUTILS_STREAMS_MAX];
   /**
    * Per-endpoint limits on the number of buffers that may be queued for
    * transmission
