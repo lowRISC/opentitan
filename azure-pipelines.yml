@@ -395,6 +395,19 @@ jobs:
       make -C hw/ip/otbn/util asm-check
     displayName: Assemble & link code snippets
 
+- job: chip_darjeeling_cw310
+  displayName: CW310's Darjeeling Bitstream
+  # Build CW310 variant of the Darjeeling toplevel design using Vivado
+  dependsOn:
+    - lint
+  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
+  pool: ci-public-eda
+  timeoutInMinutes: 240
+  steps:
+  - template: ci/cw310-template.yml
+    parameters:
+      top_name: darjeeling
+
 - job: chip_earlgrey_cw310
   displayName: CW310's Earl Grey Bitstream
   # Build CW310 variant of the Earl Grey toplevel design using Vivado
@@ -585,6 +598,7 @@ jobs:
     - lint
     - sw_build
     - execute_verilated_tests
+    - chip_darjeeling_cw310
     - chip_earlgrey_cw310
     - chip_englishbreakfast_verilator
   condition: and(eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
@@ -596,6 +610,7 @@ jobs:
       downloadPartialBuildBinFrom:
         - sw_build
         - execute_verilated_tests
+        - chip_darjeeling_cw310
         - chip_earlgrey_cw310
         - chip_englishbreakfast_verilator
   - bash: |
