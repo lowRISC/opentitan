@@ -121,6 +121,14 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // it will be updated in chip_base_test::build
   uint flash_write_latency_in_us = 0;
 
+  // Add early cpu init
+  // early_cpu_init has been introduced to address the issue
+  // that cpu_init is called during the boot time when pre_start task takes too long
+  // to finish.
+  // When this knob is set, call cpu_init task during reset period, chip_base_vseq::dut_init,
+  // and skip cpu_init in chip_sw_base_vseq::body
+  bit early_cpu_init = 0;
+
   // NOTE: The clk_freq_mhz variable created in the base class was meant to be used by clk_rst_vif
   // interface that is passed by default by the testbench (retrieved by dv_base_env class). It was
   // meant for a CIP-compliant testbench to drive the clock and reset to the DUT. The chip level
