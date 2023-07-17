@@ -48,6 +48,7 @@ bool test_main(void) {
                      &otp, kDifOtpCtrlPartitionVendorTest, 0x10 + i, word),
                  "Failed to program word kTestData[%d] = 0x%08x.", i, word);
   }
+  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
 
   uint32_t readout[ARRAYSIZE(kTestData) / sizeof(uint32_t)] = {0};
   CHECK_DIF_OK(dif_otp_ctrl_read_blocking(&otp, kDifOtpCtrlPartitionVendorTest,
