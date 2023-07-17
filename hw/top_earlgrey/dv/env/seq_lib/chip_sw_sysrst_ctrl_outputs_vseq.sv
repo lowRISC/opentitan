@@ -70,6 +70,8 @@ class chip_sw_sysrst_ctrl_outputs_vseq extends chip_sw_base_vseq;
   virtual task sync_with_sw();
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
+    // Wait some additional aon cycles for the synchronizers.
+    cfg.chip_vif.aon_clk_por_rst_if.wait_clks(3);
   endtask
 
   virtual task check_loopback_pattern();
