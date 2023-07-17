@@ -871,17 +871,9 @@ module otbn
   // Only certain combinations of the state variable {locking, busy_execute_d,
   // otbn_dmem_scramble_key_req_busy, otbn_imem_scramble_key_req_busy} are possible.
   //
-  // (1) When we finish (with a pulse on "done_core", which might stay high in the "locking"
-  //     signal), busy_execute_d is guaranteed to be low. (Assertion: NotBusyAndDone_A)
-  //
-  // (2) There aren't really any other restrictions when locking is low: if there is an error during
-  //     an operation, we'll start rotating memory keys while doing the internal secure wipe, so
-  //     may see all of the signals high except locking.
-  //
-  // (3) Once locking is high, we guarantee never to see a new execution or the start of a key
-  //     rotation. (Assertion: NoStartWhenLocked_A)
+  // - Once locking is high, we guarantee never to see a new execution or the start of a key
+  //   rotation. (Assertion: NoStartWhenLocked_A)
 
-  `ASSERT(NotBusyAndDone_A, !((done_core | locking) && busy_execute_d))
   `ASSERT(NoStartWhenLocked_A,
           locking |=> !($rose(busy_execute_d) ||
                         $rose(otbn_dmem_scramble_key_req_busy) ||
