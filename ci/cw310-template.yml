@@ -17,7 +17,7 @@ steps:
 - bash: |
     set -ex
     module load "xilinx/vivado/$(VIVADO_VERSION)"
-    ci/scripts/prepare-cached-bitstream.sh
+    ci/scripts/prepare-cached-bitstream.sh ${{ parameters.top_name }}
   condition: eq(variables.bitstreamStrategy, 'cached')
   displayName: Splice cached bitstream
 - bash: |
