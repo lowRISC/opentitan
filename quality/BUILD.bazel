@@ -4,7 +4,7 @@
 
 load("@ot_hack_bazelbuild_buildtools//buildifier:def.bzl", "buildifier", "buildifier_test")
 load("@lowrisc_lint//rules:rules.bzl", "licence_test")
-load("//rules:quality.bzl", "clang_format_check", "clang_format_test", "clang_tidy_rv_test", "clang_tidy_test", "html_coverage_report")
+load("//rules:quality.bzl", "clang_format_check", "clang_format_test", "clang_tidy_rv_test", "clang_tidy_test", "html_coverage_report", "rustfmt_fix")
 load("@rules_rust//rust:defs.bzl", "rustfmt_test")
 
 package(default_visibility = ["//visibility:public"])
@@ -80,7 +80,7 @@ licence_test(
     workspace = "//:WORKSPACE",
 )
 
-clang_format_exclude = [
+format_exclude = [
     # Vendored source code dirs
     "./**/vendor/**",
     # Rust cargo build dirs
@@ -94,14 +94,14 @@ clang_format_exclude = [
 
 clang_format_test(
     name = "clang_format_check",
-    exclude_patterns = clang_format_exclude,
+    exclude_patterns = format_exclude,
     mode = "diff",
     workspace = "//:WORKSPACE",
 )
 
 clang_format_check(
     name = "clang_format_fix",
-    exclude_patterns = clang_format_exclude,
+    exclude_patterns = format_exclude,
     mode = "fix",
 )
 
@@ -189,6 +189,11 @@ RUST_TARGETS = [
 rustfmt_test(
     name = "rustfmt_check",
     targets = RUST_TARGETS,
+)
+
+rustfmt_fix(
+    name = "rustfmt_fix",
+    exclude_patterns = format_exclude,
 )
 
 html_coverage_report(

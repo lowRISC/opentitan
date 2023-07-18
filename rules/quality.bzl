@@ -389,3 +389,62 @@ modid_check_aspect = aspect(
         ),
     },
 )
+
+def _rustfmt_impl(ctx):
+    # See rules/ujson.bzl
+    rustfmt_files = ctx.attr._rustfmt.data_runfiles.files.to_list()
+    rustfmt = [f for f in rustfmt_files if f.basename == "rustfmt"][0]
+
+    out_file = ctx.actions.declare_file(ctx.label.name + ".bash")
+    exclude_patterns = ["\\! -path {}".format(shell.quote(p)) for p in ctx.attr.exclude_patterns]
+    include_patterns = ["-name {}".format(shell.quote(p)) for p in ctx.attr.patterns]
+    workspace = ctx.file.workspace.path if ctx.file.workspace else ""
+    substitutions = {
+        "@@EXCLUDE_PATTERNS@@": " ".join(exclude_patterns),
+        "@@INCLUDE_PATTERNS@@": " -o ".join(include_patterns),
+        "@@RUSTFMT@@": shell.quote(rustfmt.short_path),
+        "@@WORKSPACE@@": workspace,
+    }
+    ctx.actions.expand_template(
+        template = ctx.file._runner,
+        output = out_file,
+        substitutions = substitutions,
+        is_executable = True,
+    )
+
+    files = [rustfmt]
+    if ctx.file.workspace:
+        files.append(ctx.file.workspace)
+
+    return DefaultInfo(
+        runfiles = ctx.runfiles(files = files),
+        executable = out_file,
+    )
+
+rustfmt_attrs = {
+    "patterns": attr.string_list(
+        default = ["*.rs"],
+        doc = "Filename patterns for format checking",
+    ),
+    "exclude_patterns": attr.string_list(
+        doc = "Filename patterns to exlucde from format checking",
+    ),
+    "workspace": attr.label(
+        allow_single_file = True,
+        doc = "Label of the WORKSPACE file",
+    ),
+    "_runner": attr.label(
+        default = "//rules/scripts:rustfmt.template.sh",
+        allow_single_file = True,
+    ),
+    "_rustfmt": attr.label(
+        default = "@rules_rust//rust/toolchain:current_rustfmt_files",
+        cfg = "exec",
+    ),
+}
+
+rustfmt_fix = rule(
+    implementation = _rustfmt_impl,
+    attrs = rustfmt_attrs,
+    executable = True,
+)
