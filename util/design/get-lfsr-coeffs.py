@@ -8,22 +8,22 @@ import os
 import shutil
 import subprocess
 import sys
-
 import wget
 
-USAGE = """./get_lfsr_coeffs.py [-t <temporary folder>] [-o <outfile>] [-f] [--fib]
+USAGE = """./get_lfsr_coeffs.py [-t <temporary folder>] [-o <outfile>] [-f] [--fib <pdf file>]
 
-Downloads LFSR constants from [1] and dumps them in SystemVerilog format
-(for use in prim_lfsr.sv). These coeffs are for a Galois XOR type LFSR, and cover
+Downloads LFSR constants from [1] and dumps them in SystemVerilog format (for
+use in prim_lfsr.sv). These coeffs are for a Galois XOR type LFSR, and cover
 implementations ranging from 4 to 64bits.
 
-Alternatively, the script can also extract the XNOR Fibonacci type LFSR coefficients
-from the XILINX application note 52 [2] by specifying the --fib switch. Note that this
-depends on the pdftotext utility for Linux.
+Alternatively, the script can also extract the XNOR Fibonacci type LFSR
+coefficients from the Xilinx application note 52 [2] by specifying the --fib
+<pdf file> switch. The pdf has to be downloaded manually from [2] first. Note
+that this depends on the pdftotext utility for Linux.
 
 [1] https://users.ece.cmu.edu/~koopman/lfsr/
 
-[2] https://www.xilinx.com/support/documentation/application_notes/xapp052.pdf
+[2] https://docs.xilinx.com/v/u/en-US/xapp052
 """
 
 # configuration for Galois
@@ -32,8 +32,6 @@ MAX_LFSR_LEN = 64
 BASE_URL = 'https://users.ece.cmu.edu/~koopman/lfsr/'
 
 # configuration for Fibonacci
-FIB_URL = 'https://www.xilinx.com/support/documentation/application_notes/xapp052.pdf'
-PDF_NAME = 'xapp052'
 LINE_FILTER = [
     'Table 3: Taps for Maximum-Length LFSR Counters',
     'XAPP 052 July 7,1996 (Version 1.1)'
@@ -89,15 +87,17 @@ def main():
     parser.add_argument(
         '-t',
         '--tempfolder',
-        help="""temporary folder to download the lfsr constant files
-to (defaults to lfsr_tmp)""",
+        help="""Temporary folder to download the lfsr constant files
+                to (defaults to ./lfsr_tmp)""",
         default='lfsr_tmp')
     parser.add_argument('--fib',
-                        help='download fibonacci coefficients',
-                        action='store_true')
+                        type=str,
+                        help="""Path to Xilinx Application Note 052 with
+                                Fibonacci coefficients.""",
+                        )
     parser.add_argument('-f',
                         '--force',
-                        help='overwrites tempfolder',
+                        help='Overwrite tempfolder.',
                         action='store_true')
     parser.add_argument('-o',
                         '--output',
@@ -112,21 +112,22 @@ to (defaults to lfsr_tmp)""",
         shutil.rmtree(args.tempfolder)
 
     if not os.path.exists(args.tempfolder):
-        # download coefficient files
         os.makedirs(args.tempfolder, exist_ok=args.force)
-        os.chdir(args.tempfolder)
 
         if args.fib:
             lfsrType = 'FIB_XNOR'
+            pdf_path = os.path.abspath(args.fib)
 
-            wget.download(FIB_URL)
-            cmd = ['pdftotext %s.pdf' % PDF_NAME, '> %s.txt' % PDF_NAME]
+            if not os.path.isfile(pdf_path):
+                print("File %s does not exist" % pdf_path)
+                sys.exit(1)
+
+            os.chdir(args.tempfolder)
+            cmd = ['pdftotext %s %s/xapp052.txt' %
+                   (pdf_path, os.getcwd())]
             subprocess.call(cmd, shell=True)
             print("")
-            cmd = [
-                'grep -A 350 "%s" %s.txt > table.txt' %
-                (LINE_FILTER[0], PDF_NAME)
-            ]
+            cmd = ['grep -A 350 "%s" xapp052.txt > table.txt' % LINE_FILTER[0]]
             subprocess.call(cmd, shell=True)
 
             # parse the table
@@ -158,6 +159,7 @@ to (defaults to lfsr_tmp)""",
 
         else:
             lfsrType = 'GAL_XOR'
+            os.chdir(args.tempfolder)
 
             for k in range(MIN_LFSR_LEN, MAX_LFSR_LEN + 1):
                 url = '%s%d.txt' % (BASE_URL, k)
