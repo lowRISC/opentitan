@@ -20,12 +20,14 @@ merge_base="$(git merge-base origin/$tgt_branch HEAD)" || {
     echo >&2 "Failed to find fork point for origin/$tgt_branch."
     exit 1
 }
-echo "Running Rust lint checks on files changed since $merge_base"
+echo "Checking if Rust files have changed since $merge_base"
+
+trap 'echo "code failed rustfmt_check fix with ./bazelisk.sh run //quality:rustfmt_fix"' ERR
 
 set -o pipefail
-git diff -z --name-only --diff-filter=ACMRTUXB "$merge_base" -- "*.rs" ':!*/vendor/*' | \
-    xargs -0 -r rustfmt --check || {
-    echo -n "##vso[task.logissue type=error]"
-    echo "Rust lint failed."
-    exit 1
-}
+if ! git diff --quiet $merge_base -- "*.rs" ':!*/vendor/*'; then
+    echo "Rust files changed, running Rust lint checks"
+    ./bazelisk.sh test //quality:rustfmt_check --test_output=streamed
+else
+    echo "Rust files unchanged, skipping Rust lint checks"
+fi
