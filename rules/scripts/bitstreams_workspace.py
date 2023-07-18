@@ -25,7 +25,7 @@ import jsonschema
 # The schema version used for legacy cache entries, JSON files missing a version
 # entry, and entries that use a higher version of the schema than supported here
 # (attempted in case there is forwards compatibility).
-MANIFEST_SCHEMA_VERSION = 1
+MANIFEST_SCHEMA_VERSION = 2
 
 # Default location of the bitstreams cache.
 CACHE_DIR = '~/.cache/opentitan-bitstreams'
@@ -265,66 +265,62 @@ class BitstreamCache(object):
         Returns:
             A dictionary mapping file paths to manifest entries
         """
-        output_files = dict()
         legacy_files = {
-            "lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig": {
-                "buildTarget": "//hw/bitstream/vivado:fpga_cw310",
-                "outputInfo": {
-                    "@type": "bitstreamInfo",
-                    "design": "chip_earlgrey_cw310"
-                }
+            "chip_earlgrey_cw310": {
+                "build_id": key,
+                "bitstream": {
+                    "file": "lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig",
+                    "build_target": "//hw/bitstream/vivado:fpga_cw310",
+                },
+                "memory_map_info": {
+                    "otp": {
+                        "file": "otp.mmi",
+                        "build_target": "//hw/bitstream/vivado:fpga_cw310",
+                    },
+                    "rom": {
+                        "file": "rom.mmi",
+                        "build_target": "//hw/bitstream/vivado:fpga_cw310",
+                    },
+                },
             },
-            "otp.mmi": {
-                "buildTarget": "//hw/bitstream/vivado:fpga_cw310",
-                "outputInfo": {
-                    "@type": "memoryMapInfo",
-                    "design": "chip_earlgrey_cw310",
-                    "memoryId": "otp"
-                }
-            },
-            "rom.mmi": {
-                "buildTarget": "//hw/bitstream/vivado:fpga_cw310",
-                "outputInfo": {
-                    "@type": "memoryMapInfo",
-                    "design": "chip_earlgrey_cw310",
-                    "memoryId": "rom"
-                }
-            },
-            "chip_earlgrey_cw310_hyperdebug/"
-            "lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.bit": {
-                "buildTarget": "//hw/bitstream/vivado:fpga_cw310_hyperdebug",
-                "outputInfo": {
-                    "@type": "bitstreamInfo",
-                    "design": "chip_earlgrey_cw310_hyperdebug"
-                }
-            },
-            "chip_earlgrey_cw310_hyperdebug/otp.mmi": {
-                "buildTarget": "//hw/bitstream/vivado:fpga_cw310_hyperdebug",
-                "outputInfo": {
-                    "@type": "memoryMapInfo",
-                    "design": "chip_earlgrey_cw310_hyperdebug",
-                    "memoryId": "otp"
-                }
-            },
-            "chip_earlgrey_cw310_hyperdebug/rom.mmi": {
-                "buildTarget": "//hw/bitstream/vivado:fpga_cw310_hyperdebug",
-                "outputInfo": {
-                    "@type": "memoryMapInfo",
-                    "design": "chip_earlgrey_cw310_hyperdebug",
-                    "memoryId": "rom"
-                }
+            "chip_earlgrey_cw310_hyperdebug": {
+                "build_id": key,
+                "bitstream": {
+                    "file": "chip_earlgrey_cw310_hyperdebug/"
+                            "lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.bit",
+                    "build_target": "//hw/bitstream/vivado:fpga_cw310_hyperdebug",
+                },
+                "memory_map_info": {
+                    "otp": {
+                        "file": "chip_earlgrey_cw310_hyperdebug/otp.mmi",
+                        "build_target": "//hw/bitstream/vivado:fpga_cw310_hyperdebug",
+                    },
+                    "rom": {
+                        "file": "chip_earlgrey_cw310_hyperdebug/rom.mmi",
+                        "build_target": "//hw/bitstream/vivado:fpga_cw310_hyperdebug",
+                    },
+                },
             },
         }
+        designs = collections.defaultdict(dict)
 
-        for legacy_file in legacy_files:
-            if os.path.join("cache", key, legacy_file) in files:
-                output_files[legacy_file] = legacy_files[legacy_file]
+        for design, metadata in legacy_files.items():
+            design_is_present = True
+            required_files = [metadata["bitstream"]["file"]]
+            for mmi in metadata["memory_map_info"].values():
+                required_files.append(mmi["file"])
+            for required_file in required_files:
+                if os.path.join("cache", key, required_file) not in files:
+                    design_is_present = False
+                    break
+            if design_is_present:
+                designs[design] = metadata
 
-        manifest = {"schemaVersion": MANIFEST_SCHEMA_VERSION, "buildId": key,
-                    "outputFiles": output_files}
+        manifest = {"schema_version": MANIFEST_SCHEMA_VERSION,
+                    "designs": designs}
         return manifest
 
-    def GetFromCache(self, key: str) -> Dict:
+    def GetFromCache(self, key: str) -> (Dict, Path):
         """Get the requested bitstream files manifest.
 
         Args:
@@ -342,21 +338,26 @@ class BitstreamCache(object):
             logging.warning("No manifest found."
                             " Attempting to generate manifest from legacy file"
                             " paths.")
-            return self._GenerateLegacyManifest(key, files)
+            return (self._GenerateLegacyManifest(key, files), None)
 
         with open(manifest_path, "r") as manifest_file:
             manifest = json.load(manifest_file)
 
-        if "schemaVersion" not in manifest:
+        if "schema_version" not in manifest:
             logging.error("schema is missing a version number."
                           " Generating legacy manifest instead...")
-            return self._GenerateLegacyManifest(key, files)
+            return (self._GenerateLegacyManifest(key, files), None)
 
-        return manifest
+        return (manifest, manifest_path)
 
     @staticmethod
     def _GetDateTimeStr():
         return datetime.datetime.now().isoformat()
+
+    @staticmethod
+    def _WriteSubstituteManifest(contents: Dict, path: Path):
+        with open(path, "w") as manifest_file:
+            json.dump(contents, manifest_file, indent=True)
 
     def _ConstructBazelString(self, build_file: Path, key: str) -> str:
         # If `key` passed in is "latest", this updates the `key` to be the hash
@@ -364,32 +365,30 @@ class BitstreamCache(object):
         if key == 'latest':
             key = self.available['latest']
 
-        manifest = self.GetFromCache(key)
+        (manifest, manifest_path) = self.GetFromCache(key)
+
+        # Schema version 1 was never used and is not valid
+        if manifest["schema_version"] <= 1:
+            msg_template = "Invalid schema_version {} found in manifest"
+            raise Exception(msg_template.format(manifest["schema_version"]))
+
         designs = collections.defaultdict(dict)
-        if manifest["schemaVersion"] > MANIFEST_SCHEMA_VERSION:
+        if manifest["schema_version"] > MANIFEST_SCHEMA_VERSION:
             logging.warning("Warning: Manifest is newer than available schemas")
             logging.warning("Will try parsing an available schema with highest version")
-            manifest["schemaVersion"] = MANIFEST_SCHEMA_VERSION
+            manifest["schema_version"] = MANIFEST_SCHEMA_VERSION
 
-        if manifest["schemaVersion"] == 1:
+        if manifest["schema_version"] == 2:
             schema_path = os.path.join(MANIFESTS_DIR, "bitstreams_manifest.schema.json")
             with open(schema_path) as schema_file:
                 schema = json.load(schema_file)
             jsonschema.validate(manifest, schema)
-            output_files = manifest["outputFiles"]
-            for output in output_files:
-                metadata = output_files[output]["outputInfo"]
-                design_name = metadata["design"]
-                design = designs[design_name]
-
-                if metadata["@type"] == "bitstreamInfo":
-                    design["bitstream"] = output
-                elif metadata["@type"] == "memoryMapInfo":
-                    mmi_id = metadata["memoryId"] + "_mmi"
-                    if mmi_id in design:
-                        logging.error("Unexpected duplicate memoryId " + metadata["memoryId"])
-                        sys.exit(1)
-                    design[mmi_id] = output
+            for design_name, metadata in manifest["designs"].items():
+                design = collections.defaultdict(dict)
+                design["bitstream"] = metadata["bitstream"]["file"]
+                for mmi_id, mmi_entry in metadata["memory_map_info"].items():
+                    design[mmi_id + "_mmi"] = mmi_entry["file"]
+                designs[design_name] = design
 
         bazel_lines = [
             '# This file was autogenerated. Do not edit!',
@@ -439,6 +438,13 @@ class BitstreamCache(object):
 
                 bazel_lines += filegroup_lines(target_name, target_file)
 
+        if manifest_path is None:
+            # Write substitute manifest if none came with the cache entry.
+            manifest_path = os.path.join(cache_base_dir,
+                                         "substitute_manifest.json")
+            self._WriteSubstituteManifest(manifest, manifest_path)
+
+        bazel_lines += filegroup_lines("manifest", manifest_path)
         return '\n'.join(bazel_lines)
 
     def WriteBuildFile(self, build_file: Path, key: str) -> str:
