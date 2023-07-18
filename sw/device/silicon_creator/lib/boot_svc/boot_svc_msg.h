@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_empty.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_header.h"
+#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_next_boot_bl0_slot.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,6 +30,14 @@ typedef union boot_svc_msg {
    * Empty boot services message.
    */
   boot_svc_empty_t empty;
+  /**
+   * Next Boot BL0 Slot request message.
+   */
+  boot_svc_next_boot_bl0_slot_req_t next_boot_bl0_slot_req;
+  /**
+   * Next Boot BL0 Slot response message.
+   */
+  boot_svc_next_boot_bl0_slot_res_t next_boot_bl0_slot_res;
 } boot_svc_msg_t;
 // TODO: Add an assertion for checking that CHIP_BOOT_SVC_MSG_SIZE_MAX is
 // up to date after defining structs for other messages.
