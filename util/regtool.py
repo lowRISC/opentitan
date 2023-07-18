@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 from reggen import (
-    gen_cfg_md, gen_cheader, gen_dv, gen_fpv, gen_md, gen_json, gen_rtl,
+    gen_cfg_md, gen_cheader, gen_dv, gen_fpv, gen_md, gen_html, gen_json, gen_rtl,
     gen_rust, gen_sec_cm_testplan, gen_selfdoc, gen_tock, version,
 )
 from reggen.countermeasure import CounterMeasure
@@ -69,6 +69,9 @@ def main():
     parser.add_argument('--interfaces',
                         action='store_true',
                         help='Output interfaces documentation (markdown)')
+    parser.add_argument('--doc-html-old',
+                        action='store_true',
+                        help='Output html documentation (depreciated)')
     parser.add_argument('--doc',
                         action='store_true',
                         help='Output source file documentation (markdown)')
@@ -159,7 +162,8 @@ def main():
                      ('f', ('fpv', 'fpv/vip')), ('cdefines', ('cdh', None)),
                      ('sec_cm_testplan', ('sec_cm_testplan', 'data')),
                      ('rust', ('rs', None)), ('tock', ('trs', None)),
-                     ('interfaces', ('interfaces', None))]
+                     ('interfaces', ('interfaces', None)),
+                     ('doc_html_old', ('doc_html_old', None))]
     fmt = None
     dirspec = None
     for arg_name, spec in arg_to_format:
@@ -299,6 +303,8 @@ def main():
                 return gen_md.gen_md(obj, outfile)
             elif fmt == 'interfaces':
                 return gen_cfg_md.gen_cfg_md(obj, outfile)
+            elif fmt == 'doc_html_old':
+                return gen_html.gen_html(obj, outfile)
             elif fmt == 'cdh':
                 return gen_cheader.gen_cdefines(obj, outfile, src_lic,
                                                 src_copy)
