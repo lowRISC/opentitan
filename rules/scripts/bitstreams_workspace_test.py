@@ -34,7 +34,7 @@ class TestBitstreamCache(unittest.TestCase):
                                offline=True)
         cache.InitRepository = unittest.mock.MagicMock(name='method')
 
-        cached_files = cache.GetFromCache('abcd')
+        (cached_files, manifest_path) = cache.GetFromCache('abcd')
 
         # This is more of an implementation detail, but it verifies that we hit
         # the mocked `os.walk` function as expected.
@@ -42,31 +42,24 @@ class TestBitstreamCache(unittest.TestCase):
 
         self.assertEqual(
             dict(cached_files), {
-                "schemaVersion": 1,
-                "buildId": "abcd",
-                "outputFiles": {
-                    BITSTREAM_ORIG: {
-                        "buildTarget": "//hw/bitstream/vivado:fpga_cw310",
-                        "outputInfo": {
-                            "@type": "bitstreamInfo",
-                            "design": "chip_earlgrey_cw310"
-                        }
-                    },
-                    "rom.mmi": {
-                        "buildTarget": "//hw/bitstream/vivado:fpga_cw310",
-                        "outputInfo": {
-                            "@type": "memoryMapInfo",
-                            "design": "chip_earlgrey_cw310",
-                            "memoryId": "rom",
-                        }
-                    },
-                    "otp.mmi": {
-                        "buildTarget": "//hw/bitstream/vivado:fpga_cw310",
-                        "outputInfo": {
-                            "@type": "memoryMapInfo",
-                            "design": "chip_earlgrey_cw310",
-                            "memoryId": "otp",
-                        }
+                "schema_version": 2,
+                "designs": {
+                    "chip_earlgrey_cw310": {
+                        "build_id": "abcd",
+                        "bitstream": {
+                            "file": BITSTREAM_ORIG,
+                            "build_target": "//hw/bitstream/vivado:fpga_cw310",
+                        },
+                        "memory_map_info": {
+                            "otp": {
+                                "file": "otp.mmi",
+                                "build_target": "//hw/bitstream/vivado:fpga_cw310",
+                            },
+                            "rom": {
+                                "file": "rom.mmi",
+                                "build_target": "//hw/bitstream/vivado:fpga_cw310",
+                            },
+                        },
                     },
                 },
             })
@@ -94,6 +87,7 @@ class TestBitstreamCache(unittest.TestCase):
                                'latest.txt',
                                offline=True)
         cache.InitRepository = unittest.mock.MagicMock(name='method')
+        cache._WriteSubstituteManifest = unittest.mock.MagicMock(name='method')
 
         bazel_string = cache._ConstructBazelString('BUILD.mock', 'abcd')
         self.maxDiff = None
@@ -119,6 +113,11 @@ filegroup(
 filegroup(
     name = "chip_earlgrey_cw310_rom_mmi",
     srcs = ["cache/abcd/rom.mmi"],
+)
+
+filegroup(
+    name = "manifest",
+    srcs = ["cache/abcd/substitute_manifest.json"],
 )
 ''')
 
