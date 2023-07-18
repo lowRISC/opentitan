@@ -497,7 +497,7 @@ jobs:
   dependsOn:
     - chip_earlgrey_cw310
     - chip_earlgrey_cw310_hyperdebug
-  condition: eq(variables['Build.SourceBranchName'], 'master')
+  condition: false
   steps:
     - template: ci/download-artifacts-template.yml
       parameters:
