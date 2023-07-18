@@ -659,7 +659,7 @@ jobs:
     condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
     inputs:
       gitHubConnection: opentitan-release-upload
-      repositoryName: lowrisc/opentitan
+      repositoryName: lowrisc/opentitan-integrated
       addChangeLog: false
       assets: |
           $(Build.ArtifactStagingDirectory)/dist-final/*
