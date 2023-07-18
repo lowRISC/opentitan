@@ -167,7 +167,9 @@ module tb;
       .current_loop_d_iterations (prefetch_loop_iterations_o),
       .current_loop_q_iterations (current_loop.loop_iterations),
 
-      .loop_stack_rd_idx
+      .loop_stack_rd_idx,
+      .loop_stack_push,
+      .loop_stack_pop
     );
 
   bind dut.u_otbn_core.u_otbn_alu_bignum otbn_alu_bignum_if i_otbn_alu_bignum_if (.*);
