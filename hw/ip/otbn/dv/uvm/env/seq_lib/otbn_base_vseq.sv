@@ -732,8 +732,7 @@ class otbn_base_vseq extends cip_base_vseq #(
           // from the model (which is also in sync with the RTL). Because we wait on the negedge
           // when updating cycle_counter above, we know we've got the "new version" of the status at
           // this point.
-          if (cfg.model_agent_cfg.vif.status inside {otbn_pkg::StatusBusyExecute,
-                                                   otbn_pkg::StatusBusySecWipeInt}) begin
+          if (cfg.model_agent_cfg.vif.status == otbn_pkg::StatusBusyExecute) begin
             timed_out = 1'b1;
           end else begin
             timed_out = 1'b0;
