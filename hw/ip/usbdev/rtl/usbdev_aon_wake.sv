@@ -173,9 +173,12 @@ module usbdev_aon_wake import usbdev_pkg::*;(
     .q_o({usbdev_dppullup_en_aon, usbdev_dnpullup_en_aon})
   );
 
-  assign aon_dppullup_en_d = wake_detect_active_q ? aon_dppullup_en_q
+  // Deassert any active pull ups immediately upon losing SENSE, to avoid
+  // potentially inconsistent state between device and host if the interruption
+  // is brief.
+  assign aon_dppullup_en_d = wake_detect_active_q ? (aon_dppullup_en_q & ~event_sense_lost)
                                                   : usbdev_dppullup_en_aon;
-  assign aon_dnpullup_en_d = wake_detect_active_q ? aon_dnpullup_en_q
+  assign aon_dnpullup_en_d = wake_detect_active_q ? (aon_dnpullup_en_q & ~event_sense_lost)
                                                   : usbdev_dnpullup_en_aon;
 
   always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin : proc_reg_pullup_en
