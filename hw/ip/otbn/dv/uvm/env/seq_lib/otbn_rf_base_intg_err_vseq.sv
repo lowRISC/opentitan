@@ -20,9 +20,11 @@ class otbn_rf_base_intg_err_vseq extends otbn_base_vseq;
         rd_en = insert_intg_err_to_a ? cfg.trace_vif.rf_base_rd_en_a :
                                        cfg.trace_vif.rf_base_rd_en_b;
       end while(!rd_en);,
-      cfg.clk_rst_vif.wait_clks(2000);,
-      "Not getting selected rd_en from OTBN for 2000 cycles!"
+      cfg.clk_rst_vif.wait_clks(2000);
     )
+    if (!rd_en) begin
+      `uvm_fatal(`gfn, "Register file was not used before time limit")
+    end
   endtask
 
   function bit [otbn_pkg::BaseIntgWidth-1:0] corrupt_data(
