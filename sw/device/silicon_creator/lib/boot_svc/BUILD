@@ -93,6 +93,7 @@ cc_library(
     deps = [
         ":boot_svc_empty",
         ":boot_svc_header",
+        ":boot_svc_next_boot_bl0_slot",
         "//sw/device/lib/base:macros",
     ],
 )
