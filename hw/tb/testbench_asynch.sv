@@ -117,7 +117,7 @@ module testbench_asynch ();
    logic             [LogDepth:0] async_axi_out_r_wptr_i;
    logic             [LogDepth:0] async_axi_out_r_rptr_o;
   
-   uart_bus #(.BAUD_RATE(1470588), .PARITY_EN(0)) i_uart0_bus (.rx(ibex_uart_tx), .tx(ibex_uart_rx), .rx_en(1'b1));
+   uart_bus #(.BAUD_RATE(1250000), .PARITY_EN(0)) i_uart0_bus (.rx(ibex_uart_tx), .tx(ibex_uart_rx), .rx_en(1'b1)); //1470588
    
    typedef axi_test::axi_rand_slave #(  
      .AW( AxiAddrWidth  ),
