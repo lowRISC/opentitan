@@ -78,19 +78,15 @@ def main() -> int:
 
         # Correctly determine `hash_mode`, `xof_mode` or `mac_mode`
         if t["operation"] == "SHAKE":
-            t["xof_mode"] = "kXofModeSha3Shake" + str(t["security_str"])
-            t["test_operation"] = "kKmacTestOperationXOF"
+            t["test_operation"] = "kKmacTestOperationShake"
         elif t["operation"] == "CSHAKE":
-            t["xof_mode"] = "kXofModeSha3Cshake" + str(t["security_str"])
-            t["test_operation"] = "kKmacTestOperationXOF"
+            t["test_operation"] = "kKmacTestOperationCshake"
         elif t["operation"] == "SHA3":
-            t["hash_mode"] = "kHashModeSha3_" + str(t["security_str"])
-            t["test_operation"] = "kKmacTestOperationHASH"
+            t["test_operation"] = "kKmacTestOperationSha3"
         elif t["operation"] == "KMAC":
-            t["mac_mode"] = "kMacModeKmac" + str(t["security_str"])
-            t["test_operation"] = "kKmacTestOperationMAC"
+            t["test_operation"] = "kKmacTestOperationKmac"
         else:
-            raise ValueError("Bad `operation`, `security_str` pair.")
+            raise ValueError(f"Bad `operation`: {t['operation']}")
 
     args.headerfile.write(Template(args.template.read()).render(tests=testvecs))
     args.headerfile.close()
