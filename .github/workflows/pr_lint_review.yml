@@ -31,7 +31,11 @@ jobs:
       # https://github.com/curl/curl/issues/11475
       # https://bugs.launchpad.net/ubuntu/+source/curl/+bug/2028170
       - name: Workaround curl bug
-        run: sudo apt-get install --allow-downgrades -y curl=7.81.0-1 libcurl4=7.81.0-1
+        run: |
+          # Mark broken packages to have a lower priority than the currently installed
+          printf "Package: curl\nPin: version 7.81.0-1ubuntu1.11\nPin-Priority: 99\n\n" | sudo tee -a /etc/apt/preferences.d/curl-workaround.pref
+          printf "Package: libcurl4\nPin: version 7.81.0-1ubuntu1.11\nPin-Priority: 99\n\n" | sudo tee -a /etc/apt/preferences.d/curl-workaround.pref
+          sudo apt-get install --allow-downgrades -y curl=7.81.0-1 libcurl4=7.81.0-1
       - uses: actions/checkout@v3
         with:
           # Because `pull_request_target` runs at the PR's base, we need to
