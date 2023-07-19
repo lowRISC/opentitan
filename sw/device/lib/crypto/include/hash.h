@@ -42,20 +42,28 @@ typedef enum hash_mode {
 } hash_mode_t;
 
 /**
- * Enum to define the supported extendable-output functions.
+ * Enum to define the supported SHAKE (extendable-output) functions.
  *
  * Values are hardened.
  */
-typedef enum xof_mode {
+typedef enum xof_shake_mode {
   // Shake128 mode.
-  kXofModeSha3Shake128 = 0x9bd,
+  kXofShakeModeShake128 = 0x9bd,
   // Shake256 mode.
-  kXofModeSha3Shake256 = 0x758,
+  kXofShakeModeShake256 = 0x758,
+} xof_shake_mode_t;
+
+/**
+ * Enum to define the supported CSHAKE (extendable-output) functions.
+ *
+ * Values are hardened.
+ */
+typedef enum xof_cshake_mode {
   // cShake128 mode.
-  kXofModeSha3Cshake128 = 0xbd3,
+  kXofCshakeModeCshake128 = 0xbd3,
   // cShake256 mode.
-  kXofModeSha3Cshake256 = 0x0fa,
-} xof_mode_t;
+  kXofCshakeModeCshake256 = 0x0fa,
+} xof_cshake_mode_t;
 
 /**
  * Generic hash context.
@@ -92,15 +100,7 @@ crypto_status_t otcrypto_hash(crypto_const_byte_buf_t input_message,
                               crypto_word32_buf_t *digest);
 
 /**
- * Performs the required extendable output function on the input data.
- *
- * The `function_name_string` is used by NIST to define functions
- * based on cSHAKE. When no function other than cSHAKE is desired; it
- * can be empty. The `customization_string` is used to define a
- * variant of the cSHAKE function. If no customization is desired it
- * can be empty. The `function_name_string` and `customization_string`
- * are ignored when the `xof_mode` is set to kHashModeSha3Shake128 or
- * kHashModeSha3Shake256.
+ * Performs the SHAKE extendable output function (XOF) on input data.
  *
  * The caller should allocate space for the `digest` buffer, with a word-length
  * long enough to hold `required_output_len`, and set the `len` field of
@@ -109,19 +109,44 @@ crypto_status_t otcrypto_hash(crypto_const_byte_buf_t input_message,
  * error.
  *
  * @param input_message Input message for extendable output function.
- * @param xof_mode Required extendable output function.
+ * @param shake_mode Required extendable output function.
+ * @param required_output_len Required output length, in bytes.
+ * @param[out] digest Output from the extendable output function.
+ * @return Result of the xof operation.
+ */
+crypto_status_t otcrypto_xof_shake(crypto_const_byte_buf_t input_message,
+                                   xof_shake_mode_t shake_mode,
+                                   size_t required_output_len,
+                                   crypto_word32_buf_t *digest);
+
+/**
+ * Performs the CSHAKE extendable output function (XOF) on input data.
+ *
+ * The `function_name_string` is used by NIST to define functions
+ * based on cSHAKE. When no function other than cSHAKE is desired; it
+ * can be empty. The `customization_string` is used to define a
+ * variant of the cSHAKE function. If no customization is desired it
+ * can be empty.
+ *
+ * The caller should allocate space for the `digest` buffer,
+ * (expected length same as `required_output_len`), and set the length
+ * of expected output in the `len` field of `digest`. If the user-set
+ * length and the output length does not match, an error message will
+ * be returned.
+ *
+ * @param input_message Input message for extendable output function.
+ * @param cshake_mode Required extendable output function.
  * @param function_name_string NIST Function name string.
  * @param customization_string Customization string for cSHAKE.
  * @param required_output_len Required output length, in bytes.
  * @param[out] digest Output from the extendable output function.
  * @return Result of the xof operation.
  */
-crypto_status_t otcrypto_xof(crypto_const_byte_buf_t input_message,
-                             xof_mode_t xof_mode,
-                             crypto_const_byte_buf_t function_name_string,
-                             crypto_const_byte_buf_t customization_string,
-                             size_t required_output_len,
-                             crypto_word32_buf_t *digest);
+crypto_status_t otcrypto_xof_cshake(
+    crypto_const_byte_buf_t input_message, xof_cshake_mode_t cshake_mode,
+    crypto_const_byte_buf_t function_name_string,
+    crypto_const_byte_buf_t customization_string, size_t required_output_len,
+    crypto_word32_buf_t *digest);
 
 /**
  * Performs the INIT operation for a cryptographic hash function.

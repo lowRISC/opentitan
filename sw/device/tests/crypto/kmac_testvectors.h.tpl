@@ -20,18 +20,17 @@ extern "C" {
  * call through cryptolib API.
  */
 typedef enum kmac_test_operation_t {
-  kKmacTestOperationXOF,
-  kKmacTestOperationHASH,
-  kKmacTestOperationMAC,
+  kKmacTestOperationCshake,
+  kKmacTestOperationShake,
+  kKmacTestOperationSha3,
+  kKmacTestOperationKmac,
 } kmac_test_operation_t;
 
 // This struct allows us to neatly pack SHA-3/SHAKE/cSHAKE/KMAC vectors
 typedef struct kmac_test_vector {
   char* vector_identifier;
   kmac_test_operation_t test_operation;
-  xof_mode_t xof_mode;
-  hash_mode_t hash_mode;
-  kmac_mode_t mac_mode;
+  size_t security_strength;
   crypto_blinded_key_t key;
   crypto_const_byte_buf_t input_msg;
   crypto_const_byte_buf_t func_name;
@@ -44,13 +43,7 @@ static kmac_test_vector_t kKmacTestVectors[${len(tests)}] = {
     {
         .vector_identifier = "${t["vector_identifier"]}",
         .test_operation = ${t["test_operation"]},
-  % if "xof_mode" in t:
-        .xof_mode = ${t["xof_mode"]},
-  % elif "hash_mode" in t:
-        .hash_mode = ${t["hash_mode"]},
-  % elif "mac_mode" in t:
-        .mac_mode = ${t["mac_mode"]},
-  % endif
+        .security_strength = ${t["security_str"]},
   % if "key" in t:
         .key = {
             .config = {
@@ -65,7 +58,7 @@ static kmac_test_vector_t kKmacTestVectors[${len(tests)}] = {
       % endfor
             },
         },
-   % endif  
+   % endif
         .input_msg = {
   % if "input_msg" in t:
             .data = (uint8_t[]){
@@ -90,7 +83,7 @@ static kmac_test_vector_t kKmacTestVectors[${len(tests)}] = {
             .len = ${len(t["func_name"])},
   % else:
             .data = NULL,
-            .len = 0,        
+            .len = 0,
   % endif
         },
         .cust_str = {
@@ -103,7 +96,7 @@ static kmac_test_vector_t kKmacTestVectors[${len(tests)}] = {
             .len = ${len(t["cust_str"])},
   % else:
             .data = NULL,
-            .len = 0,        
+            .len = 0,
   % endif
         },
         .digest = {
@@ -112,7 +105,7 @@ static kmac_test_vector_t kKmacTestVectors[${len(tests)}] = {
                 ${', '.join(t["digest"][i:i + 8])},
       % endfor
             },
-            .len = ${len(t["digest"])},     
+            .len = ${len(t["digest"])},
         },
     },
 % endfor

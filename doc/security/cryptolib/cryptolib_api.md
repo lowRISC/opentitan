@@ -134,7 +134,8 @@ Data structures for key types and modes help the cryptolib recognize and prevent
 #### Hash data structures
 
 {{#header-snippet sw/device/lib/crypto/include/hash.h hash_mode }}
-{{#header-snippet sw/device/lib/crypto/include/hash.h xof_mode }}
+{{#header-snippet sw/device/lib/crypto/include/hash.h xof_cshake_mode }}
+{{#header-snippet sw/device/lib/crypto/include/hash.h xof_shake_mode }}
 
 #### Key derivation data structures
 
@@ -239,8 +240,8 @@ The supported hash modes are SHA256, SHA384, SHA512, SHA3-224, SHA3-256, SHA3-38
 The cryptolib supports the SHAKE and cSHAKE extendable-output functions, which can produce a varaible-sized digest.
 To avoid locking up the KMAC block, only a one-shot mode is supported.
 
-<!-- TODO: fix header to have shake/cshake! -->
-{{#header-snippet sw/device/lib/crypto/include/hash.h otcrypto_xof }}
+{{#header-snippet sw/device/lib/crypto/include/hash.h otcrypto_xof_shake }}
+{{#header-snippet sw/device/lib/crypto/include/hash.h otcrypto_xof_cshake }}
 
 ### Streaming mode
 
