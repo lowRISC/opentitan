@@ -6,7 +6,7 @@
   human_name:         "RISC-V Debug Module",
   one_line_desc:      "Enables debug support for Ibex, access protected by life cycle",
   one_paragraph_desc: '''
-  RISC-V Debug Module provides a JTAG test access port (TAP) to interface the Ibex RISC-V core as well as hardware blocks attached to the TileLink on-chip interconnect.
+  RISC-V Debug Module provides a Debug Module Interface (DMI) to interface the Ibex RISC-V core as well as hardware blocks attached to the TileLink on-chip interconnect.
   The interface to Ibex is compliant with the RISC-V Debug Specification 0.13.2, which in turn is supported by debug software such as OpenOCD and GDB.
   For security reasons, RISC-V Debug Module is only active in life cycles that have hardware debug enabled.
   '''
@@ -16,10 +16,10 @@
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "",
-  version:            "1.0.0",
+  version:            "2.0.0",
   life_stage:         "L1",
-  design_stage:       "D2S",
-  verification_stage: "V1",
+  design_stage:       "D0",
+  verification_stage: "V0",
   clocking: [
     {clock: "clk_i", reset: "rst_ni"}
   ]
