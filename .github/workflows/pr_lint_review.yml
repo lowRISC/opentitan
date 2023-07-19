@@ -27,6 +27,11 @@ jobs:
     env:
       verible_config: hw/lint/tools/veriblelint/lowrisc-styleguide.rules.verible_lint
     steps:
+      # Downgrade curl as a bug workaround. Remove when the bug is fixed.
+      # https://github.com/curl/curl/issues/11475
+      # https://bugs.launchpad.net/ubuntu/+source/curl/+bug/2028170
+      - name: Workaround curl bug
+        run: sudo apt-get install --allow-downgrades -y curl=7.81.0-1 libcurl4=7.81.0-1
       - uses: actions/checkout@v3
         with:
           # Because `pull_request_target` runs at the PR's base, we need to
