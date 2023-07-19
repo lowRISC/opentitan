@@ -14309,7 +14309,7 @@ d00083ac:       004955b7                lui     a1,0x495
 d00083b0:       20258593                addi    a1,a1,514 # 495202 <WDOG_BARK_THOLD+0x45e31a>
 d00083b4:       8d4d                    or      a0,a0,a1
 rom_interrupt_handler():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:576
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:571
   shutdown_finalize(rom_try_boot());
 }
 
@@ -15040,7 +15040,7 @@ d0008806:                 d226                  sw      s1,36(sp)
 d0008808:                 d04a                  sw      s2,32(sp)
 d000880a:                 842a                  mv      s0,a0
 /proc/self/cwd/sw/device/silicon_creator/rom/rom.c:124
-      .spi_clock = peripheral_clock_freq_hz / 2,
+      .spi_clock = peripheral_clock_freq_hz / 2,// 100, for tape out 1MHz, in sim 50MHz
 d000880c:                 0015d513              srli    a0,a1,0x1
 /proc/self/cwd/sw/device/silicon_creator/rom/rom.c:131
   CHECK_DIF_OK(dif_spi_host_configure(spi_host, config));
@@ -15160,8 +15160,8 @@ d0008944:          |         4d7030ef           jal     ra,d000c61a <test_status
   init_spi_host(&spi_host, (uint32_t)clkHz);
 d0008948:          \-------> 0fff9b97           auipc   s7,0xfff9
 d000894c:                    714b8b93           addi    s7,s7,1812 # e000205c <spi_host>
-d0008950:                    00989537           lui     a0,0x989
-d0008954:                    68050593           addi    a1,a0,1664 # 989680 <WDOG_BARK_THOLD+0x952798>
+d0008950:                    05f5e537           lui     a0,0x5f5e
+d0008954:                    10050593           addi    a1,a0,256 # 5f5e100 <WDOG_BARK_THOLD+0x5f27218>
 d0008958:                    855e                       mv      a0,s7
 d000895a:                    355d                       jal     d0008800 <init_spi_host>
 d000895c:                    4401                       li      s0,0
@@ -15343,7 +15343,7 @@ d0008aea:                    8082                       ret
 
 d0008aec <rom_main>:
 rom_main():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:537
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:532
 void rom_main(void) {
 d0008aec:                 1101                  addi    sp,sp,-32
 d0008aee:                 ce06                  sw      ra,28(sp)
@@ -15355,10 +15355,10 @@ d0008af8:                 c452                  sw      s4,8(sp)
 d0008afa:                 c256                  sw      s5,4(sp)
 d0008afc:                 c1418a93              addi    s5,gp,-1004 # e000246c <rom_counters>
 d0008b00:                 1a500513              li      a0,421
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:542
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:537
   CFI_FUNC_COUNTER_INIT(rom_counters, kCfiRomMain);
 d0008b04:                 00aaa023              sw      a0,0(s5)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:543
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:538
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomMain, 1, kCfiRomInit);
 d0008b08:                 000aa583              lw      a1,0(s5)
 d0008b0c:             /-- 00a58663              beq     a1,a0,d0008b18 <rom_main+0x2c>
@@ -15380,7 +15380,7 @@ inline void barrier32(uint32_t val) { asm volatile("" ::"r"(val)); }
 d0008b24:                 6505                  lui     a0,0x1
 d0008b26:                 83650513              addi    a0,a0,-1994 # 836 <_epmp_reset_rx_size+0x36>
 rom_main():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:543
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:538
 d0008b2a:                 00aaa223              sw      a0,4(s5)
 d0008b2e:                 000aa583              lw      a1,0(s5)
 d0008b32:                 1ff00613              li      a2,511
@@ -15573,7 +15573,7 @@ launder32():
   asm volatile("" : "+r"(val));
 d0008c7a:       \-------> 8552                  mv      a0,s4
 rom_main():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:545
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:540
   SHUTDOWN_IF_ERROR(rom_init());
 d0008c7c:       /-------- 0b351463              bne     a0,s3,d0008d24 <rom_main+0x238>
 d0008c80:       |         73900913              li      s2,1849
@@ -15583,22 +15583,22 @@ d0008c8a:       |     |   0000                  unimp
 d0008c8c:       |     |   0000                  unimp
 d0008c8e:       |     |   0000                  unimp
 d0008c90:       |     \-> ff000537              lui     a0,0xff000
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:548
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:543
   if(*pad_bootmode == 0x1){
 d0008c94:       |         4948                  lw      a0,20(a0)
 d0008c96:       |         4585                  li      a1,1
 d0008c98:       |     /-- 00b51d63              bne     a0,a1,d0008cb2 <rom_main+0x1c6>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:549
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:544
     rom_printf("Loading rom_ext from extenal SPI flash\r\n");
 d0008c9c:       |     |   00006417              auipc   s0,0x6
 d0008ca0:       |     |   ec140413              addi    s0,s0,-319 # d000eb5d <_text_end+0x1ad>
 d0008ca4:       |     |   8522                  mv      a0,s0
 d0008ca6:       |     |   73d010ef              jal     ra,d000abe2 <rom_printf>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:550
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:545
     printf("Loading rom_ext from extenal SPI flash\r\n");
 d0008caa:       |     |   8522                  mv      a0,s0
 d0008cac:       |     |   53e010ef              jal     ra,d000a1ea <printf>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:551
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:546
     spi_flash_load_data();
 d0008cb0:       |     |   3139                  jal     d00088be <spi_flash_load_data>
 rom_bootstrap_message():
@@ -15613,7 +15613,7 @@ d0008cbc:       |         727010ef              jal     ra,d000abe2 <rom_printf>
 d0008cc0:       |         8522                  mv      a0,s0
 d0008cc2:       |         528010ef              jal     ra,d000a1ea <printf>
 rom_main():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:556
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:551
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomMain, 3);
 d0008cc6:       |         000aa503              lw      a0,0(s5)
 d0008cca:       |         25900593              li      a1,601
@@ -15625,7 +15625,7 @@ d0008cd8:       |     |   0000                  unimp
 d0008cda:       |     \-> 000aa503              lw      a0,0(s5)
 d0008cde:       |         05a50513              addi    a0,a0,90 # ff00005a <_stack_end+0x1efe005a>
 d0008ce2:       |         00aaa023              sw      a0,0(s5)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:557
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:552
   CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomInit, 3);
 d0008ce6:       |         004aa503              lw      a0,4(s5)
 d0008cea:       |         6585                  lui     a1,0x1
@@ -15635,39 +15635,39 @@ d0008cf4:       |     |   0000                  unimp
 d0008cf6:       |     |   0000                  unimp
 d0008cf8:       |     |   0000                  unimp
 d0008cfa:       |     |   0000                  unimp
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:559
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:554
   hardened_bool_t bootstrap_req = bootstrap_requested();
 d0008cfc:       |     \-> 6d9000ef              jal     ra,d0009bd4 <bootstrap_requested>
 launder32():
 /proc/self/cwd/./sw/device/lib/base/hardened.h:244
 d0008d00:       |         85aa                  mv      a1,a0
 rom_main():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:560
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:555
   if (launder32(bootstrap_req) == kHardenedBoolTrue) {
 d0008d02:       |  /----- 03259463              bne     a1,s2,d0008d2a <rom_main+0x23e>
 d0008d06:       |  |      73900593              li      a1,1849
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:561
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:556
     HARDENED_CHECK_EQ(bootstrap_req, kHardenedBoolTrue);
 d0008d0a:       |  |  /-- 00b50663              beq     a0,a1,d0008d16 <rom_main+0x22a>
 d0008d0e:       |  |  |   0000                  unimp
 d0008d10:       |  |  |   0000                  unimp
 d0008d12:       |  |  |   0000                  unimp
 d0008d14:       |  |  |   0000                  unimp
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:562
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:557
     rom_bootstrap_message();
 d0008d16:       |  |  \-> 208d                  jal     d0008d78 <rom_bootstrap_message>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:563
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:558
     watchdog_disable();
 d0008d18:       |  |      40c030ef              jal     ra,d000c124 <watchdog_disable>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:564
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:559
     shutdown_finalize(bootstrap());
 d0008d1c:       |  |      70f000ef              jal     ra,d0009c2a <bootstrap>
 d0008d20:       |  |      1f9050ef              jal     ra,d000e718 <shutdown_finalize>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:545
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:540
   SHUTDOWN_IF_ERROR(rom_init());
 d0008d24:       \--|----> 8552                  mv      a0,s4
 d0008d26:          |      1f3050ef              jal     ra,d000e718 <shutdown_finalize>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:568
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:563
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomMain, 4, kCfiRomTryBoot);
 d0008d2a:          \----> 000aa503              lw      a0,0(s5)
 d0008d2e:                 2b300593              li      a1,691
@@ -15684,7 +15684,7 @@ barrier32():
 inline void barrier32(uint32_t val) { asm volatile("" ::"r"(val)); }
 d0008d4a:                 28f00513              li      a0,655
 rom_main():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:568
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:563
 d0008d4e:                 00aaa623              sw      a0,12(s5)
 d0008d52:                 000aa503              lw      a0,0(s5)
 d0008d56:                 30d00593              li      a1,781
@@ -15696,7 +15696,7 @@ d0008d64:             |   0000                  unimp
 d0008d66:             \-> 000aa503              lw      a0,0(s5)
 d0008d6a:                 05a50513              addi    a0,a0,90
 d0008d6e:                 00aaa023              sw      a0,0(s5)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:571
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:566
   shutdown_finalize(rom_try_boot());
 d0008d72:                 201d                  jal     d0008d98 <rom_try_boot>
 d0008d74:                 1a5050ef              jal     ra,d000e718 <shutdown_finalize>
@@ -15724,7 +15724,7 @@ d0008d94:       4560106f                j       d000a1ea <printf>
 
 d0008d98 <rom_try_boot>:
 rom_try_boot():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:505
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:501
 static rom_error_t rom_try_boot(void) {
 d0008d98:                    1101                       addi    sp,sp,-32
 d0008d9a:                    ce06                       sw      ra,28(sp)
@@ -15735,7 +15735,7 @@ d0008da2:                    c64e                       sw      s3,12(sp)
 d0008da4:                    c452                       sw      s4,8(sp)
 d0008da6:                    c256                       sw      s5,4(sp)
 d0008da8:                    c1418413           addi    s0,gp,-1004 # e000246c <rom_counters>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:506
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:502
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBoot, 1);
 d0008dac:                    4448                       lw      a0,12(s0)
 d0008dae:                    28f00593           li      a1,655
@@ -15747,7 +15747,7 @@ d0008dbc:                |   0000                       unimp
 d0008dbe:                \-> 4448                       lw      a0,12(s0)
 d0008dc0:                    05a50513           addi    a0,a0,90
 d0008dc4:                    c448                       sw      a0,12(s0)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:509
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:505
   HARDENED_RETURN_IF_ERROR(boot_data_read(lc_state, &boot_data));
 d0008dc6:                    0fff9517           auipc   a0,0xfff9
 d0008dca:                    29250513           addi    a0,a0,658 # e0002058 <lc_state>
@@ -15760,24 +15760,24 @@ launder32():
 d0008dd8:                    85aa                       mv      a1,a0
 d0008dda:                    73900493           li      s1,1849
 rom_try_boot():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:509
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:505
 d0008dde:       /----------- 1c959663           bne     a1,s1,d0008faa <rom_try_boot+0x212>
 d0008de2:       |        /-- 00950663           beq     a0,s1,d0008dee <rom_try_boot+0x56>
 d0008de6:       |        |   0000                       unimp
 d0008de8:       |        |   0000                       unimp
 d0008dea:       |        |   0000                       unimp
 d0008dec:       |        |   0000                       unimp
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:511
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:507
   boot_policy_manifests_t manifests = boot_policy_manifests_get();
 d0008dee:       |        \-> 25ed                       jal     d00094d8 <boot_policy_manifests_get>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:514
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:510
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 2, kCfiRomVerify);
 d0008df0:       |            4450                       lw      a2,12(s0)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:512
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:508
   uint32_t flash_exec = 0;
 d0008df2:       |            c002                       sw      zero,0(sp)
 d0008df4:       |            2e900993           li      s3,745
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:514
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:510
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 2, kCfiRomVerify);
 d0008df8:       |        /-- 01360663           beq     a2,s3,d0008e04 <rom_try_boot+0x6c>
 d0008dfc:       |        |   0000                       unimp
@@ -15792,7 +15792,7 @@ barrier32():
 inline void barrier32(uint32_t val) { asm volatile("" ::"r"(val)); }
 d0008e0c:       |            60100a93           li      s5,1537
 rom_try_boot():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:514
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:510
 d0008e10:       |            01542423           sw      s5,8(s0)
 d0008e14:       |            4450                       lw      a2,12(s0)
 d0008e16:       |            34300693           li      a3,835
@@ -15802,20 +15802,20 @@ d0008e20:       |        |   0000                       unimp
 d0008e22:       |        |   0000                       unimp
 d0008e24:       |        |   0000                       unimp
 d0008e26:       |        \-> 4450                       lw      a2,12(s0)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:511
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:507
   boot_policy_manifests_t manifests = boot_policy_manifests_get();
 d0008e28:       |            8a2a                       mv      s4,a0
 d0008e2a:       |            892e                       mv      s2,a1
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:514
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:510
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 2, kCfiRomVerify);
 d0008e2c:       |            05a60513           addi    a0,a2,90
 d0008e30:       |            c448                       sw      a0,12(s0)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:515
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:511
   rom_error_t error = rom_verify(manifests.ordered[0], &flash_exec);
 d0008e32:       |            858a                       mv      a1,sp
 d0008e34:       |            8552                       mv      a0,s4
 d0008e36:       |            2259                       jal     d0008fbc <rom_verify>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:516
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:512
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBoot, 4);
 d0008e38:       |            444c                       lw      a1,12(s0)
 d0008e3a:       |            39d00613           li      a2,925
@@ -15832,18 +15832,18 @@ launder32():
   asm volatile("" : "+r"(val));
 d0008e52:       |            85aa                       mv      a1,a0
 rom_try_boot():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:518
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:514
   if (launder32(error) == kErrorOk) {
 d0008e54:       |     /----- 06959c63           bne     a1,s1,d0008ecc <rom_try_boot+0x134>
 d0008e58:       |     |      73900493           li      s1,1849
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:519
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:515
     HARDENED_CHECK_EQ(error, kErrorOk);
 d0008e5c:       |     |  /-- 00950663           beq     a0,s1,d0008e68 <rom_try_boot+0xd0>
 d0008e60:       |     |  |   0000                       unimp
 d0008e62:       |     |  |   0000                       unimp
 d0008e64:       |     |  |   0000                       unimp
 d0008e66:       |     |  |   0000                       unimp
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:520
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:516
     CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomVerify, 3);
 d0008e68:       |     |  \-> 4408                       lw      a0,8(s0)
 d0008e6a:       |     |      6b500593           li      a1,1717
@@ -15853,10 +15853,10 @@ d0008e74:       |     |  |   0000                       unimp
 d0008e76:       |     |  |   0000                       unimp
 d0008e78:       |     |  |   0000                       unimp
 d0008e7a:       |     |  \-> 28f00513           li      a0,655
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:521
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:517
     CFI_FUNC_COUNTER_INIT(rom_counters, kCfiRomTryBoot);
 d0008e7e:       |     |      c448                       sw      a0,12(s0)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:522
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:518
     CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 1, kCfiRomBoot);
 d0008e80:       |     |      444c                       lw      a1,12(s0)
 d0008e82:       |     |  /-- 00a58663           beq     a1,a0,d0008e8e <rom_try_boot+0xf6>
@@ -15872,7 +15872,7 @@ barrier32():
 inline void barrier32(uint32_t val) { asm volatile("" ::"r"(val)); }
 d0008e96:       |     |      33c00513           li      a0,828
 rom_try_boot():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:522
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:518
 d0008e9a:       |     |      c848                       sw      a0,20(s0)
 d0008e9c:       |     |      4448                       lw      a0,12(s0)
 d0008e9e:       |     |  /-- 01350663           beq     a0,s3,d0008eaa <rom_try_boot+0x112>
@@ -15883,7 +15883,7 @@ d0008ea8:       |     |  |   0000                       unimp
 d0008eaa:       |     |  \-> 4448                       lw      a0,12(s0)
 d0008eac:       |     |      05a50513           addi    a0,a0,90
 d0008eb0:       |     |      c448                       sw      a0,12(s0)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:523
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:519
     HARDENED_RETURN_IF_ERROR(rom_boot(manifests.ordered[0], flash_exec));
 d0008eb2:       |     |      4582                       lw      a1,0(sp)
 d0008eb4:       |     |      8552                       mv      a0,s4
@@ -15893,7 +15893,7 @@ launder32():
   asm volatile("" : "+r"(val));
 d0008eb8:       |     |      85aa                       mv      a1,a0
 rom_try_boot():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:523
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:519
 d0008eba:       +-----|----- 0e959863           bne     a1,s1,d0008faa <rom_try_boot+0x212>
 d0008ebe:       |     |  /-- 00950663           beq     a0,s1,d0008eca <rom_try_boot+0x132>
 d0008ec2:       |     |  |   0000                       unimp
@@ -15901,7 +15901,7 @@ d0008ec4:       |     |  |   0000                       unimp
 d0008ec6:       |     |  |   0000                       unimp
 d0008ec8:       |     |  |   0000                       unimp
 d0008eca:       |  /--|--\-X a8e1                       j       d0008fa2 <rom_try_boot+0x20a>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:527
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:522
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 5, kCfiRomVerify);
 d0008ecc:       |  |  \----> 4448                       lw      a0,12(s0)
 d0008ece:       |  |         3f700593           li      a1,1015
@@ -15924,7 +15924,7 @@ d0008efa:       |  |     |   0000                       unimp
 d0008efc:       |  |     \-> 4448                       lw      a0,12(s0)
 d0008efe:       |  |         05a50513           addi    a0,a0,90
 d0008f02:       |  |         c448                       sw      a0,12(s0)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:528
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:523
   HARDENED_RETURN_IF_ERROR(rom_verify(manifests.ordered[1], &flash_exec));
 d0008f04:       |  |         858a                       mv      a1,sp
 d0008f06:       |  |         854a                       mv      a0,s2
@@ -15934,14 +15934,14 @@ launder32():
 d0008f0a:       |  |         85aa                       mv      a1,a0
 d0008f0c:       |  |         73900493           li      s1,1849
 rom_try_boot():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:528
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:523
 d0008f10:       +--|-------- 08959d63           bne     a1,s1,d0008faa <rom_try_boot+0x212>
 d0008f14:       |  |     /-- 00950663           beq     a0,s1,d0008f20 <rom_try_boot+0x188>
 d0008f18:       |  |     |   0000                       unimp
 d0008f1a:       |  |     |   0000                       unimp
 d0008f1c:       |  |     |   0000                       unimp
 d0008f1e:       |  |     |   0000                       unimp
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:529
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:524
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBoot, 7);
 d0008f20:       |  |     \-> 4448                       lw      a0,12(s0)
 d0008f22:       |  |         4ab00593           li      a1,1195
@@ -15953,7 +15953,7 @@ d0008f30:       |  |     |   0000                       unimp
 d0008f32:       |  |     \-> 4448                       lw      a0,12(s0)
 d0008f34:       |  |         05a50513           addi    a0,a0,90
 d0008f38:       |  |         c448                       sw      a0,12(s0)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:530
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:525
   CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomVerify, 3);
 d0008f3a:       |  |         4408                       lw      a0,8(s0)
 d0008f3c:       |  |         6b500593           li      a1,1717
@@ -15962,7 +15962,7 @@ d0008f44:       |  |     |   0000                       unimp
 d0008f46:       |  |     |   0000                       unimp
 d0008f48:       |  |     |   0000                       unimp
 d0008f4a:       |  |     |   0000                       unimp
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:532
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:527
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 8, kCfiRomBoot);
 d0008f4c:       |  |     \-> 4448                       lw      a0,12(s0)
 d0008f4e:       |  |         50500593           li      a1,1285
@@ -15979,7 +15979,7 @@ barrier32():
 inline void barrier32(uint32_t val) { asm volatile("" ::"r"(val)); }
 d0008f66:       |  |         33c00513           li      a0,828
 rom_try_boot():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:532
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:527
 d0008f6a:       |  |         c848                       sw      a0,20(s0)
 d0008f6c:       |  |         4448                       lw      a0,12(s0)
 d0008f6e:       |  |         55f00593           li      a1,1375
@@ -15991,7 +15991,7 @@ d0008f7c:       |  |     |   0000                       unimp
 d0008f7e:       |  |     \-> 4448                       lw      a0,12(s0)
 d0008f80:       |  |         05a50513           addi    a0,a0,90
 d0008f84:       |  |         c448                       sw      a0,12(s0)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:533
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:528
   HARDENED_RETURN_IF_ERROR(rom_boot(manifests.ordered[1], flash_exec));
 d0008f86:       |  |         4582                       lw      a1,0(sp)
 d0008f88:       |  |         854a                       mv      a0,s2
@@ -16001,7 +16001,7 @@ launder32():
   asm volatile("" : "+r"(val));
 d0008f8c:       |  |         85aa                       mv      a1,a0
 rom_try_boot():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:533
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:528
 d0008f8e:       +--|-------- 00959e63           bne     a1,s1,d0008faa <rom_try_boot+0x212>
 d0008f92:       |  |         73900593           li      a1,1849
 d0008f96:       |  +-------- 00b50663           beq     a0,a1,d0008fa2 <rom_try_boot+0x20a>
@@ -16011,7 +16011,7 @@ d0008f9e:       |  |         0000                       unimp
 d0008fa0:       |  |         0000                       unimp
 d0008fa2:       |  \-------> 014d5537           lui     a0,0x14d5
 d0008fa6:       |            20950513           addi    a0,a0,521 # 14d5209 <WDOG_BARK_THOLD+0x149e321>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:535
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:530
 }
 d0008faa:       \----------> 4a92                       lw      s5,4(sp)
 d0008fac:                    4a22                       lw      s4,8(sp)
@@ -16102,47 +16102,47 @@ d000903c:       |  |   0000                     unimp
 d000903e:       |  |   0000                     unimp
 d0009040:       |  |   0000                     unimp
 d0009042:       |  |   0000                     unimp
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:305
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:304
   uint32_t clobber_value = rnd_uint32();
 d0009044:       |  \-> 479040ef                 jal     ra,d000dcbc <rnd_uint32>
 d0009048:       |      4581                     li      a1,0
 d000904a:       |      0fff7617                 auipc   a2,0xfff7
 d000904e:       |      fb660613                 addi    a2,a2,-74 # e0000000 <boot_measurements>
 d0009052:       |      02000693                 li      a3,32
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:307
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:306
     boot_measurements.rom_ext.data[i] = clobber_value;
 d0009056:       |  /-> 00c58733                 add     a4,a1,a2
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:306
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:305
   for (size_t i = 0; i < ARRAYSIZE(boot_measurements.rom_ext.data); ++i) {
 d000905a:       |  |   0591                     addi    a1,a1,4
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:307
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:306
     boot_measurements.rom_ext.data[i] = clobber_value;
 d000905c:       |  |   c308                     sw      a0,0(a4)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:306
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:305
   for (size_t i = 0; i < ARRAYSIZE(boot_measurements.rom_ext.data); ++i) {
 d000905e:       |  \-- fed59ce3                 bne     a1,a3,d0009056 <rom_verify+0x9a>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:310
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:308
   hmac_sha256_init();
 d0009062:       |      675040ef                 jal     ra,d000ded6 <hmac_sha256_init>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:313
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:311
   if (launder32(manifest->security_version) <
 d0009066:       |      344b2583                 lw      a1,836(s6)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:314
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:312
       boot_data.min_security_version_rom_ext) {
 d000906a:       |      030a2503                 lw      a0,48(s4)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:313
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:311
   if (launder32(manifest->security_version) <
 d000906e:       |  /-- 00a5fa63                 bgeu    a1,a0,d0009082 <rom_verify+0xc6>
 d0009072:       |  |   557d                     li      a0,-1
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:315
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:313
     uint32_t extra_word = UINT32_MAX;
 d0009074:       |  |   d42a                     sw      a0,40(sp)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:316
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:314
     hmac_sha256_update(&extra_word, sizeof(extra_word));
 d0009076:       |  |   1028                     addi    a0,sp,40
 d0009078:       |  |   4591                     li      a1,4
 d000907a:       |  |   677040ef                 jal     ra,d000def0 <hmac_sha256_update>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:318
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:316
   HARDENED_CHECK_GE(manifest->security_version,
 d000907e:       |  |   030a2503                 lw      a0,48(s4)
 d0009082:       |  \-> 344b2583                 lw      a1,836(s6)
@@ -16151,12 +16151,12 @@ d000908a:       |  |   0000                     unimp
 d000908c:       |  |   0000                     unimp
 d000908e:       |  |   0000                     unimp
 d0009090:       |  |   0000                     unimp
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:323
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:321
   sigverify_usage_constraints_get(manifest->usage_constraints.selector_bits,
 d0009092:       |  \-> 180b2503                 lw      a0,384(s6)
 d0009096:       |      102c                     addi    a1,sp,40
 d0009098:       |      2ba040ef                 jal     ra,d000d352 <sigverify_usage_constraints_get>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:325
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:323
   hmac_sha256_update(&usage_constraints_from_hw,
 d000909c:       |      1028                     addi    a0,sp,40
 d000909e:       |      03000593                 li      a1,48
@@ -16172,22 +16172,22 @@ manifest_digest_region_get():
 d00090a6:       |      338b2503                 lw      a0,824(s6)
 d00090aa:       |      e5050593                 addi    a1,a0,-432
 rom_verify():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:330
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:327
   hmac_sha256_update(digest_region.start, digest_region.length);
 d00090ae:       |      854e                     mv      a0,s3
 d00090b0:       |      641040ef                 jal     ra,d000def0 <hmac_sha256_update>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:333
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:330
   hmac_sha256_final(&act_digest);
 d00090b4:       |      0028                     addi    a0,sp,8
 d00090b6:       |      6a9040ef                 jal     ra,d000df5e <hmac_sha256_final>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:337
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:334
   memcpy(&boot_measurements.rom_ext, &act_digest,
 d00090ba:       |      0fff7517                 auipc   a0,0xfff7
 d00090be:       |      f4650513                 addi    a0,a0,-186 # e0000000 <boot_measurements>
 d00090c2:       |      002c                     addi    a1,sp,8
 d00090c4:       |      02000613                 li      a2,32
 d00090c8:       |      34a050ef                 jal     ra,d000e412 <memcpy>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:340
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:336
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomVerify, 2);
 d00090cc:       |      4408                     lw      a0,8(s0)
 d00090ce:       |      65b00593                 li      a1,1627
@@ -16199,7 +16199,7 @@ d00090dc:       |  |   0000                     unimp
 d00090de:       |  \-> 4408                     lw      a0,8(s0)
 d00090e0:       |      05a50513                 addi    a0,a0,90
 d00090e4:       |      c408                     sw      a0,8(s0)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:341
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:337
   return sigverify_rsa_verify(&manifest->signature, key, &act_digest, lc_state,
 d00090e6:       |      45f6                     lw      a1,92(sp)
 d00090e8:       |      000aa683                 lw      a3,0(s5)
@@ -16207,7 +16207,7 @@ d00090ec:       |      0030                     addi    a2,sp,8
 d00090ee:       |      855a                     mv      a0,s6
 d00090f0:       |      874a                     mv      a4,s2
 d00090f2:       |      7d3030ef                 jal     ra,d000d0c4 <sigverify_rsa_verify>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:343
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:339
 }
 d00090f6:       \----> 5b06                     lw      s6,96(sp)
 d00090f8:              5a96                     lw      s5,100(sp)
@@ -16222,7 +16222,7 @@ d0009108:              8082                     ret
 
 d000910a <rom_boot>:
 rom_boot():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:421
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:417
 static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
 d000910a:                             7179                      addi    sp,sp,-48
 d000910c:                             d606                      sw      ra,44(sp)
@@ -16237,7 +16237,7 @@ d000911c:                             c65e                      sw      s7,12(sp
 d000911e:                             c462                      sw      s8,8(sp)
 d0009120:                             c266                      sw      s9,4(sp)
 d0009122:                             c1418a13                  addi    s4,gp,-1004 # e000246c <rom_counters>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:422
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:418
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomBoot, 1);
 d0009126:                             014a2603                  lw      a2,20(s4)
 d000912a:                             33c00693                  li      a3,828
@@ -16251,7 +16251,7 @@ d000913e:                             892e                      mv      s2,a1
 d0009140:                             84aa                      mv      s1,a0
 d0009142:                             05a60513                  addi    a0,a2,90
 d0009146:                             00aa2a23                  sw      a0,20(s4)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:423
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:419
   HARDENED_RETURN_IF_ERROR(keymgr_state_check(kKeymgrStateReset));
 d000914a:                             4501                      li      a0,0
 d000914c:                             55d020ef                  jal     ra,d000bea8 <keymgr_state_check>
@@ -16260,17 +16260,17 @@ launder32():
 d0009150:                             85aa                      mv      a1,a0
 d0009152:                             73900413                  li      s0,1849
 rom_boot():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:423
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:419
 d0009156:       /-------------------- 34859263                  bne     a1,s0,d000949a <rom_boot+0x390>
 d000915a:       |                 /-- 00850663                  beq     a0,s0,d0009166 <rom_boot+0x5c>
 d000915e:       |                 |   0000                      unimp
 d0009160:       |                 |   0000                      unimp
 d0009162:       |                 |   0000                      unimp
 d0009164:       |                 |   0000                      unimp
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:426
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:422
       &manifest->binding_value;
 d0009166:       |                 \-> 35048993                  addi    s3,s1,848
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:428
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:424
       otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN_OFFSET);
 d000916a:       |                     56400513                  li      a0,1380
 d000916e:       |                     038050ef                  jal     ra,d000e1a6 <otp_read32>
@@ -16278,11 +16278,11 @@ launder32():
 /proc/self/cwd/./sw/device/lib/base/hardened.h:244
 d0009172:       |                     85aa                      mv      a1,a0
 rom_boot():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:429
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:425
   if (launder32(use_rom_ext_measurement) == kHardenedBoolTrue) {
 d0009174:       |           /-------- 00859f63                  bne     a1,s0,d0009192 <rom_boot+0x88>
 d0009178:       |           |         73900593                  li      a1,1849
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:430
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:426
     HARDENED_CHECK_EQ(use_rom_ext_measurement, kHardenedBoolTrue);
 d000917c:       |           |     /-- 00b50663                  beq     a0,a1,d0009188 <rom_boot+0x7e>
 d0009180:       |           |     |   0000                      unimp
@@ -16293,7 +16293,7 @@ d0009188:       |           |     \-> 0fff7597                  auipc   a1,0xfff
 d000918c:       |           |         e7858593                  addi    a1,a1,-392 # e0000000 <boot_measurements>
 d0009190:       |           |  /----- a811                      j       d00091a4 <rom_boot+0x9a>
 d0009192:       |           \--|----> 73900593                  li      a1,1849
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:434
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:430
     HARDENED_CHECK_NE(use_rom_ext_measurement, kHardenedBoolTrue);
 d0009196:       |              |  /-- 00b51663                  bne     a0,a1,d00091a2 <rom_boot+0x98>
 d000919a:       |              |  |   0000                      unimp
@@ -16301,26 +16301,26 @@ d000919c:       |              |  |   0000                      unimp
 d000919e:       |              |  |   0000                      unimp
 d00091a0:       |              |  |   0000                      unimp
 d00091a2:       |              |  \-> 85ce                      mv      a1,s3
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:436
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:432
   keymgr_sw_binding_set(&manifest->binding_value, attestation_measurement);
 d00091a4:       |              \----> 854e                      mv      a0,s3
 d00091a6:       |                     471020ef                  jal     ra,d000be16 <keymgr_sw_binding_set>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:437
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:433
   keymgr_creator_max_ver_set(manifest->max_key_version);
 d00091aa:       |                     3704a503                  lw      a0,880(s1)
 d00091ae:       |                     4d7020ef                  jal     ra,d000be84 <keymgr_creator_max_ver_set>
 d00091b2:       |                     0fff7a97                  auipc   s5,0xfff7
 d00091b6:       |                     ec2a8a93                  addi    s5,s5,-318 # e0000074 <sec_mmio_ctx>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:438
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:434
   SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioSwBindingSet +
 d00091ba:       |                     008aa503                  lw      a0,8(s5)
 d00091be:       |                     054d                      addi    a0,a0,19
 d00091c0:       |                     00aaa423                  sw      a0,8(s5)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:441
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:437
   sec_mmio_check_counters(/*expected_check_count=*/2);
 d00091c4:       |                     4509                      li      a0,2
 d00091c6:       |                     200050ef                  jal     ra,d000e3c6 <sec_mmio_check_counters>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:449
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:445
   switch (launder32(manifest->address_translation)) {
 d00091ca:       |                     3304a503                  lw      a0,816(s1)
 manifest_code_region_get():
@@ -16346,9 +16346,9 @@ inline uintptr_t manifest_entry_point_get(const manifest_t *manifest) {
 d00091d6:       |                     37c4ab03                  lw      s6,892(s1)
 d00091da:       |                     1d400593                  li      a1,468
 rom_boot():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:449
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:445
 d00091de:       |              /----- 00b51c63                  bne     a0,a1,d00091f6 <rom_boot+0xec>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:470
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:466
       HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolFalse);
 d00091e2:       |              |      3304a503                  lw      a0,816(s1)
 d00091e6:       |              |  /-- 00b50663                  beq     a0,a1,d00091f2 <rom_boot+0xe8>
@@ -16359,10 +16359,10 @@ d00091f0:       |              |  |   0000                      unimp
 d00091f2:       |              |  \-> 89a6                      mv      s3,s1
 d00091f4:       |           /--|----- a08d                      j       d0009256 <rom_boot+0x14c>
 d00091f6:       |           |  \----> 73900c93                  li      s9,1849
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:449
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:445
   switch (launder32(manifest->address_translation)) {
 d00091fa:       |  /--------|-------- 2b951f63                  bne     a0,s9,d00094b8 <rom_boot+0x3ae>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:451
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:447
       HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolTrue);
 d00091fe:       |  |        |         3304a503                  lw      a0,816(s1)
 d0009202:       |  |        |     /-- 01950663                  beq     a0,s9,d000920e <rom_boot+0x104>
@@ -16370,7 +16370,7 @@ d0009206:       |  |        |     |   0000                      unimp
 d0009208:       |  |        |     |   0000                      unimp
 d000920a:       |  |        |     |   0000                      unimp
 d000920c:       |  |        |     |   0000                      unimp
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:452
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:448
       ibex_addr_remap_0_set((uintptr_t)_rom_ext_virtual_start_address,
 d000920e:       |  |        |     \-> bfff7997                  auipc   s3,0xbfff7
 d0009212:       |  |        |         df298993                  addi    s3,s3,-526 # 90000000 <_rom_ext_virtual_start_address>
@@ -16380,19 +16380,19 @@ d000921e:       |  |        |         854e                      mv      a0,s3
 d0009220:       |  |        |         85a6                      mv      a1,s1
 d0009222:       |  |        |         8622                      mv      a2,s0
 d0009224:       |  |        |         32f020ef                  jal     ra,d000bd52 <ibex_addr_remap_0_set>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:454
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:450
       SEC_MMIO_WRITE_INCREMENT(kAddressTranslationSecMmioConfigure);
 d0009228:       |  |        |         008aa503                  lw      a0,8(s5)
 d000922c:       |  |        |         0519                      addi    a0,a0,6
 d000922e:       |  |        |         00aaa423                  sw      a0,8(s5)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:457
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:453
       HARDENED_RETURN_IF_ERROR(epmp_state_check());
 d0009232:       |  |        |         2b7040ef                  jal     ra,d000dce8 <epmp_state_check>
 launder32():
 /proc/self/cwd/./sw/device/lib/base/hardened.h:244
 d0009236:       |  |        |         85aa                      mv      a1,a0
 rom_boot():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:457
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:453
 d0009238:       +--|--------|-------- 27959163                  bne     a1,s9,d000949a <rom_boot+0x390>
 d000923c:       |  |        |         73900593                  li      a1,1849
 d0009240:       |  |        |     /-- 00b50663                  beq     a0,a1,d000924c <rom_boot+0x142>
@@ -16400,12 +16400,12 @@ d0009244:       |  |        |     |   0000                      unimp
 d0009246:       |  |        |     |   0000                      unimp
 d0009248:       |  |        |     |   0000                      unimp
 d000924a:       |  |        |     |   0000                      unimp
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:458
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:454
       rom_epmp_unlock_rom_ext_r(
 d000924c:       |  |        |     \-> 008985b3                  add     a1,s3,s0
 d0009250:       |  |        |         854e                      mv      a0,s3
 d0009252:       |  |        |         581030ef                  jal     ra,d000cfd2 <rom_epmp_unlock_rom_ext_r>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:477
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:473
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
 d0009256:       |  |        \-------> 293040ef                  jal     ra,d000dce8 <epmp_state_check>
 launder32():
@@ -16413,7 +16413,7 @@ launder32():
 d000925a:       |  |                  85aa                      mv      a1,a0
 d000925c:       |  |                  73900413                  li      s0,1849
 rom_boot():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:477
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:473
 d0009260:       +--|----------------- 22859d63                  bne     a1,s0,d000949a <rom_boot+0x390>
 d0009264:       |  |                  018985b3                  add     a1,s3,s8
 d0009268:       |  |                  01798633                  add     a2,s3,s7
@@ -16422,18 +16422,18 @@ d0009270:       |  |              |   0000                      unimp
 d0009272:       |  |              |   0000                      unimp
 d0009274:       |  |              |   0000                      unimp
 d0009276:       |  |              |   0000                      unimp
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:478
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:474
   rom_epmp_unlock_rom_ext_rx(text_region);
 d0009278:       |  |              \-> 8532                      mv      a0,a2
 d000927a:       |  |                  52b030ef                  jal     ra,d000cfa4 <rom_epmp_unlock_rom_ext_rx>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:479
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:475
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
 d000927e:       |  |                  26b040ef                  jal     ra,d000dce8 <epmp_state_check>
 launder32():
 /proc/self/cwd/./sw/device/lib/base/hardened.h:244
 d0009282:       |  |                  85aa                      mv      a1,a0
 rom_boot():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:479
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:475
 d0009284:       +--|----------------- 20859b63                  bne     a1,s0,d000949a <rom_boot+0x390>
 d0009288:       |  |                  73900413                  li      s0,1849
 d000928c:       |  |              /-- 00850663                  beq     a0,s0,d0009298 <rom_boot+0x18e>
@@ -16441,7 +16441,7 @@ d0009290:       |  |              |   0000                      unimp
 d0009292:       |  |              |   0000                      unimp
 d0009294:       |  |              |   0000                      unimp
 d0009296:       |  |              |   0000                      unimp
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:481
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:477
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomBoot, 2, kCfiRomPreBootCheck);
 d0009298:       |  |              \-> 014a2503                  lw      a0,20(s4)
 d000929c:       |  |                  39600593                  li      a1,918
@@ -16458,7 +16458,7 @@ barrier32():
 inline void barrier32(uint32_t val) { asm volatile("" ::"r"(val)); }
 d00092b8:       |  |                  49400513                  li      a0,1172
 rom_boot():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:481
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:477
 d00092bc:       |  |                  00aa2823                  sw      a0,16(s4)
 d00092c0:       |  |                  014a2583                  lw      a1,20(s4)
 d00092c4:       |  |                  3f000613                  li      a2,1008
@@ -16471,7 +16471,7 @@ d00092d4:       |  |              \-> 014a2583                  lw      a1,20(s4
 d00092d8:       |  |                  05a58593                  addi    a1,a1,90
 d00092dc:       |  |                  00ba2a23                  sw      a1,20(s4)
 rom_pre_boot_check():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:371
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:367
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 1);
 d00092e0:       |  |                  010a2583                  lw      a1,16(s4)
 d00092e4:       |  |              /-- 00a58663                  beq     a1,a0,d00092f0 <rom_boot+0x1e6>
@@ -16482,7 +16482,7 @@ d00092ee:       |  |              |   0000                      unimp
 d00092f0:       |  |              \-> 010a2503                  lw      a0,16(s4)
 d00092f4:       |  |                  05a50513                  addi    a0,a0,90
 d00092f8:       |  |                  00aa2823                  sw      a0,16(s4)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:374
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:370
   SHUTDOWN_IF_ERROR(alert_config_check(lc_state));
 d00092fc:       |  |                  0fff9497                  auipc   s1,0xfff9
 d0009300:       |  |                  d5c48493                  addi    s1,s1,-676 # e0002058 <lc_state>
@@ -16493,14 +16493,14 @@ launder32():
   asm volatile("" : "+r"(val));
 d000930a:       |  |                  85aa                      mv      a1,a0
 rom_pre_boot_check():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:374
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:370
 d000930c:       |  |  /-------------- 1a859463                  bne     a1,s0,d00094b4 <rom_boot+0x3aa>
 d0009310:       |  |  |           /-- 00850663                  beq     a0,s0,d000931c <rom_boot+0x212>
 d0009314:       |  |  |           |   0000                      unimp
 d0009316:       |  |  |           |   0000                      unimp
 d0009318:       |  |  |           |   0000                      unimp
 d000931a:       |  |  |           |   0000                      unimp
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:375
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:371
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 2);
 d000931c:       |  |  |           \-> 010a2503                  lw      a0,16(s4)
 d0009320:       |  |  |               4ee00593                  li      a1,1262
@@ -16512,25 +16512,25 @@ d000932e:       |  |  |           |   0000                      unimp
 d0009330:       |  |  |           \-> 010a2503                  lw      a0,16(s4)
 d0009334:       |  |  |               05a50513                  addi    a0,a0,90
 d0009338:       |  |  |               00aa2823                  sw      a0,16(s4)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:378
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:374
   lifecycle_state_t lc_state_check = lifecycle_state_get();
 d000933c:       |  |  |               459040ef                  jal     ra,d000df94 <lifecycle_state_get>
 launder32():
 /proc/self/cwd/./sw/device/lib/base/hardened.h:244
 d0009340:       |  |  |               85aa                      mv      a1,a0
 rom_pre_boot_check():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:379
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:375
   if (launder32(lc_state_check) != lc_state) {
 d0009342:       |  |  |               4090                      lw      a2,0(s1)
 d0009344:       |  |  |  /----------- 16c59e63                  bne     a1,a2,d00094c0 <rom_boot+0x3b6>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:382
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:378
   HARDENED_CHECK_EQ(lc_state_check, lc_state);
 d0009348:       |  |  |  |        /-- 00b50663                  beq     a0,a1,d0009354 <rom_boot+0x24a>
 d000934c:       |  |  |  |        |   0000                      unimp
 d000934e:       |  |  |  |        |   0000                      unimp
 d0009350:       |  |  |  |        |   0000                      unimp
 d0009352:       |  |  |  |        |   0000                      unimp
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:383
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:379
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 3);
 d0009354:       |  |  |  |        \-> 010a2503                  lw      a0,16(s4)
 d0009358:       |  |  |  |            54800593                  li      a1,1352
@@ -16542,7 +16542,7 @@ d0009366:       |  |  |  |        |   0000                      unimp
 d0009368:       |  |  |  |        \-> 010a2503                  lw      a0,16(s4)
 d000936c:       |  |  |  |            05a50513                  addi    a0,a0,90
 d0009370:       |  |  |  |            00aa2823                  sw      a0,16(s4)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:386
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:382
   rom_error_t boot_data_ok = boot_data_check(&boot_data);
 d0009374:       |  |  |  |            c3018513                  addi    a0,gp,-976 # e0002488 <boot_data>
 d0009378:       |  |  |  |            7b2000ef                  jal     ra,d0009b2a <boot_data_check>
@@ -16551,17 +16551,17 @@ launder32():
 d000937c:       |  |  |  |            862a                      mv      a2,a0
 d000937e:       |  |  |  |            73900593                  li      a1,1849
 rom_pre_boot_check():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:387
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:383
   if (launder32(boot_data_ok) != kErrorOk) {
 d0009382:       |  |  |  |  /-------- 14b61363                  bne     a2,a1,d00094c8 <rom_boot+0x3be>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:390
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:386
   HARDENED_CHECK_EQ(boot_data_ok, kErrorOk);
 d0009386:       |  |  |  |  |     /-- 00b50663                  beq     a0,a1,d0009392 <rom_boot+0x288>
 d000938a:       |  |  |  |  |     |   0000                      unimp
 d000938c:       |  |  |  |  |     |   0000                      unimp
 d000938e:       |  |  |  |  |     |   0000                      unimp
 d0009390:       |  |  |  |  |     |   0000                      unimp
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:391
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:387
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 4);
 d0009392:       |  |  |  |  |     \-> 010a2503                  lw      a0,16(s4)
 d0009396:       |  |  |  |  |         5a200593                  li      a1,1442
@@ -16573,11 +16573,11 @@ d00093a4:       |  |  |  |  |     |   0000                      unimp
 d00093a6:       |  |  |  |  |     \-> 010a2503                  lw      a0,16(s4)
 d00093aa:       |  |  |  |  |         05a50513                  addi    a0,a0,90
 d00093ae:       |  |  |  |  |         00aa2823                  sw      a0,16(s4)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:396
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:392
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_CPUCTRL_OFFSET);
 d00093b2:       |  |  |  |  |         10c00513                  li      a0,268
 d00093b6:       |  |  |  |  |         5f1040ef                  jal     ra,d000e1a6 <otp_read32>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:397
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:393
   CSR_READ(CSR_REG_CPUCTRL, &cpuctrl_csr);
 d00093ba:       |  |  |  |  |         7c0025f3                  csrr    a1,0x7c0
 bitfield_field32_write():
@@ -16588,17 +16588,17 @@ launder32():
 /proc/self/cwd/./sw/device/lib/base/hardened.h:244
 d00093c2:       |  |  |  |  |         862e                      mv      a2,a1
 rom_pre_boot_check():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:401
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:397
   if (launder32(cpuctrl_csr) != cpuctrl_otp) {
 d00093c4:       |  |  |  |  |  /----- 10a61663                  bne     a2,a0,d00094d0 <rom_boot+0x3c6>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:404
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:400
   HARDENED_CHECK_EQ(cpuctrl_csr, cpuctrl_otp);
 d00093c8:       |  |  |  |  |  |  /-- 00a58663                  beq     a1,a0,d00093d4 <rom_boot+0x2ca>
 d00093cc:       |  |  |  |  |  |  |   0000                      unimp
 d00093ce:       |  |  |  |  |  |  |   0000                      unimp
 d00093d0:       |  |  |  |  |  |  |   0000                      unimp
 d00093d2:       |  |  |  |  |  |  |   0000                      unimp
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:405
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:401
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 5);
 d00093d4:       |  |  |  |  |  |  \-> 010a2503                  lw      a0,16(s4)
 d00093d8:       |  |  |  |  |  |      5fc00593                  li      a1,1532
@@ -16611,11 +16611,11 @@ d00093e8:       |  |  |  |  |  |  \-> 010a2503                  lw      a0,16(s4
 d00093ec:       |  |  |  |  |  |      01698433                  add     s0,s3,s6
 d00093f0:       |  |  |  |  |  |      05a50513                  addi    a0,a0,90
 d00093f4:       |  |  |  |  |  |      00aa2823                  sw      a0,16(s4)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:407
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:403
   sec_mmio_check_counters(/*expected_check_count=*/3);
 d00093f8:       |  |  |  |  |  |      450d                      li      a0,3
 d00093fa:       |  |  |  |  |  |      7cd040ef                  jal     ra,d000e3c6 <sec_mmio_check_counters>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:408
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:404
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 6);
 d00093fe:       |  |  |  |  |  |      010a2503                  lw      a0,16(s4)
 d0009402:       |  |  |  |  |  |      65600593                  li      a1,1622
@@ -16628,7 +16628,7 @@ d0009412:       |  |  |  |  |  |  \-> 010a2503                  lw      a0,16(s4
 d0009416:       |  |  |  |  |  |      05a50513                  addi    a0,a0,90
 d000941a:       |  |  |  |  |  |      00aa2823                  sw      a0,16(s4)
 rom_boot():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:483
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:479
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomBoot, 4);
 d000941e:       |  |  |  |  |  |      014a2503                  lw      a0,20(s4)
 d0009422:       |  |  |  |  |  |      44a00593                  li      a1,1098
@@ -16640,7 +16640,7 @@ d0009430:       |  |  |  |  |  |  |   0000                      unimp
 d0009432:       |  |  |  |  |  |  \-> 014a2503                  lw      a0,20(s4)
 d0009436:       |  |  |  |  |  |      05a50513                  addi    a0,a0,90
 d000943a:       |  |  |  |  |  |      00aa2a23                  sw      a0,20(s4)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:484
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:480
   CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomPreBootCheck, 7);
 d000943e:       |  |  |  |  |  |      010a2503                  lw      a0,16(s4)
 d0009442:       |  |  |  |  |  |      6b000593                  li      a1,1712
@@ -16649,24 +16649,24 @@ d000944a:       |  |  |  |  |  |  |   0000                      unimp
 d000944c:       |  |  |  |  |  |  |   0000                      unimp
 d000944e:       |  |  |  |  |  |  |   0000                      unimp
 d0009450:       |  |  |  |  |  |  |   0000                      unimp
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:487
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:483
   flash_ctrl_exec_set(flash_exec);
 d0009452:       |  |  |  |  |  |  \-> 854a                      mv      a0,s2
 d0009454:       |  |  |  |  |  |      4be020ef                  jal     ra,d000b912 <flash_ctrl_exec_set>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:488
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:484
   SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioExecSet);
 d0009458:       |  |  |  |  |  |      008aa503                  lw      a0,8(s5)
 d000945c:       |  |  |  |  |  |      0505                      addi    a0,a0,1
 d000945e:       |  |  |  |  |  |      00aaa423                  sw      a0,8(s5)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:490
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:486
   sec_mmio_check_values(rnd_uint32());
 d0009462:       |  |  |  |  |  |      05b040ef                  jal     ra,d000dcbc <rnd_uint32>
 d0009466:       |  |  |  |  |  |      6f1040ef                  jal     ra,d000e356 <sec_mmio_check_values>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:491
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:487
   sec_mmio_check_counters(/*expected_check_count=*/5);
 d000946a:       |  |  |  |  |  |      4515                      li      a0,5
 d000946c:       |  |  |  |  |  |      75b040ef                  jal     ra,d000e3c6 <sec_mmio_check_counters>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:494
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:490
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomBoot, 5);
 d0009470:       |  |  |  |  |  |      014a2503                  lw      a0,20(s4)
 d0009474:       |  |  |  |  |  |      4a400593                  li      a1,1188
@@ -16678,12 +16678,12 @@ d0009482:       |  |  |  |  |  |  |   0000                      unimp
 d0009484:       |  |  |  |  |  |  \-> 014a2503                  lw      a0,20(s4)
 d0009488:       |  |  |  |  |  |      05a50513                  addi    a0,a0,90
 d000948c:       |  |  |  |  |  |      00aa2a23                  sw      a0,20(s4)
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:495
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:491
   ((rom_ext_entry_point *)entry_point)();
 d0009490:       |  |  |  |  |  |      9402                      jalr    s0
 d0009492:       |  |  |  |  |  |      014d5537                  lui     a0,0x14d5
 d0009496:       |  |  |  |  |  |      20950513                  addi    a0,a0,521 # 14d5209 <WDOG_BARK_THOLD+0x149e321>
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:498
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:494
 }
 d000949a:       \--|--|--|--|--|----> 4c92                      lw      s9,4(sp)
 d000949c:          |  |  |  |  |      4c22                      lw      s8,8(sp)
@@ -16699,30 +16699,30 @@ d00094ae:          |  |  |  |  |      50b2                      lw      ra,44(sp
 d00094b0:          |  |  |  |  |      6145                      addi    sp,sp,48
 d00094b2:          |  |  |  |  |      8082                      ret
 rom_pre_boot_check():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:374
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:370
   SHUTDOWN_IF_ERROR(alert_config_check(lc_state));
 d00094b4:          |  \--|--|--|----> 264050ef                  jal     ra,d000e718 <shutdown_finalize>
 rom_boot():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:473
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:469
       HARDENED_UNREACHABLE();
 d00094b8:          \-----|--|--|----> 0000                      unimp
 d00094ba:                |  |  |      0000                      unimp
 d00094bc:                |  |  |      0000                      unimp
 d00094be:                |  |  |      0000                      unimp
 rom_pre_boot_check():
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:380
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:376
     HARDENED_UNREACHABLE();
 d00094c0:                \--|--|----> 0000                      unimp
 d00094c2:                   |  |      0000                      unimp
 d00094c4:                   |  |      0000                      unimp
 d00094c6:                   |  |      0000                      unimp
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:388
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:384
     HARDENED_UNREACHABLE();
 d00094c8:                   \--|----> 0000                      unimp
 d00094ca:                      |      0000                      unimp
 d00094cc:                      |      0000                      unimp
 d00094ce:                      |      0000                      unimp
-/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:402
+/proc/self/cwd/sw/device/silicon_creator/rom/rom.c:398
     HARDENED_UNREACHABLE();
 d00094d0:                      \----> 0000                      unimp
 d00094d2:                             0000                      unimp
