@@ -135,6 +135,20 @@ otbn_library(
 )
 
 otbn_library(
+    name = "p384_internal_mult",
+    srcs = [
+        "p384_internal_mult.s",
+    ],
+)
+
+otbn_library(
+    name = "p384_scalar_mult",
+    srcs = [
+        "p384_scalar_mult.s",
+    ],
+)
+
+otbn_library(
     name = "p384_verify",
     srcs = [
         "p384_verify.s",
@@ -283,6 +297,7 @@ otbn_binary(
     ],
     deps = [
         ":p384_base",
+        ":p384_internal_mult",
         ":p384_sign",
     ],
 )

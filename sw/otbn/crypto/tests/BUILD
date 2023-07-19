@@ -371,7 +371,8 @@ otbn_sim_test(
     exp = "p384_base_mult_test.exp",
     deps = [
         "//sw/otbn/crypto:p384_base",
-        "//sw/otbn/crypto:p384_sign",
+        "//sw/otbn/crypto:p384_internal_mult",
+        "//sw/otbn/crypto:p384_scalar_mult",
     ],
 )
 
@@ -383,6 +384,7 @@ otbn_sim_test(
     exp = "p384_ecdsa_sign_test.exp",
     deps = [
         "//sw/otbn/crypto:p384_base",
+        "//sw/otbn/crypto:p384_internal_mult",
         "//sw/otbn/crypto:p384_sign",
     ],
 )
@@ -430,7 +432,19 @@ otbn_sim_test(
     exp = "p384_scalar_mult_test.exp",
     deps = [
         "//sw/otbn/crypto:p384_base",
-        "//sw/otbn/crypto:p384_sign",
+        "//sw/otbn/crypto:p384_internal_mult",
+        "//sw/otbn/crypto:p384_scalar_mult",
+    ],
+)
+
+otbn_sim_test(
+    name = "p384_mulmod448x128_test",
+    srcs = [
+        "p384_mulmod448x128_test.s",
+    ],
+    exp = "p384_mulmod448x128_test.exp",
+    deps = [
+        "//sw/otbn/crypto:p384_base",
     ],
 )
 
@@ -438,7 +452,15 @@ otbn_consttime_test(
     name = "p384_base_mult_consttime",
     subroutine = "p384_base_mult",
     deps = [
-        ":p384_ecdsa_sign_test",
+        ":p384_base_mult_test",
+    ],
+)
+
+otbn_consttime_test(
+    name = "p384_scalar_mult_consttime",
+    subroutine = "p384_scalar_mult",
+    deps = [
+        ":p384_scalar_mult_test",
     ],
 )
 
@@ -481,14 +503,6 @@ otbn_consttime_test(
         "x25:17",
     ],
     subroutine = "proj_add_p384",
-    deps = [
-        ":p384_ecdsa_sign_test",
-    ],
-)
-
-otbn_consttime_test(
-    name = "scalar_mult_p384_consttime",
-    subroutine = "scalar_mult_p384",
     deps = [
         ":p384_ecdsa_sign_test",
     ],

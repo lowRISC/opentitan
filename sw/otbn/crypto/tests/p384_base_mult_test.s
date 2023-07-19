@@ -16,14 +16,14 @@
 
 p384_base_mult_test:
 
-  /* set dmem pointer to point to scalar (private key) d */
-  la       x2, scalar
-  la       x3, dptr_d
+  /* set dmem pointer to point to 1st scalar share d0 (private key) */
+  la       x2, d0
+  la       x3, dptr_d0
   sw       x2, 0(x3)
 
-  /* set dmem pointer to point to blinding parameter */
-  la       x2, blinding_param
-  la       x3, dptr_rnd
+  /* set dmem pointer to point to 2nd scalar share d1 (private key) */
+  la       x2, d1
+  la       x3, dptr_d1
   sw       x2, 0(x3)
 
   /* set dmem pointer to point to x-coordinate */
@@ -53,7 +53,43 @@ p384_base_mult_test:
 
 .section .data
 
-/* scalar d */
+/* 1st scalar share d0 (448-bit) */
+d0:
+  .word 0x5c832a51
+  .word 0x3eb17c27
+  .word 0x9a0c1b76
+  .word 0x6e001281
+  .word 0x4de8344e
+  .word 0x5b7d3b0f
+  .word 0x96d2f9e0
+  .word 0x1e9d19e7
+  .word 0x16f5c1ee
+  .word 0x800a4c94
+  .word 0xe14cd8df
+  .word 0xadb9ce1b
+  .word 0x8677a5f2
+  .word 0x32f9e2b0
+  .zero 8
+
+/* 2nd scalar share d1 (448-bit) */
+d1:
+  .word 0x33eae098
+  .word 0xd31b18d5
+  .word 0x507568cd
+  .word 0xab8fb14d
+  .word 0x9ef51898
+  .word 0x44676e61
+  .word 0x9cb814d9
+  .word 0x4ad22b6e
+  .word 0x8930f243
+  .word 0xb706d682
+  .word 0xa9da1611
+  .word 0x13e7014a
+  .word 0x9ec9b430
+  .word 0x9e5dc598
+  .zero 8
+
+/* scalar d = (d0 + d1) mod n (384-bit) */
 scalar:
   .word 0xe8791ba3
   .word 0xf549e1f7
@@ -67,22 +103,6 @@ scalar:
   .word 0x37112316
   .word 0x8b26eef1
   .word 0xc1a0cf66
-  .zero 16
-
-   /* blinding parameter rnd */
- blinding_param:
-  .word 0xa82c85b0
-  .word 0x163ce1c8
-  .word 0x32518fd7
-  .word 0xf8a428cd
-  .word 0xf5b9d867
-  .word 0x00906f5f
-  .word 0x7387b4f2
-  .word 0xa2d3da7a
-  .word 0xebe0a647
-  .word 0xfb2ef7ca
-  .word 0x74249432
-  .word 0x230e5ff6
   .zero 16
 
 /* result buffer x-coordinate */
