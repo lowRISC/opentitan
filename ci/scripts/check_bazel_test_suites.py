@@ -26,8 +26,8 @@ EMPTY_TEST_SUITE_DESCRIPTION = """
 Test suites below contain zero tests. This is probably an accident.
 """
 
-AZURE_PIPELINES_WARNING = "##vso[task.logissue type=error]"
-AZURE_PIPELINES_ERROR = "##vso[task.logissue type=warning]"
+AZURE_PIPELINES_WARNING = "##vso[task.logissue type=warning]"
+AZURE_PIPELINES_ERROR = "##vso[task.logissue type=error]"
 
 if __name__ == '__main__':
     bazel = BazelQueryRunner()
