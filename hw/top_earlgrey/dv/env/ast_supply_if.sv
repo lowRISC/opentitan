@@ -66,10 +66,17 @@ interface ast_supply_if (
 `endif
   endtask
 
+  task static release_vcmain_pok();
+`ifndef GATE_LEVEL
+    `uvm_info("ast_supply_if", $sformatf("Releasing ast_pwst_o.main_pok"), UVM_MEDIUM)
+    release u_ast.ast_pwst_o.main_pok;
+`endif
+  endtask
+
 `define GLITCH_VCMAIN_POK                 \
     force_vcmain_pok(1'b0);               \
     #1ps; \
-    release u_ast.ast_pwst_o.main_pok;
+    release_vcmain_pok();
 
   // Create glitch in vcmain_pok_h_o some cycles after core_sleeping trigger transitions high.
   // This is useful for non-deep sleep-related triggers.
