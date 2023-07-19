@@ -61,10 +61,11 @@ constexpr boot_data_t kDefaultEntry = {
                0xcc761df1, 0xff42f0f2, 0x3f1955ee, 0x9465b3e7, 0x81ce0fdb},
     .is_valid = kBootDataValidEntry,
     .identifier = kBootDataIdentifier,
-    .version = kBootDataVersion1,
+    .version = kBootDataVersion2,
     .counter = kBootDataDefaultCounterVal,
     .min_security_version_rom_ext = 0x01234567,
     .min_security_version_bl0 = 0x89abcdef,
+    .primary_bl0_slot = kBootDataSlotA,
 };
 
 namespace boot_data_unittest {

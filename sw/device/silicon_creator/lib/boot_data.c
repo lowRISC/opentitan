@@ -545,12 +545,13 @@ static rom_error_t boot_data_default_get(lifecycle_state_t lc_state,
 
   boot_data->is_valid = kBootDataValidEntry;
   boot_data->identifier = kBootDataIdentifier;
-  boot_data->version = kBootDataVersion1;
+  boot_data->version = kBootDataVersion2;
   boot_data->counter = kBootDataDefaultCounterVal;
   boot_data->min_security_version_rom_ext =
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT_OFFSET);
   boot_data->min_security_version_bl0 =
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_MIN_SEC_VER_BL0_OFFSET);
+  boot_data->primary_bl0_slot = kBootDataSlotA;
   // We cannot use a constant digest since some fields are read from the OTP
   // and we check the digest of the cached boot data entry in rom.c
   boot_data_digest_compute(boot_data, &boot_data->digest);
@@ -664,4 +665,17 @@ rom_error_t boot_data_check(const boot_data_t *boot_data) {
   }
 
   return kErrorBootDataInvalid;
+}
+
+rom_error_t boot_data_as_v2(boot_data_t *boot_data) {
+  switch (launder32(boot_data->version)) {
+    case kBootDataVersion1:
+      boot_data->primary_bl0_slot = kBootDataSlotA;
+      return kErrorOk;
+    case kBootDataVersion2:
+      return kErrorOk;
+    default:
+      HARDENED_TRAP();
+      OT_UNREACHABLE();
+  }
 }

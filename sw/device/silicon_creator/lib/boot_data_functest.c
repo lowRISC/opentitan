@@ -32,11 +32,12 @@ boot_data_t kTestBootData = (boot_data_t){
     .digest = {{0x58dbe282, 0x57d7c3f6, 0x1f3f6647, 0xbe7e27b6, 0x334bd1c5,
                 0xdb2c57b5, 0x134933c9, 0xd8fa260c}},
     .identifier = kBootDataIdentifier,
-    .version = kBootDataVersion1,
+    .version = kBootDataVersion2,
     .is_valid = kBootDataValidEntry,
     // `kBootDataDefaultCounterVal` + 1 for consistency.
     .counter = kBootDataDefaultCounterVal + 1,
     .min_security_version_rom_ext = 0,
+    .primary_bl0_slot = kBootDataSlotA,
 };
 
 /**
