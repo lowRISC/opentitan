@@ -790,12 +790,34 @@ class SimCfg(FlowCfg):
         # Add path to testplan, only if it has entries (i.e., its not dummy).
         if self.testplan.testpoints:
             if hasattr(self, "testplan_doc_path"):
-                testplan = "https://{}/{}".format(self.doc_server,
-                                                  self.testplan_doc_path)
+                # The key 'testplan_doc_path' can override the path to the testplan file
+                # if it's not in the default location relative to the sim_cfg.
+                relative_path_to_testplan = (Path(self.testplan_doc_path)
+                                             .relative_to(Path(self.proj_root)))
+                testplan = "https://{}/{}".format(
+                    self.book,
+                    str(relative_path_to_testplan).replace("hjson", "html")
+                )
             else:
-                testplan = "https://{}/{}".format(self.doc_server,
-                                                  self.rel_path)
-                testplan = testplan.replace("/dv", "/doc/dv/#testplan")
+                # Default filesystem layout for an ip block
+                # ├── data
+                # │   ├── gpio_testplan.hjson
+                # │   └── <...>
+                # ├── doc
+                # │   ├── checklist.md
+                # │   ├── programmers_guide.md
+                # │   ├── theory_of_operation.md
+                # │   └── <...>
+                # ├── dv
+                # │   ├── gpio_sim_cfg.hjson
+                # │   └── <...>
+
+                # self.rel_path gives us the path to the directory
+                # containing the sim_cfg file...
+                testplan = "https://{}/{}".format(
+                    self.book,
+                    Path(self.rel_path).parent / 'data' / f"{self.name}_testplan.html"
+                )
 
             results_str += f"### [Testplan]({testplan})\n"
 
