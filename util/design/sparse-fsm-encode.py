@@ -112,7 +112,7 @@ def main():
             (args.n, args.m))
         sys.exit(1)
 
-    if (args.d >= args.n) and not(args.d == args.n and args.m == 2):
+    if (args.d >= args.n) and not (args.d == args.n and args.m == 2):
         log.error(
             'State is only %d bits wide, which is not enough to fulfill a '
             'minimum Hamming distance constraint of %d. ' % (args.n, args.d))
@@ -134,7 +134,11 @@ def main():
         random.seed()
         args.s = random.getrandbits(32)
 
-    random.seed(args.s)
+    # Create and seed a separate Random instance to avoid sharing state with
+    # other libraries that may use the global random. This will improve the
+    # determinism of this script.
+    rand = random.Random()
+    rand.seed(args.s)
 
     # This is a heuristic that opportunistically draws random
     # state encodings and check whether they fulfill the minimum
@@ -147,7 +151,7 @@ def main():
     # cases, and it scales favorably to large N.
     num_draws = 0
     num_restarts = 0
-    rnd = random.getrandbits(args.n)
+    rnd = rand.getrandbits(args.n)
     encodings = []
 
     min_popcnt = args.d if args.avoid_zero else 1
@@ -157,7 +161,7 @@ def main():
         if num_draws >= MAX_DRAWS:
             num_draws = 0
             num_restarts += 1
-            rnd = random.getrandbits(args.n)
+            rnd = rand.getrandbits(args.n)
             encodings = []
         # if we restarted for too many times, abort.
         if num_restarts >= MAX_RESTARTS:
@@ -172,7 +176,7 @@ def main():
         num_draws += 1
         # draw a candidate and check whether it fulfills the minimum
         # distance requirement with respect to other encodings.
-        rnd = random.getrandbits(args.n)
+        rnd = rand.getrandbits(args.n)
         cand = format(rnd, '0' + str(args.n) + 'b')
         # disallow all-zero and all-one states
         pop_cnt = cand.count('1')
