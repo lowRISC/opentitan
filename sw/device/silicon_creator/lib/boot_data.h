@@ -65,10 +65,14 @@ typedef struct boot_data {
    */
   uint32_t min_security_version_bl0;
   /**
+   * The BL0 slot that is prioritized during boot.
+   */
+  uint32_t primary_bl0_slot;
+  /**
    * Padding for future enhancements and to make the size of `boot_data_t` a
    * power of two.
    */
-  uint32_t padding[17];
+  uint32_t padding[16];
 } boot_data_t;
 
 OT_ASSERT_MEMBER_OFFSET(boot_data_t, digest, 0);
@@ -78,7 +82,8 @@ OT_ASSERT_MEMBER_OFFSET(boot_data_t, version, 44);
 OT_ASSERT_MEMBER_OFFSET(boot_data_t, counter, 48);
 OT_ASSERT_MEMBER_OFFSET(boot_data_t, min_security_version_rom_ext, 52);
 OT_ASSERT_MEMBER_OFFSET(boot_data_t, min_security_version_bl0, 56);
-OT_ASSERT_MEMBER_OFFSET(boot_data_t, padding, 60);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, primary_bl0_slot, 60);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, padding, 64);
 OT_ASSERT_SIZE(boot_data_t, 128);
 
 enum {
@@ -90,6 +95,10 @@ enum {
    * Boot data version 1 value.
    */
   kBootDataVersion1 = 0xd4ce468e,
+  /**
+   * Boot data version 2 value.
+   */
+  kBootDataVersion2 = 0xad51e729,
   /**
    * Value of the `is_valid` field for valid entries.
    */
@@ -128,6 +137,21 @@ static_assert(kBootDataInvalidEntry != kBootDataValidEntry,
 static_assert(kBootDataValidEntry ==
                   ((uint64_t)kFlashCtrlErasedWord << 32 | kFlashCtrlErasedWord),
               "kBootDataValidEntry words must be kFlashCtrlErasedWord");
+
+/*
+ * Encoding generated with
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 2 -n 32 \
+ *     -s 3436204326 --language=c
+ *
+ * Minimum Hamming distance: 12
+ * Maximum Hamming distance: 12
+ * Minimum Hamming weight: 15
+ * Maximum Hamming weight: 15
+ */
+enum {
+  kBootDataSlotA = 0x9cdc8d50,
+  kBootDataSlotB = 0xcd598a4a,
+};
 
 /**
  * Reads the boot data stored in the flash info partition.
@@ -170,6 +194,20 @@ rom_error_t boot_data_write(const boot_data_t *boot_data);
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t boot_data_check(const boot_data_t *boot_data);
+
+/**
+ * Populates fields not present in older versions of `boot_data_t`.
+ *
+ * For older `boot_data_t` entries, some fields may be missing after a call to
+ * `boot_data_read()`. This function will populate fields with their default
+ * values, the same values that `boot_data_read()` uses when returning default
+ * boot data.
+ *
+ * @param boot_data A buffer the holds a boot data entry.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t boot_data_as_v2(boot_data_t *boot_data);
 
 #ifdef __cplusplus
 }  // extern "C"
