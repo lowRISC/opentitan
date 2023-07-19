@@ -44,17 +44,20 @@ class alert_monitor extends alert_esc_base_monitor;
     end
   endtask : alert_init_thread
 
-  // This task called inside forever loop in the `reset_thread` task, intended to be a nonblocking
-  // process. However, it can still block alert handshake via the `cfg.alert_init_done` flag.
-  // To handle the scenario where reset is issued during alert init, we use a fork join_any thread.
+  // Block until alert initialisation happens, but exit early on a reset. When alert initialisation
+  // is complete, clear under_reset and set alert_init_done.
+  //
+  // Alert initialisation is normally tracked by the p/n signals becoming equal and then different
+  // again. As a special case, we also consider alert initialisation to have happened when
+  // en_alert_lpg is high. In this case, alert_sender can still send alerts, and alert_handler
+  // should ignore the alert_tx request.
   virtual task wait_alert_init_done();
-    fork begin
+    fork begin : isolation_fork
       fork
         begin
-          wait (cfg.vif.monitor_cb.alert_tx_final.alert_p ==
-                cfg.vif.monitor_cb.alert_tx_final.alert_n);
-          wait (cfg.vif.monitor_cb.alert_tx_final.alert_p !=
-                cfg.vif.monitor_cb.alert_tx_final.alert_n);
+          wait (cfg.vif.alert_tx.alert_p == cfg.vif.alert_tx.alert_n);
+          wait (cfg.vif.alert_tx.alert_p != cfg.vif.alert_tx.alert_n);
+          @(posedge cfg.vif.clk);
           `uvm_info("alert_monitor", "Alert init done!", UVM_HIGH)
           cfg.alert_init_done = 1;
           under_reset = 0;
@@ -62,8 +65,6 @@ class alert_monitor extends alert_esc_base_monitor;
         begin
           @(negedge cfg.vif.rst_n);
         end
-        // Clear `under_reset` and `alert_init_done` when en_alert_lpg is on, because alert_sender
-        // can still send alerts, and alert_handler should ignore the alert_tx request.
         begin
           wait (cfg.en_alert_lpg == 1);
           cfg.alert_init_done = 1;
@@ -71,7 +72,7 @@ class alert_monitor extends alert_esc_base_monitor;
         end
       join_any
       disable fork;
-    end
+    end : isolation_fork
     join
   endtask
 
