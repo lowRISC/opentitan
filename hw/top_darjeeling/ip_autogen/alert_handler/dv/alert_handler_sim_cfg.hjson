@@ -29,7 +29,10 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/shadow_reg_errors_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
-                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
+                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson",
+                // Top-level-specific configuration
+                "{proj_root}/hw/{top_chip}/chip_cfg.hjson",
+                ]
 
   // Add additional tops for simulation.
   sim_tops: ["alert_handler_bind",
