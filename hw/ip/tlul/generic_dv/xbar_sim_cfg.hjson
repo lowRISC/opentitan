@@ -21,8 +21,8 @@
   // Fusesoc core file used for building the file list.
   fusesoc_core: "lowrisc:dv:{top_chip}_{dut}_sim:0.1"
 
-  // Set the path to testplan md file as it's not in the default location.
-  testplan_doc_path: "hw/ip/tlul/doc/dv/#testplan"
+  // Give the path to the testplan file since it's not in the default location.
+  testplan_doc_path: "{proj_root}/hw/ip/tlul/data/tlul_testplan.hjson"
 
   // Bypass VCS CHECK_SUM check as the exclusion file is generated without proper CHECK_SUM value
   vcs_cov_analyze_opts: ["-excl_bypass_checks"]

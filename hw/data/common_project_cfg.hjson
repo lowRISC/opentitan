@@ -4,6 +4,7 @@
 {
   project:          opentitan
   repo_server:      "github.com/lowrisc/opentitan"
+  book:             opentitan.org/book
   doc_server:       docs.opentitan.org
   results_server:   reports.opentitan.org
 
