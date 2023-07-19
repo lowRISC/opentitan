@@ -179,7 +179,9 @@ def main():
         if pop_cnt < args.n and pop_cnt >= min_popcnt:
             for k in encodings:
                 # disallow candidates that are the complement of other states
-                if int(cand, 2) == ~int(k, 2):
+                # The ~ operator cannot be used here as it returns a 2's
+                # complement result. XOR with 1's instead to invert the bits.
+                if int(cand, 2) ^ ((1 << args.n) - 1) == int(k, 2):
                     break
                 # disallow candidates that are too close to other states
                 if get_hd(cand, k) < args.d:
