@@ -247,9 +247,13 @@ void cleanup(uint32_t test_idx) {
       break;
     case PWRMGR_PARAM_PINMUX_AON_USB_WKUP_REQ_IDX:
       CHECK_DIF_OK(dif_usbdev_set_wake_enable(&usbdev, kDifToggleDisabled));
+      // Write again to make sure the first one has already completed.
+      CHECK_DIF_OK(dif_usbdev_set_wake_enable(&usbdev, kDifToggleDisabled));
       CHECK_DIF_OK(dif_pinmux_wakeup_cause_clear(&pinmux));
       break;
     case PWRMGR_PARAM_AON_TIMER_AON_WKUP_REQ_IDX:
+      CHECK_DIF_OK(dif_aon_timer_wakeup_stop(&aon_timer));
+      // Write again to make sure the first one has already completed.
       CHECK_DIF_OK(dif_aon_timer_wakeup_stop(&aon_timer));
       CHECK_DIF_OK(dif_aon_timer_clear_wakeup_cause(&aon_timer));
       break;
