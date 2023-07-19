@@ -121,7 +121,7 @@ static void rom_bootstrap_message(void) {
 void init_spi_host(dif_spi_host_t *spi_host,
                    uint32_t peripheral_clock_freq_hz) {
   dif_spi_host_config_t config = {
-      .spi_clock = peripheral_clock_freq_hz / 2,
+      .spi_clock = peripheral_clock_freq_hz / 2,// 100, for tape out 1MHz, in sim 50MHz
       .peripheral_clock_freq_hz = peripheral_clock_freq_hz,
       .chip_select = {.idle = 2, .trail = 2, .lead = 2},
       .full_cycle = true,
@@ -145,7 +145,7 @@ void spi_flash_load_data(void){
   uint32_t addr_swap = 0;
   int index = 0;
   uintptr_t base_addr = TOP_EARLGREY_SPI_HOST0_BASE_ADDR;
-  uint64_t clkHz = 10000000;
+  uint64_t clkHz = 100000000;
   
   payload_1  = (int *) 0xff000000;
   payload_2  = (int *) 0xff000004;
@@ -301,12 +301,10 @@ static rom_error_t rom_verify(const manifest_t *manifest,
   const sigverify_rsa_key_t *key;
   HARDENED_RETURN_IF_ERROR(sigverify_rsa_key_get(
       sigverify_rsa_key_id_get(&manifest->modulus), lc_state, &key));
-
   uint32_t clobber_value = rnd_uint32();
   for (size_t i = 0; i < ARRAYSIZE(boot_measurements.rom_ext.data); ++i) {
     boot_measurements.rom_ext.data[i] = clobber_value;
   }
-
   hmac_sha256_init();
   // Invalidate the digest if the security version of the manifest is smaller
   // than the minimum required security version.
@@ -326,7 +324,6 @@ static rom_error_t rom_verify(const manifest_t *manifest,
                      sizeof(usage_constraints_from_hw));
   // Hash the remaining part of the image.
   manifest_digest_region_t digest_region = manifest_digest_region_get(manifest);
-
   hmac_sha256_update(digest_region.start, digest_region.length);
   // Verify signature
   hmac_digest_t act_digest;
@@ -336,7 +333,6 @@ static rom_error_t rom_verify(const manifest_t *manifest,
                 "Unexpected ROM_EXT digest size.");
   memcpy(&boot_measurements.rom_ext, &act_digest,
          sizeof(boot_measurements.rom_ext));
-
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomVerify, 2);
   return sigverify_rsa_verify(&manifest->signature, key, &act_digest, lc_state,
                               flash_exec);
@@ -523,7 +519,6 @@ static rom_error_t rom_try_boot(void) {
     HARDENED_RETURN_IF_ERROR(rom_boot(manifests.ordered[0], flash_exec));
     return kErrorRomBootFailed;
   }
-
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 5, kCfiRomVerify);
   HARDENED_RETURN_IF_ERROR(rom_verify(manifests.ordered[1], &flash_exec));
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBoot, 7);
