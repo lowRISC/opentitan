@@ -48,9 +48,7 @@
   ]
   alert_list: [
     { name: "fatal_fault"
-      desc: '''
-      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
-      '''
+      desc: "This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected."
     }
   ]
   countermeasures: [
@@ -62,7 +60,11 @@
   regwidth: "32"
   registers: [
     { name: "SOURCE_ADDRESS_LO"
-      desc: "Lower 32 bits of 4 byte aligned physical or virtual address of memory location within SOC memory address map or physical address within OT non-secure memory space."
+      desc: '''
+            Lower 32 bits of 4 byte aligned physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
+            Data is read from this location in a copy operation.
+            The address may be an IO virtual address.
+            '''
       swaccess: "rw"
       hwaccess: "hrw"
       hwqe: "true"
@@ -83,12 +85,16 @@
         { bits: "31:0"
           name: "source_address_hi"
           resval: 0x0
-          desc: "Upper 32 bits of 4 byte aligned physical or virtual address of memory location within SOC memory address map or physical address within OT non-secure memory space."
+          desc: "Upper 32 bits of 4 byte aligned physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space."
         }
       ]
     }
     { name: "DESTINATION_ADDRESS_LO"
-      desc: "Lower 32 bits of 4 byte aligned physical or virtual address of memory location within SOC memory address map or physical address within OT non-secure memory space."
+      desc: '''
+            Lower 32 bits of 4 byte aligned physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
+            Data is written to this location in a copy operation.
+            The address may be an IO virtual address.
+            '''
       swaccess: "rw"
       hwaccess: "hrw"
       hwqe: "true"
@@ -109,7 +115,7 @@
         { bits: "31:0"
           name: "destination_address_hi"
           resval: 0x0
-          desc: "Upper 32 bits of 4 byte aligned physical or virtual address of memory location within SOC memory address map or physical address within OT non-secure memory space."
+          desc: "Upper 32 bits of 4 byte aligned physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space."
         }
       ]
     }
@@ -200,8 +206,9 @@
           mubi: "true"
           name: "unlock"
           resval: true
-          desc: '''Used by firmware to lock the DMA enabled memory range configuration registers from further modification.
-                This register once set to kMultiBitBool4False can be set only upon a reset event.
+          desc: '''
+                Used by firmware to lock the DMA enabled memory range configuration registers from further modification.
+                Once this register is set to kMultiBitBool4False, it can only be set to kMultiBitBool4True through a reset event.
 
                 Default Value = kMultiBitBool4True -> Unlocked at reset.
                 '''
@@ -216,10 +223,11 @@
         { bits: "31:0"
           name: "data_size"
           resval: 0x0
-          desc: '''Total size of the data blob involved in DMA movement.
+          desc: '''
+                Total size (in bytes) of the data blob involved in DMA movement.
 
                 Minimum: 1 byte.
-                Maximum: may be restricted to a maximum pre-defined size based on OT DMA enabled memory space allocation.
+                Maximum: May be restricted to a maximum pre-defined size based on OT DMA enabled memory space allocation.
                 Works in conjunction with Transfer width register.
           '''
         }
@@ -233,7 +241,8 @@
         { bits: "1:0"
           name: "transaction_width"
           resval: 0x3
-          desc: '''Denotes the width of each transaction that the DMA shall issue during the data movement.
+          desc: '''
+                Denotes the width of each transaction that the DMA shall issue during the data movement.
 
                 Multiple transactions of transfer width each will be issued until total size number of bytes are reached.
                 Note that firmware may need to set a different value if a receiving IP supports a read / write transaction width that is less than 1 DWORD.
@@ -251,7 +260,8 @@
             }
             { value: "3",
               name: "FOUR_BYTE",
-              desc: '''Four bytes per transaction.
+              desc: '''
+                    Four bytes per transaction.
                     Default value after reset.
                     '''
             }
@@ -268,7 +278,8 @@
         { bits: "31:0"
           name: "address_limit_lo"
           resval: 0x0
-          desc: '''Limit address configuration.
+          desc: '''
+                Limit address configuration.
 
                 Used in conjunction with the address auto-increment mode for hardware handshake operation to
                 generate an interrupt when memory buffer address approaches memory buffer address limit.
@@ -287,7 +298,8 @@
         { bits: "31:0"
           name: "address_limit_hi"
           resval: 0x0
-          desc: '''Limit address configuration.
+          desc: '''
+                Limit address configuration.
 
                 Used in conjunction with the address auto-increment mode for hardware handshake operation to
                 generate an interrupt when memory buffer address approaches memory buffer address limit.
@@ -306,7 +318,8 @@
         { bits: "31:0"
           name: "address_limit_lo"
           resval: 0x0
-          desc: '''Threshold for detecting that the buffer limit is approaching so as to prevent destination buffer overflow.
+          desc: '''
+                Threshold for detecting that the buffer limit is approaching so as to prevent destination buffer overflow.
                 Used in conjunction with the address auto-increment mode for hardware handshake operation to generate an
                 interrupt when the buffer address approaches close to the buffer (i.e. reaches this threshold) address limit.
                 Enables firmware to take appropriate action prior to reaching the final limit.
@@ -325,7 +338,8 @@
         { bits: "31:0"
           name: "address_limit_hi"
           resval: 0x0
-          desc: '''Threshold for detecting that the buffer limit is approaching so as to prevent destination buffer overflow.
+          desc: '''
+                Threshold for detecting that the buffer limit is approaching so as to prevent destination buffer overflow.
                 Used in conjunction with the address auto-increment mode for hardware handshake operation to generate an
                 interrupt when the buffer address approaches close to the buffer (i.e. reaches this threshold) address limit.
                 Enables firmware to take appropriate action prior to reaching the final limit.
@@ -344,15 +358,24 @@
         { bits: "5:2"
           name: "opcode"
           resval: 0x0
-          desc: '''Defines the type of DMA operations.
+          desc: '''
+                Defines the type of DMA operations.
 
                 0: Copy Operation, Simple copy from source to destination.
+                1: Reserved for hashing (SHA2). Perform inline hash operation using the specified algorithm.
+                2: Reserved for symmetric encryption
+                3: Reserved for symmetric decryption
+                4: Reserved for future use
+
+                Note that the Copy operation is a basic operation that needs to be supported.
+                Currently the other operations are reserved for a future implementation, and they are optional capabilities that may be included via design time options.
                 '''
         }
         { bits: "6"
           name: "hardware_handshake_enable"
           resval: 0x0
-          desc: '''Enable hardware handshake mode.
+          desc: '''
+                Enable hardware handshake mode.
                 Used to clear FIFOs from low speed IO peripherals receiving data, e.g., I3C receive buffer.
                   Listen to an input trigger signal.
                   Read data from source address location.
@@ -365,16 +388,18 @@
         { bits: "7"
           name: "memory_buffer_auto_increment_enable"
           resval: 0x0
-          desc: '''Used in conjunction with the hardware handshake mode of operation.
+          desc: '''
+                Used in conjunction with the hardware handshake mode of operation.
                 Auto Increments the memory buffer address register by data size to point to the next memory buffer address.
-                Generate a warning (assert interrupt) if the auto-incremented address reaches close to the value set in.
-                limit address register to prevent destination buffer overflow.
+                Generate a warning (assert interrupt) if the auto-incremented address reaches close to the value set in limit address register to prevent destination buffer overflow.
+                Enables firmware to take appropriate action prior to reaching the limit.
                 '''
         }
         { bits: "8"
           name: "fifo_auto_increment_enable"
           resval: 0x0
-          desc: '''Used in conjunction with the hardware handshake mode of operation.
+          desc: '''
+                Used in conjunction with the hardware handshake mode of operation.
                 If set, reads/writes from/to incremental addresses for FIFO data register addresses.
                 Else uses the same address for subsequent transactions.
                 '''
@@ -382,7 +407,8 @@
         { bits: "9"
           name: "data_direction"
           resval: 0x0
-          desc: '''Used in conjunction with the hardware handshake enable.
+          desc: '''
+                Used in conjunction with the hardware handshake enable.
                 0: Receive data from LSIO FIFO to memory buffer.
                 1: Send data from memory buffer to LSIO FIFO.
                 '''
@@ -391,14 +417,17 @@
           name: "abort"
           swaccess: "wo"
           resval: 0x0
-          desc: '''Aborts the DMA operation if this bit is set.
+          desc: '''
+                Aborts the DMA operation if this bit is set.
                 Sets the corresponding bit in the status register once abort operation is complete.
+                Any OpenTitan-internal transactions are guaranteed to complete, but there are no guarantees on the SoC interface.
                 '''
         }
         { bits: "31"
           name: "go"
           resval: 0x0
-          desc: '''Trigger the DMA operation when the Go bit is set.
+          desc: '''
+                Trigger the DMA operation when the Go bit is set.
                 For normal operation, DMA engine clears the GO bit automatically after the configured operation is complete.
                 For Hardware handshake operation, DMA engine does not auto clear the Go bit.
                 Firmware shall clear the Go bit when it intends to stop the hardware handshake operation.
@@ -415,7 +444,8 @@
         { bits: "0"
           name: "busy"
           resval: 0x0
-          desc: '''DMA operation is active if this bit is set.
+          desc: '''
+                DMA operation is active if this bit is set.
                 DMA engine clears this bit when operation is complete.
                 This bit may be set as long as hardware handshake mode is active and triggered.
                 '''
@@ -433,14 +463,16 @@
         { bits: "3"
           name: "error"
           resval: 0x0
-          desc: '''Error occurred during the operation.
+          desc: '''
+                Error occurred during the operation.
                 error_code denotes the source of the error.
                 '''
         }
         { bits: "10:4"
           name: "error_code"
           resval: 0x0
-          desc: '''Denotes the source of the operational error.
+          desc: '''
+                Denotes the source of the operational error.
 
                 Bit 0: Source address error.
                 Bit 1: Destination address error.
@@ -462,12 +494,14 @@
         { bits: "0"
           name: "clear"
           resval: 0x0
-          desc: '''A write to this register (value is a don't care) clears the following DMA controller state:
-                    Done Status
-                    Error Status
-                    Error Code
-                    Done Interrupt
-          '''
+          desc: '''
+                A write to this register (value is a don't care) clears the following DMA controller state:
+
+                Done Status
+                Error Status
+                Error Code
+                Done Interrupt
+                '''
         }
       ]
     }

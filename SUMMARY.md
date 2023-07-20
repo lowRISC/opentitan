@@ -104,6 +104,8 @@
     - [Interface and Registers](./hw/ip/csrng/data/csrng.hjson)
     - [Device Interface Functions](./sw/device/lib/dif/dif_csrng.h)
     - [Checklist](./hw/ip/csrng/doc/checklist.md)
+  - [DMA](./hw/ip/dma/README.md)
+    - [Theory of Operation](./hw/ip/dma/doc/theory_of_operation.md)
   - [EDN](./hw/ip/edn/README.md)
     - [Theory of Operation](./hw/ip/edn/doc/theory_of_operation.md)
     - [Design Verification](./hw/ip/edn/dv/README.md)

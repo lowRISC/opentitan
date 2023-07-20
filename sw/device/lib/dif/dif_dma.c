@@ -27,7 +27,33 @@ static_assert(kDifDmaOpentitanExternalFlash ==
 
 dif_result_t dif_dma_configure(const dif_dma_t *dma,
                                dif_dma_transaction_t transaction) {
-  return kDifUnavailable;
+  if (dma == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(dma->base_addr, DMA_SOURCE_ADDRESS_LO_REG_OFFSET,
+                      transaction.source.address & UINT32_MAX);
+  mmio_region_write32(dma->base_addr, DMA_SOURCE_ADDRESS_HI_REG_OFFSET,
+                      transaction.source.address >> sizeof(uint32_t) * 8);
+
+  mmio_region_write32(dma->base_addr, DMA_DESTINATION_ADDRESS_LO_REG_OFFSET,
+                      transaction.destination.address & UINT32_MAX);
+  mmio_region_write32(dma->base_addr, DMA_DESTINATION_ADDRESS_HI_REG_OFFSET,
+                      transaction.destination.address >> sizeof(uint32_t) * 8);
+
+  uint32_t reg = 0;
+  reg = bitfield_field32_write(reg, DMA_ADDRESS_SPACE_ID_SOURCE_ASID_FIELD,
+                               transaction.source.asid);
+  reg = bitfield_field32_write(reg, DMA_ADDRESS_SPACE_ID_DESTINATION_ASID_FIELD,
+                               transaction.destination.asid);
+  mmio_region_write32(dma->base_addr, DMA_ADDRESS_SPACE_ID_REG_OFFSET, reg);
+
+  mmio_region_write32(dma->base_addr, DMA_TOTAL_DATA_SIZE_REG_OFFSET,
+                      transaction.size);
+  mmio_region_write32(dma->base_addr, DMA_TRANSFER_WIDTH_REG_OFFSET,
+                      transaction.width);
+
+  return kDifOk;
 }
 
 dif_result_t dif_dma_handshake_enable(const dif_dma_t *dma,
