@@ -10,7 +10,6 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/crypto/impl/status.h"
-#include "sw/device/lib/crypto/include/datatypes.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -71,189 +70,176 @@ status_t kmac_hwip_default_configure(void);
 /**
  * Compute SHA-3-224 in one-shot.
  *
- * Warning: The caller must ensure that `digest` buffer is large
- * enough to store the resulting digest (at least 224 / 8 = 28 bytes).
- *
- * The caller must ensure that `message` and `digest` have properly
- * allocated `data` fields whose length matches their `len` fields.
+ * The caller must ensure that there is at least 224 bits = 28 bytes of space
+ * available at the location pointed to by `digest`.
  *
  * @param message The input message.
- * @param digest The digest buffer to return the result.
+ * @param message_len The input message length in bytes.
+ * @param[out] digest Output buffer for the result.
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-status_t kmac_sha3_224(crypto_const_uint8_buf_t message,
-                       crypto_uint8_buf_t *digest);
+status_t kmac_sha3_224(const uint8_t *message, size_t message_len,
+                       uint8_t *digest);
 
 /**
  * Compute SHA-3-256 in one-shot.
  *
- * Warning: The caller must ensure that `digest` buffer is large
- * enough to store the resulting digest (at least 256 / 8 = 32 bytes).
- *
- * The caller must ensure that `message` and `digest` have properly
- * allocated `data` fields whose length matches their `len` fields.
+ * The caller must ensure that there is at least 256 bits = 32 bytes of space
+ * available at the location pointed to by `digest`.
  *
  * @param message The input message.
- * @param digest The digest buffer to return the result.
+ * @param message_len The input message length in bytes.
+ * @param[out] digest Output buffer for the result.
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-status_t kmac_sha3_256(crypto_const_uint8_buf_t message,
-                       crypto_uint8_buf_t *digest);
+status_t kmac_sha3_256(const uint8_t *message, size_t message_len,
+                       uint8_t *digest);
+
 /**
  * Compute SHA-3-384 in one-shot.
  *
- * Warning: The caller must ensure that `digest` buffer is large
- * enough to store the resulting digest (at least 384 / 8 = 48 bytes).
- *
- * The caller must ensure that `message` and `digest` have properly
- * allocated `data` fields whose length matches their `len` fields.
+ * The caller must ensure that there is at least 384 bits = 48 bytes of space
+ * available at the location pointed to by `digest`.
  *
  * @param message The input message.
- * @param digest The digest buffer to return the result.
+ * @param message_len The input message length in bytes.
+ * @param[out] digest Output buffer for the result.
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-status_t kmac_sha3_384(crypto_const_uint8_buf_t message,
-                       crypto_uint8_buf_t *digest);
+status_t kmac_sha3_384(const uint8_t *message, size_t message_len,
+                       uint8_t *digest);
 
 /**
  * Compute SHA-3-512 in one-shot.
  *
- * Warning: The caller must ensure that `digest` buffer is large
- * enough to store the resulting digest (at least 512 / 8 = 64 bytes).
- *
- * The caller must ensure that `message` and `digest` have properly
- * allocated `data` fields whose length matches their `len` fields.
+ * The caller must ensure that there is at least 512 bits = 64 bytes of space
+ * available at the location pointed to by `digest`.
  *
  * @param message The input message.
- * @param digest The digest buffer to return the result.
+ * @param message_len The input message length in bytes.
+ * @param[out] digest Output buffer for the result.
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-status_t kmac_sha3_512(crypto_const_uint8_buf_t message,
-                       crypto_uint8_buf_t *digest);
+status_t kmac_sha3_512(const uint8_t *message, size_t message_len,
+                       uint8_t *digest);
 
 /**
  * Compute SHAKE-128 in one-shot.
  *
- * Warning: The caller must ensure that `digest->len` contains the
- * requested digest length (in bytes).
- *
- * The caller must ensure that `message` and `digest` have properly
- * allocated `data` fields whose length matches their `len` fields.
+ * The caller must ensure that `digest_len` bytes are allocated at the location
+ * pointed to by `digest`.
  *
  * @param message The input message.
- * @param digest The digest buffer to return the result.
+ * @param message_len The input message length in bytes.
+ * @param[out] digest Output buffer for the result.
+ * @param digest_len Requested digest length in bytes.
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-status_t kmac_shake_128(crypto_const_uint8_buf_t message,
-                        crypto_uint8_buf_t *digest);
+status_t kmac_shake_128(const uint8_t *message, size_t message_len,
+                        uint8_t *digest, size_t digest_len);
 
 /**
  * Compute SHAKE-256 in one-shot.
  *
- * Warning: The caller must ensure that `digest->len` contains the
- * requested digest length (in bytes).
- *
- * The caller must ensure that `message` and `digest` have properly
- * allocated `data` fields whose length matches their `len` fields.
+ * The caller must ensure that `digest_len` bytes are allocated at the location
+ * pointed to by `digest`.
  *
  * @param message The input message.
- * @param digest The digest buffer to return the result.
+ * @param message_len The input message length in bytes.
+ * @param[out] digest Output buffer for the result.
+ * @param digest_len Requested digest length in bytes.
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-status_t kmac_shake_256(crypto_const_uint8_buf_t message,
-                        crypto_uint8_buf_t *digest);
+status_t kmac_shake_256(const uint8_t *message, size_t message_len,
+                        uint8_t *digest, size_t digest_len);
 
 /**
  * Compute CSHAKE-128 in one-shot.
  *
- * Warning: The caller must ensure that `digest->len` contains the
- * requested digest length (in bytes).
- *
- * The caller must ensure that `message` and `digest` have properly
- * allocated `data` fields whose length matches their `len` fields.
+ * The caller must ensure that `digest_len` bytes are allocated at the location
+ * pointed to by `digest`.
  *
  * @param message The input message.
+ * @param message_len The input message length in bytes.
  * @param func_name The function name.
+ * @param func_name_len The function name length in bytes.
  * @param cust_str The customization string.
- * @param digest The digest buffer to return the result.
+ * @param cust_str_len The customization string length in bytes.
+ * @param[out] digest Output buffer for the result.
+ * @param digest_len Requested digest length in bytes.
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-status_t kmac_cshake_128(crypto_const_uint8_buf_t message,
-                         crypto_const_uint8_buf_t func_name,
-                         crypto_const_uint8_buf_t cust_str,
-                         crypto_uint8_buf_t *digest);
+status_t kmac_cshake_128(const uint8_t *message, size_t message_len,
+                         const unsigned char *func_name, size_t func_name_len,
+                         const unsigned char *cust_str, size_t cust_str_len,
+                         uint8_t *digest, size_t digest_len);
 
 /**
  * Compute CSHAKE-256 in one-shot.
  *
- * Warning: The caller must ensure that `digest->len` contains the
- * requested digest length (in bytes).
- *
- * The caller must ensure that `message` and `digest` have properly
- * allocated `data` fields whose length matches their `len` fields.
+ * The caller must ensure that `digest_len` bytes are allocated at the location
+ * pointed to by `digest`.
  *
  * @param message The input message.
+ * @param message_len The input message length in bytes.
  * @param func_name The function name.
+ * @param func_name_len The function name length in bytes.
  * @param cust_str The customization string.
- * @param digest The digest buffer to return the result.
+ * @param cust_str_len The customization string length in bytes.
+ * @param[out] digest Output buffer for the result.
+ * @param digest_len Requested digest length in bytes.
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-status_t kmac_cshake_256(crypto_const_uint8_buf_t message,
-                         crypto_const_uint8_buf_t func_name,
-                         crypto_const_uint8_buf_t cust_str,
-                         crypto_uint8_buf_t *digest);
+status_t kmac_cshake_256(const uint8_t *message, size_t message_len,
+                         const unsigned char *func_name, size_t func_name_len,
+                         const unsigned char *cust_str, size_t cust_str_len,
+                         uint8_t *digest, size_t digest_len);
 
 /**
  * Compute KMAC-128 in one-shot.
  *
- * Warning: The caller must ensure that `digest->len` contains the
- * requested digest length (in bytes).
+ * The caller must ensure that `digest_len` bytes are allocated at the location
+ * pointed to by `digest`.
  *
- * The caller must ensure that `message` and `digest` have properly
- * allocated `data` fields whose length matches their `len` fields.
- *
- * @param key The input key as a struct.
  * @param message The input message.
- * @param func_name The function name.
+ * @param message_len The input message length in bytes.
  * @param cust_str The customization string.
- * @param digest The digest buffer to return the result.
+ * @param cust_str_len The customization string length in bytes.
+ * @param[out] digest Output buffer for the result.
+ * @param digest_len Requested digest length in bytes.
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-status_t kmac_kmac_128(kmac_blinded_key_t *key,
-                       crypto_const_uint8_buf_t message,
-                       crypto_const_uint8_buf_t cust_str,
-                       crypto_uint8_buf_t *digest);
+status_t kmac_kmac_128(kmac_blinded_key_t *key, const uint8_t *message,
+                       size_t message_len, const unsigned char *cust_str,
+                       size_t cust_str_len, uint8_t *digest, size_t digest_len);
 
 /**
  * Compute KMAC-256 in one-shot.
  *
- * Warning: The caller must ensure that `digest->len` contains the
- * requested digest length (in bytes).
+ * The caller must ensure that `digest_len` bytes are allocated at the location
+ * pointed to by `digest`.
  *
- * The caller must ensure that `message` and `digest` have properly
- * allocated `data` fields whose length matches their `len` fields.
- *
- * @param key The input key as a struct.
  * @param message The input message.
- * @param func_name The function name.
+ * @param message_len The input message length in bytes.
  * @param cust_str The customization string.
- * @param digest The digest buffer to return the result.
+ * @param cust_str_len The customization string length in bytes.
+ * @param[out] digest Output buffer for the result.
+ * @param digest_len Requested digest length in bytes.
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-status_t kmac_kmac_256(kmac_blinded_key_t *key,
-                       crypto_const_uint8_buf_t message,
-                       crypto_const_uint8_buf_t cust_str,
-                       crypto_uint8_buf_t *digest);
+status_t kmac_kmac_256(kmac_blinded_key_t *key, const uint8_t *message,
+                       size_t message_len, const unsigned char *cust_str,
+                       size_t cust_str_len, uint8_t *digest, size_t digest_len);
 
 #ifdef __cplusplus
 }
