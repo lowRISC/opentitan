@@ -36,8 +36,6 @@ class kmac_edn_timeout_error_vseq extends kmac_app_vseq;
   endtask
 
   virtual function void disable_asserts();
-    $assertoff(0,
-      "tb.dut.gen_entropy.u_prim_sync_reqack_data.u_prim_sync_reqack.SyncReqAckAckNeedsReq");
     $assertoff(0, "tb.edn_if[0].ReqHighUntilAck_A");
     $assertoff(0, "tb.edn_if[0].AckAssertedOnlyWhenReqAsserted_A");
   endfunction

@@ -226,6 +226,10 @@ module kmac_entropy
   // Status out: entropy configured
   prim_mubi_pkg::mubi4_t entropy_configured;
 
+  // Internal entropy request signals.
+  logic entropy_req;
+  logic entropy_req_hold_d, entropy_req_hold_q;
+
   //////////////
   // Datapath //
   //////////////
@@ -502,6 +506,21 @@ module kmac_entropy
 
   `ASSUME(ConsumeNotAseertWhenNotReady_M, rand_consumed_i |-> rand_valid_o)
 
+  // Upon escalation or in case the EDN wait timer expires the entropy_req signal
+  // can be dropped before getting acknowledged. This may leave EDN in a strange
+  // state. We thus hold the request until it's actually acknowledged. In case the
+  // request is acknowledged while the FSM is in the StRandErr already, the
+  // incoming entropy is simply dropped.
+  assign entropy_req_o      = entropy_req | entropy_req_hold_q;
+  assign entropy_req_hold_d = (entropy_req_hold_q | entropy_req) & ~entropy_ack_i;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      entropy_req_hold_q <= '0;
+    end else begin
+      entropy_req_hold_q <= entropy_req_hold_d;
+    end
+  end
+
   // Randomness outputs -------------------------------------------------------
 
   // Remaining outputs
@@ -529,7 +548,7 @@ module kmac_entropy
     threshold_hit_clr = 1'b 0;
 
     // EDN request
-    entropy_req_o = 1'b 0;
+    entropy_req = 1'b 0;
 
     // rand is valid when this logic expands the entropy.
     // FSM sets the valid signal, the signal is cleared by `consume` signal
@@ -637,7 +656,7 @@ module kmac_entropy
 
       StRandEdn: begin
         // Send request
-        entropy_req_o = 1'b 1;
+        entropy_req = 1'b 1;
 
         // Wait timer
         timer_enable = 1'b 1;

@@ -1176,7 +1176,7 @@ module kmac
       .rst_src_ni(rst_ni),
       .clk_dst_i (clk_edn_i),
       .rst_dst_ni(rst_edn_ni),
-      .req_chk_i ((kmac_entropy_state_error == 1'b0) && (entropy_err.valid == 1'b0)),
+      .req_chk_i (1'b1),
       .src_req_i (entropy_req),
       .src_ack_o (entropy_ack),
       .dst_req_o (entropy_o.edn_req),
