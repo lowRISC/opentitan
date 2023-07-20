@@ -542,3 +542,15 @@ cc_library(
         "//sw/device/lib/testing/test_framework:check",
     ],
 )
+
+cc_library(
+    name = "usb_logging",
+    srcs = ["usb_logging.c"],
+    hdrs = ["usb_logging.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":pinmux_testutils",
+        ":usb_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
