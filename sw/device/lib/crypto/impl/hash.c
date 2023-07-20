@@ -212,16 +212,20 @@ crypto_status_t otcrypto_hash(crypto_const_uint8_buf_t input_message,
 
   switch (hash_mode) {
     case kHashModeSha3_224:
-      HARDENED_TRY(kmac_sha3_224(input_message, digest));
+      HARDENED_TRY(
+          kmac_sha3_224(input_message.data, input_message.len, digest->data));
       break;
     case kHashModeSha3_256:
-      HARDENED_TRY(kmac_sha3_256(input_message, digest));
+      HARDENED_TRY(
+          kmac_sha3_256(input_message.data, input_message.len, digest->data));
       break;
     case kHashModeSha3_384:
-      HARDENED_TRY(kmac_sha3_384(input_message, digest));
+      HARDENED_TRY(
+          kmac_sha3_384(input_message.data, input_message.len, digest->data));
       break;
     case kHashModeSha3_512:
-      HARDENED_TRY(kmac_sha3_512(input_message, digest));
+      HARDENED_TRY(
+          kmac_sha3_512(input_message.data, input_message.len, digest->data));
       break;
     case kHashModeSha256:
       // Call the HMAC block driver in SHA-256 mode.
@@ -264,18 +268,24 @@ crypto_status_t otcrypto_xof(crypto_const_uint8_buf_t input_message,
 
   switch (xof_mode) {
     case kXofModeSha3Shake128:
-      HARDENED_TRY(kmac_shake_128(input_message, digest));
+      HARDENED_TRY(kmac_shake_128(input_message.data, input_message.len,
+                                  digest->data, digest->len));
       break;
     case kXofModeSha3Shake256:
-      HARDENED_TRY(kmac_shake_256(input_message, digest));
+      HARDENED_TRY(kmac_shake_256(input_message.data, input_message.len,
+                                  digest->data, digest->len));
       break;
     case kXofModeSha3Cshake128:
-      HARDENED_TRY(kmac_cshake_128(input_message, function_name_string,
-                                   customization_string, digest));
+      HARDENED_TRY(kmac_cshake_128(
+          input_message.data, input_message.len, function_name_string.data,
+          function_name_string.len, customization_string.data,
+          customization_string.len, digest->data, digest->len));
       break;
     case kXofModeSha3Cshake256:
-      HARDENED_TRY(kmac_cshake_256(input_message, function_name_string,
-                                   customization_string, digest));
+      HARDENED_TRY(kmac_cshake_256(
+          input_message.data, input_message.len, function_name_string.data,
+          function_name_string.len, customization_string.data,
+          customization_string.len, digest->data, digest->len));
       break;
     default:
       return OTCRYPTO_BAD_ARGS;
