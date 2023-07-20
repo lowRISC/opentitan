@@ -152,15 +152,23 @@ impl CommandDispatch for ManifestUpdateCommand {
         let mut image = image::Image::read_from_file(&self.image)?;
         let mut update_length = true;
 
-        // Apply the manifest values to the image.
+        // Load the manifest HJSON definition and update the image.
         if let Some(manifest) = &self.manifest {
             let def = ManifestSpec::read_from_file(manifest)?;
             update_length = !def.has_length();
             image.overwrite_manifest(def)?;
         }
 
-        // Update the public key fields of the manifest before signing the image. Otherwise we have
-        // to repeat the first signing operation.
+        // Load the manifest extension HJSON definition and update the image.
+        let ext = self
+            .manifest_ext
+            .as_deref()
+            .map(ManifestExtSpec::read_from_file)
+            .unwrap_or(Ok(Default::default()))?;
+        image.add_signed_manifest_extensions(&ext)?;
+
+        // Update the manifest fields that are in the signed region.
+        // Load / write RSA public key.
         let mut rsa_private_key: Option<RsaPrivateKey> = None;
         if let Some(key) = &self.rsa_key {
             let (public, private) = load_rsa_key(key)?;
@@ -169,41 +177,30 @@ impl CommandDispatch for ManifestUpdateCommand {
                 rsa_private_key = Some(private);
             }
         }
-
-        let ext = self
-            .manifest_ext
-            .as_deref()
-            .map(ManifestExtSpec::read_from_file)
-            .unwrap_or(Ok(Default::default()))?;
-
-        // Add any signed extensions defined in `ext`.
-        image.add_signed_manifest_extensions(&ext)?;
-
+        // Load / write SPX+ public key.
         let mut spx_private_key: Option<SpxKeypair> = None;
         if let Some(key) = &self.spx_key {
             let key = spx::load_spx_key(key)?;
             let key_ext = ManifestExtEntry::new_spx_key_entry(&key)?;
             image.add_manifest_extension(key_ext)?;
-
             if let SpxKey::Private(private) = key {
                 spx_private_key = Some(private);
             }
         }
-
-        // If SPX+ is being used the `spx_signature` extensions needs to be allocated so manifest
-        // values are correct for offline signing.
-        if self.spx_signature.is_some() || self.spx_key.is_some() {
+        // Allocate space for `spx_signature` (this impacts the manifest `length` field which is in
+        // the signed region of the image). Adding this facilitates offline signing.
+        if self.spx_key.is_some() {
             image.allocate_manifest_extension(
                 ManifestExtId::spx_signature.into(),
                 std::mem::size_of::<ManifestExtSpxSignature>(),
             )?;
         }
 
-        // Add any unsigned extensions defined in `ext`.
+        // Update the manifest fields that are in the unsigned region.
         // These extensions will come after `signed_region_end`.
         image.add_unsigned_manifest_extensions(&ext)?;
 
-        // Update `length` to be able to generate signatures.
+        // Update manifest `length` field.
         // This is done by default, and will only be skipped if the `length` field is specified in
         // the manifest HJSON, typically during negative tests.
         if update_length {
@@ -219,33 +216,31 @@ impl CommandDispatch for ManifestUpdateCommand {
             .collect::<HashSet<u32>>();
         image.update_signed_region(&signed_ids)?;
 
-        // Remove any extensions in the table that reference extension data.
-        // This allows the entries in the extension table to be present in the manifest even if
-        // the extensions end up not being used.
+        // Remove any unused extensions in the table that do not reference extension data.
         image.drop_null_extensions()?;
 
-        // Sign the image
+        // Online signing takes place if private keys are provided.
+        // Sign with RSA.
         if let Some(key) = rsa_private_key {
             image.update_rsa_signature(key.sign(&image.compute_digest()?)?)?;
         }
-
-        let spx_signature = if let Some(spx_sig_file) = &self.spx_signature {
-            Some(SpxSignature::read_from_file(spx_sig_file)?)
-        } else if let Some(key) = spx_private_key {
-            Some(image.map_signed_region(|buf| key.sign(buf))?)
-        } else {
-            None
-        };
-
-        if let Some(spx_signature) = spx_signature {
+        // Sign with SPX+.
+        if let Some(key) = spx_private_key {
             image.add_manifest_extension(ManifestExtEntry::new_spx_signature_entry(
-                &spx_signature,
+                &image.map_signed_region(|buf| key.sign(buf))?,
             )?)?;
         }
 
+        // Offline signing takes place if signatures are provided.
+        // Attach RSA signature.
         if let Some(rsa_signature) = &self.rsa_signature {
             let signature = RsaSignature::read_from_file(rsa_signature)?;
             image.update_rsa_signature(signature)?;
+        }
+        // Attach SPX+ signature.
+        if let Some(spx_signature) = &self.spx_signature {
+            let signature = SpxSignature::read_from_file(spx_signature)?;
+            image.add_manifest_extension(ManifestExtEntry::new_spx_signature_entry(&signature)?)?;
         }
 
         image.write_to_file(self.output.as_ref().unwrap_or(&self.image))?;
