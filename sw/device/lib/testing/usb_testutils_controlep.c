@@ -9,6 +9,8 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/usb_testutils.h"
 
+#define MODULE_ID MAKE_MODULE_ID('u', 't', 'c')
+
 // Device descriptor
 static const uint8_t kDevDscr[] = {
     18,    // bLength

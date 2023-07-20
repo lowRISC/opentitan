@@ -8,6 +8,9 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/usb_testutils.h"
 
+// "uts" is used by usb_testutils_streams.c
+#define MODULE_ID MAKE_MODULE_ID('u', 't', 'i')
+
 #define MAX_GATHER 16
 
 static status_t ss_rx(void *ssctx_v, dif_usbdev_rx_packet_info_t packet_info,
