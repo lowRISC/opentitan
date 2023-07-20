@@ -4,15 +4,24 @@
 
 class usbdev_env_cfg extends cip_base_env_cfg #(.RAL_T(usbdev_reg_block));
 
-  virtual clk_rst_if  usb_clk_rst_vif;
-  rand uint usb_clk_freq_mhz;
+  virtual clk_rst_if  aon_clk_rst_vif;
 
   // Reset kinds for USB
-  string reset_kinds[] = {"HARD", "TL_IF", "USB_IF"};
+  string reset_kinds[] = {"HARD", "TL_IF"};
 
-  // Constrain USB to be at 48MHz based on spec
+  // Constrain the main clock to be at 48MHz based on spec
+  rand uint usb_clk_freq_mhz;
   constraint usb_clk_freq_mhz_c {
     usb_clk_freq_mhz == 48;
+  }
+
+  // Constrain the AON clock to be faster than the USB clock. Make it between 2 and 3 times the
+  // speed. No serious requirements, but making them more noticeably different makes it easier to
+  // look at wave dumps.
+  rand uint aon_clk_freq_mhz;
+  constraint aon_clk_freq_mhz_c {
+    aon_clk_freq_mhz >= usb_clk_freq_mhz * 2 &&
+    aon_clk_freq_mhz <= usb_clk_freq_mhz * 3;
   }
 
   // ext component cfgs

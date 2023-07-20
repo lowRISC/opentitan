@@ -18,23 +18,24 @@ class usbdev_base_vseq extends cip_base_vseq #(
 
   `uvm_object_new
 
-  // Override apply_reset to cater to usb domain as well.
+  // Override apply_reset to cater to AON domain as well.
   virtual task apply_reset(string kind = "HARD");
     fork
       if (kind == "HARD" || kind == "BUS_IF") begin
         super.apply_reset("HARD");
       end
-      if (kind == "HARD" || kind == "USB_IF") begin
-        cfg.usb_clk_rst_vif.apply_reset();
+
+      if (kind == "HARD") begin
+        cfg.aon_clk_rst_vif.apply_reset();
       end
     join
     do_apply_post_reset_delays_for_sync();
   endtask
 
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
-    cfg.usb_clk_rst_vif.drive_rst_pin(0);
-    super.apply_resets_concurrently(cfg.usb_clk_rst_vif.clk_period_ps);
-    cfg.usb_clk_rst_vif.drive_rst_pin(1);
+    cfg.aon_clk_rst_vif.drive_rst_pin(0);
+    super.apply_resets_concurrently(cfg.aon_clk_rst_vif.clk_period_ps);
+    cfg.aon_clk_rst_vif.drive_rst_pin(1);
   endtask
 
   // Apply additional delays at the dut_init stage when either apply_reset or
@@ -45,12 +46,12 @@ class usbdev_base_vseq extends cip_base_vseq #(
     if (apply_post_reset_delays_for_sync) begin
       fork
         cfg.clk_rst_vif.wait_clks($urandom_range(5, 10));
-        cfg.usb_clk_rst_vif.wait_clks($urandom_range(5, 10));
+        cfg.aon_clk_rst_vif.wait_clks($urandom_range(5, 10));
       join
     end
   endtask
 
-  // Override wait_for_reset to cater to usb domain as well.
+  // Override wait_for_reset to cater to AON domain as well.
   virtual task wait_for_reset(string reset_kind     = "HARD",
                               bit wait_for_assert   = 1,
                               bit wait_for_deassert = 1);
@@ -59,16 +60,16 @@ class usbdev_base_vseq extends cip_base_vseq #(
       if (reset_kind == "HARD" || reset_kind == "BUS_IF") begin
         super.wait_for_reset(reset_kind, wait_for_assert, wait_for_deassert);
       end
-      if (reset_kind == "HARD" || reset_kind == "USB_IF") begin
+      if (reset_kind == "HARD") begin
         if (wait_for_assert) begin
-          `uvm_info(`gfn, "waiting for usb rst_n assertion...", UVM_MEDIUM)
-          @(negedge cfg.usb_clk_rst_vif.rst_n);
+          `uvm_info(`gfn, "waiting for aon rst_n assertion...", UVM_MEDIUM)
+          @(negedge cfg.aon_clk_rst_vif.rst_n);
         end
         if (wait_for_deassert) begin
-          `uvm_info(`gfn, "waiting for usb rst_n de-assertion...", UVM_MEDIUM)
-          @(posedge cfg.usb_clk_rst_vif.rst_n);
+          `uvm_info(`gfn, "waiting for aon rst_n de-assertion...", UVM_MEDIUM)
+          @(posedge cfg.aon_clk_rst_vif.rst_n);
         end
-        `uvm_info(`gfn, "usb wait_for_reset done", UVM_HIGH)
+        `uvm_info(`gfn, "usbdev wait_for_reset done", UVM_HIGH)
       end
     join
     do_apply_post_reset_delays_for_sync();
