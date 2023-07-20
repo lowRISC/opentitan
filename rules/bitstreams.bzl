@@ -114,11 +114,11 @@ bitstreams_repo = repository_rule(
     attrs = {
         "bucket_url": attr.string(
             doc = "Location of the GCP bitstream bucket.",
-            default = "https://storage.googleapis.com/opentitan-bitstreams/",
+            default = "https://storage.googleapis.com/opentitan-bitstreams-integrated-a/",
         ),
         "cache": attr.string(
             doc = "Location of bitstreams cache.",
-            default = "~/.cache/opentitan-bitstreams",
+            default = "~/.cache/opentitan-bitstreams-integrated-a",
         ),
         "refresh_time": attr.int(
             doc = "How often to check for new bitstreams (seconds).",
