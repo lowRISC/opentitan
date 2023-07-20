@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
   sw_bootmode = (int *) 0xff000018;
   debug_mode  = (int *) 0xff00001C;
   
-  *debug_mode = 0x00000001; 
+  *datapath = 0x00000001; 
   for(int i = 0; i < buffer_size; i += 3) {
      if(i + 2 < buffer_size) {
         *payload_1 = FLASH_HELLO_WORLD_SIGNED[i];
@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
      }
   }
   
-  *debug_mode = 0x0;
+  *datapath = 0x0;
   *sw_bootmode = 0x1;
 
   return 0;

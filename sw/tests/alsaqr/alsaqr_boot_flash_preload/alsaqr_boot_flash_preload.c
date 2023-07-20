@@ -17,7 +17,7 @@
 
 int main(int argc, char **argv) {
 
-  volatile int * debug_mode;
+  volatile int * debug_mode, * sw_bootmode;
   volatile int * payload_1, * payload_2, * payload_3, * address, * start;
   
   payload_1  = (int *) 0xff000000;
