@@ -145,10 +145,15 @@ def hist_to_bars(hist, m):
     return bars
 
 
-def get_hd(word1, word2):
+def get_hd(word1: str, word2: str) -> int:
     '''Calculate Hamming distance between two words.'''
     if len(word1) != len(word2):
         raise RuntimeError('Words are not of equal size')
+    # Python's int(n, 2) function will accept both strings of bits and
+    # 0b-prefixed strings. This can lead to edge cases such as get_hd('1001',
+    # '0b01'). We forbid the usage of "0b" with this function.
+    if '0b' in word1 or '0b' in word2:
+        raise ValueError('Words should not contain the "0b" prefix')
     return bin(int(word1, 2) ^ int(word2, 2)).count('1')
 
 
