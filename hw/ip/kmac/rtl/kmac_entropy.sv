@@ -722,6 +722,9 @@ module kmac_entropy
         // Keep entropy signal valid to complete current hashing even with error
         rand_valid_set = 1'b 1;
 
+        // Advance the LFSR after the entropy has been used.
+        lfsr_en = rand_consumed_i & ((fast_process_i & in_keyblock_i) | ~fast_process_i);
+
         if (err_processed_i) begin
           st_d = StRandReset;
 
