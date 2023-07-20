@@ -5,8 +5,8 @@
 // This module implements different LFSR types:
 //
 // 0) Galois XOR type LFSR ([1], internal XOR gates, very fast).
-//    Parameterizable width from 4 to 64 bits.
-//    Coefficients obtained from [2].
+//    Parameterizable width from 3 to 168 bits.
+//    Coefficients obtained from [3].
 //
 // 1) Fibonacci XNOR type LFSR, parameterizable from 3 to 168 bits.
 //    Coefficients obtained from [3].
@@ -73,73 +73,8 @@ module prim_lfsr #(
 );
 
   // automatically generated with util/design/get-lfsr-coeffs.py script
-  localparam int unsigned GAL_XOR_LUT_OFF = 4;
-  localparam logic [63:0] GAL_XOR_COEFFS [61] =
-    '{ 64'h9,
-       64'h12,
-       64'h21,
-       64'h41,
-       64'h8E,
-       64'h108,
-       64'h204,
-       64'h402,
-       64'h829,
-       64'h100D,
-       64'h2015,
-       64'h4001,
-       64'h8016,
-       64'h10004,
-       64'h20013,
-       64'h40013,
-       64'h80004,
-       64'h100002,
-       64'h200001,
-       64'h400010,
-       64'h80000D,
-       64'h1000004,
-       64'h2000023,
-       64'h4000013,
-       64'h8000004,
-       64'h10000002,
-       64'h20000029,
-       64'h40000004,
-       64'h80000057,
-       64'h100000029,
-       64'h200000073,
-       64'h400000002,
-       64'h80000003B,
-       64'h100000001F,
-       64'h2000000031,
-       64'h4000000008,
-       64'h800000001C,
-       64'h10000000004,
-       64'h2000000001F,
-       64'h4000000002C,
-       64'h80000000032,
-       64'h10000000000D,
-       64'h200000000097,
-       64'h400000000010,
-       64'h80000000005B,
-       64'h1000000000038,
-       64'h200000000000E,
-       64'h4000000000025,
-       64'h8000000000004,
-       64'h10000000000023,
-       64'h2000000000003E,
-       64'h40000000000023,
-       64'h8000000000004A,
-       64'h100000000000016,
-       64'h200000000000031,
-       64'h40000000000003D,
-       64'h800000000000001,
-       64'h1000000000000013,
-       64'h2000000000000034,
-       64'h4000000000000001,
-       64'h800000000000000D };
-
-  // automatically generated with get-lfsr-coeffs.py script
-  localparam int unsigned FIB_XNOR_LUT_OFF = 3;
-  localparam logic [167:0] FIB_XNOR_COEFFS [166] =
+  localparam int unsigned LUT_OFF = 3;
+  localparam logic [167:0] LFSR_COEFFS [166] =
     '{ 168'h6,
        168'hC,
        168'h14,
@@ -351,10 +286,10 @@ module prim_lfsr #(
     if (CustomCoeffs > 0) begin : gen_custom
       assign coeffs = CustomCoeffs[LfsrDw-1:0];
     end else begin : gen_lut
-      assign coeffs = GAL_XOR_COEFFS[LfsrDw-GAL_XOR_LUT_OFF][LfsrDw-1:0];
+      assign coeffs = LFSR_COEFFS[LfsrDw-LUT_OFF][LfsrDw-1:0];
       // check that the most significant bit of polynomial is 1
-      `ASSERT_INIT(MinLfsrWidth_A, LfsrDw >= $low(GAL_XOR_COEFFS)+GAL_XOR_LUT_OFF)
-      `ASSERT_INIT(MaxLfsrWidth_A, LfsrDw <= $high(GAL_XOR_COEFFS)+GAL_XOR_LUT_OFF)
+      `ASSERT_INIT(MinLfsrWidth_A, LfsrDw >= $low(LFSR_COEFFS)+LUT_OFF)
+      `ASSERT_INIT(MaxLfsrWidth_A, LfsrDw <= $high(LFSR_COEFFS)+LUT_OFF)
     end
 
     // calculate next state using internal XOR feedback and entropy input
@@ -376,10 +311,10 @@ module prim_lfsr #(
     if (CustomCoeffs > 0) begin : gen_custom
       assign coeffs = CustomCoeffs[LfsrDw-1:0];
     end else begin : gen_lut
-      assign coeffs = FIB_XNOR_COEFFS[LfsrDw-FIB_XNOR_LUT_OFF][LfsrDw-1:0];
+      assign coeffs = LFSR_COEFFS[LfsrDw-LUT_OFF][LfsrDw-1:0];
       // check that the most significant bit of polynomial is 1
-      `ASSERT_INIT(MinLfsrWidth_A, LfsrDw >= $low(FIB_XNOR_COEFFS)+FIB_XNOR_LUT_OFF)
-      `ASSERT_INIT(MaxLfsrWidth_A, LfsrDw <= $high(FIB_XNOR_COEFFS)+FIB_XNOR_LUT_OFF)
+      `ASSERT_INIT(MinLfsrWidth_A, LfsrDw >= $low(LFSR_COEFFS)+LUT_OFF)
+      `ASSERT_INIT(MaxLfsrWidth_A, LfsrDw <= $high(LFSR_COEFFS)+LUT_OFF)
     end
 
     // calculate next state using external XNOR feedback and entropy input
