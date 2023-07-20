@@ -13,7 +13,7 @@
 #include <stdbool.h>
 
 #include "gtest/gtest.h"
-#include "sw/device/lib/dif/dif_base.h"
+#include "sw/common/dif/dif_base.h"
 
 /**
  * Creates a test expectation for `expr_` to evaluate to `kDifOk`.
