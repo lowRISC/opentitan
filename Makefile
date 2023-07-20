@@ -81,7 +81,7 @@ compile-bazel-rom:   bazel-compile-rom clean-rom
 	$(shell python3 scripts/vmem_scripts/rom/vmem2coe_rom.py  $(rom_dest)/$(rom_vmem) $(rom_dest)/boot_rom.coe)
 
 .PHONY: gen_flash_preload_vmem
-gen_flash_preload_vmem: compile-bazel-flash
+flash-all: compile-bazel-flash
 	$(shell python3 scripts/vmem_scripts/flash/vmem_datawidth_converter.py      $(destination)/$(test_name)_signed.vmem $(destination))
 	$(shell python3 scripts/vmem_scripts/flash/vmem32_to_header32_converter.py  $(destination)/$(test_name)_signed.vmem $(destination))
 

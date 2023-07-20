@@ -9,41 +9,40 @@
 // specific language governing permissions and limitations under the License.
 //
 //
-#include "../flash_hello_world/bazel-out/flash_hello_world_signed32.h"
+#include "../alsaqr_boot_flash/bazel-out/alsaqr_boot_flash_signed32.h"
 #include "../common/utils.h"
 #include <stdbool.h>
 
 //#define DUMMYBOY
 
 int main(int argc, char **argv) {
-  volatile int * datapath, * sw_bootmode;
-  volatile int * payload_1, * payload_2, * payload_3, * address, * start;
 
-  int errors = 0;
-  int i = 0;
+  volatile int * debug_mode;
+  volatile int * payload_1, * payload_2, * payload_3, * address, * start;
   
-  payload_1   = (int *) 0xff000000;
-  payload_2   = (int *) 0xff000004;
-  payload_3   = (int *) 0xff000008;
-  address     = (int *) 0xff00000C;
-  start       = (int *) 0xff000010;
+  payload_1  = (int *) 0xff000000;
+  payload_2  = (int *) 0xff000004;
+  payload_3  = (int *) 0xff000008;
+  address    = (int *) 0xff00000C;
+  start      = (int *) 0xff000010;
+  debug_mode = (int *) 0xff00001C;
   sw_bootmode = (int *) 0xff000018;
-  debug_mode  = (int *) 0xff00001C;
   
-  *debug_mode = 0x00000001; 
+  *debug_mode = 0x00000001;
+  
   for(int i = 0; i < buffer_size; i += 3) {
      if(i + 2 < buffer_size) {
-        *payload_1 = FLASH_HELLO_WORLD_SIGNED[i];
-        *payload_2 = FLASH_HELLO_WORLD_SIGNED[i+1];
-        *payload_3 = FLASH_HELLO_WORLD_SIGNED[i+2];
+        *payload_1 = ALSAQR_BOOT_FLASH_SIGNED[i];
+        *payload_2 = ALSAQR_BOOT_FLASH_SIGNED[i+1];
+        *payload_3 = ALSAQR_BOOT_FLASH_SIGNED[i+2];
         *address = i/3;
         *start = 0x1;
      }
   }
-  
+
   *debug_mode = 0x0;
   *sw_bootmode = 0x1;
-
+  
   return 0;
   
 }
