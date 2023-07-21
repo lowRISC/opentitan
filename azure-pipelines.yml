@@ -182,15 +182,26 @@ jobs:
     displayName: Buildifier (Bazel lint)
   - bash: ci/scripts/check-vendoring.sh
     displayName: Vendored directories
-  - bash: ci/scripts/verible-lint.sh rtl
+  # Earlgrey lint
+  - bash: ci/scripts/verible-lint.sh top_earlgrey rtl
     condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Verible RTL (Verilog lint)
-  - bash: ci/scripts/verible-lint.sh dv
+    displayName: Earlgrey Verible RTL (Verilog lint)
+  - bash: ci/scripts/verible-lint.sh top_earlgrey dv
     condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Verible DV (Verilog lint)
-  - bash: ci/scripts/verible-lint.sh fpv
+    displayName: Earlgrey Verible DV (Verilog lint)
+  - bash: ci/scripts/verible-lint.sh top_earlgrey fpv
     condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Verible FPV (Verilog lint)
+    displayName: Earlgrey Verible FPV (Verilog lint)
+  # Darjeeling lint
+  - bash: ci/scripts/verible-lint.sh top_darjeeling rtl
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: Darjeeling Verible RTL (Verilog lint)
+  - bash: ci/scripts/verible-lint.sh top_darjeeling dv
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: Darjeeling Verible DV (Verilog lint)
+  - bash: ci/scripts/verible-lint.sh top_darjeeling fpv
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: Darjeeling Verible FPV (Verilog lint)
 
 - job: sw_build
   displayName: Earl Grey SW Build & Test

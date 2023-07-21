@@ -10,25 +10,26 @@
 
 set -e
 
-if [ $# != 1 ]; then
-    echo >&2 "Usage: verible-lint.sh <flavour>"
+if [ $# != 2 ]; then
+    echo >&2 "Usage: verible-lint.sh <top> <flavour>"
     exit 1
 fi
-flavour="$1"
+top="$1"
+flavour="$2"
 
 case "$flavour" in
     rtl)
         human_desc=design
-        dvsim_cfg=hw/top_earlgrey/lint/top_earlgrey_lint_cfgs.hjson
+        dvsim_cfg=hw/${top}/lint/${top}_lint_cfgs.hjson
         ;;
 
     dv)
         human_desc=DV
-        dvsim_cfg=hw/top_earlgrey/lint/top_earlgrey_dv_lint_cfgs.hjson
+        dvsim_cfg=hw/${top}/lint/${top}_dv_lint_cfgs.hjson
         ;;
     fpv)
         human_desc=FPV
-        dvsim_cfg=hw/top_earlgrey/lint/top_earlgrey_fpv_lint_cfgs.hjson
+        dvsim_cfg=hw/${top}/lint/${top}_fpv_lint_cfgs.hjson
         ;;
 
     *)
