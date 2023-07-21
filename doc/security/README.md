@@ -87,6 +87,10 @@ Advanced Encryption Standard (AES) supporting Encryption/Decryption using
 *   Output Feedback (OFB) mode, and
 *   Counter (CTR) mode.
 
+Galois/Counter Mode (GCM) can be implemented by leveraging Ibex for the GHASH
+operation as demonstrated in [OpenTitan's library of cryptographic
+implementations][cryptolib].
+
 ### [HMAC][hmac]
 
 HMAC with SHA-2 FIPS 180-4 compliant hash function, supporting both
@@ -121,3 +125,4 @@ the assigned severity.
 [security_model]: ./specs/README.md
 [use_cases]: ../use_cases/README.md
 [threat_model]: ./threat_model/README.md
+[cryptolib]: https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/crypto
