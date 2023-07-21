@@ -13,7 +13,7 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/dif/autogen/dif_sram_ctrl_autogen.h"
+#include "sw/ip/sram_ctrl/dif/autogen/dif_sram_ctrl_autogen.h"
 
 #ifdef __cplusplus
 extern "C" {

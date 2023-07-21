@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/dif/dif_rstmgr.h"
+#include "sw/ip/rstmgr/dif/dif_rstmgr.h"
 
 #include <assert.h>
 #include <stdint.h>
@@ -11,7 +11,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/multibits.h"
-#include "sw/device/lib/dif/dif_base.h"
+#include "sw/common/dif/dif_base.h"
 
 #include "rstmgr_regs.h"  // Generated.
 

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/dif/dif_rv_timer.h"
+#include "sw/ip/rv_timer/dif/dif_rv_timer.h"
 
 #include <cstring>
 #include <limits>
@@ -12,7 +12,7 @@
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_mmio.h"
-#include "sw/device/lib/dif/dif_test_base.h"
+#include "sw/common/dif/dif_test_base.h"
 
 #include "rv_timer_regs.h"  // Generated.
 

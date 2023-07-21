@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/dif/dif_spi_host.h"
+#include "sw/ip/spi_host/dif/dif_spi_host.h"
 
 #include <assert.h>
 #include <stdalign.h>

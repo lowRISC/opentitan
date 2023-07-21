@@ -14,7 +14,7 @@
 
 #include "sw/device/lib/base/mmio.h"
 
-#include "sw/device/lib/dif/autogen/dif_uart_autogen.h"
+#include "sw/ip/uart/dif/autogen/dif_uart_autogen.h"
 
 #ifdef __cplusplus
 extern "C" {

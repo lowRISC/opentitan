@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/dif/dif_pwrmgr.h"
+#include "sw/ip/pwrmgr/dif/dif_pwrmgr.h"
 
 #include <assert.h>
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_base.h"
+#include "sw/common/dif/dif_base.h"
 
 #include "pwrmgr_regs.h"  // Generated.
 

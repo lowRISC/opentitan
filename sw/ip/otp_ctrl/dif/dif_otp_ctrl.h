@@ -15,9 +15,9 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_base.h"
+#include "sw/common/dif/dif_base.h"
 
-#include "sw/device/lib/dif/autogen/dif_otp_ctrl_autogen.h"
+#include "sw/ip/otp_ctrl/dif/autogen/dif_otp_ctrl_autogen.h"
 
 // Header Extern Guard (so header can be used from C and C++)
 #ifdef __cplusplus

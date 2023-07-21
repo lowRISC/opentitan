@@ -32,7 +32,7 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/dif/autogen/dif_pwm_autogen.h"
+#include "sw/ip/pwm/dif/autogen/dif_pwm_autogen.h"
 
 #ifdef __cplusplus
 extern "C" {

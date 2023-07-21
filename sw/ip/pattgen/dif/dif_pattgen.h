@@ -13,9 +13,9 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/dif/dif_base.h"
+#include "sw/common/dif/dif_base.h"
 
-#include "sw/device/lib/dif/autogen/dif_pattgen_autogen.h"
+#include "sw/ip/pattgen/dif/autogen/dif_pattgen_autogen.h"
 
 #ifdef __cplusplus
 extern "C" {

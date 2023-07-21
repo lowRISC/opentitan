@@ -11,7 +11,7 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/dif/autogen/dif_spi_host_autogen.h"
+#include "sw/ip/spi_host/dif/autogen/dif_spi_host_autogen.h"
 
 #ifdef __cplusplus
 extern "C" {

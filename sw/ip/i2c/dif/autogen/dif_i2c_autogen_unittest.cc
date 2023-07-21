@@ -5,12 +5,12 @@
 // THIS FILE HAS BEEN GENERATED, DO NOT EDIT MANUALLY. COMMAND:
 // util/make_new_dif.py --mode=regen --only=autogen
 
-#include "sw/device/lib/dif/autogen/dif_i2c_autogen.h"
+#include "sw/ip/i2c/dif/autogen/dif_i2c_autogen.h"
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_mmio.h"
-#include "sw/device/lib/dif/dif_test_base.h"
+#include "sw/common/dif/dif_test_base.h"
 
 #include "i2c_regs.h"  // Generated.
 

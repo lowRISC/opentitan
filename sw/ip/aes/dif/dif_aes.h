@@ -10,9 +10,9 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_base.h"
+#include "sw/common/dif/dif_base.h"
 
-#include "sw/device/lib/dif/autogen/dif_aes_autogen.h"
+#include "sw/ip/aes/dif/autogen/dif_aes_autogen.h"
 
 #ifdef __cplusplus
 extern "C" {

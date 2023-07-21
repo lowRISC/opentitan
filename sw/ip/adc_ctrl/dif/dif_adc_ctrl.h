@@ -12,7 +12,7 @@
  */
 
 #include "adc_ctrl_regs.h"  // Generated.
-#include "sw/device/lib/dif/autogen/dif_adc_ctrl_autogen.h"
+#include "sw/ip/adc_ctrl/dif/autogen/dif_adc_ctrl_autogen.h"
 
 #ifdef __cplusplus
 extern "C" {

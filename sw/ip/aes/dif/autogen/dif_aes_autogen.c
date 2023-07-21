@@ -5,11 +5,11 @@
 // THIS FILE HAS BEEN GENERATED, DO NOT EDIT MANUALLY. COMMAND:
 // util/make_new_dif.py --mode=regen --only=autogen
 
-#include "sw/device/lib/dif/autogen/dif_aes_autogen.h"
+#include "sw/ip/aes/dif/autogen/dif_aes_autogen.h"
 
 #include <stdint.h>
 
-#include "sw/device/lib/dif/dif_base.h"
+#include "sw/common/dif/dif_base.h"
 
 #include "aes_regs.h"  // Generated.
 

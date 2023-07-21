@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/dif/dif_uart.h"
+#include "sw/ip/uart/dif/dif_uart.h"
 
 #include <assert.h>
 #include <stddef.h>

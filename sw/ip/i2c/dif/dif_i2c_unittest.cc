@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/dif/dif_i2c.h"
+#include "sw/ip/i2c/dif/dif_i2c.h"
 
 #include <cstring>
 #include <limits>
@@ -11,7 +11,7 @@
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_mmio.h"
-#include "sw/device/lib/dif/dif_test_base.h"
+#include "sw/common/dif/dif_test_base.h"
 
 #include "i2c_regs.h"  // Generated.
 

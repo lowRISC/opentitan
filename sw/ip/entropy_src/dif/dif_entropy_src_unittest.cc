@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/dif/dif_entropy_src.h"
+#include "sw/ip/entropy_src/dif/dif_entropy_src.h"
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_mmio.h"
 #include "sw/device/lib/base/multibits.h"
-#include "sw/device/lib/dif/dif_base.h"
-#include "sw/device/lib/dif/dif_test_base.h"
+#include "sw/common/dif/dif_base.h"
+#include "sw/common/dif/dif_test_base.h"
 
 #include "entropy_src_regs.h"  // Generated
 

@@ -167,10 +167,12 @@ cc_test(
 cc_library(
     name = "csrng_shared",
     srcs = [
+        "//sw/ip/csrng/dif:headers",
         "//sw/ip/csrng/dif:shared_headers",
         "//sw/ip/csrng/dif:shared_sources",
     ],
     hdrs = [
+        "//sw/ip/csrng/dif:api",
         "//sw/ip/csrng/dif:shared_api",
     ],
     deps = [
@@ -660,6 +662,7 @@ cc_test(
     deps = [
         ":pwm",
         "//sw/common/dif:test_base",
+        "//sw/device/lib/base:global_mock",
         "@googletest//:gtest_main",
     ],
 )

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/dif/dif_spi_host.h"
+#include "sw/ip/spi_host/dif/dif_spi_host.h"
 
 #include <array>
 #include <utility>
@@ -12,7 +12,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_mmio.h"
-#include "sw/device/lib/dif/dif_test_base.h"
+#include "sw/common/dif/dif_test_base.h"
 
 #include "spi_host_regs.h"  // Generated.
 

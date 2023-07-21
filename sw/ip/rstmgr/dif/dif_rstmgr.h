@@ -16,9 +16,9 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_base.h"
+#include "sw/common/dif/dif_base.h"
 
-#include "sw/device/lib/dif/autogen/dif_rstmgr_autogen.h"
+#include "sw/ip/rstmgr/dif/autogen/dif_rstmgr_autogen.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -9,8 +9,8 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_base.h"
-#include "sw/device/lib/dif/dif_csrng.h"
+#include "sw/common/dif/dif_base.h"
+#include "sw/ip/csrng/dif/dif_csrng.h"
 
 /**
  * Private code shared between the CSRNG and EDN DIFs.

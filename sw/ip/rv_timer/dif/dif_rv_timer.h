@@ -13,9 +13,9 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_base.h"
+#include "sw/common/dif/dif_base.h"
 
-#include "sw/device/lib/dif/autogen/dif_rv_timer_autogen.h"
+#include "sw/ip/rv_timer/dif/autogen/dif_rv_timer_autogen.h"
 
 #ifdef __cplusplus
 extern "C" {

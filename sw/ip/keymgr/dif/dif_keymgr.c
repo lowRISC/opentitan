@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/dif/dif_keymgr.h"
+#include "sw/ip/keymgr/dif/dif_keymgr.h"
 
 #include <assert.h>
 
-#include "sw/device/lib/dif/dif_base.h"
+#include "sw/common/dif/dif_base.h"
 
 #include "keymgr_regs.h"  // Generated.
-#include "sw/device/lib/dif/autogen/dif_keymgr_autogen.h"
+#include "sw/ip/keymgr/dif/autogen/dif_keymgr_autogen.h"
 
 /**
  * Make sure dif_keymgr_sideload_clr_t enum is in sync with autogenarated

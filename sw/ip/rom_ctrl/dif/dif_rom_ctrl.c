@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/dif/dif_rom_ctrl.h"
+#include "sw/ip/rom_ctrl/dif/dif_rom_ctrl.h"
 
 #include <stdint.h>
 
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_base.h"
+#include "sw/common/dif/dif_base.h"
 
 #include "rom_ctrl_regs.h"  // Generated.
 

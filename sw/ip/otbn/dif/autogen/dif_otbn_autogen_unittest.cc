@@ -5,12 +5,12 @@
 // THIS FILE HAS BEEN GENERATED, DO NOT EDIT MANUALLY. COMMAND:
 // util/make_new_dif.py --mode=regen --only=autogen
 
-#include "sw/device/lib/dif/autogen/dif_otbn_autogen.h"
+#include "sw/ip/otbn/dif/autogen/dif_otbn_autogen.h"
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_mmio.h"
-#include "sw/device/lib/dif/dif_test_base.h"
+#include "sw/common/dif/dif_test_base.h"
 
 #include "otbn_regs.h"  // Generated.
 

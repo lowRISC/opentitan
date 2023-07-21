@@ -5,11 +5,11 @@
 // THIS FILE HAS BEEN GENERATED, DO NOT EDIT MANUALLY. COMMAND:
 // util/make_new_dif.py --mode=regen --only=autogen
 
-#include "sw/device/lib/dif/autogen/dif_flash_ctrl_autogen.h"
+#include "sw/ip/flash_ctrl/dif/autogen/dif_flash_ctrl_autogen.h"
 
 #include <stdint.h>
 
-#include "sw/device/lib/dif/dif_base.h"
+#include "sw/common/dif/dif_base.h"
 
 #include "flash_ctrl_regs.h"  // Generated.
 
