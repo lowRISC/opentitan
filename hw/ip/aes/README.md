@@ -33,6 +33,7 @@ This AES unit targets medium performance (16 parallel S-Boxes, \~1 cycle per rou
 High-speed, single-cycle operation for high-bandwidth data streaming is not required.
 
 Cipher modes other than ECB, CBC, CFB, OFB and CTR are beyond this version of the AES unit but might be supported in future versions.
+Galois/Counter Mode (GCM) can be implemented by leveraging [Ibex](../rv_core_ibex/README.md) for the GHASH operation as demonstrated in [OpenTitan's library of cryptographic implementations](https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/crypto).
 
 
 ## Description
@@ -40,6 +41,10 @@ Cipher modes other than ECB, CBC, CFB, OFB and CTR are beyond this version of th
 The AES unit is a cryptographic accelerator that accepts requests from the processor to encrypt or decrypt 16B blocks of data.
 It supports AES-128/192/256 in Electronic Codebook (ECB) mode, Cipher Block Chaining (CBC) mode, Cipher Feedback (CFB) mode (fixed data segment size of 128 bits, i.e., CFB-128), Output Feedback (OFB) mode and Counter (CTR) mode.
 For more information on these cipher modes, refer to [Recommendation for Block Cipher Modes of Operation](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf).
+Galois/Counter Mode (GCM) can be implemented using [Ibex](../rv_core_ibex/README.md) for the GHASH operation as demonstrated in [OpenTitan's library of cryptographic implementations](https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/crypto).
+To improve the performance of GCM, instructions of the [RISC-V Bit-Manipulation Extension of Ibex](https://ibex-core.readthedocs.io/en/latest/03_reference/instruction_decode_execute.html#arithmetic-logic-unit-alu) can be leveraged.
+In particular, carry-less multiply instructions can help to speed up the GHASH operation.
+For details on GCM, refer to [Recommendation for Block Cipher Modes of Operation: Galois/Counter Mode (GCM) and GMAC](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38d.pdf).
 Other cipher modes might be added in future versions.
 
 The AES unit is attached to the chip interconnect bus as a peripheral module.
