@@ -17,12 +17,13 @@ log.basicConfig(level=log.INFO, format="%(levelname)s: %(message)s")
 
 
 def get_tool_requirements_path():
-    '''Return the path to tool_requirements.py, at the top of the repo'''
-    # top_src_dir is the top of the repository
-    top_src_dir = os.path.normpath(os.path.join(os.path.dirname(__file__),
-                                                '..'))
+    '''Return the path to tool_requirements.py'''
+    # tool_requirement_dir is the location of tool_requirements.py
+    # Currently this is in the same directory as check_tool_requirements.py
+    tool_requirement_dir = os.path.normpath(os.path.join(os.path.dirname(__file__),
+                                                         '.'))
 
-    return os.path.join(top_src_dir, 'tool_requirements.py')
+    return os.path.join(tool_requirement_dir, 'tool_requirements.py')
 
 
 class ReqErr(Exception):
