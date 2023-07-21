@@ -11,7 +11,6 @@ from util.py.packages.lib.register_usage_report import (
 
 
 class TestSingleFileSourceRange(unittest.TestCase):
-
     def test_hash(self):
         """Test that the hash function incorporates all fields.
 
@@ -54,7 +53,6 @@ class TestSingleFileSourceRange(unittest.TestCase):
 
 
 class TestRegisterUsageReport(unittest.TestCase):
-
     def test_merge_trivial(self):
         reports = [
             RegisterUsageReport("foo", dict(), set()),
@@ -167,7 +165,6 @@ class TestRegisterUsageReport(unittest.TestCase):
 
 
 class TestRegisterUsageReportGroup(unittest.TestCase):
-
     def test_serialization_roundtrips(self):
         report_groups = [
             RegisterUsageReportGroup({}),
@@ -243,7 +240,6 @@ class TestRegisterUsageReportGroup(unittest.TestCase):
 
 
 class TestRegisterTokenPattern(unittest.TestCase):
-
     def test_empty(self):
         pattern = RegisterTokenPattern([])
         self.assertEqual(pattern.count_wildcards(), 0)

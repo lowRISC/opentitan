@@ -96,6 +96,7 @@ cc_test(
     deps = [
         ":bootstrap",
         "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:bootstrap",
         "//sw/device/silicon_creator/lib:bootstrap_unittest_util",
         "//sw/device/silicon_creator/lib:error_unittest_util",
@@ -104,6 +105,7 @@ cc_test(
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/device/silicon_creator/lib/drivers:spi_device",
         "//sw/device/silicon_creator/testing:rom_test",
+        "@com_google_absl//absl/types:optional",
         "@com_google_absl//absl/types:span",
         "@googletest//:gtest_main",
     ],
