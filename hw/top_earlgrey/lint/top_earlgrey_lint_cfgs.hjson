@@ -119,12 +119,6 @@
                   fusesoc_core: lowrisc:ip:lc_ctrl
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/lc_ctrl/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              {    name: pattgen
                   fusesoc_core: lowrisc:ip:pattgen
@@ -167,12 +161,6 @@
                   fusesoc_core: lowrisc:ip:pwm
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/pwm/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              {    name: pwrmgr
                   fusesoc_core: lowrisc:ip:pwrmgr
@@ -235,12 +223,6 @@
                   fusesoc_core: lowrisc:ip:sram_ctrl
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/sram_ctrl/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              {    name: sysrst_ctrl
                   fusesoc_core: lowrisc:ip:sysrst_ctrl
