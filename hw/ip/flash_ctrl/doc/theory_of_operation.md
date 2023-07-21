@@ -19,7 +19,7 @@ By default, the hardware interfaces have precedence and are used to read out see
 The seed material is read twice to confirm the values are consistent.
 They are then forwarded to the key manager for processing.
 During this seed phase, software initiated activities are back-pressured until the seed reading is complete.
-It is recommended that instead of blindly issuing transactions to the flash controller, the software polls [`STATUS.INIT_WIP`](../data/flash_ctrl.hjson#status) until it is 0.
+It is recommended that instead of blindly issuing transactions to the flash controller, the software polls [`STATUS.INIT_WIP`](registers.md#status) until it is 0.
 
 Once the seed phase is complete, the flash controller switches to the software interface.
 Software can then read / program / erase the flash as needed.
@@ -38,7 +38,7 @@ It is expected that after an RMA transition, the entire system will be rebooted.
 
 #### Initialization
 
-The flash protocol controller is initialized through [`INIT`](../data/flash_ctrl.hjson#init).
+The flash protocol controller is initialized through [`INIT`](registers.md#init).
 When initialization is invoked, the flash controller requests the address and data scrambling keys from an external entity, [otp_ctrl](../../otp_ctrl/README.md#interface-to-flash-scrambler) in this case.
 
 After the scrambling keys are requested, the flash protocol controller reads the root seeds out of the [secret partitions](#secret-information-partitions) and sends them to the key manager.
@@ -59,10 +59,10 @@ The flash controller registers however, remain accessible for status reads and s
 
 Flash memory protection is handled differently depending on what type of partition is accessed.
 
-For data partitions, software can configure a number of memory protection regions such as [`MP_REGION_CFG_0`](../data/flash_ctrl.hjson#mp_region_cfg_0).
+For data partitions, software can configure a number of memory protection regions such as [`MP_REGION_CFG_0`](registers.md#mp_region_cfg).
 For each region, software specifies both the beginning page and the number of pages that belong to that region.
 Software then configures the access privileges for that region.
-Finally, each region can be activated or de-activated from matching through [`MP_REGION_CFG_0.EN`](../data/flash_ctrl.hjson#mp_region_cfg_0).
+Finally, each region can be activated or de-activated from matching through [`MP_REGION_CFG_0.EN`](registers.md#mp_region_cfg).
 
 Subsequent accesses are then allowed or denied based on the defined rule set.
 Similar to RISCV pmp, if two region overlaps, the lower region index has higher priority.
@@ -70,14 +70,14 @@ Similar to RISCV pmp, if two region overlaps, the lower region index has higher 
 For information partitions, the protection is done per individual page.
 Each page can be configured with access privileges.
 As a result, software does not need to define a start and end page for information partitions.
-See [`BANK0_INFO0_PAGE_CFG_0`](../data/flash_ctrl.hjson#bank0_info0_page_cfg_0) as an example.
+See [`BANK0_INFO0_PAGE_CFG_0`](registers.md#bank0_info0_page_cfg) as an example.
 
 #### Bank Erase Protection
 
 Unlike read, program and page erase operations, the bank erase command is the only one that can be issued at a bank level.
 Because of this, bank erase commands are not guarded by the typical [memory protection mechanisms](#memory-protection).
 
-Instead, whether bank erase is allowed is controlled by [`MP_BANK_CFG_SHADOWED`](../data/flash_ctrl.hjson#mp_bank_cfg_shadowed), where there is a separate configuration bit per bank.
+Instead, whether bank erase is allowed is controlled by [`MP_BANK_CFG_SHADOWED`](registers.md#mp_bank_cfg_shadowed), where there is a separate configuration bit per bank.
 When the corresponding bit is set, that particular bank is permitted to have bank level operations.
 
 The specific behavior of what is erased when bank erase is issued is flash memory dependent and thus can vary by vendor and technology.
@@ -110,7 +110,7 @@ This information is not configurable but instead decided at design time and is e
 
 #### Erase Suspend
 
-The flash controller supports erase suspend through [`ERASE_SUSPEND`](../data/flash_ctrl.hjson#erase_suspend).
+The flash controller supports erase suspend through [`ERASE_SUSPEND`](registers.md#erase_suspend).
 This allows the software to interrupt an ongoing erase operation.
 
 The behavior of what happens to flash contents when erase is suspended is vendor defined; however, generally it can be assumed that the erase would be incomplete.
@@ -118,10 +118,10 @@ It is then up to the controlling software to take appropriate steps to erase aga
 
 #### Additional Flash Attributes
 
-There are certain attributes provisioned in [`MP_REGION_CFG_0`](../data/flash_ctrl.hjson#mp_region_cfg_0) that are not directly used by the open source protocol or physical controllers.
+There are certain attributes provisioned in [`MP_REGION_CFG_0`](registers.md#mp_region_cfg) that are not directly used by the open source protocol or physical controllers.
 
 Instead, these attributes are fed to the vendor flash module on a per-page or defined boundary basis.
-Currently there is only one such attribute [`MP_REGION_CFG_0.HE`](../data/flash_ctrl.hjson#mp_region_cfg_0).
+Currently there is only one such attribute [`MP_REGION_CFG_0.HE`](registers.md#mp_region_cfg).
 
 #### Idle Indication to External Power Manager
 
@@ -133,10 +133,10 @@ This is because an external power manager event (such as shutting off power) whi
 #### Flash Code Execution Handling
 
 Flash can be used to store both data and code.
-To support separate access privileges between data and code, the flash protocol controller provides [`EXEC`](../data/flash_ctrl.hjson#exec) for software control.
+To support separate access privileges between data and code, the flash protocol controller provides [`EXEC`](registers.md#exec) for software control.
 
-If software programs [`EXEC`](../data/flash_ctrl.hjson#exec) to `0xa26a38f7`, code fetch from flash is allowed.
-If software programs [`EXEC`](../data/flash_ctrl.hjson#exec) to any other value, code fetch from flash results in an error.
+If software programs [`EXEC`](registers.md#exec) to `0xa26a38f7`, code fetch from flash is allowed.
+If software programs [`EXEC`](registers.md#exec) to any other value, code fetch from flash results in an error.
 
 The flash protocol controller distinguishes code / data transactions through the [instruction type attribute](../../lc_ctrl/README.md#usage-of-user-bits) of the TL-UL interface.
 
@@ -144,7 +144,7 @@ The flash protocol controller distinguishes code / data transactions through the
 
 The flash protocol controller maintains 3 different categories of observed errors and faults.
 In general, errors are considered recoverable and primarily geared towards problems that could have been caused by software or that occurred during a software initiated operation.
-Errors can be found in [`ERR_CODE`](../data/flash_ctrl.hjson#err_code).
+Errors can be found in [`ERR_CODE`](registers.md#err_code).
 
 Faults, on the other hand, represent error events that are unlikely to have been caused by software and represent a major malfunction of the system.
 
@@ -165,7 +165,7 @@ Since the flash controller has multiple interfaces for access, transmission inte
 There are 4 interfaces:
 - host direct access to flash controller [register files](#host-direct-access-to-flash-controller-register-files).
 - host direct access to [flash macro](#host-direct-access-to-flash-macro)
-- host / software initiated flash controller access to [flash macro (read / program / erase)](#host-software-initiated-access-to-flash-macro)
+- host / software initiated flash controller access to [flash macro (read / program / erase)](#host--software-initiated-access-to-flash-macro)
 - life cycle management interface / hardware initiated flash controller access to [flash macro (read / program / erase)](#life-cycle-management-interface-hardware-initiated-access-to-flash-macro)
 
 The impact of transmission integrity of each interface is described below.
@@ -173,7 +173,7 @@ The impact of transmission integrity of each interface is described below.
 ##### Host Direct Access to Flash Controller Register Files
 This category of transmission integrity behaves identically to other modules.
 A bus transaction, when received, is checked for command and data payload integrity.
-If an integrity error is seen, the issuing bus host receives an in-band error response and a fault is registered in [`STD_FAULT_STATUS.REG_INTG_ERR`](../data/flash_ctrl.hjson#std_fault_status).
+If an integrity error is seen, the issuing bus host receives an in-band error response and a fault is registered in [`STD_FAULT_STATUS.REG_INTG_ERR`](registers.md#std_fault_status).
 
 ##### Host Direct Access to Flash Macro
 Flash can only be read by the host.
@@ -186,21 +186,21 @@ Controller reads behave similarly to [host direct access to macro](#host-direct-
 
 For program operations, the write data and its associated integrity are stored and propagated through the flash protocol and physical controllers.
 Prior to packing the data for final flash program, the data is then checked for integrity correctness.
-If the data integrity is incorrect, an in-band error response is returned to the initiating host and an error is registered in [`ERR_CODE.PROG_INTG_ERR`](../data/flash_ctrl.hjson#err_code).
-An error is also registered in [`STD_FAULT_STATUS.PROG_INTG_ERR`](../data/flash_ctrl.hjson#std_fault_status) to indicate that a fatal fault has occurred.
+If the data integrity is incorrect, an in-band error response is returned to the initiating host and an error is registered in [`ERR_CODE.PROG_INTG_ERR`](registers.md#err_code).
+An error is also registered in [`STD_FAULT_STATUS.PROG_INTG_ERR`](registers.md#std_fault_status) to indicate that a fatal fault has occurred.
 
 The reasons a program error is registered in two locations are two-fold:
-- It is registered in [`ERR_CODE`](../data/flash_ctrl.hjson#err_code) so software can discover during operation status that a program has failed.
-- It is registered in [`STD_FAULT_STATUS`](../data/flash_ctrl.hjson#std_fault_status) because transmission integrity failures represent a fatal failure in the standard structure of the design, something that should never happen.
+- It is registered in [`ERR_CODE`](registers.md#err_code) so software can discover during operation status that a program has failed.
+- It is registered in [`STD_FAULT_STATUS`](registers.md#std_fault_status) because transmission integrity failures represent a fatal failure in the standard structure of the design, something that should never happen.
 
 ##### Life Cycle Management Interface / Hardware Initiated Access to Flash Macro
 The life cycle management interface issues transactions directly to the flash controller and does not perform a command payload integrity check.
 
 For read operations, the read data and its associated integrity are directly checked by the life cycle management interface.
-If an integrity error is seen, it is registered in [`FAULT_STATUS.LCMGR_INTG_ERR`](../data/flash_ctrl.hjson#fault_status).
+If an integrity error is seen, it is registered in [`FAULT_STATUS.LCMGR_INTG_ERR`](registers.md#fault_status).
 
 For program operations, the program data and its associated integrity are propagated into the flash controller.
-If an integrity error is seen, an error is registered in [`FAULT_STATUS.PROG_INTG_ERR`](../data/flash_ctrl.hjson#fault_status).
+If an integrity error is seen, an error is registered in [`FAULT_STATUS.PROG_INTG_ERR`](registers.md#fault_status).
 
 #### ECC and ICV Related Read Errors
 
@@ -209,8 +209,8 @@ In addition to transmission integrity errors described above, the flash can also
 Flash reliability ECC errors (multi-bit errors) and integrity check errors (integrity check errors) are both reflected as in-band errors to the entity that issued the transaction.
 That means if a host direct read, controller initiated read or hardware initiated read encounters one of these errors, the error is directly reflected in the operation status.
 
-Further, reliability ECC / integrity check errors are also captured in [`FAULT_STATUS`](../data/flash_ctrl.hjson#fault_status) and can be used to generate fatal alerts.
-The reason these are not captured in [`STD_FAULT_STATUS`](../data/flash_ctrl.hjson#std_fault_status) is because 1 or 2 bit errors can occur in real usage due to environmental conditions, thus they do not belong to the standard group of structural errors.
+Further, reliability ECC / integrity check errors are also captured in [`FAULT_STATUS`](registers.md#fault_status) and can be used to generate fatal alerts.
+The reason these are not captured in [`STD_FAULT_STATUS`](registers.md#std_fault_status) is because 1 or 2 bit errors can occur in real usage due to environmental conditions, thus they do not belong to the standard group of structural errors.
 If we assume 2-bit errors can occur, then software must have a mechanism to recover from the error instead of [escalation](#flash-escalation).
 
 #### Flash Escalation
@@ -218,7 +218,7 @@ If we assume 2-bit errors can occur, then software must have a mechanism to reco
 Flash has two sources of escalation - global and local.
 
 Global escalation is triggered by the life cycle controller through `lc_escalate_en`.
-Local escalation is triggered by a standard faults of flash, seen in [`STD_FAULT_STATUS`](../data/flash_ctrl.hjson#std_fault_status).
+Local escalation is triggered by a standard faults of flash, seen in [`STD_FAULT_STATUS`](registers.md#std_fault_status).
 Local escalation is not configurable and automatically triggers when this subset of faults are seen.
 
 For the escalation behavior, see [flash access disable](#flash-access-disable) .
@@ -227,7 +227,7 @@ For the escalation behavior, see [flash access disable](#flash-access-disable) .
 
 Flash access can be disabled through global escalation trigger, local escalation trigger, rma process completion or software command.
 The escalation triggers are described [here](#flash-escalation).
-The software command to disable flash can be found in [`DIS`](../data/flash_ctrl.hjson#dis).
+The software command to disable flash can be found in [`DIS`](registers.md#dis).
 The description for rma entry can be found [here](#rma-entry-handling).
 
 When disabled, the flash has a two layered response:
@@ -263,7 +263,7 @@ This ensures a stream of host activity cannot deny protocol controller access (f
 This section describes the open source modeling of flash memory.
 The actual flash memory behavior may differ, and should consult the specific vendor or technology specification.
 
-When a bank erase command is issued and allowed, see [bank erase protection](#bank-erase-protection), the erase behavior is dependent on [`CONTROL.PARTITION_SEL`](../data/flash_ctrl.hjson#control).
+When a bank erase command is issued and allowed, see [bank erase protection](#bank-erase-protection), the erase behavior is dependent on [`CONTROL.PARTITION_SEL`](registers.md#control).
 - If data partition is selected, all data in the data partition is erased.
 - If info partition is selected, all data in the data partition is erased AND all data in the info partitions (including all info types) is also erased.
 
@@ -373,7 +373,7 @@ When an erase / program is issued to the flash, the entries are evicted to ensur
 When a page erase / program is issued to a flash bank, only entries that fall into that address range are evicted.
 When a bank erase is issued, then all entries are evicted.
 
-The flash buffer is only enabled after [`INIT`](../data/flash_ctrl.hjson#init) is invoked.
+The flash buffer is only enabled after [`INIT`](registers.md#init) is invoked.
 When an RMA entry sequence is received, the flash buffers are disabled.
 
 As an example, assume a flash word is made up of 2 bus words.
@@ -395,9 +395,9 @@ When a read hits in the flash buffer, the integrity ECC is checked against the d
 The information partition uses the same address scheme as the data partition - which is directly accessible by software.
 This means the address of page{N}.word{M} is the same no matter which type of partition is accessed.
 
-Which partition a specific transaction accesses is denoted through a separate field [`CONTROL.PARTITION_SEL`](../data/flash_ctrl.hjson#control) in the [`CONTROL`](../data/flash_ctrl.hjson#control) register.
-If [`CONTROL.PARTITION_SEL`](../data/flash_ctrl.hjson#control) is set, then the information partition is accessed.
-If [`CONTROL.PARTITION_SEL`](../data/flash_ctrl.hjson#control) is not set, then the corresponding word in the data partition is accessed.
+Which partition a specific transaction accesses is denoted through a separate field [`CONTROL.PARTITION_SEL`](registers.md#control) in the [`CONTROL`](registers.md#control) register.
+If [`CONTROL.PARTITION_SEL`](registers.md#control) is set, then the information partition is accessed.
+If [`CONTROL.PARTITION_SEL`](registers.md#control) is not set, then the corresponding word in the data partition is accessed.
 
 Flash scrambling, if enabled, also applies to information partitions.
 It may be required for manufacturers to directly inject data into specific pages flash information partitions via die contacts.
@@ -427,49 +427,6 @@ This sections details the default settings used by the flash controller:
 * Secret partition 0 (used for creator): Bank 0, information partition 0, page 1
 * Secret partition 1 (used for owner): Bank 0, information partition 0, page 2
 * Isolated partition: Bank 0, information partition 0, page 3
-
-## Hardware Interfaces
-
-* [Interface Tables](../data/flash_ctrl.hjson#interfaces)
-
-### Signals
-
-In addition to the interrupts and bus signals, the tables below lists the flash controller functional I/Os.
-
-Signal                     | Direction      | Description
-------------------------   |-----------     |---------------
-`lc_creator_seed_sw_rw_en` | `input`        | Indication from `lc_ctrl` that software is allowed to read/write creator seed.
-`lc_owner_seed_sw_rw_en`   | `input`        | Indication from `lc_ctrl` that software is allowed to read/write owner seed.
-`lc_seed_hw_rd_en`         | `input`        | Indication from `lc_ctrl` that hardware is allowed to read creator / owner seeds.
-`lc_iso_part_sw_rd_en`     | `input`        | Indication from `lc_ctrl` that software is allowed to read the isolated partition.
-`lc_iso_part_sw_wr_en`     | `input`        | Indication from `lc_ctrl` that software is allowed to write the isolated partition.
-`lc_escalate_en`           | `input`        | Escalation indication from `lc_ctrl`.
-`lc_nvm_debug_en`          | `input`        | Indication from lc_ctrl that non-volatile memory debug is allowed.
-`core_tl`                  | `input/output` | TL-UL interface used to access `flash_ctrl` registers for activating program / erase and reads to information partitions/
-`prim_tl`                  | `input/output` | TL-UL interface used to access the vendor flash memory proprietary registers.
-`mem_tl`                   | `input/output` | TL-UL interface used by host to access the vendor flash memory directly.
-`OTP`                      | `input/output` | Interface used to request scrambling keys from `otp_ctrl`.
-`rma_req`                  | `input`        | rma entry request from `lc_ctrl`.
-`rma_ack`                  | `output`       | rma entry acknowlegement to `lc_ctrl`.
-`rma_seed`                 | `input`        | rma entry seed.
-`pwrmgr`                   | `output`       | Idle indication to `pwrmgr`.
-`keymgr`                   | `output`       | Secret seed bus to `keymgr`.
-
-In addition to the functional IOs, there are a set of signals that are directly connected to vendor flash module.
-
-Signal                     | Direction      | Description
-------------------------   |-----------     |---------------
-`scan_en`                  | `input`        | scan enable
-`scanmode`                 | `input`        | scan mode
-`scan_rst_n`               | `input`        | scan reset
-`flash_bist_enable`        | `input`        | enable flash built-in-self-test
-`flash_power_down_h`       | `input`        | flash power down indication, note this is NOT a core level signal
-`flash_power_ready_h`      | `input`        | flash power ready indication, note this is NOT a core level signal
-`flash_test_mode_a`        | `input/output` | flash test mode io, note this is NOT a core level signal
-`flash_test_voltage_h`     | `input/output` | flash test voltage, note this is NOT a core level signal
-`flash_alert`              | `output`       | flash alert outputs directly to AST
-
-
 
 ## Design Details
 

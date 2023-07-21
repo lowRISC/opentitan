@@ -8,21 +8,21 @@ To issue a flash read, the programmer must
 *  Specify the operation to be 'READ' type
 *  Set the 'START' bit for the operation to begin
 
-The above fields can be set in the [`CONTROL`](../data/flash_ctrl.hjson#control) and [`ADDR`](../data/flash_ctrl.hjson#addr) registers.
+The above fields can be set in the [`CONTROL`](registers.md#control) and [`ADDR`](registers.md#addr) registers.
 See [library code](https://github.com/lowRISC/opentitan/blob/master/sw/device/lib/dif/dif_flash_ctrl.c) for implementation.
 
 It is acceptable for total number of flash words to be significantly greater than the depth of the read FIFO.
 In this situation, the read FIFO will fill up (or hit programmable fill value), pause the flash read and trigger an interrupt to software.
 Once there is space inside the FIFO, the controller will resume reading until the appropriate number of words have been read.
-Once the total count has been reached, the flash controller will post OP_DONE in the [`OP_STATUS`](../data/flash_ctrl.hjson#op_status) register.
+Once the total count has been reached, the flash controller will post OP_DONE in the [`OP_STATUS`](registers.md#op_status) register.
 
 ## Issuing a Controller Program
 
 To program flash, the same procedure as read is followed.
-However, instead of setting the [`CONTROL`](../data/flash_ctrl.hjson#control) register for read operation, a program operation is selected instead.
+However, instead of setting the [`CONTROL`](registers.md#control) register for read operation, a program operation is selected instead.
 Software will then fill the program FIFO and wait for the controller to consume this data.
 Similar to the read case, the controller will automatically stall when there is insufficient data in the FIFO.
-When all desired words have been programmed, the controller will post OP_DONE in the [`OP_STATUS`](../data/flash_ctrl.hjson#op_status) register.
+When all desired words have been programmed, the controller will post OP_DONE in the [`OP_STATUS`](registers.md#op_status) register.
 
 ## Debugging a Read Error
 Since flash has multiple access modes, debugging read errors can be complicated.
@@ -37,8 +37,8 @@ From these exceptions, software should be able to determine the error address th
 Once the address is discovered, further steps can be taken to triage the issue.
 
 ### Error Encountered by Software Initiated Controller Operations
-A controller operation can encounter a much greater variety of errors, see [`ERR_CODE`](../data/flash_ctrl.hjson#err_code).
-When such an error is encountered, as reflected by [`OP_STATUS`](../data/flash_ctrl.hjson#op_status) when the operation is complete, software can examine the [`ERR_ADDR`](../data/flash_ctrl.hjson#err_addr) to determine the error location.
+A controller operation can encounter a much greater variety of errors, see [`ERR_CODE`](registers.md#err_code).
+When such an error is encountered, as reflected by [`OP_STATUS`](registers.md#op_status) when the operation is complete, software can examine the [`ERR_ADDR`](registers.md#err_addr) to determine the error location.
 Once the address is discovered, further steps can be taken to triage the issue.
 
 ### Hardware Initiated Reads
@@ -47,21 +47,14 @@ If the root secrets have been provisioned in OTP and the life cycle state is in 
 Hence, it is important that these pages are initialized with valid data, since otherwise the hardware will likely encounter ECC errors during the automatic readout.
 
 Note that by default, hardware assumes that scrambling and ECC is enabled on these special info pages.
-If software decides to not use scrambling or ECC on these partitions at the time of provisioning, software should disable these features in the [`HW_INFO_CFG_OVERRIDE`](../data/flash_ctrl.hjson#hw_info_cfg_override) register accordingly when initializing the flash controller.
+If software decides to not use scrambling or ECC on these partitions at the time of provisioning, software should disable these features in the [`HW_INFO_CFG_OVERRIDE`](registers.md#hw_info_cfg_override) register accordingly when initializing the flash controller.
 Otherwise, a configuration mismatch between hardware interface and the software side will lead to corrupted seed values and ECC errors upon automatic readout.
 
 ### Correctable ECC Errors
 Correctable ECC errors are by nature not fatal errors and do not stop operation.
 Instead, if the error is correctable, the flash controller fixes the issue and registers the last address where a single bit error was seen.
-See [`ECC_SINGLE_ERR_CNT`](../data/flash_ctrl.hjson#ecc_single_err_cnt) and [`ECC_SINGLE_ERR_ADDR`](../data/flash_ctrl.hjson#ecc_single_err_addr)
+See [`ECC_SINGLE_ERR_CNT`](registers.md#ecc_single_err_cnt) and [`ECC_SINGLE_ERR_ADDR`](registers.md#ecc_single_err_addr)
 
 ## Device Interface Functions (DIFs)
 
 - [Device Interface Functions](../../../../sw/device/lib/dif/dif_flash_ctrl.h)
-
-## Register Table
-
-The flash protocol controller maintains two separate access windows for the FIFO.
-It is implemented this way because the access window supports transaction back-pressure should the FIFO become full (in case of write) or empty (in case of read).
-
-* [Register Table](../data/flash_ctrl.hjson#registers)
