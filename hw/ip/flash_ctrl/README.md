@@ -44,7 +44,7 @@ The protocol controller currently supports the following features:
 *  Flash memory protection at page boundaries.
 *  Life cycle RMA entry.
 *  Key manager secret seeds that are inaccessible to software.
-*  Support vendor flash module [erase suspend](#erase-suspend).
+*  Support vendor flash module [erase suspend](./doc/theory_of_operation.md#erase-suspend).
 *  Provisioning of flash specific attributes:
    * High endurance.
 *  Idle indication to external power managers.
@@ -105,11 +105,11 @@ Lastly, while the different partitions may be identical in some attributes, they
 *  All types of partitions obey the same program and erase rules :
    * A bit cannot be programmed back to 1 once it has been programmed to 0.
    * Only erase can restore a bit to 1 under normal circumstances.
-*  All partitions (data and information) can be read, programmed and erased by the flash protocol controller, subject to [memory protection](#memory-protection) and [life cycle qualification](#memory-protection-for-key-manager-and-life-cycle) .
+*  All partitions (data and information) can be read, programmed and erased by the flash protocol controller, subject to [memory protection](./doc/theory_of_operation.md#memory-protection) and [life cycle qualification](./doc/theory_of_operation.md#memory-protection-for-key-manager-and-life-cycle) .
 *  System hosts (processor and other entities) can only directly read the data partition, they do not have any kind of access to information partitions.
    * System hosts are also not subject to memory protection rules, as those apply to the flash protocol controller only.
 
-For default assumptions of the design, see the [default configuration](#flash-default-configuration).
+For default assumptions of the design, see the [default configuration](./doc/theory_of_operation.md#flash-default-configuration).
 
 #### Addresses Map
 
@@ -140,10 +140,10 @@ All partitions share the same addressing scheme.
 For example, the page 0 address of any kind of partition is always the same.
 
 To distinguish which partition is accessed, use the configuration in [`CONTROL.PARTITION_SEL`](data/flash_ctrl.hjson#control) and [`CONTROL.INFO_SEL`](data/flash_ctrl.hjson#control)
-Note however, the system host is only able to access the [data partitions](#host-and-protocol-controller-handling).
+Note however, the system host is only able to access the [data partitions](./doc/theory_of_operation.md#host-and-protocol-controller-handling).
 
 ##### Default Address Map
-Based on the [default configuration](#flash-default-configuration), the following would be the default address map for each partition / page.
+Based on the [default configuration](./doc/theory_of_operation.md#flash-default-configuration), the following would be the default address map for each partition / page.
 
 Location        | Address      |
 ----------------|------------- |
