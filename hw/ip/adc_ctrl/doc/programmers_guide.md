@@ -3,33 +3,33 @@
 ## Initialization
 
 The controller should be initialized with the properties of the ADC and scan times.
-* The ADC power up delay must be set in [`adc_pd_ctl.pwrup_time`](../data/adc_ctrl.hjson#adc_pd_ctl).
-* The time to delay between samples in a slow scan should be set in [`adc_pd_ctl.wakeup_time`](../data/adc_ctrl.hjson#adc_pd_ctl).
-* The number of samples to cause transition from slow to fast scan should be set in [`adc_lp_sample_ctl`](../data/adc_ctrl.hjson#adc_lp_sample_ctl).
-* The number of samples for debounce should be set in [`adc_sample_ctl`](../data/adc_ctrl.hjson#adc_sample_ctl).
-* The filter registers [`adc_chnX_filter_ctlN`](../data/adc_ctrl.hjson#adc_chnx_filter_ctln) should be programmed.
-* The interrupt [`adc_intr_ctl`](../data/adc_ctrl.hjson#adc_intr_ctl) and wakeup [`adc_wakeup_ctl`](../data/adc_ctrl.hjson#adc_wakeup_ctl) enables should be configured.
-* All ones should be written to [`adc_intr_status`](../data/adc_ctrl.hjson#adc_intr_status) and  [`filter_status`](../data/adc_ctrl.hjson#filter_status) to ensure there are no spurious pending triggers.
-* Optionally, the low-power mode should be set in [`adc_pd_ctl.lp_mode`](../data/adc_ctrl.hjson#adc_pd_ctl) if the system is going to the low-power mode.
-* The state machine will only start running when [`adc_en_ctl`](../data/adc_ctrl.hjson#adc_en_ctl) is set.
+* The ADC power up delay must be set in [`adc_pd_ctl.pwrup_time`](registers.md#adc_pd_ctl).
+* The time to delay between samples in a slow scan should be set in [`adc_pd_ctl.wakeup_time`](registers.md#adc_pd_ctl).
+* The number of samples to cause transition from slow to fast scan should be set in [`adc_lp_sample_ctl`](registers.md#adc_lp_sample_ctl).
+* The number of samples for debounce should be set in [`adc_sample_ctl`](registers.md#adc_sample_ctl).
+* The filter registers [`adc_chnX_filter_ctlN`](registers.md#adc_chn0_filter_ctl) should be programmed.
+* The interrupt [`adc_intr_ctl`](registers.md#adc_intr_ctl) and wakeup [`adc_wakeup_ctl`](registers.md#adc_wakeup_ctl) enables should be configured.
+* All ones should be written to [`adc_intr_status`](registers.md#adc_intr_status) and  [`filter_status`](registers.md#filter_status) to ensure there are no spurious pending triggers.
+* Optionally, the low-power mode should be set in [`adc_pd_ctl.lp_mode`](registers.md#adc_pd_ctl) if the system is going to the low-power mode.
+* The state machine will only start running when [`adc_en_ctl`](registers.md#adc_en_ctl) is set.
 
 ## Running in normal mode
 
-If fast sampling is always required then the [`adc_pd_ctl.lp_mode`](../data/adc_ctrl.hjson#adc_pd_ctl) bit should be clear.
-In this case the values in the [`adc_lp_sample_ctl`](../data/adc_ctrl.hjson#adc_lp_sample_ctl) are not used.
+If fast sampling is always required then the [`adc_pd_ctl.lp_mode`](registers.md#adc_pd_ctl) bit should be clear.
+In this case the values in the [`adc_lp_sample_ctl`](registers.md#adc_lp_sample_ctl) are not used.
 The ADC will always be enabled and consuming power.
 
-If power saving is required then the controller can be set to operate in low power mode by setting [`adc_pd_ctl.lp_mode`](../data/adc_ctrl.hjson#adc_pd_ctl).
-The [`adc_lp_sample_ctl`](../data/adc_ctrl.hjson#adc_lp_sample_ctl) must be programmed prior to setting this bit.
+If power saving is required then the controller can be set to operate in low power mode by setting [`adc_pd_ctl.lp_mode`](registers.md#adc_pd_ctl).
+The [`adc_lp_sample_ctl`](registers.md#adc_lp_sample_ctl) must be programmed prior to setting this bit.
 
 ## Running with the rest of the chip in sleep
 
 Once programmed the controller and ADC can run when the rest of the chip is in low power state and the main clocks are stopped.
 This allows the chip to be woken when appropriate values are detected on the two ADC channels.
 The fast sampling mode can be used but will usually consume more power than desired when the chip is in sleep.
-So it is expected that [`adc_lp_sample_ctl`](../data/adc_ctrl.hjson#adc_lp_sample_ctl) is configured and low power mode enabled by setting [`adc_pd_ctl.lp_mode`](../data/adc_ctrl.hjson#adc_pd_ctl) prior to the sleep being initiated.
+So it is expected that [`adc_lp_sample_ctl`](registers.md#adc_lp_sample_ctl) is configured and low power mode enabled by setting [`adc_pd_ctl.lp_mode`](registers.md#adc_pd_ctl) prior to the sleep being initiated.
 
-If the ADC wakeup is not required then the controller and ADC should both be disabled by clearing [`adc_en_ctl`](../data/adc_ctrl.hjson#adc_en_ctl) prior to the sleep being initiated.
+If the ADC wakeup is not required then the controller and ADC should both be disabled by clearing [`adc_en_ctl`](registers.md#adc_en_ctl) prior to the sleep being initiated.
 
 ## Use Case
 
@@ -57,12 +57,12 @@ The following assumes:
 * The ADC takes a single sample in 44 clocks (220 us)
 
 The controller should be initialized with the properties of the ADC and scan times.
-* The ADC power up delay must be set in [`adc_pd_ctl.pwrup_time`](../data/adc_ctrl.hjson#adc_pd_ctl) to `6` (30 us).
-* The time to delay between samples in a slow scan should be set in [`adc_pd_ctl.wakeup_time`](../data/adc_ctrl.hjson#adc_pd_ctl) to `1600` (8ms).
-* The number of samples to cause transition from slow to fast scan should be set in [`adc_lp_sample_ctl`](../data/adc_ctrl.hjson#adc_lp_sample_ctl) to `4` (causing slow scan to be 4*8ms = 32ms of debounce time).
-* The number of samples for debounce should be set in [`adc_sample_ctl`](../data/adc_ctrl.hjson#adc_sample_ctl) to `155` (causing the total debounce time to be 32ms (slow scan) + 220us * 2 * 155 = 100ms, at the low end of the USB-C spec window).
+* The ADC power up delay must be set in [`adc_pd_ctl.pwrup_time`](registers.md#adc_pd_ctl) to `6` (30 us).
+* The time to delay between samples in a slow scan should be set in [`adc_pd_ctl.wakeup_time`](registers.md#adc_pd_ctl) to `1600` (8ms).
+* The number of samples to cause transition from slow to fast scan should be set in [`adc_lp_sample_ctl`](registers.md#adc_lp_sample_ctl) to `4` (causing slow scan to be 4*8ms = 32ms of debounce time).
+* The number of samples for debounce should be set in [`adc_sample_ctl`](registers.md#adc_sample_ctl) to `155` (causing the total debounce time to be 32ms (slow scan) + 220us * 2 * 155 = 100ms, at the low end of the USB-C spec window).
 
-* For the 10-bit ADC granularity, the filter registers [`adc_chnX_filter_ctlN`](../data/adc_ctrl.hjson#adc_chnx_filter_ctln) should be programmed to:
+* For the 10-bit ADC granularity, the filter registers [`adc_chnX_filter_ctlN`](registers.md#adc_chn0_filter_ctl) should be programmed to:
 
 | Filter | Ch0 Min      | Ch0 Max      | Ch1 Min      | Ch1 Max      | Device connected            |
 |--------|--------------|--------------|--------------|--------------|-----------------------------|
@@ -76,9 +76,9 @@ The controller should be initialized with the properties of the ADC and scan tim
 | 7 OUT  |  116 (0.25V) |  954 (2.05V) |  116 (0.25V) |  954 (2.05V) | Disconnect                  |
 
 
-* The interrupt [`adc_intr_ctl`](../data/adc_ctrl.hjson#adc_intr_ctl) and wakeup [`adc_wakeup_ctl`](../data/adc_ctrl.hjson#adc_wakeup_ctl) enables should be configured.
-* All ones should be written to [`adc_intr_status`](../data/adc_ctrl.hjson#adc_intr_status) and  [`filter_status`](../data/adc_ctrl.hjson#filter_status) to ensure there are no spurious pending triggers.
-* The state machine will only start running when [`adc_en_ctl`](../data/adc_ctrl.hjson#adc_en_ctl) is set.
+* The interrupt [`adc_intr_ctl`](registers.md#adc_intr_ctl) and wakeup [`adc_wakeup_ctl`](registers.md#adc_wakeup_ctl) enables should be configured.
+* All ones should be written to [`adc_intr_status`](registers.md#adc_intr_status) and  [`filter_status`](registers.md#filter_status) to ensure there are no spurious pending triggers.
+* The state machine will only start running when [`adc_en_ctl`](registers.md#adc_en_ctl) is set.
 
 Note that for the debug controller (DTS in USB-C specification) as a power source the filter that is hit will indicate the orientation of the connector.
 If the debug controller is acting as a power sink then the orientation cannot be known unless the debug controller supports the optional behavior of converting one of its pulldowns to an Ra (rather than Rp) to indicate CC2 (the CC that is not used for communication).
@@ -87,7 +87,3 @@ This would not be detected by the filters since it happens later than connection
 ## Device Interface Functions (DIFs)
 
 - [Device Interface Functions](../../../../sw/device/lib/dif/dif_adc_ctrl.h)
-
-## Registers
-
-* [Register Table](../data/adc_ctrl.hjson#registers)
