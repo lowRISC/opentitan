@@ -25,8 +25,7 @@ readonly DIST_ARTIFACTS=(
   'sw/device/*.bin'
   'sw/device/*.vmem'
   'hw/top_earlgrey/Vchip_earlgrey_verilator'
-  'hw/top_earlgrey/lowrisc_systems_chip_earlgrey_*.bit.*'
-  'hw/top_earlgrey/*.mmi'
+  'hw/top_earlgrey/chip_earlgrey_cw310/*'
 )
 
 DIST_DIR="$OBJ_DIR/$OT_VERSION"
