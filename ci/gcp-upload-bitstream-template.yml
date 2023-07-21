@@ -1,14 +1,14 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-  
+
 # Azure template for uploading artifacts to a Google Cloud Platform (GCP)
 # bucket.
 #
 # This template first installs gsutil to interact with GCP resources. Then,
-# files located under parentDir and at paths specified by includeFiles will be
-# packed into archiveName (a tar.gz file) and uploaded to a GCP bucket located
-# at bucketURI using gsutil.
+# files indicated by bitstream manifest fragments specified by fragmentFiles
+# will be packed into an archive (a tar.gz file) and uploaded to a GCP bucket
+# located at bucketURI using gsutil.
 #
 # Writing to a GCP bucket requires a GCP service account key with sufficient
 # permisions. This key must be uploaded to Azure as a Secure File. The name of
@@ -16,10 +16,7 @@
 #
 
 parameters:
-  - name: parentDir
-    type: string
-    default: ""
-  - name: includeFiles
+  - name: fragmentFiles
     type: object
     default: []
   - name: gcpKeyFile
@@ -40,7 +37,7 @@ steps:
       echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | \
         sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
       echo "vvvvvvvvv cat /etc/apt/sources.list.d/google-cloud-sdk.list"
-      cat /etc/apt/sources.list.d/google-cloud-sdk.list 
+      cat /etc/apt/sources.list.d/google-cloud-sdk.list
       echo "^^^^^^^^"
       curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo tee /usr/share/keyrings/cloud.google.gpg
       sudo apt-get update || {
@@ -50,8 +47,15 @@ steps:
 
       . util/build_consts.sh
       printf "$(date -u +%Y-%m-%dT%H:%M:%S)\n$(Build.SourceVersion)" > latest.txt
-      printf "${{ join('\n', parameters.includeFiles) }}" > include_files.txt
-      tar -C ${{ parameters.parentDir }} -zcvf bitstream-latest.tar.gz -T include_files.txt
+      ci/bazelisk.sh build //util/py/scripts:bitstream_cache_create
+      printf "${{ join('\n', parameters.fragmentFiles) }}" > fragment_files.txt
+      mapfile -t fragments < fragment_files.txt
+      ./util/py/scripts/bitstream_cache_create.py \
+        --schema rules/scripts/bitstreams_manifest.schema.json \
+        --stamp-file bazel-out/volatile-status.txt \
+        --out $BIN_DIR/bitstream-cache \
+        "${fragments[@]}"
+      mv $BIN_DIR/bitstream-cache/bitstream-cache.tar.gz bitstream-latest.tar.gz
 
       gsutil -o Credentials:gs_service_key_file=$(gcpkey.secureFilePath) \
         cp latest.txt ${{ parameters.bucketURI }}/latest.txt
@@ -62,4 +66,3 @@ steps:
     condition: succeeded()
     continueOnError: true
     displayName: Upload bitstreams to GCP bucket
-
