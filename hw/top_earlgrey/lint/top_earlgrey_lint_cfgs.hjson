@@ -21,115 +21,72 @@
   // Severities to be printed in the summary report
   report_severities: ["warning", "error"]
 
-  use_cfgs: [{    name: top_earlgrey_alert_handler
+  use_cfgs: [// Top-specific IPs
+             {    name: alert_handler
                   fusesoc_core: lowrisc:opentitan:top_earlgrey_alert_handler
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson",
+                                "{proj_root}/hw/top_earlgrey/data/chip_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/ip_autogen/alert_handler/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
-             {    name: top_earlgrey_ast
+             {    name: ast
                   fusesoc_core: lowrisc:systems:ast
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson",
+                                "{proj_root}/hw/top_earlgrey/data/chip_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/ip/ast/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
-             {    name: top_earlgrey_clkmgr
+             {    name: clkmgr
                   fusesoc_core: lowrisc:systems:clkmgr
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson",
+                                "{proj_root}/hw/top_earlgrey/data/chip_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/ip/clkmgr/lint/{tool}",
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
-             {    name: top_earlgrey_flash_ctrl
+             {    name: flash_ctrl
                   fusesoc_core: lowrisc:ip:flash_ctrl
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson",
+                                "{proj_root}/hw/top_earlgrey/data/chip_cfg.hjson"]
                   rel_path: "hw/ip/flash_ctrl/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
-// This should be top-level dependent, but it is not yet templated accordingly.
-//             {    name: top_earlgrey_otp_ctrl
-//                  fusesoc_core: lowrisc:ip:otp_ctrl
-//                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-//                  rel_path: "hw/ip/otp_ctrl/lint/{tool}"
-//                  overrides: [
-//                    {
-//                      name: design_level
-//                      value: "top"
-//                    }
-//                  ]
-//             },
-             {    name: top_earlgrey_pinmux
+             {    name: otp_ctrl
+                  fusesoc_core: lowrisc:ip:otp_ctrl
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson",
+                                "{proj_root}/hw/top_earlgrey/data/chip_cfg.hjson"]
+                  rel_path: "hw/ip/otp_ctrl/lint/{tool}"
+             },
+             {    name: pinmux
                   fusesoc_core: lowrisc:ip:pinmux
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson",
+                                "{proj_root}/hw/top_earlgrey/data/chip_cfg.hjson"]
                   rel_path: "hw/ip/pinmux/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
-             {    name: top_earlgrey_pwrmgr
+             {    name: pwrmgr
                   fusesoc_core: lowrisc:ip:pwrmgr
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson",
+                                "{proj_root}/hw/top_earlgrey/data/chip_cfg.hjson"]
                   rel_path: "hw/ip/pwrmgr/lint/{tool}",
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
-             {    name: top_earlgrey_rstmgr
+             {    name: rstmgr
                   fusesoc_core: lowrisc:ip:rstmgr
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson",
+                                "{proj_root}/hw/top_earlgrey/data/chip_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/ip/rstmgr/lint/{tool}",
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
-             {    name: top_earlgrey_rv_plic
+             {    name: rv_plic
                   fusesoc_core: lowrisc:opentitan:top_earlgrey_rv_plic
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson",
+                                "{proj_root}/hw/top_earlgrey/data/chip_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/ip_autogen/rv_plic/lint/{tool}"
              },
-             {    name: top_earlgrey_sensor_ctrl
+             {    name: sensor_ctrl
                   fusesoc_core: lowrisc:systems:sensor_ctrl
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson",
+                                "{proj_root}/hw/top_earlgrey/data/chip_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/ip/sensor_ctrl/lint/{tool}"
              },
              {    name: chip_earlgrey_asic
                   fusesoc_core: lowrisc:systems:chip_earlgrey_asic
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson",
+                                "{proj_root}/hw/top_earlgrey/data/chip_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
             ]
 

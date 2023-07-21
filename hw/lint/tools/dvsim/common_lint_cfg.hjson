@@ -20,13 +20,15 @@
 
   // We rely on fusesoc to run lint for us.
   build_cmd:  "{job_prefix} fusesoc"
-  build_opts: ["--cores-root {proj_root}",
+  build_opts: ["{fusesoc_cores_root_dirs}",
                "run",
                "--flag=fileset_{design_level}",
                "--target={flow}",
                "--tool={tool}",
                "--build-root={build_dir}",
                "{fusesoc_core}"]
+
+  fusesoc_cores_root_dirs: ["--cores-root {proj_root}"]
 
   // Determines which message severities to print into report summaries.
   report_severities: ["warning", "error"]

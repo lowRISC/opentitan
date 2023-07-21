@@ -55,6 +55,7 @@
                 "{proj_root}/hw/dv/verilator/memutil_dpi_scrambled_opts.hjson",
                 "{proj_root}/hw/ip/otbn/dv/memutil/otbn_memutil_sim_opts.hjson",
                 "{proj_root}/hw/ip/otbn/dv/tracer/otbn_tracer_sim_opts.hjson",
+                // This defines the design_level: "top" key
                 "{proj_root}/hw/{top_chip}/data/chip_cfg.hjson",
                 "{top_dv_path}/chip_smoketests.hjson",
                 "{top_dv_path}/chip_rom_tests.hjson",
@@ -97,11 +98,6 @@
     {
       name: vcs_xprop_cfg_file
       value: "{top_dv_path}/vcs_xprop.cfg"
-    }
-    // This defaults to 'ip' in `hw/data/common_project_cfg.hjson`.
-    {
-      name: design_level
-      value: "top"
     }
     // The jtag agent requires the data and bytenable widths to be increased.
     {
