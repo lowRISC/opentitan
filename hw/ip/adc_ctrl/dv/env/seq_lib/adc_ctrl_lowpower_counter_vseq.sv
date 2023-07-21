@@ -19,10 +19,25 @@ class adc_ctrl_lowpower_counter_vseq extends adc_ctrl_counter_vseq;
 
   virtual task wait_for_txfers();
     wait_all_rx();
-    `DV_ASSERT_CTRL_REQ("WakeupTime_A_CTRL", 1)
-    wait_all_rx();
-    wait_all_rx();
-    `DV_ASSERT_CTRL_REQ("WakeupTime_A_CTRL", 0)
+
+    // Wait for a couple of ADC wakeups and make sure that they happen with the configured frequency
+    // (the gaps should be the configured wakeup time). This is checked by the WakeupTime_A
+    // assertion, which we need to turn on.
+    //
+    // In case a parent sequence applies a reset, it will kill us too. Fortunately, that happens
+    // after the reset has gone through, so we can clean up after ourselves by disabling the
+    // assertion (and stopping this sequence) on reset.
+    fork begin : isolation_fork
+      `DV_ASSERT_CTRL_REQ("WakeupTime_A_CTRL", 1)
+
+      fork
+        repeat (2) wait_all_rx();
+        cfg.clk_aon_rst_vif.wait_for_reset(.wait_negedge(1'b1), .wait_posedge(1'b0));
+      join_any
+
+      `DV_ASSERT_CTRL_REQ("WakeupTime_A_CTRL", 0)
+      disable fork;
+    end : isolation_fork join
   endtask
 
 endclass : adc_ctrl_lowpower_counter_vseq
