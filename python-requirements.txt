@@ -16,7 +16,7 @@ pyelftools==0.29
 pytest-timeout==2.1.0
 pytest==7.0.1
 pyyaml==6.0
-rich==13.3.5
+rich==12.6.0  # maximum version compatible with Python 3.6.8 (used on CentOS7 nightly regression machines)
 semantic_version==2.10.0
 tabulate==0.8.10
 typer==0.6.1
