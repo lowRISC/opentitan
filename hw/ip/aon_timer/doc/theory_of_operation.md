@@ -9,10 +9,6 @@ The timer interacts with the CPU core and the power manager and reset manager to
 There is also an extra input to tell the counter whether to run ("counter-run").
 This is used to stop the watchdog timer running when in debugging mode or when the alert handler has put the system in a "killed" state.
 
-## Hardware Interfaces
-
-* [Interface Tables](../data/aon_timer.hjson#interfaces)
-
 ## Design Details
 
 The always-on timer will run on a ~200KHz clock.
