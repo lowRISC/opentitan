@@ -73,6 +73,31 @@ static void tryTX(usbdpi_ctx_t *ctx, uint8_t endpoint, bool expect_status);
 // static void testIso(usbdpi_ctx_t *ctx);
 #define testIso(ctx) tryTX((ctx), ENDPOINT_ISOCHRONOUS, false)
 
+// Initialize the state of the DPI model appropriately for when the device
+// connects to the bus
+static void bus_reset(usbdpi_ctx_t *ctx) {
+  // Initialize state for each endpoint and direction
+  for (unsigned ep = 0U; ep < USBDPI_MAX_ENDPOINTS; ep++) {
+    // First DATAx received shall be DATA0
+    ctx->ep_in[ep].next_data = USB_PID_DATA0;
+
+    // First DATAx transmitted shall be DATA0 because it must follow a SETUP
+    // transaction
+    ctx->ep_out[ep].next_data = USB_PID_DATA0;
+  }
+
+  ctx->baudrate_set_successfully = 0;
+  ctx->state = ST_IDLE;
+
+  ctx->step = STEP_BUS_RESET;
+  ctx->hostSt = HS_NEXTFRAME;
+
+  // Device address should be discarded by usbdev, and it should now respond
+  // at the default address of 0.
+  ctx->dev_address = 0U;
+  ctx->bus_state = kUsbIdle;
+}
+
 // Callback for USB data detection
 static void usbdpi_data_callback(void *ctx_v, usbmon_data_type_t type,
                                  uint8_t d);
@@ -93,23 +118,10 @@ void *usbdpi_create(const char *name, int loglevel) {
   // ctx->frame_start = 0;
   // ctx->last_pu = 0;
   // ctx->driving = 0;
-  // ctx->baudrate_set_successfully = 0;
 
-  // Initialize state for each endpoint and direction
-  for (unsigned ep = 0U; ep < USBDPI_MAX_ENDPOINTS; ep++) {
-    // First DATAx received shall be DATA0
-    ctx->ep_in[ep].next_data = USB_PID_DATA0;
+  bus_reset(ctx);
 
-    // First DATAx transmitted shall be DATA0 because it must follow a SETUP
-    // transaction
-    ctx->ep_out[ep].next_data = USB_PID_DATA0;
-  }
-
-  ctx->state = ST_IDLE;
-  ctx->hostSt = HS_NEXTFRAME;
   ctx->loglevel = loglevel;
-
-  ctx->step = STEP_BUS_RESET;
 
   char cwd[FILENAME_MAX];
   char *cwd_rv;
@@ -364,8 +376,10 @@ void setDeviceAddress(usbdpi_ctx_t *ctx, uint8_t dev_addr) {
   uint8_t *dp;
   switch (ctx->hostSt) {
     case HS_STARTFRAME:
-      // Setting device address, uses address 0 initially
-      transfer_token(tr, USB_PID_SETUP, 0, ENDPOINT_ZERO);
+      // Setting device address
+      //   (uses address 0 initially, so if this SETUP message is intended to
+      //    be received, `dev_address` should be zero at this point.)
+      transfer_token(tr, USB_PID_SETUP, ctx->dev_address, ENDPOINT_ZERO);
 
       dp = transfer_data_start(tr, USB_PID_DATA0, 8);
       if (INSERT_ERR_PID) {
@@ -1129,12 +1143,16 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
   if ((d2p & D2P_PU) == 0) {
     // In the event that the device disconnected, we must start anew in
     // anticipation of a reconnection
+    bus_reset(ctx);
+    ctx->driving = set_driving(ctx, d2p, 0, true);  // SE0
     ctx->recovery_time = ctx->tick + 4 * 48;
     return ctx->driving;
   }
 
   // Are we allowed to start transmitting yet; device recovery time elapsed?
   if (ctx->tick < ctx->recovery_time) {
+    ctx->driving = set_driving(ctx, d2p, P2D_DP, false);  // J, but not driving
+    ctx->state = ST_IDLE;
     ctx->frame_start = ctx->tick_bits;
     return ctx->driving;
   }
@@ -1180,11 +1198,23 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
 
       if (ctx->hostSt == HS_NEXTFRAME) {
         ctx->step = usbdpi_test_seq_next(ctx, ctx->step);
+        ctx->num_tries = 0U;
         ctx->hostSt = HS_STARTFRAME;
       } else {
-        // TODO - this surely means that something went wrong;
-        // but what shall we do at this point?!
-        assert(!"DPI Host not ready to start new frame");
+        // This normally means that we did not get the expected response to
+        // a Control Transfer stage (Data/Status), so retry if we haven't
+        // already exhausted our retry attempts.
+        if (ctx->num_tries++ >= USBDPI_MAX_RETRIES) {
+          ctx->num_tries = 0U;
+          assert(!"USBDPI: no response to Control Transfer");
+        } else {
+          printf("[usbdpi] Warning: DPI Host not ready to start new frame\n");
+          // For now we'll just start the Control Transfer again, because
+          // this means sending a SETUP packet which should reset the device
+          // behavior; later we may want to mimic more accurately a real
+          // host.
+          ctx->hostSt = HS_STARTFRAME;
+        }
       }
     }
   }
@@ -1199,6 +1229,27 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
       }
 
       switch (ctx->step) {
+        case STEP_BUS_RESET:
+          // Note: this is a placeholder for the more proper Reset and Resume
+          // signaling that has been implemented for suspend-resume testing;
+          // this is sufficient for PinCfg test.
+          switch (ctx->hostSt) {
+            case HS_STARTFRAME:
+              bus_reset(ctx);
+              ctx->wait = ctx->tick_bits + 532;               // HACK
+              ctx->driving = set_driving(ctx, d2p, 0, true);  // SE0
+              ctx->hostSt = HS_NEXTFRAME;
+              break;
+            default:
+              if (ctx->tick_bits >= ctx->wait) {
+                // Let the bus float to Idle, undriven
+                ctx->driving = set_driving(ctx, d2p, P2D_DP, false);  // J
+              }
+              ctx->hostSt = HS_NEXTFRAME;
+              break;
+          }
+          break;
+
         case STEP_SET_DEVICE_ADDRESS:
           setDeviceAddress(ctx, USBDEV_ADDRESS);
           break;
