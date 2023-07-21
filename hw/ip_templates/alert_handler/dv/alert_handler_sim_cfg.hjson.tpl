@@ -31,7 +31,7 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson",
                 // Top-level-specific configuration
-                "{proj_root}/hw/{top_chip}/chip_cfg.hjson",
+                "{proj_root}/hw/{top_chip}/data/chip_cfg.hjson",
                 ]
 
   // Add additional tops for simulation.

@@ -55,7 +55,7 @@
                 "{proj_root}/hw/dv/verilator/memutil_dpi_scrambled_opts.hjson",
                 "{proj_root}/hw/ip/otbn/dv/memutil/otbn_memutil_sim_opts.hjson",
                 "{proj_root}/hw/ip/otbn/dv/tracer/otbn_tracer_sim_opts.hjson",
-                "{proj_root}/hw/{top_chip}/chip_cfg.hjson",
+                "{proj_root}/hw/{top_chip}/data/chip_cfg.hjson",
                 "{top_dv_path}/chip_smoketests.hjson",
                 "{top_dv_path}/chip_rom_tests.hjson",
                 ]
