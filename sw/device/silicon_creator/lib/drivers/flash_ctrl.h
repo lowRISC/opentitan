@@ -183,7 +183,7 @@ enum {
 };
 
 /**
- * Kicks of the initialization of the flash controller.
+ * Kicks off the initialization of the flash controller.
  *
  * This must complete before flash can be accessed. The init status can be
  * queried by calling `flash_ctrl_status_get()` and checking `init_wip`.
@@ -417,6 +417,8 @@ void flash_ctrl_info_perms_set(const flash_ctrl_info_page_t *info_page,
  * flash_ctrl config registers use 4-bits for boolean values. Use
  * `kMultiBitBool4True` to enable and `kMultiBitBool4False` to disable
  * these settings.
+ *
+ * This struct has no padding, so it is safe to `memcmp()` without invoking UB.
  */
 typedef struct flash_ctrl_cfg {
   /**
@@ -433,6 +435,11 @@ typedef struct flash_ctrl_cfg {
   multi_bit_bool_t he;
 } flash_ctrl_cfg_t;
 
+OT_ASSERT_MEMBER_OFFSET(flash_ctrl_cfg_t, scrambling, 0);
+OT_ASSERT_MEMBER_OFFSET(flash_ctrl_cfg_t, ecc, 4);
+OT_ASSERT_MEMBER_OFFSET(flash_ctrl_cfg_t, he, 8);
+OT_ASSERT_SIZE(flash_ctrl_cfg_t, 12);
+
 /**
  * Sets default configuration settings for the data partition.
  *
@@ -443,6 +450,37 @@ typedef struct flash_ctrl_cfg {
  * @param cfg New configuration settings.
  */
 void flash_ctrl_data_default_cfg_set(flash_ctrl_cfg_t cfg);
+
+/**
+ * Reads the current default configuration settings for the data partition.
+ *
+ * @return Current configuration settings.
+ */
+flash_ctrl_cfg_t flash_ctrl_data_default_cfg_get(void);
+
+/**
+ * A type for flash_ctrl memory protection region indices.
+ */
+typedef uint32_t flash_ctrl_region_index_t;
+
+/**
+ * Configure memory protection for a region of pages.
+ *
+ * Based on the `region` parameter, this function overwrites the
+ * `MP_REGION_${region}` and `MP_REGION_CFG_${region}` registers. Calling this
+ * function invalidates previously-configured protections for `region`.
+ *
+ * @param region The index of the region to protect.
+ * @param page_offset The index of the first page in the region.
+ * @param num_pages The number of pages in the region.
+ * @param perms The read/write/erase permissions for this region.
+ * @param cfg Flash config values that are used to fill in some fields of the
+ *            `MP_REGION_CFG_${region}` register.
+ */
+void flash_ctrl_data_region_protect(flash_ctrl_region_index_t region,
+                                    uint32_t page_offset, uint32_t num_pages,
+                                    flash_ctrl_perms_t perms,
+                                    flash_ctrl_cfg_t cfg);
 
 /**
  * Sets configuration settings for an info page.

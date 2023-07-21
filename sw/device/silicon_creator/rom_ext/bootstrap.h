@@ -29,15 +29,12 @@ hardened_bool_t rom_ext_bootstrap_enabled(void);
  * spi_device. This function will never erase or reprogram ROM_EXT's flash
  * regions in slot A or slot B.
  *
- * OpenTitan bootstrap uses the typical SPI flash EEPROM commands. A typical
- * bootstrap session involves:
+ * OpenTitan's ROM_EXT bootstrap uses the typical SPI flash EEPROM commands. A
+ * typical bootstrap session involves:
  * - Asserting bootstrap pins to enter bootstrap mode,
  * - Erasing the chip (WREN, CHIP_ERASE, busy loop ...),
  * - Programming the chip (WREN, PAGE_PROGRAM, busy loop ...), and
  * - Resetting the chip (RESET).
- *
- * TODO(#19151) Configure flash memory protection hardware. Until we do this,
- * the flash restrictions described below are not enforced.
  *
  * This function configures flash memory protection to control which operations
  * can be performed on individual regions, e.g. the ROM_EXT in slot A should be

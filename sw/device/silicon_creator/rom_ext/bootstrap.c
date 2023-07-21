@@ -99,5 +99,56 @@ rom_error_t rom_ext_bootstrap(void) {
   }
   HARDENED_CHECK_EQ(enabled, kHardenedBoolTrue);
 
+  enum {
+    kNumPagesInRomExt = CHIP_ROM_EXT_SIZE_MAX / FLASH_CTRL_PARAM_BYTES_PER_PAGE
+  };
+  static_assert(CHIP_ROM_EXT_SIZE_MAX % FLASH_CTRL_PARAM_BYTES_PER_PAGE == 0,
+                "ROM_EXT size must be an integer multiple of flash page size.");
+  static_assert(kNumPagesInRomExt <= FLASH_CTRL_PARAM_REG_PAGES_PER_BANK,
+                "ROM_EXT must fit within a single flash bank.");
+
+  // Read the DEFAULT_REGION register to determine default values for some
+  // fields of MP_REGION_CFG_${region}.
+  const flash_ctrl_cfg_t default_cfg = flash_ctrl_data_default_cfg_get();
+
+  // The region of slot A following the ROM_EXT region is erasable and
+  // programmable.
+  flash_ctrl_data_region_protect(
+      /*region=*/0,
+      /*page_offset=*/kNumPagesInRomExt,
+      /*num_pages=*/FLASH_CTRL_PARAM_REG_PAGES_PER_BANK - kNumPagesInRomExt,
+      (flash_ctrl_perms_t){
+          .read = kMultiBitBool4True,
+          .write = kMultiBitBool4True,
+          .erase = kMultiBitBool4True,
+      },
+      default_cfg);
+
+  // The region of slot B following the ROM_EXT region is erasable, but not
+  // programmable.
+  flash_ctrl_data_region_protect(
+      /*region=*/1,
+      /*page_offset=*/FLASH_CTRL_PARAM_REG_PAGES_PER_BANK + kNumPagesInRomExt,
+      /*num_pages=*/FLASH_CTRL_PARAM_REG_PAGES_PER_BANK - kNumPagesInRomExt,
+      (flash_ctrl_perms_t){
+          .read = kMultiBitBool4True,
+          .write = kMultiBitBool4False,
+          .erase = kMultiBitBool4True,
+      },
+      default_cfg);
+
+  // With the lowest priority, disable programming and erasing the flash.
+  flash_ctrl_data_region_protect(
+      /*region=*/2,
+      /*page_offset=*/0,
+      /*num_pages=*/FLASH_CTRL_PARAM_REG_PAGES_PER_BANK *
+          FLASH_CTRL_PARAM_REG_NUM_BANKS,
+      (flash_ctrl_perms_t){
+          .read = kMultiBitBool4True,
+          .write = kMultiBitBool4False,
+          .erase = kMultiBitBool4False,
+      },
+      default_cfg);
+
   return enter_bootstrap();
 }
