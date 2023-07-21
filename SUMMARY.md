@@ -70,6 +70,8 @@
     - [Design Verification](./hw/ip/adc_ctrl/dv/README.md)
       - [Testplan](./hw/ip/adc_ctrl/data/adc_ctrl_testplan.hjson)
     - [Programmer's Guide](./hw/ip/adc_ctrl/doc/programmers_guide.md)
+    - [Hardware Interfaces](./hw/ip/adc_ctrl/doc/interfaces.md)
+    - [Registers](./hw/ip/adc_ctrl/doc/registers.md)
     - [Checklist](./hw/ip/adc_ctrl/doc/checklist.md)
     - [Interface and Registers](./hw/ip/adc_ctrl/data/adc_ctrl.hjson)
   - [AES](./hw/ip/aes/README.md)
