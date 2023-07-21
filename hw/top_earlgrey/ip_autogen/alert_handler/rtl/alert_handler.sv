@@ -8,8 +8,6 @@
 
 module alert_handler
   import alert_pkg::*;
-  import prim_alert_pkg::*;
-  import prim_esc_pkg::*;
 #(
   // Compile time random constants, to be overriden by topgen.
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
@@ -39,12 +37,12 @@ module alert_handler
   input  edn_pkg::edn_rsp_t                edn_i,
   // Alert Sources
   // SEC_CM: ALERT.INTERSIG.DIFF
-  input  alert_tx_t [NAlerts-1:0]          alert_tx_i,
-  output alert_rx_t [NAlerts-1:0]          alert_rx_o,
+  input  prim_alert_pkg::alert_tx_t [NAlerts-1:0] alert_tx_i,
+  output prim_alert_pkg::alert_rx_t [NAlerts-1:0] alert_rx_o,
   // Escalation outputs
   // SEC_CM: ESC.INTERSIG.DIFF
-  input  esc_rx_t [N_ESC_SEV-1:0]          esc_rx_i,
-  output esc_tx_t [N_ESC_SEV-1:0]          esc_tx_o
+  input  prim_esc_pkg::esc_rx_t [N_ESC_SEV-1:0] esc_rx_i,
+  output prim_esc_pkg::esc_tx_t [N_ESC_SEV-1:0] esc_tx_o
 );
 
   //////////////////////////////////
@@ -321,12 +319,14 @@ module alert_handler
   `ASSERT_KNOWN(EscPKnownO_A,      esc_tx_o)
   `ASSERT_KNOWN(EdnKnownO_A,       edn_o)
 
-  // this restriction is due to specifics in the ping selection mechanism
-  `ASSERT_INIT(CheckNAlerts,   NAlerts  < (256 - N_CLASSES))
-  `ASSERT_INIT(CheckEscCntDw,  EscCntDw  <= 32)
-  `ASSERT_INIT(CheckAccuCntDw, AccuCntDw <= 32)
-  `ASSERT_INIT(CheckNClasses,  N_CLASSES <= 8)
-  `ASSERT_INIT(CheckNEscSev,   N_ESC_SEV <= 8)
+  // This restriction comes from the way alert channels are indexed inside the ping timer.
+  `ASSERT_INIT(CheckNAlerts_A,   $clog2(NAlerts) <= LfsrWidth - PING_CNT_DW)
+
+  // The prim_esc_receivers are not dependent on the alert handler packages to make it easier to
+  // integrate them in other IPs. To that end, some of the parameters have therefore been
+  // duplicated in prim_esc_pkg. We check here that these parameters are identical.
+  `ASSERT_INIT(CheckPingCntDw_A, PING_CNT_DW == prim_esc_pkg::PingCntDw)
+  `ASSERT_INIT(CheckNEscSev2_A,  N_ESC_SEV == prim_esc_pkg::NumEscSev)
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ERR(RegWeOnehotCheck_A,

@@ -21,30 +21,13 @@
 module prim_esc_receiver
   import prim_esc_pkg::*;
 #(
-  // The number of escalation severities. Should be set to the Alert Handler's N_ESC_SEV when this
-  // primitive is instantiated.
-  parameter int N_ESC_SEV = 4,
-
-  // The width of the Alert Handler's ping counter. Should be set to the Alert Handler's PING_CNT_DW
-  // when this primitive is instantiated.
-  parameter int PING_CNT_DW = 16,
-
-  // This counter monitors incoming ping requests and auto-escalates if the alert handler
-  // ceases to send them regularly. The maximum number of cycles between subsequent ping requests
-  // is N_ESC_SEV x (2 x 2 x 2**PING_CNT_DW), see also implementation of the ping timer
-  // (alert_handler_ping_timer.sv). The timeout counter below uses a timeout that is 4x larger than
-  // that in order to incorporate some margin.
-  //
-  // Do NOT modify this counter value, when instantiating it in the design. It is only exposed to
-  // reduce the state space in the FPV testbench.
-  localparam int MarginFactor = 4,
-  localparam int NumWaitCounts = 2,
-  localparam int NumTimeoutCounts = 2,
+  // Do NOT modify this counter value, when instantiating it in the design.
+  // It is only exposed to reduce the state space in dedicated FPV / DV testbenches.
   parameter int TimeoutCntDw = $clog2(MarginFactor) +
-                               $clog2(N_ESC_SEV) +
+                               $clog2(NumEscSev) +
                                $clog2(NumWaitCounts) +
                                $clog2(NumTimeoutCounts) +
-                               PING_CNT_DW
+                               PingCntDw
 ) (
   input           clk_i,
   input           rst_ni,

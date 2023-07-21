@@ -133,10 +133,7 @@ module pwrmgr
   );
 
   logic esc_rst_req_d, esc_rst_req_q;
-  prim_esc_receiver #(
-    .N_ESC_SEV   (alert_handler_reg_pkg::N_ESC_SEV),
-    .PING_CNT_DW (alert_handler_reg_pkg::PING_CNT_DW)
-  ) u_esc_rx (
+  prim_esc_receiver u_esc_rx (
     .clk_i(clk_esc),
     .rst_ni(rst_esc_n),
     .esc_req_o(esc_rst_req_d),

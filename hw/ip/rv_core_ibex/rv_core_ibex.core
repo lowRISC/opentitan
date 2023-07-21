@@ -13,7 +13,6 @@ filesets:
       - lowrisc:ip:pwrmgr_pkg
       - lowrisc:ip:rv_core_ibex_pkg
       - lowrisc:ip:tlul
-      - lowrisc:ip_interfaces:alert_handler_reg
       - lowrisc:prim:all
       - lowrisc:prim:clock_gating
       - lowrisc:prim:edn_req

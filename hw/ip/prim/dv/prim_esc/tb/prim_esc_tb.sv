@@ -23,8 +23,9 @@ module prim_esc_tb;
   //////////////////////////////////////////////////////
 
   localparam time ClkPeriod  = 10000;
-  localparam int  PING_CNT_DW = 1;
-  localparam int  TIMEOUT_CYCLES = 1 << (PING_CNT_DW + 6);
+  // Reduce timeout counter width to avoid long wait period to check ping request reverse timeout.
+  localparam int TIMEOUT_CNT_DW = 7;
+  localparam int TIMEOUT_CYCLES = 1 << TIMEOUT_CNT_DW;
   localparam string MSG_ID = $sformatf("%m");
 
   uint default_spinwait_timeout_ns = 100_000;
@@ -60,9 +61,7 @@ module prim_esc_tb;
   );
 
   prim_esc_receiver #(
-    .N_ESC_SEV(4),
-    // Set to 1 to avoid long wait period to check ping request reverse timeout.
-    .PING_CNT_DW(PING_CNT_DW)
+    .TimeoutCntDw(TIMEOUT_CNT_DW)
   ) i_esc_receiver (
     .clk_i(clk),
     .rst_ni(rst_n),
