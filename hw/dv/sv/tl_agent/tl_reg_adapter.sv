@@ -75,9 +75,9 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
     end
     if (cfg.csr_access_abort_pct_in_adapter > $urandom_range(0, 100)) begin
       bus_req.req_abort_after_a_valid_len = 1;
-      `uvm_info(`gtn, $sformatf("tl reg req item is allowed to be aborted"), UVM_MEDIUM)
+      `uvm_info(this.get_name(), $sformatf("tl reg req item is allowed to be aborted"), UVM_MEDIUM)
     end
-    `uvm_info(`gtn, {"tl_reg_adapter::reg2bus: ", bus_req.convert2string()}, UVM_HIGH)
+    `uvm_info(this.get_name(), {"tl_reg_adapter::reg2bus: ", bus_req.convert2string()}, UVM_HIGH)
     return bus_req;
   endfunction : reg2bus
 
@@ -95,7 +95,7 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
     end
     // indicate if the item is completed successfully for upper level to update predict value
     rw.status  = !bus_rsp.req_completed ? UVM_NOT_OK : UVM_IS_OK;
-    `uvm_info(`gtn, {"tl_reg_adapter::bus2reg: ", bus_rsp.convert2string()}, UVM_HIGH)
+    `uvm_info(this.get_name(), {"tl_reg_adapter::bus2reg: ", bus_rsp.convert2string()}, UVM_HIGH)
   endfunction: bus2reg
 
 endclass : tl_reg_adapter
