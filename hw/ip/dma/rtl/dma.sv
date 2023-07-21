@@ -9,49 +9,40 @@ module dma
   import dma_pkg::*;
   import dma_reg_pkg::*;
 #(
-    parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-    parameter integer NumLsioTriggers            = 4,
-    parameter integer SysNumRnReqCh              = 2,
-    parameter integer AgtReqMetadataWidth        = 7,
-    parameter integer AgtReqDataByteWidth        = 4,
-    parameter integer NumSysErrorTypes           = 1,
-    parameter integer RaclWidth                  = 4,
-    parameter integer DmaAddrWidth               = 64
+    parameter logic [NumAlerts-1:0] AlertAsyncOn         = {NumAlerts{1'b1}},
+    parameter bit                   EnableDataIntgGen    = 1'b1,
+    parameter logic [RsvdWidth-1:0] TlUserRsvd           = '0,
+    parameter int                   NumLsioTriggers      = 4,
+    parameter int unsigned PlicLsioPlic[NumLsioTriggers] = '{
+      32'h1234567,
+      32'h1234567,
+      32'h1234567,
+      32'h1234567
+    },
+    parameter logic [SYS_RACL_WIDTH-1:0] SysRacl         = '0,
+    parameter integer                  OtAgentId         = 0
 ) (
-  input logic                                                          clk_i,
-  input logic                                                          rst_ni,
-  input logic                                                          test_en_i,
-  // DMA interrupt and incoming LSIO interrupts
-  output  logic                                                        intr_dma_o,
-  input   logic [(NumLsioTriggers-1):0]                                lsio_trigger_i,
+  input logic                                      clk_i,
+  input logic                                      rst_ni,
+  input logic                                      test_en_i,
+  // DMA interrupt and incoming LSIO triggers
+  output  logic                                    intr_dma_o,
+  input   logic [(NumLsioTriggers-1):0]            lsio_trigger_i,
   // Alerts
-  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0]                    alert_rx_i,
-  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0]                    alert_tx_o,
-  // facing scs's xbar
-  input   tlul_pkg::tl_d2h_t                                           tl_xbar_i,
-  output  tlul_pkg::tl_h2d_t                                           tl_xbar_o,
+  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
   // Device port
-  input   tlul_pkg::tl_h2d_t                                           tl_dev_i,
-  output  tlul_pkg::tl_d2h_t                                           tl_dev_o,
+  input   tlul_pkg::tl_h2d_t                        tl_dev_i,
+  output  tlul_pkg::tl_d2h_t                        tl_dev_o,
+  // Facing Xbar
+  input   tlul_pkg::tl_d2h_t                        tl_xbar_i,
+  output  tlul_pkg::tl_h2d_t                        tl_xbar_o,
   // Host port
-  input   tlul_pkg::tl_d2h_t                                           tl_host_i,
-  output  tlul_pkg::tl_h2d_t                                           tl_host_o,
+  input   tlul_pkg::tl_d2h_t                        tl_host_i,
+  output  tlul_pkg::tl_h2d_t                        tl_host_o,
   // System port
-  output logic     [(SysNumRnReqCh-1):0]                            sys_req_vld_vec_o,
-  output logic     [(SysNumRnReqCh-1):0][(AgtReqMetadataWidth-1):0] sys_req_metadata_vec_o,
-  output sys_opc_e [(SysNumRnReqCh-1):0]                            sys_req_opcode_vec_o,
-  output logic     [(SysNumRnReqCh-1):0][(DmaAddrWidth-1):0]        sys_req_iova_vec_o,
-  output logic     [(SysNumRnReqCh-1):0][(RaclWidth-1):0]           sys_req_racl_vec_o,
-  // Request write data
-  output logic [((AgtReqDataByteWidth*8)-1):0]                         sys_req_write_data_o,
-  output logic [(AgtReqDataByteWidth-1):0]                             sys_req_write_be_o,
-  output logic [(AgtReqDataByteWidth-1):0]                             sys_req_read_be_o,
-  input logic                                                          sys_error_vld_i,
-  input logic [(NumSysErrorTypes-1):0]                                 sys_error_vec_i,
-  input logic                                                          sys_read_data_vld_i,
-  input logic [((AgtReqDataByteWidth*8)-1):0]                          sys_read_data_i,
-  input logic [(AgtReqMetadataWidth-1):0]                              sys_read_metadata_i,
-  input logic [(SysNumRnReqCh-1):0]                                    sys_req_grant_vec_i
+  input  dma_pkg::sys_req_t                         sys_i,
+  output dma_pkg::sys_rsp_t                         sys_o
 );
   dma_reg2hw_t reg2hw;
   dma_hw2reg_t hw2reg;
