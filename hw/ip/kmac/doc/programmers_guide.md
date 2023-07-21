@@ -75,7 +75,3 @@ It could restore the previous hashing state later and continue the operation.
 ## Registers
 
 * [Register Table](../data/kmac.hjson#registers)
-
-[SHA3 specification, FIPS 202]: https://csrc.nist.gov/publications/detail/fips/202/final
-[NIST SP 800-185]: https://csrc.nist.gov/publications/detail/sp/800-185/final
-[Domain-Oriented Masking (DOM)]: https://eprint.iacr.org/2017/395.pdf
