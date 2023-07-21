@@ -6,6 +6,8 @@
 //
 // implementation using security_strength = 256
 
+`include "prim_assert.sv"
+
 module csrng_ctr_drbg_upd #(
   parameter int Cmd = 3,
   parameter int StateId = 4,
