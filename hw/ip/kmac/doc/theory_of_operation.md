@@ -59,7 +59,7 @@ If the compile-time Verilog parameter `EnMasking` is not set, i.e., if masking i
 
 If masking is enabled, the Keccak round logic stores the intermediate state after processing the 1st phase.
 The stored values are then fed into the 2nd phase computing the Chi and Iota functions.
-The Chi function leverages first-order [Domain-Oriented Masking (DOM)][] to aggravate SCA attacks.
+The Chi function leverages first-order [Domain-Oriented Masking (DOM)][] to deter SCA attacks.
 
 To balance circuit area and SCA hardening, the Chi function uses 800 instead 1600 DOM multipliers but the multipliers are fully pipelined.
 The Chi and Iota functions are thus separately applied to the two halves of the state and the 2nd phase takes in total three clock cycles to complete.
