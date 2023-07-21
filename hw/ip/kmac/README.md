@@ -29,10 +29,10 @@ The secret key length can vary up to 512 bits.
 
 The KMAC generates at most 1600 bits of the digest value at a time which can be read from the STATE memory region.
 There's a way for the software to read more digest values by manually running the Keccak rounds.
-The details of the operation are described in the [SHA3 specification, FIPS 202]() known as _sponge construction_.
+The details of the operation are described in the [SHA3 specification, FIPS 202](https://csrc.nist.gov/publications/detail/fips/202/final) known as _sponge construction_.
 
 The KMAC HWIP also performs the SHA3 hash functions without the authentication, whose purpose is to check the correctness of the received message.
 The KMAC IP supports various SHA3 hashing functions including SHA3 Extended Output Function (XOF) known as SHAKE functions.
 
 The KMAC HWIP implements a defense mechanism to deter SCA attacks.
-It is expected to protect against 1st-order SCA attacks by implementing masked storage and [Domain-Oriented Masking (DOM)][] inside the Keccak function.
+It is expected to protect against 1st-order SCA attacks by implementing masked storage and [Domain-Oriented Masking (DOM)](https://eprint.iacr.org/2017/395.pdf) inside the Keccak function.

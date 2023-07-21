@@ -59,7 +59,7 @@ If the compile-time Verilog parameter `EnMasking` is not set, i.e., if masking i
 
 If masking is enabled, the Keccak round logic stores the intermediate state after processing the 1st phase.
 The stored values are then fed into the 2nd phase computing the Chi and Iota functions.
-The Chi function leverages first-order [Domain-Oriented Masking (DOM)][] to deter SCA attacks.
+The Chi function leverages first-order [Domain-Oriented Masking (DOM)](https://eprint.iacr.org/2017/395.pdf) to deter SCA attacks.
 
 To balance circuit area and SCA hardening, the Chi function uses 800 instead 1600 DOM multipliers but the multipliers are fully pipelined.
 The Chi and Iota functions are thus separately applied to the two halves of the state and the 2nd phase takes in total three clock cycles to complete.
@@ -121,7 +121,7 @@ The padding logic clears internal variables and goes back to Idle state.
 ![](../doc/kmac-padding.svg)
 
 KMAC core prepends and appends additional bitstream on top of Keccak padding logic in SHA3 core.
-The [NIST SP 800-185][] defines `KMAC[128,256](K, X, L, S)` as a cSHAKE function.
+The [NIST SP 800-185](https://csrc.nist.gov/publications/detail/sp/800-185/final) defines `KMAC[128,256](K, X, L, S)` as a cSHAKE function.
 See the section 4.3 in NIST SP 800-185 for details.
 If KMAC is enabled, the software should configure [`CMD.mode`](../data/kmac.hjson#cmd) to cSHAKE and the first six bytes of [`PREFIX`](../data/kmac.hjson#prefix) to `0x01204B4D4143` (bigendian).
 The first six bytes of [`PREFIX`](../data/kmac.hjson#prefix) represents the value of `encode_string("KMAC")`.
