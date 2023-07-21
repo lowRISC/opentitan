@@ -560,6 +560,15 @@
       reseed: 1
     }
     {
+      name: chip_sw_usbdev_pincfg
+      uvm_test_seq: chip_sw_usbdev_dpi_vseq
+      sw_images: ["//sw/device/tests:usbdev_pincfg_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+uart_idx=0", "+calibrate_usb_clk=1", "+sw_test_timeout_ns=100_000_000"]
+      run_timeout_mins: 300
+      reseed: 1
+    }
+    {
       name: chip_sw_usbdev_stream
       uvm_test_seq: chip_sw_usbdev_stream_vseq
       sw_images: ["//sw/device/tests:usbdev_stream_test:1"]

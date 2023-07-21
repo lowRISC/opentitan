@@ -1203,8 +1203,8 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
       } else {
         // This normally means that we did not get the expected response to
         // a Control Transfer stage (Data/Status), so retry if we haven't
-        // already exhausted our retry attempts.
-        if (ctx->num_tries++ >= USBDPI_MAX_RETRIES) {
+        // already exhausted our attempts.
+        if (++ctx->num_tries >= USBDPI_MAX_TRIES) {
           ctx->num_tries = 0U;
           assert(!"USBDPI: no response to Control Transfer");
         } else {

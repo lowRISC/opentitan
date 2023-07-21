@@ -158,8 +158,8 @@ typedef uint32_t svBitVecVal;
 // Maximum length of test status message
 #define USBDPI_MAX_TEST_MSG_LEN 80U
 
-// Maximum number of times to /re/try a Control Transfer before faulting it.
-#define USBDPI_MAX_RETRIES 2U
+// Maximum number of attempts to perform a Control Transfer before faulting it.
+#define USBDPI_MAX_TRIES 3U
 
 // Vendor-specific commands used for test framework
 #define USBDPI_VENDOR_TEST_CONFIG 0x7CU
