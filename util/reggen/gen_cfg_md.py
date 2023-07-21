@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Generate markdown documentation for the interfaces of an IpBlock."""
 
-from typing import TextIO, List, Tuple
+from typing import TextIO, List, Tuple, Optional
 
 from reggen.ip_block import IpBlock
 from reggen.md_helpers import (
@@ -11,7 +11,7 @@ from reggen.md_helpers import (
 )
 
 
-def gen_cfg_md(cfgs: IpBlock, output: TextIO) -> None:
+def gen_cfg_md(cfgs: IpBlock, output: TextIO, register_file: Optional[str] = None) -> None:
     comport_url = url(
         "Comportable guideline for peripheral device functionality",
         "https://opentitan.org/book/doc/contributing/hw/comportability",
@@ -59,7 +59,7 @@ def gen_cfg_md(cfgs: IpBlock, output: TextIO) -> None:
         list_items.append("Peripheral Pins for Chip IO: " + italic("none"))
     else:
         rows = [
-            [name_width(x), direction, regref_to_link(x.desc)]
+            [name_width(x), direction, regref_to_link(x.desc, register_file)]
             for direction, x in ios
         ]
         tables.append((
@@ -97,7 +97,7 @@ def gen_cfg_md(cfgs: IpBlock, output: TextIO) -> None:
         list_items.append("Interrupts: " + italic("none"))
     else:
         rows = [
-            [name_width(x), x.intr_type.name, regref_to_link(x.desc)]
+            [name_width(x), x.intr_type.name, regref_to_link(x.desc, register_file)]
             for x in cfgs.interrupts
         ]
         tables.append((
@@ -111,7 +111,7 @@ def gen_cfg_md(cfgs: IpBlock, output: TextIO) -> None:
         list_items.append("Security Alerts: " + italic("none"))
     else:
         rows = [
-            [x.name, regref_to_link(x.desc)]
+            [x.name, regref_to_link(x.desc, register_file)]
             for x in cfgs.alerts
         ]
         tables.append((
@@ -125,7 +125,7 @@ def gen_cfg_md(cfgs: IpBlock, output: TextIO) -> None:
         list_items.append("Security Countermeasures: " + italic("none"))
     else:
         rows = [
-            [cfgs.name.upper() + '.' + str(cm), regref_to_link(cm.desc)]
+            [cfgs.name.upper() + '.' + str(cm), regref_to_link(cm.desc, register_file)]
             for cm in cfgs.countermeasures
         ]
         tables.append((
