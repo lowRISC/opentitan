@@ -27,7 +27,3 @@ Need to alert the system of a FIFO overflow condition.
 ## Device Interface Functions (DIFs)
 
 - [Device Interface Functions](../../../../sw/device/lib/dif/dif_edn.h)
-
-## Register Table
-
-* [Register Table](../data/edn.hjson#registers)
