@@ -4,7 +4,7 @@
 """A collection of functions that aid in generating markdown."""
 
 import re
-from typing import List, Match, Union
+from typing import List, Match, Union, Optional
 
 import tabulate
 from reggen.signal import Signal
@@ -71,16 +71,23 @@ def first_line(s: str) -> str:
         return s
 
 
-def regref_to_link(s: str) -> str:
+def regref_to_link(s: str, file: Optional[str] = None) -> str:
     '''Replaces the register reference markup in the data files with markdown links.
 
-    The markup used in data files is `!!REG_NAME.field`
-    which is translated to `[REG_NAME.field](#reg_name)`.
+    The markup used in data files is '!!REG_NAME.field'
+    which is translated to '[`REG_NAME.field`](file#reg_name)'.
+
+    Args:
+        s (str): The content in which to substitute register links.
+        file (str | None): An optional link to the file holding registers.
+
+    Returns:
+        str: The content after the substitutions have been performed.
     '''
     def linkify(match: Match[str]) -> str:
         name = match.group(1)
         register = match.group(1).partition('.')[0].lower()  # remove field
-        return f"[`{name}`](#{register})"
+        return f"[`{name}`]({file if file else ''}#{register})"
 
     return re.sub(r"!!([A-Za-z0-9_.]+)", linkify, s)
 

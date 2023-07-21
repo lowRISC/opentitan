@@ -302,7 +302,10 @@ def main():
             if fmt == 'registers':
                 return gen_md.gen_md(obj, outfile)
             elif fmt == 'interfaces':
-                return gen_cfg_md.gen_cfg_md(obj, outfile)
+                # Assumes the registers will be in a file called `registers.md`
+                # and within the same location as the output's destination.
+                # Exposing this as an option would nice to do.
+                return gen_cfg_md.gen_cfg_md(obj, outfile, "registers.md")
             elif fmt == 'doc_html_old':
                 return gen_html.gen_html(obj, outfile)
             elif fmt == 'cdh':
