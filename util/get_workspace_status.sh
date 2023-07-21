@@ -20,7 +20,7 @@ then
 fi
 echo "BUILD_SCM_REVISION ${git_rev}"
 
-git_version=$(git describe --always)
+git_version=$(git describe --always --tags)
 if [[ $? != 0 ]];
 then
   exit 1
