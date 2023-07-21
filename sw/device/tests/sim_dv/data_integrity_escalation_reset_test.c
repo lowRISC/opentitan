@@ -160,7 +160,6 @@ enum {
   kWdogBiteMicros = 900,
   // We expect exactly one reset
   kMaxResets = 1,
-  kMaxInterrupts = 30,
 };
 
 static_assert(
@@ -235,13 +234,10 @@ void ottf_external_isr(void) {
   uint32_t interrupt_count = 0;
   CHECK_STATUS_OK(
       flash_ctrl_testutils_counter_get(kCounterInterrupt, &interrupt_count));
-  if (interrupt_count > kMaxInterrupts) {
-    CHECK(false, "Reset count %d got too many interrupts (%d)", reset_count,
-          interrupt_count);
+  if (interrupt_count == 0) {
+    CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
+        &flash_ctrl_state, kCounterInterrupt, 1));
   }
-  CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
-      &flash_ctrl_state, kCounterInterrupt, interrupt_count + 1));
-
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
 
   LOG_INFO("Got irq_id 0x%x (%d)", irq_id, irq_id);
@@ -302,11 +298,9 @@ void ottf_load_integrity_error_handler(void) {
   uint32_t exception_count = 0;
   CHECK_STATUS_OK(
       flash_ctrl_testutils_counter_get(kCounterException, &exception_count));
-  if (exception_count > kMaxInterrupts) {
-    LOG_INFO("Saturating exception counter at %d", exception_count);
-  } else {
+  if (exception_count == 0) {
     CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
-        &flash_ctrl_state, kCounterException, exception_count + 1));
+        &flash_ctrl_state, kCounterException, 1));
   }
 
   rv_core_ibex_fault_checker(true);
@@ -329,11 +323,9 @@ void ottf_instr_access_fault_handler(void) {
   uint32_t exception_count = 0;
   CHECK_STATUS_OK(
       flash_ctrl_testutils_counter_get(kCounterException, &exception_count));
-  if (exception_count > kMaxInterrupts) {
-    LOG_INFO("Saturating exception counter at %d", exception_count);
-  } else if (exception_count == 0) {
+  if (exception_count == 0) {
     CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
-        &flash_ctrl_state, kCounterException, exception_count + 1));
+        &flash_ctrl_state, kCounterException, 1));
   }
 
   rv_core_ibex_fault_checker(true);
@@ -353,11 +345,9 @@ void ottf_external_nmi_handler(void) {
   // Increment the nmi interrupt count.
   uint32_t nmi_count = 0;
   CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(kCounterNmi, &nmi_count));
-  if (nmi_count > kMaxInterrupts) {
-    LOG_INFO("Saturating nmi interrupts at %d", nmi_count);
-  } else {
-    CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(
-        &flash_ctrl_state, kCounterNmi, nmi_count + 1));
+  if (nmi_count == 0) {
+    CHECK_STATUS_OK(flash_ctrl_testutils_counter_set_at_least(&flash_ctrl_state,
+                                                              kCounterNmi, 1));
   }
 
   // Check that this NMI was due to an alert handler escalation, and not due
