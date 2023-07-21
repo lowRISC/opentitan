@@ -10,21 +10,21 @@ set -ex
 . util/build_consts.sh
 
 readonly TOPLEVEL=top_earlgrey
-readonly TOPLEVEL_BIN_DIR="${BIN_DIR}/hw/${TOPLEVEL}"
-readonly TARGETS=(
-  @bitstreams//:chip_earlgrey_cw310_bitstream
-  @bitstreams//:chip_earlgrey_cw310_rom_mmi
-  @bitstreams//:chip_earlgrey_cw310_otp_mmi
-)
+readonly TOPLEVEL_BIN_DIR="${BIN_DIR}/hw/${TOPLEVEL}/chip_earlgrey_cw310"
+readonly TARGET="//hw/bitstream:chip_earlgrey_cw310_cached_fragment"
 readonly BAZEL_OPTS=(
   "--define"
   "bitstream=gcp_splice"
 )
 
-BITSTREAM=HEAD ci/bazelisk.sh build "${BAZEL_OPTS[@]}" "${TARGETS[@]}"
+BITSTREAM=HEAD ci/bazelisk.sh build "${BAZEL_OPTS[@]}" "${TARGET}"
 mkdir -p "${TOPLEVEL_BIN_DIR}"
-for target in "${TARGETS[@]}"; do
-  src="$(ci/scripts/target-location.sh "${target}" "${BAZEL_OPTS[@]}")"
-  dst="${TOPLEVEL_BIN_DIR}/$(basename "$(ci/scripts/target-location.sh "${target}")")"
-  cp -vL "${src}" "${dst}"
-done
+MANIFEST_DIR=$($REPO_TOP/bazelisk.sh cquery --output=starlark \
+  --starlark:file=ci/scripts/get-bitstream-fragment-dir.bzl \
+  ${TARGET})
+echo "$($REPO_TOP/bazelisk.sh cquery --output=starlark \
+  --starlark:file=ci/scripts/get-bitstream-fragment-files-relative.bzl \
+  ${TARGET})" > files.txt
+rsync --archive --copy-unsafe-links --verbose --files-from=files.txt \
+  ${MANIFEST_DIR}/ $BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310
+rm files.txt

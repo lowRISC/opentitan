@@ -21,16 +21,10 @@ cw310_tags=("$@")
 
 # Copy bitstreams and related files into the cache directory so Bazel will have
 # the corresponding targets in the @bitstreams workspace.
-#
-# TODO(#13807) Update this when we change the naming scheme.
 readonly BIT_CACHE_DIR="${HOME}/.cache/opentitan-bitstreams/cache/${SHA}"
-readonly BIT_SRC_DIR="${BIN_DIR}/hw/top_earlgrey"
-readonly BIT_NAME_PREFIX="lowrisc_systems_chip_earlgrey_cw310_0.1.bit"
+readonly BIT_SRC_DIR="${BIN_DIR}/hw/top_earlgrey/chip_earlgrey_cw310"
 mkdir -p "${BIT_CACHE_DIR}"
-cp "${BIT_SRC_DIR}/${BIT_NAME_PREFIX}.orig" \
-    "${BIT_SRC_DIR}/otp.mmi"  \
-    "${BIT_SRC_DIR}/rom.mmi" \
-    "${BIT_CACHE_DIR}"
+cp -rt "${BIT_CACHE_DIR}" "${BIT_SRC_DIR}"/*
 
 echo -n "$SHA" > "${BIT_CACHE_DIR}/../../latest.txt"
 export BITSTREAM="--offline --list ${SHA}"
