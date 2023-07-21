@@ -89,7 +89,7 @@ void *usbdpi_create(const char *name, int loglevel) {
   // ctx->tick = 0;
   // ctx->tick_bits = 0;
   // ctx->frame = 0;
-  // ctx->framepend = 0;
+  // ctx->framepend = false;
   // ctx->frame_start = 0;
   // ctx->last_pu = 0;
   // ctx->driving = 0;
@@ -187,9 +187,9 @@ void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
 
       // Device to host transmission; collect the bits
       case ST_GET:
-        // TODO - perform bit-level decoding and packet construction here rather
+        // TODO: perform bit-level decoding and packet construction here rather
         // than relying upon usb_monitor to do that
-        // TODO - synchronize with the device transmission and check that the
+        // TODO: synchronize with the device transmission and check that the
         // signals remain stable across all 4 cycles of the bit interval
         break;
 
@@ -570,6 +570,7 @@ void getDescriptor(usbdpi_ctx_t *ctx, uint8_t desc_type, uint8_t desc_idx,
             ctx->ep_out[ENDPOINT_ZERO].next_data =
                 DATA_TOGGLE_ADVANCE(ctx->ep_out[ENDPOINT_ZERO].next_data);
             ctx->hostSt = HS_NEXTFRAME;
+            printf("[usbdpi] getDescriptor done\n");
             break;
 
           case USB_PID_NAK:
@@ -578,7 +579,9 @@ void getDescriptor(usbdpi_ctx_t *ctx, uint8_t desc_type, uint8_t desc_idx,
             ctx->wait = ctx->tick_bits + 200;  // HACK
             break;
 
-          // TODO - commute these other responses into test failures
+          // For DEVICE_QUALIFIER reads we expect a STALL response, being
+          // a Full Speed-only device
+          // TODO: commute these other responses into test failures
           case USB_PID_STALL:
             printf("[usbdpi] Device stalled\n");
             ctx->hostSt = HS_NEXTFRAME;
@@ -591,7 +594,7 @@ void getDescriptor(usbdpi_ctx_t *ctx, uint8_t desc_type, uint8_t desc_idx,
         }
       } else if (ctx->tick_bits >= ctx->wait) {
         printf(
-            "[usbdpi] Time out waiting for device response in Status Stage\n");
+            "[usbdpi] Timed out waiting for device response in Status Stage\n");
         ctx->hostSt = HS_NEXTFRAME;
       }
       break;
@@ -647,7 +650,7 @@ void getTestConfig(usbdpi_ctx_t *ctx, uint16_t desc_len) {
             const uint8_t test_sig_tail[] = {0x1fu, 0x0cu, 0x75u, 0xe7u};
             if (!memcmp(dp, test_sig_head, 4) && 0x10 == get_le16(&dp[4]) &&
                 !memcmp(&dp[12], test_sig_tail, 4)) {
-              ctx->test_number = get_le16(&dp[6]);
+              ctx->test_number = (usb_testutils_test_number_t)get_le16(&dp[6]);
               ctx->test_arg[0] = dp[8];
               ctx->test_arg[1] = dp[9];
               ctx->test_arg[2] = dp[10];
@@ -1124,11 +1127,13 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
   }
 
   if ((d2p & D2P_PU) == 0) {
+    // In the event that the device disconnected, we must start anew in
+    // anticipation of a reconnection
     ctx->recovery_time = ctx->tick + 4 * 48;
     return ctx->driving;
   }
 
-  // Are allowed to start transmitting yet; device recovery time elapsed?
+  // Are we allowed to start transmitting yet; device recovery time elapsed?
   if (ctx->tick < ctx->recovery_time) {
     ctx->frame_start = ctx->tick_bits;
     return ctx->driving;
@@ -1137,19 +1142,19 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
   // Time to commence a new bus frame?
   if ((ctx->tick_bits - ctx->frame_start) >= FRAME_INTERVAL) {
     if (ctx->state != ST_IDLE) {
-      if (ctx->framepend == 0) {
+      if (!ctx->framepend) {
         printf(
             "[usbdpi] frame 0x%x tick_bits 0x%x error state %d at frame 0x%x "
             "time\n",
             ctx->frame, ctx->tick, ctx->state, ctx->frame + 1);
       }
-      ctx->framepend = 1;
+      ctx->framepend = true;
     } else {
-      if (ctx->framepend == 1) {
+      if (ctx->framepend) {
         printf("[usbdpi] frame 0x%x tick_bits 0x%x can send frame 0x%x SOF\n",
                ctx->frame, ctx->tick, ctx->frame + 1);
       }
-      ctx->framepend = 0;
+      ctx->framepend = false;
       ctx->frame++;
       ctx->frame_start = ctx->tick_bits;
 
@@ -1283,6 +1288,8 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
           testUnimplEp(ctx, USB_PID_IN, ctx->dev_address,
                        ENDPOINT_UNIMPLEMENTED);
           break;
+
+        // Test SETUP to a different device address
         case STEP_DEVICE_UK_SETUP:
           testUnimplEp(ctx, USB_PID_SETUP, UKDEV_ADDRESS, 1u);
           break;

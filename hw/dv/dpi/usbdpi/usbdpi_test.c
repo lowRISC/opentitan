@@ -6,7 +6,7 @@
 
 #include <assert.h>
 
-#include "usbdpi_stream.h"
+#include "usbdpi.h"
 
 // Test-specific initialization
 void usbdpi_test_init(usbdpi_ctx_t *ctx) {
