@@ -158,6 +158,9 @@ typedef uint32_t svBitVecVal;
 // Maximum length of test status message
 #define USBDPI_MAX_TEST_MSG_LEN 80U
 
+// Maximum number of times to /re/try a Control Transfer before faulting it.
+#define USBDPI_MAX_RETRIES 2U
+
 // Vendor-specific commands used for test framework
 #define USBDPI_VENDOR_TEST_CONFIG 0x7CU
 #define USBDPI_VENDOR_TEST_STATUS 0x7EU
@@ -342,6 +345,10 @@ struct usbdpi_ctx {
    * Test step number
    */
   usbdpi_test_step_t step;
+  /**
+   * Number of attempts to complete the current Control Transfer stage
+   */
+  uint8_t num_tries;
 
   /**
    * Current bus frame number
