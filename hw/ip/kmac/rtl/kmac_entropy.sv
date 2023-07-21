@@ -696,6 +696,7 @@ module kmac_entropy
           // operation while waiting for the EDN response.
           st_d = StRandEdn;
 
+          lfsr_en = 1'b 1;
           rand_valid_clear = 1'b 1;
         end else begin
           st_d = StRandEdn;
