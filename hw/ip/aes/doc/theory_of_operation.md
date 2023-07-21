@@ -271,7 +271,7 @@ The AES unit employs different means at architectural, micro-architectural and p
 
 ## Side-Channel Analysis
 
-To aggravate side-channel analysis (SCA), the AES unit implements the following countermeasures.
+To deter side-channel analysis (SCA), the AES unit implements the following countermeasures.
 
 ### 1st-order Masking of the Cipher Core
 
@@ -315,7 +315,7 @@ In OpenTitan, the [Keccak Message Authentication Code (KMAC) unit](../../kmac/RE
 
 Any 1st-order masking scheme primarily protects against 1st-order SCA.
 Vulnerabilities against higher-order SCA might still be present.
-A common technique to aggravate higher-order attacks is to increase the noise in the system e.g. by leveraging parallel architectures.
+A common technique to impede higher-order attacks is to increase the noise in the system e.g. by leveraging parallel architectures.
 To this end, the AES cipher core uses a 128-bit parallel data path with a total of up to 20 S-Boxes (16 inside SubBytes, 4 inside KeyExpand) that are evaluated in parallel.
 
 Besides more noise for increased resistance against higher-order SCA, the fully-parallel architecture also enables for higher performance and flexibility.

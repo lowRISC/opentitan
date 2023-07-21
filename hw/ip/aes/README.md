@@ -21,10 +21,10 @@ The AES unit supports the following features:
   - Output Feedback (OFB) mode, and
   - Counter (CTR) mode.
 - Support for AES-192 can be removed to save area, and is enabled/disabled using a compile-time Verilog parameter
-- First-order masking of the cipher core using domain-oriented masking (DOM) to aggravate side-channel analysis (SCA), can optionally be disabled using compile-time Verilog parameters (for more details see [Security Hardening below](#side-channel-analysis))
+- First-order masking of the cipher core using domain-oriented masking (DOM) to deter side-channel analysis (SCA), can optionally be disabled using compile-time Verilog parameters (for more details see [Security Hardening below](#side-channel-analysis))
 - Latency per 16 byte data block of 12/14/16 clock cycles (unmasked implementation) and 56/66/72 clock cycles (DOM) in AES-128/192/256 mode
 - Automatic as well as software-initiated reseeding of internal pseudo-random number generators (PRNGs) with configurable reseeding rate resulting in max entropy consumption rates ranging from 286 Mbit/s to 0.035 Mbit/s (at 100 MHz).
-- Countermeasures for aggravating fault injection (FI) on the control path (for more details see [Security Hardening below](#fault-injection))
+- Countermeasures for deterring fault injection (FI) on the control path (for more details see [Security Hardening below](#fault-injection))
 - Register-based data and control interface
 - System key-manager interface for optional key sideload to not expose key material to the processor and other hosts attached to the system bus interconnect.
 - On-the-fly round-key generation in parallel to the actual encryption/decryption from a single initial 128/192/256-bit key provided through the register interface (for more details see [Theory of Operations below](#theory-of-operations))
