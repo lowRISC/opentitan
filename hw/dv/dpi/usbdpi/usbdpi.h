@@ -23,6 +23,7 @@ typedef uint32_t svBitVecVal;
 #include "usb_transfer.h"
 #include "usb_utils.h"
 #include "usbdpi_stream.h"
+#include "usbdpi_test.h"
 
 // Shall we employ a proper simulation of the frame interval (1ms)?
 // TODO - Because we cannot perform multiple control transfers in a
@@ -179,45 +180,6 @@ typedef enum {
   ST_EOP0 = 5
 } usbdpi_drv_state_t;
 
-// Test steps
-typedef enum {
-
-  STEP_BUS_RESET = 0u,
-  STEP_SET_DEVICE_ADDRESS,
-  STEP_GET_DEVICE_DESCRIPTOR,
-  STEP_GET_CONFIG_DESCRIPTOR,
-  STEP_GET_FULL_CONFIG_DESCRIPTOR,
-  STEP_SET_DEVICE_CONFIG,
-
-  // Read test configuration
-  // This is a bespoke 'vendor' command via which we inquire of the CPU
-  // software what behaviour is required
-  STEP_GET_TEST_CONFIG,
-  // Report test status (pass/failure) to the CPU software
-  STEP_SET_TEST_STATUS,
-
-  // usbdev_test
-  STEP_FIRST_READ,
-  STEP_READ_BAUD,
-  STEP_SECOND_READ,
-  STEP_SET_BAUD,
-  STEP_THIRD_READ,
-  STEP_TEST_ISO1,
-  STEP_TEST_ISO2,
-  STEP_ENDPT_UNIMPL_SETUP,
-  STEP_ENDPT_UNIMPL_OUT,
-  STEP_ENDPT_UNIMPL_IN,
-  STEP_DEVICE_UK_SETUP,
-  STEP_IDLE_START,
-  STEP_IDLE_END = STEP_IDLE_START + 4,
-
-  // usbdev_stream_test
-  STEP_STREAM_SERVICE = 0x20u,
-
-  // Disconnect the device and stop
-  STEP_BUS_DISCONNECT = 0x7fu
-} usbdpi_test_step_t;
-
 // Host states
 typedef enum {
   HS_STARTFRAME = 0,
@@ -288,7 +250,7 @@ struct usbdpi_ctx {
   /**
    * Test number, retrieved from the software
    */
-  uint16_t test_number;
+  usb_testutils_test_number_t test_number;
   /**
    * Test-specific arguments
    */
@@ -381,11 +343,15 @@ struct usbdpi_ctx {
    */
   usbdpi_test_step_t step;
 
-  // Bus framing
-  // Note: USB frame numbers are transmitted as 11-bit fields [0,0x7ffU]
+  /**
+   * Current bus frame number
+   * Note: USB frame numbers are transmitted as 11-bit fields [0,0x7ffU]
+   */
   uint16_t frame;
-  uint16_t framepend;
-
+  /**
+   * New bus frame pending
+   */
+  bool framepend;
   /**
    * Time at which the current frame started (bit intervals)
    */
