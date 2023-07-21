@@ -131,6 +131,7 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
   virtual function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     foreach (m_tl_agents[i]) begin
+      m_tl_agents[i].monitor.agent_name = i;
       m_tl_agents[i].monitor.a_chan_port.connect(scoreboard.tl_a_chan_fifos[i].analysis_export);
       m_tl_agents[i].monitor.d_chan_port.connect(scoreboard.tl_d_chan_fifos[i].analysis_export);
       m_tl_agents[i].monitor.channel_dir_port.connect(scoreboard.tl_dir_fifos[i].analysis_export);
