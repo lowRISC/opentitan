@@ -37,24 +37,6 @@ Finally, an `ack` response and status will be returned to the application interf
 
 ![CSRNG Block Diagram](../doc/csrng_blk_diag.svg)
 
-## Hardware Interfaces
-
- * [Interface Tables](../data/csrng.hjson#interfaces)
-
-The table below lists other CSRNG signals.
-
-Signal                       | Direction        | Type                        | Description
------------------------------|------------------|-----------------------------|---------------
-`otp_en_csrng_sw_app_read_i` | `input `         | `otp_en_t `                 | An efuse that will enable firmware to access the NIST CTR_DRBG internal state and genbits through registers.
-`lc_hw_debug_en_i`           | `input`          | `lc_tx_t `                  | A life-cycle that will select which diversification value is used for xoring with the seed from ENTROPY_SRC.
-`entropy_src_hw_if_o`        | `output`         | `entropy_src_hw_if_req_t`   | Seed request made to the ENTROPY_SRC module.
-`entropy_src_hw_if_i`        | `input`          | `entropy_src_hw_if_rsp_t`   | Seed response from the ENTROPY_SRC module.
-`cs_aes_halt_i`              | `input`          | `cs_aes_halt_req_t`         | Request to CSRNG from ENTROPY_SRC to halt requests to the AES block for power leveling purposes.
-`cs_aes_halt_o`              | `output`         | `cs_aes_halt_rsp_t`         | Response from CSRNG to ENTROPY_SRC that all requests to AES block are halted.
-`csrng_cmd_i`                | `input`          | `csrng_req_t`               | Application interface request to CSRNG from an EDN block.
-`csrng_cmd_o`                | `output`         | `csrng_rsp_t`               | Application interface response from CSRNG to an EDN block.
-
-
 ## Design Details
 
 #### Non-blocking Commands
