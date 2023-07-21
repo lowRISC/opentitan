@@ -4,9 +4,9 @@
 #include "sw/device/silicon_creator/manuf/lib/otp_img.h"
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_img_types.h"
+#include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
 
 status_t otp_img_write(const dif_otp_ctrl_t *otp,
                        dif_otp_ctrl_partition_t partition, const otp_kv_t *kv,

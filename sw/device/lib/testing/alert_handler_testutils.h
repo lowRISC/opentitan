@@ -7,10 +7,10 @@
 
 #include <stdbool.h>
 
+#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_alert_handler.h"
-#include "sw/device/lib/dif/dif_base.h"
-#include "sw/device/lib/dif/dif_rstmgr.h"
+#include "sw/ip/alert_handler/dif/dif_alert_handler.h"
+#include "sw/ip/rstmgr/dif/dif_rstmgr.h"
 
 #include "alert_handler_regs.h"
 

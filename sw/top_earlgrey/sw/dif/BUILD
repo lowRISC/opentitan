@@ -739,8 +739,9 @@ cc_library(
     hdrs = [
         "//sw/ip/rstmgr/dif:api",
     ],
+    linkstatic = True,
     deps = [
-        "//sw/common/dif:base"
+        "//sw/common/dif:base",
     ],
 )
 

@@ -18,7 +18,7 @@
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
-  sw_checklist:       "/sw/device/lib/dif/dif_otbn"
+  sw_checklist:       "/sw/ip/otbn/dif/dif_otbn"
   revisions: [
       {
           version:            "0.1",

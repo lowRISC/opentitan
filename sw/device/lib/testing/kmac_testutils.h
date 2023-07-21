@@ -6,7 +6,7 @@
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_KMAC_TESTUTILS_H_
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_kmac.h"
+#include "sw/ip/kmac/dif/dif_kmac.h"
 
 /**
  * Configure the KMAC block.

@@ -4,11 +4,11 @@
 
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 
+#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/math.h"
-#include "sw/device/lib/dif/dif_alert_handler.h"
-#include "sw/device/lib/dif/dif_base.h"
-#include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/ip/alert_handler/dif/dif_alert_handler.h"
+#include "sw/ip/rstmgr/dif/dif_rstmgr.h"
 
 #include "alert_handler_regs.h"  // Generated
 

@@ -7,8 +7,6 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_rv_plic.h"
-#include "sw/device/lib/dif/dif_spi_host.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
@@ -19,6 +17,8 @@
 #include "sw/device/lib/testing/spi_host_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/ip/rv_plic/dif/dif_rv_plic.h"
+#include "sw/ip/spi_host/dif/dif_spi_host.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "spi_host_regs.h"  // Generated.

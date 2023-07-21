@@ -4,9 +4,9 @@
 
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
 
+#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/runtime/hart.h"
 
 #include "pinmux_regs.h"  // Generated.

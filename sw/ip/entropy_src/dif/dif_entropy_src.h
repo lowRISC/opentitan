@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_ENTROPY_SRC_H_
-#define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_ENTROPY_SRC_H_
+#ifndef OPENTITAN_SW_IP_ENTROPY_SRC_DIF_DIF_ENTROPY_SRC_H_
+#define OPENTITAN_SW_IP_ENTROPY_SRC_DIF_DIF_ENTROPY_SRC_H_
 
 /**
  * @file
@@ -13,9 +13,9 @@
 
 #include <stdint.h>
 
+#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/common/dif/dif_base.h"
 
 #include "sw/ip/entropy_src/dif/autogen/dif_entropy_src_autogen.h"
 
@@ -825,4 +825,4 @@ dif_result_t dif_entropy_src_get_main_fsm_state(
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_ENTROPY_SRC_H_
+#endif  // OPENTITAN_SW_IP_ENTROPY_SRC_DIF_DIF_ENTROPY_SRC_H_

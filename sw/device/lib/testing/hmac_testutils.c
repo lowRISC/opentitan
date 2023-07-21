@@ -6,9 +6,9 @@
 
 #include <stdbool.h>
 
-#include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/ip/hmac/dif/dif_hmac.h"
 
 const char kHmacRefData[34] = "Sample message for keylen=blocklen";
 

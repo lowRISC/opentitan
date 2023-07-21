@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
+#include "sw/ip/rstmgr/dif/dif_rstmgr.h"
 
 status_t rstmgr_testutils_is_reset_info(const dif_rstmgr_t *rstmgr,
                                         dif_rstmgr_reset_info_bitfield_t info) {

@@ -3,16 +3,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_pinmux.h"
-#include "sw/device/lib/dif/dif_pwrmgr.h"
-#include "sw/device/lib/dif/dif_rstmgr.h"
-#include "sw/device/lib/dif/dif_sysrst_ctrl.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/ip/pinmux/dif/dif_pinmux.h"
+#include "sw/ip/pwrmgr/dif/dif_pwrmgr.h"
+#include "sw/ip/rstmgr/dif/dif_rstmgr.h"
+#include "sw/ip/sysrst_ctrl/dif/dif_sysrst_ctrl.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

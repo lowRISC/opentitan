@@ -39,7 +39,7 @@ UJSON_SERDE_STRUCT(PinmuxConfig, pinmux_config_t, STRUCT_PINMUX_CONFIG);
 
 // clang-format on
 #ifndef RUST_PREPROCESSOR_EMIT
-#include "sw/device/lib/dif/dif_pinmux.h"
+#include "sw/ip/pinmux/dif/dif_pinmux.h"
 /**
  * Configure the pinmux with a specific configuration.
  *

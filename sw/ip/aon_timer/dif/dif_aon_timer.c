@@ -7,9 +7,9 @@
 #include <assert.h>
 #include <stddef.h>
 
+#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/common/dif/dif_base.h"
 
 #include "aon_timer_regs.h"  // Generated.
 

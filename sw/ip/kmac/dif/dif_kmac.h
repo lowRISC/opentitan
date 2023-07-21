@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_KMAC_H_
-#define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_KMAC_H_
+#ifndef OPENTITAN_SW_IP_KMAC_DIF_DIF_KMAC_H_
+#define OPENTITAN_SW_IP_KMAC_DIF_DIF_KMAC_H_
 
 /**
  * @file
@@ -12,9 +12,9 @@
 
 #include <stdint.h>
 
+#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/common/dif/dif_base.h"
 
 #include "sw/ip/kmac/dif/autogen/dif_kmac_autogen.h"
 
@@ -758,4 +758,4 @@ dif_result_t dif_kmac_poll_status(const dif_kmac_t *kmac, uint32_t flag);
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_KMAC_H_
+#endif  // OPENTITAN_SW_IP_KMAC_DIF_DIF_KMAC_H_

@@ -163,4 +163,4 @@ The code snippet below shows how to perform this task.
 
 ## Device Interface Functions (DIFs)
 
-* [DIF Listings](../../../../sw/device/lib/dif/dif_aes.h)
+* [DIF Listings](../../../../sw/ip/aes/dif/dif_aes.h)

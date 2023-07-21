@@ -7,12 +7,12 @@
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
-#include "sw/device/lib/dif/dif_lc_ctrl.h"
-#include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
+#include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
+#include "sw/ip/lc_ctrl/dif/dif_lc_ctrl.h"
+#include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
 
 #include "otp_ctrl_regs.h"
 

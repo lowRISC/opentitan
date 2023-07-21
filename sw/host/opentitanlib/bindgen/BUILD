@@ -11,10 +11,10 @@ cc_library(
     name = "difs",
     hdrs = ["difs.h"],
     deps = [
-        "//sw/device/lib/dif:clkmgr",
-        "//sw/device/lib/dif:lc_ctrl",
-        "//sw/device/lib/dif:otp_ctrl",
-        "//sw/device/lib/dif:rstmgr",
+        "//sw/top_earlgrey/sw/dif:clkmgr",
+        "//sw/top_earlgrey/sw/dif:lc_ctrl",
+        "//sw/top_earlgrey/sw/dif:otp_ctrl",
+        "//sw/top_earlgrey/sw/dif:rstmgr",
     ],
 )
 

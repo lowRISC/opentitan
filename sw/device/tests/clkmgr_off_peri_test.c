@@ -2,17 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/dif/dif_aon_timer.h"
-#include "sw/device/lib/dif/dif_base.h"
-#include "sw/device/lib/dif/dif_clkmgr.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
-#include "sw/device/lib/dif/dif_pwrmgr.h"
-#include "sw/device/lib/dif/dif_rstmgr.h"
-#include "sw/device/lib/dif/dif_spi_host.h"
-#include "sw/device/lib/dif/dif_uart.h"
-#include "sw/device/lib/dif/dif_usbdev.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
@@ -20,6 +12,14 @@
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/ip/aon_timer/dif/dif_aon_timer.h"
+#include "sw/ip/clkmgr/dif/dif_clkmgr.h"
+#include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
+#include "sw/ip/pwrmgr/dif/dif_pwrmgr.h"
+#include "sw/ip/rstmgr/dif/dif_rstmgr.h"
+#include "sw/ip/spi_host/dif/dif_spi_host.h"
+#include "sw/ip/uart/dif/dif_uart.h"
+#include "sw/ip/usbdev/dif/dif_usbdev.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "spi_host_regs.h"

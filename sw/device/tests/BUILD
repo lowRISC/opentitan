@@ -40,10 +40,10 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:aes",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aes_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:aes",
     ],
 )
 
@@ -55,11 +55,11 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:aes",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aes_testutils",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:aes",
     ],
 )
 
@@ -76,13 +76,13 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:aes",
-        "//sw/device/lib/dif:clkmgr",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aes_testutils",
         "//sw/device/lib/testing:clkmgr_testutils",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:aes",
+        "//sw/top_earlgrey/sw/dif:clkmgr",
     ],
 )
 
@@ -103,10 +103,10 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:aes",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aes_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:aes",
     ],
 )
 
@@ -124,9 +124,6 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:alert_handler",
-        "//sw/device/lib/dif:rv_core_ibex",
-        "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
@@ -134,6 +131,9 @@ opentitan_functest(
         "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:alert_handler",
+        "//sw/top_earlgrey/sw/dif:rv_core_ibex",
+        "//sw/top_earlgrey/sw/dif:rv_plic",
     ],
 )
 
@@ -157,17 +157,6 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:aes",
-        "//sw/device/lib/dif:alert_handler",
-        "//sw/device/lib/dif:clkmgr",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:hmac",
-        "//sw/device/lib/dif:kmac",
-        "//sw/device/lib/dif:otbn",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/dif:rv_plic",
-        "//sw/device/lib/dif:spi_host",
-        "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
@@ -178,6 +167,17 @@ opentitan_functest(
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:aes",
+        "//sw/top_earlgrey/sw/dif:alert_handler",
+        "//sw/top_earlgrey/sw/dif:clkmgr",
+        "//sw/top_earlgrey/sw/dif:flash_ctrl",
+        "//sw/top_earlgrey/sw/dif:hmac",
+        "//sw/top_earlgrey/sw/dif:kmac",
+        "//sw/top_earlgrey/sw/dif:otbn",
+        "//sw/top_earlgrey/sw/dif:rstmgr",
+        "//sw/top_earlgrey/sw/dif:rv_plic",
+        "//sw/top_earlgrey/sw/dif:spi_host",
+        "//sw/top_earlgrey/sw/dif:usbdev",
     ],
 )
 
@@ -193,12 +193,6 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:alert_handler",
-        "//sw/device/lib/dif:aon_timer",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
@@ -210,6 +204,12 @@ opentitan_functest(
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:alert_handler",
+        "//sw/top_earlgrey/sw/dif:aon_timer",
+        "//sw/top_earlgrey/sw/dif:flash_ctrl",
+        "//sw/top_earlgrey/sw/dif:pwrmgr",
+        "//sw/top_earlgrey/sw/dif:rstmgr",
+        "//sw/top_earlgrey/sw/dif:rv_plic",
     ],
 )
 
@@ -239,14 +239,6 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:alert_handler",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:i2c",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/dif:rv_plic",
-        "//sw/device/lib/dif:spi_device",
-        "//sw/device/lib/dif:spi_host",
-        "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
@@ -256,6 +248,14 @@ opentitan_functest(
         "//sw/device/lib/testing:nv_counter_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:alert_handler",
+        "//sw/top_earlgrey/sw/dif:flash_ctrl",
+        "//sw/top_earlgrey/sw/dif:i2c",
+        "//sw/top_earlgrey/sw/dif:rstmgr",
+        "//sw/top_earlgrey/sw/dif:rv_plic",
+        "//sw/top_earlgrey/sw/dif:spi_device",
+        "//sw/top_earlgrey/sw/dif:spi_host",
+        "//sw/top_earlgrey/sw/dif:usbdev",
     ],
 )
 
@@ -281,10 +281,6 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:alert_handler",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
@@ -299,6 +295,10 @@ opentitan_functest(
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:alert_handler",
+        "//sw/top_earlgrey/sw/dif:flash_ctrl",
+        "//sw/top_earlgrey/sw/dif:rstmgr",
+        "//sw/top_earlgrey/sw/dif:rv_plic",
     ],
 )
 
@@ -315,10 +315,6 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:alert_handler",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
@@ -332,6 +328,10 @@ opentitan_functest(
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:alert_handler",
+        "//sw/top_earlgrey/sw/dif:flash_ctrl",
+        "//sw/top_earlgrey/sw/dif:rstmgr",
+        "//sw/top_earlgrey/sw/dif:rv_plic",
     ],
 )
 
@@ -347,15 +347,15 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:aon_timer",
-        "//sw/device/lib/dif:rv_plic",
-        "//sw/device/lib/dif:rv_timer",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:aon_timer",
+        "//sw/top_earlgrey/sw/dif:rv_plic",
+        "//sw/top_earlgrey/sw/dif:rv_timer",
     ],
 )
 
@@ -369,11 +369,11 @@ opentitan_functest(
     ],
     deps = [
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:aon_timer",
     ],
 )
 
@@ -389,14 +389,14 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:aon_timer",
-        "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:aon_timer",
+        "//sw/top_earlgrey/sw/dif:pwrmgr",
+        "//sw/top_earlgrey/sw/dif:rstmgr",
     ],
 )
 
@@ -407,14 +407,14 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:aon_timer",
-        "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:aon_timer",
+        "//sw/top_earlgrey/sw/dif:pwrmgr",
+        "//sw/top_earlgrey/sw/dif:rstmgr",
     ],
 )
 
@@ -428,12 +428,6 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:alert_handler",
-        "//sw/device/lib/dif:aon_timer",
-        "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/dif:rv_plic",
-        "//sw/device/lib/dif:rv_timer",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:alert_handler_testutils",
@@ -441,6 +435,12 @@ opentitan_functest(
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:alert_handler",
+        "//sw/top_earlgrey/sw/dif:aon_timer",
+        "//sw/top_earlgrey/sw/dif:pwrmgr",
+        "//sw/top_earlgrey/sw/dif:rstmgr",
+        "//sw/top_earlgrey/sw/dif:rv_plic",
+        "//sw/top_earlgrey/sw/dif:rv_timer",
     ],
 )
 
@@ -450,15 +450,15 @@ opentitan_functest(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:aon_timer",
-        "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:aon_timer",
+        "//sw/top_earlgrey/sw/dif:pwrmgr",
+        "//sw/top_earlgrey/sw/dif:rstmgr",
     ],
 )
 
@@ -470,18 +470,18 @@ opentitan_functest(
     ),
     deps = [
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:alert_handler",
-        "//sw/device/lib/dif:aon_timer",
-        "//sw/device/lib/dif:gpio",
-        "//sw/device/lib/dif:otp_ctrl",
-        "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:pwm",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:alert_handler",
+        "//sw/top_earlgrey/sw/dif:aon_timer",
+        "//sw/top_earlgrey/sw/dif:gpio",
+        "//sw/top_earlgrey/sw/dif:otp_ctrl",
+        "//sw/top_earlgrey/sw/dif:pinmux",
+        "//sw/top_earlgrey/sw/dif:pwm",
     ],
 )
 
@@ -493,14 +493,6 @@ opentitan_functest(
     ),
     deps = [
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:adc_ctrl",
-        "//sw/device/lib/dif:alert_handler",
-        "//sw/device/lib/dif:aon_timer",
-        "//sw/device/lib/dif:gpio",
-        "//sw/device/lib/dif:otp_ctrl",
-        "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:pwm",
-        "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
@@ -508,6 +500,14 @@ opentitan_functest(
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:adc_ctrl",
+        "//sw/top_earlgrey/sw/dif:alert_handler",
+        "//sw/top_earlgrey/sw/dif:aon_timer",
+        "//sw/top_earlgrey/sw/dif:gpio",
+        "//sw/top_earlgrey/sw/dif:otp_ctrl",
+        "//sw/top_earlgrey/sw/dif:pinmux",
+        "//sw/top_earlgrey/sw/dif:pwm",
+        "//sw/top_earlgrey/sw/dif:rv_plic",
     ],
 )
 
@@ -518,15 +518,15 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/dif:base",
-        "//sw/device/lib/dif:clkmgr",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:clkmgr_testutils",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/top_earlgrey/sw/dif:clkmgr",
     ],
 )
 
@@ -571,10 +571,10 @@ opentitan_functest(
     srcs = ["clkmgr_jitter_test.c"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/dif:base",
-        "//sw/device/lib/dif:clkmgr",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:clkmgr",
     ],
 )
 
@@ -586,23 +586,23 @@ opentitan_functest(
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/dif:aon_timer",
-        "//sw/device/lib/dif:base",
-        "//sw/device/lib/dif:clkmgr",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/dif:spi_host",
-        "//sw/device/lib/dif:uart",
-        "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:nv_counter_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:aon_timer",
+        "//sw/top_earlgrey/sw/dif:clkmgr",
+        "//sw/top_earlgrey/sw/dif:flash_ctrl",
+        "//sw/top_earlgrey/sw/dif:pwrmgr",
+        "//sw/top_earlgrey/sw/dif:rstmgr",
+        "//sw/top_earlgrey/sw/dif:spi_host",
+        "//sw/top_earlgrey/sw/dif:uart",
+        "//sw/top_earlgrey/sw/dif:usbdev",
     ],
 )
 
@@ -612,20 +612,20 @@ cc_library(
     hdrs = ["clkmgr_off_trans_impl.h"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/dif:aes",
-        "//sw/device/lib/dif:aon_timer",
-        "//sw/device/lib/dif:base",
-        "//sw/device/lib/dif:clkmgr",
-        "//sw/device/lib/dif:hmac",
-        "//sw/device/lib/dif:kmac",
-        "//sw/device/lib/dif:otbn",
-        "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:aes",
+        "//sw/top_earlgrey/sw/dif:aon_timer",
+        "//sw/top_earlgrey/sw/dif:clkmgr",
+        "//sw/top_earlgrey/sw/dif:hmac",
+        "//sw/top_earlgrey/sw/dif:kmac",
+        "//sw/top_earlgrey/sw/dif:otbn",
+        "//sw/top_earlgrey/sw/dif:pwrmgr",
+        "//sw/top_earlgrey/sw/dif:rstmgr",
     ],
 )
 
@@ -663,7 +663,6 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:sensor_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:clkmgr_testutils",
@@ -671,6 +670,7 @@ opentitan_functest(
         "//sw/device/lib/testing:sensor_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:sensor_ctrl",
     ],
 )
 
@@ -685,8 +685,6 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:rv_plic",
-        "//sw/device/lib/dif:sensor_ctrl",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
@@ -697,6 +695,8 @@ opentitan_functest(
         "//sw/device/lib/testing:sensor_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:rv_plic",
+        "//sw/top_earlgrey/sw/dif:sensor_ctrl",
     ],
 )
 
@@ -705,10 +705,10 @@ opentitan_functest(
     srcs = ["clkmgr_smoketest.c"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/dif:base",
-        "//sw/device/lib/dif:clkmgr",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:clkmgr",
     ],
 )
 
@@ -736,13 +736,13 @@ opentitan_functest(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:stdasm",
-        "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_start",
         "//sw/device/lib/testing/test_framework:ottf_test_config",
         "//sw/device/lib/testing/test_framework:status",
+        "//sw/top_earlgrey/sw/dif:uart",
     ],
 )
 
@@ -755,13 +755,9 @@ opentitan_functest(
     deps = [
         ":otbn_randomness_impl",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:base",
-        "//sw/device/lib/dif:csrng",
-        "//sw/device/lib/dif:csrng_shared",
-        "//sw/device/lib/dif:edn",
-        "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:csrng_testutils",
         "//sw/device/lib/testing:entropy_testutils",
@@ -770,6 +766,10 @@ opentitan_functest(
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:csrng",
+        "//sw/top_earlgrey/sw/dif:csrng_shared",
+        "//sw/top_earlgrey/sw/dif:edn",
+        "//sw/top_earlgrey/sw/dif:entropy_src",
     ],
 )
 
@@ -779,10 +779,10 @@ opentitan_functest(
     deps = [
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:csrng",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:csrng_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:csrng",
     ],
 )
 
@@ -792,10 +792,10 @@ opentitan_functest(
     deps = [
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:csrng",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:csrng_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:csrng",
     ],
 )
 
@@ -813,13 +813,13 @@ opentitan_functest(
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:base",
-        "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:entropy_src",
     ],
 )
 
@@ -829,13 +829,13 @@ cc_library(
     hdrs = ["entropy_src_kat_impl.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        "//sw/common/dif:base",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:base",
-        "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/top_earlgrey/sw/dif:entropy_src",
     ],
 )
 
@@ -845,10 +845,10 @@ opentitan_functest(
     deps = [
         ":entropy_src_kat_impl",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:entropy_src",
     ],
 )
 
@@ -857,13 +857,13 @@ opentitan_functest(
     srcs = ["entropy_src_smoketest.c"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:base",
-        "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:entropy_src",
     ],
 )
 
@@ -874,9 +874,9 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:entropy_src",
     ],
 )
 
@@ -889,13 +889,9 @@ opentitan_functest(
     deps = [
         ":otbn_randomness_impl",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:base",
-        "//sw/device/lib/dif:csrng",
-        "//sw/device/lib/dif:edn",
-        "//sw/device/lib/dif:entropy_src",
-        "//sw/device/lib/dif:otbn",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:csrng_testutils",
         "//sw/device/lib/testing:entropy_testutils",
@@ -904,6 +900,10 @@ opentitan_functest(
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:csrng",
+        "//sw/top_earlgrey/sw/dif:edn",
+        "//sw/top_earlgrey/sw/dif:entropy_src",
+        "//sw/top_earlgrey/sw/dif:otbn",
     ],
 )
 
@@ -918,15 +918,6 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:aes",
-        "//sw/device/lib/dif:alert_handler",
-        "//sw/device/lib/dif:entropy_src",
-        "//sw/device/lib/dif:keymgr",
-        "//sw/device/lib/dif:kmac",
-        "//sw/device/lib/dif:otbn",
-        "//sw/device/lib/dif:otp_ctrl",
-        "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aes_testutils",
@@ -936,6 +927,15 @@ opentitan_functest(
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:aes",
+        "//sw/top_earlgrey/sw/dif:alert_handler",
+        "//sw/top_earlgrey/sw/dif:entropy_src",
+        "//sw/top_earlgrey/sw/dif:keymgr",
+        "//sw/top_earlgrey/sw/dif:kmac",
+        "//sw/top_earlgrey/sw/dif:otbn",
+        "//sw/top_earlgrey/sw/dif:otp_ctrl",
+        "//sw/top_earlgrey/sw/dif:pwrmgr",
+        "//sw/top_earlgrey/sw/dif:rv_core_ibex",
     ],
 )
 
@@ -975,7 +975,6 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
@@ -984,6 +983,7 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/lib/testing/test_rom:linker_script",
         "//sw/device/lib/testing/test_rom:test_rom_lib",
+        "//sw/top_earlgrey/sw/dif:uart",
     ],
 )
 
@@ -1003,11 +1003,6 @@ opentitan_functest(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:aon_timer",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
@@ -1017,6 +1012,11 @@ opentitan_functest(
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:aon_timer",
+        "//sw/top_earlgrey/sw/dif:flash_ctrl",
+        "//sw/top_earlgrey/sw/dif:pwrmgr",
+        "//sw/top_earlgrey/sw/dif:rstmgr",
+        "//sw/top_earlgrey/sw/dif:rv_plic",
     ],
 )
 
@@ -1030,14 +1030,14 @@ opentitan_functest(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:flash_ctrl",
+        "//sw/top_earlgrey/sw/dif:rv_plic",
     ],
 )
 
@@ -1053,13 +1053,13 @@ opentitan_functest(
     ),
     deps = [
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:clkmgr",
-        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:clkmgr",
+        "//sw/top_earlgrey/sw/dif:flash_ctrl",
     ],
 )
 
@@ -1074,10 +1074,10 @@ opentitan_functest(
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:flash_ctrl",
     ],
 )
 
@@ -1090,10 +1090,10 @@ opentitan_functest(
         "dv",
     ],
     deps = [
-        "//sw/device/lib/dif:gpio",
-        "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:gpio",
+        "//sw/top_earlgrey/sw/dif:pinmux",
     ],
 )
 
@@ -1118,12 +1118,12 @@ opentitan_functest(
         test_cmds = [],
     ),
     deps = [
-        "//sw/device/lib/dif:gpio",
-        "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/testing/json:command",
         "//sw/device/lib/testing/json:gpio",
         "//sw/device/lib/testing/json:pinmux_config",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:gpio",
+        "//sw/top_earlgrey/sw/dif:pinmux",
     ],
 )
 
@@ -1133,12 +1133,12 @@ opentitan_functest(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:hmac",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:hmac_testutils",
         "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:hmac",
     ],
 )
 
@@ -1148,12 +1148,12 @@ opentitan_functest(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:clkmgr",
-        "//sw/device/lib/dif:hmac",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:clkmgr_testutils",
         "//sw/device/lib/testing:hmac_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:clkmgr",
+        "//sw/top_earlgrey/sw/dif:hmac",
     ],
 )
 
@@ -1164,10 +1164,10 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:hmac",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:hmac_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:hmac",
     ],
 )
 
@@ -1183,13 +1183,13 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
-        "//sw/device/lib/dif:keymgr",
-        "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:keymgr",
+        "//sw/top_earlgrey/sw/dif:kmac",
     ],
 )
 
@@ -1205,9 +1205,6 @@ opentitan_functest(
         "//hw/ip/kmac/data:kmac_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
-        "//sw/device/lib/dif:aes",
-        "//sw/device/lib/dif:keymgr",
-        "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
@@ -1216,6 +1213,9 @@ opentitan_functest(
         "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing:kmac_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:aes",
+        "//sw/top_earlgrey/sw/dif:keymgr",
+        "//sw/top_earlgrey/sw/dif:kmac",
     ],
 )
 
@@ -1230,14 +1230,14 @@ opentitan_functest(
         "//hw/ip/kmac/data:kmac_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
-        "//sw/device/lib/dif:keymgr",
-        "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing:kmac_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:keymgr",
+        "//sw/top_earlgrey/sw/dif:kmac",
     ],
 )
 
@@ -1251,8 +1251,6 @@ opentitan_functest(
         "//hw/ip/otbn/data:otbn_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
-        "//sw/device/lib/dif:keymgr",
-        "//sw/device/lib/dif:otbn",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
@@ -1260,6 +1258,8 @@ opentitan_functest(
         "//sw/device/lib/testing:otbn_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/otbn/crypto:x25519_sideload",
+        "//sw/top_earlgrey/sw/dif:keymgr",
+        "//sw/top_earlgrey/sw/dif:otbn",
     ],
 )
 
@@ -1269,9 +1269,9 @@ opentitan_functest(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:rom_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:rom_ctrl",
     ],
 )
 
@@ -1285,10 +1285,10 @@ opentitan_functest(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:kmac",
     ],
 )
 
@@ -1298,10 +1298,10 @@ opentitan_functest(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:clkmgr",
-        "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:clkmgr",
+        "//sw/top_earlgrey/sw/dif:kmac",
     ],
 )
 
@@ -1316,9 +1316,9 @@ opentitan_functest(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:kmac",
     ],
 )
 
@@ -1330,9 +1330,9 @@ opentitan_functest(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:kmac",
     ],
 )
 
@@ -1343,9 +1343,9 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:kmac",
     ],
 )
 
@@ -1357,11 +1357,11 @@ opentitan_functest(
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:lc_ctrl",
-        "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:lc_ctrl",
+        "//sw/top_earlgrey/sw/dif:otp_ctrl",
     ],
 )
 
@@ -1373,7 +1373,6 @@ opentitan_functest(
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:otbn",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
@@ -1383,6 +1382,7 @@ opentitan_functest(
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/otbn/crypto:p256_ecdsa",
+        "//sw/top_earlgrey/sw/dif:otbn",
     ],
 )
 
@@ -1394,8 +1394,6 @@ opentitan_functest(
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:otbn",
-        "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
@@ -1403,6 +1401,8 @@ opentitan_functest(
         "//sw/device/lib/testing:otbn_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/otbn/code-snippets:err_test",
+        "//sw/top_earlgrey/sw/dif:otbn",
+        "//sw/top_earlgrey/sw/dif:rv_plic",
     ],
 )
 
@@ -1418,12 +1418,12 @@ opentitan_functest(
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:base",
-        "//sw/device/lib/dif:otbn",
-        "//sw/device/lib/dif:rv_core_ibex",
+        "//sw/common/dif:base",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:otbn_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:otbn",
+        "//sw/top_earlgrey/sw/dif:rv_core_ibex",
     ],
 )
 
@@ -1433,12 +1433,12 @@ cc_library(
     hdrs = ["otbn_randomness_impl.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//sw/device/lib/dif:base",
-        "//sw/device/lib/dif:otbn",
+        "//sw/common/dif:base",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:otbn_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/otbn/code-snippets:randomness",
+        "//sw/top_earlgrey/sw/dif:otbn",
     ],
 )
 
@@ -1451,9 +1451,7 @@ opentitan_functest(
     deps = [
         ":otbn_randomness_impl",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:base",
-        "//sw/device/lib/dif:clkmgr",
-        "//sw/device/lib/dif:otbn",
+        "//sw/common/dif:base",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
@@ -1463,6 +1461,8 @@ opentitan_functest(
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:clkmgr",
+        "//sw/top_earlgrey/sw/dif:otbn",
     ],
 )
 
@@ -1474,7 +1474,6 @@ opentitan_functest(
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:otbn",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
@@ -1482,6 +1481,7 @@ opentitan_functest(
         "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/otbn/crypto:rsa",
+        "//sw/top_earlgrey/sw/dif:otbn",
     ],
 )
 
@@ -1493,7 +1493,6 @@ opentitan_functest(
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:otbn",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
@@ -1501,6 +1500,7 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/otbn/code-snippets:barrett384",
         "//sw/otbn/code-snippets:err_test",
+        "//sw/top_earlgrey/sw/dif:otbn",
     ],
 )
 
@@ -1512,10 +1512,10 @@ opentitan_functest(
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:otp_ctrl",
     ],
 )
 
@@ -1527,11 +1527,11 @@ opentitan_functest(
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:rv_plic",
     ],
 )
 
@@ -1570,14 +1570,14 @@ opentitan_functest(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:aon_timer",
-        "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:aon_timer",
+        "//sw/top_earlgrey/sw/dif:pwrmgr",
+        "//sw/top_earlgrey/sw/dif:rstmgr",
     ],
 )
 
@@ -1592,13 +1592,13 @@ opentitan_functest(
         tags = ["broken"],
     ),
     deps = [
-        "//sw/device/lib/dif:aon_timer",
-        "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:aon_timer",
+        "//sw/top_earlgrey/sw/dif:pwrmgr",
+        "//sw/top_earlgrey/sw/dif:rv_plic",
     ],
 )
 
@@ -1608,9 +1608,9 @@ opentitan_functest(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:rstmgr",
     ],
 )
 
@@ -1631,13 +1631,13 @@ opentitan_functest(
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:pwrmgr",
+        "//sw/top_earlgrey/sw/dif:rstmgr",
+        "//sw/top_earlgrey/sw/dif:rv_core_ibex",
     ],
 )
 
@@ -1647,10 +1647,10 @@ opentitan_functest(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:rstmgr",
     ],
 )
 
@@ -1669,14 +1669,14 @@ opentitan_functest(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:i2c",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/dif:spi_device",
-        "//sw/device/lib/dif:spi_host",
-        "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:i2c",
+        "//sw/top_earlgrey/sw/dif:rstmgr",
+        "//sw/top_earlgrey/sw/dif:spi_device",
+        "//sw/top_earlgrey/sw/dif:spi_host",
+        "//sw/top_earlgrey/sw/dif:usbdev",
     ],
 )
 
@@ -1686,13 +1686,13 @@ opentitan_functest(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:rv_plic",
-        "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:status",
+        "//sw/top_earlgrey/sw/dif:rv_plic",
+        "//sw/top_earlgrey/sw/dif:uart",
     ],
 )
 
@@ -1701,12 +1701,12 @@ opentitan_functest(
     srcs = ["rv_timer_smoketest.c"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:rv_timer",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:rv_timer",
     ],
 )
 
@@ -1720,13 +1720,13 @@ cc_library(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:spi_host",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:spi_device_testutils",
         "//sw/device/lib/testing:spi_flash_testutils",
         "//sw/device/lib/testing:spi_host_testutils",
+        "//sw/top_earlgrey/sw/dif:spi_host",
     ],
 )
 
@@ -1743,7 +1743,6 @@ opentitan_functest(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:spi_host",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
@@ -1751,6 +1750,7 @@ opentitan_functest(
         "//sw/device/lib/testing:spi_flash_testutils",
         "//sw/device/lib/testing:spi_host_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:spi_host",
     ],
 )
 
@@ -1764,7 +1764,6 @@ opentitan_functest(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:spi_host",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
@@ -1772,6 +1771,7 @@ opentitan_functest(
         "//sw/device/lib/testing:spi_flash_testutils",
         "//sw/device/lib/testing:spi_host_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:spi_host",
     ],
 )
 
@@ -1784,8 +1784,6 @@ opentitan_functest(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:rv_plic",
-        "//sw/device/lib/dif:spi_host",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
@@ -1794,6 +1792,8 @@ opentitan_functest(
         "//sw/device/lib/testing:spi_flash_testutils",
         "//sw/device/lib/testing:spi_host_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:rv_plic",
+        "//sw/top_earlgrey/sw/dif:spi_host",
     ],
 )
 
@@ -1812,13 +1812,13 @@ opentitan_functest(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:i2c",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:i2c_testutils",
         "//sw/device/lib/testing:rv_core_ibex_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:i2c",
     ],
 )
 
@@ -1837,13 +1837,13 @@ opentitan_functest(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:i2c",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:i2c_testutils",
         "//sw/device/lib/testing:rv_core_ibex_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:i2c",
     ],
 )
 
@@ -1862,13 +1862,13 @@ opentitan_functest(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:i2c",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:i2c_testutils",
         "//sw/device/lib/testing:rv_core_ibex_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:i2c",
     ],
 )
 
@@ -1887,8 +1887,6 @@ opentitan_functest(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:i2c",
-        "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
@@ -1896,6 +1894,8 @@ opentitan_functest(
         "//sw/device/lib/testing:rv_core_ibex_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:i2c",
+        "//sw/top_earlgrey/sw/dif:rv_plic",
     ],
 )
 
@@ -1914,14 +1914,14 @@ opentitan_functest(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:i2c",
-        "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:i2c_testutils",
         "//sw/device/lib/testing:rv_core_ibex_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:i2c",
+        "//sw/top_earlgrey/sw/dif:rstmgr",
     ],
 )
 
@@ -1940,13 +1940,13 @@ opentitan_functest(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:i2c",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:i2c_testutils",
         "//sw/device/lib/testing:rv_core_ibex_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:i2c",
     ],
 )
 
@@ -1965,13 +1965,13 @@ opentitan_functest(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:i2c",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:i2c_testutils",
         "//sw/device/lib/testing:rv_core_ibex_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:i2c",
     ],
 )
 
@@ -1990,13 +1990,13 @@ opentitan_functest(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:i2c",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:i2c_testutils",
         "//sw/device/lib/testing:rv_core_ibex_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:i2c",
     ],
 )
 
@@ -2015,13 +2015,13 @@ opentitan_functest(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:i2c",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:i2c_testutils",
         "//sw/device/lib/testing:rv_core_ibex_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:i2c",
     ],
 )
 
@@ -2040,8 +2040,6 @@ opentitan_functest(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:i2c",
-        "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
@@ -2049,6 +2047,8 @@ opentitan_functest(
         "//sw/device/lib/testing:rv_core_ibex_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:i2c",
+        "//sw/top_earlgrey/sw/dif:rv_plic",
     ],
 )
 
@@ -2062,10 +2062,6 @@ opentitan_functest(
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:alert_handler",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/dif:rv_plic",
-        "//sw/device/lib/dif:sensor_ctrl",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:irq",
@@ -2076,6 +2072,10 @@ opentitan_functest(
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:alert_handler",
+        "//sw/top_earlgrey/sw/dif:rstmgr",
+        "//sw/top_earlgrey/sw/dif:rv_plic",
+        "//sw/top_earlgrey/sw/dif:sensor_ctrl",
     ],
 )
 
@@ -2091,9 +2091,6 @@ opentitan_functest(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/dif:rv_plic",
-        "//sw/device/lib/dif:sensor_ctrl",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
@@ -2102,6 +2099,9 @@ opentitan_functest(
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:pwrmgr",
+        "//sw/top_earlgrey/sw/dif:rv_plic",
+        "//sw/top_earlgrey/sw/dif:sensor_ctrl",
     ],
 )
 
@@ -2116,16 +2116,16 @@ opentitan_functest(
         "//hw/ip/pwm/data:pwm_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:aon_timer",
-        "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:pwm",
-        "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:aon_timer",
+        "//sw/top_earlgrey/sw/dif:pinmux",
+        "//sw/top_earlgrey/sw/dif:pwm",
+        "//sw/top_earlgrey/sw/dif:pwrmgr",
+        "//sw/top_earlgrey/sw/dif:rstmgr",
     ],
 )
 
@@ -2137,10 +2137,10 @@ opentitan_functest(
         "//sw/device/examples/sram_program",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
-        "//sw/device/lib/dif:sram_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:epmp_state",
+        "//sw/top_earlgrey/sw/dif:sram_ctrl",
     ],
 )
 
@@ -2153,10 +2153,6 @@ opentitan_functest(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:aon_timer",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:flash_ctrl_testutils",
@@ -2167,6 +2163,10 @@ opentitan_functest(
         "//sw/device/lib/testing:sram_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/top_earlgrey/sw/dif:aon_timer",
+        "//sw/top_earlgrey/sw/dif:flash_ctrl",
+        "//sw/top_earlgrey/sw/dif:pwrmgr",
+        "//sw/top_earlgrey/sw/dif:rstmgr",
     ],
 )
 
@@ -2178,9 +2178,9 @@ opentitan_functest(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:sram_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:sram_ctrl",
     ],
 )
 
@@ -2209,9 +2209,9 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:uart",
     ],
 )
 
@@ -2222,9 +2222,9 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:uart",
     ],
 )
 
@@ -2244,14 +2244,14 @@ opentitan_functest(
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing:usb_testutils",
         "//sw/device/lib/testing:usb_testutils_simpleserial",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:pinmux",
+        "//sw/top_earlgrey/sw/dif:usbdev",
     ],
 )
 
@@ -2267,13 +2267,13 @@ opentitan_functest(
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing:usb_testutils",
         "//sw/device/lib/testing:usb_testutils_streams",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:pinmux",
     ],
 )
 
@@ -2289,13 +2289,13 @@ opentitan_functest(
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing:usb_testutils",
         "//sw/device/lib/testing:usb_testutils_streams",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:pinmux",
     ],
 )
 
@@ -2316,13 +2316,13 @@ opentitan_functest(
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing:usb_testutils",
         "//sw/device/lib/testing:usb_testutils_streams",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:pinmux",
     ],
 )
 
@@ -2344,17 +2344,6 @@ opentitan_functest(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:alert_handler",
-        "//sw/device/lib/dif:aon_timer",
-        "//sw/device/lib/dif:i2c",
-        "//sw/device/lib/dif:otp_ctrl",
-        "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/dif:rv_core_ibex",
-        "//sw/device/lib/dif:rv_plic",
-        "//sw/device/lib/dif:rv_timer",
-        "//sw/device/lib/dif:spi_host",
-        "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
@@ -2366,6 +2355,17 @@ opentitan_functest(
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:alert_handler",
+        "//sw/top_earlgrey/sw/dif:aon_timer",
+        "//sw/top_earlgrey/sw/dif:i2c",
+        "//sw/top_earlgrey/sw/dif:otp_ctrl",
+        "//sw/top_earlgrey/sw/dif:pwrmgr",
+        "//sw/top_earlgrey/sw/dif:rstmgr",
+        "//sw/top_earlgrey/sw/dif:rv_core_ibex",
+        "//sw/top_earlgrey/sw/dif:rv_plic",
+        "//sw/top_earlgrey/sw/dif:rv_timer",
+        "//sw/top_earlgrey/sw/dif:spi_host",
+        "//sw/top_earlgrey/sw/dif:uart",
     ],
 )
 
@@ -2379,13 +2379,13 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:edn",
-        "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:rv_core_ibex_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:edn",
+        "//sw/top_earlgrey/sw/dif:rv_core_ibex",
     ],
 )
 
@@ -2400,11 +2400,11 @@ opentitan_functest(
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:epmp_state",
+        "//sw/top_earlgrey/sw/dif:rv_core_ibex",
     ],
 )
 
@@ -2413,9 +2413,6 @@ opentitan_functest(
     srcs = ["rv_core_ibex_nmi_irq_test.c"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:alert_handler",
-        "//sw/device/lib/dif:aon_timer",
-        "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:alert_handler_testutils",
@@ -2423,6 +2420,9 @@ opentitan_functest(
         "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:alert_handler",
+        "//sw/top_earlgrey/sw/dif:aon_timer",
+        "//sw/top_earlgrey/sw/dif:rv_core_ibex",
     ],
 )
 
@@ -2451,7 +2451,6 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:sensor_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:clkmgr_testutils",
@@ -2459,6 +2458,7 @@ opentitan_functest(
         "//sw/device/lib/testing:sensor_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:sensor_ctrl",
     ],
 )
 
@@ -2529,25 +2529,6 @@ opentitan_functest(
         "//sw/device/lib/base:multibits",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/impl/rsa:rsa_3072_verify",
-        "//sw/device/lib/dif:adc_ctrl",
-        "//sw/device/lib/dif:aes",
-        "//sw/device/lib/dif:csrng",
-        "//sw/device/lib/dif:csrng_shared",
-        "//sw/device/lib/dif:edn",
-        "//sw/device/lib/dif:entropy_src",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:gpio",
-        "//sw/device/lib/dif:hmac",
-        "//sw/device/lib/dif:i2c",
-        "//sw/device/lib/dif:kmac",
-        "//sw/device/lib/dif:otbn",
-        "//sw/device/lib/dif:pattgen",
-        "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:pwm",
-        "//sw/device/lib/dif:rv_plic",
-        "//sw/device/lib/dif:spi_device",
-        "//sw/device/lib/dif:spi_host",
-        "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aes_testutils",
         "//sw/device/lib/testing:entropy_testutils",
@@ -2558,6 +2539,25 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/tests/crypto:rsa_3072_verify_testvectors_hardcoded_header",
+        "//sw/top_earlgrey/sw/dif:adc_ctrl",
+        "//sw/top_earlgrey/sw/dif:aes",
+        "//sw/top_earlgrey/sw/dif:csrng",
+        "//sw/top_earlgrey/sw/dif:csrng_shared",
+        "//sw/top_earlgrey/sw/dif:edn",
+        "//sw/top_earlgrey/sw/dif:entropy_src",
+        "//sw/top_earlgrey/sw/dif:flash_ctrl",
+        "//sw/top_earlgrey/sw/dif:gpio",
+        "//sw/top_earlgrey/sw/dif:hmac",
+        "//sw/top_earlgrey/sw/dif:i2c",
+        "//sw/top_earlgrey/sw/dif:kmac",
+        "//sw/top_earlgrey/sw/dif:otbn",
+        "//sw/top_earlgrey/sw/dif:pattgen",
+        "//sw/top_earlgrey/sw/dif:pinmux",
+        "//sw/top_earlgrey/sw/dif:pwm",
+        "//sw/top_earlgrey/sw/dif:rv_plic",
+        "//sw/top_earlgrey/sw/dif:spi_device",
+        "//sw/top_earlgrey/sw/dif:spi_host",
+        "//sw/top_earlgrey/sw/dif:uart",
     ],
 )
 
@@ -2582,14 +2582,14 @@ opentitan_functest(
     test_harness = "//sw/host/tests/chip/spi_passthru",
     deps = [
         "//sw/device/lib/arch:device",
-        "//sw/device/lib/dif:gpio",
-        "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/testing:spi_device_testutils",
         "//sw/device/lib/testing:spi_flash_testutils",
         "//sw/device/lib/testing/json:command",
         "//sw/device/lib/testing/json:spi_passthru",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/top_earlgrey/sw/dif:gpio",
+        "//sw/top_earlgrey/sw/dif:spi_device",
     ],
 )
 
@@ -2664,9 +2664,9 @@ opentitan_functest(
     test_harness = "//sw/host/tests/chip/spi_device_ottf_console",
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/dif:spi_device",
     ],
 )
 
@@ -2691,11 +2691,6 @@ opentitan_functest(
     test_harness = "//sw/host/tests/chip/i2c_target",
     deps = [
         "//sw/device/lib/arch:device",
-        "//sw/device/lib/dif:gpio",
-        "//sw/device/lib/dif:i2c",
-        "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/testing:i2c_testutils",
         "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
@@ -2704,6 +2699,11 @@ opentitan_functest(
         "//sw/device/lib/testing/json:i2c_target",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/top_earlgrey/sw/dif:gpio",
+        "//sw/top_earlgrey/sw/dif:i2c",
+        "//sw/top_earlgrey/sw/dif:pinmux",
+        "//sw/top_earlgrey/sw/dif:pwrmgr",
+        "//sw/top_earlgrey/sw/dif:rv_plic",
     ],
 )
 

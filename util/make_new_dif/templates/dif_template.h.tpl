@@ -23,8 +23,8 @@
     1. ip: See util/make_new_dif.py for the definition of the `ip` obj.
 </%doc>
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_${ip.name_upper}_H_
-#define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_${ip.name_upper}_H_
+#ifndef OPENTITAN_SW_IP_${ip.name_upper}_DIF_DIF_${ip.name_upper}_H_
+#define OPENTITAN_SW_IP_${ip.name_upper}_DIF_DIF_${ip.name_upper}_H_
 
 #error "This file is a template, and not real code."
 
@@ -35,7 +35,7 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/dif/autogen/dif_${ip.name_snake}_autogen.h"
+#include "sw/ip/${ip.name_snake}/dif/autogen/dif_${ip.name_snake}_autogen.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -136,4 +136,4 @@ dif_result_t dif_${ip.name_snake}_is_locked(
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_${ip.name_upper}_H_
+#endif  // OPENTITAN_SW_IP_${ip.name_upper}_DIF_DIF_${ip.name_upper}_H_

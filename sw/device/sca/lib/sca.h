@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/dif/dif_uart.h"
+#include "sw/ip/uart/dif/dif_uart.h"
 
 /**
  * @file

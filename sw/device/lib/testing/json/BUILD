@@ -23,9 +23,9 @@ cc_library(
     srcs = ["gpio.c"],
     hdrs = ["gpio.h"],
     deps = [
-        "//sw/device/lib/dif:gpio",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
+        "//sw/top_earlgrey/sw/dif:gpio",
     ],
 )
 
@@ -54,10 +54,10 @@ cc_library(
         ":pinmux",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
+        "//sw/top_earlgrey/sw/dif:pinmux",
     ],
 )
 

@@ -26,7 +26,7 @@
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
-  sw_checklist:       "/sw/device/lib/dif/dif_pinmux",
+  sw_checklist:       "/sw/ip/pinmux/dif/dif_pinmux",
   version:            "1.0",
   life_stage:         "L1",
   design_stage:       "D3",

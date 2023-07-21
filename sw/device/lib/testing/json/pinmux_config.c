@@ -8,9 +8,9 @@
 #define UJSON_SERDE_IMPL 1
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/testing/json/pinmux_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
+#include "sw/ip/pinmux/dif/dif_pinmux.h"
 
 status_t pinmux_config(ujson_t *uj, dif_pinmux_t *pinmux) {
   pinmux_config_t config;

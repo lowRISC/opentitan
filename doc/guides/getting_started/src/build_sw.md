@@ -161,23 +161,23 @@ For more information, please refer to the [Verilator](./setup_verilator.md) and/
 
 ### Running on-host DIF Tests
 
-The Device Interface Function or [DIF](https://opentitan.org/book/sw/device/lib/dif/) libraries contain unit tests that run on the host and are built and run with Bazel.
+	The Device Interface Function or [DIF](https://opentitan.org/book/sw/device/lib/dif/) libraries contain unit tests that run on the host and are built and run with Bazel.
 As shown below, you may use Bazel to query which tests are available, build and run all tests, or build and run only one test.
 
 #### Querying which tests are available
 ```console
-bazel query 'tests(//sw/device/lib/dif:all)'
+bazel query 'tests(//sw/top_earlgrey/sw/dif:all)'
 ```
 
 #### Building and running **all** tests
 ```console
-bazel test //sw/device/lib/dif:all
+bazel test //sw/top_earlgrey/sw/dif:all
 ```
 
 #### Building and running a **single** test
 For example, building and testing the UART DIF library's unit tests:
 ```console
-bazel test //sw/device/lib/dif:uart_unittest
+bazel test //sw/top_earlgrey/sw/dif:uart_unittest
 ```
 
 ### Running on-host ROM Tests

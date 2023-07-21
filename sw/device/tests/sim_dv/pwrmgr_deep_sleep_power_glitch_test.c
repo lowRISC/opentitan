@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_pwrmgr.h"
-#include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/ip/pwrmgr/dif/dif_pwrmgr.h"
+#include "sw/ip/rstmgr/dif/dif_rstmgr.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

@@ -5,9 +5,9 @@
 #include "sw/ip/pattgen/dif/dif_pattgen.h"
 
 #include "gtest/gtest.h"
-#include "sw/device/lib/base/mock_mmio.h"
 #include "sw/common/dif/dif_base.h"
 #include "sw/common/dif/dif_test_base.h"
+#include "sw/device/lib/base/mock_mmio.h"
 
 #include "pattgen_regs.h"  // Generated.
 

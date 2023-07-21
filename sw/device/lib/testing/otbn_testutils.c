@@ -4,11 +4,11 @@
 
 #include "sw/device/lib/testing/otbn_testutils.h"
 
+#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_base.h"
-#include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/ip/otbn/dif/dif_otbn.h"
 
 enum {
   /**

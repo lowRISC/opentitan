@@ -9,13 +9,13 @@ alert_peripheral_names = sorted({p.name for p in helper.alert_peripherals})
 %>\
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
-% for n in sorted(alert_peripheral_names + ["alert_handler"]):
-#include "sw/device/lib/dif/dif_${n}.h"
-% endfor
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
+% for n in sorted(alert_peripheral_names + ["alert_handler"]):
+#include "sw/ip/${n}/dif/dif_${n}.h"
+% endfor
 
 #include "alert_handler_regs.h"  // Generated.
 

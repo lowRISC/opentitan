@@ -14,7 +14,7 @@
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
-  sw_checklist:       "/sw/device/lib/dif/dif_spi_device",
+  sw_checklist:       "/sw/ip/spi_device/dif/dif_spi_device",
   revisions: [
     {
       version:            "0.5",

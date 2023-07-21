@@ -47,19 +47,19 @@ cc_library(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:multibits",
-        "//sw/device/lib/dif:rstmgr_intf",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
+        "//sw/top_earlgrey/sw/dif:rstmgr_intf",
     ],
 )
 
 cc_library(
     name = "earl_grey_test_rom_lib",
     deps = [
-        "//sw/device/lib/dif:rstmgr",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/rom:bootstrap",
+        "//sw/top_earlgrey/sw/dif:rstmgr",
     ],
 )
 
@@ -133,14 +133,6 @@ cc_library(
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/crt",
-        "//sw/device/lib/dif:clkmgr",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:gpio",
-        "//sw/device/lib/dif:hmac",
-        "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:rv_core_ibex",
-        "//sw/device/lib/dif:spi_device",
-        "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
@@ -151,6 +143,14 @@ cc_library(
         "//sw/device/silicon_creator/lib:chip_info",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical",
+        "//sw/top_earlgrey/sw/dif:clkmgr",
+        "//sw/top_earlgrey/sw/dif:flash_ctrl",
+        "//sw/top_earlgrey/sw/dif:gpio",
+        "//sw/top_earlgrey/sw/dif:hmac",
+        "//sw/top_earlgrey/sw/dif:pinmux",
+        "//sw/top_earlgrey/sw/dif:rv_core_ibex",
+        "//sw/top_earlgrey/sw/dif:spi_device",
+        "//sw/top_earlgrey/sw/dif:uart",
     ],
 )
 

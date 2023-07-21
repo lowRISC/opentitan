@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_aon_timer.h"
+#include "sw/ip/aon_timer/dif/dif_aon_timer.h"
 
 /**
  * Compute the number of AON cycles corresponding to the given microseconds.

@@ -4,13 +4,6 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_csrng.h"
-#include "sw/device/lib/dif/dif_entropy_src.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
-#include "sw/device/lib/dif/dif_kmac.h"
-#include "sw/device/lib/dif/dif_lc_ctrl.h"
-#include "sw/device/lib/dif/dif_otp_ctrl.h"
-#include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/csrng_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
@@ -20,6 +13,13 @@
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/ip/csrng/dif/dif_csrng.h"
+#include "sw/ip/entropy_src/dif/dif_entropy_src.h"
+#include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
+#include "sw/ip/kmac/dif/dif_kmac.h"
+#include "sw/ip/lc_ctrl/dif/dif_lc_ctrl.h"
+#include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
+#include "sw/ip/rstmgr/dif/dif_rstmgr.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

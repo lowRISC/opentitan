@@ -9,7 +9,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_spi_host.h"
+#include "sw/ip/spi_host/dif/dif_spi_host.h"
 
 /**
  * Return True if spi host is active.

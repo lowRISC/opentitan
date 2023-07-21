@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_RV_PLIC_H_
-#define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_RV_PLIC_H_
+#ifndef OPENTITAN_SW_IP_RV_PLIC_DIF_DIF_RV_PLIC_H_
+#define OPENTITAN_SW_IP_RV_PLIC_DIF_DIF_RV_PLIC_H_
 
 /**
  * @file
@@ -20,9 +20,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/common/dif/dif_base.h"
 
 #include "sw/ip/rv_plic/dif/autogen/dif_rv_plic_autogen.h"
 
@@ -265,4 +265,4 @@ dif_result_t dif_rv_plic_software_irq_is_pending(const dif_rv_plic_t *plic,
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_RV_PLIC_H_
+#endif  // OPENTITAN_SW_IP_RV_PLIC_DIF_DIF_RV_PLIC_H_

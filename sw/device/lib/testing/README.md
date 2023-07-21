@@ -25,7 +25,7 @@ code will live in: `sw/device/lib/testing/test\_framework`.
 - All `testutils` functions should be marked with **OT_WARN_UNUSED_RESULT** to avoid mistakenly ignoring errors.
 - Try to keep `testutils` libraries toplevel agnostic (e.g., don’t include `hw/top_earlgrey/sw/autogen/top_earlgrey.h` if you can avoid it).
   This means `dif_<ip>_init()` DIFs should be invoked in chip-level tests, *not* `testutils`, and the DIF handles should be passed in as parameters to `testutils` functions.
-- Pass-through `sw/device/lib/dif_base.h` types where appropriate.
+- Pass-through `sw/common/dif/dif_base.h` types where appropriate.
   This allows testutils functions to easily mix with DIFs within chip-level tests.
 - Avoid defining testutils that call a single DIF, and use the DIF directly.
-  If a DIF does not exist for your needs, create one by following the [DIF development guide](../dif/README.md).
+  If a DIF does not exist for your needs, create one by following the [DIF development guide](../../../common/dif/README.md).

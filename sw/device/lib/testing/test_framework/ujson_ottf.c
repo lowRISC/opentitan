@@ -5,10 +5,10 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/ujson/ujson.h"
+#include "sw/ip/uart/dif/dif_uart.h"
 
 static status_t ottf_putbuf(void *io, const char *buf, size_t len) {
   const dif_uart_t *uart = (const dif_uart_t *)io;

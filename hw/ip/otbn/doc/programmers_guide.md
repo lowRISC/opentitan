@@ -355,7 +355,7 @@ Code snippets giving examples of 256x256 and 384x384 multiplies can be found in 
 
 ## Device Interface Functions (DIFs)
 
-- [Device Interface Functions](../../../../sw/device/lib/dif/dif_otbn.h)
+- [Device Interface Functions](../../../../sw/ip/otbn/dif/dif_otbn.h)
 
 ## Driver
 

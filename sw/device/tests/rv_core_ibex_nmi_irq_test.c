@@ -8,11 +8,6 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_alert_handler.h"
-#include "sw/device/lib/dif/dif_aon_timer.h"
-#include "sw/device/lib/dif/dif_pwrmgr.h"
-#include "sw/device/lib/dif/dif_rv_core_ibex.h"
-#include "sw/device/lib/dif/dif_rv_timer.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
@@ -22,6 +17,11 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/ip/alert_handler/dif/dif_alert_handler.h"
+#include "sw/ip/aon_timer/dif/dif_aon_timer.h"
+#include "sw/ip/pwrmgr/dif/dif_pwrmgr.h"
+#include "sw/ip/rv_core_ibex/dif/dif_rv_core_ibex.h"
+#include "sw/ip/rv_timer/dif/dif_rv_timer.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"

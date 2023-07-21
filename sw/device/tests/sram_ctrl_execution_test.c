@@ -8,7 +8,6 @@
 #include "sw/device/examples/sram_program/sram_program.h"
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/dif/dif_sram_ctrl.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -16,6 +15,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_macros.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/epmp_state.h"
+#include "sw/ip/sram_ctrl/dif/dif_sram_ctrl.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

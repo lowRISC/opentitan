@@ -243,10 +243,10 @@ opentitan_functest(
         rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
     deps = [
-        "//sw/device/lib/dif:hmac",
         "//sw/device/lib/testing:hmac_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
+        "//sw/top_earlgrey/sw/dif:hmac",
     ],
 )
 
@@ -255,11 +255,11 @@ opentitan_flash_binary(
     testonly = True,
     srcs = [":rom_e2e_keymgr_init_test.c"],
     deps = [
-        "//sw/device/lib/dif:keymgr",
         "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/top_earlgrey/sw/dif:keymgr",
     ],
 )
 
@@ -577,16 +577,16 @@ opentitan_functest(
             "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:mmio",
-            "//sw/device/lib/dif:clkmgr",
-            "//sw/device/lib/dif:lc_ctrl",
-            "//sw/device/lib/dif:otp_ctrl",
-            "//sw/device/lib/dif:sram_ctrl",
             "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing/json:chip_specific_startup",
             "//sw/device/lib/testing/json:command",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/lib/testing/test_framework:ujson_ottf",
             "//sw/device/lib/ujson",
+            "//sw/top_earlgrey/sw/dif:clkmgr",
+            "//sw/top_earlgrey/sw/dif:lc_ctrl",
+            "//sw/top_earlgrey/sw/dif:otp_ctrl",
+            "//sw/top_earlgrey/sw/dif:sram_ctrl",
         ],
     )
     for lc_state, lc_state_val in get_lc_items()
@@ -2338,13 +2338,13 @@ test_suite(
         deps = [
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:csr",
-            "//sw/device/lib/dif:lc_ctrl",
             "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing:lc_ctrl_testutils",
             "//sw/device/lib/testing/test_framework:check",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/lib/testing/test_framework:status",
             "//sw/device/silicon_creator/lib:epmp_defs",
+            "//sw/top_earlgrey/sw/dif:lc_ctrl",
         ],
     )
     for lc_state, lc_state_val in get_lc_items()
@@ -3615,11 +3615,11 @@ opentitan_functest(
     ],
     deps = [
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        "//sw/top_earlgrey/sw/dif:rstmgr",
     ],
 )
 
@@ -3637,8 +3637,6 @@ opentitan_functest(
     deps = [
         "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/dif:aon_timer",
-        "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
@@ -3646,6 +3644,8 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        "//sw/top_earlgrey/sw/dif:aon_timer",
+        "//sw/top_earlgrey/sw/dif:pwrmgr",
     ],
 )
 

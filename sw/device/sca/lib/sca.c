@@ -8,28 +8,27 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/dif/dif_clkmgr.h"
-#include "sw/device/lib/dif/dif_entropy_src.h"
-#include "sw/device/lib/dif/dif_gpio.h"
-#include "sw/device/lib/dif/dif_pinmux.h"
-#include "sw/device/lib/dif/dif_rv_timer.h"
-#include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
+#if !OT_IS_ENGLISH_BREAKFAST
+#include "sw/ip/csrng/dif/dif_csrng.h"
+#include "sw/ip/edn/dif/dif_edn.h"
+#endif
+#include "sw/ip/clkmgr/dif/dif_clkmgr.h"
+#include "sw/ip/entropy_src/dif/dif_entropy_src.h"
+#include "sw/ip/gpio/dif/dif_gpio.h"
+#include "sw/ip/pinmux/dif/dif_pinmux.h"
+#include "sw/ip/rv_timer/dif/dif_rv_timer.h"
+#include "sw/ip/uart/dif/dif_uart.h"
 
 #include "clkmgr_regs.h"  // Generated
 #include "csrng_regs.h"   // Generated
 #include "edn_regs.h"     // Generated
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
-#if !OT_IS_ENGLISH_BREAKFAST
-#include "sw/device/lib/dif/dif_csrng.h"
-#include "sw/device/lib/dif/dif_edn.h"
-#endif
 
 /**
  * Bitfield for the trigger source.

@@ -8,8 +8,8 @@
 #include <stdarg.h>
 #include <stddef.h>
 
-#include "sw/device/lib/dif/dif_spi_device.h"
-#include "sw/device/lib/dif/dif_uart.h"
+#include "sw/ip/spi_device/dif/dif_spi_device.h"
+#include "sw/ip/uart/dif/dif_uart.h"
 
 /**
  * @file

@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
 
 /**
  * Wait for the flash_ctrl to initialize.

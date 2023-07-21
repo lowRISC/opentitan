@@ -6,9 +6,9 @@
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_INDIVIDUALIZE_H_
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
-#include "sw/device/lib/dif/dif_lc_ctrl.h"
-#include "sw/device/lib/dif/dif_otp_ctrl.h"
+#include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
+#include "sw/ip/lc_ctrl/dif/dif_lc_ctrl.h"
+#include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
 
 /**
  * Configures the HW_CFG OTP partition.

@@ -175,7 +175,7 @@ In the event of an error the SPI_HOST IP can be reset under software control usi
 
 ## Device Interface Functions (DIFs)
 
-- [Device Interface Functions](../../../../sw/device/lib/dif/dif_spi_host.h)
+- [Device Interface Functions](../../../../sw/ip/spi_host/dif/dif_spi_host.h)
 
 ## Register Table
 

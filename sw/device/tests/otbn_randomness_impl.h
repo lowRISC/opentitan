@@ -7,7 +7,7 @@
 
 #include <stdbool.h>
 
-#include "sw/device/lib/dif/dif_otbn.h"
+#include "sw/ip/otbn/dif/dif_otbn.h"
 
 /**
  * Starts OTBN randomness test.

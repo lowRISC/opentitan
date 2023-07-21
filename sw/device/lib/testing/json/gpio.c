@@ -5,8 +5,8 @@
 #define UJSON_SERDE_IMPL 1
 #include "sw/device/lib/testing/json/gpio.h"
 
-#include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
+#include "sw/ip/gpio/dif/dif_gpio.h"
 
 status_t gpio_set(ujson_t *uj, const dif_gpio_t *gpio) {
   gpio_set_t op;

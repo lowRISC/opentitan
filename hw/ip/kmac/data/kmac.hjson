@@ -19,7 +19,7 @@
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
-  sw_checklist:       "/sw/device/lib/dif/dif_kmac",
+  sw_checklist:       "/sw/ip/kmac/dif/dif_kmac",
   revisions: [
     {
       version:            "1.0",

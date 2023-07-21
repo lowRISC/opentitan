@@ -24,7 +24,7 @@ If [`WKUP_COUNT`](../data/aon_timer.hjson#wkup_count) remains above the threshol
 
 ## Device Interface Functions (DIFs)
 
-- [Device Interface Functions](../../../../sw/device/lib/dif/dif_aon_timer.h)
+- [Device Interface Functions](../../../../sw/ip/aon_timer/dif/dif_aon_timer.h)
 
 ## Register Table
 

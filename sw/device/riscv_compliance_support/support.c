@@ -5,10 +5,10 @@
 #include <stddef.h>
 
 #include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/status.h"
+#include "sw/ip/uart/dif/dif_uart.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

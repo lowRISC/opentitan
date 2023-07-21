@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_RSTMGR_H_
-#define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_RSTMGR_H_
+#ifndef OPENTITAN_SW_IP_RSTMGR_DIF_DIF_RSTMGR_H_
+#define OPENTITAN_SW_IP_RSTMGR_DIF_DIF_RSTMGR_H_
 
 /**
  * @file
@@ -14,9 +14,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/common/dif/dif_base.h"
 
 #include "sw/ip/rstmgr/dif/autogen/dif_rstmgr_autogen.h"
 
@@ -381,4 +381,4 @@ dif_result_t dif_rstmgr_fatal_err_code_get_codes(
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_RSTMGR_H_
+#endif  // OPENTITAN_SW_IP_RSTMGR_DIF_DIF_RSTMGR_H_

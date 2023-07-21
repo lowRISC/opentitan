@@ -17,7 +17,6 @@
 // independently, by the receiving code to check that the data has been
 // propagated unmodified and without data loss, corruption, replication etc.
 
-#include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
@@ -27,6 +26,7 @@
 #include "sw/device/lib/testing/usb_testutils_controlep.h"
 #include "sw/device/lib/testing/usb_testutils_diags.h"
 #include "sw/device/lib/testing/usb_testutils_streams.h"
+#include "sw/ip/pinmux/dif/dif_pinmux.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 

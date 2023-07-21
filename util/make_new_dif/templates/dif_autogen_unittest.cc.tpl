@@ -16,12 +16,12 @@
 
 ${autogen_banner}
 
-#include "sw/device/lib/dif/autogen/dif_${ip.name_snake}_autogen.h"
+#include "sw/ip/${ip.name_snake}/dif/autogen/dif_${ip.name_snake}_autogen.h"
 
 #include "gtest/gtest.h"
+#include "sw/common/dif/dif_test_base.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_mmio.h"
-#include "sw/device/lib/dif/dif_test_base.h"
 
 #include "${ip.name_snake}_regs.h"  // Generated.
 

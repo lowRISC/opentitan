@@ -28,8 +28,8 @@ ${autogen_banner}
 
 #include <stdint.h>
 
-#include "sw/device/lib/dif/dif_base.h"
-#include "sw/device/lib/dif/autogen/dif_${ip.name_snake}_autogen.h"
+#include "sw/common/dif/dif_base.h"
+#include "sw/ip/${ip.name_snake}/dif/autogen/dif_${ip.name_snake}_autogen.h"
 
 #include "${ip.name_snake}_regs.h"  // Generated.
 

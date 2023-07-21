@@ -6,7 +6,7 @@
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_INDIVIDUALIZE_PREOP_H_
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_otp_ctrl.h"
+#include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
 
 /**
  * Configures the CREATOR_SW an OWNER_SW OTP partitions.

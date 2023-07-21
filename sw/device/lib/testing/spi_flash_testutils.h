@@ -10,7 +10,7 @@
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_spi_host.h"
+#include "sw/ip/spi_host/dif/dif_spi_host.h"
 
 typedef struct spi_flash_testutils_jedec_id {
   uint16_t device_id;

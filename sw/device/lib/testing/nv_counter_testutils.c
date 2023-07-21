@@ -8,9 +8,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
 
 #include "flash_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"

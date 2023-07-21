@@ -9,7 +9,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_rv_core_ibex.h"
+#include "sw/ip/rv_core_ibex/dif/dif_rv_core_ibex.h"
 
 /**
  * Returns the validity of random data read from the entropy source as bool.

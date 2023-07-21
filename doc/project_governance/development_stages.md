@@ -233,7 +233,7 @@ They are converted to complete URLs in the generated dashboard.
     design_spec:  "hw/ip/gpio/doc"
     dv_doc:      "hw/ip/gpio/doc/dv"
     hw_checklist: "hw/ip/gpio/doc/checklist"
-    sw_checklist: "sw/device/lib/dif/dif_gpio"
+    sw_checklist: "sw/ip/gpio/dif/dif_gpio"
 }
 ```
 

@@ -14,7 +14,7 @@
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
-  sw_checklist:       "/sw/device/lib/dif/dif_rv_plic",
+  sw_checklist:       "/sw/ip/rv_plic/dif/dif_rv_plic",
   revisions: [
     {
       version:            "1.0",

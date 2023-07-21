@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_gpio.h"
-#include "sw/device/lib/dif/dif_pinmux.h"
+#include "sw/ip/gpio/dif/dif_gpio.h"
+#include "sw/ip/pinmux/dif/dif_pinmux.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

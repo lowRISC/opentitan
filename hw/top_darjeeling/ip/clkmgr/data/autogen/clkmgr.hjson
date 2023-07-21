@@ -24,7 +24,7 @@
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
-  sw_checklist:       "/sw/device/lib/dif/dif_clkmgr",
+  sw_checklist:       "/sw/ip/clkmgr/dif/dif_clkmgr",
   revisions: [
     {
       version:            "1.0",

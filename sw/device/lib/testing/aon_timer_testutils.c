@@ -10,8 +10,8 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/ip/aon_timer/dif/dif_aon_timer.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

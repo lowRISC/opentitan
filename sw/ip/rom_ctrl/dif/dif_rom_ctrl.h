@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_ROM_CTRL_H_
-#define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_ROM_CTRL_H_
+#ifndef OPENTITAN_SW_IP_ROM_CTRL_DIF_DIF_ROM_CTRL_H_
+#define OPENTITAN_SW_IP_ROM_CTRL_DIF_DIF_ROM_CTRL_H_
 
 /**
  * @file
@@ -91,4 +91,4 @@ dif_result_t dif_rom_ctrl_get_expected_digest(
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_ROM_CTRL_H_
+#endif  // OPENTITAN_SW_IP_ROM_CTRL_DIF_DIF_ROM_CTRL_H_

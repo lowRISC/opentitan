@@ -4,8 +4,8 @@
 
 #include "sw/device/lib/testing/kmac_testutils.h"
 
-#include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/ip/kmac/dif/dif_kmac.h"
 
 status_t kmac_testutils_config(dif_kmac_t *kmac, bool sideload) {
   dif_kmac_config_t config = {

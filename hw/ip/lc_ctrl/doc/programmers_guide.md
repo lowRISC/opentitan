@@ -69,7 +69,7 @@ The `LC_TRANSITION_CNT`  will not be incremented and the life cycle state will n
 
 ## Device Interface Functions (DIFs)
 
-- [Device Interface Functions](../../../../sw/device/lib/dif/dif_lc_ctrl.h)
+- [Device Interface Functions](../../../../sw/ip/lc_ctrl/dif/dif_lc_ctrl.h)
 
 ## Register Table
 

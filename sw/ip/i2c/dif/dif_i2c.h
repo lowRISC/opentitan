@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_I2C_H_
-#define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_I2C_H_
+#ifndef OPENTITAN_SW_IP_I2C_DIF_DIF_I2C_H_
+#define OPENTITAN_SW_IP_I2C_DIF_DIF_I2C_H_
 
 /**
  * @file
@@ -13,9 +13,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/common/dif/dif_base.h"
 
 #include "sw/ip/i2c/dif/autogen/dif_i2c_autogen.h"
 
@@ -667,4 +667,4 @@ dif_result_t dif_i2c_set_host_timeout(const dif_i2c_t *i2c, uint32_t duration);
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_I2C_H_
+#endif  // OPENTITAN_SW_IP_I2C_DIF_DIF_I2C_H_

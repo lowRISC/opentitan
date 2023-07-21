@@ -4,11 +4,6 @@
 
 #include "sw/device/lib/testing/keymgr_testutils.h"
 
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
-#include "sw/device/lib/dif/dif_keymgr.h"
-#include "sw/device/lib/dif/dif_kmac.h"
-#include "sw/device/lib/dif/dif_otp_ctrl.h"
-#include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
@@ -18,6 +13,11 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
+#include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
+#include "sw/ip/keymgr/dif/dif_keymgr.h"
+#include "sw/ip/kmac/dif/dif_kmac.h"
+#include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
+#include "sw/ip/rstmgr/dif/dif_rstmgr.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

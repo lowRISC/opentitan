@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_GPIO_H_
-#define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_GPIO_H_
+#ifndef OPENTITAN_SW_IP_GPIO_DIF_DIF_GPIO_H_
+#define OPENTITAN_SW_IP_GPIO_DIF_DIF_GPIO_H_
 
 /**
  * @file
@@ -13,9 +13,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/common/dif/dif_base.h"
 
 #include "sw/ip/gpio/dif/autogen/dif_gpio_autogen.h"
 
@@ -251,4 +251,4 @@ dif_result_t dif_gpio_input_noise_filter_set_enabled(const dif_gpio_t *gpio,
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_GPIO_H_
+#endif  // OPENTITAN_SW_IP_GPIO_DIF_DIF_GPIO_H_

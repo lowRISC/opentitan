@@ -7,7 +7,7 @@
 
 #include <stdbool.h>
 
-#include "sw/device/lib/dif/dif_clkmgr.h"
+#include "sw/ip/clkmgr/dif/dif_clkmgr.h"
 
 bool execute_off_trans_test(dif_clkmgr_hintable_clock_t clock);
 

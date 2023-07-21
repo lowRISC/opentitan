@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_CSRNG_H_
-#define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_CSRNG_H_
+#ifndef OPENTITAN_SW_IP_CSRNG_DIF_DIF_CSRNG_H_
+#define OPENTITAN_SW_IP_CSRNG_DIF_DIF_CSRNG_H_
 
 /**
  * @file
@@ -12,9 +12,9 @@
 
 #include <stdint.h>
 
+#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/common/dif/dif_base.h"
 
 #include "csrng_regs.h"  // Generated
 #include "sw/ip/csrng/dif/autogen/dif_csrng_autogen.h"
@@ -596,4 +596,4 @@ dif_result_t dif_csrng_clear_recoverable_alerts(const dif_csrng_t *csrng);
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_CSRNG_H_
+#endif  // OPENTITAN_SW_IP_CSRNG_DIF_DIF_CSRNG_H_

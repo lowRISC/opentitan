@@ -8,9 +8,9 @@
 #include "sw/ip/flash_ctrl/dif/autogen/dif_flash_ctrl_autogen.h"
 
 #include "gtest/gtest.h"
+#include "sw/common/dif/dif_test_base.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_mmio.h"
-#include "sw/common/dif/dif_test_base.h"
 
 #include "flash_ctrl_regs.h"  // Generated.
 

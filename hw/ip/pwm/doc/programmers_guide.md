@@ -36,7 +36,7 @@ This step is necessary for changing the blink timing parameters
 
 ## Device Interface Functions (DIFs)
 
-- [Device Interface Functions](../../../../sw/device/lib/dif/dif_pwm.h)
+- [Device Interface Functions](../../../../sw/ip/pwm/dif/dif_pwm.h)
 
 ## Register Table
 

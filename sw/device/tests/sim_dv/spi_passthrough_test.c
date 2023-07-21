@@ -9,10 +9,6 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_pinmux.h"
-#include "sw/device/lib/dif/dif_rv_plic.h"
-#include "sw/device/lib/dif/dif_spi_device.h"
-#include "sw/device/lib/dif/dif_spi_host.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
@@ -21,6 +17,10 @@
 #include "sw/device/lib/testing/spi_flash_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/ip/pinmux/dif/dif_pinmux.h"
+#include "sw/ip/rv_plic/dif/dif_rv_plic.h"
+#include "sw/ip/spi_device/dif/dif_spi_device.h"
+#include "sw/ip/spi_host/dif/dif_spi_host.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

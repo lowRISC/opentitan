@@ -5,11 +5,11 @@
 #include "sw/ip/aon_timer/dif/dif_aon_timer.h"
 
 #include "gtest/gtest.h"
+#include "sw/common/dif/dif_base.h"
+#include "sw/common/dif/dif_test_base.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_mmio.h"
-#include "sw/common/dif/dif_base.h"
-#include "sw/common/dif/dif_test_base.h"
 
 #include "aon_timer_regs.h"  // Generated.
 

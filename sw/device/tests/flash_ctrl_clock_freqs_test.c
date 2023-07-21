@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_clkmgr.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/ip/clkmgr/dif/dif_clkmgr.h"
+#include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

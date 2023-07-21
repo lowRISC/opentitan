@@ -15,7 +15,7 @@ extern "C" {
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_uart.h"
+#include "sw/ip/uart/dif/dif_uart.h"
 
 // NOTE: This is only present so that print.c can link without pulling in
 // dif_uart.c.

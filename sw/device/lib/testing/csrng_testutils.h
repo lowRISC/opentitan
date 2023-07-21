@@ -6,7 +6,7 @@
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_CSRNG_TESTUTILS_H_
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_csrng.h"
+#include "sw/ip/csrng/dif/dif_csrng.h"
 
 /**
  * Wait for the `csrng` instance command interface to be ready to accept

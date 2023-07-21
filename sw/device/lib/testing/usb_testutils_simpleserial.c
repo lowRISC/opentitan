@@ -4,9 +4,9 @@
 
 #include "sw/device/lib/testing/usb_testutils_simpleserial.h"
 
-#include "sw/device/lib/dif/dif_usbdev.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/usb_testutils.h"
+#include "sw/ip/usbdev/dif/dif_usbdev.h"
 
 #define MAX_GATHER 16
 

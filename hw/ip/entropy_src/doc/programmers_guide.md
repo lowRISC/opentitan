@@ -100,7 +100,7 @@ Need to alert the system of a FIFO overflow condition.
 
 ## Device Interface Functions (DIFs)
 
-- [Device Interface Functions](../../../../sw/device/lib/dif/dif_entropy_src.h)
+- [Device Interface Functions](../../../../sw/ip/entropy_src/dif/dif_entropy_src.h)
 
 ## Register Table
 

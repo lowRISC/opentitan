@@ -6,9 +6,9 @@
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_KEYMGR_TESTUTILS_H_
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
-#include "sw/device/lib/dif/dif_keymgr.h"
-#include "sw/device/lib/dif/dif_kmac.h"
+#include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
+#include "sw/ip/keymgr/dif/dif_keymgr.h"
+#include "sw/ip/kmac/dif/dif_kmac.h"
 
 /**
  * Versioned key parameters for testing.

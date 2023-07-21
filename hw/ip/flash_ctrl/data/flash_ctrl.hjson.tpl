@@ -29,7 +29,7 @@
   design_spec:        "../doc",
   dv_doc:             "../doc/dv"
   hw_checklist:       "../doc/checklist",
-  sw_checklist:       "/sw/device/lib/dif/dif_flash_ctrl",
+  sw_checklist:       "/sw/ip/flash_ctrl/dif/dif_flash_ctrl",
   revisions: [
       {
           version:            "0.1",

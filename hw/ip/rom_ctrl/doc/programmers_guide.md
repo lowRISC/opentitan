@@ -15,7 +15,7 @@ In case software needs access to this value, it can be read at [`EXP_DIGEST_0`](
 
 ## Device Interface Functions (DIFs)
 
-- [Device Interface Functions](../../../../sw/device/lib/dif/dif_rom_ctrl.h)
+- [Device Interface Functions](../../../../sw/ip/rom_ctrl/dif/dif_rom_ctrl.h)
 
 ## Register Table
 

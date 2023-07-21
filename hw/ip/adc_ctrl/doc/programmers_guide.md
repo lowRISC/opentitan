@@ -86,7 +86,7 @@ This would not be detected by the filters since it happens later than connection
 
 ## Device Interface Functions (DIFs)
 
-- [Device Interface Functions](../../../../sw/device/lib/dif/dif_adc_ctrl.h)
+- [Device Interface Functions](../../../../sw/ip/adc_ctrl/dif/dif_adc_ctrl.h)
 
 ## Registers
 

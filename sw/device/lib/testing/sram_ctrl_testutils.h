@@ -9,7 +9,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_sram_ctrl.h"
+#include "sw/ip/sram_ctrl/dif/dif_sram_ctrl.h"
 
 /**
  * A typed representation of the test data.

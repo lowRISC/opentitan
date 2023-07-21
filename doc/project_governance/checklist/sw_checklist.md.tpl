@@ -10,7 +10,7 @@ title: "${ip.name_long_upper} DIF Checklist"
 
 <!--
 NOTE: This is a template checklist document that is required to be copied over
-to `sw/device/lib/dif/dif_${ip.name_snake}.md` for a new DIF that transitions
+to `sw/ip/${ip.name_snake}/dif/dif_${ip.name_snake}.md` for a new DIF that transitions
 from L0 (Specification) to L1 (Development) stage, and updated as needed.
 Once done, please remove this comment before checking it in.
 -->

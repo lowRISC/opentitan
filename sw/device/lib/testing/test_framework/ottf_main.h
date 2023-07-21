@@ -8,12 +8,12 @@
 #include <stdbool.h>
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
+#include "sw/ip/uart/dif/dif_uart.h"
 
 /**
  * @file

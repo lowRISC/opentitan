@@ -156,7 +156,7 @@ In particular, the most significant byte B<sub>1</sub> of the string is read in 
 
 ## Device Interface Functions (DIFs)
 
-- [Device Interface Functions](../../../../sw/device/lib/dif/dif_csrng.h)
+- [Device Interface Functions](../../../../sw/ip/csrng/dif/dif_csrng.h)
 
 ## Register Table
 

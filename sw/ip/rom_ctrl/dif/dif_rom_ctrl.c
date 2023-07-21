@@ -6,8 +6,8 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/base/mmio.h"
 #include "sw/common/dif/dif_base.h"
+#include "sw/device/lib/base/mmio.h"
 
 #include "rom_ctrl_regs.h"  // Generated.
 

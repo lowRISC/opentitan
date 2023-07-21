@@ -17,8 +17,8 @@
     1. ip: See util/make_new_dif.py for the definition of the `ip` obj.
 </%doc>
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_${ip.name_upper}_AUTOGEN_H_
-#define OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_${ip.name_upper}_AUTOGEN_H_
+#ifndef OPENTITAN_SW_IP_${ip.name_upper}_DIF_AUTOGEN_DIF_${ip.name_upper}_AUTOGEN_H_
+#define OPENTITAN_SW_IP_${ip.name_upper}_DIF_AUTOGEN_DIF_${ip.name_upper}_AUTOGEN_H_
 
 ${autogen_banner}
 
@@ -30,9 +30,9 @@ ${autogen_banner}
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_base.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -314,4 +314,4 @@ dif_result_t dif_${ip.name_snake}_init(
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_${ip.name_upper}_AUTOGEN_H_
+#endif  // OPENTITAN_SW_IP_${ip.name_upper}_DIF_AUTOGEN_DIF_${ip.name_upper}_AUTOGEN_H_

@@ -95,7 +95,7 @@ However, alert accumulation will not be triggered by this testing mechanism.
 
 ## Device Interface Functions (DIFs)
 
-- [Device Interface Functions](../../../../../sw/device/lib/dif/dif_alert_handler.h)
+- [Device Interface Functions](../../../../../sw/ip/alert_handler/dif/dif_alert_handler.h)
 
 ## Register Table
 

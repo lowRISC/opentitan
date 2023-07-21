@@ -15,7 +15,7 @@
   '''
   design_spec:        "../doc",
   hw_checklist:       "../doc/checklist",
-  sw_checklist:       "/sw/device/lib/dif/dif_rv_core_ibex",
+  sw_checklist:       "/sw/ip/rv_core_ibex/dif/dif_rv_core_ibex",
   dv_doc:             "../doc/dv",
   version:            "1.0",
   life_stage:         "L1",

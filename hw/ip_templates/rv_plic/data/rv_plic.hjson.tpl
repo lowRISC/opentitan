@@ -15,7 +15,7 @@
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
-  sw_checklist:       "/sw/device/lib/dif/dif_${module_instance_name.lower()}",
+  sw_checklist:       "/sw/ip/${module_instance_name.lower()}/dif/dif_${module_instance_name.lower()}",
   revisions: [
     {
       version:            "1.0",

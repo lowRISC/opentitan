@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_TEST_BASE_H_
-#define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_TEST_BASE_H_
+#ifndef OPENTITAN_SW_COMMON_DIF_DIF_TEST_BASE_H_
+#define OPENTITAN_SW_COMMON_DIF_DIF_TEST_BASE_H_
 
 /**
  * @file
@@ -40,4 +40,4 @@
  */
 #define EXPECT_DIF_OUTOFRANGE(expr_) EXPECT_EQ(expr_, kDifOutOfRange)
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_TEST_BASE_H_
+#endif  // OPENTITAN_SW_COMMON_DIF_DIF_TEST_BASE_H_

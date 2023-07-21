@@ -7,10 +7,6 @@
 
 #include "sw/device/examples/demos.h"
 #include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/dif/dif_gpio.h"
-#include "sw/device/lib/dif/dif_pinmux.h"
-#include "sw/device/lib/dif/dif_spi_device.h"
-#include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
@@ -20,6 +16,10 @@
 #include "sw/device/lib/testing/usb_testutils.h"
 #include "sw/device/lib/testing/usb_testutils_controlep.h"
 #include "sw/device/lib/testing/usb_testutils_simpleserial.h"
+#include "sw/ip/gpio/dif/dif_gpio.h"
+#include "sw/ip/pinmux/dif/dif_pinmux.h"
+#include "sw/ip/spi_device/dif/dif_spi_device.h"
+#include "sw/ip/uart/dif/dif_uart.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 

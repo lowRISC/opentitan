@@ -8,7 +8,7 @@
 #include <stdbool.h>
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_lc_ctrl.h"
+#include "sw/ip/lc_ctrl/dif/dif_lc_ctrl.h"
 
 /**
  * Print current life cycle state to the console.

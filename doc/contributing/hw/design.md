@@ -119,7 +119,7 @@ If the interrupt names are changed or new interrupts are introduced, the DIF for
 $ ./util/make_new_dif.py --mode=regen --only=autogen
 ```
 
-The command above updates the DIF (auto-generated part) under `sw/device/lib/dif/`.
+The command above updates the DIF (auto-generated part) under `sw/ip/rv_plic/dif/`.
 
 If DIF for the IP block already uses the interrupt enums inside, you need to manually revise the reference.
 In most cases, the interrupt name is `kDif`, followed by the IP name in PascalCase (e.g `SpiDevice`), then `Irq`, then the interrupt name in PascalCase (e.g. `RxFull`).
@@ -131,5 +131,5 @@ For example, `kTopEarlgreyPlicIrqIdSpiDeviceRxFull`.
 
 If the number of interrupts has changed, you need to revise the SW unit test manually.
 
-Open `sw/device/lib/dif/dif_rv_plic_unittest.cc` and change the `RV_PLIC_PARAM_NUM_SRC` macro to the current interrupt number.
+Open `sw/ip/rv_plic/dif/dif_rv_plic_unittest.cc` and change the `RV_PLIC_PARAM_NUM_SRC` macro to the current interrupt number.
 Then, find `RV_PLIC_IE0_*_REG_OFFSET`, `RV_PLIC_IP0_*_REG_OFFSET` and revise the Bit value or add lines below if new `IE`, `IP` registers are added.

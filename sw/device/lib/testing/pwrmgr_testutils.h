@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_pwrmgr.h"
+#include "sw/ip/pwrmgr/dif/dif_pwrmgr.h"
 
 /**
  * Set the device in low power mode.

@@ -2,7 +2,7 @@
 
 ## Device Interface Functions (DIFs)
 
-- [Device Interface Functions](../../../../sw/device/lib/dif/dif_rv_core_ibex.h)
+- [Device Interface Functions](../../../../sw/ip/rv_core_ibex/dif/dif_rv_core_ibex.h)
 
 ## Register Table
 

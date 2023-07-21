@@ -18,7 +18,7 @@ DIFs may be illustrative for writing device drivers but should not be considered
 #### Language
 
 DIFs **must** be written in C, specifically [C11 (with a few allowed extensions)](../style_guides/c_cpp_coding_style.md#c-style-guide).
-DIFs **must** conform to the style guide in [`sw/device/lib/dif`](../../../sw/device/lib/dif/README.md).
+DIFs **must** conform to the style guide in [`sw/common/dif`](../../../sw/common/dif/README.md).
 
 DIFs **must** only depend on:
 

@@ -11,8 +11,8 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/ip/hmac/dif/dif_hmac.h"
 
 /**
  * Timeouts to be used for different HMAC operations.

@@ -15,7 +15,7 @@
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
-  sw_checklist:       "/sw/device/lib/dif/dif_uart",
+  sw_checklist:       "/sw/ip/uart/dif/dif_uart",
   revisions: [
   {
     version:            "1.0",

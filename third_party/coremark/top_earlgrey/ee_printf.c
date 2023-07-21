@@ -17,7 +17,7 @@ limitations under the License.
 #include <coremark.h>
 #include <stdarg.h>
 
-#include "sw/device/lib/dif/dif_uart.h"
+#include "sw/ip/uart/dif/dif_uart.h"
 
 extern dif_uart_t uart;
 

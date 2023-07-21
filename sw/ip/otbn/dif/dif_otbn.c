@@ -6,9 +6,9 @@
 
 #include <assert.h>
 
+#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/common/dif/dif_base.h"
 
 #include "otbn_regs.h"  // Generated.
 

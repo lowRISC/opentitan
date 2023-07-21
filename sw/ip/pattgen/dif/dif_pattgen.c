@@ -4,8 +4,8 @@
 
 #include "sw/ip/pattgen/dif/dif_pattgen.h"
 
-#include "sw/device/lib/base/bitfield.h"
 #include "sw/common/dif/dif_base.h"
+#include "sw/device/lib/base/bitfield.h"
 
 #include "pattgen_regs.h"  // Generated.
 

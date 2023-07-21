@@ -7,11 +7,11 @@
 #include <assert.h>
 #include <stdint.h>
 
+#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/multibits.h"
-#include "sw/common/dif/dif_base.h"
 
 #include "rstmgr_regs.h"  // Generated.
 

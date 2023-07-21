@@ -4,8 +4,8 @@
 
 #include "sw/device/lib/testing/spi_device_testutils.h"
 
-#include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/ip/spi_device/dif/dif_spi_device.h"
 
 status_t spi_device_testutils_configure_passthrough(
     dif_spi_device_handle_t *spi_device, uint32_t filters,

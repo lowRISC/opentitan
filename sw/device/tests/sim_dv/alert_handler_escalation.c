@@ -4,12 +4,6 @@
 
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_alert_handler.h"
-#include "sw/device/lib/dif/dif_clkmgr.h"
-#include "sw/device/lib/dif/dif_keymgr.h"
-#include "sw/device/lib/dif/dif_rstmgr.h"
-#include "sw/device/lib/dif/dif_rv_core_ibex.h"
-#include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
@@ -18,6 +12,12 @@
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/ip/alert_handler/dif/dif_alert_handler.h"
+#include "sw/ip/clkmgr/dif/dif_clkmgr.h"
+#include "sw/ip/keymgr/dif/dif_keymgr.h"
+#include "sw/ip/rstmgr/dif/dif_rstmgr.h"
+#include "sw/ip/rv_core_ibex/dif/dif_rv_core_ibex.h"
+#include "sw/ip/uart/dif/dif_uart.h"
 
 #include "alert_handler_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"

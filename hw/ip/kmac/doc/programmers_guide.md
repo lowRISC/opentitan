@@ -70,7 +70,7 @@ It could restore the previous hashing state later and continue the operation.
 
 ## Device Interface Functions (DIFs)
 
-- [Device Interface Functions](../../../../sw/device/lib/dif/dif_kmac.h)
+- [Device Interface Functions](../../../../sw/ip/kmac/dif/dif_kmac.h)
 
 ## Registers
 

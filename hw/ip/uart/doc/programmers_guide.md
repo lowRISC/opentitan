@@ -158,7 +158,7 @@ case the host will eventually get a watermark interrupt, this will happen
 
 ## Device Interface Functions (DIFs)
 
-- [Device Interface Functions](../../../../sw/device/lib/dif/dif_uart.h)
+- [Device Interface Functions](../../../../sw/ip/uart/dif/dif_uart.h)
 
 ## Register Table
 

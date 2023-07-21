@@ -15,7 +15,7 @@
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
-  sw_checklist:       "/sw/device/lib/dif/dif_usbdev",
+  sw_checklist:       "/sw/ip/usbdev/dif/dif_",
   version:            "1.0",
   life_stage:         "L1",
   design_stage:       "D2S",

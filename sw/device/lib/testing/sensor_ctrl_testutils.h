@@ -8,7 +8,7 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include "sw/device/lib/dif/dif_sensor_ctrl.h"
+#include "sw/ip/sensor_ctrl/dif/dif_sensor_ctrl.h"
 
 /**
  * Returns true if ast_init is done.

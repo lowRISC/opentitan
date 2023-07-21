@@ -9,7 +9,7 @@ To issue a flash read, the programmer must
 *  Set the 'START' bit for the operation to begin
 
 The above fields can be set in the [`CONTROL`](../data/flash_ctrl.hjson#control) and [`ADDR`](../data/flash_ctrl.hjson#addr) registers.
-See [library code](https://github.com/lowRISC/opentitan/blob/master/sw/device/lib/dif/dif_flash_ctrl.c) for implementation.
+See [library code](https://github.com/lowRISC/opentitan/blob/master/sw/ip/flash_ctrl/dif/dif_flash_ctrl.c) for implementation.
 
 It is acceptable for total number of flash words to be significantly greater than the depth of the read FIFO.
 In this situation, the read FIFO will fill up (or hit programmable fill value), pause the flash read and trigger an interrupt to software.
@@ -57,7 +57,7 @@ See [`ECC_SINGLE_ERR_CNT`](../data/flash_ctrl.hjson#ecc_single_err_cnt) and [`EC
 
 ## Device Interface Functions (DIFs)
 
-- [Device Interface Functions](../../../../sw/device/lib/dif/dif_flash_ctrl.h)
+- [Device Interface Functions](../../../../sw/ip/flash_ctrl/dif/dif_flash_ctrl.h)
 
 ## Register Table
 

@@ -9,7 +9,7 @@
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
-  sw_checklist:       "/sw/device/lib/dif/dif_alert_handler"
+  sw_checklist:       "/sw/ip/alert_handler/dif/dif_alert_handler"
   version:            "1.0",
   life_stage:         "L1",
   design_stage:       "D3",

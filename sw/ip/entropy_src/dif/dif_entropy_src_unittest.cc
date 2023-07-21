@@ -5,11 +5,11 @@
 #include "sw/ip/entropy_src/dif/dif_entropy_src.h"
 
 #include "gtest/gtest.h"
+#include "sw/common/dif/dif_base.h"
+#include "sw/common/dif/dif_test_base.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_mmio.h"
 #include "sw/device/lib/base/multibits.h"
-#include "sw/common/dif/dif_base.h"
-#include "sw/common/dif/dif_test_base.h"
 
 #include "entropy_src_regs.h"  // Generated
 

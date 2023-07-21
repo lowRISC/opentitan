@@ -27,7 +27,7 @@ It should also be noted that data and address scrambling is never entirely disab
 
 ## Device Interface Functions (DIFs)
 
-- [Device Interface Functions](../../../../sw/device/lib/dif/dif_sram_ctrl.h)
+- [Device Interface Functions](../../../../sw/ip/sram_ctrl/dif/dif_sram_ctrl.h)
 
 ## Register Table
 

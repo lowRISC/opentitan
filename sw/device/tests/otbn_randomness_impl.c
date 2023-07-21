@@ -4,11 +4,11 @@
 
 #include "sw/device/tests/otbn_randomness_impl.h"
 
-#include "sw/device/lib/dif/dif_base.h"
-#include "sw/device/lib/dif/dif_otbn.h"
+#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/otbn_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/ip/otbn/dif/dif_otbn.h"
 
 OTBN_DECLARE_APP_SYMBOLS(randomness);
 OTBN_DECLARE_SYMBOL_ADDR(randomness, rv);

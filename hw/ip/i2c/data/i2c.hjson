@@ -15,7 +15,7 @@
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
-  sw_checklist:       "/sw/device/lib/dif/dif_i2c",
+  sw_checklist:       "/sw/ip/i2c/dif/dif_i2c",
   revisions: [
     {
       version:            "1.0",

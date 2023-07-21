@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
+#include "sw/ip/rstmgr/dif/dif_rstmgr.h"
 
 // TODO(#12905): This file includes fake definitions for the functions that are
 // used by the silicon_creator bootstrap implementation and to set reset_reason

@@ -4,7 +4,7 @@ This chapter shows how to use the HMAC-SHA256 IP by showing some snippets such
 as initialization, initiating SHA-256 or HMAC process and processing the
 interrupts. This code is not compilable but serves to demonstrate the IO
 required.
-More detailed and complete code can be found in the software under `sw/`, [ROM code](https://github.com/lowRISC/opentitan/blob/master/sw/device/silicon_creator/lib/drivers/hmac.c) and [HMAC DIF](https://github.com/lowRISC/opentitan/blob/master/sw/device/lib/dif/dif_hmac.c).
+More detailed and complete code can be found in the software under `sw/`, [ROM code](https://github.com/lowRISC/opentitan/blob/master/sw/device/silicon_creator/lib/drivers/hmac.c) and [HMAC DIF](https://github.com/lowRISC/opentitan/blob/master/sw/ip/hmac/dif/dif_hmac.c).
 
 ## Initialization
 
@@ -102,7 +102,7 @@ interconnect.
 
 ## Device Interface Functions (DIFs)
 
-- [Device Interface Functions](../../../../sw/device/lib/dif/dif_hmac.h)
+- [Device Interface Functions](../../../../sw/ip/hmac/dif/dif_hmac.h)
 
 ## Register Table
 

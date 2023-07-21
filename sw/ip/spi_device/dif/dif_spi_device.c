@@ -4,9 +4,9 @@
 
 #include "sw/ip/spi_device/dif/dif_spi_device.h"
 
+#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
-#include "sw/common/dif/dif_base.h"
 
 #include "spi_device_regs.h"  // Generated.
 

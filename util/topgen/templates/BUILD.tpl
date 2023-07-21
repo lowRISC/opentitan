@@ -26,13 +26,13 @@ opentitan_functest(
     deps = [
         "//hw/top_${top["name"]}/sw/autogen:top_${top["name"]}",
         "//sw/device/lib/base:mmio",
-% for n in sorted(irq_peripheral_names + ["rv_plic"]):
-        "//sw/device/lib/dif:${n}",
-% endfor
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+% for n in sorted(irq_peripheral_names + ["rv_plic"]):
+        "//sw/top_${top["name"]}/sw/dif:${n}",
+% endfor
     ],
 )
 
@@ -43,11 +43,11 @@ opentitan_functest(
         "//hw/top_${top["name"]}/sw/autogen:top_${top["name"]}",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-% for n in sorted(alert_peripheral_names + ["alert_handler"]):
-        "//sw/device/lib/dif:${n}",
-% endfor
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+% for n in sorted(alert_peripheral_names + ["alert_handler"]):
+        "//sw/top_${top["name"]}/sw/dif:${n}",
+% endfor
     ],
 )

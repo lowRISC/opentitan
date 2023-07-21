@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_CSRNG_AUTOGEN_H_
-#define OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_CSRNG_AUTOGEN_H_
+#ifndef OPENTITAN_SW_IP_CSRNG_DIF_AUTOGEN_DIF_CSRNG_AUTOGEN_H_
+#define OPENTITAN_SW_IP_CSRNG_DIF_AUTOGEN_DIF_CSRNG_AUTOGEN_H_
 
 // THIS FILE HAS BEEN GENERATED, DO NOT EDIT MANUALLY. COMMAND:
 // util/make_new_dif.py --mode=regen --only=autogen
@@ -16,9 +16,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/common/dif/dif_base.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -252,4 +252,4 @@ dif_result_t dif_csrng_irq_restore_all(
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_CSRNG_AUTOGEN_H_
+#endif  // OPENTITAN_SW_IP_CSRNG_DIF_AUTOGEN_DIF_CSRNG_AUTOGEN_H_

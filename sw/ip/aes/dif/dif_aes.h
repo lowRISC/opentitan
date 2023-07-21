@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_AES_H_
-#define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_AES_H_
+#ifndef OPENTITAN_SW_IP_AES_DIF_DIF_AES_H_
+#define OPENTITAN_SW_IP_AES_DIF_DIF_AES_H_
 
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/common/dif/dif_base.h"
 
 #include "sw/ip/aes/dif/autogen/dif_aes_autogen.h"
 
@@ -474,4 +474,4 @@ dif_result_t dif_aes_read_iv(const dif_aes_t *aes, dif_aes_iv_t *iv);
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_AES_H_
+#endif  // OPENTITAN_SW_IP_AES_DIF_DIF_AES_H_

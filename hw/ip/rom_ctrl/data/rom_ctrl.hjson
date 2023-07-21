@@ -14,7 +14,7 @@
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
-  sw_checklist:       "/sw/device/lib/dif/dif_rom_ctrl",
+  sw_checklist:       "/sw/ip/rom_ctrl/dif/dif_rom_ctrl",
   revisions: [
       {
           version:            "1.0",

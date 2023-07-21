@@ -5,7 +5,6 @@
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -13,6 +12,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_macros.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/epmp_state.h"
+#include "sw/ip/rv_core_ibex/dif/dif_rv_core_ibex.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

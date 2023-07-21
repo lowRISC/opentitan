@@ -9,9 +9,9 @@
 #include <ostream>
 
 #include "gtest/gtest.h"
+#include "sw/common/dif/dif_test_base.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_mmio.h"
-#include "sw/common/dif/dif_test_base.h"
 
 #include "i2c_regs.h"  // Generated.
 

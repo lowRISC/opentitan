@@ -6,9 +6,9 @@
 
 #include <stdbool.h>
 
-#include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/ip/lc_ctrl/dif/dif_lc_ctrl.h"
 
 status_t lc_ctrl_testutils_lc_state_log(const dif_lc_ctrl_state_t *state) {
   switch (*state) {

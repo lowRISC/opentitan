@@ -8,8 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/lib/dif/dif_usbdev.h"
 #include "sw/device/lib/testing/usb_testutils.h"
+#include "sw/ip/usbdev/dif/dif_usbdev.h"
 
 // This is only here because caller of _init needs it
 typedef struct usb_testutils_ss_ctx {

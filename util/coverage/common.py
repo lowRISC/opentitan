@@ -25,19 +25,20 @@ DEVICE_LIBS_INC: List[str] = [
     "//sw/device/silicon_creator/...",
 ]
 DEVICE_LIBS_EXC: List[str] = [
+    "//sw/common/...",
     "//sw/device/lib/arch/...",
     "//sw/device/lib/base:mmio_on_device_do_not_use_directly",
     "//sw/device/lib/base:mmio_on_host_do_not_use_directly",
     "//sw/device/lib/base:status",
     "//sw/device/lib/base:status_report_unittest_c",
     "//sw/device/lib/crypto/...",
-    "//sw/device/lib/dif/...",
     "//sw/device/lib/runtime/...",
     "//sw/device/lib/testing/... ",
     "//sw/device/lib/ujson/...",
     "//sw/device/silicon_creator/manuf/...",
     "//sw/device/silicon_creator/rom/keys/real:real",
     "//sw/device/silicon_creator/rom_ext/...",
+    "//sw/ip/...",
 ]
 DEVICE_LIBS_QUERY: str = (
     f"kind('^cc_library rule$', ({' + '.join(DEVICE_LIBS_INC)}) "

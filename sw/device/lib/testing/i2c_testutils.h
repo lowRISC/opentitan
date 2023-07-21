@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_i2c.h"
-#include "sw/device/lib/dif/dif_pinmux.h"
+#include "sw/ip/i2c/dif/dif_i2c.h"
+#include "sw/ip/pinmux/dif/dif_pinmux.h"
 
 /**
  * Construct an I2C write as an I2C host.

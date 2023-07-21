@@ -87,7 +87,7 @@ If either a control endpoint's [`set_nak_out`](../data/usbdev.hjson#set_nak_out)
 
 ## Device Interface Functions (DIFs)
 
-- [Device Interface Functions](../../../../sw/device/lib/dif/dif_usbdev.h)
+- [Device Interface Functions](../../../../sw/ip/usbdev/dif/dif_usbdev.h)
 
 ## Register Table
 

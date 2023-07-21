@@ -8,9 +8,9 @@
 #include "sw/ip/entropy_src/dif/autogen/dif_entropy_src_autogen.h"
 
 #include "gtest/gtest.h"
+#include "sw/common/dif/dif_test_base.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_mmio.h"
-#include "sw/common/dif/dif_test_base.h"
 
 #include "entropy_src_regs.h"  // Generated.
 

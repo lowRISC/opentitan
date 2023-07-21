@@ -144,7 +144,7 @@ The SW must check TPM_INT_ENABLE, TPM_INT_STATUS and control the GPIO pin that i
 
 ## Device Interface Functions (DIFs)
 
-- [Device Interface Functions](../../../../sw/device/lib/dif/dif_spi_device.h)
+- [Device Interface Functions](../../../../sw/ip/spi_device/dif/dif_spi_device.h)
 
 ## Register Table
 

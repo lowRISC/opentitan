@@ -16,7 +16,7 @@
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
-  sw_checklist:       "sw/device/lib/dif/dif_rv_timer",
+  sw_checklist:       "sw/ip/rv_timer/dif/dif_rv_timer",
   revisions: [
     {
       version:            "0.5",

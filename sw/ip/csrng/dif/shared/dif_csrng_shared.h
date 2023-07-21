@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_CSRNG_SHARED_H_
-#define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_CSRNG_SHARED_H_
+#ifndef OPENTITAN_SW_IP_CSRNG_DIF_SHARED_DIF_CSRNG_SHARED_H_
+#define OPENTITAN_SW_IP_CSRNG_DIF_SHARED_DIF_CSRNG_SHARED_H_
 
+#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/common/dif/dif_base.h"
 #include "sw/ip/csrng/dif/dif_csrng.h"
 
 /**
@@ -90,4 +90,4 @@ OT_WARN_UNUSED_RESULT
 dif_result_t csrng_send_app_cmd(mmio_region_t base_addr, ptrdiff_t offset,
                                 csrng_app_cmd_t cmd);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_CSRNG_SHARED_H_
+#endif  // OPENTITAN_SW_IP_CSRNG_DIF_SHARED_DIF_CSRNG_SHARED_H_

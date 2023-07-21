@@ -4,8 +4,8 @@
 
 #include "sw/device/lib/testing/sensor_ctrl_testutils.h"
 
-#include "sw/device/lib/dif/dif_sensor_ctrl.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/ip/sensor_ctrl/dif/dif_sensor_ctrl.h"
 
 bool sensor_ctrl_ast_init_done(const dif_sensor_ctrl_t *sensor_ctrl) {
   dif_toggle_t init_st = kDifToggleDisabled;

@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_RV_TIMER_H_
-#define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_RV_TIMER_H_
+#ifndef OPENTITAN_SW_IP_RV_TIMER_DIF_DIF_RV_TIMER_H_
+#define OPENTITAN_SW_IP_RV_TIMER_DIF_DIF_RV_TIMER_H_
 
 /**
  * @file
@@ -12,8 +12,8 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/base/mmio.h"
 #include "sw/common/dif/dif_base.h"
+#include "sw/device/lib/base/mmio.h"
 
 #include "sw/ip/rv_timer/dif/autogen/dif_rv_timer_autogen.h"
 
@@ -189,4 +189,4 @@ dif_result_t dif_rv_timer_arm(const dif_rv_timer_t *timer, uint32_t hart_id,
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_RV_TIMER_H_
+#endif  // OPENTITAN_SW_IP_RV_TIMER_DIF_DIF_RV_TIMER_H_

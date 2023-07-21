@@ -31,7 +31,7 @@ UJSON_SERDE_STRUCT(GpioSet, gpio_set_t, STRUCT_GPIO_SET);
 UJSON_SERDE_STRUCT(GpioGet, gpio_get_t, STRUCT_GPIO_GET);
 
 #ifndef RUST_PREPROCESSOR_EMIT
-#include "sw/device/lib/dif/dif_gpio.h"
+#include "sw/ip/gpio/dif/dif_gpio.h"
 
 status_t gpio_set(ujson_t *uj, const dif_gpio_t *gpio);
 status_t gpio_get(ujson_t *uj, const dif_gpio_t *gpio);

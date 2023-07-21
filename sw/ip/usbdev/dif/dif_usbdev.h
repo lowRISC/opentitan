@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_USBDEV_H_
-#define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_USBDEV_H_
+#ifndef OPENTITAN_SW_IP_USBDEV_DIF_DIF_USBDEV_H_
+#define OPENTITAN_SW_IP_USBDEV_DIF_DIF_USBDEV_H_
 
 /**
  * @file
@@ -13,9 +13,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/common/dif/dif_base.h"
 
 #include "sw/ip/usbdev/dif/autogen/dif_usbdev_autogen.h"
 
@@ -873,4 +873,4 @@ dif_result_t dif_usbdev_set_phy_pins_state(
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_USBDEV_H_
+#endif  // OPENTITAN_SW_IP_USBDEV_DIF_DIF_USBDEV_H_

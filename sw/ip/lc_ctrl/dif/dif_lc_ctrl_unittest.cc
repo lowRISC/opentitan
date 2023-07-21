@@ -9,11 +9,11 @@
 #include <utility>
 
 #include "gtest/gtest.h"
+#include "sw/common/dif/dif_test_base.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_mmio.h"
 #include "sw/device/lib/base/multibits.h"
-#include "sw/common/dif/dif_test_base.h"
 
 #include "lc_ctrl_regs.h"  // Generated.
 

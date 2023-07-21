@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_PWM_H_
-#define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_PWM_H_
+#ifndef OPENTITAN_SW_IP_PWM_DIF_DIF_PWM_H_
+#define OPENTITAN_SW_IP_PWM_DIF_DIF_PWM_H_
 
 /**
  * @file
@@ -327,4 +327,4 @@ dif_result_t dif_pwm_is_locked(const dif_pwm_t *pwm, bool *is_locked);
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_PWM_H_
+#endif  // OPENTITAN_SW_IP_PWM_DIF_DIF_PWM_H_

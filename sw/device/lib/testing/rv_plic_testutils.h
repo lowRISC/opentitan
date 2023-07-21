@@ -5,7 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_RV_PLIC_TESTUTILS_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_RV_PLIC_TESTUTILS_H_
 
-#include "sw/device/lib/dif/dif_rv_plic.h"
+#include "sw/ip/rv_plic/dif/dif_rv_plic.h"
 
 /**
  * Enables a range of IRQs at the PLIC.

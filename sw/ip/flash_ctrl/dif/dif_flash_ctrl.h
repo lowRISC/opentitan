@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_FLASH_CTRL_H_
-#define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_FLASH_CTRL_H_
+#ifndef OPENTITAN_SW_IP_FLASH_CTRL_DIF_DIF_FLASH_CTRL_H_
+#define OPENTITAN_SW_IP_FLASH_CTRL_DIF_DIF_FLASH_CTRL_H_
 
 /**
  * @file
@@ -1075,4 +1075,4 @@ dif_result_t dif_flash_ctrl_get_scratch(const dif_flash_ctrl_state_t *handle,
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_FLASH_CTRL_H_
+#endif  // OPENTITAN_SW_IP_FLASH_CTRL_DIF_DIF_FLASH_CTRL_H_

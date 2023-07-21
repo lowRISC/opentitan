@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_OTBN_H_
-#define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_OTBN_H_
+#ifndef OPENTITAN_SW_IP_OTBN_DIF_DIF_OTBN_H_
+#define OPENTITAN_SW_IP_OTBN_DIF_DIF_OTBN_H_
 
 /**
  * @file
@@ -13,8 +13,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/mmio.h"
 #include "sw/common/dif/dif_base.h"
+#include "sw/device/lib/base/mmio.h"
 
 #include "sw/ip/otbn/dif/autogen/dif_otbn_autogen.h"
 
@@ -235,4 +235,4 @@ size_t dif_otbn_get_imem_size_bytes(const dif_otbn_t *otbn);
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_OTBN_H_
+#endif  // OPENTITAN_SW_IP_OTBN_DIF_DIF_OTBN_H_

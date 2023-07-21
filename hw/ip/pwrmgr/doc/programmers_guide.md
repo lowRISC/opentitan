@@ -60,7 +60,7 @@ For an in-depth discussion, please see [power management programmers model](http
 
 ## Device Interface Functions (DIFs)
 
-- [Device Interface Functions](../../../../sw/device/lib/dif/dif_pwrmgr.h)
+- [Device Interface Functions](../../../../sw/ip/pwrmgr/dif/dif_pwrmgr.h)
 
 ## Register Table
 

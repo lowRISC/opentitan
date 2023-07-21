@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_rstmgr.h"
+#include "sw/ip/rstmgr/dif/dif_rstmgr.h"
 
 /**
  * Determines if the reset_info matches info.

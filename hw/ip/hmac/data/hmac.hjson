@@ -15,7 +15,7 @@
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
-  sw_checklist:       "/sw/device/lib/dif/dif_hmac",
+  sw_checklist:       "/sw/ip/hmac/dif/dif_hmac",
   revisions: [
     {
       version:            "0.5",

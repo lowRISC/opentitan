@@ -19,7 +19,7 @@
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
-  sw_checklist:       "/sw/device/lib/dif/dif_pwrmgr",
+  sw_checklist:       "/sw/ip/pwrmgr/dif/dif_pwrmgr",
   revisions: [
     {
       version:            "0.1",

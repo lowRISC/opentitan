@@ -4,8 +4,8 @@
 
 #include "sw/device/lib/testing/usb_testutils.h"
 
-#include "sw/device/lib/dif/dif_usbdev.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/ip/usbdev/dif/dif_usbdev.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

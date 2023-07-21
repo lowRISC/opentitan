@@ -7,12 +7,12 @@
 #include <stdbool.h>
 
 #include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/dif/dif_gpio.h"
-#include "sw/device/lib/dif/dif_spi_device.h"
-#include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/ip/gpio/dif/dif_gpio.h"
+#include "sw/ip/spi_device/dif/dif_spi_device.h"
+#include "sw/ip/uart/dif/dif_uart.h"
 
 void demo_gpio_startup(dif_gpio_t *gpio) {
   LOG_INFO("Watch the LEDs!");

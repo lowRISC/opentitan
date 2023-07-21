@@ -251,8 +251,6 @@ opentitan_functest(
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crt",
-        "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:sram_ctrl",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
@@ -268,6 +266,8 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib/base:static_critical",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:uart",
+        "//sw/top_earlgrey/sw/dif:pinmux",
+        "//sw/top_earlgrey/sw/dif:sram_ctrl",
     ],
 )
 

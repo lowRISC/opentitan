@@ -5,10 +5,10 @@
 #include "sw/ip/adc_ctrl/dif/dif_adc_ctrl.h"
 
 #include "gtest/gtest.h"
-#include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/mock_mmio.h"
 #include "sw/common/dif/dif_base.h"
 #include "sw/common/dif/dif_test_base.h"
+#include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/mock_mmio.h"
 
 #include "adc_ctrl_regs.h"  // Generated.
 

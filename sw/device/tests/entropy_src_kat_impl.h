@@ -7,7 +7,7 @@
 
 #include <stdbool.h>
 
-#include "sw/device/lib/dif/dif_entropy_src.h"
+#include "sw/ip/entropy_src/dif/dif_entropy_src.h"
 
 /**
  * Runs known answer test for the entropy_src SHA-3 conditioner.

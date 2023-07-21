@@ -6,10 +6,6 @@
 
 #include "otp_img_sku_earlgrey_a0_stage_individualize.h"  // Generated.
 #include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
-#include "sw/device/lib/dif/dif_lc_ctrl.h"
-#include "sw/device/lib/dif/dif_otp_ctrl.h"
-#include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
@@ -19,6 +15,10 @@
 #include "sw/device/silicon_creator/manuf/lib/isolated_flash_partition.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_img.h"
 #include "sw/device/silicon_creator/manuf/lib/test_wafer_auth_secret.h"
+#include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
+#include "sw/ip/lc_ctrl/dif/dif_lc_ctrl.h"
+#include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
+#include "sw/ip/uart/dif/dif_uart.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"  // Generated.

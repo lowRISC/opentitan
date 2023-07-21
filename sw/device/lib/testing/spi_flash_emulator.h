@@ -9,8 +9,8 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_spi_device.h"
-#include "sw/device/lib/dif/dif_spi_host.h"
+#include "sw/ip/spi_device/dif/dif_spi_device.h"
+#include "sw/ip/spi_host/dif/dif_spi_host.h"
 
 /**
  * Emulate a SPI eeprom.

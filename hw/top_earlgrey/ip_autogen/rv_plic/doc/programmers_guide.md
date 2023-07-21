@@ -77,7 +77,7 @@ IP, and are documented [here](/sw/apis/isr__testutils_8h.html).
 
 ## Device Interface Functions (DIFs)
 
-- [Device Interface Functions](../../../../../sw/device/lib/dif/dif_rv_plic.h)
+- [Device Interface Functions](../../../../../sw/ip/rv_plic/dif/dif_rv_plic.h)
 
 ## Registers
 
