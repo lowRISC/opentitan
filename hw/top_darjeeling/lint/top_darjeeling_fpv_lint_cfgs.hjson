@@ -133,6 +133,13 @@
                rel_path: "hw/ip/prim/prim_packer_fpv/lint/{tool}"
              }
              {
+               name: sha3pad_fpv
+               fusesoc_core: lowrisc:fpv:sha3pad_fpv
+               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+               rel_path: "hw/ip/kmac/fpv/lint/{tool}"
+             }
+             // Top-specific IPs
+             {
                name: pinmux_fpv
                fusesoc_core: lowrisc:fpv:pinmux_fpv
                import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
@@ -143,12 +150,6 @@
                fusesoc_core: lowrisc:opentitan:top_darjeeling_rv_plic_fpv
                import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                rel_path: "hw/top_darjeeling/ip_autogen/rv_plic/fpv/lint/{tool}"
-             }
-             {
-               name: sha3pad_fpv
-               fusesoc_core: lowrisc:fpv:sha3pad_fpv
-               import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-               rel_path: "hw/ip/kmac/fpv/lint/{tool}"
              }
             ]
 }
