@@ -26,8 +26,16 @@
     { protocol: "tlul", direction: "host", name: "host" }
     { protocol: "tlul", direction: "host", name: "xbar" }
   ]
-
-   interrupt_list: [
+  inter_signal_list: [
+    { name:   "sys"
+      type:   "req_rsp"
+      struct: "sys"
+      package: "dma_pkg"
+      act:     "req"
+      width:   "1"
+    }
+  ]
+  interrupt_list: [
     { name: "dma_done"
       desc: "DMA operation has been completed."
     }
