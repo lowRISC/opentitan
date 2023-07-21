@@ -436,16 +436,16 @@ jobs:
       trap 'get_logs' EXIT
       get_logs() {
         mkdir -p $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/
-        mkdir -p $BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/
         cp -rLvt $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/ \
           $($REPO_TOP/bazelisk.sh outquery-all //hw/top_earlgrey/bitstream/vivado:fpga_cw310_hyperdebug)
-        cp -rLvt $BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/ \
-          $($REPO_TOP/bazelisk.sh outquery-all //hw/top_earlgrey/bitstream/vivado:hyperdebug)
+        bitstream_archive=$($REPO_TOP/bazelisk.sh outquery \
+          //hw/top_earlgrey/bitstream/vivado:cw310_hyperdebug_archive)
+        cp -Lv ${bitstream_archive} ${BUILD_ROOT}/build-bin.tar
       }
 
       . util/build_consts.sh
       module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/bazelisk.sh build //hw/top_earlgrey/bitstream/vivado:fpga_cw310_hyperdebug
+      ci/bazelisk.sh build //hw/top_earlgrey/bitstream/vivado:cw310_hyperdebug_archive
     displayName: Build bitstream with Vivado
   - bash: |
       . util/build_consts.sh
@@ -508,14 +508,9 @@ jobs:
         . util/build_consts.sh
     - template: ci/gcp-upload-bitstream-template.yml
       parameters:
-        parentDir: "$BIN_DIR/hw/top_earlgrey"
-        includeFiles:
-          - "lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig"
-          - "rom.mmi"
-          - "otp.mmi"
-          - "chip_earlgrey_cw310_hyperdebug/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.bit"
-          - "chip_earlgrey_cw310_hyperdebug/rom.mmi"
-          - "chip_earlgrey_cw310_hyperdebug/otp.mmi"
+        fragmentFiles:
+          - "$BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310/manifest.json"
+          - "$BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/manifest.json"
         gcpKeyFile: "gcpkey.json"
         bucketURI: "gs://opentitan-bitstreams/master"
 

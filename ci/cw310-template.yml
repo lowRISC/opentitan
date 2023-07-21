@@ -24,20 +24,18 @@ steps:
     set -ex
     trap 'get_logs' EXIT
     get_logs() {
-      SUB_PATH="hw/top_${{ parameters.top_name }}"
+      SUB_PATH="hw/top_${{ parameters.top_name }}/chip_${{ parameters.top_name }}_cw310"
       mkdir -p "$OBJ_DIR/$SUB_PATH" "$BIN_DIR/$SUB_PATH"
       cp -rLvt "$OBJ_DIR/$SUB_PATH/" \
         $($REPO_TOP/bazelisk.sh outquery-all //hw/top_${{ parameters.top_name }}/bitstream/vivado:fpga_cw310)
-      cp -rLvt "$BIN_DIR/$SUB_PATH/" \
-        $($REPO_TOP/bazelisk.sh outquery-all //hw/top_${{ parameters.top_name }}/bitstream/vivado:standard)
-      # Rename bitstreams to be compatible with subsequent steps
-      # TODO(#13807): replace this after choosing a naming scheme
-      mv "$BIN_DIR/$SUB_PATH/lowrisc_systems_chip_${{ parameters.top_name }}_cw310_0.1.bit" "$BIN_DIR/$SUB_PATH/lowrisc_systems_chip_${{ parameters.top_name }}_cw310_0.1.bit.orig"
+      bitstream_archive=$($REPO_TOP/bazelisk.sh outquery \
+        //hw/top_${{ parameters.top_name }}/bitstream/vivado:cw310_archive)
+      cp -Lv ${bitstream_archive} ${BUILD_ROOT}/build-bin.tar
     }
 
     . util/build_consts.sh
     module load "xilinx/vivado/$(VIVADO_VERSION)"
-    ci/bazelisk.sh build //hw/top_${{ parameters.top_name }}/bitstream/vivado:standard
+    ci/bazelisk.sh build //hw/top_${{ parameters.top_name }}/bitstream/vivado:cw310_archive
   condition: ne(variables.bitstreamStrategy, 'cached')
   displayName: Build and splice bitstream with Vivado
 - bash: |
@@ -49,10 +47,9 @@ steps:
     cat $OBJ_DIR/hw/top_${{ parameters.top_name }}/build.fpga_cw310/synth-vivado/lowrisc_systems_chip_${{ parameters.top_name }}_cw310_0.1.runs/impl_1/runme.log || true
   condition: ne(variables.bitstreamStrategy, 'cached')
   displayName: Display synthesis & implementation logs
-- template: ./upload-artifacts-template.yml
-  parameters:
-    includePatterns:
-      - "/hw/***"
+- publish: "$(Build.ArtifactStagingDirectory)/build-bin.tar"
+  artifact: partial-build-bin-$(System.PhaseName)
+  displayName: Upload step outputs
 - publish: "$(Build.ArtifactStagingDirectory)"
   artifact: chip_${{ parameters.top_name }}_cw310-build-out
   displayName: Upload artifacts for CW310

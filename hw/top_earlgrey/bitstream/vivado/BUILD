@@ -176,7 +176,7 @@ filegroup(
 
 # Bitstream cache manifest fragment targets
 bitstream_manifest_fragment(
-    name = "earlgrey_cw310_manifest",
+    name = "cw310_manifest",
     testonly = True,
     srcs = [":fpga_cw310"],
     bitstream = "bitstream",
@@ -189,17 +189,17 @@ bitstream_manifest_fragment(
 )
 
 pkg_tar(
-    name = "earlgrey_cw310_archive",
+    name = "cw310_archive",
     testonly = True,
-    srcs = [":earlgrey_cw310_manifest"],
+    srcs = [":cw310_manifest"],
     mode = "0444",
     package_dir = "build-bin/hw/top_earlgrey/chip_earlgrey_cw310",
-    strip_prefix = "/hw/bitstream/vivado/earlgrey_cw310_manifest",
+    strip_prefix = "/hw/top_earlgrey/bitstream/vivado/cw310_manifest",
     tags = ["manual"],
 )
 
 bitstream_manifest_fragment(
-    name = "earlgrey_cw310_hyperdebug_manifest",
+    name = "cw310_hyperdebug_manifest",
     testonly = True,
     srcs = [":fpga_cw310_hyperdebug"],
     bitstream = "bitstream",
@@ -212,12 +212,12 @@ bitstream_manifest_fragment(
 )
 
 pkg_tar(
-    name = "earlgrey_cw310_hyperdebug_archive",
+    name = "cw310_hyperdebug_archive",
     testonly = True,
-    srcs = [":earlgrey_cw310_hyperdebug_manifest"],
+    srcs = [":cw310_hyperdebug_manifest"],
     mode = "0444",
     package_dir = "build-bin/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug",
-    strip_prefix = "/hw/bitstream/vivado/earlgrey_cw310_hyperdebug_manifest",
+    strip_prefix = "/hw/top_earlgrey/bitstream/vivado/cw310_hyperdebug_manifest",
     tags = ["manual"],
 )
 
@@ -244,9 +244,7 @@ pkg_files(
     name = "hyperdebug",
     testonly = True,
     srcs = [
-        ":fpga_cw310_test_rom_hyp",
-        ":otp_mmi_hyp",
-        ":rom_mmi_hyp",
+        ":fpga_cw310_hyperdebug_manifest",
     ],
     prefix = "earlgrey/fpga_cw310/hyperdebug",
     tags = ["manual"],
