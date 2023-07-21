@@ -504,7 +504,16 @@ module kmac_entropy
   // Let consumers know that the randomness will be valid in the next clock cycle.
   assign rand_early_o = rand_valid_set;
 
-  `ASSUME(ConsumeNotAseertWhenNotReady_M, rand_consumed_i |-> rand_valid_o)
+  // The Keccak core is not supposed to ever consume randomness unless it's marked
+  // as valid. The only exception is if the reseeding of the LFSRs just finished
+  // in the previous clock cycle. Because it's possible for the randomness to stay
+  // valid throughout the reseeding (the valid is for sure de-asserted at the end).
+  // The Keccak core may base its decision to start processing / consuming entropy
+  // before the valid is de-asserted. If this happens, the current LFSR output
+  // might be used for both remasking and as auxiliary randomness which isn't ideal
+  // but given this happens only very rarely it should be okay.
+  `ASSUME(ConsumeNotAssertWhenNotValid_M,
+      rand_consumed_i |-> rand_valid_o || $past(lfsr_seed_done))
 
   // Upon escalation or in case the EDN wait timer expires the entropy_req signal
   // can be dropped before getting acknowledged. This may leave EDN in a strange
