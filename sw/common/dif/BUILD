@@ -5,7 +5,7 @@
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
-    name = "dif_base",
+    name = "base",
     srcs = ["dif_base.c"],
     hdrs = ["dif_base.h"],
     deps = [
@@ -16,11 +16,11 @@ cc_library(
 )
 
 cc_library(
-    name = "dif_test_base",
+    name = "test_base",
     testonly = True,
     hdrs = ["dif_test_base.h"],
     deps = [
-        ":dif_base",
+        ":base",
         "@googletest//:gtest",
     ],
 )

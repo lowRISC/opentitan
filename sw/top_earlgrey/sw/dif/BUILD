@@ -5,39 +5,17 @@
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
-    name = "base",
-    srcs = ["dif_base.c"],
-    hdrs = ["dif_base.h"],
-    deps = [
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/internal:status",
-    ],
-)
-
-cc_library(
-    name = "test_base",
-    testonly = True,
-    hdrs = ["dif_test_base.h"],
-    deps = [
-        ":base",
-        "@googletest//:gtest",
-    ],
-)
-
-cc_library(
     name = "adc_ctrl",
     srcs = [
-        "autogen/dif_adc_ctrl_autogen.c",
-        "autogen/dif_adc_ctrl_autogen.h",
-        "dif_adc_ctrl.c",
+        "//sw/ip/adc_ctrl/dif:headers",
+        "//sw/ip/adc_ctrl/dif:sources",
     ],
     hdrs = [
-        "dif_adc_ctrl.h",
+        "//sw/ip/adc_ctrl/dif:api",
     ],
     deps = [
-        ":base",
         "//hw/ip/adc_ctrl/data:adc_ctrl_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -49,12 +27,11 @@ cc_library(
 cc_test(
     name = "adc_ctrl_unittest",
     srcs = [
-        "autogen/dif_adc_ctrl_autogen_unittest.cc",
-        "dif_adc_ctrl_unittest.cc",
+        "//sw/ip/adc_ctrl/dif:test_sources",
     ],
     deps = [
         ":adc_ctrl",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -62,16 +39,15 @@ cc_test(
 cc_library(
     name = "aes",
     srcs = [
-        "autogen/dif_aes_autogen.c",
-        "autogen/dif_aes_autogen.h",
-        "dif_aes.c",
+        "//sw/ip/aes/dif:headers",
+        "//sw/ip/aes/dif:sources",
     ],
     hdrs = [
-        "dif_aes.h",
+        "//sw/ip/aes/dif:api",
     ],
     deps = [
-        ":base",
         "//hw/ip/aes/data:aes_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -83,12 +59,11 @@ cc_library(
 cc_test(
     name = "aes_unittest",
     srcs = [
-        "autogen/dif_aes_autogen_unittest.cc",
-        "dif_aes_unittest.cc",
+        "//sw/ip/aes/dif:test_sources",
     ],
     deps = [
         ":aes",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -96,16 +71,15 @@ cc_test(
 cc_library(
     name = "alert_handler",
     srcs = [
-        "autogen/dif_alert_handler_autogen.c",
-        "autogen/dif_alert_handler_autogen.h",
-        "dif_alert_handler.c",
+        "//sw/ip/alert_handler/dif:headers",
+        "//sw/ip/alert_handler/dif:sources",
     ],
     hdrs = [
-        "dif_alert_handler.h",
+        "//sw/ip/alert_handler/dif:api",
     ],
     deps = [
-        ":base",
         "//hw/top_earlgrey:alert_handler_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -117,12 +91,11 @@ cc_library(
 cc_test(
     name = "alert_handler_unittest",
     srcs = [
-        "autogen/dif_alert_handler_autogen_unittest.cc",
-        "dif_alert_handler_unittest.cc",
+        "//sw/ip/alert_handler/dif:test_sources",
     ],
     deps = [
         ":alert_handler",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -130,16 +103,15 @@ cc_test(
 cc_library(
     name = "aon_timer",
     srcs = [
-        "autogen/dif_aon_timer_autogen.c",
-        "autogen/dif_aon_timer_autogen.h",
-        "dif_aon_timer.c",
+        "//sw/ip/aon_timer/dif:headers",
+        "//sw/ip/aon_timer/dif:sources",
     ],
     hdrs = [
-        "dif_aon_timer.h",
+        "//sw/ip/aon_timer/dif:api",
     ],
     deps = [
-        ":base",
         "//hw/ip/aon_timer/data:aon_timer_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -151,12 +123,11 @@ cc_library(
 cc_test(
     name = "aon_timer_unittest",
     srcs = [
-        "autogen/dif_aon_timer_autogen_unittest.cc",
-        "dif_aon_timer_unittest.cc",
+        "//sw/ip/aon_timer/dif:test_sources",
     ],
     deps = [
         ":aon_timer",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -164,14 +135,15 @@ cc_test(
 cc_library(
     name = "clkmgr",
     srcs = [
-        "autogen/dif_clkmgr_autogen.c",
-        "autogen/dif_clkmgr_autogen.h",
-        "dif_clkmgr.c",
+        "//sw/ip/clkmgr/dif:headers",
+        "//sw/ip/clkmgr/dif:sources",
     ],
-    hdrs = ["dif_clkmgr.h"],
+    hdrs = [
+        "//sw/ip/clkmgr/dif:api",
+    ],
     deps = [
-        ":base",
         "//hw/top_earlgrey/ip/clkmgr/data/autogen:clkmgr_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -183,12 +155,11 @@ cc_library(
 cc_test(
     name = "clkmgr_unittest",
     srcs = [
-        "autogen/dif_clkmgr_autogen_unittest.cc",
-        "dif_clkmgr_unittest.cc",
+        "//sw/ip/clkmgr/dif:test_sources",
     ],
     deps = [
         ":clkmgr",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -196,16 +167,15 @@ cc_test(
 cc_library(
     name = "csrng_shared",
     srcs = [
-        "autogen/dif_csrng_autogen.h",
-        "dif_csrng_shared.c",
+        "//sw/ip/csrng/dif:shared_headers",
+        "//sw/ip/csrng/dif:shared_sources",
     ],
     hdrs = [
-        "dif_csrng.h",
-        "dif_csrng_shared.h",
+        "//sw/ip/csrng/dif:shared_api",
     ],
     deps = [
-        ":base",
         "//hw/ip/csrng/data:csrng_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -217,17 +187,16 @@ cc_library(
 cc_library(
     name = "csrng",
     srcs = [
-        "autogen/dif_csrng_autogen.c",
-        "autogen/dif_csrng_autogen.h",
-        "dif_csrng.c",
+        "//sw/ip/csrng/dif:headers",
+        "//sw/ip/csrng/dif:sources",
     ],
     hdrs = [
-        "dif_csrng.h",
+        "//sw/ip/csrng/dif:api",
     ],
     deps = [
-        ":base",
         ":csrng_shared",
         "//hw/ip/csrng/data:csrng_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -239,12 +208,11 @@ cc_library(
 cc_test(
     name = "csrng_unittest",
     srcs = [
-        "autogen/dif_csrng_autogen_unittest.cc",
-        "dif_csrng_unittest.cc",
+        "//sw/ip/csrng/dif:test_sources",
     ],
     deps = [
         ":csrng",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -252,17 +220,16 @@ cc_test(
 cc_library(
     name = "edn",
     srcs = [
-        "autogen/dif_edn_autogen.c",
-        "autogen/dif_edn_autogen.h",
-        "dif_edn.c",
+        "//sw/ip/edn/dif:headers",
+        "//sw/ip/edn/dif:sources",
     ],
     hdrs = [
-        "dif_edn.h",
+        "//sw/ip/edn/dif:api",
     ],
     deps = [
-        ":base",
         ":csrng_shared",
         "//hw/ip/edn/data:edn_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -274,12 +241,11 @@ cc_library(
 cc_test(
     name = "edn_unittest",
     srcs = [
-        "autogen/dif_edn_autogen_unittest.cc",
-        "dif_edn_unittest.cc",
+        "//sw/ip/edn/dif:test_sources",
     ],
     deps = [
         ":edn",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -287,16 +253,15 @@ cc_test(
 cc_library(
     name = "entropy_src",
     srcs = [
-        "autogen/dif_entropy_src_autogen.c",
-        "autogen/dif_entropy_src_autogen.h",
-        "dif_entropy_src.c",
+        "//sw/ip/entropy_src/dif:headers",
+        "//sw/ip/entropy_src/dif:sources",
     ],
     hdrs = [
-        "dif_entropy_src.h",
+        "//sw/ip/entropy_src/dif:api",
     ],
     deps = [
-        ":base",
         "//hw/ip/entropy_src/data:entropy_src_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -308,12 +273,11 @@ cc_library(
 cc_test(
     name = "entropy_src_unittest",
     srcs = [
-        "autogen/dif_entropy_src_autogen_unittest.cc",
-        "dif_entropy_src_unittest.cc",
+        "//sw/ip/entropy_src/dif:test_sources",
     ],
     deps = [
         ":entropy_src",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -321,14 +285,12 @@ cc_test(
 cc_library(
     name = "flash_ctrl",
     srcs = [
-        "autogen/dif_flash_ctrl_autogen.c",
-        "autogen/dif_flash_ctrl_autogen.h",
-        "dif_flash_ctrl.c",
-        "dif_flash_ctrl.h",
+        "//sw/ip/flash_ctrl/dif:headers",
+        "//sw/ip/flash_ctrl/dif:sources",
     ],
     deps = [
-        ":base",
         "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -340,12 +302,11 @@ cc_library(
 cc_test(
     name = "flash_ctrl_unittest",
     srcs = [
-        "autogen/dif_flash_ctrl_autogen_unittest.cc",
-        "dif_flash_ctrl_unittest.cc",
+        "//sw/ip/flash_ctrl/dif:test_sources",
     ],
     deps = [
         ":flash_ctrl",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -353,16 +314,15 @@ cc_test(
 cc_library(
     name = "gpio",
     srcs = [
-        "autogen/dif_gpio_autogen.c",
-        "autogen/dif_gpio_autogen.h",
-        "dif_gpio.c",
+        "//sw/ip/gpio/dif:headers",
+        "//sw/ip/gpio/dif:sources",
     ],
     hdrs = [
-        "dif_gpio.h",
+        "//sw/ip/gpio/dif:api",
     ],
     deps = [
-        ":base",
         "//hw/ip/gpio/data:gpio_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -374,12 +334,11 @@ cc_library(
 cc_test(
     name = "gpio_unittest",
     srcs = [
-        "autogen/dif_gpio_autogen_unittest.cc",
-        "dif_gpio_unittest.cc",
+        "//sw/ip/gpio/dif:test_sources",
     ],
     deps = [
         ":gpio",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -387,16 +346,15 @@ cc_test(
 cc_library(
     name = "hmac",
     srcs = [
-        "autogen/dif_hmac_autogen.c",
-        "autogen/dif_hmac_autogen.h",
-        "dif_hmac.c",
+        "//sw/ip/hmac/dif:headers",
+        "//sw/ip/hmac/dif:sources",
     ],
     hdrs = [
-        "dif_hmac.h",
+        "//sw/ip/hmac/dif:api",
     ],
     deps = [
-        ":base",
         "//hw/ip/hmac/data:hmac_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -408,12 +366,11 @@ cc_library(
 cc_test(
     name = "hmac_unittest",
     srcs = [
-        "autogen/dif_hmac_autogen_unittest.cc",
-        "dif_hmac_unittest.cc",
+        "//sw/ip/hmac/dif:test_sources",
     ],
     deps = [
         ":hmac",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -421,16 +378,15 @@ cc_test(
 cc_library(
     name = "i2c",
     srcs = [
-        "autogen/dif_i2c_autogen.c",
-        "autogen/dif_i2c_autogen.h",
-        "dif_i2c.c",
+        "//sw/ip/i2c/dif:headers",
+        "//sw/ip/i2c/dif:sources",
     ],
     hdrs = [
-        "dif_i2c.h",
+        "//sw/ip/i2c/dif:api",
     ],
     deps = [
-        ":base",
         "//hw/ip/i2c/data:i2c_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -442,12 +398,11 @@ cc_library(
 cc_test(
     name = "i2c_unittest",
     srcs = [
-        "autogen/dif_i2c_autogen_unittest.cc",
-        "dif_i2c_unittest.cc",
+        "//sw/ip/i2c/dif:test_sources",
     ],
     deps = [
         ":i2c",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -455,16 +410,15 @@ cc_test(
 cc_library(
     name = "keymgr",
     srcs = [
-        "autogen/dif_keymgr_autogen.c",
-        "autogen/dif_keymgr_autogen.h",
-        "dif_keymgr.c",
+        "//sw/ip/keymgr/dif:headers",
+        "//sw/ip/keymgr/dif:sources",
     ],
     hdrs = [
-        "dif_keymgr.h",
+        "//sw/ip/keymgr/dif:api",
     ],
     deps = [
-        ":base",
         "//hw/ip/keymgr/data:keymgr_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -476,12 +430,11 @@ cc_library(
 cc_test(
     name = "keymgr_unittest",
     srcs = [
-        "autogen/dif_keymgr_autogen_unittest.cc",
-        "dif_keymgr_unittest.cc",
+        "//sw/ip/keymgr/dif:test_sources",
     ],
     deps = [
         ":keymgr",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -489,16 +442,15 @@ cc_test(
 cc_library(
     name = "kmac",
     srcs = [
-        "autogen/dif_kmac_autogen.c",
-        "autogen/dif_kmac_autogen.h",
-        "dif_kmac.c",
+        "//sw/ip/kmac/dif:headers",
+        "//sw/ip/kmac/dif:sources",
     ],
     hdrs = [
-        "dif_kmac.h",
+        "//sw/ip/kmac/dif:api",
     ],
     deps = [
-        ":base",
         "//hw/ip/kmac/data:kmac_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -510,12 +462,11 @@ cc_library(
 cc_test(
     name = "kmac_unittest",
     srcs = [
-        "autogen/dif_kmac_autogen_unittest.cc",
-        "dif_kmac_unittest.cc",
+        "//sw/ip/kmac/dif:test_sources",
     ],
     deps = [
         ":kmac",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -523,16 +474,15 @@ cc_test(
 cc_library(
     name = "lc_ctrl",
     srcs = [
-        "autogen/dif_lc_ctrl_autogen.c",
-        "autogen/dif_lc_ctrl_autogen.h",
-        "dif_lc_ctrl.c",
+        "//sw/ip/lc_ctrl/dif:headers",
+        "//sw/ip/lc_ctrl/dif:sources",
     ],
     hdrs = [
-        "dif_lc_ctrl.h",
+        "//sw/ip/lc_ctrl/dif:api",
     ],
     deps = [
-        ":base",
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -544,12 +494,11 @@ cc_library(
 cc_test(
     name = "lc_ctrl_unittest",
     srcs = [
-        "autogen/dif_lc_ctrl_autogen_unittest.cc",
-        "dif_lc_ctrl_unittest.cc",
+        "//sw/ip/lc_ctrl/dif:test_sources",
     ],
     deps = [
         ":lc_ctrl",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -557,16 +506,15 @@ cc_test(
 cc_library(
     name = "otbn",
     srcs = [
-        "autogen/dif_otbn_autogen.c",
-        "autogen/dif_otbn_autogen.h",
-        "dif_otbn.c",
+        "//sw/ip/otbn/dif:headers",
+        "//sw/ip/otbn/dif:sources",
     ],
     hdrs = [
-        "dif_otbn.h",
+        "//sw/ip/otbn/dif:api",
     ],
     deps = [
-        ":base",
         "//hw/ip/otbn/data:otbn_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -578,12 +526,11 @@ cc_library(
 cc_test(
     name = "otbn_unittest",
     srcs = [
-        "autogen/dif_otbn_autogen_unittest.cc",
-        "dif_otbn_unittest.cc",
+        "//sw/ip/otbn/dif:test_sources",
     ],
     deps = [
         ":otbn",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -591,16 +538,15 @@ cc_test(
 cc_library(
     name = "otp_ctrl",
     srcs = [
-        "autogen/dif_otp_ctrl_autogen.c",
-        "autogen/dif_otp_ctrl_autogen.h",
-        "dif_otp_ctrl.c",
+        "//sw/ip/otp_ctrl/dif:headers",
+        "//sw/ip/otp_ctrl/dif:sources",
     ],
     hdrs = [
-        "dif_otp_ctrl.h",
+        "//sw/ip/otp_ctrl/dif:api",
     ],
     deps = [
-        ":base",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -612,12 +558,11 @@ cc_library(
 cc_test(
     name = "otp_ctrl_unittest",
     srcs = [
-        "autogen/dif_otp_ctrl_autogen_unittest.cc",
-        "dif_otp_ctrl_unittest.cc",
+        "//sw/ip/otp_ctrl/dif:test_sources",
     ],
     deps = [
         ":otp_ctrl",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -625,16 +570,15 @@ cc_test(
 cc_library(
     name = "pattgen",
     srcs = [
-        "autogen/dif_pattgen_autogen.c",
-        "autogen/dif_pattgen_autogen.h",
-        "dif_pattgen.c",
+        "//sw/ip/pattgen/dif:headers",
+        "//sw/ip/pattgen/dif:sources",
     ],
     hdrs = [
-        "dif_pattgen.h",
+        "//sw/ip/pattgen/dif:api",
     ],
     deps = [
-        ":base",
         "//hw/ip/pattgen/data:pattgen_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -646,12 +590,11 @@ cc_library(
 cc_test(
     name = "pattgen_unittest",
     srcs = [
-        "autogen/dif_pattgen_autogen_unittest.cc",
-        "dif_pattgen_unittest.cc",
+        "//sw/ip/pattgen/dif:test_sources",
     ],
     deps = [
         ":pattgen",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -659,16 +602,15 @@ cc_test(
 cc_library(
     name = "pinmux",
     srcs = [
-        "autogen/dif_pinmux_autogen.c",
-        "autogen/dif_pinmux_autogen.h",
-        "dif_pinmux.c",
+        "//sw/ip/pinmux/dif:headers",
+        "//sw/ip/pinmux/dif:sources",
     ],
     hdrs = [
-        "dif_pinmux.h",
+        "//sw/ip/pinmux/dif:api",
     ],
     deps = [
-        ":base",
         "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -681,12 +623,11 @@ cc_library(
 cc_test(
     name = "pinmux_unittest",
     srcs = [
-        "autogen/dif_pinmux_autogen_unittest.cc",
-        "dif_pinmux_unittest.cc",
+        "//sw/ip/pinmux/dif:test_sources",
     ],
     deps = [
         ":pinmux",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -694,16 +635,15 @@ cc_test(
 cc_library(
     name = "pwm",
     srcs = [
-        "autogen/dif_pwm_autogen.c",
-        "autogen/dif_pwm_autogen.h",
-        "dif_pwm.c",
+        "//sw/ip/pwm/dif:headers",
+        "//sw/ip/pwm/dif:sources",
     ],
     hdrs = [
-        "dif_pwm.h",
+        "//sw/ip/pwm/dif:api",
     ],
     deps = [
-        ":base",
         "//hw/ip/pwm/data:pwm_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -715,11 +655,11 @@ cc_library(
 cc_test(
     name = "pwm_unittest",
     srcs = [
-        "autogen/dif_pwm_autogen_unittest.cc",
+        "//sw/ip/pwm/dif:test_sources",
     ],
     deps = [
         ":pwm",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -727,16 +667,15 @@ cc_test(
 cc_library(
     name = "pwrmgr",
     srcs = [
-        "autogen/dif_pwrmgr_autogen.c",
-        "autogen/dif_pwrmgr_autogen.h",
-        "dif_pwrmgr.c",
+        "//sw/ip/pwrmgr/dif:headers",
+        "//sw/ip/pwrmgr/dif:sources",
     ],
     hdrs = [
-        "dif_pwrmgr.h",
+        "//sw/ip/pwrmgr/dif:api",
     ],
     deps = [
-        ":base",
         "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -748,12 +687,11 @@ cc_library(
 cc_test(
     name = "pwrmgr_unittest",
     srcs = [
-        "autogen/dif_pwrmgr_autogen_unittest.cc",
-        "dif_pwrmgr_unittest.cc",
+        "//sw/ip/pwrmgr/dif:test_sources",
     ],
     deps = [
         ":pwrmgr",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -761,16 +699,15 @@ cc_test(
 cc_library(
     name = "rom_ctrl",
     srcs = [
-        "autogen/dif_rom_ctrl_autogen.c",
-        "autogen/dif_rom_ctrl_autogen.h",
-        "dif_rom_ctrl.c",
+        "//sw/ip/rom_ctrl/dif:headers",
+        "//sw/ip/rom_ctrl/dif:sources",
     ],
     hdrs = [
-        "dif_rom_ctrl.h",
+        "//sw/ip/rom_ctrl/dif:api",
     ],
     deps = [
-        ":base",
         "//hw/ip/rom_ctrl/data:rom_ctrl_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -782,32 +719,37 @@ cc_library(
 cc_test(
     name = "rom_ctrl_unittest",
     srcs = [
-        "autogen/dif_rom_ctrl_autogen_unittest.cc",
+        "//sw/ip/rom_ctrl/dif:test_sources",
     ],
     deps = [
         ":rom_ctrl",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
 
 cc_library(
     name = "rstmgr_intf",
-    srcs = ["autogen/dif_rstmgr_autogen.h"],
-    hdrs = ["dif_rstmgr.h"],
-    deps = [":base"],
+    srcs = [
+        "//sw/ip/rstmgr/dif:headers",
+    ],
+    hdrs = [
+        "//sw/ip/rstmgr/dif:api",
+    ],
+    deps = [
+        "//sw/common/dif:base"
+    ],
 )
 
 cc_library(
     name = "rstmgr",
     srcs = [
-        "autogen/dif_rstmgr_autogen.c",
-        "dif_rstmgr.c",
+        "//sw/ip/rstmgr/dif:sources",
     ],
     deps = [
-        ":base",
         ":rstmgr_intf",
         "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -819,12 +761,11 @@ cc_library(
 cc_test(
     name = "rstmgr_unittest",
     srcs = [
-        "autogen/dif_rstmgr_autogen_unittest.cc",
-        "dif_rstmgr_unittest.cc",
+        "//sw/ip/rstmgr/dif:test_sources",
     ],
     deps = [
         ":rstmgr",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -832,17 +773,16 @@ cc_test(
 cc_library(
     name = "rv_core_ibex",
     srcs = [
-        "autogen/dif_rv_core_ibex_autogen.c",
-        "autogen/dif_rv_core_ibex_autogen.h",
-        "dif_rv_core_ibex.c",
+        "//sw/ip/rv_core_ibex/dif:headers",
+        "//sw/ip/rv_core_ibex/dif:sources",
     ],
     hdrs = [
-        "dif_rv_core_ibex.h",
+        "//sw/ip/rv_core_ibex/dif:api",
     ],
     deps = [
-        ":base",
         "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/runtime:hart",
     ],
@@ -851,12 +791,11 @@ cc_library(
 cc_test(
     name = "rv_core_ibex_unittest",
     srcs = [
-        "autogen/dif_rv_core_ibex_autogen_unittest.cc",
-        "dif_rv_core_ibex_unittest.cc",
+        "//sw/ip/rv_core_ibex/dif:test_sources",
     ],
     deps = [
         ":rv_core_ibex",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -864,16 +803,15 @@ cc_test(
 cc_library(
     name = "rv_plic",
     srcs = [
-        "autogen/dif_rv_plic_autogen.c",
-        "autogen/dif_rv_plic_autogen.h",
-        "dif_rv_plic.c",
+        "//sw/ip/rv_plic/dif:headers",
+        "//sw/ip/rv_plic/dif:sources",
     ],
     hdrs = [
-        "dif_rv_plic.h",
+        "//sw/ip/rv_plic/dif:headers",
     ],
     deps = [
-        ":base",
         "//hw/top_earlgrey:rv_plic_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -885,12 +823,11 @@ cc_library(
 cc_test(
     name = "rv_plic_unittest",
     srcs = [
-        "autogen/dif_rv_plic_autogen_unittest.cc",
-        "dif_rv_plic_unittest.cc",
+        "//sw/ip/rv_plic/dif:test_sources",
     ],
     deps = [
         ":rv_plic",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -898,16 +835,15 @@ cc_test(
 cc_library(
     name = "rv_timer",
     srcs = [
-        "autogen/dif_rv_timer_autogen.c",
-        "autogen/dif_rv_timer_autogen.h",
-        "dif_rv_timer.c",
+        "//sw/ip/rv_timer/dif:headers",
+        "//sw/ip/rv_timer/dif:sources",
     ],
     hdrs = [
-        "dif_rv_timer.h",
+        "//sw/ip/rv_timer/dif:api",
     ],
     deps = [
-        ":base",
         "//hw/ip/rv_timer/data:rv_timer_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:math",
@@ -920,12 +856,11 @@ cc_library(
 cc_test(
     name = "rv_timer_unittest",
     srcs = [
-        "autogen/dif_rv_timer_autogen_unittest.cc",
-        "dif_rv_timer_unittest.cc",
+        "//sw/ip/rv_timer/dif:test_sources",
     ],
     deps = [
         ":rv_timer",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -933,16 +868,15 @@ cc_test(
 cc_library(
     name = "spi_device",
     srcs = [
-        "autogen/dif_spi_device_autogen.c",
-        "autogen/dif_spi_device_autogen.h",
-        "dif_spi_device.c",
+        "//sw/ip/spi_device/dif:headers",
+        "//sw/ip/spi_device/dif:sources",
     ],
     hdrs = [
-        "dif_spi_device.h",
+        "//sw/ip/spi_device/dif:api",
     ],
     deps = [
-        ":base",
         "//hw/ip/spi_device/data:spi_device_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -954,12 +888,11 @@ cc_library(
 cc_test(
     name = "spi_device_unittest",
     srcs = [
-        "autogen/dif_spi_device_autogen_unittest.cc",
-        "dif_spi_device_unittest.cc",
+        "//sw/ip/spi_device/dif:test_sources",
     ],
     deps = [
         ":spi_device",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -967,16 +900,15 @@ cc_test(
 cc_library(
     name = "spi_host",
     srcs = [
-        "autogen/dif_spi_host_autogen.c",
-        "autogen/dif_spi_host_autogen.h",
-        "dif_spi_host.c",
+        "//sw/ip/spi_host/dif:headers",
+        "//sw/ip/spi_host/dif:sources",
     ],
     hdrs = [
-        "dif_spi_host.h",
+        "//sw/ip/spi_host/dif:api",
     ],
     deps = [
-        ":base",
         "//hw/ip/spi_host/data:spi_host_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -988,12 +920,11 @@ cc_library(
 cc_test(
     name = "spi_host_unittest",
     srcs = [
-        "autogen/dif_spi_host_autogen_unittest.cc",
-        "dif_spi_host_unittest.cc",
+        "//sw/ip/spi_host/dif:test_sources",
     ],
     deps = [
         ":spi_host",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "//sw/device/lib/base:global_mock",
         "@googletest//:gtest_main",
     ],
@@ -1002,16 +933,15 @@ cc_test(
 cc_library(
     name = "sram_ctrl",
     srcs = [
-        "autogen/dif_sram_ctrl_autogen.c",
-        "autogen/dif_sram_ctrl_autogen.h",
-        "dif_sram_ctrl.c",
+        "//sw/ip/sram_ctrl/dif:headers",
+        "//sw/ip/sram_ctrl/dif:sources",
     ],
     hdrs = [
-        "dif_sram_ctrl.h",
+        "//sw/ip/sram_ctrl/dif:api",
     ],
     deps = [
-        ":base",
         "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -1023,12 +953,11 @@ cc_library(
 cc_test(
     name = "sram_ctrl_unittest",
     srcs = [
-        "autogen/dif_sram_ctrl_autogen_unittest.cc",
-        "dif_sram_ctrl_unittest.cc",
+        "//sw/ip/sram_ctrl/dif:test_sources",
     ],
     deps = [
         ":sram_ctrl",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -1036,16 +965,15 @@ cc_test(
 cc_library(
     name = "sensor_ctrl",
     srcs = [
-        "autogen/dif_sensor_ctrl_autogen.c",
-        "autogen/dif_sensor_ctrl_autogen.h",
-        "dif_sensor_ctrl.c",
+        "//sw/ip/sensor_ctrl/dif:headers",
+        "//sw/ip/sensor_ctrl/dif:sources",
     ],
     hdrs = [
-        "dif_sensor_ctrl.h",
+        "//sw/ip/sensor_ctrl/dif:api",
     ],
     deps = [
-        ":base",
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
@@ -1055,12 +983,11 @@ cc_library(
 cc_test(
     name = "sensor_ctrl_unittest",
     srcs = [
-        "autogen/dif_sensor_ctrl_autogen_unittest.cc",
-        "dif_sensor_ctrl_unittest.cc",
+        "//sw/ip/sensor_ctrl/dif:test_sources",
     ],
     deps = [
         ":sensor_ctrl",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -1068,16 +995,15 @@ cc_test(
 cc_library(
     name = "sysrst_ctrl",
     srcs = [
-        "autogen/dif_sysrst_ctrl_autogen.c",
-        "autogen/dif_sysrst_ctrl_autogen.h",
-        "dif_sysrst_ctrl.c",
+        "//sw/ip/sysrst_ctrl/dif:headers",
+        "//sw/ip/sysrst_ctrl/dif:sources",
     ],
     hdrs = [
-        "dif_sysrst_ctrl.h",
+        "//sw/ip/sysrst_ctrl/dif:headers",
     ],
     deps = [
-        ":base",
         "//hw/ip/sysrst_ctrl/data:sysrst_ctrl_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -1089,12 +1015,11 @@ cc_library(
 cc_test(
     name = "sysrst_ctrl_unittest",
     srcs = [
-        "autogen/dif_sysrst_ctrl_autogen_unittest.cc",
-        "dif_sysrst_ctrl_unittest.cc",
+        "//sw/ip/sysrst_ctrl/dif:test_sources",
     ],
     deps = [
         ":sysrst_ctrl",
-        ":test_base",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -1102,14 +1027,15 @@ cc_test(
 cc_library(
     name = "uart",
     srcs = [
-        "autogen/dif_uart_autogen.c",
-        "autogen/dif_uart_autogen.h",
-        "dif_uart.c",
+        "//sw/ip/uart/dif:headers",
+        "//sw/ip/uart/dif:sources",
     ],
-    hdrs = ["dif_uart.h"],
+    hdrs = [
+        "//sw/ip/uart/dif:api",
+    ],
     deps = [
-        ":base",
         "//hw/ip/uart/data:uart_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:math",
@@ -1122,12 +1048,11 @@ cc_library(
 cc_test(
     name = "uart_unittest",
     srcs = [
-        "autogen/dif_uart_autogen_unittest.cc",
-        "dif_uart_unittest.cc",
+        "//sw/ip/uart/dif:test_sources",
     ],
     deps = [
-        ":test_base",
         ":uart",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -1135,16 +1060,15 @@ cc_test(
 cc_library(
     name = "usbdev",
     srcs = [
-        "autogen/dif_usbdev_autogen.c",
-        "autogen/dif_usbdev_autogen.h",
-        "dif_usbdev.c",
+        "//sw/ip/usbdev/dif:headers",
+        "//sw/ip/usbdev/dif:sources",
     ],
     hdrs = [
-        "dif_usbdev.h",
+        "//sw/ip/usbdev/dif:api",
     ],
     deps = [
-        ":base",
         "//hw/ip/usbdev/data:usbdev_regs",
+        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -1156,12 +1080,11 @@ cc_library(
 cc_test(
     name = "usbdev_unittest",
     srcs = [
-        "autogen/dif_usbdev_autogen_unittest.cc",
-        "dif_usbdev_unittest.cc",
+        "//sw/ip/usbdev/dif:test_sources",
     ],
     deps = [
-        ":test_base",
         ":usbdev",
+        "//sw/common/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
