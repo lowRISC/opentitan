@@ -18,10 +18,11 @@ log.basicConfig(level=log.INFO, format="%(levelname)s: %(message)s")
 
 def get_tool_requirements_path():
     '''Return the path to tool_requirements.py'''
+    # Relative path from check_tool_requirements.py to tool_requirements.py
+    relative_path = '.'
     # tool_requirement_dir is the location of tool_requirements.py
-    # Currently this is in the same directory as check_tool_requirements.py
     tool_requirement_dir = os.path.normpath(os.path.join(os.path.dirname(__file__),
-                                                         '.'))
+                                                         relative_path))
 
     return os.path.join(tool_requirement_dir, 'tool_requirements.py')
 
