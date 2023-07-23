@@ -81,8 +81,12 @@ class chip_sw_lc_raw_unlock_vseq extends chip_sw_base_vseq;
                                          p_sequencer.jtag_sequencer_h,
                                          1);
     // Add some delay until clock bypass is turned on.
+`ifdef GATE_LEVEL
+    // In gate level, the clock may be different
+    #(10us);
+`else
     cfg.chip_vif.aon_clk_por_rst_if.wait_clks(10);
-
+`endif
     // Switch tap to rvdm
     cfg.chip_vif.tap_straps_if.drive(JtagTapRvDm);
     reset_jtag_tap();
