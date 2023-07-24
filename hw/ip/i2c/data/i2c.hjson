@@ -141,9 +141,14 @@
                 Enable I2C line loopback test
                 If line loopback is enabled, the internal design sees ACQ and RX data as "1"
                 '''
-          tags: [// Exclude from write-checks: writing 1'b1 to this bit causes interrupts unexpectedly asserted
-                "excl:CsrAllTests:CsrExclWrite"]
         }
+      ]
+      tags: [
+        // Exclude the CTRL register from write checks. These checks
+        // don't know about I2C as a protocol, so will get confused by
+        // other CSRs changing values and interrupts getting asserted
+        // if they write to this register.
+        "excl:CsrAllTests:CsrExclWrite"
       ]
     }
     { name:     "STATUS"
