@@ -113,7 +113,7 @@ package dma_reg_pkg;
   typedef struct packed {
     logic [1:0]  q;
     logic        qe;
-  } dma_reg2hw_transfer_size_reg_t;
+  } dma_reg2hw_transfer_width_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
@@ -307,7 +307,7 @@ package dma_reg_pkg;
     dma_reg2hw_enabled_memory_range_limit_reg_t enabled_memory_range_limit; // [268:236]
     dma_reg2hw_range_unlock_regwen_reg_t range_unlock_regwen; // [235:235]
     dma_reg2hw_total_data_size_reg_t total_data_size; // [234:202]
-    dma_reg2hw_transfer_size_reg_t transfer_size; // [201:199]
+    dma_reg2hw_transfer_width_reg_t transfer_width; // [201:199]
     dma_reg2hw_destination_address_limit_lo_reg_t destination_address_limit_lo; // [198:166]
     dma_reg2hw_destination_address_limit_hi_reg_t destination_address_limit_hi; // [165:133]
     dma_reg2hw_destination_address_almost_limit_lo_reg_t
@@ -346,7 +346,7 @@ package dma_reg_pkg;
   parameter logic [BlockAw-1:0] DMA_ENABLED_MEMORY_RANGE_LIMIT_OFFSET = 7'h 28;
   parameter logic [BlockAw-1:0] DMA_RANGE_UNLOCK_REGWEN_OFFSET = 7'h 2c;
   parameter logic [BlockAw-1:0] DMA_TOTAL_DATA_SIZE_OFFSET = 7'h 30;
-  parameter logic [BlockAw-1:0] DMA_TRANSFER_SIZE_OFFSET = 7'h 34;
+  parameter logic [BlockAw-1:0] DMA_TRANSFER_WIDTH_OFFSET = 7'h 34;
   parameter logic [BlockAw-1:0] DMA_DESTINATION_ADDRESS_LIMIT_LO_OFFSET = 7'h 38;
   parameter logic [BlockAw-1:0] DMA_DESTINATION_ADDRESS_LIMIT_HI_OFFSET = 7'h 3c;
   parameter logic [BlockAw-1:0] DMA_DESTINATION_ADDRESS_ALMOST_LIMIT_LO_OFFSET = 7'h 40;
@@ -379,7 +379,7 @@ package dma_reg_pkg;
     DMA_ENABLED_MEMORY_RANGE_LIMIT,
     DMA_RANGE_UNLOCK_REGWEN,
     DMA_TOTAL_DATA_SIZE,
-    DMA_TRANSFER_SIZE,
+    DMA_TRANSFER_WIDTH,
     DMA_DESTINATION_ADDRESS_LIMIT_LO,
     DMA_DESTINATION_ADDRESS_LIMIT_HI,
     DMA_DESTINATION_ADDRESS_ALMOST_LIMIT_LO,
@@ -405,7 +405,7 @@ package dma_reg_pkg;
     4'b 1111, // index[10] DMA_ENABLED_MEMORY_RANGE_LIMIT
     4'b 0001, // index[11] DMA_RANGE_UNLOCK_REGWEN
     4'b 1111, // index[12] DMA_TOTAL_DATA_SIZE
-    4'b 0001, // index[13] DMA_TRANSFER_SIZE
+    4'b 0001, // index[13] DMA_TRANSFER_WIDTH
     4'b 1111, // index[14] DMA_DESTINATION_ADDRESS_LIMIT_LO
     4'b 1111, // index[15] DMA_DESTINATION_ADDRESS_LIMIT_HI
     4'b 1111, // index[16] DMA_DESTINATION_ADDRESS_ALMOST_LIMIT_LO
