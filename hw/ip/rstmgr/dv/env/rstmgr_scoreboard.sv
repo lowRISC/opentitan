@@ -217,7 +217,9 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
         end else if (!uvm_re_match("sw_rst_regwen_*", csr.get_name())) begin
           // RW0C, so check.
         end else begin
-          `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+          if (!is_cip_csr(csr)) begin
+            `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+          end
         end
       end
     endcase

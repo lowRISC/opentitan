@@ -524,7 +524,9 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
         end
       end
       default: begin
-        `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+        if (!is_cip_csr(csr)) begin
+          `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+        end
       end
     endcase
 

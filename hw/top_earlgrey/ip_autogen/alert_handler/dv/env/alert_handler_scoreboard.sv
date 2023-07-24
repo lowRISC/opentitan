@@ -442,6 +442,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
                 !uvm_re_match("class*_clr_regwen", csr_name) ||
                 !uvm_re_match("class*_regwen", csr_name) ||
                 !uvm_re_match("*alert_regwen_*", csr_name)) begin
+            end else if (is_cip_csr(csr)) begin
             end else begin
               `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
             end

@@ -1416,7 +1416,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       "main_sm_state": begin
       end
       default: begin
-        `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+        if (!is_cip_csr(csr)) begin
+          `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+        end
       end
     endcase
 

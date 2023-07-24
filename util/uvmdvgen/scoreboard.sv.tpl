@@ -105,7 +105,9 @@ class ${name}_scoreboard extends dv_base_scoreboard #(
         // FIXME
       end
       default: begin
-        `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+        if (!is_cip_csr(csr)) begin
+          `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+        end
       end
     endcase
 

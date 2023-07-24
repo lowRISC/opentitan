@@ -519,7 +519,9 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
         // no special handling is needed
       end
       default: begin
-        `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+        if (!is_cip_csr(csr)) begin
+          `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+        end
       end
     endcase
 

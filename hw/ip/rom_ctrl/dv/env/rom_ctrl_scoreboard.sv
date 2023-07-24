@@ -223,7 +223,9 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
         end
       end
       default: begin
-        `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+        if (!is_cip_csr(csr)) begin
+          `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+        end
       end
     endcase
 

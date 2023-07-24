@@ -319,6 +319,25 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     `uvm_fatal(`gfn, "this method is not supposed to be called directly!")
   endtask
 
+  // Returns true if the register passed in is one of the generic "CIP" CSRs
+  virtual function bit is_cip_csr(uvm_reg csr);
+    string name = csr.get_name();
+
+    // There are a few "magic names" that are used by all comportable IPs. Check whether this is one
+    // of them.
+    bit is_cip;
+    case (name)
+      "cip_id": is_cip = 1'b1;
+      "revision": is_cip = 1'b1;
+      "parameter_block_type": is_cip = 1'b1;
+      "parameter_block_length": is_cip = 1'b1;
+      "next_parameter_block": is_cip = 1'b1;
+      default: is_cip = 1'b0;
+    endcase
+
+    return is_cip;
+  endfunction
+
   virtual task process_mem_write(tl_seq_item item, string ral_name);
     uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
     if (!cfg.under_reset)  exp_mem[ral_name].write(addr, item.a_data, item.a_mask);

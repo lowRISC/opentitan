@@ -913,7 +913,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         // Do nothing
       end
       default: begin
-        `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+        if (!is_cip_csr(csr)) begin
+          `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
+        end
       end
     endcase
 
