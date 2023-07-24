@@ -118,47 +118,47 @@
       swaccess: "rw"
       hwqe: "true"
       fields: [
-        { bits: "1:0"
+        { bits: "3:0"
           name: "source_asid"
-          resval: 0x0
+          resval: 0x7
           desc: "Target address space that the source address pointer refers to."
           enum: [
-            { value: "0"
+            { value: "0x7"
               name: "OT_ADDR"
               desc: "OpenTitan 32-bit internal bus."
             }
-            { value: "1"
+            { value: "0xa"
               name: "SOC_ADDR"
               desc: "SoC control register bus using 32-bit (or 64 bits if configured by an SoC) control port."
             }
-            { value: "2"
+            { value: "0x9"
               name: SYS_ADDR"
               desc: "SoC system address bus using 64 bit SYS port."
             }
-            { value: "3"
+            { value: "0xc"
               name: "FLASH_ADDR"
               desc: "Integrated OpenTitan external flash address space."
             }
           ]
         }
-        { bits: "3:2"
+        { bits: "7:4"
           name: "destination_asid"
-          resval: 0x0
+          resval: 0x7
           desc: "Target address space that the destination address pointer refers to."
           enum: [
-            { value: "0"
+            { value: "0x7"
               name: "OT_ADDR"
               desc: "OpenTitan 32-bit internal bus."
             }
-            { value: "1"
+            { value: "0xa"
               name: "SOC_ADDR"
               desc: "SoC control register bus using 32-bit (or 64 bits if configured by an SoC) control port."
             }
-            { value: "2"
+            { value: "0x9"
               name: SYS_ADDR"
               desc: "SoC system address bus using 64 bit SYS port."
             }
-            { value: "3"
+            { value: "0xc"
               name: "FLASH_ADDR"
               desc: "Integrated OpenTitan external flash address space."
             }

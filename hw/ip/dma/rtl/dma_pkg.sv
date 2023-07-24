@@ -4,6 +4,14 @@
 
 package dma_pkg;
 
+  // ASID uses a 4-bit FI protected encoding with a minimum Hamming distance of 2-bit
+  typedef enum logic [3:0] {
+    OtAddr    = 4'h7,
+    SocAddr   = 4'ha,
+    SysAddr   = 4'h9,
+    FlashAddr = 4'hc
+  } asid_encoding_e;
+
   ////////////////////////////
   // System Port Interfaces //
   ////////////////////////////
