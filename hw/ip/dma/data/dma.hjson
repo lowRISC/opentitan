@@ -219,23 +219,23 @@
 
                 Minimum: 1 byte.
                 Maximum: may be restricted to a maximum pre-defined size based on OT DMA enabled memory space allocation.
-                Works in conjunction with Transfer size register.
+                Works in conjunction with Transfer width register.
           '''
         }
       ]
     }
-    { name: "TRANSFER_SIZE"
-      desc: "Denotes the size of each transaction that the DMA shall issue."
+    { name: "TRANSFER_WIDTH"
+      desc: "Denotes the width of each transaction that the DMA shall issue."
       swaccess: "rw"
       hwqe: "true"
       fields: [
         { bits: "1:0"
-          name: "transaction_size"
+          name: "transaction_width"
           resval: 0x3
-          desc: '''Denotes the size of each transaction that the DMA shall issue during the data movement.
+          desc: '''Denotes the width of each transaction that the DMA shall issue during the data movement.
 
-                Multiple transactions of transfer size each will be issued until total size number of bytes are reached.
-                Note that firmware may need to set a different value if a receiving IP supports a read / write transaction size that is less than 1 DWORD.
+                Multiple transactions of transfer width each will be issued until total size number of bytes are reached.
+                Note that firmware may need to set a different value if a receiving IP supports a read / write transaction width that is less than 1 DWORD.
                 This does not affect the wrap-around mechanism.
                 '''
           enum: [

@@ -173,9 +173,9 @@ module dma_reg_top (
   logic total_data_size_we;
   logic [31:0] total_data_size_qs;
   logic [31:0] total_data_size_wd;
-  logic transfer_size_we;
-  logic [1:0] transfer_size_qs;
-  logic [1:0] transfer_size_wd;
+  logic transfer_width_we;
+  logic [1:0] transfer_width_qs;
+  logic [1:0] transfer_width_wd;
   logic destination_address_limit_lo_we;
   logic [31:0] destination_address_limit_lo_qs;
   logic [31:0] destination_address_limit_lo_wd;
@@ -828,43 +828,43 @@ module dma_reg_top (
   assign reg2hw.total_data_size.qe = total_data_size_qe;
 
 
-  // R[transfer_size]: V(False)
-  logic transfer_size_qe;
-  logic [0:0] transfer_size_flds_we;
+  // R[transfer_width]: V(False)
+  logic transfer_width_qe;
+  logic [0:0] transfer_width_flds_we;
   prim_flop #(
     .Width(1),
     .ResetValue(0)
-  ) u_transfer_size0_qe (
+  ) u_transfer_width0_qe (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .d_i(&transfer_size_flds_we),
-    .q_o(transfer_size_qe)
+    .d_i(&transfer_width_flds_we),
+    .q_o(transfer_width_qe)
   );
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h3)
-  ) u_transfer_size (
+  ) u_transfer_width (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (transfer_size_we),
-    .wd     (transfer_size_wd),
+    .we     (transfer_width_we),
+    .wd     (transfer_width_wd),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0),
 
     // to internal hardware
-    .qe     (transfer_size_flds_we[0]),
-    .q      (reg2hw.transfer_size.q),
+    .qe     (transfer_width_flds_we[0]),
+    .q      (reg2hw.transfer_width.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (transfer_size_qs)
+    .qs     (transfer_width_qs)
   );
-  assign reg2hw.transfer_size.qe = transfer_size_qe;
+  assign reg2hw.transfer_width.qe = transfer_width_qe;
 
 
   // R[destination_address_limit_lo]: V(False)
@@ -1456,7 +1456,7 @@ module dma_reg_top (
     addr_hit[10] = (reg_addr == DMA_ENABLED_MEMORY_RANGE_LIMIT_OFFSET);
     addr_hit[11] = (reg_addr == DMA_RANGE_UNLOCK_REGWEN_OFFSET);
     addr_hit[12] = (reg_addr == DMA_TOTAL_DATA_SIZE_OFFSET);
-    addr_hit[13] = (reg_addr == DMA_TRANSFER_SIZE_OFFSET);
+    addr_hit[13] = (reg_addr == DMA_TRANSFER_WIDTH_OFFSET);
     addr_hit[14] = (reg_addr == DMA_DESTINATION_ADDRESS_LIMIT_LO_OFFSET);
     addr_hit[15] = (reg_addr == DMA_DESTINATION_ADDRESS_LIMIT_HI_OFFSET);
     addr_hit[16] = (reg_addr == DMA_DESTINATION_ADDRESS_ALMOST_LIMIT_LO_OFFSET);
@@ -1550,9 +1550,9 @@ module dma_reg_top (
   assign total_data_size_we = addr_hit[12] & reg_we & !reg_error;
 
   assign total_data_size_wd = reg_wdata[31:0];
-  assign transfer_size_we = addr_hit[13] & reg_we & !reg_error;
+  assign transfer_width_we = addr_hit[13] & reg_we & !reg_error;
 
-  assign transfer_size_wd = reg_wdata[1:0];
+  assign transfer_width_wd = reg_wdata[1:0];
   assign destination_address_limit_lo_we = addr_hit[14] & reg_we & !reg_error;
 
   assign destination_address_limit_lo_wd = reg_wdata[31:0];
@@ -1614,7 +1614,7 @@ module dma_reg_top (
     reg_we_check[10] = enabled_memory_range_limit_gated_we;
     reg_we_check[11] = range_unlock_regwen_we;
     reg_we_check[12] = total_data_size_we;
-    reg_we_check[13] = transfer_size_we;
+    reg_we_check[13] = transfer_width_we;
     reg_we_check[14] = destination_address_limit_lo_we;
     reg_we_check[15] = destination_address_limit_hi_we;
     reg_we_check[16] = destination_address_almost_limit_lo_we;
@@ -1689,7 +1689,7 @@ module dma_reg_top (
       end
 
       addr_hit[13]: begin
-        reg_rdata_next[1:0] = transfer_size_qs;
+        reg_rdata_next[1:0] = transfer_width_qs;
       end
 
       addr_hit[14]: begin
