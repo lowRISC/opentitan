@@ -13,7 +13,7 @@
 ## Current status
 * [Design & verification stage](../../../README.md)
   * [HW development stages](../../../../../doc/project_governance/development_stages.md)
-* [Simulation results](https://reports.opentitan.org/integrated/hw/top_earlgrey/ip_autogen/alert_handler/dv/latest/report.html)
+* [Simulation results](https://reports.opentitan.org/integrated/hw/top_darjeeling/ip_autogen/alert_handler/dv/latest/report.html)
 
 ## Design features
 For detailed information on ALERT_HANDLER design features, please see the [ALERT_HANDLER HWIP technical specification](../README.md).
@@ -112,9 +112,8 @@ We are using our in-house developed [regression tool](../../../../../util/dvsim/
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/$CHIP/ip_autogen/alert_handler/dv/alert_handler_sim_cfg.hjson -i alert_handler_smoke
+$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/top_darjeeling/ip_autogen/alert_handler/dv/alert_handler_sim_cfg.hjson -i alert_handler_smoke
 ```
-In this run command, $CHIP can be top_earlgrey, etc.
 
 ## Testplan
 [Testplan](../data/alert_handler_testplan.hjson)
