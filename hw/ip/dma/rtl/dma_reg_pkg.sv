@@ -82,11 +82,11 @@ package dma_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [1:0]  q;
+      logic [3:0]  q;
       logic        qe;
     } source_asid;
     struct packed {
-      logic [1:0]  q;
+      logic [3:0]  q;
       logic        qe;
     } destination_asid;
   } dma_reg2hw_address_space_id_reg_t;
@@ -294,15 +294,15 @@ package dma_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    dma_reg2hw_intr_state_reg_t intr_state; // [453:451]
-    dma_reg2hw_intr_enable_reg_t intr_enable; // [450:448]
-    dma_reg2hw_intr_test_reg_t intr_test; // [447:442]
-    dma_reg2hw_alert_test_reg_t alert_test; // [441:440]
-    dma_reg2hw_source_address_lo_reg_t source_address_lo; // [439:407]
-    dma_reg2hw_source_address_hi_reg_t source_address_hi; // [406:374]
-    dma_reg2hw_destination_address_lo_reg_t destination_address_lo; // [373:341]
-    dma_reg2hw_destination_address_hi_reg_t destination_address_hi; // [340:308]
-    dma_reg2hw_address_space_id_reg_t address_space_id; // [307:302]
+    dma_reg2hw_intr_state_reg_t intr_state; // [457:455]
+    dma_reg2hw_intr_enable_reg_t intr_enable; // [454:452]
+    dma_reg2hw_intr_test_reg_t intr_test; // [451:446]
+    dma_reg2hw_alert_test_reg_t alert_test; // [445:444]
+    dma_reg2hw_source_address_lo_reg_t source_address_lo; // [443:411]
+    dma_reg2hw_source_address_hi_reg_t source_address_hi; // [410:378]
+    dma_reg2hw_destination_address_lo_reg_t destination_address_lo; // [377:345]
+    dma_reg2hw_destination_address_hi_reg_t destination_address_hi; // [344:312]
+    dma_reg2hw_address_space_id_reg_t address_space_id; // [311:302]
     dma_reg2hw_enabled_memory_range_base_reg_t enabled_memory_range_base; // [301:269]
     dma_reg2hw_enabled_memory_range_limit_reg_t enabled_memory_range_limit; // [268:236]
     dma_reg2hw_range_unlock_regwen_reg_t range_unlock_regwen; // [235:235]
