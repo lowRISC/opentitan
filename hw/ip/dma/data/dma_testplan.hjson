@@ -20,7 +20,7 @@
                 - Configure DMA
                   * Randomize DMA memory region base and limit
                   * Randomize source and destination address space IDs and address pointers such that all valid source and destination combinations are covered at least once
-                  * Randomize Total transfer size and transaction size
+                  * Randomize Total transfer width and transaction size
                   * Update DMAC.op_code and disable hardware_handshake mode
                 - Start DMA operation by setting DMAC.GO bit
                 - Wait for TLUL transactions on the output interface
@@ -47,7 +47,7 @@
                 - Configure DMA
                   * Randomize DMA memory region base and limit
                   * Randomize source and destination address space IDs and address pointers such that all valid source and destination combinations are covered at least once
-                  * Randomize total transfer and transaction sizes
+                  * Randomize total transfer width and transaction sizes
                   * Program DMAC.op_code and enable hardware handshake mode
                 - Start DMA operation by setting DMAC.GO bit
               - Assert Low Speed IO (LSIO) interrupt
@@ -77,7 +77,7 @@
                 - Configure DMA
                   * Randomize DMA memory region base and limit
                   * Randomize source and destination address space IDs and address pointers such that all valid source and destination combinations are covered at least once
-                  * Randomize Total transfer size and transaction size
+                  * Randomize Total transfer width and transaction size
                   * Lock DMA memory configuration registers
                   * Program DMAC register with OP code and randomize hardware handshake mode enable bit
                 - Start DMA operation by setting DMAC.GO bit
@@ -143,7 +143,7 @@
                   * Randomize DMA memory region base and limit
                   * Randomize source and destination address space IDs and address pointers
                     such that all valid source and destination combinations are covered at least once
-                  * Randomize total transfer size and transaction size
+                  * Randomize total transfer width and transaction size
                   * Randomize DMAC.data_direction
                   * Randomize DMAC.FIFO_address_auto_increment_enable and DMAC.memory_address_auto_increment_enable
                   * Program DMAC register with OP code and enable hardware handshake mode
@@ -173,7 +173,7 @@
               - Configure DMA
                 * Randomize DMA memory region base and limit
                 * Randomize source and destination address space IDs and address pointers
-                * Randomize Total transfer size and transaction size
+                * Randomize Total transfer width and transaction size
                 * Program DMAC register with OP code and disable hardware handshake mode
               - Start DMA operation by setting DMAC.GO bit
               - Wait for the operation to complete
@@ -247,7 +247,7 @@
               - Configure DMA
                 * Randomize DMA memory region base and limit
                 * Randomize source and destination address pointers and address space IDs such that the transfer happens between CTN and SYS address spaces
-                * Randomize total transfer size and transaction size
+                * Randomize total transfer width and transaction size
                 * Enable hardware handshake mode and set DMAC.direction randomly
                 * Update the OPcode in DMAC register
               - Start DMA operation
@@ -269,7 +269,7 @@
               - Configure DMA
                 * Update DMA memory region base and limit
                 * Update Source and Destination address pointers and address space IDs such that the address source or destination address is outside the DMA memory region
-              - Configure DMA with total transfer size and transaction size
+              - Configure DMA with total transfer width and transaction size
               - Enable hardware handshake mode and direction randomly
               - Start DMA operation
               - Wait for interrupt assertion if INTR_ENABLE.int_enable is set else poll for STATUS.abort bit
@@ -292,7 +292,7 @@
                - Cover DMA memory region base and size
                - Cover DMA memory region threshold and limit
                - Cover DMA memory region lock
-               - Cover total transfer size
+               - Cover total transfer width
                - Cover transaction size
                - Cover values of each field in DMA Control register
                 * OP code
