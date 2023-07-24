@@ -157,10 +157,10 @@ module dma_reg_top (
   logic [31:0] destination_address_hi_qs;
   logic [31:0] destination_address_hi_wd;
   logic address_space_id_we;
-  logic [1:0] address_space_id_source_asid_qs;
-  logic [1:0] address_space_id_source_asid_wd;
-  logic [1:0] address_space_id_destination_asid_qs;
-  logic [1:0] address_space_id_destination_asid_wd;
+  logic [3:0] address_space_id_source_asid_qs;
+  logic [3:0] address_space_id_source_asid_wd;
+  logic [3:0] address_space_id_destination_asid_qs;
+  logic [3:0] address_space_id_destination_asid_wd;
   logic enabled_memory_range_base_we;
   logic [31:0] enabled_memory_range_base_qs;
   logic [31:0] enabled_memory_range_base_wd;
@@ -622,11 +622,11 @@ module dma_reg_top (
     .d_i(&address_space_id_flds_we),
     .q_o(address_space_id_qe)
   );
-  //   F[source_asid]: 1:0
+  //   F[source_asid]: 3:0
   prim_subreg #(
-    .DW      (2),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0)
+    .RESVAL  (4'h7)
   ) u_address_space_id_source_asid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -649,11 +649,11 @@ module dma_reg_top (
   );
   assign reg2hw.address_space_id.source_asid.qe = address_space_id_qe;
 
-  //   F[destination_asid]: 3:2
+  //   F[destination_asid]: 7:4
   prim_subreg #(
-    .DW      (2),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0)
+    .RESVAL  (4'h7)
   ) u_address_space_id_destination_asid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1535,9 +1535,9 @@ module dma_reg_top (
   assign destination_address_hi_wd = reg_wdata[31:0];
   assign address_space_id_we = addr_hit[8] & reg_we & !reg_error;
 
-  assign address_space_id_source_asid_wd = reg_wdata[1:0];
+  assign address_space_id_source_asid_wd = reg_wdata[3:0];
 
-  assign address_space_id_destination_asid_wd = reg_wdata[3:2];
+  assign address_space_id_destination_asid_wd = reg_wdata[7:4];
   assign enabled_memory_range_base_we = addr_hit[9] & reg_we & !reg_error;
 
   assign enabled_memory_range_base_wd = reg_wdata[31:0];
@@ -1668,8 +1668,8 @@ module dma_reg_top (
       end
 
       addr_hit[8]: begin
-        reg_rdata_next[1:0] = address_space_id_source_asid_qs;
-        reg_rdata_next[3:2] = address_space_id_destination_asid_qs;
+        reg_rdata_next[3:0] = address_space_id_source_asid_qs;
+        reg_rdata_next[7:4] = address_space_id_destination_asid_qs;
       end
 
       addr_hit[9]: begin
