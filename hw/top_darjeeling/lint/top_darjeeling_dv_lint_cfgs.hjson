@@ -18,7 +18,12 @@
   // Different dashboard output path for each tool
   rel_path: "hw/top_darjeeling/dv/lint/{tool}/summary"
 
-  use_cfgs: [{    name: aes
+  use_cfgs: [{    name: dma
+                  fusesoc_core: lowrisc:ip:dma
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/dma/lint/{tool}"
+             },
+             {    name: aes
                   fusesoc_core: lowrisc:dv:aes_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/aes/dv/lint/{tool}"
