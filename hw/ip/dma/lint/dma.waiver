@@ -19,3 +19,6 @@ waive -rules OUTPUT_NOT_DRIVEN -location {dma.sv} -regexp {Output port} \
       -comment "Outputs are not used in empty skeleton implementation"
 waive -rules PARAM_NOT_USED -location {dma.sv} -regexp {Parameter} \
       -comment "Parameters are not used in empty skeleton implementation"
+waive -rules PARAM_ENUM_VAL -location {dma.sv}
+      -regexp {Parameter 'ResetValue' is assigned an enum value 'DmaIdle' but is not declared explicitly as the same enum type}
+      -comment "State value is allowed to be assigned to prim flop logic"
