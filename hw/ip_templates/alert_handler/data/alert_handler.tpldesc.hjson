@@ -29,13 +29,13 @@
     },
     {
       "name": "async_on",
-      "desc": "Enables asynchronous sygnalling between specific alert RX/TX pairs"
+      "desc": "Enables asynchronous signalling between specific alert RX/TX pairs"
       "type": "object"
       "default": []
     },
     {
       "name": "n_classes",
-      "desc": "Number of supported classes (leave this at 4 at the moment)"
+      "desc": "Number of supported classes"
       "type": "int"
       "default": 4
     },
