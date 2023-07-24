@@ -77,6 +77,7 @@ def ipgen_render(template_name: str, topname: str, params: Dict,
     """
     module_name = params.get("module_instance_name", template_name)
     instance_name = f"top_{topname}_{module_name}"
+    params["top_name"] = topname
     ip_template = IpTemplate.from_template_path(
         SRCTREE_TOP / "hw/ip_templates" / template_name)
 
