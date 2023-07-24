@@ -1,36 +1,49 @@
-# Ipgen: Generate IP blocks from IP templates
+# ipgen: Generate IP blocks from IP templates
 
-Ipgen is a tool to produce IP blocks from IP templates.
+ipgen is a tool to produce specialized IP blocks from IP templates.
 
 IP templates are highly customizable IP blocks which need to be pre-processed before they can be used in a hardware design.
-In the pre-processing ("rendering"), which is performed by the ipgen tool, templates of source files, written in the Mako templating language, are converted into "real" source files.
-The templates can be customized through template parameters, which are available within the templates.
+Templates of source files, written in the [Mako templating language](https://www.makotemplates.org/), are converted into "real" source files by a pre-processing step which is performed by the ipgen tool.
+We refer to this step as "rendering", a term which is borrowed from the Mako project and other templating frameworks.
+"Rendering" takes a set of argument parameters and uses them to resolve all template parameters defined by the template.
+The result of this process is normally written back to disk as a complete IP block, ready to be instantiated in a design.
 
-Ipgen is a command-line tool and a library.
-Users wishing to instantiate an IP template or query it for template parameters will find the command-line application useful.
-For use in higher-level scripting, e.g. within [topgen](../topgen/README.md) using ipgen as Python library is recommended.
+Creating a completely unique instance of a template is not a trivial task.
+This is known as "uniquification", and is a common problem to be overcome in IP management for SoC integrators.
+We need to consider challenges such as symbol namespace resolution and compilation unit scoping in downstream tooling.
+As an example, a C++ compiler can use name mangling as one way to achieve uniquification.
+See the [Limitations](#limitations) section below for details of what cannot currently be achieved with the ipgen tool.
 
+ipgen is a command-line tool and a library.
+Users wishing to instantiate an IP template or query it for template parameters will find the command-line interface to ipgen useful.
+For use in higher-level scripting flows (e.g. within [topgen](../topgen/README.md)), using ipgen as a Python library is recommended.
 
 ## Anatomy of an IP template
 
-An IP template is a directory with a well-defined directory layout, which mostly mirrors the standard layout of IP blocks.
+An IP template is a directory with a well-defined layout. It is structured as follows:
 
-An IP template directory has a well-defined structure:
+* The directory name must equal the IP template name (`<templatename>`).
+* The directory must contain a [Template description file](#template-description-file-tpldeschjson).\
+  This file, located at `data/<templatename>.tpldesc.hjson`, contains all configuration information related to the template.
+* The directory may contain [templated files](#source-file-templates-tpl-files) with the extension `.tpl`.\
+  These files are [Mako](https://www.makotemplates.org/) templates, which are rendered into source files at the same relative paths in the output directory.
 
-* The IP template name (`<templatename>`) equals the directory name.
-* The directory contains a file `data/<templatename>.tpldesc.hjson` containing all configuration information related to the template.
-* The directory also contains zero or more files ending in `.tpl`.
-  These files are Mako templates and rendered into an file in the same location without the `.tpl` file extension.
+The rendering process recursively copies all files which are not templates directly to the output directory, and applies the template parameters to [templated files](#source-file-templates-tpl-files) to create specialized source files in the same relative locations in the output directory (but with the `.tpl` file extension removed).
+Hence, the outputted IP block directory has a very similar structure to the IP template directory.
 
-### The template description file
+### Template description file (`.tpldesc.hjson`)
 
-Each IP template comes with a description itself.
-This description is contained in the `data/<templatename>.tpldesc.hjson` file in the template directory.
-The file is written in Hjson.
+Each IP template comes with a description file, located at `data/<templatename>.tpldesc.hjson` in the template directory.
+The file is written in [hjson](https://hjson.github.io/).
 
-It contains a top-level dictionary, the keys of which are documented next.
+The description file is used to define the template parameters used by `.tpl` templated files within the directory.
+When rendering a template, values for each of these parameters can be passed to the tool to specialize the generated block.
+Each template parameter may also specify a default value to use if no input is given for that parameter.
 
-#### List of template parameters: `template_param_list`
+The '.tpldesc.hjson' file is structured as a single top-level object (*dictionary*), with a single key `template_param_list`.
+The value of `template_param_list` is an array (*list*) of template parameters, each of which is an object with the key/values defined in [the following section](#list-of-template-parameters-template_param_list).
+
+#### List of template parameters (`template_param_list`)
 
 Keys within `template_param_list`:
 
@@ -39,9 +52,26 @@ Keys within `template_param_list`:
 * `type` (string): Data type of the parameter. Valid values: `int`, `str`
 * `default` (string|int): The default value of the parameter. The data type should match the `type` argument. As convenience, strings are converted into integers on demand (if possible).
 
-#### Example template description file
+##### Special parameters
 
-An exemplary template description file with two parameters, `src` and `target` is shown below.
+If an IP Template defines a special parameter called `module_instance_name`, ipgen can use this value to perform a basic uniquification of the block.
+This can be used as a 'Manual Approach' to uniquification by a template author.
+(See the [Limitations](#limitations) section for discussion about different approaches to uniquification.)
+
+With this approach, "module_instance_name" can be used as a standard templated variable throughout the template, everywhere a unique name may be required.
+The value for "module_instance_name" given to ipgen will then be inserted in the normal rendering process.
+In addition, ipgen will perform the following steps:
+- Rewrite the filenames of all `.tpl` templated files, replacing `<template_name>` with `<module_instance_name>`.
+
+By using the value of "module_instance_name" when constructing the `IpConfig` object and invoking `IpBlockRenderer.render()`), it is also possible to:
+- Use `<module_instance_name>` as the instance name for the block.
+- Change the output directory to `ip_autogen/<module_instance_name>`
+
+This approach is currently implemented in the `hw/ip_templates/rv_plic` template, but for the Earl Grey top the default value ("rv_plic") for the `module_instance_name` is used and this effectively becomes a noop.
+
+#### Example file
+
+An example template description file with two parameters `src` and `target` is shown below.
 
 ```hjson
 // data/<templatename>.tpldesc.hjson
@@ -49,7 +79,7 @@ An exemplary template description file with two parameters, `src` and `target` i
   "template_param_list": [
     {
       "name": "src",
-      "desc": "Number of Interrupt Source",
+      "desc": "Number of Interrupt Sources",
       "type": "int",
       "default": "32"
     },
@@ -76,27 +106,30 @@ Furthermore, the following functions are available:
   The optional version segment is retained.
   Use this function on the `name` of all FuseSoC cores which contain sources generated from templates and which export symbols into the global namespace.
 
-### Templating FuseSoC core files
+## Templating FuseSoC core files (`.core` files)
 
 FuseSoC core files can be templated just like any other file.
-Especially handy is the `instance_vlnv()` template function, which transforms a placeholder VLNV (a string in the form `vendor:library:name:version`) into a instance-specific one.
 
-For example, a `rv_plic.core.tpl` file could look like this:
+The following rules should be applied when creating IP templates of FuseSoC `.core` files:
+
+* Use instance-specific names for all FuseSoC cores which reference templated source files (e.g. SystemVerilog files).
+* Use an instance-specific name for the top-level FuseSoC core at a minimum.
+* If a FuseSoC core with an instance-specific name exposes a well-defined public interface (see below), add a `provides: lowrisc:ip_interfaces:<name>` line to the core file to allow other cores to refer to it without knowing the actual core name.
+
+### `instance_vlnv()` template function
+
+The ipgen tool defines a handy helper template function `instance_vlnv()`, which transforms a placeholder VLNV (a string in the form `vendor:library:name:version`) into a instance-specific one.
+
+For example, a `rv_plic.core.tpl` file could use the `instance_vlnv()` function like this:
 
 ```yaml
 CAPI=2:
 name: ${instance_vlnv("lowrisc:ip:rv_plic")}
 ```
 
-After processing, the `name` key is set to e.g. `lowrisc:opentitan:top_earlgrey_rv_plic`.
+After processing, the `name` in the rendered output file will be set to `lowrisc:opentitan:top_earlgrey_rv_plic`.
 
-The following rules should be applied when creating IP templates:
-
-* Template and use an instance-specific name for all FuseSoC cores which reference templated source files (e.g. SystemVerilog files).
-* Template and use an instance-specific name at least the top-level FuseSoC core.
-* If a FuseSoC core with an instance-specific name exposes a well-defined public interface (see below), add a `provides: lowrisc:ip_interfaces:<name>` line to the core file to allow other cores to refer to it without knowing the actual core name.
-
-#### Templating core files to uphold the "same name, same interface" principle
+### "same name, same interface" principle
 
 FuseSoC core files should be written in a way that upholds the principle "same name, same public interface", i.e. if a FuseSoC core has the same name as another one, it must also provide the same public interface.
 
@@ -110,7 +143,7 @@ If any of those aspects of a source file are templated, the core name referencin
 
 ## Library usage
 
-Ipgen can be used as Python library by importing from the `ipgen` package.
+ipgen can be used as a Python library by importing from the `ipgen` package.
 Refer to the comments within the source code for usage information.
 
 The following example shows how to produce an IP block from an IP template.
@@ -157,7 +190,7 @@ actions:
     generate  Generate an IP block from an IP template
 ```
 
-## `ipgen generate`
+### `ipgen generate`
 
 ```console
 $ cd $REPO_TOP
@@ -178,7 +211,7 @@ optional arguments:
                         path to a configuration file
 ```
 
-## `ipgen describe`
+### `ipgen describe`
 
 ```console
 $ cd $REPO_TOP
@@ -194,7 +227,6 @@ optional arguments:
                         IP template directory
 ```
 
-
 ## Limitations
 
 ### Changing the IP block name is not supported
@@ -206,7 +238,6 @@ Doing that is possible but a non-trivial amount of work, which is currently not 
 This limitation is of lesser importance, as each template may be used only once in every toplevel design (see below).
 
 What is supported and required for most IP templates is the modification of the FuseSoC core name, which can be achieved by templating relevant `.core` files (see above).
-
 
 ### Each template may be used only once per (top-level) design
 
