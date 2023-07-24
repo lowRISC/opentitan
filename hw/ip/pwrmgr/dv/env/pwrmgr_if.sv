@@ -177,7 +177,7 @@ interface pwrmgr_if (
     if (!internal_assertion_disabled) begin
       internal_assertion_disabled = 1'b1;
       `uvm_info("pwrmgr_if", "disabling power glitch related SVA", UVM_MEDIUM)
-      $assertoff(1, dut.u_slow_fsm.IntRstReq_A);
+      $assertoff(1, tb.dut.u_slow_fsm.IntRstReq_A);
     end
     repeat (2) @(posedge clk_slow);
     rst_main_n = 1'b1;
