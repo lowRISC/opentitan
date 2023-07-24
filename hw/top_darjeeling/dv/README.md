@@ -16,7 +16,7 @@
 ## Current status
 * [Design & verification stage](../../README.md)
   * [HW development stages](../../../doc/project_governance/development_stages.md)
-* [Simulation results](https://reports.opentitan.org/hw/top_darjeeling/dv/latest/report.html)
+* [Simulation results](https://reports.opentitan.org/integrated/hw/top_darjeeling/dv/latest/report.html)
 
 ## Design features
 For detailed information on `top_darjeeling` design features, please see the [Darjeeling Top Level Specification](../doc/specification.md).

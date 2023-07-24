@@ -11,7 +11,7 @@
 ## Current status
 * [Design & verification stage](../../../README.md)
   * [HW development stages](../../../../doc/project_governance/development_stages.md)
-* [Simulation results](https://reports.opentitan.org/hw/ip/clkmgr/dv/latest/report.html)
+* [Simulation results](https://reports.opentitan.org/integrated/hw/ip/clkmgr/dv/latest/report.html)
 
 ## Design features
 The detailed information on CLKMGR design features is at [CLKMGR HWIP technical specification](../README.md).

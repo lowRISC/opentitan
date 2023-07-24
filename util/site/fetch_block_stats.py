@@ -20,7 +20,7 @@ REPO_TOP = Path(__file__).parents[2].resolve()
 
 
 def parse_report(path: str) -> Tuple[int, int]:
-    with urlopen(f'https://reports.opentitan.org{path}/latest/report.json') as response:
+    with urlopen(f'https://reports.opentitan.org/integrated{path}/latest/report.json') as response:
         report = json.load(response)
 
     # Extract all tests from the report.

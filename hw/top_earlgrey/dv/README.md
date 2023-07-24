@@ -16,7 +16,7 @@
 ## Current status
 * [Design & verification stage](../../README.md)
   * [HW development stages](../../../doc/project_governance/development_stages.md)
-* [Simulation results](https://reports.opentitan.org/hw/top_earlgrey/dv/latest/report.html)
+* [Simulation results](https://reports.opentitan.org/integrated/hw/top_earlgrey/dv/latest/report.html)
 
 ## Design features
 For detailed information on `top_earlgrey` design features, please see the [Earl Grey Top Level Specification](../doc/specification.md).

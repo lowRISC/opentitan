@@ -10,8 +10,8 @@
 ## Current status
 * [Design & verification stage](../../../README.md)
   * [HW development stages](../../../../doc/project_governance/development_stages.md)
-* [Simulation results for Masked KMAC](https://reports.opentitan.org/hw/ip/kmac_masked/dv/latest/report.html)
-* [Simulation results for Unmasked KMAC](https://reports.opentitan.org/hw/ip/kmac_unmasked/dv/latest/report.html)
+* [Simulation results for Masked KMAC](https://reports.opentitan.org/integrated/hw/ip/kmac_masked/dv/latest/report.html)
+* [Simulation results for Unmasked KMAC](https://reports.opentitan.org/integrated/hw/ip/kmac_unmasked/dv/latest/report.html)
 
 ## Design features
 For detailed information on KMAC design features, please see the [KMAC HWIP technical specification](../README.md).

@@ -22,7 +22,7 @@ Remove "draft: true" before submission.
 ## Current status
 * [Design & verification stage](../../README.md)
   * [HW development stages](../../../doc/project_governance/development_stages.md)
-* [Simulation results](https://reports.opentitan.org/hw/ip/foo/dv/latest/report.html)
+* [Simulation results](https://reports.opentitan.org/integrated/hw/ip/foo/dv/latest/report.html)
 
 ## Design features
 <!-- TODO: uncomment link to the spec below -->

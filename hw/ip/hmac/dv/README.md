@@ -10,7 +10,7 @@
 ## Current status
 * [Design & verification stage](../../../README.md)
   * [HW development stages](../../../../doc/project_governance/development_stages.md)
-* [Simulation results](https://reports.opentitan.org/hw/ip/hmac/dv/latest/report.html)
+* [Simulation results](https://reports.opentitan.org/integrated/hw/ip/hmac/dv/latest/report.html)
 
 ## Design features
 For detailed information on HMAC design features, please see the

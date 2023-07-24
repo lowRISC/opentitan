@@ -147,7 +147,7 @@ class FlowCfg():
                             self.rel_path / "latest")
         self.results_page = (self.results_dir / self.results_html_name)
 
-        tmp_path = self.results_server + "/" + self.rel_path
+        tmp_path = self.results_server + "/integrated/" + self.rel_path
         self.results_server_path = self.results_server_prefix + tmp_path
         tmp_path += "/latest"
         self.results_server_dir = self.results_server_prefix + tmp_path

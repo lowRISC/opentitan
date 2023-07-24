@@ -9,16 +9,16 @@
 
 ## Pre-verified sub-modules
 The following sub-modules are pre-verified:
-* [prim_prince](https://reports.opentitan.org/hw/ip/prim/dv/prim_prince/latest/report.html)
-* [prim_lfsr](https://reports.opentitan.org/hw/ip/prim/dv/prim_lfsr/latest/report.html)
+* [prim_prince](https://reports.opentitan.org/integrated/hw/ip/prim/dv/prim_prince/latest/report.html)
+* [prim_lfsr](https://reports.opentitan.org/integrated/hw/ip/prim/dv/prim_lfsr/latest/report.html)
 
 Only toggle coverage on the IOs of these sub-modules is enabled for coverage collection.
 
 ## Current status
 * [Design & verification stage](../../../README.md)
   * [HW development stages](../../../../doc/project_governance/development_stages.md)
-* [Simulation results for SRAM](https://reports.opentitan.org/hw/ip/sram_ctrl_main/dv/latest/report.html)
-* [Simulation results for retention SRAM](https://reports.opentitan.org/hw/ip/sram_ctrl_ret/dv/latest/report.html)
+* [Simulation results for SRAM](https://reports.opentitan.org/integrated/hw/ip/sram_ctrl_main/dv/latest/report.html)
+* [Simulation results for retention SRAM](https://reports.opentitan.org/integrated/hw/ip/sram_ctrl_ret/dv/latest/report.html)
 
 ## Design features
 For detailed information on SRAM_CTRL design features, please see the [SRAM_CTRL HWIP technical specification](../README.md).

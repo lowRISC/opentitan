@@ -10,8 +10,8 @@
 ## Current status
 * [Design & verification stage](../../../README.md)
   * [HW development stages](../../../../doc/project_governance/development_stages.md)
-* [Simulation results for Masked AES](https://reports.opentitan.org/hw/ip/aes_masked/dv/latest/report.html)
-* [Simulation results for Unmasked AES](https://reports.opentitan.org/hw/ip/aes_unmasked/dv/latest/report.html)
+* [Simulation results for Masked AES](https://reports.opentitan.org/integrated/hw/ip/aes_masked/dv/latest/report.html)
+* [Simulation results for Unmasked AES](https://reports.opentitan.org/integrated/hw/ip/aes_unmasked/dv/latest/report.html)
 
 ## Design features
 For detailed information on AES design features, please see the [AES HWIP Technical Specification](../README.md).
