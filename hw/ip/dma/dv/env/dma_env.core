@@ -1,0 +1,42 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:dma_env:0.1.0"
+description: "DMA DV UVM environment"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:ralgen
+      - lowrisc:dv:cip_lib
+    files:
+      - dma_env_pkg.sv
+      - dma_if.sv
+      - dma_env_cfg.sv: {is_include_file: true}
+      - dma_env_cov.sv: {is_include_file: true}
+      - dma_virtual_sequencer.sv: {is_include_file: true}
+      - dma_pull_seq.sv: {is_include_file: true}
+      - dma_seq_item.sv: {is_include_file: true}
+      - dma_scoreboard.sv: {is_include_file: true}
+      - dma_env.sv: {is_include_file: true}
+      - seq_lib/dma_vseq_list.sv: {is_include_file: true}
+      - seq_lib/dma_base_vseq.sv: {is_include_file: true}
+      - seq_lib/dma_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/dma_handshake_vseq.sv: {is_include_file: true}
+      - seq_lib/dma_short_transfer_vseq.sv: {is_include_file: true}
+      - seq_lib/dma_intr_vseq.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+generate:
+  ral:
+    generator: ralgen
+    parameters:
+      name: dma
+      ip_hjson: ../../data/dma.hjson
+
+targets:
+  default:
+    filesets:
+      - files_dv
+    generate:
+      - ral

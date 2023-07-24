@@ -41,8 +41,8 @@ module dma
   input   tlul_pkg::tl_d2h_t                        tl_host_i,
   output  tlul_pkg::tl_h2d_t                        tl_host_o,
   // System port
-  input  dma_pkg::sys_req_t                         sys_i,
-  output dma_pkg::sys_rsp_t                         sys_o
+  input  dma_pkg::sys_rsp_t                         sys_i,
+  output dma_pkg::sys_req_t                         sys_o
 );
   dma_reg2hw_t reg2hw;
   dma_hw2reg_t hw2reg;
@@ -85,5 +85,5 @@ module dma
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_dma_reg_core, alert_tx_o[0])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_dma_reg, alert_tx_o[0])
 endmodule
