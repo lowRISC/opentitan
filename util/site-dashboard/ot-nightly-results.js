@@ -5,7 +5,7 @@
 const all_report_urls = [
   ["adc_ctrl", ["https://reports.opentitan.org/integrated/hw/ip/adc_ctrl/dv/latest/"]],
   ["aes", ["https://reports.opentitan.org/integrated/hw/ip/aes_masked/dv/latest/", "https://reports.opentitan.org/integrated/hw/ip/aes_unmasked/dv/latest/"]],
-  ["alert_handler", ["https://reports.opentitan.org/integrated/hw/top_earlgrey/ip_autogen/alert_handler/dv/latest/"]],
+  ["alert_handler", ["https://reports.opentitan.org/integrated/hw/top_darjeeling/ip_autogen/alert_handler/dv/latest/"]],
   ["aon_timer", ["https://reports.opentitan.org/integrated/hw/ip/aon_timer/dv/latest/"]],
   ["clkmgr", ["https://reports.opentitan.org/integrated/hw/ip/clkmgr/dv/latest/"]],
   ["csrng", ["https://reports.opentitan.org/integrated/hw/ip/csrng/dv/latest/"]],
@@ -40,8 +40,8 @@ const all_report_urls = [
   ["tl_agent", ["https://reports.opentitan.org/integrated/hw/dv/sv/tl_agent/dv/latest/"]],
   ["uart", ["https://reports.opentitan.org/integrated/hw/ip/uart/dv/latest/"]],
   ["usbdev", ["https://reports.opentitan.org/integrated/hw/ip/usbdev/dv/latest/"]],
-  ["xbar", ["https://reports.opentitan.org/integrated/hw/top_earlgrey/ip/xbar_main/dv/autogen/latest/", "https://reports.opentitan.org/integrated/hw/top_earlgrey/ip/xbar_peri/dv/autogen/latest/"]],
-  ["chip", ["https://reports.opentitan.org/integrated/hw/top_earlgrey/dv/latest/"]],
+  ["xbar", ["https://reports.opentitan.org/integrated/hw/top_darjeeling/ip/xbar_main/dv/autogen/latest/", "https://reports.opentitan.org/integrated/hw/top_darjeeling/ip/xbar_peri/dv/autogen/latest/"]],
+  ["chip", ["https://reports.opentitan.org/integrated/hw/top_darjeeling/dv/latest/"]],
   ["rv_core_ibex", ["https://ibex.reports.lowrisc.org/opentitan/latest/"]]
 ];
 
