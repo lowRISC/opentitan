@@ -4,13 +4,46 @@
 
 package dma_pkg;
 
+  localparam logic [3:0] DMA_SOURCE_ADDR_ERR      = 4'd0;
+  localparam logic [3:0] DMA_DESTINATION_ADDR_ERR = 4'd1;
+  localparam logic [3:0] DMA_OPCODE_ERR           = 4'd2;
+  localparam logic [3:0] DMA_SIZE_ERR             = 4'd3;
+  localparam logic [3:0] DMA_COMPLETION_ERR       = 4'd4;
+  localparam logic [3:0] DMA_BASE_LIMIT_ERR       = 4'd5;
+  localparam logic [3:0] DMA_GO_CONFIG_ERR        = 4'd6;
+  localparam logic [3:0] DMA_NUM_ERRORS           = 4'd7;
+
   // ASID uses a 4-bit FI protected encoding with a minimum Hamming distance of 2-bit
   typedef enum logic [3:0] {
-    OtAddr    = 4'h7,
-    SocAddr   = 4'ha,
-    SysAddr   = 4'h9,
-    FlashAddr = 4'hc
+    OtInternalAddr = 4'h7,
+    SocControlAddr = 4'ha,
+    SocSystemAddr  = 4'h9,
+    OtExtFlashAddr = 4'hc
   } asid_encoding_e;
+
+  // Supported opcodes by the DMA
+  typedef enum logic [3:0] {
+    OpcCopy = 4'h0
+  } opcode_e;
+
+  typedef enum logic [3:0] {
+    DmaIdle                  = 4'b0000,
+    DmaClearPlic             = 4'b0001,
+    DmaWaitClearPlicResponse = 4'b0010,
+    DmaAddrSetup             = 4'b0011,
+    DmaSendHostRead          = 4'b0100,
+    DmaWaitHostReadResponse  = 4'b0101,
+    DmaSendXbarRead          = 4'b0110,
+    DmaWaitXbarReadResponse  = 4'b0111,
+    DmaSendSysRead           = 4'b1000,
+    DmaWaitSysReadResponse   = 4'b1001,
+    DmaSendHostWrite         = 4'b1010,
+    DmaWaitHostWriteResponse = 4'b1011,
+    DmaSendXbarWrite         = 4'b1100,
+    DmaWaitXbarWriteResponse = 4'b1101,
+    DmaSendSysWrite          = 4'b1110,
+    DmaError                 = 4'b1111
+  } dma_ctrl_state_e;
 
   ////////////////////////////
   // System Port Interfaces //
@@ -37,12 +70,18 @@ package dma_pkg;
     SysOpcMsgP2P          = 3'd7
   } sys_opc_e;
 
+  // Request command type
+  typedef enum logic {
+    SysCmdRead  = 1'd0,
+    SysCmdWrite = 1'd1
+  } sys_cmd_type_e;
+
   // System port request interface
   typedef struct packed {
     logic     [SYS_NUM_REQ_CH-1:0]                         vld_vec;
-    logic     [SYS_NUM_REQ_CH-1:0][SYS_ADDR_WIDTH-1:0]     metadata_vec;
+    logic     [SYS_NUM_REQ_CH-1:0][SYS_METADATA_WIDTH-1:0] metadata_vec;
     sys_opc_e [SYS_NUM_REQ_CH-1:0]                         opcode_vec;
-    logic     [SYS_NUM_REQ_CH-1:0][SYS_METADATA_WIDTH-1:0] iova_vec;
+    logic     [SYS_NUM_REQ_CH-1:0][SYS_ADDR_WIDTH-1:0]     iova_vec;
     logic     [SYS_NUM_REQ_CH-1:0][SYS_RACL_WIDTH-1:0]     racl_vec;
     logic     [SYS_DATA_WIDTH-1:0]                         write_data;
     logic     [SYS_DATA_BYTEWIDTH-1:0]                     write_be;
@@ -51,12 +90,12 @@ package dma_pkg;
 
   // System port response interface
   typedef struct packed {
-    logic [SYS_NUM_REQ_CH-1:0]         req_grant_vec_i;
-    logic                              read_data_vld_i;
-    logic [(SYS_DATA_BYTEWIDTH*8)-1:0] read_data_i;
-    logic [SYS_METADATA_WIDTH-1:0]     read_metadata_i;
-    logic                              error_vld_i;
-    logic [SYS_NUM_ERROR_TYPES-1:0]    error_vec_i;
+    logic [SYS_NUM_REQ_CH-1:0]         grant_vec;
+    logic                              read_data_vld;
+    logic [(SYS_DATA_BYTEWIDTH*8)-1:0] read_data;
+    logic [SYS_METADATA_WIDTH-1:0]     read_metadata;
+    logic                              error_vld;
+    logic [SYS_NUM_ERROR_TYPES-1:0]    error_vec;
   } sys_rsp_t;
 
 endpackage
