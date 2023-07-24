@@ -53,7 +53,7 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
   mubi4_t all_clk_byp_ack_non_true;
   mubi4_t div_step_down_req_non_true;
 
-  int exp_all_clk_byp_ack;
+  mubi4_t exp_all_clk_byp_ack;
 
   function void post_randomize();
     if (mubi_mode == ClkmgrMubiLcHand) begin
