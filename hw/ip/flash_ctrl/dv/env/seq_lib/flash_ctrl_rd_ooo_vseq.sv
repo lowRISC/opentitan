@@ -89,4 +89,8 @@ class flash_ctrl_rd_ooo_vseq extends flash_ctrl_legacy_base_vseq;
     flash_ctrl_default_info_cfg(scr_mode, ecc_mode);
     update_p2r_map(cfg.mp_regions);
   endtask // flash_otf_region_cfg
+  task post_start();
+    flash_init = otf_flash_init;
+    super.post_start();
+  endtask
 endclass // flash_ctrl_rd_ooo_vseq
