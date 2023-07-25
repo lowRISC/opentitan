@@ -24,7 +24,7 @@ module clkmgr_reg_top (
 
   import clkmgr_reg_pkg::* ;
 
-  localparam int AW = 7;
+  localparam int AW = 4;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -55,9 +55,9 @@ module clkmgr_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [7:0] reg_we_check;
+  logic [2:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(8)
+    .OneHotWidth(3)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -124,14 +124,6 @@ module clkmgr_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic [31:0] cip_id_qs;
-  logic [7:0] revision_reserved_qs;
-  logic [7:0] revision_subminor_qs;
-  logic [7:0] revision_minor_qs;
-  logic [7:0] revision_major_qs;
-  logic [31:0] parameter_block_type_qs;
-  logic [31:0] parameter_block_length_qs;
-  logic [31:0] next_parameter_block_qs;
   logic clk_enables_we;
   logic clk_enables_clk_fixed_peri_en_qs;
   logic clk_enables_clk_fixed_peri_en_wd;
@@ -146,44 +138,6 @@ module clkmgr_reg_top (
   logic clk_hints_status_clk_main_hmac_val_qs;
 
   // Register instances
-  // R[cip_id]: V(False)
-  // constant-only read
-  assign cip_id_qs = 32'h4;
-
-
-  // R[revision]: V(False)
-  //   F[reserved]: 7:0
-  // constant-only read
-  assign revision_reserved_qs = 8'h0;
-
-  //   F[subminor]: 15:8
-  // constant-only read
-  assign revision_subminor_qs = 8'h0;
-
-  //   F[minor]: 23:16
-  // constant-only read
-  assign revision_minor_qs = 8'h0;
-
-  //   F[major]: 31:24
-  // constant-only read
-  assign revision_major_qs = 8'h2;
-
-
-  // R[parameter_block_type]: V(False)
-  // constant-only read
-  assign parameter_block_type_qs = 32'h0;
-
-
-  // R[parameter_block_length]: V(False)
-  // constant-only read
-  assign parameter_block_length_qs = 32'hc;
-
-
-  // R[next_parameter_block]: V(False)
-  // constant-only read
-  assign next_parameter_block_qs = 32'h0;
-
-
   // R[clk_enables]: V(False)
   //   F[clk_fixed_peri_en]: 0:0
   prim_subreg #(
@@ -347,17 +301,12 @@ module clkmgr_reg_top (
 
 
 
-  logic [7:0] addr_hit;
+  logic [2:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[0] = (reg_addr == CLKMGR_CIP_ID_OFFSET);
-    addr_hit[1] = (reg_addr == CLKMGR_REVISION_OFFSET);
-    addr_hit[2] = (reg_addr == CLKMGR_PARAMETER_BLOCK_TYPE_OFFSET);
-    addr_hit[3] = (reg_addr == CLKMGR_PARAMETER_BLOCK_LENGTH_OFFSET);
-    addr_hit[4] = (reg_addr == CLKMGR_NEXT_PARAMETER_BLOCK_OFFSET);
-    addr_hit[5] = (reg_addr == CLKMGR_CLK_ENABLES_OFFSET);
-    addr_hit[6] = (reg_addr == CLKMGR_CLK_HINTS_OFFSET);
-    addr_hit[7] = (reg_addr == CLKMGR_CLK_HINTS_STATUS_OFFSET);
+    addr_hit[0] = (reg_addr == CLKMGR_CLK_ENABLES_OFFSET);
+    addr_hit[1] = (reg_addr == CLKMGR_CLK_HINTS_OFFSET);
+    addr_hit[2] = (reg_addr == CLKMGR_CLK_HINTS_STATUS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -367,21 +316,16 @@ module clkmgr_reg_top (
     wr_err = (reg_we &
               ((addr_hit[0] & (|(CLKMGR_PERMIT[0] & ~reg_be))) |
                (addr_hit[1] & (|(CLKMGR_PERMIT[1] & ~reg_be))) |
-               (addr_hit[2] & (|(CLKMGR_PERMIT[2] & ~reg_be))) |
-               (addr_hit[3] & (|(CLKMGR_PERMIT[3] & ~reg_be))) |
-               (addr_hit[4] & (|(CLKMGR_PERMIT[4] & ~reg_be))) |
-               (addr_hit[5] & (|(CLKMGR_PERMIT[5] & ~reg_be))) |
-               (addr_hit[6] & (|(CLKMGR_PERMIT[6] & ~reg_be))) |
-               (addr_hit[7] & (|(CLKMGR_PERMIT[7] & ~reg_be)))));
+               (addr_hit[2] & (|(CLKMGR_PERMIT[2] & ~reg_be)))));
   end
 
   // Generate write-enables
-  assign clk_enables_we = addr_hit[5] & reg_we & !reg_error;
+  assign clk_enables_we = addr_hit[0] & reg_we & !reg_error;
 
   assign clk_enables_clk_fixed_peri_en_wd = reg_wdata[0];
 
   assign clk_enables_clk_usb_48mhz_peri_en_wd = reg_wdata[1];
-  assign clk_hints_we = addr_hit[6] & reg_we & !reg_error;
+  assign clk_hints_we = addr_hit[1] & reg_we & !reg_error;
 
   assign clk_hints_clk_main_aes_hint_wd = reg_wdata[0];
 
@@ -390,14 +334,9 @@ module clkmgr_reg_top (
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
-    reg_we_check[0] = 1'b0;
-    reg_we_check[1] = 1'b0;
+    reg_we_check[0] = clk_enables_we;
+    reg_we_check[1] = clk_hints_we;
     reg_we_check[2] = 1'b0;
-    reg_we_check[3] = 1'b0;
-    reg_we_check[4] = 1'b0;
-    reg_we_check[5] = clk_enables_we;
-    reg_we_check[6] = clk_hints_we;
-    reg_we_check[7] = 1'b0;
   end
 
   // Read data return
@@ -405,39 +344,16 @@ module clkmgr_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[31:0] = cip_id_qs;
-      end
-
-      addr_hit[1]: begin
-        reg_rdata_next[7:0] = revision_reserved_qs;
-        reg_rdata_next[15:8] = revision_subminor_qs;
-        reg_rdata_next[23:16] = revision_minor_qs;
-        reg_rdata_next[31:24] = revision_major_qs;
-      end
-
-      addr_hit[2]: begin
-        reg_rdata_next[31:0] = parameter_block_type_qs;
-      end
-
-      addr_hit[3]: begin
-        reg_rdata_next[31:0] = parameter_block_length_qs;
-      end
-
-      addr_hit[4]: begin
-        reg_rdata_next[31:0] = next_parameter_block_qs;
-      end
-
-      addr_hit[5]: begin
         reg_rdata_next[0] = clk_enables_clk_fixed_peri_en_qs;
         reg_rdata_next[1] = clk_enables_clk_usb_48mhz_peri_en_qs;
       end
 
-      addr_hit[6]: begin
+      addr_hit[1]: begin
         reg_rdata_next[0] = clk_hints_clk_main_aes_hint_qs;
         reg_rdata_next[1] = clk_hints_clk_main_hmac_hint_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[2]: begin
         reg_rdata_next[0] = clk_hints_status_clk_main_aes_val_qs;
         reg_rdata_next[1] = clk_hints_status_clk_main_hmac_val_qs;
       end

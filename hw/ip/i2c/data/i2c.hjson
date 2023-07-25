@@ -12,15 +12,13 @@
   In addition to supporting all mandatory I2C features, this block supports clock stretching in host mode and automatic clock stretching in device mode.
   I2C Interface uses a 7-bit address space and is compatible with any device covered by I2C specification operating at speeds up to 1 Mbaud.
   '''
-  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
-  cip_id:             "11",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_i2c",
   revisions: [
     {
-      version:            "2.0.0",
+      version:            "1.0",
       life_stage:         "L1",
       design_stage:       "D2S",
       verification_stage: "V2",

@@ -11,15 +11,13 @@
   It also has a checker block that interfaces KMAC Accelerator to perform a cryptographic hash of the ROM contents at boot to detect any malicious changes to the ROM itself while in reset.
   ROM Controller also has status registers for ROM integrity errors or checker block FSM glitches.
   '''
-  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
-  cip_id:             "21",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_rom_ctrl",
   revisions: [
       {
-          version:            "2.0.0",
+          version:            "1.0",
           life_stage:         "L1",
           design_stage:       "D3",
           verification_stage: "V2S",

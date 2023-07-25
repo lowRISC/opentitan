@@ -13,13 +13,11 @@
   The wakeup timer has a 12-bit pre-scaler to enable very long timeouts and also generates an interrupt to the core.
   The timers run on a ~200 kHz AON clock and have a maximum timeout window of roughly ~6 hours for the watchdog timer and ~1000 days with the use of the pre-scaler for the wakeup timer.
   '''
-  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
-  cip_id:             "3",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_aon_timer",
-  version:            "2.0.0",
+  version:            "1.0",
   life_stage:         "L1",
   design_stage:       "D3",
   verification_stage: "V2S",

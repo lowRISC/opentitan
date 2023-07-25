@@ -23,7 +23,7 @@ module rv_dm_regs_reg_top (
 
   import rv_dm_reg_pkg::* ;
 
-  localparam int AW = 7;
+  localparam int AW = 2;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -54,9 +54,9 @@ module rv_dm_regs_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [5:0] reg_we_check;
+  logic [0:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(6)
+    .OneHotWidth(1)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -123,56 +123,10 @@ module rv_dm_regs_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic [31:0] cip_id_qs;
-  logic [7:0] revision_reserved_qs;
-  logic [7:0] revision_subminor_qs;
-  logic [7:0] revision_minor_qs;
-  logic [7:0] revision_major_qs;
-  logic [31:0] parameter_block_type_qs;
-  logic [31:0] parameter_block_length_qs;
-  logic [31:0] next_parameter_block_qs;
   logic alert_test_we;
   logic alert_test_wd;
 
   // Register instances
-  // R[cip_id]: V(False)
-  // constant-only read
-  assign cip_id_qs = 32'h18;
-
-
-  // R[revision]: V(False)
-  //   F[reserved]: 7:0
-  // constant-only read
-  assign revision_reserved_qs = 8'h0;
-
-  //   F[subminor]: 15:8
-  // constant-only read
-  assign revision_subminor_qs = 8'h0;
-
-  //   F[minor]: 23:16
-  // constant-only read
-  assign revision_minor_qs = 8'h0;
-
-  //   F[major]: 31:24
-  // constant-only read
-  assign revision_major_qs = 8'h2;
-
-
-  // R[parameter_block_type]: V(False)
-  // constant-only read
-  assign parameter_block_type_qs = 32'h0;
-
-
-  // R[parameter_block_length]: V(False)
-  // constant-only read
-  assign parameter_block_length_qs = 32'hc;
-
-
-  // R[next_parameter_block]: V(False)
-  // constant-only read
-  assign next_parameter_block_qs = 32'h0;
-
-
   // R[alert_test]: V(True)
   logic alert_test_qe;
   logic [0:0] alert_test_flds_we;
@@ -194,15 +148,10 @@ module rv_dm_regs_reg_top (
 
 
 
-  logic [5:0] addr_hit;
+  logic [0:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[0] = (reg_addr == RV_DM_CIP_ID_OFFSET);
-    addr_hit[1] = (reg_addr == RV_DM_REVISION_OFFSET);
-    addr_hit[2] = (reg_addr == RV_DM_PARAMETER_BLOCK_TYPE_OFFSET);
-    addr_hit[3] = (reg_addr == RV_DM_PARAMETER_BLOCK_LENGTH_OFFSET);
-    addr_hit[4] = (reg_addr == RV_DM_NEXT_PARAMETER_BLOCK_OFFSET);
-    addr_hit[5] = (reg_addr == RV_DM_ALERT_TEST_OFFSET);
+    addr_hit[0] = (reg_addr == RV_DM_ALERT_TEST_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -210,28 +159,18 @@ module rv_dm_regs_reg_top (
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((addr_hit[0] & (|(RV_DM_REGS_PERMIT[0] & ~reg_be))) |
-               (addr_hit[1] & (|(RV_DM_REGS_PERMIT[1] & ~reg_be))) |
-               (addr_hit[2] & (|(RV_DM_REGS_PERMIT[2] & ~reg_be))) |
-               (addr_hit[3] & (|(RV_DM_REGS_PERMIT[3] & ~reg_be))) |
-               (addr_hit[4] & (|(RV_DM_REGS_PERMIT[4] & ~reg_be))) |
-               (addr_hit[5] & (|(RV_DM_REGS_PERMIT[5] & ~reg_be)))));
+              ((addr_hit[0] & (|(RV_DM_REGS_PERMIT[0] & ~reg_be)))));
   end
 
   // Generate write-enables
-  assign alert_test_we = addr_hit[5] & reg_we & !reg_error;
+  assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
-    reg_we_check[0] = 1'b0;
-    reg_we_check[1] = 1'b0;
-    reg_we_check[2] = 1'b0;
-    reg_we_check[3] = 1'b0;
-    reg_we_check[4] = 1'b0;
-    reg_we_check[5] = alert_test_we;
+    reg_we_check[0] = alert_test_we;
   end
 
   // Read data return
@@ -239,29 +178,6 @@ module rv_dm_regs_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[31:0] = cip_id_qs;
-      end
-
-      addr_hit[1]: begin
-        reg_rdata_next[7:0] = revision_reserved_qs;
-        reg_rdata_next[15:8] = revision_subminor_qs;
-        reg_rdata_next[23:16] = revision_minor_qs;
-        reg_rdata_next[31:24] = revision_major_qs;
-      end
-
-      addr_hit[2]: begin
-        reg_rdata_next[31:0] = parameter_block_type_qs;
-      end
-
-      addr_hit[3]: begin
-        reg_rdata_next[31:0] = parameter_block_length_qs;
-      end
-
-      addr_hit[4]: begin
-        reg_rdata_next[31:0] = next_parameter_block_qs;
-      end
-
-      addr_hit[5]: begin
         reg_rdata_next[0] = '0;
       end
 

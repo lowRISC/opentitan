@@ -3477,7 +3477,7 @@ test_suite(
 
             echo :::: Manually write bytes to UART0.\\n
             set $uart0_base = 0x40000000
-            set $uart_wdata = 0x5c
+            set $uart_wdata = 0x1c
             print *(uint32_t*)($uart0_base + $uart_wdata) = 'O'
             print *(uint32_t*)($uart0_base + $uart_wdata) = 'K'
             print *(uint32_t*)($uart0_base + $uart_wdata) = '!'
@@ -3504,7 +3504,7 @@ test_suite(
             gpr_copy_commands = gdb_commands_copy_registers(IBEX_GPRS),
             gpr_restore_commands = gdb_commands_restore_registers(IBEX_GPRS),
             gpr_set_commands = gdb_commands_set_registers("0x89abcdef", IBEX_GPRS),
-            watchdog_ctrl_reg_addr = "0x40470054",
+            watchdog_ctrl_reg_addr = "0x40470014",
         ),
         gdb_script_symlinks = {
             "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310.elf": "rom.elf",

@@ -12,7 +12,7 @@ package rstmgr_reg_pkg;
   parameter int NumSwResets = 2;
 
   // Address widths within the block
-  parameter int BlockAw = 7;
+  parameter int BlockAw = 5;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -94,17 +94,12 @@ package rstmgr_reg_pkg;
   } rstmgr_hw2reg_t;
 
   // Register offsets
-  parameter logic [BlockAw-1:0] RSTMGR_CIP_ID_OFFSET = 7'h 0;
-  parameter logic [BlockAw-1:0] RSTMGR_REVISION_OFFSET = 7'h 4;
-  parameter logic [BlockAw-1:0] RSTMGR_PARAMETER_BLOCK_TYPE_OFFSET = 7'h 8;
-  parameter logic [BlockAw-1:0] RSTMGR_PARAMETER_BLOCK_LENGTH_OFFSET = 7'h c;
-  parameter logic [BlockAw-1:0] RSTMGR_NEXT_PARAMETER_BLOCK_OFFSET = 7'h 10;
-  parameter logic [BlockAw-1:0] RSTMGR_RESET_INFO_OFFSET = 7'h 40;
-  parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_CTRL_OFFSET = 7'h 44;
-  parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_ATTR_OFFSET = 7'h 48;
-  parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_OFFSET = 7'h 4c;
-  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_REGWEN_OFFSET = 7'h 50;
-  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_CTRL_N_OFFSET = 7'h 54;
+  parameter logic [BlockAw-1:0] RSTMGR_RESET_INFO_OFFSET = 5'h 0;
+  parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_CTRL_OFFSET = 5'h 4;
+  parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_ATTR_OFFSET = 5'h 8;
+  parameter logic [BlockAw-1:0] RSTMGR_ALERT_INFO_OFFSET = 5'h c;
+  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_REGWEN_OFFSET = 5'h 10;
+  parameter logic [BlockAw-1:0] RSTMGR_SW_RST_CTRL_N_OFFSET = 5'h 14;
 
   // Reset values for hwext registers and their fields
   parameter logic [3:0] RSTMGR_ALERT_INFO_ATTR_RESVAL = 4'h 0;
@@ -117,11 +112,6 @@ package rstmgr_reg_pkg;
 
   // Register index
   typedef enum int {
-    RSTMGR_CIP_ID,
-    RSTMGR_REVISION,
-    RSTMGR_PARAMETER_BLOCK_TYPE,
-    RSTMGR_PARAMETER_BLOCK_LENGTH,
-    RSTMGR_NEXT_PARAMETER_BLOCK,
     RSTMGR_RESET_INFO,
     RSTMGR_ALERT_INFO_CTRL,
     RSTMGR_ALERT_INFO_ATTR,
@@ -131,18 +121,13 @@ package rstmgr_reg_pkg;
   } rstmgr_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] RSTMGR_PERMIT [11] = '{
-    4'b 1111, // index[ 0] RSTMGR_CIP_ID
-    4'b 1111, // index[ 1] RSTMGR_REVISION
-    4'b 1111, // index[ 2] RSTMGR_PARAMETER_BLOCK_TYPE
-    4'b 1111, // index[ 3] RSTMGR_PARAMETER_BLOCK_LENGTH
-    4'b 1111, // index[ 4] RSTMGR_NEXT_PARAMETER_BLOCK
-    4'b 0001, // index[ 5] RSTMGR_RESET_INFO
-    4'b 0001, // index[ 6] RSTMGR_ALERT_INFO_CTRL
-    4'b 0001, // index[ 7] RSTMGR_ALERT_INFO_ATTR
-    4'b 1111, // index[ 8] RSTMGR_ALERT_INFO
-    4'b 0001, // index[ 9] RSTMGR_SW_RST_REGWEN
-    4'b 0001  // index[10] RSTMGR_SW_RST_CTRL_N
+  parameter logic [3:0] RSTMGR_PERMIT [6] = '{
+    4'b 0001, // index[0] RSTMGR_RESET_INFO
+    4'b 0001, // index[1] RSTMGR_ALERT_INFO_CTRL
+    4'b 0001, // index[2] RSTMGR_ALERT_INFO_ATTR
+    4'b 1111, // index[3] RSTMGR_ALERT_INFO
+    4'b 0001, // index[4] RSTMGR_SW_RST_REGWEN
+    4'b 0001  // index[5] RSTMGR_SW_RST_CTRL_N
   };
 
 endpackage

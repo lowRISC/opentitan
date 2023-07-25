@@ -60,9 +60,9 @@ module otbn_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [15:0] reg_we_check;
+  logic [10:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(16)
+    .OneHotWidth(11)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -176,14 +176,6 @@ module otbn_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic [31:0] cip_id_qs;
-  logic [7:0] revision_reserved_qs;
-  logic [7:0] revision_subminor_qs;
-  logic [7:0] revision_minor_qs;
-  logic [7:0] revision_major_qs;
-  logic [31:0] parameter_block_type_qs;
-  logic [31:0] parameter_block_length_qs;
-  logic [31:0] next_parameter_block_qs;
   logic intr_state_we;
   logic intr_state_qs;
   logic intr_state_wd;
@@ -254,44 +246,6 @@ module otbn_reg_top (
   logic [31:0] load_checksum_wd;
 
   // Register instances
-  // R[cip_id]: V(False)
-  // constant-only read
-  assign cip_id_qs = 32'hf;
-
-
-  // R[revision]: V(False)
-  //   F[reserved]: 7:0
-  // constant-only read
-  assign revision_reserved_qs = 8'h0;
-
-  //   F[subminor]: 15:8
-  // constant-only read
-  assign revision_subminor_qs = 8'h0;
-
-  //   F[minor]: 23:16
-  // constant-only read
-  assign revision_minor_qs = 8'h0;
-
-  //   F[major]: 31:24
-  // constant-only read
-  assign revision_major_qs = 8'h2;
-
-
-  // R[parameter_block_type]: V(False)
-  // constant-only read
-  assign parameter_block_type_qs = 32'h0;
-
-
-  // R[parameter_block_length]: V(False)
-  // constant-only read
-  assign parameter_block_length_qs = 32'hc;
-
-
-  // R[next_parameter_block]: V(False)
-  // constant-only read
-  assign next_parameter_block_qs = 32'h0;
-
-
   // R[intr_state]: V(False)
   prim_subreg #(
     .DW      (1),
@@ -982,25 +936,20 @@ module otbn_reg_top (
 
 
 
-  logic [15:0] addr_hit;
+  logic [10:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[ 0] = (reg_addr == OTBN_CIP_ID_OFFSET);
-    addr_hit[ 1] = (reg_addr == OTBN_REVISION_OFFSET);
-    addr_hit[ 2] = (reg_addr == OTBN_PARAMETER_BLOCK_TYPE_OFFSET);
-    addr_hit[ 3] = (reg_addr == OTBN_PARAMETER_BLOCK_LENGTH_OFFSET);
-    addr_hit[ 4] = (reg_addr == OTBN_NEXT_PARAMETER_BLOCK_OFFSET);
-    addr_hit[ 5] = (reg_addr == OTBN_INTR_STATE_OFFSET);
-    addr_hit[ 6] = (reg_addr == OTBN_INTR_ENABLE_OFFSET);
-    addr_hit[ 7] = (reg_addr == OTBN_INTR_TEST_OFFSET);
-    addr_hit[ 8] = (reg_addr == OTBN_ALERT_TEST_OFFSET);
-    addr_hit[ 9] = (reg_addr == OTBN_CMD_OFFSET);
-    addr_hit[10] = (reg_addr == OTBN_CTRL_OFFSET);
-    addr_hit[11] = (reg_addr == OTBN_STATUS_OFFSET);
-    addr_hit[12] = (reg_addr == OTBN_ERR_BITS_OFFSET);
-    addr_hit[13] = (reg_addr == OTBN_FATAL_ALERT_CAUSE_OFFSET);
-    addr_hit[14] = (reg_addr == OTBN_INSN_CNT_OFFSET);
-    addr_hit[15] = (reg_addr == OTBN_LOAD_CHECKSUM_OFFSET);
+    addr_hit[ 0] = (reg_addr == OTBN_INTR_STATE_OFFSET);
+    addr_hit[ 1] = (reg_addr == OTBN_INTR_ENABLE_OFFSET);
+    addr_hit[ 2] = (reg_addr == OTBN_INTR_TEST_OFFSET);
+    addr_hit[ 3] = (reg_addr == OTBN_ALERT_TEST_OFFSET);
+    addr_hit[ 4] = (reg_addr == OTBN_CMD_OFFSET);
+    addr_hit[ 5] = (reg_addr == OTBN_CTRL_OFFSET);
+    addr_hit[ 6] = (reg_addr == OTBN_STATUS_OFFSET);
+    addr_hit[ 7] = (reg_addr == OTBN_ERR_BITS_OFFSET);
+    addr_hit[ 8] = (reg_addr == OTBN_FATAL_ALERT_CAUSE_OFFSET);
+    addr_hit[ 9] = (reg_addr == OTBN_INSN_CNT_OFFSET);
+    addr_hit[10] = (reg_addr == OTBN_LOAD_CHECKSUM_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1018,38 +967,33 @@ module otbn_reg_top (
                (addr_hit[ 7] & (|(OTBN_PERMIT[ 7] & ~reg_be))) |
                (addr_hit[ 8] & (|(OTBN_PERMIT[ 8] & ~reg_be))) |
                (addr_hit[ 9] & (|(OTBN_PERMIT[ 9] & ~reg_be))) |
-               (addr_hit[10] & (|(OTBN_PERMIT[10] & ~reg_be))) |
-               (addr_hit[11] & (|(OTBN_PERMIT[11] & ~reg_be))) |
-               (addr_hit[12] & (|(OTBN_PERMIT[12] & ~reg_be))) |
-               (addr_hit[13] & (|(OTBN_PERMIT[13] & ~reg_be))) |
-               (addr_hit[14] & (|(OTBN_PERMIT[14] & ~reg_be))) |
-               (addr_hit[15] & (|(OTBN_PERMIT[15] & ~reg_be)))));
+               (addr_hit[10] & (|(OTBN_PERMIT[10] & ~reg_be)))));
   end
 
   // Generate write-enables
-  assign intr_state_we = addr_hit[5] & reg_we & !reg_error;
+  assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
   assign intr_state_wd = reg_wdata[0];
-  assign intr_enable_we = addr_hit[6] & reg_we & !reg_error;
+  assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
   assign intr_enable_wd = reg_wdata[0];
-  assign intr_test_we = addr_hit[7] & reg_we & !reg_error;
+  assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
   assign intr_test_wd = reg_wdata[0];
-  assign alert_test_we = addr_hit[8] & reg_we & !reg_error;
+  assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
 
   assign alert_test_fatal_wd = reg_wdata[0];
 
   assign alert_test_recov_wd = reg_wdata[1];
-  assign cmd_we = addr_hit[9] & reg_we & !reg_error;
+  assign cmd_we = addr_hit[4] & reg_we & !reg_error;
 
   assign cmd_wd = reg_wdata[7:0];
-  assign ctrl_re = addr_hit[10] & reg_re & !reg_error;
-  assign ctrl_we = addr_hit[10] & reg_we & !reg_error;
+  assign ctrl_re = addr_hit[5] & reg_re & !reg_error;
+  assign ctrl_we = addr_hit[5] & reg_we & !reg_error;
 
   assign ctrl_wd = reg_wdata[0];
-  assign err_bits_re = addr_hit[12] & reg_re & !reg_error;
-  assign err_bits_we = addr_hit[12] & reg_we & !reg_error;
+  assign err_bits_re = addr_hit[7] & reg_re & !reg_error;
+  assign err_bits_we = addr_hit[7] & reg_we & !reg_error;
 
   assign err_bits_bad_data_addr_wd = reg_wdata[0];
 
@@ -1082,34 +1026,29 @@ module otbn_reg_top (
   assign err_bits_lifecycle_escalation_wd = reg_wdata[22];
 
   assign err_bits_fatal_software_wd = reg_wdata[23];
-  assign insn_cnt_re = addr_hit[14] & reg_re & !reg_error;
-  assign insn_cnt_we = addr_hit[14] & reg_we & !reg_error;
+  assign insn_cnt_re = addr_hit[9] & reg_re & !reg_error;
+  assign insn_cnt_we = addr_hit[9] & reg_we & !reg_error;
 
   assign insn_cnt_wd = reg_wdata[31:0];
-  assign load_checksum_re = addr_hit[15] & reg_re & !reg_error;
-  assign load_checksum_we = addr_hit[15] & reg_we & !reg_error;
+  assign load_checksum_re = addr_hit[10] & reg_re & !reg_error;
+  assign load_checksum_we = addr_hit[10] & reg_we & !reg_error;
 
   assign load_checksum_wd = reg_wdata[31:0];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
-    reg_we_check[0] = 1'b0;
-    reg_we_check[1] = 1'b0;
-    reg_we_check[2] = 1'b0;
-    reg_we_check[3] = 1'b0;
-    reg_we_check[4] = 1'b0;
-    reg_we_check[5] = intr_state_we;
-    reg_we_check[6] = intr_enable_we;
-    reg_we_check[7] = intr_test_we;
-    reg_we_check[8] = alert_test_we;
-    reg_we_check[9] = cmd_we;
-    reg_we_check[10] = ctrl_we;
-    reg_we_check[11] = 1'b0;
-    reg_we_check[12] = err_bits_we;
-    reg_we_check[13] = 1'b0;
-    reg_we_check[14] = insn_cnt_we;
-    reg_we_check[15] = load_checksum_we;
+    reg_we_check[0] = intr_state_we;
+    reg_we_check[1] = intr_enable_we;
+    reg_we_check[2] = intr_test_we;
+    reg_we_check[3] = alert_test_we;
+    reg_we_check[4] = cmd_we;
+    reg_we_check[5] = ctrl_we;
+    reg_we_check[6] = 1'b0;
+    reg_we_check[7] = err_bits_we;
+    reg_we_check[8] = 1'b0;
+    reg_we_check[9] = insn_cnt_we;
+    reg_we_check[10] = load_checksum_we;
   end
 
   // Read data return
@@ -1117,58 +1056,35 @@ module otbn_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[31:0] = cip_id_qs;
-      end
-
-      addr_hit[1]: begin
-        reg_rdata_next[7:0] = revision_reserved_qs;
-        reg_rdata_next[15:8] = revision_subminor_qs;
-        reg_rdata_next[23:16] = revision_minor_qs;
-        reg_rdata_next[31:24] = revision_major_qs;
-      end
-
-      addr_hit[2]: begin
-        reg_rdata_next[31:0] = parameter_block_type_qs;
-      end
-
-      addr_hit[3]: begin
-        reg_rdata_next[31:0] = parameter_block_length_qs;
-      end
-
-      addr_hit[4]: begin
-        reg_rdata_next[31:0] = next_parameter_block_qs;
-      end
-
-      addr_hit[5]: begin
         reg_rdata_next[0] = intr_state_qs;
       end
 
-      addr_hit[6]: begin
+      addr_hit[1]: begin
         reg_rdata_next[0] = intr_enable_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[2]: begin
         reg_rdata_next[0] = '0;
       end
 
-      addr_hit[8]: begin
+      addr_hit[3]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
       end
 
-      addr_hit[9]: begin
+      addr_hit[4]: begin
         reg_rdata_next[7:0] = '0;
       end
 
-      addr_hit[10]: begin
+      addr_hit[5]: begin
         reg_rdata_next[0] = ctrl_qs;
       end
 
-      addr_hit[11]: begin
+      addr_hit[6]: begin
         reg_rdata_next[7:0] = status_qs;
       end
 
-      addr_hit[12]: begin
+      addr_hit[7]: begin
         reg_rdata_next[0] = err_bits_bad_data_addr_qs;
         reg_rdata_next[1] = err_bits_bad_insn_addr_qs;
         reg_rdata_next[2] = err_bits_call_stack_qs;
@@ -1187,7 +1103,7 @@ module otbn_reg_top (
         reg_rdata_next[23] = err_bits_fatal_software_qs;
       end
 
-      addr_hit[13]: begin
+      addr_hit[8]: begin
         reg_rdata_next[0] = fatal_alert_cause_imem_intg_violation_qs;
         reg_rdata_next[1] = fatal_alert_cause_dmem_intg_violation_qs;
         reg_rdata_next[2] = fatal_alert_cause_reg_intg_violation_qs;
@@ -1198,11 +1114,11 @@ module otbn_reg_top (
         reg_rdata_next[7] = fatal_alert_cause_fatal_software_qs;
       end
 
-      addr_hit[14]: begin
+      addr_hit[9]: begin
         reg_rdata_next[31:0] = insn_cnt_qs;
       end
 
-      addr_hit[15]: begin
+      addr_hit[10]: begin
         reg_rdata_next[31:0] = load_checksum_qs;
       end
 

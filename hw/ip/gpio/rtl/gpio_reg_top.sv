@@ -24,7 +24,7 @@ module gpio_reg_top (
 
   import gpio_reg_pkg::* ;
 
-  localparam int AW = 7;
+  localparam int AW = 6;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -55,9 +55,9 @@ module gpio_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [20:0] reg_we_check;
+  logic [15:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(21)
+    .OneHotWidth(16)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -124,14 +124,6 @@ module gpio_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic [31:0] cip_id_qs;
-  logic [7:0] revision_reserved_qs;
-  logic [7:0] revision_subminor_qs;
-  logic [7:0] revision_minor_qs;
-  logic [7:0] revision_major_qs;
-  logic [31:0] parameter_block_type_qs;
-  logic [31:0] parameter_block_length_qs;
-  logic [31:0] next_parameter_block_qs;
   logic intr_state_we;
   logic [31:0] intr_state_qs;
   logic [31:0] intr_state_wd;
@@ -190,44 +182,6 @@ module gpio_reg_top (
   logic [31:0] ctrl_en_input_filter_wd;
 
   // Register instances
-  // R[cip_id]: V(False)
-  // constant-only read
-  assign cip_id_qs = 32'h9;
-
-
-  // R[revision]: V(False)
-  //   F[reserved]: 7:0
-  // constant-only read
-  assign revision_reserved_qs = 8'h0;
-
-  //   F[subminor]: 15:8
-  // constant-only read
-  assign revision_subminor_qs = 8'h0;
-
-  //   F[minor]: 23:16
-  // constant-only read
-  assign revision_minor_qs = 8'h0;
-
-  //   F[major]: 31:24
-  // constant-only read
-  assign revision_major_qs = 8'h2;
-
-
-  // R[parameter_block_type]: V(False)
-  // constant-only read
-  assign parameter_block_type_qs = 32'h0;
-
-
-  // R[parameter_block_length]: V(False)
-  // constant-only read
-  assign parameter_block_length_qs = 32'hc;
-
-
-  // R[next_parameter_block]: V(False)
-  // constant-only read
-  assign next_parameter_block_qs = 32'h0;
-
-
   // R[intr_state]: V(False)
   prim_subreg #(
     .DW      (32),
@@ -673,30 +627,25 @@ module gpio_reg_top (
 
 
 
-  logic [20:0] addr_hit;
+  logic [15:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[ 0] = (reg_addr == GPIO_CIP_ID_OFFSET);
-    addr_hit[ 1] = (reg_addr == GPIO_REVISION_OFFSET);
-    addr_hit[ 2] = (reg_addr == GPIO_PARAMETER_BLOCK_TYPE_OFFSET);
-    addr_hit[ 3] = (reg_addr == GPIO_PARAMETER_BLOCK_LENGTH_OFFSET);
-    addr_hit[ 4] = (reg_addr == GPIO_NEXT_PARAMETER_BLOCK_OFFSET);
-    addr_hit[ 5] = (reg_addr == GPIO_INTR_STATE_OFFSET);
-    addr_hit[ 6] = (reg_addr == GPIO_INTR_ENABLE_OFFSET);
-    addr_hit[ 7] = (reg_addr == GPIO_INTR_TEST_OFFSET);
-    addr_hit[ 8] = (reg_addr == GPIO_ALERT_TEST_OFFSET);
-    addr_hit[ 9] = (reg_addr == GPIO_DATA_IN_OFFSET);
-    addr_hit[10] = (reg_addr == GPIO_DIRECT_OUT_OFFSET);
-    addr_hit[11] = (reg_addr == GPIO_MASKED_OUT_LOWER_OFFSET);
-    addr_hit[12] = (reg_addr == GPIO_MASKED_OUT_UPPER_OFFSET);
-    addr_hit[13] = (reg_addr == GPIO_DIRECT_OE_OFFSET);
-    addr_hit[14] = (reg_addr == GPIO_MASKED_OE_LOWER_OFFSET);
-    addr_hit[15] = (reg_addr == GPIO_MASKED_OE_UPPER_OFFSET);
-    addr_hit[16] = (reg_addr == GPIO_INTR_CTRL_EN_RISING_OFFSET);
-    addr_hit[17] = (reg_addr == GPIO_INTR_CTRL_EN_FALLING_OFFSET);
-    addr_hit[18] = (reg_addr == GPIO_INTR_CTRL_EN_LVLHIGH_OFFSET);
-    addr_hit[19] = (reg_addr == GPIO_INTR_CTRL_EN_LVLLOW_OFFSET);
-    addr_hit[20] = (reg_addr == GPIO_CTRL_EN_INPUT_FILTER_OFFSET);
+    addr_hit[ 0] = (reg_addr == GPIO_INTR_STATE_OFFSET);
+    addr_hit[ 1] = (reg_addr == GPIO_INTR_ENABLE_OFFSET);
+    addr_hit[ 2] = (reg_addr == GPIO_INTR_TEST_OFFSET);
+    addr_hit[ 3] = (reg_addr == GPIO_ALERT_TEST_OFFSET);
+    addr_hit[ 4] = (reg_addr == GPIO_DATA_IN_OFFSET);
+    addr_hit[ 5] = (reg_addr == GPIO_DIRECT_OUT_OFFSET);
+    addr_hit[ 6] = (reg_addr == GPIO_MASKED_OUT_LOWER_OFFSET);
+    addr_hit[ 7] = (reg_addr == GPIO_MASKED_OUT_UPPER_OFFSET);
+    addr_hit[ 8] = (reg_addr == GPIO_DIRECT_OE_OFFSET);
+    addr_hit[ 9] = (reg_addr == GPIO_MASKED_OE_LOWER_OFFSET);
+    addr_hit[10] = (reg_addr == GPIO_MASKED_OE_UPPER_OFFSET);
+    addr_hit[11] = (reg_addr == GPIO_INTR_CTRL_EN_RISING_OFFSET);
+    addr_hit[12] = (reg_addr == GPIO_INTR_CTRL_EN_FALLING_OFFSET);
+    addr_hit[13] = (reg_addr == GPIO_INTR_CTRL_EN_LVLHIGH_OFFSET);
+    addr_hit[14] = (reg_addr == GPIO_INTR_CTRL_EN_LVLLOW_OFFSET);
+    addr_hit[15] = (reg_addr == GPIO_CTRL_EN_INPUT_FILTER_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -719,99 +668,89 @@ module gpio_reg_top (
                (addr_hit[12] & (|(GPIO_PERMIT[12] & ~reg_be))) |
                (addr_hit[13] & (|(GPIO_PERMIT[13] & ~reg_be))) |
                (addr_hit[14] & (|(GPIO_PERMIT[14] & ~reg_be))) |
-               (addr_hit[15] & (|(GPIO_PERMIT[15] & ~reg_be))) |
-               (addr_hit[16] & (|(GPIO_PERMIT[16] & ~reg_be))) |
-               (addr_hit[17] & (|(GPIO_PERMIT[17] & ~reg_be))) |
-               (addr_hit[18] & (|(GPIO_PERMIT[18] & ~reg_be))) |
-               (addr_hit[19] & (|(GPIO_PERMIT[19] & ~reg_be))) |
-               (addr_hit[20] & (|(GPIO_PERMIT[20] & ~reg_be)))));
+               (addr_hit[15] & (|(GPIO_PERMIT[15] & ~reg_be)))));
   end
 
   // Generate write-enables
-  assign intr_state_we = addr_hit[5] & reg_we & !reg_error;
+  assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
   assign intr_state_wd = reg_wdata[31:0];
-  assign intr_enable_we = addr_hit[6] & reg_we & !reg_error;
+  assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
   assign intr_enable_wd = reg_wdata[31:0];
-  assign intr_test_we = addr_hit[7] & reg_we & !reg_error;
+  assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
   assign intr_test_wd = reg_wdata[31:0];
-  assign alert_test_we = addr_hit[8] & reg_we & !reg_error;
+  assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
-  assign direct_out_re = addr_hit[10] & reg_re & !reg_error;
-  assign direct_out_we = addr_hit[10] & reg_we & !reg_error;
+  assign direct_out_re = addr_hit[5] & reg_re & !reg_error;
+  assign direct_out_we = addr_hit[5] & reg_we & !reg_error;
 
   assign direct_out_wd = reg_wdata[31:0];
-  assign masked_out_lower_re = addr_hit[11] & reg_re & !reg_error;
-  assign masked_out_lower_we = addr_hit[11] & reg_we & !reg_error;
+  assign masked_out_lower_re = addr_hit[6] & reg_re & !reg_error;
+  assign masked_out_lower_we = addr_hit[6] & reg_we & !reg_error;
 
   assign masked_out_lower_data_wd = reg_wdata[15:0];
 
   assign masked_out_lower_mask_wd = reg_wdata[31:16];
-  assign masked_out_upper_re = addr_hit[12] & reg_re & !reg_error;
-  assign masked_out_upper_we = addr_hit[12] & reg_we & !reg_error;
+  assign masked_out_upper_re = addr_hit[7] & reg_re & !reg_error;
+  assign masked_out_upper_we = addr_hit[7] & reg_we & !reg_error;
 
   assign masked_out_upper_data_wd = reg_wdata[15:0];
 
   assign masked_out_upper_mask_wd = reg_wdata[31:16];
-  assign direct_oe_re = addr_hit[13] & reg_re & !reg_error;
-  assign direct_oe_we = addr_hit[13] & reg_we & !reg_error;
+  assign direct_oe_re = addr_hit[8] & reg_re & !reg_error;
+  assign direct_oe_we = addr_hit[8] & reg_we & !reg_error;
 
   assign direct_oe_wd = reg_wdata[31:0];
-  assign masked_oe_lower_re = addr_hit[14] & reg_re & !reg_error;
-  assign masked_oe_lower_we = addr_hit[14] & reg_we & !reg_error;
+  assign masked_oe_lower_re = addr_hit[9] & reg_re & !reg_error;
+  assign masked_oe_lower_we = addr_hit[9] & reg_we & !reg_error;
 
   assign masked_oe_lower_data_wd = reg_wdata[15:0];
 
   assign masked_oe_lower_mask_wd = reg_wdata[31:16];
-  assign masked_oe_upper_re = addr_hit[15] & reg_re & !reg_error;
-  assign masked_oe_upper_we = addr_hit[15] & reg_we & !reg_error;
+  assign masked_oe_upper_re = addr_hit[10] & reg_re & !reg_error;
+  assign masked_oe_upper_we = addr_hit[10] & reg_we & !reg_error;
 
   assign masked_oe_upper_data_wd = reg_wdata[15:0];
 
   assign masked_oe_upper_mask_wd = reg_wdata[31:16];
-  assign intr_ctrl_en_rising_we = addr_hit[16] & reg_we & !reg_error;
+  assign intr_ctrl_en_rising_we = addr_hit[11] & reg_we & !reg_error;
 
   assign intr_ctrl_en_rising_wd = reg_wdata[31:0];
-  assign intr_ctrl_en_falling_we = addr_hit[17] & reg_we & !reg_error;
+  assign intr_ctrl_en_falling_we = addr_hit[12] & reg_we & !reg_error;
 
   assign intr_ctrl_en_falling_wd = reg_wdata[31:0];
-  assign intr_ctrl_en_lvlhigh_we = addr_hit[18] & reg_we & !reg_error;
+  assign intr_ctrl_en_lvlhigh_we = addr_hit[13] & reg_we & !reg_error;
 
   assign intr_ctrl_en_lvlhigh_wd = reg_wdata[31:0];
-  assign intr_ctrl_en_lvllow_we = addr_hit[19] & reg_we & !reg_error;
+  assign intr_ctrl_en_lvllow_we = addr_hit[14] & reg_we & !reg_error;
 
   assign intr_ctrl_en_lvllow_wd = reg_wdata[31:0];
-  assign ctrl_en_input_filter_we = addr_hit[20] & reg_we & !reg_error;
+  assign ctrl_en_input_filter_we = addr_hit[15] & reg_we & !reg_error;
 
   assign ctrl_en_input_filter_wd = reg_wdata[31:0];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
-    reg_we_check[0] = 1'b0;
-    reg_we_check[1] = 1'b0;
-    reg_we_check[2] = 1'b0;
-    reg_we_check[3] = 1'b0;
+    reg_we_check[0] = intr_state_we;
+    reg_we_check[1] = intr_enable_we;
+    reg_we_check[2] = intr_test_we;
+    reg_we_check[3] = alert_test_we;
     reg_we_check[4] = 1'b0;
-    reg_we_check[5] = intr_state_we;
-    reg_we_check[6] = intr_enable_we;
-    reg_we_check[7] = intr_test_we;
-    reg_we_check[8] = alert_test_we;
-    reg_we_check[9] = 1'b0;
-    reg_we_check[10] = direct_out_we;
-    reg_we_check[11] = masked_out_lower_we;
-    reg_we_check[12] = masked_out_upper_we;
-    reg_we_check[13] = direct_oe_we;
-    reg_we_check[14] = masked_oe_lower_we;
-    reg_we_check[15] = masked_oe_upper_we;
-    reg_we_check[16] = intr_ctrl_en_rising_we;
-    reg_we_check[17] = intr_ctrl_en_falling_we;
-    reg_we_check[18] = intr_ctrl_en_lvlhigh_we;
-    reg_we_check[19] = intr_ctrl_en_lvllow_we;
-    reg_we_check[20] = ctrl_en_input_filter_we;
+    reg_we_check[5] = direct_out_we;
+    reg_we_check[6] = masked_out_lower_we;
+    reg_we_check[7] = masked_out_upper_we;
+    reg_we_check[8] = direct_oe_we;
+    reg_we_check[9] = masked_oe_lower_we;
+    reg_we_check[10] = masked_oe_upper_we;
+    reg_we_check[11] = intr_ctrl_en_rising_we;
+    reg_we_check[12] = intr_ctrl_en_falling_we;
+    reg_we_check[13] = intr_ctrl_en_lvlhigh_we;
+    reg_we_check[14] = intr_ctrl_en_lvllow_we;
+    reg_we_check[15] = ctrl_en_input_filter_we;
   end
 
   // Read data return
@@ -819,93 +758,70 @@ module gpio_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[31:0] = cip_id_qs;
-      end
-
-      addr_hit[1]: begin
-        reg_rdata_next[7:0] = revision_reserved_qs;
-        reg_rdata_next[15:8] = revision_subminor_qs;
-        reg_rdata_next[23:16] = revision_minor_qs;
-        reg_rdata_next[31:24] = revision_major_qs;
-      end
-
-      addr_hit[2]: begin
-        reg_rdata_next[31:0] = parameter_block_type_qs;
-      end
-
-      addr_hit[3]: begin
-        reg_rdata_next[31:0] = parameter_block_length_qs;
-      end
-
-      addr_hit[4]: begin
-        reg_rdata_next[31:0] = next_parameter_block_qs;
-      end
-
-      addr_hit[5]: begin
         reg_rdata_next[31:0] = intr_state_qs;
       end
 
-      addr_hit[6]: begin
+      addr_hit[1]: begin
         reg_rdata_next[31:0] = intr_enable_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[2]: begin
         reg_rdata_next[31:0] = '0;
       end
 
-      addr_hit[8]: begin
+      addr_hit[3]: begin
         reg_rdata_next[0] = '0;
       end
 
-      addr_hit[9]: begin
+      addr_hit[4]: begin
         reg_rdata_next[31:0] = data_in_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[5]: begin
         reg_rdata_next[31:0] = direct_out_qs;
       end
 
-      addr_hit[11]: begin
+      addr_hit[6]: begin
         reg_rdata_next[15:0] = masked_out_lower_data_qs;
         reg_rdata_next[31:16] = '0;
       end
 
-      addr_hit[12]: begin
+      addr_hit[7]: begin
         reg_rdata_next[15:0] = masked_out_upper_data_qs;
         reg_rdata_next[31:16] = '0;
       end
 
-      addr_hit[13]: begin
+      addr_hit[8]: begin
         reg_rdata_next[31:0] = direct_oe_qs;
       end
 
-      addr_hit[14]: begin
+      addr_hit[9]: begin
         reg_rdata_next[15:0] = masked_oe_lower_data_qs;
         reg_rdata_next[31:16] = masked_oe_lower_mask_qs;
       end
 
-      addr_hit[15]: begin
+      addr_hit[10]: begin
         reg_rdata_next[15:0] = masked_oe_upper_data_qs;
         reg_rdata_next[31:16] = masked_oe_upper_mask_qs;
       end
 
-      addr_hit[16]: begin
+      addr_hit[11]: begin
         reg_rdata_next[31:0] = intr_ctrl_en_rising_qs;
       end
 
-      addr_hit[17]: begin
+      addr_hit[12]: begin
         reg_rdata_next[31:0] = intr_ctrl_en_falling_qs;
       end
 
-      addr_hit[18]: begin
+      addr_hit[13]: begin
         reg_rdata_next[31:0] = intr_ctrl_en_lvlhigh_qs;
       end
 
-      addr_hit[19]: begin
+      addr_hit[14]: begin
         reg_rdata_next[31:0] = intr_ctrl_en_lvllow_qs;
       end
 
-      addr_hit[20]: begin
+      addr_hit[15]: begin
         reg_rdata_next[31:0] = ctrl_en_input_filter_qs;
       end
 

@@ -104,13 +104,8 @@ package rv_timer_reg_pkg;
   } rv_timer_hw2reg_t;
 
   // Register offsets
-  parameter logic [BlockAw-1:0] RV_TIMER_CIP_ID_OFFSET = 9'h 0;
-  parameter logic [BlockAw-1:0] RV_TIMER_REVISION_OFFSET = 9'h 4;
-  parameter logic [BlockAw-1:0] RV_TIMER_PARAMETER_BLOCK_TYPE_OFFSET = 9'h 8;
-  parameter logic [BlockAw-1:0] RV_TIMER_PARAMETER_BLOCK_LENGTH_OFFSET = 9'h c;
-  parameter logic [BlockAw-1:0] RV_TIMER_NEXT_PARAMETER_BLOCK_OFFSET = 9'h 10;
-  parameter logic [BlockAw-1:0] RV_TIMER_ALERT_TEST_OFFSET = 9'h 40;
-  parameter logic [BlockAw-1:0] RV_TIMER_CTRL_OFFSET = 9'h 44;
+  parameter logic [BlockAw-1:0] RV_TIMER_ALERT_TEST_OFFSET = 9'h 0;
+  parameter logic [BlockAw-1:0] RV_TIMER_CTRL_OFFSET = 9'h 4;
   parameter logic [BlockAw-1:0] RV_TIMER_INTR_ENABLE0_OFFSET = 9'h 100;
   parameter logic [BlockAw-1:0] RV_TIMER_INTR_STATE0_OFFSET = 9'h 104;
   parameter logic [BlockAw-1:0] RV_TIMER_INTR_TEST0_OFFSET = 9'h 108;
@@ -127,11 +122,6 @@ package rv_timer_reg_pkg;
 
   // Register index
   typedef enum int {
-    RV_TIMER_CIP_ID,
-    RV_TIMER_REVISION,
-    RV_TIMER_PARAMETER_BLOCK_TYPE,
-    RV_TIMER_PARAMETER_BLOCK_LENGTH,
-    RV_TIMER_NEXT_PARAMETER_BLOCK,
     RV_TIMER_ALERT_TEST,
     RV_TIMER_CTRL,
     RV_TIMER_INTR_ENABLE0,
@@ -145,22 +135,17 @@ package rv_timer_reg_pkg;
   } rv_timer_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] RV_TIMER_PERMIT [15] = '{
-    4'b 1111, // index[ 0] RV_TIMER_CIP_ID
-    4'b 1111, // index[ 1] RV_TIMER_REVISION
-    4'b 1111, // index[ 2] RV_TIMER_PARAMETER_BLOCK_TYPE
-    4'b 1111, // index[ 3] RV_TIMER_PARAMETER_BLOCK_LENGTH
-    4'b 1111, // index[ 4] RV_TIMER_NEXT_PARAMETER_BLOCK
-    4'b 0001, // index[ 5] RV_TIMER_ALERT_TEST
-    4'b 0001, // index[ 6] RV_TIMER_CTRL
-    4'b 0001, // index[ 7] RV_TIMER_INTR_ENABLE0
-    4'b 0001, // index[ 8] RV_TIMER_INTR_STATE0
-    4'b 0001, // index[ 9] RV_TIMER_INTR_TEST0
-    4'b 0111, // index[10] RV_TIMER_CFG0
-    4'b 1111, // index[11] RV_TIMER_TIMER_V_LOWER0
-    4'b 1111, // index[12] RV_TIMER_TIMER_V_UPPER0
-    4'b 1111, // index[13] RV_TIMER_COMPARE_LOWER0_0
-    4'b 1111  // index[14] RV_TIMER_COMPARE_UPPER0_0
+  parameter logic [3:0] RV_TIMER_PERMIT [10] = '{
+    4'b 0001, // index[0] RV_TIMER_ALERT_TEST
+    4'b 0001, // index[1] RV_TIMER_CTRL
+    4'b 0001, // index[2] RV_TIMER_INTR_ENABLE0
+    4'b 0001, // index[3] RV_TIMER_INTR_STATE0
+    4'b 0001, // index[4] RV_TIMER_INTR_TEST0
+    4'b 0111, // index[5] RV_TIMER_CFG0
+    4'b 1111, // index[6] RV_TIMER_TIMER_V_LOWER0
+    4'b 1111, // index[7] RV_TIMER_TIMER_V_UPPER0
+    4'b 1111, // index[8] RV_TIMER_COMPARE_LOWER0_0
+    4'b 1111  // index[9] RV_TIMER_COMPARE_UPPER0_0
   };
 
 endpackage

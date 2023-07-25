@@ -11,7 +11,7 @@ package rv_dm_reg_pkg;
   parameter int NumAlerts = 1;
 
   // Address widths within the block
-  parameter int RegsAw = 7;
+  parameter int RegsAw = 2;
   parameter int MemAw = 12;
 
   ///////////////////////////////////////////////
@@ -29,12 +29,7 @@ package rv_dm_reg_pkg;
   } rv_dm_regs_reg2hw_t;
 
   // Register offsets for regs interface
-  parameter logic [RegsAw-1:0] RV_DM_CIP_ID_OFFSET = 7'h 0;
-  parameter logic [RegsAw-1:0] RV_DM_REVISION_OFFSET = 7'h 4;
-  parameter logic [RegsAw-1:0] RV_DM_PARAMETER_BLOCK_TYPE_OFFSET = 7'h 8;
-  parameter logic [RegsAw-1:0] RV_DM_PARAMETER_BLOCK_LENGTH_OFFSET = 7'h c;
-  parameter logic [RegsAw-1:0] RV_DM_NEXT_PARAMETER_BLOCK_OFFSET = 7'h 10;
-  parameter logic [RegsAw-1:0] RV_DM_ALERT_TEST_OFFSET = 7'h 40;
+  parameter logic [RegsAw-1:0] RV_DM_ALERT_TEST_OFFSET = 2'h 0;
 
   // Reset values for hwext registers and their fields for regs interface
   parameter logic [0:0] RV_DM_ALERT_TEST_RESVAL = 1'h 0;
@@ -42,22 +37,12 @@ package rv_dm_reg_pkg;
 
   // Register index for regs interface
   typedef enum int {
-    RV_DM_CIP_ID,
-    RV_DM_REVISION,
-    RV_DM_PARAMETER_BLOCK_TYPE,
-    RV_DM_PARAMETER_BLOCK_LENGTH,
-    RV_DM_NEXT_PARAMETER_BLOCK,
     RV_DM_ALERT_TEST
   } rv_dm_regs_id_e;
 
   // Register width information to check illegal writes for regs interface
-  parameter logic [3:0] RV_DM_REGS_PERMIT [6] = '{
-    4'b 1111, // index[0] RV_DM_CIP_ID
-    4'b 1111, // index[1] RV_DM_REVISION
-    4'b 1111, // index[2] RV_DM_PARAMETER_BLOCK_TYPE
-    4'b 1111, // index[3] RV_DM_PARAMETER_BLOCK_LENGTH
-    4'b 1111, // index[4] RV_DM_NEXT_PARAMETER_BLOCK
-    4'b 0001  // index[5] RV_DM_ALERT_TEST
+  parameter logic [3:0] RV_DM_REGS_PERMIT [1] = '{
+    4'b 0001  // index[0] RV_DM_ALERT_TEST
   };
 
   //////////////////////////////////////////////

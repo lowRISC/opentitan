@@ -10,7 +10,7 @@ package clkmgr_reg_pkg;
   parameter int NumGroups = 7;
 
   // Address widths within the block
-  parameter int BlockAw = 7;
+  parameter int BlockAw = 4;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -57,37 +57,22 @@ package clkmgr_reg_pkg;
   } clkmgr_hw2reg_t;
 
   // Register offsets
-  parameter logic [BlockAw-1:0] CLKMGR_CIP_ID_OFFSET = 7'h 0;
-  parameter logic [BlockAw-1:0] CLKMGR_REVISION_OFFSET = 7'h 4;
-  parameter logic [BlockAw-1:0] CLKMGR_PARAMETER_BLOCK_TYPE_OFFSET = 7'h 8;
-  parameter logic [BlockAw-1:0] CLKMGR_PARAMETER_BLOCK_LENGTH_OFFSET = 7'h c;
-  parameter logic [BlockAw-1:0] CLKMGR_NEXT_PARAMETER_BLOCK_OFFSET = 7'h 10;
-  parameter logic [BlockAw-1:0] CLKMGR_CLK_ENABLES_OFFSET = 7'h 40;
-  parameter logic [BlockAw-1:0] CLKMGR_CLK_HINTS_OFFSET = 7'h 44;
-  parameter logic [BlockAw-1:0] CLKMGR_CLK_HINTS_STATUS_OFFSET = 7'h 48;
+  parameter logic [BlockAw-1:0] CLKMGR_CLK_ENABLES_OFFSET = 4'h 0;
+  parameter logic [BlockAw-1:0] CLKMGR_CLK_HINTS_OFFSET = 4'h 4;
+  parameter logic [BlockAw-1:0] CLKMGR_CLK_HINTS_STATUS_OFFSET = 4'h 8;
 
   // Register index
   typedef enum int {
-    CLKMGR_CIP_ID,
-    CLKMGR_REVISION,
-    CLKMGR_PARAMETER_BLOCK_TYPE,
-    CLKMGR_PARAMETER_BLOCK_LENGTH,
-    CLKMGR_NEXT_PARAMETER_BLOCK,
     CLKMGR_CLK_ENABLES,
     CLKMGR_CLK_HINTS,
     CLKMGR_CLK_HINTS_STATUS
   } clkmgr_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] CLKMGR_PERMIT [8] = '{
-    4'b 1111, // index[0] CLKMGR_CIP_ID
-    4'b 1111, // index[1] CLKMGR_REVISION
-    4'b 1111, // index[2] CLKMGR_PARAMETER_BLOCK_TYPE
-    4'b 1111, // index[3] CLKMGR_PARAMETER_BLOCK_LENGTH
-    4'b 1111, // index[4] CLKMGR_NEXT_PARAMETER_BLOCK
-    4'b 0001, // index[5] CLKMGR_CLK_ENABLES
-    4'b 0001, // index[6] CLKMGR_CLK_HINTS
-    4'b 0001  // index[7] CLKMGR_CLK_HINTS_STATUS
+  parameter logic [3:0] CLKMGR_PERMIT [3] = '{
+    4'b 0001, // index[0] CLKMGR_CLK_ENABLES
+    4'b 0001, // index[1] CLKMGR_CLK_HINTS
+    4'b 0001  // index[2] CLKMGR_CLK_HINTS_STATUS
   };
 
 endpackage
