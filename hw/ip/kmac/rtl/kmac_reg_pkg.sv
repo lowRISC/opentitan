@@ -258,72 +258,67 @@ package kmac_reg_pkg;
   } kmac_hw2reg_t;
 
   // Register offsets
-  parameter logic [BlockAw-1:0] KMAC_CIP_ID_OFFSET = 12'h 0;
-  parameter logic [BlockAw-1:0] KMAC_REVISION_OFFSET = 12'h 4;
-  parameter logic [BlockAw-1:0] KMAC_PARAMETER_BLOCK_TYPE_OFFSET = 12'h 8;
-  parameter logic [BlockAw-1:0] KMAC_PARAMETER_BLOCK_LENGTH_OFFSET = 12'h c;
-  parameter logic [BlockAw-1:0] KMAC_NEXT_PARAMETER_BLOCK_OFFSET = 12'h 10;
-  parameter logic [BlockAw-1:0] KMAC_INTR_STATE_OFFSET = 12'h 40;
-  parameter logic [BlockAw-1:0] KMAC_INTR_ENABLE_OFFSET = 12'h 44;
-  parameter logic [BlockAw-1:0] KMAC_INTR_TEST_OFFSET = 12'h 48;
-  parameter logic [BlockAw-1:0] KMAC_ALERT_TEST_OFFSET = 12'h 4c;
-  parameter logic [BlockAw-1:0] KMAC_CFG_REGWEN_OFFSET = 12'h 50;
-  parameter logic [BlockAw-1:0] KMAC_CFG_SHADOWED_OFFSET = 12'h 54;
-  parameter logic [BlockAw-1:0] KMAC_CMD_OFFSET = 12'h 58;
-  parameter logic [BlockAw-1:0] KMAC_STATUS_OFFSET = 12'h 5c;
-  parameter logic [BlockAw-1:0] KMAC_ENTROPY_PERIOD_OFFSET = 12'h 60;
-  parameter logic [BlockAw-1:0] KMAC_ENTROPY_REFRESH_HASH_CNT_OFFSET = 12'h 64;
-  parameter logic [BlockAw-1:0] KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_OFFSET = 12'h 68;
-  parameter logic [BlockAw-1:0] KMAC_ENTROPY_SEED_0_OFFSET = 12'h 6c;
-  parameter logic [BlockAw-1:0] KMAC_ENTROPY_SEED_1_OFFSET = 12'h 70;
-  parameter logic [BlockAw-1:0] KMAC_ENTROPY_SEED_2_OFFSET = 12'h 74;
-  parameter logic [BlockAw-1:0] KMAC_ENTROPY_SEED_3_OFFSET = 12'h 78;
-  parameter logic [BlockAw-1:0] KMAC_ENTROPY_SEED_4_OFFSET = 12'h 7c;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_0_OFFSET = 12'h 80;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_1_OFFSET = 12'h 84;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_2_OFFSET = 12'h 88;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_3_OFFSET = 12'h 8c;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_4_OFFSET = 12'h 90;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_5_OFFSET = 12'h 94;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_6_OFFSET = 12'h 98;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_7_OFFSET = 12'h 9c;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_8_OFFSET = 12'h a0;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_9_OFFSET = 12'h a4;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_10_OFFSET = 12'h a8;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_11_OFFSET = 12'h ac;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_12_OFFSET = 12'h b0;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_13_OFFSET = 12'h b4;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_14_OFFSET = 12'h b8;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_15_OFFSET = 12'h bc;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_0_OFFSET = 12'h c0;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_1_OFFSET = 12'h c4;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_2_OFFSET = 12'h c8;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_3_OFFSET = 12'h cc;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_4_OFFSET = 12'h d0;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_5_OFFSET = 12'h d4;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_6_OFFSET = 12'h d8;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_7_OFFSET = 12'h dc;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_8_OFFSET = 12'h e0;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_9_OFFSET = 12'h e4;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_10_OFFSET = 12'h e8;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_11_OFFSET = 12'h ec;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_12_OFFSET = 12'h f0;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_13_OFFSET = 12'h f4;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_14_OFFSET = 12'h f8;
-  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_15_OFFSET = 12'h fc;
-  parameter logic [BlockAw-1:0] KMAC_KEY_LEN_OFFSET = 12'h 100;
-  parameter logic [BlockAw-1:0] KMAC_PREFIX_0_OFFSET = 12'h 104;
-  parameter logic [BlockAw-1:0] KMAC_PREFIX_1_OFFSET = 12'h 108;
-  parameter logic [BlockAw-1:0] KMAC_PREFIX_2_OFFSET = 12'h 10c;
-  parameter logic [BlockAw-1:0] KMAC_PREFIX_3_OFFSET = 12'h 110;
-  parameter logic [BlockAw-1:0] KMAC_PREFIX_4_OFFSET = 12'h 114;
-  parameter logic [BlockAw-1:0] KMAC_PREFIX_5_OFFSET = 12'h 118;
-  parameter logic [BlockAw-1:0] KMAC_PREFIX_6_OFFSET = 12'h 11c;
-  parameter logic [BlockAw-1:0] KMAC_PREFIX_7_OFFSET = 12'h 120;
-  parameter logic [BlockAw-1:0] KMAC_PREFIX_8_OFFSET = 12'h 124;
-  parameter logic [BlockAw-1:0] KMAC_PREFIX_9_OFFSET = 12'h 128;
-  parameter logic [BlockAw-1:0] KMAC_PREFIX_10_OFFSET = 12'h 12c;
-  parameter logic [BlockAw-1:0] KMAC_ERR_CODE_OFFSET = 12'h 130;
+  parameter logic [BlockAw-1:0] KMAC_INTR_STATE_OFFSET = 12'h 0;
+  parameter logic [BlockAw-1:0] KMAC_INTR_ENABLE_OFFSET = 12'h 4;
+  parameter logic [BlockAw-1:0] KMAC_INTR_TEST_OFFSET = 12'h 8;
+  parameter logic [BlockAw-1:0] KMAC_ALERT_TEST_OFFSET = 12'h c;
+  parameter logic [BlockAw-1:0] KMAC_CFG_REGWEN_OFFSET = 12'h 10;
+  parameter logic [BlockAw-1:0] KMAC_CFG_SHADOWED_OFFSET = 12'h 14;
+  parameter logic [BlockAw-1:0] KMAC_CMD_OFFSET = 12'h 18;
+  parameter logic [BlockAw-1:0] KMAC_STATUS_OFFSET = 12'h 1c;
+  parameter logic [BlockAw-1:0] KMAC_ENTROPY_PERIOD_OFFSET = 12'h 20;
+  parameter logic [BlockAw-1:0] KMAC_ENTROPY_REFRESH_HASH_CNT_OFFSET = 12'h 24;
+  parameter logic [BlockAw-1:0] KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_OFFSET = 12'h 28;
+  parameter logic [BlockAw-1:0] KMAC_ENTROPY_SEED_0_OFFSET = 12'h 2c;
+  parameter logic [BlockAw-1:0] KMAC_ENTROPY_SEED_1_OFFSET = 12'h 30;
+  parameter logic [BlockAw-1:0] KMAC_ENTROPY_SEED_2_OFFSET = 12'h 34;
+  parameter logic [BlockAw-1:0] KMAC_ENTROPY_SEED_3_OFFSET = 12'h 38;
+  parameter logic [BlockAw-1:0] KMAC_ENTROPY_SEED_4_OFFSET = 12'h 3c;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_0_OFFSET = 12'h 40;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_1_OFFSET = 12'h 44;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_2_OFFSET = 12'h 48;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_3_OFFSET = 12'h 4c;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_4_OFFSET = 12'h 50;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_5_OFFSET = 12'h 54;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_6_OFFSET = 12'h 58;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_7_OFFSET = 12'h 5c;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_8_OFFSET = 12'h 60;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_9_OFFSET = 12'h 64;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_10_OFFSET = 12'h 68;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_11_OFFSET = 12'h 6c;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_12_OFFSET = 12'h 70;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_13_OFFSET = 12'h 74;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_14_OFFSET = 12'h 78;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE0_15_OFFSET = 12'h 7c;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_0_OFFSET = 12'h 80;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_1_OFFSET = 12'h 84;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_2_OFFSET = 12'h 88;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_3_OFFSET = 12'h 8c;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_4_OFFSET = 12'h 90;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_5_OFFSET = 12'h 94;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_6_OFFSET = 12'h 98;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_7_OFFSET = 12'h 9c;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_8_OFFSET = 12'h a0;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_9_OFFSET = 12'h a4;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_10_OFFSET = 12'h a8;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_11_OFFSET = 12'h ac;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_12_OFFSET = 12'h b0;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_13_OFFSET = 12'h b4;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_14_OFFSET = 12'h b8;
+  parameter logic [BlockAw-1:0] KMAC_KEY_SHARE1_15_OFFSET = 12'h bc;
+  parameter logic [BlockAw-1:0] KMAC_KEY_LEN_OFFSET = 12'h c0;
+  parameter logic [BlockAw-1:0] KMAC_PREFIX_0_OFFSET = 12'h c4;
+  parameter logic [BlockAw-1:0] KMAC_PREFIX_1_OFFSET = 12'h c8;
+  parameter logic [BlockAw-1:0] KMAC_PREFIX_2_OFFSET = 12'h cc;
+  parameter logic [BlockAw-1:0] KMAC_PREFIX_3_OFFSET = 12'h d0;
+  parameter logic [BlockAw-1:0] KMAC_PREFIX_4_OFFSET = 12'h d4;
+  parameter logic [BlockAw-1:0] KMAC_PREFIX_5_OFFSET = 12'h d8;
+  parameter logic [BlockAw-1:0] KMAC_PREFIX_6_OFFSET = 12'h dc;
+  parameter logic [BlockAw-1:0] KMAC_PREFIX_7_OFFSET = 12'h e0;
+  parameter logic [BlockAw-1:0] KMAC_PREFIX_8_OFFSET = 12'h e4;
+  parameter logic [BlockAw-1:0] KMAC_PREFIX_9_OFFSET = 12'h e8;
+  parameter logic [BlockAw-1:0] KMAC_PREFIX_10_OFFSET = 12'h ec;
+  parameter logic [BlockAw-1:0] KMAC_ERR_CODE_OFFSET = 12'h f0;
 
   // Reset values for hwext registers and their fields
   parameter logic [2:0] KMAC_INTR_TEST_RESVAL = 3'h 0;
@@ -387,11 +382,6 @@ package kmac_reg_pkg;
 
   // Register index
   typedef enum int {
-    KMAC_CIP_ID,
-    KMAC_REVISION,
-    KMAC_PARAMETER_BLOCK_TYPE,
-    KMAC_PARAMETER_BLOCK_LENGTH,
-    KMAC_NEXT_PARAMETER_BLOCK,
     KMAC_INTR_STATE,
     KMAC_INTR_ENABLE,
     KMAC_INTR_TEST,
@@ -456,73 +446,68 @@ package kmac_reg_pkg;
   } kmac_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] KMAC_PERMIT [66] = '{
-    4'b 1111, // index[ 0] KMAC_CIP_ID
-    4'b 1111, // index[ 1] KMAC_REVISION
-    4'b 1111, // index[ 2] KMAC_PARAMETER_BLOCK_TYPE
-    4'b 1111, // index[ 3] KMAC_PARAMETER_BLOCK_LENGTH
-    4'b 1111, // index[ 4] KMAC_NEXT_PARAMETER_BLOCK
-    4'b 0001, // index[ 5] KMAC_INTR_STATE
-    4'b 0001, // index[ 6] KMAC_INTR_ENABLE
-    4'b 0001, // index[ 7] KMAC_INTR_TEST
-    4'b 0001, // index[ 8] KMAC_ALERT_TEST
-    4'b 0001, // index[ 9] KMAC_CFG_REGWEN
-    4'b 1111, // index[10] KMAC_CFG_SHADOWED
-    4'b 0011, // index[11] KMAC_CMD
-    4'b 0111, // index[12] KMAC_STATUS
-    4'b 1111, // index[13] KMAC_ENTROPY_PERIOD
-    4'b 0011, // index[14] KMAC_ENTROPY_REFRESH_HASH_CNT
-    4'b 0011, // index[15] KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED
-    4'b 1111, // index[16] KMAC_ENTROPY_SEED_0
-    4'b 1111, // index[17] KMAC_ENTROPY_SEED_1
-    4'b 1111, // index[18] KMAC_ENTROPY_SEED_2
-    4'b 1111, // index[19] KMAC_ENTROPY_SEED_3
-    4'b 1111, // index[20] KMAC_ENTROPY_SEED_4
-    4'b 1111, // index[21] KMAC_KEY_SHARE0_0
-    4'b 1111, // index[22] KMAC_KEY_SHARE0_1
-    4'b 1111, // index[23] KMAC_KEY_SHARE0_2
-    4'b 1111, // index[24] KMAC_KEY_SHARE0_3
-    4'b 1111, // index[25] KMAC_KEY_SHARE0_4
-    4'b 1111, // index[26] KMAC_KEY_SHARE0_5
-    4'b 1111, // index[27] KMAC_KEY_SHARE0_6
-    4'b 1111, // index[28] KMAC_KEY_SHARE0_7
-    4'b 1111, // index[29] KMAC_KEY_SHARE0_8
-    4'b 1111, // index[30] KMAC_KEY_SHARE0_9
-    4'b 1111, // index[31] KMAC_KEY_SHARE0_10
-    4'b 1111, // index[32] KMAC_KEY_SHARE0_11
-    4'b 1111, // index[33] KMAC_KEY_SHARE0_12
-    4'b 1111, // index[34] KMAC_KEY_SHARE0_13
-    4'b 1111, // index[35] KMAC_KEY_SHARE0_14
-    4'b 1111, // index[36] KMAC_KEY_SHARE0_15
-    4'b 1111, // index[37] KMAC_KEY_SHARE1_0
-    4'b 1111, // index[38] KMAC_KEY_SHARE1_1
-    4'b 1111, // index[39] KMAC_KEY_SHARE1_2
-    4'b 1111, // index[40] KMAC_KEY_SHARE1_3
-    4'b 1111, // index[41] KMAC_KEY_SHARE1_4
-    4'b 1111, // index[42] KMAC_KEY_SHARE1_5
-    4'b 1111, // index[43] KMAC_KEY_SHARE1_6
-    4'b 1111, // index[44] KMAC_KEY_SHARE1_7
-    4'b 1111, // index[45] KMAC_KEY_SHARE1_8
-    4'b 1111, // index[46] KMAC_KEY_SHARE1_9
-    4'b 1111, // index[47] KMAC_KEY_SHARE1_10
-    4'b 1111, // index[48] KMAC_KEY_SHARE1_11
-    4'b 1111, // index[49] KMAC_KEY_SHARE1_12
-    4'b 1111, // index[50] KMAC_KEY_SHARE1_13
-    4'b 1111, // index[51] KMAC_KEY_SHARE1_14
-    4'b 1111, // index[52] KMAC_KEY_SHARE1_15
-    4'b 0001, // index[53] KMAC_KEY_LEN
-    4'b 1111, // index[54] KMAC_PREFIX_0
-    4'b 1111, // index[55] KMAC_PREFIX_1
-    4'b 1111, // index[56] KMAC_PREFIX_2
-    4'b 1111, // index[57] KMAC_PREFIX_3
-    4'b 1111, // index[58] KMAC_PREFIX_4
-    4'b 1111, // index[59] KMAC_PREFIX_5
-    4'b 1111, // index[60] KMAC_PREFIX_6
-    4'b 1111, // index[61] KMAC_PREFIX_7
-    4'b 1111, // index[62] KMAC_PREFIX_8
-    4'b 1111, // index[63] KMAC_PREFIX_9
-    4'b 1111, // index[64] KMAC_PREFIX_10
-    4'b 1111  // index[65] KMAC_ERR_CODE
+  parameter logic [3:0] KMAC_PERMIT [61] = '{
+    4'b 0001, // index[ 0] KMAC_INTR_STATE
+    4'b 0001, // index[ 1] KMAC_INTR_ENABLE
+    4'b 0001, // index[ 2] KMAC_INTR_TEST
+    4'b 0001, // index[ 3] KMAC_ALERT_TEST
+    4'b 0001, // index[ 4] KMAC_CFG_REGWEN
+    4'b 1111, // index[ 5] KMAC_CFG_SHADOWED
+    4'b 0011, // index[ 6] KMAC_CMD
+    4'b 0111, // index[ 7] KMAC_STATUS
+    4'b 1111, // index[ 8] KMAC_ENTROPY_PERIOD
+    4'b 0011, // index[ 9] KMAC_ENTROPY_REFRESH_HASH_CNT
+    4'b 0011, // index[10] KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED
+    4'b 1111, // index[11] KMAC_ENTROPY_SEED_0
+    4'b 1111, // index[12] KMAC_ENTROPY_SEED_1
+    4'b 1111, // index[13] KMAC_ENTROPY_SEED_2
+    4'b 1111, // index[14] KMAC_ENTROPY_SEED_3
+    4'b 1111, // index[15] KMAC_ENTROPY_SEED_4
+    4'b 1111, // index[16] KMAC_KEY_SHARE0_0
+    4'b 1111, // index[17] KMAC_KEY_SHARE0_1
+    4'b 1111, // index[18] KMAC_KEY_SHARE0_2
+    4'b 1111, // index[19] KMAC_KEY_SHARE0_3
+    4'b 1111, // index[20] KMAC_KEY_SHARE0_4
+    4'b 1111, // index[21] KMAC_KEY_SHARE0_5
+    4'b 1111, // index[22] KMAC_KEY_SHARE0_6
+    4'b 1111, // index[23] KMAC_KEY_SHARE0_7
+    4'b 1111, // index[24] KMAC_KEY_SHARE0_8
+    4'b 1111, // index[25] KMAC_KEY_SHARE0_9
+    4'b 1111, // index[26] KMAC_KEY_SHARE0_10
+    4'b 1111, // index[27] KMAC_KEY_SHARE0_11
+    4'b 1111, // index[28] KMAC_KEY_SHARE0_12
+    4'b 1111, // index[29] KMAC_KEY_SHARE0_13
+    4'b 1111, // index[30] KMAC_KEY_SHARE0_14
+    4'b 1111, // index[31] KMAC_KEY_SHARE0_15
+    4'b 1111, // index[32] KMAC_KEY_SHARE1_0
+    4'b 1111, // index[33] KMAC_KEY_SHARE1_1
+    4'b 1111, // index[34] KMAC_KEY_SHARE1_2
+    4'b 1111, // index[35] KMAC_KEY_SHARE1_3
+    4'b 1111, // index[36] KMAC_KEY_SHARE1_4
+    4'b 1111, // index[37] KMAC_KEY_SHARE1_5
+    4'b 1111, // index[38] KMAC_KEY_SHARE1_6
+    4'b 1111, // index[39] KMAC_KEY_SHARE1_7
+    4'b 1111, // index[40] KMAC_KEY_SHARE1_8
+    4'b 1111, // index[41] KMAC_KEY_SHARE1_9
+    4'b 1111, // index[42] KMAC_KEY_SHARE1_10
+    4'b 1111, // index[43] KMAC_KEY_SHARE1_11
+    4'b 1111, // index[44] KMAC_KEY_SHARE1_12
+    4'b 1111, // index[45] KMAC_KEY_SHARE1_13
+    4'b 1111, // index[46] KMAC_KEY_SHARE1_14
+    4'b 1111, // index[47] KMAC_KEY_SHARE1_15
+    4'b 0001, // index[48] KMAC_KEY_LEN
+    4'b 1111, // index[49] KMAC_PREFIX_0
+    4'b 1111, // index[50] KMAC_PREFIX_1
+    4'b 1111, // index[51] KMAC_PREFIX_2
+    4'b 1111, // index[52] KMAC_PREFIX_3
+    4'b 1111, // index[53] KMAC_PREFIX_4
+    4'b 1111, // index[54] KMAC_PREFIX_5
+    4'b 1111, // index[55] KMAC_PREFIX_6
+    4'b 1111, // index[56] KMAC_PREFIX_7
+    4'b 1111, // index[57] KMAC_PREFIX_8
+    4'b 1111, // index[58] KMAC_PREFIX_9
+    4'b 1111, // index[59] KMAC_PREFIX_10
+    4'b 1111  // index[60] KMAC_ERR_CODE
   };
 
 endpackage

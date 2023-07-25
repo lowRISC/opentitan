@@ -9,13 +9,11 @@
   Life Cycle Controller is responsible for handling and guarding transitions between different device life cycle states, concurrently decoding the current life cycle state and redundantly broadcasting encoded life cycle qualification signals across the system, e.g., to control the behavior of Key Manager, Flash Controller, OTP Controller, and debug infrastructure.
   In addition, it features an escalation receiver for the alert system to invalidate the life cycle state as part of an escalation sequence.
   '''
-  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
-  cip_id:             "14",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_lc_ctrl",
-  version:            "2.0.0",
+  version:            "1.0",
   life_stage:         "L1",
   design_stage:       "D3",
   verification_stage: "V2S",

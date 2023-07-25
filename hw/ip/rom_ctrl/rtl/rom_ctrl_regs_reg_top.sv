@@ -24,7 +24,7 @@ module rom_ctrl_regs_reg_top (
 
   import rom_ctrl_reg_pkg::* ;
 
-  localparam int AW = 8;
+  localparam int AW = 7;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -55,9 +55,9 @@ module rom_ctrl_regs_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [22:0] reg_we_check;
+  logic [17:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(23)
+    .OneHotWidth(18)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -124,14 +124,6 @@ module rom_ctrl_regs_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic [31:0] cip_id_qs;
-  logic [7:0] revision_reserved_qs;
-  logic [7:0] revision_subminor_qs;
-  logic [7:0] revision_minor_qs;
-  logic [7:0] revision_major_qs;
-  logic [31:0] parameter_block_type_qs;
-  logic [31:0] parameter_block_length_qs;
-  logic [31:0] next_parameter_block_qs;
   logic alert_test_we;
   logic alert_test_wd;
   logic fatal_alert_cause_checker_error_qs;
@@ -154,44 +146,6 @@ module rom_ctrl_regs_reg_top (
   logic [31:0] exp_digest_7_qs;
 
   // Register instances
-  // R[cip_id]: V(False)
-  // constant-only read
-  assign cip_id_qs = 32'h15;
-
-
-  // R[revision]: V(False)
-  //   F[reserved]: 7:0
-  // constant-only read
-  assign revision_reserved_qs = 8'h0;
-
-  //   F[subminor]: 15:8
-  // constant-only read
-  assign revision_subminor_qs = 8'h0;
-
-  //   F[minor]: 23:16
-  // constant-only read
-  assign revision_minor_qs = 8'h0;
-
-  //   F[major]: 31:24
-  // constant-only read
-  assign revision_major_qs = 8'h2;
-
-
-  // R[parameter_block_type]: V(False)
-  // constant-only read
-  assign parameter_block_type_qs = 32'h0;
-
-
-  // R[parameter_block_length]: V(False)
-  // constant-only read
-  assign parameter_block_length_qs = 32'hc;
-
-
-  // R[next_parameter_block]: V(False)
-  // constant-only read
-  assign next_parameter_block_qs = 32'h0;
-
-
   // R[alert_test]: V(True)
   logic alert_test_qe;
   logic [0:0] alert_test_flds_we;
@@ -715,32 +669,27 @@ module rom_ctrl_regs_reg_top (
 
 
 
-  logic [22:0] addr_hit;
+  logic [17:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[ 0] = (reg_addr == ROM_CTRL_CIP_ID_OFFSET);
-    addr_hit[ 1] = (reg_addr == ROM_CTRL_REVISION_OFFSET);
-    addr_hit[ 2] = (reg_addr == ROM_CTRL_PARAMETER_BLOCK_TYPE_OFFSET);
-    addr_hit[ 3] = (reg_addr == ROM_CTRL_PARAMETER_BLOCK_LENGTH_OFFSET);
-    addr_hit[ 4] = (reg_addr == ROM_CTRL_NEXT_PARAMETER_BLOCK_OFFSET);
-    addr_hit[ 5] = (reg_addr == ROM_CTRL_ALERT_TEST_OFFSET);
-    addr_hit[ 6] = (reg_addr == ROM_CTRL_FATAL_ALERT_CAUSE_OFFSET);
-    addr_hit[ 7] = (reg_addr == ROM_CTRL_DIGEST_0_OFFSET);
-    addr_hit[ 8] = (reg_addr == ROM_CTRL_DIGEST_1_OFFSET);
-    addr_hit[ 9] = (reg_addr == ROM_CTRL_DIGEST_2_OFFSET);
-    addr_hit[10] = (reg_addr == ROM_CTRL_DIGEST_3_OFFSET);
-    addr_hit[11] = (reg_addr == ROM_CTRL_DIGEST_4_OFFSET);
-    addr_hit[12] = (reg_addr == ROM_CTRL_DIGEST_5_OFFSET);
-    addr_hit[13] = (reg_addr == ROM_CTRL_DIGEST_6_OFFSET);
-    addr_hit[14] = (reg_addr == ROM_CTRL_DIGEST_7_OFFSET);
-    addr_hit[15] = (reg_addr == ROM_CTRL_EXP_DIGEST_0_OFFSET);
-    addr_hit[16] = (reg_addr == ROM_CTRL_EXP_DIGEST_1_OFFSET);
-    addr_hit[17] = (reg_addr == ROM_CTRL_EXP_DIGEST_2_OFFSET);
-    addr_hit[18] = (reg_addr == ROM_CTRL_EXP_DIGEST_3_OFFSET);
-    addr_hit[19] = (reg_addr == ROM_CTRL_EXP_DIGEST_4_OFFSET);
-    addr_hit[20] = (reg_addr == ROM_CTRL_EXP_DIGEST_5_OFFSET);
-    addr_hit[21] = (reg_addr == ROM_CTRL_EXP_DIGEST_6_OFFSET);
-    addr_hit[22] = (reg_addr == ROM_CTRL_EXP_DIGEST_7_OFFSET);
+    addr_hit[ 0] = (reg_addr == ROM_CTRL_ALERT_TEST_OFFSET);
+    addr_hit[ 1] = (reg_addr == ROM_CTRL_FATAL_ALERT_CAUSE_OFFSET);
+    addr_hit[ 2] = (reg_addr == ROM_CTRL_DIGEST_0_OFFSET);
+    addr_hit[ 3] = (reg_addr == ROM_CTRL_DIGEST_1_OFFSET);
+    addr_hit[ 4] = (reg_addr == ROM_CTRL_DIGEST_2_OFFSET);
+    addr_hit[ 5] = (reg_addr == ROM_CTRL_DIGEST_3_OFFSET);
+    addr_hit[ 6] = (reg_addr == ROM_CTRL_DIGEST_4_OFFSET);
+    addr_hit[ 7] = (reg_addr == ROM_CTRL_DIGEST_5_OFFSET);
+    addr_hit[ 8] = (reg_addr == ROM_CTRL_DIGEST_6_OFFSET);
+    addr_hit[ 9] = (reg_addr == ROM_CTRL_DIGEST_7_OFFSET);
+    addr_hit[10] = (reg_addr == ROM_CTRL_EXP_DIGEST_0_OFFSET);
+    addr_hit[11] = (reg_addr == ROM_CTRL_EXP_DIGEST_1_OFFSET);
+    addr_hit[12] = (reg_addr == ROM_CTRL_EXP_DIGEST_2_OFFSET);
+    addr_hit[13] = (reg_addr == ROM_CTRL_EXP_DIGEST_3_OFFSET);
+    addr_hit[14] = (reg_addr == ROM_CTRL_EXP_DIGEST_4_OFFSET);
+    addr_hit[15] = (reg_addr == ROM_CTRL_EXP_DIGEST_5_OFFSET);
+    addr_hit[16] = (reg_addr == ROM_CTRL_EXP_DIGEST_6_OFFSET);
+    addr_hit[17] = (reg_addr == ROM_CTRL_EXP_DIGEST_7_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -765,28 +714,23 @@ module rom_ctrl_regs_reg_top (
                (addr_hit[14] & (|(ROM_CTRL_REGS_PERMIT[14] & ~reg_be))) |
                (addr_hit[15] & (|(ROM_CTRL_REGS_PERMIT[15] & ~reg_be))) |
                (addr_hit[16] & (|(ROM_CTRL_REGS_PERMIT[16] & ~reg_be))) |
-               (addr_hit[17] & (|(ROM_CTRL_REGS_PERMIT[17] & ~reg_be))) |
-               (addr_hit[18] & (|(ROM_CTRL_REGS_PERMIT[18] & ~reg_be))) |
-               (addr_hit[19] & (|(ROM_CTRL_REGS_PERMIT[19] & ~reg_be))) |
-               (addr_hit[20] & (|(ROM_CTRL_REGS_PERMIT[20] & ~reg_be))) |
-               (addr_hit[21] & (|(ROM_CTRL_REGS_PERMIT[21] & ~reg_be))) |
-               (addr_hit[22] & (|(ROM_CTRL_REGS_PERMIT[22] & ~reg_be)))));
+               (addr_hit[17] & (|(ROM_CTRL_REGS_PERMIT[17] & ~reg_be)))));
   end
 
   // Generate write-enables
-  assign alert_test_we = addr_hit[5] & reg_we & !reg_error;
+  assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
-    reg_we_check[0] = 1'b0;
+    reg_we_check[0] = alert_test_we;
     reg_we_check[1] = 1'b0;
     reg_we_check[2] = 1'b0;
     reg_we_check[3] = 1'b0;
     reg_we_check[4] = 1'b0;
-    reg_we_check[5] = alert_test_we;
+    reg_we_check[5] = 1'b0;
     reg_we_check[6] = 1'b0;
     reg_we_check[7] = 1'b0;
     reg_we_check[8] = 1'b0;
@@ -799,11 +743,6 @@ module rom_ctrl_regs_reg_top (
     reg_we_check[15] = 1'b0;
     reg_we_check[16] = 1'b0;
     reg_we_check[17] = 1'b0;
-    reg_we_check[18] = 1'b0;
-    reg_we_check[19] = 1'b0;
-    reg_we_check[20] = 1'b0;
-    reg_we_check[21] = 1'b0;
-    reg_we_check[22] = 1'b0;
   end
 
   // Read data return
@@ -811,98 +750,75 @@ module rom_ctrl_regs_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[31:0] = cip_id_qs;
-      end
-
-      addr_hit[1]: begin
-        reg_rdata_next[7:0] = revision_reserved_qs;
-        reg_rdata_next[15:8] = revision_subminor_qs;
-        reg_rdata_next[23:16] = revision_minor_qs;
-        reg_rdata_next[31:24] = revision_major_qs;
-      end
-
-      addr_hit[2]: begin
-        reg_rdata_next[31:0] = parameter_block_type_qs;
-      end
-
-      addr_hit[3]: begin
-        reg_rdata_next[31:0] = parameter_block_length_qs;
-      end
-
-      addr_hit[4]: begin
-        reg_rdata_next[31:0] = next_parameter_block_qs;
-      end
-
-      addr_hit[5]: begin
         reg_rdata_next[0] = '0;
       end
 
-      addr_hit[6]: begin
+      addr_hit[1]: begin
         reg_rdata_next[0] = fatal_alert_cause_checker_error_qs;
         reg_rdata_next[1] = fatal_alert_cause_integrity_error_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[2]: begin
         reg_rdata_next[31:0] = digest_0_qs;
       end
 
-      addr_hit[8]: begin
+      addr_hit[3]: begin
         reg_rdata_next[31:0] = digest_1_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[4]: begin
         reg_rdata_next[31:0] = digest_2_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[5]: begin
         reg_rdata_next[31:0] = digest_3_qs;
       end
 
-      addr_hit[11]: begin
+      addr_hit[6]: begin
         reg_rdata_next[31:0] = digest_4_qs;
       end
 
-      addr_hit[12]: begin
+      addr_hit[7]: begin
         reg_rdata_next[31:0] = digest_5_qs;
       end
 
-      addr_hit[13]: begin
+      addr_hit[8]: begin
         reg_rdata_next[31:0] = digest_6_qs;
       end
 
-      addr_hit[14]: begin
+      addr_hit[9]: begin
         reg_rdata_next[31:0] = digest_7_qs;
       end
 
-      addr_hit[15]: begin
+      addr_hit[10]: begin
         reg_rdata_next[31:0] = exp_digest_0_qs;
       end
 
-      addr_hit[16]: begin
+      addr_hit[11]: begin
         reg_rdata_next[31:0] = exp_digest_1_qs;
       end
 
-      addr_hit[17]: begin
+      addr_hit[12]: begin
         reg_rdata_next[31:0] = exp_digest_2_qs;
       end
 
-      addr_hit[18]: begin
+      addr_hit[13]: begin
         reg_rdata_next[31:0] = exp_digest_3_qs;
       end
 
-      addr_hit[19]: begin
+      addr_hit[14]: begin
         reg_rdata_next[31:0] = exp_digest_4_qs;
       end
 
-      addr_hit[20]: begin
+      addr_hit[15]: begin
         reg_rdata_next[31:0] = exp_digest_5_qs;
       end
 
-      addr_hit[21]: begin
+      addr_hit[16]: begin
         reg_rdata_next[31:0] = exp_digest_6_qs;
       end
 
-      addr_hit[22]: begin
+      addr_hit[17]: begin
         reg_rdata_next[31:0] = exp_digest_7_qs;
       end
 

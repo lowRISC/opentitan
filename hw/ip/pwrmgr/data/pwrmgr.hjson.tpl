@@ -16,15 +16,13 @@
   During power up, Power Manager is responsible for triggering OTP sensing, initiating Life Cycle Controller, coordinating with ROM Controller for the startup ROM check, and eventually releasing software to execute.
   It features several countermeasures to deter fault injection (FI) attacks.
   '''
-  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
-  cip_id:             "20",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_pwrmgr",
   revisions: [
     {
-      version:            "0.1.0",
+      version:            "0.1",
       life_stage:         "L1",
       design_stage:       "D1",
       verification_stage: "V0", // this module is not verified at the block level
@@ -32,7 +30,7 @@
       commit_id:          "b2abc989498f072d9a5530f8aab9b58c1f92c9fb"
     }
     {
-      version:            "2.0.0",
+      version:            "1.0",
       life_stage:         "L1",
       design_stage:       "D2S",
       verification_stage: "V2S",

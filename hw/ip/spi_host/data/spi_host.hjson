@@ -12,15 +12,13 @@
   32-bit TL-UL registers interface with receive and transmit data FIFOs as well as a command FIFO for encoding multiple sequential 'segments' making up a larger SPI transaction.
   This allows each segment to have an arbitrary byte-count, Std/Dual/Quad width, and direction, and it allows the CS to be managed automatically across multiple sequential segments.
   '''
-  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
-  cip_id:             "27",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_spi_host",
   revisions: [
     {
-      version:            "2.0.0",
+      version:            "1.0",
       life_stage:         "L1",
       design_stage:       "D2S",
       verification_stage: "V2S",

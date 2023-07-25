@@ -33,7 +33,7 @@ pub const UART0_BASE_ADDR: usize = 0x40000000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #UART0_BASE_ADDR and
 /// `UART0_BASE_ADDR + UART0_SIZE_BYTES`.
-pub const UART0_SIZE_BYTES: usize = 0x80;
+pub const UART0_SIZE_BYTES: usize = 0x40;
 /// Peripheral base address for uart1 in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -46,7 +46,7 @@ pub const UART1_BASE_ADDR: usize = 0x40010000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #UART1_BASE_ADDR and
 /// `UART1_BASE_ADDR + UART1_SIZE_BYTES`.
-pub const UART1_SIZE_BYTES: usize = 0x80;
+pub const UART1_SIZE_BYTES: usize = 0x40;
 /// Peripheral base address for uart2 in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -59,7 +59,7 @@ pub const UART2_BASE_ADDR: usize = 0x40020000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #UART2_BASE_ADDR and
 /// `UART2_BASE_ADDR + UART2_SIZE_BYTES`.
-pub const UART2_SIZE_BYTES: usize = 0x80;
+pub const UART2_SIZE_BYTES: usize = 0x40;
 /// Peripheral base address for uart3 in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -72,7 +72,7 @@ pub const UART3_BASE_ADDR: usize = 0x40030000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #UART3_BASE_ADDR and
 /// `UART3_BASE_ADDR + UART3_SIZE_BYTES`.
-pub const UART3_SIZE_BYTES: usize = 0x80;
+pub const UART3_SIZE_BYTES: usize = 0x40;
 /// Peripheral base address for gpio in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -85,7 +85,7 @@ pub const GPIO_BASE_ADDR: usize = 0x40040000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #GPIO_BASE_ADDR and
 /// `GPIO_BASE_ADDR + GPIO_SIZE_BYTES`.
-pub const GPIO_SIZE_BYTES: usize = 0x80;
+pub const GPIO_SIZE_BYTES: usize = 0x40;
 /// Peripheral base address for spi_device in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -111,7 +111,7 @@ pub const I2C0_BASE_ADDR: usize = 0x40080000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #I2C0_BASE_ADDR and
 /// `I2C0_BASE_ADDR + I2C0_SIZE_BYTES`.
-pub const I2C0_SIZE_BYTES: usize = 0x100;
+pub const I2C0_SIZE_BYTES: usize = 0x80;
 /// Peripheral base address for i2c1 in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -124,7 +124,7 @@ pub const I2C1_BASE_ADDR: usize = 0x40090000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #I2C1_BASE_ADDR and
 /// `I2C1_BASE_ADDR + I2C1_SIZE_BYTES`.
-pub const I2C1_SIZE_BYTES: usize = 0x100;
+pub const I2C1_SIZE_BYTES: usize = 0x80;
 /// Peripheral base address for i2c2 in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -137,7 +137,7 @@ pub const I2C2_BASE_ADDR: usize = 0x400A0000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #I2C2_BASE_ADDR and
 /// `I2C2_BASE_ADDR + I2C2_SIZE_BYTES`.
-pub const I2C2_SIZE_BYTES: usize = 0x100;
+pub const I2C2_SIZE_BYTES: usize = 0x80;
 /// Peripheral base address for pattgen in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -150,7 +150,7 @@ pub const PATTGEN_BASE_ADDR: usize = 0x400E0000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #PATTGEN_BASE_ADDR and
 /// `PATTGEN_BASE_ADDR + PATTGEN_SIZE_BYTES`.
-pub const PATTGEN_SIZE_BYTES: usize = 0x80;
+pub const PATTGEN_SIZE_BYTES: usize = 0x40;
 /// Peripheral base address for rv_timer in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -228,7 +228,7 @@ pub const SPI_HOST0_BASE_ADDR: usize = 0x40300000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #SPI_HOST0_BASE_ADDR and
 /// `SPI_HOST0_BASE_ADDR + SPI_HOST0_SIZE_BYTES`.
-pub const SPI_HOST0_SIZE_BYTES: usize = 0x80;
+pub const SPI_HOST0_SIZE_BYTES: usize = 0x40;
 /// Peripheral base address for spi_host1 in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -241,7 +241,7 @@ pub const SPI_HOST1_BASE_ADDR: usize = 0x40310000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #SPI_HOST1_BASE_ADDR and
 /// `SPI_HOST1_BASE_ADDR + SPI_HOST1_SIZE_BYTES`.
-pub const SPI_HOST1_SIZE_BYTES: usize = 0x80;
+pub const SPI_HOST1_SIZE_BYTES: usize = 0x40;
 /// Peripheral base address for usbdev in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -267,7 +267,7 @@ pub const PWRMGR_AON_BASE_ADDR: usize = 0x40400000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #PWRMGR_AON_BASE_ADDR and
 /// `PWRMGR_AON_BASE_ADDR + PWRMGR_AON_SIZE_BYTES`.
-pub const PWRMGR_AON_SIZE_BYTES: usize = 0x100;
+pub const PWRMGR_AON_SIZE_BYTES: usize = 0x80;
 /// Peripheral base address for rstmgr_aon in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -280,7 +280,7 @@ pub const RSTMGR_AON_BASE_ADDR: usize = 0x40410000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #RSTMGR_AON_BASE_ADDR and
 /// `RSTMGR_AON_BASE_ADDR + RSTMGR_AON_SIZE_BYTES`.
-pub const RSTMGR_AON_SIZE_BYTES: usize = 0x100;
+pub const RSTMGR_AON_SIZE_BYTES: usize = 0x80;
 /// Peripheral base address for clkmgr_aon in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -293,7 +293,7 @@ pub const CLKMGR_AON_BASE_ADDR: usize = 0x40420000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #CLKMGR_AON_BASE_ADDR and
 /// `CLKMGR_AON_BASE_ADDR + CLKMGR_AON_SIZE_BYTES`.
-pub const CLKMGR_AON_SIZE_BYTES: usize = 0x100;
+pub const CLKMGR_AON_SIZE_BYTES: usize = 0x80;
 /// Peripheral base address for sysrst_ctrl_aon in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -319,7 +319,7 @@ pub const ADC_CTRL_AON_BASE_ADDR: usize = 0x40440000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #ADC_CTRL_AON_BASE_ADDR and
 /// `ADC_CTRL_AON_BASE_ADDR + ADC_CTRL_AON_SIZE_BYTES`.
-pub const ADC_CTRL_AON_SIZE_BYTES: usize = 0x100;
+pub const ADC_CTRL_AON_SIZE_BYTES: usize = 0x80;
 /// Peripheral base address for pwm_aon in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -332,7 +332,7 @@ pub const PWM_AON_BASE_ADDR: usize = 0x40450000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #PWM_AON_BASE_ADDR and
 /// `PWM_AON_BASE_ADDR + PWM_AON_SIZE_BYTES`.
-pub const PWM_AON_SIZE_BYTES: usize = 0x100;
+pub const PWM_AON_SIZE_BYTES: usize = 0x80;
 /// Peripheral base address for pinmux_aon in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -358,7 +358,7 @@ pub const AON_TIMER_AON_BASE_ADDR: usize = 0x40470000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #AON_TIMER_AON_BASE_ADDR and
 /// `AON_TIMER_AON_BASE_ADDR + AON_TIMER_AON_SIZE_BYTES`.
-pub const AON_TIMER_AON_SIZE_BYTES: usize = 0x80;
+pub const AON_TIMER_AON_SIZE_BYTES: usize = 0x40;
 /// Peripheral base address for ast in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -384,7 +384,7 @@ pub const SENSOR_CTRL_AON_BASE_ADDR: usize = 0x40490000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #SENSOR_CTRL_AON_BASE_ADDR and
 /// `SENSOR_CTRL_AON_BASE_ADDR + SENSOR_CTRL_AON_SIZE_BYTES`.
-pub const SENSOR_CTRL_AON_SIZE_BYTES: usize = 0x80;
+pub const SENSOR_CTRL_AON_SIZE_BYTES: usize = 0x40;
 /// Peripheral base address for regs device on sram_ctrl_ret_aon in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -397,7 +397,7 @@ pub const SRAM_CTRL_RET_AON_REGS_BASE_ADDR: usize = 0x40500000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #SRAM_CTRL_RET_AON_REGS_BASE_ADDR and
 /// `SRAM_CTRL_RET_AON_REGS_BASE_ADDR + SRAM_CTRL_RET_AON_REGS_SIZE_BYTES`.
-pub const SRAM_CTRL_RET_AON_REGS_SIZE_BYTES: usize = 0x80;
+pub const SRAM_CTRL_RET_AON_REGS_SIZE_BYTES: usize = 0x20;
 /// Peripheral base address for ram device on sram_ctrl_ret_aon in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -462,7 +462,7 @@ pub const RV_DM_REGS_BASE_ADDR: usize = 0x41200000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #RV_DM_REGS_BASE_ADDR and
 /// `RV_DM_REGS_BASE_ADDR + RV_DM_REGS_SIZE_BYTES`.
-pub const RV_DM_REGS_SIZE_BYTES: usize = 0x80;
+pub const RV_DM_REGS_SIZE_BYTES: usize = 0x4;
 /// Peripheral base address for mem device on rv_dm in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -553,7 +553,7 @@ pub const KEYMGR_BASE_ADDR: usize = 0x41140000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #KEYMGR_BASE_ADDR and
 /// `KEYMGR_BASE_ADDR + KEYMGR_SIZE_BYTES`.
-pub const KEYMGR_SIZE_BYTES: usize = 0x200;
+pub const KEYMGR_SIZE_BYTES: usize = 0x100;
 /// Peripheral base address for csrng in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -566,7 +566,7 @@ pub const CSRNG_BASE_ADDR: usize = 0x41150000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #CSRNG_BASE_ADDR and
 /// `CSRNG_BASE_ADDR + CSRNG_SIZE_BYTES`.
-pub const CSRNG_SIZE_BYTES: usize = 0x100;
+pub const CSRNG_SIZE_BYTES: usize = 0x80;
 /// Peripheral base address for entropy_src in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -579,7 +579,7 @@ pub const ENTROPY_SRC_BASE_ADDR: usize = 0x41160000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #ENTROPY_SRC_BASE_ADDR and
 /// `ENTROPY_SRC_BASE_ADDR + ENTROPY_SRC_SIZE_BYTES`.
-pub const ENTROPY_SRC_SIZE_BYTES: usize = 0x200;
+pub const ENTROPY_SRC_SIZE_BYTES: usize = 0x100;
 /// Peripheral base address for edn0 in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -592,7 +592,7 @@ pub const EDN0_BASE_ADDR: usize = 0x41170000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #EDN0_BASE_ADDR and
 /// `EDN0_BASE_ADDR + EDN0_SIZE_BYTES`.
-pub const EDN0_SIZE_BYTES: usize = 0x100;
+pub const EDN0_SIZE_BYTES: usize = 0x80;
 /// Peripheral base address for edn1 in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -605,7 +605,7 @@ pub const EDN1_BASE_ADDR: usize = 0x41180000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #EDN1_BASE_ADDR and
 /// `EDN1_BASE_ADDR + EDN1_SIZE_BYTES`.
-pub const EDN1_SIZE_BYTES: usize = 0x100;
+pub const EDN1_SIZE_BYTES: usize = 0x80;
 /// Peripheral base address for regs device on sram_ctrl_main in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -618,7 +618,7 @@ pub const SRAM_CTRL_MAIN_REGS_BASE_ADDR: usize = 0x411C0000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #SRAM_CTRL_MAIN_REGS_BASE_ADDR and
 /// `SRAM_CTRL_MAIN_REGS_BASE_ADDR + SRAM_CTRL_MAIN_REGS_SIZE_BYTES`.
-pub const SRAM_CTRL_MAIN_REGS_SIZE_BYTES: usize = 0x80;
+pub const SRAM_CTRL_MAIN_REGS_SIZE_BYTES: usize = 0x20;
 /// Peripheral base address for ram device on sram_ctrl_main in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -644,7 +644,7 @@ pub const ROM_CTRL_REGS_BASE_ADDR: usize = 0x411E0000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #ROM_CTRL_REGS_BASE_ADDR and
 /// `ROM_CTRL_REGS_BASE_ADDR + ROM_CTRL_REGS_SIZE_BYTES`.
-pub const ROM_CTRL_REGS_SIZE_BYTES: usize = 0x100;
+pub const ROM_CTRL_REGS_SIZE_BYTES: usize = 0x80;
 /// Peripheral base address for rom device on rom_ctrl in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped

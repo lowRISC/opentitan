@@ -15,15 +15,13 @@
   (4) giving OTBN software direct access to cryptographically secure random numbers,
   and (5) implementing various hardware countermeasures to deter side-channel analysis (SCA) and fault injection (FI) attacks.
   '''
-  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
-  cip_id:             "15",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_otbn"
   revisions: [
       {
-          version:            "0.1.0",
+          version:            "0.1",
           life_stage:         "L1",
           design_stage:       "D1",
           verification_stage: "V1",
@@ -32,7 +30,7 @@
           notes:              ""
       },
       {
-          version:            "2.0.0",
+          version:            "1.0",
           life_stage:         "L1",
           design_stage:       "D2S",
           verification_stage: "V2S",

@@ -191,38 +191,33 @@ package hmac_reg_pkg;
   } hmac_hw2reg_t;
 
   // Register offsets
-  parameter logic [BlockAw-1:0] HMAC_CIP_ID_OFFSET = 12'h 0;
-  parameter logic [BlockAw-1:0] HMAC_REVISION_OFFSET = 12'h 4;
-  parameter logic [BlockAw-1:0] HMAC_PARAMETER_BLOCK_TYPE_OFFSET = 12'h 8;
-  parameter logic [BlockAw-1:0] HMAC_PARAMETER_BLOCK_LENGTH_OFFSET = 12'h c;
-  parameter logic [BlockAw-1:0] HMAC_NEXT_PARAMETER_BLOCK_OFFSET = 12'h 10;
-  parameter logic [BlockAw-1:0] HMAC_INTR_STATE_OFFSET = 12'h 40;
-  parameter logic [BlockAw-1:0] HMAC_INTR_ENABLE_OFFSET = 12'h 44;
-  parameter logic [BlockAw-1:0] HMAC_INTR_TEST_OFFSET = 12'h 48;
-  parameter logic [BlockAw-1:0] HMAC_ALERT_TEST_OFFSET = 12'h 4c;
-  parameter logic [BlockAw-1:0] HMAC_CFG_OFFSET = 12'h 50;
-  parameter logic [BlockAw-1:0] HMAC_CMD_OFFSET = 12'h 54;
-  parameter logic [BlockAw-1:0] HMAC_STATUS_OFFSET = 12'h 58;
-  parameter logic [BlockAw-1:0] HMAC_ERR_CODE_OFFSET = 12'h 5c;
-  parameter logic [BlockAw-1:0] HMAC_WIPE_SECRET_OFFSET = 12'h 60;
-  parameter logic [BlockAw-1:0] HMAC_KEY_0_OFFSET = 12'h 64;
-  parameter logic [BlockAw-1:0] HMAC_KEY_1_OFFSET = 12'h 68;
-  parameter logic [BlockAw-1:0] HMAC_KEY_2_OFFSET = 12'h 6c;
-  parameter logic [BlockAw-1:0] HMAC_KEY_3_OFFSET = 12'h 70;
-  parameter logic [BlockAw-1:0] HMAC_KEY_4_OFFSET = 12'h 74;
-  parameter logic [BlockAw-1:0] HMAC_KEY_5_OFFSET = 12'h 78;
-  parameter logic [BlockAw-1:0] HMAC_KEY_6_OFFSET = 12'h 7c;
-  parameter logic [BlockAw-1:0] HMAC_KEY_7_OFFSET = 12'h 80;
-  parameter logic [BlockAw-1:0] HMAC_DIGEST_0_OFFSET = 12'h 84;
-  parameter logic [BlockAw-1:0] HMAC_DIGEST_1_OFFSET = 12'h 88;
-  parameter logic [BlockAw-1:0] HMAC_DIGEST_2_OFFSET = 12'h 8c;
-  parameter logic [BlockAw-1:0] HMAC_DIGEST_3_OFFSET = 12'h 90;
-  parameter logic [BlockAw-1:0] HMAC_DIGEST_4_OFFSET = 12'h 94;
-  parameter logic [BlockAw-1:0] HMAC_DIGEST_5_OFFSET = 12'h 98;
-  parameter logic [BlockAw-1:0] HMAC_DIGEST_6_OFFSET = 12'h 9c;
-  parameter logic [BlockAw-1:0] HMAC_DIGEST_7_OFFSET = 12'h a0;
-  parameter logic [BlockAw-1:0] HMAC_MSG_LENGTH_LOWER_OFFSET = 12'h a4;
-  parameter logic [BlockAw-1:0] HMAC_MSG_LENGTH_UPPER_OFFSET = 12'h a8;
+  parameter logic [BlockAw-1:0] HMAC_INTR_STATE_OFFSET = 12'h 0;
+  parameter logic [BlockAw-1:0] HMAC_INTR_ENABLE_OFFSET = 12'h 4;
+  parameter logic [BlockAw-1:0] HMAC_INTR_TEST_OFFSET = 12'h 8;
+  parameter logic [BlockAw-1:0] HMAC_ALERT_TEST_OFFSET = 12'h c;
+  parameter logic [BlockAw-1:0] HMAC_CFG_OFFSET = 12'h 10;
+  parameter logic [BlockAw-1:0] HMAC_CMD_OFFSET = 12'h 14;
+  parameter logic [BlockAw-1:0] HMAC_STATUS_OFFSET = 12'h 18;
+  parameter logic [BlockAw-1:0] HMAC_ERR_CODE_OFFSET = 12'h 1c;
+  parameter logic [BlockAw-1:0] HMAC_WIPE_SECRET_OFFSET = 12'h 20;
+  parameter logic [BlockAw-1:0] HMAC_KEY_0_OFFSET = 12'h 24;
+  parameter logic [BlockAw-1:0] HMAC_KEY_1_OFFSET = 12'h 28;
+  parameter logic [BlockAw-1:0] HMAC_KEY_2_OFFSET = 12'h 2c;
+  parameter logic [BlockAw-1:0] HMAC_KEY_3_OFFSET = 12'h 30;
+  parameter logic [BlockAw-1:0] HMAC_KEY_4_OFFSET = 12'h 34;
+  parameter logic [BlockAw-1:0] HMAC_KEY_5_OFFSET = 12'h 38;
+  parameter logic [BlockAw-1:0] HMAC_KEY_6_OFFSET = 12'h 3c;
+  parameter logic [BlockAw-1:0] HMAC_KEY_7_OFFSET = 12'h 40;
+  parameter logic [BlockAw-1:0] HMAC_DIGEST_0_OFFSET = 12'h 44;
+  parameter logic [BlockAw-1:0] HMAC_DIGEST_1_OFFSET = 12'h 48;
+  parameter logic [BlockAw-1:0] HMAC_DIGEST_2_OFFSET = 12'h 4c;
+  parameter logic [BlockAw-1:0] HMAC_DIGEST_3_OFFSET = 12'h 50;
+  parameter logic [BlockAw-1:0] HMAC_DIGEST_4_OFFSET = 12'h 54;
+  parameter logic [BlockAw-1:0] HMAC_DIGEST_5_OFFSET = 12'h 58;
+  parameter logic [BlockAw-1:0] HMAC_DIGEST_6_OFFSET = 12'h 5c;
+  parameter logic [BlockAw-1:0] HMAC_DIGEST_7_OFFSET = 12'h 60;
+  parameter logic [BlockAw-1:0] HMAC_MSG_LENGTH_LOWER_OFFSET = 12'h 64;
+  parameter logic [BlockAw-1:0] HMAC_MSG_LENGTH_UPPER_OFFSET = 12'h 68;
 
   // Reset values for hwext registers and their fields
   parameter logic [2:0] HMAC_INTR_TEST_RESVAL = 3'h 0;
@@ -261,11 +256,6 @@ package hmac_reg_pkg;
 
   // Register index
   typedef enum int {
-    HMAC_CIP_ID,
-    HMAC_REVISION,
-    HMAC_PARAMETER_BLOCK_TYPE,
-    HMAC_PARAMETER_BLOCK_LENGTH,
-    HMAC_NEXT_PARAMETER_BLOCK,
     HMAC_INTR_STATE,
     HMAC_INTR_ENABLE,
     HMAC_INTR_TEST,
@@ -296,39 +286,34 @@ package hmac_reg_pkg;
   } hmac_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] HMAC_PERMIT [32] = '{
-    4'b 1111, // index[ 0] HMAC_CIP_ID
-    4'b 1111, // index[ 1] HMAC_REVISION
-    4'b 1111, // index[ 2] HMAC_PARAMETER_BLOCK_TYPE
-    4'b 1111, // index[ 3] HMAC_PARAMETER_BLOCK_LENGTH
-    4'b 1111, // index[ 4] HMAC_NEXT_PARAMETER_BLOCK
-    4'b 0001, // index[ 5] HMAC_INTR_STATE
-    4'b 0001, // index[ 6] HMAC_INTR_ENABLE
-    4'b 0001, // index[ 7] HMAC_INTR_TEST
-    4'b 0001, // index[ 8] HMAC_ALERT_TEST
-    4'b 0001, // index[ 9] HMAC_CFG
-    4'b 0001, // index[10] HMAC_CMD
-    4'b 0011, // index[11] HMAC_STATUS
-    4'b 1111, // index[12] HMAC_ERR_CODE
-    4'b 1111, // index[13] HMAC_WIPE_SECRET
-    4'b 1111, // index[14] HMAC_KEY_0
-    4'b 1111, // index[15] HMAC_KEY_1
-    4'b 1111, // index[16] HMAC_KEY_2
-    4'b 1111, // index[17] HMAC_KEY_3
-    4'b 1111, // index[18] HMAC_KEY_4
-    4'b 1111, // index[19] HMAC_KEY_5
-    4'b 1111, // index[20] HMAC_KEY_6
-    4'b 1111, // index[21] HMAC_KEY_7
-    4'b 1111, // index[22] HMAC_DIGEST_0
-    4'b 1111, // index[23] HMAC_DIGEST_1
-    4'b 1111, // index[24] HMAC_DIGEST_2
-    4'b 1111, // index[25] HMAC_DIGEST_3
-    4'b 1111, // index[26] HMAC_DIGEST_4
-    4'b 1111, // index[27] HMAC_DIGEST_5
-    4'b 1111, // index[28] HMAC_DIGEST_6
-    4'b 1111, // index[29] HMAC_DIGEST_7
-    4'b 1111, // index[30] HMAC_MSG_LENGTH_LOWER
-    4'b 1111  // index[31] HMAC_MSG_LENGTH_UPPER
+  parameter logic [3:0] HMAC_PERMIT [27] = '{
+    4'b 0001, // index[ 0] HMAC_INTR_STATE
+    4'b 0001, // index[ 1] HMAC_INTR_ENABLE
+    4'b 0001, // index[ 2] HMAC_INTR_TEST
+    4'b 0001, // index[ 3] HMAC_ALERT_TEST
+    4'b 0001, // index[ 4] HMAC_CFG
+    4'b 0001, // index[ 5] HMAC_CMD
+    4'b 0011, // index[ 6] HMAC_STATUS
+    4'b 1111, // index[ 7] HMAC_ERR_CODE
+    4'b 1111, // index[ 8] HMAC_WIPE_SECRET
+    4'b 1111, // index[ 9] HMAC_KEY_0
+    4'b 1111, // index[10] HMAC_KEY_1
+    4'b 1111, // index[11] HMAC_KEY_2
+    4'b 1111, // index[12] HMAC_KEY_3
+    4'b 1111, // index[13] HMAC_KEY_4
+    4'b 1111, // index[14] HMAC_KEY_5
+    4'b 1111, // index[15] HMAC_KEY_6
+    4'b 1111, // index[16] HMAC_KEY_7
+    4'b 1111, // index[17] HMAC_DIGEST_0
+    4'b 1111, // index[18] HMAC_DIGEST_1
+    4'b 1111, // index[19] HMAC_DIGEST_2
+    4'b 1111, // index[20] HMAC_DIGEST_3
+    4'b 1111, // index[21] HMAC_DIGEST_4
+    4'b 1111, // index[22] HMAC_DIGEST_5
+    4'b 1111, // index[23] HMAC_DIGEST_6
+    4'b 1111, // index[24] HMAC_DIGEST_7
+    4'b 1111, // index[25] HMAC_MSG_LENGTH_LOWER
+    4'b 1111  // index[26] HMAC_MSG_LENGTH_UPPER
   };
 
 endpackage

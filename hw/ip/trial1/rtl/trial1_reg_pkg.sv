@@ -257,15 +257,10 @@ package trial1_reg_pkg;
   } trial1_hw2reg_t;
 
   // Register offsets
-  parameter logic [BlockAw-1:0] TRIAL1_CIP_ID_OFFSET = 10'h 0;
-  parameter logic [BlockAw-1:0] TRIAL1_REVISION_OFFSET = 10'h 4;
-  parameter logic [BlockAw-1:0] TRIAL1_PARAMETER_BLOCK_TYPE_OFFSET = 10'h 8;
-  parameter logic [BlockAw-1:0] TRIAL1_PARAMETER_BLOCK_LENGTH_OFFSET = 10'h c;
-  parameter logic [BlockAw-1:0] TRIAL1_NEXT_PARAMETER_BLOCK_OFFSET = 10'h 10;
-  parameter logic [BlockAw-1:0] TRIAL1_RWTYPE0_OFFSET = 10'h 40;
-  parameter logic [BlockAw-1:0] TRIAL1_RWTYPE1_OFFSET = 10'h 44;
-  parameter logic [BlockAw-1:0] TRIAL1_RWTYPE2_OFFSET = 10'h 48;
-  parameter logic [BlockAw-1:0] TRIAL1_RWTYPE3_OFFSET = 10'h 4c;
+  parameter logic [BlockAw-1:0] TRIAL1_RWTYPE0_OFFSET = 10'h 0;
+  parameter logic [BlockAw-1:0] TRIAL1_RWTYPE1_OFFSET = 10'h 4;
+  parameter logic [BlockAw-1:0] TRIAL1_RWTYPE2_OFFSET = 10'h 8;
+  parameter logic [BlockAw-1:0] TRIAL1_RWTYPE3_OFFSET = 10'h c;
   parameter logic [BlockAw-1:0] TRIAL1_RWTYPE4_OFFSET = 10'h 200;
   parameter logic [BlockAw-1:0] TRIAL1_ROTYPE0_OFFSET = 10'h 204;
   parameter logic [BlockAw-1:0] TRIAL1_W1CTYPE0_OFFSET = 10'h 208;
@@ -291,11 +286,6 @@ package trial1_reg_pkg;
 
   // Register index
   typedef enum int {
-    TRIAL1_CIP_ID,
-    TRIAL1_REVISION,
-    TRIAL1_PARAMETER_BLOCK_TYPE,
-    TRIAL1_PARAMETER_BLOCK_LENGTH,
-    TRIAL1_NEXT_PARAMETER_BLOCK,
     TRIAL1_RWTYPE0,
     TRIAL1_RWTYPE1,
     TRIAL1_RWTYPE2,
@@ -319,32 +309,27 @@ package trial1_reg_pkg;
   } trial1_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] TRIAL1_PERMIT [25] = '{
-    4'b 1111, // index[ 0] TRIAL1_CIP_ID
-    4'b 1111, // index[ 1] TRIAL1_REVISION
-    4'b 1111, // index[ 2] TRIAL1_PARAMETER_BLOCK_TYPE
-    4'b 1111, // index[ 3] TRIAL1_PARAMETER_BLOCK_LENGTH
-    4'b 1111, // index[ 4] TRIAL1_NEXT_PARAMETER_BLOCK
-    4'b 1111, // index[ 5] TRIAL1_RWTYPE0
-    4'b 0011, // index[ 6] TRIAL1_RWTYPE1
-    4'b 1111, // index[ 7] TRIAL1_RWTYPE2
-    4'b 1111, // index[ 8] TRIAL1_RWTYPE3
-    4'b 1111, // index[ 9] TRIAL1_RWTYPE4
-    4'b 1111, // index[10] TRIAL1_ROTYPE0
-    4'b 1111, // index[11] TRIAL1_W1CTYPE0
-    4'b 1111, // index[12] TRIAL1_W1CTYPE1
-    4'b 1111, // index[13] TRIAL1_W1CTYPE2
-    4'b 1111, // index[14] TRIAL1_W1STYPE2
-    4'b 1111, // index[15] TRIAL1_W0CTYPE2
-    4'b 1111, // index[16] TRIAL1_R0W1CTYPE2
-    4'b 1111, // index[17] TRIAL1_RCTYPE0
-    4'b 1111, // index[18] TRIAL1_WOTYPE0
-    4'b 1111, // index[19] TRIAL1_MIXTYPE0
-    4'b 1111, // index[20] TRIAL1_RWTYPE5
-    4'b 1111, // index[21] TRIAL1_RWTYPE6
-    4'b 1111, // index[22] TRIAL1_ROTYPE1
-    4'b 1111, // index[23] TRIAL1_ROTYPE2
-    4'b 1111  // index[24] TRIAL1_RWTYPE7
+  parameter logic [3:0] TRIAL1_PERMIT [20] = '{
+    4'b 1111, // index[ 0] TRIAL1_RWTYPE0
+    4'b 0011, // index[ 1] TRIAL1_RWTYPE1
+    4'b 1111, // index[ 2] TRIAL1_RWTYPE2
+    4'b 1111, // index[ 3] TRIAL1_RWTYPE3
+    4'b 1111, // index[ 4] TRIAL1_RWTYPE4
+    4'b 1111, // index[ 5] TRIAL1_ROTYPE0
+    4'b 1111, // index[ 6] TRIAL1_W1CTYPE0
+    4'b 1111, // index[ 7] TRIAL1_W1CTYPE1
+    4'b 1111, // index[ 8] TRIAL1_W1CTYPE2
+    4'b 1111, // index[ 9] TRIAL1_W1STYPE2
+    4'b 1111, // index[10] TRIAL1_W0CTYPE2
+    4'b 1111, // index[11] TRIAL1_R0W1CTYPE2
+    4'b 1111, // index[12] TRIAL1_RCTYPE0
+    4'b 1111, // index[13] TRIAL1_WOTYPE0
+    4'b 1111, // index[14] TRIAL1_MIXTYPE0
+    4'b 1111, // index[15] TRIAL1_RWTYPE5
+    4'b 1111, // index[16] TRIAL1_RWTYPE6
+    4'b 1111, // index[17] TRIAL1_ROTYPE1
+    4'b 1111, // index[18] TRIAL1_ROTYPE2
+    4'b 1111  // index[19] TRIAL1_RWTYPE7
   };
 
 endpackage

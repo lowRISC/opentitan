@@ -10,7 +10,7 @@ package edn_reg_pkg;
   parameter int NumAlerts = 2;
 
   // Address widths within the block
-  parameter int BlockAw = 8;
+  parameter int BlockAw = 7;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -219,28 +219,23 @@ package edn_reg_pkg;
   } edn_hw2reg_t;
 
   // Register offsets
-  parameter logic [BlockAw-1:0] EDN_CIP_ID_OFFSET = 8'h 0;
-  parameter logic [BlockAw-1:0] EDN_REVISION_OFFSET = 8'h 4;
-  parameter logic [BlockAw-1:0] EDN_PARAMETER_BLOCK_TYPE_OFFSET = 8'h 8;
-  parameter logic [BlockAw-1:0] EDN_PARAMETER_BLOCK_LENGTH_OFFSET = 8'h c;
-  parameter logic [BlockAw-1:0] EDN_NEXT_PARAMETER_BLOCK_OFFSET = 8'h 10;
-  parameter logic [BlockAw-1:0] EDN_INTR_STATE_OFFSET = 8'h 40;
-  parameter logic [BlockAw-1:0] EDN_INTR_ENABLE_OFFSET = 8'h 44;
-  parameter logic [BlockAw-1:0] EDN_INTR_TEST_OFFSET = 8'h 48;
-  parameter logic [BlockAw-1:0] EDN_ALERT_TEST_OFFSET = 8'h 4c;
-  parameter logic [BlockAw-1:0] EDN_REGWEN_OFFSET = 8'h 50;
-  parameter logic [BlockAw-1:0] EDN_CTRL_OFFSET = 8'h 54;
-  parameter logic [BlockAw-1:0] EDN_BOOT_INS_CMD_OFFSET = 8'h 58;
-  parameter logic [BlockAw-1:0] EDN_BOOT_GEN_CMD_OFFSET = 8'h 5c;
-  parameter logic [BlockAw-1:0] EDN_SW_CMD_REQ_OFFSET = 8'h 60;
-  parameter logic [BlockAw-1:0] EDN_SW_CMD_STS_OFFSET = 8'h 64;
-  parameter logic [BlockAw-1:0] EDN_RESEED_CMD_OFFSET = 8'h 68;
-  parameter logic [BlockAw-1:0] EDN_GENERATE_CMD_OFFSET = 8'h 6c;
-  parameter logic [BlockAw-1:0] EDN_MAX_NUM_REQS_BETWEEN_RESEEDS_OFFSET = 8'h 70;
-  parameter logic [BlockAw-1:0] EDN_RECOV_ALERT_STS_OFFSET = 8'h 74;
-  parameter logic [BlockAw-1:0] EDN_ERR_CODE_OFFSET = 8'h 78;
-  parameter logic [BlockAw-1:0] EDN_ERR_CODE_TEST_OFFSET = 8'h 7c;
-  parameter logic [BlockAw-1:0] EDN_MAIN_SM_STATE_OFFSET = 8'h 80;
+  parameter logic [BlockAw-1:0] EDN_INTR_STATE_OFFSET = 7'h 0;
+  parameter logic [BlockAw-1:0] EDN_INTR_ENABLE_OFFSET = 7'h 4;
+  parameter logic [BlockAw-1:0] EDN_INTR_TEST_OFFSET = 7'h 8;
+  parameter logic [BlockAw-1:0] EDN_ALERT_TEST_OFFSET = 7'h c;
+  parameter logic [BlockAw-1:0] EDN_REGWEN_OFFSET = 7'h 10;
+  parameter logic [BlockAw-1:0] EDN_CTRL_OFFSET = 7'h 14;
+  parameter logic [BlockAw-1:0] EDN_BOOT_INS_CMD_OFFSET = 7'h 18;
+  parameter logic [BlockAw-1:0] EDN_BOOT_GEN_CMD_OFFSET = 7'h 1c;
+  parameter logic [BlockAw-1:0] EDN_SW_CMD_REQ_OFFSET = 7'h 20;
+  parameter logic [BlockAw-1:0] EDN_SW_CMD_STS_OFFSET = 7'h 24;
+  parameter logic [BlockAw-1:0] EDN_RESEED_CMD_OFFSET = 7'h 28;
+  parameter logic [BlockAw-1:0] EDN_GENERATE_CMD_OFFSET = 7'h 2c;
+  parameter logic [BlockAw-1:0] EDN_MAX_NUM_REQS_BETWEEN_RESEEDS_OFFSET = 7'h 30;
+  parameter logic [BlockAw-1:0] EDN_RECOV_ALERT_STS_OFFSET = 7'h 34;
+  parameter logic [BlockAw-1:0] EDN_ERR_CODE_OFFSET = 7'h 38;
+  parameter logic [BlockAw-1:0] EDN_ERR_CODE_TEST_OFFSET = 7'h 3c;
+  parameter logic [BlockAw-1:0] EDN_MAIN_SM_STATE_OFFSET = 7'h 40;
 
   // Reset values for hwext registers and their fields
   parameter logic [1:0] EDN_INTR_TEST_RESVAL = 2'h 0;
@@ -255,11 +250,6 @@ package edn_reg_pkg;
 
   // Register index
   typedef enum int {
-    EDN_CIP_ID,
-    EDN_REVISION,
-    EDN_PARAMETER_BLOCK_TYPE,
-    EDN_PARAMETER_BLOCK_LENGTH,
-    EDN_NEXT_PARAMETER_BLOCK,
     EDN_INTR_STATE,
     EDN_INTR_ENABLE,
     EDN_INTR_TEST,
@@ -280,29 +270,24 @@ package edn_reg_pkg;
   } edn_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] EDN_PERMIT [22] = '{
-    4'b 1111, // index[ 0] EDN_CIP_ID
-    4'b 1111, // index[ 1] EDN_REVISION
-    4'b 1111, // index[ 2] EDN_PARAMETER_BLOCK_TYPE
-    4'b 1111, // index[ 3] EDN_PARAMETER_BLOCK_LENGTH
-    4'b 1111, // index[ 4] EDN_NEXT_PARAMETER_BLOCK
-    4'b 0001, // index[ 5] EDN_INTR_STATE
-    4'b 0001, // index[ 6] EDN_INTR_ENABLE
-    4'b 0001, // index[ 7] EDN_INTR_TEST
-    4'b 0001, // index[ 8] EDN_ALERT_TEST
-    4'b 0001, // index[ 9] EDN_REGWEN
-    4'b 0011, // index[10] EDN_CTRL
-    4'b 1111, // index[11] EDN_BOOT_INS_CMD
-    4'b 1111, // index[12] EDN_BOOT_GEN_CMD
-    4'b 1111, // index[13] EDN_SW_CMD_REQ
-    4'b 0001, // index[14] EDN_SW_CMD_STS
-    4'b 1111, // index[15] EDN_RESEED_CMD
-    4'b 1111, // index[16] EDN_GENERATE_CMD
-    4'b 1111, // index[17] EDN_MAX_NUM_REQS_BETWEEN_RESEEDS
-    4'b 0011, // index[18] EDN_RECOV_ALERT_STS
-    4'b 1111, // index[19] EDN_ERR_CODE
-    4'b 0001, // index[20] EDN_ERR_CODE_TEST
-    4'b 0011  // index[21] EDN_MAIN_SM_STATE
+  parameter logic [3:0] EDN_PERMIT [17] = '{
+    4'b 0001, // index[ 0] EDN_INTR_STATE
+    4'b 0001, // index[ 1] EDN_INTR_ENABLE
+    4'b 0001, // index[ 2] EDN_INTR_TEST
+    4'b 0001, // index[ 3] EDN_ALERT_TEST
+    4'b 0001, // index[ 4] EDN_REGWEN
+    4'b 0011, // index[ 5] EDN_CTRL
+    4'b 1111, // index[ 6] EDN_BOOT_INS_CMD
+    4'b 1111, // index[ 7] EDN_BOOT_GEN_CMD
+    4'b 1111, // index[ 8] EDN_SW_CMD_REQ
+    4'b 0001, // index[ 9] EDN_SW_CMD_STS
+    4'b 1111, // index[10] EDN_RESEED_CMD
+    4'b 1111, // index[11] EDN_GENERATE_CMD
+    4'b 1111, // index[12] EDN_MAX_NUM_REQS_BETWEEN_RESEEDS
+    4'b 0011, // index[13] EDN_RECOV_ALERT_STS
+    4'b 1111, // index[14] EDN_ERR_CODE
+    4'b 0001, // index[15] EDN_ERR_CODE_TEST
+    4'b 0011  // index[16] EDN_MAIN_SM_STATE
   };
 
 endpackage

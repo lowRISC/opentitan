@@ -260,22 +260,17 @@ package otbn_reg_pkg;
   } otbn_hw2reg_t;
 
   // Register offsets
-  parameter logic [BlockAw-1:0] OTBN_CIP_ID_OFFSET = 16'h 0;
-  parameter logic [BlockAw-1:0] OTBN_REVISION_OFFSET = 16'h 4;
-  parameter logic [BlockAw-1:0] OTBN_PARAMETER_BLOCK_TYPE_OFFSET = 16'h 8;
-  parameter logic [BlockAw-1:0] OTBN_PARAMETER_BLOCK_LENGTH_OFFSET = 16'h c;
-  parameter logic [BlockAw-1:0] OTBN_NEXT_PARAMETER_BLOCK_OFFSET = 16'h 10;
-  parameter logic [BlockAw-1:0] OTBN_INTR_STATE_OFFSET = 16'h 40;
-  parameter logic [BlockAw-1:0] OTBN_INTR_ENABLE_OFFSET = 16'h 44;
-  parameter logic [BlockAw-1:0] OTBN_INTR_TEST_OFFSET = 16'h 48;
-  parameter logic [BlockAw-1:0] OTBN_ALERT_TEST_OFFSET = 16'h 4c;
-  parameter logic [BlockAw-1:0] OTBN_CMD_OFFSET = 16'h 50;
-  parameter logic [BlockAw-1:0] OTBN_CTRL_OFFSET = 16'h 54;
-  parameter logic [BlockAw-1:0] OTBN_STATUS_OFFSET = 16'h 58;
-  parameter logic [BlockAw-1:0] OTBN_ERR_BITS_OFFSET = 16'h 5c;
-  parameter logic [BlockAw-1:0] OTBN_FATAL_ALERT_CAUSE_OFFSET = 16'h 60;
-  parameter logic [BlockAw-1:0] OTBN_INSN_CNT_OFFSET = 16'h 64;
-  parameter logic [BlockAw-1:0] OTBN_LOAD_CHECKSUM_OFFSET = 16'h 68;
+  parameter logic [BlockAw-1:0] OTBN_INTR_STATE_OFFSET = 16'h 0;
+  parameter logic [BlockAw-1:0] OTBN_INTR_ENABLE_OFFSET = 16'h 4;
+  parameter logic [BlockAw-1:0] OTBN_INTR_TEST_OFFSET = 16'h 8;
+  parameter logic [BlockAw-1:0] OTBN_ALERT_TEST_OFFSET = 16'h c;
+  parameter logic [BlockAw-1:0] OTBN_CMD_OFFSET = 16'h 10;
+  parameter logic [BlockAw-1:0] OTBN_CTRL_OFFSET = 16'h 14;
+  parameter logic [BlockAw-1:0] OTBN_STATUS_OFFSET = 16'h 18;
+  parameter logic [BlockAw-1:0] OTBN_ERR_BITS_OFFSET = 16'h 1c;
+  parameter logic [BlockAw-1:0] OTBN_FATAL_ALERT_CAUSE_OFFSET = 16'h 20;
+  parameter logic [BlockAw-1:0] OTBN_INSN_CNT_OFFSET = 16'h 24;
+  parameter logic [BlockAw-1:0] OTBN_LOAD_CHECKSUM_OFFSET = 16'h 28;
 
   // Reset values for hwext registers and their fields
   parameter logic [0:0] OTBN_INTR_TEST_RESVAL = 1'h 0;
@@ -317,11 +312,6 @@ package otbn_reg_pkg;
 
   // Register index
   typedef enum int {
-    OTBN_CIP_ID,
-    OTBN_REVISION,
-    OTBN_PARAMETER_BLOCK_TYPE,
-    OTBN_PARAMETER_BLOCK_LENGTH,
-    OTBN_NEXT_PARAMETER_BLOCK,
     OTBN_INTR_STATE,
     OTBN_INTR_ENABLE,
     OTBN_INTR_TEST,
@@ -336,23 +326,18 @@ package otbn_reg_pkg;
   } otbn_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] OTBN_PERMIT [16] = '{
-    4'b 1111, // index[ 0] OTBN_CIP_ID
-    4'b 1111, // index[ 1] OTBN_REVISION
-    4'b 1111, // index[ 2] OTBN_PARAMETER_BLOCK_TYPE
-    4'b 1111, // index[ 3] OTBN_PARAMETER_BLOCK_LENGTH
-    4'b 1111, // index[ 4] OTBN_NEXT_PARAMETER_BLOCK
-    4'b 0001, // index[ 5] OTBN_INTR_STATE
-    4'b 0001, // index[ 6] OTBN_INTR_ENABLE
-    4'b 0001, // index[ 7] OTBN_INTR_TEST
-    4'b 0001, // index[ 8] OTBN_ALERT_TEST
-    4'b 0001, // index[ 9] OTBN_CMD
-    4'b 0001, // index[10] OTBN_CTRL
-    4'b 0001, // index[11] OTBN_STATUS
-    4'b 0111, // index[12] OTBN_ERR_BITS
-    4'b 0001, // index[13] OTBN_FATAL_ALERT_CAUSE
-    4'b 1111, // index[14] OTBN_INSN_CNT
-    4'b 1111  // index[15] OTBN_LOAD_CHECKSUM
+  parameter logic [3:0] OTBN_PERMIT [11] = '{
+    4'b 0001, // index[ 0] OTBN_INTR_STATE
+    4'b 0001, // index[ 1] OTBN_INTR_ENABLE
+    4'b 0001, // index[ 2] OTBN_INTR_TEST
+    4'b 0001, // index[ 3] OTBN_ALERT_TEST
+    4'b 0001, // index[ 4] OTBN_CMD
+    4'b 0001, // index[ 5] OTBN_CTRL
+    4'b 0001, // index[ 6] OTBN_STATUS
+    4'b 0111, // index[ 7] OTBN_ERR_BITS
+    4'b 0001, // index[ 8] OTBN_FATAL_ALERT_CAUSE
+    4'b 1111, // index[ 9] OTBN_INSN_CNT
+    4'b 1111  // index[10] OTBN_LOAD_CHECKSUM
   };
 
 endpackage
