@@ -12,15 +12,13 @@
   The channels are configured using the following parameters: clock divider ratio, clock polarity, pattern length, pattern data, and repetition count.
   Effectively, Pattern Generator outputs the pattern data a specified number of times with the corresponding clock and then raises an interrupt when it is done.
   '''
-  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
-  cip_id:             "17",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_pattgen",
   revisions: [
     {
-      version:            "2.0.0",
+      version:            "1.0",
       life_stage:         "L1",
       design_stage:       "D2S",
       verification_stage: "V2S",

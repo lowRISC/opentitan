@@ -17,15 +17,13 @@
   On top of defensive features provided by the proprietary OTP memory to deter side-channel analysis (SCA), fault injection (FI) attacks, and visual and electrical probing, the open source OTP controller features high-level logical security protection such as integrity checks and scrambling, as well as software isolation for when OTP contents are readable and programmable.
   It features multiple individually-lockable logical partitions, periodic / persistent checking of OTP values, and a separate partition and interface for Life Cycle Controller.
   '''
-  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
-  cip_id:             "16",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_otp_ctrl",
   revisions: [
     {
-      version:            "0.1.0",
+      version:            "0.1",
       life_stage:         "L1",
       design_stage:       "D2",
       verification_stage: "V2",
@@ -34,7 +32,7 @@
       notes:              "",
     }
     {
-      version:            "2.0.0",
+      version:            "1.0",
       life_stage:         "L1",
       design_stage:       "D3",
       verification_stage: "V2S",

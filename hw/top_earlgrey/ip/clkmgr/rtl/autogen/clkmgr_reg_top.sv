@@ -38,7 +38,7 @@ module clkmgr_reg_top (
 
   import clkmgr_reg_pkg::* ;
 
-  localparam int AW = 8;
+  localparam int AW = 7;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -69,9 +69,9 @@ module clkmgr_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [26:0] reg_we_check;
+  logic [21:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(27)
+    .OneHotWidth(22)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -138,14 +138,6 @@ module clkmgr_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic [31:0] cip_id_qs;
-  logic [7:0] revision_reserved_qs;
-  logic [7:0] revision_subminor_qs;
-  logic [7:0] revision_minor_qs;
-  logic [7:0] revision_major_qs;
-  logic [31:0] parameter_block_type_qs;
-  logic [31:0] parameter_block_length_qs;
-  logic [31:0] next_parameter_block_qs;
   logic alert_test_we;
   logic alert_test_recov_fault_wd;
   logic alert_test_fatal_fault_wd;
@@ -705,44 +697,6 @@ module clkmgr_reg_top (
       ^usb_usb_meas_ctrl_shadowed_wdata;
 
   // Register instances
-  // R[cip_id]: V(False)
-  // constant-only read
-  assign cip_id_qs = 32'h4;
-
-
-  // R[revision]: V(False)
-  //   F[reserved]: 7:0
-  // constant-only read
-  assign revision_reserved_qs = 8'h0;
-
-  //   F[subminor]: 15:8
-  // constant-only read
-  assign revision_subminor_qs = 8'h0;
-
-  //   F[minor]: 23:16
-  // constant-only read
-  assign revision_minor_qs = 8'h0;
-
-  //   F[major]: 31:24
-  // constant-only read
-  assign revision_major_qs = 8'h2;
-
-
-  // R[parameter_block_type]: V(False)
-  // constant-only read
-  assign parameter_block_type_qs = 32'h0;
-
-
-  // R[parameter_block_length]: V(False)
-  // constant-only read
-  assign parameter_block_length_qs = 32'hc;
-
-
-  // R[next_parameter_block]: V(False)
-  // constant-only read
-  assign next_parameter_block_qs = 32'h0;
-
-
   // R[alert_test]: V(True)
   logic alert_test_qe;
   logic [1:0] alert_test_flds_we;
@@ -2421,36 +2375,31 @@ module clkmgr_reg_top (
 
 
 
-  logic [26:0] addr_hit;
+  logic [21:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[ 0] = (reg_addr == CLKMGR_CIP_ID_OFFSET);
-    addr_hit[ 1] = (reg_addr == CLKMGR_REVISION_OFFSET);
-    addr_hit[ 2] = (reg_addr == CLKMGR_PARAMETER_BLOCK_TYPE_OFFSET);
-    addr_hit[ 3] = (reg_addr == CLKMGR_PARAMETER_BLOCK_LENGTH_OFFSET);
-    addr_hit[ 4] = (reg_addr == CLKMGR_NEXT_PARAMETER_BLOCK_OFFSET);
-    addr_hit[ 5] = (reg_addr == CLKMGR_ALERT_TEST_OFFSET);
-    addr_hit[ 6] = (reg_addr == CLKMGR_EXTCLK_CTRL_REGWEN_OFFSET);
-    addr_hit[ 7] = (reg_addr == CLKMGR_EXTCLK_CTRL_OFFSET);
-    addr_hit[ 8] = (reg_addr == CLKMGR_EXTCLK_STATUS_OFFSET);
-    addr_hit[ 9] = (reg_addr == CLKMGR_JITTER_REGWEN_OFFSET);
-    addr_hit[10] = (reg_addr == CLKMGR_JITTER_ENABLE_OFFSET);
-    addr_hit[11] = (reg_addr == CLKMGR_CLK_ENABLES_OFFSET);
-    addr_hit[12] = (reg_addr == CLKMGR_CLK_HINTS_OFFSET);
-    addr_hit[13] = (reg_addr == CLKMGR_CLK_HINTS_STATUS_OFFSET);
-    addr_hit[14] = (reg_addr == CLKMGR_MEASURE_CTRL_REGWEN_OFFSET);
-    addr_hit[15] = (reg_addr == CLKMGR_IO_MEAS_CTRL_EN_OFFSET);
-    addr_hit[16] = (reg_addr == CLKMGR_IO_MEAS_CTRL_SHADOWED_OFFSET);
-    addr_hit[17] = (reg_addr == CLKMGR_IO_DIV2_MEAS_CTRL_EN_OFFSET);
-    addr_hit[18] = (reg_addr == CLKMGR_IO_DIV2_MEAS_CTRL_SHADOWED_OFFSET);
-    addr_hit[19] = (reg_addr == CLKMGR_IO_DIV4_MEAS_CTRL_EN_OFFSET);
-    addr_hit[20] = (reg_addr == CLKMGR_IO_DIV4_MEAS_CTRL_SHADOWED_OFFSET);
-    addr_hit[21] = (reg_addr == CLKMGR_MAIN_MEAS_CTRL_EN_OFFSET);
-    addr_hit[22] = (reg_addr == CLKMGR_MAIN_MEAS_CTRL_SHADOWED_OFFSET);
-    addr_hit[23] = (reg_addr == CLKMGR_USB_MEAS_CTRL_EN_OFFSET);
-    addr_hit[24] = (reg_addr == CLKMGR_USB_MEAS_CTRL_SHADOWED_OFFSET);
-    addr_hit[25] = (reg_addr == CLKMGR_RECOV_ERR_CODE_OFFSET);
-    addr_hit[26] = (reg_addr == CLKMGR_FATAL_ERR_CODE_OFFSET);
+    addr_hit[ 0] = (reg_addr == CLKMGR_ALERT_TEST_OFFSET);
+    addr_hit[ 1] = (reg_addr == CLKMGR_EXTCLK_CTRL_REGWEN_OFFSET);
+    addr_hit[ 2] = (reg_addr == CLKMGR_EXTCLK_CTRL_OFFSET);
+    addr_hit[ 3] = (reg_addr == CLKMGR_EXTCLK_STATUS_OFFSET);
+    addr_hit[ 4] = (reg_addr == CLKMGR_JITTER_REGWEN_OFFSET);
+    addr_hit[ 5] = (reg_addr == CLKMGR_JITTER_ENABLE_OFFSET);
+    addr_hit[ 6] = (reg_addr == CLKMGR_CLK_ENABLES_OFFSET);
+    addr_hit[ 7] = (reg_addr == CLKMGR_CLK_HINTS_OFFSET);
+    addr_hit[ 8] = (reg_addr == CLKMGR_CLK_HINTS_STATUS_OFFSET);
+    addr_hit[ 9] = (reg_addr == CLKMGR_MEASURE_CTRL_REGWEN_OFFSET);
+    addr_hit[10] = (reg_addr == CLKMGR_IO_MEAS_CTRL_EN_OFFSET);
+    addr_hit[11] = (reg_addr == CLKMGR_IO_MEAS_CTRL_SHADOWED_OFFSET);
+    addr_hit[12] = (reg_addr == CLKMGR_IO_DIV2_MEAS_CTRL_EN_OFFSET);
+    addr_hit[13] = (reg_addr == CLKMGR_IO_DIV2_MEAS_CTRL_SHADOWED_OFFSET);
+    addr_hit[14] = (reg_addr == CLKMGR_IO_DIV4_MEAS_CTRL_EN_OFFSET);
+    addr_hit[15] = (reg_addr == CLKMGR_IO_DIV4_MEAS_CTRL_SHADOWED_OFFSET);
+    addr_hit[16] = (reg_addr == CLKMGR_MAIN_MEAS_CTRL_EN_OFFSET);
+    addr_hit[17] = (reg_addr == CLKMGR_MAIN_MEAS_CTRL_SHADOWED_OFFSET);
+    addr_hit[18] = (reg_addr == CLKMGR_USB_MEAS_CTRL_EN_OFFSET);
+    addr_hit[19] = (reg_addr == CLKMGR_USB_MEAS_CTRL_SHADOWED_OFFSET);
+    addr_hit[20] = (reg_addr == CLKMGR_RECOV_ERR_CODE_OFFSET);
+    addr_hit[21] = (reg_addr == CLKMGR_FATAL_ERR_CODE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -2479,36 +2428,31 @@ module clkmgr_reg_top (
                (addr_hit[18] & (|(CLKMGR_PERMIT[18] & ~reg_be))) |
                (addr_hit[19] & (|(CLKMGR_PERMIT[19] & ~reg_be))) |
                (addr_hit[20] & (|(CLKMGR_PERMIT[20] & ~reg_be))) |
-               (addr_hit[21] & (|(CLKMGR_PERMIT[21] & ~reg_be))) |
-               (addr_hit[22] & (|(CLKMGR_PERMIT[22] & ~reg_be))) |
-               (addr_hit[23] & (|(CLKMGR_PERMIT[23] & ~reg_be))) |
-               (addr_hit[24] & (|(CLKMGR_PERMIT[24] & ~reg_be))) |
-               (addr_hit[25] & (|(CLKMGR_PERMIT[25] & ~reg_be))) |
-               (addr_hit[26] & (|(CLKMGR_PERMIT[26] & ~reg_be)))));
+               (addr_hit[21] & (|(CLKMGR_PERMIT[21] & ~reg_be)))));
   end
 
   // Generate write-enables
-  assign alert_test_we = addr_hit[5] & reg_we & !reg_error;
+  assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
   assign alert_test_recov_fault_wd = reg_wdata[0];
 
   assign alert_test_fatal_fault_wd = reg_wdata[1];
-  assign extclk_ctrl_regwen_we = addr_hit[6] & reg_we & !reg_error;
+  assign extclk_ctrl_regwen_we = addr_hit[1] & reg_we & !reg_error;
 
   assign extclk_ctrl_regwen_wd = reg_wdata[0];
-  assign extclk_ctrl_we = addr_hit[7] & reg_we & !reg_error;
+  assign extclk_ctrl_we = addr_hit[2] & reg_we & !reg_error;
 
   assign extclk_ctrl_sel_wd = reg_wdata[3:0];
 
   assign extclk_ctrl_hi_speed_sel_wd = reg_wdata[7:4];
-  assign extclk_status_re = addr_hit[8] & reg_re & !reg_error;
-  assign jitter_regwen_we = addr_hit[9] & reg_we & !reg_error;
+  assign extclk_status_re = addr_hit[3] & reg_re & !reg_error;
+  assign jitter_regwen_we = addr_hit[4] & reg_we & !reg_error;
 
   assign jitter_regwen_wd = reg_wdata[0];
-  assign jitter_enable_we = addr_hit[10] & reg_we & !reg_error;
+  assign jitter_enable_we = addr_hit[5] & reg_we & !reg_error;
 
   assign jitter_enable_wd = reg_wdata[3:0];
-  assign clk_enables_we = addr_hit[11] & reg_we & !reg_error;
+  assign clk_enables_we = addr_hit[6] & reg_we & !reg_error;
 
   assign clk_enables_clk_io_div4_peri_en_wd = reg_wdata[0];
 
@@ -2517,7 +2461,7 @@ module clkmgr_reg_top (
   assign clk_enables_clk_io_peri_en_wd = reg_wdata[2];
 
   assign clk_enables_clk_usb_peri_en_wd = reg_wdata[3];
-  assign clk_hints_we = addr_hit[12] & reg_we & !reg_error;
+  assign clk_hints_we = addr_hit[7] & reg_we & !reg_error;
 
   assign clk_hints_clk_main_aes_hint_wd = reg_wdata[0];
 
@@ -2526,40 +2470,40 @@ module clkmgr_reg_top (
   assign clk_hints_clk_main_kmac_hint_wd = reg_wdata[2];
 
   assign clk_hints_clk_main_otbn_hint_wd = reg_wdata[3];
-  assign measure_ctrl_regwen_we = addr_hit[14] & reg_we & !reg_error;
+  assign measure_ctrl_regwen_we = addr_hit[9] & reg_we & !reg_error;
 
   assign measure_ctrl_regwen_wd = reg_wdata[0];
-  assign io_meas_ctrl_en_we = addr_hit[15] & reg_we & !reg_error;
+  assign io_meas_ctrl_en_we = addr_hit[10] & reg_we & !reg_error;
 
-  assign io_meas_ctrl_shadowed_re = addr_hit[16] & reg_re & !reg_error;
-  assign io_meas_ctrl_shadowed_we = addr_hit[16] & reg_we & !reg_error;
-
-
-  assign io_div2_meas_ctrl_en_we = addr_hit[17] & reg_we & !reg_error;
-
-  assign io_div2_meas_ctrl_shadowed_re = addr_hit[18] & reg_re & !reg_error;
-  assign io_div2_meas_ctrl_shadowed_we = addr_hit[18] & reg_we & !reg_error;
+  assign io_meas_ctrl_shadowed_re = addr_hit[11] & reg_re & !reg_error;
+  assign io_meas_ctrl_shadowed_we = addr_hit[11] & reg_we & !reg_error;
 
 
-  assign io_div4_meas_ctrl_en_we = addr_hit[19] & reg_we & !reg_error;
+  assign io_div2_meas_ctrl_en_we = addr_hit[12] & reg_we & !reg_error;
 
-  assign io_div4_meas_ctrl_shadowed_re = addr_hit[20] & reg_re & !reg_error;
-  assign io_div4_meas_ctrl_shadowed_we = addr_hit[20] & reg_we & !reg_error;
-
-
-  assign main_meas_ctrl_en_we = addr_hit[21] & reg_we & !reg_error;
-
-  assign main_meas_ctrl_shadowed_re = addr_hit[22] & reg_re & !reg_error;
-  assign main_meas_ctrl_shadowed_we = addr_hit[22] & reg_we & !reg_error;
+  assign io_div2_meas_ctrl_shadowed_re = addr_hit[13] & reg_re & !reg_error;
+  assign io_div2_meas_ctrl_shadowed_we = addr_hit[13] & reg_we & !reg_error;
 
 
-  assign usb_meas_ctrl_en_we = addr_hit[23] & reg_we & !reg_error;
+  assign io_div4_meas_ctrl_en_we = addr_hit[14] & reg_we & !reg_error;
 
-  assign usb_meas_ctrl_shadowed_re = addr_hit[24] & reg_re & !reg_error;
-  assign usb_meas_ctrl_shadowed_we = addr_hit[24] & reg_we & !reg_error;
+  assign io_div4_meas_ctrl_shadowed_re = addr_hit[15] & reg_re & !reg_error;
+  assign io_div4_meas_ctrl_shadowed_we = addr_hit[15] & reg_we & !reg_error;
 
 
-  assign recov_err_code_we = addr_hit[25] & reg_we & !reg_error;
+  assign main_meas_ctrl_en_we = addr_hit[16] & reg_we & !reg_error;
+
+  assign main_meas_ctrl_shadowed_re = addr_hit[17] & reg_re & !reg_error;
+  assign main_meas_ctrl_shadowed_we = addr_hit[17] & reg_we & !reg_error;
+
+
+  assign usb_meas_ctrl_en_we = addr_hit[18] & reg_we & !reg_error;
+
+  assign usb_meas_ctrl_shadowed_re = addr_hit[19] & reg_re & !reg_error;
+  assign usb_meas_ctrl_shadowed_we = addr_hit[19] & reg_we & !reg_error;
+
+
+  assign recov_err_code_we = addr_hit[20] & reg_we & !reg_error;
 
   assign recov_err_code_shadow_update_err_wd = reg_wdata[0];
 
@@ -2586,33 +2530,28 @@ module clkmgr_reg_top (
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
-    reg_we_check[0] = 1'b0;
-    reg_we_check[1] = 1'b0;
-    reg_we_check[2] = 1'b0;
+    reg_we_check[0] = alert_test_we;
+    reg_we_check[1] = extclk_ctrl_regwen_we;
+    reg_we_check[2] = extclk_ctrl_gated_we;
     reg_we_check[3] = 1'b0;
-    reg_we_check[4] = 1'b0;
-    reg_we_check[5] = alert_test_we;
-    reg_we_check[6] = extclk_ctrl_regwen_we;
-    reg_we_check[7] = extclk_ctrl_gated_we;
+    reg_we_check[4] = jitter_regwen_we;
+    reg_we_check[5] = jitter_enable_we;
+    reg_we_check[6] = clk_enables_we;
+    reg_we_check[7] = clk_hints_we;
     reg_we_check[8] = 1'b0;
-    reg_we_check[9] = jitter_regwen_we;
-    reg_we_check[10] = jitter_enable_we;
-    reg_we_check[11] = clk_enables_we;
-    reg_we_check[12] = clk_hints_we;
-    reg_we_check[13] = 1'b0;
-    reg_we_check[14] = measure_ctrl_regwen_we;
-    reg_we_check[15] = io_meas_ctrl_en_we;
-    reg_we_check[16] = io_meas_ctrl_shadowed_we;
-    reg_we_check[17] = io_div2_meas_ctrl_en_we;
-    reg_we_check[18] = io_div2_meas_ctrl_shadowed_we;
-    reg_we_check[19] = io_div4_meas_ctrl_en_we;
-    reg_we_check[20] = io_div4_meas_ctrl_shadowed_we;
-    reg_we_check[21] = main_meas_ctrl_en_we;
-    reg_we_check[22] = main_meas_ctrl_shadowed_we;
-    reg_we_check[23] = usb_meas_ctrl_en_we;
-    reg_we_check[24] = usb_meas_ctrl_shadowed_we;
-    reg_we_check[25] = recov_err_code_we;
-    reg_we_check[26] = 1'b0;
+    reg_we_check[9] = measure_ctrl_regwen_we;
+    reg_we_check[10] = io_meas_ctrl_en_we;
+    reg_we_check[11] = io_meas_ctrl_shadowed_we;
+    reg_we_check[12] = io_div2_meas_ctrl_en_we;
+    reg_we_check[13] = io_div2_meas_ctrl_shadowed_we;
+    reg_we_check[14] = io_div4_meas_ctrl_en_we;
+    reg_we_check[15] = io_div4_meas_ctrl_shadowed_we;
+    reg_we_check[16] = main_meas_ctrl_en_we;
+    reg_we_check[17] = main_meas_ctrl_shadowed_we;
+    reg_we_check[18] = usb_meas_ctrl_en_we;
+    reg_we_check[19] = usb_meas_ctrl_shadowed_we;
+    reg_we_check[20] = recov_err_code_we;
+    reg_we_check[21] = 1'b0;
   end
 
   // Read data return
@@ -2620,110 +2559,87 @@ module clkmgr_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[31:0] = cip_id_qs;
-      end
-
-      addr_hit[1]: begin
-        reg_rdata_next[7:0] = revision_reserved_qs;
-        reg_rdata_next[15:8] = revision_subminor_qs;
-        reg_rdata_next[23:16] = revision_minor_qs;
-        reg_rdata_next[31:24] = revision_major_qs;
-      end
-
-      addr_hit[2]: begin
-        reg_rdata_next[31:0] = parameter_block_type_qs;
-      end
-
-      addr_hit[3]: begin
-        reg_rdata_next[31:0] = parameter_block_length_qs;
-      end
-
-      addr_hit[4]: begin
-        reg_rdata_next[31:0] = next_parameter_block_qs;
-      end
-
-      addr_hit[5]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
       end
 
-      addr_hit[6]: begin
+      addr_hit[1]: begin
         reg_rdata_next[0] = extclk_ctrl_regwen_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[2]: begin
         reg_rdata_next[3:0] = extclk_ctrl_sel_qs;
         reg_rdata_next[7:4] = extclk_ctrl_hi_speed_sel_qs;
       end
 
-      addr_hit[8]: begin
+      addr_hit[3]: begin
         reg_rdata_next[3:0] = extclk_status_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[4]: begin
         reg_rdata_next[0] = jitter_regwen_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[5]: begin
         reg_rdata_next[3:0] = jitter_enable_qs;
       end
 
-      addr_hit[11]: begin
+      addr_hit[6]: begin
         reg_rdata_next[0] = clk_enables_clk_io_div4_peri_en_qs;
         reg_rdata_next[1] = clk_enables_clk_io_div2_peri_en_qs;
         reg_rdata_next[2] = clk_enables_clk_io_peri_en_qs;
         reg_rdata_next[3] = clk_enables_clk_usb_peri_en_qs;
       end
 
-      addr_hit[12]: begin
+      addr_hit[7]: begin
         reg_rdata_next[0] = clk_hints_clk_main_aes_hint_qs;
         reg_rdata_next[1] = clk_hints_clk_main_hmac_hint_qs;
         reg_rdata_next[2] = clk_hints_clk_main_kmac_hint_qs;
         reg_rdata_next[3] = clk_hints_clk_main_otbn_hint_qs;
       end
 
-      addr_hit[13]: begin
+      addr_hit[8]: begin
         reg_rdata_next[0] = clk_hints_status_clk_main_aes_val_qs;
         reg_rdata_next[1] = clk_hints_status_clk_main_hmac_val_qs;
         reg_rdata_next[2] = clk_hints_status_clk_main_kmac_val_qs;
         reg_rdata_next[3] = clk_hints_status_clk_main_otbn_val_qs;
       end
 
-      addr_hit[14]: begin
+      addr_hit[9]: begin
         reg_rdata_next[0] = measure_ctrl_regwen_qs;
       end
 
-      addr_hit[15]: begin
+      addr_hit[10]: begin
         reg_rdata_next = DW'(io_meas_ctrl_en_qs);
       end
-      addr_hit[16]: begin
+      addr_hit[11]: begin
         reg_rdata_next = DW'(io_meas_ctrl_shadowed_qs);
       end
-      addr_hit[17]: begin
+      addr_hit[12]: begin
         reg_rdata_next = DW'(io_div2_meas_ctrl_en_qs);
       end
-      addr_hit[18]: begin
+      addr_hit[13]: begin
         reg_rdata_next = DW'(io_div2_meas_ctrl_shadowed_qs);
       end
-      addr_hit[19]: begin
+      addr_hit[14]: begin
         reg_rdata_next = DW'(io_div4_meas_ctrl_en_qs);
       end
-      addr_hit[20]: begin
+      addr_hit[15]: begin
         reg_rdata_next = DW'(io_div4_meas_ctrl_shadowed_qs);
       end
-      addr_hit[21]: begin
+      addr_hit[16]: begin
         reg_rdata_next = DW'(main_meas_ctrl_en_qs);
       end
-      addr_hit[22]: begin
+      addr_hit[17]: begin
         reg_rdata_next = DW'(main_meas_ctrl_shadowed_qs);
       end
-      addr_hit[23]: begin
+      addr_hit[18]: begin
         reg_rdata_next = DW'(usb_meas_ctrl_en_qs);
       end
-      addr_hit[24]: begin
+      addr_hit[19]: begin
         reg_rdata_next = DW'(usb_meas_ctrl_shadowed_qs);
       end
-      addr_hit[25]: begin
+      addr_hit[20]: begin
         reg_rdata_next[0] = recov_err_code_shadow_update_err_qs;
         reg_rdata_next[1] = recov_err_code_io_measure_err_qs;
         reg_rdata_next[2] = recov_err_code_io_div2_measure_err_qs;
@@ -2737,7 +2653,7 @@ module clkmgr_reg_top (
         reg_rdata_next[10] = recov_err_code_usb_timeout_err_qs;
       end
 
-      addr_hit[26]: begin
+      addr_hit[21]: begin
         reg_rdata_next[0] = fatal_err_code_reg_intg_qs;
         reg_rdata_next[1] = fatal_err_code_idle_cnt_qs;
         reg_rdata_next[2] = fatal_err_code_shadow_storage_err_qs;
@@ -2804,34 +2720,34 @@ module clkmgr_reg_top (
   always_comb begin
     reg_busy_sel = '0;
     unique case (1'b1)
-      addr_hit[15]: begin
+      addr_hit[10]: begin
         reg_busy_sel = io_meas_ctrl_en_busy;
       end
-      addr_hit[16]: begin
+      addr_hit[11]: begin
         reg_busy_sel = io_meas_ctrl_shadowed_busy;
       end
-      addr_hit[17]: begin
+      addr_hit[12]: begin
         reg_busy_sel = io_div2_meas_ctrl_en_busy;
       end
-      addr_hit[18]: begin
+      addr_hit[13]: begin
         reg_busy_sel = io_div2_meas_ctrl_shadowed_busy;
       end
-      addr_hit[19]: begin
+      addr_hit[14]: begin
         reg_busy_sel = io_div4_meas_ctrl_en_busy;
       end
-      addr_hit[20]: begin
+      addr_hit[15]: begin
         reg_busy_sel = io_div4_meas_ctrl_shadowed_busy;
       end
-      addr_hit[21]: begin
+      addr_hit[16]: begin
         reg_busy_sel = main_meas_ctrl_en_busy;
       end
-      addr_hit[22]: begin
+      addr_hit[17]: begin
         reg_busy_sel = main_meas_ctrl_shadowed_busy;
       end
-      addr_hit[23]: begin
+      addr_hit[18]: begin
         reg_busy_sel = usb_meas_ctrl_en_busy;
       end
-      addr_hit[24]: begin
+      addr_hit[19]: begin
         reg_busy_sel = usb_meas_ctrl_shadowed_busy;
       end
       default: begin

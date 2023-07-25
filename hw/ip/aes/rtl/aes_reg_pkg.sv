@@ -240,45 +240,40 @@ package aes_reg_pkg;
   } aes_hw2reg_t;
 
   // Register offsets
-  parameter logic [BlockAw-1:0] AES_CIP_ID_OFFSET = 8'h 0;
-  parameter logic [BlockAw-1:0] AES_REVISION_OFFSET = 8'h 4;
-  parameter logic [BlockAw-1:0] AES_PARAMETER_BLOCK_TYPE_OFFSET = 8'h 8;
-  parameter logic [BlockAw-1:0] AES_PARAMETER_BLOCK_LENGTH_OFFSET = 8'h c;
-  parameter logic [BlockAw-1:0] AES_NEXT_PARAMETER_BLOCK_OFFSET = 8'h 10;
-  parameter logic [BlockAw-1:0] AES_ALERT_TEST_OFFSET = 8'h 40;
-  parameter logic [BlockAw-1:0] AES_KEY_SHARE0_0_OFFSET = 8'h 44;
-  parameter logic [BlockAw-1:0] AES_KEY_SHARE0_1_OFFSET = 8'h 48;
-  parameter logic [BlockAw-1:0] AES_KEY_SHARE0_2_OFFSET = 8'h 4c;
-  parameter logic [BlockAw-1:0] AES_KEY_SHARE0_3_OFFSET = 8'h 50;
-  parameter logic [BlockAw-1:0] AES_KEY_SHARE0_4_OFFSET = 8'h 54;
-  parameter logic [BlockAw-1:0] AES_KEY_SHARE0_5_OFFSET = 8'h 58;
-  parameter logic [BlockAw-1:0] AES_KEY_SHARE0_6_OFFSET = 8'h 5c;
-  parameter logic [BlockAw-1:0] AES_KEY_SHARE0_7_OFFSET = 8'h 60;
-  parameter logic [BlockAw-1:0] AES_KEY_SHARE1_0_OFFSET = 8'h 64;
-  parameter logic [BlockAw-1:0] AES_KEY_SHARE1_1_OFFSET = 8'h 68;
-  parameter logic [BlockAw-1:0] AES_KEY_SHARE1_2_OFFSET = 8'h 6c;
-  parameter logic [BlockAw-1:0] AES_KEY_SHARE1_3_OFFSET = 8'h 70;
-  parameter logic [BlockAw-1:0] AES_KEY_SHARE1_4_OFFSET = 8'h 74;
-  parameter logic [BlockAw-1:0] AES_KEY_SHARE1_5_OFFSET = 8'h 78;
-  parameter logic [BlockAw-1:0] AES_KEY_SHARE1_6_OFFSET = 8'h 7c;
-  parameter logic [BlockAw-1:0] AES_KEY_SHARE1_7_OFFSET = 8'h 80;
-  parameter logic [BlockAw-1:0] AES_IV_0_OFFSET = 8'h 84;
-  parameter logic [BlockAw-1:0] AES_IV_1_OFFSET = 8'h 88;
-  parameter logic [BlockAw-1:0] AES_IV_2_OFFSET = 8'h 8c;
-  parameter logic [BlockAw-1:0] AES_IV_3_OFFSET = 8'h 90;
-  parameter logic [BlockAw-1:0] AES_DATA_IN_0_OFFSET = 8'h 94;
-  parameter logic [BlockAw-1:0] AES_DATA_IN_1_OFFSET = 8'h 98;
-  parameter logic [BlockAw-1:0] AES_DATA_IN_2_OFFSET = 8'h 9c;
-  parameter logic [BlockAw-1:0] AES_DATA_IN_3_OFFSET = 8'h a0;
-  parameter logic [BlockAw-1:0] AES_DATA_OUT_0_OFFSET = 8'h a4;
-  parameter logic [BlockAw-1:0] AES_DATA_OUT_1_OFFSET = 8'h a8;
-  parameter logic [BlockAw-1:0] AES_DATA_OUT_2_OFFSET = 8'h ac;
-  parameter logic [BlockAw-1:0] AES_DATA_OUT_3_OFFSET = 8'h b0;
-  parameter logic [BlockAw-1:0] AES_CTRL_SHADOWED_OFFSET = 8'h b4;
-  parameter logic [BlockAw-1:0] AES_CTRL_AUX_SHADOWED_OFFSET = 8'h b8;
-  parameter logic [BlockAw-1:0] AES_CTRL_AUX_REGWEN_OFFSET = 8'h bc;
-  parameter logic [BlockAw-1:0] AES_TRIGGER_OFFSET = 8'h c0;
-  parameter logic [BlockAw-1:0] AES_STATUS_OFFSET = 8'h c4;
+  parameter logic [BlockAw-1:0] AES_ALERT_TEST_OFFSET = 8'h 0;
+  parameter logic [BlockAw-1:0] AES_KEY_SHARE0_0_OFFSET = 8'h 4;
+  parameter logic [BlockAw-1:0] AES_KEY_SHARE0_1_OFFSET = 8'h 8;
+  parameter logic [BlockAw-1:0] AES_KEY_SHARE0_2_OFFSET = 8'h c;
+  parameter logic [BlockAw-1:0] AES_KEY_SHARE0_3_OFFSET = 8'h 10;
+  parameter logic [BlockAw-1:0] AES_KEY_SHARE0_4_OFFSET = 8'h 14;
+  parameter logic [BlockAw-1:0] AES_KEY_SHARE0_5_OFFSET = 8'h 18;
+  parameter logic [BlockAw-1:0] AES_KEY_SHARE0_6_OFFSET = 8'h 1c;
+  parameter logic [BlockAw-1:0] AES_KEY_SHARE0_7_OFFSET = 8'h 20;
+  parameter logic [BlockAw-1:0] AES_KEY_SHARE1_0_OFFSET = 8'h 24;
+  parameter logic [BlockAw-1:0] AES_KEY_SHARE1_1_OFFSET = 8'h 28;
+  parameter logic [BlockAw-1:0] AES_KEY_SHARE1_2_OFFSET = 8'h 2c;
+  parameter logic [BlockAw-1:0] AES_KEY_SHARE1_3_OFFSET = 8'h 30;
+  parameter logic [BlockAw-1:0] AES_KEY_SHARE1_4_OFFSET = 8'h 34;
+  parameter logic [BlockAw-1:0] AES_KEY_SHARE1_5_OFFSET = 8'h 38;
+  parameter logic [BlockAw-1:0] AES_KEY_SHARE1_6_OFFSET = 8'h 3c;
+  parameter logic [BlockAw-1:0] AES_KEY_SHARE1_7_OFFSET = 8'h 40;
+  parameter logic [BlockAw-1:0] AES_IV_0_OFFSET = 8'h 44;
+  parameter logic [BlockAw-1:0] AES_IV_1_OFFSET = 8'h 48;
+  parameter logic [BlockAw-1:0] AES_IV_2_OFFSET = 8'h 4c;
+  parameter logic [BlockAw-1:0] AES_IV_3_OFFSET = 8'h 50;
+  parameter logic [BlockAw-1:0] AES_DATA_IN_0_OFFSET = 8'h 54;
+  parameter logic [BlockAw-1:0] AES_DATA_IN_1_OFFSET = 8'h 58;
+  parameter logic [BlockAw-1:0] AES_DATA_IN_2_OFFSET = 8'h 5c;
+  parameter logic [BlockAw-1:0] AES_DATA_IN_3_OFFSET = 8'h 60;
+  parameter logic [BlockAw-1:0] AES_DATA_OUT_0_OFFSET = 8'h 64;
+  parameter logic [BlockAw-1:0] AES_DATA_OUT_1_OFFSET = 8'h 68;
+  parameter logic [BlockAw-1:0] AES_DATA_OUT_2_OFFSET = 8'h 6c;
+  parameter logic [BlockAw-1:0] AES_DATA_OUT_3_OFFSET = 8'h 70;
+  parameter logic [BlockAw-1:0] AES_CTRL_SHADOWED_OFFSET = 8'h 74;
+  parameter logic [BlockAw-1:0] AES_CTRL_AUX_SHADOWED_OFFSET = 8'h 78;
+  parameter logic [BlockAw-1:0] AES_CTRL_AUX_REGWEN_OFFSET = 8'h 7c;
+  parameter logic [BlockAw-1:0] AES_TRIGGER_OFFSET = 8'h 80;
+  parameter logic [BlockAw-1:0] AES_STATUS_OFFSET = 8'h 84;
 
   // Reset values for hwext registers and their fields
   parameter logic [1:0] AES_ALERT_TEST_RESVAL = 2'h 0;
@@ -342,11 +337,6 @@ package aes_reg_pkg;
 
   // Register index
   typedef enum int {
-    AES_CIP_ID,
-    AES_REVISION,
-    AES_PARAMETER_BLOCK_TYPE,
-    AES_PARAMETER_BLOCK_LENGTH,
-    AES_NEXT_PARAMETER_BLOCK,
     AES_ALERT_TEST,
     AES_KEY_SHARE0_0,
     AES_KEY_SHARE0_1,
@@ -384,46 +374,41 @@ package aes_reg_pkg;
   } aes_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] AES_PERMIT [39] = '{
-    4'b 1111, // index[ 0] AES_CIP_ID
-    4'b 1111, // index[ 1] AES_REVISION
-    4'b 1111, // index[ 2] AES_PARAMETER_BLOCK_TYPE
-    4'b 1111, // index[ 3] AES_PARAMETER_BLOCK_LENGTH
-    4'b 1111, // index[ 4] AES_NEXT_PARAMETER_BLOCK
-    4'b 0001, // index[ 5] AES_ALERT_TEST
-    4'b 1111, // index[ 6] AES_KEY_SHARE0_0
-    4'b 1111, // index[ 7] AES_KEY_SHARE0_1
-    4'b 1111, // index[ 8] AES_KEY_SHARE0_2
-    4'b 1111, // index[ 9] AES_KEY_SHARE0_3
-    4'b 1111, // index[10] AES_KEY_SHARE0_4
-    4'b 1111, // index[11] AES_KEY_SHARE0_5
-    4'b 1111, // index[12] AES_KEY_SHARE0_6
-    4'b 1111, // index[13] AES_KEY_SHARE0_7
-    4'b 1111, // index[14] AES_KEY_SHARE1_0
-    4'b 1111, // index[15] AES_KEY_SHARE1_1
-    4'b 1111, // index[16] AES_KEY_SHARE1_2
-    4'b 1111, // index[17] AES_KEY_SHARE1_3
-    4'b 1111, // index[18] AES_KEY_SHARE1_4
-    4'b 1111, // index[19] AES_KEY_SHARE1_5
-    4'b 1111, // index[20] AES_KEY_SHARE1_6
-    4'b 1111, // index[21] AES_KEY_SHARE1_7
-    4'b 1111, // index[22] AES_IV_0
-    4'b 1111, // index[23] AES_IV_1
-    4'b 1111, // index[24] AES_IV_2
-    4'b 1111, // index[25] AES_IV_3
-    4'b 1111, // index[26] AES_DATA_IN_0
-    4'b 1111, // index[27] AES_DATA_IN_1
-    4'b 1111, // index[28] AES_DATA_IN_2
-    4'b 1111, // index[29] AES_DATA_IN_3
-    4'b 1111, // index[30] AES_DATA_OUT_0
-    4'b 1111, // index[31] AES_DATA_OUT_1
-    4'b 1111, // index[32] AES_DATA_OUT_2
-    4'b 1111, // index[33] AES_DATA_OUT_3
-    4'b 0011, // index[34] AES_CTRL_SHADOWED
-    4'b 0001, // index[35] AES_CTRL_AUX_SHADOWED
-    4'b 0001, // index[36] AES_CTRL_AUX_REGWEN
-    4'b 0001, // index[37] AES_TRIGGER
-    4'b 0001  // index[38] AES_STATUS
+  parameter logic [3:0] AES_PERMIT [34] = '{
+    4'b 0001, // index[ 0] AES_ALERT_TEST
+    4'b 1111, // index[ 1] AES_KEY_SHARE0_0
+    4'b 1111, // index[ 2] AES_KEY_SHARE0_1
+    4'b 1111, // index[ 3] AES_KEY_SHARE0_2
+    4'b 1111, // index[ 4] AES_KEY_SHARE0_3
+    4'b 1111, // index[ 5] AES_KEY_SHARE0_4
+    4'b 1111, // index[ 6] AES_KEY_SHARE0_5
+    4'b 1111, // index[ 7] AES_KEY_SHARE0_6
+    4'b 1111, // index[ 8] AES_KEY_SHARE0_7
+    4'b 1111, // index[ 9] AES_KEY_SHARE1_0
+    4'b 1111, // index[10] AES_KEY_SHARE1_1
+    4'b 1111, // index[11] AES_KEY_SHARE1_2
+    4'b 1111, // index[12] AES_KEY_SHARE1_3
+    4'b 1111, // index[13] AES_KEY_SHARE1_4
+    4'b 1111, // index[14] AES_KEY_SHARE1_5
+    4'b 1111, // index[15] AES_KEY_SHARE1_6
+    4'b 1111, // index[16] AES_KEY_SHARE1_7
+    4'b 1111, // index[17] AES_IV_0
+    4'b 1111, // index[18] AES_IV_1
+    4'b 1111, // index[19] AES_IV_2
+    4'b 1111, // index[20] AES_IV_3
+    4'b 1111, // index[21] AES_DATA_IN_0
+    4'b 1111, // index[22] AES_DATA_IN_1
+    4'b 1111, // index[23] AES_DATA_IN_2
+    4'b 1111, // index[24] AES_DATA_IN_3
+    4'b 1111, // index[25] AES_DATA_OUT_0
+    4'b 1111, // index[26] AES_DATA_OUT_1
+    4'b 1111, // index[27] AES_DATA_OUT_2
+    4'b 1111, // index[28] AES_DATA_OUT_3
+    4'b 0011, // index[29] AES_CTRL_SHADOWED
+    4'b 0001, // index[30] AES_CTRL_AUX_SHADOWED
+    4'b 0001, // index[31] AES_CTRL_AUX_REGWEN
+    4'b 0001, // index[32] AES_TRIGGER
+    4'b 0001  // index[33] AES_STATUS
   };
 
 endpackage

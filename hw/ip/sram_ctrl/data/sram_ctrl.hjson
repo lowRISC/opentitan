@@ -11,13 +11,11 @@
   For end-to-end data integrity protection, SRAM Controller stores the integrity bits alongside data words in memory and raises an alert if it detects an integrity fault.
   SRAM Controller contains an LFSR-based initialization mechanism that overwrites the entire SRAM with pseudorandom data.
   '''
-  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
-  cip_id:             "28",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_sram_ctrl",
-  version:            "2.0.0",
+  version:            "1.0",
   life_stage:         "L1",
   design_stage:       "D3",
   verification_stage: "V2S",

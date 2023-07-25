@@ -16,15 +16,13 @@
   [nist-fips-202]: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.202.pdf
   [nist-sp-800-185]: https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-185.pdf
   '''
-  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
-  cip_id:             "13",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_kmac",
   revisions: [
     {
-      version:            "2.0.0",
+      version:            "1.0",
       life_stage:         "L1",
       design_stage:       "D2S",
       verification_stage: "V2S",

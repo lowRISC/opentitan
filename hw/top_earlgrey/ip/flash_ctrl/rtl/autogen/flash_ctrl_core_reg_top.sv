@@ -64,9 +64,9 @@ module flash_ctrl_core_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [112:0] reg_we_check;
+  logic [107:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(113)
+    .OneHotWidth(108)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -137,8 +137,8 @@ module flash_ctrl_core_reg_top (
   // Create steering logic
   always_comb begin
     reg_steer =
-        tl_i.a_address[AW-1:0] inside {[496:499]} ? 2'd0 :
-        tl_i.a_address[AW-1:0] inside {[500:503]} ? 2'd1 :
+        tl_i.a_address[AW-1:0] inside {[432:435]} ? 2'd0 :
+        tl_i.a_address[AW-1:0] inside {[436:439]} ? 2'd1 :
         // Default set to register
         2'd2;
 
@@ -180,14 +180,6 @@ module flash_ctrl_core_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic [31:0] cip_id_qs;
-  logic [7:0] revision_reserved_qs;
-  logic [7:0] revision_subminor_qs;
-  logic [7:0] revision_minor_qs;
-  logic [7:0] revision_major_qs;
-  logic [31:0] parameter_block_type_qs;
-  logic [31:0] parameter_block_length_qs;
-  logic [31:0] next_parameter_block_qs;
   logic intr_state_we;
   logic intr_state_prog_empty_qs;
   logic intr_state_prog_empty_wd;
@@ -1030,44 +1022,6 @@ module flash_ctrl_core_reg_top (
   logic [4:0] curr_fifo_lvl_rd_qs;
 
   // Register instances
-  // R[cip_id]: V(False)
-  // constant-only read
-  assign cip_id_qs = 32'h8;
-
-
-  // R[revision]: V(False)
-  //   F[reserved]: 7:0
-  // constant-only read
-  assign revision_reserved_qs = 8'h0;
-
-  //   F[subminor]: 15:8
-  // constant-only read
-  assign revision_subminor_qs = 8'h0;
-
-  //   F[minor]: 23:16
-  // constant-only read
-  assign revision_minor_qs = 8'h0;
-
-  //   F[major]: 31:24
-  // constant-only read
-  assign revision_major_qs = 8'h2;
-
-
-  // R[parameter_block_type]: V(False)
-  // constant-only read
-  assign parameter_block_type_qs = 32'h0;
-
-
-  // R[parameter_block_length]: V(False)
-  // constant-only read
-  assign parameter_block_length_qs = 32'hc;
-
-
-  // R[next_parameter_block]: V(False)
-  // constant-only read
-  assign next_parameter_block_qs = 32'h0;
-
-
   // R[intr_state]: V(False)
   //   F[prog_empty]: 0:0
   prim_subreg #(
@@ -11492,122 +11446,117 @@ module flash_ctrl_core_reg_top (
 
 
 
-  logic [112:0] addr_hit;
+  logic [107:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[  0] = (reg_addr == FLASH_CTRL_CIP_ID_OFFSET);
-    addr_hit[  1] = (reg_addr == FLASH_CTRL_REVISION_OFFSET);
-    addr_hit[  2] = (reg_addr == FLASH_CTRL_PARAMETER_BLOCK_TYPE_OFFSET);
-    addr_hit[  3] = (reg_addr == FLASH_CTRL_PARAMETER_BLOCK_LENGTH_OFFSET);
-    addr_hit[  4] = (reg_addr == FLASH_CTRL_NEXT_PARAMETER_BLOCK_OFFSET);
-    addr_hit[  5] = (reg_addr == FLASH_CTRL_INTR_STATE_OFFSET);
-    addr_hit[  6] = (reg_addr == FLASH_CTRL_INTR_ENABLE_OFFSET);
-    addr_hit[  7] = (reg_addr == FLASH_CTRL_INTR_TEST_OFFSET);
-    addr_hit[  8] = (reg_addr == FLASH_CTRL_ALERT_TEST_OFFSET);
-    addr_hit[  9] = (reg_addr == FLASH_CTRL_DIS_OFFSET);
-    addr_hit[ 10] = (reg_addr == FLASH_CTRL_EXEC_OFFSET);
-    addr_hit[ 11] = (reg_addr == FLASH_CTRL_INIT_OFFSET);
-    addr_hit[ 12] = (reg_addr == FLASH_CTRL_CTRL_REGWEN_OFFSET);
-    addr_hit[ 13] = (reg_addr == FLASH_CTRL_CONTROL_OFFSET);
-    addr_hit[ 14] = (reg_addr == FLASH_CTRL_ADDR_OFFSET);
-    addr_hit[ 15] = (reg_addr == FLASH_CTRL_PROG_TYPE_EN_OFFSET);
-    addr_hit[ 16] = (reg_addr == FLASH_CTRL_ERASE_SUSPEND_OFFSET);
-    addr_hit[ 17] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_0_OFFSET);
-    addr_hit[ 18] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_1_OFFSET);
-    addr_hit[ 19] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_2_OFFSET);
-    addr_hit[ 20] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_3_OFFSET);
-    addr_hit[ 21] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_4_OFFSET);
-    addr_hit[ 22] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_5_OFFSET);
-    addr_hit[ 23] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_6_OFFSET);
-    addr_hit[ 24] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_7_OFFSET);
-    addr_hit[ 25] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_0_OFFSET);
-    addr_hit[ 26] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_1_OFFSET);
-    addr_hit[ 27] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_2_OFFSET);
-    addr_hit[ 28] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_3_OFFSET);
-    addr_hit[ 29] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_4_OFFSET);
-    addr_hit[ 30] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_5_OFFSET);
-    addr_hit[ 31] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_6_OFFSET);
-    addr_hit[ 32] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_7_OFFSET);
-    addr_hit[ 33] = (reg_addr == FLASH_CTRL_MP_REGION_0_OFFSET);
-    addr_hit[ 34] = (reg_addr == FLASH_CTRL_MP_REGION_1_OFFSET);
-    addr_hit[ 35] = (reg_addr == FLASH_CTRL_MP_REGION_2_OFFSET);
-    addr_hit[ 36] = (reg_addr == FLASH_CTRL_MP_REGION_3_OFFSET);
-    addr_hit[ 37] = (reg_addr == FLASH_CTRL_MP_REGION_4_OFFSET);
-    addr_hit[ 38] = (reg_addr == FLASH_CTRL_MP_REGION_5_OFFSET);
-    addr_hit[ 39] = (reg_addr == FLASH_CTRL_MP_REGION_6_OFFSET);
-    addr_hit[ 40] = (reg_addr == FLASH_CTRL_MP_REGION_7_OFFSET);
-    addr_hit[ 41] = (reg_addr == FLASH_CTRL_DEFAULT_REGION_OFFSET);
-    addr_hit[ 42] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_0_OFFSET);
-    addr_hit[ 43] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_1_OFFSET);
-    addr_hit[ 44] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_2_OFFSET);
-    addr_hit[ 45] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_3_OFFSET);
-    addr_hit[ 46] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_4_OFFSET);
-    addr_hit[ 47] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_5_OFFSET);
-    addr_hit[ 48] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_6_OFFSET);
-    addr_hit[ 49] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_7_OFFSET);
-    addr_hit[ 50] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_8_OFFSET);
-    addr_hit[ 51] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_9_OFFSET);
-    addr_hit[ 52] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_OFFSET);
-    addr_hit[ 53] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_1_OFFSET);
-    addr_hit[ 54] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_2_OFFSET);
-    addr_hit[ 55] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_3_OFFSET);
-    addr_hit[ 56] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_4_OFFSET);
-    addr_hit[ 57] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_5_OFFSET);
-    addr_hit[ 58] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_6_OFFSET);
-    addr_hit[ 59] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_7_OFFSET);
-    addr_hit[ 60] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_8_OFFSET);
-    addr_hit[ 61] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_9_OFFSET);
-    addr_hit[ 62] = (reg_addr == FLASH_CTRL_BANK0_INFO1_REGWEN_OFFSET);
-    addr_hit[ 63] = (reg_addr == FLASH_CTRL_BANK0_INFO1_PAGE_CFG_OFFSET);
-    addr_hit[ 64] = (reg_addr == FLASH_CTRL_BANK0_INFO2_REGWEN_0_OFFSET);
-    addr_hit[ 65] = (reg_addr == FLASH_CTRL_BANK0_INFO2_REGWEN_1_OFFSET);
-    addr_hit[ 66] = (reg_addr == FLASH_CTRL_BANK0_INFO2_PAGE_CFG_0_OFFSET);
-    addr_hit[ 67] = (reg_addr == FLASH_CTRL_BANK0_INFO2_PAGE_CFG_1_OFFSET);
-    addr_hit[ 68] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_0_OFFSET);
-    addr_hit[ 69] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_1_OFFSET);
-    addr_hit[ 70] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_2_OFFSET);
-    addr_hit[ 71] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_3_OFFSET);
-    addr_hit[ 72] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_4_OFFSET);
-    addr_hit[ 73] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_5_OFFSET);
-    addr_hit[ 74] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_6_OFFSET);
-    addr_hit[ 75] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_7_OFFSET);
-    addr_hit[ 76] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_8_OFFSET);
-    addr_hit[ 77] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_9_OFFSET);
-    addr_hit[ 78] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_0_OFFSET);
-    addr_hit[ 79] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_1_OFFSET);
-    addr_hit[ 80] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_2_OFFSET);
-    addr_hit[ 81] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_3_OFFSET);
-    addr_hit[ 82] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_4_OFFSET);
-    addr_hit[ 83] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_5_OFFSET);
-    addr_hit[ 84] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_6_OFFSET);
-    addr_hit[ 85] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_7_OFFSET);
-    addr_hit[ 86] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_8_OFFSET);
-    addr_hit[ 87] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_9_OFFSET);
-    addr_hit[ 88] = (reg_addr == FLASH_CTRL_BANK1_INFO1_REGWEN_OFFSET);
-    addr_hit[ 89] = (reg_addr == FLASH_CTRL_BANK1_INFO1_PAGE_CFG_OFFSET);
-    addr_hit[ 90] = (reg_addr == FLASH_CTRL_BANK1_INFO2_REGWEN_0_OFFSET);
-    addr_hit[ 91] = (reg_addr == FLASH_CTRL_BANK1_INFO2_REGWEN_1_OFFSET);
-    addr_hit[ 92] = (reg_addr == FLASH_CTRL_BANK1_INFO2_PAGE_CFG_0_OFFSET);
-    addr_hit[ 93] = (reg_addr == FLASH_CTRL_BANK1_INFO2_PAGE_CFG_1_OFFSET);
-    addr_hit[ 94] = (reg_addr == FLASH_CTRL_HW_INFO_CFG_OVERRIDE_OFFSET);
-    addr_hit[ 95] = (reg_addr == FLASH_CTRL_BANK_CFG_REGWEN_OFFSET);
-    addr_hit[ 96] = (reg_addr == FLASH_CTRL_MP_BANK_CFG_SHADOWED_OFFSET);
-    addr_hit[ 97] = (reg_addr == FLASH_CTRL_OP_STATUS_OFFSET);
-    addr_hit[ 98] = (reg_addr == FLASH_CTRL_STATUS_OFFSET);
-    addr_hit[ 99] = (reg_addr == FLASH_CTRL_DEBUG_STATE_OFFSET);
-    addr_hit[100] = (reg_addr == FLASH_CTRL_ERR_CODE_OFFSET);
-    addr_hit[101] = (reg_addr == FLASH_CTRL_STD_FAULT_STATUS_OFFSET);
-    addr_hit[102] = (reg_addr == FLASH_CTRL_FAULT_STATUS_OFFSET);
-    addr_hit[103] = (reg_addr == FLASH_CTRL_ERR_ADDR_OFFSET);
-    addr_hit[104] = (reg_addr == FLASH_CTRL_ECC_SINGLE_ERR_CNT_OFFSET);
-    addr_hit[105] = (reg_addr == FLASH_CTRL_ECC_SINGLE_ERR_ADDR_0_OFFSET);
-    addr_hit[106] = (reg_addr == FLASH_CTRL_ECC_SINGLE_ERR_ADDR_1_OFFSET);
-    addr_hit[107] = (reg_addr == FLASH_CTRL_PHY_ALERT_CFG_OFFSET);
-    addr_hit[108] = (reg_addr == FLASH_CTRL_PHY_STATUS_OFFSET);
-    addr_hit[109] = (reg_addr == FLASH_CTRL_SCRATCH_OFFSET);
-    addr_hit[110] = (reg_addr == FLASH_CTRL_FIFO_LVL_OFFSET);
-    addr_hit[111] = (reg_addr == FLASH_CTRL_FIFO_RST_OFFSET);
-    addr_hit[112] = (reg_addr == FLASH_CTRL_CURR_FIFO_LVL_OFFSET);
+    addr_hit[  0] = (reg_addr == FLASH_CTRL_INTR_STATE_OFFSET);
+    addr_hit[  1] = (reg_addr == FLASH_CTRL_INTR_ENABLE_OFFSET);
+    addr_hit[  2] = (reg_addr == FLASH_CTRL_INTR_TEST_OFFSET);
+    addr_hit[  3] = (reg_addr == FLASH_CTRL_ALERT_TEST_OFFSET);
+    addr_hit[  4] = (reg_addr == FLASH_CTRL_DIS_OFFSET);
+    addr_hit[  5] = (reg_addr == FLASH_CTRL_EXEC_OFFSET);
+    addr_hit[  6] = (reg_addr == FLASH_CTRL_INIT_OFFSET);
+    addr_hit[  7] = (reg_addr == FLASH_CTRL_CTRL_REGWEN_OFFSET);
+    addr_hit[  8] = (reg_addr == FLASH_CTRL_CONTROL_OFFSET);
+    addr_hit[  9] = (reg_addr == FLASH_CTRL_ADDR_OFFSET);
+    addr_hit[ 10] = (reg_addr == FLASH_CTRL_PROG_TYPE_EN_OFFSET);
+    addr_hit[ 11] = (reg_addr == FLASH_CTRL_ERASE_SUSPEND_OFFSET);
+    addr_hit[ 12] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_0_OFFSET);
+    addr_hit[ 13] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_1_OFFSET);
+    addr_hit[ 14] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_2_OFFSET);
+    addr_hit[ 15] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_3_OFFSET);
+    addr_hit[ 16] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_4_OFFSET);
+    addr_hit[ 17] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_5_OFFSET);
+    addr_hit[ 18] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_6_OFFSET);
+    addr_hit[ 19] = (reg_addr == FLASH_CTRL_REGION_CFG_REGWEN_7_OFFSET);
+    addr_hit[ 20] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_0_OFFSET);
+    addr_hit[ 21] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_1_OFFSET);
+    addr_hit[ 22] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_2_OFFSET);
+    addr_hit[ 23] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_3_OFFSET);
+    addr_hit[ 24] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_4_OFFSET);
+    addr_hit[ 25] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_5_OFFSET);
+    addr_hit[ 26] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_6_OFFSET);
+    addr_hit[ 27] = (reg_addr == FLASH_CTRL_MP_REGION_CFG_7_OFFSET);
+    addr_hit[ 28] = (reg_addr == FLASH_CTRL_MP_REGION_0_OFFSET);
+    addr_hit[ 29] = (reg_addr == FLASH_CTRL_MP_REGION_1_OFFSET);
+    addr_hit[ 30] = (reg_addr == FLASH_CTRL_MP_REGION_2_OFFSET);
+    addr_hit[ 31] = (reg_addr == FLASH_CTRL_MP_REGION_3_OFFSET);
+    addr_hit[ 32] = (reg_addr == FLASH_CTRL_MP_REGION_4_OFFSET);
+    addr_hit[ 33] = (reg_addr == FLASH_CTRL_MP_REGION_5_OFFSET);
+    addr_hit[ 34] = (reg_addr == FLASH_CTRL_MP_REGION_6_OFFSET);
+    addr_hit[ 35] = (reg_addr == FLASH_CTRL_MP_REGION_7_OFFSET);
+    addr_hit[ 36] = (reg_addr == FLASH_CTRL_DEFAULT_REGION_OFFSET);
+    addr_hit[ 37] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_0_OFFSET);
+    addr_hit[ 38] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_1_OFFSET);
+    addr_hit[ 39] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_2_OFFSET);
+    addr_hit[ 40] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_3_OFFSET);
+    addr_hit[ 41] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_4_OFFSET);
+    addr_hit[ 42] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_5_OFFSET);
+    addr_hit[ 43] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_6_OFFSET);
+    addr_hit[ 44] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_7_OFFSET);
+    addr_hit[ 45] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_8_OFFSET);
+    addr_hit[ 46] = (reg_addr == FLASH_CTRL_BANK0_INFO0_REGWEN_9_OFFSET);
+    addr_hit[ 47] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_OFFSET);
+    addr_hit[ 48] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_1_OFFSET);
+    addr_hit[ 49] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_2_OFFSET);
+    addr_hit[ 50] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_3_OFFSET);
+    addr_hit[ 51] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_4_OFFSET);
+    addr_hit[ 52] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_5_OFFSET);
+    addr_hit[ 53] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_6_OFFSET);
+    addr_hit[ 54] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_7_OFFSET);
+    addr_hit[ 55] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_8_OFFSET);
+    addr_hit[ 56] = (reg_addr == FLASH_CTRL_BANK0_INFO0_PAGE_CFG_9_OFFSET);
+    addr_hit[ 57] = (reg_addr == FLASH_CTRL_BANK0_INFO1_REGWEN_OFFSET);
+    addr_hit[ 58] = (reg_addr == FLASH_CTRL_BANK0_INFO1_PAGE_CFG_OFFSET);
+    addr_hit[ 59] = (reg_addr == FLASH_CTRL_BANK0_INFO2_REGWEN_0_OFFSET);
+    addr_hit[ 60] = (reg_addr == FLASH_CTRL_BANK0_INFO2_REGWEN_1_OFFSET);
+    addr_hit[ 61] = (reg_addr == FLASH_CTRL_BANK0_INFO2_PAGE_CFG_0_OFFSET);
+    addr_hit[ 62] = (reg_addr == FLASH_CTRL_BANK0_INFO2_PAGE_CFG_1_OFFSET);
+    addr_hit[ 63] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_0_OFFSET);
+    addr_hit[ 64] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_1_OFFSET);
+    addr_hit[ 65] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_2_OFFSET);
+    addr_hit[ 66] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_3_OFFSET);
+    addr_hit[ 67] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_4_OFFSET);
+    addr_hit[ 68] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_5_OFFSET);
+    addr_hit[ 69] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_6_OFFSET);
+    addr_hit[ 70] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_7_OFFSET);
+    addr_hit[ 71] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_8_OFFSET);
+    addr_hit[ 72] = (reg_addr == FLASH_CTRL_BANK1_INFO0_REGWEN_9_OFFSET);
+    addr_hit[ 73] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_0_OFFSET);
+    addr_hit[ 74] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_1_OFFSET);
+    addr_hit[ 75] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_2_OFFSET);
+    addr_hit[ 76] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_3_OFFSET);
+    addr_hit[ 77] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_4_OFFSET);
+    addr_hit[ 78] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_5_OFFSET);
+    addr_hit[ 79] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_6_OFFSET);
+    addr_hit[ 80] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_7_OFFSET);
+    addr_hit[ 81] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_8_OFFSET);
+    addr_hit[ 82] = (reg_addr == FLASH_CTRL_BANK1_INFO0_PAGE_CFG_9_OFFSET);
+    addr_hit[ 83] = (reg_addr == FLASH_CTRL_BANK1_INFO1_REGWEN_OFFSET);
+    addr_hit[ 84] = (reg_addr == FLASH_CTRL_BANK1_INFO1_PAGE_CFG_OFFSET);
+    addr_hit[ 85] = (reg_addr == FLASH_CTRL_BANK1_INFO2_REGWEN_0_OFFSET);
+    addr_hit[ 86] = (reg_addr == FLASH_CTRL_BANK1_INFO2_REGWEN_1_OFFSET);
+    addr_hit[ 87] = (reg_addr == FLASH_CTRL_BANK1_INFO2_PAGE_CFG_0_OFFSET);
+    addr_hit[ 88] = (reg_addr == FLASH_CTRL_BANK1_INFO2_PAGE_CFG_1_OFFSET);
+    addr_hit[ 89] = (reg_addr == FLASH_CTRL_HW_INFO_CFG_OVERRIDE_OFFSET);
+    addr_hit[ 90] = (reg_addr == FLASH_CTRL_BANK_CFG_REGWEN_OFFSET);
+    addr_hit[ 91] = (reg_addr == FLASH_CTRL_MP_BANK_CFG_SHADOWED_OFFSET);
+    addr_hit[ 92] = (reg_addr == FLASH_CTRL_OP_STATUS_OFFSET);
+    addr_hit[ 93] = (reg_addr == FLASH_CTRL_STATUS_OFFSET);
+    addr_hit[ 94] = (reg_addr == FLASH_CTRL_DEBUG_STATE_OFFSET);
+    addr_hit[ 95] = (reg_addr == FLASH_CTRL_ERR_CODE_OFFSET);
+    addr_hit[ 96] = (reg_addr == FLASH_CTRL_STD_FAULT_STATUS_OFFSET);
+    addr_hit[ 97] = (reg_addr == FLASH_CTRL_FAULT_STATUS_OFFSET);
+    addr_hit[ 98] = (reg_addr == FLASH_CTRL_ERR_ADDR_OFFSET);
+    addr_hit[ 99] = (reg_addr == FLASH_CTRL_ECC_SINGLE_ERR_CNT_OFFSET);
+    addr_hit[100] = (reg_addr == FLASH_CTRL_ECC_SINGLE_ERR_ADDR_0_OFFSET);
+    addr_hit[101] = (reg_addr == FLASH_CTRL_ECC_SINGLE_ERR_ADDR_1_OFFSET);
+    addr_hit[102] = (reg_addr == FLASH_CTRL_PHY_ALERT_CFG_OFFSET);
+    addr_hit[103] = (reg_addr == FLASH_CTRL_PHY_STATUS_OFFSET);
+    addr_hit[104] = (reg_addr == FLASH_CTRL_SCRATCH_OFFSET);
+    addr_hit[105] = (reg_addr == FLASH_CTRL_FIFO_LVL_OFFSET);
+    addr_hit[106] = (reg_addr == FLASH_CTRL_FIFO_RST_OFFSET);
+    addr_hit[107] = (reg_addr == FLASH_CTRL_CURR_FIFO_LVL_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -11722,16 +11671,11 @@ module flash_ctrl_core_reg_top (
                (addr_hit[104] & (|(FLASH_CTRL_CORE_PERMIT[104] & ~reg_be))) |
                (addr_hit[105] & (|(FLASH_CTRL_CORE_PERMIT[105] & ~reg_be))) |
                (addr_hit[106] & (|(FLASH_CTRL_CORE_PERMIT[106] & ~reg_be))) |
-               (addr_hit[107] & (|(FLASH_CTRL_CORE_PERMIT[107] & ~reg_be))) |
-               (addr_hit[108] & (|(FLASH_CTRL_CORE_PERMIT[108] & ~reg_be))) |
-               (addr_hit[109] & (|(FLASH_CTRL_CORE_PERMIT[109] & ~reg_be))) |
-               (addr_hit[110] & (|(FLASH_CTRL_CORE_PERMIT[110] & ~reg_be))) |
-               (addr_hit[111] & (|(FLASH_CTRL_CORE_PERMIT[111] & ~reg_be))) |
-               (addr_hit[112] & (|(FLASH_CTRL_CORE_PERMIT[112] & ~reg_be)))));
+               (addr_hit[107] & (|(FLASH_CTRL_CORE_PERMIT[107] & ~reg_be)))));
   end
 
   // Generate write-enables
-  assign intr_state_we = addr_hit[5] & reg_we & !reg_error;
+  assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
   assign intr_state_prog_empty_wd = reg_wdata[0];
 
@@ -11744,7 +11688,7 @@ module flash_ctrl_core_reg_top (
   assign intr_state_op_done_wd = reg_wdata[4];
 
   assign intr_state_corr_err_wd = reg_wdata[5];
-  assign intr_enable_we = addr_hit[6] & reg_we & !reg_error;
+  assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
   assign intr_enable_prog_empty_wd = reg_wdata[0];
 
@@ -11757,7 +11701,7 @@ module flash_ctrl_core_reg_top (
   assign intr_enable_op_done_wd = reg_wdata[4];
 
   assign intr_enable_corr_err_wd = reg_wdata[5];
-  assign intr_test_we = addr_hit[7] & reg_we & !reg_error;
+  assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
   assign intr_test_prog_empty_wd = reg_wdata[0];
 
@@ -11770,7 +11714,7 @@ module flash_ctrl_core_reg_top (
   assign intr_test_op_done_wd = reg_wdata[4];
 
   assign intr_test_corr_err_wd = reg_wdata[5];
-  assign alert_test_we = addr_hit[8] & reg_we & !reg_error;
+  assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
 
   assign alert_test_recov_err_wd = reg_wdata[0];
 
@@ -11781,17 +11725,17 @@ module flash_ctrl_core_reg_top (
   assign alert_test_fatal_prim_flash_alert_wd = reg_wdata[3];
 
   assign alert_test_recov_prim_flash_alert_wd = reg_wdata[4];
-  assign dis_we = addr_hit[9] & reg_we & !reg_error;
+  assign dis_we = addr_hit[4] & reg_we & !reg_error;
 
   assign dis_wd = reg_wdata[3:0];
-  assign exec_we = addr_hit[10] & reg_we & !reg_error;
+  assign exec_we = addr_hit[5] & reg_we & !reg_error;
 
   assign exec_wd = reg_wdata[31:0];
-  assign init_we = addr_hit[11] & reg_we & !reg_error;
+  assign init_we = addr_hit[6] & reg_we & !reg_error;
 
   assign init_wd = reg_wdata[0];
-  assign ctrl_regwen_re = addr_hit[12] & reg_re & !reg_error;
-  assign control_we = addr_hit[13] & reg_we & !reg_error;
+  assign ctrl_regwen_re = addr_hit[7] & reg_re & !reg_error;
+  assign control_we = addr_hit[8] & reg_we & !reg_error;
 
   assign control_start_wd = reg_wdata[0];
 
@@ -11806,42 +11750,42 @@ module flash_ctrl_core_reg_top (
   assign control_info_sel_wd = reg_wdata[10:9];
 
   assign control_num_wd = reg_wdata[27:16];
-  assign addr_we = addr_hit[14] & reg_we & !reg_error;
+  assign addr_we = addr_hit[9] & reg_we & !reg_error;
 
   assign addr_wd = reg_wdata[19:0];
-  assign prog_type_en_we = addr_hit[15] & reg_we & !reg_error;
+  assign prog_type_en_we = addr_hit[10] & reg_we & !reg_error;
 
   assign prog_type_en_normal_wd = reg_wdata[0];
 
   assign prog_type_en_repair_wd = reg_wdata[1];
-  assign erase_suspend_we = addr_hit[16] & reg_we & !reg_error;
+  assign erase_suspend_we = addr_hit[11] & reg_we & !reg_error;
 
   assign erase_suspend_wd = reg_wdata[0];
-  assign region_cfg_regwen_0_we = addr_hit[17] & reg_we & !reg_error;
+  assign region_cfg_regwen_0_we = addr_hit[12] & reg_we & !reg_error;
 
   assign region_cfg_regwen_0_wd = reg_wdata[0];
-  assign region_cfg_regwen_1_we = addr_hit[18] & reg_we & !reg_error;
+  assign region_cfg_regwen_1_we = addr_hit[13] & reg_we & !reg_error;
 
   assign region_cfg_regwen_1_wd = reg_wdata[0];
-  assign region_cfg_regwen_2_we = addr_hit[19] & reg_we & !reg_error;
+  assign region_cfg_regwen_2_we = addr_hit[14] & reg_we & !reg_error;
 
   assign region_cfg_regwen_2_wd = reg_wdata[0];
-  assign region_cfg_regwen_3_we = addr_hit[20] & reg_we & !reg_error;
+  assign region_cfg_regwen_3_we = addr_hit[15] & reg_we & !reg_error;
 
   assign region_cfg_regwen_3_wd = reg_wdata[0];
-  assign region_cfg_regwen_4_we = addr_hit[21] & reg_we & !reg_error;
+  assign region_cfg_regwen_4_we = addr_hit[16] & reg_we & !reg_error;
 
   assign region_cfg_regwen_4_wd = reg_wdata[0];
-  assign region_cfg_regwen_5_we = addr_hit[22] & reg_we & !reg_error;
+  assign region_cfg_regwen_5_we = addr_hit[17] & reg_we & !reg_error;
 
   assign region_cfg_regwen_5_wd = reg_wdata[0];
-  assign region_cfg_regwen_6_we = addr_hit[23] & reg_we & !reg_error;
+  assign region_cfg_regwen_6_we = addr_hit[18] & reg_we & !reg_error;
 
   assign region_cfg_regwen_6_wd = reg_wdata[0];
-  assign region_cfg_regwen_7_we = addr_hit[24] & reg_we & !reg_error;
+  assign region_cfg_regwen_7_we = addr_hit[19] & reg_we & !reg_error;
 
   assign region_cfg_regwen_7_wd = reg_wdata[0];
-  assign mp_region_cfg_0_we = addr_hit[25] & reg_we & !reg_error;
+  assign mp_region_cfg_0_we = addr_hit[20] & reg_we & !reg_error;
 
   assign mp_region_cfg_0_en_0_wd = reg_wdata[3:0];
 
@@ -11856,7 +11800,7 @@ module flash_ctrl_core_reg_top (
   assign mp_region_cfg_0_ecc_en_0_wd = reg_wdata[23:20];
 
   assign mp_region_cfg_0_he_en_0_wd = reg_wdata[27:24];
-  assign mp_region_cfg_1_we = addr_hit[26] & reg_we & !reg_error;
+  assign mp_region_cfg_1_we = addr_hit[21] & reg_we & !reg_error;
 
   assign mp_region_cfg_1_en_1_wd = reg_wdata[3:0];
 
@@ -11871,7 +11815,7 @@ module flash_ctrl_core_reg_top (
   assign mp_region_cfg_1_ecc_en_1_wd = reg_wdata[23:20];
 
   assign mp_region_cfg_1_he_en_1_wd = reg_wdata[27:24];
-  assign mp_region_cfg_2_we = addr_hit[27] & reg_we & !reg_error;
+  assign mp_region_cfg_2_we = addr_hit[22] & reg_we & !reg_error;
 
   assign mp_region_cfg_2_en_2_wd = reg_wdata[3:0];
 
@@ -11886,7 +11830,7 @@ module flash_ctrl_core_reg_top (
   assign mp_region_cfg_2_ecc_en_2_wd = reg_wdata[23:20];
 
   assign mp_region_cfg_2_he_en_2_wd = reg_wdata[27:24];
-  assign mp_region_cfg_3_we = addr_hit[28] & reg_we & !reg_error;
+  assign mp_region_cfg_3_we = addr_hit[23] & reg_we & !reg_error;
 
   assign mp_region_cfg_3_en_3_wd = reg_wdata[3:0];
 
@@ -11901,7 +11845,7 @@ module flash_ctrl_core_reg_top (
   assign mp_region_cfg_3_ecc_en_3_wd = reg_wdata[23:20];
 
   assign mp_region_cfg_3_he_en_3_wd = reg_wdata[27:24];
-  assign mp_region_cfg_4_we = addr_hit[29] & reg_we & !reg_error;
+  assign mp_region_cfg_4_we = addr_hit[24] & reg_we & !reg_error;
 
   assign mp_region_cfg_4_en_4_wd = reg_wdata[3:0];
 
@@ -11916,7 +11860,7 @@ module flash_ctrl_core_reg_top (
   assign mp_region_cfg_4_ecc_en_4_wd = reg_wdata[23:20];
 
   assign mp_region_cfg_4_he_en_4_wd = reg_wdata[27:24];
-  assign mp_region_cfg_5_we = addr_hit[30] & reg_we & !reg_error;
+  assign mp_region_cfg_5_we = addr_hit[25] & reg_we & !reg_error;
 
   assign mp_region_cfg_5_en_5_wd = reg_wdata[3:0];
 
@@ -11931,7 +11875,7 @@ module flash_ctrl_core_reg_top (
   assign mp_region_cfg_5_ecc_en_5_wd = reg_wdata[23:20];
 
   assign mp_region_cfg_5_he_en_5_wd = reg_wdata[27:24];
-  assign mp_region_cfg_6_we = addr_hit[31] & reg_we & !reg_error;
+  assign mp_region_cfg_6_we = addr_hit[26] & reg_we & !reg_error;
 
   assign mp_region_cfg_6_en_6_wd = reg_wdata[3:0];
 
@@ -11946,7 +11890,7 @@ module flash_ctrl_core_reg_top (
   assign mp_region_cfg_6_ecc_en_6_wd = reg_wdata[23:20];
 
   assign mp_region_cfg_6_he_en_6_wd = reg_wdata[27:24];
-  assign mp_region_cfg_7_we = addr_hit[32] & reg_we & !reg_error;
+  assign mp_region_cfg_7_we = addr_hit[27] & reg_we & !reg_error;
 
   assign mp_region_cfg_7_en_7_wd = reg_wdata[3:0];
 
@@ -11961,47 +11905,47 @@ module flash_ctrl_core_reg_top (
   assign mp_region_cfg_7_ecc_en_7_wd = reg_wdata[23:20];
 
   assign mp_region_cfg_7_he_en_7_wd = reg_wdata[27:24];
-  assign mp_region_0_we = addr_hit[33] & reg_we & !reg_error;
+  assign mp_region_0_we = addr_hit[28] & reg_we & !reg_error;
 
   assign mp_region_0_base_0_wd = reg_wdata[8:0];
 
   assign mp_region_0_size_0_wd = reg_wdata[18:9];
-  assign mp_region_1_we = addr_hit[34] & reg_we & !reg_error;
+  assign mp_region_1_we = addr_hit[29] & reg_we & !reg_error;
 
   assign mp_region_1_base_1_wd = reg_wdata[8:0];
 
   assign mp_region_1_size_1_wd = reg_wdata[18:9];
-  assign mp_region_2_we = addr_hit[35] & reg_we & !reg_error;
+  assign mp_region_2_we = addr_hit[30] & reg_we & !reg_error;
 
   assign mp_region_2_base_2_wd = reg_wdata[8:0];
 
   assign mp_region_2_size_2_wd = reg_wdata[18:9];
-  assign mp_region_3_we = addr_hit[36] & reg_we & !reg_error;
+  assign mp_region_3_we = addr_hit[31] & reg_we & !reg_error;
 
   assign mp_region_3_base_3_wd = reg_wdata[8:0];
 
   assign mp_region_3_size_3_wd = reg_wdata[18:9];
-  assign mp_region_4_we = addr_hit[37] & reg_we & !reg_error;
+  assign mp_region_4_we = addr_hit[32] & reg_we & !reg_error;
 
   assign mp_region_4_base_4_wd = reg_wdata[8:0];
 
   assign mp_region_4_size_4_wd = reg_wdata[18:9];
-  assign mp_region_5_we = addr_hit[38] & reg_we & !reg_error;
+  assign mp_region_5_we = addr_hit[33] & reg_we & !reg_error;
 
   assign mp_region_5_base_5_wd = reg_wdata[8:0];
 
   assign mp_region_5_size_5_wd = reg_wdata[18:9];
-  assign mp_region_6_we = addr_hit[39] & reg_we & !reg_error;
+  assign mp_region_6_we = addr_hit[34] & reg_we & !reg_error;
 
   assign mp_region_6_base_6_wd = reg_wdata[8:0];
 
   assign mp_region_6_size_6_wd = reg_wdata[18:9];
-  assign mp_region_7_we = addr_hit[40] & reg_we & !reg_error;
+  assign mp_region_7_we = addr_hit[35] & reg_we & !reg_error;
 
   assign mp_region_7_base_7_wd = reg_wdata[8:0];
 
   assign mp_region_7_size_7_wd = reg_wdata[18:9];
-  assign default_region_we = addr_hit[41] & reg_we & !reg_error;
+  assign default_region_we = addr_hit[36] & reg_we & !reg_error;
 
   assign default_region_rd_en_wd = reg_wdata[3:0];
 
@@ -12014,37 +11958,37 @@ module flash_ctrl_core_reg_top (
   assign default_region_ecc_en_wd = reg_wdata[19:16];
 
   assign default_region_he_en_wd = reg_wdata[23:20];
-  assign bank0_info0_regwen_0_we = addr_hit[42] & reg_we & !reg_error;
+  assign bank0_info0_regwen_0_we = addr_hit[37] & reg_we & !reg_error;
 
   assign bank0_info0_regwen_0_wd = reg_wdata[0];
-  assign bank0_info0_regwen_1_we = addr_hit[43] & reg_we & !reg_error;
+  assign bank0_info0_regwen_1_we = addr_hit[38] & reg_we & !reg_error;
 
   assign bank0_info0_regwen_1_wd = reg_wdata[0];
-  assign bank0_info0_regwen_2_we = addr_hit[44] & reg_we & !reg_error;
+  assign bank0_info0_regwen_2_we = addr_hit[39] & reg_we & !reg_error;
 
   assign bank0_info0_regwen_2_wd = reg_wdata[0];
-  assign bank0_info0_regwen_3_we = addr_hit[45] & reg_we & !reg_error;
+  assign bank0_info0_regwen_3_we = addr_hit[40] & reg_we & !reg_error;
 
   assign bank0_info0_regwen_3_wd = reg_wdata[0];
-  assign bank0_info0_regwen_4_we = addr_hit[46] & reg_we & !reg_error;
+  assign bank0_info0_regwen_4_we = addr_hit[41] & reg_we & !reg_error;
 
   assign bank0_info0_regwen_4_wd = reg_wdata[0];
-  assign bank0_info0_regwen_5_we = addr_hit[47] & reg_we & !reg_error;
+  assign bank0_info0_regwen_5_we = addr_hit[42] & reg_we & !reg_error;
 
   assign bank0_info0_regwen_5_wd = reg_wdata[0];
-  assign bank0_info0_regwen_6_we = addr_hit[48] & reg_we & !reg_error;
+  assign bank0_info0_regwen_6_we = addr_hit[43] & reg_we & !reg_error;
 
   assign bank0_info0_regwen_6_wd = reg_wdata[0];
-  assign bank0_info0_regwen_7_we = addr_hit[49] & reg_we & !reg_error;
+  assign bank0_info0_regwen_7_we = addr_hit[44] & reg_we & !reg_error;
 
   assign bank0_info0_regwen_7_wd = reg_wdata[0];
-  assign bank0_info0_regwen_8_we = addr_hit[50] & reg_we & !reg_error;
+  assign bank0_info0_regwen_8_we = addr_hit[45] & reg_we & !reg_error;
 
   assign bank0_info0_regwen_8_wd = reg_wdata[0];
-  assign bank0_info0_regwen_9_we = addr_hit[51] & reg_we & !reg_error;
+  assign bank0_info0_regwen_9_we = addr_hit[46] & reg_we & !reg_error;
 
   assign bank0_info0_regwen_9_wd = reg_wdata[0];
-  assign bank0_info0_page_cfg_0_we = addr_hit[52] & reg_we & !reg_error;
+  assign bank0_info0_page_cfg_0_we = addr_hit[47] & reg_we & !reg_error;
 
   assign bank0_info0_page_cfg_0_en_0_wd = reg_wdata[3:0];
 
@@ -12059,7 +12003,7 @@ module flash_ctrl_core_reg_top (
   assign bank0_info0_page_cfg_0_ecc_en_0_wd = reg_wdata[23:20];
 
   assign bank0_info0_page_cfg_0_he_en_0_wd = reg_wdata[27:24];
-  assign bank0_info0_page_cfg_1_we = addr_hit[53] & reg_we & !reg_error;
+  assign bank0_info0_page_cfg_1_we = addr_hit[48] & reg_we & !reg_error;
 
   assign bank0_info0_page_cfg_1_en_1_wd = reg_wdata[3:0];
 
@@ -12074,7 +12018,7 @@ module flash_ctrl_core_reg_top (
   assign bank0_info0_page_cfg_1_ecc_en_1_wd = reg_wdata[23:20];
 
   assign bank0_info0_page_cfg_1_he_en_1_wd = reg_wdata[27:24];
-  assign bank0_info0_page_cfg_2_we = addr_hit[54] & reg_we & !reg_error;
+  assign bank0_info0_page_cfg_2_we = addr_hit[49] & reg_we & !reg_error;
 
   assign bank0_info0_page_cfg_2_en_2_wd = reg_wdata[3:0];
 
@@ -12089,7 +12033,7 @@ module flash_ctrl_core_reg_top (
   assign bank0_info0_page_cfg_2_ecc_en_2_wd = reg_wdata[23:20];
 
   assign bank0_info0_page_cfg_2_he_en_2_wd = reg_wdata[27:24];
-  assign bank0_info0_page_cfg_3_we = addr_hit[55] & reg_we & !reg_error;
+  assign bank0_info0_page_cfg_3_we = addr_hit[50] & reg_we & !reg_error;
 
   assign bank0_info0_page_cfg_3_en_3_wd = reg_wdata[3:0];
 
@@ -12104,7 +12048,7 @@ module flash_ctrl_core_reg_top (
   assign bank0_info0_page_cfg_3_ecc_en_3_wd = reg_wdata[23:20];
 
   assign bank0_info0_page_cfg_3_he_en_3_wd = reg_wdata[27:24];
-  assign bank0_info0_page_cfg_4_we = addr_hit[56] & reg_we & !reg_error;
+  assign bank0_info0_page_cfg_4_we = addr_hit[51] & reg_we & !reg_error;
 
   assign bank0_info0_page_cfg_4_en_4_wd = reg_wdata[3:0];
 
@@ -12119,7 +12063,7 @@ module flash_ctrl_core_reg_top (
   assign bank0_info0_page_cfg_4_ecc_en_4_wd = reg_wdata[23:20];
 
   assign bank0_info0_page_cfg_4_he_en_4_wd = reg_wdata[27:24];
-  assign bank0_info0_page_cfg_5_we = addr_hit[57] & reg_we & !reg_error;
+  assign bank0_info0_page_cfg_5_we = addr_hit[52] & reg_we & !reg_error;
 
   assign bank0_info0_page_cfg_5_en_5_wd = reg_wdata[3:0];
 
@@ -12134,7 +12078,7 @@ module flash_ctrl_core_reg_top (
   assign bank0_info0_page_cfg_5_ecc_en_5_wd = reg_wdata[23:20];
 
   assign bank0_info0_page_cfg_5_he_en_5_wd = reg_wdata[27:24];
-  assign bank0_info0_page_cfg_6_we = addr_hit[58] & reg_we & !reg_error;
+  assign bank0_info0_page_cfg_6_we = addr_hit[53] & reg_we & !reg_error;
 
   assign bank0_info0_page_cfg_6_en_6_wd = reg_wdata[3:0];
 
@@ -12149,7 +12093,7 @@ module flash_ctrl_core_reg_top (
   assign bank0_info0_page_cfg_6_ecc_en_6_wd = reg_wdata[23:20];
 
   assign bank0_info0_page_cfg_6_he_en_6_wd = reg_wdata[27:24];
-  assign bank0_info0_page_cfg_7_we = addr_hit[59] & reg_we & !reg_error;
+  assign bank0_info0_page_cfg_7_we = addr_hit[54] & reg_we & !reg_error;
 
   assign bank0_info0_page_cfg_7_en_7_wd = reg_wdata[3:0];
 
@@ -12164,7 +12108,7 @@ module flash_ctrl_core_reg_top (
   assign bank0_info0_page_cfg_7_ecc_en_7_wd = reg_wdata[23:20];
 
   assign bank0_info0_page_cfg_7_he_en_7_wd = reg_wdata[27:24];
-  assign bank0_info0_page_cfg_8_we = addr_hit[60] & reg_we & !reg_error;
+  assign bank0_info0_page_cfg_8_we = addr_hit[55] & reg_we & !reg_error;
 
   assign bank0_info0_page_cfg_8_en_8_wd = reg_wdata[3:0];
 
@@ -12179,7 +12123,7 @@ module flash_ctrl_core_reg_top (
   assign bank0_info0_page_cfg_8_ecc_en_8_wd = reg_wdata[23:20];
 
   assign bank0_info0_page_cfg_8_he_en_8_wd = reg_wdata[27:24];
-  assign bank0_info0_page_cfg_9_we = addr_hit[61] & reg_we & !reg_error;
+  assign bank0_info0_page_cfg_9_we = addr_hit[56] & reg_we & !reg_error;
 
   assign bank0_info0_page_cfg_9_en_9_wd = reg_wdata[3:0];
 
@@ -12194,10 +12138,10 @@ module flash_ctrl_core_reg_top (
   assign bank0_info0_page_cfg_9_ecc_en_9_wd = reg_wdata[23:20];
 
   assign bank0_info0_page_cfg_9_he_en_9_wd = reg_wdata[27:24];
-  assign bank0_info1_regwen_we = addr_hit[62] & reg_we & !reg_error;
+  assign bank0_info1_regwen_we = addr_hit[57] & reg_we & !reg_error;
 
   assign bank0_info1_regwen_wd = reg_wdata[0];
-  assign bank0_info1_page_cfg_we = addr_hit[63] & reg_we & !reg_error;
+  assign bank0_info1_page_cfg_we = addr_hit[58] & reg_we & !reg_error;
 
   assign bank0_info1_page_cfg_en_0_wd = reg_wdata[3:0];
 
@@ -12212,13 +12156,13 @@ module flash_ctrl_core_reg_top (
   assign bank0_info1_page_cfg_ecc_en_0_wd = reg_wdata[23:20];
 
   assign bank0_info1_page_cfg_he_en_0_wd = reg_wdata[27:24];
-  assign bank0_info2_regwen_0_we = addr_hit[64] & reg_we & !reg_error;
+  assign bank0_info2_regwen_0_we = addr_hit[59] & reg_we & !reg_error;
 
   assign bank0_info2_regwen_0_wd = reg_wdata[0];
-  assign bank0_info2_regwen_1_we = addr_hit[65] & reg_we & !reg_error;
+  assign bank0_info2_regwen_1_we = addr_hit[60] & reg_we & !reg_error;
 
   assign bank0_info2_regwen_1_wd = reg_wdata[0];
-  assign bank0_info2_page_cfg_0_we = addr_hit[66] & reg_we & !reg_error;
+  assign bank0_info2_page_cfg_0_we = addr_hit[61] & reg_we & !reg_error;
 
   assign bank0_info2_page_cfg_0_en_0_wd = reg_wdata[3:0];
 
@@ -12233,7 +12177,7 @@ module flash_ctrl_core_reg_top (
   assign bank0_info2_page_cfg_0_ecc_en_0_wd = reg_wdata[23:20];
 
   assign bank0_info2_page_cfg_0_he_en_0_wd = reg_wdata[27:24];
-  assign bank0_info2_page_cfg_1_we = addr_hit[67] & reg_we & !reg_error;
+  assign bank0_info2_page_cfg_1_we = addr_hit[62] & reg_we & !reg_error;
 
   assign bank0_info2_page_cfg_1_en_1_wd = reg_wdata[3:0];
 
@@ -12248,37 +12192,37 @@ module flash_ctrl_core_reg_top (
   assign bank0_info2_page_cfg_1_ecc_en_1_wd = reg_wdata[23:20];
 
   assign bank0_info2_page_cfg_1_he_en_1_wd = reg_wdata[27:24];
-  assign bank1_info0_regwen_0_we = addr_hit[68] & reg_we & !reg_error;
+  assign bank1_info0_regwen_0_we = addr_hit[63] & reg_we & !reg_error;
 
   assign bank1_info0_regwen_0_wd = reg_wdata[0];
-  assign bank1_info0_regwen_1_we = addr_hit[69] & reg_we & !reg_error;
+  assign bank1_info0_regwen_1_we = addr_hit[64] & reg_we & !reg_error;
 
   assign bank1_info0_regwen_1_wd = reg_wdata[0];
-  assign bank1_info0_regwen_2_we = addr_hit[70] & reg_we & !reg_error;
+  assign bank1_info0_regwen_2_we = addr_hit[65] & reg_we & !reg_error;
 
   assign bank1_info0_regwen_2_wd = reg_wdata[0];
-  assign bank1_info0_regwen_3_we = addr_hit[71] & reg_we & !reg_error;
+  assign bank1_info0_regwen_3_we = addr_hit[66] & reg_we & !reg_error;
 
   assign bank1_info0_regwen_3_wd = reg_wdata[0];
-  assign bank1_info0_regwen_4_we = addr_hit[72] & reg_we & !reg_error;
+  assign bank1_info0_regwen_4_we = addr_hit[67] & reg_we & !reg_error;
 
   assign bank1_info0_regwen_4_wd = reg_wdata[0];
-  assign bank1_info0_regwen_5_we = addr_hit[73] & reg_we & !reg_error;
+  assign bank1_info0_regwen_5_we = addr_hit[68] & reg_we & !reg_error;
 
   assign bank1_info0_regwen_5_wd = reg_wdata[0];
-  assign bank1_info0_regwen_6_we = addr_hit[74] & reg_we & !reg_error;
+  assign bank1_info0_regwen_6_we = addr_hit[69] & reg_we & !reg_error;
 
   assign bank1_info0_regwen_6_wd = reg_wdata[0];
-  assign bank1_info0_regwen_7_we = addr_hit[75] & reg_we & !reg_error;
+  assign bank1_info0_regwen_7_we = addr_hit[70] & reg_we & !reg_error;
 
   assign bank1_info0_regwen_7_wd = reg_wdata[0];
-  assign bank1_info0_regwen_8_we = addr_hit[76] & reg_we & !reg_error;
+  assign bank1_info0_regwen_8_we = addr_hit[71] & reg_we & !reg_error;
 
   assign bank1_info0_regwen_8_wd = reg_wdata[0];
-  assign bank1_info0_regwen_9_we = addr_hit[77] & reg_we & !reg_error;
+  assign bank1_info0_regwen_9_we = addr_hit[72] & reg_we & !reg_error;
 
   assign bank1_info0_regwen_9_wd = reg_wdata[0];
-  assign bank1_info0_page_cfg_0_we = addr_hit[78] & reg_we & !reg_error;
+  assign bank1_info0_page_cfg_0_we = addr_hit[73] & reg_we & !reg_error;
 
   assign bank1_info0_page_cfg_0_en_0_wd = reg_wdata[3:0];
 
@@ -12293,7 +12237,7 @@ module flash_ctrl_core_reg_top (
   assign bank1_info0_page_cfg_0_ecc_en_0_wd = reg_wdata[23:20];
 
   assign bank1_info0_page_cfg_0_he_en_0_wd = reg_wdata[27:24];
-  assign bank1_info0_page_cfg_1_we = addr_hit[79] & reg_we & !reg_error;
+  assign bank1_info0_page_cfg_1_we = addr_hit[74] & reg_we & !reg_error;
 
   assign bank1_info0_page_cfg_1_en_1_wd = reg_wdata[3:0];
 
@@ -12308,7 +12252,7 @@ module flash_ctrl_core_reg_top (
   assign bank1_info0_page_cfg_1_ecc_en_1_wd = reg_wdata[23:20];
 
   assign bank1_info0_page_cfg_1_he_en_1_wd = reg_wdata[27:24];
-  assign bank1_info0_page_cfg_2_we = addr_hit[80] & reg_we & !reg_error;
+  assign bank1_info0_page_cfg_2_we = addr_hit[75] & reg_we & !reg_error;
 
   assign bank1_info0_page_cfg_2_en_2_wd = reg_wdata[3:0];
 
@@ -12323,7 +12267,7 @@ module flash_ctrl_core_reg_top (
   assign bank1_info0_page_cfg_2_ecc_en_2_wd = reg_wdata[23:20];
 
   assign bank1_info0_page_cfg_2_he_en_2_wd = reg_wdata[27:24];
-  assign bank1_info0_page_cfg_3_we = addr_hit[81] & reg_we & !reg_error;
+  assign bank1_info0_page_cfg_3_we = addr_hit[76] & reg_we & !reg_error;
 
   assign bank1_info0_page_cfg_3_en_3_wd = reg_wdata[3:0];
 
@@ -12338,7 +12282,7 @@ module flash_ctrl_core_reg_top (
   assign bank1_info0_page_cfg_3_ecc_en_3_wd = reg_wdata[23:20];
 
   assign bank1_info0_page_cfg_3_he_en_3_wd = reg_wdata[27:24];
-  assign bank1_info0_page_cfg_4_we = addr_hit[82] & reg_we & !reg_error;
+  assign bank1_info0_page_cfg_4_we = addr_hit[77] & reg_we & !reg_error;
 
   assign bank1_info0_page_cfg_4_en_4_wd = reg_wdata[3:0];
 
@@ -12353,7 +12297,7 @@ module flash_ctrl_core_reg_top (
   assign bank1_info0_page_cfg_4_ecc_en_4_wd = reg_wdata[23:20];
 
   assign bank1_info0_page_cfg_4_he_en_4_wd = reg_wdata[27:24];
-  assign bank1_info0_page_cfg_5_we = addr_hit[83] & reg_we & !reg_error;
+  assign bank1_info0_page_cfg_5_we = addr_hit[78] & reg_we & !reg_error;
 
   assign bank1_info0_page_cfg_5_en_5_wd = reg_wdata[3:0];
 
@@ -12368,7 +12312,7 @@ module flash_ctrl_core_reg_top (
   assign bank1_info0_page_cfg_5_ecc_en_5_wd = reg_wdata[23:20];
 
   assign bank1_info0_page_cfg_5_he_en_5_wd = reg_wdata[27:24];
-  assign bank1_info0_page_cfg_6_we = addr_hit[84] & reg_we & !reg_error;
+  assign bank1_info0_page_cfg_6_we = addr_hit[79] & reg_we & !reg_error;
 
   assign bank1_info0_page_cfg_6_en_6_wd = reg_wdata[3:0];
 
@@ -12383,7 +12327,7 @@ module flash_ctrl_core_reg_top (
   assign bank1_info0_page_cfg_6_ecc_en_6_wd = reg_wdata[23:20];
 
   assign bank1_info0_page_cfg_6_he_en_6_wd = reg_wdata[27:24];
-  assign bank1_info0_page_cfg_7_we = addr_hit[85] & reg_we & !reg_error;
+  assign bank1_info0_page_cfg_7_we = addr_hit[80] & reg_we & !reg_error;
 
   assign bank1_info0_page_cfg_7_en_7_wd = reg_wdata[3:0];
 
@@ -12398,7 +12342,7 @@ module flash_ctrl_core_reg_top (
   assign bank1_info0_page_cfg_7_ecc_en_7_wd = reg_wdata[23:20];
 
   assign bank1_info0_page_cfg_7_he_en_7_wd = reg_wdata[27:24];
-  assign bank1_info0_page_cfg_8_we = addr_hit[86] & reg_we & !reg_error;
+  assign bank1_info0_page_cfg_8_we = addr_hit[81] & reg_we & !reg_error;
 
   assign bank1_info0_page_cfg_8_en_8_wd = reg_wdata[3:0];
 
@@ -12413,7 +12357,7 @@ module flash_ctrl_core_reg_top (
   assign bank1_info0_page_cfg_8_ecc_en_8_wd = reg_wdata[23:20];
 
   assign bank1_info0_page_cfg_8_he_en_8_wd = reg_wdata[27:24];
-  assign bank1_info0_page_cfg_9_we = addr_hit[87] & reg_we & !reg_error;
+  assign bank1_info0_page_cfg_9_we = addr_hit[82] & reg_we & !reg_error;
 
   assign bank1_info0_page_cfg_9_en_9_wd = reg_wdata[3:0];
 
@@ -12428,10 +12372,10 @@ module flash_ctrl_core_reg_top (
   assign bank1_info0_page_cfg_9_ecc_en_9_wd = reg_wdata[23:20];
 
   assign bank1_info0_page_cfg_9_he_en_9_wd = reg_wdata[27:24];
-  assign bank1_info1_regwen_we = addr_hit[88] & reg_we & !reg_error;
+  assign bank1_info1_regwen_we = addr_hit[83] & reg_we & !reg_error;
 
   assign bank1_info1_regwen_wd = reg_wdata[0];
-  assign bank1_info1_page_cfg_we = addr_hit[89] & reg_we & !reg_error;
+  assign bank1_info1_page_cfg_we = addr_hit[84] & reg_we & !reg_error;
 
   assign bank1_info1_page_cfg_en_0_wd = reg_wdata[3:0];
 
@@ -12446,13 +12390,13 @@ module flash_ctrl_core_reg_top (
   assign bank1_info1_page_cfg_ecc_en_0_wd = reg_wdata[23:20];
 
   assign bank1_info1_page_cfg_he_en_0_wd = reg_wdata[27:24];
-  assign bank1_info2_regwen_0_we = addr_hit[90] & reg_we & !reg_error;
+  assign bank1_info2_regwen_0_we = addr_hit[85] & reg_we & !reg_error;
 
   assign bank1_info2_regwen_0_wd = reg_wdata[0];
-  assign bank1_info2_regwen_1_we = addr_hit[91] & reg_we & !reg_error;
+  assign bank1_info2_regwen_1_we = addr_hit[86] & reg_we & !reg_error;
 
   assign bank1_info2_regwen_1_wd = reg_wdata[0];
-  assign bank1_info2_page_cfg_0_we = addr_hit[92] & reg_we & !reg_error;
+  assign bank1_info2_page_cfg_0_we = addr_hit[87] & reg_we & !reg_error;
 
   assign bank1_info2_page_cfg_0_en_0_wd = reg_wdata[3:0];
 
@@ -12467,7 +12411,7 @@ module flash_ctrl_core_reg_top (
   assign bank1_info2_page_cfg_0_ecc_en_0_wd = reg_wdata[23:20];
 
   assign bank1_info2_page_cfg_0_he_en_0_wd = reg_wdata[27:24];
-  assign bank1_info2_page_cfg_1_we = addr_hit[93] & reg_we & !reg_error;
+  assign bank1_info2_page_cfg_1_we = addr_hit[88] & reg_we & !reg_error;
 
   assign bank1_info2_page_cfg_1_en_1_wd = reg_wdata[3:0];
 
@@ -12482,27 +12426,27 @@ module flash_ctrl_core_reg_top (
   assign bank1_info2_page_cfg_1_ecc_en_1_wd = reg_wdata[23:20];
 
   assign bank1_info2_page_cfg_1_he_en_1_wd = reg_wdata[27:24];
-  assign hw_info_cfg_override_we = addr_hit[94] & reg_we & !reg_error;
+  assign hw_info_cfg_override_we = addr_hit[89] & reg_we & !reg_error;
 
   assign hw_info_cfg_override_scramble_dis_wd = reg_wdata[3:0];
 
   assign hw_info_cfg_override_ecc_dis_wd = reg_wdata[7:4];
-  assign bank_cfg_regwen_we = addr_hit[95] & reg_we & !reg_error;
+  assign bank_cfg_regwen_we = addr_hit[90] & reg_we & !reg_error;
 
   assign bank_cfg_regwen_wd = reg_wdata[0];
-  assign mp_bank_cfg_shadowed_re = addr_hit[96] & reg_re & !reg_error;
-  assign mp_bank_cfg_shadowed_we = addr_hit[96] & reg_we & !reg_error;
+  assign mp_bank_cfg_shadowed_re = addr_hit[91] & reg_re & !reg_error;
+  assign mp_bank_cfg_shadowed_we = addr_hit[91] & reg_we & !reg_error;
 
   assign mp_bank_cfg_shadowed_erase_en_0_wd = reg_wdata[0];
 
   assign mp_bank_cfg_shadowed_erase_en_1_wd = reg_wdata[1];
-  assign op_status_we = addr_hit[97] & reg_we & !reg_error;
+  assign op_status_we = addr_hit[92] & reg_we & !reg_error;
 
   assign op_status_done_wd = reg_wdata[0];
 
   assign op_status_err_wd = reg_wdata[1];
-  assign debug_state_re = addr_hit[99] & reg_re & !reg_error;
-  assign err_code_we = addr_hit[100] & reg_we & !reg_error;
+  assign debug_state_re = addr_hit[94] & reg_re & !reg_error;
+  assign err_code_we = addr_hit[95] & reg_we & !reg_error;
 
   assign err_code_op_err_wd = reg_wdata[0];
 
@@ -12519,145 +12463,140 @@ module flash_ctrl_core_reg_top (
   assign err_code_update_err_wd = reg_wdata[6];
 
   assign err_code_macro_err_wd = reg_wdata[7];
-  assign ecc_single_err_cnt_we = addr_hit[104] & reg_we & !reg_error;
+  assign ecc_single_err_cnt_we = addr_hit[99] & reg_we & !reg_error;
 
   assign ecc_single_err_cnt_ecc_single_err_cnt_0_wd = reg_wdata[7:0];
 
   assign ecc_single_err_cnt_ecc_single_err_cnt_1_wd = reg_wdata[15:8];
-  assign phy_alert_cfg_we = addr_hit[107] & reg_we & !reg_error;
+  assign phy_alert_cfg_we = addr_hit[102] & reg_we & !reg_error;
 
   assign phy_alert_cfg_alert_ack_wd = reg_wdata[0];
 
   assign phy_alert_cfg_alert_trig_wd = reg_wdata[1];
-  assign scratch_we = addr_hit[109] & reg_we & !reg_error;
+  assign scratch_we = addr_hit[104] & reg_we & !reg_error;
 
   assign scratch_wd = reg_wdata[31:0];
-  assign fifo_lvl_we = addr_hit[110] & reg_we & !reg_error;
+  assign fifo_lvl_we = addr_hit[105] & reg_we & !reg_error;
 
   assign fifo_lvl_prog_wd = reg_wdata[4:0];
 
   assign fifo_lvl_rd_wd = reg_wdata[12:8];
-  assign fifo_rst_we = addr_hit[111] & reg_we & !reg_error;
+  assign fifo_rst_we = addr_hit[106] & reg_we & !reg_error;
 
   assign fifo_rst_wd = reg_wdata[0];
-  assign curr_fifo_lvl_re = addr_hit[112] & reg_re & !reg_error;
+  assign curr_fifo_lvl_re = addr_hit[107] & reg_re & !reg_error;
 
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
-    reg_we_check[0] = 1'b0;
-    reg_we_check[1] = 1'b0;
-    reg_we_check[2] = 1'b0;
-    reg_we_check[3] = 1'b0;
-    reg_we_check[4] = 1'b0;
-    reg_we_check[5] = intr_state_we;
-    reg_we_check[6] = intr_enable_we;
-    reg_we_check[7] = intr_test_we;
-    reg_we_check[8] = alert_test_we;
-    reg_we_check[9] = dis_we;
-    reg_we_check[10] = exec_we;
-    reg_we_check[11] = init_we;
-    reg_we_check[12] = 1'b0;
-    reg_we_check[13] = control_gated_we;
-    reg_we_check[14] = addr_gated_we;
-    reg_we_check[15] = prog_type_en_gated_we;
-    reg_we_check[16] = erase_suspend_we;
-    reg_we_check[17] = region_cfg_regwen_0_we;
-    reg_we_check[18] = region_cfg_regwen_1_we;
-    reg_we_check[19] = region_cfg_regwen_2_we;
-    reg_we_check[20] = region_cfg_regwen_3_we;
-    reg_we_check[21] = region_cfg_regwen_4_we;
-    reg_we_check[22] = region_cfg_regwen_5_we;
-    reg_we_check[23] = region_cfg_regwen_6_we;
-    reg_we_check[24] = region_cfg_regwen_7_we;
-    reg_we_check[25] = mp_region_cfg_0_gated_we;
-    reg_we_check[26] = mp_region_cfg_1_gated_we;
-    reg_we_check[27] = mp_region_cfg_2_gated_we;
-    reg_we_check[28] = mp_region_cfg_3_gated_we;
-    reg_we_check[29] = mp_region_cfg_4_gated_we;
-    reg_we_check[30] = mp_region_cfg_5_gated_we;
-    reg_we_check[31] = mp_region_cfg_6_gated_we;
-    reg_we_check[32] = mp_region_cfg_7_gated_we;
-    reg_we_check[33] = mp_region_0_gated_we;
-    reg_we_check[34] = mp_region_1_gated_we;
-    reg_we_check[35] = mp_region_2_gated_we;
-    reg_we_check[36] = mp_region_3_gated_we;
-    reg_we_check[37] = mp_region_4_gated_we;
-    reg_we_check[38] = mp_region_5_gated_we;
-    reg_we_check[39] = mp_region_6_gated_we;
-    reg_we_check[40] = mp_region_7_gated_we;
-    reg_we_check[41] = default_region_we;
-    reg_we_check[42] = bank0_info0_regwen_0_we;
-    reg_we_check[43] = bank0_info0_regwen_1_we;
-    reg_we_check[44] = bank0_info0_regwen_2_we;
-    reg_we_check[45] = bank0_info0_regwen_3_we;
-    reg_we_check[46] = bank0_info0_regwen_4_we;
-    reg_we_check[47] = bank0_info0_regwen_5_we;
-    reg_we_check[48] = bank0_info0_regwen_6_we;
-    reg_we_check[49] = bank0_info0_regwen_7_we;
-    reg_we_check[50] = bank0_info0_regwen_8_we;
-    reg_we_check[51] = bank0_info0_regwen_9_we;
-    reg_we_check[52] = bank0_info0_page_cfg_0_gated_we;
-    reg_we_check[53] = bank0_info0_page_cfg_1_gated_we;
-    reg_we_check[54] = bank0_info0_page_cfg_2_gated_we;
-    reg_we_check[55] = bank0_info0_page_cfg_3_gated_we;
-    reg_we_check[56] = bank0_info0_page_cfg_4_gated_we;
-    reg_we_check[57] = bank0_info0_page_cfg_5_gated_we;
-    reg_we_check[58] = bank0_info0_page_cfg_6_gated_we;
-    reg_we_check[59] = bank0_info0_page_cfg_7_gated_we;
-    reg_we_check[60] = bank0_info0_page_cfg_8_gated_we;
-    reg_we_check[61] = bank0_info0_page_cfg_9_gated_we;
-    reg_we_check[62] = bank0_info1_regwen_we;
-    reg_we_check[63] = bank0_info1_page_cfg_gated_we;
-    reg_we_check[64] = bank0_info2_regwen_0_we;
-    reg_we_check[65] = bank0_info2_regwen_1_we;
-    reg_we_check[66] = bank0_info2_page_cfg_0_gated_we;
-    reg_we_check[67] = bank0_info2_page_cfg_1_gated_we;
-    reg_we_check[68] = bank1_info0_regwen_0_we;
-    reg_we_check[69] = bank1_info0_regwen_1_we;
-    reg_we_check[70] = bank1_info0_regwen_2_we;
-    reg_we_check[71] = bank1_info0_regwen_3_we;
-    reg_we_check[72] = bank1_info0_regwen_4_we;
-    reg_we_check[73] = bank1_info0_regwen_5_we;
-    reg_we_check[74] = bank1_info0_regwen_6_we;
-    reg_we_check[75] = bank1_info0_regwen_7_we;
-    reg_we_check[76] = bank1_info0_regwen_8_we;
-    reg_we_check[77] = bank1_info0_regwen_9_we;
-    reg_we_check[78] = bank1_info0_page_cfg_0_gated_we;
-    reg_we_check[79] = bank1_info0_page_cfg_1_gated_we;
-    reg_we_check[80] = bank1_info0_page_cfg_2_gated_we;
-    reg_we_check[81] = bank1_info0_page_cfg_3_gated_we;
-    reg_we_check[82] = bank1_info0_page_cfg_4_gated_we;
-    reg_we_check[83] = bank1_info0_page_cfg_5_gated_we;
-    reg_we_check[84] = bank1_info0_page_cfg_6_gated_we;
-    reg_we_check[85] = bank1_info0_page_cfg_7_gated_we;
-    reg_we_check[86] = bank1_info0_page_cfg_8_gated_we;
-    reg_we_check[87] = bank1_info0_page_cfg_9_gated_we;
-    reg_we_check[88] = bank1_info1_regwen_we;
-    reg_we_check[89] = bank1_info1_page_cfg_gated_we;
-    reg_we_check[90] = bank1_info2_regwen_0_we;
-    reg_we_check[91] = bank1_info2_regwen_1_we;
-    reg_we_check[92] = bank1_info2_page_cfg_0_gated_we;
-    reg_we_check[93] = bank1_info2_page_cfg_1_gated_we;
-    reg_we_check[94] = hw_info_cfg_override_we;
-    reg_we_check[95] = bank_cfg_regwen_we;
-    reg_we_check[96] = mp_bank_cfg_shadowed_gated_we;
-    reg_we_check[97] = op_status_we;
+    reg_we_check[0] = intr_state_we;
+    reg_we_check[1] = intr_enable_we;
+    reg_we_check[2] = intr_test_we;
+    reg_we_check[3] = alert_test_we;
+    reg_we_check[4] = dis_we;
+    reg_we_check[5] = exec_we;
+    reg_we_check[6] = init_we;
+    reg_we_check[7] = 1'b0;
+    reg_we_check[8] = control_gated_we;
+    reg_we_check[9] = addr_gated_we;
+    reg_we_check[10] = prog_type_en_gated_we;
+    reg_we_check[11] = erase_suspend_we;
+    reg_we_check[12] = region_cfg_regwen_0_we;
+    reg_we_check[13] = region_cfg_regwen_1_we;
+    reg_we_check[14] = region_cfg_regwen_2_we;
+    reg_we_check[15] = region_cfg_regwen_3_we;
+    reg_we_check[16] = region_cfg_regwen_4_we;
+    reg_we_check[17] = region_cfg_regwen_5_we;
+    reg_we_check[18] = region_cfg_regwen_6_we;
+    reg_we_check[19] = region_cfg_regwen_7_we;
+    reg_we_check[20] = mp_region_cfg_0_gated_we;
+    reg_we_check[21] = mp_region_cfg_1_gated_we;
+    reg_we_check[22] = mp_region_cfg_2_gated_we;
+    reg_we_check[23] = mp_region_cfg_3_gated_we;
+    reg_we_check[24] = mp_region_cfg_4_gated_we;
+    reg_we_check[25] = mp_region_cfg_5_gated_we;
+    reg_we_check[26] = mp_region_cfg_6_gated_we;
+    reg_we_check[27] = mp_region_cfg_7_gated_we;
+    reg_we_check[28] = mp_region_0_gated_we;
+    reg_we_check[29] = mp_region_1_gated_we;
+    reg_we_check[30] = mp_region_2_gated_we;
+    reg_we_check[31] = mp_region_3_gated_we;
+    reg_we_check[32] = mp_region_4_gated_we;
+    reg_we_check[33] = mp_region_5_gated_we;
+    reg_we_check[34] = mp_region_6_gated_we;
+    reg_we_check[35] = mp_region_7_gated_we;
+    reg_we_check[36] = default_region_we;
+    reg_we_check[37] = bank0_info0_regwen_0_we;
+    reg_we_check[38] = bank0_info0_regwen_1_we;
+    reg_we_check[39] = bank0_info0_regwen_2_we;
+    reg_we_check[40] = bank0_info0_regwen_3_we;
+    reg_we_check[41] = bank0_info0_regwen_4_we;
+    reg_we_check[42] = bank0_info0_regwen_5_we;
+    reg_we_check[43] = bank0_info0_regwen_6_we;
+    reg_we_check[44] = bank0_info0_regwen_7_we;
+    reg_we_check[45] = bank0_info0_regwen_8_we;
+    reg_we_check[46] = bank0_info0_regwen_9_we;
+    reg_we_check[47] = bank0_info0_page_cfg_0_gated_we;
+    reg_we_check[48] = bank0_info0_page_cfg_1_gated_we;
+    reg_we_check[49] = bank0_info0_page_cfg_2_gated_we;
+    reg_we_check[50] = bank0_info0_page_cfg_3_gated_we;
+    reg_we_check[51] = bank0_info0_page_cfg_4_gated_we;
+    reg_we_check[52] = bank0_info0_page_cfg_5_gated_we;
+    reg_we_check[53] = bank0_info0_page_cfg_6_gated_we;
+    reg_we_check[54] = bank0_info0_page_cfg_7_gated_we;
+    reg_we_check[55] = bank0_info0_page_cfg_8_gated_we;
+    reg_we_check[56] = bank0_info0_page_cfg_9_gated_we;
+    reg_we_check[57] = bank0_info1_regwen_we;
+    reg_we_check[58] = bank0_info1_page_cfg_gated_we;
+    reg_we_check[59] = bank0_info2_regwen_0_we;
+    reg_we_check[60] = bank0_info2_regwen_1_we;
+    reg_we_check[61] = bank0_info2_page_cfg_0_gated_we;
+    reg_we_check[62] = bank0_info2_page_cfg_1_gated_we;
+    reg_we_check[63] = bank1_info0_regwen_0_we;
+    reg_we_check[64] = bank1_info0_regwen_1_we;
+    reg_we_check[65] = bank1_info0_regwen_2_we;
+    reg_we_check[66] = bank1_info0_regwen_3_we;
+    reg_we_check[67] = bank1_info0_regwen_4_we;
+    reg_we_check[68] = bank1_info0_regwen_5_we;
+    reg_we_check[69] = bank1_info0_regwen_6_we;
+    reg_we_check[70] = bank1_info0_regwen_7_we;
+    reg_we_check[71] = bank1_info0_regwen_8_we;
+    reg_we_check[72] = bank1_info0_regwen_9_we;
+    reg_we_check[73] = bank1_info0_page_cfg_0_gated_we;
+    reg_we_check[74] = bank1_info0_page_cfg_1_gated_we;
+    reg_we_check[75] = bank1_info0_page_cfg_2_gated_we;
+    reg_we_check[76] = bank1_info0_page_cfg_3_gated_we;
+    reg_we_check[77] = bank1_info0_page_cfg_4_gated_we;
+    reg_we_check[78] = bank1_info0_page_cfg_5_gated_we;
+    reg_we_check[79] = bank1_info0_page_cfg_6_gated_we;
+    reg_we_check[80] = bank1_info0_page_cfg_7_gated_we;
+    reg_we_check[81] = bank1_info0_page_cfg_8_gated_we;
+    reg_we_check[82] = bank1_info0_page_cfg_9_gated_we;
+    reg_we_check[83] = bank1_info1_regwen_we;
+    reg_we_check[84] = bank1_info1_page_cfg_gated_we;
+    reg_we_check[85] = bank1_info2_regwen_0_we;
+    reg_we_check[86] = bank1_info2_regwen_1_we;
+    reg_we_check[87] = bank1_info2_page_cfg_0_gated_we;
+    reg_we_check[88] = bank1_info2_page_cfg_1_gated_we;
+    reg_we_check[89] = hw_info_cfg_override_we;
+    reg_we_check[90] = bank_cfg_regwen_we;
+    reg_we_check[91] = mp_bank_cfg_shadowed_gated_we;
+    reg_we_check[92] = op_status_we;
+    reg_we_check[93] = 1'b0;
+    reg_we_check[94] = 1'b0;
+    reg_we_check[95] = err_code_we;
+    reg_we_check[96] = 1'b0;
+    reg_we_check[97] = 1'b0;
     reg_we_check[98] = 1'b0;
-    reg_we_check[99] = 1'b0;
-    reg_we_check[100] = err_code_we;
+    reg_we_check[99] = ecc_single_err_cnt_we;
+    reg_we_check[100] = 1'b0;
     reg_we_check[101] = 1'b0;
-    reg_we_check[102] = 1'b0;
+    reg_we_check[102] = phy_alert_cfg_we;
     reg_we_check[103] = 1'b0;
-    reg_we_check[104] = ecc_single_err_cnt_we;
-    reg_we_check[105] = 1'b0;
-    reg_we_check[106] = 1'b0;
-    reg_we_check[107] = phy_alert_cfg_we;
-    reg_we_check[108] = 1'b0;
-    reg_we_check[109] = scratch_we;
-    reg_we_check[110] = fifo_lvl_we;
-    reg_we_check[111] = fifo_rst_we;
-    reg_we_check[112] = 1'b0;
+    reg_we_check[104] = scratch_we;
+    reg_we_check[105] = fifo_lvl_we;
+    reg_we_check[106] = fifo_rst_we;
+    reg_we_check[107] = 1'b0;
   end
 
   // Read data return
@@ -12665,29 +12604,6 @@ module flash_ctrl_core_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[31:0] = cip_id_qs;
-      end
-
-      addr_hit[1]: begin
-        reg_rdata_next[7:0] = revision_reserved_qs;
-        reg_rdata_next[15:8] = revision_subminor_qs;
-        reg_rdata_next[23:16] = revision_minor_qs;
-        reg_rdata_next[31:24] = revision_major_qs;
-      end
-
-      addr_hit[2]: begin
-        reg_rdata_next[31:0] = parameter_block_type_qs;
-      end
-
-      addr_hit[3]: begin
-        reg_rdata_next[31:0] = parameter_block_length_qs;
-      end
-
-      addr_hit[4]: begin
-        reg_rdata_next[31:0] = next_parameter_block_qs;
-      end
-
-      addr_hit[5]: begin
         reg_rdata_next[0] = intr_state_prog_empty_qs;
         reg_rdata_next[1] = intr_state_prog_lvl_qs;
         reg_rdata_next[2] = intr_state_rd_full_qs;
@@ -12696,7 +12612,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[5] = intr_state_corr_err_qs;
       end
 
-      addr_hit[6]: begin
+      addr_hit[1]: begin
         reg_rdata_next[0] = intr_enable_prog_empty_qs;
         reg_rdata_next[1] = intr_enable_prog_lvl_qs;
         reg_rdata_next[2] = intr_enable_rd_full_qs;
@@ -12705,7 +12621,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[5] = intr_enable_corr_err_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[2]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
         reg_rdata_next[2] = '0;
@@ -12714,7 +12630,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[5] = '0;
       end
 
-      addr_hit[8]: begin
+      addr_hit[3]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
         reg_rdata_next[2] = '0;
@@ -12722,23 +12638,23 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[4] = '0;
       end
 
-      addr_hit[9]: begin
+      addr_hit[4]: begin
         reg_rdata_next[3:0] = dis_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[5]: begin
         reg_rdata_next[31:0] = exec_qs;
       end
 
-      addr_hit[11]: begin
+      addr_hit[6]: begin
         reg_rdata_next[0] = init_qs;
       end
 
-      addr_hit[12]: begin
+      addr_hit[7]: begin
         reg_rdata_next[0] = ctrl_regwen_qs;
       end
 
-      addr_hit[13]: begin
+      addr_hit[8]: begin
         reg_rdata_next[0] = control_start_qs;
         reg_rdata_next[5:4] = control_op_qs;
         reg_rdata_next[6] = control_prog_sel_qs;
@@ -12748,52 +12664,52 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:16] = control_num_qs;
       end
 
-      addr_hit[14]: begin
+      addr_hit[9]: begin
         reg_rdata_next[19:0] = addr_qs;
       end
 
-      addr_hit[15]: begin
+      addr_hit[10]: begin
         reg_rdata_next[0] = prog_type_en_normal_qs;
         reg_rdata_next[1] = prog_type_en_repair_qs;
       end
 
-      addr_hit[16]: begin
+      addr_hit[11]: begin
         reg_rdata_next[0] = erase_suspend_qs;
       end
 
-      addr_hit[17]: begin
+      addr_hit[12]: begin
         reg_rdata_next[0] = region_cfg_regwen_0_qs;
       end
 
-      addr_hit[18]: begin
+      addr_hit[13]: begin
         reg_rdata_next[0] = region_cfg_regwen_1_qs;
       end
 
-      addr_hit[19]: begin
+      addr_hit[14]: begin
         reg_rdata_next[0] = region_cfg_regwen_2_qs;
       end
 
-      addr_hit[20]: begin
+      addr_hit[15]: begin
         reg_rdata_next[0] = region_cfg_regwen_3_qs;
       end
 
-      addr_hit[21]: begin
+      addr_hit[16]: begin
         reg_rdata_next[0] = region_cfg_regwen_4_qs;
       end
 
-      addr_hit[22]: begin
+      addr_hit[17]: begin
         reg_rdata_next[0] = region_cfg_regwen_5_qs;
       end
 
-      addr_hit[23]: begin
+      addr_hit[18]: begin
         reg_rdata_next[0] = region_cfg_regwen_6_qs;
       end
 
-      addr_hit[24]: begin
+      addr_hit[19]: begin
         reg_rdata_next[0] = region_cfg_regwen_7_qs;
       end
 
-      addr_hit[25]: begin
+      addr_hit[20]: begin
         reg_rdata_next[3:0] = mp_region_cfg_0_en_0_qs;
         reg_rdata_next[7:4] = mp_region_cfg_0_rd_en_0_qs;
         reg_rdata_next[11:8] = mp_region_cfg_0_prog_en_0_qs;
@@ -12803,7 +12719,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = mp_region_cfg_0_he_en_0_qs;
       end
 
-      addr_hit[26]: begin
+      addr_hit[21]: begin
         reg_rdata_next[3:0] = mp_region_cfg_1_en_1_qs;
         reg_rdata_next[7:4] = mp_region_cfg_1_rd_en_1_qs;
         reg_rdata_next[11:8] = mp_region_cfg_1_prog_en_1_qs;
@@ -12813,7 +12729,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = mp_region_cfg_1_he_en_1_qs;
       end
 
-      addr_hit[27]: begin
+      addr_hit[22]: begin
         reg_rdata_next[3:0] = mp_region_cfg_2_en_2_qs;
         reg_rdata_next[7:4] = mp_region_cfg_2_rd_en_2_qs;
         reg_rdata_next[11:8] = mp_region_cfg_2_prog_en_2_qs;
@@ -12823,7 +12739,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = mp_region_cfg_2_he_en_2_qs;
       end
 
-      addr_hit[28]: begin
+      addr_hit[23]: begin
         reg_rdata_next[3:0] = mp_region_cfg_3_en_3_qs;
         reg_rdata_next[7:4] = mp_region_cfg_3_rd_en_3_qs;
         reg_rdata_next[11:8] = mp_region_cfg_3_prog_en_3_qs;
@@ -12833,7 +12749,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = mp_region_cfg_3_he_en_3_qs;
       end
 
-      addr_hit[29]: begin
+      addr_hit[24]: begin
         reg_rdata_next[3:0] = mp_region_cfg_4_en_4_qs;
         reg_rdata_next[7:4] = mp_region_cfg_4_rd_en_4_qs;
         reg_rdata_next[11:8] = mp_region_cfg_4_prog_en_4_qs;
@@ -12843,7 +12759,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = mp_region_cfg_4_he_en_4_qs;
       end
 
-      addr_hit[30]: begin
+      addr_hit[25]: begin
         reg_rdata_next[3:0] = mp_region_cfg_5_en_5_qs;
         reg_rdata_next[7:4] = mp_region_cfg_5_rd_en_5_qs;
         reg_rdata_next[11:8] = mp_region_cfg_5_prog_en_5_qs;
@@ -12853,7 +12769,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = mp_region_cfg_5_he_en_5_qs;
       end
 
-      addr_hit[31]: begin
+      addr_hit[26]: begin
         reg_rdata_next[3:0] = mp_region_cfg_6_en_6_qs;
         reg_rdata_next[7:4] = mp_region_cfg_6_rd_en_6_qs;
         reg_rdata_next[11:8] = mp_region_cfg_6_prog_en_6_qs;
@@ -12863,7 +12779,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = mp_region_cfg_6_he_en_6_qs;
       end
 
-      addr_hit[32]: begin
+      addr_hit[27]: begin
         reg_rdata_next[3:0] = mp_region_cfg_7_en_7_qs;
         reg_rdata_next[7:4] = mp_region_cfg_7_rd_en_7_qs;
         reg_rdata_next[11:8] = mp_region_cfg_7_prog_en_7_qs;
@@ -12873,47 +12789,47 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = mp_region_cfg_7_he_en_7_qs;
       end
 
-      addr_hit[33]: begin
+      addr_hit[28]: begin
         reg_rdata_next[8:0] = mp_region_0_base_0_qs;
         reg_rdata_next[18:9] = mp_region_0_size_0_qs;
       end
 
-      addr_hit[34]: begin
+      addr_hit[29]: begin
         reg_rdata_next[8:0] = mp_region_1_base_1_qs;
         reg_rdata_next[18:9] = mp_region_1_size_1_qs;
       end
 
-      addr_hit[35]: begin
+      addr_hit[30]: begin
         reg_rdata_next[8:0] = mp_region_2_base_2_qs;
         reg_rdata_next[18:9] = mp_region_2_size_2_qs;
       end
 
-      addr_hit[36]: begin
+      addr_hit[31]: begin
         reg_rdata_next[8:0] = mp_region_3_base_3_qs;
         reg_rdata_next[18:9] = mp_region_3_size_3_qs;
       end
 
-      addr_hit[37]: begin
+      addr_hit[32]: begin
         reg_rdata_next[8:0] = mp_region_4_base_4_qs;
         reg_rdata_next[18:9] = mp_region_4_size_4_qs;
       end
 
-      addr_hit[38]: begin
+      addr_hit[33]: begin
         reg_rdata_next[8:0] = mp_region_5_base_5_qs;
         reg_rdata_next[18:9] = mp_region_5_size_5_qs;
       end
 
-      addr_hit[39]: begin
+      addr_hit[34]: begin
         reg_rdata_next[8:0] = mp_region_6_base_6_qs;
         reg_rdata_next[18:9] = mp_region_6_size_6_qs;
       end
 
-      addr_hit[40]: begin
+      addr_hit[35]: begin
         reg_rdata_next[8:0] = mp_region_7_base_7_qs;
         reg_rdata_next[18:9] = mp_region_7_size_7_qs;
       end
 
-      addr_hit[41]: begin
+      addr_hit[36]: begin
         reg_rdata_next[3:0] = default_region_rd_en_qs;
         reg_rdata_next[7:4] = default_region_prog_en_qs;
         reg_rdata_next[11:8] = default_region_erase_en_qs;
@@ -12922,47 +12838,47 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[23:20] = default_region_he_en_qs;
       end
 
-      addr_hit[42]: begin
+      addr_hit[37]: begin
         reg_rdata_next[0] = bank0_info0_regwen_0_qs;
       end
 
-      addr_hit[43]: begin
+      addr_hit[38]: begin
         reg_rdata_next[0] = bank0_info0_regwen_1_qs;
       end
 
-      addr_hit[44]: begin
+      addr_hit[39]: begin
         reg_rdata_next[0] = bank0_info0_regwen_2_qs;
       end
 
-      addr_hit[45]: begin
+      addr_hit[40]: begin
         reg_rdata_next[0] = bank0_info0_regwen_3_qs;
       end
 
-      addr_hit[46]: begin
+      addr_hit[41]: begin
         reg_rdata_next[0] = bank0_info0_regwen_4_qs;
       end
 
-      addr_hit[47]: begin
+      addr_hit[42]: begin
         reg_rdata_next[0] = bank0_info0_regwen_5_qs;
       end
 
-      addr_hit[48]: begin
+      addr_hit[43]: begin
         reg_rdata_next[0] = bank0_info0_regwen_6_qs;
       end
 
-      addr_hit[49]: begin
+      addr_hit[44]: begin
         reg_rdata_next[0] = bank0_info0_regwen_7_qs;
       end
 
-      addr_hit[50]: begin
+      addr_hit[45]: begin
         reg_rdata_next[0] = bank0_info0_regwen_8_qs;
       end
 
-      addr_hit[51]: begin
+      addr_hit[46]: begin
         reg_rdata_next[0] = bank0_info0_regwen_9_qs;
       end
 
-      addr_hit[52]: begin
+      addr_hit[47]: begin
         reg_rdata_next[3:0] = bank0_info0_page_cfg_0_en_0_qs;
         reg_rdata_next[7:4] = bank0_info0_page_cfg_0_rd_en_0_qs;
         reg_rdata_next[11:8] = bank0_info0_page_cfg_0_prog_en_0_qs;
@@ -12972,7 +12888,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = bank0_info0_page_cfg_0_he_en_0_qs;
       end
 
-      addr_hit[53]: begin
+      addr_hit[48]: begin
         reg_rdata_next[3:0] = bank0_info0_page_cfg_1_en_1_qs;
         reg_rdata_next[7:4] = bank0_info0_page_cfg_1_rd_en_1_qs;
         reg_rdata_next[11:8] = bank0_info0_page_cfg_1_prog_en_1_qs;
@@ -12982,7 +12898,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = bank0_info0_page_cfg_1_he_en_1_qs;
       end
 
-      addr_hit[54]: begin
+      addr_hit[49]: begin
         reg_rdata_next[3:0] = bank0_info0_page_cfg_2_en_2_qs;
         reg_rdata_next[7:4] = bank0_info0_page_cfg_2_rd_en_2_qs;
         reg_rdata_next[11:8] = bank0_info0_page_cfg_2_prog_en_2_qs;
@@ -12992,7 +12908,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = bank0_info0_page_cfg_2_he_en_2_qs;
       end
 
-      addr_hit[55]: begin
+      addr_hit[50]: begin
         reg_rdata_next[3:0] = bank0_info0_page_cfg_3_en_3_qs;
         reg_rdata_next[7:4] = bank0_info0_page_cfg_3_rd_en_3_qs;
         reg_rdata_next[11:8] = bank0_info0_page_cfg_3_prog_en_3_qs;
@@ -13002,7 +12918,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = bank0_info0_page_cfg_3_he_en_3_qs;
       end
 
-      addr_hit[56]: begin
+      addr_hit[51]: begin
         reg_rdata_next[3:0] = bank0_info0_page_cfg_4_en_4_qs;
         reg_rdata_next[7:4] = bank0_info0_page_cfg_4_rd_en_4_qs;
         reg_rdata_next[11:8] = bank0_info0_page_cfg_4_prog_en_4_qs;
@@ -13012,7 +12928,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = bank0_info0_page_cfg_4_he_en_4_qs;
       end
 
-      addr_hit[57]: begin
+      addr_hit[52]: begin
         reg_rdata_next[3:0] = bank0_info0_page_cfg_5_en_5_qs;
         reg_rdata_next[7:4] = bank0_info0_page_cfg_5_rd_en_5_qs;
         reg_rdata_next[11:8] = bank0_info0_page_cfg_5_prog_en_5_qs;
@@ -13022,7 +12938,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = bank0_info0_page_cfg_5_he_en_5_qs;
       end
 
-      addr_hit[58]: begin
+      addr_hit[53]: begin
         reg_rdata_next[3:0] = bank0_info0_page_cfg_6_en_6_qs;
         reg_rdata_next[7:4] = bank0_info0_page_cfg_6_rd_en_6_qs;
         reg_rdata_next[11:8] = bank0_info0_page_cfg_6_prog_en_6_qs;
@@ -13032,7 +12948,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = bank0_info0_page_cfg_6_he_en_6_qs;
       end
 
-      addr_hit[59]: begin
+      addr_hit[54]: begin
         reg_rdata_next[3:0] = bank0_info0_page_cfg_7_en_7_qs;
         reg_rdata_next[7:4] = bank0_info0_page_cfg_7_rd_en_7_qs;
         reg_rdata_next[11:8] = bank0_info0_page_cfg_7_prog_en_7_qs;
@@ -13042,7 +12958,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = bank0_info0_page_cfg_7_he_en_7_qs;
       end
 
-      addr_hit[60]: begin
+      addr_hit[55]: begin
         reg_rdata_next[3:0] = bank0_info0_page_cfg_8_en_8_qs;
         reg_rdata_next[7:4] = bank0_info0_page_cfg_8_rd_en_8_qs;
         reg_rdata_next[11:8] = bank0_info0_page_cfg_8_prog_en_8_qs;
@@ -13052,7 +12968,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = bank0_info0_page_cfg_8_he_en_8_qs;
       end
 
-      addr_hit[61]: begin
+      addr_hit[56]: begin
         reg_rdata_next[3:0] = bank0_info0_page_cfg_9_en_9_qs;
         reg_rdata_next[7:4] = bank0_info0_page_cfg_9_rd_en_9_qs;
         reg_rdata_next[11:8] = bank0_info0_page_cfg_9_prog_en_9_qs;
@@ -13062,11 +12978,11 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = bank0_info0_page_cfg_9_he_en_9_qs;
       end
 
-      addr_hit[62]: begin
+      addr_hit[57]: begin
         reg_rdata_next[0] = bank0_info1_regwen_qs;
       end
 
-      addr_hit[63]: begin
+      addr_hit[58]: begin
         reg_rdata_next[3:0] = bank0_info1_page_cfg_en_0_qs;
         reg_rdata_next[7:4] = bank0_info1_page_cfg_rd_en_0_qs;
         reg_rdata_next[11:8] = bank0_info1_page_cfg_prog_en_0_qs;
@@ -13076,15 +12992,15 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = bank0_info1_page_cfg_he_en_0_qs;
       end
 
-      addr_hit[64]: begin
+      addr_hit[59]: begin
         reg_rdata_next[0] = bank0_info2_regwen_0_qs;
       end
 
-      addr_hit[65]: begin
+      addr_hit[60]: begin
         reg_rdata_next[0] = bank0_info2_regwen_1_qs;
       end
 
-      addr_hit[66]: begin
+      addr_hit[61]: begin
         reg_rdata_next[3:0] = bank0_info2_page_cfg_0_en_0_qs;
         reg_rdata_next[7:4] = bank0_info2_page_cfg_0_rd_en_0_qs;
         reg_rdata_next[11:8] = bank0_info2_page_cfg_0_prog_en_0_qs;
@@ -13094,7 +13010,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = bank0_info2_page_cfg_0_he_en_0_qs;
       end
 
-      addr_hit[67]: begin
+      addr_hit[62]: begin
         reg_rdata_next[3:0] = bank0_info2_page_cfg_1_en_1_qs;
         reg_rdata_next[7:4] = bank0_info2_page_cfg_1_rd_en_1_qs;
         reg_rdata_next[11:8] = bank0_info2_page_cfg_1_prog_en_1_qs;
@@ -13104,47 +13020,47 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = bank0_info2_page_cfg_1_he_en_1_qs;
       end
 
-      addr_hit[68]: begin
+      addr_hit[63]: begin
         reg_rdata_next[0] = bank1_info0_regwen_0_qs;
       end
 
-      addr_hit[69]: begin
+      addr_hit[64]: begin
         reg_rdata_next[0] = bank1_info0_regwen_1_qs;
       end
 
-      addr_hit[70]: begin
+      addr_hit[65]: begin
         reg_rdata_next[0] = bank1_info0_regwen_2_qs;
       end
 
-      addr_hit[71]: begin
+      addr_hit[66]: begin
         reg_rdata_next[0] = bank1_info0_regwen_3_qs;
       end
 
-      addr_hit[72]: begin
+      addr_hit[67]: begin
         reg_rdata_next[0] = bank1_info0_regwen_4_qs;
       end
 
-      addr_hit[73]: begin
+      addr_hit[68]: begin
         reg_rdata_next[0] = bank1_info0_regwen_5_qs;
       end
 
-      addr_hit[74]: begin
+      addr_hit[69]: begin
         reg_rdata_next[0] = bank1_info0_regwen_6_qs;
       end
 
-      addr_hit[75]: begin
+      addr_hit[70]: begin
         reg_rdata_next[0] = bank1_info0_regwen_7_qs;
       end
 
-      addr_hit[76]: begin
+      addr_hit[71]: begin
         reg_rdata_next[0] = bank1_info0_regwen_8_qs;
       end
 
-      addr_hit[77]: begin
+      addr_hit[72]: begin
         reg_rdata_next[0] = bank1_info0_regwen_9_qs;
       end
 
-      addr_hit[78]: begin
+      addr_hit[73]: begin
         reg_rdata_next[3:0] = bank1_info0_page_cfg_0_en_0_qs;
         reg_rdata_next[7:4] = bank1_info0_page_cfg_0_rd_en_0_qs;
         reg_rdata_next[11:8] = bank1_info0_page_cfg_0_prog_en_0_qs;
@@ -13154,7 +13070,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = bank1_info0_page_cfg_0_he_en_0_qs;
       end
 
-      addr_hit[79]: begin
+      addr_hit[74]: begin
         reg_rdata_next[3:0] = bank1_info0_page_cfg_1_en_1_qs;
         reg_rdata_next[7:4] = bank1_info0_page_cfg_1_rd_en_1_qs;
         reg_rdata_next[11:8] = bank1_info0_page_cfg_1_prog_en_1_qs;
@@ -13164,7 +13080,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = bank1_info0_page_cfg_1_he_en_1_qs;
       end
 
-      addr_hit[80]: begin
+      addr_hit[75]: begin
         reg_rdata_next[3:0] = bank1_info0_page_cfg_2_en_2_qs;
         reg_rdata_next[7:4] = bank1_info0_page_cfg_2_rd_en_2_qs;
         reg_rdata_next[11:8] = bank1_info0_page_cfg_2_prog_en_2_qs;
@@ -13174,7 +13090,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = bank1_info0_page_cfg_2_he_en_2_qs;
       end
 
-      addr_hit[81]: begin
+      addr_hit[76]: begin
         reg_rdata_next[3:0] = bank1_info0_page_cfg_3_en_3_qs;
         reg_rdata_next[7:4] = bank1_info0_page_cfg_3_rd_en_3_qs;
         reg_rdata_next[11:8] = bank1_info0_page_cfg_3_prog_en_3_qs;
@@ -13184,7 +13100,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = bank1_info0_page_cfg_3_he_en_3_qs;
       end
 
-      addr_hit[82]: begin
+      addr_hit[77]: begin
         reg_rdata_next[3:0] = bank1_info0_page_cfg_4_en_4_qs;
         reg_rdata_next[7:4] = bank1_info0_page_cfg_4_rd_en_4_qs;
         reg_rdata_next[11:8] = bank1_info0_page_cfg_4_prog_en_4_qs;
@@ -13194,7 +13110,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = bank1_info0_page_cfg_4_he_en_4_qs;
       end
 
-      addr_hit[83]: begin
+      addr_hit[78]: begin
         reg_rdata_next[3:0] = bank1_info0_page_cfg_5_en_5_qs;
         reg_rdata_next[7:4] = bank1_info0_page_cfg_5_rd_en_5_qs;
         reg_rdata_next[11:8] = bank1_info0_page_cfg_5_prog_en_5_qs;
@@ -13204,7 +13120,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = bank1_info0_page_cfg_5_he_en_5_qs;
       end
 
-      addr_hit[84]: begin
+      addr_hit[79]: begin
         reg_rdata_next[3:0] = bank1_info0_page_cfg_6_en_6_qs;
         reg_rdata_next[7:4] = bank1_info0_page_cfg_6_rd_en_6_qs;
         reg_rdata_next[11:8] = bank1_info0_page_cfg_6_prog_en_6_qs;
@@ -13214,7 +13130,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = bank1_info0_page_cfg_6_he_en_6_qs;
       end
 
-      addr_hit[85]: begin
+      addr_hit[80]: begin
         reg_rdata_next[3:0] = bank1_info0_page_cfg_7_en_7_qs;
         reg_rdata_next[7:4] = bank1_info0_page_cfg_7_rd_en_7_qs;
         reg_rdata_next[11:8] = bank1_info0_page_cfg_7_prog_en_7_qs;
@@ -13224,7 +13140,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = bank1_info0_page_cfg_7_he_en_7_qs;
       end
 
-      addr_hit[86]: begin
+      addr_hit[81]: begin
         reg_rdata_next[3:0] = bank1_info0_page_cfg_8_en_8_qs;
         reg_rdata_next[7:4] = bank1_info0_page_cfg_8_rd_en_8_qs;
         reg_rdata_next[11:8] = bank1_info0_page_cfg_8_prog_en_8_qs;
@@ -13234,7 +13150,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = bank1_info0_page_cfg_8_he_en_8_qs;
       end
 
-      addr_hit[87]: begin
+      addr_hit[82]: begin
         reg_rdata_next[3:0] = bank1_info0_page_cfg_9_en_9_qs;
         reg_rdata_next[7:4] = bank1_info0_page_cfg_9_rd_en_9_qs;
         reg_rdata_next[11:8] = bank1_info0_page_cfg_9_prog_en_9_qs;
@@ -13244,11 +13160,11 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = bank1_info0_page_cfg_9_he_en_9_qs;
       end
 
-      addr_hit[88]: begin
+      addr_hit[83]: begin
         reg_rdata_next[0] = bank1_info1_regwen_qs;
       end
 
-      addr_hit[89]: begin
+      addr_hit[84]: begin
         reg_rdata_next[3:0] = bank1_info1_page_cfg_en_0_qs;
         reg_rdata_next[7:4] = bank1_info1_page_cfg_rd_en_0_qs;
         reg_rdata_next[11:8] = bank1_info1_page_cfg_prog_en_0_qs;
@@ -13258,15 +13174,15 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = bank1_info1_page_cfg_he_en_0_qs;
       end
 
-      addr_hit[90]: begin
+      addr_hit[85]: begin
         reg_rdata_next[0] = bank1_info2_regwen_0_qs;
       end
 
-      addr_hit[91]: begin
+      addr_hit[86]: begin
         reg_rdata_next[0] = bank1_info2_regwen_1_qs;
       end
 
-      addr_hit[92]: begin
+      addr_hit[87]: begin
         reg_rdata_next[3:0] = bank1_info2_page_cfg_0_en_0_qs;
         reg_rdata_next[7:4] = bank1_info2_page_cfg_0_rd_en_0_qs;
         reg_rdata_next[11:8] = bank1_info2_page_cfg_0_prog_en_0_qs;
@@ -13276,7 +13192,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = bank1_info2_page_cfg_0_he_en_0_qs;
       end
 
-      addr_hit[93]: begin
+      addr_hit[88]: begin
         reg_rdata_next[3:0] = bank1_info2_page_cfg_1_en_1_qs;
         reg_rdata_next[7:4] = bank1_info2_page_cfg_1_rd_en_1_qs;
         reg_rdata_next[11:8] = bank1_info2_page_cfg_1_prog_en_1_qs;
@@ -13286,26 +13202,26 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[27:24] = bank1_info2_page_cfg_1_he_en_1_qs;
       end
 
-      addr_hit[94]: begin
+      addr_hit[89]: begin
         reg_rdata_next[3:0] = hw_info_cfg_override_scramble_dis_qs;
         reg_rdata_next[7:4] = hw_info_cfg_override_ecc_dis_qs;
       end
 
-      addr_hit[95]: begin
+      addr_hit[90]: begin
         reg_rdata_next[0] = bank_cfg_regwen_qs;
       end
 
-      addr_hit[96]: begin
+      addr_hit[91]: begin
         reg_rdata_next[0] = mp_bank_cfg_shadowed_erase_en_0_qs;
         reg_rdata_next[1] = mp_bank_cfg_shadowed_erase_en_1_qs;
       end
 
-      addr_hit[97]: begin
+      addr_hit[92]: begin
         reg_rdata_next[0] = op_status_done_qs;
         reg_rdata_next[1] = op_status_err_qs;
       end
 
-      addr_hit[98]: begin
+      addr_hit[93]: begin
         reg_rdata_next[0] = status_rd_full_qs;
         reg_rdata_next[1] = status_rd_empty_qs;
         reg_rdata_next[2] = status_prog_full_qs;
@@ -13314,11 +13230,11 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[5] = status_initialized_qs;
       end
 
-      addr_hit[99]: begin
+      addr_hit[94]: begin
         reg_rdata_next[10:0] = debug_state_qs;
       end
 
-      addr_hit[100]: begin
+      addr_hit[95]: begin
         reg_rdata_next[0] = err_code_op_err_qs;
         reg_rdata_next[1] = err_code_mp_err_qs;
         reg_rdata_next[2] = err_code_rd_err_qs;
@@ -13329,7 +13245,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[7] = err_code_macro_err_qs;
       end
 
-      addr_hit[101]: begin
+      addr_hit[96]: begin
         reg_rdata_next[0] = std_fault_status_reg_intg_err_qs;
         reg_rdata_next[1] = std_fault_status_prog_intg_err_qs;
         reg_rdata_next[2] = std_fault_status_lcmgr_err_qs;
@@ -13341,7 +13257,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[8] = std_fault_status_fifo_err_qs;
       end
 
-      addr_hit[102]: begin
+      addr_hit[97]: begin
         reg_rdata_next[0] = fault_status_op_err_qs;
         reg_rdata_next[1] = fault_status_mp_err_qs;
         reg_rdata_next[2] = fault_status_rd_err_qs;
@@ -13356,48 +13272,48 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[11] = fault_status_host_gnt_err_qs;
       end
 
-      addr_hit[103]: begin
+      addr_hit[98]: begin
         reg_rdata_next[19:0] = err_addr_qs;
       end
 
-      addr_hit[104]: begin
+      addr_hit[99]: begin
         reg_rdata_next[7:0] = ecc_single_err_cnt_ecc_single_err_cnt_0_qs;
         reg_rdata_next[15:8] = ecc_single_err_cnt_ecc_single_err_cnt_1_qs;
       end
 
-      addr_hit[105]: begin
+      addr_hit[100]: begin
         reg_rdata_next[19:0] = ecc_single_err_addr_0_qs;
       end
 
-      addr_hit[106]: begin
+      addr_hit[101]: begin
         reg_rdata_next[19:0] = ecc_single_err_addr_1_qs;
       end
 
-      addr_hit[107]: begin
+      addr_hit[102]: begin
         reg_rdata_next[0] = phy_alert_cfg_alert_ack_qs;
         reg_rdata_next[1] = phy_alert_cfg_alert_trig_qs;
       end
 
-      addr_hit[108]: begin
+      addr_hit[103]: begin
         reg_rdata_next[0] = phy_status_init_wip_qs;
         reg_rdata_next[1] = phy_status_prog_normal_avail_qs;
         reg_rdata_next[2] = phy_status_prog_repair_avail_qs;
       end
 
-      addr_hit[109]: begin
+      addr_hit[104]: begin
         reg_rdata_next[31:0] = scratch_qs;
       end
 
-      addr_hit[110]: begin
+      addr_hit[105]: begin
         reg_rdata_next[4:0] = fifo_lvl_prog_qs;
         reg_rdata_next[12:8] = fifo_lvl_rd_qs;
       end
 
-      addr_hit[111]: begin
+      addr_hit[106]: begin
         reg_rdata_next[0] = fifo_rst_qs;
       end
 
-      addr_hit[112]: begin
+      addr_hit[107]: begin
         reg_rdata_next[4:0] = curr_fifo_lvl_prog_qs;
         reg_rdata_next[12:8] = curr_fifo_lvl_rd_qs;
       end

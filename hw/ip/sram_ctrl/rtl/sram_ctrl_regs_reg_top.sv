@@ -24,7 +24,7 @@ module sram_ctrl_regs_reg_top (
 
   import sram_ctrl_reg_pkg::* ;
 
-  localparam int AW = 7;
+  localparam int AW = 5;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -55,9 +55,9 @@ module sram_ctrl_regs_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [10:0] reg_we_check;
+  logic [5:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(11)
+    .OneHotWidth(6)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -124,14 +124,6 @@ module sram_ctrl_regs_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic [31:0] cip_id_qs;
-  logic [7:0] revision_reserved_qs;
-  logic [7:0] revision_subminor_qs;
-  logic [7:0] revision_minor_qs;
-  logic [7:0] revision_major_qs;
-  logic [31:0] parameter_block_type_qs;
-  logic [31:0] parameter_block_length_qs;
-  logic [31:0] next_parameter_block_qs;
   logic alert_test_we;
   logic alert_test_wd;
   logic status_bus_integ_error_qs;
@@ -154,44 +146,6 @@ module sram_ctrl_regs_reg_top (
   logic ctrl_init_wd;
 
   // Register instances
-  // R[cip_id]: V(False)
-  // constant-only read
-  assign cip_id_qs = 32'h1c;
-
-
-  // R[revision]: V(False)
-  //   F[reserved]: 7:0
-  // constant-only read
-  assign revision_reserved_qs = 8'h0;
-
-  //   F[subminor]: 15:8
-  // constant-only read
-  assign revision_subminor_qs = 8'h0;
-
-  //   F[minor]: 23:16
-  // constant-only read
-  assign revision_minor_qs = 8'h0;
-
-  //   F[major]: 31:24
-  // constant-only read
-  assign revision_major_qs = 8'h2;
-
-
-  // R[parameter_block_type]: V(False)
-  // constant-only read
-  assign parameter_block_type_qs = 32'h0;
-
-
-  // R[parameter_block_length]: V(False)
-  // constant-only read
-  assign parameter_block_length_qs = 32'hc;
-
-
-  // R[next_parameter_block]: V(False)
-  // constant-only read
-  assign next_parameter_block_qs = 32'h0;
-
-
   // R[alert_test]: V(True)
   logic alert_test_qe;
   logic [0:0] alert_test_flds_we;
@@ -525,20 +479,15 @@ module sram_ctrl_regs_reg_top (
 
 
 
-  logic [10:0] addr_hit;
+  logic [5:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[ 0] = (reg_addr == SRAM_CTRL_CIP_ID_OFFSET);
-    addr_hit[ 1] = (reg_addr == SRAM_CTRL_REVISION_OFFSET);
-    addr_hit[ 2] = (reg_addr == SRAM_CTRL_PARAMETER_BLOCK_TYPE_OFFSET);
-    addr_hit[ 3] = (reg_addr == SRAM_CTRL_PARAMETER_BLOCK_LENGTH_OFFSET);
-    addr_hit[ 4] = (reg_addr == SRAM_CTRL_NEXT_PARAMETER_BLOCK_OFFSET);
-    addr_hit[ 5] = (reg_addr == SRAM_CTRL_ALERT_TEST_OFFSET);
-    addr_hit[ 6] = (reg_addr == SRAM_CTRL_STATUS_OFFSET);
-    addr_hit[ 7] = (reg_addr == SRAM_CTRL_EXEC_REGWEN_OFFSET);
-    addr_hit[ 8] = (reg_addr == SRAM_CTRL_EXEC_OFFSET);
-    addr_hit[ 9] = (reg_addr == SRAM_CTRL_CTRL_REGWEN_OFFSET);
-    addr_hit[10] = (reg_addr == SRAM_CTRL_CTRL_OFFSET);
+    addr_hit[0] = (reg_addr == SRAM_CTRL_ALERT_TEST_OFFSET);
+    addr_hit[1] = (reg_addr == SRAM_CTRL_STATUS_OFFSET);
+    addr_hit[2] = (reg_addr == SRAM_CTRL_EXEC_REGWEN_OFFSET);
+    addr_hit[3] = (reg_addr == SRAM_CTRL_EXEC_OFFSET);
+    addr_hit[4] = (reg_addr == SRAM_CTRL_CTRL_REGWEN_OFFSET);
+    addr_hit[5] = (reg_addr == SRAM_CTRL_CTRL_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -546,33 +495,28 @@ module sram_ctrl_regs_reg_top (
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((addr_hit[ 0] & (|(SRAM_CTRL_REGS_PERMIT[ 0] & ~reg_be))) |
-               (addr_hit[ 1] & (|(SRAM_CTRL_REGS_PERMIT[ 1] & ~reg_be))) |
-               (addr_hit[ 2] & (|(SRAM_CTRL_REGS_PERMIT[ 2] & ~reg_be))) |
-               (addr_hit[ 3] & (|(SRAM_CTRL_REGS_PERMIT[ 3] & ~reg_be))) |
-               (addr_hit[ 4] & (|(SRAM_CTRL_REGS_PERMIT[ 4] & ~reg_be))) |
-               (addr_hit[ 5] & (|(SRAM_CTRL_REGS_PERMIT[ 5] & ~reg_be))) |
-               (addr_hit[ 6] & (|(SRAM_CTRL_REGS_PERMIT[ 6] & ~reg_be))) |
-               (addr_hit[ 7] & (|(SRAM_CTRL_REGS_PERMIT[ 7] & ~reg_be))) |
-               (addr_hit[ 8] & (|(SRAM_CTRL_REGS_PERMIT[ 8] & ~reg_be))) |
-               (addr_hit[ 9] & (|(SRAM_CTRL_REGS_PERMIT[ 9] & ~reg_be))) |
-               (addr_hit[10] & (|(SRAM_CTRL_REGS_PERMIT[10] & ~reg_be)))));
+              ((addr_hit[0] & (|(SRAM_CTRL_REGS_PERMIT[0] & ~reg_be))) |
+               (addr_hit[1] & (|(SRAM_CTRL_REGS_PERMIT[1] & ~reg_be))) |
+               (addr_hit[2] & (|(SRAM_CTRL_REGS_PERMIT[2] & ~reg_be))) |
+               (addr_hit[3] & (|(SRAM_CTRL_REGS_PERMIT[3] & ~reg_be))) |
+               (addr_hit[4] & (|(SRAM_CTRL_REGS_PERMIT[4] & ~reg_be))) |
+               (addr_hit[5] & (|(SRAM_CTRL_REGS_PERMIT[5] & ~reg_be)))));
   end
 
   // Generate write-enables
-  assign alert_test_we = addr_hit[5] & reg_we & !reg_error;
+  assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
-  assign exec_regwen_we = addr_hit[7] & reg_we & !reg_error;
+  assign exec_regwen_we = addr_hit[2] & reg_we & !reg_error;
 
   assign exec_regwen_wd = reg_wdata[0];
-  assign exec_we = addr_hit[8] & reg_we & !reg_error;
+  assign exec_we = addr_hit[3] & reg_we & !reg_error;
 
   assign exec_wd = reg_wdata[3:0];
-  assign ctrl_regwen_we = addr_hit[9] & reg_we & !reg_error;
+  assign ctrl_regwen_we = addr_hit[4] & reg_we & !reg_error;
 
   assign ctrl_regwen_wd = reg_wdata[0];
-  assign ctrl_we = addr_hit[10] & reg_we & !reg_error;
+  assign ctrl_we = addr_hit[5] & reg_we & !reg_error;
 
   assign ctrl_renew_scr_key_wd = reg_wdata[0];
 
@@ -581,17 +525,12 @@ module sram_ctrl_regs_reg_top (
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
-    reg_we_check[0] = 1'b0;
+    reg_we_check[0] = alert_test_we;
     reg_we_check[1] = 1'b0;
-    reg_we_check[2] = 1'b0;
-    reg_we_check[3] = 1'b0;
-    reg_we_check[4] = 1'b0;
-    reg_we_check[5] = alert_test_we;
-    reg_we_check[6] = 1'b0;
-    reg_we_check[7] = exec_regwen_we;
-    reg_we_check[8] = exec_gated_we;
-    reg_we_check[9] = ctrl_regwen_we;
-    reg_we_check[10] = ctrl_gated_we;
+    reg_we_check[2] = exec_regwen_we;
+    reg_we_check[3] = exec_gated_we;
+    reg_we_check[4] = ctrl_regwen_we;
+    reg_we_check[5] = ctrl_gated_we;
   end
 
   // Read data return
@@ -599,33 +538,10 @@ module sram_ctrl_regs_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[31:0] = cip_id_qs;
-      end
-
-      addr_hit[1]: begin
-        reg_rdata_next[7:0] = revision_reserved_qs;
-        reg_rdata_next[15:8] = revision_subminor_qs;
-        reg_rdata_next[23:16] = revision_minor_qs;
-        reg_rdata_next[31:24] = revision_major_qs;
-      end
-
-      addr_hit[2]: begin
-        reg_rdata_next[31:0] = parameter_block_type_qs;
-      end
-
-      addr_hit[3]: begin
-        reg_rdata_next[31:0] = parameter_block_length_qs;
-      end
-
-      addr_hit[4]: begin
-        reg_rdata_next[31:0] = next_parameter_block_qs;
-      end
-
-      addr_hit[5]: begin
         reg_rdata_next[0] = '0;
       end
 
-      addr_hit[6]: begin
+      addr_hit[1]: begin
         reg_rdata_next[0] = status_bus_integ_error_qs;
         reg_rdata_next[1] = status_init_error_qs;
         reg_rdata_next[2] = status_escalated_qs;
@@ -634,19 +550,19 @@ module sram_ctrl_regs_reg_top (
         reg_rdata_next[5] = status_init_done_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[2]: begin
         reg_rdata_next[0] = exec_regwen_qs;
       end
 
-      addr_hit[8]: begin
+      addr_hit[3]: begin
         reg_rdata_next[3:0] = exec_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[4]: begin
         reg_rdata_next[0] = ctrl_regwen_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[5]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
       end

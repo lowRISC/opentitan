@@ -24,7 +24,7 @@ module sensor_ctrl_reg_top (
 
   import sensor_ctrl_reg_pkg::* ;
 
-  localparam int AW = 7;
+  localparam int AW = 6;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -55,9 +55,9 @@ module sensor_ctrl_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [14:0] reg_we_check;
+  logic [9:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(15)
+    .OneHotWidth(10)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -124,14 +124,6 @@ module sensor_ctrl_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic [31:0] cip_id_qs;
-  logic [7:0] revision_reserved_qs;
-  logic [7:0] revision_subminor_qs;
-  logic [7:0] revision_minor_qs;
-  logic [7:0] revision_major_qs;
-  logic [31:0] parameter_block_type_qs;
-  logic [31:0] parameter_block_length_qs;
-  logic [31:0] next_parameter_block_qs;
   logic intr_state_we;
   logic intr_state_io_status_change_qs;
   logic intr_state_io_status_change_wd;
@@ -236,44 +228,6 @@ module sensor_ctrl_reg_top (
   logic [1:0] status_io_pok_qs;
 
   // Register instances
-  // R[cip_id]: V(False)
-  // constant-only read
-  assign cip_id_qs = 32'h23;
-
-
-  // R[revision]: V(False)
-  //   F[reserved]: 7:0
-  // constant-only read
-  assign revision_reserved_qs = 8'h0;
-
-  //   F[subminor]: 15:8
-  // constant-only read
-  assign revision_subminor_qs = 8'h0;
-
-  //   F[minor]: 23:16
-  // constant-only read
-  assign revision_minor_qs = 8'h0;
-
-  //   F[major]: 31:24
-  // constant-only read
-  assign revision_major_qs = 8'h2;
-
-
-  // R[parameter_block_type]: V(False)
-  // constant-only read
-  assign parameter_block_type_qs = 32'h0;
-
-
-  // R[parameter_block_length]: V(False)
-  // constant-only read
-  assign parameter_block_length_qs = 32'hc;
-
-
-  // R[next_parameter_block]: V(False)
-  // constant-only read
-  assign next_parameter_block_qs = 32'h0;
-
-
   // R[intr_state]: V(False)
   //   F[io_status_change]: 0:0
   prim_subreg #(
@@ -1723,24 +1677,19 @@ module sensor_ctrl_reg_top (
 
 
 
-  logic [14:0] addr_hit;
+  logic [9:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[ 0] = (reg_addr == SENSOR_CTRL_CIP_ID_OFFSET);
-    addr_hit[ 1] = (reg_addr == SENSOR_CTRL_REVISION_OFFSET);
-    addr_hit[ 2] = (reg_addr == SENSOR_CTRL_PARAMETER_BLOCK_TYPE_OFFSET);
-    addr_hit[ 3] = (reg_addr == SENSOR_CTRL_PARAMETER_BLOCK_LENGTH_OFFSET);
-    addr_hit[ 4] = (reg_addr == SENSOR_CTRL_NEXT_PARAMETER_BLOCK_OFFSET);
-    addr_hit[ 5] = (reg_addr == SENSOR_CTRL_INTR_STATE_OFFSET);
-    addr_hit[ 6] = (reg_addr == SENSOR_CTRL_INTR_ENABLE_OFFSET);
-    addr_hit[ 7] = (reg_addr == SENSOR_CTRL_INTR_TEST_OFFSET);
-    addr_hit[ 8] = (reg_addr == SENSOR_CTRL_ALERT_TEST_OFFSET);
-    addr_hit[ 9] = (reg_addr == SENSOR_CTRL_CFG_REGWEN_OFFSET);
-    addr_hit[10] = (reg_addr == SENSOR_CTRL_ALERT_TRIG_OFFSET);
-    addr_hit[11] = (reg_addr == SENSOR_CTRL_FATAL_ALERT_EN_OFFSET);
-    addr_hit[12] = (reg_addr == SENSOR_CTRL_RECOV_ALERT_OFFSET);
-    addr_hit[13] = (reg_addr == SENSOR_CTRL_FATAL_ALERT_OFFSET);
-    addr_hit[14] = (reg_addr == SENSOR_CTRL_STATUS_OFFSET);
+    addr_hit[0] = (reg_addr == SENSOR_CTRL_INTR_STATE_OFFSET);
+    addr_hit[1] = (reg_addr == SENSOR_CTRL_INTR_ENABLE_OFFSET);
+    addr_hit[2] = (reg_addr == SENSOR_CTRL_INTR_TEST_OFFSET);
+    addr_hit[3] = (reg_addr == SENSOR_CTRL_ALERT_TEST_OFFSET);
+    addr_hit[4] = (reg_addr == SENSOR_CTRL_CFG_REGWEN_OFFSET);
+    addr_hit[5] = (reg_addr == SENSOR_CTRL_ALERT_TRIG_OFFSET);
+    addr_hit[6] = (reg_addr == SENSOR_CTRL_FATAL_ALERT_EN_OFFSET);
+    addr_hit[7] = (reg_addr == SENSOR_CTRL_RECOV_ALERT_OFFSET);
+    addr_hit[8] = (reg_addr == SENSOR_CTRL_FATAL_ALERT_OFFSET);
+    addr_hit[9] = (reg_addr == SENSOR_CTRL_STATUS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1748,48 +1697,43 @@ module sensor_ctrl_reg_top (
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((addr_hit[ 0] & (|(SENSOR_CTRL_PERMIT[ 0] & ~reg_be))) |
-               (addr_hit[ 1] & (|(SENSOR_CTRL_PERMIT[ 1] & ~reg_be))) |
-               (addr_hit[ 2] & (|(SENSOR_CTRL_PERMIT[ 2] & ~reg_be))) |
-               (addr_hit[ 3] & (|(SENSOR_CTRL_PERMIT[ 3] & ~reg_be))) |
-               (addr_hit[ 4] & (|(SENSOR_CTRL_PERMIT[ 4] & ~reg_be))) |
-               (addr_hit[ 5] & (|(SENSOR_CTRL_PERMIT[ 5] & ~reg_be))) |
-               (addr_hit[ 6] & (|(SENSOR_CTRL_PERMIT[ 6] & ~reg_be))) |
-               (addr_hit[ 7] & (|(SENSOR_CTRL_PERMIT[ 7] & ~reg_be))) |
-               (addr_hit[ 8] & (|(SENSOR_CTRL_PERMIT[ 8] & ~reg_be))) |
-               (addr_hit[ 9] & (|(SENSOR_CTRL_PERMIT[ 9] & ~reg_be))) |
-               (addr_hit[10] & (|(SENSOR_CTRL_PERMIT[10] & ~reg_be))) |
-               (addr_hit[11] & (|(SENSOR_CTRL_PERMIT[11] & ~reg_be))) |
-               (addr_hit[12] & (|(SENSOR_CTRL_PERMIT[12] & ~reg_be))) |
-               (addr_hit[13] & (|(SENSOR_CTRL_PERMIT[13] & ~reg_be))) |
-               (addr_hit[14] & (|(SENSOR_CTRL_PERMIT[14] & ~reg_be)))));
+              ((addr_hit[0] & (|(SENSOR_CTRL_PERMIT[0] & ~reg_be))) |
+               (addr_hit[1] & (|(SENSOR_CTRL_PERMIT[1] & ~reg_be))) |
+               (addr_hit[2] & (|(SENSOR_CTRL_PERMIT[2] & ~reg_be))) |
+               (addr_hit[3] & (|(SENSOR_CTRL_PERMIT[3] & ~reg_be))) |
+               (addr_hit[4] & (|(SENSOR_CTRL_PERMIT[4] & ~reg_be))) |
+               (addr_hit[5] & (|(SENSOR_CTRL_PERMIT[5] & ~reg_be))) |
+               (addr_hit[6] & (|(SENSOR_CTRL_PERMIT[6] & ~reg_be))) |
+               (addr_hit[7] & (|(SENSOR_CTRL_PERMIT[7] & ~reg_be))) |
+               (addr_hit[8] & (|(SENSOR_CTRL_PERMIT[8] & ~reg_be))) |
+               (addr_hit[9] & (|(SENSOR_CTRL_PERMIT[9] & ~reg_be)))));
   end
 
   // Generate write-enables
-  assign intr_state_we = addr_hit[5] & reg_we & !reg_error;
+  assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
   assign intr_state_io_status_change_wd = reg_wdata[0];
 
   assign intr_state_init_status_change_wd = reg_wdata[1];
-  assign intr_enable_we = addr_hit[6] & reg_we & !reg_error;
+  assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
   assign intr_enable_io_status_change_wd = reg_wdata[0];
 
   assign intr_enable_init_status_change_wd = reg_wdata[1];
-  assign intr_test_we = addr_hit[7] & reg_we & !reg_error;
+  assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
   assign intr_test_io_status_change_wd = reg_wdata[0];
 
   assign intr_test_init_status_change_wd = reg_wdata[1];
-  assign alert_test_we = addr_hit[8] & reg_we & !reg_error;
+  assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
 
   assign alert_test_recov_alert_wd = reg_wdata[0];
 
   assign alert_test_fatal_alert_wd = reg_wdata[1];
-  assign cfg_regwen_we = addr_hit[9] & reg_we & !reg_error;
+  assign cfg_regwen_we = addr_hit[4] & reg_we & !reg_error;
 
   assign cfg_regwen_wd = reg_wdata[0];
-  assign alert_trig_we = addr_hit[10] & reg_we & !reg_error;
+  assign alert_trig_we = addr_hit[5] & reg_we & !reg_error;
 
   assign alert_trig_val_0_wd = reg_wdata[0];
 
@@ -1812,7 +1756,7 @@ module sensor_ctrl_reg_top (
   assign alert_trig_val_9_wd = reg_wdata[9];
 
   assign alert_trig_val_10_wd = reg_wdata[10];
-  assign fatal_alert_en_we = addr_hit[11] & reg_we & !reg_error;
+  assign fatal_alert_en_we = addr_hit[6] & reg_we & !reg_error;
 
   assign fatal_alert_en_val_0_wd = reg_wdata[0];
 
@@ -1835,7 +1779,7 @@ module sensor_ctrl_reg_top (
   assign fatal_alert_en_val_9_wd = reg_wdata[9];
 
   assign fatal_alert_en_val_10_wd = reg_wdata[10];
-  assign recov_alert_we = addr_hit[12] & reg_we & !reg_error;
+  assign recov_alert_we = addr_hit[7] & reg_we & !reg_error;
 
   assign recov_alert_val_0_wd = reg_wdata[0];
 
@@ -1862,21 +1806,16 @@ module sensor_ctrl_reg_top (
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
-    reg_we_check[0] = 1'b0;
-    reg_we_check[1] = 1'b0;
-    reg_we_check[2] = 1'b0;
-    reg_we_check[3] = 1'b0;
-    reg_we_check[4] = 1'b0;
-    reg_we_check[5] = intr_state_we;
-    reg_we_check[6] = intr_enable_we;
-    reg_we_check[7] = intr_test_we;
-    reg_we_check[8] = alert_test_we;
-    reg_we_check[9] = cfg_regwen_we;
-    reg_we_check[10] = alert_trig_we;
-    reg_we_check[11] = fatal_alert_en_gated_we;
-    reg_we_check[12] = recov_alert_we;
-    reg_we_check[13] = 1'b0;
-    reg_we_check[14] = 1'b0;
+    reg_we_check[0] = intr_state_we;
+    reg_we_check[1] = intr_enable_we;
+    reg_we_check[2] = intr_test_we;
+    reg_we_check[3] = alert_test_we;
+    reg_we_check[4] = cfg_regwen_we;
+    reg_we_check[5] = alert_trig_we;
+    reg_we_check[6] = fatal_alert_en_gated_we;
+    reg_we_check[7] = recov_alert_we;
+    reg_we_check[8] = 1'b0;
+    reg_we_check[9] = 1'b0;
   end
 
   // Read data return
@@ -1884,53 +1823,30 @@ module sensor_ctrl_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[31:0] = cip_id_qs;
-      end
-
-      addr_hit[1]: begin
-        reg_rdata_next[7:0] = revision_reserved_qs;
-        reg_rdata_next[15:8] = revision_subminor_qs;
-        reg_rdata_next[23:16] = revision_minor_qs;
-        reg_rdata_next[31:24] = revision_major_qs;
-      end
-
-      addr_hit[2]: begin
-        reg_rdata_next[31:0] = parameter_block_type_qs;
-      end
-
-      addr_hit[3]: begin
-        reg_rdata_next[31:0] = parameter_block_length_qs;
-      end
-
-      addr_hit[4]: begin
-        reg_rdata_next[31:0] = next_parameter_block_qs;
-      end
-
-      addr_hit[5]: begin
         reg_rdata_next[0] = intr_state_io_status_change_qs;
         reg_rdata_next[1] = intr_state_init_status_change_qs;
       end
 
-      addr_hit[6]: begin
+      addr_hit[1]: begin
         reg_rdata_next[0] = intr_enable_io_status_change_qs;
         reg_rdata_next[1] = intr_enable_init_status_change_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[2]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
       end
 
-      addr_hit[8]: begin
+      addr_hit[3]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
       end
 
-      addr_hit[9]: begin
+      addr_hit[4]: begin
         reg_rdata_next[0] = cfg_regwen_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[5]: begin
         reg_rdata_next[0] = alert_trig_val_0_qs;
         reg_rdata_next[1] = alert_trig_val_1_qs;
         reg_rdata_next[2] = alert_trig_val_2_qs;
@@ -1944,7 +1860,7 @@ module sensor_ctrl_reg_top (
         reg_rdata_next[10] = alert_trig_val_10_qs;
       end
 
-      addr_hit[11]: begin
+      addr_hit[6]: begin
         reg_rdata_next[0] = fatal_alert_en_val_0_qs;
         reg_rdata_next[1] = fatal_alert_en_val_1_qs;
         reg_rdata_next[2] = fatal_alert_en_val_2_qs;
@@ -1958,7 +1874,7 @@ module sensor_ctrl_reg_top (
         reg_rdata_next[10] = fatal_alert_en_val_10_qs;
       end
 
-      addr_hit[12]: begin
+      addr_hit[7]: begin
         reg_rdata_next[0] = recov_alert_val_0_qs;
         reg_rdata_next[1] = recov_alert_val_1_qs;
         reg_rdata_next[2] = recov_alert_val_2_qs;
@@ -1972,7 +1888,7 @@ module sensor_ctrl_reg_top (
         reg_rdata_next[10] = recov_alert_val_10_qs;
       end
 
-      addr_hit[13]: begin
+      addr_hit[8]: begin
         reg_rdata_next[0] = fatal_alert_val_0_qs;
         reg_rdata_next[1] = fatal_alert_val_1_qs;
         reg_rdata_next[2] = fatal_alert_val_2_qs;
@@ -1987,7 +1903,7 @@ module sensor_ctrl_reg_top (
         reg_rdata_next[11] = fatal_alert_val_11_qs;
       end
 
-      addr_hit[14]: begin
+      addr_hit[9]: begin
         reg_rdata_next[0] = status_ast_init_done_qs;
         reg_rdata_next[2:1] = status_io_pok_qs;
       end
