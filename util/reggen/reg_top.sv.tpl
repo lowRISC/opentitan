@@ -255,7 +255,7 @@ module ${mod_name} (
 % else:
   always_ff @(posedge ${reg_clk_expr} or negedge ${reg_rst_expr}) begin
     if (!${reg_rst_expr}) begin
-% endif    
+% endif
       err_q <= '0;
     end else if (intg_err || reg_we_err) begin
       err_q <= 1'b1;
@@ -601,6 +601,9 @@ ${reg_hdr}
     we_expr = f'{we_signal} & {clk_base_name}{sr_name}_regwen'
   elif sr.regwen:
     we_expr = f'{we_signal} & {sr.regwen.lower()}_qs'
+    for reg in regs_flat:
+      if reg.name == sr.regwen and reg.fields[0].mubi:
+        we_expr = f'{we_signal} & prim_mubi_pkg::mubi4_test_true_strict({sr.regwen.lower()}_qs)'
   else:
     we_expr = we_signal
 
