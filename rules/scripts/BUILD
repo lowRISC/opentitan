@@ -30,6 +30,11 @@ py_library(
     ],
 )
 
+filegroup(
+    name = "bitstreams_manifest_schema",
+    srcs = ["bitstreams_manifest.schema.json"],
+)
+
 py_test(
     name = "bitstreams_workspace_test",
     srcs = [
