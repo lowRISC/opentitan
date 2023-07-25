@@ -10,8 +10,7 @@ with the shift register, whereas the latter combines several shift register taps
 and reduces them with an XNOR tree. For more information, refer to
 [this page](https://en.wikipedia.org/wiki/Linear-feedback_shift_register). Both
 LFSR flavors have maximal period (`2^LfsrDw - 1`). The recommendation is to use
-the Galois type and fall back to the Fibonacci type depending on the polynomial
-width availability in the lookup table (see below).
+the Galois type.
 
 
 ## Parameters
@@ -70,18 +69,15 @@ LFSR with the `DefaultSeed` in the next cycle.
 
 The LFSR coefficients are taken from an internal set of lookup tables with
 precomputed coefficients. Alternatively, a custom polynomial can be provided
-using the `Custom` parameter. The lookup tables contain polynomials for both
-LFSR forms and range from 4bit to 64bit for the Galois form and 3bit to 168bit
-for the Fibonacci form. The polynomial coefficients have been obtained from
-[this page](https://users.ece.cmu.edu/~koopman/lfsr/) and
+using the `Custom` parameter. The lookup table contains polynomials for both
+LFSR forms and range from 3bit to 168bit.
+The polynomial coefficients have been obtained from
 [Xilinx application note 52](https://www.xilinx.com/support/documentation/application_notes/xapp052.pdf).
 The script `./script/get-lfsr-coeffs.py` can be used to download, parse and dump
 these coefficients in SV format as follows:
 ```
 $ script/get-lfsr-coeffs.py -o <output_file>
 ```
-The default is to get the Galois coefficients. If the Fibonacci coefficients
-are needed, add the `--fib` switch to the above command.
 
 The implementation of the state transition function of both polynomials have
 been formally verified. Further, all polynomials up to 34bit in length have been
