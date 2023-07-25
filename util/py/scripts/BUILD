@@ -42,3 +42,21 @@ py_binary(
         "//util/py/packages/lib:register_usage_report",
     ],
 )
+
+py_binary(
+    name = "bitstream_cache_create",
+    srcs = ["bitstream_cache_create.py"],
+    visibility = ["//visibility:public"],
+    deps = [
+        requirement("jsonschema"),
+    ],
+)
+
+py_binary(
+    name = "bitstreams_fragment_from_manifest",
+    srcs = ["bitstreams_fragment_from_manifest.py"],
+    visibility = ["//visibility:public"],
+    deps = [
+        requirement("jsonschema"),
+    ],
+)
