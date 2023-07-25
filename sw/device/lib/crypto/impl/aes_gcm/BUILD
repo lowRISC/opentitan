@@ -26,3 +26,12 @@ cc_library(
         "//sw/device/lib/base:memory",
     ],
 )
+
+cc_test(
+    name = "ghash_unittest",
+    srcs = ["ghash_unittest.cc"],
+    deps = [
+        ":ghash",
+        "@googletest//:gtest_main",
+    ],
+)
