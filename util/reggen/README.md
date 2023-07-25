@@ -288,15 +288,16 @@ multireg | optional | group | group defining registers generated from a base ins
 
 
 Registers can protect themselves from software writes by using the
-register attribute regwen. When not an emptry string (the default
+register attribute regwen. When not an empty string (the default
 value), regwen indicates that another register must be true in order
-to allow writes to this register.  This is useful for the prevention
+to allow writes to this register. This is useful for the prevention
 of software modification.  The register-enable register (call it
-REGWEN) must be one bit in width, and should default to 1 and be rw1c
-for preferred security control.  This allows all writes to proceed
+REGWEN) must be either one bit or 4 bit in width to support a FI-protected
+multi-bit REGWEN. The default value should be true and be rw1c for
+preferred security control. This allows all writes to proceed
 until at some point software disables future modifications by clearing
 REGWEN. An error is reported if REGWEN does not exist, contains more
-than one bit, is not `rw1c` or does not default to 1. One REGWEN can
+than one bit, is not `rw1c` or does not default to true. One REGWEN can
 protect multiple registers. The REGWEN register must precede those
 registers that refer to it in the .hjson register list. An example:
 
