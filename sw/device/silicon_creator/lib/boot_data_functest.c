@@ -29,8 +29,8 @@ static const flash_ctrl_info_page_t *kPages[2] = {
  * Boot data entry used in tests.
  */
 boot_data_t kTestBootData = (boot_data_t){
-    .digest = {{0x58dbe282, 0x57d7c3f6, 0x1f3f6647, 0xbe7e27b6, 0x334bd1c5,
-                0xdb2c57b5, 0x134933c9, 0xd8fa260c}},
+    .digest = {{0x8ee18396, 0xbc21d5de, 0x288c27bb, 0x7388061c, 0xe7382e8a,
+                0x8af122bc, 0xd851f67a, 0xdcc440a2}},
     .identifier = kBootDataIdentifier,
     .version = kBootDataVersion2,
     .is_valid = kBootDataValidEntry,
