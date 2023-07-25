@@ -52,6 +52,31 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "boot_svc_primary_bl0_slot",
+    srcs = ["boot_svc_primary_bl0_slot.c"],
+    hdrs = ["boot_svc_primary_bl0_slot.h"],
+    deps = [
+        ":boot_svc_header",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/base:chip",
+    ],
+)
+
+cc_test(
+    name = "boot_svc_primary_bl0_slot_unittest",
+    srcs = ["boot_svc_primary_bl0_slot_unittest.cc"],
+    deps = [
+        ":boot_svc_primary_bl0_slot",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_test(
     name = "boot_svc_empty_unittest",
     srcs = ["boot_svc_empty_unittest.cc"],
