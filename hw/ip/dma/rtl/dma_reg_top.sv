@@ -168,8 +168,8 @@ module dma_reg_top (
   logic [31:0] enabled_memory_range_limit_qs;
   logic [31:0] enabled_memory_range_limit_wd;
   logic range_unlock_regwen_we;
-  logic range_unlock_regwen_qs;
-  logic range_unlock_regwen_wd;
+  logic [3:0] range_unlock_regwen_qs;
+  logic [3:0] range_unlock_regwen_wd;
   logic total_data_size_we;
   logic [31:0] total_data_size_qs;
   logic [31:0] total_data_size_wd;
@@ -691,7 +691,8 @@ module dma_reg_top (
   );
   // Create REGWEN-gated WE signal
   logic enabled_memory_range_base_gated_we;
-  assign enabled_memory_range_base_gated_we = enabled_memory_range_base_we & range_unlock_regwen_qs;
+  assign enabled_memory_range_base_gated_we =
+    enabled_memory_range_base_we & prim_mubi_pkg::mubi4_test_true_strict(range_unlock_regwen_qs);
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -734,7 +735,7 @@ module dma_reg_top (
   // Create REGWEN-gated WE signal
   logic enabled_memory_range_limit_gated_we;
   assign enabled_memory_range_limit_gated_we =
-    enabled_memory_range_limit_we & range_unlock_regwen_qs;
+    enabled_memory_range_limit_we & prim_mubi_pkg::mubi4_test_true_strict(range_unlock_regwen_qs);
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -764,9 +765,9 @@ module dma_reg_top (
 
   // R[range_unlock_regwen]: V(False)
   prim_subreg #(
-    .DW      (1),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
-    .RESVAL  (1'h1)
+    .RESVAL  (4'h6)
   ) u_range_unlock_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1546,7 +1547,7 @@ module dma_reg_top (
   assign enabled_memory_range_limit_wd = reg_wdata[31:0];
   assign range_unlock_regwen_we = addr_hit[11] & reg_we & !reg_error;
 
-  assign range_unlock_regwen_wd = reg_wdata[0];
+  assign range_unlock_regwen_wd = reg_wdata[3:0];
   assign total_data_size_we = addr_hit[12] & reg_we & !reg_error;
 
   assign total_data_size_wd = reg_wdata[31:0];
@@ -1681,7 +1682,7 @@ module dma_reg_top (
       end
 
       addr_hit[11]: begin
-        reg_rdata_next[0] = range_unlock_regwen_qs;
+        reg_rdata_next[3:0] = range_unlock_regwen_qs;
       end
 
       addr_hit[12]: begin
