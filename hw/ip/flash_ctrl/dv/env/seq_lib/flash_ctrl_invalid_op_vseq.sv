@@ -44,10 +44,15 @@ class flash_ctrl_invalid_op_vseq extends flash_ctrl_base_vseq;
 
   constraint flash_op_c {
     flash_op.addr inside {[0 : FlashSizeBytes - 1]};
+    // 8Byte (2 words) aligned.
+    // With scramble enabled, odd size of word access (or address) will cause
+    // ecc errors.
+    flash_op.addr[2:0] == 3'h0;
     flash_op.erase_type == flash_ctrl_pkg::FlashErasePage;
     flash_op.num_words inside {[10 : FlashNumBusWords - flash_op.addr[TL_AW-1:TL_SZW]]};
     flash_op.num_words <= cfg.seq_cfg.op_max_words;
     flash_op.num_words < FlashPgmRes - flash_op.addr[TL_SZW+:FlashPgmResWidth];
+    flash_op.num_words % 2 == 0;
   }
 
   // Memory protection regions settings.
