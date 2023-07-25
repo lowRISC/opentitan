@@ -196,13 +196,14 @@
       desc: "Used to lock the DMA enabled memory range configuration registers."
       swaccess: "rw0c"
       fields: [
-        { bits: "0"
+        { bits: "3:0"
+          mubi: "true"
           name: "unlock"
-          resval: 0x1
+          resval: true
           desc: '''Used by firmware to lock the DMA enabled memory range configuration registers from further modification.
-                This bit once cleared can be set only upon a reset event.
+                This register once set to kMultiBitBool4False can be set only upon a reset event.
 
-                Default Value = 1 -> Unlocked at reset.
+                Default Value = kMultiBitBool4True -> Unlocked at reset.
                 '''
         }
       ]
