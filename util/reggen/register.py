@@ -4,6 +4,8 @@
 
 from typing import Dict, List, Optional
 
+from design.mubi import prim_mubi  # type: ignore
+
 from reggen.access import SWAccess, HWAccess
 from reggen.clocking import Clocking
 from reggen.field import Field
@@ -557,11 +559,18 @@ class Register(RegBase):
                              .format(self.name, len(self.fields)))
 
         wen_fld = self.fields[0]
-        if wen_fld.bits.width() != 1:
-            raise ValueError('One or more registers use {} as a '
-                             'write-enable so its field should be 1 bit wide, '
-                             'not {}.'
-                             .format(self.name, wen_fld.bits.width()))
+        if wen_fld.mubi:
+            if wen_fld.bits.width() != 4:
+                raise ValueError('One or more registers use {} as a multi-bit'
+                                 'write-enable so its field should be 4 bit wide, '
+                                 'not {}.'
+                                 .format(self.name, wen_fld.bits.width()))
+        else:
+            if wen_fld.bits.width() != 1:
+                raise ValueError('One or more registers use {} as a '
+                                 'write-enable so its field should be 1 bit wide, '
+                                 'not {}.'
+                                 .format(self.name, wen_fld.bits.width()))
         if wen_fld.bits.lsb != 0:
             raise ValueError('One or more registers use {} as a '
                              'write-enable so its field should have LSB 0, '
@@ -569,13 +578,23 @@ class Register(RegBase):
                              .format(self.name, wen_fld.bits.lsb))
 
         # If the REGWEN bit is SW controlled, check that the register
-        # defaults to enabled. If this bit is read-only by SW and hence
-        # hardware controlled, we do not enforce this requirement.
-        if wen_fld.swaccess.key != "ro" and not self.resval:
-            raise ValueError('One or more registers use {} as a '
-                             'write-enable. Since it is SW-controlled '
-                             'it should have a nonzero reset value.'
-                             .format(self.name))
+        # defaults to enabled, which means 1 for single-bit REGWEN signals or
+        # prim_mubi.mubi_value_as_int(True, 4) for 4-bit multi-bit REGWEN signals.
+        # If this bit is read-only by SW and hence hardware controlled, we do not
+        # enforce this requirement.
+        if wen_fld.swaccess.key != "ro":
+            if wen_fld.mubi:
+                if self.resval != prim_mubi.mubi_value_as_int(True, wen_fld.bits.width()):
+                    raise ValueError('One or more registers use {} as a '
+                                     'multi-bit write-enable. Since it is SW-controlled '
+                                     'it should have a multi-bit TRUE reset value.'
+                                     .format(self.name))
+            else:
+                if not self.resval:
+                    raise ValueError('One or more registers use {} as a '
+                                     'write-enable. Since it is SW-controlled '
+                                     'it should have a nonzero reset value.'
+                                     .format(self.name))
 
         if wen_fld.swaccess.key == "rw0c":
             # The register is software managed: all good!
