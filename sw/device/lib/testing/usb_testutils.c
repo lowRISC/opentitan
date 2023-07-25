@@ -228,12 +228,9 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
     }
   }
 
-  // TODO - clean this up
-  // Frame ticks every 1ms, use to flush data every 16ms
-  // (faster in DPI but this seems to work ok)
-  //
-  // Ensure that we do not flush until we have received a frame
-  if (ctx->got_frame && (ctx->frame & 0xf) == 1) {
+  // Frame ticks every 1ms, use to flush data every 16ms.
+  // Ensure that we do not flush until we have received a frame.
+  if (ctx->got_frame && (ctx->frame & 0xfu) == 1u) {
     if (ctx->flushed == 0) {
       for (unsigned ep = 0; ep < USBDEV_NUM_ENDPOINTS; ep++) {
         if (ctx->in[ep].flush) {

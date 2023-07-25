@@ -276,7 +276,7 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
             return kUsbTestutilsCtWaitIn;
           } break;
           case kVendorSetupReqTestStatus: {
-            // TODO - pass the received test status to the OTTF directly?
+            // TODO: pass the received test status to the OTTF directly?
           } break;
         }
       }

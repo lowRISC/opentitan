@@ -122,6 +122,7 @@ static uint8_t buffer_sig_create(usb_testutils_streams_ctx_t *ctx,
   s->tx.seq++;
 
   if (s->verbose && log_traffic) {
+    LOG_INFO("S%u: Tx Sig buffer", s->id);
     buffer_dump((uint8_t *)&sig, sizeof(sig));
   }
 
@@ -258,6 +259,7 @@ static void buffer_fill(usb_testutils_streams_ctx_t *ctx, usbdev_stream_t *s,
   }
 
   if (s->verbose && log_traffic) {
+    LOG_INFO("S%u: Tx buffer", s->id);
     buffer_dump(data, num_bytes);
   }
 
@@ -279,16 +281,17 @@ static void buffer_fill(usb_testutils_streams_ctx_t *ctx, usbdev_stream_t *s,
 }
 
 // Check the contents of a received buffer
-static void buffer_check(usb_testutils_streams_ctx_t *ctx, usbdev_stream_t *s,
-                         dif_usbdev_rx_packet_info_t packet_info,
-                         dif_usbdev_buffer_t buf) {
+static status_t buffer_check(usb_testutils_streams_ctx_t *ctx,
+                             usbdev_stream_t *s,
+                             dif_usbdev_rx_packet_info_t packet_info,
+                             dif_usbdev_buffer_t buf) {
   usb_testutils_ctx_t *usbdev = ctx->usbdev;
   uint8_t len = packet_info.length;
 
   if (len > 0) {
     alignas(uint32_t) uint8_t data[USBDEV_MAX_PACKET_SIZE];
 
-    CHECK(len <= sizeof(data));
+    TRY_CHECK(len <= sizeof(data));
 
     // Notes: the buffer being read here is USBDEV memory accessed as MMIO, so
     //        only the DIF accesses it directly. when we consume the final bytes
@@ -304,13 +307,14 @@ static void buffer_check(usb_testutils_streams_ctx_t *ctx, usbdev_stream_t *s,
         OT_FALLTHROUGH_INTENDED;
 #endif
       default:
-        CHECK_DIF_OK(dif_usbdev_buffer_read(usbdev->dev, usbdev->buffer_pool,
-                                            &buf, data, len, &bytes_read));
+        TRY(dif_usbdev_buffer_read(usbdev->dev, usbdev->buffer_pool, &buf, data,
+                                   len, &bytes_read));
         break;
     }
     CHECK(bytes_read == len);
 
     if (s->verbose && log_traffic) {
+      LOG_INFO("S%u: Rx buffer", s->id);
       buffer_dump(data, bytes_read);
     }
 
@@ -323,7 +327,7 @@ static void buffer_check(usb_testutils_streams_ctx_t *ctx, usbdev_stream_t *s,
         // check the remainder of the packet
         const usbdev_stream_sig_t *sig = (usbdev_stream_sig_t *)data;
         bool ok = buffer_sig_check(ctx, s, sig, len);
-        CHECK(ok, "S%u: Received packet invalid", s->id);
+        TRY_CHECK(ok, "S%u: Received packet invalid", s->id);
 
         offset = sizeof(*sig);
       }  // no break
@@ -361,15 +365,16 @@ static void buffer_check(usb_testutils_streams_ctx_t *ctx, usbdev_stream_t *s,
       } break;
 
       default:
-        CHECK(s->xfr_type == kUsbTransferTypeControl);
+        TRY_CHECK(s->xfr_type == kUsbTransferTypeControl);
         break;
     }
   } else {
     // In the event that we've received a zero-length data packet, we still
     // must return the buffer to the pool
-    CHECK_DIF_OK(
-        dif_usbdev_buffer_return(usbdev->dev, usbdev->buffer_pool, &buf));
+    TRY(dif_usbdev_buffer_return(usbdev->dev, usbdev->buffer_pool, &buf));
   }
+
+  return OK_STATUS();
 }
 
 // Callback for successful buffer transmission
@@ -425,23 +430,26 @@ static status_t strm_rx(void *cb_v, dif_usbdev_rx_packet_info_t packet_info,
   // Streaming context and per-stream context.
   usb_testutils_streams_ctx_t *ctx = cb->ctx;
   usbdev_stream_t *s = cb->s;
+  // Context for usb_testutils layer.
+  usb_testutils_ctx_t *usbdev = ctx->usbdev;
 
   TRY_CHECK(packet_info.endpoint == s->rx_ep);
 
+  if (s->verbose) {
+    LOG_INFO("S%u: xfr %u setup %u", s->id, s->xfr_type, packet_info.is_setup);
+  }
   // We do not expect to receive SETUP packets to this endpoint
   TRY_CHECK(!packet_info.is_setup);
 
   if (s->verbose) {
-    LOG_INFO("Stream %u: Received buffer of %u bytes(s)", s->id,
-             packet_info.length);
+    LOG_INFO("Stream %u: Received %s buffer of %u bytes(s)", s->id,
+             packet_info.is_setup ? "SETUP" : "OUT", packet_info.length);
   }
 
   if (s->sending && s->generating) {
-    buffer_check(ctx, s, packet_info, buf);
+    TRY(buffer_check(ctx, s, packet_info, buf));
   } else {
     // Note: this is useful for profiling the OUT performance on CW310
-    usb_testutils_ctx_t *usbdev = ctx->usbdev;
-
     if (read_method != kReadMethodNone && packet_info.length > 0) {
       alignas(uint32_t) uint8_t data[USBDEV_MAX_PACKET_SIZE];
       size_t len = packet_info.length;
@@ -591,7 +599,7 @@ status_t usb_testutils_stream_service(usb_testutils_streams_ctx_t *ctx,
   TRY_CHECK(id < USBUTILS_STREAMS_MAX);
   usbdev_stream_t *s = &ctx->streams[id];
 
-  // Generate output data as soon as possible and make it available for
+  // Generate IN traffic as soon as possible and make it available for
   //   collection by the host
 
   uint8_t tx_ep = s->tx_ep;
