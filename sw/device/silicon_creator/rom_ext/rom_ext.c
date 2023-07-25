@@ -11,12 +11,17 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
+#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_empty.h"
+#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_header.h"
+#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
+#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_next_boot_bl0_slot.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
+#include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/epmp_state.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
@@ -26,6 +31,7 @@
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 #include "sw/device/silicon_creator/rom_ext/bootstrap.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy.h"
+#include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy_ptrs.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_epmp.h"
 #include "sw/device/silicon_creator/rom_ext/sigverify_keys.h"
 
@@ -166,7 +172,47 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
 }
 
 OT_WARN_UNUSED_RESULT
+static rom_error_t boot_svc_next_boot_bl0_slot_handler(
+    boot_svc_msg_t *boot_svc_msg) {
+  const manifest_t *kNextSlot;
+  switch (boot_svc_msg->next_boot_bl0_slot_req.next_bl0_slot) {
+    case kBootSvcNextBootBl0SlotA:
+      kNextSlot = rom_ext_boot_policy_manifest_a_get();
+      break;
+    case kBootSvcNextBootBl0SlotB:
+      kNextSlot = rom_ext_boot_policy_manifest_b_get();
+      break;
+    default:
+      HARDENED_TRAP();
+  }
+
+  boot_svc_next_boot_bl0_slot_res_init(kErrorOk,
+                                       &boot_svc_msg->next_boot_bl0_slot_res);
+
+  RETURN_IF_ERROR(rom_ext_verify(kNextSlot));
+  // Boot fails if a verified ROM_EXT cannot be booted.
+  RETURN_IF_ERROR(rom_ext_boot(kNextSlot));
+  // `rom_ext_boot()` should never return `kErrorOk`, but if it does
+  // we must shut down the chip instead of trying the next ROM_EXT.
+  return kErrorRomBootFailed;
+}
+
+OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_try_boot(void) {
+  boot_svc_msg_t boot_svc_msg = retention_sram_get()->creator.boot_svc_msg;
+  if (boot_svc_msg.header.identifier == kBootSvcIdentifier) {
+    RETURN_IF_ERROR(boot_svc_header_check(&boot_svc_msg.header));
+    switch (boot_svc_msg.header.type) {
+      case kBootSvcEmptyType:
+        break;
+      case kBootSvcNextBl0SlotReqType:
+        RETURN_IF_ERROR(boot_svc_next_boot_bl0_slot_handler(&boot_svc_msg));
+        break;
+      default:
+        HARDENED_TRAP();
+    }
+  }
+
   rom_ext_boot_policy_manifests_t manifests =
       rom_ext_boot_policy_manifests_get();
   rom_error_t error = kErrorRomBootFailed;
