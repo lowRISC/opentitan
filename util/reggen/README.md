@@ -93,7 +93,7 @@ The top level of the JSON is a group containing the following keys:
 Key | Kind | Type | Description of Value
 --- | ---- | ---- | --------------------
 name | required | string | name of the component
-cip_id | required | int | unique comportable IP identifier
+cip_id | required | int | comportable IP identifier
 clocking | required | list | clocking for the device
 bus_interfaces | required | list | bus interfaces for the device
 registers | required | list | list of register definition groups and offset control groups
@@ -119,8 +119,8 @@ available_output_list | optional | name list+ | list of available peripheral out
 expose_reg_if | optional | python Bool | if set, expose reg interface in reg2hw signal
 interrupt_list | optional | name list+ | list of peripheral interrupts
 inter_signal_list | optional | list | list of inter-module signals
-no_auto_id_regs | optional | string | Set to true to suppress automatic generation of CIP_ID and version registers. Defaults to false.
-no_auto_feat_regs | optional | string | Set to true to suppress automatic generation of parameter block containing the feature registers. Defaults to false.
+no_auto_id_regs | optional | string | Set to true to suppress automatic generation of CIP_ID and version registers. Defaults to true.
+no_auto_feat_regs | optional | string | Set to true to suppress automatic generation of parameter block containing the feature registers. Defaults to true.
 no_auto_intr_regs | optional | string | Set to true to suppress automatic generation of interrupt registers. Defaults to true if no interrupt_list is present. Otherwise this defaults to false.
 no_auto_alert_regs | optional | string | Set to true to suppress automatic generation of alert test registers. Defaults to true if no alert_list is present. Otherwise this defaults to false.
 param_list | optional | parameter list | list of parameters of the IP
@@ -870,13 +870,6 @@ This causes all of the implementation to be done outside of the generated regist
 There is no way to guarantee that hardware is doing the right thing, but at least the `RW1C` conveys the notion to software the intended effect.
 
 Similarly it is legal to set `hwqe` true for any of these register types if the clearing wants to be monitored by the hardware outside.
-
-## Comportable IP ID, Version and Feature Registers
-
-By default, the regtool automatically adds a set of informational read-only registers at the beginning of the primary register block of an IP - see[the comportability documentation](../../doc/contributing/hw/comportability/README.md#comportable-ip-id-version-and-feature-registers) for more information about the register content.
-These automatically added registers occupy the first 16 words of a register block.
-The automatic insertion of these registers can be disabled with the `no_auto_id_regs` and `no_auto_feat_regs` keys in the hjson description.
-Note however that comportable IPs have to expose these registers to conform to the comportable IP standard.
 
 ## Shadow Registers
 

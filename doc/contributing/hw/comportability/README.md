@@ -245,19 +245,6 @@ The connection between the modules are defined in the top-level configuration fi
 
 See the section on [Inter Signal Handling](#inter-signal-handling) below for detailed data structure in the configuration file.
 
-### Comportable IP ID, Version and Feature Registers
-
-Each comportable IP must expose a set of informational registers in its primary register block exposing the following information:
-
-- A unique comportable IP ID (CIP_ID) as defined in `ip_block.py` of the register tool.
-- The current semantic version number assigned in the IP hjson file. The associated versioning rules are defined in the [development stage documention](../../../project_governance/development_stages.md#versioning).
-- A parameter block that can be used to identify which features are available within a particular IP block.
-
-These automatically added registers occupy the first 16 words of a register block.
-Note that the parameter block feature currently just reserves a space of 3 metadata registers and 11 payload registers - but the actual mechanism to populate them is not yet implemented.
-
-The register tool automatically adds these by default as described in [its documentation](../../../../util/reggen/README.md#comportable-ip-id-version-and-feature-registers).
-
 ### Security countermeasures
 
 If this IP block is considered security-critical, it will probably have design features that try to mitigate against attacks like fault injection or side channel analysis.
