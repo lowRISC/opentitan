@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_python//python:defs.bzl", "py_binary")
+load("@ot_python_deps//:requirements.bzl", "requirement")
 
 py_binary(
     name = "object_size",
@@ -14,5 +15,23 @@ py_binary(
         "//util/py/packages/impl/object_size:types",
         "//util/py/packages/lib:bazel",
         "//util/py/packages/lib:ot_logging",
+    ],
+)
+
+py_binary(
+    name = "bitstream_cache_create",
+    srcs = ["bitstream_cache_create.py"],
+    visibility = ["//visibility:public"],
+    deps = [
+        requirement("jsonschema"),
+    ],
+)
+
+py_binary(
+    name = "bitstreams_fragment_from_manifest",
+    srcs = ["bitstreams_fragment_from_manifest.py"],
+    visibility = ["//visibility:public"],
+    deps = [
+        requirement("jsonschema"),
     ],
 )
