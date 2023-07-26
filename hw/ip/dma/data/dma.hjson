@@ -237,6 +237,7 @@
                 Multiple transactions of transfer width each will be issued until total size number of bytes are reached.
                 Note that firmware may need to set a different value if a receiving IP supports a read / write transaction width that is less than 1 DWORD.
                 This does not affect the wrap-around mechanism.
+                Note that the value 2 for this register represents an invalid configuration that leads to an error.
                 '''
           enum: [
             { value: "0",
@@ -246,12 +247,6 @@
             { value: "1",
               name: TWO_BYTE",
               desc: "Two bytes per transaction."
-
-            }
-            { value: "2",
-              name: "THREE_BYTE",
-              desc: "Three bytes per transaction."
-
             }
             { value: "3",
               name: "FOUR_BYTE",
