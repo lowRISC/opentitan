@@ -167,6 +167,17 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
         TRC_I(ep, 8);
         TRY(dif_usbdev_buffer_return(ctx->dev, ctx->buffer_pool, &buffer));
       }
+
+      // TODO: decide what to do here!
+      // Issue lowrisc/opentitan#19017
+      // Handle only a single Rx packet is necessary to prevent Control
+      // Transfers breaking when there is OUT traffic to other streams, because
+      // the rx (Status Stage ACK or SETUP) may leapfrog the Tx done signaling
+      // otherwise.
+      //
+      // We could perhaps sidestep this by having a queue per endpoint and
+      // serialising the Tx done and Rx notifications.
+      break;
     }
   }
   if (istate & (1u << kDifUsbdevIrqLinkReset)) {

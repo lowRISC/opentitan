@@ -139,6 +139,20 @@ typedef struct usbdev_stream_tx {
    * Transmission-side LFSR for selection of buffer size
    */
   uint8_t buf_size;
+  /**
+   * Current state of Control Transfer processing
+   */
+  enum {
+    kStreamCtlIdle = 0U,
+    // IN traffic
+    kStreamCtlSendData,    // Trying to send IN DATA stage
+    kStreamCtlQueuedData,  // Awaiting transmission of IN DATA stage
+    kStreamCtlWaitAck,
+    // OUT traffic
+    kStreamCtlWaitData,   // Waiting for OUT DATA stage
+    kStreamCtlSendAck,    // Trying to ACKnowledge OUT DATA stage
+    kStreamCtlQueuedAck,  // Awaiting transmission of ACK
+  } ctl_state;
 } usbdev_stream_tx_t;
 
 /**
