@@ -1496,6 +1496,52 @@
           { name: 'tdo',    pad: 'IOR1', desc: 'JTAG tdo signal.'    },
         ],
       }
+    },
+    { name: 'cw340',
+
+      pinout: {
+        remove_ports: [],
+        remove_pads: [
+          'CC1', 'CC2',
+          'FLASH_TEST_VOLT', 'OTP_EXT_VOLT'
+          'FLASH_TEST_MODE0', 'FLASH_TEST_MODE1',
+          'USB_P', 'USB_N'
+        ],
+
+        add_pads: [
+          // Additional infrastructure pads
+          { name: 'IO_CLK',           type: 'InputStd', bank: 'VCC', connection: 'manual', desc: 'Extra clock input for FPGA target'}
+          // Custom USB pads
+          { name: 'IO_USB_CONNECT',  type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
+          { name: 'IO_USB_DP_TX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
+          { name: 'IO_USB_DN_TX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
+          { name: 'IO_USB_D_RX',     type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
+          { name: 'IO_USB_DP_RX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
+          { name: 'IO_USB_DN_RX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
+          { name: 'IO_USB_OE_N',     type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
+          { name: 'IO_USB_SPEED',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
+          { name: 'IO_USB_SUSPEND',  type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
+          // ChipWhisperer IO
+          { name: 'IO_CLKOUT',        type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual clock output for SCA setup'}
+          { name: 'IO_TRIGGER',       type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual trigger output for SCA setup'}
+        ],
+      },
+
+      pinmux: {
+        special_signals: [
+          // Straps
+          { name: 'tap0',   pad: 'IOC8', desc: 'TAP strap signal.'   },
+          { name: 'tap1',   pad: 'IOC5', desc: 'TAP strap signal.'   },
+          { name: 'dft0',   pad: 'IOC3', desc: 'DFT strap signal.'   },
+          { name: 'dft1',   pad: 'IOC4', desc: 'DFT strap signal.'   },
+          // JTAG
+          { name: 'tck',    pad: 'IOR3', desc: 'JTAG tck signal.'    },
+          { name: 'tms',    pad: 'IOR0', desc: 'JTAG tms signal.'    },
+          { name: 'trst_n', pad: 'IOR4', desc: 'JTAG trst_n signal.' },
+          { name: 'tdi',    pad: 'IOR2', desc: 'JTAG tdi signal.'    },
+          { name: 'tdo',    pad: 'IOR1', desc: 'JTAG tdo signal.'    },
+        ],
+      }
     }
   ]
 }

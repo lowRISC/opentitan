@@ -9,3 +9,4 @@ util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson -o hw/top_earlgrey/
 |:-------------:|:-----------:|:-------------:|:--------------:|:--------------:|:-------------:|:-----------------------------------------------------------------------------------:|
 |     ASIC      |      4      |      47       |       14       |       10       |      71       | [Pinout Table](../../../top_earlgrey/ip/pinmux/doc/autogen/pinout_asic/index.html)  |
 |     CW310     |      4      |      47       |       14       |       14       |      75       | [Pinout Table](../../../top_earlgrey/ip/pinmux/doc/autogen/pinout_cw310/index.html) |
+|     CW340     |      4      |      47       |       14       |       13       |      74       | [Pinout Table](../../../top_earlgrey/ip/pinmux/doc/autogen/pinout_cw340/index.html) |
