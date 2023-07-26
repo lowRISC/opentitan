@@ -11,6 +11,11 @@ class otbn_rf_base_intg_err_vseq extends otbn_base_vseq;
   `uvm_object_new
   rand bit insert_intg_err_to_a;
 
+  // Wait until the selected register file is being used
+  //
+  // This will normally just be a couple of cycles (because most instructions read from the register
+  // file), but it might be a bit longer if we happen to be stalled waiting for the EDN, which
+  // happens on a RND read.
   task await_use();
     logic rd_en;
     `uvm_info(`gfn, "Waiting for selected RF to be used", UVM_LOW)
@@ -20,7 +25,7 @@ class otbn_rf_base_intg_err_vseq extends otbn_base_vseq;
         rd_en = insert_intg_err_to_a ? cfg.trace_vif.rf_base_rd_en_a :
                                        cfg.trace_vif.rf_base_rd_en_b;
       end while(!rd_en);,
-      cfg.clk_rst_vif.wait_clks(2000);
+      cfg.clk_rst_vif.wait_clks(20000);
     )
     if (!rd_en) begin
       `uvm_fatal(`gfn, "Register file was not used before time limit")
@@ -83,10 +88,9 @@ class otbn_rf_base_intg_err_vseq extends otbn_base_vseq;
     @(cfg.clk_rst_vif.cbn);
     release_force();
 
-    // OTBN should now do a secure wipe. Give it up to 400 cycles to do so (because it needs to go
-    // twice over all registers and reseed URND in between, the time of which depends on the delay
-    // configured in the EDN model).
-    cfg.clk_rst_vif.wait_n_clks(400);
+    // OTBN should now do a secure wipe
+    wait_secure_wipe();
+
     // We should now be in a locked state after the secure wipe.
     `DV_CHECK_FATAL(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked);
     // The scoreboard will have seen the transition to locked state and inferred that it should

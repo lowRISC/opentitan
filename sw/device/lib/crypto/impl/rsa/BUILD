@@ -39,6 +39,22 @@ cc_library(
 )
 
 cc_library(
+    name = "rsa_signature",
+    srcs = ["rsa_signature.c"],
+    hdrs = ["rsa_signature.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":rsa_datatypes",
+        ":rsa_modexp",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/impl/sha2:sha256",
+        "//sw/device/lib/crypto/impl/sha2:sha512",
+    ],
+)
+
+cc_library(
     name = "rsa_3072_verify",
     srcs = ["rsa_3072_verify.c"],
     hdrs = ["rsa_3072_verify.h"],

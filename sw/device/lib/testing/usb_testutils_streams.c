@@ -30,6 +30,14 @@ static const enum {
 } read_method = kReadMethodStandard;
 
 /**
+ * Write method to be employed
+ */
+static const enum {
+  kWriteMethodStandard = 1u,  // Use standard dif_usbdev_buffer_write() function
+  kWriteMethodFaster          // Faster implementation
+} write_method = kWriteMethodStandard;
+
+/**
  * Diagnostic logging; expensive
  */
 static bool log_traffic = false;
@@ -57,7 +65,7 @@ static uint8_t packet_length(const usbdev_stream_t *s, uint32_t bytes_done,
     num_bytes = bytes_left;
   } else {
     // Vary the amount of data sent per buffer
-    if (s->sig_required) {
+    if (s->tx.sig_required) {
       const unsigned sig_bytes = sizeof(usbdev_stream_sig_t);
       switch (s->xfr_type) {
         case kUsbTransferTypeIsochronous: {
@@ -99,28 +107,38 @@ static uint8_t buffer_sig_create(usb_testutils_streams_ctx_t *ctx,
   // - for Isochronous this provideds a down count, and it will wrap around
   //   upon reaching zero, in the event of packet loss and prolonged
   //   transmission
-  uint32_t tx_left = s->transfer_bytes - (s->tx_bytes % s->transfer_bytes);
+  uint32_t tx_left = s->transfer_bytes - (s->tx.bytes % s->transfer_bytes);
 
   usbdev_stream_sig_t sig;
   sig.head_sig = USBDEV_STREAM_SIGNATURE_HEAD;
-  sig.init_lfsr = s->tx_lfsr;
+  sig.init_lfsr = s->tx.lfsr;
   sig.stream = s->id | (uint8_t)s->flags;
-  sig.seq_lo = (uint8_t)s->tx_seq;
-  sig.seq_hi = (uint8_t)(s->tx_seq >> 8);
+  sig.seq_lo = (uint8_t)s->tx.seq;
+  sig.seq_hi = (uint8_t)(s->tx.seq >> 8);
   sig.num_bytes = tx_left;
   sig.tail_sig = USBDEV_STREAM_SIGNATURE_TAIL;
 
   // Advance sequence counter
-  s->tx_seq++;
+  s->tx.seq++;
 
   if (s->verbose && log_traffic) {
     buffer_dump((uint8_t *)&sig, sizeof(sig));
   }
 
   size_t bytes_written;
-  CHECK_DIF_OK(dif_usbdev_buffer_write(ctx->usbdev->dev, buf, (uint8_t *)&sig,
-                                       sizeof(sig), &bytes_written));
-  CHECK(bytes_written == sizeof(sig));
+  switch (write_method) {
+#if USBUTILS_MEM_FASTER
+    case kWriteMethodFaster:
+      // TODO: integrate faster transfers to/from USB device packet buffer
+      // memory.
+      OT_FALLTHROUGH_INTENDED;
+#endif
+    default:
+      CHECK_DIF_OK(dif_usbdev_buffer_write(
+          ctx->usbdev->dev, buf, (uint8_t *)&sig, sizeof(sig), &bytes_written));
+      CHECK(bytes_written == sizeof(sig));
+      break;
+  }
 
   // Note: stream signature is not included in the count of bytes transferred
   // so we do not advance tx_bytes
@@ -161,24 +179,38 @@ static bool buffer_sig_check(usb_testutils_streams_ctx_t *ctx,
   // Skip past any packets that appear to have been dropped; this is
   // permissible for Isochronous transfers which prioritize service/real-time
   // delivery over reliable transmission.
-  while (rx_seq < seq) {
-    // Determine the length of the missing packet
-    uint8_t len = packet_length(s, s->rx_bytes, &s->rx_buf_size);
-    len -= sizeof(*sig);
-    // Advance the LFSR states to account for the missing packet
-    while (len-- > 0U) {
-      rxtx_lfsr = LFSR_ADVANCE(rxtx_lfsr);
-      rx_lfsr = LFSR_ADVANCE(rx_lfsr);
-    }
-    // The updated host-side LFSR has been supplied in the packet signature
-    rx_seq++;
+  if (rx_seq < seq) {
+    do {
+      // Determine the length of the missing packet
+      uint8_t len = packet_length(s, s->rx_bytes, &s->rx_buf_size);
+      len -= sizeof(*sig);
+      // Advance the LFSR states to account for the missing packet
+      while (len-- > 0U) {
+        rxtx_lfsr = LFSR_ADVANCE(rxtx_lfsr);
+      }
+      // The updated host-side LFSR has been supplied in the packet signature
+      rx_seq++;
+    } while (rx_seq < seq);
+
+    // Since we do not know where the packet(s) were dropped, we must set our
+    // knowledge of the host-side LFSR to the value indicated in this packet.
+    rx_lfsr = sig->init_lfsr;
+  }
+
+  // Our expectation of the host/DPI LFSR should now match the value that it has
+  // supplied in the modified packet.
+  if (rx_lfsr != sig->init_lfsr) {
+    LOG_INFO(
+        "buffer_sig_check: S%u unexpected host-side LFSR value (0x%x but "
+        "expected 0x%x)",
+        s->id, sig->init_lfsr, rx_lfsr);
+    return false;
   }
 
   // For 'rx_buf_size' to track the 'tx_buf_size' used when the packets were
   // created and transmitted, we must also ascertain the expected length of the
   // packet that we have just received; we thus check that the length of this
   // packet has not changed either.
-
   uint8_t exp_len = packet_length(s, s->rx_bytes, &s->rx_buf_size);
   if (len != exp_len) {
     LOG_INFO(
@@ -186,15 +218,6 @@ static bool buffer_sig_check(usb_testutils_streams_ctx_t *ctx,
         "0x%x)",
         s->id, len, exp_len);
     return false;
-  }
-
-  // Similarly, our expectation of the host/DPI LFSR should now match the
-  // value that it has supplied in the modified packet.
-  if (rx_lfsr != sig->init_lfsr) {
-    LOG_INFO(
-        "buffer_sig_check: S%u unexpected LFSR value (0x%x but expected 0x%x)",
-        s->id, sig->init_lfsr, rx_lfsr);
-    return true;
   }
 
   // Expected sequence number of next packet
@@ -218,7 +241,7 @@ static void buffer_fill(usb_testutils_streams_ctx_t *ctx, usbdev_stream_t *s,
     // Emit LFSR-generated byte stream; keep this brief so that we can
     // reduce our latency in responding to USB events (usb_testutils employs
     // polling at present)
-    uint8_t lfsr = s->tx_lfsr;
+    uint8_t lfsr = s->tx.lfsr;
 
     const uint8_t *edp = &data[num_bytes];
     uint8_t *dp = data;
@@ -228,7 +251,7 @@ static void buffer_fill(usb_testutils_streams_ctx_t *ctx, usbdev_stream_t *s,
     }
 
     // Update the LFSR for the next packet
-    s->tx_lfsr = lfsr;
+    s->tx.lfsr = lfsr;
   } else {
     // Undefined buffer contents; useful for profiling IN throughput on
     // CW310, because the CPU load at 10MHz can be an appreciable slowdown
@@ -239,11 +262,20 @@ static void buffer_fill(usb_testutils_streams_ctx_t *ctx, usbdev_stream_t *s,
   }
 
   size_t bytes_written;
-
-  CHECK_DIF_OK(dif_usbdev_buffer_write(ctx->usbdev->dev, buf, data, num_bytes,
-                                       &bytes_written));
-  CHECK(bytes_written == num_bytes);
-  s->tx_bytes += bytes_written;
+  switch (write_method) {
+#if USBUTILS_MEM_FASTER
+    case kWriteMethodFaster:
+      // TODO: integrate faster transfers to/from USB device packet buffer
+      // memory.
+      OT_FALLTHROUGH_INTENDED;
+#endif
+    default:
+      CHECK_DIF_OK(dif_usbdev_buffer_write(ctx->usbdev->dev, buf, data,
+                                           num_bytes, &bytes_written));
+      CHECK(bytes_written == num_bytes);
+      break;
+  }
+  s->tx.bytes += bytes_written;
 }
 
 // Check the contents of a received buffer
@@ -258,14 +290,24 @@ static void buffer_check(usb_testutils_streams_ctx_t *ctx, usbdev_stream_t *s,
 
     CHECK(len <= sizeof(data));
 
-    size_t bytes_read;
-
     // Notes: the buffer being read here is USBDEV memory accessed as MMIO, so
     //        only the DIF accesses it directly. when we consume the final bytes
     //        from the read buffer, it is automatically returned to the buffer
     //        pool.
-    CHECK_DIF_OK(dif_usbdev_buffer_read(usbdev->dev, usbdev->buffer_pool, &buf,
-                                        data, len, &bytes_read));
+
+    size_t bytes_read;
+    switch (read_method) {
+#if USBUTILS_MEM_FASTER
+      // Faster read performance using custom routine
+      case kReadMethodFaster:
+        // TODO: faster read method not yet integrated, defaulting to standard
+        OT_FALLTHROUGH_INTENDED;
+#endif
+      default:
+        CHECK_DIF_OK(dif_usbdev_buffer_read(usbdev->dev, usbdev->buffer_pool,
+                                            &buf, data, len, &bytes_read));
+        break;
+    }
     CHECK(bytes_read == len);
 
     if (s->verbose && log_traffic) {
@@ -299,8 +341,7 @@ static void buffer_check(usb_testutils_streams_ctx_t *ctx, usbdev_stream_t *s,
         const uint8_t *sp = &data[offset];
         while (sp < esp) {
           // Received data should be the XOR of two LFSR-generated PRND streams
-          // - ours on the
-          //   transmission side, and that of the DPI model
+          // - ours on the transmission side, and that of the DPI model
           uint8_t expected = rxtx_lfsr ^ rx_lfsr;
           CHECK(expected == *sp,
                 "S%u: Unexpected received data 0x%02x : (LFSRs 0x%02x 0x%02x)",
@@ -332,11 +373,12 @@ static void buffer_check(usb_testutils_streams_ctx_t *ctx, usbdev_stream_t *s,
 }
 
 // Callback for successful buffer transmission
-static status_t strm_tx_done(void *stream_v,
-                             usb_testutils_xfr_result_t result) {
-  usbdev_stream_t *s = (usbdev_stream_t *)stream_v;
-  usb_testutils_streams_ctx_t *ctx = s->ctx;
-  usb_testutils_ctx_t *usbdev = ctx->usbdev;
+static status_t strm_tx_done(void *cb_v, usb_testutils_xfr_result_t result) {
+  // Pointer to callback context.
+  usbdev_stream_cb_ctx_t *cb = (usbdev_stream_cb_ctx_t *)cb_v;
+  // Streaming context and per-stream context.
+  usb_testutils_streams_ctx_t *ctx = cb->ctx;
+  usbdev_stream_t *s = cb->s;
 
   // If we do not have at least one queued buffer then something has gone wrong
   // and this callback is inappropriate
@@ -355,6 +397,9 @@ static status_t strm_tx_done(void *stream_v,
   // potential races here
 
   if (nqueued > 0) {
+    // Advance the 'committed transmission' state for this stream
+    s->tx_cmt = ctx->tx_bufs[tx_ep][0u].tx;
+
     // Shuffle the buffer descriptions, without using memmove
     for (unsigned idx = 1u; idx < nqueued; idx++) {
       ctx->tx_bufs[tx_ep][idx - 1u] = ctx->tx_bufs[tx_ep][idx];
@@ -365,17 +410,21 @@ static status_t strm_tx_done(void *stream_v,
     ctx->tx_bufs_queued[tx_ep] = --nqueued;
 
     if (nqueued) {
-      TRY(dif_usbdev_send(usbdev->dev, tx_ep, &ctx->tx_bufs[tx_ep][0u]));
+      usb_testutils_ctx_t *usbdev = ctx->usbdev;
+      TRY(dif_usbdev_send(usbdev->dev, tx_ep, &ctx->tx_bufs[tx_ep][0u].buf));
     }
   }
   return OK_STATUS();
 }
 
 // Callback for buffer reception
-static status_t strm_rx(void *stream_v, dif_usbdev_rx_packet_info_t packet_info,
+static status_t strm_rx(void *cb_v, dif_usbdev_rx_packet_info_t packet_info,
                         dif_usbdev_buffer_t buf) {
-  usbdev_stream_t *s = (usbdev_stream_t *)stream_v;
-  usb_testutils_streams_ctx_t *ctx = s->ctx;
+  // Pointer to callback context.
+  usbdev_stream_cb_ctx_t *cb = (usbdev_stream_cb_ctx_t *)cb_v;
+  // Streaming context and per-stream context.
+  usb_testutils_streams_ctx_t *ctx = cb->ctx;
+  usbdev_stream_t *s = cb->s;
 
   TRY_CHECK(packet_info.endpoint == s->rx_ep);
 
@@ -403,7 +452,7 @@ static status_t strm_rx(void *stream_v, dif_usbdev_rx_packet_info_t packet_info,
         // Faster read performance using custom routine
         case kReadMethodFaster:
           // TODO: faster read method not yet integrated, defaulting to standard
-          // no break
+          OT_FALLTHROUGH_INTENDED;
 #endif
         //  Use the standard interface
         default:
@@ -457,7 +506,7 @@ bool usb_testutils_stream_completed(const usb_testutils_streams_ctx_t *ctx,
   // Locate the stream context information
   const usbdev_stream_t *s = &ctx->streams[id];
 
-  return (s->tx_bytes >= s->transfer_bytes) &&
+  return (s->tx.bytes >= s->transfer_bytes) &&
          (s->rx_bytes >= s->transfer_bytes);
 }
 
@@ -470,10 +519,6 @@ status_t usb_testutils_stream_init(usb_testutils_streams_ctx_t *ctx, uint8_t id,
   // Locate the stream context information
   TRY_CHECK(id < USBUTILS_STREAMS_MAX);
   usbdev_stream_t *s = &ctx->streams[id];
-
-  // We need to be able to locate the test context given only the stream
-  // pointer within the strm_tx_done callback from usb_testutils
-  s->ctx = ctx;
 
   // Remember the stream IDentifier and flags
   s->id = id;
@@ -490,40 +535,50 @@ status_t usb_testutils_stream_init(usb_testutils_streams_ctx_t *ctx, uint8_t id,
   s->generating = ((flags & kUsbdevStreamFlagCheck) != 0U);
 
   // Not yet sent stream signature
-  s->sig_required = true;
+  s->tx.sig_required = true;
 
   // Initialize the transfer state
-  s->tx_bytes = 0u;
+  s->tx.bytes = 0u;
   s->rx_bytes = 0u;
   s->transfer_bytes = transfer_bytes;
 
   // Sequence number to be used for first packet
-  s->tx_seq = 0u;
-  s->rx_seq = s->tx_seq;
+  s->tx.seq = 0u;
+  s->rx_seq = s->tx.seq;
 
   // Initialize the LFSR state for transmission and reception sides
   // - we use a simple LFSR to generate a PRND stream to transmit to the USBPI
   // - the USBDPI XORs the received data with another LFSR-generated stream of
   //   its own, and transmits the result back to us
   // - to check the returned data, our reception code mimics both LFSRs
-  s->tx_lfsr = USBTST_LFSR_SEED(id);
-  s->rxtx_lfsr = s->tx_lfsr;
+  s->tx.lfsr = USBTST_LFSR_SEED(id);
+  s->rxtx_lfsr = s->tx.lfsr;
   s->rx_lfsr = USBDPI_LFSR_SEED(id);
 
   // Packet size randomization
-  s->tx_buf_size = BUFSZ_LFSR_SEED(id);
-  s->rx_buf_size = s->tx_buf_size;
+  s->tx.buf_size = BUFSZ_LFSR_SEED(id);
+  s->rx_buf_size = s->tx.buf_size;
 
   s->rx_ep = ep_out;
   s->tx_ep = ep_in;
 
+  // Retain the current transmission state as the latest 'committed transmission
+  // state'
+  s->tx_cmt = s->tx;
+
+  // Callback context pointer; permits access to both the stream-specific state
+  // and the enclosing streaming context.
+  usbdev_stream_cb_ctx_t *cb = &ctx->cb[id];
+  cb->ctx = ctx;
+  cb->s = s;
+
   // Set up the endpoint for IN transfers (TO host)
-  CHECK_STATUS_OK(usb_testutils_in_endpoint_setup(ctx->usbdev, ep_in, xfr_type,
-                                                  s, strm_tx_done, NULL, NULL));
+  CHECK_STATUS_OK(usb_testutils_in_endpoint_setup(
+      ctx->usbdev, ep_in, xfr_type, cb, strm_tx_done, NULL, NULL));
 
   // Set up the endpoint for OUT transfers (FROM host)
   CHECK_STATUS_OK(usb_testutils_out_endpoint_setup(
-      ctx->usbdev, ep_out, xfr_type, kUsbdevOutStream, s, strm_rx, NULL));
+      ctx->usbdev, ep_out, xfr_type, kUsbdevOutStream, cb, strm_rx, NULL));
 
   return OK_STATUS();
 }
@@ -545,7 +600,7 @@ status_t usb_testutils_stream_service(usb_testutils_streams_ctx_t *ctx,
   // Isochronous streams never cease transmission because packets are expected
   // to get dropped; let the reception side decided test completion
   bool tx_more = (s->xfr_type == kUsbTransferTypeIsochronous) ||
-                 (s->tx_bytes < s->transfer_bytes);
+                 (s->tx.bytes < s->transfer_bytes);
 
   if (tx_more &&                              // More bytes to transfer?
       nqueued < ctx->tx_bufs_limit[tx_ep] &&  // Endpoint allowed buffer?
@@ -564,23 +619,23 @@ status_t usb_testutils_stream_service(usb_testutils_streams_ctx_t *ctx,
       uint8_t num_bytes;
 
       // Decide upon the packet length, _including_ any signature bytes.
-      num_bytes = packet_length(s, s->tx_bytes, &s->tx_buf_size);
+      num_bytes = packet_length(s, s->tx.bytes, &s->tx.buf_size);
 
       // Construct a signature to send to the host-side software,
       // identifying the stream and its properties?
-      if (s->sig_required) {
+      if (s->tx.sig_required) {
         bytes_added = buffer_sig_create(ctx, s, &buf);
         // If we're 'not sending' then we still send the stream signature once
         // but only the signature; it allows the host/DPI model to receive the
         // stream flags and discover that no further data is to be expected.
         if (!s->sending) {
-          s->tx_bytes = s->transfer_bytes;
+          s->tx.bytes = s->transfer_bytes;
         }
         // Signature required for each packet of an Isochronous stream, but only
         // at the stream start for other transfer types
         if (!s->sending || s->xfr_type != kUsbTransferTypeIsochronous) {
           // First packet is just the stream signature
-          s->sig_required = false;
+          s->tx.sig_required = false;
         }
       }
 
@@ -589,12 +644,13 @@ status_t usb_testutils_stream_service(usb_testutils_streams_ctx_t *ctx,
         buffer_fill(ctx, s, &buf, (uint8_t)(num_bytes - bytes_added));
       }
 
-      // Remember the buffer until we're informed that it has been
-      // successfully transmitted
+      // Remember the buffer and the current transmission state until we're
+      // informed that it has been successfully transmitted
       //
       // Note: since the 'tx_done' callback occurs from foreground code that
       // is polling, there is no issue of interrupt races here
-      ctx->tx_bufs[tx_ep][nqueued] = buf;
+      ctx->tx_bufs[tx_ep][nqueued].buf = buf;
+      ctx->tx_bufs[tx_ep][nqueued].tx = s->tx;
       ctx->tx_bufs_queued[tx_ep] = ++nqueued;
       ctx->tx_queued_total++;
 
@@ -651,6 +707,106 @@ status_t usb_testutils_streams_service(usb_testutils_streams_ctx_t *ctx) {
     // transmission as well as perform packet reception and checking
     CHECK_STATUS_OK(usb_testutils_poll(ctx->usbdev));
   }
+  return OK_STATUS();
+}
+
+status_t usb_testutils_streams_suspend(usb_testutils_streams_ctx_t *ctx,
+                                       uint8_t *buf, unsigned size,
+                                       unsigned *used) {
+  // Validate arguments.
+  if (!ctx || !buf || !used ||
+      size < 1U + ctx->nstreams * sizeof(usbdev_stream_t)) {
+    return INVALID_ARGUMENT();
+  }
+
+  // Store the stream count
+  uint8_t *dp = buf;
+  *dp++ = ctx->nstreams;
+
+  // Store the state of each stream
+  for (uint8_t id = 0U; id < ctx->nstreams; id++) {
+    // We can just save the entire stream context as-is
+    const usbdev_stream_t *s = &ctx->streams[id];
+    memcpy(dp, s, sizeof(*s));
+    dp += sizeof(*s);
+    if (s->verbose) {
+      LOG_INFO("S%u: suspend seq %u, lfsr %x <- commit seq %u, lfsr %x", id,
+               s->tx.seq, s->tx.lfsr, s->tx_cmt.seq, s->tx_cmt.lfsr);
+    }
+  }
+
+  *used = (unsigned)(dp - buf);
+
+  // Note: we rely upon all packet reception having occurred, such that there
+  // are no residual OUT data packets in the USB device. There is necessarily a
+  // period of at least 4ms of Suspending/Suspended state before we save the
+  // state for Sleep.
+  // In practice it is likely to be much longer than that.
+
+  return OK_STATUS();
+}
+
+status_t usb_testutils_streams_resume(usb_testutils_streams_ctx_t *ctx,
+                                      const uint8_t *data, unsigned len) {
+  // Validate arguments.
+  if (!ctx || !data || len < 1U) {
+    return INVALID_ARGUMENT();
+  }
+
+  // We expect only to be resuming immediately after initialization, and with no
+  // buffers already in use.
+  if (ctx->tx_queued_total) {
+    return FAILED_PRECONDITION();
+  }
+
+  // Read the stream count and then check that we have enough supplied data.
+  const uint8_t *dp = data;
+  unsigned nstreams = *dp++;
+  if (len < 1U + nstreams * sizeof(usbdev_stream_t)) {
+    return INVALID_ARGUMENT();
+  }
+
+  for (uint8_t id = 0U; id < nstreams; id++) {
+    // Load the entire stream context as-is...
+    usbdev_stream_t *s = &ctx->streams[id];
+    memcpy(&s->id, dp, sizeof(*s));
+    if (s->verbose) {
+      LOG_INFO("S%u: resume seq %u, lfsr %x <- commit seq %u, lfsr %x", id,
+               s->tx.seq, s->tx.lfsr, s->tx_cmt.seq, s->tx_cmt.lfsr);
+    }
+    // ...but now we need to rewind the state to the latest 'commit' point,
+    // reflecting the most recent point of data transmission at the USB device,
+    // rather than the point to which the packet creation had run ahead.
+    s->tx = s->tx_cmt;
+    dp += sizeof(*s);
+  }
+
+  // Remember the stream count and apportion the available tx buffers
+  TRY_CHECK(usb_testutils_streams_count_set(ctx, nstreams));
+
+  return OK_STATUS();
+}
+
+status_t usb_testutils_stream_status(usb_testutils_streams_ctx_t *ctx,
+                                     uint8_t id, uint32_t *num_bytes,
+                                     uint32_t *tx_bytes, uint32_t *rx_bytes) {
+  // Check the stream IDentifier.
+  if (id >= ctx->nstreams) {
+    return INVALID_ARGUMENT();
+  }
+
+  // Return the requested information.
+  const usbdev_stream_t *s = &ctx->streams[id];
+  if (num_bytes) {
+    *num_bytes = s->transfer_bytes;
+  }
+  if (tx_bytes) {
+    *tx_bytes = s->tx.bytes;
+  }
+  if (rx_bytes) {
+    *rx_bytes = s->rx_bytes;
+  }
+
   return OK_STATUS();
 }
 

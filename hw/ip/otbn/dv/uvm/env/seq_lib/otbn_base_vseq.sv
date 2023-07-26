@@ -853,4 +853,66 @@ class otbn_base_vseq extends cip_base_vseq #(
       dut_init("HARD");
     end
   endtask
+
+  // Wait for a single beat of data on an EDN interface
+  //
+  // This waits until it has seen the end of a beat. If we are in the middle of a beat, it will just
+  // wait until the end of this one. Otherwise, it will wait for the next one to start.
+  protected task wait_edn_beat(edn_idx_e iface_idx, int max_wait_before);
+    // Wait at least one cycle (EDN clock) to clear any finishing beat on the EDN interface. Then
+    // wait up to max_wait_before cycles (main clock) for OTBN to ask for some data.
+    @(cfg.m_edn_pull_agent_cfgs[iface_idx].vif.mon_cb);
+    for (int i = 0; i < max_wait_before; ++i) begin
+      if (!cfg.m_edn_pull_agent_cfgs[iface_idx].is_silent()) break;
+      @(cfg.clk_rst_vif.cbn);
+    end
+
+    // Now we know that OTBN is asking for *something*. Wait until the beat has completed.
+    cfg.m_edn_pull_agent_cfgs[iface_idx].wait_while_running();
+  endtask
+
+   // Wait for a reseed on RND or URND
+   //
+   // This assumes that none of the 8 beats of data had been transferred so far, so it waits for each
+   // of them. The max_wait_before argument gives the number of cycles allowed before OTBN asks for
+   // each beat of data.
+   //
+   // If we are called when some beats have already been transferred then we'll end up waiting some
+   // multiple of max_wait_before cycles after the reseed has finished.
+   protected task wait_edn_reseed(edn_idx_e iface_idx, int max_wait_before);
+     repeat (8) wait_edn_beat(iface_idx, max_wait_before);
+   endtask
+
+   // Wait for one phase of a secure wipe
+   //
+   // This might take a bit of time because it needs to reseed over URND and also walk over the
+   // registers. To give ourselves enough time, we wait for the URND reseed and then an extra 64
+   // cycles.
+   protected task wait_secure_wipe_phase();
+     // A secure wipe phase consists of wiping with whatever data we've currently got from the EDN
+     // (takes 64 cycles), then reseeding over the EDN (depends on EDN timing).
+     //
+     // As a special case, the RTL doesn't bother reseeding over the EDN on the second pass if it
+     // knows it's done because it's locking anyway. In that case, this task will wait too long
+     // because it will wait some extra cycles for an EDN transaction that doesn't happen.
+     //
+     // Wipe with whatever we've currently got from the EDN
+     repeat (64) @(cfg.clk_rst_vif.cbn);
+
+     // Ask the EDN for more data
+     //
+     // We pass 10 as max_wait_before in the call to wait_edn_reseed: we expect the secure wipe to
+     // start immediately, but wish to allow a couple of cycles leeway, in case the thing that
+     // caused the wipe is *now*.
+     wait_edn_reseed(UrndEdnIdx, 10);
+
+   endtask
+
+   // Wait for a secure wipe
+   //
+   // This is just waiting for the two phases, one after the other.
+   task wait_secure_wipe();
+     repeat (2) wait_secure_wipe_phase();
+   endtask
+
 endclass : otbn_base_vseq
