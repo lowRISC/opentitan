@@ -74,10 +74,10 @@ static const char *xfr_name[] = {
 // limited to six.
 static const usb_testutils_transfer_type_t xfr_types[USBUTILS_STREAMS_MAX] = {
     kUsbTransferTypeIsochronous, kUsbTransferTypeInterrupt,
-    kUsbTransferTypeBulk,        kUsbTransferTypeBulk,
+    kUsbTransferTypeBulk,        kUsbTransferTypeControl,
 
     kUsbTransferTypeIsochronous, kUsbTransferTypeInterrupt,
-    kUsbTransferTypeBulk,        kUsbTransferTypeIsochronous,
+    kUsbTransferTypeControl,     kUsbTransferTypeIsochronous,
 
     kUsbTransferTypeInterrupt,   kUsbTransferTypeBulk,
     kUsbTransferTypeBulk,
@@ -235,14 +235,12 @@ bool test_main(void) {
     // Indicate to the DPI model the transfer type of each stream in turn.
     mixed_types |= xfr_type << (s * 2U);
 
-    // TODO: we shall also want some Control endpoints at some point, not just
-    // Endpoint Zero, but this requires more thought.
     // TODO: some of the streams should probably be undirectional, and it could
     // be a good idea to cross endpoints for a few of the streams, just in case.
     uint8_t ep_in = (uint8_t)(s + 1U);
     uint8_t ep_out = (uint8_t)(s + 1U);
 
-    // Isochronous endpoints require a bInterval value of 1.
+    // Isochronous and Interrupt endpoints require a bInterval value of 1.
     uint8_t bInterval = (xfr_type == kUsbTransferTypeIsochronous ||
                          xfr_type == kUsbTransferTypeInterrupt);
 
@@ -260,8 +258,8 @@ bool test_main(void) {
 
     CHECK_STATUS_OK(usb_testutils_stream_init(
         ctx, s, xfr_type, ep_in, ep_out, transfer_bytes, test_flags, verbose));
-    LOG_INFO("S%u: IN %u:OUT %u : %s - 0x%x bytes flags 0x%x", s, ep_in, ep_out,
-             xfr_name[xfr_type], transfer_bytes, test_flags);
+    LOG_INFO("S%u: IN %u : OUT %u : %s - 0x%x bytes flags 0x%x", s, ep_in,
+             ep_out, xfr_name[xfr_type], transfer_bytes, test_flags);
   }
 
   // Inform the testutils layer of the total number of streams
