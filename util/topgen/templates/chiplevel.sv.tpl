@@ -407,7 +407,7 @@ module chip_${top["name"]}_${target["name"]} #(
 ###################################################################
 ## USB for CW310                                                 ##
 ###################################################################
-% if target["name"] == "cw310":
+% if target["name"] in ["cw310", "cw340"]:
   // TODO: generalize this USB mux code and align with other tops.
 
   // Only use the UPHY on CW310, which does not support pin flipping.
@@ -652,7 +652,7 @@ module chip_${top["name"]}_${target["name"]} #(
 
   logic usb_diff_rx_obs;
 
-% else:
+% elif target["name"] in ["cw305", "cw310"]:
   // TODO: Hook this up when FPGA pads are updated
   assign ext_clk = '0;
   assign pad2ast = '0;
@@ -680,6 +680,37 @@ module chip_${top["name"]}_${target["name"]} #(
     usb: clk_usb_48mhz,
     sys: clk_main,
     io:  clk_main,
+    aon: clk_aon
+  };
+
+% else:
+  // TODO: Hook this up when FPGA pads are updated
+  assign ext_clk = '0;
+  assign pad2ast = '0;
+
+  logic clk_main, clk_io, clk_usb_48mhz, clk_aon, rst_n;
+  clkgen_xil_ultrascale # (
+    .AddClkBuf(0)
+  ) clkgen (
+    .clk_i(manual_in_io_clk),
+    .rst_ni(manual_in_por_n),
+    .clk_main_o(clk_main),
+    .clk_io_o(clk_io),
+    .clk_48MHz_o(clk_usb_48mhz),
+    .clk_aon_o(clk_aon),
+    .rst_no(rst_n)
+  );
+
+  logic [31:0] fpga_info;
+  usr_access_xil7series u_info (
+    .info_o(fpga_info)
+  );
+
+  ast_pkg::clks_osc_byp_t clks_osc_byp;
+  assign clks_osc_byp = '{
+    usb: clk_usb_48mhz,
+    sys: clk_main,
+    io:  clk_io,
     aon: clk_aon
   };
 
@@ -1031,7 +1062,7 @@ module chip_${top["name"]}_${target["name"]} #(
 ###################################################################
 ## FPGA shared                                                   ##
 ###################################################################
-% if target["name"] in ["cw310", "cw305"]:
+% if target["name"] in ["cw340", "cw310", "cw305"]:
   //////////////////
   // PLL for FPGA //
   //////////////////
@@ -1042,11 +1073,11 @@ module chip_${top["name"]}_${target["name"]} #(
   assign manual_attr_por_n = '0;
   assign manual_out_por_n = 1'b0;
   assign manual_oe_por_n = 1'b0;
+  % if target["name"] in ["cw305", "cw310"]:
   assign manual_attr_por_button_n = '0;
   assign manual_out_por_button_n = 1'b0;
   assign manual_oe_por_button_n = 1'b0;
 
-  % if target["name"] in ["cw305", "cw310"]:
   assign srst_n = manual_in_por_button_n;
   % endif
 
@@ -1069,7 +1100,7 @@ module chip_${top["name"]}_${target["name"]} #(
 // Also need to add AST simulation and FPGA emulation models for things like entropy source -
 // otherwise Verilator / FPGA will hang.
   top_${top["name"]} #(
-% if target["name"] == "cw310":
+% if target["name"] in ["cw310", "cw340"]:
     .SecAesMasking(1'b1),
     .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
     .SecAesStartTriggerDelay(320),
@@ -1201,7 +1232,7 @@ module chip_${top["name"]}_${target["name"]} #(
 ###################################################################
 ## CW310/305 capture board interface                             ##
 ###################################################################
-% if target["name"] in ["cw310", "cw305"]:
+% if target["name"] in ["cw340", "cw310", "cw305"]:
 
   /////////////////////////////////////////////////////
   // ChipWhisperer CW310/305 Capture Board Interface //

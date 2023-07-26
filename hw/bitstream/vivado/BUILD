@@ -21,13 +21,17 @@ package(default_visibility = ["//visibility:public"])
 # relative $(location ...) resolved labels is up 10 subdirectories.
 _PREFIX = "../../../../../../../../../.."
 
-_FPGA_CW310_TESTROM = "//sw/device/lib/testing/test_rom:test_rom_fpga_cw310_scr_vmem"
+_CW310_TESTROM = "//sw/device/lib/testing/test_rom:test_rom_fpga_cw310_scr_vmem"
 
-_FPGA_CW310_OTP_RMA = "//hw/ip/otp_ctrl/data:img_rma"
+_CW340_TESTROM = _CW310_TESTROM
 
-_FPGA_CW310_TESTROM_PATH = "{}/$(location {})".format(_PREFIX, _FPGA_CW310_TESTROM)
+_OTP_RMA = "//hw/ip/otp_ctrl/data:img_rma"
 
-_FPGA_CW310_OTP_RMA_PATH = "{}/$(location {})".format(_PREFIX, _FPGA_CW310_OTP_RMA)
+_CW310_TESTROM_PATH = "{}/$(location {})".format(_PREFIX, _CW310_TESTROM)
+
+_CW340_TESTROM_PATH = _CW310_TESTROM_PATH
+
+_OTP_RMA_PATH = "{}/$(location {})".format(_PREFIX, _OTP_RMA)
 
 # Note: all of the targets are tagged with "manual" to prevent them from being
 # matched by bazel wildcards like "//...".  In order to build the bitstream,
@@ -38,14 +42,14 @@ fusesoc_build(
     testonly = True,
     srcs = [
         "//hw:all_files",
-        _FPGA_CW310_TESTROM,
-        _FPGA_CW310_OTP_RMA,
+        _CW310_TESTROM,
+        _OTP_RMA,
     ],
     cores = ["//:cores"],
     data = ["//hw/ip/otbn:all_files"],
     flags = [
-        "--BootRomInitFile=" + _FPGA_CW310_TESTROM_PATH,
-        "--OtpCtrlMemInitFile=" + _FPGA_CW310_OTP_RMA_PATH,
+        "--BootRomInitFile=" + _CW310_TESTROM_PATH,
+        "--OtpCtrlMemInitFile=" + _OTP_RMA_PATH,
     ],
     output_groups = {
         "bitstream": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit"],
@@ -113,14 +117,14 @@ fusesoc_build(
     testonly = True,
     srcs = [
         "//hw:all_files",
-        _FPGA_CW310_TESTROM,
-        _FPGA_CW310_OTP_RMA,
+        _CW310_TESTROM,
+        _OTP_RMA,
     ],
     cores = ["//:cores"],
     data = ["//hw/ip/otbn:all_files"],
     flags = [
-        "--BootRomInitFile=" + _FPGA_CW310_TESTROM_PATH,
-        "--OtpCtrlMemInitFile=" + _FPGA_CW310_OTP_RMA_PATH,
+        "--BootRomInitFile=" + _CW310_TESTROM_PATH,
+        "--OtpCtrlMemInitFile=" + _OTP_RMA_PATH,
     ],
     output_groups = {
         "bitstream": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.bit"],
@@ -156,7 +160,33 @@ filegroup(
     tags = ["manual"],
 )
 
+# CW340 bitstream
+fusesoc_build(
+    name = "fpga_cw340",
+    testonly = True,
+    srcs = [
+        "//hw:all_files",
+        _CW340_TESTROM,
+        _OTP_RMA,
+    ],
+    cores = ["//:cores"],
+    data = ["//hw/ip/otbn:all_files"],
+    flags = [
+        "--BootRomInitFile=" + _CW340_TESTROM_PATH,
+        "--OtpCtrlMemInitFile=" + _OTP_RMA_PATH,
+    ],
+    output_groups = {
+        "bitstream": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw340_0.1.bit"],
+        "rom_mmi": ["synth-vivado/rom.mmi"],
+        "otp_mmi": ["synth-vivado/otp.mmi"],
+    },
+    systems = ["lowrisc:systems:chip_earlgrey_cw340"],
+    tags = ["manual"],
+    target = "synth",
+)
+
 # Bitstream cache manifest fragment targets
+
 bitstream_manifest_fragment(
     name = "earlgrey_cw310_manifest",
     testonly = True,
@@ -200,6 +230,29 @@ pkg_tar(
     mode = "0444",
     package_dir = "build-bin/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug",
     strip_prefix = "/hw/bitstream/vivado/earlgrey_cw310_hyperdebug_manifest",
+    tags = ["manual"],
+)
+
+bitstream_manifest_fragment(
+    name = "earlgrey_cw340_manifest",
+    testonly = True,
+    srcs = [":fpga_cw340"],
+    bitstream = "bitstream",
+    design = "chip_earlgrey_cw340",
+    memory_maps = {
+        "rom_mmi": "rom",
+        "otp_mmi": "otp",
+    },
+    tags = ["manual"],
+)
+
+pkg_tar(
+    name = "earlgrey_cw340_archive",
+    testonly = True,
+    srcs = [":earlgrey_cw340_manifest"],
+    mode = "0444",
+    package_dir = "build-bin/hw/top_earlgrey/chip_earlgrey_cw340",
+    strip_prefix = "/hw/bitstream/vivado/earlgrey_cw340_manifest",
     tags = ["manual"],
 )
 
