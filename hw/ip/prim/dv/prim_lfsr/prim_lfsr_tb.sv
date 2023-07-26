@@ -50,6 +50,8 @@ module prim_lfsr_tb;
   logic [MaxLfsrDw-1:0] lfsr_periods [MaxLfsrDw+1];
   logic [MaxLfsrDw-1:0] entropy      [MaxLfsrDw+1];
   logic [MaxLfsrDw-1:0] seed         [MaxLfsrDw+1];
+  logic [MaxLfsrDw-1:0] rand_entropy;
+  logic [MaxLfsrDw-1:0] rand_seed;
 
 
   for (genvar k = MinLfsrDw; k <= MaxLfsrDw; k++) begin : gen_duts
@@ -224,10 +226,12 @@ module prim_lfsr_tb;
       repeat ($urandom_range(5000, 10000)) begin
         // Do random reset sometimes
         if ($urandom_range(0, 10) == 0) main_clk.apply_reset();
-        randomize(seed[k]);
-        randomize(entropy[k]);
-        randomize(lfsr_en[k]);
-        randomize(seed_en[k]);
+        randomize(rand_seed);
+        randomize(rand_entropy);
+        seed[k] = rand_seed;
+        entropy[k] = rand_entropy;
+        lfsr_en[k] = $urandom_range(0, 1);
+        seed_en[k] = $urandom_range(0, 1);
         main_clk.wait_clks(1);
       end
 
