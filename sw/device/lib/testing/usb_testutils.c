@@ -5,6 +5,7 @@
 #include "sw/device/lib/testing/usb_testutils.h"
 
 #include "sw/device/lib/dif/dif_usbdev.h"
+#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -341,8 +342,16 @@ status_t usb_testutils_out_endpoint_setup(
     nak = kDifToggleEnabled;
   }
 
+  // Do we need to support SETUP packets?
+  dif_toggle_t setup = kDifToggleDisabled;
+  if (ep_type == kUsbTransferTypeControl) {
+    setup = kDifToggleEnabled;
+  }
+
   TRY(dif_usbdev_endpoint_out_enable(ctx->dev, ep, enabled));
   TRY(dif_usbdev_endpoint_set_nak_out_enable(ctx->dev, ep, nak));
+  TRY(dif_usbdev_endpoint_setup_enable(ctx->dev, ep, setup));
+
   // Now we may enable the OUT endpoint
   TRY(dif_usbdev_endpoint_enable(ctx->dev, endpoint, enabled));
   return OK_STATUS();
@@ -442,13 +451,12 @@ status_t usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
   // All about polling...
   TRY(dif_usbdev_irq_disable_all(ctx->dev, NULL));
 
+  // Clear any outstanding interrupts such as Powered/Disconnected interrupts
+  // from when the usbdev came out of reset
+  TRY(dif_usbdev_irq_acknowledge_all(ctx->dev));
+
   // Provide buffers for any packet reception
   TRY(dif_usbdev_fill_available_fifo(ctx->dev, ctx->buffer_pool));
-
-  // Preemptively enable SETUP reception on endpoint zero for the
-  // Default Control Pipe; all other settings for that endpoint will be applied
-  // once the callback handlers are registered by a call to _endpoint_setup()
-  TRY(dif_usbdev_endpoint_setup_enable(ctx->dev, 0, kDifToggleEnabled));
 
   return OK_STATUS();
 }
