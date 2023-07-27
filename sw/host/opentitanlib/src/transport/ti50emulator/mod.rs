@@ -8,8 +8,9 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process;
-use std::rc::Rc;
+use std::rc::{Rc, Weak};
 use std::time::{SystemTime, UNIX_EPOCH};
+use std::vec::Vec;
 
 use crate::io::emu::Emulator;
 use crate::io::gpio::GpioPin;
@@ -73,7 +74,8 @@ impl Ti50Emulator {
         let inner = Rc::new(Inner {
             instance_directory,
             process: RefCell::new(process),
-            gpio_map: RefCell::new(HashMap::new()),
+            gpio_map: RefCell::default(),
+            uarts: RefCell::default(),
         });
 
         let mut gpio_map: HashMap<String, Rc<dyn GpioPin>> = HashMap::new();
@@ -91,8 +93,9 @@ impl Ti50Emulator {
             gpio_map.insert(name.to_uppercase(), Rc::clone(&gpio));
         }
         for (name, path) in conf.uart.iter() {
-            let uart: Rc<dyn Uart> = Rc::new(Ti50Uart::open(&inner, path)?);
-            uart_map.insert(name.to_uppercase(), Rc::clone(&uart));
+            let uart: Rc<Ti50Uart> = Rc::new(Ti50Uart::open(&inner, path)?);
+            uart_map.insert(name.to_uppercase(), Rc::clone(&uart) as Rc<dyn Uart>);
+            inner.uarts.borrow_mut().push(Rc::downgrade(&uart));
         }
         for (name, path) in conf.i2c.iter() {
             let i2c: Rc<dyn Bus> = Rc::new(Ti50I2cBus::open(&inner, path)?);
@@ -129,6 +132,7 @@ pub struct Inner {
     process: RefCell<EmulatorProcess>,
     /// Current state of host drive of all GPIOs
     gpio_map: RefCell<HashMap<String, gpio::GpioConfiguration>>,
+    uarts: RefCell<Vec<Weak<Ti50Uart>>>,
 }
 
 impl Inner {}
