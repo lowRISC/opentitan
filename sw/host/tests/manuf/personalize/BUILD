@@ -13,7 +13,7 @@ ujson_rust(
 )
 
 rust_binary(
-    name = "provisioning",
+    name = "personalize",
     srcs = [
         "src/main.rs",
         "src/provisioning_data.rs",
