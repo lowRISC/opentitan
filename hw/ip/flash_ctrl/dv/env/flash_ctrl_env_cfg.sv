@@ -276,6 +276,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
 
   virtual function void initialize(addr_t csr_base_addr = '1);
     string prim_ral_name = "flash_ctrl_prim_reg_block";
+    string fast_rcvr_name = "";
 
     list_of_alerts = flash_ctrl_env_pkg::LIST_OF_ALERTS;
     tl_intg_alert_name = "fatal_std_err";
@@ -289,6 +290,10 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     clk_freqs_mhz[prim_ral_name] = clk_freq_mhz;
     super.initialize(csr_base_addr);
 
+    void'($value$plusargs("fast_rcvr_%s", fast_rcvr_name));
+    if (fast_rcvr_name != "") begin
+      m_alert_agent_cfgs[fast_rcvr_name].fast_rcvr = 1;
+    end
     tl_intg_alert_fields[ral.std_fault_status.reg_intg_err] = 1;
     shadow_update_err_status_fields[ral.err_code.update_err] = 1;
     shadow_storage_err_status_fields[ral.std_fault_status.storage_err] = 1;
