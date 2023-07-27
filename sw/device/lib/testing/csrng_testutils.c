@@ -61,6 +61,7 @@ status_t csrng_testutils_kat_instantiate(
     const dif_csrng_seed_material_t *seed_material,
     const dif_csrng_internal_state_t *expected_state) {
   LOG_INFO("CSRNG KAT instantiate");
+  TRY(csrng_testutils_cmd_ready_wait(csrng));
   TRY(dif_csrng_uninstantiate(csrng));
 
   // Instantiate CSRNG - use the provided seed material only.
