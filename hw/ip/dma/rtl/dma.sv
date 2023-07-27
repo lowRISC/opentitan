@@ -503,6 +503,22 @@ module dma
           bad_base_limit = 1'b1;
         end
 
+        // In 4-byte transfers, source and destination address must be 4-byte aligned
+        if (reg2hw.transfer_width.q == 2'b11 && (|reg2hw.source_address_lo.q[1:0])) begin
+          bad_src_addr = 1'b1;
+        end
+        if (reg2hw.transfer_width.q == 2'b11 && (|reg2hw.destination_address_lo.q[1:0])) begin
+          bad_dst_addr = 1'b1;
+        end
+
+        // In 2-byte transfers, source and destination address must be 2-byte aligned
+        if (reg2hw.transfer_width.q == 2'b01 && reg2hw.source_address_lo.q[0]) begin
+          bad_src_addr = 1'b1;
+        end
+        if (reg2hw.transfer_width.q == 2'b01 && reg2hw.destination_address_lo.q[0]) begin
+          bad_dst_addr = 1'b1;
+        end
+
         if (((reg2hw.address_space_id.source_asid.q == SocControlAddr) ||
              (reg2hw.address_space_id.source_asid.q == SocSystemAddr)) &&
              (reg2hw.address_space_id.destination_asid.q == OtInternalAddr) &&
