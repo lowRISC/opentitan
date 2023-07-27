@@ -65,6 +65,7 @@ module testbench_asynch ();
    localparam type         axi_ot_out_resp_t     = synth_ot_axi_out_resp_t;
    
    localparam int  unsigned LogDepth             = SynthLogDepth;
+   localparam int  unsigned CdcSyncStages        = SynthCdcSyncStages;
    
    localparam bit  RAND_RESP = 0; 
    localparam int  AX_MIN_WAIT_CYCLES = 0;   
@@ -209,6 +210,7 @@ module testbench_asynch ();
    
    axi_cdc_dst #(
      .LogDepth   ( LogDepth         ),
+     .SyncStages ( CdcSyncStages    ),
      .aw_chan_t  ( axi_out_aw_chan_t ),
      .w_chan_t   ( axi_out_w_chan_t  ),
      .b_chan_t   ( axi_out_b_chan_t  ),

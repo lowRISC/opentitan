@@ -29,7 +29,7 @@ module secure_subsystem_synth_wrap
    parameter int unsigned AxiOtDataWidth        = SynthOtAxiDataWidth,
    parameter int unsigned AxiOtUserWidth        = SynthOtAxiUserWidth,
    parameter int unsigned AxiOtOutIdWidth       = SynthOtAxiOutIdWidth,
- 
+
    parameter int unsigned AsyncAxiOutAwWidth    = SynthAsyncAxiOutAwWidth,
    parameter int unsigned AsyncAxiOutWWidth     = SynthAsyncAxiOutWWidth,
    parameter int unsigned AsyncAxiOutBWidth     = SynthAsyncAxiOutBWidth,
@@ -51,10 +51,11 @@ module secure_subsystem_synth_wrap
    parameter type         axi_ot_out_r_chan_t   = synth_ot_axi_out_r_chan_t,
    parameter type         axi_ot_out_req_t      = synth_ot_axi_out_req_t,
    parameter type         axi_ot_out_resp_t     = synth_ot_axi_out_resp_t,
-   
+
    parameter int unsigned LogDepth              = SynthLogDepth,
+   parameter int unsigned CdcSyncStages         = SynthCdcSyncStages,
    parameter int unsigned SyncStages            = 3
-)  (  
+)  (
    input logic                           clk_i,
    input logic                           clk_ref_i,
    input logic                           rst_ni,
@@ -72,13 +73,13 @@ module secure_subsystem_synth_wrap
    // Asynch AXI port
    output logic [AsyncAxiOutAwWidth-1:0] async_axi_out_aw_data_o,
    output logic [LogDepth:0]             async_axi_out_aw_wptr_o,
-   input logic [LogDepth:0]              async_axi_out_aw_rptr_i, 
+   input logic [LogDepth:0]              async_axi_out_aw_rptr_i,
    output logic [AsyncAxiOutWWidth-1:0]  async_axi_out_w_data_o,
    output logic [LogDepth:0]             async_axi_out_w_wptr_o,
-   input logic [LogDepth:0]              async_axi_out_w_rptr_i, 
+   input logic [LogDepth:0]              async_axi_out_w_rptr_i,
    input logic [AsyncAxiOutBWidth-1:0]   async_axi_out_b_data_i,
    input logic [LogDepth:0]              async_axi_out_b_wptr_i,
-   output logic [LogDepth:0]             async_axi_out_b_rptr_o, 
+   output logic [LogDepth:0]             async_axi_out_b_rptr_o,
    output logic [AsyncAxiOutArWidth-1:0] async_axi_out_ar_data_o,
    output logic [LogDepth:0]             async_axi_out_ar_wptr_o,
    input logic [LogDepth:0]              async_axi_out_ar_rptr_i,
@@ -110,7 +111,7 @@ module secure_subsystem_synth_wrap
    output logic [3:0]                    spi_host_SD_en_o
 
 );
-     
+
    axi_out_req_t        axi_req;
    axi_out_resp_t       axi_rsp;
 
@@ -129,16 +130,16 @@ module secure_subsystem_synth_wrap
    logic [15:0] dio_in_i;
    logic [15:0] dio_out_o;
    logic [15:0] dio_oe_o;
-                                           
+
    logic [46:0] mio_in_i;
    logic [46:0] mio_out_o;
    logic [46:0] mio_oe_o;
-   
+
    logic es_rng_fips;
 
    logic test_en_tieoff;
    logic s_rst_n, s_init_n;
-   
+
    logic fetch_en_sync;
    logic irq_ibex_sync;
    logic axi_isolate_sync;
@@ -151,31 +152,31 @@ module secure_subsystem_synth_wrap
 
    assign mio_in_i[0] = gpio_0_i ;
    assign mio_in_i[1] = gpio_1_i ;
-   
+
    assign mio_in_i[25:2]  = '0;
    assign mio_in_i[46:27] = '0;
 
    assign spi_host_SCK_o  = dio_out_o[DioSpiHost0Sck];
    assign spi_host_CSB_o  = dio_out_o[DioSpiHost0Csb];
-   
+
    assign spi_host_SCK_en_o = dio_oe_o[DioSpiHost0Sck];
    assign spi_host_CSB_en_o = dio_oe_o[DioSpiHost0Csb];
-   
+
    assign spi_host_SD_o[0] = dio_out_o[DioSpiHost0Sd0];
    assign spi_host_SD_o[1] = dio_out_o[DioSpiHost0Sd1];
    assign spi_host_SD_o[2] = dio_out_o[DioSpiHost0Sd2];
    assign spi_host_SD_o[3] = dio_out_o[DioSpiHost0Sd3];
-   
+
    assign spi_host_SD_en_o[0] = dio_oe_o[DioSpiHost0Sd0];
    assign spi_host_SD_en_o[1] = dio_oe_o[DioSpiHost0Sd1];
    assign spi_host_SD_en_o[2] = dio_oe_o[DioSpiHost0Sd2];
    assign spi_host_SD_en_o[3] = dio_oe_o[DioSpiHost0Sd3];
-                             
+
    assign dio_in_i[DioSpiHost0Sd0]  = spi_host_SD_i[0];
    assign dio_in_i[DioSpiHost0Sd1]  = spi_host_SD_i[1];
    assign dio_in_i[DioSpiHost0Sd2]  = spi_host_SD_i[2];
    assign dio_in_i[DioSpiHost0Sd3]  = spi_host_SD_i[3];
-   
+
    assign mio_in_i[26]  = ibex_uart_rx_i;
    assign ibex_uart_tx_o = mio_out_o[26];
 
@@ -191,12 +192,12 @@ module secure_subsystem_synth_wrap
    assign jtag_i.tms     = jtag_tms_i;
    assign jtag_i.trst_n  = jtag_trst_n_i;
    assign jtag_i.tdi     = jtag_tdi_i;
-   
+
    assign jtag_tdo_o     = jtag_o.tdo;
    assign jtag_tdo_oe_o  = jtag_o.tdo_oe;
 
    assign test_en_tieoff = test_enable_i;
-   
+
    rstgen rstgen_i (
      .clk_i      ( clk_i       ),
      .rst_ni     ( rst_ni      ),
@@ -224,7 +225,7 @@ module secure_subsystem_synth_wrap
      .serial_i ( irq_ibex_i    ),
      .serial_o ( irq_ibex_sync )
    );
- 
+
    sync #(
      .STAGES     ( SyncStages ),
      .ResetValue ( 1'b1       )
@@ -234,7 +235,7 @@ module secure_subsystem_synth_wrap
      .serial_i ( axi_isolate_i    ),
      .serial_o ( axi_isolate_sync )
    );
-   
+
    axi_isolate            #(
      .NumPending           ( secure_subsystem_synth_pkg::AxiMaxOutTrans ),
      .TerminateTransaction ( 1              ),
@@ -281,13 +282,14 @@ module secure_subsystem_synth_wrap
       .slv_resp_o ( ot_axi_rsp ),
       // master port
       .mst_req_o  ( axi_req    ),
-      .mst_resp_i ( axi_rsp    ) 
+      .mst_resp_i ( axi_rsp    )
    );
 
    // CDC domain
 
    axi_cdc_src #(
       .LogDepth   ( LogDepth          ),
+      .SyncStages ( CdcSyncStages     ),
       .aw_chan_t  ( axi_out_aw_chan_t ),
       .w_chan_t   ( axi_out_w_chan_t  ),
       .b_chan_t   ( axi_out_b_chan_t  ),
@@ -317,7 +319,7 @@ module secure_subsystem_synth_wrap
       .async_data_master_r_rptr_o ( async_axi_out_r_rptr_o  )
    );
 
-   
+
    top_earlgrey #(
       .HartIdOffs(HartIdOffs),
       .axi_req_t(axi_ot_out_req_t),
@@ -334,7 +336,7 @@ module secure_subsystem_synth_wrap
       .io_clk_byp_req_o             (                       ),
       .all_clk_byp_req_o            (                       ),
       .hi_speed_sel_o               (                       ),
-      .flash_obs_o                  (                       ),  
+      .flash_obs_o                  (                       ),
       .ast_tl_req_o                 (                       ),
       .ast_tl_rsp_i                 ( '0                    ),
       .dft_strap_test_o             (                       ),
@@ -350,8 +352,8 @@ module secure_subsystem_synth_wrap
       .ast2pinmux_i                 ( '0                    ),
       .flash_test_mode_a_io         ( flash_testmode_tieoff ),
       //.flash_test_voltage_h_io(),
-      .ast_init_done_i              ( lc_ctrl_pkg::On       ),   
-      .sck_monitor_o                (                       ),   
+      .ast_init_done_i              ( lc_ctrl_pkg::On       ),
+      .sck_monitor_o                (                       ),
       .usbdev_usb_rx_d_i            ( '0                    ),
       .usbdev_usb_tx_d_o            (                       ),
       .usbdev_usb_tx_se0_o          (                       ),
@@ -415,8 +417,7 @@ module secure_subsystem_synth_wrap
       .scan_mode_i    ( '0                    ),
       .rng_b_o        ( es_rng_rsp.rng_b      ),
       .rng_val_o      ( es_rng_rsp.rng_valid  )
-   ); 
+   );
 
 
 endmodule
-    
