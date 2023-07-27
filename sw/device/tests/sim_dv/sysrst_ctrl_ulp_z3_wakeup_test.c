@@ -20,7 +20,7 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 // This is updated by the sv component of the test
-static volatile const uint8_t kTestPhase = 0;
+static volatile const uint8_t kTestPhase[1];
 
 static dif_pwrmgr_t pwrmgr;
 static dif_rstmgr_t rstmgr;
@@ -85,14 +85,28 @@ static void pinmux_setup(void) {
  * Waits for `kTestPhase` variable to be changed by a backdoor overwrite
  * from the testbench in chip_sw_<testname>_vseq.sv. This will indicate that
  * the testbench is ready to proceed with the next phase of the test.
+ *
+ * Backdoor overwrites don't invalidate the read caches, so this explicitly
+ * flushes them before updating the value.
  */
-static void wait_next_test_phase(void) {
+static status_t wait_next_test_phase(uint32_t current_phase) {
   // Set WFI status for testbench synchronization,
   // no actual WFI instruction is issued.
   test_status_set(kTestStatusInWfi);
   test_status_set(kTestStatusInTest);
-  CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_wait_update(
-      &flash, (uintptr_t)&kTestPhase, kTestPhaseTimeoutUsec));
+  LOG_INFO("wait_next_test_phase ater %d", current_phase);
+  uint8_t new_data = 0;
+  const ibex_timeout_t timeout = ibex_timeout_init(kTestPhaseTimeoutUsec);
+  do {
+    if (ibex_timeout_check(&timeout)) {
+      return DEADLINE_EXCEEDED();
+    }
+    CHECK_STATUS_OK(flash_ctrl_testutils_flush_read_buffers());
+    new_data = kTestPhase[0];
+  } while (new_data == current_phase);
+  LOG_INFO("Read test phase *0x%x = 0x%x, with count = %d", kTestPhase,
+           new_data, 0);
+  return OK_STATUS();
 }
 
 /**
@@ -151,8 +165,10 @@ bool test_main(void) {
 
   CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_init(&flash));
 
-  while (kTestPhase < kTestPhaseDone) {
-    switch (kTestPhase) {
+  uint8_t current_test_phase = kTestPhase[0];
+  while (current_test_phase < kTestPhaseDone) {
+    LOG_INFO("Test phase %d", current_test_phase);
+    switch (current_test_phase) {
       case kTestPhaseInit:
         pinmux_setup();
         break;
@@ -175,11 +191,16 @@ bool test_main(void) {
         LOG_INFO("kTestPhaseWaitWakeup");
         break;
       default:
-        LOG_ERROR("Unexpected test phase : %d", kTestPhase);
+        LOG_ERROR("Unexpected test phase : %d", current_test_phase);
         LOG_INFO("END");
         break;
     }
-    wait_next_test_phase();
+    status_t status = wait_next_test_phase(current_test_phase);
+    CHECK_STATUS_OK(status);
+    if (!status_ok(status)) {
+      return false;
+    }
+    current_test_phase = kTestPhase[0];
   }
   return true;
 }
