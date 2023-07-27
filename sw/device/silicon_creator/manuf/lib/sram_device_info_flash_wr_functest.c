@@ -93,7 +93,7 @@ bool sram_main(void) {
           &flash_ctrl_state, kWaferAuthSecretSizeInWords,
           actual_wafer_auth_secret));
       LOG_INFO("Enabling ROM execution to enable bootstrap after reset.");
-      CHECK_STATUS_OK(individualize_preop_otp_write(&otp_ctrl));
+      CHECK_STATUS_OK(manuf_individualize_device_sw_cfg(&otp_ctrl));
       LOG_INFO("Done. Perform an LC transition and run flash stage.");
       break;
     default:
