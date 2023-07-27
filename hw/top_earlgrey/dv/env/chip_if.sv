@@ -641,8 +641,8 @@ interface chip_if;
   clk_rst_if cpu_clk_rst_if(.clk(cpu_clk), .rst_n(cpu_rst_n));
 
 `ifdef GATE_LEVEL
-  wire aon_clk = 1'b0;
-  wire aon_rst_n = 1'b1;
+  wire aon_clk = `CLKMGR_HIER.clocks_o_clk_aon_powerup;
+  wire aon_rst_n = `RSTMGR_HIER.resets_o_rst_por_aon_n_0_;
 `else
   wire aon_clk = `CLKMGR_HIER.clocks_o.clk_aon_powerup;
   wire aon_rst_n = `RSTMGR_HIER.resets_o.rst_por_aon_n[0];
@@ -1103,11 +1103,12 @@ interface chip_if;
 `define _ADC_FSM_STATE_Q(i) \
    `ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q_``i``_
 
-  assign adc_ctrl_state = {1'b0,
-                           1'b0,
-                           1'b0,
-                           1'b0, // JDON need to check later
-                           1'b0};
+  assign adc_ctrl_state = {`ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q_CDR1_4_
+                          ,`ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q_CDR1_3_
+                          ,`ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q[2]
+                          ,`ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q_CDR1_1_
+                          ,`ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q[0]
+                          };
 `undef _ADC_FSM_STATE_Q
 `else
   assign adc_ctrl_state = `ADC_CTRL_HIER.u_adc_ctrl_core.u_adc_ctrl_fsm.fsm_state_q;
@@ -1143,7 +1144,7 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.stat
   // Signal probe function for `acmd_q` of CSRNG core
   wire [2:0] csrng_acmd_q;
 `ifdef GATE_LEVEL
-  assign csrng_acmd_q = 0;
+  assign csrng_acmd_q = `CSRNG_HIER.u_csrng_core.acmd_q[2:0];
 `else
   assign csrng_acmd_q = `CSRNG_HIER.u_csrng_core.acmd_q;
 `endif
@@ -1153,7 +1154,7 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.stat
   wire [3:0] aes_ctrl_rnd_ctr;
   assign aes_ctrl_rnd_ctr =
 `ifdef GATE_LEVEL
-                             0;
+      `AES_HIER.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.mr_rnd_ctr[3:0];
 `else
       `AES_HIER.u_aes_core.u_aes_cipher_core.u_aes_cipher_control.rnd_ctr;
 `endif
@@ -1163,9 +1164,9 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.stat
   // Signal probe function for `st_q` of HMAC
   wire [2:0] hmac_fsm_state;
 `ifdef GATE_LEVEL
-  assign hmac_fsm_state = {`HMAC_HIER.u_hmac.st_q_reg_2_.Q
-                          ,`HMAC_HIER.u_hmac.st_q_reg_1_.Q
-                          ,`HMAC_HIER.u_hmac.st_q_reg_0_.Q
+  assign hmac_fsm_state = {`HMAC_HIER.u_hmac.dftopt19
+                          ,`HMAC_HIER.u_hmac.dftopt10
+                          ,`HMAC_HIER.u_hmac.dftopt1
                           };
 `else
   assign hmac_fsm_state = `HMAC_HIER.u_hmac.st_q;
@@ -1218,7 +1219,8 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.stat
   // Signal probe function for `chan0.enable` and `chan1.enable`of PATTGEN
   wire [1:0] pattgen_chan_1_0_enable;
 `ifdef GATE_LEVEL
-  assign pattgen_chan_1_0_enable = 0;
+  assign pattgen_chan_1_0_enable = {`PATTGEN_HIER.u_pattgen_core.chan1.ctrl_i_enable
+                                   ,`PATTGEN_HIER.u_pattgen_core.chan0.ctrl_i_enable};
 `else
   assign pattgen_chan_1_0_enable = {`PATTGEN_HIER.u_pattgen_core.chan1.enable,
                                     `PATTGEN_HIER.u_pattgen_core.chan0.enable};
@@ -1229,7 +1231,7 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.stat
   // tb.dut.top_earlgrey.u_pwm_aon.u_pwm_core.cntr_en
   wire pwm_core_cntr_en;
 `ifdef GATE_LEVEL
-  assign pwm_core_cntr_en = 0;
+  assign pwm_core_cntr_en = `PWM_HIER.u_reg.u_cfg_cntr_en.q;
 `else
   assign pwm_core_cntr_en = `PWM_HIER.u_pwm_core.cntr_en;
 `endif
