@@ -62,9 +62,10 @@
   registers: [
     { name: "SOURCE_ADDRESS_LO"
       desc: '''
-            Lower 32 bits of 4 byte aligned physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
+            Lower 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
             Data is read from this location in a copy operation.
             The address may be an IO virtual address.
+            Must be aligned to the transfer width.
             '''
       swaccess: "rw"
       hwaccess: "hrw"
@@ -73,12 +74,14 @@
         { bits: "31:0"
           name: "source_address_lo"
           resval: 0x0
-          desc: "Lower 32 bits of 4 byte aligned source address."
+          desc: '''Lower 32 bits of the source address.
+                Must be aligned to the transfer width.
+                '''
         }
       ]
     }
     { name: "SOURCE_ADDRESS_HI"
-      desc: "Upper 32 bits of 4 byte aligned source address."
+      desc: "Upper 32 bits of the source address."
       swaccess: "rw"
       hwaccess: "hrw"
       hwqe: "true"
@@ -86,15 +89,19 @@
         { bits: "31:0"
           name: "source_address_hi"
           resval: 0x0
-          desc: "Upper 32 bits of 4 byte aligned physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space."
+          desc: '''
+                Upper 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
+                Must be aligned to the transfer width.
+                '''
         }
       ]
     }
     { name: "DESTINATION_ADDRESS_LO"
       desc: '''
-            Lower 32 bits of 4 byte aligned physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
+            Lower 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
             Data is written to this location in a copy operation.
             The address may be an IO virtual address.
+            Must be aligned to the transfer width.
             '''
       swaccess: "rw"
       hwaccess: "hrw"
@@ -103,12 +110,16 @@
         { bits: "31:0"
           name: "destination_address_lo"
           resval: 0x0
-          desc: "Lower 32 bits of 4 byte aligned destination address."
+          desc: '''Lower 32 bits of the destination address.
+                Must be aligned to the transfer width.
+                '''
         }
       ]
     }
     { name: "DESTINATION_ADDRESS_HI"
-      desc: "Upper 32 bits of 4 byte aligned destination address."
+      desc: '''Upper 32 bits of the destination address.
+            Must be aligned to the transfer width.
+            '''
       swaccess: "rw"
       hwaccess: "hrw"
       hwqe: "true"
@@ -116,7 +127,10 @@
         { bits: "31:0"
           name: "destination_address_hi"
           resval: 0x0
-          desc: "Upper 32 bits of 4 byte aligned physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space."
+          desc: '''
+                Upper 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
+                Must be aligned to the transfer width.
+                '''
         }
       ]
     }
