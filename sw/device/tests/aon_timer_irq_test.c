@@ -95,8 +95,8 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
   uint64_t sleep_range_h = irq_time_us + variation;
   uint64_t sleep_range_l = irq_time_us - variation;
 
-  // Add 600 cpu cycles of overhead to cover irq handling.
-  sleep_range_h += udiv64_slow(600 * 1000000, kClockFreqCpuHz, NULL);
+  // Add 1500 cpu cycles of overhead to cover irq handling.
+  sleep_range_h += udiv64_slow(1500 * 1000000, kClockFreqCpuHz, NULL);
 
   uint32_t count_cycles = 0;
   CHECK_STATUS_OK(
