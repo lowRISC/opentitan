@@ -71,7 +71,7 @@ package secure_subsystem_synth_pkg;
   `AXI_TYPEDEF_ALL(synth_ot_axi_out, synth_ot_axi_addr_t, synth_ot_axi_out_id_t, synth_ot_axi_data_t, synth_ot_axi_strb_t, synth_ot_axi_user_t)
    
   localparam SynthLogDepth = 3;
-  localparam SynthSyncStages = 2;
+  localparam SynthCdcSyncStages = 2;
 
   localparam SynthAsyncAxiOutAwWidth = (2**SynthLogDepth)*$bits(synth_axi_out_aw_chan_t);
   localparam SynthAsyncAxiOutWWidth  = (2**SynthLogDepth)*$bits(synth_axi_out_w_chan_t);
