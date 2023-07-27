@@ -54,6 +54,7 @@ class chip_sw_rom_ctrl_integrity_check_vseq extends chip_sw_base_vseq;
       forever @(cfg.chip_vif.rom_ctrl_done or rom_ctrl_done_checker_stop) begin
         if (rom_ctrl_done_checker_stop) break;
         if (cfg.chip_vif.rom_ctrl_done) begin
+          #(1ns);
           `DV_CHECK(!cfg.chip_vif.rom_ctrl_good)
         end
       end
