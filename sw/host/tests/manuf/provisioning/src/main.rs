@@ -52,7 +52,11 @@ fn provisioning(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Get UART, set flow control, and wait for for test to start running.
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Provisioning complete.", opts.timeout)?;
+    let _ = UartConsole::wait_for(
+        &*uart,
+        r"Personalization complete. Checking status ...",
+        opts.timeout,
+    )?;
 
     // Wait for exported data to be transimitted over the console.
     let export_data = ManufProvisioning::recv(&*uart, opts.timeout, false)?;
