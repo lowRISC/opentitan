@@ -131,6 +131,11 @@ class alert_receiver_driver extends alert_esc_base_driver;
                               $urandom_range(cfg.ack_delay_max, cfg.ack_delay_min);
     int unsigned ack_stable = (cfg.use_seq_item_ack_stable) ? req.ack_stable :
                                $urandom_range(cfg.ack_stable_max, cfg.ack_stable_min);
+    if (cfg.fast_rcvr) begin
+      ack_delay = cfg.ack_delay_min;
+      ack_stable = cfg.ack_stable_min;
+    end
+
     if (!req.int_err) begin
       @(cfg.vif.receiver_cb);
       repeat (ack_delay) @(cfg.vif.receiver_cb);
