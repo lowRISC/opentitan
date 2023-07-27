@@ -41,5 +41,4 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 |:----------------------|:---------------------------------|
 | PATTGEN.BUS.INTEGRITY | End-to-end bus integrity scheme. |
 
-
 <!-- END CMDGEN -->

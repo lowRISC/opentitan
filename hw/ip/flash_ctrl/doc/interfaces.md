@@ -99,7 +99,6 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | FLASH_CTRL.MEM_TL_LC_GATE.FSM.SPARSE       | The control FSM inside the TL-UL gating primitive is sparsely encoded.                                                                                                                                                                              |
 | FLASH_CTRL.PROG_TL_LC_GATE.FSM.SPARSE      | The control FSM inside the TL-UL gating primitive is sparsely encoded.                                                                                                                                                                              |
 
-
 <!-- END CMDGEN -->
 
 ## Signals

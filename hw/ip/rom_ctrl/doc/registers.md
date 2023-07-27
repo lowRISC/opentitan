@@ -135,5 +135,4 @@ ROM data
 - Access: `ro`
 - Byte writes are *not* supported.
 
-
 <!-- END CMDGEN -->

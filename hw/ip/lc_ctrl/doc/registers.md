@@ -627,5 +627,4 @@ This is a 256bit field used for keeping track of the manufacturing state.
 |:------:|:------:|:-------:|:------------|:--------------|
 |  31:0  |   ro   |    x    | MANUF_STATE |               |
 
-
 <!-- END CMDGEN -->

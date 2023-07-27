@@ -144,7 +144,6 @@ The generated content is inserted using [`CMDGEN`](./README.md#cmdgen).
 Additional information before
 
 <!-- BEGIN CMDGEN #util/regtool.py --interfaces ./hw/ip/example/data/example.hjson -->
-
 <!-- END CMDGEN -->
 
 and after the generated content.
@@ -154,7 +153,6 @@ and after the generated content.
 # Registers
 
 <!-- BEGIN CMDGEN #util/regtool.py -d ./hw/ip/example/data/example.hjson -->
-
 <!-- END CMDGEN -->
 ````
 

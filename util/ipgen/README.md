@@ -154,7 +154,6 @@ actions:
   ACTION
     describe  Show details about an IP template
     generate  Generate an IP block from an IP template
-
 ```
 <!-- END CMDGEN -->
 
@@ -177,7 +176,6 @@ optional arguments:
   --force, -f           overwrite the output directory, if it exists
   --config-file CONFIG_FILE, -c CONFIG_FILE
                         path to a configuration file
-
 ```
 <!-- END CMDGEN -->
 
@@ -194,7 +192,6 @@ optional arguments:
   --verbose             More info messages
   -C TEMPLATE_DIR, --template-dir TEMPLATE_DIR
                         IP template directory
-
 ```
 <!-- END CMDGEN -->
 

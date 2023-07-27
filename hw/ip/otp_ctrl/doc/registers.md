@@ -1008,5 +1008,4 @@ will block until OTP readout has completed.
 |  7:6   |        |         |        | Reserved      |
 |  5:0   |   ro   |   0x0   | field0 |               |
 
-
 <!-- END CMDGEN -->

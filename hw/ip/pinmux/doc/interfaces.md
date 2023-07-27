@@ -51,7 +51,6 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 |:---------------------|:---------------------------------|
 | PINMUX.BUS.INTEGRITY | End-to-end bus integrity scheme. |
 
-
 <!-- END CMDGEN -->
 
 ## Parameters

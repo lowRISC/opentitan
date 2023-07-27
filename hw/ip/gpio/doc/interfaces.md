@@ -37,5 +37,4 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 |:--------------------|:---------------------------------|
 | GPIO.BUS.INTEGRITY  | End-to-end bus integrity scheme. |
 
-
 <!-- END CMDGEN -->

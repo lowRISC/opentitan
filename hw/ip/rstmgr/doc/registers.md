@@ -332,5 +332,4 @@ A bit vector of all the errors that have occurred in reset manager
 |   1    |   ro   |   0x0   | RESET_CONSISTENCY_ERR | A inconsistent parent / child reset was observed.     |
 |   0    |   ro   |   0x0   | REG_INTG_ERR          | The register file has experienced an integrity error. |
 
-
 <!-- END CMDGEN -->

@@ -288,5 +288,4 @@ This blink-rate timing parameter has two different
    In heartbeat mode is enabled, the size of each step is
    controlled by BLINK_PARAM.Y.
 
-
 <!-- END CMDGEN -->

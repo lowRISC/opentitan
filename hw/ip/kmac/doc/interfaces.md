@@ -54,5 +54,4 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | KMAC.ABSORBED.CTRL.MUBI           | `absorbed` signal is mubi4_t type to protect against FI attacks.                                       |
 | KMAC.SW_CMD.CTRL.SPARSE           | `sw_cmd` and related signals are sparse encoded to protect against FI attacks.                         |
 
-
 <!-- END CMDGEN -->

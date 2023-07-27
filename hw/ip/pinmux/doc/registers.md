@@ -1889,5 +1889,4 @@ However, read/write accesses following a write will block until that write has c
 |   1    |  rw0c  |   0x0   | CAUSE_1 | Set to 1 if the corresponding detector has detected a wakeup pattern. Write 0 to clear. |
 |   0    |  rw0c  |   0x0   | CAUSE_0 | Set to 1 if the corresponding detector has detected a wakeup pattern. Write 0 to clear. |
 
-
 <!-- END CMDGEN -->

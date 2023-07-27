@@ -352,5 +352,4 @@ Message FIFO. Any write to this window will be appended to the FIFO. Only the lo
 - Access: `wo`
 - Byte writes are  supported.
 
-
 <!-- END CMDGEN -->

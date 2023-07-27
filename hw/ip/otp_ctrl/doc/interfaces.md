@@ -125,7 +125,6 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | OTP_CTRL.MACRO.MEM.INTEGRITY         | The OTP macro employs a vendor-specific integrity scheme at the granularity of the native 16bit OTP words. The scheme is able to at least detect single bit errors. |
 | OTP_CTRL.MACRO.MEM.CM                | The OTP macro may contain additional vendor-specific countermeasures.                                                                                               |
 
-
 <!-- END CMDGEN -->
 
 The OTP controller contains various interfaces that connect to other comportable IPs within OpenTitan, and these are briefly explained further below.

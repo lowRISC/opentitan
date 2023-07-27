@@ -55,7 +55,6 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 |:-------------------------|:---------------------------------|
 | SPI_DEVICE.BUS.INTEGRITY | End-to-end bus integrity scheme. |
 
-
 <!-- END CMDGEN -->
 
 The TPM submodule requires a separate input port for CS#.

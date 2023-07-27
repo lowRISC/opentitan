@@ -224,5 +224,4 @@ Wakeup request status
 |  31:1  |        |         |        | Reserved                                     |
 |   0    |  rw0c  |   0x0   | cause  | AON timer requested wakeup, write 0 to clear |
 
-
 <!-- END CMDGEN -->

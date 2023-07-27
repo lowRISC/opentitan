@@ -63,5 +63,4 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | PWRMGR.WAKEUP.CONFIG.REGWEN   | Wakeup configuration protected by regwen.                                                                                |
 | PWRMGR.RESET.CONFIG.REGWEN    | Reset configuration protected by regwen.                                                                                 |
 
-
 <!-- END CMDGEN -->

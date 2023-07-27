@@ -38,5 +38,4 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 |:------------------------|:---------------------------------|
 | AON_TIMER.BUS.INTEGRITY | End-to-end bus integrity scheme. |
 
-
 <!-- END CMDGEN -->

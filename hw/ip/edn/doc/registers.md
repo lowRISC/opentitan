@@ -462,5 +462,4 @@ Main state machine state observation register
 |  31:9  |        |         |               | Reserved                                                                                                       |
 |  8:0   |   ro   |  0x185  | MAIN_SM_STATE | This is the state of the EDN main state machine. See the RTL file `edn_main_sm` for the meaning of the values. |
 
-
 <!-- END CMDGEN -->

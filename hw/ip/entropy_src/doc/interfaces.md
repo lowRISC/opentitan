@@ -53,5 +53,4 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | ENTROPY_SRC.ESFINAL_RDATA.BUS.CONSISTENCY | Comparison on successive bus values for the post-conditioned entropy seed bus.      |
 | ENTROPY_SRC.TILE_LINK.BUS.INTEGRITY       | Tilelink end-to-end bus integrity scheme.                                           |
 
-
 <!-- END CMDGEN -->

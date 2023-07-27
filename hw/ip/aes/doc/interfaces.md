@@ -57,7 +57,6 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | AES.CTR.FSM.LOCAL_ESC            | The CTR mode FSM moves to a terminal error state upon local escalation. Can be triggered by CTR.FSM.SPARSE, CTR.FSM.REDUN, and CTRL.SPARSE.                                                              |
 | AES.DATA_REG.LOCAL_ESC           | Upon local escalation, the module doesn't output intermediate state.                                                                                                                                     |
 
-
 <!-- END CMDGEN -->
 
 ### Other Signals

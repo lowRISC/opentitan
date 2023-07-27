@@ -184,5 +184,4 @@ Timer value Upper
 |:------:|:------:|:----------:|:-------|:----------------------------|
 |  31:0  |   rw   | 0xffffffff | v      | Timer compare value [63:32] |
 
-
 <!-- END CMDGEN -->

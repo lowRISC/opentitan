@@ -1787,5 +1787,4 @@ buffer, 32B of CmdFIFO, 32B of AddrFIFO, and 256B of payload FIFO.
 - Access: `rw`
 - Byte writes are *not* supported.
 
-
 <!-- END CMDGEN -->

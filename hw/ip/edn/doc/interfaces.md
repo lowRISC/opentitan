@@ -43,5 +43,4 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | EDN.CS_RDATA.BUS.CONSISTENCY | Comparison on successive bus values for genbits returned from csrng that will distribute over the endpoint buses. |
 | EDN.TILE_LINK.BUS.INTEGRITY  | Tilelink end-to-end bus integrity scheme.                                                                         |
 
-
 <!-- END CMDGEN -->

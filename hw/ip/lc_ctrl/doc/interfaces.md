@@ -91,7 +91,6 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | LC_CTRL.TOKEN_MUX.CTRL.REDUN       | The life cycle transition token mux is broken into two halves that are steered with separately decoded and buffered MUBI valid signals (see also TOKEN_VALID.CTRL.MUBI).                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | LC_CTRL.TOKEN_VALID.MUX.REDUN      | The life cycle transition token valid mux is replicated twice. If a transition is initiated and the two mux index signals are inconsistent or if any of the two valid mux outputs is not set to valid, the transition will fail with a TRANSITION_ERROR.                                                                                                                                                                                                                                                                                                                                                                |
 
-
 <!-- END CMDGEN -->
 
 Signal                       | Direction        | Type                                     | Description

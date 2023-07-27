@@ -338,5 +338,4 @@ must be stable for 16 cycles before transitioning.
 |:------:|:------:|:-------:|:---------------------|:--------------|
 |  31:0  |   rw   |   0x0   | CTRL_EN_INPUT_FILTER |               |
 
-
 <!-- END CMDGEN -->

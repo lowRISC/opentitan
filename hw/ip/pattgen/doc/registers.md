@@ -206,5 +206,4 @@ PATTGEN pattern length
 |  15:6  |   rw   |   0x0   | REPS_CH0 | Number of pattern repetitions for Channel 0, minus 1. Valid values: 0..1023. Note that writes to a channel's configuration registers have no effect while the channel is enabled. |
 |  5:0   |   rw   |   0x0   | LEN_CH0  | Length of the seed pattern for Channel 0, minus 1. Valid values: 0..63. Note that writes to a channel's configuration registers have no effect while the channel is enabled.      |
 
-
 <!-- END CMDGEN -->

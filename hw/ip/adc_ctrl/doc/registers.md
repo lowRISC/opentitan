@@ -375,5 +375,4 @@ Debug cable internal status
 |   8    |  rw1c  |   0x0   | oneshot      | 0: oneshot sample is not done ; 1: oneshot sample is done  |
 |  7:0   |  rw1c  |   0x0   | filter_match | 0: filter condition is not met; 1: filter condition is met |
 
-
 <!-- END CMDGEN -->

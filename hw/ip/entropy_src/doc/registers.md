@@ -1577,5 +1577,4 @@ Main state machine state debug register
 |  31:9  |        |         |               | Reserved                                                                                                                       |
 |  8:0   |   ro   |  0xf5   | MAIN_SM_STATE | This is the state of the ENTROPY_SRC main state machine. See the RTL file `entropy_src_main_sm` for the meaning of the values. |
 
-
 <!-- END CMDGEN -->

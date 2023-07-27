@@ -65,7 +65,6 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | SRAM_CTRL.SCRAMBLE.KEY.SIDELOAD        | The scrambling key is sideloaded from OTP and thus unreadable by SW.                                                                                                        |
 | SRAM_CTRL.TLUL_FIFO.CTR.REDUN          | The TL-UL response FIFO pointers are implemented with duplicate counters.                                                                                                   |
 
-
 <!-- END CMDGEN -->
 
 The table below lists other SRAM controller signals.

@@ -796,5 +796,4 @@ in order to handle with sub-word writes.
 - Access: `wo`
 - Byte writes are  supported.
 
-
 <!-- END CMDGEN -->

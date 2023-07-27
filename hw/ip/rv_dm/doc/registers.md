@@ -763,5 +763,4 @@ Access window into the debug ROM.
 - Access: `ro`
 - Byte writes are *not* supported.
 
-
 <!-- END CMDGEN -->

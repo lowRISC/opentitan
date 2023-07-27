@@ -45,5 +45,4 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 |:--------------------|:---------------------------------|
 | UART.BUS.INTEGRITY  | End-to-end bus integrity scheme. |
 
-
 <!-- END CMDGEN -->
