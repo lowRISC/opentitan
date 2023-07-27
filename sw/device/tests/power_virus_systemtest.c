@@ -1212,7 +1212,6 @@ static void max_power_task(void *task_parameters) {
                       csrng_reseed_cmd_header);
 
   // Issue HMAC process and KMAC squeeze commands.
-  mmio_region_write32(hmac.base_addr, HMAC_CMD_REG_OFFSET, hmac_cmd_reg);
   kmac_operation_state.squeezing = true;
   mmio_region_write32(kmac.base_addr, KMAC_CMD_REG_OFFSET, kmac_cmd_reg);
 
@@ -1221,6 +1220,11 @@ static void max_power_task(void *task_parameters) {
   // propagates to the pin, the AES will already be active.
   mmio_region_write32(gpio.base_addr, GPIO_MASKED_OUT_LOWER_REG_OFFSET,
                       gpio_on_reg_val);
+
+  mmio_region_write32(hmac.base_addr, HMAC_CMD_REG_OFFSET,
+                      hmac_cmd_reg);  // see note
+  // moved HMAC activation here because it is too fast and returns to idle
+  // before GPIO pin IOB8 is toggled.
 
   // Issue AES trigger commands.
   mmio_region_write32(aes.base_addr, AES_TRIGGER_REG_OFFSET, aes_trigger_reg);
