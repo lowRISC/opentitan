@@ -6,7 +6,6 @@ import json
 import logging as log
 import os
 import pprint
-import re
 import subprocess
 import sys
 from pathlib import Path
@@ -147,9 +146,7 @@ class FlowCfg():
                             self.rel_path / "latest")
         self.results_page = (self.results_dir / self.results_html_name)
 
-        tmp_path = self.results_server + "/" + self.rel_path
-        self.results_server_path = self.results_server_prefix + tmp_path
-        tmp_path += "/latest"
+        tmp_path = self.results_server + "/" + self.rel_path + "/latest"
         self.results_server_dir = self.results_server_prefix + tmp_path
         tmp_path += "/" + self.results_html_name
         self.results_server_page = self.results_server_prefix + tmp_path
@@ -473,14 +470,17 @@ class FlowCfg():
     def _publish_results(self, results_server: ResultsServer):
         '''Publish results to the opentitan web server.
 
-        Results are uploaded to {results_server_page}.
-        If the 'latest' directory exists, then it is renamed to its 'timestamp'
-        directory. If the list of directories in this area is > 14, then the
-        oldest entry is removed. Links to the last 7 regression results are
-        appended at the end if the results page.
+        Results are uploaded to {results_server_page}. If the 'latest'
+        directory exists, then it is renamed to its 'timestamp' directory.
+        Links to the last 7 regression results are appended at the end if the
+        results page.
         '''
         # Timeformat for moving the dir
         tf = "%Y.%m.%d_%H.%M.%S"
+
+        # Maximum number of links to add to previous results pages at the
+        # bottom of the page that we're generating.
+        max_old_page_links = 7
 
         # We're going to try to put things in a directory called "latest". But
         # there's probably something with that name already. If so, we want to
@@ -500,50 +500,38 @@ class FlowCfg():
 
             results_server.mv(latest_dir, backup_dir)
 
+        # Do an ls in the results root dir to check what directories exist. If
+        # something goes wrong then continue, behaving as if there were none.
+        try:
+            existing_paths = results_server.ls(self.rel_path)
+        except subprocess.CalledProcessError:
+            log.error('Failed to list {} with gsutil. '
+                      'Acting as if there was nothing.'
+                      .format(self.rel_path))
+            existing_paths = []
+
         # Do an ls in the results root dir to check what directories exist.
-        results_dirs = []
-        cmd = self.results_server_cmd + " ls " + self.results_server_path
-        log.log(VERBOSE, cmd)
-        cmd_output = subprocess.run(args=cmd,
-                                    shell=True,
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.DEVNULL)
-        log.log(VERBOSE, cmd_output.stdout.decode("utf-8"))
-        if cmd_output.returncode == 0:
-            # Some directories exist. Check if 'latest' is one of them
-            results_dirs = cmd_output.stdout.decode("utf-8").strip()
-            results_dirs = results_dirs.split("\n")
-        else:
-            log.log(VERBOSE, "Failed to run \"%s\"!", cmd)
+        existing_basenames = []
+        for existing_path in existing_paths:
+            # Here, existing_path will start with "gs://" and should end in a
+            # time or with "latest" and then a trailing '/'. Split it to find
+            # that the directory basename. The rsplit() here will result in
+            # ["some_path", "basename_we_want", ""]. Grab the middle.
+            existing_parts = existing_path.rsplit('/', 2)
+            existing_basenames.append(existing_parts[1])
 
-        # Start pruning
-        log.log(VERBOSE, "Pruning %s area to limit last 7 results",
-                self.results_server_path)
+        # We want to add pointers to existing directories with recent
+        # timestamps. Sort in reverse (time and lexicographic!) order, then
+        # take the top few results.
+        existing_basenames.sort(reverse=True)
 
-        rdirs = []
-        for rdir in results_dirs:
-            dirname = rdir.replace(self.results_server_path, '')
-            dirname = dirname.replace('/', '')
-            # Only track history directories with format
-            # "year.month.date_hour.min.sec".
-            if not bool(re.match(r"[\d*.]*_[\d*.]*", dirname)):
-                continue
-            rdirs.append(dirname)
-        rdirs.sort(reverse=True)
-
-        rm_cmd = ""
         history_txt = "\n## Past Results\n"
         history_txt += "- [Latest](../latest/" + self.results_html_name + ")\n"
-        if len(rdirs) > 0:
-            for i in range(len(rdirs)):
-                if i < 7:
-                    rdir_url = '../' + rdirs[i] + "/" + self.results_html_name
-                    history_txt += "- [{}]({})\n".format(rdirs[i], rdir_url)
-                elif i > 14:
-                    rm_cmd += self.results_server_path + '/' + rdirs[i] + " "
-
-        if rm_cmd != "":
-            rm_cmd = self.results_server_cmd + " -m rm -r " + rm_cmd + "; "
+        for existing_basename in existing_basenames[:max_old_page_links]:
+            relative_url = '../{}/{}'.format(existing_basename,
+                                             self.results_html_name)
+            history_txt += '- [{}]({})\n'.format(existing_basename,
+                                                 relative_url)
 
         # Append the history to the results.
         publish_results_md = self.publish_results_md or self.results_md
