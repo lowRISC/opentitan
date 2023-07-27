@@ -283,8 +283,8 @@ cc_library(
         ":bitfield",
         ":macros",
         "//sw/device/lib/base/internal:status",
+        "//sw/device/lib/dif:base",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/ip/base/dif:base",
     ],
 )
 

@@ -12,8 +12,8 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/ip/spi_device/dif/dif_spi_device.h"
-#include "sw/ip/uart/dif/dif_uart.h"
+#include "sw/device/lib/dif/dif_spi_device.h"
+#include "sw/device/lib/dif/dif_uart.h"
 
 // This is declared as an enum to force the values to be
 // compile-time constants, but the type is otherwise not
