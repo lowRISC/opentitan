@@ -53,7 +53,7 @@ class dma_base_vseq extends cip_base_vseq #(
   event e_aborted;
   event e_errored;
 
- function new (string name="dma_base_vseq");
+ function new (string name="");
   super.new(name);
   m_seq = dma_seq_item::type_id::create("m_seq");
  endfunction: new

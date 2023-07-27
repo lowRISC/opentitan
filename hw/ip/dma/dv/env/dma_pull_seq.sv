@@ -6,7 +6,7 @@ class dma_pull_seq extends tl_device_seq;
 
   `uvm_object_utils(dma_pull_seq)
 
-  function new (string name = "dma_pull_seq");
+  function new (string name = "");
     super.new(name);
     min_rsp_delay = 1;
     max_rsp_delay = 4;

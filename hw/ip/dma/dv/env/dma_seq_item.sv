@@ -90,7 +90,7 @@ class dma_seq_item extends uvm_sequence_item;
   }
 
   //  Constructor: new
-  function new(string name = "dma_seq_item");
+  function new(string name = "");
     super.new(name);
   endfunction: new
 
