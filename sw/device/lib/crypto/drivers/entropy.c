@@ -41,7 +41,7 @@ typedef enum entropy_csrng_op {
   kEntropyDrbgOpReseed = 2,
   kEntropyDrbgOpGenerate = 3,
   kEntropyDrbgOpUpdate = 4,
-  kEntropyDrbgOpUnisntantiate = 5,
+  kEntropyDrbgOpUninstantiate = 5,
 } entropy_csrng_op_t;
 
 /**
