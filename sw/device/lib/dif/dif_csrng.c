@@ -133,7 +133,7 @@ dif_result_t dif_csrng_uninstantiate(const dif_csrng_t *csrng) {
   }
   return csrng_send_app_cmd(csrng->base_addr, CSRNG_CMD_REQ_REG_OFFSET,
                             (csrng_app_cmd_t){
-                                .id = kCsrngAppCmdUnisntantiate,
+                                .id = kCsrngAppCmdUninstantiate,
                             });
 }
 

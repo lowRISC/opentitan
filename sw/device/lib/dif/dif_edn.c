@@ -338,7 +338,7 @@ dif_result_t dif_edn_uninstantiate(const dif_edn_t *edn) {
   }
   return csrng_send_app_cmd(edn->base_addr, EDN_SW_CMD_REQ_REG_OFFSET,
                             (csrng_app_cmd_t){
-                                .id = kCsrngAppCmdUnisntantiate,
+                                .id = kCsrngAppCmdUninstantiate,
                             });
 }
 
