@@ -7,8 +7,8 @@ class dma_virtual_sequencer extends cip_base_virtual_sequencer #(
   .COV_T(dma_env_cov)
 );
 
-tl_sequencer      tl_sequencer_dma_host_h;
-tl_sequencer      tl_sequencer_dma_xbar_h;
+tl_sequencer tl_sequencer_dma_host_h;
+tl_sequencer tl_sequencer_dma_xbar_h;
 
 `uvm_component_utils(dma_virtual_sequencer)
 `uvm_component_new

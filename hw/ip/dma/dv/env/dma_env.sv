@@ -23,17 +23,17 @@ class dma_env extends cip_base_env #(
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
 
     // Get dma interface
-    if (!uvm_config_db #(dma_vif)::get(this,"", "dma_vif", cfg.dma_vif)) begin
-      `uvm_fatal( `gfn, "failed to get dma_vif from uvm_config_db" )
+    if (!uvm_config_db #(dma_vif)::get(this, "", "dma_vif", cfg.dma_vif)) begin
+      `uvm_fatal(`gfn, "failed to get dma_vif from uvm_config_db")
     end
 
     // TL agents
-    m_tl_agent_dma_host  = tl_agent::type_id::create("m_tl_agent_dma_host",  this);
-    uvm_config_db #(tl_agent_cfg)::set(this, "m_tl_agent_dma_host",  "cfg",
+    m_tl_agent_dma_host = tl_agent::type_id::create("m_tl_agent_dma_host", this);
+    uvm_config_db #(tl_agent_cfg)::set(this, "m_tl_agent_dma_host", "cfg",
                                        cfg.m_tl_agent_dma_host_device_cfg);
 
-    m_tl_agent_dma_xbar  = tl_agent::type_id::create("m_tl_agent_dma_xbar",  this);
-    uvm_config_db #(tl_agent_cfg)::set(this, "m_tl_agent_dma_xbar",  "cfg",
+    m_tl_agent_dma_xbar = tl_agent::type_id::create("m_tl_agent_dma_xbar", this);
+    uvm_config_db #(tl_agent_cfg)::set(this, "m_tl_agent_dma_xbar", "cfg",
                                        cfg.m_tl_agent_dma_xbar_device_cfg);
   endfunction: build_phase
 
@@ -41,11 +41,11 @@ class dma_env extends cip_base_env #(
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
 
-    virtual_sequencer.tl_sequencer_dma_host_h  = m_tl_agent_dma_host.sequencer;
-    virtual_sequencer.tl_sequencer_dma_xbar_h  = m_tl_agent_dma_xbar.sequencer;
+    virtual_sequencer.tl_sequencer_dma_host_h = m_tl_agent_dma_host.sequencer;
+    virtual_sequencer.tl_sequencer_dma_xbar_h = m_tl_agent_dma_xbar.sequencer;
 
-    m_tl_agent_dma_host.monitor.analysis_port.connect( scoreboard.dma_host_fifo.analysis_export );
-    m_tl_agent_dma_xbar.monitor.analysis_port.connect( scoreboard.dma_xbar_fifo.analysis_export );
+    m_tl_agent_dma_host.monitor.analysis_port.connect(scoreboard.dma_host_fifo.analysis_export);
+    m_tl_agent_dma_xbar.monitor.analysis_port.connect(scoreboard.dma_xbar_fifo.analysis_export);
 
     uvm_top.print_topology();
   endfunction: connect_phase
@@ -54,13 +54,13 @@ class dma_env extends cip_base_env #(
     super.start_of_simulation_phase(phase);
 
     // DEBUG
-    `uvm_info( `gfn, "[DMA] NEW DEBUG - FANOUT", UVM_HIGH )
+    `uvm_info(`gfn, "[DMA] NEW DEBUG - FANOUT", UVM_HIGH)
     m_tl_agent_dma_host.driver.seq_item_port.debug_connected_to();
-    `uvm_info( `gfn, "[DMA] NEW DEBUG - FANIN", UVM_HIGH )
+    `uvm_info(`gfn, "[DMA] NEW DEBUG - FANIN", UVM_HIGH)
     m_tl_agent_dma_host.sequencer.seq_item_export.debug_provided_to();
-    `uvm_info( `gfn, "[DMA] NEW DEBUG - VS FANOUT", UVM_HIGH )
+    `uvm_info(`gfn, "[DMA] NEW DEBUG - VS FANOUT", UVM_HIGH)
     m_tl_agent_dma_host.monitor.a_chan_port.debug_connected_to();
-    `uvm_info( `gfn, "[DMA] NEW DEBUG - VS FANIN", UVM_HIGH )
+    `uvm_info(`gfn, "[DMA] NEW DEBUG - VS FANIN", UVM_HIGH)
     virtual_sequencer.tl_sequencer_dma_xbar_h.a_chan_req_fifo.analysis_export.debug_provided_to();
   endfunction: start_of_simulation_phase
 endclass

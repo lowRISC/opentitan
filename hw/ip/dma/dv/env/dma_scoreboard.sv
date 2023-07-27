@@ -19,13 +19,12 @@ class dma_scoreboard extends cip_base_scoreboard #(
   tl_seq_item   xbar_queue[$];
   tl_seq_item   csr_queue[$];
 
-
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
 
-    dma_host_fifo  = new("dma_host_fifo", this);
-    dma_xbar_fifo  = new("dma_xbar_fifo", this);
-    csr_fifo       = new("csr_fifo", this);
+    dma_host_fifo = new("dma_host_fifo", this);
+    dma_xbar_fifo = new("dma_xbar_fifo", this);
+    csr_fifo      = new("csr_fifo", this);
   endfunction: build_phase
 
   task run_phase(uvm_phase phase);

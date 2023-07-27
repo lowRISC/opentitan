@@ -4,25 +4,25 @@
 
 import dma_pkg::*;
 
-interface dma_if #( parameter uint WIDTH_IN  = 1 ) (
+interface dma_if #(parameter uint WIDTH_IN = 1) (
   input clk_i,
   input rst_ni
 );
 
-logic [WIDTH_IN -1:0] handshake_i = '0;   // IO->DMA handshake signal
-logic [31:0]          remaining;
+logic [WIDTH_IN-1:0] handshake_i = '0;   // IO->DMA handshake signal
+logic [31:0]         remaining;
 // For DMA handshake mode, we are expected to manage lsio_trigger_i.
-logic                 read_cmpl_host;
-logic                 read_cmpl_xbar;  //  Due to the above requirement we need to track FIFO drain
-logic                 read_opc_host;
-logic                 read_opc_xbar;
+logic                read_cmpl_host;
+logic                read_cmpl_xbar;  //  Due to the above requirement we need to track FIFO drain
+logic                read_opc_host;
+logic                read_opc_xbar;
 
 task automatic init();
   handshake_i <= '0;
 endtask : init
 
 // Drive Handshake
-task automatic drive( input int pos = 0 );
+task automatic drive(input int pos = 0);
   handshake_i[pos] <= 1'b1;
 endtask : drive
 

@@ -41,7 +41,7 @@ class dma_pull_seq extends tl_device_seq;
     end
     `uvm_info("dma_pull_seq",
               $sformatf("[check][d_chan] : a_address=0x%08h d_valid_delay=%0d",
-              rsp.a_addr, rsp.d_valid_delay),
+                        rsp.a_addr, rsp.d_valid_delay),
               UVM_HIGH)
   endfunction
 endclass
