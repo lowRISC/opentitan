@@ -20,7 +20,6 @@ load("//rules:const.bzl", "CONST", "get_lc_items")
 load("//rules:lc.bzl", "lc_raw_unlock_token")
 load("//rules:otp.bzl", "otp_image", "otp_json", "otp_partition")
 load("//rules:splice.bzl", "bitstream_splice")
-load("@crt//rules:transition.bzl", "platform_target")
 
 _TEST_UNLOCKED_LC_ITEMS = get_lc_items(
     CONST.LCV.TEST_UNLOCKED0,
@@ -245,12 +244,6 @@ cc_library(
     ],
 )
 
-platform_target(
-    name = "sram_empty_functest_fpga_cw310_elf",
-    platform = OPENTITAN_PLATFORM,
-    target = ":sram_empty_functest_fpga_cw310.elf",
-)
-
 # We are using a bitstream with ROM execution disabled so the contents of flash
 # does not matter but opentitan_functest() is unhappy if we don't provide one.
 # Additionally, ROM execution is disabled in the OTP image we use so we do not
@@ -265,10 +258,10 @@ platform_target(
             test_cmds = [
                 "--clear-bitstream",
                 "--bitstream=\"$(rootpath {bitstream})\"",
-                "--elf=\"$(rootpath :sram_empty_functest_fpga_cw310_elf)\"",
+                "--elf=\"$(rootpath :sram_empty_functest_fpga_cw310_elf_transition)\"",
             ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
         ),
-        data = [":sram_empty_functest_fpga_cw310_elf"] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
+        data = [":sram_empty_functest_fpga_cw310_elf_transition"] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
         targets = ["cw310_rom_with_fake_keys"],
         test_harness = "//sw/host/tests/manuf/manuf_sram_program_crc_check",
         deps = [
@@ -318,17 +311,6 @@ opentitan_ram_binary(
     ],
 )
 
-# The way opentitan_ram_binary works, it is a macro that creates an elf file
-# use the native cc_binary that has no transition defined. We want to use this
-# file with opentitan_functest which also a macro with no transition defined.
-# Hence we need to manually created a transition to build the ELF file for the
-# device.
-platform_target(
-    name = "sram_device_info_flash_wr_functest_fpga_cw310_elf",
-    platform = OPENTITAN_PLATFORM,
-    target = ":sram_device_info_flash_wr_functest_fpga_cw310.elf",
-)
-
 [
     opentitan_functest(
         name = "manuf_cp_device_info_flash_wr_{}_to_{}_functest".format(
@@ -344,11 +326,11 @@ platform_target(
                 "--bitstream=\"$(rootpath {bitstream})\"",
                 "--bootstrap=\"$(location {flash})\"",
                 "--target-lc-state=\"{}\"".format(target_lc_state),
-                "--elf=\"$(rootpath :sram_device_info_flash_wr_functest_fpga_cw310_elf)\"",
+                "--elf=\"$(rootpath :sram_device_info_flash_wr_functest_fpga_cw310_elf_transition)\"",
             ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
         ),
         data = [
-            ":sram_device_info_flash_wr_functest_fpga_cw310_elf",
+            ":sram_device_info_flash_wr_functest_fpga_cw310_elf_transition",
         ] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
         # We select the PROD key since the SRAM test program does an LC transition to DEV.
         key_struct = filter_key_structs_for_lc_state(
@@ -404,12 +386,6 @@ opentitan_ram_binary(
     ],
 )
 
-platform_target(
-    name = "sram_exec_test_fpga_cw310_elf",
-    platform = OPENTITAN_PLATFORM,
-    target = ":sram_exec_test_fpga_cw310.elf",
-)
-
 # We are using a bitstream with disabled execution so the content of the flash
 # does not matter but opentitan_functest() is unhappy if we don't provide one.
 # Additionally, ROM execution is disabled in the OTP image we use so we do not
@@ -424,10 +400,10 @@ platform_target(
             test_cmds = [
                 "--clear-bitstream",
                 "--bitstream=\"$(rootpath {bitstream})\"",
-                "--elf=\"$(rootpath :sram_exec_test_fpga_cw310_elf)\"",
+                "--elf=\"$(rootpath :sram_exec_test_fpga_cw310_elf_transition)\"",
             ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
         ),
-        data = [":sram_exec_test_fpga_cw310_elf"] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
+        data = [":sram_exec_test_fpga_cw310_elf_transition"] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
         targets = ["cw310_rom_with_fake_keys"],
         test_harness = "//sw/host/tests/manuf/manuf_cp_ast_test_execution",
         deps = [

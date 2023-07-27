@@ -20,6 +20,7 @@ load(
     _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
     _opentitan_transition = "opentitan_transition",
 )
+load("@crt//rules:transition.bzl", "platform_target")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@bazel_skylib//lib:structs.bzl", "structs")
 
@@ -723,6 +724,7 @@ def opentitan_binary(
       @param **kwargs: Arguments to forward to `cc_binary`.
     Emits rules:
       cc_binary             named: <name>.elf
+      cc_binary+transition  named: <name>_elf_transition
       rv_preprocess         named: <name>_preproc
       rv_asm                named: <name>_asm
       rv_llvm_ir            named: <name>_ll
@@ -756,6 +758,14 @@ def opentitan_binary(
         linkopts = linkopts,
         testonly = testonly,
         **kwargs
+    )
+    elf_transition_binary_name = "{}_elf_transition".format(name)
+    targets.append(":" + elf_transition_binary_name)
+    platform_target(
+        name = elf_transition_binary_name,
+        platform = platform,
+        target = native_binary_name,
+        testonly = testonly,
     )
 
     preproc_name = "{}_{}".format(name, "preproc")
