@@ -33,7 +33,7 @@ typedef enum csrng_app_cmd_id {
   kCsrngAppCmdReseed = 2,
   kCsrngAppCmdGenerate = 3,
   kCsrngAppCmdUpdate = 4,
-  kCsrngAppCmdUnisntantiate = 5,
+  kCsrngAppCmdUninstantiate = 5,
 } csrng_app_cmd_id_t;
 
 /**
