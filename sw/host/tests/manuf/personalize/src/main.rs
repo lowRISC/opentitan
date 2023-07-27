@@ -44,7 +44,7 @@ struct Opts {
     hsm_ecdh_sk: PathBuf,
 }
 
-fn provisioning(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Reset the chip, select the LC TAP, we will connect to it later.
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
@@ -144,7 +144,7 @@ fn main() -> Result<()> {
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
 
-    execute_test!(provisioning, &opts, &transport);
+    execute_test!(rma_unlock_token_export, &opts, &transport);
 
     Ok(())
 }
