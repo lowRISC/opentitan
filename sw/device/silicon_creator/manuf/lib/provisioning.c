@@ -43,12 +43,12 @@ enum {
                          OTP_CTRL_PARAM_SECRET2_OFFSET,
 
   /**
-   * Creator and Owner seed sizes.
+   * CreatorSeed and OwnerSeed sizes.
    *
-   * Both seeds are stored in flash. The Creator Seed is used to derive
-   * CreatorRootKey, and also referred to as the `DiversificationKey` in the
-   * "Identities and Root Keys" OpenTitan specification. The Owner Seed is used
-   * to derive the OwnerIntermediateKey, and is also referred to as the
+   * Both seeds are stored in flash info pages. The CreatorSeed is used to
+   * derive the CreatorRootKey, and also referred to as the `DiversificationKey`
+   * in the "Identities and Root Keys" OpenTitan specification. The OwnerSeed is
+   * used to derive the OwnerIntermediateKey, and is also referred to as the
    * `OwnerRootSecret` in the aforementioned spec.
    */
   kCreatorSeedSizeInBytes = 32,
@@ -56,34 +56,24 @@ enum {
   kOwnerSeedSizeInWords = kCreatorSeedSizeInWords,
 
   /**
-   * Flash secrets partition ID.
-   *
-   * Used for both Creator and Owner secrets.
+   * Creator/Owner seed flash partition ID.
    */
-  kFlashInfoPartitionId = 0,
+  kSeedFlashInfoPartitionId = 0,
 
   /**
-   * Flash secrets bank ID.
-   *
-   * Used for both Creator and Owner secrets.
+   * Creator/Owner seed flash bank ID.
    */
-  kFlashInfoBankId = 0,
+  kSeedFlashInfoBankId = 0,
 
   /**
-   * Creator Secret flash info page ID.
-   *
-   * Used to store the Creator Seed (i.e., DiversificationKey).
+   * CreatorSeed flash info page ID.
    */
-  kFlashInfoPageIdCreatorSecret = 1,
+  kCreatorSeedFlashInfoPageId = 1,
 
   /**
-   * Owner Secret flash info page ID.
-   *
-   * Used to store the Owner Seed (i.e., OwnerRootSecret).
+   * OwnerSeed flash info page ID.
    */
-  kFlashInfoPageIdOwnerSecret = 2,
-
-  kOtpDefaultBlankValue = 0,
+  kOwnerSeedFlashInfoPageId = 2,
 };
 
 static_assert(OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE0_SIZE ==
@@ -230,20 +220,20 @@ static status_t shares_check(uint64_t *share0, uint64_t *share1, size_t len) {
 /**
  * Checks if the SECRET2 OTP partition is in locked state.
  *
- * @param otp otp_ctrl instance.
+ * @param otp_ctrl OTP controller instance.
  * @param[out] is_locked Set to true if the SECRET2 partition is locked.
  * @return OK_STATUS on success.
  */
 OT_WARN_UNUSED_RESULT
-static status_t otp_partition_secret2_is_locked(const dif_otp_ctrl_t *otp,
+static status_t otp_partition_secret2_is_locked(const dif_otp_ctrl_t *otp_ctrl,
                                                 bool *is_locked) {
-  TRY(dif_otp_ctrl_is_digest_computed(otp, kDifOtpCtrlPartitionSecret2,
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionSecret2,
                                       is_locked));
   return OK_STATUS();
 }
 
 /**
- * Configures secret value to flash info partition.
+ * Writes a device-generated secret to a flash info page.
  *
  * Entropy is extracted from the CSRNG instance and programmed into the target
  * flash info page.
@@ -285,49 +275,6 @@ static status_t flash_ctrl_secret_write(dif_flash_ctrl_state_t *flash_state,
         seed[i] == 0 || seed[i] == UINT32_MAX || seed[i] != seed_result[i];
   }
   return found_error ? INTERNAL() : OK_STATUS();
-}
-
-/**
- * Configures the Silicon Creator Secret Seed in flash.
- *
- * Entropy is extracted from the CSRNG instance and programmed into the Silicon
- * Creator Seed flash info page. This value needs to be configured before the
- * OTP SECRET2 partition is locked and when the device is in PROD, PROD_END, DEV
- * or RMA lifecyle state.
- *
- * @param flash_state Flash controller instance.
- * @return OK_STATUS on success.
- */
-OT_WARN_UNUSED_RESULT
-static status_t flash_ctrl_creator_secret_write(
-    dif_flash_ctrl_state_t *flash_state) {
-  TRY(flash_ctrl_secret_write(flash_state, kFlashInfoPageIdCreatorSecret,
-                              kFlashInfoBankId, kFlashInfoPartitionId,
-                              kCreatorSeedSizeInWords));
-  return OK_STATUS();
-}
-
-/**
- * Configures the Silicon Owner Secret Seed in flash.
- *
- * Entropy is extracted from the CSRNG instance and programmed into the Silicon
- * Owner Seed flash info page. This value needs to be configured when the device
- * is in PROD, PROD_END, DEV or RMA lifecyle state.
- *
- * A preliminary value is configured as part of the provisioning flow, but the
- * expectation is that the Silicon Owner will rotate this value as part of
- * ownership transfer.
- *
- * @param flash_state Flash controller instance.
- * @return OK_STATUS on success.
- */
-OT_WARN_UNUSED_RESULT
-static status_t flash_ctrl_owner_secret_write(
-    dif_flash_ctrl_state_t *flash_state) {
-  TRY(flash_ctrl_secret_write(flash_state, kFlashInfoPageIdOwnerSecret,
-                              kFlashInfoBankId, kFlashInfoPartitionId,
-                              kOwnerSeedSizeInWords));
-  return OK_STATUS();
 }
 
 /**
@@ -378,16 +325,17 @@ static status_t hash_lc_transition_token(uint32_t *raw_token, size_t token_size,
  *
  * Entropy is extracted from the CSRNG instance and programmed into the SECRET2
  * OTP partition. The data needs to be programmed before the OTP SECRET2
- * partition is locked and when the device is in PROD, PROD_END, DEV or RMA
+ * partition is locked and when the device is in DEV, PROD, or PROD_END
  * lifecyle state.
  *
- * @param otp OTP controller instance.
+ * @param otp_ctrl OTP controller instance.
  * @param[out] rma_unlock_token RMA unlock token to export export from the chip.
  * @return OK_STATUS on success.
  */
 OT_WARN_UNUSED_RESULT
 static status_t otp_partition_secret2_configure(
-    const dif_otp_ctrl_t *otp, wrapped_rma_unlock_token_t *rma_unlock_token) {
+    const dif_otp_ctrl_t *otp_ctrl,
+    wrapped_rma_unlock_token_t *rma_unlock_token) {
   TRY(entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolFalse,
                                 /*seed_material=*/NULL));
 
@@ -417,25 +365,25 @@ static status_t otp_partition_secret2_configure(
 
   // Provision RMA unlock token and RootKey shares into OTP.
   TRY(otp_ctrl_testutils_dai_write64(
-      otp, kDifOtpCtrlPartitionSecret2, kRmaUnlockTokenOffset,
+      otp_ctrl, kDifOtpCtrlPartitionSecret2, kRmaUnlockTokenOffset,
       hashed_rma_unlock_token, kRmaUnlockTokenSizeIn64BitWords));
-  TRY(otp_ctrl_testutils_dai_write64(otp, kDifOtpCtrlPartitionSecret2,
+  TRY(otp_ctrl_testutils_dai_write64(otp_ctrl, kDifOtpCtrlPartitionSecret2,
                                      kRootKeyOffsetShare0, share0,
                                      kRootKeyShareSizeIn64BitWords));
-  TRY(otp_ctrl_testutils_dai_write64(otp, kDifOtpCtrlPartitionSecret2,
+  TRY(otp_ctrl_testutils_dai_write64(otp_ctrl, kDifOtpCtrlPartitionSecret2,
                                      kRootKeyOffsetShare1, share1,
                                      kRootKeyShareSizeIn64BitWords));
 
-  TRY(otp_ctrl_testutils_lock_partition(otp, kDifOtpCtrlPartitionSecret2,
+  TRY(otp_ctrl_testutils_lock_partition(otp_ctrl, kDifOtpCtrlPartitionSecret2,
                                         /*digest=*/0));
 
   return OK_STATUS();
 }
 
-status_t provisioning_device_secrets_start(dif_flash_ctrl_state_t *flash_state,
-                                           const dif_lc_ctrl_t *lc_ctrl,
-                                           const dif_otp_ctrl_t *otp,
-                                           manuf_provisioning_t *export_data) {
+status_t manuf_personalize_device(dif_flash_ctrl_state_t *flash_state,
+                                  const dif_lc_ctrl_t *lc_ctrl,
+                                  const dif_otp_ctrl_t *otp_ctrl,
+                                  manuf_provisioning_t *export_data) {
   // Check life cycle in either PROD, PROD_END, or DEV.
   TRY(lc_ctrl_testutils_operational_state_check(lc_ctrl));
 
@@ -445,7 +393,7 @@ status_t provisioning_device_secrets_start(dif_flash_ctrl_state_t *flash_state,
   // secret info flash page nor the OTP secrets if the OTP SECRET2 partition is
   // locked.
   bool is_locked;
-  TRY(otp_partition_secret2_is_locked(otp, &is_locked));
+  TRY(otp_partition_secret2_is_locked(otp_ctrl, &is_locked));
   if (is_locked) {
     return OK_STATUS();
   }
@@ -465,10 +413,20 @@ status_t provisioning_device_secrets_start(dif_flash_ctrl_state_t *flash_state,
   TRY(gen_rma_unlock_token_aes_key(&token_aes_key,
                                    &export_data->wrapped_rma_unlock_token));
 
-  // Provision secrets in flash and OTP.
-  TRY(flash_ctrl_creator_secret_write(flash_state));
-  TRY(flash_ctrl_owner_secret_write(flash_state));
-  TRY(otp_partition_secret2_configure(otp,
+  // Provision secret Creator / Owner key seeds in flash.
+  // Provision CreatorSeed into target flash info page.
+  TRY(flash_ctrl_secret_write(flash_state, kCreatorSeedFlashInfoPageId,
+                              kSeedFlashInfoBankId, kSeedFlashInfoPartitionId,
+                              kCreatorSeedSizeInWords));
+  // Provision preliminary OwnerSeed into target flash info page (with
+  // expectation that SiliconOwner will rotate this value during ownership
+  // transfer).
+  TRY(flash_ctrl_secret_write(flash_state, kOwnerSeedFlashInfoPageId,
+                              kSeedFlashInfoBankId, kSeedFlashInfoPartitionId,
+                              kOwnerSeedSizeInWords));
+
+  // Provision the OTP SECRET2 partition.
+  TRY(otp_partition_secret2_configure(otp_ctrl,
                                       &export_data->wrapped_rma_unlock_token));
 
   // Encrypt the RMA unlock token with AES.
@@ -478,8 +436,8 @@ status_t provisioning_device_secrets_start(dif_flash_ctrl_state_t *flash_state,
   return OK_STATUS();
 }
 
-status_t provisioning_device_secrets_end(const dif_otp_ctrl_t *otp) {
+status_t manuf_personalize_device_check(const dif_otp_ctrl_t *otp_ctrl) {
   bool is_locked;
-  TRY(otp_partition_secret2_is_locked(otp, &is_locked));
+  TRY(otp_partition_secret2_is_locked(otp_ctrl, &is_locked));
   return is_locked ? OK_STATUS() : INTERNAL();
 }
