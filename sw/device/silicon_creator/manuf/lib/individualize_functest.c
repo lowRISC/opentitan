@@ -57,14 +57,14 @@ void sw_reset(void) {
 bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
 
-  if (!status_ok(individualize_dev_hw_cfg_end(&otp_ctrl))) {
+  if (!status_ok(manuf_individualize_device_hw_cfg_check(&otp_ctrl))) {
     CHECK_STATUS_OK(
-        individualize_dev_hw_cfg_start(&flash_state, &lc_ctrl, &otp_ctrl));
+        manuf_individualize_device_hw_cfg(&flash_state, &lc_ctrl, &otp_ctrl));
     sw_reset();
   }
 
-  if (!status_ok(individualize_dev_secret1_end(&otp_ctrl))) {
-    CHECK_STATUS_OK(individualize_dev_secret1_start(&lc_ctrl, &otp_ctrl));
+  if (!status_ok(manuf_individualize_device_secret1_check(&otp_ctrl))) {
+    CHECK_STATUS_OK(manuf_individualize_device_secret1(&lc_ctrl, &otp_ctrl));
     sw_reset();
   }
 
