@@ -23,6 +23,7 @@ query_elfs='
         )
     )'
 target_file=$(mktemp)
+trap 'rm -f "$target_file"' EXIT
 ./bazelisk.sh query "$query_elfs" >"$target_file"
 # We now ask bazel to build all targets but we also add the module ID checker aspect
 # and we query the corresponding output group to force bazel to run the checks.
