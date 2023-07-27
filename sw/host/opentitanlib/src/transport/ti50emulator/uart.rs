@@ -4,7 +4,7 @@
 
 use anyhow::{Context, Result};
 
-use std::cell::{Cell, RefCell, RefMut};
+use std::cell::{RefCell, RefMut};
 use std::io::{ErrorKind, Read, Write};
 use std::os::unix::net::UnixStream;
 use std::path::PathBuf;
@@ -13,7 +13,6 @@ use std::time::Duration;
 
 use crate::io::emu::EmuState;
 use crate::io::uart::{Uart, UartError};
-use crate::transport::ti50emulator::emu::EMULATOR_INVALID_ID;
 use crate::transport::ti50emulator::Inner;
 
 const TI50_UART_BAUDRATE: u32 = 115200;
@@ -24,8 +23,6 @@ pub struct Ti50Uart {
     socket: RefCell<Option<UnixStream>>,
     // full path to socket file
     path: PathBuf,
-    // last SubProcess ID
-    last_id: Cell<u64>,
 }
 
 impl Ti50Uart {
@@ -35,17 +32,14 @@ impl Ti50Uart {
             inner: inner.clone(),
             socket: RefCell::default(),
             path: soc_path,
-            last_id: Cell::new(EMULATOR_INVALID_ID),
         })
     }
 
-    pub fn reconnect(&self) -> Result<()> {
+    // Called when a emulator sub-process starts up, after the sub-process has created its Unix
+    // pipes, but before it executes any project code.
+    pub fn connect(&self) -> Result<()> {
         let mut socket = self.socket.borrow_mut();
-        let id = self.inner.process.borrow().get_id();
-        if self.last_id.get() != id {
-            *socket = Some(UnixStream::connect(&self.path).context("UART reconect error")?);
-            self.last_id.set(id);
-        }
+        *socket = Some(UnixStream::connect(&self.path).context("UART reconect error")?);
         Ok(())
     }
 
@@ -56,7 +50,6 @@ impl Ti50Uart {
     }
 
     pub fn get_socket(&self) -> Result<RefMut<UnixStream>> {
-        self.reconnect()?;
         return Ok(RefMut::map(self.socket.borrow_mut(), |socket| {
             socket.as_mut().unwrap()
         }));

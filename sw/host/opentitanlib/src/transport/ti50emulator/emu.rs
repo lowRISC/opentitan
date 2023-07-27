@@ -6,7 +6,7 @@ use std::collections::{HashMap, HashSet};
 use std::ffi::OsString;
 use std::fs;
 use std::fs::{File, OpenOptions};
-use std::io::{BufReader, BufWriter, Read};
+use std::io::{BufReader, BufWriter, Read, Write};
 use std::os::fd::AsRawFd;
 use std::os::unix::fs::FileTypeExt;
 use std::path::{Path, PathBuf};
@@ -44,10 +44,15 @@ pub struct EmulatorConfig {
     pub i2c: HashMap<String, String>,
 }
 
-/// State of the simulated environment, sent to the subprocess on start.  Contains the simulated
-/// external drive on every GPIO pin, enabling e.g. strappings.
+/// State of the simulated environment, sent to the subprocess on start.
 #[derive(Serialize)]
 pub struct EnvironmentState {
+    /// Controls wehther this process stops after creating Unix pipes for all peripherals.
+    /// Enabling this will allow the parent process a chance to connect to the pipes, and this
+    /// process will only resume execution once the parent gives the signal to do so.
+    pub use_init_handshake: bool,
+    /// This map contains how the host (emulated HyperDebug) drives each pin as the dut boots
+    /// (e.g. strappings.)
     pub gpio: HashMap<String, Logic>,
 }
 
@@ -194,7 +199,10 @@ impl EmulatorProcess {
         for (key, value) in &*inner.gpio_map.borrow() {
             gpio_init.insert(key.to_string(), Logic::from(*value));
         }
-        let init = EnvironmentState { gpio: gpio_init };
+        let init = EnvironmentState {
+            use_init_handshake: true,
+            gpio: gpio_init,
+        };
         let file = OpenOptions::new()
             .truncate(true)
             .create(true)
@@ -243,12 +251,13 @@ impl EmulatorProcess {
         log::info!("Command: {} {:?}", exec.display(), args_list);
         let mut handle = Command::new(&exec)
             .args(args_list)
-            .stdin(Stdio::null())
+            .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .spawn()
             .context(format!("Could not spawn `{}`", exec.display()))?;
 
         log::info!("Waiting for sub-process start");
+        let child_stdin = handle.stdin.as_mut().expect("Failed to open stdin");
         let child_stdout = handle.stdout.as_mut().expect("Failed to open stdout");
         let mut buffer = Vec::new();
         let mut timeout = TimeVal::microseconds(SPAWN_TIMEOUT.as_micros().try_into()?);
@@ -257,6 +266,9 @@ impl EmulatorProcess {
 
         // Now wait for the sub-process to produce a "CHIP READY" line on its standard output.  If
         // end-of-stream is detected, it means that the sub-process failed to initialize properly.
+        // When the sub-process indicates readiness, it will have created all the Unix pipes used
+        // for communication, and it will wait until "GO" signal from us before executing any
+        // project code.
         loop {
             // Select will subtract from the timeout, so that total time waited across all
             // iterations of the loop is bounded.
@@ -283,6 +295,16 @@ impl EmulatorProcess {
             buffer.resize(prev_len + read_count, 0u8);
             while let Some(newline_pos) = buffer.iter().position(|c| *c == b'\n') {
                 if PATTERN.as_bytes() == &buffer[..newline_pos] {
+                    // Connect to Unix pipes representing each UART.
+                    for weak_rc_uart in &*inner.uarts.borrow() {
+                        match weak_rc_uart.upgrade() {
+                            None => (),
+                            Some(uart) => uart.connect()?,
+                        }
+                    }
+                    // Now release the sub-process to run project code.
+                    child_stdin.write_all(b"GO\n")?;
+                    child_stdin.flush()?;
                     log::info!("Ti50Emulator ready");
                     self.proc = Some(handle);
                     return Ok(());
