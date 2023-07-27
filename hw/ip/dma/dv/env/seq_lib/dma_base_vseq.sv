@@ -151,7 +151,7 @@ class dma_base_vseq extends cip_base_vseq #(
   // Task : Enable Interrupt
   task enable_interrupt();
     `uvm_info(`gfn, "DMA: Assert Interrupt Enable", UVM_HIGH)
-    csr_wr(ral.intr_enable, 32'b111);
+    csr_wr(ral.intr_enable, (1 << ral.intr_enable.get_n_bits()) - 1);
   endtask: enable_interrupt
 
   // Task : Enable Handshake Interrupt Enable
