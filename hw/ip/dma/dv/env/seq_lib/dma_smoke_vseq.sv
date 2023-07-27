@@ -27,8 +27,8 @@ class dma_smoke_vseq extends dma_base_vseq;
 
   // Constraint : Data and Transfer Size limit for Simulation-time reduction
   constraint dma_data_size_c {
-    soft $countones(cfg_total_size)==1;                      // Make it power of 2 for convenience
-    soft cfg_transfer_size==2'b11;
+    soft $countones(cfg_total_size) == 1; // Make it power of 2 for convenience
+    soft cfg_transfer_size == 2'b11;
     soft cfg_total_size < 32'h100;
   }
 
@@ -38,18 +38,18 @@ class dma_smoke_vseq extends dma_base_vseq;
   }
 
   virtual task body();
-    `uvm_info( `gfn, "DMA: Starting Smoke Sequence", UVM_HIGH )
+    `uvm_info(`gfn, "DMA: Starting Smoke Sequence", UVM_HIGH)
     super.body();
 
-    `uvm_info( `gfn, $sformatf("DMA: Running %d DMA Sequences", num_txns+1), UVM_HIGH )
+    `uvm_info(`gfn, $sformatf("DMA: Running %d DMA Sequences", num_txns + 1), UVM_HIGH)
 
     // First
     set_control_register();
     poll_status();
-    `uvm_info( `gfn, "DMA: Completed Sequence #1", UVM_HIGH )
+    `uvm_info(`gfn, "DMA: Completed Sequence #1", UVM_HIGH)
 
     // Subsequent
-    for (int i=0; i<num_txns; i++) begin
+    for (int i = 0; i < num_txns; i++) begin
       clear();
       delay(10);
       randomize_new_address();
@@ -59,9 +59,9 @@ class dma_smoke_vseq extends dma_base_vseq;
       assert(std::randomize(cfg_direction));
       set_control_register();
       poll_status();
-      `uvm_info( `gfn, $sformatf("DMA: Completed Sequence #%d",i+2), UVM_HIGH )
+      `uvm_info(`gfn, $sformatf("DMA: Completed Sequence #%d", i + 2), UVM_HIGH)
     end
 
-    `uvm_info( `gfn, "DMA: Completed Smoke Sequence", UVM_HIGH)
+    `uvm_info(`gfn, "DMA: Completed Smoke Sequence", UVM_HIGH)
   endtask: body
 endclass
