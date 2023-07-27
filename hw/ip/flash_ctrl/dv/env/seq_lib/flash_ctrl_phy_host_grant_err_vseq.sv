@@ -15,29 +15,50 @@ class flash_ctrl_phy_host_grant_err_vseq extends flash_ctrl_err_base_vseq;
     cfg.scb_h.expected_alert["fatal_err"].expected = 1;
     cfg.scb_h.expected_alert["fatal_err"].max_delay = 2000;
     cfg.scb_h.exp_alert_contd["fatal_err"] = 10000;
+    cfg.scb_h.check_alert_sig_int_err = 0;
 
-     // unit 100 ns;
-     delay = $urandom_range(1, 10);
-     #(delay * 100ns);
+    // unit 100 ns;
+    delay = $urandom_range(1, 10);
+    #(delay * 100ns);
 
-     // This can happen when host_read is sent to info partition (by force).
-     // After that, fatal error happen. So turning off these assertion
-     // just to make sure test run to complete.
+    // set error counter high number to skip unpredictable error
+    cfg.scb_h.exp_tl_rsp_intg_err = 1;
+    cfg.tlul_eflash_exp_cnt = 1;
+    cfg.tlul_core_exp_cnt = 1;
+    cfg.otf_scb_h.comp_off = 1;
+    cfg.otf_scb_h.mem_mon_off = 1;
 
-     // set error counter high number to skip unpredictable error
-     cfg.scb_h.exp_tl_rsp_intg_err = 1;
-     cfg.tlul_eflash_exp_cnt = 1;
-     cfg.tlul_core_exp_cnt = 1;
-     cfg.otf_scb_h.comp_off = 1;
-     cfg.otf_scb_h.mem_mon_off = 1;
+    // This can happen when host_read is sent to info partition (by force).
+    // After that, fatal error happen. So turning off these assertion
+    // just to make sure test run to complete.
+    $assertoff(1, "tb.dut");
+    $assertoff(0, "tb.dut.gen_alert_senders[0].u_alert_sender");
+    $assertoff(0, "tb.dut.gen_alert_senders[1].u_alert_sender");
+    $assertoff(0, "tb.dut.u_tl_adapter_eflash");
+    $assertoff(0, "tb.dut.u_eflash");
+    $assertoff(0, "tb.dut.u_disable_buf");
+    $assertoff(0, "tb.dut.tlul_assert_device");
+    $assertoff(0, "tb.dut.u_reg_core.u_socket");
+    $assertoff(0, "tb.dut.u_prog_tl_gate");
+    $assertoff(0, "tb.dut.u_to_prog_fifo");
+    $assertoff(0, "tb.dut.u_tl_gate");
+    $assertoff(0, "tb.dut.u_to_rd_fifo");
+    $assertoff(0, "tb.dut.u_lfsr");
+    $assertoff(0, "tb.dut.u_sw_rd_fifo");
+    $assertoff(0, "tb.dut.u_prog_fifo");
 
-     @(posedge cfg.flash_ctrl_vif.host_gnt);
-     `DV_CHECK(uvm_hdl_force(path, 1))
+    @(posedge cfg.flash_ctrl_vif.host_gnt);
+    `DV_CHECK(uvm_hdl_force(path, 1))
 
-    check_fault(ral.fault_status.host_gnt_err);
+    check_fault(.ptr(ral.fault_status.host_gnt_err), .back_door(1));
     `DV_CHECK(uvm_hdl_release(path))
 
     collect_err_cov_status(ral.fault_status);
+    // Kill all on-going assertion under dut
+    // Once host_grant_err is detected, whole datapath can be corrupted by x's.
+    // So shutdown after detect fatal error
+    $assertkill(0, "tb.dut");
+
     drain_n_finish_err_event();
   endtask
 

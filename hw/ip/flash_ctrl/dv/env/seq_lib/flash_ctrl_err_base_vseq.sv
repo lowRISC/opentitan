@@ -26,9 +26,10 @@ class flash_ctrl_err_base_vseq extends flash_ctrl_rw_vseq;
   virtual task run_error_event(); endtask
 
   task check_fault(input uvm_object ptr,
-                   input uvm_reg_data_t exp_data = 1);
+                   input uvm_reg_data_t exp_data = 1,
+                   input bit back_door = 0);
     `uvm_info(`gfn, "err assert is done", UVM_MEDIUM)
-    csr_spinwait(.ptr(ptr), .exp_data(exp_data));
+    csr_spinwait(.ptr(ptr), .exp_data(exp_data), .backdoor(back_door));
     `uvm_info(`gfn, "csr wait is done is done", UVM_MEDIUM)
   endtask
 
