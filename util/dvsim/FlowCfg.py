@@ -146,9 +146,8 @@ class FlowCfg():
                             self.rel_path / "latest")
         self.results_page = (self.results_dir / self.results_html_name)
 
-        tmp_path = self.results_server + "/" + self.rel_path + "/latest"
-        self.results_server_dir = self.results_server_prefix + tmp_path
-        tmp_path += "/" + self.results_html_name
+        tmp_path = (self.results_server + "/" + self.rel_path +
+                    "/latest/" + self.results_html_name)
         self.results_server_page = self.results_server_prefix + tmp_path
         self.results_server_url = "https://" + tmp_path
 
@@ -537,35 +536,28 @@ class FlowCfg():
         publish_results_md = self.publish_results_md or self.results_md
         publish_results_md = publish_results_md + history_txt
 
-        # Publish the results page.
-        # First, write the results html and json files to the scratch area.
-        json_str = (json.dumps(self.results_dict)
-                    if hasattr(self, 'results_dict')
-                    else None)
-        self.write_results("publish.html", publish_results_md, json_str)
-        results_html_file = self.results_dir / "publish.html"
+        # Export any results dictionary to json
+        suffixes = ['html']
+        json_str = None
+        if hasattr(self, 'results_dict'):
+            suffixes.append('json')
+            json_str = json.dumps(self.results_dict)
 
-        # Second, copy the files to the server.
+        # Export our markdown page to HTML and dump the json to a local file.
+        # These are called publish.html and publish.json locally, but we'll
+        # rename them as part of the upload.
+        self.write_results("publish.html", publish_results_md, json_str)
+
+        html_name_no_suffix = self.results_html_name.split('.', 1)[0]
+        dst_no_suffix = '{}/latest/{}'.format(self.rel_path,
+                                              html_name_no_suffix)
+
+        # Now copy our local files over to the server
         log.info("Publishing results to %s", self.results_server_url)
-        suffixes = ['html'] + (['json'] if json_str is not None else [])
         for suffix in suffixes:
-            src = str(Path(results_html_file).with_suffix('.' + suffix))
-            dst = self.results_server_page
-            # results_server_page has '.html' as suffix.  If that does not match
-            # suffix, change it.
-            if suffix != 'html':
-                assert dst[-5:] == '.html'
-                dst = dst[:-5] + '.json'
-            cmd = f"{self.results_server_cmd} cp {src} {dst}"
-            log.log(VERBOSE, cmd)
-            try:
-                cmd_output = subprocess.run(args=cmd,
-                                            shell=True,
-                                            stdout=subprocess.PIPE,
-                                            stderr=subprocess.STDOUT)
-                log.log(VERBOSE, cmd_output.stdout.decode("utf-8"))
-            except Exception as e:
-                log.error("%s: Failed to publish results:\n\"%s\"", e, str(cmd))
+            src = "{}/publish.{}".format(self.results_dir, suffix)
+            dst = "{}.{}".format(dst_no_suffix, suffix)
+            results_server.upload(src, dst)
 
     def publish_results(self):
         """Publish these results to the opentitan web server."""
@@ -582,30 +574,22 @@ class FlowCfg():
             item._publish_results(server_handle)
 
         if self.is_primary_cfg:
-            self.publish_results_summary()
+            self.publish_results_summary(server_handle)
 
         # Trigger a rebuild of the site/docs which may pull new data from
         # the published results.
         self.rebuild_site()
 
-    def publish_results_summary(self):
+    def publish_results_summary(self, results_server: ResultsServer):
         '''Public facing API for publishing md format results to the opentitan
         web server.
         '''
         # Publish the results page.
         log.info("Publishing results summary to %s", self.results_server_url)
-        cmd = (self.results_server_cmd + " cp " +
-               str(self.results_page) + " " +
-               self.results_server_page)
-        log.log(VERBOSE, cmd)
-        try:
-            cmd_output = subprocess.run(args=cmd,
-                                        shell=True,
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.STDOUT)
-            log.log(VERBOSE, cmd_output.stdout.decode("utf-8"))
-        except Exception as e:
-            log.error("%s: Failed to publish results:\n\"%s\"", e, str(cmd))
+
+        latest_dir = '{}/latest'.format(self.rel_path)
+        latest_report_path = '{}/report.html'.format(latest_dir)
+        results_server.upload(self.results_page, latest_report_path)
 
     def rebuild_site(self):
         '''Trigger a rebuild of the opentitan.org site using a Cloud Build trigger.

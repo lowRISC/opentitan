@@ -101,3 +101,29 @@ class ResultsServer:
             log.error('Failed to use gsutil to move {} to {}'
                       .format(from_path, to_path))
             raise
+
+    def upload(self,
+               local_path: str,
+               dst_path: str,
+               recursive: bool = False) -> None:
+        """Upload a file to GCP.
+
+        Like the "cp" command, dst_path can either be the target directory or
+        it can be the name of the file/directory that you're creating inside.
+
+        On failure, prints a message to the log but returns as normal.
+        """
+        try:
+            sub_cmd = ['cp']
+            if recursive:
+                sub_cmd.append('-r')
+            subprocess.run(['gsutil'] + sub_cmd +
+                           [local_path,
+                            self._path_in_bucket(dst_path)],
+                           check=True)
+        except subprocess.CalledProcessError:
+            # If we failed to copy the file, print an error message but
+            # otherwise keep going. We don't want our failed upload to kill the
+            # rest of the job.
+            log.error('Failed to use gsutil to copy {} to {}'
+                      .format(local_path, dst_path))
