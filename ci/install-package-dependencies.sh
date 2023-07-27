@@ -18,7 +18,7 @@ error()
     exit 1
 }
 
-long="verilator-version:,verible-version:,rust-version:"
+long="verilator-version:,verible-version:"
 ARGS="$(getopt -o "" -l "$long" -- "$@")" || usage
 
 VERILATOR_VERSION=
@@ -30,7 +30,6 @@ do
     case "$1" in
         --verilator-version) VERILATOR_VERSION="$2"; shift 2 ;;
         --verible-version)   VERIBLE_VERSION="$2";   shift 2 ;;
-        --rust-version)                              shift 2 ;;
         --) shift; break ;;
         *)  error "getopt / case statement mismatch"
     esac
