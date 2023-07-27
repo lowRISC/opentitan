@@ -48,7 +48,7 @@ class dma_handshake_vseq extends dma_base_vseq;
 
     `uvm_info(`gfn, m_msg, UVM_HIGH)
     txn = dma_seq_item::type_id::create("txn");
-    assert( txn.randomize() with {m_handshake == 1;} );
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(txn, m_handshake == 1;)
 
     fork
       begin
@@ -106,7 +106,7 @@ class dma_handshake_vseq extends dma_base_vseq;
 
     `uvm_info(`gfn, m_msg, UVM_HIGH)
     txn = dma_seq_item::type_id::create("txn");
-    assert(txn.randomize() with {m_handshake == 1;});
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(txn, m_handshake == 1;)
 
     fork
       begin
