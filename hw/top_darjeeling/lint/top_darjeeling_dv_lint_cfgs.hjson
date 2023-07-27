@@ -85,10 +85,10 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/lc_ctrl/dv/lint/{tool}"
              },
-             {    name: pattgen
-                  fusesoc_core: lowrisc:,dv:pattgen_sim,
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
-                  rel_path: "hw/ip/pattgen/dv/lint/{tool}"
+             {    name: otp_ctrl
+                  fusesoc_core: lowrisc:dv:otp_ctrl_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/otp_ctrl/dv/lint/{tool}"
              },
              {    name: prim_alert
                   fusesoc_core: lowrisc:dv:prim_alert_sim

@@ -22,7 +22,6 @@ class chip_virtual_sequencer extends cip_base_virtual_sequencer #(
 
   // Collect pkts from pwm monitor
   uvm_tlm_analysis_fifo #(pwm_item) pwm_rx_fifo[NUM_PWM_CHANNELS];
-  uvm_tlm_analysis_fifo #(pattgen_item) pattgen_rx_fifo[NUM_PATTGEN_CHANNELS];
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -30,7 +29,6 @@ class chip_virtual_sequencer extends cip_base_virtual_sequencer #(
     foreach (uart_tx_fifos[i]) uart_tx_fifos[i] = new($sformatf("uart_tx_fifo%0d", i), this);
     foreach (i2c_rd_fifos[i]) i2c_rd_fifos[i] = new($sformatf("i2c_rd_fifo%0d", i), this);
     foreach (pwm_rx_fifo[i]) pwm_rx_fifo[i] = new($sformatf("pwm_rx_fifo%0d", i), this);
-    foreach (pattgen_rx_fifo[i]) pattgen_rx_fifo[i] = new($sformatf("pattgen_rx_fifo%0d", i), this);
   endfunction
 
 endclass

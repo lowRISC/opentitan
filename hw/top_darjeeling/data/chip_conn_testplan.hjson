@@ -439,7 +439,6 @@
             - i2c0 clk_i
             - i2c1 clk_i
             - i2c2 clk_i
-            - pattgen clk_i
             - uart0 clk_i
             - uart1 clk_i
             - uart2 clk_i
@@ -452,7 +451,6 @@
               "clkmgr_peri_clk_i2c0_clk",
               "clkmgr_peri_clk_i2c1_clk",
               "clkmgr_peri_clk_i2c2_clk",
-              "clkmgr_peri_clk_pattgen_clk",
               "clkmgr_peri_clk_uart0_clk",
               "clkmgr_peri_clk_uart1_clk",
               "clkmgr_peri_clk_uart2_clk",
@@ -1132,7 +1130,6 @@
       desc: '''Verify rstmgr's rst_sys_io_div4_n[1] is connected to the following:
             - flash_ctrl's rst_otp_ni
             - gpio's rst_ni
-            - pattgen's rst_ni
             - rv_timer's rst_ni
             - uart0's rst_ni
             - uart1's rst_ni
@@ -1144,7 +1141,6 @@
       stage: V2
       tests: ["rstmgr_sys_io_div4_d0_flash_ctrl_rst_otp_ni",
               "rstmgr_sys_io_div4_d0_gpio_rst_ni",
-              "rstmgr_sys_io_div4_d0_pattgen_rst_ni",
               "rstmgr_sys_io_div4_d0_rv_timer_rst_ni",
               "rstmgr_sys_io_div4_d0_uart0_rst_ni",
               "rstmgr_sys_io_div4_d0_uart1_rst_ni",

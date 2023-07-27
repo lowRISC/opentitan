@@ -15,10 +15,10 @@
                      "hw/top_darjeeling/data/chip_conn_testplan.hjson"]
 
   testpoints: [
-    ///////////////////////////////////////////////////////////////////////////
-    // IO Peripherals                                                        //
-    // UART, GPIO, I2C, SPIDEV, SPIHOST, USB, PINMUX & PADCTRL, PATTGEN, PWM //
-    ///////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////
+    // IO Peripherals                                               //
+    // UART, GPIO, I2C, SPIDEV, SPIHOST, USB, PINMUX & PADCTRL, PWM //
+    //////////////////////////////////////////////////////////////////
 
     // UART (pre-verified IP) integration tests:
     {
@@ -516,21 +516,6 @@
       stage: V2
       tests: ["chip_tap_straps_dev", "chip_tap_straps_prod", "chip_tap_straps_rma",
               "chip_tap_straps_testunlock0"]
-    }
-
-    // PATTGEN (pre-verified IP) integration tests:
-    {
-      name: chip_sw_pattgen_ios
-      desc: '''Verify pattern generation to chip output pads.
-
-            - Program the pattgen to generate a known pattern in each lane.
-            - Program the pinmux to route the chosen output to the chip IOs.
-            - Verify that the correct pattern is seen on the IOs by hooking up the pattgen monitor.
-            - Validate the reception of the done interrupt.
-            - Verify both pattgen channels independently.
-            '''
-      stage: V2
-      tests: ["chip_sw_pattgen_ios"]
     }
 
     // PWM (pre-verified IP) integration tests:

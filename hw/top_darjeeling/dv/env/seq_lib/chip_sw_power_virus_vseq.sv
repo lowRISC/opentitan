@@ -151,7 +151,6 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
     logic [8:0] edn_0_fsm_state;
     logic [8:0] edn_1_fsm_state;
     logic [8:0] entropy_src_fsm_state;
-    logic [1:0] pattgen_chan_1_0_enable;
     logic pwm_core_cntr_en;
 
     // Wait for max-power indicator GPIO pin (IOB8) to go up.
@@ -171,7 +170,6 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
     `_DV_PROBE_AND_CHECK_IDLE(edn_0_fsm_state, edn_pkg::Idle)
     `_DV_PROBE_AND_CHECK_IDLE(edn_1_fsm_state, edn_pkg::Idle)
     `_DV_PROBE_AND_CHECK_IDLE(entropy_src_fsm_state, entropy_src_main_sm_pkg::Idle)
-    `_DV_PROBE_AND_CHECK_IDLE(pattgen_chan_1_0_enable, 2'b00)
     `_DV_PROBE_AND_CHECK_IDLE(pwm_core_cntr_en, 1'b0)
   endtask
 

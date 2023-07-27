@@ -19,7 +19,6 @@ class chip_env extends cip_base_env #(
   // spi host agent that transmits trasnactions to dut spi device
   spi_agent              m_spi_host_agent;
   pwm_monitor            m_pwm_monitor[NUM_PWM_CHANNELS];
-  pattgen_agent          m_pattgen_agent;
 
   `uvm_component_new
 
@@ -128,11 +127,6 @@ class chip_env extends cip_base_env #(
                                            cfg.m_pwm_monitor_cfg[i]);
     end
 
-    // Instantiate pattgen agent
-    m_pattgen_agent = pattgen_agent::type_id::create("m_pattgen_agent", this);
-    uvm_config_db#(pattgen_agent_cfg)::set(this, "m_pattgen_agent*", "cfg",
-                                           cfg.m_pattgen_agent_cfg);
-
     // disable alert_esc_agent's driver and only use its monitor
     foreach (LIST_OF_ALERTS[i]) begin
       cfg.m_alert_agent_cfgs[LIST_OF_ALERTS[i]].is_active = 0;
@@ -185,10 +179,6 @@ class chip_env extends cip_base_env #(
 
     foreach (m_pwm_monitor[i]) begin
       m_pwm_monitor[i].analysis_port.connect(virtual_sequencer.pwm_rx_fifo[i].analysis_export);
-    end
-    for (int i = 0; i < NUM_PATTGEN_CH; i++) begin
-      m_pattgen_agent.monitor.item_port[i].connect(
-                                          virtual_sequencer.pattgen_rx_fifo[i].analysis_export);
     end
   endfunction
 

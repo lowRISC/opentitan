@@ -35,7 +35,7 @@
              "{proj_root}/hw/ip/kmac/dv/kmac_unmasked_sim_cfg.hjson",
              "{proj_root}/hw/ip/lc_ctrl/dv/lc_ctrl_sim_cfg.hjson",
              "{proj_root}/hw/ip/otbn/dv/uvm/otbn_sim_cfg.hjson",
-             "{proj_root}/hw/ip/pattgen/dv/pattgen_sim_cfg.hjson",
+             "{proj_root}/hw/ip/otp_ctrl/dv/otp_ctrl_sim_cfg.hjson",
              "{proj_root}/hw/ip/prim/dv/prim_alert/prim_alert_sim_cfg.hjson",
              "{proj_root}/hw/ip/prim/dv/prim_esc/prim_esc_sim_cfg.hjson",
              "{proj_root}/hw/ip/prim/dv/prim_lfsr/prim_lfsr_sim_cfg.hjson",

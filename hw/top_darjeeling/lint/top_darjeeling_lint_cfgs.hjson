@@ -86,11 +86,6 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/lc_ctrl/lint/{tool}"
              },
-             {    name: pattgen
-                  fusesoc_core: lowrisc:ip:pattgen
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/pattgen/lint/{tool}"
-             },
              {    name: keymgr
                   fusesoc_core: lowrisc:ip:keymgr
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]

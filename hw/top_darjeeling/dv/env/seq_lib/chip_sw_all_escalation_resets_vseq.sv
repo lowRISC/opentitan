@@ -41,7 +41,6 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     '{"*otp_ctrl.u_otp.*u_state_regs", TopDarjeelingAlertIdOtpCtrlFatalPrimOtpAlert},
     '{"*otp_ctrl*u_otp_ctrl_dai*", TopDarjeelingAlertIdOtpCtrlFatalCheckError},
     '{"*otp_ctrl*prim_reg_we_check*", TopDarjeelingAlertIdOtpCtrlFatalBusIntegError},
-    '{"*pattgen*prim_reg_we_check*", TopDarjeelingAlertIdPattgenFatalFault},
     '{"*pinmux*prim_reg_we_check*", TopDarjeelingAlertIdPinmuxAonFatalFault},
     '{"*pwm*prim_reg_we_check*", TopDarjeelingAlertIdPwmAonFatalFault},
     '{"*pwrmgr*prim_reg_we_check*", TopDarjeelingAlertIdPwrmgrAonFatalFault},
