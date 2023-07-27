@@ -56,7 +56,7 @@ class dma_smoke_vseq extends dma_base_vseq;
       set_source_address();
       set_destination_address_and_limit();
       set_address_space_id();
-      assert(std::randomize(cfg_direction));
+      `DV_CHECK_STD_RANDOMIZE_FATAL(cfg_direction)
       set_control_register();
       poll_status();
       `uvm_info(`gfn, $sformatf("DMA: Completed Sequence #%d", i + 2), UVM_HIGH)
