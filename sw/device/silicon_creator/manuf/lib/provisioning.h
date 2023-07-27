@@ -27,18 +27,19 @@ enum {
 };
 
 /**
- * Run device personalization.
+ * Personalize device with unique secrets.
  *
- * The device is configured with a unique set of secrets, which once
- * provisioned, are hidden from software. These secrets are used as the root
- * of the key derivation function in the key manager.
+ * The device is provisioned with a unique set of secrets, which are hidden from
+ * software. These secrets include both:
  *
- * This function implements part of the
- * `manuf_ft_provision_rma_token_and_personalization` testpoint documented in
- * the sw/device/silicon_creator/manuf/data/manuf_testplan.hjson testplan.
+ * 1. roots of the key derivation function in the key manager,
+ *   a. CreatorSeed (Flash - Info Page)
+ *   b. OwnerSeed (Flash - Info Page)
+ *   c. RootKey (OTP - SECRET2 Partition)
+ * 2. the RMA unlock token (OTP - SECRET2 Partition)
  *
  * Preconditions:
- * - Device is in DEV, PROD, or PROD_END lifecycle stage.
+ * - Device is in DEV, PROD, or PROD_END lifecycle state.
  * - Device has SW CSRNG data access.
  *
  * Note: The test will skip all programming steps and succeed if the SECRET2
@@ -48,21 +49,23 @@ enum {
  *
  * @param flash_state Flash controller instance.
  * @param lc_ctrl Lifecycle controller instance.
- * @param otp OTP controller instance.
+ * @param otp_ctrl OTP controller instance.
  * @param[out] export_data UJSON struct of data to export from the device.
  * @return OK_STATUS on success.
  */
-status_t provisioning_device_secrets_start(dif_flash_ctrl_state_t *flash_state,
-                                           const dif_lc_ctrl_t *lc_ctrl,
-                                           const dif_otp_ctrl_t *otp,
-                                           manuf_provisioning_t *export_data);
+status_t manuf_personalize_device(dif_flash_ctrl_state_t *flash_state,
+                                  const dif_lc_ctrl_t *lc_ctrl,
+                                  const dif_otp_ctrl_t *otp_ctrl,
+                                  manuf_provisioning_t *export_data);
 
 /**
- * Checks device personalization end state.
+ * Checks the device personalization end state.
  *
- * @param otp OTP controller instance.
+ * When personalization is complete, OTP SECRET2 partition should be locked.
+ *
+ * @param otp_ctrl OTP controller instance.
  * @return OK_STATUS if the SECRET2 OTP partition is locked.
  */
-status_t provisioning_device_secrets_end(const dif_otp_ctrl_t *otp);
+status_t manuf_personalize_device_check(const dif_otp_ctrl_t *otp_ctrl);
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_PROVISIONING_H_

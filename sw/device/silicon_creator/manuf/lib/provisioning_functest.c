@@ -49,10 +49,9 @@ static status_t peripheral_handles_init(void) {
   return OK_STATUS();
 }
 
-status_t provisioning_test(manuf_provisioning_t *export_data) {
-  LOG_INFO("Provisioning device.");
-  TRY(provisioning_device_secrets_start(&flash_state, &lc_ctrl, &otp_ctrl,
-                                        export_data));
+status_t personalize_test(manuf_provisioning_t *export_data) {
+  LOG_INFO("Personalizing device.");
+  TRY(manuf_personalize_device(&flash_state, &lc_ctrl, &otp_ctrl, export_data));
   return OK_STATUS();
 }
 
@@ -77,17 +76,16 @@ bool test_main(void) {
   dif_rstmgr_reset_info_bitfield_t info = rstmgr_testutils_reason_get();
   if (info & kDifRstmgrResetInfoPor) {
     // Provision secrets into the device.
-    CHECK_STATUS_OK(provisioning_test(export_data));
+    CHECK_STATUS_OK(personalize_test(export_data));
 
     // Issue and wait for reset.
     rstmgr_testutils_reason_clear();
     CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
     wait_for_interrupt();
   } else if (info == kDifRstmgrResetInfoSw) {
-    // Check provisioning completed successfully.
-    LOG_INFO("Provisioning complete.");
-    LOG_INFO("Checking status ...");
-    CHECK_STATUS_OK(provisioning_device_secrets_end(&otp_ctrl));
+    // Check personalization completed successfully.
+    LOG_INFO("Personalization complete. Checking status ...");
+    CHECK_STATUS_OK(manuf_personalize_device_check(&otp_ctrl));
 
     // Send the RMA unlock token data (stored in the retention SRAM) over the
     // console using ujson framework.
