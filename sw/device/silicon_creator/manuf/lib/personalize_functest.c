@@ -14,7 +14,7 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
-#include "sw/device/silicon_creator/manuf/lib/provisioning.h"
+#include "sw/device/silicon_creator/manuf/lib/personalize.h"
 
 #include "flash_ctrl_regs.h"  // Generated
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"

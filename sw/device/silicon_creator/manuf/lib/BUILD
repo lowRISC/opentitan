@@ -201,11 +201,9 @@ opentitan_functest(
 )
 
 cc_library(
-    name = "provisioning",
-    srcs = ["provisioning.c"],
-    hdrs = [
-        "provisioning.h",
-    ],
+    name = "personalize",
+    srcs = ["personalize.c"],
+    hdrs = ["personalize.h"],
     deps = [
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
@@ -227,8 +225,8 @@ cc_library(
 )
 
 opentitan_functest(
-    name = "provisioning_functest",
-    srcs = ["provisioning_functest.c"],
+    name = "personalize_functest",
+    srcs = ["personalize_functest.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_dev_individualized",
         tags = ["manuf"],
@@ -246,9 +244,9 @@ opentitan_functest(
     targets = [
         "cw310_rom_with_fake_keys",
     ],
-    test_harness = "//sw/host/tests/manuf/provisioning",
+    test_harness = "//sw/host/tests/manuf/personalize",
     deps = [
-        ":provisioning",
+        ":personalize",
         "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
