@@ -265,6 +265,8 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     send.mem_addr = exp.start_addr >> 3;
     send.ctrl_rd_region_q = exp.ctrl_rd_region_q;
 
+    // Mask descramble error chk whem comp_off is set.
+    if (comp_off) send.skip_err_chk = 1;
     send.descramble(exp.addr_key, exp.data_key);
     send.print("exp_read: raw_data");
     `dv_info($sformatf("RDATA size: %d x 8B bank:%0d sent_cnt:%0d",

@@ -53,6 +53,8 @@ class flash_ctrl_scoreboard #(
 
   bit skip_read_check = 0;
 
+  // Prevent to execute predict_tl_err during fatal error test
+  bit stop_tl_err_chk = 0;
   flash_phy_pkg::rd_buf_t evict_q[NumBanks][$];
 
   // utility function to word-align an input TL address
@@ -780,6 +782,10 @@ class flash_ctrl_scoreboard #(
   // when using Code Access Restrictions (EXEC)
   virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
     bit   ecc_err, in_err;
+
+    // Skip this routine when fatal error event is asserted
+    if (stop_tl_err_chk) return 1;
+
     // For flash, address has to be 8byte aligned.
     ecc_err = ecc_error_addr.exists({item.a_addr[AddrWidth-1:3],3'b0});
     in_err = in_error_addr.exists({item.a_addr[AddrWidth-1:3],3'b0});

@@ -415,7 +415,7 @@
     {
       name: flash_ctrl_phy_ack_consistency
       uvm_test_seq: flash_ctrl_phy_ack_consistency_vseq
-      run_opts: ["+scb_otf_en=1", "+otf_num_rw=5", "+otf_num_hr=10", "+ecc_mode=1",
+      run_opts: ["+scb_otf_en=1", "+otf_num_rw=5", "+otf_num_hr=10", "+ecc_mode=1", "+bank0_pct=8",
                  "+otf_rd_pct=4", "+en_always_all=1", "+bypass_alert_ready_to_end_check=1"]
       reseed: 5
     }
