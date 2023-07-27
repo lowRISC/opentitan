@@ -141,9 +141,8 @@ Refer to the `ipgen.renderer` module for more renderers available with ipgen.
 The ipgen command-line tool lives in `util/ipgen.py`.
 The first argument is typically the action to be executed.
 
+<!-- BEGIN CMDGEN --md-codeblock console -- util/ipgen.py --help -->
 ```console
-$ cd $REPO_TOP
-$ util/ipgen.py --help
 usage: ipgen.py [-h] ACTION ...
 
 optional arguments:
@@ -155,14 +154,16 @@ actions:
   ACTION
     describe  Show details about an IP template
     generate  Generate an IP block from an IP template
+
 ```
+<!-- END CMDGEN -->
 
 ## `ipgen generate`
 
+<!-- BEGIN CMDGEN --md-codeblock console -- util/ipgen.py generate --help -->
 ```console
-$ cd $REPO_TOP
-$ util/ipgen.py generate --help
-usage: ipgen.py generate [-h] [--verbose] -C TEMPLATE_DIR -o OUTDIR [--force] [--config-file CONFIG_FILE]
+usage: ipgen.py generate [-h] [--verbose] -C TEMPLATE_DIR -o OUTDIR [--force]
+                         --config-file CONFIG_FILE
 
 Generate an IP block from an IP template
 
@@ -176,13 +177,14 @@ optional arguments:
   --force, -f           overwrite the output directory, if it exists
   --config-file CONFIG_FILE, -c CONFIG_FILE
                         path to a configuration file
+
 ```
+<!-- END CMDGEN -->
 
 ## `ipgen describe`
 
+<!-- BEGIN CMDGEN --md-codeblock console -- util/ipgen.py describe --help -->
 ```console
-$ cd $REPO_TOP
-$ util/ipgen.py generate --help
 usage: ipgen.py describe [-h] [--verbose] -C TEMPLATE_DIR
 
 Show all information available for the IP template.
@@ -192,8 +194,9 @@ optional arguments:
   --verbose             More info messages
   -C TEMPLATE_DIR, --template-dir TEMPLATE_DIR
                         IP template directory
-```
 
+```
+<!-- END CMDGEN -->
 
 ## Limitations
 
