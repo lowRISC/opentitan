@@ -39,3 +39,8 @@ py_test(
         ":bitstreams_workspace",
     ],
 )
+
+sh_binary(
+    name = "modid_check",
+    srcs = ["modid_check.sh"],
+)

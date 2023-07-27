@@ -392,7 +392,7 @@ html_coverage_report = rule(
 def _modid_check_aspect_impl(target, ctx):
     """
     Verify that a binary (ELF file) does not contain conflicting module IDs
-    using opentitantool. The result of this aspect is put is in modid_check
+    using opentitantool. The result of this aspect is put in modid_check
     output group.
     """
 
@@ -406,14 +406,16 @@ def _modid_check_aspect_impl(target, ctx):
     # but at least this makes the check more explicit.
     generated_file = ctx.actions.declare_file("{}.mod-id".format(target.label.name))
 
-    # Call "opentitantool status lint <files>"
+    # Call bash script that will run opentitantool and capture the output. We want to avoid
+    # printing anything if the test is successful but by default opentitantool prints
+    # unnecessary information that pollutes the output.
     args = ctx.actions.args()
-    args.add_all(["status", "lint", "--touch", generated_file])
+    args.add_all([ctx.file._opentitantool, generated_file])
     args.add_all(target.files)
     ctx.actions.run(
-        executable = ctx.file._opentitantool,
+        executable = ctx.executable._modid_check,
         arguments = [args],
-        inputs = target.files,
+        inputs = depset([ctx.file._opentitantool] + target.files.to_list()),
         tools = [],
         outputs = [generated_file],
         progress_message = "Checking module IDs for %{label}",
@@ -436,6 +438,11 @@ modid_check_aspect = aspect(
         "_opentitantool": attr.label(
             default = "//sw/host/opentitantool",
             allow_single_file = True,
+            executable = True,
+            cfg = "exec",
+        ),
+        "_modid_check": attr.label(
+            default = "//rules/scripts:modid_check",
             executable = True,
             cfg = "exec",
         ),
