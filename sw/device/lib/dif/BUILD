@@ -252,6 +252,40 @@ cc_test(
 )
 
 cc_library(
+    name = "dma",
+    srcs = [
+        "autogen/dif_dma_autogen.c",
+        "autogen/dif_dma_autogen.h",
+        "dif_dma.c",
+    ],
+    hdrs = [
+        "dif_dma.h",
+    ],
+    deps = [
+        ":base",
+        "//hw/ip/dma/data:dma_c_regs",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/base:multibits",
+    ],
+)
+
+cc_test(
+    name = "dma_unittest",
+    srcs = [
+        "autogen/dif_dma_autogen_unittest.cc",
+        "dif_dma_unittest.cc",
+    ],
+    deps = [
+        ":dma",
+        ":test_base",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "edn",
     srcs = [
         "autogen/dif_edn_autogen.c",
