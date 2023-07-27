@@ -21,6 +21,7 @@ from typing import Optional
 from Deploy import CompileSim, CovAnalyze, CovMerge, CovReport, CovUnr, RunTest
 from FlowCfg import FlowCfg
 from Modes import BuildModes, Modes, Regressions, RunModes, Tests
+from results_server import ResultsServer
 from SimResults import SimResults
 from tabulate import tabulate
 from Testplan import Testplan
@@ -920,9 +921,9 @@ class SimCfg(FlowCfg):
         print(self.results_summary_md)
         return self.results_summary_md
 
-    def _publish_results(self):
+    def _publish_results(self, results_server: ResultsServer):
         '''Publish coverage results to the opentitan web server.'''
-        super()._publish_results()
+        super()._publish_results(results_server)
 
         if self.cov_report_deploy is not None:
             results_server_dir_url = self.results_server_dir.replace(
