@@ -21,6 +21,7 @@
  *
  * Preconditions:
  * - Device is in DEV, PROD, or PROD_END lifecycle stage.
+ * - DeviceId & ManufState are pre-populated in the appropriate flash info page.
  *
  * Note: The test will skip all programming steps and succeed if the HW_CFG
  * parition is already locked. This is to facilitate test re-runs.
