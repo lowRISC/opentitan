@@ -2,7 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-import datetime
 import json
 import logging as log
 import os
@@ -483,53 +482,23 @@ class FlowCfg():
         # Timeformat for moving the dir
         tf = "%Y.%m.%d_%H.%M.%S"
 
-        # Extract the timestamp of the existing self.results_server_page
-        cmd = (self.results_server_cmd + " ls -L " +
-               self.results_server_page + " | grep \'Creation time:\'")
+        # We're going to try to put things in a directory called "latest". But
+        # there's probably something with that name already. If so, we want to
+        # move the thing that's there already to be at a path based on its
+        # creation time.
 
-        log.log(VERBOSE, cmd)
-        cmd_output = subprocess.run(cmd,
-                                    shell=True,
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.DEVNULL)
-        log.log(VERBOSE, cmd_output.stdout.decode("utf-8"))
-        old_results_ts = cmd_output.stdout.decode("utf-8")
-        old_results_ts = old_results_ts.replace("Creation time:", "")
-        old_results_ts = old_results_ts.strip()
+        # Try to get the creation time of any existing "latest/report.html"
+        latest_dir = '{}/latest'.format(self.rel_path)
+        latest_report_path = '{}/report.html'.format(latest_dir)
+        old_results_time = results_server.get_creation_time(latest_report_path)
 
-        # Move the 'latest' to its timestamp directory if lookup succeeded
-        if cmd_output.returncode == 0:
-            try:
-                if old_results_ts != "":
-                    ts = datetime.datetime.strptime(
-                        old_results_ts, "%a, %d %b %Y %H:%M:%S %Z")
-                    old_results_ts = ts.strftime(tf)
-            except ValueError as e:
-                log.error(
-                    "%s: \'%s\' Timestamp conversion value error raised!", e)
-                old_results_ts = ""
+        if old_results_time is not None:
+            # If there is indeed a creation time, we will need to move the
+            # "latest" directory to a path based on that time.
+            old_results_ts = old_results_time.strftime(tf)
+            backup_dir = '{}/{}'.format(self.rel_path, old_results_ts)
 
-            # If the timestamp conversion failed - then create a dummy one with
-            # yesterday's date.
-            if old_results_ts == "":
-                log.log(VERBOSE,
-                        "Creating dummy timestamp with yesterday's date")
-                ts = datetime.datetime.now(
-                    datetime.timezone.utc) - datetime.timedelta(days=1)
-                old_results_ts = ts.strftime(tf)
-
-            old_results_dir = self.results_server_path + "/" + old_results_ts
-            cmd = (self.results_server_cmd + " mv " + self.results_server_dir +
-                   " " + old_results_dir)
-            log.log(VERBOSE, cmd)
-            cmd_output = subprocess.run(cmd,
-                                        shell=True,
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.DEVNULL)
-            log.log(VERBOSE, cmd_output.stdout.decode("utf-8"))
-            if cmd_output.returncode != 0:
-                log.error("Failed to mv old results page \"%s\" to \"%s\"!",
-                          self.results_server_dir, old_results_dir)
+            results_server.mv(latest_dir, backup_dir)
 
         # Do an ls in the results root dir to check what directories exist.
         results_dirs = []
