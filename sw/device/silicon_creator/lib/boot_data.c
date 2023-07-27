@@ -670,9 +670,13 @@ rom_error_t boot_data_check(const boot_data_t *boot_data) {
 rom_error_t boot_data_as_v2(boot_data_t *boot_data) {
   switch (launder32(boot_data->version)) {
     case kBootDataVersion1:
+      HARDENED_CHECK_EQ(boot_data->version, kBootDataVersion1);
       boot_data->primary_bl0_slot = kBootDataSlotA;
+      boot_data->version = kBootDataVersion2;
+      boot_data_digest_compute(boot_data, &boot_data->digest);
       return kErrorOk;
     case kBootDataVersion2:
+      HARDENED_CHECK_EQ(boot_data->version, kBootDataVersion2);
       return kErrorOk;
     default:
       HARDENED_TRAP();
