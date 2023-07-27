@@ -17,6 +17,7 @@ cc_library(
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/dif:csrng",
+        "//sw/device/lib/dif:dma",
         "//sw/device/lib/dif:edn",
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/dif:flash_ctrl",
