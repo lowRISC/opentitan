@@ -596,7 +596,7 @@ status_t entropy_csrng_generate(const entropy_seed_material_t *seed_material,
 status_t entropy_csrng_uninstantiate(void) {
   return csrng_send_app_cmd(kBaseCsrng + CSRNG_CMD_REQ_REG_OFFSET,
                             (entropy_csrng_cmd_t){
-                                .id = kEntropyDrbgOpUpdate,
+                                .id = kEntropyDrbgOpUninstantiate,
                                 .seed_material = NULL,
                                 .generate_len = 0,
                             },
