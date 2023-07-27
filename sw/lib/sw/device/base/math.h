@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_MATH_H_
-#define OPENTITAN_SW_DEVICE_LIB_BASE_MATH_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_BASE_MATH_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_BASE_MATH_H_
 
 #include <stdint.h>
 
-#include "sw/device/lib/base/macros.h"
+#include "sw/lib/sw/device/base/macros.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -51,4 +51,4 @@ uint64_t udiv64_slow(uint64_t a, uint64_t b, uint64_t *rem_out);
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MATH_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_BASE_MATH_H_

@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_CSR_REGISTERS_H_
-#define OPENTITAN_SW_DEVICE_LIB_BASE_CSR_REGISTERS_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_BASE_CSR_REGISTERS_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_BASE_CSR_REGISTERS_H_
 
 /**
  * Ibex Control and Status Register (CSR) definitions.
@@ -149,4 +149,4 @@
 #define CSR_REG_MHPMCOUNTER31H 0xB9F
 #define CSR_REG_MHARTID 0xF14
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_CSR_REGISTERS_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_BASE_CSR_REGISTERS_H_

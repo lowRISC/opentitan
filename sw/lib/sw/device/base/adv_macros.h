@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_ADV_MACROS_H_
-#define OPENTITAN_SW_DEVICE_LIB_BASE_ADV_MACROS_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_BASE_ADV_MACROS_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_BASE_ADV_MACROS_H_
 
-#include "sw/device/lib/base/macros.h"
+#include "sw/lib/sw/device/base/macros.h"
 
 // The preprocessor techniques below are explained at
 // https://github.com/pfultz2/Cloak/wiki/C-Preprocessor-tricks,-tips,-and-idioms
@@ -33,4 +33,4 @@
 #define OT_EVAL4(...) OT_EVAL5(OT_EVAL5(OT_EVAL5(__VA_ARGS__)))
 #define OT_EVAL5(...) __VA_ARGS__
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_ADV_MACROS_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_BASE_ADV_MACROS_H_

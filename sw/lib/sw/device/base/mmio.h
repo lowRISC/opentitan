@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_MMIO_H_
-#define OPENTITAN_SW_DEVICE_LIB_BASE_MMIO_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_BASE_MMIO_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_BASE_MMIO_H_
 
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/macros.h"
+#include "sw/lib/sw/device/base/bitfield.h"
+#include "sw/lib/sw/device/base/macros.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -442,4 +442,4 @@ void mmio_region_memcpy_to_mmio32(mmio_region_t base, uint32_t offset,
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MMIO_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_BASE_MMIO_H_

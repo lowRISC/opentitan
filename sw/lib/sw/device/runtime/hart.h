@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_RUNTIME_HART_H_
-#define OPENTITAN_SW_DEVICE_LIB_RUNTIME_HART_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_RUNTIME_HART_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_RUNTIME_HART_H_
 
 #include <stddef.h>
 #include <stdint.h>
 #include <stdnoreturn.h>
 
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/stdasm.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/stdasm.h"
 
 /**
  * @file
@@ -53,4 +53,4 @@ void busy_spin_micros(uint32_t usec);
  */
 noreturn void abort(void);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_HART_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_RUNTIME_HART_H_

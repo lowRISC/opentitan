@@ -6,12 +6,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/runtime/ibex.h"
-#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/memory.h"
+#include "sw/lib/sw/device/runtime/ibex.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 enum {
   kBufLen = 1000,
@@ -126,7 +126,7 @@ OTTF_DEFINE_TEST_CONFIG();
 // testing on a CW310 FPGA with the following command:
 //
 //   $ ./bazelisk.sh test --copt -O2 --test_output=all \
-//       //sw/device/lib/base:memory_perftest_fpga_cw310
+//       //sw/top_<chip>/sw/device/base:memory_perftest_fpga_cw310
 //
 // There are a handful of reasons why the expected number of cycles for this
 // test might be inaccurate. Here are a few of them:

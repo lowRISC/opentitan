@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_FREESTANDING_LIMITS_H_
-#define OPENTITAN_SW_DEVICE_LIB_BASE_FREESTANDING_LIMITS_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_BASE_FREESTANDING_LIMITS_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_BASE_FREESTANDING_LIMITS_H_
 
 #include <stdint.h>
 
@@ -44,4 +44,4 @@
 #define CHAR_MAX SCHAR_MAX /**< @hideinitializer */
 #endif
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_FREESTANDING_LIMITS_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_BASE_FREESTANDING_LIMITS_H_

@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/base/status_report_unittest_c.h"
+#include "sw/lib/sw/device/base/status_report_unittest_c.h"
 
-#include "sw/device/lib/base/status.h"
+#include "sw/lib/sw/device/base/status.h"
 
 /* This part of the test needs to be written in C because the TRY
  * macro is not polyglot. Specifically, the TRY macros uses

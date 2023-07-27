@@ -2,17 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_RUNTIME_IBEX_H_
-#define OPENTITAN_SW_DEVICE_LIB_RUNTIME_IBEX_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_RUNTIME_IBEX_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_RUNTIME_IBEX_H_
 
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/math.h"
-#include "sw/device/lib/base/stdasm.h"
+#include "sw/lib/sw/device/arch/device.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/math.h"
+#include "sw/lib/sw/device/base/stdasm.h"
 
 // IBEX_SPIN_FOR needs a dependency on check.h, but the build fails if a
 // dependency on sw_lib_testing_check is added.
@@ -239,4 +239,4 @@ inline uint64_t ibex_timeout_elapsed(const ibex_timeout_t *timeout) {
     }                                                                \
   } while (0)
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_IBEX_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_RUNTIME_IBEX_H_

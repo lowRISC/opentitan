@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/base/hardened.h"
+#include "sw/lib/sw/device/base/hardened.h"
 
 // `extern` declarations to give the inline functions in the corresponding
 // header a link location.

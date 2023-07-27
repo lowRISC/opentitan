@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_CSR_H_
-#define OPENTITAN_SW_DEVICE_LIB_BASE_CSR_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_BASE_CSR_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_BASE_CSR_H_
 
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/csr_registers.h"
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/stdasm.h"
+#include "sw/lib/sw/device/base/csr_registers.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/stdasm.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -174,4 +174,4 @@ void mock_csr_clear_bits(uint32_t addr, uint32_t mask);
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_CSR_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_BASE_CSR_H_

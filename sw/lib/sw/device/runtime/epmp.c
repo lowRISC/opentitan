@@ -2,6 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/runtime/epmp.h"
+#include "sw/lib/sw/device/runtime/epmp.h"
 
 // TODO: implement!

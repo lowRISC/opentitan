@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_RUNTIME_PMP_H_
-#define OPENTITAN_SW_DEVICE_LIB_RUNTIME_PMP_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_RUNTIME_PMP_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_RUNTIME_PMP_H_
 
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/macros.h"
+#include "sw/lib/sw/device/base/macros.h"
 
 /**
  * RISC-V PMP address matching modes.
@@ -296,4 +296,4 @@ OT_WARN_UNUSED_RESULT
 pmp_region_configure_result_t pmp_region_lock_status_get(
     pmp_region_index_t region, pmp_region_lock_t *lock);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_PMP_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_RUNTIME_PMP_H_

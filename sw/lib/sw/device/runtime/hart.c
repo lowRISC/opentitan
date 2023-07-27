@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/runtime/hart.h"
+#include "sw/lib/sw/device/runtime/hart.h"
 
 #include <stdbool.h>
 
-#include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/base/math.h"
-#include "sw/device/lib/runtime/ibex.h"
+#include "sw/lib/sw/device/arch/device.h"
+#include "sw/lib/sw/device/base/math.h"
+#include "sw/lib/sw/device/runtime/ibex.h"
 
 void busy_spin_micros(uint32_t usec) {
   uint64_t start = ibex_mcycle_read();

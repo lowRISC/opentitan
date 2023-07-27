@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_MOCK_MMIO_H_
-#define OPENTITAN_SW_DEVICE_LIB_BASE_MOCK_MMIO_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_BASE_MOCK_MMIO_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_BASE_MOCK_MMIO_H_
 
 #include <initializer_list>
 #include <memory>
@@ -14,8 +14,8 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/base/mock_mmio_test_utils.h"
+#include "sw/lib/sw/device/base/mmio.h"
+#include "sw/lib/sw/device/base/mock_mmio_test_utils.h"
 
 namespace mock_mmio {
 /**
@@ -300,4 +300,4 @@ class MmioTest {
 #define EXPECT_MASK32(offset, ...) \
   EXPECT_MASK_INTERNAL_(32, this->dev(), offset, __VA_ARGS__)
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MOCK_MMIO_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_BASE_MOCK_MMIO_H_

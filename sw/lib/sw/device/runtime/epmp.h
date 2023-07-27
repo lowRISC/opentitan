@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_RUNTIME_EPMP_H_
-#define OPENTITAN_SW_DEVICE_LIB_RUNTIME_EPMP_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_RUNTIME_EPMP_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_RUNTIME_EPMP_H_
 
 #include <stdint.h>
 
@@ -524,4 +524,4 @@ epmp_result_t epmp_debug_get_state(epmp_debug_state_t *state);
  */
 epmp_result_t epmp_debug_get_transaction_state(epmp_debug_state_t *state);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_EPMP_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_RUNTIME_EPMP_H_

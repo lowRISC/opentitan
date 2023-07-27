@@ -2,18 +2,18 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/runtime/print.h"
+#include "sw/lib/sw/device/runtime/print.h"
 
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_uart.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/memory.h"
+#include "sw/lib/sw/device/base/status.h"
 
 // This is declared as an enum to force the values to be
 // compile-time constants, but the type is otherwise not

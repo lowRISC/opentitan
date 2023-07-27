@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_FREESTANDING_STDALIGN_H_
-#define OPENTITAN_SW_DEVICE_LIB_BASE_FREESTANDING_STDALIGN_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_BASE_FREESTANDING_STDALIGN_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_BASE_FREESTANDING_STDALIGN_H_
 
 /**
  * @file
@@ -19,4 +19,4 @@
 #define alignof _Alignof
 #define __alignof_is_defined 1
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_FREESTANDING_STDALIGN_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_BASE_FREESTANDING_STDALIGN_H_

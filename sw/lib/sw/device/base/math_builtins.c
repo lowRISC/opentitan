@@ -30,7 +30,7 @@
 #include <stdint.h>
 #include <stdnoreturn.h>
 
-#include "sw/device/lib/base/macros.h"
+#include "sw/lib/sw/device/base/macros.h"
 
 // Linker aliases for libgcc symbols.
 #ifdef OT_PLATFORM_RV32

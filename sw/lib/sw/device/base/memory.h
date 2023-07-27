@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_MEMORY_H_
-#define OPENTITAN_SW_DEVICE_LIB_BASE_MEMORY_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_BASE_MEMORY_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_BASE_MEMORY_H_
 
 /**
  * @file
@@ -21,7 +21,7 @@
 #include <string.h>
 #endif
 
-#include "sw/device/lib/base/macros.h"
+#include "sw/lib/sw/device/base/macros.h"
 
 // When compiling unit tests on the host machine, we must mangle the names of
 // OpenTitan's memory functions to disambiguate them from libc's variants.
@@ -281,4 +281,4 @@ void *OT_PREFIX_IF_NOT_RV32(memrchr)(const void *ptr, int value, size_t len);
 
 #undef OT_PREFIX_IF_NOT_RV32
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MEMORY_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_BASE_MEMORY_H_

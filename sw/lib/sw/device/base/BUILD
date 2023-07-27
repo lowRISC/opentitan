@@ -3,11 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
-load(
-    "//rules:opentitan_test.bzl",
-    "cw310_params",
-    "opentitan_functest",
-)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -91,25 +86,9 @@ cc_library(
     ],
 )
 
-opentitan_functest(
-    name = "memory_perftest",
+filegroup(
+    name = "memory_perftest_c",
     srcs = ["memory_perftest.c"],
-    cw310 = cw310_params(
-        tags = [
-            "flaky",
-            "manual",
-        ],
-    ),
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
-    targets = ["cw310_test_rom"],
-    deps = [
-        ":macros",
-        ":memory",
-        "//sw/device/lib/runtime:ibex",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
 )
 
 cc_test(
@@ -282,8 +261,8 @@ cc_library(
     deps = [
         ":bitfield",
         ":macros",
-        "//sw/device/lib/base/internal:status",
         "//sw/device/lib/dif:base",
+        "//sw/lib/sw/device/base/internal:status",
         "//sw/device/silicon_creator/lib:error",
     ],
 )

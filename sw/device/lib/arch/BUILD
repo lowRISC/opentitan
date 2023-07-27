@@ -10,7 +10,7 @@ cc_library(
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:macros",
+        "//sw/lib/sw/device/arch:device",
     ],
 )
 
@@ -19,9 +19,9 @@ cc_library(
     srcs = ["device_fpga_cw305.c"],
     deps = [
         ":device",
-        "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:rom_print",
         "//sw/device/silicon_creator/lib/drivers:ibex",
+        "//sw/lib/sw/device/base:macros",
     ],
 )
 
@@ -30,9 +30,9 @@ cc_library(
     srcs = ["device_fpga_cw310.c"],
     deps = [
         ":device",
-        "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:rom_print",
         "//sw/device/silicon_creator/lib/drivers:ibex",
+        "//sw/lib/sw/device/base:macros",
     ],
 )
 

@@ -2,21 +2,21 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_STATUS_H_
-#define OPENTITAN_SW_DEVICE_LIB_BASE_STATUS_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_BASE_STATUS_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_BASE_STATUS_H_
 #include <assert.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 
-#include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/lib/sw/device/base/bitfield.h"
+#include "sw/lib/sw/device/base/macros.h"
 
 #define USING_INTERNAL_STATUS
-#include "sw/device/lib/base/internal/status.h"
+#include "sw/lib/sw/device/base/internal/status.h"
 #undef USING_INTERNAL_STATUS
 
 #ifdef __cplusplus
@@ -277,4 +277,4 @@ OT_ALWAYS_INLINE absl_status_t status_err(status_t s) {
 #ifdef __cplusplus
 }
 #endif
-#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_STATUS_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_BASE_STATUS_H_

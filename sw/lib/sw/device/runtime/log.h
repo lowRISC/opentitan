@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_RUNTIME_LOG_H_
-#define OPENTITAN_SW_DEVICE_LIB_RUNTIME_LOG_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_RUNTIME_LOG_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_RUNTIME_LOG_H_
 
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/base/macros.h"
+#include "sw/lib/sw/device/arch/device.h"
+#include "sw/lib/sw/device/base/macros.h"
 
 /**
  * @file
@@ -181,4 +181,4 @@ void base_log_internal_dv(const log_fields_t *log, uint32_t nargs, ...);
  */
 #define LOG_FATAL(...) LOG(kLogSeverityFatal, __VA_ARGS__)
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_LOG_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_RUNTIME_LOG_H_

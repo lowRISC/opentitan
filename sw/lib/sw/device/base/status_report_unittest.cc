@@ -6,8 +6,8 @@
 #include <vector>
 
 #include "gtest/gtest.h"
-#include "sw/device/lib/base/status.h"
-#include "sw/device/lib/base/status_report_unittest_c.h"
+#include "sw/lib/sw/device/base/status.h"
+#include "sw/lib/sw/device/base/status_report_unittest_c.h"
 
 namespace status_list_unittest {
 namespace {

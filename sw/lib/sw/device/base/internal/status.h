@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_INTERNAL_STATUS_H_
-#define OPENTITAN_SW_DEVICE_LIB_BASE_INTERNAL_STATUS_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_BASE_INTERNAL_STATUS_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_BASE_INTERNAL_STATUS_H_
 
 #ifndef USING_INTERNAL_STATUS
 #error "Do not include internal/status.h directly. Include status.h instead."
 #endif
-#include "sw/device/lib/base/bitfield.h"
+#include "sw/lib/sw/device/base/bitfield.h"
 
 #define USING_ABSL_STATUS
-#include "sw/device/lib/base/internal/absl_status.h"
+#include "sw/lib/sw/device/base/internal/absl_status.h"
 #undef USING_ABSL_STATUS
 #ifdef __cplusplus
 extern "C" {
@@ -79,4 +79,4 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_INTERNAL_STATUS_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_BASE_INTERNAL_STATUS_H_

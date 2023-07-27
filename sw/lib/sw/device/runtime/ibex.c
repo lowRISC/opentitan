@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/runtime/ibex.h"
+#include "sw/lib/sw/device/runtime/ibex.h"
 
-#include "sw/device/lib/base/csr.h"
+#include "sw/lib/sw/device/base/csr.h"
 
 uint32_t ibex_mcause_read(void) {
   uint32_t mtval;

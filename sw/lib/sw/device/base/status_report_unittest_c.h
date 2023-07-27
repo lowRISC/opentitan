@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_STATUS_REPORT_UNITTEST_C_H_
-#define OPENTITAN_SW_DEVICE_LIB_BASE_STATUS_REPORT_UNITTEST_C_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_BASE_STATUS_REPORT_UNITTEST_C_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_BASE_STATUS_REPORT_UNITTEST_C_H_
 
-#include "sw/device/lib/base/status.h"
+#include "sw/lib/sw/device/base/status.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,4 +19,4 @@ status_t status_report_unittest_c(void);
 #ifdef __cplusplus
 }
 #endif
-#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_STATUS_REPORT_UNITTEST_C_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_BASE_STATUS_REPORT_UNITTEST_C_H_

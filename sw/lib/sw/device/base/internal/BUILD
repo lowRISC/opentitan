@@ -14,6 +14,6 @@ cc_library(
     hdrs = ["status.h"],
     deps = [
         ":absl_status",
-        "//sw/device/lib/base:bitfield",
+        "//sw/lib/sw/device/base:bitfield",
     ],
 )

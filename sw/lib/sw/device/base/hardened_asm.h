@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_HARDENED_ASM_H_
-#define OPENTITAN_SW_DEVICE_LIB_BASE_HARDENED_ASM_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_BASE_HARDENED_ASM_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_BASE_HARDENED_ASM_H_
 
 /**
  * Values for a hardened boolean type.
@@ -32,4 +32,4 @@
 #define HARDENED_BYTE_BOOL_TRUE 0xa5
 #define HARDENED_BYTE_BOOL_FALSE 0x4b
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_HARDENED_ASM_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_BASE_HARDENED_ASM_H_

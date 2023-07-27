@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_FREESTANDING_STDARG_H_
-#define OPENTITAN_SW_DEVICE_LIB_BASE_FREESTANDING_STDARG_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_BASE_FREESTANDING_STDARG_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_BASE_FREESTANDING_STDARG_H_
 
 /**
  * @file
@@ -23,4 +23,4 @@ typedef __builtin_va_list va_list;
 #define va_arg(ap, type) __builtin_va_arg(ap, type)   /**< @hideinitializer */
 #define va_copy(dst, src) __builtin_va_copy(dst, src) /**< @hideinitializer */
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_FREESTANDING_STDARG_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_BASE_FREESTANDING_STDARG_H_

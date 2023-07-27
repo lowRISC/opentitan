@@ -24,12 +24,12 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             ":ibex",
-            "//sw/device/lib/arch:device",
+            "//sw/lib/sw/device/arch:device",
         ],
         shared = [
-            "//sw/device/lib/base:math",
-            "//sw/device/lib/base:stdasm",
-            "//sw/device/lib/base:macros",
+            "//sw/lib/sw/device/base:math",
+            "//sw/lib/sw/device/base:stdasm",
+            "//sw/lib/sw/device/base:macros",
         ],
     ),
 )
@@ -40,11 +40,11 @@ cc_library(
     hdrs = ["ibex.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//sw/device/lib/arch:device",
-        "//sw/device/lib/base:csr",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:math",
-        "//sw/device/lib/base:stdasm",
+        "//sw/lib/sw/device/arch:device",
+        "//sw/lib/sw/device/base:csr",
+        "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/base:math",
+        "//sw/lib/sw/device/base:stdasm",
     ],
 )
 
@@ -54,7 +54,7 @@ cc_library(
     hdrs = ["irq.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//sw/device/lib/base:csr",
+        "//sw/lib/sw/device/base:csr",
     ],
 )
 
@@ -64,11 +64,11 @@ cc_library(
     hdrs = ["log.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//sw/device/lib/arch:device",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/runtime:print",
+        "//sw/lib/sw/device/arch:device",
+        "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/base:memory",
+        "//sw/lib/sw/device/base:mmio",
+        "//sw/lib/sw/device/runtime:print",
     ],
 )
 
@@ -78,31 +78,28 @@ cc_library(
     hdrs = ["pmp.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:csr",
-        "//sw/device/lib/base:macros",
+        "//sw/lib/sw/device/base:bitfield",
+        "//sw/lib/sw/device/base:csr",
+        "//sw/lib/sw/device/base:macros",
     ],
 )
 
 cc_library(
     name = "print",
-    srcs = ["print.c"],
     hdrs = ["print.h"],
     deps = [
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/dif:spi_device",
-        "//sw/device/lib/dif:uart",
+        "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/base:memory",
+        "//sw/lib/sw/device/base:status",
     ],
 )
 
-cc_test(
-    name = "print_unittest",
+filegroup(
+    name = "print_c",
+    srcs = ["print.c"],
+)
+
+filegroup(
+    name = "print_unittest_cc",
     srcs = ["print_unittest.cc"],
-    deps = [
-        ":print",
-        "@com_google_absl//absl/strings:str_format",
-        "@googletest//:gtest_main",
-    ],
 )

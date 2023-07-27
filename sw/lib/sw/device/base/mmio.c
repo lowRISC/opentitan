@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/base/mmio.h"
+#include "sw/lib/sw/device/base/mmio.h"
 
 #include <stdalign.h>
 
-#include "sw/device/lib/base/memory.h"
+#include "sw/lib/sw/device/base/memory.h"
 
 /**
  * Copies a block of memory between MMIO and main memory while ensuring that

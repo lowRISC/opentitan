@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_FREESTANDING_STDINT_H_
-#define OPENTITAN_SW_DEVICE_LIB_BASE_FREESTANDING_STDINT_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_BASE_FREESTANDING_STDINT_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_BASE_FREESTANDING_STDINT_H_
 
 /**
  * @file
@@ -137,4 +137,4 @@ typedef __INTMAX_TYPE__ intmax_t;
 #define UINT64_C(value) (value##ULL)  /**< @hideinitializer */
 #define UINTMAX_C(value) (value##ULL) /**< @hideinitializer */
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_FREESTANDING_STDINT_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_BASE_FREESTANDING_STDINT_H_

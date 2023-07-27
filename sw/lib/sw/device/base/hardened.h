@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_HARDENED_H_
-#define OPENTITAN_SW_DEVICE_LIB_BASE_HARDENED_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_BASE_HARDENED_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_BASE_HARDENED_H_
 
 #include <stdint.h>
 
-#include "sw/device/lib/base/hardened_asm.h"
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/stdasm.h"
+#include "sw/lib/sw/device/base/hardened_asm.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/stdasm.h"
 
 /**
  * @file
@@ -620,4 +620,4 @@ inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
 }
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_HARDENED_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_BASE_HARDENED_H_

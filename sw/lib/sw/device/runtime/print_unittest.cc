@@ -5,7 +5,7 @@
 // print.h's polyglotness is not part of its public API at the moment; we wrap
 // it in an `extern` here for the time being.
 extern "C" {
-#include "sw/device/lib/runtime/print.h"
+#include "sw/lib/sw/device/runtime/print.h"
 }  // extern "C"
 
 #include <stdint.h>
@@ -14,8 +14,8 @@ extern "C" {
 #include "absl/strings/str_format.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_uart.h"
+#include "sw/lib/sw/device/base/status.h"
 
 // NOTE: This is only present so that print.c can link without pulling in
 // dif_uart.c.

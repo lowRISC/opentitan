@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_FREESTANDING_ASSERT_H_
-#define OPENTITAN_SW_DEVICE_LIB_BASE_FREESTANDING_ASSERT_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_BASE_FREESTANDING_ASSERT_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_BASE_FREESTANDING_ASSERT_H_
 
 /**
  * @file
@@ -28,4 +28,4 @@
 #define assert(do_not_use) \
   static_assert(false, "do not use assert(); use CHECK() instead")
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_FREESTANDING_ASSERT_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_BASE_FREESTANDING_ASSERT_H_

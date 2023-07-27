@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_MACROS_H_
-#define OPENTITAN_SW_DEVICE_LIB_BASE_MACROS_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_BASE_MACROS_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_BASE_MACROS_H_
 
 // This file may be used in .S files, in which case standard library includes
 // should be elided.
@@ -512,4 +512,4 @@ class SignConverter {
 #endif  // !defined(__ASSEMBLER__) && !defined(NOSTDINC) &&
         // !defined(RUST_PREPROCESSOR_EMIT)
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MACROS_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_BASE_MACROS_H_

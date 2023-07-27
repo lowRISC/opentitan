@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_RANDOM_ORDER_H_
-#define OPENTITAN_SW_DEVICE_LIB_BASE_RANDOM_ORDER_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_BASE_RANDOM_ORDER_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_BASE_RANDOM_ORDER_H_
 
 #include <stddef.h>
 
@@ -79,4 +79,4 @@ size_t random_order_advance(random_order_t *ctx);
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_RANDOM_ORDER_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_BASE_RANDOM_ORDER_H_

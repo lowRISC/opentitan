@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/base/memory.h"
+#include "sw/lib/sw/device/base/memory.h"
 
 #include <stdint.h>
 
-#include "sw/device/lib/base/macros.h"
+#include "sw/lib/sw/device/base/macros.h"
 
 #ifdef OT_PLATFORM_RV32
 #define OT_PREFIX_IF_NOT_RV32(name) name

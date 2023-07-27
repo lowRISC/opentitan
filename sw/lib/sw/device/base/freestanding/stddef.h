@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_FREESTANDING_STDDEF_H_
-#define OPENTITAN_SW_DEVICE_LIB_BASE_FREESTANDING_STDDEF_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_BASE_FREESTANDING_STDDEF_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_BASE_FREESTANDING_STDDEF_H_
 
 #include <stdalign.h>
 #include <stdint.h>
@@ -39,4 +39,4 @@ typedef __WCHAR_TYPE__ wchar_t;
 #define offsetof(type, member) \
   __builtin_offsetof(type, member) /**< @hideinitializer */
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_FREESTANDING_STDDEF_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_BASE_FREESTANDING_STDDEF_H_

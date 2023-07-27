@@ -2,14 +2,33 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_RUNTIME_PRINT_H_
-#define OPENTITAN_SW_DEVICE_LIB_RUNTIME_PRINT_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_RUNTIME_PRINT_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_RUNTIME_PRINT_H_
 
 #include <stdarg.h>
 #include <stddef.h>
 
-#include "sw/device/lib/dif/dif_spi_device.h"
-#include "sw/device/lib/dif/dif_uart.h"
+/**
+ * Forward declaration of struct containing the relevant run-time information for
+ * the SPI device DIF.
+ */
+struct dif_spi_device_handle;
+/**
+ * Typedef of struct containing the relevant run-time information for the SPI
+ * device DIF.
+ */
+typedef struct dif_spi_device_handle dif_spi_device_handle_t;
+
+/**
+ * Forward declaration of struct containing the relevant run-time information for
+ * the UART DIF.
+ */
+struct dif_uart;
+/**
+ * Typedef of struct containing the relevant run-time information for the UART
+ * DIF.
+ */
+typedef struct dif_uart dif_uart_t;
 
 /**
  * @file
@@ -300,4 +319,4 @@ void base_spi_device_stdout(const dif_spi_device_handle_t *spi_device);
  */
 void base_uart_stdout(const dif_uart_t *uart);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_PRINT_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_RUNTIME_PRINT_H_
