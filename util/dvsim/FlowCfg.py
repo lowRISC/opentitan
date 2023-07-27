@@ -601,7 +601,7 @@ class FlowCfg():
         triggered through an appropriately-authenticated Google Cloud SDK command. This
         function calls that command.
         '''
-        if which('gsutil') is None or which('gcloud') is None:
+        if which('gcloud') is None:
             log.error("Google Cloud SDK not installed!"
                       "Cannot access the Cloud Build API to trigger a site rebuild.")
             return
