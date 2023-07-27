@@ -46,7 +46,7 @@ rust_library(
     version = "0.18.0",
     deps = [
         "@crate_index__futures-util-0.3.28//:futures_util",
-        "@crate_index__log-0.4.17//:log",
+        "@crate_index__log-0.4.19//:log",
         "@crate_index__tokio-1.29.1//:tokio",
         "@crate_index__tungstenite-0.18.0//:tungstenite",
     ],

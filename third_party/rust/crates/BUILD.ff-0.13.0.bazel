@@ -43,6 +43,6 @@ rust_library(
     version = "0.13.0",
     deps = [
         "@crate_index__rand_core-0.6.4//:rand_core",
-        "@crate_index__subtle-2.4.1//:subtle",
+        "@crate_index__subtle-2.5.0//:subtle",
     ],
 )

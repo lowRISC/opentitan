@@ -45,7 +45,7 @@ rust_library(
     version = "0.8.7",
     deps = [
         "@crate_index__new_debug_unreachable-1.0.4//:debug_unreachable",
-        "@crate_index__once_cell-1.17.1//:once_cell",
+        "@crate_index__once_cell-1.18.0//:once_cell",
         "@crate_index__parking_lot-0.12.1//:parking_lot",
         "@crate_index__phf_shared-0.10.0//:phf_shared",
         "@crate_index__precomputed-hash-0.1.1//:precomputed_hash",

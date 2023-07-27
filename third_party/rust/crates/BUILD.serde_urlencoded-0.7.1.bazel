@@ -39,9 +39,9 @@ rust_library(
     ],
     version = "0.7.1",
     deps = [
-        "@crate_index__form_urlencoded-1.1.0//:form_urlencoded",
-        "@crate_index__itoa-1.0.5//:itoa",
-        "@crate_index__ryu-1.0.12//:ryu",
+        "@crate_index__form_urlencoded-1.2.0//:form_urlencoded",
+        "@crate_index__itoa-1.0.9//:itoa",
+        "@crate_index__ryu-1.0.15//:ryu",
         "@crate_index__serde-1.0.171//:serde",
     ],
 )

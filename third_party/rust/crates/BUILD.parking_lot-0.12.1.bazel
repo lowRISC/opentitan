@@ -42,7 +42,7 @@ rust_library(
     ],
     version = "0.12.1",
     deps = [
-        "@crate_index__lock_api-0.4.9//:lock_api",
-        "@crate_index__parking_lot_core-0.9.7//:parking_lot_core",
+        "@crate_index__lock_api-0.4.10//:lock_api",
+        "@crate_index__parking_lot_core-0.9.8//:parking_lot_core",
     ],
 )

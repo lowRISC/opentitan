@@ -43,7 +43,7 @@ rust_library(
     ],
     version = "4.2.1",
     deps = [
-        "@crate_index__scopeguard-1.1.0//:scopeguard",
+        "@crate_index__scopeguard-1.2.0//:scopeguard",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
             "@crate_index__CoreFoundation-sys-0.1.4//:CoreFoundation_sys",  # cfg(any(target_os = "ios", target_os = "macos"))

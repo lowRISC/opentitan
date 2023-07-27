@@ -45,7 +45,7 @@ rust_library(
     ],
     version = "2.1.0",
     deps = [
-        "@crate_index__digest-0.10.6//:digest",
+        "@crate_index__digest-0.10.7//:digest",
         "@crate_index__rand_core-0.6.4//:rand_core",
     ],
 )

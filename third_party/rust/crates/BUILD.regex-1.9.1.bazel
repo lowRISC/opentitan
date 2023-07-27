@@ -60,7 +60,7 @@ rust_library(
     deps = [
         "@crate_index__aho-corasick-1.0.2//:aho_corasick",
         "@crate_index__memchr-2.5.0//:memchr",
-        "@crate_index__regex-automata-0.3.3//:regex_automata",
+        "@crate_index__regex-automata-0.3.4//:regex_automata",
         "@crate_index__regex-syntax-0.7.4//:regex_syntax",
     ],
 )

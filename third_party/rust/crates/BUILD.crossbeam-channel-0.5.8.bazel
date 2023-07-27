@@ -45,6 +45,6 @@ rust_library(
     version = "0.5.8",
     deps = [
         "@crate_index__cfg-if-1.0.0//:cfg_if",
-        "@crate_index__crossbeam-utils-0.8.15//:crossbeam_utils",
+        "@crate_index__crossbeam-utils-0.8.16//:crossbeam_utils",
     ],
 )

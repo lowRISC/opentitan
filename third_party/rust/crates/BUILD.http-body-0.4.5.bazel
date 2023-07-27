@@ -41,6 +41,6 @@ rust_library(
     deps = [
         "@crate_index__bytes-1.4.0//:bytes",
         "@crate_index__http-0.2.9//:http",
-        "@crate_index__pin-project-lite-0.2.9//:pin_project_lite",
+        "@crate_index__pin-project-lite-0.2.10//:pin_project_lite",
     ],
 )

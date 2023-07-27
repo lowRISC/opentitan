@@ -45,6 +45,7 @@ rust_library(
         "Win32_System_Pipes",
         "Win32_System_SystemServices",
         "Win32_System_Threading",
+        "Win32_System_WindowsProgramming",
         "default",
     ],
     crate_root = "src/lib.rs",
@@ -59,6 +60,6 @@ rust_library(
     ],
     version = "0.48.0",
     deps = [
-        "@crate_index__windows-targets-0.48.0//:windows_targets",
+        "@crate_index__windows-targets-0.48.1//:windows_targets",
     ],
 )

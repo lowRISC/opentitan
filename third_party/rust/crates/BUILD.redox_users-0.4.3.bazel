@@ -39,8 +39,8 @@ rust_library(
     ],
     version = "0.4.3",
     deps = [
-        "@crate_index__getrandom-0.2.8//:getrandom",
+        "@crate_index__getrandom-0.2.10//:getrandom",
         "@crate_index__redox_syscall-0.2.16//:syscall",
-        "@crate_index__thiserror-1.0.38//:thiserror",
+        "@crate_index__thiserror-1.0.44//:thiserror",
     ],
 )

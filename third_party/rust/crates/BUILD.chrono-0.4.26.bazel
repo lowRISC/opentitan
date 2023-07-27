@@ -51,82 +51,82 @@ rust_library(
     ],
     version = "0.4.26",
     deps = [
-        "@crate_index__num-traits-0.2.15//:num_traits",
+        "@crate_index__num-traits-0.2.16//:num_traits",
         "@crate_index__time-0.1.45//:time",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crate_index__iana-time-zone-0.1.53//:iana_time_zone",  # cfg(unix)
+            "@crate_index__iana-time-zone-0.1.57//:iana_time_zone",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:aarch64-apple-ios": [
-            "@crate_index__iana-time-zone-0.1.53//:iana_time_zone",  # cfg(unix)
+            "@crate_index__iana-time-zone-0.1.57//:iana_time_zone",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:aarch64-apple-ios-sim": [
-            "@crate_index__iana-time-zone-0.1.53//:iana_time_zone",  # cfg(unix)
+            "@crate_index__iana-time-zone-0.1.57//:iana_time_zone",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:aarch64-linux-android": [
             "@crate_index__android-tzdata-0.1.1//:android_tzdata",  # cfg(target_os = "android")
-            "@crate_index__iana-time-zone-0.1.53//:iana_time_zone",  # cfg(unix)
+            "@crate_index__iana-time-zone-0.1.57//:iana_time_zone",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
             "@crate_index__winapi-0.3.9//:winapi",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crate_index__iana-time-zone-0.1.53//:iana_time_zone",  # cfg(unix)
+            "@crate_index__iana-time-zone-0.1.57//:iana_time_zone",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:arm-unknown-linux-gnueabi": [
-            "@crate_index__iana-time-zone-0.1.53//:iana_time_zone",  # cfg(unix)
+            "@crate_index__iana-time-zone-0.1.57//:iana_time_zone",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:armv7-linux-androideabi": [
             "@crate_index__android-tzdata-0.1.1//:android_tzdata",  # cfg(target_os = "android")
-            "@crate_index__iana-time-zone-0.1.53//:iana_time_zone",  # cfg(unix)
+            "@crate_index__iana-time-zone-0.1.57//:iana_time_zone",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:armv7-unknown-linux-gnueabi": [
-            "@crate_index__iana-time-zone-0.1.53//:iana_time_zone",  # cfg(unix)
+            "@crate_index__iana-time-zone-0.1.57//:iana_time_zone",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:i686-apple-darwin": [
-            "@crate_index__iana-time-zone-0.1.53//:iana_time_zone",  # cfg(unix)
+            "@crate_index__iana-time-zone-0.1.57//:iana_time_zone",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:i686-linux-android": [
             "@crate_index__android-tzdata-0.1.1//:android_tzdata",  # cfg(target_os = "android")
-            "@crate_index__iana-time-zone-0.1.53//:iana_time_zone",  # cfg(unix)
+            "@crate_index__iana-time-zone-0.1.57//:iana_time_zone",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:i686-pc-windows-msvc": [
             "@crate_index__winapi-0.3.9//:winapi",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:i686-unknown-freebsd": [
-            "@crate_index__iana-time-zone-0.1.53//:iana_time_zone",  # cfg(unix)
+            "@crate_index__iana-time-zone-0.1.57//:iana_time_zone",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:i686-unknown-linux-gnu": [
-            "@crate_index__iana-time-zone-0.1.53//:iana_time_zone",  # cfg(unix)
+            "@crate_index__iana-time-zone-0.1.57//:iana_time_zone",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:powerpc-unknown-linux-gnu": [
-            "@crate_index__iana-time-zone-0.1.53//:iana_time_zone",  # cfg(unix)
+            "@crate_index__iana-time-zone-0.1.57//:iana_time_zone",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:s390x-unknown-linux-gnu": [
-            "@crate_index__iana-time-zone-0.1.53//:iana_time_zone",  # cfg(unix)
+            "@crate_index__iana-time-zone-0.1.57//:iana_time_zone",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "@crate_index__js-sys-0.3.61//:js_sys",  # cfg(all(target_arch = "wasm32", not(any(target_os = "emscripten", target_os = "wasi"))))
-            "@crate_index__wasm-bindgen-0.2.84//:wasm_bindgen",  # cfg(all(target_arch = "wasm32", not(any(target_os = "emscripten", target_os = "wasi"))))
+            "@crate_index__js-sys-0.3.64//:js_sys",  # cfg(all(target_arch = "wasm32", not(any(target_os = "emscripten", target_os = "wasi"))))
+            "@crate_index__wasm-bindgen-0.2.87//:wasm_bindgen",  # cfg(all(target_arch = "wasm32", not(any(target_os = "emscripten", target_os = "wasi"))))
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crate_index__iana-time-zone-0.1.53//:iana_time_zone",  # cfg(unix)
+            "@crate_index__iana-time-zone-0.1.57//:iana_time_zone",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-apple-ios": [
-            "@crate_index__iana-time-zone-0.1.53//:iana_time_zone",  # cfg(unix)
+            "@crate_index__iana-time-zone-0.1.57//:iana_time_zone",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-linux-android": [
             "@crate_index__android-tzdata-0.1.1//:android_tzdata",  # cfg(target_os = "android")
-            "@crate_index__iana-time-zone-0.1.53//:iana_time_zone",  # cfg(unix)
+            "@crate_index__iana-time-zone-0.1.57//:iana_time_zone",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
             "@crate_index__winapi-0.3.9//:winapi",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:x86_64-unknown-freebsd": [
-            "@crate_index__iana-time-zone-0.1.53//:iana_time_zone",  # cfg(unix)
+            "@crate_index__iana-time-zone-0.1.57//:iana_time_zone",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crate_index__iana-time-zone-0.1.53//:iana_time_zone",  # cfg(unix)
+            "@crate_index__iana-time-zone-0.1.57//:iana_time_zone",  # cfg(unix)
         ],
         "//conditions:default": [],
     }),

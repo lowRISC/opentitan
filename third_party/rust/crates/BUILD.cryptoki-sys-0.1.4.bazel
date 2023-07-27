@@ -74,7 +74,7 @@ cargo_build_script(
     version = "0.1.4",
     visibility = ["//visibility:private"],
     deps = [
-        "@crate_index__target-lexicon-0.12.6//:target_lexicon",
+        "@crate_index__target-lexicon-0.12.11//:target_lexicon",
     ],
 )
 

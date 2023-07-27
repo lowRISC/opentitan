@@ -85,82 +85,82 @@ cargo_build_script(
         "@crate_index__cfg-if-1.0.0//:cfg_if",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crate_index__pkg-config-0.3.26//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
         "@rules_rust//rust/platform:aarch64-apple-ios": [
-            "@crate_index__pkg-config-0.3.26//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
         "@rules_rust//rust/platform:aarch64-apple-ios-sim": [
-            "@crate_index__pkg-config-0.3.26//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
         "@rules_rust//rust/platform:aarch64-linux-android": [
-            "@crate_index__pkg-config-0.3.26//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
             "@crate_index__vcpkg-0.2.15//:vcpkg",  # cfg(all(windows, target_env = "msvc"))
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crate_index__pkg-config-0.3.26//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
         "@rules_rust//rust/platform:arm-unknown-linux-gnueabi": [
-            "@crate_index__pkg-config-0.3.26//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
         "@rules_rust//rust/platform:armv7-linux-androideabi": [
-            "@crate_index__pkg-config-0.3.26//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
         "@rules_rust//rust/platform:armv7-unknown-linux-gnueabi": [
-            "@crate_index__pkg-config-0.3.26//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
         "@rules_rust//rust/platform:i686-apple-darwin": [
-            "@crate_index__pkg-config-0.3.26//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
         "@rules_rust//rust/platform:i686-linux-android": [
-            "@crate_index__pkg-config-0.3.26//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
         "@rules_rust//rust/platform:i686-pc-windows-msvc": [
             "@crate_index__vcpkg-0.2.15//:vcpkg",  # cfg(all(windows, target_env = "msvc"))
         ],
         "@rules_rust//rust/platform:i686-unknown-freebsd": [
-            "@crate_index__pkg-config-0.3.26//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
         "@rules_rust//rust/platform:i686-unknown-linux-gnu": [
-            "@crate_index__pkg-config-0.3.26//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
         "@rules_rust//rust/platform:powerpc-unknown-linux-gnu": [
-            "@crate_index__pkg-config-0.3.26//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
         "@rules_rust//rust/platform:riscv32imc-unknown-none-elf": [
-            "@crate_index__pkg-config-0.3.26//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
         "@rules_rust//rust/platform:riscv64gc-unknown-none-elf": [
-            "@crate_index__pkg-config-0.3.26//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
         "@rules_rust//rust/platform:s390x-unknown-linux-gnu": [
-            "@crate_index__pkg-config-0.3.26//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [
-            "@crate_index__pkg-config-0.3.26//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
         "@rules_rust//rust/platform:wasm32-wasi": [
-            "@crate_index__pkg-config-0.3.26//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crate_index__pkg-config-0.3.26//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
         "@rules_rust//rust/platform:x86_64-apple-ios": [
-            "@crate_index__pkg-config-0.3.26//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
         "@rules_rust//rust/platform:x86_64-linux-android": [
-            "@crate_index__pkg-config-0.3.26//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
             "@crate_index__vcpkg-0.2.15//:vcpkg",  # cfg(all(windows, target_env = "msvc"))
         ],
         "@rules_rust//rust/platform:x86_64-unknown-freebsd": [
-            "@crate_index__pkg-config-0.3.26//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crate_index__pkg-config-0.3.26//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
         "//conditions:default": [],
     }),

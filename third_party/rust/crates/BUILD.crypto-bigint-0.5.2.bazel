@@ -44,9 +44,9 @@ rust_library(
     ],
     version = "0.5.2",
     deps = [
-        "@crate_index__generic-array-0.14.6//:generic_array",
+        "@crate_index__generic-array-0.14.7//:generic_array",
         "@crate_index__rand_core-0.6.4//:rand_core",
-        "@crate_index__subtle-2.4.1//:subtle",
+        "@crate_index__subtle-2.5.0//:subtle",
         "@crate_index__zeroize-1.6.0//:zeroize",
     ],
 )

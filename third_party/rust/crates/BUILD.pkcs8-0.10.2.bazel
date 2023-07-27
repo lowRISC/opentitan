@@ -44,7 +44,7 @@ rust_library(
     ],
     version = "0.10.2",
     deps = [
-        "@crate_index__der-0.7.5//:der",
-        "@crate_index__spki-0.7.1//:spki",
+        "@crate_index__der-0.7.7//:der",
+        "@crate_index__spki-0.7.2//:spki",
     ],
 )

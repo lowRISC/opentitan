@@ -28,7 +28,6 @@ rust_library(
         ],
     ),
     crate_features = [
-        "default",
         "hardcoded-data",
         "std",
     ],

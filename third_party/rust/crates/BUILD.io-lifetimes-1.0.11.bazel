@@ -30,7 +30,6 @@ rust_library(
     ),
     crate_features = [
         "close",
-        "default",
         "hermit-abi",
         "libc",
         "windows-sys",
@@ -136,7 +135,6 @@ cargo_build_script(
     srcs = glob(["**/*.rs"]),
     crate_features = [
         "close",
-        "default",
         "hermit-abi",
         "libc",
         "windows-sys",

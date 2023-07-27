@@ -40,7 +40,7 @@ rust_library(
     ],
     version = "0.2.4",
     deps = [
-        "@crate_index__getrandom-0.2.8//:getrandom",
+        "@crate_index__getrandom-0.2.10//:getrandom",
         "@crate_index__libc-0.2.147//:libc",
         "@crate_index__pqcrypto-internals-0.2.4//:build_script_build",
     ],
@@ -76,8 +76,8 @@ cargo_build_script(
     version = "0.2.4",
     visibility = ["//visibility:private"],
     deps = [
-        "@crate_index__cc-1.0.79//:cc",
-        "@crate_index__dunce-1.0.3//:dunce",
+        "@crate_index__cc-1.0.81//:cc",
+        "@crate_index__dunce-1.0.4//:dunce",
     ],
 )
 

@@ -42,7 +42,7 @@ rust_library(
     ],
     version = "0.16.2",
     deps = [
-        "@crate_index__console-0.15.5//:console",
+        "@crate_index__console-0.15.7//:console",
         "@crate_index__lazy_static-1.4.0//:lazy_static",
         "@crate_index__number_prefix-0.4.0//:number_prefix",
         "@crate_index__regex-1.9.1//:regex",

@@ -56,6 +56,6 @@ rust_library(
     version = "4.2.7",
     deps = [
         "@crate_index__clap_builder-4.2.7//:clap_builder",
-        "@crate_index__once_cell-1.17.1//:once_cell",
+        "@crate_index__once_cell-1.18.0//:once_cell",
     ],
 )
