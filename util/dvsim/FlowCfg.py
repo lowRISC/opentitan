@@ -14,6 +14,7 @@ from pathlib import Path
 from shutil import which
 
 import hjson
+from results_server import NoGCPError, ResultsServer
 from CfgJson import set_target_attribute
 from LauncherFactory import get_launcher_cls
 from Scheduler import Scheduler
@@ -470,7 +471,7 @@ class FlowCfg():
                                         relative_to)
         return "[%s](%s)" % (link_text, relative_link)
 
-    def _publish_results(self):
+    def _publish_results(self, results_server: ResultsServer):
         '''Publish results to the opentitan web server.
 
         Results are uploaded to {results_server_page}.
@@ -479,11 +480,6 @@ class FlowCfg():
         oldest entry is removed. Links to the last 7 regression results are
         appended at the end if the results page.
         '''
-        if which('gsutil') is None or which('gcloud') is None:
-            log.error("Google cloud SDK not installed! Cannot access the "
-                      "results server")
-            return
-
         # Timeformat for moving the dir
         tf = "%Y.%m.%d_%H.%M.%S"
 
@@ -615,11 +611,18 @@ class FlowCfg():
                 log.error("%s: Failed to publish results:\n\"%s\"", e, str(cmd))
 
     def publish_results(self):
-        '''Public facing API for publishing results to the opentitan web
-        server.
-        '''
+        """Publish these results to the opentitan web server."""
+        try:
+            server_handle = ResultsServer(self.results_server)
+        except NoGCPError:
+            # We failed to create a results server object at all, so we're not going to be able
+            # to publish any results right now.
+            log.error("Google Cloud SDK not installed. Cannot access the "
+                      "results server")
+            return
+
         for item in self.cfgs:
-            item._publish_results()
+            item._publish_results(server_handle)
 
         if self.is_primary_cfg:
             self.publish_results_summary()
