@@ -5,7 +5,7 @@
 class dma_intr_vseq extends dma_base_vseq;
   `uvm_object_utils(dma_intr_vseq)
 
-  function new (string name = "dma_intr_vseq");
+  function new (string name = "");
     super.new(name);
     do_quieterror = 1;
     do_interrupt = 1;
