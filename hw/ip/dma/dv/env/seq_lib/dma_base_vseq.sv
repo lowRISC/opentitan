@@ -60,7 +60,7 @@ class dma_base_vseq extends cip_base_vseq #(
 
   // Function : Rerandomization of address ranges
   task randomize_new_address();
-    assert(m_seq.randomize());
+    `DV_CHECK_RANDOMIZE_FATAL(m_seq)
     `uvm_info(`gfn, "DMA: Randomized a new transaction with...", UVM_HIGH)
     addr_source            = m_seq.m_src_addr;
     addr_destination       = m_seq.m_dst_addr;
