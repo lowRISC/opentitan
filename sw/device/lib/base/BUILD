@@ -282,9 +282,9 @@ cc_library(
     deps = [
         ":bitfield",
         ":macros",
-        "//sw/common/dif:base",
         "//sw/device/lib/base/internal:status",
         "//sw/device/silicon_creator/lib:error",
+        "//sw/ip/base/dif:base",
     ],
 )
 

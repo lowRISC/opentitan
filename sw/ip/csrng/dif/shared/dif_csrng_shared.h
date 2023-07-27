@@ -5,11 +5,11 @@
 #ifndef OPENTITAN_SW_IP_CSRNG_DIF_SHARED_DIF_CSRNG_SHARED_H_
 #define OPENTITAN_SW_IP_CSRNG_DIF_SHARED_DIF_CSRNG_SHARED_H_
 
-#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/ip/base/dif/dif_base.h"
 #include "sw/ip/csrng/dif/dif_csrng.h"
 
 /**

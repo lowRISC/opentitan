@@ -8,9 +8,9 @@
 #include "sw/ip/lc_ctrl/dif/autogen/dif_lc_ctrl_autogen.h"
 
 #include "gtest/gtest.h"
-#include "sw/common/dif/dif_test_base.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_mmio.h"
+#include "sw/ip/base/dif/dif_test_base.h"
 
 #include "lc_ctrl_regs.h"  // Generated.
 

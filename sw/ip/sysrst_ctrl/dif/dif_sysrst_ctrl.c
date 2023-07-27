@@ -6,9 +6,9 @@
 
 #include <assert.h>
 
-#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/ip/base/dif/dif_base.h"
 
 #include "sysrst_ctrl_regs.h"  // Generated.
 

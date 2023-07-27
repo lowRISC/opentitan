@@ -6,7 +6,7 @@
 
 #include <assert.h>
 
-#include "sw/common/dif/dif_base.h"
+#include "sw/ip/base/dif/dif_base.h"
 
 #include "keymgr_regs.h"  // Generated.
 #include "sw/ip/keymgr/dif/autogen/dif_keymgr_autogen.h"

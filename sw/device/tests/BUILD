@@ -518,7 +518,6 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:ibex",
@@ -526,6 +525,7 @@ cc_library(
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:clkmgr_testutils",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/ip/base/dif:base",
         "//sw/top_earlgrey/sw/dif:clkmgr",
     ],
 )
@@ -571,9 +571,9 @@ opentitan_functest(
     srcs = ["clkmgr_jitter_test.c"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/ip/base/dif:base",
         "//sw/top_earlgrey/sw/dif:clkmgr",
     ],
 )
@@ -586,7 +586,6 @@ opentitan_functest(
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/runtime:log",
@@ -595,6 +594,7 @@ opentitan_functest(
         "//sw/device/lib/testing:nv_counter_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/ip/base/dif:base",
         "//sw/top_earlgrey/sw/dif:aon_timer",
         "//sw/top_earlgrey/sw/dif:clkmgr",
         "//sw/top_earlgrey/sw/dif:flash_ctrl",
@@ -612,12 +612,12 @@ cc_library(
     hdrs = ["clkmgr_off_trans_impl.h"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/ip/base/dif:base",
         "//sw/top_earlgrey/sw/dif:aes",
         "//sw/top_earlgrey/sw/dif:aon_timer",
         "//sw/top_earlgrey/sw/dif:clkmgr",
@@ -705,9 +705,9 @@ opentitan_functest(
     srcs = ["clkmgr_smoketest.c"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/ip/base/dif:base",
         "//sw/top_earlgrey/sw/dif:clkmgr",
     ],
 )
@@ -755,7 +755,6 @@ opentitan_functest(
     deps = [
         ":otbn_randomness_impl",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/runtime:log",
@@ -766,6 +765,7 @@ opentitan_functest(
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/ip/base/dif:base",
         "//sw/top_earlgrey/sw/dif:csrng",
         "//sw/top_earlgrey/sw/dif:csrng_shared",
         "//sw/top_earlgrey/sw/dif:edn",
@@ -813,12 +813,12 @@ opentitan_functest(
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/ip/base/dif:base",
         "//sw/top_earlgrey/sw/dif:entropy_src",
     ],
 )
@@ -829,12 +829,12 @@ cc_library(
     hdrs = ["entropy_src_kat_impl.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//sw/common/dif:base",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/ip/base/dif:base",
         "//sw/top_earlgrey/sw/dif:entropy_src",
     ],
 )
@@ -857,12 +857,12 @@ opentitan_functest(
     srcs = ["entropy_src_smoketest.c"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/ip/base/dif:base",
         "//sw/top_earlgrey/sw/dif:entropy_src",
     ],
 )
@@ -889,7 +889,6 @@ opentitan_functest(
     deps = [
         ":otbn_randomness_impl",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/runtime:log",
@@ -900,6 +899,7 @@ opentitan_functest(
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/ip/base/dif:base",
         "//sw/top_earlgrey/sw/dif:csrng",
         "//sw/top_earlgrey/sw/dif:edn",
         "//sw/top_earlgrey/sw/dif:entropy_src",
@@ -1418,10 +1418,10 @@ opentitan_functest(
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/common/dif:base",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:otbn_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/ip/base/dif:base",
         "//sw/top_earlgrey/sw/dif:otbn",
         "//sw/top_earlgrey/sw/dif:rv_core_ibex",
     ],
@@ -1433,10 +1433,10 @@ cc_library(
     hdrs = ["otbn_randomness_impl.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//sw/common/dif:base",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:otbn_testutils",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/ip/base/dif:base",
         "//sw/otbn/code-snippets:randomness",
         "//sw/top_earlgrey/sw/dif:otbn",
     ],
@@ -1451,7 +1451,6 @@ opentitan_functest(
     deps = [
         ":otbn_randomness_impl",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/common/dif:base",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
@@ -1461,6 +1460,7 @@ opentitan_functest(
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/ip/base/dif:base",
         "//sw/top_earlgrey/sw/dif:clkmgr",
         "//sw/top_earlgrey/sw/dif:otbn",
     ],

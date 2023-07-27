@@ -12,9 +12,9 @@
 
 #include <stdint.h>
 
-#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/ip/base/dif/dif_base.h"
 
 #include "csrng_regs.h"  // Generated
 #include "sw/ip/csrng/dif/autogen/dif_csrng_autogen.h"

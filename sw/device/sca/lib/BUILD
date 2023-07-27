@@ -26,11 +26,11 @@ cc_library(
     deps = [
         ":prng",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/common/dif:base",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/runtime:print",
+        "//sw/ip/base/dif:base",
         "//sw/top_earlgrey/sw/dif:uart",
     ],
 )

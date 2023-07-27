@@ -161,7 +161,7 @@ For more information, please refer to the [Verilator](./setup_verilator.md) and/
 
 ### Running on-host DIF Tests
 
-	The Device Interface Function or [DIF](https://opentitan.org/book/sw/device/lib/dif/) libraries contain unit tests that run on the host and are built and run with Bazel.
+The Device Interface Function or [DIF](https://opentitan.org/book/sw/device/lib/dif/) libraries contain unit tests that run on the host and are built and run with Bazel.
 As shown below, you may use Bazel to query which tests are available, build and run all tests, or build and run only one test.
 
 #### Querying which tests are available

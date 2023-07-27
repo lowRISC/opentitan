@@ -13,12 +13,12 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:dma",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/top_earlgrey/sw/dif:adc_ctrl",
         "//sw/top_earlgrey/sw/dif:alert_handler",
         "//sw/top_earlgrey/sw/dif:aon_timer",
         "//sw/top_earlgrey/sw/dif:csrng",
+        "//sw/top_earlgrey/sw/dif:dma",
         "//sw/top_earlgrey/sw/dif:edn",
         "//sw/top_earlgrey/sw/dif:entropy_src",
         "//sw/top_earlgrey/sw/dif:flash_ctrl",
@@ -64,8 +64,8 @@ cc_library(
     hdrs = ["alert_handler_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//sw/common/dif:base",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/ip/base/dif:base",
         "//sw/top_earlgrey/sw/dif:alert_handler",
         "//sw/top_earlgrey/sw/dif:rstmgr",
     ],
@@ -264,10 +264,10 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/common/dif:base",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/ip/base/dif:base",
         "//sw/top_earlgrey/sw/dif:gpio",
         "//sw/top_earlgrey/sw/dif:pinmux",
     ],
@@ -341,9 +341,9 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":rand_testutils",
-        "//sw/common/dif:base",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/ip/base/dif:base",
         "//sw/top_earlgrey/sw/dif:rv_plic",
     ],
 )
@@ -354,8 +354,8 @@ cc_library(
     hdrs = ["sensor_ctrl_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//sw/common/dif:base",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/ip/base/dif:base",
         "//sw/top_earlgrey/sw/dif:sensor_ctrl",
     ],
 )

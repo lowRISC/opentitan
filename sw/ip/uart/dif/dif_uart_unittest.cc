@@ -5,9 +5,9 @@
 #include "sw/ip/uart/dif/dif_uart.h"
 
 #include "gtest/gtest.h"
-#include "sw/common/dif/dif_test_base.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_mmio.h"
+#include "sw/ip/base/dif/dif_test_base.h"
 
 #include "uart_regs.h"  // Generated.
 

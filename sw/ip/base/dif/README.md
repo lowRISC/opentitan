@@ -83,7 +83,7 @@ memory-mapped hardware, and modifying processor CSRs.
   * `sw/device/lib/base/bitfield.h`
   * `sw/device/lib/base/mmio.h`
   * `sw/device/lib/base/memory.h`
-  * `sw/common/dif/dif_base.h`
+  * `sw/ip/base/dif/dif_base.h`
 * DIF libraries must not depend on other DIF libraries. Exercising DIF
   functionality may require an environment set up using another DIF library, but
   DIFs must not call DIFs in other DIF libraries.
@@ -105,7 +105,7 @@ Notational caveats:
 * The parameter name `handle` is not normative, and DIF libraries are free to
   choose a different, but consistent, name for it.
 * All functions below are assumed to return `dif_result_t`, a global DIF return
-  type defined in `sw/common/dif/dif_base.h`.
+  type defined in `sw/ip/base/dif/dif_base.h`.
 * Unless otherwise noted, all symbols mentioned below are required.
 
 #### Hardware Parameterization
@@ -124,12 +124,12 @@ extracted from the IP's auto-generated register header file, e.g.,
 #### Base Types
 
 There are two categories of base types:
-1. those that are defined once in `sw/common/dif/dif_base.h` and used in all
+1. those that are defined once in `sw/ip/base/dif/dif_base.h` and used in all
    DIF libraries, and
 2. those that are expected to be defined separately by all DIF libraries (unless
    otherwise specified).
 
-The base types defined in `sw/common/dif/dif_base.h` include:
+The base types defined in `sw/ip/base/dif/dif_base.h` include:
 * `dif_result_t` -- an enum representing global DIF return codes.
 * `dif_toggle_t` -- an enum to be used instead of a `bool` when describing
   enablement states.
@@ -297,7 +297,7 @@ there are some relaxations of these rules for them described at the end.
     in DIF signatures.
 
 * DIFs must use one of the `dif_result_t` enums (described in
-  `sw/common/dif/dif_base.h`) rather than booleans for reporting errors. If
+  `sw/ip/base/dif/dif_base.h`) rather than booleans for reporting errors. If
   a DIF can either error or instead produce a value, it must return a
   `dif_result_t`, and use an out-parameter for returning the produced value.
   * DIFs that return an enum return code must be annotated with

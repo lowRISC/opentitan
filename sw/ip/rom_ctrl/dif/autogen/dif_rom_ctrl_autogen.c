@@ -9,7 +9,7 @@
 
 #include <stdint.h>
 
-#include "sw/common/dif/dif_base.h"
+#include "sw/ip/base/dif/dif_base.h"
 
 #include "rom_ctrl_regs.h"  // Generated.
 

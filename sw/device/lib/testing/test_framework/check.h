@@ -7,13 +7,13 @@
 
 #include <stdbool.h>
 
-#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/status.h"
+#include "sw/ip/base/dif/dif_base.h"
 
 /**
  * Runtime assertion macros with log.h integration.
@@ -223,7 +223,7 @@
 
 /**
  * Checks that the given DIF call returns kDifOk. If the DIF call returns a
- * different dif_result_t value (defined in sw/common/dif/dif_base.h), this
+ * different dif_result_t value (defined in sw/ip/base/dif/dif_base.h), this
  * function logs and then aborts.
  *
  * @param dif_call DIF call to invoke and check its return value.

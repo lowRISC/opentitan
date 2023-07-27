@@ -13,9 +13,9 @@
 
 #include <stdint.h>
 
-#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/ip/base/dif/dif_base.h"
 
 #include "sw/ip/alert_handler/dif/autogen/dif_alert_handler_autogen.h"
 

@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_DMA_H_
-#define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_DMA_H_
+#ifndef OPENTITAN_SW_IP_DMA_DIF_DIF_DMA_H_
+#define OPENTITAN_SW_IP_DMA_DIF_DIF_DMA_H_
 
 /**
  * @file
@@ -13,7 +13,7 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/dif/autogen/dif_dma_autogen.h"
+#include "sw/ip/dma/dif/autogen/dif_dma_autogen.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -204,4 +204,4 @@ dif_result_t dif_dma_is_memory_range_locked(const dif_dma_t *dma,
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_DMA_H_
+#endif  // OPENTITAN_SW_IP_DMA_DIF_DIF_DMA_H_

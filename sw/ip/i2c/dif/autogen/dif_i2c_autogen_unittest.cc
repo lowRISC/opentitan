@@ -8,9 +8,9 @@
 #include "sw/ip/i2c/dif/autogen/dif_i2c_autogen.h"
 
 #include "gtest/gtest.h"
-#include "sw/common/dif/dif_test_base.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_mmio.h"
+#include "sw/ip/base/dif/dif_test_base.h"
 
 #include "i2c_regs.h"  // Generated.
 

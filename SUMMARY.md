@@ -351,7 +351,7 @@
 
 - [Device Software](./sw/device/README.md)
   - [Device Libraries](./sw/device/lib/README.md)
-    - [DIF Library](./sw/common/dif/README.md)
+    - [DIF Library](./sw/ip/base/dif/README.md)
       - [ADC Checklist](sw/ip/adc_ctrl/dif/dif_adc_ctrl.md)
       - [AES Checklist](sw/ip/aes/dif/dif_aes.md)
       - [Alert Handler Checklist](sw/ip/alert_handler/dif/dif_alert_handler.md)

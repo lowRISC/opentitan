@@ -12,7 +12,7 @@ These are organised into the `sw/device/lib` directory.
     contains the Base Libraries, including
     [freestanding C library headers](https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/base/freestanding).
     The Base Libraries are simple libraries that can be used by any other OpenTitan device software libraries.
--   [`sw/common/dif`](../../common/dif/README.md)
+-   [`sw/ip/base/dif`](../../ip/base/dif/README.md)
     contains the [Device Interface Functions](../../../doc/contributing/sw/device_interface_functions.md).
 -   `sw/device/lib/arch` contains the libraries to be used on specific device
     configurations (for instance FPGA, Simulation, etc.).

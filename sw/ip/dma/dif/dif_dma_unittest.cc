@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/dif/dif_dma.h"
+#include "sw/ip/dma/dif/dif_dma.h"
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_mmio.h"
-#include "sw/device/lib/dif/dif_test_base.h"
+#include "sw/ip/base/dif/dif_test_base.h"
 
 extern "C" {
 #include "dma_regs.h"  // Generated.

@@ -8,9 +8,9 @@
 #include "sw/ip/rv_core_ibex/dif/autogen/dif_rv_core_ibex_autogen.h"
 
 #include "gtest/gtest.h"
-#include "sw/common/dif/dif_test_base.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_mmio.h"
+#include "sw/ip/base/dif/dif_test_base.h"
 
 #include "rv_core_ibex_regs.h"  // Generated.
 

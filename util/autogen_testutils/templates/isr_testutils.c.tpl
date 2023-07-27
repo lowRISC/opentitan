@@ -4,9 +4,9 @@
 
 ${autogen_banner}
 
-#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
+#include "sw/ip/base/dif/dif_base.h"
 
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
 % for ip in ips_with_difs:

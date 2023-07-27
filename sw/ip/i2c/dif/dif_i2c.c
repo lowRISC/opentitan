@@ -4,10 +4,10 @@
 
 #include "sw/ip/i2c/dif/dif_i2c.h"
 
-#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/ip/base/dif/dif_base.h"
 
 #include "i2c_regs.h"  // Generated
 

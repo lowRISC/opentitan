@@ -13,8 +13,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/ip/base/dif/dif_base.h"
 
 #include "sw/ip/otbn/dif/autogen/dif_otbn_autogen.h"
 

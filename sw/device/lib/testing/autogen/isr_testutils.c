@@ -7,14 +7,14 @@
 
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
-#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/dif/dif_dma.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/adc_ctrl/dif/dif_adc_ctrl.h"
 #include "sw/ip/alert_handler/dif/dif_alert_handler.h"
 #include "sw/ip/aon_timer/dif/dif_aon_timer.h"
+#include "sw/ip/base/dif/dif_base.h"
 #include "sw/ip/csrng/dif/dif_csrng.h"
+#include "sw/ip/dma/dif/dif_dma.h"
 #include "sw/ip/edn/dif/dif_edn.h"
 #include "sw/ip/entropy_src/dif/dif_entropy_src.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"

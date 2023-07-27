@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_COMMON_DIF_DIF_BASE_H_
-#define OPENTITAN_SW_COMMON_DIF_DIF_BASE_H_
+#ifndef OPENTITAN_SW_IP_BASE_DIF_DIF_BASE_H_
+#define OPENTITAN_SW_IP_BASE_DIF_DIF_BASE_H_
 
 /**
  * @file
@@ -258,4 +258,4 @@ inline multi_bit_bool_t dif_toggle_to_multi_bit_bool16(dif_toggle_t val) {
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_COMMON_DIF_DIF_BASE_H_
+#endif  // OPENTITAN_SW_IP_BASE_DIF_DIF_BASE_H_

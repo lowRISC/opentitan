@@ -5,10 +5,10 @@
 #include "sw/ip/clkmgr/dif/dif_clkmgr.h"
 
 #include "gtest/gtest.h"
-#include "sw/common/dif/dif_test_base.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_mmio.h"
 #include "sw/device/lib/base/multibits.h"
+#include "sw/ip/base/dif/dif_test_base.h"
 
 // Generated.
 #include "clkmgr_regs.h"

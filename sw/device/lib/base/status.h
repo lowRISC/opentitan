@@ -10,10 +10,10 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "sw/common/dif/dif_base.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/ip/base/dif/dif_base.h"
 
 #define USING_INTERNAL_STATUS
 #include "sw/device/lib/base/internal/status.h"

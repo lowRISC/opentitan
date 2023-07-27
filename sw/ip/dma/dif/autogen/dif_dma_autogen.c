@@ -5,11 +5,11 @@
 // THIS FILE HAS BEEN GENERATED, DO NOT EDIT MANUALLY. COMMAND:
 // util/make_new_dif.py --mode=regen --only=autogen
 
-#include "sw/device/lib/dif/autogen/dif_dma_autogen.h"
+#include "sw/ip/dma/dif/autogen/dif_dma_autogen.h"
 
 #include <stdint.h>
 
-#include "sw/device/lib/dif/dif_base.h"
+#include "sw/ip/base/dif/dif_base.h"
 
 #include "dma_regs.h"  // Generated.
 

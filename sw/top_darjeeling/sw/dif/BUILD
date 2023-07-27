@@ -15,12 +15,12 @@ cc_library(
     ],
     deps = [
         "//hw/ip/adc_ctrl/data:adc_ctrl_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -31,7 +31,7 @@ cc_test(
     ],
     deps = [
         ":adc_ctrl",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -47,12 +47,12 @@ cc_library(
     ],
     deps = [
         "//hw/ip/aes/data:aes_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -63,7 +63,7 @@ cc_test(
     ],
     deps = [
         ":aes",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -79,12 +79,12 @@ cc_library(
     ],
     deps = [
         "//hw/top_darjeeling:alert_handler_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -95,7 +95,7 @@ cc_test(
     ],
     deps = [
         ":alert_handler",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -111,12 +111,12 @@ cc_library(
     ],
     deps = [
         "//hw/ip/aon_timer/data:aon_timer_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -127,7 +127,7 @@ cc_test(
     ],
     deps = [
         ":aon_timer",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -143,12 +143,12 @@ cc_library(
     ],
     deps = [
         "//hw/top_darjeeling/ip/clkmgr/data/autogen:clkmgr_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -159,7 +159,7 @@ cc_test(
     ],
     deps = [
         ":clkmgr",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -177,12 +177,12 @@ cc_library(
     ],
     deps = [
         "//hw/ip/csrng/data:csrng_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -198,12 +198,12 @@ cc_library(
     deps = [
         ":csrng_shared",
         "//hw/ip/csrng/data:csrng_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -214,7 +214,39 @@ cc_test(
     ],
     deps = [
         ":csrng",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "dma",
+    srcs = [
+        "//sw/ip/dma/dif:headers",
+        "//sw/ip/dma/dif:sources",
+    ],
+    hdrs = [
+        "//sw/ip/dma/dif:api",
+    ],
+    deps = [
+        "//hw/ip/dma/data:dma_regs",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
+    ],
+)
+
+cc_test(
+    name = "dma_unittest",
+    srcs = [
+        "//sw/ip/dma/dif:test_sources",
+    ],
+    deps = [
+        ":dma",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -231,12 +263,12 @@ cc_library(
     deps = [
         ":csrng_shared",
         "//hw/ip/edn/data:edn_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -247,7 +279,7 @@ cc_test(
     ],
     deps = [
         ":edn",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -263,12 +295,12 @@ cc_library(
     ],
     deps = [
         "//hw/ip/entropy_src/data:entropy_src_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -279,7 +311,7 @@ cc_test(
     ],
     deps = [
         ":entropy_src",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -292,12 +324,12 @@ cc_library(
     ],
     deps = [
         "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -308,7 +340,7 @@ cc_test(
     ],
     deps = [
         ":flash_ctrl",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -324,12 +356,12 @@ cc_library(
     ],
     deps = [
         "//hw/ip/gpio/data:gpio_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -340,7 +372,7 @@ cc_test(
     ],
     deps = [
         ":gpio",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -356,12 +388,12 @@ cc_library(
     ],
     deps = [
         "//hw/ip/hmac/data:hmac_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -372,7 +404,7 @@ cc_test(
     ],
     deps = [
         ":hmac",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -388,12 +420,12 @@ cc_library(
     ],
     deps = [
         "//hw/ip/i2c/data:i2c_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -404,7 +436,7 @@ cc_test(
     ],
     deps = [
         ":i2c",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -420,12 +452,12 @@ cc_library(
     ],
     deps = [
         "//hw/ip/keymgr/data:keymgr_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -436,7 +468,7 @@ cc_test(
     ],
     deps = [
         ":keymgr",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -452,12 +484,12 @@ cc_library(
     ],
     deps = [
         "//hw/ip/kmac/data:kmac_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -468,7 +500,7 @@ cc_test(
     ],
     deps = [
         ":kmac",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -484,12 +516,12 @@ cc_library(
     ],
     deps = [
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -500,7 +532,7 @@ cc_test(
     ],
     deps = [
         ":lc_ctrl",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -516,12 +548,12 @@ cc_library(
     ],
     deps = [
         "//hw/ip/otbn/data:otbn_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -532,7 +564,7 @@ cc_test(
     ],
     deps = [
         ":otbn",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -548,12 +580,12 @@ cc_library(
     ],
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -564,7 +596,7 @@ cc_test(
     ],
     deps = [
         ":otp_ctrl",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -580,12 +612,12 @@ cc_library(
     ],
     deps = [
         "//hw/ip/pattgen/data:pattgen_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -596,7 +628,7 @@ cc_test(
     ],
     deps = [
         ":pattgen",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -612,13 +644,13 @@ cc_library(
     ],
     deps = [
         "//hw/top_darjeeling/ip/pinmux/data/autogen:pinmux_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
         "//sw/device/lib/runtime:hart",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -629,7 +661,7 @@ cc_test(
     ],
     deps = [
         ":pinmux",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -645,12 +677,12 @@ cc_library(
     ],
     deps = [
         "//hw/ip/pwm/data:pwm_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -661,8 +693,8 @@ cc_test(
     ],
     deps = [
         ":pwm",
-        "//sw/common/dif:test_base",
         "//sw/device/lib/base:global_mock",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -678,12 +710,12 @@ cc_library(
     ],
     deps = [
         "//hw/top_darjeeling/ip/pwrmgr/data/autogen:pwrmgr_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -694,7 +726,7 @@ cc_test(
     ],
     deps = [
         ":pwrmgr",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -710,12 +742,12 @@ cc_library(
     ],
     deps = [
         "//hw/ip/rom_ctrl/data:rom_ctrl_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -726,7 +758,7 @@ cc_test(
     ],
     deps = [
         ":rom_ctrl",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -741,7 +773,7 @@ cc_library(
     ],
     linkstatic = True,
     deps = [
-        "//sw/common/dif:base",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -753,12 +785,12 @@ cc_library(
     deps = [
         ":rstmgr_intf",
         "//hw/top_darjeeling/ip/rstmgr/data/autogen:rstmgr_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -769,7 +801,7 @@ cc_test(
     ],
     deps = [
         ":rstmgr",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -786,9 +818,9 @@ cc_library(
     deps = [
         "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/runtime:hart",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -799,7 +831,7 @@ cc_test(
     ],
     deps = [
         ":rv_core_ibex",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -815,12 +847,12 @@ cc_library(
     ],
     deps = [
         "//hw/top_darjeeling:rv_plic_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -831,7 +863,7 @@ cc_test(
     ],
     deps = [
         ":rv_plic",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -847,13 +879,13 @@ cc_library(
     ],
     deps = [
         "//hw/ip/rv_timer/data:rv_timer_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -864,7 +896,7 @@ cc_test(
     ],
     deps = [
         ":rv_timer",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -880,12 +912,12 @@ cc_library(
     ],
     deps = [
         "//hw/ip/spi_device/data:spi_device_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -896,7 +928,7 @@ cc_test(
     ],
     deps = [
         ":spi_device",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -912,12 +944,12 @@ cc_library(
     ],
     deps = [
         "//hw/ip/spi_host/data:spi_host_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -928,8 +960,8 @@ cc_test(
     ],
     deps = [
         ":spi_host",
-        "//sw/common/dif:test_base",
         "//sw/device/lib/base:global_mock",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -945,12 +977,12 @@ cc_library(
     ],
     deps = [
         "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -961,7 +993,7 @@ cc_test(
     ],
     deps = [
         ":sram_ctrl",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -977,10 +1009,10 @@ cc_library(
     ],
     deps = [
         "//hw/top_darjeeling/ip/sensor_ctrl/data:sensor_ctrl_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -991,7 +1023,7 @@ cc_test(
     ],
     deps = [
         ":sensor_ctrl",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -1007,12 +1039,12 @@ cc_library(
     ],
     deps = [
         "//hw/ip/sysrst_ctrl/data:sysrst_ctrl_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -1023,7 +1055,7 @@ cc_test(
     ],
     deps = [
         ":sysrst_ctrl",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -1039,13 +1071,13 @@ cc_library(
     ],
     deps = [
         "//hw/ip/uart/data:uart_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -1056,7 +1088,7 @@ cc_test(
     ],
     deps = [
         ":uart",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
@@ -1072,12 +1104,12 @@ cc_library(
     ],
     deps = [
         "//hw/ip/usbdev/data:usbdev_regs",
-        "//sw/common/dif:base",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
+        "//sw/ip/base/dif:base",
     ],
 )
 
@@ -1088,7 +1120,7 @@ cc_test(
     ],
     deps = [
         ":usbdev",
-        "//sw/common/dif:test_base",
+        "//sw/ip/base/dif:test_base",
         "@googletest//:gtest_main",
     ],
 )
