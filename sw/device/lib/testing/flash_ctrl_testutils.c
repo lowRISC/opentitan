@@ -320,3 +320,14 @@ status_t flash_ctrl_testutils_backdoor_wait_update(
   IBEX_TRY_SPIN_FOR(UINT32_MAX != *(uint32_t *)addr, timeout);
   return OK_STATUS();
 }
+
+status_t flash_ctrl_testutils_flush_read_buffers(void) {
+  static volatile const uint32_t kFlashFlusher[8];
+  // Cause read buffers to flush.
+  uint32_t count = 0;
+  for (int i = 0; i < sizeof(kFlashFlusher); ++i) {
+    count += kFlashFlusher[i];
+  }
+  (void)count;
+  return OK_STATUS();
+}

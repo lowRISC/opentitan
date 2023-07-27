@@ -273,4 +273,11 @@ OT_WARN_UNUSED_RESULT
 status_t flash_ctrl_testutils_backdoor_wait_update(
     dif_flash_ctrl_state_t *flash_state, uintptr_t addr, size_t timeout);
 
+/**
+ * This flushes the read buffers. It assumes there are 4 buffers,
+ * each holding 8 byte aligned data previously read.
+ */
+OT_WARN_UNUSED_RESULT
+status_t flash_ctrl_testutils_flush_read_buffers(void);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_FLASH_CTRL_TESTUTILS_H_
