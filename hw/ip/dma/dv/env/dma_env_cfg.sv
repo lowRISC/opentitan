@@ -17,9 +17,9 @@ class dma_env_cfg extends cip_base_env_cfg #(.RAL_T(dma_reg_block));
   // Constraints
   //  TODO
 
-  `uvm_object_utils_begin( dma_env_cfg )
-    `uvm_field_object( m_tl_agent_dma_host_device_cfg, UVM_DEFAULT )
-    `uvm_field_object( m_tl_agent_dma_xbar_device_cfg, UVM_DEFAULT )
+  `uvm_object_utils_begin(dma_env_cfg)
+    `uvm_field_object(m_tl_agent_dma_host_device_cfg, UVM_DEFAULT)
+    `uvm_field_object(m_tl_agent_dma_xbar_device_cfg, UVM_DEFAULT)
   `uvm_object_utils_end
   `uvm_object_new
 
