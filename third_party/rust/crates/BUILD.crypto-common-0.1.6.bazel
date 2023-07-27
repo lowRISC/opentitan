@@ -42,7 +42,7 @@ rust_library(
     ],
     version = "0.1.6",
     deps = [
-        "@crate_index__generic-array-0.14.6//:generic_array",
+        "@crate_index__generic-array-0.14.7//:generic_array",
         "@crate_index__typenum-1.16.0//:typenum",
     ],
 )

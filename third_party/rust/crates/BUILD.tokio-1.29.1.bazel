@@ -62,9 +62,9 @@ rust_library(
     version = "1.29.1",
     deps = [
         "@crate_index__bytes-1.4.0//:bytes",
-        "@crate_index__mio-0.8.6//:mio",
-        "@crate_index__num_cpus-1.15.0//:num_cpus",
-        "@crate_index__pin-project-lite-0.2.9//:pin_project_lite",
+        "@crate_index__mio-0.8.8//:mio",
+        "@crate_index__num_cpus-1.16.0//:num_cpus",
+        "@crate_index__pin-project-lite-0.2.10//:pin_project_lite",
         "@crate_index__tokio-1.29.1//:build_script_build",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [

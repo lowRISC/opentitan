@@ -44,58 +44,58 @@ rust_library(
     version = "0.10.5",
     deps = [
         "@crate_index__cfg-if-1.0.0//:cfg_if",
-        "@crate_index__digest-0.10.6//:digest",
+        "@crate_index__digest-0.10.7//:digest",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crate_index__cpufeatures-0.2.5//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:aarch64-apple-ios": [
-            "@crate_index__cpufeatures-0.2.5//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:aarch64-apple-ios-sim": [
-            "@crate_index__cpufeatures-0.2.5//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:aarch64-linux-android": [
-            "@crate_index__cpufeatures-0.2.5//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crate_index__cpufeatures-0.2.5//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crate_index__cpufeatures-0.2.5//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:i686-apple-darwin": [
-            "@crate_index__cpufeatures-0.2.5//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:i686-linux-android": [
-            "@crate_index__cpufeatures-0.2.5//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:i686-pc-windows-msvc": [
-            "@crate_index__cpufeatures-0.2.5//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:i686-unknown-freebsd": [
-            "@crate_index__cpufeatures-0.2.5//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:i686-unknown-linux-gnu": [
-            "@crate_index__cpufeatures-0.2.5//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crate_index__cpufeatures-0.2.5//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:x86_64-apple-ios": [
-            "@crate_index__cpufeatures-0.2.5//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:x86_64-linux-android": [
-            "@crate_index__cpufeatures-0.2.5//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crate_index__cpufeatures-0.2.5//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:x86_64-unknown-freebsd": [
-            "@crate_index__cpufeatures-0.2.5//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crate_index__cpufeatures-0.2.5//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
+            "@crate_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64"))
         ],
         "//conditions:default": [],
     }),

@@ -39,6 +39,6 @@ rust_library(
     ],
     version = "0.1.3",
     deps = [
-        "@crate_index__generic-array-0.14.6//:generic_array",
+        "@crate_index__generic-array-0.14.7//:generic_array",
     ],
 )

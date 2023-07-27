@@ -39,9 +39,9 @@ rust_library(
     ],
     version = "0.4.20",
     deps = [
-        "@crate_index__globset-0.4.11//:globset",
+        "@crate_index__globset-0.4.12//:globset",
         "@crate_index__lazy_static-1.4.0//:lazy_static",
-        "@crate_index__log-0.4.17//:log",
+        "@crate_index__log-0.4.19//:log",
         "@crate_index__memchr-2.5.0//:memchr",
         "@crate_index__regex-1.9.1//:regex",
         "@crate_index__same-file-1.0.6//:same_file",

@@ -45,6 +45,6 @@ rust_library(
     version = "0.2.1",
     deps = [
         "@crate_index__crossbeam-channel-0.5.8//:crossbeam_channel",
-        "@crate_index__notify-5.1.0//:notify",
+        "@crate_index__notify-5.2.0//:notify",
     ],
 )

@@ -75,8 +75,8 @@ cargo_build_script(
     version = "0.5.0",
     visibility = ["//visibility:private"],
     deps = [
-        "@crate_index__cc-1.0.79//:cc",
-        "@crate_index__pkg-config-0.3.26//:pkg_config",
+        "@crate_index__cc-1.0.81//:cc",
+        "@crate_index__pkg-config-0.3.27//:pkg_config",
     ] + select({
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
             "@crate_index__vcpkg-0.2.15//:vcpkg",  # cfg(target_env = "msvc")

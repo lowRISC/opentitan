@@ -93,7 +93,7 @@ cargo_build_script(
     version = "0.6.4",
     visibility = ["//visibility:private"],
     deps = [
-        "@crate_index__cc-1.0.79//:cc",
+        "@crate_index__cc-1.0.81//:cc",
         "@crate_index__glob-0.3.1//:glob",
     ],
 )

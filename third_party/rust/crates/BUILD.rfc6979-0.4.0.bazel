@@ -40,6 +40,6 @@ rust_library(
     version = "0.4.0",
     deps = [
         "@crate_index__hmac-0.12.1//:hmac",
-        "@crate_index__subtle-2.4.1//:subtle",
+        "@crate_index__subtle-2.5.0//:subtle",
     ],
 )

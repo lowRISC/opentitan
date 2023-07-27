@@ -46,7 +46,7 @@ rust_library(
     version = "1.6.0",
     deps = [
         "@crate_index__memchr-2.5.0//:memchr",
-        "@crate_index__regex-automata-0.3.3//:regex_automata",
+        "@crate_index__regex-automata-0.3.4//:regex_automata",
         "@crate_index__serde-1.0.171//:serde",
     ],
 )

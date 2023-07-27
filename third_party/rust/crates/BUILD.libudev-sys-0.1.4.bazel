@@ -75,7 +75,7 @@ cargo_build_script(
     version = "0.1.4",
     visibility = ["//visibility:private"],
     deps = [
-        "@crate_index__pkg-config-0.3.26//:pkg_config",
+        "@crate_index__pkg-config-0.3.27//:pkg_config",
     ],
 )
 

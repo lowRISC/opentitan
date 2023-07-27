@@ -41,7 +41,7 @@ rust_library(
     deps = [
         "@crate_index__phf_generator-0.10.0//:phf_generator",
         "@crate_index__phf_shared-0.10.0//:phf_shared",
-        "@crate_index__proc-macro2-1.0.64//:proc_macro2",
-        "@crate_index__quote-1.0.29//:quote",
+        "@crate_index__proc-macro2-1.0.66//:proc_macro2",
+        "@crate_index__quote-1.0.32//:quote",
     ],
 )
