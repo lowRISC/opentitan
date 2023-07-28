@@ -123,7 +123,10 @@ def cmdgen_rewrite_md(filepath: Path, dry_run: bool, update: bool) -> bool:
             continue
 
         # Run the found-command in a subshell
-        res = subprocess.run(" ".join(cmd_args.cmd), shell=True, capture_output=True)
+        res = subprocess.run(" ".join(cmd_args.cmd),
+                             shell=True,
+                             capture_output=True,
+                             env={"COLUMNS": "80"})
         if res.stderr:
             logger.info(
                 f"{rel_path}:L{match_start_linum}: `{cmd}` "
