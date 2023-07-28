@@ -2,9 +2,16 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("//rules:splice.bzl", "bitstream_splice")
 load("//rules:otp.bzl", "get_otp_images")
 load("//rules:const.bzl", "KEY_AUTHENTICITY")
+load("//rules:bitstreams.bzl", "bitstream_fragment_from_manifest")
+load(
+    "//rules:bitstreams_select.bzl",
+    "bitstream_cache_filter",
+    "bitstream_cache_or",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -87,9 +94,11 @@ filegroup(
     srcs = select({
         "bitstream_skip": ["//hw/bitstream:skip"],
         "bitstream_vivado": ["//hw/top_darjeeling/bitstream/vivado:rom_mmi"],
-        "//conditions:default": ["//hw/top_darjeeling/bitstream/vivado:rom_mmi"],
-        # TODO: Reenable when Darjeeling has bitstream cache
-        #        "//conditions:default": ["@bitstreams//:chip_darjeeling_cw310_rom_mmi"],
+        "//conditions:default": bitstream_cache_or(
+            "chip_darjeeling_cw310",
+            ["@bitstreams//:chip_darjeeling_cw310_rom_mmi"],
+            ["//hw/top_darjeeling/bitstream/vivado:rom_mmi"],
+        ),
     }),
     tags = ["manual"],
 )
@@ -100,9 +109,11 @@ filegroup(
     srcs = select({
         "bitstream_skip": ["//hw/bitstream:skip"],
         "bitstream_vivado": ["//hw/top_darjeeling/bitstream/vivado:otp_mmi"],
-        "//conditions:default": ["//hw/top_darjeeling/bitstream/vivado:otp_mmi"],
-        # TODO: Reenable when Darjeeling has bitstream cache
-        #        "//conditions:default": ["@bitstreams//:chip_darjeeling_cw310_otp_mmi"],
+        "//conditions:default": bitstream_cache_or(
+            "chip_darjeeling_cw310",
+            ["@bitstreams//:chip_darjeeling_cw310_otp_mmi"],
+            ["//hw/top_darjeeling/bitstream/vivado:otp_mmi"],
+        ),
     }),
     tags = ["manual"],
 )
@@ -127,9 +138,11 @@ filegroup(
 bitstream_splice(
     name = "gcp_spliced_test_rom",
     testonly = True,
-    # TODO: Reenable when Darjeeling has bitstream cache
-    #    src = "@bitstreams//:chip_darjeeling_cw310_bitstream",
-    src = "//hw/top_darjeeling/bitstream/vivado:fpga_cw310_test_rom",
+    src = bitstream_cache_or(
+        "chip_darjeeling_cw310",
+        "@bitstreams//:chip_darjeeling_cw310_bitstream",
+        "//hw/top_darjeeling/bitstream/vivado:fpga_cw310_test_rom",
+    ),
     data = "//sw/device/lib/testing/test_rom:test_rom_fpga_cw310_scr_vmem",
     meminfo = ":rom_mmi",
     tags = ["manual"],
@@ -142,9 +155,11 @@ bitstream_splice(
     bitstream_splice(
         name = "gcp_spliced_rom_with_{}_keys".format(authenticity),
         testonly = True,
-        # TODO: Reenable when Darjeeling has bitstream cache
-        #        src = "@bitstreams//:chip_darjeeling_cw310_bitstream",
-        src = "//hw/top_darjeeling/bitstream/vivado:fpga_cw310_test_rom",
+        src = bitstream_cache_or(
+            "chip_darjeeling_cw310",
+            "@bitstreams//:chip_darjeeling_cw310_bitstream",
+            "//hw/top_darjeeling/bitstream/vivado:fpga_cw310_test_rom",
+        ),
         data = "//sw/device/silicon_creator/rom:rom_with_{}_keys_fpga_cw310_scr_vmem".format(authenticity),
         meminfo = ":rom_mmi",
         tags = ["manual"],
@@ -168,4 +183,40 @@ bitstream_splice(
     )
     for (otp_name, img_target) in get_otp_images()
     for authenticity in KEY_AUTHENTICITY
+]
+
+# Create manifest fragments for all the cached bitstreams
+[
+    bitstream_fragment_from_manifest(
+        name = "{}_cached_fragment".format(design),
+        testonly = True,
+        srcs = [
+            "@bitstreams//:{}_bitstream".format(design),
+            "@bitstreams//:{}_otp_mmi".format(design),
+            "@bitstreams//:{}_rom_mmi".format(design),
+        ],
+        design = "{}".format(design),
+        manifest = "@bitstreams//:manifest",
+        tags = ["manual"],
+    )
+    for design in bitstream_cache_filter([
+        "chip_darjeeling_cw310",
+        "chip_darjeeling_cw310_hyperdebug",
+    ])
+]
+
+[
+    pkg_tar(
+        name = "{}_cached_archive".format(design),
+        testonly = True,
+        srcs = [":{}_cached_fragment".format(design)],
+        mode = "0444",
+        package_dir = "build-bin/hw/top_darjeeling/{}".format(design),
+        strip_prefix = "/hw/top_darjeeling/bitstream/{}_cached_fragment".format(design),
+        tags = ["manual"],
+    )
+    for design in bitstream_cache_filter([
+        "chip_darjeeling_cw310",
+        "chip_darjeeling_cw310_hyperdebug",
+    ])
 ]

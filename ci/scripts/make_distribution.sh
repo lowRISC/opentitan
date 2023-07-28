@@ -24,8 +24,7 @@ readonly DIST_ARTIFACTS=(
   'sw/device/*.elf'
   'sw/device/*.bin'
   'sw/device/*.vmem'
-  'hw/top_darjeeling/lowrisc_systems_chip_darjeeling_*.bit.*'
-  'hw/top_darjeeling/*.mmi'
+  'hw/top_darjeeling/chip_darjeeling_cw310/*'
   'hw/top_earlgrey/Vchip_earlgrey_verilator'
   'hw/top_earlgrey/chip_earlgrey_cw310/*'
 )

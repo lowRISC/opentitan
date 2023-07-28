@@ -3,11 +3,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("//rules:const.bzl", "KEY_AUTHENTICITY")
 load("//rules:fusesoc.bzl", "fusesoc_build")
 load("//rules:otp.bzl", "get_otp_images")
 load("//rules:splice.bzl", "bitstream_splice")
 load("//rules:const.bzl", "KEY_AUTHENTICITY")
+load("//rules:bitstreams.bzl", "bitstream_manifest_fragment")
+load("//rules:bitstreams_select.bzl", "bitstream_cache_or")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -92,9 +95,11 @@ filegroup(
     bitstream_splice(
         name = "fpga_cw310_rom_with_{}_keys".format(authenticity),
         testonly = True,
-        # TODO: Reenable when Darjeeling has bitstream cache
-        #        src = "@bitstreams//:chip_darjeeling_cw310_bitstream",
-        src = ":fpga_cw310_test_rom",
+        src = bitstream_cache_or(
+            "chip_darjeeling_cw310",
+            "@bitstreams//:chip_darjeeling_cw310_bitstream",
+            "//hw/top_darjeeling/bitstream/vivado:fpga_cw310_test_rom",
+        ),
         data = "//sw/device/silicon_creator/rom:rom_with_{}_keys_fpga_cw310_scr_vmem".format(authenticity),
         meminfo = ":rom_mmi",
         tags = ["manual"],
@@ -171,6 +176,53 @@ filegroup(
     testonly = True,
     srcs = [":fpga_cw310_hyperdebug"],
     output_group = "otp_mmi",
+    tags = ["manual"],
+)
+
+# Bitstream cache manifest fragment targets
+bitstream_manifest_fragment(
+    name = "cw310_manifest",
+    testonly = True,
+    srcs = [":fpga_cw310"],
+    bitstream = "bitstream",
+    design = "chip_darjeeling_cw310",
+    memory_maps = {
+        "rom_mmi": "rom",
+        "otp_mmi": "otp",
+    },
+    tags = ["manual"],
+)
+
+pkg_tar(
+    name = "cw310_archive",
+    testonly = True,
+    srcs = [":cw310_manifest"],
+    mode = "0444",
+    package_dir = "build-bin/hw/top_darjeeling/chip_darjeeling_cw310",
+    strip_prefix = "/hw/top_darjeeling/bitstream/vivado/cw310_manifest",
+    tags = ["manual"],
+)
+
+bitstream_manifest_fragment(
+    name = "cw310_hyperdebug_manifest",
+    testonly = True,
+    srcs = [":fpga_cw310_hyperdebug"],
+    bitstream = "bitstream",
+    design = "chip_darjeeling_cw310_hyperdebug",
+    memory_maps = {
+        "rom_mmi": "rom",
+        "otp_mmi": "otp",
+    },
+    tags = ["manual"],
+)
+
+pkg_tar(
+    name = "cw310_hyperdebug_archive",
+    testonly = True,
+    srcs = [":cw310_hyperdebug_manifest"],
+    mode = "0444",
+    package_dir = "build-bin/hw/top_darjeeling/chip_darjeeling_cw310_hyperdebug",
+    strip_prefix = "/hw/top_darjeeling/bitstream/vivado/cw310_hyperdebug_manifest",
     tags = ["manual"],
 )
 
