@@ -490,10 +490,9 @@ jobs:
       cat $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/build.fpga_cw310_hyperdebug/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.runs/impl_1/runme.log || true
     displayName: Display synthesis & implementation logs
     condition: succeededOrFailed()
-  - template: ci/upload-artifacts-template.yml
-    parameters:
-      includePatterns:
-        - "/hw/***"
+  - publish: "$(Build.ArtifactStagingDirectory)/build-bin.tar"
+    artifact: partial-build-bin-$(System.PhaseName)
+    displayName: Upload step outputs
   - publish: "$(Build.ArtifactStagingDirectory)"
     artifact: chip_earlgrey_cw310_hyperdebug-build-out
     displayName: Upload artifacts for CW310
