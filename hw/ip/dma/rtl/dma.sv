@@ -77,6 +77,7 @@ module dma
   logic bad_size;
   logic bad_base_limit;
   logic bad_go_config;
+  logic bad_asid;
   logic config_error;
 
   logic read_rsp_error;
@@ -348,6 +349,7 @@ module dma
     bad_size       = 1'b0;
     bad_base_limit = 1'b0;
     bad_go_config  = 1'b0;
+    bad_asid       = 1'b0;
     config_error   = 1'b0;
 
     capture_addr = 1'b0;
@@ -499,6 +501,20 @@ module dma
           bad_opcode = 1'b1;
         end
 
+        // Ensure that ASIDs have valid values
+        if (!(reg2hw.address_space_id.source_asid.q inside {OtInternalAddr,
+                                                            SocControlAddr,
+                                                            SocSystemAddr,
+                                                            OtExtFlashAddr})) begin
+          bad_asid = 1'b1;
+        end
+        if (!(reg2hw.address_space_id.destination_asid.q inside {OtInternalAddr,
+                                                                 SocControlAddr,
+                                                                 SocSystemAddr,
+                                                                 OtExtFlashAddr})) begin
+          bad_asid = 1'b1;
+        end
+
         if (reg2hw.enabled_memory_range_limit.q < reg2hw.enabled_memory_range_base.q) begin
           bad_base_limit = 1'b1;
         end
@@ -562,7 +578,8 @@ module dma
                        bad_size       ||
                        bad_base_limit ||
                        bad_opcode     ||
-                       bad_go_config;
+                       bad_go_config  ||
+                       bad_asid;
 
         if (config_error) begin
           next_error[DMA_SOURCE_ADDR_ERR]      = bad_src_addr;
@@ -571,6 +588,7 @@ module dma
           next_error[DMA_SIZE_ERR]             = bad_size;
           next_error[DMA_BASE_LIMIT_ERR]       = bad_base_limit;
           next_error[DMA_GO_CONFIG_ERR]        = bad_go_config;
+          next_error[DMA_ASID_ERR]             = bad_asid;
 
           ctrl_state_d = DmaError;
         end else if (cfg_abort_en) begin
@@ -988,4 +1006,20 @@ module dma
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_dma_reg, alert_tx_o[0])
+
+  // Handshake interrupt enable register must be expanded if there are more than 32 handshake
+  // trigger wires
+  `ASSERT_NEVER(LimitHandshakeTriggerWires_A, NumLsioTriggers > 32)
+
+  // The RTL code assumes the BE signal is 4-bit wide
+  `ASSERT_NEVER(BeLengthMustBe4_A, top_pkg::TL_DBW != 4)
+
+  // There should be no register writes after GO bit is set
+  `ASSERT_NEVER(NoRegWritesAfterGo_A, reg2hw.control.go && sw_reg_wr)
+
+  // The DMA enabled memory should not be changed after lock
+  `ASSERT_NEVER(NoDmaEnabledMemoryChangeAfterLock_A,
+                prim_mubi_pkg::mubi4_test_false_loose(reg2hw.range_register_unlock_regwen.q) &&
+                (reg2hw.enabled_memory_range_base.qe ||
+                 reg2hw.enabled_memory_range_limit.qe))
 endmodule

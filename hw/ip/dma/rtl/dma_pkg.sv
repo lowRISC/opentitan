@@ -11,7 +11,9 @@ package dma_pkg;
   localparam logic [3:0] DMA_COMPLETION_ERR       = 4'd4;
   localparam logic [3:0] DMA_BASE_LIMIT_ERR       = 4'd5;
   localparam logic [3:0] DMA_GO_CONFIG_ERR        = 4'd6;
-  localparam logic [3:0] DMA_NUM_ERRORS           = 4'd7;
+  localparam logic [3:0] DMA_ASID_ERR             = 4'd7;
+
+  localparam logic [3:0] DMA_NUM_ERRORS           = 4'd8;
 
   // ASID uses a 4-bit FI protected encoding with a minimum Hamming distance of 2-bit
   typedef enum logic [3:0] {
