@@ -56,16 +56,28 @@ static status_t keygen_start(uint32_t mode) {
 }
 
 /**
- * Finalize a key generation operation and read back the modulus and private
- * exponent.
+ * Finalize a key generation operation.
  *
+ * Checks the application mode against expectations, then reads back the
+ * modulus and private exponent.
+ *
+ * @param exp_mode Application mode to expect.
  * @param num_words Number of words for modulus and private exponent.
  * @param[out] n Buffer for the modulus.
  * @param[out] d Buffer for the private exponent.
+ * @return OK or error.
  */
-static status_t keygen_finalize(size_t num_words, uint32_t *n, uint32_t *d) {
+static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
+                                uint32_t *n, uint32_t *d) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
+
+  // Read the mode from OTBN dmem and panic if it's not as expected.
+  uint32_t act_mode = 0;
+  HARDENED_TRY(otbn_dmem_read(1, kOtbnVarRsaMode, &act_mode));
+  if (act_mode != exp_mode) {
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   // Read the public modulus (n) from OTBN dmem.
   HARDENED_TRY(otbn_dmem_read(num_words, kOtbnVarRsaN, n));
@@ -83,8 +95,8 @@ status_t rsa_keygen_2048_start(void) { return keygen_start(kOtbnRsaMode2048); }
 
 status_t rsa_keygen_2048_finalize(rsa_2048_public_key_t *public_key,
                                   rsa_2048_private_key_t *private_key) {
-  HARDENED_TRY(keygen_finalize(kRsa2048NumWords, private_key->n.data,
-                               private_key->d.data));
+  HARDENED_TRY(keygen_finalize(kOtbnRsaMode2048, kRsa2048NumWords,
+                               private_key->n.data, private_key->d.data));
 
   // Copy the modulus to the public key.
   hardened_memcpy(public_key->n.data, private_key->n.data,
@@ -101,8 +113,8 @@ status_t rsa_keygen_3072_start(void) { return keygen_start(kOtbnRsaMode3072); }
 
 status_t rsa_keygen_3072_finalize(rsa_3072_public_key_t *public_key,
                                   rsa_3072_private_key_t *private_key) {
-  HARDENED_TRY(keygen_finalize(kRsa3072NumWords, private_key->n.data,
-                               private_key->d.data));
+  HARDENED_TRY(keygen_finalize(kOtbnRsaMode3072, kRsa3072NumWords,
+                               private_key->n.data, private_key->d.data));
 
   // Copy the modulus to the public key.
   hardened_memcpy(public_key->n.data, private_key->n.data,
@@ -119,8 +131,8 @@ status_t rsa_keygen_4096_start(void) { return keygen_start(kOtbnRsaMode4096); }
 
 status_t rsa_keygen_4096_finalize(rsa_4096_public_key_t *public_key,
                                   rsa_4096_private_key_t *private_key) {
-  HARDENED_TRY(keygen_finalize(kRsa4096NumWords, private_key->n.data,
-                               private_key->d.data));
+  HARDENED_TRY(keygen_finalize(kOtbnRsaMode4096, kRsa4096NumWords,
+                               private_key->n.data, private_key->d.data));
 
   // Copy the modulus to the public key.
   hardened_memcpy(public_key->n.data, private_key->n.data,

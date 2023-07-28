@@ -358,17 +358,45 @@ status_t rsa_signature_verify_2048_start(
                                        &public_key->n);
 }
 
-status_t rsa_signature_verify_2048_finalize(
+status_t rsa_signature_verify_finalize(
     const uint8_t *message, const size_t message_len,
     const rsa_signature_padding_t padding_mode,
     const rsa_signature_hash_t hash_mode,
     hardened_bool_t *verification_result) {
-  // Read the result of modexp (the recovered encoded message).
-  rsa_2048_int_t recovered_message;
-  HARDENED_TRY(rsa_modexp_2048_finalize(&recovered_message));
+  // Wait for OTBN to complete and get the size for the last RSA operation.
+  size_t num_words;
+  HARDENED_TRY(rsa_modexp_wait(&num_words));
 
-  // Check against the provided message.
-  return encoded_message_verify(
-      message, message_len, padding_mode, hash_mode, recovered_message.data,
-      sizeof(recovered_message.data), verification_result);
+  // Call the appropriate `finalize()` operation to get the recovered encoded
+  // message.
+  switch (num_words) {
+    case kRsa2048NumWords: {
+      rsa_2048_int_t recovered_message;
+      HARDENED_TRY(rsa_modexp_2048_finalize(&recovered_message));
+      return encoded_message_verify(
+          message, message_len, padding_mode, hash_mode, recovered_message.data,
+          sizeof(recovered_message.data), verification_result);
+    }
+    case kRsa3072NumWords: {
+      rsa_3072_int_t recovered_message;
+      HARDENED_TRY(rsa_modexp_3072_finalize(&recovered_message));
+      return encoded_message_verify(
+          message, message_len, padding_mode, hash_mode, recovered_message.data,
+          sizeof(recovered_message.data), verification_result);
+    }
+    case kRsa4096NumWords: {
+      rsa_4096_int_t recovered_message;
+      HARDENED_TRY(rsa_modexp_4096_finalize(&recovered_message));
+      return encoded_message_verify(
+          message, message_len, padding_mode, hash_mode, recovered_message.data,
+          sizeof(recovered_message.data), verification_result);
+    }
+    default:
+      // Unexpected number of words; should never get here.
+      return OTCRYPTO_FATAL_ERR;
+  }
+
+  // Should be unreachable.
+  HARDENED_TRAP();
+  return OTCRYPTO_FATAL_ERR;
 }

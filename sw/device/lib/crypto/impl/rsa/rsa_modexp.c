@@ -23,18 +23,17 @@ static const otbn_addr_t kOtbnVarRsaD = OTBN_ADDR_T_INIT(run_rsa_modexp, d);
 static const otbn_addr_t kOtbnVarRsaInOut =
     OTBN_ADDR_T_INIT(run_rsa_modexp, inout);
 
-/**
- * Available modes for the OTBN application. Must match the values from
- * `run_rsa_modexp.s`.
- */
-static const uint32_t kMode2048Modexp = 0x76b;
-static const uint32_t kMode2048ModexpF4 = 0x565;
-static const uint32_t kMode3072Modexp = 0x378;
-static const uint32_t kMode3072ModexpF4 = 0x6d1;
-static const uint32_t kMode4096Modexp = 0x70b;
-static const uint32_t kMode4096ModexpF4 = 0x0ee;
-
 enum {
+  /**
+   * Available modes for the OTBN application. Must match the values from
+   * `run_rsa_modexp.s`.
+   */
+  kMode2048Modexp = 0x76b,
+  kMode2048ModexpF4 = 0x565,
+  kMode3072Modexp = 0x378,
+  kMode3072ModexpF4 = 0x6d1,
+  kMode4096Modexp = 0x70b,
+  kMode4096ModexpF4 = 0x0ee,
   /**
    * Common RSA exponent with a specialized implementation.
    *
@@ -42,25 +41,60 @@ enum {
    * number.
    */
   kExponentF4 = 65537,
-  /**
-   * Number of words to represent the application mode.
-   */
-  kOtbnRsaModeWords = 1,
 };
+
+status_t rsa_modexp_wait(size_t *num_words) {
+  // Spin here waiting for OTBN to complete.
+  HARDENED_TRY(otbn_busy_wait_for_done());
+
+  // Read the application mode.
+  uint32_t mode;
+  HARDENED_TRY(otbn_dmem_read(1, kOtbnVarRsaMode, &mode));
+
+  *num_words = 0;
+  switch (mode) {
+    case kMode2048Modexp:
+      OT_FALLTHROUGH_INTENDED;
+    case kMode2048ModexpF4:
+      *num_words = kRsa2048NumWords;
+      break;
+    case kMode3072Modexp:
+      OT_FALLTHROUGH_INTENDED;
+    case kMode3072ModexpF4:
+      *num_words = kRsa3072NumWords;
+      break;
+    case kMode4096Modexp:
+      OT_FALLTHROUGH_INTENDED;
+    case kMode4096ModexpF4:
+      *num_words = kRsa4096NumWords;
+      break;
+    default:
+      // Unrecognized mode.
+      return OTCRYPTO_FATAL_ERR;
+  }
+
+  return OTCRYPTO_OK;
+}
 
 /**
  * Finalizes a modular exponentiation of variable size.
  *
- * Blocks until OTBN is done, checks for errors, reads back the result, and
- * then performs an OTBN secure wipe.
+ * Blocks until OTBN is done, checks for errors. Ensures the mode matches
+ * expectations. Reads back the result, and then performs an OTBN secure wipe.
  *
  * @param num_words Number of words for the modexp result.
  * @param[out] result Result of the modexp operation.
  * @return Status of the operation (OK or error).
  */
 static status_t rsa_modexp_finalize(const size_t num_words, uint32_t *result) {
-  // Spin here waiting for OTBN to complete.
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  // Wait for OTBN to complete and get the result size.
+  size_t num_words_inferred;
+  HARDENED_TRY(rsa_modexp_wait(&num_words_inferred));
+
+  // Check that the inferred result size matches expectations.
+  if (num_words != num_words_inferred) {
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   // Read the result.
   HARDENED_TRY(otbn_dmem_read(num_words, kOtbnVarRsaInOut, result));
@@ -76,8 +110,8 @@ status_t rsa_modexp_consttime_2048_start(const rsa_2048_int_t *base,
   HARDENED_TRY(otbn_load_app(kOtbnAppRsaModexp));
 
   // Set mode.
-  HARDENED_TRY(
-      otbn_dmem_write(kOtbnRsaModeWords, &kMode2048Modexp, kOtbnVarRsaMode));
+  uint32_t mode = kMode2048Modexp;
+  HARDENED_TRY(otbn_dmem_write(1, &mode, kOtbnVarRsaMode));
 
   // Set the base, the modulus n and private exponent d.
   HARDENED_TRY(otbn_dmem_write(kRsa2048NumWords, base->data, kOtbnVarRsaInOut));
@@ -101,8 +135,8 @@ status_t rsa_modexp_vartime_2048_start(const rsa_2048_int_t *base,
   HARDENED_TRY(otbn_load_app(kOtbnAppRsaModexp));
 
   // Set mode.
-  HARDENED_TRY(
-      otbn_dmem_write(kOtbnRsaModeWords, &kMode2048ModexpF4, kOtbnVarRsaMode));
+  uint32_t mode = kMode2048ModexpF4;
+  HARDENED_TRY(otbn_dmem_write(1, &mode, kOtbnVarRsaMode));
 
   // Set the base and the modulus n.
   HARDENED_TRY(otbn_dmem_write(kRsa2048NumWords, base->data, kOtbnVarRsaInOut));
@@ -123,8 +157,8 @@ status_t rsa_modexp_consttime_3072_start(const rsa_3072_int_t *base,
   HARDENED_TRY(otbn_load_app(kOtbnAppRsaModexp));
 
   // Set mode.
-  HARDENED_TRY(
-      otbn_dmem_write(kOtbnRsaModeWords, &kMode3072Modexp, kOtbnVarRsaMode));
+  uint32_t mode = kMode3072Modexp;
+  HARDENED_TRY(otbn_dmem_write(1, &mode, kOtbnVarRsaMode));
 
   // Set the base, the modulus n and private exponent d.
   HARDENED_TRY(otbn_dmem_write(kRsa3072NumWords, base->data, kOtbnVarRsaInOut));
@@ -148,8 +182,8 @@ status_t rsa_modexp_vartime_3072_start(const rsa_3072_int_t *base,
   HARDENED_TRY(otbn_load_app(kOtbnAppRsaModexp));
 
   // Set mode.
-  HARDENED_TRY(
-      otbn_dmem_write(kOtbnRsaModeWords, &kMode3072ModexpF4, kOtbnVarRsaMode));
+  uint32_t mode = kMode3072ModexpF4;
+  HARDENED_TRY(otbn_dmem_write(1, &mode, kOtbnVarRsaMode));
 
   // Set the base and the modulus n.
   HARDENED_TRY(otbn_dmem_write(kRsa3072NumWords, base->data, kOtbnVarRsaInOut));
@@ -170,8 +204,8 @@ status_t rsa_modexp_consttime_4096_start(const rsa_4096_int_t *base,
   HARDENED_TRY(otbn_load_app(kOtbnAppRsaModexp));
 
   // Set mode.
-  HARDENED_TRY(
-      otbn_dmem_write(kOtbnRsaModeWords, &kMode4096Modexp, kOtbnVarRsaMode));
+  uint32_t mode = kMode4096Modexp;
+  HARDENED_TRY(otbn_dmem_write(1, &mode, kOtbnVarRsaMode));
 
   // Set the base, the modulus n and private exponent d.
   HARDENED_TRY(otbn_dmem_write(kRsa4096NumWords, base->data, kOtbnVarRsaInOut));
@@ -195,8 +229,8 @@ status_t rsa_modexp_vartime_4096_start(const rsa_4096_int_t *base,
   HARDENED_TRY(otbn_load_app(kOtbnAppRsaModexp));
 
   // Set mode.
-  HARDENED_TRY(
-      otbn_dmem_write(kOtbnRsaModeWords, &kMode4096ModexpF4, kOtbnVarRsaMode));
+  uint32_t mode = kMode4096ModexpF4;
+  HARDENED_TRY(otbn_dmem_write(1, &mode, kOtbnVarRsaMode));
 
   // Set the base and the modulus n.
   HARDENED_TRY(otbn_dmem_write(kRsa4096NumWords, base->data, kOtbnVarRsaInOut));
