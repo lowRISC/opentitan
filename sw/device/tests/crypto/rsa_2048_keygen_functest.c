@@ -53,7 +53,7 @@ status_t keygen_then_sign_test(void) {
   LOG_INFO("Starting signature verification...");
   TRY(rsa_signature_verify_2048_start(&public_key, &signature));
   hardened_bool_t verification_result;
-  TRY(rsa_signature_verify_2048_finalize(
+  TRY(rsa_signature_verify_finalize(
       kTestMessage, kTestMessageLen, kRsaSignaturePaddingPkcs1v15,
       kRsaSignatureHashSha256, &verification_result));
   LOG_INFO("Signature verification complete.");

@@ -87,10 +87,11 @@ status_t rsa_signature_verify_2048_start(
     const rsa_2048_public_key_t *public_key, const rsa_2048_int_t *signature);
 
 /**
- * Waits for an RSA-2048 signature generation to complete.
+ * Waits for an signature generation to complete.
  *
- * Should be invoked only after `rsa_2048_signature_verify_start`. Blocks until
- * OTBN is done processing.
+ * Should be invoked only after a `rsa_signature_verify_{size}_start` call, but
+ * can be invoked for any size. Blocks until OTBN is done processing, and then
+ * infers the size from the OTBN application mode.
  *
  * The caller must check the `result` parameter to see if the signature passed
  * or failed verification; the return value of this function will always return
@@ -104,7 +105,7 @@ status_t rsa_signature_verify_2048_start(
  * @param[out] verification_result Whether verification succeeded or failed.
  * @return Result of the operation (OK or error).
  */
-status_t rsa_signature_verify_2048_finalize(
+status_t rsa_signature_verify_finalize(
     const uint8_t *message, const size_t message_len,
     const rsa_signature_padding_t padding_mode,
     const rsa_signature_hash_t hash_mode, hardened_bool_t *verification_result);

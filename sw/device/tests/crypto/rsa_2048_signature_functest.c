@@ -142,7 +142,7 @@ status_t pkcs1v15_verify_valid_test(void) {
   TRY(rsa_signature_verify_2048_start(&kTestPublicKey,
                                       &kValidSignaturePkcs1v15));
   hardened_bool_t verification_result;
-  TRY(rsa_signature_verify_2048_finalize(
+  TRY(rsa_signature_verify_finalize(
       kTestMessage, kTestMessageLen, kRsaSignaturePaddingPkcs1v15,
       kRsaSignatureHashSha256, &verification_result));
 
@@ -155,7 +155,7 @@ status_t pkcs1v15_verify_invalid_test(void) {
   // Try to verify an invalid signature (wrong padding mode).
   TRY(rsa_signature_verify_2048_start(&kTestPublicKey, &kValidSignaturePss));
   hardened_bool_t verification_result;
-  TRY(rsa_signature_verify_2048_finalize(
+  TRY(rsa_signature_verify_finalize(
       kTestMessage, kTestMessageLen, kRsaSignaturePaddingPkcs1v15,
       kRsaSignatureHashSha256, &verification_result));
 
