@@ -4,16 +4,18 @@
 
 """Classes to represent the crossbar's dataflow graph."""
 
-from typing import List
+from typing import List, Tuple
 
 
 class Edge:
-    """Edge class contains the connection from a node to a node.
+    """A connection between two nodes.
 
-    a Node can be a host port, output of async_fifo, port in a socket,
+    A node can be a host port, output of async_fifo, port in a socket,
     or a device port.
     """
-    def __init__(self, us, ds):
+
+    def __init__(self, us: 'Node', ds: 'Node'):
+        """Create an edge between us and ds."""
         self.us = us
         self.ds = ds
 
@@ -29,14 +31,16 @@ class Node:
 
     # If NodeType is Socket out from 1:N then address steering is used
     # But this value is also propagated up to a Host from multiple Devices
-    # Device Node should have address_from, address_to
-    # address_from = 0  #: int
-    # address_to = 0  #: int
-    addr_range = []
+    # A device Node should have address_from, address_to.
+    #
+    # Other nodes have this fields set to -1.
+    address_from: int = -1
+    address_to: int = -1
+    addr_range: List[Tuple[int, int]] = []
 
-    us = []  # Edges  # Number of Ports depends on the NodeType
+    us: List[Edge] = []  # Number of Ports depends on the NodeType
     # 1 for Host, Device, 2 for Async FIFO, N for Sockets
-    ds = []  # Edges
+    ds: List[Edge] = []
 
     # Req/Rsp FIFO. default False
     # when False, no storage element
@@ -81,6 +85,8 @@ class Host(Node):
 
 class Device(Node):
     """A device node."""
+
+    xbar: bool = False
 
 
 class AsyncFifo(Node):

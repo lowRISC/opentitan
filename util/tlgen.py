@@ -2,8 +2,7 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-r""" TileLink-Uncached Lightweight Xbar generator
-"""
+"""TileLink Uncached Lightweight crossbar generator."""
 
 import argparse
 import logging as log
@@ -16,6 +15,7 @@ import tlgen
 
 
 def main():
+    """Run tlgen as a script."""
     parser = argparse.ArgumentParser(prog="tlgen")
     parser.add_argument('--topcfg',
                         '-t',

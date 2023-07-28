@@ -2,6 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+"""Collection of helper modules for the tlgen tool."""
+
 from .doc import selfdoc  # noqa: F401
 from .elaborate import elaborate  # noqa: F401
 from .generate import generate  # noqa: F401
