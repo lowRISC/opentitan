@@ -226,7 +226,9 @@ pkg_files(
     name = "hyperdebug",
     testonly = True,
     srcs = [
-        ":fpga_cw310_hyperdebug_manifest",
+        ":fpga_cw310_test_rom_hyp",
+        ":otp_mmi_hyp",
+        ":rom_mmi_hyp",
     ],
     prefix = "earlgrey/fpga_cw310/hyperdebug",
     tags = ["manual"],
