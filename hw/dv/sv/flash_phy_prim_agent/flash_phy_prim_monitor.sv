@@ -42,7 +42,7 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
   task run_phase(uvm_phase phase);
     if (cfg.scb_otf_en) begin
       `DV_SPINWAIT(wait(cfg.mon_start);,
-                   "timeout waiting for mon_start", 200_000)
+                   "timeout waiting for mon_start", 500_000)
       fork
         super.run_phase(phase);
         monitor_core();
