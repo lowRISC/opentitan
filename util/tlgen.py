@@ -69,6 +69,10 @@ def main():
     log.info(obj)
 
     xbar = tlgen.validate(obj)
+    if xbar is None:
+        log.error("Validation failed for crossbar.")
+        exit(1)
+
     xbar.ip_path = args.ip_path
 
     if not tlgen.elaborate(xbar):
