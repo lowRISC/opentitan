@@ -8,9 +8,9 @@
   human_name:         "DOE Mailbox"
   one_line_desc:      "DOE mailbox for use as an integrated OpenTitan communication channel."
   one_paragraph_desc: '''
-  The SoC Host (or other SoC Execution Engines) may request security services from the OpenTitan RoT.
+  The SoC (i.e., the SoC Host CPU or other SoC Execution Engines) may request security services from OpenTitan.
   This means that pre-defined control information must be passed to OpenTitan from the security service requester.
-  A secure inbound/outbound mailbox can be used to implement a secure channel for these request/response transactions between the Host and the RoT.
+  A secure inbound/outbound mailbox can be used to implement a secure channel for these request/response transactions between the SoC and OpenTitan.
   '''
   cip_id:             "37"
   design_spec:        "../doc"
