@@ -5,7 +5,7 @@
 // Derived from code in the SPHINCS+ reference implementation (CC0 license):
 // https://github.com/sphincs/sphincsplus/blob/ed15dd78658f63288c7492c00260d86154b84637/ref/hash_shake.c
 
-#include "sw/device/lib/base/memory.h"
+#include "sw/lib/sw/device/base/memory.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/address.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/hash.h"

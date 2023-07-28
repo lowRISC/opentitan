@@ -14,11 +14,6 @@ def args(p):
 #include <limits.h>
 
 #include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/base/csr.h"
-#include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/runtime/ibex.h"
-#include "sw/device/lib/runtime/irq.h"
-#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -26,6 +21,11 @@ def args(p):
 % for n in sorted(irq_peripheral_names + ["rv_plic"]):
 #include "sw/ip/${n}/dif/dif_${n}.h"
 % endfor
+#include "sw/lib/sw/device/base/csr.h"
+#include "sw/lib/sw/device/base/mmio.h"
+#include "sw/lib/sw/device/runtime/ibex.h"
+#include "sw/lib/sw/device/runtime/irq.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 % for p in helper.irq_peripherals:
 static dif_${p.name}_t ${p.inst_name};

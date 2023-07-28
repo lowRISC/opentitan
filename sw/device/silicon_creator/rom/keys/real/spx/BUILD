@@ -21,7 +21,7 @@ cc_library(
         "test_key_1_spx.h",
     ],
     deps = [
-        "//sw/device/lib/base:macros",
+        "//sw/lib/sw/device/base:macros",
         "//sw/device/silicon_creator/lib/sigverify",
     ],
 )

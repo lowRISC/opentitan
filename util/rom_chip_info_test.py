@@ -25,7 +25,7 @@ class TestGenerateChipInfoCSource(unittest.TestCase):
 
 #include "sw/device/silicon_creator/lib/chip_info.h"
 
-#include "sw/device/lib/base/macros.h"
+#include "sw/lib/sw/device/base/macros.h"
 
 OT_SECTION(".chip_info")
 const chip_info_t kChipInfo = {
@@ -50,7 +50,7 @@ const chip_info_t kChipInfo = {
 
 #include "sw/device/silicon_creator/lib/chip_info.h"
 
-#include "sw/device/lib/base/macros.h"
+#include "sw/lib/sw/device/base/macros.h"
 
 OT_SECTION(".chip_info")
 const chip_info_t kChipInfo = {

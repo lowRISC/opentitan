@@ -9,7 +9,6 @@
 // util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson
 // -o hw/top_earlgrey
 #include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -47,6 +46,7 @@
 #include "sw/ip/sysrst_ctrl/dif/dif_sysrst_ctrl.h"
 #include "sw/ip/uart/dif/dif_uart.h"
 #include "sw/ip/usbdev/dif/dif_usbdev.h"
+#include "sw/lib/sw/device/base/mmio.h"
 
 #include "alert_handler_regs.h"  // Generated.
 

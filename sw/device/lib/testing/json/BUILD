@@ -52,11 +52,11 @@ cc_library(
     hdrs = ["pinmux_config.h"],
     deps = [
         ":pinmux",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
+        "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/base:status",
+        "//sw/lib/sw/device/runtime:print",
         "//sw/top_earlgrey/sw/dif:pinmux",
     ],
 )

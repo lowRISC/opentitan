@@ -119,7 +119,7 @@ def autogen_chip_info(name):
         srcs = [chip_info_src_target],
         hdrs = ["//sw/device/silicon_creator/lib:chip_info.h"],
         deps = [
-            "//sw/device/lib/base:macros",
+            "//sw/lib/sw/device/base:macros",
         ],
     )
 

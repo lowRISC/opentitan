@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/crypto/impl/integrity.h"
 
-#include "sw/device/lib/base/hardened.h"
+#include "sw/lib/sw/device/base/hardened.h"
 
 uint32_t integrity_unblinded_checksum(const crypto_unblinded_key_t *key) {
   // TODO: decide on a checksum algorithm and implement integrity checks.

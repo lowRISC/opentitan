@@ -5,14 +5,14 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/csr.h"
-#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/silicon_creator/lib/epmp_defs.h"
 #include "sw/ip/lc_ctrl/dif/dif_lc_ctrl.h"
+#include "sw/lib/sw/device/base/csr.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

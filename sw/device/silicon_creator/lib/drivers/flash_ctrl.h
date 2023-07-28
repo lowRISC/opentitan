@@ -6,9 +6,9 @@
 
 #include <limits.h>
 
-#include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/hardened.h"
-#include "sw/device/lib/base/multibits.h"
+#include "sw/lib/sw/device/base/bitfield.h"
+#include "sw/lib/sw/device/base/hardened.h"
+#include "sw/lib/sw/device/base/multibits.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #ifdef __cplusplus

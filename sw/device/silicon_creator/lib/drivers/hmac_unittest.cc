@@ -8,8 +8,8 @@
 #include <limits>
 
 #include "gtest/gtest.h"
-#include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/base/mock_abs_mmio.h"
+#include "sw/lib/sw/device/base/mmio.h"
+#include "sw/lib/sw/device/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 

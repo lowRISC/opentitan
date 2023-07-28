@@ -4,8 +4,8 @@
 
 #include "sw/device/silicon_creator/lib/epmp_state.h"
 
-#include "sw/device/lib/base/csr.h"
-#include "sw/device/lib/base/hardened.h"
+#include "sw/lib/sw/device/base/csr.h"
+#include "sw/lib/sw/device/base/hardened.h"
 
 // The context is declared as weak so that the ROM and ROM_EXT may
 // override its location.

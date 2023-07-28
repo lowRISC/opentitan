@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/base/hardened.h"
+#include "sw/lib/sw/device/base/hardened.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 
 #ifdef __cplusplus

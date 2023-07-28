@@ -28,8 +28,6 @@ Thoughts:
   randomize the sending, trying, receiving and max_packets
 */
 
-#include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -38,6 +36,8 @@ Thoughts:
 #include "sw/device/lib/testing/usb_testutils_diags.h"
 #include "sw/device/lib/testing/usb_testutils_streams.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
+#include "sw/lib/sw/device/runtime/log.h"
+#include "sw/lib/sw/device/runtime/print.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 

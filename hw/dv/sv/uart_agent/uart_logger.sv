@@ -63,7 +63,7 @@ class uart_logger extends uvm_component;
   endtask
 
   // Print log with the right severity. Severity is extracted from the log string.
-  // See sw/device/lib/runtime/log.h for details on how the severity is indicated.
+  // See sw/lib/sw/device/runtime/log.h for details on how the severity is indicated.
   // TODO: Add support for verbosity when the severity is info.
   virtual function void print_log(string log);
     string info   = "INFO: *";

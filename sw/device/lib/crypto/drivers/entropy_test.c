@@ -3,14 +3,14 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/device/lib/crypto/drivers/entropy.h"
 
-#include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/base/status.h"
+#include "sw/lib/sw/device/base/memory.h"
+#include "sw/lib/sw/device/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy_kat.h"
-#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/otbn_randomness_impl.h"
 #include "sw/ip/otbn/dif/dif_otbn.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

@@ -6,7 +6,7 @@
 
 #include <stdbool.h>
 
-#include "sw/device/lib/base/hardened_memory.h"
+#include "sw/lib/sw/device/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/sha2/sha256.h"

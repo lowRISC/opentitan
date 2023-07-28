@@ -5,7 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_SHA2_SHA512_H_
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_SHA2_SHA512_H_
 
-#include "sw/device/lib/base/hardened.h"
+#include "sw/lib/sw/device/base/hardened.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 
 #ifdef __cplusplus

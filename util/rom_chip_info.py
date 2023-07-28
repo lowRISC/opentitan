@@ -30,7 +30,7 @@ def generate_chip_info_c_source(scm_revision: int) -> str:
 
 #include "sw/device/silicon_creator/lib/chip_info.h"
 
-#include "sw/device/lib/base/macros.h"
+#include "sw/lib/sw/device/base/macros.h"
 
 OT_SECTION(".chip_info")
 const chip_info_t kChipInfo = {{

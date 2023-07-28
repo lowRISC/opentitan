@@ -115,7 +115,7 @@ index 08d3799da..c9e8def8a 100644
  
 -#include <stdlib.h>
 -#include <string.h>
-+#include "sw/device/lib/base/memory.h"
++#include "sw/lib/sw/device/base/memory.h"
  
  /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
   * all the API functions to use the MPU wrappers.  That should only be done when
@@ -129,7 +129,7 @@ index 91af83382..efe7cfb90 100644
  /* Standard includes. */
 -#include <stdlib.h>
 -#include <string.h>
-+#include "sw/device/lib/base/memory.h"
++#include "sw/lib/sw/device/base/memory.h"
  
  /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
   * all the API functions to use the MPU wrappers.  That should only be done when

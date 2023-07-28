@@ -3,11 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "hw/ip/aes/model/aes_modes.h"
-#include "sw/device/lib/base/math.h"
-#include "sw/device/lib/base/multibits.h"
+#include "sw/lib/sw/device/base/math.h"
+#include "sw/lib/sw/device/base/multibits.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_3072_verify.h"
-#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aes_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/hmac_testutils.h"
@@ -36,6 +35,7 @@
 #include "sw/ip/spi_device/dif/dif_spi_device.h"
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
 #include "sw/ip/uart/dif/dif_uart.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 #include "adc_ctrl_regs.h"     // Generated.
 #include "aes_regs.h"          // Generated.

@@ -5,8 +5,8 @@
 #ifndef OPENTITAN_SW_DEVICE_TESTS_SPI_HOST_FLASH_TEST_IMPL_H_
 #define OPENTITAN_SW_DEVICE_TESTS_SPI_HOST_FLASH_TEST_IMPL_H_
 
-#include "sw/device/lib/base/status.h"
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
+#include "sw/lib/sw/device/base/status.h"
 
 /**
  * Send the sw_reset command.

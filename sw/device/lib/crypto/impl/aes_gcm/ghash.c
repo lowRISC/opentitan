@@ -4,8 +4,8 @@
 
 #include "sw/device/lib/crypto/impl/aes_gcm/ghash.h"
 
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/memory.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/memory.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('g', 'h', 'a')

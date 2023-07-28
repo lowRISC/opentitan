@@ -13,8 +13,8 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":p256_common",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:hardened_memory",
+        "//sw/lib/sw/device/base:hardened",
+        "//sw/lib/sw/device/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/otbn/crypto:p256_ecdh",
     ],
@@ -27,8 +27,8 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":p256_common",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:hardened_memory",
+        "//sw/lib/sw/device/base:hardened",
+        "//sw/lib/sw/device/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/otbn/crypto:p256_ecdsa",
     ],

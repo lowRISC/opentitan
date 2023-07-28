@@ -2,9 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/runtime/ibex.h"
-#include "sw/device/lib/runtime/irq.h"
-#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
@@ -16,6 +13,9 @@
 #include "sw/ip/pwrmgr/dif/dif_pwrmgr.h"
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
 #include "sw/ip/sysrst_ctrl/dif/dif_sysrst_ctrl.h"
+#include "sw/lib/sw/device/runtime/ibex.h"
+#include "sw/lib/sw/device/runtime/irq.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "pwrmgr_regs.h"

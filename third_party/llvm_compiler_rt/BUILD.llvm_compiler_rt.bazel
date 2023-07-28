@@ -5,7 +5,7 @@
 package(default_visibility = ["//visibility:public"])
 
 # Using `filegroup()` because the actual library depends on
-# `//sw/device/lib/base:memory` and thus needs to be defined outside.
+# `//sw/lib/sw/device/base:memory` and thus needs to be defined outside.
 filegroup(
     name = "srcs",
     srcs = [

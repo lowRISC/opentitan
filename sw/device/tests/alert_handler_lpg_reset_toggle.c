@@ -7,10 +7,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/math.h"
-#include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/runtime/irq.h"
-#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/nv_counter_testutils.h"
@@ -27,6 +23,10 @@
 #include "sw/ip/spi_device/dif/dif_spi_device.h"
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
 #include "sw/ip/usbdev/dif/dif_usbdev.h"
+#include "sw/lib/sw/device/base/math.h"
+#include "sw/lib/sw/device/base/mmio.h"
+#include "sw/lib/sw/device/runtime/irq.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 #include "alert_handler_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"

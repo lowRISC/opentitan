@@ -19,9 +19,9 @@ ${autogen_banner}
 #include "sw/ip/${ip.name_snake}/dif/autogen/dif_${ip.name_snake}_autogen.h"
 
 #include "gtest/gtest.h"
-#include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/base/mock_mmio.h"
 #include "sw/ip/base/dif/dif_test_base.h"
+#include "sw/lib/sw/device/base/mmio.h"
+#include "sw/lib/sw/device/base/mock_mmio.h"
 
 #include "${ip.name_snake}_regs.h"  // Generated.
 

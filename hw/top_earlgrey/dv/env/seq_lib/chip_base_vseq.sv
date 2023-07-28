@@ -286,7 +286,7 @@ class chip_base_vseq #(
   virtual function void initialize_otp_sig_verify();
     // Use otbn mod_exp implementation for signature
     // verification. See the definition of `hardened_bool_t` in
-    // sw/device/lib/base/hardened.h.
+    // sw/lib/sw/device/base/hardened.h.
     cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgSigverifyRsaModExpIbexEnOffset,
                                      32'h1d4);
   endfunction : initialize_otp_sig_verify

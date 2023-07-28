@@ -5,7 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CFI_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CFI_H_
 
-#include "sw/device/lib/base/hardened.h"
+#include "sw/lib/sw/device/base/hardened.h"
 
 /**
  * @brief Control Flow Integrity (CFI).

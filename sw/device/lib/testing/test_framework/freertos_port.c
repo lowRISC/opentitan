@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/runtime/irq.h"
-#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/rv_timer/dif/dif_rv_timer.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/runtime/irq.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 // TODO: make this toplevel agnostic.
 #include "external/freertos/include/FreeRTOS.h"

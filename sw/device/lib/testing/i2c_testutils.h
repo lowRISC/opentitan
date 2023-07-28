@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/base/status.h"
 #include "sw/ip/i2c/dif/dif_i2c.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
+#include "sw/lib/sw/device/base/status.h"
 
 /**
  * Construct an I2C write as an I2C host.

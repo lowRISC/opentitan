@@ -19,8 +19,8 @@ MUBI_CORE_OUT_PATH = "hw/ip/prim/prim_mubi.core"
 MUBI_SENDER_OUT_PATH = "hw/ip/prim/rtl/prim_mubi{}_sender.sv"
 MUBI_SYNC_OUT_PATH = "hw/ip/prim/rtl/prim_mubi{}_sync.sv"
 MUBI_DEC_OUT_PATH = "hw/ip/prim/rtl/prim_mubi{}_dec.sv"
-MUBI_SW_OUT_PATH = "sw/device/lib/base/multibits.h"
-MUBI_SW_ASM_OUT_PATH = "sw/device/lib/base/multibits_asm.h"
+MUBI_SW_OUT_PATH = "sw/lib/sw/device/base/multibits.h"
+MUBI_SW_ASM_OUT_PATH = "sw/lib/sw/device/base/multibits_asm.h"
 
 N_MAX_NIBBLES = 4
 

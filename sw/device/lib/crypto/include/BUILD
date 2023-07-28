@@ -14,7 +14,7 @@ cc_library(
     name = "datatypes",
     hdrs = ["datatypes.h"],
     deps = [
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:status",
+        "//sw/lib/sw/device/base:hardened",
+        "//sw/lib/sw/device/base:status",
     ],
 )

@@ -14,7 +14,7 @@
 
 #include "sw/device/lib/testing/usb_testutils_streams.h"
 
-#include "sw/device/lib/runtime/print.h"
+#include "sw/lib/sw/device/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/usb_testutils_diags.h"
 

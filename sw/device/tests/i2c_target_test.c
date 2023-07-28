@@ -6,13 +6,6 @@
 #include <assert.h>
 
 #include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/runtime/hart.h"
-#include "sw/device/lib/runtime/irq.h"
-#include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/i2c_testutils.h"
 #include "sw/device/lib/testing/json/command.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
@@ -25,6 +18,13 @@
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
 #include "sw/ip/pwrmgr/dif/dif_pwrmgr.h"
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/memory.h"
+#include "sw/lib/sw/device/base/mmio.h"
+#include "sw/lib/sw/device/runtime/hart.h"
+#include "sw/lib/sw/device/runtime/irq.h"
+#include "sw/lib/sw/device/runtime/log.h"
+#include "sw/lib/sw/device/runtime/print.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "i2c_regs.h"  // Generated.

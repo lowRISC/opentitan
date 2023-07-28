@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/runtime/log.h"
+#include "sw/lib/sw/device/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 

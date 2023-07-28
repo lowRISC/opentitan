@@ -26,7 +26,7 @@
  *
  */
 
-#include "sw/device/lib/base/memory.h"
+#include "sw/lib/sw/device/base/memory.h"
 
 /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
  * all the API functions to use the MPU wrappers.  That should only be done when

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/device/silicon_creator/manuf/lib/provisioning.h"
 
-#include "sw/device/lib/base/status.h"
+#include "sw/lib/sw/device/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/ecc/p256_common.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"

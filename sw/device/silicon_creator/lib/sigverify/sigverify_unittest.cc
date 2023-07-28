@@ -10,8 +10,8 @@
 #include <unordered_set>
 
 #include "gtest/gtest.h"
-#include "sw/device/lib/base/hardened.h"
-#include "sw/device/lib/base/macros.h"
+#include "sw/lib/sw/device/base/hardened.h"
+#include "sw/lib/sw/device/base/macros.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/lib/sigverify/mock_mod_exp_ibex.h"

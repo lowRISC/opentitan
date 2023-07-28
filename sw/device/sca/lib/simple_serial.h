@@ -8,9 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/status.h"
 #include "sw/ip/base/dif/dif_base.h"
 #include "sw/ip/uart/dif/dif_uart.h"
+#include "sw/lib/sw/device/base/status.h"
 
 /**
  * @file

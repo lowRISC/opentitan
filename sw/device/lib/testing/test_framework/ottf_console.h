@@ -7,8 +7,8 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/base/status.h"
 #include "sw/ip/uart/dif/dif_uart.h"
+#include "sw/lib/sw/device/base/status.h"
 
 /**
  * Flow control state.

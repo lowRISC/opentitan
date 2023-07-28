@@ -6,10 +6,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/abs_mmio.h"
-#include "sw/device/lib/base/math.h"
-#include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/nv_counter_testutils.h"
@@ -23,6 +19,10 @@
 #include "sw/ip/pwrmgr/dif/dif_pwrmgr.h"
 #include "sw/ip/rstmgr/dif/dif_rstmgr.h"
 #include "sw/ip/sysrst_ctrl/dif/dif_sysrst_ctrl.h"
+#include "sw/lib/sw/device/base/abs_mmio.h"
+#include "sw/lib/sw/device/base/math.h"
+#include "sw/lib/sw/device/base/mmio.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

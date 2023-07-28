@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/base/mock_csr.h"
 
-#include "sw/device/lib/base/csr.h"
+#include "sw/lib/sw/device/base/csr.h"
 
 namespace mock_csr {
 extern "C" {

@@ -6,7 +6,7 @@
 #define OPENTITAN_SW_DEVICE_LIB_UJSON_UJSON_H_
 #include <stdint.h>
 
-#include "sw/device/lib/base/status.h"
+#include "sw/lib/sw/device/base/status.h"
 #ifdef __cplusplus
 extern "C" {
 #endif

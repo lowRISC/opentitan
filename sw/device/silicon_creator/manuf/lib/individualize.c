@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
 
-#include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/multibits.h"
-#include "sw/device/lib/base/status.h"
+#include "sw/lib/sw/device/base/bitfield.h"
+#include "sw/lib/sw/device/base/multibits.h"
+#include "sw/lib/sw/device/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"

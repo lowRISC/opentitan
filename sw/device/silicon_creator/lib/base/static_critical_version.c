@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/base/static_critical_version.h"
 
-#include "sw/device/lib/base/macros.h"
+#include "sw/lib/sw/device/base/macros.h"
 
 /**
  * Static critical region format version.

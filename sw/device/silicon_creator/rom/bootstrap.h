@@ -4,7 +4,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_BOOTSTRAP_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_BOOTSTRAP_H_
 
-#include "sw/device/lib/base/hardened.h"
+#include "sw/lib/sw/device/base/hardened.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #ifdef __cplusplus

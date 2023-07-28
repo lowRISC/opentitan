@@ -78,7 +78,7 @@ build:ot_coverage_on_target --define='measure_coverage_on_target=true'
 # Instrument selectively to limit size overhead when measuring on-target coverage.
 # Note: We have to disable optimizations until the corresponding item in #16761 is
 # resolved.
-build:ot_coverage_on_target --per_file_copt='//sw/device/silicon_creator[/:].*,//sw/device/lib/base:.*@-fprofile-instr-generate,-fcoverage-mapping,-O0'
+build:ot_coverage_on_target --per_file_copt='//sw/device/silicon_creator[/:].*,//sw/lib/sw/device/base:.*@-fprofile-instr-generate,-fcoverage-mapping,-O0'
 # Needed to be able to build host binaries while collecting coverage.
 coverage:ot_coverage_on_target --platforms=""
 

@@ -10,7 +10,7 @@ cc_library(
     hdrs = ["address.h"],
     deps = [
         ":params",
-        "//sw/device/lib/base:memory",
+        "//sw/lib/sw/device/base:memory",
     ],
 )
 
@@ -67,7 +67,7 @@ cc_library(
         ":address",
         ":context",
         ":params",
-        "//sw/device/lib/base:macros",
+        "//sw/lib/sw/device/base:macros",
         "//sw/device/silicon_creator/lib/drivers:kmac",
     ],
 )
@@ -80,7 +80,7 @@ cc_library(
         ":address",
         ":params",
         ":thash",
-        "//sw/device/lib/base:memory",
+        "//sw/lib/sw/device/base:memory",
         "//sw/device/silicon_creator/lib:error",
     ],
 )
@@ -98,7 +98,7 @@ cc_library(
         ":thash",
         ":utils",
         ":wots",
-        "//sw/device/lib/base:memory",
+        "//sw/lib/sw/device/base:memory",
         "//sw/device/silicon_creator/lib:error",
     ],
 )
@@ -113,7 +113,7 @@ cc_library(
         ":params",
         ":thash",
         ":utils",
-        "//sw/device/lib/base:memory",
+        "//sw/lib/sw/device/base:memory",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/drivers:kmac",
     ],

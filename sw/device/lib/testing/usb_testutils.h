@@ -9,9 +9,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/usbdev/dif/dif_usbdev.h"
+#include "sw/lib/sw/device/base/status.h"
 #include "usb_testutils_diags.h"
 
 // Result codes to rx/tx callback handlers

@@ -21,7 +21,7 @@ opentitan_flash_binary(
     ],
     deps = [
         ":hello_world_lib",
-        "//sw/device/lib/base:mmio",
+        "//sw/lib/sw/device/base:mmio",
     ],
 )
 
@@ -32,15 +32,15 @@ cc_library(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/examples:demos",
         "//sw/device/lib/arch:device",
-        "//sw/device/lib/crt",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_start",
         "//sw/device/lib/testing/test_framework:ottf_test_config",
+        "//sw/lib/sw/device/crt",
+        "//sw/lib/sw/device/runtime:hart",
+        "//sw/lib/sw/device/runtime:log",
+        "//sw/lib/sw/device/runtime:print",
         "//sw/top_earlgrey/sw/dif:gpio",
         "//sw/top_earlgrey/sw/dif:pinmux",
         "//sw/top_earlgrey/sw/dif:spi_device",

@@ -12,7 +12,7 @@ extern "C" {
 #endif
 
 // Note: the PrivateStatus enum values must be in the same order as the
-// values in //sw/device/lib/base/absl_status.h.
+// values in //sw/lib/sw/device/base/absl_status.h.
 
 // clang-format off
 #define ENUM_PRIVATE_STATUS(_, value) \

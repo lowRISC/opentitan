@@ -74,7 +74,7 @@ cc_library(
     name = "test_hooks_1",
     srcs = ["test_hooks_1.c"],
     deps = [
-        "@//sw/device/lib/runtime:log",
+        "@//sw/lib/sw/device/runtime:log",
     ],
     alwayslink = True,
 )
@@ -95,7 +95,7 @@ cc_library(
 #    # `deps` is a list of dependencies for this library.
 #    # Any dependencies local to this repo can start with `//`.
 #    # Any dependencies from the main opentitan repo must start with `@//`.
-#    deps = ["@//sw/device/lib/runtime:log"],
+#    deps = ["@//sw/lib/sw/device/runtime:log"],
 #
 #    # We use alwayslink to force the symbols exported by this library to
 #    # override the default test hook weak symbols provided by the default
@@ -112,7 +112,7 @@ cc_library(
 cc_library(
     name = "test_hooks",
     srcs = ["test_hooks_default.c"],
-    deps = ["@//sw/device/lib/base:macros"] + _TEST_HOOKS_DEPS,
+    deps = ["@//sw/lib/sw/device/base:macros"] + _TEST_HOOKS_DEPS,
 )
 
 ################################################################################

@@ -5,10 +5,10 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_ENTROPY_TESTUTILS_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_ENTROPY_TESTUTILS_H_
 
-#include "sw/device/lib/base/status.h"
 #include "sw/ip/csrng/dif/dif_csrng.h"
 #include "sw/ip/edn/dif/dif_edn.h"
 #include "sw/ip/entropy_src/dif/dif_entropy_src.h"
+#include "sw/lib/sw/device/base/status.h"
 
 /**
  * Returns default entropy source configuration.

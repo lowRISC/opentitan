@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/crypto/impl/keyblob.h"
 
-#include "sw/device/lib/base/hardened_memory.h"
+#include "sw/lib/sw/device/base/hardened_memory.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/status.h"
 

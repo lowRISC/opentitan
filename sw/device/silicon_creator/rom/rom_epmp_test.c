@@ -8,14 +8,6 @@
 #include <stdint.h>
 
 #include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/base/abs_mmio.h"
-#include "sw/device/lib/base/csr.h"
-#include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/base/stdasm.h"
-#include "sw/device/lib/runtime/hart.h"
-#include "sw/device/lib/runtime/ibex.h"
-#include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
@@ -25,6 +17,14 @@
 #include "sw/device/silicon_creator/rom/rom_epmp.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
 #include "sw/ip/sram_ctrl/dif/dif_sram_ctrl.h"
+#include "sw/lib/sw/device/base/abs_mmio.h"
+#include "sw/lib/sw/device/base/csr.h"
+#include "sw/lib/sw/device/base/memory.h"
+#include "sw/lib/sw/device/base/stdasm.h"
+#include "sw/lib/sw/device/runtime/hart.h"
+#include "sw/lib/sw/device/runtime/ibex.h"
+#include "sw/lib/sw/device/runtime/log.h"
+#include "sw/lib/sw/device/runtime/print.h"
 
 #include "flash_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"

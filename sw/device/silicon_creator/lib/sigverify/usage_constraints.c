@@ -4,8 +4,8 @@
 
 #include "sw/device/silicon_creator/lib/sigverify/usage_constraints.h"
 
-#include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/hardened.h"
+#include "sw/lib/sw/device/base/bitfield.h"
+#include "sw/lib/sw/device/base/hardened.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 
 #include "otp_ctrl_regs.h"

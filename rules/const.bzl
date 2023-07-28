@@ -10,7 +10,7 @@ CONST = struct(
     HARDENED_FALSE = 0x1d4,
     HARDENED_BYTE_TRUE = 0xa5,
     HARDENED_BYTE_FALSE = 0x4b,
-    # Must match the definitions in sw/device/lib/base/multibits.h
+    # Must match the definitions in sw/lib/sw/device/base/multibits.h
     MUBI4_TRUE = 0x6,
     MUBI4_FALSE = 0x9,
     # Must match the definitions in chip.h.

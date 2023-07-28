@@ -18,7 +18,7 @@
 #ifndef RUST_PREPROCESSOR_EMIT
 #error "Do not include this file directly.  Include ujson_derive.h instead."
 #endif  // RUST_PREPROCESSOR_EMIT
-#include "sw/device/lib/base/adv_macros.h"
+#include "sw/lib/sw/device/base/adv_macros.h"
 
 #define uint64_t u64
 #define uint32_t u32

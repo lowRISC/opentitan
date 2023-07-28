@@ -8,15 +8,15 @@ device software.
 
 These are organised into the `sw/device/lib` directory.
 
--   [`sw/device/lib/base`](https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/base)
+-   [`sw/lib/sw/device/base`](https://github.com/lowRISC/opentitan/tree/master/sw/lib/sw/device/base)
     contains the Base Libraries, including
-    [freestanding C library headers](https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/base/freestanding).
+    [freestanding C library headers](https://github.com/lowRISC/opentitan/tree/master/sw/lib/sw/device/base/freestanding).
     The Base Libraries are simple libraries that can be used by any other OpenTitan device software libraries.
 -   [`sw/ip/base/dif`](../../ip/base/dif/README.md)
     contains the [Device Interface Functions](../../../doc/contributing/sw/device_interface_functions.md).
 -   `sw/device/lib/arch` contains the libraries to be used on specific device
     configurations (for instance FPGA, Simulation, etc.).
--   [`sw/device/lib/runtime`](https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/runtime)
+-   [`sw/lib/sw/device/runtime`](https://github.com/lowRISC/opentitan/tree/master/sw/lib/sw/device/runtime)
     contains general libraries for more advanced on-device functionality
     (including logging, printing, and interacting with the RISC-V core).
 -   [`sw/device/lib/testing`](./testing/README.md)

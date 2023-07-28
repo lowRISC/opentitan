@@ -6,9 +6,6 @@
 
 #include <stdbool.h>
 
-#include "sw/device/lib/base/csr.h"
-#include "sw/device/lib/base/status.h"
-#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/json/command.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
@@ -18,6 +15,9 @@
 #include "sw/ip/lc_ctrl/dif/dif_lc_ctrl.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
 #include "sw/ip/sram_ctrl/dif/dif_sram_ctrl.h"
+#include "sw/lib/sw/device/base/csr.h"
+#include "sw/lib/sw/device/base/status.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 #include "csrng_regs.h"
 #include "edn_regs.h"

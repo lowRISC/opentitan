@@ -4,7 +4,7 @@
 
 #include <stdbool.h>
 
-#include "sw/device/lib/base/macros.h"
+#include "sw/lib/sw/device/base/macros.h"
 
 // The default test hooks do nothing, but exist as the OTTF expects some hooks
 // to exist. Additionally, they are weak symbols so they may be overridden by

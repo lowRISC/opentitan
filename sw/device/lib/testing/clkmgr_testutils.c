@@ -4,8 +4,8 @@
 
 #include "sw/device/lib/testing/clkmgr_testutils.h"
 
-#include "sw/device/lib/base/math.h"
 #include "sw/ip/clkmgr/dif/dif_clkmgr.h"
+#include "sw/lib/sw/device/base/math.h"
 
 static const char *measure_clock_names[kDifClkmgrMeasureClockUsb + 1] = {
     "io_clk", "io_div2_clk", "io_div4_clk", "main_clk", "usb_clk"};

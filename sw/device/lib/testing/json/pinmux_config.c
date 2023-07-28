@@ -6,11 +6,11 @@
 #include "sw/device/lib/testing/json/pinmux.h"
 #undef UJSON_SERDE_IMPL
 #define UJSON_SERDE_IMPL 1
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/testing/json/pinmux_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/status.h"
 
 status_t pinmux_config(ujson_t *uj, dif_pinmux_t *pinmux) {
   pinmux_config_t config;

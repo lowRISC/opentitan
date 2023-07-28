@@ -10,9 +10,9 @@ cc_library(
     hdrs = ["demos.h"],
     deps = [
         "//sw/device/lib/arch:device",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/lib/sw/device/runtime:hart",
+        "//sw/lib/sw/device/runtime:log",
         "//sw/top_earlgrey/sw/dif:gpio",
         "//sw/top_earlgrey/sw/dif:spi_device",
         "//sw/top_earlgrey/sw/dif:uart",

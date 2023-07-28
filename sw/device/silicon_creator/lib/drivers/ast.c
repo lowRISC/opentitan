@@ -5,9 +5,9 @@
 #include "sw/device/silicon_creator/lib/drivers/ast.h"
 
 #include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/base/abs_mmio.h"
-#include "sw/device/lib/base/csr.h"
-#include "sw/device/lib/base/multibits.h"
+#include "sw/lib/sw/device/base/abs_mmio.h"
+#include "sw/lib/sw/device/base/csr.h"
+#include "sw/lib/sw/device/base/multibits.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"

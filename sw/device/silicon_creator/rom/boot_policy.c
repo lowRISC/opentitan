@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/rom/boot_policy.h"
 
-#include "sw/device/lib/base/hardened.h"
+#include "sw/lib/sw/device/base/hardened.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"

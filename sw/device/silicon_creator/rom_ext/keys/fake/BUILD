@@ -16,7 +16,7 @@ cc_library(
     ],
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//sw/device/lib/base:macros",
+        "//sw/lib/sw/device/base:macros",
         "//sw/device/silicon_creator/lib/sigverify",
     ],
 )
@@ -31,7 +31,7 @@ cc_test(
     ],
     deps = [
         ":fake",
-        "//sw/device/lib/base:hardened",
+        "//sw/lib/sw/device/base:hardened",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",

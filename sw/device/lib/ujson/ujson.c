@@ -8,9 +8,9 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "sw/device/lib/base/math.h"
-#include "sw/device/lib/base/status.h"
-#include "sw/device/lib/runtime/print.h"
+#include "sw/lib/sw/device/base/math.h"
+#include "sw/lib/sw/device/base/status.h"
+#include "sw/lib/sw/device/runtime/print.h"
 #include "sw/device/lib/ujson/private_status.h"
 #include "sw/device/silicon_creator/lib/crc32.h"
 

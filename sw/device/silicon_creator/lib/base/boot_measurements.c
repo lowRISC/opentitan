@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 
-#include "sw/device/lib/base/macros.h"
+#include "sw/lib/sw/device/base/macros.h"
 
 // This symbol is declared as weak so that the ROM and ROM_EXT may
 // override its location.

@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/base/math.h"
-#include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/testing/clkmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -11,6 +9,8 @@
 #include "sw/ip/clkmgr/dif/dif_clkmgr.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
 #include "sw/ip/usbdev/dif/dif_usbdev.h"
+#include "sw/lib/sw/device/base/math.h"
+#include "sw/lib/sw/device/base/mmio.h"
 
 #include "ast_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"

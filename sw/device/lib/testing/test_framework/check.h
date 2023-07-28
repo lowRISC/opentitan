@@ -7,13 +7,13 @@
 
 #include <stdbool.h>
 
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/base/status.h"
-#include "sw/device/lib/runtime/hart.h"
-#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/ip/base/dif/dif_base.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/memory.h"
+#include "sw/lib/sw/device/base/status.h"
+#include "sw/lib/sw/device/runtime/hart.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 /**
  * Runtime assertion macros with log.h integration.

@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "sw/device/lib/base/status.h"
+#include "sw/lib/sw/device/base/status.h"
 #include "sw/device/lib/ujson/example.h"
 
 status_t stdio_getc(void *context) {

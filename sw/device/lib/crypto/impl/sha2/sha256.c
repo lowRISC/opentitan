@@ -4,10 +4,10 @@
 
 #include "sw/device/lib/crypto/impl/sha2/sha256.h"
 
-#include "sw/device/lib/base/hardened.h"
-#include "sw/device/lib/base/hardened_memory.h"
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/memory.h"
+#include "sw/lib/sw/device/base/hardened.h"
+#include "sw/lib/sw/device/base/hardened_memory.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/memory.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/status.h"
 

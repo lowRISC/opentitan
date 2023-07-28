@@ -4,10 +4,10 @@
 
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 
-#include "sw/device/lib/runtime/ibex.h"
-#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
+#include "sw/lib/sw/device/runtime/ibex.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 /*
  * OTP the Direct Access Interface (DAI) operation time-out in micro seconds.

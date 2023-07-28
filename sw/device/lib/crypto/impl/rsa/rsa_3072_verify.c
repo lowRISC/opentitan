@@ -4,9 +4,9 @@
 
 #include "sw/device/lib/crypto/impl/rsa/rsa_3072_verify.h"
 
-#include "sw/device/lib/base/hardened.h"
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/memory.h"
+#include "sw/lib/sw/device/base/hardened.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/memory.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/status.h"

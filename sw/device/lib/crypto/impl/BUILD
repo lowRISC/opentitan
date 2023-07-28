@@ -20,8 +20,8 @@ cc_library(
     deps = [
         ":integrity",
         ":keyblob",
-        "//sw/device/lib/base:hardened_memory",
-        "//sw/device/lib/base:memory",
+        "//sw/lib/sw/device/base:hardened_memory",
+        "//sw/lib/sw/device/base:memory",
         "//sw/device/lib/crypto/drivers:aes",
         "//sw/device/lib/crypto/impl/aes_gcm",
         "//sw/device/lib/crypto/include:datatypes",
@@ -61,7 +61,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":status",
-        "//sw/device/lib/base:hardened",
+        "//sw/lib/sw/device/base:hardened",
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/drivers:kmac",
         "//sw/device/lib/crypto/impl/sha2:sha256",
@@ -75,7 +75,7 @@ cc_library(
     srcs = ["integrity.c"],
     hdrs = ["integrity.h"],
     deps = [
-        "//sw/device/lib/base:hardened",
+        "//sw/lib/sw/device/base:hardened",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
@@ -97,7 +97,7 @@ cc_library(
     deps = [
         ":integrity",
         ":status",
-        "//sw/device/lib/base:hardened_memory",
+        "//sw/lib/sw/device/base:hardened_memory",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
@@ -143,7 +143,7 @@ cc_library(
         "//conditions:default": [],
     }),
     deps = [
-        "//sw/device/lib/base:status",
+        "//sw/lib/sw/device/base:status",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
@@ -177,7 +177,7 @@ cc_library(
     deps = [
         ":integrity",
         ":keyblob",
-        "//sw/device/lib/base:hardened",
+        "//sw/lib/sw/device/base:hardened",
         "//sw/device/lib/crypto/drivers:kmac",
         "//sw/device/lib/crypto/impl/sha2:sha256",
     ],

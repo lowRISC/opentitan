@@ -6,8 +6,8 @@
 
 #include <stdbool.h>
 
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/memory.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/memory.h"
 
 #ifdef OT_PLATFORM_RV32
 OT_WARN_UNUSED_RESULT

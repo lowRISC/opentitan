@@ -8,12 +8,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/abs_mmio.h"
-#include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/runtime/hart.h"
-#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
+#include "sw/lib/sw/device/base/abs_mmio.h"
+#include "sw/lib/sw/device/base/mmio.h"
+#include "sw/lib/sw/device/runtime/hart.h"
+#include "sw/lib/sw/device/runtime/ibex.h"
 
 #include "flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"

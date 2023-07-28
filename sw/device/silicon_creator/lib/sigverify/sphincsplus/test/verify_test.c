@@ -6,10 +6,10 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/base/status.h"
-#include "sw/device/lib/runtime/ibex.h"
-#include "sw/device/lib/runtime/log.h"
+#include "sw/lib/sw/device/base/memory.h"
+#include "sw/lib/sw/device/base/status.h"
+#include "sw/lib/sw/device/runtime/ibex.h"
+#include "sw/lib/sw/device/runtime/log.h"
 #include "sw/device/lib/testing/profile.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"

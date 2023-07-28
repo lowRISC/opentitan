@@ -4,8 +4,8 @@
 
 #include "sw/device/silicon_creator/rom_ext/rom_ext_epmp.h"
 
-#include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/csr.h"
+#include "sw/lib/sw/device/base/bitfield.h"
+#include "sw/lib/sw/device/base/csr.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

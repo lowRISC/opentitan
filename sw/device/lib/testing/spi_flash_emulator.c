@@ -7,9 +7,9 @@
 #include <stdalign.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/runtime/log.h"
+#include "sw/lib/sw/device/base/bitfield.h"
+#include "sw/lib/sw/device/base/memory.h"
+#include "sw/lib/sw/device/runtime/log.h"
 #include "sw/device/lib/testing/spi_device_testutils.h"
 #include "sw/device/lib/testing/spi_flash_testutils.h"
 

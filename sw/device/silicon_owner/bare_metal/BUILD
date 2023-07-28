@@ -57,7 +57,7 @@ cc_library(
     srcs = ["bare_metal.c"],
     hdrs = ["bare_metal.h"],
     deps = [
-        "//sw/device/lib/base:macros",
+        "//sw/lib/sw/device/base:macros",
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib:rom_print",
         "//sw/device/silicon_creator/lib/base:static_critical",
@@ -84,7 +84,7 @@ opentitan_flash_binary(
     deps = [
         ":bare_metal",
         ":ld_slot_a",
-        "//sw/device/lib/crt",
+        "//sw/lib/sw/device/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
     ],
 )
@@ -97,7 +97,7 @@ opentitan_flash_binary(
     deps = [
         ":bare_metal",
         ":ld_slot_b",
-        "//sw/device/lib/crt",
+        "//sw/lib/sw/device/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
     ],
 )
@@ -110,7 +110,7 @@ opentitan_flash_binary(
     deps = [
         ":bare_metal",
         ":ld_slot_virtual",
-        "//sw/device/lib/crt",
+        "//sw/lib/sw/device/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
     ],
 )

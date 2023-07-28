@@ -4,8 +4,8 @@
 
 #include "sw/device/lib/crypto/impl/rsa/rsa_keygen.h"
 
-#include "sw/device/lib/base/hardened.h"
-#include "sw/device/lib/base/hardened_memory.h"
+#include "sw/lib/sw/device/base/hardened.h"
+#include "sw/lib/sw/device/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 
 // Module ID for status codes.

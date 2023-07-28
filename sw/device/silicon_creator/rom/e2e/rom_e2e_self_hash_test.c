@@ -4,8 +4,8 @@
 
 #include <stdbool.h>
 
-#include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/base/status.h"
+#include "sw/lib/sw/device/base/memory.h"
+#include "sw/lib/sw/device/base/status.h"
 #include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"

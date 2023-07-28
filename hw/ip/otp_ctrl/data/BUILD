@@ -79,11 +79,11 @@ otp_json(
             items = {
                 # Use software mod_exp implementation for signature
                 # verification. See the definition of `hardened_bool_t` in
-                # sw/device/lib/base/hardened.h.
+                # sw/lib/sw/device/base/hardened.h.
                 "CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN": otp_hex(CONST.HARDENED_TRUE),
                 # Mark the first three keys as valid and remaining as invalid
                 # since we currently have only three keys. See the definition of
-                # `hardened_byte_bool_t` in sw/device/lib/base/hardened.h.
+                # `hardened_byte_bool_t` in sw/lib/sw/device/base/hardened.h.
                 "CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN": otp_bytestring([
                     CONST.HARDENED_BYTE_TRUE,  # key0
                     CONST.HARDENED_BYTE_TRUE,  # key1
@@ -99,7 +99,7 @@ otp_json(
                 # sw/device/silicon_creator/lib/sigverify/spx_verify.h.
                 "CREATOR_SW_CFG_SIGVERIFY_SPX_EN": otp_hex(0x8d6c8c17),
                 # Enable use of entropy for countermeasures. See the definition
-                # of `hardened_bool_t` in sw/device/lib/base/hardened.h.
+                # of `hardened_bool_t` in sw/lib/sw/device/base/hardened.h.
                 "CREATOR_SW_CFG_RNG_EN": otp_hex(CONST.HARDENED_TRUE),
                 # ROM execution is enabled if this item is set to a non-zero
                 # value.
@@ -117,7 +117,7 @@ otp_json(
                 "CREATOR_SW_CFG_MIN_SEC_VER_BL0": otp_hex(0x0),
                 # Enable the default boot data in PROD and PROD_END life cycle
                 # states. See the definition of `hardened_bool_t` in
-                # sw/device/lib/base/hardened.h.
+                # sw/lib/sw/device/base/hardened.h.
                 "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": otp_hex(CONST.HARDENED_TRUE),
                 # Enable AST initialization.
                 "CREATOR_SW_CFG_AST_INIT_EN": otp_hex(CONST.MUBI4_TRUE),
@@ -170,7 +170,7 @@ otp_json(
             name = "OWNER_SW_CFG",
             items = {
                 # Enable bootstrap. See `hardened_bool_t` in
-                # sw/device/lib/base/hardened.h.
+                # sw/lib/sw/device/base/hardened.h.
                 "OWNER_SW_CFG_ROM_BOOTSTRAP_DIS": otp_hex(CONST.HARDENED_FALSE),
                 # Set to 0x739 to use the ROM_EXT hash measurement as the key
                 # manager attestation binding value.

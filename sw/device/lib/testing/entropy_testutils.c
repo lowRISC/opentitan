@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/device/lib/testing/entropy_testutils.h"
 
-#include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/csrng/dif/dif_csrng.h"
 #include "sw/ip/csrng/dif/shared/dif_csrng_shared.h"
 #include "sw/ip/edn/dif/dif_edn.h"
 #include "sw/ip/entropy_src/dif/dif_entropy_src.h"
+#include "sw/lib/sw/device/base/mmio.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

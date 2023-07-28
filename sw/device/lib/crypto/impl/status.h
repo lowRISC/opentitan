@@ -5,8 +5,8 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_STATUS_H_
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_STATUS_H_
 
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/status.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 
 #ifdef __cplusplus

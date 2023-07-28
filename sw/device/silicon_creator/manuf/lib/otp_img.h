@@ -5,9 +5,9 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_OTP_IMG_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_OTP_IMG_H_
 
-#include "sw/device/lib/base/status.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_img_types.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
+#include "sw/lib/sw/device/base/status.h"
 
 /**
  * Writes OTP values to target OTP `partition`.

@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
-#include "sw/device/lib/base/hardened_asm.h"
-#include "sw/device/lib/base/multibits_asm.h"
+#include "sw/lib/sw/device/base/hardened_asm.h"
+#include "sw/lib/sw/device/base/multibits_asm.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "aon_timer_regs.h"
 #include "ast_regs.h"

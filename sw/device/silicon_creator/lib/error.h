@@ -5,11 +5,11 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_ERROR_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_ERROR_H_
 
-#include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/hardened.h"
+#include "sw/lib/sw/device/base/bitfield.h"
+#include "sw/lib/sw/device/base/hardened.h"
 
 #define USING_INTERNAL_STATUS
-#include "sw/device/lib/base/internal/status.h"
+#include "sw/lib/sw/device/base/internal/status.h"
 #undef USING_INTERNAL_STATUS
 
 #ifdef __cplusplus
@@ -170,7 +170,7 @@ typedef enum rom_error {
  * Hardened version of `RETURN_IF_ERROR()`.
  *
  * See `launder32()` and `HARDENED_CHECK_EQ()` in
- * `sw/device/lib/base/hardened.h` for more details.
+ * `sw/lib/sw/device/base/hardened.h` for more details.
  *
  * @param expr_ An expression which results in a `rom_error_t`.
  */

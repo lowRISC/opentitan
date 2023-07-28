@@ -7,11 +7,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/abs_mmio.h"
-#include "sw/device/lib/base/math.h"
-#include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/runtime/irq.h"
-#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
@@ -31,6 +26,11 @@
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
 #include "sw/ip/rv_timer/dif/dif_rv_timer.h"
 #include "sw/ip/sysrst_ctrl/dif/dif_sysrst_ctrl.h"
+#include "sw/lib/sw/device/base/abs_mmio.h"
+#include "sw/lib/sw/device/base/math.h"
+#include "sw/lib/sw/device/base/mmio.h"
+#include "sw/lib/sw/device/runtime/irq.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -62,7 +62,7 @@ enum {
   // The cpu value is slightly larger as the busy_spin_micros
   // routine cycle count comes out slightly smaller due to the
   // fact that it does not divide by exactly 1M
-  // see sw/device/lib/runtime/hart.c
+  // see sw/lib/sw/device/runtime/hart.c
   kEscalationPhase0MicrosCpu = kEscalationPhase0Micros + 20,  // 120 us
   kEscalationPhase1Micros = 5 * 100,                          // 500 us
   kEscalationPhase2Micros = 50,                               // 50 us

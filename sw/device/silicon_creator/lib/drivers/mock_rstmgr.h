@@ -5,7 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_MOCK_RSTMGR_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_MOCK_RSTMGR_H_
 
-#include "sw/device/lib/base/global_mock.h"
+#include "sw/lib/sw/device/base/global_mock.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 
 namespace rom_test {

@@ -6,7 +6,7 @@
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_UJSON_OTTF_H_
 #include <stdint.h>
 
-#include "sw/device/lib/base/status.h"
+#include "sw/lib/sw/device/base/status.h"
 #include "sw/device/lib/ujson/ujson.h"
 #ifdef __cplusplus
 extern "C" {

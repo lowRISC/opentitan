@@ -15,7 +15,7 @@ cc_library(
     tags = ["manual"],
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//sw/device/lib/base:macros",
+        "//sw/lib/sw/device/base:macros",
         "//sw/device/silicon_creator/lib/sigverify",
     ],
 )

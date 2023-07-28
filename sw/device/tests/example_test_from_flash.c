@@ -14,7 +14,7 @@
 /**
  * Uncomment if you want to log messages with `LOG_{INFO,WARNING,ERROR,FATAL()`.
  */
-// #include "sw/device/lib/runtime/log.h"
+// #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 

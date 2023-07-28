@@ -35,7 +35,7 @@ CASE_SENSE_NAMES       = NO
 
 FORCE_LOCAL_INCLUDES   = NO
 STRIP_FROM_INC_PATH    = "$(SRCTREE_TOP)" \
-                         "$(SRCTREE_TOP)/sw/device/lib/base/freestanding"
+                         "$(SRCTREE_TOP)/sw/lib/sw/device/base/freestanding"
 
 GENERATE_TODOLIST      = NO
 GENERATE_TESTLIST      = NO
@@ -175,7 +175,7 @@ GENERATE_PERLMOD       = NO
 # Configuration options related to the preprocessor
 #---------------------------------------------------------------------------
 
-INCLUDE_PATH           = "$(SRCTREE_TOP)/sw/device/lib/base/freestanding"
+INCLUDE_PATH           = "$(SRCTREE_TOP)/sw/lib/sw/device/base/freestanding"
 
 INCLUDE_FILE_PATTERNS  = *.h
 

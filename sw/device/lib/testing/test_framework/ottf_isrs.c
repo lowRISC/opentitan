@@ -4,13 +4,13 @@
 
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 
-#include "sw/device/lib/base/csr.h"
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/runtime/hart.h"
-#include "sw/device/lib/runtime/ibex.h"
-#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
+#include "sw/lib/sw/device/base/csr.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/runtime/hart.h"
+#include "sw/lib/sw/device/runtime/ibex.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

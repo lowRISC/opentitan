@@ -17,10 +17,10 @@ cc_library(
     ],
     deps = [
         ":private_status",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:math",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/runtime:print",
+        "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/base:math",
+        "//sw/lib/sw/device/base:status",
+        "//sw/lib/sw/device/runtime:print",
         dual_cc_device_library_of("//sw/device/silicon_creator/lib:crc32"),
     ],
 )
@@ -35,8 +35,8 @@ cc_library(
     hdrs = ["private_status.h"],
     visibility = ["//visibility:private"],
     deps = [
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:status",
+        "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/base:status",
     ],
 )
 
@@ -51,7 +51,7 @@ cc_test(
     deps = [
         ":test_helpers",
         ":ujson",
-        "//sw/device/lib/base:status",
+        "//sw/lib/sw/device/base:status",
         "@googletest//:gtest_main",
     ],
 )
@@ -70,7 +70,7 @@ cc_test(
         ":example",
         ":test_helpers",
         ":ujson",
-        "//sw/device/lib/base:status",
+        "//sw/lib/sw/device/base:status",
         "@googletest//:gtest_main",
     ],
 )
@@ -80,6 +80,6 @@ cc_binary(
     srcs = ["example_roundtrip.c"],
     deps = [
         ":example",
-        "//sw/device/lib/base:status",
+        "//sw/lib/sw/device/base:status",
     ],
 )

@@ -90,8 +90,8 @@ rust_bindgen_library(
         "--allowlist-type=hardened_bool",
         "--allowlist-type=hardened_byte_bool",
     ],
-    cc_lib = "//sw/device/lib/base:hardened",
-    header = "//sw/device/lib/base:hardened.h",
+    cc_lib = "//sw/lib/sw/device/base:hardened",
+    header = "//sw/lib/sw/device/base:hardened.h",
     rustc_flags = [
         "--allow=non_snake_case",
         "--allow=non_upper_case_globals",
@@ -104,8 +104,8 @@ rust_bindgen_library(
     bindgen_flags = [
         "--allowlist-type=multi_bit_bool",
     ],
-    cc_lib = "//sw/device/lib/base:multibits",
-    header = "//sw/device/lib/base:multibits.h",
+    cc_lib = "//sw/lib/sw/device/base:multibits",
+    header = "//sw/lib/sw/device/base:multibits.h",
     rustc_flags = [
         "--allow=non_snake_case",
         "--allow=non_upper_case_globals",
@@ -144,8 +144,8 @@ rust_bindgen_library(
         "--allowlist-function=status_ok",
         "--generate-inline-functions",
     ],
-    cc_lib = "//sw/device/lib/base:status",
-    header = "//sw/device/lib/base:status.h",
+    cc_lib = "//sw/lib/sw/device/base:status",
+    header = "//sw/lib/sw/device/base:status.h",
     rustc_flags = [
         "--allow=non_snake_case",
         "--allow=non_upper_case_globals",

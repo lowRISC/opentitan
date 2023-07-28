@@ -24,7 +24,7 @@
 
 #if USBUTILS_ENABLE_TRC
 // May be useful on FPGA CW310
-#include "sw/device/lib/runtime/log.h"
+#include "sw/lib/sw/device/runtime/log.h"
 #define TRC_S(s) LOG_INFO("%s", s)
 #define TRC_I(i, b) LOG_INFO("0x%x", i)
 #define TRC_C(c) LOG_INFO("%c", c)

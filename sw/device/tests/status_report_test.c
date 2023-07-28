@@ -4,7 +4,7 @@
 
 #include <stdbool.h>
 
-#include "sw/device/lib/base/status_report_unittest_c.h"
+#include "sw/lib/sw/device/base/status_report_unittest_c.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 

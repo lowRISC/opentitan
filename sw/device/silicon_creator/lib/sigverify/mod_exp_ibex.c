@@ -6,8 +6,8 @@
 
 #include <stddef.h>
 
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/memory.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/memory.h"
 
 /**
  * Subtracts the modulus of `key` from `a` in-place, i.e. `a -= n`.

@@ -10,7 +10,7 @@ cc_library(
     name = "llvm_compiler_rt",
     srcs = ["@llvm_compiler_rt//:srcs"],
     deps = [
-        "//sw/device/lib/base:memory",
+        "//sw/lib/sw/device/base:memory",
         "@llvm_compiler_rt//:hdrs",
     ],
 )

@@ -5,13 +5,13 @@
 #include "sw/device/lib/testing/pinmux_testutils.h"
 
 #include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/status.h"
-#include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/base/dif/dif_base.h"
 #include "sw/ip/gpio/dif/dif_gpio.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/status.h"
+#include "sw/lib/sw/device/runtime/hart.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

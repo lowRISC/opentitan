@@ -5,8 +5,8 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_OTP_CTRL_TESTUTILS_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_OTP_CTRL_TESTUTILS_H_
 
-#include "sw/device/lib/base/status.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
+#include "sw/lib/sw/device/base/status.h"
 
 /**
  * Enum that encodes the expectation for the check_dai_access_error function.

@@ -359,7 +359,7 @@ Code snippets giving examples of 256x256 and 384x384 multiplies can be found in 
 
 ## Driver
 
-A higher-level driver for the OTBN block is available at `sw/device/lib/runtime/otbn.h`.
+A higher-level driver for the OTBN block is available at `sw/lib/sw/device/runtime/otbn.h`.
 
 Another driver for OTBN is part of the silicon creator code at `sw/device/silicon_creator/lib/drivers/otbn.h`.
 

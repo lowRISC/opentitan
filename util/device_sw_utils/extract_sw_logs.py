@@ -58,7 +58,7 @@ def cleanup_format(_format):
     - Change %[N]?X         --> %[N]?H
 
     The below is a non-standard format specifier added in OpenTitan
-    (see sw/device/lib/base/print.c for more details). A single %!s specifier
+    (see sw/lib/sw/device/base/print.c for more details). A single %!s specifier
     consumes 2 arguments instead of 1 and hence has to converted as such to
     prevent the log monitor in SystemVerilog from throwing an error at runtime.
     The %!{x, X, y, Y} specifiers have the same property, but can print garbage,

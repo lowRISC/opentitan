@@ -27,12 +27,12 @@ DEVICE_LIBS_INC: List[str] = [
 DEVICE_LIBS_EXC: List[str] = [
     "//sw/common/...",
     "//sw/device/lib/arch/...",
-    "//sw/device/lib/base:mmio_on_device_do_not_use_directly",
-    "//sw/device/lib/base:mmio_on_host_do_not_use_directly",
-    "//sw/device/lib/base:status",
-    "//sw/device/lib/base:status_report_unittest_c",
+    "//sw/lib/sw/device/base:mmio_on_device_do_not_use_directly",
+    "//sw/lib/sw/device/base:mmio_on_host_do_not_use_directly",
+    "//sw/lib/sw/device/base:status",
+    "//sw/lib/sw/device/base:status_report_unittest_c",
     "//sw/device/lib/crypto/...",
-    "//sw/device/lib/runtime/...",
+    "//sw/lib/sw/device/runtime/...",
     "//sw/device/lib/testing/... ",
     "//sw/device/lib/ujson/...",
     "//sw/device/silicon_creator/manuf/...",
@@ -170,8 +170,8 @@ TEST_TARGETS_INC = [
 ]
 TEST_TARGETS_EXC = [
     "//sw/device/silicon_creator/rom_ext/...",
-    "//sw/device/lib/base:status_unittest",
-    "//sw/device/lib/base:status_report_unittest",
+    "//sw/lib/sw/device/base:status_unittest",
+    "//sw/lib/sw/device/base:status_report_unittest",
     "attr(tags, '[\\[ ]dv[,\\]]', //sw/device/silicon_creator/...)",
     "attr(tags, '[\\[ ]verilator[,\\]]', //sw/device/silicon_creator/...)",
     "attr(tags, '[\\[ ]broken[,\\]]', //sw/device/silicon_creator/...)",

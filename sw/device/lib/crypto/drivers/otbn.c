@@ -4,11 +4,11 @@
 
 #include "sw/device/lib/crypto/drivers/otbn.h"
 
-#include "sw/device/lib/base/abs_mmio.h"
-#include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/hardened.h"
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/status.h"
+#include "sw/lib/sw/device/base/abs_mmio.h"
+#include "sw/lib/sw/device/base/bitfield.h"
+#include "sw/lib/sw/device/base/hardened.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/status.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"

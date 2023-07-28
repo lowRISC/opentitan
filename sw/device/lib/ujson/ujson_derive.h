@@ -11,8 +11,8 @@
 #ifndef RUST_PREPROCESSOR_EMIT
 #include <stdint.h>
 
-#include "sw/device/lib/base/adv_macros.h"
-#include "sw/device/lib/base/status.h"
+#include "sw/lib/sw/device/base/adv_macros.h"
+#include "sw/lib/sw/device/base/status.h"
 #include "sw/device/lib/ujson/ujson.h"
 
 // If there is a pre-existing Rust `with_unknown! { ... }` enum, you can

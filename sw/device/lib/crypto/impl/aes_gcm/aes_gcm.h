@@ -8,8 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/hardened.h"
-#include "sw/device/lib/base/macros.h"
+#include "sw/lib/sw/device/base/hardened.h"
+#include "sw/lib/sw/device/base/macros.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
 
 #ifdef __cplusplus

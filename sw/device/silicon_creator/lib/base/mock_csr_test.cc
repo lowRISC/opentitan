@@ -5,7 +5,7 @@
 #include "sw/device/silicon_creator/lib/base/mock_csr.h"
 
 #include "gtest/gtest.h"
-#include "sw/device/lib/base/csr.h"
+#include "sw/lib/sw/device/base/csr.h"
 
 namespace mock_csr_test {
 class MockCsrTest : public testing::Test {

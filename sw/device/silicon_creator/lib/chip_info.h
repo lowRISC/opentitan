@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/base/macros.h"
+#include "sw/lib/sw/device/base/macros.h"
 
 /**
  * A truncated commit hash from the open-source OpenTitan repo that can be

@@ -5,10 +5,10 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_CLKMGR_TESTUTILS_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_CLKMGR_TESTUTILS_H_
 
-#include "sw/device/lib/base/status.h"
-#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/clkmgr/dif/dif_clkmgr.h"
+#include "sw/lib/sw/device/base/status.h"
+#include "sw/lib/sw/device/runtime/ibex.h"
 
 /**
  * Returns the transactional block's clock status.

@@ -24,7 +24,7 @@
                     name: "CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN",
                     // Use software mod_exp implementation for signature
                     // verification. See the definition of `hardened_bool_t` in
-                    // sw/device/lib/base/hardened.h.
+                    // sw/lib/sw/device/base/hardened.h.
                     value: "0x739",
                 },
                 {
@@ -32,7 +32,7 @@
                     // Mark the first two keys as valid and remaining as
                     // invalid since we have currently only two keys. See the
                     // definition of `hardened_byte_bool_t` in
-                    // sw/device/lib/base/hardened.h.
+                    // sw/lib/sw/device/base/hardened.h.
                     value: "0x4ba5a5a5a5a5a5a5",
                 }
             ],

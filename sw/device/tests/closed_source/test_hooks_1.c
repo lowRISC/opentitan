@@ -4,7 +4,7 @@
 
 #include <stdbool.h>
 
-#include "sw/device/lib/runtime/log.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 bool manufacturer_pre_test_hook(void) {
   LOG_INFO("Manufacturer pre-test hook running ...");

@@ -5,8 +5,8 @@
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 
 #include "gtest/gtest.h"
-#include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/base/mock_abs_mmio.h"
+#include "sw/lib/sw/device/base/mmio.h"
+#include "sw/lib/sw/device/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"

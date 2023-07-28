@@ -18,7 +18,7 @@ Each chip-level test must contain the following boilerplate setup code:
 ```
 #include "sw/device/lib/testing/test_framework/test_main.h"
 #include "sw/device/lib/testing/check_.h" // if calls to CHECK() are made
-#include "sw/device/lib/runtime/log.h"  // if calls to LOG_INFO() are made
+#include "sw/lib/sw/device/runtime/log.h"  // if calls to LOG_INFO() are made
 
 OTTF_DEFINE_TEST_CONFIG();
 

@@ -4,10 +4,10 @@
 
 #include "sw/device/lib/testing/csrng_testutils.h"
 
-#include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/csrng/dif/dif_csrng.h"
 #include "sw/ip/csrng/dif/shared/dif_csrng_shared.h"
+#include "sw/lib/sw/device/base/memory.h"
 
 #include "csrng_regs.h"  // Generated
 

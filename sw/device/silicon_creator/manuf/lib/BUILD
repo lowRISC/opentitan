@@ -98,7 +98,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":sram_start_headers",
-        "//sw/device/lib/crt",
+        "//sw/lib/sw/device/crt",
     ],
 )
 
@@ -113,8 +113,8 @@ cc_library(
     hdrs = ["otp_img.h"],
     deps = [
         ":otp_img_types",
-        "//sw/device/lib/base:status",
         "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/lib/sw/device/base:status",
         "//sw/top_earlgrey/sw/dif:otp_ctrl",
     ],
 )
@@ -126,7 +126,7 @@ cc_library(
         "individualize.h",
     ],
     deps = [
-        "//sw/device/lib/base:status",
+        "//sw/lib/sw/device/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:lc_ctrl_testutils",
@@ -154,9 +154,9 @@ opentitan_functest(
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:status",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/lib/sw/device/base:status",
         "//sw/top_earlgrey/sw/dif:flash_ctrl",
         "//sw/top_earlgrey/sw/dif:lc_ctrl",
         "//sw/top_earlgrey/sw/dif:otp_ctrl",
@@ -173,9 +173,9 @@ cc_library(
     deps = [
         ":otp_img",
         "//hw/ip/otp_ctrl/data/sku_earlgrey_a0:otp_img_sku_earlgrey_a0_stage_individualize",
-        "//sw/device/lib/base:status",
         "//sw/device/lib/testing:lc_ctrl_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/lib/sw/device/base:status",
         "//sw/top_earlgrey/sw/dif:otp_ctrl",
     ],
 )
@@ -194,8 +194,8 @@ opentitan_functest(
         ":individualize_preop",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:status",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/lib/sw/device/base:status",
         "//sw/top_earlgrey/sw/dif:otp_ctrl",
     ],
 )
@@ -207,7 +207,7 @@ cc_library(
         "provisioning.h",
     ],
     deps = [
-        "//sw/device/lib/base:status",
+        "//sw/lib/sw/device/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:aes",
         "//sw/device/lib/crypto/impl:ecc",
@@ -253,7 +253,6 @@ opentitan_functest(
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:status",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/json:command",
         "//sw/device/lib/testing/json:provisioning_data",
@@ -261,6 +260,7 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/manuf/keys/fake",
+        "//sw/lib/sw/device/base:status",
         "//sw/top_earlgrey/sw/dif:flash_ctrl",
         "//sw/top_earlgrey/sw/dif:lc_ctrl",
         "//sw/top_earlgrey/sw/dif:otp_ctrl",
@@ -294,7 +294,7 @@ lc_raw_unlock_token(
         targets = ["cw310_rom_with_fake_keys"],
         test_harness = "//sw/host/tests/manuf/manuf_scrap",
         deps = [
-            "//sw/device/lib/runtime:log",
+            "//sw/lib/sw/device/runtime:log",
             "//sw/device/lib/testing/test_framework:ottf_main",
         ],
     )
@@ -417,8 +417,8 @@ cc_library(
     srcs = ["isolated_flash_partition.c"],
     hdrs = ["isolated_flash_partition.h"],
     deps = [
-        "//sw/device/lib/base:status",
         "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/lib/sw/device/base:status",
         "//sw/top_earlgrey/sw/dif:flash_ctrl",
     ],
 )
@@ -442,10 +442,10 @@ opentitan_ram_binary(
         ":sram_start",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:status",
+        "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/runtime:log",
         "//sw/top_earlgrey/sw/dif:pinmux",
         "//sw/top_earlgrey/sw/dif:uart",
     ],
@@ -471,12 +471,12 @@ opentitan_ram_binary(
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
+        "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/runtime:log",
         "//sw/top_earlgrey/sw/dif:flash_ctrl",
         "//sw/top_earlgrey/sw/dif:lc_ctrl",
         "//sw/top_earlgrey/sw/dif:otp_ctrl",
@@ -527,8 +527,8 @@ platform_target(
         deps = [
             ":isolated_flash_partition",
             ":test_wafer_auth_secret",
-            "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/lib/sw/device/runtime:log",
             "//sw/top_earlgrey/sw/dif:flash_ctrl",
             "//sw/top_earlgrey/sw/dif:lc_ctrl",
         ],
@@ -561,12 +561,12 @@ opentitan_ram_binary(
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
+        "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/runtime:log",
         "//sw/top_earlgrey/sw/dif:otp_ctrl",
     ],
 )
@@ -598,7 +598,7 @@ platform_target(
         targets = ["cw310_rom_with_fake_keys"],
         test_harness = "//sw/host/tests/manuf/manuf_cp_ast_test_execution",
         deps = [
-            "//sw/device/lib/runtime:log",
+            "//sw/lib/sw/device/runtime:log",
             "//sw/device/lib/testing:otp_ctrl_testutils",
             "//sw/device/lib/testing/test_framework:check",
             "//sw/device/lib/testing/test_framework:ottf_main",
@@ -637,7 +637,7 @@ test_suite(
         targets = ["cw310_rom_with_fake_keys"],
         test_harness = "//sw/host/tests/manuf/manuf_sram_program_crc_check",
         deps = [
-            "//sw/device/lib/runtime:log",
+            "//sw/lib/sw/device/runtime:log",
             "//sw/device/lib/testing:otp_ctrl_testutils",
             "//sw/device/lib/testing/test_framework:check",
             "//sw/device/lib/testing/test_framework:ottf_main",

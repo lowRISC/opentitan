@@ -37,7 +37,7 @@
 
 /**
  * The following section contains log fields constructed from the logs using
- * the log_fields_t struct defined in sw/device/lib/runtime/log.h. The size of
+ * the log_fields_t struct defined in sw/lib/sw/device/runtime/log.h. The size of
  * each log field is fixed - 20 bytes.
  */
 .logs.fields _dv_log_offset (INFO): {

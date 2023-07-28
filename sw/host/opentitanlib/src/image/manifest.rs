@@ -23,7 +23,7 @@ use zerocopy::FromBytes;
 //      --no-doc-comments --no-layout-tests \
 //      sw/device/silicon_creator/lib/manifest.h \
 //      sw/device/silicon_creator/lib/base/chip.h \
-//      -- -I./ -Isw/device/lib/base/freestanding
+//      -- -I./ -Isw/lib/sw/device/base/freestanding
 // TODO: Generate some constants as hex if possible, replacing manually for now.
 
 pub const CHIP_MANIFEST_SIZE: u32 = 1024;

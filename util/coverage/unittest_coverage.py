@@ -74,9 +74,9 @@ def handle_test_targets(test_targets: List[str]) -> List[str]:
         The given list of targets along with some base library tests.
     """
     res = test_targets + [
-        "//sw/device/lib/base:hardened_memory_unittest",
-        "//sw/device/lib/base:math_unittest",
-        "//sw/device/lib/base:memory_unittest",
+        "//sw/lib/sw/device/base:hardened_memory_unittest",
+        "//sw/lib/sw/device/base:math_unittest",
+        "//sw/lib/sw/device/base:memory_unittest",
     ]
     logging.info(f"test targets: {pformat(res)}")
     return res

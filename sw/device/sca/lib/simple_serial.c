@@ -5,11 +5,11 @@
 #include "sw/device/sca/lib/simple_serial.h"
 
 #include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/runtime/print.h"
 #include "sw/device/sca/lib/prng.h"
 #include "sw/ip/uart/dif/dif_uart.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/memory.h"
+#include "sw/lib/sw/device/runtime/print.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

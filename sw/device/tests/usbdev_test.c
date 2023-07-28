@@ -17,9 +17,6 @@
 // transactions with a data payload of "Hi!" to Endpoint 1. If these two OUT
 // transactions are succesfully received by the device, the test passes.
 
-#include "sw/device/lib/runtime/ibex.h"
-#include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -27,6 +24,9 @@
 #include "sw/device/lib/testing/usb_testutils_controlep.h"
 #include "sw/device/lib/testing/usb_testutils_simpleserial.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
+#include "sw/lib/sw/device/runtime/ibex.h"
+#include "sw/lib/sw/device/runtime/log.h"
+#include "sw/lib/sw/device/runtime/print.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 

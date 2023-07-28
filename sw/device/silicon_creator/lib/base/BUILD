@@ -26,14 +26,14 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         host = [
-            "//sw/device/lib/base:global_mock",
+            "//sw/lib/sw/device/base:global_mock",
             "//sw/device/silicon_creator/testing:rom_test",
             "@googletest//:gtest",
         ],
         shared = [
-            "//sw/device/lib/base:abs_mmio",
-            "//sw/device/lib/base:hardened",
-            "//sw/device/lib/base:macros",
+            "//sw/lib/sw/device/base:abs_mmio",
+            "//sw/lib/sw/device/base:hardened",
+            "//sw/lib/sw/device/base:macros",
             "//sw/device/silicon_creator/lib:error",
         ],
     ),
@@ -54,7 +54,7 @@ cc_library(
     srcs = ["static_critical_sec_mmio.c"],
     deps = [
         ":sec_mmio",
-        "//sw/device/lib/base:macros",
+        "//sw/lib/sw/device/base:macros",
     ],
     # This library provides a special symbol that the linker will find.
     # We want this to be a linker input to ensure the weak version in
@@ -67,7 +67,7 @@ cc_library(
     srcs = ["boot_measurements.c"],
     hdrs = ["boot_measurements.h"],
     deps = [
-        "//sw/device/lib/base:macros",
+        "//sw/lib/sw/device/base:macros",
         "//sw/device/silicon_creator/lib:keymgr_binding",
     ],
 )
@@ -101,7 +101,7 @@ cc_library(
     srcs = ["static_critical_version.c"],
     hdrs = ["static_critical_version.h"],
     deps = [
-        "//sw/device/lib/base:macros",
+        "//sw/lib/sw/device/base:macros",
     ],
     # This library provides a special symbol that the linker will find.
     alwayslink = True,

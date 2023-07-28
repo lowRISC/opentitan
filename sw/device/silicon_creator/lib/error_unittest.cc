@@ -10,7 +10,7 @@
 #include <string>
 
 #include "gtest/gtest.h"
-#include "sw/device/lib/base/bitfield.h"
+#include "sw/lib/sw/device/base/bitfield.h"
 
 namespace error_unittest {
 namespace {

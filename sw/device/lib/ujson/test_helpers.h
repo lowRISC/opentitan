@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "sw/device/lib/base/status.h"
+#include "sw/lib/sw/device/base/status.h"
 #include "sw/device/lib/ujson/ujson.h"
 
 namespace test_helpers {

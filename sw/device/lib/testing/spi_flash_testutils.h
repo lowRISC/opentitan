@@ -8,9 +8,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/status.h"
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
+#include "sw/lib/sw/device/base/bitfield.h"
+#include "sw/lib/sw/device/base/status.h"
 
 typedef struct spi_flash_testutils_jedec_id {
   uint16_t device_id;

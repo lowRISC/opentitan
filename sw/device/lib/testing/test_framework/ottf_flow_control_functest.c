@@ -6,9 +6,9 @@
 #include <stdint.h>
 
 #include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/base/status.h"
-#include "sw/device/lib/runtime/hart.h"
-#include "sw/device/lib/runtime/print.h"
+#include "sw/lib/sw/device/base/status.h"
+#include "sw/lib/sw/device/runtime/hart.h"
+#include "sw/lib/sw/device/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"

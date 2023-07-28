@@ -4,11 +4,11 @@
 
 #include "sw/device/lib/testing/sram_ctrl_testutils.h"
 
-#include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/runtime/ibex.h"
-#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/sram_ctrl/dif/dif_sram_ctrl.h"
+#include "sw/lib/sw/device/base/mmio.h"
+#include "sw/lib/sw/device/runtime/ibex.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 void sram_ctrl_testutils_write(uintptr_t address,
                                const sram_ctrl_testutils_data_t data) {

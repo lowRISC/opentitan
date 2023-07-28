@@ -22,11 +22,11 @@ DIFs **must** conform to the style guide in [`sw/ip/base/dif`](../../../sw/ip/ba
 
 DIFs **must** only depend on:
 
-*   the [freestanding C library headers](https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/base/freestanding),
+*   the [freestanding C library headers](https://github.com/lowRISC/opentitan/tree/master/sw/lib/sw/device/base/freestanding),
 *   compiler runtime libraries (e.g. libgcc and compiler-rt),
-*   the bitfield library for manipulating bits in binary values (`sw/device/lib/base/bitfield.h`),
-*   the mmio library for interacting with memory-mapped registers (`sw/device/lib/base/mmio.h`),
-*   the memory library for interacting with non-volatile memory (`sw/device/lib/base/memory.h`), and
+*   the bitfield library for manipulating bits in binary values (`sw/lib/sw/device/base/bitfield.h`),
+*   the mmio library for interacting with memory-mapped registers (`sw/lib/sw/device/base/mmio.h`),
+*   the memory library for interacting with non-volatile memory (`sw/lib/sw/device/base/memory.h`), and
 *   any IP-specific register definition files.
 
 DIFs **must not** depend on DIFs for other IP blocks, or other external libraries.

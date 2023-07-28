@@ -5,7 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_MOCK_MOD_EXP_OTBN_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_MOCK_MOD_EXP_OTBN_H_
 
-#include "sw/device/lib/base/global_mock.h"
+#include "sw/lib/sw/device/base/global_mock.h"
 #include "sw/device/silicon_creator/lib/sigverify/mod_exp_otbn.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 

@@ -108,7 +108,7 @@ class chip_sw_lc_raw_unlock_vseq extends chip_sw_base_vseq;
 
     if (rom_prod_mode) begin
       // Use otbn mod_exp implementation for signature verification. See the
-      // definition of `hardened_bool_t` in sw/device/lib/base/hardened.h.
+      // definition of `hardened_bool_t` in sw/lib/sw/device/base/hardened.h.
       jtag_otp_program32(otp_ctrl_reg_pkg::CreatorSwCfgSigverifyRsaModExpIbexEnOffset, 32'h1d4);
     end
 

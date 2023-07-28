@@ -31,12 +31,12 @@ opentitan_functest(
         test_cmds = [],
     ),
     deps = [
-        "//sw/device/lib/base:status",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/json:command",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
+        "//sw/lib/sw/device/base:status",
         "//sw/top_earlgrey/sw/dif:gpio",
         "//sw/top_earlgrey/sw/dif:pinmux",
     ],

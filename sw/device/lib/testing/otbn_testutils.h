@@ -5,10 +5,10 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_OTBN_TESTUTILS_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_OTBN_TESTUTILS_H_
 
-#include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/base/status.h"
 #include "sw/ip/base/dif/dif_base.h"
 #include "sw/ip/otbn/dif/dif_otbn.h"
+#include "sw/lib/sw/device/base/mmio.h"
+#include "sw/lib/sw/device/base/status.h"
 
 /**
  * @file

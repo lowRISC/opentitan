@@ -7,8 +7,8 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "sw/device/lib/base/csr.h"
-#include "sw/device/lib/base/global_mock.h"
+#include "sw/lib/sw/device/base/csr.h"
+#include "sw/lib/sw/device/base/global_mock.h"
 
 namespace mock_csr {
 
