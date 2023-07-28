@@ -183,6 +183,8 @@
     - [Interface and Registers](./hw/ip/lc_ctrl/data/lc_ctrl.hjson)
     - [Device Interface Functions](./sw/ip/lc_ctrl/dif/dif_lc_ctrl.h)
     - [Checklist](./hw/ip/lc_ctrl/doc/checklist.md)
+  - [Mailbox](./hw/ip/mbx/README.md)
+    - [DOE Example Schema](./hw/ip/mbx/doc/DOE.md)
   - [OTP Controller](./hw/ip/otp_ctrl/README.md)
     - [Theory of Operation](./hw/ip/otp_ctrl/doc/theory_of_operation.md)
     - [Design Verification](./hw/ip/otp_ctrl/dv/README.md)
