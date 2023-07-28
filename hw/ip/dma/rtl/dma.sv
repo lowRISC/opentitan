@@ -77,6 +77,7 @@ module dma
   logic bad_size;
   logic bad_base_limit;
   logic bad_go_config;
+  logic bad_asid;
   logic config_error;
 
   logic read_rsp_error;
@@ -349,6 +350,7 @@ module dma
     bad_size       = 1'b0;
     bad_base_limit = 1'b0;
     bad_go_config  = 1'b0;
+    bad_asid       = 1'b0;
     config_error   = 1'b0;
 
     capture_addr = 1'b0;
@@ -500,6 +502,20 @@ module dma
           bad_opcode = 1'b1;
         end
 
+        // Ensure that ASIDs have valid values
+        if (!(reg2hw.address_space_id.source_asid.q inside {OtInternalAddr,
+                                                            SocControlAddr,
+                                                            SocSystemAddr,
+                                                            OtExtFlashAddr})) begin
+          bad_asid = 1'b1;
+        end
+        if (!(reg2hw.address_space_id.destination_asid.q inside {OtInternalAddr,
+                                                                 SocControlAddr,
+                                                                 SocSystemAddr,
+                                                                 OtExtFlashAddr})) begin
+          bad_asid = 1'b1;
+        end
+
         if (reg2hw.enabled_memory_range_limit.q < reg2hw.enabled_memory_range_base.q) begin
           bad_base_limit = 1'b1;
         end
@@ -563,7 +579,8 @@ module dma
                        bad_size       ||
                        bad_base_limit ||
                        bad_opcode     ||
-                       bad_go_config;
+                       bad_go_config  ||
+                       bad_asid;
 
         if (config_error) begin
           next_error[DMA_SOURCE_ADDR_ERR]      = bad_src_addr;
@@ -572,6 +589,7 @@ module dma
           next_error[DMA_SIZE_ERR]             = bad_size;
           next_error[DMA_BASE_LIMIT_ERR]       = bad_base_limit;
           next_error[DMA_GO_CONFIG_ERR]        = bad_go_config;
+          next_error[DMA_ASID_ERR]             = bad_asid;
 
           ctrl_state_d = DmaError;
         end else if (cfg_abort_en) begin
