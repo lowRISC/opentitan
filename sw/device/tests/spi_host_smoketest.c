@@ -4,12 +4,12 @@
 #include <assert.h>
 
 #include "spi_host_flash_test_impl.h"
-#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/testing/spi_device_testutils.h"
 #include "sw/device/lib/testing/spi_flash_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
+#include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/base/mmio.h"

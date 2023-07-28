@@ -5,7 +5,6 @@
 
 #include <assert.h>
 
-#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/testing/i2c_testutils.h"
 #include "sw/device/lib/testing/json/command.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
@@ -18,6 +17,7 @@
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
 #include "sw/ip/pwrmgr/dif/dif_pwrmgr.h"
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
+#include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/base/mmio.h"

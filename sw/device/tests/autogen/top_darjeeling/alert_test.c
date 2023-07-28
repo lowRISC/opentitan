@@ -8,7 +8,6 @@
 // PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
 // util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson
 // -o hw/top_darjeeling
-#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -46,8 +45,10 @@
 #include "sw/ip/sysrst_ctrl/dif/dif_sysrst_ctrl.h"
 #include "sw/ip/uart/dif/dif_uart.h"
 #include "sw/ip/usbdev/dif/dif_usbdev.h"
+#include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/mmio.h"
 
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "alert_handler_regs.h"  // Generated.
 
 OTTF_DEFINE_TEST_CONFIG();

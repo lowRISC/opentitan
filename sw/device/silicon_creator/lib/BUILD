@@ -65,6 +65,7 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -116,7 +117,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":epmp_state",
-        "//sw/device/lib/arch:device",
+        "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:csr",
     ],
 )
@@ -170,6 +171,7 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/device/silicon_creator/lib/drivers:watchdog",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -309,7 +311,7 @@ dual_cc_library(
             "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
             "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-            "//sw/device/lib/arch:device",
+            "//sw/lib/sw/device/arch:device",
             "//sw/lib/sw/device/base:abs_mmio",
             "//sw/lib/sw/device/base:bitfield",
             "//sw/lib/sw/device/base:csr",
@@ -372,6 +374,7 @@ opentitan_functest(
     deps = [
         ":crc32",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -392,5 +395,6 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ottf_test_config",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )

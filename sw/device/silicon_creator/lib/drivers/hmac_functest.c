@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/arch/device.h"
+#include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/base/status.h"

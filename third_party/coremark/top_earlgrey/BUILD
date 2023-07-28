@@ -40,6 +40,7 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_start",
         "//sw/device/lib/testing/test_framework:ottf_test_config",
         "//sw/device/lib/testing/test_framework:status",
+        "//sw/top_earlgrey/sw/device/runtime:print",
         "@coremark//:coremark_lib",
     ],
 )

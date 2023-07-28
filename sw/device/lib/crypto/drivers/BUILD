@@ -35,6 +35,7 @@ opentitan_functest(
         "//sw/device/lib/crypto/impl:status",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -108,6 +109,7 @@ opentitan_functest(
         "//sw/device/tests:otbn_randomness_impl",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/base:memory",
+        "//sw/top_earlgrey/sw/device/runtime:print",
         "//sw/top_earlgrey/sw/dif:otbn",
     ],
 )

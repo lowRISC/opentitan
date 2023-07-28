@@ -4,9 +4,9 @@
 
 #include <stdbool.h>
 
-#include "sw/device/lib/arch/device.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/rom_print.h"
+#include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/macros.h"
 
 /**

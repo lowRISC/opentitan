@@ -78,8 +78,8 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/arch:device",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:math",
         "//sw/top_earlgrey/sw/dif:aon_timer",
     ],
@@ -264,9 +264,9 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/arch:device",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/ip/base/dif:base",
+        "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/runtime:hart",
         "//sw/top_earlgrey/sw/dif:gpio",
         "//sw/top_earlgrey/sw/dif:pinmux",
@@ -302,8 +302,8 @@ cc_library(
     deps = [
         ":rv_core_ibex_testutils",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/arch:device",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:memory",
         "//sw/lib/sw/device/runtime:log",
         "//sw/top_earlgrey/sw/dif:rv_core_ibex",

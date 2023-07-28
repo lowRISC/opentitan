@@ -9,8 +9,8 @@ cc_library(
     srcs = ["demos.c"],
     hdrs = ["demos.h"],
     deps = [
-        "//sw/device/lib/arch:device",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/runtime:hart",
         "//sw/lib/sw/device/runtime:log",
         "//sw/top_earlgrey/sw/dif:gpio",

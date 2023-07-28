@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/testing/test_framework/status.h"
 
-#include "sw/device/lib/arch/device.h"
+#include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/hart.h"
 #include "sw/lib/sw/device/runtime/log.h"

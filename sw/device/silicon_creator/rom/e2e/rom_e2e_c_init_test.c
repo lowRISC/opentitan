@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/arch/device.h"
+#include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"
 #include "sw/lib/sw/device/base/bitfield.h"
 #include "sw/lib/sw/device/base/csr.h"

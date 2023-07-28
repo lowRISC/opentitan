@@ -4,11 +4,11 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/ip/uart/dif/dif_uart.h"
+#include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/runtime/hart.h"
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/runtime/print.h"

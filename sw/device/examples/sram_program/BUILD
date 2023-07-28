@@ -29,11 +29,12 @@ opentitan_ram_binary(
     deps = [
         ":sram_program_linker_script",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/arch:device",
+        "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/runtime:log",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )

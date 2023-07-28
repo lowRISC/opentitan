@@ -147,7 +147,7 @@ cc_library(
         ":rom_ext_boot_policy",
         ":rom_ext_epmp",
         ":sigverify_keys",
-        "//sw/device/lib/arch:device",
+        "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:csr",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/base:stdasm",

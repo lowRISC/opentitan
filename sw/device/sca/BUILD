@@ -29,6 +29,7 @@ opentitan_flash_binary(
         "//sw/device/sca/lib:simple_serial",
         "//sw/lib/sw/device/base:memory",
         "//sw/lib/sw/device/runtime:log",
+        "//sw/top_earlgrey/sw/device/runtime:print",
         "//sw/top_earlgrey/sw/dif:aes",
     ],
 )
@@ -45,6 +46,7 @@ opentitan_flash_binary(
         "//sw/device/sca/lib:simple_serial",
         "//sw/lib/sw/device/base:memory",
         "//sw/lib/sw/device/runtime:log",
+        "//sw/top_earlgrey/sw/device/runtime:print",
         "//sw/top_earlgrey/sw/dif:kmac",
     ],
 )
@@ -61,6 +63,7 @@ opentitan_flash_binary(
         "//sw/device/sca/lib:simple_serial",
         "//sw/lib/sw/device/base:memory",
         "//sw/lib/sw/device/runtime:log",
+        "//sw/top_earlgrey/sw/device/runtime:print",
         "//sw/top_earlgrey/sw/dif:kmac",
     ],
 )
@@ -81,6 +84,7 @@ opentitan_flash_binary(
         "//sw/device/sca/lib:sca",
         "//sw/device/sca/lib:simple_serial",
         "//sw/otbn/crypto:p384_ecdsa_sca",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -101,5 +105,6 @@ opentitan_flash_binary(
         "//sw/device/sca/lib:sca",
         "//sw/device/sca/lib:simple_serial",
         "//sw/otbn/crypto:p256_ecdsa_sca",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )

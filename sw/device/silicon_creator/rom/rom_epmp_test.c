@@ -7,7 +7,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
@@ -17,6 +16,7 @@
 #include "sw/device/silicon_creator/rom/rom_epmp.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
 #include "sw/ip/sram_ctrl/dif/dif_sram_ctrl.h"
+#include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"
 #include "sw/lib/sw/device/base/csr.h"
 #include "sw/lib/sw/device/base/memory.h"

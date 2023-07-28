@@ -7,7 +7,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/arch/device.h"
+#include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/bitfield.h"
 #include "sw/lib/sw/device/base/csr.h"
 #include "sw/lib/sw/device/base/hardened.h"

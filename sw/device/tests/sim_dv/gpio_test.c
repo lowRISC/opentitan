@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -10,6 +9,7 @@
 #include "sw/ip/gpio/dif/dif_gpio.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
+#include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/hart.h"
 #include "sw/lib/sw/device/runtime/irq.h"

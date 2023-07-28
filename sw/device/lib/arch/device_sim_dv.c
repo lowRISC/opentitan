@@ -4,7 +4,7 @@
 
 #include <stdbool.h>
 
-#include "sw/device/lib/arch/device.h"
+#include "sw/lib/sw/device/arch/device.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "rv_core_ibex_regs.h"

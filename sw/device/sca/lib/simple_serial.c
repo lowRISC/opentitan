@@ -4,9 +4,9 @@
 
 #include "sw/device/sca/lib/simple_serial.h"
 
-#include "sw/device/lib/arch/device.h"
 #include "sw/device/sca/lib/prng.h"
 #include "sw/ip/uart/dif/dif_uart.h"
+#include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/runtime/print.h"

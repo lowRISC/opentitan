@@ -87,6 +87,7 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/sigverify/sigverify_tests:sigverify_testvectors_hardcoded",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -102,6 +103,7 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/sigverify/sigverify_tests:sigverify_testvectors_wycheproof",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -153,6 +155,7 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/sigverify/sigverify_tests:sigverify_testvectors_hardcoded",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -175,6 +178,7 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/sigverify/sigverify_tests:sigverify_testvectors_wycheproof",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -230,6 +234,7 @@ opentitan_functest(
     deps = [
         ":rsa_verify",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -260,6 +265,7 @@ opentitan_functest(
     deps = [
         ":spx_verify",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -330,6 +336,7 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/sigverify/sigverify_tests:sigverify_testvectors_hardcoded",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -345,5 +352,6 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/sigverify/sigverify_tests:sigverify_testvectors_wycheproof",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )

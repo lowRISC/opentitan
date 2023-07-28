@@ -83,6 +83,7 @@ opentitan_functest(
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -96,7 +97,7 @@ cc_library(
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/arch:device",
+        "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:bitfield",
         "//sw/lib/sw/device/base:csr",
@@ -213,6 +214,7 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -287,6 +289,7 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib:keymgr_binding",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
+        "//sw/top_earlgrey/sw/device/runtime:print",
         "//sw/top_earlgrey/sw/dif:flash_ctrl",
         "//sw/top_earlgrey/sw/dif:kmac",
         "//sw/top_earlgrey/sw/dif:otp_ctrl",
@@ -329,6 +332,7 @@ opentitan_functest(
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -508,6 +512,7 @@ opentitan_functest(
         "//sw/lib/sw/device/base:memory",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -575,6 +580,7 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:crc32",
         "//sw/device/silicon_creator/lib:error",
+        "//sw/top_earlgrey/sw/device/runtime:print",
         "//sw/top_earlgrey/sw/dif:entropy_src",
     ],
 )
@@ -632,6 +638,7 @@ opentitan_functest(
         ":rstmgr",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -642,7 +649,7 @@ cc_library(
     deps = [
         "//hw/ip/uart/data:uart_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/arch:device",
+        "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:bitfield",
         "//sw/device/silicon_creator/lib:error",
@@ -669,6 +676,7 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -720,6 +728,7 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 

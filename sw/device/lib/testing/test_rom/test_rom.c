@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -23,6 +22,7 @@
 #include "sw/ip/rstmgr/dif/dif_rstmgr.h"
 #include "sw/ip/rv_core_ibex/dif/dif_rv_core_ibex.h"
 #include "sw/ip/uart/dif/dif_uart.h"
+#include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"
 #include "sw/lib/sw/device/base/bitfield.h"
 #include "sw/lib/sw/device/base/csr.h"

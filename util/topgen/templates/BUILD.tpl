@@ -33,6 +33,7 @@ opentitan_functest(
 % for n in sorted(irq_peripheral_names + ["rv_plic"]):
         "//sw/top_${top["name"]}/sw/dif:${n}",
 % endfor
+        "//sw/top_${top["name"]}/sw/device/runtime:print",
     ],
 )
 
@@ -49,5 +50,6 @@ opentitan_functest(
 % for n in sorted(alert_peripheral_names + ["alert_handler"]):
         "//sw/top_${top["name"]}/sw/dif:${n}",
 % endfor
+        "//sw/top_${top["name"]}/sw/device/runtime:print",
     ],
 )

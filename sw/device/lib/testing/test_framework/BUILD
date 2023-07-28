@@ -51,7 +51,7 @@ cc_library(
     hdrs = ["status.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//sw/device/lib/arch:device",
+        "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:mmio",
         "//sw/lib/sw/device/runtime:hart",
         "//sw/lib/sw/device/runtime:log",
@@ -219,8 +219,8 @@ cc_library(
         ":ottf_start",
         ":ottf_test_config",
         ":status",
-        "//sw/device/lib/arch:device",
         "//sw/device/lib/testing:rand_testutils",
+        "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/base:mmio",
         "//sw/lib/sw/device/base:status",
@@ -316,8 +316,8 @@ opentitan_functest(
         ":ottf_main",
         ":ujson_ottf",
         "//sw/lib/sw/device/base:status",
-        "//sw/lib/sw/device/runtime:print",
         "//sw/device/lib/ujson",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 

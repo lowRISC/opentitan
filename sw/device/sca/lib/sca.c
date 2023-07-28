@@ -5,7 +5,6 @@
 #include "sw/device/sca/lib/sca.h"
 
 #include "hw/ip/aes/model/aes.h"
-#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
@@ -19,6 +18,7 @@
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
 #include "sw/ip/rv_timer/dif/dif_rv_timer.h"
 #include "sw/ip/uart/dif/dif_uart.h"
+#include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/bitfield.h"
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/runtime/hart.h"

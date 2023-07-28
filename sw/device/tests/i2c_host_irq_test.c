@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 #include <assert.h>
 
-#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/testing/i2c_testutils.h"
 #include "sw/device/lib/testing/rv_core_ibex_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
@@ -11,6 +10,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/ip/i2c/dif/dif_i2c.h"
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
+#include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/base/mmio.h"

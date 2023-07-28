@@ -67,5 +67,6 @@ opentitan_flash_binary(
         "//sw/device/sca/otbn_vertical:ecc256_keygen_serial",
         "//sw/device/sca/otbn_vertical:ecc256_modinv_serial",
         "//sw/otbn/crypto:p256_mod_inv_sca",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )

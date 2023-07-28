@@ -18,6 +18,7 @@ opentitan_functest(
         ":aes_testvectors",
         "//sw/lib/sw/device/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -40,6 +41,7 @@ opentitan_functest(
         ":aes_gcm_testvectors",
         "//sw/lib/sw/device/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -85,6 +87,7 @@ opentitan_functest(
         "//sw/lib/sw/device/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -100,6 +103,7 @@ opentitan_functest(
         "//sw/lib/sw/device/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -116,6 +120,7 @@ opentitan_functest(
         "//sw/lib/sw/device/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -147,6 +152,7 @@ opentitan_functest(
         "//sw/device/lib/crypto/impl:mac",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -163,6 +169,7 @@ opentitan_functest(
         "//sw/device/lib/crypto/impl/ecc:ecdsa_p256",
         "//sw/lib/sw/device/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -196,6 +203,7 @@ opentitan_functest(
         "//sw/device/lib/crypto/impl/rsa:rsa_3072_verify",
         "//sw/lib/sw/device/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -219,6 +227,7 @@ opentitan_functest(
         "//sw/device/lib/crypto/impl/rsa:rsa_3072_verify",
         "//sw/lib/sw/device/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -232,6 +241,7 @@ opentitan_functest(
         "//sw/device/lib/crypto/impl:hash",
         "//sw/lib/sw/device/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -247,6 +257,7 @@ opentitan_functest(
         "//sw/device/lib/crypto/impl:status",
         "//sw/lib/sw/device/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -272,6 +283,7 @@ opentitan_functest(
         "//sw/device/lib/crypto/impl:mac",
         "//sw/lib/sw/device/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -308,6 +320,7 @@ opentitan_functest(
         "//sw/device/lib/crypto/impl:hash",
         "//sw/lib/sw/device/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 

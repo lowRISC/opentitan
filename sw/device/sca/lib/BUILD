@@ -26,9 +26,8 @@ cc_library(
     deps = [
         ":prng",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/arch:device",
-        "//sw/device/lib/dif:base",
         "//sw/ip/base/dif:base",
+        "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/base:memory",
         "//sw/lib/sw/device/runtime:print",
@@ -43,10 +42,10 @@ cc_library(
     deps = [
         "//hw/ip/aes:model",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/arch:device",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_start",
+        "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:bitfield",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/runtime:hart",

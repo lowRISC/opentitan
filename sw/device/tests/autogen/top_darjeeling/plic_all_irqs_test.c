@@ -9,7 +9,6 @@
 // -o hw/top_darjeeling
 #include <limits.h>
 
-#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -38,11 +37,14 @@
 #include "sw/ip/sysrst_ctrl/dif/dif_sysrst_ctrl.h"
 #include "sw/ip/uart/dif/dif_uart.h"
 #include "sw/ip/usbdev/dif/dif_usbdev.h"
+#include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/csr.h"
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/ibex.h"
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/log.h"
+
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 static dif_adc_ctrl_t adc_ctrl_aon;
 static dif_alert_handler_t alert_handler;

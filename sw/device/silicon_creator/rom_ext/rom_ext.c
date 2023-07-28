@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/rom_ext/rom_ext.h"
 
-#include "sw/device/lib/arch/device.h"
+#include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/csr.h"
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/base/stdasm.h"

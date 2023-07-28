@@ -5,7 +5,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/kmac_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
@@ -15,6 +14,7 @@
 #include "sw/ip/kmac/dif/dif_kmac.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
 #include "sw/ip/rstmgr/dif/dif_rstmgr.h"
+#include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/runtime/hart.h"
 #include "sw/lib/sw/device/runtime/log.h"

@@ -128,7 +128,6 @@ cc_library(
         "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/arch:device",
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
@@ -136,6 +135,7 @@ cc_library(
         "//sw/device/silicon_creator/lib:chip_info",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical",
+        "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:bitfield",
         "//sw/lib/sw/device/base:mmio",
@@ -143,6 +143,7 @@ cc_library(
         "//sw/lib/sw/device/runtime:hart",
         "//sw/lib/sw/device/runtime:log",
         "//sw/lib/sw/device/runtime:print",
+        "//sw/top_earlgrey/sw/device/runtime:print",
         "//sw/top_earlgrey/sw/dif:clkmgr",
         "//sw/top_earlgrey/sw/dif:flash_ctrl",
         "//sw/top_earlgrey/sw/dif:gpio",
@@ -159,6 +160,7 @@ opentitan_functest(
     srcs = ["test_rom_test.c"],
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 

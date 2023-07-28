@@ -5,7 +5,7 @@
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
 
 #include "gtest/gtest.h"
-#include "sw/device/lib/arch/device.h"
+#include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"

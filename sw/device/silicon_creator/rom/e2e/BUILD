@@ -137,6 +137,7 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -157,6 +158,7 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 ) for slot in SLOTS]
 
@@ -171,6 +173,7 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -202,6 +205,7 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib/base:static_critical",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -246,6 +250,7 @@ opentitan_functest(
         "//sw/device/lib/testing:hmac_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
+        "//sw/top_earlgrey/sw/device/runtime:print",
         "//sw/top_earlgrey/sw/dif:hmac",
     ],
 )
@@ -259,6 +264,7 @@ opentitan_flash_binary(
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/top_earlgrey/sw/device/runtime:print",
         "//sw/top_earlgrey/sw/dif:keymgr",
     ],
 )
@@ -364,12 +370,12 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/lib/sw/device/runtime:hart",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/lib/sw/device/runtime:print",
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib/base:static_critical",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:pinmux",
         "//sw/device/silicon_creator/lib/drivers:uart",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -515,6 +521,7 @@ opentitan_functest(
         "//sw/lib/sw/device/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -583,6 +590,7 @@ opentitan_functest(
             "//sw/device/lib/ujson",
             "//sw/lib/sw/device/base:mmio",
             "//sw/lib/sw/device/runtime:log",
+            "//sw/top_earlgrey/sw/device/runtime:print",
             "//sw/top_earlgrey/sw/dif:clkmgr",
             "//sw/top_earlgrey/sw/dif:lc_ctrl",
             "//sw/top_earlgrey/sw/dif:otp_ctrl",
@@ -829,6 +837,7 @@ SEC_VERS = [
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 ) for slot in SLOTS for sec_ver in SEC_VERS]
 
@@ -1077,6 +1086,7 @@ otp_json(
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 ) for watchdog_config in [
     "disabled",
@@ -1210,6 +1220,7 @@ ALERT_LC_STATES = get_lc_items(
         "//sw/device/silicon_creator/lib/drivers:alert",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 ) for lc_state, _ in ALERT_LC_STATES]
 
@@ -1343,6 +1354,7 @@ otp_alert_digest(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 ) for lc_state, _ in ALERT_LC_STATES]
 
@@ -1412,6 +1424,7 @@ opentitan_flash_binary(
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -1645,6 +1658,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 ) for t in BOOT_POLICY_BAD_MANIFEST_CASES for slot in SLOTS]
 
@@ -1899,6 +1913,7 @@ BOOT_DATA_RECOVERY_CASES = [
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 ) for case in BOOT_DATA_RECOVERY_CASES]
 
@@ -2055,6 +2070,7 @@ SHUTDOWN_WATCHDOG_CASES = [
         targets = ["cw310_rom_with_fake_keys"],
         deps = [
             "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/top_earlgrey/sw/device/runtime:print",
         ],
     )
     for t in SHUTDOWN_WATCHDOG_CASES
@@ -2288,6 +2304,7 @@ test_suite(
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:otp",
             "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+            "//sw/top_earlgrey/sw/device/runtime:print",
         ],
     )
     for lc_state, _ in get_lc_items(
@@ -2344,6 +2361,7 @@ test_suite(
             "//sw/device/silicon_creator/lib:epmp_defs",
             "//sw/lib/sw/device/base:csr",
             "//sw/lib/sw/device/runtime:log",
+            "//sw/top_earlgrey/sw/device/runtime:print",
             "//sw/top_earlgrey/sw/dif:lc_ctrl",
         ],
     )
@@ -2761,6 +2779,7 @@ REDACT.update({"INVALID": 0x0})
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:otp",
             "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+            "//sw/top_earlgrey/sw/device/runtime:print",
         ],
     )
     for lc_state, lc_state_val in get_lc_items()
@@ -3377,6 +3396,7 @@ test_cases = device_id_test_cases + lc_state_test_cases + manuf_state_test_cases
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 ) for t in test_cases]
 
@@ -3549,6 +3569,7 @@ opentitan_flash_binary(
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -3619,6 +3640,7 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/lib/sw/device/base:memory",
         "//sw/lib/sw/device/runtime:log",
+        "//sw/top_earlgrey/sw/device/runtime:print",
         "//sw/top_earlgrey/sw/dif:rstmgr",
     ],
 )
@@ -3644,6 +3666,7 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/lib/sw/device/base:memory",
         "//sw/lib/sw/device/runtime:log",
+        "//sw/top_earlgrey/sw/device/runtime:print",
         "//sw/top_earlgrey/sw/dif:aon_timer",
         "//sw/top_earlgrey/sw/dif:pwrmgr",
     ],
@@ -3720,6 +3743,7 @@ otp_json(
             "//sw/device/silicon_creator/lib:boot_data",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:rstmgr",
+            "//sw/top_earlgrey/sw/device/runtime:print",
         ],
     )
     for lc_state, lc_state_val in get_lc_items()
@@ -3816,6 +3840,7 @@ opentitan_flash_binary(
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -3962,6 +3987,7 @@ opentitan_flash_binary(
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:chip_info",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 

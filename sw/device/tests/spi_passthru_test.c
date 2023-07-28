@@ -7,7 +7,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/testing/json/command.h"
 #include "sw/device/lib/testing/spi_device_testutils.h"
 #include "sw/device/lib/testing/spi_flash_emulator.h"
@@ -18,6 +17,7 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/ip/spi_device/dif/dif_spi_device.h"
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
+#include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/status.h"
 #include "sw/lib/sw/device/runtime/log.h"
 

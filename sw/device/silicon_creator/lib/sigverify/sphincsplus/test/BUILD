@@ -41,6 +41,7 @@ opentitan_functest(
         "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/sigverify/sphincsplus:verify",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -58,6 +59,7 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib/sigverify/sphincsplus:context",
         "//sw/device/silicon_creator/lib/sigverify/sphincsplus:fors",
         "//sw/device/silicon_creator/lib/sigverify/sphincsplus:hash",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -75,5 +77,6 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib/sigverify/sphincsplus:context",
         "//sw/device/silicon_creator/lib/sigverify/sphincsplus:hash",
         "//sw/device/silicon_creator/lib/sigverify/sphincsplus:wots",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )

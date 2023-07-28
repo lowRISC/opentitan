@@ -156,6 +156,7 @@ opentitan_flash_binary(
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 

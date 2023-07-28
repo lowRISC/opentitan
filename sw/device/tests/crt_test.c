@@ -5,12 +5,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 #include "sw/ip/uart/dif/dif_uart.h"
+#include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/base/stdasm.h"
 #include "sw/lib/sw/device/runtime/hart.h"

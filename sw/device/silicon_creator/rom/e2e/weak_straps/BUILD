@@ -37,6 +37,7 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
         "//sw/lib/sw/device/base:status",
+        "//sw/top_earlgrey/sw/device/runtime:print",
         "//sw/top_earlgrey/sw/dif:gpio",
         "//sw/top_earlgrey/sw/dif:pinmux",
     ],
