@@ -10,6 +10,7 @@ load("//rules:otp.bzl", "get_otp_images")
 load("//rules:splice.bzl", "bitstream_splice")
 load("//rules:const.bzl", "KEY_AUTHENTICITY")
 load("//rules:bitstreams.bzl", "bitstream_manifest_fragment")
+load("//rules:bitstreams_select.bzl", "bitstream_cache_or")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -94,7 +95,11 @@ filegroup(
     bitstream_splice(
         name = "fpga_cw310_rom_with_{}_keys".format(authenticity),
         testonly = True,
-        src = "@bitstreams//:chip_earlgrey_cw310_bitstream",
+        src = bitstream_cache_or(
+            "chip_earlgrey_cw310",
+            "@bitstreams//:chip_earlgrey_cw310_bitstream",
+            "//hw/top_earlgrey/bitstream/vivado:fpga_cw310_test_rom",
+        ),
         data = "//sw/device/silicon_creator/rom:rom_with_{}_keys_fpga_cw310_scr_vmem".format(authenticity),
         meminfo = ":rom_mmi",
         tags = ["manual"],

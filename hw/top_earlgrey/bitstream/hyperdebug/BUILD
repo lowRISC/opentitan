@@ -5,6 +5,11 @@
 load("//rules:splice.bzl", "bitstream_splice")
 load("//rules:otp.bzl", "get_otp_images")
 load("//rules:const.bzl", "KEY_AUTHENTICITY")
+load(
+    "//rules:bitstreams_select.bzl",
+    "bitstream_cache_filter",
+    "bitstream_cache_or",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -41,7 +46,11 @@ filegroup(
     srcs = select({
         "//hw/top_earlgrey/bitstream:bitstream_skip": ["//hw/bitstream:skip"],
         "//hw/top_earlgrey/bitstream:bitstream_vivado": ["//hw/top_earlgrey/bitstream/vivado:rom_mmi"],
-        "//conditions:default": ["@bitstreams//:chip_earlgrey_cw310_hyperdebug_rom_mmi"],
+        "//conditions:default": bitstream_cache_or(
+            "chip_earlgrey_cw310_hyperdebug",
+            ["@bitstreams//:chip_earlgrey_cw310_hyperdebug_rom_mmi"],
+            ["//hw/top_earlgrey/bitstream/vivado:rom_mmi_hyp"],
+        ),
     }),
     tags = ["manual"],
 )
@@ -52,7 +61,11 @@ filegroup(
     srcs = select({
         "//hw/top_earlgrey/bitstream:bitstream_skip": ["//hw/bitstream:skip"],
         "//hw/top_earlgrey/bitstream:bitstream_vivado": ["//hw/top_earlgrey/bitstream/vivado:otp_mmi"],
-        "//conditions:default": ["@bitstreams//:chip_earlgrey_cw310_hyperdebug_otp_mmi"],
+        "//conditions:default": bitstream_cache_or(
+            "chip_earlgrey_cw310_hyperdebug",
+            ["@bitstreams//:chip_earlgrey_cw310_hyperdebug_rom_mmi"],
+            ["//hw/top_earlgrey/bitstream/vivado:rom_mmi_hyp"],
+        ),
     }),
     tags = ["manual"],
 )
@@ -77,7 +90,11 @@ filegroup(
 bitstream_splice(
     name = "gcp_spliced_test_rom",
     testonly = True,
-    src = "@bitstreams//:chip_earlgrey_cw310_hyperdebug_bitstream",
+    src = bitstream_cache_or(
+        "chip_earlgrey_cw310_hyperdebug",
+        "@bitstreams//:chip_earlgrey_cw310_hyperdebug_bitstream",
+        "//hw/top_earlgrey/bitstream/vivado:fpga_cw310_test_rom_hyp",
+    ),
     data = "//sw/device/lib/testing/test_rom:test_rom_fpga_cw310_scr_vmem",
     meminfo = ":rom_mmi",
     tags = ["manual"],
@@ -89,7 +106,11 @@ bitstream_splice(
     bitstream_splice(
         name = "gcp_spliced_rom_with_{}_keys".format(authenticity),
         testonly = True,
-        src = "@bitstreams//:chip_earlgrey_cw310_hyperdebug_bitstream",
+        src = bitstream_cache_or(
+            "chip_earlgrey_cw310_hyperdebug",
+            "@bitstreams//:chip_earlgrey_cw310_hyperdebug_bitstream",
+            "//hw/top_earlgrey/bitstream/vivado:fpga_cw310_test_rom_hyp",
+        ),
         data = "//sw/device/silicon_creator/rom:rom_with_{}_keys_fpga_cw310_scr_vmem".format(authenticity),
         meminfo = ":rom_mmi",
         tags = ["manual"],

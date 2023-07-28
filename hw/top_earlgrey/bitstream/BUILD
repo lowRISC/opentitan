@@ -6,6 +6,11 @@ load("//rules:splice.bzl", "bitstream_splice")
 load("//rules:otp.bzl", "get_otp_images")
 load("//rules:const.bzl", "KEY_AUTHENTICITY")
 load("//rules:bitstreams.bzl", "bitstream_fragment_from_manifest")
+load(
+    "//rules:bitstreams_select.bzl",
+    "bitstream_cache_filter",
+    "bitstream_cache_or",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -88,7 +93,11 @@ filegroup(
     srcs = select({
         "bitstream_skip": ["//hw/bitstream:skip"],
         "bitstream_vivado": ["//hw/top_earlgrey/bitstream/vivado:rom_mmi"],
-        "//conditions:default": ["@bitstreams//:chip_earlgrey_cw310_rom_mmi"],
+        "//conditions:default": bitstream_cache_or(
+            "chip_earlgrey_cw310",
+            ["@bitstreams//:chip_earlgrey_cw310_rom_mmi"],
+            ["//hw/top_earlgrey/bitstream/vivado:rom_mmi"],
+        ),
     }),
     tags = ["manual"],
 )
@@ -99,7 +108,11 @@ filegroup(
     srcs = select({
         "bitstream_skip": ["//hw/bitstream:skip"],
         "bitstream_vivado": ["//hw/top_earlgrey/bitstream/vivado:otp_mmi"],
-        "//conditions:default": ["@bitstreams//:chip_earlgrey_cw310_otp_mmi"],
+        "//conditions:default": bitstream_cache_or(
+            "chip_earlgrey_cw310",
+            ["@bitstreams//:chip_earlgrey_cw310_otp_mmi"],
+            ["//hw/top_earlgrey/bitstream/vivado:otp_mmi"],
+        ),
     }),
     tags = ["manual"],
 )
@@ -124,7 +137,11 @@ filegroup(
 bitstream_splice(
     name = "gcp_spliced_test_rom",
     testonly = True,
-    src = "@bitstreams//:chip_earlgrey_cw310_bitstream",
+    src = bitstream_cache_or(
+        "chip_earlgrey_cw310",
+        "@bitstreams//:chip_earlgrey_cw310_bitstream",
+        "//hw/top_earlgrey/bitstream/vivado:fpga_cw310_test_rom",
+    ),
     data = "//sw/device/lib/testing/test_rom:test_rom_fpga_cw310_scr_vmem",
     meminfo = ":rom_mmi",
     tags = ["manual"],
@@ -137,7 +154,11 @@ bitstream_splice(
     bitstream_splice(
         name = "gcp_spliced_rom_with_{}_keys".format(authenticity),
         testonly = True,
-        src = "@bitstreams//:chip_earlgrey_cw310_bitstream",
+        src = bitstream_cache_or(
+            "chip_earlgrey_cw310",
+            "@bitstreams//:chip_earlgrey_cw310_bitstream",
+            "//hw/top_earlgrey/bitstream/vivado:fpga_cw310_test_rom",
+        ),
         data = "//sw/device/silicon_creator/rom:rom_with_{}_keys_fpga_cw310_scr_vmem".format(authenticity),
         meminfo = ":rom_mmi",
         tags = ["manual"],
@@ -163,28 +184,22 @@ bitstream_splice(
     for authenticity in KEY_AUTHENTICITY
 ]
 
-
 # Create manifest fragments for all the cached bitstreams
-bitstream_fragment_from_manifest(
-    name = "chip_earlgrey_cw310_cached_fragment",
-    srcs = [
-        "@bitstreams//:chip_earlgrey_cw310_bitstream",
-        "@bitstreams//:chip_earlgrey_cw310_otp_mmi",
-        "@bitstreams//:chip_earlgrey_cw310_rom_mmi",
-    ],
-    design = "chip_earlgrey_cw310",
-    manifest = "@bitstreams//:manifest",
-    tags = ["manual"],
-)
-
-bitstream_fragment_from_manifest(
-    name = "chip_earlgrey_cw310_hyperdebug_cached_fragment",
-    srcs = [
-        "@bitstreams//:chip_earlgrey_cw310_hyperdebug_bitstream",
-        "@bitstreams//:chip_earlgrey_cw310_hyperdebug_otp_mmi",
-        "@bitstreams//:chip_earlgrey_cw310_hyperdebug_rom_mmi",
-    ],
-    design = "chip_earlgrey_cw310_hyperdebug",
-    manifest = "@bitstreams//:manifest",
-    tags = ["manual"],
-)
+[
+    bitstream_fragment_from_manifest(
+        name = "{}_cached_fragment".format(design),
+        testonly = True,
+        srcs = [
+            "@bitstreams//:{}_bitstream".format(design),
+            "@bitstreams//:{}_otp_mmi".format(design),
+            "@bitstreams//:{}_rom_mmi".format(design),
+        ],
+        design = "{}".format(design),
+        manifest = "@bitstreams//:manifest",
+        tags = ["manual"],
+    )
+    for design in bitstream_cache_filter([
+        "chip_earlgrey_cw310",
+        "chip_earlgrey_cw310_hyperdebug",
+    ])
+]

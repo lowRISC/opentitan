@@ -39,13 +39,18 @@ MANIFESTS_DIR = os.path.dirname(__file__) if __file__ else os.path.dirname(sys.a
 parser = argparse.ArgumentParser(
     description='Bitstream Downloader & Cache manager')
 parser.add_argument('--cache', default=CACHE_DIR, help='Cache directory name')
+parser.add_argument('--create-symlink', default=True,
+                    help='Create symlink to cache directory')
 parser.add_argument('--latest-update',
                     default='latest.txt',
                     help='Last time the cache was updated')
 parser.add_argument('--bucket-url', default=BUCKET_URL, help='GCP Bucket URL')
 parser.add_argument('--build-file',
                     default='BUILD.bazel',
-                    help='Name of the genrated BUILD file')
+                    help='Name of the generated BUILD file')
+parser.add_argument('--bzl-file',
+                    default='defs.bzl',
+                    help='Name of the generated bzl library file')
 parser.add_argument('--list',
                     default=False,
                     action=argparse.BooleanOptionalAction,
@@ -95,10 +100,11 @@ class BitstreamCache(object):
                                args.offline)
         return cache
 
-    def InitRepository(self):
+    def InitRepository(self, create_symlink: bool):
         """Create the cache directory and symlink it into the bazel repository dir."""
         os.makedirs(self.cachedir, exist_ok=True)
-        os.symlink(self.cachedir, 'cache')
+        if create_symlink:
+            os.symlink(self.cachedir, 'cache')
 
     def Touch(self, key):
         """Set the latest known bitstream.
@@ -359,7 +365,7 @@ class BitstreamCache(object):
         with open(path, "w") as manifest_file:
             json.dump(contents, manifest_file, indent=True)
 
-    def _ConstructBazelString(self, build_file: Path, key: str) -> str:
+    def _ConstructBazelString(self, build_file: Path, key: str) -> (str, list):
         # If `key` passed in is "latest", this updates the `key` to be the hash
         # that "latest" points to.
         if key == 'latest':
@@ -445,9 +451,27 @@ class BitstreamCache(object):
             self._WriteSubstituteManifest(manifest, manifest_path)
 
         bazel_lines += filegroup_lines("manifest", manifest_path)
-        return '\n'.join(bazel_lines)
+        return ('\n'.join(bazel_lines), designs.keys())
 
-    def WriteBuildFile(self, build_file: Path, key: str) -> str:
+    def _ConstructStarlarkString(self, designs: list) -> str:
+        """Construct a Starlark string to add a symbol that represents all
+        designs known to the bitstreams cache. The resulting library can be used
+        to probe the cache and avoid constructing references to non-existent
+        targets.
+
+        Args:
+            designs: A list of all design names in the cache.
+        Returns:
+            A Starlark string forming a bzl_library that contains a constant
+            listing all the designs known to the cache.
+        """
+        bzl_lines = ['BITSTREAM_CACHE_DESIGNS = [']
+        for design in designs:
+            bzl_lines.append('    \'{}\','.format(design))
+        bzl_lines.append(']')
+        return '\n'.join(bzl_lines)
+
+    def WriteBazelFiles(self, build_file: Path, bzl_file: Path, key: str) -> str:
         """Write a BUILD file for the requested bitstream files.
 
         Args:
@@ -456,8 +480,15 @@ class BitstreamCache(object):
         Returns:
             Either `key` or the corresponding commit hash if `key` is 'latest'.
         """
+        designs = []
         with open(build_file, 'wt') as f:
-            f.write(self._ConstructBazelString(build_file, key))
+            (build_str, designs) = self._ConstructBazelString(build_file, key)
+            designs = list(designs)
+            f.write(build_str)
+
+        with open(bzl_file, 'wt') as f:
+            bzl_str = self._ConstructStarlarkString(designs)
+            f.write(bzl_str)
 
         if key != 'latest':
             return key
@@ -487,7 +518,7 @@ def main(argv):
 
     cache = BitstreamCache(args.bucket_url, args.cache, args.latest_update,
                            args.offline)
-    cache.InitRepository()
+    cache.InitRepository(args.create_symlink)
 
     # Do we need a refresh?
     need_refresh = (args.refresh or desired_bitstream != 'latest' or
@@ -518,8 +549,9 @@ def main(argv):
     # Write a build file which allows tests to reference the bitstreams with
     # the labels:
     #   @bitstreams//:{design}_bitstream
-    configured_bitream = cache.WriteBuildFile(args.build_file,
-                                              desired_bitstream)
+    configured_bitream = cache.WriteBazelFiles(args.build_file,
+                                               args.bzl_file,
+                                               desired_bitstream)
     if desired_bitstream != 'latest' and configured_bitream != desired_bitstream:
         logging.error(
             'Configured bitstream {} does not match desired bitstream {}.'.
