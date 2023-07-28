@@ -8,6 +8,8 @@
 // appropriately apart from each other depending on the clock frequency ratio
 // of the two clock domains.
 
+`include "prim_assert.sv"
+
 module prim_pulse_sync (
   // source clock domain
   input  logic clk_src_i,

@@ -5,6 +5,7 @@
 // Scrambling key derivation module for OTP.
 //
 
+`include "prim_assert.sv"
 `include "prim_flop_macros.sv"
 
 module otp_ctrl_kdi

@@ -9,6 +9,8 @@
 //                -o hw/top_darjeeling/ \
 //                --rnd_cnst_seed 4881560218908238235
 
+`include "prim_assert.sv"
+
 module top_darjeeling #(
   // Manually defined parameters
 

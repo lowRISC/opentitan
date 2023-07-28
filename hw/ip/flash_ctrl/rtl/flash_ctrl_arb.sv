@@ -6,6 +6,7 @@
 //
 
 `include "prim_assert.sv"
+`include "prim_flop_macros.sv"
 
 // flash read and erase functionality is shared between the hardware (life cycle
 // and key manager) and software interfaces.

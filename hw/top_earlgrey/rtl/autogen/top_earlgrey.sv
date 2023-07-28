@@ -9,6 +9,8 @@
 //                -o hw/top_earlgrey/ \
 //                --rnd_cnst_seed 4881560218908238235
 
+`include "prim_assert.sv"
+
 module top_earlgrey #(
   // Manually defined parameters
 

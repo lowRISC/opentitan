@@ -27,6 +27,9 @@
  *   for use as a call stack
  * - triple error detection
  */
+
+`include "prim_assert.sv"
+
 module otbn_rf_base
   import otbn_pkg::*;
 #(

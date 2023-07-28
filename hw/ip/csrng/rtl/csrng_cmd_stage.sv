@@ -6,6 +6,7 @@
 //
 
 `include "prim_assert.sv"
+`include "prim_flop_macros.sv"
 
 module csrng_cmd_stage import csrng_pkg::*; #(
   parameter int CmdFifoWidth = 32,

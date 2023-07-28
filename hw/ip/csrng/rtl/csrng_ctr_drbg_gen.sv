@@ -9,6 +9,7 @@
 // ctr_drbg cmd module.
 
 `include "prim_assert.sv"
+`include "prim_flop_macros.sv"
 
 module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   parameter int NApps = 4,

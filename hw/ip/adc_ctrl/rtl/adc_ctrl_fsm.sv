@@ -4,6 +4,8 @@
 //
 // Description adc_ctrl detection FSM module
 
+`include "prim_assert.sv"
+
 module adc_ctrl_fsm
   import adc_ctrl_reg_pkg::*;
   import adc_ctrl_pkg::*;

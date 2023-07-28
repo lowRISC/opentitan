@@ -4,6 +4,8 @@
 //
 // Life cycle signal decoder and sender module.
 
+`include "prim_assert.sv"
+
 module lc_ctrl_signal_decode
   import lc_ctrl_pkg::*;
   import lc_ctrl_state_pkg::*;

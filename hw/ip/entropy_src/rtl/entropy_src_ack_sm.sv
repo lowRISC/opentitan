@@ -6,6 +6,7 @@
 //
 
 `include "prim_assert.sv"
+`include "prim_flop_macros.sv"
 
 module entropy_src_ack_sm (
   input logic                clk_i,

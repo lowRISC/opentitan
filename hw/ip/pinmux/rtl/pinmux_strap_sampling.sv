@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`include "prim_assert.sv"
+
 module pinmux_strap_sampling
   import pinmux_pkg::*;
   import pinmux_reg_pkg::*;

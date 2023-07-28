@@ -7,6 +7,7 @@
 //  - handles all app cmd requests from all requesting interfaces
 
 `include "prim_assert.sv"
+`include "prim_flop_macros.sv"
 
 module csrng_main_sm import csrng_pkg::*; #() (
   input logic                         clk_i,

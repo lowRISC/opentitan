@@ -7,6 +7,7 @@
 // implementation using security_strength = 256
 
 `include "prim_assert.sv"
+`include "prim_flop_macros.sv"
 
 module csrng_ctr_drbg_upd #(
   parameter int Cmd = 3,

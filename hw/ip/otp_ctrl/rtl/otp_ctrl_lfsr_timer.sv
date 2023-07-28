@@ -26,6 +26,7 @@
 // This can be useful if SW chooses to leave the periodic checks disabled.
 //
 
+`include "prim_assert.sv"
 `include "prim_flop_macros.sv"
 
 module otp_ctrl_lfsr_timer

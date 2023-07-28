@@ -4,6 +4,8 @@
 //
 // SPI byte to SPI (Single/ Dual/ Quad)
 
+`include "prim_assert.sv"
+
 module spi_p2s
   import spi_device_pkg::*;
 (

@@ -10,6 +10,7 @@
 //
 
 `include "prim_assert.sv"
+`include "prim_flop_macros.sv"
 
 module rom_ctrl_compare
   import prim_mubi_pkg::mubi4_t;
