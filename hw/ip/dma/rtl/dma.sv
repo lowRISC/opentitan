@@ -989,4 +989,20 @@ module dma
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_dma_reg, alert_tx_o[0])
+
+  // Handshake interrupt enable register must be expanded if there are more than 32 handshake
+  // trigger wires
+  `ASSERT_NEVER(LimitHandshakeTriggerWires_A, NumLsioTriggers > 32)
+
+  // The RTL code assumes the BE signal is 4-bit wide
+  `ASSERT_NEVER(BeLengthMustBe4_A, top_pkg::TL_DBW != 4)
+
+  // There should be no register writes after GO bit is set
+  `ASSERT_NEVER(NoRegWritesAfterGo_A, reg2hw.control.go && sw_reg_wr)
+
+  // The DMA enabled memory should not be changed after lock
+  `ASSERT_NEVER(NoDmaEnabledMemoryChangeAfterLock_A,
+                prim_mubi_pkg::mubi4_test_false_loose(reg2hw.range_register_unlock_regwen.q) &&
+                (reg2hw.enabled_memory_range_base.qe ||
+                 reg2hw.enabled_memory_range_limit.qe))
 endmodule
