@@ -22,28 +22,6 @@ class Xbar:
         self.clocks = []
         self.resets = []
 
-    def __repr__(self):
-        out = "<Xbar(%s) #nodes:%d clock:%s" % (self.name, len(
-            self.nodes), self.clock)
-        out += " #edges:%d>\n" % (len(self.edges))
-
-        # print nodes
-        out += "  Nodes:\n"
-        for node in self.nodes:
-            out += "    - " + node.name + "\n"
-
-        out += "  Edges:\n"
-        for edge in self.edges:
-            out += "    - " + edge.us.name + " => " + edge.ds.name + "\n"
-        # print edges
-        return out
-
-    def get_edges_from_node(self, node):  # Node -> Edges
-        return [
-            edge for edge in self.edges
-            if node.name in (edge.us.name, edge.ns.name)
-        ]
-
     def get_node(self, node):  # str -> Node
         result = [x for x in self.nodes if x.name == node]
         if len(result) != 1:

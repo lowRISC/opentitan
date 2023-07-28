@@ -15,9 +15,6 @@ class Edge:
         self.us = us
         self.ds = ds
 
-    def __repr__(self):
-        return "U(%s) D(%s)" % (self.us.name, self.ds.name)
-
 
 # Edges = List[Edge]
 # Clocks = List[str]  # If length is more than one, should be exactly two
