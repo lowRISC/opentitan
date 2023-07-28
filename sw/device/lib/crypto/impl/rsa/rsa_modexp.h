@@ -17,6 +17,20 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
+ * Block until a modexp operation is complete and get the result size.
+ *
+ * After OTBN finishes processing, this function reads the mode and infers the
+ * size of the modulus/signature for the just-finished operation. It then
+ * populates the `num_words` parameter with this size (expressed in 32b words).
+ * This is designed so that callers can call `rsa_modexp_wait()` and then use
+ * the size to select the appropriate `finalize()` call.
+ *
+ * @param[out] num_words Number of words for result buffers.
+ * @return Status of the operation (OK or error).
+ */
+status_t rsa_modexp_wait(size_t *num_words);
+
+/**
  * Start a constant-time RSA-2048 modular exponentiation.
  *
  * This construct is for secret exponents, and is much slower than the
