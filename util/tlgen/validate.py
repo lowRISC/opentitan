@@ -126,11 +126,10 @@ def check_keys(obj, control, prefix=""):
     """
     error = 0
 
-    # required
-    for k, v in control["required"].items():
-        if k not in obj:
-            error += 1
-            log.error(prefix + " missing required key " + k)
+    # Make sure that every key that we expect has actually been passed.
+    for k in control['required'].keys() - obj.keys():
+        error += 1
+        log.error(prefix + " missing required key: " + k)
 
     # Check every fields' correctness
     for k, v in obj.items():
