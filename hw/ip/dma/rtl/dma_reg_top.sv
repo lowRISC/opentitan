@@ -208,8 +208,8 @@ module dma_reg_top (
   logic status_aborted_wd;
   logic status_error_qs;
   logic status_error_wd;
-  logic [6:0] status_error_code_qs;
-  logic [6:0] status_error_code_wd;
+  logic [7:0] status_error_code_qs;
+  logic [7:0] status_error_code_wd;
   logic clear_state_we;
   logic clear_state_qs;
   logic clear_state_wd;
@@ -1377,11 +1377,11 @@ module dma_reg_top (
   );
   assign reg2hw.status.error.qe = status_qe;
 
-  //   F[error_code]: 10:4
+  //   F[error_code]: 11:4
   prim_subreg #(
-    .DW      (7),
+    .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (7'h0),
+    .RESVAL  (8'h0),
     .Mubi    (1'b0)
   ) u_status_error_code (
     .clk_i   (clk_i),
@@ -1625,7 +1625,7 @@ module dma_reg_top (
 
   assign status_error_wd = reg_wdata[3];
 
-  assign status_error_code_wd = reg_wdata[10:4];
+  assign status_error_code_wd = reg_wdata[11:4];
   assign clear_state_we = addr_hit[20] & reg_we & !reg_error;
 
   assign clear_state_wd = reg_wdata[0];
@@ -1758,7 +1758,7 @@ module dma_reg_top (
         reg_rdata_next[1] = status_done_qs;
         reg_rdata_next[2] = status_aborted_qs;
         reg_rdata_next[3] = status_error_qs;
-        reg_rdata_next[10:4] = status_error_code_qs;
+        reg_rdata_next[11:4] = status_error_code_qs;
       end
 
       addr_hit[20]: begin

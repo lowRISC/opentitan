@@ -168,7 +168,7 @@ package dma_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [6:0]  q;
+      logic [7:0]  q;
       logic        qe;
     } error_code;
     struct packed {
@@ -282,7 +282,7 @@ package dma_reg_pkg;
       logic        de;
     } error;
     struct packed {
-      logic [6:0]  d;
+      logic [7:0]  d;
       logic        de;
     } error_code;
   } dma_hw2reg_status_reg_t;
@@ -294,41 +294,41 @@ package dma_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    dma_reg2hw_intr_state_reg_t intr_state; // [460:458]
-    dma_reg2hw_intr_enable_reg_t intr_enable; // [457:455]
-    dma_reg2hw_intr_test_reg_t intr_test; // [454:449]
-    dma_reg2hw_alert_test_reg_t alert_test; // [448:447]
-    dma_reg2hw_source_address_lo_reg_t source_address_lo; // [446:414]
-    dma_reg2hw_source_address_hi_reg_t source_address_hi; // [413:381]
-    dma_reg2hw_destination_address_lo_reg_t destination_address_lo; // [380:348]
-    dma_reg2hw_destination_address_hi_reg_t destination_address_hi; // [347:315]
-    dma_reg2hw_address_space_id_reg_t address_space_id; // [314:305]
-    dma_reg2hw_enabled_memory_range_base_reg_t enabled_memory_range_base; // [304:272]
-    dma_reg2hw_enabled_memory_range_limit_reg_t enabled_memory_range_limit; // [271:239]
-    dma_reg2hw_range_unlock_regwen_reg_t range_unlock_regwen; // [238:235]
-    dma_reg2hw_total_data_size_reg_t total_data_size; // [234:202]
-    dma_reg2hw_transfer_width_reg_t transfer_width; // [201:199]
-    dma_reg2hw_destination_address_limit_lo_reg_t destination_address_limit_lo; // [198:166]
-    dma_reg2hw_destination_address_limit_hi_reg_t destination_address_limit_hi; // [165:133]
+    dma_reg2hw_intr_state_reg_t intr_state; // [461:459]
+    dma_reg2hw_intr_enable_reg_t intr_enable; // [458:456]
+    dma_reg2hw_intr_test_reg_t intr_test; // [455:450]
+    dma_reg2hw_alert_test_reg_t alert_test; // [449:448]
+    dma_reg2hw_source_address_lo_reg_t source_address_lo; // [447:415]
+    dma_reg2hw_source_address_hi_reg_t source_address_hi; // [414:382]
+    dma_reg2hw_destination_address_lo_reg_t destination_address_lo; // [381:349]
+    dma_reg2hw_destination_address_hi_reg_t destination_address_hi; // [348:316]
+    dma_reg2hw_address_space_id_reg_t address_space_id; // [315:306]
+    dma_reg2hw_enabled_memory_range_base_reg_t enabled_memory_range_base; // [305:273]
+    dma_reg2hw_enabled_memory_range_limit_reg_t enabled_memory_range_limit; // [272:240]
+    dma_reg2hw_range_unlock_regwen_reg_t range_unlock_regwen; // [239:236]
+    dma_reg2hw_total_data_size_reg_t total_data_size; // [235:203]
+    dma_reg2hw_transfer_width_reg_t transfer_width; // [202:200]
+    dma_reg2hw_destination_address_limit_lo_reg_t destination_address_limit_lo; // [199:167]
+    dma_reg2hw_destination_address_limit_hi_reg_t destination_address_limit_hi; // [166:134]
     dma_reg2hw_destination_address_almost_limit_lo_reg_t
-        destination_address_almost_limit_lo; // [132:100]
+        destination_address_almost_limit_lo; // [133:101]
     dma_reg2hw_destination_address_almost_limit_hi_reg_t
-        destination_address_almost_limit_hi; // [99:67]
-    dma_reg2hw_control_reg_t control; // [66:50]
-    dma_reg2hw_status_reg_t status; // [49:34]
+        destination_address_almost_limit_hi; // [100:68]
+    dma_reg2hw_control_reg_t control; // [67:51]
+    dma_reg2hw_status_reg_t status; // [50:34]
     dma_reg2hw_clear_state_reg_t clear_state; // [33:32]
     dma_reg2hw_handshake_interrupt_enable_reg_t handshake_interrupt_enable; // [31:0]
   } dma_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    dma_hw2reg_intr_state_reg_t intr_state; // [172:167]
-    dma_hw2reg_source_address_lo_reg_t source_address_lo; // [166:134]
-    dma_hw2reg_source_address_hi_reg_t source_address_hi; // [133:101]
-    dma_hw2reg_destination_address_lo_reg_t destination_address_lo; // [100:68]
-    dma_hw2reg_destination_address_hi_reg_t destination_address_hi; // [67:35]
-    dma_hw2reg_control_reg_t control; // [34:18]
-    dma_hw2reg_status_reg_t status; // [17:2]
+    dma_hw2reg_intr_state_reg_t intr_state; // [173:168]
+    dma_hw2reg_source_address_lo_reg_t source_address_lo; // [167:135]
+    dma_hw2reg_source_address_hi_reg_t source_address_hi; // [134:102]
+    dma_hw2reg_destination_address_lo_reg_t destination_address_lo; // [101:69]
+    dma_hw2reg_destination_address_hi_reg_t destination_address_hi; // [68:36]
+    dma_hw2reg_control_reg_t control; // [35:19]
+    dma_hw2reg_status_reg_t status; // [18:2]
     dma_hw2reg_clear_state_reg_t clear_state; // [1:0]
   } dma_hw2reg_t;
 
