@@ -483,7 +483,7 @@
                 error_code denotes the source of the error.
                 '''
         }
-        { bits: "10:4"
+        { bits: "11:4"
           name: "error_code"
           resval: 0x0
           desc: '''
@@ -496,6 +496,7 @@
                 Bit 4: Completion error.
                 Bit 5: DMA enabled memory config error.
                 Bit 6: Register config unlocked.
+                Bit 7: Invalid ASID error.
                 '''
         }
       ]
