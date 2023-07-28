@@ -3,9 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging as log
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 
-def is_pow2(v):
+def is_pow2(v: Any) -> bool:
     """Return true if value is power of two
     """
     if not isinstance(v, int):
@@ -14,7 +15,8 @@ def is_pow2(v):
     return (v > 0) and (v & (v - 1) == 0)
 
 
-def simplify_addr(dev, xbar):
+def simplify_addr(dev: Dict[Any, Any],
+                  xbar: Dict[Any, Any]) -> List[Dict[Any, Any]]:
     """Make smaller entries by combining them
 
     If any contiguous regions exist, concatenate them.
@@ -33,7 +35,7 @@ def simplify_addr(dev, xbar):
     # Sort based on the base addr
     newlist = sorted(addrs, key=lambda k: int(k['base_addr'], 0))
     # check if overlap or contiguous
-    result = []
+    result: List[Dict[Any, Any]] = []
     for e in newlist:
         if len(result) == 0:
             result.append(e)
@@ -48,14 +50,9 @@ def simplify_addr(dev, xbar):
 
         if no_device_in_range(xbar, dev["name"], result[-1], e):
             # Determine if size can be power of 2 value
-            smallest_addr_gte = get_next_base_addr(e["base_addr"], xbar,
-                                                   dev["name"])
-
-            # Choose next value
-            if smallest_addr_gte == -1:
-                next_value = 0x100000000
-            else:
-                next_value = int(smallest_addr_gte["base_addr"], 0)
+            next_value = (get_next_base_addr(e["base_addr"], xbar,
+                                             dev["name"]) or
+                          0x100000000)
 
             calc_size = int(e["base_addr"], 0) + int(e["size_byte"], 0) - int(
                 result[-1]["base_addr"], 0)
@@ -75,7 +72,10 @@ def simplify_addr(dev, xbar):
     return result
 
 
-def no_device_in_range(xbar, name, f, t):
+def no_device_in_range(xbar: Dict[Any, Any],
+                       name: str,
+                       f: Dict[Any, Any],
+                       t: Dict[Any, Any]) -> bool:
     """Check if other devices doesn't overlap with the range 'from <= x < to'
     """
     from_addr = int(f["base_addr"], 0) + int(f["size_byte"], 0)
@@ -103,7 +103,9 @@ def no_device_in_range(xbar, name, f, t):
     return True
 
 
-def get_next_base_addr(addr, xbar, name):
+def get_next_base_addr(addr: Union[str, int],
+                       xbar: Dict[Any, Any],
+                       name: str) -> Optional[int]:
     """Return the least value of base_addr of the IP greater than addr
 
     """
@@ -130,12 +132,14 @@ def get_next_base_addr(addr, xbar, name):
     gte_list = [x for x in sorted_list if int(x["base_addr"], 0) > value]
 
     if len(gte_list) == 0:
-        return -1
+        return None
 
-    return gte_list[0]
+    return int(gte_list[0]["base_addr"], 0)
 
 
-def find_pow2_size(addr, min_size, next_value):
+def find_pow2_size(addr: Dict[Any, Any],
+                   min_size: int,
+                   next_value: int) -> int:
     """Find smallest power of 2 value greater than min_size by given addr.
 
     For instance, {addr:0x4000_0000, min_size:0x21000} and `next_value` as
@@ -179,7 +183,8 @@ def find_pow2_size(addr, min_size, next_value):
     return i
 
 
-def get_toggle_excl_bits(addr_ranges, addr_width=32):
+def get_toggle_excl_bits(addr_ranges: List[List[int]],
+                         addr_width: int = 32) -> List[Tuple[int, int]]:
     """ Input addr_ranges is a list of (start_addr, end_addr)
     From given addr_ranges, will calculate what address bits can't be toggled as
     only the address in the ranges can pass through the xbar to the device
