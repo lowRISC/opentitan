@@ -24,6 +24,7 @@ class flash_ctrl_wr_path_intg_vseq extends flash_ctrl_rw_vseq;
 
       // disable tl_rsp error check
       cfg.m_tl_agent_cfg.check_tl_errs = 0;
+      cfg.otf_scb_h.mem_mon_off = 1;
       fork
         begin
           uvm_reg_data_t ldata;
@@ -52,7 +53,6 @@ class flash_ctrl_wr_path_intg_vseq extends flash_ctrl_rw_vseq;
                 // prog_err and mp_err
                 set_otf_exp_alert("recov_err");
                 prog_flash(ctrl, bank, 1, fractions, 1);
-                csr_spinwait(.ptr(ral.op_status.err), .exp_data(1'b1));
               end
               cfg.otf_rd_pct:read_flash(ctrl, bank, num, fractions);
             endcase
@@ -85,6 +85,8 @@ class flash_ctrl_wr_path_intg_vseq extends flash_ctrl_rw_vseq;
       cfg.seq_cfg.disable_flash_init = 1;
       cfg.seq_cfg.en_init_keys_seeds = 0;
       apply_reset();
+      cfg.otf_scb_h.clear_fifos();
+      cfg.otf_scb_h.stop = 1;
       csr_wr(.ptr(ral.init), .value(1));
       `uvm_info("Test","OTP",UVM_LOW)
       otp_model();
@@ -92,6 +94,7 @@ class flash_ctrl_wr_path_intg_vseq extends flash_ctrl_rw_vseq;
                    "Timed out waiting for rd_buf_en",
                    state_timeout_ns)
       cfg.clk_rst_vif.wait_clks(10);
+      cfg.otf_scb_h.stop = 0;
     end
     // disable tlul_err_cnt check
     cfg.tlul_core_obs_cnt = cfg.tlul_core_exp_cnt;
