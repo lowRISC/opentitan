@@ -109,7 +109,6 @@ Crossbar node description. It can be host, device, or internal nodes.
 Field | Kind | Type | Description
 ----- | ---- | ---- | ------------
 name | required | string | Module instance name
-stub | required | python Bool | Real node or stub.  Stubs only occupy address ranges
 type | required | string | Module type: {"host", "device", "async", "socket_1n", "socket_m1"}
 clock | optional | string | main clock of the port
 reset | optional | string | main reset of the port
@@ -119,6 +118,7 @@ rsp_fifo_pass | optional | python Bool | If true, pipeline fifo has passthrough 
 inst_type | optional | string | Instance type
 xbar | optional | python Bool | If true, the node is connected to another Xbar
 addr_range | optional | list of group | List of addr_range group
+stub | optional | python Bool | Real node or stub.  Stubs only occupy address ranges
 
 
 ### Address configuration

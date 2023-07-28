@@ -58,7 +58,6 @@ Crossbar node description. It can be host, device, or internal nodes.
 ''',
     'required': {
         'name': ['s', 'Module instance name'],
-        'stub': ['pb', 'Real node or stub.  Stubs only occupy address ranges'],
         'type': [
             's',
             'Module type: {"host", "device", "async", "socket_1n", "socket_m1"}'
@@ -74,7 +73,8 @@ Crossbar node description. It can be host, device, or internal nodes.
                           'If true, pipeline fifo has passthrough behavior on rsp'],
         'inst_type': ['s', 'Instance type'],
         'xbar': ['pb', 'If true, the node is connected to another Xbar'],
-        'addr_range': ['lg', addr]
+        'addr_range': ['lg', addr],
+        'stub': ['pb', 'Real node or stub.  Stubs only occupy address ranges']
     },
     'added': {}
 }
