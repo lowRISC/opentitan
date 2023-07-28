@@ -50,9 +50,9 @@ steps:
       ci/bazelisk.sh build //util/py/scripts:bitstream_cache_create
       printf "${{ join('\n', parameters.fragmentFiles) }}" > fragment_files.txt
       mapfile -t fragments < fragment_files.txt
-      ./util/py/scripts/bitstream_cache_create.py \
-        --schema rules/scripts/bitstreams_manifest.schema.json \
-        --stamp-file bazel-out/volatile-status.txt \
+      ci/bazelisk.sh run //util/py/scripts:bitstream_cache_create -- \
+        --schema $REPO_TOP/rules/scripts/bitstreams_manifest.schema.json \
+        --stamp-file $REPO_TOP/bazel-out/volatile-status.txt \
         --out $BIN_DIR/bitstream-cache \
         "${fragments[@]}"
       mv $BIN_DIR/bitstream-cache/bitstream-cache.tar.gz bitstream-latest.tar.gz
@@ -64,5 +64,5 @@ steps:
       gsutil -o Credentials:gs_service_key_file=$(gcpkey.secureFilePath) \
         cp -r ${{ parameters.bucketURI }}/bitstream-latest.tar.gz ${{ parameters.bucketURI }}/bitstream-$(Build.SourceVersion).tar.gz
     condition: succeeded()
-    continueOnError: true
+    continueOnError: false
     displayName: Upload bitstreams to GCP bucket
