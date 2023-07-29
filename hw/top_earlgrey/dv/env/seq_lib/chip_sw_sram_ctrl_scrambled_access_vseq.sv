@@ -60,7 +60,7 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
   bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] sram_main_nonce;
   bit [  sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0] sram_main_key;
 
-  typedef enum {
+  typedef enum byte {
     PhaseSetup           = 0,
     kTestPhaseMainSram   = 1,
     kTestPhaseRetSram    = 2,

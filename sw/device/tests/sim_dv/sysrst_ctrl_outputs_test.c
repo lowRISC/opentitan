@@ -78,7 +78,7 @@ static const dif_sysrst_ctrl_pin_t kSysrstCtrlOutputs[] = {
 };
 
 // Test phase written by testbench.
-static volatile const uint8_t kTestPhase = 0;
+static volatile const uint8_t kTestPhase[1] = {0};
 
 // Sets up the pinmux to assign input and output pads
 // to the sysrst_ctrl peripheral as required.
@@ -99,13 +99,13 @@ static void pinmux_setup(void) {
 // test. The function `flash_ctrl_testutils_backdoor_wait_update` it's used to
 // deal with possible caching that can prevent the software to read the new
 // value of `kTestPhase`.
-static void sync_with_testbench(void) {
+static void sync_with_testbench(uint8_t prior_phase) {
   // Set WFI status for testbench synchronization,
   // no actual WFI instruction is issued.
   test_status_set(kTestStatusInWfi);
   test_status_set(kTestStatusInTest);
   CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_wait_update(
-      &flash, (uintptr_t)&kTestPhase, kTestPhaseTimeoutUsec));
+      &kTestPhase[0], prior_phase, kTestPhaseTimeoutUsec));
 }
 
 // Enables the sysrst_ctrl overrides for the output pins. Allows
@@ -146,8 +146,10 @@ bool test_main(void) {
       &sysrst_ctrl));
   CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_init(&flash));
 
-  while (kTestPhase < kTestPhaseDone) {
-    switch (kTestPhase) {
+  uint8_t current_test_phase = kTestPhase[0];
+  while (current_test_phase < kTestPhaseDone) {
+    LOG_INFO("Test phase %d", current_test_phase);
+    switch (current_test_phase) {
       case kTestPhaseSetup:
         pinmux_setup();
         break;
@@ -170,10 +172,11 @@ bool test_main(void) {
         set_output_overrides(kLoopbackPartial);
         break;
       default:
-        LOG_ERROR("Unexpected test phase : %d", kTestPhase);
+        LOG_ERROR("Unexpected test phase : %d", kTestPhase[0]);
         break;
     }
-    sync_with_testbench();
+    sync_with_testbench(current_test_phase);
+    current_test_phase = kTestPhase[0];
   }
   return true;
 }
