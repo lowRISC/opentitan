@@ -8,8 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/mmio.h"
+#include "sw/lib/sw/device/base/bitfield.h"
+#include "sw/lib/sw/device/base/mmio.h"
 
 #include "rv_plic_regs.h"  // Generated.
 

@@ -6,9 +6,9 @@
 
 #include <assert.h>
 
-#include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/multibits.h"
+#include "sw/lib/sw/device/base/bitfield.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/multibits.h"
 
 // Generated.
 #include "flash_ctrl_regs.h"

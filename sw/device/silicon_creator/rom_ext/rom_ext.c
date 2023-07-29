@@ -4,11 +4,6 @@
 
 #include "sw/device/silicon_creator/rom_ext/rom_ext.h"
 
-#include "sw/lib/sw/device/arch/device.h"
-#include "sw/lib/sw/device/base/csr.h"
-#include "sw/lib/sw/device/base/macros.h"
-#include "sw/lib/sw/device/base/stdasm.h"
-#include "sw/lib/sw/device/runtime/hart.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
@@ -27,6 +22,11 @@
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_epmp.h"
 #include "sw/device/silicon_creator/rom_ext/sigverify_keys.h"
+#include "sw/lib/sw/device/arch/device.h"
+#include "sw/lib/sw/device/base/csr.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/stdasm.h"
+#include "sw/lib/sw/device/runtime/hart.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 

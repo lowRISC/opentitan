@@ -4,9 +4,9 @@
 
 #include <stdbool.h>
 
-#include "sw/lib/sw/device/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 

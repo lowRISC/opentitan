@@ -12,7 +12,7 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/base/mmio.h"
+#include "sw/lib/sw/device/base/mmio.h"
 
 #include "sw/ip/uart/dif/autogen/dif_uart_autogen.h"
 

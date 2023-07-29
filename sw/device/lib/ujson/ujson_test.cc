@@ -7,8 +7,8 @@
 #include <gtest/gtest.h>
 #include <string>
 
-#include "sw/lib/sw/device/base/status.h"
 #include "sw/device/lib/ujson/test_helpers.h"
+#include "sw/lib/sw/device/base/status.h"
 
 namespace {
 using test_helpers::SourceSink;

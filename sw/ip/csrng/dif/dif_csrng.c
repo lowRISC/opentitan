@@ -4,11 +4,11 @@
 
 #include "sw/ip/csrng/dif/dif_csrng.h"
 
-#include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/base/mmio.h"
 #include "sw/ip/csrng/dif/shared/dif_csrng_shared.h"
+#include "sw/lib/sw/device/base/bitfield.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/memory.h"
+#include "sw/lib/sw/device/base/mmio.h"
 
 #include "csrng_regs.h"  // Generated
 

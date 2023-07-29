@@ -17,9 +17,9 @@ cc_library(
     hdrs = ["rom_ext_epmp.h"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/silicon_creator/lib:epmp_state",
         "//sw/lib/sw/device/base:bitfield",
         "//sw/lib/sw/device/base:csr",
-        "//sw/device/silicon_creator/lib:epmp_state",
     ],
 )
 
@@ -34,14 +34,14 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         host = [
-            "//sw/lib/sw/device/base:global_mock",
             "//sw/device/silicon_creator/testing:rom_test",
+            "//sw/lib/sw/device/base:global_mock",
             "@googletest//:gtest",
         ],
         shared = [
             "//sw/device/silicon_creator/lib/base:chip",
-            "//sw/lib/sw/device/base:macros",
             "//sw/device/silicon_creator/lib:manifest",
+            "//sw/lib/sw/device/base:macros",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
     ),
@@ -54,10 +54,10 @@ cc_library(
     deps = [
         ":rom_ext_boot_policy_ptrs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/lib/sw/device/base:bitfield",
-        "//sw/lib/sw/device/base:csr",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:manifest",
+        "//sw/lib/sw/device/base:bitfield",
+        "//sw/lib/sw/device/base:csr",
     ],
 )
 
@@ -113,14 +113,14 @@ cc_library(
     hdrs = ["sigverify_keys.h"],
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//sw/lib/sw/device/base:bitfield",
-        "//sw/lib/sw/device/base:hardened",
-        "//sw/lib/sw/device/base:macros",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:rnd",
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",
+        "//sw/lib/sw/device/base:bitfield",
+        "//sw/lib/sw/device/base:hardened",
+        "//sw/lib/sw/device/base:macros",
     ],
 )
 
@@ -147,11 +147,6 @@ cc_library(
         ":rom_ext_boot_policy",
         ":rom_ext_epmp",
         ":sigverify_keys",
-        "//sw/lib/sw/device/arch:device",
-        "//sw/lib/sw/device/base:csr",
-        "//sw/lib/sw/device/base:macros",
-        "//sw/lib/sw/device/base:stdasm",
-        "//sw/lib/sw/device/runtime:hart",
         "//sw/device/silicon_creator/lib:manifest",
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib:rom_print",
@@ -168,6 +163,11 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:uart",
         "//sw/device/silicon_creator/lib/sigverify",
         "//sw/device/silicon_creator/rom_ext/keys/fake",
+        "//sw/lib/sw/device/arch:device",
+        "//sw/lib/sw/device/base:csr",
+        "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/base:stdasm",
+        "//sw/lib/sw/device/runtime:hart",
     ],
 )
 
@@ -191,8 +191,8 @@ opentitan_flash_binary(
     deps = [
         ":ld_slot_a",
         ":rom_ext",
-        "//sw/lib/sw/device/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/lib/sw/device/crt",
     ],
 )
 
@@ -203,8 +203,8 @@ opentitan_flash_binary(
     deps = [
         ":ld_slot_b",
         ":rom_ext",
-        "//sw/lib/sw/device/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/lib/sw/device/crt",
     ],
 )
 
@@ -215,8 +215,8 @@ opentitan_flash_binary(
     deps = [
         ":ld_slot_virtual",
         ":rom_ext",
-        "//sw/lib/sw/device/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/lib/sw/device/crt",
     ],
 )
 
@@ -233,7 +233,7 @@ opentitan_flash_binary(
     deps = [
         ":ld_slot_a",
         ":rom_ext",
-        "//sw/lib/sw/device/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/lib/sw/device/crt",
     ],
 )

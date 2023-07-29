@@ -6,15 +6,15 @@
 
 #include <assert.h>
 
+#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
+#include "sw/device/silicon_creator/lib/drivers/otp.h"
+#include "sw/device/silicon_creator/lib/error.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"
 #include "sw/lib/sw/device/base/bitfield.h"
 #include "sw/lib/sw/device/base/hardened.h"
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/base/multibits.h"
-#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
-#include "sw/device/silicon_creator/lib/drivers/otp.h"
-#include "sw/device/silicon_creator/lib/error.h"
 
 #include "flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"

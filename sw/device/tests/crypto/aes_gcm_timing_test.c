@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/lib/sw/device/base/macros.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/aes_gcm.h"
-#include "sw/lib/sw/device/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/crypto/aes_gcm_testutils.h"
 #include "sw/device/tests/crypto/aes_gcm_testvectors.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 /**
  * Checks that decryption takes the same number of cycles regardless of tag.

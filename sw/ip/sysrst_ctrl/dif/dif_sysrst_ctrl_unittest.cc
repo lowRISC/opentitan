@@ -5,10 +5,10 @@
 #include "sw/ip/sysrst_ctrl/dif/dif_sysrst_ctrl.h"
 
 #include "gtest/gtest.h"
-#include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/mock_mmio.h"
 #include "sw/ip/base/dif/dif_base.h"
 #include "sw/ip/base/dif/dif_test_base.h"
+#include "sw/lib/sw/device/base/bitfield.h"
+#include "sw/lib/sw/device/base/mock_mmio.h"
 
 #include "sysrst_ctrl_regs.h"  // Generated.
 

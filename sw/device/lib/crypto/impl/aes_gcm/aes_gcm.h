@@ -8,9 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/device/lib/crypto/drivers/aes.h"
 #include "sw/lib/sw/device/base/hardened.h"
 #include "sw/lib/sw/device/base/macros.h"
-#include "sw/device/lib/crypto/drivers/aes.h"
 
 #ifdef __cplusplus
 extern "C" {

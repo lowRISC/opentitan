@@ -6,8 +6,8 @@
 
 #include <assert.h>
 
-#include "sw/device/lib/base/bitfield.h"
 #include "sw/ip/base/dif/dif_base.h"
+#include "sw/lib/sw/device/base/bitfield.h"
 
 #include "pwm_regs.h"  // Generated.
 

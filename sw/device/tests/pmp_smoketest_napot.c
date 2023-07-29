@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/lib/sw/device/base/csr.h"
 #include "sw/lib/sw/device/runtime/hart.h"
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/pmp.h"
-#include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #define PMP_LOAD_REGION_ID 0
 

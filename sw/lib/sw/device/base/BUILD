@@ -86,10 +86,7 @@ cc_library(
     ],
 )
 
-filegroup(
-    name = "memory_perftest_c",
-    srcs = ["memory_perftest.c"],
-)
+exports_files(["memory_perftest.c"])
 
 cc_test(
     name = "memory_unittest",
@@ -261,9 +258,9 @@ cc_library(
     deps = [
         ":bitfield",
         ":macros",
-        "//sw/device/lib/dif:base",
-        "//sw/lib/sw/device/base/internal:status",
         "//sw/device/silicon_creator/lib:error",
+        "//sw/ip/base/dif:base",
+        "//sw/lib/sw/device/base/internal:status",
     ],
 )
 

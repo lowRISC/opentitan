@@ -6,15 +6,15 @@
 
 #include <stdalign.h>
 
-#include "sw/lib/sw/device/base/abs_mmio.h"
-#include "sw/lib/sw/device/base/bitfield.h"
-#include "sw/lib/sw/device/base/hardened.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/spi_device.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/lib/sw/device/base/abs_mmio.h"
+#include "sw/lib/sw/device/base/bitfield.h"
+#include "sw/lib/sw/device/base/hardened.h"
 
 #include "flash_ctrl_regs.h"
 #include "gpio_regs.h"

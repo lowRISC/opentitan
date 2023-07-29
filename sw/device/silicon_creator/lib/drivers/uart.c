@@ -7,10 +7,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/device/silicon_creator/lib/error.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"
 #include "sw/lib/sw/device/base/bitfield.h"
-#include "sw/device/silicon_creator/lib/error.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "uart_regs.h"  // Generated.

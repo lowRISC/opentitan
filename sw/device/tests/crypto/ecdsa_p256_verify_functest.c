@@ -5,9 +5,9 @@
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/ecc/ecdsa_p256.h"
-#include "sw/lib/sw/device/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 // The autogen rule that creates this header creates it in a directory named
 // after the rule, then manipulates the include path in the

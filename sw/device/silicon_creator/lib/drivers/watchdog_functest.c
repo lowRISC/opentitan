@@ -5,12 +5,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/lib/sw/device/arch/device.h"
-#include "sw/lib/sw/device/base/math.h"
-#include "sw/lib/sw/device/base/memory.h"
-#include "sw/lib/sw/device/runtime/hart.h"
-#include "sw/lib/sw/device/runtime/log.h"
-#include "sw/lib/sw/device/runtime/print.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -19,6 +13,12 @@
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/lib/sw/device/arch/device.h"
+#include "sw/lib/sw/device/base/math.h"
+#include "sw/lib/sw/device/base/memory.h"
+#include "sw/lib/sw/device/runtime/hart.h"
+#include "sw/lib/sw/device/runtime/log.h"
+#include "sw/lib/sw/device/runtime/print.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "rstmgr_regs.h"

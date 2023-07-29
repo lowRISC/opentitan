@@ -51,11 +51,11 @@ static uint32_t cast_safely(uint64_t val) {
 }
 
 void initialize_expected_counts(void) {
-  // The expected counts depend on the device, per sw/lib/sw/device/arch/device.h.
-  // Notice the ratios are small enough to fit a uint32_t, even if the Hz number
-  // is in uint64_t.
-  // The expected counts are derived from the ratios of the frequencies of the
-  // various clocks to the AON clock. For example, 48 Mhz / 200 kHz = 240.
+  // The expected counts depend on the device, per
+  // sw/lib/sw/device/arch/device.h. Notice the ratios are small enough to fit a
+  // uint32_t, even if the Hz number is in uint64_t. The expected counts are
+  // derived from the ratios of the frequencies of the various clocks to the AON
+  // clock. For example, 48 Mhz / 200 kHz = 240.
   const uint32_t kDeviceCpuCount =
       cast_safely(udiv64_slow(kClockFreqCpuHz, kClockFreqAonHz,
                               /*rem_out=*/NULL));

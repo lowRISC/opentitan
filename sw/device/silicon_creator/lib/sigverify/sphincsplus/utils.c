@@ -7,12 +7,12 @@
 
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/utils.h"
 
-#include "sw/lib/sw/device/base/memory.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/address.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/params.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/thash.h"
+#include "sw/lib/sw/device/base/memory.h"
 
 uint64_t spx_utils_bytes_to_u64(const uint8_t *in, size_t inlen) {
   uint64_t retval = 0;

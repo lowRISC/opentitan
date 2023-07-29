@@ -34,11 +34,11 @@ dual_cc_library(
         ],
         shared = [
             ":error",
-            "//sw/lib/sw/device/base:macros",
             "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
             "//sw/device/silicon_creator/lib/drivers:hmac",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:otp",
+            "//sw/lib/sw/device/base:macros",
         ],
     ),
 )
@@ -165,12 +165,12 @@ opentitan_functest(
         ":error",
         ":irq_asm",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/lib/sw/device/base:abs_mmio",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/device/silicon_creator/lib/drivers:watchdog",
+        "//sw/lib/sw/device/base:abs_mmio",
         "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
@@ -186,8 +186,8 @@ cc_library(
     hdrs = ["rom_print.h"],
     deps = [
         ":error",
-        "//sw/lib/sw/device/base:macros",
         "//sw/device/silicon_creator/lib/drivers:uart",
+        "//sw/lib/sw/device/base:macros",
     ],
 )
 
@@ -217,19 +217,19 @@ dual_cc_library(
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
         host = [
-            "//sw/lib/sw/device/base:global_mock",
             "//sw/device/silicon_creator/testing:rom_test",
+            "//sw/lib/sw/device/base:global_mock",
             "@googletest//:gtest",
         ],
         shared = [
             ":epmp_state",
             ":error",
             ":keymgr_binding",
-            "//sw/lib/sw/device/base:macros",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/sigverify:rsa_key",
             "//sw/device/silicon_creator/lib/sigverify:spx_key",
             "//sw/device/silicon_creator/lib/base:chip",
+            "//sw/lib/sw/device/base:macros",
         ],
     ),
 )
@@ -262,8 +262,8 @@ cc_test(
     local_defines = ["MANIFEST_UNIT_TEST_"],
     deps = [
         dual_cc_device_library_of(":manifest"),
-        "//sw/lib/sw/device/base:csr",
         "//sw/device/silicon_creator/testing:rom_test",
+        "//sw/lib/sw/device/base:csr",
         "@googletest//:gtest_main",
     ],
 )
@@ -290,8 +290,8 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         host = [
-            "//sw/lib/sw/device/base:global_mock",
             "//sw/device/silicon_creator/testing:rom_test",
+            "//sw/lib/sw/device/base:global_mock",
             "@googletest//:gtest",
         ],
         shared = [
@@ -311,6 +311,8 @@ dual_cc_library(
             "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
             "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/silicon_creator/lib/drivers:alert",
+            "//sw/device/silicon_creator/lib/drivers:otp",
             "//sw/lib/sw/device/arch:device",
             "//sw/lib/sw/device/base:abs_mmio",
             "//sw/lib/sw/device/base:bitfield",
@@ -318,8 +320,6 @@ dual_cc_library(
             "//sw/lib/sw/device/base:memory",
             "//sw/lib/sw/device/base:multibits",
             "//sw/lib/sw/device/base:stdasm",
-            "//sw/device/silicon_creator/lib/drivers:alert",
-            "//sw/device/silicon_creator/lib/drivers:otp",
         ],
     ),
 )
@@ -389,12 +389,12 @@ opentitan_functest(
     targets = ["cw310_test_rom"],
     deps = [
         ":crc32",
-        "//sw/lib/sw/device/base:macros",
-        "//sw/lib/sw/device/runtime:ibex",
-        "//sw/lib/sw/device/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ottf_test_config",
+        "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/runtime:ibex",
+        "//sw/lib/sw/device/runtime:log",
         "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )

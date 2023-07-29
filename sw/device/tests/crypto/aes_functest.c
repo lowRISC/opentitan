@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/lib/sw/device/base/macros.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/aes.h"
-#include "sw/lib/sw/device/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/crypto/aes_testvectors.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 // Random mask for testing.
 static const uint32_t kKeyMask[8] = {

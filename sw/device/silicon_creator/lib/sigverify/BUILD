@@ -28,8 +28,8 @@ cc_library(
     srcs = ["spx_key.c"],
     hdrs = ["spx_key.h"],
     deps = [
-        "//sw/lib/sw/device/base:macros",
         "//sw/device/silicon_creator/lib/sigverify/sphincsplus:params",
+        "//sw/lib/sw/device/base:macros",
     ],
 )
 
@@ -48,8 +48,8 @@ dual_cc_library(
             "//sw/lib/sw/device/base:macros",
         ],
         host = [
-            "//sw/lib/sw/device/base:global_mock",
             "//sw/device/silicon_creator/testing:rom_test",
+            "//sw/lib/sw/device/base:global_mock",
             "@googletest//:gtest",
         ],
         shared = [
@@ -124,14 +124,14 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
+            "//sw/device/silicon_creator/lib/drivers:otbn",
             "//sw/lib/sw/device/base:macros",
             "//sw/lib/sw/device/base:memory",
-            "//sw/device/silicon_creator/lib/drivers:otbn",
             "//sw/otbn/crypto:run_rsa_verify_3072_rr_modexp",
         ],
         host = [
-            "//sw/lib/sw/device/base:global_mock",
             "//sw/device/silicon_creator/testing:rom_test",
+            "//sw/lib/sw/device/base:global_mock",
             "@googletest//:gtest",
         ],
         shared = [
@@ -215,10 +215,10 @@ cc_library(
         ":mod_exp_otbn",
         ":rsa_key",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//sw/lib/sw/device/base:hardened",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/lib/sw/device/base:hardened",
     ],
 )
 
@@ -245,11 +245,11 @@ cc_library(
     deps = [
         ":spx_key",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//sw/lib/sw/device/base:hardened",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/sigverify/sphincsplus:verify",
+        "//sw/lib/sw/device/base:hardened",
     ],
 )
 
@@ -275,10 +275,10 @@ cc_library(
     hdrs = ["usage_constraints.h"],
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//sw/lib/sw/device/base:bitfield",
-        "//sw/lib/sw/device/base:hardened",
         "//sw/device/silicon_creator/lib:manifest",
         "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/lib/sw/device/base:bitfield",
+        "//sw/lib/sw/device/base:hardened",
     ],
 )
 

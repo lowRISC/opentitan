@@ -153,6 +153,7 @@ opentitan_functest(
     ],
     deps = [
         "@//sw/device/lib/testing/test_framework:ottf_main",
+        "@//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
 
@@ -191,6 +192,7 @@ opentitan_functest(
     ],
     deps = [
         "@//sw/device/lib/testing/test_framework:ottf_main",
+        "@//sw/top_earlgrey/sw/device/runtime:print",
         "@manufacturer_test_hooks//:test_hooks_1",
     ],
 )

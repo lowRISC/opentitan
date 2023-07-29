@@ -4,8 +4,8 @@
 
 #include "sw/device/lib/testing/profile.h"
 
-#include "sw/lib/sw/device/runtime/ibex.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/lib/sw/device/runtime/ibex.h"
 
 uint64_t profile_start(void) { return ibex_mcycle_read(); }
 

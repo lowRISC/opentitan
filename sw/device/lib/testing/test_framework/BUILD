@@ -28,10 +28,10 @@ cc_library(
     hdrs = ["coverage.h"],
     linkopts = ["-lgcc"],
     deps = [
+        "//sw/device/silicon_creator/lib:crc32",
         "//sw/lib/sw/device/base:memory",
         "//sw/lib/sw/device/runtime:log",
         "//sw/lib/sw/device/runtime:print",
-        "//sw/device/silicon_creator/lib:crc32",
         "//third_party/llvm_compiler_rt",
     ],
 )
@@ -64,7 +64,6 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":status",
-        "//sw/device/lib/dif:base",
         "//sw/ip/base/dif:base",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/base:mmio",
@@ -315,8 +314,8 @@ opentitan_functest(
         ":ottf_console",
         ":ottf_main",
         ":ujson_ottf",
-        "//sw/lib/sw/device/base:status",
         "//sw/device/lib/ujson",
+        "//sw/lib/sw/device/base:status",
         "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )

@@ -5,13 +5,13 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_PROVISIONING_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_PROVISIONING_H_
 
-#include "sw/lib/sw/device/base/status.h"
 #include "sw/device/lib/crypto/impl/ecc/p256_common.h"
 #include "sw/device/lib/crypto/include/ecc.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
 #include "sw/ip/lc_ctrl/dif/dif_lc_ctrl.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
+#include "sw/lib/sw/device/base/status.h"
 
 #include "otp_ctrl_regs.h"  // Generated.
 

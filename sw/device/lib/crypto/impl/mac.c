@@ -4,12 +4,12 @@
 
 #include "sw/device/lib/crypto/include/mac.h"
 
-#include "sw/lib/sw/device/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/sha2/sha256.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/lib/sw/device/base/hardened_memory.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('m', 'a', 'c')

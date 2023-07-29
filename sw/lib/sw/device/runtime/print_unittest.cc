@@ -14,7 +14,7 @@ extern "C" {
 #include "absl/strings/str_format.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "sw/device/lib/dif/dif_uart.h"
+#include "sw/ip/uart/dif/dif_uart.h"
 #include "sw/lib/sw/device/base/status.h"
 
 // NOTE: This is only present so that print.c can link without pulling in

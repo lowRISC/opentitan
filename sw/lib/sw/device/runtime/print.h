@@ -9,8 +9,8 @@
 #include <stddef.h>
 
 /**
- * Forward declaration of struct containing the relevant run-time information for
- * the SPI device DIF.
+ * Forward declaration of struct containing the relevant run-time information
+ * for the SPI device DIF.
  */
 struct dif_spi_device_handle;
 /**
@@ -20,8 +20,8 @@ struct dif_spi_device_handle;
 typedef struct dif_spi_device_handle dif_spi_device_handle_t;
 
 /**
- * Forward declaration of struct containing the relevant run-time information for
- * the UART DIF.
+ * Forward declaration of struct containing the relevant run-time information
+ * for the UART DIF.
  */
 struct dif_uart;
 /**

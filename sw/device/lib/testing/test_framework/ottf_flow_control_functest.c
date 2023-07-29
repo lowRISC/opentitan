@@ -5,15 +5,15 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/lib/sw/device/arch/device.h"
-#include "sw/lib/sw/device/base/status.h"
-#include "sw/lib/sw/device/runtime/hart.h"
-#include "sw/lib/sw/device/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
+#include "sw/lib/sw/device/arch/device.h"
+#include "sw/lib/sw/device/base/status.h"
+#include "sw/lib/sw/device/runtime/hart.h"
+#include "sw/lib/sw/device/runtime/print.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 

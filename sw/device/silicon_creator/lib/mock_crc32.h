@@ -5,8 +5,8 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_MOCK_CRC32_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_MOCK_CRC32_H_
 
-#include "sw/lib/sw/device/base/global_mock.h"
 #include "sw/device/silicon_creator/lib/crc32.h"
+#include "sw/lib/sw/device/base/global_mock.h"
 
 namespace rom_test {
 namespace internal {

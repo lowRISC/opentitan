@@ -4,9 +4,9 @@
 
 #include "sw/ip/edn/dif/dif_edn.h"
 
-#include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/multibits.h"
 #include "sw/ip/csrng/dif/shared/dif_csrng_shared.h"
+#include "sw/lib/sw/device/base/bitfield.h"
+#include "sw/lib/sw/device/base/multibits.h"
 
 #include "edn_regs.h"  // Generated
 

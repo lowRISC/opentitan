@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/lib/sw/device/base/abs_mmio.h"
-#include "sw/lib/sw/device/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
+#include "sw/lib/sw/device/base/abs_mmio.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 #include "flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"

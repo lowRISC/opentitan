@@ -4,11 +4,11 @@
 
 #include "sw/device/lib/crypto/drivers/entropy.h"
 
+#include "sw/device/lib/crypto/impl/status.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"
 #include "sw/lib/sw/device/base/bitfield.h"
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/base/multibits.h"
-#include "sw/device/lib/crypto/impl/status.h"
 
 #include "csrng_regs.h"        // Generated
 #include "edn_regs.h"          // Generated

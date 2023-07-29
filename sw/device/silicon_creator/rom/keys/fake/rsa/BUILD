@@ -18,8 +18,8 @@ cc_library(
     ],
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//sw/lib/sw/device/base:macros",
         "//sw/device/silicon_creator/rom:sigverify_keys",
+        "//sw/lib/sw/device/base:macros",
     ],
 )
 
@@ -33,7 +33,6 @@ cc_test(
     ],
     deps = [
         ":rsa",
-        "//sw/lib/sw/device/base:hardened",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
@@ -43,6 +42,7 @@ cc_test(
         "//sw/device/silicon_creator/rom:sigverify_keys",
         "//sw/device/silicon_creator/rom:sigverify_keys_rsa",
         "//sw/device/silicon_creator/testing:rom_test",
+        "//sw/lib/sw/device/base:hardened",
         "@googletest//:gtest_main",
     ],
 )

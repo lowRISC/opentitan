@@ -6,8 +6,8 @@
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_SHA2_SHA256_H_
 
 #include "stdint.h"
-#include "sw/lib/sw/device/base/hardened.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/lib/sw/device/base/hardened.h"
 
 #ifdef __cplusplus
 extern "C" {

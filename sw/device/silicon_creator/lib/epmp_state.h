@@ -7,9 +7,9 @@
 
 #include <stdint.h>
 
-#include "sw/lib/sw/device/base/bitfield.h"
 #include "sw/device/silicon_creator/lib/epmp_defs.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/lib/sw/device/base/bitfield.h"
 
 #ifdef __cplusplus
 extern "C" {

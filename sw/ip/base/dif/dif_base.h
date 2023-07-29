@@ -12,11 +12,11 @@
 
 #include <stdbool.h>
 
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/multibits.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/multibits.h"
 
 #define USING_INTERNAL_STATUS
-#include "sw/device/lib/base/internal/status.h"
+#include "sw/lib/sw/device/base/internal/status.h"
 #undef USING_INTERNAL_STATUS
 
 #ifdef __cplusplus

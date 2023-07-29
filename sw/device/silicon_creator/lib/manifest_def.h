@@ -7,8 +7,8 @@
 
 #include <stdint.h>
 
-#include "sw/lib/sw/device/base/macros.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
+#include "sw/lib/sw/device/base/macros.h"
 
 /**
  * Gets the manifest of the current boot stage.

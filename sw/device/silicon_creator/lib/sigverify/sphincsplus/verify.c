@@ -10,7 +10,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/lib/sw/device/base/memory.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/address.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/context.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/fors.h"
@@ -19,6 +18,7 @@
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/thash.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/utils.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/wots.h"
+#include "sw/lib/sw/device/base/memory.h"
 
 static_assert(kSpxVerifySigWords * sizeof(uint32_t) == kSpxVerifySigBytes,
               "kSpxVerifySigWords and kSpxVerifySigBytes do not match.");

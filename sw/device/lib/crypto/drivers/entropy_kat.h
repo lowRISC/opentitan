@@ -8,9 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/base/status.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
 
 #ifdef __cplusplus
 extern "C" {

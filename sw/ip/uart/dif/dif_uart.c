@@ -7,9 +7,9 @@
 #include <assert.h>
 #include <stddef.h>
 
-#include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/math.h"
-#include "sw/device/lib/base/mmio.h"
+#include "sw/lib/sw/device/base/bitfield.h"
+#include "sw/lib/sw/device/base/math.h"
+#include "sw/lib/sw/device/base/mmio.h"
 
 #include "uart_regs.h"  // Generated.
 

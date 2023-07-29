@@ -4,7 +4,7 @@
 
 #include "sw/ip/csrng/dif/shared/dif_csrng_shared.h"
 
-#include "sw/device/lib/base/multibits.h"
+#include "sw/lib/sw/device/base/multibits.h"
 
 // The application command header is not specified as a register in the
 // hardware specification, so the fields are mapped here by hand. The

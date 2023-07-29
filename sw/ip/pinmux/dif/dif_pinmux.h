@@ -25,9 +25,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/mmio.h"
 #include "sw/ip/base/dif/dif_base.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/mmio.h"
 
 #include "sw/ip/pinmux/dif/autogen/dif_pinmux_autogen.h"
 

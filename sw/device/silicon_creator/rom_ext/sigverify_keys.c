@@ -7,9 +7,9 @@
 #include <assert.h>
 #include <stddef.h>
 
+#include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/lib/sw/device/base/bitfield.h"
 #include "sw/lib/sw/device/base/hardened.h"
-#include "sw/device/silicon_creator/lib/drivers/rnd.h"
 
 /**
  * Determines whether a key is valid in the RMA life cycle state.

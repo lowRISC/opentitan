@@ -8,9 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/lib/sw/device/base/macros.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/lib/sw/device/base/macros.h"
 
 #ifdef __cplusplus
 extern "C" {

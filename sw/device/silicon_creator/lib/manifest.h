@@ -7,7 +7,6 @@
 
 #include <stddef.h>
 
-#include "sw/lib/sw/device/base/macros.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/epmp_state.h"
@@ -15,6 +14,7 @@
 #include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
 #include "sw/device/silicon_creator/lib/sigverify/rsa_key.h"
 #include "sw/device/silicon_creator/lib/sigverify/spx_key.h"
+#include "sw/lib/sw/device/base/macros.h"
 
 #ifdef __cplusplus
 extern "C" {

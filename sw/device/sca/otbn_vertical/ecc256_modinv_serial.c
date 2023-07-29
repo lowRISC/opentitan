@@ -4,16 +4,16 @@
 
 #include "sw/device/sca/otbn_vertical/ecc256_modinv_serial.h"
 
-#include "sw/lib/sw/device/base/abs_mmio.h"
-#include "sw/lib/sw/device/base/memory.h"
-#include "sw/lib/sw/device/runtime/ibex.h"
-#include "sw/lib/sw/device/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/sca/lib/prng.h"
 #include "sw/device/sca/lib/sca.h"
 #include "sw/device/sca/lib/simple_serial.h"
+#include "sw/lib/sw/device/base/abs_mmio.h"
+#include "sw/lib/sw/device/base/memory.h"
+#include "sw/lib/sw/device/runtime/ibex.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otbn_regs.h"

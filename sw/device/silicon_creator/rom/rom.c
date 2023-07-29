@@ -7,13 +7,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/lib/sw/device/arch/device.h"
-#include "sw/lib/sw/device/base/bitfield.h"
-#include "sw/lib/sw/device/base/csr.h"
-#include "sw/lib/sw/device/base/hardened.h"
-#include "sw/lib/sw/device/base/macros.h"
-#include "sw/lib/sw/device/base/memory.h"
-#include "sw/lib/sw/device/base/stdasm.h"
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/base/static_critical_version.h"
@@ -41,6 +34,13 @@
 #include "sw/device/silicon_creator/rom/rom_epmp.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys_rsa.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys_spx.h"
+#include "sw/lib/sw/device/arch/device.h"
+#include "sw/lib/sw/device/base/bitfield.h"
+#include "sw/lib/sw/device/base/csr.h"
+#include "sw/lib/sw/device/base/hardened.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/memory.h"
+#include "sw/lib/sw/device/base/stdasm.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"

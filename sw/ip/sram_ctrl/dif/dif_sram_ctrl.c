@@ -4,7 +4,7 @@
 
 #include "sw/ip/sram_ctrl/dif/dif_sram_ctrl.h"
 
-#include "sw/device/lib/base/multibits.h"
+#include "sw/lib/sw/device/base/multibits.h"
 
 #include "sram_ctrl_regs.h"  // Generated.
 

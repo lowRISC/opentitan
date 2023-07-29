@@ -7,9 +7,9 @@
 #include <assert.h>
 #include <stddef.h>
 
-#include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/mmio.h"
 #include "sw/ip/base/dif/dif_base.h"
+#include "sw/lib/sw/device/base/bitfield.h"
+#include "sw/lib/sw/device/base/mmio.h"
 
 #include "aon_timer_regs.h"  // Generated.
 

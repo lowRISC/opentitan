@@ -4,9 +4,9 @@
 
 #include "sw/device/lib/crypto/impl/rsa/rsa_keygen.h"
 
+#include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/lib/sw/device/base/hardened.h"
 #include "sw/lib/sw/device/base/hardened_memory.h"
-#include "sw/device/lib/crypto/drivers/otbn.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('r', 'k', 'g')

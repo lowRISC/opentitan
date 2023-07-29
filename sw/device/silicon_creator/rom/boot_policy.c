@@ -4,13 +4,13 @@
 
 #include "sw/device/silicon_creator/rom/boot_policy.h"
 
-#include "sw/lib/sw/device/base/hardened.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/rom/boot_policy_ptrs.h"
+#include "sw/lib/sw/device/base/hardened.h"
 
 boot_policy_manifests_t boot_policy_manifests_get(void) {
   const manifest_t *slot_a = boot_policy_manifest_a_get();

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/lib/sw/device/base/macros.h"
 #include "sw/device/silicon_creator/rom/keys/real/rsa/earlgrey_a0_dev_0.h"
 #include "sw/device/silicon_creator/rom/keys/real/rsa/earlgrey_a0_dev_1.h"
 #include "sw/device/silicon_creator/rom/keys/real/rsa/earlgrey_a0_prod_0.h"
@@ -11,6 +10,7 @@
 #include "sw/device/silicon_creator/rom/keys/real/rsa/earlgrey_a0_test_0.h"
 #include "sw/device/silicon_creator/rom/keys/real/rsa/earlgrey_a0_test_1.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys_rsa.h"
+#include "sw/lib/sw/device/base/macros.h"
 
 #include "otp_ctrl_regs.h"
 

@@ -14,11 +14,11 @@ cc_library(
     deps = [
         "//hw/ip/aes/data:aes_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/crypto/impl:status",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:bitfield",
         "//sw/lib/sw/device/base:hardened",
         "//sw/lib/sw/device/base:macros",
-        "//sw/device/lib/crypto/impl:status",
     ],
 )
 
@@ -30,11 +30,11 @@ opentitan_functest(
     ),
     deps = [
         ":aes",
-        "//sw/lib/sw/device/base:macros",
-        "//sw/lib/sw/device/base:memory",
         "//sw/device/lib/crypto/impl:status",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/base:memory",
         "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
@@ -49,11 +49,11 @@ cc_library(
     deps = [
         "//hw/ip/kmac/data:kmac_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/crypto/impl:status",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:bitfield",
         "//sw/lib/sw/device/base:hardened",
         "//sw/lib/sw/device/base:macros",
-        "//sw/device/lib/crypto/impl:status",
     ],
 )
 
@@ -66,12 +66,12 @@ cc_library(
         "//hw/ip/edn/data:edn_regs",
         "//hw/ip/entropy_src/data:entropy_src_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/crypto/impl:status",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:bitfield",
         "//sw/lib/sw/device/base:hardened",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/base:memory",
-        "//sw/device/lib/crypto/impl:status",
     ],
 )
 
@@ -103,7 +103,6 @@ opentitan_functest(
         ":entropy",
         ":entropy_kat",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:otbn",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/tests:otbn_randomness_impl",
@@ -121,12 +120,12 @@ cc_library(
     deps = [
         "//hw/ip/hmac/data:hmac_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/crypto/impl:status",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:bitfield",
         "//sw/lib/sw/device/base:hardened",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/base:memory",
-        "//sw/device/lib/crypto/impl:status",
     ],
 )
 
@@ -137,9 +136,9 @@ cc_library(
     deps = [
         "//hw/ip/otbn/data:otbn_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/crypto/impl:status",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:bitfield",
         "//sw/lib/sw/device/base:hardened",
-        "//sw/device/lib/crypto/impl:status",
     ],
 )

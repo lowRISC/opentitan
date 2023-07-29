@@ -10,8 +10,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/ip/base/dif/dif_base.h"
 #include "sw/lib/sw/device/base/bitfield.h"
 #include "sw/lib/sw/device/base/macros.h"
 

@@ -94,12 +94,7 @@ cc_library(
     ],
 )
 
-filegroup(
-    name = "print_c",
-    srcs = ["print.c"],
-)
-
-filegroup(
-    name = "print_unittest_cc",
-    srcs = ["print_unittest.cc"],
-)
+exports_files([
+    "print.c",
+    "print_unittest.cc",
+])

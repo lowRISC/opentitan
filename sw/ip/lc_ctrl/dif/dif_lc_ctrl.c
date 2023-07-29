@@ -4,9 +4,9 @@
 
 #include "sw/ip/lc_ctrl/dif/dif_lc_ctrl.h"
 
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/base/multibits.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/memory.h"
+#include "sw/lib/sw/device/base/multibits.h"
 
 #include "lc_ctrl_regs.h"  // Generated.
 

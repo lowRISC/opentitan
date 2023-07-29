@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/lib/sw/device/base/macros.h"
 #include "sw/device/silicon_creator/lib/epmp_state.h"
+#include "sw/lib/sw/device/base/macros.h"
 
 // In-memory copy of the ePMP register configuration.
 //

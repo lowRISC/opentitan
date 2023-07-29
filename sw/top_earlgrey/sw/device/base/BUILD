@@ -12,7 +12,7 @@ package(default_visibility = ["//visibility:public"])
 
 opentitan_functest(
     name = "memory_perftest",
-    srcs = ["//sw/lib/sw/device/base:memory_perftest_c"],
+    srcs = ["//sw/lib/sw/device/base:memory_perftest.c"],
     cw310 = cw310_params(
         tags = [
             "flaky",

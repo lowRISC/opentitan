@@ -11,8 +11,8 @@
  * Interface Functions
  */
 
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/multibits.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/multibits.h"
 
 #include "sw/ip/flash_ctrl/dif/autogen/dif_flash_ctrl_autogen.h"
 

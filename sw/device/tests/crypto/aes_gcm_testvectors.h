@@ -5,9 +5,9 @@
 #ifndef OPENTITAN_SW_DEVICE_TESTS_CRYPTO_AES_GCM_TESTVECTORS_H_
 #define OPENTITAN_SW_DEVICE_TESTS_CRYPTO_AES_GCM_TESTVECTORS_H_
 
-#include "sw/lib/sw/device/base/macros.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
 #include "sw/device/tests/crypto/aes_gcm_testutils.h"
+#include "sw/lib/sw/device/base/macros.h"
 
 #ifdef __cplusplus
 extern "C" {

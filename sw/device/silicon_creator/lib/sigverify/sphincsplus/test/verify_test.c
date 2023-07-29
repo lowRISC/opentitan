@@ -6,13 +6,13 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/testing/profile.h"
+#include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/base/status.h"
 #include "sw/lib/sw/device/runtime/ibex.h"
 #include "sw/lib/sw/device/runtime/log.h"
-#include "sw/device/lib/testing/profile.h"
-#include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 // The autogen rule that creates this header creates it in a directory named
 // after the rule, then manipulates the include path in the

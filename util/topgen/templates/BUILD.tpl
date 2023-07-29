@@ -30,10 +30,10 @@ opentitan_functest(
         "//sw/lib/sw/device/base:mmio",
         "//sw/lib/sw/device/runtime:irq",
         "//sw/lib/sw/device/runtime:log",
+        "//sw/top_${top["name"]}/sw/device/runtime:print",
 % for n in sorted(irq_peripheral_names + ["rv_plic"]):
         "//sw/top_${top["name"]}/sw/dif:${n}",
 % endfor
-        "//sw/top_${top["name"]}/sw/device/runtime:print",
     ],
 )
 
@@ -47,9 +47,9 @@ opentitan_functest(
         "//sw/lib/sw/device/base:memory",
         "//sw/lib/sw/device/base:mmio",
         "//sw/lib/sw/device/runtime:log",
+        "//sw/top_${top["name"]}/sw/device/runtime:print",
 % for n in sorted(alert_peripheral_names + ["alert_handler"]):
         "//sw/top_${top["name"]}/sw/dif:${n}",
 % endfor
-        "//sw/top_${top["name"]}/sw/device/runtime:print",
     ],
 )

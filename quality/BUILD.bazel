@@ -108,7 +108,6 @@ clang_format_check(
 clang_tidy_rv_test(
     name = "clang_tidy_check_rv",
     deps = [
-        "//sw/lib/sw/device/base:memory",
         "//sw/device/silicon_creator/rom:boot_policy",
         "//sw/device/silicon_creator/rom:bootstrap",
         "//sw/device/silicon_creator/rom:rom_common",
@@ -119,6 +118,7 @@ clang_tidy_rv_test(
         "//sw/device/silicon_creator/rom:sigverify_keys_spx",
         "//sw/device/silicon_creator/rom/keys/fake/rsa",
         "//sw/device/silicon_creator/rom/keys/fake/spx",
+        "//sw/lib/sw/device/base:memory",
         "//sw/top_earlgrey/sw/device/base:memory_perftest",
     ],
 )

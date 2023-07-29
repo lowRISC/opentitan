@@ -27,10 +27,6 @@ cc_library(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/examples:demos",
-        "//sw/device/lib/dif:gpio",
-        "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:spi_device",
-        "//sw/device/lib/dif:uart",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing:usb_testutils",
         "//sw/device/lib/testing:usb_testutils_simpleserial",

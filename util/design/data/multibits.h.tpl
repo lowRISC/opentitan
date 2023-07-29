@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_MULTIBITS_H_
-#define OPENTITAN_SW_DEVICE_LIB_BASE_MULTIBITS_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_BASE_MULTIBITS_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_BASE_MULTIBITS_H_
 
 /**
  * Multi-bit boolean values
@@ -30,4 +30,4 @@ from mubi import prim_mubi
 % endfor
 } multi_bit_bool_t;
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MULTIBITS_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_BASE_MULTIBITS_H_

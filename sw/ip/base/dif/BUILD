@@ -9,9 +9,9 @@ cc_library(
     srcs = ["dif_base.c"],
     hdrs = ["dif_base.h"],
     deps = [
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base/internal:status",
+        "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/base:multibits",
+        "//sw/lib/sw/device/base/internal:status",
     ],
 )
 

@@ -126,11 +126,11 @@ cc_library(
         "individualize.h",
     ],
     deps = [
-        "//sw/lib/sw/device/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:lc_ctrl_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/lib/sw/device/base:status",
         "//sw/top_earlgrey/sw/dif:flash_ctrl",
         "//sw/top_earlgrey/sw/dif:lc_ctrl",
         "//sw/top_earlgrey/sw/dif:otp_ctrl",
@@ -209,7 +209,6 @@ cc_library(
         "provisioning.h",
     ],
     deps = [
-        "//sw/lib/sw/device/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:aes",
         "//sw/device/lib/crypto/impl:ecc",
@@ -222,6 +221,7 @@ cc_library(
         "//sw/device/lib/testing/json:provisioning_data",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/silicon_creator/manuf/keys",
+        "//sw/lib/sw/device/base:status",
         "//sw/top_earlgrey/sw/dif:flash_ctrl",
         "//sw/top_earlgrey/sw/dif:lc_ctrl",
         "//sw/top_earlgrey/sw/dif:otp_ctrl",
@@ -297,8 +297,8 @@ lc_raw_unlock_token(
         targets = ["cw310_rom_with_fake_keys"],
         test_harness = "//sw/host/tests/manuf/manuf_scrap",
         deps = [
-            "//sw/lib/sw/device/runtime:log",
             "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/lib/sw/device/runtime:log",
             "//sw/top_earlgrey/sw/device/runtime:print",
         ],
     )
@@ -608,10 +608,10 @@ platform_target(
         targets = ["cw310_rom_with_fake_keys"],
         test_harness = "//sw/host/tests/manuf/manuf_cp_ast_test_execution",
         deps = [
-            "//sw/lib/sw/device/runtime:log",
             "//sw/device/lib/testing:otp_ctrl_testutils",
             "//sw/device/lib/testing/test_framework:check",
             "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/lib/sw/device/runtime:log",
             "//sw/top_earlgrey/sw/device/runtime:print",
         ],
     )
@@ -648,10 +648,10 @@ test_suite(
         targets = ["cw310_rom_with_fake_keys"],
         test_harness = "//sw/host/tests/manuf/manuf_sram_program_crc_check",
         deps = [
-            "//sw/lib/sw/device/runtime:log",
             "//sw/device/lib/testing:otp_ctrl_testutils",
             "//sw/device/lib/testing/test_framework:check",
             "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/lib/sw/device/runtime:log",
             "//sw/top_earlgrey/sw/device/runtime:print",
         ],
     )

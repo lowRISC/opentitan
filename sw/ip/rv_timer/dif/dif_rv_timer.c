@@ -7,9 +7,9 @@
 #include <assert.h>
 #include <stddef.h>
 
-#include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/math.h"
+#include "sw/lib/sw/device/base/bitfield.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/math.h"
 
 #include "rv_timer_regs.h"  // Generated.
 

@@ -8,9 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/lib/sw/device/base/hardened.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_datatypes.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/lib/sw/device/base/hardened.h"
 
 #ifdef __cplusplus
 extern "C" {

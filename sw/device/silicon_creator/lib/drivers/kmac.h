@@ -11,8 +11,8 @@
 
 #include <stdint.h>
 
-#include "sw/lib/sw/device/base/macros.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/lib/sw/device/base/macros.h"
 
 #ifdef __cplusplus
 extern "C" {

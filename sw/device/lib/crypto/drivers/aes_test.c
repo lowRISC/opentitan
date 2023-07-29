@@ -4,11 +4,11 @@
 
 #include "sw/device/lib/crypto/drivers/aes.h"
 
-#include "sw/lib/sw/device/base/memory.h"
 #include "sw/device/lib/crypto/impl/status.h"
-#include "sw/lib/sw/device/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/lib/sw/device/base/memory.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 // NIST 800-38a F.5.1 CTR-AES128.Encrypt test vectors.
 static const uint32_t kSecretKey[] = {

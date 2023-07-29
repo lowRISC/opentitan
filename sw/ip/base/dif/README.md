@@ -80,9 +80,9 @@ memory-mapped hardware, and modifying processor CSRs.
 * DIF libraries must be written in C.
 * DIF libraries can only depend on the following headers (and their associated
   libraries):
-  * `sw/device/lib/base/bitfield.h`
-  * `sw/device/lib/base/mmio.h`
-  * `sw/device/lib/base/memory.h`
+  * `sw/lib/sw/device/base/bitfield.h`
+  * `sw/lib/sw/device/base/mmio.h`
+  * `sw/lib/sw/device/base/memory.h`
   * `sw/ip/base/dif/dif_base.h`
 * DIF libraries must not depend on other DIF libraries. Exercising DIF
   functionality may require an environment set up using another DIF library, but
@@ -330,8 +330,8 @@ there are some relaxations of these rules for them described at the end.
   * Enum switches do not need a `case` for enum constants that are unreachable
     due to a guard statement.
 
-* DIFs must use `sw/device/lib/base/mmio.h` for accessing memory-mapped
-  hardware. DIFs must not use `sw/device/lib/base/memory.h` for accessing
+* DIFs must use `sw/lib/sw/device/base/mmio.h` for accessing memory-mapped
+  hardware. DIFs must not use `sw/lib/sw/device/base/memory.h` for accessing
   memory-mapped hardware.
 
 * Internal DIF functions, which are not intended to be part of a public DIF

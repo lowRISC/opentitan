@@ -8,9 +8,9 @@
 #include <stdalign.h>
 #include <stddef.h>
 
-#include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/base/mmio.h"
+#include "sw/lib/sw/device/base/bitfield.h"
+#include "sw/lib/sw/device/base/memory.h"
+#include "sw/lib/sw/device/base/mmio.h"
 
 #include "spi_host_regs.h"  // Generated.
 

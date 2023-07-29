@@ -36,11 +36,11 @@ opentitan_functest(
     ),
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_hardcoded_header",
-        "//sw/lib/sw/device/base:memory",
-        "//sw/lib/sw/device/runtime:ibex",
         "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/sigverify/sphincsplus:verify",
+        "//sw/lib/sw/device/base:memory",
+        "//sw/lib/sw/device/runtime:ibex",
         "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
@@ -52,13 +52,13 @@ opentitan_functest(
         timeout = "long",
     ),
     deps = [
-        "//sw/lib/sw/device/base:memory",
-        "//sw/lib/sw/device/runtime:ibex",
-        "//sw/lib/sw/device/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/sigverify/sphincsplus:context",
         "//sw/device/silicon_creator/lib/sigverify/sphincsplus:fors",
         "//sw/device/silicon_creator/lib/sigverify/sphincsplus:hash",
+        "//sw/lib/sw/device/base:memory",
+        "//sw/lib/sw/device/runtime:ibex",
+        "//sw/lib/sw/device/runtime:log",
         "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
@@ -70,13 +70,13 @@ opentitan_functest(
         timeout = "long",
     ),
     deps = [
-        "//sw/lib/sw/device/base:memory",
-        "//sw/lib/sw/device/runtime:ibex",
-        "//sw/lib/sw/device/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/sigverify/sphincsplus:context",
         "//sw/device/silicon_creator/lib/sigverify/sphincsplus:hash",
         "//sw/device/silicon_creator/lib/sigverify/sphincsplus:wots",
+        "//sw/lib/sw/device/base:memory",
+        "//sw/lib/sw/device/runtime:ibex",
+        "//sw/lib/sw/device/runtime:log",
         "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )

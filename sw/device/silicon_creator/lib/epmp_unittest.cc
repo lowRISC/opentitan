@@ -7,11 +7,11 @@
 #include <vector>
 
 #include "gtest/gtest.h"
-#include "sw/lib/sw/device/base/bitfield.h"
-#include "sw/lib/sw/device/base/csr.h"
 #include "sw/device/silicon_creator/lib/base/mock_csr.h"
 #include "sw/device/silicon_creator/lib/epmp_state.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
+#include "sw/lib/sw/device/base/bitfield.h"
+#include "sw/lib/sw/device/base/csr.h"
 
 namespace epmp_unittest {
 namespace {

@@ -5,13 +5,13 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/lib/sw/device/runtime/log.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 

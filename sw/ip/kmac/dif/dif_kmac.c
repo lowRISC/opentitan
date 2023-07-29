@@ -6,9 +6,9 @@
 
 #include <assert.h>
 
-#include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/memory.h"
+#include "sw/lib/sw/device/base/bitfield.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/memory.h"
 
 #include "kmac_regs.h"  // Generated.
 

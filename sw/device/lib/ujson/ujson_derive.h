@@ -11,9 +11,9 @@
 #ifndef RUST_PREPROCESSOR_EMIT
 #include <stdint.h>
 
+#include "sw/device/lib/ujson/ujson.h"
 #include "sw/lib/sw/device/base/adv_macros.h"
 #include "sw/lib/sw/device/base/status.h"
-#include "sw/device/lib/ujson/ujson.h"
 
 // If there is a pre-existing Rust `with_unknown! { ... }` enum, you can
 // add this flag to UJSON_SERDE_ENUM(...) to cause the C-based serializer

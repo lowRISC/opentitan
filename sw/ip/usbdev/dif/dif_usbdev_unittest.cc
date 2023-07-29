@@ -5,11 +5,11 @@
 #include "sw/ip/usbdev/dif/dif_usbdev.h"
 
 #include "gtest/gtest.h"
-#include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/base/mock_mmio.h"
-#include "sw/device/lib/base/multibits.h"
 #include "sw/ip/base/dif/dif_base.h"
 #include "sw/ip/base/dif/dif_test_base.h"
+#include "sw/lib/sw/device/base/mmio.h"
+#include "sw/lib/sw/device/base/mock_mmio.h"
+#include "sw/lib/sw/device/base/multibits.h"
 
 #include "usbdev_regs.h"  // Generated.
 

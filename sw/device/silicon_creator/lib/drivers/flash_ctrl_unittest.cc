@@ -7,13 +7,13 @@
 #include <array>
 
 #include "gtest/gtest.h"
-#include "sw/lib/sw/device/base/mock_abs_mmio.h"
-#include "sw/lib/sw/device/base/mock_mmio_test_utils.h"
-#include "sw/lib/sw/device/base/multibits.h"
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
+#include "sw/lib/sw/device/base/mock_abs_mmio.h"
+#include "sw/lib/sw/device/base/mock_mmio_test_utils.h"
+#include "sw/lib/sw/device/base/multibits.h"
 
 #include "flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"

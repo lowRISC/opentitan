@@ -4,9 +4,9 @@
 
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 
+#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"
 #include "sw/lib/sw/device/runtime/hart.h"
-#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "rv_core_ibex_regs.h"

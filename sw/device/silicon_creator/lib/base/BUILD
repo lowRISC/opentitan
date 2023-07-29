@@ -31,10 +31,10 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
+            "//sw/device/silicon_creator/lib:error",
             "//sw/lib/sw/device/base:abs_mmio",
             "//sw/lib/sw/device/base:hardened",
             "//sw/lib/sw/device/base:macros",
-            "//sw/device/silicon_creator/lib:error",
         ],
     ),
 )
@@ -67,8 +67,8 @@ cc_library(
     srcs = ["boot_measurements.c"],
     hdrs = ["boot_measurements.h"],
     deps = [
-        "//sw/lib/sw/device/base:macros",
         "//sw/device/silicon_creator/lib:keymgr_binding",
+        "//sw/lib/sw/device/base:macros",
     ],
 )
 

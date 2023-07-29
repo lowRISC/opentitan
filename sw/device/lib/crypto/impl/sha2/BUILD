@@ -12,11 +12,11 @@ cc_library(
     hdrs = ["sha256.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        "//sw/device/lib/crypto/drivers:otbn",
         "//sw/lib/sw/device/base:hardened",
         "//sw/lib/sw/device/base:hardened_memory",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/base:memory",
-        "//sw/device/lib/crypto/drivers:otbn",
         "//sw/otbn/crypto:run_sha256",
     ],
 )
@@ -27,11 +27,11 @@ cc_library(
     hdrs = ["sha512.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        "//sw/device/lib/crypto/drivers:otbn",
         "//sw/lib/sw/device/base:hardened",
         "//sw/lib/sw/device/base:hardened_memory",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/base:memory",
-        "//sw/device/lib/crypto/drivers:otbn",
         "//sw/otbn/crypto:run_sha512",
     ],
 )

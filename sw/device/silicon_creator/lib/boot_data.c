@@ -7,13 +7,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/lib/sw/device/base/hardened.h"
-#include "sw/lib/sw/device/base/memory.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/lib/sw/device/base/hardened.h"
+#include "sw/lib/sw/device/base/memory.h"
 
 #include "flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"

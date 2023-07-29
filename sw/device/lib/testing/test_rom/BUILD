@@ -87,9 +87,6 @@ cc_library(
         "//hw/ip/spi_device/data:spi_device_regs",
         "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/lib/sw/device/base:abs_mmio",
-        "//sw/lib/sw/device/base:macros",
-        "//sw/lib/sw/device/base:multibits",
         "//sw/device/silicon_creator/lib:epmp_state",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:keymgr_binding",
@@ -97,6 +94,9 @@ cc_library(
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",
         "//sw/device/silicon_creator/lib/sigverify:spx_key",
+        "//sw/lib/sw/device/base:abs_mmio",
+        "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/base:multibits",
     ],
 )
 
@@ -142,7 +142,6 @@ cc_library(
         "//sw/lib/sw/device/crt",
         "//sw/lib/sw/device/runtime:hart",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/lib/sw/device/runtime:print",
         "//sw/top_earlgrey/sw/device/runtime:print",
         "//sw/top_earlgrey/sw/dif:clkmgr",
         "//sw/top_earlgrey/sw/dif:flash_ctrl",

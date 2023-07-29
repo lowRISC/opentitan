@@ -6,12 +6,12 @@
 
 #include <stdbool.h>
 
-#include "sw/lib/sw/device/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/sha2/sha256.h"
 #include "sw/device/lib/crypto/impl/sha2/sha512.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/lib/sw/device/base/hardened_memory.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('h', 'a', 's')

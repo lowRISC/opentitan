@@ -67,8 +67,8 @@ cc_library(
         ":address",
         ":context",
         ":params",
-        "//sw/lib/sw/device/base:macros",
         "//sw/device/silicon_creator/lib/drivers:kmac",
+        "//sw/lib/sw/device/base:macros",
     ],
 )
 
@@ -80,8 +80,8 @@ cc_library(
         ":address",
         ":params",
         ":thash",
-        "//sw/lib/sw/device/base:memory",
         "//sw/device/silicon_creator/lib:error",
+        "//sw/lib/sw/device/base:memory",
     ],
 )
 
@@ -98,8 +98,8 @@ cc_library(
         ":thash",
         ":utils",
         ":wots",
-        "//sw/lib/sw/device/base:memory",
         "//sw/device/silicon_creator/lib:error",
+        "//sw/lib/sw/device/base:memory",
     ],
 )
 
@@ -113,8 +113,8 @@ cc_library(
         ":params",
         ":thash",
         ":utils",
-        "//sw/lib/sw/device/base:memory",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/drivers:kmac",
+        "//sw/lib/sw/device/base:memory",
     ],
 )

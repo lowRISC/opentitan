@@ -4,9 +4,9 @@
 
 #include "sw/ip/hmac/dif/dif_hmac.h"
 
-#include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/base/mmio.h"
+#include "sw/lib/sw/device/base/bitfield.h"
+#include "sw/lib/sw/device/base/memory.h"
+#include "sw/lib/sw/device/base/mmio.h"
 
 #include "hmac_regs.h"  // Generated.
 

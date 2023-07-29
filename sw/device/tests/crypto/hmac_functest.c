@@ -6,9 +6,9 @@
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/mac.h"
-#include "sw/lib/sw/device/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 enum {
   /**

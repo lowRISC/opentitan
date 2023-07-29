@@ -6,7 +6,7 @@
 
 #include <assert.h>
 
-#include "sw/device/lib/base/bitfield.h"
+#include "sw/lib/sw/device/base/bitfield.h"
 
 #include "usbdev_regs.h"  // Generated.
 

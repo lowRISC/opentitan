@@ -2,6 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/silicon_creator/lib/drivers/otp.h"
+#include "sw/device/silicon_creator/lib/drivers/pinmux.h"
+#include "sw/device/silicon_creator/lib/drivers/uart.h"
+#include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/manifest_def.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"
 #include "sw/lib/sw/device/base/bitfield.h"
@@ -10,11 +15,6 @@
 #include "sw/lib/sw/device/runtime/hart.h"
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/runtime/print.h"
-#include "sw/device/silicon_creator/lib/drivers/otp.h"
-#include "sw/device/silicon_creator/lib/drivers/pinmux.h"
-#include "sw/device/silicon_creator/lib/drivers/uart.h"
-#include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/manifest_def.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"

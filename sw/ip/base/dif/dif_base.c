@@ -6,7 +6,7 @@
 
 #include <stdbool.h>
 
-#include "sw/device/lib/base/multibits.h"
+#include "sw/lib/sw/device/base/multibits.h"
 
 // `extern` declarations to give the inline functions in the corresponding
 // header a link location.

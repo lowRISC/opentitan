@@ -7,10 +7,10 @@
 #include <assert.h>
 #include <stdint.h>
 
+#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/lib/sw/device/base/bitfield.h"
 #include "sw/lib/sw/device/base/hardened.h"
 #include "sw/lib/sw/device/base/macros.h"
-#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "lc_ctrl_regs.h"

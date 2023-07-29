@@ -7,8 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/base/mmio.h"
+#include "sw/lib/sw/device/base/memory.h"
+#include "sw/lib/sw/device/base/mmio.h"
 
 #include "dma_regs.h"  // Generated.
 

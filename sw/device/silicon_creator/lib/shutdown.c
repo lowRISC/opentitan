@@ -6,6 +6,11 @@
 
 #include <assert.h>
 
+#include "sw/device/silicon_creator/lib/chip_info.h"
+#include "sw/device/silicon_creator/lib/drivers/alert.h"
+#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
+#include "sw/device/silicon_creator/lib/drivers/otp.h"
+#include "sw/device/silicon_creator/lib/epmp_defs.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"
 #include "sw/lib/sw/device/base/bitfield.h"
@@ -15,11 +20,6 @@
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/base/multibits.h"
 #include "sw/lib/sw/device/base/stdasm.h"
-#include "sw/device/silicon_creator/lib/chip_info.h"
-#include "sw/device/silicon_creator/lib/drivers/alert.h"
-#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
-#include "sw/device/silicon_creator/lib/drivers/otp.h"
-#include "sw/device/silicon_creator/lib/epmp_defs.h"
 
 #include "alert_handler_regs.h"
 #include "flash_ctrl_regs.h"

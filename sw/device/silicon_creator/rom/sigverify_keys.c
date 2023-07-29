@@ -7,12 +7,12 @@
 #include <assert.h>
 #include <stddef.h>
 
-#include "sw/lib/sw/device/base/bitfield.h"
-#include "sw/lib/sw/device/base/hardened.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys_rsa.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys_spx.h"
+#include "sw/lib/sw/device/base/bitfield.h"
+#include "sw/lib/sw/device/base/hardened.h"
 
 /**
  * Checks the validity of a key in OTP.

@@ -368,13 +368,13 @@ opentitan_functest(
         "//hw/ip/uart/data:uart_regs",
         "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/lib/sw/device/runtime:hart",
-        "//sw/lib/sw/device/runtime:log",
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib/base:static_critical",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:pinmux",
         "//sw/device/silicon_creator/lib/drivers:uart",
+        "//sw/lib/sw/device/runtime:hart",
+        "//sw/lib/sw/device/runtime:log",
         "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
@@ -517,10 +517,10 @@ opentitan_functest(
     test_harness = "//sw/host/tests/rom/e2e_bootstrap_rma",
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/lib/sw/device/base:macros",
-        "//sw/lib/sw/device/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/runtime:log",
         "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
@@ -1083,9 +1083,9 @@ otp_json(
     deps = [
         "//hw/ip/aon_timer/data:aon_timer_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/lib/sw/device/base:abs_mmio",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/lib/sw/device/base:abs_mmio",
         "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 ) for watchdog_config in [
@@ -1349,11 +1349,11 @@ otp_alert_digest(
     ],
     deps = [
         "//hw/ip/uart/data:uart_regs",
-        "//sw/lib/sw/device/base:abs_mmio",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        "//sw/lib/sw/device/base:abs_mmio",
         "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 ) for lc_state, _ in ALERT_LC_STATES]
@@ -2300,10 +2300,10 @@ test_suite(
         targets = ["cw310_rom_with_fake_keys"],
         test_harness = "//sw/host/tests/chip/jtag:sram_load",
         deps = [
-            "//sw/lib/sw/device/runtime:log",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:otp",
             "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+            "//sw/lib/sw/device/runtime:log",
             "//sw/top_earlgrey/sw/device/runtime:print",
         ],
     )
@@ -3981,12 +3981,12 @@ opentitan_flash_binary(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
-        "//sw/lib/sw/device/base:status",
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:chip_info",
+        "//sw/lib/sw/device/base:status",
         "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )

@@ -18,10 +18,10 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":rsa_datatypes",
+        "//sw/device/lib/crypto/drivers:otbn",
         "//sw/lib/sw/device/base:hardened",
         "//sw/lib/sw/device/base:hardened_memory",
         "//sw/lib/sw/device/base:memory",
-        "//sw/device/lib/crypto/drivers:otbn",
         "//sw/otbn/crypto:run_rsa_keygen",
     ],
 )
@@ -33,11 +33,11 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":rsa_datatypes",
+        "//sw/device/lib/crypto/drivers:hmac",
+        "//sw/device/lib/crypto/drivers:otbn",
         "//sw/lib/sw/device/base:hardened",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/base:memory",
-        "//sw/device/lib/crypto/drivers:hmac",
-        "//sw/device/lib/crypto/drivers:otbn",
         "//sw/otbn/crypto:run_rsa_verify_3072",
     ],
 )

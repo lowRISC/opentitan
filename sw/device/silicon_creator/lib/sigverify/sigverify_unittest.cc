@@ -10,13 +10,13 @@
 #include <unordered_set>
 
 #include "gtest/gtest.h"
-#include "sw/lib/sw/device/base/hardened.h"
-#include "sw/lib/sw/device/base/macros.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/lib/sigverify/mock_mod_exp_ibex.h"
 #include "sw/device/silicon_creator/lib/sigverify/mock_mod_exp_otbn.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
+#include "sw/lib/sw/device/base/hardened.h"
+#include "sw/lib/sw/device/base/macros.h"
 
 #include "otp_ctrl_regs.h"
 

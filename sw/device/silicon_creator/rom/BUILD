@@ -27,8 +27,8 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         host = [
-            "//sw/lib/sw/device/base:global_mock",
             "//sw/device/silicon_creator/testing:rom_test",
+            "//sw/lib/sw/device/base:global_mock",
             "@googletest//:gtest",
         ],
         shared = [
@@ -44,12 +44,12 @@ cc_library(
     hdrs = ["boot_policy.h"],
     deps = [
         ":boot_policy_ptrs",
-        "//sw/lib/sw/device/base:hardened",
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:manifest",
         "//sw/device/silicon_creator/lib:shutdown",
         "//sw/device/silicon_creator/lib/base:chip",
+        "//sw/lib/sw/device/base:hardened",
     ],
 )
 
@@ -98,9 +98,9 @@ cc_library(
         "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/silicon_creator/lib/base:chip",
         "//sw/lib/sw/device/base:hardened",
         "//sw/lib/sw/device/base:multibits",
-        "//sw/device/silicon_creator/lib/base:chip",
     ],
     alwayslink = True,
 )
@@ -119,14 +119,6 @@ cc_library(
         ":sigverify_keys_rsa",
         ":sigverify_keys_spx",
         "//hw/ip/aon_timer/data:aon_timer_regs",
-        "//sw/lib/sw/device/arch:device",
-        "//sw/lib/sw/device/base:bitfield",
-        "//sw/lib/sw/device/base:csr",
-        "//sw/lib/sw/device/base:macros",
-        "//sw/lib/sw/device/base:memory",
-        "//sw/lib/sw/device/base:stdasm",
-        "//sw/lib/sw/device/crt",
-        "//sw/lib/sw/device/runtime:hart",
         "//sw/device/silicon_creator/lib:cfi",
         "//sw/device/silicon_creator/lib:epmp_state",
         "//sw/device/silicon_creator/lib:error",
@@ -151,6 +143,14 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:uart",
         "//sw/device/silicon_creator/lib/drivers:watchdog",
         "//sw/device/silicon_creator/lib/sigverify",
+        "//sw/lib/sw/device/arch:device",
+        "//sw/lib/sw/device/base:bitfield",
+        "//sw/lib/sw/device/base:csr",
+        "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/base:memory",
+        "//sw/lib/sw/device/base:stdasm",
+        "//sw/lib/sw/device/crt",
+        "//sw/lib/sw/device/runtime:hart",
     ],
 )
 
@@ -218,11 +218,11 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/silicon_creator/lib:epmp_state",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/lib/sw/device/base:bitfield",
         "//sw/lib/sw/device/base:csr",
         "//sw/lib/sw/device/base:memory",
-        "//sw/device/silicon_creator/lib:epmp_state",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
     ],
 )
 
@@ -265,7 +265,6 @@ opentitan_functest(
         "//sw/lib/sw/device/runtime:hart",
         "//sw/lib/sw/device/runtime:ibex",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/lib/sw/device/runtime:print",
         "//sw/top_earlgrey/sw/device/runtime:print",
         "//sw/top_earlgrey/sw/dif:pinmux",
         "//sw/top_earlgrey/sw/dif:sram_ctrl",
@@ -289,15 +288,15 @@ cc_library(
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/lib/sw/device/base:abs_mmio",
-        "//sw/lib/sw/device/base:bitfield",
-        "//sw/lib/sw/device/base:hardened",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/device/silicon_creator/lib/drivers:spi_device",
+        "//sw/lib/sw/device/base:abs_mmio",
+        "//sw/lib/sw/device/base:bitfield",
+        "//sw/lib/sw/device/base:hardened",
     ],
 )
 
@@ -325,15 +324,15 @@ cc_library(
         "sigverify_keys.h",
     ],
     deps = [
-        "//sw/lib/sw/device/base:bitfield",
-        "//sw/lib/sw/device/base:hardened",
-        "//sw/lib/sw/device/base:macros",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:rnd",
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",
         "//sw/device/silicon_creator/lib/sigverify:spx_key",
+        "//sw/lib/sw/device/base:bitfield",
+        "//sw/lib/sw/device/base:hardened",
+        "//sw/lib/sw/device/base:macros",
     ],
 )
 
@@ -348,10 +347,10 @@ cc_library(
     deps = [
         ":sigverify_keys",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//sw/lib/sw/device/base:macros",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",
+        "//sw/lib/sw/device/base:macros",
     ],
 )
 
@@ -366,11 +365,11 @@ cc_library(
     deps = [
         ":sigverify_keys",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//sw/lib/sw/device/base:macros",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/sigverify",
         "//sw/device/silicon_creator/lib/sigverify:spx_key",
+        "//sw/lib/sw/device/base:macros",
     ],
 )
 

@@ -4,9 +4,9 @@
 
 #include "sw/device/lib/crypto/impl/keyblob.h"
 
-#include "sw/lib/sw/device/base/hardened_memory.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/lib/sw/device/base/hardened_memory.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('k', 'b', 'b')

@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/lib/sw/device/base/macros.h"
 #include "sw/device/silicon_creator/rom_ext/keys/fake/rom_ext_dev_key_0_rsa_3072_exp_f4.h"
 #include "sw/device/silicon_creator/rom_ext/keys/fake/rom_ext_test_key_0_rsa_3072_exp_f4.h"
 #include "sw/device/silicon_creator/rom_ext/sigverify_keys.h"
+#include "sw/lib/sw/device/base/macros.h"
 
 /**
  * Number of RSA public keys.

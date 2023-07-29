@@ -747,10 +747,10 @@ opentitan_functest(
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/runtime:hart",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
@@ -980,9 +980,9 @@ opentitan_functest(
     name = "example_concurrency_test",
     srcs = ["example_concurrency_test.c"],
     deps = [
-        "//sw/lib/sw/device/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/lib/sw/device/runtime:log",
         "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
@@ -1074,7 +1074,6 @@ opentitan_functest(
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:mmio",
-        "//sw/device/lib/dif:flash_ctrl",
         "//sw/lib/sw/device/runtime:irq",
         "//sw/lib/sw/device/runtime:log",
         "//sw/top_earlgrey/sw/device/runtime:print",
@@ -1605,11 +1604,11 @@ opentitan_functest(
     srcs = ["pmp_smoketest_napot.c"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:csr",
         "//sw/lib/sw/device/runtime:hart",
         "//sw/lib/sw/device/runtime:irq",
         "//sw/lib/sw/device/runtime:pmp",
-        "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
@@ -1619,11 +1618,11 @@ opentitan_functest(
     srcs = ["pmp_smoketest_tor.c"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:csr",
         "//sw/lib/sw/device/runtime:hart",
         "//sw/lib/sw/device/runtime:irq",
         "//sw/lib/sw/device/runtime:pmp",
-        "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
@@ -2252,6 +2251,7 @@ opentitan_functest(
     srcs = ["sram_ctrl_smoketest.c"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/base:mmio",
@@ -2513,8 +2513,8 @@ opentitan_functest(
     name = "rv_core_ibex_icache_invalidate_test",
     srcs = ["rv_core_ibex_icache_invalidate_test.c"],
     deps = [
-        "//sw/lib/sw/device/runtime:hart",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/lib/sw/device/runtime:hart",
         "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
@@ -2610,8 +2610,6 @@ opentitan_functest(
         "//hw/ip/spi_host/data:spi_host_regs",
         "//hw/ip/uart/data:uart_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/lib/sw/device/base:math",
-        "//sw/lib/sw/device/base:multibits",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/impl/rsa:rsa_3072_verify",
         "//sw/device/lib/testing:aes_testutils",
@@ -2623,6 +2621,8 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/tests/crypto:rsa_3072_verify_testvectors_hardcoded_header",
+        "//sw/lib/sw/device/base:math",
+        "//sw/lib/sw/device/base:multibits",
         "//sw/lib/sw/device/runtime:log",
         "//sw/top_earlgrey/sw/device/runtime:print",
         "//sw/top_earlgrey/sw/dif:adc_ctrl",
@@ -2730,8 +2730,8 @@ opentitan_functest(
     targets = ["cw310_rom_with_fake_keys"],
     test_harness = "//sw/host/tests/chip/jtag:openocd_test",
     deps = [
-        "//sw/lib/sw/device/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/lib/sw/device/runtime:log",
         "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )
@@ -2817,8 +2817,8 @@ opentitan_functest(
         "cw310_test_rom",
     ],
     deps = [
-        "//sw/lib/sw/device/base:status_report_unittest_c",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/lib/sw/device/base:status_report_unittest_c",
         "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )

@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/lib/sw/device/base/memory.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/sigverify/mod_exp_otbn.h"
+#include "sw/lib/sw/device/base/memory.h"
 
 // The autogen rule that creates this header creates it in a directory named
 // after the rule, then manipulates the include path in the

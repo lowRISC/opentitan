@@ -4,9 +4,9 @@
 
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/hash.h"
-#include "sw/lib/sw/device/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 /**
  * First test from:

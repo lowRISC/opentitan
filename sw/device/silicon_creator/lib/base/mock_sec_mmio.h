@@ -5,10 +5,10 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_BASE_MOCK_SEC_MMIO_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_BASE_MOCK_SEC_MMIO_H_
 
-#include "sw/lib/sw/device/base/global_mock.h"
-#include "sw/lib/sw/device/base/mock_mmio_test_utils.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
+#include "sw/lib/sw/device/base/global_mock.h"
+#include "sw/lib/sw/device/base/mock_mmio_test_utils.h"
 
 namespace rom_test {
 namespace internal {

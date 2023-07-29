@@ -4,9 +4,9 @@
 
 #include "sw/device/lib/crypto/impl/ecc/ecdsa_p256.h"
 
+#include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/lib/sw/device/base/hardened.h"
 #include "sw/lib/sw/device/base/hardened_memory.h"
-#include "sw/device/lib/crypto/drivers/otbn.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
