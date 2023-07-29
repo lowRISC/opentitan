@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("//rules:splice.bzl", "bitstream_splice")
 load("//rules:otp.bzl", "get_otp_images")
 load("//rules:const.bzl", "KEY_AUTHENTICITY")
@@ -176,6 +177,16 @@ bitstream_fragment_from_manifest(
     tags = ["manual"],
 )
 
+pkg_tar(
+    name = "earlgrey_cw310_cached_archive",
+    testonly = True,
+    srcs = [":chip_earlgrey_cw310_cached_fragment"],
+    mode = "0444",
+    package_dir = "build-bin/hw/top_earlgrey/chip_earlgrey_cw310",
+    strip_prefix = "/hw/bitstream/chip_earlgrey_cw310_cached_fragment",
+    tags = ["manual"],
+)
+
 bitstream_fragment_from_manifest(
     name = "chip_earlgrey_cw310_hyperdebug_cached_fragment",
     srcs = [
@@ -185,5 +196,15 @@ bitstream_fragment_from_manifest(
     ],
     design = "chip_earlgrey_cw310_hyperdebug",
     manifest = "@bitstreams//:manifest",
+    tags = ["manual"],
+)
+
+pkg_tar(
+    name = "earlgrey_cw310_hyperdebug_cached_archive",
+    testonly = True,
+    srcs = [":chip_earlgrey_cw310_hyperdebug_cached_fragment"],
+    mode = "0444",
+    package_dir = "build-bin/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug",
+    strip_prefix = "/hw/bitstream/chip_earlgrey_cw310_hyperdebug_cached_fragment",
     tags = ["manual"],
 )
