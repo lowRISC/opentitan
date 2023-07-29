@@ -412,14 +412,17 @@ jobs:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
   - bash: |
-      ci/scripts/get-bitstream-strategy.sh "@bitstreams//:chip_earlgrey_cw310_bitstream" ':!/sw/' ':!/*testplan.hjson' ':!/site/' ':!/doc/' ':!/COMMITTERS' ':!/CLA' ':!/*.md' ':!/hw/**/dv/*'
+      ci/scripts/get-bitstream-strategy.sh "chip_earlgrey_cw310" ':!/sw/' ':!/*testplan.hjson' ':!/site/' ':!/doc/' ':!/COMMITTERS' ':!/CLA' ':!/*.md' ':!/hw/**/dv/*'
     displayName: Configure bitstream strategy
   - bash: |
       set -ex
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/prepare-cached-bitstream.sh
+      . util/build_consts.sh
+      cached_archive=//hw/bitstream:earlgrey_cw310_cached_archive
+      ci/bazelisk.sh build "${cached_archive}"
+      bitstream_archive=$($REPO_TOP/bazelisk.sh outquery "${cached_archive}")
+      cp -Lv ${bitstream_archive} ${BUILD_ROOT}/build-bin.tar
     condition: eq(variables.bitstreamStrategy, 'cached')
-    displayName: Splice cached bitstream
+    displayName: Extract cached bitstream
   - bash: |
       set -ex
       trap 'get_logs' EXIT
@@ -436,7 +439,7 @@ jobs:
       module load "xilinx/vivado/$(VIVADO_VERSION)"
       ci/bazelisk.sh build //hw/bitstream/vivado:earlgrey_cw310_archive
     condition: ne(variables.bitstreamStrategy, 'cached')
-    displayName: Build and splice bitstream with Vivado
+    displayName: Build bitstream with Vivado
   - bash: |
       . util/build_consts.sh
       echo "Synthesis log"

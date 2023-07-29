@@ -60,3 +60,16 @@ py_binary(
         requirement("jsonschema"),
     ],
 )
+
+py_binary(
+    name = "get_bitstream_build_id",
+    srcs = ["get_bitstream_build_id.py"],
+    data = [
+        "//rules/scripts:bitstreams_manifest_schema",
+        "@bitstreams//:manifest",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        requirement("jsonschema"),
+    ],
+)
