@@ -249,35 +249,22 @@ status_t flash_ctrl_testutils_backdoor_init(
     dif_flash_ctrl_state_t *flash_state);
 
 /**
- * This is a backdoor API to be used with dvsim testbench.
- * Backdoor variables present on flash may not be updated when read by software
- * after written in the testbench due to the cache. So this function implements
- * a workaround to invalidate the cache and force it to update. Before using
- * this function `flash_ctrl_testutils_backdoor_init` should be called.
+ * This detects changes in a specific byte in flash memory contents with a
+ * timeout. In some cases the party updating it uses a backdoor overwrite,
+ * so this code flushes the read buffers since the backdoor API has no
+ * mechanism to flush.
  *
- * Note:
- * Given typical flash write latency (a few 10s of us),
- * this api can causes following misbehavior with real flash model.
+ * The `flash_ctrl_testutils_backdoor_init` function should be called prior
+ * to this.
  *
- * While flash write with all 1's in progress, backdoor write from
- * sv finished. When that happens, this function can complete without
- * detecting proper backdoor update value. So it is highly discouraged to use
- * this api without opensource flash model.
- *
- * @param flash_state A flash_ctrl handle.
- * @param addr The address to a `const uint32_t` variable where the testbench
- * will write to.
- * @param timeout Timeout.
+ * @param addr The volatile address of a uint8_t variable where an update
+ * is expected.
+ * @param prior_data The prior data value.
+ * @param timeout_usec Timeout in microseconds.
  */
 OT_WARN_UNUSED_RESULT
-status_t flash_ctrl_testutils_backdoor_wait_update(
-    dif_flash_ctrl_state_t *flash_state, uintptr_t addr, size_t timeout);
-
-/**
- * This flushes the read buffers. It assumes there are 4 buffers,
- * each holding 8 byte aligned data previously read.
- */
-OT_WARN_UNUSED_RESULT
-status_t flash_ctrl_testutils_flush_read_buffers(void);
+status_t flash_ctrl_testutils_backdoor_wait_update(const volatile uint8_t *addr,
+                                                   uint8_t prior_data,
+                                                   size_t timeout_usec);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_FLASH_CTRL_TESTUTILS_H_

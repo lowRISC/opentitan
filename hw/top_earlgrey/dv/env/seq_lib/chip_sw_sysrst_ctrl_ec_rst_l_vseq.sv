@@ -38,7 +38,7 @@ class chip_sw_sysrst_ctrl_ec_rst_l_vseq extends chip_sw_base_vseq;
     cfg.chip_vif.pwrb_in_if.pins_pd[0] = 1;
   endtask
 
-  virtual function void write_test_phase(input test_phases_e phase);
+  virtual function void write_test_phase(input byte phase);
     `uvm_info(`gfn, $sformatf("Writing test phase %0d", phase), UVM_MEDIUM)
     sw_symbol_backdoor_overwrite("kTestPhase", {<<8{phase}});
   endfunction

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
@@ -89,24 +90,18 @@ static void pinmux_setup(void) {
  * Backdoor overwrites don't invalidate the read caches, so this explicitly
  * flushes them before updating the value.
  */
-static status_t wait_next_test_phase(uint32_t current_phase) {
+static status_t wait_next_test_phase(uint8_t prior_phase) {
   // Set WFI status for testbench synchronization,
   // no actual WFI instruction is issued.
   test_status_set(kTestStatusInWfi);
   test_status_set(kTestStatusInTest);
-  LOG_INFO("wait_next_test_phase ater %d", current_phase);
-  uint8_t new_data = 0;
-  const ibex_timeout_t timeout = ibex_timeout_init(kTestPhaseTimeoutUsec);
-  do {
-    if (ibex_timeout_check(&timeout)) {
-      return DEADLINE_EXCEEDED();
-    }
-    CHECK_STATUS_OK(flash_ctrl_testutils_flush_read_buffers());
-    new_data = kTestPhase[0];
-  } while (new_data == current_phase);
-  LOG_INFO("Read test phase *0x%x = 0x%x, with count = %d", kTestPhase,
-           new_data, 0);
-  return OK_STATUS();
+  LOG_INFO("wait_next_test_phase after %d", prior_phase);
+  status_t status = flash_ctrl_testutils_backdoor_wait_update(
+      &kTestPhase[0], prior_phase, kTestPhaseTimeoutUsec);
+  if (status_ok(status)) {
+    LOG_INFO("Read test phase 0x%x", kTestPhase[0]);
+  }
+  return status;
 }
 
 /**

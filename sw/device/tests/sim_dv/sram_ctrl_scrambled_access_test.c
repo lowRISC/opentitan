@@ -319,18 +319,18 @@ typedef enum test_phases {
 } test_phases_t;
 
 // Test phase written by testbench.
-static volatile const test_phases_t kTestPhase = kTestPhaseSetup;
+static volatile const uint8_t kTestPhase[1] = {kTestPhaseSetup};
 const uint32_t kTestPhaseTimeoutUsec = 2500;
-static void sync_testbench(test_phases_t expected_phase) {
+
+static void sync_testbench(uint8_t prior_phase) {
   // Set WFI status for testbench synchronization,
   // no actual WFI instruction is issued.
   test_status_set(kTestStatusInWfi);
   test_status_set(kTestStatusInTest);
 
   CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_wait_update(
-      &flash, (uintptr_t)&kTestPhase, kTestPhaseTimeoutUsec));
-  LOG_INFO("Test phase = %d", kTestPhase);
-  CHECK(expected_phase == kTestPhase);
+      &kTestPhase[0], prior_phase, kTestPhaseTimeoutUsec));
+  LOG_INFO("Test phase = %d", kTestPhase[0]);
 }
 
 /**
@@ -395,8 +395,10 @@ bool test_main(void) {
            main_sram_addr);
 
   dif_rstmgr_reset_info_bitfield_t info = rstmgr_testutils_reason_get();
+  uint8_t current_phase = kTestPhase[0];
   if (info == kDifRstmgrResetInfoPor) {
-    sync_testbench(kTestPhaseMainSram);
+    sync_testbench(current_phase);
+    CHECK(kTestPhase[0] == kTestPhaseMainSram);
     LOG_INFO("First boot, testing main sram");
     // First boot, start with ret sram.
     execute_main_sram_test();
@@ -410,7 +412,8 @@ bool test_main(void) {
         kRetSramBaseAddr, kRetRamLastAddr - sizeof(scramble_test_frame)));
     LOG_INFO("RET_SRAM addr: %x MAIN_SRAM addr: %x", ret_sram_addr,
              main_sram_addr);
-    sync_testbench(kTestPhaseRetSram);
+    sync_testbench(current_phase);
+    CHECK(kTestPhase[0] == kTestPhaseRetSram);
 
     scrambling_frame = (scramble_test_frame *)ret_sram_addr;
     reference_frame = (scramble_test_frame *)main_sram_addr;
