@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("//rules:splice.bzl", "bitstream_splice")
 load("//rules:otp.bzl", "get_otp_images")
 load("//rules:const.bzl", "KEY_AUTHENTICITY")
@@ -196,6 +197,22 @@ bitstream_splice(
         ],
         design = "{}".format(design),
         manifest = "@bitstreams//:manifest",
+        tags = ["manual"],
+    )
+    for design in bitstream_cache_filter([
+        "chip_earlgrey_cw310",
+        "chip_earlgrey_cw310_hyperdebug",
+    ])
+]
+
+[
+    pkg_tar(
+        name = "{}_cached_archive".format(design),
+        testonly = True,
+        srcs = [":{}_cached_fragment".format(design)],
+        mode = "0444",
+        package_dir = "build-bin/hw/top_earlgrey/{}".format(design),
+        strip_prefix = "/hw/top_earlgrey/bitstream/{}_cached_fragment".format(design),
         tags = ["manual"],
     )
     for design in bitstream_cache_filter([

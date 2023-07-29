@@ -406,6 +406,7 @@ jobs:
   - template: ci/cw310-template.yml
     parameters:
       top_name: darjeeling
+      design_suffix: cw310
 
 - job: chip_earlgrey_cw310
   displayName: CW310's Earl Grey Bitstream
@@ -419,6 +420,7 @@ jobs:
   - template: ci/cw310-template.yml
     parameters:
       top_name: earlgrey
+      design_suffix: cw310
 
 - job: chip_earlgrey_cw310_hyperdebug
   displayName: CW310's Earl Grey Bitstream for Hyperdebug
@@ -493,6 +495,7 @@ jobs:
   pool:
     vmImage: ubuntu-20.04
   dependsOn:
+    - chip_darjeeling_cw310
     - chip_earlgrey_cw310
     - chip_earlgrey_cw310_hyperdebug
   condition: false
@@ -500,6 +503,7 @@ jobs:
     - template: ci/download-artifacts-template.yml
       parameters:
         downloadPartialBuildBinFrom:
+          - chip_darjeeling_cw310
           - chip_earlgrey_cw310
           - chip_earlgrey_cw310_hyperdebug
     - bash: |
@@ -508,6 +512,7 @@ jobs:
     - template: ci/gcp-upload-bitstream-template.yml
       parameters:
         fragmentFiles:
+          - "$BIN_DIR/hw/top_darjeeling/chip_darjeeling_cw310/manifest.json"
           - "$BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310/manifest.json"
           - "$BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/manifest.json"
         gcpKeyFile: "gcpkey.json"
