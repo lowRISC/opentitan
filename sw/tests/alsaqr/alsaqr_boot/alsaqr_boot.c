@@ -48,12 +48,13 @@ int main(int argc, char **argv) {
   *pointer =  1<<(mbox_id%32);
 
   printf("[SECD] Writing CVA6 boot PC into mbox\r\n");
+  uart_wait_tx_done();
   // Write CVA6 boot PC to mbox 
   pointer = (int *) 0x10404000;
   *pointer = 0x80000000;
 
   printf("[SECD] Booting CVA6\r\n");
-
+  uart_wait_tx_done();
   // Send IRQ and boot
   pointer = (int *) 0x10404024;
   *pointer = 0x1;
