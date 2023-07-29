@@ -25,7 +25,7 @@ static dif_rstmgr_t rstmgr;
 static dif_flash_ctrl_state_t flash;
 static dif_rstmgr_reset_info_bitfield_t rstmgr_reset_info;
 
-const uint32_t kTestPhaseTimeoutUsec = 2500;
+const uint32_t kTestPhaseTimeoutUsec = 10000;
 
 typedef enum {
   kTestPhaseSetup = 0,
@@ -91,7 +91,7 @@ enum {
 };
 
 // Test phase written by testbench.
-static volatile const test_phases_e kTestPhase = 0;
+static volatile const uint8_t kTestPhase[1] = {0};
 
 // Sets up the pinmux to assign input and output pads
 // to the sysrst_ctrl peripheral as required.
@@ -141,16 +141,16 @@ static void configure_combo_reset(void) {
 // Waits for the kTestPhase variable to be changed by a backdoor overwrite
 // from the testbench in `chip_sw_sysrst_ctrl_ec_rst_l_vseq.sv`. This will
 // indicate that the testbench is ready to proceed with the next phase of the
-// test. The function `flash_ctrl_testutils_backdoor_wait_update` it's used to
+// test. The function `flash_ctrl_testutils_backdoor_wait_update` is used to
 // deal with possible caching that can prevent the software to read the new
 // value of `kTestPhase`.
-static void sync_with_testbench(void) {
+static void sync_with_testbench(uint8_t prior_phase) {
   // Set WFI status for testbench synchronization,
   // no actual WFI instruction is issued.
   test_status_set(kTestStatusInWfi);
   test_status_set(kTestStatusInTest);
   CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_wait_update(
-      &flash, (uintptr_t)&kTestPhase, kTestPhaseTimeoutUsec));
+      &kTestPhase[0], prior_phase, kTestPhaseTimeoutUsec));
 }
 
 // Enables the sysrst_ctrl overrides for the output pins. Allows
@@ -194,9 +194,10 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_sysrst_ctrl_output_pin_override_set_enabled(
       &sysrst_ctrl, kDifSysrstCtrlPinEcResetInOut, kDifToggleDisabled));
 
-  while (kTestPhase < kTestPhaseDone) {
-    LOG_INFO("Running test phase %d", kTestPhase);
-    switch (kTestPhase) {
+  uint8_t current_test_phase = kTestPhase[0];
+  while (current_test_phase < kTestPhaseDone) {
+    LOG_INFO("Test phase %d", current_test_phase);
+    switch (current_test_phase) {
       case kTestPhaseSetup:
         CHECK(rstmgr_reset_info == kDifRstmgrResetInfoPor);
         configure_combo_reset();
@@ -215,10 +216,11 @@ bool test_main(void) {
         set_output_overrides(kAllOne);
         break;
       default:
-        LOG_ERROR("Unexpected test phase : %d", kTestPhase);
+        LOG_ERROR("Unexpected test phase : %d", current_test_phase);
         break;
     }
-    sync_with_testbench();
+    sync_with_testbench(current_test_phase);
+    current_test_phase = kTestPhase[0];
   }
   return true;
 }
