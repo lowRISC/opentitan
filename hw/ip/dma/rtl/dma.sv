@@ -535,35 +535,53 @@ module dma
           bad_dst_addr = 1'b1;
         end
 
+        // If data from the SOC system bus, the control bus, or the external flash is transferred to
+        // the OT internal memory, we must check if the destination address range falls into the DMA
+        // enabled memory region.
         if (((reg2hw.address_space_id.source_asid.q == SocControlAddr) ||
-             (reg2hw.address_space_id.source_asid.q == SocSystemAddr)) &&
+             (reg2hw.address_space_id.source_asid.q == SocSystemAddr)  ||
+             (reg2hw.address_space_id.source_asid.q == OtExtFlashAddr)) &&
              (reg2hw.address_space_id.destination_asid.q == OtInternalAddr) &&
-          ((!((reg2hw.destination_address_lo.q <= reg2hw.enabled_memory_range_limit.q) &&
-              (reg2hw.destination_address_lo.q >= reg2hw.enabled_memory_range_base.q))) ||
-            ((SYS_ADDR_WIDTH'(reg2hw.destination_address_lo.q) +
-              SYS_ADDR_WIDTH'(reg2hw.total_data_size.q)) >
-              SYS_ADDR_WIDTH'(reg2hw.enabled_memory_range_limit.q)))) begin
-          bad_dst_addr = 1'b1;
+             // Out-of-bound check
+             ((reg2hw.destination_address_lo.q > reg2hw.enabled_memory_range_limit.q) ||
+              (reg2hw.destination_address_lo.q < reg2hw.enabled_memory_range_base.q)  ||
+              ((SYS_ADDR_WIDTH'(reg2hw.destination_address_lo.q) +
+                SYS_ADDR_WIDTH'(reg2hw.total_data_size.q)) >
+                SYS_ADDR_WIDTH'(reg2hw.enabled_memory_range_limit.q)))) begin
+            bad_dst_addr = 1'b1;
         end
 
+        // If data from the OT internal memory is transferred  to the SOC system bus, the control
+        // bus, or the external flash, we must check if the source address range falls into the DMA
+        // enabled memory region.
         if (((reg2hw.address_space_id.destination_asid.q == SocControlAddr) ||
-             (reg2hw.address_space_id.destination_asid.q == SocSystemAddr))  &&
+             (reg2hw.address_space_id.destination_asid.q == SocSystemAddr)  ||
+             (reg2hw.address_space_id.destination_asid.q == OtExtFlashAddr)) &&
              (reg2hw.address_space_id.source_asid.q == OtInternalAddr) &&
-          ((!((reg2hw.source_address_lo.q <= reg2hw.enabled_memory_range_limit.q) &&
-              (reg2hw.source_address_lo.q >= reg2hw.enabled_memory_range_base.q))) ||
-            ((SYS_ADDR_WIDTH'(reg2hw.source_address_lo.q) +
-              SYS_ADDR_WIDTH'(reg2hw.total_data_size.q)) >
-              SYS_ADDR_WIDTH'(reg2hw.enabled_memory_range_limit.q)))) begin
+              // Out-of-bound check
+              ((reg2hw.source_address_lo.q > reg2hw.enabled_memory_range_limit.q) ||
+               (reg2hw.source_address_lo.q < reg2hw.enabled_memory_range_base.q)  ||
+               ((SYS_ADDR_WIDTH'(reg2hw.source_address_lo.q) +
+                SYS_ADDR_WIDTH'(reg2hw.total_data_size.q)) >
+                SYS_ADDR_WIDTH'(reg2hw.enabled_memory_range_limit.q)))) begin
           bad_src_addr = 1'b1;
         end
 
+        // If the source ASID is the SOC control port, the OT internal port, or the external flash,
+        //  we are accessing a 32-bit address space. Thus the upper bits of the source address must
+        // be zero
         if (((reg2hw.address_space_id.source_asid.q == SocControlAddr) ||
+             (reg2hw.address_space_id.source_asid.q == OtExtFlashAddr) ||
              (reg2hw.address_space_id.source_asid.q == OtInternalAddr)) &&
             (|reg2hw.source_address_hi.q)) begin
           bad_src_addr = 1'b1;
         end
 
+        // If the desitination ASID is the SOC control port, the OT internal port or the external
+        // flash, we are accessing a 32-bit address space. Thus the upper bits of the destination
+        // address must be zero
         if (((reg2hw.address_space_id.destination_asid.q == SocControlAddr) ||
+             (reg2hw.address_space_id.destination_asid.q == OtExtFlashAddr) ||
              (reg2hw.address_space_id.destination_asid.q == OtInternalAddr)) &&
             (|reg2hw.destination_address_hi.q)) begin
           bad_dst_addr = 1'b1;
