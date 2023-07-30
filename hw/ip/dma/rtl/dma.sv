@@ -645,14 +645,16 @@ module dma
           end else if (cfg_abort_en) begin
             ctrl_state_d = DmaIdle;
           end else begin
-            if ((reg2hw.address_space_id.destination_asid.q == SocControlAddr) ||
-                (reg2hw.address_space_id.destination_asid.q == OtExtFlashAddr)) begin
-              ctrl_state_d = DmaSendXbarWrite;
-            end else if (reg2hw.address_space_id.destination_asid.q == SocSystemAddr) begin
-              ctrl_state_d = DmaSendSysWrite;
-            end else begin
-              ctrl_state_d = DmaSendHostWrite;
-            end
+            unique case (reg2hw.address_space_id.destination_asid.q)
+              SocControlAddr: ctrl_state_d = DmaSendXbarWrite;
+              OtExtFlashAddr: ctrl_state_d = DmaSendXbarWrite;
+              SocSystemAddr:  ctrl_state_d = DmaSendSysWrite;
+              OtInternalAddr: ctrl_state_d = DmaSendHostWrite;
+              default: begin
+                next_error[DMA_ASID_ERR] = 1'b1;
+                ctrl_state_d = DmaError;
+              end
+            endcase
           end
         end
       end
@@ -680,16 +682,17 @@ module dma
             ctrl_state_d = DmaError;
           end else if (cfg_abort_en) begin
             ctrl_state_d = DmaIdle;
-          end
-          else begin
-            if ((reg2hw.address_space_id.destination_asid.q == SocControlAddr) ||
-                (reg2hw.address_space_id.destination_asid.q == OtExtFlashAddr)) begin
-              ctrl_state_d = DmaSendXbarWrite;
-            end else if (reg2hw.address_space_id.destination_asid.q == SocSystemAddr) begin
-              ctrl_state_d = DmaSendSysWrite;
-            end else begin
-              ctrl_state_d = DmaSendHostWrite;
-            end
+          end else begin
+            unique case (reg2hw.address_space_id.destination_asid.q)
+              SocControlAddr: ctrl_state_d = DmaSendXbarWrite;
+              OtExtFlashAddr: ctrl_state_d = DmaSendXbarWrite;
+              SocSystemAddr:  ctrl_state_d = DmaSendSysWrite;
+              OtInternalAddr: ctrl_state_d = DmaSendHostWrite;
+              default: begin
+                next_error[DMA_ASID_ERR] = 1'b1;
+                ctrl_state_d = DmaError;
+              end
+            endcase
           end
         end
       end
@@ -721,15 +724,16 @@ module dma
           end else if (cfg_abort_en) begin
             ctrl_state_d = DmaIdle;
           end else begin
-            if ((reg2hw.address_space_id.destination_asid.q == SocControlAddr) ||
-                (reg2hw.address_space_id.destination_asid.q == OtExtFlashAddr)) begin
-              ctrl_state_d = DmaSendXbarWrite;
-            end else if (reg2hw.address_space_id.destination_asid.q == SocSystemAddr) begin
-              ctrl_state_d = DmaSendSysWrite;
-            end
-            else begin
-              ctrl_state_d = DmaSendHostWrite;
-            end
+            unique case (reg2hw.address_space_id.destination_asid.q)
+              SocControlAddr: ctrl_state_d = DmaSendXbarWrite;
+              OtExtFlashAddr: ctrl_state_d = DmaSendXbarWrite;
+              SocSystemAddr:  ctrl_state_d = DmaSendSysWrite;
+              OtInternalAddr: ctrl_state_d = DmaSendHostWrite;
+              default: begin
+                next_error[DMA_ASID_ERR] = 1'b1;
+                ctrl_state_d = DmaError;
+              end
+            endcase
           end
         end
       end
