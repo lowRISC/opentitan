@@ -70,7 +70,7 @@ module dma
 
   dma_ctrl_state_e ctrl_state_q, ctrl_state_d;
 
-  logic [DMA_NUM_ERRORS-1:0] next_error;
+  logic [DmaErrLast-1:0] next_error;
   logic bad_src_addr;
   logic bad_dst_addr;
   logic bad_opcode;
@@ -601,13 +601,13 @@ module dma
                        bad_asid;
 
         if (config_error) begin
-          next_error[DMA_SOURCE_ADDR_ERR]      = bad_src_addr;
-          next_error[DMA_DESTINATION_ADDR_ERR] = bad_dst_addr;
-          next_error[DMA_OPCODE_ERR]           = bad_opcode;
-          next_error[DMA_SIZE_ERR]             = bad_size;
-          next_error[DMA_BASE_LIMIT_ERR]       = bad_base_limit;
-          next_error[DMA_GO_CONFIG_ERR]        = bad_go_config;
-          next_error[DMA_ASID_ERR]             = bad_asid;
+          next_error[DmaSourceAddrErr]      = bad_src_addr;
+          next_error[DmaDestinationAddrErr] = bad_dst_addr;
+          next_error[DmaOpcodeErr]          = bad_opcode;
+          next_error[DmaSizeErr]            = bad_size;
+          next_error[DmaBaseLimitErr]       = bad_base_limit;
+          next_error[DmaGoConfigErr]        = bad_go_config;
+          next_error[DmaAsidErr]            = bad_asid;
 
           ctrl_state_d = DmaError;
         end else if (cfg_abort_en) begin
@@ -640,7 +640,7 @@ module dma
 
         if (dma_host_tlul_rsp_valid) begin
           if (read_rsp_error) begin
-            next_error[DMA_COMPLETION_ERR] = 1'b1;
+            next_error[DmaCompletionErr] = 1'b1;
 
             ctrl_state_d = DmaError;
           end else if (cfg_abort_en) begin
@@ -652,7 +652,7 @@ module dma
               SocSystemAddr:  ctrl_state_d = DmaSendSysWrite;
               OtInternalAddr: ctrl_state_d = DmaSendHostWrite;
               default: begin
-                next_error[DMA_ASID_ERR] = 1'b1;
+                next_error[DmaAsidErr] = 1'b1;
                 ctrl_state_d = DmaError;
               end
             endcase
@@ -678,7 +678,7 @@ module dma
 
         if (dma_xbar_tlul_rsp_valid) begin
           if (read_rsp_error) begin
-            next_error[DMA_COMPLETION_ERR] = 1'b1;
+            next_error[DmaCompletionErr] = 1'b1;
 
             ctrl_state_d = DmaError;
           end else if (cfg_abort_en) begin
@@ -690,7 +690,7 @@ module dma
               SocSystemAddr:  ctrl_state_d = DmaSendSysWrite;
               OtInternalAddr: ctrl_state_d = DmaSendHostWrite;
               default: begin
-                next_error[DMA_ASID_ERR] = 1'b1;
+                next_error[DmaAsidErr] = 1'b1;
                 ctrl_state_d = DmaError;
               end
             endcase
@@ -719,7 +719,7 @@ module dma
 
         if (sys_i.read_data_vld) begin
           if (read_rsp_error) begin
-            next_error[DMA_COMPLETION_ERR] = 1'b1;
+            next_error[DmaCompletionErr] = 1'b1;
 
             ctrl_state_d = DmaError;
           end else if (cfg_abort_en) begin
@@ -731,7 +731,7 @@ module dma
               SocSystemAddr:  ctrl_state_d = DmaSendSysWrite;
               OtInternalAddr: ctrl_state_d = DmaSendHostWrite;
               default: begin
-                next_error[DMA_ASID_ERR] = 1'b1;
+                next_error[DmaAsidErr] = 1'b1;
                 ctrl_state_d = DmaError;
               end
             endcase
