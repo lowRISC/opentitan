@@ -869,6 +869,7 @@ module dma
   assign test_memory_buffer_limit_interrupt =
     reg2hw.intr_test.dma_memory_buffer_limit.q &&
     reg2hw.intr_test.dma_memory_buffer_limit.qe;
+
   // Signal interrupt controller whenever an enabled intrrupt info bit is set
   assign intr_dma_o =
     (reg2hw.intr_state.dma_done.q  && reg2hw.intr_enable.dma_done.q)  ||
@@ -878,17 +879,6 @@ module dma
 
   // Calculate remaining amount of data
   assign remaining_bytes = reg2hw.total_data_size.q - transfer_byte_q;
-
-  // Destination limit logic, only want to trigger for single cycle when data has moved
-  assign send_memory_buffer_limit_interrupt =
-    data_move_state_valid               &&
-    cfg_handshake_en                    &&
-    cfg_memory_buffer_auto_increment_en &&
-    !cfg_data_direction                 &&
-    ((dst_addr_q >= {reg2hw.destination_address_limit_hi.q,
-                     reg2hw.destination_address_limit_lo.q})       ||
-     (dst_addr_q >= {reg2hw.destination_address_almost_limit_hi.q,
-                    reg2hw.destination_address_almost_limit_lo.q}));
 
   assign data_move_state_valid =
     (dma_host_tlul_req_valid && (ctrl_state_q == DmaSendHostWrite)) ||
@@ -903,19 +893,16 @@ module dma
                            (ctrl_state_q == DmaWaitXbarWriteResponse) ||
                            (ctrl_state_q == DmaSendSysWrite);
 
-  // data direction = 0 dest = memory buffer  src = fifo
-  // data direction = 1 dest = fifo           src = memory buffer
-
-  assign update_destination_addr_reg =
-    cfg_handshake_en  &&
-    (!cfg_data_direction && cfg_memory_buffer_auto_increment_en) &&
-    data_move_state                                              &&
-    (ctrl_state_d == DmaIdle);
-
-  assign update_source_addr_reg = cfg_handshake_en                                              &&
-                                  ((cfg_data_direction && cfg_memory_buffer_auto_increment_en)) &&
-                                  data_move_state                                               &&
-                                  (ctrl_state_d == DmaIdle);
+  // Destination limit logic, only want to trigger for single cycle when data has moved
+  assign send_memory_buffer_limit_interrupt =
+    data_move_state_valid               &&
+    cfg_handshake_en                    &&
+    cfg_memory_buffer_auto_increment_en &&
+    !cfg_data_direction                 &&
+    ((dst_addr_q >= {reg2hw.destination_address_limit_hi.q,
+                     reg2hw.destination_address_limit_lo.q})       ||
+     (dst_addr_q >= {reg2hw.destination_address_almost_limit_hi.q,
+                     reg2hw.destination_address_almost_limit_lo.q}));
 
   assign new_destination_addr = cfg_data_direction ?
     ({reg2hw.destination_address_hi.q, reg2hw.destination_address_lo.q} +
@@ -931,6 +918,19 @@ module dma
 
   always_comb begin
     hw2reg = '0;
+
+    // If we are in hardware handshake mode with auto-increment increment the corresponding address
+    // when finishing a DMA operation when transitioning from a data move state to the idle state
+    update_destination_addr_reg = 1'b0;
+    update_source_addr_reg      = 1'b0;
+    if (cfg_handshake_en && cfg_memory_buffer_auto_increment_en &&
+        data_move_state && (ctrl_state_d == DmaIdle)) begin
+      if (cfg_data_direction) begin
+        update_source_addr_reg = 1'b1;
+      end else begin
+        update_destination_addr_reg = 1'b1;
+      end
+    end
 
     hw2reg.destination_address_hi.de = update_destination_addr_reg;
     hw2reg.destination_address_hi.d  = new_destination_addr[63:32];
