@@ -3,8 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 """TileLink-Uncached Lightweight Xbar self document
 """
-import logging as log
-
 from reggen.validate import val_types
 
 from .validate import root
@@ -49,7 +47,6 @@ Field | Kind | Type | Description
 
         if v[0] == 'lg':
             subgroup.append(v[1])
-            log.error(val_types[v[0]])
             outstr += '{} | {} | {} | List of {} group\n'.format(
                 k, kind, v_type, k)
             continue
