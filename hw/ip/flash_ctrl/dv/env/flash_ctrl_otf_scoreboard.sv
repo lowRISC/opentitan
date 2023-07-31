@@ -346,7 +346,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
                        obs.fq.size(), bank, cfg.otf_ctrl_wr_rcvd++), UVM_MEDIUM, "process_write")
 
     compare_data(obs.fq, exp.fq, bank, $sformatf("wdata_page%0d", exp.page), exp.ecc_en);
-  endtask // process_eg
+  endtask // process_write
 
   // Compare 64 bit for now
   task compare_data(fdata_q_t obs, fdata_q_t exp, int bank, string rw, bit is_ecc = 0);
@@ -414,35 +414,48 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     flash_phy_prim_item exp;
     flash_otf_mem_entry rcv;
     string name = $sformatf("mon_tb_mem%0d", bank);
-    forever begin
-      @(posedge cfg.flash_ctrl_mem_vif[bank].mem_wr);
-      if (mem_mon_off == 0) begin
-        `uvm_info("mem_if", "got posedge wr", UVM_MEDIUM)
-        `uvm_create_obj(flash_otf_mem_entry, rcv)
-        #1ps;
-        rcv.mem_addr = cfg.flash_ctrl_mem_vif[bank].mem_addr;
-        rcv.mem_wdata = cfg.flash_ctrl_mem_vif[bank].mem_wdata;
-        rcv.mem_part = cfg.flash_ctrl_mem_vif[bank].mem_part;
-        rcv.mem_info_sel = cfg.flash_ctrl_mem_vif[bank].mem_info_sel;
-        @(negedge cfg.flash_ctrl_mem_vif[bank].clk_i);
-        if (cfg.seq_cfg.use_vendor_flash == 0) begin
-          if (rcv.mem_part == FlashPartData) begin
-            `DV_CHECK_EQ(cfg.flash_ctrl_mem_vif[bank].data_mem_req, 1,,, name)
-          end else begin
-            case (rcv.mem_info_sel)
-              0: `DV_CHECK_EQ(cfg.flash_ctrl_mem_vif[bank].info0_mem_req, 1,,, name)
-              1: `DV_CHECK_EQ(cfg.flash_ctrl_mem_vif[bank].info1_mem_req, 1,,, name)
-              2: `DV_CHECK_EQ(cfg.flash_ctrl_mem_vif[bank].info2_mem_req, 1,,, name)
-              default: `uvm_error(name, $sformatf("bank%0d infosel%0d doesn't exists",
-                                                  bank, rcv.mem_info_sel))
-            endcase
+    fork
+      begin : isolation_fork
+        fork
+          begin : working_thread
+            forever begin
+              @(posedge cfg.flash_ctrl_mem_vif[bank].mem_wr);
+              if (mem_mon_off == 0) begin
+                `uvm_info("mem_if", "got posedge wr", UVM_MEDIUM)
+                `uvm_create_obj(flash_otf_mem_entry, rcv)
+                #1ps;
+                rcv.mem_addr = cfg.flash_ctrl_mem_vif[bank].mem_addr;
+                rcv.mem_wdata = cfg.flash_ctrl_mem_vif[bank].mem_wdata;
+                rcv.mem_part = cfg.flash_ctrl_mem_vif[bank].mem_part;
+                rcv.mem_info_sel = cfg.flash_ctrl_mem_vif[bank].mem_info_sel;
+                @(negedge cfg.flash_ctrl_mem_vif[bank].clk_i);
+                if (cfg.seq_cfg.use_vendor_flash == 0) begin
+                  if (rcv.mem_part == FlashPartData) begin
+                    `DV_CHECK_EQ(cfg.flash_ctrl_mem_vif[bank].data_mem_req, 1,,, name)
+                  end else begin
+                    case (rcv.mem_info_sel)
+                      0: `DV_CHECK_EQ(cfg.flash_ctrl_mem_vif[bank].info0_mem_req, 1,,, name)
+                      1: `DV_CHECK_EQ(cfg.flash_ctrl_mem_vif[bank].info1_mem_req, 1,,, name)
+                      2: `DV_CHECK_EQ(cfg.flash_ctrl_mem_vif[bank].info2_mem_req, 1,,, name)
+                      default: `uvm_error(name, $sformatf("bank%0d infosel%0d doesn't exists",
+                                                          bank, rcv.mem_info_sel))
+                    endcase
+                  end
+                end
+                // collect ref data
+                eg_exp_lm_fifo[bank].get(exp);
+                lm_wdata_comp(exp, rcv, bank);
+              end
+            end // forever begin
+          end // block: working_thread
+          begin : terminate_thread
+            wait (stop);
           end
-        end
-        // collect ref data
-        eg_exp_lm_fifo[bank].get(exp);
-        lm_wdata_comp(exp, rcv, bank);
-      end
-    end
+        join_any
+        #0;
+        disable fork;
+      end // block: isolation_fork
+    join
   endtask // monitor_tb_mem
 
   task lm_wdata_comp(flash_phy_prim_item exp, flash_otf_mem_entry rcv, int bank);
