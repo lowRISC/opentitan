@@ -16,7 +16,6 @@ class Xbar:
         self.name = ""  # str  # e.g. "main" --> main_xbar
         self.ip_path = ""  # additional path to generated rtl/dv folders: outdir/ip_path/rtl
 
-        self.blocks = []
         self.nodes = []
         self.edges = []
         self.clocks = []
