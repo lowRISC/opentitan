@@ -37,10 +37,6 @@ __TOOL_REQUIREMENTS__ = {
         'min_version': '2022.06-SP2',
         'as_needed': True
     },
-    'rust': {
-        'min_version': '1.60.0',
-        'as_needed': True
-    },
     'vivado': {
         'min_version': '2020.2',
         'as_needed': True

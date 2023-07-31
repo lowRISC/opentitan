@@ -26,7 +26,6 @@ steps:
       cd ${{ parameters.REPO_TOP }}
       ci/install-package-dependencies.sh \
         --verilator-version $(VERILATOR_VERSION) \
-        --verible-version $(VERIBLE_VERSION) \
-        --rust-version $(RUST_VERSION)
+        --verible-version $(VERIBLE_VERSION)
     retryCountOnTaskFailure: 3
     displayName: 'Install package dependencies'
