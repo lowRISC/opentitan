@@ -85,6 +85,8 @@ class flash_ctrl_hw_prog_rma_wipe_err_vseq extends flash_ctrl_err_base_vseq;
   endtask // check_status
 
   task clean_up();
+    cfg.otf_scb_h.stop = 1;
+    cfg.otf_scb_h.clear_fifos();
     apply_reset();
   endtask // clean_up
 endclass // flash_ctrl_hw_prog_rma_wipe_err_vseq
