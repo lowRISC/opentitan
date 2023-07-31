@@ -7,7 +7,7 @@ from functools import partial
 
 from reggen.validate import check_bool, check_int, val_types
 
-from .item import Node, NodeType
+from .item import Host, Device, AsyncFifo, Socket1N, SocketM1
 from .lib import simplify_addr
 from .xbar import Xbar
 
@@ -196,19 +196,27 @@ def check_keys(obj, control, prefix=""):
     return error
 
 
-def get_nodetype(t):  # t: str -> NodeType
-    if t == "host":
-        return NodeType.HOST
-    elif t == "device":
-        return NodeType.DEVICE
-    elif t == "async_fifo":
-        return NodeType.ASYNC_FIFO
-    elif t == "socket_1n":
-        return NodeType.SOCKET_1N
-    elif t == "socket_m1":
-        return NodeType.SOCKET_M1
+def mk_node(typ: str, name: str, clock: str, reset: str):
+    """Create a graph node with the requested node type.
 
-    log.error("Cannot process type {}".format(t))
+    This is just a wrapper around the constructors in item.py, and picks the
+    right Python class for the textual requested node type.
+
+    `typ` gives the name of the node type. `name` gives the name of the node.
+    `clock` and `reset` give the names of the node's clock and reset signals.
+    """
+    if typ == "host":
+        return Host(name, clock, reset)
+    if typ == "device":
+        return Device(name, clock, reset)
+    if typ == "async_fifo":
+        return AsyncFifo(name, clock, reset)
+    if typ == "socket_1n":
+        return Socket1N(name, clock, reset)
+    if typ == "socket_m1":
+        return SocketM1(name, clock, reset)
+
+    log.error("Cannot process type {}".format(typ))
     raise
 
 
@@ -287,12 +295,12 @@ def validate(obj: OrderedDict) -> Xbar:  # OrderedDict -> Xbar
                 % (reset, nodeobj['name'], obj['name']))
             raise SystemExit("Reset does not exist")
 
-        node = Node(name=nodeobj["name"].lower(),
-                    node_type=get_nodetype(nodeobj["type"].lower()),
-                    clock=clock,
-                    reset=reset)
+        node = mk_node(typ=nodeobj["type"].lower(),
+                       name=nodeobj["name"].lower(),
+                       clock=clock,
+                       reset=reset)
 
-        if node.node_type == NodeType.DEVICE:
+        if isinstance(node, Device):
             node.xbar = nodeobj["xbar"]
             node.addr_range = []
 
@@ -337,21 +345,15 @@ def validate(obj: OrderedDict) -> Xbar:  # OrderedDict -> Xbar
                 addr_ranges.append(addr_entry)
                 node.addr_range.append(addr_entry)
 
-        if node.node_type in [NodeType.DEVICE, NodeType.HOST
-                              ] and "pipeline" in nodeobj:
-            node.pipeline = True if nodeobj["pipeline"] else False
-        else:
-            node.pipeline = False
-        if node.node_type in [NodeType.DEVICE, NodeType.HOST]:
-            node.req_fifo_pass = nodeobj["req_fifo_pass"] \
-                if "req_fifo_pass" in nodeobj else False
+        node.pipeline = False
+        node.req_fifo_pass = False
+        node.rsp_fifo_pass = False
 
-            node.rsp_fifo_pass = nodeobj["rsp_fifo_pass"] \
-                if "rsp_fifo_pass" in nodeobj else False
+        if isinstance(node, Device) or isinstance(node, Host):
+            node.pipeline = nodeobj.get("pipeline", False)
+            node.req_fifo_pass = nodeobj.get("req_fifo_pass", False)
+            node.rsp_fifo_pass = nodeobj.get("rsp_fifo_pass", False)
 
-        else:
-            node.req_fifo_pass = False
-            node.rsp_fifo_pass = False
         xbar.nodes.append(node)
 
     # Edge

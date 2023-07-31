@@ -2,7 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from enum import Enum
+"""Classes to represent the crossbar's dataflow graph."""
+
+from typing import List
 
 
 class Edge:
@@ -16,29 +18,13 @@ class Edge:
         self.ds = ds
 
 
-# Edges = List[Edge]
-# Clocks = List[str]  # If length is more than one, should be exactly two
-
-# [UpstreamClock, DownstreamClock]
-
-
-class NodeType(Enum):
-    HOST = 1
-    DEVICE = 2
-    ASYNC_FIFO = 3
-    SOCKET_1N = 4
-    SOCKET_M1 = 5
-
-
 class Node:
-    """Node class is a port that communicates from/to other Node or TL-UL
-    input/output.
-    """
+    """Base class representing a node in the data graph."""
 
-    name = ""  # name: str
-    # node_type: NodeType
-    clocks = []  # Clocks  # clock domains of the node
-    resets = []  # Resets  # resets of the node
+    name: str = ""
+
+    clocks: List[str] = []  # clock domains of the node. Should have at most 2.
+    resets: List[str] = []  # resets of the node
     # e.g. async_fifo in : clk_core , out : clk_main
 
     # If NodeType is Socket out from 1:N then address steering is used
@@ -66,9 +52,12 @@ class Node:
     req_fifo_pass = True
     rsp_fifo_pass = True
 
-    def __init__(self, name, node_type, clock, reset):
+    def __init__(self,
+                 name: str,
+                 clock: str,
+                 reset: str):
+        """Construct a node with the given name and main clock/reset."""
         self.name = name
-        self.node_type = node_type
         self.clocks = [clock]
         self.resets = [reset]
         self.us = []
@@ -84,3 +73,27 @@ class Node:
 
         '''
         return self.name.replace('.', '__')
+
+
+class Host(Node):
+    """A host node."""
+
+
+class Device(Node):
+    """A device node."""
+
+
+class AsyncFifo(Node):
+    """A node representing an async fifo."""
+
+
+class Socket(Node):
+    """A node representing a socket (1N or M1)."""
+
+
+class Socket1N(Socket):
+    """A 1N socket."""
+
+
+class SocketM1(Socket):
+    """An M1 socket."""
