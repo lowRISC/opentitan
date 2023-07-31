@@ -78,36 +78,22 @@ def process_node(node: Node, xbar: Xbar) -> Xbar:
     # If a node has multiple edges having it as a end node and not SOCKET_M1:
     elif len(node.us) > 1 and not isinstance(node, SocketM1):
         # (New node) Create SOCKET_M1 node
-        new_node = SocketM1(name="sm1_" + str(len(xbar.nodes)),
+        new_node = SocketM1(hwidth=len(node.us),
+                            name="sm1_" + str(len(xbar.nodes)),
                             clock=xbar.clock,
                             reset=xbar.reset)
 
-        # By default, assume connecting to SOCKET_1N upstream and bypass all FIFOs
-        # If upstream requires pipelining, it will be added through process pipeline
-        new_node.hdepth = 0
-        new_node.hreq_pass = 2**len(node.us) - 1
-        new_node.hrsp_pass = 2**len(node.us) - 1
-        new_node.ddepth = 0
-        new_node.dreq_pass = 1
-        new_node.drsp_pass = 1
         xbar.insert_node(new_node, node)
         process_node(new_node, xbar)
 
     # If a node has multiple edges having it as a start node and not SOCKET_1N:
     elif len(node.ds) > 1 and not isinstance(node, Socket1N):
         # (New node) Create SOCKET_1N node
-        new_node = Socket1N(name="s1n_" + str(len(xbar.nodes)),
+        new_node = Socket1N(dwidth=len(node.ds),
+                            name="s1n_" + str(len(xbar.nodes)),
                             clock=xbar.clock,
                             reset=xbar.reset)
 
-        # By default, assume connecting to SOCKET_M1 downstream and bypass all FIFOs
-        # If upstream requires pipelining, it will be added through process pipeline
-        new_node.hdepth = 0
-        new_node.hreq_pass = 1
-        new_node.hrsp_pass = 1
-        new_node.ddepth = 0
-        new_node.dreq_pass = 2**len(node.ds) - 1
-        new_node.drsp_pass = 2**len(node.ds) - 1
         xbar.insert_node(new_node, node)
 
         # (for loop) Repeat the algorithm with SOCKET_1N's other side node

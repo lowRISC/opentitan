@@ -212,9 +212,9 @@ def mk_node(typ: str, name: str, clock: str, reset: str):
     if typ == "async_fifo":
         return AsyncFifo(name, clock, reset)
     if typ == "socket_1n":
-        return Socket1N(name, clock, reset)
+        return Socket1N(1, name, clock, reset)
     if typ == "socket_m1":
-        return SocketM1(name, clock, reset)
+        return SocketM1(1, name, clock, reset)
 
     log.error("Cannot process type {}".format(typ))
     raise

@@ -90,10 +90,39 @@ class AsyncFifo(Node):
 class Socket(Node):
     """A node representing a socket (1N or M1)."""
 
+    hdepth: int
+    hreq_pass: int
+    hrsp_pass: int
+
+    ddepth: int
+    dreq_pass: int
+    drsp_pass: int
+
+    def __init__(self, hwidth: int, dwidth: int,
+                 name: str, clock: str, reset: str):
+        """Construct a socket with given host/device width."""
+        super().__init__(name, clock, reset)
+        self.hdepth = 0
+        self.hreq_pass = 2 ** hwidth - 1
+        self.hrsp_pass = 2 ** hwidth - 1
+        self.ddepth = 0
+        self.dreq_pass = 2 ** dwidth - 1
+        self.drsp_pass = 2 ** dwidth - 1
+
 
 class Socket1N(Socket):
     """A 1N socket."""
 
+    def __init__(self, dwidth: int,
+                 name: str, clock: str, reset: str):
+        """Construct a 1N socket with given device width."""
+        super().__init__(1, dwidth, name, clock, reset)
+
 
 class SocketM1(Socket):
     """An M1 socket."""
+
+    def __init__(self, hwidth: int,
+                 name: str, clock: str, reset: str):
+        """Construct a socket with given host width."""
+        super().__init__(hwidth, 1, name, clock, reset)
