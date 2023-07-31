@@ -270,6 +270,19 @@ cc_library(
     ],
 )
 
+cc_test(
+    name = "dma_unittest",
+    srcs = [
+        "autogen/dif_dma_autogen_unittest.cc",
+        "dif_dma_unittest.cc",
+    ],
+    deps = [
+        ":dma",
+        ":test_base",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_library(
     name = "edn",
     srcs = [
