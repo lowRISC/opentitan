@@ -36,7 +36,7 @@ function logic [bus_params_pkg::BUS_AW-1:0] get_sram_encrypt_addr (
 
   return scr_addr;
 
-endfunction // get_sram_encrypt_addr
+endfunction : get_sram_encrypt_addr
 
 function logic [38:0] get_sram_encrypt32_intg_data (
   logic [bus_params_pkg::BUS_AW-1:0] addr,
@@ -73,7 +73,7 @@ function logic [38:0] get_sram_encrypt32_intg_data (
 
   return scrambled_data;
 
-endfunction // get_sram_encrypt32_intg_data
+endfunction : get_sram_encrypt32_intg_data
 
 virtual function logic [38:0] sram_encrypt_read32_integ(logic [bus_params_pkg::BUS_AW-1:0] addr,
                                                         logic [SRAM_KEY_WIDTH-1:0]         key,

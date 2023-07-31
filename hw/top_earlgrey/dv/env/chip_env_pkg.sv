@@ -25,6 +25,7 @@ package chip_env_pkg;
   import jtag_riscv_agent_pkg::*;
   import jtag_dmi_agent_pkg::*;
   import jtag_rv_debugger_pkg::*;
+  import prim_secded_pkg::*;
   import rv_dm_regs_ral_pkg::*;
   import rv_dm_mem_ral_pkg::*;
   import rv_dm_reg_pkg::NrHarts;

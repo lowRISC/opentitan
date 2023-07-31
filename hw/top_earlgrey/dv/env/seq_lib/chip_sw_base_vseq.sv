@@ -156,22 +156,87 @@ class chip_sw_base_vseq extends chip_base_vseq;
       bit [bus_params_pkg::BUS_AW-1:0] addr,
       bit [31:0] data,
       bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0]   key = RndCnstSramCtrlMainSramKey,
-      bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce = RndCnstSramCtrlMainSramNonce,
-      bit [38:0] flip_bits = '0);
-    _sram_bkdr_write32(addr, data, 1, key, nonce, flip_bits);
+      bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce = RndCnstSramCtrlMainSramNonce);
+    _sram_bkdr_write32(addr, data, 1, key, nonce, '0);
+  endfunction
+
+  virtual function void main_sram_inject_ecc_error(
+      bit [bus_params_pkg::BUS_AW-1:0] addr,
+      bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0] key = RndCnstSramCtrlMainSramKey,
+      bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce = RndCnstSramCtrlMainSramNonce);
+    int max_attempts = 40;
+    int attempt = 0;
+
+    while (attempt < max_attempts) begin
+      bit [31:0] data = $urandom();
+      bit [1:0] err_code;
+      // The specific bits to be flipped should be irrelevant.
+      _sram_bkdr_write32(addr, data, 1, key, nonce, 39'h1001);
+      err_code =_sram_bkdr_ecc_check(addr, 1, key, nonce);
+      if (err_code) begin
+        `uvm_info(`gfn, $sformatf("ECC error injection succeeds after %0d attempts", attempt + 1),
+                  UVM_MEDIUM)
+        break;
+      end
+      ++attempt;
+    end
+    `DV_CHECK_LT(attempt, max_attempts, "Too many attempts in main_sram_inject_ecc_error")
   endfunction
 
   virtual function void ret_sram_bkdr_write32(
       bit [bus_params_pkg::BUS_AW-1:0] addr,
       bit [31:0] data,
       bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0]   key = RndCnstSramCtrlRetAonSramKey,
-      bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce = RndCnstSramCtrlRetAonSramNonce,
-      bit [38:0] flip_bits = '0);
-    _sram_bkdr_write32(addr, data, 0, key, nonce, flip_bits);
+      bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce = RndCnstSramCtrlRetAonSramNonce);
+    _sram_bkdr_write32(addr, data, 0, key, nonce, '0);
   endfunction
 
-  // scrambled address may cross the tile, this function will find out what tile the address is
-  // located and backdoor write to it.
+  virtual function void ret_sram_inject_ecc_error(
+      bit [bus_params_pkg::BUS_AW-1:0] addr,
+      bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0] key = RndCnstSramCtrlRetAonSramKey,
+      bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce = RndCnstSramCtrlRetAonSramNonce);
+    int max_attempts = 40;
+    int attempt = 0;
+
+    while (attempt < max_attempts) begin
+      bit [31:0] data = $urandom();
+      bit [1:0] err_code;
+      // The specific bits to be flipped should be irrelevant.
+      _sram_bkdr_write32(addr, data, 0, key, nonce, 39'h1001);
+      err_code =_sram_bkdr_ecc_check(addr, 0, key, nonce);
+      if (err_code) begin
+        `uvm_info(`gfn, $sformatf("ECC error injection succeeds after %0d attempts", attempt + 1),
+                  UVM_MEDIUM)
+        break;
+      end
+      ++attempt;
+    end
+    `DV_CHECK_LT(attempt, max_attempts, "Too many attempts in ret_sram_inject_ecc_error")
+  endfunction
+
+  // This gets some parameters based on the type of sram. Notice it will always return a
+  // chip_mem_e corresponding to the first tile. The actual tile to be updated depends on the
+  // scrambled address.
+  local function void _sram_get_params(
+      output            chip_mem_e mem,
+      output int        num_tiles,
+      output int        size_bytes,
+      input bit         is_main_ram); // if 1, main ram, otherwise, ret ram
+    if (is_main_ram) begin
+      mem = RamMain0;
+      num_tiles = cfg.num_ram_main_tiles;
+    end else begin
+      mem = RamRet0;
+      num_tiles = cfg.num_ram_ret_tiles;
+    end
+
+    // Assume each tile contains the same number of bytes
+    size_bytes = cfg.mem_bkdr_util_h[mem].get_size_bytes();
+  endfunction
+
+  // This performs a backdoor write. It will scramble the address and data, and add integrity bits.
+  // Notice the address to be updated is not the same as the given address, and they can end up in
+  // different tiles.
   protected function void _sram_bkdr_write32(
       bit [bus_params_pkg::BUS_AW-1:0] addr,
       bit [31:0] data,
@@ -185,22 +250,10 @@ class chip_sw_base_vseq extends chip_base_vseq;
     bit [31:0] addr_scr;
     bit [38:0] data_scr;
     bit [31:0] addr_mask;
-    int        tile_idx;
     int        size_bytes;
+    int        tile_idx;
 
-    // Use the 1st tile of the RAM for now. Based on the scrambled address, will find out which
-    // tile to write.
-    if (is_main_ram) begin
-      mem = RamMain0;
-      num_tiles = cfg.num_ram_main_tiles;
-    end else begin
-      mem = RamRet0;
-      num_tiles = cfg.num_ram_ret_tiles;
-    end
-
-    // Assume each tile contains the same number of bytes
-    size_bytes = cfg.mem_bkdr_util_h[mem].get_size_bytes();
-    addr_mask = size_bytes - 1;
+    _sram_get_params(mem, num_tiles, size_bytes, is_main_ram);
 
     // calculate the scramble address
     addr_scr = cfg.mem_bkdr_util_h[mem].get_sram_encrypt_addr(
@@ -216,7 +269,41 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     // write the scrambled data into the targetted memory tile
     mem = chip_mem_e'(mem + tile_idx);
+    addr_mask = size_bytes - 1;
     cfg.mem_bkdr_util_h[mem].write39integ(addr_scr & addr_mask, data_scr ^ flip_bits);
+  endfunction
+
+  // This performs an ecc check at a given address. The address and data need to be de-scrambled,
+  // so the actual address to be checked will most likely be different, and at a different tile.
+  protected function logic [1:0] _sram_bkdr_ecc_check(
+      bit [bus_params_pkg::BUS_AW-1:0] addr,
+      bit is_main_ram, // if 1, main ram, otherwise, ret ram
+      bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0]   key,
+      bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce);
+
+    chip_mem_e mem;
+    int        num_tiles;
+    bit [31:0] addr_scr;
+    bit [38:0] data_scr;
+    bit [31:0] addr_mask;
+    int        tile_idx;
+    int        size_bytes;
+    prim_secded_pkg::secded_inv_39_32_t dec;
+
+    _sram_get_params(mem, num_tiles, size_bytes, is_main_ram);
+
+    // calculate the scramble address
+    addr_scr = cfg.mem_bkdr_util_h[mem].get_sram_encrypt_addr(
+        addr, nonce, $clog2(num_tiles));
+
+    // determine which tile the scrambled address belongs
+    tile_idx = addr_scr / size_bytes;
+    mem = chip_mem_e'(mem + tile_idx);
+
+    addr_mask = size_bytes - 1;
+    data_scr = cfg.mem_bkdr_util_h[mem].read39integ(addr_scr & addr_mask);
+    dec = prim_secded_pkg::prim_secded_inv_39_32_dec(data_scr);
+    return dec.err;
   endfunction
 
   virtual task body();
@@ -689,14 +776,16 @@ class chip_sw_base_vseq extends chip_base_vseq;
                           LcStTestLocked2, LcStTestLocked3,
                           LcStTestLocked4, LcStTestLocked5,
                           LcStTestLocked6});
-  endfunction // is_locked_lc_state
+  endfunction : is_test_locked_lc_state
+
   virtual function bit is_test_unlocked_lc_state(lc_state_e state);
     return (state inside {LcStTestUnlocked0, LcStTestUnlocked1,
                           LcStTestUnlocked2, LcStTestUnlocked3,
                           LcStTestUnlocked4, LcStTestUnlocked5,
                           LcStTestUnlocked6, LcStTestUnlocked7
                           });
-  endfunction
+  endfunction : is_test_unlocked_lc_state
+
   // Indicate LC state where cpu_en == 1
   // This has to follow Manufacturing State description
   // https://opentitan.org/book/doc/security/specs/device_life_cycle/#manufacturing-states
@@ -1077,7 +1166,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     cfg.clk_rst_vif.wait_clks(10);
     cfg.chip_vif.por_n_if.drive(1);
-  endtask // assert_por_reset_deep_sleep
+  endtask : assert_por_reset_deep_sleep
 
   // push button 50us;
   // this task requires proper sysrst_ctrl config
@@ -1087,7 +1176,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.chip_vif.pwrb_in_if.drive(0);
     #50us;
     cfg.chip_vif.pwrb_in_if.drive(1);
-  endtask // push_button
+  endtask : push_button
 
   // This task can be called, when rma is requested by lc_ctrl.
   // Before rma wipe for data partition started (256 pages),

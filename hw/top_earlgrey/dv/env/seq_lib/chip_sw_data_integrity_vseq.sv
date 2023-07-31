@@ -81,14 +81,14 @@ class chip_sw_data_integrity_vseq extends chip_sw_base_vseq;
       error_ram_base = ral.sram_ctrl_ret_aon_ram.default_map.get_base_addr();
       `DV_CHECK(error_ram_address >= error_ram_base)
       `DV_CHECK(error_ram_address < error_ram_base + error_ram_size)
-      ret_sram_bkdr_write32(.addr(error_ram_address), .data('0), .flip_bits(39'h1001));
+      ret_sram_inject_ecc_error(.addr(error_ram_address));
     end else begin
       // Double check again that the address range is correct.
       error_ram_size = ral.sram_ctrl_main_ram.get_addr_mask() + 1;
       error_ram_base = ral.sram_ctrl_main_ram.default_map.get_base_addr();
       `DV_CHECK(error_ram_address >= error_ram_base)
       `DV_CHECK(error_ram_address < error_ram_base + error_ram_size)
-      main_sram_bkdr_write32(.addr(error_ram_address), .data('0), .flip_bits(39'h1001));
+      main_sram_inject_ecc_error(.addr(error_ram_address));
     end
   endtask
 endclass
