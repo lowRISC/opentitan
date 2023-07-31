@@ -581,7 +581,6 @@ module tb;
   `ifdef GATE_LEVEL
      initial begin
        // unconnected ports
-       force tb.dut.u_ast.u_entropy.dev1_entropy_o = 'h0;
        tb.dut.chip_if.disable_mios_x_check = 1'b1;
 
        // Ignore 0 time x
