@@ -34,12 +34,13 @@ dif_result_t dif_dma_configure(const dif_dma_t *dma,
   mmio_region_write32(dma->base_addr, DMA_SOURCE_ADDRESS_LO_REG_OFFSET,
                       transaction.source.address & UINT32_MAX);
   mmio_region_write32(dma->base_addr, DMA_SOURCE_ADDRESS_HI_REG_OFFSET,
-                      transaction.source.address >> sizeof(uint32_t) * 8);
+                      transaction.source.address >> (sizeof(uint32_t) * 8));
 
   mmio_region_write32(dma->base_addr, DMA_DESTINATION_ADDRESS_LO_REG_OFFSET,
                       transaction.destination.address & UINT32_MAX);
-  mmio_region_write32(dma->base_addr, DMA_DESTINATION_ADDRESS_HI_REG_OFFSET,
-                      transaction.destination.address >> sizeof(uint32_t) * 8);
+  mmio_region_write32(
+      dma->base_addr, DMA_DESTINATION_ADDRESS_HI_REG_OFFSET,
+      transaction.destination.address >> (sizeof(uint32_t) * 8));
 
   uint32_t reg = 0;
   reg = bitfield_field32_write(reg, DMA_ADDRESS_SPACE_ID_SOURCE_ASID_FIELD,
