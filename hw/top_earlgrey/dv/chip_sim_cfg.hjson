@@ -240,7 +240,7 @@
                                fi ''']
 
   // TODO(lowrisc/opentitan#16689): Enable cdc instrumentation.
-  run_opts: ["+cdc_instrumentation_enabled=0"]
+  run_opts: ["+cdc_instrumentation_enabled=1"]
 
   // Add run modes.
   run_modes: [
