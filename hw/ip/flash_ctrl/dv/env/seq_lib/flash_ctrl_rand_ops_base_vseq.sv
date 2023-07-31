@@ -279,6 +279,8 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
   `uvm_object_new
 
   task body();
+    rd_cache_t rd_entry;
+    bit op_ok = 0;
     cfg.flash_ctrl_vif.lc_creator_seed_sw_rw_en = lc_ctrl_pkg::On;
     cfg.flash_ctrl_vif.lc_owner_seed_sw_rw_en   = lc_ctrl_pkg::On;
     cfg.flash_ctrl_vif.lc_iso_part_sw_rd_en     = lc_ctrl_pkg::On;
@@ -312,12 +314,31 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
       // Send num_flash_ops_per_cfg number of ops with this configuration.
       for (int j = 1; j <= num_flash_ops_per_cfg; j++) begin
         data_q_t exp_data;
-
+        int retry_cnt = 0;
         // Those 2 has to be randomized simultaneously, otherwise the value of flash_op_data from
         //  the previous iteration will affect the randomization of flash_op.
-        if (!randomize(flash_op, flash_op_data)) begin
-          `uvm_fatal(`gfn, "Randomization failed for flash_op & flash_op_data!")
+        while (op_ok == 0 && retry_cnt < 100) begin
+          if (!randomize(flash_op, flash_op_data)) begin
+            `uvm_fatal(`gfn, "Randomization failed for flash_op & flash_op_data!")
+          end
+          rd_entry.bank = flash_op.addr[OTFBankId];
+          flash_op.otf_addr = flash_op.addr[OTFBankId-1:0];
+          rd_entry.addr = flash_op.otf_addr;
+          rd_entry.addr[2:0] = 'h0;
+          rd_entry.part = flash_op.partition;
+
+          if (flash_op.op == FlashOpRead) begin
+            if (!cfg.otf_read_entry.check(rd_entry, flash_op)) begin
+              cfg.otf_read_entry.insert(rd_entry, flash_op);
+              op_ok = 1;
+            end
+          end else begin
+            op_ok = 1;
+            cfg.otf_read_entry.update(rd_entry, flash_op);
+          end
+          retry_cnt++;
         end
+        op_ok = 0;
         `uvm_info(`gfn, $sformatf(
                   "Starting flash_ctrl op: %0d/%0d: %p", j, num_flash_ops_per_cfg, flash_op),
                   UVM_LOW)
