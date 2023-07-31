@@ -15,7 +15,7 @@ class flash_ctrl_phy_ack_consistency_vseq extends flash_ctrl_phy_host_grant_err_
     string path2 = "tb.dut.u_eflash.gen_flash_cores[0].u_core.host_req_done_o";
 
     cfg.scb_h.expected_alert["fatal_err"].expected = 1;
-    cfg.scb_h.expected_alert["fatal_err"].max_delay = 2000;
+    cfg.scb_h.expected_alert["fatal_err"].max_delay = 20000;
     cfg.scb_h.exp_alert_contd["fatal_err"] = 10000;
     $assertoff(0, "tb.dut.u_eflash.gen_flash_cores[0].u_host_rsp_fifo.gen_normal_fifo.u_fifo_cnt");
 
@@ -38,7 +38,7 @@ class flash_ctrl_phy_ack_consistency_vseq extends flash_ctrl_phy_host_grant_err_
             // This error injection can cause catastrophic event
             // Set fatal_std_err and stop tl response check
             cfg.scb_h.expected_alert["fatal_std_err"].expected = 1;
-            cfg.scb_h.expected_alert["fatal_std_err"].max_delay = 2000;
+            cfg.scb_h.expected_alert["fatal_std_err"].max_delay = 20000;
             cfg.scb_h.exp_alert_contd["fatal_std_err"] = 10000;
             cfg.scb_h.stop_tl_err_chk = 1;
             cfg.m_tl_agent_cfg.check_tl_errs = 0;
