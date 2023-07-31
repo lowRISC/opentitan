@@ -45,18 +45,6 @@ cc_library(
     hdrs = ["test_helpers.h"],
 )
 
-cc_test(
-    name = "ujson_test",
-    srcs = ["ujson_test.cc"],
-    deps = [
-        ":test_helpers",
-        ":ujson",
-        "//sw/lib/sw/device/base:status",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "@googletest//:gtest_main",
-    ],
-)
-
 cc_library(
     name = "example",
     srcs = ["example.c"],
@@ -64,25 +52,23 @@ cc_library(
     deps = [":ujson"],
 )
 
-cc_test(
-    name = "example_test",
-    srcs = ["example_test.cc"],
-    deps = [
-        ":example",
-        ":test_helpers",
-        ":ujson",
-        "//sw/lib/sw/device/base:status",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "@googletest//:gtest_main",
+filegroup(
+    name = "ujson_test",
+    srcs = [
+        "ujson_test.cc",
     ],
 )
 
-cc_binary(
+filegroup(
+    name = "example_test",
+    srcs = [
+        "example_test.cc",
+    ],
+)
+
+filegroup(
     name = "example_roundtrip",
-    srcs = ["example_roundtrip.c"],
-    deps = [
-        ":example",
-        "//sw/lib/sw/device/base:status",
-        "//sw/top_darjeeling/sw/device/runtime:print",
+    srcs = [
+        "example_roundtrip.c",
     ],
 )
