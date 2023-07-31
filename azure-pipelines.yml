@@ -498,7 +498,7 @@ jobs:
     - chip_darjeeling_cw310
     - chip_earlgrey_cw310
     - chip_earlgrey_cw310_hyperdebug
-  condition: false
+  condition: eq(variables['Build.SourceBranchName'], 'master')
   steps:
     - template: ci/download-artifacts-template.yml
       parameters:
