@@ -26,20 +26,22 @@
   It supports differentiation between informational and data flash partitions, flash memory protection at page boundaries, and the handling of key manager secrets inaccessible to software.
   The actual physical controller is highly parameterized (number of banks, number of pages for each bank, number of words and word size for each page, and number of read buffers) and supports XEX scrambling configurable by software, as well as two types of ECC support configurable on a page boundary.
   '''
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "8",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv"
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_flash_ctrl",
   revisions: [
       {
-          version:            "0.1",
+          version:            "0.1.0",
           life_stage:         "L1",
           design_stage:       "D1",
           verification_stage: "V1",
           commit_id:          "7049fd0d5d48e20772f8ebf32b240faa0dad5528",
       },
       {
-          version:            "1.0",
+          version:            "1.0.0",
           life_stage:         "L1",
           design_stage:       "D2S",
           verification_stage: "V2S",

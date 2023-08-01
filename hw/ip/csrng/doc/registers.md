@@ -3,117 +3,29 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/csrng/data/csrng.hjson -->
 ## Summary
 
-| Name                                                      | Offset   |   Length | Description                                            |
-|:----------------------------------------------------------|:---------|---------:|:-------------------------------------------------------|
-| csrng.[`CIP_ID`](#cip_id)                                 | 0x0      |        4 | Comportable IP ID.                                     |
-| csrng.[`REVISION`](#revision)                             | 0x4      |        4 | Comportable IP semantic version.                       |
-| csrng.[`PARAMETER_BLOCK_TYPE`](#parameter_block_type)     | 0x8      |        4 | Parameter block type.                                  |
-| csrng.[`PARAMETER_BLOCK_LENGTH`](#parameter_block_length) | 0xc      |        4 | Parameter block length.                                |
-| csrng.[`NEXT_PARAMETER_BLOCK`](#next_parameter_block)     | 0x10     |        4 | Next parameter block offset.                           |
-| csrng.[`INTR_STATE`](#intr_state)                         | 0x40     |        4 | Interrupt State Register                               |
-| csrng.[`INTR_ENABLE`](#intr_enable)                       | 0x44     |        4 | Interrupt Enable Register                              |
-| csrng.[`INTR_TEST`](#intr_test)                           | 0x48     |        4 | Interrupt Test Register                                |
-| csrng.[`ALERT_TEST`](#alert_test)                         | 0x4c     |        4 | Alert Test Register                                    |
-| csrng.[`REGWEN`](#regwen)                                 | 0x50     |        4 | Register write enable for all control registers        |
-| csrng.[`CTRL`](#ctrl)                                     | 0x54     |        4 | Control register                                       |
-| csrng.[`CMD_REQ`](#cmd_req)                               | 0x58     |        4 | Command request register                               |
-| csrng.[`SW_CMD_STS`](#sw_cmd_sts)                         | 0x5c     |        4 | Application interface command status register          |
-| csrng.[`GENBITS_VLD`](#genbits_vld)                       | 0x60     |        4 | Generate bits returned valid register                  |
-| csrng.[`GENBITS`](#genbits)                               | 0x64     |        4 | Generate bits returned register                        |
-| csrng.[`INT_STATE_NUM`](#int_state_num)                   | 0x68     |        4 | Internal state number register                         |
-| csrng.[`INT_STATE_VAL`](#int_state_val)                   | 0x6c     |        4 | Internal state read access register                    |
-| csrng.[`HW_EXC_STS`](#hw_exc_sts)                         | 0x70     |        4 | Hardware instance exception status register            |
-| csrng.[`RECOV_ALERT_STS`](#recov_alert_sts)               | 0x74     |        4 | Recoverable alert status register                      |
-| csrng.[`ERR_CODE`](#err_code)                             | 0x78     |        4 | Hardware detection of error conditions status register |
-| csrng.[`ERR_CODE_TEST`](#err_code_test)                   | 0x7c     |        4 | Test error conditions register                         |
-| csrng.[`MAIN_SM_STATE`](#main_sm_state)                   | 0x80     |        4 | Main state machine state debug register                |
-
-## CIP_ID
-Comportable IP ID.
-- Offset: `0x0`
-- Reset default: `0x5`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "CIP_ID", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name   | Description                                       |
-|:------:|:------:|:-------:|:-------|:--------------------------------------------------|
-|  31:0  |   ro   |   0x5   | CIP_ID | This value is a unique comportable IP identifier. |
-
-## REVISION
-Comportable IP semantic version.
-- Offset: `0x4`
-- Reset default: `0x2000000`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "RESERVED", "bits": 8, "attr": ["ro"], "rotate": 0}, {"name": "SUBMINOR", "bits": 8, "attr": ["ro"], "rotate": 0}, {"name": "MINOR", "bits": 8, "attr": ["ro"], "rotate": 0}, {"name": "MAJOR", "bits": 8, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name     | Description                      |
-|:------:|:------:|:-------:|:---------|:---------------------------------|
-| 31:24  |   ro   |   0x2   | MAJOR    | Major version number.            |
-| 23:16  |   ro   |   0x0   | MINOR    | Minor version number.            |
-|  15:8  |   ro   |   0x0   | SUBMINOR | Subminor (patch) version number. |
-|  7:0   |   ro   |   0x0   | RESERVED | Reserved version number.         |
-
-## PARAMETER_BLOCK_TYPE
-Parameter block type.
-- Offset: `0x8`
-- Reset default: `0x0`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "BLOCK_TYPE", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name       | Description           |
-|:------:|:------:|:-------:|:-----------|:----------------------|
-|  31:0  |   ro   |   0x0   | BLOCK_TYPE | Parameter block type. |
-
-## PARAMETER_BLOCK_LENGTH
-Parameter block length.
-- Offset: `0xc`
-- Reset default: `0xc`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "BLOCK_LENGTH", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name         | Description                      |
-|:------:|:------:|:-------:|:-------------|:---------------------------------|
-|  31:0  |   ro   |   0xc   | BLOCK_LENGTH | Parameter block length in bytes. |
-
-## NEXT_PARAMETER_BLOCK
-Next parameter block offset.
-- Offset: `0x10`
-- Reset default: `0x0`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "BLOCK_OFFSET", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name         | Description                                                                             |
-|:------:|:------:|:-------:|:-------------|:----------------------------------------------------------------------------------------|
-|  31:0  |   ro   |   0x0   | BLOCK_OFFSET | This offset value is zero if there is no other                         parameter block. |
+| Name                                        | Offset   |   Length | Description                                            |
+|:--------------------------------------------|:---------|---------:|:-------------------------------------------------------|
+| csrng.[`INTR_STATE`](#intr_state)           | 0x0      |        4 | Interrupt State Register                               |
+| csrng.[`INTR_ENABLE`](#intr_enable)         | 0x4      |        4 | Interrupt Enable Register                              |
+| csrng.[`INTR_TEST`](#intr_test)             | 0x8      |        4 | Interrupt Test Register                                |
+| csrng.[`ALERT_TEST`](#alert_test)           | 0xc      |        4 | Alert Test Register                                    |
+| csrng.[`REGWEN`](#regwen)                   | 0x10     |        4 | Register write enable for all control registers        |
+| csrng.[`CTRL`](#ctrl)                       | 0x14     |        4 | Control register                                       |
+| csrng.[`CMD_REQ`](#cmd_req)                 | 0x18     |        4 | Command request register                               |
+| csrng.[`SW_CMD_STS`](#sw_cmd_sts)           | 0x1c     |        4 | Application interface command status register          |
+| csrng.[`GENBITS_VLD`](#genbits_vld)         | 0x20     |        4 | Generate bits returned valid register                  |
+| csrng.[`GENBITS`](#genbits)                 | 0x24     |        4 | Generate bits returned register                        |
+| csrng.[`INT_STATE_NUM`](#int_state_num)     | 0x28     |        4 | Internal state number register                         |
+| csrng.[`INT_STATE_VAL`](#int_state_val)     | 0x2c     |        4 | Internal state read access register                    |
+| csrng.[`HW_EXC_STS`](#hw_exc_sts)           | 0x30     |        4 | Hardware instance exception status register            |
+| csrng.[`RECOV_ALERT_STS`](#recov_alert_sts) | 0x34     |        4 | Recoverable alert status register                      |
+| csrng.[`ERR_CODE`](#err_code)               | 0x38     |        4 | Hardware detection of error conditions status register |
+| csrng.[`ERR_CODE_TEST`](#err_code_test)     | 0x3c     |        4 | Test error conditions register                         |
+| csrng.[`MAIN_SM_STATE`](#main_sm_state)     | 0x40     |        4 | Main state machine state debug register                |
 
 ## INTR_STATE
 Interrupt State Register
-- Offset: `0x40`
+- Offset: `0x0`
 - Reset default: `0x0`
 - Reset mask: `0xf`
 
@@ -133,7 +45,7 @@ Interrupt State Register
 
 ## INTR_ENABLE
 Interrupt Enable Register
-- Offset: `0x44`
+- Offset: `0x4`
 - Reset default: `0x0`
 - Reset mask: `0xf`
 
@@ -153,7 +65,7 @@ Interrupt Enable Register
 
 ## INTR_TEST
 Interrupt Test Register
-- Offset: `0x48`
+- Offset: `0x8`
 - Reset default: `0x0`
 - Reset mask: `0xf`
 
@@ -173,7 +85,7 @@ Interrupt Test Register
 
 ## ALERT_TEST
 Alert Test Register
-- Offset: `0x4c`
+- Offset: `0xc`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 
@@ -191,7 +103,7 @@ Alert Test Register
 
 ## REGWEN
 Register write enable for all control registers
-- Offset: `0x50`
+- Offset: `0x10`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
@@ -208,7 +120,7 @@ Register write enable for all control registers
 
 ## CTRL
 Control register
-- Offset: `0x54`
+- Offset: `0x14`
 - Reset default: `0x999`
 - Reset mask: `0xfff`
 - Register enable: [`REGWEN`](#regwen)
@@ -228,7 +140,7 @@ Control register
 
 ## CMD_REQ
 Command request register
-- Offset: `0x58`
+- Offset: `0x18`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -244,7 +156,7 @@ Command request register
 
 ## SW_CMD_STS
 Application interface command status register
-- Offset: `0x5c`
+- Offset: `0x1c`
 - Reset default: `0x1`
 - Reset mask: `0x3`
 
@@ -272,7 +184,7 @@ This bit indicates when the command interface is ready to accept commands.
 
 ## GENBITS_VLD
 Generate bits returned valid register
-- Offset: `0x60`
+- Offset: `0x20`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 
@@ -290,7 +202,7 @@ Generate bits returned valid register
 
 ## GENBITS
 Generate bits returned register
-- Offset: `0x64`
+- Offset: `0x24`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -313,7 +225,7 @@ of the data out of the FIFO path.
 
 ## INT_STATE_NUM
 Internal state number register
-- Offset: `0x68`
+- Offset: `0x28`
 - Reset default: `0x0`
 - Reset mask: `0xf`
 
@@ -341,7 +253,7 @@ that the [`INT_STATE_VAL`](#int_state_val) read back is accurate.
 
 ## INT_STATE_VAL
 Internal state read access register
-- Offset: `0x6c`
+- Offset: `0x2c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -365,7 +277,7 @@ another internal state field can be read.
 
 ## HW_EXC_STS
 Hardware instance exception status register
-- Offset: `0x70`
+- Offset: `0x30`
 - Reset default: `0x0`
 - Reset mask: `0xffff`
 
@@ -390,7 +302,7 @@ resets the status bits.
 
 ## RECOV_ALERT_STS
 Recoverable alert status register
-- Offset: `0x74`
+- Offset: `0x34`
 - Reset default: `0x0`
 - Reset mask: `0x300f`
 
@@ -413,7 +325,7 @@ Recoverable alert status register
 
 ## ERR_CODE
 Hardware detection of error conditions status register
-- Offset: `0x78`
+- Offset: `0x38`
 - Reset default: `0x0`
 - Reset mask: `0x77f0ffff`
 
@@ -614,7 +526,7 @@ This bit will stay set until the next reset.
 
 ## ERR_CODE_TEST
 Test error conditions register
-- Offset: `0x7c`
+- Offset: `0x3c`
 - Reset default: `0x0`
 - Reset mask: `0x1f`
 - Register enable: [`REGWEN`](#regwen)
@@ -640,7 +552,7 @@ an interrupt or an alert.
 
 ## MAIN_SM_STATE
 Main state machine state debug register
-- Offset: `0x80`
+- Offset: `0x40`
 - Reset default: `0x4e`
 - Reset mask: `0xff`
 

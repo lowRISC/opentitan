@@ -23,13 +23,15 @@
   Through always-on registers, software can get information on the reset cause, as well as alert and CPU status prior to a triggered reset (crash dump).
   To deter fault injection (FI) attacks, several countermeasures are implemented, including consistency checks of leaf resets and support for shadow resets.
   '''
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "22",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_rstmgr",
   revisions: [
     {
-      version:            "1.0",
+      version:            "1.0.0",
       life_stage:         "L1",
       design_stage:       "D2S",
       verification_stage: "V2S",

@@ -5,115 +5,27 @@
 
 | Name                                                                | Offset   |   Length | Description                                                  |
 |:--------------------------------------------------------------------|:---------|---------:|:-------------------------------------------------------------|
-| edn.[`CIP_ID`](#cip_id)                                             | 0x0      |        4 | Comportable IP ID.                                           |
-| edn.[`REVISION`](#revision)                                         | 0x4      |        4 | Comportable IP semantic version.                             |
-| edn.[`PARAMETER_BLOCK_TYPE`](#parameter_block_type)                 | 0x8      |        4 | Parameter block type.                                        |
-| edn.[`PARAMETER_BLOCK_LENGTH`](#parameter_block_length)             | 0xc      |        4 | Parameter block length.                                      |
-| edn.[`NEXT_PARAMETER_BLOCK`](#next_parameter_block)                 | 0x10     |        4 | Next parameter block offset.                                 |
-| edn.[`INTR_STATE`](#intr_state)                                     | 0x40     |        4 | Interrupt State Register                                     |
-| edn.[`INTR_ENABLE`](#intr_enable)                                   | 0x44     |        4 | Interrupt Enable Register                                    |
-| edn.[`INTR_TEST`](#intr_test)                                       | 0x48     |        4 | Interrupt Test Register                                      |
-| edn.[`ALERT_TEST`](#alert_test)                                     | 0x4c     |        4 | Alert Test Register                                          |
-| edn.[`REGWEN`](#regwen)                                             | 0x50     |        4 | Register write enable for all control registers              |
-| edn.[`CTRL`](#ctrl)                                                 | 0x54     |        4 | EDN control register                                         |
-| edn.[`BOOT_INS_CMD`](#boot_ins_cmd)                                 | 0x58     |        4 | EDN boot instantiate command register                        |
-| edn.[`BOOT_GEN_CMD`](#boot_gen_cmd)                                 | 0x5c     |        4 | EDN boot generate command register                           |
-| edn.[`SW_CMD_REQ`](#sw_cmd_req)                                     | 0x60     |        4 | EDN csrng app command request register                       |
-| edn.[`SW_CMD_STS`](#sw_cmd_sts)                                     | 0x64     |        4 | EDN command status register                                  |
-| edn.[`RESEED_CMD`](#reseed_cmd)                                     | 0x68     |        4 | EDN csrng reseed command register                            |
-| edn.[`GENERATE_CMD`](#generate_cmd)                                 | 0x6c     |        4 | EDN csrng generate command register                          |
-| edn.[`MAX_NUM_REQS_BETWEEN_RESEEDS`](#max_num_reqs_between_reseeds) | 0x70     |        4 | EDN maximum number of requests between reseeds register      |
-| edn.[`RECOV_ALERT_STS`](#recov_alert_sts)                           | 0x74     |        4 | Recoverable alert status register                            |
-| edn.[`ERR_CODE`](#err_code)                                         | 0x78     |        4 | Hardware detection of fatal error conditions status register |
-| edn.[`ERR_CODE_TEST`](#err_code_test)                               | 0x7c     |        4 | Test error conditions register                               |
-| edn.[`MAIN_SM_STATE`](#main_sm_state)                               | 0x80     |        4 | Main state machine state observation register                |
-
-## CIP_ID
-Comportable IP ID.
-- Offset: `0x0`
-- Reset default: `0x6`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "CIP_ID", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name   | Description                                       |
-|:------:|:------:|:-------:|:-------|:--------------------------------------------------|
-|  31:0  |   ro   |   0x6   | CIP_ID | This value is a unique comportable IP identifier. |
-
-## REVISION
-Comportable IP semantic version.
-- Offset: `0x4`
-- Reset default: `0x2000000`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "RESERVED", "bits": 8, "attr": ["ro"], "rotate": 0}, {"name": "SUBMINOR", "bits": 8, "attr": ["ro"], "rotate": 0}, {"name": "MINOR", "bits": 8, "attr": ["ro"], "rotate": 0}, {"name": "MAJOR", "bits": 8, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name     | Description                      |
-|:------:|:------:|:-------:|:---------|:---------------------------------|
-| 31:24  |   ro   |   0x2   | MAJOR    | Major version number.            |
-| 23:16  |   ro   |   0x0   | MINOR    | Minor version number.            |
-|  15:8  |   ro   |   0x0   | SUBMINOR | Subminor (patch) version number. |
-|  7:0   |   ro   |   0x0   | RESERVED | Reserved version number.         |
-
-## PARAMETER_BLOCK_TYPE
-Parameter block type.
-- Offset: `0x8`
-- Reset default: `0x0`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "BLOCK_TYPE", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name       | Description           |
-|:------:|:------:|:-------:|:-----------|:----------------------|
-|  31:0  |   ro   |   0x0   | BLOCK_TYPE | Parameter block type. |
-
-## PARAMETER_BLOCK_LENGTH
-Parameter block length.
-- Offset: `0xc`
-- Reset default: `0xc`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "BLOCK_LENGTH", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name         | Description                      |
-|:------:|:------:|:-------:|:-------------|:---------------------------------|
-|  31:0  |   ro   |   0xc   | BLOCK_LENGTH | Parameter block length in bytes. |
-
-## NEXT_PARAMETER_BLOCK
-Next parameter block offset.
-- Offset: `0x10`
-- Reset default: `0x0`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "BLOCK_OFFSET", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name         | Description                                                                             |
-|:------:|:------:|:-------:|:-------------|:----------------------------------------------------------------------------------------|
-|  31:0  |   ro   |   0x0   | BLOCK_OFFSET | This offset value is zero if there is no other                         parameter block. |
+| edn.[`INTR_STATE`](#intr_state)                                     | 0x0      |        4 | Interrupt State Register                                     |
+| edn.[`INTR_ENABLE`](#intr_enable)                                   | 0x4      |        4 | Interrupt Enable Register                                    |
+| edn.[`INTR_TEST`](#intr_test)                                       | 0x8      |        4 | Interrupt Test Register                                      |
+| edn.[`ALERT_TEST`](#alert_test)                                     | 0xc      |        4 | Alert Test Register                                          |
+| edn.[`REGWEN`](#regwen)                                             | 0x10     |        4 | Register write enable for all control registers              |
+| edn.[`CTRL`](#ctrl)                                                 | 0x14     |        4 | EDN control register                                         |
+| edn.[`BOOT_INS_CMD`](#boot_ins_cmd)                                 | 0x18     |        4 | EDN boot instantiate command register                        |
+| edn.[`BOOT_GEN_CMD`](#boot_gen_cmd)                                 | 0x1c     |        4 | EDN boot generate command register                           |
+| edn.[`SW_CMD_REQ`](#sw_cmd_req)                                     | 0x20     |        4 | EDN csrng app command request register                       |
+| edn.[`SW_CMD_STS`](#sw_cmd_sts)                                     | 0x24     |        4 | EDN command status register                                  |
+| edn.[`RESEED_CMD`](#reseed_cmd)                                     | 0x28     |        4 | EDN csrng reseed command register                            |
+| edn.[`GENERATE_CMD`](#generate_cmd)                                 | 0x2c     |        4 | EDN csrng generate command register                          |
+| edn.[`MAX_NUM_REQS_BETWEEN_RESEEDS`](#max_num_reqs_between_reseeds) | 0x30     |        4 | EDN maximum number of requests between reseeds register      |
+| edn.[`RECOV_ALERT_STS`](#recov_alert_sts)                           | 0x34     |        4 | Recoverable alert status register                            |
+| edn.[`ERR_CODE`](#err_code)                                         | 0x38     |        4 | Hardware detection of fatal error conditions status register |
+| edn.[`ERR_CODE_TEST`](#err_code_test)                               | 0x3c     |        4 | Test error conditions register                               |
+| edn.[`MAIN_SM_STATE`](#main_sm_state)                               | 0x40     |        4 | Main state machine state observation register                |
 
 ## INTR_STATE
 Interrupt State Register
-- Offset: `0x40`
+- Offset: `0x0`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 
@@ -131,7 +43,7 @@ Interrupt State Register
 
 ## INTR_ENABLE
 Interrupt Enable Register
-- Offset: `0x44`
+- Offset: `0x4`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 
@@ -149,7 +61,7 @@ Interrupt Enable Register
 
 ## INTR_TEST
 Interrupt Test Register
-- Offset: `0x48`
+- Offset: `0x8`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 
@@ -167,7 +79,7 @@ Interrupt Test Register
 
 ## ALERT_TEST
 Alert Test Register
-- Offset: `0x4c`
+- Offset: `0xc`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 
@@ -185,7 +97,7 @@ Alert Test Register
 
 ## REGWEN
 Register write enable for all control registers
-- Offset: `0x50`
+- Offset: `0x10`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
@@ -202,7 +114,7 @@ Register write enable for all control registers
 
 ## CTRL
 EDN control register
-- Offset: `0x54`
+- Offset: `0x14`
 - Reset default: `0x9999`
 - Reset mask: `0xffff`
 - Register enable: [`REGWEN`](#regwen)
@@ -252,7 +164,7 @@ Programmers Guide for details.
 
 ## BOOT_INS_CMD
 EDN boot instantiate command register
-- Offset: `0x58`
+- Offset: `0x18`
 - Reset default: `0x901`
 - Reset mask: `0xffffffff`
 
@@ -268,7 +180,7 @@ EDN boot instantiate command register
 
 ## BOOT_GEN_CMD
 EDN boot generate command register
-- Offset: `0x5c`
+- Offset: `0x1c`
 - Reset default: `0xfff003`
 - Reset mask: `0xffffffff`
 
@@ -284,7 +196,7 @@ EDN boot generate command register
 
 ## SW_CMD_REQ
 EDN csrng app command request register
-- Offset: `0x60`
+- Offset: `0x20`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -312,7 +224,7 @@ in the CSRNG documentation.
 
 ## SW_CMD_STS
 EDN command status register
-- Offset: `0x64`
+- Offset: `0x24`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 
@@ -330,7 +242,7 @@ EDN command status register
 
 ## RESEED_CMD
 EDN csrng reseed command register
-- Offset: `0x68`
+- Offset: `0x28`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -358,7 +270,7 @@ in the CSRNG documentation.
 
 ## GENERATE_CMD
 EDN csrng generate command register
-- Offset: `0x6c`
+- Offset: `0x2c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -386,7 +298,7 @@ in the CSRNG documentation.
 
 ## MAX_NUM_REQS_BETWEEN_RESEEDS
 EDN maximum number of requests between reseeds register
-- Offset: `0x70`
+- Offset: `0x30`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -409,7 +321,7 @@ automatic reseed when it reaches zero.
 
 ## RECOV_ALERT_STS
 Recoverable alert status register
-- Offset: `0x74`
+- Offset: `0x34`
 - Reset default: `0x0`
 - Reset mask: `0x100f`
 
@@ -431,7 +343,7 @@ Recoverable alert status register
 
 ## ERR_CODE
 Hardware detection of fatal error conditions status register
-- Offset: `0x78`
+- Offset: `0x38`
 - Reset default: `0x0`
 - Reset mask: `0x70700007`
 
@@ -510,7 +422,7 @@ When this bit is set, a fatal error condition will result.
 
 ## ERR_CODE_TEST
 Test error conditions register
-- Offset: `0x7c`
+- Offset: `0x3c`
 - Reset default: `0x0`
 - Reset mask: `0x1f`
 
@@ -535,7 +447,7 @@ an interrupt or an alert.
 
 ## MAIN_SM_STATE
 Main state machine state observation register
-- Offset: `0x80`
+- Offset: `0x40`
 - Reset default: `0x185`
 - Reset mask: `0x1ff`
 

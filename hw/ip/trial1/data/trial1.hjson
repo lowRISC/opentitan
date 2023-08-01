@@ -3,11 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name:               "trial1",
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "0",
   design_spec:        "",
   dv_doc:             "",
   hw_checklist:       "",
   sw_checklist:       "",
-  version:            "1.0",
+  version:            "1.0.0",
   life_stage:         "L1",
   design_stage:       "D1",
   verification_stage: "V1",
