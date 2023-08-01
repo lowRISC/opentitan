@@ -381,20 +381,17 @@ def gen_tock(block: IpBlock, outfile: TextIO, src_file: Optional[str],
     fieldstr = fieldout.getvalue()
     fieldout.close()
 
-    genout(outfile, '// Generated register constants for {}.\n', block.name)
+    tm = int(version_stamp.get('BUILD_TIMESTAMP', 0))
+    dt = datetime.utcfromtimestamp(tm) if tm else datetime.utcnow()
     # Opensource council has approved dual-licensing the generated files under
     # both Apache and MIT licenses.
-    genout(outfile, '// This file is licensed under either of:\n')
-    genout(
-        outfile,
-        '//   Apache License, Version 2.0 '
-        '(LICENSE-APACHE <http://www.apache.org/licenses/LICENSE-2.0>)\n'
-    )
-    genout(
-        outfile,
-        '//   MIT License (LICENSE-MIT <http://opensource.org/licenses/MIT>)\n'
-    )
+    # Since these generated files are meant to be imported into the Tock
+    # codebase, emit a header acceptable to Tock's license checker.
+    genout(outfile, "// Licensed under the Apache License, Version 2.0 or the MIT License.\n")
+    genout(outfile, "// SPDX-License-Identifier: Apache-2.0 OR MIT\n")
+    genout(outfile, "// Copyright lowRISC contributors {}.\n", dt.year)
     genout(outfile, '\n')
+    genout(outfile, '// Generated register constants for {}.\n', block.name)
 
     genout(outfile, '// Built for {}\n',
            version_stamp.get('BUILD_GIT_VERSION', '<unknown>'))
@@ -402,8 +399,6 @@ def gen_tock(block: IpBlock, outfile: TextIO, src_file: Optional[str],
            version_stamp.get('BUILD_SCM_REVISION', '<unknown>'))
     genout(outfile, '// Tree status: {}\n',
            version_stamp.get('BUILD_SCM_STATUS', '<unknown>'))
-    tm = int(version_stamp.get('BUILD_TIMESTAMP', 0))
-    dt = datetime.utcfromtimestamp(tm) if tm else datetime.utcnow()
     genout(outfile, '// Build date: {}\n\n', dt.isoformat())
 
     if src_file:
