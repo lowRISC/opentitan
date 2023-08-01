@@ -13,11 +13,13 @@
   [bsi-ais31]: https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Zertifizierung/Interpretationen/AIS_31_Functionality_classes_for_random_number_generators_e.pdf
   [nist-sp-800-90b]: https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-90B.pdf
   '''
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "7",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_entropy_src",
-  version:            "1.0",
+  version:            "1.0.0",
   life_stage:         "L1",
   design_stage:       "D2S",
   verification_stage: "V2S",

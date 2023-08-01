@@ -11,11 +11,13 @@
   To enable usage while the device is sleeping, it runs on a slow always-on clock.
   In addition, it has a low power periodic scan mode for monitoring ADC channels.
   '''
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "1",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_adc_ctrl",
-  version:            "1.0",
+  version:            "1.0.0",
   life_stage:         "L1",
   design_stage:       "D3",
   verification_stage: "V2S",

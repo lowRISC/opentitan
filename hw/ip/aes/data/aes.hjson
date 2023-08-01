@@ -16,11 +16,13 @@
 
   [nist-aes]: https://www.nist.gov/publications/advanced-encryption-standard-aes
   '''
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "2",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_aes",
-  version:            "1.0",
+  version:            "1.0.0",
   life_stage:         "L1",
   design_stage:       "D2S",
   verification_stage: "V2S",

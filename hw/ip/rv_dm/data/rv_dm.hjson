@@ -10,11 +10,13 @@
   The interface to Ibex is compliant with the RISC-V Debug Specification 0.13.2, which in turn is supported by debug software such as OpenOCD and GDB.
   For security reasons, RISC-V Debug Module is only active in life cycles that have hardware debug enabled.
   '''
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "24",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "",
-  version:            "1.0",
+  version:            "1.0.0",
   life_stage:         "L1",
   design_stage:       "D2S",
   verification_stage: "V1",
