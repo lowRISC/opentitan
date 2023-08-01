@@ -209,9 +209,25 @@ TEST_F(MemoryRangeTests, SetSuccess) {
       dif_dma_memory_range_set(&dma_, kStartAddr, kEndAddr - kStartAddr + 1));
 }
 
-TEST_F(MemoryRangeTests, SetBadArg) {
-  EXPECT_DIF_BADARG(dif_dma_memory_range_set(nullptr, 0, 4));
-  EXPECT_DIF_BADARG(dif_dma_memory_range_set(&dma_, 0, 0));
+TEST_F(MemoryRangeTests, GetSuccess) {
+  enum { kAddress = 0x721F400F, kSize = 0xF0000 };
+  EXPECT_READ32(DMA_ENABLED_MEMORY_RANGE_BASE_REG_OFFSET, kAddress);
+  EXPECT_READ32(DMA_ENABLED_MEMORY_RANGE_LIMIT_REG_OFFSET,
+                kAddress + kSize - 1);
+
+  uint32_t address = 0;
+  size_t size = 0;
+  EXPECT_DIF_OK(dif_dma_memory_range_get(&dma_, &address, &size));
+  EXPECT_EQ(address, kAddress);
+  EXPECT_EQ(size, kSize);
+}
+
+TEST_F(MemoryRangeTests, GetBadArg) {
+  uint32_t address = 0;
+  size_t size = 0;
+  EXPECT_DIF_BADARG(dif_dma_memory_range_get(nullptr, &address, &size));
+  EXPECT_DIF_BADARG(dif_dma_memory_range_get(&dma_, NULL, &size));
+  EXPECT_DIF_BADARG(dif_dma_memory_range_get(&dma_, &address, NULL));
 }
 
 // DMA abort tests

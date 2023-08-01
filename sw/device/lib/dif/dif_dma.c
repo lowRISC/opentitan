@@ -117,6 +117,23 @@ dif_result_t dif_dma_memory_range_set(const dif_dma_t *dma, uint32_t address,
   return kDifOk;
 }
 
+dif_result_t dif_dma_memory_range_get(const dif_dma_t *dma, uint32_t *address,
+                                      size_t *size) {
+  if (dma == NULL || size == NULL || address == NULL) {
+    return kDifBadArg;
+  }
+
+  *address = mmio_region_read32(dma->base_addr,
+                                DMA_ENABLED_MEMORY_RANGE_BASE_REG_OFFSET);
+
+  // The limit address is inclusive so we add one.
+  *size = mmio_region_read32(dma->base_addr,
+                             DMA_ENABLED_MEMORY_RANGE_LIMIT_REG_OFFSET) -
+          *address + 1;
+
+  return kDifOk;
+}
+
 dif_result_t dif_dma_memory_range_lock(const dif_dma_t *dma) {
   if (dma == NULL) {
     return kDifBadArg;
