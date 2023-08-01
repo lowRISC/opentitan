@@ -19,7 +19,9 @@ module pwrmgr_sec_cm_checker_assert
   input slow_fsm_invalid,
   input fast_fsm_invalid,
   input prim_mubi_pkg::mubi4_t rom_intg_chk_dis,
-  input prim_mubi_pkg::mubi4_t rom_intg_chk_ok,
+  input prim_mubi_pkg::mubi4_t rom_intg_chk_done,
+  input prim_mubi_pkg::mubi4_t rom_intg_chk_good,
+  input pwrmgr_pkg::fast_pwr_state_e fast_state,
   input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
   input slow_esc_rst_req,
@@ -55,23 +57,37 @@ module pwrmgr_sec_cm_checker_assert
           clk_i,
           reset_or_disable)
 
-  // check rom_intg_chk_ok
-  // rom_intg_chk_ok can be any values.
-  `ASSERT(RomIntgChkOkTrue_A,
-          rom_intg_chk_ok == prim_mubi_pkg::MuBi4True |->
-          (rom_intg_chk_dis == prim_mubi_pkg::MuBi4True &&
-           rom_ctrl_done_i == prim_mubi_pkg::MuBi4True) ||
-          (rom_ctrl_done_i == prim_mubi_pkg::MuBi4True &&
-           rom_ctrl_good_i == prim_mubi_pkg::MuBi4True),
+  // Check that unless rom_intg_chk_done is mubi true the fast state machine will
+  // stay in FastPwrStateRomCheckDone.
+  `ASSERT(RomBlockCheckGoodState_A,
+          rom_intg_chk_done != prim_mubi_pkg::MuBi4True &&
+          fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone |=>
+          fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone,
           clk_i,
           reset_or_disable)
 
-  `ASSERT(RomIntgChkOkFalse_A,
-          rom_intg_chk_ok != prim_mubi_pkg::MuBi4True |->
-          (rom_intg_chk_dis == prim_mubi_pkg::MuBi4False ||
-           rom_ctrl_done_i != prim_mubi_pkg::MuBi4True) &&
-          (rom_ctrl_done_i != prim_mubi_pkg::MuBi4True ||
-           rom_ctrl_good_i != prim_mubi_pkg::MuBi4True),
+  `ASSERT(RomAllowCheckGoodState_A,
+          rom_intg_chk_done == prim_mubi_pkg::MuBi4True &&
+          fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone |=>
+          fast_state == pwrmgr_pkg::FastPwrStateRomCheckGood,
+          clk_i,
+          reset_or_disable)
+
+  // Check that unless rom_intg_chk_good is mubi true or rom_intg_chk_dis is mubi true
+  // the fast state machine will stay in FastPwrStateRomCheckGood.
+  `ASSERT(RomBlockActiveState_A,
+          rom_intg_chk_good != prim_mubi_pkg::MuBi4True &&
+          rom_intg_chk_dis != prim_mubi_pkg::MuBi4True &&
+          fast_state == pwrmgr_pkg::FastPwrStateRomCheckGood |=>
+          fast_state == pwrmgr_pkg::FastPwrStateRomCheckGood,
+          clk_i,
+          reset_or_disable)
+
+  `ASSERT(RomAllowActiveState_A,
+          (rom_intg_chk_good == prim_mubi_pkg::MuBi4True ||
+           rom_intg_chk_dis == prim_mubi_pkg::MuBi4True) &&
+          fast_state == pwrmgr_pkg::FastPwrStateRomCheckGood |=>
+          fast_state == pwrmgr_pkg::FastPwrStateActive,
           clk_i,
           reset_or_disable)
 
