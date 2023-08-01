@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -19,32 +19,32 @@ package dma_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } dma_done;
+    } dma_memory_buffer_limit;
     struct packed {
       logic        q;
     } dma_error;
     struct packed {
       logic        q;
-    } dma_memory_buffer_limit;
+    } dma_done;
   } dma_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } dma_done;
+    } dma_memory_buffer_limit;
     struct packed {
       logic        q;
     } dma_error;
     struct packed {
       logic        q;
-    } dma_memory_buffer_limit;
+    } dma_done;
   } dma_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } dma_done;
+    } dma_memory_buffer_limit;
     struct packed {
       logic        q;
       logic        qe;
@@ -52,7 +52,7 @@ package dma_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } dma_memory_buffer_limit;
+    } dma_done;
   } dma_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
@@ -84,11 +84,11 @@ package dma_reg_pkg;
     struct packed {
       logic [3:0]  q;
       logic        qe;
-    } source_asid;
+    } destination_asid;
     struct packed {
       logic [3:0]  q;
       logic        qe;
-    } destination_asid;
+    } source_asid;
   } dma_reg2hw_address_space_id_reg_t;
 
   typedef struct packed {
@@ -137,25 +137,9 @@ package dma_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [3:0]  q;
-      logic        qe;
-    } opcode;
-    struct packed {
       logic        q;
       logic        qe;
-    } hardware_handshake_enable;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } memory_buffer_auto_increment_enable;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fifo_auto_increment_enable;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } data_direction;
+    } go;
     struct packed {
       logic        q;
       logic        qe;
@@ -163,18 +147,34 @@ package dma_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } go;
+    } data_direction;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } fifo_auto_increment_enable;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } memory_buffer_auto_increment_enable;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } hardware_handshake_enable;
+    struct packed {
+      logic [3:0]  q;
+      logic        qe;
+    } opcode;
   } dma_reg2hw_control_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic        q;
+      logic [6:0]  q;
       logic        qe;
-    } busy;
+    } error_code;
     struct packed {
       logic        q;
       logic        qe;
-    } done;
+    } error;
     struct packed {
       logic        q;
       logic        qe;
@@ -182,11 +182,11 @@ package dma_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } error;
+    } done;
     struct packed {
-      logic [6:0]  q;
+      logic        q;
       logic        qe;
-    } error_code;
+    } busy;
   } dma_reg2hw_status_reg_t;
 
   typedef struct packed {
