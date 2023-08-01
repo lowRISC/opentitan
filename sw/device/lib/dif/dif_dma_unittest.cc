@@ -223,8 +223,22 @@ TEST_F(MemoryRangeLock, SetSuccess) {
   EXPECT_DIF_OK(dif_dma_memory_range_lock(&dma_));
 }
 
+TEST_F(MemoryRangeLock, GetLocked) {
+  bool locked = false;
+  EXPECT_READ32(DMA_RANGE_UNLOCK_REGWEN_REG_OFFSET, kMultiBitBool4False);
+
+  EXPECT_DIF_OK(dif_dma_is_memory_range_locked(&dma_, &locked));
+  EXPECT_TRUE(locked);
+}
+
 TEST_F(MemoryRangeLock, SetBadArg) {
   EXPECT_DIF_BADARG(dif_dma_memory_range_lock(nullptr));
+}
+
+TEST_F(MemoryRangeLock, GetBadArg) {
+  bool dummy;
+  EXPECT_DIF_BADARG(dif_dma_is_memory_range_locked(nullptr, &dummy));
+  EXPECT_DIF_BADARG(dif_dma_is_memory_range_locked(&dma_, nullptr));
 }
 
 }  // namespace dif_dma_test

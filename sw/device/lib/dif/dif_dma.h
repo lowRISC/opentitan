@@ -158,14 +158,15 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_dma_memory_range_lock(const dif_dma_t *dma);
 
 /**
- * Checks whether this DMA Controller is locked.
+ * Checks whether the DMA memory range is locked.
  *
  * @param dma A DMA Controller handle.
  * @param[out] is_locked Out-param for the locked state.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_dma_is_locked(const dif_dma_t *dma, bool *is_locked);
+dif_result_t dif_dma_is_memory_range_locked(const dif_dma_t *dma,
+                                            bool *is_locked);
 
 #ifdef __cplusplus
 }  // extern "C"
