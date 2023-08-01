@@ -196,4 +196,21 @@ INSTANTIATE_TEST_SUITE_P(
 TEST_F(StartTest, BadArg) {
   EXPECT_DIF_BADARG(dif_dma_start(nullptr, kDifDmaCopyOpcode));
 }
+
+// DMA abort tests
+class AbortTest : public DmaTestInitialized {};
+
+TEST_F(AbortTest, Success) {
+  EXPECT_READ32(DMA_CONTROL_REG_OFFSET,
+                {{DMA_CONTROL_HARDWARE_HANDSHAKE_ENABLE_BIT, true}});
+  EXPECT_WRITE32(DMA_CONTROL_REG_OFFSET,
+                 {
+                     {DMA_CONTROL_HARDWARE_HANDSHAKE_ENABLE_BIT, true},
+                     {DMA_CONTROL_ABORT_BIT, true},
+                 });
+
+  EXPECT_DIF_OK(dif_dma_abort(&dma_));
+}
+
+TEST_F(AbortTest, BadArg) { EXPECT_DIF_BADARG(dif_dma_abort(nullptr)); }
 }  // namespace dif_dma_test

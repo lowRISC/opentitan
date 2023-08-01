@@ -90,9 +90,16 @@ dif_result_t dif_dma_start(const dif_dma_t *dma,
   return kDifOk;
 }
 
-dif_result_t dif_dma_abort(const dif_dma_t *dma) { return kDifUnavailable; }
+dif_result_t dif_dma_abort(const dif_dma_t *dma) {
+  if (dma == NULL) {
+    return kDifBadArg;
+  }
 
-dif_result_t dif_dma_lock(const dif_dma_t *dma) { return kDifUnavailable; }
+  uint32_t reg = mmio_region_read32(dma->base_addr, DMA_CONTROL_REG_OFFSET);
+  reg = bitfield_bit32_write(reg, DMA_CONTROL_ABORT_BIT, 1);
+  mmio_region_write32(dma->base_addr, DMA_CONTROL_REG_OFFSET, reg);
+  return kDifOk;
+}
 
 dif_result_t dif_dma_is_locked(const dif_dma_t *dma, bool *is_locked) {
   return kDifUnavailable;
