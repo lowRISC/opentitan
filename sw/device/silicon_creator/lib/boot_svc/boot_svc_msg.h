@@ -60,9 +60,45 @@ typedef union boot_svc_msg {
   BOOT_SVC_MSGS_DEFINE(BOOT_SVC_MSG_FIELD);
 } boot_svc_msg_t;
 
-// TODO: Add an assertion for checking that CHIP_BOOT_SVC_MSG_SIZE_MAX is
-// up to date after defining structs for other messages.
-OT_ASSERT_SIZE(boot_svc_msg_t, CHIP_BOOT_SVC_MSG_SIZE_MAX);
+/**
+ * Helper macro for generating the equalities for checking that the value of
+ * `CHIP_BOOT_SVC_MSG_SIZE_MAX` is equal to the size of at least one of the boot
+ * services messages.
+ *
+ * Note that the macro expands to an incomplete expression that must be
+ * terminated with `false`.
+ *
+ * @param type_ Data type.
+ * @param field_name_ `boot_svc_msg_t` union field name.
+ */
+#define BOOT_SVC_SIZE_EQ_(type_, field_name_) \
+  sizeof(type_) == CHIP_BOOT_SVC_MSG_SIZE_MAX ||
+
+static_assert(BOOT_SVC_MSGS_DEFINE(BOOT_SVC_SIZE_EQ_) false,
+              "CHIP_BOOT_SVC_MSG_SIZE_MAX must equal to the size of at least "
+              "one of the boot services messages");
+
+#undef BOOT_SVC_SIZE_EQ_
+
+/**
+ * Helper macro for generating the inequalities for checking that the value of
+ * `CHIP_BOOT_SVC_MSG_SIZE_MAX` is greater than or equal to the sizes of all
+ * boot services messages.
+ *
+ * Note that the macro expands to an incomplete expression that must be
+ * terminated with `true`.
+ *
+ * @param type_ Data type.
+ * @param field_name_ `boot_svc_msg_t` union field name.
+ */
+#define BOOT_SVC_SIZE_LE_(type_, field_name_) \
+  sizeof(type_) <= CHIP_BOOT_SVC_MSG_SIZE_MAX &&
+
+static_assert(BOOT_SVC_MSGS_DEFINE(BOOT_SVC_SIZE_LE_) true,
+              "CHIP_BOOT_SVC_MSG_SIZE_MAX must be greater than or equal to the "
+              "sizes of all of the boot services messages");
+
+#undef BOOT_SVC_SIZE_LE_
 
 #ifdef __cplusplus
 }  // extern "C"
