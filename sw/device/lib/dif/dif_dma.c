@@ -101,6 +101,22 @@ dif_result_t dif_dma_abort(const dif_dma_t *dma) {
   return kDifOk;
 }
 
+dif_result_t dif_dma_memory_range_set(const dif_dma_t *dma, uint32_t address,
+                                      size_t size) {
+  if (dma == NULL || size == 0) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(dma->base_addr, DMA_ENABLED_MEMORY_RANGE_BASE_REG_OFFSET,
+                      address);
+  // The limit address is inclusive so we subtract one.
+  uint32_t end_addr = address + size - 1;
+  mmio_region_write32(dma->base_addr, DMA_ENABLED_MEMORY_RANGE_LIMIT_REG_OFFSET,
+                      end_addr);
+
+  return kDifOk;
+}
+
 dif_result_t dif_dma_memory_range_lock(const dif_dma_t *dma) {
   if (dma == NULL) {
     return kDifBadArg;

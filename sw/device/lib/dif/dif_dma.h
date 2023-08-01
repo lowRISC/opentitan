@@ -146,6 +146,17 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_dma_abort(const dif_dma_t *dma);
 
 /**
+ * Set the DMA enabled memory range within the OT internal memory space.
+ *
+ * @param dma A DMA Controller handle.
+ * @param address
+ * @param size
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_dma_memory_range_set(const dif_dma_t *dma, uint32_t address,
+                                      size_t size);
+/**
  * Locks out the DMA memory range register.
  *
  * This function is reentrant: calling it while functionality is locked will

@@ -197,6 +197,23 @@ TEST_F(StartTest, BadArg) {
   EXPECT_DIF_BADARG(dif_dma_start(nullptr, kDifDmaCopyOpcode));
 }
 
+// DMA memory range tests
+class MemoryRangeTests : public DmaTestInitialized {};
+
+TEST_F(MemoryRangeTests, SetSuccess) {
+  enum { kStartAddr = 0xD0CF2C50, kEndAddr = 0xD1CF2C0F };
+  EXPECT_WRITE32(DMA_ENABLED_MEMORY_RANGE_BASE_REG_OFFSET, kStartAddr);
+  EXPECT_WRITE32(DMA_ENABLED_MEMORY_RANGE_LIMIT_REG_OFFSET, kEndAddr);
+
+  EXPECT_DIF_OK(
+      dif_dma_memory_range_set(&dma_, kStartAddr, kEndAddr - kStartAddr + 1));
+}
+
+TEST_F(MemoryRangeTests, SetBadArg) {
+  EXPECT_DIF_BADARG(dif_dma_memory_range_set(nullptr, 0, 4));
+  EXPECT_DIF_BADARG(dif_dma_memory_range_set(&dma_, 0, 0));
+}
+
 // DMA abort tests
 class AbortTest : public DmaTestInitialized {};
 
