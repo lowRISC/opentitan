@@ -7,6 +7,7 @@
 from typing import Dict, List, Optional, Sequence, Set, Tuple
 
 import hjson  # type: ignore
+from semantic_version import Version
 
 from reggen.alert import Alert
 from reggen.bus_interfaces import BusInterfaces
@@ -19,6 +20,45 @@ from reggen.reg_block import RegBlock
 from reggen.signal import Signal
 from reggen.countermeasure import CounterMeasure
 
+# Known unique comportable IP names and associated CIP_IDs.
+KNOWN_CIP_IDS = {
+    0: 'trial1',
+    1: 'adc_ctrl',
+    2: 'aes',
+    3: 'aon_timer',
+    4: 'clkmgr',
+    5: 'csrng',
+    6: 'edn',
+    7: 'entropy_src',
+    8: 'flash_ctrl',
+    9: 'gpio',
+    10: 'hmac',
+    11: 'i2c',
+    12: 'keymgr',
+    13: 'kmac',
+    14: 'lc_ctrl',
+    15: 'otbn',
+    16: 'otp_ctrl',
+    17: 'pattgen',
+    18: 'pinmux',
+    19: 'pwm',
+    20: 'pwrmgr',
+    21: 'rom_ctrl',
+    22: 'rstmgr',
+    23: 'rv_core_ibex',
+    24: 'rv_dm',
+    25: 'rv_timer',
+    26: 'spi_device',
+    27: 'spi_host',
+    28: 'sram_ctrl',
+    29: 'sysrst_ctrl',
+    30: 'uart',
+    31: 'usbdev',
+    32: 'alert_handler',
+    33: 'rv_plic',
+    34: 'ast',
+    35: 'sensor_ctrl'
+}
 
 REQUIRED_ALIAS_FIELDS = {
     'alias_impl': [
@@ -46,6 +86,7 @@ OPTIONAL_ALIAS_FIELDS: Dict[str, List[str]] = {
 
 REQUIRED_FIELDS = {
     'name': ['s', "name of the component"],
+    'cip_id': ['d', "unique comportable IP identifier"],
     'clocking': ['l', "clocking for the device"],
     'bus_interfaces': ['l', "bus interfaces for the device"],
     'registers': [
@@ -108,10 +149,26 @@ OPTIONAL_FIELDS = {
     'countermeasures': ["ln", "list of countermeasures in this block"]
 }
 
+# Note that the revisions list may be deprecated in the future.
+REQUIRED_REVISIONS_FIELDS = {
+    'design_stage': ['s', "design stage of module"],
+    'verification_stage': ['s', "verification stage of module"],
+    'version': ['s', "semantic module version in the format x.y.z[+res#]"],
+    'life_stage': ['s', "life stage of module"],
+}
+
+OPTIONAL_REVISIONS_FIELDS = {
+    'dif_stage': ['s', 'DIF stage of module'],
+    'commit_id': ['s', "commit ID of last stage sign-off"],
+    'notes': ['s', "random notes"],
+}
+
 
 class IpBlock:
     def __init__(self,
                  name: str,
+                 cip_id: int,
+                 version: Version,
                  regwidth: int,
                  params: ReggenParams,
                  reg_blocks: Dict[Optional[str], RegBlock],
@@ -144,6 +201,8 @@ class IpBlock:
         assert set(reg_block_names) == set(dev_if_names)
 
         self.name = name
+        self.cip_id = cip_id
+        self.version = version
         self.regwidth = regwidth
         self.reg_blocks = reg_blocks
         self.alias_impl = alias_impl
@@ -217,6 +276,27 @@ class IpBlock:
             else:
                 known_cms.update({str(x): 1})
 
+        cip_id = check_int(rd.get('cip_id'), 'cip id for ' + what)
+        # In case there are multiple past revisions of this IP, always pick the
+        # newest one. Note: this revision list may be deprecated in the
+        # future.
+        version = Version('0.0.0')
+        if 'revisions' in rd:
+            for rev in check_list(rd['revisions'], what):
+                rev = check_keys(rev, 'rev item at ' + what,
+                                 list(REQUIRED_REVISIONS_FIELDS.keys()),
+                                 list(OPTIONAL_REVISIONS_FIELDS.keys()))
+                try:
+                    ver = Version(rev['version'])
+                except ValueError as err:
+                    raise RuntimeError(str(err) + ' in ' + what)
+                version = ver if ver >= version else version
+        else:
+            try:
+                version = Version(rd.get('version'))
+            except ValueError as err:
+                raise RuntimeError(str(err) + ' in ' + what)
+
         no_auto_intr = check_bool(rd.get('no_auto_intr_regs', not interrupts),
                                   'no_auto_intr_regs field of ' + what)
 
@@ -225,7 +305,7 @@ class IpBlock:
 
         if interrupts and not no_auto_intr:
             if interrupts[-1].bits.msb >= regwidth:
-                raise ValueError("Interrupt list for {} is too wide: "
+                raise ValueError("Too many interrupts defined for {}: "
                                  "msb is {}, which doesn't fit with a "
                                  "regwidth of {}."
                                  .format(what,
@@ -235,12 +315,13 @@ class IpBlock:
         if alerts:
             if not no_auto_alert:
                 if len(alerts) > regwidth:
-                    raise ValueError("Interrupt list for {} is too wide: "
+                    raise ValueError("Too many alerts defined for {}: "
                                      "{} alerts don't fit with a regwidth of {}."
                                      .format(what, len(alerts), regwidth))
                 init_block.make_alert_regs(alerts)
 
-            # Generate a NumAlerts parameter
+        # Generate a NumAlerts parameter
+        if alerts:
             existing_param = params.get('NumAlerts')
             if existing_param is not None:
                 if ((not isinstance(existing_param, LocalParam) or
@@ -312,8 +393,8 @@ class IpBlock:
                              .format(name, dev_if_names,
                                      list(reg_block_names)))
 
-        return IpBlock(name, regwidth, params, reg_blocks, None,
-                       interrupts, no_auto_intr, alerts, no_auto_alert,
+        return IpBlock(name, cip_id, version, regwidth, params, reg_blocks,
+                       None, interrupts, no_auto_intr, alerts, no_auto_alert,
                        scan, inter_signals, bus_interfaces, clocking, xputs,
                        wakeups, rst_reqs, expose_reg_if, scan_reset, scan_en,
                        countermeasures)
@@ -480,6 +561,8 @@ class IpBlock:
                                 for k, v in self.reg_blocks.items()}
 
         ret['param_list'] = self.params.as_dicts()
+        ret['cip_id'] = self.cip_id
+        ret['version'] = str(self.version)
         ret['interrupt_list'] = self.interrupts
         ret['no_auto_intr_regs'] = self.no_auto_intr
         ret['alert_list'] = self.alerts

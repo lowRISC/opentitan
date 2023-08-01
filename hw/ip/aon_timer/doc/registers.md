@@ -3,112 +3,24 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/aon_timer/data/aon_timer.hjson -->
 ## Summary
 
-| Name                                                          | Offset   |   Length | Description                            |
-|:--------------------------------------------------------------|:---------|---------:|:---------------------------------------|
-| aon_timer.[`CIP_ID`](#cip_id)                                 | 0x0      |        4 | Comportable IP ID.                     |
-| aon_timer.[`REVISION`](#revision)                             | 0x4      |        4 | Comportable IP semantic version.       |
-| aon_timer.[`PARAMETER_BLOCK_TYPE`](#parameter_block_type)     | 0x8      |        4 | Parameter block type.                  |
-| aon_timer.[`PARAMETER_BLOCK_LENGTH`](#parameter_block_length) | 0xc      |        4 | Parameter block length.                |
-| aon_timer.[`NEXT_PARAMETER_BLOCK`](#next_parameter_block)     | 0x10     |        4 | Next parameter block offset.           |
-| aon_timer.[`ALERT_TEST`](#alert_test)                         | 0x40     |        4 | Alert Test Register                    |
-| aon_timer.[`WKUP_CTRL`](#wkup_ctrl)                           | 0x44     |        4 | Wakeup Timer Control register          |
-| aon_timer.[`WKUP_THOLD`](#wkup_thold)                         | 0x48     |        4 | Wakeup Timer Threshold Register        |
-| aon_timer.[`WKUP_COUNT`](#wkup_count)                         | 0x4c     |        4 | Wakeup Timer Count Register            |
-| aon_timer.[`WDOG_REGWEN`](#wdog_regwen)                       | 0x50     |        4 | Watchdog Timer Write Enable Register   |
-| aon_timer.[`WDOG_CTRL`](#wdog_ctrl)                           | 0x54     |        4 | Watchdog Timer Control register        |
-| aon_timer.[`WDOG_BARK_THOLD`](#wdog_bark_thold)               | 0x58     |        4 | Watchdog Timer Bark Threshold Register |
-| aon_timer.[`WDOG_BITE_THOLD`](#wdog_bite_thold)               | 0x5c     |        4 | Watchdog Timer Bite Threshold Register |
-| aon_timer.[`WDOG_COUNT`](#wdog_count)                         | 0x60     |        4 | Watchdog Timer Count Register          |
-| aon_timer.[`INTR_STATE`](#intr_state)                         | 0x64     |        4 | Interrupt State Register               |
-| aon_timer.[`INTR_TEST`](#intr_test)                           | 0x68     |        4 | Interrupt Test Register                |
-| aon_timer.[`WKUP_CAUSE`](#wkup_cause)                         | 0x6c     |        4 | Wakeup request status                  |
-
-## CIP_ID
-Comportable IP ID.
-- Offset: `0x0`
-- Reset default: `0x3`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "CIP_ID", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name   | Description                                       |
-|:------:|:------:|:-------:|:-------|:--------------------------------------------------|
-|  31:0  |   ro   |   0x3   | CIP_ID | This value is a unique comportable IP identifier. |
-
-## REVISION
-Comportable IP semantic version.
-- Offset: `0x4`
-- Reset default: `0x2000000`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "RESERVED", "bits": 8, "attr": ["ro"], "rotate": 0}, {"name": "SUBMINOR", "bits": 8, "attr": ["ro"], "rotate": 0}, {"name": "MINOR", "bits": 8, "attr": ["ro"], "rotate": 0}, {"name": "MAJOR", "bits": 8, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name     | Description                      |
-|:------:|:------:|:-------:|:---------|:---------------------------------|
-| 31:24  |   ro   |   0x2   | MAJOR    | Major version number.            |
-| 23:16  |   ro   |   0x0   | MINOR    | Minor version number.            |
-|  15:8  |   ro   |   0x0   | SUBMINOR | Subminor (patch) version number. |
-|  7:0   |   ro   |   0x0   | RESERVED | Reserved version number.         |
-
-## PARAMETER_BLOCK_TYPE
-Parameter block type.
-- Offset: `0x8`
-- Reset default: `0x0`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "BLOCK_TYPE", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name       | Description           |
-|:------:|:------:|:-------:|:-----------|:----------------------|
-|  31:0  |   ro   |   0x0   | BLOCK_TYPE | Parameter block type. |
-
-## PARAMETER_BLOCK_LENGTH
-Parameter block length.
-- Offset: `0xc`
-- Reset default: `0xc`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "BLOCK_LENGTH", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name         | Description                      |
-|:------:|:------:|:-------:|:-------------|:---------------------------------|
-|  31:0  |   ro   |   0xc   | BLOCK_LENGTH | Parameter block length in bytes. |
-
-## NEXT_PARAMETER_BLOCK
-Next parameter block offset.
-- Offset: `0x10`
-- Reset default: `0x0`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "BLOCK_OFFSET", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name         | Description                                                                             |
-|:------:|:------:|:-------:|:-------------|:----------------------------------------------------------------------------------------|
-|  31:0  |   ro   |   0x0   | BLOCK_OFFSET | This offset value is zero if there is no other                         parameter block. |
+| Name                                            | Offset   |   Length | Description                            |
+|:------------------------------------------------|:---------|---------:|:---------------------------------------|
+| aon_timer.[`ALERT_TEST`](#alert_test)           | 0x0      |        4 | Alert Test Register                    |
+| aon_timer.[`WKUP_CTRL`](#wkup_ctrl)             | 0x4      |        4 | Wakeup Timer Control register          |
+| aon_timer.[`WKUP_THOLD`](#wkup_thold)           | 0x8      |        4 | Wakeup Timer Threshold Register        |
+| aon_timer.[`WKUP_COUNT`](#wkup_count)           | 0xc      |        4 | Wakeup Timer Count Register            |
+| aon_timer.[`WDOG_REGWEN`](#wdog_regwen)         | 0x10     |        4 | Watchdog Timer Write Enable Register   |
+| aon_timer.[`WDOG_CTRL`](#wdog_ctrl)             | 0x14     |        4 | Watchdog Timer Control register        |
+| aon_timer.[`WDOG_BARK_THOLD`](#wdog_bark_thold) | 0x18     |        4 | Watchdog Timer Bark Threshold Register |
+| aon_timer.[`WDOG_BITE_THOLD`](#wdog_bite_thold) | 0x1c     |        4 | Watchdog Timer Bite Threshold Register |
+| aon_timer.[`WDOG_COUNT`](#wdog_count)           | 0x20     |        4 | Watchdog Timer Count Register          |
+| aon_timer.[`INTR_STATE`](#intr_state)           | 0x24     |        4 | Interrupt State Register               |
+| aon_timer.[`INTR_TEST`](#intr_test)             | 0x28     |        4 | Interrupt Test Register                |
+| aon_timer.[`WKUP_CAUSE`](#wkup_cause)           | 0x2c     |        4 | Wakeup request status                  |
 
 ## ALERT_TEST
 Alert Test Register
-- Offset: `0x40`
+- Offset: `0x0`
 - Reset default: `0x0`
 - Reset mask: `0x1`
 
@@ -125,7 +37,7 @@ Alert Test Register
 
 ## WKUP_CTRL
 Wakeup Timer Control register
-- Offset: `0x44`
+- Offset: `0x4`
 - Reset default: `0x0`
 - Reset mask: `0x1fff`
 
@@ -143,7 +55,7 @@ Wakeup Timer Control register
 
 ## WKUP_THOLD
 Wakeup Timer Threshold Register
-- Offset: `0x48`
+- Offset: `0x8`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -159,7 +71,7 @@ Wakeup Timer Threshold Register
 
 ## WKUP_COUNT
 Wakeup Timer Count Register
-- Offset: `0x4c`
+- Offset: `0xc`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -175,7 +87,7 @@ Wakeup Timer Count Register
 
 ## WDOG_REGWEN
 Watchdog Timer Write Enable Register
-- Offset: `0x50`
+- Offset: `0x10`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
@@ -192,7 +104,7 @@ Watchdog Timer Write Enable Register
 
 ## WDOG_CTRL
 Watchdog Timer Control register
-- Offset: `0x54`
+- Offset: `0x14`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 - Register enable: [`WDOG_REGWEN`](#wdog_regwen)
@@ -211,7 +123,7 @@ Watchdog Timer Control register
 
 ## WDOG_BARK_THOLD
 Watchdog Timer Bark Threshold Register
-- Offset: `0x58`
+- Offset: `0x18`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 - Register enable: [`WDOG_REGWEN`](#wdog_regwen)
@@ -228,7 +140,7 @@ Watchdog Timer Bark Threshold Register
 
 ## WDOG_BITE_THOLD
 Watchdog Timer Bite Threshold Register
-- Offset: `0x5c`
+- Offset: `0x1c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 - Register enable: [`WDOG_REGWEN`](#wdog_regwen)
@@ -245,7 +157,7 @@ Watchdog Timer Bite Threshold Register
 
 ## WDOG_COUNT
 Watchdog Timer Count Register
-- Offset: `0x60`
+- Offset: `0x20`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -261,7 +173,7 @@ Watchdog Timer Count Register
 
 ## INTR_STATE
 Interrupt State Register
-- Offset: `0x64`
+- Offset: `0x24`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 
@@ -279,7 +191,7 @@ Interrupt State Register
 
 ## INTR_TEST
 Interrupt Test Register
-- Offset: `0x68`
+- Offset: `0x28`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 
@@ -297,7 +209,7 @@ Interrupt Test Register
 
 ## WKUP_CAUSE
 Wakeup request status
-- Offset: `0x6c`
+- Offset: `0x2c`
 - Reset default: `0x0`
 - Reset mask: `0x1`
 

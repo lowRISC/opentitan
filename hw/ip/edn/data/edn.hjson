@@ -11,11 +11,13 @@
   This allows configuring EDN to automatically send reseed and generate commands to the connected CSRNG context in order to continuously supply consumers with entropy of defined quality.
   Additionally, EDN supports a boot-time request mode, in which it supplies a limited amount of potentially lower-quality entropy with less firmware interaction immediately at boot-time or after reset.
   '''
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "6",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_edn",
-  version:            "1.0",
+  version:            "1.0.0",
   life_stage:         "L1",
   design_stage:       "D2S",
   verification_stage: "V2S",
