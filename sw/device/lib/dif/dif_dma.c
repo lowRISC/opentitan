@@ -101,6 +101,12 @@ dif_result_t dif_dma_abort(const dif_dma_t *dma) {
   return kDifOk;
 }
 
-dif_result_t dif_dma_is_locked(const dif_dma_t *dma, bool *is_locked) {
-  return kDifUnavailable;
+dif_result_t dif_dma_memory_range_lock(const dif_dma_t *dma) {
+  if (dma == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(dma->base_addr, DMA_RANGE_UNLOCK_REGWEN_REG_OFFSET,
+                      kMultiBitBool4False);
+  return kDifOk;
 }

@@ -146,7 +146,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_dma_abort(const dif_dma_t *dma);
 
 /**
- * Locks out DMA Controller functionality.
+ * Locks out the DMA memory range register.
  *
  * This function is reentrant: calling it while functionality is locked will
  * have no effect and return `kDifOk`.
@@ -155,7 +155,7 @@ dif_result_t dif_dma_abort(const dif_dma_t *dma);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_dma_lock(const dif_dma_t *dma);
+dif_result_t dif_dma_memory_range_lock(const dif_dma_t *dma);
 
 /**
  * Checks whether this DMA Controller is locked.

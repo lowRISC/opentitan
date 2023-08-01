@@ -213,4 +213,18 @@ TEST_F(AbortTest, Success) {
 }
 
 TEST_F(AbortTest, BadArg) { EXPECT_DIF_BADARG(dif_dma_abort(nullptr)); }
+
+// DMA Memory range lock tests
+class MemoryRangeLock : public DmaTestInitialized {};
+
+TEST_F(MemoryRangeLock, SetSuccess) {
+  EXPECT_WRITE32(DMA_RANGE_UNLOCK_REGWEN_REG_OFFSET, kMultiBitBool4False);
+
+  EXPECT_DIF_OK(dif_dma_memory_range_lock(&dma_));
+}
+
+TEST_F(MemoryRangeLock, SetBadArg) {
+  EXPECT_DIF_BADARG(dif_dma_memory_range_lock(nullptr));
+}
+
 }  // namespace dif_dma_test
