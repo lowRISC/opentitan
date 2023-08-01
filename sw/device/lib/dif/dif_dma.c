@@ -79,7 +79,15 @@ dif_result_t dif_dma_handshake_enable(const dif_dma_t *dma,
 
 dif_result_t dif_dma_start(const dif_dma_t *dma,
                            dif_dma_transaction_opcode_t opcode) {
-  return kDifUnavailable;
+  if (dma == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg = mmio_region_read32(dma->base_addr, DMA_CONTROL_REG_OFFSET);
+  reg = bitfield_field32_write(reg, DMA_CONTROL_OPCODE_FIELD, opcode);
+  reg = bitfield_bit32_write(reg, DMA_CONTROL_GO_BIT, 1);
+  mmio_region_write32(dma->base_addr, DMA_CONTROL_REG_OFFSET, reg);
+  return kDifOk;
 }
 
 dif_result_t dif_dma_abort(const dif_dma_t *dma) { return kDifUnavailable; }

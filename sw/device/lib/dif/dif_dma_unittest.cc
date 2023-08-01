@@ -167,4 +167,33 @@ TEST_F(EnableHandshakeTest, BadArg) {
   dif_dma_handshake_t handshake;
   EXPECT_DIF_BADARG(dif_dma_handshake_enable(nullptr, handshake));
 }
+
+// DMA start tests
+class StartTest
+    : public DmaTestInitialized,
+      public testing::WithParamInterface<dif_dma_transaction_opcode_t> {};
+
+TEST_P(StartTest, Success) {
+  dif_dma_transaction_opcode_t opcode = GetParam();
+  EXPECT_READ32(DMA_CONTROL_REG_OFFSET,
+                {{DMA_CONTROL_HARDWARE_HANDSHAKE_ENABLE_BIT, true}});
+  EXPECT_WRITE32(DMA_CONTROL_REG_OFFSET,
+                 {
+                     {DMA_CONTROL_OPCODE_OFFSET, opcode},
+                     {DMA_CONTROL_GO_BIT, true},
+                     {DMA_CONTROL_HARDWARE_HANDSHAKE_ENABLE_BIT, true},
+                 });
+
+  EXPECT_DIF_OK(dif_dma_start(&dma_, opcode));
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    StartTest, StartTest,
+    testing::ValuesIn(std::vector<dif_dma_transaction_opcode_t>{{
+        kDifDmaCopyOpcode,
+    }}));
+
+TEST_F(StartTest, BadArg) {
+  EXPECT_DIF_BADARG(dif_dma_start(nullptr, kDifDmaCopyOpcode));
+}
 }  // namespace dif_dma_test
