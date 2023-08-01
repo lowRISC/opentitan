@@ -15,6 +15,30 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
+ * Table of boot services request and response types.
+ *
+ * Columns: Data type, `boot_svc_msg_t` union field name.
+ * We use an X macro to generate the assertion that checks
+ * the value of `CHIP_BOOT_SVC_MSG_SIZE_MAX`.
+ */
+// clang-format off
+#define BOOT_SVC_MSGS_DEFINE(X) \
+  /**
+   * Next Boot BL0 Slot request and response.
+   */ \
+  X(boot_svc_next_boot_bl0_slot_req_t, next_boot_bl0_slot_req) \
+  X(boot_svc_next_boot_bl0_slot_res_t, next_boot_bl0_slot_res)
+// clang-format on
+
+/**
+ * Helper macro for declaring fields for boot services messages
+ *
+ * @param type_ Data type.
+ * @param field_name_ `boot_svc_msg_t` union field name.
+ */
+#define BOOT_SVC_MSG_FIELD(type_, field_name_) type_ field_name_;
+
+/**
  * A Boot Services message.
  *
  * This is defined as a union where the common initial sequence is a
@@ -31,14 +55,11 @@ typedef union boot_svc_msg {
    */
   boot_svc_empty_t empty;
   /**
-   * Next Boot BL0 Slot request message.
+   * Boot services request and response messages.
    */
-  boot_svc_next_boot_bl0_slot_req_t next_boot_bl0_slot_req;
-  /**
-   * Next Boot BL0 Slot response message.
-   */
-  boot_svc_next_boot_bl0_slot_res_t next_boot_bl0_slot_res;
+  BOOT_SVC_MSGS_DEFINE(BOOT_SVC_MSG_FIELD);
 } boot_svc_msg_t;
+
 // TODO: Add an assertion for checking that CHIP_BOOT_SVC_MSG_SIZE_MAX is
 // up to date after defining structs for other messages.
 OT_ASSERT_SIZE(boot_svc_msg_t, CHIP_BOOT_SVC_MSG_SIZE_MAX);
