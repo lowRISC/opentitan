@@ -56,8 +56,7 @@ module dma
     .reg2hw    ( reg2hw         ),
     .hw2reg    ( hw2reg         ),
     // SEC_CM: BUS.INTEGRITY
-    .intg_err_o( reg_intg_error ),
-    .devmode_i ( 1'b1           )
+    .intg_err_o( reg_intg_error )
   );
 
   // Alerts
