@@ -26,6 +26,7 @@ class MockAbsMmio : public global_mock::GlobalMock<MockAbsMmio> {
 }  // namespace internal
 
 using MockAbsMmio = testing::StrictMock<internal::MockAbsMmio>;
+using NiceMockAbsMmio = testing::NiceMock<internal::MockAbsMmio>;
 
 /**
  * Expect an abs_mmio read at the given address, returning the given 8-bit
