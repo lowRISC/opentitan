@@ -59,8 +59,24 @@ dif_result_t dif_dma_configure(const dif_dma_t *dma,
 
 dif_result_t dif_dma_handshake_enable(const dif_dma_t *dma,
                                       dif_dma_handshake_t handshake) {
-  return kDifUnavailable;
+  if (dma == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg = mmio_region_read32(dma->base_addr, DMA_CONTROL_REG_OFFSET);
+  reg = bitfield_bit32_write(reg, DMA_CONTROL_HARDWARE_HANDSHAKE_ENABLE_BIT,
+                             true);
+  reg = bitfield_bit32_write(reg, DMA_CONTROL_FIFO_AUTO_INCREMENT_ENABLE_BIT,
+                             handshake.fifo_auto_increment);
+  reg = bitfield_bit32_write(
+      reg, DMA_CONTROL_MEMORY_BUFFER_AUTO_INCREMENT_ENABLE_BIT,
+      handshake.memory_auto_increment);
+  reg = bitfield_bit32_write(reg, DMA_CONTROL_DATA_DIRECTION_BIT,
+                             handshake.direction_from_mem_to_fifo);
+  mmio_region_write32(dma->base_addr, DMA_CONTROL_REG_OFFSET, reg);
+  return kDifOk;
 }
+
 dif_result_t dif_dma_start(const dif_dma_t *dma,
                            dif_dma_transaction_opcode_t opcode) {
   return kDifUnavailable;
