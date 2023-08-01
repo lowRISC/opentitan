@@ -93,6 +93,7 @@ The top level of the JSON is a group containing the following keys:
 Key | Kind | Type | Description of Value
 --- | ---- | ---- | --------------------
 name | required | string | name of the component
+cip_id | required | int | unique comportable IP identifier
 clocking | required | list | clocking for the device
 bus_interfaces | required | list | bus interfaces for the device
 registers | required | list | list of register definition groups and offset control groups

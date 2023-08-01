@@ -6,11 +6,13 @@
 // *Module Description: Analog Sensors Top Registers
 //#############################################################################
 { name:               "ast",
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "34",
   design_spec:        "../doc",
   dv_doc:             "",
   hw_checklist:       "",
   sw_checklist:       "",
-  version:            "1.0",
+  version:            "1.0.0",
   life_stage:         "L1",
   design_stage:       "D2",
   verification_stage: "V2S",
