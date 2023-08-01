@@ -42,6 +42,7 @@
 - [Cores](./hw/doc/cores.md)
   - [Ibex RISC-V Core Wrapper](./hw/ip/rv_core_ibex/README.md)
     - [Theory of Operation](./hw/ip/rv_core_ibex/doc/theory_of_operation.md)
+    - [Boot, ROM execution and Patching](./hw/ip/rv_core_ibex/doc/boot-rom-patching.md)
     - [Design Verification](./hw/ip/rv_core_ibex/dv/README.md)
     - [Programmer's Guide](./hw/ip/rv_core_ibex/doc/programmers_guide.md)
     - [Interface and Registers](./hw/ip/rv_core_ibex/data/rv_core_ibex.hjson)
