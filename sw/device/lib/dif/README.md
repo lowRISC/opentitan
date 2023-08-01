@@ -42,7 +42,7 @@ be subsequently edited. Specifically, the script will create:
    the portion of the IP DIF library that is manually implemented, including:
   * a (public) header for the DIF, based on
   `util/make_new_dif/templates/dif_template.h.tpl`], and
-  * a checklist for the DIF, based on `doc/project/sw_checklist.md.tpl`.
+  * a checklist for the DIF, based on `doc/project_governance/checklist/sw_checklist.md.tpl`.
 
 Only the second set of files will need checking and editing, but the templates
 serve to avoid most of the copy/paste required, while keeping our DIF libraries

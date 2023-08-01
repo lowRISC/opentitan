@@ -156,7 +156,7 @@ def get_linked_sw_checklist(obj, rev, stage, is_latest_rev=True):
     else:
         # There is no checklist available, so point to the template.
         url = "https://github.com/lowrisc/opentitan/tree/master/"
-        url += "doc/project/sw_checklist.md.tpl"
+        url += "doc/project_governance/checklist/sw_checklist.md.tpl"
 
     return "<a href=\"{}\">{}</a>".format(url, html.escape(rev[stage]))
 
