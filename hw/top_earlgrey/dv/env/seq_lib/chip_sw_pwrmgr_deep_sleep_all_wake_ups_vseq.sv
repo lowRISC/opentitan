@@ -48,9 +48,9 @@ class chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq extends chip_sw_base_vseq;
         forever begin
           // force ADC channel0,1
           @(adc_valid_rising_edge_event);
-          `DV_CHECK(uvm_hdl_force(ADC_CHANNEL_OUT_HDL_PATH, (channel0_value)));
+          cfg.chip_vif.force_adc_d_o(channel0_value);
           @(adc_valid_rising_edge_event);
-          `DV_CHECK(uvm_hdl_force(ADC_CHANNEL_OUT_HDL_PATH, (channel1_value)));
+          cfg.chip_vif.force_adc_d_o(channel1_value);
         end
       end
       begin
@@ -153,7 +153,7 @@ class chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq extends chip_sw_base_vseq;
     case(round)
       0: cfg.chip_vif.pwrb_in_if.drive(1'b1);
       1: begin
-        `DV_CHECK(uvm_hdl_release(ADC_CHANNEL_OUT_HDL_PATH))
+        cfg.chip_vif.release_adc_d_o();
         ->release_adc_force;
       end
       2:     cfg.chip_vif.pinmux_wkup_if.drive(1'b0);
