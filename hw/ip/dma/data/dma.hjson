@@ -13,9 +13,10 @@
   It provides the hardware enforcement of security properties through well defined isolation & access control techniques, hardware based checking and other protection mechanisms.
   Note that depending upon use case, it is expected that the SoC provides proper security mechanisms for code / data protections such as access control mechanisms, encrypted (w/integrity protection) memory regions etc.
   '''
+  cip_id:             "36",
   design_spec:        "../doc"
   dv_doc:             "../doc/dv"
-  version:            "0.1"
+  version:            "0.1.0"
 
   clocking: [{clock: "clk_i", reset: "rst_ni", primary: true}]
   scan: "true"        // Enable `scanmode_i` port
