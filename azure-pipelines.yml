@@ -235,7 +235,7 @@ jobs:
       echo //... > "${TARGET_PATTERN_FILE}"
       echo -//quality/... >> "${TARGET_PATTERN_FILE}"
       echo -//third_party/riscv-compliance/... >> "${TARGET_PATTERN_FILE}"
-      echo -//hw:all >> "${TARGET_PATTERN_FILE}"
+      echo -//hw/... >> "${TARGET_PATTERN_FILE}"
       ./bazelisk.sh cquery \
         --noinclude_aspects \
         --output=starlark \
@@ -243,6 +243,11 @@ jobs:
         --define DISABLE_VERILATOR_BUILD=true \
         -- "rdeps(//..., kind(bitstream_splice, //...))" \
         >> "${TARGET_PATTERN_FILE}"
+      ci/bazelisk.sh build \
+        --build_tests_only=false \
+        --define DISABLE_VERILATOR_BUILD=true \
+        --test_tag_filters=-broken,-cw310,-verilator,-dv \
+        --target_pattern_file="${TARGET_PATTERN_FILE}"
       ci/bazelisk.sh test \
         --build_tests_only=false \
         --test_output=errors \
