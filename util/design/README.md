@@ -165,12 +165,12 @@ TODO
 
 The `get-lfsr-coeffs.py` script is used to fetch a list of primitive polynomials for Galois and Fibonacci type LFSRs.
 
-Galois coefficients are downloaded from [https://users.ece.cmu.edu/~koopman/lfsr/](https://users.ece.cmu.edu/~koopman/lfsr/).
+By default, the coefficients are downloaded from [https://users.ece.cmu.edu/~koopman/lfsr/](https://users.ece.cmu.edu/~koopman/lfsr/).
 The script downloads text files containing the first 100 primitive polynomials for LFSR widths ranging from 4 to 64 and places them into a temporary folder.
 The script also produces an output file containing a SystemVerilog template with LFSR polynomials for widths 4 to 64.
 This template contains exactly one polynomial for each LFSR width, which is always the first polynomial listed in the corresponding file.
 
-When used with the `--fib <pdf file>` option, the script outputs polynomials for the XNOR Fibonacci-type LFSR.
+When used with the `--pdf <pdf file>` option, the script outputs polynomials extracted from the Xilinx application note.
 To run this option, the user first needs to download the Xilinx application note from [https://docs.xilinx.com/v/u/en-US/xapp052](https://docs.xilinx.com/v/u/en-US/xapp052).
 The produced output file contains a SystemVerilog template with LFSR polynomials for widths ranging from 3 to 168.
 
