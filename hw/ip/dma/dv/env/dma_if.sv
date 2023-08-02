@@ -4,7 +4,7 @@
 
 import dma_pkg::*;
 
-interface dma_if #(parameter uint WIDTH_IN = 1) (
+interface dma_if #(parameter uint WIDTH_IN = dma_pkg::NUM_LSIO_TRIGGERS) (
   input clk_i,
   input rst_ni
 );
