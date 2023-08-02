@@ -15,6 +15,8 @@
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_empty.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_header.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
+#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_next_boot_bl0_slot.h"
+#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_primary_bl0_slot.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
@@ -201,6 +203,42 @@ static rom_error_t boot_svc_next_boot_bl0_slot_handler(
 }
 
 OT_WARN_UNUSED_RESULT
+static rom_error_t boot_svc_primary_boot_bl0_slot_handler(
+    boot_svc_msg_t *boot_svc_msg, boot_data_t *boot_data) {
+  uint32_t active_slot = boot_data->primary_bl0_slot;
+  uint32_t requested_slot = boot_svc_msg->primary_bl0_slot_req.primary_bl0_slot;
+
+  // In cases where the primary is already set to the requested slot, this
+  // function is a no-op.
+  if (active_slot != requested_slot) {
+    switch (launder32(requested_slot)) {
+      case kBootDataSlotA:
+        HARDENED_CHECK_EQ(requested_slot, kBootDataSlotA);
+        boot_data->primary_bl0_slot = kBootDataSlotA;
+        break;
+      case kBootDataSlotB:
+        HARDENED_CHECK_EQ(requested_slot, kBootDataSlotB);
+        boot_data->primary_bl0_slot = kBootDataSlotB;
+        break;
+      default:
+        HARDENED_TRAP();
+        OT_UNREACHABLE();
+    }
+
+    // Write boot data, updating relevant fields and recomputing the digest.
+    HARDENED_RETURN_IF_ERROR(boot_data_write(boot_data));
+    // Read the boot data back to ensure the correct slot is booted this time.
+    HARDENED_RETURN_IF_ERROR(boot_data_read(lc_state, boot_data));
+    HARDENED_RETURN_IF_ERROR(boot_data_check(boot_data));
+  }
+
+  boot_svc_primary_bl0_slot_res_init(boot_data->primary_bl0_slot, kErrorOk,
+                                     &boot_svc_msg->primary_bl0_slot_res);
+
+  return kErrorOk;
+}
+
+OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_try_boot(void) {
   boot_data_t boot_data;
   HARDENED_RETURN_IF_ERROR(boot_data_read(lc_state, &boot_data));
@@ -218,6 +256,11 @@ static rom_error_t rom_ext_try_boot(void) {
         HARDENED_CHECK_EQ(msg_type, kBootSvcNextBl0SlotReqType);
         HARDENED_RETURN_IF_ERROR(
             boot_svc_next_boot_bl0_slot_handler(&boot_svc_msg));
+        break;
+      case kBootSvcPrimaryBl0SlotReqType:
+        HARDENED_CHECK_EQ(msg_type, kBootSvcPrimaryBl0SlotReqType);
+        HARDENED_RETURN_IF_ERROR(
+            boot_svc_primary_boot_bl0_slot_handler(&boot_svc_msg, &boot_data));
         break;
       default:
         HARDENED_TRAP();
