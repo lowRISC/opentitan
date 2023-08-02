@@ -9,7 +9,7 @@ package(default_visibility = ["//visibility:public"])
 rust_test(
     name = "roundtrip_test",
     srcs = [
-        "//sw/lib/sw/device/ujson/rust:roundtrip_test",
+        "//sw/lib/sw/device/ujson/rust:roundtrip_test.rs",
     ],
     compile_data = [
         "//sw/lib/sw/device/ujson/rust:example",

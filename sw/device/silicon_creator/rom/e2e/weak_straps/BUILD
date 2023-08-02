@@ -35,7 +35,7 @@ opentitan_functest(
         "//sw/device/lib/testing/json:command",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
-        "//sw/device/lib/ujson",
+        "//sw/lib/sw/device/ujson",
         "//sw/lib/sw/device/base:status",
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:gpio",

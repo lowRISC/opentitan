@@ -11,7 +11,7 @@
 #ifndef RUST_PREPROCESSOR_EMIT
 #include <stdint.h>
 
-#include "sw/device/lib/ujson/ujson.h"
+#include "sw/lib/sw/device/ujson/ujson.h"
 #include "sw/lib/sw/device/base/adv_macros.h"
 #include "sw/lib/sw/device/base/status.h"
 
@@ -307,6 +307,6 @@
   extern const int __never_referenced___here_to_eat_a_semicolon[]
 
 #else  // RUST_PREPROCESSOR_EMIT
-#include "sw/device/lib/ujson/ujson_rust.h"
+#include "sw/lib/sw/device/ujson/ujson_rust.h"
 #endif  // RUST_PREPROCESSOR_EMIT
 #endif  // OPENTITAN_SW_DEVICE_LIB_UJSON_UJSON_DERIVE_H_

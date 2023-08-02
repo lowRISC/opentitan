@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/ujson/example.h"
+#include "sw/lib/sw/device/ujson/example.h"
 
 #include <cstring>
 #include <gtest/gtest.h>
 #include <string>
 
-#include "sw/device/lib/ujson/test_helpers.h"
-#include "sw/device/lib/ujson/ujson.h"
+#include "sw/lib/sw/device/ujson/test_helpers.h"
+#include "sw/lib/sw/device/ujson/ujson.h"
 #include "sw/lib/sw/device/base/status.h"
 namespace {
 using test_helpers::SourceSink;

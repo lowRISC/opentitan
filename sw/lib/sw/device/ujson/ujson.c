@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/ujson/ujson.h"
+#include "sw/lib/sw/device/ujson/ujson.h"
 
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 
-#include "sw/device/lib/ujson/private_status.h"
+#include "sw/lib/sw/device/ujson/private_status.h"
 #include "sw/device/silicon_creator/lib/crc32.h"
 #include "sw/lib/sw/device/base/math.h"
 #include "sw/lib/sw/device/base/status.h"

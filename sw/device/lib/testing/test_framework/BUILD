@@ -242,9 +242,9 @@ cc_library(
     hdrs = ["ujson_ottf.h"],
     deps = [
         ":ottf_console",
-        "//sw/device/lib/ujson",
         "//sw/lib/sw/device/base:status",
         "//sw/lib/sw/device/runtime:print",
+        "//sw/lib/sw/device/ujson",
         "//sw/top_darjeeling/sw/dif:uart",
     ],
 )
@@ -314,7 +314,7 @@ opentitan_functest(
         ":ottf_console",
         ":ottf_main",
         ":ujson_ottf",
-        "//sw/device/lib/ujson",
+        "//sw/lib/sw/device/ujson",
         "//sw/lib/sw/device/base:status",
         "//sw/top_darjeeling/sw/device/runtime:print",
     ],

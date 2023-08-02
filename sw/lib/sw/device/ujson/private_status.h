@@ -5,7 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_UJSON_PRIVATE_STATUS_H_
 #define OPENTITAN_SW_DEVICE_LIB_UJSON_PRIVATE_STATUS_H_
 
-#include "sw/device/lib/ujson/ujson_derive.h"
+#include "sw/lib/sw/device/ujson/ujson_derive.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -4,7 +4,7 @@
 
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_JSON_PINMUX_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_JSON_PINMUX_H_
-#include "sw/device/lib/ujson/ujson_derive.h"
+#include "sw/lib/sw/device/ujson/ujson_derive.h"
 #ifdef __cplusplus
 extern "C" {
 #endif

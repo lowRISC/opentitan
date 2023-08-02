@@ -6,7 +6,7 @@ package(default_visibility = ["//visibility:public"])
 
 cc_test(
     name = "ujson_test",
-    srcs = ["//sw/lib/sw/device/ujson:ujson_test"],
+    srcs = ["//sw/lib/sw/device/ujson:ujson_test.cc"],
     deps = [
         "//sw/lib/sw/device/ujson:test_helpers",
         "//sw/lib/sw/device/ujson:ujson",
@@ -18,7 +18,7 @@ cc_test(
 
 cc_test(
     name = "example_test",
-    srcs = ["//sw/lib/sw/device/ujson:example_test"],
+    srcs = ["//sw/lib/sw/device/ujson:example_test.cc"],
     deps = [
         "//sw/lib/sw/device/ujson:example",
         "//sw/lib/sw/device/ujson:test_helpers",
@@ -31,7 +31,7 @@ cc_test(
 
 cc_binary(
     name = "example_roundtrip",
-    srcs = ["//sw/lib/sw/device/ujson:example_roundtrip"],
+    srcs = ["//sw/lib/sw/device/ujson:example_roundtrip.c"],
     deps = [
         "//sw/lib/sw/device/ujson:example",
         "//sw/lib/sw/device/base:status",

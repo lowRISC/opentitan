@@ -167,7 +167,7 @@ buildifier_test(
 #
 # $ bazel query 'kind("rust_(binary|library|test)", //...)' | grep -v bindgen
 RUST_TARGETS = [
-    "//sw/device/lib/ujson/rust:roundtrip_test",
+    "//sw/top_earlgrey/sw/device/ujson/rust:roundtrip_test",
     "//sw/host/cryptotest:cryptotest_parser",
     "//sw/host/cryptotest:cryptotest_parser_test",
     "//sw/host/hsmtool:hsmlib",

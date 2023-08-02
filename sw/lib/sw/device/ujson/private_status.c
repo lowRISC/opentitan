@@ -3,4 +3,4 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #define UJSON_SERDE_IMPL 1
-#include "sw/device/lib/ujson/private_status.h"
+#include "sw/lib/sw/device/ujson/private_status.h"

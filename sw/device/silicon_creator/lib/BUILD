@@ -345,7 +345,7 @@ dual_cc_library(
         shared = ["crc32.h"],
     ),
     # This library is a dependancy of the ujson library.
-    visibility = ["//sw/device/lib/ujson:__pkg__"],
+    visibility = ["//sw/lib/sw/device/ujson:__pkg__"],
     deps = dual_inputs(
         host = [
             "//sw/lib/sw/device/base:global_mock",

@@ -8,4 +8,4 @@
 // file.  This will cause the preprocessor to emit the `serialize` and
 // `deserialize` implementations for the data structures.
 #define UJSON_SERDE_IMPL 1
-#include "sw/device/lib/ujson/example.h"
+#include "sw/lib/sw/device/ujson/example.h"

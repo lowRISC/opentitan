@@ -34,7 +34,7 @@ DEVICE_LIBS_EXC: List[str] = [
     "//sw/device/lib/crypto/...",
     "//sw/lib/sw/device/runtime/...",
     "//sw/device/lib/testing/... ",
-    "//sw/device/lib/ujson/...",
+    "//sw/lib/sw/device/ujson/...",
     "//sw/device/silicon_creator/manuf/...",
     "//sw/device/silicon_creator/rom/keys/real:real",
     "//sw/device/silicon_creator/rom_ext/...",

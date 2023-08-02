@@ -6,12 +6,7 @@ load("//rules:ujson.bzl", "ujson_rust")
 
 package(default_visibility = ["//visibility:public"])
 
-filegroup(
-    name = "roundtrip_test",
-    srcs = [
-        "roundtrip_test.rs",
-    ],
-)
+exports_files(["roundtrip_test.rs"])
 
 ujson_rust(
     name = "example",

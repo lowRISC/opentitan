@@ -9,7 +9,6 @@
 #include "sw/device/lib/testing/json/command.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
-#include "sw/device/lib/ujson/ujson.h"
 #include "sw/ip/base/dif/dif_base.h"
 #include "sw/ip/clkmgr/dif/dif_clkmgr.h"
 #include "sw/ip/lc_ctrl/dif/dif_lc_ctrl.h"
@@ -18,6 +17,7 @@
 #include "sw/lib/sw/device/base/csr.h"
 #include "sw/lib/sw/device/base/status.h"
 #include "sw/lib/sw/device/runtime/log.h"
+#include "sw/lib/sw/device/ujson/ujson.h"
 
 #include "csrng_regs.h"
 #include "edn_regs.h"

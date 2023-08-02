@@ -52,23 +52,8 @@ cc_library(
     deps = [":ujson"],
 )
 
-filegroup(
-    name = "ujson_test",
-    srcs = [
-        "ujson_test.cc",
-    ],
-)
-
-filegroup(
-    name = "example_test",
-    srcs = [
-        "example_test.cc",
-    ],
-)
-
-filegroup(
-    name = "example_roundtrip",
-    srcs = [
-        "example_roundtrip.c",
-    ],
-)
+exports_files([
+    "ujson_test.cc",
+    "example_test.cc",
+    "example_roundtrip.c",
+])

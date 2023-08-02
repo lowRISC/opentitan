@@ -7,7 +7,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
-#include "sw/device/lib/ujson/ujson.h"
+#include "sw/lib/sw/device/ujson/ujson.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/manuf/lib/provisioning.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"

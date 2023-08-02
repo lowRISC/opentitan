@@ -12,7 +12,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
-#include "sw/device/lib/ujson/ujson.h"
 #include "sw/ip/i2c/dif/dif_i2c.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
 #include "sw/ip/pwrmgr/dif/dif_pwrmgr.h"
@@ -25,6 +24,7 @@
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/runtime/print.h"
+#include "sw/lib/sw/device/ujson/ujson.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "i2c_regs.h"  // Generated.

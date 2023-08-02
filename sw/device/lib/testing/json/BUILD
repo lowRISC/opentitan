@@ -8,14 +8,14 @@ cc_library(
     name = "command",
     srcs = ["command.c"],
     hdrs = ["command.h"],
-    deps = ["//sw/device/lib/ujson"],
+    deps = ["//sw/lib/sw/device/ujson"],
 )
 
 cc_library(
     name = "chip_specific_startup",
     srcs = ["chip_specific_startup.c"],
     hdrs = ["chip_specific_startup.h"],
-    deps = ["//sw/device/lib/ujson"],
+    deps = ["//sw/lib/sw/device/ujson"],
 )
 
 cc_library(
@@ -24,7 +24,7 @@ cc_library(
     hdrs = ["gpio.h"],
     deps = [
         "//sw/device/lib/testing/test_framework:ujson_ottf",
-        "//sw/device/lib/ujson",
+        "//sw/lib/sw/device/ujson",
         "//sw/top_darjeeling/sw/dif:gpio",
     ],
 )
@@ -33,7 +33,7 @@ cc_library(
     name = "i2c_target",
     srcs = ["i2c_target.c"],
     hdrs = ["i2c_target.h"],
-    deps = ["//sw/device/lib/ujson"],
+    deps = ["//sw/lib/sw/device/ujson"],
 )
 
 cc_library(
@@ -42,7 +42,7 @@ cc_library(
     hdrs = ["pinmux.h"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/ujson",
+        "//sw/lib/sw/device/ujson",
     ],
 )
 
@@ -53,7 +53,7 @@ cc_library(
     deps = [
         ":pinmux",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
-        "//sw/device/lib/ujson",
+        "//sw/lib/sw/device/ujson",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/base:status",
         "//sw/lib/sw/device/runtime:print",
@@ -65,12 +65,12 @@ cc_library(
     name = "spi_passthru",
     srcs = ["spi_passthru.c"],
     hdrs = ["spi_passthru.h"],
-    deps = ["//sw/device/lib/ujson"],
+    deps = ["//sw/lib/sw/device/ujson"],
 )
 
 cc_library(
     name = "provisioning_data",
     srcs = ["provisioning_data.c"],
     hdrs = ["provisioning_data.h"],
-    deps = ["//sw/device/lib/ujson"],
+    deps = ["//sw/lib/sw/device/ujson"],
 )
