@@ -23,6 +23,7 @@ package dma_pkg;
   parameter int unsigned SYS_DATA_BYTEWIDTH  = 4;
   parameter int unsigned SYS_DATA_WIDTH      = SYS_DATA_BYTEWIDTH * 8;
   parameter int unsigned SYS_NUM_ERROR_TYPES = 1;
+  parameter int unsigned NUM_LSIO_TRIGGERS   = 4;
 
   // Supported Opcodes on the bus
   typedef enum logic [2:0] {

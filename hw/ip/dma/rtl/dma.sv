@@ -12,7 +12,7 @@ module dma
     parameter logic [NumAlerts-1:0] AlertAsyncOn         = {NumAlerts{1'b1}},
     parameter bit                   EnableDataIntgGen    = 1'b1,
     parameter logic [RsvdWidth-1:0] TlUserRsvd           = '0,
-    parameter int                   NumLsioTriggers      = 4,
+    parameter int                   NumLsioTriggers      = dma_pkg::NUM_LSIO_TRIGGERS,
     parameter int unsigned PlicLsioPlic[NumLsioTriggers] = '{
       32'h1234567,
       32'h1234567,
