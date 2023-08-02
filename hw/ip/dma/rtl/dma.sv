@@ -947,9 +947,9 @@ module dma
     // if all data has been transferred successfully and not in hardware
     // handshake mode, then clear the go bit
     hw2reg.control.go.de = ((!cfg_handshake_en) &&
-                                data_move_state     &&
-                                (ctrl_state_d == DmaIdle)) ||
-                              (cfg_abort_en && (ctrl_state_d == DmaIdle));
+                             data_move_state    &&
+                            (ctrl_state_d == DmaIdle)) ||
+                            (cfg_abort_en && (ctrl_state_d == DmaIdle));
 
     hw2reg.control.go.d  = 1'b0;
 
@@ -962,9 +962,9 @@ module dma
 
     // SW must clear done bit in handshake mode
     // a transaction should not indicated done when aborted
-    hw2reg.status.done.de = (!cfg_handshake_en)           &&
-                            (!cfg_abort_en)               &&
-                             data_move_state              &&
+    hw2reg.status.done.de = (!cfg_handshake_en) &&
+                            (!cfg_abort_en)     &&
+                             data_move_state    &&
                             (ctrl_state_d == DmaIdle);
 
     hw2reg.status.done.d  = 1'b1;
