@@ -28,7 +28,7 @@ extern "C" {
 enum {
   kBootSvcPrimaryBl0SlotReqType = 0x3d6c47b8,
   kBootSvcPrimaryBl0SlotResType = 0xf2a4a609,
-} my_state_t;
+};
 
 /**
  * A Set Primary Boot Slot request message.
@@ -58,15 +58,21 @@ typedef struct boot_svc_primary_bl0_slot_res {
    */
   boot_svc_header_t header;
   /**
-   * Response from ROM_EXT.
+   * New primary slot set by the boot service.
+   */
+  uint32_t new_primary_bl0_slot;
+  /**
+   * Status response from ROM_EXT.
    */
   rom_error_t status;
 } boot_svc_primary_bl0_slot_res_t;
 
 OT_ASSERT_MEMBER_OFFSET(boot_svc_primary_bl0_slot_res_t, header, 0);
-OT_ASSERT_MEMBER_OFFSET(boot_svc_primary_bl0_slot_res_t, status,
+OT_ASSERT_MEMBER_OFFSET(boot_svc_primary_bl0_slot_res_t, new_primary_bl0_slot,
                         CHIP_BOOT_SVC_MSG_HEADER_SIZE);
-OT_ASSERT_SIZE(boot_svc_primary_bl0_slot_res_t, 48);
+OT_ASSERT_MEMBER_OFFSET(boot_svc_primary_bl0_slot_res_t, status,
+                        CHIP_BOOT_SVC_MSG_HEADER_SIZE + 4);
+OT_ASSERT_SIZE(boot_svc_primary_bl0_slot_res_t, 52);
 
 /**
  * Initialize an empty set primary bl0 slot request message.
@@ -79,9 +85,10 @@ void boot_svc_primary_bl0_slot_req_init(uint32_t primary_bl0_slot,
 /**
  * Initialize an empty set primary bl0 slot response message.
  *
+ * @param status Error status from processing the request.
  * @param[out] msg Output buffer for the message.
  */
-void boot_svc_primary_bl0_slot_res_init(rom_error_t status,
+void boot_svc_primary_bl0_slot_res_init(uint32_t new_slot, rom_error_t status,
                                         boot_svc_primary_bl0_slot_res_t *msg);
 
 #ifdef __cplusplus

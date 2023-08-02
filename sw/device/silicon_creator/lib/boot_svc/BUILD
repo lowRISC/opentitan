@@ -120,6 +120,7 @@ cc_library(
         ":boot_svc_header",
         ":boot_svc_min_bl0_sec_ver",
         ":boot_svc_next_boot_bl0_slot",
+        ":boot_svc_primary_bl0_slot",
         "//sw/device/lib/base:macros",
     ],
 )
