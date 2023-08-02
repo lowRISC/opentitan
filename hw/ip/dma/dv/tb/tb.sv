@@ -21,8 +21,8 @@ module tb;
   clk_rst_if  clk_rst_if(.clk(clk), .rst_n(rst_n));
 
   // Common wire - Handshake/Interrupt Inputs
-  wire                     handshake_i;
-  dma_if #(.WIDTH_IN(1))   dma_intf(.clk_i(clk), .rst_ni(rst_n));
+  wire [NUM_LSIO_TRIGGERS-1:0] handshake_i;
+  dma_if dma_intf(.clk_i(clk), .rst_ni(rst_n));
   assign handshake_i = dma_intf.handshake_i;
 
   // Common Interface - Interrupt Outputs
@@ -89,15 +89,14 @@ module tb;
     dma_intf.init();
 
     // Registeration
-    uvm_config_db #(virtual tl_if)::set(null, "*.env.m_tl_agent_dma_reg_block*", "vif", tl_if);
-    uvm_config_db #(virtual tl_if)::set(null, "*.env.m_tl_agent_dma_host*", "vif",
-                                        tl_host_device_if);
-    uvm_config_db #(virtual tl_if)::set(null, "*.env.m_tl_agent_dma_xbar*", "vif",
-                                        tl_xbar_device_if);
-    uvm_config_db #(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
-    uvm_config_db #(virtual dma_if)::set(null, "*.env", "dma_vif", dma_intf);
-    uvm_config_db #(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
-    uvm_config_db #(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
+    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_dma_reg_block*", "vif", tl_if);
+    uvm_config_db#(virtual tl_if)::set(null, "*.env.s_tl_agent_host*", "vif", tl_host_if);
+    uvm_config_db#(virtual tl_if)::set(null, "*.env.s_tl_agent_xbar*", "vif", tl_xbar_if);
+    uvm_config_db#(virtual tl_if)::set(null, "*.env.s_tl_agent_sys*", "vif", tl_sys_if);
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
+    uvm_config_db#(virtual dma_if)::set(null, "*.env", "dma_vif", dma_intf);
+    uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
+    uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
 
     $timeformat(-12, 0, "ps", 12);
     run_test();
