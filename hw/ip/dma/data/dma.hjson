@@ -25,7 +25,7 @@
   bus_interfaces: [
     { protocol: "tlul", direction: "device", hier_path: "u_dma_reg" }
     { protocol: "tlul", direction: "host", name: "host" }
-    { protocol: "tlul", direction: "host", name: "xbar" }
+    { protocol: "tlul", direction: "host", name: "ctn" }
   ]
   inter_signal_list: [
     { name:   "sys"
