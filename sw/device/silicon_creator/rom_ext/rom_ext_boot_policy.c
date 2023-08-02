@@ -4,21 +4,31 @@
 
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy.h"
 
+#include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy_ptrs.h"
 
-rom_ext_boot_policy_manifests_t rom_ext_boot_policy_manifests_get(void) {
+rom_ext_boot_policy_manifests_t rom_ext_boot_policy_manifests_get(
+    const boot_data_t *boot_data) {
   const manifest_t *slot_a = rom_ext_boot_policy_manifest_a_get();
   const manifest_t *slot_b = rom_ext_boot_policy_manifest_b_get();
-  if (slot_a->security_version >= slot_b->security_version) {
-    return (rom_ext_boot_policy_manifests_t){
-        .ordered = {slot_a, slot_b},
-    };
+  uint32_t slot = boot_data->primary_bl0_slot;
+  switch (launder32(slot)) {
+    case kBootDataSlotA:
+      HARDENED_CHECK_EQ(slot, kBootDataSlotA);
+      return (rom_ext_boot_policy_manifests_t){
+          .ordered = {slot_a, slot_b},
+      };
+    case kBootDataSlotB:
+      HARDENED_CHECK_EQ(slot, kBootDataSlotB);
+      return (rom_ext_boot_policy_manifests_t){
+          .ordered = {slot_b, slot_a},
+      };
+    default:
+      HARDENED_TRAP();
+      OT_UNREACHABLE();
   }
-  return (rom_ext_boot_policy_manifests_t){
-      .ordered = {slot_b, slot_a},
-  };
 }
 
 rom_error_t rom_ext_boot_policy_manifest_check(const manifest_t *manifest) {
