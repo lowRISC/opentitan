@@ -34,9 +34,9 @@ module dma
   // Device port
   input   tlul_pkg::tl_h2d_t                        tl_dev_i,
   output  tlul_pkg::tl_d2h_t                        tl_dev_o,
-  // Facing Xbar
-  input   tlul_pkg::tl_d2h_t                        tl_xbar_i,
-  output  tlul_pkg::tl_h2d_t                        tl_xbar_o,
+  // Facing CTN
+  input   tlul_pkg::tl_d2h_t                        tl_ctn_i,
+  output  tlul_pkg::tl_h2d_t                        tl_ctn_o,
   // Host port
   input   tlul_pkg::tl_d2h_t                        tl_host_i,
   output  tlul_pkg::tl_h2d_t                        tl_host_o,
@@ -52,19 +52,19 @@ module dma
   localparam int unsigned TRANSFER_BYTES_WIDTH = $bits(reg2hw.total_data_size.q);
 
   // Signals for both TL interfaces
-  logic                       dma_host_tlul_req_valid,    dma_xbar_tlul_req_valid;
-  logic [top_pkg::TL_AW-1:0]  dma_host_tlul_req_addr,     dma_xbar_tlul_req_addr;
-  logic                       dma_host_tlul_req_we,       dma_xbar_tlul_req_we;
-  logic [top_pkg::TL_DW-1:0]  dma_host_tlul_req_wdata,    dma_xbar_tlul_req_wdata;
-  logic [top_pkg::TL_DBW-1:0] dma_host_tlul_req_be,       dma_xbar_tlul_req_be;
-  logic                       dma_host_tlul_gnt,          dma_xbar_tlul_gnt;
-  logic                       dma_host_tlul_rsp_valid,    dma_xbar_tlul_rsp_valid;
-  logic [top_pkg::TL_DW-1:0]  dma_host_tlul_rsp_data,     dma_xbar_tlul_rsp_data;
-  logic                       dma_host_tlul_rsp_err,      dma_xbar_tlul_rsp_err;
-  logic                       dma_host_tlul_rsp_intg_err, dma_xbar_tlul_rsp_intg_err;
+  logic                       dma_host_tlul_req_valid,    dma_ctn_tlul_req_valid;
+  logic [top_pkg::TL_AW-1:0]  dma_host_tlul_req_addr,     dma_ctn_tlul_req_addr;
+  logic                       dma_host_tlul_req_we,       dma_ctn_tlul_req_we;
+  logic [top_pkg::TL_DW-1:0]  dma_host_tlul_req_wdata,    dma_ctn_tlul_req_wdata;
+  logic [top_pkg::TL_DBW-1:0] dma_host_tlul_req_be,       dma_ctn_tlul_req_be;
+  logic                       dma_host_tlul_gnt,          dma_ctn_tlul_gnt;
+  logic                       dma_host_tlul_rsp_valid,    dma_ctn_tlul_rsp_valid;
+  logic [top_pkg::TL_DW-1:0]  dma_host_tlul_rsp_data,     dma_ctn_tlul_rsp_data;
+  logic                       dma_host_tlul_rsp_err,      dma_ctn_tlul_rsp_err;
+  logic                       dma_host_tlul_rsp_intg_err, dma_ctn_tlul_rsp_intg_err;
 
   logic                       capture_return_data, capture_host_return_data,
-                              capture_xbar_return_data, capture_sys_return_data;
+                              capture_ctn_return_data, capture_sys_return_data;
   logic [top_pkg::TL_DW-1:0]  read_return_data_q, read_return_data_d;
   logic [SYS_ADDR_WIDTH-1:0]  new_source_addr, new_destination_addr;
 
@@ -165,7 +165,7 @@ module dma
   assign alert_test = {reg2hw.alert_test.q & reg2hw.alert_test.qe};
   assign alerts[0]  = reg_intg_error              ||
                       dma_host_tlul_rsp_intg_err  ||
-                      dma_xbar_tlul_rsp_intg_err;
+                      dma_ctn_tlul_rsp_intg_err;
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
@@ -204,31 +204,31 @@ module dma
     .rdata_intg_o   (                                  ),
     .err_o          ( dma_host_tlul_rsp_err            ),
     .intg_err_o     ( dma_host_tlul_rsp_intg_err       ),
-    .tl_o           ( tl_xbar_o                        ),
-    .tl_i           ( tl_xbar_i                        )
+    .tl_o           ( tl_ctn_o                         ),
+    .tl_i           ( tl_ctn_i                         )
   );
 
-  // Adapter from the DMA to the Xbar
+  // Adapter from the DMA to the ctn
   tlul_adapter_host #(
     .EnableDataIntgGen(EnableDataIntgGen)
-  ) u_dma_xbar_tlul_host (
+  ) u_dma_ctn_tlul_host (
     .clk_i          ( gated_clk                        ),
     .rst_ni         ( rst_ni                           ),
     // do not make a request unless there is room for the response
-    .req_i          ( dma_xbar_tlul_req_valid          ),
-    .gnt_o          ( dma_xbar_tlul_gnt                ),
-    .addr_i         ( dma_xbar_tlul_req_addr           ),
-    .we_i           ( dma_xbar_tlul_req_we             ),
-    .wdata_i        ( dma_xbar_tlul_req_wdata          ),
+    .req_i          ( dma_ctn_tlul_req_valid           ),
+    .gnt_o          ( dma_ctn_tlul_gnt                 ),
+    .addr_i         ( dma_ctn_tlul_req_addr            ),
+    .we_i           ( dma_ctn_tlul_req_we              ),
+    .wdata_i        ( dma_ctn_tlul_req_wdata           ),
     .wdata_intg_i   ( TL_A_USER_DEFAULT.data_intg      ),
-    .be_i           ( dma_xbar_tlul_req_be             ),
+    .be_i           ( dma_ctn_tlul_req_be              ),
     .instr_type_i   ( MuBi4False                       ),
     .user_rsvd_i    ( TlUserRsvd                       ),
-    .valid_o        ( dma_xbar_tlul_rsp_valid          ),
-    .rdata_o        ( dma_xbar_tlul_rsp_data           ),
+    .valid_o        ( dma_ctn_tlul_rsp_valid           ),
+    .rdata_o        ( dma_ctn_tlul_rsp_data            ),
     .rdata_intg_o   (                                  ),
-    .err_o          ( dma_xbar_tlul_rsp_err            ),
-    .intg_err_o     ( dma_xbar_tlul_rsp_intg_err       ),
+    .err_o          ( dma_ctn_tlul_rsp_err             ),
+    .intg_err_o     ( dma_ctn_tlul_rsp_intg_err        ),
     .tl_o           ( tl_host_o                        ),
     .tl_i           ( tl_host_i                        )
   );
@@ -366,11 +366,11 @@ module dma
     dma_host_tlul_req_wdata  =   '0;
     dma_host_tlul_req_be     =   '0;
 
-    dma_xbar_tlul_req_valid  = 1'b0;
-    dma_xbar_tlul_req_addr   =   '0;
-    dma_xbar_tlul_req_we     = 1'b0;
-    dma_xbar_tlul_req_wdata  =   '0;
-    dma_xbar_tlul_req_be     =   '0;
+    dma_ctn_tlul_req_valid   = 1'b0;
+    dma_ctn_tlul_req_addr    =   '0;
+    dma_ctn_tlul_req_we      = 1'b0;
+    dma_ctn_tlul_req_wdata   =   '0;
+    dma_ctn_tlul_req_be      =   '0;
 
     sys_o.vld_vec            = '0;
     sys_o.metadata_vec       = '0;
@@ -382,14 +382,14 @@ module dma
     sys_o.read_be            = '0;
 
     capture_host_return_data = 1'b0;
-    capture_xbar_return_data = 1'b0;
+    capture_ctn_return_data  = 1'b0;
     capture_sys_return_data  = 1'b0;
 
     read_rsp_error = 1'b0;
 
     unique case (ctrl_state_q)
       DmaIdle: begin
-        transfer_byte_d            = '0;
+        transfer_byte_d       = '0;
         capture_transfer_byte = 1'b1;
         // Wait for go bit to be set to proceed with data movement
         if (reg2hw.control.go.q) begin
@@ -403,13 +403,13 @@ module dma
       end
 
       DmaClearPlic: begin
-        dma_xbar_tlul_req_valid = 1'b1;
-        dma_xbar_tlul_req_addr  = plic_clear_addr;  // TLUL 4B aligned
-        dma_xbar_tlul_req_we    = 1'b1;
-        dma_xbar_tlul_req_wdata = '0;
-        dma_xbar_tlul_req_be    = {top_pkg::TL_DBW{1'b1}};
+        dma_ctn_tlul_req_valid = 1'b1;
+        dma_ctn_tlul_req_addr  = plic_clear_addr;  // TLUL 4B aligned
+        dma_ctn_tlul_req_we    = 1'b1;
+        dma_ctn_tlul_req_wdata = '0;
+        dma_ctn_tlul_req_be    = {top_pkg::TL_DBW{1'b1}};
 
-        if (dma_xbar_tlul_gnt) begin
+        if (dma_ctn_tlul_gnt) begin
           ctrl_state_d = DmaWaitClearPlicResponse;
         end
       end
@@ -417,7 +417,7 @@ module dma
       DmaWaitClearPlicResponse: begin
         // Writes also get a resp valid, but no data, need to wait for this to not
         // overrun TLUL adapter
-        if (dma_xbar_tlul_rsp_valid) begin
+        if (dma_ctn_tlul_rsp_valid) begin
           if (cfg_abort_en) begin
             ctrl_state_d = DmaIdle;
           end else begin
@@ -613,7 +613,7 @@ module dma
           ctrl_state_d = DmaIdle;
         end else if ((reg2hw.address_space_id.source_asid.q == SocControlAddr) ||
                      (reg2hw.address_space_id.source_asid.q == OtExtFlashAddr)) begin
-          ctrl_state_d = DmaSendXbarRead;
+          ctrl_state_d = DmaSendCtnRead;
         end else if (reg2hw.address_space_id.source_asid.q == SocSystemAddr) begin
           ctrl_state_d = DmaSendSysRead;
         end else begin
@@ -646,8 +646,8 @@ module dma
             ctrl_state_d = DmaIdle;
           end else begin
             unique case (reg2hw.address_space_id.destination_asid.q)
-              SocControlAddr: ctrl_state_d = DmaSendXbarWrite;
-              OtExtFlashAddr: ctrl_state_d = DmaSendXbarWrite;
+              SocControlAddr: ctrl_state_d = DmaSendCtnWrite;
+              OtExtFlashAddr: ctrl_state_d = DmaSendCtnWrite;
               SocSystemAddr:  ctrl_state_d = DmaSendSysWrite;
               OtInternalAddr: ctrl_state_d = DmaSendHostWrite;
               default: begin
@@ -659,23 +659,23 @@ module dma
         end
       end
 
-      DmaSendXbarRead: begin
-        dma_xbar_tlul_req_valid = 1'b1;
-        dma_xbar_tlul_req_addr  = {src_addr_q[top_pkg::TL_AW-1:2], 2'b0}; // TLUL 4B aligned
-        dma_xbar_tlul_req_be    = req_src_be_q;
+      DmaSendCtnRead: begin
+        dma_ctn_tlul_req_valid = 1'b1;
+        dma_ctn_tlul_req_addr  = {src_addr_q[top_pkg::TL_AW-1:2], 2'b0}; // TLUL 4B aligned
+        dma_ctn_tlul_req_be    = req_src_be_q;
 
-        if (dma_xbar_tlul_gnt) begin
-          ctrl_state_d = DmaWaitXbarReadResponse;
+        if (dma_ctn_tlul_gnt) begin
+          ctrl_state_d = DmaWaitCtnReadResponse;
         end else if (cfg_abort_en) begin
           ctrl_state_d = DmaIdle;
         end
       end
 
-      DmaWaitXbarReadResponse: begin
-        read_rsp_error           = dma_xbar_tlul_rsp_err || dma_xbar_tlul_rsp_intg_err;
-        capture_xbar_return_data = dma_xbar_tlul_rsp_valid && (!read_rsp_error);
+      DmaWaitCtnReadResponse: begin
+        read_rsp_error           = dma_ctn_tlul_rsp_err || dma_ctn_tlul_rsp_intg_err;
+        capture_ctn_return_data = dma_ctn_tlul_rsp_valid && (!read_rsp_error);
 
-        if (dma_xbar_tlul_rsp_valid) begin
+        if (dma_ctn_tlul_rsp_valid) begin
           if (read_rsp_error) begin
             next_error[DmaCompletionErr] = 1'b1;
 
@@ -684,8 +684,8 @@ module dma
             ctrl_state_d = DmaIdle;
           end else begin
             unique case (reg2hw.address_space_id.destination_asid.q)
-              SocControlAddr: ctrl_state_d = DmaSendXbarWrite;
-              OtExtFlashAddr: ctrl_state_d = DmaSendXbarWrite;
+              SocControlAddr: ctrl_state_d = DmaSendCtnWrite;
+              OtExtFlashAddr: ctrl_state_d = DmaSendCtnWrite;
               SocSystemAddr:  ctrl_state_d = DmaSendSysWrite;
               OtInternalAddr: ctrl_state_d = DmaSendHostWrite;
               default: begin
@@ -725,8 +725,8 @@ module dma
             ctrl_state_d = DmaIdle;
           end else begin
             unique case (reg2hw.address_space_id.destination_asid.q)
-              SocControlAddr: ctrl_state_d = DmaSendXbarWrite;
-              OtExtFlashAddr: ctrl_state_d = DmaSendXbarWrite;
+              SocControlAddr: ctrl_state_d = DmaSendCtnWrite;
+              OtExtFlashAddr: ctrl_state_d = DmaSendCtnWrite;
               SocSystemAddr:  ctrl_state_d = DmaSendSysWrite;
               OtInternalAddr: ctrl_state_d = DmaSendHostWrite;
               default: begin
@@ -769,24 +769,24 @@ module dma
         end
       end
 
-      DmaSendXbarWrite: begin
-        dma_xbar_tlul_req_valid = 1'b1;
-        dma_xbar_tlul_req_addr  = {dst_addr_q[top_pkg::TL_AW-1:2], 2'b0};  // TLUL 4B aligned
-        dma_xbar_tlul_req_we    = 1'b1;
-        dma_xbar_tlul_req_wdata = read_return_data_q;
-        dma_xbar_tlul_req_be    = req_dst_be_q;
+      DmaSendCtnWrite: begin
+        dma_ctn_tlul_req_valid = 1'b1;
+        dma_ctn_tlul_req_addr  = {dst_addr_q[top_pkg::TL_AW-1:2], 2'b0};  // TLUL 4B aligned
+        dma_ctn_tlul_req_we    = 1'b1;
+        dma_ctn_tlul_req_wdata = read_return_data_q;
+        dma_ctn_tlul_req_be    = req_dst_be_q;
 
-        if (dma_xbar_tlul_gnt) begin
-          ctrl_state_d = DmaWaitXbarWriteResponse;
+        if (dma_ctn_tlul_gnt) begin
+          ctrl_state_d = DmaWaitCtnWriteResponse;
         end else if (cfg_abort_en) begin
           ctrl_state_d = DmaIdle;
         end
       end
 
-      DmaWaitXbarWriteResponse: begin
+      DmaWaitCtnWriteResponse: begin
         // writes also get a resp valid, but no data, need to wait for this to not
         // overrun tlul adapter
-        if (dma_xbar_tlul_rsp_valid) begin
+        if (dma_ctn_tlul_rsp_valid) begin
           transfer_byte_d       = transfer_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
           capture_transfer_byte = 1'b1;
 
@@ -840,12 +840,12 @@ module dma
   always_comb begin
     read_return_data_d = '0;
     if (capture_host_return_data) read_return_data_d = dma_host_tlul_rsp_data;
-    if (capture_xbar_return_data) read_return_data_d = dma_xbar_tlul_rsp_data;
+    if (capture_ctn_return_data)  read_return_data_d = dma_ctn_tlul_rsp_data;
     if (capture_sys_return_data)  read_return_data_d = sys_i.read_data;
   end
 
   assign capture_return_data = capture_host_return_data ||
-                               capture_xbar_return_data ||
+                               capture_ctn_return_data  ||
                                capture_sys_return_data;
   prim_generic_flop_en #(
     .Width(top_pkg::TL_DW)
@@ -882,15 +882,15 @@ module dma
 
   assign data_move_state_valid =
     (dma_host_tlul_req_valid && (ctrl_state_q == DmaSendHostWrite)) ||
-    (dma_xbar_tlul_req_valid && (ctrl_state_q == DmaSendXbarWrite)) ||
+    (dma_ctn_tlul_req_valid  && (ctrl_state_q == DmaSendCtnWrite))  ||
     ((sys_o.vld_vec[SysCmdWrite]    &&
       sys_i.grant_vec[SysCmdWrite]) &&
      (ctrl_state_q == DmaSendSysWrite));
 
   assign data_move_state = (ctrl_state_q == DmaSendHostWrite)         ||
                            (ctrl_state_q == DmaWaitHostWriteResponse) ||
-                           (ctrl_state_q == DmaSendXbarWrite)         ||
-                           (ctrl_state_q == DmaWaitXbarWriteResponse) ||
+                           (ctrl_state_q == DmaSendCtnWrite)          ||
+                           (ctrl_state_q == DmaWaitCtnWriteResponse)  ||
                            (ctrl_state_q == DmaSendSysWrite);
 
   // Destination limit logic, only want to trigger for single cycle when data has moved
