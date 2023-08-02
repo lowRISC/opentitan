@@ -42,7 +42,7 @@ static rom_error_t rom_ext_irq_error(void) {
   uint32_t mcause;
   CSR_READ(CSR_REG_MCAUSE, &mcause);
   // Shuffle the mcause bits into the uppermost byte of the word and report
-  // the cause as kErrorInterrupt.
+  // the cause as kErrorRomExtInterrupt.
   // Based on the ibex verilog, it appears that the most significant bit
   // indicates whether the cause is an exception (0) or external interrupt (1),
   // and the 5 least significant bits indicate which exception/interrupt.
@@ -52,7 +52,7 @@ static rom_error_t rom_ext_irq_error(void) {
   // as zero and those would be the next bits used should the number of
   // interrupt causes increase).
   mcause = (mcause & 0x80000000) | ((mcause & 0x7f) << 24);
-  return kErrorInterrupt + mcause;
+  return kErrorRomExtInterrupt + mcause;
 }
 
 void rom_ext_init(void) {
@@ -165,7 +165,7 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
   OT_DISCARD(rom_printf("entry: 0x%x\r\n", (unsigned int)entry_point));
   ((owner_stage_entry_point *)entry_point)();
 
-  return kErrorRomBootFailed;
+  return kErrorRomExtBootFailed;
 }
 
 OT_WARN_UNUSED_RESULT
@@ -194,7 +194,7 @@ static rom_error_t boot_svc_next_boot_bl0_slot_handler(
   HARDENED_RETURN_IF_ERROR(rom_ext_boot(kNextSlot));
   // `rom_ext_boot()` should never return `kErrorOk`, but if it does
   // we must shut down the chip instead of trying the next ROM_EXT.
-  return kErrorRomBootFailed;
+  return kErrorRomExtBootFailed;
 }
 
 OT_WARN_UNUSED_RESULT
@@ -219,7 +219,7 @@ static rom_error_t rom_ext_try_boot(void) {
 
   rom_ext_boot_policy_manifests_t manifests =
       rom_ext_boot_policy_manifests_get();
-  rom_error_t error = kErrorRomBootFailed;
+  rom_error_t error = kErrorRomExtBootFailed;
   for (size_t i = 0; i < ARRAYSIZE(manifests.ordered); ++i) {
     error = rom_ext_verify(manifests.ordered[i]);
     if (error != kErrorOk) {
@@ -229,7 +229,7 @@ static rom_error_t rom_ext_try_boot(void) {
     RETURN_IF_ERROR(rom_ext_boot(manifests.ordered[i]));
     // `rom_ext_boot()` should never return `kErrorOk`, but if it does
     // we must shut down the chip instead of trying the next ROM_EXT.
-    return kErrorRomBootFailed;
+    return kErrorRomExtBootFailed;
   }
   return error;
 }

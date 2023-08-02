@@ -26,25 +26,27 @@ extern "C" {
 enum module_ {
   // clang-format off
   kModuleUnknown = 0,
-  kModuleAlertHandler = MODULE_CODE('A', 'H'),
-  kModuleSigverify =    MODULE_CODE('S', 'V'),
-  kModuleKeymgr =       MODULE_CODE('K', 'M'),
-  kModuleManifest =     MODULE_CODE('M', 'A'),
-  kModuleRom =          MODULE_CODE('M', 'R'),
-  kModuleInterrupt =    MODULE_CODE('I', 'R'),
-  kModuleEpmp =         MODULE_CODE('E', 'P'),
-  kModuleKmac =         MODULE_CODE('K', 'C'),
-  kModuleOtbn =         MODULE_CODE('B', 'N'),
-  kModuleFlashCtrl =    MODULE_CODE('F', 'C'),
-  kModuleBootPolicy =   MODULE_CODE('B', 'P'),
-  kModuleBootstrap =    MODULE_CODE('B', 'S'),
-  kModuleLog =          MODULE_CODE('L', 'G'),
-  kModuleBootData =     MODULE_CODE('B', 'D'),
-  kModuleSpiDevice =    MODULE_CODE('S', 'P'),
-  kModuleAst =          MODULE_CODE('A', 'S'),
-  kModuleRstmgr =       MODULE_CODE('R', 'S'),
-  KModuleRnd =          MODULE_CODE('R', 'N'),
-  kModuleBootSvc =      MODULE_CODE('B', 'C'),
+  kModuleAlertHandler =    MODULE_CODE('A', 'H'),
+  kModuleSigverify =       MODULE_CODE('S', 'V'),
+  kModuleKeymgr =          MODULE_CODE('K', 'M'),
+  kModuleManifest =        MODULE_CODE('M', 'A'),
+  kModuleRom =             MODULE_CODE('M', 'R'),
+  kModuleInterrupt =       MODULE_CODE('I', 'R'),
+  kModuleEpmp =            MODULE_CODE('E', 'P'),
+  kModuleKmac =            MODULE_CODE('K', 'C'),
+  kModuleOtbn =            MODULE_CODE('B', 'N'),
+  kModuleFlashCtrl =       MODULE_CODE('F', 'C'),
+  kModuleBootPolicy =      MODULE_CODE('B', 'P'),
+  kModuleBootstrap =       MODULE_CODE('B', 'S'),
+  kModuleLog =             MODULE_CODE('L', 'G'),
+  kModuleBootData =        MODULE_CODE('B', 'D'),
+  kModuleSpiDevice =       MODULE_CODE('S', 'P'),
+  kModuleAst =             MODULE_CODE('A', 'S'),
+  kModuleRstmgr =          MODULE_CODE('R', 'S'),
+  KModuleRnd =             MODULE_CODE('R', 'N'),
+  kModuleBootSvc =         MODULE_CODE('B', 'C'),
+  kModuleRomExt =          MODULE_CODE('R', 'E'),
+  kModuleRomExtInterrupt = MODULE_CODE('R', 'I'),
   // clang-format on
 };
 
@@ -145,7 +147,12 @@ enum module_ {
   \
   X(kErrorRndBadCrc32,                ERROR_(1, KModuleRnd, kInvalidArgument)), \
   \
-  X(kErrorBootSvcBadHeader,           ERROR_(1, kModuleBootSvc, kInternal))
+  X(kErrorBootSvcBadHeader,           ERROR_(1, kModuleBootSvc, kInternal)), \
+  \
+  X(kErrorRomExtBootFailed,           ERROR_(1, kModuleRomExt, kFailedPrecondition)), \
+  \
+  /* The high-byte of kErrorInterrupt is modified with the interrupt cause */ \
+  X(kErrorRomExtInterrupt,            ERROR_(0, kModuleRomExtInterrupt, kUnknown))
 // clang-format on
 
 #define ERROR_ENUM_INIT(name_, value_) name_ = value_
