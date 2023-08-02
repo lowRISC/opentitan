@@ -174,12 +174,15 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
 OT_WARN_UNUSED_RESULT
 static rom_error_t boot_svc_next_boot_bl0_slot_handler(
     boot_svc_msg_t *boot_svc_msg) {
+  uint32_t msg_bl0_slot = boot_svc_msg->next_boot_bl0_slot_req.next_bl0_slot;
   const manifest_t *kNextSlot;
-  switch (boot_svc_msg->next_boot_bl0_slot_req.next_bl0_slot) {
+  switch (launder32(msg_bl0_slot)) {
     case kBootSvcNextBootBl0SlotA:
+      HARDENED_CHECK_EQ(msg_bl0_slot, kBootSvcNextBootBl0SlotA);
       kNextSlot = rom_ext_boot_policy_manifest_a_get();
       break;
     case kBootSvcNextBootBl0SlotB:
+      HARDENED_CHECK_EQ(msg_bl0_slot, kBootSvcNextBootBl0SlotB);
       kNextSlot = rom_ext_boot_policy_manifest_b_get();
       break;
     default:
@@ -189,9 +192,9 @@ static rom_error_t boot_svc_next_boot_bl0_slot_handler(
   boot_svc_next_boot_bl0_slot_res_init(kErrorOk,
                                        &boot_svc_msg->next_boot_bl0_slot_res);
 
-  RETURN_IF_ERROR(rom_ext_verify(kNextSlot));
+  HARDENED_RETURN_IF_ERROR(rom_ext_verify(kNextSlot));
   // Boot fails if a verified ROM_EXT cannot be booted.
-  RETURN_IF_ERROR(rom_ext_boot(kNextSlot));
+  HARDENED_RETURN_IF_ERROR(rom_ext_boot(kNextSlot));
   // `rom_ext_boot()` should never return `kErrorOk`, but if it does
   // we must shut down the chip instead of trying the next ROM_EXT.
   return kErrorRomBootFailed;
@@ -201,12 +204,16 @@ OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_try_boot(void) {
   boot_svc_msg_t boot_svc_msg = retention_sram_get()->creator.boot_svc_msg;
   if (boot_svc_msg.header.identifier == kBootSvcIdentifier) {
-    RETURN_IF_ERROR(boot_svc_header_check(&boot_svc_msg.header));
-    switch (boot_svc_msg.header.type) {
+    HARDENED_RETURN_IF_ERROR(boot_svc_header_check(&boot_svc_msg.header));
+    uint32_t msg_type = boot_svc_msg.header.type;
+    switch (launder32(msg_type)) {
       case kBootSvcEmptyType:
+        HARDENED_CHECK_EQ(msg_type, kBootSvcEmptyType);
         break;
       case kBootSvcNextBl0SlotReqType:
-        RETURN_IF_ERROR(boot_svc_next_boot_bl0_slot_handler(&boot_svc_msg));
+        HARDENED_CHECK_EQ(msg_type, kBootSvcNextBl0SlotReqType);
+        HARDENED_RETURN_IF_ERROR(
+            boot_svc_next_boot_bl0_slot_handler(&boot_svc_msg));
         break;
       default:
         HARDENED_TRAP();
