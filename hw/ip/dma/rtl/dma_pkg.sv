@@ -21,6 +21,7 @@ package dma_pkg;
   parameter int unsigned SYS_METADATA_WIDTH  = 7;
   parameter int unsigned SYS_RACL_WIDTH      = 4;
   parameter int unsigned SYS_DATA_BYTEWIDTH  = 4;
+  parameter int unsigned SYS_DATA_WIDTH      = SYS_DATA_BYTEWIDTH * 8;
   parameter int unsigned SYS_NUM_ERROR_TYPES = 1;
 
   // Supported Opcodes on the bus
@@ -42,7 +43,7 @@ package dma_pkg;
     sys_opc_e [SYS_NUM_REQ_CH-1:0]                         opcode_vec;
     logic     [SYS_NUM_REQ_CH-1:0][SYS_METADATA_WIDTH-1:0] iova_vec;
     logic     [SYS_NUM_REQ_CH-1:0][SYS_RACL_WIDTH-1:0]     racl_vec;
-    logic     [(SYS_DATA_BYTEWIDTH*8)-1:0]                 write_data;
+    logic     [SYS_DATA_WIDTH-1:0]                         write_data;
     logic     [SYS_DATA_BYTEWIDTH-1:0]                     write_be;
     logic     [SYS_DATA_BYTEWIDTH-1:0]                     read_be;
   } sys_req_t;
