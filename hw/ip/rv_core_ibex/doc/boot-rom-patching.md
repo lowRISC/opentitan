@@ -21,11 +21,6 @@
 This document covers the boot mechanism for the Integrated OpenTitan.
 This includes the execution of the OT ROM, associated patch support in efuses / OTP for survivability and the code fetch from external flash.
 
-## Document Organization
-
-Introduction to problem statement, followed by involved building blocks, requirements from each building block during the boot flow and finally the overall boot flow connecting these pieces together.
-The document also dives into the need for integrated OpenTitan to boot first within an SoC and have full control over the access to the external flash device.
-
 ## Overview
 
 Integrated Open Titan is a root of trust for measurement.
@@ -62,8 +57,6 @@ The patch in eFuses will be signed using an appropriate PK signing algorithm
 The factory provisioning model is expected to be the mainstream deployment model that covers bugs found throughout the product development lifecycle until product deployment phase.
 The in-field patching capability is primarily a backup mechanism used only in very rare cases to patch a critical ROM bug escape in the field, especially some hard to catch security or functional bugs.
 **It is advised to avoid reliance on the in-field ROM patch as much as possible.**
-
-This document also contains a detailed specification for the OT ROM patching architecture, the programming interfaces, and example sequences for patching ROM firmware.
 
 ## ROM Boot & Patching Building Blocks
 
