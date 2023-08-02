@@ -692,7 +692,8 @@ module dma_reg_top (
   // Create REGWEN-gated WE signal
   logic enabled_memory_range_base_gated_we;
   assign enabled_memory_range_base_gated_we =
-    enabled_memory_range_base_we & prim_mubi_pkg::mubi4_test_true_strict(range_unlock_regwen_qs);
+    enabled_memory_range_base_we &
+          prim_mubi_pkg::mubi4_test_true_strict(prim_mubi_pkg::mubi4_t'(range_unlock_regwen_qs));
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -735,7 +736,8 @@ module dma_reg_top (
   // Create REGWEN-gated WE signal
   logic enabled_memory_range_limit_gated_we;
   assign enabled_memory_range_limit_gated_we =
-    enabled_memory_range_limit_we & prim_mubi_pkg::mubi4_test_true_strict(range_unlock_regwen_qs);
+    enabled_memory_range_limit_we &
+          prim_mubi_pkg::mubi4_test_true_strict(prim_mubi_pkg::mubi4_t'(range_unlock_regwen_qs));
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
