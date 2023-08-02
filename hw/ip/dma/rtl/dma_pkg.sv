@@ -38,14 +38,14 @@ package dma_pkg;
     DmaAddrSetup             = 4'b0011,
     DmaSendHostRead          = 4'b0100,
     DmaWaitHostReadResponse  = 4'b0101,
-    DmaSendXbarRead          = 4'b0110,
-    DmaWaitXbarReadResponse  = 4'b0111,
+    DmaSendCtnRead           = 4'b0110,
+    DmaWaitCtnReadResponse   = 4'b0111,
     DmaSendSysRead           = 4'b1000,
     DmaWaitSysReadResponse   = 4'b1001,
     DmaSendHostWrite         = 4'b1010,
     DmaWaitHostWriteResponse = 4'b1011,
-    DmaSendXbarWrite         = 4'b1100,
-    DmaWaitXbarWriteResponse = 4'b1101,
+    DmaSendCtnWrite          = 4'b1100,
+    DmaWaitCtnWriteResponse  = 4'b1101,
     DmaSendSysWrite          = 4'b1110,
     DmaError                 = 4'b1111
   } dma_ctrl_state_e;
