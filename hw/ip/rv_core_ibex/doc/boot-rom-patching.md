@@ -18,14 +18,14 @@
 
 ## Scope
 
-This document covers the boot mechanism for the Integrated OpenTitan.
+This document covers the boot mechanism for Integrated OpenTitan.
 This includes the execution of the OT ROM, associated patch support in efuses / OTP for survivability and the code fetch from external flash.
 
 ## Overview
 
-Integrated Open Titan is a root of trust for measurement.
+Integrated OpenTitan is a root of trust for measurement.
 It shall be integrated within an SoC.
-It impacts the SoC level design SoC secure boot, debug authentication etc and provides the framework necessary to bootstrap the SoC computing elements in a secure & trusted fashion.
+It provides the framework necessary to bootstrap the SoC computing elements in a secure and trusted fashion.
 This document covers the changes necessary for the OpenTitan to boot first while also allowing an SoC with integrated OT to add small customizations to the boot path configuration that fit with the SoC topology.
 A few examples are voltage ramp up sequence, clock settings etc.
 Such customizations are expected to
@@ -40,19 +40,19 @@ Integrated flash technology may not be available for SoCs built using advanced p
 
 Two models for OT based ROM patch deployment are envisioned:
 
-- **Factory patching** - here the ROM patches are programmed into the eFuses in the factory.
+- **Factory patching:** Here, the ROM patches are programmed into the eFuses in the factory.
   This may be to accommodate post-silicon bug fixes without needing a new step of the silicon.
   Performed through the secure manufacturing flow.
-- **In-field patching** - The capability may be used to recover parts in the field but that requires an ability to burn eFuses in the field.
+- **In-field patching:** This capability may be used to recover parts in the field but that requires an ability to burn eFuses in the field.
 
 Note that patch structure for both deployment models is the same.
-An infield patch can be viewed as a new revision of the OTP patch.
+An in-field patch can be viewed as a new revision of the OTP patch.
 The patch in eFuses will be signed using an appropriate PK signing algorithm
 
 ### Programming method:
 
--   If prior to the PROD lifecycle stage: Using the manufacturing efuse programming interface.
--   In PROD lifecycle stage: Secure, verified patch update programming managed by secure application running on OT Ibex core (e.g. update patch revision in factory after provisioning, backup in-field patching mechanism).
+- If prior to the PROD lifecycle stage: Using the manufacturing efuse programming interface.
+- In PROD lifecycle stage: Secure, verified patch update programming managed by secure application running on OT Ibex core (e.g. update patch revision in factory after provisioning, backup in-field patching mechanism).
 
 The factory provisioning model is expected to be the mainstream deployment model that covers bugs found throughout the product development lifecycle until product deployment phase.
 The in-field patching capability is primarily a backup mechanism used only in very rare cases to patch a critical ROM bug escape in the field, especially some hard to catch security or functional bugs.
@@ -90,13 +90,13 @@ Following changes are envisioned to allow OT based boot customizations for an So
 - Late binding security functionality to be tested & hardened prior to incorporating in base ROM.
 
 - Second ROM partition is patchable through e-fuse / OTP based code patches for survivability.
-  Provides hooks to fix critical functional (e.g. early reset sequence) and / or security bugs.
+  This provides hooks to fix critical functional (e.g. early reset sequence) and/or security bugs.
 
 - ROM Patching requirements are as follows:
 
   - Must be able to patch at least 32 locations in the ROM with a granularity of 4B, 8B, 16B, or 32B per patched location.
 
-  - At reset no patches must be active.
+  - At reset, no patches must be active.
 
   - The patch contents must be authenticated before being consumed by the ROM code.
     This authentication uses RSA3072 or ECC384, SHA-384.
@@ -117,7 +117,7 @@ The second ROM partition with patching capability is added to the architecture d
 
   - Size of the OTP partition is configurable at design time.
 
-  - May be configured to hold ***one or more*** revisions of an OTP patch.
+  - It may be configured to hold ***one or more*** revisions of an OTP patch.
 
 - Each OTP patch consists of a patch header, patch table, patch code and a digital signature.
 
@@ -125,7 +125,7 @@ The second ROM partition with patching capability is added to the architecture d
 
 - Patch Header of 1 DWORD includes
 
-  - **Patch size**: Total *size* of the patch in number of DWORDS encompassing the patch header, patch table, patch body and the digital signature.
+  - **Patch size**: Total *size* of the patch in DWORDS, including the patch header, patch table, patch body and the digital signature.
 
   - **Patch Revision**: Specifies the major and minor version of the OTP patch code.
     A later version has a higher revision number.
@@ -145,7 +145,7 @@ The second ROM partition with patching capability is added to the architecture d
 
 - **Code region**:
 
-  - Replacement code to potentially faulty instruction(s) is ROM.
+  - Replacement code for potentially faulty instruction(s) in ROM.
 
   - Variable size - few bytes to few KB.
     To alter a large block of ROM code, the patch can include a branch that redirects execution to code in patch SRAM, that need not be in OTP.
@@ -262,7 +262,7 @@ This is illustrated further below:
 
 ![Redirection example](redirection-example-1.svg)
 
-**Example 2: Replace one instruction with a sequence instruction**
+**Example 2: Replace one instruction with a sequence of instructions**
 
 Consider the following code sequence at address `h8940` in the ROM that needs to be patched and the instruction at address `h8940` be replaced with an alternate 2 instruction sequence.
 
