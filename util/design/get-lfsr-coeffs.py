@@ -10,14 +10,14 @@ import subprocess
 import sys
 import wget
 
-USAGE = """./get_lfsr_coeffs.py [-t <temporary folder>] [-o <outfile>] [-f] [--fib <pdf file>]
+USAGE = """./get_lfsr_coeffs.py [-t <temporary folder>] [-o <outfile>] [-f] [--pdf <pdf file>]
 
 Downloads LFSR constants from [1] and dumps them in SystemVerilog format (for
 use in prim_lfsr.sv). These coeffs are for a Galois XOR type LFSR, and cover
 implementations ranging from 4 to 64bits.
 
 Alternatively, the script can also extract the XNOR Fibonacci type LFSR
-coefficients from the Xilinx application note 52 [2] by specifying the --fib
+coefficients from the Xilinx application note 52 [2] by specifying the --pdf
 <pdf file> switch. The pdf has to be downloaded manually from [2] first. Note
 that this depends on the pdftotext utility for Linux.
 
@@ -26,12 +26,12 @@ that this depends on the pdftotext utility for Linux.
 [2] https://docs.xilinx.com/v/u/en-US/xapp052
 """
 
-# configuration for Galois
+# configuration for [1]
 MIN_LFSR_LEN = 4
 MAX_LFSR_LEN = 64
 BASE_URL = 'https://users.ece.cmu.edu/~koopman/lfsr/'
 
-# configuration for Fibonacci
+# configuration for [2]
 LINE_FILTER = [
     'Table 3: Taps for Maximum-Length LFSR Counters',
     'XAPP 052 July 7,1996 (Version 1.1)'
@@ -39,7 +39,7 @@ LINE_FILTER = [
 
 
 # helper function to write out coeffs
-def dump_coeffs(lfsrType, widths, coeffs, outfile):
+def dump_coeffs(widths, coeffs, outfile):
     # widths consistency check
     for k in range(widths[0], widths[-1] + 1):
         # print("%d -- %d" % (k,widths[k-widths[0]]))
@@ -49,11 +49,11 @@ def dump_coeffs(lfsrType, widths, coeffs, outfile):
 
     # select first coefficient in each file and print to SV LUT
     with outfile:
-        decl_str = "localparam int unsigned %s_LUT_OFF = %d;\n" \
-            % (lfsrType, min(widths))
+        decl_str = "localparam int unsigned LUT_OFF = %d;\n" \
+            % (min(widths))
         outfile.write(decl_str)
-        decl_str = "localparam logic [%d:0] %s_COEFFS [%d] = '{ " \
-            % (max(widths) - 1, lfsrType, max(widths) - min(widths) + 1)
+        decl_str = "localparam logic [%d:0] LFSR_COEFFS [%d] = '{ " \
+            % (max(widths) - 1, max(widths) - min(widths) + 1)
         outfile.write(decl_str)
         comma = ',\n'
         spaces = ''
@@ -90,10 +90,10 @@ def main():
         help="""Temporary folder to download the lfsr constant files
                 to (defaults to ./lfsr_tmp)""",
         default='lfsr_tmp')
-    parser.add_argument('--fib',
+    parser.add_argument('--pdf',
                         type=str,
                         help="""Path to Xilinx Application Note 052 with
-                                Fibonacci coefficients.""",
+                                primitive polynomial coefficients.""",
                         )
     parser.add_argument('-f',
                         '--force',
@@ -114,9 +114,8 @@ def main():
     if not os.path.exists(args.tempfolder):
         os.makedirs(args.tempfolder, exist_ok=args.force)
 
-        if args.fib:
-            lfsrType = 'FIB_XNOR'
-            pdf_path = os.path.abspath(args.fib)
+        if args.pdf:
+            pdf_path = os.path.abspath(args.pdf)
 
             if not os.path.isfile(pdf_path):
                 print("File %s does not exist" % pdf_path)
@@ -158,7 +157,6 @@ def main():
                 coeffs[k] = to_bit_mask(coeffs[k])
 
         else:
-            lfsrType = 'GAL_XOR'
             os.chdir(args.tempfolder)
 
             for k in range(MIN_LFSR_LEN, MAX_LFSR_LEN + 1):
@@ -177,7 +175,7 @@ def main():
                     coeffs += [infile.readline().strip()]
 
         # write to stdout or file
-        dump_coeffs(lfsrType, widths, coeffs, outfile=args.output)
+        dump_coeffs(widths, coeffs, outfile=args.output)
     else:
         print("Temporary directory already exists, abort...")
         sys.exit(1)
