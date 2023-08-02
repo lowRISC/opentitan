@@ -11,6 +11,9 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
+#include "sw/device/silicon_creator/lib/boot_data.h"
+#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_empty.h"
+#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_header.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
@@ -199,6 +202,10 @@ static rom_error_t boot_svc_next_boot_bl0_slot_handler(
 
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_try_boot(void) {
+  boot_data_t boot_data;
+  HARDENED_RETURN_IF_ERROR(boot_data_read(lc_state, &boot_data));
+  HARDENED_RETURN_IF_ERROR(boot_data_check(&boot_data));
+
   boot_svc_msg_t boot_svc_msg = retention_sram_get()->creator.boot_svc_msg;
   if (boot_svc_msg.header.identifier == kBootSvcIdentifier) {
     HARDENED_RETURN_IF_ERROR(boot_svc_header_check(&boot_svc_msg.header));
@@ -218,8 +225,8 @@ static rom_error_t rom_ext_try_boot(void) {
   }
 
   rom_ext_boot_policy_manifests_t manifests =
-      rom_ext_boot_policy_manifests_get();
-  rom_error_t error = kErrorRomExtBootFailed;
+      rom_ext_boot_policy_manifests_get(&boot_data);
+  rom_error_t error = kErrorRomBootFailed;
   for (size_t i = 0; i < ARRAYSIZE(manifests.ordered); ++i) {
     error = rom_ext_verify(manifests.ordered[i]);
     if (error != kErrorOk) {
