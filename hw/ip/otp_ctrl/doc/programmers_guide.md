@@ -22,8 +22,7 @@ The only initialization steps that SW should perform are:
 If needed, one-off integrity and consistency checks can be triggered via [`CHECK_TRIGGER`](registers.md#check_trigger).
 If this functionality is not needed, it is recommended to lock down the trigger register via [`CHECK_TRIGGER_REGWEN`](registers.md#check_trigger_regwen).
 
-Later on during the boot process, SW may also choose to block read access to the CREATOR_SW_CFG or OWNER_SW_CFG partitions at runtime via [`CREATOR_SW_CFG_READ_LOCK`](registers.md#creator_sw_cfg_read_lock) and [`OWNER_SW_CFG_READ_LOCK`](registers.md#owner_sw_cfg_read_lock).
-
+Later on during the boot process, SW may also choose to block read access to the SW managed partitions via the associated partition lock registers, e.g. [`CREATOR_SW_CFG_READ_LOCK`](registers.md#creator_sw_cfg_read_lock) or [`OWNER_SW_CFG_READ_LOCK`](registers.md#owner_sw_cfg_read_lock).
 
 ### Reset Considerations
 
