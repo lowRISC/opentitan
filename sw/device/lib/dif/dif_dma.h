@@ -122,6 +122,15 @@ dif_result_t dif_dma_handshake_enable(const dif_dma_t *dma,
                                       dif_dma_handshake_t handshake);
 
 /**
+ * Disable DMA Controller hardware handshake mode.
+ *
+ * @param dma A DMA Controller handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_dma_handshake_disable(const dif_dma_t *dma);
+
+/**
  * Begins a DMA Controller transaction.
  *
  * Before this function the DMA transaction shall be configured by calling the

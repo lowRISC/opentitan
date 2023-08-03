@@ -130,12 +130,12 @@ TEST_F(ConfigureTest, BadArg) {
   EXPECT_DIF_BADARG(dif_dma_configure(nullptr, transaction));
 }
 
-// Enable handshake tests
-class EnableHandshakeTest
-    : public DmaTestInitialized,
-      public testing::WithParamInterface<dif_dma_handshake_t> {};
+// Handshake tests
+class HandshakeTest : public DmaTestInitialized,
+                      public testing::WithParamInterface<dif_dma_handshake_t> {
+};
 
-TEST_P(EnableHandshakeTest, Success) {
+TEST_P(HandshakeTest, EnableSuccess) {
   dif_dma_handshake_t handshake = GetParam();
   EXPECT_READ32(DMA_CONTROL_REG_OFFSET, 0);
   EXPECT_WRITE32(DMA_CONTROL_REG_OFFSET,
@@ -152,7 +152,20 @@ TEST_P(EnableHandshakeTest, Success) {
   EXPECT_DIF_OK(dif_dma_handshake_enable(&dma_, handshake));
 }
 
-INSTANTIATE_TEST_SUITE_P(EnableHandshakeTest, EnableHandshakeTest,
+TEST_P(HandshakeTest, DisableSuccess) {
+  EXPECT_READ32(DMA_CONTROL_REG_OFFSET,
+                {
+                    {DMA_CONTROL_HARDWARE_HANDSHAKE_ENABLE_BIT, true},
+                });
+  EXPECT_WRITE32(DMA_CONTROL_REG_OFFSET,
+                 {
+                     {DMA_CONTROL_HARDWARE_HANDSHAKE_ENABLE_BIT, false},
+                 });
+
+  EXPECT_DIF_OK(dif_dma_handshake_disable(&dma_));
+}
+
+INSTANTIATE_TEST_SUITE_P(HandshakeTest, HandshakeTest,
                          testing::ValuesIn(std::vector<dif_dma_handshake_t>{{
                              {false, false, false},
                              {false, false, true},
@@ -163,9 +176,13 @@ INSTANTIATE_TEST_SUITE_P(EnableHandshakeTest, EnableHandshakeTest,
                              {true, true, true},
                          }}));
 
-TEST_F(EnableHandshakeTest, BadArg) {
+TEST_F(HandshakeTest, EnableBadArg) {
   dif_dma_handshake_t handshake;
   EXPECT_DIF_BADARG(dif_dma_handshake_enable(nullptr, handshake));
+}
+
+TEST_F(HandshakeTest, DisableBadArg) {
+  EXPECT_DIF_BADARG(dif_dma_handshake_disable(nullptr));
 }
 
 // DMA start tests
