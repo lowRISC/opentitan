@@ -27,6 +27,7 @@ IPS ?= aes           \
        keymgr        \
        kmac          \
        lc_ctrl       \
+       mbx           \
        otbn          \
        otp_ctrl      \
        pattgen       \
