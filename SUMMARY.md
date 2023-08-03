@@ -6,6 +6,10 @@
 
 - [Getting Started](./doc/getting_started/README.md)
 
+## Unofficial Setup Guides
+
+- [RedHat/Fedora](unofficial/fedora.md)
+
 - [Workflows](./doc/getting_started/workflows.md)
   - [Design Verification](./doc/getting_started/setup_dv.md)
   - [Formal Verification](./doc/getting_started/setup_formal.md)
