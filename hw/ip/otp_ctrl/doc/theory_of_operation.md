@@ -428,7 +428,7 @@ Parameter      | Default | Top Earlgrey  | Description
 ---------------|---------|---------------|---------------
 `Width`        | 16      | 16            | Native OTP word width.
 `Depth`        | 1024    | 1024          | Depth of OTP macro.
-`CmdWidth`     | 2       | 2             | Width of the OTP command.
+`CmdWidth`     | 3       | 3             | Width of the OTP command.
 `ErrWidth`     | 3       | 3             | Width of error code output signal.
 `PwrSeqWidth`  | 2       | 2             | Width of power sequencing signals to/from AST.
 `SizeWidth`    | 2       | 2             | Width of the size field.
@@ -459,14 +459,17 @@ Signal                  | Direction        | Type                        | Descr
 `ready_o`               | `output`         | `logic`                     | Ready signal for the command handshake.
 `valid_i`               | `input`          | `logic`                     | Valid signal for the command handshake.
 `size_i`                | `input`          | `logic [SizeWidth-1:0]`     | Number of native OTP words to transfer, minus one: `2'b00 = 1 native word` ... `2'b11 = 4 native words`.
-`cmd_i`                 | `input`          | `logic [CmdWidth-1:0]`      | OTP command: `2'b00 = read`, `2'b01 = write`, `2'b11 = initialize`
+`cmd_i`                 | `input`          | `logic [CmdWidth-1:0]`      | OTP command: `3'b000 = read`, `3'b001 = write`, `3'b010 = read raw`, `3'b011 = write raw`,  `3'b111 = initialize`
 `addr_i`                | `input`          | `logic [$clog2(Depth)-1:0]` | OTP word address.
 `wdata_i`               | `input`          | `logic [IfWidth-1:0]`       | Write data for write commands.
 `valid_o`               | `output`         | `logic`                     | Valid signal for command response.
 `rdata_o`               | `output`         | `logic [IfWidth-1:0]`       | Read data from read commands.
 `err_o`                 | `output`         | `logic [ErrWidth-1:0]`      | Error code.
 
-The `prim_otp` wrappers implements the `Macro*` error codes (0x0 - 0x4) defined in the [OTP error handling](#error-handling).
+The `write raw` and `read raw` command instructs the `prim_otp` wrapper to store / read the data in raw format without generating nor checking integrity information.
+That means that the wrapper must return the raw, uncorrected data and no integrity errors.
+
+The `prim_otp` wrapper implements the `Macro*` error codes (0x0 - 0x4) defined in [OTP error handling](#error-handling).
 
 The timing diagram below illustrates the timing of a command.
 Note that both read and write commands return a response, and each command is independent of the previously issued commands.
