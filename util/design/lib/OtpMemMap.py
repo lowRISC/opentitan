@@ -147,9 +147,9 @@ def _validate_part(part, key_names):
             "Partition cannot support both a SW and a HW digest at the same time."
         )
 
-    if part["variant"] == "Unbuffered" and not part["sw_digest"]:
+    if part["variant"] == "Unbuffered" and part["hw_digest"]:
         raise RuntimeError(
-            "Unbuffered partitions without digest are not supported at the moment."
+            "Unbuffered partitions with a HW digest are not supported at the moment."
         )
 
     if part["variant"] == "Buffered" and part["read_lock"].lower() == "csr":

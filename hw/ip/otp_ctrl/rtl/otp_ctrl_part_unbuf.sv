@@ -172,7 +172,12 @@ module otp_ctrl_part_unbuf
       // initialization request.
       ResetSt: begin
         if (init_req_i) begin
-          state_d = InitSt;
+          // If the partition does not have a digest, no initialization is necessary.
+          if (Info.sw_digest) begin
+            state_d = InitSt;
+          end else begin
+            state_d = IdleSt;
+          end
         end
       end
       ///////////////////////////////////////////////////////////////////
@@ -349,19 +354,26 @@ module otp_ctrl_part_unbuf
   // Digest Reg //
   ////////////////
 
-  // SEC_CM: PART.DATA_REG.INTEGRITY
-  otp_ctrl_ecc_reg #(
-    .Width ( ScrmblBlockWidth ),
-    .Depth ( 1                )
-  ) u_otp_ctrl_ecc_reg (
-    .clk_i,
-    .rst_ni,
-    .wren_i     ( digest_reg_en ),
-    .addr_i     ( '0            ),
-    .wdata_i    ( otp_rdata_i   ),
-    .data_o     ( digest_o      ),
-    .ecc_err_o  ( ecc_err       )
-  );
+  if (Info.sw_digest) begin : gen_ecc_reg
+    // SEC_CM: PART.DATA_REG.INTEGRITY
+    otp_ctrl_ecc_reg #(
+      .Width ( ScrmblBlockWidth ),
+      .Depth ( 1                )
+    ) u_otp_ctrl_ecc_reg (
+      .clk_i,
+      .rst_ni,
+      .wren_i     ( digest_reg_en ),
+      .addr_i     ( '0            ),
+      .wdata_i    ( otp_rdata_i   ),
+      .data_o     ( digest_o      ),
+      .ecc_err_o  ( ecc_err       )
+    );
+  end else begin : gen_no_ecc_reg
+    logic unused_digest_reg_en;
+    assign unused_digest_reg_en = digest_reg_en;
+    assign digest_o = '0;
+    assign ecc_err = 1'b0;
+  end
 
   ////////////////////////
   // DAI Access Control //

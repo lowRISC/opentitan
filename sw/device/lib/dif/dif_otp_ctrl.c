@@ -370,62 +370,58 @@ typedef struct partition_info {
    * digest.
    */
   bool is_software;
+
+  /**
+   * Whether this partition has a digest field.
+   */
+  bool has_digest;
 } partition_info_t;
 
 static const partition_info_t kPartitions[] = {
     // TODO: These should be provided by the gen'd header.
     // See #3904.
-    [kDifOtpCtrlPartitionVendorTest] =
-        {
-            .start_addr = OTP_CTRL_PARAM_VENDOR_TEST_OFFSET,
-            .len = OTP_CTRL_PARAM_VENDOR_TEST_SIZE,
-            .align_mask = 0x3,
-            .is_software = true,
-        },
+    [kDifOtpCtrlPartitionVendorTest] = {.start_addr =
+                                            OTP_CTRL_PARAM_VENDOR_TEST_OFFSET,
+                                        .len = OTP_CTRL_PARAM_VENDOR_TEST_SIZE,
+                                        .align_mask = 0x3,
+                                        .is_software = true,
+                                        .has_digest = true},
     [kDifOtpCtrlPartitionCreatorSwCfg] =
-        {
-            .start_addr = OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET,
-            .len = OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE,
-            .align_mask = 0x3,
-            .is_software = true,
-        },
-    [kDifOtpCtrlPartitionOwnerSwCfg] =
-        {
-            .start_addr = OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET,
-            .len = OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE,
-            .align_mask = 0x3,
-            .is_software = true,
-        },
-    [kDifOtpCtrlPartitionHwCfg] =
-        {
-            .start_addr = OTP_CTRL_PARAM_HW_CFG_OFFSET,
-            .len = OTP_CTRL_PARAM_HW_CFG_SIZE,
-            .align_mask = 0x3,
-        },
-    [kDifOtpCtrlPartitionSecret0] =
-        {
-            .start_addr = OTP_CTRL_PARAM_SECRET0_OFFSET,
-            .len = OTP_CTRL_PARAM_SECRET0_SIZE,
-            .align_mask = 0x7,
-        },
-    [kDifOtpCtrlPartitionSecret1] =
-        {
-            .start_addr = OTP_CTRL_PARAM_SECRET1_OFFSET,
-            .len = OTP_CTRL_PARAM_SECRET1_SIZE,
-            .align_mask = 0x7,
-        },
-    [kDifOtpCtrlPartitionSecret2] =
-        {
-            .start_addr = OTP_CTRL_PARAM_SECRET2_OFFSET,
-            .len = OTP_CTRL_PARAM_SECRET2_SIZE,
-            .align_mask = 0x7,
-        },
-    [kDifOtpCtrlPartitionLifeCycle] =
-        {
-            .start_addr = OTP_CTRL_PARAM_LIFE_CYCLE_OFFSET,
-            .len = OTP_CTRL_PARAM_LIFE_CYCLE_SIZE,
-            .align_mask = 0x3,
-        },
+        {.start_addr = OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET,
+         .len = OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE,
+         .align_mask = 0x3,
+         .is_software = true,
+         .has_digest = true},
+    [kDifOtpCtrlPartitionOwnerSwCfg] = {.start_addr =
+                                            OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET,
+                                        .len = OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE,
+                                        .align_mask = 0x3,
+                                        .is_software = true,
+                                        .has_digest = true},
+    [kDifOtpCtrlPartitionHwCfg] = {.start_addr = OTP_CTRL_PARAM_HW_CFG_OFFSET,
+                                   .len = OTP_CTRL_PARAM_HW_CFG_SIZE,
+                                   .align_mask = 0x3,
+                                   .has_digest = true},
+    [kDifOtpCtrlPartitionSecret0] = {.start_addr =
+                                         OTP_CTRL_PARAM_SECRET0_OFFSET,
+                                     .len = OTP_CTRL_PARAM_SECRET0_SIZE,
+                                     .align_mask = 0x7,
+                                     .has_digest = true},
+    [kDifOtpCtrlPartitionSecret1] = {.start_addr =
+                                         OTP_CTRL_PARAM_SECRET1_OFFSET,
+                                     .len = OTP_CTRL_PARAM_SECRET1_SIZE,
+                                     .align_mask = 0x7,
+                                     .has_digest = true},
+    [kDifOtpCtrlPartitionSecret2] = {.start_addr =
+                                         OTP_CTRL_PARAM_SECRET2_OFFSET,
+                                     .len = OTP_CTRL_PARAM_SECRET2_SIZE,
+                                     .align_mask = 0x7,
+                                     .has_digest = true},
+    [kDifOtpCtrlPartitionLifeCycle] = {.start_addr =
+                                           OTP_CTRL_PARAM_LIFE_CYCLE_OFFSET,
+                                       .len = OTP_CTRL_PARAM_LIFE_CYCLE_SIZE,
+                                       .align_mask = 0x3,
+                                       .has_digest = false},
 };
 
 dif_result_t dif_otp_ctrl_relative_address(dif_otp_ctrl_partition_t partition,
@@ -549,8 +545,9 @@ dif_result_t dif_otp_ctrl_dai_program32(const dif_otp_ctrl_t *otp,
   }
 
   // NOTE: The bounds check is tightened here, since we disallow writing the
-  // digest directly.
-  size_t digest_size = sizeof(uint64_t);
+  // digest directly. If the partition does not have a digest, no tightening is
+  // needed.
+  size_t digest_size = kPartitions[partition].has_digest * sizeof(uint64_t);
   if (address >= kPartitions[partition].len - digest_size) {
     return kDifOutOfRange;
   }
