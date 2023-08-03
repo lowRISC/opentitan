@@ -55,8 +55,9 @@ raw_tty = "0.1.0"
 regex = "1.7"
 rsa = "0.8"
 rusb = "0.8.1"
-serde = { version="1.0", features=["serde_derive"] }
-serde_derive = "1.0"
+# TODO(opentitan#19362) serde-derive 1.0.172 uses precompiled binary which
+# does not work well with Bazel.
+serde = { version="=1.0.171", features = ["derive"] }
 
 serde_bytes = "0.11"
 serde_json = "1.0.69"

@@ -48,7 +48,6 @@ rust_library(
     ],
     crate_name = "hsmtool",
     proc_macro_deps = [
-        "@crate_index//:serde_derive",
         "@lowrisc_serde_annotate//annotate_derive:annotate_derive",
     ],
     deps = [
