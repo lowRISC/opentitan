@@ -377,7 +377,6 @@ _PROC_MACRO_DEPENDENCIES = {
     "third_party/rust": {
         _COMMON_CONDITION: {
             "pest_derive": "@crate_index__pest_derive-2.5.5//:pest_derive",
-            "serde_derive": "@crate_index__serde_derive-1.0.171//:serde_derive",
         },
     },
 }

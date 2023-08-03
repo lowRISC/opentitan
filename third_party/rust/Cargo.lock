@@ -328,7 +328,6 @@ dependencies = [
  "secrecy",
  "serde",
  "serde_bytes",
- "serde_derive",
  "serde_json",
  "serialport",
  "sha2",

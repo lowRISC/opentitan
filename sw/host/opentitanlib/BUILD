@@ -218,7 +218,6 @@ rust_library(
     }),
     proc_macro_deps = [
         "//sw/host/opentitanlib/opentitantool_derive",
-        "@crate_index//:serde_derive",
         "@lowrisc_serde_annotate//annotate_derive:annotate_derive",
     ],
     rustc_env = {
