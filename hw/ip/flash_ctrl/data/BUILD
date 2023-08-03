@@ -11,6 +11,7 @@ autogen_hjson_header(
     srcs = [
         "flash_ctrl.hjson",
     ],
+    node = "core",
 )
 
 filegroup(
