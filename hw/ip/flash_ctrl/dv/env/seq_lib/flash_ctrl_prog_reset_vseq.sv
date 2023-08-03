@@ -87,6 +87,9 @@ class flash_ctrl_prog_reset_vseq extends flash_ctrl_otf_base_vseq;
     `uvm_info(`gfn, "RESET", UVM_LOW)
     cfg.seq_cfg.disable_flash_init = 1;
     cfg.seq_cfg.en_init_keys_seeds = 0;
+    // Clean up scoreboard before the next round.
+    cfg.otf_scb_h.clear_fifos();
+    cfg.otf_scb_h.stop = 1;
     apply_reset();
     csr_wr(.ptr(ral.init), .value(1));
     `uvm_info("Test","OTP",UVM_LOW)
