@@ -671,6 +671,7 @@
           hwaccess:  "hwo",
           hwext:     "true",
           cname:     "AGENT",
+          compact:   "false",
           resval:    0,
           tags: [ // OTP internal HW can modify the error code registers
                   "excl:CsrAllTests:CsrExclCheck"],

@@ -178,7 +178,6 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
                                   OtpCheckFailError : OtpMacroEccUncorrError;
     otp_err_code_e err_code;
     dv_base_reg_field err_code_flds[$];
-    ral.err_code[0].get_dv_base_reg_fields(err_code_flds);
 
     cfg.otp_ctrl_vif.drive_pwr_otp_init(1);
 
@@ -200,8 +199,9 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
     // escalation. The logic below tries to confirm the first fatal alert is triggered with the
     // correct error code.
     for (int i = 0; i <= OtpLciErrIdx; i++) begin
+      ral.err_code[i].get_dv_base_reg_fields(err_code_flds);
       if (exp_status[i]) begin
-        csr_rd(err_code_flds[i], err_code);
+        csr_rd(err_code_flds[0], err_code);
         if (err_code == exp_err_code) begin
           error_cnt++;
         end else if (err_code != OtpFsmStateError) begin
