@@ -74,14 +74,14 @@ class dma_handshake_vseq extends dma_base_vseq;
             end
           end
           else if (txn.m_src_asid == 1) begin
-            @(posedge cfg.dma_vif.read_cmpl_xbar)
-            if (cfg.dma_vif.read_opc_xbar) begin
+            @(posedge cfg.dma_vif.read_cmpl_ctn)
+            if (cfg.dma_vif.read_opc_ctn) begin
               maxcount--;
             end
           end
           else if (txn.m_src_asid == 3) begin
-            @(posedge cfg.dma_vif.read_cmpl_xbar)
-            if (cfg.dma_vif.read_opc_xbar) begin
+            @(posedge cfg.dma_vif.read_cmpl_ctn)
+            if (cfg.dma_vif.read_opc_ctn) begin
               maxcount--;
             end
           end
@@ -132,14 +132,14 @@ class dma_handshake_vseq extends dma_base_vseq;
             end
           end
           else if (txn.m_src_asid == 1) begin
-            @(posedge cfg.dma_vif.read_cmpl_xbar)
-            if (cfg.dma_vif.read_opc_xbar) begin
+            @(posedge cfg.dma_vif.read_cmpl_ctn)
+            if (cfg.dma_vif.read_opc_ctn) begin
               maxcount--;
             end
           end
           else if (txn.m_src_asid == 3) begin
-            @(posedge cfg.dma_vif.read_cmpl_xbar)
-            if (cfg.dma_vif.read_opc_xbar) begin
+            @(posedge cfg.dma_vif.read_cmpl_ctn)
+            if (cfg.dma_vif.read_opc_ctn) begin
               maxcount--;
             end
           end
