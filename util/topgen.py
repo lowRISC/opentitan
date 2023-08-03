@@ -495,18 +495,22 @@ def generate_rstmgr(topcfg, out_path):
     rtl_path.mkdir(parents=True, exist_ok=True)
     doc_path = out_path / "ip/rstmgr/data/autogen"
     doc_path.mkdir(parents=True, exist_ok=True)
+    sva_path = out_path / "ip/rstmgr/dv/sva/autogen"
+    sva_path.mkdir(parents=True, exist_ok=True)
     tpl_path = Path(__file__).resolve().parent / "../hw/ip/rstmgr/data"
     original_rtl_path = Path(__file__).resolve().parent / "../hw/ip/rstmgr/rtl"
 
     # Read template files from ip directory.
     tpls = []
     outputs = []
-    names = ["rstmgr.hjson", "rstmgr.sv", "rstmgr_pkg.sv"]
+    names = ["rstmgr.hjson", "rstmgr.sv", "rstmgr_pkg.sv", "rstmgr_rst_en_track_sva_if.sv"]
 
     for x in names:
         tpls.append(tpl_path / Path(x + ".tpl"))
         if "hjson" in x:
             outputs.append(doc_path / Path(x))
+        elif "sva_if" in x:
+            outputs.append(sva_path / Path(x))
         else:
             outputs.append(rtl_path / Path(x))
 

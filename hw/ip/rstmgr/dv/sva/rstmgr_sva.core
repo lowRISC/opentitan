@@ -7,6 +7,7 @@ description: "RSTMGR assertion modules and bind file."
 filesets:
   files_dv:
     depend:
+      - lowrisc:systems:rstmgr_sva
       - lowrisc:dv:rstmgr_sva_ifs
 
     files:
