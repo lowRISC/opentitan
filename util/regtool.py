@@ -130,6 +130,13 @@ def main():
     parser.add_argument('--novalidate',
                         action='store_true',
                         help='Skip validate, just output json')
+    parser.add_argument('--node',
+                        '-n',
+                        type=str,
+                        default="",
+                        help='''Regblock node to generate.
+                                By default, generate for all nodes.
+                                ''')
     parser.add_argument(
         '--version-stamp',
         type=str,
@@ -234,7 +241,7 @@ def main():
     srcfull = infile.read()
 
     try:
-        obj = IpBlock.from_text(srcfull, params, infile.name)
+        obj = IpBlock.from_text(srcfull, params, infile.name, args.node)
     except ValueError as err:
         log.error(str(err))
         exit(1)

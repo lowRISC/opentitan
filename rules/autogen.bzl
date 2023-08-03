@@ -11,6 +11,10 @@ from hjson register descriptions.
 
 def _hjson_header(ctx):
     header = ctx.actions.declare_file("{}.h".format(ctx.label.name))
+    node = []
+    if ctx.attr.node:
+        node.append("--node={}".format(ctx.attr.node))
+
     ctx.actions.run(
         outputs = [header],
         inputs = ctx.files.srcs + [ctx.executable._regtool],
@@ -19,7 +23,7 @@ def _hjson_header(ctx):
             "-q",
             "-o",
             header.path,
-        ] + [src.path for src in ctx.files.srcs],
+        ] + node + [src.path for src in ctx.files.srcs],
         executable = ctx.executable._regtool,
     )
 
@@ -33,7 +37,7 @@ def _hjson_header(ctx):
             "-q",
             "-o",
             tock.path,
-        ] + [src.path for src in ctx.files.srcs],
+        ] + node + [src.path for src in ctx.files.srcs],
         executable = ctx.executable._regtool,
     )
 
@@ -53,6 +57,9 @@ autogen_hjson_header = rule(
     implementation = _hjson_header,
     attrs = {
         "srcs": attr.label_list(allow_files = True),
+        "node": attr.string(
+            doc = "Register block node to generate",
+        ),
         "version_stamp": attr.label(
             default = "//util:full_version_file",
             allow_single_file = True,
