@@ -729,7 +729,8 @@ module otp_ctrl_dai
         otp_size_o = OtpSizeWidth'(unsigned'(ScrmblBlockWidth / OtpWidth - 1));
         addr_base = PartInfo[part_idx].offset;
     // 64bit transaction if the DAI address points to the partition's digest offset.
-    end else if ((base_sel_q == DaiOffset) &&
+    end else if ((PartInfo[part_idx].hw_digest || PartInfo[part_idx].sw_digest) &&
+        (base_sel_q == DaiOffset) &&
         ({dai_addr_i[OtpByteAddrWidth-1:3], 2'b0} == digest_addr_lut[part_idx])) begin
       otp_size_o = OtpSizeWidth'(unsigned'(ScrmblBlockWidth / OtpWidth - 1));
       addr_base = {dai_addr_i[OtpByteAddrWidth-1:3], 3'h0};

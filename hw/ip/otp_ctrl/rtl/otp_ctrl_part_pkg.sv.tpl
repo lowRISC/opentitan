@@ -109,6 +109,7 @@ package otp_ctrl_part_pkg;
     key_sel_e key_sel;
     // Attributes
     logic secret;     // Whether the partition is secret (and hence scrambled)
+    logic sw_digest;  // Whether the partition has a software digest
     logic hw_digest;  // Whether the partition has a hardware digest
     logic write_lock; // Whether the partition is write lockable (via digest)
     logic read_lock;  // Whether the partition is read lockable (via digest)
@@ -121,6 +122,7 @@ package otp_ctrl_part_pkg;
       size:       OtpByteAddrWidth'('hFF),
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
+      sw_digest:  1'b0,
       hw_digest:  1'b0,
       write_lock: 1'b0,
       read_lock:  1'b0,
@@ -140,6 +142,7 @@ package otp_ctrl_part_pkg;
       size:       ${part["size"]},
       key_sel:    ${part["key_sel"] if part["key_sel"] != "NoKey" else "key_sel_e'('0)"},
       secret:     1'b${"1" if part["secret"] else "0"},
+      sw_digest:  1'b${"1" if part["sw_digest"] else "0"},
       hw_digest:  1'b${"1" if part["hw_digest"] else "0"},
       write_lock: 1'b${"1" if part["write_lock"].lower() == "digest" else "0"},
       read_lock:  1'b${"1" if part["read_lock"].lower() == "digest" else "0"},
