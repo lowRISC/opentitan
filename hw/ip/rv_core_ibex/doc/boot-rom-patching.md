@@ -119,7 +119,7 @@ The second ROM partition with patching capability is added to the architecture d
 
   - May be configured to hold ***one or more*** revisions of an OTP patch.
 
-- Each OTP patch consists of a patch header, patch table, patch body and a digital signature.
+- Each OTP patch consists of a patch header, patch table, patch code and a digital signature.
 
   ![OTP Patch Layout](otp-patch-layout.svg)
 
