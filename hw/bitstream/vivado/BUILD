@@ -186,7 +186,6 @@ fusesoc_build(
 )
 
 # Bitstream cache manifest fragment targets
-
 bitstream_manifest_fragment(
     name = "earlgrey_cw310_manifest",
     testonly = True,

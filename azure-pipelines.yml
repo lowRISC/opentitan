@@ -494,6 +494,50 @@ jobs:
     displayName: Upload artifacts for CW310
     condition: failed()
 
+- job: chip_earlgrey_cw340
+  displayName: CW340's Earl Grey Bitstream
+  # Build CW340 variant of the Earl Grey toplevel design using Vivado
+  dependsOn:
+    - lint
+  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'), eq(variables['Build.SourceBranchName'], 'master'))
+  pool: ci-public-eda
+  timeoutInMinutes: 150
+  steps:
+  - template: ci/checkout-template.yml
+  - template: ci/install-package-dependencies.yml
+  - bash: |
+      set -ex
+      trap 'get_logs' EXIT
+      get_logs() {
+        mkdir -p $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw340/
+        cp -rLvt $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw340/ \
+          $($REPO_TOP/bazelisk.sh outquery-all //hw/bitstream/vivado:fpga_cw340)
+        bitstream_archive=$($REPO_TOP/bazelisk.sh outquery \
+          //hw/bitstream/vivado:earlgrey_cw340_archive)
+        cp -Lv ${bitstream_archive} ${BUILD_ROOT}/build-bin.tar
+      }
+
+      . util/build_consts.sh
+      module load "xilinx/vivado/$(VIVADO_VERSION)"
+      ci/bazelisk.sh build //hw/bitstream/vivado:earlgrey_cw340_archive
+    displayName: Build bitstream with Vivado
+  - bash: |
+      . util/build_consts.sh
+      echo "Synthesis log"
+      cat $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw340/build.fpga_cw340/synth-vivado/lowrisc_systems_chip_earlgrey_cw340_0.1.runs/synth_1/runme.log || true
+
+      echo "Implementation log"
+      cat $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw340/build.fpga_cw340/synth-vivado/lowrisc_systems_chip_earlgrey_cw340_0.1.runs/impl_1/runme.log || true
+    displayName: Display synthesis & implementation logs
+    condition: succeededOrFailed()
+  - publish: "$(Build.ArtifactStagingDirectory)/build-bin.tar"
+    artifact: partial-build-bin-$(System.PhaseName)
+    displayName: Upload step outputs
+  - publish: "$(Build.ArtifactStagingDirectory)"
+    artifact: chip_earlgrey_cw340-build-out
+    displayName: Upload artifacts for CW340
+    condition: failed()
+
 - job: chip_englishbreakfast_cw305
   displayName: CW305's Bitstream
   # Build CW305 variant of the English Breakfast toplevel design using Vivado
@@ -525,6 +569,7 @@ jobs:
   dependsOn:
     - chip_earlgrey_cw310
     - chip_earlgrey_cw310_hyperdebug
+    - chip_earlgrey_cw340
   condition: eq(variables['Build.SourceBranchName'], 'master')
   steps:
     - template: ci/download-artifacts-template.yml
@@ -532,6 +577,7 @@ jobs:
         downloadPartialBuildBinFrom:
           - chip_earlgrey_cw310
           - chip_earlgrey_cw310_hyperdebug
+          - chip_earlgrey_cw340
     - bash: |
         set -x
         . util/build_consts.sh
@@ -540,6 +586,7 @@ jobs:
         fragmentFiles:
           - "$BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310/manifest.json"
           - "$BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/manifest.json"
+          - "$BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw340/manifest.json"
         gcpKeyFile: "gcpkey.json"
         bucketURI: "gs://opentitan-bitstreams/master"
 
