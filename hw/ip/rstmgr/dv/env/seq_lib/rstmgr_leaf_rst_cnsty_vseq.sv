@@ -146,6 +146,7 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
 
     `DV_SPINWAIT(wait_for_cnsty_idle(path);, "Timeout waiting for cnsty_idle", 1000_000)
 
+    `DV_SPINWAIT(wait_for_alert_sender_ready();, "Timeout waiting for alert_sender ready", 1000_000)
     `DV_CHECK_RANDOMIZE_FATAL(this);
     `uvm_info(`gfn, "Triggering inconsistency", UVM_MEDIUM)
     randcase
@@ -190,6 +191,22 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
       `DV_CHECK(uvm_hdl_read(lpath, value))
     end
   endtask : wait_for_cnsty_idle
+
+  // This waits until the alert_rx differential pairs are complementary, indicating the
+  // end of their initialization phase. This is necessary so the fault injection doesn't
+  // happen during initialization, which would end up delaying the outgoing alert.
+  task wait_for_alert_sender_ready();
+    `uvm_info(`gfn, "Waiting for alert sender ready", UVM_MEDIUM)
+    forever @cfg.m_alert_agent_cfgs["fatal_cnsty_fault"].vif.sender_cb begin
+      if (cfg.m_alert_agent_cfgs["fatal_cnsty_fault"].vif.sender_cb.alert_rx.ping_p !=
+          cfg.m_alert_agent_cfgs["fatal_cnsty_fault"].vif.sender_cb.alert_rx.ping_n &&
+          cfg.m_alert_agent_cfgs["fatal_cnsty_fault"].vif.sender_cb.alert_rx.ack_p !=
+          cfg.m_alert_agent_cfgs["fatal_cnsty_fault"].vif.sender_cb.alert_rx.ack_n) begin
+        `uvm_info(`gfn, "Alert sender is ready", UVM_MEDIUM)
+        return;
+      end
+    end
+  endtask : wait_for_alert_sender_ready
 
   task check_alert_and_cpu_info_after_reset(alert_crashdump_t alert_dump, cpu_crash_dump_t cpu_dump,
                                             logic enable);
