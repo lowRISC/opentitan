@@ -68,6 +68,7 @@ module dma
   logic [top_pkg::TL_DW-1:0]  read_return_data_q, read_return_data_d;
   logic [SYS_ADDR_WIDTH-1:0]  new_source_addr, new_destination_addr;
 
+  logic dma_state_error;
   dma_ctrl_state_e ctrl_state_q, ctrl_state_d;
 
   logic [DmaErrLast-1:0] next_error;
@@ -165,7 +166,8 @@ module dma
   assign alert_test = {reg2hw.alert_test.q & reg2hw.alert_test.qe};
   assign alerts[0]  = reg_intg_error              ||
                       dma_host_tlul_rsp_intg_err  ||
-                      dma_ctn_tlul_rsp_intg_err;
+                      dma_ctn_tlul_rsp_intg_err   ||
+                      dma_state_error;
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
@@ -385,7 +387,8 @@ module dma
     capture_ctn_return_data  = 1'b0;
     capture_sys_return_data  = 1'b0;
 
-    read_rsp_error = 1'b0;
+    read_rsp_error  = 1'b0;
+    dma_state_error = 1'b0;
 
     unique case (ctrl_state_q)
       DmaIdle: begin
@@ -833,6 +836,7 @@ module dma
 
       default: begin
         // Should not be reachable
+        dma_state_error = 1'b1;
       end
     endcase
   end
