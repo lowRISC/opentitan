@@ -99,17 +99,12 @@ Following changes are envisioned to allow OT based boot customizations for an So
   - At reset no patches must be active.
 
   - The patch contents must be authenticated before being consumed by the ROM code.
-
-    - Authenticated using RSA3072 or ECC384, SHA-384.[^pqc]
-
-[^pqc]: Later revisions of this document may specify opt-in support for PQC signatures.
-  This revision does not include it due to OTP space and time-to-solution constraints.
+    This authentication uses RSA3072 or ECC384, SHA-384.
 
   - The ROM code should have the ability to lock out further patching capability prior to transferring control to execute out of RAM.
 
   - Patch code update must be authenticated prior to updating the patch section.
-
-    - Authenticated using RSA3072 or ECC384, SHA-384.
+    This authentication also uses RSA3072 or ECC384, SHA-384.
 
 **Note:** This ROM implements potentially new logic for each SoC and thus chances of having bug escapes is higher.
 An SoC built using an advanced node may not support an integrated flash.
