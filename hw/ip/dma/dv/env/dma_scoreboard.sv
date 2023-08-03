@@ -9,22 +9,21 @@ class dma_scoreboard extends cip_base_scoreboard #(
 );
   `uvm_component_utils(dma_scoreboard)
 
-  uvm_tlm_analysis_fifo #(tl_seq_item) dma_host_fifo;
-  uvm_tlm_analysis_fifo #(tl_seq_item) dma_xbar_fifo;
-  uvm_tlm_analysis_fifo #(tl_seq_item) csr_fifo;
-
   `uvm_component_new
-
-  tl_seq_item   host_queue[$];
-  tl_seq_item   xbar_queue[$];
-  tl_seq_item   csr_queue[$];
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+    // Create a_channel analysis fifo
+    foreach (cfg.dma_a_fifo[key]) begin
+      tl_a_chan_fifos[cfg.dma_a_fifo[key]] = new(cfg.dma_a_fifo[key], this);
+    end
+    foreach (cfg.dma_d_fifo[key]) begin
+      tl_d_chan_fifos[cfg.dma_d_fifo[key]] = new(cfg.dma_d_fifo[key], this);
+    end
+    foreach (cfg.dma_dir_fifo[key]) begin
+      tl_dir_fifos[cfg.dma_dir_fifo[key]] = new(cfg.dma_dir_fifo[key], this);
+    end
 
-    dma_host_fifo = new("dma_host_fifo", this);
-    dma_xbar_fifo = new("dma_xbar_fifo", this);
-    csr_fifo      = new("csr_fifo", this);
   endfunction: build_phase
 
   task run_phase(uvm_phase phase);
@@ -32,7 +31,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
 
     fork
       process_host_fifo();
-      process_xbar_fifo();
+      process_ctn_fifo();
       process_csr_fifo();
       //process_tl_access();
     join
@@ -41,7 +40,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
   virtual task process_host_fifo();
   endtask
 
-  virtual task process_xbar_fifo();
+  virtual task process_ctn_fifo();
   endtask
 
   virtual task process_csr_fifo();
