@@ -123,7 +123,8 @@ def data_type(name: str, val: int, as_hex: bool) -> str:
 filler_no = 0
 
 
-def possibly_gen_filler(regout: TextIO, highest_address: Set[int], next_address: int) -> None:
+def possibly_gen_filler(regout: TextIO, highest_address: Set[int],
+                        next_address: int) -> None:
     r"""Tock requires any gaps between registers do be declared as a reserved field.
     """
 
@@ -214,13 +215,15 @@ def gen_field_definitions(
         if field.auto_split:
             for sub_field_id in range(field.bits.lsb, field.bits.width()):
                 genout(fieldout, "\n{} OFFSET({}) NUMBITS({}) [],",
-                       "{}_{}".format(field.name.upper(), sub_field_id), sub_field_id, 1)
+                       "{}_{}".format(field.name.upper(),
+                                      sub_field_id), sub_field_id, 1)
         else:
-            genout(fieldout, "\n{} OFFSET({}) NUMBITS({}) [", field.name.upper(),
-                   field.bits.lsb, field.bits.width())
+            genout(fieldout, "\n{} OFFSET({}) NUMBITS({}) [",
+                   field.name.upper(), field.bits.lsb, field.bits.width())
             if getattr(field, 'enum', None) is not None:
                 for enum in field.enum:
-                    genout(fieldout, "\n{} = {},", sanitize_name(enum.name).upper(), enum.value)
+                    genout(fieldout, "\n{} = {},",
+                           sanitize_name(enum.name).upper(), enum.value)
                 genout(fieldout, "\n],")
             else:
                 genout(fieldout, "],")
@@ -387,7 +390,10 @@ def gen_tock(block: IpBlock, outfile: TextIO, src_file: Optional[str],
     # both Apache and MIT licenses.
     # Since these generated files are meant to be imported into the Tock
     # codebase, emit a header acceptable to Tock's license checker.
-    genout(outfile, "// Licensed under the Apache License, Version 2.0 or the MIT License.\n")
+    genout(
+        outfile,
+        "// Licensed under the Apache License, Version 2.0 or the MIT License.\n"
+    )
     genout(outfile, "// SPDX-License-Identifier: Apache-2.0 OR MIT\n")
     genout(outfile, "// Copyright lowRISC contributors {}.\n", dt.year)
     genout(outfile, '\n')
@@ -406,7 +412,10 @@ def gen_tock(block: IpBlock, outfile: TextIO, src_file: Optional[str],
 
     for access in sorted(access_type):
         genout(outfile, "use kernel::utilities::registers::{};\n", access)
-    genout(outfile, "use kernel::utilities::registers::{{register_bitfields, register_structs}};\n")
+    genout(
+        outfile,
+        "use kernel::utilities::registers::{{register_bitfields, register_structs}};\n"
+    )
 
     outfile.write(indent(paramstr))
     outfile.write(indent(regstr))

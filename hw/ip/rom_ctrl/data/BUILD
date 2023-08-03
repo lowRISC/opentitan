@@ -11,6 +11,7 @@ autogen_hjson_header(
     srcs = [
         "rom_ctrl.hjson",
     ],
+    node = "regs",
 )
 
 filegroup(
