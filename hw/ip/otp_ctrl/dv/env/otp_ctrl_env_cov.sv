@@ -75,7 +75,16 @@ class otp_ctrl_csr_rd_after_alert_cg_wrap;
       bins direct_access_rdata = {ral.direct_access_rdata[0].get_offset(),
                                   ral.direct_access_rdata[1].get_offset()};
       bins status              = {ral.status.get_offset()};
-      bins error_code          = {ral.err_code[0].get_offset()};
+      bins error_code          = {ral.err_code[0].get_offset(),
+                                  ral.err_code[1].get_offset(),
+                                  ral.err_code[2].get_offset(),
+                                  ral.err_code[3].get_offset(),
+                                  ral.err_code[4].get_offset(),
+                                  ral.err_code[5].get_offset(),
+                                  ral.err_code[6].get_offset(),
+                                  ral.err_code[7].get_offset(),
+                                  ral.err_code[8].get_offset(),
+                                  ral.err_code[9].get_offset()};
     }
   endgroup
 
@@ -292,9 +301,9 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
 
   function void collect_err_code_cov(bit [TL_DW-1:0] val, int part_idx = DaiIdx);
     dv_base_reg_field err_code_flds[$];
-    cfg.ral.err_code[0].get_dv_base_reg_fields(err_code_flds);
-    foreach (err_code_flds[i]) begin
-      collect_err_code_field_cov(i, get_field_val(err_code_flds[i], val), part_idx);
+    for (int k = 0; k <= OtpLciErrIdx; k++) begin
+      cfg.ral.err_code[k].get_dv_base_reg_fields(err_code_flds);
+      collect_err_code_field_cov(k, get_field_val(err_code_flds[0], val), part_idx);
     end
   endfunction
 

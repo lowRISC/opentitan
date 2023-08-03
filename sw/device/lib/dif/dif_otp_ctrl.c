@@ -228,8 +228,6 @@ dif_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
   status->codes = 0;
   uint32_t status_code =
       mmio_region_read32(otp->base_addr, OTP_CTRL_STATUS_REG_OFFSET);
-  uint32_t error_codes =
-      mmio_region_read32(otp->base_addr, OTP_CTRL_ERR_CODE_REG_OFFSET);
   for (int i = 0; i < ARRAYSIZE(kIndices); ++i) {
     // If the error is not present at all, we clear its cause bit if relevant,
     // and bail immediately.
@@ -243,103 +241,48 @@ dif_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
     status->codes =
         bitfield_bit32_write(status->codes, (bitfield_bit32_index_t)i, true);
 
-    bitfield_field32_t field;
-    switch (i) {
-      case kDifOtpCtrlStatusCodeVendorTestError:
-        field = (bitfield_field32_t){
-            .mask = OTP_CTRL_ERR_CODE_ERR_CODE_0_MASK,
-            .index = OTP_CTRL_ERR_CODE_ERR_CODE_0_OFFSET,
-        };
-        break;
-      case kDifOtpCtrlStatusCodeCreatorSwCfgError:
-        field = (bitfield_field32_t){
-            .mask = OTP_CTRL_ERR_CODE_ERR_CODE_1_MASK,
-            .index = OTP_CTRL_ERR_CODE_ERR_CODE_1_OFFSET,
-        };
-        break;
-      case kDifOtpCtrlStatusCodeOwnerSwCfgError:
-        field = (bitfield_field32_t){
-            .mask = OTP_CTRL_ERR_CODE_ERR_CODE_2_MASK,
-            .index = OTP_CTRL_ERR_CODE_ERR_CODE_2_OFFSET,
-        };
-        break;
-      case kDifOtpCtrlStatusCodeHwCfgError:
-        field = (bitfield_field32_t){
-            .mask = OTP_CTRL_ERR_CODE_ERR_CODE_3_MASK,
-            .index = OTP_CTRL_ERR_CODE_ERR_CODE_3_OFFSET,
-        };
-        break;
-      case kDifOtpCtrlStatusCodeSecret0Error:
-        field = (bitfield_field32_t){
-            .mask = OTP_CTRL_ERR_CODE_ERR_CODE_4_MASK,
-            .index = OTP_CTRL_ERR_CODE_ERR_CODE_4_OFFSET,
-        };
-        break;
-      case kDifOtpCtrlStatusCodeSecret1Error:
-        field = (bitfield_field32_t){
-            .mask = OTP_CTRL_ERR_CODE_ERR_CODE_5_MASK,
-            .index = OTP_CTRL_ERR_CODE_ERR_CODE_5_OFFSET,
-        };
-        break;
-      case kDifOtpCtrlStatusCodeSecret2Error:
-        field = (bitfield_field32_t){
-            .mask = OTP_CTRL_ERR_CODE_ERR_CODE_6_MASK,
-            .index = OTP_CTRL_ERR_CODE_ERR_CODE_6_OFFSET,
-        };
-        break;
-      case kDifOtpCtrlStatusCodeLifeCycleError:
-        field = (bitfield_field32_t){
-            .mask = OTP_CTRL_ERR_CODE_ERR_CODE_7_MASK,
-            .index = OTP_CTRL_ERR_CODE_ERR_CODE_7_OFFSET,
-        };
-        break;
-      case kDifOtpCtrlStatusCodeDaiError:
-        field = (bitfield_field32_t){
-            .mask = OTP_CTRL_ERR_CODE_ERR_CODE_8_MASK,
-            .index = OTP_CTRL_ERR_CODE_ERR_CODE_8_OFFSET,
-        };
-        break;
-      case kDifOtpCtrlStatusCodeLciError:
-        field = (bitfield_field32_t){
-            .mask = OTP_CTRL_ERR_CODE_ERR_CODE_9_MASK,
-            .index = OTP_CTRL_ERR_CODE_ERR_CODE_9_OFFSET,
-        };
-        break;
-      // Not an error status, so there's nothing to do.
-      default:
-        continue;
-    }
+    if (i <= kDifOtpCtrlStatusCodeHasCauseLast) {
+      bitfield_field32_t field;
+      field = (bitfield_field32_t){
+          .mask = OTP_CTRL_ERR_CODE_0_ERR_CODE_0_MASK,
+          .index = OTP_CTRL_ERR_CODE_0_ERR_CODE_0_OFFSET,
+      };
 
-    dif_otp_ctrl_error_t err;
-    switch (bitfield_field32_read(error_codes, field)) {
-      case OTP_CTRL_ERR_CODE_ERR_CODE_0_VALUE_NO_ERROR:
-        err = kDifOtpCtrlErrorOk;
-        break;
-      case OTP_CTRL_ERR_CODE_ERR_CODE_0_VALUE_MACRO_ERROR:
-        err = kDifOtpCtrlErrorMacroUnspecified;
-        break;
-      case OTP_CTRL_ERR_CODE_ERR_CODE_0_VALUE_MACRO_ECC_CORR_ERROR:
-        err = kDifOtpCtrlErrorMacroRecoverableRead;
-        break;
-      case OTP_CTRL_ERR_CODE_ERR_CODE_0_VALUE_MACRO_ECC_UNCORR_ERROR:
-        err = kDifOtpCtrlErrorMacroUnrecoverableRead;
-        break;
-      case OTP_CTRL_ERR_CODE_ERR_CODE_0_VALUE_MACRO_WRITE_BLANK_ERROR:
-        err = kDifOtpCtrlErrorMacroBlankCheckFailed;
-        break;
-      case OTP_CTRL_ERR_CODE_ERR_CODE_0_VALUE_ACCESS_ERROR:
-        err = kDifOtpCtrlErrorLockedAccess;
-        break;
-      case OTP_CTRL_ERR_CODE_ERR_CODE_0_VALUE_CHECK_FAIL_ERROR:
-        err = kDifOtpCtrlErrorBackgroundCheckFailed;
-        break;
-      case OTP_CTRL_ERR_CODE_ERR_CODE_0_VALUE_FSM_STATE_ERROR:
-        err = kDifOtpCtrlErrorFsmBadState;
-        break;
-      default:
-        return kDifError;
+      ptrdiff_t address =
+          OTP_CTRL_ERR_CODE_0_REG_OFFSET + i * (ptrdiff_t)sizeof(uint32_t);
+      uint32_t error_code = mmio_region_read32(otp->base_addr, address);
+
+      dif_otp_ctrl_error_t err;
+      switch (bitfield_field32_read(error_code, field)) {
+        case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_NO_ERROR:
+          err = kDifOtpCtrlErrorOk;
+          break;
+        case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_MACRO_ERROR:
+          err = kDifOtpCtrlErrorMacroUnspecified;
+          break;
+        case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_MACRO_ECC_CORR_ERROR:
+          err = kDifOtpCtrlErrorMacroRecoverableRead;
+          break;
+        case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_MACRO_ECC_UNCORR_ERROR:
+          err = kDifOtpCtrlErrorMacroUnrecoverableRead;
+          break;
+        case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_MACRO_WRITE_BLANK_ERROR:
+          err = kDifOtpCtrlErrorMacroBlankCheckFailed;
+          break;
+        case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_ACCESS_ERROR:
+          err = kDifOtpCtrlErrorLockedAccess;
+          break;
+        case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_CHECK_FAIL_ERROR:
+          err = kDifOtpCtrlErrorBackgroundCheckFailed;
+          break;
+        case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_FSM_STATE_ERROR:
+          err = kDifOtpCtrlErrorFsmBadState;
+          break;
+        default:
+          return kDifError;
+      }
+      status->causes[i] = err;
     }
-    status->causes[i] = err;
   }
 
   return kDifOk;

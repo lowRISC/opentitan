@@ -218,7 +218,6 @@ TEST_F(StatusTest, Idle) {
 
   EXPECT_READ32(OTP_CTRL_STATUS_REG_OFFSET,
                 {{OTP_CTRL_STATUS_DAI_IDLE_BIT, true}});
-  EXPECT_READ32(OTP_CTRL_ERR_CODE_REG_OFFSET, 0);
   EXPECT_DIF_OK(dif_otp_ctrl_get_status(&otp_, &status));
 
   EXPECT_EQ(status.codes, 1 << kDifOtpCtrlStatusCodeDaiIdle);
@@ -235,11 +234,12 @@ TEST_F(StatusTest, Errors) {
                     {OTP_CTRL_STATUS_LCI_ERROR_BIT, true},
                 });
 
-  EXPECT_READ32(OTP_CTRL_ERR_CODE_REG_OFFSET,
-                {{OTP_CTRL_ERR_CODE_ERR_CODE_3_OFFSET,
-                  OTP_CTRL_ERR_CODE_ERR_CODE_0_VALUE_MACRO_ECC_CORR_ERROR},
-                 {OTP_CTRL_ERR_CODE_ERR_CODE_9_OFFSET,
-                  OTP_CTRL_ERR_CODE_ERR_CODE_0_VALUE_MACRO_ERROR}});
+  EXPECT_READ32(OTP_CTRL_ERR_CODE_3_REG_OFFSET,
+                {{OTP_CTRL_ERR_CODE_0_ERR_CODE_0_OFFSET,
+                  OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_MACRO_ECC_CORR_ERROR}});
+  EXPECT_READ32(OTP_CTRL_ERR_CODE_9_REG_OFFSET,
+                {{OTP_CTRL_ERR_CODE_0_ERR_CODE_0_OFFSET,
+                  OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_MACRO_ERROR}});
 
   EXPECT_DIF_OK(dif_otp_ctrl_get_status(&otp_, &status));
   EXPECT_EQ(status.codes, (1 << kDifOtpCtrlStatusCodeDaiIdle) |

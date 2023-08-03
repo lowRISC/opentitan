@@ -417,7 +417,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
           forever begin
             bit [TL_DW-1:0] err_val;
             cfg.clk_rst_vif.wait_clks(1);
-            csr_rd(.ptr(ral.err_code[0].err_code[7]), .value(err_val), .backdoor(1));
+            csr_rd(.ptr(ral.err_code[DaiIdx].err_code), .value(err_val), .backdoor(1));
             // Break if error will cause fatal alerts
             if (err_val inside {OTP_TERMINAL_ERRS}) break;
           end
