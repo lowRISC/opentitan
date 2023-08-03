@@ -19,6 +19,7 @@
 | [`keymgr_dpe`]   | Manage multiple DICE sessions in a DPE-compatible way                                                                             |
 | [`kmac`]         | Accelerator for Keccak-based keyed hash message authentication code and SHA-3 hash functions; with SCA and FI countermeasures     |
 | [`lc_ctrl`]      | Manages device life cycle states and transitions, and controls key manager, flash, OTP, and debug access                          |
+| [`mbx`]          | DOE mailbox for use as an integrated OpenTitan communication channel.                                                             |
 | [`otbn`]         | Programmable coprocessor for asymmetric cryptography with SCA and FI countermeasures                                              |
 | [`otp_ctrl`]     | Interfaces integrated one-time programmable memory, supports scrambling, integrity and secure wipe                                |
 | [`pattgen`]      | Transmission of short time-dependent data patterns on two clock-parallel output channels                                          |
@@ -53,6 +54,7 @@
 [`keymgr_dpe`]: ./keymgr_dpe/README.md
 [`kmac`]: ./kmac/README.md
 [`lc_ctrl`]: ./lc_ctrl/README.md
+[`mbx`]: ./mbx/README.md
 [`otbn`]: ./otbn/README.md
 [`otp_ctrl`]: ./otp_ctrl/README.md
 [`pattgen`]: ./pattgen/README.md
