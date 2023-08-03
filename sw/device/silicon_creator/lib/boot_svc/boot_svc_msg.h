@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_empty.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_header.h"
+#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_min_bl0_sec_ver.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_next_boot_bl0_slot.h"
 
 #ifdef __cplusplus
@@ -27,7 +28,12 @@ extern "C" {
    * Next Boot BL0 Slot request and response.
    */ \
   X(boot_svc_next_boot_bl0_slot_req_t, next_boot_bl0_slot_req) \
-  X(boot_svc_next_boot_bl0_slot_res_t, next_boot_bl0_slot_res)
+  X(boot_svc_next_boot_bl0_slot_res_t, next_boot_bl0_slot_res) \
+  /**
+   * Set Minimum Security Version request and response.
+   */ \
+  X(boot_svc_min_bl0_sec_ver_req_t, min_bl0_sec_ver_req) \
+  X(boot_svc_min_bl0_sec_ver_res_t, min_bl0_sec_ver_res)
 // clang-format on
 
 /**
