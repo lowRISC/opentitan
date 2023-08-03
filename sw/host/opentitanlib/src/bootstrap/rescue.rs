@@ -39,7 +39,6 @@ impl Default for Frame {
 }
 
 impl Frame {
-    const EOF: u32 = 0x8000_0000;
     const FLASH_SECTOR_SIZE: usize = 2048;
     const FLASH_SECTOR_MASK: usize = Self::FLASH_SECTOR_SIZE - 1;
     const FLASH_BUFFER_SIZE: usize = 128;
@@ -111,6 +110,13 @@ impl Frame {
             + 1)
             * 4;
 
+        // Round up to multiple of 128 bytes, this is to ensure that the bootloader flushes the
+        // last data transmitted, even in the absense of the "EOF" flag.  The reason we do not
+        // send that flag is that it causes immediate boot into the code just programmed, and we
+        // want to allow the user to use --leave_in_reset to control exactly when the newly
+        // programmed code should first run.
+        let max_addr = (max_addr + Self::FLASH_BUFFER_SIZE - 1) & !Self::FLASH_BUFFER_MASK;
+
         let mut frames = Vec::new();
         let mut frame_num = 0;
         let mut addr = min_addr;
@@ -137,15 +143,15 @@ impl Frame {
                 },
                 ..Default::default()
             };
-            let slice_size = Self::DATA_LEN.min(payload.len() - addr);
+            let slice_size = Self::DATA_LEN.min(max_addr - addr);
             frame.data[..slice_size].copy_from_slice(&payload[addr..addr + slice_size]);
+            for i in slice_size..Self::DATA_LEN {
+                frame.data[i] = 0xFF;
+            }
             frames.push(frame);
 
             addr += Self::DATA_LEN;
             frame_num += 1;
-        }
-        if let Some(f) = frames.last_mut() {
-            f.header.frame_num |= Self::EOF;
         }
         frames
             .iter_mut()
