@@ -54,6 +54,10 @@ If you are building another form of simulation, this constraint does not apply.
 If you are specifying a new machine to run top-level simulations of the whole of OpenTitan using Verilator, it is recommended that you
 have a minimum of **32GiB of physical RAM** and at least **512GiB of disk storage** for the build tools, repository and Ubuntu installation.
 
+There are unofficial guides for alternate Linux environments.
+The unofficial guides are not formally supported by the OpenTitan project. YMMV.
+- [RedHat/Fedora](unofficial/fedora.md)
+
 ## Step 2: Install dependencies using the package manager
 
 *Skip this step if using the Docker container.*
