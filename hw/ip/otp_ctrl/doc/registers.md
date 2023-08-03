@@ -10,37 +10,46 @@
 | otp_ctrl.[`INTR_TEST`](#intr_test)                               | 0x8      |        4 | Interrupt Test Register                                                                             |
 | otp_ctrl.[`ALERT_TEST`](#alert_test)                             | 0xc      |        4 | Alert Test Register                                                                                 |
 | otp_ctrl.[`STATUS`](#status)                                     | 0x10     |        4 | OTP status register.                                                                                |
-| otp_ctrl.[`ERR_CODE`](#ERR_CODE)                                 | 0x14     |        4 | This register holds information about error conditions that occurred in the agents                  |
-| otp_ctrl.[`DIRECT_ACCESS_REGWEN`](#direct_access_regwen)         | 0x18     |        4 | Register write enable for all direct access interface registers.                                    |
-| otp_ctrl.[`DIRECT_ACCESS_CMD`](#direct_access_cmd)               | 0x1c     |        4 | Command register for direct accesses.                                                               |
-| otp_ctrl.[`DIRECT_ACCESS_ADDRESS`](#direct_access_address)       | 0x20     |        4 | Address register for direct accesses.                                                               |
-| otp_ctrl.[`DIRECT_ACCESS_WDATA_0`](#direct_access_wdata)         | 0x24     |        4 | Write data for direct accesses.                                                                     |
-| otp_ctrl.[`DIRECT_ACCESS_WDATA_1`](#direct_access_wdata)         | 0x28     |        4 | Write data for direct accesses.                                                                     |
-| otp_ctrl.[`DIRECT_ACCESS_RDATA_0`](#direct_access_rdata)         | 0x2c     |        4 | Read data for direct accesses.                                                                      |
-| otp_ctrl.[`DIRECT_ACCESS_RDATA_1`](#direct_access_rdata)         | 0x30     |        4 | Read data for direct accesses.                                                                      |
-| otp_ctrl.[`CHECK_TRIGGER_REGWEN`](#check_trigger_regwen)         | 0x34     |        4 | Register write enable for !!CHECK_TRIGGER.                                                          |
-| otp_ctrl.[`CHECK_TRIGGER`](#check_trigger)                       | 0x38     |        4 | Command register for direct accesses.                                                               |
-| otp_ctrl.[`CHECK_REGWEN`](#check_regwen)                         | 0x3c     |        4 | Register write enable for !!INTEGRITY_CHECK_PERIOD and !!CONSISTENCY_CHECK_PERIOD.                  |
-| otp_ctrl.[`CHECK_TIMEOUT`](#check_timeout)                       | 0x40     |        4 | Timeout value for the integrity and consistency checks.                                             |
-| otp_ctrl.[`INTEGRITY_CHECK_PERIOD`](#integrity_check_period)     | 0x44     |        4 | This value specifies the maximum period that can be generated pseudo-randomly.                      |
-| otp_ctrl.[`CONSISTENCY_CHECK_PERIOD`](#consistency_check_period) | 0x48     |        4 | This value specifies the maximum period that can be generated pseudo-randomly.                      |
-| otp_ctrl.[`VENDOR_TEST_READ_LOCK`](#vendor_test_read_lock)       | 0x4c     |        4 | Runtime read lock for the VENDOR_TEST partition.                                                    |
-| otp_ctrl.[`CREATOR_SW_CFG_READ_LOCK`](#creator_sw_cfg_read_lock) | 0x50     |        4 | Runtime read lock for the CREATOR_SW_CFG partition.                                                 |
-| otp_ctrl.[`OWNER_SW_CFG_READ_LOCK`](#owner_sw_cfg_read_lock)     | 0x54     |        4 | Runtime read lock for the OWNER_SW_CFG partition.                                                   |
-| otp_ctrl.[`VENDOR_TEST_DIGEST_0`](#vendor_test_digest)           | 0x58     |        4 | Integrity digest for the VENDOR_TEST partition.                                                     |
-| otp_ctrl.[`VENDOR_TEST_DIGEST_1`](#vendor_test_digest)           | 0x5c     |        4 | Integrity digest for the VENDOR_TEST partition.                                                     |
-| otp_ctrl.[`CREATOR_SW_CFG_DIGEST_0`](#creator_sw_cfg_digest)     | 0x60     |        4 | Integrity digest for the CREATOR_SW_CFG partition.                                                  |
-| otp_ctrl.[`CREATOR_SW_CFG_DIGEST_1`](#creator_sw_cfg_digest)     | 0x64     |        4 | Integrity digest for the CREATOR_SW_CFG partition.                                                  |
-| otp_ctrl.[`OWNER_SW_CFG_DIGEST_0`](#owner_sw_cfg_digest)         | 0x68     |        4 | Integrity digest for the OWNER_SW_CFG partition.                                                    |
-| otp_ctrl.[`OWNER_SW_CFG_DIGEST_1`](#owner_sw_cfg_digest)         | 0x6c     |        4 | Integrity digest for the OWNER_SW_CFG partition.                                                    |
-| otp_ctrl.[`HW_CFG_DIGEST_0`](#hw_cfg_digest)                     | 0x70     |        4 | Integrity digest for the HW_CFG partition.                                                          |
-| otp_ctrl.[`HW_CFG_DIGEST_1`](#hw_cfg_digest)                     | 0x74     |        4 | Integrity digest for the HW_CFG partition.                                                          |
-| otp_ctrl.[`SECRET0_DIGEST_0`](#secret0_digest)                   | 0x78     |        4 | Integrity digest for the SECRET0 partition.                                                         |
-| otp_ctrl.[`SECRET0_DIGEST_1`](#secret0_digest)                   | 0x7c     |        4 | Integrity digest for the SECRET0 partition.                                                         |
-| otp_ctrl.[`SECRET1_DIGEST_0`](#secret1_digest)                   | 0x80     |        4 | Integrity digest for the SECRET1 partition.                                                         |
-| otp_ctrl.[`SECRET1_DIGEST_1`](#secret1_digest)                   | 0x84     |        4 | Integrity digest for the SECRET1 partition.                                                         |
-| otp_ctrl.[`SECRET2_DIGEST_0`](#secret2_digest)                   | 0x88     |        4 | Integrity digest for the SECRET2 partition.                                                         |
-| otp_ctrl.[`SECRET2_DIGEST_1`](#secret2_digest)                   | 0x8c     |        4 | Integrity digest for the SECRET2 partition.                                                         |
+| otp_ctrl.[`ERR_CODE_0`](#err_code)                               | 0x14     |        4 | This register holds information about error conditions that occurred in the agents                  |
+| otp_ctrl.[`ERR_CODE_1`](#err_code)                               | 0x18     |        4 | This register holds information about error conditions that occurred in the agents                  |
+| otp_ctrl.[`ERR_CODE_2`](#err_code)                               | 0x1c     |        4 | This register holds information about error conditions that occurred in the agents                  |
+| otp_ctrl.[`ERR_CODE_3`](#err_code)                               | 0x20     |        4 | This register holds information about error conditions that occurred in the agents                  |
+| otp_ctrl.[`ERR_CODE_4`](#err_code)                               | 0x24     |        4 | This register holds information about error conditions that occurred in the agents                  |
+| otp_ctrl.[`ERR_CODE_5`](#err_code)                               | 0x28     |        4 | This register holds information about error conditions that occurred in the agents                  |
+| otp_ctrl.[`ERR_CODE_6`](#err_code)                               | 0x2c     |        4 | This register holds information about error conditions that occurred in the agents                  |
+| otp_ctrl.[`ERR_CODE_7`](#err_code)                               | 0x30     |        4 | This register holds information about error conditions that occurred in the agents                  |
+| otp_ctrl.[`ERR_CODE_8`](#err_code)                               | 0x34     |        4 | This register holds information about error conditions that occurred in the agents                  |
+| otp_ctrl.[`ERR_CODE_9`](#err_code)                               | 0x38     |        4 | This register holds information about error conditions that occurred in the agents                  |
+| otp_ctrl.[`DIRECT_ACCESS_REGWEN`](#direct_access_regwen)         | 0x3c     |        4 | Register write enable for all direct access interface registers.                                    |
+| otp_ctrl.[`DIRECT_ACCESS_CMD`](#direct_access_cmd)               | 0x40     |        4 | Command register for direct accesses.                                                               |
+| otp_ctrl.[`DIRECT_ACCESS_ADDRESS`](#direct_access_address)       | 0x44     |        4 | Address register for direct accesses.                                                               |
+| otp_ctrl.[`DIRECT_ACCESS_WDATA_0`](#direct_access_wdata)         | 0x48     |        4 | Write data for direct accesses.                                                                     |
+| otp_ctrl.[`DIRECT_ACCESS_WDATA_1`](#direct_access_wdata)         | 0x4c     |        4 | Write data for direct accesses.                                                                     |
+| otp_ctrl.[`DIRECT_ACCESS_RDATA_0`](#direct_access_rdata)         | 0x50     |        4 | Read data for direct accesses.                                                                      |
+| otp_ctrl.[`DIRECT_ACCESS_RDATA_1`](#direct_access_rdata)         | 0x54     |        4 | Read data for direct accesses.                                                                      |
+| otp_ctrl.[`CHECK_TRIGGER_REGWEN`](#check_trigger_regwen)         | 0x58     |        4 | Register write enable for !!CHECK_TRIGGER.                                                          |
+| otp_ctrl.[`CHECK_TRIGGER`](#check_trigger)                       | 0x5c     |        4 | Command register for direct accesses.                                                               |
+| otp_ctrl.[`CHECK_REGWEN`](#check_regwen)                         | 0x60     |        4 | Register write enable for !!INTEGRITY_CHECK_PERIOD and !!CONSISTENCY_CHECK_PERIOD.                  |
+| otp_ctrl.[`CHECK_TIMEOUT`](#check_timeout)                       | 0x64     |        4 | Timeout value for the integrity and consistency checks.                                             |
+| otp_ctrl.[`INTEGRITY_CHECK_PERIOD`](#integrity_check_period)     | 0x68     |        4 | This value specifies the maximum period that can be generated pseudo-randomly.                      |
+| otp_ctrl.[`CONSISTENCY_CHECK_PERIOD`](#consistency_check_period) | 0x6c     |        4 | This value specifies the maximum period that can be generated pseudo-randomly.                      |
+| otp_ctrl.[`VENDOR_TEST_READ_LOCK`](#vendor_test_read_lock)       | 0x70     |        4 | Runtime read lock for the VENDOR_TEST partition.                                                    |
+| otp_ctrl.[`CREATOR_SW_CFG_READ_LOCK`](#creator_sw_cfg_read_lock) | 0x74     |        4 | Runtime read lock for the CREATOR_SW_CFG partition.                                                 |
+| otp_ctrl.[`OWNER_SW_CFG_READ_LOCK`](#owner_sw_cfg_read_lock)     | 0x78     |        4 | Runtime read lock for the OWNER_SW_CFG partition.                                                   |
+| otp_ctrl.[`VENDOR_TEST_DIGEST_0`](#vendor_test_digest)           | 0x7c     |        4 | Integrity digest for the VENDOR_TEST partition.                                                     |
+| otp_ctrl.[`VENDOR_TEST_DIGEST_1`](#vendor_test_digest)           | 0x80     |        4 | Integrity digest for the VENDOR_TEST partition.                                                     |
+| otp_ctrl.[`CREATOR_SW_CFG_DIGEST_0`](#creator_sw_cfg_digest)     | 0x84     |        4 | Integrity digest for the CREATOR_SW_CFG partition.                                                  |
+| otp_ctrl.[`CREATOR_SW_CFG_DIGEST_1`](#creator_sw_cfg_digest)     | 0x88     |        4 | Integrity digest for the CREATOR_SW_CFG partition.                                                  |
+| otp_ctrl.[`OWNER_SW_CFG_DIGEST_0`](#owner_sw_cfg_digest)         | 0x8c     |        4 | Integrity digest for the OWNER_SW_CFG partition.                                                    |
+| otp_ctrl.[`OWNER_SW_CFG_DIGEST_1`](#owner_sw_cfg_digest)         | 0x90     |        4 | Integrity digest for the OWNER_SW_CFG partition.                                                    |
+| otp_ctrl.[`HW_CFG_DIGEST_0`](#hw_cfg_digest)                     | 0x94     |        4 | Integrity digest for the HW_CFG partition.                                                          |
+| otp_ctrl.[`HW_CFG_DIGEST_1`](#hw_cfg_digest)                     | 0x98     |        4 | Integrity digest for the HW_CFG partition.                                                          |
+| otp_ctrl.[`SECRET0_DIGEST_0`](#secret0_digest)                   | 0x9c     |        4 | Integrity digest for the SECRET0 partition.                                                         |
+| otp_ctrl.[`SECRET0_DIGEST_1`](#secret0_digest)                   | 0xa0     |        4 | Integrity digest for the SECRET0 partition.                                                         |
+| otp_ctrl.[`SECRET1_DIGEST_0`](#secret1_digest)                   | 0xa4     |        4 | Integrity digest for the SECRET1 partition.                                                         |
+| otp_ctrl.[`SECRET1_DIGEST_1`](#secret1_digest)                   | 0xa8     |        4 | Integrity digest for the SECRET1 partition.                                                         |
+| otp_ctrl.[`SECRET2_DIGEST_0`](#secret2_digest)                   | 0xac     |        4 | Integrity digest for the SECRET2 partition.                                                         |
+| otp_ctrl.[`SECRET2_DIGEST_1`](#secret2_digest)                   | 0xb0     |        4 | Integrity digest for the SECRET2 partition.                                                         |
 | otp_ctrl.[`SW_CFG_WINDOW`](#sw_cfg_window)                       | 0x1000   |     2048 | Any read to this window directly maps to the corresponding offset in the creator and owner software |
 
 ## INTR_STATE
@@ -158,157 +167,37 @@ if the partitions, DAI or LCI flag an error in the [`STATUS`](#status) register,
 [`INTR_STATE.otp_error`](#intr_state) has been triggered. Note that all errors trigger an otp_error
 interrupt, and in addition some errors may trigger either an fatal_macro_error or an
 fatal_check_error alert.
-- Offset: `0x14`
 - Reset default: `0x0`
-- Reset mask: `0x3fffffff`
+- Reset mask: `0x7`
+
+### Instances
+
+| Name       | Offset   |
+|:-----------|:---------|
+| ERR_CODE_0 | 0x14     |
+| ERR_CODE_1 | 0x18     |
+| ERR_CODE_2 | 0x1c     |
+| ERR_CODE_3 | 0x20     |
+| ERR_CODE_4 | 0x24     |
+| ERR_CODE_5 | 0x28     |
+| ERR_CODE_6 | 0x2c     |
+| ERR_CODE_7 | 0x30     |
+| ERR_CODE_8 | 0x34     |
+| ERR_CODE_9 | 0x38     |
+
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ERR_CODE_0", "bits": 3, "attr": ["ro"], "rotate": -90}, {"name": "ERR_CODE_1", "bits": 3, "attr": ["ro"], "rotate": -90}, {"name": "ERR_CODE_2", "bits": 3, "attr": ["ro"], "rotate": -90}, {"name": "ERR_CODE_3", "bits": 3, "attr": ["ro"], "rotate": -90}, {"name": "ERR_CODE_4", "bits": 3, "attr": ["ro"], "rotate": -90}, {"name": "ERR_CODE_5", "bits": 3, "attr": ["ro"], "rotate": -90}, {"name": "ERR_CODE_6", "bits": 3, "attr": ["ro"], "rotate": -90}, {"name": "ERR_CODE_7", "bits": 3, "attr": ["ro"], "rotate": -90}, {"name": "ERR_CODE_8", "bits": 3, "attr": ["ro"], "rotate": -90}, {"name": "ERR_CODE_9", "bits": 3, "attr": ["ro"], "rotate": -90}, {"bits": 2}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
+{"reg": [{"name": "ERR_CODE", "bits": 3, "attr": ["ro"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 100}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                |
-|:------:|:------:|:-------:|:------------------------------------|
-| 31:30  |        |         | Reserved                            |
-| 29:27  |   ro   |   0x0   | [ERR_CODE_9](#err_code--err_code_9) |
-| 26:24  |   ro   |   0x0   | [ERR_CODE_8](#err_code--err_code_8) |
-| 23:21  |   ro   |   0x0   | [ERR_CODE_7](#err_code--err_code_7) |
-| 20:18  |   ro   |   0x0   | [ERR_CODE_6](#err_code--err_code_6) |
-| 17:15  |   ro   |   0x0   | [ERR_CODE_5](#err_code--err_code_5) |
-| 14:12  |   ro   |   0x0   | [ERR_CODE_4](#err_code--err_code_4) |
-|  11:9  |   ro   |   0x0   | [ERR_CODE_3](#err_code--err_code_3) |
-|  8:6   |   ro   |   0x0   | [ERR_CODE_2](#err_code--err_code_2) |
-|  5:3   |   ro   |   0x0   | [ERR_CODE_1](#err_code--err_code_1) |
-|  2:0   |   ro   |   0x0   | [ERR_CODE_0](#err_code--err_code_0) |
+|  Bits  |  Type  |  Reset  | Name                            |
+|:------:|:------:|:-------:|:--------------------------------|
+|  31:3  |        |         | Reserved                        |
+|  2:0   |   ro   |   0x0   | [ERR_CODE](#err_code--err_code) |
 
-### ERR_CODE . ERR_CODE_9
-
-| Value   | Name                    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-|:--------|:------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | NO_ERROR                | No error condition has occurred.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 0x1     | MACRO_ERROR             | Returned if the OTP macro command was invalid or did not complete successfully due to a macro malfunction. This error should never occur during normal operation and is not recoverable. This error triggers an fatal_macro_error alert.                                                                                                                                                                                                                                                                                                                                                                             |
-| 0x2     | MACRO_ECC_CORR_ERROR    | A correctable ECC error has occured during an OTP read operation. The corresponding controller automatically recovers from this error when issuing a new command.                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| 0x3     | MACRO_ECC_UNCORR_ERROR  | An uncorrectable ECC error has occurred during an OTP read operation. This error should never occur during normal operation and is not recoverable. If this error is present this may be a sign that the device is malfunctioning. This error triggers an fatal_macro_error alert.                                                                                                                                                                                                                                                                                                                                   |
-| 0x4     | MACRO_WRITE_BLANK_ERROR | This error is returned if a programming operation attempted to clear a bit that has previously been programmed to 1. The corresponding controller automatically recovers from this error when issuing a new command. Note however that the affected OTP word may be left in an inconsistent state if this error occurs. This can cause several issues when the word is accessed again (either as part of a regular read operation, as part of the readout at boot, or as part of a background check). It is important that SW ensures that each word is only written once, since this can render the device useless. |
-| 0x5     | ACCESS_ERROR            | This error indicates that a locked memory region has been accessed. The corresponding controller automatically recovers from this error when issuing a new command.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| 0x6     | CHECK_FAIL_ERROR        | An ECC, integrity or consistency mismatch has been detected in the buffer registers. This error should never occur during normal operation and is not recoverable. This error triggers an fatal_check_error alert.                                                                                                                                                                                                                                                                                                                                                                                                   |
-| 0x7     | FSM_STATE_ERROR         | The FSM of the corresponding controller has reached an invalid state, or the FSM has been moved into a terminal error state due to an escalation action via lc_escalate_en_i. This error should never occur during normal operation and is not recoverable. If this error is present, this is a sign that the device has fallen victim to an invasive attack. This error triggers an fatal_check_error alert.                                                                                                                                                                                                        |
-
-
-### ERR_CODE . ERR_CODE_8
-
-| Value   | Name                    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-|:--------|:------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | NO_ERROR                | No error condition has occurred.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 0x1     | MACRO_ERROR             | Returned if the OTP macro command was invalid or did not complete successfully due to a macro malfunction. This error should never occur during normal operation and is not recoverable. This error triggers an fatal_macro_error alert.                                                                                                                                                                                                                                                                                                                                                                             |
-| 0x2     | MACRO_ECC_CORR_ERROR    | A correctable ECC error has occured during an OTP read operation. The corresponding controller automatically recovers from this error when issuing a new command.                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| 0x3     | MACRO_ECC_UNCORR_ERROR  | An uncorrectable ECC error has occurred during an OTP read operation. This error should never occur during normal operation and is not recoverable. If this error is present this may be a sign that the device is malfunctioning. This error triggers an fatal_macro_error alert.                                                                                                                                                                                                                                                                                                                                   |
-| 0x4     | MACRO_WRITE_BLANK_ERROR | This error is returned if a programming operation attempted to clear a bit that has previously been programmed to 1. The corresponding controller automatically recovers from this error when issuing a new command. Note however that the affected OTP word may be left in an inconsistent state if this error occurs. This can cause several issues when the word is accessed again (either as part of a regular read operation, as part of the readout at boot, or as part of a background check). It is important that SW ensures that each word is only written once, since this can render the device useless. |
-| 0x5     | ACCESS_ERROR            | This error indicates that a locked memory region has been accessed. The corresponding controller automatically recovers from this error when issuing a new command.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| 0x6     | CHECK_FAIL_ERROR        | An ECC, integrity or consistency mismatch has been detected in the buffer registers. This error should never occur during normal operation and is not recoverable. This error triggers an fatal_check_error alert.                                                                                                                                                                                                                                                                                                                                                                                                   |
-| 0x7     | FSM_STATE_ERROR         | The FSM of the corresponding controller has reached an invalid state, or the FSM has been moved into a terminal error state due to an escalation action via lc_escalate_en_i. This error should never occur during normal operation and is not recoverable. If this error is present, this is a sign that the device has fallen victim to an invasive attack. This error triggers an fatal_check_error alert.                                                                                                                                                                                                        |
-
-
-### ERR_CODE . ERR_CODE_7
-
-| Value   | Name                    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-|:--------|:------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | NO_ERROR                | No error condition has occurred.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 0x1     | MACRO_ERROR             | Returned if the OTP macro command was invalid or did not complete successfully due to a macro malfunction. This error should never occur during normal operation and is not recoverable. This error triggers an fatal_macro_error alert.                                                                                                                                                                                                                                                                                                                                                                             |
-| 0x2     | MACRO_ECC_CORR_ERROR    | A correctable ECC error has occured during an OTP read operation. The corresponding controller automatically recovers from this error when issuing a new command.                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| 0x3     | MACRO_ECC_UNCORR_ERROR  | An uncorrectable ECC error has occurred during an OTP read operation. This error should never occur during normal operation and is not recoverable. If this error is present this may be a sign that the device is malfunctioning. This error triggers an fatal_macro_error alert.                                                                                                                                                                                                                                                                                                                                   |
-| 0x4     | MACRO_WRITE_BLANK_ERROR | This error is returned if a programming operation attempted to clear a bit that has previously been programmed to 1. The corresponding controller automatically recovers from this error when issuing a new command. Note however that the affected OTP word may be left in an inconsistent state if this error occurs. This can cause several issues when the word is accessed again (either as part of a regular read operation, as part of the readout at boot, or as part of a background check). It is important that SW ensures that each word is only written once, since this can render the device useless. |
-| 0x5     | ACCESS_ERROR            | This error indicates that a locked memory region has been accessed. The corresponding controller automatically recovers from this error when issuing a new command.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| 0x6     | CHECK_FAIL_ERROR        | An ECC, integrity or consistency mismatch has been detected in the buffer registers. This error should never occur during normal operation and is not recoverable. This error triggers an fatal_check_error alert.                                                                                                                                                                                                                                                                                                                                                                                                   |
-| 0x7     | FSM_STATE_ERROR         | The FSM of the corresponding controller has reached an invalid state, or the FSM has been moved into a terminal error state due to an escalation action via lc_escalate_en_i. This error should never occur during normal operation and is not recoverable. If this error is present, this is a sign that the device has fallen victim to an invasive attack. This error triggers an fatal_check_error alert.                                                                                                                                                                                                        |
-
-
-### ERR_CODE . ERR_CODE_6
-
-| Value   | Name                    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-|:--------|:------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | NO_ERROR                | No error condition has occurred.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 0x1     | MACRO_ERROR             | Returned if the OTP macro command was invalid or did not complete successfully due to a macro malfunction. This error should never occur during normal operation and is not recoverable. This error triggers an fatal_macro_error alert.                                                                                                                                                                                                                                                                                                                                                                             |
-| 0x2     | MACRO_ECC_CORR_ERROR    | A correctable ECC error has occured during an OTP read operation. The corresponding controller automatically recovers from this error when issuing a new command.                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| 0x3     | MACRO_ECC_UNCORR_ERROR  | An uncorrectable ECC error has occurred during an OTP read operation. This error should never occur during normal operation and is not recoverable. If this error is present this may be a sign that the device is malfunctioning. This error triggers an fatal_macro_error alert.                                                                                                                                                                                                                                                                                                                                   |
-| 0x4     | MACRO_WRITE_BLANK_ERROR | This error is returned if a programming operation attempted to clear a bit that has previously been programmed to 1. The corresponding controller automatically recovers from this error when issuing a new command. Note however that the affected OTP word may be left in an inconsistent state if this error occurs. This can cause several issues when the word is accessed again (either as part of a regular read operation, as part of the readout at boot, or as part of a background check). It is important that SW ensures that each word is only written once, since this can render the device useless. |
-| 0x5     | ACCESS_ERROR            | This error indicates that a locked memory region has been accessed. The corresponding controller automatically recovers from this error when issuing a new command.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| 0x6     | CHECK_FAIL_ERROR        | An ECC, integrity or consistency mismatch has been detected in the buffer registers. This error should never occur during normal operation and is not recoverable. This error triggers an fatal_check_error alert.                                                                                                                                                                                                                                                                                                                                                                                                   |
-| 0x7     | FSM_STATE_ERROR         | The FSM of the corresponding controller has reached an invalid state, or the FSM has been moved into a terminal error state due to an escalation action via lc_escalate_en_i. This error should never occur during normal operation and is not recoverable. If this error is present, this is a sign that the device has fallen victim to an invasive attack. This error triggers an fatal_check_error alert.                                                                                                                                                                                                        |
-
-
-### ERR_CODE . ERR_CODE_5
-
-| Value   | Name                    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-|:--------|:------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | NO_ERROR                | No error condition has occurred.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 0x1     | MACRO_ERROR             | Returned if the OTP macro command was invalid or did not complete successfully due to a macro malfunction. This error should never occur during normal operation and is not recoverable. This error triggers an fatal_macro_error alert.                                                                                                                                                                                                                                                                                                                                                                             |
-| 0x2     | MACRO_ECC_CORR_ERROR    | A correctable ECC error has occured during an OTP read operation. The corresponding controller automatically recovers from this error when issuing a new command.                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| 0x3     | MACRO_ECC_UNCORR_ERROR  | An uncorrectable ECC error has occurred during an OTP read operation. This error should never occur during normal operation and is not recoverable. If this error is present this may be a sign that the device is malfunctioning. This error triggers an fatal_macro_error alert.                                                                                                                                                                                                                                                                                                                                   |
-| 0x4     | MACRO_WRITE_BLANK_ERROR | This error is returned if a programming operation attempted to clear a bit that has previously been programmed to 1. The corresponding controller automatically recovers from this error when issuing a new command. Note however that the affected OTP word may be left in an inconsistent state if this error occurs. This can cause several issues when the word is accessed again (either as part of a regular read operation, as part of the readout at boot, or as part of a background check). It is important that SW ensures that each word is only written once, since this can render the device useless. |
-| 0x5     | ACCESS_ERROR            | This error indicates that a locked memory region has been accessed. The corresponding controller automatically recovers from this error when issuing a new command.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| 0x6     | CHECK_FAIL_ERROR        | An ECC, integrity or consistency mismatch has been detected in the buffer registers. This error should never occur during normal operation and is not recoverable. This error triggers an fatal_check_error alert.                                                                                                                                                                                                                                                                                                                                                                                                   |
-| 0x7     | FSM_STATE_ERROR         | The FSM of the corresponding controller has reached an invalid state, or the FSM has been moved into a terminal error state due to an escalation action via lc_escalate_en_i. This error should never occur during normal operation and is not recoverable. If this error is present, this is a sign that the device has fallen victim to an invasive attack. This error triggers an fatal_check_error alert.                                                                                                                                                                                                        |
-
-
-### ERR_CODE . ERR_CODE_4
-
-| Value   | Name                    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-|:--------|:------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | NO_ERROR                | No error condition has occurred.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 0x1     | MACRO_ERROR             | Returned if the OTP macro command was invalid or did not complete successfully due to a macro malfunction. This error should never occur during normal operation and is not recoverable. This error triggers an fatal_macro_error alert.                                                                                                                                                                                                                                                                                                                                                                             |
-| 0x2     | MACRO_ECC_CORR_ERROR    | A correctable ECC error has occured during an OTP read operation. The corresponding controller automatically recovers from this error when issuing a new command.                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| 0x3     | MACRO_ECC_UNCORR_ERROR  | An uncorrectable ECC error has occurred during an OTP read operation. This error should never occur during normal operation and is not recoverable. If this error is present this may be a sign that the device is malfunctioning. This error triggers an fatal_macro_error alert.                                                                                                                                                                                                                                                                                                                                   |
-| 0x4     | MACRO_WRITE_BLANK_ERROR | This error is returned if a programming operation attempted to clear a bit that has previously been programmed to 1. The corresponding controller automatically recovers from this error when issuing a new command. Note however that the affected OTP word may be left in an inconsistent state if this error occurs. This can cause several issues when the word is accessed again (either as part of a regular read operation, as part of the readout at boot, or as part of a background check). It is important that SW ensures that each word is only written once, since this can render the device useless. |
-| 0x5     | ACCESS_ERROR            | This error indicates that a locked memory region has been accessed. The corresponding controller automatically recovers from this error when issuing a new command.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| 0x6     | CHECK_FAIL_ERROR        | An ECC, integrity or consistency mismatch has been detected in the buffer registers. This error should never occur during normal operation and is not recoverable. This error triggers an fatal_check_error alert.                                                                                                                                                                                                                                                                                                                                                                                                   |
-| 0x7     | FSM_STATE_ERROR         | The FSM of the corresponding controller has reached an invalid state, or the FSM has been moved into a terminal error state due to an escalation action via lc_escalate_en_i. This error should never occur during normal operation and is not recoverable. If this error is present, this is a sign that the device has fallen victim to an invasive attack. This error triggers an fatal_check_error alert.                                                                                                                                                                                                        |
-
-
-### ERR_CODE . ERR_CODE_3
-
-| Value   | Name                    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-|:--------|:------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | NO_ERROR                | No error condition has occurred.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 0x1     | MACRO_ERROR             | Returned if the OTP macro command was invalid or did not complete successfully due to a macro malfunction. This error should never occur during normal operation and is not recoverable. This error triggers an fatal_macro_error alert.                                                                                                                                                                                                                                                                                                                                                                             |
-| 0x2     | MACRO_ECC_CORR_ERROR    | A correctable ECC error has occured during an OTP read operation. The corresponding controller automatically recovers from this error when issuing a new command.                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| 0x3     | MACRO_ECC_UNCORR_ERROR  | An uncorrectable ECC error has occurred during an OTP read operation. This error should never occur during normal operation and is not recoverable. If this error is present this may be a sign that the device is malfunctioning. This error triggers an fatal_macro_error alert.                                                                                                                                                                                                                                                                                                                                   |
-| 0x4     | MACRO_WRITE_BLANK_ERROR | This error is returned if a programming operation attempted to clear a bit that has previously been programmed to 1. The corresponding controller automatically recovers from this error when issuing a new command. Note however that the affected OTP word may be left in an inconsistent state if this error occurs. This can cause several issues when the word is accessed again (either as part of a regular read operation, as part of the readout at boot, or as part of a background check). It is important that SW ensures that each word is only written once, since this can render the device useless. |
-| 0x5     | ACCESS_ERROR            | This error indicates that a locked memory region has been accessed. The corresponding controller automatically recovers from this error when issuing a new command.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| 0x6     | CHECK_FAIL_ERROR        | An ECC, integrity or consistency mismatch has been detected in the buffer registers. This error should never occur during normal operation and is not recoverable. This error triggers an fatal_check_error alert.                                                                                                                                                                                                                                                                                                                                                                                                   |
-| 0x7     | FSM_STATE_ERROR         | The FSM of the corresponding controller has reached an invalid state, or the FSM has been moved into a terminal error state due to an escalation action via lc_escalate_en_i. This error should never occur during normal operation and is not recoverable. If this error is present, this is a sign that the device has fallen victim to an invasive attack. This error triggers an fatal_check_error alert.                                                                                                                                                                                                        |
-
-
-### ERR_CODE . ERR_CODE_2
-
-| Value   | Name                    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-|:--------|:------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | NO_ERROR                | No error condition has occurred.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 0x1     | MACRO_ERROR             | Returned if the OTP macro command was invalid or did not complete successfully due to a macro malfunction. This error should never occur during normal operation and is not recoverable. This error triggers an fatal_macro_error alert.                                                                                                                                                                                                                                                                                                                                                                             |
-| 0x2     | MACRO_ECC_CORR_ERROR    | A correctable ECC error has occured during an OTP read operation. The corresponding controller automatically recovers from this error when issuing a new command.                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| 0x3     | MACRO_ECC_UNCORR_ERROR  | An uncorrectable ECC error has occurred during an OTP read operation. This error should never occur during normal operation and is not recoverable. If this error is present this may be a sign that the device is malfunctioning. This error triggers an fatal_macro_error alert.                                                                                                                                                                                                                                                                                                                                   |
-| 0x4     | MACRO_WRITE_BLANK_ERROR | This error is returned if a programming operation attempted to clear a bit that has previously been programmed to 1. The corresponding controller automatically recovers from this error when issuing a new command. Note however that the affected OTP word may be left in an inconsistent state if this error occurs. This can cause several issues when the word is accessed again (either as part of a regular read operation, as part of the readout at boot, or as part of a background check). It is important that SW ensures that each word is only written once, since this can render the device useless. |
-| 0x5     | ACCESS_ERROR            | This error indicates that a locked memory region has been accessed. The corresponding controller automatically recovers from this error when issuing a new command.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| 0x6     | CHECK_FAIL_ERROR        | An ECC, integrity or consistency mismatch has been detected in the buffer registers. This error should never occur during normal operation and is not recoverable. This error triggers an fatal_check_error alert.                                                                                                                                                                                                                                                                                                                                                                                                   |
-| 0x7     | FSM_STATE_ERROR         | The FSM of the corresponding controller has reached an invalid state, or the FSM has been moved into a terminal error state due to an escalation action via lc_escalate_en_i. This error should never occur during normal operation and is not recoverable. If this error is present, this is a sign that the device has fallen victim to an invasive attack. This error triggers an fatal_check_error alert.                                                                                                                                                                                                        |
-
-
-### ERR_CODE . ERR_CODE_1
-
-| Value   | Name                    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-|:--------|:------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | NO_ERROR                | No error condition has occurred.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 0x1     | MACRO_ERROR             | Returned if the OTP macro command was invalid or did not complete successfully due to a macro malfunction. This error should never occur during normal operation and is not recoverable. This error triggers an fatal_macro_error alert.                                                                                                                                                                                                                                                                                                                                                                             |
-| 0x2     | MACRO_ECC_CORR_ERROR    | A correctable ECC error has occured during an OTP read operation. The corresponding controller automatically recovers from this error when issuing a new command.                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| 0x3     | MACRO_ECC_UNCORR_ERROR  | An uncorrectable ECC error has occurred during an OTP read operation. This error should never occur during normal operation and is not recoverable. If this error is present this may be a sign that the device is malfunctioning. This error triggers an fatal_macro_error alert.                                                                                                                                                                                                                                                                                                                                   |
-| 0x4     | MACRO_WRITE_BLANK_ERROR | This error is returned if a programming operation attempted to clear a bit that has previously been programmed to 1. The corresponding controller automatically recovers from this error when issuing a new command. Note however that the affected OTP word may be left in an inconsistent state if this error occurs. This can cause several issues when the word is accessed again (either as part of a regular read operation, as part of the readout at boot, or as part of a background check). It is important that SW ensures that each word is only written once, since this can render the device useless. |
-| 0x5     | ACCESS_ERROR            | This error indicates that a locked memory region has been accessed. The corresponding controller automatically recovers from this error when issuing a new command.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| 0x6     | CHECK_FAIL_ERROR        | An ECC, integrity or consistency mismatch has been detected in the buffer registers. This error should never occur during normal operation and is not recoverable. This error triggers an fatal_check_error alert.                                                                                                                                                                                                                                                                                                                                                                                                   |
-| 0x7     | FSM_STATE_ERROR         | The FSM of the corresponding controller has reached an invalid state, or the FSM has been moved into a terminal error state due to an escalation action via lc_escalate_en_i. This error should never occur during normal operation and is not recoverable. If this error is present, this is a sign that the device has fallen victim to an invasive attack. This error triggers an fatal_check_error alert.                                                                                                                                                                                                        |
-
-
-### ERR_CODE . ERR_CODE_0
+### ERR_CODE . ERR_CODE
 
 | Value   | Name                    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 |:--------|:------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -324,7 +213,7 @@ fatal_check_error alert.
 
 ## DIRECT_ACCESS_REGWEN
 Register write enable for all direct access interface registers.
-- Offset: `0x18`
+- Offset: `0x3c`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
@@ -341,7 +230,7 @@ Register write enable for all direct access interface registers.
 
 ## DIRECT_ACCESS_CMD
 Command register for direct accesses.
-- Offset: `0x1c`
+- Offset: `0x40`
 - Reset default: `0x0`
 - Reset mask: `0x7`
 - Register enable: [`DIRECT_ACCESS_REGWEN`](#direct_access_regwen)
@@ -361,7 +250,7 @@ Command register for direct accesses.
 
 ## DIRECT_ACCESS_ADDRESS
 Address register for direct accesses.
-- Offset: `0x20`
+- Offset: `0x44`
 - Reset default: `0x0`
 - Reset mask: `0x7ff`
 - Register enable: [`DIRECT_ACCESS_REGWEN`](#direct_access_regwen)
@@ -396,8 +285,8 @@ partition is being written to.
 
 | Name                  | Offset   |
 |:----------------------|:---------|
-| DIRECT_ACCESS_WDATA_0 | 0x24     |
-| DIRECT_ACCESS_WDATA_1 | 0x28     |
+| DIRECT_ACCESS_WDATA_0 | 0x48     |
+| DIRECT_ACCESS_WDATA_1 | 0x4c     |
 
 
 ### Fields
@@ -421,8 +310,8 @@ partition is read from.
 
 | Name                  | Offset   |
 |:----------------------|:---------|
-| DIRECT_ACCESS_RDATA_0 | 0x2c     |
-| DIRECT_ACCESS_RDATA_1 | 0x30     |
+| DIRECT_ACCESS_RDATA_0 | 0x50     |
+| DIRECT_ACCESS_RDATA_1 | 0x54     |
 
 
 ### Fields
@@ -437,7 +326,7 @@ partition is read from.
 
 ## CHECK_TRIGGER_REGWEN
 Register write enable for [`CHECK_TRIGGER.`](#check_trigger)
-- Offset: `0x34`
+- Offset: `0x58`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
@@ -454,7 +343,7 @@ Register write enable for [`CHECK_TRIGGER.`](#check_trigger)
 
 ## CHECK_TRIGGER
 Command register for direct accesses.
-- Offset: `0x38`
+- Offset: `0x5c`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 - Register enable: [`CHECK_TRIGGER_REGWEN`](#check_trigger_regwen)
@@ -483,7 +372,7 @@ in the [`STATUS`](#status) and [`ERR_CODE`](#err_code) registers, and via the in
 
 ## CHECK_REGWEN
 Register write enable for [`INTEGRITY_CHECK_PERIOD`](#integrity_check_period) and [`CONSISTENCY_CHECK_PERIOD.`](#consistency_check_period)
-- Offset: `0x3c`
+- Offset: `0x60`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
@@ -500,7 +389,7 @@ Register write enable for [`INTEGRITY_CHECK_PERIOD`](#integrity_check_period) an
 
 ## CHECK_TIMEOUT
 Timeout value for the integrity and consistency checks.
-- Offset: `0x40`
+- Offset: `0x64`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 - Register enable: [`CHECK_REGWEN`](#check_regwen)
@@ -527,7 +416,7 @@ safe side. A value of zero disables the timeout mechanism (default).
 ## INTEGRITY_CHECK_PERIOD
 This value specifies the maximum period that can be generated pseudo-randomly.
 Only applies to the HW_CFG and SECRET* partitions once they are locked.
-- Offset: `0x44`
+- Offset: `0x68`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 - Register enable: [`CHECK_REGWEN`](#check_regwen)
@@ -553,7 +442,7 @@ A value of zero disables the timer (default). Note that a one-off check can alwa
 ## CONSISTENCY_CHECK_PERIOD
 This value specifies the maximum period that can be generated pseudo-randomly.
 This applies to the LIFE_CYCLE partition and the HW_CFG and SECRET* partitions once they are locked.
-- Offset: `0x48`
+- Offset: `0x6c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 - Register enable: [`CHECK_REGWEN`](#check_regwen)
@@ -578,7 +467,7 @@ A value of zero disables the timer (default). Note that a one-off check can alwa
 
 ## VENDOR_TEST_READ_LOCK
 Runtime read lock for the VENDOR_TEST partition.
-- Offset: `0x4c`
+- Offset: `0x70`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 - Register enable: [`DIRECT_ACCESS_REGWEN`](#direct_access_regwen)
@@ -596,7 +485,7 @@ Runtime read lock for the VENDOR_TEST partition.
 
 ## CREATOR_SW_CFG_READ_LOCK
 Runtime read lock for the CREATOR_SW_CFG partition.
-- Offset: `0x50`
+- Offset: `0x74`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 - Register enable: [`DIRECT_ACCESS_REGWEN`](#direct_access_regwen)
@@ -614,7 +503,7 @@ Runtime read lock for the CREATOR_SW_CFG partition.
 
 ## OWNER_SW_CFG_READ_LOCK
 Runtime read lock for the OWNER_SW_CFG partition.
-- Offset: `0x54`
+- Offset: `0x78`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 - Register enable: [`DIRECT_ACCESS_REGWEN`](#direct_access_regwen)
@@ -643,8 +532,8 @@ the digest becomes visible in this CSR.
 
 | Name                 | Offset   |
 |:---------------------|:---------|
-| VENDOR_TEST_DIGEST_0 | 0x58     |
-| VENDOR_TEST_DIGEST_1 | 0x5c     |
+| VENDOR_TEST_DIGEST_0 | 0x7c     |
+| VENDOR_TEST_DIGEST_1 | 0x80     |
 
 
 ### Fields
@@ -670,8 +559,8 @@ the digest becomes visible in this CSR.
 
 | Name                    | Offset   |
 |:------------------------|:---------|
-| CREATOR_SW_CFG_DIGEST_0 | 0x60     |
-| CREATOR_SW_CFG_DIGEST_1 | 0x64     |
+| CREATOR_SW_CFG_DIGEST_0 | 0x84     |
+| CREATOR_SW_CFG_DIGEST_1 | 0x88     |
 
 
 ### Fields
@@ -697,8 +586,8 @@ the digest becomes visible in this CSR.
 
 | Name                  | Offset   |
 |:----------------------|:---------|
-| OWNER_SW_CFG_DIGEST_0 | 0x68     |
-| OWNER_SW_CFG_DIGEST_1 | 0x6c     |
+| OWNER_SW_CFG_DIGEST_0 | 0x8c     |
+| OWNER_SW_CFG_DIGEST_1 | 0x90     |
 
 
 ### Fields
@@ -722,8 +611,8 @@ After a reset, the digest then becomes visible in this CSR, and the correspondin
 
 | Name            | Offset   |
 |:----------------|:---------|
-| HW_CFG_DIGEST_0 | 0x70     |
-| HW_CFG_DIGEST_1 | 0x74     |
+| HW_CFG_DIGEST_0 | 0x94     |
+| HW_CFG_DIGEST_1 | 0x98     |
 
 
 ### Fields
@@ -747,8 +636,8 @@ After a reset, the digest then becomes visible in this CSR, and the correspondin
 
 | Name             | Offset   |
 |:-----------------|:---------|
-| SECRET0_DIGEST_0 | 0x78     |
-| SECRET0_DIGEST_1 | 0x7c     |
+| SECRET0_DIGEST_0 | 0x9c     |
+| SECRET0_DIGEST_1 | 0xa0     |
 
 
 ### Fields
@@ -772,8 +661,8 @@ After a reset, the digest then becomes visible in this CSR, and the correspondin
 
 | Name             | Offset   |
 |:-----------------|:---------|
-| SECRET1_DIGEST_0 | 0x80     |
-| SECRET1_DIGEST_1 | 0x84     |
+| SECRET1_DIGEST_0 | 0xa4     |
+| SECRET1_DIGEST_1 | 0xa8     |
 
 
 ### Fields
@@ -797,8 +686,8 @@ After a reset, the digest then becomes visible in this CSR, and the correspondin
 
 | Name             | Offset   |
 |:-----------------|:---------|
-| SECRET2_DIGEST_0 | 0x88     |
-| SECRET2_DIGEST_1 | 0x8c     |
+| SECRET2_DIGEST_0 | 0xac     |
+| SECRET2_DIGEST_1 | 0xb0     |
 
 
 ### Fields

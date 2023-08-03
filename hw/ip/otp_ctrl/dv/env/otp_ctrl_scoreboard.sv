@@ -902,7 +902,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           end
         end
       end
-      "err_code": begin
+      "err_code_0", "err_code_1", "err_code_2", "err_code_3", "err_code_4", "err_code_5",
+      "err_code_6", "err_code_7", "err_code_8", "err_code_9": begin
         // If lc_prog in progress, err_code might update anytime in DUT. Ignore checking until req
         // is acknowledged.
         if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
@@ -1218,15 +1219,15 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       if (err_code == OtpNoError) begin
         `uvm_error(`gfn, $sformatf("please set status error: %0s error code", status_err_idx.name))
       end
-      ral.err_code[0].get_dv_base_reg_fields(err_code_flds);
+      ral.err_code[status_err_idx].get_dv_base_reg_fields(err_code_flds);
 
-      if (`gmv(err_code_flds[status_err_idx]) inside {OTP_TERMINAL_ERRS}) begin
+      if (`gmv(err_code_flds[0]) inside {OTP_TERMINAL_ERRS}) begin
         `uvm_info(`gfn, "terminal error cannot be updated", UVM_HIGH)
       end else if (status_err_idx == OtpLciErrIdx &&
-                   `gmv(err_code_flds[status_err_idx]) != OtpNoError) begin
+                   `gmv(err_code_flds[0]) != OtpNoError) begin
         `uvm_info(`gfn, "For LC partition, all errors are terminal error!", UVM_HIGH)
       end else begin
-        void'(err_code_flds[status_err_idx].predict(.value(err_code), .kind(UVM_PREDICT_READ)));
+        void'(err_code_flds[0].predict(.value(err_code), .kind(UVM_PREDICT_READ)));
       end
     end
 
@@ -1240,8 +1241,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 
     if (status_err_idx <= OtpLciErrIdx) begin
       dv_base_reg_field err_code_flds[$];
-      ral.err_code[0].get_dv_base_reg_fields(err_code_flds);
-      void'(err_code_flds[status_err_idx].predict(OtpNoError));
+      ral.err_code[status_err_idx].get_dv_base_reg_fields(err_code_flds);
+      void'(err_code_flds[0].predict(OtpNoError));
     end
   endfunction
 
