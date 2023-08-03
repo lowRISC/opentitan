@@ -58,7 +58,8 @@ KNOWN_CIP_IDS = {
     33: 'rv_plic',
     34: 'ast',
     35: 'sensor_ctrl',
-    36: 'dma'
+    36: 'dma',
+    37: 'mbx'
 }
 
 REQUIRED_ALIAS_FIELDS = {

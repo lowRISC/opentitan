@@ -21,7 +21,12 @@
   // Severities to be printed in the summary report
   report_severities: ["warning", "error"]
 
-  use_cfgs: [{    name: dma
+  use_cfgs: [{    name: mbx
+                  fusesoc_core: lowrisc:ip:mbx
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/mbx/lint/{tool}"
+             },
+             {    name: dma
                   fusesoc_core: lowrisc:ip:dma
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/dma/lint/{tool}"
