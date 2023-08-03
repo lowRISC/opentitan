@@ -46,6 +46,8 @@ impl Frame {
     const DATA_LEN: usize = 1024 - std::mem::size_of::<FrameHeader>();
     const HASH_LEN: usize = 32;
     const HEADER_ALIGNMENT: usize = 0x1000;
+    const GSC_FLASH_MEMMAP_OFFSET: usize = 0x80000;
+    const GSC_HEADER_LENGTH_FIELD_OFFSET: usize = 0x338;
     const MAGIC_HEADER: [u8; 4] = [0xfd, 0xff, 0xff, 0xff];
     const CRYPTOLIB_TELL: [u8; 4] = [0x53, 0x53, 0x53, 0x53];
 
@@ -84,7 +86,7 @@ impl Frame {
         );
 
         // Find second occurrence of magic value, not followed by signature of encrypted
-        // cryptolib.
+        // cryptolib, this will be the header of RW in slot A.
         let min_addr = match payload[Self::HEADER_ALIGNMENT..]
             .chunks(Self::HEADER_ALIGNMENT)
             .position(|c| c[0..4] == Self::MAGIC_HEADER && c[4..8] != Self::CRYPTOLIB_TELL)
@@ -93,14 +95,11 @@ impl Frame {
             None => bail!(RescueError::ImageFormatError),
         };
 
-        // Find third occurrence of magic value.
-        let max_addr = match payload[min_addr + Self::HEADER_ALIGNMENT..]
-            .chunks(Self::HEADER_ALIGNMENT)
-            .position(|c| c[0..4] == Self::MAGIC_HEADER)
-        {
-            Some(n) => (n + 1) * Self::HEADER_ALIGNMENT + min_addr,
-            None => payload.len(),
-        };
+        // Inspect the length field of the RW header.
+        let length_field_at = min_addr + Self::GSC_HEADER_LENGTH_FIELD_OFFSET;
+        let max_addr = u32::from_le_bytes(payload[length_field_at..length_field_at + 4].try_into()?)
+            as usize
+            - Self::GSC_FLASH_MEMMAP_OFFSET;
 
         // Trim trailing 0xff bytes.
         let max_addr = (payload[..max_addr]
