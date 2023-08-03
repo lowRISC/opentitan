@@ -484,7 +484,7 @@
                data-drawio-colors="color: rgb(0, 0, 0); "
                style="box-sizing: border-box; font-size: 0px; text-align: center;">
               <xhtml:div
-                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">s_tl_agent_host (tl_agent)</xhtml:div>
+                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">tl_agent_dma_host (tl_agent)</xhtml:div>
             </xhtml:div>
           </xhtml:div>
         </foreignObject>
@@ -495,7 +495,7 @@
            font-family="Helvetica"
            font-size="12px"
            text-anchor="middle"
-           id="text613">s_tl_agent_host (tl_agent)</text>
+           id="text613">tl_agent_dma_host (tl_agent)</text>
       </switch>
     </g>
     <rect
@@ -526,7 +526,7 @@
                data-drawio-colors="color: rgb(0, 0, 0); "
                style="box-sizing: border-box; font-size: 0px; text-align: center;">
               <xhtml:div
-                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">s_tl_agent_xbar(tl_agent)</xhtml:div>
+                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">tl_agent_dma_ctn(tl_agent)</xhtml:div>
             </xhtml:div>
           </xhtml:div>
         </foreignObject>
@@ -537,7 +537,7 @@
            font-family="Helvetica"
            font-size="12px"
            text-anchor="middle"
-           id="text621">s_tl_agent_xbar(tl_agent)</text>
+           id="text621">tl_agent_dma_ctn(tl_agent)</text>
       </switch>
     </g>
     <rect
@@ -610,7 +610,7 @@
                data-drawio-colors="color: rgb(0, 0, 0); "
                style="box-sizing: border-box; font-size: 0px; text-align: center;">
               <xhtml:div
-                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">s_tl_agent_sys (tl_agent)</xhtml:div>
+                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">tl_agent_dma_sys (tl_agent)</xhtml:div>
             </xhtml:div>
           </xhtml:div>
         </foreignObject>
@@ -621,7 +621,7 @@
            font-family="Helvetica"
            font-size="12px"
            text-anchor="middle"
-           id="text637">s_tl_agent_sys (tl_agent)</text>
+           id="text637">tl_agent_dma_sys (tl_agent)</text>
       </switch>
     </g>
     <rect
@@ -927,7 +927,7 @@
                data-drawio-colors="color: rgb(0, 0, 0); "
                style="box-sizing: border-box; font-size: 0px; text-align: center;">
               <xhtml:div
-                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">s_tl_agent_host _cfg(tl_agent_cfg)</xhtml:div>
+                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">tl_agent_dma_host _cfg(tl_agent_cfg)</xhtml:div>
             </xhtml:div>
           </xhtml:div>
         </foreignObject>
@@ -938,7 +938,7 @@
            font-family="Helvetica"
            font-size="12px"
            text-anchor="middle"
-           id="text709">s_tl_agent_host _cfg(tl_agent_cfg)</text>
+           id="text709">tl_agent_dma_host _cfg(tl_agent_cfg)</text>
       </switch>
     </g>
     <rect
@@ -969,7 +969,7 @@
                data-drawio-colors="color: rgb(0, 0, 0); "
                style="box-sizing: border-box; font-size: 0px; text-align: center;">
               <xhtml:div
-                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">s_tl_agent_xbar_cfg(tl_agent_cfg)</xhtml:div>
+                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">tl_agent_dma_ctn_cfg(tl_agent_cfg)</xhtml:div>
             </xhtml:div>
           </xhtml:div>
         </foreignObject>
@@ -980,7 +980,7 @@
            font-family="Helvetica"
            font-size="12px"
            text-anchor="middle"
-           id="text717">s_tl_agent_xbar_cfg(tl_agent_cfg)</text>
+           id="text717">tl_agent_dma_ctn_cfg(tl_agent_cfg)</text>
       </switch>
     </g>
     <rect
@@ -1011,7 +1011,7 @@
                data-drawio-colors="color: rgb(0, 0, 0); "
                style="box-sizing: border-box; font-size: 0px; text-align: center;">
               <xhtml:div
-                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">s_tl_agent_sys_cfg(tl_agent_cfg)</xhtml:div>
+                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">tl_agent_dma_sys_cfg(tl_agent_cfg)</xhtml:div>
             </xhtml:div>
           </xhtml:div>
         </foreignObject>
@@ -1022,7 +1022,7 @@
            font-family="Helvetica"
            font-size="12px"
            text-anchor="middle"
-           id="text725">s_tl_agent_sys_cfg(tl_agent_cfg)</text>
+           id="text725">tl_agent_dma_sys_cfg(tl_agent_cfg)</text>
       </switch>
     </g>
     <path
@@ -1215,7 +1215,7 @@
                data-drawio-colors="color: rgb(0, 0, 0); "
                style="box-sizing: border-box; font-size: 0px; text-align: center;">
               <xhtml:div
-                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">m_mem_xbar(mem_model)</xhtml:div>
+                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">m_mem_ctn(mem_model)</xhtml:div>
             </xhtml:div>
           </xhtml:div>
         </foreignObject>
@@ -1226,7 +1226,7 @@
            font-family="Helvetica"
            font-size="12px"
            text-anchor="middle"
-           id="text785">m_mem_xbar(mem_model)</text>
+           id="text785">m_mem_ctn(mem_model)</text>
       </switch>
     </g>
     <rect
@@ -1287,7 +1287,7 @@
          sodipodi:role="line"
          id="tspan27167-6"
          x="644.1427"
-         y="183.73964">tl_xbar_if</tspan></text>
+         y="183.73964">tl_ctn_if</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:12px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none"
@@ -1321,11 +1321,11 @@
          x="589.42224"
          y="438.56754"
          id="tspan87525"
-         sodipodi:role="line">tl_host_if:    retrieved by s_tl_agent_host</tspan><tspan
+         sodipodi:role="line">tl_host_if:    retrieved by tl_agent_dma_host</tspan><tspan
          x="589.42224"
          y="451.90091"
          id="tspan87527"
-         sodipodi:role="line">tl_xbar_if:    retrieved by s_tl_agent_xbar</tspan><tspan
+         sodipodi:role="line">tl_ctn_if:    retrieved by tl_agent_dma_ctn</tspan><tspan
          x="589.42224"
          y="465.23428"
          id="tspan87529"
@@ -1333,7 +1333,7 @@
          x="589.42224"
          y="478.56766"
          id="tspan87531"
-         sodipodi:role="line">tl_sys_if:      retrieved by s_tl_agent_sys</tspan><tspan
+         sodipodi:role="line">tl_sys_if:      retrieved by tl_agent_dma_sys</tspan><tspan
          x="589.42224"
          y="491.90103"
          id="tspan87533"

@@ -34,9 +34,10 @@ module tb;
   pins_if #(1) devmode_if (devmode);
 
   // TL Interface
-  tl_if tl_if            (.clk(clk), .rst_n(rst_n)); // Ingress Port from System Fabric *Primary*
-  tl_if tl_host_device_if(.clk(clk), .rst_n(rst_n)); // Egress Port to System Fabric (DMA Registers)
-  tl_if tl_xbar_device_if(.clk(clk), .rst_n(rst_n)); // to CTN XBar
+  tl_if tl_if (.clk(clk), .rst_n(rst_n)); // Ingress Port from System Fabric *Primary*
+  tl_if tl_host_if(.clk(clk), .rst_n(rst_n)); // Egress Port to System Fabric (DMA Registers)
+  tl_if tl_ctn_if(.clk(clk), .rst_n(rst_n)); // to CTN
+  tl_if tl_sys_if(.clk(clk), .rst_n(rst_n)); // to SYS
 
   `DV_ALERT_IF_CONNECT()
 
@@ -55,15 +56,15 @@ module tb;
     .alert_tx_o      (alert_tx),
 
     // TL Interface
-    .tl_host_o       (tl_host_device_if.h2d),
-    .tl_host_i       (tl_host_device_if.d2h),
+    .tl_host_o       (tl_host_if.h2d),
+    .tl_host_i       (tl_host_if.d2h),
 
     // TL Interface for CSR
     .tl_dev_o        (tl_if.h2d),
     .tl_dev_i        (tl_if.d2h),
 
-    .tl_xbar_o       (tl_xbar_device_if.h2d),
-    .tl_xbar_i       (tl_xbar_device_if.d2h),
+    .tl_ctn_o       (tl_ctn_if.h2d),
+    .tl_ctn_i       (tl_ctn_if.d2h),
 
     .sys_o           (),
     .sys_i           ('0)
@@ -71,10 +72,10 @@ module tb;
 
   // assign dma_intf.remaining     = dut.remaining_bytes; // Add after implementation is done
   assign dma_intf.read_cmpl_host = dut.tl_host_i.d_valid;
-  assign dma_intf.read_cmpl_xbar = dut.tl_xbar_i.d_valid;
+  assign dma_intf.read_cmpl_ctn = dut.tl_ctn_i.d_valid;
 
   assign dma_intf.read_opc_host = dut.tl_host_i.d_opcode;
-  assign dma_intf.read_opc_xbar = dut.tl_xbar_i.d_opcode;
+  assign dma_intf.read_opc_ctn = dut.tl_ctn_i.d_opcode;
 
 
   // Clocking related
@@ -90,9 +91,9 @@ module tb;
 
     // Registeration
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_dma_reg_block*", "vif", tl_if);
-    uvm_config_db#(virtual tl_if)::set(null, "*.env.s_tl_agent_host*", "vif", tl_host_if);
-    uvm_config_db#(virtual tl_if)::set(null, "*.env.s_tl_agent_xbar*", "vif", tl_xbar_if);
-    uvm_config_db#(virtual tl_if)::set(null, "*.env.s_tl_agent_sys*", "vif", tl_sys_if);
+    uvm_config_db#(virtual tl_if)::set(null, "*.env.tl_agent_dma_host*", "vif", tl_host_if);
+    uvm_config_db#(virtual tl_if)::set(null, "*.env.tl_agent_dma_ctn*", "vif", tl_ctn_if);
+    uvm_config_db#(virtual tl_if)::set(null, "*.env.tl_agent_dma_sys*", "vif", tl_sys_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual dma_if)::set(null, "*.env", "dma_vif", dma_intf);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);

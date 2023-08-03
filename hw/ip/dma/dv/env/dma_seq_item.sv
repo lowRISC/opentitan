@@ -22,9 +22,9 @@ class dma_seq_item extends uvm_sequence_item;
 
   // Constraint : Address Specific ID (ASID)
   //      ASID=0 will trigger transactions on HOST
-  //      ASID=1 will trigger transactions on XBAR
+  //      ASID=1 will trigger transactions on CTN
   //      ASID=2 will trigger transactions on SYS
-  //      ASID=3 will trigger transactions on XBAR
+  //      ASID=3 will trigger transactions on CTN
   constraint dma_addressing_c {
     // ASID specific
     if (m_src_asid != 2) m_src_addr[63:32] == 32'd0; // Only SYS transactions can go over 4GB space

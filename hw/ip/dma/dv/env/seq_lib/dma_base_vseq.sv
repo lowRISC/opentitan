@@ -163,17 +163,17 @@ class dma_base_vseq extends cip_base_vseq #(
   // Task : Start TLUL Sequences
   virtual task start_device();
     // response sequences
-    dma_pull_seq  seq_xbar;
+    dma_pull_seq  seq_ctn;
     dma_pull_seq  seq_host;
 
-    seq_xbar = dma_pull_seq::type_id::create("seq_xbar");
+    seq_ctn = dma_pull_seq::type_id::create("seq_ctn");
     seq_host = dma_pull_seq::type_id::create("seq_host");
-    seq_xbar.mem = m_mem; // FIXME - may need 2 MEMs (OT vs SYS)
+    seq_ctn.mem = m_mem; // FIXME - may need 2 MEMs (OT vs SYS)
     seq_host.mem = m_mem; // FIXME - may need separate MEM
 
     `uvm_info(`gfn, "DMA: Starting Devices", UVM_HIGH)
     fork
-      seq_xbar.start(p_sequencer.tl_sequencer_dma_xbar_h);
+      seq_ctn.start(p_sequencer.tl_sequencer_dma_ctn_h);
       seq_host.start(p_sequencer.tl_sequencer_dma_host_h);
     join_none
   endtask: start_device
