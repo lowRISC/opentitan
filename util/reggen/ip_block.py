@@ -1,24 +1,23 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-
 '''Code representing an IP block for reggen'''
 
 from typing import Dict, List, Optional, Sequence, Set, Tuple
 
 import hjson  # type: ignore
-from semantic_version import Version
-
 from reggen.alert import Alert
 from reggen.bus_interfaces import BusInterfaces
 from reggen.clocking import Clocking, ClockingItem
-from reggen.interrupt import Interrupt
+from reggen.countermeasure import CounterMeasure
 from reggen.inter_signal import InterSignal
-from reggen.lib import (check_keys, check_name, check_int, check_bool, check_list)
-from reggen.params import ReggenParams, LocalParam
+from reggen.interrupt import Interrupt
+from reggen.lib import (check_bool, check_int, check_keys, check_list,
+                        check_name)
+from reggen.params import LocalParam, ReggenParams
 from reggen.reg_block import RegBlock
 from reggen.signal import Signal
-from reggen.countermeasure import CounterMeasure
+from semantic_version import Version
 
 # Known unique comportable IP names and associated CIP_IDs.
 KNOWN_CIP_IDS = {
@@ -61,39 +60,24 @@ KNOWN_CIP_IDS = {
 }
 
 REQUIRED_ALIAS_FIELDS = {
-    'alias_impl': [
-        's',
-        "identifier for this alias implementation"
-    ],
-    'alias_target': [
-        's',
-        "name of the component to apply the alias file to"
-    ],
-    'registers': [
-        'l',
-        "list of alias register definition groups"
-    ],
-    'bus_interfaces': [
-        'l',
-        "bus interfaces for the device"
-    ],
+    'alias_impl': ['s', "identifier for this alias implementation"],
+    'alias_target': ['s', "name of the component to apply the alias file to"],
+    'registers': ['l', "list of alias register definition groups"],
+    'bus_interfaces': ['l', "bus interfaces for the device"],
 }
 
 # TODO: we may want to support for countermeasure and parameter aliases
 # in the future.
-OPTIONAL_ALIAS_FIELDS: Dict[str, List[str]] = {
-}
+OPTIONAL_ALIAS_FIELDS: Dict[str, List[str]] = {}
 
 REQUIRED_FIELDS = {
     'name': ['s', "name of the component"],
     'cip_id': ['d', "unique comportable IP identifier"],
     'clocking': ['l', "clocking for the device"],
     'bus_interfaces': ['l', "bus interfaces for the device"],
-    'registers': [
-        'l',
-        "list of register definition groups and "
-        "offset control groups"
-    ]
+    'registers':
+    ['l', "list of register definition groups and "
+     "offset control groups"]
 }
 
 OPTIONAL_FIELDS = {
@@ -165,6 +149,7 @@ OPTIONAL_REVISIONS_FIELDS = {
 
 
 class IpBlock:
+
     def __init__(self,
                  name: str,
                  cip_id: int,
@@ -181,21 +166,30 @@ class IpBlock:
                  inter_signals: List[InterSignal],
                  bus_interfaces: BusInterfaces,
                  clocking: Clocking,
-                 xputs: Tuple[Sequence[Signal],
-                              Sequence[Signal],
+                 xputs: Tuple[Sequence[Signal], Sequence[Signal],
                               Sequence[Signal]],
                  wakeups: Sequence[Signal],
                  reset_requests: Sequence[Signal],
                  expose_reg_if: bool,
                  scan_reset: bool,
                  scan_en: bool,
-                 countermeasures: List[CounterMeasure]):
+                 countermeasures: List[CounterMeasure],
+                 node: str = ''):
         assert reg_blocks
+
+        # Filter the interfaces and reg_blocks if request to build only for a
+        # specific reg_block node.
+        dev_if_names = []  # type: List[Optional[str]]
+        if node:
+            dev_if_names += [
+                i for i in bus_interfaces.named_devices if i == node
+            ]
+            reg_blocks = {k: v for k, v in reg_blocks.items() if k == node}
+        else:
+            dev_if_names += bus_interfaces.named_devices
 
         # Check that register blocks are in bijection with device interfaces
         reg_block_names = reg_blocks.keys()
-        dev_if_names = []  # type: List[Optional[str]]
-        dev_if_names += bus_interfaces.named_devices
         if bus_interfaces.has_unnamed_device:
             dev_if_names.append(None)
         assert set(reg_block_names) == set(dev_if_names)
@@ -226,10 +220,10 @@ class IpBlock:
     @staticmethod
     def from_raw(param_defaults: List[Tuple[str, str]],
                  raw: object,
-                 where: str) -> 'IpBlock':
+                 where: str,
+                 node: str = '') -> 'IpBlock':
 
-        rd = check_keys(raw, 'block at ' + where,
-                        list(REQUIRED_FIELDS.keys()),
+        rd = check_keys(raw, 'block at ' + where, list(REQUIRED_FIELDS.keys()),
                         list(OPTIONAL_FIELDS.keys()))
 
         name = check_name(rd['name'], 'name of block at ' + where)
@@ -243,31 +237,28 @@ class IpBlock:
             regwidth = check_int(r_regwidth, 'regwidth field of ' + what)
             if regwidth <= 0:
                 raise ValueError('Invalid regwidth field for {}: '
-                                 '{} is not positive.'
-                                 .format(what, regwidth))
+                                 '{} is not positive.'.format(what, regwidth))
 
         params = ReggenParams.from_raw('parameter list for ' + what,
                                        rd.get('param_list', []))
         try:
             params.apply_defaults(param_defaults)
         except (ValueError, KeyError) as err:
-            raise ValueError('Failed to apply defaults to params: {}'
-                             .format(err)) from None
+            raise ValueError(
+                'Failed to apply defaults to params: {}'.format(err)) from None
 
         init_block = RegBlock(regwidth, params)
 
-        interrupts = Interrupt.from_raw_list('interrupt_list for block {}'
-                                             .format(name),
-                                             rd.get('interrupt_list', []))
-        alerts = Alert.from_raw_list('alert_list for block {}'
-                                     .format(name),
+        interrupts = Interrupt.from_raw_list(
+            'interrupt_list for block {}'.format(name),
+            rd.get('interrupt_list', []))
+        alerts = Alert.from_raw_list('alert_list for block {}'.format(name),
                                      rd.get('alert_list', []))
         known_cms = {}
         raw_cms = rd.get('countermeasures', [])
 
         countermeasures = CounterMeasure.from_raw_list(
-            'countermeasure list for block {}'
-            .format(name), raw_cms)
+            'countermeasure list for block {}'.format(name), raw_cms)
 
         # Ensure that the countermeasures are unique
         for x in countermeasures:
@@ -307,17 +298,17 @@ class IpBlock:
             if interrupts[-1].bits.msb >= regwidth:
                 raise ValueError("Too many interrupts defined for {}: "
                                  "msb is {}, which doesn't fit with a "
-                                 "regwidth of {}."
-                                 .format(what,
-                                         interrupts[-1].bits.msb, regwidth))
+                                 "regwidth of {}.".format(
+                                     what, interrupts[-1].bits.msb, regwidth))
             init_block.make_intr_regs(interrupts)
 
         if alerts:
             if not no_auto_alert:
                 if len(alerts) > regwidth:
-                    raise ValueError("Too many alerts defined for {}: "
-                                     "{} alerts don't fit with a regwidth of {}."
-                                     .format(what, len(alerts), regwidth))
+                    raise ValueError(
+                        "Too many alerts defined for {}: "
+                        "{} alerts don't fit with a regwidth of {}.".format(
+                            what, len(alerts), regwidth))
                 init_block.make_alert_regs(alerts)
 
         # Generate a NumAlerts parameter
@@ -330,42 +321,39 @@ class IpBlock:
                     raise ValueError('Conflicting definition of NumAlerts '
                                      'parameter.')
             else:
-                params.add(LocalParam(name='NumAlerts',
-                                      desc='Number of alerts',
-                                      param_type='int',
-                                      value=str(len(alerts))))
+                params.add(
+                    LocalParam(name='NumAlerts',
+                               desc='Number of alerts',
+                               param_type='int',
+                               value=str(len(alerts))))
 
         scan = check_bool(rd.get('scan', False), 'scan field of ' + what)
 
         r_inter_signals = check_list(rd.get('inter_signal_list', []),
                                      'inter_signal_list field')
         inter_signals = [
-            InterSignal.from_raw('entry {} of the inter_signal_list field'
-                                 .format(idx + 1),
-                                 entry)
-            for idx, entry in enumerate(r_inter_signals)
+            InterSignal.from_raw(
+                'entry {} of the inter_signal_list field'.format(idx + 1),
+                entry) for idx, entry in enumerate(r_inter_signals)
         ]
 
-        bus_interfaces = (BusInterfaces.
-                          from_raw(rd['bus_interfaces'],
-                                   'bus_interfaces field of ' + where))
+        bus_interfaces = (BusInterfaces.from_raw(
+            rd['bus_interfaces'], 'bus_interfaces field of ' + where))
         inter_signals += bus_interfaces.inter_signals()
 
         clocking = Clocking.from_raw(rd['clocking'],
                                      'clocking field of ' + what)
 
         reg_blocks = RegBlock.build_blocks(init_block, rd['registers'],
-                                           bus_interfaces,
-                                           clocking, False)
+                                           bus_interfaces, clocking, False)
 
-        xputs = (
-            Signal.from_raw_list('available_inout_list for block ' + name,
-                                 rd.get('available_inout_list', [])),
-            Signal.from_raw_list('available_input_list for block ' + name,
-                                 rd.get('available_input_list', [])),
-            Signal.from_raw_list('available_output_list for block ' + name,
-                                 rd.get('available_output_list', []))
-        )
+        xputs = (Signal.from_raw_list('available_inout_list for block ' + name,
+                                      rd.get('available_inout_list', [])),
+                 Signal.from_raw_list('available_input_list for block ' + name,
+                                      rd.get('available_input_list', [])),
+                 Signal.from_raw_list(
+                     'available_output_list for block ' + name,
+                     rd.get('available_output_list', [])))
         wakeups = Signal.from_raw_list('wakeup_list for block ' + name,
                                        rd.get('wakeup_list', []))
         rst_reqs = Signal.from_raw_list('reset_request_list for block ' + name,
@@ -389,37 +377,34 @@ class IpBlock:
         if set(reg_block_names) != set(dev_if_names):
             raise ValueError("IP block {} defines device interfaces, named {} "
                              "but its registers don't match (they are keyed "
-                             "by {})."
-                             .format(name, dev_if_names,
-                                     list(reg_block_names)))
+                             "by {}).".format(name, dev_if_names,
+                                              list(reg_block_names)))
 
         return IpBlock(name, cip_id, version, regwidth, params, reg_blocks,
                        None, interrupts, no_auto_intr, alerts, no_auto_alert,
                        scan, inter_signals, bus_interfaces, clocking, xputs,
                        wakeups, rst_reqs, expose_reg_if, scan_reset, scan_en,
-                       countermeasures)
+                       countermeasures, node)
 
     @staticmethod
     def from_text(txt: str,
                   param_defaults: List[Tuple[str, str]],
-                  where: str) -> 'IpBlock':
+                  where: str,
+                  node: str = '') -> 'IpBlock':
         '''Load an IpBlock from an hjson description in txt'''
         return IpBlock.from_raw(param_defaults,
-                                hjson.loads(txt, use_decimal=True),
-                                where)
+                                hjson.loads(txt, use_decimal=True), where,
+                                node)
 
     @staticmethod
-    def from_path(path: str,
-                  param_defaults: List[Tuple[str, str]]) -> 'IpBlock':
+    def from_path(path: str, param_defaults: List[Tuple[str,
+                                                        str]]) -> 'IpBlock':
         '''Load an IpBlock from an hjson description in a file at path'''
         with open(path, 'r', encoding='utf-8') as handle:
             return IpBlock.from_text(handle.read(), param_defaults,
                                      'file at {!r}'.format(path))
 
-    def alias_from_raw(self,
-                       scrub: bool,
-                       raw: object,
-                       where: str) -> None:
+    def alias_from_raw(self, scrub: bool, raw: object, where: str) -> None:
         '''Parses and validates an alias reg block and adds it to this IpBlock.
 
         The alias register definitions are compared with the corresponding
@@ -449,14 +434,12 @@ class IpBlock:
                         list(REQUIRED_ALIAS_FIELDS.keys()),
                         list(OPTIONAL_ALIAS_FIELDS.keys()))
 
-        alias_bus_interfaces = (BusInterfaces.
-                                from_raw(rd['bus_interfaces'],
-                                         'bus_interfaces of block at ' + where))
+        alias_bus_interfaces = (BusInterfaces.from_raw(
+            rd['bus_interfaces'], 'bus_interfaces of block at ' + where))
         if ((alias_bus_interfaces.has_unnamed_host or
              alias_bus_interfaces.named_hosts)):
             raise ValueError("Alias registers cannot be defined for host "
-                             "interfaces (in block at {})."
-                             .format(where))
+                             "interfaces (in block at {}).".format(where))
         # Alias register definitions are only compatible with named devices.
         if ((alias_bus_interfaces.has_unnamed_device or
              self.bus_interfaces.has_unnamed_device)):
@@ -469,9 +452,9 @@ class IpBlock:
         alias_bus_device_names = set(alias_bus_interfaces.named_devices)
         if not alias_bus_device_names.issubset(bus_device_names):
             raise ValueError("Alias file {} refers to device names {} that "
-                             "do not map to device names in {}."
-                             .format(where, list(alias_bus_device_names),
-                                     self.name))
+                             "do not map to device names in {}.".format(
+                                 where, list(alias_bus_device_names),
+                                 self.name))
 
         self.alias_impl = check_name(rd['alias_impl'],
                                      'alias_impl of block at ' + where)
@@ -481,15 +464,14 @@ class IpBlock:
 
         if alias_target != self.name:
             raise ValueError("Alias target block name {} in {} "
-                             "does not match block name {}."
-                             .format(alias_target, where, self.name))
+                             "does not match block name {}.".format(
+                                 alias_target, where, self.name))
 
         init_block = RegBlock(self.regwidth, self.params)
 
         alias_reg_blocks = RegBlock.build_blocks(init_block, rd['registers'],
                                                  self.bus_interfaces,
-                                                 self.clocking,
-                                                 True)
+                                                 self.clocking, True)
 
         # Check that alias register block names are
         # a subset of the already defined register blocks
@@ -497,9 +479,9 @@ class IpBlock:
 
         if not alias_reg_block_names.issubset(set(self.reg_blocks.keys())):
             raise ValueError("Alias file {} refers to register blocks {} that "
-                             "do not map to register blocks in {}."
-                             .format(where, list(alias_reg_block_names),
-                                     self.name))
+                             "do not map to register blocks in {}.".format(
+                                 where, list(alias_reg_block_names),
+                                 self.name))
 
         # Check that the alias bus interface names and register blocks match
         if alias_reg_block_names != alias_bus_device_names:
@@ -513,13 +495,12 @@ class IpBlock:
             if self.bus_interfaces.device_async:
                 if not alias_bus_interfaces.device_async:
                     raise ValueError('Missing device_async key in alias '
-                                     'interface {} in {}'
-                                     .format(block_key, where))
+                                     'interface {} in {}'.format(
+                                         block_key, where))
                 if ((alias_bus_interfaces.device_async[block_key] !=
                      self.bus_interfaces.device_async[block_key])):
                     raise ValueError('Inconsistent configuration of interface '
-                                     '{} in {}'
-                                     .format(block_key, where))
+                                     '{} in {}'.format(block_key, where))
 
             if scrub:
                 # scrub alias definitions and replace the entire block.
@@ -533,32 +514,25 @@ class IpBlock:
                 # Validate and apply alias definitions
                 self.reg_blocks[block_key].apply_alias(alias_block, where)
 
-    def alias_from_text(self,
-                        scrub: bool,
-                        txt: str,
-                        where: str) -> None:
+    def alias_from_text(self, scrub: bool, txt: str, where: str) -> None:
         '''Load alias regblocks from an hjson description in txt'''
         self.alias_from_raw(scrub, hjson.loads(txt, use_decimal=True), where)
 
-    def alias_from_path(self,
-                        scrub: bool,
-                        path: str) -> None:
+    def alias_from_path(self, scrub: bool, path: str) -> None:
         '''Load alias regblocks from an hjson description in a file at path'''
         with open(path, 'r', encoding='utf-8') as handle:
-            self.alias_from_text(scrub,
-                                 handle.read(),
+            self.alias_from_text(scrub, handle.read(),
                                  'alias file at {!r}'.format(path))
 
     def _asdict(self) -> Dict[str, object]:
-        ret = {
-            'name': self.name,
-            'regwidth': self.regwidth
-        }
+        ret = {'name': self.name, 'regwidth': self.regwidth}
         if len(self.reg_blocks) == 1 and None in self.reg_blocks:
             ret['registers'] = self.reg_blocks[None].as_dicts()
         else:
-            ret['registers'] = {k: v.as_dicts()
-                                for k, v in self.reg_blocks.items()}
+            ret['registers'] = {
+                k: v.as_dicts()
+                for k, v in self.reg_blocks.items()
+            }
 
         ret['param_list'] = self.params.as_dicts()
         ret['cip_id'] = self.cip_id
@@ -612,8 +586,8 @@ class IpBlock:
             if sig['name'] == name:
                 return sig
         else:
-            raise ValueError("Signal {} does not exist in IP block {}"
-                             .format(name, self.name))
+            raise ValueError("Signal {} does not exist in IP block {}".format(
+                name, self.name))
 
     def has_shadowed_reg(self) -> bool:
         '''Return boolean indication whether reg block contains shadowed registers'''
@@ -630,12 +604,10 @@ class IpBlock:
 
         return self.clocking.primary
 
-    def check_cm_annotations(self,
-                             rtl_names: Dict[str, List[Tuple[str, int]]],
+    def check_cm_annotations(self, rtl_names: Dict[str, List[Tuple[str, int]]],
                              where: str) -> None:
         '''Check RTL annotations against countermeasure list of this block'''
 
         what = '{} block at {}'.format(self.name, where)
-        CounterMeasure.check_annotation_list(what,
-                                             rtl_names,
+        CounterMeasure.check_annotation_list(what, rtl_names,
                                              self.countermeasures)
