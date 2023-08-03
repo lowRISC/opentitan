@@ -11,11 +11,13 @@ import sys
 import textwrap
 import warnings
 from typing import Optional, Set, TextIO
+from collections.abc import Iterable
 
 
 from reggen.field import Field
 from reggen.ip_block import IpBlock
 from reggen.params import LocalParam
+from reggen.reg_block import RegBlock
 from reggen.register import Register
 from reggen.multi_register import MultiRegister
 from reggen.signal import Signal
@@ -299,7 +301,8 @@ def gen_const_interrupts(outstr: TextIO,
 def gen_rust(block: IpBlock,
              outfile: TextIO,
              src_lic: Optional[str],
-             src_copy: str) -> int:
+             src_copy: str,
+             rb_iface: Optional[str] = None) -> int:
     rnames = block.get_rnames()
 
     outstr = io.StringIO()
@@ -314,7 +317,13 @@ def gen_rust(block: IpBlock,
     gen_const_interrupts(outstr, block, block.name, block.regwidth,
                          existing_defines)
 
-    for rb in block.reg_blocks.values():
+    reg_blocks: Iterable[RegBlock] = []
+    if rb_iface is None:
+        reg_blocks = block.reg_blocks.values()
+    else:
+        reg_blocks = [block.reg_blocks[rb_iface]]
+
+    for rb in reg_blocks:
         for x in rb.entries:
             if isinstance(x, Register):
                 gen_const_register(outstr, x, block.name, block.regwidth, rnames,

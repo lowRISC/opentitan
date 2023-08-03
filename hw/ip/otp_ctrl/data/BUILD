@@ -68,6 +68,7 @@ autogen_hjson_header(
     srcs = [
         "otp_ctrl.hjson",
     ],
+    interface = "core",
 )
 
 exports_files(["otp_ctrl_mmap.hjson"])

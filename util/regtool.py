@@ -127,6 +127,13 @@ def main():
     parser.add_argument('--novalidate',
                         action='store_true',
                         help='Skip validate, just output json')
+    parser.add_argument('--reg-block-iface',
+                        '-n',
+                        type=str,
+                        required=False,
+                        help='''Regblock interface to generate.
+                                By default, generate for all interfaces.
+                                ''')
     parser.add_argument(
         '--version-stamp',
         type=str,
@@ -301,12 +308,14 @@ def main():
                 return gen_cfg_md.gen_cfg_md(obj, outfile)
             elif fmt == 'cdh':
                 return gen_cheader.gen_cdefines(obj, outfile, src_lic,
-                                                src_copy)
+                                                src_copy, args.reg_block_iface)
             elif fmt == 'rs':
-                return gen_rust.gen_rust(obj, outfile, src_lic, src_copy)
+                return gen_rust.gen_rust(obj, outfile, src_lic, src_copy,
+                                         args.reg_block_iface)
             elif fmt == 'trs':
                 return gen_tock.gen_tock(obj, outfile, infile.name, src_lic,
-                                         src_copy, version_stamp)
+                                         src_copy, version_stamp,
+                                         args.reg_block_iface)
             else:
                 return gen_json.gen_json(obj, outfile, fmt)
 

@@ -12,10 +12,12 @@ import textwrap
 import warnings
 from datetime import datetime
 from typing import Any, Dict, Optional, Set, TextIO
+from collections.abc import Iterable
 
 from reggen.ip_block import IpBlock
 from reggen.multi_register import MultiRegister
 from reggen.params import LocalParam
+from reggen.reg_block import RegBlock
 from reggen.register import Register
 from reggen.window import Window
 
@@ -123,7 +125,8 @@ def data_type(name: str, val: int, as_hex: bool) -> str:
 filler_no = 0
 
 
-def possibly_gen_filler(regout: TextIO, highest_address: Set[int], next_address: int) -> None:
+def possibly_gen_filler(regout: TextIO, highest_address: Set[int],
+                        next_address: int) -> None:
     r"""Tock requires any gaps between registers do be declared as a reserved field.
     """
 
@@ -214,13 +217,15 @@ def gen_field_definitions(
         if field.auto_split:
             for sub_field_id in range(field.bits.lsb, field.bits.width()):
                 genout(fieldout, "\n{} OFFSET({}) NUMBITS({}) [],",
-                       "{}_{}".format(field.name.upper(), sub_field_id), sub_field_id, 1)
+                       "{}_{}".format(field.name.upper(),
+                                      sub_field_id), sub_field_id, 1)
         else:
-            genout(fieldout, "\n{} OFFSET({}) NUMBITS({}) [", field.name.upper(),
-                   field.bits.lsb, field.bits.width())
+            genout(fieldout, "\n{} OFFSET({}) NUMBITS({}) [",
+                   field.name.upper(), field.bits.lsb, field.bits.width())
             if getattr(field, 'enum', None) is not None:
                 for enum in field.enum:
-                    genout(fieldout, "\n{} = {},", sanitize_name(enum.name).upper(), enum.value)
+                    genout(fieldout, "\n{} = {},",
+                           sanitize_name(enum.name).upper(), enum.value)
                 genout(fieldout, "\n],")
             else:
                 genout(fieldout, "],")
@@ -324,7 +329,8 @@ def gen_const_interrupts(fieldout: TextIO, block: IpBlock, component: str,
 
 def gen_tock(block: IpBlock, outfile: TextIO, src_file: Optional[str],
              src_lic: Optional[str], src_copy: str,
-             version_stamp: Dict[str, str]) -> int:
+             version_stamp: Dict[str, str],
+             rb_iface: Optional[str] = None) -> int:
     rnames = block.get_rnames()
 
     paramout = io.StringIO()
@@ -346,7 +352,13 @@ def gen_tock(block: IpBlock, outfile: TextIO, src_file: Optional[str],
     gen_const_interrupts(fieldout, block, block.name, block.regwidth,
                          existing_defines)
 
-    for rb in block.reg_blocks.values():
+    reg_blocks: Iterable[RegBlock] = []
+    if rb_iface is None:
+        reg_blocks = block.reg_blocks.values()
+    else:
+        reg_blocks = [block.reg_blocks[rb_iface]]
+
+    for rb in reg_blocks:
         for x in rb.entries:
             if isinstance(x, Register):
                 gen_const_register(regout, fieldout, x, block, rnames,
@@ -381,20 +393,20 @@ def gen_tock(block: IpBlock, outfile: TextIO, src_file: Optional[str],
     fieldstr = fieldout.getvalue()
     fieldout.close()
 
-    genout(outfile, '// Generated register constants for {}.\n', block.name)
+    tm = int(version_stamp.get('BUILD_TIMESTAMP', 0))
+    dt = datetime.utcfromtimestamp(tm) if tm else datetime.utcnow()
     # Opensource council has approved dual-licensing the generated files under
     # both Apache and MIT licenses.
-    genout(outfile, '// This file is licensed under either of:\n')
+    # Since these generated files are meant to be imported into the Tock
+    # codebase, emit a header acceptable to Tock's license checker.
     genout(
         outfile,
-        '//   Apache License, Version 2.0 '
-        '(LICENSE-APACHE <http://www.apache.org/licenses/LICENSE-2.0>)\n'
+        "// Licensed under the Apache License, Version 2.0 or the MIT License.\n"
     )
-    genout(
-        outfile,
-        '//   MIT License (LICENSE-MIT <http://opensource.org/licenses/MIT>)\n'
-    )
+    genout(outfile, "// SPDX-License-Identifier: Apache-2.0 OR MIT\n")
+    genout(outfile, "// Copyright lowRISC contributors {}.\n", dt.year)
     genout(outfile, '\n')
+    genout(outfile, '// Generated register constants for {}.\n', block.name)
 
     genout(outfile, '// Built for {}\n',
            version_stamp.get('BUILD_GIT_VERSION', '<unknown>'))
@@ -402,8 +414,6 @@ def gen_tock(block: IpBlock, outfile: TextIO, src_file: Optional[str],
            version_stamp.get('BUILD_SCM_REVISION', '<unknown>'))
     genout(outfile, '// Tree status: {}\n',
            version_stamp.get('BUILD_SCM_STATUS', '<unknown>'))
-    tm = int(version_stamp.get('BUILD_TIMESTAMP', 0))
-    dt = datetime.utcfromtimestamp(tm) if tm else datetime.utcnow()
     genout(outfile, '// Build date: {}\n\n', dt.isoformat())
 
     if src_file:
@@ -411,7 +421,10 @@ def gen_tock(block: IpBlock, outfile: TextIO, src_file: Optional[str],
 
     for access in sorted(access_type):
         genout(outfile, "use kernel::utilities::registers::{};\n", access)
-    genout(outfile, "use kernel::utilities::registers::{{register_bitfields, register_structs}};\n")
+    genout(
+        outfile,
+        "use kernel::utilities::registers::{{register_bitfields, register_structs}};\n"
+    )
 
     outfile.write(indent(paramstr))
     outfile.write(indent(regstr))
