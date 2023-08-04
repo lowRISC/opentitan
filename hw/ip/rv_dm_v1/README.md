@@ -1,8 +1,8 @@
-# RISC-V Debug System Wrapper Technical Specification
+# RISC-V Debug System Wrapper v1 Technical Specification
 
 # Overview
 
-{{#block-dashboard rv_dm}}
+{{#block-dashboard rv_dm_v1}}
 
 This document specifies the RISC-V Debug System wrapper functionality.
 

@@ -7,7 +7,7 @@ package(default_visibility = ["//visibility:public"])
 filegroup(
     name = "all_files",
     srcs = glob(["**"]) + [
-        "//hw/ip/rv_dm/data:all_files",
+        "//hw/ip/rv_dm_v1/data:all_files",
     ],
 )
 

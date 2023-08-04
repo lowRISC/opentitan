@@ -30,6 +30,7 @@
 | [`rstmgr`]       | Controls the on-chip reset signals, records reset cause and CPU crash dump for software                                           |
 | [`rv_core_ibex`] | Dual-core lockstep 32-bit RISC-V processor running application and control software                                               |
 | [`rv_dm`]        | Enables debug support for Ibex, access protected by life cycle                                                                    |
+| [`rv_dm_v1`]     | Enables debug support for Ibex, access protected by life cycle                                                                    |
 | [`rv_timer`]     | Memory-mapped timer unit implementing RISC-V mtime and mtimecmp registers                                                         |
 | [`spi_device`]   | Serial peripheral interface supporting different device modes, suitable for bulk-load of data into and out of the chip            |
 | [`spi_host`]     | Serial peripheral interface for host mode, suitable for interfacing external serial NOR flash devices                             |
@@ -67,6 +68,7 @@
 [`rstmgr`]: ./rstmgr/README.md
 [`rv_core_ibex`]: ./rv_core_ibex/README.md
 [`rv_dm`]: ./rv_dm/README.md
+[`rv_dm_v1`]: ./rv_dm_v1/README.md
 [`rv_timer`]: ./rv_timer/README.md
 [`spi_device`]: ./spi_device/README.md
 [`spi_host`]: ./spi_host/README.md

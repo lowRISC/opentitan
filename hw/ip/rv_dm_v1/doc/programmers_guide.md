@@ -2,4 +2,4 @@
 
 ## Register Table
 
-* [Register Table](../data/rv_dm.hjson#registers)
+* [Register Table](../data/rv_dm_v1.hjson#registers)
