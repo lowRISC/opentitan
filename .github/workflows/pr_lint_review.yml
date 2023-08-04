@@ -48,6 +48,7 @@ jobs:
         uses: chipsalliance/verible-linter-action@main
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          reviewdog_reporter: 'github-pr-check'
           suggest_fixes: 'false'
           config_file: ${{ env.verible_config }}
           extra_args: "--waiver_files=verible_waiver"
