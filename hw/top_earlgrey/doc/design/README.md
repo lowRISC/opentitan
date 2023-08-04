@@ -113,7 +113,7 @@ Attached to the Ibex core are a debug module (DM) and interrupt module (PLIC).
 
 One feature available for Earl Grey processor core is debug access.
 By interfacing with JTAG pins, logic in the debug module allows the core to enter debug mode (per RISC-V 0.13 debug spec), and gives the design the ability to inject code either into the device - by emulating an instruction - or into memory.
-Full details can be found in the [rv_dm specification](../../../ip/rv_dm/README.md).
+Full details can be found in the [rv_dm specification](../../../ip/rv_dm_v1/README.md).
 
 #### Interrupt Controller
 
@@ -430,7 +430,7 @@ For the purpose of `top_earlgrey`, the first option has been chosen to benefit s
 | flash_ctrl        | flash_ctrl    | 0x41000000 (core) |
 |                   |               | 0x41008000 (prim) |
 |                   |               | 0x20000000 (mem)  |
-| rv_dm             | rv_dm         | 0x00010000 (mem)  |
+| rv_dm             | rv_dm_v1      | 0x00010000 (mem)  |
 |                   |               | 0x41200000 (regs) |
 | rv_plic           | rv_plic       | 0x48000000 (regs) |
 | aes               | aes           | 0x41100000 (regs) |

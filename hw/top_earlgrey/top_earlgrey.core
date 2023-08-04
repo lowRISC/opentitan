@@ -11,7 +11,7 @@ filesets:
       - lowrisc:opentitan:top_earlgrey_alert_handler
       - lowrisc:ip:gpio
       - lowrisc:ip:rv_core_ibex
-      - lowrisc:ip:rv_dm
+      - lowrisc:ip:rv_dm_v1
       - lowrisc:opentitan:top_earlgrey_rv_plic
       - lowrisc:ip:pinmux
       - lowrisc:ip:rv_timer

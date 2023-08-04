@@ -167,7 +167,7 @@
       reset: rst_main_ni
       req_fifo_pass: false
       rsp_fifo_pass: false
-      inst_type: rv_dm
+      inst_type: rv_dm_v1
       addr_range:
       [
         {
@@ -186,7 +186,7 @@
       reset: rst_main_ni
       req_fifo_pass: false
       rsp_fifo_pass: false
-      inst_type: rv_dm
+      inst_type: rv_dm_v1
       addr_range:
       [
         {

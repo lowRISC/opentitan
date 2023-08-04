@@ -243,7 +243,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     debugger = jtag_rv_debugger::type_id::create("debugger");
     debugger.set_cfg(m_jtag_agent_cfg);
     debugger.set_ral(jtag_dmi_ral);
-    debugger.num_harts = rv_dm_reg_pkg::NrHarts;
+    debugger.num_harts = rv_dm_v1_reg_pkg::NrHarts;
     debugger.num_triggers = 4;  // TODO: wire this from `top_earlgrey_pkg`.
 
     // This TL agent is used in stub_cpu mode and connected with ibex data port.

@@ -12,7 +12,7 @@ filesets:
       - lowrisc:tlul:headers
       # Manually instantiated
       - lowrisc:ip:rv_core_ibex
-      - lowrisc:ip:rv_dm
+      - lowrisc:ip:rv_dm_v1
       - lowrisc:opentitan:top_englishbreakfast_rv_plic
       - lowrisc:ip:tlul
       - lowrisc:prim:all

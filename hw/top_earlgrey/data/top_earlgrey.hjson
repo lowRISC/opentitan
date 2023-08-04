@@ -622,7 +622,7 @@
       attr: "templated",
     },
     { name: "rv_dm",
-      type: "rv_dm",
+      type: "rv_dm_v1",
       clock_srcs: {clk_i: "main"},
       clock_group: "infra",
       reset_connections: {rst_ni: "sys"},
