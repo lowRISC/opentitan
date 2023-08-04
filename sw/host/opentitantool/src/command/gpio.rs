@@ -325,7 +325,7 @@ pub struct GpioMonitoringRead {
     )]
     pub pins: Vec<String>,
 
-    #[arg(long, ignore_case = true)]
+    #[arg(long)]
     pub continue_monitoring: bool,
 }
 
