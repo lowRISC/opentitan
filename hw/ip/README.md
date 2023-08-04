@@ -19,6 +19,7 @@
 | [`keymgr`]       | Managing identities and root keys; shielding confidential assets from software; providing a key derivation interface for software |
 | [`kmac`]         | Accelerator for Keccak-based keyed hash message authentication code and SHA-3 hash functions; with SCA and FI countermeasures     |
 | [`lc_ctrl`]      | Manages device life cycle states and transitions, and controls key manager, flash, OTP, and debug access                          |
+| [`lc_ctrl_v1`]   | Manages device life cycle states and transitions, and controls key manager, flash, OTP, and debug access                          |
 | [`otbn`]         | Programmable coprocessor for asymmetric cryptography with SCA and FI countermeasures                                              |
 | [`otp_ctrl`]     | Interfaces integrated one-time programmable memory, supports scrambling, integrity and secure wipe                                |
 | [`pattgen`]      | Transmission of short time-dependent data patterns on two clock-parallel output channels                                          |
@@ -55,6 +56,7 @@
 [`keymgr`]: ./keymgr/README.md
 [`kmac`]: ./kmac/README.md
 [`lc_ctrl`]: ./lc_ctrl/README.md
+[`lc_ctrl_v1`]: ./lc_ctrl_v1/README.md
 [`otbn`]: ./otbn/README.md
 [`otp_ctrl`]: ./otp_ctrl/README.md
 [`pattgen`]: ./pattgen/README.md

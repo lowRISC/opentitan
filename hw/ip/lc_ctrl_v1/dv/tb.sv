@@ -6,11 +6,11 @@ module tb;
   // dep packages
   import uvm_pkg::*;
   import dv_utils_pkg::*;
-  import lc_ctrl_pkg::*;
-  import lc_ctrl_reg_pkg::*;
-  import lc_ctrl_state_pkg::*;
-  import lc_ctrl_env_pkg::*;
-  import lc_ctrl_test_pkg::*;
+  import lc_ctrl_v1_pkg::*;
+  import lc_ctrl_v1_reg_pkg::*;
+  import lc_ctrl_v1_state_pkg::*;
+  import lc_ctrl_v1_env_pkg::*;
+  import lc_ctrl_v1_test_pkg::*;
   import otp_ctrl_pkg::*;
   import jtag_riscv_agent_pkg::*;
 
@@ -45,8 +45,8 @@ module tb;
 
   wire [OtpTestCtrlWidth-1:0] otp_vendor_test_ctrl;
   wire [OtpTestStatusWidth-1:0] otp_vendor_test_status;
-  assign lc_ctrl_if.otp_vendor_test_ctrl_o = otp_vendor_test_ctrl;
-  assign otp_vendor_test_status = lc_ctrl_if.otp_vendor_test_status_i;
+  assign lc_ctrl_v1_if.otp_vendor_test_ctrl_o = otp_vendor_test_ctrl;
+  assign otp_vendor_test_status = lc_ctrl_v1_if.otp_vendor_test_status_i;
 
   // HW revision
   lc_hw_rev_t hw_rev_o;
@@ -62,7 +62,7 @@ module tb;
     .clk  (clk),
     .rst_n(rst_n)
   );
-  lc_ctrl_if lc_ctrl_if (
+  lc_ctrl_v1_if lc_ctrl_v1_if (
     .clk  (clk),
     .rst_n(rst_n)
   );
@@ -99,7 +99,7 @@ module tb;
   `DV_ALERT_IF_CONNECT()
 
   // dut
-  lc_ctrl #(
+  lc_ctrl_v1 #(
     .AlertAsyncOn(AlertAsyncOn),
     // Idcode value for the JTAG.
     .IdcodeValue(IdcodeValue),
@@ -107,9 +107,9 @@ module tb;
     .RndCnstLcKeymgrDivInvalid(RndCnstLcKeymgrDivInvalid),
     .RndCnstLcKeymgrDivTestDevRma(RndCnstLcKeymgrDivTestDevRma),
     .RndCnstLcKeymgrDivProduction(RndCnstLcKeymgrDivProduction),
-    .SiliconCreatorId(LcCtrlSiliconCreatorId[lc_ctrl_reg_pkg::SiliconCreatorIdWidth-1:0]),
-    .ProductId(LcCtrlProductId[lc_ctrl_reg_pkg::ProductIdWidth-1:0]),
-    .RevisionId(LcCtrlRevisionId[lc_ctrl_reg_pkg::RevisionIdWidth-1:0]),
+    .SiliconCreatorId(LcCtrlSiliconCreatorId[lc_ctrl_v1_reg_pkg::SiliconCreatorIdWidth-1:0]),
+    .ProductId(LcCtrlProductId[lc_ctrl_v1_reg_pkg::ProductIdWidth-1:0]),
+    .RevisionId(LcCtrlRevisionId[lc_ctrl_v1_reg_pkg::RevisionIdWidth-1:0]),
     .SecVolatileRawUnlockEn(SecVolatileRawUnlockEn)
   ) dut (
     .clk_i (clk),
@@ -125,9 +125,9 @@ module tb;
     .alert_tx_o(alert_tx),
 
     .jtag_i     ({jtag_if.tck, jtag_if.tms, jtag_if.trst_n, jtag_if.tdi}),
-    .jtag_o     ({jtag_if.tdo, lc_ctrl_if.tdo_oe}),
-    .scanmode_i (lc_ctrl_if.scanmode_i),
-    .scan_rst_ni(lc_ctrl_if.scan_rst_ni),
+    .jtag_o     ({jtag_if.tdo, lc_ctrl_v1_if.tdo_oe}),
+    .scanmode_i (lc_ctrl_v1_if.scanmode_i),
+    .scan_rst_ni(lc_ctrl_v1_if.scan_rst_ni),
 
     .esc_scrap_state0_tx_i(esc_scrap_state0_if.esc_tx),
     .esc_scrap_state0_rx_o(esc_scrap_state0_if.esc_rx),
@@ -136,7 +136,7 @@ module tb;
 
     .pwr_lc_i(pwr_lc[LcPwrInitReq]),
     .pwr_lc_o(pwr_lc[LcPwrDoneRsp:LcPwrIdleRsp]),
-    .strap_en_override_o(lc_ctrl_if.strap_en_override_o),
+    .strap_en_override_o(lc_ctrl_v1_if.strap_en_override_o),
 
     .lc_otp_vendor_test_o(otp_vendor_test_ctrl),
     .lc_otp_vendor_test_i(otp_vendor_test_status),
@@ -147,33 +147,33 @@ module tb;
     .kmac_data_i(kmac_data_in),
     .kmac_data_o(kmac_data_out),
 
-    .otp_lc_data_i(lc_ctrl_if.otp_i),
+    .otp_lc_data_i(lc_ctrl_v1_if.otp_i),
 
-    .lc_dft_en_o               (lc_ctrl_if.lc_dft_en_o),
-    .lc_nvm_debug_en_o         (lc_ctrl_if.lc_nvm_debug_en_o),
-    .lc_hw_debug_en_o          (lc_ctrl_if.lc_hw_debug_en_o),
-    .lc_cpu_en_o               (lc_ctrl_if.lc_cpu_en_o),
-    .lc_creator_seed_sw_rw_en_o(lc_ctrl_if.lc_creator_seed_sw_rw_en_o),
-    .lc_owner_seed_sw_rw_en_o  (lc_ctrl_if.lc_owner_seed_sw_rw_en_o),
-    .lc_iso_part_sw_rd_en_o    (lc_ctrl_if.lc_iso_part_sw_rd_en_o),
-    .lc_iso_part_sw_wr_en_o    (lc_ctrl_if.lc_iso_part_sw_wr_en_o),
-    .lc_seed_hw_rd_en_o        (lc_ctrl_if.lc_seed_hw_rd_en_o),
-    .lc_keymgr_en_o            (lc_ctrl_if.lc_keymgr_en_o),
-    .lc_escalate_en_o          (lc_ctrl_if.lc_escalate_en_o),
-    .lc_check_byp_en_o         (lc_ctrl_if.lc_check_byp_en_o),
+    .lc_dft_en_o               (lc_ctrl_v1_if.lc_dft_en_o),
+    .lc_nvm_debug_en_o         (lc_ctrl_v1_if.lc_nvm_debug_en_o),
+    .lc_hw_debug_en_o          (lc_ctrl_v1_if.lc_hw_debug_en_o),
+    .lc_cpu_en_o               (lc_ctrl_v1_if.lc_cpu_en_o),
+    .lc_creator_seed_sw_rw_en_o(lc_ctrl_v1_if.lc_creator_seed_sw_rw_en_o),
+    .lc_owner_seed_sw_rw_en_o  (lc_ctrl_v1_if.lc_owner_seed_sw_rw_en_o),
+    .lc_iso_part_sw_rd_en_o    (lc_ctrl_v1_if.lc_iso_part_sw_rd_en_o),
+    .lc_iso_part_sw_wr_en_o    (lc_ctrl_v1_if.lc_iso_part_sw_wr_en_o),
+    .lc_seed_hw_rd_en_o        (lc_ctrl_v1_if.lc_seed_hw_rd_en_o),
+    .lc_keymgr_en_o            (lc_ctrl_v1_if.lc_keymgr_en_o),
+    .lc_escalate_en_o          (lc_ctrl_v1_if.lc_escalate_en_o),
+    .lc_check_byp_en_o         (lc_ctrl_v1_if.lc_check_byp_en_o),
 
-    .lc_clk_byp_req_o(lc_ctrl_if.clk_byp_req_o),
-    .lc_clk_byp_ack_i(lc_ctrl_if.clk_byp_ack_i),
+    .lc_clk_byp_req_o(lc_ctrl_v1_if.clk_byp_req_o),
+    .lc_clk_byp_ack_i(lc_ctrl_v1_if.clk_byp_ack_i),
 
-    .lc_flash_rma_seed_o(lc_ctrl_if.flash_rma_seed_o),
-    .lc_flash_rma_req_o (lc_ctrl_if.flash_rma_req_o),
-    .lc_flash_rma_ack_i (lc_ctrl_if.flash_rma_ack_i),
+    .lc_flash_rma_seed_o(lc_ctrl_v1_if.flash_rma_seed_o),
+    .lc_flash_rma_req_o (lc_ctrl_v1_if.flash_rma_req_o),
+    .lc_flash_rma_ack_i (lc_ctrl_v1_if.flash_rma_ack_i),
 
-    .lc_keymgr_div_o(lc_ctrl_if.keymgr_div_o),
+    .lc_keymgr_div_o(lc_ctrl_v1_if.keymgr_div_o),
 
-    .otp_device_id_i(lc_ctrl_if.otp_device_id_i),
+    .otp_device_id_i(lc_ctrl_v1_if.otp_device_id_i),
 
-    .otp_manuf_state_i(lc_ctrl_if.otp_manuf_state_i),
+    .otp_manuf_state_i(lc_ctrl_v1_if.otp_manuf_state_i),
     .hw_rev_o(hw_rev_o)
   );
 
@@ -183,32 +183,32 @@ module tb;
 
   // JTAG/TL Mutex claim
   // Need a small delay to filter out glitches
-  assign #1ps lc_ctrl_if.mutex_claim_jtag = (dut.tap_reg2hw.claim_transition_if.qe == 1) &&
+  assign #1ps lc_ctrl_v1_if.mutex_claim_jtag = (dut.tap_reg2hw.claim_transition_if.qe == 1) &&
       prim_mubi_pkg::mubi8_test_false_loose(
       dut.tap_claim_transition_if_q
   );
 
-  assign #1ps lc_ctrl_if.mutex_claim_tl = (dut.reg2hw.claim_transition_if.qe == 1) &&
+  assign #1ps lc_ctrl_v1_if.mutex_claim_tl = (dut.reg2hw.claim_transition_if.qe == 1) &&
       prim_mubi_pkg::mubi8_test_false_loose(
       dut.sw_claim_transition_if_q
   );
 
   // FSM State
-  assign #1ps lc_ctrl_if.lc_ctrl_fsm_state = dut.u_lc_ctrl_fsm.fsm_state_q;
+  assign #1ps lc_ctrl_v1_if.lc_ctrl_v1_fsm_state = dut.u_lc_ctrl_fsm.fsm_state_q;
   // Token mux control
-  assign lc_ctrl_if.token_idx0 = dut.u_lc_ctrl_fsm.token_idx0;
-  assign lc_ctrl_if.token_idx1 = dut.u_lc_ctrl_fsm.token_idx1;
+  assign lc_ctrl_v1_if.token_idx0 = dut.u_lc_ctrl_fsm.token_idx0;
+  assign lc_ctrl_v1_if.token_idx1 = dut.u_lc_ctrl_fsm.token_idx1;
   // Hashed tokens
-  assign lc_ctrl_if.hashed_token_i = dut.u_lc_ctrl_fsm.hashed_token_i;
-  assign lc_ctrl_if.hashed_token_mux = dut.u_lc_ctrl_fsm.hashed_token_mux;
-  assign lc_ctrl_if.token_hash_ack_i = dut.u_lc_ctrl_fsm.token_hash_ack_i;
+  assign lc_ctrl_v1_if.hashed_token_i = dut.u_lc_ctrl_fsm.hashed_token_i;
+  assign lc_ctrl_v1_if.hashed_token_mux = dut.u_lc_ctrl_fsm.hashed_token_mux;
+  assign lc_ctrl_v1_if.token_hash_ack_i = dut.u_lc_ctrl_fsm.token_hash_ack_i;
 
 
 
   initial begin
     static
-    lc_ctrl_parameters_cfg
-    parameters_cfg = lc_ctrl_parameters_cfg::type_id::create(
+    lc_ctrl_v1_parameters_cfg
+    parameters_cfg = lc_ctrl_v1_parameters_cfg::type_id::create(
         "parameters_cfg"
     );
 
@@ -218,7 +218,7 @@ module tb;
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(pwr_lc_vif)::set(null, "*.env", "pwr_lc_vif", pwr_lc_if);
-    uvm_config_db#(virtual lc_ctrl_if)::set(null, "*.env", "lc_ctrl_vif", lc_ctrl_if);
+    uvm_config_db#(virtual lc_ctrl_v1_if)::set(null, "*.env", "lc_ctrl_v1_vif", lc_ctrl_v1_if);
 
     // verilog_format: off - avoid bad formatting
     // The jtag_agent is a low_level agent that configured inside jtag_riscv_agent.
@@ -239,7 +239,7 @@ module tb;
     parameters_cfg.keymgr_div_invalid = RndCnstLcKeymgrDivInvalid;
     parameters_cfg.keymgr_div_test_dev_rma = RndCnstLcKeymgrDivTestDevRma;
     parameters_cfg.keymgr_div_production = RndCnstLcKeymgrDivProduction;
-    uvm_config_db#(lc_ctrl_parameters_cfg)::set(null, "*", "parameters_cfg", parameters_cfg);
+    uvm_config_db#(lc_ctrl_v1_parameters_cfg)::set(null, "*", "parameters_cfg", parameters_cfg);
 
     // verilog_format: on
     $timeformat(-12, 0, " ps", 12);
@@ -249,13 +249,13 @@ module tb;
   // Assertions
   // HW Revision
   `ASSERT(HwRevSiliconCreatorId_A, hw_rev_o.silicon_creator_id ==
-                       LcCtrlSiliconCreatorId[lc_ctrl_reg_pkg::SiliconCreatorIdWidth-1:0],
+                       LcCtrlSiliconCreatorId[lc_ctrl_v1_reg_pkg::SiliconCreatorIdWidth-1:0],
                        clk, ~rst_n)
   `ASSERT(HwRevProductId_A, hw_rev_o.product_id ==
-                       LcCtrlProductId[lc_ctrl_reg_pkg::ProductIdWidth-1:0],
+                       LcCtrlProductId[lc_ctrl_v1_reg_pkg::ProductIdWidth-1:0],
                        clk, ~rst_n)
   `ASSERT(HwRevRevisionId_A, hw_rev_o.revision_id ==
-                       LcCtrlRevisionId[lc_ctrl_reg_pkg::RevisionIdWidth-1:0],
+                       LcCtrlRevisionId[lc_ctrl_v1_reg_pkg::RevisionIdWidth-1:0],
                        clk, ~rst_n)
   `ASSERT(HwRevReserved_A, hw_rev_o.reserved == '0,
                        clk, ~rst_n)

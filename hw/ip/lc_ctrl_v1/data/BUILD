@@ -7,9 +7,9 @@ load("//rules:autogen.bzl", "autogen_hjson_header")
 package(default_visibility = ["//visibility:public"])
 
 autogen_hjson_header(
-    name = "lc_ctrl_regs",
+    name = "lc_ctrl_v1_regs",
     srcs = [
-        "lc_ctrl.hjson",
+        "lc_ctrl_v1.hjson",
     ],
 )
 

@@ -10,7 +10,7 @@
 ## Current status
 * [Design & verification stage](../../../README.md)
   * [HW development stages](../../../../doc/project_governance/development_stages.md)
-* [Simulation results](https://reports.opentitan.org/integrated/hw/ip/lc_ctrl/dv/latest/report.html)
+* [Simulation results](https://reports.opentitan.org/integrated/hw/ip/lc_ctrl_v1/dv/latest/report.html)
 
 ## Design features
 For detailed information on LC_CTRL design features, please see the [LC_CTRL HWIP technical specification](../README.md).
@@ -22,7 +22,7 @@ LC_CTRL testbench has been constructed based on the [CIP testbench architecture]
 ![Block diagram](./doc/tb.svg)
 
 ### Top level testbench
-Top level testbench is located at `hw/ip/lc_ctrl/dv/tb/tb.sv`. It instantiates the LC_CTRL DUT module `hw/ip/lc_ctrl/rtl/lc_ctrl.sv`.
+Top level testbench is located at `hw/ip/lc_ctrl_v1/dv/tb/tb.sv`. It instantiates the LC_CTRL DUT module `hw/ip/lc_ctrl_v1/rtl/lc_ctrl_v1.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface](../../../dv/sv/common_ifs/README.md)
 * [TileLink host interface](../../../dv/sv/tl_agent/README.md)
@@ -41,7 +41,7 @@ The following utilities provide generic helper tasks and functions to perform ac
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in
-`lc_ctrl_env_pkg`.
+`lc_ctrl_v1_env_pkg`.
 
 ### TL_agent
 LC_CTRL testbench instantiates (already handled in CIP base env) [tl_agent](../../../dv/sv/tl_agent/README.md)
@@ -65,9 +65,9 @@ It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/s
 
 ### Stimulus strategy
 #### Test sequences
-All test sequences reside in `hw/ip/lc_ctrl/dv/env/seq_lib`.
-The `lc_ctrl_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
-All test sequences are extended from `lc_ctrl_base_vseq`.
+All test sequences reside in `hw/ip/lc_ctrl_v1/dv/env/seq_lib`.
+The `lc_ctrl_v1_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
+All test sequences are extended from `lc_ctrl_v1_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
 
 
@@ -79,9 +79,9 @@ The following covergroups have been developed to prove that the test intent has 
 
 ### Self-checking strategy
 #### Scoreboard
-The `lc_ctrl_scoreboard` is primarily used for end to end checking.
+The `lc_ctrl_v1_scoreboard` is primarily used for end to end checking.
 It creates the following analysis exports to retrieve the data monitored by corresponding interface agents:
-* tl_[a_chan, d_chan, dir]_fifo_lc_ctrl_reg_block.analysis_export: TileLink CSR reads/writes.
+* tl_[a_chan, d_chan, dir]_fifo_lc_ctrl_v1_reg_block.analysis_export: TileLink CSR reads/writes.
 * jtag_riscv_fifo.analysis_export: JTAG CSR reads/writes
 * alert_fifo[fatal_bus_integ_error, fatal_prog_error, fatal_state_error].analysis_export: Alert traffic from DUT
 * otp_prog_fifo.analysis_export:  OTP program data from LC_CTRL and response to LC_CTRL.
@@ -95,7 +95,7 @@ It also updates the UVM register model.
 * Alert data is decoded and used to indicate an alert has occurred
 
 #### Assertions
-* TLUL assertions: The `tb/lc_ctrl_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
+* TLUL assertions: The `tb/lc_ctrl_v1_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 
@@ -104,8 +104,8 @@ We are using our in-house developed [regression tool](../../../../util/dvsim/REA
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/lc_ctrl/dv/lc_ctrl_sim_cfg.hjson -i lc_ctrl_smoke
+$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/lc_ctrl_v1/dv/lc_ctrl_v1_sim_cfg.hjson -i lc_ctrl_v1_smoke
 ```
 
 ## Testplan
-[Testplan](../data/lc_ctrl_testplan.hjson)
+[Testplan](../data/lc_ctrl_v1_testplan.hjson)

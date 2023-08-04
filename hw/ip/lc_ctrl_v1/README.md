@@ -1,6 +1,6 @@
-# Life Cycle Controller Technical Specification
+# Life Cycle Controller v1 Technical Specification
 
-{{#block-dashboard lc_ctrl}}
+{{#block-dashboard lc_ctrl_v1}}
 
 # Overview
 

@@ -19,7 +19,7 @@ Once the ROM check completes, the CPU fetch enable is released.
 The following diagram illustrates this power-up sequence.
 Note the sequence is not designed into one specific module, but rather a result of coordination between the OTP controller, life cycle controller and the reset / power controllers.
 
-![LC Power Up Sequence](../doc/lc_ctrl_power_up.svg)
+![LC Power Up Sequence](../doc/lc_ctrl_v1_power_up.svg)
 
 ## Normal Operation
 
@@ -106,7 +106,7 @@ They exist only after specific events, and are restored to normal once the devic
 
 The individual signals summarized in the table below are described in the following subsections.
 
-{{#include lc_ctrl_function_signals_table.md}}
+{{#include lc_ctrl_v1_function_signals_table.md}}
 
 Signals marked with an asterisk (Y\*) are only asserted under certain conditions as explained in detail below.
 
@@ -175,9 +175,9 @@ The CHECK_BYP_EN signal is only asserted when a transition command is issued.
 
 #### CLK_BYP_REQ
 
-If the life cycle state is in RAW, TEST* or RMA, and if [`TRANSITION_CTRL.EXT_CLOCK_EN`](../data/lc_ctrl.hjson#transition_ctrl) is set to one, the CLK_BYP_REQ signal is asserted in order to switch the main system clock to an external clock signal.
+If the life cycle state is in RAW, TEST* or RMA, and if [`TRANSITION_CTRL.EXT_CLOCK_EN`](../data/lc_ctrl_v1.hjson#transition_ctrl) is set to one, the CLK_BYP_REQ signal is asserted in order to switch the main system clock to an external clock signal.
 This functionality is needed in certain life cycle states where the internal clock source may not be fully calibrated yet, since the OTP macro requires a stable clock frequency in order to reliably program the fuse array.
-Note that the [`TRANSITION_CTRL.EXT_CLOCK_EN`](../data/lc_ctrl.hjson#transition_ctrl) register can only be set to one if the transition interface has been claimed via the [`CLAIM_TRANSITION_IF`](../data/lc_ctrl.hjson#claim_transition_if) mutex.
+Note that the [`TRANSITION_CTRL.EXT_CLOCK_EN`](../data/lc_ctrl_v1.hjson#transition_ctrl) register can only be set to one if the transition interface has been claimed via the [`CLAIM_TRANSITION_IF`](../data/lc_ctrl_v1.hjson#claim_transition_if) mutex.
 This function is not available in production life cycle states.
 
 For details on the clock switch, please see [clkmgr](../../clkmgr/README.md#life-cycle-requested-external-clock).
@@ -187,7 +187,7 @@ For details on the clock switch, please see [clkmgr](../../clkmgr/README.md#life
 
 The individual signals summarized in the table below are described in the following subsections.
 
-{{#include lc_ctrl_access_signals_table.md}}
+{{#include lc_ctrl_v1_access_signals_table.md}}
 
 Signals marked with an asterisk (Y\*) are only asserted under certain conditions as explained in detail below.
 
@@ -222,7 +222,7 @@ The following is a list of all life cycle related collateral stored in OTP.
 Most collateral also contain associated metadata to indicate when the collateral is restricted from further software access, see [accessibility summary](#otp-accessibility-summary-and-impact-of-provision_en) for more details.
 Since not all collateral is consumed by the life cycle controller, the consuming agent is also shown.
 
-{{#include lc_ctrl_otp_collateral.md}}
+{{#include lc_ctrl_v1_otp_collateral.md}}
 
 The TOKENs and KEYS are considered secret data and are stored in [wrapped format](#conditional-transitions).
 Before use, the secrets are unwrapped.
@@ -268,7 +268,7 @@ These are
 
 The table below summarizes the software accessibility of all life cycle collateral.
 
-{{#include lc_ctrl_otp_accessibility.md}}
+{{#include lc_ctrl_v1_otp_accessibility.md}}
 
 Note that CREATOR_SEED_SW_RW_EN is set to OFF if SECRET2_DIGEST has a nonzero value in PROD, PROD_END and DEV states.
 SEED_HW_RD_EN only becomes active if SECRET2_DIGEST has a nonzero value in DEV, PROD, PROD_END and RMA states.
@@ -280,11 +280,11 @@ As it pertains to life cycle, the flash contains two sets of important collatera
 They are enumerated in the table below.
 Just as with OTP, the consumer and usage of each is also described.
 
-{{#include lc_ctrl_flash_collateral.md}}
+{{#include lc_ctrl_v1_flash_collateral.md}}
 
 Each collateral belongs to a separate flash partition, the table below enumerates the partition and whether the partition is memory mapped.
 
-{{#include lc_ctrl_flash_partitions.md}}
+{{#include lc_ctrl_v1_flash_partitions.md}}
 
 The general flash partition refers to any software managed storage in flash, and is not a specific carve out in the non-memory mapped area.
 
@@ -297,7 +297,7 @@ It is expected that ROM_ext during secure boot programs the protection correctly
 The CREATOR_DATA partitions however, are further qualified based on the personalization state of the device.
 Just as with OTP, the table below enumerates accessibility of flash collateral.
 
-{{#include lc_ctrl_flash_accessibility.md}}
+{{#include lc_ctrl_v1_flash_accessibility.md}}
 
 Note that CREATOR_SEED_SW_RW_EN is set to OFF if SECRET2_DIGEST has a nonzero value in PROD, PROD_END and DEV states.
 SEED_HW_RD_EN only becomes active if SECRET2_DIGEST has a nonzero value in DEV, PROD, PROD_END and RMA states.
@@ -322,7 +322,7 @@ Parameter                      | Default (Max)         | Top Earlgrey   | Descri
 
 ### Signals
 
-* [Interface Tables](../data/lc_ctrl.hjson#interfaces)
+* [Interface Tables](../data/lc_ctrl_v1.hjson#interfaces)
 
 Signal                       | Direction        | Type                                     | Description
 -----------------------------|------------------|------------------------------------------|---------------
@@ -341,10 +341,10 @@ Signal                       | Direction        | Type                          
 `otp_lc_data_i`              | `input`          | `otp_ctrl_pkg::otp_lc_data_t`            | Life cycle state output holding the current life cycle state, the value of the transition counter and the tokens needed for life cycle transitions.
 `lc_keymgr_div_o`            | `output`         | `lc_keymgr_div_t`                        | Life cycle state group diversification value.
 `lc_flash_rma_seed_o`        | `output`         | `lc_flash_rma_seed_t`                    | Seed for flash RMA.
-`otp_device_id_i`            | `input`          | `otp_device_id_t`                        | HW_CFG bits from OTP ([`DEVICE_ID_0`](../data/lc_ctrl.hjson#device_id_0)).
-`otp_manuf_state_i`          | `input`          | `otp_manuf_state_t`                      | HW_CFG bits from OTP ([`MANUF_STATE_0`](../data/lc_ctrl.hjson#manuf_state_0)).
-`lc_otp_vendor_test_o`       | `output`         | `otp_ctrl_pkg::lc_otp_vendor_test_req_t` | Vendor-specific test bits to OTP ([`OTP_VENDOR_TEST_CTRL`](../data/lc_ctrl.hjson#otp_vendor_test_ctrl)).
-`lc_otp_vendor_test_i`       | `input`          | `otp_ctrl_pkg::lc_otp_vendor_test_rsp_t` | Vendor-specific test bits to OTP ([`OTP_VENDOR_TEST_STATUS`](../data/lc_ctrl.hjson#otp_vendor_test_status)).
+`otp_device_id_i`            | `input`          | `otp_device_id_t`                        | HW_CFG bits from OTP ([`DEVICE_ID_0`](../data/lc_ctrl_v1.hjson#device_id_0)).
+`otp_manuf_state_i`          | `input`          | `otp_manuf_state_t`                      | HW_CFG bits from OTP ([`MANUF_STATE_0`](../data/lc_ctrl_v1.hjson#manuf_state_0)).
+`lc_otp_vendor_test_o`       | `output`         | `otp_ctrl_pkg::lc_otp_vendor_test_req_t` | Vendor-specific test bits to OTP ([`OTP_VENDOR_TEST_CTRL`](../data/lc_ctrl_v1.hjson#otp_vendor_test_ctrl)).
+`lc_otp_vendor_test_i`       | `input`          | `otp_ctrl_pkg::lc_otp_vendor_test_rsp_t` | Vendor-specific test bits to OTP ([`OTP_VENDOR_TEST_STATUS`](../data/lc_ctrl_v1.hjson#otp_vendor_test_status)).
 `lc_dft_en_o`                | `output`         | `lc_tx_t`                                | [Multibit control signal](#life-cycle-decoded-outputs-and-controls).
 `lc_nvm_debug_en_o`          | `output`         | `lc_tx_t`                                | [Multibit control signal](#life-cycle-decoded-outputs-and-controls).
 `lc_hw_debug_en_o`           | `output`         | `lc_tx_t`                                | [Multibit control signal](#life-cycle-decoded-outputs-and-controls).
@@ -392,13 +392,13 @@ For better security, all the [life cycle control signals](#life-cycle-decoded-ou
 The active ON state for every signal is broadcast as `4'b1010`, while the inactive OFF state is encoded as `4'b0101`.
 For all life cycle signals except the escalation signal ESCALATE_EN, all values different from ON must be interpreted as OFF in RTL.
 In case of ESCALATE_EN, all values different from OFF must be interpreted as ON in RTL.
-To that end the functions `lc_tx_test_true_strict()`, `lc_tx_test_true_loose()`, `lc_tx_test_false_strict()` and `lc_tx_test_false_loose()` in the `lc_ctrl_pkg` must be employed unless there is a strong reason not to.
+To that end the functions `lc_tx_test_true_strict()`, `lc_tx_test_true_loose()`, `lc_tx_test_false_strict()` and `lc_tx_test_false_loose()` in the `lc_ctrl_v1_pkg` must be employed unless there is a strong reason not to.
 The reason must be documented and agreed at block sign-off.
 
 Since many signals cross clock boundaries, their synchronization needs to be taken into account.
 However, since the ON / OFF encoding above has been chosen such that **all bits toggle exactly once** for a transition from OFF to ON (and vice-versa), all that needs to be done is guard against metastability using a two-stage synchronizer, as illustrated below.
 
-![Multibit Sync](../doc/lc_ctrl_multibit_sync.svg)
+![Multibit Sync](../doc/lc_ctrl_v1_multibit_sync.svg)
 
 In other words, since each bit in the encoding flips exactly once upon an OFF -> ON or ON -> OFF transition, we can guarantee that there are no transient patterns toggling back and forth between enabling and disabling a function.
 It is crucial however that the design follows the guidance above and interprets all undefined values as either ON or OFF in order to avoid issues due to staggered bits after synchronization.
@@ -429,16 +429,16 @@ It is hence recommended to place a max-delay constraint on it and leverage the s
 
 Conceptually speaking, the life cycle controller consists of a large  FSM that is further subdivided into logical modules for maintainability, as illustrated below. All blue blocks in the block diagram are purely combinational and do not contain any registers.
 
-![LC Controller Block Diagram](../doc/lc_ctrl_blockdiag.svg)
+![LC Controller Block Diagram](../doc/lc_ctrl_v1_blockdiag.svg)
 
 The main FSM implements a linear state sequence that always moves in one direction for increased glitch resistance.
 I.e., it never returns to the initialization and broadcast states as described in the [life cycle state controller section](#main-fsm).
 
 The main FSM state is redundantly encoded, and augmented with the life cycle state.
 That augmented state vector is consumed by three combinational submodules:
-- `lc_ctrl_state_decode`: This submodule decodes the redundantly encoded life cycle state, checks that there are no encoding errors and enforces state dependencies as required by the definition. The decoded state is forwarded to the CSRs for SW consumption.
-- `lc_ctrl_transition`: This submodule checks whether the transition target state specified via the CSRs is valid, and computes the redundantly encoded state vector of the transition target state.
-- `lc_ctrl_signal_decode`: This submodule is an output function only and derives the life cycle control signals (colored in blue) from the augmented state vector.
+- `lc_ctrl_v1_state_decode`: This submodule decodes the redundantly encoded life cycle state, checks that there are no encoding errors and enforces state dependencies as required by the definition. The decoded state is forwarded to the CSRs for SW consumption.
+- `lc_ctrl_v1_transition`: This submodule checks whether the transition target state specified via the CSRs is valid, and computes the redundantly encoded state vector of the transition target state.
+- `lc_ctrl_v1_signal_decode`: This submodule is an output function only and derives the life cycle control signals (colored in blue) from the augmented state vector.
 
 Note that the two additional life cycle control signals `lc_flash_rma_req_o` and `lc_clk_byp_req_o` are output by the main FSM, since they cannot be derived from the life cycle state alone and are reactive in nature in the sense that there is a corresponding acknowledgement signal.
 
@@ -452,7 +452,7 @@ The actions that are triggered by these escalation receivers are explained in th
 
 The figure below provides more context about how the life cycle controller is integrated into the system, and how its control signals interact with various components.
 
-![LC Controller Block Diagram](../doc/lc_ctrl_system_view.svg)
+![LC Controller Block Diagram](../doc/lc_ctrl_v1_system_view.svg)
 
 Although technically a life cycle feature, the sampling of the strap pins and JTAG / TAP isolation is performed in the pinmux after the life cycle controller has initialized.
 See [pinmux documentation](../../pinmux/README.md#strap-sampling-and-tap-isolation) and the detailed selection listed in [Life Cycle Definition Table](../../../../doc/security/specs/device_life_cycle/README.md#manufacturing-states).
@@ -462,7 +462,7 @@ See [pinmux documentation](../../pinmux/README.md#strap-sampling-and-tap-isolati
 The encoding of the life-cycle state is used both for OTP storage and as part of the FSM state in the life cycle controller.
 In other words the state stored within OTP is not re-encoded before it is consumed as part of the life cycle controller FSM state.
 
-{{#include lc_ctrl_encoding_table.md}}
+{{#include lc_ctrl_v1_encoding_table.md}}
 
 Any decoding that does not fall into the table above is considered **INVALID**.
 
@@ -482,7 +482,7 @@ In particular, this encoding guards against attacks that manipulate the OTP to o
 Note that the RAW state is guarded by the RAW_UNLOCK process, which involves supplying a 128bit UNLOCK_TOKEN and performing a full system reset in case the token was correct. Hence moving the state into RAW does not provide any advantage to an attacker.
 
 The encoded life cycle state is not readable by SW in any way through the OTP or life cycle interfaces.
-However a decoded version of the manufacturing life cycle is exposed in the [`LC_STATE`](../data/lc_ctrl.hjson#lc_state) register.
+However a decoded version of the manufacturing life cycle is exposed in the [`LC_STATE`](../data/lc_ctrl_v1.hjson#lc_state) register.
 
 ### Life Cycle Readout Consistency Checks in OTP
 
@@ -496,18 +496,18 @@ The second readout pass uses a linearly increasing address sequence, whereas the
 The life cycle transition counter has 24 strokes where each stroke maps to one 16bit OTP word.
 The strokes are similarly encoded as the life cycle state in the sense that upon the first transition attempt, all words are initialized with unique Cx values that can later be overwritten with unique Dx values without producing an ECC error.
 
-{{#include lc_ctrl_counter_table.md}}
+{{#include lc_ctrl_v1_counter_table.md}}
 
 Upon each life cycle transition attempt, the life cycle controller **FIRST** increments the transition counter before initiating any token hashing and comparison operations.
 
-A decoded version of this counter is exposed in the [`LC_TRANSITION_CNT`](../data/lc_ctrl.hjson#lc_transition_cnt) register.
+A decoded version of this counter is exposed in the [`LC_TRANSITION_CNT`](../data/lc_ctrl_v1.hjson#lc_transition_cnt) register.
 
 ### Life Cycle State Controller
 
 The life cycle state controller is the main entity that handles life cycle requests, escalation events and transactions with the OTP and flash controllers.
 The state diagram for the controller FSM is shown below.
 
-![LC Controller FSM](../doc/lc_ctrl_fsm.svg)
+![LC Controller FSM](../doc/lc_ctrl_v1_fsm.svg)
 
 Once the FSM has initialized upon request from the power manager, it moves into `IdleSt`, which is the state where all life cycle control signals are broadcast.
 The life cycle controller stays in `IdleSt` unless a life cycle state request is initiated via the CSRs.
@@ -549,24 +549,24 @@ If two requests arrive simultaneously, the TAP interface is given priority.
 
 The request interface consists of 7 registers:
 
-1. [`TRANSITION_CTRL`](../data/lc_ctrl.hjson#transition_ctrl): Control register for the transition, can be used to switch to an external clock.
-2. [`TRANSITION_TARGET`](../data/lc_ctrl.hjson#transition_target): Specifies the target state to which the agent wants to transition.
-3. [`TRANSITION_TOKEN_*`](../data/lc_ctrl.hjson#transition_token_): Any necessary token for conditional transitions.
-4. [`TRANSITION_CMD`](../data/lc_ctrl.hjson#transition_cmd): Start the life cycle transition.
-5. [`STATUS`](../data/lc_ctrl.hjson#status): Indicates whether the requested transition succeeded.
-6. [`OTP_VENDOR_TEST_CTRL`](../data/lc_ctrl.hjson#otp_vendor_test_ctrl): See [Macro-specific test control bits](#vendor-specific-test-control-register).
-7. [`OTP_VENDOR_TEST_STATUS`](../data/lc_ctrl.hjson#otp_vendor_test_status): See [Macro-specific test control bits](#vendor-specific-test-control-register).
+1. [`TRANSITION_CTRL`](../data/lc_ctrl_v1.hjson#transition_ctrl): Control register for the transition, can be used to switch to an external clock.
+2. [`TRANSITION_TARGET`](../data/lc_ctrl_v1.hjson#transition_target): Specifies the target state to which the agent wants to transition.
+3. [`TRANSITION_TOKEN_*`](../data/lc_ctrl_v1.hjson#transition_token_): Any necessary token for conditional transitions.
+4. [`TRANSITION_CMD`](../data/lc_ctrl_v1.hjson#transition_cmd): Start the life cycle transition.
+5. [`STATUS`](../data/lc_ctrl_v1.hjson#status): Indicates whether the requested transition succeeded.
+6. [`OTP_VENDOR_TEST_CTRL`](../data/lc_ctrl_v1.hjson#otp_vendor_test_ctrl): See [Macro-specific test control bits](#vendor-specific-test-control-register).
+7. [`OTP_VENDOR_TEST_STATUS`](../data/lc_ctrl_v1.hjson#otp_vendor_test_status): See [Macro-specific test control bits](#vendor-specific-test-control-register).
 
 If the transition fails, the cause will be reported in this register as well.
 
 See diagram below.
 
-![LC Request Interface](../doc/lc_ctrl_request_interface.svg)
+![LC Request Interface](../doc/lc_ctrl_v1_request_interface.svg)
 
-In order to claim the hardware mutex, the value kMuBi8True must be written to the claim register ([`CLAIM_TRANSITION_IF`](../data/lc_ctrl.hjson#claim_transition_if)).
+In order to claim the hardware mutex, the value kMuBi8True must be written to the claim register ([`CLAIM_TRANSITION_IF`](../data/lc_ctrl_v1.hjson#claim_transition_if)).
 If the register reads back as kMuBi8True, then the mutex is claimed, and the interface that won arbitration can continue operations.
 If the value is not read back, then the requesting interface should wait and try again later.
-Note that all transition registers (with the exception of the [`STATUS`](../data/lc_ctrl.hjson#status) register) read back all-zero if the mutex is not claimed.
+Note that all transition registers (with the exception of the [`STATUS`](../data/lc_ctrl_v1.hjson#status) register) read back all-zero if the mutex is not claimed.
 
 When an agent is done with the mutex, it releases the mutex by explicitly writing a 0 to the claim register.
 This resets the mux to select no one and also holds the request interface in reset.
@@ -575,7 +575,7 @@ This resets the mux to select no one and also holds the request interface in res
 
 Certain OTP macros require special configuration bits to be set during the test phases.
 Likewise, it is necessary to expose macro-specific status bits during the test phases.
-To this end, the life cycle CSRs contain the [`OTP_VENDOR_TEST_CTRL`](../data/lc_ctrl.hjson#otp_vendor_test_ctrl) and [`OTP_VENDOR_TEST_STATUS`](../data/lc_ctrl.hjson#otp_vendor_test_status) registers, which are reserved for vendor-specific test control and status bits.
+To this end, the life cycle CSRs contain the [`OTP_VENDOR_TEST_CTRL`](../data/lc_ctrl_v1.hjson#otp_vendor_test_ctrl) and [`OTP_VENDOR_TEST_STATUS`](../data/lc_ctrl_v1.hjson#otp_vendor_test_status) registers, which are reserved for vendor-specific test control and status bits.
 These registers are only active during RAW, TEST_* and RMA life cycle states.
 In all other life cycle states, the status register reads back all-zero, and the control register value will be tied to 0 before forwarding it to the OTP macro.
 
