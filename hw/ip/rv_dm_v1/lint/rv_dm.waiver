@@ -1,0 +1,118 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for rv_dm lint
+
+# rv_dm
+# dedicated reset drivers / muxes
+set_reset_drivers prim_clock_mux2 prim_flop_2sync prim_flop
+set_clock_drivers prim_clock_buf
+
+waive -rules IFDEF_CODE -location {rv_dm.sv} -regexp {DMIDirectTAP} \
+      -comment "That's fine."
+waive -rules CLOCK_MUX  -location {rv_dm.sv} \
+      -regexp {Clock 'tck_muxed' is driven by a multiplexer here, used as a clock} \
+      -comment "The signal is coming out of a prim_clock_mux2 block."
+waive -rules CLOCK_USE -location {rv_dm.sv} \
+      -msg {'clk_i' is connected to 'prim_clock_mux2' port 'clk1_i',} \
+      -comment "This is needed such that the clock can be properly controlled during scanmode."
+waive -rules CLOCK_USE -location {rv_dm.sv} \
+      -msg {'clk_i' is connected to 'prim_clock_mux2' port 'clk1_i',} \
+      -comment "This clock usage is OK and is due to hand instantiated primitives on the clock line."
+waive -rules RESET_MUX -location {rv_dm.sv} \
+      -msg {Asynchronous reset 'trst_n_muxed' is driven by a multiplexer here, used as a reset 'trst_ni' at} \
+      -comment "This is needed such that the reset can be properly controlled during scanmode."
+waive -rules CLOCK_MUX -location {rv_dm.sv} -msg {Clock 'jtag_in_int.tck' is driven by a multiplexer here, used as a clock 'tck_i' at} \
+      -comment "This mux gates the JTAG interface based on life cycle."
+waive -rules RESET_MUX -location {rv_dm.sv} \
+      -msg {Asynchronous reset 'jtag_in_int.trst_n' is driven by a multiplexer here, used as a reset 'trst_ni' at} \
+      -comment "This mux gates the JTAG interface based on life cycle."
+waive -rules RESET_MUX -location {rv_dm.sv} \
+      -msg {Asynchronous reset 'dmi_rst_n' is driven by a multiplexer here, used as a reset 'rst_ni' at} \
+      -comment "This is needed such that the reset can be properly controlled during scanmode.."
+waive -rules RESET_USE -location {rv_dm.sv} \
+      -msg {'rst_ni' is connected to 'dmi_jtag' port 'rst_ni', and used as an asynchronous reset or set at rv_dm_regs_reg_top} \
+      -comment "This message arises since due to reset synchronization inside the dmi_jtag module."
+
+# dmi_jtag_tap
+waive -rules CLOCK_MUX -location {dmi_jtag_tap.sv} -regexp {Clock '.*tck_n' is driven by a multiplexer here, used as a clock at dmi_jtag_tap.sv} \
+      -comment "This is needed such that the reset can be properly controlled during scanmode."
+waive -rules INV_CLOCK -location {dmi_jtag_tap.sv} -regexp {'tck_i' is inverted, used as clock at dmi_jtag_tap.sv} \
+      -comment "Shift data is latched on the falling edge."
+waive -rules CLOCK_DRIVER -location {dmi_jtag_tap.sv} -msg {'tck_n' is driven by instance 'i_tck_inv' of module 'prim_clock_inv'} \
+      -comment "This is due to clocking primitives on the clock line."
+waive -rules CLOCK_DRIVER -location {dmi_jtag_tap.sv} -msg {'clk_no' driven in module 'prim_clock_inv' by port 'gen_*.clk_no' at prim_clock_inv.} \
+      -comment "This is due to clocking primitives on the clock line."
+waive -rules CLOCK_DRIVER -location {dmi_jtag_tap.sv} -regexp {'clk_no' driven in module .* by port 'gen_scan.u_size_only_mux2.X' at.*} \
+      -comment "This is due to clocking primitives on the clock line."
+waive -rules CLOCK_DRIVER -location {dmi_jtag_tap.sv} -msg {'X' driven in module 'SEN_MUXI2_S_4' at} \
+      -comment "This is permissible for now as it appears to be related to how lint translates the LIB - but it should be reviewed before tapeout."
+waive -rules CLOCK_USE -location {dmi_jtag_tap.sv} -msg {'tck_i' is connected to 'prim_clock_inv' port 'clk_i', and used as a clock at dmi_jtag_tap} \
+      -comment "This is a clock inverter in the design."
+
+# dm_top
+waive -rules HIER_NET_NOT_READ -location {dm_top.sv} -regexp {Net 'hartsel\[19:1\]' in module 'dm_top'} \
+      -comment "These bits are not used since the system has only one hart."
+
+# dm_csrs
+waive -rules CONST_FF -location {dm_csrs.sv} -regexp {Flip-flop 'dmcontrol_q.*' is driven by constant zero} \
+      -comment "Parts of this struct are constantly set to zero."
+waive -rules CONST_FF -location {dm_csrs.sv} -regexp {Flip-flop 'abstractauto_q.*' is driven by constant zero.} \
+      -comment "Parts of this struct are constantly set to zero."
+waive -rules CONST_FF -location {dm_csrs.sv} -regexp {Flip-flop 'sbcs_q.sbaccess(8|16|64|128|\[17\]|\[19\])' is driven by constant zero} \
+      -comment "Parts of this struct are constantly set to zero."
+      waive -rules CONST_FF -location {dm_csrs.sv} -regexp {Flip-flop 'sbcs_q.sbasize\[(9:5|11)\]' is driven by constant zero} \
+      -comment "Parts of this struct are constantly set to zero."
+      waive -rules CONST_FF -location {dm_csrs.sv} -regexp {Flip-flop 'sbcs_q.sbversion\[31:30\]' is driven by constant zero.} \
+      -comment "Parts of this struct are constantly set to zero."
+waive -rules CASE_SEL_EXPR -location {dm_csrs.sv} -regexp {Expression 'dm::dm_csr_e.*as case selector} \
+      -comment "acceptable use"
+waive -rules NOT_READ -location {dm_csrs.sv} -regexp {Signal 'a_abstractcs.(busy|datacount|progbufsize|zero[0-3])' is not read from} \
+      -comment "These signals are not needed by dm_csrs module"
+waive -rules ARITH_CONTEXT -location {dm_csrs.sv} \
+      -regexp {Bitlength of arithmetic operation '{dm_csr_addr} - {dm::Data0}' is self-determined in this context} \
+      -comment "Values from the same enum can safely be subtracted."
+
+
+# dm_mem
+waive -rules INPUT_NOT_READ -location {dm_mem.sv} -regexp {Input port 'hartsel_i\[19:1\]' is not read from.*} \
+      -comment "These bits are not used since the system has only one hart."
+waive -rules ARITH_CONTEXT -location {dm_mem.sv} -regexp {Bitlength.*DbgAddressBits.*self-determined} \
+      -comment "should be no concern about loss of bit accuracy"
+waive -rules ONE_BRANCH    -location {dm_mem.sv} -regexp {unique case statement has only one branch} \
+      -comment "easier to write this way for extendability"
+waive -rules NOT_READ -location {dm_mem.sv} -regexp {Signal 'ac_ar.(regno.13.|zero1)' is not read from in module 'dm_mem'} \
+      -comment "These bits and fields are not used, but all other bits and fields are used"
+waive -rules LOOP_VAR_OP -location {dm_mem.sv} \
+      -msg {Loop variable 'dc' is in arithmetic expression 'dc < (dm::DataCount - 1)' with non-constant terms} \
+      -comment "This is incorrect because all terms except the loop variable are constant in the arithmetic expression."
+
+# dm_sba
+waive -rules HIER_BRANCH_NOT_READ  -location {dm_sba.sv}            -regexp {Net 'dmactive_i' is not read from in module 'dm_sba'} \
+      -comment "This signal is only used in an assertion"
+waive -rules INPUT_NOT_READ        -location {dm_sba.sv}            -regexp {Input port 'dmactive_i' is not read from in module 'dm_sba'} \
+      -comment "This input is only used by an assertion"
+
+# dm_pkg
+waive -rules INPUT_NOT_READ -location {dm_pkg.sv} -regexp {Input port 'imm.0.' is not read from in function '(jal|auipc)'} \
+      -comment "These functions use all bits of input imm, except for bit 0"
+
+# debug_rom and dm_mem
+waive -rules INPUT_NOT_READ -location {debug_rom.sv} -regexp {Input port 'addr_i.(2:0|63:8).' is not read from in module 'debug_rom'} \
+      -comment "These bits are not used, but the remaining address bits are used"
+waive -rules HIER_NET_NOT_READ -location {dm_mem.sv} -regexp {Connected net 'addr_i.(2:0|31:8).' at debug_rom.sv} \
+      -comment "These bits are not used, but the remaining address bits are used"
+
+# dmi_jtag
+waive -rules HIER_NET_NOT_READ -location {dmi_jtag.sv} -regexp {Net 'dmi_resp.resp' is not read from in module 'dmi_jtag'} \
+      -comment "This part of the struct is not read from within this module."
+waive -rules NOT_READ -location {dmi_jtag.sv} -regexp {Signal 'dmi_resp.resp' is not read from in module 'dmi_jtag'} \
+      -comment "This part of the struct is not read from within this module."
+waive -rules STRUCT_INDEX -location {dmi_jtag.sv} -msg {Bit select '[0]' of 'dtmcs_q' of struct type} \
+      -comment "dtmcs is a vector that is continuously shifted into where its lsb is then fed to tdo"
+
+# dmi_cdc
+waive -rules RESET_MUX -location {dmi_cdc.sv} \
+      -msg {Asynchronous reset 'combined_rstn' is driven by a multiplexer here, used as a reset 'rst_dst_ni' at prim_sync_reqack} \
+      -comment "This is needed such that the reset can be properly controlled during scanmode."

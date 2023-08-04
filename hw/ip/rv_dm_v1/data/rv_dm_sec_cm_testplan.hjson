@@ -1,0 +1,63 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Security countermeasures testplan extracted from the IP Hjson using reggen.
+//
+// This testplan is auto-generated only the first time it is created. This is
+// because this testplan needs to be hand-editable. It is possible that these
+// testpoints can go out of date if the spec is updated with new
+// countermeasures. When `reggen` is invoked when this testplan already exists,
+// It checks if the list of testpoints is up-to-date and enforces the user to
+// make further manual updates.
+//
+// These countermeasures and their descriptions can be found here:
+// .../rv_dm/data/rv_dm.hjson
+//
+// It is possible that the testing of some of these countermeasures may already
+// be covered as a testpoint in a different testplan. This duplication is ok -
+// the test would have likely already been developed. We simply map those tests
+// to the testpoints below using the `tests` key.
+//
+// Please ensure that this testplan is imported in:
+// .../rv_dm/data/rv_dm_testplan.hjson
+{
+  testpoints: [
+    {
+      name: sec_cm_bus_integrity
+      desc: "Verify the countermeasure(s) BUS.INTEGRITY."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_lc_hw_debug_en_intersig_mubi
+      desc: "Verify the countermeasure(s) LC_HW_DEBUG_EN.INTERSIG.MUBI."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_dm_en_ctrl_lc_gated
+      desc: "Verify the countermeasure(s) DM_EN.CTRL.LC_GATED."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_sba_tl_lc_gate_fsm_sparse
+      desc: "Verify the countermeasure(s) SBA_TL_LC_GATE.FSM.SPARSE."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_mem_tl_lc_gate_fsm_sparse
+      desc: "Verify the countermeasure(s) MEM_TL_LC_GATE.FSM.SPARSE."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_exec_ctrl_mubi
+      desc: "Verify the countermeasure(s) EXEC.CTRL.MUBI."
+      stage: V2S
+      tests: []
+    }
+  ]
+}
