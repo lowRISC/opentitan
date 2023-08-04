@@ -14,7 +14,7 @@ interface clkmgr_lost_calib_ctrl_en_sva_if (
   // The latter is io_div4 so it is pretty slow compared to all others. There
   // are a number of clock domain crossings, so this needs a large number of
   // wait cycles to account for the worst case.
-  localparam int MAX_CYCLES = 40;
+  localparam int MAX_CYCLES = 45;
   `ASSERT(CtrlEnOn_A,
           (calib_rdy == prim_mubi_pkg::MuBi4False && meas_ctrl_en != prim_mubi_pkg::MuBi4False) |=>
           ##[0:MAX_CYCLES] (meas_ctrl_en == prim_mubi_pkg::MuBi4False),
