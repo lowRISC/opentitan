@@ -43,6 +43,13 @@ class flash_ctrl_invalid_op_vseq extends flash_ctrl_base_vseq;
   }
 
   constraint flash_op_c {
+    // Add read only constraint for closed source env
+    if (cfg.seq_cfg.op_readonly_on_info_partition) {
+      flash_op.partition == FlashPartInfo -> flash_op.op == flash_ctrl_pkg::FlashOpRead;
+    }
+    if (cfg.seq_cfg.op_readonly_on_info1_partition) {
+      flash_op.partition == FlashPartInfo1 -> flash_op.op == flash_ctrl_pkg::FlashOpRead;
+    }
     flash_op.addr inside {[0 : FlashSizeBytes - 1]};
     // 8Byte (2 words) aligned.
     // With scramble enabled, odd size of word access (or address) will cause
