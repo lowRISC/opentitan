@@ -11,6 +11,7 @@ filesets:
       - lowrisc:prim:util
     files:
       - rtl/prim_onehot_enc.sv
+      - rtl/prim_onehot_dec.sv
       - rtl/prim_onehot_mux.sv
     file_type: systemVerilogSource
 
