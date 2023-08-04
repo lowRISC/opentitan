@@ -14,9 +14,9 @@ def args(p):
 #include <limits.h>
 
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/status.h"
+#include "sw/ip/rv_plic/test/utils/rv_plic_testutils.h"
 % for n in sorted(irq_peripheral_names + ["rv_plic"]):
 #include "sw/ip/${n}/dif/dif_${n}.h"
 % endfor

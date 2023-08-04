@@ -25,12 +25,12 @@ opentitan_functest(
     ),
     deps = [
         "//hw/top_${top["name"]}/sw/autogen:top_${top["name"]}",
-        "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:mmio",
         "//sw/lib/sw/device/runtime:irq",
         "//sw/lib/sw/device/runtime:log",
         "//sw/top_${top["name"]}/sw/device/runtime:print",
+        "//sw/ip/rv_plic/test/utils:rv_plic_testutils",
 % for n in sorted(irq_peripheral_names + ["rv_plic"]):
         "//sw/top_${top["name"]}/sw/dif:${n}",
 % endfor
@@ -42,12 +42,12 @@ opentitan_functest(
     srcs = ["alert_test.c"],
     deps = [
         "//hw/top_${top["name"]}/sw/autogen:top_${top["name"]}",
-        "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:memory",
         "//sw/lib/sw/device/base:mmio",
         "//sw/lib/sw/device/runtime:log",
         "//sw/top_${top["name"]}/sw/device/runtime:print",
+        "//ip/alert_handler/test/utils:alert_handler_testutils",
 % for n in sorted(alert_peripheral_names + ["alert_handler"]):
 <%
 if top["name"] == "earlgrey" and n == "lc_ctrl_v1":

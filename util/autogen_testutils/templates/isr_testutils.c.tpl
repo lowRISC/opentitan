@@ -4,7 +4,10 @@
 
 ${autogen_banner}
 
-#include "sw/device/lib/testing/autogen/isr_testutils.h"
+#include "sw/top_${top_name}/sw/test/utils/autogen/isr_testutils.h"
+
+#include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/base/dif/dif_base.h"
 
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
@@ -13,10 +16,6 @@ ${autogen_banner}
     #include "sw/ip/${ip.name_snake}/dif/dif_${ip.name_snake}.h"
   % endif
 % endfor
-#include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/lib/sw/device/arch/device.h"
-
-#include "hw/top_${top_name}/sw/autogen/top_${top_name}.h"
 
 % for ip in ips_with_difs:
   % if ip.irqs:
