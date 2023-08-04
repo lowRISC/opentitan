@@ -17,6 +17,9 @@ class flash_ctrl_rw_evict_vseq extends flash_ctrl_legacy_base_vseq;
     flash_op_t init_ctrl;
     flash_dv_part_e part;
 
+    // Enable interrupt for more visibility
+    flash_ctrl_intr_enable(6'h3f);
+
     // Don't select a partition defined as read-only
     cfg.seq_cfg.avoid_ro_partitions = 1'b1;
 
