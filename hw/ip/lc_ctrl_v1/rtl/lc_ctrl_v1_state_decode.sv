@@ -5,7 +5,7 @@
 // Life cycle state decoder. This is a purely combinational module.
 
 module lc_ctrl_v1_state_decode
-  import lc_ctrl_v1_pkg::*;
+  import lc_ctrl_pkg::*;
   import lc_ctrl_v1_state_pkg::*;
 (
   // Life cycle state vector.

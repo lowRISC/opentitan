@@ -13,7 +13,7 @@ package lc_ctrl_v1_env_pkg;
   import cip_base_pkg::*;
   import csr_utils_pkg::*;
   import lc_ctrl_v1_ral_pkg::*;
-  import lc_ctrl_v1_pkg::*;
+  import lc_ctrl_pkg::*;
   import lc_ctrl_v1_state_pkg::*;
   import otp_ctrl_pkg::*;
   import push_pull_agent_pkg::*;
@@ -51,17 +51,17 @@ package lc_ctrl_v1_env_pkg;
                                     (LcCtrlProductId[31] ^ LcCtrlProductId[30])};
 
   typedef struct packed {
-    lc_ctrl_v1_pkg::lc_tx_t lc_dft_en_o;
-    lc_ctrl_v1_pkg::lc_tx_t lc_nvm_debug_en_o;
-    lc_ctrl_v1_pkg::lc_tx_t lc_hw_debug_en_o;
-    lc_ctrl_v1_pkg::lc_tx_t lc_cpu_en_o;
-    lc_ctrl_v1_pkg::lc_tx_t lc_creator_seed_sw_rw_en_o;
-    lc_ctrl_v1_pkg::lc_tx_t lc_owner_seed_sw_rw_en_o;
-    lc_ctrl_v1_pkg::lc_tx_t lc_seed_hw_rd_en_o;
-    lc_ctrl_v1_pkg::lc_tx_t lc_iso_part_sw_rd_en_o;
-    lc_ctrl_v1_pkg::lc_tx_t lc_iso_part_sw_wr_en_o;
-    lc_ctrl_v1_pkg::lc_tx_t lc_keymgr_en_o;
-    lc_ctrl_v1_pkg::lc_tx_t lc_escalate_en_o;
+    lc_ctrl_pkg::lc_tx_t lc_dft_en_o;
+    lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en_o;
+    lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_o;
+    lc_ctrl_pkg::lc_tx_t lc_cpu_en_o;
+    lc_ctrl_pkg::lc_tx_t lc_creator_seed_sw_rw_en_o;
+    lc_ctrl_pkg::lc_tx_t lc_owner_seed_sw_rw_en_o;
+    lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en_o;
+    lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_rd_en_o;
+    lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_wr_en_o;
+    lc_ctrl_pkg::lc_tx_t lc_keymgr_en_o;
+    lc_ctrl_pkg::lc_tx_t lc_escalate_en_o;
   } lc_outputs_t;
 
   // error injection
@@ -247,21 +247,21 @@ package lc_ctrl_v1_env_pkg;
   endfunction
 
   // verilog_format: off - avoid bad reformatting
-  function automatic lc_ctrl_v1_pkg::token_idx_e get_exp_token(dec_lc_state_e curr_state,
+  function automatic lc_ctrl_pkg::token_idx_e get_exp_token(dec_lc_state_e curr_state,
                                                             dec_lc_state_e next_state);
     // Raw Token
     if (curr_state == DecLcStRaw && is_test_unlocked_state(next_state, 0, 7)) begin
-      get_exp_token = lc_ctrl_v1_pkg::RawUnlockTokenIdx;
+      get_exp_token = lc_ctrl_pkg::RawUnlockTokenIdx;
     // RMA Token
     end else if (curr_state inside {DecLcStProd, DecLcStDev} && next_state == DecLcStRma) begin
-      get_exp_token = lc_ctrl_v1_pkg::RmaTokenIdx;
+      get_exp_token = lc_ctrl_pkg::RmaTokenIdx;
     // Test Exit Token
     end else if ((is_test_unlocked_state(curr_state, 0, 7) ||
                   is_test_locked_state(curr_state, 0, 6)) &&
                  next_state inside {DecLcStDev,
                                     DecLcStProd,
                                     DecLcStProdEnd}) begin
-      get_exp_token = lc_ctrl_v1_pkg::TestExitTokenIdx;
+      get_exp_token = lc_ctrl_pkg::TestExitTokenIdx;
     // Test Unlock Token
     end else if ((curr_state == DecLcStTestLocked6 && is_test_unlocked_state(next_state, 7, 7)) ||
                  (curr_state == DecLcStTestLocked5 && is_test_unlocked_state(next_state, 6, 7)) ||
@@ -271,7 +271,7 @@ package lc_ctrl_v1_env_pkg;
                  (curr_state == DecLcStTestLocked1 && is_test_unlocked_state(next_state, 2, 7)) ||
                  (curr_state == DecLcStTestLocked0 && is_test_unlocked_state(next_state, 1, 7)))
     begin
-      get_exp_token = lc_ctrl_v1_pkg::TestUnlockTokenIdx;
+      get_exp_token = lc_ctrl_pkg::TestUnlockTokenIdx;
     // Test Zero Token
     end else if ((next_state == DecLcStScrap) ||
                  (is_test_unlocked_state(curr_state, 0, 7) && next_state == DecLcStRma) ||
@@ -283,10 +283,10 @@ package lc_ctrl_v1_env_pkg;
                  (curr_state == DecLcStTestUnlocked1 && is_test_locked_state(next_state, 1, 6)) ||
                  (curr_state == DecLcStTestUnlocked0 && is_test_locked_state(next_state, 0, 6)))
     begin
-      get_exp_token = lc_ctrl_v1_pkg::ZeroTokenIdx;
+      get_exp_token = lc_ctrl_pkg::ZeroTokenIdx;
     // Test Invalid Token
     end else begin
-      get_exp_token = lc_ctrl_v1_pkg::InvalidTokenIdx;
+      get_exp_token = lc_ctrl_pkg::InvalidTokenIdx;
     end
   endfunction
   // verilog_format: on

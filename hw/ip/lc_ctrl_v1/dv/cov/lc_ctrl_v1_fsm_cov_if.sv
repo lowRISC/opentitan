@@ -7,7 +7,7 @@
 // Need this or the "->" causes a lint syntax error
 // verilog_syntax: parse-as-module-body
 interface lc_ctrl_v1_fsm_cov_if
-  import lc_ctrl_v1_pkg::*;
+  import lc_ctrl_pkg::*;
 (
   input logic clk_i,
   input logic rst_ni,

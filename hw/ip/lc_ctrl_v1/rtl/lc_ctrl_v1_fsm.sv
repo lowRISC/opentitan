@@ -7,7 +7,7 @@
 `include "prim_assert.sv"
 
 module lc_ctrl_v1_fsm
-  import lc_ctrl_v1_pkg::*;
+  import lc_ctrl_pkg::*;
   import lc_ctrl_v1_state_pkg::*;
 #(// Random netlist constants
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivInvalid    = LcKeymgrDivWidth'(0),
@@ -603,7 +603,7 @@ module lc_ctrl_v1_fsm
   // Token mux //
   ///////////////
 
-  lc_ctrl_v1_pkg::lc_tx_t [3:0] rma_token_valid;
+  lc_ctrl_pkg::lc_tx_t [3:0] rma_token_valid;
   prim_lc_sync #(
     .NumCopies(4),
     .AsyncOn(0),
@@ -615,7 +615,7 @@ module lc_ctrl_v1_fsm
     .lc_en_o(rma_token_valid)
   );
 
-  lc_ctrl_v1_pkg::lc_tx_t [7:0] test_tokens_valid;
+  lc_ctrl_pkg::lc_tx_t [7:0] test_tokens_valid;
   prim_lc_sync #(
     .NumCopies(8),
     .AsyncOn(0),

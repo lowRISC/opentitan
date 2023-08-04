@@ -6,7 +6,7 @@ module tb;
   // dep packages
   import uvm_pkg::*;
   import dv_utils_pkg::*;
-  import lc_ctrl_v1_pkg::*;
+  import lc_ctrl_pkg::*;
   import lc_ctrl_v1_reg_pkg::*;
   import lc_ctrl_v1_state_pkg::*;
   import lc_ctrl_v1_env_pkg::*;

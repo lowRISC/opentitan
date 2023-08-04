@@ -392,7 +392,7 @@ For better security, all the [life cycle control signals](#life-cycle-decoded-ou
 The active ON state for every signal is broadcast as `4'b1010`, while the inactive OFF state is encoded as `4'b0101`.
 For all life cycle signals except the escalation signal ESCALATE_EN, all values different from ON must be interpreted as OFF in RTL.
 In case of ESCALATE_EN, all values different from OFF must be interpreted as ON in RTL.
-To that end the functions `lc_tx_test_true_strict()`, `lc_tx_test_true_loose()`, `lc_tx_test_false_strict()` and `lc_tx_test_false_loose()` in the `lc_ctrl_v1_pkg` must be employed unless there is a strong reason not to.
+To that end the functions `lc_tx_test_true_strict()`, `lc_tx_test_true_loose()`, `lc_tx_test_false_strict()` and `lc_tx_test_false_loose()` in the `lc_ctrl_pkg` must be employed unless there is a strong reason not to.
 The reason must be documented and agreed at block sign-off.
 
 Since many signals cross clock boundaries, their synchronization needs to be taken into account.

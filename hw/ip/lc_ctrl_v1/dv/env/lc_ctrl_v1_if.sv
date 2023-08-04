@@ -14,7 +14,7 @@ interface lc_ctrl_v1_if (
 );
 
   import uvm_pkg::*;
-  import lc_ctrl_v1_pkg::*;
+  import lc_ctrl_pkg::*;
   import lc_ctrl_v1_state_pkg::*;
   import otp_ctrl_pkg::*;
   import otp_ctrl_part_pkg::*;
@@ -74,7 +74,7 @@ interface lc_ctrl_v1_if (
   logic mutex_claim_tl;
 
   // FSM state
-  lc_ctrl_v1_pkg::fsm_state_e lc_ctrl_v1_fsm_state;
+  lc_ctrl_pkg::fsm_state_e lc_ctrl_v1_fsm_state;
   // Token mux control
   bit [TokenIdxWidth-1:0] token_idx0;
   bit [TokenIdxWidth-1:0] token_idx1;

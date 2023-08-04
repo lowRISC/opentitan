@@ -14,7 +14,7 @@ class lc_ctrl_v1_scoreboard extends cip_base_scoreboard #(
   // local variables
   bit is_personalized;
 
-  lc_ctrl_v1_pkg::lc_tx_t exp_clk_byp_req = lc_ctrl_v1_pkg::Off;
+  lc_ctrl_pkg::lc_tx_t exp_clk_byp_req = lc_ctrl_pkg::Off;
 
   // Data to program OTP
   protected otp_ctrl_pkg::lc_otp_program_req_t m_otp_prog_data;
@@ -71,11 +71,11 @@ class lc_ctrl_v1_scoreboard extends cip_base_scoreboard #(
 
         // lc_creator_seed_sw_rw_en_o is ON only when device has NOT been personalized or RMA state
         if (is_personalized && lc_state != DecLcStRma) begin
-          exp_lc_o.lc_creator_seed_sw_rw_en_o = lc_ctrl_v1_pkg::Off;
+          exp_lc_o.lc_creator_seed_sw_rw_en_o = lc_ctrl_pkg::Off;
         end
         // lc_seed_hw_rd_en_o is ON only when device has been personalized or RMA state
         if (!is_personalized && lc_state != DecLcStRma) begin
-          exp_lc_o.lc_seed_hw_rd_en_o = lc_ctrl_v1_pkg::Off;
+          exp_lc_o.lc_seed_hw_rd_en_o = lc_ctrl_pkg::Off;
         end
 
         // lc_seed_hw_rd_en copies otp_secrets_valid in certain states
@@ -229,7 +229,7 @@ class lc_ctrl_v1_scoreboard extends cip_base_scoreboard #(
   endtask
 
   // check lc outputs, default all off
-  virtual function void check_lc_outputs(lc_outputs_t exp_o = '{default: lc_ctrl_v1_pkg::Off},
+  virtual function void check_lc_outputs(lc_outputs_t exp_o = '{default: lc_ctrl_pkg::Off},
                                          string msg = "expect all output OFF");
     `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.lc_dft_en_o, exp_o.lc_dft_en_o, msg)
     `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.lc_nvm_debug_en_o, exp_o.lc_nvm_debug_en_o, msg)
@@ -251,7 +251,7 @@ class lc_ctrl_v1_scoreboard extends cip_base_scoreboard #(
     bit            do_read_check = 1'b0;
     bit            write = item.is_write();
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
-    lc_outputs_t   exp = '{default: lc_ctrl_v1_pkg::Off};
+    lc_outputs_t   exp = '{default: lc_ctrl_pkg::Off};
 
     bit            addr_phase_read = (!write && channel == AddrChannel);
     bit            addr_phase_write = (write && channel == AddrChannel);
@@ -274,8 +274,8 @@ class lc_ctrl_v1_scoreboard extends cip_base_scoreboard #(
             dec_lc_state_e lc_state = dec_lc_state(lc_state_e'(cfg.lc_ctrl_v1_vif.otp_i.state));
             if (!(lc_state inside {DecLcStDev, DecLcStProd, DecLcStProdEnd, DecLcStScrap,
                                    DecLcStPostTrans, DecLcStEscalate, DecLcStInvalid})) begin
-              if (item.a_data[0]) exp_clk_byp_req = lc_ctrl_v1_pkg::On;
-              else                exp_clk_byp_req = lc_ctrl_v1_pkg::Off;
+              if (item.a_data[0]) exp_clk_byp_req = lc_ctrl_pkg::On;
+              else                exp_clk_byp_req = lc_ctrl_pkg::Off;
             end
           end
         end
@@ -384,13 +384,13 @@ class lc_ctrl_v1_scoreboard extends cip_base_scoreboard #(
         if(cfg.err_inj.lc_fsm_backdoor_err || cfg.err_inj.count_backdoor_err ||
             cfg.err_inj.otp_prog_err || cfg.err_inj.clk_byp_error_rsp) begin
           // Expect escalate to be asserted
-          exp.lc_escalate_en_o = lc_ctrl_v1_pkg::On;
+          exp.lc_escalate_en_o = lc_ctrl_pkg::On;
         end
       end
 
       if (cfg.err_inj.security_escalation_err) begin
         // Expect escalate to be asserted
-        exp.lc_escalate_en_o = lc_ctrl_v1_pkg::On;
+        exp.lc_escalate_en_o = lc_ctrl_pkg::On;
       end
 
       // when lc successfully req a transition, all outputs are turned off.
@@ -616,7 +616,7 @@ class lc_ctrl_v1_scoreboard extends cip_base_scoreboard #(
     // reset local fifos queues and variables
     // Clear OTP program count
     m_otp_prog_cnt = 0;
-    exp_clk_byp_req = lc_ctrl_v1_pkg::Off;
+    exp_clk_byp_req = lc_ctrl_pkg::Off;
   endfunction
 
   function void check_phase(uvm_phase phase);

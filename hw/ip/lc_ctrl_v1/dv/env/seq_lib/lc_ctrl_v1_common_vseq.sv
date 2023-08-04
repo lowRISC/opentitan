@@ -58,20 +58,20 @@ class lc_ctrl_v1_common_vseq extends lc_ctrl_v1_base_vseq;
       csr_rd_check(.ptr(ral.lc_state), .compare_value({6{exp_lc_state_single}}));
 
       // Check DUT outputs
-      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.lc_dft_en_o, lc_ctrl_v1_pkg::Off)
-      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.lc_nvm_debug_en_o, lc_ctrl_v1_pkg::Off)
-      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.lc_hw_debug_en_o, lc_ctrl_v1_pkg::Off)
-      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.lc_cpu_en_o, lc_ctrl_v1_pkg::Off)
-      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.lc_creator_seed_sw_rw_en_o, lc_ctrl_v1_pkg::Off)
-      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.lc_owner_seed_sw_rw_en_o, lc_ctrl_v1_pkg::Off)
-      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.lc_iso_part_sw_rd_en_o, lc_ctrl_v1_pkg::Off)
-      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.lc_iso_part_sw_wr_en_o, lc_ctrl_v1_pkg::Off)
-      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.lc_seed_hw_rd_en_o, lc_ctrl_v1_pkg::Off)
-      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.lc_keymgr_en_o, lc_ctrl_v1_pkg::Off)
-      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.lc_escalate_en_o, lc_ctrl_v1_pkg::On)
-      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.lc_check_byp_en_o, lc_ctrl_v1_pkg::Off)
-      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.clk_byp_req_o, lc_ctrl_v1_pkg::Off)
-      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.flash_rma_req_o, lc_ctrl_v1_pkg::Off)
+      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.lc_dft_en_o, lc_ctrl_pkg::Off)
+      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.lc_nvm_debug_en_o, lc_ctrl_pkg::Off)
+      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.lc_hw_debug_en_o, lc_ctrl_pkg::Off)
+      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.lc_cpu_en_o, lc_ctrl_pkg::Off)
+      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.lc_creator_seed_sw_rw_en_o, lc_ctrl_pkg::Off)
+      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.lc_owner_seed_sw_rw_en_o, lc_ctrl_pkg::Off)
+      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.lc_iso_part_sw_rd_en_o, lc_ctrl_pkg::Off)
+      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.lc_iso_part_sw_wr_en_o, lc_ctrl_pkg::Off)
+      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.lc_seed_hw_rd_en_o, lc_ctrl_pkg::Off)
+      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.lc_keymgr_en_o, lc_ctrl_pkg::Off)
+      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.lc_escalate_en_o, lc_ctrl_pkg::On)
+      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.lc_check_byp_en_o, lc_ctrl_pkg::Off)
+      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.clk_byp_req_o, lc_ctrl_pkg::Off)
+      `DV_CHECK_EQ(cfg.lc_ctrl_v1_vif.flash_rma_req_o, lc_ctrl_pkg::Off)
     end
 
   endtask : check_sec_cm_fi_resp

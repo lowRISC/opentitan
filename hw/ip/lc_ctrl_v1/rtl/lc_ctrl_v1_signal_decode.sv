@@ -5,7 +5,7 @@
 // Life cycle signal decoder and sender module.
 
 module lc_ctrl_v1_signal_decode
-  import lc_ctrl_v1_pkg::*;
+  import lc_ctrl_pkg::*;
   import lc_ctrl_v1_state_pkg::*;
 #(
   // Random netlist constants

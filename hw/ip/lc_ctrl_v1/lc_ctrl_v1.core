@@ -15,13 +15,16 @@ filesets:
       - lowrisc:prim:lc_sender
       - lowrisc:prim:mubi
       - lowrisc:prim:sparse_fsm
-      - lowrisc:ip:lc_ctrl_v1_pkg
+      - lowrisc:tlul:headers
+      - lowrisc:ip:lc_ctrl_pkg
+      - lowrisc:ip:lc_ctrl_v1_state_pkg
       - lowrisc:ip:tlul
       - lowrisc:ip:pwrmgr_pkg
       - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:ip:kmac_pkg
       - lowrisc:ip:jtag_pkg
     files:
+      - rtl/lc_ctrl_v1_reg_pkg.sv
       - rtl/lc_ctrl_v1_reg_top.sv
       - rtl/lc_ctrl_v1_state_decode.sv
       - rtl/lc_ctrl_v1_state_transition.sv

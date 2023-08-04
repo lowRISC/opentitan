@@ -27,7 +27,7 @@ class lc_ctrl_v1_errors_vseq extends lc_ctrl_v1_smoke_vseq;
   rand int unsigned count_err_inj_period;
   rand bit [1:0] security_escalation_err_inj_channels;
   // Escalate injection trigger state
-  rand lc_ctrl_v1_pkg::fsm_state_e security_escalation_err_inj_state;
+  rand lc_ctrl_pkg::fsm_state_e security_escalation_err_inj_state;
   // Additional delay from trigger state
   rand uint security_escalation_err_inj_delay;
 
@@ -495,8 +495,8 @@ class lc_ctrl_v1_errors_vseq extends lc_ctrl_v1_smoke_vseq;
   // verilog_format: on - avoid bad formatting
 
   virtual function void set_hashed_token();
-    lc_ctrl_v1_pkg::token_idx_e token_idx = get_exp_token(dec_lc_state(lc_state), next_lc_state);
-    lc_ctrl_v1_pkg::token_idx_e token_idx_err_inj;
+    lc_ctrl_pkg::token_idx_e token_idx = get_exp_token(dec_lc_state(lc_state), next_lc_state);
+    lc_ctrl_pkg::token_idx_e token_idx_err_inj;
     lc_ctrl_v1_state_pkg::lc_token_t tokens_a[NumTokens];
     lc_ctrl_v1_state_pkg::lc_token_t token_err_inj;
     kmac_pkg::rsp_digest_t kmac_digest;
@@ -550,18 +550,18 @@ class lc_ctrl_v1_errors_vseq extends lc_ctrl_v1_smoke_vseq;
   // Drive OTP input `lc_state` and `lc_cnt`.
   virtual task drive_otp_i(bit rand_otp_i = 1);
     // Get random values for the MUBI inputs
-    lc_ctrl_v1_pkg::lc_tx_t otp_secrets_valid = err_inj.otp_secrets_valid_mubi_err ?
+    lc_ctrl_pkg::lc_tx_t otp_secrets_valid = err_inj.otp_secrets_valid_mubi_err ?
         cip_base_pkg::get_rand_lc_tx_val(
         .t_weight(0), .f_weight(0), .other_weight(1)
-    ) : lc_ctrl_v1_pkg::Off;
-    lc_ctrl_v1_pkg::lc_tx_t otp_test_tokens_valid = err_inj.otp_test_tokens_valid_mubi_err ?
+    ) : lc_ctrl_pkg::Off;
+    lc_ctrl_pkg::lc_tx_t otp_test_tokens_valid = err_inj.otp_test_tokens_valid_mubi_err ?
         cip_base_pkg::get_rand_lc_tx_val(
         .t_weight(0), .f_weight(0), .other_weight(1)
-    ) : lc_ctrl_v1_pkg::On;
-    lc_ctrl_v1_pkg::lc_tx_t otp_rma_token_valid = err_inj.otp_rma_token_valid_mubi_err ?
+    ) : lc_ctrl_pkg::On;
+    lc_ctrl_pkg::lc_tx_t otp_rma_token_valid = err_inj.otp_rma_token_valid_mubi_err ?
         cip_base_pkg::get_rand_lc_tx_val(
         .t_weight(0), .f_weight(0), .other_weight(1)
-    ) : lc_ctrl_v1_pkg::On;
+    ) : lc_ctrl_pkg::On;
 
     cfg.otp_secrets_valid = otp_secrets_valid;
     `uvm_info(`gfn, $sformatf("drive_otp_i: started rand_otp_i=%0b err_inj=%p", rand_otp_i, err_inj
@@ -893,23 +893,23 @@ class lc_ctrl_v1_errors_vseq extends lc_ctrl_v1_smoke_vseq;
   // verilog_format: off
   virtual task run_clk_byp_rsp(bit has_err = 0);
     // Values to be driven for On and Off
-    lc_ctrl_v1_pkg::lc_tx_t on_val = err_inj.clk_byp_rsp_mubi_err ?
+    lc_ctrl_pkg::lc_tx_t on_val = err_inj.clk_byp_rsp_mubi_err ?
         // Get a random value for on
         cip_base_pkg::get_rand_lc_tx_val(.t_weight(0), .f_weight(0), .other_weight(1)) :
         // Standard On value
-        lc_ctrl_v1_pkg::On;
+        lc_ctrl_pkg::On;
     // Get a random value for off which is anything but On
-    lc_ctrl_v1_pkg::lc_tx_t off_val = err_inj.clk_byp_rsp_mubi_err ?
+    lc_ctrl_pkg::lc_tx_t off_val = err_inj.clk_byp_rsp_mubi_err ?
         cip_base_pkg::get_rand_lc_tx_val(.t_weight(0), .f_weight(0), .other_weight(1)) :
         // Standard On value
-        lc_ctrl_v1_pkg::Off;
+        lc_ctrl_pkg::Off;
     cfg.lc_ctrl_v1_vif.set_clk_byp_ack(off_val);
     forever begin
-      lc_ctrl_v1_pkg::lc_tx_t rsp = off_val;
-      wait (cfg.lc_ctrl_v1_vif.clk_byp_req_o == lc_ctrl_v1_pkg::On || err_inj.clk_byp_error_rsp);
+      lc_ctrl_pkg::lc_tx_t rsp = off_val;
+      wait (cfg.lc_ctrl_v1_vif.clk_byp_req_o == lc_ctrl_pkg::On || err_inj.clk_byp_error_rsp);
       if (err_inj.clk_byp_error_rsp) begin
         // Error stream just on -> off -> on... every clock cycle
-        rsp = (rsp == lc_ctrl_v1_pkg::On) ? off_val : on_val;
+        rsp = (rsp == lc_ctrl_pkg::On) ? off_val : on_val;
         cfg.lc_ctrl_v1_vif.set_clk_byp_ack(rsp);
         cfg.clk_rst_vif.wait_clks(1);
       end else begin
@@ -918,10 +918,10 @@ class lc_ctrl_v1_errors_vseq extends lc_ctrl_v1_smoke_vseq;
         cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
         cfg.lc_ctrl_v1_vif.set_clk_byp_ack(rsp);
       end
-      wait (cfg.lc_ctrl_v1_vif.clk_byp_req_o != lc_ctrl_v1_pkg::On || err_inj.clk_byp_error_rsp);
+      wait (cfg.lc_ctrl_v1_vif.clk_byp_req_o != lc_ctrl_pkg::On || err_inj.clk_byp_error_rsp);
       if (err_inj.clk_byp_error_rsp) begin
         // Error stream just on -> off -> on... every clock cycle
-        rsp = (rsp == lc_ctrl_v1_pkg::On) ? off_val : on_val;
+        rsp = (rsp == lc_ctrl_pkg::On) ? off_val : on_val;
         cfg.lc_ctrl_v1_vif.set_clk_byp_ack(rsp);
         cfg.clk_rst_vif.wait_clks(1);
       end else begin
@@ -940,33 +940,33 @@ class lc_ctrl_v1_errors_vseq extends lc_ctrl_v1_smoke_vseq;
     // and we take maximum to be conservative.
     const int FLASH_RMA_ACK_SYNC_FFS = 3;
     // Values to be driven for On and Off
-    lc_ctrl_v1_pkg::lc_tx_t on_val = err_inj.flash_rma_rsp_mubi_err ?
+    lc_ctrl_pkg::lc_tx_t on_val = err_inj.flash_rma_rsp_mubi_err ?
         // Get a random value for on
         cip_base_pkg::get_rand_lc_tx_val(.t_weight(0), .f_weight(0), .other_weight(1)) :
         // Standard On value
-        lc_ctrl_v1_pkg::On;
-    lc_ctrl_v1_pkg::lc_tx_t off_val = err_inj.flash_rma_rsp_mubi_err ?
+        lc_ctrl_pkg::On;
+    lc_ctrl_pkg::lc_tx_t off_val = err_inj.flash_rma_rsp_mubi_err ?
         // Get a random value for off
         cip_base_pkg::get_rand_lc_tx_val(.t_weight(0), .f_weight(0), .other_weight(1)) :
         // Standard On value
-        lc_ctrl_v1_pkg::Off;
+        lc_ctrl_pkg::Off;
     `uvm_info(`gfn, $sformatf("run_flash_rma_rsp started off_val=%0x, on_val=%0x",
         off_val,on_val), UVM_MEDIUM)
 
     cfg.lc_ctrl_v1_vif.set_flash_rma_ack(off_val);
     forever begin
-      lc_ctrl_v1_pkg::lc_tx_t rsp = off_val;
-      while (cfg.lc_ctrl_v1_vif.flash_rma_req_o != lc_ctrl_v1_pkg::On &&
+      lc_ctrl_pkg::lc_tx_t rsp = off_val;
+      while (cfg.lc_ctrl_v1_vif.flash_rma_req_o != lc_ctrl_pkg::On &&
           !err_inj.flash_rma_error_rsp) begin
         @(cfg.lc_ctrl_v1_vif.flash_rma_req_o or err_inj);
         if(err_inj.flash_rma_rsp_mubi_err &&
-          cfg.lc_ctrl_v1_vif.flash_rma_req_o != lc_ctrl_v1_pkg::On) begin
+          cfg.lc_ctrl_v1_vif.flash_rma_req_o != lc_ctrl_pkg::On) begin
           cfg.lc_ctrl_v1_vif.set_flash_rma_ack(rsp);
         end
       end
       if (err_inj.flash_rma_error_rsp) begin
         // Error stream just on -> off -> on... every clock cycle
-        rsp = (rsp == lc_ctrl_v1_pkg::On) ? Off : On;
+        rsp = (rsp == lc_ctrl_pkg::On) ? Off : On;
         cfg.lc_ctrl_v1_vif.set_flash_rma_ack(rsp);
         cfg.clk_rst_vif.wait_clks(1);
       end else begin
@@ -984,10 +984,10 @@ class lc_ctrl_v1_errors_vseq extends lc_ctrl_v1_smoke_vseq;
           cfg.lc_ctrl_v1_vif.set_flash_rma_ack(rsp);
         end
       end
-      wait (cfg.lc_ctrl_v1_vif.flash_rma_req_o != lc_ctrl_v1_pkg::On || err_inj.flash_rma_error_rsp);
+      wait (cfg.lc_ctrl_v1_vif.flash_rma_req_o != lc_ctrl_pkg::On || err_inj.flash_rma_error_rsp);
       if (err_inj.flash_rma_error_rsp) begin
         // Error stream just on -> off -> on... every clock cycle
-        rsp = (rsp == lc_ctrl_v1_pkg::On) ? Off : On;
+        rsp = (rsp == lc_ctrl_pkg::On) ? Off : On;
         cfg.lc_ctrl_v1_vif.set_flash_rma_ack(rsp);
         cfg.clk_rst_vif.wait_clks(1);
       end else begin
@@ -1050,7 +1050,7 @@ class lc_ctrl_v1_errors_vseq extends lc_ctrl_v1_smoke_vseq;
   virtual task token_mux_ctrl_err_inject();
     bit [TokenIdxWidth-1:0] good_idx, bad_idx;
     bit idx_to_change = $urandom_range(0, 1);
-    lc_ctrl_v1_pkg::fsm_state_e inj_state = ClkMuxSt;
+    lc_ctrl_pkg::fsm_state_e inj_state = ClkMuxSt;
 
     // Select FSM state to wait for
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(inj_state,
@@ -1093,7 +1093,7 @@ class lc_ctrl_v1_errors_vseq extends lc_ctrl_v1_smoke_vseq;
     lc_token_t good_token, bad_token;
     lc_token_t token_bit_flip;
     bit token_to_change = $urandom_range(0, 1);
-    lc_ctrl_v1_pkg::fsm_state_e inj_state = ClkMuxSt;
+    lc_ctrl_pkg::fsm_state_e inj_state = ClkMuxSt;
 
     // Select FSM state to wait for
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(

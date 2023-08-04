@@ -73,25 +73,25 @@
     // Random netlist constants
     { name:      "RndCnstLcKeymgrDivInvalid",
       desc:      "Compile-time random bits for lc state group diversification value",
-      type:      "lc_ctrl_v1_pkg::lc_keymgr_div_t",
+      type:      "lc_ctrl_pkg::lc_keymgr_div_t",
       randcount: "128",
       randtype:  "data",
     }
     { name:      "RndCnstLcKeymgrDivTestDevRma",
       desc:      "Compile-time random bits for lc state group diversification value",
-      type:      "lc_ctrl_v1_pkg::lc_keymgr_div_t",
+      type:      "lc_ctrl_pkg::lc_keymgr_div_t",
       randcount: "128",
       randtype:  "data",
     }
     { name:      "RndCnstLcKeymgrDivProduction",
       desc:      "Compile-time random bits for lc state group diversification value",
-      type:      "lc_ctrl_v1_pkg::lc_keymgr_div_t",
+      type:      "lc_ctrl_pkg::lc_keymgr_div_t",
       randcount: "128",
       randtype:  "data",
     }
     { name:      "RndCnstInvalidTokens",
       desc:      "Compile-time random bits used for invalid tokens in the token mux",
-      type:      "lc_ctrl_v1_pkg::lc_token_mux_t",
+      type:      "lc_ctrl_pkg::lc_token_mux_t",
       randcount: "1024",
       randtype:  "data",
     }
@@ -274,120 +274,120 @@
       type:    "uni"
       name:    "lc_dft_en"
       act:     "req"
-      default: "lc_ctrl_v1_pkg::Off"
-      package: "lc_ctrl_v1_pkg"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
     }
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_nvm_debug_en"
       act:     "req"
-      default: "lc_ctrl_v1_pkg::Off"
-      package: "lc_ctrl_v1_pkg"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
     }
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_hw_debug_en"
       act:     "req"
-      default: "lc_ctrl_v1_pkg::Off"
-      package: "lc_ctrl_v1_pkg"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
     }
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_cpu_en"
       act:     "req"
-      default: "lc_ctrl_v1_pkg::Off"
-      package: "lc_ctrl_v1_pkg"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
     }
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_keymgr_en"
       act:     "req"
-      default: "lc_ctrl_v1_pkg::Off"
-      package: "lc_ctrl_v1_pkg"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
     }
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_escalate_en"
       act:     "req"
-      default: "lc_ctrl_v1_pkg::Off"
-      package: "lc_ctrl_v1_pkg"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
     }
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_clk_byp_req"
       act:     "req"
-      default: "lc_ctrl_v1_pkg::Off"
-      package: "lc_ctrl_v1_pkg"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
     }
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_clk_byp_ack"
       act:     "rcv"
-      default: "lc_ctrl_v1_pkg::Off"
-      package: "lc_ctrl_v1_pkg"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
     }
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_flash_rma_req"
       act:     "req"
-      default: "lc_ctrl_v1_pkg::Off"
-      package: "lc_ctrl_v1_pkg"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
     }
     { struct:  "lc_flash_rma_seed"
       type:    "uni"
       name:    "lc_flash_rma_seed"
       act:     "req"
       default: "'0"
-      package: "lc_ctrl_v1_pkg"
+      package: "lc_ctrl_pkg"
     }
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_flash_rma_ack"
       act:     "rcv"
-      default: "lc_ctrl_v1_pkg::Off"
-      package: "lc_ctrl_v1_pkg"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
     }
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_check_byp_en"
       act:     "req"
-      default: "lc_ctrl_v1_pkg::Off"
-      package: "lc_ctrl_v1_pkg"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
     }
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_creator_seed_sw_rw_en"
       act:     "req"
-      default: "lc_ctrl_v1_pkg::Off"
-      package: "lc_ctrl_v1_pkg"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
     }
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_owner_seed_sw_rw_en"
       act:     "req"
-      default: "lc_ctrl_v1_pkg::Off"
-      package: "lc_ctrl_v1_pkg"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
     }
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_iso_part_sw_rd_en"
       act:     "req"
-      default: "lc_ctrl_v1_pkg::Off"
-      package: "lc_ctrl_v1_pkg"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
     }
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_iso_part_sw_wr_en"
       act:     "req"
-      default: "lc_ctrl_v1_pkg::Off"
-      package: "lc_ctrl_v1_pkg"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
     }
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_seed_hw_rd_en"
       act:     "req"
-      default: "lc_ctrl_v1_pkg::Off"
-      package: "lc_ctrl_v1_pkg"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
     }
     // LC state diversification value for keymgr
     { struct:  "lc_keymgr_div"
@@ -395,7 +395,7 @@
       name:    "lc_keymgr_div"
       act:     "req"
       default: "'0"
-      package: "lc_ctrl_v1_pkg"
+      package: "lc_ctrl_pkg"
     }
     // HW config input for DEVICE_ID
     { struct:  "otp_device_id",
@@ -418,7 +418,7 @@
       type:    "uni",
       name:    "hw_rev",
       act:     "req",
-      package: "lc_ctrl_v1_pkg",
+      package: "lc_ctrl_pkg",
       default: "'0"
     },
     // Strap sampling override pulse.

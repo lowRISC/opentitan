@@ -8,7 +8,7 @@
 `include "prim_assert.sv"
 
 module lc_ctrl_v1_kmac_if
-  import lc_ctrl_v1_pkg::*;
+  import lc_ctrl_pkg::*;
   import lc_ctrl_v1_state_pkg::*;
 (
   // Life cycle controller clock

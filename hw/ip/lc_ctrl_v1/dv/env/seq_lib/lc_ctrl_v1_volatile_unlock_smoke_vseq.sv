@@ -66,7 +66,7 @@ class lc_ctrl_v1_volatile_unlock_smoke_vseq extends lc_ctrl_v1_smoke_vseq;
 
   virtual task transition_to_next_valid_state(bit volatile_raw_unlock_success);
     lc_ctrl_v1_state_pkg::lc_token_t token_val = get_random_token();
-    lc_ctrl_v1_pkg::token_idx_e token;
+    lc_ctrl_pkg::token_idx_e token;
     randomize_next_lc_state(next_state);
     lc_state = encode_lc_state(next_state);
     set_hashed_token();

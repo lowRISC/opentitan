@@ -123,7 +123,7 @@ class lc_ctrl_v1_smoke_vseq extends lc_ctrl_v1_base_vseq;
   endfunction
 
   virtual function void set_hashed_token();
-    lc_ctrl_v1_pkg::token_idx_e token_idx = get_exp_token(dec_lc_state(lc_state), next_lc_state);
+    lc_ctrl_pkg::token_idx_e token_idx = get_exp_token(dec_lc_state(lc_state), next_lc_state);
     kmac_pkg::rsp_digest_t kmac_digest;
     // No token for InvalidTokenIdx
     lc_ctrl_v1_state_pkg::lc_token_t tokens_a[NumTokens-1];

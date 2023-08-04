@@ -46,7 +46,7 @@ package lc_ctrl_v1_state_pkg;
 
   // These values have been generated such that they are incrementally writeable with respect
   // to the ECC polynomial specified. The values are used to define the life cycle manufacturing
-  // state and transition counter encoding in lc_ctrl_v1_pkg.sv.
+  // state and transition counter encoding in lc_ctrl_pkg.sv.
   //
   // The values are unique and have the following statistics (considering all 16
   // data and 6 ECC bits):

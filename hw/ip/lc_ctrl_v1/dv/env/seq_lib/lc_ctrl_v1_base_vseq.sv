@@ -103,16 +103,16 @@ class lc_ctrl_v1_base_vseq extends cip_base_vseq #(
 
   virtual task run_clk_byp_rsp(bit has_err = 0);
     forever begin
-      lc_ctrl_v1_pkg::lc_tx_t rsp;
-      wait(cfg.lc_ctrl_v1_vif.clk_byp_req_o == lc_ctrl_v1_pkg::On);
-      rsp = (has_err) ? ($urandom_range(0, 1) ? lc_ctrl_v1_pkg::On : lc_ctrl_v1_pkg::Off) :
-          lc_ctrl_v1_pkg::On;
+      lc_ctrl_pkg::lc_tx_t rsp;
+      wait(cfg.lc_ctrl_v1_vif.clk_byp_req_o == lc_ctrl_pkg::On);
+      rsp = (has_err) ? ($urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off) :
+          lc_ctrl_pkg::On;
       cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
       cfg.lc_ctrl_v1_vif.set_clk_byp_ack(rsp);
 
-      wait(cfg.lc_ctrl_v1_vif.clk_byp_req_o != lc_ctrl_v1_pkg::On);
-      rsp = (has_err) ? ($urandom_range(0, 1) ? lc_ctrl_v1_pkg::On : lc_ctrl_v1_pkg::Off) :
-          lc_ctrl_v1_pkg::Off;
+      wait(cfg.lc_ctrl_v1_vif.clk_byp_req_o != lc_ctrl_pkg::On);
+      rsp = (has_err) ? ($urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off) :
+          lc_ctrl_pkg::Off;
       cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
       cfg.lc_ctrl_v1_vif.set_clk_byp_ack(rsp);
     end
@@ -120,16 +120,16 @@ class lc_ctrl_v1_base_vseq extends cip_base_vseq #(
 
   virtual task run_flash_rma_rsp(bit has_err = 0);
     forever begin
-      lc_ctrl_v1_pkg::lc_tx_t rsp;
-      wait(cfg.lc_ctrl_v1_vif.flash_rma_req_o == lc_ctrl_v1_pkg::On);
-      rsp = (has_err) ? ($urandom_range(0, 1) ? lc_ctrl_v1_pkg::On : lc_ctrl_v1_pkg::Off) :
-          lc_ctrl_v1_pkg::On;
+      lc_ctrl_pkg::lc_tx_t rsp;
+      wait(cfg.lc_ctrl_v1_vif.flash_rma_req_o == lc_ctrl_pkg::On);
+      rsp = (has_err) ? ($urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off) :
+          lc_ctrl_pkg::On;
       cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
       cfg.lc_ctrl_v1_vif.set_flash_rma_ack(rsp);
 
-      wait(cfg.lc_ctrl_v1_vif.flash_rma_req_o != lc_ctrl_v1_pkg::On);
-      rsp = (has_err) ? ($urandom_range(0, 1) ? lc_ctrl_v1_pkg::On : lc_ctrl_v1_pkg::Off) :
-          lc_ctrl_v1_pkg::Off;
+      wait(cfg.lc_ctrl_v1_vif.flash_rma_req_o != lc_ctrl_pkg::On);
+      rsp = (has_err) ? ($urandom_range(0, 1) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off) :
+          lc_ctrl_pkg::Off;
       cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
       cfg.lc_ctrl_v1_vif.set_flash_rma_ack(rsp);
     end
