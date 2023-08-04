@@ -20,8 +20,12 @@ class flash_ctrl_rd_path_intg_vseq extends flash_ctrl_legacy_base_vseq;
       bit             saw_err, completed;
       data_4s_t rdata;
 
+      // Read buffer can be skipped if descramble is not enabled and there is
+      // no backlog at the read response pipeline
+      // (https://cs.opensource.google/opentitan/opentitan/+/master:
+      //  hw/ip/flash_ctrl/rtl/flash_phy_rd.sv;drc=8046c2896fa50aaf3a186a7ce8c0570db9f99eaf;l=481)
       // Enable ecc for all regions
-      flash_otf_region_cfg(.scr_mode(scr_ecc_cfg), .ecc_mode(OTFCfgTrue));
+      flash_otf_region_cfg(.scr_mode(OTFCfgTrue), .ecc_mode(OTFCfgTrue));
       idx1 = $urandom_range(0, 63);
       idx2 = $urandom_range(0, 63);
       path1 = {"tb.dut.u_eflash.gen_flash_cores[0].u_core",
