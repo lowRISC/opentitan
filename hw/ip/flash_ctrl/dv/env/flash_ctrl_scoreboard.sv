@@ -830,7 +830,7 @@ class flash_ctrl_scoreboard #(
       end
     end
 
-    if (exp_tl_rsp_intg_err) begin
+    if (exp_tl_rsp_intg_err == 1 && channel == DataChannel) begin
       return (!item.is_d_chan_intg_ok(.throw_error(0)));
     end
     return (super.predict_tl_err(item, channel, ral_name));
