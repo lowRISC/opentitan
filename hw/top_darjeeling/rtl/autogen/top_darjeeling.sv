@@ -60,7 +60,6 @@ module top_darjeeling #(
   parameter int FlashCtrlProgFifoDepth = 4,
   parameter int FlashCtrlRdFifoDepth = 16,
   // parameters for rv_dm
-  parameter logic [31:0] RvDmIdcodeValue = jtag_id_pkg::RV_DM_JTAG_IDCODE,
   // parameters for rv_plic
   // parameters for aes
   parameter bit SecAesMasking = 1,
@@ -163,9 +162,9 @@ module top_darjeeling #(
   output logic       es_rng_fips_o,
   input  tlul_pkg::tl_h2d_t       lc_ctrl_dmi_h2d_i,
   output tlul_pkg::tl_d2h_t       lc_ctrl_dmi_d2h_o,
+  input  tlul_pkg::tl_h2d_t       rv_dm_dmi_h2d_i,
+  output tlul_pkg::tl_d2h_t       rv_dm_dmi_d2h_o,
   output logic       pwrmgr_strap_en_o,
-  input  jtag_pkg::jtag_req_t       rv_jtag_req_i,
-  output jtag_pkg::jtag_rsp_t       rv_jtag_rsp_o,
   input  lc_ctrl_pkg::lc_tx_t       rv_pinmux_hw_debug_en_i,
   output tlul_pkg::tl_h2d_t       ast_tl_req_o,
   input  tlul_pkg::tl_d2h_t       ast_tl_rsp_i,
@@ -2126,16 +2125,15 @@ module top_darjeeling #(
       .rst_otp_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
   rv_dm #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[40:40]),
-    .IdcodeValue(RvDmIdcodeValue)
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[40:40])
   ) u_rv_dm (
       // [40]: fatal_fault
       .alert_tx_o  ( alert_tx[40:40] ),
       .alert_rx_i  ( alert_rx[40:40] ),
 
       // Inter-module signals
-      .jtag_i(rv_jtag_req_i),
-      .jtag_o(rv_jtag_rsp_o),
+      .dmi_tl_h2d_i(rv_dm_dmi_h2d_i),
+      .dmi_tl_d2h_o(rv_dm_dmi_d2h_o),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
       .pinmux_hw_debug_en_i(rv_pinmux_hw_debug_en_i),
       .unavailable_i(1'b0),
@@ -2149,7 +2147,6 @@ module top_darjeeling #(
       .mem_tl_d_i(rv_dm_mem_tl_d_req),
       .mem_tl_d_o(rv_dm_mem_tl_d_rsp),
       .scanmode_i,
-      .scan_rst_ni,
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_infra),

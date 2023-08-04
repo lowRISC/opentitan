@@ -5148,10 +5148,6 @@
           domain: "0"
         }
       }
-      param_decl:
-      {
-        IdcodeValue: jtag_id_pkg::RV_DM_JTAG_IDCODE
-      }
       base_addrs:
       {
         mem: 0x00010000
@@ -5165,32 +5161,37 @@
       [
         "0"
       ]
-      memory: {}
-      param_list:
-      [
-        {
-          name: IdcodeValue
-          desc: RISC-V debug module JTAG ID code.
-          type: logic [31:0]
-          default: jtag_id_pkg::RV_DM_JTAG_IDCODE
-          expose: "true"
-          name_top: RvDmIdcodeValue
-        }
-      ]
+      param_decl: {}
+      param_list: []
       inter_signal_list:
       [
         {
-          name: jtag
-          desc: JTAG signals for the RISC-V TAP.
-          struct: jtag
-          package: jtag_pkg
-          type: req_rsp
-          act: rsp
+          name: dmi_tl_h2d
+          desc: TLUL-based DMI request input port
+          struct: tl_h2d
+          package: tlul_pkg
+          type: uni
+          act: rcv
           width: 1
           inst_name: rv_dm
           default: ""
           external: true
-          top_signame: rv_jtag
+          top_signame: rv_dm_dmi_h2d
+          conn_type: false
+          index: -1
+        }
+        {
+          name: dmi_tl_d2h
+          desc: TLUL-based DMI response output port
+          struct: tl_d2h
+          package: tlul_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: rv_dm
+          default: ""
+          external: true
+          top_signame: rv_dm_dmi_d2h
           conn_type: false
           index: -1
         }
@@ -8686,8 +8687,9 @@
       entropy_src.rng_fips: es_rng_fips
       lc_ctrl.dmi_tl_h2d: lc_ctrl_dmi_h2d
       lc_ctrl.dmi_tl_d2h: lc_ctrl_dmi_d2h
+      rv_dm.dmi_tl_h2d: rv_dm_dmi_h2d
+      rv_dm.dmi_tl_d2h: rv_dm_dmi_d2h
       pwrmgr_aon.strap: pwrmgr_strap_en
-      rv_dm.jtag: rv_jtag
       rv_dm.pinmux_hw_debug_en: rv_pinmux_hw_debug_en
       peri.tl_ast: ast_tl
       pinmux_aon.dft_strap_test: dft_strap_test
@@ -18141,17 +18143,32 @@
         index: -1
       }
       {
-        name: jtag
-        desc: JTAG signals for the RISC-V TAP.
-        struct: jtag
-        package: jtag_pkg
-        type: req_rsp
-        act: rsp
+        name: dmi_tl_h2d
+        desc: TLUL-based DMI request input port
+        struct: tl_h2d
+        package: tlul_pkg
+        type: uni
+        act: rcv
         width: 1
         inst_name: rv_dm
         default: ""
         external: true
-        top_signame: rv_jtag
+        top_signame: rv_dm_dmi_h2d
+        conn_type: false
+        index: -1
+      }
+      {
+        name: dmi_tl_d2h
+        desc: TLUL-based DMI response output port
+        struct: tl_d2h
+        package: tlul_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: rv_dm
+        default: ""
+        external: true
+        top_signame: rv_dm_dmi_d2h
         conn_type: false
         index: -1
       }
@@ -20661,6 +20678,30 @@
         netname: lc_ctrl_dmi_d2h
       }
       {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: rv_dm_dmi_h2d_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: rv_dm_dmi_h2d
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: rv_dm_dmi_d2h_o
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: rv_dm_dmi_d2h
+      }
+      {
         package: ""
         struct: logic
         signame: pwrmgr_strap_en_o
@@ -20671,30 +20712,6 @@
         conn_type: true
         index: -1
         netname: pwrmgr_aon_strap
-      }
-      {
-        package: jtag_pkg
-        struct: jtag_req
-        signame: rv_jtag_req_i
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: rv_jtag_req
-      }
-      {
-        package: jtag_pkg
-        struct: jtag_rsp
-        signame: rv_jtag_rsp_o
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: rv_jtag_rsp
       }
       {
         package: lc_ctrl_pkg

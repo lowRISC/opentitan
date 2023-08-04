@@ -1003,6 +1003,8 @@ module chip_darjeeling_asic #(
   // TODO: replace this with a unified TAP
   tlul_pkg::tl_h2d_t lc_ctrl_dmi_h2d;
   tlul_pkg::tl_d2h_t lc_ctrl_dmi_d2h;
+  tlul_pkg::tl_h2d_t rv_dm_dmi_h2d;
+  tlul_pkg::tl_d2h_t rv_dm_dmi_d2h;
   jtag_pkg::jtag_req_t lc_jtag_req;
   jtag_pkg::jtag_rsp_t lc_jtag_rsp;
   jtag_pkg::jtag_req_t rv_jtag_req;
@@ -1018,6 +1020,18 @@ module chip_darjeeling_asic #(
     .scanmode_i (scanmode),
     .tl_h2d_o   (lc_ctrl_dmi_h2d),
     .tl_d2h_i   (lc_ctrl_dmi_d2h)
+  );
+  tlul_jtag_dtm #(
+    .IdcodeValue(jtag_id_pkg::RV_DM_JTAG_IDCODE)
+  ) u_tlul_jtag_dtm_rv (
+    .clk_i      (clkmgr_aon_clocks.clk_main_infra),
+    .rst_ni     (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
+    .jtag_i     (rv_jtag_req),
+    .jtag_o     (rv_jtag_rsp),
+    .scan_rst_ni(scan_rst_n),
+    .scanmode_i (scanmode),
+    .tl_h2d_o   (rv_dm_dmi_h2d),
+    .tl_d2h_i   (rv_dm_dmi_d2h)
   );
 
   // TODO: remove this once unified TAP is available.
@@ -1239,9 +1253,9 @@ module chip_darjeeling_asic #(
     .lc_ctrl_dmi_h2d_i            ( lc_ctrl_dmi_h2d            ),
     .lc_ctrl_dmi_d2h_o            ( lc_ctrl_dmi_d2h            ),
 
-    // JTAG for RV_DM
-    .rv_jtag_req_i                ( rv_jtag_req                ),
-    .rv_jtag_rsp_o                ( rv_jtag_rsp                ),
+    // DMI into RV_DM
+    .rv_dm_dmi_h2d_i              ( rv_dm_dmi_h2d              ),
+    .rv_dm_dmi_d2h_o              ( rv_dm_dmi_d2h              ),
 
     // Pinmux strap
     .pwrmgr_strap_en_o            ( pwrmgr_strap_en            ),

@@ -29,20 +29,13 @@
     { protocol: "tlul", direction: "device", name: "mem" }
   ],
   scan: "true", // Enable `scanmode_i` port
-  scan_reset: "true", // Enable `scan_rst_ni` port
+  scan_reset: "false", // Enable `scan_rst_ni` port
   param_list: [
     { name:    "NrHarts",
       type:    "int",
       default: "1",
       desc:    "Number of hardware threads in the system."
       local:   "true"
-    },
-    { name:    "IdcodeValue",
-      type:    "logic [31:0]",
-      default: "32'h 0000_0001",
-      desc:    "RISC-V debug module JTAG ID code."
-      local:   "false",
-      expose:  "true"
     },
   ]
   interrupt_list: [
@@ -55,13 +48,26 @@
     }
   ],
   inter_signal_list: [
-    { struct:  "jtag",
-      type:    "req_rsp",
-      name:    "jtag",
-      act:     "rsp",
-      package: "jtag_pkg",
-      desc:    "JTAG signals for the RISC-V TAP."
-    },
+    {
+      struct:  "tl_h2d"
+      package: "tlul_pkg"
+      type:    "uni"
+      name:    "dmi_tl_h2d"
+      act:     "rcv"
+      desc:    '''
+               TLUL-based DMI request input port
+               '''
+    }
+    {
+      struct:  "tl_d2h"
+      package: "tlul_pkg"
+      type:    "uni"
+      name:    "dmi_tl_d2h"
+      act:     "req"
+      desc:    '''
+               TLUL-based DMI response output port
+               '''
+    }
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_hw_debug_en"

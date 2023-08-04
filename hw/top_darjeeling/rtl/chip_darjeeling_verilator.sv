@@ -547,6 +547,11 @@ module chip_darjeeling_verilator (
     .calib_rdy_i                  ( ast_init_done              ),
     .ast_init_done_i              ( ast_init_done              ),
 
+    // DMI into rv_dm
+    // TODO: instantiate TAP at this level and connect these ports
+    .rv_dm_dmi_h2d_i              ( tlul_pkg::TL_H2D_DEFAULT   ),
+    .rv_dm_dmi_d2h_o              (                            ),
+
     // USB signals
     .usb_dp_pullup_en_o           (usb_dp_pullup),
     .usb_dn_pullup_en_o           (usb_dn_pullup),

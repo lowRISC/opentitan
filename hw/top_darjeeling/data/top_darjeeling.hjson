@@ -627,9 +627,6 @@
       clock_srcs: {clk_i: "main"},
       clock_group: "infra",
       reset_connections: {rst_ni: "sys"},
-      param_decl: {
-        IdcodeValue: "jtag_id_pkg::RV_DM_JTAG_IDCODE",
-      }
       // Note that this module also contains a bus host.
       base_addrs: {mem: "0x00010000", regs: "0x41200000"}
     },
@@ -1129,8 +1126,9 @@
         'entropy_src.rng_fips'            : 'es_rng_fips',
         'lc_ctrl.dmi_tl_h2d'              : 'lc_ctrl_dmi_h2d',
         'lc_ctrl.dmi_tl_d2h'              : 'lc_ctrl_dmi_d2h',
+        'rv_dm.dmi_tl_h2d'                : 'rv_dm_dmi_h2d',
+        'rv_dm.dmi_tl_d2h'                : 'rv_dm_dmi_d2h',
         'pwrmgr_aon.strap'                : 'pwrmgr_strap_en',
-        'rv_dm.jtag'                      : 'rv_jtag',
         'rv_dm.pinmux_hw_debug_en'        : 'rv_pinmux_hw_debug_en',
         'peri.tl_ast'                     : 'ast_tl',
         'pinmux_aon.dft_strap_test'       : 'dft_strap_test'
