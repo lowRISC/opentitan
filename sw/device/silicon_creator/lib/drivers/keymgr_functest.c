@@ -5,10 +5,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/testing/keymgr_testutils.h"
-#include "sw/device/lib/testing/otp_ctrl_testutils.h"
-#include "sw/device/lib/testing/pwrmgr_testutils.h"
-#include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
@@ -19,9 +15,13 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
+#include "sw/ip/keymgr/test/utils/keymgr_testutils.h"
 #include "sw/ip/kmac/dif/dif_kmac.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
+#include "sw/ip/otp_ctrl/test/utils/otp_ctrl_testutils.h"
+#include "sw/ip/pwrmgr/test/utils/pwrmgr_testutils.h"
 #include "sw/ip/rstmgr/dif/dif_rstmgr.h"
+#include "sw/ip/rstmgr/test/utils/rstmgr_testutils.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/runtime/hart.h"

@@ -80,10 +80,10 @@ opentitan_functest(
         "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//hw/top_darjeeling/ip/rstmgr/data/autogen:rstmgr_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
     ],
 )
 
@@ -279,11 +279,6 @@ opentitan_functest(
         ":retention_sram",
         "//hw/ip/kmac/data:kmac_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:keymgr_binding",
@@ -294,6 +289,11 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:kmac",
         "//sw/top_darjeeling/sw/dif:otp_ctrl",
         "//sw/top_darjeeling/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:keymgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:otp_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
     ],
 )
 
@@ -329,10 +329,10 @@ opentitan_functest(
     deps = [
         ":kmac",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
         "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/test/utils:entropy_testutils",
     ],
 )
 
@@ -468,7 +468,7 @@ cc_test(
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:csr",
         "//sw/lib/sw/device/base:macros",
-        "//sw/top_earlgrey/sw/device/arch:sim_dv",
+        "//sw/top_darjeeling/sw/device/arch:sim_dv",
         "@googletest//:gtest_main",
     ],
 )
@@ -575,13 +575,13 @@ opentitan_functest(
         ":otp",
         ":rnd",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:crc32",
         "//sw/device/silicon_creator/lib:error",
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:entropy_src",
+        "//sw/top_darjeeling/sw/test/utils:entropy_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rand_testutils",
     ],
 )
 
@@ -636,9 +636,9 @@ opentitan_functest(
     ),
     deps = [
         ":rstmgr",
-        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
     ],
 )
 
@@ -723,12 +723,12 @@ opentitan_functest(
         ":rstmgr",
         ":watchdog",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
     ],
 )
 

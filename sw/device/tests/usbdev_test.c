@@ -17,13 +17,13 @@
 // transactions with a data payload of "Hi!" to Endpoint 1. If these two OUT
 // transactions are succesfully received by the device, the test passes.
 
-#include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/lib/testing/usb_testutils.h"
-#include "sw/device/lib/testing/usb_testutils_controlep.h"
-#include "sw/device/lib/testing/usb_testutils_simpleserial.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
+#include "sw/ip/pinmux/test/utils/pinmux_testutils.h"
+#include "sw/ip/usbdev/test/utils/usb_testutils.h"
+#include "sw/ip/usbdev/test/utils/usb_testutils_controlep.h"
+#include "sw/ip/usbdev/test/utils/usb_testutils_simpleserial.h"
 #include "sw/lib/sw/device/runtime/ibex.h"
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/runtime/print.h"

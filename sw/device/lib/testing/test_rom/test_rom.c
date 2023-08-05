@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
-#include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
@@ -17,8 +15,10 @@
 #include "sw/ip/base/dif/dif_base.h"
 #include "sw/ip/clkmgr/dif/dif_clkmgr.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
+#include "sw/ip/flash_ctrl/test/utils/flash_ctrl_testutils.h"
 #include "sw/ip/gpio/dif/dif_gpio.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
+#include "sw/ip/pinmux/test/utils/pinmux_testutils.h"
 #include "sw/ip/rstmgr/dif/dif_rstmgr.h"
 #include "sw/ip/rv_core_ibex/dif/dif_rv_core_ibex.h"
 #include "sw/ip/uart/dif/dif_uart.h"

@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/testing/pwrmgr_testutils.h"
-#include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/ip/adc_ctrl/dif/dif_adc_ctrl.h"
 #include "sw/ip/pwrmgr/dif/dif_pwrmgr.h"
+#include "sw/ip/pwrmgr/test/utils/pwrmgr_testutils.h"
 #include "sw/ip/rstmgr/dif/dif_rstmgr.h"
+#include "sw/ip/rstmgr/test/utils/rstmgr_testutils.h"
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/hart.h"
@@ -16,7 +16,7 @@
 #include "sw/lib/sw/device/runtime/log.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
-#include "sw/device/lib/testing/autogen/isr_testutils.h"
+#include "sw/top_darjeeling/sw/test/utils/autogen/isr_testutils.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 

@@ -4,12 +4,11 @@
 
 #include "sw/device/tests/clkmgr_off_trans_impl.h"
 
-#include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/ip/aes/dif/dif_aes.h"
 #include "sw/ip/aon_timer/dif/dif_aon_timer.h"
+#include "sw/ip/aon_timer/test/utils/aon_timer_testutils.h"
 #include "sw/ip/base/dif/dif_base.h"
 #include "sw/ip/clkmgr/dif/dif_clkmgr.h"
 #include "sw/ip/hmac/dif/dif_hmac.h"
@@ -17,6 +16,7 @@
 #include "sw/ip/otbn/dif/dif_otbn.h"
 #include "sw/ip/pwrmgr/dif/dif_pwrmgr.h"
 #include "sw/ip/rstmgr/dif/dif_rstmgr.h"
+#include "sw/ip/rstmgr/test/utils/rstmgr_testutils.h"
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/runtime/log.h"
 

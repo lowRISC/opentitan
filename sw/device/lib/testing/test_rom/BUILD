@@ -128,8 +128,6 @@ cc_library(
         "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//hw/top_darjeeling/ip/sensor_ctrl/data:sensor_ctrl_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/silicon_creator/lib:chip_info",
@@ -151,6 +149,8 @@ cc_library(
         "//sw/top_darjeeling/sw/dif:rv_core_ibex",
         "//sw/top_darjeeling/sw/dif:spi_device",
         "//sw/top_darjeeling/sw/dif:uart",
+        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
     ],
 )
 

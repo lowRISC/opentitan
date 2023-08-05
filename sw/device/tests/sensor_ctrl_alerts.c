@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
-#include "sw/device/lib/testing/nv_counter_testutils.h"
-#include "sw/device/lib/testing/pwrmgr_testutils.h"
-#include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/ip/alert_handler/dif/dif_alert_handler.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
+#include "sw/ip/flash_ctrl/test/utils/flash_ctrl_testutils.h"
+#include "sw/ip/flash_ctrl/test/utils/nv_counter_testutils.h"
+#include "sw/ip/pwrmgr/test/utils/pwrmgr_testutils.h"
 #include "sw/ip/rstmgr/dif/dif_rstmgr.h"
+#include "sw/ip/rv_core_ibex/test/utils/rand_testutils.h"
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
 #include "sw/ip/sensor_ctrl/dif/dif_sensor_ctrl.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"

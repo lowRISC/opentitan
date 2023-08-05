@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/testing/clkmgr_testutils.h"
-#include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/otbn_testutils.h"
-#include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/otbn_randomness_impl.h"
 #include "sw/ip/base/dif/dif_base.h"
 #include "sw/ip/clkmgr/dif/dif_clkmgr.h"
+#include "sw/ip/clkmgr/test/utils/clkmgr_testutils.h"
+#include "sw/ip/entropy_src/test/utils/entropy_testutils.h"
 #include "sw/ip/otbn/dif/dif_otbn.h"
+#include "sw/ip/otbn/test/utils/otbn_testutils.h"
+#include "sw/ip/rv_plic/test/utils/rv_plic_testutils.h"
 #include "sw/lib/sw/device/runtime/ibex.h"
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/log.h"

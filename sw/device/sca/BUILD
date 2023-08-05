@@ -10,7 +10,7 @@ alias(
     name = "aes_serial_aes_testutils",
     actual = select({
         "//sw/device:is_english_breakfast": "//sw/device:nothing",
-        "//conditions:default": "//sw/device/lib/testing:aes_testutils",
+        "//conditions:default": "//sw/top_darjeeling/sw/test/utils:aes_testutils",
     }),
     visibility = ["//visibility:private"],
 )
@@ -20,7 +20,6 @@ opentitan_flash_binary(
     srcs = ["aes_serial.c"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:aes_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -31,6 +30,7 @@ opentitan_flash_binary(
         "//sw/lib/sw/device/runtime:log",
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:aes",
+        "//sw/top_darjeeling/sw/test/utils:aes_testutils",
     ],
 )
 
@@ -74,7 +74,6 @@ opentitan_flash_binary(
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/sca/lib:prng",
@@ -85,6 +84,7 @@ opentitan_flash_binary(
         "//sw/lib/sw/device/runtime:log",
         "//sw/otbn/crypto:p384_ecdsa_sca",
         "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/test/utils:entropy_testutils",
     ],
 )
 
@@ -94,7 +94,6 @@ opentitan_flash_binary(
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/sca/lib:prng",
@@ -106,5 +105,6 @@ opentitan_flash_binary(
         "//sw/lib/sw/device/runtime:log",
         "//sw/otbn/crypto:p256_ecdsa_sca",
         "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/test/utils:entropy_testutils",
     ],
 )

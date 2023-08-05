@@ -7,15 +7,15 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/testing/alert_handler_testutils.h"
-#include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/ip/alert_handler/dif/dif_alert_handler.h"
+#include "sw/ip/alert_handler/test/utils/alert_handler_testutils.h"
 #include "sw/ip/aon_timer/dif/dif_aon_timer.h"
+#include "sw/ip/aon_timer/test/utils/aon_timer_testutils.h"
 #include "sw/ip/pwrmgr/dif/dif_pwrmgr.h"
+#include "sw/ip/pwrmgr/test/utils/pwrmgr_testutils.h"
 #include "sw/ip/rv_core_ibex/dif/dif_rv_core_ibex.h"
 #include "sw/ip/rv_timer/dif/dif_rv_timer.h"
 #include "sw/lib/sw/device/base/mmio.h"
@@ -24,7 +24,7 @@
 #include "sw/lib/sw/device/runtime/log.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
-#include "sw/device/lib/testing/autogen/isr_testutils.h"
+#include "sw/top_darjeeling/sw/test/utils/autogen/isr_testutils.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 

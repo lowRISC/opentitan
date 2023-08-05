@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/testing/i2c_testutils.h"
-#include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/ip/base/dif/dif_base.h"
 #include "sw/ip/i2c/dif/dif_i2c.h"
+#include "sw/ip/i2c/test/utils/i2c_testutils.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
+#include "sw/ip/rv_core_ibex/test/utils/rand_testutils.h"
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/mmio.h"
@@ -19,7 +19,7 @@
 #include "sw/lib/sw/device/runtime/log.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
-#include "sw/device/lib/testing/autogen/isr_testutils.h"
+#include "sw/top_darjeeling/sw/test/utils/autogen/isr_testutils.h"
 
 // TODO #14111, remove it once pinout configuration is provided
 #include "i2c_regs.h"

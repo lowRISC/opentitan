@@ -5,8 +5,6 @@
 #include <stdint.h>
 
 #include "otp_img_sku_darjeeling_a0_stage_individualize.h"  // Generated.
-#include "sw/device/lib/testing/otp_ctrl_testutils.h"
-#include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize_preop.h"
 #include "sw/device/silicon_creator/manuf/lib/isolated_flash_partition.h"
@@ -15,6 +13,8 @@
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
 #include "sw/ip/lc_ctrl/dif/dif_lc_ctrl.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
+#include "sw/ip/otp_ctrl/test/utils/otp_ctrl_testutils.h"
+#include "sw/ip/pinmux/test/utils/pinmux_testutils.h"
 #include "sw/ip/uart/dif/dif_uart.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/runtime/log.h"

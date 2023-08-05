@@ -2,21 +2,21 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/clkmgr_testutils.h"
-#include "sw/device/lib/testing/pwrmgr_testutils.h"
-#include "sw/device/lib/testing/rv_plic_testutils.h"
-#include "sw/device/lib/testing/sensor_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/ip/aon_timer/test/utils/aon_timer_testutils.h"
+#include "sw/ip/clkmgr/test/utils/clkmgr_testutils.h"
+#include "sw/ip/pwrmgr/test/utils/pwrmgr_testutils.h"
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
+#include "sw/ip/rv_plic/test/utils/rv_plic_testutils.h"
 #include "sw/ip/sensor_ctrl/dif/dif_sensor_ctrl.h"
+#include "sw/ip/sensor_ctrl/test/utils/sensor_ctrl_testutils.h"
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
-#include "sw/device/lib/testing/autogen/isr_testutils.h"
+#include "sw/top_darjeeling/sw/test/utils/autogen/isr_testutils.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 

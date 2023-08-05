@@ -250,11 +250,11 @@ opentitan_functest(
         rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
     deps = [
-        "//sw/device/lib/testing:hmac_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:hmac",
+        "//sw/top_darjeeling/sw/test/utils:hmac_testutils",
     ],
 )
 
@@ -263,12 +263,12 @@ opentitan_flash_binary(
     testonly = True,
     srcs = [":rom_e2e_keymgr_init_test.c"],
     deps = [
-        "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:keymgr",
+        "//sw/top_darjeeling/sw/test/utils:keymgr_testutils",
     ],
 )
 
@@ -1064,7 +1064,7 @@ otp_json(
     name = "bitstream_watchdog_enable_{}".format(lc_state),
     src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
     data = ":otp_img_watchdog_enable_{}".format(lc_state),
-    meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+    meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
     tags = maybe_skip_in_ci(lc_state_val),
     update_usr_access = True,
 ) for lc_state, lc_state_val in get_lc_items()]
@@ -2357,7 +2357,6 @@ test_suite(
         ),
         deps = [
             "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-            "//sw/device/lib/testing:lc_ctrl_testutils",
             "//sw/device/lib/testing/test_framework:check",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/lib/testing/test_framework:status",
@@ -2366,6 +2365,7 @@ test_suite(
             "//sw/lib/sw/device/runtime:log",
             "//sw/top_darjeeling/sw/device/runtime:print",
             "//sw/top_darjeeling/sw/dif:lc_ctrl",
+            "//sw/top_darjeeling/sw/test/utils:lc_ctrl_testutils",
         ],
     )
     for lc_state, lc_state_val in get_lc_items()
@@ -3661,8 +3661,6 @@ opentitan_functest(
     ],
     deps = [
         "//hw/top_darjeeling/ip/pwrmgr/data/autogen:pwrmgr_regs",
-        "//sw/device/lib/testing:aon_timer_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
@@ -3672,6 +3670,8 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:aon_timer",
         "//sw/top_darjeeling/sw/dif:pwrmgr",
+        "//sw/top_darjeeling/sw/test/utils:aon_timer_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
     ],
 )
 
@@ -3739,14 +3739,14 @@ otp_json(
             "cw310_rom_with_fake_keys",
         ],
         deps = [
-            "//sw/device/lib/testing:flash_ctrl_testutils",
-            "//sw/device/lib/testing:nv_counter_testutils",
             "//sw/device/lib/testing/test_framework:check",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib:boot_data",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:rstmgr",
             "//sw/top_darjeeling/sw/device/runtime:print",
+            "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
+            "//sw/top_darjeeling/sw/test/utils:nv_counter_testutils",
         ],
     )
     for lc_state, lc_state_val in get_lc_items()

@@ -5,14 +5,14 @@
 
 #include <assert.h>
 
-#include "sw/device/lib/testing/i2c_testutils.h"
 #include "sw/device/lib/testing/json/command.h"
-#include "sw/device/lib/testing/pwrmgr_testutils.h"
-#include "sw/device/lib/testing/rv_plic_testutils.h"
+#include "sw/ip/pwrmgr/test/utils/pwrmgr_testutils.h"
+#include "sw/ip/rv_plic/test/utils/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/ip/i2c/dif/dif_i2c.h"
+#include "sw/ip/i2c/test/utils/i2c_testutils.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
 #include "sw/ip/pwrmgr/dif/dif_pwrmgr.h"
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
@@ -28,7 +28,7 @@
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "i2c_regs.h"  // Generated.
-#include "sw/device/lib/testing/autogen/isr_testutils.h"
+#include "sw/top_darjeeling/sw/test/utils/autogen/isr_testutils.h"
 
 static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
               "This test assumes the target platform is little endian.");

@@ -7,8 +7,8 @@
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/aes.h"
-#include "sw/device/lib/testing/profile.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/ip/base/test/utils/profile.h"
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/runtime/log.h"
 

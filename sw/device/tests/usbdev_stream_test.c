@@ -17,14 +17,14 @@
 // independently, by the receiving code to check that the data has been
 // propagated unmodified and without data loss, corruption, replication etc.
 
-#include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/lib/testing/usb_testutils.h"
-#include "sw/device/lib/testing/usb_testutils_controlep.h"
-#include "sw/device/lib/testing/usb_testutils_diags.h"
-#include "sw/device/lib/testing/usb_testutils_streams.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
+#include "sw/ip/pinmux/test/utils/pinmux_testutils.h"
+#include "sw/ip/usbdev/test/utils/usb_testutils.h"
+#include "sw/ip/usbdev/test/utils/usb_testutils_controlep.h"
+#include "sw/ip/usbdev/test/utils/usb_testutils_diags.h"
+#include "sw/ip/usbdev/test/utils/usb_testutils_streams.h"
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/runtime/print.h"
 

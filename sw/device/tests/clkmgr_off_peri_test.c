@@ -2,18 +2,18 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
-#include "sw/device/lib/testing/nv_counter_testutils.h"
-#include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/ip/aon_timer/dif/dif_aon_timer.h"
+#include "sw/ip/aon_timer/test/utils/aon_timer_testutils.h"
 #include "sw/ip/base/dif/dif_base.h"
 #include "sw/ip/clkmgr/dif/dif_clkmgr.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
+#include "sw/ip/flash_ctrl/test/utils/flash_ctrl_testutils.h"
+#include "sw/ip/flash_ctrl/test/utils/nv_counter_testutils.h"
 #include "sw/ip/pwrmgr/dif/dif_pwrmgr.h"
 #include "sw/ip/rstmgr/dif/dif_rstmgr.h"
+#include "sw/ip/rstmgr/test/utils/rstmgr_testutils.h"
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
 #include "sw/ip/uart/dif/dif_uart.h"
 #include "sw/ip/usbdev/dif/dif_usbdev.h"

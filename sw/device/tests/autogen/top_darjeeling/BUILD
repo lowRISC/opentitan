@@ -25,7 +25,6 @@ opentitan_functest(
     ),
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:mmio",
         "//sw/lib/sw/device/runtime:irq",
@@ -54,6 +53,7 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
         "//sw/top_darjeeling/sw/dif:uart",
         "//sw/top_darjeeling/sw/dif:usbdev",
+        "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
     ],
 )
 
@@ -62,7 +62,6 @@ opentitan_functest(
     srcs = ["alert_test.c"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:memory",
         "//sw/lib/sw/device/base:mmio",
@@ -100,5 +99,6 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
         "//sw/top_darjeeling/sw/dif:uart",
         "//sw/top_darjeeling/sw/dif:usbdev",
+        "//sw/top_darjeeling/sw/test/utils:alert_handler_testutils",
     ],
 )

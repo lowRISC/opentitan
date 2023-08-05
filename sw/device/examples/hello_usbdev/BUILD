@@ -27,9 +27,6 @@ cc_library(
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/examples:demos",
-        "//sw/device/lib/testing:pinmux_testutils",
-        "//sw/device/lib/testing:usb_testutils",
-        "//sw/device/lib/testing:usb_testutils_simpleserial",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_start",
@@ -43,5 +40,8 @@ cc_library(
         "//sw/top_darjeeling/sw/dif:pinmux",
         "//sw/top_darjeeling/sw/dif:spi_device",
         "//sw/top_darjeeling/sw/dif:uart",
+        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
+        "//sw/top_darjeeling/sw/test/utils:usb_testutils",
+        "//sw/top_darjeeling/sw/test/utils:usb_testutils_simpleserial",
     ],
 )

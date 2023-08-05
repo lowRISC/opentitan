@@ -5,15 +5,15 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/testing/lc_ctrl_testutils.h"
-#include "sw/device/lib/testing/otp_ctrl_testutils.h"
-#include "sw/device/lib/testing/sram_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 #include "sw/device/lib/testing/test_framework/ottf_macros.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/status.h"
+#include "sw/ip/lc_ctrl/test/utils/lc_ctrl_testutils.h"
+#include "sw/ip/otp_ctrl/test/utils/otp_ctrl_testutils.h"
 #include "sw/ip/sram_ctrl/dif/dif_sram_ctrl.h"
+#include "sw/ip/sram_ctrl/test/utils/sram_ctrl_testutils.h"
 #include "sw/lib/sw/device/base/bitfield.h"
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/base/multibits.h"

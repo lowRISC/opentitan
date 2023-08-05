@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "hw/ip/aes/model/aes_modes.h"
-#include "sw/device/lib/testing/aes_testutils.h"
-#include "sw/device/lib/testing/csrng_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/ip/aes/dif/dif_aes.h"
+#include "sw/ip/aes/test/utils/aes_testutils.h"
 #include "sw/ip/csrng/dif/dif_csrng.h"
 #include "sw/ip/csrng/dif/shared/dif_csrng_shared.h"
+#include "sw/ip/csrng/test/utils/csrng_testutils.h"
 #include "sw/ip/edn/dif/dif_edn.h"
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/base/mmio.h"

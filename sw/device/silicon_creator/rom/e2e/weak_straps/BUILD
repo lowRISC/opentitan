@@ -31,7 +31,6 @@ opentitan_functest(
         test_cmds = [],
     ),
     deps = [
-        "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/json:command",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
@@ -40,5 +39,6 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:gpio",
         "//sw/top_darjeeling/sw/dif:pinmux",
+        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
     ],
 )

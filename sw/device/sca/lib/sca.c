@@ -5,7 +5,6 @@
 #include "sw/device/sca/lib/sca.h"
 
 #include "hw/ip/aes/model/aes.h"
-#include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 #if !OT_IS_ENGLISH_BREAKFAST
@@ -16,6 +15,7 @@
 #include "sw/ip/entropy_src/dif/dif_entropy_src.h"
 #include "sw/ip/gpio/dif/dif_gpio.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
+#include "sw/ip/pinmux/test/utils/pinmux_testutils.h"
 #include "sw/ip/rv_timer/dif/dif_rv_timer.h"
 #include "sw/ip/uart/dif/dif_uart.h"
 #include "sw/lib/sw/device/arch/device.h"

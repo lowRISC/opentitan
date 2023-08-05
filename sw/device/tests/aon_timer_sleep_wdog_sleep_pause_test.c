@@ -6,14 +6,14 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/pwrmgr_testutils.h"
-#include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/ip/aon_timer/dif/dif_aon_timer.h"
+#include "sw/ip/aon_timer/test/utils/aon_timer_testutils.h"
 #include "sw/ip/pwrmgr/dif/dif_pwrmgr.h"
+#include "sw/ip/pwrmgr/test/utils/pwrmgr_testutils.h"
 #include "sw/ip/rstmgr/dif/dif_rstmgr.h"
+#include "sw/ip/rstmgr/test/utils/rstmgr_testutils.h"
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/log.h"
 

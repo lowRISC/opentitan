@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/rv_core_ibex_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/ip/edn/dif/dif_edn.h"
+#include "sw/ip/entropy_src/test/utils/entropy_testutils.h"
 #include "sw/ip/rv_core_ibex/dif/dif_rv_core_ibex.h"
+#include "sw/ip/rv_core_ibex/test/utils/rv_core_ibex_testutils.h"
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/ibex.h"

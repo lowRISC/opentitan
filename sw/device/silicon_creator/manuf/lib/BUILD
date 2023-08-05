@@ -113,9 +113,9 @@ cc_library(
     hdrs = ["otp_img.h"],
     deps = [
         ":otp_img_types",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/lib/sw/device/base:status",
         "//sw/top_darjeeling/sw/dif:otp_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:otp_ctrl_testutils",
     ],
 )
 
@@ -127,13 +127,13 @@ cc_library(
     ],
     deps = [
         "//sw/device/lib/crypto/drivers:entropy",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:lc_ctrl_testutils",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/lib/sw/device/base:status",
         "//sw/top_darjeeling/sw/dif:flash_ctrl",
         "//sw/top_darjeeling/sw/dif:lc_ctrl",
         "//sw/top_darjeeling/sw/dif:otp_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:lc_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:otp_ctrl_testutils",
     ],
 )
 
@@ -154,7 +154,6 @@ opentitan_functest(
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:status",
         "//sw/top_darjeeling/sw/device/runtime:print",
@@ -162,6 +161,7 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:lc_ctrl",
         "//sw/top_darjeeling/sw/dif:otp_ctrl",
         "//sw/top_darjeeling/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
     ],
 )
 
@@ -174,9 +174,9 @@ cc_library(
     deps = [
         ":otp_img",
         "//hw/ip/otp_ctrl/data/sku_darjeeling_a0:otp_img_sku_darjeeling_a0_stage_individualize",
-        "//sw/device/lib/testing:lc_ctrl_testutils",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/lib/sw/device/base:status",
+        "//sw/top_darjeeling/sw/test/utils:lc_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:otp_ctrl_testutils",
         "//sw/top_darjeeling/sw/dif:otp_ctrl",
     ],
 )
@@ -215,9 +215,6 @@ cc_library(
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/include:datatypes",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:lc_ctrl_testutils",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing/json:provisioning_data",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/silicon_creator/manuf/keys",
@@ -225,6 +222,9 @@ cc_library(
         "//sw/top_darjeeling/sw/dif:flash_ctrl",
         "//sw/top_darjeeling/sw/dif:lc_ctrl",
         "//sw/top_darjeeling/sw/dif:otp_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:lc_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:otp_ctrl_testutils",
     ],
 )
 
@@ -255,7 +255,6 @@ opentitan_functest(
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/json:command",
         "//sw/device/lib/testing/json:provisioning_data",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -268,6 +267,7 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:lc_ctrl",
         "//sw/top_darjeeling/sw/dif:otp_ctrl",
         "//sw/top_darjeeling/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
     ],
 )
 
@@ -423,8 +423,8 @@ cc_library(
     srcs = ["isolated_flash_partition.c"],
     hdrs = ["isolated_flash_partition.h"],
     deps = [
-        "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/lib/sw/device/base:status",
+        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
         "//sw/top_darjeeling/sw/dif:flash_ctrl",
     ],
 )
@@ -447,7 +447,6 @@ opentitan_ram_binary(
         ":sram_program_linker_script",
         ":sram_start",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:macros",
@@ -455,6 +454,7 @@ opentitan_ram_binary(
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:pinmux",
         "//sw/top_darjeeling/sw/dif:uart",
+        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
     ],
 )
 
@@ -477,8 +477,6 @@ opentitan_ram_binary(
         ":test_wafer_auth_secret",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
-        "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/lib/sw/device/arch:device",
@@ -490,6 +488,8 @@ opentitan_ram_binary(
         "//sw/top_darjeeling/sw/dif:otp_ctrl",
         "//sw/top_darjeeling/sw/dif:pinmux",
         "//sw/top_darjeeling/sw/dif:uart",
+        "//sw/top_darjeeling/sw/test/utils:otp_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
     ],
 )
 
@@ -569,8 +569,6 @@ opentitan_ram_binary(
         ":sram_start",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
-        "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/lib/sw/device/arch:device",
@@ -578,6 +576,8 @@ opentitan_ram_binary(
         "//sw/lib/sw/device/runtime:log",
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:otp_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:otp_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
     ],
 )
 
@@ -608,11 +608,11 @@ platform_target(
         targets = ["cw310_rom_with_fake_keys"],
         test_harness = "//sw/host/tests/manuf/manuf_cp_ast_test_execution",
         deps = [
-            "//sw/device/lib/testing:otp_ctrl_testutils",
             "//sw/device/lib/testing/test_framework:check",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/lib/sw/device/runtime:log",
             "//sw/top_darjeeling/sw/device/runtime:print",
+            "//sw/top_darjeeling/sw/test/utils:otp_ctrl_testutils",
         ],
     )
     for lc_state, _ in _TEST_UNLOCKED_LC_ITEMS
@@ -648,11 +648,11 @@ test_suite(
         targets = ["cw310_rom_with_fake_keys"],
         test_harness = "//sw/host/tests/manuf/manuf_sram_program_crc_check",
         deps = [
-            "//sw/device/lib/testing:otp_ctrl_testutils",
             "//sw/device/lib/testing/test_framework:check",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/lib/sw/device/runtime:log",
             "//sw/top_darjeeling/sw/device/runtime:print",
+            "//sw/top_darjeeling/sw/test/utils:otp_ctrl_testutils",
         ],
     )
     for lc_state, _ in _TEST_UNLOCKED_LC_ITEMS

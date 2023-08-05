@@ -4,9 +4,9 @@
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
 
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
-#include "sw/device/lib/testing/lc_ctrl_testutils.h"
-#include "sw/device/lib/testing/otp_ctrl_testutils.h"
+#include "sw/ip/flash_ctrl/test/utils/flash_ctrl_testutils.h"
+#include "sw/ip/lc_ctrl/test/utils/lc_ctrl_testutils.h"
+#include "sw/ip/otp_ctrl/test/utils/otp_ctrl_testutils.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
 #include "sw/ip/lc_ctrl/dif/dif_lc_ctrl.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"

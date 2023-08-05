@@ -7,21 +7,21 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/testing/alert_handler_testutils.h"
-#include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
-#include "sw/device/lib/testing/pwrmgr_testutils.h"
-#include "sw/device/lib/testing/rstmgr_testutils.h"
-#include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/ip/alert_handler/dif/dif_alert_handler.h"
+#include "sw/ip/alert_handler/test/utils/alert_handler_testutils.h"
 #include "sw/ip/aon_timer/dif/dif_aon_timer.h"
+#include "sw/ip/aon_timer/test/utils/aon_timer_testutils.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
+#include "sw/ip/keymgr/test/utils/keymgr_testutils.h"
 #include "sw/ip/pwrmgr/dif/dif_pwrmgr.h"
+#include "sw/ip/pwrmgr/test/utils/pwrmgr_testutils.h"
 #include "sw/ip/rstmgr/dif/dif_rstmgr.h"
+#include "sw/ip/rstmgr/test/utils/rstmgr_testutils.h"
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
+#include "sw/ip/rv_plic/test/utils/rv_plic_testutils.h"
 #include "sw/lib/sw/device/base/math.h"
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/hart.h"
@@ -30,7 +30,7 @@
 
 #include "alert_handler_regs.h"  // Generated.
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
-#include "sw/device/lib/testing/autogen/isr_testutils.h"
+#include "sw/top_darjeeling/sw/test/utils/autogen/isr_testutils.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 

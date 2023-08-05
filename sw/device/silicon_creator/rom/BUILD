@@ -245,7 +245,6 @@ opentitan_functest(
     deps = [
         ":rom_without_keys",
         "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
-        "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/silicon_creator/lib:epmp_state",
@@ -268,6 +267,7 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:pinmux",
         "//sw/top_darjeeling/sw/dif:sram_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
     ],
 )
 

@@ -10,7 +10,7 @@
 #include <limits.h>
 
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/lib/testing/rv_plic_testutils.h"
+#include "sw/ip/rv_plic/test/utils/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/ip/adc_ctrl/dif/dif_adc_ctrl.h"

@@ -9,7 +9,7 @@
 #include "sw/device/sca/lib/sca.h"
 #include "sw/device/sca/lib/simple_serial.h"
 #if !OT_IS_ENGLISH_BREAKFAST
-#include "sw/device/lib/testing/aes_testutils.h"
+#include "sw/ip/aes/test/utils/aes_testutils.h"
 #endif
 #include "sw/ip/aes/dif/dif_aes.h"
 #include "sw/lib/sw/device/base/memory.h"

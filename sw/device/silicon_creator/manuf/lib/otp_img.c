@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/device/silicon_creator/manuf/lib/otp_img.h"
 
-#include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_img_types.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
+#include "sw/ip/otp_ctrl/test/utils/otp_ctrl_testutils.h"
 #include "sw/lib/sw/device/base/status.h"
 
 status_t otp_img_write(const dif_otp_ctrl_t *otp,

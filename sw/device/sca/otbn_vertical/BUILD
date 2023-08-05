@@ -13,7 +13,6 @@ cc_library(
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/sca/lib:prng",
@@ -24,6 +23,7 @@ cc_library(
         "//sw/lib/sw/device/runtime:ibex",
         "//sw/lib/sw/device/runtime:log",
         "//sw/otbn/crypto:p256_key_from_seed_sca",
+        "//sw/top_darjeeling/sw/test/utils:entropy_testutils",
     ],
 )
 
@@ -34,7 +34,6 @@ cc_library(
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/sca/lib:prng",
@@ -45,6 +44,7 @@ cc_library(
         "//sw/lib/sw/device/runtime:ibex",
         "//sw/lib/sw/device/runtime:log",
         "//sw/otbn/crypto:p256_mod_inv_sca",
+        "//sw/top_darjeeling/sw/test/utils:entropy_testutils",
     ],
 )
 
@@ -54,7 +54,6 @@ opentitan_flash_binary(
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/sca/lib:prng",
@@ -68,5 +67,6 @@ opentitan_flash_binary(
         "//sw/lib/sw/device/runtime:log",
         "//sw/otbn/crypto:p256_mod_inv_sca",
         "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/test/utils:entropy_testutils",
     ],
 )

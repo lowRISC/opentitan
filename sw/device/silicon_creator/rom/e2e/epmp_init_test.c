@@ -5,12 +5,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/silicon_creator/lib/epmp_defs.h"
 #include "sw/ip/lc_ctrl/dif/dif_lc_ctrl.h"
+#include "sw/ip/lc_ctrl/test/utils/lc_ctrl_testutils.h"
 #include "sw/lib/sw/device/base/csr.h"
 #include "sw/lib/sw/device/runtime/log.h"
 

@@ -7,14 +7,14 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/rand_testutils.h"
-#include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/ip/aon_timer/dif/dif_aon_timer.h"
+#include "sw/ip/aon_timer/test/utils/aon_timer_testutils.h"
+#include "sw/ip/rv_core_ibex/test/utils/rand_testutils.h"
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
+#include "sw/ip/rv_plic/test/utils/rv_plic_testutils.h"
 #include "sw/ip/rv_timer/dif/dif_rv_timer.h"
 #include "sw/lib/sw/device/base/math.h"
 #include "sw/lib/sw/device/base/mmio.h"

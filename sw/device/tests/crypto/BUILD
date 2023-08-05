@@ -53,8 +53,8 @@ cc_library(
         "//sw/device/lib/crypto/impl:aes",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:keyblob",
-        "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/ip/base/test/utils:profile",
         "//sw/lib/sw/device/runtime:log",
     ],
 )
@@ -100,10 +100,10 @@ opentitan_functest(
     deps = [
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/impl:ecc",
-        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/runtime:log",
         "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/test/utils:entropy_testutils",
     ],
 )
 
@@ -117,10 +117,10 @@ opentitan_functest(
         "//sw/device/lib/crypto/impl:ecc",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/include:datatypes",
-        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/runtime:log",
         "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/test/utils:entropy_testutils",
     ],
 )
 

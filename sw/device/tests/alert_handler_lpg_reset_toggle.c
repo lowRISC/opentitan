@@ -7,19 +7,19 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/testing/alert_handler_testutils.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
-#include "sw/device/lib/testing/nv_counter_testutils.h"
-#include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/ip/alert_handler/dif/dif_alert_handler.h"
+#include "sw/ip/alert_handler/test/utils/alert_handler_testutils.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
+#include "sw/ip/flash_ctrl/test/utils/flash_ctrl_testutils.h"
+#include "sw/ip/flash_ctrl/test/utils/nv_counter_testutils.h"
 #include "sw/ip/i2c/dif/dif_i2c.h"
 #include "sw/ip/rstmgr/dif/dif_rstmgr.h"
 #include "sw/ip/rv_core_ibex/dif/dif_rv_core_ibex.h"
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
+#include "sw/ip/rv_plic/test/utils/rv_plic_testutils.h"
 #include "sw/ip/spi_device/dif/dif_spi_device.h"
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
 #include "sw/ip/usbdev/dif/dif_usbdev.h"
@@ -33,7 +33,7 @@
 #include "i2c_regs.h"
 #include "spi_device_regs.h"
 #include "spi_host_regs.h"
-#include "sw/device/lib/testing/autogen/isr_testutils.h"
+#include "sw/top_darjeeling/sw/test/utils/autogen/isr_testutils.h"
 #include "usbdev_regs.h"
 
 OTTF_DEFINE_TEST_CONFIG();

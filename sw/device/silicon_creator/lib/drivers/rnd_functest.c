@@ -5,8 +5,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/crc32.h"
@@ -14,6 +12,8 @@
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/ip/entropy_src/dif/dif_entropy_src.h"
+#include "sw/ip/entropy_src/test/utils/entropy_testutils.h"
+#include "sw/ip/rv_core_ibex/test/utils/rand_testutils.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"

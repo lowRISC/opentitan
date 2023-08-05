@@ -6,9 +6,9 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/testing/profile.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/ip/base/test/utils/profile.h"
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/base/status.h"
 #include "sw/lib/sw/device/runtime/ibex.h"

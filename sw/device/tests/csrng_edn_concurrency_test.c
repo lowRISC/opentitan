@@ -2,26 +2,26 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/testing/csrng_testutils.h"
-#include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/otbn_testutils.h"
-#include "sw/device/lib/testing/rand_testutils.h"
-#include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_macros.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/otbn_randomness_impl.h"
 #include "sw/ip/csrng/dif/dif_csrng.h"
 #include "sw/ip/csrng/dif/shared/dif_csrng_shared.h"
+#include "sw/ip/csrng/test/utils/csrng_testutils.h"
 #include "sw/ip/edn/dif/dif_edn.h"
 #include "sw/ip/entropy_src/dif/dif_entropy_src.h"
+#include "sw/ip/entropy_src/test/utils/entropy_testutils.h"
+#include "sw/ip/otbn/test/utils/otbn_testutils.h"
+#include "sw/ip/rv_core_ibex/test/utils/rand_testutils.h"
+#include "sw/ip/rv_plic/test/utils/rv_plic_testutils.h"
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
-#include "sw/device/lib/testing/autogen/isr_testutils.h"
+#include "sw/top_darjeeling/sw/test/utils/autogen/isr_testutils.h"
 
 static dif_csrng_t csrng;
 static dif_edn_t edn0;

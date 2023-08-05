@@ -42,7 +42,6 @@ cc_library(
     deps = [
         "//hw/ip/aes:model",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_start",
         "//sw/lib/sw/device/arch:device",
@@ -59,5 +58,6 @@ cc_library(
         "//sw/top_darjeeling/sw/dif:pinmux",
         "//sw/top_darjeeling/sw/dif:rv_timer",
         "//sw/top_darjeeling/sw/dif:uart",
+        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
     ],
 )

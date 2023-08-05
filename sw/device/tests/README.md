@@ -24,7 +24,6 @@ While most of these tests are top-level agnostic, some are not.
 ## Subfoldering Rules
 *   Smoke tests will be placed in (one per IP):
     *   (generic) **sw/device/tests/**
-    *   (earlgrey-specific) **sw/device/tests/earlgrey/**
     *   ({toplevel}-specific) **sw/device/tests/{toplevel}/**
 *   IP Integration tests will be placed in the same folders as above.
 *   System-level tests will be placed in the same folders as above.
@@ -49,7 +48,7 @@ For instructions on how to write a chip-level test, refer to the [on-device test
 TBD
 
 ## IP Integration
-{{< incGenFromIpDesc "/hw/top_earlgrey/data/chip_testplan.hjson" "testplan" >}}
+{{< incGenFromIpDesc "/hw/top_darjeeling/data/chip_testplan.hjson" "testplan" >}}
 
 ## System-Level (Use Case)
 

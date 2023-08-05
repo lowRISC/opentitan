@@ -5,12 +5,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/testing/keymgr_testutils.h"
-#include "sw/device/lib/testing/otbn_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/ip/keymgr/dif/dif_keymgr.h"
+#include "sw/ip/keymgr/test/utils/keymgr_testutils.h"
 #include "sw/ip/otbn/dif/dif_otbn.h"
+#include "sw/ip/otbn/test/utils/otbn_testutils.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/runtime/hart.h"

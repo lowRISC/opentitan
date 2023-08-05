@@ -8,11 +8,11 @@
 // disabled and the clock counts are measured to confirm the frequencies are
 // back to what is expected when the external clock is not enabled.
 
-#include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/clkmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/ip/aon_timer/test/utils/aon_timer_testutils.h"
 #include "sw/ip/base/dif/dif_base.h"
 #include "sw/ip/clkmgr/dif/dif_clkmgr.h"
+#include "sw/ip/clkmgr/test/utils/clkmgr_testutils.h"
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/runtime/hart.h"
 #include "sw/lib/sw/device/runtime/ibex.h"

@@ -14,7 +14,6 @@ opentitan_functest(
         "//hw/top_darjeeling/ip/clkmgr/data/autogen:clkmgr_regs",
         "//hw/top_darjeeling/ip/pinmux/data/autogen:pinmux_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:clkmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:mmio",
         "//sw/lib/sw/device/runtime:hart",
@@ -25,6 +24,7 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:lc_ctrl",
         "//sw/top_darjeeling/sw/dif:rv_plic",
         "//sw/top_darjeeling/sw/dif:uart",
+        "//sw/top_darjeeling/sw/test/utils:clkmgr_testutils",
     ],
 )
 
@@ -36,9 +36,6 @@ opentitan_functest(
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
         "//hw/top_darjeeling/ip/clkmgr/data/autogen:clkmgr_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:i2c_testutils",
-        "//sw/device/lib/testing:isr_testutils",
-        "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:mmio",
         "//sw/lib/sw/device/runtime:hart",
@@ -48,6 +45,9 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:i2c",
         "//sw/top_darjeeling/sw/dif:pinmux",
         "//sw/top_darjeeling/sw/dif:rv_plic",
+        "//sw/top_darjeeling/sw/test/utils:i2c_testutils",
+        "//sw/top_darjeeling/sw/test/utils:isr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rand_testutils",
     ],
 )
 
@@ -57,11 +57,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
-        "//hw/top_darjeeling/ip/clkmgr/data/autogen:clkmgr_regs",
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:i2c_testutils",
-        "//sw/device/lib/testing:isr_testutils",
-        "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:mmio",
         "//sw/lib/sw/device/runtime:hart",
@@ -71,6 +66,9 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:i2c",
         "//sw/top_darjeeling/sw/dif:pinmux",
         "//sw/top_darjeeling/sw/dif:rv_plic",
+        "//sw/top_darjeeling/sw/test/utils:i2c_testutils",
+        "//sw/top_darjeeling/sw/test/utils:isr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rand_testutils",
     ],
 )
 
@@ -80,7 +78,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/base:mmio",
@@ -91,6 +88,7 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:kmac",
         "//sw/top_darjeeling/sw/dif:lc_ctrl",
         "//sw/top_darjeeling/sw/dif:otp_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
     ],
 )
 
@@ -105,8 +103,6 @@ opentitan_functest(
     test_in_rom = True,
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/lib/testing/test_rom:linker_script",
@@ -120,6 +116,8 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:lc_ctrl",
         "//sw/top_darjeeling/sw/dif:otp_ctrl",
         "//sw/top_darjeeling/sw/dif:uart",
+        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
     ],
 )
 
@@ -135,8 +133,6 @@ opentitan_functest(
     test_in_rom = True,
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/lib/testing/test_rom:linker_script",
@@ -148,6 +144,8 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:flash_ctrl",
         "//sw/top_darjeeling/sw/dif:uart",
+        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
     ],
 )
 
@@ -157,8 +155,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:pinmux_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:mmio",
@@ -168,6 +164,8 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:gpio",
         "//sw/top_darjeeling/sw/dif:rv_plic",
+        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
     ],
 )
 
@@ -193,7 +191,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:mmio",
         "//sw/lib/sw/device/runtime:ibex",
@@ -202,6 +199,7 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:pinmux",
         "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
     ],
 )
 
@@ -211,9 +209,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:mmio",
         "//sw/lib/sw/device/runtime:ibex",
@@ -223,6 +218,9 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:pwrmgr",
         "//sw/top_darjeeling/sw/dif:rstmgr",
         "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
     ],
 )
 
@@ -232,8 +230,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:mmio",
         "//sw/lib/sw/device/runtime:log",
@@ -242,6 +238,8 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:pwrmgr",
         "//sw/top_darjeeling/sw/dif:rstmgr",
         "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
     ],
 )
 
@@ -251,7 +249,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:mmio",
         "//sw/lib/sw/device/runtime:ibex",
@@ -259,6 +256,7 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:pinmux",
         "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
     ],
 )
 
@@ -268,8 +266,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:mmio",
         "//sw/lib/sw/device/runtime:ibex",
@@ -279,6 +275,8 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:pwrmgr",
         "//sw/top_darjeeling/sw/dif:rstmgr",
         "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
     ],
 )
 
@@ -288,7 +286,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:lc_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:bitfield",
@@ -297,6 +294,7 @@ opentitan_functest(
         "//sw/lib/sw/device/runtime:log",
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:lc_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:lc_ctrl_testutils",
     ],
 )
 
@@ -325,7 +323,6 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:lc_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/lib/sw/device/base:bitfield",
         "//sw/lib/sw/device/base:memory",
@@ -333,6 +330,7 @@ cc_library(
         "//sw/lib/sw/device/runtime:log",
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:lc_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:lc_ctrl_testutils",
     ],
 )
 
@@ -353,7 +351,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:lc_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:bitfield",
@@ -362,6 +359,7 @@ opentitan_functest(
         "//sw/lib/sw/device/runtime:log",
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:lc_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:lc_ctrl_testutils",
     ],
 )
 
@@ -371,8 +369,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:lc_ctrl_testutils",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ottf_test_config",
@@ -383,6 +379,8 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:lc_ctrl",
         "//sw/top_darjeeling/sw/dif:otp_ctrl",
         "//sw/top_darjeeling/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/test/utils:lc_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:otp_ctrl_testutils",
     ],
 )
 
@@ -392,8 +390,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:lc_ctrl_testutils",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:memory",
@@ -403,6 +399,8 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:lc_ctrl",
         "//sw/top_darjeeling/sw/dif:otp_ctrl",
         "//sw/top_darjeeling/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/test/utils:lc_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:otp_ctrl_testutils",
     ],
 )
 
@@ -412,12 +410,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:alert_handler_testutils",
-        "//sw/device/lib/testing:aon_timer_testutils",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:nv_counter_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:abs_mmio",
@@ -440,6 +432,12 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:rv_core_ibex",
         "//sw/top_darjeeling/sw/dif:rv_plic",
         "//sw/top_darjeeling/sw/dif:sram_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:alert_handler_testutils",
+        "//sw/top_darjeeling/sw/test/utils:aon_timer_testutils",
+        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:nv_counter_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
     ],
 )
 
@@ -449,12 +447,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:alert_handler_testutils",
-        "//sw/device/lib/testing:aon_timer_testutils",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:nv_counter_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/runtime:ibex",
@@ -467,6 +459,12 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:rv_core_ibex",
         "//sw/top_darjeeling/sw/dif:rv_plic",
         "//sw/top_darjeeling/sw/dif:sram_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:alert_handler_testutils",
+        "//sw/top_darjeeling/sw/test/utils:aon_timer_testutils",
+        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:nv_counter_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
     ],
 )
 
@@ -486,12 +484,12 @@ opentitan_functest(
     srcs = ["pwrmgr_main_power_glitch_test.c"],
     targets = ["dv"],
     deps = [
-        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:mmio",
         "//sw/lib/sw/device/runtime:log",
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
     ],
 )
 
@@ -501,8 +499,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:mmio",
@@ -510,6 +506,8 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:pwrmgr",
         "//sw/top_darjeeling/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
     ],
 )
 
@@ -519,8 +517,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:mmio",
@@ -528,6 +524,8 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:pwrmgr",
         "//sw/top_darjeeling/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
     ],
 )
 
@@ -537,12 +535,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:aon_timer_testutils",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:nv_counter_testutils",
-        "//sw/device/lib/testing:pinmux_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:abs_mmio",
@@ -555,6 +547,12 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:pwrmgr",
         "//sw/top_darjeeling/sw/dif:rstmgr",
         "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:aon_timer_testutils",
+        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:nv_counter_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
     ],
 )
 
@@ -564,14 +562,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:alert_handler_testutils",
-        "//sw/device/lib/testing:aon_timer_testutils",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:nv_counter_testutils",
-        "//sw/device/lib/testing:pinmux_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:abs_mmio",
@@ -587,6 +577,14 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:rv_plic",
         "//sw/top_darjeeling/sw/dif:rv_timer",
         "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:alert_handler_testutils",
+        "//sw/top_darjeeling/sw/test/utils:aon_timer_testutils",
+        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:nv_counter_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
     ],
 )
 
@@ -596,14 +594,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:alert_handler_testutils",
-        "//sw/device/lib/testing:aon_timer_testutils",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:nv_counter_testutils",
-        "//sw/device/lib/testing:pinmux_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:abs_mmio",
@@ -619,6 +609,14 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:rv_plic",
         "//sw/top_darjeeling/sw/dif:rv_timer",
         "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:alert_handler_testutils",
+        "//sw/top_darjeeling/sw/test/utils:aon_timer_testutils",
+        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:nv_counter_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
     ],
 )
 
@@ -628,14 +626,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:alert_handler_testutils",
-        "//sw/device/lib/testing:aon_timer_testutils",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:nv_counter_testutils",
-        "//sw/device/lib/testing:pinmux_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:abs_mmio",
@@ -651,6 +641,14 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:rv_plic",
         "//sw/top_darjeeling/sw/dif:rv_timer",
         "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:alert_handler_testutils",
+        "//sw/top_darjeeling/sw/test/utils:aon_timer_testutils",
+        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:nv_counter_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
     ],
 )
 
@@ -660,14 +658,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:alert_handler_testutils",
-        "//sw/device/lib/testing:aon_timer_testutils",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:nv_counter_testutils",
-        "//sw/device/lib/testing:pinmux_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:abs_mmio",
@@ -683,6 +673,14 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:rv_plic",
         "//sw/top_darjeeling/sw/dif:rv_timer",
         "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:alert_handler_testutils",
+        "//sw/top_darjeeling/sw/test/utils:aon_timer_testutils",
+        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:nv_counter_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
     ],
 )
 
@@ -691,7 +689,6 @@ opentitan_functest(
     srcs = ["pwrmgr_usbdev_smoketest.c"],
     targets = ["dv"],
     deps = [
-        "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:mmio",
         "//sw/lib/sw/device/runtime:hart",
@@ -699,6 +696,7 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:pwrmgr",
         "//sw/top_darjeeling/sw/dif:usbdev",
+        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
     ],
 )
 
@@ -708,13 +706,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:alert_handler_testutils",
-        "//sw/device/lib/testing:aon_timer_testutils",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:pinmux_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:abs_mmio",
@@ -731,6 +722,13 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:rv_plic",
         "//sw/top_darjeeling/sw/dif:rv_timer",
         "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:alert_handler_testutils",
+        "//sw/top_darjeeling/sw/test/utils:aon_timer_testutils",
+        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
     ],
 )
 
@@ -757,10 +755,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:isr_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rand_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:mmio",
         "//sw/lib/sw/device/runtime:irq",
@@ -769,6 +763,10 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:pinmux",
         "//sw/top_darjeeling/sw/dif:pwrmgr",
         "//sw/top_darjeeling/sw/dif:rv_plic",
+        "//sw/top_darjeeling/sw/test/utils:isr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rand_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
     ],
 )
 
@@ -778,11 +776,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:isr_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rand_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:mmio",
         "//sw/lib/sw/device/runtime:irq",
@@ -792,6 +785,11 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:pinmux",
         "//sw/top_darjeeling/sw/dif:pwrmgr",
         "//sw/top_darjeeling/sw/dif:rv_plic",
+        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:isr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rand_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
     ],
 )
 
@@ -801,10 +799,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:isr_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rand_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:mmio",
         "//sw/lib/sw/device/runtime:irq",
@@ -814,6 +808,10 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:pinmux",
         "//sw/top_darjeeling/sw/dif:pwrmgr",
         "//sw/top_darjeeling/sw/dif:rv_plic",
+        "//sw/top_darjeeling/sw/test/utils:isr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rand_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
     ],
 )
 
@@ -843,7 +841,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/lib/sw/device/arch:device",
@@ -855,6 +852,7 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:pinmux",
         "//sw/top_darjeeling/sw/dif:rv_plic",
         "//sw/top_darjeeling/sw/dif:spi_device",
+        "//sw/top_darjeeling/sw/test/utils:isr_testutils",
     ],
 )
 
@@ -864,8 +862,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:pinmux_testutils",
-        "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:mmio",
         "//sw/lib/sw/device/runtime:hart",
@@ -874,6 +870,8 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:pinmux",
         "//sw/top_darjeeling/sw/dif:spi_host",
+        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rand_testutils",
     ],
 )
 
@@ -883,9 +881,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:pinmux_testutils",
-        "//sw/device/lib/testing:spi_device_testutils",
-        "//sw/device/lib/testing:spi_flash_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:bitfield",
@@ -898,6 +893,9 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:rv_plic",
         "//sw/top_darjeeling/sw/dif:spi_device",
         "//sw/top_darjeeling/sw/dif:spi_host",
+        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
+        "//sw/top_darjeeling/sw/test/utils:spi_device_testutils",
+        "//sw/top_darjeeling/sw/test/utils:spi_flash_testutils",
     ],
 )
 
@@ -913,7 +911,6 @@ opentitan_functest(
         "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//hw/top_darjeeling/ip/pinmux/data/autogen:pinmux_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:mmio",
@@ -927,6 +924,7 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:pinmux",
         "//sw/top_darjeeling/sw/dif:rstmgr",
         "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
     ],
 )
 
@@ -936,13 +934,13 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/runtime:hart",
         "//sw/lib/sw/device/runtime:log",
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
     ],
 )
 
@@ -953,9 +951,6 @@ opentitan_functest(
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:lc_ctrl_testutils",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
-        "//sw/device/lib/testing:sram_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/lib/sw/device/base:bitfield",
@@ -965,6 +960,9 @@ opentitan_functest(
         "//sw/lib/sw/device/runtime:log",
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:sram_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:lc_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:otp_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:sram_ctrl_testutils",
     ],
 )
 
@@ -976,8 +974,6 @@ opentitan_functest(
         "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
         "//hw/top_darjeeling/ip/rstmgr/data/autogen:rstmgr_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:rstmgr_testutils",
-        "//sw/device/lib/testing:sram_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/base:mmio",
@@ -986,6 +982,8 @@ opentitan_functest(
         "//sw/lib/sw/device/runtime:log",
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:sram_ctrl_testutils",
     ],
 )
 
@@ -997,10 +995,6 @@ cc_library(
     deps = [
         "//hw/top_darjeeling/ip/pwrmgr/data/autogen:pwrmgr_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:aon_timer_testutils",
-        "//sw/device/lib/testing:isr_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:mmio",
         "//sw/lib/sw/device/runtime:ibex",
@@ -1013,6 +1007,10 @@ cc_library(
         "//sw/top_darjeeling/sw/dif:rv_plic",
         "//sw/top_darjeeling/sw/dif:sensor_ctrl",
         "//sw/top_darjeeling/sw/dif:usbdev",
+        "//sw/top_darjeeling/sw/test/utils:aon_timer_testutils",
+        "//sw/top_darjeeling/sw/test/utils:isr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
     ],
 )
 
@@ -1023,15 +1021,15 @@ opentitan_functest(
     deps = [
         "//hw/top_darjeeling/ip/pwrmgr/data/autogen:pwrmgr_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:aon_timer_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/tests/sim_dv:pwrmgr_sleep_all_wake_ups_impl",
         "//sw/lib/sw/device/runtime:irq",
         "//sw/lib/sw/device/runtime:log",
         "//sw/top_darjeeling/sw/dif:pwrmgr",
         "//sw/top_darjeeling/sw/dif:rv_plic",
+        "//sw/top_darjeeling/sw/test/utils:aon_timer_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
     ],
 )
 
@@ -1042,18 +1040,18 @@ opentitan_functest(
     deps = [
         "//hw/top_darjeeling/ip/pwrmgr/data/autogen:pwrmgr_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:aon_timer_testutils",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:isr_testutils",
-        "//sw/device/lib/testing:nv_counter_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/tests/sim_dv:pwrmgr_sleep_all_wake_ups_impl",
         "//sw/lib/sw/device/runtime:irq",
         "//sw/lib/sw/device/runtime:log",
         "//sw/top_darjeeling/sw/dif:pwrmgr",
         "//sw/top_darjeeling/sw/dif:rv_plic",
+        "//sw/top_darjeeling/sw/test/utils:aon_timer_testutils",
+        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:isr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:nv_counter_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
     ],
 )
 
@@ -1064,18 +1062,18 @@ opentitan_functest(
     deps = [
         "//hw/top_darjeeling/ip/pwrmgr/data/autogen:pwrmgr_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:aon_timer_testutils",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:isr_testutils",
-        "//sw/device/lib/testing:nv_counter_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/tests/sim_dv:pwrmgr_sleep_all_wake_ups_impl",
         "//sw/lib/sw/device/runtime:irq",
         "//sw/lib/sw/device/runtime:log",
         "//sw/top_darjeeling/sw/dif:pwrmgr",
         "//sw/top_darjeeling/sw/dif:rv_plic",
+        "//sw/top_darjeeling/sw/test/utils:aon_timer_testutils",
+        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:isr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:nv_counter_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
     ],
 )
 
@@ -1085,9 +1083,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:isr_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:mmio",
@@ -1099,6 +1094,9 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:pwrmgr",
         "//sw/top_darjeeling/sw/dif:rstmgr",
         "//sw/top_darjeeling/sw/dif:rv_plic",
+        "//sw/top_darjeeling/sw/test/utils:isr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
     ],
 )
 
@@ -1109,11 +1107,6 @@ opentitan_functest(
     deps = [
         "//hw/ip/aon_timer/data:aon_timer_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:aon_timer_testutils",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:nv_counter_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:mmio",
@@ -1124,6 +1117,11 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:pwrmgr",
         "//sw/top_darjeeling/sw/dif:rstmgr",
         "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:aon_timer_testutils",
+        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:nv_counter_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
     ],
 )
 
@@ -1134,8 +1132,6 @@ opentitan_functest(
     deps = [
         "//hw/top_darjeeling/ip/sensor_ctrl/data:sensor_ctrl_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:isr_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:memory",
@@ -1147,6 +1143,8 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:rv_plic",
         "//sw/top_darjeeling/sw/dif:sensor_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:isr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
     ],
 )
 
@@ -1157,9 +1155,6 @@ opentitan_functest(
     deps = [
         "//hw/top_darjeeling:alert_handler_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:alert_handler_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:memory",
@@ -1173,6 +1168,9 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:keymgr",
         "//sw/top_darjeeling/sw/dif:rstmgr",
         "//sw/top_darjeeling/sw/dif:rv_core_ibex",
+        "//sw/top_darjeeling/sw/test/utils:alert_handler_testutils",
+        "//sw/top_darjeeling/sw/test/utils:keymgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
     ],
 )
 
@@ -1183,7 +1181,6 @@ opentitan_functest(
     deps = [
         "//hw/top_darjeeling:alert_handler_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:memory",
@@ -1192,6 +1189,7 @@ opentitan_functest(
         "//sw/lib/sw/device/runtime:log",
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:alert_handler",
+        "//sw/top_darjeeling/sw/test/utils:alert_handler_testutils",
     ],
 )
 
@@ -1201,12 +1199,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:alert_handler_testutils",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:lc_ctrl_testutils",
-        "//sw/device/lib/testing:nv_counter_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/arch:device",
@@ -1225,6 +1217,12 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:rv_core_ibex",
         "//sw/top_darjeeling/sw/dif:rv_plic",
         "//sw/top_darjeeling/sw/dif:sram_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:alert_handler_testutils",
+        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:lc_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:nv_counter_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
     ],
 )
 
@@ -1234,8 +1232,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/ip/base/dif:base",
         "//sw/lib/sw/device/base:memory",
@@ -1244,6 +1240,8 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:entropy_src",
         "//sw/top_darjeeling/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/test/utils:otp_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
     ],
 )
 
@@ -1254,7 +1252,6 @@ opentitan_functest(
     deps = [
         "//hw/top_darjeeling/ip/ast/data:ast_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:clkmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/ip/base/dif:base",
         "//sw/lib/sw/device/base:memory",
@@ -1264,6 +1261,7 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:clkmgr",
         "//sw/top_darjeeling/sw/dif:pinmux",
         "//sw/top_darjeeling/sw/dif:usbdev",
+        "//sw/top_darjeeling/sw/test/utils:clkmgr_testutils",
     ],
 )
 
@@ -1273,9 +1271,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:csrng_testutils",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/ip/base/dif:base",
         "//sw/lib/sw/device/base:memory",
@@ -1284,6 +1279,9 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:csrng",
         "//sw/top_darjeeling/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/test/utils:csrng_testutils",
+        "//sw/top_darjeeling/sw/test/utils:otp_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
     ],
 )
 
@@ -1292,12 +1290,6 @@ opentitan_functest(
     srcs = ["csrng_lc_hw_debug_en_test.c"],
     targets = ["dv"],
     deps = [
-        "//sw/device/lib/testing:csrng_testutils",
-        "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
-        "//sw/device/lib/testing:rand_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/base:mmio",
@@ -1310,6 +1302,12 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:lc_ctrl",
         "//sw/top_darjeeling/sw/dif:otp_ctrl",
         "//sw/top_darjeeling/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/test/utils:csrng_testutils",
+        "//sw/top_darjeeling/sw/test/utils:entropy_testutils",
+        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:otp_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rand_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
     ],
 )
 
@@ -1321,10 +1319,6 @@ opentitan_functest(
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
-        "//sw/device/lib/testing:rand_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:mmio",
@@ -1335,6 +1329,10 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:flash_ctrl",
         "//sw/top_darjeeling/sw/dif:otp_ctrl",
         "//sw/top_darjeeling/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:otp_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rand_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
     ],
 )
 
@@ -1361,11 +1359,6 @@ opentitan_functest(
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:keymgr_testutils",
-        "//sw/device/lib/testing:kmac_testutils",
-        "//sw/device/lib/testing:lc_ctrl_testutils",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ottf_test_config",
@@ -1381,6 +1374,11 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:lc_ctrl",
         "//sw/top_darjeeling/sw/dif:otp_ctrl",
         "//sw/top_darjeeling/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/test/utils:keymgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:kmac_testutils",
+        "//sw/top_darjeeling/sw/test/utils:lc_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:otp_ctrl_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
     ],
 )
 
@@ -1391,13 +1389,6 @@ opentitan_functest(
     deps = [
         "//hw/top_darjeeling/ip/sensor_ctrl/data:sensor_ctrl_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:alert_handler_testutils",
-        "//sw/device/lib/testing:aon_timer_testutils",
-        "//sw/device/lib/testing:clkmgr_testutils",
-        "//sw/device/lib/testing:isr_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:memory",
         "//sw/lib/sw/device/base:mmio",
@@ -1412,5 +1403,12 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:rstmgr",
         "//sw/top_darjeeling/sw/dif:rv_plic",
         "//sw/top_darjeeling/sw/dif:sensor_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:alert_handler_testutils",
+        "//sw/top_darjeeling/sw/test/utils:aon_timer_testutils",
+        "//sw/top_darjeeling/sw/test/utils:clkmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:isr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
+        "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
     ],
 )
