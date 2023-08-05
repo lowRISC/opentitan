@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/testing/hmac_testutils.h"
+#include "sw/ip/hmac/test/utils/hmac_testutils.h"
 
 #include <stdbool.h>
 

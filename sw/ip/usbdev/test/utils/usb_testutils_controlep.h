@@ -9,7 +9,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/testing/usb_testutils.h"
+#include "sw/ip/usbdev/test/utils/usb_testutils.h"
 
 // DPI test numbers
 typedef enum usb_testutils_test_number {

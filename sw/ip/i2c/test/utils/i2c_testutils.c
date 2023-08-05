@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/testing/i2c_testutils.h"
+#include "sw/ip/i2c/test/utils/i2c_testutils.h"
 
 #include <assert.h>
 #include <stdbool.h>

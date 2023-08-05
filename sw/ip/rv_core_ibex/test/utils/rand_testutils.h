@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/testing/rv_core_ibex_testutils.h"
+#include "sw/ip/rv_core_ibex/test/utils/rv_core_ibex_testutils.h"
 
 /**
  * A random number generator testutil type.

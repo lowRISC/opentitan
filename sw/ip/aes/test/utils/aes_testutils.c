@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/testing/aes_testutils.h"
+#include "sw/ip/aes/test/utils/aes_testutils.h"
 
 #if !OT_IS_ENGLISH_BREAKFAST
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/testing/csrng_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/csrng/dif/dif_csrng.h"
 #include "sw/ip/csrng/dif/shared/dif_csrng_shared.h"
+#include "sw/ip/csrng/test/utils/csrng_testutils.h"
 #include "sw/ip/edn/dif/dif_edn.h"
 
 #include "csrng_regs.h"  // Generated

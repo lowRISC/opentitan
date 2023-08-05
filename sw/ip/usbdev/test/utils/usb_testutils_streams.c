@@ -12,11 +12,11 @@
 // independently, by the receiving code to check that the data has been
 // propagated unmodified and without data loss, corruption, replication etc.
 
-#include "sw/device/lib/testing/usb_testutils_streams.h"
+#include "sw/ip/usbdev/test/utils/usb_testutils_streams.h"
 
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/lib/testing/usb_testutils_diags.h"
+#include "sw/ip/usbdev/test/utils/usb_testutils_diags.h"
 
 /**
  * Read method to be employed

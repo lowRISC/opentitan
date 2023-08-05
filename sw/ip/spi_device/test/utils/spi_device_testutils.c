@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/testing/spi_device_testutils.h"
+#include "sw/ip/spi_device/test/utils/spi_device_testutils.h"
 
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/spi_device/dif/dif_spi_device.h"

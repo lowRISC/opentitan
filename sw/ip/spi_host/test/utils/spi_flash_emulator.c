@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/testing/spi_flash_emulator.h"
+#include "sw/ip/spi_host/test/utils/spi_flash_emulator.h"
 
 #include <stdalign.h>
 #include <stdint.h>
@@ -10,8 +10,8 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/spi_device_testutils.h"
-#include "sw/device/lib/testing/spi_flash_testutils.h"
+#include "sw/ip/spi_device/test/utils/spi_device_testutils.h"
+#include "sw/ip/spi_host/test/utils/spi_flash_testutils.h"
 
 enum {
   // JEDEC standard continuation code.

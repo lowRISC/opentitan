@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/testing/sensor_ctrl_testutils.h"
+#include "sw/ip/sensor_ctrl/test/utils/sensor_ctrl_testutils.h"
 
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/sensor_ctrl/dif/dif_sensor_ctrl.h"

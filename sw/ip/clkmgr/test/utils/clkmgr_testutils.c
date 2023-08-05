@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/testing/clkmgr_testutils.h"
+#include "sw/ip/clkmgr/test/utils/clkmgr_testutils.h"
 
 #include "sw/device/lib/base/math.h"
 #include "sw/ip/clkmgr/dif/dif_clkmgr.h"

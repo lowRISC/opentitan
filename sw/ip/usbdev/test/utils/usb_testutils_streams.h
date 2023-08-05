@@ -7,7 +7,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/testing/usb_testutils.h"
+#include "sw/ip/usbdev/test/utils/usb_testutils.h"
 
 // Maximum number of concurrent streams
 #ifndef USBUTILS_STREAMS_MAX
