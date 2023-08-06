@@ -1537,7 +1537,6 @@
         SiliconCreatorId: 16'h 0001
         ProductId: 16'h 4000
         RevisionId: 8'h 01
-        IdcodeValue: jtag_id_pkg::LC_CTRL_JTAG_IDCODE
       }
       clock_connections:
       {
@@ -1633,28 +1632,36 @@
           expose: "true"
           name_top: LcCtrlRevisionId
         }
-        {
-          name: IdcodeValue
-          desc: JTAG ID code.
-          type: logic [31:0]
-          default: jtag_id_pkg::LC_CTRL_JTAG_IDCODE
-          expose: "true"
-          name_top: LcCtrlIdcodeValue
-        }
       ]
       inter_signal_list:
       [
         {
-          name: jtag
-          struct: jtag
-          package: jtag_pkg
-          type: req_rsp
-          act: rsp
+          name: dmi_tl_h2d
+          desc: TL-UL-based DMI request input port
+          struct: tl_h2d
+          package: tlul_pkg
+          type: uni
+          act: rcv
           width: 1
           inst_name: lc_ctrl
           default: ""
           external: true
-          top_signame: lc_jtag
+          top_signame: lc_ctrl_dmi_h2d
+          conn_type: false
+          index: -1
+        }
+        {
+          name: dmi_tl_d2h
+          desc: TL-UL-based DMI response output port
+          struct: tl_d2h
+          package: tlul_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: lc_ctrl
+          default: ""
+          external: true
+          top_signame: lc_ctrl_dmi_d2h
           conn_type: false
           index: -1
         }
@@ -8677,7 +8684,8 @@
       flash_ctrl.fla_obs: flash_obs
       entropy_src.entropy_src_rng: es_rng
       entropy_src.rng_fips: es_rng_fips
-      lc_ctrl.jtag: lc_jtag
+      lc_ctrl.dmi_tl_h2d: lc_ctrl_dmi_h2d
+      lc_ctrl.dmi_tl_d2h: lc_ctrl_dmi_d2h
       pwrmgr_aon.strap: pwrmgr_strap_en
       rv_dm.jtag: rv_jtag
       rv_dm.pinmux_hw_debug_en: rv_pinmux_hw_debug_en
@@ -15760,16 +15768,32 @@
         index: -1
       }
       {
-        name: jtag
-        struct: jtag
-        package: jtag_pkg
-        type: req_rsp
-        act: rsp
+        name: dmi_tl_h2d
+        desc: TL-UL-based DMI request input port
+        struct: tl_h2d
+        package: tlul_pkg
+        type: uni
+        act: rcv
         width: 1
         inst_name: lc_ctrl
         default: ""
         external: true
-        top_signame: lc_jtag
+        top_signame: lc_ctrl_dmi_h2d
+        conn_type: false
+        index: -1
+      }
+      {
+        name: dmi_tl_d2h
+        desc: TL-UL-based DMI response output port
+        struct: tl_d2h
+        package: tlul_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: lc_ctrl
+        default: ""
+        external: true
+        top_signame: lc_ctrl_dmi_d2h
         conn_type: false
         index: -1
       }
@@ -20613,28 +20637,28 @@
         netname: es_rng_fips
       }
       {
-        package: jtag_pkg
-        struct: jtag_req
-        signame: lc_jtag_req_i
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: lc_ctrl_dmi_h2d_i
         width: 1
-        type: req_rsp
+        type: uni
         default: ""
         direction: in
         conn_type: false
         index: -1
-        netname: lc_jtag_req
+        netname: lc_ctrl_dmi_h2d
       }
       {
-        package: jtag_pkg
-        struct: jtag_rsp
-        signame: lc_jtag_rsp_o
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: lc_ctrl_dmi_d2h_o
         width: 1
-        type: req_rsp
+        type: uni
         default: ""
         direction: out
         conn_type: false
         index: -1
-        netname: lc_jtag_rsp
+        netname: lc_ctrl_dmi_d2h
       }
       {
         package: ""

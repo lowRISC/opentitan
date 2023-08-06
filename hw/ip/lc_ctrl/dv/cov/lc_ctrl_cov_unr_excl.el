@@ -10,7 +10,7 @@
 // ExclMode: default
 //==================================================
 CHECKSUM: "617078566 378857456"
-INSTANCE: tb.dut.u_reg_tap.u_reg_if.u_err
+INSTANCE: tb.dut.u_reg_dmi.u_reg_if.u_err
 ANNOTATION: "VC_COV_UNR"
 Condition 1 "4001409645" "(tl_i.a_address[1] ? ((~|(tl_i.a_mask & 4'b0011))) : ((~|(tl_i.a_mask & 4'b1100)))) 1 -1" (1 "0")
 ANNOTATION: "VC_COV_UNR"
@@ -42,7 +42,7 @@ Condition 13 "1204832585" "(addr_sz_chk & mask_chk & (op_get | op_partial | full
 ANNOTATION: "VC_COV_UNR"
 Condition 14 "2774296200" "(op_get | op_partial | fulldata_chk) 1 -1" (3 "010")
 CHECKSUM: "2802010327 966964350"
-INSTANCE: tb.dut.u_reg_tap
+INSTANCE: tb.dut.u_reg_dmi
 ANNOTATION: "VC_COV_UNR"
 Condition 1 "258898769" "(intg_err || reg_we_err) 1 -1" (3 "10")
 ANNOTATION: "VC_COV_UNR"
@@ -354,13 +354,13 @@ Condition 131 "1752759267" "(addr_hit[34] & reg_re & ((!reg_error))) 1 -1" (3 "1
 CHECKSUM: "4147888352 3094017812"
 INSTANCE: tb.dut
 ANNOTATION: "VC_COV_UNR"
-Condition 12 "1251741960" "(fatal_bus_integ_error_csr_d | fatal_bus_integ_error_tap_d | fatal_bus_integ_error_q) 1 -1" (2 "001")
+Condition 12 "1251741960" "(fatal_bus_integ_error_csr_d | fatal_bus_integ_error_dmi_d | fatal_bus_integ_error_q) 1 -1" (2 "001")
 CHECKSUM: "74367784 3785313510"
 INSTANCE: tb.dut.u_reg.u_reg_if
 ANNOTATION: "VC_COV_UNR"
 Condition 18 "3340270436" "(addr_align_err | malformed_meta_err | tl_err | instr_error | intg_error) 1 -1" (5 "01000")
 CHECKSUM: "74367784 3785313510"
-INSTANCE: tb.dut.u_reg_tap.u_reg_if
+INSTANCE: tb.dut.u_reg_dmi.u_reg_if
 ANNOTATION: "VC_COV_UNR"
 Condition 3 "2201410814" "(error_i || err_internal || wr_req) 1 -1" (3 "010")
 ANNOTATION: "VC_COV_UNR"
@@ -384,24 +384,6 @@ Condition 18 "3340270436" "(addr_align_err | malformed_meta_err | tl_err | instr
 ANNOTATION: "VC_COV_UNR"
 Condition 18 "3340270436" "(addr_align_err | malformed_meta_err | tl_err | instr_error | intg_error) 1 -1" (6 "10000")
 CHECKSUM: "2344099384 1131983231"
-INSTANCE: tb.dut.u_tap_tlul_host
-ANNOTATION: "VC_COV_UNR"
-Condition 1 "3292310999" "(req_i && gnt_o) 1 -1" (2 "10")
-ANNOTATION: "VC_COV_UNR"
-Condition 6 "1833040053" "(tl_i.d_error | intg_err) 1 -1" (2 "01")
-ANNOTATION: "VC_COV_UNR"
-Condition 7 "3076816343" "(intg_err_q | intg_err) 1 -1" (2 "01")
-ANNOTATION: "VC_COV_UNR"
-Condition 7 "3076816343" "(intg_err_q | intg_err) 1 -1" (3 "10")
-CHECKSUM: "1227054160 2112005895"
-INSTANCE: tb.dut.u_tap_tlul_host.u_rsp_chk
-ANNOTATION: "VC_COV_UNR"
-Condition 1 "1335100549" "(tl_i.d_valid & (((|rsp_err)) | rsp_data_err)) 1 -1" (1 "01")
-ANNOTATION: "VC_COV_UNR"
-Condition 1 "1335100549" "(tl_i.d_valid & (((|rsp_err)) | rsp_data_err)) 1 -1" (3 "11")
-ANNOTATION: "VC_COV_UNR"
-Condition 2 "871061566" "(((|rsp_err)) | rsp_data_err) 1 -1" (3 "10")
-CHECKSUM: "2580972288 547113095"
 INSTANCE: tb.dut.u_lc_ctrl_fsm
 ANNOTATION: "VC_COV_UNR"
 Condition 4 "3444895930" "((lc_state_q == LcStRaw) && (trans_target_i == {lc_ctrl_state_pkg::DecLcStateNumRep {DecLcStTestUnlocked0}}) && ((!trans_invalid_error_o))) 1 -1" (1 "011")

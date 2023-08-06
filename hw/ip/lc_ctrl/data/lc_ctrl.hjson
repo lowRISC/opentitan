@@ -27,8 +27,8 @@
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
-  scan: "true", // Enable `scanmode_i` port
-  scan_reset: "true", // Enable `scan_rst_ni` port
+  scan: "false", // Enable `scanmode_i` port
+  scan_reset: "false", // Enable `scan_rst_ni` port
   regwidth: "32",
 
 
@@ -135,13 +135,6 @@
       local:   "false",
       expose:  "true"
     }
-    { name:    "IdcodeValue",
-      desc:    "JTAG ID code.",
-      type:    "logic [31:0]",
-      default: "32'h00000001",
-      local:   "false",
-      expose:  "true"
-    }
     // Regular parameters
     { name:    "NumTokenWords",
       desc:    "Number of 32bit words in a token.",
@@ -198,12 +191,24 @@
   /////////////////////////////
 
   inter_signal_list: [
-    // life cycle JTAG TAP
-    { struct:  "jtag"
-      type:    "req_rsp"
-      name:    "jtag"
-      act:     "rsp"
-      package: "jtag_pkg"
+    // TL-UL-based DMI
+    { struct:  "tl_h2d"
+      package: "tlul_pkg"
+      type:    "uni"
+      name:    "dmi_tl_h2d"
+      act:     "rcv"
+      desc:    '''
+               TL-UL-based DMI request input port
+               '''
+    }
+    { struct:  "tl_d2h"
+      package: "tlul_pkg"
+      type:    "uni"
+      name:    "dmi_tl_d2h"
+      act:     "req"
+      desc:    '''
+               TL-UL-based DMI response output port
+               '''
     }
     // Escalation inputs from alert handler
     { struct:  "esc_tx"
@@ -237,7 +242,7 @@
       act:     "rsp",
       package: "pwrmgr_pkg",
     },
-    // Macro-specific test signals to/from LC TAP
+    // Macro-specific test signals to/from LC DMI
     { struct:  "lc_otp_vendor_test"
       type:    "req_rsp"
       name:    "lc_otp_vendor_test"
@@ -803,7 +808,7 @@
         desc:     '''
                   128bit token for conditional transitions.
                   Make sure to set this to 0 for unconditional transitions.
-                  Note that this register is shared with the life cycle TAP interface.
+                  Note that this register is shared with the life cycle DMI interface.
                   In order to have exclusive access to this register, SW must first claim the associated
                   hardware mutex via !!CLAIM_TRANSITION_IF.
                   ''',
@@ -838,7 +843,7 @@
                 The 5bit state enum is repeated 6x so that it fills the entire 32bit register.
                 The encoding is straightforward replication: [val, val, val, val, val, val].
 
-                Note that this register is shared with the life cycle TAP interface.
+                Note that this register is shared with the life cycle DMI interface.
                 In order to have exclusive access to this register, SW must first claim the associated
                 hardware mutex via !!CLAIM_TRANSITION_IF.
                 '''

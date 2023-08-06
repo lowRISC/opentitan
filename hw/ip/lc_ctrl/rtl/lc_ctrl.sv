@@ -18,8 +18,6 @@ module lc_ctrl
   parameter logic [SiliconCreatorIdWidth-1:0] SiliconCreatorId = '0,
   parameter logic [ProductIdWidth-1:0]        ProductId        = '0,
   parameter logic [RevisionIdWidth-1:0]       RevisionId       = '0,
-  // Idcode value for the JTAG.
-  parameter logic [31:0] IdcodeValue = 32'h00000001,
   // Random netlist constants
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivInvalid    = LcKeymgrDivWidth'(0),
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivTestDevRma = LcKeymgrDivWidth'(1),
@@ -36,12 +34,9 @@ module lc_ctrl
   // Bus Interface (device)
   input  tlul_pkg::tl_h2d_t                          tl_i,
   output tlul_pkg::tl_d2h_t                          tl_o,
-  // JTAG TAP.
-  input  jtag_pkg::jtag_req_t                        jtag_i,
-  output jtag_pkg::jtag_rsp_t                        jtag_o,
-  // This bypasses the clock inverter inside the JTAG TAP for scanmmode.
-  input                                              scan_rst_ni,
-  input  prim_mubi_pkg::mubi4_t                      scanmode_i,
+  // TL-UL-based DMI
+  input  tlul_pkg::tl_h2d_t                          dmi_tl_h2d_i,
+  output tlul_pkg::tl_d2h_t                          dmi_tl_d2h_o,
   // Alert outputs.
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0]  alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0]  alert_tx_o,
@@ -59,7 +54,7 @@ module lc_ctrl
   // Otherwise this output is tied off to 0.
   output logic                                       strap_en_override_o,
   // Strap override - this is only used when
-  // Macro-specific test registers going to lifecycle TAP
+  // Macro-specific test registers going to lifecycle DMI
   output otp_ctrl_pkg::lc_otp_vendor_test_req_t      lc_otp_vendor_test_o,
   input  otp_ctrl_pkg::lc_otp_vendor_test_rsp_t      lc_otp_vendor_test_i,
   // Life cycle transition command interface.
@@ -134,7 +129,7 @@ module lc_ctrl
   lc_ctrl_reg_pkg::lc_ctrl_hw2reg_t hw2reg;
 
   // SEC_CM: TRANSITION.CONFIG.REGWEN, STATE.CONFIG.SPARSE
-  logic fatal_bus_integ_error_q, fatal_bus_integ_error_csr_d, fatal_bus_integ_error_tap_d;
+  logic fatal_bus_integ_error_q, fatal_bus_integ_error_csr_d, fatal_bus_integ_error_dmi_d;
   lc_ctrl_reg_top u_reg (
     .clk_i,
     .rst_ni,
@@ -147,132 +142,24 @@ module lc_ctrl
     .devmode_i ( 1'b1                        )
   );
 
-  ////////////////////
-  // Life Cycle TAP //
-  ////////////////////
+  /////////////////////////
+  // Life Cycle DMI Regs //
+  /////////////////////////
 
-  tlul_pkg::tl_h2d_t tap_tl_h2d;
-  tlul_pkg::tl_d2h_t tap_tl_d2h;
-  lc_ctrl_reg_pkg::lc_ctrl_reg2hw_t tap_reg2hw;
-  lc_ctrl_reg_pkg::lc_ctrl_hw2reg_t tap_hw2reg;
+  lc_ctrl_reg_pkg::lc_ctrl_reg2hw_t dmi_reg2hw;
+  lc_ctrl_reg_pkg::lc_ctrl_hw2reg_t dmi_hw2reg;
 
-  lc_ctrl_reg_top u_reg_tap (
+  lc_ctrl_reg_top u_reg_dmi (
     .clk_i,
     .rst_ni,
-    .tl_i      ( tap_tl_h2d                  ),
-    .tl_o      ( tap_tl_d2h                  ),
-    .reg2hw    ( tap_reg2hw                  ),
-    .hw2reg    ( tap_hw2reg                  ),
+    .tl_i      ( dmi_tl_h2d_i                ),
+    .tl_o      ( dmi_tl_d2h_o                ),
+    .reg2hw    ( dmi_reg2hw                  ),
+    .hw2reg    ( dmi_hw2reg                  ),
     // SEC_CM: BUS.INTEGRITY
-    // While the TAP does not have bus integrity, it does have a WE checker
-    // that feeds into intg_err_o - hence this is wired up to the fatal_bus_integ_error.
-    .intg_err_o( fatal_bus_integ_error_tap_d ),
+    .intg_err_o( fatal_bus_integ_error_dmi_d ),
     .devmode_i ( 1'b1                        )
   );
-
-
-  // This reuses the JTAG DTM and DMI from the RISC-V external
-  // debug v0.13 specification to read and write the lc_ctrl CSRs:
-  // https://github.com/riscv/riscv-debug-spec/blob/release/riscv-debug-release.pdf
-  // The register addresses correspond to the byte offsets of the lc_ctrl CSRs, divided by 4.
-  // Note that the DMI reset does not affect the LC controller in any way.
-  dm::dmi_req_t dmi_req;
-  logic dmi_req_valid;
-  logic dmi_req_ready;
-  dm::dmi_resp_t dmi_resp;
-  logic dmi_resp_ready;
-  logic dmi_resp_valid;
-
-  logic scanmode;
-  prim_mubi4_dec u_prim_mubi4_dec (
-    .mubi_i(scanmode_i),
-    .mubi_dec_o(scanmode)
-  );
-
-  logic tck_muxed;
-  logic trst_n_muxed;
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_prim_clock_mux2 (
-    .clk0_i(jtag_i.tck),
-    .clk1_i(clk_i),
-    .sel_i (scanmode),
-    .clk_o (tck_muxed)
-  );
-
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_prim_rst_n_mux2 (
-    .clk0_i(jtag_i.trst_n),
-    .clk1_i(scan_rst_ni),
-    .sel_i (scanmode),
-    .clk_o (trst_n_muxed)
-  );
-
-  logic req_ready;
-  assign req_ready = dmi_req_ready & dmi_resp_ready;
-  dmi_jtag #(
-    .IdcodeValue(IdcodeValue)
-  ) u_dmi_jtag (
-    .clk_i,
-    .rst_ni,
-    .testmode_i       ( scanmode          ),
-    .test_rst_ni      ( scan_rst_ni       ),
-    .dmi_rst_no       (                   ), // unused
-    .dmi_req_o        ( dmi_req           ),
-    .dmi_req_valid_o  ( dmi_req_valid     ),
-    // unless there is room for response, stall
-    .dmi_req_ready_i  ( req_ready         ),
-    .dmi_resp_i       ( dmi_resp          ),
-    .dmi_resp_ready_o ( dmi_resp_ready    ),
-    .dmi_resp_valid_i ( dmi_resp_valid    ),
-    .tck_i            ( tck_muxed         ),
-    .tms_i            ( jtag_i.tms        ),
-    .trst_ni          ( trst_n_muxed      ),
-    .td_i             ( jtag_i.tdi        ),
-    .td_o             ( jtag_o.tdo        ),
-    .tdo_oe_o         ( jtag_o.tdo_oe     )
-  );
-
-  // DMI to TL-UL transducing
-  tlul_adapter_host #(
-    .EnableDataIntgGen(1)
-  ) u_tap_tlul_host (
-    .clk_i,
-    .rst_ni,
-    // do not make a request unless there is room for the response
-    .req_i        ( dmi_req_valid & dmi_resp_ready         ),
-    .gnt_o        ( dmi_req_ready                          ),
-    .addr_i       ( top_pkg::TL_AW'({dmi_req.addr, 2'b00}) ),
-    .we_i         ( dmi_req.op == dm::DTM_WRITE            ),
-    .wdata_i      ( dmi_req.data                           ),
-    .wdata_intg_i ('0                                      ),
-    .be_i         ( {top_pkg::TL_DBW{1'b1}}                ),
-    .user_rsvd_i  ('0                                      ),
-    .instr_type_i ( prim_mubi_pkg::MuBi4False              ),
-    .valid_o      ( dmi_resp_valid                         ),
-    .rdata_o      ( dmi_resp.data                          ),
-    .rdata_intg_o (                                        ),
-    .err_o        (                                        ),
-    .intg_err_o   (                                        ),
-    .tl_o         ( tap_tl_h2d                             ),
-    .tl_i         ( tap_tl_d2h                             )
-  );
-
-  // TL-UL to DMI transducing
-  assign dmi_resp.resp = '0; // unused inside dmi_jtag
-
-  // These signals are unused
-  logic unused_tap_tl_d2h;
-  assign unused_tap_tl_d2h = ^{
-    tap_tl_d2h.d_opcode,
-    tap_tl_d2h.d_param,
-    tap_tl_d2h.d_size,
-    tap_tl_d2h.d_source,
-    tap_tl_d2h.d_sink,
-    tap_tl_d2h.d_user,
-    tap_tl_d2h.d_error
-  };
 
   ///////////////////////////////////////
   // Transition Interface and HW Mutex //
@@ -288,7 +175,7 @@ module lc_ctrl
   logic          state_invalid_error_d, fatal_state_error_q;
   logic          otp_part_error_q;
   mubi8_t        sw_claim_transition_if_d, sw_claim_transition_if_q;
-  mubi8_t        tap_claim_transition_if_d, tap_claim_transition_if_q;
+  mubi8_t        dmi_claim_transition_if_d, dmi_claim_transition_if_q;
   logic          transition_cmd;
   lc_token_t     transition_token_d, transition_token_q;
   ext_dec_lc_state_t transition_target_d, transition_target_q;
@@ -336,21 +223,21 @@ module lc_ctrl
     hw2reg.hw_revision1.revision_id        = hw_rev_o.revision_id;
     hw2reg.hw_revision1.reserved           = '0;
 
-    // The assignments above are identical for the TAP.
-    tap_hw2reg = hw2reg;
+    // The assignments above are identical for the DMI.
+    dmi_hw2reg = hw2reg;
 
-    // Assignments gated by mutex. Again, the TAP has priority.
-    tap_hw2reg.claim_transition_if = tap_claim_transition_if_q;
+    // Assignments gated by mutex. Again, the DMI has priority.
+    dmi_hw2reg.claim_transition_if = dmi_claim_transition_if_q;
     hw2reg.claim_transition_if = sw_claim_transition_if_q;
-    if (mubi8_test_true_strict(tap_claim_transition_if_q)) begin
-      tap_hw2reg.transition_ctrl.ext_clock_en = use_ext_clock_q;
-      tap_hw2reg.transition_ctrl.volatile_raw_unlock = volatile_raw_unlock_q;
-      tap_hw2reg.transition_token  = transition_token_q;
-      tap_hw2reg.transition_target = transition_target_q;
+    if (mubi8_test_true_strict(dmi_claim_transition_if_q)) begin
+      dmi_hw2reg.transition_ctrl.ext_clock_en = use_ext_clock_q;
+      dmi_hw2reg.transition_ctrl.volatile_raw_unlock = volatile_raw_unlock_q;
+      dmi_hw2reg.transition_token  = transition_token_q;
+      dmi_hw2reg.transition_target = transition_target_q;
       // SEC_CM: TRANSITION.CONFIG.REGWEN
-      tap_hw2reg.transition_regwen = lc_idle_d;
-      tap_hw2reg.otp_vendor_test_ctrl     = otp_vendor_test_ctrl_q;
-      tap_hw2reg.otp_vendor_test_status   = otp_vendor_test_status;
+      dmi_hw2reg.transition_regwen = lc_idle_d;
+      dmi_hw2reg.otp_vendor_test_ctrl     = otp_vendor_test_ctrl_q;
+      dmi_hw2reg.otp_vendor_test_status   = otp_vendor_test_status;
     end else if (mubi8_test_true_strict(sw_claim_transition_if_q)) begin
       hw2reg.transition_ctrl.ext_clock_en = use_ext_clock_q;
       hw2reg.transition_ctrl.volatile_raw_unlock = volatile_raw_unlock_q;
@@ -365,7 +252,7 @@ module lc_ctrl
 
   always_comb begin : p_csr_assign_inputs
     sw_claim_transition_if_d  = sw_claim_transition_if_q;
-    tap_claim_transition_if_d = tap_claim_transition_if_q;
+    dmi_claim_transition_if_d = dmi_claim_transition_if_q;
     transition_token_d        = transition_token_q;
     transition_target_d       = transition_target_q;
     transition_cmd            = 1'b0;
@@ -373,14 +260,14 @@ module lc_ctrl
     use_ext_clock_d           = use_ext_clock_q;
     volatile_raw_unlock_d     = volatile_raw_unlock_q;
 
-    // Note that the mutex claims from the TAP and SW side could arrive within the same cycle.
-    // In that case we give priority to the TAP mutex claim in order to avoid a race condition.
-    // TAP mutex claim.
+    // Note that the mutex claims from the DMI and SW side could arrive within the same cycle.
+    // In that case we give priority to the DMI mutex claim in order to avoid a race condition.
+    // DMI mutex claim.
     if (mubi8_test_false_loose(sw_claim_transition_if_q) &&
-        tap_reg2hw.claim_transition_if.qe) begin
-      tap_claim_transition_if_d = mubi8_t'(tap_reg2hw.claim_transition_if.q);
+        dmi_reg2hw.claim_transition_if.qe) begin
+      dmi_claim_transition_if_d = mubi8_t'(dmi_reg2hw.claim_transition_if.q);
     // SW mutex claim.
-    end else if (mubi8_test_false_loose(tap_claim_transition_if_q) &&
+    end else if (mubi8_test_false_loose(dmi_claim_transition_if_q) &&
         reg2hw.claim_transition_if.qe) begin
       sw_claim_transition_if_d = mubi8_t'(reg2hw.claim_transition_if.q);
     end
@@ -388,13 +275,13 @@ module lc_ctrl
 
     // The idle signal serves as the REGWEN in this case.
     if (lc_idle_d) begin
-      // The TAP has priority.
-      if (mubi8_test_true_strict(tap_claim_transition_if_q)) begin
-        transition_cmd = tap_reg2hw.transition_cmd.q &
-                         tap_reg2hw.transition_cmd.qe;
+      // The DMI has priority.
+      if (mubi8_test_true_strict(dmi_claim_transition_if_q)) begin
+        transition_cmd = dmi_reg2hw.transition_cmd.q &
+                         dmi_reg2hw.transition_cmd.qe;
 
-        if (tap_reg2hw.transition_ctrl.ext_clock_en.qe) begin
-          use_ext_clock_d |= tap_reg2hw.transition_ctrl.ext_clock_en.q;
+        if (dmi_reg2hw.transition_ctrl.ext_clock_en.qe) begin
+          use_ext_clock_d |= dmi_reg2hw.transition_ctrl.ext_clock_en.q;
         end
 
         // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
@@ -402,26 +289,26 @@ module lc_ctrl
         // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED VIA
         // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
         // ---------------------------------------------------------------
-        if (tap_reg2hw.transition_ctrl.volatile_raw_unlock.qe) begin
-          volatile_raw_unlock_d = tap_reg2hw.transition_ctrl.volatile_raw_unlock.q;
+        if (dmi_reg2hw.transition_ctrl.volatile_raw_unlock.qe) begin
+          volatile_raw_unlock_d = dmi_reg2hw.transition_ctrl.volatile_raw_unlock.q;
         end
         // ----------- VOLATILE_TEST_UNLOCKED CODE SECTION END -----------
 
         for (int k = 0; k < LcTokenWidth/32; k++) begin
-          if (tap_reg2hw.transition_token[k].qe) begin
-            transition_token_d[k*32 +: 32] = tap_reg2hw.transition_token[k].q;
+          if (dmi_reg2hw.transition_token[k].qe) begin
+            transition_token_d[k*32 +: 32] = dmi_reg2hw.transition_token[k].q;
           end
         end
 
-        if (tap_reg2hw.transition_target.qe) begin
+        if (dmi_reg2hw.transition_target.qe) begin
           for (int k = 0; k < DecLcStateNumRep; k++) begin
             transition_target_d[k] = dec_lc_state_e'(
-                tap_reg2hw.transition_target.q[k*DecLcStateWidth +: DecLcStateWidth]);
+                dmi_reg2hw.transition_target.q[k*DecLcStateWidth +: DecLcStateWidth]);
           end
         end
 
-        if (tap_reg2hw.otp_vendor_test_ctrl.qe) begin
-          otp_vendor_test_ctrl_d = tap_reg2hw.otp_vendor_test_ctrl.q;
+        if (dmi_reg2hw.otp_vendor_test_ctrl.qe) begin
+          otp_vendor_test_ctrl_d = dmi_reg2hw.otp_vendor_test_ctrl.q;
         end
       end else if (mubi8_test_true_strict(sw_claim_transition_if_q)) begin
         transition_cmd = reg2hw.transition_cmd.q &
@@ -471,7 +358,7 @@ module lc_ctrl
       fatal_prog_error_q        <= 1'b0;
       fatal_state_error_q       <= 1'b0;
       sw_claim_transition_if_q  <= MuBi8False;
-      tap_claim_transition_if_q <= MuBi8False;
+      dmi_claim_transition_if_q <= MuBi8False;
       transition_token_q        <= '0;
       transition_target_q       <= {DecLcStateNumRep{DecLcStRaw}};
       otp_part_error_q          <= 1'b0;
@@ -501,11 +388,11 @@ module lc_ctrl
       fatal_state_error_q       <= state_invalid_error_d   | fatal_state_error_q;
       otp_part_error_q          <= otp_lc_data_i.error     | otp_part_error_q;
       fatal_bus_integ_error_q   <= fatal_bus_integ_error_csr_d |
-                                   fatal_bus_integ_error_tap_d |
+                                   fatal_bus_integ_error_dmi_d |
                                    fatal_bus_integ_error_q;
       // Other regs, gated by mutex further below.
       sw_claim_transition_if_q  <= sw_claim_transition_if_d;
-      tap_claim_transition_if_q <= tap_claim_transition_if_d;
+      dmi_claim_transition_if_q <= dmi_claim_transition_if_d;
       transition_token_q        <= transition_token_d;
       transition_target_q       <= transition_target_d;
       otp_vendor_test_ctrl_q    <= otp_vendor_test_ctrl_d;
@@ -561,7 +448,7 @@ module lc_ctrl
 
   logic [NumAlerts-1:0] alerts;
   logic [NumAlerts-1:0] alert_test;
-  logic [NumAlerts-1:0] tap_alert_test;
+  logic [NumAlerts-1:0] dmi_alert_test;
 
   assign alerts = {
     fatal_bus_integ_error_q,
@@ -578,13 +465,13 @@ module lc_ctrl
     reg2hw.alert_test.fatal_prog_error.qe
   };
 
-   assign tap_alert_test = {
-    tap_reg2hw.alert_test.fatal_bus_integ_error.q &
-    tap_reg2hw.alert_test.fatal_bus_integ_error.qe,
-    tap_reg2hw.alert_test.fatal_state_error.q &
-    tap_reg2hw.alert_test.fatal_state_error.qe,
-    tap_reg2hw.alert_test.fatal_prog_error.q &
-    tap_reg2hw.alert_test.fatal_prog_error.qe
+   assign dmi_alert_test = {
+    dmi_reg2hw.alert_test.fatal_bus_integ_error.q &
+    dmi_reg2hw.alert_test.fatal_bus_integ_error.qe,
+    dmi_reg2hw.alert_test.fatal_state_error.q &
+    dmi_reg2hw.alert_test.fatal_state_error.qe,
+    dmi_reg2hw.alert_test.fatal_prog_error.q &
+    dmi_reg2hw.alert_test.fatal_prog_error.qe
   };
 
   for (genvar k = 0; k < NumAlerts; k++) begin : gen_alert_tx
@@ -595,7 +482,7 @@ module lc_ctrl
       .clk_i,
       .rst_ni,
       .alert_test_i  ( alert_test[k] |
-                       tap_alert_test[k] ),
+                       dmi_alert_test[k] ),
       .alert_req_i   ( alerts[k]         ),
       .alert_ack_o   (                   ),
       .alert_state_o (                   ),
@@ -816,5 +703,5 @@ module lc_ctrl
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[2])
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(TapRegWeOnehotCheck_A, u_reg_tap, alert_tx_o[2], 0)
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(DmiRegWeOnehotCheck_A, u_reg_dmi, alert_tx_o[2], 0)
 endmodule : lc_ctrl

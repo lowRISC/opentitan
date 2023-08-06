@@ -32,7 +32,6 @@ module top_darjeeling #(
   parameter logic [15:0] LcCtrlSiliconCreatorId = 16'h 0001,
   parameter logic [15:0] LcCtrlProductId = 16'h 4000,
   parameter logic [7:0] LcCtrlRevisionId = 8'h 01,
-  parameter logic [31:0] LcCtrlIdcodeValue = jtag_id_pkg::LC_CTRL_JTAG_IDCODE,
   // parameters for alert_handler
   // parameters for spi_host0
   // parameters for spi_host1
@@ -162,8 +161,8 @@ module top_darjeeling #(
   output entropy_src_pkg::entropy_src_rng_req_t       es_rng_req_o,
   input  entropy_src_pkg::entropy_src_rng_rsp_t       es_rng_rsp_i,
   output logic       es_rng_fips_o,
-  input  jtag_pkg::jtag_req_t       lc_jtag_req_i,
-  output jtag_pkg::jtag_rsp_t       lc_jtag_rsp_o,
+  input  tlul_pkg::tl_h2d_t       lc_ctrl_dmi_h2d_i,
+  output tlul_pkg::tl_d2h_t       lc_ctrl_dmi_d2h_o,
   output logic       pwrmgr_strap_en_o,
   input  jtag_pkg::jtag_req_t       rv_jtag_req_i,
   output jtag_pkg::jtag_rsp_t       rv_jtag_rsp_o,
@@ -1447,8 +1446,7 @@ module top_darjeeling #(
     .RndCnstInvalidTokens(RndCnstLcCtrlInvalidTokens),
     .SiliconCreatorId(LcCtrlSiliconCreatorId),
     .ProductId(LcCtrlProductId),
-    .RevisionId(LcCtrlRevisionId),
-    .IdcodeValue(LcCtrlIdcodeValue)
+    .RevisionId(LcCtrlRevisionId)
   ) u_lc_ctrl (
       // [16]: fatal_prog_error
       // [17]: fatal_state_error
@@ -1457,8 +1455,8 @@ module top_darjeeling #(
       .alert_rx_i  ( alert_rx[18:16] ),
 
       // Inter-module signals
-      .jtag_i(lc_jtag_req_i),
-      .jtag_o(lc_jtag_rsp_o),
+      .dmi_tl_h2d_i(lc_ctrl_dmi_h2d_i),
+      .dmi_tl_d2h_o(lc_ctrl_dmi_d2h_o),
       .esc_scrap_state0_tx_i(alert_handler_esc_tx[1]),
       .esc_scrap_state0_rx_o(alert_handler_esc_rx[1]),
       .esc_scrap_state1_tx_i(alert_handler_esc_tx[2]),
@@ -1496,8 +1494,6 @@ module top_darjeeling #(
       .strap_en_override_o(lc_ctrl_strap_en_override),
       .tl_i(lc_ctrl_tl_req),
       .tl_o(lc_ctrl_tl_rsp),
-      .scanmode_i,
-      .scan_rst_ni,
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_secure),

@@ -313,7 +313,6 @@
         SiliconCreatorId: "16'h 0001", // OpenTitan project
         ProductId: "16'h 4000", // Darjeeling
         RevisionId: "8'h 01",   // First tapeout
-        IdcodeValue: "jtag_id_pkg::LC_CTRL_JTAG_IDCODE",
       },
     },
     { name: "alert_handler",
@@ -1128,7 +1127,8 @@
         'flash_ctrl.fla_obs'              : 'flash_obs',
         'entropy_src.entropy_src_rng'     : 'es_rng',
         'entropy_src.rng_fips'            : 'es_rng_fips',
-        'lc_ctrl.jtag'                    : 'lc_jtag',
+        'lc_ctrl.dmi_tl_h2d'              : 'lc_ctrl_dmi_h2d',
+        'lc_ctrl.dmi_tl_d2h'              : 'lc_ctrl_dmi_d2h',
         'pwrmgr_aon.strap'                : 'pwrmgr_strap_en',
         'rv_dm.jtag'                      : 'rv_jtag',
         'rv_dm.pinmux_hw_debug_en'        : 'rv_pinmux_hw_debug_en',
