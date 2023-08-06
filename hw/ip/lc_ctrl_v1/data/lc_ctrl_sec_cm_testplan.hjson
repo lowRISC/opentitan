@@ -1,0 +1,287 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Security countermeasures testplan extracted from the IP Hjson using reggen.
+//
+// This testplan is auto-generated only the first time it is created. This is
+// because this testplan needs to be hand-editable. It is possible that these
+// testpoints can go out of date if the spec is updated with new
+// countermeasures. When `reggen` is invoked when this testplan already exists,
+// It checks if the list of testpoints is up-to-date and enforces the user to
+// make further manual updates.
+//
+// These countermeasures and their descriptions can be found here:
+// .../lc_ctrl/data/lc_ctrl.hjson
+//
+// It is possible that the testing of some of these countermeasures may already
+// be covered as a testpoint in a different testplan. This duplication is ok -
+// the test would have likely already been developed. We simply map those tests
+// to the testpoints below using the `tests` key.
+//
+// Please ensure that this testplan is imported in:
+// .../lc_ctrl/data/lc_ctrl_testplan.hjson
+{
+  testpoints: [
+    {
+      name: sec_cm_bus_integrity
+      desc: '''BUS.INTEGRITY:
+
+      Verify this countermeasure with a standardized test.
+      '''
+      stage: V2S
+      tests: ["lc_ctrl_tl_intg_err"]
+    }
+    {
+      name: sec_cm_transition_config_regwen
+      desc: '''
+      TRANSITION.CONFIG.REGWEN:
+
+      Verify that the transition interface registers cannot be modified
+      anymore once a transition has been initiated (either via TL-UL or the
+      JTAG interface, depending on which interface is being used to claim the
+      mutex).
+      '''
+      stage: V2S
+      tests: ["lc_ctrl_regwen_during_op"]
+    }
+    {
+      name: sec_cm_manuf_state_sparse
+      desc: '''
+      MANUF.STATE.SPARSE:
+
+      Verify this countermeasure with a standardized test.
+      '''
+      stage: V2S
+      tests: ["lc_ctrl_sec_cm", "lc_ctrl_state_failure"]
+    }
+    {
+      name: sec_cm_transition_ctr_sparse
+      desc: '''
+      TRANSITION.CTR.SPARSE:
+
+      Verify this countermeasure with a standardized test.
+      '''
+      stage: V2S
+      tests: ["lc_ctrl_sec_cm", "lc_ctrl_state_failure"]
+    }
+    {
+      name: sec_cm_manuf_state_bkgn_chk
+      desc: '''
+      MANUF.STATE.BKGN_CHK:
+
+      Verify this countermeasure with a standardized test.
+      '''
+      stage: V2S
+      tests: ["lc_ctrl_sec_cm", "lc_ctrl_state_failure"]
+    }
+    {
+      name: sec_cm_transition_ctr_bkgn_chk
+      desc: '''
+      TRANSITION.CTR.BKGN_CHK:
+
+      Verify this countermeasure with a standardized test.
+      '''
+      stage: V2S
+      tests: ["lc_ctrl_sec_cm", "lc_ctrl_state_failure"]
+    }
+    {
+      name: sec_cm_state_config_sparse
+      desc: '''
+      STATE.CONFIG.SPARSE:
+
+      Verify this countermeasure with a standardized test.
+      '''
+      stage: V2S
+      tests: ["lc_ctrl_sec_cm", "lc_ctrl_state_failure"]
+    }
+    {
+      name: sec_cm_main_fsm_sparse
+      desc: '''
+      MAIN.FSM.SPARSE:
+
+      Verify this countermeasure with a standardized test.
+      '''
+      stage: V2S
+      tests: ["lc_ctrl_sec_cm", "lc_ctrl_state_failure"]
+    }
+    {
+      name: sec_cm_kmac_fsm_sparse
+      desc: '''
+      KMAC.FSM.SPARSE:
+
+      Verify this countermeasure with a standardized test.
+      '''
+      stage: V2S
+      tests: ["lc_ctrl_sec_cm", "lc_ctrl_state_failure"]
+    }
+    {
+      name: sec_cm_main_fsm_local_esc
+      desc: '''
+      MAIN.FSM.LOCAL_ESC:
+
+      Verify that the main FSM goes into the `InvalidSt` if
+
+      * the FSM enum is glitched into an undefined state (MAIN.FSM.SPARSE),
+
+      * the KMAC interface FSM is glitched into an undefined state
+        (KMAC.FSM.SPARSE),
+
+      * the life cycle state vector and transition counter (from OTP) have an
+        invalid encoding (MANUF.STATE.BKGN_CHK, TRANSITION.CTR.BKGN_CHK).
+      '''
+      stage: V2S
+      tests: ["lc_ctrl_sec_cm", "lc_ctrl_state_failure"]
+    }
+    {
+      name: sec_cm_main_fsm_global_esc
+      desc: '''
+      MAIN.FSM.GLOBAL_ESC:
+
+      Verify that the main FSM goes into the `EscalateSt` if
+      any of the two escalation channels (`esc_scrap_state0/1`) is asserted.
+      '''
+      stage: V2S
+      tests: ["lc_ctrl_security_escalation"]
+    }
+    {
+      name: sec_cm_main_ctrl_flow_consistency
+      desc: '''
+      MAIN.CTRL_FLOW.CONSISTENCY:
+
+      Verify that the control flow of the main FSM only ever progresses in one
+      direction - i.e. that there are no transitions that move backwards into
+      a state where the FSM has previously been (e.g. from `InvalidSt` back
+      into `IdleSt`).
+
+      Note: This is expected to be formally proven by FPV test lc_ctrl_sec_cm_fsm but
+      there is currently no mechanism to include this in the testplan.
+      '''
+      stage: V2S
+      tests: ["lc_ctrl_state_post_trans", "lc_ctrl_jtag_state_post_trans"]
+    }
+    {
+      name: sec_cm_intersig_mubi
+      desc: '''
+      INTERSIG.MUBI:
+
+      Verify the behavior of MUBI inputs as follows:
+
+      1) `lc_clk_byp_ack_i`: Verify that an inconsistent input value
+      (`lc_clk_byp_ack_i` != `lc_clk_byp_ack_o`) causes an OTP_ERROR when a life
+      cycle transition is initiated.
+
+      There are two ways this condition can be triggered: either no external
+      clock is requested, and then setting `lc_clk_byp_ack_i` to any value
+      other than 'OFF' when initiating the life cycle transition should trigger
+      this error. If the external clock is requested, setting
+      `lc_clk_byp_ack_i` to any value other than 'ON' after the main FSM has
+      progressed through the `ClkMuxSt` state should trigger this error.
+
+      2) `lc_flash_rma_ack_i`: Verify that an inconsistent input value
+      (`lc_flash_rma_ack_i` != `lc_flash_rma_ack_o`) causes a FLASH_RMA_ERROR
+      when a life cycle transition is initiated.
+
+      There are two ways this condition can be triggered: either no RMA
+      transition is requested, and then setting `lc_flash_rma_ack_i` to any
+      value other than 'OFF' when initiating the life cycle transition should
+      trigger this error. If an RMA transition is requested, setting
+      `lc_flash_rma_ack_i` to any value other than 'ON' after the main FSM
+      has progressed through the `FlashRmaSt` state should trigger this
+      error.
+
+      The main life cycle FSM should not progress through the `TransProgSt` if
+      this error occurs.
+      '''
+      stage: V2S
+      tests: ["lc_ctrl_sec_mubi"]
+    }
+    {
+      name: sec_cm_token_valid_ctrl_mubi
+      desc: '''
+      TOKEN_VALID.CTRL.MUBI:
+
+      Verify that any value other than 'ON' will lead to a TOKEN_ERROR in life
+      cycle transitions where the associated token is being used. The main
+      life cycle FSM should not progress through the `TransProgSt` if this
+      error occurs.
+      '''
+      stage: V2S
+      tests: ["lc_ctrl_sec_mubi"]
+    }
+    {
+      name: sec_cm_token_digest
+      desc: '''
+      TOKEN.DIGEST:
+
+      Life cycle tokens are hashed using an external SHA3 block, and checked
+      multiple times internally. In order to verify this countermeasure, the
+      following aspects should be tested:
+
+      * All valid hashed token values (RAW_UNLOCK, TEST_UNLOCK, TEST_EXIT and
+        RMA) should be tested in conjunction with the appropriate life cycle
+        transition to make sure that the correct tokens are selected
+        internally (the RAW_UNLOCK token is a netlist constant, while the
+        other tokens are supplied by OTP).
+
+      * The hashed token is checked three times overall in the `TokenHashSt`,
+        `TokenCheck0St` and `TokenCheck1St`. Verify that a mismatch in any of
+        these checks will lead to a TOKEN_ERROR.
+      '''
+      stage: V2S
+      tests: ["lc_ctrl_sec_token_digest"]
+    }
+    {
+      name: sec_cm_token_mux_ctrl_redun
+      desc: '''
+      TOKEN_MUX.CTRL.REDUN:
+
+      The token mux is split into two halves that are indexed separately.
+      Verify that any inconsistency between the two indexes leads to a
+      TRANSITION_ERROR, without the main FSM going through the `TransProgSt`
+      state. To that end, an inconsistency is triggered by forcing the
+      `token_idx0/1` signals to different values when initiating a lifecycle
+      transition.
+
+      Note: the same test as for TOKEN_VALID.MUX.REDUN can be used.
+      '''
+      stage: V2S
+      tests: ["lc_ctrl_sec_token_mux"]
+    }
+    {
+      name: sec_cm_token_valid_mux_redun
+      desc:
+      '''
+      TOKEN_VALID.MUX.REDUN:
+
+      The token mux is split into two halves that are indexed separately.
+      Verify that any inconsistency between the two indexes leads to a
+      TRANSITION_ERROR, without the main FSM going through the `TransProgSt`
+      state. To that end, an inconsistency is triggered by forcing the
+      `token_idx0/1` signals to different values when initiating a lifecycle
+      transition.
+
+      Note: the same test as for TOKEN_MUX.CTRL.REDUN can be used.
+      '''
+      stage: V2S
+      tests: ["lc_ctrl_sec_token_mux"]
+    }
+  ]
+
+  covergroups: [
+    {
+      name: sec_token_mux_idx_error_cg
+      desc: '''
+        Indicates FSM states that a token mux index error is detected
+      '''
+    }
+
+    {
+      name: sec_token_digest_error_cg
+      desc: '''
+        Indicates FSM states that a token digest error is detected
+      '''
+    }
+  ]
+
+}

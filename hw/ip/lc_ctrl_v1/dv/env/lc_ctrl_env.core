@@ -1,0 +1,57 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:lc_ctrl_env:0.1"
+description: "LC_CTRL DV UVM environment"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:ralgen
+      - lowrisc:dv:cip_lib
+      - lowrisc:dv:jtag_riscv_agent
+      - lowrisc:dv:kmac_app_agent
+      - lowrisc:dv:lc_ctrl_dv_utils
+    files:
+      - lc_ctrl_env_pkg.sv
+      - lc_ctrl_if.sv
+      - lc_ctrl_parameters_cfg.sv: {is_include_file: true}
+      - lc_ctrl_env_cfg.sv: {is_include_file: true}
+      - lc_ctrl_env_cov.sv: {is_include_file: true}
+      - lc_ctrl_virtual_sequencer.sv: {is_include_file: true}
+      - lc_ctrl_scoreboard.sv: {is_include_file: true}
+      - lc_ctrl_env.sv: {is_include_file: true}
+      - seq_lib/lc_ctrl_vseq_list.sv: {is_include_file: true}
+      - seq_lib/lc_ctrl_base_vseq.sv: {is_include_file: true}
+      - seq_lib/lc_ctrl_common_vseq.sv: {is_include_file: true}
+      - seq_lib/lc_ctrl_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/lc_ctrl_volatile_unlock_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/lc_ctrl_prog_failure_vseq.sv: {is_include_file: true}
+      - seq_lib/lc_ctrl_state_failure_vseq.sv: {is_include_file: true}
+      - seq_lib/lc_ctrl_errors_vseq.sv: {is_include_file: true}
+      - seq_lib/lc_ctrl_state_post_trans_vseq.sv: {is_include_file: true}
+      - seq_lib/lc_ctrl_lc_errors_vseq.sv: {is_include_file: true}
+      - seq_lib/lc_ctrl_security_escalation_vseq.sv: {is_include_file: true}
+      - seq_lib/lc_ctrl_jtag_access_vseq.sv: {is_include_file: true}
+      - seq_lib/lc_ctrl_jtag_priority_vseq.sv: {is_include_file: true}
+      - seq_lib/lc_ctrl_regwen_during_op_vseq.sv: {is_include_file: true}
+      - seq_lib/lc_ctrl_sec_mubi_vseq.sv: {is_include_file: true}
+      - seq_lib/lc_ctrl_sec_token_mux_vseq.sv: {is_include_file: true}
+      - seq_lib/lc_ctrl_sec_token_digest_vseq.sv: {is_include_file: true}
+      - seq_lib/lc_ctrl_claim_transition_if_vseq.sv: {is_include_file: true}
+      - seq_lib/lc_ctrl_stress_all_vseq.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+generate:
+  ral:
+    generator: ralgen
+    parameters:
+      name: lc_ctrl
+      ip_hjson: ../../data/lc_ctrl.hjson
+
+targets:
+  default:
+    filesets:
+      - files_dv
+    generate:
+      - ral

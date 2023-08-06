@@ -1,0 +1,236 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "lc_ctrl"
+  import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson"
+                     "lc_ctrl_sec_cm_testplan.hjson"]
+  testpoints: [
+    {
+      name: smoke
+      desc: '''
+            Smoke test accessing lc_ctrl state transition datapath.
+
+            **Stimulus**:
+            - Initialize lc_ctrl by sending pwrmgr req and otp_ctrl valid random data.
+            - Request a valid next LC state by writing CSRs: `transition_target`,
+              `transition_token*`, and `transition_cmd`.
+
+            **Checks**:
+            - After lc_ctrl initialization finishes, check lc_ctrl broadcast outputs, check
+              the value of lc_state and lc_transition_cnt CSRs, and check device_id and id_state
+              CSRs.
+            - After lc_ctrl state transition request, check status to ensure the transition is
+              valid and successful.
+            - Check token matching for both conditional and unconditional requests.
+            - Once the transition is successful, check lc_ctrl broadcast outputs are all turned
+              off.
+            '''
+      stage: V1
+      tests: ["lc_ctrl_smoke"]
+    }
+    {
+      name: state_post_trans
+      desc: '''
+            This test is based on smoke test.
+            After smoke sequence, this test adds additional lc_state transition request before
+            issuing reset. This should happen regardless if the transition is successful.
+            Use scoreboard to ensure lc_ctrl ignores this additional lc_state transition request
+            and check state count.
+            '''
+      stage: V2
+      tests: ["lc_ctrl_state_post_trans"]
+    }
+    {
+      name: regwen_during_op
+      desc: '''
+            `Transition_regwen` is RO register and it gates bunch of write access of other
+            registers.
+
+            **Checks**:
+            - Check `transition_regwen` register is set to 1 during lc_state transition request.
+            - Check that accessing its locked CSRs is gated during the transition operation.
+            '''
+      stage: V2
+      tests: ["lc_ctrl_regwen_during_op"]
+    }
+    {
+      name: rand_wr_claim_transition_if
+      desc: '''
+            `claim_transition_if` only accept `Mubi8True` or 0 value.
+            This test will write random value to this register.
+            **Checks**:
+            - When write value `Mubi8True` to `claim_transition_if` register, the
+              `transition_regwen` is set to 1.
+            - When write any other value to `claim_transition_if` register, the `transition_regwen`
+              register remains value 0.
+            '''
+      stage: V2
+      tests: ["lc_ctrl_claim_transition_if"]
+    }
+    {
+      name: lc_prog_failure
+      desc: '''
+            This test checks lc_program failure by setting the error bit after otp program request.
+
+            **Checks**:
+            - Check if status register reflects the correct error bit.
+            - Check if lc_program_failure alert is triggered.
+            - Check if lc_state moves to escalation state.
+            '''
+      stage: V2
+      tests: ["lc_ctrl_prog_failure"]
+    }
+    {
+      name: lc_state_failure
+      desc: '''
+            This test checks lc_state failure by:
+            - Driving invalid data to lc_ctrl input `otp_lc_data_i` fields `lc_state` and `lc_cnt`.
+            - Backdoor changing lc_ctrl FSM's to invalid value.
+            For invalid value, the testbench will test using random value and valid `A/B/C/D`
+            values with different orders.
+
+            **Checks**:
+            - Check if status register reflects the correct error bit.
+            - Check if lc_state_failure alert is triggered.
+            - Check if lc_state moves to escalation state.
+            '''
+      stage: V2
+      tests: ["lc_ctrl_state_failure"]
+    }
+    {
+      name: lc_errors
+      desc: '''
+            This test randomly executes the error senarios:
+            - otp_ctrl input lc_trans_cnt reaches 16
+            - lc_ctrl state transition request is invalid
+            - input LC token does not match the output from otp_ctrl
+            - flash rma responses to lc_ctrl request with error
+            - lc_ctrl clock bypass responses with error
+            - input otp_lc_data's error bit is set to 1
+            Note that all the above scenarios except the last one requires a reset to recover.
+
+            **Checks**:
+            - Check if status register reflects the correct error bit.
+            - Check if lc_state moves to correct exit state.
+            - Check if lc_trans_cnt is incremented.
+            '''
+      stage: V2
+      tests: ["lc_ctrl_errors"]
+    }
+    {
+      name: security_escalation
+      desc: '''
+            This test checks two security escalation responses:
+            - wipe secrets: permanently asserts lc_escalate_en signal
+            - scrap state: lc_ctrl moves to escalation state, check the state will be cleared up
+               upon next power cycle
+            '''
+      stage: V2
+      tests: ["lc_ctrl_security_escalation",
+              "lc_ctrl_errors",
+              "lc_ctrl_state_failure",
+              "lc_ctrl_prog_failure",
+              "lc_ctrl_jtag_errors",
+              "lc_ctrl_jtag_state_failure",
+              "lc_ctrl_jtag_prog_failure"
+              ]
+    }
+    {
+      name: jtag_access
+      desc: '''
+            This test checks jtag debug interface in lc_ctrl.
+            This test will use both JTAG TAP and TLUL to access the CSR space.
+            All above CSR sequences should be accessible via both interfaces.
+            '''
+      stage: V2
+      tests: ["lc_ctrl_jtag_access",
+              "lc_ctrl_jtag_smoke",
+              "lc_ctrl_jtag_state_post_trans",
+              "lc_ctrl_jtag_errors",
+              "lc_ctrl_jtag_prog_failure",
+              "lc_ctrl_jtag_errors",
+              "lc_ctrl_jtag_regwen_during_op",
+              "lc_ctrl_jtag_csr_hw_reset",
+              "lc_ctrl_jtag_csr_rw",
+              "lc_ctrl_jtag_csr_bit_bash",
+              "lc_ctrl_jtag_csr_aliasing",
+              "lc_ctrl_jtag_same_csr_outstanding",
+              "lc_ctrl_jtag_csr_mem_rw_with_rand_reset",
+              "lc_ctrl_jtag_alert_test"
+              ]
+    }
+    {
+      name: jtag_priority
+      desc: '''
+            This test covers a corner case in JTAG and TLUL interfaces.
+
+            **Stimulus**:
+            - Issue mux_claim operation from TLUL and JTAG interfaces at the same time.
+
+            **Checks**:
+            - Ensure TAP interface has the priority.
+            - Ensure right after the mux_claim operation, the non-prioritized interface returns 0
+              from the CSR readings. This checking ensures there is no token leakage between
+              interfaces.
+            '''
+      stage: V2
+      tests: ["lc_ctrl_jtag_priority"]
+    }
+    {
+      name: lc_ctrl_volatile_unlock
+      desc: '''
+            This test covers lc_ctrl volatile_raw_unlock functionality.
+
+            **Stimulus**:
+            - Claim the mutex.
+            - Set volatile_raw_unlock to 1.
+            - Trigger a lc_transition.
+            - Trigger a second lc_transition without reset.
+
+            **Checks**:
+            - If the current state is RawState, and transition state is TestUnlocked0, and if the
+              input token is correct, expect the transition to be sucessful.
+            - Check status and volatile_raw_unlock output.
+            - If the raw unlock transition is successful, check the second lc_transition can be
+              performed without any error.
+            '''
+      stage: V2
+      tests: ["lc_ctrl_volatile_unlock_smoke"]
+    }
+    {
+      name: stress_all
+      desc: '''
+            - Combine above sequences in one test to run sequentially, except csr sequence.
+            - Random selection of Tilelink or JTAG CSR for each sequence
+            - Randomly add reset between each sequence.
+            '''
+      stage: V2
+      tests: ["lc_ctrl_stress_all"]
+    }
+  ]
+
+  covergroups: [
+    {
+      name: err_inj_cg
+      desc: '''
+        Indicates what error conditions have been injected.
+      '''
+    }
+    {
+      name: lc_ctrl_fsm_cg
+      desc: '''
+        lc_ctrl_fsm states and arcs
+      '''
+    }
+    {
+      name: volatile_raw_unlock_cg
+      desc: '''
+        Cover volatile_raw_unlock transition success and fail cases.
+      '''
+    }
+  ]
+}
