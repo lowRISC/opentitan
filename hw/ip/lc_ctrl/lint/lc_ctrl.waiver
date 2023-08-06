@@ -8,7 +8,7 @@ waive -rules CONST_FF -location {lc_ctrl_signal_decode.sv} -regexp {Flip-flop 'l
       -comment {Some of these bits may be constantly zero, depending on the RndCnst parameters.}
 
 # dmi_jtag_tap clock mux for scan mode
-waive -rules CLOCK_MUX -location {lc_ctrl.sv} -regexp {Clock 'tck_muxed' is driven by a multiplexer here, used as a clock 'tck_i' at dmi_jtag_tap.sv} \
+waive -rules CLOCK_MUX -location {lc_ctrl.sv} -regexp {Clock 'gen_tap_tlul.tck_muxed' is driven by a multiplexer here, used as a clock 'tck_i' at dmi_jtag_tap.sv} \
       -comment "This is needed such that the clock can be properly controlled during scanmode."
 
 waive -rules CLOCK_USE -location {lc_ctrl.sv} \
@@ -20,7 +20,7 @@ waive -rules CLOCK_USE -location {lc_ctrl.sv} \
       -comment "This message arises since the prim_lc_sync module is used in purely combinational mode."
 
 waive -rules RESET_MUX -location {lc_ctrl.sv} \
-      -msg {Asynchronous reset 'trst_n_muxed' is driven by a multiplexer here, used as a reset 'trst_ni' at dmi_jtag} \
+      -msg {Asynchronous reset 'gen_tap_tlul.trst_n_muxed' is driven by a multiplexer here, used as a reset 'trst_ni' at dmi_jtag} \
       -comment "This is needed such that the reset can be properly controlled during scanmode."
 
 waive -rules RESET_USE -location {lc_ctrl.sv} \

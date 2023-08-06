@@ -35,6 +35,7 @@ module top_earlgrey #(
   parameter OtpCtrlMemInitFile = "",
   // parameters for lc_ctrl
   parameter bit SecLcCtrlVolatileRawUnlockEn = top_pkg::SecVolatileRawUnlockEn,
+  parameter bit LcCtrlUseDmiInterface = 0,
   parameter logic [15:0] LcCtrlSiliconCreatorId = 16'h 4001,
   parameter logic [15:0] LcCtrlProductId = 16'h 0002,
   parameter logic [7:0] LcCtrlRevisionId = 8'h 01,
@@ -1487,6 +1488,7 @@ module top_earlgrey #(
   lc_ctrl #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[18:16]),
     .SecVolatileRawUnlockEn(SecLcCtrlVolatileRawUnlockEn),
+    .UseDmiInterface(LcCtrlUseDmiInterface),
     .RndCnstLcKeymgrDivInvalid(RndCnstLcCtrlLcKeymgrDivInvalid),
     .RndCnstLcKeymgrDivTestUnlocked(RndCnstLcCtrlLcKeymgrDivTestUnlocked),
     .RndCnstLcKeymgrDivDev(RndCnstLcCtrlLcKeymgrDivDev),
@@ -1507,6 +1509,8 @@ module top_earlgrey #(
       // Inter-module signals
       .jtag_i(pinmux_aon_lc_jtag_req),
       .jtag_o(pinmux_aon_lc_jtag_rsp),
+      .dmi_tl_h2d_i(tlul_pkg::TL_H2D_DEFAULT),
+      .dmi_tl_d2h_o(),
       .esc_scrap_state0_tx_i(alert_handler_esc_tx[1]),
       .esc_scrap_state0_rx_o(alert_handler_esc_rx[1]),
       .esc_scrap_state1_tx_i(alert_handler_esc_tx[2]),

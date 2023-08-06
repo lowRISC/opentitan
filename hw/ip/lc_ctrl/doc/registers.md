@@ -278,7 +278,7 @@ device is in a non-PROD life cycle state. The clock mux will remain switched unt
 ## TRANSITION_TOKEN
 128bit token for conditional transitions.
 Make sure to set this to 0 for unconditional transitions.
-Note that this register is shared with the life cycle TAP interface.
+Note that this register is shared with the life cycle TAP/DMI interface.
 In order to have exclusive access to this register, SW must first claim the associated
 hardware mutex via [`CLAIM_TRANSITION_IF.`](#claim_transition_if)
 - Reset default: `0x0`
@@ -327,7 +327,7 @@ This field encodes the target life cycle state in a redundant enum format.
 The 5bit state enum is repeated 6x so that it fills the entire 32bit register.
 The encoding is straightforward replication: [val, val, val, val, val, val].
 
-Note that this register is shared with the life cycle TAP interface.
+Note that this register is shared with the life cycle TAP/DMI interface.
 In order to have exclusive access to this register, SW must first claim the associated
 hardware mutex via [`CLAIM_TRANSITION_IF.`](#claim_transition_if)
 

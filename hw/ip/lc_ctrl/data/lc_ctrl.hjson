@@ -70,6 +70,13 @@
       local:   "false",
       expose:  "true"
     },
+    { name:    "UseDmiInterface",
+      desc:    "When 1, a TLUL-based DMI interface is used. When 0, a JTAG TAP is used.",
+      type:    "bit",
+      default: "0",
+      local:   "false",
+      expose:  "true"
+    }
     // Random netlist constants
     { name:      "RndCnstLcKeymgrDivInvalid",
       desc:      "Diversification value used for all invalid life cycle states.",
@@ -223,6 +230,25 @@
       act:     "rsp"
       package: "jtag_pkg"
     }
+    // TL-UL-based DMI
+    { struct:  "tl_h2d"
+      package: "tlul_pkg"
+      type:    "uni"
+      name:    "dmi_tl_h2d"
+      act:     "rcv"
+      desc:    '''
+               TL-UL-based DMI request input port
+               '''
+    }
+    { struct:  "tl_d2h"
+      package: "tlul_pkg"
+      type:    "uni"
+      name:    "dmi_tl_d2h"
+      act:     "req"
+      desc:    '''
+               TL-UL-based DMI response output port
+               '''
+    }
     // Escalation inputs from alert handler
     { struct:  "esc_tx"
       type:    "uni"
@@ -255,7 +281,7 @@
       act:     "rsp",
       package: "pwrmgr_pkg",
     },
-    // Macro-specific test signals to/from LC TAP
+    // Macro-specific test signals to/from LC TAP/DMI
     { struct:  "lc_otp_vendor_test"
       type:    "req_rsp"
       name:    "lc_otp_vendor_test"
@@ -914,7 +940,7 @@
         desc:     '''
                   128bit token for conditional transitions.
                   Make sure to set this to 0 for unconditional transitions.
-                  Note that this register is shared with the life cycle TAP interface.
+                  Note that this register is shared with the life cycle TAP/DMI interface.
                   In order to have exclusive access to this register, SW must first claim the associated
                   hardware mutex via !!CLAIM_TRANSITION_IF.
                   ''',
@@ -949,7 +975,7 @@
                 The 5bit state enum is repeated 6x so that it fills the entire 32bit register.
                 The encoding is straightforward replication: [val, val, val, val, val, val].
 
-                Note that this register is shared with the life cycle TAP interface.
+                Note that this register is shared with the life cycle TAP/DMI interface.
                 In order to have exclusive access to this register, SW must first claim the associated
                 hardware mutex via !!CLAIM_TRANSITION_IF.
                 '''
