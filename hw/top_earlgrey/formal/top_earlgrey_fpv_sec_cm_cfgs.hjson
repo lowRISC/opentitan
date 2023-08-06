@@ -120,10 +120,10 @@
              }
              {
                name: lc_ctrl_sec_cm
-               dut: lc_ctrl
-               fusesoc_core: lowrisc:dv:lc_ctrl_sva
+               dut: lc_ctrl_v1
+               fusesoc_core: lowrisc:dv:lc_ctrl_v1_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
-               rel_path: "hw/ip/lc_ctrl/{sub_flow}/{tool}"
+               rel_path: "hw/ip/lc_ctrl_v1/{sub_flow}/{tool}"
                stopats: ["*u_lc_ctrl_fsm.u_fsm_state_regs.state_o",
                          "*u_lc_ctrl_fsm.u_state_regs.state_o",
                          "*u_lc_ctrl_fsm.u_cnt_regs.state_o",
@@ -247,10 +247,10 @@
              // revert back to functional states.
              {
                name: lc_ctrl_sec_cm_fsm
-               dut: lc_ctrl_fsm
-               fusesoc_core: lowrisc:ip:lc_ctrl
+               dut: lc_ctrl_v1_fsm
+               fusesoc_core: lowrisc:ip:lc_ctrl_v1
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
-               rel_path: "hw/ip/lc_ctrl/fsm/{sub_flow}/{tool}"
+               rel_path: "hw/ip/lc_ctrl_v1/fsm/{sub_flow}/{tool}"
                task: "SecCmCFI"
              }
              //

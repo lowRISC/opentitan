@@ -36,7 +36,7 @@ filesets:
       - lowrisc:constants:top_pkg
       - lowrisc:constants:jtag_id_pkg
       - lowrisc:ip:otp_ctrl
-      - lowrisc:ip:lc_ctrl
+      - lowrisc:ip:lc_ctrl_v1
       - lowrisc:ip:usbdev
       - lowrisc:top_earlgrey:xbar_main
       - lowrisc:top_earlgrey:xbar_peri

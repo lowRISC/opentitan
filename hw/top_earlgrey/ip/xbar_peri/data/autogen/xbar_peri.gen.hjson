@@ -407,7 +407,7 @@
       clock: clk_peri_i
       reset: rst_peri_ni
       pipeline: false
-      inst_type: lc_ctrl
+      inst_type: lc_ctrl_v1
       addr_range:
       [
         {

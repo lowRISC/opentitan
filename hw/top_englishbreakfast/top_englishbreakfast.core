@@ -34,7 +34,7 @@ filesets:
       - lowrisc:ip:kmac
       - lowrisc:ip:keymgr
       - lowrisc:ip:otp_ctrl
-      - lowrisc:ip:lc_ctrl
+      - lowrisc:ip:lc_ctrl_v1
       - lowrisc:ip:usbdev
       - lowrisc:top_englishbreakfast:xbar_main
       - lowrisc:top_englishbreakfast:xbar_peri

@@ -5,6 +5,11 @@
 
 ${gencmd}
 <%
+for p in helper.alert_peripherals:
+  if p.name == "lc_ctrl_v1":
+    p.name = "lc_ctrl"
+    p.dif_alert_name = "kDifLcCtrlAlertFatalProgError"
+
 alert_peripheral_names = sorted({p.name for p in helper.alert_peripherals})
 %>\
 #include "sw/device/lib/testing/alert_handler_testutils.h"

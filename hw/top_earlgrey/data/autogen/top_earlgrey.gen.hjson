@@ -1511,7 +1511,7 @@
     }
     {
       name: lc_ctrl
-      type: lc_ctrl
+      type: lc_ctrl_v1
       clock_srcs:
       {
         clk_i: io_div4
@@ -2053,7 +2053,7 @@
           name: strap_en_override
           desc:
             '''
-            This signal transitions from 0 -> 1 by the lc_ctrl manager after volatile RAW_UNLOCK in order to re-sample the HW straps.
+            This signal transitions from 0 -> 1 by the lc_ctrl_v1 manager after volatile RAW_UNLOCK in order to re-sample the HW straps.
             The signal stays at 1 until reset.
             Note that this is only used in test chips when SecVolatileRawUnlockEn = 1.
             Otherwise this signal is tied off to 0.
@@ -10053,7 +10053,7 @@
           clock: clk_peri_i
           reset: rst_peri_ni
           pipeline: false
-          inst_type: lc_ctrl
+          inst_type: lc_ctrl_v1
           addr_range:
           [
             {
@@ -16164,7 +16164,7 @@
         name: strap_en_override
         desc:
           '''
-          This signal transitions from 0 -> 1 by the lc_ctrl manager after volatile RAW_UNLOCK in order to re-sample the HW straps.
+          This signal transitions from 0 -> 1 by the lc_ctrl_v1 manager after volatile RAW_UNLOCK in order to re-sample the HW straps.
           The signal stays at 1 until reset.
           Note that this is only used in test chips when SecVolatileRawUnlockEn = 1.
           Otherwise this signal is tied off to 0.
