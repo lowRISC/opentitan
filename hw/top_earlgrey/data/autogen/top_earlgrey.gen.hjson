@@ -1923,6 +1923,14 @@
           name_top: SecLcCtrlVolatileRawUnlockEn
         }
         {
+          name: UseDmiInterface
+          desc: When 1, a TLUL-based DMI interface is used. When 0, a JTAG TAP is used.
+          type: bit
+          default: "0"
+          expose: "true"
+          name_top: LcCtrlUseDmiInterface
+        }
+        {
           name: RndCnstLcKeymgrDivInvalid
           desc: Diversification value used for all invalid life cycle states.
           type: lc_ctrl_pkg::lc_keymgr_div_t
@@ -2027,6 +2035,28 @@
           inst_name: lc_ctrl
           default: ""
           top_signame: pinmux_aon_lc_jtag
+          index: -1
+        }
+        {
+          name: dmi_tl_h2d
+          desc: TL-UL-based DMI request input port
+          struct: tl_h2d
+          package: tlul_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: lc_ctrl
+          index: -1
+        }
+        {
+          name: dmi_tl_d2h
+          desc: TL-UL-based DMI response output port
+          struct: tl_d2h
+          package: tlul_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: lc_ctrl
           index: -1
         }
         {
@@ -17258,6 +17288,28 @@
         inst_name: lc_ctrl
         default: ""
         top_signame: pinmux_aon_lc_jtag
+        index: -1
+      }
+      {
+        name: dmi_tl_h2d
+        desc: TL-UL-based DMI request input port
+        struct: tl_h2d
+        package: tlul_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: lc_ctrl
+        index: -1
+      }
+      {
+        name: dmi_tl_d2h
+        desc: TL-UL-based DMI response output port
+        struct: tl_d2h
+        package: tlul_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: lc_ctrl
         index: -1
       }
       {
