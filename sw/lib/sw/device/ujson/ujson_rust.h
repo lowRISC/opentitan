@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_UJSON_UJSON_RUST_H_
-#define OPENTITAN_SW_DEVICE_LIB_UJSON_UJSON_RUST_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_UJSON_UJSON_RUST_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_UJSON_UJSON_RUST_H_
 
 // Definitions of the UJSON macros that emit code that can be trivially
 // transformed into rust code:
@@ -110,4 +110,4 @@ use opentitanlib::test_utils::status::status_t;
 
 #define C_ONLY(x) const _ : () = {/* eat a semicolon */}
 #define RUST_ONLY(x) x
-#endif  // OPENTITAN_SW_DEVICE_LIB_UJSON_UJSON_RUST_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_UJSON_UJSON_RUST_H_

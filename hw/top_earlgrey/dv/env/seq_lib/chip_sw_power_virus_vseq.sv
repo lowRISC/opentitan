@@ -24,7 +24,7 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
     bit [31:0] peripheral_clock_freq_hz;   // `kClockFreqPeripheralHz` in SW
     bit [31:0] peripheral_clock_period_ns; // `peripheral_clock_period_ns` in SW
     bit [31:0] half_cycles_in_i2c_period;
-    // Hard-coded from `sw/device/lib/arch/device_sim_dv.c`.
+    // Hard-coded from `sw/top_earlgrey/sw/device/arch/device_sim_dv.c`.
     peripheral_clock_freq_hz = 24 * 1000 * 1000;
     peripheral_clock_period_ns = 1_000_000_000 / peripheral_clock_freq_hz;
     `uvm_info(`gfn, $sformatf("peripheral_clock_period_ns = %0d", peripheral_clock_period_ns),

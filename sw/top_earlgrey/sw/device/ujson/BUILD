@@ -8,9 +8,9 @@ cc_test(
     name = "ujson_test",
     srcs = ["//sw/lib/sw/device/ujson:ujson_test.cc"],
     deps = [
-        "//sw/lib/sw/device/ujson:test_helpers",
-        "//sw/lib/sw/device/ujson:ujson",
         "//sw/lib/sw/device/base:status",
+        "//sw/lib/sw/device/ujson",
+        "//sw/lib/sw/device/ujson:test_helpers",
         "//sw/top_earlgrey/sw/device/runtime:print",
         "@googletest//:gtest_main",
     ],
@@ -20,10 +20,10 @@ cc_test(
     name = "example_test",
     srcs = ["//sw/lib/sw/device/ujson:example_test.cc"],
     deps = [
+        "//sw/lib/sw/device/base:status",
+        "//sw/lib/sw/device/ujson",
         "//sw/lib/sw/device/ujson:example",
         "//sw/lib/sw/device/ujson:test_helpers",
-        "//sw/lib/sw/device/ujson:ujson",
-        "//sw/lib/sw/device/base:status",
         "//sw/top_earlgrey/sw/device/runtime:print",
         "@googletest//:gtest_main",
     ],
@@ -33,8 +33,8 @@ cc_binary(
     name = "example_roundtrip",
     srcs = ["//sw/lib/sw/device/ujson:example_roundtrip.c"],
     deps = [
-        "//sw/lib/sw/device/ujson:example",
         "//sw/lib/sw/device/base:status",
+        "//sw/lib/sw/device/ujson:example",
         "//sw/top_earlgrey/sw/device/runtime:print",
     ],
 )

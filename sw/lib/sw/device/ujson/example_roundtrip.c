@@ -6,8 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "sw/lib/sw/device/ujson/example.h"
 #include "sw/lib/sw/device/base/status.h"
+#include "sw/lib/sw/device/ujson/example.h"
 
 status_t stdio_getc(void *context) {
   int ch = fgetc(stdin);

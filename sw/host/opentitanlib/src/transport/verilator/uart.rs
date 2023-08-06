@@ -28,7 +28,7 @@ impl VerilatorUart {
     pub fn open(path: &str) -> Result<Self> {
         Ok(VerilatorUart {
             // The verilator UART operates at 7200 baud.
-            // See `sw/device/lib/arch/device_sim_verilator.c`.
+            // See `sw/top_<chip>/sw/device/arch/device_sim_verilator.c`.
             // The reality of the simulation is that the CPU can
             // only deal with about 4 chars per second.
             baudrate: Cell::new(40),

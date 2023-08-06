@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_UJSON_EXAMPLE_H_
-#define OPENTITAN_SW_DEVICE_LIB_UJSON_EXAMPLE_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_UJSON_EXAMPLE_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_UJSON_EXAMPLE_H_
 #include "sw/lib/sw/device/ujson/ujson_derive.h"
 #ifdef __cplusplus
 extern "C" {
@@ -110,4 +110,4 @@ UJSON_SERDE_STRUCT(Misc, misc_t, STRUCT_MISC);
 #ifdef __cplusplus
 }
 #endif
-#endif  // OPENTITAN_SW_DEVICE_LIB_UJSON_EXAMPLE_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_UJSON_EXAMPLE_H_

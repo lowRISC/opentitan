@@ -463,12 +463,12 @@ cc_test(
     deps = [
         ":pinmux",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/arch:sim_dv",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/testing:rom_test",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:csr",
         "//sw/lib/sw/device/base:macros",
+        "//sw/top_earlgrey/sw/device/arch:sim_dv",
         "@googletest//:gtest_main",
     ],
 )

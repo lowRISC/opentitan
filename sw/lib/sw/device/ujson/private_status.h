@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_UJSON_PRIVATE_STATUS_H_
-#define OPENTITAN_SW_DEVICE_LIB_UJSON_PRIVATE_STATUS_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_UJSON_PRIVATE_STATUS_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_UJSON_PRIVATE_STATUS_H_
 
 #include "sw/lib/sw/device/ujson/ujson_derive.h"
 
@@ -42,4 +42,4 @@ UJSON_DESERIALIZE_ENUM(PrivateStatus, private_status_t, ENUM_PRIVATE_STATUS);
 #ifdef __cplusplus
 }
 #endif
-#endif  // OPENTITAN_SW_DEVICE_LIB_UJSON_PRIVATE_STATUS_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_UJSON_PRIVATE_STATUS_H_

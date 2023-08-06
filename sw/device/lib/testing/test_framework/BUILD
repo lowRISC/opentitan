@@ -314,8 +314,8 @@ opentitan_functest(
         ":ottf_console",
         ":ottf_main",
         ":ujson_ottf",
-        "//sw/lib/sw/device/ujson",
         "//sw/lib/sw/device/base:status",
+        "//sw/lib/sw/device/ujson",
         "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )

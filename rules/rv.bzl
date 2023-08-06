@@ -7,17 +7,6 @@
 OPENTITAN_CPU = "@platforms//cpu:riscv32"
 OPENTITAN_PLATFORM = "@crt//platforms/riscv32:opentitan"
 
-# This constant holds a dictionary of per-device dependencies which are used to
-# generate slightly different binaries for each hardware target, including two
-# simulation platforms (DV and Verilator), and two FPGA platforms (CW305
-# and CW310).
-PER_DEVICE_DEPS = {
-    "sim_verilator": ["//sw/device/lib/arch:sim_verilator"],
-    "sim_dv": ["//sw/device/lib/arch:sim_dv"],
-    "fpga_cw305": ["//sw/device/lib/arch:fpga_cw305"],
-    "fpga_cw310": ["//sw/device/lib/arch:fpga_cw310"],
-}
-
 def _opentitan_transition_impl(settings, attr):
     return {"//command_line_option:platforms": attr.platform}
 

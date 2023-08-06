@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_UJSON_UJSON_H_
-#define OPENTITAN_SW_DEVICE_LIB_UJSON_UJSON_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_UJSON_UJSON_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_UJSON_UJSON_H_
 #include <stdint.h>
 
 #include "sw/lib/sw/device/base/status.h"
@@ -232,4 +232,4 @@ status_t ujson_serialize_status_t(ujson_t *uj, const status_t *value);
 #ifdef __cplusplus
 }
 #endif
-#endif  // OPENTITAN_SW_DEVICE_LIB_UJSON_UJSON_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_UJSON_UJSON_H_

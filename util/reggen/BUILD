@@ -144,7 +144,6 @@ py_library(
         ":register",
         ":signal",
         ":window",
-        requirement("semantic_version"),
     ],
 )
 

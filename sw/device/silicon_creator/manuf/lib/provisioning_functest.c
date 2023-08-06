@@ -7,7 +7,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
-#include "sw/lib/sw/device/ujson/ujson.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/manuf/lib/provisioning.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
@@ -15,6 +14,7 @@
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
 #include "sw/ip/rstmgr/dif/dif_rstmgr.h"
 #include "sw/lib/sw/device/base/status.h"
+#include "sw/lib/sw/device/ujson/ujson.h"
 
 #include "flash_ctrl_regs.h"  // Generated
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"

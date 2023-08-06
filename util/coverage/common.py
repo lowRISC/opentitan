@@ -23,22 +23,22 @@ LLD_TARGET: str = "/tools/riscv/bin/riscv32-unknown-elf-ld"
 DEVICE_LIBS_INC: List[str] = [
     "//sw/device/lib/...",
     "//sw/device/silicon_creator/...",
+    "//sw/lib/sw/device/...",
 ]
 DEVICE_LIBS_EXC: List[str] = [
-    "//sw/common/...",
-    "//sw/device/lib/arch/...",
-    "//sw/lib/sw/device/base:mmio_on_device_do_not_use_directly",
-    "//sw/lib/sw/device/base:mmio_on_host_do_not_use_directly",
-    "//sw/lib/sw/device/base:status",
-    "//sw/lib/sw/device/base:status_report_unittest_c",
     "//sw/device/lib/crypto/...",
-    "//sw/lib/sw/device/runtime/...",
     "//sw/device/lib/testing/... ",
-    "//sw/lib/sw/device/ujson/...",
     "//sw/device/silicon_creator/manuf/...",
     "//sw/device/silicon_creator/rom/keys/real:real",
     "//sw/device/silicon_creator/rom_ext/...",
     "//sw/ip/...",
+    "//sw/lib/sw/device/arch/...",
+    "//sw/lib/sw/device/base:mmio_on_device_do_not_use_directly",
+    "//sw/lib/sw/device/base:mmio_on_host_do_not_use_directly",
+    "//sw/lib/sw/device/base:status",
+    "//sw/lib/sw/device/base:status_report_unittest_c",
+    "//sw/lib/sw/device/runtime/...",
+    "//sw/lib/sw/device/ujson/...",
 ]
 DEVICE_LIBS_QUERY: str = (
     f"kind('^cc_library rule$', ({' + '.join(DEVICE_LIBS_INC)}) "

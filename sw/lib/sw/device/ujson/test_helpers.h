@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_UJSON_TEST_HELPERS_H_
-#define OPENTITAN_SW_DEVICE_LIB_UJSON_TEST_HELPERS_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_UJSON_TEST_HELPERS_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_UJSON_TEST_HELPERS_H_
 
 #include <string>
 
-#include "sw/lib/sw/device/ujson/ujson.h"
 #include "sw/lib/sw/device/base/status.h"
+#include "sw/lib/sw/device/ujson/ujson.h"
 
 namespace test_helpers {
 class SourceSink {
@@ -59,4 +59,4 @@ class SourceSink {
   std::string sink_;
 };
 }  // namespace test_helpers
-#endif  // OPENTITAN_SW_DEVICE_LIB_UJSON_TEST_HELPERS_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_UJSON_TEST_HELPERS_H_

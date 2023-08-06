@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_UJSON_UJSON_DERIVE_H_
-#define OPENTITAN_SW_DEVICE_LIB_UJSON_UJSON_DERIVE_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_UJSON_UJSON_DERIVE_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_UJSON_UJSON_DERIVE_H_
 // This is what we'll use as the Rust enumeration name for C-enum values
 // that do not have a symbolic name.
 #define RUST_ENUM_INTVALUE IntValue
@@ -11,9 +11,9 @@
 #ifndef RUST_PREPROCESSOR_EMIT
 #include <stdint.h>
 
-#include "sw/lib/sw/device/ujson/ujson.h"
 #include "sw/lib/sw/device/base/adv_macros.h"
 #include "sw/lib/sw/device/base/status.h"
+#include "sw/lib/sw/device/ujson/ujson.h"
 
 // If there is a pre-existing Rust `with_unknown! { ... }` enum, you can
 // add this flag to UJSON_SERDE_ENUM(...) to cause the C-based serializer
@@ -309,4 +309,4 @@
 #else  // RUST_PREPROCESSOR_EMIT
 #include "sw/lib/sw/device/ujson/ujson_rust.h"
 #endif  // RUST_PREPROCESSOR_EMIT
-#endif  // OPENTITAN_SW_DEVICE_LIB_UJSON_UJSON_DERIVE_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_UJSON_UJSON_DERIVE_H_
