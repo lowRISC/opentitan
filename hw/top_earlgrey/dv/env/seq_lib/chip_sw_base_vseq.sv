@@ -164,23 +164,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
       bit [bus_params_pkg::BUS_AW-1:0] addr,
       bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0] key = RndCnstSramCtrlMainSramKey,
       bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce = RndCnstSramCtrlMainSramNonce);
-    int max_attempts = 40;
-    int attempt = 0;
-
-    while (attempt < max_attempts) begin
-      bit [31:0] data = $urandom();
-      bit [1:0] err_code;
-      // The specific bits to be flipped should be irrelevant.
-      _sram_bkdr_write32(addr, data, 1, key, nonce, 39'h1001);
-      err_code =_sram_bkdr_ecc_check(addr, 1, key, nonce);
-      if (err_code) begin
-        `uvm_info(`gfn, $sformatf("ECC error injection succeeds after %0d attempts", attempt + 1),
-                  UVM_MEDIUM)
-        break;
-      end
-      ++attempt;
-    end
-    `DV_CHECK_LT(attempt, max_attempts, "Too many attempts in main_sram_inject_ecc_error")
+    _sram_bkdr_inject_ecc_error(addr, 1, key, nonce);
   endfunction
 
   virtual function void ret_sram_bkdr_write32(
@@ -195,23 +179,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
       bit [bus_params_pkg::BUS_AW-1:0] addr,
       bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0] key = RndCnstSramCtrlRetAonSramKey,
       bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce = RndCnstSramCtrlRetAonSramNonce);
-    int max_attempts = 40;
-    int attempt = 0;
-
-    while (attempt < max_attempts) begin
-      bit [31:0] data = $urandom();
-      bit [1:0] err_code;
-      // The specific bits to be flipped should be irrelevant.
-      _sram_bkdr_write32(addr, data, 0, key, nonce, 39'h1001);
-      err_code =_sram_bkdr_ecc_check(addr, 0, key, nonce);
-      if (err_code) begin
-        `uvm_info(`gfn, $sformatf("ECC error injection succeeds after %0d attempts", attempt + 1),
-                  UVM_MEDIUM)
-        break;
-      end
-      ++attempt;
-    end
-    `DV_CHECK_LT(attempt, max_attempts, "Too many attempts in ret_sram_inject_ecc_error")
+    _sram_bkdr_inject_ecc_error(addr, 0, key, nonce);
   endfunction
 
   // This gets some parameters based on the type of sram. Notice it will always return a
@@ -237,7 +205,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
   // This performs a backdoor write. It will scramble the address and data, and add integrity bits.
   // Notice the address to be updated is not the same as the given address, and they can end up in
   // different tiles.
-  protected function void _sram_bkdr_write32(
+  local function void _sram_bkdr_write32(
       bit [bus_params_pkg::BUS_AW-1:0] addr,
       bit [31:0] data,
       bit is_main_ram, // if 1, main ram, otherwise, ret ram
@@ -256,26 +224,22 @@ class chip_sw_base_vseq extends chip_base_vseq;
     _sram_get_params(mem, num_tiles, size_bytes, is_main_ram);
 
     // calculate the scramble address
-    addr_scr = cfg.mem_bkdr_util_h[mem].get_sram_encrypt_addr(
-        addr, nonce, $clog2(num_tiles));
+    addr_scr = cfg.mem_bkdr_util_h[mem].get_sram_encrypt_addr(addr, nonce, $clog2(num_tiles));
+    addr_mask = size_bytes - 1;
 
     // determine which tile the scrambled address belongs
     tile_idx = addr_scr / size_bytes;
+    mem = chip_mem_e'(mem + tile_idx);
 
     // calculate the scrambled data
-    data_scr = cfg.mem_bkdr_util_h[mem].get_sram_encrypt32_intg_data(
-        addr, data, key, nonce,
-        $clog2(num_tiles));
-
-    // write the scrambled data into the targetted memory tile
-    mem = chip_mem_e'(mem + tile_idx);
-    addr_mask = size_bytes - 1;
+    data_scr = cfg.mem_bkdr_util_h[mem].get_sram_encrypt32_intg_data(addr, data, key, nonce,
+                                                                     $clog2(num_tiles));
     cfg.mem_bkdr_util_h[mem].write39integ(addr_scr & addr_mask, data_scr ^ flip_bits);
   endfunction
 
   // This performs an ecc check at a given address. The address and data need to be de-scrambled,
   // so the actual address to be checked will most likely be different, and at a different tile.
-  protected function logic [1:0] _sram_bkdr_ecc_check(
+  local function logic [1:0] _sram_bkdr_inject_ecc_error(
       bit [bus_params_pkg::BUS_AW-1:0] addr,
       bit is_main_ram, // if 1, main ram, otherwise, ret ram
       bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0]   key,
@@ -288,22 +252,19 @@ class chip_sw_base_vseq extends chip_base_vseq;
     bit [31:0] addr_mask;
     int        tile_idx;
     int        size_bytes;
-    prim_secded_pkg::secded_inv_39_32_t dec;
 
     _sram_get_params(mem, num_tiles, size_bytes, is_main_ram);
 
     // calculate the scramble address
-    addr_scr = cfg.mem_bkdr_util_h[mem].get_sram_encrypt_addr(
-        addr, nonce, $clog2(num_tiles));
+    addr_scr = cfg.mem_bkdr_util_h[mem].get_sram_encrypt_addr(addr, nonce, $clog2(num_tiles));
 
     // determine which tile the scrambled address belongs
     tile_idx = addr_scr / size_bytes;
     mem = chip_mem_e'(mem + tile_idx);
 
     addr_mask = size_bytes - 1;
-    data_scr = cfg.mem_bkdr_util_h[mem].read39integ(addr_scr & addr_mask);
-    dec = prim_secded_pkg::prim_secded_inv_39_32_dec(data_scr);
-    return dec.err;
+    cfg.mem_bkdr_util_h[mem].sram_inject_integ_error(addr & addr_mask, addr_scr & addr_mask, key,
+                                                     nonce);
   endfunction
 
   virtual task body();
