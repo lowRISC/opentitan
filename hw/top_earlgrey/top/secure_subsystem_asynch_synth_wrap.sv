@@ -199,11 +199,11 @@ module secure_subsystem_synth_wrap
    assign test_en_tieoff = test_enable_i;
 
    rstgen rstgen_i (
-     .clk_i      ( clk_i       ),
-     .rst_ni     ( rst_ni      ),
-     .test_mode_i( test_mode_i ),
-     .rst_no     ( s_rst_n     ),
-     .init_no    ( s_init_n    )
+     .clk_i      ( clk_i         ),
+     .rst_ni     ( rst_ni        ),
+     .test_mode_i( test_enable_i ),
+     .rst_no     ( s_rst_n       ),
+     .init_no    ( s_init_n      )
    );
 
    sync #(
