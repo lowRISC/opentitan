@@ -375,16 +375,25 @@
           resval: 0x0
           desc: '''
                 Defines the type of DMA operations.
-
-                0: Copy Operation, Simple copy from source to destination.
-                1: Reserved for hashing (SHA2). Perform inline hash operation using the specified algorithm.
-                2: Reserved for symmetric encryption
-                3: Reserved for symmetric decryption
-                4: Reserved for future use
-
-                Note that the Copy operation is a basic operation that needs to be supported.
-                Currently the other operations are reserved for a future implementation, and they are optional capabilities that may be included via design time options.
                 '''
+          enum: [
+            { value: "0",
+              name: "COPY"
+              desc: "Copy Operation, Simple copy from source to destination."
+            }
+            { value: "1",
+              name: "SHA256"
+              desc: "Perform inline hashing using SHA256."
+            }
+            { value: "2",
+              name: "SHA384"
+              desc: "Perform inline hashing using SHA384."
+            }
+            { value: "3",
+              name: "SHA512"
+              desc: "Perform inline hashing using SHA512."
+            }
+          ]
         }
         { bits: "6"
           name: "hardware_handshake_enable"
@@ -532,6 +541,28 @@
           desc: "Enable bits for incoming handshake interrupt wires."
         }
       ]
+    }
+    { multireg: {
+        name: "SHA2_DIGEST"
+        cname: "DMA"
+        desc: '''
+              Digest register for the inline hashing operation.
+              Depending on the used hashing mode, not all registers are used.
+                SHA256: Digest is stored in registers 0 to 7
+                SHA384: Digest is stored in registers 0 to 11
+                SHA512: Digest is stored in registers 0 to 15
+              '''
+        count: "16"
+        swaccess: "ro",
+        hwaccess: "hrw",
+        fields: [
+          { name: DATA
+            desc: ""
+            resval: "0"
+            bits: "31:0"
+          }
+        ]
+      }
     }
   ]
 }
