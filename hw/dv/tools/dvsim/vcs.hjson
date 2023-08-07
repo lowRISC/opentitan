@@ -106,6 +106,9 @@
                "-error=ENUMASSIGN",
                // Tasks must not be enabled in functions. Other tools do not allow this.
                "-error=TEIF"
+               // This helps avoid races in flops per Synopsys CASE 01552811.
+               // It causes flops to always use the sampled data value.
+               "-deraceclockdata"
                ]
 
   run_opts:   ["-licqueue",
