@@ -33,9 +33,9 @@ rust_library(
         "std",
     ],
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2021",
     proc_macro_deps = [
-        "@crate_index__num_enum_derive-0.5.11//:num_enum_derive",
+        "@crate_index__num_enum_derive-0.7.0//:num_enum_derive",
     ],
     rustc_flags = ["--cap-lints=allow"],
     tags = [
@@ -79,5 +79,5 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.5.11",
+    version = "0.7.0",
 )
