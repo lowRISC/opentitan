@@ -383,11 +383,10 @@ fn scan_usb_descriptor(usb_device: &UsbBackend) -> Result<DfuDescriptor> {
                 continue;
             }
             dfu_interface = interface.number();
-            if let Some(extra_bytes) = interface_desc.extra() {
-                // Extra bytes contains inforation encoded according to DFU specification.
-                if extra_bytes.len() >= 9 {
-                    xfer_size = extra_bytes[5] as u32 | (extra_bytes[6] as u32) << 8;
-                }
+            let extra_bytes = interface_desc.extra();
+            // Extra bytes contains inforation encoded according to DFU specification.
+            if extra_bytes.len() >= 9 {
+                xfer_size = extra_bytes[5] as u32 | (extra_bytes[6] as u32) << 8;
             }
             static DFU_SECTION_REGEX: Lazy<Regex> = Lazy::new(|| {
                 Regex::new("^@([^/]*)/0x([0-9a-fA-F]+)/([0-9]+)\\*([0-9]+)(..)").unwrap()

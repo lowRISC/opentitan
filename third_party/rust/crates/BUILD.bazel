@@ -333,7 +333,7 @@ alias(
 
 alias(
     name = "rusb",
-    actual = "@crate_index__rusb-0.8.1//:rusb",
+    actual = "@crate_index__rusb-0.9.3//:rusb",
     tags = ["manual"],
 )
 
