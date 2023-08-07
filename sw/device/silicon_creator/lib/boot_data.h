@@ -195,20 +195,6 @@ rom_error_t boot_data_write(const boot_data_t *boot_data);
 OT_WARN_UNUSED_RESULT
 rom_error_t boot_data_check(const boot_data_t *boot_data);
 
-/**
- * Populates fields not present in older versions of `boot_data_t`.
- *
- * For older `boot_data_t` entries, some fields may be missing after a call to
- * `boot_data_read()`. This function will populate fields with their default
- * values, the same values that `boot_data_read()` uses when returning default
- * boot data.
- *
- * @param boot_data A buffer the holds a boot data entry.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-rom_error_t boot_data_as_v2(boot_data_t *boot_data);
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
