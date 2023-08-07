@@ -70,9 +70,30 @@ otbn_library(
 )
 
 otbn_library(
-    name = "p256",
+    name = "p256_a2b",
     srcs = [
-        "p256.s",
+        "p256_a2b.s",
+    ],
+)
+
+otbn_library(
+    name = "p256_base",
+    srcs = [
+        "p256_base.s",
+    ],
+)
+
+otbn_library(
+    name = "p256_sign",
+    srcs = [
+        "p256_sign.s",
+    ],
+)
+
+otbn_library(
+    name = "p256_verify",
+    srcs = [
+        "p256_verify.s",
     ],
 )
 
@@ -82,7 +103,8 @@ otbn_binary(
         "p256_ecdh.s",
     ],
     deps = [
-        ":p256",
+        ":p256_a2b",
+        ":p256_base",
     ],
 )
 
@@ -92,7 +114,9 @@ otbn_binary(
         "p256_ecdsa.s",
     ],
     deps = [
-        ":p256",
+        ":p256_base",
+        ":p256_sign",
+        ":p256_verify",
     ],
 )
 
@@ -226,7 +250,9 @@ otbn_binary(
         "p256_ecdsa_sca.s",
     ],
     deps = [
-        ":p256",
+        ":p256_base",
+        ":p256_sign",
+        ":p256_verify",
     ],
 )
 
@@ -236,7 +262,7 @@ otbn_binary(
         "p256_key_from_seed_sca.s",
     ],
     deps = [
-        ":p256",
+        ":p256_base",
     ],
 )
 
@@ -246,7 +272,7 @@ otbn_binary(
         "p256_mod_inv_sca.s",
     ],
     deps = [
-        ":p256",
+        ":p256_base",
     ],
 )
 
