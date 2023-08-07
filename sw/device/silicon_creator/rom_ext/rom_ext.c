@@ -72,8 +72,9 @@ void rom_ext_init(void) {
 }
 
 OT_WARN_UNUSED_RESULT
-static rom_error_t rom_ext_verify(const manifest_t *manifest) {
-  RETURN_IF_ERROR(rom_ext_boot_policy_manifest_check(manifest));
+static rom_error_t rom_ext_verify(const manifest_t *manifest,
+                                  const boot_data_t *boot_data) {
+  RETURN_IF_ERROR(rom_ext_boot_policy_manifest_check(manifest, boot_data));
   const sigverify_rsa_key_t *key;
   RETURN_IF_ERROR(sigverify_rsa_key_get(
       sigverify_rsa_key_id_get(&manifest->rsa_modulus), lc_state, &key));
@@ -174,7 +175,7 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
 
 OT_WARN_UNUSED_RESULT
 static rom_error_t boot_svc_next_boot_bl0_slot_handler(
-    boot_svc_msg_t *boot_svc_msg) {
+    boot_svc_msg_t *boot_svc_msg, const boot_data_t *boot_data) {
   uint32_t msg_bl0_slot = boot_svc_msg->next_boot_bl0_slot_req.next_bl0_slot;
   const manifest_t *kNextSlot;
   switch (launder32(msg_bl0_slot)) {
@@ -193,7 +194,7 @@ static rom_error_t boot_svc_next_boot_bl0_slot_handler(
   boot_svc_next_boot_bl0_slot_res_init(kErrorOk,
                                        &boot_svc_msg->next_boot_bl0_slot_res);
 
-  HARDENED_RETURN_IF_ERROR(rom_ext_verify(kNextSlot));
+  HARDENED_RETURN_IF_ERROR(rom_ext_verify(kNextSlot, boot_data));
   // Boot fails if a verified ROM_EXT cannot be booted.
   HARDENED_RETURN_IF_ERROR(rom_ext_boot(kNextSlot));
   // `rom_ext_boot()` should never return `kErrorOk`, but if it does
@@ -272,7 +273,7 @@ static rom_error_t rom_ext_try_boot(void) {
       case kBootSvcNextBl0SlotReqType:
         HARDENED_CHECK_EQ(msg_type, kBootSvcNextBl0SlotReqType);
         HARDENED_RETURN_IF_ERROR(
-            boot_svc_next_boot_bl0_slot_handler(&boot_svc_msg));
+            boot_svc_next_boot_bl0_slot_handler(&boot_svc_msg, &boot_data));
         break;
       case kBootSvcPrimaryBl0SlotReqType:
         HARDENED_CHECK_EQ(msg_type, kBootSvcPrimaryBl0SlotReqType);
@@ -293,7 +294,7 @@ static rom_error_t rom_ext_try_boot(void) {
       rom_ext_boot_policy_manifests_get(&boot_data);
   rom_error_t error = kErrorRomExtBootFailed;
   for (size_t i = 0; i < ARRAYSIZE(manifests.ordered); ++i) {
-    error = rom_ext_verify(manifests.ordered[i]);
+    error = rom_ext_verify(manifests.ordered[i], &boot_data);
     if (error != kErrorOk) {
       continue;
     }

@@ -22,40 +22,60 @@ class RomExtBootPolicyTest : public rom_test::RomTest {
 };
 
 TEST_F(RomExtBootPolicyTest, ManifestCheck) {
+  boot_data_t boot_data{{0}};
+
   manifest_t manifest{};
   manifest.identifier = CHIP_BL0_IDENTIFIER;
 
   manifest.length = CHIP_BL0_SIZE_MIN;
   EXPECT_CALL(mock_manifest_, Check(&manifest)).WillOnce(Return(kErrorOk));
-  EXPECT_EQ(rom_ext_boot_policy_manifest_check(&manifest), kErrorOk);
+  EXPECT_EQ(rom_ext_boot_policy_manifest_check(&manifest, &boot_data),
+            kErrorOk);
 
   manifest.length = CHIP_BL0_SIZE_MAX >> 1;
   EXPECT_CALL(mock_manifest_, Check(&manifest)).WillOnce(Return(kErrorOk));
-  EXPECT_EQ(rom_ext_boot_policy_manifest_check(&manifest), kErrorOk);
+  EXPECT_EQ(rom_ext_boot_policy_manifest_check(&manifest, &boot_data),
+            kErrorOk);
 
   manifest.length = CHIP_BL0_SIZE_MAX;
   EXPECT_CALL(mock_manifest_, Check(&manifest)).WillOnce(Return(kErrorOk));
-  EXPECT_EQ(rom_ext_boot_policy_manifest_check(&manifest), kErrorOk);
+  EXPECT_EQ(rom_ext_boot_policy_manifest_check(&manifest, &boot_data),
+            kErrorOk);
 }
 
 TEST_F(RomExtBootPolicyTest, ManifestCheckBadIdentifier) {
+  boot_data_t boot_data{};
   manifest_t manifest{};
 
-  EXPECT_EQ(rom_ext_boot_policy_manifest_check(&manifest),
+  EXPECT_EQ(rom_ext_boot_policy_manifest_check(&manifest, &boot_data),
             kErrorBootPolicyBadIdentifier);
 }
 
 TEST_F(RomExtBootPolicyTest, ManifestCheckBadLength) {
+  boot_data_t boot_data{};
   manifest_t manifest{};
   manifest.identifier = CHIP_BL0_IDENTIFIER;
 
   manifest.length = CHIP_BL0_SIZE_MIN - 1;
-  EXPECT_EQ(rom_ext_boot_policy_manifest_check(&manifest),
+  EXPECT_EQ(rom_ext_boot_policy_manifest_check(&manifest, &boot_data),
             kErrorBootPolicyBadLength);
 
   manifest.length = CHIP_BL0_SIZE_MAX + 1;
-  EXPECT_EQ(rom_ext_boot_policy_manifest_check(&manifest),
+  EXPECT_EQ(rom_ext_boot_policy_manifest_check(&manifest, &boot_data),
             kErrorBootPolicyBadLength);
+}
+
+TEST_F(RomExtBootPolicyTest, ManifestCheckBadBl0SecVer) {
+  boot_data_t boot_data{};
+  boot_data.min_security_version_bl0 = 1;
+
+  manifest_t manifest{};
+  manifest.identifier = CHIP_BL0_IDENTIFIER;
+  manifest.length = CHIP_BL0_SIZE_MIN;
+  manifest.security_version = 0;
+
+  EXPECT_EQ(rom_ext_boot_policy_manifest_check(&manifest, &boot_data),
+            kErrorBootPolicyRollback);
 }
 
 struct ManifestOrderTestCase {

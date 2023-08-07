@@ -57,10 +57,12 @@ rom_ext_boot_policy_manifests_t rom_ext_boot_policy_manifests_get(
  * or equal to the minimum required security version.
  *
  * @param manifest A first boot owner boot stage manifest.
+ * @param boot_data The boot data for the current lifecycle state.
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t rom_ext_boot_policy_manifest_check(const manifest_t *manifest);
+rom_error_t rom_ext_boot_policy_manifest_check(const manifest_t *manifest,
+                                               const boot_data_t *boot_data);
 
 #ifdef __cplusplus
 }  // extern "C"
