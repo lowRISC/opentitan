@@ -815,29 +815,23 @@ module dma
         end
       end
 
-      DmaSendHostRead: begin
-        dma_host_tlul_req_valid = 1'b1;
-        dma_host_tlul_req_addr  = {src_addr_q[top_pkg::TL_AW-1:2], 2'b0}; // TLUL 4B aligned
-        dma_host_tlul_req_be    = req_src_be_q;
-
-        if (dma_host_tlul_gnt) begin
-          ctrl_state_d = DmaWaitHostReadResponse;
-        end else if (cfg_abort_en) begin
-          ctrl_state_d = DmaIdle;
-        end
-      end
-
+      DmaSendHostRead,
       DmaWaitHostReadResponse: begin
+        if (ctrl_state_q == DmaSendHostRead) begin
+          dma_host_tlul_req_valid = 1'b1;
+          dma_host_tlul_req_addr  = {src_addr_q[top_pkg::TL_AW-1:2], 2'b0}; // TLUL 4B aligned
+          dma_host_tlul_req_be    = req_src_be_q;
+        end
+
         read_rsp_error           = dma_host_tlul_rsp_err || dma_host_tlul_rsp_intg_err;
         capture_host_return_data = dma_host_tlul_rsp_valid && (!read_rsp_error);
 
-        if (dma_host_tlul_rsp_valid) begin
+        if (cfg_abort_en) begin
+          ctrl_state_d = DmaIdle;
+        end else if (dma_host_tlul_rsp_valid) begin
           if (read_rsp_error) begin
             next_error[DmaCompletionErr] = 1'b1;
-
-            ctrl_state_d = DmaError;
-          end else if (cfg_abort_en) begin
-            ctrl_state_d = DmaIdle;
+            ctrl_state_d                 = DmaError;
           end else begin
             // We received data, feed it into the SHA2 engine
             if (use_inline_hashing) begin
@@ -852,36 +846,33 @@ module dma
               OtInternalAddr: ctrl_state_d = DmaSendHostWrite;
               default: begin
                 next_error[DmaAsidErr] = 1'b1;
-                ctrl_state_d = DmaError;
+                ctrl_state_d           = DmaError;
               end
             endcase
           end
+        end else if (dma_host_tlul_gnt) begin
+          // Only Request handled
+          ctrl_state_d = DmaWaitHostReadResponse;
         end
       end
 
-      DmaSendCtnRead: begin
-        dma_ctn_tlul_req_valid = 1'b1;
-        dma_ctn_tlul_req_addr  = {src_addr_q[top_pkg::TL_AW-1:2], 2'b0}; // TLUL 4B aligned
-        dma_ctn_tlul_req_be    = req_src_be_q;
-
-        if (dma_ctn_tlul_gnt) begin
-          ctrl_state_d = DmaWaitCtnReadResponse;
-        end else if (cfg_abort_en) begin
-          ctrl_state_d = DmaIdle;
-        end
-      end
-
+      DmaSendCtnRead,
       DmaWaitCtnReadResponse: begin
-        read_rsp_error           = dma_ctn_tlul_rsp_err || dma_ctn_tlul_rsp_intg_err;
+        if (ctrl_state_q == DmaSendCtnRead) begin
+          dma_ctn_tlul_req_valid = 1'b1;
+          dma_ctn_tlul_req_addr  = {src_addr_q[top_pkg::TL_AW-1:2], 2'b0}; // TLUL 4B aligned
+          dma_ctn_tlul_req_be    = req_src_be_q;
+        end
+
+        read_rsp_error          = dma_ctn_tlul_rsp_err || dma_ctn_tlul_rsp_intg_err;
         capture_ctn_return_data = dma_ctn_tlul_rsp_valid && (!read_rsp_error);
 
-        if (dma_ctn_tlul_rsp_valid) begin
+        if (cfg_abort_en) begin
+          ctrl_state_d = DmaIdle;
+        end else if (dma_ctn_tlul_rsp_valid) begin
           if (read_rsp_error) begin
             next_error[DmaCompletionErr] = 1'b1;
-
             ctrl_state_d = DmaError;
-          end else if (cfg_abort_en) begin
-            ctrl_state_d = DmaIdle;
           end else begin
             // We received data, feed it into the SHA2 engine
             if (use_inline_hashing) begin
@@ -900,6 +891,9 @@ module dma
               end
             endcase
           end
+        end else if (dma_ctn_tlul_gnt) begin
+          // Only Request handled
+          ctrl_state_d = DmaWaitCtnReadResponse;
         end
       end
 
@@ -950,60 +944,15 @@ module dma
         end
       end
 
-      DmaSendHostWrite: begin
-        dma_host_tlul_req_valid = 1'b1;
-        dma_host_tlul_req_addr  = {dst_addr_q[top_pkg::TL_AW-1:2], 2'b0};  // TLUL 4B aligned
-        dma_host_tlul_req_we    = 1'b1;
-        dma_host_tlul_req_wdata = read_return_data_q;
-        dma_host_tlul_req_be    = req_dst_be_q;
-
-        // If using inline hashing and data is not yet comsumed, apply it
-        if (use_inline_hashing && !sha2_consumed_q) begin
-          sha2_valid = 1'b1;
-          sha2_consumed_d = sha2_ready;
-        end
-
-        if (dma_host_tlul_gnt) begin
-          ctrl_state_d = DmaWaitHostWriteResponse;
-        end else if (cfg_abort_en) begin
-          ctrl_state_d = DmaIdle;
-        end
-      end
-
+      DmaSendHostWrite,
       DmaWaitHostWriteResponse: begin
-        // If using inline hashing and data is not yet comsumed, apply it
-        if (use_inline_hashing && !sha2_consumed_q) begin
-          sha2_valid = 1'b1;
-          sha2_consumed_d = sha2_ready;
+        if (ctrl_state_q == DmaSendHostWrite) begin
+          dma_host_tlul_req_valid = 1'b1;
+          dma_host_tlul_req_addr  = {dst_addr_q[top_pkg::TL_AW-1:2], 2'b0};  // TLUL 4B aligned
+          dma_host_tlul_req_we    = 1'b1;
+          dma_host_tlul_req_wdata = read_return_data_q;
+          dma_host_tlul_req_be    = req_dst_be_q;
         end
-        // writes also get a resp valid, but no data, need to wait for this to not
-        // overrun tlul adapter
-        if (dma_host_tlul_rsp_valid) begin
-          transfer_byte_d       = transfer_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
-          capture_transfer_byte = 1'b1;
-
-          if (cfg_abort_en) begin
-            ctrl_state_d = DmaIdle;
-          end else if (use_inline_hashing && !(sha2_ready || sha2_consumed_q)) begin
-            ctrl_state_d = DmaShaWait;
-          end else if (remaining_bytes <= TRANSFER_BYTES_WIDTH'(transfer_width_q)) begin
-            if (use_inline_hashing) begin
-              ctrl_state_d = DmaShaFinalize;
-            end else begin
-              ctrl_state_d = DmaIdle;
-            end
-          end else begin
-            ctrl_state_d = DmaAddrSetup;
-          end
-        end
-      end
-
-      DmaSendCtnWrite: begin
-        dma_ctn_tlul_req_valid = 1'b1;
-        dma_ctn_tlul_req_addr  = {dst_addr_q[top_pkg::TL_AW-1:2], 2'b0};  // TLUL 4B aligned
-        dma_ctn_tlul_req_we    = 1'b1;
-        dma_ctn_tlul_req_wdata = read_return_data_q;
-        dma_ctn_tlul_req_be    = req_dst_be_q;
 
         // If using inline hashing and data is not yet comsumed, apply it
         if (use_inline_hashing && !sha2_consumed_q) begin
@@ -1011,30 +960,15 @@ module dma
           sha2_consumed_d = sha2_ready;
         end
 
-        if (dma_ctn_tlul_gnt) begin
-          ctrl_state_d = DmaWaitCtnWriteResponse;
-        end else if (cfg_abort_en) begin
+        if (cfg_abort_en) begin
           ctrl_state_d = DmaIdle;
-        end
-      end
-
-      DmaWaitCtnWriteResponse: begin
-        // If using inline hashing and data is not yet comsumed, apply it
-        if (use_inline_hashing && !sha2_consumed_q) begin
-          sha2_valid = 1'b1;
-          sha2_consumed_d = sha2_ready;
-        end
-        // writes also get a resp valid, but no data, need to wait for this to not
-        // overrun tlul adapter
-        if (dma_ctn_tlul_rsp_valid) begin
+        end else if (use_inline_hashing && !(sha2_ready || sha2_consumed_q)) begin
+            ctrl_state_d = DmaShaWait;
+        end else if (dma_host_tlul_rsp_valid) begin
           transfer_byte_d       = transfer_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
           capture_transfer_byte = 1'b1;
 
-          if (cfg_abort_en) begin
-            ctrl_state_d = DmaIdle;
-          end else if (use_inline_hashing && !(sha2_ready || sha2_consumed_q)) begin
-            ctrl_state_d = DmaShaWait;
-          end else if (remaining_bytes <= TRANSFER_BYTES_WIDTH'(transfer_width_q)) begin
+          if (remaining_bytes <= TRANSFER_BYTES_WIDTH'(transfer_width_q)) begin
             if (use_inline_hashing) begin
               ctrl_state_d = DmaShaFinalize;
             end else begin
@@ -1043,6 +977,48 @@ module dma
           end else begin
             ctrl_state_d = DmaAddrSetup;
           end
+        end else if (dma_host_tlul_gnt) begin
+          // Only Request handled
+          ctrl_state_d = DmaWaitHostWriteResponse;
+        end
+      end
+
+      DmaSendCtnWrite,
+      DmaWaitCtnWriteResponse: begin
+        if (ctrl_state_q == DmaSendCtnWrite) begin
+          dma_ctn_tlul_req_valid = 1'b1;
+          dma_ctn_tlul_req_addr  = {dst_addr_q[top_pkg::TL_AW-1:2], 2'b0};  // TLUL 4B aligned
+          dma_ctn_tlul_req_we    = 1'b1;
+          dma_ctn_tlul_req_wdata = read_return_data_q;
+          dma_ctn_tlul_req_be    = req_dst_be_q;
+        end
+
+        // If using inline hashing and data is not yet comsumed, apply it
+        if (use_inline_hashing && !sha2_consumed_q) begin
+          sha2_valid = 1'b1;
+          sha2_consumed_d = sha2_ready;
+        end
+
+        if (cfg_abort_en) begin
+          ctrl_state_d = DmaIdle;
+        end else if (use_inline_hashing && !(sha2_ready || sha2_consumed_q)) begin
+            ctrl_state_d = DmaShaWait;
+        end else if (dma_ctn_tlul_rsp_valid) begin
+          transfer_byte_d       = transfer_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
+          capture_transfer_byte = 1'b1;
+
+          if (remaining_bytes <= TRANSFER_BYTES_WIDTH'(transfer_width_q)) begin
+            if (use_inline_hashing) begin
+              ctrl_state_d = DmaShaFinalize;
+            end else begin
+              ctrl_state_d = DmaIdle;
+            end
+          end else begin
+            ctrl_state_d = DmaAddrSetup;
+          end
+        end else if (dma_ctn_tlul_gnt) begin
+          // Only Request handled
+          ctrl_state_d = DmaWaitCtnWriteResponse;
         end
       end
 
