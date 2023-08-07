@@ -4,8 +4,8 @@
 
 #include "sw/ip/spi_host/test/utils/spi_flash_testutils.h"
 
-#include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/macros.h"
+#include "sw/lib/sw/device/base/bitfield.h"
+#include "sw/lib/sw/device/base/macros.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/spi_device/test/utils/spi_device_testutils.h"
 #include "sw/ip/spi_host/dif/dif_spi_host.h"

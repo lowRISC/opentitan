@@ -808,6 +808,7 @@ cc_library(
     hdrs = ["entropy_src_kat_impl.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/ip/base/dif:base",
         "//sw/lib/sw/device/base:memory",

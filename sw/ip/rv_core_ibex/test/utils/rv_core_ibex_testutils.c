@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/runtime/ibex.h"
+#include "sw/lib/sw/device/runtime/ibex.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/rv_core_ibex/dif/dif_rv_core_ibex.h"
 

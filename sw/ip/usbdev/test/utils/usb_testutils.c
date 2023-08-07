@@ -6,10 +6,9 @@
 
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/usbdev/dif/dif_usbdev.h"
+#include "sw/ip/usbdev/driver/usbdev.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
-#define USBDEV_BASE_ADDR TOP_EARLGREY_USBDEV_BASE_ADDR
+#define USBDEV_BASE_ADDR kUsbdevBaseAddr[0]
 
 static dif_usbdev_t usbdev;
 static dif_usbdev_buffer_pool_t buffer_pool;

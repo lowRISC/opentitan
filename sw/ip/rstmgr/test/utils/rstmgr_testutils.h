@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/base/status.h"
+#include "sw/lib/sw/device/base/status.h"
 #include "sw/ip/rstmgr/dif/dif_rstmgr.h"
 
 /**

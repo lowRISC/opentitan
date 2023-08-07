@@ -6,7 +6,7 @@
 
 #include <stdbool.h>
 
-#include "sw/device/lib/runtime/log.h"
+#include "sw/lib/sw/device/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/lc_ctrl/dif/dif_lc_ctrl.h"
 

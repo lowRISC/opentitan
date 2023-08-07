@@ -4,10 +4,10 @@
 
 #include "sw/ip/pinmux/test/utils/pinmux_testutils.h"
 
-#include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/status.h"
-#include "sw/device/lib/runtime/hart.h"
+#include "sw/lib/sw/device/arch/device.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/status.h"
+#include "sw/lib/sw/device/runtime/hart.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/base/dif/dif_base.h"
 #include "sw/ip/gpio/dif/dif_gpio.h"
@@ -150,7 +150,7 @@ uint32_t pinmux_testutils_get_testable_gpios_mask(void) {
 
 uint32_t pinmux_testutils_read_strap_pin(dif_pinmux_t *pinmux, dif_gpio_t *gpio,
                                          dif_gpio_pin_t io,
-                                         top_earlgrey_muxed_pads_t pad) {
+                                         dif_pinmux_index_t pad) {
   // Turn off the pull enable on the pad and read the IO.
   dif_pinmux_pad_attr_t attr = {.flags = 0};
   dif_pinmux_pad_attr_t attr_out;

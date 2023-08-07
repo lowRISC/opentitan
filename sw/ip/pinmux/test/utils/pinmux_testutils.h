@@ -7,11 +7,9 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/base/status.h"
+#include "sw/lib/sw/device/base/status.h"
 #include "sw/ip/gpio/dif/dif_gpio.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
-
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 /**
  * Default pinmux initialization.
@@ -58,7 +56,7 @@ uint32_t pinmux_testutils_get_testable_gpios_mask(void);
  */
 uint32_t pinmux_testutils_read_strap_pin(dif_pinmux_t *pinmux, dif_gpio_t *gpio,
                                          dif_gpio_pin_t io,
-                                         top_earlgrey_muxed_pads_t pad);
+                                         dif_pinmux_index_t pad);
 
 /**
  * Reads the OpenTitan sw strap pins for the strap configuration value.

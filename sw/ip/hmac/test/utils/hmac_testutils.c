@@ -6,7 +6,7 @@
 
 #include <stdbool.h>
 
-#include "sw/device/lib/runtime/ibex.h"
+#include "sw/lib/sw/device/runtime/ibex.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/hmac/dif/dif_hmac.h"
 

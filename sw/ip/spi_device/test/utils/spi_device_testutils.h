@@ -8,7 +8,7 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/status.h"
+#include "sw/lib/sw/device/base/status.h"
 #include "sw/device/lib/testing/json/spi_passthru.h"
 #include "sw/ip/spi_device/dif/dif_spi_device.h"
 

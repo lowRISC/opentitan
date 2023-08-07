@@ -8,7 +8,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/status.h"
+#include "sw/lib/sw/device/base/status.h"
 #include "sw/ip/sram_ctrl/dif/dif_sram_ctrl.h"
 
 /**

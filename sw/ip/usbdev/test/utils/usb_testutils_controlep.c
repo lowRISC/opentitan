@@ -4,7 +4,7 @@
 
 #include "sw/ip/usbdev/test/utils/usb_testutils_controlep.h"
 
-#include "sw/device/lib/base/macros.h"
+#include "sw/lib/sw/device/base/macros.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/usbdev/test/utils/usb_testutils.h"
 #include "sw/ip/usbdev/dif/dif_usbdev.h"

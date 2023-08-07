@@ -8,15 +8,14 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/runtime/hart.h"
-#include "sw/device/lib/runtime/ibex.h"
-#include "sw/device/lib/runtime/log.h"
+#include "sw/lib/sw/device/base/mmio.h"
+#include "sw/lib/sw/device/runtime/hart.h"
+#include "sw/lib/sw/device/runtime/ibex.h"
+#include "sw/lib/sw/device/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/i2c/dif/dif_i2c.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "i2c_regs.h"  // Generated.
 
 enum {
@@ -30,66 +29,6 @@ static const dif_i2c_fmt_flags_t kDefaultFlags = {.start = false,
                                                   .read = false,
                                                   .read_cont = false,
                                                   .suppress_nak_irq = false};
-
-typedef struct i2c_pinmux_map {
-  const top_earlgrey_pinmux_mio_out_t mio_out;
-  const top_earlgrey_pinmux_insel_t insel;
-  const top_earlgrey_pinmux_peripheral_in_t peripheral_in;
-  const top_earlgrey_pinmux_outsel_t outsel;
-} i2c_pinmux_map_t;
-
-typedef struct i2c_pinmux_conf {
-  i2c_pinmux_map_t sda;
-  i2c_pinmux_map_t scl;
-} i2c_pinmux_conf_t;
-
-static const i2c_pinmux_conf_t pinmux_conf[] = {
-    // I2C0.
-    {.sda =
-         {
-             .mio_out = kTopEarlgreyPinmuxMioOutIoa7,
-             .insel = kTopEarlgreyPinmuxInselIoa7,
-             .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c0Sda,
-             .outsel = kTopEarlgreyPinmuxOutselI2c0Sda,
-         },
-     .scl =
-         {
-             .mio_out = kTopEarlgreyPinmuxMioOutIoa8,
-             .insel = kTopEarlgreyPinmuxInselIoa8,
-             .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c0Scl,
-             .outsel = kTopEarlgreyPinmuxOutselI2c0Scl,
-         }},
-    // I2C1.
-    {.sda =
-         {
-             .mio_out = kTopEarlgreyPinmuxMioOutIob10,
-             .insel = kTopEarlgreyPinmuxInselIob10,
-             .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c1Sda,
-             .outsel = kTopEarlgreyPinmuxOutselI2c1Sda,
-         },
-     .scl =
-         {
-             .mio_out = kTopEarlgreyPinmuxMioOutIob9,
-             .insel = kTopEarlgreyPinmuxInselIob9,
-             .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c1Scl,
-             .outsel = kTopEarlgreyPinmuxOutselI2c1Scl,
-         }},
-    // I2C2.
-    {.sda =
-         {
-             .mio_out = kTopEarlgreyPinmuxMioOutIob12,
-             .insel = kTopEarlgreyPinmuxInselIob12,
-             .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c2Sda,
-             .outsel = kTopEarlgreyPinmuxOutselI2c2Sda,
-         },
-     .scl =
-         {
-             .mio_out = kTopEarlgreyPinmuxMioOutIob11,
-             .insel = kTopEarlgreyPinmuxInselIob11,
-             .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c2Scl,
-             .outsel = kTopEarlgreyPinmuxOutselI2c2Scl,
-         }},
-};
 
 status_t i2c_testutils_write(const dif_i2c_t *i2c, uint8_t addr,
                              uint8_t byte_count, const uint8_t *data,

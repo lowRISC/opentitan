@@ -5,7 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_CSRNG_TESTUTILS_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_CSRNG_TESTUTILS_H_
 
-#include "sw/device/lib/base/status.h"
+#include "sw/lib/sw/device/base/status.h"
 #include "sw/ip/csrng/dif/dif_csrng.h"
 
 /**

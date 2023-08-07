@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/base/status.h"
+#include "sw/lib/sw/device/base/status.h"
 #include "sw/ip/aon_timer/dif/dif_aon_timer.h"
 
 /**

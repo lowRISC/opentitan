@@ -4,22 +4,25 @@
 
 #include "sw/ip/keymgr/test/utils/keymgr_testutils.h"
 
-#include "sw/device/lib/runtime/ibex.h"
-#include "sw/device/lib/runtime/log.h"
+#include "sw/lib/sw/device/runtime/ibex.h"
+#include "sw/lib/sw/device/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
+#include "sw/ip/flash_ctrl/driver/flash_ctrl.h"
 #include "sw/ip/flash_ctrl/test/utils/flash_ctrl_testutils.h"
 #include "sw/ip/keymgr/dif/dif_keymgr.h"
+#include "sw/ip/keymgr/driver/keymgr.h"
 #include "sw/ip/kmac/dif/dif_kmac.h"
+#include "sw/ip/kmac/driver/kmac.h"
 #include "sw/ip/kmac/test/utils/kmac_testutils.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
+#include "sw/ip/otp_ctrl/driver/otp_ctrl.h"
 #include "sw/ip/otp_ctrl/test/utils/otp_ctrl_testutils.h"
 #include "sw/ip/rstmgr/dif/dif_rstmgr.h"
+#include "sw/ip/rstmgr/driver/rstmgr.h"
 #include "sw/ip/rstmgr/test/utils/rstmgr_testutils.h"
-
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 enum {
   /** Flash Secret partition ID. */
@@ -76,8 +79,7 @@ status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
   dif_rstmgr_t rstmgr;
   dif_rstmgr_reset_info_bitfield_t info;
 
-  TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR),
-                      &rstmgr));
+  TRY(dif_rstmgr_init(mmio_region_from_addr(kRstmgrAonBaseAddr[0]), &rstmgr));
   info = rstmgr_testutils_reason_get();
 
   // Check the last word of the retention SRAM creator area to determine the
@@ -93,14 +95,14 @@ status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
     LOG_INFO("Powered up for the first time, program flash");
 
     TRY(dif_flash_ctrl_init_state(
-        &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+        &flash, mmio_region_from_addr(kFlashCtrlCoreBaseAddr[0])));
 
     TRY(keymgr_testutils_flash_init(&flash, &kCreatorSecret, &kOwnerSecret));
 
     // Lock otp secret partition.
     dif_otp_ctrl_t otp;
     TRY(dif_otp_ctrl_init(
-        mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
+        mmio_region_from_addr(kOtpCtrlCoreBaseAddr[0]), &otp));
     TRY(otp_ctrl_testutils_lock_partition(&otp, kDifOtpCtrlPartitionSecret2,
                                           0));
 
@@ -118,8 +120,7 @@ status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
         "Powered up for the second time, actuate keymgr and perform test.");
 
     // Initialize KMAC in preparation for keymgr use.
-    TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR),
-                      kmac));
+    TRY(dif_kmac_init(mmio_region_from_addr(kKmacBaseAddr[0]), kmac));
 
     // We shouldn't use the KMAC block's default entropy setting for keymgr, so
     // configure it to use software entropy (and a sideloaded key, although it
@@ -127,8 +128,7 @@ status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
     TRY(kmac_testutils_config(kmac, true));
 
     // Initialize keymgr context.
-    TRY(dif_keymgr_init(mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR),
-                        keymgr));
+    TRY(dif_keymgr_init(mmio_region_from_addr(kKeymgrBaseAddr[0]), keymgr));
 
     // Advance to Initialized state.
     TRY(keymgr_testutils_check_state(keymgr, kDifKeymgrStateReset));

@@ -10,10 +10,10 @@
 
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
+#include "sw/ip/flash_ctrl/driver/flash_ctrl.h"
 #include "sw/ip/flash_ctrl/test/utils/flash_ctrl_testutils.h"
 
 #include "flash_ctrl_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 enum {
   kNonVolatileCounterFlashWords = 256,
@@ -84,7 +84,7 @@ status_t flash_ctrl_testutils_counter_set_at_least(
   uint32_t new_val[FLASH_CTRL_PARAM_BYTES_PER_WORD / sizeof(uint32_t)] = {0, 0};
   return flash_ctrl_testutils_write(flash_state,
                                     (uint32_t)&kNvCounters[counter][val - 1] -
-                                        TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+                                        kFlashCtrlMemBaseAddr[0],
                                     0, new_val, kDifFlashCtrlPartitionTypeData,
                                     ARRAYSIZE(new_val));
 }
@@ -102,8 +102,7 @@ status_t flash_ctrl_testutils_counter_init_zero(
   for (int ii = 0; ii < kNonVolatileCounterFlashWords; ii++) {
     TRY(flash_ctrl_testutils_erase_and_write_page(
         flash_state,
-        (uint32_t)&kNvCounters[counter][ii] -
-            TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+        (uint32_t)&kNvCounters[counter][ii] - kFlashCtrlMemBaseAddr[0],
         0, new_val, kDifFlashCtrlPartitionTypeData, ARRAYSIZE(new_val)));
   }
   return OK_STATUS();

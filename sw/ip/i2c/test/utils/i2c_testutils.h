@@ -7,9 +7,52 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/base/status.h"
+#include "sw/lib/sw/device/base/status.h"
 #include "sw/ip/i2c/dif/dif_i2c.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
+
+/**
+ * Pinmux configuration for a single pin.
+ */
+typedef struct i2c_pinmux_map {
+  /**
+   * Pinmux MIO Output.
+   */
+  const dif_pinmux_index_t mio_out;
+  /**
+   * Pinmux MIO Input Selector.
+   */
+  const dif_pinmux_index_t insel;
+  /**
+   * Pinmux Peripheral Input.
+   */
+  const dif_pinmux_index_t peripheral_in;
+  /**
+   * Pinmux Peripheral Output Selector.
+   */
+  const dif_pinmux_index_t outsel;
+} i2c_pinmux_map_t;
+
+/**
+ * Pinmux configuration for I2C pins.
+ */
+typedef struct i2c_pinmux_conf {
+  /**
+   * SDA configuration.
+   */
+  i2c_pinmux_map_t sda;
+  /**
+   * SCL configuration.
+   */
+  i2c_pinmux_map_t scl;
+} i2c_pinmux_conf_t;
+
+/**
+ * I2C pinmux configuratrion.
+ *
+ * This array provides pinmux configuration information for all defined I2Cs.
+ */
+extern const i2c_pinmux_conf_t pinmux_conf[];
 
 /**
  * Construct an I2C write as an I2C host.

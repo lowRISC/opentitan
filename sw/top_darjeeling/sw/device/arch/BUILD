@@ -5,9 +5,27 @@
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
+    name = "drivers",
+    srcs = ["drivers.c"],
+    deps = [
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//sw/top_darjeeling/sw/drivers:csrng",
+        "//sw/top_darjeeling/sw/drivers:edn",
+        "//sw/top_darjeeling/sw/drivers:entropy_src",
+        "//sw/top_darjeeling/sw/drivers:flash_ctrl",
+        "//sw/top_darjeeling/sw/drivers:keymgr",
+        "//sw/top_darjeeling/sw/drivers:kmac",
+        "//sw/top_darjeeling/sw/drivers:otp_ctrl",
+        "//sw/top_darjeeling/sw/drivers:rstmgr",
+        "//sw/top_darjeeling/sw/drivers:usbdev",
+    ],
+)
+
+cc_library(
     name = "fpga_cw305",
     srcs = ["device_fpga_cw305.c"],
     deps = [
+        ":drivers",
         "//sw/device/silicon_creator/lib:rom_print",
         "//sw/device/silicon_creator/lib/drivers:ibex",
         "//sw/lib/sw/device/arch:device",
@@ -19,6 +37,7 @@ cc_library(
     name = "fpga_cw310",
     srcs = ["device_fpga_cw310.c"],
     deps = [
+        ":drivers",
         "//sw/device/silicon_creator/lib:rom_print",
         "//sw/device/silicon_creator/lib/drivers:ibex",
         "//sw/lib/sw/device/arch:device",
@@ -30,6 +49,7 @@ cc_library(
     name = "sim_dv",
     srcs = ["device_sim_dv.c"],
     deps = [
+        ":drivers",
         "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/lib/sw/device/arch:device",
@@ -40,6 +60,7 @@ cc_library(
     name = "sim_verilator",
     srcs = ["device_sim_verilator.c"],
     deps = [
+        ":drivers",
         "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/lib/sw/device/arch:device",

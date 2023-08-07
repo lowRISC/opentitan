@@ -5,7 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_AES_TESTUTILS_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_AES_TESTUTILS_H_
 
-#include "sw/device/lib/runtime/ibex.h"
+#include "sw/lib/sw/device/runtime/ibex.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/aes/dif/dif_aes.h"
 

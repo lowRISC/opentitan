@@ -4,7 +4,7 @@
 
 #include "sw/ip/clkmgr/test/utils/clkmgr_testutils.h"
 
-#include "sw/device/lib/base/math.h"
+#include "sw/lib/sw/device/base/math.h"
 #include "sw/ip/clkmgr/dif/dif_clkmgr.h"
 
 static const char *measure_clock_names[kDifClkmgrMeasureClockUsb + 1] = {
@@ -51,7 +51,7 @@ static uint32_t cast_safely(uint64_t val) {
 }
 
 void initialize_expected_counts(void) {
-  // The expected counts depend on the device, per sw/device/lib/arch/device.h.
+  // The expected counts depend on the device, per sw/lib/sw/device/arch/device.h.
   // Notice the ratios are small enough to fit a uint32_t, even if the Hz number
   // is in uint64_t.
   // The expected counts are derived from the ratios of the frequencies of the

@@ -9,7 +9,7 @@ cc_library(
     srcs = ["profile.c"],
     hdrs = ["profile.h"],
     deps = [
-        "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/lib/sw/device/runtime:ibex",
     ],
 )

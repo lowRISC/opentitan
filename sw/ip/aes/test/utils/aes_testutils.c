@@ -5,15 +5,16 @@
 #include "sw/ip/aes/test/utils/aes_testutils.h"
 
 #if !OT_IS_ENGLISH_BREAKFAST
-#include "sw/device/lib/base/mmio.h"
+#include "sw/lib/sw/device/base/mmio.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/csrng/dif/dif_csrng.h"
+#include "sw/ip/csrng/driver/csrng.h"
 #include "sw/ip/csrng/dif/shared/dif_csrng_shared.h"
 #include "sw/ip/csrng/test/utils/csrng_testutils.h"
 #include "sw/ip/edn/dif/dif_edn.h"
+#include "sw/ip/edn/driver/edn.h"
 
 #include "csrng_regs.h"  // Generated
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #endif
 
 // `extern` declarations to give the inline functions in the
@@ -79,9 +80,9 @@ const uint32_t kEdnSeedMaterialReseed[kEdnSeedMaterialLen] = {
 
 status_t aes_testutils_masking_prng_zero_output_seed(void) {
   const dif_csrng_t csrng = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
+      .base_addr = mmio_region_from_addr(kCsrngBaseAddr[0])};
   const dif_edn_t edn0 = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
+      .base_addr = mmio_region_from_addr(kEdnBaseAddr[0])};
 
   // Shutdown EDN0 and CSRNG
   TRY(dif_edn_stop(&edn0));
@@ -138,7 +139,7 @@ status_t aes_testutils_masking_prng_zero_output_seed(void) {
 
 status_t aes_testutils_csrng_kat(void) {
   const dif_csrng_t csrng = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
+      .base_addr = mmio_region_from_addr(kCsrngBaseAddr[0])};
 
   // Instantiate CSRNG with seed material suitable for switching the AES masking
   // off.
