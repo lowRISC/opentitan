@@ -11,12 +11,15 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # Apache-2.0 OR MIT
+#     "TODO",  # MIT OR Apache-2.0
 # ])
 
 rust_library(
-    name = "der",
+    name = "rsa",
     srcs = glob(["**/*.rs"]),
+    aliases = {
+        "@crate_index__num-bigint-dig-0.8.4//:num_bigint_dig": "num_bigint",
+    },
     compile_data = glob(
         include = ["**"],
         exclude = [
@@ -29,20 +32,17 @@ rust_library(
         ],
     ),
     crate_features = [
-        "alloc",
-        "const-oid",
-        "oid",
+        "default",
         "pem",
-        "pem-rfc7468",
         "std",
-        "zeroize",
+        "u64_digit",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=der",
+        "crate-name=rsa",
         "manual",
         "noclippy",
         "norustfmt",
@@ -81,10 +81,21 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.6.1",
+    version = "0.9.2",
     deps = [
+        "@crate_index__byteorder-1.4.3//:byteorder",
         "@crate_index__const-oid-0.9.5//:const_oid",
-        "@crate_index__pem-rfc7468-0.6.0//:pem_rfc7468",
+        "@crate_index__digest-0.10.7//:digest",
+        "@crate_index__num-bigint-dig-0.8.4//:num_bigint_dig",
+        "@crate_index__num-integer-0.1.45//:num_integer",
+        "@crate_index__num-iter-0.1.43//:num_iter",
+        "@crate_index__num-traits-0.2.16//:num_traits",
+        "@crate_index__pkcs1-0.7.5//:pkcs1",
+        "@crate_index__pkcs8-0.10.2//:pkcs8",
+        "@crate_index__rand_core-0.6.4//:rand_core",
+        "@crate_index__signature-2.1.0//:signature",
+        "@crate_index__spki-0.7.2//:spki",
+        "@crate_index__subtle-2.5.0//:subtle",
         "@crate_index__zeroize-1.6.0//:zeroize",
     ],
 )
