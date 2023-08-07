@@ -147,10 +147,8 @@ The second ROM partition with patching capability is added to the architecture d
 
   - Replacement code to potentially faulty instruction(s) is ROM.
 
-  - Variable size - few bytes to few KB (can be larger than the patched location when execution is redirected as part of the patch).
-
-    - Determined at the time of patch construction.
-    - Size limited by the minimum size of total patch partition in OTP and the patch SRAM.
+  - Variable size - few bytes to few KB.
+    To alter a large block of ROM code, the patch can include a branch that redirects execution to code in patch SRAM, that need not be in OTP.
 
 - **Signature**:
 
