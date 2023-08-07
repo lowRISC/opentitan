@@ -12,6 +12,9 @@
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
+#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_empty.h"
+#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_header.h"
+#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_min_bl0_sec_ver.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
@@ -236,6 +239,24 @@ static rom_error_t boot_svc_primary_boot_bl0_slot_handler(
 }
 
 OT_WARN_UNUSED_RESULT
+static rom_error_t boot_svc_min_sec_ver_handler(boot_svc_msg_t *boot_svc_msg,
+                                                boot_data_t *boot_data) {
+  boot_data->min_security_version_bl0 =
+      boot_svc_msg->min_bl0_sec_ver_req.min_bl0_sec_ver;
+
+  // Write boot data, updating relevant fields and recomputing the digest.
+  HARDENED_RETURN_IF_ERROR(boot_data_write(boot_data));
+  // Read the boot data back to ensure the correct policy is used on this boot.
+  HARDENED_RETURN_IF_ERROR(boot_data_read(lc_state, boot_data));
+  HARDENED_RETURN_IF_ERROR(boot_data_check(boot_data));
+
+  boot_svc_min_bl0_sec_ver_res_init(kErrorOk,
+                                    &boot_svc_msg->min_bl0_sec_ver_res);
+
+  return kErrorOk;
+}
+
+OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_try_boot(void) {
   boot_data_t boot_data;
   HARDENED_RETURN_IF_ERROR(boot_data_read(lc_state, &boot_data));
@@ -257,6 +278,11 @@ static rom_error_t rom_ext_try_boot(void) {
         HARDENED_CHECK_EQ(msg_type, kBootSvcPrimaryBl0SlotReqType);
         HARDENED_RETURN_IF_ERROR(
             boot_svc_primary_boot_bl0_slot_handler(&boot_svc_msg, &boot_data));
+        break;
+      case kBootSvcMinBl0SecVerReqType:
+        HARDENED_CHECK_EQ(msg_type, kBootSvcMinBl0SecVerReqType);
+        HARDENED_RETURN_IF_ERROR(
+            boot_svc_min_sec_ver_handler(&boot_svc_msg, &boot_data));
         break;
       default:
         HARDENED_TRAP();
