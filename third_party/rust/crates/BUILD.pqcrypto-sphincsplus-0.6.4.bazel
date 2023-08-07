@@ -30,9 +30,6 @@ rust_library(
         ],
     ),
     crate_features = [
-        "aes",
-        "avx2",
-        "default",
         "std",
     ],
     crate_root = "src/lib.rs",
@@ -95,9 +92,6 @@ cargo_build_script(
         "BAZEL_PQCRYPTO_INTERNALS_INCLUDES": "$(rootpaths @crate_index__pqcrypto-internals-0.2.4//:include)",
     },
     crate_features = [
-        "aes",
-        "avx2",
-        "default",
         "std",
     ],
     crate_name = "build_script_build",
