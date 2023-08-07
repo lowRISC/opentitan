@@ -65,7 +65,7 @@ impl StagedProgressBar {
     pub fn enable_steady_tick(&self, duration: Duration) {
         let bar = self.current_progress_bar.borrow();
         let bar = bar.as_ref().unwrap();
-        bar.enable_steady_tick(duration.as_millis() as u64);
+        bar.enable_steady_tick(duration);
     }
 
     /// Returns the overall bytes per second for the most recent stage (either completed or in
@@ -73,7 +73,7 @@ impl StagedProgressBar {
     pub fn bytes_per_second(&self) -> f64 {
         let bar = self.current_progress_bar.borrow();
         let bar = bar.as_ref().unwrap();
-        bar.length() as f64 / bar.elapsed().as_secs_f64()
+        bar.length().unwrap() as f64 / bar.elapsed().as_secs_f64()
     }
 }
 
@@ -81,9 +81,17 @@ impl ProgressIndicator for StagedProgressBar {
     fn new_stage(&self, name: &str, total: usize) {
         let progress = ProgressBar::new(total as u64);
         if name.is_empty() {
-            progress.set_style(ProgressStyle::default_bar().template(Self::DEFAULT_TEMPLATE));
+            progress.set_style(
+                ProgressStyle::default_bar()
+                    .template(Self::DEFAULT_TEMPLATE)
+                    .unwrap(),
+            );
         } else {
-            progress.set_style(ProgressStyle::default_bar().template(Self::STAGE_TEMPLATE));
+            progress.set_style(
+                ProgressStyle::default_bar()
+                    .template(Self::STAGE_TEMPLATE)
+                    .unwrap(),
+            );
         }
         self.current_progress_bar
             .borrow_mut()
@@ -93,7 +101,7 @@ impl ProgressIndicator for StagedProgressBar {
     fn progress(&self, pos: usize) {
         let bar = self.current_progress_bar.borrow();
         let bar = bar.as_ref().unwrap();
-        if pos as u64 == bar.length() {
+        if pos as u64 == bar.length().unwrap() {
             bar.finish();
             return;
         }

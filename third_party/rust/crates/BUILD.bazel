@@ -159,7 +159,7 @@ alias(
 
 alias(
     name = "indicatif",
-    actual = "@crate_index__indicatif-0.16.2//:indicatif",
+    actual = "@crate_index__indicatif-0.17.6//:indicatif",
     tags = ["manual"],
 )
 

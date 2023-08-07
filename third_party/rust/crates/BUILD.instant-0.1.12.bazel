@@ -11,11 +11,11 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # MIT
+#     "TODO",  # BSD-3-Clause
 # ])
 
 rust_library(
-    name = "indicatif",
+    name = "instant",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -28,15 +28,12 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "default",
-    ],
     crate_root = "src/lib.rs",
     edition = "2018",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=indicatif",
+        "crate-name=instant",
         "manual",
         "noclippy",
         "norustfmt",
@@ -75,11 +72,8 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.16.2",
+    version = "0.1.12",
     deps = [
-        "@crate_index__console-0.15.7//:console",
-        "@crate_index__lazy_static-1.4.0//:lazy_static",
-        "@crate_index__number_prefix-0.4.0//:number_prefix",
-        "@crate_index__regex-1.9.4//:regex",
+        "@crate_index__cfg-if-1.0.0//:cfg_if",
     ],
 )

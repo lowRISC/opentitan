@@ -11,11 +11,11 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # MIT
+#     "TODO",  # MIT/Apache-2.0
 # ])
 
 rust_library(
-    name = "console",
+    name = "unicode_width",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -29,15 +29,14 @@ rust_library(
         ],
     ),
     crate_features = [
-        "ansi-parsing",
-        "unicode-width",
+        "default",
     ],
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2015",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=console",
+        "crate-name=unicode-width",
         "manual",
         "noclippy",
         "norustfmt",
@@ -76,24 +75,5 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.15.7",
-    deps = [
-        "@crate_index__lazy_static-1.4.0//:lazy_static",
-        "@crate_index__libc-0.2.147//:libc",
-        "@crate_index__unicode-width-0.1.10//:unicode_width",
-    ] + select({
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crate_index__encode_unicode-0.3.6//:encode_unicode",  # cfg(windows)
-            "@crate_index__windows-sys-0.45.0//:windows_sys",  # cfg(windows)
-        ],
-        "@rules_rust//rust/platform:i686-pc-windows-msvc": [
-            "@crate_index__encode_unicode-0.3.6//:encode_unicode",  # cfg(windows)
-            "@crate_index__windows-sys-0.45.0//:windows_sys",  # cfg(windows)
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crate_index__encode_unicode-0.3.6//:encode_unicode",  # cfg(windows)
-            "@crate_index__windows-sys-0.45.0//:windows_sys",  # cfg(windows)
-        ],
-        "//conditions:default": [],
-    }),
+    version = "0.1.10",
 )
