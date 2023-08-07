@@ -225,7 +225,7 @@ alias(
 
 alias(
     name = "num_enum",
-    actual = "@crate_index__num_enum-0.5.11//:num_enum",
+    actual = "@crate_index__num_enum-0.7.0//:num_enum",
     tags = ["manual"],
 )
 

@@ -336,69 +336,42 @@ impl InternalJedecParams {
 
 /// `BlockEraseSize` represents whether or not the device can perform
 /// a 4KiB erase.
-#[derive(Debug, Eq, PartialEq, FromPrimitive, Clone, Copy, Serialize)]
+#[derive(Default, Debug, Eq, PartialEq, FromPrimitive, Clone, Copy, Serialize)]
 #[repr(u32)]
 pub enum BlockEraseSize {
     Reserved0 = 0,
     Block4KiB = 1,
     Reserved2 = 2,
     BlockNot4KiB = 3,
-    #[num_enum(default)]
+    #[default]
     Invalid,
-}
-
-// Conflict between deriving Default and having a num_enum(default).
-// The workaround is to manually derive Default.
-#[allow(clippy::derivable_impls)]
-impl Default for BlockEraseSize {
-    fn default() -> Self {
-        BlockEraseSize::Invalid
-    }
 }
 
 /// `WriteGranularity` represents whether or not the device has an internal
 /// buffer for program operations.
-#[derive(Debug, Eq, PartialEq, FromPrimitive, Clone, Copy, Serialize)]
+#[derive(Default, Debug, Eq, PartialEq, FromPrimitive, Clone, Copy, Serialize)]
 #[repr(u32)]
 pub enum WriteGranularity {
     Granularity1Byte = 0,
     Granularity64Bytes = 1,
-    #[num_enum(default)]
+    #[default]
     Invalid,
-}
-
-// Conflict between deriving Default and having a num_enum(default).
-// The workaround is to manually derive Default.
-#[allow(clippy::derivable_impls)]
-impl Default for WriteGranularity {
-    fn default() -> Self {
-        WriteGranularity::Invalid
-    }
 }
 
 /// `SupportedAddressModes` represents which addressing modes are valid for
 /// the device.
-#[derive(Debug, Eq, PartialEq, FromPrimitive, Clone, Copy, Serialize)]
+#[derive(Default, Debug, Eq, PartialEq, FromPrimitive, Clone, Copy, Serialize)]
 #[repr(u32)]
 pub enum SupportedAddressModes {
     Mode3b = 0,
     Mode3b4b = 1,
     Mode4b = 2,
     Reserved = 3,
-    #[num_enum(default)]
+    #[default]
     Invalid,
 }
 
-// Conflict between deriving Default and having a num_enum(default).
-// The workaround is to manually derive Default.
-#[allow(clippy::derivable_impls)]
-impl Default for SupportedAddressModes {
-    fn default() -> Self {
-        SupportedAddressModes::Invalid
-    }
-}
-
-#[derive(Debug, Eq, PartialEq, FromPrimitive, Clone, Copy, Serialize)]
+#[derive(Default, Debug, Eq, PartialEq, FromPrimitive, Clone, Copy, Serialize)]
 #[repr(u32)]
 pub enum MaxSpeed {
     Reserved0 = 0,
@@ -416,17 +389,8 @@ pub enum MaxSpeed {
     Speed400MHz,
     Reserved10,
     NotCharacterized,
-    #[num_enum(default)]
+    #[default]
     NotSupported,
-}
-
-// Conflict between deriving Default and having a num_enum(default).
-// The workaround is to manually derive Default.
-#[allow(clippy::derivable_impls)]
-impl Default for MaxSpeed {
-    fn default() -> Self {
-        MaxSpeed::NotSupported
-    }
 }
 
 /// `FastReadParam` represents the parameters for the different styles of fast read.

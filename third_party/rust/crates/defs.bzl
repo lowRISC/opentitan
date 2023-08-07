@@ -328,7 +328,7 @@ _NORMAL_DEPENDENCIES = {
             "nix": "@crate_index__nix-0.26.4//:nix",
             "num-bigint-dig": "@crate_index__num-bigint-dig-0.8.4//:num_bigint_dig",
             "num-traits": "@crate_index__num-traits-0.2.16//:num_traits",
-            "num_enum": "@crate_index__num_enum-0.5.11//:num_enum",
+            "num_enum": "@crate_index__num_enum-0.7.0//:num_enum",
             "object": "@crate_index__object-0.32.0//:object",
             "once_cell": "@crate_index__once_cell-1.18.0//:once_cell",
             "p256": "@crate_index__p256-0.13.2//:p256",
@@ -2183,22 +2183,22 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "crate_index__num_enum-0.5.11",
-        sha256 = "1f646caf906c20226733ed5b1374287eb97e3c2a5c227ce668c1f2ce20ae57c9",
+        name = "crate_index__num_enum-0.7.0",
+        sha256 = "70bf6736f74634d299d00086f02986875b3c2d924781a6a2cb6c201e73da0ceb",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/num_enum/0.5.11/download"],
-        strip_prefix = "num_enum-0.5.11",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.num_enum-0.5.11.bazel"),
+        urls = ["https://crates.io/api/v1/crates/num_enum/0.7.0/download"],
+        strip_prefix = "num_enum-0.7.0",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.num_enum-0.7.0.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "crate_index__num_enum_derive-0.5.11",
-        sha256 = "dcbff9bc912032c62bf65ef1d5aea88983b420f4f839db1e9b0c281a25c9c799",
+        name = "crate_index__num_enum_derive-0.7.0",
+        sha256 = "56ea360eafe1022f7cc56cd7b869ed57330fb2453d0c7831d99b74c65d2f5597",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/num_enum_derive/0.5.11/download"],
-        strip_prefix = "num_enum_derive-0.5.11",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.num_enum_derive-0.5.11.bazel"),
+        urls = ["https://crates.io/api/v1/crates/num_enum_derive/0.7.0/download"],
+        strip_prefix = "num_enum_derive-0.7.0",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.num_enum_derive-0.7.0.bazel"),
     )
 
     maybe(
