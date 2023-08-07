@@ -31,8 +31,6 @@ pub enum CertificateType {
     X509AttrCert = CKC_X_509_ATTR_CERT,
     #[serde(rename = "CKC_WTLS")]
     Wtls = CKC_WTLS,
-    #[serde(rename = "CKC_VENDOR_DEFINED")]
-    VendorDefined = CKC_VENDOR_DEFINED,
     #[num_enum(catch_all)]
     UnknownCertificateType(u64) = u64::MAX,
 }

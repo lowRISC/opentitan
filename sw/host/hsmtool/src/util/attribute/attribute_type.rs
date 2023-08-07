@@ -26,34 +26,6 @@ use std::convert::TryFrom;
 )]
 #[repr(u64)]
 pub enum AttributeType {
-    #[serde(rename = "CKA_WRAP_TEMPLATE")]
-    #[strum(
-        serialize = "CKA_WRAP_TEMPLATE",
-        serialize = "WrapTemplate",
-        serialize = "wrap_template"
-    )]
-    WrapTemplate = CKA_WRAP_TEMPLATE,
-    #[serde(rename = "CKA_UNWRAP_TEMPLATE")]
-    #[strum(
-        serialize = "CKA_UNWRAP_TEMPLATE",
-        serialize = "UnwrapTemplate",
-        serialize = "unwrap_template"
-    )]
-    UnwrapTemplate = CKA_UNWRAP_TEMPLATE,
-    #[serde(rename = "CKA_DERIVE_TEMPLATE")]
-    #[strum(
-        serialize = "CKA_DERIVE_TEMPLATE",
-        serialize = "DeriveTemplate",
-        serialize = "derive_template"
-    )]
-    DeriveTemplate = CKA_DERIVE_TEMPLATE,
-    #[serde(rename = "CKA_ALLOWED_MECHANISMS")]
-    #[strum(
-        serialize = "CKA_ALLOWED_MECHANISMS",
-        serialize = "AllowedMechanisms",
-        serialize = "allowed_mechanisms"
-    )]
-    AllowedMechanisms = CKA_ALLOWED_MECHANISMS,
     #[serde(rename = "CKA_CLASS")]
     #[strum(serialize = "CKA_CLASS", serialize = "Class", serialize = "class")]
     Class = CKA_CLASS,
@@ -677,13 +649,34 @@ pub enum AttributeType {
         serialize = "supported_cms_attributes"
     )]
     SupportedCmsAttributes = CKA_SUPPORTED_CMS_ATTRIBUTES,
-    #[serde(rename = "CKA_VENDOR_DEFINED")]
+    #[serde(rename = "CKA_WRAP_TEMPLATE")]
     #[strum(
-        serialize = "CKA_VENDOR_DEFINED",
-        serialize = "VendorDefined",
-        serialize = "vendor_defined"
+        serialize = "CKA_WRAP_TEMPLATE",
+        serialize = "WrapTemplate",
+        serialize = "wrap_template"
     )]
-    VendorDefined = CKA_VENDOR_DEFINED,
+    WrapTemplate = CKA_WRAP_TEMPLATE,
+    #[serde(rename = "CKA_UNWRAP_TEMPLATE")]
+    #[strum(
+        serialize = "CKA_UNWRAP_TEMPLATE",
+        serialize = "UnwrapTemplate",
+        serialize = "unwrap_template"
+    )]
+    UnwrapTemplate = CKA_UNWRAP_TEMPLATE,
+    #[serde(rename = "CKA_DERIVE_TEMPLATE")]
+    #[strum(
+        serialize = "CKA_DERIVE_TEMPLATE",
+        serialize = "DeriveTemplate",
+        serialize = "derive_template"
+    )]
+    DeriveTemplate = CKA_DERIVE_TEMPLATE,
+    #[serde(rename = "CKA_ALLOWED_MECHANISMS")]
+    #[strum(
+        serialize = "CKA_ALLOWED_MECHANISMS",
+        serialize = "AllowedMechanisms",
+        serialize = "allowed_mechanisms"
+    )]
+    AllowedMechanisms = CKA_ALLOWED_MECHANISMS,
     #[num_enum(catch_all)]
     UnknownAttributeType(u64) = u64::MAX,
 }

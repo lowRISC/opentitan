@@ -43,8 +43,6 @@ pub enum ObjectClass {
     Mechanism = CKO_MECHANISM,
     #[serde(rename = "CKO_OTP_KEY")]
     OtpKey = CKO_OTP_KEY,
-    #[serde(rename = "CKO_VENDOR_DEFINED")]
-    VendorDefined = CKO_VENDOR_DEFINED,
     #[num_enum(catch_all)]
     UnknownObjectClass(u64) = u64::MAX,
 }

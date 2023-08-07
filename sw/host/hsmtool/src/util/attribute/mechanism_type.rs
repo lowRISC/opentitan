@@ -635,8 +635,6 @@ pub enum MechanismType {
     AesCfb128 = CKM_AES_CFB128,
     #[serde(rename = "CKM_AES_CFB1")]
     AesCfb1 = CKM_AES_CFB1,
-    #[serde(rename = "CKM_VENDOR_DEFINED")]
-    VendorDefined = CKM_VENDOR_DEFINED,
     #[serde(rename = "CKM_SHA224")]
     Sha224 = CKM_SHA224,
     #[serde(rename = "CKM_SHA224_HMAC")]
@@ -675,6 +673,10 @@ pub enum MechanismType {
     EcEdwardsKeyPairGen = CKM_EC_EDWARDS_KEY_PAIR_GEN,
     #[serde(rename = "CKM_EC_MONTGOMERY_KEY_PAIR_GEN")]
     EcMontgomeryKeyPairGen = CKM_EC_MONTGOMERY_KEY_PAIR_GEN,
+    #[serde(rename = "CKM_EDDSA")]
+    Eddsa = CKM_EDDSA,
+    #[serde(rename = "CKM_VENDOR_DEFINED")]
+    VendorDefined = CKM_VENDOR_DEFINED,
     #[num_enum(catch_all)]
     UnknownMechanismType(u64) = u64::MAX,
 }

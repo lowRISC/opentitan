@@ -558,9 +558,9 @@ dependencies = [
 
 [[package]]
 name = "cryptoki-sys"
-version = "0.1.4"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e4895bb04269df9a14f2692c6499dc2769e9a93caa33ef37c4df134f76956d2"
+checksum = "4bc9943e09928a84ed6e76dbaea1699b7678e95b2487b0de31075af300221095"
 dependencies = [
  "libloading",
  "target-lexicon",
