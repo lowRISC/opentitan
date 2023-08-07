@@ -45,7 +45,7 @@ object = "0.25.3"
 once_cell = "1.17"
 p256 = "0.13.2"
 pem-rfc7468 = { version = "0.7.0", features = ["alloc", "std"] }
-pqcrypto-sphincsplus = "0.6.4"
+pqcrypto-sphincsplus = { version = "0.6.4", default-features = false, features = ["std"] }
 pqcrypto-traits = "0.3.4"
 proc-macro-error = "1.0"
 proc-macro2 = "1.0.45"
