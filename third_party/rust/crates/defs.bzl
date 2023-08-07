@@ -345,7 +345,7 @@ _NORMAL_DEPENDENCIES = {
             "ring": "@crate_index__ring-0.16.20//:ring",
             "rsa": "@crate_index__rsa-0.8.2//:rsa",
             "rsa-der": "@crate_index__rsa-der-0.3.0//:rsa_der",
-            "rusb": "@crate_index__rusb-0.8.1//:rusb",
+            "rusb": "@crate_index__rusb-0.9.3//:rusb",
             "secrecy": "@crate_index__secrecy-0.8.0//:secrecy",
             "serde": "@crate_index__serde-1.0.171//:serde",
             "serde_bytes": "@crate_index__serde_bytes-0.11.12//:serde_bytes",
@@ -1897,12 +1897,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "crate_index__libusb1-sys-0.5.0",
-        sha256 = "e22e89d08bbe6816c6c5d446203b859eba35b8fa94bf1b7edb2f6d25d43f023f",
+        name = "crate_index__libusb1-sys-0.6.4",
+        sha256 = "f9d0e2afce4245f2c9a418511e5af8718bcaf2fa408aefb259504d1a9cb25f27",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/libusb1-sys/0.5.0/download"],
-        strip_prefix = "libusb1-sys-0.5.0",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.libusb1-sys-0.5.0.bazel"),
+        urls = ["https://crates.io/api/v1/crates/libusb1-sys/0.6.4/download"],
+        strip_prefix = "libusb1-sys-0.6.4",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.libusb1-sys-0.6.4.bazel"),
     )
 
     maybe(
@@ -2789,12 +2789,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "crate_index__rusb-0.8.1",
-        sha256 = "d9a5084628cc5be77b1c750b3e5ee0cc519d2f2491b3f06b78b3aac3328b00ad",
+        name = "crate_index__rusb-0.9.3",
+        sha256 = "45fff149b6033f25e825cbb7b2c625a11ee8e6dac09264d49beb125e39aa97bf",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/rusb/0.8.1/download"],
-        strip_prefix = "rusb-0.8.1",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.rusb-0.8.1.bazel"),
+        urls = ["https://crates.io/api/v1/crates/rusb/0.9.3/download"],
+        strip_prefix = "rusb-0.9.3",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.rusb-0.9.3.bazel"),
     )
 
     maybe(
