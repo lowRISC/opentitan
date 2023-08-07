@@ -111,8 +111,6 @@ pub enum KeyType {
     EcEdwards = CKK_EC_EDWARDS,
     #[serde(rename = "CKK_EC_MONTGOMERY")]
     EcMontgomery = CKK_EC_MONTGOMERY,
-    #[serde(rename = "CKK_VENDOR_DEFINED")]
-    VendorDefined = CKK_VENDOR_DEFINED,
     #[num_enum(catch_all)]
     UnknownKeyType(u64) = u64::MAX,
 }

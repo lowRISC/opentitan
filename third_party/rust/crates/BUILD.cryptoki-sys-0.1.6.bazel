@@ -73,9 +73,9 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.1.4",
+    version = "0.1.6",
     deps = [
-        "@crate_index__cryptoki-sys-0.1.4//:build_script_build",
+        "@crate_index__cryptoki-sys-0.1.6//:build_script_build",
         "@crate_index__libloading-0.7.4//:libloading",
     ],
 )
@@ -107,7 +107,7 @@ cargo_build_script(
         "noclippy",
         "norustfmt",
     ],
-    version = "0.1.4",
+    version = "0.1.6",
     visibility = ["//visibility:private"],
     deps = [
         "@crate_index__target-lexicon-0.12.11//:target_lexicon",

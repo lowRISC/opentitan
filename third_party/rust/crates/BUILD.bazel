@@ -93,7 +93,7 @@ alias(
 
 alias(
     name = "cryptoki-sys",
-    actual = "@crate_index__cryptoki-sys-0.1.4//:cryptoki_sys",
+    actual = "@crate_index__cryptoki-sys-0.1.6//:cryptoki_sys",
     tags = ["manual"],
 )
 

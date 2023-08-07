@@ -72,10 +72,7 @@ zerocopy = "0.6.3"
 
 # hsmtool dependencies
 cryptoki = "0.4.1"
-# Possible tagging/release error in the cryptoki crates. Pin to a version of
-# cryptoki-sys known to work.
-# https://github.com/parallaxsecond/rust-cryptoki/issues/134#issuecomment-1516540075
-cryptoki-sys = "=0.1.4"
+cryptoki-sys = "0.1.6"
 indexmap = { version = "2.0", features = ["serde"] }
 secrecy = "0.8"
 strum = { version = "0.25", features = ["derive"] }
