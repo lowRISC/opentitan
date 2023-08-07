@@ -28,7 +28,10 @@ package dma_pkg;
 
   // Supported opcodes by the DMA
   typedef enum logic [3:0] {
-    OpcCopy = 4'h0
+    OpcCopy   = 4'h0,
+    OpcSha256 = 4'h1,
+    OpcSha384 = 4'h2,
+    OpcSha512 = 4'h3
   } opcode_e;
 
   typedef enum logic [3:0] {

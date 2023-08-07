@@ -500,7 +500,10 @@ module dma
           bad_size = 1'b1;
         end
 
-        if (!(reg2hw.control.opcode.q inside {OpcCopy})) begin
+        if (!(reg2hw.control.opcode.q inside {OpcCopy,
+                                              OpcSha256,
+                                              OpcSha384,
+                                              OpcSha512})) begin
           bad_opcode = 1'b1;
         end
 
