@@ -8,6 +8,7 @@ description: "DMA Engine Package"
 filesets:
   files_rtl:
     files:
+      - rtl/dma_reg_pkg.sv
       - rtl/dma_pkg.sv
     file_type: systemVerilogSource
 
