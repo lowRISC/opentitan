@@ -86,7 +86,7 @@ rust_library(
     version = "0.7.3",
     deps = [
         "@crate_index__base16ct-0.2.0//:base16ct",
-        "@crate_index__der-0.7.7//:der",
+        "@crate_index__der-0.7.8//:der",
         "@crate_index__generic-array-0.14.7//:generic_array",
         "@crate_index__pkcs8-0.10.2//:pkcs8",
         "@crate_index__subtle-2.5.0//:subtle",

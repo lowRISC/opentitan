@@ -80,10 +80,10 @@ rust_library(
     }),
     version = "4.3.7",
     deps = [
-        "@crate_index__log-0.4.19//:log",
+        "@crate_index__log-0.4.20//:log",
         "@crate_index__pest-2.7.2//:pest",
         "@crate_index__serde-1.0.171//:serde",
-        "@crate_index__serde_json-1.0.104//:serde_json",
-        "@crate_index__thiserror-1.0.44//:thiserror",
+        "@crate_index__serde_json-1.0.105//:serde_json",
+        "@crate_index__thiserror-1.0.47//:thiserror",
     ],
 )

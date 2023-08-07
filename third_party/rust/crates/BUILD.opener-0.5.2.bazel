@@ -78,31 +78,31 @@ rust_library(
             "@crate_index__winapi-0.3.9//:winapi",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crate_index__bstr-1.6.0//:bstr",  # cfg(target_os = "linux")
+            "@crate_index__bstr-1.6.1//:bstr",  # cfg(target_os = "linux")
         ],
         "@rules_rust//rust/platform:arm-unknown-linux-gnueabi": [
-            "@crate_index__bstr-1.6.0//:bstr",  # cfg(target_os = "linux")
+            "@crate_index__bstr-1.6.1//:bstr",  # cfg(target_os = "linux")
         ],
         "@rules_rust//rust/platform:armv7-unknown-linux-gnueabi": [
-            "@crate_index__bstr-1.6.0//:bstr",  # cfg(target_os = "linux")
+            "@crate_index__bstr-1.6.1//:bstr",  # cfg(target_os = "linux")
         ],
         "@rules_rust//rust/platform:i686-pc-windows-msvc": [
             "@crate_index__winapi-0.3.9//:winapi",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:i686-unknown-linux-gnu": [
-            "@crate_index__bstr-1.6.0//:bstr",  # cfg(target_os = "linux")
+            "@crate_index__bstr-1.6.1//:bstr",  # cfg(target_os = "linux")
         ],
         "@rules_rust//rust/platform:powerpc-unknown-linux-gnu": [
-            "@crate_index__bstr-1.6.0//:bstr",  # cfg(target_os = "linux")
+            "@crate_index__bstr-1.6.1//:bstr",  # cfg(target_os = "linux")
         ],
         "@rules_rust//rust/platform:s390x-unknown-linux-gnu": [
-            "@crate_index__bstr-1.6.0//:bstr",  # cfg(target_os = "linux")
+            "@crate_index__bstr-1.6.1//:bstr",  # cfg(target_os = "linux")
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
             "@crate_index__winapi-0.3.9//:winapi",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crate_index__bstr-1.6.0//:bstr",  # cfg(target_os = "linux")
+            "@crate_index__bstr-1.6.1//:bstr",  # cfg(target_os = "linux")
         ],
         "//conditions:default": [],
     }),

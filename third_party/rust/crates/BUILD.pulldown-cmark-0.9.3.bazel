@@ -76,9 +76,9 @@ rust_library(
     version = "0.9.3",
     deps = [
         "@crate_index__bitflags-1.3.2//:bitflags",
-        "@crate_index__memchr-2.5.0//:memchr",
+        "@crate_index__memchr-2.6.1//:memchr",
         "@crate_index__pulldown-cmark-0.9.3//:build_script_build",
-        "@crate_index__unicase-2.6.0//:unicase",
+        "@crate_index__unicase-2.7.0//:unicase",
     ],
 )
 

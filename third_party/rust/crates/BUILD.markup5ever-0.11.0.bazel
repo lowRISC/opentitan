@@ -75,7 +75,7 @@ rust_library(
     }),
     version = "0.11.0",
     deps = [
-        "@crate_index__log-0.4.19//:log",
+        "@crate_index__log-0.4.20//:log",
         "@crate_index__markup5ever-0.11.0//:build_script_build",
         "@crate_index__phf-0.10.1//:phf",
         "@crate_index__string_cache-0.8.7//:string_cache",

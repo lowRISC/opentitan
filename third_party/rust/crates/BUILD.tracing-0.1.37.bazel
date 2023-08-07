@@ -79,8 +79,8 @@ rust_library(
     version = "0.1.37",
     deps = [
         "@crate_index__cfg-if-1.0.0//:cfg_if",
-        "@crate_index__log-0.4.19//:log",
-        "@crate_index__pin-project-lite-0.2.10//:pin_project_lite",
+        "@crate_index__log-0.4.20//:log",
+        "@crate_index__pin-project-lite-0.2.13//:pin_project_lite",
         "@crate_index__tracing-core-0.1.31//:tracing_core",
     ],
 )

@@ -79,7 +79,7 @@ rust_library(
     }),
     version = "0.3.2",
     deps = [
-        "@crate_index__anstyle-1.0.1//:anstyle",
+        "@crate_index__anstyle-1.0.2//:anstyle",
         "@crate_index__anstyle-parse-0.2.1//:anstyle_parse",
         "@crate_index__anstyle-query-1.0.0//:anstyle_query",
         "@crate_index__colorchoice-1.0.0//:colorchoice",
@@ -87,13 +87,13 @@ rust_library(
         "@crate_index__utf8parse-0.2.1//:utf8parse",
     ] + select({
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crate_index__anstyle-wincon-1.0.1//:anstyle_wincon",  # cfg(windows)
+            "@crate_index__anstyle-wincon-1.0.2//:anstyle_wincon",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:i686-pc-windows-msvc": [
-            "@crate_index__anstyle-wincon-1.0.1//:anstyle_wincon",  # cfg(windows)
+            "@crate_index__anstyle-wincon-1.0.2//:anstyle_wincon",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crate_index__anstyle-wincon-1.0.1//:anstyle_wincon",  # cfg(windows)
+            "@crate_index__anstyle-wincon-1.0.2//:anstyle_wincon",  # cfg(windows)
         ],
         "//conditions:default": [],
     }),

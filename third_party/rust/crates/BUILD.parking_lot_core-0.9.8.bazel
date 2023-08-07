@@ -95,7 +95,7 @@ rust_library(
             "@crate_index__libc-0.2.147//:libc",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crate_index__windows-targets-0.48.1//:windows_targets",  # cfg(windows)
+            "@crate_index__windows-targets-0.48.5//:windows_targets",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
             "@crate_index__libc-0.2.147//:libc",  # cfg(unix)
@@ -116,7 +116,7 @@ rust_library(
             "@crate_index__libc-0.2.147//:libc",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:i686-pc-windows-msvc": [
-            "@crate_index__windows-targets-0.48.1//:windows_targets",  # cfg(windows)
+            "@crate_index__windows-targets-0.48.5//:windows_targets",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:i686-unknown-freebsd": [
             "@crate_index__libc-0.2.147//:libc",  # cfg(unix)
@@ -143,7 +143,7 @@ rust_library(
             "@crate_index__libc-0.2.147//:libc",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crate_index__windows-targets-0.48.1//:windows_targets",  # cfg(windows)
+            "@crate_index__windows-targets-0.48.5//:windows_targets",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:x86_64-unknown-freebsd": [
             "@crate_index__libc-0.2.147//:libc",  # cfg(unix)

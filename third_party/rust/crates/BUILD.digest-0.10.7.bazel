@@ -86,7 +86,7 @@ rust_library(
     version = "0.10.7",
     deps = [
         "@crate_index__block-buffer-0.10.4//:block_buffer",
-        "@crate_index__const-oid-0.9.4//:const_oid",
+        "@crate_index__const-oid-0.9.5//:const_oid",
         "@crate_index__crypto-common-0.1.6//:crypto_common",
         "@crate_index__subtle-2.5.0//:subtle",
     ],

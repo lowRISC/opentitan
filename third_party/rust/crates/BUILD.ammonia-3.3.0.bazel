@@ -78,6 +78,6 @@ rust_library(
         "@crate_index__maplit-1.0.2//:maplit",
         "@crate_index__once_cell-1.18.0//:once_cell",
         "@crate_index__tendril-0.4.3//:tendril",
-        "@crate_index__url-2.4.0//:url",
+        "@crate_index__url-2.4.1//:url",
     ],
 )
