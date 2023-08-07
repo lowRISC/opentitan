@@ -79,6 +79,6 @@ rust_library(
     }),
     version = "0.7.2",
     deps = [
-        "@crate_index__der-0.7.7//:der",
+        "@crate_index__der-0.7.8//:der",
     ],
 )

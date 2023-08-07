@@ -39,7 +39,7 @@ alias(
 
 alias(
     name = "anyhow",
-    actual = "@crate_index__anyhow-1.0.72//:anyhow",
+    actual = "@crate_index__anyhow-1.0.75//:anyhow",
     tags = ["manual"],
 )
 
@@ -51,7 +51,7 @@ alias(
 
 alias(
     name = "bitflags",
-    actual = "@crate_index__bitflags-2.3.3//:bitflags",
+    actual = "@crate_index__bitflags-2.4.0//:bitflags",
     tags = ["manual"],
 )
 
@@ -69,7 +69,7 @@ alias(
 
 alias(
     name = "chrono",
-    actual = "@crate_index__chrono-0.4.26//:chrono",
+    actual = "@crate_index__chrono-0.4.27//:chrono",
     tags = ["manual"],
 )
 
@@ -99,13 +99,13 @@ alias(
 
 alias(
     name = "deser-hjson",
-    actual = "@crate_index__deser-hjson-1.2.0//:deser_hjson",
+    actual = "@crate_index__deser-hjson-2.1.0//:deser_hjson",
     tags = ["manual"],
 )
 
 alias(
     name = "directories",
-    actual = "@crate_index__directories-4.0.1//:directories",
+    actual = "@crate_index__directories-5.0.1//:directories",
     tags = ["manual"],
 )
 
@@ -129,7 +129,7 @@ alias(
 
 alias(
     name = "erased-serde",
-    actual = "@crate_index__erased-serde-0.3.28//:erased_serde",
+    actual = "@crate_index__erased-serde-0.3.31//:erased_serde",
     tags = ["manual"],
 )
 
@@ -153,7 +153,7 @@ alias(
 
 alias(
     name = "indexmap",
-    actual = "@crate_index__indexmap-1.9.3//:indexmap",
+    actual = "@crate_index__indexmap-2.0.0//:indexmap",
     tags = ["manual"],
 )
 
@@ -177,7 +177,7 @@ alias(
 
 alias(
     name = "log",
-    actual = "@crate_index__log-0.4.19//:log",
+    actual = "@crate_index__log-0.4.20//:log",
     tags = ["manual"],
 )
 
@@ -189,25 +189,25 @@ alias(
 
 alias(
     name = "memoffset",
-    actual = "@crate_index__memoffset-0.6.5//:memoffset",
+    actual = "@crate_index__memoffset-0.9.0//:memoffset",
     tags = ["manual"],
 )
 
 alias(
     name = "mio",
-    actual = "@crate_index__mio-0.7.14//:mio",
+    actual = "@crate_index__mio-0.8.8//:mio",
     tags = ["manual"],
 )
 
 alias(
     name = "mio-signals",
-    actual = "@crate_index__mio-signals-0.1.5//:mio_signals",
+    actual = "@crate_index__mio-signals-0.2.0//:mio_signals",
     tags = ["manual"],
 )
 
 alias(
     name = "nix",
-    actual = "@crate_index__nix-0.26.2//:nix",
+    actual = "@crate_index__nix-0.26.4//:nix",
     tags = ["manual"],
 )
 
@@ -231,7 +231,7 @@ alias(
 
 alias(
     name = "object",
-    actual = "@crate_index__object-0.25.3//:object",
+    actual = "@crate_index__object-0.32.0//:object",
     tags = ["manual"],
 )
 
@@ -291,7 +291,7 @@ alias(
 
 alias(
     name = "quote",
-    actual = "@crate_index__quote-1.0.32//:quote",
+    actual = "@crate_index__quote-1.0.33//:quote",
     tags = ["manual"],
 )
 
@@ -309,7 +309,7 @@ alias(
 
 alias(
     name = "regex",
-    actual = "@crate_index__regex-1.9.1//:regex",
+    actual = "@crate_index__regex-1.9.4//:regex",
     tags = ["manual"],
 )
 
@@ -357,7 +357,7 @@ alias(
 
 alias(
     name = "serde_json",
-    actual = "@crate_index__serde_json-1.0.104//:serde_json",
+    actual = "@crate_index__serde_json-1.0.105//:serde_json",
     tags = ["manual"],
 )
 
@@ -381,7 +381,7 @@ alias(
 
 alias(
     name = "strum",
-    actual = "@crate_index__strum-0.24.1//:strum",
+    actual = "@crate_index__strum-0.25.0//:strum",
     tags = ["manual"],
 )
 
@@ -399,25 +399,25 @@ alias(
 
 alias(
     name = "tempfile",
-    actual = "@crate_index__tempfile-3.7.0//:tempfile",
+    actual = "@crate_index__tempfile-3.8.0//:tempfile",
     tags = ["manual"],
 )
 
 alias(
     name = "thiserror",
-    actual = "@crate_index__thiserror-1.0.44//:thiserror",
+    actual = "@crate_index__thiserror-1.0.47//:thiserror",
     tags = ["manual"],
 )
 
 alias(
     name = "typetag",
-    actual = "@crate_index__typetag-0.2.12//:typetag",
+    actual = "@crate_index__typetag-0.2.13//:typetag",
     tags = ["manual"],
 )
 
 alias(
     name = "zerocopy",
-    actual = "@crate_index__zerocopy-0.5.0//:zerocopy",
+    actual = "@crate_index__zerocopy-0.6.3//:zerocopy",
     tags = ["manual"],
 )
 

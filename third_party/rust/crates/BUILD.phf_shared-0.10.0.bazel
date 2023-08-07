@@ -78,6 +78,6 @@ rust_library(
     }),
     version = "0.10.0",
     deps = [
-        "@crate_index__siphasher-0.3.10//:siphasher",
+        "@crate_index__siphasher-0.3.11//:siphasher",
     ],
 )

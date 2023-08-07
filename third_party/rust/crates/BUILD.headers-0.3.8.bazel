@@ -79,7 +79,7 @@ rust_library(
         "@crate_index__bytes-1.4.0//:bytes",
         "@crate_index__headers-core-0.2.0//:headers_core",
         "@crate_index__http-0.2.9//:http",
-        "@crate_index__httpdate-1.0.2//:httpdate",
+        "@crate_index__httpdate-1.0.3//:httpdate",
         "@crate_index__mime-0.3.17//:mime",
         "@crate_index__sha1-0.10.5//:sha1",
     ],

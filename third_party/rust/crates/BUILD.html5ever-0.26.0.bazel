@@ -76,7 +76,7 @@ rust_library(
     version = "0.26.0",
     deps = [
         "@crate_index__html5ever-0.26.0//:build_script_build",
-        "@crate_index__log-0.4.19//:log",
+        "@crate_index__log-0.4.20//:log",
         "@crate_index__mac-0.1.1//:mac",
         "@crate_index__markup5ever-0.11.0//:markup5ever",
     ],
@@ -113,7 +113,7 @@ cargo_build_script(
     visibility = ["//visibility:private"],
     deps = [
         "@crate_index__proc-macro2-1.0.66//:proc_macro2",
-        "@crate_index__quote-1.0.32//:quote",
+        "@crate_index__quote-1.0.33//:quote",
         "@crate_index__syn-1.0.109//:syn",
     ],
 )

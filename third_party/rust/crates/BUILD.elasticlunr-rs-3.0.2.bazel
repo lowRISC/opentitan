@@ -77,8 +77,8 @@ rust_library(
     }),
     version = "3.0.2",
     deps = [
-        "@crate_index__regex-1.9.1//:regex",
+        "@crate_index__regex-1.9.4//:regex",
         "@crate_index__serde-1.0.171//:serde",
-        "@crate_index__serde_json-1.0.104//:serde_json",
+        "@crate_index__serde_json-1.0.105//:serde_json",
     ],
 )

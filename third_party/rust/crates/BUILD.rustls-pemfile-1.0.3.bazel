@@ -74,6 +74,6 @@ rust_library(
     }),
     version = "1.0.3",
     deps = [
-        "@crate_index__base64-0.21.2//:base64",
+        "@crate_index__base64-0.21.3//:base64",
     ],
 )

@@ -83,8 +83,8 @@ rust_library(
         "@crate_index__bytes-1.4.0//:bytes",
         "@crate_index__futures-core-0.3.28//:futures_core",
         "@crate_index__futures-sink-0.3.28//:futures_sink",
-        "@crate_index__pin-project-lite-0.2.10//:pin_project_lite",
-        "@crate_index__tokio-1.29.1//:tokio",
+        "@crate_index__pin-project-lite-0.2.13//:pin_project_lite",
+        "@crate_index__tokio-1.32.0//:tokio",
         "@crate_index__tracing-0.1.37//:tracing",
     ],
 )

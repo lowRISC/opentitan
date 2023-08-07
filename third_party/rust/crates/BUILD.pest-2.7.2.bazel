@@ -78,7 +78,7 @@ rust_library(
     }),
     version = "2.7.2",
     deps = [
-        "@crate_index__thiserror-1.0.44//:thiserror",
+        "@crate_index__thiserror-1.0.47//:thiserror",
         "@crate_index__ucd-trie-0.1.6//:ucd_trie",
     ],
 )

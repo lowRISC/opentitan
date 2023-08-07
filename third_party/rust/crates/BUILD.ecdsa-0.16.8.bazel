@@ -88,7 +88,7 @@ rust_library(
     }),
     version = "0.16.8",
     deps = [
-        "@crate_index__der-0.7.7//:der",
+        "@crate_index__der-0.7.8//:der",
         "@crate_index__digest-0.10.7//:digest",
         "@crate_index__elliptic-curve-0.13.5//:elliptic_curve",
         "@crate_index__rfc6979-0.4.0//:rfc6979",

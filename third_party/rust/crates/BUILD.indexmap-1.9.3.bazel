@@ -30,7 +30,6 @@ rust_library(
         ],
     ),
     crate_features = [
-        "serde",
         "std",
     ],
     crate_root = "src/lib.rs",
@@ -81,7 +80,6 @@ rust_library(
     deps = [
         "@crate_index__hashbrown-0.12.3//:hashbrown",
         "@crate_index__indexmap-1.9.3//:build_script_build",
-        "@crate_index__serde-1.0.171//:serde",
     ],
 )
 
@@ -89,7 +87,6 @@ cargo_build_script(
     name = "indexmap_build_script",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "serde",
         "std",
     ],
     crate_name = "build_script_build",

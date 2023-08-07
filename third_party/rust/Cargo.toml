@@ -23,8 +23,8 @@ chrono = "0.4"
 # We're hitting a rustc bug in the nightly version we use that's exposed by clap >= 4.3
 clap = { version = "4.1, <=4.2.7", features = ["derive", "env", "deprecated"] }
 crc = "3.0"
-deser-hjson = "1.0.2"
-directories = "4.0.1"
+deser-hjson = "2.0.0"
+directories = "5.0.1"
 env_logger = "0.10"
 elliptic-curve = { version = "0.13.4", features = ["ecdh", "pkcs8", "sec1", "std"] }
 erased-serde = "0.3.12"
@@ -34,14 +34,14 @@ humantime-serde = "1.1"
 indicatif = "0.16.2"
 is-terminal = "0.4"
 log = "0.4"
-memoffset = "0.6.0"
-mio = { version = "0.7.0", features = ["os-poll", "net", "os-ext"] }
-mio-signals = "0.1.5" # mio-signals 0.2.0 exists, but requires mio 0.8.0
+memoffset = "0.9.0"
+mio = { version = "0.8.8", features = ["os-poll", "net", "os-ext"] }
+mio-signals = "0.2.0"
 nix = "0.26.1"
 num-bigint-dig = "0.8"
 num-traits = "0.2.14"
 num_enum = "0.5"
-object = "0.25.3"
+object = "0.32.0"
 once_cell = "1.17"
 p256 = "0.13.2"
 pem-rfc7468 = { version = "0.7.0", features = ["alloc", "std"] }
@@ -68,7 +68,7 @@ syn = "1.0"
 tempfile = "3.3.0"
 thiserror = "1.0"
 typetag = "0.2"
-zerocopy = "0.5.0"
+zerocopy = "0.6.3"
 
 # hsmtool dependencies
 cryptoki = "0.4.1"
@@ -76,9 +76,9 @@ cryptoki = "0.4.1"
 # cryptoki-sys known to work.
 # https://github.com/parallaxsecond/rust-cryptoki/issues/134#issuecomment-1516540075
 cryptoki-sys = "=0.1.4"
-indexmap = { version = "1.9", features = ["serde"] }
+indexmap = { version = "2.0", features = ["serde"] }
 secrecy = "0.8"
-strum = { version = "0.24", features = ["derive"] }
+strum = { version = "0.25", features = ["derive"] }
 
 # We'd like to referece safe-ftdi and serde_annotate by their Git repos, but
 # we also need to support airgapped builds and bazel does not support git

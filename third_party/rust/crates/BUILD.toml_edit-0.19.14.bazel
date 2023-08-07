@@ -79,6 +79,6 @@ rust_library(
     deps = [
         "@crate_index__indexmap-2.0.0//:indexmap",
         "@crate_index__toml_datetime-0.6.3//:toml_datetime",
-        "@crate_index__winnow-0.5.3//:winnow",
+        "@crate_index__winnow-0.5.15//:winnow",
     ],
 )

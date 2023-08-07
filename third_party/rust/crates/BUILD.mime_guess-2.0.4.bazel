@@ -81,7 +81,7 @@ rust_library(
     deps = [
         "@crate_index__mime-0.3.17//:mime",
         "@crate_index__mime_guess-2.0.4//:build_script_build",
-        "@crate_index__unicase-2.6.0//:unicase",
+        "@crate_index__unicase-2.7.0//:unicase",
     ],
 )
 
@@ -119,7 +119,7 @@ cargo_build_script(
     version = "2.0.4",
     visibility = ["//visibility:private"],
     deps = [
-        "@crate_index__unicase-2.6.0//:unicase",
+        "@crate_index__unicase-2.7.0//:unicase",
     ],
 )
 
