@@ -15,7 +15,6 @@ filesets:
       - lowrisc:ip:dma_pkg
       - lowrisc:ip:hmac
     files:
-      - rtl/dma_reg_pkg.sv
       - rtl/dma_reg_top.sv
       - rtl/dma.sv
     file_type: systemVerilogSource
