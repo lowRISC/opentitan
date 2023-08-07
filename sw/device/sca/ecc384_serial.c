@@ -99,17 +99,17 @@ uint32_t ecc384_msg[kEcc384NumWords] = {
 // p384_ecdsa_sca has randomnization removed.
 OTBN_DECLARE_APP_SYMBOLS(p384_ecdsa_sca);
 
-/*
+
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, dptr_msg);
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, dptr_r);
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, dptr_s);
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, dptr_x);
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, dptr_y);
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, dptr_d);
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca,
-                         dptr_rnd);  // x_r not used in p384 verify .s
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, dptr_k);
-*/
+OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, dptr_d0);
+OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, dptr_d1);
+OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, dptr_k0);
+OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, dptr_k1);
+
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, mode);
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, msg);
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, r);
@@ -120,12 +120,10 @@ OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, d0);
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, d1);
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, k0);
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, k1);
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca,
-                         rnd);  // x_r not used in p384 verify .s file
 
 static const otbn_app_t kOtbnAppP384Ecdsa = OTBN_APP_T_INIT(p384_ecdsa_sca);
 
-/*
+
 static const otbn_addr_t kOtbnVarDptrMsg =
     OTBN_ADDR_T_INIT(p384_ecdsa_sca, dptr_msg);
 static const otbn_addr_t kOtbnVarDptrR =
@@ -136,13 +134,15 @@ static const otbn_addr_t kOtbnVarDptrX =
     OTBN_ADDR_T_INIT(p384_ecdsa_sca, dptr_x);
 static const otbn_addr_t kOtbnVarDptrY =
     OTBN_ADDR_T_INIT(p384_ecdsa_sca, dptr_y);
-static const otbn_addr_t kOtbnVarDptrD =
-    OTBN_ADDR_T_INIT(p384_ecdsa_sca, dptr_d);
-static const otbn_addr_t kOtbnVarDptrRnd =
-    OTBN_ADDR_T_INIT(p384_ecdsa_sca, dptr_rnd);
-static const otbn_addr_t kOtbnVarDptrK =
-    OTBN_ADDR_T_INIT(p384_ecdsa_sca, dptr_k);
-*/
+static const otbn_addr_t kOtbnVarDptrD0 =
+    OTBN_ADDR_T_INIT(p384_ecdsa_sca, dptr_d0);
+static const otbn_addr_t kOtbnVarDptrD1 =
+    OTBN_ADDR_T_INIT(p384_ecdsa_sca, dptr_d1);
+static const otbn_addr_t kOtbnVarDptrK0 =
+    OTBN_ADDR_T_INIT(p384_ecdsa_sca, dptr_k0);
+static const otbn_addr_t kOtbnVarDptrK1 =
+    OTBN_ADDR_T_INIT(p384_ecdsa_sca, dptr_k1);
+
 
 static const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(p384_ecdsa_sca, mode);
 static const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(p384_ecdsa_sca, msg);
@@ -152,20 +152,17 @@ static const otbn_addr_t kOtbnVarX = OTBN_ADDR_T_INIT(p384_ecdsa_sca, x);
 static const otbn_addr_t kOtbnVarY = OTBN_ADDR_T_INIT(p384_ecdsa_sca, y);
 static const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(p384_ecdsa_sca, d0);
 static const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(p384_ecdsa_sca, d1);
-static const otbn_addr_t kOtbnVarRnd = OTBN_ADDR_T_INIT(p384_ecdsa_sca, rnd);
 static const otbn_addr_t kOtbnVarK0 = OTBN_ADDR_T_INIT(p384_ecdsa_sca, k0);
 static const otbn_addr_t kOtbnVarK1 = OTBN_ADDR_T_INIT(p384_ecdsa_sca, k1);
 
 /**
  * Makes a single dptr in the P384 library point to where its value is stored.
  */
-/*
 static void setup_data_pointer(const otbn_addr_t dptr,
                                const otbn_addr_t value) {
   SS_CHECK_STATUS_OK(
       otbn_dmem_write(sizeof(value) / sizeof(uint32_t), &value, dptr));
 }
-*/
 
 /**
  * Sets up all data pointers used by the P384 library to point to DMEM.
@@ -180,18 +177,17 @@ static void setup_data_pointer(const otbn_addr_t dptr,
  * This function makes the data pointers refer to the pre-allocated DMEM
  * regions to store the actual values.
  */
-/*
 static void setup_data_pointers(void) {
   setup_data_pointer(kOtbnVarDptrMsg, kOtbnVarMsg);
   setup_data_pointer(kOtbnVarDptrR, kOtbnVarR);
   setup_data_pointer(kOtbnVarDptrS, kOtbnVarS);
   setup_data_pointer(kOtbnVarDptrX, kOtbnVarX);
   setup_data_pointer(kOtbnVarDptrY, kOtbnVarY);
-  setup_data_pointer(kOtbnVarDptrD, kOtbnVarD);
-  setup_data_pointer(kOtbnVarDptrRnd, kOtbnVarRnd);
-  setup_data_pointer(kOtbnVarDptrK, kOtbnVarK);
+  setup_data_pointer(kOtbnVarDptrD0, kOtbnVarD0);
+  setup_data_pointer(kOtbnVarDptrD1, kOtbnVarD1);
+  setup_data_pointer(kOtbnVarDptrK0, kOtbnVarK0);
+  setup_data_pointer(kOtbnVarDptrK1, kOtbnVarK1);
 }
-*/
 
 /**
  * Simple serial 'k' (set ephemeral key) command handler.
@@ -395,8 +391,7 @@ static void simple_serial_main(void) {
 bool test_main(void) {
   (void)kOtbnVarX;
   (void)kOtbnVarY;
-  (void)kOtbnVarRnd;
-
+  
   simple_serial_main();
   return true;
 }

@@ -26,7 +26,7 @@ start:
 
 .text
 p384_ecdsa_sign:
-  jal      x1, p384_ecdsa_setup_rand
+  jal      x1, p384_ecdsa_setup
   jal      x1, p384_sign
   ecall
 
@@ -37,23 +37,40 @@ p384_ecdsa_verify:
 /**
  * Populate the variables rnd and k with randomness, and setup data pointers.
  */
-p384_ecdsa_setup_rand:
-  /* Obtain the blinding constant from URND, and write it to `rnd` in DMEM. */
-  /* bn.wsrr   w0, 0x2 */ /* URND */
-  la        x10, rnd
-  /* bn.sid    x0, 0(x10) */
-
-  /* Point dptr_rnd to rnd. */
-  la        x11, dptr_rnd
+p384_ecdsa_setup:
+  /* Point dptr_k0 to k0. */
+  la        x10, k0
+  la        x11, dptr_k0
   sw        x10, 0(x11)
 
-  /* Obtain the nonce (k) from RND. */
-  /*bn.wsrr   w0, 0x1 *//* RND */
-  la        x10, k
-  /*bn.sid    x0, 0(x10)*/
+  /* Point dptr_k1 to k1. */
+  la        x10, k1
+  la        x11, dptr_k1
+  sw        x10, 0(x11)
 
-  /* Point dptr_k to k. */
-  la        x11, dptr_k
+  /* Point dptr_d0 to d0. */
+  la        x10, d0
+  la        x11, dptr_d0
+  sw        x10, 0(x11)
+
+  /* Point dptr_d1 to d1. */
+  la        x10, d1
+  la        x11, dptr_d1
+  sw        x10, 0(x11)
+
+  /* Point dptr_msg to msg. */
+  la        x10, msg
+  la        x11, dptr_msg
+  sw        x10, 0(x11)
+
+  /* Point dptr_r to sig_r. */
+  la        x10, r
+  la        x11, dptr_r
+  sw        x10, 0(x11)
+
+  /* Point dptr_s to sig_s. */
+  la        x10, s
+  la        x11, dptr_s
   sw        x10, 0(x11)
 
   ret
@@ -70,15 +87,21 @@ mode:
 
 /* All constants below must be 256b-aligned. */
 
-/* random scalar k */
-.global k
+/* random scalar k0*/
+.global k0
 .balign 64
-k:
+k0:
+  .zero 64
+
+/* random scalar k1*/
+.global k1
+.balign 64
+k1:
   .zero 64
 
 /* randomness for blinding */
-.balign 64
 .global rnd
+.balign 64
 rnd:
   .zero 64
 
@@ -112,10 +135,16 @@ x:
 y:
   .zero 64
 
-/* private key d */
-.globl d
+/* private key d0 */
+.globl d0
 .balign 64
-d:
+d0:
+  .zero 64
+
+/* private key d1 */
+.globl d1
+.balign 64
+d1:
   .zero 64
 
 /* verification result x_r (aka x_1) */
