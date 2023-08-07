@@ -13,6 +13,7 @@ class sram_ctrl_mem_bkdr_scb extends mem_bkdr_scb;
   protected otp_ctrl_pkg::sram_nonce_t nonce;
 
   virtual function mem_data_t get_bkdr_val(mem_addr_t addr);
+    // This chops the integrity bits since mem_data_t is just the data portion.
     return mem_bkdr_util_h.sram_encrypt_read32_integ(addr, key, nonce);
   endfunction
 
