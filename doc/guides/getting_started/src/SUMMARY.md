@@ -8,7 +8,6 @@
 - [Formal Verification](setup_formal.md)
 - [Building (and Testing) Software](build_sw.md)
 - [Building Documentation](build_docs.md)
-- [Running e2e Tests](https://opentitan.org/book/sw/device/silicon_creator/rom/doc/e2e_tests.html)
 - [Using OpenOCD](using_openocd.md)
 
 # Tools Setup
