@@ -1027,7 +1027,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     end
   endtask : flash_ctrl_write_extra
 
-  // Task to Program the Entire Flash Memory
+  // Task to Read the Entire Flash Memory
   virtual task flash_ctrl_read_extra(flash_op_t flash_op, ref data_q_t data);
 
     // Local Signals
@@ -1066,7 +1066,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       `uvm_info(`gfn, $sformatf("Read Cycle : %0d, flash_addr = 0x%0x", cycle, flash_addr),
                 UVM_MEDIUM)
 
-      csr_wr(.ptr(ral.addr), .value(flash_addr));  // Write Address
+      csr_wr(.ptr(ral.addr), .value(flash_addr));  // Read Address
 
       reg_data = '0;
       reg_data = get_csr_val_with_updated_field(ral.control.start, reg_data, 1'b1) |
@@ -1152,7 +1152,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   endtask : enable_small_rma
 
   // Task to send an RMA Request (with a given seed) to the Flash Controller
-  virtual task send_rma_req(lc_flash_rma_seed_t rma_seed = LC_FLASH_RMA_SEED_DEFAULT);
+  virtual task send_rma_req(lc_flash_rma_seed_t rma_seed = LC_FLASH_RMA_SEED_DEFAULT,
+                            bit ignore_short_rma = 0);
 
     // Local Variables
     lc_ctrl_pkg::lc_tx_t done;
@@ -1177,7 +1178,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     fork
       begin
         // If small_rma enabled
-        if (cfg.en_small_rma) begin
+        if (cfg.en_small_rma & !ignore_short_rma) begin
           `uvm_info(`gfn, "small_rma mode is enabled", UVM_LOW)
           enable_small_rma();
         end
