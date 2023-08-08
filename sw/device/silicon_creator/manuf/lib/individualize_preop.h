@@ -7,6 +7,19 @@
 
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
+#include "sw/device/silicon_creator/manuf/lib/otp_img.h"
+
+/**
+ * OTP Creator Software Configuration Partition.
+ */
+extern const size_t kOtpKvCreatorSwCfgSize;
+extern const otp_kv_t kOtpKvCreatorSwCfg[];
+
+/**
+ * OTP Owner Software Configuration Partition.
+ */
+extern const size_t kOtpKvOwnerSwCfgSize;
+extern const otp_kv_t kOtpKvOwnerSwCfg[];
 
 /**
  * Configures the CREATOR_SW_CFG and OWNER_SW_CFG OTP partitions.

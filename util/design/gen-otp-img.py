@@ -207,18 +207,18 @@ def main():
                         The mapping must be bijective - otherwise this will generate
                         an error.
                         ''')
-    parser.add_argument('--header-template',
+    parser.add_argument('--c-template',
                         type=Path,
                         metavar='<path>',
                         help='''
-                        Template file used to generate C header version of the OTP image.
-                        This flag is only required when --header-out is set.
+                        Template file used to generate C version of the OTP image.
+                        This flag is only required when --c-out is set.
                         ''')
-    parser.add_argument('--header-out',
+    parser.add_argument('--c-out',
                         type=Path,
                         metavar='<path>',
                         help='''
-                        C header output path. Requires the --header-template flag to be
+                        C output path. Requires the --c-template flag to be
                         set. The --out flag is ignored when this flag is set.
                         ''')
 
@@ -280,12 +280,10 @@ def main():
     file_header = '// Generated on {} with\n// $ gen-otp-img.py {}\n//\n'.format(
         dtstr, argstr)
 
-    if args.header_out:
-        log.info(f'Generating header file: {args.header_out}')
-        file_body = otp_mem_img.generate_headerfile(args.header_out,
-                                                    file_header,
-                                                    args.header_template)
-        with open(args.header_out, 'wb') as outfile:
+    if args.c_out:
+        log.info(f'Generating C file: {args.c_out}')
+        file_body = otp_mem_img.generate_c_file(file_header, args.c_template)
+        with open(args.c_out, 'wb') as outfile:
             outfile.write(file_body.encode('utf-8'))
         exit(0)
 
