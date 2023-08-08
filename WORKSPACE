@@ -69,6 +69,10 @@ crate_repositories()
 load("//third_party/shellcheck:repos.bzl", "shellcheck_repos")
 shellcheck_repos()
 
+# Tock dependencies.
+load("//third_party/tock/crates:crates.bzl", tock_crate_repositories = "crate_repositories")
+tock_crate_repositories()
+
 # OpenOCD
 load("//third_party/openocd:repos.bzl", "openocd_repos")
 openocd_repos()
