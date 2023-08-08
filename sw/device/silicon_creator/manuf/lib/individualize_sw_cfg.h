@@ -7,7 +7,7 @@
 
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
-#include "sw/device/silicon_creator/manuf/lib/otp_img.h"
+#include "sw/device/silicon_creator/manuf/lib/otp_img_types.h"
 
 /**
  * OTP Creator Software Configuration Partition.
