@@ -20,10 +20,10 @@
     - Reset memory contents at the end of iteration
 */
 
-class dma_smoke_vseq extends dma_base_vseq;
+class dma_generic_smoke_vseq extends dma_base_vseq;
   rand int num_txns;
 
-  `uvm_object_utils(dma_smoke_vseq)
+  `uvm_object_utils(dma_generic_smoke_vseq)
   `uvm_object_new
 
   constraint transactions_c {num_txns == valid_combinations.size();}

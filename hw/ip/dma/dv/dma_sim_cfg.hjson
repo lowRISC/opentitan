@@ -45,9 +45,8 @@
   // List of test specifications.
   tests: [
     {
-      name: dma_smoke
-      uvm_test_seq: dma_smoke_vseq
-      run_opts: ["+en_scb=0"]
+      name: dma_generic_smoke
+      uvm_test_seq: dma_generic_smoke_vseq
       reseed: 1
     }
     {
