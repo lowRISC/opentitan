@@ -58,11 +58,13 @@
                name: alert_handler
                top_chip: top_darjeeling
                import_cfgs: ["{proj_root}/hw/{top_chip}/ip_autogen/alert_handler/dv/alert_handler_sim_cfg.hjson"]
+               rel_path: "{proj_root}/hw/{top_chip}/ip_autogen/alert_handler/dv/"
              },
              {
                name: clkmgr
                top_chip: top_darjeeling
                import_cfgs: ["{proj_root}/hw/ip/clkmgr/dv/clkmgr_sim_cfg.hjson"]
+               rel_path: "{proj_root}/hw/ip/clkmgr/dv/"
              },
              "{proj_root}/hw/ip/flash_ctrl/dv/flash_ctrl_sim_cfg.hjson",
              "{proj_root}/hw/ip/otp_ctrl/dv/otp_ctrl_sim_cfg.hjson",
@@ -70,11 +72,13 @@
                name: pwrmgr
                top_chip: top_darjeeling
                import_cfgs: ["{proj_root}/hw/ip/pwrmgr/dv/pwrmgr_sim_cfg.hjson"]
+               rel_path: "{proj_root}/hw/ip/pwrmgr/dv/"
              },
              {
                name: rstmgr
                top_chip: top_darjeeling
                import_cfgs: ["{proj_root}/hw/ip/rstmgr/dv/rstmgr_sim_cfg.hjson"]
+               rel_path: "{proj_root}/hw/ip/rstmgr/dv/"
              },
              "{proj_root}/hw/{top_chip}/ip/xbar_main/dv/autogen/xbar_main_sim_cfg.hjson",
              "{proj_root}/hw/{top_chip}/ip/xbar_peri/dv/autogen/xbar_peri_sim_cfg.hjson",
