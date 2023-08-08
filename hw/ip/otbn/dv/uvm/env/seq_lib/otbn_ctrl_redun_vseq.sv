@@ -8,8 +8,16 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
   `uvm_object_utils(otbn_ctrl_redun_vseq)
   `uvm_object_new
 
+  bit have_injected_error;
+
   task body();
     do_end_addr_check = 0;
+
+    // Run the otbn_single_vseq body, which runs a single OTBN application to completion. At the
+    // same time, try to inject an error and check that the RTL (and model) both spot the error. If
+    // we didn't find a good moment to inject the error, fail the test: sadly, it hasn't actually
+    // tested anything.
+    have_injected_error = 1'b0;
     fork
       begin
         super.body();
@@ -18,6 +26,11 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
         inject_redun_err();
       end
     join_any
+
+    if (!have_injected_error) begin
+      `uvm_fatal(`gfn, "Never found a time to inject an error.")
+    end
+
   endtask: body
 
   // Wait until the value at path becomes nonzero
@@ -210,6 +223,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
       end
     endcase
     `uvm_info(`gfn, "injecting bad internal state error into ISS", UVM_HIGH)
+    have_injected_error = 1'b1;
     cfg.model_agent_cfg.vif.send_err_escalation(err_val);
     `DV_WAIT(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked)
     `DV_CHECK_FATAL(uvm_hdl_release(err_path) == 1);
