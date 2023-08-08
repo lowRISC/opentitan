@@ -22,7 +22,11 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
 
   // Wait until the value at path becomes nonzero
   task wait_for_flag(string path);
-    uvm_hdl_data_t flag;
+    // Initialise flag to zero. With some simulators (one version of Xcelium, at least), it seems
+    // that the call to uvm_hdl_read might leave its destination set to X. The HDL path exists and
+    // the signal is not X, so this is rather confusing. Initialising flag to zero before calling
+    // uvm_hdl_read seems to fix the behaviour.
+    uvm_hdl_data_t flag = 0;
     `DV_SPINWAIT(do begin
                    @(cfg.clk_rst_vif.cb);
                    `DV_CHECK_FATAL(uvm_hdl_read(path, flag) == 1);
