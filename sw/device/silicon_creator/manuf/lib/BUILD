@@ -106,10 +106,10 @@ opentitan_functest(
 )
 
 cc_library(
-    name = "individualize_preop_generic",
+    name = "individualize_sw_cfg",
     srcs = [
-        "individualize_preop.c",
-        "individualize_preop.h",
+        "individualize_sw_cfg.c",
+        "individualize_sw_cfg.h",
     ],
     deps = [
         ":otp_img",
@@ -124,16 +124,16 @@ cc_library(
 # As more SKUs are created with different OTP software configuration partitions,
 # libraries can be added accordingly.
 cc_library(
-    name = "individualize_preop_sku_earlgrey_a0",
+    name = "individualize_sw_cfg_earlgrey_a0_sku_test",
     deps = [
-        ":individualize_preop_generic",
-        "//hw/ip/otp_ctrl/data/sku_earlgrey_a0:otp_img_consts",
+        ":individualize_sw_cfg",
+        "//hw/ip/otp_ctrl/data/earlgrey_a0_skus:test_otp_sw_cfg",
     ],
 )
 
 opentitan_functest(
-    name = "individualize_preop_functest",
-    srcs = ["individualize_preop_functest.c"],
+    name = "individualize_sw_cfg_functest",
+    srcs = ["individualize_sw_cfg_functest.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_test_unlocked0",
         tags = ["manuf"],
@@ -142,7 +142,7 @@ opentitan_functest(
         "cw310_rom_with_fake_keys",
     ],
     deps = [
-        ":individualize_preop_sku_earlgrey_a0",
+        ":individualize_sw_cfg_earlgrey_a0_sku_test",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",

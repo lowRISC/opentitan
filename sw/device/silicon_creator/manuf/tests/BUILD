@@ -311,7 +311,7 @@ opentitan_ram_binary(
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
-        "//sw/device/silicon_creator/manuf/lib:individualize_preop_sku_earlgrey_a0",
+        "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_a0_sku_test",
         "//sw/device/silicon_creator/manuf/lib:isolated_flash_partition",
         "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
         "//sw/device/silicon_creator/manuf/lib:sram_start",

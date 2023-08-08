@@ -4,7 +4,6 @@
 
 #include <stdint.h>
 
-#include "otp_img_sku_earlgrey_a0_stage_individualize.h"  // Generated.
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
@@ -15,7 +14,7 @@
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/silicon_creator/manuf/lib/individualize_preop.h"
+#include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
 #include "sw/device/silicon_creator/manuf/lib/isolated_flash_partition.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_img.h"
 #include "sw/device/silicon_creator/manuf/tests/test_wafer_auth_secret.h"

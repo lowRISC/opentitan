@@ -12,8 +12,9 @@ otp_json(
     seed = "94259314771464387",
 )
 
+# OTP SW Configuration for Test SKU.
 otp_image_consts(
-    name = "otp_img_consts_c_file",
+    name = "test_otp_sw_cfg_c_file",
     src = ":otp_json_baseline",
     overlays = [
         "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
@@ -23,8 +24,8 @@ otp_image_consts(
 )
 
 cc_library(
-    name = "otp_img_consts",
-    srcs = [":otp_img_consts_c_file"],
+    name = "test_otp_sw_cfg",
+    srcs = [":test_otp_sw_cfg_c_file"],
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/silicon_creator/manuf/lib:otp_img_types",
