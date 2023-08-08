@@ -293,22 +293,6 @@ module otp_ctrl
     end
   end
 
-  ///////////////////////////////
-  // Digests and LC State CSRs //
-  ///////////////////////////////
-
-  logic [ScrmblBlockWidth-1:0] unused_digest;
-  logic [NumPart-1:0][ScrmblBlockWidth-1:0] part_digest;
-  assign hw2reg.vendor_test_digest    = part_digest[VendorTestIdx];
-  assign hw2reg.creator_sw_cfg_digest = part_digest[CreatorSwCfgIdx];
-  assign hw2reg.owner_sw_cfg_digest   = part_digest[OwnerSwCfgIdx];
-  assign hw2reg.hw_cfg_digest         = part_digest[HwCfgIdx];
-  assign hw2reg.secret0_digest        = part_digest[Secret0Idx];
-  assign hw2reg.secret1_digest        = part_digest[Secret1Idx];
-  assign hw2reg.secret2_digest        = part_digest[Secret2Idx];
-  // LC partition has no digest
-  assign unused_digest                = part_digest[LifeCycleIdx];
-
   //////////////////////////////
   // Access Defaults and CSRs //
   //////////////////////////////
@@ -382,9 +366,6 @@ module otp_ctrl
 
   assign dai_addr  = reg2hw.direct_access_address.q;
   assign dai_wdata = reg2hw.direct_access_wdata;
-  assign hw2reg.direct_access_rdata = dai_rdata;
-  // This write-protects all DAI regs during pending operations.
-  assign hw2reg.direct_access_regwen.d = dai_idle;
 
   // The DAI and the LCI can initiate write transactions, which
   // are critical and we must not power down if such transactions
@@ -418,7 +399,6 @@ module otp_ctrl
   logic chk_pending, chk_timeout;
   logic lfsr_fsm_err, scrmbl_fsm_err;
   always_comb begin : p_errors_alerts
-    hw2reg.err_code = part_error;
     // Note: since these are all fatal alert events, we latch them and keep on sending
     // alert events via the alert senders. These regs can only be cleared via a system reset.
     fatal_macro_error_d = fatal_macro_error_q;
@@ -471,16 +451,6 @@ module otp_ctrl
                            (|part_fsm_err);
   end
 
-  // Assign these to the status register.
-  assign hw2reg.status = {part_errors_reduced,
-                          chk_timeout,
-                          lfsr_fsm_err,
-                          scrmbl_fsm_err,
-                          part_fsm_err[KdiIdx],
-                          fatal_bus_integ_error_q,
-                          dai_idle,
-                          chk_pending};
-
   // If we got an error, we trigger an interrupt.
   logic [$bits(part_errors_reduced)+4-1:0] interrupt_triggers_d, interrupt_triggers_q;
 
@@ -509,6 +479,37 @@ module otp_ctrl
     end
   end
 
+  // CSR assignments are done in one combo process so that we can use
+  // the parameterized digest_assign task below without multiple driver issues.
+  logic [NumPart-1:0][ScrmblBlockWidth-1:0] part_digest;
+  logic intr_state_otp_operation_done_d, intr_state_otp_operation_done_de;
+  logic intr_state_otp_error_d, intr_state_otp_error_de;
+  always_comb begin : p_csr_assign
+    // Assign named CSRs (like digests).
+    hw2reg = named_reg_assign(part_digest);
+    // DAI related CSRs
+    hw2reg.direct_access_rdata = dai_rdata;
+    // This write-protects all DAI regs during pending operations.
+    hw2reg.direct_access_regwen.d = dai_idle;
+    // Assign these to the status register.
+    hw2reg.status = {part_errors_reduced,
+                     chk_timeout,
+                     lfsr_fsm_err,
+                     scrmbl_fsm_err,
+                     part_fsm_err[KdiIdx],
+                     fatal_bus_integ_error_q,
+                     dai_idle,
+                     chk_pending};
+    // Error code registers.
+    hw2reg.err_code = part_error;
+    // Interrupt signals
+    hw2reg.intr_state.otp_operation_done.de = intr_state_otp_operation_done_de;
+    hw2reg.intr_state.otp_operation_done.d  = intr_state_otp_operation_done_d;
+    hw2reg.intr_state.otp_error.de = intr_state_otp_error_de;
+    hw2reg.intr_state.otp_error.d  = intr_state_otp_error_d;
+end
+
+
   //////////////////////////////////
   // Interrupts and Alert Senders //
   //////////////////////////////////
@@ -523,8 +524,8 @@ module otp_ctrl
     .reg2hw_intr_test_q_i   ( reg2hw.intr_test.otp_operation_done.q   ),
     .reg2hw_intr_test_qe_i  ( reg2hw.intr_test.otp_operation_done.qe  ),
     .reg2hw_intr_state_q_i  ( reg2hw.intr_state.otp_operation_done.q  ),
-    .hw2reg_intr_state_de_o ( hw2reg.intr_state.otp_operation_done.de ),
-    .hw2reg_intr_state_d_o  ( hw2reg.intr_state.otp_operation_done.d  ),
+    .hw2reg_intr_state_de_o ( intr_state_otp_operation_done_de        ),
+    .hw2reg_intr_state_d_o  ( intr_state_otp_operation_done_d         ),
     .intr_o                 ( intr_otp_operation_done_o               )
   );
 
@@ -538,8 +539,8 @@ module otp_ctrl
     .reg2hw_intr_test_q_i   ( reg2hw.intr_test.otp_error.q   ),
     .reg2hw_intr_test_qe_i  ( reg2hw.intr_test.otp_error.qe  ),
     .reg2hw_intr_state_q_i  ( reg2hw.intr_state.otp_error.q  ),
-    .hw2reg_intr_state_de_o ( hw2reg.intr_state.otp_error.de ),
-    .hw2reg_intr_state_d_o  ( hw2reg.intr_state.otp_error.d  ),
+    .hw2reg_intr_state_de_o ( intr_state_otp_error_de        ),
+    .hw2reg_intr_state_d_o  ( intr_state_otp_error_d         ),
     .intr_o                 ( intr_otp_error_o               )
   );
 

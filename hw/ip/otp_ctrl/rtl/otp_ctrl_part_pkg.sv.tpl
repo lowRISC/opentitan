@@ -225,4 +225,24 @@ package otp_ctrl_part_pkg;
     % endfor
   % endfor
 
+  ///////////////////////////////////////////////
+  // Parameterized Assignment Helper Functions //
+  ///////////////////////////////////////////////
+
+  function automatic otp_ctrl_core_hw2reg_t named_reg_assign(
+      logic [NumPart-1:0][ScrmblBlockWidth-1:0] part_digest);
+    logic unused_digest;
+    otp_ctrl_core_hw2reg_t hw2reg;
+    hw2reg = '0;
+    unused_digest = 1'b0;
+% for k, part in enumerate(otp_mmap.config["partitions"]):
+  % if part["sw_digest"] or part["hw_digest"]:
+    hw2reg.${part["name"].lower()}_digest = part_digest[${_to_pascal_case(part["name"])}Idx];
+  % else:
+    unused_digest ^= ^part_digest[${_to_pascal_case(part["name"])}Idx];
+  % endif
+% endfor
+    return hw2reg;
+  endfunction : named_reg_assign
+
 endpackage : otp_ctrl_part_pkg
