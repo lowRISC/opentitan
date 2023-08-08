@@ -49,18 +49,6 @@ cc_library(
 )
 
 cc_library(
-    name = "otp_img",
-    srcs = ["otp_img.c"],
-    hdrs = ["otp_img.h"],
-    deps = [
-        ":otp_img_types",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/dif:otp_ctrl",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
-    ],
-)
-
-cc_library(
     name = "individualize",
     srcs = ["individualize.c"],
     hdrs = [
@@ -112,7 +100,6 @@ cc_library(
         "individualize_sw_cfg.h",
     ],
     deps = [
-        ":otp_img",
         ":otp_img_types",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:otp_ctrl",
@@ -147,6 +134,7 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
