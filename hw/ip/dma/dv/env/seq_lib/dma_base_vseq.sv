@@ -4,7 +4,6 @@
 
 // Configuration methods
 //
-//  task randomize_new_address()
 //  task run_common_config()
 //    task set_source_address(source_address)
 //    task set_destination_address_and_limit(destination_address)
@@ -27,24 +26,16 @@ class dma_base_vseq extends cip_base_vseq #(
   .COV_T              (dma_env_cov),
   .VIRTUAL_SEQUENCER_T(dma_virtual_sequencer)
 );
-  `include "dv_macros.svh"
+
   `uvm_object_utils(dma_base_vseq)
 
-  // Test-specific configuration
-  bit [63:0]   addr_source;
-  bit [63:0]   addr_destination;
-  bit [1:0]    addr_asid_source;
-  bit [1:0]    addr_asid_destination;
-  bit [31:0]   cfg_total_size;
-  bit [1:0]    cfg_transfer_size;
-  bit [31:0]   cfg_memory_range_base;
-  bit [31:0]   cfg_memory_range_limit;
-  bit          cfg_direction;
-  bit          cfg_auto_inc_buffer;
-  bit          cfg_auto_inc_fifo;
-  bit          cfg_handshake;
-  bit          sim_fatal_exit_on_dma_error = 1;
-  mem_model    m_mem;
+  bit sim_fatal_exit_on_dma_error=1;
+  // response sequences
+  dma_pull_seq seq_host;
+  dma_pull_seq seq_ctn;
+  // TODO add sequence for SYS interface
+  mem_model m_mem;
+  // DMA configuration item
   dma_seq_item m_seq;
 
   // Event triggers
@@ -53,143 +44,165 @@ class dma_base_vseq extends cip_base_vseq #(
   event e_aborted;
   event e_errored;
 
- function new (string name="");
-  super.new(name);
-  m_seq = dma_seq_item::type_id::create("m_seq");
- endfunction: new
+  function new (string name = "");
+    super.new(name);
+    m_seq = dma_seq_item::type_id::create("m_seq");
+  endfunction: new
 
-  // Function : Rerandomization of address ranges
-  task randomize_new_address();
-    `DV_CHECK_RANDOMIZE_FATAL(m_seq)
-    `uvm_info(`gfn, "DMA: Randomized a new transaction with...", UVM_HIGH)
-    addr_source            = m_seq.m_src_addr;
-    addr_destination       = m_seq.m_dst_addr;
-    addr_asid_source       = m_seq.m_src_asid;
-    addr_asid_destination  = m_seq.m_dst_asid;
-    cfg_total_size         = m_seq.m_total_transfer_size;
-    cfg_transfer_size      = m_seq.m_per_transfer_size;
-    cfg_memory_range_base  = m_seq.m_mem_range_base;
-    cfg_memory_range_limit = m_seq.m_mem_range_limit;
-    cfg_direction          = m_seq.m_direction;
-    cfg_auto_inc_buffer    = m_seq.m_auto_inc_buffer;
-    cfg_auto_inc_fifo      = m_seq.m_auto_inc_fifo;
-    cfg_handshake          = m_seq.m_handshake;
+  // Method to randomize data in memory model
+  function void randomize_mem(ref mem_model model,
+                              bit [63:0] start_addr,
+                              bit [31:0] transfer_width);
 
-    `uvm_info(`gfn, $sformatf("DMA: Source Addr = 0x%016x (ASID=%d)",
-                              addr_source, addr_asid_source), UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("DMA: Dest.  Addr = 0x%016x (ASID=%d)",
-                              addr_destination, addr_asid_destination), UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("DMA: Total Transfer Size=%d    Transfer Width=%d",
-                              cfg_total_size, cfg_transfer_size), UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("DMA: Memory Range Base/Limit: 0x%016x .. 0x%016x",
-                              cfg_memory_range_base, cfg_memory_range_limit), UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("DMA: Direction=%d Buffer+=%d Fifo+=%d Handshake=%d",
-        cfg_direction, cfg_auto_inc_buffer, cfg_auto_inc_fifo, cfg_handshake), UVM_HIGH)
+    bit [63:0] limit = start_addr + transfer_width;
+    bit [63:0] addr = start_addr;
+    while (addr <= limit) begin
+      model.write_byte(addr, $urandom_range(0, 256));
+      addr++;
+    end
+  endfunction
 
-  endtask: randomize_new_address
+  // Randomize data in source memory model based on source address space id setting
+  function void randomize_asid_mem(asid_encoding_e asid,
+                                   bit [63:0] start_addr,
+                                   bit [31:0] transfer_width);
 
-  // Task : Write to Source Address CSR
-  task set_source_address(bit [63:0] source_address = addr_source);
+    case (asid)
+      OtInternalAddr: begin
+        randomize_mem(cfg.mem_host, start_addr, transfer_width);
+      end
+      SocControlAddr,
+      OtExtFlashAddr: begin
+        randomize_mem(cfg.mem_ctn, start_addr, transfer_width);
+      end
+      SocSystemAddr: begin
+        randomize_mem(cfg.mem_sys, start_addr, transfer_width)
+      end
+      default: begin
+        `uvm_error(`gfn, $sformatf("Unsupported Address space ID %d", asid))
+      end
+    endcase
+  endfunction
+
+  // Task: Write to Source Address CSR
+  task set_source_address(bit [63:0] source_address);
     `uvm_info(`gfn, $sformatf("DMA: Source Address = 0x%016h", source_address), UVM_HIGH)
     csr_wr(ral.source_address_lo, source_address[31:0]);
     csr_wr(ral.source_address_hi, source_address[63:32]);
   endtask: set_source_address
 
-  // Task : Write to Destination Address CSR
-  task set_destination_address_and_limit(bit [63:0] destination_address = addr_destination);
-    bit [63:0] limit = destination_address;
-
+  // Task: Write to Destination Address CSR
+  task set_destination_address(bit [63:0] destination_address);
     csr_wr(ral.destination_address_lo, destination_address[31:0]);
     csr_wr(ral.destination_address_hi, destination_address[63:32]);
     `uvm_info(`gfn, $sformatf("DMA: Destination Address = 0x%016h", destination_address), UVM_HIGH)
+  endtask: set_destination_address
 
-    if (addr_asid_source == 0 || addr_asid_destination == 0) begin
-      limit = limit + cfg_total_size;
-      csr_wr(ral.destination_address_limit_lo, limit[31:0]);
-      csr_wr(ral.destination_address_limit_hi, limit[63:32]);
-      `uvm_info(`gfn, $sformatf("DMA: Destination Limit = 0x%016h", limit), UVM_HIGH)
+  task set_destination_address_range(bit[63:0] almost_limit,
+                                     bit[63:0] limit);
+    csr_wr(ral.destination_address_limit_lo, limit[31:0]);
+    csr_wr(ral.destination_address_limit_hi, limit[63:32]);
+    `uvm_info(`gfn, $sformatf("DMA: Destination Limit = 0x%016h", limit), UVM_HIGH)
+    csr_wr(ral.destination_address_almost_limit_lo, almost_limit[31:0]);
+    csr_wr(ral.destination_address_almost_limit_hi, almost_limit[63:32]);
+    `uvm_info(`gfn, $sformatf("DMA: Destination Almost Limit = 0x%016h", almost_limit), UVM_HIGH)
+  endtask: set_destination_address_range
 
-      limit = limit - cfg_transfer_size;
-      csr_wr(ral.destination_address_almost_limit_lo, limit[31:0]);
-      csr_wr(ral.destination_address_almost_limit_hi, limit[63:32]);
-      `uvm_info(`gfn, $sformatf("DMA: Destination Almost Limit = 0x%016h", limit), UVM_HIGH)
+  // Task: Set DMA Enabled Memory base and limit
+  task set_dma_enabled_memory_range(bit [32:0] base, bit [31:0] limit, mubi4_t unlock);
+    csr_wr(ral.enabled_memory_range_base, base);
+    `uvm_info(`gfn, $sformatf("DMA: DMA Enabled Memory base = %0x08h", base), UVM_HIGH)
+    csr_wr(ral.enabled_memory_range_limit, limit);
+    `uvm_info(`gfn, $sformatf("DMA: DMA Enabled Memory limit = %0x08h", limit), UVM_HIGH)
+    if (unlock != MuBi4True) begin
+      csr_wr(ral.range_unlock_regwen, int'(unlock));
+      `uvm_info(`gfn, $sformatf("DMA: DMA Enabled Memory unlock = %s", unlock.name()), UVM_HIGH)
     end
-  endtask: set_destination_address_and_limit
+  endtask: set_dma_enabled_memory_range
 
-  // Task : Write to Source and Destination Address Space ID (ASID)
-  task set_address_space_id(bit [1:0] src_asid = addr_asid_source,
-                            bit [1:0] dst_asid = addr_asid_destination);
-    ral.address_space_id.source_asid.set(src_asid);
-    ral.address_space_id.destination_asid.set(dst_asid);
+  // Task: Write to Source and Destination Address Space ID (ASID)
+  task set_address_space_id(asid_encoding_e src_asid, asid_encoding_e dst_asid);
+    ral.address_space_id.source_asid.set(int'(src_asid));
+    ral.address_space_id.destination_asid.set(int'(dst_asid));
     csr_update(.csr(ral.address_space_id));
     `uvm_info(`gfn, $sformatf("DMA: Source ASID = %d", src_asid), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("DMA: Destination ASID = %d", dst_asid), UVM_HIGH)
   endtask: set_address_space_id
 
-  // Task : Set number of chunks to transfer
-  task set_total_size(bit [31:0] txn_size = cfg_total_size);
-    csr_wr(ral.total_data_size, txn_size);
-    `uvm_info(`gfn, $sformatf("DMA: Total Data Size = %d", txn_size), UVM_HIGH)
+  // Task: Set number of chunks to transfer
+  task set_total_size(bit [31:0] total_data_size);
+    csr_wr(ral.total_data_size, total_data_size);
+    `uvm_info(`gfn, $sformatf("DMA: Total Data Size = %d", total_data_size), UVM_HIGH)
   endtask: set_total_size
 
-  // Task : Set Byte size of each transfer (0:1B, 1:2B, 2:3B, 3:4B)
-  task set_transfer_size(bit [1:0] bytesize = cfg_transfer_size);
-    csr_wr(ral.transfer_size, bytesize);
-    `uvm_info(`gfn, $sformatf("DMA: Transfer Byte Size = %d Bytes", bytesize + 1), UVM_HIGH)
-  endtask: set_transfer_size
+  // Task: Set Byte size of each transfer (0:1B, 1:2B, 2:3B, 3:4B)
+  task set_transfer_width(dma_transfer_width_e transfer_width);
+    csr_wr(ral.transfer_width, transaction_width);
+    `uvm_info(`gfn, $sformatf("DMA: Transfer Byte Size = %d",
+                              transaction_width.name()), UVM_HIGH)
+  endtask: set_transfer_width
 
-  // Task : Run above configurations common to both Generic and Handshake Mode of operations
-  task run_common_config();
+  // Task: Run above configurations common to both Generic and Handshake Mode of operations
+  task run_common_config(dma_seq_item m_seq);
     `uvm_info(`gfn, "DMA: Start Common Configuration", UVM_HIGH)
-    set_source_address();
-    set_destination_address_and_limit();
-    set_address_space_id();
-    set_total_size();
-    set_transfer_size();
+    set_source_address(m_seq.m_src_addr);
+    set_destination_address(m_seq.m_dst_addr);
+    set_destination_address_range(m_seq.m_mem_buffer_almost_limit,
+                                  m_seq.m_mem_buffer_limit,
+                                  m_seq.m_per_transfer_width);
+    set_address_space_id(m_seq.m_src_asid, m_seq.m_dst_asid);
+    set_total_size(m_seq.m_total_transfer_size);
+    set_transfer_width(m_seq.m_per_transfer_width);
+    // Randomize data in source memory model
+    randomize_asid_mem(m_seq.m_src_asid, m_seq.m_src_addr, m_seq.m_total_transfer_size);
+    set_dma_enabled_memory_range(m_seq.m_mem_range_base,
+                                 m_seq.m_mem_range_limit,
+                                 m_seq.m_mem_range_unlock);
   endtask: run_common_config
 
-  // Task : Enable Interrupt
+  // Task: Enable Interrupt
   task enable_interrupt();
     `uvm_info(`gfn, "DMA: Assert Interrupt Enable", UVM_HIGH)
     csr_wr(ral.intr_enable, (1 << ral.intr_enable.get_n_bits()) - 1);
   endtask: enable_interrupt
 
-  // Task : Enable Handshake Interrupt Enable
+  // Task: Enable Handshake Interrupt Enable
   task enable_handshake_interrupt();
     `uvm_info(`gfn, "DMA: Assert Interrupt Enable", UVM_HIGH)
     csr_wr(ral.handshake_interrupt_enable, 32'd1);
   endtask: enable_handshake_interrupt
 
-  // Task : Start TLUL Sequences
+  // Task: Start TLUL Sequences
   virtual task start_device();
     // response sequences
-    dma_pull_seq  seq_ctn;
-    dma_pull_seq  seq_host;
-
     seq_ctn = dma_pull_seq::type_id::create("seq_ctn");
     seq_host = dma_pull_seq::type_id::create("seq_host");
-    seq_ctn.mem = m_mem; // FIXME - may need 2 MEMs (OT vs SYS)
-    seq_host.mem = m_mem; // FIXME - may need separate MEM
+    seq_sys  = dma_pull_seq::type_id::create("seq_sys");
+    seq_ctn.mem = cfg.mem_ctn;
+    seq_host.mem = cfg.mem_host;
+    seq_sys.mem = cfg.mem_sys;
 
     `uvm_info(`gfn, "DMA: Starting Devices", UVM_HIGH)
     fork
       seq_ctn.start(p_sequencer.tl_sequencer_dma_ctn_h);
       seq_host.start(p_sequencer.tl_sequencer_dma_host_h);
+      seq_sys.start(p_sequencer.tl_sequencer_dma_sys_h);
     join_none
   endtask: start_device
 
-  // Task : Configures (optionally executes) DMA control registers
-  task set_control_register(bit [3:0] op = 4'h0,                  // OPCODE
-                            bit       hs = cfg_handshake,         // Handshake Enable
-                            bit       buff = cfg_auto_inc_buffer, // Auto-increment Buffer Address
-                            bit       fifo = cfg_auto_inc_fifo,   // Auto-increment FIFO Address
-                            bit       dir = cfg_direction,        // Direction
-                            bit       go = 1);                    // Execute
+  // Task: Configures (optionally executes) DMA control registers
+  task set_control_register(opcode_e op = DmaOperCopy, // OPCODE
+                            bit hs, // Handshake Enable
+                            bit buff, // Auto-increment Buffer Address
+                            bit fifo, // Auto-increment FIFO Address
+                            bit dir, // Direction
+                            bit go); // Execute
     string tmpstr;
-    tmpstr = go ? "Executing" : "Setting";
-    `uvm_info(`gfn, $sformatf("DMA: %s DMA Control Register OPCODE=%d HS=%d BUF=%d FIFO=%d DIR=%d",
-                              tmpstr, op, hs, buff, fifo, dir), UVM_HIGH)
-    ral.control.opcode.set(op);
+    tmpstr = go ? "Executing": "Setting";
+    `uvm_info(`gfn, $sformatf(
+                      "DMA: %s DMA Control Register   OPCODE=%d HS=%d BUF=%d FIFO=%d DIR=%d",
+                      tmpstr, op, hs, buff, fifo, dir), UVM_HIGH)
+    ral.control.opcode.set(int'(op));
     ral.control.hardware_handshake_enable.set(hs);
     ral.control.memory_buffer_auto_increment_enable.set(buff);
     ral.control.fifo_auto_increment_enable.set(fifo);
@@ -198,19 +211,19 @@ class dma_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.control));
   endtask: set_control_register
 
-  // Task : Abort the current transaction
+  // Task: Abort the current transaction
   task abort();
     ral.control.abort.set(1);
     csr_update(.csr(ral.control));
   endtask: abort
 
-  // Task : Clear DMA Status
+  // Task: Clear DMA Status
   task clear();
     `uvm_info(`gfn, "DMA: Clear DMA State", UVM_HIGH)
     csr_wr(ral.clear_state, 32'd1);
   endtask: clear
 
-  // Task : Wait for Completion
+  // Task: Wait for Completion
   task wait_for_completion(output int status);
     int timeout = 1000;
     // Case 1.    Timeout due to simulation hang
@@ -249,7 +262,7 @@ class dma_base_vseq extends cip_base_vseq #(
     disable fork;
   endtask: wait_for_completion
 
-  // Task : Continuously poll status until completion every N cycles
+  // Task: Continuously poll status until completion every N cycles
   task poll_status(int pollrate = 10);
     bit [31:0] v;
 
@@ -264,16 +277,14 @@ class dma_base_vseq extends cip_base_vseq #(
     end
   endtask: poll_status
 
-  // Task : Simulate a clock delay
+  // Task: Simulate a clock delay
   virtual task delay(int num = 1);
     cfg.clk_rst_vif.wait_clks(num);
   endtask: delay
 
-  // Body : Need to override for inherited tests
+  // Body: Need to override for inherited tests
   task body();
     start_device();
-    randomize_new_address();
-    run_common_config();
     enable_interrupt();
-  endtask : body
+  endtask: body
 endclass
