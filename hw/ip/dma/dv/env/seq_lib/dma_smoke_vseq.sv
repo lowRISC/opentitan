@@ -17,6 +17,7 @@
     - FW either
         i)    Poll for completion
         ii)   Waits for Completion Interrupt
+    - Reset memory contents at the end of iteration
 */
 
 class dma_smoke_vseq extends dma_base_vseq;
@@ -25,43 +26,72 @@ class dma_smoke_vseq extends dma_base_vseq;
   `uvm_object_utils(dma_smoke_vseq)
   `uvm_object_new
 
-  // Constraint : Data and Transfer Size limit for Simulation-time reduction
-  constraint dma_data_size_c {
-    soft $countones(cfg_total_size) == 1; // Make it power of 2 for convenience
-    soft cfg_transfer_size == 2'b11;
-    soft cfg_total_size < 32'h100;
-  }
+  constraint transactions_c {num_txns == valid_combinations.size();}
 
-  constraint transactions_c {
-    num_txns >= 1;
-    num_txns < 10;
-  }
+  typedef struct {
+    dma_address_space_id_t src_id;
+    dma_address_space_id_t dst_id;
+  } valid_space_id_t;
+
+  valid_space_id_t valid_combinations[$] = '{
+      '{OtInternalAddr, SocControlAddr},
+      '{OtInternalAddr, SocControlAddr},
+      // TODO remove once SYS support is enabled'{OtInternalAddr, SocSystemAddr},
+      '{OtInternalAddr, OtExtFlashAddr},
+      '{SocControlAddr, OtInternalAddr},
+      '{SocControlAddr, OtInternalAddr},
+      // TODO remove once SYS support is enabled '{SocSystemAddr, OtInternalAddr},
+      '{OtExtFlashAddr, OtInternalAddr},
+      '{OtInternalAddr,OtInternalAddr}
+  };
+
+  // Function : Rerandomization of address ranges
+  function void randomize_item(ref dma_seq_item m_seq, input int iteration = 0);
+    int num_valid_combinations = valid_combinations.size();
+    int index = $urandom_range(0, num_valid_combinations);
+    valid_space_id_t valid_combination = valid_combinations.pop_front();
+    if (iteration > 0) begin
+      // Disable DMA memory region base and limit randomization
+      m_seq.lock_memory_range();
+    end
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(
+      m_seq,
+      valid_dma_config == 1; // Allow only random configurations
+      m_src_asid == valid_combination.src_id;
+      m_dst_asid == valid_combination.dst_id;
+      m_opcode == DmaOperCopy;)
+    `uvm_info(`gfn, $sformatf("DMA: Randomized a new transaction\n %s", m_seq.sprint()), UVM_HIGH)
+  endfunction
 
   virtual task body();
-    `uvm_info(`gfn, "DMA: Starting Smoke Sequence", UVM_HIGH)
+    `uvm_info(`gfn, "DMA: Starting Generic smoke Sequence", UVM_LOW)
+    valid_combinations.shuffle();
     super.body();
 
-    `uvm_info(`gfn, $sformatf("DMA: Running %d DMA Sequences", num_txns + 1), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("DMA: Running %d DMA Sequences", num_txns), UVM_LOW)
 
-    // First
-    set_control_register();
-    poll_status();
-    `uvm_info(`gfn, "DMA: Completed Sequence #1", UVM_HIGH)
-
-    // Subsequent
     for (int i = 0; i < num_txns; i++) begin
+      `uvm_info(`gfn, $sformatf("DMA: Started Sequence #%0d", i), UVM_LOW)
+      randomize_item(m_seq, i);
+      run_common_config(m_seq);
+      set_control_register(m_seq.m_opcode, // OPCODE
+                           m_seq.m_handshake, // Handshake Enable
+                           m_seq.m_auto_inc_buffer, // Auto-increment Buffer Address
+                           m_seq.m_auto_inc_fifo, // Auto-increment FIFO Address
+                           m_seq.m_direction, // Direction
+                           1'b1); // Go
+      poll_status();
       clear();
       delay(10);
-      randomize_new_address();
-      set_source_address();
-      set_destination_address_and_limit();
-      set_address_space_id();
-      `DV_CHECK_STD_RANDOMIZE_FATAL(cfg_direction)
-      set_control_register();
-      poll_status();
-      `uvm_info(`gfn, $sformatf("DMA: Completed Sequence #%d", i + 2), UVM_HIGH)
+      // TODO: reset design to unlock DMA enabled momory range registers
+      // Clear memory contents
+      `uvm_info(`gfn, $sformatf("Clearing memory contents"), UVM_MEDIUM)
+      cfg.mem_host.init();
+      cfg.mem_ctn.init();
+      cfg.mem_sys.init();
+      `uvm_info(`gfn, $sformatf("DMA: Completed Sequence #%d", i), UVM_LOW)
     end
 
-    `uvm_info(`gfn, "DMA: Completed Smoke Sequence", UVM_HIGH)
-  endtask: body
+    `uvm_info(`gfn, "DMA: Completed Smoke Sequence", UVM_LOW)
+  endtask : body
 endclass
