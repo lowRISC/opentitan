@@ -11,7 +11,10 @@ class flash_ctrl_hw_prog_rma_wipe_err_vseq extends flash_ctrl_err_base_vseq;
 
   task run_main_event();
     logic [RmaSeedWidth-1:0] rma_seed = $urandom;
-    send_rma_req(rma_seed);
+    // This test needs long rma.
+    // In case en_small_rma is set for all tests,
+    // force to long rma.
+    send_rma_req(.rma_seed(rma_seed), .ignore_short_rma(1));
     cfg.clk_rst_vif.wait_clks($urandom_range(10, 100));
 
   endtask // run_main_event
