@@ -139,7 +139,12 @@ module otp_ctrl_part_unbuf
   // This partition cannot do any write accesses, hence we tie this
   // constantly off.
   assign otp_wdata_o = '0;
-  assign otp_cmd_o   = prim_otp_pkg::Read;
+  // Depending on the partition configuration, the wrapper is instructed to ignore integrity errors.
+  if (Info.integrity) begin : gen_integrity
+    assign otp_cmd_o = prim_otp_pkg::Read;
+  end else begin : gen_no_integrity
+    assign otp_cmd_o = prim_otp_pkg::ReadRaw;
+  end
 
   `ASSERT_KNOWN(FsmStateKnown_A, state_q)
   always_comb begin : p_fsm
@@ -197,16 +202,9 @@ module otp_ctrl_part_unbuf
       InitWaitSt: begin
         if (otp_rvalid_i) begin
           digest_reg_en = 1'b1;
-          // Depending on the partition configuration, we do not treat uncorrectable ECC errors
-          // as fatal.
-          if (!Info.ecc_fatal && otp_err_e'(otp_err_i) == MacroEccUncorrError ||
-              otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}) begin
+          if (otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}) begin
             state_d = IdleSt;
             // At this point the only error that we could have gotten are correctable ECC errors.
-            // There is one exception, though, which are partitions where the ecc_fatal
-            // bit is set to 0 (this is only used for test partitions). In that a case,
-            // correctable and uncorrectable ECC errors are both collapsed and signalled
-            // as MacroEccCorrError
             if (otp_err_e'(otp_err_i) != NoError) begin
               error_d = MacroEccCorrError;
             end
@@ -258,16 +256,9 @@ module otp_ctrl_part_unbuf
         init_done_o = 1'b1;
         if (otp_rvalid_i) begin
           tlul_rvalid_o = 1'b1;
-          // Depending on the partition configuration, we do not treat uncorrectable ECC errors
-          // as fatal.
-          if (!Info.ecc_fatal && otp_err_e'(otp_err_i) == MacroEccUncorrError ||
-              otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}) begin
+          if (otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}) begin
             state_d = IdleSt;
             // At this point the only error that we could have gotten are correctable ECC errors.
-            // There is one exception, though, which are partitions where the ecc_fatal
-            // bit is set to 0 (this is only used for test partitions). In that a case,
-            // correctable and uncorrectable ECC errors are both collapsed and signalled
-            // as MacroEccCorrError
             if (otp_err_e'(otp_err_i) != NoError) begin
               error_d = MacroEccCorrError;
             end
@@ -512,8 +503,7 @@ module otp_ctrl_part_unbuf
   // OTP error response
   `ASSERT(OtpErrorState_A,
       state_q inside {InitWaitSt, ReadWaitSt} && otp_rvalid_i &&
-      !(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError} ||
-        otp_err_e'(otp_err_i) == MacroEccUncorrError && !Info.ecc_fatal) && !ecc_err
+      !(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}) && !ecc_err
       |=>
       state_q == ErrorSt && error_o == $past(otp_err_e'(otp_err_i)))
 
