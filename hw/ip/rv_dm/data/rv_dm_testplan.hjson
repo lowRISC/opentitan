@@ -386,9 +386,9 @@
       name: mem_tl_access_halted
       desc: '''
             Verify whether the selected hart has been halted or not.
-            
+
             - Set the haltreq bit of dmcontrol register.
-            - Write into memory mapped register called HALTED(0x100) through tl-device(mem_tl_if) interface. 
+            - Write into memory mapped register called HALTED(0x100) through tl-device(mem_tl_if) interface.
             - Verify that the anyhalted and allhalted bits of the dmstatus register are set.
             '''
       stage: V1
