@@ -14,6 +14,7 @@ IPS ?= aes           \
        adc_ctrl      \
        aon_timer     \
        clkmgr        \
+       dma           \
        entropy_src   \
        csrng         \
        edn           \
