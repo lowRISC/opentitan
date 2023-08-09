@@ -319,7 +319,7 @@
       name: flash_ctrl_intr_wr_slow_flash
       uvm_test_seq: flash_ctrl_intr_wr_vseq
       run_opts: ["+scb_otf_en=1", "+flash_read_latency=50", "+flash_program_latency=500",
-                 "+rd_buf_en_to=500_000", "+test_timeout_ns=500_000_000"]
+                 "+rd_buf_en_to=500_000", "+test_timeout_ns=1_000_000_000"]
       reseed: 10
     }
     {
