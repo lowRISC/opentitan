@@ -1,0 +1,32 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# An example configuration that tries to make programs that don't
+# "die".
+#
+# This boils down to avoiding calls of stop_at_end_of_cycle() with
+# error bits in the simulator. For example, programs should not try to
+# read sideload keys that don't have a value.
+
+inherit: base
+
+# Squash some snippet generators that we might expect to kill the
+# program.
+gen-weights:
+  BadAtEnd: 0
+  BadBNMovr: 0
+  BadBranch: 0
+  BadCallStackRW: 0
+  BadDeepLoop: 0
+  BadLoadStore: 0
+  BadInsn: 0
+  BadGiantLoop: 0
+  BadZeroLoop: 0
+  MisalignedLoadStore: 0
+  BadIspr: 0
+
+insn-weights:
+  # Avoid using the WSRR instruction, which might try to read from a
+  # sideload WSR (that may not have a value).
+  bn.wsrr: 0

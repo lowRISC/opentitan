@@ -98,13 +98,23 @@ name:
   multi_err_dir: "{otbn_dir}/dv/otbnsim/test/simple/multi"
 
   run_modes: [
-    // Run the random instruction generator and builds the one resulting binary
+    // Run the random instruction generator and build the one resulting binary
     // in {otbn_elf_dir}. If you override the otbn_elf_dir plusarg with
     // --run-opts, we'll still build the binary (but will ignore it).
     {
       name: build_otbn_rig_binary_mode
       pre_run_cmds: [
         "{gen_rnd} --count 1 {otbn_elf_dir}"
+      ]
+    }
+
+    // Run the random instruction generator in a "safe mode" and build
+    // resulting binary in {otbn_elf_dir}. Other than the choice of
+    // RIG config, this the same as build_otbn_rig_binary_mode.
+    {
+      name: build_otbn_rig_safe_binary_mode
+      pre_run_cmds: [
+        "{gen_rnd} --count 1 {otbn_elf_dir} --config safe"
       ]
     }
 
@@ -293,6 +303,8 @@ name:
     {
       name: "otbn_pc_ctrl_flow_redun"
       uvm_test_seq: "otbn_pc_ctrl_flow_redun_vseq"
+      // Use a "safe" binary, in the hope that it will run for long
+      // enough that we can interrupt it with an error.
       en_run_modes: ["build_otbn_rig_binary_mode"]
       reseed: 5
     }
@@ -305,7 +317,7 @@ name:
     {
       name: "otbn_ctrl_redun"
       uvm_test_seq: "otbn_ctrl_redun_vseq"
-      en_run_modes: ["build_otbn_rig_binary_mode"]
+      en_run_modes: ["build_otbn_rig_safe_binary_mode"]
       reseed: 12
     }
     {

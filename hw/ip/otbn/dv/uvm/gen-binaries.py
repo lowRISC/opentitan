@@ -106,6 +106,8 @@ def main() -> int:
                         nargs='?',
                         const='unlimited',
                         help='Number of parallel jobs.')
+    parser.add_argument('--config', type=str, default='default',
+                        help='Configuration to use for any RIG calls')
     parser.add_argument('--gen-only',
                         action='store_true',
                         help="Generate the ninja file but don't run it")
@@ -151,7 +153,7 @@ def main() -> int:
     with open(os.path.join(args.destdir, ninja_fname), 'w') as ninja_handle:
         if args.src_dir is None:
             write_ninja_rnd(ninja_handle, toolchain, otbn_dir, args.count,
-                            args.seed, args.size)
+                            args.seed, args.size, args.config)
         else:
             write_ninja_fixed(ninja_handle, toolchain, otbn_dir, args.src_dir)
 
@@ -176,7 +178,8 @@ def main() -> int:
 
 
 def write_ninja_rnd(handle: TextIO, toolchain: Toolchain, otbn_dir: str,
-                    count: int, start_seed: int, size: int) -> None:
+                    count: int, start_seed: int,
+                    size: int, config: str) -> None:
     '''Write a build.ninja to build random binaries.
 
     The rules build everything in the same directory as the build.ninja file.
@@ -191,8 +194,8 @@ def write_ninja_rnd(handle: TextIO, toolchain: Toolchain, otbn_dir: str,
 
     handle.write(
         'rule rig-gen\n'
-        '  command = {rig} gen --size {size} --seed $seed -o $out\n\n'.format(
-            rig=otbn_rig, size=size))
+        '  command = {rig} gen --size {size} --config {config} '
+        '--seed $seed -o $out\n\n'.format(rig=otbn_rig, size=size, config=config))
 
     handle.write('rule rig-asm\n'
                  '  command = {rig} asm -o $seed $in\n\n'.format(rig=otbn_rig))
