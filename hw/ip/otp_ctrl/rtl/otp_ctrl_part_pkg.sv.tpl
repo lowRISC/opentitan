@@ -245,4 +245,23 @@ package otp_ctrl_part_pkg;
     return hw2reg;
   endfunction : named_reg_assign
 
+  function automatic part_access_t [NumPart-1:0] named_part_access_pre(
+      otp_ctrl_core_reg2hw_t reg2hw);
+    part_access_t [NumPart-1:0] part_access_pre;
+    logic unused_sigs;
+    unused_sigs = ^reg2hw;
+    // Default (this will be overridden by partition-internal settings).
+    part_access_pre = {{32'(2*NumPart)}{prim_mubi_pkg::MuBi8False}};
+    // Note: these could be made a MuBi CSRs in the future.
+    // The main thing that is missing right now is proper support for W0C.
+% for k, part in enumerate(otp_mmap.config["partitions"]):
+  % if part["read_lock"] == "CSR":
+    if (!reg2hw.${part["name"].lower()}_read_lock) begin
+      part_access_pre[${_to_pascal_case(part["name"])}Idx].read_lock = prim_mubi_pkg::MuBi8True;
+    end
+  % endif
+% endfor
+    return part_access_pre;
+  endfunction : named_part_access_pre
+
 endpackage : otp_ctrl_part_pkg

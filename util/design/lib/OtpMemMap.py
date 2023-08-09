@@ -152,6 +152,11 @@ def _validate_part(part, key_names):
             "Unbuffered partitions without digest are not supported at the moment."
         )
 
+    if part["variant"] == "Buffered" and part["read_lock"].lower() == "csr":
+        raise RuntimeError(
+            "CSR read lock is only supported for SW partitions."
+        )
+
     if not part["sw_digest"] and not part["hw_digest"]:
         if part["write_lock"].lower() == "digest" or part["read_lock"].lower(
         ) == "digest":
