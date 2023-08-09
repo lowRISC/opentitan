@@ -6,19 +6,16 @@ use std::collections::{HashMap, HashSet};
 use std::ffi::OsString;
 use std::fs;
 use std::fs::{File, OpenOptions};
-use std::io::{BufReader, BufWriter, Read, Write};
-use std::os::fd::AsRawFd;
+use std::io::{self, BufReader, BufWriter, Read, Write};
 use std::os::unix::fs::FileTypeExt;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
 use std::rc::Rc;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use anyhow::{bail, Context, Result};
 use log;
-use nix::sys::select;
 use nix::sys::signal::{self, Signal};
-use nix::sys::time::{TimeVal, TimeValLike};
 use nix::unistd::Pid;
 use serde::{Deserialize, Serialize};
 
@@ -26,6 +23,7 @@ use crate::io::emu::{EmuError, EmuState, EmuValue, Emulator};
 use crate::io::gpio::{self, GpioError, PinMode, PullMode};
 use crate::transport::ti50emulator::gpio::Logic;
 use crate::transport::ti50emulator::Inner;
+use crate::util::file;
 
 const SPAWN_TIMEOUT: Duration = Duration::from_secs(10);
 const TIMEOUT: Duration = Duration::from_millis(1000);
@@ -260,9 +258,8 @@ impl EmulatorProcess {
         let child_stdin = handle.stdin.as_mut().expect("Failed to open stdin");
         let child_stdout = handle.stdout.as_mut().expect("Failed to open stdout");
         let mut buffer = Vec::new();
-        let mut timeout = TimeVal::microseconds(SPAWN_TIMEOUT.as_micros().try_into()?);
-        let mut fdset = select::FdSet::new();
-        fdset.insert(child_stdout.as_raw_fd());
+
+        let deadline = Instant::now() + SPAWN_TIMEOUT;
 
         // Now wait for the sub-process to produce a "CHIP READY" line on its standard output.  If
         // end-of-stream is detected, it means that the sub-process failed to initialize properly.
@@ -270,15 +267,22 @@ impl EmulatorProcess {
         // for communication, and it will wait until "GO" signal from us before executing any
         // project code.
         loop {
-            // Select will subtract from the timeout, so that total time waited across all
+            // Use a deadline to ensure that the total time waited across all
             // iterations of the loop is bounded.
-            if select::select(None, Some(&mut fdset), None, None, Some(&mut timeout))? == 0 {
-                // Timeout
-                return Err(EmuError::StartFailureCause(
-                    "Spawning Ti50Emulator sub-process timeout".to_string(),
-                )
-                .into());
+            if let Err(err) = file::wait_read_timeout(
+                &child_stdout,
+                deadline.saturating_duration_since(Instant::now()),
+            ) {
+                match err.downcast_ref::<io::Error>() {
+                    Some(e) if e.kind() == io::ErrorKind::TimedOut => {
+                        bail!(EmuError::StartFailureCause(
+                            "Spawning Ti50Emulator sub-process timeout".to_string(),
+                        ))
+                    }
+                    _ => bail!(err),
+                }
             }
+
             let prev_len = buffer.len();
             buffer.resize(prev_len + 256, 0u8);
             let read_count = child_stdout.read(&mut buffer[prev_len..])?;
