@@ -345,6 +345,22 @@
       tests: ["rv_dm_tap_fsm", "rv_dm_tap_fsm_rand_reset"]
     }
     {
+      name: jtag_dmi_cmderr_busy
+      desc: '''
+            Verify that attempt to generate command error result in cmderr field of abstractcs
+            register are set.    	              
+
+            - write to the command, abstractcs or abstractauto registers when an abstract command is
+              executing.OR
+            - Read or write to one of the data or progbuf registers, when an abstract command is
+              executing.
+            - Verify that the cmderr field of abstractcs register is set to 1.
+                 
+            '''
+      stage: V1
+      tests: ["rv_dm_cmderr_busy"]
+    }
+    {
       name: stress_all
       desc: '''
             A 'bug hunt' test that stresses the DUT to its limits.
