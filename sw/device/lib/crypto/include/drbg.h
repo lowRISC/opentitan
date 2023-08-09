@@ -22,12 +22,10 @@ extern "C" {
  * Initializes the DRBG and the context for DRBG. Gets the required
  * entropy input automatically from the entropy source.
  *
- * @param nonce Pointer to the nonce bit-string.
  * @param perso_string Pointer to personalization bitstring.
  * @return Result of the DRBG instantiate operation.
  */
-crypto_status_t otcrypto_drbg_instantiate(crypto_uint8_buf_t nonce,
-                                          crypto_uint8_buf_t perso_string);
+crypto_status_t otcrypto_drbg_instantiate(crypto_uint8_buf_t perso_string);
 
 /**
  * Reseeds the DRBG with fresh entropy.
@@ -46,13 +44,16 @@ crypto_status_t otcrypto_drbg_reseed(crypto_uint8_buf_t additional_input);
  * Initializes DRBG and the DRBG context. Gets the required entropy
  * input from the user through the `entropy` parameter.
  *
+ * The entropy input must be exactly 384 bits long (48 bytes). The
+ * personalization string must not be longer than the entropy input, and may be
+ * empty.
+ *
  * @param entropy Pointer to the user defined entropy value.
- * @param nonce Pointer to the nonce bit-string.
  * @param personalization_string Pointer to personalization bitstring.
  * @return Result of the DRBG manual instantiation.
  */
 crypto_status_t otcrypto_drbg_manual_instantiate(
-    crypto_uint8_buf_t entropy, crypto_uint8_buf_t nonce,
+    crypto_uint8_buf_t entropy,
     crypto_uint8_buf_t perso_string);
 
 /**
@@ -79,6 +80,10 @@ crypto_status_t otcrypto_drbg_manual_reseed(
  * output in the `len` field of `drbg_output`. If the user-set length
  * and the output length does not match, an error message will be
  * returned.
+ *
+ * The output is generated in 16-byte blocks; if `output_len` is not a multiple
+ * of 16, some output from the hardware will be discarded. This detail may be
+ * important for known-answer tests.
  *
  * @param additional_input Pointer to the additional data.
  * @param output_len Required len of pseudorandom output, in bytes.
