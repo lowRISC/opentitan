@@ -98,20 +98,6 @@ jobs:
     displayName: rustfmt
   - bash: |
       set -e
-      # Azure-specific installation:
-      # The latest version of shellcheck available to ubuntu-18.04 is 0.4.6-1.
-      # We need a newer version that provides the --warning flag.
-      SC_VERSION="v0.8.0"
-      SHELLCHECK_FILE="shellcheck-$SC_VERSION.linux.x86_64.tar.xz"
-      SHELLCHECK_URL="https://github.com/koalaman/shellcheck/releases/download/$SC_VERSION/$SHELLCHECK_FILE"
-      SC_SHA256=ab6ee1b178f014d1b86d1e24da20d1139656c8b0ed34d2867fbb834dad02bf0a
-      echo "Installing Shellcheck $SC_VERSION"
-      curl -L -o "$SHELLCHECK_FILE" "$SHELLCHECK_URL" --silent --show-error
-      echo "${SC_SHA256}  ${SHELLCHECK_FILE}" | sha256sum -c
-      tar -xJf $SHELLCHECK_FILE
-      sudo cp "shellcheck-$SC_VERSION/shellcheck" /usr/bin
-      # Run shellcheck
-      echo "Checking shell scripts..."
       ci/scripts/run-shellcheck.sh || {
         echo -n "##vso[task.logissue type=error]"
         echo "Shellcheck failed. Run ci/scripts/run-shellcheck.sh to see errors."

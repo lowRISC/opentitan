@@ -13,4 +13,4 @@ EXCLUDED_DIRS="-name third_party -o -name vendor -o -name lowrisc_misc-linters"
 # process substitution. For details on this syntax, see ShellCheck SC2046.
 readarray -t shell_scripts < \
     <(find . \( $EXCLUDED_DIRS \) -prune -o -name '*.sh' -print)
-shellcheck --severity=warning "${shell_scripts[@]}"
+ci/bazelisk.sh run //third_party/shellcheck -- --severity=warning "${shell_scripts[@]}"

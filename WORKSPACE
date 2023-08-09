@@ -65,6 +65,10 @@ crate_universe_dependencies(bootstrap = True)
 load("//third_party/rust/crates:crates.bzl", "crate_repositories")
 crate_repositories()
 
+# Shellcheck
+load("//third_party/shellcheck:repos.bzl", "shellcheck_repos")
+shellcheck_repos()
+
 # OpenOCD
 load("//third_party/openocd:repos.bzl", "openocd_repos")
 openocd_repos()
