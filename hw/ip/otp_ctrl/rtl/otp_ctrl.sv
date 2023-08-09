@@ -299,25 +299,16 @@ module otp_ctrl
   // SEC_CM: ACCESS.CTRL.MUBI
   part_access_t [NumPart-1:0] part_access_pre, part_access;
   always_comb begin : p_access_control
-    // Default (this will be overridden by partition-internal settings).
-    part_access_pre = {{32'(2*NumPart)}{MuBi8False}};
+    // Assigns default and extracts named CSR read enables for SW_CFG partitions.
+    // SEC_CM: PART.MEM.REGREN
+    part_access_pre = named_part_access_pre(reg2hw);
+
     // Permanently lock DAI write and read access to the life cycle partition.
     // The LC partition can only be read from and written to via the LC controller.
     // SEC_CM: LC_PART.MEM.SW_NOACCESS
     part_access_pre[LifeCycleIdx].write_lock = MuBi8True;
     part_access_pre[LifeCycleIdx].read_lock = MuBi8True;
 
-    // Propagate CSR read enables down to the SW_CFG partitions.
-    // SEC_CM: PART.MEM.REGREN
-    if (!reg2hw.vendor_test_read_lock) begin
-      part_access_pre[VendorTestIdx].read_lock = MuBi8True;
-    end
-    if (!reg2hw.creator_sw_cfg_read_lock) begin
-      part_access_pre[CreatorSwCfgIdx].read_lock = MuBi8True;
-    end
-    if (!reg2hw.owner_sw_cfg_read_lock) begin
-      part_access_pre[OwnerSwCfgIdx].read_lock = MuBi8True;
-    end
     // The SECRET2 partition can only be accessed (write&read) when provisioning is enabled.
     if (lc_ctrl_pkg::lc_tx_test_false_loose(lc_creator_seed_sw_rw_en)) begin
       part_access_pre[Secret2Idx] = {2{MuBi8True}};
