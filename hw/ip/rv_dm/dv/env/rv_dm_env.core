@@ -31,6 +31,7 @@ filesets:
       - seq_lib/rv_dm_jtag_dmi_csr_vseq.sv: {is_include_file: true}
       - seq_lib/rv_dm_sba_tl_access_vseq_lib.sv: {is_include_file: true}
       - seq_lib/rv_dm_tap_fsm_vseq.sv: {is_include_file: true}
+      - seq_lib/rv_dm_cmderr_busy_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

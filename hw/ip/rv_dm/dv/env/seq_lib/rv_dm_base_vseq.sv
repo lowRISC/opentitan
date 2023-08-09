@@ -31,7 +31,6 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   // Handles for convenience.
   jtag_dtm_reg_block jtag_dtm_ral;
   jtag_dmi_reg_block jtag_dmi_ral;
-  
   rv_dm_mem_reg_block tl_mem_ral;
   dv_base_reg_block dv_base_ral;
 
