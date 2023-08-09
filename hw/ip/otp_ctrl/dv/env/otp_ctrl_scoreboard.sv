@@ -547,7 +547,14 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         bit [TL_AW-1:0] otp_addr = dai_addr >> 2;
         int part_idx = get_part_index(dai_addr);
         bit [TL_DW-1:0] read_out;
-        int ecc_err = read_a_word_with_ecc(dai_addr, read_out);
+        int ecc_err = OtpNoEccErr;
+
+        // We can't get an ECC error if the partition does not have integrity.
+        if (part_has_integrity(part_idx)) begin
+          ecc_err = read_a_word_with_ecc(dai_addr, read_out);
+        end else begin
+          ecc_err = read_a_word_with_ecc_raw(dai_addr, read_out);
+        end
 
         if (cfg.en_cov) begin
           cov.unbuf_access_lock_cg_wrap[part_idx].sample(.read_lock(0),
@@ -559,19 +566,26 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         `DV_CHECK_EQ(cfg.otp_ctrl_vif.alert_reqs, 0)
 
         // ECC uncorrectable errors are gated by `is_tl_mem_access_allowed` function.
-        if (ecc_err != OtpNoEccErr) begin
+        if (ecc_err != OtpNoEccErr && part_has_integrity(part_idx)) begin
+
           predict_err(part_idx, OtpMacroEccCorrError);
           if (ecc_err == OtpEccCorrErr) begin
              `DV_CHECK_EQ(item.d_data, otp_a[otp_addr],
                          $sformatf("mem read mismatch at TLUL addr %0h, csr_addr %0h",
                          csr_addr, dai_addr))
           end else begin
-            // This is an exception for vendor test partition, which reports uncorrectable errors
-            // as correctable ECC errors.
             // Only check the first 16 bits because if ECC readout detects uncorrectable error, it
             // won't continue read the remaining 16 bits.
             uncorr_comp(item.d_data[15:0], read_out[15:0], csr_addr, dai_addr);
           end
+        // If there is an injected error, but the partition cannot detect it, we have to compare
+        // to the value read via the backdoor instead of otp_a[otp_addr] since otherwise the
+        // perturbed value does not get modelled correctly.
+        end else if (ecc_err != OtpNoEccErr && !part_has_integrity(part_idx)) begin
+          `DV_CHECK_EQ(item.d_data, read_out,
+                      $sformatf("mem read mismatch at TLUL addr %0h, csr_addr %0h",
+                      csr_addr, dai_addr))
+          predict_no_err(part_idx);
         end else if (ecc_err == OtpNoEccErr) begin
           `DV_CHECK_EQ(item.d_data, otp_a[otp_addr],
                       $sformatf("mem read mismatch at TLUL addr %0h, csr_addr %0h",
@@ -696,40 +710,41 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                   predict_rdata(is_secret(dai_addr) || is_digest(dai_addr), 0, 0);
 
                 end else begin
-                  bit [TL_DW-1:0] err_code, read_out;
+                  bit [TL_DW-1:0] read_out0, read_out1;
                   bit [TL_AW-1:0] otp_addr = get_scb_otp_addr();
+                  int ecc_err = 0;
 
                   // Backdoor read to check if there is any ECC error.
-                  int ecc_err = read_a_word_with_ecc(dai_addr, read_out);
-                  if (is_secret(dai_addr) || is_digest(dai_addr)) begin
-                    ecc_err = max2(read_a_word_with_ecc(dai_addr + 4, read_out), ecc_err);
+                  if (part_has_integrity(part_idx)) begin
+                    ecc_err = read_a_word_with_ecc(dai_addr, read_out0);
+                    if (is_secret(dai_addr) || is_digest(dai_addr)) begin
+                      ecc_err = max2(read_a_word_with_ecc(dai_addr + 4, read_out1), ecc_err);
+                    end
+                  end else begin
+                    ecc_err = read_a_word_with_ecc_raw(dai_addr, read_out0);
+                    if (is_secret(dai_addr) || is_digest(dai_addr)) begin
+                      ecc_err = max2(read_a_word_with_ecc_raw(dai_addr + 4, read_out1), ecc_err);
+                    end
                   end
 
-                  // Check if write has any write_blank_error, then potentially read might have ECC
-                  // error.
-                  err_code = `gmv(ral.err_code[0]);
-
-                  if (get_field_val(ral.err_code[0].err_code[DaiIdx], err_code) ==
-                      OtpMacroWriteBlankError || ecc_err != OtpNoEccErr) begin
-
-                    // Some partitions do not trigger ECC uncorrectable fatal error.
-                    if (ecc_err == OtpEccCorrErr ||
-                        (ecc_err == OtpEccUncorrErr && ecc_corr_err_only_part(part_idx))) begin
-                      predict_err(OtpDaiErrIdx, OtpMacroEccCorrError);
-                      if (ecc_err == OtpEccUncorrErr) check_dai_rd_data = 0;
-                      else                            backdoor_update_otp_array(dai_addr);
-                      predict_rdata(is_secret(dai_addr) || is_digest(dai_addr),
-                                    otp_a[otp_addr], otp_a[otp_addr+1]);
-                    end else if (ecc_err == OtpEccUncorrErr) begin
-                      predict_err(OtpDaiErrIdx, OtpMacroEccUncorrError);
-                      // Max wait 20 clock cycles because scb did not know when exactly OTP will
-                      // finish reading and reporting the uncorrectable error.
-                      set_exp_alert("fatal_macro_error", 1, 20);
-                      predict_rdata(1, 0, 0);
-                    end else begin
-                      predict_rdata(is_secret(dai_addr) || is_digest(dai_addr),
-                                    otp_a[otp_addr], otp_a[otp_addr+1]);
-                    end
+                  if (ecc_err == OtpEccCorrErr && part_has_integrity(part_idx)) begin
+                    predict_err(OtpDaiErrIdx, OtpMacroEccCorrError);
+                    backdoor_update_otp_array(dai_addr);
+                    predict_rdata(is_secret(dai_addr) || is_digest(dai_addr),
+                                  otp_a[otp_addr], otp_a[otp_addr+1]);
+                  end else if (ecc_err == OtpEccUncorrErr && part_has_integrity(part_idx)) begin
+                    predict_err(OtpDaiErrIdx, OtpMacroEccUncorrError);
+                    // Max wait 20 clock cycles because scb did not know when exactly OTP will
+                    // finish reading and reporting the uncorrectable error.
+                    set_exp_alert("fatal_macro_error", 1, 20);
+                    predict_rdata(1, 0, 0);
+                  // Some partitions do not interpret/report ECC errors. In those cases
+                  // we still need to model the read data correctly if it has been perturbed.
+                  end else if (ecc_err inside {OtpEccCorrErr, OtpEccUncorrErr} &&
+                               !part_has_integrity(part_idx)) begin
+                    predict_no_err(OtpDaiErrIdx);
+                    predict_rdata(is_secret(dai_addr) || is_digest(dai_addr),
+                                  read_out0, read_out1);
                   end else begin
                     predict_no_err(OtpDaiErrIdx);
                     predict_rdata(is_secret(dai_addr) || is_digest(dai_addr),
@@ -875,9 +890,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           end else begin
             if (get_field_val(ral.check_trigger.consistency, item.a_data)) begin
               foreach (cfg.ecc_chk_err[i]) begin
-                if (cfg.ecc_chk_err[i] == OtpEccCorrErr) begin
+                if (cfg.ecc_chk_err[i] == OtpEccCorrErr && part_has_integrity(i)) begin
                   predict_err(i, OtpMacroEccCorrError);
-                end else if (cfg.ecc_chk_err[i] == OtpEccUncorrErr) begin
+                end else if (cfg.ecc_chk_err[i] == OtpEccUncorrErr &&
+                             part_has_integrity(i)) begin
                   set_exp_alert("fatal_macro_error", 1, check_timout);
                   predict_err(i, OtpMacroEccUncorrError);
                 end
@@ -944,14 +960,20 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   virtual function void backdoor_update_otp_array(bit [TL_DW-1:0] dai_addr);
     bit [TL_DW-1:0] otp_addr = dai_addr >> 2;
     bit [TL_DW-1:0] readout_word, readout_word1;
-    void'(read_a_word_with_ecc(dai_addr,     readout_word));
-    void'(read_a_word_with_ecc(dai_addr + 4, readout_word1));
+    int part_idx = get_part_index(dai_addr);
+    if (part_has_integrity(part_idx)) begin
+      void'(read_a_word_with_ecc(dai_addr,     readout_word));
+      void'(read_a_word_with_ecc(dai_addr + 4, readout_word1));
+    end else begin
+      void'(read_a_word_with_ecc_raw(dai_addr,     readout_word));
+      void'(read_a_word_with_ecc_raw(dai_addr + 4, readout_word1));
+    end
+
     otp_a[otp_addr] = readout_word;
 
     if (is_digest(dai_addr)) begin
       otp_a[otp_addr+1] = readout_word1;
     end else if (is_secret(dai_addr)) begin
-      int part_idx = get_part_index(dai_addr);
       bit [TL_DW*2-1:0] mem_rd_val, descrambled_val;
       mem_rd_val        = {readout_word1 ,readout_word};
       descrambled_val   = descramble_data(mem_rd_val, part_idx);
@@ -968,6 +990,17 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     readout_word[31:16] = ecc_rd_data1.data;
     return max2(ecc_rd_data0.err, ecc_rd_data1.err);
   endfunction
+
+  // Returns the ECC error but does not correct the data bits (i.e. returns the raw data).
+  virtual function bit [1:0] read_a_word_with_ecc_raw(bit [TL_DW-1:0] dai_addr,
+                                                     ref bit [TL_DW-1:0] readout_word);
+    prim_secded_pkg::secded_22_16_t ecc_rd_data0 = cfg.mem_bkdr_util_h.ecc_read16(dai_addr);
+    prim_secded_pkg::secded_22_16_t ecc_rd_data1 = cfg.mem_bkdr_util_h.ecc_read16(dai_addr + 2);
+    readout_word[15:0]  = 16'hFFFF & cfg.mem_bkdr_util_h.read(dai_addr);
+    readout_word[31:16] = 16'hFFFF & cfg.mem_bkdr_util_h.read(dai_addr + 2);
+    return max2(ecc_rd_data0.err, ecc_rd_data1.err);
+  endfunction
+
 
   virtual function void reset(string kind = "HARD");
     recover_interrupted_op();
@@ -1326,7 +1359,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         int part_idx = get_part_index(dai_addr);
         bit [TL_DW-1:0] read_out;
         int ecc_err = read_a_word_with_ecc(dai_addr, read_out);
-        if (ecc_err == OtpEccUncorrErr && !ecc_corr_err_only_part(part_idx)) begin
+        if (ecc_err == OtpEccUncorrErr && part_has_integrity(part_idx)) begin
            predict_err(part_idx, OtpMacroEccUncorrError);
            set_exp_alert("fatal_macro_error", 1, 20);
            custom_err = 1;
