@@ -8,4 +8,5 @@ package(default_visibility = ["//visibility:private"])
 alias(
     name = "shellcheck",
     actual = "@shellcheck//:shellcheck",
+    visibility = ["//quality:__pkg__"],
 )
