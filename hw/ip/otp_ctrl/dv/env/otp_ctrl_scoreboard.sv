@@ -1046,25 +1046,25 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     void'(ral.owner_sw_cfg_digest[1].predict(
           .value(otp_a[PART_OTP_DIGEST_ADDRS[OwnerSwCfgIdx] + 1]), .kind(UVM_PREDICT_DIRECT)));
 
-    void'(ral.hw_cfg_digest[0].predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
-          otp_a[PART_OTP_DIGEST_ADDRS[HwCfgIdx]]), .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.hw_cfg_digest[1].predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
-          otp_a[PART_OTP_DIGEST_ADDRS[HwCfgIdx] + 1]), .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.hw_cfg_digest[0].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfgIdx]]),
+        .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.hw_cfg_digest[1].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfgIdx] + 1]),
+        .kind(UVM_PREDICT_DIRECT)));
 
-    void'(ral.secret0_digest[0].predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
-          otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx]]), .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.secret0_digest[1].predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
-          otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.secret0_digest[0].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx]]),
+        .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.secret0_digest[1].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx] + 1]),
+        .kind(UVM_PREDICT_DIRECT)));
 
-    void'(ral.secret1_digest[0].predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
-          otp_a[PART_OTP_DIGEST_ADDRS[Secret1Idx]]), .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.secret1_digest[1].predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
-          otp_a[PART_OTP_DIGEST_ADDRS[Secret1Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.secret1_digest[0].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[Secret1Idx]]),
+        .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.secret1_digest[1].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[Secret1Idx] + 1]),
+        .kind(UVM_PREDICT_DIRECT)));
 
-    void'(ral.secret2_digest[0].predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
-          otp_a[PART_OTP_DIGEST_ADDRS[Secret2Idx]]), .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.secret2_digest[1].predict(.value(cfg.otp_ctrl_vif.under_error_states() ? 0 :
-          otp_a[PART_OTP_DIGEST_ADDRS[Secret2Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.secret2_digest[0].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[Secret2Idx]]),
+        .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.secret2_digest[1].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[Secret2Idx] + 1]),
+        .kind(UVM_PREDICT_DIRECT)));
   endfunction
 
   function void update_digest_to_otp(int part_idx, bit [TL_DW*2-1:0] digest);
