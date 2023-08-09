@@ -604,7 +604,7 @@ ${reg_hdr}
     for reg in regs_flat:
       if reg.name == sr.regwen and reg.fields[0].mubi:
         we_expr = f'''{we_signal} &
-          prim_mubi_pkg::mubi4_test_true_strict(prim_mubi_pkg::mubi4_t\'({sr.regwen.lower()}_qs))'''
+          prim_mubi_pkg::mubi{reg.fields[0].bits.width()}_test_true_strict(prim_mubi_pkg::mubi{reg.fields[0].bits.width()}_t\'({sr.regwen.lower()}_qs))'''
   else:
     we_expr = we_signal
 
