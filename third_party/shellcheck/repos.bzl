@@ -5,7 +5,7 @@
 load("//rules:repo.bzl", "http_archive_or_local")
 
 def shellcheck_repos(local = None):
-    SHELLCHECK_VERSION = "v0.8.0"
+    SHELLCHECK_VERSION = "v0.9.0"
 
     http_archive_or_local(
         name = "shellcheck",
@@ -13,7 +13,7 @@ def shellcheck_repos(local = None):
         url = "https://github.com/koalaman/shellcheck/releases/download/{version}/shellcheck-{version}.linux.x86_64.tar.xz".format(
             version = SHELLCHECK_VERSION,
         ),
-        sha256 = "ab6ee1b178f014d1b86d1e24da20d1139656c8b0ed34d2867fbb834dad02bf0a",
+        sha256 = "700324c6dd0ebea0117591c6cc9d7350d9c7c5c287acbad7630fa17b1d4d9e2f",
         strip_prefix = "shellcheck-" + SHELLCHECK_VERSION,
         build_file_content = """
 package(default_visibility = ["//visibility:public"])
