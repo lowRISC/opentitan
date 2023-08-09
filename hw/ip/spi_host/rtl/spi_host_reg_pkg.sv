@@ -328,8 +328,10 @@ package spi_host_reg_pkg;
   // Window parameters
   parameter logic [BlockAw-1:0] SPI_HOST_RXDATA_OFFSET = 6'h 24;
   parameter int unsigned        SPI_HOST_RXDATA_SIZE   = 'h 4;
+  parameter int unsigned        SPI_HOST_RXDATA_IDX    = 0;
   parameter logic [BlockAw-1:0] SPI_HOST_TXDATA_OFFSET = 6'h 28;
   parameter int unsigned        SPI_HOST_TXDATA_SIZE   = 'h 4;
+  parameter int unsigned        SPI_HOST_TXDATA_IDX    = 1;
 
   // Register index
   typedef enum int {
