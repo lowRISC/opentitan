@@ -18,7 +18,11 @@ class flash_ctrl_lcmgr_intg_vseq extends flash_ctrl_err_base_vseq;
    task run_error_event();
      int wait_timeout_ns = 50_000;
      string path = "tb.dut.u_flash_hw_if.rdata_i[38:32]";
-     int    err_intg = $urandom_range(0, 127);
+     int    err_data = $urandom() + 1;
+     logic [38:0] enc_data;
+     // Generate error intg from random data to ensure
+     // error to occur when test force this field.
+     enc_data = prim_secded_pkg::prim_secded_39_32_enc(err_data);
 
      `DV_SPINWAIT(wait(cfg.flash_ctrl_vif.hw_rvalid == 1);,
                   , wait_timeout_ns)
@@ -29,7 +33,7 @@ class flash_ctrl_lcmgr_intg_vseq extends flash_ctrl_err_base_vseq;
      $assertoff(0, "tb.dut.u_flash_mp.NoReqWhenErr_A");
      #0;
      @(posedge cfg.flash_ctrl_vif.hw_rvalid);
-     `DV_CHECK(uvm_hdl_force(path, err_intg))
+     `DV_CHECK(uvm_hdl_force(path, enc_data[38:32]))
      // Make sure this is not too long.
      // If this is too long, it will causes other fatal errors.
      cfg.clk_rst_vif.wait_clks(5);
