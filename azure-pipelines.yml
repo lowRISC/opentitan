@@ -97,10 +97,9 @@ jobs:
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: rustfmt
   - bash: |
-      set -e
-      ci/scripts/run-shellcheck.sh || {
+      ci/bazelisk.sh test //quality:shellcheck_check || {
         echo -n "##vso[task.logissue type=error]"
-        echo "Shellcheck failed. Run ci/scripts/run-shellcheck.sh to see errors."
+        echo "Shellcheck failed. Run util/sh/scripts/run-shellcheck.sh to see errors."
         exit 1
       }
     displayName: shellcheck
