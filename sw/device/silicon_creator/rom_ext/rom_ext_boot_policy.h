@@ -41,7 +41,7 @@ typedef struct rom_ext_boot_policy_manifests {
  *
  * These boot stages must be verified prior to handing over execution.
  *
- * @param boot_data The boot data for the current lifecycle state.
+ * @param boot_data Boot data struct.
  * @return Manifests of first owner boot stages in descending order according to
  * their security versions.
  */
