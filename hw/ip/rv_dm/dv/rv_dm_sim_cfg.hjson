@@ -180,6 +180,11 @@
                  "+en_scb=0"]
       reseed: 40
     }
+     {
+      name: jtag_dmi_cmderr_busy
+      uvm_test_seq: rv_dm_cmderr_busy_vseq
+      reseed: 2
+    }
   ]
 
   // List of regressions.
