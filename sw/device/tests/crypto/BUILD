@@ -177,8 +177,7 @@ opentitan_functest(
     name = "rsa_3072_verify_functest_wycheproof",
     srcs = ["rsa_3072_verify_functest.c"],
     cw310 = cw310_params(
-        timeout = "long",
-        tags = ["broken"],  # FIXME #16805 hangs at vector 170
+        timeout = "moderate",
     ),
     targets = [
         "cw310_test_rom",
@@ -187,10 +186,10 @@ opentitan_functest(
     ],
     verilator = verilator_params(
         timeout = "eternal",
-        tags = ["broken"],  # FIXME #16805 hangs at vector 165 after ~3h
     ),
     deps = [
         ":rsa_3072_verify_testvectors_wycheproof_header",
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/impl/rsa:rsa_3072_verify",
@@ -214,6 +213,7 @@ opentitan_functest(
     ),
     deps = [
         ":rsa_3072_verify_testvectors_hardcoded_header",
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/impl/rsa:rsa_3072_verify",

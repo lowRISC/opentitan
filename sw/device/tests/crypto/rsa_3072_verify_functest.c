@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_3072_verify.h"
 #include "sw/device/lib/runtime/log.h"
@@ -59,6 +60,9 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   // Stays true only if all tests pass.
   bool result = true;
+
+  // Set entropy complex to auto mode.
+  CHECK_STATUS_OK(entropy_complex_init());
 
   // The definition of `RULE_NAME` comes from the autogen Bazel rule.
   LOG_INFO("Starting rsa_3072_verify_test:%s", RULE_NAME);
