@@ -130,7 +130,6 @@ impl CommandDispatch for SpiReadId {
 
 /// Read data from a SPI EEPROM.
 #[derive(Debug, Args)]
-#[command(disable_help_flag = true)]
 pub struct SpiRead {
     #[arg(short, long, default_value = "0", help = "Start offset.")]
     start: u32,
@@ -150,14 +149,10 @@ pub struct SpiRead {
         help = "Read mode"
     )]
     pub mode: ReadMode,
-    #[arg(short, long, help = "Hexdump the data.")]
+    #[arg(long, help = "Hexdump the data.")]
     hexdump: bool,
     #[arg(name = "FILE", default_value = "-")]
     filename: PathBuf,
-
-    // `disable_help_flag` disable both short and long help flags. Add long help back.
-    #[arg(long, action = clap::ArgAction::Help, help = "Print help")]
-    help: bool,
 }
 
 #[derive(Debug, serde::Serialize)]
@@ -367,14 +362,9 @@ impl CommandDispatch for SpiRawRead {
 
 /// Write plain data bytes to a SPI device (not necessarily SPI EEPROM/flash).
 #[derive(Debug, Args)]
-#[command(disable_help_flag = true)]
 pub struct SpiRawWrite {
-    #[arg(short, long, help = "Hex data bytes to write.")]
+    #[arg(short = 'd', long, help = "Hex data bytes to write.")]
     hexdata: String,
-
-    // `disable_help_flag` disable both short and long help flags. Add long help back.
-    #[arg(long, action = clap::ArgAction::Help, help = "Print help")]
-    help: bool,
 }
 
 impl CommandDispatch for SpiRawWrite {
@@ -393,17 +383,12 @@ impl CommandDispatch for SpiRawWrite {
 
 /// Write data bytes to a SPI device then read data (not necessarily SPI EEPROM/flash).
 #[derive(Debug, Args)]
-#[command(disable_help_flag = true)]
 pub struct SpiRawWriteRead {
-    #[arg(short, long, help = "Hex data bytes to write.")]
+    #[arg(short = 'd', long, help = "Hex data bytes to write.")]
     hexdata: String,
 
     #[arg(short = 'n', long, help = "Number of bytes to read.")]
     length: usize,
-
-    // `disable_help_flag` disable both short and long help flags. Add long help back.
-    #[arg(long, action = clap::ArgAction::Help, help = "Print help")]
-    help: bool,
 }
 
 impl CommandDispatch for SpiRawWriteRead {
@@ -428,14 +413,9 @@ impl CommandDispatch for SpiRawWriteRead {
 
 /// Simultaneously write and read plain data bytes to a SPI device (not SPI EEPROM/flash).
 #[derive(Debug, Args)]
-#[command(disable_help_flag = true)]
 pub struct SpiRawTransceive {
-    #[arg(short, long, help = "Hex data bytes to write.")]
+    #[arg(short = 'd', long, help = "Hex data bytes to write.")]
     hexdata: String,
-
-    // `disable_help_flag` disable both short and long help flags. Add long help back.
-    #[arg(long, action = clap::ArgAction::Help, help = "Print help")]
-    help: bool,
 }
 
 impl CommandDispatch for SpiRawTransceive {
