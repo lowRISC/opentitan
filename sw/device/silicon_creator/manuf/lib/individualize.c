@@ -272,7 +272,8 @@ static status_t otp_secret_write(const dif_otp_ctrl_t *otp_ctrl,
   size_t len_in_32bit_words = len * 2;
   uint64_t data[kBufferSize];
   TRY(entropy_csrng_generate(/*seed_material=*/NULL, (uint32_t *)data,
-                             len_in_32bit_words));
+                             len_in_32bit_words,
+                             /*fips_check=*/kHardenedBoolTrue));
 
   bool found_error = false;
   uint64_t prev_val = 0;
