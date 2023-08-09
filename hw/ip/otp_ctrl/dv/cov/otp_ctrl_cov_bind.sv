@@ -61,22 +61,22 @@ module otp_ctrl_cov_bind;
   );
 
   // Mubi internal coverage for buffered and unbuffered partitions.
-  `PART_MUBI_COV(vendor_test, VendorTestIdx)
-  `PART_MUBI_COV(creator_sw, CreatorSwCfgIdx)
-  `PART_MUBI_COV(owner_sw, OwnerSwCfgIdx)
-  `PART_MUBI_COV(hw_cfg, HwCfgIdx)
-  `PART_MUBI_COV(secret0, Secret0Idx)
-  `PART_MUBI_COV(secret1, Secret1Idx)
-  `PART_MUBI_COV(secret2, Secret2Idx)
+  `PART_MUBI_COV(vendor_test, otp_ctrl_part_pkg::VendorTestIdx)
+  `PART_MUBI_COV(creator_sw, otp_ctrl_part_pkg::CreatorSwCfgIdx)
+  `PART_MUBI_COV(owner_sw, otp_ctrl_part_pkg::OwnerSwCfgIdx)
+  `PART_MUBI_COV(hw_cfg, otp_ctrl_part_pkg::HwCfgIdx)
+  `PART_MUBI_COV(secret0, otp_ctrl_part_pkg::Secret0Idx)
+  `PART_MUBI_COV(secret1, otp_ctrl_part_pkg::Secret1Idx)
+  `PART_MUBI_COV(secret2, otp_ctrl_part_pkg::Secret2Idx)
 
   // Mubi internal coverage for DAI interface access
-  `DAI_MUBI_COV(vendor_test, VendorTestIdx)
-  `DAI_MUBI_COV(creator_sw, CreatorSwCfgIdx)
-  `DAI_MUBI_COV(owner_sw, OwnerSwCfgIdx)
-  `DAI_MUBI_COV(hw_cfg, HwCfgIdx)
-  `DAI_MUBI_COV(secret0, Secret0Idx)
-  `DAI_MUBI_COV(secret1, Secret1Idx)
-  `DAI_MUBI_COV(secret2, Secret2Idx)
+  `DAI_MUBI_COV(vendor_test, otp_ctrl_part_pkg::VendorTestIdx)
+  `DAI_MUBI_COV(creator_sw, otp_ctrl_part_pkg::CreatorSwCfgIdx)
+  `DAI_MUBI_COV(owner_sw, otp_ctrl_part_pkg::OwnerSwCfgIdx)
+  `DAI_MUBI_COV(hw_cfg, otp_ctrl_part_pkg::HwCfgIdx)
+  `DAI_MUBI_COV(secret0, otp_ctrl_part_pkg::Secret0Idx)
+  `DAI_MUBI_COV(secret1, otp_ctrl_part_pkg::Secret1Idx)
+  `DAI_MUBI_COV(secret2, otp_ctrl_part_pkg::Secret2Idx)
 
 `undef PART_MUBI_COV
 `undef DAI_MUBI_COV
