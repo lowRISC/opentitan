@@ -301,14 +301,17 @@ value = "{}'h {:x}".format(aw, r.offset)
 
     offset_type = 'logic [{}-1:0]'.format(aw_name)
     size_type = 'int unsigned'
+    idx_type = 'int unsigned'
     max_type_len = max(len(offset_type), len(size_type))
 
     offset_type += ' ' * (max_type_len - len(offset_type))
     size_type += ' ' * (max_type_len - len(size_type))
+    idx_type += ' ' * (max_type_len - len(idx_type))
 
 %>\
   parameter ${offset_type} ${win_pfx}_OFFSET = ${base_txt_val};
   parameter ${size_type} ${win_pfx}_SIZE   = ${size_txt_val};
+  parameter ${idx_type} ${win_pfx}_IDX    = ${i};
 % endfor
 % endif
 </%def>\

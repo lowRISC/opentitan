@@ -667,6 +667,7 @@ package usbdev_reg_pkg;
   // Window parameters
   parameter logic [BlockAw-1:0] USBDEV_BUFFER_OFFSET = 12'h 800;
   parameter int unsigned        USBDEV_BUFFER_SIZE   = 'h 800;
+  parameter int unsigned        USBDEV_BUFFER_IDX    = 0;
 
   // Register index
   typedef enum int {
