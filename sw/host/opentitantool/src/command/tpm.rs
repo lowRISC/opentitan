@@ -124,14 +124,9 @@ impl CommandDispatch for TpmWriteRegister {
 
 /// Write to a given TPM register.
 #[derive(Debug, Args)]
-#[command(disable_help_flag = true)]
 pub struct TpmExecuteCommand {
     #[arg(short = 'd', long, help = "Hex encoding of TPM command to execute.")]
     hexdata: String,
-
-    // `disable_help_flag` disable both short and long help flags. Add long help back.
-    #[arg(long, action = clap::ArgAction::Help, help = "Print help")]
-    help: bool,
 }
 
 #[derive(Annotate, Serialize, Deserialize, Debug, PartialEq, Eq)]
