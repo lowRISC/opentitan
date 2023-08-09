@@ -193,6 +193,10 @@
     {
       name: rv_dm_cmderr_exception
       uvm_test_seq: rv_dm_cmderr_exception_vseq
+    }
+    {
+      name: rv_dm_mem_tl_access_halted
+      uvm_test_seq: rv_dm_mem_tl_access_halted_vseq
       reseed: 2
     }
   ]
