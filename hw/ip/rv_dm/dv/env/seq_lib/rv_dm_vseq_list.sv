@@ -12,3 +12,4 @@
 `include "rv_dm_cmderr_busy_vseq.sv"
 `include "rv_dm_cmderr_not_supported_vseq.sv"
 `include "rv_dm_cmderr_exception_vseq.sv"
+`include "rv_dm_mem_tl_access_halted_vseq.sv"
