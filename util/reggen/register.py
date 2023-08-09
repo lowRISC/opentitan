@@ -560,10 +560,10 @@ class Register(RegBase):
 
         wen_fld = self.fields[0]
         if wen_fld.mubi:
-            if wen_fld.bits.width() != 4:
-                raise ValueError('One or more registers use {} as a multi-bit'
-                                 'write-enable so its field should be 4 bit wide, '
-                                 'not {}.'
+            if wen_fld.bits.width() % 4:
+                raise ValueError('One or more registers use {} as a multi-bit '
+                                 'write-enable so its field bit-width should '
+                                 'be a multiple of 4, not {}.'
                                  .format(self.name, wen_fld.bits.width()))
         else:
             if wen_fld.bits.width() != 1:
