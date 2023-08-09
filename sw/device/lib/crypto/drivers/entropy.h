@@ -16,6 +16,25 @@
 extern "C" {
 #endif
 
+enum {
+  /**
+   * Number of bits in an entropy seed.
+   *
+   * Specified in NIST SP800-90Ar1, table 3. In NIST terminology, the CSRNG
+   * block runs a CTR-DRBG with AES-256 as the underlying cipher, so the seed
+   * is key size + block size = 256 + 128 bits.
+   */
+  kEntropySeedBits = 256 + 128,
+  /**
+   * Number of bytes in an entropy seed.
+   */
+  kEntropySeedBytes = kEntropySeedBits / 8,
+  /**
+   * Number of words in an entropy seed.
+   */
+  kEntropySeedWords = kEntropySeedBytes / sizeof(uint32_t),
+};
+
 /**
  * Seed material as specified in NIST SP 800-90Ar1 section 10.2.1.3.1. Up to 12
  * words of seed material can be provided using this interface.
@@ -29,7 +48,7 @@ typedef struct entropy_seed_material {
   /**
    * Seed material in unsigned word format.
    */
-  uint32_t data[12];
+  uint32_t data[kEntropySeedWords];
 } entropy_seed_material_t;
 
 /**
@@ -42,6 +61,24 @@ typedef struct entropy_seed_material {
  */
 OT_WARN_UNUSED_RESULT
 status_t entropy_complex_init(void);
+
+/**
+ * Ensures that the entropy complex is ready for use.
+ *
+ * Ensures that the entropy complex is running and that `entropy_src` is in
+ * FIPS mode, and verifies the thresholds for health tests in `entropy_src`.
+ * This function should be called periodically while the entropy complex is in
+ * use, because the threshold registers are not shadowed.
+ *
+ * This check does not ensure that the SW CSRNG is in FIPS mode, so it is safe
+ * to call it while using the SW CSRNG in manual mode. However, it is important
+ * to note that passing the check does not by itself guarantee FIPS-compatible
+ * entropy from CSRNG.
+ *
+ * @return Operation status in `status_t` format.
+ */
+OT_WARN_UNUSED_RESULT
+status_t entropy_complex_check(void);
 
 /**
  * Instantiate the SW CSRNG with a new seed value.
@@ -113,10 +150,12 @@ status_t entropy_csrng_generate_start(
  *
  * @param buf A buffer to fill with words from the CSRNG output buffer.
  * @param len The number of words to read into `buf`.
+ * @param fips_check Whether to expect FIPS-compatible entropy.
  * @return Operation status in `status_t` format.
  */
 OT_WARN_UNUSED_RESULT
-status_t entropy_csrng_generate_data_get(uint32_t *buf, size_t len);
+status_t entropy_csrng_generate_data_get(uint32_t *buf, size_t len,
+                                         hardened_bool_t fips_check);
 
 /**
  * Request and read data from the SW CSRNG.
@@ -125,12 +164,14 @@ status_t entropy_csrng_generate_data_get(uint32_t *buf, size_t len);
  * There is not additional entropy loaded from hardware.
  * @param buf A buffer to fill with words from the CSRNG output buffer.
  * @param len The number of words to read into `buf`.
+ * @param fips_check Whether to expect FIPS-compatible entropy.
  * @return Operation status in `status_t` format. OutOfRange if the `len`
  * parameter results in a 128bit block level size greater than 0x800.
  */
 OT_WARN_UNUSED_RESULT
 status_t entropy_csrng_generate(const entropy_seed_material_t *seed_material,
-                                uint32_t *buf, size_t len);
+                                uint32_t *buf, size_t len,
+                                hardened_bool_t fips_check);
 
 /**
  * Uninstantiate the SW CSRNG.

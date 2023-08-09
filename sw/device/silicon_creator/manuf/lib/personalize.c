@@ -255,7 +255,8 @@ static status_t flash_ctrl_secret_write(dif_flash_ctrl_state_t *flash_state,
                                 /*seed_material=*/NULL));
 
   uint32_t seed[kCreatorSeedSizeInWords];
-  TRY(entropy_csrng_generate(/*seed_material=*/NULL, seed, len));
+  TRY(entropy_csrng_generate(/*seed_material=*/NULL, seed, len,
+                             /*fips_check*/ kHardenedBoolTrue));
   TRY(entropy_csrng_uninstantiate());
 
   uint32_t address = 0;
@@ -342,7 +343,8 @@ static status_t otp_partition_secret2_configure(
 
   // Generate and hash RMA unlock token.
   TRY(entropy_csrng_generate(/*seed_material=*/NULL, rma_unlock_token->data,
-                             kRmaUnlockTokenSizeIn32BitWords));
+                             kRmaUnlockTokenSizeIn32BitWords,
+                             /*fips_check*/ kHardenedBoolTrue));
   TRY(entropy_csrng_reseed(/*disable_trng_input=*/kHardenedBoolFalse,
                            /*seed_material=*/NULL));
   uint64_t hashed_rma_unlock_token[kRmaUnlockTokenSizeIn64BitWords];
@@ -353,13 +355,15 @@ static status_t otp_partition_secret2_configure(
   // Generate RootKey shares.
   uint64_t share0[kRootKeyShareSizeIn64BitWords];
   TRY(entropy_csrng_generate(/*seed_material=*/NULL, (uint32_t *)share0,
-                             kRootKeyShareSizeIn32BitWords));
+                             kRootKeyShareSizeIn32BitWords,
+                             /*fips_check*/ kHardenedBoolTrue));
   TRY(entropy_csrng_reseed(/*disable_trng_input=*/kHardenedBoolFalse,
                            /*seed_material=*/NULL));
 
   uint64_t share1[kRootKeyShareSizeIn64BitWords];
   TRY(entropy_csrng_generate(/*seed_material=*/NULL, (uint32_t *)share1,
-                             kRootKeyShareSizeIn32BitWords));
+                             kRootKeyShareSizeIn32BitWords,
+                             /*fips_check*/ kHardenedBoolTrue));
   TRY(entropy_csrng_uninstantiate());
 
   TRY(shares_check(share0, share1, kRootKeyShareSizeIn64BitWords));

@@ -18,23 +18,25 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
-static void entropy_complex_init_test(void) {
-  CHECK_STATUS_OK(entropy_complex_init());
+static status_t entropy_complex_init_test(void) {
+  TRY(entropy_complex_init());
+
+  // Check the configuration.
+  TRY(entropy_complex_check());
 
   // The following test requests entropy from both EDN0 and EDN1.
   dif_otbn_t otbn;
-  CHECK_DIF_OK(
-      dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+  TRY_CHECK(dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR),
+                          &otbn) == kDifOk);
   otbn_randomness_test_start(&otbn);
-  CHECK(otbn_randomness_test_end(&otbn, /*skip_otbn_don_check=*/false));
+  TRY_CHECK(otbn_randomness_test_end(&otbn, /*skip_otbn_don_check=*/false));
+  return OK_STATUS();
 }
 
 bool test_main(void) {
-  status_t result = entropy_csrng_kat();
-  if (!status_ok(result)) {
-    LOG_ERROR("entropy_csrng_kat: %r\n", result);
-    return false;
-  }
-  entropy_complex_init_test();
-  return true;
+  status_t result = OK_STATUS();
+
+  EXECUTE_TEST(result, entropy_complex_init_test);
+  EXECUTE_TEST(result, entropy_csrng_kat);
+  return status_ok(result);
 }
