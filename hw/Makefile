@@ -17,6 +17,7 @@ IPS ?= aes           \
        adc_ctrl      \
        aon_timer     \
        csrng         \
+       dma           \
        edn           \
        entropy_src   \
        flash_ctrl    \
