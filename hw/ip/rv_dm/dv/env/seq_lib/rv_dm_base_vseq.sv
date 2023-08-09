@@ -36,8 +36,12 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   dv_base_reg_block dv_base_ral;
 =======
   dv_base_reg_block dv_base_ral;
+<<<<<<< HEAD
 	rv_dm_mem_reg_block tl_mem_ral;
 >>>>>>> 3bd3378a5 ([rv_dm] Halted test)
+=======
+  rv_dm_mem_reg_block tl_mem_ral;
+>>>>>>> a79c15a48 ([rv_dm] remove extra displays)
 
   virtual function void set_handles();
     super.set_handles();
