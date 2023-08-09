@@ -45,6 +45,15 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   mubi4_t       extclk_ctrl_sel;
   clkmgr_mubi_e mubi_mode;
 
+  // This holds the necessary per measure control CSR info.
+  typedef struct {
+    string name;
+    dv_base_reg en;
+    dv_base_reg_field ctrl_hi;
+    dv_base_reg_field ctrl_lo;
+  } meas_ctrl_regs_t;
+  meas_ctrl_regs_t meas_ctrl_regs[clk_mesr_e];
+
   virtual function void set_scanmode_on_low_weight();
     scanmode_on_weight = 2;
   endfunction
@@ -88,6 +97,19 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   endfunction
 
   task pre_start();
+    meas_ctrl_regs[ClkMesrIo] = '{"io", ral.io_meas_ctrl_en, ral.io_meas_ctrl_shadowed.hi,
+                                  ral.io_meas_ctrl_shadowed.lo};
+    meas_ctrl_regs[ClkMesrIoDiv2] = '{"io div2", ral.io_div2_meas_ctrl_en,
+                                      ral.io_div2_meas_ctrl_shadowed.hi,
+                                      ral.io_div2_meas_ctrl_shadowed.lo};
+    meas_ctrl_regs[ClkMesrIoDiv4] = '{"io div4", ral.io_div4_meas_ctrl_en,
+                                      ral.io_div4_meas_ctrl_shadowed.hi,
+                                      ral.io_div4_meas_ctrl_shadowed.lo};
+    meas_ctrl_regs[ClkMesrMain] = '{"main", ral.main_meas_ctrl_en, ral.main_meas_ctrl_shadowed.hi,
+                                    ral.main_meas_ctrl_shadowed.lo};
+    meas_ctrl_regs[ClkMesrUsb] = '{"usb", ral.usb_meas_ctrl_en, ral.usb_meas_ctrl_shadowed.hi,
+                                   ral.usb_meas_ctrl_shadowed.lo};
+
     mubi_mode = ClkmgrMubiNone;
     `DV_GET_ENUM_PLUSARG(clkmgr_mubi_e, mubi_mode, clkmgr_mubi_mode)
     `uvm_info(`gfn, $sformatf("mubi_mode = %s", mubi_mode.name), UVM_MEDIUM)
@@ -237,24 +259,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
 
   task disable_frequency_measurement(clk_mesr_e which);
     `uvm_info(`gfn, $sformatf("Disabling frequency measurement for %0s", which.name), UVM_MEDIUM)
-    case (which)
-      ClkMesrIo: begin
-        csr_wr(.ptr(ral.io_meas_ctrl_en.en), .value(MuBi4False));
-      end
-      ClkMesrIoDiv2: begin
-        csr_wr(.ptr(ral.io_div2_meas_ctrl_en.en), .value(MuBi4False));
-      end
-      ClkMesrIoDiv4: begin
-        csr_wr(.ptr(ral.io_div4_meas_ctrl_en.en), .value(MuBi4False));
-      end
-      ClkMesrMain: begin
-        csr_wr(.ptr(ral.main_meas_ctrl_en.en), .value(MuBi4False));
-      end
-      ClkMesrUsb: begin
-        csr_wr(.ptr(ral.usb_meas_ctrl_en.en), .value(MuBi4False));
-      end
-      default: ;
-    endcase
+    csr_wr(.ptr(meas_ctrl_regs[which].en), .value(MuBi4False));
   endtask
 
   local function int get_meas_ctrl_value(int min_threshold, int max_threshold, uvm_reg_field lo,
@@ -269,6 +274,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
 
   task enable_frequency_measurement(clk_mesr_e which, int min_threshold, int max_threshold,
                                     bit block_meas_en = 1'b0);
+    int value;
     mubi4_t expected_en_value = block_meas_en ? MuBi4False : MuBi4True;
     `uvm_info(`gfn, $sformatf(
               "Enabling frequency measurement for %0s, min=0x%x, max=0x%x, expected=0x%x",
@@ -282,91 +288,18 @@ class clkmgr_base_vseq extends cip_base_vseq #(
               ral.measure_ctrl_regwen.get(),
               `gmv(ral.measure_ctrl_regwen)
               ), UVM_MEDIUM)
-    case (which)
-      ClkMesrIo: begin
-        int value = get_meas_ctrl_value(
-            min_threshold, max_threshold, ral.io_meas_ctrl_shadowed.lo, ral.io_meas_ctrl_shadowed.hi
-        );
-        csr_wr(.ptr(ral.io_meas_ctrl_shadowed), .value(value));
-        `uvm_info(`gfn, $sformatf(
-                  "Wrote 0x%x to %s, predict 0x%x, mirrored 0x%x",
-                  value,
-                  which.name(),
-                  ral.io_meas_ctrl_shadowed.get(),
-                  `gmv(ral.io_meas_ctrl_shadowed)
-                  ), UVM_MEDIUM)
-        csr_wr(.ptr(ral.io_meas_ctrl_en), .value(MuBi4True));
-      end
-      ClkMesrIoDiv2: begin
-        int value = get_meas_ctrl_value(
-            min_threshold,
-            max_threshold,
-            ral.io_div2_meas_ctrl_shadowed.lo,
-            ral.io_div2_meas_ctrl_shadowed.hi
-        );
-        csr_wr(.ptr(ral.io_div2_meas_ctrl_shadowed), .value(value));
-        `uvm_info(`gfn, $sformatf(
-                  "Wrote 0x%x to %s, predict 0x%x, mirrored 0x%x",
-                  value,
-                  which.name(),
-                  ral.io_div2_meas_ctrl_shadowed.get(),
-                  `gmv(ral.io_div2_meas_ctrl_shadowed)
-                  ), UVM_MEDIUM)
-        csr_wr(.ptr(ral.io_div2_meas_ctrl_en), .value(MuBi4True));
-      end
-      ClkMesrIoDiv4: begin
-        int value = get_meas_ctrl_value(
-            min_threshold,
-            max_threshold,
-            ral.io_div4_meas_ctrl_shadowed.lo,
-            ral.io_div4_meas_ctrl_shadowed.hi
-        );
-        csr_wr(.ptr(ral.io_div4_meas_ctrl_shadowed), .value(value));
-        `uvm_info(`gfn, $sformatf(
-                  "Wrote 0x%x to %s, predict 0x%x, mirrored 0x%x",
-                  value,
-                  which.name(),
-                  ral.io_div4_meas_ctrl_shadowed.get(),
-                  `gmv(ral.io_div4_meas_ctrl_shadowed)
-                  ), UVM_MEDIUM)
-        csr_wr(.ptr(ral.io_div4_meas_ctrl_en), .value(MuBi4True));
-      end
-      ClkMesrMain: begin
-        int value = get_meas_ctrl_value(
-            min_threshold,
-            max_threshold,
-            ral.main_meas_ctrl_shadowed.lo,
-            ral.main_meas_ctrl_shadowed.hi
-        );
-        csr_wr(.ptr(ral.main_meas_ctrl_shadowed), .value(value));
-        `uvm_info(`gfn, $sformatf(
-                  "Wrote 0x%x to %s, predict 0x%x, mirrored 0x%x",
-                  value,
-                  which.name(),
-                  ral.main_meas_ctrl_shadowed.get(),
-                  `gmv(ral.main_meas_ctrl_shadowed)
-                  ), UVM_MEDIUM)
-        csr_wr(.ptr(ral.main_meas_ctrl_en), .value(MuBi4True));
-      end
-      ClkMesrUsb: begin
-        int value = get_meas_ctrl_value(
-            min_threshold,
-            max_threshold,
-            ral.usb_meas_ctrl_shadowed.lo,
-            ral.usb_meas_ctrl_shadowed.hi
-        );
-        csr_wr(.ptr(ral.usb_meas_ctrl_shadowed), .value(value));
-        `uvm_info(`gfn, $sformatf(
-                  "Wrote 0x%x to %s, predict 0x%x, mirrored 0x%x",
-                  value,
-                  which.name(),
-                  ral.usb_meas_ctrl_shadowed.get(),
-                  `gmv(ral.usb_meas_ctrl_shadowed)
-                  ), UVM_MEDIUM)
-        csr_wr(.ptr(ral.usb_meas_ctrl_en), .value(MuBi4True));
-      end
-      default: ;
-    endcase
+    value = get_meas_ctrl_value(min_threshold, max_threshold,
+                                meas_ctrl_regs[which].ctrl_lo,
+                                meas_ctrl_regs[which].ctrl_hi);
+    csr_wr(.ptr(meas_ctrl_regs[which].ctrl_lo.get_dv_base_reg_parent()), .value(value));
+    `uvm_info(`gfn, $sformatf(
+              "Wrote 0x%x to %s, predict 0x%x, mirrored 0x%x",
+              value,
+              which.name(),
+              meas_ctrl_regs[which].ctrl_lo.get_dv_base_reg_parent().get(),
+              `gmv(meas_ctrl_regs[which].ctrl_lo.get_dv_base_reg_parent())
+              ), UVM_MEDIUM)
+    csr_wr(.ptr(meas_ctrl_regs[which].en), .value(MuBi4True));
   endtask
 
   // This checks that when calibration is lost regwen should be re-enabled and measurements
@@ -376,26 +309,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     csr_rd_check(.ptr(ral.measure_ctrl_regwen), .compare_value(1));
     foreach (ExpectedCounts[clk]) begin
       clk_mesr_e clk_mesr = clk_mesr_e'(clk);
-      case (clk_mesr)
-        ClkMesrIo: begin
-          csr_rd_check(.ptr(ral.io_meas_ctrl_en.en), .compare_value(MuBi4False));
-          `uvm_info(`gfn, $sformatf("CSR %s meas_ctrl_en mirrored value 0x%x",
-                                    clk_mesr.name(), `gmv(ral.io_meas_ctrl_en)), UVM_MEDIUM)
-        end
-        ClkMesrIoDiv2: begin
-          csr_rd_check(.ptr(ral.io_div2_meas_ctrl_en.en), .compare_value(MuBi4False));
-        end
-        ClkMesrIoDiv4: begin
-          csr_rd_check(.ptr(ral.io_div4_meas_ctrl_en.en), .compare_value(MuBi4False));
-        end
-        ClkMesrMain: begin
-          csr_rd_check(.ptr(ral.main_meas_ctrl_en.en), .compare_value(MuBi4False));
-        end
-        ClkMesrUsb: begin
-          csr_rd_check(.ptr(ral.usb_meas_ctrl_en.en), .compare_value(MuBi4False));
-        end
-        default: ;
-      endcase
+      csr_rd_check(.ptr(meas_ctrl_regs[clk_mesr].en), .compare_value(MuBi4False));
     end
   endtask
 
