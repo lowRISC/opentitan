@@ -279,7 +279,8 @@ class flash_ctrl_scoreboard #(
                         erase_addr
                         ), UVM_LOW)
               if (erase_access) begin
-                erase_data(part, erase_addr, erase_sel);
+                if (erase_sel) erase_bank(erase_addr[OTFBankId]);
+                else erase_data(part, erase_addr, erase_sel);
               end
             end
           end
@@ -406,6 +407,34 @@ class flash_ctrl_scoreboard #(
       end
     end
   endtask
+
+  // Update scb_flash_* with bank erase command.
+  // When bank erase is set, all partitions in the bank will be erased.
+  function void erase_bank(int bank);
+    uint partition_words_num;
+    data_model_t scb_flash_model;
+    flash_mem_addr_attrs addr_attr;
+    flash_dv_part_e part = part.first();
+    do begin
+      partition_words_num = cfg.get_partition_words_num(part);
+      scb_flash_model = cfg.get_partition_mem_model(part);
+      addr_attr = new();
+      addr_attr.set_attrs(bank * BytesPerBank);
+      for (int j = 0; j < partition_words_num; j++) begin
+        scb_flash_model[addr_attr.addr] = ALL_ONES;
+        addr_attr.incr(flash_ctrl_pkg::BusBytes);
+      end
+      case (part)
+        FlashPartData: cfg.scb_flash_data = scb_flash_model;
+        FlashPartInfo: cfg.scb_flash_info = scb_flash_model;
+        FlashPartInfo1: cfg.scb_flash_info1 = scb_flash_model;
+        FlashPartInfo2: cfg.scb_flash_info2 = scb_flash_model;
+        default: `uvm_fatal(`gfn, "flash_ctrl_scoreboard: Partition type not supported!")
+      endcase
+      part = part.next();
+    end while (part != part.first());
+
+  endfunction
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
