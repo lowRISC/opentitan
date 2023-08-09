@@ -52,7 +52,7 @@ class flash_ctrl_scoreboard #(
   uvm_tlm_analysis_fifo #(tl_seq_item)       eflash_tl_d_chan_fifo;
 
   bit skip_read_check = 0;
-
+  bit skip_alert_chk[string];
   // Prevent to execute predict_tl_err during fatal error test
   bit stop_tl_err_chk = 0;
   flash_phy_pkg::rd_buf_t evict_q[NumBanks][$];
@@ -67,6 +67,7 @@ class flash_ctrl_scoreboard #(
     eflash_tl_a_chan_fifo = new("eflash_tl_a_chan_fifo", this);
     eflash_tl_d_chan_fifo = new("eflash_tl_d_chan_fifo", this);
     hs_state = AlertComplete;
+    foreach(LIST_OF_ALERTS[i]) skip_alert_chk[i] = 1'b0;
   endfunction
 
   virtual function void connect_phase(uvm_phase phase);
@@ -918,6 +919,12 @@ class flash_ctrl_scoreboard #(
         expected_alert[alert_name].expected = 1;
         exp_alert_contd[alert_name]--;
       end
+    end
+  endfunction
+
+  virtual function void on_alert(string alert_name, alert_esc_seq_item item);
+    if(!skip_alert_chk[alert_name]) begin
+      super.on_alert(alert_name, item);
     end
   endfunction
 

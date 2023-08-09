@@ -14,6 +14,12 @@ class flash_ctrl_phy_ack_consistency_vseq extends flash_ctrl_phy_host_grant_err_
     string path1 = "tb.dut.u_eflash.gen_flash_cores[0].u_core.ctrl_rsp_vld";
     string path2 = "tb.dut.u_eflash.gen_flash_cores[0].u_core.host_req_done_o";
 
+    // Once error event is triggered, corrupted data propagate all the way down to flash phy interface and terminated.
+    // This can causes unexpected errors.
+    // Therefore, ignore potential unexpected err and check
+    // expected error only.
+    cfg.scb_h.skip_alert_chk["recov_err"] = 1;
+
     cfg.scb_h.expected_alert["fatal_err"].expected = 1;
     cfg.scb_h.expected_alert["fatal_err"].max_delay = 20000;
     cfg.scb_h.exp_alert_contd["fatal_err"] = 10000;
@@ -53,6 +59,7 @@ class flash_ctrl_phy_ack_consistency_vseq extends flash_ctrl_phy_host_grant_err_
           end
         endcase // randcase
         cfg.otf_scb_h.comp_off = 1;
+        cfg.otf_scb_h.mem_mon_off = 1;
       end
     end // repeat (2)
     check_fault(ral.fault_status.spurious_ack);
