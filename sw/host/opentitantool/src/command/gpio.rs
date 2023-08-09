@@ -475,7 +475,7 @@ impl CommandDispatch for GpioMonitoringVcd {
             } else {
                 Duration::from_millis(0)
             };
-            if file::wait_fd_read_timeout(stdin.as_raw_fd(), delay).is_ok() {
+            if file::wait_read_timeout(&stdin, delay).is_ok() {
                 let mut buf = [0u8; 1];
                 let len = stdin.read(&mut buf)?;
                 if len == 1 && buf[0] == 3 {

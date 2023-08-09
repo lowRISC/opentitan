@@ -7,7 +7,7 @@ use mio::{Events, Interest, Poll, Token};
 use regex::{Captures, Regex};
 use std::fs::File;
 use std::io::{ErrorKind, Read, Write};
-use std::os::unix::io::AsRawFd;
+use std::os::fd::{AsFd, AsRawFd};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::{Duration, Instant, SystemTime};
 
@@ -35,9 +35,9 @@ pub enum ExitStatus {
     ExitFailure,
 }
 
-// Creates a vtable for implementors of Read and AsRawFd traits.
-pub trait ReadAsRawFd: Read + AsRawFd {}
-impl<T: Read + AsRawFd> ReadAsRawFd for T {}
+// Creates a vtable for implementors of Read and AsFd traits.
+pub trait ReadAsFd: Read + AsFd {}
+impl<T: Read + AsFd> ReadAsFd for T {}
 
 impl UartConsole {
     const CTRL_C: u8 = 3;
@@ -47,7 +47,7 @@ impl UartConsole {
     pub fn interact<T>(
         &mut self,
         device: &T,
-        mut stdin: Option<&mut dyn ReadAsRawFd>,
+        mut stdin: Option<&mut dyn ReadAsFd>,
         mut stdout: Option<&mut dyn Write>,
     ) -> Result<ExitStatus>
     where
@@ -72,7 +72,7 @@ impl UartConsole {
     fn interact_mio<T>(
         &mut self,
         device: &T,
-        mut stdin: Option<&mut dyn ReadAsRawFd>,
+        mut stdin: Option<&mut dyn ReadAsFd>,
         mut stdout: Option<&mut dyn Write>,
     ) -> Result<ExitStatus>
     where
@@ -93,7 +93,7 @@ impl UartConsole {
         let stdin_token = Self::get_next_token();
         if stdin.is_some() {
             poll.registry().register(
-                &mut mio::unix::SourceFd(&stdin.as_mut().unwrap().as_raw_fd()),
+                &mut mio::unix::SourceFd(&stdin.as_mut().unwrap().as_fd().as_raw_fd()),
                 stdin_token,
                 Interest::READABLE,
             )?;
@@ -207,13 +207,13 @@ impl UartConsole {
     fn process_input<T>(
         &self,
         device: &T,
-        stdin: &mut Option<&mut (dyn ReadAsRawFd)>,
+        stdin: &mut Option<&mut (dyn ReadAsFd)>,
     ) -> Result<ExitStatus>
     where
         T: ConsoleDevice + ?Sized,
     {
         if let Some(ref mut input) = stdin.as_mut() {
-            while file::wait_fd_read_timeout(input.as_raw_fd(), Duration::from_millis(0)).is_ok() {
+            while file::wait_read_timeout(&input.as_fd(), Duration::from_millis(0)).is_ok() {
                 let mut buf = [0u8; 256];
                 let len = input.read(&mut buf)?;
                 if len == 1 && buf[0] == UartConsole::CTRL_C {
@@ -232,7 +232,7 @@ impl UartConsole {
     fn interact_once<T>(
         &mut self,
         device: &T,
-        stdin: &mut Option<&mut (dyn ReadAsRawFd)>,
+        stdin: &mut Option<&mut (dyn ReadAsFd)>,
         stdout: &mut Option<&mut dyn Write>,
     ) -> Result<ExitStatus>
     where
