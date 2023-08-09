@@ -925,8 +925,10 @@ package flash_ctrl_reg_pkg;
   // Window parameters for core interface
   parameter logic [CoreAw-1:0] FLASH_CTRL_PROG_FIFO_OFFSET = 9'h 1b0;
   parameter int unsigned       FLASH_CTRL_PROG_FIFO_SIZE   = 'h 4;
+  parameter int unsigned       FLASH_CTRL_PROG_FIFO_IDX    = 0;
   parameter logic [CoreAw-1:0] FLASH_CTRL_RD_FIFO_OFFSET = 9'h 1b4;
   parameter int unsigned       FLASH_CTRL_RD_FIFO_SIZE   = 'h 4;
+  parameter int unsigned       FLASH_CTRL_RD_FIFO_IDX    = 1;
 
   // Register index for core interface
   typedef enum int {

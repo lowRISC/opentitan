@@ -377,8 +377,10 @@ package kmac_reg_pkg;
   // Window parameters
   parameter logic [BlockAw-1:0] KMAC_STATE_OFFSET = 12'h 400;
   parameter int unsigned        KMAC_STATE_SIZE   = 'h 200;
+  parameter int unsigned        KMAC_STATE_IDX    = 0;
   parameter logic [BlockAw-1:0] KMAC_MSG_FIFO_OFFSET = 12'h 800;
   parameter int unsigned        KMAC_MSG_FIFO_SIZE   = 'h 800;
+  parameter int unsigned        KMAC_MSG_FIFO_IDX    = 1;
 
   // Register index
   typedef enum int {

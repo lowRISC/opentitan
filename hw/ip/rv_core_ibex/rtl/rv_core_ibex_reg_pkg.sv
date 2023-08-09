@@ -455,6 +455,7 @@ package rv_core_ibex_reg_pkg;
   // Window parameters for cfg interface
   parameter logic [CfgAw-1:0] RV_CORE_IBEX_DV_SIM_WINDOW_OFFSET = 11'h 440;
   parameter int unsigned      RV_CORE_IBEX_DV_SIM_WINDOW_SIZE   = 'h 20;
+  parameter int unsigned      RV_CORE_IBEX_DV_SIM_WINDOW_IDX    = 0;
 
   // Register index for cfg interface
   typedef enum int {

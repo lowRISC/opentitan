@@ -136,5 +136,6 @@ package rom_ctrl_reg_pkg;
   // Window parameters for rom interface
   parameter logic [RomAw-1:0] ROM_CTRL_ROM_OFFSET = 15'h 0;
   parameter int unsigned      ROM_CTRL_ROM_SIZE   = 'h 8000;
+  parameter int unsigned      ROM_CTRL_ROM_IDX    = 0;
 
 endpackage

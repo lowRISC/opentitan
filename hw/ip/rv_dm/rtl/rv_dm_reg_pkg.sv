@@ -400,6 +400,7 @@ package rv_dm_reg_pkg;
   // Window parameters for mem interface
   parameter logic [MemAw-1:0] RV_DM_ROM_OFFSET = 12'h 800;
   parameter int unsigned      RV_DM_ROM_SIZE   = 'h 800;
+  parameter int unsigned      RV_DM_ROM_IDX    = 0;
 
   // Register index for mem interface
   typedef enum int {
