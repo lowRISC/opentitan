@@ -37,7 +37,7 @@ TEST_F(BootSvcPrimaryBl0SlotTest, ResInit) {
   boot_svc_primary_bl0_slot_res_init(kBootDataSlotB, kStatus, &msg);
 
   EXPECT_EQ(msg.status, kStatus);
-  EXPECT_EQ(msg.new_primary_bl0_slot, kBootDataSlotB);
+  EXPECT_EQ(msg.primary_bl0_slot, kBootDataSlotB);
 }
 
 }  // namespace
