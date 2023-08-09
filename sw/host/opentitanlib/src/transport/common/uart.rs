@@ -14,7 +14,7 @@ use std::cell::{Cell, RefCell};
 use std::collections::VecDeque;
 use std::fs::OpenOptions;
 use std::io::{ErrorKind, Read, Write};
-use std::os::unix::io::AsRawFd;
+use std::os::fd::{AsRawFd, BorrowedFd};
 use std::time::Duration;
 
 //use crate::io::uart::{Uart, UartError};
@@ -159,7 +159,8 @@ impl Uart for SerialPortUart {
                         // this one file descriptor to again become ready for writing.  Since this
                         // is a UART, we know that it will become ready in bounded time.
                         util::file::wait_timeout(
-                            port.as_raw_fd(),
+                            // SAFETY: The file descriptor is owned by `port` and is valid.
+                            unsafe { BorrowedFd::borrow_raw(port.as_raw_fd()) },
                             poll::PollFlags::POLLOUT,
                             Duration::from_secs(5),
                         )?;
