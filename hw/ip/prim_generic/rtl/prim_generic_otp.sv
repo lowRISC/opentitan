@@ -52,8 +52,10 @@ module prim_generic_otp
   // Ready valid handshake for read/write command
   output logic                   ready_o,
   input                          valid_i,
-  input [SizeWidth-1:0]          size_i, // #(Native words)-1, e.g. size == 0 for 1 native word.
-  input  cmd_e                   cmd_i,  // 00: read command, 01: write command, 11: init command
+  // #(Native words)-1, e.g. size == 0 for 1 native word.
+  input [SizeWidth-1:0]          size_i,
+  // 000: read, 001: write, 010: read raw, 011: write raw, 111: init
+  input  cmd_e                   cmd_i,
   input [AddrWidth-1:0]          addr_i,
   input [IfWidth-1:0]            wdata_i,
   // Response channel
@@ -157,13 +159,14 @@ module prim_generic_otp
   state_e state_d, state_q;
   err_e err_d, err_q;
   logic valid_d, valid_q;
+  logic integrity_en_d, integrity_en_q;
   logic req, wren, rvalid;
   logic [1:0] rerror;
   logic [AddrWidth-1:0] addr_q;
   logic [SizeWidth-1:0] size_q;
   logic [SizeWidth-1:0] cnt_d, cnt_q;
   logic cnt_clr, cnt_en;
-  logic read_ecc_on;
+  logic read_ecc_on, write_ecc_on;
   logic wdata_inconsistent;
 
 
@@ -184,7 +187,9 @@ module prim_generic_otp
     cnt_clr = 1'b0;
     cnt_en  = 1'b0;
     read_ecc_on = 1'b1;
+    write_ecc_on = 1'b1;
     fsm_err = 1'b0;
+    integrity_en_d = integrity_en_q;
 
     unique case (state_q)
       // Wait here until we receive an initialization command.
@@ -211,8 +216,22 @@ module prim_generic_otp
           cnt_clr = 1'b1;
           err_d = NoError;
           unique case (cmd_i)
-            Read:  state_d = ReadSt;
-            Write: state_d = WriteCheckSt;
+            Read:  begin
+              state_d = ReadSt;
+              integrity_en_d = 1'b1;
+            end
+            Write: begin
+              state_d = WriteCheckSt;
+              integrity_en_d = 1'b1;
+            end
+            ReadRaw:  begin
+              state_d = ReadSt;
+              integrity_en_d = 1'b0;
+            end
+            WriteRaw: begin
+              state_d = WriteCheckSt;
+              integrity_en_d = 1'b0;
+            end
             default: ;
           endcase // cmd_i
         end
@@ -221,13 +240,17 @@ module prim_generic_otp
       ReadSt: begin
         state_d = ReadWaitSt;
         req     = 1'b1;
+        // Suppress ECC correction if needed.
+        read_ecc_on = integrity_en_q;
       end
       // Wait for response from macro.
       ReadWaitSt: begin
+        // Suppress ECC correction if needed.
+        read_ecc_on = integrity_en_q;
         if (rvalid) begin
           cnt_en = 1'b1;
           // Uncorrectable error, bail out.
-          if (rerror[1]) begin
+          if (rerror[1] && integrity_en_q) begin
             state_d = IdleSt;
             valid_d = 1'b1;
             err_d = MacroEccUncorrError;
@@ -239,7 +262,7 @@ module prim_generic_otp
               state_d = ReadSt;
             end
             // Correctable error, carry on but signal back.
-            if (rerror[0]) begin
+            if (rerror[0] && integrity_en_q) begin
               err_d = MacroEccCorrError;
             end
           end
@@ -250,12 +273,14 @@ module prim_generic_otp
       WriteCheckSt: begin
         state_d = WriteWaitSt;
         req     = 1'b1;
-        // Register raw memory contents without correction
+        // Register raw memory contents without correction so that we can
+        // perform the read-modify-write correctly.
         read_ecc_on = 1'b0;
       end
       // Wait for readout to complete first.
       WriteWaitSt: begin
-        // Register raw memory contents without correction
+        // Register raw memory contents without correction so that we can
+        // perform the read-modify-write correctly.
         read_ecc_on = 1'b0;
         if (rvalid) begin
           cnt_en = 1'b1;
@@ -274,6 +299,9 @@ module prim_generic_otp
         req = 1'b1;
         wren = 1'b1;
         cnt_en = 1'b1;
+        // Suppress ECC calculation if needed.
+        write_ecc_on = integrity_en_q;
+
         if (wdata_inconsistent) begin
           err_d = MacroWriteBlankError;
         end
@@ -323,7 +351,9 @@ module prim_generic_otp
                                  : rdata_ecc;
 
   // Read-modify-write (OTP can only set bits to 1, but not clear to 0).
-  assign wdata_rmw = wdata_ecc | rdata_q[cnt_q];
+  assign wdata_rmw = (write_ecc_on) ? wdata_ecc | rdata_q[cnt_q]
+                                    : {{EccWidth{1'b0}}, wdata_q[cnt_q]} | rdata_q[cnt_q];
+
   // This indicates if the write data is inconsistent (i.e., if the operation attempts to
   // clear an already programmed bit to zero).
   assign wdata_inconsistent = (rdata_q[cnt_q] & wdata_ecc) != rdata_q[cnt_q];
@@ -374,10 +404,12 @@ module prim_generic_otp
       rdata_q <= '0;
       cnt_q   <= '0;
       size_q  <= '0;
+      integrity_en_q <= 1'b0;
     end else begin
       valid_q <= valid_d;
       err_q   <= err_d;
       cnt_q   <= cnt_d;
+      integrity_en_q <= integrity_en_d;
       if (ready_o && valid_i) begin
         addr_q  <= addr_i;
         wdata_q <= wdata_i;
@@ -395,7 +427,8 @@ module prim_generic_otp
 
   // Check that the otp_ctrl FSMs only issue legal commands to the wrapper.
   `ASSERT(CheckCommands0_A, state_q == ResetSt && valid_i && ready_o |-> cmd_i == Init)
-  `ASSERT(CheckCommands1_A, state_q != ResetSt && valid_i && ready_o |-> cmd_i inside {Read, Write})
+  `ASSERT(CheckCommands1_A, state_q != ResetSt && valid_i && ready_o
+      |-> cmd_i inside {Read, ReadRaw, Write, WriteRaw})
 
 
 endmodule : prim_generic_otp

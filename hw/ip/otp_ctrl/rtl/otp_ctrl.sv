@@ -406,7 +406,7 @@ module otp_ctrl
       fatal_macro_error_d |= part_error[k] == MacroError;
       // While uncorrectable ECC errors are always reported, they do not trigger a fatal alert
       // event in some partitions like the VENDOR_TEST partition.
-      if (PartInfo[k].ecc_fatal) begin
+      if (PartInfo[k].integrity) begin
         fatal_macro_error_d |= part_error[k] == MacroEccUncorrError;
       end
     end

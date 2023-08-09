@@ -250,11 +250,10 @@ package otp_ctrl_env_pkg;
     else return 0;
   endfunction
 
-  // Returns true if this partition only has ECC correctable error.
-  // If the partition has ECC uncorrectable error, design will still categorize it as ECC
-  // correctable error.
-  function automatic bit ecc_corr_err_only_part(int part_idx);
-    return part_idx == VendorTestIdx;
+  // Returns true if this partition supports ECC. Otherwise, no ECC errors are reported, and
+  // the single bit errors are not corrected.
+  function automatic bit part_has_integrity(int part_idx);
+    return PartInfo[part_idx].integrity;
   endfunction
 
   // Resolve an offset within the software window as an offset within the whole otp_ctrl block.

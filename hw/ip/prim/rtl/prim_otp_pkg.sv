@@ -6,13 +6,16 @@
 
 package prim_otp_pkg;
 
-  parameter int CmdWidth = 2;
+  parameter int CmdWidth = 3;
   parameter int ErrWidth = 3;
 
   typedef enum logic [CmdWidth-1:0] {
-    Read  = 2'b00,
-    Write = 2'b01,
-    Init  = 2'b11
+    Read     = 3'b000,
+    Write    = 3'b001,
+    // Raw commands ignore integrity
+    ReadRaw  = 3'b010,
+    WriteRaw = 3'b011,
+    Init     = 3'b111
   } cmd_e;
 
   typedef enum logic [ErrWidth-1:0] {

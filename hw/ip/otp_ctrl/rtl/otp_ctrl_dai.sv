@@ -301,7 +301,13 @@ module otp_ctrl_dai
             // HW digests always remain readable.
             PartInfo[part_idx].hw_digest && otp_addr_o == digest_addr_lut[part_idx]) begin
           otp_req_o = 1'b1;
-          otp_cmd_o = prim_otp_pkg::Read;
+          // Depending on the partition configuration,
+          // the wrapper is instructed to ignore integrity errors.
+          if (PartInfo[part_idx].integrity) begin
+            otp_cmd_o = prim_otp_pkg::Read;
+          end else begin
+            otp_cmd_o = prim_otp_pkg::ReadRaw;
+          end
           if (otp_gnt_i) begin
             state_d = ReadWaitSt;
           end
@@ -322,10 +328,8 @@ module otp_ctrl_dai
             // HW digests always remain readable.
             PartInfo[part_idx].hw_digest && otp_addr_o == digest_addr_lut[part_idx]) begin
           if (otp_rvalid_i) begin
-            // Check OTP return code. Depending on the partition configuration, we do not treat
-            // uncorrectable ECC errors as fatal.
-            if (!PartInfo[part_idx].ecc_fatal && otp_err_e'(otp_err_i) == MacroEccUncorrError ||
-                otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}) begin
+            // Check OTP return code.
+            if (otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}) begin
               data_en = 1'b1;
               // We do not need to descramble the digest values.
               if (PartInfo[part_idx].secret && otp_addr_o != digest_addr_lut[part_idx]) begin
@@ -335,10 +339,6 @@ module otp_ctrl_dai
                 dai_cmd_done_o = 1'b1;
               end
               // At this point the only error that we could have gotten are correctable ECC errors.
-              // There is one exception, though, which are partitions where the ecc_fatal
-              // bit is set to 0 (this is only used for test partitions). In that a case,
-              // correctable and uncorrectable ECC errors are both collapsed and signalled
-              // as MacroEccCorrError
               if (otp_err_e'(otp_err_i) != NoError) begin
                 error_d = MacroEccCorrError;
               end
@@ -403,7 +403,13 @@ module otp_ctrl_dai
              // If this is a write to an unbuffered partition
              (PartInfo[part_idx].variant != Buffered && base_sel_q == DaiOffset))) begin
           otp_req_o = 1'b1;
-          otp_cmd_o = prim_otp_pkg::Write;
+          // Depending on the partition configuration,
+          // the wrapper is instructed to ignore integrity errors.
+          if (PartInfo[part_idx].integrity) begin
+            otp_cmd_o = prim_otp_pkg::Write;
+          end else begin
+            otp_cmd_o = prim_otp_pkg::WriteRaw;
+          end
           if (otp_gnt_i) begin
             state_d = WriteWaitSt;
           end
@@ -529,7 +535,13 @@ module otp_ctrl_dai
         if (mubi8_test_false_strict(part_access_i[part_idx].read_lock) &&
             mubi8_test_false_strict(part_access_i[part_idx].write_lock)) begin
           otp_req_o = 1'b1;
-          otp_cmd_o = prim_otp_pkg::Read;
+          // Depending on the partition configuration,
+          // the wrapper is instructed to ignore integrity errors.
+          if (PartInfo[part_idx].integrity) begin
+            otp_cmd_o = prim_otp_pkg::Read;
+          end else begin
+            otp_cmd_o = prim_otp_pkg::ReadRaw;
+          end
           if (otp_gnt_i) begin
             state_d = DigReadWaitSt;
           end
@@ -817,8 +829,7 @@ module otp_ctrl_dai
   // OTP error response
   `ASSERT(OtpErrorState_A,
       state_q inside {InitOtpSt, ReadWaitSt, WriteWaitSt, DigReadWaitSt} && otp_rvalid_i &&
-      !(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError, MacroWriteBlankError}) &&
-      !(!PartInfo[part_idx].ecc_fatal && otp_err_e'(otp_err_i) == MacroEccUncorrError)
+      !(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError, MacroWriteBlankError})
       |=>
       state_q == ErrorSt && error_o == $past(otp_err_e'(otp_err_i)))
 

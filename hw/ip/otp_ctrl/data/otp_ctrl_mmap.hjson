@@ -84,7 +84,7 @@
             write_lock: "Digest",
             read_lock:  "CSR",
             key_sel:    "NoKey",
-            ecc_fatal:  false, // Do not send out a fatal alert upon detection of uncorrectable ECC errors.
+            integrity:  false, // Do not use integrity (ECC) on this partition.
             bkout_type: false, // Do not generate a breakout type for this partition.
             items: [
                 {
@@ -110,7 +110,7 @@
             write_lock: "Digest",
             read_lock:  "CSR",
             key_sel:    "NoKey",
-            ecc_fatal:  true, // Uncorrectable ECC errors trigger a fatal alert.
+            integrity:  true,  // Use integrity (ECC) on this partition.
             bkout_type: false, // Do not generate a breakout type for this partition.
             items: [
                 {
@@ -262,7 +262,7 @@
             write_lock: "Digest",
             read_lock:  "CSR",
             key_sel:    "NoKey",
-            ecc_fatal:  true,
+            integrity:  true,
             bkout_type: false,
             items: [
                 {
@@ -349,7 +349,7 @@
             write_lock: "Digest",
             read_lock:  "None",
             key_sel:    "NoKey",
-            ecc_fatal:  true,
+            integrity:  true,
             bkout_type: true,
             items: [
                 {
@@ -409,7 +409,7 @@
             write_lock: "Digest",
             read_lock:  "Digest",
             key_sel:    "Secret0Key",
-            ecc_fatal:  true,
+            integrity:  true,
             bkout_type: false,
             items: [
                 {
@@ -438,7 +438,7 @@
             write_lock: "Digest",
             read_lock:  "Digest",
             key_sel:    "Secret1Key",
-            ecc_fatal:  true,
+            integrity:  true,
             bkout_type: false,
             items: [
                 {
@@ -470,7 +470,7 @@
             write_lock: "Digest",
             read_lock:  "Digest",
             key_sel:    "Secret2Key",
-            ecc_fatal:  true,
+            integrity:  true,
             bkout_type: false,
             items: [
                 {
@@ -501,7 +501,7 @@
             write_lock: "None",
             read_lock:  "None",
             key_sel:    "NoKey",
-            ecc_fatal:  true,
+            integrity:  true,
             bkout_type: false,
             items: [
                 // The life cycle transition count is specified

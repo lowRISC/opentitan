@@ -113,7 +113,7 @@ package otp_ctrl_part_pkg;
     logic hw_digest;  // Whether the partition has a hardware digest
     logic write_lock; // Whether the partition is write lockable (via digest)
     logic read_lock;  // Whether the partition is read lockable (via digest)
-    logic ecc_fatal;  // Whether the an ECC uncorrectable error leads to a fatal alert
+    logic integrity;  // Whether the partition is integrity protected
   } part_info_t;
 
   parameter part_info_t PartInfoDefault = '{
@@ -126,7 +126,7 @@ package otp_ctrl_part_pkg;
       hw_digest:  1'b0,
       write_lock: 1'b0,
       read_lock:  1'b0,
-      ecc_fatal:  1'b0
+      integrity:  1'b0
   };
 
   ////////////////////////
@@ -146,7 +146,7 @@ package otp_ctrl_part_pkg;
       hw_digest:  1'b${"1" if part["hw_digest"] else "0"},
       write_lock: 1'b${"1" if part["write_lock"].lower() == "digest" else "0"},
       read_lock:  1'b${"1" if part["read_lock"].lower() == "digest" else "0"},
-      ecc_fatal:  1'b${"1" if part["ecc_fatal"] else "0"}
+      integrity:  1'b${"1" if part["integrity"] else "0"}
     }${"" if loop.last else ","}
 % endfor
   };
