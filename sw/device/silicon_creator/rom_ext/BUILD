@@ -215,7 +215,6 @@ cc_library(
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical",
-        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_min_bl0_sec_ver",
         "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",

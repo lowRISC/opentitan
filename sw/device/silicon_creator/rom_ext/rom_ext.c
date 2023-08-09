@@ -14,7 +14,6 @@
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_empty.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_header.h"
-#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_min_bl0_sec_ver.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
@@ -242,17 +241,35 @@ static rom_error_t boot_svc_primary_boot_bl0_slot_handler(
 OT_WARN_UNUSED_RESULT
 static rom_error_t boot_svc_min_sec_ver_handler(boot_svc_msg_t *boot_svc_msg,
                                                 boot_data_t *boot_data) {
-  boot_data->min_security_version_bl0 =
-      boot_svc_msg->min_bl0_sec_ver_req.min_bl0_sec_ver;
+  const uint32_t current_min_sec_ver = boot_data->min_security_version_bl0;
+  const uint32_t requested_min_sec_ver =
+      boot_svc_msg->next_boot_bl0_slot_req.next_bl0_slot;
+  const uint32_t diff = requested_min_sec_ver - current_min_sec_ver;
 
-  // Write boot data, updating relevant fields and recomputing the digest.
-  HARDENED_RETURN_IF_ERROR(boot_data_write(boot_data));
-  // Read the boot data back to ensure the correct policy is used on this boot.
-  HARDENED_RETURN_IF_ERROR(boot_data_read(lc_state, boot_data));
-  HARDENED_RETURN_IF_ERROR(boot_data_check(boot_data));
+  // Ensure the requested minimum security version isn't lower than the current
+  // minimum security version.
+  if (launder32(requested_min_sec_ver) > current_min_sec_ver) {
+    HARDENED_CHECK_GT(requested_min_sec_ver, current_min_sec_ver);
+    HARDENED_CHECK_LT(diff, requested_min_sec_ver);
 
-  boot_svc_min_bl0_sec_ver_res_init(kErrorOk,
-                                    &boot_svc_msg->min_bl0_sec_ver_res);
+    // Update boot data to the requested minimum BL0 security version.
+    boot_data->min_security_version_bl0 = requested_min_sec_ver;
+
+    // Write boot data, updating relevant fields and recomputing the digest.
+    HARDENED_RETURN_IF_ERROR(boot_data_write(boot_data));
+    // Read the boot data back to ensure the correct policy is used this boot.
+    HARDENED_RETURN_IF_ERROR(boot_data_read(lc_state, boot_data));
+
+    boot_svc_min_bl0_sec_ver_res_init(boot_data->min_security_version_bl0,
+                                      kErrorOk,
+                                      &boot_svc_msg->min_bl0_sec_ver_res);
+
+    HARDENED_CHECK_EQ(requested_min_sec_ver,
+                      boot_data->min_security_version_bl0);
+  } else {
+    boot_svc_min_bl0_sec_ver_res_init(current_min_sec_ver, kErrorOk,
+                                      &boot_svc_msg->min_bl0_sec_ver_res);
+  }
 
   return kErrorOk;
 }
