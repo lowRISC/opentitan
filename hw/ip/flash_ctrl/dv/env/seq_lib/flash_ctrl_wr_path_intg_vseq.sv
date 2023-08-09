@@ -53,6 +53,9 @@ class flash_ctrl_wr_path_intg_vseq extends flash_ctrl_rw_vseq;
                 // prog_err and mp_err
                 set_otf_exp_alert("recov_err");
                 prog_flash(ctrl, bank, 1, fractions, 1);
+                // Wait for op_done or op_err
+                csr_spinwait(.ptr(ral.op_status), .exp_data(2'b0),
+                             .compare_op(CompareOpCaseNe), .backdoor(1));
               end
               cfg.otf_rd_pct:read_flash(ctrl, bank, num, fractions);
             endcase
