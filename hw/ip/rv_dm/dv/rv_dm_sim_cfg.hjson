@@ -180,9 +180,15 @@
                  "+en_scb=0"]
       reseed: 40
     }
+<<<<<<< HEAD
      {
       name: jtag_dmi_cmderr_busy
       uvm_test_seq: rv_dm_cmderr_busy_vseq
+=======
+    {
+      name: rv_dm_mem_tl_access_halted
+      uvm_test_seq: rv_dm_mem_tl_access_halted_vseq
+>>>>>>> 3bd3378a5 ([rv_dm] Halted test)
       reseed: 2
     }
   ]

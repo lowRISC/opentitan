@@ -31,15 +31,25 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   // Handles for convenience.
   jtag_dtm_reg_block jtag_dtm_ral;
   jtag_dmi_reg_block jtag_dmi_ral;
+<<<<<<< HEAD
   rv_dm_mem_reg_block tl_mem_ral;
   dv_base_reg_block dv_base_ral;
+=======
+  dv_base_reg_block dv_base_ral;
+	rv_dm_mem_reg_block tl_mem_ral;
+>>>>>>> 3bd3378a5 ([rv_dm] Halted test)
 
   virtual function void set_handles();
     super.set_handles();
     jtag_dtm_ral = cfg.m_jtag_agent_cfg.jtag_dtm_ral;
     jtag_dmi_ral = cfg.jtag_dmi_ral;
+<<<<<<< HEAD
     dv_base_ral = cfg.ral_models["rv_dm_mem_reg_block"];
     `downcast(tl_mem_ral,dv_base_ral);
+=======
+    dv_base_ral	 = cfg.ral_models["rv_dm_mem_reg_block"];
+    `downcast(tl_mem_ral, dv_base_ral);
+>>>>>>> 3bd3378a5 ([rv_dm] Halted test)
   endfunction
 
   task pre_start();
