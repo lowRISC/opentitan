@@ -267,6 +267,7 @@ def opentitan_functest(
         targets = sets.to_list(sets.remove(sets.make(VALID_TARGETS), "cw310_rom_with_real_keys")),
         args = [],
         data = [],
+        tags = [],
         test_in_rom = False,
         ot_flash_binary = None,
         signed = True,
@@ -294,6 +295,7 @@ def opentitan_functest(
       @param data: Extra data dependencies (in addition to those defined in the
                    target-specific parameter dictionary) needed while executing
                    the test.
+      @param tags: Tags to add to all emitted test rules.
       @param test_in_rom: Whether to run the test from ROM, runs from flash by
                           default.
       @param ot_flash_binary: Use the named `opentitan_flash_binary` as the
@@ -431,6 +433,8 @@ def opentitan_functest(
         target_args = args
         target_data = data + [test_harness]
         target_test_cmds = []
+
+        params["tags"] = params["tags"] + tags
 
         ########################################################################
         # Retrieve host-side test components.
