@@ -204,13 +204,13 @@ p384_sign:
   /* Multiplicative masking of shares k0 and k1 */
 
   /* Generate a random 127-bit number.
-       w4 <= URND()[255:129] */
-  bn.wsrr  w4, 0x2 /* URND */
-  bn.rshi  w4, w31, w4 >> 129
+     w4 <= URND()[255:129] */
+  bn.wsrr   w4, 0x2 /* URND */
+  bn.rshi   w4, w31, w4 >> 129
 
   /* Add 1 to get a 128-bit nonzero scalar for masking.
-       w16 <= w16 + 1 = alpha */
-  bn.addi  w4, w4, 1
+     w4 <= w4 + 1 = alpha */
+  bn.addi   w4, w4, 1
 
   /* load 1st share k0 from dmem
      [w11,w10] <= k0 = dmem[dptr_k0] */
@@ -220,7 +220,6 @@ p384_sign:
 
   /* [w26,w25] <= ([w11,w10] * w4) mod n = (k0 * alpha) mod n */
   bn.mov    w16, w4
-  bn.mov    w17, w31
   jal       x1, p384_mulmod448x128_n
   bn.mov    w25, w16
   bn.mov    w26, w17
@@ -233,7 +232,6 @@ p384_sign:
 
   /* [w28,w27] <= ([w11,w10] * w4) mod n = (k1 * alpha) mod n */
   bn.mov    w16, w4
-  bn.mov    w17, w31
   jal       x1, p384_mulmod448x128_n
   bn.mov    w27, w16
   bn.mov    w28, w17
@@ -248,7 +246,6 @@ p384_sign:
 
   /* [w7,w6] <= ([w11,w10] * w4) mod n = (d0 * alpha) mod n */
   bn.mov    w16, w4
-  bn.mov    w17, w31
   jal       x1, p384_mulmod448x128_n
   bn.mov    w6, w16
   bn.mov    w7, w17
@@ -261,7 +258,6 @@ p384_sign:
 
   /* [w9,w8] <= ([w11,w10] * w4) mod n = (d1 * alpha) mod n */
   bn.mov    w16, w4
-  bn.mov    w17, w31
   jal       x1, p384_mulmod448x128_n
   bn.mov    w8, w16
   bn.mov    w9, w17
@@ -276,7 +272,6 @@ p384_sign:
 
   /* [w1,w0] <= ([w11,w10] * w4) mod n = (msg * alpha) mod n */
   bn.mov    w16, w4
-  bn.mov    w17, w31
   jal       x1, p384_mulmod448x128_n
   bn.mov    w0, w16
   bn.mov    w1, w17
