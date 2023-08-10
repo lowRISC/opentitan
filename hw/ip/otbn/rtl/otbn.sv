@@ -1240,33 +1240,45 @@ module otbn
       !rst_ni || u_otbn_core.urnd_reseed_err || u_otbn_core.u_otbn_start_stop_control.mubi_err_d)
   end
 
-  // WDR assertions for secure wipe
-  // 1. urnd_reseed_err disables the assertion because secure wipe finishes with failure and OTBN
-  // goes to LOCKED state immediately after this error which means that it's not guaranteed to have
-  // secure wiping complete.
-  // 2. mubi_err_d of start_stop_control disables the internal secure wipe related assertion
-  // because a fatal error affecting internal secure wiping could cause an immediate locking
-  // behaviour in which it's not guaranteed to see a succesful secure wipe.
-  for (genvar i = 0; i < NWdr; ++i) begin : gen_sec_wipe_wdr_asserts
-    // Initial secure wipe needs to initialise all registers to nonzero
-    `ASSERT(InitSecWipeNonZeroWideRegs_A,
-            $fell(busy_secure_wipe) |->
-              u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.rf[i] !=
-                EccWideZeroWord,
-            clk_i,
-            !rst_ni || u_otbn_core.urnd_reseed_err ||
-              u_otbn_core.u_otbn_start_stop_control.mubi_err_d)
+  // We have several assertions that check that secure wipe worked properly. However, we've also got
+  // some tests where we force nets, stopping it from working properly! That's fine, and the tests
+  // are checking that some other mechanism catches the problem. However, we don't want the
+  // simulation to die with a failed assertion, so we put everything in a named block which we can
+  // turn off with $assertoff.
+  //
+  // The silly-looking name is to avoid a lint warning. Verible (correctly) points out that
+  // SystemVerilog doesn't allow bare begin/end blocks at module level. So I cheated and put
+  // everything in an if(1) block. But this is treated as a generate block, and our lint rules
+  // therefore expect its name to start with a "g_".
+  if (1) begin : g_secure_wipe_assertions
+    // WDR assertions for secure wipe
+    // 1. urnd_reseed_err disables the assertion because secure wipe finishes with failure and OTBN
+    // goes to LOCKED state immediately after this error which means that it's not guaranteed to
+    // have secure wiping complete.
+    // 2. mubi_err_d of start_stop_control disables the internal secure wipe related assertion
+    // because a fatal error affecting internal secure wiping could cause an immediate locking
+    // behaviour in which it's not guaranteed to see a succesful secure wipe.
+    for (genvar i = 0; i < NWdr; ++i) begin : gen_sec_wipe_wdr_asserts
+      // Initial secure wipe needs to initialise all registers to nonzero
+      `ASSERT(InitSecWipeNonZeroWideRegs_A,
+              $fell(busy_secure_wipe) |->
+                u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.rf[i] !=
+                  EccWideZeroWord,
+              clk_i,
+              !rst_ni || u_otbn_core.urnd_reseed_err ||
+                u_otbn_core.u_otbn_start_stop_control.mubi_err_d)
 
-    // After execution, it's expected to see a change resulting with a nonzero register value
-    `ASSERT(SecWipeChangedWideRegs_A,
-            $rose(busy_secure_wipe) |-> ((##[0:$]
-              u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.rf[i] !=
-                EccWideZeroWord &&
-              $changed(
-                u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.rf[i]))
-              within ($rose(busy_secure_wipe) ##[0:$] $fell(busy_secure_wipe))),
-          clk_i, !rst_ni || u_otbn_core.urnd_reseed_err ||
-            u_otbn_core.u_otbn_start_stop_control.mubi_err_d)
+      // After execution, it's expected to see a change resulting with a nonzero register value
+      `ASSERT(SecWipeChangedWideRegs_A,
+              $rose(busy_secure_wipe) |-> ((##[0:$]
+                u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.rf[i] !=
+                  EccWideZeroWord &&
+                $changed(
+                  u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.rf[i]))
+                within ($rose(busy_secure_wipe) ##[0:$] $fell(busy_secure_wipe))),
+            clk_i, !rst_ni || u_otbn_core.urnd_reseed_err ||
+              u_otbn_core.u_otbn_start_stop_control.mubi_err_d)
+    end
   end
 
   // Secure wipe needs to invalidate call and loop stack, initialize MOD, ACC to nonzero and set
