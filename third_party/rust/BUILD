@@ -14,11 +14,11 @@ rust_bindgen_toolchain(
     bindgen = "@rules_rust//bindgen/3rdparty:bindgen",
     clang = "@bindgen_clang_linux//:clang",
     libclang = "@bindgen_clang_linux//:libclang",
-    system_includes = "@bindgen_clang_linux//:system_includes",
     libstdcxx = select({
         ":specify_bindgen_libstdcxx": "@bindgen_libstdcxx_linux//:libstdc++",
         "//conditions:default": None,
     }),
+    system_includes = "@bindgen_clang_linux//:system_includes",
 )
 
 toolchain(
