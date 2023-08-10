@@ -272,10 +272,11 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     return value;
   endfunction
 
-  task enable_frequency_measurement(clk_mesr_e which, int min_threshold, int max_threshold,
-                                    bit block_meas_en = 1'b0);
-    int value;
-    mubi4_t expected_en_value = block_meas_en ? MuBi4False : MuBi4True;
+  // Any non-false mubi value in the enable CSR turns measurements on.
+  task enable_frequency_measurement(clk_mesr_e which, int min_threshold, int max_threshold);
+    int value = get_meas_ctrl_value(min_threshold, max_threshold, meas_ctrl_regs[which].ctrl_lo,
+                                    meas_ctrl_regs[which].ctrl_hi);
+    mubi4_t en_value = get_rand_mubi4_val(1, 0, 3);
     `uvm_info(`gfn, $sformatf(
               "Enabling frequency measurement for %0s, min=0x%x, max=0x%x, expected=0x%x",
               which.name,
@@ -283,23 +284,8 @@ class clkmgr_base_vseq extends cip_base_vseq #(
               max_threshold,
               ExpectedCounts[which]
               ), UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf(
-              "measure_ctrl_regwen predicted value 0x%x, mirrored 0x%x",
-              ral.measure_ctrl_regwen.get(),
-              `gmv(ral.measure_ctrl_regwen)
-              ), UVM_MEDIUM)
-    value = get_meas_ctrl_value(min_threshold, max_threshold,
-                                meas_ctrl_regs[which].ctrl_lo,
-                                meas_ctrl_regs[which].ctrl_hi);
     csr_wr(.ptr(meas_ctrl_regs[which].ctrl_lo.get_dv_base_reg_parent()), .value(value));
-    `uvm_info(`gfn, $sformatf(
-              "Wrote 0x%x to %s, predict 0x%x, mirrored 0x%x",
-              value,
-              which.name(),
-              meas_ctrl_regs[which].ctrl_lo.get_dv_base_reg_parent().get(),
-              `gmv(meas_ctrl_regs[which].ctrl_lo.get_dv_base_reg_parent())
-              ), UVM_MEDIUM)
-    csr_wr(.ptr(meas_ctrl_regs[which].en), .value(MuBi4True));
+    csr_wr(.ptr(meas_ctrl_regs[which].en), .value(en_value));
   endtask
 
   // This checks that when calibration is lost regwen should be re-enabled and measurements

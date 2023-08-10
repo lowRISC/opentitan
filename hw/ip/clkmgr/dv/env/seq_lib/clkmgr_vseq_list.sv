@@ -9,6 +9,7 @@
 `include "clkmgr_frequency_vseq.sv"
 `include "clkmgr_extclk_vseq.sv"
 `include "clkmgr_peri_vseq.sv"
+`include "clkmgr_regwen_vseq.sv"
 `include "clkmgr_smoke_vseq.sv"
 `include "clkmgr_stress_all_vseq.sv"
 `include "clkmgr_trans_vseq.sv"
