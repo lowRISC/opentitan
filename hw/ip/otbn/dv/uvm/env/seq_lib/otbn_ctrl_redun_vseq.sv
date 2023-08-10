@@ -36,6 +36,14 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
     bit [3:0] bad_addr;
     bit [3:0] mask;
     bit [31:0] err_val = 32'd1 << 20;
+
+    // We're doing something evil and forcing a signal inside the design. We expect the design to
+    // notice that something went wrong and lock itself and we test for that. However, the design
+    // RTL has some assertions that are rendered false by the forcing that we do. To avoid killing
+    // the simulation with the failed assertion, turn them off here, and turn them on again at the
+    // end of this task.
+    $assertoff(0, "tb.dut.g_secure_wipe_assertions");
+
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(err_type, err_type inside {[0:6]};)
     case(err_type)
       // Injecting error on ispr_addr during a write
@@ -202,6 +210,10 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
     `DV_WAIT(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked)
     `DV_CHECK_FATAL(uvm_hdl_release(err_path) == 1);
     reset_if_locked();
+
+    // Turn the secure wipe assertions on again (there's a note above the $assertoff call earlier
+    // which explains what we're doing).
+    $asserton(0, "tb.dut.g_secure_wipe_assertions");
   endtask
 
 endclass : otbn_ctrl_redun_vseq
