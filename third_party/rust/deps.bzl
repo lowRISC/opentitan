@@ -13,7 +13,7 @@ def rust_deps():
         # upstream `rules_rust`.
         #include_rustc_srcs = False,
         edition = "2021",
-        versions = ["1.67.0", "nightly/2023-01-26"],
+        versions = ["1.67.0", "nightly/2023-07-30"],
         extra_target_triples = [
             "riscv32imc-unknown-none-elf",
         ],
