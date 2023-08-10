@@ -107,16 +107,24 @@ hsm_repos()
 load("//rules:bitstreams.bzl", "bitstreams_repo")
 bitstreams_repo(name = "bitstreams")
 
-# Setup for linking in external test hooks.
-load("//rules:hooks_setup.bzl", "hooks_setup")
+# Setup for linking in external test hooks for both secure/non-secure
+# manufacturer domains.
+load("//rules:hooks_setup.bzl", "hooks_setup", "secure_hooks_setup")
 hooks_setup(
     name = "hooks_setup",
     dummy = "sw/device/tests/closed_source",
 )
+secure_hooks_setup(
+    name = "secure_hooks_setup",
+    dummy = "sw/device/tests/closed_source",
+)
 
-# Declare the external test_hooks repository.
+# Declare the external test_hooks repositories. One for both manufacturer secure
+# and non-secure domains.
 load("@hooks_setup//:repos.bzl", "hooks_repo")
+load("@secure_hooks_setup//:repos.bzl", "secure_hooks_repo")
 hooks_repo(name = "manufacturer_test_hooks")
+secure_hooks_repo(name = "secure_manufacturer_test_hooks")
 
 # The nonhermetic_repo imports environment variables needed to run vivado.
 load("//rules:nonhermetic.bzl", "nonhermetic_repo")
