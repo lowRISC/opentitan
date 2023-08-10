@@ -4,6 +4,11 @@
 
 #include "tcp_server.h"
 
+// Strictly speaking, versions of C older than C23 might not declare
+// strdup in string.h. With e.g. glibc, this macro tells it to declare
+// what we need.
+#define __STDC_WANT_LIB_EXT2__ 1
+
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
