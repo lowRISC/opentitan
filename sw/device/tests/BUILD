@@ -481,6 +481,7 @@ opentitan_functest(
 opentitan_functest(
     name = "chip_power_idle_load",
     srcs = ["chip_power_idle_load.c"],
+    tags = ["earlgrey"],
     verilator = verilator_params(
         tags = ["broken"],  # FIXME #16374 test doesn't make progress after enabling PWM
     ),
@@ -505,6 +506,7 @@ opentitan_functest(
 opentitan_functest(
     name = "chip_power_sleep_load",
     srcs = ["chip_power_sleep_load.c"],
+    tags = ["earlgrey"],
     verilator = verilator_params(
         tags = ["broken"],  # FIXME #16374 test doesn't make progress after enabling PWM
     ),
@@ -2182,6 +2184,7 @@ opentitan_functest(
 opentitan_functest(
     name = "sleep_pwm_pulses_test",
     srcs = ["sleep_pwm_pulses_test.c"],
+    tags = ["earlgrey"],
     verilator = verilator_params(
         timeout = "eternal",
         tags = ["broken"],
@@ -2589,6 +2592,7 @@ opentitan_functest(
     dv = dv_params(
         otp = ":power_virus_systemtest_otp_img_rma",
     ),
+    tags = ["earlgrey"],
     targets = [
         # TODO(#14814): add more targets
         "cw310_test_rom",
