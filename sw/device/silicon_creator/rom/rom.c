@@ -4,6 +4,7 @@
 
 #include "sw/device/silicon_creator/rom/rom.h"
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -224,8 +225,8 @@ static rom_error_t rom_verify(const manifest_t *manifest,
   HARDENED_RETURN_IF_ERROR(sigverify_rsa_key_get(
       sigverify_rsa_key_id_get(&manifest->rsa_modulus), lc_state, &rsa_key));
 
-  const sigverify_spx_key_t *spx_key;
-  const sigverify_spx_signature_t *spx_signature;
+  const sigverify_spx_key_t *spx_key = NULL;
+  const sigverify_spx_signature_t *spx_signature = NULL;
   uint32_t sigverify_spx_en = sigverify_spx_verify_enabled(lc_state);
   if (launder32(sigverify_spx_en) != kSigverifySpxDisabledOtp) {
     const manifest_ext_spx_key_t *ext_spx_key;
@@ -474,6 +475,10 @@ static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
       HARDENED_TRAP();
   }
   HARDENED_CHECK_EQ(manifest, manifest_check);
+
+#if OT_BUILD_FOR_STATIC_ANALYZER
+  assert(manifest_check != NULL);
+#endif
 
   if (launder32(manifest_check->address_translation) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(manifest_check->address_translation, kHardenedBoolTrue);

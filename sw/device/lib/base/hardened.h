@@ -240,6 +240,12 @@ inline uint32_t launder32(uint32_t val) {
   // > instead require that reordering be prevented through careful sequencing
   // > of statements.
 
+  // When we're building for static analysis, reduce false positives by
+  // short-circuiting the inline assembly block.
+#if OT_BUILD_FOR_STATIC_ANALYZER
+  return val;
+#endif
+
   // The +r constraint tells the compiler that this is an "inout" parameter: it
   // means that not only does the black box depend on `val`, but it also mutates
   // it in an unspecified way.

@@ -195,6 +195,8 @@ def _cc_aspect_impl(target, ctx, action_callback):
 #  ./bazelisk.sh run @lowrisc_rv32imcb_files//:bin/clang-tidy -- --checks='*' --list-checks
 _CLANG_TIDY_CHECKS = [
     "clang-analyzer-core.*",
+    # Disable advice to replace `memcpy` with `mempcy_s`.
+    "-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling",
 ]
 
 def _clang_tidy_run_action(ctx, cc_toolchain, cc_compile_ctx, generated_file, command_line, src):
