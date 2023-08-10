@@ -13,6 +13,7 @@ filesets:
     depend:
       - lowrisc:dv:dma_test
       - lowrisc:dv:dma_cov
+      - lowrisc:dv:dma_sva
     files:
       - tb/tb.sv
     file_type: systemVerilogSource
