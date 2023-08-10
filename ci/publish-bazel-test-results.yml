@@ -1,0 +1,19 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Azure template for publishing `bazel test` results on Azure and GitHub
+# checks.
+#
+# This template can be included from pipelines in other repositories.
+# It expects the source code to be checked out at $(Build.SourcesDirectory).
+#
+
+steps:
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'JUnit'
+      testResultsFiles: '**/test.xml'
+      searchFolder: ' $(Build.SourcesDirectory)/bazel-out'
+    displayName: 'Publish bazel test results'
+    condition: succeededOrFailed()

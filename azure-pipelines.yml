@@ -246,6 +246,7 @@ jobs:
         --test_tag_filters=-broken,-cw310,-verilator,-dv \
         --target_pattern_file="${TARGET_PATTERN_FILE}"
     displayName: Build & test SW
+  - template: ci/publish-bazel-test-results.yml
   - bash: |
       set -x -e
       . util/build_consts.sh
@@ -317,6 +318,7 @@ jobs:
       export GCP_BAZEL_CACHE_KEY=$(bazelCacheGcpKeyPath)
       ci/scripts/run-verilator-tests.sh
     displayName: Build & execute tests
+  - template: ci/publish-bazel-test-results.yml
   # TODO: build and cache the verilator model to avoid building twice (#12574)
   - bash: |
       . util/build_consts.sh
@@ -615,6 +617,7 @@ jobs:
       module load "xilinx/vivado/$(VIVADO_VERSION)"
       ci/scripts/run-fpga-cw310-tests.sh cw310_test_rom,-manuf || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
     displayName: Execute tests
+  - template: ci/publish-bazel-test-results.yml
 
 - job: execute_rom_fpga_tests_cw310
   displayName: CW310 ROM Tests
@@ -638,6 +641,7 @@ jobs:
       module load "xilinx/vivado/$(VIVADO_VERSION)"
       ci/scripts/run-fpga-cw310-tests.sh cw310_rom_with_fake_keys,cw310_rom_with_real_keys,-manuf || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
     displayName: Execute tests
+  - template: ci/publish-bazel-test-results.yml
 
 - job: execute_fpga_manuf_tests_cw310
   displayName: CW310 Manufacturing Tests
@@ -661,6 +665,7 @@ jobs:
       module load "xilinx/vivado/$(VIVADO_VERSION)"
       ci/scripts/run-fpga-cw310-tests.sh manuf || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
     displayName: Execute tests
+  - template: ci/publish-bazel-test-results.yml
 
 
 - job: deploy_release_artifacts
