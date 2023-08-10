@@ -14,8 +14,8 @@
 #include "sw/device/silicon_creator/lib/drivers/mock_lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_rnd.h"
-#include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/testing/rom_test.h"
+#include "sw/lib/sw/device/silicon_creator/error.h"
+#include "sw/lib/sw/device/silicon_creator/testing/rom_test.h"
 #include "sw/lib/sw/device/base/hardened.h"
 
 #include "otp_ctrl_regs.h"

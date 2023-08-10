@@ -11,8 +11,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/sigverify/sphincsplus/params.h"
+#include "sw/lib/sw/device/silicon_creator/error.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/params.h"
 #include "sw/lib/sw/device/base/macros.h"
 
 #ifdef __cplusplus

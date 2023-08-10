@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
-#include "sw/device/silicon_creator/lib/epmp_state.h"
+#include "sw/lib/sw/device/silicon_creator/epmp_state.h"
 
 #ifdef __cplusplus
 extern "C" {

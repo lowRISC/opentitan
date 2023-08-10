@@ -6,7 +6,7 @@
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_AST_H_
 
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
-#include "sw/device/silicon_creator/lib/error.h"
+#include "sw/lib/sw/device/silicon_creator/error.h"
 #include "sw/lib/sw/device/base/hardened.h"
 
 #ifdef __cplusplus

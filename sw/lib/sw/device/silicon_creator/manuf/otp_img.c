@@ -1,12 +1,12 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-#include "sw/device/silicon_creator/manuf/lib/otp_img.h"
+#include "sw/lib/sw/device/silicon_creator/manuf/otp_img.h"
 
-#include "sw/device/silicon_creator/manuf/lib/otp_img_types.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
 #include "sw/ip/otp_ctrl/test/utils/otp_ctrl_testutils.h"
 #include "sw/lib/sw/device/base/status.h"
+#include "sw/lib/sw/device/silicon_creator/manuf/otp_img_types.h"
 
 status_t otp_img_write(const dif_otp_ctrl_t *otp,
                        dif_otp_ctrl_partition_t partition, const otp_kv_t *kv,

@@ -5,7 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_USAGE_CONSTRAINTS_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_USAGE_CONSTRAINTS_H_
 
-#include "sw/device/silicon_creator/lib/manifest.h"
+#include "sw/lib/sw/device/silicon_creator/manifest.h"
 
 #ifdef __cplusplus
 extern "C" {

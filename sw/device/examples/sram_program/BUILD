@@ -13,7 +13,7 @@ ld_library(
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling_memory",
         "//sw/device:info_sections",
-        "//sw/device/silicon_creator/lib/base:static_critical_sections",
+        "//sw/lib/sw/device/silicon_creator/base:static_critical_sections",
     ],
 )
 

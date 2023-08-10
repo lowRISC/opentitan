@@ -5,7 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_BOOT_POLICY_PTRS_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_BOOT_POLICY_PTRS_H_
 
-#include "sw/device/silicon_creator/lib/manifest.h"
+#include "sw/lib/sw/device/silicon_creator/manifest.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 

@@ -28,7 +28,7 @@ cc_library(
     hdrs = ["coverage.h"],
     linkopts = ["-lgcc"],
     deps = [
-        "//sw/device/silicon_creator/lib:crc32",
+        "//sw/lib/sw/device/silicon_creator:crc32",
         "//sw/lib/sw/device/base:memory",
         "//sw/lib/sw/device/runtime:log",
         "//sw/lib/sw/device/runtime:print",
@@ -78,7 +78,7 @@ ld_library(
     includes = ["ottf_common.ld"],
     deps = [
         "//sw/device:info_sections",
-        "//sw/device/silicon_creator/lib/base:static_critical_sections",
+        "//sw/lib/sw/device/silicon_creator/base:static_critical_sections",
     ],
 )
 
@@ -142,7 +142,7 @@ ld_library(
 cc_library(
     name = "english_breakfast_test_framework_manifest_def",
     srcs = [
-        "//sw/device/silicon_creator/lib:english_breakfast_test_framework_manifest_def_srcs",
+        "//sw/lib/sw/device/silicon_creator:english_breakfast_test_framework_manifest_def_srcs",
     ],
     # This should be built only for english breakfast and skipped if using wildcards.
     tags = ["manual"],
@@ -158,7 +158,7 @@ alias(
     name = "test_framework_manifest_def",
     actual = select({
         "//sw/device:is_english_breakfast": ":english_breakfast_test_framework_manifest_def",
-        "//conditions:default": "//sw/device/silicon_creator/lib:manifest_def",
+        "//conditions:default": "//sw/lib/sw/device/silicon_creator:manifest_def",
     }),
 )
 
@@ -187,13 +187,13 @@ cc_library(
         ":check",
         ":test_framework_manifest_def",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/silicon_creator/lib/base:static_critical",
         "//sw/lib/sw/device/base:csr",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/crt",
         "//sw/lib/sw/device/runtime:hart",
         "//sw/lib/sw/device/runtime:ibex",
         "//sw/lib/sw/device/runtime:log",
+        "//sw/lib/sw/device/silicon_creator/base:static_critical",
         "//sw/top_darjeeling/sw/dif:rv_plic",
     ],
 )

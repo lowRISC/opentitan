@@ -19,7 +19,7 @@ cc_test(
     srcs = ["address_unittest.cc"],
     deps = [
         ":address",
-        "//sw/device/silicon_creator/testing:rom_test",
+        "//sw/lib/sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -80,7 +80,7 @@ cc_library(
         ":address",
         ":params",
         ":thash",
-        "//sw/device/silicon_creator/lib:error",
+        "//sw/lib/sw/device/silicon_creator:error",
         "//sw/lib/sw/device/base:memory",
     ],
 )
@@ -98,7 +98,7 @@ cc_library(
         ":thash",
         ":utils",
         ":wots",
-        "//sw/device/silicon_creator/lib:error",
+        "//sw/lib/sw/device/silicon_creator:error",
         "//sw/lib/sw/device/base:memory",
     ],
 )
@@ -113,7 +113,7 @@ cc_library(
         ":params",
         ":thash",
         ":utils",
-        "//sw/device/silicon_creator/lib:error",
+        "//sw/lib/sw/device/silicon_creator:error",
         "//sw/device/silicon_creator/lib/drivers:kmac",
         "//sw/lib/sw/device/base:memory",
     ],

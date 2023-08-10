@@ -21,7 +21,7 @@ cc_library(
         "test_key_1_spx.h",
     ],
     deps = [
-        "//sw/device/silicon_creator/lib/sigverify",
+        "//sw/lib/sw/device/silicon_creator/sigverify",
         "//sw/lib/sw/device/base:macros",
     ],
 )
@@ -34,7 +34,7 @@ cc_test(
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/rom:sigverify_keys",
         "//sw/device/silicon_creator/rom/keys/real/rsa",
-        "//sw/device/silicon_creator/testing:rom_test",
+        "//sw/lib/sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
 )

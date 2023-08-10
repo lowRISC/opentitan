@@ -140,7 +140,7 @@ SECTIONS {
    * Critical static data that is accessible by both the ROM and the ROM
    * extension.
    */
-  INCLUDE sw/device/silicon_creator/lib/base/static_critical.ld
+  INCLUDE sw/lib/sw/device/silicon_creator/base/static_critical.ld
 
   /**
    * Standard mutable data section, at the bottom of RAM. This will be

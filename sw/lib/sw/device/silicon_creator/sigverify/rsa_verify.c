@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/lib/sigverify/rsa_verify.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/rsa_verify.h"
 
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
-#include "sw/device/silicon_creator/lib/sigverify/mod_exp_ibex.h"
-#include "sw/device/silicon_creator/lib/sigverify/mod_exp_otbn.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/mod_exp_ibex.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/mod_exp_otbn.h"
 
 #include "otp_ctrl_regs.h"
 

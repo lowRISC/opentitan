@@ -8,7 +8,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/status.h"
-#include "sw/device/silicon_creator/lib/manifest_def.h"
 #include "sw/ip/uart/dif/dif_uart.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/macros.h"
@@ -16,6 +15,7 @@
 #include "sw/lib/sw/device/runtime/hart.h"
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/runtime/print.h"
+#include "sw/lib/sw/device/silicon_creator/manifest_def.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 

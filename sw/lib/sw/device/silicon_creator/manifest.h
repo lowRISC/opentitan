@@ -7,13 +7,13 @@
 
 #include <stddef.h>
 
-#include "sw/device/silicon_creator/lib/base/chip.h"
+#include "sw/lib/sw/device/silicon_creator/base/chip.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
-#include "sw/device/silicon_creator/lib/epmp_state.h"
-#include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
-#include "sw/device/silicon_creator/lib/sigverify/rsa_key.h"
-#include "sw/device/silicon_creator/lib/sigverify/spx_key.h"
+#include "sw/lib/sw/device/silicon_creator/epmp_state.h"
+#include "sw/lib/sw/device/silicon_creator/error.h"
+#include "sw/lib/sw/device/silicon_creator/keymgr_binding_value.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/rsa_key.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/spx_key.h"
 #include "sw/lib/sw/device/base/macros.h"
 
 #ifdef __cplusplus

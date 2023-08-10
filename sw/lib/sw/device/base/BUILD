@@ -152,11 +152,11 @@ cc_test(
 dual_cc_library(
     name = "csr",
     srcs = dual_inputs(
-        host = ["//sw/device/silicon_creator/lib/base:mock_csr.cc"],
+        host = ["//sw/lib/sw/device/silicon_creator/base:mock_csr.cc"],
     ),
     hdrs = dual_inputs(
         host = [
-            "//sw/device/silicon_creator/lib/base:mock_csr.h",
+            "//sw/lib/sw/device/silicon_creator/base:mock_csr.h",
         ],
         shared = [
             "csr.h",
@@ -177,7 +177,7 @@ dual_cc_library(
 
 cc_test(
     name = "mock_csr_unittest",
-    srcs = ["//sw/device/silicon_creator/lib/base:mock_csr_test.cc"],
+    srcs = ["//sw/lib/sw/device/silicon_creator/base:mock_csr_test.cc"],
     deps = [
         ":csr",
         "@googletest//:gtest_main",
@@ -258,9 +258,9 @@ cc_library(
     deps = [
         ":bitfield",
         ":macros",
-        "//sw/device/silicon_creator/lib:error",
         "//sw/ip/base/dif:base",
         "//sw/lib/sw/device/base/internal:status",
+        "//sw/lib/sw/device/silicon_creator:error",
     ],
 )
 

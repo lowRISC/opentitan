@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/lib/shutdown.h"
+#include "sw/lib/sw/device/silicon_creator/shutdown.h"
 
 #include <assert.h>
 
-#include "sw/device/silicon_creator/lib/chip_info.h"
+#include "sw/lib/sw/device/silicon_creator/chip_info.h"
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
-#include "sw/device/silicon_creator/lib/epmp_defs.h"
+#include "sw/lib/sw/device/silicon_creator/epmp_defs.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"
 #include "sw/lib/sw/device/base/bitfield.h"

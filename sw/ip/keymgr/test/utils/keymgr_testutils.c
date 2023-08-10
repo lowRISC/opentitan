@@ -5,7 +5,6 @@
 #include "sw/ip/keymgr/test/utils/keymgr_testutils.h"
 
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
 #include "sw/ip/flash_ctrl/driver/flash_ctrl.h"
@@ -23,6 +22,7 @@
 #include "sw/ip/rstmgr/test/utils/rstmgr_testutils.h"
 #include "sw/lib/sw/device/runtime/ibex.h"
 #include "sw/lib/sw/device/runtime/log.h"
+#include "sw/lib/sw/device/silicon_creator/base/chip.h"
 
 enum {
   /** Flash Secret partition ID. */

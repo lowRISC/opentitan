@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/silicon_creator/lib/sigverify/rsa_verify.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/rsa_verify.h"
 
 static const char kMessage[] = "test message";
 

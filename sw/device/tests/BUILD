@@ -2047,7 +2047,7 @@ opentitan_functest(
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/examples/sram_program",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:epmp_state",
+        "//sw/lib/sw/device/silicon_creator:epmp_state",
         "//sw/lib/sw/device/base:csr",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/runtime:log",
@@ -2315,7 +2315,7 @@ opentitan_functest(
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:epmp_state",
+        "//sw/lib/sw/device/silicon_creator:epmp_state",
         "//sw/lib/sw/device/base:csr",
         "//sw/lib/sw/device/base:memory",
         "//sw/lib/sw/device/base:mmio",

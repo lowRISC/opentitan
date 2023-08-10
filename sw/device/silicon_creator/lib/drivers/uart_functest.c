@@ -7,7 +7,7 @@
 
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
-#include "sw/device/silicon_creator/lib/error.h"
+#include "sw/lib/sw/device/silicon_creator/error.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/runtime/print.h"
 

@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/lib/rom_print.h"
+#include "sw/lib/sw/device/silicon_creator/rom_print.h"
 
 #include "gtest/gtest.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
-#include "sw/device/silicon_creator/lib/error.h"
+#include "sw/lib/sw/device/silicon_creator/error.h"
 
 namespace rom_printf_unittest {
 // We don't use a mock here since it'd be overkill; expectations are easier

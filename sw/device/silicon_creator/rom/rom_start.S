@@ -5,7 +5,7 @@
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling_memory.h"
 #include "sw/lib/sw/device/base/hardened_asm.h"
 #include "sw/lib/sw/device/base/multibits_asm.h"
-#include "sw/device/silicon_creator/lib/base/chip.h"
+#include "sw/lib/sw/device/silicon_creator/base/chip.h"
 #include "aon_timer_regs.h"
 #include "ast_regs.h"
 #include "clkmgr_regs.h"

@@ -7,8 +7,8 @@
 
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
-#include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/sigverify/rsa_key.h"
+#include "sw/lib/sw/device/silicon_creator/error.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/rsa_key.h"
 
 #ifdef __cplusplus
 extern "C" {

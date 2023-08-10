@@ -98,7 +98,7 @@ otp_json(
                 ]),
                 # Disable SPX+ signature verification. See the definitions of
                 # `kSigverifySpxDisabledOtp` and `kSigverifySpxEnabledOtp` in
-                # sw/device/silicon_creator/lib/sigverify/spx_verify.h.
+                # sw/lib/sw/device/silicon_creator/sigverify/spx_verify.h.
                 "CREATOR_SW_CFG_SIGVERIFY_SPX_EN": otp_hex(0x8d6c8c17),
                 # Enable use of entropy for countermeasures. See the definition
                 # of `hardened_bool_t` in sw/lib/sw/device/base/hardened.h.

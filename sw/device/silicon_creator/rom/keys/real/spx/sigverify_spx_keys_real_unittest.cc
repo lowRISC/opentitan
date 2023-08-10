@@ -5,7 +5,7 @@
 #include <unordered_set>
 
 #include "sw/device/silicon_creator/rom/sigverify_keys_spx.h"
-#include "sw/device/silicon_creator/testing/rom_test.h"
+#include "sw/lib/sw/device/silicon_creator/testing/rom_test.h"
 
 namespace sigverify_spx_keys_fake_unittest {
 namespace {

@@ -1,7 +1,7 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-#include "sw/device/silicon_creator/manuf/lib/individualize.h"
+#include "sw/lib/sw/device/silicon_creator/manuf/individualize.h"
 
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"

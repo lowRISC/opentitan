@@ -6,16 +6,16 @@
 
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/silicon_creator/lib/base/boot_measurements.h"
-#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
+#include "sw/lib/sw/device/silicon_creator/base/boot_measurements.h"
+#include "sw/lib/sw/device/silicon_creator/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
-#include "sw/device/silicon_creator/lib/manifest.h"
-#include "sw/device/silicon_creator/lib/manifest_def.h"
 #include "sw/ip/keymgr/dif/dif_keymgr.h"
 #include "sw/ip/keymgr/test/utils/keymgr_testutils.h"
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/ibex.h"
 #include "sw/lib/sw/device/runtime/log.h"
+#include "sw/lib/sw/device/silicon_creator/manifest.h"
+#include "sw/lib/sw/device/silicon_creator/manifest_def.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"  // Generated

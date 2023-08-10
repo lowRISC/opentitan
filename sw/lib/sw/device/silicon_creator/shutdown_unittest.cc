@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/lib/shutdown.h"
+#include "sw/lib/sw/device/silicon_creator/shutdown.h"
 
 #include <array>
 
@@ -10,8 +10,8 @@
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_alert.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
-#include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/testing/rom_test.h"
+#include "sw/lib/sw/device/silicon_creator/error.h"
+#include "sw/lib/sw/device/silicon_creator/testing/rom_test.h"
 #include "sw/lib/sw/device/base/global_mock.h"
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/base/mmio.h"

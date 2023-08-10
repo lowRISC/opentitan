@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/lib/epmp_defs.h"
+#include "sw/lib/sw/device/silicon_creator/epmp_defs.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling_memory.h"
 

@@ -5,11 +5,11 @@
 #include "sw/device/silicon_creator/rom/boot_policy.h"
 
 #include "gtest/gtest.h"
-#include "sw/device/silicon_creator/lib/base/chip.h"
-#include "sw/device/silicon_creator/lib/mock_manifest.h"
-#include "sw/device/silicon_creator/lib/mock_shutdown.h"
+#include "sw/lib/sw/device/silicon_creator/base/chip.h"
+#include "sw/lib/sw/device/silicon_creator/mock_manifest.h"
+#include "sw/lib/sw/device/silicon_creator/mock_shutdown.h"
 #include "sw/device/silicon_creator/rom/mock_boot_policy_ptrs.h"
-#include "sw/device/silicon_creator/testing/rom_test.h"
+#include "sw/lib/sw/device/silicon_creator/testing/rom_test.h"
 
 namespace manifest_unittest {
 namespace {

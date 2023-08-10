@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include "sw/device/lib/testing/test_framework/status.h"
-#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
+#include "sw/lib/sw/device/silicon_creator/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
-#include "sw/device/silicon_creator/lib/epmp_test_unlock.h"
+#include "sw/lib/sw/device/silicon_creator/epmp_test_unlock.h"
 #include "sw/device/silicon_creator/rom/rom_epmp.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
 #include "sw/ip/pinmux/test/utils/pinmux_testutils.h"

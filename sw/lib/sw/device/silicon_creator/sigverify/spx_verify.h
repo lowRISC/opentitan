@@ -6,8 +6,8 @@
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_SPX_VERIFY_H_
 
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
-#include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/sigverify/spx_key.h"
+#include "sw/lib/sw/device/silicon_creator/error.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/spx_key.h"
 
 #ifdef __cplusplus
 extern "C" {

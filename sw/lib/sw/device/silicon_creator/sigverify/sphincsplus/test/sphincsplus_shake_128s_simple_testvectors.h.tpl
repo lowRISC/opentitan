@@ -8,7 +8,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_SPHINCSPLUS_TEST_SPHINCSPLUS_SHAKE_128S_SIMPLE_TESTVECTORS_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_SPHINCSPLUS_TEST_SPHINCSPLUS_SHAKE_128S_SIMPLE_TESTVECTORS_H_
 
-#include "sw/device/silicon_creator/lib/sigverify/sphincsplus/params.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/params.h"
 
 #ifdef __cplusplus
 extern "C" {

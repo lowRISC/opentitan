@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/silicon_creator/lib/manifest_def.h"
+#include "sw/lib/sw/device/silicon_creator/manifest_def.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -17,6 +17,7 @@ bool test_main(void) {
   // Wait in a loop so that OpenOCD can connect to the TAP without the ROM
   // resetting the chip.
   while (1) {
+    // Do nothing
   }
   return true;
 }

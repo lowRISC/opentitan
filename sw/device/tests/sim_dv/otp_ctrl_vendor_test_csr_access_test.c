@@ -4,12 +4,12 @@
 
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
-#include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/ip/lc_ctrl/dif/dif_lc_ctrl.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/log.h"
+#include "sw/lib/sw/device/silicon_creator/base/chip.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 

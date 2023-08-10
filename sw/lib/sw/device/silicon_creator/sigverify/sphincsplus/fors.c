@@ -5,12 +5,12 @@
 // Derived from code in the SPHINCS+ reference implementation (CC0 license):
 // https://github.com/sphincs/sphincsplus/blob/ed15dd78658f63288c7492c00260d86154b84637/ref/fors.h
 
-#include "sw/device/silicon_creator/lib/sigverify/sphincsplus/fors.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/fors.h"
 
-#include "sw/device/silicon_creator/lib/sigverify/sphincsplus/address.h"
-#include "sw/device/silicon_creator/lib/sigverify/sphincsplus/hash.h"
-#include "sw/device/silicon_creator/lib/sigverify/sphincsplus/thash.h"
-#include "sw/device/silicon_creator/lib/sigverify/sphincsplus/utils.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/address.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/hash.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/thash.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/utils.h"
 
 /**
  * Get the leaf value from the FORS secret key.

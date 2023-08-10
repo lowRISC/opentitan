@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/manuf/lib/isolated_flash_partition.h"
+#include "sw/lib/sw/device/silicon_creator/manuf/isolated_flash_partition.h"
 
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
 #include "sw/ip/flash_ctrl/test/utils/flash_ctrl_testutils.h"

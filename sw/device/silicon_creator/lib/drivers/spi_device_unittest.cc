@@ -10,8 +10,8 @@
 
 #include "gtest/gtest.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_lifecycle.h"
-#include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/testing/rom_test.h"
+#include "sw/lib/sw/device/silicon_creator/error.h"
+#include "sw/lib/sw/device/silicon_creator/testing/rom_test.h"
 #include "sw/lib/sw/device/base/mock_abs_mmio.h"
 
 #include "flash_ctrl_regs.h"

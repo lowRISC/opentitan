@@ -5,7 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_TEST_WAFER_AUTH_SECRET_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_TEST_WAFER_AUTH_SECRET_H_
 
-#include "sw/device/silicon_creator/manuf/lib/isolated_flash_partition.h"
+#include "sw/lib/sw/device/silicon_creator/manuf/isolated_flash_partition.h"
 
 // Expected wafer authentication secret to write to the flash
 const uint32_t kExpectedWaferAuthSecret[kWaferAuthSecretSizeInWords] = {

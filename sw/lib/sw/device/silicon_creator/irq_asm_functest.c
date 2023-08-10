@@ -9,7 +9,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
-#include "sw/device/silicon_creator/lib/error.h"
 #include "sw/ip/rstmgr/test/utils/rstmgr_testutils.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"
@@ -18,6 +17,7 @@
 #include "sw/lib/sw/device/runtime/hart.h"
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/runtime/print.h"
+#include "sw/lib/sw/device/silicon_creator/error.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 

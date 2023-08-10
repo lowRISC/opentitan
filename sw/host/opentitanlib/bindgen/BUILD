@@ -118,8 +118,8 @@ rust_bindgen_library(
     bindgen_flags = [
         "--allowlist-var=SRAM_MAGIC_SP_.*",
     ],
-    cc_lib = "//sw/device/silicon_creator/manuf/lib:sram_start_headers",
-    header = "//sw/device/silicon_creator/manuf/lib:sram_start.h",
+    cc_lib = "//sw/lib/sw/device/silicon_creator/manuf:sram_start_headers",
+    header = "//sw/lib/sw/device/silicon_creator/manuf:sram_start.h",
     rustc_flags = [
         "--allow=non_snake_case",
         "--allow=non_upper_case_globals",

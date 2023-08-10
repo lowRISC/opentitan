@@ -4,9 +4,9 @@
 
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/silicon_creator/manuf/lib/individualize_preop.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
 #include "sw/lib/sw/device/base/status.h"
+#include "sw/lib/sw/device/silicon_creator/manuf/individualize_preop.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"  // Generated

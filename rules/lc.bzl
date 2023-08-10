@@ -41,7 +41,7 @@ lc_raw_unlock_token = rule(
     attrs = {
         "src": attr.label(
             allow_single_file = [".rs.tpl"],
-            default = "//sw/device/silicon_creator/manuf/data:lc_raw_unlock_token.rs.tpl",
+            default = "//sw/lib/sw/device/silicon_creator/manuf/data:lc_raw_unlock_token.rs.tpl",
             doc = "Life-cycle state definition file in Hjson format.",
         ),
         "lc_state_def": attr.label(
@@ -51,7 +51,7 @@ lc_raw_unlock_token = rule(
         ),
         "lc_raw_unlock_rust_template": attr.label(
             allow_single_file = True,
-            default = "//sw/device/silicon_creator/manuf/data:lc_raw_unlock_token.rs.tpl",
+            default = "//sw/lib/sw/device/silicon_creator/manuf/data:lc_raw_unlock_token.rs.tpl",
             doc = "Life-cycle state definition file in Hjson format.",
         ),
         "lc_seed": attr.label(

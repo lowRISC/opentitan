@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/lib/crc32.h"
+#include "sw/lib/sw/device/silicon_creator/crc32.h"
 
 #include <cstring>
 #include <stdint.h>

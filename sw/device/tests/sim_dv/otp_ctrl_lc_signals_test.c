@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
-#include "sw/device/silicon_creator/lib/base/chip.h"
+#include "sw/lib/sw/device/silicon_creator/base/chip.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/ip/keymgr/dif/dif_keymgr.h"
 #include "sw/ip/keymgr/test/utils/keymgr_testutils.h"

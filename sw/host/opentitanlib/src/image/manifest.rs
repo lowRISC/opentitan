@@ -5,7 +5,7 @@
 //! Structs for reading and writing manifests of flash boot stage images.
 //!
 //! Note: The structs below must match the definitions in
-//! sw/device/silicon_creator/lib/manifest.h.
+//! sw/lib/sw/device/silicon_creator/manifest.h.
 
 #![deny(warnings)]
 #![deny(unused)]
@@ -21,8 +21,8 @@ use zerocopy::FromBytes;
 //   bindgen --allowlist-type manifest_t --allowlist-var "MANIFEST_.*" \
 //      --allowlist-var "CHIP_.*" \
 //      --no-doc-comments --no-layout-tests \
-//      sw/device/silicon_creator/lib/manifest.h \
-//      sw/device/silicon_creator/lib/base/chip.h \
+//      sw/lib/sw/device/silicon_creator/manifest.h \
+//      sw/lib/sw/device/silicon_creator/base/chip.h \
 //      -- -I./ -Isw/lib/sw/device/base/freestanding
 // TODO: Generate some constants as hex if possible, replacing manually for now.
 

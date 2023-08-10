@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "sw/device/silicon_creator/lib/manifest.h"
+#include "sw/lib/sw/device/silicon_creator/manifest.h"
 #include "sw/lib/sw/device/base/macros.h"
 
 /**

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 
-#include "sw/device/silicon_creator/lib/crc32.h"
+#include "sw/lib/sw/device/silicon_creator/crc32.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"
 #include "sw/lib/sw/device/base/csr.h"

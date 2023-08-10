@@ -5,8 +5,8 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_EXT_ROM_EXT_BOOT_POLICY_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_EXT_ROM_EXT_BOOT_POLICY_H_
 
-#include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/manifest.h"
+#include "sw/lib/sw/device/silicon_creator/error.h"
+#include "sw/lib/sw/device/silicon_creator/manifest.h"
 
 #ifdef __cplusplus
 extern "C" {

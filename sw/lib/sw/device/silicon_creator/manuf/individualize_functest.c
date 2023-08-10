@@ -4,13 +4,13 @@
 
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/silicon_creator/manuf/lib/individualize.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
 #include "sw/ip/lc_ctrl/dif/dif_lc_ctrl.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
 #include "sw/ip/rstmgr/dif/dif_rstmgr.h"
 #include "sw/ip/rstmgr/test/utils/rstmgr_testutils.h"
 #include "sw/lib/sw/device/base/status.h"
+#include "sw/lib/sw/device/silicon_creator/manuf/individualize.h"
 
 #include "flash_ctrl_regs.h"  // Generated
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"

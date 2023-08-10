@@ -16,7 +16,7 @@ ld_library(
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling_memory",
         "//sw/device:info_sections",
-        "//sw/device/silicon_creator/lib/base:static_critical_sections",
+        "//sw/lib/sw/device/silicon_creator/base:static_critical_sections",
     ],
 )
 
@@ -45,10 +45,10 @@ cc_library(
         "//hw/ip/spi_device/data:spi_device_regs",
         "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/silicon_creator/lib/base:chip",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:multibits",
+        "//sw/lib/sw/device/silicon_creator/base:chip",
+        "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
         "//sw/top_darjeeling/sw/dif:rstmgr_intf",
     ],
 )
@@ -77,7 +77,7 @@ alias(
 cc_library(
     name = "english_breakfast_test_rom_manifest",
     srcs = [
-        "//sw/device/silicon_creator/lib:english_breakfast_test_rom_manifest_srcs",
+        "//sw/lib/sw/device/silicon_creator:english_breakfast_test_rom_manifest_srcs",
         "//sw/device/silicon_creator/lib/drivers:english_breakfast_test_rom_driver_srcs",
     ],
     # This should be built only for english breakfast and skipped if using wildcards.
@@ -87,16 +87,16 @@ cc_library(
         "//hw/ip/spi_device/data:spi_device_regs",
         "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/silicon_creator/lib:epmp_state",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:keymgr_binding",
-        "//sw/device/silicon_creator/lib/base:chip",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-        "//sw/device/silicon_creator/lib/sigverify:rsa_key",
-        "//sw/device/silicon_creator/lib/sigverify:spx_key",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/base:multibits",
+        "//sw/lib/sw/device/silicon_creator:epmp_state",
+        "//sw/lib/sw/device/silicon_creator:error",
+        "//sw/lib/sw/device/silicon_creator:keymgr_binding",
+        "//sw/lib/sw/device/silicon_creator/base:chip",
+        "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
+        "//sw/lib/sw/device/silicon_creator/sigverify:rsa_key",
+        "//sw/lib/sw/device/silicon_creator/sigverify:spx_key",
     ],
 )
 
@@ -104,7 +104,7 @@ alias(
     name = "test_rom_manifest",
     actual = select({
         "//sw/device:is_english_breakfast": ":english_breakfast_test_rom_manifest",
-        "//conditions:default": "//sw/device/silicon_creator/lib:manifest",
+        "//conditions:default": "//sw/lib/sw/device/silicon_creator:manifest",
     }),
 )
 
@@ -129,9 +129,6 @@ cc_library(
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
-        "//sw/device/silicon_creator/lib:chip_info",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-        "//sw/device/silicon_creator/lib/base:static_critical",
         "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:bitfield",
@@ -139,6 +136,9 @@ cc_library(
         "//sw/lib/sw/device/crt",
         "//sw/lib/sw/device/runtime:hart",
         "//sw/lib/sw/device/runtime:log",
+        "//sw/lib/sw/device/silicon_creator:chip_info",
+        "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
+        "//sw/lib/sw/device/silicon_creator/base:static_critical",
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:clkmgr",
         "//sw/top_darjeeling/sw/dif:flash_ctrl",

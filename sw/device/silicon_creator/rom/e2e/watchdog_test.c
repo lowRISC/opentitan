@@ -6,7 +6,7 @@
 
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
-#include "sw/device/silicon_creator/lib/manifest_def.h"
+#include "sw/lib/sw/device/silicon_creator/manifest_def.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"
 #include "sw/lib/sw/device/runtime/log.h"
 

@@ -23,7 +23,7 @@ class TestGenerateChipInfoCSource(unittest.TestCase):
 //
 // --------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! ---------//
 
-#include "sw/device/silicon_creator/lib/chip_info.h"
+#include "sw/lib/sw/device/silicon_creator/chip_info.h"
 
 #include "sw/lib/sw/device/base/macros.h"
 
@@ -48,7 +48,7 @@ const chip_info_t kChipInfo = {
 //
 // --------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! ---------//
 
-#include "sw/device/silicon_creator/lib/chip_info.h"
+#include "sw/lib/sw/device/silicon_creator/chip_info.h"
 
 #include "sw/lib/sw/device/base/macros.h"
 

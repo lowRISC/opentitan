@@ -6,7 +6,7 @@
 
 #include <limits.h>
 
-#include "sw/device/silicon_creator/lib/error.h"
+#include "sw/lib/sw/device/silicon_creator/error.h"
 #include "sw/lib/sw/device/base/bitfield.h"
 #include "sw/lib/sw/device/base/hardened.h"
 #include "sw/lib/sw/device/base/multibits.h"

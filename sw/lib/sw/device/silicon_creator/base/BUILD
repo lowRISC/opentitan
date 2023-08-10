@@ -27,14 +27,14 @@ dual_cc_library(
     deps = dual_inputs(
         host = [
             "//sw/lib/sw/device/base:global_mock",
-            "//sw/device/silicon_creator/testing:rom_test",
+            "//sw/lib/sw/device/silicon_creator/testing:rom_test",
             "@googletest//:gtest",
         ],
         shared = [
-            "//sw/device/silicon_creator/lib:error",
             "//sw/lib/sw/device/base:abs_mmio",
             "//sw/lib/sw/device/base:hardened",
             "//sw/lib/sw/device/base:macros",
+            "//sw/lib/sw/device/silicon_creator:error",
         ],
     ),
 )
@@ -44,7 +44,7 @@ cc_test(
     srcs = ["sec_mmio_unittest.cc"],
     deps = [
         dual_cc_device_library_of(":sec_mmio"),
-        "//sw/device/silicon_creator/testing:rom_test",
+        "//sw/lib/sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -67,8 +67,8 @@ cc_library(
     srcs = ["boot_measurements.c"],
     hdrs = ["boot_measurements.h"],
     deps = [
-        "//sw/device/silicon_creator/lib:keymgr_binding",
         "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/silicon_creator:keymgr_binding",
     ],
 )
 
@@ -76,7 +76,7 @@ cc_library(
     name = "static_critical_epmp_state",
     srcs = ["static_critical_epmp_state.c"],
     deps = [
-        "//sw/device/silicon_creator/lib:epmp_state",
+        "//sw/lib/sw/device/silicon_creator:epmp_state",
     ],
     # This library provides a special symbol that the linker will find.
     # We want this to be a linker input to ensure the weak version in

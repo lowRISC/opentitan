@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/lib/sigverify/spx_verify.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/spx_verify.h"
 
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
-#include "sw/device/silicon_creator/lib/sigverify/sphincsplus/verify.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/verify.h"
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/base/memory.h"
 

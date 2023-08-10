@@ -8,9 +8,9 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_SPHINCSPLUS_HASH_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_SPHINCSPLUS_HASH_H_
 
-#include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/sigverify/sphincsplus/context.h"
-#include "sw/device/silicon_creator/lib/sigverify/sphincsplus/params.h"
+#include "sw/lib/sw/device/silicon_creator/error.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/context.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/params.h"
 #include "sw/lib/sw/device/base/macros.h"
 
 #ifdef __cplusplus

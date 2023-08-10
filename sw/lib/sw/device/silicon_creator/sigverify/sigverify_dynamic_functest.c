@@ -4,9 +4,9 @@
 
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
+#include "sw/lib/sw/device/silicon_creator/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
-#include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/sigverify.h"
 #include "sw/lib/sw/device/base/memory.h"
 
 // The autogen rule that creates this header creates it in a directory named

@@ -18,7 +18,7 @@ OTTF_DEFINE_TEST_CONFIG();
  * The `OWNER_SW_CFG_ROM_ALERT_DIGEST_<LC_STATE>` OTP word should match the
  * digest computed by XORing the CRC32 of the alert_handler registers with the
  * current lifecycle state and kErrorOk, as done in
- * `sw/device/silicon_creator/lib/shutdown.c:shutdown_init`.
+ * `sw/lib/sw/device/silicon_creator/shutdown.c:shutdown_init`.
  */
 static void alert_cfg_test(void) {
   uint32_t digest = alert_config_crc32() ^ lifecycle_state_get() ^ kErrorOk;

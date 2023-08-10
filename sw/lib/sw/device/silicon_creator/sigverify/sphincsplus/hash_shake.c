@@ -6,10 +6,10 @@
 // https://github.com/sphincs/sphincsplus/blob/ed15dd78658f63288c7492c00260d86154b84637/ref/hash_shake.c
 
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
-#include "sw/device/silicon_creator/lib/sigverify/sphincsplus/address.h"
-#include "sw/device/silicon_creator/lib/sigverify/sphincsplus/hash.h"
-#include "sw/device/silicon_creator/lib/sigverify/sphincsplus/params.h"
-#include "sw/device/silicon_creator/lib/sigverify/sphincsplus/utils.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/address.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/hash.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/params.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/utils.h"
 #include "sw/lib/sw/device/base/memory.h"
 
 enum {

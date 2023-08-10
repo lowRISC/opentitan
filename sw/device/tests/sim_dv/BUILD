@@ -1317,7 +1317,7 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ottf_test_config",
-        "//sw/device/silicon_creator/lib/base:chip",
+        "//sw/lib/sw/device/silicon_creator/base:chip",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/lib/sw/device/base:memory",
         "//sw/lib/sw/device/base:mmio",

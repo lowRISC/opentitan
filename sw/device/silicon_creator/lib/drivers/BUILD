@@ -38,15 +38,15 @@ dual_cc_library(
             "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         ],
         host = [
-            "//sw/device/silicon_creator/testing:rom_test",
+            "//sw/lib/sw/device/silicon_creator/testing:rom_test",
             "//sw/lib/sw/device/base:global_mock",
             "@googletest//:gtest",
         ],
         shared = [
             ":lifecycle",
             ":otp",
-            "//sw/device/silicon_creator/lib:crc32",
-            "//sw/device/silicon_creator/lib:error",
+            "//sw/lib/sw/device/silicon_creator:crc32",
+            "//sw/lib/sw/device/silicon_creator:error",
             "//sw/lib/sw/device/base:abs_mmio",
             "//sw/lib/sw/device/base:macros",
             "//sw/lib/sw/device/base:memory",
@@ -61,7 +61,7 @@ cc_test(
         dual_cc_device_library_of(":alert"),
         "//hw/top_darjeeling:alert_handler_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/silicon_creator/lib:crc32",
+        "//sw/lib/sw/device/silicon_creator:crc32",
         "@googletest//:gtest_main",
     ],
 )
@@ -97,7 +97,6 @@ cc_library(
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_darjeeling/ip/sensor_ctrl/data:sensor_ctrl_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/silicon_creator/lib:error",
         "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:bitfield",
@@ -105,6 +104,7 @@ cc_library(
         "//sw/lib/sw/device/base:hardened",
         "//sw/lib/sw/device/base:memory",
         "//sw/lib/sw/device/base:multibits",
+        "//sw/lib/sw/device/silicon_creator:error",
     ],
 )
 
@@ -113,7 +113,7 @@ cc_test(
     srcs = ["ast_unittest.cc"],
     deps = [
         ":ast",
-        "//sw/device/silicon_creator/testing:rom_test",
+        "//sw/lib/sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -134,21 +134,21 @@ dual_cc_library(
             "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         ],
         host = [
-            "//sw/device/silicon_creator/testing:rom_test",
+            "//sw/lib/sw/device/silicon_creator/testing:rom_test",
             "//sw/lib/sw/device/base:global_mock",
             "@googletest//:gtest",
         ],
         shared = [
             "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
             "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-            "//sw/device/silicon_creator/lib:error",
-            "//sw/device/silicon_creator/lib/base:sec_mmio",
             "//sw/device/silicon_creator/lib/drivers:otp",
             "//sw/lib/sw/device/base:abs_mmio",
             "//sw/lib/sw/device/base:bitfield",
             "//sw/lib/sw/device/base:hardened",
             "//sw/lib/sw/device/base:memory",
             "//sw/lib/sw/device/base:multibits",
+            "//sw/lib/sw/device/silicon_creator:error",
+            "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
         ],
     ),
 )
@@ -178,7 +178,7 @@ dual_cc_library(
             "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         ],
         host = [
-            "//sw/device/silicon_creator/testing:rom_test",
+            "//sw/lib/sw/device/silicon_creator/testing:rom_test",
             "//sw/lib/sw/device/base:global_mock",
             "@googletest//:gtest",
         ],
@@ -187,7 +187,7 @@ dual_cc_library(
             "//sw/lib/sw/device/base:bitfield",
             "//sw/lib/sw/device/base:hardened",
             "//sw/lib/sw/device/base:memory",
-            "//sw/device/silicon_creator/lib:error",
+            "//sw/lib/sw/device/silicon_creator:error",
         ],
     ),
 )
@@ -199,9 +199,9 @@ cc_test(
         dual_cc_device_library_of(":hmac"),
         "//hw/ip/hmac/data:hmac_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/testing:rom_test",
         "//sw/lib/sw/device/base:abs_mmio",
+        "//sw/lib/sw/device/silicon_creator:error",
+        "//sw/lib/sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -213,7 +213,7 @@ opentitan_functest(
         ":hmac",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:error",
+        "//sw/lib/sw/device/silicon_creator:error",
         "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
@@ -225,10 +225,10 @@ cc_library(
     deps = [
         "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/runtime:hart",
+        "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
     ],
 )
 
@@ -237,7 +237,7 @@ cc_test(
     srcs = ["ibex_unittest.cc"],
     deps = [
         ":ibex",
-        "//sw/device/silicon_creator/testing:rom_test",
+        "//sw/lib/sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -249,11 +249,11 @@ cc_library(
     deps = [
         "//hw/ip/keymgr/data:keymgr_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:keymgr_binding",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/silicon_creator:error",
+        "//sw/lib/sw/device/silicon_creator:keymgr_binding",
+        "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
     ],
 )
 
@@ -262,7 +262,7 @@ cc_test(
     srcs = ["keymgr_unittest.cc"],
     deps = [
         ":keymgr",
-        "//sw/device/silicon_creator/testing:rom_test",
+        "//sw/lib/sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -280,10 +280,10 @@ opentitan_functest(
         "//hw/ip/kmac/data:kmac_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:keymgr_binding",
-        "//sw/device/silicon_creator/lib/base:chip",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
+        "//sw/lib/sw/device/silicon_creator:error",
+        "//sw/lib/sw/device/silicon_creator:keymgr_binding",
+        "//sw/lib/sw/device/silicon_creator/base:chip",
+        "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:flash_ctrl",
         "//sw/top_darjeeling/sw/dif:kmac",
@@ -304,9 +304,9 @@ cc_library(
     deps = [
         "//hw/ip/kmac/data:kmac_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/silicon_creator/lib:error",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/silicon_creator:error",
     ],
 )
 
@@ -315,7 +315,7 @@ cc_test(
     srcs = ["kmac_unittest.cc"],
     deps = [
         ":kmac",
-        "//sw/device/silicon_creator/testing:rom_test",
+        "//sw/lib/sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -330,7 +330,7 @@ opentitan_functest(
         ":kmac",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:error",
+        "//sw/lib/sw/device/silicon_creator:error",
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/test/utils:entropy_testutils",
     ],
@@ -353,11 +353,11 @@ dual_cc_library(
         ],
         host = [
             "//sw/lib/sw/device/base:global_mock",
-            "//sw/device/silicon_creator/testing:rom_test",
+            "//sw/lib/sw/device/silicon_creator/testing:rom_test",
             "@googletest//:gtest",
         ],
         shared = [
-            "//sw/device/silicon_creator/lib/base:sec_mmio",
+            "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
             "//sw/lib/sw/device/base:bitfield",
             "//sw/lib/sw/device/base:hardened",
             "//sw/lib/sw/device/base:macros",
@@ -372,7 +372,7 @@ cc_test(
         dual_cc_device_library_of(":lifecycle"),
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/silicon_creator/testing:rom_test",
+        "//sw/lib/sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -384,11 +384,11 @@ cc_library(
     deps = [
         "//hw/ip/otbn/data:otbn_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:rnd",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:bitfield",
+        "//sw/lib/sw/device/silicon_creator:error",
+        "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
     ],
 )
 
@@ -397,7 +397,7 @@ cc_test(
     srcs = ["otbn_unittest.cc"],
     deps = [
         ":otbn",
-        "//sw/device/silicon_creator/testing:rom_test",
+        "//sw/lib/sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -418,12 +418,12 @@ dual_cc_library(
             "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         ],
         host = [
-            "//sw/device/silicon_creator/testing:rom_test",
+            "//sw/lib/sw/device/silicon_creator/testing:rom_test",
             "//sw/lib/sw/device/base:global_mock",
             "@googletest//:gtest",
         ],
         shared = [
-            "//sw/device/silicon_creator/lib/base:sec_mmio",
+            "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
             "//sw/lib/sw/device/base:hardened",
             "//sw/lib/sw/device/base:macros",
         ],
@@ -435,7 +435,7 @@ cc_test(
     srcs = ["otp_unittest.cc"],
     deps = [
         dual_cc_device_library_of(":otp"),
-        "//sw/device/silicon_creator/testing:rom_test",
+        "//sw/lib/sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -448,12 +448,12 @@ cc_library(
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_darjeeling/ip/pinmux/data/autogen:pinmux_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:csr",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/runtime:hart",
+        "//sw/lib/sw/device/silicon_creator/base:chip",
     ],
 )
 
@@ -463,11 +463,11 @@ cc_test(
     deps = [
         ":pinmux",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/silicon_creator/lib/base:chip",
-        "//sw/device/silicon_creator/testing:rom_test",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:csr",
         "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/silicon_creator/base:chip",
+        "//sw/lib/sw/device/silicon_creator/testing:rom_test",
         "//sw/top_darjeeling/sw/device/arch:sim_dv",
         "@googletest//:gtest_main",
     ],
@@ -480,10 +480,10 @@ cc_library(
     deps = [
         "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/silicon_creator/lib:error",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/base:memory",
+        "//sw/lib/sw/device/silicon_creator:error",
     ],
 )
 
@@ -493,8 +493,8 @@ cc_test(
     deps = [
         ":retention_sram",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/silicon_creator/testing:rom_test",
         "//sw/lib/sw/device/base:abs_mmio",
+        "//sw/lib/sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -509,7 +509,7 @@ opentitan_functest(
         ":retention_sram",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:error",
+        "//sw/lib/sw/device/silicon_creator:error",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/base:memory",
         "//sw/top_darjeeling/sw/device/runtime:print",
@@ -532,19 +532,19 @@ dual_cc_library(
             "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
             "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
             "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-            "//sw/device/silicon_creator/lib:crc32",
             "//sw/lib/sw/device/base:csr",
             "//sw/lib/sw/device/base:abs_mmio",
             "//sw/lib/sw/device/base:hardened",
+            "//sw/lib/sw/device/silicon_creator:crc32",
         ],
         host = [
-            "//sw/device/silicon_creator/testing:rom_test",
+            "//sw/lib/sw/device/silicon_creator/testing:rom_test",
             "//sw/lib/sw/device/base:global_mock",
             "@googletest//:gtest",
         ],
         shared = [
             ":lifecycle",
-            "//sw/device/silicon_creator/lib:error",
+            "//sw/lib/sw/device/silicon_creator:error",
             "//sw/lib/sw/device/base:macros",
         ],
     ),
@@ -559,13 +559,31 @@ cc_test(
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-        "//sw/device/silicon_creator/testing:rom_test",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:csr",
+        "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
+        "//sw/lib/sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
 )
+
+# TODO: Enable for Earlgrey
+#opentitan_functest(
+#    name = "rnd_functest",
+#    srcs = ["rnd_functest.c"],
+#    deps = [
+#        ":otp",
+#        ":rnd",
+#        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+#        "//sw/device/lib/testing/test_framework:ottf_main",
+#        "//sw/lib/sw/device/silicon_creator:crc32",
+#        "//sw/lib/sw/device/silicon_creator:error",
+#        "//sw/top_darjeeling/sw/device/runtime:print",
+#        "//sw/top_darjeeling/sw/dif:entropy_src",
+#        "//sw/top_darjeeling/sw/test/utils:entropy_testutils",
+#        "//sw/top_darjeeling/sw/test/utils:rand_testutils",
+#    ],
+#)
 
 dual_cc_library(
     name = "rstmgr",
@@ -583,14 +601,14 @@ dual_cc_library(
             "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         ],
         host = [
-            "//sw/device/silicon_creator/testing:rom_test",
+            "//sw/lib/sw/device/silicon_creator/testing:rom_test",
             "//sw/lib/sw/device/base:global_mock",
             "@googletest//:gtest",
         ],
         shared = [
             "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-            "//sw/device/silicon_creator/lib:error",
-            "//sw/device/silicon_creator/lib/base:sec_mmio",
+            "//sw/lib/sw/device/silicon_creator:error",
+            "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
             "//sw/device/silicon_creator/lib/drivers:otp",
             "//sw/lib/sw/device/base:bitfield",
             "//sw/lib/sw/device/base:macros",
@@ -605,7 +623,7 @@ cc_test(
     srcs = ["rstmgr_unittest.cc"],
     deps = [
         dual_cc_device_library_of(":rstmgr"),
-        "//sw/device/silicon_creator/testing:rom_test",
+        "//sw/lib/sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -631,10 +649,10 @@ cc_library(
     deps = [
         "//hw/ip/uart/data:uart_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/silicon_creator/lib:error",
         "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:bitfield",
+        "//sw/lib/sw/device/silicon_creator:error",
     ],
 )
 
@@ -644,8 +662,8 @@ cc_test(
     deps = [
         ":uart",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/silicon_creator/testing:rom_test",
         "//sw/lib/sw/device/base:abs_mmio",
+        "//sw/lib/sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -657,7 +675,7 @@ opentitan_functest(
         ":uart",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:error",
+        "//sw/lib/sw/device/silicon_creator:error",
         "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
@@ -671,10 +689,10 @@ cc_library(
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_darjeeling/ip/pwrmgr/data/autogen:pwrmgr_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/lib/sw/device/base:abs_mmio",
+        "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
     ],
 )
 
@@ -686,10 +704,10 @@ cc_test(
         "//hw/ip/aon_timer/data:aon_timer_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/device/silicon_creator/testing:rom_test",
+        "//sw/lib/sw/device/silicon_creator/testing:rom_test",
         "//sw/lib/sw/device/base:abs_mmio",
+        "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -706,8 +724,8 @@ opentitan_functest(
         ":watchdog",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
+        "//sw/lib/sw/device/silicon_creator:error",
+        "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
@@ -731,13 +749,13 @@ dual_cc_library(
             "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         ],
         host = [
-            "//sw/device/silicon_creator/testing:rom_test",
+            "//sw/lib/sw/device/silicon_creator/testing:rom_test",
             "//sw/lib/sw/device/base:global_mock",
             "@googletest//:gtest",
         ],
         shared = [
             ":lifecycle",
-            "//sw/device/silicon_creator/lib:error",
+            "//sw/lib/sw/device/silicon_creator:error",
             "//sw/lib/sw/device/base:abs_mmio",
             "//sw/lib/sw/device/base:memory",
         ],
@@ -753,9 +771,9 @@ cc_test(
         dual_cc_device_library_of(":spi_device"),
         "//hw/ip/spi_device/data:spi_device_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/testing:rom_test",
         "//sw/lib/sw/device/base:abs_mmio",
+        "//sw/lib/sw/device/silicon_creator:error",
+        "//sw/lib/sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -767,7 +785,7 @@ cc_library(
     deps = [
         "//hw/top_darjeeling/ip/pwrmgr/data/autogen:pwrmgr_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/lib/sw/device/base:abs_mmio",
+        "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
     ],
 )

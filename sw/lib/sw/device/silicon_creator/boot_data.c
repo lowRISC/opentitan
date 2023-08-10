@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/lib/boot_data.h"
+#include "sw/lib/sw/device/silicon_creator/boot_data.h"
 
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
+#include "sw/lib/sw/device/silicon_creator/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
-#include "sw/device/silicon_creator/lib/error.h"
+#include "sw/lib/sw/device/silicon_creator/error.h"
 #include "sw/lib/sw/device/base/hardened.h"
 #include "sw/lib/sw/device/base/memory.h"
 

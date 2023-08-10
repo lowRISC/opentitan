@@ -16,7 +16,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/status.h"
-#include "sw/device/silicon_creator/lib/manifest_def.h"
 #include "sw/ip/base/dif/dif_base.h"
 #include "sw/ip/rv_core_ibex/dif/dif_rv_core_ibex.h"
 #include "sw/ip/rv_core_ibex/test/utils/rand_testutils.h"
@@ -26,6 +25,7 @@
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/hart.h"
 #include "sw/lib/sw/device/runtime/log.h"
+#include "sw/lib/sw/device/silicon_creator/manifest_def.h"
 
 // TODO: make this toplevel agnostic.
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"

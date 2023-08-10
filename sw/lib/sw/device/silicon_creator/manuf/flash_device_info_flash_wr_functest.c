@@ -6,12 +6,12 @@
 
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/silicon_creator/manuf/lib/isolated_flash_partition.h"
-#include "sw/device/silicon_creator/manuf/lib/test_wafer_auth_secret.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
 #include "sw/ip/lc_ctrl/dif/dif_lc_ctrl.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/runtime/log.h"
+#include "sw/lib/sw/device/silicon_creator/manuf/isolated_flash_partition.h"
+#include "sw/lib/sw/device/silicon_creator/manuf/test_wafer_auth_secret.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 

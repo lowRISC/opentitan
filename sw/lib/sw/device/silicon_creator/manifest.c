@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/lib/manifest.h"
+#include "sw/lib/sw/device/silicon_creator/manifest.h"
 
-#include "sw/device/silicon_creator/lib/base/chip.h"
+#include "sw/lib/sw/device/silicon_creator/base/chip.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 

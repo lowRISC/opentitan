@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
+#include "sw/lib/sw/device/silicon_creator/keymgr_binding_value.h"
 #include "sw/lib/sw/device/base/macros.h"
 
 #ifdef __cplusplus

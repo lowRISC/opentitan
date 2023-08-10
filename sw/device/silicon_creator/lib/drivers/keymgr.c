@@ -6,7 +6,7 @@
 
 #include <assert.h>
 
-#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
+#include "sw/lib/sw/device/silicon_creator/base/sec_mmio.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"
 #include "sw/lib/sw/device/base/macros.h"
 

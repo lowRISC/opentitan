@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/silicon_creator/lib/epmp_state.h"
+#include "sw/lib/sw/device/silicon_creator/epmp_state.h"
 #include "sw/lib/sw/device/base/csr.h"
 #include "sw/lib/sw/device/runtime/hart.h"
 #include "sw/lib/sw/device/runtime/irq.h"

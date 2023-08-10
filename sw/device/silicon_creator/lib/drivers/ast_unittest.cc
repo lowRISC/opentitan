@@ -7,9 +7,9 @@
 #include <array>
 
 #include "gtest/gtest.h"
-#include "sw/device/silicon_creator/lib/base/mock_csr.h"
+#include "sw/lib/sw/device/silicon_creator/base/mock_csr.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
-#include "sw/device/silicon_creator/testing/rom_test.h"
+#include "sw/lib/sw/device/silicon_creator/testing/rom_test.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/mock_abs_mmio.h"
 #include "sw/lib/sw/device/base/multibits.h"

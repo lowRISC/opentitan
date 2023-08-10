@@ -144,7 +144,7 @@ impl AlertRegs {
     /// Create the set of alert_handler register values from a given lifecycle state and OTP.
     ///
     /// The internal fields of `AlertRegs` should match those produced on the device after
-    /// alert_handler is configured in `sw/device/silicon_creator/lib/shutdown.h:shutdown_init`.
+    /// alert_handler is configured in `sw/lib/sw/device/silicon_creator/shutdown.h:shutdown_init`.
     pub fn try_new<T: OtpRead>(lc_state: LcStateVal, otp: &T) -> Result<Self> {
         let mut alert = AlertRegs::default();
 
@@ -487,7 +487,7 @@ mod test {
     // A sanity test to make sure the correct CRC algorithm is being used.
     //
     // These values are taken from the CRC32 unit tests in
-    // `sw/device/silicon_creator/lib/crc32_unittest.cc`.
+    // `sw/lib/sw/device/silicon_creator/crc32_unittest.cc`.
     #[test]
     fn test_new_crc() {
         let crc = new_crc();

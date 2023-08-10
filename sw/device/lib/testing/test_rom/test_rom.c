@@ -4,13 +4,10 @@
 
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/status.h"
-#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
-#include "sw/device/silicon_creator/lib/chip_info.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #if !OT_IS_ENGLISH_BREAKFAST
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #endif
-#include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/rom/bootstrap.h"
 #include "sw/ip/base/dif/dif_base.h"
 #include "sw/ip/clkmgr/dif/dif_clkmgr.h"
@@ -30,6 +27,9 @@
 #include "sw/lib/sw/device/runtime/hart.h"
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/runtime/print.h"
+#include "sw/lib/sw/device/silicon_creator/base/sec_mmio.h"
+#include "sw/lib/sw/device/silicon_creator/chip_info.h"
+#include "sw/lib/sw/device/silicon_creator/manifest.h"
 
 #include "flash_ctrl_regs.h"
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"  // Generated.

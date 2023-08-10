@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/lib/boot_data.h"
+#include "sw/lib/sw/device/silicon_creator/boot_data.h"
 
 #include <array>
 #include <cstring>
@@ -11,7 +11,7 @@
 #include "sw/device/silicon_creator/lib/drivers/mock_flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
-#include "sw/device/silicon_creator/testing/rom_test.h"
+#include "sw/lib/sw/device/silicon_creator/testing/rom_test.h"
 
 #include "flash_ctrl_regs.h"
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"

@@ -124,7 +124,7 @@ def autogen_chip_info(name):
     native.cc_library(
         name = name,
         srcs = [chip_info_src_target],
-        hdrs = ["//sw/device/silicon_creator/lib:chip_info.h"],
+        hdrs = ["//sw/lib/sw/device/silicon_creator:chip_info.h"],
         deps = [
             "//sw/lib/sw/device/base:macros",
         ],

@@ -6,10 +6,6 @@
 
 #include "otp_img_sku_darjeeling_a0_stage_individualize.h"  // Generated.
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/device/silicon_creator/manuf/lib/individualize_preop.h"
-#include "sw/device/silicon_creator/manuf/lib/isolated_flash_partition.h"
-#include "sw/device/silicon_creator/manuf/lib/otp_img.h"
-#include "sw/device/silicon_creator/manuf/lib/test_wafer_auth_secret.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
 #include "sw/ip/lc_ctrl/dif/dif_lc_ctrl.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
@@ -19,6 +15,10 @@
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/runtime/print.h"
+#include "sw/lib/sw/device/silicon_creator/manuf/individualize_preop.h"
+#include "sw/lib/sw/device/silicon_creator/manuf/isolated_flash_partition.h"
+#include "sw/lib/sw/device/silicon_creator/manuf/otp_img.h"
+#include "sw/lib/sw/device/silicon_creator/manuf/test_wafer_auth_secret.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"  // Generated.

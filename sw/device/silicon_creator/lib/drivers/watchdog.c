@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 
-#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
+#include "sw/lib/sw/device/silicon_creator/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"

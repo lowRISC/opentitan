@@ -29,7 +29,7 @@ dual_cc_library(
         ],
         host = [
             "//sw/lib/sw/device/base:global_mock",
-            "//sw/device/silicon_creator/testing:rom_test",
+            "//sw/lib/sw/device/silicon_creator/testing:rom_test",
             "@googletest//:gtest",
         ],
         shared = [
@@ -105,7 +105,7 @@ cc_test(
     srcs = ["epmp_unittest.cc"],
     deps = [
         ":epmp_state",
-        "//sw/device/silicon_creator/testing:rom_test",
+        "//sw/lib/sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -217,7 +217,7 @@ dual_cc_library(
             "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         ],
         host = [
-            "//sw/device/silicon_creator/testing:rom_test",
+            "//sw/lib/sw/device/silicon_creator/testing:rom_test",
             "//sw/lib/sw/device/base:global_mock",
             "@googletest//:gtest",
         ],
@@ -226,9 +226,9 @@ dual_cc_library(
             ":error",
             ":keymgr_binding",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
-            "//sw/device/silicon_creator/lib/sigverify:rsa_key",
-            "//sw/device/silicon_creator/lib/sigverify:spx_key",
-            "//sw/device/silicon_creator/lib/base:chip",
+            "//sw/lib/sw/device/silicon_creator/sigverify:rsa_key",
+            "//sw/lib/sw/device/silicon_creator/sigverify:spx_key",
+            "//sw/lib/sw/device/silicon_creator/base:chip",
             "//sw/lib/sw/device/base:macros",
         ],
     ),
@@ -262,7 +262,7 @@ cc_test(
     local_defines = ["MANIFEST_UNIT_TEST_"],
     deps = [
         dual_cc_device_library_of(":manifest"),
-        "//sw/device/silicon_creator/testing:rom_test",
+        "//sw/lib/sw/device/silicon_creator/testing:rom_test",
         "//sw/lib/sw/device/base:csr",
         "@googletest//:gtest_main",
     ],
@@ -290,7 +290,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         host = [
-            "//sw/device/silicon_creator/testing:rom_test",
+            "//sw/lib/sw/device/silicon_creator/testing:rom_test",
             "//sw/lib/sw/device/base:global_mock",
             "@googletest//:gtest",
         ],
@@ -329,7 +329,7 @@ cc_test(
     srcs = ["shutdown_unittest.cc"],
     deps = [
         dual_cc_device_library_of(":shutdown"),
-        "//sw/device/silicon_creator/testing:rom_test",
+        "//sw/lib/sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -363,7 +363,7 @@ cc_test(
     srcs = ["crc32_unittest.cc"],
     deps = [
         dual_cc_device_library_of(":crc32"),
-        "//sw/device/silicon_creator/testing:rom_test",
+        "//sw/lib/sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
 )

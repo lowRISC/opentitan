@@ -5,8 +5,8 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_MOCK_BOOT_DATA_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_MOCK_BOOT_DATA_H_
 
-#include "sw/device/silicon_creator/lib/boot_data.h"
-#include "sw/device/silicon_creator/testing/rom_test.h"
+#include "sw/lib/sw/device/silicon_creator/boot_data.h"
+#include "sw/lib/sw/device/silicon_creator/testing/rom_test.h"
 #include "sw/lib/sw/device/base/global_mock.h"
 
 namespace rom_test {

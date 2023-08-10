@@ -11,7 +11,7 @@ ${fileheader}
 
 // See the following include file for details on the types used in this header
 // file.
-#include "sw/device/silicon_creator/manuf/lib/otp_img_types.h"
+#include "sw/lib/sw/device/silicon_creator/manuf/otp_img_types.h"
 
 #include "otp_ctrl_regs.h"
 

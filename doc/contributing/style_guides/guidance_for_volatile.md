@@ -112,7 +112,7 @@ See `hardened.h` for the hardening primitives we have.
 ### `const` and Non-`const` Variables Initialized Outside the Lifetime of a Program
 
 There are several cases in OpenTitan silicon creator code where a variable with static storage duration is initialized either partially or completely in a way that isn’t visible to the C source code overriding the static initializer of the C object.
-A `const` example to this case is the definition of `kManifest` in `sw/device/silicon_creator/lib/manifest_def.c`.
+A `const` example to this case is the definition of `kManifest` in `sw/lib/sw/device/silicon_creator/manifest_def.c`.
 `kManifest` is an aggregate object of type `manifest_t` that resides in flash memory whose actual value at runtime is different from the initializer in source code because the binary is modified by the build system before it is loaded into flash memory.
 Non-`const` examples include the `struct`s in the `static_critical` section of the main SRAM.
 
