@@ -150,14 +150,12 @@ supply of entropy can be delivered to the endpoints. Reseed commands will be sen
 on a programmable basic between generate commands.
 The [`GENERATE_CMD`](#generate_cmd), [`RESEED_CMD`](#reseed_cmd), and [`MAX_NUM_REQS_BETWEEN_RESEEDS`](#max_num_reqs_between_reseeds) registers must
 set up before the [`SW_CMD_REQ`](#sw_cmd_req) register command is issued.
- 
 
 ### CTRL . BOOT_REQ_MODE
 Setting this field to kMultiBitBool4True will enable the feature where the EDN block
 will automatically send a boot-time request to the CSRNG application interface.
 The purpose of this feature is to request entropy as fast as possible after reset,
 and during chip boot-time.
- 
 
 ### CTRL . EDN_ENABLE
 Setting this field to kMultiBitBool4True enables the EDN module. The modules of the

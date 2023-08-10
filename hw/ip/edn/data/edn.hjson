@@ -141,7 +141,7 @@
                 will automatically send a boot-time request to the CSRNG application interface.
                 The purpose of this feature is to request entropy as fast as possible after reset,
                 and during chip boot-time.
-                 '''
+                '''
           resval: false
         },
         { bits: "11:8",
@@ -158,7 +158,7 @@
                 on a programmable basic between generate commands.
                 The !!GENERATE_CMD, !!RESEED_CMD, and !!MAX_NUM_REQS_BETWEEN_RESEEDS registers must
                 set up before the !!SW_CMD_REQ register command is issued.
-                 '''
+                '''
           resval: false
         },
         { bits: "15:12",
