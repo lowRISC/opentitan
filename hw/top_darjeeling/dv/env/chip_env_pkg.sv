@@ -44,8 +44,6 @@ package chip_env_pkg;
   import xbar_env_pkg::*;
   import top_darjeeling_pkg::*;
   import top_darjeeling_rnd_cnst_pkg::*;
-  import pwm_monitor_pkg::*;
-  import pwm_reg_pkg::NOutputs;
   import tl_main_pkg::ADDR_SPACE_RV_CORE_IBEX__CFG;
   import rv_core_ibex_reg_pkg::RV_CORE_IBEX_DV_SIM_WINDOW_OFFSET;
   import i2c_agent_pkg::*;

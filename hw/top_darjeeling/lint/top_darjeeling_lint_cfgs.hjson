@@ -96,11 +96,6 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/otbn/lint/{tool}"
              },
-             {    name: pwm
-                  fusesoc_core: lowrisc:ip:pwm
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/pwm/lint/{tool}"
-             },
              {    name: rom_ctrl
                   fusesoc_core: lowrisc:ip:rom_ctrl
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]

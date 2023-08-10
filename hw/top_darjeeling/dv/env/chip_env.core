@@ -27,7 +27,6 @@ filesets:
       - lowrisc:dv:sw_test_status
       - lowrisc:dv:sw_logger_if
       - lowrisc:dv:uart_agent
-      - lowrisc:dv:pwm_monitor
       - lowrisc:dv:i2c_agent
       - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:ip:pwrmgr_pkg
@@ -74,7 +73,6 @@ filesets:
       - seq_lib/chip_sw_sleep_pin_mio_dio_val_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_sleep_pin_wake_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_sleep_pin_retention_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_sw_pwm_pulses_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_uart_tx_rx_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_uart_rand_baudrate_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_sysrst_ctrl_inputs_vseq.sv: {is_include_file: true}
@@ -140,8 +138,6 @@ filesets:
       - seq_lib/chip_sw_rom_e2e_asm_init_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_rom_e2e_jtag_debug_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_rom_e2e_jtag_inject_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_sw_power_idle_load_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_sw_power_sleep_load_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_power_virus_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_ast_clk_rst_inputs_vseq.sv: {is_include_file: true}
       - autogen/chip_env_pkg__params.sv: {is_include_file: true}

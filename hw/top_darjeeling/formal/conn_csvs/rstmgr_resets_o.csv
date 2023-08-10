@@ -54,8 +54,6 @@ CONNECTION, RSTMGR_LC_IO_DIV4_AON_LCRST_CTRL_RST_NI, top_darjeeling.u_rstmgr_aon
 CONNECTION, RSTMGR_LC_AON_AON_LCRST_CTRL_RST_AON_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_lc_aon_n[0], top_darjeeling.u_sysrst_ctrl_aon, rst_aon_ni
 CONNECTION, RSTMGR_LC_IO_DIV4_AON_ADC_CTRL_RST_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_lc_io_div4_n[0], top_darjeeling.u_adc_ctrl_aon, rst_ni
 CONNECTION, RSTMGR_LC_AON_AON_ADC_CTRL_RST_AON_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_lc_aon_n[0], top_darjeeling.u_adc_ctrl_aon, rst_aon_ni
-CONNECTION, RSTMGR_LC_IO_DIV4_AON_PWM_RST_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_lc_io_div4_n[0], top_darjeeling.u_pwm_aon, rst_ni
-CONNECTION, RSTMGR_LC_AON_AON_PWM_RST_AON_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_lc_aon_n[0], top_darjeeling.u_pwm_aon, rst_core_ni
 CONNECTION, RSTMGR_LC_IO_DIV4_AON_PINMUX_RST_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_lc_io_div4_n[0], top_darjeeling.u_pinmux_aon, rst_ni
 CONNECTION, RSTMGR_LC_AON_AON_PINMUX_RST_AON_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_lc_aon_n[0], top_darjeeling.u_pinmux_aon, rst_aon_ni
 CONNECTION, RSTMGR_LC_IO_DIV4_AON_AON_TIMER_RST_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_lc_io_div4_n[0], top_darjeeling.u_aon_timer_aon, rst_ni

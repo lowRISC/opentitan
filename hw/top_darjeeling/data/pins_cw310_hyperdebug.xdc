@@ -71,7 +71,7 @@ set_property -dict { PACKAGE_PIN D8  IOSTANDARD LVCMOS33 }  [get_ports { IOC2  }
 set_property -dict { PACKAGE_PIN G15 IOSTANDARD LVCMOS33 }  [get_ports { IOC3  }]; # J4.12 USERIOA-12, UART RX (CONSOLE), DFT STRAP 0
 set_property -dict { PACKAGE_PIN F15 IOSTANDARD LVCMOS33 }  [get_ports { IOC4  }]; # J4.14 USERIOA-14, UART TX (CONSOLE), DFT STRAP 1
 set_property -dict { PACKAGE_PIN D15 IOSTANDARD LVCMOS33 }  [get_ports { IOC5  }]; # J4.16 USERIOA-16, TAP STRAP 1
-set_property -dict { PACKAGE_PIN D16 IOSTANDARD LVCMOS33 }  [get_ports { IOC6  }]; # J4.18 USERIOA-18, PWM, EXT_CLK
+set_property -dict { PACKAGE_PIN D16 IOSTANDARD LVCMOS33 }  [get_ports { IOC6  }]; # J4.18 USERIOA-18, EXT_CLK
 set_property -dict { PACKAGE_PIN P18 IOSTANDARD LVCMOS33 }  [get_ports { IOC7  }]; # USRUSB_VBUS_DETECT
 set_property -dict { PACKAGE_PIN D9  IOSTANDARD LVCMOS33 }  [get_ports { IOC8  }]; # J5.18 USERIOB-18, TAP STRAP 0
 set_property -dict { PACKAGE_PIN N19 IOSTANDARD LVCMOS33 }  [get_ports { IOC9  }]; # PMOD2_IO1 (GPIO)

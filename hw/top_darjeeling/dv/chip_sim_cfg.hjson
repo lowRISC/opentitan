@@ -490,12 +490,6 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
-      name: chip_sw_sleep_pwm_pulses
-      uvm_test_seq: chip_sw_pwm_pulses_vseq
-      sw_images: ["//sw/device/tests:sleep_pwm_pulses_test:1"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-    }
-    {
       name: chip_sw_uart_tx_rx
       uvm_test_seq: chip_sw_uart_tx_rx_vseq
       sw_images: ["//sw/device/tests/sim_dv:uart_tx_rx_test:1"]
@@ -1868,18 +1862,6 @@
       run_opts: ["+sw_test_timeout_ns=180_000_000", "+rng_srate_value_min=15",
                  "+rng_srate_value_max=20", "+cal_sys_clk_70mhz=1", "+en_jitter=1"]
       run_timeout_mins: 240
-    }
-    {
-      name: chip_sw_power_idle_load
-      uvm_test_seq: chip_sw_power_idle_load_vseq
-      sw_images: ["//sw/device/tests:chip_power_idle_load:1"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-    }
-    {
-      name: chip_sw_power_sleep_load
-      uvm_test_seq: chip_sw_power_sleep_load_vseq
-      sw_images: ["//sw/device/tests:chip_power_sleep_load:1"]
-      en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
       name: chip_sw_ast_clk_rst_inputs

@@ -506,7 +506,6 @@
             input:
             - clkmgr clk_i
             - pinmux clk_i
-            - pwm clk_i
             - pwrmgr clk_i
             - rstmgr clk_i
             - rstmgr clk_io_div4_i
@@ -514,7 +513,6 @@
       stage: V2
       tests: ["clkmgr_powerup_clk_clkmgr_clk",
               "clkmgr_powerup_clk_pinmux_clk",
-              "clkmgr_powerup_clk_pwm_clk",
               "clkmgr_powerup_clk_pwrmgr_clk",
               "clkmgr_powerup_clk_pwrmgr_lc_clk",
               "clkmgr_powerup_clk_rstmgr_por_clk",
@@ -525,13 +523,11 @@
       name: clkmgr_clk_aon_powerup
       desc: '''Verify clkmgr's `clk_aon_powerup` is connected to the following blocks' clock input:
             - pinmux's clk_aon_i
-            - pwm clk_core_i
             - pwrmgr clk_slow_i
             - rstmgr clk_aon_i
             '''
       stage: V2
       tests: ["clkmgr_powerup_clk_pinmux_aon_clk",
-              "clkmgr_powerup_clk_pwm_core_clk",
               "clkmgr_powerup_clk_pwrmgr_slow_clk",
               "clkmgr_powerup_clk_rstmgr_aon_clk"]
       tags: ["conn"]
@@ -1083,13 +1079,11 @@
       name: rst_sys_aon_aon
       desc: '''Verify rstmgr's rst_sys_aon_n[0] is connected to the following:
             - adc_ctrl's rst_aon_ni
-            - pwm's rst_core_ni
             - sensor_ctrl's rst_aon_ni
             - sysrst_ctrl's rst_aon_ni
             '''
       stage: V2
       tests: ["rstmgr_sys_aon_aon_adc_ctrl_rst_aon_ni",
-              "rstmgr_sys_aon_aon_pwm_rst_aon_ni",
               "rstmgr_sys_aon_aon_sensor_ctrl_rst_aon_ni",
               "rstmgr_sys_aon_aon_sysrst_ctrl_rst_aon_ni"]
       tags: ["conn"]
@@ -1112,14 +1106,12 @@
       name: rst_sys_io_div4_aon
       desc: '''Verify rstmgr's rst_sys_io_div4_n[0] is connected to the following:
             - adc_ctrl's rst_ni
-            - pwm's rst_ni
             - sensor_ctrl's rst_ni
             - sram_ctrl_ret's rst_ni
             - sysrst_ctrl's rst_ni
             '''
       stage: V2
       tests: ["rstmgr_sys_io_div4_aon_adc_ctrl_rst_ni",
-              "rstmgr_sys_io_div4_aon_pwm_rst_ni",
               "rstmgr_sys_io_div4_aon_sensor_ctrl_rst_ni",
               "rstmgr_sys_io_div4_aon_sram_ctrl_ret_rst_ni",
               "rstmgr_sys_io_div4_aon_sysrst_ctrl_rst_ni"]

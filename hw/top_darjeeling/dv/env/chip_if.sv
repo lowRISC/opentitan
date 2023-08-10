@@ -62,7 +62,6 @@ interface chip_if;
 `define OTP_CTRL_HIER       `TOP_HIER.u_otp_ctrl
 `define OTBN_HIER           `TOP_HIER.u_otbn
 `define PINMUX_HIER         `TOP_HIER.u_pinmux_aon
-`define PWM_HIER            `TOP_HIER.u_pwm_aon
 `define PWRMGR_HIER         `TOP_HIER.u_pwrmgr_aon
 `define ROM_CTRL0_HIER      `TOP_HIER.u_rom_ctrl0
 `define ROM_CTRL1_HIER      `TOP_HIER.u_rom_ctrl1
@@ -571,33 +570,6 @@ interface chip_if;
     __enable_i2c[inst_num] = enable;
   endfunction
 
-  // Functional (muxed) interface: PWM.
-  localparam int AssignedPwmIos[NUM_PWM_CHANNELS] = {
-    top_darjeeling_pkg::MioPadIob10,
-    top_darjeeling_pkg::MioPadIob11,
-    top_darjeeling_pkg::MioPadIob12,
-    top_darjeeling_pkg::MioPadIoc10,
-    top_darjeeling_pkg::MioPadIoc11,
-    top_darjeeling_pkg::MioPadIoc12
-  };
-
-  for (genvar i = 0; i < NUM_PWM_CHANNELS; i++) begin : gen_pwm_if_conn
-    pwm_if pwm_if(
-`ifdef GATE_LEVEL
-                  .clk (0),
-                  .rst_n (1),
-`else
-                  .clk  (`CLKMGR_HIER.clocks_o.clk_aon_powerup),
-                  .rst_n(`RSTMGR_HIER.resets_o.rst_lc_aon_n[0]),
-`endif
-                  .pwm  (mios[AssignedPwmIos[i]]));
-
-    initial begin
-      uvm_config_db#(virtual pwm_if)::set(null, $sformatf("*.env.m_pwm_monitor%0d*", i), "vif",
-                                          pwm_if);
-    end
-  end : gen_pwm_if_conn
-
   // Functional (muxed) interface: external clock source.
   //
   // The reset port is passive only.
@@ -976,7 +948,6 @@ interface chip_if;
       PeripheralOtbn:           path = {path, ".", `DV_STRINGIFY(`OTBN_HIER)};
       PeripheralOtpCtrl:        path = {path, ".", `DV_STRINGIFY(`OTP_CTRL_HIER)};
       PeripheralPinmuxAon:      path = {path, ".", `DV_STRINGIFY(`PINMUX_HIER)};
-      PeripheralPwmAon:         path = {path, ".", `DV_STRINGIFY(`PWM_HIER)};
       PeripheralPwrmgrAon:      path = {path, ".", `DV_STRINGIFY(`PWRMGR_HIER)};
       PeripheralRomCtrl0:       path = {path, ".", `DV_STRINGIFY(`ROM_CTRL0_HIER)};
       PeripheralRomCtrl1:       path = {path, ".", `DV_STRINGIFY(`ROM_CTRL1_HIER)};
@@ -1201,16 +1172,6 @@ assign spi_host_1_state = {tb.dut.top_darjeeling.u_spi_host1.u_spi_core.u_fsm.st
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_entropy_src_fsm_state,
       entropy_src_fsm_state, 9)
 
-  // tb.dut.top_darjeeling.u_pwm_aon.u_pwm_core.cntr_en
-  wire pwm_core_cntr_en;
-`ifdef GATE_LEVEL
-  assign pwm_core_cntr_en = 0;
-`else
-  assign pwm_core_cntr_en = `PWM_HIER.u_pwm_core.cntr_en;
-`endif
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pwm_core_cntr_en,
-      pwm_core_cntr_en, 1)
-
 `undef TOP_HIER
 `undef ADC_CTRL_HIER
 `undef AES_HIER
@@ -1235,7 +1196,6 @@ assign spi_host_1_state = {tb.dut.top_darjeeling.u_spi_host1.u_spi_core.u_fsm.st
 `undef OTP_CTRL_HIER
 `undef OTBN_HIER
 `undef PINMUX_HIER
-`undef PWM_HIER
 `undef PWRMGR_HIER
 `undef ROM_CTRL0_HIER
 `undef ROM_CTRL1_HIER

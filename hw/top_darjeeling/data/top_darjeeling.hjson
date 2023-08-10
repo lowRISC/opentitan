@@ -460,14 +460,6 @@
       domain: ["Aon"],
       base_addr: "0x40440000"
     },
-    { name: "pwm_aon",
-      type: "pwm",
-      clock_srcs: {clk_i: "io_div4", clk_core_i: "aon"},
-      clock_group: "peri",
-      reset_connections: {rst_ni: "lc_io_div4", rst_core_ni: "lc_aon"},
-      domain: ["Aon"],
-      base_addr: "0x40450000",
-    },
     { name: "pinmux_aon",
       type: "pinmux",
       clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
@@ -1398,7 +1390,6 @@
       { instance: "spi_host1",       port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "flash_ctrl",      port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "sensor_ctrl",     port: '',               connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "pwm_aon",         port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "otp_ctrl",        port: 'test[0]',        connection: 'muxed' , pad: ''             , desc: ''},
       // Sysrst ctrl has both muxed and dedicated IOs
       { instance: "sysrst_ctrl_aon", port: 'ac_present',     connection: 'muxed' , pad: ''             , desc: ''},

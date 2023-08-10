@@ -225,7 +225,6 @@ static const char *lc_ctrl_inst_name = "lc_ctrl";
 static const char *otbn_inst_name = "otbn";
 static const char *otp_ctrl_inst_name = "otp_ctrl";
 static const char *pinmux_inst_name = "pinmux";
-static const char *pwm_inst_name = "pwm";
 static const char *pwrmgr_inst_name = "pwrmgr";
 static const char *rom_ctrl0_inst_name = "rom_ctrl0";
 static const char *rom_ctrl1_inst_name = "rom_ctrl1";
@@ -957,10 +956,6 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
     } break;
     case kTopDarjeelingAlertIdPinmuxAonFatalFault: {
       fault_checker_t fc = {trivial_fault_checker, pinmux_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopDarjeelingAlertIdPwmAonFatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, pwm_inst_name, we_check};
       fault_checker = fc;
     } break;
     case kTopDarjeelingAlertIdPwrmgrAonFatalFault: {

@@ -15,10 +15,10 @@
                      "hw/top_darjeeling/data/chip_conn_testplan.hjson"]
 
   testpoints: [
-    //////////////////////////////////////////////////////////////////
-    // IO Peripherals                                               //
-    // UART, GPIO, I2C, SPIDEV, SPIHOST, USB, PINMUX & PADCTRL, PWM //
-    //////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////
+    // IO Peripherals                                          //
+    // UART, GPIO, I2C, SPIDEV, SPIHOST, USB, PINMUX & PADCTRL //
+    /////////////////////////////////////////////////////////////
 
     // UART (pre-verified IP) integration tests:
     {
@@ -453,8 +453,7 @@
             verifies the correctness of the reflected values once the chip goes into deep sleep.
             This is replicated for DIO pins as well.
 
-            In this test, passthrough feature is not tested. The feature is
-            covered in other tests such as chip_sw_sleep_pwm_pulses.
+            In this test, passthrough feature is not tested.
             '''
       stage: V2
       tests: ["chip_sw_sleep_pin_mio_dio_val"]
@@ -516,23 +515,6 @@
       stage: V2
       tests: ["chip_tap_straps_dev", "chip_tap_straps_prod", "chip_tap_straps_rma",
               "chip_tap_straps_testunlock0"]
-    }
-
-    // PWM (pre-verified IP) integration tests:
-    {
-      name: chip_sw_sleep_pwm_pulses
-      desc: '''Verify PWM signaling to chip output pads during deep sleep.
-
-            - Program each PWM output to pulse in a known pattern.
-            - Program the pinmux to route the chosen PWM output to the chip IOs.
-            - Program the pwrmgr to go to deep sleep state, with AON timer wakeup.
-            - Initiate the sleep state by issuing a WFI.
-            - Verify that in the sleep state, the PWM signals are active and pulsing correctly, by
-              hooking up the PWM monitor.
-            - Repeat the steps for all 6 PWM signals.
-            '''
-      stage: V2
-      tests: ["chip_sw_sleep_pwm_pulses"]
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
@@ -3565,62 +3547,6 @@
       stage: V3
       tests: ["chip_sw_power_virus"]
     }
-    {
-      name: chip_sw_power_idle_load
-      desc: '''Concurrency test modeling load conditions in idle state
-
-      This concurrency test models an average idle scenarios.
-
-      The test should be made configurable so that the type of power state and
-      the time spent in a particular power state can be configured via a
-      flag (or similar). This will make it easier to reuse the test for power
-      simulation and characterization later on.
-
-      The test should set a GPIO (mapped to the IOA2 pin) to high while the power
-      state of interest is active.
-
-      The test should cover the following scenarios:
-
-        - Processor polls for nmi interrupt
-        - Background checks enabled wherever possible
-          - rstmgr background checks
-          - alert_handler ping checks
-          - OTP background checks
-        - Timers (regular and AON) are active
-        - Check whether transactional clocks should be enabled or disabled
-        - Check whether PWM should be active
-      '''
-      stage: V2
-      tests: ["chip_sw_power_idle_load"]
-    }
-    {
-      name: chip_sw_power_sleep_load
-      desc: '''Concurrency test modeling load conditions in idle state
-
-      This concurrency test models average sleep scenarios.
-
-      The test should be made configurable so that the type of power state and
-      the time spent in a particular power state can be configured via a
-      flag (or similar). This will make it easier to reuse the test for power
-      simulation and characterization later on.
-
-      The test should cover the following scenarios:
-
-        - System can be in deep or light sleep
-        - The system has the following AON / IO activity:
-          - aon_timer active
-          - adc_ctrl active in low power mode
-          - TBD: check whether sysrst_ctrl and pinmux wakeup detectors should be active
-          - TBD: check whether PWM should be active
-
-      This test should leverage the OTTF test framework for supporting
-      concurrency in a FreeRTOS environment. See also the design docs linked
-      in #14095 for more details on how to approach the implementation.
-      '''
-      stage: V2
-      tests: ["chip_sw_power_sleep_load"]
-    }
-
     {
       name: chip_sw_exit_test_unlocked_bootstrap
       desc: '''End to end test to ensure rom boot strap can be performed after

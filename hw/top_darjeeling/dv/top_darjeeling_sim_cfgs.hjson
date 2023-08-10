@@ -41,7 +41,6 @@
              "{proj_root}/hw/ip/prim/dv/prim_lfsr/prim_lfsr_sim_cfg.hjson",
              "{proj_root}/hw/ip/prim/dv/prim_present/prim_present_sim_cfg.hjson",
              "{proj_root}/hw/ip/prim/dv/prim_prince/prim_prince_sim_cfg.hjson",
-             "{proj_root}/hw/ip/pwm/dv/pwm_sim_cfg.hjson",
              "{proj_root}/hw/ip/rom_ctrl/dv/rom_ctrl_32kB_sim_cfg.hjson",
              "{proj_root}/hw/ip/rom_ctrl/dv/rom_ctrl_64kB_sim_cfg.hjson",
              "{proj_root}/hw/ip/rv_dm/dv/rv_dm_sim_cfg.hjson",
