@@ -453,6 +453,17 @@ extern "C++" {
 #define OT_USED __attribute__((used))
 
 /**
+ * OT_BUILD_FOR_STATIC_ANALYZER indicates whether we are compiling for the
+ * purpose of static analysis. Currently, this macro only detects
+ * Clang-Analyzer, which is used as a backend by Clang-Tidy.
+ */
+#ifdef __clang_analyzer__
+#define OT_BUILD_FOR_STATIC_ANALYZER 1
+#else
+#define OT_BUILD_FOR_STATIC_ANALYZER 0
+#endif
+
+/**
  *  This macro is used to align an offset to point to a 32b value.
  */
 #define OT_ALIGN_MEM(x) (uint32_t)(4 + (((uintptr_t)(x)-1) & ~3u))

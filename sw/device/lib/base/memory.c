@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/base/memory.h"
 
+#include <assert.h>
 #include <stdint.h>
 
 #include "sw/device/lib/base/macros.h"
@@ -121,6 +122,10 @@ int OT_PREFIX_IF_NOT_RV32(memcmp)(const void *lhs, const void *rhs,
     }
   }
   for (; i < tail_offset; i += sizeof(uint32_t)) {
+#if OT_BUILD_FOR_STATIC_ANALYZER
+    assert(&lhs8[i] != NULL);
+    assert(&rhs8[i] != NULL);
+#endif
     uint32_t word_left = __builtin_bswap32(read_32(&lhs8[i]));
     uint32_t word_right = __builtin_bswap32(read_32(&rhs8[i]));
     static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
@@ -157,6 +162,10 @@ int memrcmp(const void *lhs, const void *rhs, size_t len) {
   }
   for (; end > body_offset; end -= sizeof(uint32_t)) {
     const size_t i = end - sizeof(uint32_t);
+#if OT_BUILD_FOR_STATIC_ANALYZER
+    assert(&lhs8[i] != NULL);
+    assert(&rhs8[i] != NULL);
+#endif
     uint32_t word_left = read_32(&lhs8[i]);
     uint32_t word_right = read_32(&rhs8[i]);
     static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
