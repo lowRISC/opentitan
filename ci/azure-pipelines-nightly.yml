@@ -67,6 +67,7 @@ jobs:
         --test_output=errors \
         //sw/device/silicon_creator/rom/e2e/...
     displayName: "Run all ROM E2E tests"
+  - template: ../ci/publish-bazel-test-results.yml
 
 - job: bob_spi_i2c
   displayName: "BoB: SPI and I2C Tests"
@@ -86,3 +87,4 @@ jobs:
         --test_output=errors \
         $(bash ./bazelisk.sh query 'attr("tags", "[\[ ]bob[,\]]", attr("tags", "[\[ ]cw310[,\]]", tests(//...)))')
     displayName: "Run all the SPI and I2C Tests with BoB"
+  - template: ../ci/publish-bazel-test-results.yml
