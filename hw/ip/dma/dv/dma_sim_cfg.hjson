@@ -38,7 +38,7 @@
   uvm_test: dma_base_test
   uvm_test_seq: dma_base_vseq
 
-  sim_tops: ["dma_cov_bind"]
+  sim_tops: ["dma_cov_bind", "dma_bind"]
 
   xcelium_cov_refine_files: []
 
