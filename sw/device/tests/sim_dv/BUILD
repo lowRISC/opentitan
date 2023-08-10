@@ -1358,6 +1358,7 @@ opentitan_functest(
 opentitan_functest(
     name = "pattgen_ios_test",
     srcs = ["pattgen_ios_test.c"],
+    tags = ["earlgrey"],
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
