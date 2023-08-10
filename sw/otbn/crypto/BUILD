@@ -142,6 +142,13 @@ otbn_library(
 )
 
 otbn_library(
+    name = "p384_keygen",
+    srcs = [
+        "p384_keygen.s",
+    ],
+)
+
+otbn_library(
     name = "p384_scalar_mult",
     srcs = [
         "p384_scalar_mult.s",
