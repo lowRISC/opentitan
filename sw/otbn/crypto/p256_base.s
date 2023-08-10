@@ -1633,11 +1633,11 @@ p256_random_scalar:
   /* XOR with bits from URND, just in case there's any vulnerability in EDN
      that lets the attacker recover bits before they reach OTBN. */
   bn.wsrr   w20, 0x2 /* URND */
+  bn.xor    w15, w15, w20
+  bn.wsrr   w20, 0x2 /* URND */
   bn.xor    w16, w16, w20
   bn.wsrr   w20, 0x2 /* URND */
   bn.xor    w17, w17, w20
-  bn.wsrr   w20, 0x2 /* URND */
-  bn.xor    w18, w18, w20
 
   /* Shift bits to get 320-bit seeds.
      w18 <= w16[255:192]
