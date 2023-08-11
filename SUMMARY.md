@@ -73,7 +73,6 @@
     - [Hardware Interfaces](./hw/ip/adc_ctrl/doc/interfaces.md)
     - [Registers](./hw/ip/adc_ctrl/doc/registers.md)
     - [Checklist](./hw/ip/adc_ctrl/doc/checklist.md)
-    - [Interface and Registers](./hw/ip/adc_ctrl/data/adc_ctrl.hjson)
   - [AES](./hw/ip/aes/README.md)
     - [Theory of Operation](./hw/ip/aes/doc/theory_of_operation.md)
     - [Design Verification](./hw/ip/aes/dv/README.md)
