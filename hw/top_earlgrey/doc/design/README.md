@@ -22,7 +22,7 @@ This section also contains a brief overview of some of the features of the final
 Clocks and resets are supplied from the Analog Sensor Top, referred to as [ast](../../ip/ast/README.md)) from this point onwards in the document.
 
 `ast` supplies a number of clocks into `top_earlgrey`.
-- sys: main jittery system clock used for higher performance blocks and security (processory, memory and crypto blocks).
+- sys: main jittery system clock used for higher performance blocks and security (processor, memory and crypto blocks).
 - io: a fixed clock used for peripheral blocks such as timers and I/O functionality, such as SPI or I2C.
 - usb: a fixed clock used specifically for usb operations.
 - aon: an always on, low frequency clock used for power management and low speed timers.
