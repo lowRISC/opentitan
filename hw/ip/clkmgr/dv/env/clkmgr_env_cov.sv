@@ -19,7 +19,10 @@ class clkmgr_peri_cg_wrap;
     ip_clk_en_cp: coverpoint ip_clk_en;
     scanmode_cp: coverpoint scanmode;
 
-    peri_cross: cross csr_enable_cp, ip_clk_en_cp, scanmode_cp;
+    peri_cross: cross csr_enable_cp, ip_clk_en_cp, scanmode_cp{
+      // The enable CSRs cannot be manipulated in low power mode.
+      ignore_bins ignore_enable_off = peri_cross with (csr_enable_cp == 1 && ip_clk_en_cp == 0);
+    }
   endgroup
 
   function new(string name);
@@ -48,7 +51,10 @@ class clkmgr_trans_cg_wrap;
     idle_cp: coverpoint idle;
 
     trans_cross: cross csr_hint_cp, ip_clk_en_cp, scanmode_cp, idle_cp{
-      ignore_bins ignore = trans_cross with (idle_cp == 0 && ip_clk_en_cp == 0);
+      // If the clock is disabled the unit must be idle.
+      ignore_bins ignore_idle_off = trans_cross with (idle_cp == 0 && ip_clk_en_cp == 0);
+      // The hint CSRs cannot be manipulated in low power mode.
+      ignore_bins ignore_enable_off = trans_cross with (csr_hint_cp == 1 && ip_clk_en_cp == 0);
     }
   endgroup
 
