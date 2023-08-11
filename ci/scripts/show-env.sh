@@ -8,7 +8,7 @@
 
 set -e
 
-tools=(
+required_tools=(
     git
     python3
     yapf
@@ -16,12 +16,22 @@ tools=(
     flake8
     ninja
     doxygen
+)
+
+optional_tools=(
     verible-verilog-lint
 )
 
-for tool in "${tools[@]}"; do
+for tool in "${required_tools[@]}"; do
     set -x
     $tool --version
+    { set +x; } 2>/dev/null
+    echo
+done
+
+for tool in "${optional_tools[@]}"; do
+    set -x
+    $tool --version || echo "Warning: failed to determine version of $tool"
     { set +x; } 2>/dev/null
     echo
 done
