@@ -83,12 +83,23 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
         bad_addr = good_addr ^ mask;
         `DV_CHECK_FATAL(uvm_hdl_force(err_path, bad_addr) == 1);
       end
-      // injecting error on opcode
+      // Injecting error in opcode on the bignum side
       2: begin
         logic [3:0] good_op, bad_op;
         err_path = "tb.dut.u_otbn_core.u_otbn_alu_bignum.operation_i.op";
-        wait_for_flag("tb.dut.u_otbn_core.alu_bignum_operation_valid");
-        `DV_CHECK_FATAL(uvm_hdl_read(err_path, good_op));
+
+        // We want to inject an error when the bignum ALU is performing an operation, so its
+        // operation_valid_i flag should be high, and this should be the opcode for a genuine
+        // operation (less than or equal to AluOpBignumNot).
+        while (1) begin
+          wait_for_flag("tb.dut.u_otbn_core.u_otbn_alu_bignum.operation_valid_i");
+          `DV_CHECK_FATAL(uvm_hdl_read(err_path, good_op));
+          if (good_op <= otbn_pkg::AluOpBignumNot)
+            break;
+          // If the opcode doesn't specify a known operation, we'll need to wait a bit longer. Go
+          // around again.
+        end
+
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bad_op,
                                            bad_op != good_op;
                                            bad_op != otbn_pkg::AluOpBignumNone;);
