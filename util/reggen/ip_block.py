@@ -130,7 +130,8 @@ OPTIONAL_FIELDS = {
         "file."
     ],
     'wakeup_list': ['lnw', "list of peripheral wakeups"],
-    'countermeasures': ["ln", "list of countermeasures in this block"]
+    'countermeasures': ["ln", "list of countermeasures in this block"],
+    'features': ["ln", "list of functional features in this block"],
 }
 
 # Note that the revisions list may be deprecated in the future.
