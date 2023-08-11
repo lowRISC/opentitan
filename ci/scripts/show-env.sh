@@ -13,7 +13,6 @@ tools=(
     python3
     yapf
     isort
-    clang-format
     flake8
     ninja
     doxygen
