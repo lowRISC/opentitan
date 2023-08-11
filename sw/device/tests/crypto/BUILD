@@ -89,6 +89,20 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "drbg_functest",
+    srcs = ["drbg_functest.c"],
+    verilator = verilator_params(
+        timeout = "eternal",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:drbg",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "ecdh_p256_functest",
     srcs = ["ecdh_p256_functest.c"],
     verilator = verilator_params(

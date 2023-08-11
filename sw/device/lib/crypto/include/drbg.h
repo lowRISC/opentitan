@@ -53,8 +53,7 @@ crypto_status_t otcrypto_drbg_reseed(crypto_uint8_buf_t additional_input);
  * @return Result of the DRBG manual instantiation.
  */
 crypto_status_t otcrypto_drbg_manual_instantiate(
-    crypto_uint8_buf_t entropy,
-    crypto_uint8_buf_t perso_string);
+    crypto_uint8_buf_t entropy, crypto_uint8_buf_t perso_string);
 
 /**
  * Reseeds the DRBG with fresh entropy.
