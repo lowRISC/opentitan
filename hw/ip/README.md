@@ -22,7 +22,7 @@
 | [`otbn`]         | Programmable coprocessor for asymmetric cryptography with SCA and FI countermeasures                                              |
 | [`otp_ctrl`]     | Interfaces integrated one-time programmable memory, supports scrambling, integrity and secure wipe                                |
 | [`pattgen`]      | Transmission of short time-dependent data patterns on two clock-parallel output channels                                          |
-| [`pinmux`]       | Multiplexes between on-chip hardware blocks and pins; can be configured at runtime                                                |
+| [`pinmux`]       | Multiplexes between on-chip hardware blocks and pins, and can be configured at runtime                                            |
 | [`pwm`]          | Transmission of pulse-width modulated output signals with adjustable duty cycle                                                   |
 | [`pwrmgr`]       | Sequences on-chip power, clocks, and resets through different reset and power states                                              |
 | [`rom_ctrl`]     | Interfaces scrambled boot ROM with system bus and KMAC for initial health check after reset                                       |
