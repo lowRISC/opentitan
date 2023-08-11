@@ -48,6 +48,8 @@ module top_darjeeling #(
   // parameters for adc_ctrl_aon
   // parameters for pwm_aon
   // parameters for pinmux_aon
+  parameter bit PinmuxAonUsbWkupModuleEn = 1,
+  parameter bit PinmuxAonHwStrapSamplingEn = 1,
   parameter bit SecPinmuxAonVolatileRawUnlockEn = top_pkg::SecVolatileRawUnlockEn,
   parameter pinmux_pkg::target_cfg_t PinmuxAonTargetCfg = pinmux_pkg::DefaultTargetCfg,
   // parameters for aon_timer_aon
@@ -1906,6 +1908,8 @@ module top_darjeeling #(
   );
   pinmux #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[30:30]),
+    .UsbWkupModuleEn(PinmuxAonUsbWkupModuleEn),
+    .HwStrapSamplingEn(PinmuxAonHwStrapSamplingEn),
     .SecVolatileRawUnlockEn(SecPinmuxAonVolatileRawUnlockEn),
     .TargetCfg(PinmuxAonTargetCfg)
   ) u_pinmux_aon (

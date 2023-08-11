@@ -16,6 +16,8 @@ module pinmux
   // target-specific top-level.
   parameter target_cfg_t TargetCfg = DefaultTargetCfg,
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  parameter bit UsbWkupModuleEn = 0,
+  parameter bit HwStrapSamplingEn = 0,
   parameter bit SecVolatileRawUnlockEn = 0
 ) (
   input                            clk_i,
@@ -312,81 +314,119 @@ module pinmux
   logic [NMioPads-1:0] mio_out, mio_oe, mio_in;
   logic [NDioPads-1:0] dio_out, dio_oe, dio_in;
 
-  // This module contains the strap sampling and JTAG mux.
-  // Affected inputs are intercepted/tapped before they go to the pinmux
-  // matrix. Likewise, affected outputs are intercepted/tapped after the
-  // retention registers.
-  pinmux_strap_sampling #(
-    .TargetCfg (TargetCfg)
-  ) u_pinmux_strap_sampling (
-    .clk_i,
-    // Inside the pinmux, the strap sampling module is the only module using SYS_RST. The reason for
-    // that is that SYS_RST reset will not be asserted during a NDM reset from the RV_DM and hence
-    // it retains some of the TAP selection state during an active debug session where NDM reset
-    // is triggered. To that end, the strap sampling module latches the lc_hw_debug_en_i signal
-    // whenever strap_en_i is asserted. Note that this does not affect the DFT TAP selection, since
-    // we always consume the live lc_dft_en_i signal.
-    .rst_ni (rst_sys_ni),
-    .scanmode_i,
-    // To padring side
-    .out_padring_o  ( {dio_out_o,  mio_out_o}  ),
-    .oe_padring_o   ( {dio_oe_o ,  mio_oe_o }  ),
-    .in_padring_i   ( {dio_in_i ,  mio_in_i }  ),
-    .attr_padring_o ( {dio_attr_o, mio_attr_o} ),
-    // To core side
-    .out_core_i     ( {dio_out,  mio_out}  ),
-    .oe_core_i      ( {dio_oe,   mio_oe}   ),
-    .in_core_o      ( {dio_in,   mio_in}   ),
-    .attr_core_i    ( {dio_attr, mio_attr} ),
-    // Strap and JTAG signals
-    .strap_en_i     ( strap_en ),
-    .lc_dft_en_i,
-    .lc_hw_debug_en_i,
-    .lc_escalate_en_i,
-    .lc_check_byp_en_i,
-    // This is the latched version of lc_hw_debug_en_i. We use it exclusively to gate the JTAG
-    // signals and TAP side of the RV_DM so that RV_DM can remain live during an NDM reset cycle.
-    .pinmux_hw_debug_en_o,
-    .dft_strap_test_o,
-    .dft_hold_tap_sel_i,
-    .lc_jtag_o,
-    .lc_jtag_i,
-    .rv_jtag_o,
-    .rv_jtag_i,
-    .dft_jtag_o,
-    .dft_jtag_i
-  );
+  if (HwStrapSamplingEn) begin : gen_hw_strap_sampling
+    // This module contains the strap sampling and JTAG mux.
+    // Affected inputs are intercepted/tapped before they go to the pinmux
+    // matrix. Likewise, affected outputs are intercepted/tapped after the
+    // retention registers.
+    pinmux_strap_sampling #(
+      .TargetCfg (TargetCfg)
+    ) u_pinmux_strap_sampling (
+      .clk_i,
+      // Inside the pinmux, the strap sampling module is the only module using SYS_RST. The reason for
+      // that is that SYS_RST reset will not be asserted during a NDM reset from the RV_DM and hence
+      // it retains some of the TAP selection state during an active debug session where NDM reset
+      // is triggered. To that end, the strap sampling module latches the lc_hw_debug_en_i signal
+      // whenever strap_en_i is asserted. Note that this does not affect the DFT TAP selection, since
+      // we always consume the live lc_dft_en_i signal.
+      .rst_ni (rst_sys_ni),
+      .scanmode_i,
+      // To padring side
+      .out_padring_o  ( {dio_out_o,  mio_out_o}  ),
+      .oe_padring_o   ( {dio_oe_o ,  mio_oe_o }  ),
+      .in_padring_i   ( {dio_in_i ,  mio_in_i }  ),
+      .attr_padring_o ( {dio_attr_o, mio_attr_o} ),
+      // To core side
+      .out_core_i     ( {dio_out,  mio_out}  ),
+      .oe_core_i      ( {dio_oe,   mio_oe}   ),
+      .in_core_o      ( {dio_in,   mio_in}   ),
+      .attr_core_i    ( {dio_attr, mio_attr} ),
+      // Strap and JTAG signals
+      .strap_en_i     ( strap_en ),
+      .lc_dft_en_i,
+      .lc_hw_debug_en_i,
+      .lc_escalate_en_i,
+      .lc_check_byp_en_i,
+      // This is the latched version of lc_hw_debug_en_i. We use it exclusively to gate the JTAG
+      // signals and TAP side of the RV_DM so that RV_DM can remain live during an NDM reset cycle.
+      .pinmux_hw_debug_en_o,
+      .dft_strap_test_o,
+      .dft_hold_tap_sel_i,
+      .lc_jtag_o,
+      .lc_jtag_i,
+      .rv_jtag_o,
+      .rv_jtag_i,
+      .dft_jtag_o,
+      .dft_jtag_i
+    );
+  end else begin : gen_no_hw_strap_sampling
+    logic unused_signals, unused_rst_sys_n;
+    assign unused_rst_sys_n = rst_sys_ni;
+    assign unused_signals = ^{strap_en,
+                              lc_dft_en_i,
+                              lc_hw_debug_en_i,
+                              lc_escalate_en_i,
+                              lc_check_byp_en_i,
+                              scanmode_i,
+                              lc_jtag_i,
+                              rv_jtag_i,
+                              dft_jtag_i,
+                              dft_hold_tap_sel_i};
+
+    assign pinmux_hw_debug_en_o = lc_ctrl_pkg::Off;
+    assign dft_strap_test_o     = '0;
+    assign lc_jtag_o            = '0;
+    assign rv_jtag_o            = '0;
+    assign dft_jtag_o           = '0;
+
+    // Just pass through these signals.
+    assign {dio_out_o,  mio_out_o}  = {dio_out,  mio_out};
+    assign {dio_oe_o ,  mio_oe_o }  = {dio_oe,   mio_oe};
+    assign {dio_in,   mio_in}       = {dio_in_i ,  mio_in_i };
+    assign {dio_attr_o, mio_attr_o} = {dio_attr, mio_attr};
+  end
 
   ///////////////////////////////////////
   // USB wake detect module connection //
   ///////////////////////////////////////
 
-  // Dedicated Peripheral side
-  usbdev_aon_wake u_usbdev_aon_wake (
-    .clk_aon_i,
-    .rst_aon_ni,
+  if (UsbWkupModuleEn) begin : gen_usbdev_aon_wake
+    // Dedicated Peripheral side
+    usbdev_aon_wake u_usbdev_aon_wake (
+      .clk_aon_i,
+      .rst_aon_ni,
 
-    // input signals for resume detection
-    .usb_dp_i(dio_to_periph_o[TargetCfg.usb_dp_idx]),
-    .usb_dn_i(dio_to_periph_o[TargetCfg.usb_dn_idx]),
-    .usb_sense_i(mio_to_periph_o[TargetCfg.usb_sense_idx]),
-    .usbdev_dppullup_en_i(usbdev_dppullup_en_i),
-    .usbdev_dnpullup_en_i(usbdev_dnpullup_en_i),
+      // input signals for resume detection
+      .usb_dp_i(dio_to_periph_o[TargetCfg.usb_dp_idx]),
+      .usb_dn_i(dio_to_periph_o[TargetCfg.usb_dn_idx]),
+      .usb_sense_i(mio_to_periph_o[TargetCfg.usb_sense_idx]),
+      .usbdev_dppullup_en_i(usbdev_dppullup_en_i),
+      .usbdev_dnpullup_en_i(usbdev_dnpullup_en_i),
 
-    // output signals for pullup connectivity
-    .usb_dppullup_en_o(usb_dppullup_en_o),
-    .usb_dnpullup_en_o(usb_dnpullup_en_o),
+      // output signals for pullup connectivity
+      .usb_dppullup_en_o(usb_dppullup_en_o),
+      .usb_dnpullup_en_o(usb_dnpullup_en_o),
 
-    // tie this to something from usbdev to indicate its out of reset
-    .suspend_req_aon_i(usbdev_suspend_req_i),
-    .wake_ack_aon_i(usbdev_wake_ack_i),
+      // tie this to something from usbdev to indicate its out of reset
+      .suspend_req_aon_i(usbdev_suspend_req_i),
+      .wake_ack_aon_i(usbdev_wake_ack_i),
 
-    // wake/powerup request
-    .wake_req_aon_o(usb_wkup_req_o),
-    .bus_reset_aon_o(usbdev_bus_reset_o),
-    .sense_lost_aon_o(usbdev_sense_lost_o),
-    .wake_detect_active_aon_o(usbdev_wake_detect_active_o)
-  );
+      // wake/powerup request
+      .wake_req_aon_o(usb_wkup_req_o),
+      .bus_reset_aon_o(usbdev_bus_reset_o),
+      .sense_lost_aon_o(usbdev_sense_lost_o),
+      .wake_detect_active_aon_o(usbdev_wake_detect_active_o)
+    );
+  end else begin : gen_no_usbdev_aon_wake
+    logic unused_sigs;
+    assign unused_sigs = ^{usbdev_suspend_req_i, usbdev_wake_ack_i};
+    assign usb_dppullup_en_o = usbdev_dppullup_en_i;
+    assign usb_dnpullup_en_o = usbdev_dnpullup_en_i;
+    assign usb_wkup_req_o = 1'b0;
+    assign usbdev_bus_reset_o = 1'b0;
+    assign usbdev_sense_lost_o = 1'b0;
+    assign usbdev_wake_detect_active_o = 1'b0;
+  end
 
   /////////////////////////
   // Retention Registers //

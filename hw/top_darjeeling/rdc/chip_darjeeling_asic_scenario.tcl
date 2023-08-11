@@ -60,7 +60,7 @@ set_reset_scenario { \
   { top_darjeeling.pwrmgr_aon_low_power                  { constraint { @t0 1 } } } \
   { top_darjeeling.spi_device_passthrough_req.passthrough_en { constraint { @t0 0 } } } \
   { top_darjeeling.u_spi_host0.reg2hw.control.output_en.q    { constraint { @t0 0 } } } \
-  { top_darjeeling.u_pinmux_aon.u_pinmux_strap_sampling.tap_strap_q { constraint { @t0 0 } } } \
+  { top_darjeeling.u_pinmux_aon.gen_hw_strap_sampling.u_pinmux_strap_sampling.tap_strap_q { constraint { @t0 0 } } } \
 } -name ScnAonPOK
 
 # AST Regulator Resets
@@ -94,7 +94,7 @@ set_reset_scenario { \
   { top_darjeeling.pwrmgr_aon_low_power                  { constraint { @t0 1 } } } \
   { top_darjeeling.spi_device_passthrough_req.passthrough_en { constraint { @t0 0 } } } \
   { top_darjeeling.u_spi_host0.reg2hw.control.output_en.q    { constraint { @t0 0 } } } \
-  { top_darjeeling.u_pinmux_aon.u_pinmux_strap_sampling.tap_strap_q { constraint { @t0 0 } } } \
+  { top_darjeeling.u_pinmux_aon.gen_hw_strap_sampling.u_pinmux_strap_sampling.tap_strap_q { constraint { @t0 0 } } } \
 } -name ScnMainPok
 
 #set_reset_scenario { \
@@ -169,10 +169,10 @@ set_reset_scenario { \
 # JTAG Scenarios
 ## RV_DM
 set_reset_scenario { \
-  { top_darjeeling.u_pinmux_aon.u_pinmux_strap_sampling.jtag_req.trst_n \
+  { top_darjeeling.u_pinmux_aon.gen_hw_strap_sampling.u_pinmux_strap_sampling.jtag_req.trst_n \
     { reset { @t0 1 } { #10 0 } { #10 1 } } } \
-  { top_darjeeling.u_pinmux_aon.u_pinmux_strap_sampling.tap_strap_q[1] { constraint { @t0 1 } } } \
-  { top_darjeeling.u_pinmux_aon.u_pinmux_strap_sampling.tap_strap_q[0] { constraint { @t0 0 } } } \
+  { top_darjeeling.u_pinmux_aon.gen_hw_strap_sampling.u_pinmux_strap_sampling.tap_strap_q[1] { constraint { @t0 1 } } } \
+  { top_darjeeling.u_pinmux_aon.gen_hw_strap_sampling.u_pinmux_strap_sampling.tap_strap_q[0] { constraint { @t0 0 } } } \
   { top_darjeeling.u_rv_dm.dap.i_dmi_cdc.i_cdc_req.u_prim_sync_reqack.gen_rz_hs_protocol.dst_fsm_q \
     { constraint { @t0 0 } } } \
   { top_darjeeling.u_rv_dm.dap.i_dmi_cdc.i_cdc_req.wvalid_i \
@@ -187,10 +187,10 @@ set_reset_scenario { \
 } -name JtagRvDm -comment "RV_DM JTAG Reset Scenario"
 ## LC_CTRL
 set_reset_scenario { \
-  { top_darjeeling.u_pinmux_aon.u_pinmux_strap_sampling.jtag_req.trst_n \
+  { top_darjeeling.u_pinmux_aon.gen_hw_strap_sampling.u_pinmux_strap_sampling.jtag_req.trst_n \
     { reset { @t0 1 } { #10 0 } { #10 1 } } } \
-  { top_darjeeling.u_pinmux_aon.u_pinmux_strap_sampling.tap_strap_q[1] { constraint { @t0 0 } } } \
-  { top_darjeeling.u_pinmux_aon.u_pinmux_strap_sampling.tap_strap_q[0] { constraint { @t0 1 } } } \
+  { top_darjeeling.u_pinmux_aon.gen_hw_strap_sampling.u_pinmux_strap_sampling.tap_strap_q[1] { constraint { @t0 0 } } } \
+  { top_darjeeling.u_pinmux_aon.gen_hw_strap_sampling.u_pinmux_strap_sampling.tap_strap_q[0] { constraint { @t0 1 } } } \
   { top_darjeeling.u_lc_ctrl.u_dmi_jtag.i_dmi_cdc.i_cdc_req.u_prim_sync_reqack.gen_rz_hs_protocol.dst_fsm_q \
     { constraint { @t0 0 } } } \
   { top_darjeeling.u_lc_ctrl.u_dmi_jtag.i_dmi_cdc.i_cdc_req.u_prim_sync_reqack.gen_rz_hs_protocol.src_fsm_q \

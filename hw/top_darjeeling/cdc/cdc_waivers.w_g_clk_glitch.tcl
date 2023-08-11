@@ -7,26 +7,26 @@
 # W_G_CLK_GLITCH
 set_rule_status -rule {W_G_CLK_GLITCH} -status {Waived} -expression             \
   {(GatedClockInput=~"top_darjeeling.u_pinmux_aon.*invert") && \
-  (GatedClock=~ "top_darjeeling.u_pinmux_aon.u_pinmux_strap_sampling.*req.tck")} -comment {W_G_CLK_GLITCH issues in JTAG}
+  (GatedClock=~ "top_darjeeling.u_pinmux_aon.gen_hw_strap_sampling.u_pinmux_strap_sampling.*req.tck")} -comment {W_G_CLK_GLITCH issues in JTAG}
 
 set_rule_status -rule {W_G_CLK_GLITCH} -status {Waived} -expression             \
-  {(GatedClockInput=~"top_darjeeling.u_pinmux_aon.u_pinmux_strap_sampling.*q_o*") && \
-  (GatedClock=~ "top_darjeeling.u_pinmux_aon.u_pinmux_strap_sampling.*req.tck")} -comment {W_G_CLK_GLITCH issues in JTAG}
+  {(GatedClockInput=~"top_darjeeling.u_pinmux_aon.gen_hw_strap_sampling.u_pinmux_strap_sampling.*q_o*") && \
+  (GatedClock=~ "top_darjeeling.u_pinmux_aon.gen_hw_strap_sampling.u_pinmux_strap_sampling.*req.tck")} -comment {W_G_CLK_GLITCH issues in JTAG}
 
 set_rule_status -rule {W_G_CLK_GLITCH} -status {Waived} -expression             \
-  {(GatedClockInput=~"top_darjeeling.u_pinmux_aon.u_pinmux_strap_sampling.tap_strap_q*") && \
-  (GatedClock=~ "top_darjeeling.u_pinmux_aon.u_pinmux_strap_sampling.*req.tck")} -comment {W_G_CLK_GLITCH issues in JTAG}
+  {(GatedClockInput=~"top_darjeeling.u_pinmux_aon.gen_hw_strap_sampling.u_pinmux_strap_sampling.tap_strap_q*") && \
+  (GatedClock=~ "top_darjeeling.u_pinmux_aon.gen_hw_strap_sampling.u_pinmux_strap_sampling.*req.tck")} -comment {W_G_CLK_GLITCH issues in JTAG}
 
 set_rule_status -rule {W_G_CLK_GLITCH} -status {Waived} -expression             \
   {(GatedClockInput=~"top_darjeeling.u_pinmux_aon.*invert") && \
   (GatedClock=~ "top_darjeeling.u_rv_dm.jtag_in_int.tck")} -comment {W_G_CLK_GLITCH issues in JTAG}
 
 set_rule_status -rule {W_G_CLK_GLITCH} -status {Waived} -expression             \
-  {(GatedClockInput=~"top_darjeeling.u_pinmux_aon.u_pinmux_strap_sampling.*q_o*") && \
+  {(GatedClockInput=~"top_darjeeling.u_pinmux_aon.gen_hw_strap_sampling.u_pinmux_strap_sampling.*q_o*") && \
   (GatedClock=~ "top_darjeeling.u_rv_dm.jtag_in_int.tck")} -comment {W_G_CLK_GLITCH issues in JTAG}
 
 set_rule_status -rule {W_G_CLK_GLITCH} -status {Waived} -expression             \
-  {(GatedClockInput=~"top_darjeeling.u_pinmux_aon.u_pinmux_strap_sampling.tap_strap_q*") && \
+  {(GatedClockInput=~"top_darjeeling.u_pinmux_aon.gen_hw_strap_sampling.u_pinmux_strap_sampling.tap_strap_q*") && \
   (GatedClock=~ "top_darjeeling.u_rv_dm.jtag_in_int.tck")} -comment {W_G_CLK_GLITCH issues in JTAG}
 
 set_rule_status -rule {W_G_CLK_GLITCH} -status {Waived} -expression             \

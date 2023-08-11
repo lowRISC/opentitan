@@ -311,6 +311,14 @@
       domain: ["Aon"],
       base_addr: "0x40460000",
       attr: "templated",
+      param_decl: {
+        UsbWkupModuleEn: "1",
+        HwStrapSamplingEn: "1",
+        // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
+        // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED FOR
+        // PRODUCTION DEVICES.
+        SecVolatileRawUnlockEn: "top_pkg::SecVolatileRawUnlockEn",
+      }
     },
     { name: "aon_timer_aon",
       type: "aon_timer",

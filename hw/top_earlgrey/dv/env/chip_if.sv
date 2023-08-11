@@ -328,17 +328,22 @@ interface chip_if;
   // The pinmux version of lc_dft_en is used below because it goes through synchronizers.
 `ifdef GATE_LEVEL
   wire pinmux_lc_dft_en =
-  (`PINMUX_HIER.u_pinmux_strap_sampling.u_prim_lc_sync_lc_dft_en.lc_en_o[3:0] == lc_ctrl_pkg::On);
+  (`PINMUX_HIER.gen_hw_strap_sampling.u_pinmux_strap_sampling.u_prim_lc_sync_lc_dft_en.lc_en_o[3:0]
+    == lc_ctrl_pkg::On);
 `else
-  wire pinmux_lc_dft_en = (`PINMUX_HIER.u_pinmux_strap_sampling.lc_dft_en[0] == lc_ctrl_pkg::On);
+  wire pinmux_lc_dft_en = (`PINMUX_HIER.gen_hw_strap_sampling.u_pinmux_strap_sampling.lc_dft_en[0]
+                           == lc_ctrl_pkg::On);
 `endif
-  wire pinmux_lc_hw_debug_en = `PINMUX_HIER.u_pinmux_strap_sampling.pinmux_hw_debug_en_o ==
-                               lc_ctrl_pkg::On;
+  wire pinmux_lc_hw_debug_en =
+      (`PINMUX_HIER.gen_hw_strap_sampling.u_pinmux_strap_sampling.pinmux_hw_debug_en_o ==
+       lc_ctrl_pkg::On);
 
 `ifdef GATE_LEVEL
-  wire pwrmgr_fast_pwr_state_strap_en = `PINMUX_HIER.u_pinmux_strap_sampling.strap_en_q_reg.Q;
+  wire pwrmgr_fast_pwr_state_strap_en =
+      `PINMUX_HIER.gen_hw_strap_sampling.u_pinmux_strap_sampling.strap_en_q_reg.Q;
 `else
-  wire pwrmgr_fast_pwr_state_strap_en = `PINMUX_HIER.u_pinmux_strap_sampling.strap_en_q;
+  wire pwrmgr_fast_pwr_state_strap_en =
+      `PINMUX_HIER.gen_hw_strap_sampling.u_pinmux_strap_sampling.strap_en_q;
 `endif
   initial begin
     fork

@@ -310,6 +310,20 @@
   ]
 
   param_list: [
+    { name:    "UsbWkupModuleEn",
+      type:    "bit",
+      default: "1'b0",
+      desc:    '''Set to 1 to instantiate the USB wake submodule.'''
+      local:   "false",
+      expose:  "true"
+    }
+    { name:    "HwStrapSamplingEn",
+      type:    "bit",
+      default: "1'b0",
+      desc:    '''Set to 1 to instantiate the HW strap sampling and TAP selection submodule wake submodule.'''
+      local:   "false",
+      expose:  "true"
+    }
     // Secure parameters
     { name:    "SecVolatileRawUnlockEn",
       type:    "bit",

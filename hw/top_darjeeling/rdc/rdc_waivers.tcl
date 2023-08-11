@@ -35,7 +35,7 @@ set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
 # USBDEV Wake up to PINMUX
 set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
   -expression {(ResetFlop=~"*.u_usbdev.u_reg.u_wake_control_cdc.u_src_to_dst_req.dst_level_q") && \
-    (MetaStableFlop=~"*.u_pinmux_aon.u_usbdev_aon_wake.wake_detect_active_q")} \
+    (MetaStableFlop=~"*.u_pinmux_aon.gen_usbdev_aon_wake.u_usbdev_aon_wake.wake_detect_active_q")} \
   -comment {Suspend request signal is a pulse signal. \
     It is to initiate the wakeup detector FSM inside pinmux. \
     When Power is down, the state machine is already configures.}

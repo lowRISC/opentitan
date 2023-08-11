@@ -3726,6 +3726,8 @@
       attr: templated
       param_decl:
       {
+        UsbWkupModuleEn: "1"
+        HwStrapSamplingEn: "1"
         SecVolatileRawUnlockEn: top_pkg::SecVolatileRawUnlockEn
       }
       clock_connections:
@@ -3736,6 +3738,22 @@
       memory: {}
       param_list:
       [
+        {
+          name: UsbWkupModuleEn
+          desc: Set to 1 to instantiate the USB wake submodule.
+          type: bit
+          default: "1"
+          expose: "true"
+          name_top: PinmuxAonUsbWkupModuleEn
+        }
+        {
+          name: HwStrapSamplingEn
+          desc: Set to 1 to instantiate the HW strap sampling and TAP selection submodule wake submodule.
+          type: bit
+          default: "1"
+          expose: "true"
+          name_top: PinmuxAonHwStrapSamplingEn
+        }
         {
           name: SecVolatileRawUnlockEn
           desc:
