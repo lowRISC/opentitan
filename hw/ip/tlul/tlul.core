@@ -13,6 +13,7 @@ filesets:
       - lowrisc:tlul:adapter_sram
       - lowrisc:tlul:adapter_reg
       - lowrisc:tlul:adapter_dmi
+      - lowrisc:tlul:jtag_dtm
       - lowrisc:tlul:sram2tlul
       - lowrisc:tlul:lc_gate
 
