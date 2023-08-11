@@ -414,7 +414,12 @@
     - [Crypto Library Tests](./sw/device/tests/crypto/README.md)
 
 - [Host Software](./sw/host/README.md)
-
+  - [Hardware Security Module (HSM) tool](./sw/host/hsmtool/README.md)
+    - [Requirements](./sw/host/hsmtool/doc/requirements.md)
+  - [OpenTitanLib](./sw/host/opentitanlib/README.md)
+  - [OpenTitanSession](./sw/host/opentitansession/README.md)
+  - [OpenTitanTool](./sw/host/opentitantool/README.md)
+  - [TPM2 Test Server](./sw/host/tpm2_test_server/README.md)
 
 # Tooling
 
