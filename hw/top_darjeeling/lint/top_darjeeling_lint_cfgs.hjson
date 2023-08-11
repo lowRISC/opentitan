@@ -272,6 +272,11 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/tlul/adapter_dmi/lint/{tool}"
              },
+             {    name: jtag_dtm
+                  fusesoc_core: lowrisc:tlul:jtag_dtm
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/tlul/jtag_dtm/lint/{tool}"
+             },
              {    name: adapter_sram
                   fusesoc_core: lowrisc:tlul:adapter_sram
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
