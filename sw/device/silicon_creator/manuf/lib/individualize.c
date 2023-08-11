@@ -7,16 +7,34 @@
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 
 #include "otp_ctrl_regs.h"
 
 enum {
+  /**
+   * Secret0 Parition OTP fields.
+   */
+  kSecret0TestUnlockTokenOffset =
+      OTP_CTRL_PARAM_TEST_UNLOCK_TOKEN_OFFSET - OTP_CTRL_PARAM_SECRET0_OFFSET,
+  kSecret0TestUnlockTokenSizeInBytes = OTP_CTRL_PARAM_TEST_UNLOCK_TOKEN_SIZE,
+  kSecret0TestUnlockTokenSizeIn64BitWords =
+      kSecret0TestUnlockTokenSizeInBytes / sizeof(uint64_t),
+
+  kSecret0TestExitTokenOffset =
+      OTP_CTRL_PARAM_TEST_EXIT_TOKEN_OFFSET - OTP_CTRL_PARAM_SECRET0_OFFSET,
+  kSecret0TestExitTokenSizeInBytes = OTP_CTRL_PARAM_TEST_EXIT_TOKEN_SIZE,
+  kSecret0TestExitTokenSizeIn64BitWords =
+      kSecret0TestExitTokenSizeInBytes / sizeof(uint64_t),
+
   /**
    * Secret1 Parition OTP fields.
    */
@@ -203,6 +221,49 @@ static status_t flash_info_read(dif_flash_ctrl_state_t *flash_state,
   return OK_STATUS();
 }
 
+/**
+ * Hashes a lifecycle transition token to prepare it to be written to OTP.
+ *
+ * According to the Lifecycle Controller's specification:
+ *
+ * "All 128bit lock and unlock tokens are passed through a cryptographic one way
+ * function in hardware before the life cycle controller compares them to the
+ * provisioned values ...", and
+ * "The employed one way function is a 128bit cSHAKE hash with the function name
+ * “” and customization string “LC_CTRL”".
+ *
+ * @param raw_token The raw token to be hashed.
+ * @param token_size The expected hashed token size in bytes.
+ * @param[out] hashed_token The hashed token.
+ * @return Result of the hash operation.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t hash_lc_transition_token(const uint32_t *raw_token,
+                                         size_t token_size,
+                                         uint64_t *hashed_token) {
+  crypto_const_uint8_buf_t input = {
+      .data = (uint8_t *)raw_token,
+      .len = token_size,
+  };
+  crypto_const_uint8_buf_t function_name_string = {
+      .data = (uint8_t *)"",
+      .len = 0,
+  };
+  crypto_const_uint8_buf_t customization_string = {
+      .data = (uint8_t *)"LC_CTRL",
+      .len = 7,
+  };
+  crypto_uint8_buf_t output = {
+      .data = (uint8_t *)hashed_token,
+      .len = token_size,
+  };
+
+  TRY(otcrypto_xof(input, kXofModeSha3Cshake128, function_name_string,
+                   customization_string, token_size, &output));
+
+  return OK_STATUS();
+}
+
 status_t manuf_individualize_device_hw_cfg(dif_flash_ctrl_state_t *flash_state,
                                            const dif_lc_ctrl_t *lc_ctrl,
                                            const dif_otp_ctrl_t *otp_ctrl) {
@@ -288,6 +349,49 @@ static status_t otp_secret_write(const dif_otp_ctrl_t *otp_ctrl,
   TRY(otp_ctrl_testutils_dai_write64(otp_ctrl, kDifOtpCtrlPartitionSecret1,
                                      offset, data, len));
   return OK_STATUS();
+}
+
+status_t manuf_individualize_device_secret0(
+    const dif_lc_ctrl_t *lc_ctrl, const dif_otp_ctrl_t *otp_ctrl,
+    const manuf_individualize_test_tokens_t *tokens) {
+  // Check life cycle in TEST_UNLOCKED0.
+  TRY(lc_ctrl_testutils_check_lc_state(lc_ctrl, kDifLcCtrlStateTestUnlocked0));
+
+  bool is_locked;
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionSecret0,
+                                      &is_locked));
+  if (is_locked) {
+    return OK_STATUS();
+  }
+
+  uint64_t hashed_test_unlock_token[kSecret0TestUnlockTokenSizeInBytes];
+  uint64_t hashed_test_exit_token[kSecret0TestExitTokenSizeInBytes];
+  TRY(hash_lc_transition_token(tokens->test_unlock_token,
+                               kSecret0TestUnlockTokenSizeInBytes,
+                               hashed_test_unlock_token));
+  TRY(hash_lc_transition_token(tokens->test_exit_token,
+                               kSecret0TestExitTokenSizeInBytes,
+                               hashed_test_exit_token));
+
+  TRY(otp_ctrl_testutils_dai_write64(
+      otp_ctrl, kDifOtpCtrlPartitionSecret0, kSecret0TestUnlockTokenOffset,
+      hashed_test_unlock_token, kSecret0TestUnlockTokenSizeIn64BitWords));
+  TRY(otp_ctrl_testutils_dai_write64(
+      otp_ctrl, kDifOtpCtrlPartitionSecret0, kSecret0TestExitTokenOffset,
+      hashed_test_exit_token, kSecret0TestExitTokenSizeIn64BitWords));
+
+  TRY(otp_ctrl_testutils_lock_partition(otp_ctrl, kDifOtpCtrlPartitionSecret0,
+                                        /*digest=*/0));
+
+  return OK_STATUS();
+}
+
+status_t manuf_individualize_device_secret0_check(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  bool is_locked;
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionSecret0,
+                                      &is_locked));
+  return is_locked ? OK_STATUS() : INTERNAL();
 }
 
 status_t manuf_individualize_device_secret1(const dif_lc_ctrl_t *lc_ctrl,
