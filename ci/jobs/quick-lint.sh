@@ -59,7 +59,7 @@ echo -e "\n### Use rustfmt to check Rust coding style"
 ci/scripts/rust-format.sh $tgt_branch
 
 echo -e "\n### Run shellcheck on all shell scripts"
-ci/scripts/run-shellcheck.sh
+util/sh/scripts/run-shellcheck.sh
 
 echo -e "\n### Render documentation"
 ci/scripts/build-docs.sh
