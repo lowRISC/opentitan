@@ -102,7 +102,7 @@ status_t aes_testutils_masking_prng_zero_output_seed(void) {
   TRY(dif_edn_stop(&edn0));
   TRY(dif_csrng_stop(&csrng));
 
-  // Re-eanble CSRNG
+  // Re-enable CSRNG
   TRY(dif_csrng_configure(&csrng));
 
   // Re-enable EDN0 and configure it to produce the seed that if loaded into AES

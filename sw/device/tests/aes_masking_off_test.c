@@ -138,7 +138,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_edn_stop(&edn));
   CHECK_DIF_OK(dif_csrng_stop(&csrng));
 
-  // Re-eanble CSRNG.
+  // Re-enable CSRNG.
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
 
   return status_ok(execute_test());

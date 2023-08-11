@@ -45,7 +45,7 @@ status_t entropy_testutils_auto_mode_init(void) {
 
   TRY(entropy_testutils_stop_all());
 
-  // re-eanble entropy src and csrng
+  // re-enable entropy src and csrng
   setup_entropy_src(&entropy_src);
   TRY(dif_csrng_configure(&csrng));
 
