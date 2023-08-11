@@ -213,21 +213,6 @@ class VerilatorToolReq(ToolReq):
         return version_str.stdout.split(' ')[1].strip()
 
 
-class VeribleToolReq(ToolReq):
-    tool_cmd = ['verible-verilog-lint', '--version']
-
-    def to_semver(self, version, from_req):
-        # Drop the hash suffix and convert into version string that
-        # is compatible with StrictVersion in check_version below.
-        # Example: v0.0-808-g1e17daa -> 0.0.808
-        m = re.fullmatch(r'v([0-9]+)\.([0-9]+)-([0-9]+)-g[0-9a-f]+$', version)
-        if m is None:
-            raise ValueError(
-                "{} has invalid version string format.".format(version))
-
-        return '.'.join(m.group(1, 2, 3))
-
-
 class VivadoToolReq(ToolReq):
     tool_cmd = ['vivado', '-version']
     version_regex = re.compile(r'Vivado v(.*)\s')
@@ -341,7 +326,6 @@ def dict_to_tool_req(path, tool, raw):
     classes = {
         'edalize': PyModuleToolReq,
         'vcs': VcsToolReq,
-        'verible': VeribleToolReq,
         'verilator': VerilatorToolReq,
         'vivado': VivadoToolReq,
         'ninja': NinjaToolReq
