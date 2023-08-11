@@ -217,6 +217,58 @@
       package: "lc_ctrl_pkg"
     }
   ]
+  features: [
+    {
+      name: "KMAC.MODE.SHA3",
+      desc: '''SHA3 hashing algorithm supporting the following security strength configurations:
+            SHA3-224, SHA3-256, SHA3-384, and SHA3-512. Compliant with NIST FIPS 202.
+            '''
+    }
+    {
+      name: "KMAC.MODE.SHAKE",
+      desc: '''SHAKE hashing algorithm supporting the following security strength configurations:
+            SHAKE128, and SHAKE256. Compliant with NIST FIPS 202.
+            '''
+    }
+    {
+      name: "KMAC.MODE.CSHAKE",
+      desc: '''cSHAKE hashing algorithm supporting the following security strength configurations:
+            cSHAKE128, and cSHAKE256. Compliant with NIST SP 800-185.
+            '''
+    }
+    {
+      name: "KMAC.MODE.KMAC",
+      desc: '''KMAC Keccak Message Authentication Code supporting the following security strength
+            configurations: KMAC128, KMAC256. Compliant with NIST SP 800-185.
+            '''
+    }
+    {
+      name: "KMAC.MODE.XOF",
+      desc: '''SHAKE, cSHAKE and KMAC modes of operation support eXtendable-Output Format (XOF)
+            as specified in NIST SP 800-185.
+            '''
+    }
+    {
+      name: "KMAC.ENDIANNESS.MESSAGE",
+      desc: "Configurable input message endianness."
+    }
+    {
+      name: "KMAC.ENDIANNESS.DIGEST",
+      desc: "Configurable output digest endianness."
+    }
+    {
+      name: "KMAC.KEY.SIDELOAD",
+      desc: "Key can be loaded directly from the keymgr."
+    }
+    {
+      name: "KMAC.ENTROPY_MODES",
+      desc: '''Entropy required for countermeasures can be configured to be provided by software or
+            EDN. In EDN mode, KMAC can be configured to set an error flag if entropy is not
+            provided within a configurable time window. The cadence of entropy requested from EDN
+            is also configurable.
+            '''
+    }
+  ]
   countermeasures: [
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."

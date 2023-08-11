@@ -130,6 +130,7 @@ scan_en | optional | python Bool | Indicates the module has `scan_en_i`
 SPDX-License-Identifier | optional | string | License ientifier (if using pure json) Only use this if unable to put this information in a comment at the top of the file.
 wakeup_list | optional | name list+ | list of peripheral wakeups
 countermeasures | optional | name list | list of countermeasures in this block
+features | optional | name list | list of functional features in this block
 
 The basic structure of a register definition file is thus:
 

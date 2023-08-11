@@ -5,14 +5,19 @@
   name: "chip"
 
   // TODO: remove the common testplans if not applicable
-  import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
-                     // TODO #5484, comment these 2 lines out because spi host memory is dummy
-                     // "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
-                     // Integrity error is tested in a SW test.
-                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_wo_intg_testplan.hjson",
-                     "hw/ip/tlul/data/tlul_testplan.hjson",
-                     "sw/device/silicon_creator/rom/data/rom_e2e_testplan.hjson",
-                     "hw/top_earlgrey/data/chip_conn_testplan.hjson"]
+  import_testplans: [
+    "hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+    // TODO #5484, comment these 2 lines out because spi host memory is dummy
+    // "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
+    // Integrity error is tested in a SW test.
+    "hw/dv/tools/dvsim/testplans/tl_device_access_types_wo_intg_testplan.hjson",
+    "hw/ip/tlul/data/tlul_testplan.hjson",
+    "sw/device/silicon_creator/rom/data/rom_e2e_testplan.hjson",
+    "hw/top_earlgrey/data/chip_conn_testplan.hjson",
+
+    // IP block specific top level test plans.
+    "hw/top_earlgrey/data/ip/chip_kmac_testplan.hjson",
+  ]
 
   testpoints: [
     ///////////////////////////////////////////////////////////////////////////
@@ -2140,106 +2145,6 @@
             '''
       stage: V2
       tests: ["chip_sw_hmac_enc_idle"]
-    }
-
-    // KMAC pre-verified IP) integration tests:
-    {
-      name: chip_sw_kmac_enc
-      desc: '''Verify the SHA3 operation.
-
-            SW test verifies SHA3 operation with a known key, plain text and digest (pick one of
-            the NIST vectors). SW validates the reception of kmac done and fifo empty interrupts.
-            '''
-      stage: V2
-      tests: ["chip_sw_kmac_mode_cshake", "chip_sw_kmac_mode_kmac",
-              "chip_sw_kmac_mode_kmac_jitter_en"]
-    }
-    {
-      name: chip_sw_kmac_app_keymgr
-      desc: '''Verify the keymgr interface to KMAC.
-
-            - Configure the keymgr to start sending known message data to the KMAC.
-            - Keymgr should transmit a sideloaded key to the KMAC as well.
-            - KMAC should finish hashing successfully (not visible to SW) and return digest to
-              keymgr.
-            - This digest is compared against the known digest value for correctness.
-            - Verify that the keymgr has received valid output from the KMAC.
-
-            X-ref'ed with keymgr test.
-            '''
-      stage: V2
-      tests: ["chip_sw_keymgr_key_derivation"]
-    }
-    {
-      name: chip_sw_kmac_app_lc
-      desc: '''Verify the LC interface to KMAC.
-
-            - Configure the LC_CTRL to start a token hash using KMAC interface.
-            - KMAC should finish hashing successfully (not visible to SW) and return digest to
-            LC_CTRL.
-
-            X-ref'ed with LC_CTRL test/env.
-            '''
-      stage: V2
-      tests: ["chip_sw_lc_ctrl_transition"]
-    }
-    {
-      name: chip_sw_kmac_app_rom
-      desc: '''Verify the ROM interface to KMAC.
-
-            - Backdoor initialize ROM memory immediately out of reset.
-            - ROM will send message to the KMAC containing its memory contents,
-            - KMAC will hash and return the digest to the ROM.
-            - ROM will compare received digest against its first 8 logical memory lines for
-            correctness.
-
-            X-ref'ed with ROM_CTRL test/env.
-            '''
-      stage: V2
-      tests: ["chip_sw_kmac_app_rom"]
-    }
-    {
-      name: chip_sw_kmac_entropy
-      desc: '''Verify the EDN interface to KMAC.
-
-            Requires `EnMasking` parameter to be enabled.
-            SW randomly configures the KMAC in any hashing mode/strength, and enable EDN mode.
-            Randomly enable/disable the `entropy_refresh`.
-            Randomly configure `wait_timer` values (zero for disable, non-zero for timer expire).
-              - Program `wait_timer` to a small value.
-                Check if EDN timeout error occurs after issuing the hashing op.
-              - Adjust `wait_timer` greater than expected EDN latency (with correct `prescaler`
-                too). Then check if Digest is correct.
-            KMAC should send EDN request after `entropy_ready` is set.
-            KMAC also should send out another request to EDN when either:
-              - kmac hash counter hits the configured threshold (assuming it is non-zero)
-              - Hash count exceeds the threshold.
-            SW verifies that KMAC produces the correct digest value.
-
-            TODO: This is pending security review discussion. It is unclear if this feature will be
-            implemented.
-
-            X-ref'ed with EDN test/env.
-            '''
-      stage: V2
-      tests: ["chip_sw_kmac_entropy"]
-    }
-    {
-      name: chip_sw_kmac_idle
-      desc: '''Verify the KMAC idle signaling to clkmgr.
-
-            - Write the KMAC clk hint to 0 within clkmgr to indicate KMAC clk can be gated and
-              verify that the KMAC clk hint status within clkmgr reads 0 (KMAC is disabled).
-            - Write the KMAC clk hint to 1 within clkmgr to indicate KMAC clk can be enabled.
-              Verify that the KMAC clk hint status within clkmgr reads 1 (KMAC is enabled).
-            - Initiate a KMAC operation with a known key, plain text and digest.
-              Write KMAC clock hint to 0 and verify the KMAC clk hint status within clkmgr reads 1
-              (KMAC is enabled), before the KMAC operation is complete.
-            - After the KMAC operation is complete, verify the digest for correctness. Verify that
-              the KMAC clk hint status within clkmgr now reads 0 again (KMAC is disabled).
-            '''
-      stage: V2
-      tests: ["chip_sw_kmac_idle"]
     }
 
     // ENTROPY_SRC (pre-verified IP) integration tests:
