@@ -56,7 +56,7 @@ enum {
 status_t manuf_personalize_device(dif_flash_ctrl_state_t *flash_state,
                                   const dif_lc_ctrl_t *lc_ctrl,
                                   const dif_otp_ctrl_t *otp_ctrl,
-                                  manuf_provisioning_t *export_data);
+                                  manuf_personalize_t *export_data);
 
 /**
  * Checks the device personalization end state.

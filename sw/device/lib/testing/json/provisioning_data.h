@@ -41,11 +41,11 @@ UJSON_SERDE_STRUCT(WrappedRmaUnlockToken, \
                    wrapped_rma_unlock_token_t, \
                    STRUCT_WRAPPED_RMA_UNLOCK_TOKEN);
 
-#define STRUCT_MANUF_PROVISIONING(field, string) \
+#define STRUCT_MANUF_PERSONALIZE(field, string) \
     field(wrapped_rma_unlock_token, wrapped_rma_unlock_token_t)
-UJSON_SERDE_STRUCT(ManufProvisioning, \
-                   manuf_provisioning_t, \
-                   STRUCT_MANUF_PROVISIONING);
+UJSON_SERDE_STRUCT(ManufPersonalize, \
+                   manuf_personalize_t, \
+                   STRUCT_MANUF_PERSONALIZE);
 
 #undef MODULE_ID
 // clang-format on
