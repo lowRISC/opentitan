@@ -4,6 +4,7 @@
 
 import unittest
 import tempfile
+import clang.cindex
 
 from util.py.packages.lib.register_usage_report import (
     RegisterTokenPattern, RegisterUsageReport, RegisterUsageReportGroup,
@@ -272,6 +273,56 @@ class TestRegisterTokenPattern(unittest.TestCase):
             pattern.find_matches(
                 ["base_ptr", "*", "REG_TOKEN_A", "+", "REG_TOKEN_B"]),
             ["REG_TOKEN_A", "REG_TOKEN_B"])
+
+
+class TestLibclang(unittest.TestCase):
+    def test_repro_libclang_quirk(self):
+        """Document the libclang quirk related to macro expansion. Issue #19438.
+
+        When we use libclang to find a call site that was created by a macro
+        expansion, the call site's arguments' tokens are incorrect. They seem to
+        point into the non-preprocessed translation unit.
+        """
+
+        C_SRC_WITH_MACRO_EXPANSION = b"""
+#define CONST_FOO 0
+#define CALL_MAGIC(name) magic(CONST_##name)
+
+void magic(int register_offset);
+
+void entry_point(void) {
+  CALL_MAGIC(FOO);
+}
+"""
+        INCORRECT_ARG_TOKENS = [
+            '0', '#', 'define', 'CALL_MAGIC', '(', 'name', ')', 'magic', '(',
+            'CONST_', '##', 'name', ')', 'void', 'magic', '(', 'int',
+            'register_offset', ')', ';', 'void', 'entry_point', '(', 'void',
+            ')', '{', 'CALL_MAGIC', '(', 'FOO', ')'
+        ]
+
+        index = clang.cindex.Index.create()
+
+        with tempfile.NamedTemporaryFile(suffix=".c") as tf:
+            tf.write(C_SRC_WITH_MACRO_EXPANSION)
+            tf.flush()
+
+            translation_unit = index.parse(tf.name, args=[])
+
+            [cursor] = [
+                c for c in translation_unit.cursor.walk_preorder()
+                if c.kind == clang.cindex.CursorKind.CALL_EXPR and
+                c.displayname == 'magic'
+            ]
+
+            [arg] = list(cursor.get_arguments())
+
+            tokens = [t.spelling for t in arg.get_tokens()]
+
+            # These assertions may feel a little backwards because the purpose
+            # of this test is to document the unwanted behavior.
+            self.assertEqual(tokens, INCORRECT_ARG_TOKENS)
+            self.assertNotEqual(tokens, ['CONST_FOO'])
 
 
 if __name__ == "__main__":
