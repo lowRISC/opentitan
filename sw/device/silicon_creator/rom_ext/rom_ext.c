@@ -8,7 +8,9 @@
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/stdasm.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
@@ -18,10 +20,12 @@
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
+#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
+#include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/epmp_state.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
@@ -77,6 +81,8 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
   const sigverify_rsa_key_t *key;
   RETURN_IF_ERROR(sigverify_rsa_key_get(
       sigverify_rsa_key_id_get(&manifest->rsa_modulus), lc_state, &key));
+  memset(boot_measurements.bl0.data, (int)rnd_uint32(),
+         sizeof(boot_measurements.bl0.data));
 
   hmac_sha256_init();
   // Hash usage constraints.
@@ -91,6 +97,10 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
   // Verify signature
   hmac_digest_t act_digest;
   hmac_sha256_final(&act_digest);
+  static_assert(sizeof(boot_measurements.bl0) == sizeof(act_digest),
+                "Unexpected BL0 digest size.");
+  memcpy(&boot_measurements.bl0, &act_digest, sizeof(boot_measurements.bl0));
+
   uint32_t flash_exec = 0;
   return sigverify_rsa_verify(&manifest->rsa_signature, key, &act_digest,
                               lc_state, &flash_exec);
@@ -117,6 +127,31 @@ static uintptr_t owner_vma_get(const manifest_t *manifest, uintptr_t lma_addr) {
 
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_boot(const manifest_t *manifest) {
+  // Initialize the entropy complex for key manager operations.
+  // Note: `OTCRYPTO_OK.value` is equal to `kErrorOk` but we cannot add a static
+  // assertion here since its definition is not an integer constant expression.
+  HARDENED_RETURN_IF_ERROR((rom_error_t)entropy_complex_init().value);
+  // ROM sets the SW binding values but does not initialize the key manager.
+  // Advance key manager state twice to transition to the creator root key
+  // state.
+  keymgr_advance_state();
+  HARDENED_RETURN_IF_ERROR(keymgr_state_check(kKeymgrStateInit));
+  keymgr_advance_state();
+  HARDENED_RETURN_IF_ERROR(keymgr_state_check(kKeymgrStateCreatorRootKey));
+  // Set binding and max version for BL0.
+  keymgr_sw_binding_unlock_wait();
+  keymgr_sw_binding_set(&manifest->binding_value, &boot_measurements.bl0);
+  keymgr_owner_int_max_ver_set(manifest->max_key_version);
+  SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioSwBindingSet +
+                           kKeymgrSecMmioOwnerIntMaxVerSet);
+  // Transition to the owner intermediate key state.
+  keymgr_advance_state();
+  HARDENED_RETURN_IF_ERROR(
+      keymgr_state_check(kKeymgrStateOwnerIntermediateKey));
+  keymgr_sw_binding_unlock_wait();
+  sec_mmio_check_values(rnd_uint32());
+  sec_mmio_check_counters(1);
+
   // Disable access to silicon creator info pages and OTP partitions until next
   // reset.
   flash_ctrl_creator_info_pages_lockdown();
