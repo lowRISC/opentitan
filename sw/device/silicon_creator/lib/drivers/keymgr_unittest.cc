@@ -46,14 +46,11 @@ class KeymgrTest : public rom_test::RomTest {
   rom_test::MockSecMmio sec_mmio_;
 };
 
-TEST_F(KeymgrTest, Initialize) {
-  ExpectStatusCheck(KEYMGR_OP_STATUS_STATUS_VALUE_IDLE,
-                    KEYMGR_WORKING_STATE_STATE_VALUE_RESET,
-                    /*err_code=*/0u);
-
+TEST_F(KeymgrTest, EntropyReseedIntervalSet) {
   EXPECT_SEC_WRITE32_SHADOWED(
       base_ + KEYMGR_RESEED_INTERVAL_SHADOWED_REG_OFFSET, 0u);
-  EXPECT_EQ(keymgr_init(0u), kErrorOk);
+
+  keymgr_entropy_reseed_interval_set(0u);
 }
 
 TEST_F(KeymgrTest, SwBindingValuesSet) {

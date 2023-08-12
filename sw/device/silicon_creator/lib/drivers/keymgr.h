@@ -69,7 +69,7 @@ typedef enum keymgr_state {
  * ```
  */
 enum {
-  kKeymgrSecMmioInit = 1,
+  kKeymgrSecMmioEntropyReseedIntervalSet = 1,
   kKeymgrSecMmioSwBindingSet = 17,
   kKeymgrSecMmioCreatorMaxVerSet = 2,
   kKeymgrSecMmioOwnerIntMaxVerSet = 2,
@@ -118,20 +118,13 @@ void keymgr_creator_max_ver_set(uint32_t max_key_ver);
 void keymgr_owner_int_max_ver_set(uint32_t max_key_ver);
 
 /**
- * Initializes the key manager.
- *
- * Initializes the key manager `entropy_reseed_interval` and advances the state
- * into initialized.
- *
- * The working status of the key manager must be set to reset before
- * calling this function otherwise it will return `kErrorKeymgrInternal`.
+ * Sets the entropy reseed interval of the key manager.
  *
  * @param entropy_reseed_interval Number of key manager cycles before the
  * entropy is reseeded.
  * @return The result of the operation.
  */
-OT_WARN_UNUSED_RESULT
-rom_error_t keymgr_init(uint16_t entropy_reseed_interval);
+void keymgr_entropy_reseed_interval_set(uint16_t entropy_reseed_interval);
 
 /**
  * Advances the state of the key manager.
