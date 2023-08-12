@@ -9,9 +9,9 @@ More detailed and complete code can be found in the software under `sw/`, [ROM c
 ## Initialization
 
 This section of the code describes initializing the HMAC-SHA256, setting up the
-interrupts, endianness, and HMAC, SHA-256 mode. [`CFG.endian_swap`](../data/hmac.hjson#cfg) reverses
+interrupts, endianness, and HMAC, SHA-256 mode. [`CFG.endian_swap`](registers.md#cfg) reverses
 the byte-order of input words when software writes into the message FIFO.
-[`CFG.digest_swap`](../data/hmac.hjson#cfg) reverses the byte-order in the final HMAC or SHA hash.
+[`CFG.digest_swap`](registers.md#cfg) reverses the byte-order in the final HMAC or SHA hash.
 
 ```c
 void hmac_init(unsigned int endianess, unsigned int digest_endian) {
@@ -38,8 +38,8 @@ void hmac_init(unsigned int endianess, unsigned int digest_endian) {
 
 The following code shows how to send a message to the HMAC, the procedure is
 the same whether a full HMAC or just a SHA-256 calculation is required (choose
-between them using [`CFG.hmac_en`](../data/hmac.hjson#cfg)). In both cases the SHA-256 engine must be
-enabled using [`CFG.sha_en`](../data/hmac.hjson#cfg) (once all other configuration has been properly set).
+between them using [`CFG.hmac_en`](registers.md#cfg)). In both cases the SHA-256 engine must be
+enabled using [`CFG.sha_en`](registers.md#cfg) (once all other configuration has been properly set).
 If the message is bigger than 512-bit, the software must wait until the FIFO
 isn't full before writing further bits.
 
@@ -72,15 +72,15 @@ void run_hmac(uint32_t *msg, uint32_t msg_len, uint32_t *hash) {
 
 ## Updating the configurations
 
-The HMAC IP prevents [`CFG`](../data/hmac.hjson#cfg) and [`KEY`](../data/hmac.hjson#key) registers from updating while the engine is processing messages.
+The HMAC IP prevents [`CFG`](registers.md#cfg) and [`KEY`](registers.md#key) registers from updating while the engine is processing messages.
 Such attempts are discarded.
-The [`KEY`](../data/hmac.hjson#key) register ignores any attempt to access the secret key in the middle of the process.
+The [`KEY`](registers.md#key) register ignores any attempt to access the secret key in the middle of the process.
 If the software tries to update the KEY, the IP reports an error through the Error FIFO. The error code is `SwUpdateSecretKeyInProcess`, `0x0003`.
 
 ## Errors
 
-When HMAC sees errors, the IP reports the error via [`INTR_STATUS.hmac_err`](../data/hmac.hjson#intr_status).
-The details of the error type is stored in [`ERR_CODE`](../data/hmac.hjson#err_code).
+When HMAC sees errors, the IP reports the error via [`INTR_STATE.hmac_err`](registers.md#intr_state).
+The details of the error type is stored in [`ERR_CODE`](registers.md#err_code).
 
 Error                        | Value | Description
 -----------------------------|-------|---------------
@@ -95,8 +95,8 @@ Error                        | Value | Description
 ### FIFO_EMPTY
 
 If the FIFO_FULL interrupt occurs, it is recommended the software does not write
-more data into [`MSG_FIFO`](../data/hmac.hjson#msg_fifo) until the interrupt is cleared and the status
-[`STATUS.fifo_full`](../data/hmac.hjson#status) is lowered. Whilst the FIFO is full the HMAC will block
+more data into [`MSG_FIFO`](registers.md#msg_fifo) until the interrupt is cleared and the status
+[`STATUS.fifo_full`](registers.md#status) is lowered. Whilst the FIFO is full the HMAC will block
 writes until the FIFO has space which will cause back-pressure on the
 interconnect.
 
@@ -106,4 +106,4 @@ interconnect.
 
 ## Register Table
 
-* [Register Table](../data/hmac.hjson#registers)
+* [Register Table](registers.md#registers)
