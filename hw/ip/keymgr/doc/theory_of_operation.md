@@ -197,8 +197,8 @@ Given the above, we have 4 total categories of errors:
 * Synchronous fatal errors
 * Asynchronous fatal errors
 
-All recoverable errors (synchronous and asynchronous) are captured in [`ERR_CODE`](../data/keymgr.hjson#err_code).
-All fatal errors (synchronous and asynchronous) are captured in [`FAULT_STATUS`](../data/keymgr.hjson#fault_status).
+All recoverable errors (synchronous and asynchronous) are captured in [`ERR_CODE`](registers.md#err_code).
+All fatal errors (synchronous and asynchronous) are captured in [`FAULT_STATUS`](registers.md#fault_status).
 
 Recoverable errors cause a recoverable alert to be sent from the key manager.
 Fatal errors cause a fatal alert to be sent from the key manager.
@@ -208,29 +208,29 @@ Below, the behavior of each category and its constituent errors are described in
 ### Synchronous Recoverable Errors
 
 These errors can only happen when a key manager operation is invoked and are typically associated with incorrect software programming.
-At the end of the operation, key manager reports whether there was an error in [`ERR_CODE`](../data/keymgr.hjson#err_code) and sends a recoverable alert.
+At the end of the operation, key manager reports whether there was an error in [`ERR_CODE`](registers.md#err_code) and sends a recoverable alert.
 
-* [`ERR_CODE.INVALID_OP`](../data/keymgr.hjson#err_code) Software issued an invalid operation given the current key manager state.
-* [`ERR_CODE.INVALID_KMAC_INPUT`](../data/keymgr.hjson#err_code) Software supplied invalid input (for example a key greater than the max version) for a key manager operation.
+* [`ERR_CODE.INVALID_OP`](registers.md#err_code) Software issued an invalid operation given the current key manager state.
+* [`ERR_CODE.INVALID_KMAC_INPUT`](registers.md#err_code) Software supplied invalid input (for example a key greater than the max version) for a key manager operation.
 
 ### Asynchronous Recoverable Errors
 
 These errors can happen at any time regardless of whether there is a key manager operation.
-The error is reported in [`ERR_CODE`](../data/keymgr.hjson#err_code) and the key manager sends a recoverable alert.
+The error is reported in [`ERR_CODE`](registers.md#err_code) and the key manager sends a recoverable alert.
 
-* [`ERR_CODE.INVALID_SHADOW_UPDATE`](../data/keymgr.hjson#err_code) Software performed an invalid sequence while trying to update a key manager shadow register.
+* [`ERR_CODE.INVALID_SHADOW_UPDATE`](registers.md#err_code) Software performed an invalid sequence while trying to update a key manager shadow register.
 
 ### Synchronous Fatal Errors
 
 These errors can only happen when a key manager operation is invoked and receives malformed operation results that are not logically possible.
-At the end of the operation, key manager reports whether there was an error in [`FAULT_STATUS`](../data/keymgr.hjson#fault_status) and continuously sends fatal alerts .
+At the end of the operation, key manager reports whether there was an error in [`FAULT_STATUS`](registers.md#fault_status) and continuously sends fatal alerts .
 
 Note, these errors are synchronous from the perspective of the key manager, but they may be asynchronous from the perspective of another module.
 
 ### Asynchronous Fatal Errors
 
 These errors can happen at any time regardless of whether there is a key manager operation.
-The error is reported in [`FAULT_STATUS`](../data/keymgr.hjson#fault_status) and the key manager continuously sends fatal alerts.
+The error is reported in [`FAULT_STATUS`](registers.md#fault_status) and the key manager continuously sends fatal alerts.
 
 
 ### Faults and Operational Faults
@@ -240,18 +240,18 @@ The following are a few examples of when the error occurs and how the key manage
 
 #### Example 1: Fault During Operation
 The key manager is running a generate operation and a non-onehot command was observed by the KMAC interface.
-Since the non-onehot condition is a fault, it is reflected in [`FAULT_STATUS`](../data/keymgr.hjson#fault_status) and a fatal alert is generated.
-The key manager transitions to `Invalid` state, wipes internal storage and reports an invalid operation in [`ERR_CODE.INVALID_OP`](../data/keymgr.hjson#err_code).
+Since the non-onehot condition is a fault, it is reflected in [`FAULT_STATUS`](registers.md#fault_status) and a fatal alert is generated.
+The key manager transitions to `Invalid` state, wipes internal storage and reports an invalid operation in [`ERR_CODE.INVALID_OP`](registers.md#err_code).
 
 #### Example 2: Fault During Idle
 The key manager is NOT running an operation and is idle.
 During this time, a fault is observed on the regfile (shadow storage error) and FSM (control FSM integrity error).
-The faults are reflected in [`FAULT_STATUS`](../data/keymgr.hjson#fault_status).
+The faults are reflected in [`FAULT_STATUS`](registers.md#fault_status).
 The key manager transitions to `Invalid` state, wipes internal storage but does not report an invalid operation.
 
 #### Example 3: Operation after Fault Detection
 Continuing from the example above, the key manager now begins an operation.
-Since the key manager is already in `Invalid` state, it does not wipe internal storage and reports an invalid operation in [`ERR_CODE.INVALID_OP`](../data/keymgr.hjson#err_code).
+Since the key manager is already in `Invalid` state, it does not wipe internal storage and reports an invalid operation in [`ERR_CODE.INVALID_OP`](registers.md#err_code).
 
 #### Additional Details on Invalid Input
 
@@ -320,16 +320,16 @@ To support these features, the key manager maintains two versions of the working
 There is one version for attestation and one version for sealing.
 
 The main difference between the two CDIs is the different usage of `SW_BINDING`.
-For the Sealing CDI, the [`"SEALING_SW_BINDING"`](../data/keymgr.hjson#sealing_sw_binding) is used, all other inputs are the same.
-For the Attestation CDI, the [`"ATTEST_SW_BINDING"`](../data/keymgr.hjson#attest_sw_binding) is used, all other inputs are the same.
+For the Sealing CDI, the [`"SEALING_SW_BINDING"`](registers.md#sealing_sw_binding) is used, all other inputs are the same.
+For the Attestation CDI, the [`"ATTEST_SW_BINDING"`](registers.md#attest_sw_binding) is used, all other inputs are the same.
 
 When invoking an advance operation, both versions are advanced, one after the other.
 There are thus two KMAC transactions.
-The first transaction uses the Sealing CDI internal key, [`"SEALING_SW_BINDING"`](../data/keymgr.hjson#sealing_sw_binding) and other common inputs.
-The second transaction uses the Attestation CDI internal key, [`"ATTEST_SW_BINDING"`](../data/keymgr.hjson#attest_sw_binding) and other common inputs.
+The first transaction uses the Sealing CDI internal key, [`"SEALING_SW_BINDING"`](registers.md#sealing_sw_binding) and other common inputs.
+The second transaction uses the Attestation CDI internal key, [`"ATTEST_SW_BINDING"`](registers.md#attest_sw_binding) and other common inputs.
 
 When invoking a generate operation, the software must specify which CDI to use as the source key.
-This is done through [`"CONTROL.CDI_SEL"`](../data/keymgr.hjson#control).
+This is done through [`"CONTROL.CDI_SEL"`](registers.md#control).
 Unlike the advance operation, there is only 1 KMAC transaction since we pick a specific CDI to operate.
 
 When disabling, both versions are disabled together.
@@ -406,7 +406,7 @@ The KMAC key thus has two possible outputs, one is the sideload key, and the oth
 When a valid operation is called, the internal state key is sent over the KMAC key.
 During all other times, the sideloaded value is presented.
 Note, there may not be a valid key in the sideload register if it has been cleared or never generated.
-The sideload key can be overwritten with another generate command, or cleared with entropy through [`SIDELOAD_CLEAR`](../data/keymgr.hjson#sideload_clear).
+The sideload key can be overwritten with another generate command, or cleared with entropy through [`SIDELOAD_CLEAR`](registers.md#sideload_clear).
 
 The clearing can be done one slot at a time, or all at once.
 Once a clearing bit is enabled for a particular key slot, its value is continuously re-randomized every clock cycle.
@@ -457,10 +457,10 @@ The software binding is used during the following state transitions only:
 -  `CreatorRootKey` to `OwnerIntermedaiteKey`
 -  `OwnerIntermediateKey` to `OwnerRootKey`
 
-In order to save on storage and not have a duplicate copy per stage, the software binding registers [`SOFTWARE_BINDING`](../data/keymgr.hjson#software_binding) are shared between key manager stages.
+In order to save on storage and not have a duplicate copy per stage, the software binding registers [`SOFTWARE_BINDING`](registers.md#software_binding) are shared between key manager stages.
 
-Software sets the appropriate values and locks it by clearing [`SOFT_BINDING_EN`](../data/keymgr.hjson#soft_binding_en).
-When later a successful `advance` call is made, the key manager then unlocks by setting [`SOFT_BINDING_EN`](../data/keymgr.hjson#soft_binding_en) to 1.
+Software sets the appropriate values and locks it by clearing [`SOFT_BINDING_EN`](registers.md#soft_binding_en).
+When later a successful `advance` call is made, the key manager then unlocks by setting [`SOFT_BINDING_EN`](registers.md#soft_binding_en) to 1.
 An unsuccessful advance call (errors) does not unlock the binding.
 This allows the next stage of software to re-use the binding registers.
 
@@ -470,23 +470,20 @@ The keymgr has several custom security checks.
 
 #### One-Hot Command Check
 The command received by the KMAC interface must always be in one-hot form and unchanging during the life time of a KMAC transaction.
-If this check fails, an error is reflected in [`FAULT_STATUS.CMD`](../data/keymgr.hjson#fault_status).
+If this check fails, an error is reflected in [`FAULT_STATUS.CMD`](registers.md#fault_status).
 
 #### Unexpected KMAC Done
 The `kmac_done` signal can only happen during the expected transaction window.
-If this check fails, an error is reflected in [`FAULT_STATUS.KMAC_DONE`](../data/keymgr.hjson#fault_status).
+If this check fails, an error is reflected in [`FAULT_STATUS.KMAC_DONE`](registers.md#fault_status).
 
 #### Control State Machine Check
 This error checks for two things:
 -  The key manager can advance to one of the key states (e.g. RootKey, OwnerIntermediateKey) only when there is a legal advanced operation.
 -  The key manager can issue an advance or generate operation to the KMAC interface only if the original software request is an advanced or generate command.
 
-If these checks fail, an error is reflected in [`FAULT_STATUS.CTRL_FSM_CHK`](../data/keymgr.hjson#fault_status).
+If these checks fail, an error is reflected in [`FAULT_STATUS.CTRL_FSM_CHK`](registers.md#fault_status).
 
 #### Sideload Select Check
 A sideload key slot is selected for update only if the original software request targeted that key slot.
 
-If this check fails, an error is reflected in [`FAULT_STATUS.SIDE_CTRL_SEL`](../data/keymgr.hjson#fault_status).
-
-## Hardware Interfaces
-* [Interface Tables](../data/keymgr.hjson#interfaces)
+If this check fails, an error is reflected in [`FAULT_STATUS.SIDE_CTRL_SEL`](registers.md#fault_status).

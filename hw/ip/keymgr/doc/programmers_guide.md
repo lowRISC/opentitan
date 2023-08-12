@@ -15,7 +15,7 @@ At the conclusion of the command, key and valid signals are forwarded by the key
 The key and valid signals remain asserted to the selected destination until software explicitly disables the output via another command, or issues another `generate-output-hw` command with a different destination primitive.
 
 ## Caveats
-The keymgr [`WORKING_STATE`](../data/keymgr.hjson#working_state) register allows software to discover the current state of `keymgr`.
+The keymgr [`WORKING_STATE`](registers.md#working_state) register allows software to discover the current state of `keymgr`.
 However, since these values are not hardened, they can be attacked.
 As such, software should be careful to not make critical system decisions based on these registers.
 They are meant generally for informational or debug purposes.
@@ -23,7 +23,3 @@ They are meant generally for informational or debug purposes.
 ## Device Interface Functions (DIFs)
 
 - [Device Interface Functions](../../../../sw/device/lib/dif/dif_keymgr.h)
-
-## Register Table
-
-* [Register Table](../data/keymgr.hjson#registers)
