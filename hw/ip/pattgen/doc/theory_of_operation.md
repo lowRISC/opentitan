@@ -1,6 +1,6 @@
 # Theory of Operation
 
-The pattern can be started (or halted) on either channel by setting the corresponding [`CTRL.ENABLE`](../data/pattgen.hjson#ctrl) bit to 1 (or 0) for the desired channel.
+The pattern can be started (or halted) on either channel by setting the corresponding [`CTRL.ENABLE`](registers.md#ctrl) bit to 1 (or 0) for the desired channel.
 Once disabled, either channel can be configured independently.
 The channel parameters (i.e. clock divider ratio, clock polarity, pattern length, pattern data, and repetition count) can all be programmed on a per-channel basis.
 Enabling the pattern generator channel starts the pattern from the beginning.
@@ -12,10 +12,6 @@ Changes to the configuration registers only take effect once the channel has bee
 ## Block Diagram
 
 ![](../doc/pattgen_block_diagram.svg)
-
-## Hardware Interfaces
-
-* [Interface Tables](../data/pattgen.hjson#interfaces)
 
 ## Design Details
 
@@ -60,5 +56,5 @@ The entire sequence can be restarted either by resetting or disabling and re-ena
 ### Interrupts
 
 The pattern generator HWIP provides two interrupt pins, `done_ch0` and `done_ch1`, which indicate the completion of pattern generation on the output channels.
-These interrupts can be enabled/disabled by setting/un-setting the corresponding bits of the [`INTR_ENABLE`](../data/pattgen.hjson#intr_enable) register.
-To clear the interrupts, bit `1` must be written the corresponding bits of [`INTR_STATE`](../data/pattgen.hjson#intr_state) register
+These interrupts can be enabled/disabled by setting/un-setting the corresponding bits of the [`INTR_ENABLE`](registers.md#intr_enable) register.
+To clear the interrupts, bit `1` must be written the corresponding bits of [`INTR_STATE`](registers.md#intr_state) register
