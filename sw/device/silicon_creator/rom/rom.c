@@ -133,7 +133,7 @@ static rom_error_t rom_init(void) {
   uart_init(kUartNCOValue);
 
   // Set static_critical region format version.
-  static_critical_version = kStaticCriticalVersion1;
+  static_critical_version = kStaticCriticalVersion2;
 
   // There are no conditional checks before writing to this CSR because it is
   // expected that if relevant Ibex countermeasures are disabled, this will
