@@ -29,8 +29,8 @@ This HMAC implementation is not hardened against side channel or fault injection
 It is meant purely for hashing acceleration.
 If hardened MAC operations are required, users should use either [KMAC](../kmac/README.md) or a software implementation.
 
-The 256-bit secret key is written in [`KEY_0`](data/hmac.hjson#key_0) to [`KEY_7`](data/hmac.hjson#key_7).
-The message to authenticate is written to [`MSG_FIFO`](data/hmac.hjson#msg_fifo) and the HMAC generates a 256-bit digest value which can be read from [`DIGEST_0`](data/hmac.hjson#digest_0) to [`DIGEST_7`](data/hmac.hjson#digest_7).
+The 256-bit secret key is written in [`KEY_0`](doc/registers.md#key) to [`KEY_7`](doc/registers.md#key).
+The message to authenticate is written to [`MSG_FIFO`](doc/registers.md#msg_fifo) and the HMAC generates a 256-bit digest value which can be read from [`DIGEST_0`](doc/registers.md#digest) to [`DIGEST_7`](doc/registers.md#digest).
 The `hash_done` interrupt is raised to report to software that the final digest is available.
 
 The HMAC IP can run in SHA-256-only mode, whose purpose is to check the
@@ -40,13 +40,13 @@ generates the same result with the same message every time.
 
 The software doesn't need to provide the message length. The HMAC IP
 will calculate the length of the message received between **1** being written to
-[`CMD.hash_start`](data/hmac.hjson#cmd) and **1** being written to [`CMD.hash_process`](data/hmac.hjson#cmd).
+[`CMD.hash_start`](doc/registers.md#cmd) and **1** being written to [`CMD.hash_process`](doc/registers.md#cmd).
 
 This version doesn't have many defense mechanisms but is able to
 wipe internal variables such as the secret key, intermediate hash results
 H, digest and the message FIFO. It does not wipe the software accessible 16x32b FIFO.
 The software can wipe the variables by writing a 32-bit random value into
-[`WIPE_SECRET`](data/hmac.hjson#wipe_secret) register. The internal variables will be reset to the written
+[`WIPE_SECRET`](doc/registers.md#wipe_secret) register. The internal variables will be reset to the written
 value. This version of the HMAC doesn't have a internal pseudo-random number
 generator to derive the random number from the written seed number.
 

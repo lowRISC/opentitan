@@ -28,26 +28,22 @@ block hash, which is stored in the hash registers above. After 64 rounds are
 completed, the SHA-256 updates the digest registers with the addition of the
 hash result and the previous digest registers.
 
-## Hardware Interface
-
-* [Interface Tables](../data/hmac.hjson#interfaces)
-
 ## Design Details
 
 ### SHA-256 message feed and pad
 
 A message is fed via a memory-mapped message FIFO. Any write access to the
-memory-mapped window [`MSG_FIFO`](../data/hmac.hjson#msg_fifo) updates the message FIFO. If the FIFO is full,
+memory-mapped window [`MSG_FIFO`](registers.md#msg_fifo) updates the message FIFO. If the FIFO is full,
 the HMAC block will block any writes leading to back-pressure on the
 interconnect (as opposed to dropping those writes or overwriting existing FIFO
 contents). It is recommended this back-pressure is avoided by not writing to the
 memory-mapped message FIFO when it is full. To avoid doing so, software can
-read the [`STATUS.fifo_full`](../data/hmac.hjson#status) register.
+read the [`STATUS.fifo_full`](registers.md#status) register.
 
 The logic assumes the input message is little-endian.
 It converts the byte order of the word right before writing to SHA2 storage as SHA2 treats the incoming message as big-endian.
-If SW wants to convert the message byte order, SW should set [`CFG.endian_swap`](../data/hmac.hjson#cfg) to **1**.
-The byte order of the digest registers, from [`DIGEST_0`](../data/hmac.hjson#digest_0) to [`DIGEST_7`](../data/hmac.hjson#digest_7) can be configured with [`CFG.digest_swap`](../data/hmac.hjson#cfg).
+If SW wants to convert the message byte order, SW should set [`CFG.endian_swap`](registers.md#cfg) to **1**.
+The byte order of the digest registers, from [`DIGEST_0`](registers.md#digest) to [`DIGEST_7`](registers.md#digest) can be configured with [`CFG.digest_swap`](registers.md#cfg).
 
 See the table below:
 
@@ -62,7 +58,7 @@ Push to SHA2 #0 | 03020105h | 01020304h
 Push to SHA2 #1 | 00000004h | 00000005h
 
 
-Small writes to [`MSG_FIFO`](../data/hmac.hjson#msg_fifo) are coalesced with into 32-bit words by the [packer logic]({{< relref "hw/ip/prim/doc/prim_packer" >}}).
+Small writes to [`MSG_FIFO`](registers.md#msg_fifo) are coalesced with into 32-bit words by the [packer logic]({{< relref "hw/ip/prim/doc/prim_packer" >}}).
 These words are fed into the internal message FIFO.
 While passing writes to the packer logic, the block also counts the number of bytes that are being passed.
 This gives the received message length, which is used in HMAC and SHA-256 as part of the hash computation.

@@ -247,9 +247,9 @@
         name: "DIGEST",
         desc: '''Digest output. If HMAC is disabled, the register shows result of SHA256
 
-               Order of the digest is:
-               digest[255:0] = {DIGEST0, DIGEST1, DIGEST2, ... , DIGEST7};
-               ''',
+              Order of the digest is:
+              digest[255:0] = {DIGEST0, DIGEST1, DIGEST2, ... , DIGEST7};
+              ''',
         count: "NumWords",
         cname: "HMAC",
         swaccess: "ro",
