@@ -160,8 +160,8 @@ rom_error_t keymgr_rom_test(void) {
 /** Key manager configuration steps performed in ROM_EXT. */
 rom_error_t keymgr_rom_ext_test(void) {
   const uint16_t kEntropyReseedInterval = 0x1234;
-  ASSERT_OK(keymgr_init(kEntropyReseedInterval));
-  SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioInit);
+  keymgr_entropy_reseed_interval_set(kEntropyReseedInterval);
+  SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioEntropyReseedIntervalSet);
   sec_mmio_check_values(/*rnd_offset=*/0);
 
   keymgr_advance_state();
