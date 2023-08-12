@@ -203,8 +203,7 @@
                      of 2^(-16)ths of a pulse cycle. The actual precision is
                      however limited to the (DC_RESN+1) most significant bits.
                      This setting only applies when blinking, and determines
-                     the target duty cycle.
-                     '''
+                     the target duty cycle.'''
             resval: "0x7fff"
           }
           { bits: "15:0",
@@ -213,8 +212,7 @@
                      of 2^(-16)ths of a pulse cycle. The actual precision is
                      however limited to the (DC_RESN+1) most significant bits.
                      This setting applies continuously when not blinking
-                     and determines the initial duty cycle when blinking.
-                     '''
+                     and determines the initial duty cycle when blinking.'''
             resval: "0x7fff"
           }
         ]

@@ -4,10 +4,6 @@
 
 ![](../doc/pwm_block_diagram.svg)
 
-## Hardware Interfaces
-
-* [Interface Tables](../data/pwm.hjson#interfaces)
-
 ## Design Details
 
 ### Phase and Duty Cycle Representation
@@ -40,8 +36,8 @@ $$DC(x)=\frac{x}{2^{16}}.$$
 Thus the allowed duty cycle in principle ranges from 0 to 99.998% (i.e. <nobr>1-(&frac12;)<sup>16</sup></nobr>).
 
 However, the actual phase resolution may be smaller.
-In order to support faster pulse rates, the phase resolution can be set to less than 16-bits, in which case the observed duty cycle will be rounded down to the next lowest multiple of <nobr>2<sup>-([`CFG.DC_RESN`](../data/pwm.hjson#cfg)+1)</sup></nobr>.
-In other words, the [`CFG.DC_RESN`](../data/pwm.hjson#cfg) register effectively limits the duty cycle resolution, such that only the <nobr>[`CFG.DC_RESN`](../data/pwm.hjson#cfg)+1</nobr> most significant bits are relevant:
+In order to support faster pulse rates, the phase resolution can be set to less than 16-bits, in which case the observed duty cycle will be rounded down to the next lowest multiple of <nobr>2<sup>-([`CFG.DC_RESN`](registers.md#cfg)+1)</sup></nobr>.
+In other words, the [`CFG.DC_RESN`](registers.md#cfg) register effectively limits the duty cycle resolution, such that only the <nobr>[`CFG.DC_RESN`](registers.md#cfg)+1</nobr> most significant bits are relevant:
 
 $$DC(x; \textrm{DC_RESN})=\frac{\textrm{MSB}(x; \textrm{DC_RESN}+1)}{2^{(\textrm{DC_RESN}+1)}},$$
 
@@ -55,7 +51,7 @@ Since all phase or duty cycle related quantities are represented as 16-bit fixed
 
 Each PWM pulse cycle is divided into <nobr>2<sup>DC_RESN+1</sup></nobr> beats.
 During each beat, the 16-bit phase counter increments by 2<sup>(16-DC_RESN-1)</sup> (modulo 65536).
-The beat period is defined by the [`CFG.CLK_DIV`](../data/pwm.hjson#cfg) register:
+The beat period is defined by the [`CFG.CLK_DIV`](registers.md#cfg) register:
 
 $$f_\textrm{beat}=\frac{f_\textrm{core clk}}{\textrm{CLK_DIV}+1}$$
 
@@ -63,9 +59,9 @@ A PWM pulse cycle is completed each time the phase counter overflows to 0.
 The PWM drive frequency is therefore:
 $$f_\textrm{PWM}=f_\textrm{beat}\frac{2^{16-\textrm{DC_RESN}-1}}{2^{16}}=\frac{f_\textrm{core clk}}{2^{\textrm{DC_RESN}+1}(\textrm{CLK_DIV}+1)}$$
 
-The PWM phase counter is reset whenever [`CFG.CNTR_EN`](../data/pwm.hjson#cfg) is disabled.
+The PWM phase counter is reset whenever [`CFG.CNTR_EN`](registers.md#cfg) is disabled.
 
-The following figure illustrates the effect of the clock divider register.  Note that changes to [`CFG.CLK_DIV`](../data/pwm.hjson#cfg) or [`CFG.DC_RESN`](../data/pwm.hjson#cfg) only take effect when [`CFG.CNTR_EN`](../data/pwm.hjson#cfg) is disabled.
+The following figure illustrates the effect of the clock divider register.  Note that changes to [`CFG.CLK_DIV`](registers.md#cfg) or [`CFG.DC_RESN`](registers.md#cfg) only take effect when [`CFG.CNTR_EN`](registers.md#cfg) is disabled.
 
 ```wavejson
 {signal: [
@@ -91,13 +87,13 @@ In the following sections, this document describes the various per-channel confi
 For concreteness, the text discusses the operation of channel 0, using registers and fields ending with "_0".
 To operate other channels, simply choose the registers with the appropriate channel suffix.
 
-Clearing [`PWM_EN.EN_0`](../data/pwm.hjson#pwm_en) disables the channel, suppressing all output pulses.
+Clearing [`PWM_EN.EN_0`](registers.md#pwm_en) disables the channel, suppressing all output pulses.
 
-The pulse phase delay is always programmed by firmware into the TL-UL register [`PWM_PARAM_0.PHASE_DELAY_0`](../data/pwm.hjson#pwm_param_0).
+The pulse phase delay is always programmed by firmware into the TL-UL register [`PWM_PARAM_0.PHASE_DELAY_0`](registers.md#pwm_param).
 The duty cycle however comes from the blink control hardware (which is described in the next section).
 The current duty cycle is stored in a channel-specific signal register, `duty_cycle`.
 
-When operating at full resolution (i.e. `DC_RESN`==15), the channel output rises when the phase counter equals [`PWM_PARAM_0.PHASE_DELAY_0`](../data/pwm.hjson#pwm_param_0), and falls when the phase counter equals [`PWM_PARAM_0.PHASE_DELAY_0`](../data/pwm.hjson#pwm_param_0) + `duty_cycle` (mod 2<sup>(`DC_RESN`+1)</sup>).
+When operating at full resolution (i.e. `DC_RESN`==15), the channel output rises when the phase counter equals [`PWM_PARAM_0.PHASE_DELAY_0`](registers.md#pwm_param), and falls when the phase counter equals [`PWM_PARAM_0.PHASE_DELAY_0`](registers.md#pwm_param) + `duty_cycle` (mod 2<sup>(`DC_RESN`+1)</sup>).
 In both cases, the transition occurs at the beginning of the beat.
 When operating at lower resolution the same comparison applies, but using only the most significant (`DC_RESN`+1) bits.
 
@@ -105,9 +101,9 @@ If the combination of phase delay and duty cycle is larger than one pulse cycle,
 In this case the comparator output will be high at the beginning of each cycle, as seen in the example waveform below.
 
 By default the pulses are all active-high, meaning the output is low if a PWM channel is disabled.
-However, to support various drive schemes, the polarity can be inverted on a channel-by-channel basis using the [`INVERT`](../data/pwm.hjson#invert) register.
+However, to support various drive schemes, the polarity can be inverted on a channel-by-channel basis using the [`INVERT`](registers.md#invert) register.
 
-The following figure illustrates the effect of the [`PWM_PARAM_0.PHASE_DELAY_0`](../data/pwm.hjson#pwm_param_0) register and `duty_cycle`.
+The following figure illustrates the effect of the [`PWM_PARAM_0.PHASE_DELAY_0`](registers.md#pwm_param) register and `duty_cycle`.
 Note that this figure shows two channels, 0 and 1, where the second channel has a significant phase delay, such that the output pulse is high when `phase_ctr` overflows to zero.
 
 ```wavejson
@@ -132,49 +128,49 @@ Note that this figure shows two channels, 0 and 1, where the second channel has 
 }
 ```
 
-Changes to [`PWM_EN.EN_0`](../data/pwm.hjson#pwm_en) bit have no effect on the *timing* of the pulses, as the `phase_ctr` is common to all channels.
-Enabling [`PWM_EN.EN_0`](../data/pwm.hjson#pwm_en), or changing [`PWM_PARAM_0.PHASE_DELAY_0`](../data/pwm.hjson#pwm_param_0) is acceptable while the PWM channel is enabled.
-Since these registers take effect immediately, the shape of the following pulse may be unpredictable if they are changed while [`CFG.CNTR_EN`](../data/pwm.hjson#cfg) is active, though this glitch in a single pulse is likely not a problem for most applications.
-Changes to the duty cycle register [`DUTY_CYCLE_0.A_0`](../data/pwm.hjson#duty_cycle_0) may also be effective immediately, but only *when blinking is disabled*.
+Changes to [`PWM_EN.EN_0`](registers.md#pwm_en) bit have no effect on the *timing* of the pulses, as the `phase_ctr` is common to all channels.
+Enabling [`PWM_EN.EN_0`](registers.md#pwm_en), or changing [`PWM_PARAM_0.PHASE_DELAY_0`](registers.md#pwm_param) is acceptable while the PWM channel is enabled.
+Since these registers take effect immediately, the shape of the following pulse may be unpredictable if they are changed while [`CFG.CNTR_EN`](registers.md#cfg) is active, though this glitch in a single pulse is likely not a problem for most applications.
+Changes to the duty cycle register [`DUTY_CYCLE_0.A_0`](registers.md#duty_cycle) may also be effective immediately, but only *when blinking is disabled*.
 
-In the above waveform, the first beat (labeled "0") does not start for one clock after [`CFG.CNTR_EN`](../data/pwm.hjson#cfg) is asserted.
+In the above waveform, the first beat (labeled "0") does not start for one clock after [`CFG.CNTR_EN`](registers.md#cfg) is asserted.
 This delay is typical, and reflects the fact that it takes exactly one clock cycle for the phase counter to start (as seen in the previous waveform).
 
 There is a register `pwm_out` at the output pin, which adds an additional delay cycle before the output pin.
-Thus, in addition to delay of the clock domain crossing, there is in total a minimum two clock delay between the assertion of [`CFG.CNTR_EN`](../data/pwm.hjson#cfg) and the rising edge of the first output pulse.
+Thus, in addition to delay of the clock domain crossing, there is in total a minimum two clock delay between the assertion of [`CFG.CNTR_EN`](registers.md#cfg) and the rising edge of the first output pulse.
 
 ### Hardware-Controlled Blink Features
 
-By default, the duty cycle of each channel is directly controlled by firmware, by writing the desired PWM duty cycle to the [`DUTY_CYCLE_0.A_0`](../data/pwm.hjson#duty_cycle_0) register.
+By default, the duty cycle of each channel is directly controlled by firmware, by writing the desired PWM duty cycle to the [`DUTY_CYCLE_0.A_0`](registers.md#duty_cycle) register.
 
 There are two other modes which allow for programmably-timed duty cycle modulations, under hardware control.
-- In the standard blink mode the duty cycle toggles between two values, [`DUTY_CYCLE_0.A_0`](../data/pwm.hjson#duty_cycle_0) and [`DUTY_CYCLE_0.B_0`](../data/pwm.hjson#duty_cycle_0).
-- In heartbeat mode, the duty cycle linearly transitions from [`DUTY_CYCLE_0.A_0`](../data/pwm.hjson#duty_cycle_0) to [`DUTY_CYCLE_0.B_0`](../data/pwm.hjson#duty_cycle_0) and back, via a regularly-timed sequence of duty cycle increments or decrements.
+- In the standard blink mode the duty cycle toggles between two values, [`DUTY_CYCLE_0.A_0`](registers.md#duty_cycle) and [`DUTY_CYCLE_0.B_0`](registers.md#duty_cycle).
+- In heartbeat mode, the duty cycle linearly transitions from [`DUTY_CYCLE_0.A_0`](registers.md#duty_cycle) to [`DUTY_CYCLE_0.B_0`](registers.md#duty_cycle) and back, via a regularly-timed sequence of duty cycle increments or decrements.
 
-In both modes the timing and control of the blinking or transition is controlled by the register fields [`BLINK_PARAM_0.X_0`](../data/pwm.hjson#blink_param_0) and [`BLINK_PARAM_0.Y_0`](../data/pwm.hjson#blink_param_0).
+In both modes the timing and control of the blinking or transition is controlled by the register fields [`BLINK_PARAM_0.X_0`](registers.md#blink_param) and [`BLINK_PARAM_0.Y_0`](registers.md#blink_param).
 However in either mode, the interpretation of these fields is different.
 
-Note that changes to the [`BLINK_PARAM_0`](../data/pwm.hjson#blink_param_0) register or to the register field [`PWM_PARAM_0.HTBT_EN_0`](../data/pwm.hjson#pwm_param_0) only take effect when the [`PWM_PARAM_0.BLINK_EN_0`](../data/pwm.hjson#pwm_param_0) is deasserted.
+Note that changes to the [`BLINK_PARAM_0`](registers.md#blink_param) register or to the register field [`PWM_PARAM_0.HTBT_EN_0`](registers.md#pwm_param) only take effect when the [`PWM_PARAM_0.BLINK_EN_0`](registers.md#pwm_param) is deasserted.
 Both of the blink modes make use of a 16-bit internal blink counter (one per channel).
-This counter is reset whenever [`PWM_PARAM_0.BLINK_EN_0`](../data/pwm.hjson#pwm_param_0) is cleared.
+This counter is reset whenever [`PWM_PARAM_0.BLINK_EN_0`](registers.md#pwm_param) is cleared.
 In other words, changing the blink behavior requires first halting the blink pattern, and the pattern starts from the beginning whenever the blink enable bit is reasserted.
 
 #### Standard Blink Mode
 
-To enter standard blink mode, assert [`PWM_PARAM_0.BLINK_EN_0`](../data/pwm.hjson#pwm_param_0), while leaving [`PWM_PARAM_0.HTBT_EN_0`](../data/pwm.hjson#pwm_param_0) deasserted.
+To enter standard blink mode, assert [`PWM_PARAM_0.BLINK_EN_0`](registers.md#pwm_param), while leaving [`PWM_PARAM_0.HTBT_EN_0`](registers.md#pwm_param) deasserted.
 
-In standard blink mode, the duty cycle abruptly alternates between two values: [`DUTY_CYCLE_0.A_0`](../data/pwm.hjson#duty_cycle_0) and [`DUTY_CYCLE_0.B_0`](../data/pwm.hjson#duty_cycle_0).
-The sequence starts with [`BLINK_PARAM_0.X_0`](../data/pwm.hjson#blink_param_0)+1 pulses at [`DUTY_CYCLE_0.A_0`](../data/pwm.hjson#duty_cycle_0), followed by [`BLINK_PARAM_0.Y_0`](../data/pwm.hjson#blink_param_0)+1 pulses at [`DUTY_CYCLE_0.B_0`](../data/pwm.hjson#duty_cycle_0), after which the cycle repeats until blink mode is disabled.
+In standard blink mode, the duty cycle abruptly alternates between two values: [`DUTY_CYCLE_0.A_0`](registers.md#duty_cycle) and [`DUTY_CYCLE_0.B_0`](registers.md#duty_cycle).
+The sequence starts with [`BLINK_PARAM_0.X_0`](registers.md#blink_param)+1 pulses at [`DUTY_CYCLE_0.A_0`](registers.md#duty_cycle), followed by [`BLINK_PARAM_0.Y_0`](registers.md#blink_param)+1 pulses at [`DUTY_CYCLE_0.B_0`](registers.md#duty_cycle), after which the cycle repeats until blink mode is disabled.
 
 Typically multiple channels need to be configured to blink synchronously, for example in the tri-color LED case.
-This can be achieved by first disabling the desired PWM outputs using the [`PWM_EN`](../data/pwm.hjson#pwm_en) multi-register.
-Once the blink parameters have been configured for these channels, they can be simultaneously re-enabled using a single write to [`PWM_EN`](../data/pwm.hjson#pwm_en).
+This can be achieved by first disabling the desired PWM outputs using the [`PWM_EN`](registers.md#pwm_en) multi-register.
+Once the blink parameters have been configured for these channels, they can be simultaneously re-enabled using a single write to [`PWM_EN`](registers.md#pwm_en).
 
 #### Heartbeat Mode
 
-To enter heartbeat mode, assert both [`PWM_PARAM_0.BLINK_EN_0`](../data/pwm.hjson#pwm_param_0) and [`PWM_PARAM_0.HTBT_EN_0`](../data/pwm.hjson#pwm_param_0).
+To enter heartbeat mode, assert both [`PWM_PARAM_0.BLINK_EN_0`](registers.md#pwm_param) and [`PWM_PARAM_0.HTBT_EN_0`](registers.md#pwm_param).
 
-In heartbeat mode the duty cycle gradually transitions from [`DUTY_CYCLE_0.A_0`](../data/pwm.hjson#duty_cycle_0) to [`DUTY_CYCLE_0.B_0`](../data/pwm.hjson#duty_cycle_0) and back in a series of small steps.
+In heartbeat mode the duty cycle gradually transitions from [`DUTY_CYCLE_0.A_0`](registers.md#duty_cycle) to [`DUTY_CYCLE_0.B_0`](registers.md#duty_cycle) and back in a series of small steps.
 
 An example of this process is illustrated in the following waveform.
 ```wavejson
@@ -193,15 +189,15 @@ An example of this process is illustrated in the following waveform.
 }
 ```
 
-The sequence starts with [`BLINK_PARAM_0.X_0`](../data/pwm.hjson#blink_param_0)+1 pulses at [`DUTY_CYCLE_0.A_0`](../data/pwm.hjson#duty_cycle_0).
-The duty cycle then increases by [`BLINK_PARAM_0.Y_0`](../data/pwm.hjson#blink_param_0)+1 units, and [`BLINK_PARAM_0.X_0`](../data/pwm.hjson#blink_param_0)+1 more pulses are generated at the new duty cycle.
-The cycle repeats until the `duty cycle`&ge; [`DUTY_CYCLE_0.B_0`](../data/pwm.hjson#duty_cycle_0), at which point the cycle is reversed, decrementing with the same step-size and rate until the duty cycle once again returns to [`DUTY_CYCLE_0.A_0`](../data/pwm.hjson#duty_cycle_0) and the whole process repeats.
-(This all assumes that [`DUTY_CYCLE_0.B_0`](../data/pwm.hjson#duty_cycle_0) &gt; [`DUTY_CYCLE_0.A_0`](../data/pwm.hjson#duty_cycle_0).
-If [`DUTY_CYCLE_0.B_0`](../data/pwm.hjson#duty_cycle_0) &lt; [`DUTY_CYCLE_0.A_0`](../data/pwm.hjson#duty_cycle_0), the cycle is similar but with all the signs reversed.
-For instance, the duty cycle is repeatedly <i>decremented</i> until reaching [`DUTY_CYCLE_0.B_0`](../data/pwm.hjson#duty_cycle_0).)
+The sequence starts with [`BLINK_PARAM_0.X_0`](registers.md#blink_param)+1 pulses at [`DUTY_CYCLE_0.A_0`](registers.md#duty_cycle).
+The duty cycle then increases by [`BLINK_PARAM_0.Y_0`](registers.md#blink_param)+1 units, and [`BLINK_PARAM_0.X_0`](registers.md#blink_param)+1 more pulses are generated at the new duty cycle.
+The cycle repeats until the `duty cycle`&ge; [`DUTY_CYCLE_0.B_0`](registers.md#duty_cycle), at which point the cycle is reversed, decrementing with the same step-size and rate until the duty cycle once again returns to [`DUTY_CYCLE_0.A_0`](registers.md#duty_cycle) and the whole process repeats.
+(This all assumes that [`DUTY_CYCLE_0.B_0`](registers.md#duty_cycle) &gt; [`DUTY_CYCLE_0.A_0`](registers.md#duty_cycle).
+If [`DUTY_CYCLE_0.B_0`](registers.md#duty_cycle) &lt; [`DUTY_CYCLE_0.A_0`](registers.md#duty_cycle), the cycle is similar but with all the signs reversed.
+For instance, the duty cycle is repeatedly <i>decremented</i> until reaching [`DUTY_CYCLE_0.B_0`](registers.md#duty_cycle).)
 
-In the heartbeat process, the duty cycle always starts at [`DUTY_CYCLE_0.A_0`](../data/pwm.hjson#duty_cycle_0), but it may slightly exceed [`DUTY_CYCLE_0.B_0`](../data/pwm.hjson#duty_cycle_0) on the last step if the step-size does not evenly divide the difference between duty cycles.
+In the heartbeat process, the duty cycle always starts at [`DUTY_CYCLE_0.A_0`](registers.md#duty_cycle), but it may slightly exceed [`DUTY_CYCLE_0.B_0`](registers.md#duty_cycle) on the last step if the step-size does not evenly divide the difference between duty cycles.
 
-The duty cycle is never allowed to overflow or underflow, even if [`DUTY_CYCLE_0.B_0`](../data/pwm.hjson#duty_cycle_0) is very close to the minimum or maximum 16-bit value.
+The duty cycle is never allowed to overflow or underflow, even if [`DUTY_CYCLE_0.B_0`](registers.md#duty_cycle) is very close to the minimum or maximum 16-bit value.
 If needed, the most extreme value in the `duty_cycle` sequence is truncated to stay within the allowable 16-bit range.
 All other points in the heartbeat sequence are unaffected by this truncation.
