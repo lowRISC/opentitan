@@ -25,6 +25,7 @@ class flash_ctrl_wr_path_intg_vseq extends flash_ctrl_rw_vseq;
       // disable tl_rsp error check
       cfg.m_tl_agent_cfg.check_tl_errs = 0;
       cfg.otf_scb_h.mem_mon_off = 1;
+      cfg.scb_h.alert_count["fatal_std_err"] = 0;
       fork
         begin
           uvm_reg_data_t ldata;
@@ -52,10 +53,27 @@ class flash_ctrl_wr_path_intg_vseq extends flash_ctrl_rw_vseq;
 
                 // prog_err and mp_err
                 set_otf_exp_alert("recov_err");
-                prog_flash(ctrl, bank, 1, fractions, 1);
-                // Wait for op_done or op_err
-                csr_spinwait(.ptr(ral.op_status), .exp_data(2'b0),
-                             .compare_op(CompareOpCaseNe), .backdoor(1));
+                // If fatal error is triggered, flash is disabled right after
+                // on going operation is finished.
+                // This can causes test lock up while polling status.
+                // To avoid this, add another thread to check if fatal alert is triggered.
+                fork begin
+                  fork
+                    begin
+                      prog_flash(ctrl, bank, 1, fractions, 1);
+                      // Wait for op_done or op_err
+                      csr_spinwait(.ptr(ral.op_status), .exp_data(2'b0),
+                                   .compare_op(CompareOpCaseNe), .backdoor(1));
+                      // clear op_status for the next round
+                      csr_wr(.ptr(ral.op_status), .value(0), .blocking(1));
+                    end
+                    begin
+                      wait(cfg.scb_h.alert_count["fatal_std_err"] > 0);
+                    end
+                  join_any
+                  wait_no_outstanding_access();
+                  disable fork
+                end join
               end
               cfg.otf_rd_pct:read_flash(ctrl, bank, num, fractions);
             endcase
