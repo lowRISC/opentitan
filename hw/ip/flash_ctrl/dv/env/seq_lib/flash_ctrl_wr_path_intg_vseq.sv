@@ -72,7 +72,7 @@ class flash_ctrl_wr_path_intg_vseq extends flash_ctrl_rw_vseq;
                     end
                   join_any
                   wait_no_outstanding_access();
-                  disable fork
+                  disable fork;
                 end join
               end
               cfg.otf_rd_pct:read_flash(ctrl, bank, num, fractions);
