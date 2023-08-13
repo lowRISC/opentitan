@@ -550,7 +550,7 @@
 % endfor
 
     { name: "RECOV_ERR_CODE",
-      desc: "Recoverable Error code ",
+      desc: "Recoverable Error code",
       swaccess: "rw1c",
       hwaccess: "hwo",
       fields: [
@@ -585,7 +585,7 @@
     },
 
     { name: "FATAL_ERR_CODE",
-      desc: "Error code ",
+      desc: "Error code",
       swaccess: "ro",
       hwaccess: "hrw",
       fields: [

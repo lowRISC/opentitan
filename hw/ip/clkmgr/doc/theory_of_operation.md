@@ -48,7 +48,7 @@ To ensure such behavior on the clocks, The final clock enable is qualified with 
 The `Idle` signal must be sourced from the transactional modules and sent to the clock manager.
 
 For this group software can only express its intent to shut-off, and does not have full control over the final state.
-This intent is indicated with a register in the clock manager register file, see [`CLK_HINTS`](../../../top_earlgrey/ip/clkmgr/data/autogen/clkmgr.hjson#clk_hints).
+This intent is indicated with a register in the clock manager register file, see [`CLK_HINTS`](registers.md#clk_hints).
 
 Even when the hint is set, the `Idle` does not directly manipulate the clock.
 When an idle indication is received, the `clkmgr` counts for a period of 10 local clocks to ensure the idle was not a glitch.
@@ -162,10 +162,6 @@ The alert handler needs to know the status of the various clock domains in the s
 To that end, the clock manager outputs a 4bit MuBi signal for each clock domain that indicates whether its clock is active.
 For more information on this mechanism, see [alert handler documentation](../../../top_earlgrey/ip_autogen/alert_handler/doc/theory_of_operation.md#low-power-management-of-alert-channels).
 
-## Hardware Interfaces
-
-* [Interface Tables](../../../top_earlgrey/ip/clkmgr/data/autogen/clkmgr.hjson#interfaces)
-
 ## Design Details
 
 ### Root Clock Gating and Interface with Power Manager
@@ -224,12 +220,12 @@ Unlike the life cycle controller, a software request for external clocks switche
 Software request for external clocks is not always valid.
 Software is only able to request for external clocks when hardware debug functions are [allowed](../../lc_ctrl/README.md#hw_debug_en).
 
-When software requests the external clock switch, it also provides an indication how fast the external clock is through [`EXTCLK_CTRL.HI_SPEED_SEL`](../../../top_earlgrey/ip/clkmgr/data/autogen/clkmgr.hjson#extclk_ctrl).
+When software requests the external clock switch, it also provides an indication how fast the external clock is through [`EXTCLK_CTRL.HI_SPEED_SEL`](registers.md#extclk_ctrl).
 There are two supported clock speeds:
 * High speed - external clock is close to nominal speeds (e.g. external clock is 96MHz and nominal frequency is 96MHz-100MHz)
 * Low speed - external clock is half of nominal speeds (e.g. external clock is 48MHz and nominal frequency is 96MHz-100MHz)
 
-When software requests external clock, the register bit [`EXTCLK_CTRL.SEL`](../../../top_earlgrey/ip/clkmgr/data/autogen/clkmgr.hjson#extclk_ctrl) is written.
+When software requests external clock, the register bit [`EXTCLK_CTRL.SEL`](registers.md#extclk_ctrl) is written.
 If hardware debug functions are allowed, the `clkmgr` sends a request signal `all_clk_byp_req_o` to `ast` and is acknowledged through `all_clk_byp_ack_i`.
 
 If software requests a low speed external clock, at the completion of the switch, internal dividers are also stepped down.
@@ -270,7 +266,7 @@ As can be seen from the table, the external clock switch scheme prioritizes the 
 ### Clock Frequency / Time-out Measurements
 
 Clock manager can continuously measure root clock frequencies to see if any of the root clocks have deviated from the expected frequency.
-This feature can be enabled through the various measurement control registers such as [`IO_MEASURE_CTRL`](../../../top_earlgrey/ip/clkmgr/data/autogen/clkmgr.hjson#io_measure_ctrl).
+This feature can be enabled through the various measurement control registers such as [`IO_MEASURE_CTRL`](registers.md#io_measure_ctrl).
 
 The root clocks, specifically the clocks supplied from `ast` and their divided variants, are constantly measured against the `always on clock` when this feature is enabled.
 Software sets both an expected maximum and minimum for each measured clock.
@@ -299,4 +295,4 @@ Clock too fast is registered when the clock cycle count is greater than the soft
 Clock too slow is registered when the clock cycle count is less than the software programmed min threshold.
 Clock time-out is registered when the clock stops toggling and the timeout threshold is reached.
 
-As these are all software supplied values, the entire measurement control can be locked from further programming through [`MEASURE_CTRL_REGWEN`](../../../top_earlgrey/ip/clkmgr/data/autogen/clkmgr.hjson#measure_ctrl_regwen).
+As these are all software supplied values, the entire measurement control can be locked from further programming through [`MEASURE_CTRL_REGWEN`](registers.md#measure_ctrl_regwen).
