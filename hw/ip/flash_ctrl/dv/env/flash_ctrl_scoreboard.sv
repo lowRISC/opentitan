@@ -280,7 +280,7 @@ class flash_ctrl_scoreboard #(
                         erase_addr
                         ), UVM_LOW)
               if (erase_access) begin
-                if (erase_sel) erase_bank(erase_addr[OTFBankId]);
+                if (erase_sel) erase_bank(erase_addr[OTFBankId], part_sel);
                 else erase_data(part, erase_addr, erase_sel);
               end
             end
@@ -410,8 +410,9 @@ class flash_ctrl_scoreboard #(
   endtask
 
   // Update scb_flash_* with bank erase command.
-  // When bank erase is set, all partitions in the bank will be erased.
-  function void erase_bank(int bank);
+  // If data partition is selected, erase data partition only,
+  // otherwise all partitions in the bank will be erased.
+  function void erase_bank(int bank, bit part_sel);
     uint partition_words_num;
     data_model_t scb_flash_model;
     flash_mem_addr_attrs addr_attr;
@@ -421,17 +422,19 @@ class flash_ctrl_scoreboard #(
       scb_flash_model = cfg.get_partition_mem_model(part);
       addr_attr = new();
       addr_attr.set_attrs(bank * BytesPerBank);
-      for (int j = 0; j < partition_words_num; j++) begin
-        scb_flash_model[addr_attr.addr] = ALL_ONES;
-        addr_attr.incr(flash_ctrl_pkg::BusBytes);
+      if (part_sel == 1 || part == FlashPartData) begin
+        for (int j = 0; j < partition_words_num; j++) begin
+          scb_flash_model[addr_attr.addr] = ALL_ONES;
+          addr_attr.incr(flash_ctrl_pkg::BusBytes);
+        end
+        case (part)
+          FlashPartData: cfg.scb_flash_data = scb_flash_model;
+          FlashPartInfo: cfg.scb_flash_info = scb_flash_model;
+          FlashPartInfo1: cfg.scb_flash_info1 = scb_flash_model;
+          FlashPartInfo2: cfg.scb_flash_info2 = scb_flash_model;
+          default: `uvm_fatal(`gfn, "flash_ctrl_scoreboard: Partition type not supported!")
+        endcase
       end
-      case (part)
-        FlashPartData: cfg.scb_flash_data = scb_flash_model;
-        FlashPartInfo: cfg.scb_flash_info = scb_flash_model;
-        FlashPartInfo1: cfg.scb_flash_info1 = scb_flash_model;
-        FlashPartInfo2: cfg.scb_flash_info2 = scb_flash_model;
-        default: `uvm_fatal(`gfn, "flash_ctrl_scoreboard: Partition type not supported!")
-      endcase
       part = part.next();
     end while (part != part.first());
 
