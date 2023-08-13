@@ -548,8 +548,8 @@
           regwen: "IBUS_REGWEN",
           regwen_multi: true,
           desc: '''
-                  Enable Ibus address matching
-                  ''',
+                Enable Ibus address matching
+                ''',
                   count: "NumRegions",
           compact: false,
           swaccess: "rw",
@@ -558,8 +558,8 @@
             { bits: "0",
               name: "EN",
               desc: '''
-                      Enable ibus address matching.
-                      ''',
+                    Enable ibus address matching.
+                    ''',
                       resval: "0"
             },
           ],
@@ -670,9 +670,9 @@
           regwen: "DBUS_REGWEN",
           regwen_multi: true,
           desc: '''
-                  Enable dbus address matching
-                  ''',
-                  count: "NumRegions",
+                Enable dbus address matching
+                ''',
+          count: "NumRegions",
           compact: false,
           swaccess: "rw",
           hwaccess: "hro",
@@ -680,9 +680,9 @@
             { bits: "0",
               name: "EN",
               desc: '''
-                      Enable dbus address matching.
-                      ''',
-                      resval: "0"
+                    Enable dbus address matching.
+                    ''',
+              resval: "0"
             },
           ],
         },
@@ -694,9 +694,9 @@
           regwen: "DBUS_REGWEN",
           regwen_multi: true,
           desc: '''
-                  See !!IBUS_ADDR_MATCHING_0 for detailed description.
-                  ''',
-                  count: "NumRegions",
+                See !!IBUS_ADDR_MATCHING_0 for detailed description.
+                ''',
+          count: "NumRegions",
           compact: false,
           swaccess: "rw",
           hwaccess: "hro",
@@ -718,8 +718,8 @@
           regwen: "DBUS_REGWEN",
           regwen_multi: true,
           desc: '''
-                  See !!IBUS_REMAP_ADDR_0 for a detailed description.
-                  ''',
+                See !!IBUS_REMAP_ADDR_0 for a detailed description.
+                ''',
           count: "NumRegions",
           compact: false,
           swaccess: "rw",
