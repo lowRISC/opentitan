@@ -14,91 +14,14 @@ Hence, the throughput of sub-word write operations is three times lower than for
 Note however that the throughput of read operations is the same for full- and sub-word read operations.
 
 The scrambling mechanism is always enabled and the `sram_ctrl` provides the scrambling device with a predefined scrambling key and nonce when it comes out of reset.
-It is the task of SW to request an updated scrambling key and nonce via the CSRs as described in the [Programmer's Guide](#programmers-guide) below.
+It is the task of SW to request an updated scrambling key and nonce via the CSRs as described in the [Programmer's Guide](programmers_guide.md) below.
 
 For SW convenience, the SRAM controller also provides an LFSR-based memory initialization feature that can overwrite the entire memory with pseudorandom data.
-Similarly to the scrambling key, it is the task of SW to request memory initialization via the CSRs as described in the [Programmer's Guide](#programmers-guide) below.
+Similarly to the scrambling key, it is the task of SW to request memory initialization via the CSRs as described in the [Programmer's Guide](programmers_guide.md) below.
 
 Note that TL-UL accesses to the memory that occur while a key request or hardware initialization is pending will be blocked until the request has completed.
 
 The individual mechanisms are explained in more detail in the subsections below.
-
-## Hardware Interfaces
-
-### Parameters
-
-The following table lists the instantiation parameters of the SRAM controller.
-
-Parameter                   | Default               | Top Earlgrey      | Description
-----------------------------|-----------------------|-------------------|---------------
-`AlertAsyncOn`              | 1'b1                  | 1'b1              |
-`InstrExec`                 | 1                     | 1                 | Enables the execute from SRAM feature.
-`MemSizeRam`                | 4096                  | (multiple values) | Number of 32bit words in the SRAM (can be overridden by `topgen`).
-`RndCnstSramKey`            | (see RTL)             | (see RTL)         | Compile-time random default constant for scrambling key.
-`RndCnstSramNonce`          | (see RTL)             | (see RTL)         | Compile-time random default constant for scrambling nonce.
-`RndCnstLfsrSeed`           | (see RTL)             | (see RTL)         | Compile-time random default constant for LFSR seed.
-`RndCnstLfsrPerm`           | (see RTL)             | (see RTL)         | Compile-time random default constant for LFSR permutation.
-
-### Signals
-
-* [Interface Tables](../data/sram_ctrl.hjson#interfaces)
-
-The table below lists other SRAM controller signals.
-
-Signal                     | Direction        | Type                               | Description
----------------------------|------------------|------------------------------------|---------------
-`lc_hw_debug_en_i`         | `input`          | `lc_ctrl_pkg::lc_tx_t`             | Multibit life cycle hardware debug enable signal coming from life cycle controller, asserted when the hardware debug mechanisms are enabled in the system.
-`lc_escalate_en_i`         | `input`          | `lc_ctrl_pkg::lc_tx_t`             | Multibit life cycle escalation enable signal coming from life cycle controller, asserted if an escalation has occurred.
-`sram_otp_key_o`           | `output`         | `otp_ctrl_pkg::sram_otp_key_req_t` | Key derivation request going to the key derivation interface of the OTP controller.
-`sram_otp_key_i`           | `input`          | `otp_ctrl_pkg::sram_otp_key_rsp_t` | Ephemeral scrambling key coming back from the key derivation interface of the OTP controller.
-`otp_en_sram_ifetch_i`     | `input`          | `otp_ctrl_pkg::mubi8_t`            | Multibit value coming from the OTP HW_CFG partition ([EN_SRAM_IFETCH](../../otp_ctrl/README.md#direct-access-memory-map)), set to kMuBi8True in order to enable the [`EXEC`](../data/sram_ctrl.hjson#exec) CSR.
-`cfg_i`                    | `input`          | `logic [CfgWidth-1:0]`             | Attributes for physical memory macro.
-
-#### Interfaces to OTP and the SRAM Scrambling Primitive
-
-The interface to the key derivation interface inside the OTP controller follows a simple req / ack protocol, where the SRAM controller first requests an updated ephemeral key by asserting the `sram_otp_key_i.req`.
-The OTP controller then fetches entropy from CSRNG and derives an ephemeral key using the SRAM_DATA_KEY_SEED and the PRESENT scrambling data path as described in the [OTP controller spec](../../otp_ctrl/README.md#scrambling-datapath).
-Finally, the OTP controller returns a fresh ephemeral key via the response channels (`sram_otp_key_o[*]`, `otbn_otp_key_o`), which complete the req / ack handshake.
-The key and nonce are made available to the scrambling primitive in the subsequent cycle.
-The wave diagram below illustrates this process.
-
-```wavejson
-{signal: [
-  {name: 'clk_otp_i',                 wave: 'p...........'},
-  {name: 'sram_otp_key_o.req',        wave: '0.|1.|..0|..'},
-  {name: 'sram_otp_key_i.ack',        wave: '0.|..|.10|..'},
-  {name: 'sram_otp_key_i.nonce',      wave: '0.|..|.30|..'},
-  {name: 'sram_otp_key_i.key',        wave: '0.|..|.30|..'},
-  {name: 'sram_otp_key_i.seed_valid', wave: '0.|..|.10|..'},
-  {},
-  {name: 'clk_i',                     wave: 'p...........'},
-  {name: 'key_valid_q',               wave: '10|..|...|1.'},
-  {name: 'key_q',                     wave: '4.|..|...|3.'},
-  {name: 'nonce_q',                   wave: '4.|..|...|3.'},
-  {name: 'key_seed_valid_q',          wave: '4.|..|...|3.'},
-]}
-```
-
-If the key seeds have not yet been provisioned in OTP, the keys are derived from all-zero constants, and the `*.seed_valid` signal will be set to 0 in the response.
-It should be noted that this mechanism requires the CSRNG and entropy distribution network to be operational, and a key derivation request will block if they are not.
-
-Note that the req/ack protocol runs on `clk_otp_i`.
-The SRAM controller synchronizes the data over via a req/ack handshake primitive `prim_sync_reqack.sv` primitive as shown below.
-
-![OTP Key Req Ack](../../otp_ctrl/doc/otp_ctrl_key_req_ack.svg)
-
-Note that the key and nonce output signals on the OTP controller side are guaranteed to remain stable for at least 62 OTP clock cycles after the `ack` signal is pulsed high, because the derivation of a 64bit half-key takes at least two passes through the 31-cycle PRESENT primitive.
-Hence, if the SRAM controller clock `clk_i` is faster or in the same order of magnitude as `clk_otp_i`, the data can be directly sampled upon assertion of `src_ack_o`.
-If the SRAM controller runs on a significantly slower clock than OTP, an additional register (as indicated with dashed grey lines in the figure) has to be added.
-
-#### Global and Local Escalation
-
-If `lc_escalate_en_i` is set to any different value than `lc_ctrl_pkg::Off`, the current scrambling keys are discarded and reset to `RndCnstSramKey` and `RndCnstSramNonce` in the subsequent cycle.
-Any subsequent memory request to `prim_ram_1p_scr` will then be blocked as well.
-This mechanism is part of the [life cycle](../../lc_ctrl/README.md) state scrapping and secret wiping countermeasure triggered by the alert handler (global escalation).
-
-Note that if any local bus integrity or counter errors are detected, the SRAM controller will locally escalate without assertion of `lc_escalate_en_i`.
-The behavior of local escalation is identical to global escalation via `lc_escalate_en_i`.
 
 ## Scrambling Primitive
 
@@ -123,7 +46,7 @@ This behavior, combined with other top level defenses, form a multi-layered defe
 Since the scrambling device uses a block cipher in CTR mode, it is undesirable to initialize the memory with all-zeros from a security perspective, as that would reveal the XOR keystream.
 To this end, the `sram_ctrl` contains an LFSR-based initialization mechanism that overwrites the entire memory with pseudorandom data.
 
-Initialization can be triggered via the [`CTRL.INIT`](../data/sram_ctrl.hjson#ctrl) CSR, and once triggered, the LFSR is first re-seeded with the nonce that has been fetched together with the scrambling key.
+Initialization can be triggered via the [`CTRL.INIT`](registers.md#ctrl) CSR, and once triggered, the LFSR is first re-seeded with the nonce that has been fetched together with the scrambling key.
 Then, the memory is initialized with pseudorandom data pulled from the LFSR.
 For each pseudorandom 32bit word, the initialization mechanism computes the corresponding integrity bits and writes both the data and integrity bits (39bit total) through the scrambling device using the most recently obtained scrambling key.
 
@@ -135,7 +58,7 @@ Note however that the PRNG sequence does not have strong security guarantees, si
 ### Code Execution from SRAM
 
 The SRAM controller contains an access control mechanism for filtering instruction fetches from the processor.
-As illustrated below, an OTP switch EN_SRAM_IFETCH (see [OTP memory map](../../otp_ctrl/README.md#direct-access-memory-map)) allows to either tie code execution from SRAM to the life cycle state via the HW_DEBUG_EN function (see [life cycle docs](../../lc_ctrl/README.md#hw_debug_en)), or it can be enabled / disabled via the [`EXEC`](../data/sram_ctrl.hjson#exec) CSR.
+As illustrated below, an OTP switch EN_SRAM_IFETCH (see [OTP memory map](../../otp_ctrl/README.md#direct-access-memory-map)) allows to either tie code execution from SRAM to the life cycle state via the HW_DEBUG_EN function (see [life cycle docs](../../lc_ctrl/README.md#hw_debug_en)), or it can be enabled / disabled via the [`EXEC`](registers.md#exec) CSR.
 
 ![SRAM Code Execution](../doc/sram_ctrl_sram_execution.svg)
 
