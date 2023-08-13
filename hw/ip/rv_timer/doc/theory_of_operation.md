@@ -6,13 +6,9 @@
 
 The timer module is composed of tick generators, counters, and comparators.
 A tick generator creates a tick every time its internal counter hits the
-[`CFG0.prescaler`](../../spi_device/data/spi_device.hjson#cfg0) value. The tick is used to increment `mtime` by the [`CFG0.step`](../../spi_device/data/spi_device.hjson#cfg0)
+[`CFG0.prescaler`](registers.md#cfg0) value. The tick is used to increment `mtime` by the [`CFG0.step`](registers.md#cfg0)
 value. The 64-bit `mtime` value is compared with the 64-bit `mtimecmp`. If
 `mtime` is greater than or equal to `mtimecmp`, the timer raises an interrupt.
-
-## Hardware Interfaces
-
-* [Interface Tables](../data/rv_timer.hjson#interfaces)
 
 ## Design Details
 
@@ -22,13 +18,13 @@ The tick module inside the timer IP is used to generate a fixed period of pulse
 signal. This allows creation of a call-clock timer tick such as 1us or 10us
 regardless of the system clock period. It is useful if the system has more than
 one clock as a clock source. The firmware just needs to adjust the
-[`CFG0.prescaler`](../../spi_device/data/spi_device.hjson#cfg0) value and the actual timer interrupt handling routine does not
+[`CFG0.prescaler`](registers.md#cfg0) value and the actual timer interrupt handling routine does not
 need a variable clock period to update `mtimecmp`.
 
 For instance, if a system switches between 48MHz and 200MHz clocks, a prescaler
 value of **47** for 48MHz and **199** for 200MHz will generate a 1us tick.
 In this version, the timer only supports a single fixed clock, so the firmware
-should change [`CFG0.prescaler`](../../spi_device/data/spi_device.hjson#cfg0) appropriately.
+should change [`CFG0.prescaler`](registers.md#cfg0) appropriately.
 
 ### Configurable number of timers and harts
 
