@@ -3,19 +3,19 @@
 
 ## Initialization
 
-The basic hardware initialization is to (in any order) configure the physical interface for the implementation via the [`phy_config`](../data/usbdev.hjson#phy_config) register, fill the Available Buffer FIFO, enable IN and OUT endpoints with ID 0 (this is the control endpoint that the host will use to configure the interface), enable reception of SETUP and OUT packets on OUT Endpoint 0, and enable any required interrupts.
-Finally, the interface is enabled by setting the enable bit in the [`usbctrl`](../data/usbdev.hjson#usbctrl) register.
+The basic hardware initialization is to (in any order) configure the physical interface for the implementation via the [`phy_config`](registers.md#phy_config) register, fill the Available Buffer FIFO, enable IN and OUT endpoints with ID 0 (this is the control endpoint that the host will use to configure the interface), enable reception of SETUP and OUT packets on OUT Endpoint 0, and enable any required interrupts.
+Finally, the interface is enabled by setting the enable bit in the [`usbctrl`](registers.md#usbctrl) register.
 Setting this bit causes the USB device to assert the pullup on the D+ line, which is used by the host to detect the device.
-There is no need to configure the device ID in ([`usbctrl.device_address`](../data/usbdev.hjson#usbctrl)) at this point -- the line remains in reset and the hardware forces the device ID to zero.
+There is no need to configure the device ID in ([`usbctrl.device_address`](registers.md#usbctrl)) at this point -- the line remains in reset and the hardware forces the device ID to zero.
 
 The second stage of initialization is done under control of the host, which will use control transfers (always beginning with SETUP transactions) to Endpoint 0.
 Initially these will be sent to device ID 0.
-When a Set Address request is received, the device ID received must be stored in the [`usbctrl.device_address`](../data/usbdev.hjson#usbctrl) register.
+When a Set Address request is received, the device ID received must be stored in the [`usbctrl.device_address`](registers.md#usbctrl) register.
 Note that device 0 is used for the entire control transaction setting the new device ID, so writing the new ID to the register should not be done until the ACK for the Status stage has been received (see [USB 2.0 specification](https://www.usb.org/document-library/usb-20-specification)).
 
 The host will then issue additional control transfers to Endpoint 0 to configure the device, now to the device's configured address.
-In response to the Set Configuration request, software should set up the rest of the endpoints for that configuration, including configuring the flow control behavior for OUT endpoints via the [`set_nak_out`](../data/usbdev.hjson#set_nak_out) register, configuring the endpoint type via the [`rxenable_setup`](../data/usbdev.hjson#rxenable_setup) register (for a control endpoint) and the [`out_iso`](../data/usbdev.hjson#out_iso) and [`in_iso`](../data/usbdev.hjson#in_iso) registers (for isochronous OUT and IN endpoints, respectively).
-Finally, software should enable the configured endpoints via the [`ep_out_enable`](../data/usbdev.hjson#ep_out_enable) and [`ep_in_enable`](../data/usbdev.hjson#ep_in_enable) registers.
+In response to the Set Configuration request, software should set up the rest of the endpoints for that configuration, including configuring the flow control behavior for OUT endpoints via the [`set_nak_out`](registers.md#set_nak_out) register, configuring the endpoint type via the [`rxenable_setup`](registers.md#rxenable_setup) register (for a control endpoint) and the [`out_iso`](registers.md#out_iso) and [`in_iso`](registers.md#in_iso) registers (for isochronous OUT and IN endpoints, respectively).
+Finally, software should enable the configured endpoints via the [`ep_out_enable`](registers.md#ep_out_enable) and [`ep_in_enable`](registers.md#ep_in_enable) registers.
 The status stage of the Set Configuration request should not be allowed to complete until all endpoints are set up.
 
 
@@ -35,7 +35,7 @@ Timely management of buffers may have a significant impact on throughput.
 Keeping the Available Buffer FIFO full can be done with a simple loop, adding buffer IDs from the software-managed free pool until the FIFO is full.
 A simpler policy of just adding a buffer ID to the Available Buffer FIFO whenever a buffer ID is removed from the Received Buffer FIFO should work on average, but performance will be slightly worse when bursts of packets are received.
 
-Flow control (using NAKs) may be done on a per-endpoint basis using the [`rxenable_out`](../data/usbdev.hjson#rxenable_out) register.
+Flow control (using NAKs) may be done on a per-endpoint basis using the [`rxenable_out`](registers.md#rxenable_out) register.
 If this does not indicate OUT packet reception is enabled, then any OUT packet will receive a NAK to request a retry later.
 This should only be done for short durations or the host may timeout the transaction.
 
@@ -45,7 +45,7 @@ This should only be done for short durations or the host may timeout the transac
 The host will send OUT or SETUP transactions when it wants to transfer data to the device.
 The data packets are directed to a particular endpoint, and the maximum packet size is set per-endpoint in its Endpoint Descriptor (this must be the same or smaller than the maximum packet size supported by the device).
 A pkt_received interrupt is raised whenever there are one or more packets in the Received Buffer FIFO.
-Software should pop the information from the Received Buffer FIFO by reading the [`rxfifo`](../data/usbdev.hjson#rxfifo) register, which gives (1) the buffer ID that the data was received in, (2) the data length received in bytes, (3) the endpoint to which the packet was sent, and (4) an indication if the packet was sent with an OUT or SETUP transaction.
+Software should pop the information from the Received Buffer FIFO by reading the [`rxfifo`](registers.md#rxfifo) register, which gives (1) the buffer ID that the data was received in, (2) the data length received in bytes, (3) the endpoint to which the packet was sent, and (4) an indication if the packet was sent with an OUT or SETUP transaction.
 Note that the data length could be between zero and the maximum packet size -- in some situations a zero length packet is used as an acknowledgment or end of transfer.
 
 The data length does not include the packet CRC.
@@ -60,30 +60,30 @@ Data is transferred to the host based on the host requesting a transfer with an 
 The host will only generate IN requests if the endpoint is declared as an IN endpoint in its Endpoint Descriptor (note that two descriptors are needed if the same endpoint is used for both IN and OUT transfers).
 The Endpoint Descriptor also includes a description of the frequency the endpoint should be polled (for isochronous and interrupt endpoints).
 
-Data is queued for transmission by writing the corresponding [`configin`](../data/usbdev.hjson#configin) register with the buffer ID containing the data, the length in bytes of data (0 to maximum packet length) and setting the rdy bit.
+Data is queued for transmission by writing the corresponding [`configin`](registers.md#configin) register with the buffer ID containing the data, the length in bytes of data (0 to maximum packet length) and setting the rdy bit.
 This data (with the packet CRC) will be sent as a response to the next IN transaction on the corresponding endpoint.
-When the host ACKs the data, the rdy bit is cleared, the corresponding endpoint bit is set in the [`in_sent`](../data/usbdev.hjson#in_sent) register, and a pkt_sent interrupt is raised. If the host does not ACK the data, the packet will be retried.
-When the packet transmission has been noted by software, the corresponding endpoint bit should be cleared in the [`in_sent`](../data/usbdev.hjson#in_sent) register (by writing a 1 to this very bit).
+When the host ACKs the data, the rdy bit is cleared, the corresponding endpoint bit is set in the [`in_sent`](registers.md#in_sent) register, and a pkt_sent interrupt is raised. If the host does not ACK the data, the packet will be retried.
+When the packet transmission has been noted by software, the corresponding endpoint bit should be cleared in the [`in_sent`](registers.md#in_sent) register (by writing a 1 to this very bit).
 
-Note that the [`configin`](../data/usbdev.hjson#configin) for an endpoint is a single register, so no new data packet should be queued until the previous packet has been ACKed.
-If a SETUP transaction is received on a control endpoint that has a transmission pending, the hardware will **clear the rdy bit** and **set the pend bit** in the [`configin`](../data/usbdev.hjson#configin) register of that endpoint.
-Software must remember the pending transmission and, after the Control transaction is complete, write it back to the [`configin`](../data/usbdev.hjson#configin) register with the rdy bit set.
+Note that the [`configin`](registers.md#configin) for an endpoint is a single register, so no new data packet should be queued until the previous packet has been ACKed.
+If a SETUP transaction is received on a control endpoint that has a transmission pending, the hardware will **clear the rdy bit** and **set the pend bit** in the [`configin`](registers.md#configin) register of that endpoint.
+Software must remember the pending transmission and, after the Control transaction is complete, write it back to the [`configin`](registers.md#configin) register with the rdy bit set.
 
 
 ## Stalling
 
-The [`out_stall`](../data/usbdev.hjson#out_stall) and [`in_stall`](../data/usbdev.hjson#in_stall) registers are used for endpoint stalling.
+The [`out_stall`](registers.md#out_stall) and [`in_stall`](registers.md#in_stall) registers are used for endpoint stalling.
 There is one dedicated register per endpoint.
 Stalling is used to signal that the host should not retry a particular transmission or to signal certain error conditions (functional stall).
 Control endpoints also use a STALL to indicate unsupported requests (protocol stall).
-Unused endpoints can have their [`in_stall`](../data/usbdev.hjson#in_stall) or [`out_stall`](../data/usbdev.hjson#out_stall) register left clear, so in many cases there is no need to use the register.
+Unused endpoints can have their [`in_stall`](registers.md#in_stall) or [`out_stall`](registers.md#out_stall) register left clear, so in many cases there is no need to use the register.
 If the stall register is set for an enabled endpoint then the STALL response will be provided to all IN or OUT requests on that endpoint.
 
 In the case of a protocol stall, the device must send a STALL for all IN/OUT requests until the next SETUP token is received.
-To support this, software sets the [`in_stall`](../data/usbdev.hjson#in_stall) and [`out_stall`](../data/usbdev.hjson#out_stall) register for an endpoint when the host requests an unsupported transfer.
+To support this, software sets the [`in_stall`](registers.md#in_stall) and [`out_stall`](registers.md#out_stall) register for an endpoint when the host requests an unsupported transfer.
 The hardware will then send a STALL response to all IN/OUT transactions until the next SETUP is received for this endpoint.
-Receiving the **SETUP token clears the [`in_stall`](../data/usbdev.hjson#in_stall) and [`out_stall`](../data/usbdev.hjson#out_stall) registers** for that endpoint.
-If either a control endpoint's [`set_nak_out`](../data/usbdev.hjson#set_nak_out) bit is set or software has cleared the [`rxenable_out`](../data/usbdev.hjson#rxenable_out) bit before this transfer began, the hardware will send NAKs to any IN/OUT requests until the software has decided what action to take for the new SETUP request.
+Receiving the **SETUP token clears the [`in_stall`](registers.md#in_stall) and [`out_stall`](registers.md#out_stall) registers** for that endpoint.
+If either a control endpoint's [`set_nak_out`](registers.md#set_nak_out) bit is set or software has cleared the [`rxenable_out`](registers.md#rxenable_out) bit before this transfer began, the hardware will send NAKs to any IN/OUT requests until the software has decided what action to take for the new SETUP request.
 
 ## Device Interface Functions (DIFs)
 
@@ -91,7 +91,7 @@ If either a control endpoint's [`set_nak_out`](../data/usbdev.hjson#set_nak_out)
 
 ## Register Table
 
-* [Register Table](../data/usbdev.hjson#registers)
+* [Register Table](registers.md#registers)
 
 ## Application to FPGAs
 
