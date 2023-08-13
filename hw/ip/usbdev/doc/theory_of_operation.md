@@ -22,7 +22,7 @@ This module features the following output signals to provide a reference for syn
   As soon as it is detected that SOF will not be received as expected (usually because the link is no longer active), `usb_ref_val_o` deasserts to zero until after the next `usb_ref_pulse_o`.
 
 Both these signals are synchronous to the 48 MHz clock.
-They can be forced to zero by setting [`phy_config.usb_ref_disable`](../data/usbdev.hjson#phy_config) to `1`.
+They can be forced to zero by setting [`phy_config.usb_ref_disable`](registers.md#phy_config) to `1`.
 
 To successfully receive SOF packets without errors and thereby enabling clock synchronization, the initial accuracy of the 48 MHz clock source should be within 3.2% or 32,000 ppm.
 This requirement comes from the fact that the SOF packet has a length of 24 bits (plus 8-bit sync field).
@@ -30,7 +30,7 @@ The first 8 bits are used to transfer the SOF packet ID (8'b01011010).
 Internally, the USB device dynamically adjusts the sampling point based on observed line transitions.
 Assuming the last bit of the SOF packet ID is sampled in the middle of the eye, the drift over the remaining 16 bits of the packet must be lower than half a bit (10^6 * (0.5/16) = 32,000 ppm).
 
-To externally monitor the 48 MHz clock, the USB device supports an oscillator test mode which can be enabled by setting [`phy_config.tx_osc_test_mode`](../data/usbdev.hjson#phy_config) to `1`.
+To externally monitor the 48 MHz clock, the USB device supports an oscillator test mode which can be enabled by setting [`phy_config.tx_osc_test_mode`](registers.md#phy_config) to `1`.
 In this mode, the device constantly transmits a J/K pattern but no longer receives SOF packets.
 Consequently, it does not generate reference pulses for clock synchronization.
 The clock might drift off.
@@ -55,7 +55,7 @@ The following sections describe how the various input/output signals relate to t
 The IP block supports two different encodings, driving out on separate TX interfaces.
 The default encoding looks like the USB bus, with D+ and D- values driven on usb_dp_o and usb_dn_o pins.
 The alternate encoding uses usb_se0_o to indicate a single-ended zero (SE0), and usb_d_o encodes K/J (when usb_se0_o is low).
-The TX mode can be selected by setting the `use_tx_d_se0` bit in [`phy_config`](../data/usbdev.hjson#phy_config) to either 1 (alternate, using d/se0) or 0 (default, using dp/dn).
+The TX mode can be selected by setting the `use_tx_d_se0` bit in [`phy_config`](registers.md#phy_config) to either 1 (alternate, using d/se0) or 0 (default, using dp/dn).
 
 The following table summarizes how the different output signals relate to the USB interface pins.
 
@@ -74,7 +74,7 @@ The other signals listed are of the "intersignal" variety, and they do not go di
 ### Data Receive
 
 The IP block supports recovery of the differential K and J symbols from the output of an external differential receiver or directly from the D+/D- pair.
-The RX mode can be selected to use a differential receiver's output by setting the `use_diff_rcvr` bit in [`phy_config`](../data/usbdev.hjson#phy_config).
+The RX mode can be selected to use a differential receiver's output by setting the `use_diff_rcvr` bit in [`phy_config`](registers.md#phy_config).
 The D+/D- pair is always used to detect the single-ended zero (SE0) state.
 
 The following table summarizes how the different input signals relate to the USB interface pins.
@@ -92,7 +92,7 @@ The USB device features the following non-data pins.
 |  External Pins | Internal Signals         | Notes |
 |----------------|--------------------------|-------|
 | sense (VBUS)   | sense_i                  | The sense pin indicates the presence of VBUS from the USB host. |
-| [pullup]       | dp_pullup_o, dn_pullup_o | When dp_pullup_o or dn_pullup_o asserts a 1.5k pullup resistor should be connected to D+ or D-, respectively. This can be done inside the chip or with an external pin. A permanently connected resistor could be used if the pin flip feature is not needed, but this is not recommended because there is then no way to force the device to appear to unplug. Only one of the pullup signals can be asserted at any time. The selection is based on the `pinflip` bit in [`phy_config`](../data/usbdev.hjson#phy_config). Because this is a Full-Speed device the resistor must be on the D+ pin, so when `pinflip` is zero, dp_pullup_o is used. |
+| [pullup]       | dp_pullup_o, dn_pullup_o | When dp_pullup_o or dn_pullup_o asserts a 1.5k pullup resistor should be connected to D+ or D-, respectively. This can be done inside the chip or with an external pin. A permanently connected resistor could be used if the pin flip feature is not needed, but this is not recommended because there is then no way to force the device to appear to unplug. Only one of the pullup signals can be asserted at any time. The selection is based on the `pinflip` bit in [`phy_config`](registers.md#phy_config). Because this is a Full-Speed device the resistor must be on the D+ pin, so when `pinflip` is zero, dp_pullup_o is used. |
 | [suspend]      | suspend_o                | The suspend pin indicates to the USB transceiver that a constant idle has been detected on the link and the device is in the Suspend state (see Section 7.1.7.6 of the [USB 2.0 specification](https://www.usb.org/document-library/usb-20-specification)). |
 | [rx_enable]    | rx_enable_o              | The rx_enable pin turns on/off a differential receiver. It is enabled via a CSR and automatically disabled when the device suspends. |
 
@@ -109,20 +109,15 @@ In an FPGA implementation, this signal can drive a 3.3V output pin that is drive
 Alternatively, it can be used to enable an internal 1.5k pullup on the D+ pin.
 
 This USB device supports the flipping of D+/D-.
-If the `pinflip` bit in [`phy_config`](../data/usbdev.hjson#phy_config) is set, the data pins are flipped internally, meaning the 1.5k pullup resistor needs to be on the external D- line.
+If the `pinflip` bit in [`phy_config`](registers.md#phy_config) is set, the data pins are flipped internally, meaning the 1.5k pullup resistor needs to be on the external D- line.
 To control the pullup on the D- line, this USB device features `dn_pullup_o` signal.
 Of the two pullup signals `dp_pullup_o` and `dn_pullup_o`, only one can be enabled at any time.
 As this is a Full-Speed device, `dp_pullup_o`, i.e., the pullup on D+ is used by default (`pinflip` equals zero).
 
-## Hardware Interfaces
-
-* [Interface Tables](../data/usbdev.hjson#interfaces)
-
-
 ## USB Link State
 
 The USB link has a number of states.
-These are detected and reported in [`usbstat.link_state`](../data/usbdev.hjson#usbstat) and state changes are reported using interrupts.
+These are detected and reported in [`usbstat.link_state`](registers.md#usbstat) and state changes are reported using interrupts.
 The FSM implements a subset of the USB device state diagram shown in Figure 9-1 of the [USB 2.0 specification.](https://www.usb.org/document-library/usb-20-specification)
 
 |State| Description |
@@ -169,7 +164,7 @@ This is an asynchronous dual-port SRAM with software accessing from the bus cloc
 
 Software provides buffers for packet reception through a 4-entry Available Buffer FIFO.
 (More study needed but four seems about right: one just returned to software, one being filled, one ready to be filled, and one for luck.)
-The [`rxenable_out`](../data/usbdev.hjson#rxenable_out) and [`rxenable_setup`](../data/usbdev.hjson#rxenable_setup) registers is used to indicate which endpoints will accept data from the host using OUT or SETUP transactions, respectively.
+The [`rxenable_out`](registers.md#rxenable_out) and [`rxenable_setup`](registers.md#rxenable_setup) registers is used to indicate which endpoints will accept data from the host using OUT or SETUP transactions, respectively.
 When a packet is transferred from the host to the device (using an OUT or SETUP transaction) and reception of that type of transaction is enabled for the requested endpoint, the next buffer ID is pulled from the Available Buffer FIFO.
 The packet data is written to the corresponding buffer in the packet buffer (the 2 kB SRAM).
 If the packet is correctly received, an ACK is returned to the host.
@@ -178,33 +173,33 @@ In addition, the buffer ID, the packet size, an out/setup flag and the endpoint 
 Software should immediately provide a free buffer for future reception by writing the corresponding buffer ID to the Available Buffer FIFO.
 It can then process the packet and eventually return the received buffer to the free pool.
 This allows streaming on a single endpoint or across a number of endpoints.
-If the packets cannot be consumed at the rate they are received, software can implement selective flow control by clearing [`rxenable_out`](../data/usbdev.hjson#rxenable_out) for a particular endpoint, which will result in a request to that endpoint being NAKed (negative acknowledgment).
+If the packets cannot be consumed at the rate they are received, software can implement selective flow control by clearing [`rxenable_out`](registers.md#rxenable_out) for a particular endpoint, which will result in a request to that endpoint being NAKed (negative acknowledgment).
 In the unfortunate event that the Available Buffer FIFO is empty or the Received Buffer FIFO is full, all OUT transactions are NAKed and SETUP transactions are ignored.
 In that event, the host will retry the transaction (up to some maximum attempts or time).
 
-There are two options for a given OUT endpoint's flow control, controlled by the [`set_nak_out`](../data/usbdev.hjson#set_nak_out) register.
+There are two options for a given OUT endpoint's flow control, controlled by the [`set_nak_out`](registers.md#set_nak_out) register.
 If `set_nak_out` is 0 for the endpoint, it will accept packets as long as there are buffers available in the Available Buffer FIFO and space available in the Received Buffer FIFO.
 For timing, this option implies that software may not be able to affect the response to a given transaction, and buffer availability is the only needed factor.
-If `set_nak_out` is 1 for the endpoint, it will clear its corresponding bit in the [`rxenable_out`](../data/usbdev.hjson#rxenable_out) register, forcing NAK responses to OUT transactions to that endpoint until software can intervene.
+If `set_nak_out` is 1 for the endpoint, it will clear its corresponding bit in the [`rxenable_out`](registers.md#rxenable_out) register, forcing NAK responses to OUT transactions to that endpoint until software can intervene.
 That option uses NAK to defer the host, and this enables software to implement features that require protocol-level control at transaction boundaries, such as when implementing the functional stall.
 
 
 ### Transmission
 
 To send data to the host in response to an IN transaction, software first writes the data into a free buffer.
-Then, it writes the buffer ID, data length and rdy flag to the [`configin`](../data/usbdev.hjson#configin) register of the corresponding endpoint.
+Then, it writes the buffer ID, data length and rdy flag to the [`configin`](registers.md#configin) register of the corresponding endpoint.
 When the host next does an IN transaction to that endpoint, the data will be sent from the buffer.
-On receipt of the ACK from the host, the rdy bit in the [`configin`](../data/usbdev.hjson#configin) register will be cleared, and the bit corresponding to the endpoint ID will be set in the [`in_sent`](../data/usbdev.hjson#in_sent) register causing a pkt_sent interrupt to be raised.
-Software can return the buffer to the free pool and write a 1 to clear the endpoint bit in the [`in_sent`](../data/usbdev.hjson#in_sent) register.
-Note that streaming can be achieved if the next buffer has been prepared and is written to the [`configin`](../data/usbdev.hjson#configin) register when the interrupt is received.
+On receipt of the ACK from the host, the rdy bit in the [`configin`](registers.md#configin) register will be cleared, and the bit corresponding to the endpoint ID will be set in the [`in_sent`](registers.md#in_sent) register causing a pkt_sent interrupt to be raised.
+Software can return the buffer to the free pool and write a 1 to clear the endpoint bit in the [`in_sent`](registers.md#in_sent) register.
+Note that streaming can be achieved if the next buffer has been prepared and is written to the [`configin`](registers.md#configin) register when the interrupt is received.
 
 A Control transfer requires one or more IN transactions, either during the data stage or the status stage.
-Therefore, when a SETUP transaction is received for an endpoint, any buffers that are waiting to be sent out to the host from that endpoint are canceled by clearing the rdy bit in the corresponding [`configin`](../data/usbdev.hjson#configin) register.
+Therefore, when a SETUP transaction is received for an endpoint, any buffers that are waiting to be sent out to the host from that endpoint are canceled by clearing the rdy bit in the corresponding [`configin`](registers.md#configin) register.
 To keep track of such canceled buffers, the pend bit in the same register is set.
 The transfer must be queued again after the Control transfer is completed.
 
-Similarly, a Link Reset cancels any waiting IN transactions by clearing the rdy bit in the [`configin`](../data/usbdev.hjson#configin) register of all endpoints.
-The pend bit in the [`configin`](../data/usbdev.hjson#configin) register is set for all endpoints with a pending IN transaction.
+Similarly, a Link Reset cancels any waiting IN transactions by clearing the rdy bit in the [`configin`](registers.md#configin) register of all endpoints.
+The pend bit in the [`configin`](registers.md#configin) register is set for all endpoints with a pending IN transaction.
 
 
 ### Buffer Count and Size
@@ -212,7 +207,7 @@ The pend bit in the [`configin`](../data/usbdev.hjson#configin) register is set 
 Under high load, the 32 buffers of the packet buffer (2 kB SRAM) are allocated as follows:
 - 1 is being processed following reception,
 - 4 are in the Available Buffer FIFO, and
-- 12 (worst case) waiting transmissions in the [`configin`](../data/usbdev.hjson#configin) registers.
+- 12 (worst case) waiting transmissions in the [`configin`](registers.md#configin) registers.
 This leaves 15 buffers for preparation of future transmissions (which would need 12 in the worst case of one per endpoint) and the free pool.
 
 The size of 64 bytes per buffer satisfies the maximum USB packet size for a Full-Speed interface for Control transfers (max may be 8, 16, 32 or 64 bytes), Bulk Transfers (max is 64 bytes) and Interrupt transfers (max is 64 bytes).
