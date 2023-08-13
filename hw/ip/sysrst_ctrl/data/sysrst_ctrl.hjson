@@ -560,7 +560,7 @@
       ]
     }
     { name: "KEY_INTR_CTL",
-      desc: "Define the keys or inputs that can trigger the interrupt ",
+      desc: "Define the keys or inputs that can trigger the interrupt",
       swaccess: "rw",
       hwaccess: "hro",
       regwen: "REGWEN",
@@ -775,7 +775,7 @@
         name: "COM_PRE_DET_CTL",
         desc: '''To define the duration that the combo pre-condition should be pressed
               0-60s, each step is 5us(200KHz clock)
-                    ''',
+              ''',
         count: "NumCombo",
         cname: "sysrst_ctrl",
         swaccess: "rw",
@@ -848,7 +848,7 @@
         name: "COM_DET_CTL",
         desc: '''To define the duration that the combo should be pressed
               0-60s, each step is 5us(200KHz clock)
-                    ''',
+              ''',
         count: "NumCombo",
         cname: "sysrst_ctrl",
         swaccess: "rw",
