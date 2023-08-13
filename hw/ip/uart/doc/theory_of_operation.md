@@ -4,10 +4,6 @@
 
 ![UART Block Diagram](../doc/block_diagram.svg)
 
-## Hardware Interfaces
-
-* [Interface Tables](../data/uart.hjson#interfaces)
-
 ## Design Details
 
 ### Serial interface (both directions)
@@ -49,7 +45,7 @@ completes one byte of data transfer.
 
 ### Transmission
 
-A write to [`WDATA`](../data/uart.hjson#wdata) enqueues a data byte into the 32 byte deep write FIFO, which
+A write to [`WDATA`](registers.md#wdata) enqueues a data byte into the 32 byte deep write FIFO, which
 triggers the transmit module to start UART TX serial data transfer. The TX
 module dequeues the byte from the FIFO and shifts it bit by bit out to the UART
 TX pin on positive edges of the baud clock.
@@ -72,7 +68,7 @@ the RX module samples at the center of each bit-time and gathers
 incoming serial bits into a character buffer. If the STOP bit is
 detected as high and the optional parity bit is correct the data byte
 is pushed into a 32 byte deep RX FIFO. The data can be read out by
-reading [`RDATA`](../data/uart.hjson#rdata) register.
+reading [`RDATA`](registers.md#rdata) register.
 
 This behaviour of the receiver can be used to compute the approximate
 baud clock frequency error that can be tolerated between the
@@ -116,7 +112,7 @@ the ideal baud rate.
 
 ### Setting the baud rate
 
-The baud rate is set by writing to the [`CTRL.NCO`](../data/uart.hjson#ctrl) register field. This should be
+The baud rate is set by writing to the [`CTRL.NCO`](registers.md#ctrl) register field. This should be
 set using the equation below, where `f_pclk` is the system clock frequency
 provided to the UART, and `f_baud` is the desired baud rate (in bits per second).
 
@@ -170,8 +166,8 @@ UART module has a few interrupts including general data flow interrupts
 and unexpected event interrupts.
 
 #### tx_watermark / rx_watermark
-If the TX FIFO level becomes smaller than the TX water mark level (configurable via [`FIFO_CTRL.RXILVL`](../data/uart.hjson#fifo_ctrl) and [`FIFO_CTRL.TXILVL`](../data/uart.hjson#fifo_ctrl)), the `tx_watermark` interrupt is raised to inform SW.
-If the RX FIFO level becomes greater than or equal to RX water mark level (configurable via [`FIFO_CTRL.RXILVL`](../data/uart.hjson#fifo_ctrl) and [`FIFO_CTRL.TXILVL`](../data/uart.hjson#fifo_ctrl)), the `rx_watermark` interrupt is raised to inform SW.
+If the TX FIFO level becomes smaller than the TX water mark level (configurable via [`FIFO_CTRL.RXILVL`](registers.md#fifo_ctrl) and [`FIFO_CTRL.TXILVL`](registers.md#fifo_ctrl)), the `tx_watermark` interrupt is raised to inform SW.
+If the RX FIFO level becomes greater than or equal to RX water mark level (configurable via [`FIFO_CTRL.RXILVL`](registers.md#fifo_ctrl) and [`FIFO_CTRL.TXILVL`](registers.md#fifo_ctrl)), the `rx_watermark` interrupt is raised to inform SW.
 
 Note that the watermark interrupts are edge triggered events.
 This means the interrupt only triggers when the condition transitions from untrue->true.
@@ -195,7 +191,7 @@ the interrupt `rx_overflow` is asserted and the character is dropped.
 The `rx_break_err` interrupt is triggered if a break condition has
 been detected. A break condition is defined as the RX pin being
 continuously low for more than a programmable number of
-character-times (via [`CTRL.RXBLVL`](../data/uart.hjson#ctrl), either 2, 4, 8, or 16). A
+character-times (via [`CTRL.RXBLVL`](registers.md#ctrl), either 2, 4, 8, or 16). A
 character time is 10 bit-times if parity is disabled (START + 8 data +
 STOP) or 11 bit-times if parity is enabled (START + 8 data + parity +
 STOP). If the UART is connected to an external connector this would
@@ -208,10 +204,10 @@ ensure a break and a pullup resistor will ensure the line looks idle
 and no break is generated.)  Note that only one interrupt is generated
 per break -- the line must return high for at least half a bit-time
 before an additional break interrupt is generated. The current break
-status can be read from the [`STATUS.BREAK`](../data/uart.hjson#status) bit. If STATUS.BREAK is set
-but [`INTR_STATE.BREAK`](../data/uart.hjson#intr_state) is clear then the line break has already caused
+status can be read from the [`STATUS.BREAK`](registers.md#status) bit. If STATUS.BREAK is set
+but [`INTR_STATE.BREAK`](registers.md#intr_state) is clear then the line break has already caused
 an interrupt that has been cleared but the line break is still going
-on. If [`STATUS.BREAK`](../data/uart.hjson#status) is clear but [`INTR_STATE.BREAK`](../data/uart.hjson#intr_state) is set then
+on. If [`STATUS.BREAK`](registers.md#status) is clear but [`INTR_STATE.BREAK`](registers.md#intr_state) is set then
 there has been a line break for which software has not cleared the
 interrupt but the line is now back to normal.
 
@@ -266,7 +262,7 @@ in the table:
 #### rx_timeout
 The `rx_timeout` interrupt is triggered when the RX FIFO has data sitting in it
 without software reading it for a programmable number of bit times (using the
-baud rate clock as reference, programmable via [`TIMEOUT_CTRL`](../data/uart.hjson#timeout_ctrl)). This is used to
+baud rate clock as reference, programmable via [`TIMEOUT_CTRL`](registers.md#timeout_ctrl)). This is used to
 alert software that it has data still waiting in the FIFO that has not been
 handled yet. The timeout counter is reset whenever the FIFO depth is changed or
 an `rx_timeout` event occurs. If the RX FIFO is full and new character is
@@ -281,4 +277,4 @@ and half baud clock periods.
 #### rx_parity_err
 The `rx_parity_err` interrupt is triggered if parity is enabled and
 the RX parity bit does not match the expected polarity as programmed
-in [`CTRL.PARITY_ODD`](../data/uart.hjson#ctrl).
+in [`CTRL.PARITY_ODD`](registers.md#ctrl--parity_odd).
