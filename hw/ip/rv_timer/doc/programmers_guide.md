@@ -80,7 +80,3 @@ In this case both [`COMPARE_LOWER0_0`](../../spi_device/data/spi_device.hjson#co
 ## Device Interface Functions (DIFs)
 
 - [Device Interface Functions](../../../../sw/device/lib/dif/dif_rv_timer.h)
-
-## Register Table
-
-* [Register Table](../data/rv_timer.hjson#registers)
