@@ -21,7 +21,7 @@ There are separate translations controls for instruction and data.
 Each control contains two programmable regions (2 for instruction and 2 for data).
 If a transaction matches multiple regions, the lowest indexed region has priority.
 
-For details on how to program the related registers, please see [`IBUS_ADDR_MATCHING_0`](../data/rv_core_ibex.hjson#ibus_addr_matching_0) and [`IBUS_REMAP_ADDR_0`](../data/rv_core_ibex.hjson#ibus_remap_addr_0).
+For details on how to program the related registers, please see [`IBUS_ADDR_MATCHING_0`](registers.md#ibus_addr_matching) and [`IBUS_REMAP_ADDR_0`](registers.md#ibus_remap_addr).
 
 ### Translation and Instruction Caching
 
@@ -34,19 +34,19 @@ The `FENCE.I` instruction forces the instruction cache to flush, and this aligns
 ## Random Number Generation
 
 The wrapper has a connection to the [Entropy Distribution Network (EDN)](../../edn/README.md) with a register based interface.
-The [`RND_DATA`](../data/rv_core_ibex.hjson#rnd_data) register provides 32-bits directly from the EDN.
-[`RND_STATUS.RND_DATA_VALID`](../data/rv_core_ibex.hjson#rnd_status) indicates if the data in [`RND_DATA`](../data/rv_core_ibex.hjson#rnd_data) is valid or not.
+The [`RND_DATA`](registers.md#rnd_data) register provides 32-bits directly from the EDN.
+[`RND_STATUS.RND_DATA_VALID`](registers.md#rnd_status) indicates if the data in [`RND_DATA`](registers.md#rnd_data) is valid or not.
 A polling style interface is used to get new random data.
-Any read to [`RND_DATA`](../data/rv_core_ibex.hjson#rnd_data) when it is valid invalidates the data and triggers an EDN request for new data.
-Software should poll [`RND_STATUS.RND_DATA_VALID`](../data/rv_core_ibex.hjson#rnd_status) until it is valid and then read from [`RND_DATA`](../data/rv_core_ibex.hjson#rnd_data) to get the new random data.
+Any read to [`RND_DATA`](registers.md#rnd_data) when it is valid invalidates the data and triggers an EDN request for new data.
+Software should poll [`RND_STATUS.RND_DATA_VALID`](registers.md#rnd_status) until it is valid and then read from [`RND_DATA`](registers.md#rnd_data) to get the new random data.
 Either the data is valid or a request for new data is pending.
 It is not possible to have a state where there is no valid data without new data being requested.
 
-Upon reset [`RND_DATA`](../data/rv_core_ibex.hjson#rnd_data) is invalid.
+Upon reset [`RND_DATA`](registers.md#rnd_data) is invalid.
 A request is made to the EDN immediately out of reset, this will not be answered until the EDN is enabled.
 Software should take care not to enable the EDN until the entropy complex configuration is as desired.
-When the entropy complex configuration is changed reading [`RND_DATA`](../data/rv_core_ibex.hjson#rnd_data) when it is valid will suffice to flush any old random data to trigger a new request under the new configuration.
-If a EDN request is pending when the entropy complex configuration is changed ([`RND_STATUS.RND_DATA_VALID`](../data/rv_core_ibex.hjson#rnd_status) is clear), it is advisable to wait until it is complete and then flush out the data to ensure the fresh value was produced under the new configuration.
+When the entropy complex configuration is changed reading [`RND_DATA`](registers.md#rnd_data) when it is valid will suffice to flush any old random data to trigger a new request under the new configuration.
+If a EDN request is pending when the entropy complex configuration is changed ([`RND_STATUS.RND_DATA_VALID`](registers.md#rnd_status) is clear), it is advisable to wait until it is complete and then flush out the data to ensure the fresh value was produced under the new configuration.
 
 ## Crash Dump Collection
 
@@ -103,55 +103,3 @@ Ibex fetch is enabled when all of the following conditions are met:
 ### Local Escalation Path
 
 When the ``fatal_hw_err`` alert is raised Ibex fetch is disabled and will remain disabled until ``rv_core_ibex`` is reset.
-
-## Hardware Interfaces
-
-### Signals
-
-* [Interface Tables](../data/rv_core_ibex.hjson#interfaces)
-
-All ports and parameters of Ibex are exposed through this wrapper module, except for the instruction and data memory interfaces (signals starting with `instr_` and `data_`).
-Refer to the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/02_user/integration.html) for a detailed description of these signals and parameters.
-
-The instruction and data memory ports are exposed as TL-UL ports.
-The table below lists other signals and the TL-UL ports.
-
-Signal               | Direction        | Type                                   | Description
----------------------|------------------|----------------------------------------|---------------
-`rst_cpu_n_o`        | `output`         | `logic`                                | Outgoing indication to reset manager that the process has reset.
-`ram_cfg_i`          | `input`          | `prim_ram_1p_pkg::ram_1p_cfg_t`        | Incoming memory configuration that is technology dependent.
-`hart_id_i`          | `input`          | `logic [31:0]`                         | Static Hard ID input signal.
-`boot_addr_i`        | `input`          | `logic [31:0]`                         | Static boot address input signal.
-`fpga_info_i`        | `input`          | `logic [31:0]`                         | Fpga info input signal, coming from a Xilinx USR_ACCESSE2 primitive for example.
-`irq_software_i`     | `input`          | `logic`                                | Software interrupt input.
-`irq_timer_i`        | `input`          | `logic`                                | Timer interrupt input.
-`irq_external_i`     | `input`          | `logic`                                | External interrupt input.
-`debug_req_i`        | `input`          | `logic`                                | Debug request from the debug module.
-`corei_tl_h_o`       | `output`         | `tlul_pkg::tl_h2d_t`                   | Outgoing instruction tlul request.
-`corei_tl_h_i`       | `input`          | `tlul_pkg::tl_d2h_t`                   | Incoming instruction tlul response.
-`cored_tl_h_o`       | `output`         | `tlul_pkg::tl_h2d_t`                   | Outgoing data tlul request.
-`cored_tl_h_i`       | `input`          | `tlul_pkg::tl_d2h_t`                   | Incoming data tlul response.
-`cfg_tl_d_i`         | `output`         | `tlul_pkg::tl_h2d_t`                   | Outgoing data tlul request for peripheral registers.
-`cfg_tl_d_o`         | `input`          | `tlul_pkg::tl_d2h_t`                   | Incoming data tlul response for peripheral registers.
-`alert_rx_i`         | `input`          | `prim_alert_pkg::alert_rx_t`           | Incoming alert response / ping.
-`alert_tx_o`         | `output`         | `prim_alert_pkg::alert_tx_t`           | Outgoing alert request.
-`esc_tx_i`           | `input`          | `prim_esc_pkg::esc_tx_t`               | Incoming escalation request / ping.
-`esc_rx_o`           | `output`         | `prim_esc_pkg::esc_rx_t`               | Outgoing escalation response.
-`nmi_wdog_i`         | `input`          | `logic`                                | Incoming watchdog NMI bark.
-`crash_dump_o`       | `output`         | `ibex_pkg::crash_dump_t`               | Outgoing crash dump information to rstmgr.
-`cfg_tl_d_i`         | `input`          | `tlul_pkg::tl_h2d_t`                   | Incoming configuration bus request.
-`cfg_tl_d_o `        | `output`         | `tlul_pkg::tl_d2h_t`                   | Outgoing configuration bus response.
-`lc_cpu_en_i`        | `input`          | `lc_ctrl_pkg::lc_tx_t`                 | CPU enable signal from life cycle controller.
-`pwrmgr_cpu_en_i`    | `input`          | `lc_ctrl_pkg::lc_tx_t`                 | CPU enable signal from power manager.
-`pwrmgr_o`           | `output`         | `pwrmgr_pkg::pwr_cpu_t`                | Low-power CPU status to power manager.
-`edn_i`              | `input`          | `edn_pkg::edn_rsp_t`                   | Incoming entropy response from entropy distribution network.
-`edn_o`              | `output`         | `edn_pkg::edn_req_t`                   | Outgoing entropy request to entropy distribution network.
-`icache_otp_key_i`   | `input`          | `otp_ctrl_pkg::sram_otp_key_rsp_t`     | Incoming scrambling key response from OTP to icache.
-`icache_otp_key_o`   | `output`         | `otp_ctrl_pkg::sram_otp_key_req_t`     | Outgoing scrambling key request from icache to OTP.
-
-
-The `PipeLine` parameter can be used to configure the bus adapter pipelining.
-
-* Setting `PipeLine` to `0` disables pipelining, which gives minimal latency between the bus and the core, at the cost of a combinatorial path into the core.
-* Setting `PipeLine` to `1` introduces a pipelining FIFO between the core instruction/data interfaces and the bus.
-  This setting increases the memory access latency, but improves timing.
