@@ -103,7 +103,7 @@ Control and Status Registers (CSRs) are 32b wide registers used for "special" pu
 they are not related to the GPRs.
 CSRs can be accessed through dedicated instructions, {{#otbn-insn-ref CSRRS}} and {{#otbn-insn-ref CSRRW}}.
 Writes to read-only (RO) registers are ignored; they do not signal an error.
-All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is written to [`CMD.start`](data/otbn.hjson#cmd)).
+All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is written to [`CMD.start`](doc/registers.md#cmd)).
 
 <!-- This list of CSRs is replicated in otbn_env_cov.sv, wsr.py, the
      RTL and in rig/model.py. If editing one, edit the other four as well. -->
@@ -316,7 +316,7 @@ OTBN has 256b Wide Special purpose Registers (WSRs).
 These are analogous to the 32b CSRs, but are used by big number instructions.
 They can be accessed with the {{#otbn-insn-ref BN.WSRR}} and {{#otbn-insn-ref BN.WSRW}} instructions.
 Writes to read-only (RO) registers are ignored; they do not signal an error.
-All read-write (RW) WSRs are set to 0 when OTBN starts an operation (when 1 is written to [`CMD.start`](data/otbn.hjson#cmd)).
+All read-write (RW) WSRs are set to 0 when OTBN starts an operation (when 1 is written to [`CMD.start`](doc/registers.md#cmd)).
 
 <!-- This list of WSRs is replicated in otbn_env_cov.sv, wsr.py, the
      RTL and in rig/model.py. If editing one, edit the other four as well. -->
@@ -485,9 +485,9 @@ Refer to the [Secure Wipe](./doc/theory_of_operation.md#secure-wipe) section for
 
 ## Instruction Counter
 
-In order to detect and mitigate fault injection attacks on the OTBN, the host CPU can read the number of executed instructions from [`INSN_CNT`](data/otbn.hjson#insn_cnt) and verify whether it matches the expectation.
+In order to detect and mitigate fault injection attacks on the OTBN, the host CPU can read the number of executed instructions from [`INSN_CNT`](doc/registers.md#insn_cnt) and verify whether it matches the expectation.
 The host CPU can clear the instruction counter when OTBN is not running.
-Writing any value to [`INSN_CNT`](data/otbn.hjson#insn_cnt) clears this register to zero.
+Writing any value to [`INSN_CNT`](doc/registers.md#insn_cnt) clears this register to zero.
 Write attempts while OTBN is running are ignored.
 
 ## Key Sideloading

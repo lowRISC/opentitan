@@ -61,7 +61,8 @@
       - [Formal Masking Verification Using Alma](./hw/ip/otbn/pre_sca/alma/README.md)
     - [Functional Coverage](./hw/ip/otbn/dv/doc/fcov.md)
     - [Programmer's Guide](./hw/ip/otbn/doc/programmers_guide.md)
-    - [Interface and Registers](./hw/ip/otbn/data/otbn.hjson)
+    - [Hardware Interfaces](./hw/ip/otbn/doc/interfaces.md)
+    - [Registers](./hw/ip/otbn/doc/registers.md)
     - [Checklist](./hw/ip/otbn/doc/checklist.md)
 
 - [Hardware IP Blocks](./hw/ip/README.md)
