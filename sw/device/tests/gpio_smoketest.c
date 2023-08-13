@@ -11,7 +11,7 @@
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 static dif_gpio_t gpio;
 static dif_pinmux_t pinmux;
@@ -22,7 +22,7 @@ OTTF_DEFINE_TEST_CONFIG();
  *
  * On FPGA, these patterns are tested as-is. In DV, this symbol is overwritten
  * by the testbench to test completely random patterns. This is done in
- * `hw/top_earlgrey/dv/env/seq_lib/chip_sw_gpio_smoke_vseq.sv`. The DV test
+ * `hw/top_darjeeling/dv/env/seq_lib/chip_sw_gpio_smoke_vseq.sv`. The DV test
  * also checks GPIO pin values at the chip periphery for correctness.
  */
 static const uint32_t kGpioVals[] = {0xAAAAAAAA, 0x55555555, 0xA5A5A5A5,
@@ -58,20 +58,21 @@ static void test_gpio_write(uint32_t write_val, uint32_t compare_mask) {
 bool test_main(void) {
   uint32_t gpio_mask = pinmux_testutils_get_testable_gpios_mask();
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
   // Assign GPIOs in the pinmux
   for (size_t i = 0; i < kDifGpioNumPins; ++i) {
     if (gpio_mask & (1u << i)) {
       dif_pinmux_index_t mio = kPinmuxTestutilsGpioMioOutPins[i];
-      dif_pinmux_index_t gpio_out = kTopEarlgreyPinmuxOutselGpioGpio0 + i;
+      dif_pinmux_index_t gpio_out = kTopDarjeelingPinmuxOutselGpioGpio0 + i;
       CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, mio, gpio_out));
       mio = kPinmuxTestutilsGpioInselPins[i];
-      dif_pinmux_index_t gpio_in = kTopEarlgreyPinmuxPeripheralInGpioGpio0 + i;
+      dif_pinmux_index_t gpio_in =
+          kTopDarjeelingPinmuxPeripheralInGpioGpio0 + i;
       CHECK_DIF_OK(dif_pinmux_input_select(&pinmux, gpio_in, mio));
     }
   }
-  CHECK_DIF_OK(
-      dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
+  CHECK_DIF_OK(dif_gpio_init(
+      mmio_region_from_addr(TOP_DARJEELING_GPIO_BASE_ADDR), &gpio));
   CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, gpio_mask));
 
   for (uint8_t i = 0; i < ARRAYSIZE(kGpioVals); ++i) {

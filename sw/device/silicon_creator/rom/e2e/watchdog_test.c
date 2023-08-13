@@ -11,7 +11,7 @@
 #include "sw/lib/sw/device/runtime/log.h"
 
 #include "aon_timer_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -19,7 +19,7 @@ enum {
   /**
    * Base address of the aon_timer registers.
    */
-  kBase = TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR,
+  kBase = TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR,
 };
 
 #ifdef EXPECT_WATCHDOG_DISABLED

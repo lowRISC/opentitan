@@ -20,7 +20,7 @@
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/runtime/print.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "rstmgr_regs.h"
 
 static uint32_t compute_ticks_per_ms(uint64_t hz) {

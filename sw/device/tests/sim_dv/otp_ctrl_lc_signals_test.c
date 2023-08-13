@@ -20,7 +20,7 @@
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"
 
 static dif_lc_ctrl_t lc;
@@ -67,24 +67,24 @@ static void init_peripherals(void) {
   };
   // Life cycle
   CHECK_DIF_OK(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR), &lc));
+      mmio_region_from_addr(TOP_DARJEELING_LC_CTRL_BASE_ADDR), &lc));
   // OTP
   CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
+      mmio_region_from_addr(TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR), &otp));
   CHECK_DIF_OK(dif_otp_ctrl_configure(&otp, config));
   // Rstmgr
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR), &rstmgr));
   // KMAC (init for Keymgr use)
-  CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  CHECK_DIF_OK(dif_kmac_init(
+      mmio_region_from_addr(TOP_DARJEELING_KMAC_BASE_ADDR), &kmac));
   CHECK_STATUS_OK(kmac_testutils_config(&kmac, true));
   // Keymgr
   CHECK_DIF_OK(dif_keymgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
+      mmio_region_from_addr(TOP_DARJEELING_KEYMGR_BASE_ADDR), &keymgr));
   // Flash
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      &flash, mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR)));
 }
 
 /**

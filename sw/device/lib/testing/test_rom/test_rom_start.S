@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling_memory.h"
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/base/multibits_asm.h"
 #include "ast_regs.h"
@@ -147,22 +147,22 @@ _reset_start:
 _start:
 #if !OT_IS_ENGLISH_BREAKFAST
   // Check if AST initialization should be skipped.
-  li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a0, (TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET(a0)
   li   t1, MULTIBIT_ASM_BOOL4_TRUE
   bne  t0, t1, .L_ast_init_skip
 
   // Copy the AST configuration from OTP.
-  li   a0, (TOP_EARLGREY_AST_BASE_ADDR)
-  li   a1, (TOP_EARLGREY_AST_BASE_ADDR + AST_REGAL_REG_OFFSET + 4)
-  li   a2, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a0, (TOP_DARJEELING_AST_BASE_ADDR)
+  li   a1, (TOP_DARJEELING_AST_BASE_ADDR + AST_REGAL_REG_OFFSET + 4)
+  li   a2, (TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + \
             OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET)
   call crt_section_copy
 
   // Wait for AST initialization to complete.
-  li   a0, TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR
+  li   a0, TOP_DARJEELING_SENSOR_CTRL_BASE_ADDR
 .L_ast_done_loop:
   lw   t0, SENSOR_CTRL_STATUS_REG_OFFSET(a0)
   srli t0, t0, SENSOR_CTRL_STATUS_AST_INIT_DONE_BIT // no-op as bit index is currently 0
@@ -172,7 +172,7 @@ _start:
 .L_ast_init_skip:
   // The following sequence enables the minimum level of entropy required to
   // initialize memory scrambling, as well as the entropy distribution network.
-  li a0, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
+  li a0, TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR
   // Note for BOOT_ROM initialization the FIPS_ENABLE bit is set to kMultiBitBool4False
   // to prevent the release of FIPS entropy until all the thresholds are set
   li t0, (MULTIBIT_ASM_BOOL4_FALSE << ENTROPY_SRC_CONF_FIPS_ENABLE_OFFSET) | \
@@ -184,13 +184,13 @@ _start:
   li t0, (MULTIBIT_ASM_BOOL4_TRUE << ENTROPY_SRC_MODULE_ENABLE_MODULE_ENABLE_OFFSET)
   sw t0, ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET(a0)
 
-  li a0, TOP_EARLGREY_CSRNG_BASE_ADDR
+  li a0, TOP_DARJEELING_CSRNG_BASE_ADDR
   li t0, (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_ENABLE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_SW_APP_ENABLE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_READ_INT_STATE_OFFSET)
   sw t0, CSRNG_CTRL_REG_OFFSET(a0)
 
-  li a0, TOP_EARLGREY_EDN0_BASE_ADDR
+  li a0, TOP_DARJEELING_EDN0_BASE_ADDR
   li t0, (MULTIBIT_ASM_BOOL4_TRUE << EDN_CTRL_EDN_ENABLE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_TRUE << EDN_CTRL_BOOT_REQ_MODE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_FALSE << EDN_CTRL_AUTO_REQ_MODE_OFFSET) | \
@@ -217,7 +217,7 @@ _start:
   // this to optimize test run times.
   lw    t0, kDeviceType
   beqz  t0, .L_sram_init_skip
-  li    a0, TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR
+  li    a0, TOP_DARJEELING_SRAM_CTRL_MAIN_REGS_BASE_ADDR
   li    t0, (1 << SRAM_CTRL_CTRL_INIT_BIT)
   sw    t0, SRAM_CTRL_CTRL_REG_OFFSET(a0)
 

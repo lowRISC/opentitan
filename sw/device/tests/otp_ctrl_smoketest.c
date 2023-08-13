@@ -14,7 +14,7 @@
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 static dif_otp_ctrl_t otp;
 
@@ -30,7 +30,7 @@ OTTF_DEFINE_TEST_CONFIG();
  */
 bool test_main(void) {
   CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
+      mmio_region_from_addr(TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR), &otp));
 
   dif_otp_ctrl_config_t config = {
       .check_timeout = 100000,

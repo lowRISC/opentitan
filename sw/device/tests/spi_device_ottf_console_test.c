@@ -7,10 +7,11 @@
 #include "sw/ip/spi_device/dif/dif_spi_device.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
-                        .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
+                        .console.base_addr =
+                            TOP_DARJEELING_SPI_DEVICE_BASE_ADDR,
                         .console.test_may_clobber = false, );
 
 static const char test_str[] = "This is a SPI device OTTF console test.";

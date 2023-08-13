@@ -32,12 +32,12 @@
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 static volatile const uint8_t RST_IDX[12] = {0, 1, 2, 3, 4,  5,
                                              6, 7, 8, 9, 10, 11};
-static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
+static const uint32_t kPlicTarget = kTopDarjeelingPlicTargetIbex0;
 
 /**
  * Objects to access the peripherals used in this test via dif API.
@@ -83,34 +83,34 @@ static_assert(
  * overrides the default OTTF implementation.
  */
 void ottf_external_isr(void) {
-  top_earlgrey_plic_peripheral_t peripheral;
+  top_darjeeling_plic_peripheral_t peripheral;
   dif_rv_plic_irq_id_t irq_id;
   uint32_t irq = 0;
   uint32_t alert = 0;
 
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
 
-  peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
+  peripheral = (top_darjeeling_plic_peripheral_t)
+      top_darjeeling_plic_interrupt_for_peripheral[irq_id];
 
-  if (peripheral == kTopEarlgreyPlicPeripheralAonTimerAon) {
+  if (peripheral == kTopDarjeelingPlicPeripheralAonTimerAon) {
     irq =
         (dif_aon_timer_irq_t)(irq_id -
                               (dif_rv_plic_irq_id_t)
-                                  kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
+                                  kTopDarjeelingPlicIrqIdAonTimerAonWkupTimerExpired);
 
     // Stops escalation process.
     CHECK_DIF_OK(dif_alert_handler_escalation_clear(&alert_handler,
                                                     kDifAlertHandlerClassA));
     CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(&aon_timer, irq));
 
-    CHECK(irq != kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark,
+    CHECK(irq != kTopDarjeelingPlicIrqIdAonTimerAonWdogTimerBark,
           "AON Timer Wdog should not bark");
 
-  } else if (peripheral == kTopEarlgreyPlicPeripheralAlertHandler) {
+  } else if (peripheral == kTopDarjeelingPlicPeripheralAlertHandler) {
     irq = (dif_rv_plic_irq_id_t)(irq_id -
                                  (dif_rv_plic_irq_id_t)
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassa);
+                                     kTopDarjeelingPlicIrqIdAlertHandlerClassa);
 
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(&alert_handler, alert));
 
@@ -134,37 +134,38 @@ void ottf_external_isr(void) {
 void init_peripherals(void) {
   // Initialize pwrmgr.
   CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+      mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR), &pwrmgr));
 
   // Initialize sysrst_ctrl.
   CHECK_DIF_OK(dif_sysrst_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
+      mmio_region_from_addr(TOP_DARJEELING_SYSRST_CTRL_AON_BASE_ADDR),
       &sysrst_ctrl_aon));
 
   // Initialize rstmgr to check the reset reason.
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
   // Initialize aon timer to use the wdog.
   CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
+      mmio_region_from_addr(TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR),
+      &aon_timer));
 
   // Initialize flash_ctrl
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_ctrl,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR)));
 
   // Initialize plic.
   CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
+      mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &plic));
 
   rv_plic_testutils_irq_range_enable(
-      &plic, kPlicTarget, kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired,
-      kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark);
+      &plic, kPlicTarget, kTopDarjeelingPlicIrqIdAonTimerAonWkupTimerExpired,
+      kTopDarjeelingPlicIrqIdAonTimerAonWdogTimerBark);
 
   // Initialize alert handler.
   CHECK_DIF_OK(dif_alert_handler_init(
-      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
+      mmio_region_from_addr(TOP_DARJEELING_ALERT_HANDLER_BASE_ADDR),
       &alert_handler));
 }
 
@@ -174,7 +175,8 @@ void init_peripherals(void) {
  * wdog is programed to bark.
  */
 static void alert_handler_config(void) {
-  dif_alert_handler_alert_t alerts[] = {kTopEarlgreyAlertIdPwrmgrAonFatalFault};
+  dif_alert_handler_alert_t alerts[] = {
+      kTopDarjeelingAlertIdPwrmgrAonFatalFault};
   dif_alert_handler_class_t alert_classes[] = {kDifAlertHandlerClassA};
 
   uint32_t cycles[4] = {0};
@@ -290,14 +292,14 @@ static void config_sysrst(const dif_pwrmgr_t *pwrmgr,
   // Configure pinmux
   dif_pinmux_t pinmux;
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
 
   CHECK_DIF_OK(dif_sysrst_ctrl_input_change_detect_configure(
       sysrst_ctrl_aon, sysrst_ctrl_input_change_config));
 
   CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey0In,
-      kTopEarlgreyPinmuxInselIor13));
+      &pinmux, kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonKey0In,
+      kTopDarjeelingPinmuxInselIor13));
 }
 
 static void low_power_sysrst(const dif_pwrmgr_t *pwrmgr) {
@@ -440,8 +442,8 @@ bool test_main(void) {
 
   // Enable all the AON interrupts used in this test.
   rv_plic_testutils_irq_range_enable(&plic, kPlicTarget,
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassa,
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassd);
+                                     kTopDarjeelingPlicIrqIdAlertHandlerClassa,
+                                     kTopDarjeelingPlicIrqIdAlertHandlerClassd);
 
   alert_handler_config();
 

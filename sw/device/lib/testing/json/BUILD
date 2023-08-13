@@ -25,7 +25,7 @@ cc_library(
     deps = [
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
-        "//sw/top_earlgrey/sw/dif:gpio",
+        "//sw/top_darjeeling/sw/dif:gpio",
     ],
 )
 
@@ -41,7 +41,7 @@ cc_library(
     srcs = ["pinmux.c"],
     hdrs = ["pinmux.h"],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/ujson",
     ],
 )
@@ -57,7 +57,7 @@ cc_library(
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/base:status",
         "//sw/lib/sw/device/runtime:print",
-        "//sw/top_earlgrey/sw/dif:pinmux",
+        "//sw/top_darjeeling/sw/dif:pinmux",
     ],
 )
 

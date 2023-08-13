@@ -10,7 +10,7 @@
  * This linker script generates a binary to run BL0 tests.
  */
 
-INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
+INCLUDE hw/top_darjeeling/sw/autogen/top_darjeeling_memory.ld
 
 /**
  * Symbols to be used in the setup of the address translation for the OTTF run

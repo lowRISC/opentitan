@@ -23,7 +23,7 @@
 
 #include "alert_handler_regs.h"
 #include "flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "keymgr_regs.h"
 #include "lc_ctrl_regs.h"
 #include "otp_ctrl_regs.h"
@@ -288,7 +288,7 @@ static shutdown_error_redact_t shutdown_redact_policy_inline(
     case LC_CTRL_LC_STATE_STATE_VALUE_PROD_END:
       // In production states use the redaction level specified in OTP.
       return (shutdown_error_redact_t)abs_mmio_read32(
-          TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
+          TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR +
           OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
           OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ERROR_REPORTING_OFFSET);
     default:
@@ -304,7 +304,7 @@ shutdown_error_redact_t shutdown_redact_policy(void) {
   // Note that we cannot use the lifecycle or OTP libraries since an error
   // may trigger a call to `shutdown_finalize`.
   uint32_t raw_state =
-      bitfield_field32_read(abs_mmio_read32(TOP_EARLGREY_LC_CTRL_BASE_ADDR +
+      bitfield_field32_read(abs_mmio_read32(TOP_DARJEELING_LC_CTRL_BASE_ADDR +
                                             LC_CTRL_LC_STATE_REG_OFFSET),
                             LC_CTRL_LC_STATE_STATE_FIELD);
   return shutdown_redact_policy_inline(raw_state);
@@ -325,7 +325,7 @@ enum {
   /**
    * Base address of UART.
    */
-  kUartBase = TOP_EARLGREY_UART0_BASE_ADDR,
+  kUartBase = TOP_DARJEELING_UART0_BASE_ADDR,
   /**
    * UART TX FIFO size.
    */
@@ -365,7 +365,7 @@ static void shutdown_print(shutdown_log_prefix_t prefix, uint32_t val) {
 
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_report_error(rom_error_t reason)) {
   uint32_t raw_state =
-      bitfield_field32_read(abs_mmio_read32(TOP_EARLGREY_LC_CTRL_BASE_ADDR +
+      bitfield_field32_read(abs_mmio_read32(TOP_DARJEELING_LC_CTRL_BASE_ADDR +
                                             LC_CTRL_LC_STATE_REG_OFFSET),
                             LC_CTRL_LC_STATE_STATE_FIELD);
 
@@ -408,7 +408,7 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_report_error(rom_error_t reason)) {
 }
 
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_software_escalate(void)) {
-  enum { kBase = TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR };
+  enum { kBase = TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR };
   //  Setting rv_core_ibex.SW_FATAL_ERR (rw0c) to any value other than
   // `kMultiBitBool4False` will continuously cause alert events.
   abs_mmio_write32(kBase + RV_CORE_IBEX_SW_FATAL_ERR_REG_OFFSET, 0);
@@ -416,7 +416,7 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_software_escalate(void)) {
 
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_keymgr_kill(void)) {
   enum {
-    kBase = TOP_EARLGREY_KEYMGR_BASE_ADDR,
+    kBase = TOP_DARJEELING_KEYMGR_BASE_ADDR,
   };
   uint32_t reg =
       bitfield_field32_write(0, KEYMGR_CONTROL_SHADOWED_DEST_SEL_FIELD,
@@ -430,20 +430,20 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_keymgr_kill(void)) {
 }
 
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_reset(void)) {
-  enum { kBase = TOP_EARLGREY_RSTMGR_AON_BASE_ADDR };
+  enum { kBase = TOP_DARJEELING_RSTMGR_AON_BASE_ADDR };
   abs_mmio_write32(kBase + RSTMGR_RESET_REQ_REG_OFFSET, kMultiBitBool4True);
 }
 
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_flash_kill(void)) {
-  enum { kBase = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR };
+  enum { kBase = TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR };
   // Setting DIS (rw0c) to a value other than 5 will disable flash permanently.
   abs_mmio_write32(kBase + FLASH_CTRL_DIS_REG_OFFSET, 0);
 }
 
 SHUTDOWN_FUNC(noreturn, shutdown_hang(void)) {
   enum {
-    kSramCtrlBase = TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR,
-    kRstmgrBase = TOP_EARLGREY_RSTMGR_AON_BASE_ADDR,
+    kSramCtrlBase = TOP_DARJEELING_SRAM_CTRL_MAIN_REGS_BASE_ADDR,
+    kRstmgrBase = TOP_DARJEELING_RSTMGR_AON_BASE_ADDR,
   };
 
   // Disable SRAM execution and lock the register.

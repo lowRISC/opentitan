@@ -59,6 +59,9 @@ jobs:
       trap 'get_logs' EXIT
       get_logs() {
         # Export the Vivado logs
+        mkdir -p $OBJ_DIR/hw/top_darjeeling/standard-release
+        cp -rLt $OBJ_DIR/hw/top_darjeeling/standard-release \
+          $($REPO_TOP/bazelisk.sh outquery-all //hw/top_darjeeling/bitstream/vivado:fpga_cw310)
         mkdir -p $OBJ_DIR/hw/top_earlgrey/standard-release
         mkdir -p $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug-release/
         cp -rLt $OBJ_DIR/hw/top_earlgrey/standard-release \
@@ -84,8 +87,10 @@ jobs:
   - bash: |
       . util/build_consts.sh
       echo "Synthesis log"
+      cat $OBJ_DIR/hw/top_darjeeling/standard-release/build.fpga_cw310/synth-vivado/lowrisc_systems_chip_darjeeling_cw310_0.1.runs/synth_1/runme.log || true
       cat $OBJ_DIR/hw/top_earlgrey/standard-release/build.fpga_cw310/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.runs/synth_1/runme.log || true
       echo "Implementation log"
+      cat $OBJ_DIR/hw/top_darjeeling/standard-release/build.fpga_cw310/synth-vivado/lowrisc_systems_chip_darjeeling_cw310_0.1.runs/impl_1/runme.log || true
       cat $OBJ_DIR/hw/top_earlgrey/standard-release/build.fpga_cw310/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.runs/impl_1/runme.log || true
     displayName: "Display standard bitstream synth and impl logs"
 

@@ -17,7 +17,7 @@
 #include "sw/lib/sw/device/base/multibits.h"
 
 #include "flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"
 
 // Values of `flash_ctrl_partition_t` constants must be distinct from each
@@ -36,7 +36,7 @@ enum {
   /**
    * Base address of the flash_ctrl registers.
    */
-  kBase = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR,
+  kBase = TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR,
 };
 
 /**
@@ -393,7 +393,7 @@ rom_error_t flash_ctrl_data_erase_verify(uint32_t addr,
   for (; launder32(i) < byte_count && launder32(r) < byte_count;
        i += sizeof(uint32_t), r -= sizeof(uint32_t)) {
     uint32_t word =
-        abs_mmio_read32(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + addr + i);
+        abs_mmio_read32(TOP_DARJEELING_FLASH_CTRL_MEM_BASE_ADDR + addr + i);
     mask &= word;
     error &= word;
   }

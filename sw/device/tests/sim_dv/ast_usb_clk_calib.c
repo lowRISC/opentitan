@@ -13,7 +13,7 @@
 #include "sw/lib/sw/device/base/mmio.h"
 
 #include "ast_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -65,13 +65,13 @@ static void enable_usb_meas_get_code(dif_clkmgr_t *clkmgr,
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+      mmio_region_from_addr(TOP_DARJEELING_CLKMGR_AON_BASE_ADDR), &clkmgr));
 
   CHECK_DIF_OK(dif_usbdev_init(
-      mmio_region_from_addr(TOP_EARLGREY_USBDEV_BASE_ADDR), &usbdev));
+      mmio_region_from_addr(TOP_DARJEELING_USBDEV_BASE_ADDR), &usbdev));
 
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
 
   aon_clk_period_us =
       cast_safely(udiv64_slow(1000 * 1000, kClockFreqAonHz, NULL));
@@ -87,8 +87,8 @@ bool test_main(void) {
   // First, connect usb.
   LOG_INFO("Enable usb");
   CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInUsbdevSense,
-      kTopEarlgreyPinmuxInselConstantOne));
+      &pinmux, kTopDarjeelingPinmuxPeripheralInUsbdevSense,
+      kTopDarjeelingPinmuxInselConstantOne));
 
   CHECK_DIF_OK(dif_usbdev_interface_enable(&usbdev, kDifToggleEnabled));
 

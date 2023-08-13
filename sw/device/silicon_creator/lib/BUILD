@@ -21,9 +21,9 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+            "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
             "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_darjeeling/sw/autogen:top_darjeeling",
             "//sw/lib/sw/device/base:hardened",
             "//sw/lib/sw/device/base:memory",
         ],
@@ -62,10 +62,10 @@ opentitan_functest(
     ),
     deps = [
         ":boot_data",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -147,10 +147,10 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/ip/aon_timer/data:aon_timer_regs",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
-        "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
-        "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//hw/top_darjeeling/ip/pwrmgr/data/autogen:pwrmgr_regs",
+        "//hw/top_darjeeling/ip/rstmgr/data/autogen:rstmgr_regs",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/lib/sw/device/base:multibits",
     ],
 )
@@ -164,14 +164,14 @@ opentitan_functest(
     deps = [
         ":error",
         ":irq_asm",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/device/silicon_creator/lib/drivers:watchdog",
         "//sw/lib/sw/device/base:abs_mmio",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -214,7 +214,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         ],
         host = [
             "//sw/device/silicon_creator/testing:rom_test",
@@ -307,10 +307,10 @@ dual_cc_library(
             "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
             "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
             "//hw/ip/uart/data:uart_regs",
-            "//hw/top_earlgrey:alert_handler_regs",
-            "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
-            "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_darjeeling:alert_handler_regs",
+            "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+            "//hw/top_darjeeling/ip/rstmgr/data/autogen:rstmgr_regs",
+            "//hw/top_darjeeling/sw/autogen:top_darjeeling",
             "//sw/device/silicon_creator/lib/drivers:alert",
             "//sw/device/silicon_creator/lib/drivers:otp",
             "//sw/lib/sw/device/arch:device",
@@ -374,7 +374,7 @@ opentitan_functest(
     deps = [
         ":crc32",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -395,6 +395,6 @@ opentitan_functest(
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/runtime:ibex",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )

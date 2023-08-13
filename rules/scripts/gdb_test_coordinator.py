@@ -121,7 +121,7 @@ app = typer.Typer(pretty_exceptions_enable=False)
 
 @app.command()
 def main(openocd_path: str = typer.Option(...),
-         openocd_earlgrey_config: str = typer.Option(...),
+         openocd_config: str = typer.Option(...),
          openocd_jtag_adapter_config: str = typer.Option(...),
          expect_debug_disallowed: bool = typer.Option(None),
          gdb_path: str = typer.Option(...),
@@ -163,7 +163,7 @@ def main(openocd_path: str = typer.Option(...),
             "reset_config none",
         ]),
         "-f",
-        openocd_earlgrey_config,
+        openocd_config,
     ]
     gdb_command = [
         # For debugging, it may be useful to use `--init-command`, which causes

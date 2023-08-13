@@ -115,7 +115,7 @@ severity: 2
 file: in.c
 line: 137
 nargs: 1
-format: DIF-fail: dif_rv_core_ibex_init( mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR), &rv_core_ibex) returns %0d
+format: DIF-fail: dif_rv_core_ibex_init( mmio_region_from_addr(TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR), &rv_core_ibex) returns %0d
 str_arg_idx: 
 addr: 10154
 severity: 2
@@ -220,7 +220,7 @@ severity: 2
 file: w/device/lib/testing/test_framework/ottf_console.c
 line: 144
 nargs: 1
-format: DIF-fail: dif_rv_plic_init( mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &ottf_plic) returns %0d
+format: DIF-fail: dif_rv_plic_init( mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &ottf_plic) returns %0d
 str_arg_idx: 
 addr: 10280
 severity: 2

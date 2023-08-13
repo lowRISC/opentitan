@@ -8,7 +8,7 @@
 #include "sw/lib/sw/device/base/hardened.h"
 #include "sw/lib/sw/device/base/hardened_memory.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('p', '2', 'x')

@@ -11,7 +11,7 @@
 #include "sw/lib/sw/device/runtime/ibex.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 /**
  * End-to-end RSA encryption and decryption test using OTBN.
@@ -216,8 +216,8 @@ static void rsa_roundtrip(uint32_t size_bytes, const uint8_t *modulus,
 
   // Initialize
   uint64_t t_start = profile_start();
-  CHECK_DIF_OK(
-      dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+  CHECK_DIF_OK(dif_otbn_init(
+      mmio_region_from_addr(TOP_DARJEELING_OTBN_BASE_ADDR), &otbn));
   CHECK_STATUS_OK(otbn_testutils_load_app(&otbn, kOtbnAppRsa));
   profile_end_and_print(t_start, "Initialization");
 

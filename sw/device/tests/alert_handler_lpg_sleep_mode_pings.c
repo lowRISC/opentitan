@@ -30,7 +30,7 @@
 #include "sw/lib/sw/device/runtime/log.h"
 
 #include "alert_handler_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "pwrmgr_regs.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
@@ -49,30 +49,31 @@ static dif_flash_ctrl_state_t flash_ctrl;
  */
 static void init_peripherals(void) {
   mmio_region_t base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
+      mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_plic_init(base_addr, &plic));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_ALERT_HANDLER_BASE_ADDR);
   CHECK_DIF_OK(dif_alert_handler_init(base_addr, &alert_handler));
 
   // Initialize pwrmgr
   CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+      mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR), &pwrmgr));
 
   // Initialize aon_timer
   CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
+      mmio_region_from_addr(TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR),
+      &aon_timer));
 
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
   mmio_region_t ibex_addr =
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
+      mmio_region_from_addr(TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_core_ibex_init(ibex_addr, &ibex));
 
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_ctrl,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR)));
 }
 
 /**
@@ -278,11 +279,11 @@ void cleanup_wakeup_src(void) {
 }
 
 static plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
-                                  .hart_id = kTopEarlgreyPlicTargetIbex0};
+                                  .hart_id = kTopDarjeelingPlicTargetIbex0};
 
 static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
     .pwrmgr = &pwrmgr,
-    .plic_pwrmgr_start_irq_id = kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
+    .plic_pwrmgr_start_irq_id = kTopDarjeelingPlicIrqIdPwrmgrAonWakeup,
     .expected_irq = kDifPwrmgrIrqWakeup,
     .is_only_irq = true};
 
@@ -303,9 +304,9 @@ void init_test_components(void) {
   init_peripherals();
 
   // Enable all the AON interrupts used in this test.
-  rv_plic_testutils_irq_range_enable(&plic, kTopEarlgreyPlicTargetIbex0,
-                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
-                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
+  rv_plic_testutils_irq_range_enable(&plic, kTopDarjeelingPlicTargetIbex0,
+                                     kTopDarjeelingPlicIrqIdPwrmgrAonWakeup,
+                                     kTopDarjeelingPlicIrqIdPwrmgrAonWakeup);
 
   // Enable pwrmgr interrupt
   CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
@@ -480,12 +481,12 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
  */
 void ottf_external_isr(void) {
   dif_pwrmgr_irq_t irq_id;
-  top_earlgrey_plic_peripheral_t peripheral;
+  top_darjeeling_plic_peripheral_t peripheral;
 
   isr_testutils_pwrmgr_isr(plic_ctx, pwrmgr_isr_ctx, &peripheral, &irq_id);
 
   // Check that both the peripheral and the irq id is correct
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralPwrmgrAon,
+  CHECK(peripheral == kTopDarjeelingPlicPeripheralPwrmgrAon,
         "IRQ peripheral: %d is incorrect", peripheral);
   CHECK(irq_id == kDifPwrmgrIrqWakeup, "IRQ ID: %d is incorrect", irq_id);
 }

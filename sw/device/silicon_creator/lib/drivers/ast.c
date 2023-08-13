@@ -10,7 +10,7 @@
 #include "sw/lib/sw/device/base/csr.h"
 #include "sw/lib/sw/device/base/multibits.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"
 #include "sensor_ctrl_regs.h"
 
@@ -20,7 +20,7 @@ const uint32_t kAstCheckPollCpuCycles = 10000;
 #endif
 
 enum {
-  kBase = TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR,
+  kBase = TOP_DARJEELING_SENSOR_CTRL_BASE_ADDR,
 };
 
 rom_error_t ast_check(lifecycle_state_t lc_state) {

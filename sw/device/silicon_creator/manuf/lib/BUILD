@@ -69,8 +69,8 @@ _MANUF_LC_TRANSITION_TEST_CMDS = [
     "--bitstream=\"$(rootpath {bitstream})\"",
     "--openocd=\"$(rootpath //third_party/openocd:openocd_bin)\"",
     "--openocd-adapter-config=\"$(rootpath //third_party/openocd:jtag_adapter_cfg)\"",
-    "--openocd-riscv-target-config=\"$(rootpath //util/openocd/target:lowrisc-earlgrey.cfg)\"",
-    "--openocd-lc-target-config=\"$(rootpath //util/openocd/target:lowrisc-earlgrey-lc.cfg)\"",
+    "--openocd-riscv-target-config=\"$(rootpath //util/openocd/target:lowrisc-darjeeling.cfg)\"",
+    "--openocd-lc-target-config=\"$(rootpath //util/openocd/target:lowrisc-darjeeling-lc.cfg)\"",
 ]
 
 _MANUF_LC_TRANSITION_TEST_CMDS_WBOOTSTRAP = _MANUF_LC_TRANSITION_TEST_CMDS + [
@@ -81,7 +81,7 @@ ld_library(
     name = "sram_program_linker_script",
     script = "sram_program.ld",
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling_memory",
         "//sw/device:info_sections",
         "//sw/device/silicon_creator/lib/base:static_critical_sections",
     ],
@@ -115,7 +115,7 @@ cc_library(
         ":otp_img_types",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/lib/sw/device/base:status",
-        "//sw/top_earlgrey/sw/dif:otp_ctrl",
+        "//sw/top_darjeeling/sw/dif:otp_ctrl",
     ],
 )
 
@@ -131,9 +131,9 @@ cc_library(
         "//sw/device/lib/testing:lc_ctrl_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/lib/sw/device/base:status",
-        "//sw/top_earlgrey/sw/dif:flash_ctrl",
-        "//sw/top_earlgrey/sw/dif:lc_ctrl",
-        "//sw/top_earlgrey/sw/dif:otp_ctrl",
+        "//sw/top_darjeeling/sw/dif:flash_ctrl",
+        "//sw/top_darjeeling/sw/dif:lc_ctrl",
+        "//sw/top_darjeeling/sw/dif:otp_ctrl",
     ],
 )
 
@@ -141,7 +141,7 @@ opentitan_functest(
     name = "individualize_functest",
     srcs = ["individualize_functest.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/top_earlgrey/bitstream:rom_with_fake_keys_otp_dev_initial",
+        bitstream = "//hw/top_darjeeling/bitstream:rom_with_fake_keys_otp_dev_initial",
         tags = ["manuf"],
     ),
     key_struct = RSA_ONLY_KEY_STRUCTS[1],
@@ -153,15 +153,15 @@ opentitan_functest(
         "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:status",
-        "//sw/top_earlgrey/sw/device/runtime:print",
-        "//sw/top_earlgrey/sw/dif:flash_ctrl",
-        "//sw/top_earlgrey/sw/dif:lc_ctrl",
-        "//sw/top_earlgrey/sw/dif:otp_ctrl",
-        "//sw/top_earlgrey/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/dif:flash_ctrl",
+        "//sw/top_darjeeling/sw/dif:lc_ctrl",
+        "//sw/top_darjeeling/sw/dif:otp_ctrl",
+        "//sw/top_darjeeling/sw/dif:rstmgr",
     ],
 )
 
@@ -173,11 +173,11 @@ cc_library(
     ],
     deps = [
         ":otp_img",
-        "//hw/ip/otp_ctrl/data/sku_earlgrey_a0:otp_img_sku_earlgrey_a0_stage_individualize",
+        "//hw/ip/otp_ctrl/data/sku_darjeeling_a0:otp_img_sku_darjeeling_a0_stage_individualize",
         "//sw/device/lib/testing:lc_ctrl_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/lib/sw/device/base:status",
-        "//sw/top_earlgrey/sw/dif:otp_ctrl",
+        "//sw/top_darjeeling/sw/dif:otp_ctrl",
     ],
 )
 
@@ -185,7 +185,7 @@ opentitan_functest(
     name = "individualize_preop_functest",
     srcs = ["individualize_preop_functest.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/top_earlgrey/bitstream:rom_with_fake_keys_otp_test_unlocked0",
+        bitstream = "//hw/top_darjeeling/bitstream:rom_with_fake_keys_otp_test_unlocked0",
         tags = ["manuf"],
     ),
     targets = [
@@ -194,11 +194,11 @@ opentitan_functest(
     deps = [
         ":individualize_preop",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:status",
-        "//sw/top_earlgrey/sw/device/runtime:print",
-        "//sw/top_earlgrey/sw/dif:otp_ctrl",
+        "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/dif:otp_ctrl",
     ],
 )
 
@@ -222,9 +222,9 @@ cc_library(
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/silicon_creator/manuf/keys",
         "//sw/lib/sw/device/base:status",
-        "//sw/top_earlgrey/sw/dif:flash_ctrl",
-        "//sw/top_earlgrey/sw/dif:lc_ctrl",
-        "//sw/top_earlgrey/sw/dif:otp_ctrl",
+        "//sw/top_darjeeling/sw/dif:flash_ctrl",
+        "//sw/top_darjeeling/sw/dif:lc_ctrl",
+        "//sw/top_darjeeling/sw/dif:otp_ctrl",
     ],
 )
 
@@ -232,7 +232,7 @@ opentitan_functest(
     name = "provisioning_functest",
     srcs = ["provisioning_functest.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/top_earlgrey/bitstream:rom_with_fake_keys_otp_dev_individualized",
+        bitstream = "//hw/top_darjeeling/bitstream:rom_with_fake_keys_otp_dev_individualized",
         tags = ["manuf"],
         test_cmds = [
             "--clear-bitstream",
@@ -254,7 +254,7 @@ opentitan_functest(
         "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/json:command",
         "//sw/device/lib/testing/json:provisioning_data",
@@ -263,11 +263,11 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/manuf/keys/fake",
         "//sw/lib/sw/device/base:status",
-        "//sw/top_earlgrey/sw/device/runtime:print",
-        "//sw/top_earlgrey/sw/dif:flash_ctrl",
-        "//sw/top_earlgrey/sw/dif:lc_ctrl",
-        "//sw/top_earlgrey/sw/dif:otp_ctrl",
-        "//sw/top_earlgrey/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/dif:flash_ctrl",
+        "//sw/top_darjeeling/sw/dif:lc_ctrl",
+        "//sw/top_darjeeling/sw/dif:otp_ctrl",
+        "//sw/top_darjeeling/sw/dif:rstmgr",
     ],
 )
 
@@ -282,7 +282,7 @@ lc_raw_unlock_token(
         name = "manuf_scrap_functest_{}".format(lc_state.lower()),
         srcs = ["empty_functest.c"],
         cw310 = cw310_params(
-            bitstream = "//hw/top_earlgrey/bitstream:rom_with_fake_keys_otp_{}".format(lc_state.lower()),
+            bitstream = "//hw/top_darjeeling/bitstream:rom_with_fake_keys_otp_{}".format(lc_state.lower()),
             tags = ["manuf"],
             test_cmds = (
                 _MANUF_LC_TRANSITION_TEST_CMDS if (
@@ -299,7 +299,7 @@ lc_raw_unlock_token(
         deps = [
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/lib/sw/device/runtime:log",
-            "//sw/top_earlgrey/sw/device/runtime:print",
+            "//sw/top_darjeeling/sw/device/runtime:print",
         ],
     )
     for lc_state, lc_val in _ALL_LC_ITEMS
@@ -318,7 +318,7 @@ opentitan_functest(
     name = "manuf_cp_unlock_raw_functest",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/top_earlgrey/bitstream:rom_with_fake_keys_otp_raw",
+        bitstream = "//hw/top_darjeeling/bitstream:rom_with_fake_keys_otp_raw",
         tags = ["manuf"],
         test_cmds = _MANUF_LC_TRANSITION_TEST_CMDS,
     ),
@@ -331,7 +331,7 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/sigverify:spx_verify",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -374,9 +374,9 @@ otp_json(
 [
     bitstream_splice(
         name = "bitstream_rom_exec_disabled_test_unlocked{}".format(i),
-        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+        src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
         data = "otp_img_rom_exec_disabled_test_unlocked{}".format(i),
-        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+        meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
         update_usr_access = True,
         visibility = ["//visibility:private"],
     )
@@ -403,7 +403,7 @@ otp_json(
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:otp",
             "//sw/device/silicon_creator/lib/sigverify:spx_verify",
-            "//sw/top_earlgrey/sw/device/runtime:print",
+            "//sw/top_darjeeling/sw/device/runtime:print",
         ],
     )
     for lc_state, _ in _TEST_UNLOCKED_LC_ITEMS
@@ -425,7 +425,7 @@ cc_library(
     deps = [
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/lib/sw/device/base:status",
-        "//sw/top_earlgrey/sw/dif:flash_ctrl",
+        "//sw/top_darjeeling/sw/dif:flash_ctrl",
     ],
 )
 
@@ -446,15 +446,15 @@ opentitan_ram_binary(
     deps = [
         ":sram_program_linker_script",
         ":sram_start",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
-        "//sw/top_earlgrey/sw/dif:pinmux",
-        "//sw/top_earlgrey/sw/dif:uart",
+        "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/dif:pinmux",
+        "//sw/top_darjeeling/sw/dif:uart",
     ],
 )
 
@@ -476,7 +476,7 @@ opentitan_ram_binary(
         ":sram_start",
         ":test_wafer_auth_secret",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
@@ -484,12 +484,12 @@ opentitan_ram_binary(
         "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
-        "//sw/top_earlgrey/sw/dif:flash_ctrl",
-        "//sw/top_earlgrey/sw/dif:lc_ctrl",
-        "//sw/top_earlgrey/sw/dif:otp_ctrl",
-        "//sw/top_earlgrey/sw/dif:pinmux",
-        "//sw/top_earlgrey/sw/dif:uart",
+        "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/dif:flash_ctrl",
+        "//sw/top_darjeeling/sw/dif:lc_ctrl",
+        "//sw/top_darjeeling/sw/dif:otp_ctrl",
+        "//sw/top_darjeeling/sw/dif:pinmux",
+        "//sw/top_darjeeling/sw/dif:uart",
     ],
 )
 
@@ -537,9 +537,9 @@ platform_target(
             ":test_wafer_auth_secret",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/lib/sw/device/runtime:log",
-            "//sw/top_earlgrey/sw/device/runtime:print",
-            "//sw/top_earlgrey/sw/dif:flash_ctrl",
-            "//sw/top_earlgrey/sw/dif:lc_ctrl",
+            "//sw/top_darjeeling/sw/device/runtime:print",
+            "//sw/top_darjeeling/sw/dif:flash_ctrl",
+            "//sw/top_darjeeling/sw/dif:lc_ctrl",
         ],
     )
     for init_lc_state, _ in _TEST_UNLOCKED_LC_ITEMS
@@ -568,7 +568,7 @@ opentitan_ram_binary(
         ":sram_program_linker_script",
         ":sram_start",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
@@ -576,8 +576,8 @@ opentitan_ram_binary(
         "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
-        "//sw/top_earlgrey/sw/dif:otp_ctrl",
+        "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/dif:otp_ctrl",
     ],
 )
 
@@ -612,7 +612,7 @@ platform_target(
             "//sw/device/lib/testing/test_framework:check",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/lib/sw/device/runtime:log",
-            "//sw/top_earlgrey/sw/device/runtime:print",
+            "//sw/top_darjeeling/sw/device/runtime:print",
         ],
     )
     for lc_state, _ in _TEST_UNLOCKED_LC_ITEMS
@@ -652,7 +652,7 @@ test_suite(
             "//sw/device/lib/testing/test_framework:check",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/lib/sw/device/runtime:log",
-            "//sw/top_earlgrey/sw/device/runtime:print",
+            "//sw/top_darjeeling/sw/device/runtime:print",
         ],
     )
     for lc_state, _ in _TEST_UNLOCKED_LC_ITEMS
@@ -675,9 +675,9 @@ otp_image(
 
 bitstream_splice(
     name = "bitstream_otp_ctrl_functest",
-    src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+    src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
     data = "otp_img_otp_ctrl_functest",
-    meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+    meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
     update_usr_access = True,
     visibility = ["//visibility:private"],
 )
@@ -699,7 +699,7 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/sigverify:spx_verify",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -720,6 +720,6 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/sigverify:spx_verify",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )

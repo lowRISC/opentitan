@@ -13,7 +13,7 @@
 #include "sw/lib/sw/device/base/math.h"
 #include "sw/lib/sw/device/base/mmio.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 status_t aon_timer_testutils_get_aon_cycles_from_us(uint64_t microseconds,
                                                     uint32_t *cycles) {

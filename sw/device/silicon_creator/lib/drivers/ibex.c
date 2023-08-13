@@ -8,11 +8,11 @@
 #include "sw/lib/sw/device/base/abs_mmio.h"
 #include "sw/lib/sw/device/runtime/hart.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "rv_core_ibex_regs.h"
 
 enum {
-  kBase = TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR,
+  kBase = TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR,
 };
 
 uint32_t ibex_fpga_version(void) {

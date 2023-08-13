@@ -21,7 +21,7 @@
 #include "sw/lib/sw/device/runtime/hart.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 static dif_pwrmgr_t pwrmgr;
 static dif_usbdev_t usbdev;
@@ -35,9 +35,9 @@ static bool compare_wakeup_reasons(dif_pwrmgr_wakeup_reason_t lhs,
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+      mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR), &pwrmgr));
   CHECK_DIF_OK(dif_usbdev_init(
-      mmio_region_from_addr(TOP_EARLGREY_USBDEV_BASE_ADDR), &usbdev));
+      mmio_region_from_addr(TOP_DARJEELING_USBDEV_BASE_ADDR), &usbdev));
 
   // Assuming the chip hasn't slept yet, wakeup reason should be empty.
   dif_pwrmgr_wakeup_reason_t wakeup_reason;

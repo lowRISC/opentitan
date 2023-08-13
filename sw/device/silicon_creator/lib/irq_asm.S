@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/lib/sw/device/base/multibits_asm.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling_memory.h"
 #include "flash_ctrl_regs.h"
 #include "rstmgr_regs.h"
 
@@ -26,7 +26,7 @@
 _asm_exception_handler:
 .L_exception_loop:
   // Request a system reset.
-  li t0, TOP_EARLGREY_RSTMGR_AON_BASE_ADDR
+  li t0, TOP_DARJEELING_RSTMGR_AON_BASE_ADDR
   li t1, MULTIBIT_ASM_BOOL4_TRUE
   sw t1, RSTMGR_RESET_REQ_REG_OFFSET(t0)
 
@@ -34,7 +34,7 @@ _asm_exception_handler:
   //
   // This is done after requesting a reset so that this function will
   // work even if it is in flash.
-  li t0, TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR
+  li t0, TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR
   sw zero, FLASH_CTRL_DIS_REG_OFFSET(t0)
 
   wfi

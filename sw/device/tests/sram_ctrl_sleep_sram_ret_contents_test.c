@@ -19,18 +19,18 @@
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 enum {
   /**
    * Retention SRAM start address (inclusive).
    */
-  kRetSramBaseAddr = TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
+  kRetSramBaseAddr = TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
 
   kRetSramOwnerAddr = kRetSramBaseAddr + offsetof(retention_sram_t, owner),
   kRetRamLastAddr =
-      kRetSramBaseAddr + TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES - 1,
+      kRetSramBaseAddr + TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES - 1,
 
   kTestBufferSizeWords = 16,
 };
@@ -42,10 +42,10 @@ static dif_aon_timer_t aon_timer;
 static dif_pwrmgr_t pwrmgr;
 static dif_rstmgr_t rstmgr;
 static plic_isr_ctx_t plic_ctx = {.rv_plic = &rv_plic,
-                                  .hart_id = kTopEarlgreyPlicTargetIbex0};
+                                  .hart_id = kTopDarjeelingPlicTargetIbex0};
 static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
     .pwrmgr = &pwrmgr,
-    .plic_pwrmgr_start_irq_id = kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
+    .plic_pwrmgr_start_irq_id = kTopDarjeelingPlicIrqIdPwrmgrAonWakeup,
     .expected_irq = kDifPwrmgrIrqWakeup,
     .is_only_irq = true};
 
@@ -95,13 +95,13 @@ void ottf_internal_isr(void) {}
  */
 void ottf_external_isr(void) {
   dif_pwrmgr_irq_t irq_id;
-  top_earlgrey_plic_peripheral_t peripheral;
+  top_darjeeling_plic_peripheral_t peripheral;
 
   isr_testutils_pwrmgr_isr(plic_ctx, pwrmgr_isr_ctx, &peripheral, &irq_id);
 
   LOG_INFO("Receive irq in normal sleep");
   // Check that both the peripheral and the irq id are correct.
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralPwrmgrAon,
+  CHECK(peripheral == kTopDarjeelingPlicPeripheralPwrmgrAon,
         "IRQ peripheral: %d is incorrect", peripheral);
   CHECK(irq_id == kDifPwrmgrIrqWakeup, "IRQ ID: %d is incorrect", irq_id);
 }
@@ -116,9 +116,9 @@ void test_ret_sram_in_normal_sleep(void) {
   // set up wakeup timer
   CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(&aon_timer, 20));
   // Enable all the AON interrupts used in this test.
-  rv_plic_testutils_irq_range_enable(&rv_plic, kTopEarlgreyPlicTargetIbex0,
-                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
-                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
+  rv_plic_testutils_irq_range_enable(&rv_plic, kTopDarjeelingPlicTargetIbex0,
+                                     kTopDarjeelingPlicIrqIdPwrmgrAonWakeup,
+                                     kTopDarjeelingPlicIrqIdPwrmgrAonWakeup);
   CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
 
   // Normal sleep.
@@ -176,15 +176,16 @@ bool test_main(void) {
   irq_global_ctrl(true);
   irq_external_ctrl(true);
 
-  mmio_region_t addr = mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR);
+  mmio_region_t addr =
+      mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_pwrmgr_init(addr, &pwrmgr));
-  addr = mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR);
+  addr = mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_rstmgr_init(addr, &rstmgr));
-  addr = mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR);
+  addr = mmio_region_from_addr(TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_aon_timer_init(addr, &aon_timer));
-  addr = mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR);
+  addr = mmio_region_from_addr(TOP_DARJEELING_SRAM_CTRL_RET_AON_REGS_BASE_ADDR);
   CHECK_DIF_OK(dif_sram_ctrl_init(addr, &ret_sram));
-  addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
+  addr = mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_plic_init(addr, &rv_plic));
 
   dif_rstmgr_reset_info_bitfield_t rstmgr_reset_info;
@@ -226,7 +227,7 @@ bool test_main(void) {
       dif_flash_ctrl_state_t flash_ctrl_state;
       CHECK_DIF_OK(dif_flash_ctrl_init_state(
           &flash_ctrl_state,
-          mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+          mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR)));
       CHECK_STATUS_OK(
           flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
                                                      /*rd_en=*/true,
@@ -239,7 +240,8 @@ bool test_main(void) {
       const uint32_t new_data = 0;
       CHECK_STATUS_OK(flash_ctrl_testutils_write(
           &flash_ctrl_state,
-          (uint32_t)&ret_non_scrambled - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+          (uint32_t)&ret_non_scrambled -
+              TOP_DARJEELING_FLASH_CTRL_MEM_BASE_ADDR,
           /*partition_id=*/0, &new_data, kDifFlashCtrlPartitionTypeData,
           /*word_count=*/1));
       // wipe data otherwise, the data may still be read after reset, since it's

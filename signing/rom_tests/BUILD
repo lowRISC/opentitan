@@ -12,7 +12,7 @@ offline_presigning_artifacts(
     testonly = True,
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test_sigverify_spx_bin"],
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
-    rsa_key = "//sw/device/silicon_creator/rom/keys/real/rsa:earlgrey_a0_test_0",
+    rsa_key = "//sw/device/silicon_creator/rom/keys/real/rsa:darjeeling_a0_test_0",
     spx_key = "//sw/device/silicon_creator/rom/keys/real/spx:test_key_0_spx",
     tags = ["manual"],
 )
@@ -22,7 +22,7 @@ offline_presigning_artifacts(
     testonly = True,
     srcs = ["//sw/device/silicon_creator/rom/e2e:rom_e2e_self_hash_bin"],
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
-    rsa_key = "//sw/device/silicon_creator/rom/keys/real/rsa:earlgrey_a0_test_0",
+    rsa_key = "//sw/device/silicon_creator/rom/keys/real/rsa:darjeeling_a0_test_0",
     tags = ["manual"],
 )
 

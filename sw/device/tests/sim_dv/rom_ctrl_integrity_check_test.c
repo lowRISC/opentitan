@@ -11,7 +11,7 @@
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 static dif_lc_ctrl_t lc;
 static dif_rom_ctrl_t rom_ctrl;
@@ -27,10 +27,11 @@ OTTF_DEFINE_TEST_CONFIG();
 // not expect a successful boot with the failed integrity check.
 
 bool test_main(void) {
-  mmio_region_t lc_reg = mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR);
+  mmio_region_t lc_reg =
+      mmio_region_from_addr(TOP_DARJEELING_LC_CTRL_BASE_ADDR);
   CHECK_DIF_OK(dif_lc_ctrl_init(lc_reg, &lc));
   mmio_region_t rom_ctrl_reg =
-      mmio_region_from_addr(TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR);
+      mmio_region_from_addr(TOP_DARJEELING_ROM_CTRL_REGS_BASE_ADDR);
   CHECK_DIF_OK(dif_rom_ctrl_init(rom_ctrl_reg, &rom_ctrl));
 
   // Check that the LC_STATE is not PROD as the boot is not

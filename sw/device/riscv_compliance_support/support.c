@@ -10,7 +10,7 @@
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/runtime/print.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 // These symbopls are provided by the riscv-compliance libraries.
 extern void run_rvc_test(void);
@@ -21,7 +21,7 @@ static dif_uart_t uart0;
 
 int opentitan_compliance_main(int argc, char **argv) {
   CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart0));
+      mmio_region_from_addr(TOP_DARJEELING_UART0_BASE_ADDR), &uart0));
   CHECK_DIF_OK(
       dif_uart_configure(&uart0, (dif_uart_config_t){
                                      .baudrate = kUartBaudrate,

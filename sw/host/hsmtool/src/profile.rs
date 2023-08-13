@@ -19,7 +19,7 @@ use crate::module;
 /// The profiles file is a JSON map of profile names to per-token credentials:
 /// ```ignore
 /// {
-///     "earlgrey": {
+///     "darjeeling": {
 ///         "token": "my_personal_token",
 ///         "user": "user",
 ///         "pin": "abc123"

@@ -17,7 +17,7 @@
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/runtime/print.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -44,7 +44,7 @@ volatile char ensure_bss_exists;
 static dif_uart_t uart0;
 static void init_uart(void) {
   CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart0));
+      mmio_region_from_addr(TOP_DARJEELING_UART0_BASE_ADDR), &uart0));
   CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
   CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
         "kClockFreqPeripheralHz must fit in uint32_t");

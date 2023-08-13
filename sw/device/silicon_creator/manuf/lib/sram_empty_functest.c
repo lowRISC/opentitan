@@ -12,7 +12,7 @@
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/runtime/print.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 static dif_uart_t uart;
 static dif_pinmux_t pinmux;
@@ -20,9 +20,9 @@ static dif_pinmux_t pinmux;
 void sram_main(void) {
   // Initialize UART console.
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
   CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart));
+      mmio_region_from_addr(TOP_DARJEELING_UART0_BASE_ADDR), &uart));
   pinmux_testutils_init(&pinmux);
   CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
   CHECK(kClockFreqPeripheralHz <= UINT32_MAX,

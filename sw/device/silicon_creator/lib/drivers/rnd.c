@@ -11,13 +11,13 @@
 #include "sw/lib/sw/device/base/macros.h"
 
 #include "entropy_src_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"
 #include "rv_core_ibex_regs.h"
 
 enum {
-  kBaseEntropySrc = TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR,
-  kBaseIbex = TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR,
+  kBaseEntropySrc = TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR,
+  kBaseIbex = TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR,
 
   // This covers the health threshold registers which are contiguous. The alert
   // threshold register is not included here.

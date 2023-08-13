@@ -15,7 +15,7 @@
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 // Below includes are generated during compile time.
 #include "flash_ctrl_regs.h"
@@ -29,7 +29,7 @@ static dif_pinmux_t pinmux;
 static dif_rv_plic_t plic;
 static dif_flash_ctrl_state_t flash_ctrl_state;
 
-static const uint32_t kNumDio = 16;  // top_earlgrey has 16 DIOs
+static const uint32_t kNumDio = 16;  // top_darjeeling has 16 DIOs
 
 // kDirectDio is a list of Dio index that TB cannot control the PAD value.
 // The list should be incremental order (see the code below)
@@ -37,11 +37,11 @@ static const uint32_t kNumDio = 16;  // top_earlgrey has 16 DIOs
 static const uint32_t kDirectDio[NUM_DIRECT_DIO] = {6, 12, 13, 14, 15};
 
 static plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
-                                  .hart_id = kTopEarlgreyPlicTargetIbex0};
+                                  .hart_id = kTopDarjeelingPlicTargetIbex0};
 
 static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
     .pwrmgr = &pwrmgr,
-    .plic_pwrmgr_start_irq_id = kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
+    .plic_pwrmgr_start_irq_id = kTopDarjeelingPlicIrqIdPwrmgrAonWakeup,
     .expected_irq = kDifPwrmgrIrqWakeup,
     .is_only_irq = true};
 
@@ -53,12 +53,12 @@ OT_SECTION(".non_volatile_scratch") uint32_t wakeup_detector_idx;
  */
 void ottf_external_isr(void) {
   dif_pwrmgr_irq_t irq_id;
-  top_earlgrey_plic_peripheral_t peripheral;
+  top_darjeeling_plic_peripheral_t peripheral;
 
   isr_testutils_pwrmgr_isr(plic_ctx, pwrmgr_isr_ctx, &peripheral, &irq_id);
 
   // Check that both the peripheral and the irq id is correct
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralPwrmgrAon,
+  CHECK(peripheral == kTopDarjeelingPlicPeripheralPwrmgrAon,
         "IRQ peripheral: %d is incorrect", peripheral);
   CHECK(irq_id == kDifPwrmgrIrqWakeup, "IRQ ID: %d is incorrect", irq_id);
 }
@@ -75,14 +75,14 @@ bool test_main(void) {
 
   // Initialize power manager
   CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+      mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR), &pwrmgr));
   CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
+      mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &plic));
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_ctrl_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR)));
   // Enable access to flash for storing info across resets.
   CHECK_STATUS_OK(
       flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
@@ -106,16 +106,16 @@ bool test_main(void) {
     CHECK_STATUS_OK(flash_ctrl_testutils_write(
         &flash_ctrl_state,
         (uint32_t)(&wakeup_detector_idx) -
-            TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+            TOP_DARJEELING_FLASH_CTRL_MEM_BASE_ADDR,
         0, &wakeup_detector_selected, kDifFlashCtrlPartitionTypeData, 1));
     LOG_INFO("detector %0d is selected", wakeup_detector_selected);
     // TODO(lowrisc/opentitan#15889): The weak pull on IOC3 needs to be
     // disabled for this test. Remove this later.
     dif_pinmux_pad_attr_t out_attr;
     dif_pinmux_pad_attr_t in_attr = {0};
-    CHECK_DIF_OK(dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyMuxedPadsIoc3,
-                                            kDifPinmuxPadKindMio, in_attr,
-                                            &out_attr));
+    CHECK_DIF_OK(
+        dif_pinmux_pad_write_attrs(&pinmux, kTopDarjeelingMuxedPadsIoc3,
+                                   kDifPinmuxPadKindMio, in_attr, &out_attr));
 
     // This print is placed here on purpose.
     // sv sequence is waiting for this print log followed by
@@ -132,9 +132,10 @@ bool test_main(void) {
     // Enable AonWakeup Interrupt if normal sleep
     if (deep_powerdown_en == 0) {
       // Enable all the AON interrupts used in this test.
-      rv_plic_testutils_irq_range_enable(&plic, kTopEarlgreyPlicTargetIbex0,
-                                         kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
-                                         kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
+      rv_plic_testutils_irq_range_enable(
+          &plic, kTopDarjeelingPlicTargetIbex0,
+          kTopDarjeelingPlicIrqIdPwrmgrAonWakeup,
+          kTopDarjeelingPlicIrqIdPwrmgrAonWakeup);
       // Enable pwrmgr interrupt
       CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
     }
@@ -154,7 +155,7 @@ bool test_main(void) {
       LOG_INFO("Pad Selection: %d / %d", mio0_dio1, pad_sel);
     } else {
       // MIO: 0, 1 are tie-0, tie-1
-      pad_sel = rand_testutils_gen32_range(2, kTopEarlgreyPinmuxInselLast);
+      pad_sel = rand_testutils_gen32_range(2, kTopDarjeelingPinmuxInselLast);
       LOG_INFO("Pad Selection: %d / %d", mio0_dio1, pad_sel - 2);
     }
 
@@ -163,7 +164,7 @@ bool test_main(void) {
       // skip if locked.
       // Turn off Pinmux output selection
       CHECK_DIF_OK(dif_pinmux_output_select(
-          &pinmux, pad_sel - 2, kTopEarlgreyPinmuxOutselConstantHighZ));
+          &pinmux, pad_sel - 2, kTopDarjeelingPinmuxOutselConstantHighZ));
     }
 
     wakeup_cfg.mode = kDifPinmuxWakeupModePositiveEdge;

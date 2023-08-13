@@ -19,7 +19,7 @@
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "sensor_ctrl_regs.h"  // Generated.
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -72,10 +72,10 @@ static void check_alert_state(dif_toggle_t fatal) {
   bool recov_cause = false;
 
   CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-      &alert_handler, kTopEarlgreyAlertIdSensorCtrlFatalAlert, &fatal_cause));
+      &alert_handler, kTopDarjeelingAlertIdSensorCtrlFatalAlert, &fatal_cause));
 
   CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-      &alert_handler, kTopEarlgreyAlertIdSensorCtrlRecovAlert, &recov_cause));
+      &alert_handler, kTopDarjeelingAlertIdSensorCtrlRecovAlert, &recov_cause));
 
   if (dif_toggle_to_bool(fatal)) {
     CHECK(fatal_cause & !recov_cause,
@@ -86,9 +86,9 @@ static void check_alert_state(dif_toggle_t fatal) {
   }
 
   CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
-      &alert_handler, kTopEarlgreyAlertIdSensorCtrlRecovAlert));
+      &alert_handler, kTopDarjeelingAlertIdSensorCtrlRecovAlert));
   CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
-      &alert_handler, kTopEarlgreyAlertIdSensorCtrlFatalAlert));
+      &alert_handler, kTopDarjeelingAlertIdSensorCtrlFatalAlert));
 };
 
 /**
@@ -154,26 +154,27 @@ bool test_main(void) {
   // Initialize flash_ctrl
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_ctrl,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR)));
 
   // Initialize sensor_ctrl
   CHECK_DIF_OK(dif_sensor_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR), &sensor_ctrl));
+      mmio_region_from_addr(TOP_DARJEELING_SENSOR_CTRL_BASE_ADDR),
+      &sensor_ctrl));
 
   // Initialize alert_handler
   CHECK_DIF_OK(dif_alert_handler_init(
-      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
+      mmio_region_from_addr(TOP_DARJEELING_ALERT_HANDLER_BASE_ADDR),
       &alert_handler));
 
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
   // Enable both recoverable and fatal alerts
   CHECK_DIF_OK(dif_alert_handler_configure_alert(
-      &alert_handler, kTopEarlgreyAlertIdSensorCtrlRecovAlert,
+      &alert_handler, kTopDarjeelingAlertIdSensorCtrlRecovAlert,
       kDifAlertHandlerClassA, kDifToggleEnabled, kDifToggleEnabled));
   CHECK_DIF_OK(dif_alert_handler_configure_alert(
-      &alert_handler, kTopEarlgreyAlertIdSensorCtrlFatalAlert,
+      &alert_handler, kTopDarjeelingAlertIdSensorCtrlFatalAlert,
       kDifAlertHandlerClassA, kDifToggleEnabled, kDifToggleEnabled));
 
   // Enable flash access

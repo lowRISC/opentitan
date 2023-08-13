@@ -7,12 +7,12 @@
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "pwrmgr_regs.h"
 
 enum {
-  kBase = TOP_EARLGREY_PWRMGR_AON_BASE_ADDR,
-  kAllResetsEnable = (1 << kTopEarlgreyPowerManagerResetRequestsLast) - 1,
+  kBase = TOP_DARJEELING_PWRMGR_AON_BASE_ADDR,
+  kAllResetsEnable = (1 << kTopDarjeelingPowerManagerResetRequestsLast) - 1,
   kSyncConfig = (1 << PWRMGR_CFG_CDC_SYNC_SYNC_BIT),
 };
 

@@ -14,7 +14,7 @@
 #include "sw/lib/sw/device/runtime/ibex.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -46,32 +46,32 @@ enum {
 };
 
 static const dif_pinmux_index_t kPeripheralInputs[] = {
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey0In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey1In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey2In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonPwrbIn,
+    kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonKey0In,
+    kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonKey1In,
+    kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonKey2In,
+    kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonPwrbIn,
 };
 
 static const dif_pinmux_index_t kInputPads[] = {
-    kTopEarlgreyPinmuxInselIob3,
-    kTopEarlgreyPinmuxInselIob6,
-    kTopEarlgreyPinmuxInselIob8,
-    kTopEarlgreyPinmuxInselIor13,
+    kTopDarjeelingPinmuxInselIob3,
+    kTopDarjeelingPinmuxInselIob6,
+    kTopDarjeelingPinmuxInselIob8,
+    kTopDarjeelingPinmuxInselIor13,
 };
 
 static const dif_pinmux_index_t kPeripheralOutputs[] = {
-    kTopEarlgreyPinmuxOutselSysrstCtrlAonKey0Out,
-    kTopEarlgreyPinmuxOutselSysrstCtrlAonKey1Out,
-    kTopEarlgreyPinmuxOutselSysrstCtrlAonKey2Out,
-    kTopEarlgreyPinmuxOutselSysrstCtrlAonPwrbOut,
-    kTopEarlgreyPinmuxOutselSysrstCtrlAonBatDisable,
-    kTopEarlgreyPinmuxOutselSysrstCtrlAonZ3Wakeup,
+    kTopDarjeelingPinmuxOutselSysrstCtrlAonKey0Out,
+    kTopDarjeelingPinmuxOutselSysrstCtrlAonKey1Out,
+    kTopDarjeelingPinmuxOutselSysrstCtrlAonKey2Out,
+    kTopDarjeelingPinmuxOutselSysrstCtrlAonPwrbOut,
+    kTopDarjeelingPinmuxOutselSysrstCtrlAonBatDisable,
+    kTopDarjeelingPinmuxOutselSysrstCtrlAonZ3Wakeup,
 };
 
 static const dif_pinmux_index_t kOutputPads[] = {
-    kTopEarlgreyPinmuxMioOutIob9, kTopEarlgreyPinmuxMioOutIor5,
-    kTopEarlgreyPinmuxMioOutIor6, kTopEarlgreyPinmuxMioOutIoc7,
-    kTopEarlgreyPinmuxMioOutIoc9, kTopEarlgreyPinmuxMioOutIob7,
+    kTopDarjeelingPinmuxMioOutIob9, kTopDarjeelingPinmuxMioOutIor5,
+    kTopDarjeelingPinmuxMioOutIor6, kTopDarjeelingPinmuxMioOutIoc7,
+    kTopDarjeelingPinmuxMioOutIoc9, kTopDarjeelingPinmuxMioOutIob7,
 };
 
 static const dif_sysrst_ctrl_pin_t kSysrstCtrlOutputs[] = {
@@ -176,14 +176,14 @@ static void set_output_overrides(uint8_t override_value) {
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
   CHECK_DIF_OK(dif_sysrst_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
+      mmio_region_from_addr(TOP_DARJEELING_SYSRST_CTRL_AON_BASE_ADDR),
       &sysrst_ctrl));
   CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+      mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR), &pwrmgr));
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
   CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_init(&flash));
 

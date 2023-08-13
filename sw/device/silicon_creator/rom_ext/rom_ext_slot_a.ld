@@ -12,7 +12,7 @@
  * the upper half of flash), this linker script only targets Slot A.
  */
 
-INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
+INCLUDE hw/top_darjeeling/sw/autogen/top_darjeeling_memory.ld
 
 /* Slot A starts at begining of the eFlash. */
 _rom_ext_size = LENGTH(eflash) / 2;

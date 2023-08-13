@@ -12,17 +12,17 @@
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 static plic_isr_ctx_t plic_ctx = {
-    .hart_id = kTopEarlgreyPlicTargetIbex0,
+    .hart_id = kTopDarjeelingPlicTargetIbex0,
 };
 
-static top_earlgrey_plic_peripheral_t peripheral_serviced;
+static top_darjeeling_plic_peripheral_t peripheral_serviced;
 static dif_hmac_irq_t irq_serviced;
 static hmac_isr_ctx_t hmac_ctx = {
-    .plic_hmac_start_irq_id = kTopEarlgreyPlicIrqIdHmacHmacDone,
+    .plic_hmac_start_irq_id = kTopDarjeelingPlicIrqIdHmacHmacDone,
     .is_only_irq = false,
 };
 
@@ -50,7 +50,7 @@ void ottf_external_isr(void) {
  */
 static void irqs_init(void) {
   mmio_region_t base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
+      mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_plic_init(base_addr, plic_ctx.rv_plic));
 
   // Enable interrupts in HMAC IP.
@@ -61,8 +61,8 @@ static void irqs_init(void) {
 
   // Enable interrupts in PLIC.
   rv_plic_testutils_irq_range_enable(plic_ctx.rv_plic, plic_ctx.hart_id,
-                                     kTopEarlgreyPlicIrqIdHmacHmacDone,
-                                     kTopEarlgreyPlicIrqIdHmacFifoEmpty);
+                                     kTopDarjeelingPlicIrqIdHmacHmacDone,
+                                     kTopDarjeelingPlicIrqIdHmacFifoEmpty);
   // Enable interrupts in Ibex.
   irq_external_ctrl(true);
   irq_global_ctrl(true);
@@ -74,7 +74,8 @@ bool test_main(void) {
   plic_ctx.rv_plic = &plic;
   hmac_ctx.hmac = &hmac;
 
-  mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
+  mmio_region_t base_addr =
+      mmio_region_from_addr(TOP_DARJEELING_HMAC_BASE_ADDR);
   CHECK_DIF_OK(dif_hmac_init(base_addr, &hmac));
 
   irqs_init();

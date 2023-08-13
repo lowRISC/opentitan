@@ -16,7 +16,7 @@ cc_library(
     srcs = ["rom_ext_epmp.c"],
     hdrs = ["rom_ext_epmp.h"],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/lib:epmp_state",
         "//sw/lib/sw/device/base:bitfield",
         "//sw/lib/sw/device/base:csr",
@@ -42,7 +42,7 @@ dual_cc_library(
             "//sw/device/silicon_creator/lib/base:chip",
             "//sw/device/silicon_creator/lib:manifest",
             "//sw/lib/sw/device/base:macros",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         ],
     ),
 )
@@ -53,7 +53,7 @@ cc_library(
     hdrs = ["rom_ext_boot_policy.h"],
     deps = [
         ":rom_ext_boot_policy_ptrs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:manifest",
         "//sw/lib/sw/device/base:bitfield",
@@ -85,7 +85,7 @@ ld_library(
     script = "rom_ext_slot_a.ld",
     deps = [
         ":ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling_memory",
     ],
 )
 
@@ -94,7 +94,7 @@ ld_library(
     script = "rom_ext_slot_b.ld",
     deps = [
         ":ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling_memory",
     ],
 )
 
@@ -103,7 +103,7 @@ ld_library(
     script = "rom_ext_slot_virtual.ld",
     deps = [
         ":ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling_memory",
     ],
 )
 
@@ -129,7 +129,7 @@ cc_test(
     srcs = ["sigverify_keys_unittest.cc"],
     deps = [
         ":sigverify_keys",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],

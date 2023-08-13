@@ -30,7 +30,7 @@ ld_library(
     script = "bare_metal_slot_a.ld",
     deps = [
         ":ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling_memory",
     ],
 )
 
@@ -39,7 +39,7 @@ ld_library(
     script = "bare_metal_slot_b.ld",
     deps = [
         ":ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling_memory",
     ],
 )
 
@@ -48,7 +48,7 @@ ld_library(
     script = "bare_metal_slot_virtual.ld",
     deps = [
         ":ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling_memory",
     ],
 )
 
@@ -156,7 +156,7 @@ opentitan_flash_binary(
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 

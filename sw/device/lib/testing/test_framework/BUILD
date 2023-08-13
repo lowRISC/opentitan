@@ -87,7 +87,7 @@ ld_library(
     script = "ottf_silicon_creator_a.ld",
     deps = [
         ":ottf_ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling_memory",
     ],
 )
 
@@ -96,7 +96,7 @@ ld_library(
     script = "ottf_silicon_creator_b.ld",
     deps = [
         ":ottf_ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling_memory",
     ],
 )
 
@@ -105,7 +105,7 @@ ld_library(
     script = "ottf_silicon_creator_virtual.ld",
     deps = [
         ":ottf_ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling_memory",
     ],
 )
 
@@ -114,7 +114,7 @@ ld_library(
     script = "ottf_silicon_owner_a.ld",
     deps = [
         ":ottf_ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling_memory",
     ],
 )
 
@@ -123,7 +123,7 @@ ld_library(
     script = "ottf_silicon_owner_b.ld",
     deps = [
         ":ottf_ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling_memory",
     ],
 )
 
@@ -132,7 +132,7 @@ ld_library(
     script = "ottf_silicon_owner_virtual.ld",
     deps = [
         ":ottf_ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling_memory",
     ],
 )
 
@@ -186,7 +186,7 @@ cc_library(
     deps = [
         ":check",
         ":test_framework_manifest_def",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/lib/base:static_critical",
         "//sw/lib/sw/device/base:csr",
         "//sw/lib/sw/device/base:macros",
@@ -194,7 +194,7 @@ cc_library(
         "//sw/lib/sw/device/runtime:hart",
         "//sw/lib/sw/device/runtime:ibex",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/dif:rv_plic",
+        "//sw/top_darjeeling/sw/dif:rv_plic",
     ],
 )
 
@@ -225,8 +225,8 @@ cc_library(
         "//sw/lib/sw/device/base:status",
         "//sw/lib/sw/device/runtime:hart",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/dif:rv_core_ibex",
-        "//sw/top_earlgrey/sw/dif:uart",
+        "//sw/top_darjeeling/sw/dif:rv_core_ibex",
+        "//sw/top_darjeeling/sw/dif:uart",
         "//third_party/freertos",
         "@manufacturer_test_hooks//:test_hooks",
     ],
@@ -245,7 +245,7 @@ cc_library(
         "//sw/device/lib/ujson",
         "//sw/lib/sw/device/base:status",
         "//sw/lib/sw/device/runtime:print",
-        "//sw/top_earlgrey/sw/dif:uart",
+        "//sw/top_darjeeling/sw/dif:uart",
     ],
 )
 
@@ -264,13 +264,13 @@ dual_cc_library(
             "//sw/lib/sw/device/runtime:print",
             "//sw/lib/sw/device/runtime:ibex",
             "//sw/lib/sw/device/runtime:irq",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-            "//sw/top_earlgrey/sw/dif:rv_plic",
+            "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+            "//sw/top_darjeeling/sw/dif:rv_plic",
         ],
         shared = [
             "//sw/lib/sw/device/base:status",
-            "//sw/top_earlgrey/sw/dif:uart",
-            "//sw/top_earlgrey/sw/dif:spi_device",
+            "//sw/top_darjeeling/sw/dif:uart",
+            "//sw/top_darjeeling/sw/dif:spi_device",
         ],
     ),
 )
@@ -316,7 +316,7 @@ opentitan_functest(
         ":ujson_ottf",
         "//sw/device/lib/ujson",
         "//sw/lib/sw/device/base:status",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -339,12 +339,12 @@ cc_library(
         ":check",
         ":freertos_config",
         ":ottf_start",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/lib/sw/device/runtime:hart",
         "//sw/lib/sw/device/runtime:irq",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/dif:rv_timer",
-        "//sw/top_earlgrey/sw/dif:uart",
+        "//sw/top_darjeeling/sw/dif:rv_timer",
+        "//sw/top_darjeeling/sw/dif:uart",
         "//third_party/freertos",
     ],
     # This library provides FreeRTOS hooks that are required for FreeRTOS to link,

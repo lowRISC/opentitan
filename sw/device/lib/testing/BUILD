@@ -12,33 +12,33 @@ cc_library(
     hdrs = ["autogen/isr_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:check",
-        "//sw/top_earlgrey/sw/dif:adc_ctrl",
-        "//sw/top_earlgrey/sw/dif:alert_handler",
-        "//sw/top_earlgrey/sw/dif:aon_timer",
-        "//sw/top_earlgrey/sw/dif:csrng",
-        "//sw/top_earlgrey/sw/dif:dma",
-        "//sw/top_earlgrey/sw/dif:edn",
-        "//sw/top_earlgrey/sw/dif:entropy_src",
-        "//sw/top_earlgrey/sw/dif:flash_ctrl",
-        "//sw/top_earlgrey/sw/dif:gpio",
-        "//sw/top_earlgrey/sw/dif:hmac",
-        "//sw/top_earlgrey/sw/dif:i2c",
-        "//sw/top_earlgrey/sw/dif:keymgr",
-        "//sw/top_earlgrey/sw/dif:kmac",
-        "//sw/top_earlgrey/sw/dif:otbn",
-        "//sw/top_earlgrey/sw/dif:otp_ctrl",
-        "//sw/top_earlgrey/sw/dif:pattgen",
-        "//sw/top_earlgrey/sw/dif:pwrmgr",
-        "//sw/top_earlgrey/sw/dif:rv_plic",
-        "//sw/top_earlgrey/sw/dif:rv_timer",
-        "//sw/top_earlgrey/sw/dif:sensor_ctrl",
-        "//sw/top_earlgrey/sw/dif:spi_device",
-        "//sw/top_earlgrey/sw/dif:spi_host",
-        "//sw/top_earlgrey/sw/dif:sysrst_ctrl",
-        "//sw/top_earlgrey/sw/dif:uart",
-        "//sw/top_earlgrey/sw/dif:usbdev",
+        "//sw/top_darjeeling/sw/dif:adc_ctrl",
+        "//sw/top_darjeeling/sw/dif:alert_handler",
+        "//sw/top_darjeeling/sw/dif:aon_timer",
+        "//sw/top_darjeeling/sw/dif:csrng",
+        "//sw/top_darjeeling/sw/dif:dma",
+        "//sw/top_darjeeling/sw/dif:edn",
+        "//sw/top_darjeeling/sw/dif:entropy_src",
+        "//sw/top_darjeeling/sw/dif:flash_ctrl",
+        "//sw/top_darjeeling/sw/dif:gpio",
+        "//sw/top_darjeeling/sw/dif:hmac",
+        "//sw/top_darjeeling/sw/dif:i2c",
+        "//sw/top_darjeeling/sw/dif:keymgr",
+        "//sw/top_darjeeling/sw/dif:kmac",
+        "//sw/top_darjeeling/sw/dif:otbn",
+        "//sw/top_darjeeling/sw/dif:otp_ctrl",
+        "//sw/top_darjeeling/sw/dif:pattgen",
+        "//sw/top_darjeeling/sw/dif:pwrmgr",
+        "//sw/top_darjeeling/sw/dif:rv_plic",
+        "//sw/top_darjeeling/sw/dif:rv_timer",
+        "//sw/top_darjeeling/sw/dif:sensor_ctrl",
+        "//sw/top_darjeeling/sw/dif:spi_device",
+        "//sw/top_darjeeling/sw/dif:spi_host",
+        "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
+        "//sw/top_darjeeling/sw/dif:uart",
+        "//sw/top_darjeeling/sw/dif:usbdev",
     ],
 )
 
@@ -48,13 +48,13 @@ cc_library(
     hdrs = ["aes_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing:csrng_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/lib/sw/device/runtime:ibex",
-        "//sw/top_earlgrey/sw/dif:aes",
-        "//sw/top_earlgrey/sw/dif:csrng_shared",
-        "//sw/top_earlgrey/sw/dif:edn",
+        "//sw/top_darjeeling/sw/dif:aes",
+        "//sw/top_darjeeling/sw/dif:csrng_shared",
+        "//sw/top_darjeeling/sw/dif:edn",
     ],
 )
 
@@ -66,8 +66,8 @@ cc_library(
     deps = [
         "//sw/device/lib/testing/test_framework:check",
         "//sw/ip/base/dif:base",
-        "//sw/top_earlgrey/sw/dif:alert_handler",
-        "//sw/top_earlgrey/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/dif:alert_handler",
+        "//sw/top_darjeeling/sw/dif:rstmgr",
     ],
 )
 
@@ -77,11 +77,11 @@ cc_library(
     hdrs = ["aon_timer_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:math",
-        "//sw/top_earlgrey/sw/dif:aon_timer",
+        "//sw/top_darjeeling/sw/dif:aon_timer",
     ],
 )
 
@@ -93,7 +93,7 @@ cc_library(
     deps = [
         "//sw/device/lib/testing/test_framework:check",
         "//sw/lib/sw/device/runtime:ibex",
-        "//sw/top_earlgrey/sw/dif:clkmgr",
+        "//sw/top_darjeeling/sw/dif:clkmgr",
     ],
 )
 
@@ -104,7 +104,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//sw/device/lib/testing/test_framework:check",
-        "//sw/top_earlgrey/sw/dif:csrng",
+        "//sw/top_darjeeling/sw/dif:csrng",
     ],
 )
 
@@ -115,13 +115,13 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/ip/edn/data:edn_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/lib/sw/device/base:mmio",
-        "//sw/top_earlgrey/sw/dif:csrng",
-        "//sw/top_earlgrey/sw/dif:csrng_shared",
-        "//sw/top_earlgrey/sw/dif:edn",
-        "//sw/top_earlgrey/sw/dif:entropy_src",
+        "//sw/top_darjeeling/sw/dif:csrng",
+        "//sw/top_darjeeling/sw/dif:csrng_shared",
+        "//sw/top_darjeeling/sw/dif:edn",
+        "//sw/top_darjeeling/sw/dif:entropy_src",
     ],
 )
 
@@ -131,13 +131,13 @@ cc_library(
     hdrs = ["flash_ctrl_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:mmio",
         "//sw/lib/sw/device/runtime:hart",
-        "//sw/top_earlgrey/sw/dif:flash_ctrl",
+        "//sw/top_darjeeling/sw/dif:flash_ctrl",
     ],
 )
 
@@ -148,10 +148,10 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":flash_ctrl_testutils",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:check",
-        "//sw/top_earlgrey/sw/dif:flash_ctrl",
+        "//sw/top_darjeeling/sw/dif:flash_ctrl",
     ],
 )
 
@@ -165,7 +165,7 @@ cc_library(
         "//sw/device/lib/testing/test_framework:check",
         "//sw/lib/sw/device/base:mmio",
         "//sw/lib/sw/device/runtime:ibex",
-        "//sw/top_earlgrey/sw/dif:hmac",
+        "//sw/top_darjeeling/sw/dif:hmac",
     ],
 )
 
@@ -176,11 +176,11 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/ip/i2c/data:i2c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/lib/sw/device/runtime:ibex",
-        "//sw/top_earlgrey/sw/dif:i2c",
-        "//sw/top_earlgrey/sw/dif:pinmux",
+        "//sw/top_darjeeling/sw/dif:i2c",
+        "//sw/top_darjeeling/sw/dif:pinmux",
     ],
 )
 
@@ -191,7 +191,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/ip/keymgr/data:keymgr_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:kmac_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
@@ -201,10 +201,10 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/lib/sw/device/base:mmio",
         "//sw/lib/sw/device/runtime:ibex",
-        "//sw/top_earlgrey/sw/dif:flash_ctrl",
-        "//sw/top_earlgrey/sw/dif:keymgr",
-        "//sw/top_earlgrey/sw/dif:otp_ctrl",
-        "//sw/top_earlgrey/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/dif:flash_ctrl",
+        "//sw/top_darjeeling/sw/dif:keymgr",
+        "//sw/top_darjeeling/sw/dif:otp_ctrl",
+        "//sw/top_darjeeling/sw/dif:rstmgr",
     ],
 )
 
@@ -215,7 +215,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//sw/device/lib/testing/test_framework:check",
-        "//sw/top_earlgrey/sw/dif:kmac",
+        "//sw/top_darjeeling/sw/dif:kmac",
     ],
 )
 
@@ -227,7 +227,7 @@ cc_library(
     deps = [
         "//sw/device/lib/testing/test_framework:check",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/dif:lc_ctrl",
+        "//sw/top_darjeeling/sw/dif:lc_ctrl",
     ],
 )
 
@@ -240,7 +240,7 @@ cc_library(
         "//sw/device/lib/testing/test_framework:check",
         "//sw/lib/sw/device/runtime:ibex",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/dif:otbn",
+        "//sw/top_darjeeling/sw/dif:otbn",
     ],
 )
 
@@ -253,7 +253,7 @@ cc_library(
         "//sw/device/lib/testing/test_framework:check",
         "//sw/lib/sw/device/runtime:ibex",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/dif:otp_ctrl",
+        "//sw/top_darjeeling/sw/dif:otp_ctrl",
     ],
 )
 
@@ -263,13 +263,13 @@ cc_library(
     hdrs = ["pinmux_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/ip/base/dif:base",
         "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/runtime:hart",
-        "//sw/top_earlgrey/sw/dif:gpio",
-        "//sw/top_earlgrey/sw/dif:pinmux",
+        "//sw/top_darjeeling/sw/dif:gpio",
+        "//sw/top_darjeeling/sw/dif:pinmux",
     ],
 )
 
@@ -290,7 +290,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//sw/device/lib/testing/test_framework:check",
-        "//sw/top_earlgrey/sw/dif:pwrmgr",
+        "//sw/top_darjeeling/sw/dif:pwrmgr",
     ],
 )
 
@@ -301,12 +301,12 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":rv_core_ibex_testutils",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:memory",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/dif:rv_core_ibex",
+        "//sw/top_darjeeling/sw/dif:rv_core_ibex",
     ],
 )
 
@@ -318,7 +318,7 @@ cc_library(
     deps = [
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
-        "//sw/top_earlgrey/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/dif:rstmgr",
     ],
 )
 
@@ -330,7 +330,7 @@ cc_library(
     deps = [
         "//sw/device/lib/testing/test_framework:check",
         "//sw/lib/sw/device/runtime:ibex",
-        "//sw/top_earlgrey/sw/dif:rv_core_ibex",
+        "//sw/top_darjeeling/sw/dif:rv_core_ibex",
     ],
 )
 
@@ -344,7 +344,7 @@ cc_library(
         "//sw/device/lib/testing/test_framework:check",
         "//sw/ip/base/dif:base",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/dif:rv_plic",
+        "//sw/top_darjeeling/sw/dif:rv_plic",
     ],
 )
 
@@ -356,7 +356,7 @@ cc_library(
     deps = [
         "//sw/device/lib/testing/test_framework:check",
         "//sw/ip/base/dif:base",
-        "//sw/top_earlgrey/sw/dif:sensor_ctrl",
+        "//sw/top_darjeeling/sw/dif:sensor_ctrl",
     ],
 )
 
@@ -370,7 +370,7 @@ cc_library(
         "//sw/lib/sw/device/base:mmio",
         "//sw/lib/sw/device/runtime:ibex",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/dif:sram_ctrl",
+        "//sw/top_darjeeling/sw/dif:sram_ctrl",
     ],
 )
 
@@ -383,7 +383,7 @@ cc_library(
         "//sw/device/lib/testing/json:spi_passthru",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/lib/sw/device/base:status",
-        "//sw/top_earlgrey/sw/dif:spi_device",
+        "//sw/top_darjeeling/sw/dif:spi_device",
     ],
 )
 
@@ -395,7 +395,7 @@ cc_library(
     deps = [
         "//sw/device/lib/testing/test_framework:check",
         "//sw/lib/sw/device/base:status",
-        "//sw/top_earlgrey/sw/dif:spi_host",
+        "//sw/top_darjeeling/sw/dif:spi_host",
     ],
 )
 
@@ -416,7 +416,7 @@ cc_library(
         "//sw/lib/sw/device/base:bitfield",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/base:status",
-        "//sw/top_earlgrey/sw/dif:spi_host",
+        "//sw/top_darjeeling/sw/dif:spi_host",
     ],
 )
 
@@ -433,9 +433,9 @@ cc_library(
     ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:check",
-        "//sw/top_earlgrey/sw/dif:usbdev",
+        "//sw/top_darjeeling/sw/dif:usbdev",
     ],
 )
 

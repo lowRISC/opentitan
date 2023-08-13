@@ -21,7 +21,7 @@
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "spi_host_regs.h"
 #include "uart_regs.h"
 #include "usbdev_regs.h"
@@ -52,8 +52,8 @@ OT_SET_BSS_SECTION(".non_volatile_scratch", uint64_t hung_data_addr[4];)
 
 static void set_hung_address(dif_clkmgr_gateable_clock_t clock,
                              uint32_t value) {
-  uint32_t addr =
-      (uintptr_t)&hung_data_addr[clock] - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
+  uint32_t addr = (uintptr_t)&hung_data_addr[clock] -
+                  TOP_DARJEELING_FLASH_CTRL_MEM_BASE_ADDR;
   uint32_t flash_word[2] = {value, 0};
   CHECK_STATUS_OK(flash_ctrl_testutils_write(
       &flash_ctrl, addr, 0, flash_word, kDifFlashCtrlPartitionTypeData, 2));
@@ -98,15 +98,15 @@ static void usbdev_csr_access(void) {
   CHECK(state == kDifToggleEnabled);
 }
 
-peri_context_t peri_context[kTopEarlgreyGateableClocksLast + 1] = {
+peri_context_t peri_context[kTopDarjeelingGateableClocksLast + 1] = {
     {uart0_csr_access,
-     TOP_EARLGREY_UART0_BASE_ADDR + UART_INTR_ENABLE_REG_OFFSET},
+     TOP_DARJEELING_UART0_BASE_ADDR + UART_INTR_ENABLE_REG_OFFSET},
     {spi_host1_csr_access,
-     TOP_EARLGREY_SPI_HOST1_BASE_ADDR + SPI_HOST_INTR_ENABLE_REG_OFFSET},
+     TOP_DARJEELING_SPI_HOST1_BASE_ADDR + SPI_HOST_INTR_ENABLE_REG_OFFSET},
     {spi_host0_csr_access,
-     TOP_EARLGREY_SPI_HOST0_BASE_ADDR + SPI_HOST_INTR_ENABLE_REG_OFFSET},
+     TOP_DARJEELING_SPI_HOST0_BASE_ADDR + SPI_HOST_INTR_ENABLE_REG_OFFSET},
     {usbdev_csr_access,
-     TOP_EARLGREY_USBDEV_BASE_ADDR + USBDEV_INTR_ENABLE_REG_OFFSET}};
+     TOP_DARJEELING_USBDEV_BASE_ADDR + USBDEV_INTR_ENABLE_REG_OFFSET}};
 
 /**
  * Test that disabling a 'gateable' unit's clock causes the unit to become
@@ -156,31 +156,32 @@ bool test_main(void) {
   dif_rstmgr_t rstmgr;
 
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
   CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+      mmio_region_from_addr(TOP_DARJEELING_CLKMGR_AON_BASE_ADDR), &clkmgr));
 
   CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+      mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR), &pwrmgr));
 
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_ctrl,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR)));
 
   // Initialize aon timer.
   CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
+      mmio_region_from_addr(TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR),
+      &aon_timer));
 
   // Initialize peripherals.
   CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart0));
+      mmio_region_from_addr(TOP_DARJEELING_UART0_BASE_ADDR), &uart0));
   CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spi_host0));
+      mmio_region_from_addr(TOP_DARJEELING_SPI_HOST0_BASE_ADDR), &spi_host0));
   CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_EARLGREY_SPI_HOST1_BASE_ADDR), &spi_host1));
+      mmio_region_from_addr(TOP_DARJEELING_SPI_HOST1_BASE_ADDR), &spi_host1));
   CHECK_DIF_OK(dif_usbdev_init(
-      mmio_region_from_addr(TOP_EARLGREY_USBDEV_BASE_ADDR), &usbdev));
+      mmio_region_from_addr(TOP_DARJEELING_USBDEV_BASE_ADDR), &usbdev));
 
   // Enable cpu dump capture.
   CHECK_DIF_OK(dif_rstmgr_cpu_info_set_enabled(&rstmgr, kDifToggleEnabled));
@@ -199,7 +200,7 @@ bool test_main(void) {
     CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
 
     // Starting clock.
-    dif_clkmgr_gateable_clock_t clock = kTopEarlgreyGateableClocksIoDiv4Peri;
+    dif_clkmgr_gateable_clock_t clock = kTopDarjeelingGateableClocksIoDiv4Peri;
     uint32_t value = 0;
     CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &value));
     LOG_INFO("Next clock to test %d", value);
@@ -241,7 +242,7 @@ bool test_main(void) {
     // Mark this clock as tested.
     CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(&flash_ctrl, 0));
 
-    if (clock < kTopEarlgreyGateableClocksLast) {
+    if (clock < kTopDarjeelingGateableClocksLast) {
       CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &clock));
       LOG_INFO("Next clock to test %d", clock);
 

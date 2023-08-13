@@ -27,7 +27,7 @@
 #include "sw/lib/sw/device/runtime/print.h"
 
 #include "flash_ctrl_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 /**
  * ROM ePMP test.
@@ -234,8 +234,9 @@ static bool passed = false;
  * Test that .rodata in the ROM is not executable.
  */
 static void test_noexec_rodata(void) {
-  CHECK(is_in_address_space(illegal_ins_ro, TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR,
-                            TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES));
+  CHECK(is_in_address_space(illegal_ins_ro,
+                            TOP_DARJEELING_ROM_CTRL_ROM_BASE_ADDR,
+                            TOP_DARJEELING_ROM_CTRL_ROM_SIZE_BYTES));
   CHECK(execute(illegal_ins_ro, kIbexExcInstrAccessFault));
 }
 
@@ -245,12 +246,12 @@ static void test_noexec_rodata(void) {
 static void test_noexec_rwdata(void) {
   dif_sram_ctrl_t sram_ctrl;
   CHECK(dif_sram_ctrl_init(
-            mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR),
+            mmio_region_from_addr(TOP_DARJEELING_SRAM_CTRL_MAIN_REGS_BASE_ADDR),
             &sram_ctrl) == kDifOk);
   CHECK(dif_sram_ctrl_exec_set_enabled(&sram_ctrl, kDifToggleEnabled) ==
         kDifOk);
-  CHECK(is_in_address_space(illegal_ins_rw, TOP_EARLGREY_RAM_MAIN_BASE_ADDR,
-                            TOP_EARLGREY_RAM_MAIN_SIZE_BYTES));
+  CHECK(is_in_address_space(illegal_ins_rw, TOP_DARJEELING_RAM_MAIN_BASE_ADDR,
+                            TOP_DARJEELING_RAM_MAIN_SIZE_BYTES));
   CHECK(execute(illegal_ins_rw, kIbexExcInstrAccessFault));
 }
 
@@ -261,8 +262,8 @@ static void test_noexec_eflash(void) {
   // Ideally we'd check all of eFlash but that takes a very long time in
   // simulation. Instead, check the first and last words are not executable and
   // check a sample of other addresses.
-  uint32_t *eflash = (uint32_t *)TOP_EARLGREY_EFLASH_BASE_ADDR;
-  size_t eflash_len = TOP_EARLGREY_EFLASH_SIZE_BYTES / sizeof(eflash[0]);
+  uint32_t *eflash = (uint32_t *)TOP_DARJEELING_EFLASH_BASE_ADDR;
+  size_t eflash_len = TOP_DARJEELING_EFLASH_SIZE_BYTES / sizeof(eflash[0]);
   CHECK(execute(&eflash[0], kIbexExcInstrAccessFault));
   CHECK(execute(&eflash[eflash_len - 1], kIbexExcInstrAccessFault));
 
@@ -287,12 +288,13 @@ static void test_noexec_mmio(void) {
   // ePMP configurations however it doesn't hurt to check it anyway.
   dif_sram_ctrl_t ret_ram_ctrl;
   CHECK(dif_sram_ctrl_init(mmio_region_from_addr(
-                               TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR),
+                               TOP_DARJEELING_SRAM_CTRL_RET_AON_REGS_BASE_ADDR),
                            &ret_ram_ctrl) == kDifOk);
   CHECK(dif_sram_ctrl_exec_set_enabled(&ret_ram_ctrl, kDifToggleEnabled) ==
         kDifOk);
-  uint32_t *ret_ram = (uint32_t *)TOP_EARLGREY_RAM_RET_AON_BASE_ADDR;
-  size_t ret_ram_len = TOP_EARLGREY_RAM_RET_AON_SIZE_BYTES / sizeof(ret_ram[0]);
+  uint32_t *ret_ram = (uint32_t *)TOP_DARJEELING_RAM_RET_AON_BASE_ADDR;
+  size_t ret_ram_len =
+      TOP_DARJEELING_RAM_RET_AON_SIZE_BYTES / sizeof(ret_ram[0]);
   ret_ram[0] = kUnimpInstruction;
   CHECK(execute(&ret_ram[0], kIbexExcInstrAccessFault));
   ret_ram[ret_ram_len - 1] = kUnimpInstruction;
@@ -313,8 +315,8 @@ static void test_unlock_exec_eflash(void) {
   // Define a region to unlock (this is somewhat arbitrary but must be word-
   // aligned and beyond the ROM region, since this same image is placed in the
   // flash).
-  uint32_t *eflash = (uint32_t *)TOP_EARLGREY_EFLASH_BASE_ADDR;
-  size_t eflash_len = TOP_EARLGREY_EFLASH_SIZE_BYTES / sizeof(eflash[0]);
+  uint32_t *eflash = (uint32_t *)TOP_DARJEELING_EFLASH_BASE_ADDR;
+  size_t eflash_len = TOP_DARJEELING_EFLASH_SIZE_BYTES / sizeof(eflash[0]);
   uint32_t *image = &eflash[eflash_len / 5];
   size_t image_len = eflash_len / 7;
   epmp_region_t region = {.start = (uintptr_t)&image[0],
@@ -356,7 +358,7 @@ void rom_main(void) {
   // Initialize pinmux configuration so we can use the UART.
   dif_pinmux_t pinmux;
   OT_DISCARD(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
   pinmux_testutils_init(&pinmux);
 
   // Enable execution of code in flash.

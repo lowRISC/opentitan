@@ -31,7 +31,7 @@ cc_test(
     srcs = ["sigverify_spx_keys_fake_unittest.cc"],
     deps = [
         ":spx",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/rom:sigverify_keys",
         "//sw/device/silicon_creator/rom/keys/fake/rsa",
         "//sw/device/silicon_creator/testing:rom_test",

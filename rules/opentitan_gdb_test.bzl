@@ -127,7 +127,7 @@ def _opentitan_gdb_fpga_cw310_test_impl(ctx):
         {} """.format(shell.quote(ctx.executable._coordinator.short_path))
     args = [
         ("--openocd-path", ctx.file._openocd.short_path),
-        ("--openocd-earlgrey-config", ctx.file._openocd_earlgrey_config.path),
+        ("--openocd-darjeeling-config", ctx.file._openocd_darjeeling_config.path),
         ("--openocd-jtag-adapter-config", ctx.file._openocd_jtag_adapter_config.path),
         ("--gdb-path", ctx.file._gdb.short_path),
         ("--gdb-script-path", gdb_script_file.short_path),
@@ -167,7 +167,7 @@ def _opentitan_gdb_fpga_cw310_test_impl(ctx):
 
     test_script_runfiles = ctx.runfiles(
         files = [
-            ctx.file._openocd_earlgrey_config,
+            ctx.file._openocd_darjeeling_config,
             ctx.file._openocd_jtag_adapter_config,
             ctx.file._opentitantool,
             ctx.file._openocd,
@@ -204,8 +204,8 @@ _opentitan_gdb_fpga_cw310_test = rv_rule(
             allow_single_file = True,
             cfg = "exec",
         ),
-        "_openocd_earlgrey_config": attr.label(
-            default = "//util/openocd/target:lowrisc-earlgrey.cfg",
+        "_openocd_darjeeling_config": attr.label(
+            default = "//util/openocd/target:lowrisc-darjeeling.cfg",
             allow_single_file = True,
         ),
         "_openocd_jtag_adapter_config": attr.label(

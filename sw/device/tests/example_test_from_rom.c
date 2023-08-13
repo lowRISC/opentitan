@@ -13,7 +13,7 @@
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/runtime/print.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"  // Generated.
 
 static dif_pinmux_t pinmux;
 static dif_uart_t uart0;
@@ -23,14 +23,14 @@ bool rom_test_main(void) {
   // has been reached, even though this test is also in the "boot ROM".
   test_status_set(kTestStatusInTest);
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
   pinmux_testutils_init(&pinmux);
 
   // We need to initialize the UART regardless if we LOG any messages, since
   // Verilator and FPGA platforms use the UART to communicate the test results.
   if (kDeviceType != kDeviceSimDV) {
     CHECK_DIF_OK(dif_uart_init(
-        mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart0));
+        mmio_region_from_addr(TOP_DARJEELING_UART0_BASE_ADDR), &uart0));
     CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
     CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
           "kClockFreqPeripheralHz must fit in uint32_t");

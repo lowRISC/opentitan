@@ -13,7 +13,7 @@
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 #define LC_TOKEN_SIZE 16
 
@@ -64,7 +64,8 @@ static volatile const uint8_t kLcExitToken[LC_TOKEN_SIZE] = {
 bool execute_lc_ctrl_transition_test(bool use_ext_clk) {
   LOG_INFO("Start LC_CTRL transition test.");
 
-  mmio_region_t lc_reg = mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR);
+  mmio_region_t lc_reg =
+      mmio_region_from_addr(TOP_DARJEELING_LC_CTRL_BASE_ADDR);
   CHECK_DIF_OK(dif_lc_ctrl_init(lc_reg, &lc));
 
   LOG_INFO("Read and check LC state.");

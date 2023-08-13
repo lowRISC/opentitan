@@ -35,7 +35,7 @@ Original Author: Shay Gal-on
 #define MEM_MALLOC 1
 #define MEM_STACK 2
 
-#include "sw/device/benchmarks/coremark/top_earlgrey/core_portme.h"
+#include "sw/device/benchmarks/coremark/top_darjeeling/core_portme.h"
 
 #if HAS_STDIO
 #include <stdio.h>

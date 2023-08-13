@@ -43,7 +43,7 @@ UJSON_SERDE_STRUCT(PinmuxConfig, pinmux_config_t, STRUCT_PINMUX_CONFIG);
 /**
  * Configure the pinmux with a specific configuration.
  *
- * This function is specific to top_earlgrey and top_englishbreakfast.
+ * This function is specific to top_darjeeling and top_englishbreakfast.
  */
 status_t pinmux_config(ujson_t *uj, dif_pinmux_t *pinmux);
 #endif  // RUST_PREPROCESSOR_EMIT

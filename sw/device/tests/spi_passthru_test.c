@@ -21,7 +21,7 @@
 #include "sw/lib/sw/device/base/status.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
@@ -227,7 +227,7 @@ bool test_main(void) {
   const uint32_t spi_host_clock_freq_hz =
       (uint32_t)kClockFreqHiSpeedPeripheralHz;
   CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spih));
+      mmio_region_from_addr(TOP_DARJEELING_SPI_HOST0_BASE_ADDR), &spih));
   dif_spi_host_config_t config = {
       .spi_clock = spi_host_clock_freq_hz / 4,
       .peripheral_clock_freq_hz = spi_host_clock_freq_hz,
@@ -242,7 +242,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_spi_host_output_set_enabled(&spih, /*enabled=*/true));
 
   CHECK_DIF_OK(dif_spi_device_init_handle(
-      mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR), &spid));
+      mmio_region_from_addr(TOP_DARJEELING_SPI_DEVICE_BASE_ADDR), &spid));
 
   // We want to block passthru of the first 5 read commands, corresponding to
   // ReadStatus{1,2,3}, ReadJedecID and ReadSfdp.

@@ -18,7 +18,7 @@
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -28,17 +28,17 @@ static dif_aon_timer_t aon;
 
 static plic_isr_ctx_t plic_ctx = {
     .rv_plic = &plic,
-    .hart_id = kTopEarlgreyPlicTargetIbex0,
+    .hart_id = kTopDarjeelingPlicTargetIbex0,
 };
 
 static aon_timer_isr_ctx_t aon_timer_ctx = {
     .aon_timer = &aon,
     .plic_aon_timer_start_irq_id =
-        kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired,
+        kTopDarjeelingPlicIrqIdAonTimerAonWkupTimerExpired,
     .is_only_irq = false,
 };
 
-static top_earlgrey_plic_peripheral_t peripheral_serviced;
+static top_darjeeling_plic_peripheral_t peripheral_serviced;
 static dif_aon_timer_irq_t irq_serviced;
 
 enum {
@@ -60,13 +60,13 @@ void ottf_external_isr(void) {
 static void enable_irqs(void) {
   // Enable the AON bark interrupt.
   CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      &plic, kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark,
-      kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
+      &plic, kTopDarjeelingPlicIrqIdAonTimerAonWdogTimerBark,
+      kTopDarjeelingPlicTargetIbex0, kDifToggleEnabled));
   CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-      &plic, kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark,
+      &plic, kTopDarjeelingPlicIrqIdAonTimerAonWdogTimerBark,
       kDifRvPlicMaxPriority));
   CHECK_DIF_OK(dif_rv_plic_target_set_threshold(
-      &plic, kTopEarlgreyPlicTargetIbex0, 0x0));
+      &plic, kTopDarjeelingPlicTargetIbex0, 0x0));
   // Enable the external IRQ at Ibex.
   irq_global_ctrl(true);
   irq_external_ctrl(true);
@@ -78,15 +78,15 @@ bool test_main(void) {
   dif_rstmgr_t rstmgr;
 
   CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
+      mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &plic));
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      &flash, mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR)));
   CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+      mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR), &pwrmgr));
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR), &rstmgr));
   CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon));
+      mmio_region_from_addr(TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR), &aon));
 
   enable_irqs();
 
@@ -147,7 +147,7 @@ bool test_main(void) {
 
     rstmgr_reset_info = rstmgr_testutils_reason_get();
     CHECK(rstmgr_reset_info == kDifRstmgrResetInfoPor);
-    CHECK(peripheral_serviced == kTopEarlgreyPlicPeripheralAonTimerAon);
+    CHECK(peripheral_serviced == kTopDarjeelingPlicPeripheralAonTimerAon);
     CHECK(irq_serviced == kDifAonTimerIrqWdogTimerBark);
 
     CHECK_STATUS_OK(flash_ctrl_testutils_wait_transaction_end(&flash));

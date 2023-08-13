@@ -14,7 +14,7 @@ pub mod load_bitstream;
 pub mod load_sram_program;
 pub mod otp_ctrl;
 // The "english breakfast" variant of the chip doesn't have the same
-// set of IO and pinmux constants as the "earlgrey" chip.
+// set of IO and pinmux constants as the "darjeeling" chip.
 #[cfg(not(feature = "english_breakfast"))]
 pub mod pinmux_config;
 pub mod poll;

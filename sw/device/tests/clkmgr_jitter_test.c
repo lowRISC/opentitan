@@ -8,14 +8,14 @@
 #include "sw/ip/clkmgr/dif/dif_clkmgr.h"
 #include "sw/lib/sw/device/base/memory.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   dif_clkmgr_t clkmgr;
   CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+      mmio_region_from_addr(TOP_DARJEELING_CLKMGR_AON_BASE_ADDR), &clkmgr));
   // Get the initial jitter state. It might be enabled or disabled depending
   // on reset behavior - either is fine for the purposes of this test.
   dif_toggle_t state;

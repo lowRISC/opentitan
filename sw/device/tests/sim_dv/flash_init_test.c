@@ -14,7 +14,7 @@
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/runtime/print.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"  // Generated.
 
 static dif_uart_t uart0;
 static dif_flash_ctrl_state_t flash_state;
@@ -140,7 +140,7 @@ static void erase_and_write_regions(void) {
 static void read_and_check_host_if(uint32_t addr, const uint32_t *check_data) {
   uint32_t host_data[kNumTestWords];
   mmio_region_memcpy_from_mmio32(
-      mmio_region_from_addr(TOP_EARLGREY_EFLASH_BASE_ADDR), addr, &host_data,
+      mmio_region_from_addr(TOP_DARJEELING_EFLASH_BASE_ADDR), addr, &host_data,
       kNumTestBytes);
   CHECK_ARRAYS_EQ(host_data, check_data, kNumTestWords);
 }
@@ -277,14 +277,14 @@ bool rom_test_main(void) {
   test_status_set(kTestStatusInTest);
   dif_pinmux_t pinmux;
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
   pinmux_testutils_init(&pinmux);
 
   // We need to initialize the UART regardless if we LOG any messages, since
   // Verilator and FPGA platforms use the UART to communicate the test results.
   if (kDeviceType != kDeviceSimDV) {
     CHECK_DIF_OK(dif_uart_init(
-        mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart0));
+        mmio_region_from_addr(TOP_DARJEELING_UART0_BASE_ADDR), &uart0));
     CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
     CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
           "kClockFreqPeripheralHz must fit in uint32_t");
@@ -302,7 +302,7 @@ bool rom_test_main(void) {
 
   // Test code.
   mmio_region_t sram_region_ret_base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR);
+      mmio_region_from_addr(TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR);
 
   mmio_region_memcpy_from_mmio32(sram_region_ret_base_addr,
                                  kCreatorSecretDataRetSramAddress,
@@ -322,7 +322,7 @@ bool rom_test_main(void) {
 
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR)));
 
   switch (kTestPhase) {
     case kTestPhaseCheckUnscrambledInit0:

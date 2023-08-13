@@ -11,8 +11,8 @@
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/base/status.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling_memory.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -53,7 +53,7 @@ extern const char _chip_info_start[];
 status_t hash_rom(void) {
   uint32_t rom_hash[kSha256HashSizeIn32BitWords];
   crypto_const_uint8_buf_t input = {
-      .data = (uint8_t *)TOP_EARLGREY_ROM_BASE_ADDR,
+      .data = (uint8_t *)TOP_DARJEELING_ROM_BASE_ADDR,
       .len = kGoldenRomSizeBytes,
   };
   crypto_uint8_buf_t output = {

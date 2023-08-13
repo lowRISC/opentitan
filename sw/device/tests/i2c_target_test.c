@@ -26,7 +26,7 @@
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/runtime/print.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "i2c_regs.h"  // Generated.
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
@@ -46,11 +46,11 @@ static dif_rv_plic_t plic;
 static dif_i2c_t i2c;
 
 static plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
-                                  .hart_id = kTopEarlgreyPlicTargetIbex0};
+                                  .hart_id = kTopDarjeelingPlicTargetIbex0};
 
 static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
     .pwrmgr = &pwrmgr,
-    .plic_pwrmgr_start_irq_id = kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
+    .plic_pwrmgr_start_irq_id = kTopDarjeelingPlicIrqIdPwrmgrAonWakeup,
     .expected_irq = kDifPwrmgrIrqWakeup,
     .is_only_irq = true};
 
@@ -59,12 +59,12 @@ static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
  */
 void ottf_external_isr(void) {
   dif_pwrmgr_irq_t irq_id;
-  top_earlgrey_plic_peripheral_t peripheral;
+  top_darjeeling_plic_peripheral_t peripheral;
 
   isr_testutils_pwrmgr_isr(plic_ctx, pwrmgr_isr_ctx, &peripheral, &irq_id);
 
   // Check that both the peripheral and the irq id is correct
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralPwrmgrAon,
+  CHECK(peripheral == kTopDarjeelingPlicPeripheralPwrmgrAon,
         "IRQ peripheral: %d is incorrect", peripheral);
   CHECK(irq_id == kDifPwrmgrIrqWakeup, "IRQ ID: %d is incorrect", irq_id);
 }
@@ -172,16 +172,16 @@ static status_t enter_sleep(ujson_t *uj, dif_i2c_t *i2c, bool normal) {
       .mode = kDifPinmuxWakeupModeAnyEdge,
       .signal_filter = false,
       .pad_type = kDifPinmuxPadKindMio,
-      .pad_select = kTopEarlgreyPinmuxInselIoa7,
+      .pad_select = kTopDarjeelingPinmuxInselIoa7,
   };
   TRY(dif_pinmux_wakeup_detector_enable(&pinmux, 0, wakeup_cfg));
   dif_pwrmgr_domain_config_t pwrmgr_domain_cfg = 0;
   if (normal) {
     // Normal sleep wakes up from an interrupt, so enable the relevant sources.
     // Enable all the AON interrupts used in this test.
-    rv_plic_testutils_irq_range_enable(&plic, kTopEarlgreyPlicTargetIbex0,
-                                       kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
-                                       kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
+    rv_plic_testutils_irq_range_enable(&plic, kTopDarjeelingPlicTargetIbex0,
+                                       kTopDarjeelingPlicIrqIdPwrmgrAonWakeup,
+                                       kTopDarjeelingPlicIrqIdPwrmgrAonWakeup);
     // Enable pwrmgr interrupt.
     TRY(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
 
@@ -257,16 +257,17 @@ static status_t command_processor(ujson_t *uj) {
 }
 
 static status_t test_init(void) {
-  mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C0_BASE_ADDR);
+  mmio_region_t base_addr =
+      mmio_region_from_addr(TOP_DARJEELING_I2C0_BASE_ADDR);
   TRY(dif_i2c_init(base_addr, &i2c));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR);
   TRY(dif_pinmux_init(base_addr, &pinmux));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR);
   TRY(dif_pwrmgr_init(base_addr, &pwrmgr));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR);
   TRY(dif_rv_plic_init(base_addr, &plic));
   // Enable global and external IRQ at Ibex.
   irq_global_ctrl(true);

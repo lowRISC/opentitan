@@ -15,7 +15,7 @@
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 static dif_otp_ctrl_t otp;
 static dif_lc_ctrl_t lc;
@@ -40,9 +40,10 @@ static void otp_ctrl_dai_read_32(const dif_otp_ctrl_t *otp,
 // TODO: needs to support other recipients besides LC_CTRL.
 bool test_main(void) {
   CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
+      mmio_region_from_addr(TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR), &otp));
 
-  mmio_region_t lc_reg = mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR);
+  mmio_region_t lc_reg =
+      mmio_region_from_addr(TOP_DARJEELING_LC_CTRL_BASE_ADDR);
   CHECK_DIF_OK(dif_lc_ctrl_init(lc_reg, &lc));
 
   dif_otp_ctrl_config_t config = {

@@ -6,8 +6,8 @@
 
 #include "sw/device/tests/clkmgr_off_trans_impl.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 bool test_main(void) {
-  return execute_off_trans_test(kTopEarlgreyHintableClocksMainHmac);
+  return execute_off_trans_test(kTopDarjeelingHintableClocksMainHmac);
 }

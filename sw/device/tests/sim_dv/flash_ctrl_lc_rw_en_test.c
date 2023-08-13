@@ -14,7 +14,7 @@
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 static dif_flash_ctrl_state_t flash;
 
@@ -116,15 +116,15 @@ bool test_main(void) {
   dif_keymgr_t keymgr;
 
   CHECK_DIF_OK(dif_keymgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
+      mmio_region_from_addr(TOP_DARJEELING_KEYMGR_BASE_ADDR), &keymgr));
   CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
-  CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+      mmio_region_from_addr(TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR), &otp));
+  CHECK_DIF_OK(dif_kmac_init(
+      mmio_region_from_addr(TOP_DARJEELING_KMAC_BASE_ADDR), &kmac));
   CHECK_DIF_OK(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR), &lc));
+      mmio_region_from_addr(TOP_DARJEELING_LC_CTRL_BASE_ADDR), &lc));
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      &flash, mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR)));
 
   dif_lc_ctrl_state_t curr_state;
   CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc, &curr_state));

@@ -20,7 +20,7 @@
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 /**
  * The hints bit order is
@@ -66,16 +66,16 @@ static void otbn_csr_access(void) {
 
 static void trans_csr_access(dif_clkmgr_hintable_clock_t trans) {
   switch (trans) {
-    case kTopEarlgreyHintableClocksMainAes:
+    case kTopDarjeelingHintableClocksMainAes:
       aes_csr_access();
       break;
-    case kTopEarlgreyHintableClocksMainHmac:
+    case kTopDarjeelingHintableClocksMainHmac:
       hmac_csr_access();
       break;
-    case kTopEarlgreyHintableClocksMainKmac:
+    case kTopDarjeelingHintableClocksMainKmac:
       kmac_csr_access();
       break;
-    case kTopEarlgreyHintableClocksMainOtbn:
+    case kTopDarjeelingHintableClocksMainOtbn:
       otbn_csr_access();
       break;
     default:
@@ -110,7 +110,7 @@ static void test_hintable_clocks_off(const dif_clkmgr_t *clkmgr,
   busy_spin_micros(1);
   // Check all units but the hinted one are alive.
   for (dif_clkmgr_hintable_clock_t other = 0;
-       other <= kTopEarlgreyHintableClocksLast; ++other) {
+       other <= kTopDarjeelingHintableClocksLast; ++other) {
     if (other != clock) {
       trans_csr_access(other);
     }
@@ -126,33 +126,34 @@ bool execute_off_trans_test(dif_clkmgr_hintable_clock_t clock) {
   dif_rstmgr_t rstmgr;
 
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
   CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+      mmio_region_from_addr(TOP_DARJEELING_CLKMGR_AON_BASE_ADDR), &clkmgr));
 
   CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+      mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR), &pwrmgr));
 
   // Initialize aon timer.
   CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
+      mmio_region_from_addr(TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR),
+      &aon_timer));
 
   // Initialize aes.
   CHECK_DIF_OK(
-      dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
+      dif_aes_init(mmio_region_from_addr(TOP_DARJEELING_AES_BASE_ADDR), &aes));
 
   // Initialize hmac.
-  CHECK_DIF_OK(
-      dif_hmac_init(mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR), &hmac));
+  CHECK_DIF_OK(dif_hmac_init(
+      mmio_region_from_addr(TOP_DARJEELING_HMAC_BASE_ADDR), &hmac));
 
   // Initialize kmac.
-  CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  CHECK_DIF_OK(dif_kmac_init(
+      mmio_region_from_addr(TOP_DARJEELING_KMAC_BASE_ADDR), &kmac));
 
   // Initialize otbn.
-  CHECK_DIF_OK(
-      dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+  CHECK_DIF_OK(dif_otbn_init(
+      mmio_region_from_addr(TOP_DARJEELING_OTBN_BASE_ADDR), &otbn));
 
   // Enable cpu dump capture.
   CHECK_DIF_OK(dif_rstmgr_cpu_info_set_enabled(&rstmgr, kDifToggleEnabled));

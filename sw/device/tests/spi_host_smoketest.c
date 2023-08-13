@@ -17,7 +17,7 @@
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/runtime/print.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
               "This test assumes the target platform is little endian.");
@@ -27,7 +27,7 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   dif_spi_host_t spi_host;
   CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spi_host));
+      mmio_region_from_addr(TOP_DARJEELING_SPI_HOST0_BASE_ADDR), &spi_host));
 
   CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
         "kClockFreqPeripheralHz must fit in uint32_t");

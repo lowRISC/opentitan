@@ -11,7 +11,7 @@
 #include "sw/device/silicon_creator/testing/rom_test.h"
 #include "sw/lib/sw/device/base/mock_abs_mmio.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "rv_core_ibex_regs.h"
 
 namespace ibex_unittest {
@@ -19,7 +19,7 @@ namespace {
 
 class AddressTranslationTest : public rom_test::RomTest {
  protected:
-  uint32_t base_ = TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR;
+  uint32_t base_ = TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR;
   rom_test::MockSecMmio sec_;
 };
 

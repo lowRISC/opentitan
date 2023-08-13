@@ -14,7 +14,7 @@
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/runtime/print.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"  // Generated.
 
 enum {
@@ -40,11 +40,11 @@ static const uint32_t kTestDeviceId[kDeviceIdSizeIn32BitWords] = {
  * Initialize all DIF handles used in this program.
  */
 static status_t peripheral_handles_init(void) {
-  TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
-                      &pinmux));
+  TRY(dif_pinmux_init(
+      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
   TRY(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
-  TRY(dif_uart_init(mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR),
+      mmio_region_from_addr(TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR), &otp));
+  TRY(dif_uart_init(mmio_region_from_addr(TOP_DARJEELING_UART0_BASE_ADDR),
                     &uart0));
   return OK_STATUS();
 }

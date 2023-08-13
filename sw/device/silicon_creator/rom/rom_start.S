@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling_memory.h"
 #include "sw/lib/sw/device/base/hardened_asm.h"
 #include "sw/lib/sw/device/base/multibits_asm.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
@@ -148,7 +148,7 @@ _rom_start_boot:
 
 LABEL_FOR_TEST(kRomStartBootMaybeHalt)
   // Check if we should halt here.
-  li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a0, (TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_ROM_EXEC_EN_OFFSET(a0)
   bnez t0, .L_exec_en
@@ -160,13 +160,13 @@ LABEL_FOR_TEST(kRomStartBootHalted)
 LABEL_FOR_TEST(kRomStartBootExecEn)
 .L_exec_en:
   // Enable NMIs from the watchdog timer.
-  li t0, TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR
+  li t0, TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR
   li t1, (1 << RV_CORE_IBEX_NMI_ENABLE_WDOG_EN_BIT)
   sw t1, RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET(t0)
 
   // Configure the power manager to enable resets.
   // Note: this enables all types of reset request for simplicity.
-  li t0, TOP_EARLGREY_PWRMGR_AON_BASE_ADDR
+  li t0, TOP_DARJEELING_PWRMGR_AON_BASE_ADDR
   li t1, -1
   sw t1, PWRMGR_RESET_EN_REG_OFFSET(t0)
 
@@ -175,7 +175,7 @@ LABEL_FOR_TEST(kRomStartBootExecEn)
   sw t1, PWRMGR_CFG_CDC_SYNC_REG_OFFSET(t0)
 
   // Configure the watchdog's bark and bite thresholds.
-  li t0, TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR
+  li t0, TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR
   li t1, WDOG_BARK_THOLD
   sw t1, AON_TIMER_WDOG_BARK_THOLD_REG_OFFSET(t0)
   li t1, WDOG_BITE_THOLD
@@ -187,11 +187,11 @@ LABEL_FOR_TEST(kRomStartStoreT1ToBiteThold)
   sw t1, AON_TIMER_WDOG_CTRL_REG_OFFSET(t0)
 
   // Configure rstmgr alert and cpu info collection.
-  li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a0, (TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_RSTMGR_INFO_EN_OFFSET(a0)
   li   t1, HARDENED_BYTE_BOOL_TRUE
-  li   a0, TOP_EARLGREY_RSTMGR_AON_BASE_ADDR
+  li   a0, TOP_DARJEELING_RSTMGR_AON_BASE_ADDR
   // Enable alert info collection if enabled in OTP.
   andi t2, t0, 0xff
   bne  t2, t1, .L_skip_rstmgr_alert_info_en
@@ -213,25 +213,25 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   csrc mie, t0
 
   // Check if AST initialization should be skipped.
-  li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a0, (TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET(a0)
   li   t1, MULTIBIT_ASM_BOOL4_TRUE
   bne  t0, t1, .L_ast_init_end
 
   // Copy the AST configuration from OTP.
-  li   a0, (TOP_EARLGREY_AST_BASE_ADDR)
-  li   a1, (TOP_EARLGREY_AST_BASE_ADDR + AST_REGAL_REG_OFFSET + 4)
-  li   a2, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a0, (TOP_DARJEELING_AST_BASE_ADDR)
+  li   a1, (TOP_DARJEELING_AST_BASE_ADDR + AST_REGAL_REG_OFFSET + 4)
+  li   a2, (TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + \
             OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET)
   call crt_section_copy
 
   // Enable jittery clock if enabled in OTP.
-  li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a0, (TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_JITTER_EN_OFFSET(a0)
-  li   a0, TOP_EARLGREY_CLKMGR_AON_BASE_ADDR
+  li   a0, TOP_DARJEELING_CLKMGR_AON_BASE_ADDR
   sw   t0, CLKMGR_JITTER_ENABLE_REG_OFFSET(a0)
 
 .L_ast_init_end:
@@ -239,13 +239,13 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   // CREATOR_SW_CFG_RMA_SPIN_CYCLES to let the transition start and continue
   // looping while lc_ctrl is not ready. Reset if the CPU is still executing at
   // the end.
-  li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a0, (TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_RMA_SPIN_EN_OFFSET(a0)
   li   t6, HARDENED_BOOL_TRUE
   bne  t0, t6, .L_rma_spin_skip
 
-  li   a1, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a1, (TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t1, OTP_CTRL_PARAM_CREATOR_SW_CFG_RMA_SPIN_EN_OFFSET(a1)
   beq  t1, t6, .L_rma_spin_check_straps
@@ -264,7 +264,7 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   // |------------------+----------------+----------------+------------------|
   // | Configuration:   | Input          | Input          | Input            |
   // |                  | Pull-down      | Pull-down      | Pull-up          |
-  li   a0, (TOP_EARLGREY_PINMUX_AON_BASE_ADDR + \
+  li   a0, (TOP_DARJEELING_PINMUX_AON_BASE_ADDR + \
             PINMUX_MIO_PAD_ATTR_0_REG_OFFSET)
   li   t0, (1 << PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT) | \
            (1 << PINMUX_MIO_PAD_ATTR_0_PULL_SELECT_0_BIT)
@@ -272,7 +272,7 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   li   t0, (1 << PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT)
   sw   t0, (SW_STRAP_1_PAD * 4)(a0)
   sw   t0, (SW_STRAP_2_PAD * 4)(a0)
-  li   a0, (TOP_EARLGREY_PINMUX_AON_BASE_ADDR + \
+  li   a0, (TOP_DARJEELING_PINMUX_AON_BASE_ADDR + \
             PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET)
   li   t0, SW_STRAP_0_INSEL
   sw   t0, (SW_STRAP_0_PERIPH * 4)(a0)
@@ -291,7 +291,7 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   bltu t1, t0, .L_rma_strap_pu_spin_cycles_loop
 
   // Read the strap GPIOs and check their value.
-  li   a0, TOP_EARLGREY_GPIO_BASE_ADDR
+  li   a0, TOP_DARJEELING_GPIO_BASE_ADDR
   lw   t0, GPIO_DATA_IN_REG_OFFSET(a0)
   li   t5, SW_STRAP_MASK
   and  t0, t0, t5
@@ -301,7 +301,7 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
 
   // Double-check the GPIO strap value.
   li   t6, HARDENED_BOOL_TRUE
-  li   a1, TOP_EARLGREY_GPIO_BASE_ADDR
+  li   a1, TOP_DARJEELING_GPIO_BASE_ADDR
   lw   t1, GPIO_DATA_IN_REG_OFFSET(a1)
   and  t1, t1, t5
   xor  t1, t1, t4
@@ -316,16 +316,16 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   // loop, disable the watchdog.
 .L_rma_spin_init:
   csrw mcycle, zero
-  li   a0, TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR
+  li   a0, TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR
   sw   zero, AON_TIMER_WDOG_CTRL_REG_OFFSET(a0)
 .L_rma_spin_cycles_loop:
-  li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a0, (TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_RMA_SPIN_CYCLES_OFFSET(a0)
   csrr t1, mcycle
   bltu t1, t0, .L_rma_spin_cycles_loop
 .L_rma_spin_lc_ctrl_loop:
-  li   a0, TOP_EARLGREY_LC_CTRL_BASE_ADDR
+  li   a0, TOP_DARJEELING_LC_CTRL_BASE_ADDR
   lw   t0, LC_CTRL_STATUS_REG_OFFSET(a0)
   andi t0, t0, (1 << LC_CTRL_STATUS_READY_BIT)
   beqz t0, .L_rma_spin_lc_ctrl_loop
@@ -338,24 +338,24 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   // Skip the `entropy_src` health checks configuration if the
   // `RNG_HEALTH_CONFIG_DIGEST` is not programmed. The default digest value is
   // 0 given that it is stored in a software OTP partition.
-  li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a0, (TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST_OFFSET(a0)
   beqz t0, .L_entropy_enable
 
   // Copy the entropy source health checks configuration thresholds from OTP.
-  li   a0, (TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR + \
+  li   a0, (TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR + \
             ENTROPY_SRC_REPCNT_THRESHOLDS_REG_OFFSET)
-  li   a1, (TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR + \
+  li   a1, (TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR + \
             ENTROPY_SRC_EXTHT_LO_THRESHOLDS_REG_OFFSET + 4)
-  li   a2, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a2, (TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + \
             OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS_OFFSET)
   call crt_section_copy
 
   // Configure the entropy source health alert threshold.
-  li a0, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
-  li a1, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+  li a0, TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR
+  li a1, (TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw t1, OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_ALERT_THRESHOLD_OFFSET(a1)
   sw t1, ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET(a0)
@@ -363,7 +363,7 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
 .L_entropy_enable:
   // The following sequence enables the minimum level of entropy required to
   // initialize memory scrambling, as well as the entropy distribution network.
-  li a0, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
+  li a0, TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR
 
   // Note for BOOT_ROM initialization the FIPS_ENABLE bit is set to kMultiBitBool4False
   // to prevent the release of FIPS entropy until all the thresholds are set
@@ -376,13 +376,13 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   li t0, (MULTIBIT_ASM_BOOL4_TRUE << ENTROPY_SRC_MODULE_ENABLE_MODULE_ENABLE_OFFSET)
   sw t0, ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET(a0)
 
-  li a0, TOP_EARLGREY_CSRNG_BASE_ADDR
+  li a0, TOP_DARJEELING_CSRNG_BASE_ADDR
   li t0, (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_ENABLE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_SW_APP_ENABLE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_READ_INT_STATE_OFFSET)
   sw t0, CSRNG_CTRL_REG_OFFSET(a0)
 
-  li a0, TOP_EARLGREY_EDN0_BASE_ADDR
+  li a0, TOP_DARJEELING_EDN0_BASE_ADDR
   li t0, (MULTIBIT_ASM_BOOL4_TRUE << EDN_CTRL_EDN_ENABLE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_TRUE << EDN_CTRL_BOOT_REQ_MODE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_FALSE << EDN_CTRL_AUTO_REQ_MODE_OFFSET) | \
@@ -393,12 +393,12 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   // Memory accesses will stall until initialization is complete.
   // Set `SRAM_KEY_RENEW_EN` OTP item to `HARDENED_BOOL_FALSE` to disable and
   // any other value to enable.
-  li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a0, (TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_SRAM_KEY_RENEW_EN_OFFSET(a0)
   li   t1, HARDENED_BOOL_FALSE
   beq t0, t1, .L_sram_key_renew_skip
-  li a0, TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR
+  li a0, TOP_DARJEELING_SRAM_CTRL_MAIN_REGS_BASE_ADDR
   li a1, (1 << SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT) | (1 << SRAM_CTRL_CTRL_INIT_BIT)
   sw a1, SRAM_CTRL_CTRL_REG_OFFSET(a0)
 .L_sram_key_renew_skip:

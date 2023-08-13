@@ -15,7 +15,7 @@
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 static dif_gpio_t gpio;
 static dif_pinmux_t pinmux;
@@ -153,18 +153,19 @@ static void gpio_input_test(const dif_gpio_t *gpio, uint32_t mask) {
 void ottf_external_isr(void) {
   // Find which interrupt fired at PLIC by claiming it.
   dif_rv_plic_irq_id_t plic_irq_id;
-  CHECK_DIF_OK(
-      dif_rv_plic_irq_claim(&plic, kTopEarlgreyPlicTargetIbex0, &plic_irq_id));
+  CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kTopDarjeelingPlicTargetIbex0,
+                                     &plic_irq_id));
 
   // Check if it is the right peripheral.
-  top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralGpio,
+  top_darjeeling_plic_peripheral_t peripheral =
+      (top_darjeeling_plic_peripheral_t)
+          top_darjeeling_plic_interrupt_for_peripheral[plic_irq_id];
+  CHECK(peripheral == kTopDarjeelingPlicPeripheralGpio,
         "Interrupt from incorrect peripheral: (exp: %d, obs: %s)",
-        kTopEarlgreyPlicPeripheralGpio, peripheral);
+        kTopDarjeelingPlicPeripheralGpio, peripheral);
 
   // Correlate the interrupt fired from GPIO.
-  uint32_t gpio_pin_irq_fired = plic_irq_id - kTopEarlgreyPlicIrqIdGpioGpio0;
+  uint32_t gpio_pin_irq_fired = plic_irq_id - kTopDarjeelingPlicIrqIdGpioGpio0;
 
   // Check if we did expect the right GPIO IRQ to fire.
   CHECK(gpio_pin_irq_fired == expected_gpio_pin_irq,
@@ -190,7 +191,7 @@ void ottf_external_isr(void) {
   CHECK_DIF_OK(dif_gpio_irq_acknowledge(&gpio, gpio_pin_irq_fired));
 
   // Complete the IRQ at PLIC.
-  CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kTopEarlgreyPlicTargetIbex0,
+  CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kTopDarjeelingPlicTargetIbex0,
                                         plic_irq_id));
 }
 
@@ -199,13 +200,14 @@ OTTF_DEFINE_TEST_CONFIG();
 void configure_pinmux(void) {
   for (size_t i = 0; i < kDifGpioNumPins; ++i) {
     dif_pinmux_index_t mio = kPinmuxTestutilsGpioInselPins[i];
-    dif_pinmux_index_t periph_io = kTopEarlgreyPinmuxPeripheralInGpioGpio0 + i;
+    dif_pinmux_index_t periph_io =
+        kTopDarjeelingPinmuxPeripheralInGpioGpio0 + i;
     CHECK_DIF_OK(dif_pinmux_input_select(&pinmux, periph_io, mio));
   }
 
   for (size_t i = 0; i < kDifGpioNumPins; ++i) {
     dif_pinmux_index_t mio = kPinmuxTestutilsGpioMioOutPins[i];
-    dif_pinmux_index_t periph_io = kTopEarlgreyPinmuxOutselGpioGpio0 + i;
+    dif_pinmux_index_t periph_io = kTopDarjeelingPinmuxOutselGpioGpio0 + i;
     CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, mio, periph_io));
   }
 }
@@ -213,20 +215,20 @@ void configure_pinmux(void) {
 bool test_main(void) {
   // Initialize the pinmux.
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
   pinmux_testutils_init(&pinmux);
   configure_pinmux();
 
   // Initialize the GPIO.
-  CHECK_DIF_OK(
-      dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
+  CHECK_DIF_OK(dif_gpio_init(
+      mmio_region_from_addr(TOP_DARJEELING_GPIO_BASE_ADDR), &gpio));
 
   // Initialize the PLIC.
   CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
+      mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &plic));
   rv_plic_testutils_irq_range_enable(
-      &plic, kTopEarlgreyPlicTargetIbex0, kTopEarlgreyPlicIrqIdGpioGpio0,
-      kTopEarlgreyPlicIrqIdGpioGpio0 + kDifGpioNumPins);
+      &plic, kTopDarjeelingPlicTargetIbex0, kTopDarjeelingPlicIrqIdGpioGpio0,
+      kTopDarjeelingPlicIrqIdGpioGpio0 + kDifGpioNumPins);
 
   // Enable the external IRQ at Ibex.
   irq_global_ctrl(true);

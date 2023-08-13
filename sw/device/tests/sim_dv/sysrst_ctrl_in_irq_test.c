@@ -13,7 +13,7 @@
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -22,11 +22,11 @@ static dif_rv_plic_t plic;
 
 enum {
   kCurrentTestPhaseTimeoutUsec = 20,
-  kPlicTarget = kTopEarlgreyPlicTargetIbex0,
+  kPlicTarget = kTopDarjeelingPlicTargetIbex0,
 };
 
 static volatile dif_sysrst_ctrl_irq_t irq;
-static volatile top_earlgrey_plic_peripheral_t peripheral;
+static volatile top_darjeeling_plic_peripheral_t peripheral;
 dif_rv_plic_irq_id_t irq_id;
 
 // Test phase written by testbench.
@@ -39,18 +39,18 @@ enum {
 };
 
 static const dif_pinmux_index_t kPeripheralInputs[] = {
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey0In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey1In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey2In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonPwrbIn,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonAcPresent,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonLidOpen,
+    kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonKey0In,
+    kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonKey1In,
+    kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonKey2In,
+    kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonPwrbIn,
+    kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonAcPresent,
+    kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonLidOpen,
 };
 
 static const dif_pinmux_index_t kInputPads[] = {
-    kTopEarlgreyPinmuxInselIob3, kTopEarlgreyPinmuxInselIob6,
-    kTopEarlgreyPinmuxInselIob8, kTopEarlgreyPinmuxInselIor13,
-    kTopEarlgreyPinmuxInselIoc7, kTopEarlgreyPinmuxInselIoc9,
+    kTopDarjeelingPinmuxInselIob3, kTopDarjeelingPinmuxInselIob6,
+    kTopDarjeelingPinmuxInselIob8, kTopDarjeelingPinmuxInselIor13,
+    kTopDarjeelingPinmuxInselIoc7, kTopDarjeelingPinmuxInselIoc9,
 };
 
 void test_phase_sync(void) {
@@ -85,9 +85,9 @@ void sysrst_ctrl_input_change_detect(
 
   wait_for_interrupt();
   // Check that the interrupt is triggered at the second part of the test.
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralSysrstCtrlAon,
+  CHECK(peripheral == kTopDarjeelingPlicPeripheralSysrstCtrlAon,
         "The interrupt is not triggered during the test.");
-  CHECK(irq_id == kTopEarlgreyPlicIrqIdSysrstCtrlAonEventDetected,
+  CHECK(irq_id == kTopDarjeelingPlicIrqIdSysrstCtrlAonEventDetected,
         "Wrong irq_id");
 
   uint32_t causes;
@@ -134,9 +134,9 @@ void sysrst_ctrl_key_combo_detect(dif_sysrst_ctrl_key_combo_t key_combo,
 
   wait_for_interrupt();
   // Check that the interrupt is triggered at the second part of the test.
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralSysrstCtrlAon,
+  CHECK(peripheral == kTopDarjeelingPlicPeripheralSysrstCtrlAon,
         "The interrupt is not triggered during the test.");
-  CHECK(irq_id == kTopEarlgreyPlicIrqIdSysrstCtrlAonEventDetected,
+  CHECK(irq_id == kTopDarjeelingPlicIrqIdSysrstCtrlAonEventDetected,
         "Wrong irq_id");
 
   uint32_t causes;
@@ -159,14 +159,14 @@ void sysrst_ctrl_key_combo_detect(dif_sysrst_ctrl_key_combo_t key_combo,
 void ottf_external_isr(void) {
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
 
-  peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
+  peripheral = (top_darjeeling_plic_peripheral_t)
+      top_darjeeling_plic_interrupt_for_peripheral[irq_id];
 
-  if (peripheral == kTopEarlgreyPlicPeripheralSysrstCtrlAon) {
+  if (peripheral == kTopDarjeelingPlicPeripheralSysrstCtrlAon) {
     irq =
         (dif_sysrst_ctrl_irq_t)(irq_id -
                                 (dif_rv_plic_irq_id_t)
-                                    kTopEarlgreyPlicIrqIdSysrstCtrlAonEventDetected);
+                                    kTopDarjeelingPlicIrqIdSysrstCtrlAonEventDetected);
     CHECK_DIF_OK(dif_sysrst_ctrl_irq_acknowledge(&sysrst_ctrl, irq));
   }
 
@@ -182,17 +182,17 @@ bool test_main(void) {
 
   // Initialize the PLIC.
   mmio_region_t plic_base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
+      mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_plic_init(plic_base_addr, &plic));
 
   // Enable all the SYSRST CTRL interrupts on PLIC.
   rv_plic_testutils_irq_range_enable(
-      &plic, kPlicTarget, kTopEarlgreyPlicIrqIdSysrstCtrlAonEventDetected,
-      kTopEarlgreyPlicIrqIdSysrstCtrlAonEventDetected);
+      &plic, kPlicTarget, kTopDarjeelingPlicIrqIdSysrstCtrlAonEventDetected,
+      kTopDarjeelingPlicIrqIdSysrstCtrlAonEventDetected);
 
   // Initialize sysrst ctrl.
   CHECK_DIF_OK(dif_sysrst_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
+      mmio_region_from_addr(TOP_DARJEELING_SYSRST_CTRL_AON_BASE_ADDR),
       &sysrst_ctrl));
 
   // Enable sysrst ctrl irq.
@@ -203,7 +203,7 @@ bool test_main(void) {
   // Set input pins.
   dif_pinmux_t pinmux;
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
   for (int i = 0; i < kOutputNunMioPads; ++i) {
     CHECK_DIF_OK(
         dif_pinmux_input_select(&pinmux, kPeripheralInputs[i], kInputPads[i]));

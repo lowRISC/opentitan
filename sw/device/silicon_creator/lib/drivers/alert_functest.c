@@ -21,14 +21,14 @@
 
 #include "alert_handler_regs.h"
 #include "flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"
 #include "rstmgr_regs.h"
 
 enum {
-  kAlertBase = TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR,
-  kOtpCoreBase = TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR,
-  kFlashBase = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR,
+  kAlertBase = TOP_DARJEELING_ALERT_HANDLER_BASE_ADDR,
+  kOtpCoreBase = TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR,
+  kFlashBase = TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR,
 };
 
 rom_error_t alert_no_escalate_test(void) {
@@ -41,7 +41,7 @@ rom_error_t alert_no_escalate_test(void) {
       .phase_cycles = {1, 10, 100, 1000},
   };
   LOG_INFO("Configure OtpCtrlFatalMacroError as class B");
-  RETURN_IF_ERROR(alert_configure(kTopEarlgreyAlertIdOtpCtrlFatalMacroError,
+  RETURN_IF_ERROR(alert_configure(kTopDarjeelingAlertIdOtpCtrlFatalMacroError,
                                   kAlertClassB, kAlertEnableLocked));
   LOG_INFO("Configure class B alerts");
   RETURN_IF_ERROR(alert_class_configure(kAlertClassB, &config));
@@ -64,7 +64,7 @@ rom_error_t alert_escalate_test(void) {
   };
 
   LOG_INFO("Configure FlashCtrlFatalErr as class A");
-  RETURN_IF_ERROR(alert_configure(kTopEarlgreyAlertIdFlashCtrlFatalErr,
+  RETURN_IF_ERROR(alert_configure(kTopDarjeelingAlertIdFlashCtrlFatalErr,
                                   kAlertClassA, kAlertEnableEnabled));
   LOG_INFO("Configure class A alerts");
   RETURN_IF_ERROR(alert_class_configure(kAlertClassA, &config));

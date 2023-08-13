@@ -13,7 +13,7 @@
 #include "sw/lib/sw/device/base/mock_abs_mmio.h"
 
 #include "alert_handler_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"
 
 namespace alert_unittest {
@@ -23,7 +23,7 @@ using ::testing::Return;
 
 class AlertTest : public rom_test::RomTest {
  protected:
-  uint32_t base_ = TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR;
+  uint32_t base_ = TOP_DARJEELING_ALERT_HANDLER_BASE_ADDR;
   rom_test::MockCrc32 crc32_;
   rom_test::MockAbsMmio abs_mmio_;
   rom_test::MockOtp otp_;

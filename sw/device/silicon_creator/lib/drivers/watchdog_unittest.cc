@@ -14,7 +14,7 @@
 #include "sw/lib/sw/device/base/mock_abs_mmio.h"
 
 #include "aon_timer_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"
 #include "pwrmgr_regs.h"
 
@@ -54,8 +54,8 @@ class WatchdogTest : public rom_test::RomTest {
     EXPECT_ABS_WRITE32(pwrmgr_ + PWRMGR_CFG_CDC_SYNC_REG_OFFSET, 1);
   }
 
-  uint32_t pwrmgr_ = TOP_EARLGREY_PWRMGR_AON_BASE_ADDR;
-  uint32_t wdog_ = TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR;
+  uint32_t pwrmgr_ = TOP_DARJEELING_PWRMGR_AON_BASE_ADDR;
+  uint32_t wdog_ = TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR;
   rom_test::MockAbsMmio abs_;
   rom_test::MockSecMmio sec_;
   rom_test::MockOtp otp_;

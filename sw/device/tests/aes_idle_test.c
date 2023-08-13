@@ -13,7 +13,7 @@
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 #define TIMEOUT (1000 * 1000)
 
@@ -29,7 +29,7 @@ static const uint8_t kKeyShare1[] = {
 OTTF_DEFINE_TEST_CONFIG();
 static dif_clkmgr_t clkmgr;
 static const dif_clkmgr_hintable_clock_t kAesClock =
-    kTopEarlgreyHintableClocksMainAes;
+    kTopDarjeelingHintableClocksMainAes;
 
 static bool is_hintable_clock_enabled(const dif_clkmgr_t *clkmgr,
                                       dif_clkmgr_hintable_clock_t clock) {
@@ -40,7 +40,8 @@ static bool is_hintable_clock_enabled(const dif_clkmgr_t *clkmgr,
 }
 
 static status_t initialize_clkmgr(void) {
-  mmio_region_t addr = mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR);
+  mmio_region_t addr =
+      mmio_region_from_addr(TOP_DARJEELING_CLKMGR_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_clkmgr_init(addr, &clkmgr));
 
   // Get initial hint and enable for AES clock and check both are enabled.
@@ -142,7 +143,7 @@ bool test_main(void) {
 
   // Initialise AES.
   CHECK_DIF_OK(
-      dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
+      dif_aes_init(mmio_region_from_addr(TOP_DARJEELING_AES_BASE_ADDR), &aes));
   CHECK_DIF_OK(dif_aes_reset(&aes));
 
   return status_ok(execute_test(&aes));

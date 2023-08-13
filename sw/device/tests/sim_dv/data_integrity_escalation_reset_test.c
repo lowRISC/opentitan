@@ -91,7 +91,7 @@
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -105,7 +105,7 @@ static volatile const uint32_t kErrorRamAddress = 0;
 static volatile const uint32_t kFaultTarget = 0;
 
 static const uint32_t kExpectedAlertNumber =
-    kTopEarlgreyAlertIdRvCoreIbexFatalHwErr;
+    kTopDarjeelingAlertIdRvCoreIbexFatalHwErr;
 
 // Alert class to use for the test. Will be chosen randomly by the test SW.
 static volatile dif_alert_handler_class_t alert_class_to_use;
@@ -171,10 +171,10 @@ static_assert(
  * Main SRAM addresses used in the sram_function_test.
  */
 enum {
-  kSramStart = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
-  kSramEnd = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR +
-             TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES,
-  kSramRetStart = TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
+  kSramStart = TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
+  kSramEnd = TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR +
+             TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES,
+  kSramRetStart = TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
 };
 
 /**
@@ -200,7 +200,7 @@ volatile static const uint32_t kSramFunctionTestAddress =
 /**
  * Objects to access the peripherals used in this test via dif API.
  */
-static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
+static const uint32_t kPlicTarget = kTopDarjeelingPlicTargetIbex0;
 static dif_alert_handler_t alert_handler;
 static dif_aon_timer_t aon_timer;
 static dif_flash_ctrl_state_t flash_ctrl_state;
@@ -246,28 +246,30 @@ void ottf_external_isr(void) {
 
   LOG_INFO("Got irq_id 0x%x (%d)", irq_id, irq_id);
 
-  top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
+  top_darjeeling_plic_peripheral_t peripheral =
+      (top_darjeeling_plic_peripheral_t)
+          top_darjeeling_plic_interrupt_for_peripheral[irq_id];
 
-  if (peripheral == kTopEarlgreyPlicPeripheralAonTimerAon) {
+  if (peripheral == kTopDarjeelingPlicPeripheralAonTimerAon) {
     uint32_t irq =
         (irq_id - (dif_rv_plic_irq_id_t)
-                      kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
+                      kTopDarjeelingPlicIrqIdAonTimerAonWkupTimerExpired);
 
     // We should not get aon timer interrupts since escalation suppresses them.
     CHECK(false, "Unexpected aon timer interrupt %d", irq);
-  } else if (peripheral == kTopEarlgreyPlicPeripheralAlertHandler) {
-    CHECK(
-        irq_id == kTopEarlgreyPlicIrqIdAlertHandlerClassa + alert_class_to_use,
-        "Unexpected irq_id, expected %d, got %d",
-        kTopEarlgreyPlicIrqIdAlertHandlerClassa + alert_class_to_use, irq_id);
+  } else if (peripheral == kTopDarjeelingPlicPeripheralAlertHandler) {
+    CHECK(irq_id ==
+              kTopDarjeelingPlicIrqIdAlertHandlerClassa + alert_class_to_use,
+          "Unexpected irq_id, expected %d, got %d",
+          kTopDarjeelingPlicIrqIdAlertHandlerClassa + alert_class_to_use,
+          irq_id);
     LOG_INFO("Got expected alert handler interrupt %d", irq_id);
 
     // Disable these interrupts from alert_handler so they don't keep happening
     // until NMI.
     uint32_t irq =
         (irq_id -
-         (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAlertHandlerClassa);
+         (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdAlertHandlerClassa);
     CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(&alert_handler, irq,
                                                    kDifToggleDisabled));
 
@@ -396,25 +398,26 @@ void ottf_external_nmi_handler(void) {
  */
 static void init_peripherals(void) {
   CHECK_DIF_OK(dif_alert_handler_init(
-      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
+      mmio_region_from_addr(TOP_DARJEELING_ALERT_HANDLER_BASE_ADDR),
       &alert_handler));
 
   CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
+      mmio_region_from_addr(TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR),
+      &aon_timer));
 
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_ctrl_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR)));
 
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
   CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      mmio_region_from_addr(TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
 
   CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
+      mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &plic));
 }
 
 /**
@@ -571,11 +574,11 @@ bool test_main(void) {
 
   // Enable all the interrupts used in this test.
   rv_plic_testutils_irq_range_enable(
-      &plic, kPlicTarget, kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired,
-      kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark);
+      &plic, kPlicTarget, kTopDarjeelingPlicIrqIdAonTimerAonWkupTimerExpired,
+      kTopDarjeelingPlicIrqIdAonTimerAonWdogTimerBark);
   rv_plic_testutils_irq_range_enable(&plic, kPlicTarget,
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassa,
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassd);
+                                     kTopDarjeelingPlicIrqIdAlertHandlerClassa,
+                                     kTopDarjeelingPlicIrqIdAlertHandlerClassd);
 
   // Enable access to flash for storing info across resets.
   LOG_INFO("Setting default region accesses");

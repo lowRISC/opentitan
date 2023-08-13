@@ -9,20 +9,21 @@
 #include "sw/lib/sw/device/base/abs_mmio.h"
 #include "sw/lib/sw/device/base/memory.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "sram_ctrl_regs.h"  // Generated.
 
 enum {
   /**
    * Base address of retention SRAM controller.
    */
-  kBase = TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR,
+  kBase = TOP_DARJEELING_SRAM_CTRL_RET_AON_REGS_BASE_ADDR,
 };
 
 retention_sram_t *retention_sram_get(void) {
-  static_assert(sizeof(retention_sram_t) == TOP_EARLGREY_RAM_RET_AON_SIZE_BYTES,
-                "Unexpected retention SRAM size.");
-  return (retention_sram_t *)TOP_EARLGREY_RAM_RET_AON_BASE_ADDR;
+  static_assert(
+      sizeof(retention_sram_t) == TOP_DARJEELING_RAM_RET_AON_SIZE_BYTES,
+      "Unexpected retention SRAM size.");
+  return (retention_sram_t *)TOP_DARJEELING_RAM_RET_AON_BASE_ADDR;
 }
 
 void retention_sram_clear(void) {

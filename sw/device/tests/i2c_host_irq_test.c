@@ -19,7 +19,7 @@
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/runtime/print.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "i2c_regs.h"  // Generated.
 
 static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
@@ -34,7 +34,7 @@ OTTF_DEFINE_TEST_CONFIG();
  * busy.
  */
 enum {
-  kHart = kTopEarlgreyPlicTargetIbex0,
+  kHart = kTopDarjeelingPlicTargetIbex0,
   kIrqVoid = UINT32_MAX,
   kDeviceAddr = 0x52,
 
@@ -68,15 +68,16 @@ static status_t external_isr(void) {
   dif_rv_plic_irq_id_t plic_irq_id;
   TRY(dif_rv_plic_irq_claim(&plic, kHart, &plic_irq_id));
 
-  top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
-  TRY_CHECK(peripheral == kTopEarlgreyPlicPeripheralI2c2,
+  top_darjeeling_plic_peripheral_t peripheral =
+      (top_darjeeling_plic_peripheral_t)
+          top_darjeeling_plic_interrupt_for_peripheral[plic_irq_id];
+  TRY_CHECK(peripheral == kTopDarjeelingPlicPeripheralI2c2,
             "IRQ from incorrect peripheral: exp = %d(i2c2), found = %d",
-            kTopEarlgreyPlicPeripheralI2c2, peripheral);
+            kTopDarjeelingPlicPeripheralI2c2, peripheral);
 
-  irq_fired =
-      (dif_i2c_irq_t)(plic_irq_id - (dif_rv_plic_irq_id_t)
-                                        kTopEarlgreyPlicIrqIdI2c2FmtThreshold);
+  irq_fired = (dif_i2c_irq_t)(plic_irq_id -
+                              (dif_rv_plic_irq_id_t)
+                                  kTopDarjeelingPlicIrqIdI2c2FmtThreshold);
 
   LOG_INFO("%s: plic:%d, i2c:%d", __func__, plic_irq_id, irq_fired);
   TRY(dif_i2c_irq_acknowledge(&i2c, irq_fired));
@@ -273,26 +274,26 @@ static status_t rx_overflow_irq(void) {
 
 static status_t test_init(void) {
   mmio_region_t base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
+      mmio_region_from_addr(TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR);
 
   TRY(dif_rv_core_ibex_init(base_addr, &rv_core_ibex));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C2_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_I2C2_BASE_ADDR);
   TRY(dif_i2c_init(base_addr, &i2c));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR);
   TRY(dif_pinmux_init(base_addr, &pinmux));
 
   TRY(i2c_testutils_select_pinmux(&pinmux, 2));
 
   TRY(dif_i2c_host_set_enabled(&i2c, kDifToggleEnabled));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR);
   TRY(dif_rv_plic_init(base_addr, &plic));
 
   rv_plic_testutils_irq_range_enable(&plic, kHart,
-                                     kTopEarlgreyPlicIrqIdI2c2FmtThreshold,
-                                     kTopEarlgreyPlicIrqIdI2c2HostTimeout);
+                                     kTopDarjeelingPlicIrqIdI2c2FmtThreshold,
+                                     kTopDarjeelingPlicIrqIdI2c2HostTimeout);
 
   // Enable the external IRQ at Ibex.
   irq_global_ctrl(true);

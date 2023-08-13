@@ -12,7 +12,7 @@
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTBN_DECLARE_APP_SYMBOLS(err_test);
 
@@ -111,21 +111,21 @@ static void run_test_with_irqs(dif_otbn_t *otbn, otbn_app_t app,
  */
 static void plic_init_with_irqs(void) {
   mmio_region_t base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
+      mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_plic_init(base_addr, &plic));
 
-  dif_rv_plic_irq_id_t irq_id = kTopEarlgreyPlicIrqIdOtbnDone;
+  dif_rv_plic_irq_id_t irq_id = kTopDarjeelingPlicIrqIdOtbnDone;
 
   // Set interrupt priority to be positive
   CHECK_DIF_OK(dif_rv_plic_irq_set_priority(&plic, irq_id, 0x1));
 
   // Enable the interrupt
   CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      &plic, irq_id, kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
+      &plic, irq_id, kTopDarjeelingPlicTargetIbex0, kDifToggleEnabled));
 
   // Set the threshold for Ibex to 0.
   CHECK_DIF_OK(dif_rv_plic_target_set_threshold(
-      &plic, kTopEarlgreyPlicTargetIbex0, 0x0));
+      &plic, kTopDarjeelingPlicTargetIbex0, 0x0));
 }
 
 /**
@@ -137,17 +137,17 @@ void ottf_external_isr(void) {
   // Find which interrupt fired at PLIC by claiming it.
   dif_rv_plic_irq_id_t irq_id;
   CHECK_DIF_OK(
-      dif_rv_plic_irq_claim(&plic, kTopEarlgreyPlicTargetIbex0, &irq_id));
+      dif_rv_plic_irq_claim(&plic, kTopDarjeelingPlicTargetIbex0, &irq_id));
 
   // Check it was from OTBN
-  top_earlgrey_plic_peripheral_t peri =
-      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
-  CHECK(peri == kTopEarlgreyPlicPeripheralOtbn,
+  top_darjeeling_plic_peripheral_t peri =
+      top_darjeeling_plic_interrupt_for_peripheral[irq_id];
+  CHECK(peri == kTopDarjeelingPlicPeripheralOtbn,
         "Interrupt from incorrect peripheral: (exp: %d, obs: %s)",
-        kTopEarlgreyPlicPeripheralOtbn, peri);
+        kTopDarjeelingPlicPeripheralOtbn, peri);
 
   // Check this is the interrupt we expected
-  CHECK(irq_id == kTopEarlgreyPlicIrqIdOtbnDone);
+  CHECK(irq_id == kTopDarjeelingPlicIrqIdOtbnDone);
 
   // otbn_finished should currently be false (we're supposed to clear it before
   // starting OTBN)
@@ -165,7 +165,8 @@ bool test_main(void) {
   irq_global_ctrl(true);
   irq_external_ctrl(true);
 
-  mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR);
+  mmio_region_t base_addr =
+      mmio_region_from_addr(TOP_DARJEELING_OTBN_BASE_ADDR);
 
   dif_otbn_t otbn;
   CHECK_DIF_OK(dif_otbn_init(base_addr, &otbn));

@@ -20,7 +20,7 @@
 #include "sw/lib/sw/device/runtime/print.h"
 
 // TODO: make this toplevel agnostic.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 /**
  * OTTF console configuration parameters.
@@ -39,7 +39,7 @@ enum {
   /**
    * HART PLIC Target.
    */
-  kPlicTarget = kTopEarlgreyPlicTargetIbex0,
+  kPlicTarget = kTopDarjeelingPlicTargetIbex0,
 };
 
 // Potential DIF handles for OTTF console communication.
@@ -69,7 +69,7 @@ void ottf_console_init(void) {
       // configured. The default is to use UART0.
       if (base_addr == 0) {
         CHECK(kOttfTestConfig.console.type == kOttfConsoleUart);
-        base_addr = TOP_EARLGREY_UART0_BASE_ADDR;
+        base_addr = TOP_DARJEELING_UART0_BASE_ADDR;
       }
       CHECK_DIF_OK(
           dif_uart_init(mmio_region_from_addr(base_addr), &ottf_console_uart));
@@ -126,22 +126,22 @@ void ottf_console_init(void) {
 static uint32_t get_flow_control_watermark_plic_id(void) {
   switch (kOttfTestConfig.console.base_addr) {
 #if !OT_IS_ENGLISH_BREAKFAST
-    case TOP_EARLGREY_UART1_BASE_ADDR:
-      return kTopEarlgreyPlicIrqIdUart1RxWatermark;
-    case TOP_EARLGREY_UART2_BASE_ADDR:
-      return kTopEarlgreyPlicIrqIdUart2RxWatermark;
-    case TOP_EARLGREY_UART3_BASE_ADDR:
-      return kTopEarlgreyPlicIrqIdUart3RxWatermark;
+    case TOP_DARJEELING_UART1_BASE_ADDR:
+      return kTopDarjeelingPlicIrqIdUart1RxWatermark;
+    case TOP_DARJEELING_UART2_BASE_ADDR:
+      return kTopDarjeelingPlicIrqIdUart2RxWatermark;
+    case TOP_DARJEELING_UART3_BASE_ADDR:
+      return kTopDarjeelingPlicIrqIdUart3RxWatermark;
 #endif
-    case TOP_EARLGREY_UART0_BASE_ADDR:
+    case TOP_DARJEELING_UART0_BASE_ADDR:
     default:
-      return kTopEarlgreyPlicIrqIdUart0RxWatermark;
+      return kTopDarjeelingPlicIrqIdUart0RxWatermark;
   }
 }
 
 void ottf_console_flow_control_enable(void) {
   CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &ottf_plic));
+      mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &ottf_plic));
 
   dif_uart_t *uart = (dif_uart_t *)ottf_console_get();
   CHECK_DIF_OK(dif_uart_watermark_rx_set(uart, kFlowControlRxWatermark));

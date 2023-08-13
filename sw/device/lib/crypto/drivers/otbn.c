@@ -11,7 +11,7 @@
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/base/status.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otbn_regs.h"  // Generated.
 
 // Module ID for status codes.
@@ -21,7 +21,7 @@ enum {
   /**
    * Base address for OTBN.
    */
-  kBase = TOP_EARLGREY_OTBN_BASE_ADDR,
+  kBase = TOP_DARJEELING_OTBN_BASE_ADDR,
   /**
    * DMEM size in bytes.
    */

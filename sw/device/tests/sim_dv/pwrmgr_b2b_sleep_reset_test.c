@@ -20,7 +20,7 @@
 #include "sw/lib/sw/device/runtime/log.h"
 
 #include "aon_timer_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 /*
    PWRMGR BACK TO BACK DEEP SLEEP, RESET / WAKEUP TEST
 
@@ -55,8 +55,8 @@ static void prgm_push_button_wakeup(void) {
   CHECK_DIF_OK(
       dif_sysrst_ctrl_input_change_detect_configure(&sysrst_ctrl, config));
   CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonPwrbIn,
-      kTopEarlgreyPinmuxInselIor13));
+      &pinmux, kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonPwrbIn,
+      kTopDarjeelingPinmuxInselIor13));
 }
 
 bool test_main(void) {
@@ -70,26 +70,26 @@ bool test_main(void) {
   // Initialize pwrmgr
   dif_pwrmgr_t pwrmgr;
   CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+      mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR), &pwrmgr));
 
   // Initialize rstmgr since this will check some registers.
   dif_rstmgr_t rstmgr;
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
   // Initialize flash_ctrl
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_ctrl,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR)));
 
   // Initialize sysrst_ctrl
   CHECK_DIF_OK(dif_sysrst_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
+      mmio_region_from_addr(TOP_DARJEELING_SYSRST_CTRL_AON_BASE_ADDR),
       &sysrst_ctrl));
 
   // Initialize pinmux
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
 
   // First check the flash stored value
   uint32_t event_idx = 0;
@@ -137,14 +137,15 @@ bool test_main(void) {
 
   dif_aon_timer_t aon_timer;
   CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
+      mmio_region_from_addr(TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR),
+      &aon_timer));
 
   // Status clean up
   if (event_idx > 0) {
     // aon timer clean up
     CHECK_DIF_OK(dif_aon_timer_wakeup_stop(&aon_timer));
     //    mmio_region_write32(
-    //        mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR),
+    //        mmio_region_from_addr(TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR),
     //        AON_TIMER_WKUP_CAUSE_REG_OFFSET, 0);
     CHECK_DIF_OK(dif_aon_timer_clear_wakeup_cause(&aon_timer));
     // sysrst ctrl status clean up

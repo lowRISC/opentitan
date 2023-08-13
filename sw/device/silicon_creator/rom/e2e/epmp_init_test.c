@@ -14,7 +14,7 @@
 #include "sw/lib/sw/device/base/csr.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -23,7 +23,8 @@ bool test_main(void) {
                 "EXPECT_DEBUG must be `0` or `1`.");
 
   dif_lc_ctrl_t lc_ctrl;
-  mmio_region_t lc_reg = mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR);
+  mmio_region_t lc_reg =
+      mmio_region_from_addr(TOP_DARJEELING_LC_CTRL_BASE_ADDR);
   CHECK_DIF_OK(dif_lc_ctrl_init(lc_reg, &lc_ctrl));
   bool debug_enabled = false;
   CHECK_STATUS_OK(
@@ -44,8 +45,8 @@ bool test_main(void) {
            pmpcfg3, pmp13cfg);
 
   const uint32_t kPmpEncodedDebugRomRange =
-      (TOP_EARLGREY_RV_DM_MEM_BASE_ADDR >> 2) |
-      ((TOP_EARLGREY_RV_DM_MEM_SIZE_BYTES - 1) >> 3);
+      (TOP_DARJEELING_RV_DM_MEM_BASE_ADDR >> 2) |
+      ((TOP_DARJEELING_RV_DM_MEM_SIZE_BYTES - 1) >> 3);
   if (pmpaddr13 != kPmpEncodedDebugRomRange) {
     LOG_ERROR("Expected pmpaddr13=0x%08x", kPmpEncodedDebugRomRange);
     return false;

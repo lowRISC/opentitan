@@ -13,7 +13,7 @@
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/base/mock_abs_mmio.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"
 #include "pinmux_regs.h"
 
@@ -23,7 +23,7 @@ using ::testing::Return;
 
 class PinmuxTest : public rom_test::RomTest {
  protected:
-  uint32_t base_ = TOP_EARLGREY_PINMUX_AON_BASE_ADDR;
+  uint32_t base_ = TOP_DARJEELING_PINMUX_AON_BASE_ADDR;
   rom_test::MockAbsMmio mmio_;
   rom_test::MockOtp otp_;
   mock_csr::MockCsr csr_;
@@ -34,7 +34,7 @@ class InitTest : public PinmuxTest {
   /**
    * Set to track which peripheral inputs have already been configured.
    */
-  std::set<top_earlgrey_pinmux_peripheral_in_t> configured_in_;
+  std::set<top_darjeeling_pinmux_peripheral_in_t> configured_in_;
 
   /**
    * Register the configuration of the input peripheral in the tracking
@@ -42,14 +42,14 @@ class InitTest : public PinmuxTest {
    *
    * Triggers a test failure if the input has already been registered.
    */
-  uint32_t RegInSel(top_earlgrey_pinmux_peripheral_in_t index) {
-    EXPECT_TRUE(index >= 0 && index < kTopEarlgreyPinmuxPeripheralInLast);
+  uint32_t RegInSel(top_darjeeling_pinmux_peripheral_in_t index) {
+    EXPECT_TRUE(index >= 0 && index < kTopDarjeelingPinmuxPeripheralInLast);
     EXPECT_TRUE(configured_in_.insert(index).second);
     return base_ + PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET +
            static_cast<uint32_t>(index) * sizeof(uint32_t);
   }
 
-  uint32_t RegPadAttr(top_earlgrey_muxed_pads_t pad) {
+  uint32_t RegPadAttr(top_darjeeling_muxed_pads_t pad) {
     return base_ + PINMUX_MIO_PAD_ATTR_0_REG_OFFSET +
            static_cast<uint32_t>(pad) * sizeof(uint32_t);
   }
@@ -57,7 +57,7 @@ class InitTest : public PinmuxTest {
   /**
    * Set to track which MIO outputs have already been configured.
    */
-  std::set<top_earlgrey_pinmux_mio_out_t> configured_out_;
+  std::set<top_darjeeling_pinmux_mio_out_t> configured_out_;
 
   /**
    * Register the configuration of the MIO output in the tracking
@@ -65,8 +65,8 @@ class InitTest : public PinmuxTest {
    *
    * Triggers a test failure if the input has already been registered.
    */
-  uint32_t RegOutSel(top_earlgrey_pinmux_mio_out_t index) {
-    EXPECT_TRUE(index >= 0 && index < kTopEarlgreyPinmuxMioOutLast);
+  uint32_t RegOutSel(top_darjeeling_pinmux_mio_out_t index) {
+    EXPECT_TRUE(index >= 0 && index < kTopDarjeelingPinmuxMioOutLast);
     EXPECT_TRUE(configured_out_.insert(index).second);
     return base_ + PINMUX_MIO_OUTSEL_0_REG_OFFSET +
            static_cast<uint32_t>(index) * sizeof(uint32_t);
@@ -84,28 +84,28 @@ TEST_F(InitTest, WithBootstrap) {
   EXPECT_CALL(otp_,
               read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET))
       .WillOnce(Return(kHardenedBoolFalse));
-  EXPECT_ABS_WRITE32(RegPadAttr(kTopEarlgreyMuxedPadsIoc0),
+  EXPECT_ABS_WRITE32(RegPadAttr(kTopDarjeelingMuxedPadsIoc0),
                      {{PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, 1}});
-  EXPECT_ABS_WRITE32(RegPadAttr(kTopEarlgreyMuxedPadsIoc1),
+  EXPECT_ABS_WRITE32(RegPadAttr(kTopDarjeelingMuxedPadsIoc1),
                      {{PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, 1}});
-  EXPECT_ABS_WRITE32(RegPadAttr(kTopEarlgreyMuxedPadsIoc2),
+  EXPECT_ABS_WRITE32(RegPadAttr(kTopDarjeelingMuxedPadsIoc2),
                      {{PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, 1}});
   EXPECT_CSR_WRITE(CSR_REG_MCYCLE, 0);
   for (size_t i = 0; i < 6; ++i) {
     EXPECT_CSR_READ(CSR_REG_MCYCLE, i * 100);
   }
-  EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInGpioGpio22),
-                     kTopEarlgreyPinmuxInselIoc0)
-  EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInGpioGpio23),
-                     kTopEarlgreyPinmuxInselIoc1)
-  EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInGpioGpio24),
-                     kTopEarlgreyPinmuxInselIoc2)
-  EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInUart0Rx),
-                     kTopEarlgreyPinmuxInselIoc3);
+  EXPECT_ABS_WRITE32(RegInSel(kTopDarjeelingPinmuxPeripheralInGpioGpio22),
+                     kTopDarjeelingPinmuxInselIoc0)
+  EXPECT_ABS_WRITE32(RegInSel(kTopDarjeelingPinmuxPeripheralInGpioGpio23),
+                     kTopDarjeelingPinmuxInselIoc1)
+  EXPECT_ABS_WRITE32(RegInSel(kTopDarjeelingPinmuxPeripheralInGpioGpio24),
+                     kTopDarjeelingPinmuxInselIoc2)
+  EXPECT_ABS_WRITE32(RegInSel(kTopDarjeelingPinmuxPeripheralInUart0Rx),
+                     kTopDarjeelingPinmuxInselIoc3);
 
   // The outputs that will be configured.
-  EXPECT_ABS_WRITE32(RegOutSel(kTopEarlgreyPinmuxMioOutIoc4),
-                     kTopEarlgreyPinmuxOutselUart0Tx);
+  EXPECT_ABS_WRITE32(RegOutSel(kTopDarjeelingPinmuxMioOutIoc4),
+                     kTopDarjeelingPinmuxOutselUart0Tx);
 
   pinmux_init();
 }
@@ -115,12 +115,12 @@ TEST_F(InitTest, WithoutBootstrap) {
   EXPECT_CALL(otp_,
               read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET))
       .WillOnce(Return(kHardenedBoolTrue));
-  EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInUart0Rx),
-                     kTopEarlgreyPinmuxInselIoc3);
+  EXPECT_ABS_WRITE32(RegInSel(kTopDarjeelingPinmuxPeripheralInUart0Rx),
+                     kTopDarjeelingPinmuxInselIoc3);
 
   // The outputs that will be configured.
-  EXPECT_ABS_WRITE32(RegOutSel(kTopEarlgreyPinmuxMioOutIoc4),
-                     kTopEarlgreyPinmuxOutselUart0Tx);
+  EXPECT_ABS_WRITE32(RegOutSel(kTopDarjeelingPinmuxMioOutIoc4),
+                     kTopDarjeelingPinmuxOutselUart0Tx);
 
   pinmux_init();
 }

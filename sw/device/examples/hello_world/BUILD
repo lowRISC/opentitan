@@ -29,7 +29,7 @@ cc_library(
     name = "hello_world_lib",
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/examples:demos",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
@@ -40,11 +40,11 @@ cc_library(
         "//sw/lib/sw/device/crt",
         "//sw/lib/sw/device/runtime:hart",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
-        "//sw/top_earlgrey/sw/dif:gpio",
-        "//sw/top_earlgrey/sw/dif:pinmux",
-        "//sw/top_earlgrey/sw/dif:spi_device",
-        "//sw/top_earlgrey/sw/dif:uart",
+        "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/dif:gpio",
+        "//sw/top_darjeeling/sw/dif:pinmux",
+        "//sw/top_darjeeling/sw/dif:spi_device",
+        "//sw/top_darjeeling/sw/dif:uart",
     ],
 )
 
@@ -63,5 +63,5 @@ pkg_files(
     name = "package",
     testonly = True,
     srcs = [":pre_package"],
-    prefix = "earlgrey/examples",
+    prefix = "darjeeling/examples",
 )

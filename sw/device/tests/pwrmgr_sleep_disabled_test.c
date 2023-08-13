@@ -13,24 +13,24 @@
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
-static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
+static const uint32_t kPlicTarget = kTopDarjeelingPlicTargetIbex0;
 static dif_aon_timer_t aon_timer;
 static dif_rv_plic_t plic;
 
 // Volatile globals accessed from the ISR.
 static volatile dif_aon_timer_irq_t irq;
-static volatile top_earlgrey_plic_peripheral_t peripheral;
+static volatile top_darjeeling_plic_peripheral_t peripheral;
 static volatile bool interrupt_serviced;
 static volatile bool interrupt_failed;
 
 bool is_pwrmgr_irq_pending(void) {
   bool status;
   CHECK_DIF_OK(dif_rv_plic_irq_is_pending(
-      &plic, kTopEarlgreyPlicIrqIdPwrmgrAonWakeup, &status));
+      &plic, kTopDarjeelingPlicIrqIdPwrmgrAonWakeup, &status));
   return status;
 }
 
@@ -45,19 +45,19 @@ void ottf_external_isr(void) {
   }
 
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
-  if (irq_id != kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired) {
+  if (irq_id != kTopDarjeelingPlicIrqIdAonTimerAonWkupTimerExpired) {
     interrupt_failed = true;
     return;
   }
 
-  peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
+  peripheral = (top_darjeeling_plic_peripheral_t)
+      top_darjeeling_plic_interrupt_for_peripheral[irq_id];
 
-  if (peripheral == kTopEarlgreyPlicPeripheralAonTimerAon) {
+  if (peripheral == kTopDarjeelingPlicPeripheralAonTimerAon) {
     irq =
         (dif_aon_timer_irq_t)(irq_id -
                               (dif_rv_plic_irq_id_t)
-                                  kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
+                                  kTopDarjeelingPlicIrqIdAonTimerAonWkupTimerExpired);
 
     CHECK_DIF_OK(dif_aon_timer_wakeup_stop(&aon_timer));
     CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(&aon_timer, irq));
@@ -92,11 +92,12 @@ bool test_main(void) {
 
   // Initialize unit difs.
   CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+      mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR), &pwrmgr));
   CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
+      mmio_region_from_addr(TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR),
+      &aon_timer));
   CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
+      mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &plic));
 
   // Notice we are clearing rstmgr's RESET_INFO, so after the aon wakeup there
   // is only one bit set.
@@ -113,23 +114,23 @@ bool test_main(void) {
 
     // Enable the AON wakeup interrupt.
     CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-        &plic, kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired, kPlicTarget,
+        &plic, kTopDarjeelingPlicIrqIdAonTimerAonWkupTimerExpired, kPlicTarget,
         kDifToggleEnabled));
     LOG_INFO("Enabled aon wakeup interrupt");
     CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-        &plic, kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired, 3));
+        &plic, kTopDarjeelingPlicIrqIdAonTimerAonWkupTimerExpired, 3));
     LOG_INFO("Set aon wakeup interrupt priority");
 
     // Enable pwrmgr wakeup interrupt, so it triggers an interrupt even though
     // it should not.
     CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, kDifPwrmgrIrqWakeup,
                                             kDifToggleEnabled));
-    CHECK_DIF_OK(
-        dif_rv_plic_irq_set_enabled(&plic, kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
-                                    kPlicTarget, kDifToggleEnabled));
+    CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
+        &plic, kTopDarjeelingPlicIrqIdPwrmgrAonWakeup, kPlicTarget,
+        kDifToggleEnabled));
     LOG_INFO("Enabled pwrmgr wakeup interrupt");
     CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-        &plic, kTopEarlgreyPlicIrqIdPwrmgrAonWakeup, 3));
+        &plic, kTopDarjeelingPlicIrqIdPwrmgrAonWakeup, 3));
     LOG_INFO("Set pwrmgr wakeup interrupt priority");
 
     // Prepare for interrupt.

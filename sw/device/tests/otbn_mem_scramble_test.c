@@ -10,7 +10,7 @@
 #include "sw/ip/rv_core_ibex/dif/dif_rv_core_ibex.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -183,13 +183,14 @@ static void otbn_check_mem_words(const dif_otbn_t *otbn, const int num,
 bool test_main(void) {
   // Init OTBN DIF.
   dif_otbn_t otbn;
-  mmio_region_t otbn_addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR);
+  mmio_region_t otbn_addr =
+      mmio_region_from_addr(TOP_DARJEELING_OTBN_BASE_ADDR);
   CHECK_DIF_OK(dif_otbn_init(otbn_addr, &otbn));
 
   // Init Ibex DIF.
   dif_rv_core_ibex_t ibex;
   mmio_region_t ibex_addr =
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
+      mmio_region_from_addr(TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_core_ibex_init(ibex_addr, &ibex));
 
   uint32_t imem_offsets[kNumAddrs];

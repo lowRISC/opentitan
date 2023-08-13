@@ -15,7 +15,7 @@
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 /**
  * OpenTitan program for AES side-channel analysis.
@@ -423,7 +423,7 @@ static void aes_serial_seed_lfsr(const uint8_t *seed, size_t seed_len) {
  */
 static void init_aes(void) {
   SS_CHECK_DIF_OK(
-      dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
+      dif_aes_init(mmio_region_from_addr(TOP_DARJEELING_AES_BASE_ADDR), &aes));
   SS_CHECK_DIF_OK(dif_aes_reset(&aes));
 }
 

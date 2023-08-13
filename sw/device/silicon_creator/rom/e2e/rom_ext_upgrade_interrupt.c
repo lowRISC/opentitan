@@ -14,7 +14,7 @@
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -32,7 +32,7 @@ static void increment_flash_counter(void) {
   dif_flash_ctrl_state_t flash_ctrl;
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_ctrl,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR)));
   CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
       &flash_ctrl,
       /*rd_en*/ true,

@@ -8,7 +8,7 @@
 #include "sw/ip/clkmgr/dif/dif_clkmgr.h"
 #include "sw/lib/sw/device/base/memory.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -18,7 +18,7 @@ OTTF_DEFINE_TEST_CONFIG();
  */
 static void test_gateable_clocks(const dif_clkmgr_t *clkmgr) {
   for (dif_clkmgr_gateable_clock_t clock = 0;
-       clock <= kTopEarlgreyGateableClocksLast; ++clock) {
+       clock <= kTopDarjeelingGateableClocksLast; ++clock) {
     // Get the initial state of the clock. The clock might be enabled or
     // disabled depending on reset behavior - either is fine for the purposes of
     // this test.
@@ -47,7 +47,7 @@ static void test_gateable_clocks(const dif_clkmgr_t *clkmgr) {
  */
 void test_hintable_clocks(const dif_clkmgr_t *clkmgr) {
   for (dif_clkmgr_hintable_clock_t clock = 0;
-       clock <= kTopEarlgreyHintableClocksLast; ++clock) {
+       clock <= kTopDarjeelingHintableClocksLast; ++clock) {
     // Get the initial state of the hint for the clock The clock hint might be
     // enabled or disabled depending on reset behavior - either is fine for the
     // purposes of this test.
@@ -82,7 +82,7 @@ void test_hintable_clocks(const dif_clkmgr_t *clkmgr) {
 bool test_main(void) {
   dif_clkmgr_t clkmgr;
   CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+      mmio_region_from_addr(TOP_DARJEELING_CLKMGR_AON_BASE_ADDR), &clkmgr));
   test_gateable_clocks(&clkmgr);
   test_hintable_clocks(&clkmgr);
 

@@ -14,7 +14,7 @@
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -38,8 +38,8 @@ OTTF_DEFINE_TEST_CONFIG();
  * the expected and measured values.
  */
 
-/* TOP_EARLGREY_NUM_MIO_PADS */
-/* TOP_EARLGREY_NUM_DIO_PADS */
+/* TOP_DARJEELING_NUM_MIO_PADS */
+/* TOP_DARJEELING_NUM_DIO_PADS */
 
 /* DioOptOut: Some of DIO PADs are input only or does not need to be tested as
  * they are alive in deep powerdown state. This lists out the PADs. Its entry
@@ -101,8 +101,8 @@ typedef enum {
  */
 enum { kNumOptOutMio = 0 };
 
-static uint8_t kMioPads[TOP_EARLGREY_NUM_MIO_PADS] = {0};
-static uint8_t kDioPads[TOP_EARLGREY_NUM_DIO_PADS] = {0};
+static uint8_t kMioPads[TOP_DARJEELING_NUM_MIO_PADS] = {0};
+static uint8_t kDioPads[TOP_DARJEELING_NUM_DIO_PADS] = {0};
 
 // PLIC structures
 static dif_pwrmgr_t pwrmgr;
@@ -110,11 +110,11 @@ static dif_pinmux_t pinmux;
 static dif_rv_plic_t plic;
 
 static plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
-                                  .hart_id = kTopEarlgreyPlicTargetIbex0};
+                                  .hart_id = kTopDarjeelingPlicTargetIbex0};
 
 static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
     .pwrmgr = &pwrmgr,
-    .plic_pwrmgr_start_irq_id = kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
+    .plic_pwrmgr_start_irq_id = kTopDarjeelingPlicIrqIdPwrmgrAonWakeup,
     .expected_irq = kDifPwrmgrIrqWakeup,
     .is_only_irq = true};
 
@@ -123,12 +123,12 @@ static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
  */
 void ottf_external_isr(void) {
   dif_pwrmgr_irq_t irq_id;
-  top_earlgrey_plic_peripheral_t peripheral;
+  top_darjeeling_plic_peripheral_t peripheral;
 
   isr_testutils_pwrmgr_isr(plic_ctx, pwrmgr_isr_ctx, &peripheral, &irq_id);
 
   // Check that both the peripheral and the irq id is correct
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralPwrmgrAon,
+  CHECK(peripheral == kTopDarjeelingPlicPeripheralPwrmgrAon,
         "IRQ peripheral: %d is incorrect", peripheral);
   CHECK(irq_id == kDifPwrmgrIrqWakeup, "IRQ ID: %d is incorrect", irq_id);
 }
@@ -169,10 +169,10 @@ void draw_pinmux_ret(const uint32_t num_pins, uint8_t *arr,
  */
 void print_chosen_values(void) {
   LOG_INFO("BEGIN Chosen Retention Types");
-  for (int i = 0; i < TOP_EARLGREY_NUM_MIO_PADS; ++i) {
+  for (int i = 0; i < TOP_DARJEELING_NUM_MIO_PADS; ++i) {
     LOG_INFO("MIO [%d]: %x", i, kMioPads[i]);
   }
-  for (int i = 0; i < TOP_EARLGREY_NUM_DIO_PADS; ++i) {
+  for (int i = 0; i < TOP_DARJEELING_NUM_DIO_PADS; ++i) {
     LOG_INFO("DIO [%d]: %x", i, kDioPads[i]);
   }
   LOG_INFO("END Chosen Retention Types");
@@ -192,7 +192,7 @@ void configure_pad_retention_types(dif_pinmux_t *pinmux) {
 
   // TODO: for loop of writing values to PINMUX CSRs.
   for (io = 0; io < 2; io++) {
-    max_pads = (io) ? TOP_EARLGREY_NUM_DIO_PADS : TOP_EARLGREY_NUM_MIO_PADS;
+    max_pads = (io) ? TOP_DARJEELING_NUM_DIO_PADS : TOP_DARJEELING_NUM_MIO_PADS;
     pad_kind = (io) ? kDifPinmuxPadKindDio : kDifPinmuxPadKindMio;
     for (int i = 0; i < max_pads; i++) {
       pad_mode = (io) ? (dif_pinmux_sleep_mode_t)(kDioPads[i])
@@ -211,9 +211,9 @@ bool lowpower_prep(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, bool deepsleep) {
 
   LOG_INFO("Selecting PADs retention modes...");
 
-  draw_pinmux_ret(TOP_EARLGREY_NUM_DIO_PADS, kDioPads, kOptOutDio,
+  draw_pinmux_ret(TOP_DARJEELING_NUM_DIO_PADS, kDioPads, kOptOutDio,
                   kNumOptOutDio);
-  draw_pinmux_ret(TOP_EARLGREY_NUM_MIO_PADS, kMioPads, NULL, kNumOptOutMio);
+  draw_pinmux_ret(TOP_DARJEELING_NUM_MIO_PADS, kMioPads, NULL, kNumOptOutMio);
 
   print_chosen_values();
 
@@ -242,11 +242,11 @@ bool test_main(void) {
   irq_external_ctrl(true);
 
   CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+      mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR), &pwrmgr));
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
   CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
+      mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &plic));
 
   if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true) {
     uint32_t deep_powerdown_en = rand_testutils_gen32_range(0, 1);
@@ -256,15 +256,16 @@ bool test_main(void) {
     // disabled for this test. Remove this later.
     dif_pinmux_pad_attr_t out_attr;
     dif_pinmux_pad_attr_t in_attr = {0};
-    CHECK_DIF_OK(dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyMuxedPadsIoc3,
-                                            kDifPinmuxPadKindMio, in_attr,
-                                            &out_attr));
+    CHECK_DIF_OK(
+        dif_pinmux_pad_write_attrs(&pinmux, kTopDarjeelingMuxedPadsIoc3,
+                                   kDifPinmuxPadKindMio, in_attr, &out_attr));
 
     if (!deepsleep) {
       // Enable all the AON interrupts used in this test.
-      rv_plic_testutils_irq_range_enable(&plic, kTopEarlgreyPlicTargetIbex0,
-                                         kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
-                                         kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
+      rv_plic_testutils_irq_range_enable(
+          &plic, kTopDarjeelingPlicTargetIbex0,
+          kTopDarjeelingPlicIrqIdPwrmgrAonWakeup,
+          kTopDarjeelingPlicIrqIdPwrmgrAonWakeup);
       // Enable pwrmgr interrupt
       CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
     }

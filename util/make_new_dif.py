@@ -84,7 +84,7 @@ def main():
     ips = []
 
     # Parse toplevel Hjson to get IPs that are templated / generated with IPgen.
-    topcfg_path = REPO_TOP / "hw/top_earlgrey/data/top_earlgrey.hjson"
+    topcfg_path = REPO_TOP / "hw/top_darjeeling/data/top_darjeeling.hjson"
     if args.topcfg:
         topcfg_path = args.topcfg
     try:

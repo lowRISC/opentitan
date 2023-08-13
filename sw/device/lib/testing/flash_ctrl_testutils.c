@@ -16,7 +16,7 @@
 #include "sw/lib/sw/device/runtime/ibex.h"
 
 #include "flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 status_t flash_ctrl_testutils_wait_for_init(
     dif_flash_ctrl_state_t *flash_state) {
@@ -298,7 +298,7 @@ status_t flash_ctrl_testutils_backdoor_init(
     dif_flash_ctrl_state_t *flash_state) {
   TRY(dif_flash_ctrl_init_state(
       flash_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR)));
 
   return flash_ctrl_testutils_default_region_access(flash_state,
                                                     /*rd_en*/ true,
@@ -313,7 +313,7 @@ status_t flash_ctrl_testutils_backdoor_wait_update(
     dif_flash_ctrl_state_t *flash_state, uintptr_t addr, size_t timeout) {
   static uint32_t data = UINT32_MAX;
   TRY(flash_ctrl_testutils_write(
-      flash_state, (uint32_t)addr - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR, 0,
+      flash_state, (uint32_t)addr - TOP_DARJEELING_FLASH_CTRL_MEM_BASE_ADDR, 0,
       &data, kDifFlashCtrlPartitionTypeData, 1));
   IBEX_TRY_SPIN_FOR(UINT32_MAX != *(uint32_t *)addr, timeout);
   return OK_STATUS();

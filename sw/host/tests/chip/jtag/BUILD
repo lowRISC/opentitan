@@ -12,7 +12,7 @@ rust_binary(
         "src/openocd_test.rs",
     ],
     deps = [
-        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen/chip:top_darjeeling",
         "//sw/host/opentitanlib",
         "//third_party/rust/crates:regex",
         "@crate_index//:anyhow",
@@ -30,7 +30,7 @@ rust_binary(
         "src/sram_load.rs",
     ],
     deps = [
-        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen/chip:top_darjeeling",
         "//sw/host/opentitanlib",
         "//third_party/rust/crates:regex",
         "@crate_index//:anyhow",

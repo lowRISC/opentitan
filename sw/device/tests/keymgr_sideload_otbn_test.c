@@ -17,7 +17,7 @@
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/runtime/print.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otbn_regs.h"  // Generated.
 
 /* Set up pointers to symbols in the OTBN application. */
@@ -158,8 +158,8 @@ bool test_main(void) {
 
   // Initialize OTBN.
   dif_otbn_t otbn;
-  CHECK_DIF_OK(
-      dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+  CHECK_DIF_OK(dif_otbn_init(
+      mmio_region_from_addr(TOP_DARJEELING_OTBN_BASE_ADDR), &otbn));
   // Test OTBN sideloading.
   test_otbn_with_sideloaded_key(&keymgr, &otbn);
 

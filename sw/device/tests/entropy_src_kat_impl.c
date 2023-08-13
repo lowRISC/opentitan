@@ -11,7 +11,7 @@
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"  // Generated.
 
 enum {
   /**

@@ -34,8 +34,8 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-            "//hw/top_earlgrey:alert_handler_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_darjeeling:alert_handler_regs",
+            "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         ],
         host = [
             "//sw/device/silicon_creator/testing:rom_test",
@@ -59,8 +59,8 @@ cc_test(
     srcs = ["alert_unittest.cc"],
     deps = [
         dual_cc_device_library_of(":alert"),
-        "//hw/top_earlgrey:alert_handler_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling:alert_handler_regs",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/lib:crc32",
         "@googletest//:gtest_main",
     ],
@@ -76,14 +76,14 @@ opentitan_functest(
         ":alert",
         ":rstmgr",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//hw/top_earlgrey:alert_handler_regs",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
-        "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling:alert_handler_regs",
+        "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//hw/top_darjeeling/ip/rstmgr/data/autogen:rstmgr_regs",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:abs_mmio",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -95,8 +95,8 @@ cc_library(
         ":lifecycle",
         ":otp",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/ip/sensor_ctrl/data:sensor_ctrl_regs",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/lib:error",
         "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:abs_mmio",
@@ -139,8 +139,8 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
-            "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+            "//hw/top_darjeeling/sw/autogen:top_darjeeling",
             "//sw/device/silicon_creator/lib:error",
             "//sw/device/silicon_creator/lib/base:sec_mmio",
             "//sw/device/silicon_creator/lib/drivers:otp",
@@ -175,7 +175,7 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             "//hw/ip/hmac/data:hmac_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         ],
         host = [
             "//sw/device/silicon_creator/testing:rom_test",
@@ -198,7 +198,7 @@ cc_test(
     deps = [
         dual_cc_device_library_of(":hmac"),
         "//hw/ip/hmac/data:hmac_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/testing:rom_test",
         "//sw/lib/sw/device/base:abs_mmio",
@@ -211,10 +211,10 @@ opentitan_functest(
     srcs = ["hmac_functest.c"],
     deps = [
         ":hmac",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -224,7 +224,7 @@ cc_library(
     hdrs = ["ibex.h"],
     deps = [
         "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:macros",
@@ -248,7 +248,7 @@ cc_library(
     hdrs = ["keymgr.h"],
     deps = [
         "//hw/ip/keymgr/data:keymgr_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:keymgr_binding",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
@@ -278,7 +278,7 @@ opentitan_functest(
         ":lifecycle",
         ":retention_sram",
         "//hw/ip/kmac/data:kmac_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
@@ -289,11 +289,11 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib:keymgr_binding",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
-        "//sw/top_earlgrey/sw/device/runtime:print",
-        "//sw/top_earlgrey/sw/dif:flash_ctrl",
-        "//sw/top_earlgrey/sw/dif:kmac",
-        "//sw/top_earlgrey/sw/dif:otp_ctrl",
-        "//sw/top_earlgrey/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/dif:flash_ctrl",
+        "//sw/top_darjeeling/sw/dif:kmac",
+        "//sw/top_darjeeling/sw/dif:otp_ctrl",
+        "//sw/top_darjeeling/sw/dif:rstmgr",
     ],
 )
 
@@ -303,7 +303,7 @@ cc_library(
     hdrs = ["kmac.h"],
     deps = [
         "//hw/ip/kmac/data:kmac_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/lib:error",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:macros",
@@ -328,11 +328,11 @@ opentitan_functest(
     ),
     deps = [
         ":kmac",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -349,7 +349,7 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         ],
         host = [
             "//sw/lib/sw/device/base:global_mock",
@@ -371,7 +371,7 @@ cc_test(
     deps = [
         dual_cc_device_library_of(":lifecycle"),
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
@@ -383,7 +383,7 @@ cc_library(
     hdrs = ["otbn.h"],
     deps = [
         "//hw/ip/otbn/data:otbn_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:rnd",
@@ -415,7 +415,7 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         ],
         host = [
             "//sw/device/silicon_creator/testing:rom_test",
@@ -446,8 +446,8 @@ cc_library(
     hdrs = ["pinmux.h"],
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/ip/pinmux/data/autogen:pinmux_regs",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/lib/sw/device/base:abs_mmio",
@@ -462,7 +462,7 @@ cc_test(
     srcs = ["pinmux_unittest.cc"],
     deps = [
         ":pinmux",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/arch:sim_dv",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/testing:rom_test",
@@ -479,7 +479,7 @@ cc_library(
     hdrs = ["retention_sram.h"],
     deps = [
         "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/lib:error",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:macros",
@@ -492,7 +492,7 @@ cc_test(
     srcs = ["retention_sram_unittest.cc"],
     deps = [
         ":retention_sram",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/testing:rom_test",
         "//sw/lib/sw/device/base:abs_mmio",
         "@googletest//:gtest_main",
@@ -507,12 +507,12 @@ opentitan_functest(
     ),
     deps = [
         ":retention_sram",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/base:memory",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -532,7 +532,7 @@ dual_cc_library(
             "//hw/ip/entropy_src/data:entropy_src_regs",
             "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
             "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_darjeeling/sw/autogen:top_darjeeling",
             "//sw/device/silicon_creator/lib:crc32",
             "//sw/lib/sw/device/base:csr",
             "//sw/lib/sw/device/base:abs_mmio",
@@ -559,7 +559,7 @@ cc_test(
         ":otp",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/testing:rom_test",
         "//sw/lib/sw/device/base:abs_mmio",
@@ -574,14 +574,14 @@ opentitan_functest(
     deps = [
         ":otp",
         ":rnd",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:crc32",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/top_earlgrey/sw/device/runtime:print",
-        "//sw/top_earlgrey/sw/dif:entropy_src",
+        "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/dif:entropy_src",
     ],
 )
 
@@ -597,8 +597,8 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_darjeeling/ip/rstmgr/data/autogen:rstmgr_regs",
+            "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         ],
         host = [
             "//sw/device/silicon_creator/testing:rom_test",
@@ -638,7 +638,7 @@ opentitan_functest(
         ":rstmgr",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -648,7 +648,7 @@ cc_library(
     hdrs = ["uart.h"],
     deps = [
         "//hw/ip/uart/data:uart_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/lib:error",
         "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:abs_mmio",
@@ -661,7 +661,7 @@ cc_test(
     srcs = ["uart_unittest.cc"],
     deps = [
         ":uart",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/testing:rom_test",
         "//sw/lib/sw/device/base:abs_mmio",
         "@googletest//:gtest_main",
@@ -673,10 +673,10 @@ opentitan_functest(
     srcs = ["uart_functest.c"],
     deps = [
         ":uart",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -687,8 +687,8 @@ cc_library(
     deps = [
         "//hw/ip/aon_timer/data:aon_timer_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/ip/pwrmgr/data/autogen:pwrmgr_regs",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
@@ -703,7 +703,7 @@ cc_test(
         ":watchdog",
         "//hw/ip/aon_timer/data:aon_timer_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/testing:rom_test",
@@ -722,13 +722,13 @@ opentitan_functest(
         ":retention_sram",
         ":rstmgr",
         ":watchdog",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/lib/sw/device/base:abs_mmio",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -744,9 +744,9 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+            "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
             "//hw/ip/spi_device/data:spi_device_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         ],
         host = [
             "//sw/device/silicon_creator/testing:rom_test",
@@ -770,7 +770,7 @@ cc_test(
     deps = [
         dual_cc_device_library_of(":spi_device"),
         "//hw/ip/spi_device/data:spi_device_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/testing:rom_test",
         "//sw/lib/sw/device/base:abs_mmio",
@@ -783,8 +783,8 @@ cc_library(
     srcs = ["pwrmgr.c"],
     hdrs = ["pwrmgr.h"],
     deps = [
-        "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/ip/pwrmgr/data/autogen:pwrmgr_regs",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/lib/sw/device/base:abs_mmio",
     ],

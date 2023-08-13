@@ -8,7 +8,7 @@
 #include "sw/lib/sw/device/base/csr.h"
 #include "sw/lib/sw/device/base/memory.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 // Symbols defined in linker script.
 extern char _stack_start[];  // Lowest stack address.
@@ -17,17 +17,17 @@ extern char _text_end[];     // End of executable code.
 
 // Note: Hardcoding these values since the way we generate this range is not
 // very robust at the moment. See #14345 and #14336.
-static_assert(TOP_EARLGREY_MMIO_BASE_ADDR == 0x40000000,
+static_assert(TOP_DARJEELING_MMIO_BASE_ADDR == 0x40000000,
               "MMIO region changed, update ePMP configuration if needed");
-static_assert(TOP_EARLGREY_MMIO_SIZE_BYTES == 0x10000000,
+static_assert(TOP_DARJEELING_MMIO_SIZE_BYTES == 0x10000000,
               "MMIO region changed, update ePMP configuration if needed");
 
-static_assert(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR >=
-                      TOP_EARLGREY_MMIO_BASE_ADDR &&
-                  TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +
-                          TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES <
-                      TOP_EARLGREY_MMIO_BASE_ADDR +
-                          TOP_EARLGREY_MMIO_SIZE_BYTES,
+static_assert(TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR >=
+                      TOP_DARJEELING_MMIO_BASE_ADDR &&
+                  TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +
+                          TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES <
+                      TOP_DARJEELING_MMIO_BASE_ADDR +
+                          TOP_DARJEELING_MMIO_SIZE_BYTES,
               "Retention SRAM must be in the MMIO address space.");
 
 void rom_epmp_state_init(lifecycle_state_t lc_state) {
@@ -37,23 +37,23 @@ void rom_epmp_state_init(lifecycle_state_t lc_state) {
   // grows downward from _stack_end.
   const epmp_region_t rom_text = {.start = (uintptr_t)_text_start,
                                   .end = (uintptr_t)_text_end};
-  const epmp_region_t rom = {.start = TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR,
-                             .end = TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR +
-                                    TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES};
-  const epmp_region_t eflash = {
-      .start = TOP_EARLGREY_EFLASH_BASE_ADDR,
-      .end = TOP_EARLGREY_EFLASH_BASE_ADDR + TOP_EARLGREY_EFLASH_SIZE_BYTES};
+  const epmp_region_t rom = {.start = TOP_DARJEELING_ROM_CTRL_ROM_BASE_ADDR,
+                             .end = TOP_DARJEELING_ROM_CTRL_ROM_BASE_ADDR +
+                                    TOP_DARJEELING_ROM_CTRL_ROM_SIZE_BYTES};
+  const epmp_region_t eflash = {.start = TOP_DARJEELING_EFLASH_BASE_ADDR,
+                                .end = TOP_DARJEELING_EFLASH_BASE_ADDR +
+                                       TOP_DARJEELING_EFLASH_SIZE_BYTES};
   const epmp_region_t mmio = {
-      .start = TOP_EARLGREY_MMIO_BASE_ADDR,
-      .end = TOP_EARLGREY_MMIO_BASE_ADDR + TOP_EARLGREY_MMIO_SIZE_BYTES};
-  const epmp_region_t debug_rom = {.start = TOP_EARLGREY_RV_DM_MEM_BASE_ADDR,
-                                   .end = TOP_EARLGREY_RV_DM_MEM_BASE_ADDR +
-                                          TOP_EARLGREY_RV_DM_MEM_SIZE_BYTES};
+      .start = TOP_DARJEELING_MMIO_BASE_ADDR,
+      .end = TOP_DARJEELING_MMIO_BASE_ADDR + TOP_DARJEELING_MMIO_SIZE_BYTES};
+  const epmp_region_t debug_rom = {.start = TOP_DARJEELING_RV_DM_MEM_BASE_ADDR,
+                                   .end = TOP_DARJEELING_RV_DM_MEM_BASE_ADDR +
+                                          TOP_DARJEELING_RV_DM_MEM_SIZE_BYTES};
   const epmp_region_t stack_guard = {.start = (uintptr_t)_stack_start,
                                      .end = (uintptr_t)_stack_start + 4};
-  const epmp_region_t ram = {.start = TOP_EARLGREY_RAM_MAIN_BASE_ADDR,
-                             .end = TOP_EARLGREY_RAM_MAIN_BASE_ADDR +
-                                    TOP_EARLGREY_RAM_MAIN_SIZE_BYTES};
+  const epmp_region_t ram = {.start = TOP_DARJEELING_RAM_MAIN_BASE_ADDR,
+                             .end = TOP_DARJEELING_RAM_MAIN_BASE_ADDR +
+                                    TOP_DARJEELING_RAM_MAIN_SIZE_BYTES};
 
   epmp_perm_t debug_rom_access = kEpmpPermLockedNoAccess;
   switch (launder32(lc_state)) {
@@ -143,8 +143,8 @@ void rom_epmp_unlock_rom_ext_r(epmp_region_t region) {
 }
 
 void rom_epmp_config_debug_rom(lifecycle_state_t lc_state) {
-  const uint32_t pmpaddr = (TOP_EARLGREY_RV_DM_MEM_BASE_ADDR >> 2) |
-                           ((TOP_EARLGREY_RV_DM_MEM_SIZE_BYTES - 1) >> 3);
+  const uint32_t pmpaddr = (TOP_DARJEELING_RV_DM_MEM_BASE_ADDR >> 2) |
+                           ((TOP_DARJEELING_RV_DM_MEM_SIZE_BYTES - 1) >> 3);
   // Update the hardware configuration (CSRs).
   //
   // Entry is hardcoded as 13. Make sure to modify hardcoded values if changing

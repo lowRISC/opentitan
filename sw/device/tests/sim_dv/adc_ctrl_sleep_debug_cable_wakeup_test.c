@@ -15,7 +15,7 @@
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -60,20 +60,20 @@ static volatile bool interrupt_serviced = false;
 
 void ottf_external_isr(void) {
   plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
-                             .hart_id = kTopEarlgreyPlicTargetIbex0};
+                             .hart_id = kTopDarjeelingPlicTargetIbex0};
 
   adc_ctrl_isr_ctx_t adc_ctrl_ctx = {
       .adc_ctrl = &adc_ctrl,
-      .plic_adc_ctrl_start_irq_id = kTopEarlgreyPlicIrqIdAdcCtrlAonMatchDone,
+      .plic_adc_ctrl_start_irq_id = kTopDarjeelingPlicIrqIdAdcCtrlAonMatchDone,
       .expected_irq = 0,
       .is_only_irq = true};
 
-  top_earlgrey_plic_peripheral_t peripheral;
+  top_darjeeling_plic_peripheral_t peripheral;
   dif_adc_ctrl_irq_t adc_ctrl_irq;
   isr_testutils_adc_ctrl_isr(plic_ctx, adc_ctrl_ctx, &peripheral,
                              &adc_ctrl_irq);
 
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralAdcCtrlAon);
+  CHECK(peripheral == kTopDarjeelingPlicPeripheralAdcCtrlAon);
   CHECK(adc_ctrl_irq == kDifAdcCtrlIrqMatchDone);
   interrupt_serviced = true;
 
@@ -82,12 +82,12 @@ void ottf_external_isr(void) {
 }
 
 static void en_plic_irqs(dif_rv_plic_t *plic) {
-  top_earlgrey_plic_irq_id_t plic_irqs[] = {
-      kTopEarlgreyPlicIrqIdAdcCtrlAonMatchDone};
+  top_darjeeling_plic_irq_id_t plic_irqs[] = {
+      kTopDarjeelingPlicIrqIdAdcCtrlAonMatchDone};
 
   for (uint32_t i = 0; i < ARRAYSIZE(plic_irqs); ++i) {
     CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-        plic, plic_irqs[i], kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
+        plic, plic_irqs[i], kTopDarjeelingPlicTargetIbex0, kDifToggleEnabled));
 
     // Assign a default priority
     CHECK_DIF_OK(dif_rv_plic_irq_set_priority(plic, plic_irqs[i], 0x1));
@@ -103,13 +103,13 @@ bool test_main(void) {
   dif_rstmgr_t rstmgr;
 
   CHECK_DIF_OK(dif_adc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR), &adc_ctrl));
+      mmio_region_from_addr(TOP_DARJEELING_ADC_CTRL_AON_BASE_ADDR), &adc_ctrl));
   CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+      mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR), &pwrmgr));
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR), &rstmgr));
   CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
+      mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &plic));
 
   // Enable adc interrupts.
   CHECK_DIF_OK(dif_adc_ctrl_irq_set_enabled(&adc_ctrl, kDifAdcCtrlIrqMatchDone,

@@ -11,7 +11,7 @@
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 #define TIMEOUT (1000 * 1000)
 
@@ -100,7 +100,7 @@ bool test_main(void) {
 
   // Initialise AES.
   CHECK_DIF_OK(
-      dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
+      dif_aes_init(mmio_region_from_addr(TOP_DARJEELING_AES_BASE_ADDR), &aes));
   CHECK_DIF_OK(dif_aes_reset(&aes));
 
   return status_ok(execute_test(&aes));

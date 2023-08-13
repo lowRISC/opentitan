@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/epmp_defs.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling_memory.h"
 
 /**
  * Helper macro to move v into the correct position to set the pmp{N*4+i}cfg
@@ -62,7 +62,7 @@ rom_epmp_init:
   csrw pmpaddr1, t0
 
   // ROM
-  li   t0, NAPOT(TOP_EARLGREY_ROM_BASE_ADDR, TOP_EARLGREY_ROM_SIZE_BYTES)
+  li   t0, NAPOT(TOP_DARJEELING_ROM_BASE_ADDR, TOP_DARJEELING_ROM_SIZE_BYTES)
   csrw pmpaddr2, t0
 
   // ROM_EXT TEXT (configured after signature verification)
@@ -70,17 +70,17 @@ rom_epmp_init:
   csrw pmpaddr4, zero // ROM_EXT TEXT high
 
   // eFLASH
-  li   t0, NAPOT(TOP_EARLGREY_EFLASH_BASE_ADDR, TOP_EARLGREY_EFLASH_SIZE_BYTES)
+  li   t0, NAPOT(TOP_DARJEELING_EFLASH_BASE_ADDR, TOP_DARJEELING_EFLASH_SIZE_BYTES)
   csrw pmpaddr5, t0
 
   // MMIO
-  li   t0, TOR(TOP_EARLGREY_MMIO_BASE_ADDR)
+  li   t0, TOR(TOP_DARJEELING_MMIO_BASE_ADDR)
   csrw pmpaddr10, t0
-  li   t0, TOR(TOP_EARLGREY_MMIO_BASE_ADDR + TOP_EARLGREY_MMIO_SIZE_BYTES)
+  li   t0, TOR(TOP_DARJEELING_MMIO_BASE_ADDR + TOP_DARJEELING_MMIO_SIZE_BYTES)
   csrw pmpaddr11, t0
 
   // Debug ROM
-  li   t0, NAPOT(TOP_EARLGREY_RV_DM_MEM_BASE_ADDR, TOP_EARLGREY_RV_DM_MEM_SIZE_BYTES)
+  li   t0, NAPOT(TOP_DARJEELING_RV_DM_MEM_BASE_ADDR, TOP_DARJEELING_RV_DM_MEM_SIZE_BYTES)
   csrw pmpaddr13, t0
 
   // Stack guard
@@ -88,7 +88,7 @@ rom_epmp_init:
   csrw pmpaddr14, t0
 
   // RAM
-  li   t0, NAPOT(TOP_EARLGREY_RAM_MAIN_BASE_ADDR, TOP_EARLGREY_RAM_MAIN_SIZE_BYTES)
+  li   t0, NAPOT(TOP_DARJEELING_RAM_MAIN_BASE_ADDR, TOP_DARJEELING_RAM_MAIN_SIZE_BYTES)
   csrw pmpaddr15, t0
 
   // Set PMP configuration registers.

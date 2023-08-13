@@ -16,7 +16,7 @@
 #include "sw/lib/sw/device/runtime/ibex.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "i2c_regs.h"  // Generated.
 
 enum {
@@ -32,10 +32,10 @@ static const dif_i2c_fmt_flags_t kDefaultFlags = {.start = false,
                                                   .suppress_nak_irq = false};
 
 typedef struct i2c_pinmux_map {
-  const top_earlgrey_pinmux_mio_out_t mio_out;
-  const top_earlgrey_pinmux_insel_t insel;
-  const top_earlgrey_pinmux_peripheral_in_t peripheral_in;
-  const top_earlgrey_pinmux_outsel_t outsel;
+  const top_darjeeling_pinmux_mio_out_t mio_out;
+  const top_darjeeling_pinmux_insel_t insel;
+  const top_darjeeling_pinmux_peripheral_in_t peripheral_in;
+  const top_darjeeling_pinmux_outsel_t outsel;
 } i2c_pinmux_map_t;
 
 typedef struct i2c_pinmux_conf {
@@ -47,47 +47,47 @@ static const i2c_pinmux_conf_t pinmux_conf[] = {
     // I2C0.
     {.sda =
          {
-             .mio_out = kTopEarlgreyPinmuxMioOutIoa7,
-             .insel = kTopEarlgreyPinmuxInselIoa7,
-             .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c0Sda,
-             .outsel = kTopEarlgreyPinmuxOutselI2c0Sda,
+             .mio_out = kTopDarjeelingPinmuxMioOutIoa7,
+             .insel = kTopDarjeelingPinmuxInselIoa7,
+             .peripheral_in = kTopDarjeelingPinmuxPeripheralInI2c0Sda,
+             .outsel = kTopDarjeelingPinmuxOutselI2c0Sda,
          },
      .scl =
          {
-             .mio_out = kTopEarlgreyPinmuxMioOutIoa8,
-             .insel = kTopEarlgreyPinmuxInselIoa8,
-             .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c0Scl,
-             .outsel = kTopEarlgreyPinmuxOutselI2c0Scl,
+             .mio_out = kTopDarjeelingPinmuxMioOutIoa8,
+             .insel = kTopDarjeelingPinmuxInselIoa8,
+             .peripheral_in = kTopDarjeelingPinmuxPeripheralInI2c0Scl,
+             .outsel = kTopDarjeelingPinmuxOutselI2c0Scl,
          }},
     // I2C1.
     {.sda =
          {
-             .mio_out = kTopEarlgreyPinmuxMioOutIob10,
-             .insel = kTopEarlgreyPinmuxInselIob10,
-             .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c1Sda,
-             .outsel = kTopEarlgreyPinmuxOutselI2c1Sda,
+             .mio_out = kTopDarjeelingPinmuxMioOutIob10,
+             .insel = kTopDarjeelingPinmuxInselIob10,
+             .peripheral_in = kTopDarjeelingPinmuxPeripheralInI2c1Sda,
+             .outsel = kTopDarjeelingPinmuxOutselI2c1Sda,
          },
      .scl =
          {
-             .mio_out = kTopEarlgreyPinmuxMioOutIob9,
-             .insel = kTopEarlgreyPinmuxInselIob9,
-             .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c1Scl,
-             .outsel = kTopEarlgreyPinmuxOutselI2c1Scl,
+             .mio_out = kTopDarjeelingPinmuxMioOutIob9,
+             .insel = kTopDarjeelingPinmuxInselIob9,
+             .peripheral_in = kTopDarjeelingPinmuxPeripheralInI2c1Scl,
+             .outsel = kTopDarjeelingPinmuxOutselI2c1Scl,
          }},
     // I2C2.
     {.sda =
          {
-             .mio_out = kTopEarlgreyPinmuxMioOutIob12,
-             .insel = kTopEarlgreyPinmuxInselIob12,
-             .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c2Sda,
-             .outsel = kTopEarlgreyPinmuxOutselI2c2Sda,
+             .mio_out = kTopDarjeelingPinmuxMioOutIob12,
+             .insel = kTopDarjeelingPinmuxInselIob12,
+             .peripheral_in = kTopDarjeelingPinmuxPeripheralInI2c2Sda,
+             .outsel = kTopDarjeelingPinmuxOutselI2c2Sda,
          },
      .scl =
          {
-             .mio_out = kTopEarlgreyPinmuxMioOutIob11,
-             .insel = kTopEarlgreyPinmuxInselIob11,
-             .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c2Scl,
-             .outsel = kTopEarlgreyPinmuxOutselI2c2Scl,
+             .mio_out = kTopDarjeelingPinmuxMioOutIob11,
+             .insel = kTopDarjeelingPinmuxInselIob11,
+             .peripheral_in = kTopDarjeelingPinmuxPeripheralInI2c2Scl,
+             .outsel = kTopDarjeelingPinmuxOutselI2c2Scl,
          }},
 };
 

@@ -11,7 +11,7 @@
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
 #include "sw/lib/sw/device/base/status.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 /**
  * Default pinmux initialization.
@@ -22,7 +22,7 @@
  *
  * Also ensures IOR0 and IOR1 outputs are disabled, for use as USB sense inputs.
  *
- * This function is specific to top_earlgrey and top_englishbreakfast.
+ * This function is specific to top_darjeeling and top_englishbreakfast.
  */
 void pinmux_testutils_init(dif_pinmux_t *pinmux);
 
@@ -58,14 +58,14 @@ uint32_t pinmux_testutils_get_testable_gpios_mask(void);
  */
 uint32_t pinmux_testutils_read_strap_pin(dif_pinmux_t *pinmux, dif_gpio_t *gpio,
                                          dif_gpio_pin_t io,
-                                         top_earlgrey_muxed_pads_t pad);
+                                         top_darjeeling_muxed_pads_t pad);
 
 /**
  * Reads the OpenTitan sw strap pins for the strap configuration value.
  *
  * The value returned is the combination of 2-bit values returned from
  * [IOC2, IOC1, IOC0] and ranges from [0..63].
- * This function assumes the Earlgrey configuration where the external
+ * This function assumes the Darjeeling configuration where the external
  * pads IOC{0,1,2} are used as software straps and that the pinmux is
  * configured to map those pads to GPIOs 22, 23 and 24.
  *

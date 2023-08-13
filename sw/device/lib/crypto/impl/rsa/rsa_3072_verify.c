@@ -11,7 +11,7 @@
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/base/memory.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('r', '3', 'v')

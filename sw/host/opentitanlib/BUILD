@@ -193,7 +193,7 @@ rust_library(
     ] + select({
         "//sw/device:is_english_breakfast": [],
         "//conditions:default": [
-            "src/chip/autogen/earlgrey.rs",
+            "src/chip/autogen/darjeeling.rs",
             "src/test_utils/pinmux_config.rs",
         ],
     }),
@@ -226,7 +226,7 @@ rust_library(
         "hyperdebug_firmware": "$(location @hyperdebug_firmware//:hyperdebug/ec.bin)",
     },
     deps = [
-        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen/chip:top_darjeeling",
         "//sw/host/opentitanlib/bindgen",
         "@crate_index//:anyhow",
         "@crate_index//:arrayvec",

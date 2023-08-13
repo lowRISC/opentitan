@@ -12,7 +12,7 @@ rust_binary(
         "src/main.rs",
     ],
     deps = [
-        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen/chip:top_darjeeling",
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
         "@crate_index//:log",

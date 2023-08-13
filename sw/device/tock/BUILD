@@ -42,27 +42,27 @@ filegroup(
 )
 
 filegroup(
-    name = "earlgrey_defs",
+    name = "darjeeling_defs",
     srcs = [
-        "//hw/top_earlgrey:alert_handler_regs",
-        "//hw/top_earlgrey:rv_plic_regs",
-        "//hw/top_earlgrey/ip/ast/data:ast_regs",
-        "//hw/top_earlgrey/ip/clkmgr/data/autogen:clkmgr_regs",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
-        "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_regs",
-        "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
-        "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
-        "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
+        "//hw/top_darjeeling:alert_handler_regs",
+        "//hw/top_darjeeling:rv_plic_regs",
+        "//hw/top_darjeeling/ip/ast/data:ast_regs",
+        "//hw/top_darjeeling/ip/clkmgr/data/autogen:clkmgr_regs",
+        "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//hw/top_darjeeling/ip/pinmux/data/autogen:pinmux_regs",
+        "//hw/top_darjeeling/ip/pwrmgr/data/autogen:pwrmgr_regs",
+        "//hw/top_darjeeling/ip/rstmgr/data/autogen:rstmgr_regs",
+        "//hw/top_darjeeling/ip/sensor_ctrl/data:sensor_ctrl_regs",
     ],
     output_group = "tock",
 )
 
 filegroup(
-    name = "earlgrey_top_defs",
+    name = "darjeeling_top_defs",
     srcs = [
-        "//hw/top_earlgrey/sw/autogen/chip:mod.rs",
-        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey.rs",
-        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey_memory.rs",
+        "//hw/top_darjeeling/sw/autogen/chip:mod.rs",
+        "//hw/top_darjeeling/sw/autogen/chip:top_darjeeling.rs",
+        "//hw/top_darjeeling/sw/autogen/chip:top_darjeeling_memory.rs",
     ],
 )
 
@@ -74,15 +74,15 @@ pkg_tar(
 )
 
 pkg_tar(
-    name = "tock_earlgrey_registers",
-    srcs = [":earlgrey_defs"],
+    name = "tock_darjeeling_registers",
+    srcs = [":darjeeling_defs"],
     mode = "0644",
-    package_dir = "chips/earlgrey/src/registers",
+    package_dir = "chips/darjeeling/src/registers",
 )
 
 pkg_tar(
-    name = "tock_earlgrey_top",
-    srcs = [":earlgrey_top_defs"],
+    name = "tock_darjeeling_top",
+    srcs = [":darjeeling_top_defs"],
     mode = "0644",
-    package_dir = "chips/earlgrey/src/top",
+    package_dir = "chips/darjeeling/src/top",
 )

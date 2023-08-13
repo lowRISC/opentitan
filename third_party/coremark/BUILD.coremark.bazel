@@ -22,6 +22,6 @@ cc_library(
     ],
     includes = ["."],
     deps = [
-        "@lowrisc_opentitan//third_party/coremark/top_earlgrey:core_portme",
+        "@lowrisc_opentitan//third_party/coremark/top_darjeeling:core_portme",
     ],
 )

@@ -28,7 +28,7 @@
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/runtime/print.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"  // Generated.
 
 // Number of streams to be tested
 #ifndef NUM_STREAMS
@@ -190,11 +190,11 @@ bool test_main(void) {
   LOG_INFO(" - %u stream(s), 0x%x bytes each", nstreams, transfer_bytes);
 
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
   pinmux_testutils_init(&pinmux);
   CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInUsbdevSense,
-      kTopEarlgreyPinmuxInselIoc7));
+      &pinmux, kTopDarjeelingPinmuxPeripheralInUsbdevSense,
+      kTopDarjeelingPinmuxInselIoc7));
 
   // Construct the test/stream flags to be used
   test_flags = (sending ? kUsbdevStreamFlagRetrieve : 0U) |

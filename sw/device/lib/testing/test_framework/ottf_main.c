@@ -28,7 +28,7 @@
 #include "sw/lib/sw/device/runtime/log.h"
 
 // TODO: make this toplevel agnostic.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 // Check layout of test configuration struct since OTTF ISR asm code requires a
 // specific layout.
@@ -133,7 +133,7 @@ void _ottf_main(void) {
   // tests with a source of entropy for randomizing test behaviors.
   dif_rv_core_ibex_t rv_core_ibex;
   CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      mmio_region_from_addr(TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
   rand_testutils_rng_ctx = rand_testutils_init(&rv_core_ibex);
 

@@ -11,7 +11,7 @@ ld_library(
     name = "sram_program_linker_script",
     script = "sram_program.ld",
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling_memory",
         "//sw/device:info_sections",
         "//sw/device/silicon_creator/lib/base:static_critical_sections",
     ],
@@ -28,13 +28,13 @@ opentitan_ram_binary(
     archive_symbol_prefix = "sram_program",
     deps = [
         ":sram_program_linker_script",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )

@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 exports_files([
+    "lowrisc-darjeeling.cfg",
+    "lowrisc-darjeeling-lc.cfg",
     "lowrisc-earlgrey.cfg",
     "lowrisc-earlgrey-lc.cfg",
 ])

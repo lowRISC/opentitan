@@ -9,7 +9,7 @@
 #include "sw/lib/sw/device/base/bitfield.h"
 #include "sw/lib/sw/device/base/memory.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "kmac_regs.h"  // Generated.
 
 // Module ID for status codes.
@@ -56,7 +56,7 @@ typedef enum kmac_key_length {
 
 enum {
   kKmacPrefixRegCount = 4 * KMAC_PREFIX_MULTIREG_COUNT,
-  kKmacBaseAddr = TOP_EARLGREY_KMAC_BASE_ADDR,
+  kKmacBaseAddr = TOP_DARJEELING_KMAC_BASE_ADDR,
   kKmacCfgAddr = kKmacBaseAddr + KMAC_CFG_SHADOWED_REG_OFFSET,
   kKmacKeyShare0Addr = kKmacBaseAddr + KMAC_KEY_SHARE0_0_REG_OFFSET,
   kKmacKeyShare1Addr = kKmacBaseAddr + KMAC_KEY_SHARE1_0_REG_OFFSET,

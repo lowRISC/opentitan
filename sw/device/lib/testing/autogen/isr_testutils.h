@@ -40,7 +40,7 @@
 #include "sw/ip/usbdev/dif/dif_usbdev.h"
 #include "sw/lib/sw/device/arch/device.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 /**
  * A handle to a PLIC ISR context struct.
@@ -595,7 +595,7 @@ typedef struct usbdev_isr_ctx {
  */
 void isr_testutils_adc_ctrl_isr(
     plic_isr_ctx_t plic_ctx, adc_ctrl_isr_ctx_t adc_ctrl_ctx,
-    top_earlgrey_plic_peripheral_t *peripheral_serviced,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
     dif_adc_ctrl_irq_t *irq_serviced);
 
 /**
@@ -609,7 +609,7 @@ void isr_testutils_adc_ctrl_isr(
  */
 void isr_testutils_alert_handler_isr(
     plic_isr_ctx_t plic_ctx, alert_handler_isr_ctx_t alert_handler_ctx,
-    top_earlgrey_plic_peripheral_t *peripheral_serviced,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
     dif_alert_handler_irq_t *irq_serviced);
 
 /**
@@ -623,7 +623,7 @@ void isr_testutils_alert_handler_isr(
  */
 void isr_testutils_aon_timer_isr(
     plic_isr_ctx_t plic_ctx, aon_timer_isr_ctx_t aon_timer_ctx,
-    top_earlgrey_plic_peripheral_t *peripheral_serviced,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
     dif_aon_timer_irq_t *irq_serviced);
 
 /**
@@ -637,7 +637,7 @@ void isr_testutils_aon_timer_isr(
  */
 void isr_testutils_csrng_isr(
     plic_isr_ctx_t plic_ctx, csrng_isr_ctx_t csrng_ctx,
-    top_earlgrey_plic_peripheral_t *peripheral_serviced,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
     dif_csrng_irq_t *irq_serviced);
 
 /**
@@ -649,9 +649,10 @@ void isr_testutils_csrng_isr(
  * serviced.
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
-void isr_testutils_dma_isr(plic_isr_ctx_t plic_ctx, dma_isr_ctx_t dma_ctx,
-                           top_earlgrey_plic_peripheral_t *peripheral_serviced,
-                           dif_dma_irq_t *irq_serviced);
+void isr_testutils_dma_isr(
+    plic_isr_ctx_t plic_ctx, dma_isr_ctx_t dma_ctx,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
+    dif_dma_irq_t *irq_serviced);
 
 /**
  * Services an edn IRQ.
@@ -662,9 +663,10 @@ void isr_testutils_dma_isr(plic_isr_ctx_t plic_ctx, dma_isr_ctx_t dma_ctx,
  * serviced.
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
-void isr_testutils_edn_isr(plic_isr_ctx_t plic_ctx, edn_isr_ctx_t edn_ctx,
-                           top_earlgrey_plic_peripheral_t *peripheral_serviced,
-                           dif_edn_irq_t *irq_serviced);
+void isr_testutils_edn_isr(
+    plic_isr_ctx_t plic_ctx, edn_isr_ctx_t edn_ctx,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
+    dif_edn_irq_t *irq_serviced);
 
 /**
  * Services an entropy_src IRQ.
@@ -677,7 +679,7 @@ void isr_testutils_edn_isr(plic_isr_ctx_t plic_ctx, edn_isr_ctx_t edn_ctx,
  */
 void isr_testutils_entropy_src_isr(
     plic_isr_ctx_t plic_ctx, entropy_src_isr_ctx_t entropy_src_ctx,
-    top_earlgrey_plic_peripheral_t *peripheral_serviced,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
     dif_entropy_src_irq_t *irq_serviced);
 
 /**
@@ -691,7 +693,7 @@ void isr_testutils_entropy_src_isr(
  */
 void isr_testutils_flash_ctrl_isr(
     plic_isr_ctx_t plic_ctx, flash_ctrl_isr_ctx_t flash_ctrl_ctx,
-    top_earlgrey_plic_peripheral_t *peripheral_serviced,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
     dif_flash_ctrl_irq_t *irq_serviced);
 
 /**
@@ -703,9 +705,10 @@ void isr_testutils_flash_ctrl_isr(
  * serviced.
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
-void isr_testutils_gpio_isr(plic_isr_ctx_t plic_ctx, gpio_isr_ctx_t gpio_ctx,
-                            top_earlgrey_plic_peripheral_t *peripheral_serviced,
-                            dif_gpio_irq_t *irq_serviced);
+void isr_testutils_gpio_isr(
+    plic_isr_ctx_t plic_ctx, gpio_isr_ctx_t gpio_ctx,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
+    dif_gpio_irq_t *irq_serviced);
 
 /**
  * Services an hmac IRQ.
@@ -716,9 +719,10 @@ void isr_testutils_gpio_isr(plic_isr_ctx_t plic_ctx, gpio_isr_ctx_t gpio_ctx,
  * serviced.
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
-void isr_testutils_hmac_isr(plic_isr_ctx_t plic_ctx, hmac_isr_ctx_t hmac_ctx,
-                            top_earlgrey_plic_peripheral_t *peripheral_serviced,
-                            dif_hmac_irq_t *irq_serviced);
+void isr_testutils_hmac_isr(
+    plic_isr_ctx_t plic_ctx, hmac_isr_ctx_t hmac_ctx,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
+    dif_hmac_irq_t *irq_serviced);
 
 /**
  * Services an i2c IRQ.
@@ -729,9 +733,10 @@ void isr_testutils_hmac_isr(plic_isr_ctx_t plic_ctx, hmac_isr_ctx_t hmac_ctx,
  * serviced.
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
-void isr_testutils_i2c_isr(plic_isr_ctx_t plic_ctx, i2c_isr_ctx_t i2c_ctx,
-                           top_earlgrey_plic_peripheral_t *peripheral_serviced,
-                           dif_i2c_irq_t *irq_serviced);
+void isr_testutils_i2c_isr(
+    plic_isr_ctx_t plic_ctx, i2c_isr_ctx_t i2c_ctx,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
+    dif_i2c_irq_t *irq_serviced);
 
 /**
  * Services an keymgr IRQ.
@@ -744,7 +749,7 @@ void isr_testutils_i2c_isr(plic_isr_ctx_t plic_ctx, i2c_isr_ctx_t i2c_ctx,
  */
 void isr_testutils_keymgr_isr(
     plic_isr_ctx_t plic_ctx, keymgr_isr_ctx_t keymgr_ctx,
-    top_earlgrey_plic_peripheral_t *peripheral_serviced,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
     dif_keymgr_irq_t *irq_serviced);
 
 /**
@@ -756,9 +761,10 @@ void isr_testutils_keymgr_isr(
  * serviced.
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
-void isr_testutils_kmac_isr(plic_isr_ctx_t plic_ctx, kmac_isr_ctx_t kmac_ctx,
-                            top_earlgrey_plic_peripheral_t *peripheral_serviced,
-                            dif_kmac_irq_t *irq_serviced);
+void isr_testutils_kmac_isr(
+    plic_isr_ctx_t plic_ctx, kmac_isr_ctx_t kmac_ctx,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
+    dif_kmac_irq_t *irq_serviced);
 
 /**
  * Services an otbn IRQ.
@@ -769,9 +775,10 @@ void isr_testutils_kmac_isr(plic_isr_ctx_t plic_ctx, kmac_isr_ctx_t kmac_ctx,
  * serviced.
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
-void isr_testutils_otbn_isr(plic_isr_ctx_t plic_ctx, otbn_isr_ctx_t otbn_ctx,
-                            top_earlgrey_plic_peripheral_t *peripheral_serviced,
-                            dif_otbn_irq_t *irq_serviced);
+void isr_testutils_otbn_isr(
+    plic_isr_ctx_t plic_ctx, otbn_isr_ctx_t otbn_ctx,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
+    dif_otbn_irq_t *irq_serviced);
 
 /**
  * Services an otp_ctrl IRQ.
@@ -784,7 +791,7 @@ void isr_testutils_otbn_isr(plic_isr_ctx_t plic_ctx, otbn_isr_ctx_t otbn_ctx,
  */
 void isr_testutils_otp_ctrl_isr(
     plic_isr_ctx_t plic_ctx, otp_ctrl_isr_ctx_t otp_ctrl_ctx,
-    top_earlgrey_plic_peripheral_t *peripheral_serviced,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
     dif_otp_ctrl_irq_t *irq_serviced);
 
 /**
@@ -798,7 +805,7 @@ void isr_testutils_otp_ctrl_isr(
  */
 void isr_testutils_pattgen_isr(
     plic_isr_ctx_t plic_ctx, pattgen_isr_ctx_t pattgen_ctx,
-    top_earlgrey_plic_peripheral_t *peripheral_serviced,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
     dif_pattgen_irq_t *irq_serviced);
 
 /**
@@ -812,7 +819,7 @@ void isr_testutils_pattgen_isr(
  */
 void isr_testutils_pwrmgr_isr(
     plic_isr_ctx_t plic_ctx, pwrmgr_isr_ctx_t pwrmgr_ctx,
-    top_earlgrey_plic_peripheral_t *peripheral_serviced,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
     dif_pwrmgr_irq_t *irq_serviced);
 
 /**
@@ -826,7 +833,7 @@ void isr_testutils_pwrmgr_isr(
  */
 void isr_testutils_rv_timer_isr(
     plic_isr_ctx_t plic_ctx, rv_timer_isr_ctx_t rv_timer_ctx,
-    top_earlgrey_plic_peripheral_t *peripheral_serviced,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
     dif_rv_timer_irq_t *irq_serviced);
 
 /**
@@ -840,7 +847,7 @@ void isr_testutils_rv_timer_isr(
  */
 void isr_testutils_sensor_ctrl_isr(
     plic_isr_ctx_t plic_ctx, sensor_ctrl_isr_ctx_t sensor_ctrl_ctx,
-    top_earlgrey_plic_peripheral_t *peripheral_serviced,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
     dif_sensor_ctrl_irq_t *irq_serviced);
 
 /**
@@ -854,7 +861,7 @@ void isr_testutils_sensor_ctrl_isr(
  */
 void isr_testutils_spi_device_isr(
     plic_isr_ctx_t plic_ctx, spi_device_isr_ctx_t spi_device_ctx,
-    top_earlgrey_plic_peripheral_t *peripheral_serviced,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
     dif_spi_device_irq_t *irq_serviced);
 
 /**
@@ -868,7 +875,7 @@ void isr_testutils_spi_device_isr(
  */
 void isr_testutils_spi_host_isr(
     plic_isr_ctx_t plic_ctx, spi_host_isr_ctx_t spi_host_ctx,
-    top_earlgrey_plic_peripheral_t *peripheral_serviced,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
     dif_spi_host_irq_t *irq_serviced);
 
 /**
@@ -882,7 +889,7 @@ void isr_testutils_spi_host_isr(
  */
 void isr_testutils_sysrst_ctrl_isr(
     plic_isr_ctx_t plic_ctx, sysrst_ctrl_isr_ctx_t sysrst_ctrl_ctx,
-    top_earlgrey_plic_peripheral_t *peripheral_serviced,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
     dif_sysrst_ctrl_irq_t *irq_serviced);
 
 /**
@@ -894,9 +901,10 @@ void isr_testutils_sysrst_ctrl_isr(
  * serviced.
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
-void isr_testutils_uart_isr(plic_isr_ctx_t plic_ctx, uart_isr_ctx_t uart_ctx,
-                            top_earlgrey_plic_peripheral_t *peripheral_serviced,
-                            dif_uart_irq_t *irq_serviced);
+void isr_testutils_uart_isr(
+    plic_isr_ctx_t plic_ctx, uart_isr_ctx_t uart_ctx,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
+    dif_uart_irq_t *irq_serviced);
 
 /**
  * Services an usbdev IRQ.
@@ -909,7 +917,7 @@ void isr_testutils_uart_isr(plic_isr_ctx_t plic_ctx, uart_isr_ctx_t uart_ctx,
  */
 void isr_testutils_usbdev_isr(
     plic_isr_ctx_t plic_ctx, usbdev_isr_ctx_t usbdev_ctx,
-    top_earlgrey_plic_peripheral_t *peripheral_serviced,
+    top_darjeeling_plic_peripheral_t *peripheral_serviced,
     dif_usbdev_irq_t *irq_serviced);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_AUTOGEN_ISR_TESTUTILS_H_

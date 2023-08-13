@@ -204,8 +204,8 @@ jobs:
     displayName: Darjeeling Verible FPV (Verilog lint)
 
 - job: sw_build
-  displayName: Earl Grey SW Build & Test
-  # Build and test Software for Earl Grey toplevel design
+  displayName: SW Build & Test
+  # Build and test Software for toplevel designs
   timeoutInMinutes: 180
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
@@ -236,7 +236,7 @@ jobs:
       # * It excludes the tests from //third_party/riscv-compliance because
       #   they're already covered by `execute_fpga_tests_cw310`.
       # * It excludes //hw:all to avoid building Verilator, which is pulled in
-      #   because //... effectively asks to build //hw/top_earlgrey:verilator_real
+      #   because //... effectively asks to build //hw/top_{chip}:verilator_real
       #   and other targets in //hw:all that depend on it. Note that this is only
       #   a shallow exclusion; tests deeper under //hw will still be found.
       # * It excludes targets that depend on bitstream_splice rules, since the
@@ -305,8 +305,8 @@ jobs:
       includePatterns:
         - "/hw/top_englishbreakfast/Vchip_englishbreakfast_verilator"
 
-- job: execute_verilated_tests
-  displayName: Fast Verilated Earl Grey tests
+- job: execute_verilated_tests_darjeeling
+  displayName: Fast Verilated Darjeeling tests
   # Build and run fast tests on sim_verilator
   pool: ci-public
   timeoutInMinutes: 240
@@ -331,48 +331,14 @@ jobs:
   # TODO: build and cache the verilator model to avoid building twice (#12574)
   - bash: |
       . util/build_consts.sh
-      mkdir -p "$BIN_DIR/hw/top_earlgrey/"
-      cp $(ci/scripts/target-location.sh //hw/top_earlgrey:verilator) \
-        "$BIN_DIR/hw/top_earlgrey/Vchip_earlgrey_verilator"
-    displayName: Copy //hw/top_earlgrey:verilator to $BIN_DIR
+      mkdir -p "$BIN_DIR/hw/top_darjeeling/"
+      cp $(ci/scripts/target-location.sh //hw/top_darjeeling:verilator) \
+        "$BIN_DIR/hw/top_darjeeling/Vchip_darjeeling_verilator"
+    displayName: Copy //hw/top_darjeeling:verilator to $BIN_DIR
   - template: ci/upload-artifacts-template.yml
     parameters:
       includePatterns:
-        - "/hw/top_earlgrey/Vchip_earlgrey_verilator"
-
-# Software targeting the English Breakfast top level is produced by patching
-# the source tree before building. This builds a selected subset of software
-# only.
-# TODO: This is a rather ugly hack, which will go away once we properly support
-# building more than one top-level design with different parametrizations.
-# Work towards this goal is tracked in issue #4669.
-- job: build_and_execute_verilated_tests_englishbreakfast
-  displayName: Verilated English Breakfast (Execute)
-  # Build and execute tests on the Verilated English Breakfast toplevel design with Bazel
-  pool:
-    vmImage: ubuntu-20.04
-  dependsOn: chip_englishbreakfast_verilator
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - chip_englishbreakfast_verilator
-  - bash: |
-      . util/build_consts.sh
-      ci/scripts/run-english-breakfast-verilator-tests.sh
-    displayName: Execute tests
-  - bash: |
-      . util/build_consts.sh
-      mkdir -p "$BIN_DIR/sw/device/lib/testing/test_rom"
-      cp $(ci/scripts/target-location.sh //sw/device/lib/testing/test_rom:test_rom_fpga_cw305_vmem) \
-        "$BIN_DIR/sw/device/lib/testing/test_rom"
-    displayName: Copy test_rom_fpga_cw305_vmem to $BIN_DIR
-  - template: ci/upload-artifacts-template.yml
-    parameters:
-      includePatterns:
-        - "/sw/device/lib/testing/test_rom/test_rom_fpga_cw305.32.vmem"
+        - "/hw/top_darjeeling/Vchip_darjeeling_verilator"
 
 - job: otbn_standalone_tests
   displayName: Run OTBN Smoke Test
@@ -479,30 +445,6 @@ jobs:
     displayName: Upload artifacts for CW310
     condition: failed()
 
-- job: chip_englishbreakfast_cw305
-  displayName: CW305's Bitstream
-  # Build CW305 variant of the English Breakfast toplevel design using Vivado
-  dependsOn: build_and_execute_verilated_tests_englishbreakfast
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
-  pool: ci-public-eda
-  timeoutInMinutes: 120 # 2 hours
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - build_and_execute_verilated_tests_englishbreakfast
-  - bash: |
-      set -e
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/build-bitstream-vivado.sh top_englishbreakfast cw305
-    displayName: Build bitstream
-  - template: ci/upload-artifacts-template.yml
-    parameters:
-      includePatterns:
-        - "/hw/top_englishbreakfast/lowrisc_systems_chip_englishbreakfast_cw305_0.1.bit"
-
 - job: cache_bitstreams
   displayName: Cache bitstreams to GCP
   pool:
@@ -536,16 +478,16 @@ jobs:
   pool: FPGA
   timeoutInMinutes: 60
   dependsOn:
-    - chip_earlgrey_cw310
+    - chip_darjeeling_cw310
     - sw_build
-  condition: succeeded( 'chip_earlgrey_cw310', 'sw_build' )
+  condition: succeeded( 'chip_darjeeling_cw310', 'sw_build' )
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
   - template: ci/download-artifacts-template.yml
     parameters:
       downloadPartialBuildBinFrom:
-        - chip_earlgrey_cw310
+        - chip_darjeeling_cw310
         - sw_build
   - bash: |
       set -e
@@ -559,16 +501,16 @@ jobs:
   pool: FPGA
   timeoutInMinutes: 60
   dependsOn:
-    - chip_earlgrey_cw310
+    - chip_darjeeling_cw310
     - sw_build
-  condition: succeeded( 'chip_earlgrey_cw310', 'sw_build' )
+  condition: succeeded( 'chip_darjeeling_cw310', 'sw_build' )
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
   - template: ci/download-artifacts-template.yml
     parameters:
       downloadPartialBuildBinFrom:
-        - chip_earlgrey_cw310
+        - chip_darjeeling_cw310
         - sw_build
   - bash: |
       set -e
@@ -582,16 +524,16 @@ jobs:
   pool: FPGA
   timeoutInMinutes: 60
   dependsOn:
-    - chip_earlgrey_cw310
+    - chip_darjeeling_cw310
     - sw_build
-  condition: succeeded( 'chip_earlgrey_cw310', 'sw_build' )
+  condition: succeeded( 'chip_darjeeling_cw310', 'sw_build' )
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
   - template: ci/download-artifacts-template.yml
     parameters:
       downloadPartialBuildBinFrom:
-        - chip_earlgrey_cw310
+        - chip_darjeeling_cw310
         - sw_build
   - bash: |
       set -e
@@ -608,7 +550,7 @@ jobs:
   dependsOn:
     - lint
     - sw_build
-    - execute_verilated_tests
+    - execute_verilated_tests_darjeeling
     - chip_darjeeling_cw310
     - chip_earlgrey_cw310
     - chip_englishbreakfast_verilator
@@ -620,7 +562,7 @@ jobs:
     parameters:
       downloadPartialBuildBinFrom:
         - sw_build
-        - execute_verilated_tests
+        - execute_verilated_tests_darjeeling
         - chip_darjeeling_cw310
         - chip_earlgrey_cw310
         - chip_englishbreakfast_verilator

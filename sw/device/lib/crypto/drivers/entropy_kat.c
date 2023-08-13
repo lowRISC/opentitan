@@ -10,10 +10,10 @@
 #include "sw/lib/sw/device/runtime/log.h"
 
 #include "csrng_regs.h"  // Generated
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 enum {
-  kBaseCsrng = TOP_EARLGREY_CSRNG_BASE_ADDR,
+  kBaseCsrng = TOP_DARJEELING_CSRNG_BASE_ADDR,
 };
 
 /**

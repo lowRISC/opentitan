@@ -6,7 +6,7 @@
 #include "sw/device/silicon_creator/lib/rom_print.h"
 #include "sw/lib/sw/device/base/macros.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 void bare_metal_main(void) {
   OT_DISCARD(rom_printf("Bare metal PASS!\r\n"));

@@ -11,7 +11,7 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "lc_ctrl_regs.h"
 
 namespace lifecycle_unittest {
@@ -20,7 +20,7 @@ using ::testing::ElementsAreArray;
 
 class LifecycleTest : public rom_test::RomTest {
  protected:
-  uint32_t base_ = TOP_EARLGREY_LC_CTRL_BASE_ADDR;
+  uint32_t base_ = TOP_DARJEELING_LC_CTRL_BASE_ADDR;
   rom_test::MockSecMmio mmio_;
 };
 

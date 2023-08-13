@@ -13,7 +13,7 @@
 #include "sw/lib/sw/device/runtime/ibex.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otbn_regs.h"
 
 /**
@@ -234,8 +234,9 @@ static void p256_ecdsa_sign(const uint32_t *msg, const uint32_t *private_key_d,
 static void ecc256_ecdsa(const uint8_t *arg, size_t len) {
   LOG_INFO("SSECDSA starting...");
   SS_CHECK_STATUS_OK(otbn_load_app(kOtbnAppP256Ecdsa));
-  LOG_INFO("otbn_status: 0x%08x", abs_mmio_read32(TOP_EARLGREY_OTBN_BASE_ADDR +
-                                                  OTBN_STATUS_REG_OFFSET));
+  LOG_INFO(
+      "otbn_status: 0x%08x",
+      abs_mmio_read32(TOP_DARJEELING_OTBN_BASE_ADDR + OTBN_STATUS_REG_OFFSET));
 
   uint32_t ecc256_signature_r[kEcc256NumWords];
   uint32_t ecc256_signature_s[kEcc256NumWords];

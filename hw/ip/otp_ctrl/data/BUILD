@@ -20,7 +20,8 @@ load(
 )
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("@bazel_skylib//rules:common_settings.bzl", "int_flag", "string_flag")
-load("//rules:const.bzl", "CONST", "EARLGREY_ALERTS", "EARLGREY_LOC_ALERTS")
+load("//rules:const.bzl", "CONST")
+load("//rules:const-darjeeling.bzl", "DARJEELING_ALERTS", "DARJEELING_LOC_ALERTS")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -199,7 +200,7 @@ otp_json(
                 # See `alert_class_t` in
                 # sw/device/silicon_creator/lib/drivers/alert.h
                 "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION": otp_alert_classification(
-                    alert_list = EARLGREY_ALERTS,
+                    alert_list = DARJEELING_ALERTS,
                     # The ordering is "prod, prod_end, dev, rma"
                     default = "X, X, X, X",
                 ),
@@ -207,7 +208,7 @@ otp_json(
                 # Set the classifications to kAlertClassX. See `alert_class_t` in
                 # sw/device/silicon_creator/lib/drivers/alert.h
                 "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION": otp_alert_classification(
-                    alert_list = EARLGREY_LOC_ALERTS,
+                    alert_list = DARJEELING_LOC_ALERTS,
                     # The ordering is "prod, prod_end, dev, rma"
                     default = "X, X, X, X",
                 ),
@@ -568,5 +569,5 @@ filegroup(
 pkg_files(
     name = "package",
     srcs = [":otp_imgs"],
-    prefix = "earlgrey/otp",
+    prefix = "darjeeling/otp",
 )

@@ -16,7 +16,7 @@
 #include "sw/lib/sw/device/base/multibits.h"
 
 #include "flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"
 
 namespace flash_ctrl_unittest {
@@ -60,7 +60,7 @@ const std::map<const flash_ctrl_info_page_t *, InfoPage> &InfoPages() {
 
 class FlashCtrlTest : public rom_test::RomTest {
  protected:
-  uint32_t base_ = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR;
+  uint32_t base_ = TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR;
   rom_test::MockAbsMmio mmio_;
   rom_test::MockSecMmio sec_mmio_;
   rom_test::MockOtp otp_;
@@ -698,11 +698,11 @@ TEST_P(EraseVerifyTest, DataEraseVerify) {
   size_t i = 0;
   for (; i < byte_count - sizeof(uint32_t); i += sizeof(uint32_t)) {
     EXPECT_ABS_READ32(
-        TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + GetParam().aligned_addr + i,
+        TOP_DARJEELING_FLASH_CTRL_MEM_BASE_ADDR + GetParam().aligned_addr + i,
         kFlashCtrlErasedWord);
   }
   EXPECT_ABS_READ32(
-      TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + GetParam().aligned_addr + i,
+      TOP_DARJEELING_FLASH_CTRL_MEM_BASE_ADDR + GetParam().aligned_addr + i,
       GetParam().last_word_val);
 
   EXPECT_EQ(

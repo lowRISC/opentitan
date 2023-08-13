@@ -18,7 +18,7 @@ opentitan_functest(
         ":aes_testvectors",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -41,7 +41,7 @@ opentitan_functest(
         ":aes_gcm_testvectors",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -87,7 +87,7 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -103,7 +103,7 @@ opentitan_functest(
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -120,7 +120,7 @@ opentitan_functest(
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -152,7 +152,7 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:macros",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -169,7 +169,7 @@ opentitan_functest(
         "//sw/device/lib/crypto/impl/ecc:ecdsa_p256",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -203,7 +203,7 @@ opentitan_functest(
         "//sw/device/lib/crypto/impl/rsa:rsa_3072_verify",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -227,7 +227,7 @@ opentitan_functest(
         "//sw/device/lib/crypto/impl/rsa:rsa_3072_verify",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -241,7 +241,7 @@ opentitan_functest(
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -257,7 +257,7 @@ opentitan_functest(
         "//sw/device/lib/crypto/impl:status",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -283,7 +283,7 @@ opentitan_functest(
         "//sw/device/lib/crypto/impl:mac",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -320,7 +320,7 @@ opentitan_functest(
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 

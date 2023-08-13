@@ -9,14 +9,14 @@
 #include "sw/lib/sw/device/base/bitfield.h"
 #include "sw/lib/sw/device/base/memory.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "kmac_regs.h"  // Generated.
 
 enum {
   /**
    * Base address of the KMAC hardware MMIO interface.
    */
-  kBase = TOP_EARLGREY_KMAC_BASE_ADDR,
+  kBase = TOP_DARJEELING_KMAC_BASE_ADDR,
   /**
    * Keccak capacity for SHAKE256.
    *

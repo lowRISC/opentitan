@@ -17,7 +17,7 @@ fi
 tl="$1"
 
 case "$tl" in
-    earlgrey)
+    darjeeling | earlgrey)
         fileset=fileset_top
         fusesoc_core=lowrisc:dv:chip_verilator_sim
         vname=Vchip_sim_tb

@@ -10,7 +10,7 @@
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -101,7 +101,7 @@ bool test_main(void) {
   LOG_INFO("Running HMAC DIF test...");
 
   dif_hmac_t hmac;
-  test_setup(mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR), &hmac);
+  test_setup(mmio_region_from_addr(TOP_DARJEELING_HMAC_BASE_ADDR), &hmac);
 
   LOG_INFO("Running test SHA256 pass 1...");
   run_test(&hmac, kData, sizeof(kData), NULL, &kExpectedShaDigest);

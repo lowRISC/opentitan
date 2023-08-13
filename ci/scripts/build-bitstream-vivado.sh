@@ -23,7 +23,7 @@ TOPLEVEL=$1
 TARGET=$2
 
 case x"$TOPLEVEL" in
-    xtop_earlgrey)
+    xtop_darjeeling | xtop_earlgrey)
         HAS_SCRAMBLED_ROM=1
         HAS_OTP=1
         RUN_TOPGEN_FUSESOC=0

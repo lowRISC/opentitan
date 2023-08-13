@@ -17,7 +17,7 @@
 #include "sw/lib/sw/device/base/status.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
@@ -49,9 +49,9 @@ status_t command_processor(ujson_t *uj) {
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
-  CHECK_DIF_OK(
-      dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
+      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
+  CHECK_DIF_OK(dif_gpio_init(
+      mmio_region_from_addr(TOP_DARJEELING_GPIO_BASE_ADDR), &gpio));
   ujson_t uj = ujson_ottf_console();
 
   status_t s = command_processor(&uj);

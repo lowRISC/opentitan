@@ -29,14 +29,14 @@ DEFAULT_TEST_FAILURE_MSG = "({})|({})".format(
 OPENTITANTOOL_OPENOCD_TEST_CMDS = [
     "--openocd=\"$(rootpath //third_party/openocd:openocd_bin)\"",
     "--openocd-adapter-config=\"$(rootpath //third_party/openocd:jtag_adapter_cfg)\"",
-    "--openocd-riscv-target-config=\"$(rootpath //util/openocd/target:lowrisc-earlgrey.cfg)\"",
-    "--openocd-lc-target-config=\"$(rootpath //util/openocd/target:lowrisc-earlgrey-lc.cfg)\"",
+    "--openocd-riscv-target-config=\"$(rootpath //util/openocd/target:lowrisc-darjeeling.cfg)\"",
+    "--openocd-lc-target-config=\"$(rootpath //util/openocd/target:lowrisc-darjeeling-lc.cfg)\"",
 ]
 OPENTITANTOOL_OPENOCD_DATA_DEPS = [
     "//third_party/openocd:jtag_adapter_cfg",
     "//third_party/openocd:openocd_bin",
-    "//util/openocd/target:lowrisc-earlgrey.cfg",
-    "//util/openocd/target:lowrisc-earlgrey-lc.cfg",
+    "//util/openocd/target:lowrisc-darjeeling.cfg",
+    "//util/openocd/target:lowrisc-darjeeling-lc.cfg",
 ]
 
 # This constant holds a dictionary of slot-specific linker script dependencies
@@ -75,7 +75,7 @@ def dv_params(
         test_runner = "@//util:dvsim_test_runner.sh",
         test_cmds = [],
         # DV-specific Parameters
-        dvsim_config = "@//hw/top_earlgrey/dv:chip_sim_cfg.hjson",
+        dvsim_config = "@//hw/top_darjeeling/dv:chip_sim_cfg.hjson",
         **kwargs):
     """A macro to create DV sim parameters for OpenTitan functional tests.
 
@@ -102,8 +102,8 @@ def dv_params(
     required_data = [
         dvsim_config,
         "@//util/dvsim",
-        "@//hw/top_earlgrey:all_files",
-        "@//hw/top_earlgrey:fusesoc_ignore",
+        "@//hw/top_darjeeling:all_files",
+        "@//hw/top_darjeeling:fusesoc_ignore",
     ]
     required_tags = ["dv"]
     kwargs.update(
@@ -162,14 +162,14 @@ def verilator_params(
     ]
     required_test_cmds = [
         "--interface=verilator",
-        "--verilator-bin=$(location @//hw/top_earlgrey:verilator)",
+        "--verilator-bin=$(location @//hw/top_darjeeling:verilator)",
         "--verilator-rom=$(location {rom})",
         "--verilator-flash=$(location {flash})",
         "--verilator-otp=$(location {otp})",
     ]
     required_data = [
-        "@//hw/top_earlgrey:verilator",
-        "@//hw/top_earlgrey:fusesoc_ignore",
+        "@//hw/top_darjeeling:verilator",
+        "@//hw/top_darjeeling:fusesoc_ignore",
     ]
     required_tags = ["verilator", "cpu:5"]
     kwargs.update(
@@ -347,15 +347,15 @@ def opentitan_functest(
             # the target. Otherwise, use the provided bitstream argument.
             if cw310_["interface"] == "cw310":
                 DEFAULT_BITSTREAM = {
-                    "cw310_test_rom": "@//hw/top_earlgrey/bitstream:test_rom",
-                    "cw310_rom_with_fake_keys": "@//hw/top_earlgrey/bitstream:rom_with_fake_keys",
-                    "cw310_rom_with_real_keys": "@//hw/top_earlgrey/bitstream:rom_with_real_keys",
+                    "cw310_test_rom": "@//hw/top_darjeeling/bitstream:test_rom",
+                    "cw310_rom_with_fake_keys": "@//hw/top_darjeeling/bitstream:rom_with_fake_keys",
+                    "cw310_rom_with_real_keys": "@//hw/top_darjeeling/bitstream:rom_with_real_keys",
                 }
             else:
                 DEFAULT_BITSTREAM = {
-                    "cw310_test_rom": "@//hw/top_earlgrey/bitstream/hyperdebug:test_rom",
-                    "cw310_rom_with_fake_keys": "@//hw/top_earlgrey/bitstream/hyperdebug:rom_with_fake_keys",
-                    "cw310_rom_with_real_keys": "@//hw/top_earlgrey/bitstream/hyperdebug:rom_with_real_keys",
+                    "cw310_test_rom": "@//hw/top_darjeeling/bitstream/hyperdebug:test_rom",
+                    "cw310_rom_with_fake_keys": "@//hw/top_darjeeling/bitstream/hyperdebug:rom_with_fake_keys",
+                    "cw310_rom_with_real_keys": "@//hw/top_darjeeling/bitstream/hyperdebug:rom_with_real_keys",
                 }
             if (cw310 == None) or (cw310.get("bitstream") == None):
                 cw310_["bitstream"] = DEFAULT_BITSTREAM[target]

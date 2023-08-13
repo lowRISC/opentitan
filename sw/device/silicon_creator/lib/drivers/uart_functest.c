@@ -11,7 +11,7 @@
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/runtime/print.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG(.console.test_may_clobber = true);
 

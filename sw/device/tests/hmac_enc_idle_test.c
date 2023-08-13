@@ -11,7 +11,7 @@
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 #define TIMEOUT (1000 * 1000)
 
@@ -19,7 +19,7 @@ OTTF_DEFINE_TEST_CONFIG();
 static dif_hmac_t hmac;
 static dif_clkmgr_t clkmgr;
 static const dif_clkmgr_hintable_clock_t kHmacClock =
-    kTopEarlgreyHintableClocksMainHmac;
+    kTopDarjeelingHintableClocksMainHmac;
 
 static const dif_hmac_transaction_t kHmacTransactionConfig = {
     .digest_endianness = kDifHmacEndiannessLittle,
@@ -35,7 +35,8 @@ static bool is_hintable_clock_enabled(const dif_clkmgr_t *clkmgr,
 }
 
 static status_t initialize_clkmgr(dif_clkmgr_hintable_clock_t clock) {
-  mmio_region_t addr = mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR);
+  mmio_region_t addr =
+      mmio_region_from_addr(TOP_DARJEELING_CLKMGR_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_clkmgr_init(addr, &clkmgr));
 
   // Get initial hint and enable for AES clock and check both are enabled.
@@ -121,7 +122,8 @@ static status_t execute_test(void) {
 bool test_main(void) {
   CHECK_STATUS_OK(initialize_clkmgr(kHmacClock));
 
-  mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
+  mmio_region_t base_addr =
+      mmio_region_from_addr(TOP_DARJEELING_HMAC_BASE_ADDR);
   CHECK_DIF_OK(dif_hmac_init(base_addr, &hmac));
 
   return status_ok(execute_test());

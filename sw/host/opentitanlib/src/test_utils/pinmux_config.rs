@@ -6,14 +6,16 @@ use anyhow::Result;
 use std::collections::HashMap;
 use std::time::Duration;
 
-use crate::chip::autogen::earlgrey::{PinmuxInsel, PinmuxMioOut, PinmuxOutsel, PinmuxPeripheralIn};
+use crate::chip::autogen::darjeeling::{
+    PinmuxInsel, PinmuxMioOut, PinmuxOutsel, PinmuxPeripheralIn,
+};
 use crate::io::uart::Uart;
 use crate::test_utils::e2e_command::TestCommand;
 use crate::test_utils::rpc::{UartRecv, UartSend};
 use crate::test_utils::status::Status;
 
 // Bring in the auto-generated sources.
-use crate::chip::autogen::earlgrey::ujson_alias::*;
+use crate::chip::autogen::darjeeling::ujson_alias::*;
 include!(env!("pinmux_config"));
 
 impl Default for PinmuxConfig {

@@ -15,7 +15,7 @@ OUTPUT_ARCH(riscv);
  */
 __DYNAMIC = 0;
 
-INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
+INCLUDE hw/top_darjeeling/sw/autogen/top_darjeeling_memory.ld
 
 _stack_end = ORIGIN(ram_main) + LENGTH(ram_main);
 

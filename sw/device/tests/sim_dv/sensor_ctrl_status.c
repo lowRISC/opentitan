@@ -12,7 +12,7 @@
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "sensor_ctrl_regs.h"  // Generated.
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
@@ -29,12 +29,12 @@ OTTF_DEFINE_TEST_CONFIG();
 static dif_sensor_ctrl_t sensor_ctrl;
 static dif_rv_plic_t plic;
 static plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
-                                  .hart_id = kTopEarlgreyPlicTargetIbex0};
+                                  .hart_id = kTopDarjeelingPlicTargetIbex0};
 
 static sensor_ctrl_isr_ctx_t sensor_ctrl_isr_ctx = {
     .sensor_ctrl = &sensor_ctrl,
     .plic_sensor_ctrl_start_irq_id =
-        kTopEarlgreyPlicIrqIdSensorCtrlIoStatusChange,
+        kTopDarjeelingPlicIrqIdSensorCtrlIoStatusChange,
     .expected_irq = kDifSensorCtrlIrqIoStatusChange,
     .is_only_irq = false};
 
@@ -43,13 +43,13 @@ static sensor_ctrl_isr_ctx_t sensor_ctrl_isr_ctx = {
  */
 void ottf_external_isr(void) {
   dif_sensor_ctrl_irq_t irq_id;
-  top_earlgrey_plic_peripheral_t peripheral;
+  top_darjeeling_plic_peripheral_t peripheral;
 
   isr_testutils_sensor_ctrl_isr(plic_ctx, sensor_ctrl_isr_ctx, &peripheral,
                                 &irq_id);
 
   // Check that both the peripheral and the irq id is correct
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralSensorCtrl,
+  CHECK(peripheral == kTopDarjeelingPlicPeripheralSensorCtrl,
         "IRQ peripheral: %d is incorrect", peripheral);
   CHECK(irq_id == kDifSensorCtrlIrqIoStatusChange, "IRQ ID: %d is incorrect",
         irq_id);
@@ -66,17 +66,18 @@ bool test_main(void) {
 
   // Initialize the PLIC.
   CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
+      mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &plic));
 
   // Initialize sensor_ctrl
   CHECK_DIF_OK(dif_sensor_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR), &sensor_ctrl));
+      mmio_region_from_addr(TOP_DARJEELING_SENSOR_CTRL_BASE_ADDR),
+      &sensor_ctrl));
 
   // Enable interrupts
   rv_plic_testutils_irq_range_enable(
-      &plic, kTopEarlgreyPlicTargetIbex0,
-      kTopEarlgreyPlicIrqIdSensorCtrlIoStatusChange,
-      kTopEarlgreyPlicIrqIdSensorCtrlIoStatusChange);
+      &plic, kTopDarjeelingPlicTargetIbex0,
+      kTopDarjeelingPlicIrqIdSensorCtrlIoStatusChange,
+      kTopDarjeelingPlicIrqIdSensorCtrlIoStatusChange);
 
   // Acknowledge the interrupt state that sets by default
   CHECK_DIF_OK(dif_sensor_ctrl_irq_acknowledge_all(&sensor_ctrl));

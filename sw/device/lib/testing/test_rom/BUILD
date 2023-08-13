@@ -14,7 +14,7 @@ ld_library(
     name = "linker_script",
     script = "test_rom.ld",
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling_memory",
         "//sw/device:info_sections",
         "//sw/device/silicon_creator/lib/base:static_critical_sections",
     ],
@@ -43,13 +43,13 @@ cc_library(
         "//hw/ip/gpio/data:gpio_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/ip/spi_device/data:spi_device_regs",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/lib/sw/device/base:abs_mmio",
         "//sw/lib/sw/device/base:multibits",
-        "//sw/top_earlgrey/sw/dif:rstmgr_intf",
+        "//sw/top_darjeeling/sw/dif:rstmgr_intf",
     ],
 )
 
@@ -59,7 +59,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/rom:bootstrap",
-        "//sw/top_earlgrey/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/dif:rstmgr",
     ],
 )
 
@@ -85,8 +85,8 @@ cc_library(
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/ip/spi_device/data:spi_device_regs",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/lib:epmp_state",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:keymgr_binding",
@@ -123,11 +123,11 @@ cc_library(
         "//hw/ip/entropy_src/data:entropy_src_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
-        "//hw/top_earlgrey/ip/ast/data:ast_regs",
-        "//hw/top_earlgrey/ip/clkmgr/data/autogen:clkmgr_regs",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
-        "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/ip/ast/data:ast_regs",
+        "//hw/top_darjeeling/ip/clkmgr/data/autogen:clkmgr_regs",
+        "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//hw/top_darjeeling/ip/sensor_ctrl/data:sensor_ctrl_regs",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
@@ -142,15 +142,15 @@ cc_library(
         "//sw/lib/sw/device/crt",
         "//sw/lib/sw/device/runtime:hart",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
-        "//sw/top_earlgrey/sw/dif:clkmgr",
-        "//sw/top_earlgrey/sw/dif:flash_ctrl",
-        "//sw/top_earlgrey/sw/dif:gpio",
-        "//sw/top_earlgrey/sw/dif:hmac",
-        "//sw/top_earlgrey/sw/dif:pinmux",
-        "//sw/top_earlgrey/sw/dif:rv_core_ibex",
-        "//sw/top_earlgrey/sw/dif:spi_device",
-        "//sw/top_earlgrey/sw/dif:uart",
+        "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/dif:clkmgr",
+        "//sw/top_darjeeling/sw/dif:flash_ctrl",
+        "//sw/top_darjeeling/sw/dif:gpio",
+        "//sw/top_darjeeling/sw/dif:hmac",
+        "//sw/top_darjeeling/sw/dif:pinmux",
+        "//sw/top_darjeeling/sw/dif:rv_core_ibex",
+        "//sw/top_darjeeling/sw/dif:spi_device",
+        "//sw/top_darjeeling/sw/dif:uart",
     ],
 )
 
@@ -159,7 +159,7 @@ opentitan_functest(
     srcs = ["test_rom_test.c"],
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -178,5 +178,5 @@ pkg_files(
     name = "package",
     testonly = True,
     srcs = [":pre_package"],
-    prefix = "earlgrey/test_rom",
+    prefix = "darjeeling/test_rom",
 )

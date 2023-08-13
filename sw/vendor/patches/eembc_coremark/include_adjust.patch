@@ -72,7 +72,7 @@ index dc9f8c7..cd2f3f9 100644
  #define MEM_STACK 2
  
 -#include "core_portme.h"
-+#include "sw/device/benchmarks/coremark/top_earlgrey/core_portme.h"
++#include "sw/device/benchmarks/coremark/top_darjeeling/core_portme.h"
  
  #if HAS_STDIO
  #include <stdio.h>

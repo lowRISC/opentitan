@@ -12,9 +12,9 @@
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
-static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
+static const uint32_t kPlicTarget = kTopDarjeelingPlicTargetIbex0;
 
 static dif_rv_plic_t plic0;
 static dif_uart_t uart0;
@@ -38,14 +38,14 @@ static void handle_uart_isr(const dif_rv_plic_irq_id_t interrupt_id) {
   dif_uart_irq_t uart_irq = 0;
 
   switch (interrupt_id) {
-    case kTopEarlgreyPlicIrqIdUart0RxOverflow:
+    case kTopDarjeelingPlicIrqIdUart0RxOverflow:
       CHECK(!uart_rx_overflow_handled,
             "UART RX overflow IRQ asserted more than once");
 
       uart_irq = kDifUartIrqRxOverflow;
       uart_rx_overflow_handled = true;
       break;
-    case kTopEarlgreyPlicIrqIdUart0TxEmpty:
+    case kTopDarjeelingPlicIrqIdUart0TxEmpty:
       CHECK(!uart_tx_empty_handled,
             "UART TX empty IRQ asserted more than once");
 
@@ -73,9 +73,9 @@ void ottf_external_isr(void) {
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic0, kPlicTarget, &interrupt_id));
 
   // Check if the interrupted peripheral is UART.
-  top_earlgrey_plic_peripheral_t peripheral_id =
-      top_earlgrey_plic_interrupt_for_peripheral[interrupt_id];
-  CHECK(peripheral_id == kTopEarlgreyPlicPeripheralUart0,
+  top_darjeeling_plic_peripheral_t peripheral_id =
+      top_darjeeling_plic_interrupt_for_peripheral[interrupt_id];
+  CHECK(peripheral_id == kTopDarjeelingPlicPeripheralUart0,
         "ISR interrupted peripheral is not UART!");
   handle_uart_isr(interrupt_id);
 
@@ -116,22 +116,23 @@ static void uart_configure_irqs(dif_uart_t *uart) {
 static void plic_configure_irqs(dif_rv_plic_t *plic) {
   // Set IRQ priorities to MAX
   CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-      plic, kTopEarlgreyPlicIrqIdUart0RxOverflow, kDifRvPlicMaxPriority));
+      plic, kTopDarjeelingPlicIrqIdUart0RxOverflow, kDifRvPlicMaxPriority));
 
   CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-      plic, kTopEarlgreyPlicIrqIdUart0TxEmpty, kDifRvPlicMaxPriority));
+      plic, kTopDarjeelingPlicIrqIdUart0TxEmpty, kDifRvPlicMaxPriority));
 
   // Set Ibex IRQ priority threshold level
   CHECK_DIF_OK(dif_rv_plic_target_set_threshold(&plic0, kPlicTarget,
                                                 kDifRvPlicMinPriority));
 
   // Enable IRQs in PLIC
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(plic,
-                                           kTopEarlgreyPlicIrqIdUart0RxOverflow,
-                                           kPlicTarget, kDifToggleEnabled));
+  CHECK_DIF_OK(
+      dif_rv_plic_irq_set_enabled(plic, kTopDarjeelingPlicIrqIdUart0RxOverflow,
+                                  kPlicTarget, kDifToggleEnabled));
 
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      plic, kTopEarlgreyPlicIrqIdUart0TxEmpty, kPlicTarget, kDifToggleEnabled));
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(plic,
+                                           kTopDarjeelingPlicIrqIdUart0TxEmpty,
+                                           kPlicTarget, kDifToggleEnabled));
 }
 
 static void execute_test(dif_uart_t *uart) {
@@ -163,11 +164,11 @@ bool test_main(void) {
 
   // No debug output in case of UART initialisation failure.
   mmio_region_t uart_base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR);
+      mmio_region_from_addr(TOP_DARJEELING_UART0_BASE_ADDR);
   uart_initialise(uart_base_addr, &uart0);
 
   mmio_region_t plic_base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
+      mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_plic_init(plic_base_addr, &plic0));
 
   uart_configure_irqs(&uart0);

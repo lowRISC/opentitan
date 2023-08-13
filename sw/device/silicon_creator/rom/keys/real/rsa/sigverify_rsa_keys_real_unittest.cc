@@ -98,7 +98,7 @@ struct RsaVerifyTestCase {
 const RsaVerifyTestCase kRsaVerifyTestCases[7]{
     // message: "test"
     // The signatures were generated with `hsmtool`:
-    // hsmtool -t <token> -u user -p <pin> exec earlgrey_test_signatures.hjson
+    // hsmtool -t <token> -u user -p <pin> exec darjeeling_test_signatures.hjson
     //
     // Then, each of the signature files was post-processed to the proper
     // word size and endianess via:

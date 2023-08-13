@@ -61,7 +61,7 @@
 
 #include "alert_handler_regs.h"
 #include "flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -144,14 +144,14 @@ static_assert(
  * SRAM addresses used in the test below.
  */
 enum {
-  kSramMainStart = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
-  kSramRetStart = TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
+  kSramMainStart = TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
+  kSramRetStart = TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
 };
 
 /**
  * Objects to access the peripherals used in this test via dif API.
  */
-static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
+static const uint32_t kPlicTarget = kTopDarjeelingPlicTargetIbex0;
 static dif_aes_t aes;
 static dif_alert_handler_t alert_handler;
 static dif_aon_timer_t aon_timer;
@@ -180,15 +180,18 @@ static void save_fault_checker(fault_checker_t *fault_checker) {
   uint32_t type_addr = (uint32_t)(fault_checker->type);
   CHECK_STATUS_OK(flash_ctrl_testutils_write(
       &flash_ctrl_state,
-      (uint32_t)(&nv_fault_checker[0]) - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+      (uint32_t)(&nv_fault_checker[0]) -
+          TOP_DARJEELING_FLASH_CTRL_MEM_BASE_ADDR,
       0, &function_addr, kDifFlashCtrlPartitionTypeData, 1));
   CHECK_STATUS_OK(flash_ctrl_testutils_write(
       &flash_ctrl_state,
-      (uint32_t)(&nv_fault_checker[1]) - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+      (uint32_t)(&nv_fault_checker[1]) -
+          TOP_DARJEELING_FLASH_CTRL_MEM_BASE_ADDR,
       0, &ip_inst_addr, kDifFlashCtrlPartitionTypeData, 1));
   CHECK_STATUS_OK(flash_ctrl_testutils_write(
       &flash_ctrl_state,
-      (uint32_t)(&nv_fault_checker[2]) - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+      (uint32_t)(&nv_fault_checker[2]) -
+          TOP_DARJEELING_FLASH_CTRL_MEM_BASE_ADDR,
       0, &type_addr, kDifFlashCtrlPartitionTypeData, 1));
 }
 
@@ -528,17 +531,18 @@ void ottf_external_isr(void) {
 
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
 
-  top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
+  top_darjeeling_plic_peripheral_t peripheral =
+      (top_darjeeling_plic_peripheral_t)
+          top_darjeeling_plic_interrupt_for_peripheral[irq_id];
 
-  if (peripheral == kTopEarlgreyPlicPeripheralAonTimerAon) {
+  if (peripheral == kTopDarjeelingPlicPeripheralAonTimerAon) {
     uint32_t irq =
         (irq_id - (dif_rv_plic_irq_id_t)
-                      kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
+                      kTopDarjeelingPlicIrqIdAonTimerAonWkupTimerExpired);
 
     // We should not get aon timer interrupts since escalation suppresses them.
     CHECK(false, "Unexpected aon timer interrupt %d", irq);
-  } else if (peripheral == kTopEarlgreyPlicPeripheralAlertHandler) {
+  } else if (peripheral == kTopDarjeelingPlicPeripheralAlertHandler) {
     // Don't acknowledge the interrupt to alert_handler so it escalates.
     CHECK(fault_checker.function);
     CHECK(fault_checker.ip_inst);
@@ -551,7 +555,8 @@ void ottf_external_isr(void) {
   // Disable these interrupts from alert_handler so they don't keep happening
   // until NMI.
   uint32_t irq =
-      (irq_id - (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAlertHandlerClassa);
+      (irq_id -
+       (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdAlertHandlerClassa);
   CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(&alert_handler, irq,
                                                  kDifToggleDisabled));
 
@@ -630,53 +635,56 @@ void ottf_external_nmi_handler(void) {
  */
 static void init_peripherals(void) {
   CHECK_DIF_OK(
-      dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
+      dif_aes_init(mmio_region_from_addr(TOP_DARJEELING_AES_BASE_ADDR), &aes));
 
   CHECK_DIF_OK(dif_alert_handler_init(
-      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
+      mmio_region_from_addr(TOP_DARJEELING_ALERT_HANDLER_BASE_ADDR),
       &alert_handler));
 
   CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
+      mmio_region_from_addr(TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR),
+      &aon_timer));
 
   CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+      mmio_region_from_addr(TOP_DARJEELING_CLKMGR_AON_BASE_ADDR), &clkmgr));
 
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_ctrl_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR)));
 
-  CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  CHECK_DIF_OK(dif_kmac_init(
+      mmio_region_from_addr(TOP_DARJEELING_KMAC_BASE_ADDR), &kmac));
 
   CHECK_DIF_OK(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR), &lc_ctrl));
+      mmio_region_from_addr(TOP_DARJEELING_LC_CTRL_BASE_ADDR), &lc_ctrl));
 
   CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
+      mmio_region_from_addr(TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR),
+      &otp_ctrl));
 
   CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+      mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR), &pwrmgr));
 
   CHECK_DIF_OK(dif_rom_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR), &rom_ctrl));
+      mmio_region_from_addr(TOP_DARJEELING_ROM_CTRL_REGS_BASE_ADDR),
+      &rom_ctrl));
 
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
   CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      mmio_region_from_addr(TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
 
   CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
+      mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &plic));
 
   CHECK_DIF_OK(dif_sram_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR),
+      mmio_region_from_addr(TOP_DARJEELING_SRAM_CTRL_MAIN_REGS_BASE_ADDR),
       &sram_ctrl_main));
 
   CHECK_DIF_OK(dif_sram_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR),
+      mmio_region_from_addr(TOP_DARJEELING_SRAM_CTRL_RET_AON_REGS_BASE_ADDR),
       &sram_ctrl_ret));
 }
 
@@ -784,61 +792,61 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
 
   // Select the fault_checker function, depending on kExpectedAlertNumber.
   switch (kExpectedAlertNumber) {
-    case kTopEarlgreyAlertIdAdcCtrlAonFatalFault: {
+    case kTopDarjeelingAlertIdAdcCtrlAonFatalFault: {
       fault_checker_t fc = {trivial_fault_checker, adc_ctrl_inst_name,
                             we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdAesFatalFault: {
+    case kTopDarjeelingAlertIdAesFatalFault: {
       fault_checker_t fc = {aes_fault_checker, aes_inst_name, we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdAonTimerAonFatalFault: {
+    case kTopDarjeelingAlertIdAonTimerAonFatalFault: {
       fault_checker_t fc = {trivial_fault_checker, aon_timer_inst_name,
                             we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdClkmgrAonFatalFault: {
+    case kTopDarjeelingAlertIdClkmgrAonFatalFault: {
       fault_checker_t fc = {clkmgr_fault_checker, clkmgr_inst_name, we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdCsrngFatalAlert: {
+    case kTopDarjeelingAlertIdCsrngFatalAlert: {
       fault_checker_t fc = {trivial_fault_checker, csrng_inst_name, we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdEdn0FatalAlert: {
+    case kTopDarjeelingAlertIdEdn0FatalAlert: {
       fault_checker_t fc = {trivial_fault_checker, edn0_inst_name, we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdEdn1FatalAlert: {
+    case kTopDarjeelingAlertIdEdn1FatalAlert: {
       fault_checker_t fc = {trivial_fault_checker, edn1_inst_name, we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdEntropySrcFatalAlert: {
+    case kTopDarjeelingAlertIdEntropySrcFatalAlert: {
       fault_checker_t fc = {trivial_fault_checker, entropy_src_inst_name,
                             we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdFlashCtrlFatalErr: {
+    case kTopDarjeelingAlertIdFlashCtrlFatalErr: {
       fault_checker_t fc = {flash_ctrl_fault_checker, flash_ctrl_inst_name,
                             flash_fatal_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdFlashCtrlFatalStdErr: {
+    case kTopDarjeelingAlertIdFlashCtrlFatalStdErr: {
       fault_checker_t fc = {flash_ctrl_fault_checker, flash_ctrl_inst_name,
                             we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdFlashCtrlFatalPrimFlashAlert: {
+    case kTopDarjeelingAlertIdFlashCtrlFatalPrimFlashAlert: {
       fault_checker_t fc = {flash_ctrl_prim_fault_checker, flash_ctrl_inst_name,
                             flash_fatal_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdGpioFatalFault: {
+    case kTopDarjeelingAlertIdGpioFatalFault: {
       fault_checker_t fc = {trivial_fault_checker, gpio_inst_name, we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdHmacFatalFault: {
+    case kTopDarjeelingAlertIdHmacFatalFault: {
       fault_checker_t fc = {trivial_fault_checker, hmac_inst_name, we_check};
       // TODO(#14518)
       LOG_INFO("Expected alert %d hmac fault check is yet unimplemented",
@@ -848,19 +856,19 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
       */
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdI2c0FatalFault: {
+    case kTopDarjeelingAlertIdI2c0FatalFault: {
       fault_checker_t fc = {trivial_fault_checker, i2c0_inst_name, we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdI2c1FatalFault: {
+    case kTopDarjeelingAlertIdI2c1FatalFault: {
       fault_checker_t fc = {trivial_fault_checker, i2c1_inst_name, we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdI2c2FatalFault: {
+    case kTopDarjeelingAlertIdI2c2FatalFault: {
       fault_checker_t fc = {trivial_fault_checker, i2c2_inst_name, we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdKeymgrFatalFaultErr: {
+    case kTopDarjeelingAlertIdKeymgrFatalFaultErr: {
       fault_checker_t fc = {trivial_fault_checker, keymgr_inst_name, we_check};
       // TODO(#14518)
       LOG_INFO("Expected alert %d keymgr fault check is yet unimplemented",
@@ -870,22 +878,22 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
       */
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdKmacFatalFaultErr: {
+    case kTopDarjeelingAlertIdKmacFatalFaultErr: {
       fault_checker_t fc = {kmac_fault_checker, kmac_inst_name, we_check};
       fault_checker = fc;
     } break;
-    // TODO add mechanism to inject kTopEarlgreyAlertIdLcCtrlFatalProgError by
+    // TODO add mechanism to inject kTopDarjeelingAlertIdLcCtrlFatalProgError by
     // forcing otp_prog_err_o from lc_ctrl_fsm
-    case kTopEarlgreyAlertIdLcCtrlFatalStateError: {
+    case kTopDarjeelingAlertIdLcCtrlFatalStateError: {
       fault_checker_t fc = {lc_ctrl_fault_checker, lc_ctrl_inst_name,
                             sparse_fsm_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdLcCtrlFatalBusIntegError: {
+    case kTopDarjeelingAlertIdLcCtrlFatalBusIntegError: {
       fault_checker_t fc = {lc_ctrl_fault_checker, lc_ctrl_inst_name, we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdOtbnFatal: {
+    case kTopDarjeelingAlertIdOtbnFatal: {
       fault_checker_t fc = {trivial_fault_checker, otbn_inst_name, we_check};
       // TODO(#14518)
       LOG_INFO("Expected alert %d otbn fault check is yet unimplemented",
@@ -897,133 +905,133 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
     } break;
       // TODO add mechanism to inject:
       // forcing otp_prog_err_o from lc_ctrl_fsm and
-      // kTopEarlgreyAlertIdLcCtrlFatalStateError using sparse fsm.
+      // kTopDarjeelingAlertIdLcCtrlFatalStateError using sparse fsm.
       // alerts, and corresponding CSR bit to check.
-    case kTopEarlgreyAlertIdOtpCtrlFatalMacroError: {
+    case kTopDarjeelingAlertIdOtpCtrlFatalMacroError: {
       fault_checker_t fc = {otp_ctrl_fault_checker, otp_ctrl_inst_name,
                             sparse_fsm_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdOtpCtrlFatalPrimOtpAlert: {
+    case kTopDarjeelingAlertIdOtpCtrlFatalPrimOtpAlert: {
       fault_checker_t fc = {otp_ctrl_prim_fault_checker, otp_ctrl_inst_name,
                             sparse_fsm_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdOtpCtrlFatalCheckError: {
+    case kTopDarjeelingAlertIdOtpCtrlFatalCheckError: {
       fault_checker_t fc = {otp_ctrl_fault_checker, otp_ctrl_inst_name,
                             sparse_fsm_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdOtpCtrlFatalBusIntegError: {
+    case kTopDarjeelingAlertIdOtpCtrlFatalBusIntegError: {
       fault_checker_t fc = {otp_ctrl_fault_checker, otp_ctrl_inst_name,
                             we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdPattgenFatalFault: {
+    case kTopDarjeelingAlertIdPattgenFatalFault: {
       fault_checker_t fc = {trivial_fault_checker, pattgen_inst_name, we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdPinmuxAonFatalFault: {
+    case kTopDarjeelingAlertIdPinmuxAonFatalFault: {
       fault_checker_t fc = {trivial_fault_checker, pinmux_inst_name, we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdPwmAonFatalFault: {
+    case kTopDarjeelingAlertIdPwmAonFatalFault: {
       fault_checker_t fc = {trivial_fault_checker, pwm_inst_name, we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdPwrmgrAonFatalFault: {
+    case kTopDarjeelingAlertIdPwrmgrAonFatalFault: {
       fault_checker_t fc = {pwrmgr_fault_checker, pwrmgr_inst_name, we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdRomCtrlFatal: {
+    case kTopDarjeelingAlertIdRomCtrlFatal: {
       fault_checker_t fc = {rom_ctrl_fault_checker, rom_ctrl_inst_name,
                             we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdRstmgrAonFatalCnstyFault: {
+    case kTopDarjeelingAlertIdRstmgrAonFatalCnstyFault: {
       fault_checker_t fc = {rstmgr_fault_checker, rstmgr_inst_name,
                             rst_cnsty_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdRstmgrAonFatalFault: {
+    case kTopDarjeelingAlertIdRstmgrAonFatalFault: {
       fault_checker_t fc = {rstmgr_fault_checker, rstmgr_inst_name, we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdRvCoreIbexFatalSwErr: {
+    case kTopDarjeelingAlertIdRvCoreIbexFatalSwErr: {
       fault_checker_t fc = {rv_core_ibex_fault_checker, rv_core_ibex_inst_name,
                             sw_alert_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdRvCoreIbexFatalHwErr: {
+    case kTopDarjeelingAlertIdRvCoreIbexFatalHwErr: {
       fault_checker_t fc = {rv_core_ibex_fault_checker, rv_core_ibex_inst_name,
                             we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdRvDmFatalFault: {
+    case kTopDarjeelingAlertIdRvDmFatalFault: {
       fault_checker_t fc = {trivial_fault_checker, rv_dm_inst_name, we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdRvPlicFatalFault: {
+    case kTopDarjeelingAlertIdRvPlicFatalFault: {
       fault_checker_t fc = {trivial_fault_checker, rv_plic_inst_name, we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdRvTimerFatalFault: {
+    case kTopDarjeelingAlertIdRvTimerFatalFault: {
       fault_checker_t fc = {trivial_fault_checker, rv_timer_inst_name,
                             we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdSensorCtrlFatalAlert: {
+    case kTopDarjeelingAlertIdSensorCtrlFatalAlert: {
       fault_checker_t fc = {trivial_fault_checker, sensor_ctrl_inst_name,
                             we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdSpiDeviceFatalFault: {
+    case kTopDarjeelingAlertIdSpiDeviceFatalFault: {
       fault_checker_t fc = {trivial_fault_checker, spi_device_inst_name,
                             we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdSpiHost0FatalFault: {
+    case kTopDarjeelingAlertIdSpiHost0FatalFault: {
       fault_checker_t fc = {trivial_fault_checker, spi_host0_inst_name,
                             we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdSpiHost1FatalFault: {
+    case kTopDarjeelingAlertIdSpiHost1FatalFault: {
       fault_checker_t fc = {trivial_fault_checker, spi_host1_inst_name,
                             we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdSramCtrlMainFatalError: {
+    case kTopDarjeelingAlertIdSramCtrlMainFatalError: {
       fault_checker_t fc = {sram_ctrl_main_fault_checker,
                             sram_ctrl_main_inst_name, we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdSramCtrlRetAonFatalError: {
+    case kTopDarjeelingAlertIdSramCtrlRetAonFatalError: {
       fault_checker_t fc = {sram_ctrl_ret_fault_checker,
                             sram_ctrl_ret_inst_name, we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdSysrstCtrlAonFatalFault: {
+    case kTopDarjeelingAlertIdSysrstCtrlAonFatalFault: {
       fault_checker_t fc = {trivial_fault_checker, sysrst_ctrl_inst_name,
                             we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdUart0FatalFault: {
+    case kTopDarjeelingAlertIdUart0FatalFault: {
       fault_checker_t fc = {trivial_fault_checker, uart0_inst_name, we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdUart1FatalFault: {
+    case kTopDarjeelingAlertIdUart1FatalFault: {
       fault_checker_t fc = {trivial_fault_checker, uart1_inst_name, we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdUart2FatalFault: {
+    case kTopDarjeelingAlertIdUart2FatalFault: {
       fault_checker_t fc = {trivial_fault_checker, uart2_inst_name, we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdUart3FatalFault: {
+    case kTopDarjeelingAlertIdUart3FatalFault: {
       fault_checker_t fc = {trivial_fault_checker, uart3_inst_name, we_check};
       fault_checker = fc;
     } break;
-    case kTopEarlgreyAlertIdUsbdevFatalFault: {
+    case kTopDarjeelingAlertIdUsbdevFatalFault: {
       fault_checker_t fc = {trivial_fault_checker, usbdev_inst_name, we_check};
       fault_checker = fc;
     } break;
@@ -1049,21 +1057,21 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
   // DO NOT CHANGE THIS: it is used to notify the SV side.
   LOG_INFO("Ready for fault injection");
 
-  if (kExpectedAlertNumber == kTopEarlgreyAlertIdRvCoreIbexFatalSwErr) {
+  if (kExpectedAlertNumber == kTopDarjeelingAlertIdRvCoreIbexFatalSwErr) {
     CHECK_DIF_OK(dif_rv_core_ibex_trigger_sw_fatal_err_alert(&rv_core_ibex));
     LOG_INFO("Software fatal alert triggered");
   }
 
   // OTP ecc macro error test requires otp to read backdoor injected error
   // macro.
-  if (kExpectedAlertNumber == kTopEarlgreyAlertIdOtpCtrlFatalMacroError) {
+  if (kExpectedAlertNumber == kTopDarjeelingAlertIdOtpCtrlFatalMacroError) {
     CHECK_DIF_OK(
         dif_otp_ctrl_dai_read_start(&otp_ctrl, kDifOtpCtrlPartitionHwCfg, 0));
     LOG_INFO("OTP_CTRL error inject done");
   }
 
   // FlashCtrlFatalErr test requires host read request.
-  if (kExpectedAlertNumber == kTopEarlgreyAlertIdFlashCtrlFatalErr) {
+  if (kExpectedAlertNumber == kTopDarjeelingAlertIdFlashCtrlFatalErr) {
     enum {
       kNumTestWords = 16,
       kNumTestBytes = kNumTestWords * sizeof(uint32_t),
@@ -1071,14 +1079,14 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
     uint32_t host_data[kNumTestWords];
     // Send host request to trigger host grant from flash_ctrl.
     mmio_region_memcpy_from_mmio32(
-        mmio_region_from_addr(TOP_EARLGREY_EFLASH_BASE_ADDR),
+        mmio_region_from_addr(TOP_DARJEELING_EFLASH_BASE_ADDR),
         FLASH_CTRL_PARAM_BYTES_PER_BANK, &host_data, kNumTestBytes);
   }
 
   IBEX_SPIN_FOR(alert_irq_seen, kTestTimeout);
   LOG_INFO("Alert IRQ seen");
 
-  if (kExpectedAlertNumber == kTopEarlgreyAlertIdSramCtrlRetAonFatalError) {
+  if (kExpectedAlertNumber == kTopDarjeelingAlertIdSramCtrlRetAonFatalError) {
     LOG_INFO("Check that the retention SRAM blocks accesses");
     uint32_t data = *((uint32_t *)kSramRetStart);
     LOG_INFO("Read from address 0x%0x with expected error gets 0x%x",
@@ -1133,11 +1141,11 @@ bool test_main(void) {
 
   // Enable all the interrupts used in this test.
   rv_plic_testutils_irq_range_enable(
-      &plic, kPlicTarget, kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired,
-      kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark);
+      &plic, kPlicTarget, kTopDarjeelingPlicIrqIdAonTimerAonWkupTimerExpired,
+      kTopDarjeelingPlicIrqIdAonTimerAonWdogTimerBark);
   rv_plic_testutils_irq_range_enable(&plic, kPlicTarget,
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassa,
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassd);
+                                     kTopDarjeelingPlicIrqIdAlertHandlerClassa,
+                                     kTopDarjeelingPlicIrqIdAlertHandlerClassd);
 
   // Enable access to flash for storing info across resets.
   LOG_INFO("Setting default region accesses");
@@ -1196,11 +1204,11 @@ bool test_main(void) {
     // flash or sram accesses are blocked in those cases. For lc_ctrl fatal
     // state, otp_fatal alerts tha will trigger LC to escalate, the lc_ctrl
     // blocks the CPU.
-    if (kExpectedAlertNumber == kTopEarlgreyAlertIdFlashCtrlFatalStdErr ||
-        kExpectedAlertNumber == kTopEarlgreyAlertIdSramCtrlMainFatalError ||
-        kExpectedAlertNumber == kTopEarlgreyAlertIdLcCtrlFatalStateError ||
-        kExpectedAlertNumber == kTopEarlgreyAlertIdOtpCtrlFatalMacroError ||
-        kExpectedAlertNumber == kTopEarlgreyAlertIdOtpCtrlFatalCheckError) {
+    if (kExpectedAlertNumber == kTopDarjeelingAlertIdFlashCtrlFatalStdErr ||
+        kExpectedAlertNumber == kTopDarjeelingAlertIdSramCtrlMainFatalError ||
+        kExpectedAlertNumber == kTopDarjeelingAlertIdLcCtrlFatalStateError ||
+        kExpectedAlertNumber == kTopDarjeelingAlertIdOtpCtrlFatalMacroError ||
+        kExpectedAlertNumber == kTopDarjeelingAlertIdOtpCtrlFatalCheckError) {
       CHECK(interrupt_count == 0,
             "Expected regular ISR should not run for flash_ctrl, lc_ctrl fatal "
             "state, or sram_ctrl_main faults");

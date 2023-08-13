@@ -33,7 +33,7 @@ dual_cc_library(
         ],
         shared = [
             "//sw/device/silicon_creator/lib:manifest",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         ],
     ),
 )
@@ -67,7 +67,7 @@ ld_library(
     name = "linker_script",
     script = "rom.ld",
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling_memory",
         "//sw/device:info_sections",
     ],
 )
@@ -91,13 +91,13 @@ cc_library(
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
         "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
-        "//hw/top_earlgrey/ip/ast/data:ast_regs",
-        "//hw/top_earlgrey/ip/clkmgr/data/autogen:clkmgr_regs",
-        "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_regs",
-        "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
-        "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
-        "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/ip/ast/data:ast_regs",
+        "//hw/top_darjeeling/ip/clkmgr/data/autogen:clkmgr_regs",
+        "//hw/top_darjeeling/ip/pinmux/data/autogen:pinmux_regs",
+        "//hw/top_darjeeling/ip/pwrmgr/data/autogen:pwrmgr_regs",
+        "//hw/top_darjeeling/ip/rstmgr/data/autogen:rstmgr_regs",
+        "//hw/top_darjeeling/ip/sensor_ctrl/data:sensor_ctrl_regs",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/lib/sw/device/base:hardened",
         "//sw/lib/sw/device/base:multibits",
@@ -217,7 +217,7 @@ cc_library(
     hdrs = ["rom_epmp.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/lib:epmp_state",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/lib/sw/device/base:bitfield",
@@ -244,7 +244,7 @@ opentitan_functest(
     test_in_rom = True,
     deps = [
         ":rom_without_keys",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
@@ -265,9 +265,9 @@ opentitan_functest(
         "//sw/lib/sw/device/runtime:hart",
         "//sw/lib/sw/device/runtime:ibex",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
-        "//sw/top_earlgrey/sw/dif:pinmux",
-        "//sw/top_earlgrey/sw/dif:sram_ctrl",
+        "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/dif:pinmux",
+        "//sw/top_darjeeling/sw/dif:sram_ctrl",
     ],
 )
 
@@ -286,8 +286,8 @@ cc_library(
     deps = [
         "//hw/ip/gpio/data:gpio_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
@@ -307,8 +307,8 @@ cc_test(
         ":bootstrap",
         "//hw/ip/gpio/data:gpio_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "@googletest//:gtest_main",
     ],
 )
@@ -379,7 +379,7 @@ cc_test(
     deps = [
         ":sigverify_keys",
         ":sigverify_keys_rsa",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
@@ -404,7 +404,7 @@ cc_test(
     name = "package_{}".format(authenticity),
     testonly = testonly,
     srcs = [":pre_package_{}".format(authenticity)],
-    prefix = "earlgrey/rom",
+    prefix = "darjeeling/rom",
 ) for authenticity, testonly in (
     ("fake", True),
     # FIXME: remove testonly after adding the real keys

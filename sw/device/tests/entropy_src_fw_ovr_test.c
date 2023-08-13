@@ -11,7 +11,7 @@
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"  // Generated.
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -89,7 +89,8 @@ void test_firmware_override(dif_entropy_src_t *entropy) {
 bool test_main(void) {
   dif_entropy_src_t entropy_src;
   CHECK_DIF_OK(dif_entropy_src_init(
-      mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
+      mmio_region_from_addr(TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR),
+      &entropy_src));
   test_firmware_override(&entropy_src);
   return true;
 }

@@ -20,7 +20,7 @@
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/runtime/print.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "spi_host_regs.h"  // Generated.
 
 static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
@@ -41,7 +41,7 @@ static volatile dif_spi_host_irq_t irq_fired;
 static dif_rv_plic_t plic;
 
 enum {
-  kHart = kTopEarlgreyPlicTargetIbex0,
+  kHart = kTopDarjeelingPlicTargetIbex0,
   kTxWatermark = 64,
   kRxWatermark = 64,
 };
@@ -63,15 +63,16 @@ static status_t external_isr(void) {
   TRY(dif_rv_plic_irq_claim(&plic, kHart, &plic_irq_id));
   LOG_INFO("%s: %d", __func__, plic_irq_id);
 
-  top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
-  TRY_CHECK(peripheral == kTopEarlgreyPlicPeripheralSpiHost0,
+  top_darjeeling_plic_peripheral_t peripheral =
+      (top_darjeeling_plic_peripheral_t)
+          top_darjeeling_plic_interrupt_for_peripheral[plic_irq_id];
+  TRY_CHECK(peripheral == kTopDarjeelingPlicPeripheralSpiHost0,
             "IRQ from incorrect peripheral: exp = %d(spi_host0), found = %d",
-            kTopEarlgreyPlicPeripheralSpiHost0, peripheral);
+            kTopDarjeelingPlicPeripheralSpiHost0, peripheral);
 
   irq_fired = (dif_spi_host_irq_t)(plic_irq_id -
                                    (dif_rv_plic_irq_id_t)
-                                       kTopEarlgreyPlicIrqIdSpiHost0Error);
+                                       kTopDarjeelingPlicIrqIdSpiHost0Error);
 
   TRY(dif_spi_host_irq_acknowledge(&spi_host, irq_fired));
 
@@ -337,7 +338,7 @@ static status_t cmd_busy_error_irq(void) {
 static status_t test_init(void) {
   mmio_region_t base_addr;
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_SPI_HOST0_BASE_ADDR);
   TRY(dif_spi_host_init(base_addr, &spi_host));
 
   CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
@@ -352,12 +353,12 @@ static status_t test_init(void) {
       }));
   TRY(dif_spi_host_output_set_enabled(&spi_host, true));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR);
   TRY(dif_rv_plic_init(base_addr, &plic));
 
   rv_plic_testutils_irq_range_enable(&plic, kHart,
-                                     kTopEarlgreyPlicIrqIdSpiHost0Error,
-                                     kTopEarlgreyPlicIrqIdSpiHost0SpiEvent);
+                                     kTopDarjeelingPlicIrqIdSpiHost0Error,
+                                     kTopDarjeelingPlicIrqIdSpiHost0SpiEvent);
 
   dif_spi_host_irq_state_snapshot_t spi_host_irqs =
       (dif_spi_host_irq_state_snapshot_t)UINT_MAX;

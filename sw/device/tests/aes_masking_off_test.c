@@ -16,7 +16,7 @@
 #include "sw/lib/sw/device/base/multibits.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 enum {
   kTestTimeout = (1000 * 1000),
@@ -56,7 +56,7 @@ status_t execute_test(void) {
   // Initialise AES.
   dif_aes_t aes;
   CHECK_DIF_OK(
-      dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
+      dif_aes_init(mmio_region_from_addr(TOP_DARJEELING_AES_BASE_ADDR), &aes));
   CHECK_DIF_OK(dif_aes_reset(&aes));
 
   // Mask the key. Note that this should not be done manually. Software is
@@ -127,9 +127,9 @@ bool test_main(void) {
 
   // Disable EDN connected to AES as well as CSRNG.
   const dif_edn_t edn = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
+      .base_addr = mmio_region_from_addr(TOP_DARJEELING_EDN0_BASE_ADDR)};
   const dif_csrng_t csrng = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
+      .base_addr = mmio_region_from_addr(TOP_DARJEELING_CSRNG_BASE_ADDR)};
   CHECK_DIF_OK(dif_edn_stop(&edn));
   CHECK_DIF_OK(dif_csrng_stop(&csrng));
 

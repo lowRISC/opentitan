@@ -14,7 +14,7 @@
 #include "sw/lib/sw/device/base/mock_abs_mmio.h"
 
 #include "hmac_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 namespace hmac_unittest {
 namespace {
@@ -22,7 +22,7 @@ using ::testing::ElementsAreArray;
 
 class HmacTest : public rom_test::RomTest {
  protected:
-  uint32_t base_ = TOP_EARLGREY_HMAC_BASE_ADDR;
+  uint32_t base_ = TOP_DARJEELING_HMAC_BASE_ADDR;
   rom_test::MockAbsMmio mmio_;
 };
 

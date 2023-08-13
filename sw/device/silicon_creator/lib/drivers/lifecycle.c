@@ -12,11 +12,11 @@
 #include "sw/lib/sw/device/base/hardened.h"
 #include "sw/lib/sw/device/base/macros.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "lc_ctrl_regs.h"
 
 enum {
-  kBase = TOP_EARLGREY_LC_CTRL_BASE_ADDR,
+  kBase = TOP_DARJEELING_LC_CTRL_BASE_ADDR,
 };
 
 lifecycle_state_t lifecycle_state_get(void) {

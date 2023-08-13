@@ -29,7 +29,7 @@
 #include "sw/lib/sw/device/runtime/log.h"
 
 #include "alert_handler_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 /*
   RSTMGR ALERT_INFO Test
 
@@ -87,7 +87,7 @@ enum {
   kRoundThreeDelay = 1000         // us
 };
 
-static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
+static const uint32_t kPlicTarget = kTopDarjeelingPlicTargetIbex0;
 static dif_flash_ctrl_state_t flash_ctrl;
 static dif_rstmgr_t rstmgr;
 static dif_alert_handler_t alert_handler;
@@ -233,7 +233,7 @@ static test_alert_info_t kExpectedInfo[kRoundTotal] = {
         },
 };
 
-static node_t test_node[kTopEarlgreyAlertPeripheralLast];
+static node_t test_node[kTopDarjeelingAlertPeripheralLast];
 
 static void set_extra_alert(volatile uint32_t *set) {
   CHECK_DIF_OK(dif_uart_alert_force(&uart0, kDifUartAlertFatalFault));
@@ -250,25 +250,25 @@ static void set_extra_alert(volatile uint32_t *set) {
  * overrides the default OTTF implementation.
  */
 void ottf_external_isr(void) {
-  top_earlgrey_plic_peripheral_t peripheral;
+  top_darjeeling_plic_peripheral_t peripheral;
   dif_rv_plic_irq_id_t irq_id;
   uint32_t irq = 0;
 
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
 
-  peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
+  peripheral = (top_darjeeling_plic_peripheral_t)
+      top_darjeeling_plic_interrupt_for_peripheral[irq_id];
 
-  if (peripheral == kTopEarlgreyPlicPeripheralAonTimerAon) {
+  if (peripheral == kTopDarjeelingPlicPeripheralAonTimerAon) {
     irq =
         (dif_aon_timer_irq_t)(irq_id -
                               (dif_rv_plic_irq_id_t)
-                                  kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
+                                  kTopDarjeelingPlicIrqIdAonTimerAonWkupTimerExpired);
 
     CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(&aon_timer, irq));
-  } else if (peripheral == kTopEarlgreyPlicPeripheralAlertHandler) {
+  } else if (peripheral == kTopDarjeelingPlicPeripheralAlertHandler) {
     irq = (irq_id -
-           (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAlertHandlerClassa);
+           (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdAlertHandlerClassa);
 
     switch (irq) {
       case 0:  // class a
@@ -326,8 +326,8 @@ static void print_alert_cause(alert_handler_testutils_info_t info) {
 static void prgm_alert_handler_round1(void) {
   dif_alert_handler_class_t alert_class = kDifAlertHandlerClassA;
 
-  for (int i = kTopEarlgreyAlertPeripheralI2c0;
-       i < kTopEarlgreyAlertPeripheralI2c2 + 1; ++i) {
+  for (int i = kTopDarjeelingAlertPeripheralI2c0;
+       i < kTopDarjeelingAlertPeripheralI2c2 + 1; ++i) {
     CHECK_DIF_OK(dif_alert_handler_configure_alert(
         &alert_handler, test_node[i].alert, test_node[i].class,
         /*enabled=*/kDifToggleEnabled, /*locked=*/kDifToggleEnabled));
@@ -359,15 +359,15 @@ static void prgm_alert_handler_round2(void) {
       kConfigProfiles[kDifAlertHandlerClassC],
       kConfigProfiles[kDifAlertHandlerClassB]};
 
-  for (int i = kTopEarlgreyAlertPeripheralUart0;
-       i < kTopEarlgreyAlertPeripheralUart3 + 1; ++i) {
+  for (int i = kTopDarjeelingAlertPeripheralUart0;
+       i < kTopDarjeelingAlertPeripheralUart3 + 1; ++i) {
     CHECK_DIF_OK(dif_alert_handler_configure_alert(
         &alert_handler, test_node[i].alert, test_node[i].class,
         /*enabled=*/kDifToggleEnabled, /*locked=*/kDifToggleEnabled));
   }
   CHECK_DIF_OK(dif_alert_handler_configure_alert(
-      &alert_handler, test_node[kTopEarlgreyAlertPeripheralOtpCtrl].alert,
-      test_node[kTopEarlgreyAlertPeripheralOtpCtrl].class,
+      &alert_handler, test_node[kTopDarjeelingAlertPeripheralOtpCtrl].alert,
+      test_node[kTopDarjeelingAlertPeripheralOtpCtrl].class,
       /*enabled=*/kDifToggleEnabled,
       /*locked=*/kDifToggleEnabled));
 
@@ -395,11 +395,11 @@ static void prgm_alert_handler_round3(void) {
   dif_alert_handler_class_t alert_class;
 
   for (dif_alert_handler_alert_t i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
-    if (i == kTopEarlgreyAlertIdSpiHost0FatalFault) {
+    if (i == kTopDarjeelingAlertIdSpiHost0FatalFault) {
       alert_class = kDifAlertHandlerClassB;
-    } else if (i == kTopEarlgreyAlertIdUart0FatalFault) {
+    } else if (i == kTopDarjeelingAlertIdUart0FatalFault) {
       alert_class = kDifAlertHandlerClassC;
-    } else if (i == kTopEarlgreyAlertIdI2c0FatalFault) {
+    } else if (i == kTopDarjeelingAlertIdI2c0FatalFault) {
       alert_class = kDifAlertHandlerClassA;
     } else {
       alert_class = kDifAlertHandlerClassD;
@@ -508,29 +508,31 @@ static void prgm_alert_handler_round4(void) {
 
 static void peripheral_init(void) {
   CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spi_host));
-  CHECK_DIF_OK(
-      dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C0_BASE_ADDR), &i2c0));
-  CHECK_DIF_OK(
-      dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C1_BASE_ADDR), &i2c1));
-  CHECK_DIF_OK(
-      dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C2_BASE_ADDR), &i2c2));
+      mmio_region_from_addr(TOP_DARJEELING_SPI_HOST0_BASE_ADDR), &spi_host));
+  CHECK_DIF_OK(dif_i2c_init(
+      mmio_region_from_addr(TOP_DARJEELING_I2C0_BASE_ADDR), &i2c0));
+  CHECK_DIF_OK(dif_i2c_init(
+      mmio_region_from_addr(TOP_DARJEELING_I2C1_BASE_ADDR), &i2c1));
+  CHECK_DIF_OK(dif_i2c_init(
+      mmio_region_from_addr(TOP_DARJEELING_I2C2_BASE_ADDR), &i2c2));
   CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart0));
+      mmio_region_from_addr(TOP_DARJEELING_UART0_BASE_ADDR), &uart0));
   CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_EARLGREY_UART1_BASE_ADDR), &uart1));
+      mmio_region_from_addr(TOP_DARJEELING_UART1_BASE_ADDR), &uart1));
   CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_EARLGREY_UART2_BASE_ADDR), &uart2));
+      mmio_region_from_addr(TOP_DARJEELING_UART2_BASE_ADDR), &uart2));
   CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_EARLGREY_UART3_BASE_ADDR), &uart3));
+      mmio_region_from_addr(TOP_DARJEELING_UART3_BASE_ADDR), &uart3));
   CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
+      mmio_region_from_addr(TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR),
+      &otp_ctrl));
   CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
+      mmio_region_from_addr(TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR),
+      &aon_timer));
   CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+      mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR), &pwrmgr));
   CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      mmio_region_from_addr(TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
 
   // Set pwrmgr reset_en
@@ -603,96 +605,97 @@ static void collect_alert_dump_and_compare(test_round_t round) {
   }
 }
 
-static node_t test_node[kTopEarlgreyAlertPeripheralLast] = {
-    [kTopEarlgreyAlertPeripheralSpiHost0] =
+static node_t test_node[kTopDarjeelingAlertPeripheralLast] = {
+    [kTopDarjeelingAlertPeripheralSpiHost0] =
         {
             .name = "SPIHOST0",
-            .alert = kTopEarlgreyAlertIdSpiHost0FatalFault,
+            .alert = kTopDarjeelingAlertIdSpiHost0FatalFault,
             .class = kDifAlertHandlerClassB,
         },
-    [kTopEarlgreyAlertPeripheralOtpCtrl] =
+    [kTopDarjeelingAlertPeripheralOtpCtrl] =
         {
             .name = "OTPCTRL",
-            .alert = kTopEarlgreyAlertIdOtpCtrlFatalBusIntegError,
+            .alert = kTopDarjeelingAlertIdOtpCtrlFatalBusIntegError,
             .class = kDifAlertHandlerClassB,
         },
-    [kTopEarlgreyAlertPeripheralKmac] =
+    [kTopDarjeelingAlertPeripheralKmac] =
         {
             .name = "KMAC",
-            .alert = kTopEarlgreyAlertIdKmacFatalFaultErr,
+            .alert = kTopDarjeelingAlertIdKmacFatalFaultErr,
             .class = kDifAlertHandlerClassB,
         },
-    [kTopEarlgreyAlertPeripheralUart0] =
+    [kTopDarjeelingAlertPeripheralUart0] =
         {
             .name = "UART0",
-            .alert = kTopEarlgreyAlertIdUart0FatalFault,
+            .alert = kTopDarjeelingAlertIdUart0FatalFault,
             .class = kDifAlertHandlerClassC,
         },
-    [kTopEarlgreyAlertPeripheralUart1] =
+    [kTopDarjeelingAlertPeripheralUart1] =
         {
             .name = "UART1",
-            .alert = kTopEarlgreyAlertIdUart1FatalFault,
+            .alert = kTopDarjeelingAlertIdUart1FatalFault,
             .class = kDifAlertHandlerClassC,
         },
-    [kTopEarlgreyAlertPeripheralUart2] =
+    [kTopDarjeelingAlertPeripheralUart2] =
         {
             .name = "UART2",
-            .alert = kTopEarlgreyAlertIdUart2FatalFault,
+            .alert = kTopDarjeelingAlertIdUart2FatalFault,
             .class = kDifAlertHandlerClassC,
         },
-    [kTopEarlgreyAlertPeripheralUart3] =
+    [kTopDarjeelingAlertPeripheralUart3] =
         {
             .name = "UART3",
-            .alert = kTopEarlgreyAlertIdUart3FatalFault,
+            .alert = kTopDarjeelingAlertIdUart3FatalFault,
             .class = kDifAlertHandlerClassC,
         },
-    [kTopEarlgreyAlertPeripheralI2c0] =
+    [kTopDarjeelingAlertPeripheralI2c0] =
         {
             .name = "I2C0",
-            .alert = kTopEarlgreyAlertIdI2c0FatalFault,
+            .alert = kTopDarjeelingAlertIdI2c0FatalFault,
             .class = kDifAlertHandlerClassA,
         },
-    [kTopEarlgreyAlertPeripheralI2c1] =
+    [kTopDarjeelingAlertPeripheralI2c1] =
         {
             .name = "I2C1",
-            .alert = kTopEarlgreyAlertIdI2c1FatalFault,
+            .alert = kTopDarjeelingAlertIdI2c1FatalFault,
             .class = kDifAlertHandlerClassA,
         },
-    [kTopEarlgreyAlertPeripheralI2c2] =
+    [kTopDarjeelingAlertPeripheralI2c2] =
         {
             .name = "I2C2",
-            .alert = kTopEarlgreyAlertIdI2c2FatalFault,
+            .alert = kTopDarjeelingAlertIdI2c2FatalFault,
             .class = kDifAlertHandlerClassA,
         },
 };
 
 static void init_expected_cause(void) {
   kExpectedInfo[kRound1]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdI2c0FatalFault] = 1;
+      .alert_info.alert_cause[kTopDarjeelingAlertIdI2c0FatalFault] = 1;
   kExpectedInfo[kRound1]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdI2c1FatalFault] = 1;
+      .alert_info.alert_cause[kTopDarjeelingAlertIdI2c1FatalFault] = 1;
   kExpectedInfo[kRound1]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdI2c2FatalFault] = 1;
+      .alert_info.alert_cause[kTopDarjeelingAlertIdI2c2FatalFault] = 1;
 
   kExpectedInfo[kRound2]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdUart0FatalFault] = 1;
+      .alert_info.alert_cause[kTopDarjeelingAlertIdUart0FatalFault] = 1;
   kExpectedInfo[kRound2]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdUart1FatalFault] = 1;
+      .alert_info.alert_cause[kTopDarjeelingAlertIdUart1FatalFault] = 1;
   kExpectedInfo[kRound2]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdUart2FatalFault] = 1;
+      .alert_info.alert_cause[kTopDarjeelingAlertIdUart2FatalFault] = 1;
   kExpectedInfo[kRound2]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdUart3FatalFault] = 1;
+      .alert_info.alert_cause[kTopDarjeelingAlertIdUart3FatalFault] = 1;
   kExpectedInfo[kRound2]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdOtpCtrlFatalBusIntegError] = 1;
+      .alert_info.alert_cause[kTopDarjeelingAlertIdOtpCtrlFatalBusIntegError] =
+      1;
 
   kExpectedInfo[kRound3]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdRvCoreIbexRecovSwErr] = 1;
+      .alert_info.alert_cause[kTopDarjeelingAlertIdRvCoreIbexRecovSwErr] = 1;
   kExpectedInfo[kRound3]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdUart0FatalFault] = 1;
+      .alert_info.alert_cause[kTopDarjeelingAlertIdUart0FatalFault] = 1;
   kExpectedInfo[kRound3]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdI2c0FatalFault] = 1;
+      .alert_info.alert_cause[kTopDarjeelingAlertIdI2c0FatalFault] = 1;
   kExpectedInfo[kRound3]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdSpiHost0FatalFault] = 1;
+      .alert_info.alert_cause[kTopDarjeelingAlertIdSpiHost0FatalFault] = 1;
 }
 bool test_main(void) {
   // Enable global and external IRQ at Ibex.
@@ -703,26 +706,26 @@ bool test_main(void) {
   init_expected_cause();
 
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR), &rstmgr));
   CHECK_DIF_OK(dif_alert_handler_init(
-      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
+      mmio_region_from_addr(TOP_DARJEELING_ALERT_HANDLER_BASE_ADDR),
       &alert_handler));
   CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
+      mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &plic));
 
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_ctrl,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR)));
 
   peripheral_init();
 
   // Enable all interrupts used in this test.
   rv_plic_testutils_irq_range_enable(&plic, kPlicTarget,
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassa,
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassd);
+                                     kTopDarjeelingPlicIrqIdAlertHandlerClassa,
+                                     kTopDarjeelingPlicIrqIdAlertHandlerClassd);
   rv_plic_testutils_irq_range_enable(
-      &plic, kPlicTarget, kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired,
-      kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark);
+      &plic, kPlicTarget, kTopDarjeelingPlicIrqIdAonTimerAonWkupTimerExpired,
+      kTopDarjeelingPlicIrqIdAonTimerAonWdogTimerBark);
 
   // First check the flash stored value.
   uint32_t event_idx = 0;

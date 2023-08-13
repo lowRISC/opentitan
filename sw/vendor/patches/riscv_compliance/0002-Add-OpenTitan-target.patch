@@ -238,7 +238,7 @@ index 0000000..b71105c
 +OT_TARGET    ?= fpga_cw310
 +LDSCRIPT      = $(OT_ROOT)/sw/device/lib/testing/test_framework/ottf.ld
 +DEFINES       = $(CARG) -DPRIV_MISA_S=0 -DPRIV_MISA_U=0 -DRVTEST_ENTRY=_rvc_start -DTRAPALIGN=8
-+TARGET_SIM   ?= $(OT_ROOT)/build/lowrisc_systems_top_earlgrey_verilator_0.1/sim-verilator/Vtop_earlgrey_verilator
++TARGET_SIM   ?= $(OT_ROOT)/build/lowrisc_systems_top_darjeeling_verilator_0.1/sim-verilator/Vtop_darjeeling_verilator
 +
 +COMPLIANCE_LIB_EXPORT = sw/device/riscv_compliance_support/riscv_compliance_support_export_$(OT_TARGET)
 +COMPLIANCE_LIB = ot_riscv_compliance_support_$(OT_TARGET)

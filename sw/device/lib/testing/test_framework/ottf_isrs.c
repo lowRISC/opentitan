@@ -12,7 +12,7 @@
 #include "sw/lib/sw/device/runtime/ibex.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 dif_rv_plic_t ottf_plic;
 
@@ -154,14 +154,15 @@ bool ottf_console_flow_control_isr(void) { return false; }
 
 OT_WEAK
 void ottf_external_isr(void) {
-  const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
+  const uint32_t kPlicTarget = kTopDarjeelingPlicTargetIbex0;
   dif_rv_plic_irq_id_t plic_irq_id;
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&ottf_plic, kPlicTarget, &plic_irq_id));
 
-  top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
+  top_darjeeling_plic_peripheral_t peripheral =
+      (top_darjeeling_plic_peripheral_t)
+          top_darjeeling_plic_interrupt_for_peripheral[plic_irq_id];
 
-  if (peripheral == kTopEarlgreyPlicPeripheralUart0 &&
+  if (peripheral == kTopDarjeelingPlicPeripheralUart0 &&
       ottf_console_flow_control_isr()) {
     // Complete the IRQ at PLIC.
     CHECK_DIF_OK(

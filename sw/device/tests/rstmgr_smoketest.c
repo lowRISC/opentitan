@@ -8,7 +8,7 @@
 #include "sw/ip/rstmgr/dif/dif_rstmgr.h"
 #include "sw/lib/sw/device/base/mmio.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -18,7 +18,7 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   dif_rstmgr_t rstmgr;
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
   LOG_INFO("Checking reset status.");
   CHECK(

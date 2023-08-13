@@ -23,22 +23,24 @@ check_empty () {
     fi
 }
 
-# This check ensures OpenTitan software can be built with a wildcard without
-# waiting for Verilator using --build_tag_filters=-verilator
-untagged=$(./bazelisk.sh query \
-  "rdeps(
-      //...,
-      //hw/top_earlgrey:verilator
-  )
-  except
-  attr(
-      tags,
-      '$(exact_regex "(verilator|manual)")',
-      //...
-  )" \
-  --output=label_kind)
-check_empty "Error:" "${untagged}" \
-"Target(s) above depend(s) on //hw/{top_chip}:verilator; please tag it with verilator or
-(to prevent matching any wildcards) manual.
-NOTE: test_suites that contain bazel tests with different tags should almost
-universally use the manual tag."
+for top_name in "darjeeling" "earlgrey"; do
+    # This check ensures OpenTitan software can be built with a wildcard without
+    # waiting for Verilator using --build_tag_filters=-verilator
+    untagged=$(./bazelisk.sh query \
+      "rdeps(
+          //...,
+          //hw/top_${top_name}:verilator
+      )
+      except
+      attr(
+          tags,
+          '$(exact_regex "(verilator|manual)")',
+          //...
+      )" \
+      --output=label_kind)
+    check_empty "Error:" "${untagged}" \
+    "Target(s) above depend(s) on //hw/{top_chip}:verilator; please tag it with verilator or
+    (to prevent matching any wildcards) manual.
+    NOTE: test_suites that contain bazel tests with different tags should almost
+    universally use the manual tag."
+done

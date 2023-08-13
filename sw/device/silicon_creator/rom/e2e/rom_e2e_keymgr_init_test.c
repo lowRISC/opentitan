@@ -17,7 +17,7 @@
 #include "sw/lib/sw/device/runtime/ibex.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"  // Generated
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -25,7 +25,7 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   dif_keymgr_t keymgr;
   CHECK_DIF_OK(dif_keymgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
+      mmio_region_from_addr(TOP_DARJEELING_KEYMGR_BASE_ADDR), &keymgr));
 
   CHECK_STATUS_OK(keymgr_testutils_check_state(&keymgr, kDifKeymgrStateReset));
 

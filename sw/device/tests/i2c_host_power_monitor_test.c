@@ -17,7 +17,7 @@
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/runtime/print.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "i2c_regs.h"  // Generated.
 
 static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
@@ -142,14 +142,14 @@ static status_t read_write_block(void) {
 
 static status_t test_init(void) {
   mmio_region_t base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
+      mmio_region_from_addr(TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR);
 
   TRY(dif_rv_core_ibex_init(base_addr, &rv_core_ibex));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C2_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_I2C2_BASE_ADDR);
   TRY(dif_i2c_init(base_addr, &i2c));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR);
   TRY(dif_pinmux_init(base_addr, &pinmux));
 
   TRY(i2c_testutils_select_pinmux(&pinmux, 2));

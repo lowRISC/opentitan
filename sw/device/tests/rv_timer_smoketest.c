@@ -10,7 +10,7 @@
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 static dif_rv_timer_t timer;
 
@@ -23,7 +23,7 @@ static volatile bool irq_fired = true;
 
 // NOTE: PLIC targets need not line up with hart ids; in the future, we should
 // generate hart ID constants elsewhere.
-static const uint32_t kHart = (uint32_t)kTopEarlgreyPlicTargetIbex0;
+static const uint32_t kHart = (uint32_t)kTopDarjeelingPlicTargetIbex0;
 static const uint32_t kComparator = 0;
 
 static const uint64_t kTickFreqHz = 1000 * 1000;  // 1 MHz.
@@ -58,7 +58,7 @@ bool test_main(void) {
   irq_timer_ctrl(true);
 
   CHECK_DIF_OK(dif_rv_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR), &timer));
+      mmio_region_from_addr(TOP_DARJEELING_RV_TIMER_BASE_ADDR), &timer));
   CHECK_DIF_OK(dif_rv_timer_reset(&timer));
 
   dif_rv_timer_tick_params_t tick_params;

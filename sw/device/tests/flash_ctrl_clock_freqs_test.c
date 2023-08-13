@@ -11,7 +11,7 @@
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -42,7 +42,7 @@ static uint32_t test_data[kDataSize];
  */
 static void read_and_check_host_if(uint32_t addr, const uint32_t *check_data) {
   mmio_region_t flash_addr =
-      mmio_region_from_addr(TOP_EARLGREY_EFLASH_BASE_ADDR + addr);
+      mmio_region_from_addr(TOP_DARJEELING_EFLASH_BASE_ADDR + addr);
   uint32_t host_data[kDataSize];
   for (int i = 0; i < kDataSize; ++i) {
     host_data[i] =
@@ -131,13 +131,13 @@ static void do_data_partition_test(uint32_t bank_number) {
 bool test_main(void) {
   dif_clkmgr_t clkmgr;
   CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+      mmio_region_from_addr(TOP_DARJEELING_CLKMGR_AON_BASE_ADDR), &clkmgr));
 
   CHECK_DIF_OK(dif_clkmgr_jitter_set_enabled(&clkmgr, kDifToggleEnabled));
 
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR)));
 
   for (int i = 0; i < kNumLoops; ++i) {
     do_info_partition_test(kFlashInfoPageIdCreatorSecret);

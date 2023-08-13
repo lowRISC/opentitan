@@ -19,7 +19,7 @@
 
 #include "alert_handler_regs.h"
 #include "flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "lc_ctrl_regs.h"
 #include "otp_ctrl_regs.h"
 #include "rv_core_ibex_regs.h"
@@ -243,7 +243,8 @@ static_assert(ARRAYSIZE(kDefaultAlertClassification) <=
               "The default alert classification must be less than or equal to "
               "the number of reserved OTP words");
 
-static_assert(kTopEarlgreyAlertIdLast < ARRAYSIZE(kDefaultAlertClassification),
+static_assert(kTopDarjeelingAlertIdLast <
+                  ARRAYSIZE(kDefaultAlertClassification),
               "The number of alert sources must be smaller than the alert "
               "classification");
 
@@ -520,7 +521,7 @@ TEST_F(ShutdownTest, RedactPolicyManufacturing) {
   };
   for (const auto state : kManufacturingStates) {
     EXPECT_ABS_READ32(
-        TOP_EARLGREY_LC_CTRL_BASE_ADDR + LC_CTRL_LC_STATE_REG_OFFSET,
+        TOP_DARJEELING_LC_CTRL_BASE_ADDR + LC_CTRL_LC_STATE_REG_OFFSET,
         static_cast<uint32_t>(state));
     EXPECT_EQ(shutdown_redact_policy(), kShutdownErrorRedactNone);
   }
@@ -535,10 +536,10 @@ TEST_F(ShutdownTest, RedactPolicyProduction) {
   };
   for (const auto state : kProductionStates) {
     EXPECT_ABS_READ32(
-        TOP_EARLGREY_LC_CTRL_BASE_ADDR + LC_CTRL_LC_STATE_REG_OFFSET,
+        TOP_DARJEELING_LC_CTRL_BASE_ADDR + LC_CTRL_LC_STATE_REG_OFFSET,
         static_cast<uint32_t>(state));
     EXPECT_ABS_READ32(
-        TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
+        TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR +
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
             OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ERROR_REPORTING_OFFSET,
         static_cast<uint32_t>(kShutdownErrorRedactModule));
@@ -550,7 +551,7 @@ TEST_F(ShutdownTest, RedactPolicyInvalid) {
   // Invalid states should result in the highest redaction level regardless of
   // the redaction level set by OTP.
   EXPECT_ABS_READ32(
-      TOP_EARLGREY_LC_CTRL_BASE_ADDR + LC_CTRL_LC_STATE_REG_OFFSET, 0);
+      TOP_DARJEELING_LC_CTRL_BASE_ADDR + LC_CTRL_LC_STATE_REG_OFFSET, 0);
   EXPECT_EQ(shutdown_redact_policy(), kShutdownErrorRedactAll);
 }
 
@@ -592,7 +593,7 @@ TEST_F(ShutdownTest, ShutdownFinalize) {
 
 TEST_F(ShutdownTest, FlashKill) {
   EXPECT_ABS_WRITE32(
-      TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR + FLASH_CTRL_DIS_REG_OFFSET, 0);
+      TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR + FLASH_CTRL_DIS_REG_OFFSET, 0);
   unmocked_shutdown_flash_kill();
 }
 
@@ -608,7 +609,7 @@ TEST_F(ShutdownTest, ShutdownIfErrorUnknown) {
 }
 
 TEST_F(ShutdownTest, SoftwareEscalate) {
-  EXPECT_ABS_WRITE32(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR +
+  EXPECT_ABS_WRITE32(TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR +
                          RV_CORE_IBEX_SW_FATAL_ERR_REG_OFFSET,
                      0);
   unmocked_shutdown_software_escalate();

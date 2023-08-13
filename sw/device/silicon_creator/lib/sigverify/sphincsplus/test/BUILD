@@ -41,7 +41,7 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib/sigverify/sphincsplus:verify",
         "//sw/lib/sw/device/base:memory",
         "//sw/lib/sw/device/runtime:ibex",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -59,7 +59,7 @@ opentitan_functest(
         "//sw/lib/sw/device/base:memory",
         "//sw/lib/sw/device/runtime:ibex",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -77,6 +77,6 @@ opentitan_functest(
         "//sw/lib/sw/device/base:memory",
         "//sw/lib/sw/device/runtime:ibex",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )

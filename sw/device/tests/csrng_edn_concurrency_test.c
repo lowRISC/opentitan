@@ -20,7 +20,7 @@
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 static dif_csrng_t csrng;
@@ -109,20 +109,21 @@ OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true);
  */
 static void init_peripherals(void) {
   CHECK_DIF_OK(dif_csrng_init(
-      mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR), &csrng));
-  CHECK_DIF_OK(
-      dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR), &edn0));
-  CHECK_DIF_OK(
-      dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR), &edn1));
+      mmio_region_from_addr(TOP_DARJEELING_CSRNG_BASE_ADDR), &csrng));
+  CHECK_DIF_OK(dif_edn_init(
+      mmio_region_from_addr(TOP_DARJEELING_EDN0_BASE_ADDR), &edn0));
+  CHECK_DIF_OK(dif_edn_init(
+      mmio_region_from_addr(TOP_DARJEELING_EDN1_BASE_ADDR), &edn1));
   CHECK_DIF_OK(dif_entropy_src_init(
-      mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
+      mmio_region_from_addr(TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR),
+      &entropy_src));
   CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
+      mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &plic));
   CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      mmio_region_from_addr(TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
-  CHECK_DIF_OK(
-      dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+  CHECK_DIF_OK(dif_otbn_init(
+      mmio_region_from_addr(TOP_DARJEELING_OTBN_BASE_ADDR), &otbn));
 }
 
 /**

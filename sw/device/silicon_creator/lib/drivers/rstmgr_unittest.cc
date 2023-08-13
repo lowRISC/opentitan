@@ -10,7 +10,7 @@
 #include "sw/lib/sw/device/base/mock_abs_mmio.h"
 #include "sw/lib/sw/device/base/multibits.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "rstmgr_regs.h"  // Generated.
 
 namespace rstmgr_unittest {
@@ -19,7 +19,7 @@ using ::testing::ElementsAre;
 
 class RstmgrTest : public rom_test::RomTest {
  protected:
-  uint32_t base_ = TOP_EARLGREY_RSTMGR_AON_BASE_ADDR;
+  uint32_t base_ = TOP_DARJEELING_RSTMGR_AON_BASE_ADDR;
   rom_test::MockAbsMmio mmio_;
 };
 

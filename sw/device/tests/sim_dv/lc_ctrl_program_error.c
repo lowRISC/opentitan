@@ -31,7 +31,7 @@
 
 #include "alert_handler_regs.h"
 #include "flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 /*
  TO BE FILLED IN
@@ -44,7 +44,7 @@ static dif_lc_ctrl_t lc_ctrl;
 static dif_rstmgr_t rstmgr;
 static dif_flash_ctrl_state_t flash_ctrl_state;
 
-static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
+static const uint32_t kPlicTarget = kTopDarjeelingPlicTargetIbex0;
 static dif_rv_plic_t plic;
 static dif_rv_core_ibex_t rv_core_ibex;
 
@@ -92,11 +92,13 @@ static void save_fault_checker(fault_checker_t *fault_checker) {
   uint32_t ip_inst_addr = (uint32_t)(fault_checker->ip_inst);
   CHECK_STATUS_OK(flash_ctrl_testutils_write(
       &flash_ctrl_state,
-      (uint32_t)(&nv_fault_checker[0]) - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+      (uint32_t)(&nv_fault_checker[0]) -
+          TOP_DARJEELING_FLASH_CTRL_MEM_BASE_ADDR,
       0, &function_addr, kDifFlashCtrlPartitionTypeData, 1));
   CHECK_STATUS_OK(flash_ctrl_testutils_write(
       &flash_ctrl_state,
-      (uint32_t)(&nv_fault_checker[1]) - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+      (uint32_t)(&nv_fault_checker[1]) -
+          TOP_DARJEELING_FLASH_CTRL_MEM_BASE_ADDR,
       0, &ip_inst_addr, kDifFlashCtrlPartitionTypeData, 1));
 }
 
@@ -127,7 +129,7 @@ static void lc_ctrl_fault_checker(bool enable, const char *ip_inst) {
   uint32_t mask = bitfield_field32_write(0, relevant_field, UINT32_MAX);
   uint32_t relevant_status = status & mask;
   uint32_t fatal_prog_error =
-      bitfield_bit32_write(0, kTopEarlgreyAlertIdLcCtrlFatalProgError, true);
+      bitfield_bit32_write(0, kTopDarjeelingAlertIdLcCtrlFatalProgError, true);
   uint32_t expected_status = enable ? fatal_prog_error : 0;
   CHECK(relevant_status == expected_status,
         "For %s got codes 0x%x, expected 0x%x", ip_inst, relevant_status,
@@ -158,17 +160,18 @@ void ottf_external_isr(void) {
 
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
 
-  top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
+  top_darjeeling_plic_peripheral_t peripheral =
+      (top_darjeeling_plic_peripheral_t)
+          top_darjeeling_plic_interrupt_for_peripheral[irq_id];
 
-  if (peripheral == kTopEarlgreyPlicPeripheralAonTimerAon) {
+  if (peripheral == kTopDarjeelingPlicPeripheralAonTimerAon) {
     uint32_t irq =
         (irq_id - (dif_rv_plic_irq_id_t)
-                      kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
+                      kTopDarjeelingPlicIrqIdAonTimerAonWkupTimerExpired);
 
     // We should not get aon timer interrupts since escalation suppresses them.
     CHECK(false, "Unexpected aon timer interrupt %d", irq);
-  } else if (peripheral == kTopEarlgreyPlicPeripheralAlertHandler) {
+  } else if (peripheral == kTopDarjeelingPlicPeripheralAlertHandler) {
     // Don't acknowledge the interrupt to alert_handler so it escalates.
     CHECK(fault_checker.function);
     CHECK(fault_checker.ip_inst);
@@ -180,7 +183,8 @@ void ottf_external_isr(void) {
   // Disable these interrupts from alert_handler so they don't keep happening
   // until NMI.
   uint32_t irq =
-      (irq_id - (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAlertHandlerClassa);
+      (irq_id -
+       (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdAlertHandlerClassa);
   CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(&alert_handler, irq,
                                                  kDifToggleDisabled));
 
@@ -236,12 +240,12 @@ void ottf_external_nmi_handler(void) {
   // Check this gets the expected alert.
   bool is_cause = false;
   CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-      &alert_handler, kTopEarlgreyAlertIdLcCtrlFatalProgError, &is_cause));
+      &alert_handler, kTopDarjeelingAlertIdLcCtrlFatalProgError, &is_cause));
   CHECK(is_cause);
 
   // Acknowledge the cause, which doesn't affect escalation.
   CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
-      &alert_handler, kTopEarlgreyAlertIdLcCtrlFatalProgError));
+      &alert_handler, kTopDarjeelingAlertIdLcCtrlFatalProgError));
   LOG_INFO("NMI handler exiting");
 }
 
@@ -266,14 +270,14 @@ void check_alert_dump(void) {
   alert_handler_testutils_info_dump(&actual_info);
   // Check alert cause.
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
-    if (i == kTopEarlgreyAlertIdLcCtrlFatalProgError) {
+    if (i == kTopDarjeelingAlertIdLcCtrlFatalProgError) {
       CHECK(actual_info.alert_cause[i], "Expected alert cause %d to be set", i);
     } else {
       // It is possible some alerts can trigger others; for example, some
       // lc_ctrl faults lead to otp_ctrl faults.
       if (actual_info.alert_cause[i]) {
         LOG_INFO("Unexpected alert cause %d, may be triggered by %d", i,
-                 kTopEarlgreyAlertIdLcCtrlFatalProgError);
+                 kTopDarjeelingAlertIdLcCtrlFatalProgError);
       }
     }
   }
@@ -286,22 +290,22 @@ bool test_main(void) {
 
   // Initialize core and peripherals.
   CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      mmio_region_from_addr(TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
 
   CHECK_DIF_OK(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR), &lc_ctrl));
+      mmio_region_from_addr(TOP_DARJEELING_LC_CTRL_BASE_ADDR), &lc_ctrl));
 
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
   CHECK_DIF_OK(dif_alert_handler_init(
-      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
+      mmio_region_from_addr(TOP_DARJEELING_ALERT_HANDLER_BASE_ADDR),
       &alert_handler));
 
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_ctrl_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR)));
 
   // Enable access to flash for storing info across resets.
   LOG_INFO("Setting default region accesses");
@@ -342,7 +346,7 @@ bool test_main(void) {
     // Configure the alert handler, LC controller fault checker and start
     // executing the test. Set the alert we care about to class A.
     CHECK_DIF_OK(dif_alert_handler_configure_alert(
-        &alert_handler, kTopEarlgreyAlertIdLcCtrlFatalProgError,
+        &alert_handler, kTopDarjeelingAlertIdLcCtrlFatalProgError,
         kDifAlertHandlerClassA, /*enabled=*/kDifToggleEnabled,
         /*locked=*/kDifToggleEnabled));
 
@@ -399,14 +403,14 @@ bool test_main(void) {
 
     CHECK(interrupt_count == 0,
           "Regular ISR should not run for "
-          "kTopEarlgreyAlertIdLcCtrlFatalProgError");
+          "kTopDarjeelingAlertIdLcCtrlFatalProgError");
     CHECK(nmi_count == 0,
-          "NMI should not run for kTopEarlgreyAlertIdLcCtrlFatalProgError");
+          "NMI should not run for kTopDarjeelingAlertIdLcCtrlFatalProgError");
 
     // Check that the alert handler cause is cleared after reset.
     bool is_cause = true;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-        &alert_handler, kTopEarlgreyAlertIdLcCtrlFatalProgError, &is_cause));
+        &alert_handler, kTopDarjeelingAlertIdLcCtrlFatalProgError, &is_cause));
     CHECK(!is_cause);
 
     // Check that the fault register is cleared after reset.

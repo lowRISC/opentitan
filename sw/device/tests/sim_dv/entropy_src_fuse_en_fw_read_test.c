@@ -13,8 +13,8 @@
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
-#include "otp_ctrl_regs.h"                            // Generated
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"  // Generated.
+#include "otp_ctrl_regs.h"                                // Generated
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -135,7 +135,7 @@ static void test_fuse_disable(dif_entropy_src_t *entropy) {
 static void check_entropy_src_fw_read_enable(bool expected) {
   dif_otp_ctrl_t otp;
   CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
+      mmio_region_from_addr(TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR), &otp));
 
   dif_otp_ctrl_config_t config = {
       .check_timeout = 100000,
@@ -175,12 +175,13 @@ static void check_entropy_src_fw_read_enable(bool expected) {
 bool test_main(void) {
   dif_entropy_src_t entropy_src;
   CHECK_DIF_OK(dif_entropy_src_init(
-      mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
+      mmio_region_from_addr(TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR),
+      &entropy_src));
 
   dif_rstmgr_t rstmgr;
   dif_rstmgr_reset_info_bitfield_t info;
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR), &rstmgr));
   info = rstmgr_testutils_reason_get();
 
   if (info == kDifRstmgrResetInfoPor) {

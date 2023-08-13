@@ -10,7 +10,7 @@
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -53,7 +53,8 @@ status_t test_ctr_drbg_ctr0_smoke(const dif_csrng_t *csrng) {
 
 bool test_main(void) {
   dif_csrng_t csrng;
-  mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR);
+  mmio_region_t base_addr =
+      mmio_region_from_addr(TOP_DARJEELING_CSRNG_BASE_ADDR);
   CHECK_DIF_OK(dif_csrng_init(base_addr, &csrng));
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
   CHECK_STATUS_OK(test_ctr_drbg_ctr0_smoke(&csrng));

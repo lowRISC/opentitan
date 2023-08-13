@@ -15,7 +15,7 @@
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "pwrmgr_regs.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
@@ -64,9 +64,9 @@ bool test_main(void) {
   init_units();
 
   // Enable all the AON interrupts used in this test.
-  rv_plic_testutils_irq_range_enable(&rv_plic, kTopEarlgreyPlicTargetIbex0,
-                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
-                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
+  rv_plic_testutils_irq_range_enable(&rv_plic, kTopDarjeelingPlicTargetIbex0,
+                                     kTopDarjeelingPlicIrqIdPwrmgrAonWakeup,
+                                     kTopDarjeelingPlicIrqIdPwrmgrAonWakeup);
 
   // Enable pwrmgr interrupt.
   CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));

@@ -13,16 +13,16 @@
 #include "csrng_regs.h"        // Generated
 #include "edn_regs.h"          // Generated
 #include "entropy_src_regs.h"  // Generated
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('d', 'e', 'n')
 
 enum {
-  kBaseCsrng = TOP_EARLGREY_CSRNG_BASE_ADDR,
-  kBaseEntropySrc = TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR,
-  kBaseEdn0 = TOP_EARLGREY_EDN0_BASE_ADDR,
-  kBaseEdn1 = TOP_EARLGREY_EDN1_BASE_ADDR,
+  kBaseCsrng = TOP_DARJEELING_CSRNG_BASE_ADDR,
+  kBaseEntropySrc = TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR,
+  kBaseEdn0 = TOP_DARJEELING_EDN0_BASE_ADDR,
+  kBaseEdn1 = TOP_DARJEELING_EDN1_BASE_ADDR,
 
   /**
    * CSRNG genbits buffer size in uint32_t words.

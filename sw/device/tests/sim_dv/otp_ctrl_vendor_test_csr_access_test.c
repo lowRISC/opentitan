@@ -11,7 +11,7 @@
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 static dif_lc_ctrl_t lc;
 static dif_otp_ctrl_t otp;
@@ -26,10 +26,10 @@ static void init_peripherals(void) {
   };
   // Life cycle
   CHECK_DIF_OK(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR), &lc));
+      mmio_region_from_addr(TOP_DARJEELING_LC_CTRL_BASE_ADDR), &lc));
   // OTP
   CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
+      mmio_region_from_addr(TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR), &otp));
   CHECK_DIF_OK(dif_otp_ctrl_configure(&otp, config));
 }
 

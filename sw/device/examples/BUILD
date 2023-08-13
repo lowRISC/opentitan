@@ -13,8 +13,8 @@ cc_library(
         "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/runtime:hart",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/dif:gpio",
-        "//sw/top_earlgrey/sw/dif:spi_device",
-        "//sw/top_earlgrey/sw/dif:uart",
+        "//sw/top_darjeeling/sw/dif:gpio",
+        "//sw/top_darjeeling/sw/dif:spi_device",
+        "//sw/top_darjeeling/sw/dif:uart",
     ],
 )

@@ -11,11 +11,11 @@
 #include "sw/lib/sw/device/base/macros.h"
 
 #include "alert_handler_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"
 
 enum {
-  kBase = TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR,
+  kBase = TOP_DARJEELING_ALERT_HANDLER_BASE_ADDR,
 };
 
 rom_error_t alert_configure(size_t index, alert_class_t cls,

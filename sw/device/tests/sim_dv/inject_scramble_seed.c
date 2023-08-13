@@ -20,7 +20,7 @@
 #include "sw/lib/sw/device/runtime/log.h"
 
 #include "flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"
 
 static dif_rstmgr_t rstmgr;
@@ -30,7 +30,7 @@ static dif_flash_ctrl_state_t flash_ctrl;
 enum {
   kFlashWordSize = FLASH_CTRL_PARAM_BYTES_PER_WORD,
   kFlashPageSize = FLASH_CTRL_PARAM_BYTES_PER_PAGE,
-  kFlashStartAddr = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+  kFlashStartAddr = TOP_DARJEELING_FLASH_CTRL_MEM_BASE_ADDR,
   kFlashMpRegions = FLASH_CTRL_PARAM_NUM_REGIONS
 };
 
@@ -86,14 +86,15 @@ static void check_iso_data(dif_flash_ctrl_state_t *flash_ctrl) {
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
   CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
+      mmio_region_from_addr(TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR),
+      &otp_ctrl));
 
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_ctrl,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+      mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR)));
 
   bool secret1_locked = false;
   CHECK_DIF_OK(dif_otp_ctrl_is_digest_computed(

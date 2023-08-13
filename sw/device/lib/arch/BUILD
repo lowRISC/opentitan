@@ -31,7 +31,7 @@ cc_library(
     srcs = ["device_sim_dv.c"],
     deps = [
         "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/lib/sw/device/arch:device",
     ],
 )
@@ -41,7 +41,7 @@ cc_library(
     srcs = ["device_sim_verilator.c"],
     deps = [
         "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/lib/sw/device/arch:device",
     ],
 )

@@ -52,7 +52,7 @@ cc_test(
         ":test_helpers",
         ":ujson",
         "//sw/lib/sw/device/base:status",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
         "@googletest//:gtest_main",
     ],
 )
@@ -72,7 +72,7 @@ cc_test(
         ":test_helpers",
         ":ujson",
         "//sw/lib/sw/device/base:status",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
         "@googletest//:gtest_main",
     ],
 )
@@ -83,6 +83,6 @@ cc_binary(
     deps = [
         ":example",
         "//sw/lib/sw/device/base:status",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )

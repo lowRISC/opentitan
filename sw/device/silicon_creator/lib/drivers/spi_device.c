@@ -11,14 +11,14 @@
 #include "sw/lib/sw/device/base/memory.h"
 
 #include "flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "spi_device_regs.h"
 
 enum {
   /**
    * Base address of the spi_device registers.
    */
-  kBase = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
+  kBase = TOP_DARJEELING_SPI_DEVICE_BASE_ADDR,
   /**
    * Start address of the SFDP space in spi_device buffer.
    */

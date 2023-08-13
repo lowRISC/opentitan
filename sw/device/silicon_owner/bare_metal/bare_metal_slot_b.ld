@@ -12,7 +12,7 @@
  * linker script only targets Slot B.
  */
 
-INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
+INCLUDE hw/top_darjeeling/sw/autogen/top_darjeeling_memory.ld
 
 /* Slot B starts at the half-size mark of the eFlash plus the fixed size of the
  * ROM_EXT.

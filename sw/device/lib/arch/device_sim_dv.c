@@ -6,7 +6,7 @@
 
 #include "sw/lib/sw/device/arch/device.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "rv_core_ibex_regs.h"
 
 /**
@@ -44,11 +44,11 @@ const uint32_t kAstCheckPollCpuCycles =
     CALCULATE_AST_CHECK_POLL_CPU_CYCLES(kClockFreqCpuHz);
 
 const uintptr_t kDeviceTestStatusAddress =
-    TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR +
+    TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR +
     RV_CORE_IBEX_DV_SIM_WINDOW_REG_OFFSET;
 
 const uintptr_t kDeviceLogBypassUartAddress =
-    TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR +
+    TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR +
     RV_CORE_IBEX_DV_SIM_WINDOW_REG_OFFSET + 0x04;
 
 const bool kJitterEnabled = false;

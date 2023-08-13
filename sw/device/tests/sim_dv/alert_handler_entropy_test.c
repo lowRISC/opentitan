@@ -13,7 +13,7 @@
 #include "sw/lib/sw/device/runtime/log.h"
 
 #include "alert_handler_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 /*
   In SV test, force the alert_handler's wait_cyc_mask_i input to shorten the
@@ -84,7 +84,7 @@ static void alert_handler_config(void) {
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_alert_handler_init(
-      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
+      mmio_region_from_addr(TOP_DARJEELING_ALERT_HANDLER_BASE_ADDR),
       &alert_handler));
 
   alert_handler_config();

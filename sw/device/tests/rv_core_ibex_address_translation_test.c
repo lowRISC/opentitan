@@ -14,7 +14,7 @@
 #include "sw/lib/sw/device/runtime/ibex.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 #define TEST_STR "Hello there, WHaT 1S Y0Ur N@ME?"
 #define EXPECTED_RESULT_MAKE_LOWER_CASE "hello there, what 1s y0ur n@me?"
@@ -174,7 +174,7 @@ bool test_main(void) {
   // Get ibex core handle.
   dif_rv_core_ibex_t ibex_core;
   CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      mmio_region_from_addr(TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR),
       &ibex_core));
 
   // Map virtual address space to make_lower_case() using slot 1.

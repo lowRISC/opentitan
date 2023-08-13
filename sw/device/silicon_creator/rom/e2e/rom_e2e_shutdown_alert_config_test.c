@@ -8,7 +8,7 @@
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "uart_regs.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -17,7 +17,7 @@ enum {
   /**
    * Base address of uart.
    */
-  kBaseUart = TOP_EARLGREY_UART0_BASE_ADDR,
+  kBaseUart = TOP_DARJEELING_UART0_BASE_ADDR,
 };
 
 static void uart_alert_trigger(void) {

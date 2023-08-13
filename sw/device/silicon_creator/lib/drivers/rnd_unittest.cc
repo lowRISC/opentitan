@@ -16,7 +16,7 @@
 #include "sw/lib/sw/device/base/mock_abs_mmio.h"
 
 #include "entropy_src_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"
 #include "rv_core_ibex_regs.h"
 
@@ -27,8 +27,8 @@ using ::testing::Return;
 
 class RndTest : public rom_test::RomTest {
  protected:
-  uint32_t base_rv_ = TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR;
-  uint32_t base_es_ = TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR;
+  uint32_t base_rv_ = TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR;
+  uint32_t base_es_ = TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR;
 
   rom_test::MockCrc32 crc32_;
   rom_test::MockAbsMmio mmio_;

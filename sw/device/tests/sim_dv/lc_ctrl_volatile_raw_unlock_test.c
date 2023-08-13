@@ -14,7 +14,7 @@
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 static dif_lc_ctrl_t lc_ctrl;
 
@@ -22,7 +22,7 @@ OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR), &lc_ctrl));
+      mmio_region_from_addr(TOP_DARJEELING_LC_CTRL_BASE_ADDR), &lc_ctrl));
 
   dif_lc_ctrl_state_t state;
   CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc_ctrl, &state));

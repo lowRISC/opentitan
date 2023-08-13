@@ -13,7 +13,7 @@
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -125,11 +125,11 @@ static void check_deep_sleep_reset(void) {
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+      mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR), &pwrmgr));
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR), &rstmgr));
   CHECK_DIF_OK(dif_sysrst_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
+      mmio_region_from_addr(TOP_DARJEELING_SYSRST_CTRL_AON_BASE_ADDR),
       &sysrst_ctrl));
 
   dif_rstmgr_reset_info_bitfield_t rstmgr_reset_info;
@@ -137,25 +137,25 @@ bool test_main(void) {
 
   dif_pinmux_t pinmux;
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
   CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey0In,
-      kTopEarlgreyPinmuxInselIob3));
+      &pinmux, kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonKey0In,
+      kTopDarjeelingPinmuxInselIob3));
   CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey1In,
-      kTopEarlgreyPinmuxInselIob6));
+      &pinmux, kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonKey1In,
+      kTopDarjeelingPinmuxInselIob6));
   CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey2In,
-      kTopEarlgreyPinmuxInselIob8));
+      &pinmux, kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonKey2In,
+      kTopDarjeelingPinmuxInselIob8));
   CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonPwrbIn,
-      kTopEarlgreyPinmuxInselIob9));
+      &pinmux, kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonPwrbIn,
+      kTopDarjeelingPinmuxInselIob9));
   CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonAcPresent,
-      kTopEarlgreyPinmuxInselIoc7));
+      &pinmux, kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonAcPresent,
+      kTopDarjeelingPinmuxInselIoc7));
   CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonLidOpen,
-      kTopEarlgreyPinmuxInselIoc9));
+      &pinmux, kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonLidOpen,
+      kTopDarjeelingPinmuxInselIoc9));
 
   CHECK_DIF_OK(dif_sysrst_ctrl_output_pin_override_set_enabled(
       &sysrst_ctrl, kDifSysrstCtrlPinEcResetInOut, kDifToggleDisabled));

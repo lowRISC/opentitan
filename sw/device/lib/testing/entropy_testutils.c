@@ -10,7 +10,7 @@
 #include "sw/ip/entropy_src/dif/dif_entropy_src.h"
 #include "sw/lib/sw/device/base/mmio.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 static status_t setup_entropy_src(const dif_entropy_src_t *entropy_src) {
   CHECK_DIF_OK(dif_entropy_src_configure(
@@ -31,13 +31,13 @@ dif_entropy_src_config_t entropy_testutils_config_default(void) {
 
 status_t entropy_testutils_auto_mode_init(void) {
   const dif_entropy_src_t entropy_src = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR)};
+      .base_addr = mmio_region_from_addr(TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR)};
   const dif_csrng_t csrng = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
+      .base_addr = mmio_region_from_addr(TOP_DARJEELING_CSRNG_BASE_ADDR)};
   const dif_edn_t edn0 = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
+      .base_addr = mmio_region_from_addr(TOP_DARJEELING_EDN0_BASE_ADDR)};
   const dif_edn_t edn1 = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR)};
+      .base_addr = mmio_region_from_addr(TOP_DARJEELING_EDN1_BASE_ADDR)};
 
   TRY(entropy_testutils_stop_all());
 
@@ -136,13 +136,13 @@ status_t entropy_testutils_auto_mode_init(void) {
 
 status_t entropy_testutils_boot_mode_init(void) {
   const dif_entropy_src_t entropy_src = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR)};
+      .base_addr = mmio_region_from_addr(TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR)};
   const dif_csrng_t csrng = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
+      .base_addr = mmio_region_from_addr(TOP_DARJEELING_CSRNG_BASE_ADDR)};
   const dif_edn_t edn0 = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
+      .base_addr = mmio_region_from_addr(TOP_DARJEELING_EDN0_BASE_ADDR)};
   const dif_edn_t edn1 = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR)};
+      .base_addr = mmio_region_from_addr(TOP_DARJEELING_EDN1_BASE_ADDR)};
 
   TRY(entropy_testutils_stop_all());
 
@@ -191,13 +191,13 @@ status_t entropy_testutils_wait_for_state(const dif_entropy_src_t *entropy_src,
 
 status_t entropy_testutils_stop_all(void) {
   const dif_entropy_src_t entropy_src = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR)};
+      .base_addr = mmio_region_from_addr(TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR)};
   const dif_csrng_t csrng = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
+      .base_addr = mmio_region_from_addr(TOP_DARJEELING_CSRNG_BASE_ADDR)};
   const dif_edn_t edn0 = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
+      .base_addr = mmio_region_from_addr(TOP_DARJEELING_EDN0_BASE_ADDR)};
   const dif_edn_t edn1 = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR)};
+      .base_addr = mmio_region_from_addr(TOP_DARJEELING_EDN1_BASE_ADDR)};
 
   TRY(dif_edn_stop(&edn0));
   TRY(dif_edn_stop(&edn1));

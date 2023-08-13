@@ -13,7 +13,7 @@
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -26,8 +26,8 @@ static dif_lc_ctrl_t lc_ctrl;
 static status_t peripheral_handles_init(void) {
   TRY(dif_flash_ctrl_init_state(
       &flash_ctrl_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-  TRY(dif_lc_ctrl_init(mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR),
+      mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR)));
+  TRY(dif_lc_ctrl_init(mmio_region_from_addr(TOP_DARJEELING_LC_CTRL_BASE_ADDR),
                        &lc_ctrl));
   return OK_STATUS();
 }

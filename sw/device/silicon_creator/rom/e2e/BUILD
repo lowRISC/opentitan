@@ -16,13 +16,16 @@ load(
 load(
     "//rules:const.bzl",
     "CONST",
-    "EARLGREY_ALERTS",
-    "EARLGREY_LOC_ALERTS",
     "error_redact",
     "get_lc_items",
     "hex",
     "hex_digits",
     "lcv_hw_to_sw",
+)
+load(
+    "//rules:const-darjeeling.bzl",
+    "DARJEELING_ALERTS",
+    "DARJEELING_LOC_ALERTS",
 )
 load(
     "//rules:opentitan.bzl",
@@ -114,9 +117,9 @@ otp_image(
 
 bitstream_splice(
     name = "bitstream_default_otp",
-    src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+    src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
     data = ":otp_img_default",
-    meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+    meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
     tags = maybe_skip_in_ci(CONST.LCV.RMA),
     update_usr_access = True,
     visibility = ["//visibility:private"],
@@ -137,7 +140,7 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/sigverify:spx_verify",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -158,7 +161,7 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         "//sw/device/silicon_creator/lib/sigverify:spx_verify",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 ) for slot in SLOTS]
 
@@ -173,7 +176,7 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -202,17 +205,17 @@ opentitan_functest(
         rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib/base:static_critical",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
 opentitan_functest(
     name = "rom_e2e_smoke",
     cw310 = cw310_params(
-        bitstream = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+        bitstream = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
     ),
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
@@ -250,8 +253,8 @@ opentitan_functest(
         "//sw/device/lib/testing:hmac_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
-        "//sw/top_earlgrey/sw/device/runtime:print",
-        "//sw/top_earlgrey/sw/dif:hmac",
+        "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/dif:hmac",
     ],
 )
 
@@ -264,8 +267,8 @@ opentitan_flash_binary(
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/top_earlgrey/sw/device/runtime:print",
-        "//sw/top_earlgrey/sw/dif:keymgr",
+        "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/dif:keymgr",
     ],
 )
 
@@ -312,9 +315,9 @@ rom_e2e_keymgr_init_configs = [
 [
     bitstream_splice(
         name = "bitstream_keymgr_{}".format(config["name"]),
-        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+        src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
         data = ":otp_img_keymgr_{}".format(config["name"]),
-        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+        meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
         visibility = ["//visibility:private"],
     )
     for config in rom_e2e_keymgr_init_configs
@@ -366,8 +369,8 @@ opentitan_functest(
     ],
     deps = [
         "//hw/ip/uart/data:uart_regs",
-        "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/ip/pinmux/data/autogen:pinmux_regs",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib/base:static_critical",
         "//sw/device/silicon_creator/lib/drivers:otp",
@@ -375,7 +378,7 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib/drivers:uart",
         "//sw/lib/sw/device/runtime:hart",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -384,7 +387,7 @@ opentitan_functest(
 opentitan_functest(
     name = "e2e_bootup_success_otp_dev",
     cw310 = cw310_params(
-        bitstream = "//hw/top_earlgrey/bitstream:rom_with_fake_keys_otp_dev",
+        bitstream = "//hw/top_darjeeling/bitstream:rom_with_fake_keys_otp_dev",
         # TODO(lowRISC/opentitan#13603): Remove this "manual" tag when the
         # bitstream target can fetch pre-spliced bitstream from GCP.
         tags = ["manual"],
@@ -404,9 +407,9 @@ opentitan_functest(
 [
     bitstream_splice(
         name = "bitstream_e2e_bootstrap_entry_{}".format(lc_state),
-        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+        src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
         data = ":otp_img_e2e_bootstrap_entry_{}".format(lc_state),
-        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+        meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
         tags = maybe_skip_in_ci(lc_state_val),
         update_usr_access = True,
     )
@@ -488,9 +491,9 @@ otp_image(
 
 bitstream_splice(
     name = "bitstream_bootstrap_rma",
-    src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+    src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
     data = ":otp_img_bootstrap_rma",
-    meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+    meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
     update_usr_access = True,
     visibility = ["//visibility:private"],
 )
@@ -516,19 +519,19 @@ opentitan_functest(
     targets = ["cw310_rom_with_fake_keys"],
     test_harness = "//sw/host/tests/rom/e2e_bootstrap_rma",
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
 opentitan_functest(
     name = "e2e_bootstrap_disabled",
     cw310 = cw310_params(
-        bitstream = "//hw/top_earlgrey/bitstream:rom_with_fake_keys_otp_bootstrap_disabled",
+        bitstream = "//hw/top_darjeeling/bitstream:rom_with_fake_keys_otp_bootstrap_disabled",
         test_cmds = [
             "--bitstream=\"$(location {bitstream})\"",
         ],
@@ -545,9 +548,9 @@ opentitan_functest(
 [
     bitstream_splice(
         name = "bitstream_chip_specific_startup_{}".format(lc_state),
-        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+        src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
         data = ":otp_img_e2e_bootstrap_entry_{}".format(lc_state),
-        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+        meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
         tags = maybe_skip_in_ci(lc_state_val),
         update_usr_access = True,
     )
@@ -581,8 +584,8 @@ opentitan_functest(
             "//hw/ip/edn/data:edn_regs",
             "//hw/ip/entropy_src/data:entropy_src_regs",
             "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-            "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_darjeeling/ip/sensor_ctrl/data:sensor_ctrl_regs",
+            "//hw/top_darjeeling/sw/autogen:top_darjeeling",
             "//sw/device/lib/testing/json:chip_specific_startup",
             "//sw/device/lib/testing/json:command",
             "//sw/device/lib/testing/test_framework:ottf_main",
@@ -590,11 +593,11 @@ opentitan_functest(
             "//sw/device/lib/ujson",
             "//sw/lib/sw/device/base:mmio",
             "//sw/lib/sw/device/runtime:log",
-            "//sw/top_earlgrey/sw/device/runtime:print",
-            "//sw/top_earlgrey/sw/dif:clkmgr",
-            "//sw/top_earlgrey/sw/dif:lc_ctrl",
-            "//sw/top_earlgrey/sw/dif:otp_ctrl",
-            "//sw/top_earlgrey/sw/dif:sram_ctrl",
+            "//sw/top_darjeeling/sw/device/runtime:print",
+            "//sw/top_darjeeling/sw/dif:clkmgr",
+            "//sw/top_darjeeling/sw/dif:lc_ctrl",
+            "//sw/top_darjeeling/sw/dif:otp_ctrl",
+            "//sw/top_darjeeling/sw/dif:sram_ctrl",
         ],
     )
     for lc_state, lc_state_val in get_lc_items()
@@ -762,9 +765,9 @@ opentitan_functest(
 [
     bitstream_splice(
         name = "bitstream_shutdown_output_{}".format(lc_state),
-        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+        src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
         data = ":otp_img_shutdown_output_{}".format(lc_state),
-        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+        meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
         update_usr_access = True,
     )
     for lc_state, _ in get_lc_items()
@@ -837,7 +840,7 @@ SEC_VERS = [
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         "//sw/device/silicon_creator/lib/sigverify:spx_verify",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 ) for slot in SLOTS for sec_ver in SEC_VERS]
 
@@ -890,9 +893,9 @@ BOOT_POLICY_NEWER_CASES = [
 [
     bitstream_splice(
         name = "bitstream_boot_policy_newer_{}".format(lc_state),
-        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+        src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
         data = ":otp_img_boot_policy_newer_{}".format(lc_state),
-        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+        meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
         update_usr_access = True,
     )
     for lc_state, _ in get_lc_items()
@@ -981,11 +984,11 @@ otp_json(
     name = "bitstream_boot_policy_rollback_{}".format(
         lc_state,
     ),
-    src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+    src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
     data = ":otp_img_boot_policy_rollback_{}".format(
         lc_state,
     ),
-    meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+    meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
     update_usr_access = True,
     visibility = ["//visibility:private"],
 ) for lc_state, _ in get_lc_items()]
@@ -1059,7 +1062,7 @@ otp_json(
 # Bitstreams with the watchdog-enable OTP images spliced in.
 [bitstream_splice(
     name = "bitstream_watchdog_enable_{}".format(lc_state),
-    src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+    src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
     data = ":otp_img_watchdog_enable_{}".format(lc_state),
     meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
     tags = maybe_skip_in_ci(lc_state_val),
@@ -1082,11 +1085,11 @@ otp_json(
     ],
     deps = [
         "//hw/ip/aon_timer/data:aon_timer_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/base:abs_mmio",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 ) for watchdog_config in [
     "disabled",
@@ -1114,7 +1117,7 @@ WATCHDOG_TEST_CASES = {
 # tests. The format argument should be replaced with the desired life cycle
 # state.
 WATCHDOG_BITSTREAM = {
-    "disable": "//hw/top_earlgrey/bitstream:rom_with_fake_keys_otp_{}",
+    "disable": "//hw/top_darjeeling/bitstream:rom_with_fake_keys_otp_{}",
     "enable": ":bitstream_watchdog_enable_{}",
 }
 
@@ -1196,9 +1199,9 @@ ALERT_LC_STATES = get_lc_items(
 
 [bitstream_splice(
     name = "bitstream_alert_{}".format(lc_state),
-    src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+    src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
     data = ":otp_img_alert_{}".format(lc_state),
-    meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+    meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
     tags = maybe_skip_in_ci(lc_state_val),
     update_usr_access = True,
 ) for lc_state, lc_state_val in ALERT_LC_STATES]
@@ -1220,7 +1223,7 @@ ALERT_LC_STATES = get_lc_items(
         "//sw/device/silicon_creator/lib/drivers:alert",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 ) for lc_state, _ in ALERT_LC_STATES]
 
@@ -1281,14 +1284,14 @@ otp_json(
                 ),
                 # Classify UART0 alerts (alert source 0) as class A and leave others as unconfigured.
                 "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION": otp_alert_classification(
-                    alert_list = EARLGREY_ALERTS,
+                    alert_list = DARJEELING_ALERTS,
                     # The ordering is "prod, prod_end, dev, rma"
                     default = "          X, X, X, X",
                     uart0_fatal_fault = "A, A, A, A",
                 ),
                 # Leave local alert classification as unconfigured.
                 "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION": otp_alert_classification(
-                    alert_list = EARLGREY_LOC_ALERTS,
+                    alert_list = DARJEELING_LOC_ALERTS,
                     default = "X, X, X, X",
                 ),
                 # Set the alert accumulation thresholds to 0.
@@ -1333,9 +1336,9 @@ otp_alert_digest(
 
 [bitstream_splice(
     name = "bitstream_shutdown_alert_{}".format(lc_state),
-    src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+    src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
     data = ":otp_img_shutdown_alert_{}".format(lc_state),
-    meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+    meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
     tags = maybe_skip_in_ci(lc_state_val),
     update_usr_access = True,
 ) for lc_state, lc_state_val in ALERT_LC_STATES]
@@ -1354,7 +1357,7 @@ otp_alert_digest(
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/lib/sw/device/base:abs_mmio",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 ) for lc_state, _ in ALERT_LC_STATES]
 
@@ -1424,7 +1427,7 @@ opentitan_flash_binary(
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/sigverify:spx_verify",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -1461,12 +1464,12 @@ opentitan_flash_binary(
             lc_state,
             t["name"],
         ),
-        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+        src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
         data = ":otp_img_sigverify_mod_exp_{}_{}".format(
             lc_state,
             t["name"],
         ),
-        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+        meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
         update_usr_access = True,
         visibility = ["//visibility:private"],
     )
@@ -1658,7 +1661,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         "//sw/device/silicon_creator/lib/sigverify:spx_verify",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 ) for t in BOOT_POLICY_BAD_MANIFEST_CASES for slot in SLOTS]
 
@@ -1725,12 +1728,12 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             lc_state,
             sec_ver,
         ),
-        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+        src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
         data = ":otp_img_boot_policy_bad_manifest_{}_sec_ver_{}".format(
             lc_state,
             sec_ver,
         ),
-        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+        meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
         update_usr_access = True,
         visibility = ["//visibility:private"],
     )
@@ -1874,12 +1877,12 @@ BOOT_DATA_RECOVERY_CASES = [
         case["lc_state"],
         case["default_boot_data"],
     ),
-    src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+    src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
     data = ":otp_img_boot_data_recovery_{}_{}".format(
         case["lc_state"],
         case["default_boot_data"],
     ),
-    meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+    meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
     tags = maybe_skip_in_ci(getattr(
         CONST.LCV,
         case["lc_state"].upper(),
@@ -1913,7 +1916,7 @@ BOOT_DATA_RECOVERY_CASES = [
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/sigverify:spx_verify",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 ) for case in BOOT_DATA_RECOVERY_CASES]
 
@@ -2030,12 +2033,12 @@ SHUTDOWN_WATCHDOG_CASES = [
             t["lc_state"],
             t["bite_threshold"],
         ),
-        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+        src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
         data = ":otp_img_shutdown_watchdog_{}_{}".format(
             t["lc_state"],
             t["bite_threshold"],
         ),
-        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+        meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
         update_usr_access = True,
         visibility = ["//visibility:private"],
     )
@@ -2070,7 +2073,7 @@ SHUTDOWN_WATCHDOG_CASES = [
         targets = ["cw310_rom_with_fake_keys"],
         deps = [
             "//sw/device/lib/testing/test_framework:ottf_main",
-            "//sw/top_earlgrey/sw/device/runtime:print",
+            "//sw/top_darjeeling/sw/device/runtime:print",
         ],
     )
     for t in SHUTDOWN_WATCHDOG_CASES
@@ -2200,9 +2203,9 @@ BOOT_POLICY_VALID_CASES = [
 [
     bitstream_splice(
         name = "bitstream_boot_policy_valid_{}".format(lc_state),
-        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+        src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
         data = ":otp_img_boot_policy_valid_{}".format(lc_state),
-        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+        meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
         update_usr_access = True,
     )
     for lc_state, _ in get_lc_items()
@@ -2263,9 +2266,9 @@ test_suite(
 [
     bitstream_splice(
         name = "rom_with_fake_keys_otp_{}_exec_disabled".format(lc_state),
-        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+        src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
         data = "img_{}_exec_disabled".format(lc_state),
-        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+        meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
         tags = [
             "manual",
         ],
@@ -2304,7 +2307,7 @@ test_suite(
             "//sw/device/silicon_creator/lib/drivers:otp",
             "//sw/device/silicon_creator/lib/sigverify:spx_verify",
             "//sw/lib/sw/device/runtime:log",
-            "//sw/top_earlgrey/sw/device/runtime:print",
+            "//sw/top_darjeeling/sw/device/runtime:print",
         ],
     )
     for lc_state, _ in get_lc_items(
@@ -2332,7 +2335,7 @@ test_suite(
         name = "epmp_init_otp_" + lc_state,
         srcs = ["epmp_init_test.c"],
         cw310 = cw310_params(
-            bitstream = "//hw/top_earlgrey/bitstream:rom_with_fake_keys_otp_" + lc_state,
+            bitstream = "//hw/top_darjeeling/bitstream:rom_with_fake_keys_otp_" + lc_state,
             tags = maybe_skip_in_ci(lc_state_val),
         ),
         key_struct = filter_key_structs_for_lc_state(RSA_ONLY_KEY_STRUCTS, lc_state_val)[0],
@@ -2353,7 +2356,7 @@ test_suite(
             rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
         ),
         deps = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_darjeeling/sw/autogen:top_darjeeling",
             "//sw/device/lib/testing:lc_ctrl_testutils",
             "//sw/device/lib/testing/test_framework:check",
             "//sw/device/lib/testing/test_framework:ottf_main",
@@ -2361,8 +2364,8 @@ test_suite(
             "//sw/device/silicon_creator/lib:epmp_defs",
             "//sw/lib/sw/device/base:csr",
             "//sw/lib/sw/device/runtime:log",
-            "//sw/top_earlgrey/sw/device/runtime:print",
-            "//sw/top_earlgrey/sw/dif:lc_ctrl",
+            "//sw/top_darjeeling/sw/device/runtime:print",
+            "//sw/top_darjeeling/sw/dif:lc_ctrl",
         ],
     )
     for lc_state, lc_state_val in get_lc_items()
@@ -2738,12 +2741,12 @@ REDACT.update({"INVALID": 0x0})
             lc_state,
             redact.lower(),
         ),
-        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+        src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
         data = ":img_{}_{}".format(
             lc_state,
             redact.lower(),
         ),
-        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+        meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
         update_usr_access = True,
         visibility = ["//visibility:private"],
     )
@@ -2779,7 +2782,7 @@ REDACT.update({"INVALID": 0x0})
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:otp",
             "//sw/device/silicon_creator/lib/sigverify:spx_verify",
-            "//sw/top_earlgrey/sw/device/runtime:print",
+            "//sw/top_darjeeling/sw/device/runtime:print",
         ],
     )
     for lc_state, lc_state_val in get_lc_items()
@@ -2894,9 +2897,9 @@ test_suite(
 [
     bitstream_splice(
         name = "bitstream_sigverify_always_{}".format(lc_state),
-        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+        src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
         data = ":otp_img_sigverify_always_{}".format(lc_state),
-        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+        meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
         tags = maybe_skip_in_ci(lc_state_val),
         update_usr_access = True,
     )
@@ -2990,11 +2993,11 @@ test_suite(
         name = "bitstream_sigverify_key_type_{}".format(
             lc_state,
         ),
-        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+        src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
         data = ":otp_img_sigverify_key_type_{}".format(
             lc_state,
         ),
-        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+        meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
         tags = maybe_skip_in_ci(lc_state_val),
         update_usr_access = True,
         visibility = ["//visibility:private"],
@@ -3084,11 +3087,11 @@ otp_json(
         name = "bitstream_sigverify_key_validity_{}".format(
             lc_state,
         ),
-        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+        src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
         data = ":otp_img_sigverify_key_validity_{}".format(
             lc_state,
         ),
-        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+        meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
         tags = maybe_skip_in_ci(lc_state_val),
         update_usr_access = True,
         visibility = ["//visibility:private"],
@@ -3186,9 +3189,9 @@ otp_json(
 
 [bitstream_splice(
     name = "bitstream_sigverify_usage_constraints_{}".format(lc_state),
-    src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+    src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
     data = ":otp_img_sigverify_usage_constraints_{}".format(lc_state),
-    meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+    meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
     tags = maybe_skip_in_ci(lc_state_val),
     update_usr_access = True,
     visibility = ["//visibility:private"],
@@ -3396,7 +3399,7 @@ test_cases = device_id_test_cases + lc_state_test_cases + manuf_state_test_cases
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/sigverify:spx_verify",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 ) for t in test_cases]
 
@@ -3448,7 +3451,7 @@ test_suite(
 
             # Use three of four hardware breakpoints. Leave one unused so we can
             # use `call` and `finish`. (See RvCoreIbexDbgHwBreakNum in
-            # hw/top_earlgrey/data/top_earlgrey.hjson.)
+            # hw/top_darjeeling/data/top_darjeeling.hjson.)
             echo :::: Set all but one available breakpoints.\\n
             # Set a breakpoint at the actual address of rom_main(), without
             # trying to skip the function prologue.
@@ -3488,7 +3491,7 @@ test_suite(
             {csr_restore_commands}
 
             echo :::: Read and write memory (both SRAM and device).\\n
-            # See hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h
+            # See hw/top_darjeeling/sw/autogen/top_darjeeling_memory.h
             set $sram_base = 0x10000000
             set $sram_len = 0x00008000
             x/16xb $sram_base
@@ -3569,7 +3572,7 @@ opentitan_flash_binary(
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -3615,9 +3618,9 @@ otp_image(
 
 bitstream_splice(
     name = "bitstream_reset_ret_ram",
-    src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+    src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
     data = ":otp_img_reset_ret_ram",
-    meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+    meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
     tags = maybe_skip_in_ci(CONST.LCV.RMA),
     update_usr_access = True,
     visibility = ["//visibility:private"],
@@ -3640,8 +3643,8 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/lib/sw/device/base:memory",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
-        "//sw/top_earlgrey/sw/dif:rstmgr",
+        "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/dif:rstmgr",
     ],
 )
 
@@ -3649,7 +3652,7 @@ opentitan_functest(
     name = "rom_e2e_ret_ram_keep",
     srcs = ["rom_e2e_ret_ram_keep_test.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+        bitstream = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
         tags = maybe_skip_in_ci(CONST.LCV.RMA),
     ),
     signed = True,
@@ -3657,7 +3660,7 @@ opentitan_functest(
         "cw310_rom_with_fake_keys",
     ],
     deps = [
-        "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
+        "//hw/top_darjeeling/ip/pwrmgr/data/autogen:pwrmgr_regs",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing/test_framework:check",
@@ -3666,9 +3669,9 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/lib/sw/device/base:memory",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
-        "//sw/top_earlgrey/sw/dif:aon_timer",
-        "//sw/top_earlgrey/sw/dif:pwrmgr",
+        "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/dif:aon_timer",
+        "//sw/top_darjeeling/sw/dif:pwrmgr",
     ],
 )
 
@@ -3706,11 +3709,11 @@ otp_json(
         name = "bitstream_rom_ext_upgrade_interrupt_{}".format(
             lc_state,
         ),
-        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+        src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
         data = ":otp_img_rom_ext_upgrade_interrupt_{}".format(
             lc_state,
         ),
-        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+        meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
         tags = maybe_skip_in_ci(lc_state_val),
         update_usr_access = True,
         visibility = ["//visibility:private"],
@@ -3743,7 +3746,7 @@ otp_json(
             "//sw/device/silicon_creator/lib:boot_data",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:rstmgr",
-            "//sw/top_earlgrey/sw/device/runtime:print",
+            "//sw/top_darjeeling/sw/device/runtime:print",
         ],
     )
     for lc_state, lc_state_val in get_lc_items()
@@ -3840,7 +3843,7 @@ opentitan_flash_binary(
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/sigverify:spx_verify",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -3889,12 +3892,12 @@ opentitan_flash_binary(
             lc_state,
             t["name"],
         ),
-        src = "//hw/top_earlgrey/bitstream:rom_with_fake_keys",
+        src = "//hw/top_darjeeling/bitstream:rom_with_fake_keys",
         data = ":otp_img_sigverify_spx_{}_{}".format(
             lc_state,
             t["name"],
         ),
-        meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+        meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
         update_usr_access = True,
         visibility = ["//visibility:private"],
     )
@@ -3948,9 +3951,9 @@ otp_image(
 
 bitstream_splice(
     name = "bitstream_sigverify_spx_rma",
-    src = "//hw/top_earlgrey/bitstream:rom_with_real_keys",
+    src = "//hw/top_darjeeling/bitstream:rom_with_real_keys",
     data = ":otp_img_sigverify_spx_rma",
-    meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+    meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
     update_usr_access = True,
     visibility = ["//visibility:private"],
 )
@@ -3979,23 +3982,23 @@ opentitan_flash_binary(
     # //signing/rom_tests.
     signed = False,
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling_memory",
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:chip_info",
         "//sw/lib/sw/device/base:status",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
 bitstream_splice(
     name = "bitstream_rom_self_hash_test_rma_otbn_mod_exp",
-    src = "//hw/top_earlgrey/bitstream:rom_with_real_keys",
+    src = "//hw/top_darjeeling/bitstream:rom_with_real_keys",
     data = ":otp_img_sigverify_mod_exp_rma_otbn",
-    meminfo = "//hw/top_earlgrey/bitstream:otp_mmi",
+    meminfo = "//hw/top_darjeeling/bitstream:otp_mmi",
     update_usr_access = True,
     visibility = ["//visibility:private"],
 )

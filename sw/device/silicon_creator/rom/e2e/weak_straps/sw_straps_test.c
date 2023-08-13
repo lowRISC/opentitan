@@ -15,7 +15,7 @@
 #include "sw/lib/sw/device/base/status.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 static dif_gpio_t gpio;
 static dif_pinmux_t pinmux;
@@ -44,9 +44,9 @@ status_t command_processor(ujson_t *uj) {
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
-  CHECK_DIF_OK(
-      dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
+      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
+  CHECK_DIF_OK(dif_gpio_init(
+      mmio_region_from_addr(TOP_DARJEELING_GPIO_BASE_ADDR), &gpio));
 
   uint32_t strap = pinmux_testutils_read_straps(&pinmux, &gpio);
   LOG_INFO("Initial sw_strap=%d", strap);

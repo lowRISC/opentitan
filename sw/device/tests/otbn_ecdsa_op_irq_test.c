@@ -13,7 +13,7 @@
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 /**
  * ECDSA sign and verify test with the NIST P-256 curve using OTBN.
@@ -82,7 +82,7 @@ static dif_otbn_t otbn;
 /**
  * The peripheral which fired the irq to be filled by the irq handler.
  */
-static volatile top_earlgrey_plic_peripheral_t plic_peripheral;
+static volatile top_darjeeling_plic_peripheral_t plic_peripheral;
 
 /**
  * The irq id to be filled by the irq handler.
@@ -107,21 +107,21 @@ static volatile dif_otbn_irq_t irq;
  * 5. Completes the IRQ service at PLIC.
  */
 void ottf_external_isr(void) {
-  CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kTopEarlgreyPlicTargetIbex0,
+  CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kTopDarjeelingPlicTargetIbex0,
                                      (dif_rv_plic_irq_id_t *)&irq_id));
 
-  plic_peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
+  plic_peripheral = (top_darjeeling_plic_peripheral_t)
+      top_darjeeling_plic_interrupt_for_peripheral[irq_id];
 
   irq = (dif_otbn_irq_t)(irq_id -
-                         (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdOtbnDone);
+                         (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdOtbnDone);
 
   CHECK_DIF_OK(dif_otbn_irq_acknowledge(&otbn, irq));
 
   // Complete the IRQ by writing the IRQ source to the Ibex specific CC.
   // register.
   CHECK_DIF_OK(
-      dif_rv_plic_irq_complete(&plic, kTopEarlgreyPlicTargetIbex0, irq_id));
+      dif_rv_plic_irq_complete(&plic, kTopDarjeelingPlicTargetIbex0, irq_id));
 }
 
 static void otbn_wait_for_done_irq(dif_otbn_t *otbn) {
@@ -151,12 +151,12 @@ static void otbn_wait_for_done_irq(dif_otbn_t *otbn) {
   }
   irq_global_ctrl(true);
 
-  CHECK(plic_peripheral == kTopEarlgreyPlicPeripheralOtbn,
+  CHECK(plic_peripheral == kTopDarjeelingPlicPeripheralOtbn,
         "Interrupt from incorrect peripheral: (exp: %d, obs: %s)",
-        kTopEarlgreyPlicPeripheralOtbn, plic_peripheral);
+        kTopDarjeelingPlicPeripheralOtbn, plic_peripheral);
 
   // Check this is the interrupt we expected.
-  CHECK(irq_id == kTopEarlgreyPlicIrqIdOtbnDone);
+  CHECK(irq_id == kTopDarjeelingPlicIrqIdOtbnDone);
 
   // Disable Done interrupt.
   CHECK_DIF_OK(
@@ -168,20 +168,20 @@ static void otbn_wait_for_done_irq(dif_otbn_t *otbn) {
 
 static void otbn_init_irq(void) {
   mmio_region_t plic_base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
+      mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR);
   // Initialize PLIC and configure OTBN interrupt.
   CHECK_DIF_OK(dif_rv_plic_init(plic_base_addr, &plic));
 
   // Set interrupt priority to be positive.
-  dif_rv_plic_irq_id_t irq_id = kTopEarlgreyPlicIrqIdOtbnDone;
+  dif_rv_plic_irq_id_t irq_id = kTopDarjeelingPlicIrqIdOtbnDone;
   CHECK_DIF_OK(dif_rv_plic_irq_set_priority(&plic, irq_id, 0x1));
 
   CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      &plic, irq_id, kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
+      &plic, irq_id, kTopDarjeelingPlicTargetIbex0, kDifToggleEnabled));
 
   // Set the threshold for Ibex to 0.
   CHECK_DIF_OK(dif_rv_plic_target_set_threshold(
-      &plic, kTopEarlgreyPlicTargetIbex0, 0x0));
+      &plic, kTopDarjeelingPlicTargetIbex0, 0x0));
 
   // Enable the external IRQ (so that we see the interrupt from the PLIC).
   irq_global_ctrl(true);
@@ -333,8 +333,8 @@ static void test_ecdsa_p256_roundtrip(void) {
 
   // Initialize
   uint64_t t_start_init = profile_start();
-  CHECK_DIF_OK(
-      dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+  CHECK_DIF_OK(dif_otbn_init(
+      mmio_region_from_addr(TOP_DARJEELING_OTBN_BASE_ADDR), &otbn));
   otbn_init_irq();
   CHECK_STATUS_OK(otbn_testutils_load_app(&otbn, kOtbnAppP256Ecdsa));
   profile_end_and_print(t_start_init, "Initialization");

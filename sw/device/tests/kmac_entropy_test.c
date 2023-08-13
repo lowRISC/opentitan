@@ -9,7 +9,7 @@
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -116,8 +116,8 @@ bool test_main(void) {
 
   // Initialize KMAC HWIP
   dif_kmac_t kmac;
-  CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  CHECK_DIF_OK(dif_kmac_init(
+      mmio_region_from_addr(TOP_DARJEELING_KMAC_BASE_ADDR), &kmac));
 
   // Configure KMAC to use EDN entropy
   dif_kmac_config_t config = {

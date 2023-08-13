@@ -13,7 +13,7 @@
 #include "sw/device/silicon_creator/testing/rom_test.h"
 #include "sw/lib/sw/device/base/mock_abs_mmio.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otbn_regs.h"  // Generated.
 
 namespace otbn_unittest {
@@ -55,7 +55,7 @@ class OtbnTest : public rom_test::RomTest {
     }
   }
 
-  uint32_t base_ = TOP_EARLGREY_OTBN_BASE_ADDR;
+  uint32_t base_ = TOP_DARJEELING_OTBN_BASE_ADDR;
   uint32_t err_bits_ok_ = 0;
   rom_test::MockAbsMmio abs_mmio_;
   rom_test::MockRnd rnd_;

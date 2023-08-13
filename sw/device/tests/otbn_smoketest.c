@@ -10,7 +10,7 @@
 #include "sw/lib/sw/device/runtime/ibex.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTBN_DECLARE_APP_SYMBOLS(barrett384);
 OTBN_DECLARE_SYMBOL_ADDR(barrett384, inp_a);
@@ -152,8 +152,8 @@ bool test_main(void) {
   CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
   dif_otbn_t otbn;
-  CHECK_DIF_OK(
-      dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+  CHECK_DIF_OK(dif_otbn_init(
+      mmio_region_from_addr(TOP_DARJEELING_OTBN_BASE_ADDR), &otbn));
 
   test_barrett384(&otbn);
   test_sec_wipe(&otbn);

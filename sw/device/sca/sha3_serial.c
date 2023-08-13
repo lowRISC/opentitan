@@ -14,7 +14,7 @@
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "kmac_regs.h"
 
 /**
@@ -341,8 +341,8 @@ static dif_result_t sha3_get_digest(uint32_t *out, size_t len) {
  * This function configures KMAC to use software entropy.
  */
 static void kmac_init(void) {
-  SS_CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  SS_CHECK_DIF_OK(dif_kmac_init(
+      mmio_region_from_addr(TOP_DARJEELING_KMAC_BASE_ADDR), &kmac));
 
   dif_kmac_config_t config = (dif_kmac_config_t){
       .entropy_mode = kDifKmacEntropyModeSoftware,
@@ -364,8 +364,8 @@ static void kmac_init(void) {
  */
 static void kmac_disable_masking(const uint8_t *masks_off, size_t off_len) {
   SS_CHECK(off_len == 1);
-  SS_CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  SS_CHECK_DIF_OK(dif_kmac_init(
+      mmio_region_from_addr(TOP_DARJEELING_KMAC_BASE_ADDR), &kmac));
 
   dif_kmac_config_t config;
   if (masks_off[0]) {

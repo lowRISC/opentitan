@@ -535,7 +535,7 @@ elf_to_scrambled_rom_vmem = rv_rule(
             cfg = "exec",
         ),
         "_config": attr.label(
-            default = "@//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
+            default = "@//hw/top_darjeeling/data:autogen/top_darjeeling.gen.hjson",
             allow_single_file = True,
         ),
     },

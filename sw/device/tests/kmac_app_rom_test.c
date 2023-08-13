@@ -8,7 +8,7 @@
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 static dif_rom_ctrl_t rom_ctrl;
 
@@ -20,7 +20,7 @@ bool test_main(void) {
 
   // initialize rom_ctrl
   mmio_region_t rom_ctrl_reg =
-      mmio_region_from_addr(TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR);
+      mmio_region_from_addr(TOP_DARJEELING_ROM_CTRL_REGS_BASE_ADDR);
   CHECK_DIF_OK(dif_rom_ctrl_init(rom_ctrl_reg, &rom_ctrl));
 
   // get computed and expected digests and check that they match

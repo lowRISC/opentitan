@@ -17,17 +17,17 @@
 #include "sw/lib/sw/device/runtime/ibex.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_sram_ctrl_t sram_ctrl;
 
 enum {
-  kSramStart = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
-  kSramEnd = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR +
-             TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES,
-  kSramRetStart = TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
+  kSramStart = TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
+  kSramEnd = TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR +
+             TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES,
+  kSramRetStart = TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
 };
 
 OT_SECTION(".data.sram_function_test")
@@ -83,7 +83,7 @@ static void sram_program_test(void) {
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_sram_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR),
+      mmio_region_from_addr(TOP_DARJEELING_SRAM_CTRL_MAIN_REGS_BASE_ADDR),
       &sram_ctrl));
 
   // Unlock the entire address space for RWX so that we can run this test with

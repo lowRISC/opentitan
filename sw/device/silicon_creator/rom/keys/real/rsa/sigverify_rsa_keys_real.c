@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/rom/keys/real/rsa/earlgrey_a0_dev_0.h"
-#include "sw/device/silicon_creator/rom/keys/real/rsa/earlgrey_a0_dev_1.h"
-#include "sw/device/silicon_creator/rom/keys/real/rsa/earlgrey_a0_prod_0.h"
-#include "sw/device/silicon_creator/rom/keys/real/rsa/earlgrey_a0_prod_1.h"
-#include "sw/device/silicon_creator/rom/keys/real/rsa/earlgrey_a0_prod_2.h"
-#include "sw/device/silicon_creator/rom/keys/real/rsa/earlgrey_a0_test_0.h"
-#include "sw/device/silicon_creator/rom/keys/real/rsa/earlgrey_a0_test_1.h"
+#include "sw/device/silicon_creator/rom/keys/real/rsa/darjeeling_a0_dev_0.h"
+#include "sw/device/silicon_creator/rom/keys/real/rsa/darjeeling_a0_dev_1.h"
+#include "sw/device/silicon_creator/rom/keys/real/rsa/darjeeling_a0_prod_0.h"
+#include "sw/device/silicon_creator/rom/keys/real/rsa/darjeeling_a0_prod_1.h"
+#include "sw/device/silicon_creator/rom/keys/real/rsa/darjeeling_a0_prod_2.h"
+#include "sw/device/silicon_creator/rom/keys/real/rsa/darjeeling_a0_test_0.h"
+#include "sw/device/silicon_creator/rom/keys/real/rsa/darjeeling_a0_test_1.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys_rsa.h"
 #include "sw/lib/sw/device/base/macros.h"
 
@@ -40,49 +40,49 @@ const sigverify_rom_rsa_key_t kSigverifyRsaKeys[kSigverifyRsaKeysCnt_] = {
     {
         .entry =
             {
-                .key = EARLGREY_A0_TEST_0,
+                .key = DARJEELING_A0_TEST_0,
                 .key_type = kSigverifyKeyTypeTest,
             },
     },
     {
         .entry =
             {
-                .key = EARLGREY_A0_TEST_1,
+                .key = DARJEELING_A0_TEST_1,
                 .key_type = kSigverifyKeyTypeTest,
             },
     },
     {
         .entry =
             {
-                .key = EARLGREY_A0_DEV_0,
+                .key = DARJEELING_A0_DEV_0,
                 .key_type = kSigverifyKeyTypeDev,
             },
     },
     {
         .entry =
             {
-                .key = EARLGREY_A0_DEV_1,
+                .key = DARJEELING_A0_DEV_1,
                 .key_type = kSigverifyKeyTypeDev,
             },
     },
     {
         .entry =
             {
-                .key = EARLGREY_A0_PROD_0,
+                .key = DARJEELING_A0_PROD_0,
                 .key_type = kSigverifyKeyTypeProd,
             },
     },
     {
         .entry =
             {
-                .key = EARLGREY_A0_PROD_1,
+                .key = DARJEELING_A0_PROD_1,
                 .key_type = kSigverifyKeyTypeProd,
             },
     },
     {
         .entry =
             {
-                .key = EARLGREY_A0_PROD_2,
+                .key = DARJEELING_A0_PROD_2,
                 .key_type = kSigverifyKeyTypeProd,
             },
     },

@@ -17,7 +17,7 @@ use opentitanlib::test_utils::pinmux_config::PinmuxConfig;
 use opentitanlib::uart::console::UartConsole;
 use opentitanlib::{collection, execute_test};
 
-use opentitanlib::chip::autogen::earlgrey::{
+use opentitanlib::chip::autogen::darjeeling::{
     PinmuxInsel, PinmuxMioOut, PinmuxOutsel, PinmuxPeripheralIn,
 };
 

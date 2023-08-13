@@ -12,7 +12,7 @@
 #include "sw/device/silicon_creator/testing/rom_test.h"
 #include "sw/lib/sw/device/base/mmio.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"  // Generated.
 
 namespace otp_unittest {
@@ -22,7 +22,7 @@ using ::testing::ElementsAreArray;
 
 class OtpTest : public rom_test::RomTest {
  protected:
-  uint32_t base_ = TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR;
+  uint32_t base_ = TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR;
   rom_test::MockSecMmio mmio_;
 };
 

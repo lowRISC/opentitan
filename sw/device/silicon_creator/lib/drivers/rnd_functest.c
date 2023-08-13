@@ -16,7 +16,7 @@
 #include "sw/ip/entropy_src/dif/dif_entropy_src.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -229,7 +229,8 @@ rom_error_t test_rnd(void) {
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_entropy_src_init(
-      mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
+      mmio_region_from_addr(TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR),
+      &entropy_src));
 
   status_t result = OK_STATUS();
   EXECUTE_TEST(result, test_rnd);

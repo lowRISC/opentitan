@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-#include "otp_img_sku_earlgrey_a0_stage_individualize.h"  // Generated.
+#include "otp_img_sku_darjeeling_a0_stage_individualize.h"  // Generated.
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -20,7 +20,7 @@
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/runtime/print.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"  // Generated.
 
 static dif_uart_t uart;
@@ -35,14 +35,15 @@ static dif_lc_ctrl_t lc_ctrl;
 static status_t peripheral_handles_init(void) {
   TRY(dif_flash_ctrl_init_state(
       &flash_ctrl_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-  TRY(dif_lc_ctrl_init(mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR),
+      mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR)));
+  TRY(dif_lc_ctrl_init(mmio_region_from_addr(TOP_DARJEELING_LC_CTRL_BASE_ADDR),
                        &lc_ctrl));
   TRY(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
-  TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
-                      &pinmux));
-  TRY(dif_uart_init(mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR),
+      mmio_region_from_addr(TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR),
+      &otp_ctrl));
+  TRY(dif_pinmux_init(
+      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
+  TRY(dif_uart_init(mmio_region_from_addr(TOP_DARJEELING_UART0_BASE_ADDR),
                     &uart));
   return OK_STATUS();
 }

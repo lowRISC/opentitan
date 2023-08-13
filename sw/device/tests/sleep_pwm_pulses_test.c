@@ -15,7 +15,7 @@
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "pwm_regs.h"
 
 /**
@@ -40,15 +40,15 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 static const dif_pinmux_index_t kPinmuxOutsel[PWM_PARAM_N_OUTPUTS] = {
-    kTopEarlgreyPinmuxOutselPwmAonPwm0, kTopEarlgreyPinmuxOutselPwmAonPwm1,
-    kTopEarlgreyPinmuxOutselPwmAonPwm2, kTopEarlgreyPinmuxOutselPwmAonPwm3,
-    kTopEarlgreyPinmuxOutselPwmAonPwm4, kTopEarlgreyPinmuxOutselPwmAonPwm5,
+    kTopDarjeelingPinmuxOutselPwmAonPwm0, kTopDarjeelingPinmuxOutselPwmAonPwm1,
+    kTopDarjeelingPinmuxOutselPwmAonPwm2, kTopDarjeelingPinmuxOutselPwmAonPwm3,
+    kTopDarjeelingPinmuxOutselPwmAonPwm4, kTopDarjeelingPinmuxOutselPwmAonPwm5,
 };
 
 static const dif_pinmux_index_t kPinmuxMioOut[PWM_PARAM_N_OUTPUTS] = {
-    kTopEarlgreyPinmuxMioOutIob10, kTopEarlgreyPinmuxMioOutIob11,
-    kTopEarlgreyPinmuxMioOutIob12, kTopEarlgreyPinmuxMioOutIoc10,
-    kTopEarlgreyPinmuxMioOutIoc11, kTopEarlgreyPinmuxMioOutIoc12,
+    kTopDarjeelingPinmuxMioOutIob10, kTopDarjeelingPinmuxMioOutIob11,
+    kTopDarjeelingPinmuxMioOutIob12, kTopDarjeelingPinmuxMioOutIoc10,
+    kTopDarjeelingPinmuxMioOutIoc11, kTopDarjeelingPinmuxMioOutIoc12,
 };
 
 static const dif_pwm_channel_t kPwmChannel[PWM_PARAM_N_OUTPUTS] = {
@@ -59,7 +59,7 @@ static const dif_pwm_channel_t kPwmChannel[PWM_PARAM_N_OUTPUTS] = {
 // Duty cycle in the unit of beat
 // These are random numbers betwen [1,beats_per_pulse_cycle)
 // make 'static volatile' to overwrite from
-// hw/top_earlgrey/dv/env/seq_lib/chip_sw_pwm_pulses_vseq.sv
+// hw/top_darjeeling/dv/env/seq_lib/chip_sw_pwm_pulses_vseq.sv
 // via backdoor
 static volatile const uint16_t kPwmDutycycle[PWM_PARAM_N_OUTPUTS] = {
     6, 11, 27, 8, 17, 7,
@@ -121,15 +121,16 @@ bool test_main(void) {
 
   // Initialize pwrmgr
   CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+      mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR), &pwrmgr));
 
   // Initialize rstmgr since this will check some registers.
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
   dif_aon_timer_t aon_timer;
   CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
+      mmio_region_from_addr(TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR),
+      &aon_timer));
 
   // Assuming the chip hasn't slept yet, wakeup reason should be empty.
 
@@ -140,7 +141,7 @@ bool test_main(void) {
     dif_pinmux_t pinmux;
     // Initialize pwm
     CHECK_DIF_OK(dif_pwm_init(
-        mmio_region_from_addr(TOP_EARLGREY_PWM_AON_BASE_ADDR), &pwm));
+        mmio_region_from_addr(TOP_DARJEELING_PWM_AON_BASE_ADDR), &pwm));
 
     // Update pwm.CFG
     CHECK_DIF_OK(dif_pwm_configure(&pwm, config_));
@@ -156,7 +157,7 @@ bool test_main(void) {
     // LOG_INFO is used to indicate pwmout is available to
     // SV pwm_monitor
     CHECK_DIF_OK(dif_pinmux_init(
-        mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+        mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
 
     LOG_INFO("pinmux_init begin");
     for (int i = 0; i < PWM_PARAM_N_OUTPUTS; ++i) {

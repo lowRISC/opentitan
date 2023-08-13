@@ -12,13 +12,13 @@
 #include "sw/lib/sw/device/base/memory.h"
 
 #include "aes_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('d', 'a', 'e')
 
 enum {
-  kBase = TOP_EARLGREY_AES_BASE_ADDR,
+  kBase = TOP_DARJEELING_AES_BASE_ADDR,
 
   kAesKeyWordLen128 = 128 / (sizeof(uint32_t) * 8),
   kAesKeyWordLen192 = 192 / (sizeof(uint32_t) * 8),

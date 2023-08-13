@@ -14,7 +14,7 @@
 #include "sw/lib/sw/device/base/mock_abs_mmio.h"
 #include "sw/lib/sw/device/base/multibits.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"
 #include "sensor_ctrl_regs.h"
 
@@ -49,7 +49,7 @@ class AstTest : public rom_test::RomTest {
         .WillOnce(Return(val));
   }
 
-  uint32_t base_ = TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR;
+  uint32_t base_ = TOP_DARJEELING_SENSOR_CTRL_BASE_ADDR;
   rom_test::MockAbsMmio mmio_;
   rom_test::MockOtp otp_;
   mock_csr::MockCsr csr_;

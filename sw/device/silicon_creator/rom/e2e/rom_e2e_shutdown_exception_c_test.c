@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 // Note: Since this test program is written to verify the behavior of the ROM C
 // exception handlers,
@@ -17,5 +17,5 @@
 //   - `.static_critical`, required by the linker script.
 
 void _ottf_start(void) {
-  ((void (*)(void))TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR)();
+  ((void (*)(void))TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR)();
 }

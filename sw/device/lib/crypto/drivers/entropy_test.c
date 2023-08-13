@@ -12,7 +12,7 @@
 #include "sw/lib/sw/device/base/status.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -21,8 +21,8 @@ static void entropy_complex_init_test(void) {
 
   // The following test requests entropy from both EDN0 and EDN1.
   dif_otbn_t otbn;
-  CHECK_DIF_OK(
-      dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+  CHECK_DIF_OK(dif_otbn_init(
+      mmio_region_from_addr(TOP_DARJEELING_OTBN_BASE_ADDR), &otbn));
   otbn_randomness_test_start(&otbn);
   CHECK(otbn_randomness_test_end(&otbn, /*skip_otbn_don_check=*/false));
 }

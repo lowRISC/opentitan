@@ -9,7 +9,7 @@
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/hart.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 static const uint8_t kSendData[] = "Smoke test!";
 
@@ -19,7 +19,7 @@ OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = false,
 bool test_main(void) {
   dif_uart_t uart;
   CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart));
+      mmio_region_from_addr(TOP_DARJEELING_UART0_BASE_ADDR), &uart));
   CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
   CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
         "kClockFreqPeripheralHz must fit in uint32_t");

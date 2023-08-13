@@ -17,7 +17,7 @@
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "pwrmgr_regs.h"
 
 /*
@@ -43,7 +43,7 @@ dif_rv_plic_t rv_plic;
  */
 void ottf_external_isr(void) {
   dif_rv_plic_irq_id_t plic_irq_id;
-  CHECK_DIF_OK(dif_rv_plic_irq_claim(&rv_plic, kTopEarlgreyPlicTargetIbex0,
+  CHECK_DIF_OK(dif_rv_plic_irq_claim(&rv_plic, kTopDarjeelingPlicTargetIbex0,
                                      &plic_irq_id));
 }
 
@@ -78,13 +78,13 @@ bool test_main(void) {
   dif_sysrst_ctrl_t sysrst_ctrl;
 
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
   CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+      mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR), &pwrmgr));
   CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &rv_plic));
+      mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &rv_plic));
   CHECK_DIF_OK(dif_sysrst_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
+      mmio_region_from_addr(TOP_DARJEELING_SYSRST_CTRL_AON_BASE_ADDR),
       &sysrst_ctrl));
 
   switch (rstmgr_testutils_reason_get()) {
@@ -94,9 +94,10 @@ bool test_main(void) {
       IBEX_SPIN_FOR(kSoftwareBarrier == 1, kSoftwareBarrierTimeoutUsec);
 
       // Enable all the AON interrupts used in this test.
-      rv_plic_testutils_irq_range_enable(&rv_plic, kTopEarlgreyPlicTargetIbex0,
-                                         kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
-                                         kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
+      rv_plic_testutils_irq_range_enable(
+          &rv_plic, kTopDarjeelingPlicTargetIbex0,
+          kTopDarjeelingPlicIrqIdPwrmgrAonWakeup,
+          kTopDarjeelingPlicIrqIdPwrmgrAonWakeup);
 
       // Enable pwrmgr interrupt.
       CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, kDifPwrmgrIrqWakeup,
@@ -110,8 +111,8 @@ bool test_main(void) {
       CHECK_DIF_OK(
           dif_sysrst_ctrl_input_change_detect_configure(&sysrst_ctrl, config));
       CHECK_DIF_OK(dif_pinmux_input_select(
-          &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonPwrbIn,
-          kTopEarlgreyPinmuxInselIor13));
+          &pinmux, kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonPwrbIn,
+          kTopDarjeelingPinmuxInselIor13));
 
       // Put the device in a normal sleep.
       put_to_sleep(&pwrmgr, /*deep_sleep=*/false);

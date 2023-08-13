@@ -18,7 +18,7 @@
 
 #include "flash_ctrl_regs.h"
 #include "gpio_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"
 
 enum {
@@ -350,7 +350,7 @@ hardened_bool_t bootstrap_requested(void) {
   // pins.
   uint32_t res = launder32(kHardenedBoolTrue) ^ SW_STRAP_BOOTSTRAP;
   res ^=
-      abs_mmio_read32(TOP_EARLGREY_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET) &
+      abs_mmio_read32(TOP_DARJEELING_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET) &
       SW_STRAP_MASK;
   if (launder32(res) != kHardenedBoolTrue) {
     return kHardenedBoolFalse;

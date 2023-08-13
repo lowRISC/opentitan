@@ -7,7 +7,7 @@
 #include "sw/lib/sw/device/base/bitfield.h"
 #include "sw/lib/sw/device/base/csr.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 void rom_ext_epmp_unlock_owner_stage_rx(epmp_region_t region) {
   const int kEntry = 8;

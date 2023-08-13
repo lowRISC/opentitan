@@ -11,7 +11,7 @@
 #include "sw/lib/sw/device/base/hardened.h"
 #include "sw/lib/sw/device/base/macros.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"
 #include "pinmux_regs.h"
 
@@ -19,43 +19,43 @@ enum {
   /**
    * Base address of the pinmux registers.
    */
-  kBase = TOP_EARLGREY_PINMUX_AON_BASE_ADDR,
+  kBase = TOP_DARJEELING_PINMUX_AON_BASE_ADDR,
 };
 
 /**
  * A peripheral input and MIO pad to link it to.
  */
 typedef struct pinmux_input {
-  top_earlgrey_pinmux_peripheral_in_t periph;
-  top_earlgrey_pinmux_insel_t insel;
-  top_earlgrey_muxed_pads_t pad;
+  top_darjeeling_pinmux_peripheral_in_t periph;
+  top_darjeeling_pinmux_insel_t insel;
+  top_darjeeling_muxed_pads_t pad;
 } pinmux_input_t;
 
 /**
  * An MIO pad and a peripheral output to link it to.
  */
 typedef struct pinmux_output {
-  top_earlgrey_pinmux_mio_out_t mio;
-  top_earlgrey_pinmux_outsel_t outsel;
-  top_earlgrey_muxed_pads_t pad;
+  top_darjeeling_pinmux_mio_out_t mio;
+  top_darjeeling_pinmux_outsel_t outsel;
+  top_darjeeling_muxed_pads_t pad;
 } pinmux_output_t;
 
 /**
  * UART RX pin.
  */
 static const pinmux_input_t kInputUart0 = {
-    .periph = kTopEarlgreyPinmuxPeripheralInUart0Rx,
-    .insel = kTopEarlgreyPinmuxInselIoc3,
-    .pad = kTopEarlgreyMuxedPadsIoc3,
+    .periph = kTopDarjeelingPinmuxPeripheralInUart0Rx,
+    .insel = kTopDarjeelingPinmuxInselIoc3,
+    .pad = kTopDarjeelingMuxedPadsIoc3,
 };
 
 /**
  * UART TX pin.
  */
 static const pinmux_output_t kOutputUart0 = {
-    .mio = kTopEarlgreyPinmuxMioOutIoc4,
-    .outsel = kTopEarlgreyPinmuxOutselUart0Tx,
-    .pad = kTopEarlgreyMuxedPadsIoc4,
+    .mio = kTopDarjeelingPinmuxMioOutIoc4,
+    .outsel = kTopDarjeelingPinmuxOutselUart0Tx,
+    .pad = kTopDarjeelingMuxedPadsIoc4,
 };
 
 /**
@@ -64,27 +64,30 @@ static const pinmux_output_t kOutputUart0 = {
 #define PINMUX_ASSERT_EQ_(a, b) \
   static_assert((a) == (b), "Unexpected software strap configuration.")
 
-PINMUX_ASSERT_EQ_(SW_STRAP_0_PERIPH, kTopEarlgreyPinmuxPeripheralInGpioGpio22);
-PINMUX_ASSERT_EQ_(SW_STRAP_0_INSEL, kTopEarlgreyPinmuxInselIoc0);
-PINMUX_ASSERT_EQ_(SW_STRAP_0_PAD, kTopEarlgreyMuxedPadsIoc0);
+PINMUX_ASSERT_EQ_(SW_STRAP_0_PERIPH,
+                  kTopDarjeelingPinmuxPeripheralInGpioGpio22);
+PINMUX_ASSERT_EQ_(SW_STRAP_0_INSEL, kTopDarjeelingPinmuxInselIoc0);
+PINMUX_ASSERT_EQ_(SW_STRAP_0_PAD, kTopDarjeelingMuxedPadsIoc0);
 static const pinmux_input_t kInputSwStrap0 = {
     .periph = SW_STRAP_0_PERIPH,
     .insel = SW_STRAP_0_INSEL,
     .pad = SW_STRAP_0_PAD,
 };
 
-PINMUX_ASSERT_EQ_(SW_STRAP_1_PERIPH, kTopEarlgreyPinmuxPeripheralInGpioGpio23);
-PINMUX_ASSERT_EQ_(SW_STRAP_1_INSEL, kTopEarlgreyPinmuxInselIoc1);
-PINMUX_ASSERT_EQ_(SW_STRAP_1_PAD, kTopEarlgreyMuxedPadsIoc1);
+PINMUX_ASSERT_EQ_(SW_STRAP_1_PERIPH,
+                  kTopDarjeelingPinmuxPeripheralInGpioGpio23);
+PINMUX_ASSERT_EQ_(SW_STRAP_1_INSEL, kTopDarjeelingPinmuxInselIoc1);
+PINMUX_ASSERT_EQ_(SW_STRAP_1_PAD, kTopDarjeelingMuxedPadsIoc1);
 static const pinmux_input_t kInputSwStrap1 = {
     .periph = SW_STRAP_1_PERIPH,
     .insel = SW_STRAP_1_INSEL,
     .pad = SW_STRAP_1_PAD,
 };
 
-PINMUX_ASSERT_EQ_(SW_STRAP_2_PERIPH, kTopEarlgreyPinmuxPeripheralInGpioGpio24);
-PINMUX_ASSERT_EQ_(SW_STRAP_2_INSEL, kTopEarlgreyPinmuxInselIoc2);
-PINMUX_ASSERT_EQ_(SW_STRAP_2_PAD, kTopEarlgreyMuxedPadsIoc2);
+PINMUX_ASSERT_EQ_(SW_STRAP_2_PERIPH,
+                  kTopDarjeelingPinmuxPeripheralInGpioGpio24);
+PINMUX_ASSERT_EQ_(SW_STRAP_2_INSEL, kTopDarjeelingPinmuxInselIoc2);
+PINMUX_ASSERT_EQ_(SW_STRAP_2_PAD, kTopDarjeelingMuxedPadsIoc2);
 static const pinmux_input_t kInputSwStrap2 = {
     .periph = SW_STRAP_2_PERIPH,
     .insel = SW_STRAP_2_INSEL,
@@ -107,7 +110,7 @@ static void configure_input(pinmux_input_t input) {
  *
  * @param pad A MIO pad.
  */
-static void enable_pull_down(top_earlgrey_muxed_pads_t pad) {
+static void enable_pull_down(top_darjeeling_muxed_pads_t pad) {
   uint32_t reg =
       bitfield_bit32_write(0, PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, true);
   abs_mmio_write32(

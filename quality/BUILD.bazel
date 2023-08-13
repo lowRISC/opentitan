@@ -35,7 +35,7 @@ licence_test(
         # PRESENT Python reference model
         "util/design/lib/Present.py",
         # Vendored FPGA information
-        "hw/top_earlgrey/data/*.xdc",
+        "hw/top_*/data/*.xdc",
         "util/fpga/bram_load.mmi",
         # Manually checked, files contain additional copyright header lines
         "hw/ip/usb_fs_nb_pe/rtl/*",
@@ -44,7 +44,7 @@ licence_test(
         ## Software Exclusions
 
         # Coremark Vendored Files
-        "sw/device/benchmarks/coremark/top_earlgrey/*",
+        "sw/device/benchmarks/coremark/top_*/*",
 
         ## Other Exclusions
 
@@ -119,6 +119,7 @@ clang_tidy_rv_test(
         "//sw/device/silicon_creator/rom/keys/fake/rsa",
         "//sw/device/silicon_creator/rom/keys/fake/spx",
         "//sw/lib/sw/device/base:memory",
+        "//sw/top_darjeeling/sw/device/base:memory_perftest",
         "//sw/top_earlgrey/sw/device/base:memory_perftest",
     ],
 )

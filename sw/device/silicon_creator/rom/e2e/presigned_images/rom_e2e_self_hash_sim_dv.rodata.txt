@@ -4125,7 +4125,7 @@ string: OTTF currently only supports use of machine-mode ecall for FreeRTOS cont
 addr: 200066a8
 string: Running %s
 addr: 200066b3
-string: DIF-fail: dif_rv_core_ibex_init( mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR), &rv_core_ibex) returns %d
+string: DIF-fail: dif_rv_core_ibex_init( mmio_region_from_addr(TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR), &rv_core_ibex) returns %d
 addr: 2000672e
 string: test_main
 addr: 20006738
@@ -4243,7 +4243,7 @@ string: DIF-fail: dif_spi_device_configure( &ottf_console_spi_device, (dif_spi_d
 addr: 20006d9e
 string: CHECK-fail: unsupported OTTF console interface.
 addr: 20006dce
-string: DIF-fail: dif_rv_plic_init( mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &ottf_plic) returns %d
+string: DIF-fail: dif_rv_plic_init( mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &ottf_plic) returns %d
 addr: 20006e38
 string: DIF-fail: dif_uart_watermark_rx_set(uart, kFlowControlRxWatermark) returns %d
 addr: 20006e86

@@ -14,7 +14,7 @@
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 static dif_lc_ctrl_t lc;
 
@@ -42,7 +42,7 @@ bool execute_lc_ctrl_scrap_test(bool use_ext_clk) {
     LOG_INFO("Start LC_CTRL scrap test");
 
     mmio_region_t lc_reg =
-        mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR);
+        mmio_region_from_addr(TOP_DARJEELING_LC_CTRL_BASE_ADDR);
     CHECK_DIF_OK(dif_lc_ctrl_init(lc_reg, &lc));
 
     // Acquire the mutex and perform a transition to SCRAP

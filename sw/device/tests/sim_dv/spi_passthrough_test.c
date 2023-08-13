@@ -22,7 +22,7 @@
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -42,37 +42,37 @@ static dif_spi_host_t spi_host1;
 // Enable pull-ups for spi_host data pins to avoid floating inputs.
 static const pinmux_pad_attributes_t pinmux_pad_config[] = {
     {
-        .pad = kTopEarlgreyMuxedPadsIob1,
+        .pad = kTopDarjeelingMuxedPadsIob1,
         .kind = kDifPinmuxPadKindMio,
         .flags = kDifPinmuxPadAttrPullResistorEnable |
                  kDifPinmuxPadAttrPullResistorUp,
     },
     {
-        .pad = kTopEarlgreyMuxedPadsIob3,
+        .pad = kTopDarjeelingMuxedPadsIob3,
         .kind = kDifPinmuxPadKindMio,
         .flags = kDifPinmuxPadAttrPullResistorEnable |
                  kDifPinmuxPadAttrPullResistorUp,
     },
     {
-        .pad = kTopEarlgreyDirectPadsSpiHost0Sd0,
+        .pad = kTopDarjeelingDirectPadsSpiHost0Sd0,
         .kind = kDifPinmuxPadKindDio,
         .flags = kDifPinmuxPadAttrPullResistorEnable |
                  kDifPinmuxPadAttrPullResistorUp,
     },
     {
-        .pad = kTopEarlgreyDirectPadsSpiHost0Sd1,
+        .pad = kTopDarjeelingDirectPadsSpiHost0Sd1,
         .kind = kDifPinmuxPadKindDio,
         .flags = kDifPinmuxPadAttrPullResistorEnable |
                  kDifPinmuxPadAttrPullResistorUp,
     },
     {
-        .pad = kTopEarlgreyDirectPadsSpiHost0Sd2,
+        .pad = kTopDarjeelingDirectPadsSpiHost0Sd2,
         .kind = kDifPinmuxPadKindDio,
         .flags = kDifPinmuxPadAttrPullResistorEnable |
                  kDifPinmuxPadAttrPullResistorUp,
     },
     {
-        .pad = kTopEarlgreyDirectPadsSpiHost0Sd3,
+        .pad = kTopDarjeelingDirectPadsSpiHost0Sd3,
         .kind = kDifPinmuxPadKindDio,
         .flags = kDifPinmuxPadAttrPullResistorEnable |
                  kDifPinmuxPadAttrPullResistorUp,
@@ -90,49 +90,49 @@ typedef struct pinmux_select {
 
 static const pinmux_select_t pinmux_out_config[] = {
     {
-        .pad = kTopEarlgreyPinmuxMioOutIob0,
-        .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Csb,
+        .pad = kTopDarjeelingPinmuxMioOutIob0,
+        .peripheral = kTopDarjeelingPinmuxOutselSpiHost1Csb,
     },
     {
-        .pad = kTopEarlgreyPinmuxMioOutIob2,
-        .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Sck,
+        .pad = kTopDarjeelingPinmuxMioOutIob2,
+        .peripheral = kTopDarjeelingPinmuxOutselSpiHost1Sck,
     },
     {
-        .pad = kTopEarlgreyPinmuxMioOutIob1,
-        .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Sd0,
+        .pad = kTopDarjeelingPinmuxMioOutIob1,
+        .peripheral = kTopDarjeelingPinmuxOutselSpiHost1Sd0,
     },
     {
-        .pad = kTopEarlgreyPinmuxMioOutIob3,
-        .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Sd1,
+        .pad = kTopDarjeelingPinmuxMioOutIob3,
+        .peripheral = kTopDarjeelingPinmuxOutselSpiHost1Sd1,
     },
     // These peripheral I/Os are not assigned for tests.
     //     {
     //         .pad = ???,
-    //         .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Sd2,
+    //         .peripheral = kTopDarjeelingPinmuxOutselSpiHost1Sd2,
     //     },
     //     {
     //         .pad = ???,
-    //         .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Sd3,
+    //         .peripheral = kTopDarjeelingPinmuxOutselSpiHost1Sd3,
     //     },
 };
 
 static const pinmux_select_t pinmux_in_config[] = {
     {
-        .pad = kTopEarlgreyPinmuxInselIob1,
-        .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Sd0,
+        .pad = kTopDarjeelingPinmuxInselIob1,
+        .peripheral = kTopDarjeelingPinmuxOutselSpiHost1Sd0,
     },
     {
-        .pad = kTopEarlgreyPinmuxInselIob3,
-        .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Sd1,
+        .pad = kTopDarjeelingPinmuxInselIob3,
+        .peripheral = kTopDarjeelingPinmuxOutselSpiHost1Sd1,
     },
     // These peripheral I/Os are not assigned for tests.
     //     {
     //         .pad = ???,
-    //         .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Sd2,
+    //         .peripheral = kTopDarjeelingPinmuxOutselSpiHost1Sd2,
     //     },
     //     {
     //         .pad = ???,
-    //         .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Sd3,
+    //         .peripheral = kTopDarjeelingPinmuxOutselSpiHost1Sd3,
     //     },
 };
 
@@ -342,17 +342,19 @@ void spi_device_isr(void) {
  * Runs in interrupt context.
  */
 void ottf_external_isr(void) {
-  const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
+  const uint32_t kPlicTarget = kTopDarjeelingPlicTargetIbex0;
   dif_rv_plic_irq_id_t plic_irq_id;
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&rv_plic, kPlicTarget, &plic_irq_id));
 
-  top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
+  top_darjeeling_plic_peripheral_t peripheral =
+      (top_darjeeling_plic_peripheral_t)
+          top_darjeeling_plic_interrupt_for_peripheral[plic_irq_id];
 
   switch (peripheral) {
-    case kTopEarlgreyPlicPeripheralSpiDevice:
+    case kTopDarjeelingPlicPeripheralSpiDevice:
       // Only the UploadCmdfifoNotEmpty interrupt is expected.
-      CHECK(plic_irq_id == kTopEarlgreyPlicIrqIdSpiDeviceUploadCmdfifoNotEmpty);
+      CHECK(plic_irq_id ==
+            kTopDarjeelingPlicIrqIdSpiDeviceUploadCmdfifoNotEmpty);
       spi_device_isr();
       break;
     default:
@@ -366,7 +368,7 @@ void ottf_external_isr(void) {
 bool test_main(void) {
   // Initialize the pinmux.
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
   pinmux_testutils_init(&pinmux);
   pinmux_testutils_configure_pads(&pinmux, pinmux_pad_config,
                                   ARRAYSIZE(pinmux_pad_config));
@@ -383,19 +385,19 @@ bool test_main(void) {
 
   // Initialize the PLIC.
   CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &rv_plic));
+      mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &rv_plic));
 
   // Initialize the spi_host devices.
   CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spi_host0));
+      mmio_region_from_addr(TOP_DARJEELING_SPI_HOST0_BASE_ADDR), &spi_host0));
   CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spi_host1));
+      mmio_region_from_addr(TOP_DARJEELING_SPI_HOST0_BASE_ADDR), &spi_host1));
   init_spi_host(&spi_host0, (uint32_t)kClockFreqHiSpeedPeripheralHz);
   init_spi_host(&spi_host1, (uint32_t)kClockFreqPeripheralHz);
 
   // Initialize spi_device.
   mmio_region_t spi_device_base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR);
+      mmio_region_from_addr(TOP_DARJEELING_SPI_DEVICE_BASE_ADDR);
   CHECK_DIF_OK(dif_spi_device_init_handle(spi_device_base_addr, &spi_device));
   bool upload_write_commands = (kUploadWriteCommands != 0);
   CHECK_STATUS_OK(spi_device_testutils_configure_passthrough(
@@ -421,22 +423,22 @@ bool test_main(void) {
                                             kDifToggleEnabled));
 
   dif_rv_plic_irq_id_t spi_irqs[] = {
-      kTopEarlgreyPlicIrqIdSpiDeviceGenericRxFull,
-      kTopEarlgreyPlicIrqIdSpiDeviceGenericRxWatermark,
-      kTopEarlgreyPlicIrqIdSpiDeviceGenericTxWatermark,
-      kTopEarlgreyPlicIrqIdSpiDeviceGenericRxError,
-      kTopEarlgreyPlicIrqIdSpiDeviceGenericRxOverflow,
-      kTopEarlgreyPlicIrqIdSpiDeviceGenericTxUnderflow,
-      kTopEarlgreyPlicIrqIdSpiDeviceUploadCmdfifoNotEmpty,
-      kTopEarlgreyPlicIrqIdSpiDeviceReadbufWatermark,
-      kTopEarlgreyPlicIrqIdSpiDeviceReadbufFlip,
-      kTopEarlgreyPlicIrqIdSpiHost0Error,
-      kTopEarlgreyPlicIrqIdSpiHost0SpiEvent,
+      kTopDarjeelingPlicIrqIdSpiDeviceGenericRxFull,
+      kTopDarjeelingPlicIrqIdSpiDeviceGenericRxWatermark,
+      kTopDarjeelingPlicIrqIdSpiDeviceGenericTxWatermark,
+      kTopDarjeelingPlicIrqIdSpiDeviceGenericRxError,
+      kTopDarjeelingPlicIrqIdSpiDeviceGenericRxOverflow,
+      kTopDarjeelingPlicIrqIdSpiDeviceGenericTxUnderflow,
+      kTopDarjeelingPlicIrqIdSpiDeviceUploadCmdfifoNotEmpty,
+      kTopDarjeelingPlicIrqIdSpiDeviceReadbufWatermark,
+      kTopDarjeelingPlicIrqIdSpiDeviceReadbufFlip,
+      kTopDarjeelingPlicIrqIdSpiHost0Error,
+      kTopDarjeelingPlicIrqIdSpiHost0SpiEvent,
   };
   for (int i = 0; i < ARRAYSIZE(spi_irqs); ++i) {
     dif_rv_plic_irq_id_t irq = spi_irqs[i];
     CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-        &rv_plic, irq, kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
+        &rv_plic, irq, kTopDarjeelingPlicTargetIbex0, kDifToggleEnabled));
     CHECK_DIF_OK(dif_rv_plic_irq_set_priority(&rv_plic, irq, 0x1));
   }
   irq_external_ctrl(/*en=*/true);

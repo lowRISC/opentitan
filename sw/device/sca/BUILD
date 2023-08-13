@@ -19,7 +19,7 @@ opentitan_flash_binary(
     name = "aes_serial",
     srcs = ["aes_serial.c"],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing:aes_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
@@ -29,8 +29,8 @@ opentitan_flash_binary(
         "//sw/device/sca/lib:simple_serial",
         "//sw/lib/sw/device/base:memory",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
-        "//sw/top_earlgrey/sw/dif:aes",
+        "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/dif:aes",
     ],
 )
 
@@ -38,7 +38,7 @@ opentitan_flash_binary(
     name = "kmac_serial",
     srcs = ["kmac_serial.c"],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/sca/lib:prng",
@@ -46,8 +46,8 @@ opentitan_flash_binary(
         "//sw/device/sca/lib:simple_serial",
         "//sw/lib/sw/device/base:memory",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
-        "//sw/top_earlgrey/sw/dif:kmac",
+        "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/dif:kmac",
     ],
 )
 
@@ -55,7 +55,7 @@ opentitan_flash_binary(
     name = "sha3_serial",
     srcs = ["sha3_serial.c"],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/sca/lib:prng",
@@ -63,8 +63,8 @@ opentitan_flash_binary(
         "//sw/device/sca/lib:simple_serial",
         "//sw/lib/sw/device/base:memory",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_earlgrey/sw/device/runtime:print",
-        "//sw/top_earlgrey/sw/dif:kmac",
+        "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/dif:kmac",
     ],
 )
 
@@ -72,7 +72,7 @@ opentitan_flash_binary(
     name = "ecc384_serial",
     srcs = ["ecc384_serial.c"],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
@@ -84,7 +84,7 @@ opentitan_flash_binary(
         "//sw/lib/sw/device/runtime:ibex",
         "//sw/lib/sw/device/runtime:log",
         "//sw/otbn/crypto:p384_ecdsa_sca",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
 
@@ -92,7 +92,7 @@ opentitan_flash_binary(
     name = "ecc256_sign_serial",
     srcs = ["ecc256_sign_serial.c"],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
@@ -105,6 +105,6 @@ opentitan_flash_binary(
         "//sw/lib/sw/device/runtime:ibex",
         "//sw/lib/sw/device/runtime:log",
         "//sw/otbn/crypto:p256_ecdsa_sca",
-        "//sw/top_earlgrey/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
