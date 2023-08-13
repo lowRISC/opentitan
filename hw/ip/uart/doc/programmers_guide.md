@@ -141,7 +141,7 @@ void uart_interrupt_routine() {
 }
 ```
 
-One use of the `rx_timeout` interrupt is when the [`FIFO_CTRL.RXILVL`](../data/uart.hjson#fifo_ctrl)
+One use of the `rx_timeout` interrupt is when the [`FIFO_CTRL.RXILVL`](registers.md#fifo_ctrl--rxilvl)
 is set greater than one, so an interrupt is only fired when the fifo
 is full to a certain level. If the remote device sends fewer than the
 watermark number of characters before stopping sending (for example it
@@ -159,7 +159,3 @@ case the host will eventually get a watermark interrupt, this will happen
 ## Device Interface Functions (DIFs)
 
 - [Device Interface Functions](../../../../sw/device/lib/dif/dif_uart.h)
-
-## Register Table
-
-* [Register Table](../data/uart.hjson#registers)
