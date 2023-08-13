@@ -36,7 +36,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   // when LC error bit is set.
   bit default_req_blocking = 1;
   bit lc_prog_blocking     = 1;
-
+  bit dai_wr_inprogress = 0;
   uint32_t op_done_spinwait_timeout_ns = 20_000_000;
 
   // Collect current lc_state and lc_cnt. This is used to create next lc_state and lc_cnt without
@@ -146,9 +146,11 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
                       bit [TL_DW-1:0] wdata0,
                       bit [TL_DW-1:0] wdata1 = 0);
     bit [TL_DW-1:0] val;
+    dai_wr_inprogress = 1;
     if (write_unused_addr) begin
       if (used_dai_addrs.exists(addr[OTP_ADDR_WIDTH - 1 : 0])) begin
         `uvm_info(`gfn, $sformatf("addr %0h is already written!", addr), UVM_MEDIUM)
+        dai_wr_inprogress = 0;
         return;
       end else begin
         used_dai_addrs[addr] = 1;
@@ -177,6 +179,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     end
     wait_dai_op_done();
     rd_and_clear_intrs();
+    dai_wr_inprogress = 0;
   endtask : dai_wr
 
   // This task triggers an OTP readout sequence via the DAI interface

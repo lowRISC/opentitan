@@ -71,6 +71,7 @@ class otp_ctrl_parallel_lc_esc_vseq extends otp_ctrl_dai_lock_vseq;
     endcase
 
     wait_no_outstanding_access();
+    wait (dai_wr_inprogress == 0);
   endtask
 
   virtual task set_lc_esc_and_check();
