@@ -10,24 +10,24 @@ The section [Writing OTBN applications](#writing-otbn-applications) describes ho
 
 The high-level sequence by which the host processor should use OTBN is as follows.
 
-1. Optional: Initialise [`LOAD_CHECKSUM`](../data/otbn.hjson#load_checksum).
-1. Write the OTBN application binary to [`IMEM`](../data/otbn.hjson#imem), starting at address 0.
-1. Optional: Write constants and input arguments, as mandated by the calling convention of the loaded application, to the half of DMEM accessible through the [`DMEM`](../data/otbn.hjson#dmem) window.
-1. Optional: Read back [`LOAD_CHECKSUM`](../data/otbn.hjson#load_checksum) and perform an integrity check.
+1. Optional: Initialise [`LOAD_CHECKSUM`](registers.md#load_checksum).
+1. Write the OTBN application binary to [`IMEM`](registers.md#imem), starting at address 0.
+1. Optional: Write constants and input arguments, as mandated by the calling convention of the loaded application, to the half of DMEM accessible through the [`DMEM`](registers.md#dmem) window.
+1. Optional: Read back [`LOAD_CHECKSUM`](registers.md#load_checksum) and perform an integrity check.
 1. Start the operation on OTBN by [issuing the `EXECUTE` command](./theory_of_operation.md#operations-and-commands).
    Now neither data nor instruction memory may be accessed from the host CPU.
    After it has been started the OTBN application runs to completion without further interaction with the host.
 1. Wait for the operation to complete (see below).
    As soon as the OTBN operation has completed the data and instruction memories can be accessed again from the host CPU.
-1. Check if the operation was successful by reading the [`ERR_BITS`](../data/otbn.hjson#err_bits) register.
-1. Optional: Retrieve results by reading [`DMEM`](../data/otbn.hjson#dmem), as mandated by the calling convention of the loaded application.
+1. Check if the operation was successful by reading the [`ERR_BITS`](registers.md#err_bits) register.
+1. Optional: Retrieve results by reading [`DMEM`](registers.md#dmem), as mandated by the calling convention of the loaded application.
 
 OTBN applications are run to completion.
-The host CPU can determine if an application has completed by either polling [`STATUS`](../data/otbn.hjson#status) or listening for an interrupt.
+The host CPU can determine if an application has completed by either polling [`STATUS`](registers.md#status) or listening for an interrupt.
 
-* To poll for a completed operation, software should repeatedly read the [`STATUS`](../data/otbn.hjson#status) register.
-  The operation is complete if [`STATUS`](../data/otbn.hjson#status) is `IDLE` or `LOCKED`, otherwise the operation is in progress.
-  When [`STATUS`](../data/otbn.hjson#status) has become `LOCKED` a fatal error has occurred and OTBN must be reset to perform further operations.
+* To poll for a completed operation, software should repeatedly read the [`STATUS`](registers.md#status) register.
+  The operation is complete if [`STATUS`](registers.md#status) is `IDLE` or `LOCKED`, otherwise the operation is in progress.
+  When [`STATUS`](registers.md#status) has become `LOCKED` a fatal error has occurred and OTBN must be reset to perform further operations.
 * Alternatively, software can listen for the `done` interrupt to determine if the operation has completed.
   The standard sequence of working with interrupts has to be followed, i.e. the interrupt has to be enabled, an interrupt service routine has to be registered, etc.
   The [DIF](#device-interface-functions-difs) contains helpers to do so conveniently.
@@ -68,8 +68,8 @@ Once OTBN has executed the {{#otbn-insn-ref ECALL}} instruction, the following t
 
 - No more instructions are fetched or executed.
 - A [secure wipe of internal state](./theory_of_operation.md#internal-state-secure-wipe) is performed.
-- The [`ERR_BITS`](../data/otbn.hjson#err_bits) register is set to 0, indicating a successful operation.
-- The current operation is marked as complete by setting [`INTR_STATE.done`](../data/otbn.hjson#intr_state) and clearing [`STATUS`](../data/otbn.hjson#status).
+- The [`ERR_BITS`](registers.md#err_bits) register is set to 0, indicating a successful operation.
+- The current operation is marked as complete by setting [`INTR_STATE.done`](registers.md#intr_state) and clearing [`STATUS`](registers.md#status).
 
 The first 2kiB of DMEM can be used to pass data back to the host processor, e.g. a "return value" or an "exit code".
 Refer to the section [Passing of data between the host CPU and OTBN](#passing-of-data-between-the-host-cpu-and-otbn) for more information.
@@ -362,7 +362,3 @@ Code snippets giving examples of 256x256 and 384x384 multiplies can be found in 
 A higher-level driver for the OTBN block is available at `sw/device/lib/runtime/otbn.h`.
 
 Another driver for OTBN is part of the silicon creator code at `sw/device/silicon_creator/lib/drivers/otbn.h`.
-
-## Register Table
-
-* [Register Table](../data/otbn.hjson#registers)
