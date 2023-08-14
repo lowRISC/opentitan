@@ -239,3 +239,12 @@ dif_result_t dif_dma_error_code_get(const dif_dma_t *dma,
 
   return kDifOk;
 }
+
+dif_result_t dif_dma_state_clear(const dif_dma_t *dma) {
+  if (dma == NULL) {
+    return kDifBadArg;
+  }
+  mmio_region_write32(dma->base_addr, DMA_CLEAR_STATE_REG_OFFSET, 1);
+
+  return kDifOk;
+}
