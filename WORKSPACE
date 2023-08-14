@@ -72,6 +72,13 @@ shellcheck_repos()
 # Tock dependencies.
 load("//third_party/tock/crates:crates.bzl", tock_crate_repositories = "crate_repositories")
 tock_crate_repositories()
+load("//third_party/tock:repos.bzl", tock_repos="tock_repos")
+tock_repos(
+    # For developing tock/libtock along side OpenTitan, set these parameters
+    # to your local checkout of tock and libtock-rs respectively.
+    #tock = "../tock",
+    #libtock = "../libtock-rs",
+)
 
 # OpenOCD
 load("//third_party/openocd:repos.bzl", "openocd_repos")
