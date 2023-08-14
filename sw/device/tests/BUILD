@@ -7,10 +7,12 @@ load(
     "//rules:opentitan_test.bzl",
     "OPENTITANTOOL_OPENOCD_DATA_DEPS",
     "OPENTITANTOOL_OPENOCD_TEST_CMDS",
+    "QEMU_ARG_DISABLE_AES_FAST_MODE",
     "ROM_BOOT_FAILURE_MSG",
     "cw310_params",
     "dv_params",
     "opentitan_functest",
+    "qemu_params",
     "verilator_params",
 )
 load("//rules:splice.bzl", "bitstream_splice")
@@ -66,10 +68,16 @@ opentitan_functest(
 opentitan_functest(
     name = "aes_idle_test",
     srcs = ["aes_idle_test.c"],
+    qemu = qemu_params(
+        icount = 6,  # just an example
+        machine_props = ["no_epmp_cfg=true"],  # just an example
+        qemu_args = QEMU_ARG_DISABLE_AES_FAST_MODE,
+    ),
     targets = [
         "dv",
         "verilator",
         "cw310_test_rom",
+        "qemu_cw310_test_rom",
     ],
     deps = [
         "//hw/ip/aes:model",

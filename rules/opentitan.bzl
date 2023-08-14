@@ -4,6 +4,7 @@
 
 load("//rules:const.bzl", "CONST")
 load("//rules:signing.bzl", "sign_bin")
+load("//rules:qemu.bzl", "qemu_flashgen")
 load("@rules_cc//cc:action_names.bzl", "ACTION_NAMES")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load(
@@ -973,6 +974,7 @@ def opentitan_multislot_flash_binary(
       For each device in per_device_deps entry:
         rules emitted by `opentitan_binary` named: see `opentitan_binary` macro
         assemble_flash_image named: <name>_<device>_bin_signed
+        qemu_flashgen        named: <name>_<device>_qemu_signed
         bin_to_vmem          named: <name>_<device>_vmem64_signed
         scrambled_flash_vmem named: <name>_<device>_scr_vmem64_signed
         filegroup            named: <name>_<device>
@@ -1007,6 +1009,13 @@ def opentitan_multislot_flash_binary(
             name = signed_bin_name,
             output = "{}.signed.bin".format(devname),
             image_size = image_size,
+            binaries = signed_dev_binaries,
+            testonly = testonly,
+        )
+        qemu_signed_bin_name = "{}_qemu_signed".format(devname)
+        qemu_flashgen(
+            name = qemu_signed_bin_name,
+            output = "{}.signed.qemu".format(devname),
             binaries = signed_dev_binaries,
             testonly = testonly,
         )
@@ -1081,10 +1090,12 @@ def opentitan_flash_binary(
         rules emitted by `opentitan_binary` named: see `opentitan_binary` macro
         bin_to_vmem                         named: <name>_<device>_vmem64
         scrambled_flash_vmem                named: <name>_<device>_scr_vmem64
+        qemu_flashgen                       named: <name>_<device>_qemu
         Optionally:
           sign_bin             named: <name>_<device>_bin_signed_<key_name>
           bin_to_vmem          named: <name>_<device>_vmem64_signed_<key_name>
           scrambled_flash_vmem named: <name>_<device>_scr_vmem64_signed_<key_name>
+          qemu_flashgen        named: <name>_<device>_qemu_signed_<key_name>
         filegroup              named: <name>_<device>
           Containing all targets for a single device for the above generated rules.
         filegroup              named: <name>
@@ -1116,6 +1127,7 @@ def opentitan_flash_binary(
             testonly = testonly,
             **kwargs
         ))
+        elf_name = "{}.elf".format(devname)
         bin_name = "{}_{}".format(devname, "bin")
         binaries.append(":" + bin_name)
 
@@ -1179,6 +1191,17 @@ def opentitan_flash_binary(
                         platform = platform,
                         testonly = testonly,
                     )
+                elif device in ["fpga_cw310"]:
+                    # QEMU tests are based on FPGA images but need a special flash format.
+                    signed_qemu_name = "{}_qemu_signed_{}".format(devname, key_name)
+                    dev_targets.append(":" + signed_qemu_name)
+                    qemu_flashgen(
+                        name = signed_qemu_name,
+                        output = "{}_{}.qemu".format(devname, key_name),
+                        binaries = {signed_bin_name: "0"},
+                        #elf = elf_name,
+                        testonly = testonly,
+                    )
 
         # We only need to generate VMEM files for sim devices.
         if device in ["sim_dv", "sim_verilator"]:
@@ -1201,6 +1224,17 @@ def opentitan_flash_binary(
                 otp = sim_otp,
                 vmem = vmem_name,
                 platform = platform,
+                testonly = testonly,
+            )
+        elif device in ["fpga_cw310"]:
+            # QEMU tests are based on FPGA images but need a special flash format.
+            qemu_name = "{}_qemu".format(devname)
+            dev_targets.append(":" + qemu_name)
+            qemu_flashgen(
+                name = qemu_name,
+                output = "{}.qemu".format(devname),
+                binaries = {bin_name: "0"},
+                #elf = elf_name,
                 testonly = testonly,
             )
 
