@@ -522,3 +522,7 @@
 # Rust for C Developers
 
 - [Rust for Embedded C Programmers](./doc/rust_for_c_devs.md)
+
+# Appendix
+
+- [Glossary](./doc/glossary.md)
