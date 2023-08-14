@@ -265,15 +265,15 @@ TEST_F(AbortTest, Success) {
 TEST_F(AbortTest, BadArg) { EXPECT_DIF_BADARG(dif_dma_abort(nullptr)); }
 
 // DMA Memory range lock tests
-class MemoryRangeLock : public DmaTestInitialized {};
+class MemoryRangeLockTest : public DmaTestInitialized {};
 
-TEST_F(MemoryRangeLock, SetSuccess) {
+TEST_F(MemoryRangeLockTest, SetSuccess) {
   EXPECT_WRITE32(DMA_RANGE_UNLOCK_REGWEN_REG_OFFSET, kMultiBitBool4False);
 
   EXPECT_DIF_OK(dif_dma_memory_range_lock(&dma_));
 }
 
-TEST_F(MemoryRangeLock, GetLocked) {
+TEST_F(MemoryRangeLockTest, GetLocked) {
   bool locked = false;
   EXPECT_READ32(DMA_RANGE_UNLOCK_REGWEN_REG_OFFSET, kMultiBitBool4False);
 
@@ -281,11 +281,11 @@ TEST_F(MemoryRangeLock, GetLocked) {
   EXPECT_TRUE(locked);
 }
 
-TEST_F(MemoryRangeLock, SetBadArg) {
+TEST_F(MemoryRangeLockTest, SetBadArg) {
   EXPECT_DIF_BADARG(dif_dma_memory_range_lock(nullptr));
 }
 
-TEST_F(MemoryRangeLock, GetBadArg) {
+TEST_F(MemoryRangeLockTest, GetBadArg) {
   bool dummy;
   EXPECT_DIF_BADARG(dif_dma_is_memory_range_locked(nullptr, &dummy));
   EXPECT_DIF_BADARG(dif_dma_is_memory_range_locked(&dma_, nullptr));
