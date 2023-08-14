@@ -212,3 +212,19 @@ dif_result_t dif_dma_irq_thresholds_get(const dif_dma_t *dma,
 
   return kDifOk;
 }
+
+dif_result_t dif_dma_status_get(const dif_dma_t *dma,
+                                dif_dma_status_t *status) {
+  if (dma == NULL || status == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t reg = mmio_region_read32(dma->base_addr, DMA_STATUS_REG_OFFSET);
+
+  const bitfield_field32_t kStatusFields = {
+      .mask = (1 << DMA_STATUS_ERROR_CODE_OFFSET) - 1,
+      .index = DMA_STATUS_BUSY_BIT};
+
+  *status = bitfield_field32_read(reg, kStatusFields);
+
+  return kDifOk;
+}
