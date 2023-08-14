@@ -294,6 +294,14 @@ typedef enum dif_dma_error_code {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_dma_error_code_get(const dif_dma_t *dma,
                                     dif_dma_error_code_t *error);
+/**
+ * Clear the DMA controller state.
+ *
+ * @param dma A DMA Controller handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_dma_state_clear(const dif_dma_t *dma);
 
 #ifdef __cplusplus
 }  // extern "C"
