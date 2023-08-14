@@ -50,13 +50,13 @@ package dma_env_pkg;
   } dma_control_data_direction_e;
 
   // package sources
+  `include "dma_seq_item.sv"
   `include "dma_env_cfg.sv"
   `include "dma_env_cov.sv"
   `include "dma_virtual_sequencer.sv"
   `include "dma_scoreboard.sv"
   `include "dma_env.sv"
   `include "dma_pull_seq.sv"
-  `include "dma_seq_item.sv"
   `include "dma_vseq_list.sv"
 
 endpackage
