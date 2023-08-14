@@ -22,6 +22,7 @@
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
+#include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/epmp_state.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
@@ -56,6 +57,15 @@ static rom_error_t rom_ext_irq_error(void) {
   // interrupt causes increase).
   mcause = (mcause & 0x80000000) | ((mcause & 0x7f) << 24);
   return kErrorRomExtInterrupt + mcause;
+}
+
+void rom_ext_check_rom_expectations(void) {
+  // Check the ePMP state.
+  SHUTDOWN_IF_ERROR(epmp_state_check());
+  // Check sec_mmio expectations.
+  // We don't check the counters since we don't want to tie ROM_EXT to a
+  // specific ROM version.
+  sec_mmio_check_values(rnd_uint32());
 }
 
 void rom_ext_init(void) {
@@ -325,6 +335,7 @@ static rom_error_t rom_ext_try_boot(void) {
 }
 
 void rom_ext_main(void) {
+  rom_ext_check_rom_expectations();
   rom_ext_init();
   OT_DISCARD(rom_printf("Starting ROM_EXT\r\n"));
   rom_error_t error = rom_ext_try_boot();
