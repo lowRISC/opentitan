@@ -332,4 +332,37 @@ TEST_F(IrqThresholdsTest, GetBadArg) {
   EXPECT_DIF_BADARG(dif_dma_irq_thresholds_get(&dma_, &dummy, nullptr));
 }
 
+// DMA thresholds tests
+typedef struct status_reg {
+  uint32_t reg;
+  dif_dma_status_t status;
+} status_reg_t;
+class StatusTest : public DmaTestInitialized,
+                   public testing::WithParamInterface<status_reg_t> {};
+
+TEST_P(StatusTest, GetSussess) {
+  status_reg_t status_arg = GetParam();
+
+  EXPECT_READ32(DMA_STATUS_REG_OFFSET, status_arg.reg);
+
+  dif_dma_status_t status;
+
+  EXPECT_DIF_OK(dif_dma_status_get(&dma_, &status));
+  EXPECT_EQ(status, status_arg.status);
+}
+
+INSTANTIATE_TEST_SUITE_P(StatusTest, StatusTest,
+                         testing::ValuesIn(std::vector<status_reg_t>{{
+                             {1 << DMA_STATUS_BUSY_BIT, kDifDmaStatusBusy},
+                             {1 << DMA_STATUS_DONE_BIT, kDifDmaStatusDone},
+                             {1 << DMA_STATUS_ABORTED_BIT,
+                              kDifDmaStatusAborted},
+                             {1 << DMA_STATUS_ERROR_BIT, kDifDmaStatusError},
+                         }}));
+
+TEST_F(StatusTest, GetBadArg) {
+  dif_dma_status_t dummy;
+  EXPECT_DIF_BADARG(dif_dma_status_get(nullptr, &dummy));
+  EXPECT_DIF_BADARG(dif_dma_status_get(&dma_, nullptr));
+}
 }  // namespace dif_dma_test

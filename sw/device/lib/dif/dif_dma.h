@@ -237,6 +237,32 @@ dif_result_t dif_dma_irq_thresholds_get(const dif_dma_t *dma,
                                         uint64_t *almost_limit,
                                         uint64_t *limit);
 
+typedef enum dif_dma_status_code {
+  // DMA operation is active.
+  kDifDmaStatusBusy = 0x01 << 0,
+  // Configured DMA operation is complete.
+  kDifDmaStatusDone = 0x01 << 1,
+  // Set once aborted operation drains.
+  kDifDmaStatusAborted = 0x01 << 2,
+  // Error occurred during the operation.
+  // Check the error_code for information about the source of the error.
+  kDifDmaStatusError = 0x01 << 3,
+} dif_dma_status_code_t;
+
+/**
+ * Bitmask with the `dif_dma_status_code_t` values.
+ */
+typedef uint32_t dif_dma_status_t;
+/**
+ * Reads the DMA status.
+ *
+ * @param dma A DMA Controller handle.
+ * @param[out] status Out-param for the status.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_dma_status_get(const dif_dma_t *dma, dif_dma_status_t *status);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
