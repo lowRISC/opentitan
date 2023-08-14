@@ -306,7 +306,7 @@ TEST_F(IrqThresholdsTest, SetSuccess) {
                                            0xF0001000E0005000));
 }
 
-TEST_F(IrqThresholdsTest, GetSussess) {
+TEST_F(IrqThresholdsTest, GetSuccess) {
   EXPECT_READ32(DMA_DESTINATION_ADDRESS_ALMOST_LIMIT_LO_REG_OFFSET, 0x9000F000);
   EXPECT_READ32(DMA_DESTINATION_ADDRESS_ALMOST_LIMIT_HI_REG_OFFSET, 0x80001000);
   EXPECT_READ32(DMA_DESTINATION_ADDRESS_LIMIT_LO_REG_OFFSET, 0xE0005000);
@@ -341,7 +341,7 @@ typedef struct status_reg {
 class StatusTest : public DmaTestInitialized,
                    public testing::WithParamInterface<status_reg_t> {};
 
-TEST_P(StatusTest, GetSussess) {
+TEST_P(StatusTest, GetSuccess) {
   status_reg_t status_arg = GetParam();
 
   EXPECT_READ32(DMA_STATUS_REG_OFFSET, status_arg.reg);
@@ -384,5 +384,11 @@ TEST_F(StatusTest, GetBadArg) {
   dif_dma_status_t dummy;
   EXPECT_DIF_BADARG(dif_dma_status_get(nullptr, &dummy));
   EXPECT_DIF_BADARG(dif_dma_status_get(&dma_, nullptr));
+}
+
+TEST_F(StatusTest, GetErrorBadArg) {
+  dif_dma_error_code_t dummy;
+  EXPECT_DIF_BADARG(dif_dma_error_code_get(nullptr, &dummy));
+  EXPECT_DIF_BADARG(dif_dma_error_code_get(&dma_, nullptr));
 }
 }  // namespace dif_dma_test
