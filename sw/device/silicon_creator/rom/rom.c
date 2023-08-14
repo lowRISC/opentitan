@@ -178,6 +178,7 @@ static rom_error_t rom_init(void) {
   if ((reset_reasons & reset_mask) != 0) {
     retention_sram_init();
     retention_sram_get()->version = kRetentionSramVersion2;
+    retention_sram_get()->creator.last_shutdown_reason = kErrorOk;
   }
   // Store the reset reason in retention RAM and clear the register.
   retention_sram_get()->creator.reset_reasons = reset_reasons;

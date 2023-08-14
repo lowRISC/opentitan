@@ -315,6 +315,7 @@ dual_cc_library(
             "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
             "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/silicon_creator/lib/drivers:retention_sram",
             "//sw/device/lib/arch:device",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:bitfield",
