@@ -336,6 +336,7 @@ TEST_F(IrqThresholdsTest, GetBadArg) {
 typedef struct status_reg {
   uint32_t reg;
   dif_dma_status_t status;
+  dif_dma_error_code_t error;
 } status_reg_t;
 class StatusTest : public DmaTestInitialized,
                    public testing::WithParamInterface<status_reg_t> {};
@@ -344,21 +345,40 @@ TEST_P(StatusTest, GetSussess) {
   status_reg_t status_arg = GetParam();
 
   EXPECT_READ32(DMA_STATUS_REG_OFFSET, status_arg.reg);
+  EXPECT_READ32(DMA_STATUS_REG_OFFSET, status_arg.reg);
 
   dif_dma_status_t status;
+  dif_dma_error_code_t error;
 
   EXPECT_DIF_OK(dif_dma_status_get(&dma_, &status));
+  EXPECT_DIF_OK(dif_dma_error_code_get(&dma_, &error));
   EXPECT_EQ(status, status_arg.status);
+  EXPECT_EQ(error, status_arg.error);
 }
 
-INSTANTIATE_TEST_SUITE_P(StatusTest, StatusTest,
-                         testing::ValuesIn(std::vector<status_reg_t>{{
-                             {1 << DMA_STATUS_BUSY_BIT, kDifDmaStatusBusy},
-                             {1 << DMA_STATUS_DONE_BIT, kDifDmaStatusDone},
-                             {1 << DMA_STATUS_ABORTED_BIT,
-                              kDifDmaStatusAborted},
-                             {1 << DMA_STATUS_ERROR_BIT, kDifDmaStatusError},
-                         }}));
+INSTANTIATE_TEST_SUITE_P(
+    StatusTest, StatusTest,
+    testing::ValuesIn(std::vector<status_reg_t>{{
+        {1 << DMA_STATUS_BUSY_BIT, kDifDmaStatusBusy, kDifDmaErrorNone},
+        {1 << DMA_STATUS_DONE_BIT, kDifDmaStatusDone, kDifDmaErrorNone},
+        {1 << DMA_STATUS_ABORTED_BIT, kDifDmaStatusAborted, kDifDmaErrorNone},
+        {1 << DMA_STATUS_ERROR_BIT | (1 << 0) << DMA_STATUS_ERROR_CODE_OFFSET,
+         kDifDmaStatusError, kDifDmaErrorSourceAddress},
+        {1 << DMA_STATUS_ERROR_BIT | (1 << 1) << DMA_STATUS_ERROR_CODE_OFFSET,
+         kDifDmaStatusError, kDifDmaErrorDestinationAddress},
+        {1 << DMA_STATUS_ERROR_BIT | (1 << 2) << DMA_STATUS_ERROR_CODE_OFFSET,
+         kDifDmaStatusError, kDifDmaErrorOpcode},
+        {1 << DMA_STATUS_ERROR_BIT | (1 << 3) << DMA_STATUS_ERROR_CODE_OFFSET,
+         kDifDmaStatusError, kDifDmaErrorSize},
+        {1 << DMA_STATUS_ERROR_BIT | (1 << 4) << DMA_STATUS_ERROR_CODE_OFFSET,
+         kDifDmaStatusError, kDifDmaErrorCompletion},
+        {1 << DMA_STATUS_ERROR_BIT | (1 << 5) << DMA_STATUS_ERROR_CODE_OFFSET,
+         kDifDmaStatusError, kDifDmaErrorEnableMemoryConfig},
+        {1 << DMA_STATUS_ERROR_BIT | (1 << 6) << DMA_STATUS_ERROR_CODE_OFFSET,
+         kDifDmaStatusError, kDifDmaErrorRegisterConfig},
+        {1 << DMA_STATUS_ERROR_BIT | (1 << 7) << DMA_STATUS_ERROR_CODE_OFFSET,
+         kDifDmaStatusError, kDifDmaErrorInvalidAsid},
+    }}));
 
 TEST_F(StatusTest, GetBadArg) {
   dif_dma_status_t dummy;

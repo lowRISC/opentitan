@@ -228,3 +228,14 @@ dif_result_t dif_dma_status_get(const dif_dma_t *dma,
 
   return kDifOk;
 }
+
+dif_result_t dif_dma_error_code_get(const dif_dma_t *dma,
+                                    dif_dma_error_code_t *error) {
+  if (dma == NULL || error == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t reg = mmio_region_read32(dma->base_addr, DMA_STATUS_REG_OFFSET);
+  *error = bitfield_field32_read(reg, DMA_STATUS_ERROR_CODE_FIELD);
+
+  return kDifOk;
+}

@@ -263,6 +263,38 @@ typedef uint32_t dif_dma_status_t;
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_dma_status_get(const dif_dma_t *dma, dif_dma_status_t *status);
 
+typedef enum dif_dma_error_code {
+  // Source address error.
+  kDifDmaErrorNone = 0x00,
+  // Source address error.
+  kDifDmaErrorSourceAddress = 0x01 << 0,
+  // Destination address error.
+  kDifDmaErrorDestinationAddress = 0x01 << 1,
+  // Opcode error.
+  kDifDmaErrorOpcode = 0x01 << 2,
+  // Size error.
+  kDifDmaErrorSize = 0x01 << 3,
+  // Completion error.
+  kDifDmaErrorCompletion = 0x01 << 4,
+  // DMA enable memory config error.
+  kDifDmaErrorEnableMemoryConfig = 0x01 << 5,
+  // Register config error.
+  kDifDmaErrorRegisterConfig = 0x01 << 6,
+  // Invalid ASID error.
+  kDifDmaErrorInvalidAsid = 0x01 << 7,
+} dif_dma_error_code_t;
+
+/**
+ * Reads the DMA status.
+ *
+ * @param dma A DMA Controller handle.
+ * @param[out] status Out-param for the status.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_dma_error_code_get(const dif_dma_t *dma,
+                                    dif_dma_error_code_t *error);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
