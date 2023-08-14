@@ -231,7 +231,7 @@ pub fn update_firmware(
 
     let dfu_desc = scan_usb_descriptor(&dfu_device)?;
     dfu_device.claim_interface(dfu_desc.dfu_interface)?;
-    do_update_firmware(&mut dfu_device, dfu_desc, firmware, progress)?;
+    do_update_firmware(&dfu_device, dfu_desc, firmware, progress)?;
 
     // At this point, the new firmware has been completely transferred, and the USB device is
     // resetting and booting the new firmware.  Wait a second, then verify that device can now be
@@ -248,7 +248,7 @@ pub fn update_firmware(
 }
 
 fn do_update_firmware(
-    usb_device: &mut UsbBackend,
+    usb_device: &UsbBackend,
     dfu_desc: DfuDescriptor,
     firmware: &[u8],
     progress: &dyn ProgressIndicator,

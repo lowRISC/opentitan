@@ -45,10 +45,10 @@ impl Verilator {
         static SPI: Lazy<Regex> =
             Lazy::new(|| Regex::new("SPI: Created ([^ ]+) for spi0").unwrap());
         static GPIO_RD: Lazy<Regex> = Lazy::new(|| {
-            Regex::new(r#"GPIO: FIFO pipes created at ([^ ]+) \(read\) and [^ ]+ \(write\) for 32-bit wide GPIO."#).unwrap()
+            Regex::new(r"GPIO: FIFO pipes created at ([^ ]+) \(read\) and [^ ]+ \(write\) for 32-bit wide GPIO.").unwrap()
         });
         static GPIO_WR: Lazy<Regex> = Lazy::new(|| {
-            Regex::new(r#"GPIO: FIFO pipes created at [^ ]+ \(read\) and ([^ ]+) \(write\) for 32-bit wide GPIO."#).unwrap()
+            Regex::new(r"GPIO: FIFO pipes created at [^ ]+ \(read\) and ([^ ]+) \(write\) for 32-bit wide GPIO.").unwrap()
         });
 
         let deadline = Instant::now() + options.timeout;
