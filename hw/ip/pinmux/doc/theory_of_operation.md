@@ -60,46 +60,6 @@ For example, certain ASIC libraries may not provide open-drain outputs, and FPGA
 See the [generic pad wrapper](#generic-pad-wrapper) section below for more details.
 Note that static pad attributes for FPGAs are currently not covered in this specification.
 
-## Hardware Interfaces
-
-* [Interface Tables](../../../top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson#interfaces)
-
-### Parameters
-
-The following table lists the main parameters used throughout the `pinmux` design.
-Note that the `pinmux` is generated based on the system configuration, and hence these parameters are placed into a package.
-The pinout and `pinmux` mappings are listed under [Pinout and Pinmux Mapping](#pinout-and-pinmux-mapping) for specific top-level configurations.
-
-Parameter      | Description
----------------|---------------
-`NPeriphOut`   | Number of peripheral outputs.
-`NPeriphIn`    | Number of peripheral input.
-`NMioPads`     | Number of muxed bidirectional pads.
-`NDioPads`     | Number of dedicated pads.
-
-### Primary IO Signals
-
-The table below lists the primary `pinmux` IO signals to/from the pad ring.
-The number of dedicated and muxed IOs is parametric, and hence the signals are stacked in packed arrays.
-
-Signal                                 | Direction | Type                               | Description
----------------------------------------|-----------|------------------------------------|---------------
-`periph_to_mio_i[NPeriphOut-1:0]`      | `input`   | packed `logic`                     | Signals from `NPeriphOut` muxed peripheral outputs coming into the `pinmux`.
-`periph_to_mio_oe_i[NPeriphOut-1:0]`   | `input`   | packed `logic`                     | Signals from `NPeriphOut` muxed peripheral output enables coming into the `pinmux`.
-`mio_to_periph_o[NPeriphIn-1:0]`       | `output`  | packed `logic`                     | Signals to `NPeriphIn` muxed peripherals coming from the `pinmux`.
-`periph_to_dio_i[NDioPads-1:0]`        | `input`   | packed `logic`                     | Signals from `NDioPads` dedicated peripheral outputs coming into the `pinmux`.
-`periph_to_dio_oe_i[NDioPads-1:0]`     | `input`   | packed `logic`                     | Signals from `NDioPads` dedicated peripheral output enables coming into the `pinmux`.
-`dio_to_periph_o[NDioPads-1:0]`        | `output`  | packed `logic`                     | Signals to `NDioPads` dedicated peripherals coming from the `pinmux`.
-`mio_attr_o[NMioPads-1:0]`             | `output`  | prim_pad_wrapper_pkg::pad_attr_t   | Packed array containing the pad attributes of all muxed IOs.
-`mio_out_o[NMioPads-1:0]`              | `output`  | packed `logic`                     | Signals to `NMioPads` bidirectional muxed pads as output data.
-`mio_oe_o[NMioPads-1:0]`               | `output`  | packed `logic`                     | Signals to `NMioPads` bidirectional muxed pads as output enables.
-`mio_in_i[NMioPads-1:0]`               | `input`   | packed `logic`                     | Signals from `NMioPads` bidirectional muxed pads as input data.
-`dio_attr_o[NDioPads-1:0]`             | `output`  | prim_pad_wrapper_pkg::pad_attr_t   | Packed array containing the pad attributes of all dedicated IOs.
-`dio_out_o[NDioPads-1:0]`              | `output`  | packed `logic`                     | Signals to `NDioPads` bidirectional dedicated pads as output data.
-`dio_oe_o[NDioPads-1:0]`               | `output`  | packed `logic`                     | Signals to `NDioPads` bidirectional dedicated pads as output enables.
-`dio_in_i[NDioPads-1:0]`               | `input`   | packed `logic`                     | Signals from `NDioPads` bidirectional dedicated pads as input data.
-
-
 ## Muxing Matrix
 
 The diagram below shows connectivity between four arbitrary chip pins, named `MIO0` .. `MIO3`, and several muxed peripheral inputs and outputs.
@@ -127,7 +87,7 @@ This ensures that the output values remain stable until the system and its perip
 
 The `pinmux` contains eight programmable wakeup detector modules that can listen on any of the MIO or DIO pins.
 Each detector contains a debounce filter and an 8bit counter running on the AON clock domain.
-The detectors can be programmed via the [`WKUP_DETECTOR_0`](../../../top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson#wkup_detector_0) and [`WKUP_DETECTOR_CNT_TH_0`](../../../top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson#wkup_detector_cnt_th_0) registers to detect the following patterns:
+The detectors can be programmed via the [`WKUP_DETECTOR_0`](registers.md#wkup_detector) and [`WKUP_DETECTOR_CNT_TH_0`](registers.md#wkup_detector_cnt_th) registers to detect the following patterns:
 
 - rising edge
 - falling edge
@@ -138,9 +98,9 @@ The detectors can be programmed via the [`WKUP_DETECTOR_0`](../../../top_earlgre
 Note that for all patterns listed above, the input signal is sampled with the AON clock.
 This means that the input signal needs to remain stable for at least one AON clock cycle after a level change for the detector to recognize the event (depending on the debounce filter configuration, the signal needs to remain stable for multiple clock cycles).
 
-If a pattern is detected, the wakeup detector will send a wakeup request to the power manager, and the cause bit corresponding to that detector will be set in the [`WKUP_CAUSE`](../../../top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson#wkup_cause) register.
+If a pattern is detected, the wakeup detector will send a wakeup request to the power manager, and the cause bit corresponding to that detector will be set in the [`WKUP_CAUSE`](registers.md#wkup_cause) register.
 
-Note that the wkup detector should be disabled by setting [`WKUP_DETECTOR_EN_0`](../../../top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson#wkup_detector_en_0) before changing the detection mode.
+Note that the wkup detector should be disabled by setting [`WKUP_DETECTOR_EN_0`](registers.md#wkup_detector_en) before changing the detection mode.
 The reason for that is that the pulse width counter is NOT cleared upon a mode change while the detector is enabled.
 
 ## Strap Sampling and TAP Isolation
@@ -248,4 +208,4 @@ Signal               | Direction  | Type        | Description
 `attr_i[8:7]`        | `input`    | `logic`     | Slew rate (0x0: slowest, 0x3: fastest)
 `attr_i[12:9]`       | `input`    | `logic`     | Drive strength (0x0: weakest, 0xf: strongest)
 
-Note that the corresponding pad attribute registers [`MIO_PAD_ATTR_0`](../../../top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson#mio_pad_attr_0) and [`DIO_PAD_ATTR_0`](../../../top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson#dio_pad_attr_0) have "writes-any-reads-legal" (WARL) behavior (see also [pad attributes](#pad-attributes)).
+Note that the corresponding pad attribute registers [`MIO_PAD_ATTR_0`](registers.md#mio_pad_attr) and [`DIO_PAD_ATTR_0`](registers.md#dio_pad_attr) have "writes-any-reads-legal" (WARL) behavior (see also [pad attributes](#pad-attributes)).
