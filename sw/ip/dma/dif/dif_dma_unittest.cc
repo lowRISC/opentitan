@@ -391,4 +391,18 @@ TEST_F(StatusTest, GetErrorBadArg) {
   EXPECT_DIF_BADARG(dif_dma_error_code_get(nullptr, &dummy));
   EXPECT_DIF_BADARG(dif_dma_error_code_get(&dma_, nullptr));
 }
+
+// DMA clear state tests
+class ClearStateTest : public DmaTestInitialized {};
+
+TEST_F(ClearStateTest, Success) {
+  EXPECT_WRITE32(DMA_CLEAR_STATE_REG_OFFSET, 1);
+
+  EXPECT_DIF_OK(dif_dma_state_clear(&dma_));
+}
+
+TEST_F(ClearStateTest, BadArg) {
+  EXPECT_DIF_BADARG(dif_dma_state_clear(nullptr));
+}
+
 }  // namespace dif_dma_test
