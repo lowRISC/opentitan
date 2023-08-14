@@ -90,10 +90,10 @@ The reset topology also contains additional properties:
 
 The reset manager handles the reset of the core domain, and also holds relevant reset information in CSR registers, such as:
 
-*  [`RESET_INFO`](../../../top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson#reset_info) indicates why the system was reset.
-*  [`ALERT_INFO`](../../../top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson#alert_info) contains the recorded alert status prior to system reset.
+*  [`RESET_INFO`](registers.md#reset_info) indicates why the system was reset.
+*  [`ALERT_INFO`](registers.md#alert_info) contains the recorded alert status prior to system reset.
    *  This is useful in case the reset was triggered by an alert escalation.
-*  [`CPU_INFO`](../../../top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson#cpu_info) contains recorded CPU state prior to system reset.
+*  [`CPU_INFO`](registers.md#cpu_info) contains recorded CPU state prior to system reset.
    *  This is useful in case the reset was triggered by a watchdog where the host hung on a particular bus transaction.
 
 Additionally, the reset manager, along with the power manager, accepts requests from the system and asserts resets for the appropriate clock trees.
@@ -139,23 +139,6 @@ The reset manager then checks as follows:
 The alert handler needs to know the status of the various reset domains in the system to avoid false alert indications due to the ping mechanism.
 To that end, the reset manager outputs a 4bit MuBi signal for each reset domain that indicates whether its reset is active.
 For more information on this mechanism, see [alert handler documentation](../../../top_earlgrey/ip_autogen/alert_handler/doc/theory_of_operation.md#low-power-management-of-alert-channels).
-
-## Hardware Interfaces
-
-### Parameters
-
-The following table lists the instantiation parameters of `rstmgr`.
-
-
-Parameter                   | Default       | Description
-----------------------------|---------------|---------------
-`SecCheck`                  | 1             | Enables reset consistency checks on the leaf reset.  Each check contains a small FSM.
-`SecMaxSyncDelay`           | 2             | The default synchronization delay assumptions used in reset consistency checks.  If a design uses a sync cell with more stages of delay, that value should be supplied.
-
-
-### Signals
-
-* [Interface Tables](../../../top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson#interfaces)
 
 ## Design Details
 
@@ -268,7 +251,7 @@ Reset Cause             | Description
 `POR`                   | Cold boot, the system was reset through POR circuitry.
 `LOW_POWER_EXIT`        | Warm boot, the system was reset through low power exit.
 `NDM RESET`             | Warm boot, the system was reset through `rv_dm` non-debug-module request.
-`SW_REQ`                | Warm boot, the system was reset through [`RESET_REQ`](../../../top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson#reset_req).
+`SW_REQ`                | Warm boot, the system was reset through [`RESET_REQ`](registers.md#reset_req).
 `HW_REQ`                | Warm boot, the system was reset through peripheral requests.  There may be multiple such requests.
 
 
@@ -310,11 +293,11 @@ The enable for such debug capture can be locked such that it never captures.
 
 The alert information register contains the value of the alert crash dump prior to a triggered reset.
 Since this information differs in length between system implementation, the alert information register only displays 32-bits at a time.
-The [`ALERT_INFO_ATTR`](../../../top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson#alert_info_attr) register indicates how many 32-bit data segments must be read.
+The [`ALERT_INFO_ATTR`](registers.md#alert_info_attr) register indicates how many 32-bit data segments must be read.
 
-To enable alert crash dump capture, set [`ALERT_INFO_CTRL.EN`](../../../top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson#alert_info_ctrl) to 1.
-Once the system has reset, check [`ALERT_INFO_ATTR.CNT_AVAIL`](../../../top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson#alert_info_attr) for how many reads need to be done.
-Set [`ALERT_INFO_CTRL.INDEX`](../../../top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson#alert_info_ctrl) to the desired segment, and then read the output from [`ALERT_INFO`](../../../top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson#alert_info).
+To enable alert crash dump capture, set [`ALERT_INFO_CTRL.EN`](registers.md#alert_info_ctrl) to 1.
+Once the system has reset, check [`ALERT_INFO_ATTR.CNT_AVAIL`](registers.md#alert_info_attr) for how many reads need to be done.
+Set [`ALERT_INFO_CTRL.INDEX`](registers.md#alert_info_ctrl) to the desired segment, and then read the output from [`ALERT_INFO`](registers.md#alert_info).
 
 ### CPU Information
 
@@ -323,5 +306,5 @@ Since this information differs in length between system implementation, the info
 
 For more details on the CPU dump details, please see [crash dump](../../rv_core_ibex/README.md#crash-dump-collection).
 
-The [`CPU_INFO_ATTR`](../../../top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson#cpu_info_attr) register indicates how many 32-bit data segments must be read.
-Software then simply needs to write in [`CPU_INFO_CTRL.INDEX`](../../../top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson#cpu_info_ctrl) which segment it wishes and then read out the [`CPU_INFO`](../../../top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson#cpu_info) register.
+The [`CPU_INFO_ATTR`](registers.md#cpu_info_attr) register indicates how many 32-bit data segments must be read.
+Software then simply needs to write in [`CPU_INFO_CTRL.INDEX`](registers.md#cpu_info_ctrl) which segment it wishes and then read out the [`CPU_INFO`](registers.md#cpu_info) register.
