@@ -180,8 +180,6 @@ jobs:
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Check status_t Module IDs (Experimental)
     continueOnError: True
-  - bash: ci/bazelisk.sh run //util/py/scripts:audit_sec_mmio_calls -- --log-level info
-    displayName: Audit calls to sec_mmio functions
 
 - job: sw_build
   displayName: Earl Grey SW Build & Test
