@@ -110,7 +110,7 @@ The latter are described in the testplan.
   Checked via SVAs in [`hw/ip/pwrmgr/dv/sva/pwrmgr_rstmgr_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/pwrmgr/dv/sva/pwrmgr_rstmgr_sva_if.sv).
 * Response to `cpu_i.ndmreset_req` input: after it is asserted, rstmgr's `rst_sys_src_n` should go active.
   Checked via SVA in [`hw/ip/pwrmgr/dv/sva/pwrmgr_rstmgr_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/pwrmgr/dv/sva/pwrmgr_rstmgr_sva_if.sv).
-* Resets cascade hierarchically per [Reset Topology](../README.md#reset-topology).
+* Resets cascade hierarchically per [Reset Topology](../doc/theory_of_operation.md#reset-topology).
   Checked via SVA in [`hw/ip/rstmgr/dv/sva/rstmgr_cascading_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/rstmgr/dv/sva/rstmgr_cascading_sva_if.sv).
 * POR must be active for at least 32 consecutive cycles before going inactive before output resets go inactive.
   Checked via SVA in [`hw/ip/rstmgr/dv/sva/rstmgr_cascading_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/rstmgr/dv/sva/rstmgr_cascading_sva_if.sv).
