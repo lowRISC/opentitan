@@ -285,10 +285,10 @@ typedef enum dif_dma_error_code {
 } dif_dma_error_code_t;
 
 /**
- * Reads the DMA status.
+ * Reads the DMA error code.
  *
  * @param dma A DMA Controller handle.
- * @param[out] status Out-param for the status.
+ * @param[out] error Out-param for the error code.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
