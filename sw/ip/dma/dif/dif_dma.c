@@ -248,3 +248,13 @@ dif_result_t dif_dma_state_clear(const dif_dma_t *dma) {
 
   return kDifOk;
 }
+
+dif_result_t dif_dma_handshake_irq_enable(const dif_dma_t *dma) {
+  if (dma == NULL) {
+    return kDifBadArg;
+  }
+  mmio_region_write32(dma->base_addr, DMA_HANDSHAKE_INTERRUPT_ENABLE_REG_OFFSET,
+                      UINT32_MAX);
+
+  return kDifOk;
+}

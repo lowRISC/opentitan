@@ -405,4 +405,18 @@ TEST_F(ClearStateTest, BadArg) {
   EXPECT_DIF_BADARG(dif_dma_state_clear(nullptr));
 }
 
+// DMA handshake irq enable tests
+class HandshakeIrqTest : public DmaTestInitialized {};
+
+TEST_F(HandshakeIrqTest, Success) {
+  EXPECT_WRITE32(DMA_HANDSHAKE_INTERRUPT_ENABLE_REG_OFFSET,
+                 std::numeric_limits<uint32_t>::max());
+
+  EXPECT_DIF_OK(dif_dma_handshake_irq_enable(&dma_));
+}
+
+TEST_F(HandshakeIrqTest, BadArg) {
+  EXPECT_DIF_BADARG(dif_dma_handshake_irq_enable(nullptr));
+}
+
 }  // namespace dif_dma_test
