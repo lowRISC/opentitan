@@ -297,6 +297,9 @@ jobs:
   pool: ci-public
   timeoutInMinutes: 240
   dependsOn: lint
+  variables:
+    - name: bazelCacheGcpKeyPath
+      value: ''
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
