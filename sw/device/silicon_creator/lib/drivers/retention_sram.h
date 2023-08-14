@@ -32,6 +32,14 @@ typedef struct retention_sram_creator {
    */
   boot_svc_msg_t boot_svc_msg;
   /**
+   * Shutdown reason.
+   *
+   * Reason of the last shutdown, redacted according to the redaction policy.
+   * This field is initialized to `kErrorOk` on PoR and a value of `kErrorOk`
+   * indicates that no shutdowns since the last PoR.
+   */
+  rom_error_t last_shutdown_reason;
+  /**
    * Space reserved for future allocation by the silicon creator.
    *
    * The first half of the retention SRAM is reserved for the silicon creator
@@ -39,7 +47,8 @@ typedef struct retention_sram_creator {
    * size of this struct must be 2044 bytes. Remaining space is reserved for
    * future use.
    */
-  uint32_t reserved[(2044 - sizeof(uint32_t) - sizeof(boot_svc_msg_t)) /
+  uint32_t reserved[(2044 - sizeof(uint32_t) - sizeof(boot_svc_msg_t) -
+                     sizeof(rom_error_t)) /
                     sizeof(uint32_t)];
 } retention_sram_creator_t;
 OT_ASSERT_SIZE(retention_sram_creator_t, 2044);
@@ -100,7 +109,8 @@ enum {
    */
   kRetentionSramVersion1 = 0x72f4eb2e,
   /**
-   * Includes the `boot_svc_msg` field in the silicon creator area.
+   * Includes the `boot_svc_msg`, `boot_log`, and `last_shutdown_reason` fields
+   * in the silicon creator area.
    */
   kRetentionSramVersion2 = 0x5b89bd6d,
 };
