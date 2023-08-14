@@ -14,10 +14,6 @@ Blocks outlined with a solid magenta line are always on; while blocks outlined w
 
 ![Power Manager Connectivity Diagram](../doc/pwrmgr_connectivity.svg)
 
-## Hardware Interfaces
-
-* [Interface Tables](../../../top_earlgrey/ip/pwrmgr/data/autogen/pwrmgr.hjson#interfaces)
-
 ## Overall Sequencing
 
 The power manager contains two state machines.
@@ -54,7 +50,7 @@ The slow FSM also handles power isolation controls as part of this process.
 
 Once the fast FSM acknowledges the power-up completion, the slow FSM transitions to `Idle` and waits for a power down request.
 When a power down request is received, the slow FSM turns off AST clocks and power as directed by software configuration.
-This means the clocks and power are not always turned off, but are rather controlled by software configurations in [`CONTROL`](../../pwm/data/pwm.hjson#control) prior to low power entry .
+This means the clocks and power are not always turned off, but are rather controlled by software configurations in [`CONTROL`](registers.md#control) prior to low power entry .
 Once these steps are complete, the slow FSM transitions to a low power state and awaits a wake request, which can come either as an actual wakeup, or a reset event (for example always on watchdog expiration).
 
 #### Sparse FSM
@@ -84,7 +80,7 @@ Once strap sampling is complete, the system is ready to begin normal operations 
 The fast FSM acknowledges the slow FSM (which made the original power up request) and releases the system reset stage - this enables the processor to begin operation.
 Afterwards, the fast FSM transitions to `Active` state and waits for a software low power entry request.
 
-A low power request is initiated by software through a combination of WFI and software low power hint in [`CONTROL`](../../pwm/data/pwm.hjson#control).
+A low power request is initiated by software through a combination of WFI and software low power hint in [`CONTROL`](registers.md#control).
 Specifically, this means if software issues only WFI, the power manager does not treat it as a power down request.
 The notion of WFI is exported from the processor.
 For Ibex, this is currently in the form of `core_sleeping_o`.
