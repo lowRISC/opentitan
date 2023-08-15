@@ -26,12 +26,29 @@ module tb;
   jtag_if jtag_if();
   rv_dm_if rv_dm_if(.clk(clk), .rst_n(rst_n));
 
+  // Used for JTAG DTM connections via TL-UL.
+  tlul_pkg::tl_h2d_t dmi_tl_h2d;
+  tlul_pkg::tl_d2h_t dmi_tl_d2h;
+
   `DV_ALERT_IF_CONNECT()
 
+  // Helper module to translate JTAG -> TL-UL requests.
+  // TODO: In the long term this JTAG agent should probably be replaced by a TL-UL agent.
+  tlul_jtag_dtm #(
+    .IdcodeValue(rv_dm_env_pkg::RV_DM_JTAG_IDCODE)
+  ) u_tlul_jtag_dtm (
+    .clk_i       (clk),
+    .rst_ni      (rst_n),
+    .jtag_i      ({jtag_if.tck, jtag_if.tms, jtag_if.trst_n, jtag_if.tdi}),
+    .jtag_o      ({jtag_if.tdo, jtag_tdo_oe}),
+    .scan_rst_ni (rv_dm_if.scan_rst_n),
+    .scanmode_i  (rv_dm_if.scanmode),
+    .tl_h2d_o    (dmi_tl_h2d),
+    .tl_d2h_i    (dmi_tl_d2h)
+  );
+
   // dut
-  rv_dm #(
-    .IdcodeValue          (rv_dm_env_pkg::RV_DM_JTAG_IDCODE)
-  ) dut (
+  rv_dm dut (
     .clk_i                (clk  ),
     .rst_ni               (rst_n),
 
@@ -41,7 +58,6 @@ module tb;
     .lc_hw_debug_en_i     (rv_dm_if.lc_hw_debug_en),
     .pinmux_hw_debug_en_i (rv_dm_if.lc_hw_debug_en),
     .scanmode_i           (rv_dm_if.scanmode      ),
-    .scan_rst_ni          (rv_dm_if.scan_rst_n    ),
     .ndmreset_req_o       (rv_dm_if.ndmreset_req  ),
     .dmactive_o           (rv_dm_if.dmactive      ),
     .debug_req_o          (rv_dm_if.debug_req     ),
@@ -56,11 +72,11 @@ module tb;
     .sba_tl_h_o           (sba_tl_if.h2d),
     .sba_tl_h_i           (sba_tl_if.d2h),
 
-    .alert_rx_i           (alert_rx ),
-    .alert_tx_o           (alert_tx ),
+    .dmi_tl_h2d_i         (dmi_tl_h2d),
+    .dmi_tl_d2h_o         (dmi_tl_d2h),
 
-    .jtag_i               ({jtag_if.tck, jtag_if.tms, jtag_if.trst_n, jtag_if.tdi}),
-    .jtag_o               ({jtag_if.tdo, jtag_tdo_oe})
+    .alert_rx_i           (alert_rx),
+    .alert_tx_o           (alert_tx)
   );
 
   initial begin
