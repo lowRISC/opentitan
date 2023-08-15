@@ -144,7 +144,7 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     @remote_java_tools//... \
     @remote_java_tools_linux//... \
     @bindgen_clang_linux//... \
-    @rules_rust_bindgen__bindgen-0.60.1//... \
+    @rules_rust_bindgen__bindgen-0.65.1//... \
     @go_sdk//... \
     @lowrisc_rv32imcb_files//... \
     @local_config_cc_toolchains//... \
