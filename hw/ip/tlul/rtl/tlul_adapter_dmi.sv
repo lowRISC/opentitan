@@ -154,10 +154,12 @@ module tlul_adapter_dmi
 
   logic addr_oob_err;       // Address out of bounds error.
   logic addr_align_err;     // Size and alignment
+  logic be_err;             // Byte enable error.
   logic malformed_meta_err; // User signal format error or unsupported
   logic tl_err;             // Common TL-UL error checker
   assign error_d = addr_oob_err ||
                    addr_align_err ||
+                   be_err ||
                    malformed_meta_err ||
                    tl_err ||
                    intg_error;
@@ -171,6 +173,9 @@ module tlul_adapter_dmi
   //    Here is it added due to the limitation of register interface.
   //    Only word-align is accepted based on comportability spec.
   assign addr_align_err = (wr_req) && |tl_h2d_i.a_address[1:0];
+
+  // The DMI does not support a non-all-ones byte enable.
+  assign be_err = (wr_req) && !(&tl_h2d_i.a_mask);
 
   // Don't allow unsupported values.
   assign malformed_meta_err = tl_a_user_chk(tl_h2d_i.a_user);
