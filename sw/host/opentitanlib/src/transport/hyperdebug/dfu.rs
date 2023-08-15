@@ -143,11 +143,12 @@ const EC_FIRMWARE_NAME_LEN: usize = 32;
 fn get_hyperdebug_firmware_version(firmware: &[u8]) -> Result<&str> {
     let Some(pos) = firmware[0..1024]
         .chunks(4)
-        .position(|c| c[0..4] == EC_COOKIE) else {
-            bail!(TransportError::FirmwareProgramFailed(
-                "File is not a HyperDebug firmware image".to_string()
-            ));
-        };
+        .position(|c| c[0..4] == EC_COOKIE)
+    else {
+        bail!(TransportError::FirmwareProgramFailed(
+            "File is not a HyperDebug firmware image".to_string()
+        ));
+    };
     let firmware_name_field = &firmware[(pos + 1) * 4..(pos + 1) * 4 + EC_FIRMWARE_NAME_LEN];
     let end = firmware_name_field
         .iter()
