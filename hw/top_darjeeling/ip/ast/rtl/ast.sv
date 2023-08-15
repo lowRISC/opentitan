@@ -686,7 +686,9 @@ ast_pkg::ast_dif_t ot2_alert_src;
 ast_pkg::ast_dif_t ot3_alert_src;
 ast_pkg::ast_dif_t ot4_alert_src;
 ast_pkg::ast_dif_t ot5_alert_src;
-
+ast_pkg::ast_dif_t es0_alert_src;
+ast_pkg::ast_dif_t es1_alert_src;
+ast_pkg::ast_dif_t es2_alert_src;
 
 // Active Shield (AS)
 ///////////////////////////////////////
@@ -809,6 +811,39 @@ ast_alert u_alert_ot5 (
   .alert_req_o ( alert_req_o.alerts[ast_pkg::Ot5Sel] )
 ); // of u_alert_ot5
 
+// Entropy Source Vendor IP Health Test Alert 0
+///////////////////////////////////////////////
+ast_alert u_alert_es0 (
+  .clk_i ( clk_ast_alert_i ),
+  .rst_ni ( rst_ast_alert_ni ),
+  .alert_src_i ( es0_alert_src ),
+  .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::Es0Sel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::Es0Sel] ),
+  .alert_req_o ( alert_req_o.alerts[ast_pkg::Es0Sel] )
+);
+
+// Entropy Source Vendor IP Health Test Alert 1
+///////////////////////////////////////////////
+ast_alert u_alert_es1 (
+  .clk_i ( clk_ast_alert_i ),
+  .rst_ni ( rst_ast_alert_ni ),
+  .alert_src_i ( es1_alert_src ),
+  .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::Es1Sel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::Es1Sel] ),
+  .alert_req_o ( alert_req_o.alerts[ast_pkg::Es1Sel] )
+);
+
+// Entropy Source Vendor IP Health Test Alert 2
+///////////////////////////////////////////////
+ast_alert u_alert_es2 (
+  .clk_i ( clk_ast_alert_i ),
+  .rst_ni ( rst_ast_alert_ni ),
+  .alert_src_i ( es2_alert_src ),
+  .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::Es2Sel] ),
+  .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::Es2Sel] ),
+  .alert_req_o ( alert_req_o.alerts[ast_pkg::Es2Sel] )
+);
+
 // Alerts Open-Source Selection
 ////////////////////////////////////////
 assign as_alert_src    = '{p: 1'b0, n: 1'b1};
@@ -821,7 +856,9 @@ assign ot2_alert_src   = '{p: 1'b0, n: 1'b1};
 assign ot3_alert_src   = '{p: 1'b0, n: 1'b1};
 assign ot4_alert_src   = '{p: 1'b0, n: 1'b1};
 assign ot5_alert_src   = '{p: 1'b0, n: 1'b1};
-
+assign es0_alert_src   = '{p: 1'b0, n: 1'b1};
+assign es1_alert_src   = '{p: 1'b0, n: 1'b1};
+assign es2_alert_src   = '{p: 1'b0, n: 1'b1};
 
 ///////////////////////////////////////
 // AST Registers (Always ON)

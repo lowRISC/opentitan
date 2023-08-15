@@ -24,7 +24,7 @@ package ast_pkg;
 
 parameter int unsigned NumIoRails = 2;
 // Alerts
-parameter int unsigned NumAlerts  = 11;
+parameter int unsigned NumAlerts  = 14;
 parameter int unsigned AsSel      = 0;
 parameter int unsigned CgSel      = 1;
 parameter int unsigned GdSel      = 2;
@@ -36,6 +36,9 @@ parameter int unsigned Ot2Sel     = 7;
 parameter int unsigned Ot3Sel     = 8;
 parameter int unsigned Ot4Sel     = 9;
 parameter int unsigned Ot5Sel     = 10;
+parameter int unsigned Es0Sel     = 11;
+parameter int unsigned Es1Sel     = 12;
+parameter int unsigned Es2Sel     = 13;
 //
 parameter int unsigned Lc2HcTrCyc = 102;  // ((99+1)+(3+1))x5 = 520 us
 parameter int unsigned Hc2LcTrCyc = 38;   // ((35+1)+(3+1))x5 = 200 us
