@@ -148,7 +148,7 @@
     { name: "NumSramKeyReqSlots",
       desc: "Number of key slots",
       type: "int",
-      default: "3",
+      default: "4",
       local: "true"
     },
     { name: "OtpByteAddrWidth",
@@ -375,7 +375,7 @@
     { struct:  "sram_otp_key"
       // TODO: would be nice if this could accept parameters.
       // Split this out into an issue.
-      width:   "3"
+      width:   "4"
       type:    "req_rsp"
       name:    "sram_otp_key"
       act:     "rsp"
