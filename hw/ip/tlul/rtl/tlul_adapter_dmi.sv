@@ -56,7 +56,7 @@ module tlul_adapter_dmi
   // Decode Requests
   logic rd_req, wr_req;
   assign wr_req  = tl_h2d_i.a_valid && ((tl_h2d_i.a_opcode == PutFullData) ||
-                                            (tl_h2d_i.a_opcode == PutPartialData));
+                                        (tl_h2d_i.a_opcode == PutPartialData));
   assign rd_req  = tl_h2d_i.a_valid && (tl_h2d_i.a_opcode == Get);
 
   // If we detect an error, the response will be returned immediately in the next cycle
