@@ -675,7 +675,8 @@ def find_otherside_modules(topcfg: OrderedDict, m,
     """
     # TODO: handle special cases
     special_inst_names = {
-        ('peri', 'tl_ast'): ('ast', 'tl')
+        ('peri', 'tl_ast'): ('ast', 'tl'),
+        ('dbg', 'tl_dbg'): ('dbg', 'tl')
     }
     special_result = special_inst_names.get((m, s))
     if special_result is not None:
