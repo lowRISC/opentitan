@@ -144,6 +144,9 @@
       name:    "lc_cpu_en",
       act:     "rcv",
       package: "lc_ctrl_pkg",
+      // Not all top levels have a lifecycle controller.
+      // For those that do not, always enable ibex.
+      default: "lc_ctrl_pkg::On"
     },
 
     { struct:  "lc_tx",
