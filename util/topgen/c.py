@@ -514,9 +514,14 @@ class TopGenC:
         """
         memories = [region.base_addr for (_, region) in self.memories()]
         # TODO(#14345): Remove the hardcoded "rv_dm" name check below.
+        # TODO: we need a cleaner way to define which buses are visible
+        # by the CPU and which ones are not. For now, exclude every
+        # interface with the name `dbg`, since that is attached to the
+        # debug bus which is not connected to the CPU LSU.
         regions = [
-            region for ((dev_name, _), region) in self.devices()
-            if region.base_addr not in memories and dev_name != "rv_dm"
+            region for ((dev_name, if_name), region) in self.devices()
+            if region.base_addr not in memories and dev_name != "rv_dm" and
+            (if_name is None or if_name != 'dbg')
         ]
         # Note: The memory interface of the retention RAM is in the MMIO address space,
         # which we prefer since it reduces the number of ePMP regions we need.
