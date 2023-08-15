@@ -10,6 +10,7 @@ use thiserror::Error;
 use chrono::{Datelike, Timelike, Utc};
 use crc::Crc;
 
+const SYNC_WORD: [u8; 4] = [0xAA, 0x99, 0x55, 0x66];
 const WRITE_USR_ACCESS: [u8; 4] = [0x30, 0x01, 0xa0, 0x01];
 const WRITE_CRC_REG: [u8; 4] = [0x30, 0x00, 0x00, 0x01];
 const NOOP: [u8; 4] = [0x20, 0x00, 0x00, 0x00];
@@ -21,13 +22,21 @@ pub enum Error {
 }
 
 fn find_cmd(bitstream: &[u8], cmd: &[u8; 4]) -> Result<usize> {
-    Ok(bitstream
+    let sync_offset = bitstream
+        .windows(4)
+        .enumerate()
+        .find(|(_, word)| *word == SYNC_WORD)
+        .ok_or_else(|| Error::CommandNotFound(u32::from_be_bytes(SYNC_WORD)))?
+        .0;
+    let bitstream_no_header = &bitstream[sync_offset..];
+    Ok(bitstream_no_header
         .chunks(4)
         .enumerate()
         .find(|(_, op)| *op == cmd)
         .ok_or_else(|| Error::CommandNotFound(u32::from_be_bytes(*cmd)))?
         .0
-        * 4)
+        * 4
+        + sync_offset)
 }
 
 /// Searches for the following pattern in the bitstream
