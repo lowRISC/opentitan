@@ -1,0 +1,15 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// sim cfg file for the variant of RV_DM using the DMI interface
+{
+  // Name of the sim cfg variant
+  variant: use_dmi_interface
+
+  // Import additional common sim cfg files.
+  import_cfgs: ["{proj_root}/hw/ip/rv_dm/dv/rv_dm_base_sim_cfg.hjson"]
+
+  // Use the DMI interface and not the JTAG interace
+  build_opts: ["+define+USE_DMI_INTERFACE=1"]
+}

@@ -25,11 +25,39 @@ module tb;
   jtag_if jtag_if();
   rv_dm_if rv_dm_if(.clk(clk), .rst_n(rst_n));
 
+  // Used for JTAG DTM connections via TL-UL.
+  tlul_pkg::tl_h2d_t dmi_tl_h2d;
+  tlul_pkg::tl_d2h_t dmi_tl_d2h;
+
   `DV_ALERT_IF_CONNECT()
+
+`ifdef USE_DMI_INTERFACE
+  // Helper module to translate JTAG -> TL-UL requests.
+  // TODO: In the long term this JTAG agent should probably be replaced by a TL-UL agent.
+  tlul_jtag_dtm #(
+    .IdcodeValue(rv_dm_env_pkg::RV_DM_JTAG_IDCODE)
+  ) u_tlul_jtag_dtm (
+    .clk_i       (clk),
+    .rst_ni      (rst_n),
+    .jtag_i      ({jtag_if.tck, jtag_if.tms, jtag_if.trst_n, jtag_if.tdi}),
+    .jtag_o      ({jtag_if.tdo, jtag_tdo_oe}),
+    .scan_rst_ni (rv_dm_if.scan_rst_n),
+    .scanmode_i  (rv_dm_if.scanmode),
+    .tl_h2d_o    (dmi_tl_h2d),
+    .tl_d2h_i    (dmi_tl_d2h)
+  );
+`else
+  assign dmi_tl_h2d = tlul_pkg::TL_H2D_DEFAULT;
+`endif
 
   // dut
   rv_dm #(
-    .IdcodeValue (rv_dm_env_pkg::RV_DM_JTAG_IDCODE)
+    .IdcodeValue (rv_dm_env_pkg::RV_DM_JTAG_IDCODE),
+`ifdef USE_DMI_INTERFACE
+    .UseDmiInterface(1'b1)
+`else
+    .UseDmiInterface(1'b0)
+`endif
   ) dut (
     .clk_i                     (clk  ),
     .rst_ni                    (rst_n),
@@ -64,18 +92,28 @@ module tb;
     .alert_rx_i                (alert_rx ),
     .alert_tx_o                (alert_tx ),
 
+`ifdef USE_DMI_INTERFACE
+    .jtag_i                    ('0),
+    .jtag_o                    (),
+`else
     .jtag_i                    ({jtag_if.tck, jtag_if.tms, jtag_if.trst_n, jtag_if.tdi}),
-    .jtag_o                    ({jtag_if.tdo, jtag_tdo_oe})
+    .jtag_o                    ({jtag_if.tdo, jtag_tdo_oe}),
+`endif
+
+    .dmi_tl_h2d_i              (dmi_tl_h2d),
+    .dmi_tl_d2h_o              (dmi_tl_d2h)
   );
 
   // Apply the muxing that we get in rv_dm, where the JTAG interface that actually connects to the
   // debug module has direct clock/reset in scan mode, and is disabled if debug is not enabled.
   jtag_mon_if mon_jtag_if ();
-  assign mon_jtag_if.tck    = dut.dap.tck_i;
-  assign mon_jtag_if.trst_n = dut.dap.trst_ni;
-  assign mon_jtag_if.tms    = dut.dap.tms_i;
-  assign mon_jtag_if.tdi    = dut.dap.td_i;
-  assign mon_jtag_if.tdo    = dut.dap.td_o;
+`ifndef USE_DMI_INTERFACE
+  assign mon_jtag_if.tck    = dut.gen_jtag_gating.dap.tck_i;
+  assign mon_jtag_if.trst_n = dut.gen_jtag_gating.dap.trst_ni;
+  assign mon_jtag_if.tms    = dut.gen_jtag_gating.dap.tms_i;
+  assign mon_jtag_if.tdi    = dut.gen_jtag_gating.dap.td_i;
+  assign mon_jtag_if.tdo    = dut.gen_jtag_gating.dap.td_o;
+`endif
 
   initial begin
     // Copy the clock period from clk_rst_if to clk_lc_rst_if. The clock isn't actually connected to
