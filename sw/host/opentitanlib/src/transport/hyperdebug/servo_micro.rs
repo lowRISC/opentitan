@@ -85,9 +85,11 @@ impl ServoMicroResetPin {
             .inner
             .cmd_one_line_output(&cmd)
             .map_err(|_| TransportError::CommunicationError(format!("No output from {cmd}")))?;
-        let Some(Ok(val)) = line.split_ascii_whitespace()
+        let Some(Ok(val)) = line
+            .split_ascii_whitespace()
             .last()
-            .map(|s| s.trim_matches(|c| !char::is_ascii_digit(&c)).parse::<u8>()) else {
+            .map(|s| s.trim_matches(|c| !char::is_ascii_digit(&c)).parse::<u8>())
+        else {
             bail!(TransportError::CommunicationError(format!(
                 "Bad i2cxfer output: '{line}'"
             )))
