@@ -164,7 +164,7 @@ module lc_ctrl
   tlul_pkg::tl_h2d_t tap_tl_h2d;
   tlul_pkg::tl_d2h_t tap_tl_d2h;
 
-  // Statically MUX DMI TLUL port and the one coming from the JTAG TAP
+  // Statically mux DMI TLUL port and the one coming from the JTAG TAP
   if (UseDmiInterface) begin : gen_dmi_tlul_ports
     assign tap_dmi_tl_h2d = dmi_tl_h2d_i;
     assign dmi_tl_d2h_o   = tap_dmi_tl_d2h;
