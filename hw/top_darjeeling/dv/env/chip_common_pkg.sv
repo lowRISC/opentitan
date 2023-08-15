@@ -101,8 +101,6 @@ package chip_common_pkg;
     top_darjeeling_pkg::DioPadSpiDevD1,   /* DioSpiDeviceSd1 */
     top_darjeeling_pkg::DioPadSpiDevD2,   /* DioSpiDeviceSd2 */
     top_darjeeling_pkg::DioPadSpiDevD3,   /* DioSpiDeviceSd3 */
-    top_darjeeling_pkg::DioPadIor8,       /* DioSysrstCtrlAonEcRstL */
-    top_darjeeling_pkg::DioPadIor9,       /* DioSysrstCtrlAonFlashWpL */
     top_darjeeling_pkg::DioPadSpiDevClk,  /* DioSpiDeviceSck */
     top_darjeeling_pkg::DioPadSpiDevCsL,  /* DioSpiDeviceCsb */
     top_darjeeling_pkg::DioPadSpiHostClk, /* DioSpiHost0Sck */

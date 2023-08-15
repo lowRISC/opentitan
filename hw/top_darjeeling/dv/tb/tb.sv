@@ -133,8 +133,6 @@ module tb;
     .SPI_DEV_D3(dut.chip_if.dios[top_darjeeling_pkg::DioPadSpiDevD3]),
     .SPI_DEV_CLK(dut.chip_if.dios[top_darjeeling_pkg::DioPadSpiDevClk]),
     .SPI_DEV_CS_L(dut.chip_if.dios[top_darjeeling_pkg::DioPadSpiDevCsL]),
-    .IOR8(dut.chip_if.dios[top_darjeeling_pkg::DioPadIor8]),
-    .IOR9(dut.chip_if.dios[top_darjeeling_pkg::DioPadIor9]),
     .AST_MISC(dut.chip_if.ast_misc),
 
     // Muxed Pads
@@ -492,7 +490,6 @@ module tb;
           $assertoff(0, dut.top_darjeeling.u_pinmux_aon);
           $assertoff(0, dut.top_darjeeling.u_spi_device);
           $assertoff(0, dut.top_darjeeling.u_spi_host0);
-          $assertoff(0, dut.top_darjeeling.u_sysrst_ctrl_aon);
           $assertoff(0, dut.top_darjeeling.u_uart0);
         end else begin
           $asserton(0, dut.top_darjeeling.u_gpio);
@@ -500,7 +497,6 @@ module tb;
           $asserton(0, dut.top_darjeeling.u_pinmux_aon);
           $asserton(0, dut.top_darjeeling.u_spi_device);
           $asserton(0, dut.top_darjeeling.u_spi_host0);
-          $asserton(0, dut.top_darjeeling.u_sysrst_ctrl_aon);
           $asserton(0, dut.top_darjeeling.u_uart0);
         end
       end

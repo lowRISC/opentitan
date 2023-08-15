@@ -67,20 +67,13 @@ filesets:
       - seq_lib/chip_sw_deep_power_glitch_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_main_power_glitch_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_random_power_glitch_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_sw_sysrst_ctrl_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_sw_random_sleep_all_reset_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_sw_deep_sleep_all_reset_vseq.sv: {is_include_file: true}
+      # - seq_lib/chip_sw_random_sleep_all_reset_vseq.sv: {is_include_file: true}
+      # - seq_lib/chip_sw_deep_sleep_all_reset_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_sleep_pin_mio_dio_val_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_sleep_pin_wake_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_sleep_pin_retention_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_uart_tx_rx_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_uart_rand_baudrate_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_sw_sysrst_ctrl_inputs_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_sw_sysrst_ctrl_in_irq_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_sw_sysrst_ctrl_ulp_z3_wakeup_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_sw_sysrst_ctrl_reset_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_sw_sysrst_ctrl_outputs_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_sw_sysrst_ctrl_ec_rst_l_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_gpio_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_gpio_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_inject_scramble_seed_vseq.sv: {is_include_file: true}
@@ -102,10 +95,10 @@ filesets:
       - seq_lib/chip_sw_sram_ctrl_scrambled_access_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_ast_clk_outputs_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_sensor_ctrl_status_intr_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_sw_rv_dm_access_after_wakeup_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq.sv: {is_include_file: true}
+      # - seq_lib/chip_sw_rv_dm_access_after_wakeup_vseq.sv: {is_include_file: true}
+      # - seq_lib/chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_adc_ctrl_sleep_debug_cable_wakeup_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_sw_repeat_reset_wkup_vseq.sv: {is_include_file: true}
+      # - seq_lib/chip_sw_repeat_reset_wkup_vseq.sv: {is_include_file: true}
       - seq_lib/chip_rv_dm_ndm_reset_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_rv_dm_ndm_reset_when_cpu_halted_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_rv_dm_access_after_escalation_reset_vseq.sv: {is_include_file: true}

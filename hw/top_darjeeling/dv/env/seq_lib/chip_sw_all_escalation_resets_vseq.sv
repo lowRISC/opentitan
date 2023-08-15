@@ -50,7 +50,6 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     '{"*spi_host0*prim_reg_we_check*", TopDarjeelingAlertIdSpiHost0FatalFault},
     '{"*sram_ctrl_main*prim_reg_we_check*", TopDarjeelingAlertIdSramCtrlMainFatalError},
     '{"*sram_ctrl_ret*prim_reg_we_check*", TopDarjeelingAlertIdSramCtrlRetAonFatalError},
-    '{"*sysrst_ctrl*prim_reg_we_check*", TopDarjeelingAlertIdSysrstCtrlAonFatalFault},
     '{"*uart0*prim_reg_we_check*", TopDarjeelingAlertIdUart0FatalFault}
   };
 

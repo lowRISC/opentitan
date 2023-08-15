@@ -797,35 +797,29 @@
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+bypass_alert_ready_to_end_check=1"]
     }
-    {
-      name: chip_sw_pwrmgr_sysrst_ctrl_reset
-      uvm_test_seq: chip_sw_sysrst_ctrl_vseq
-      sw_images: ["//sw/device/tests/sim_dv:pwrmgr_sysrst_ctrl_test:6"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-    }
-    {
-      name: chip_sw_pwrmgr_random_sleep_all_reset_reqs
-      uvm_test_seq: chip_sw_random_sleep_all_reset_vseq
-      sw_images: ["//sw/device/tests/sim_dv:pwrmgr_random_sleep_all_reset_reqs_test:6"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=50_000_000"]
-      run_timeout_mins: 120
-    }
-    {
-      name: chip_sw_pwrmgr_deep_sleep_all_reset_reqs
-      uvm_test_seq: chip_sw_deep_sleep_all_reset_vseq
-      sw_images: ["//sw/device/tests/sim_dv:pwrmgr_deep_sleep_all_reset_reqs_test:6"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=50_000_000"]
-      run_timeout_mins: 120
-    }
-    {
-      name: chip_sw_pwrmgr_normal_sleep_all_reset_reqs
-      uvm_test_seq: chip_sw_deep_sleep_all_reset_vseq
-      sw_images: ["//sw/device/tests/sim_dv:pwrmgr_normal_sleep_all_reset_reqs_test:6"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_timeout_mins: 120
-    }
+    // {
+    //   name: chip_sw_pwrmgr_random_sleep_all_reset_reqs
+    //   uvm_test_seq: chip_sw_random_sleep_all_reset_vseq
+    //   sw_images: ["//sw/device/tests/sim_dv:pwrmgr_random_sleep_all_reset_reqs_test:1"]
+    //   en_run_modes: ["sw_test_mode_test_rom"]
+    //   run_opts: ["+sw_test_timeout_ns=50_000_000"]
+    //   run_timeout_mins: 120
+    // }
+    // {
+    //   name: chip_sw_pwrmgr_deep_sleep_all_reset_reqs
+    //   uvm_test_seq: chip_sw_deep_sleep_all_reset_vseq
+    //   sw_images: ["//sw/device/tests/sim_dv:pwrmgr_deep_sleep_all_reset_reqs_test:1"]
+    //   en_run_modes: ["sw_test_mode_test_rom"]
+    //   run_opts: ["+sw_test_timeout_ns=50_000_000"]
+    //   run_timeout_mins: 120
+    // }
+    // {
+    //   name: chip_sw_pwrmgr_normal_sleep_all_reset_reqs
+    //   uvm_test_seq: chip_sw_deep_sleep_all_reset_vseq
+    //   sw_images: ["//sw/device/tests/sim_dv:pwrmgr_normal_sleep_all_reset_reqs_test:1"]
+    //   en_run_modes: ["sw_test_mode_test_rom"]
+    //   run_timeout_mins: 120
+    // }
     {
       name: chip_sw_pwrmgr_sleep_power_glitch_reset
       uvm_test_seq: chip_sw_main_power_glitch_vseq
@@ -860,44 +854,6 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:rv_timer_smoketest:6"]
       en_run_modes: ["sw_test_mode_test_rom"]
-    }
-    {
-      name: chip_sw_sysrst_ctrl_inputs
-      uvm_test_seq: chip_sw_sysrst_ctrl_inputs_vseq
-      sw_images: ["//sw/device/tests/sim_dv:sysrst_ctrl_inputs_test:6"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-    }
-    {
-      name: chip_sw_sysrst_ctrl_in_irq
-      uvm_test_seq: chip_sw_sysrst_ctrl_in_irq_vseq
-      sw_images: ["//sw/device/tests/sim_dv:sysrst_ctrl_in_irq_test:6"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-    }
-    {
-      name: chip_sw_sysrst_ctrl_ulp_z3_wakeup
-      uvm_test_seq: chip_sw_sysrst_ctrl_ulp_z3_wakeup_vseq
-      sw_images: ["//sw/device/tests/sim_dv:sysrst_ctrl_ulp_z3_wakeup_test:6"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-    }
-    {
-      name: chip_sw_sysrst_ctrl_reset
-      uvm_test_seq: chip_sw_sysrst_ctrl_reset_vseq
-      sw_images: ["//sw/device/tests/sim_dv:sysrst_ctrl_reset_test:6"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=36_000_000"]
-    }
-    {
-      name: chip_sw_sysrst_ctrl_outputs
-      uvm_test_seq: chip_sw_sysrst_ctrl_outputs_vseq
-      sw_images: ["//sw/device/tests/sim_dv:sysrst_ctrl_outputs_test:6"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-    }
-    {
-      name: chip_sw_sysrst_ctrl_ec_rst_l
-      uvm_test_seq: chip_sw_sysrst_ctrl_ec_rst_l_vseq
-      sw_images: ["//sw/device/tests/sim_dv:sysrst_ctrl_ec_rst_l_test:6"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_timeout_mins: 180
     }
     {
       name: chip_sw_aon_timer_irq
@@ -1318,14 +1274,15 @@
       reseed: 1
       run_timeout_mins: 180
     }
-    {
-      name: chip_sw_pwrmgr_b2b_sleep_reset_req
-      uvm_test_seq: chip_sw_repeat_reset_wkup_vseq
-      sw_images: ["//sw/device/tests/sim_dv:pwrmgr_b2b_sleep_reset_test:6"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=35_000_000"]
-      run_timeout_mins: 120
-    }
+    // {
+    //   name: chip_sw_pwrmgr_b2b_sleep_reset_req
+    //   uvm_test_seq: chip_sw_repeat_reset_wkup_vseq
+    //   sw_images: ["//sw/device/tests/sim_dv:pwrmgr_b2b_sleep_reset_test:1"]
+    //   en_run_modes: ["sw_test_mode_test_rom"]
+    //   run_opts: ["+sw_test_timeout_ns=35_000_000"]
+    //   run_timeout_mins: 120
+    // }
+
     // The test below is from tl_access_tests.hjson, but we don't need to include tl_intg_err,
     // which is also in tl_access_tests.hjson, as TLUL integrity is generated by design and we
     // include this block in the data path when we stub CPU to verify TL access
@@ -1487,26 +1444,26 @@
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+en_scb=0", "+bypass_alert_ready_to_end_check=1"]
     }
-    {
-      name: chip_sw_pwrmgr_normal_sleep_all_wake_ups
-      uvm_test_seq: "chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq"
-      sw_images: ["//sw/device/tests/sim_dv:pwrmgr_normal_sleep_all_wake_ups:6"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-    }
-    {
-      name: chip_sw_pwrmgr_deep_sleep_all_wake_ups
-      uvm_test_seq: "chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq"
-      sw_images: ["//sw/device/tests/sim_dv:pwrmgr_deep_sleep_all_wake_ups:6"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=18_000_000"]
-    }
-    {
-      name: chip_sw_pwrmgr_random_sleep_all_wake_ups
-      uvm_test_seq: "chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq"
-      sw_images: ["//sw/device/tests/sim_dv:pwrmgr_random_sleep_all_wake_ups:6"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=18_000_000", "+do_random=1"]
-    }
+    // {
+    //   name: chip_sw_pwrmgr_normal_sleep_all_wake_ups
+    //   uvm_test_seq: "chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq"
+    //   sw_images: ["//sw/device/tests/sim_dv:pwrmgr_normal_sleep_all_wake_ups:1"]
+    //   en_run_modes: ["sw_test_mode_test_rom"]
+    // }
+    // {
+    //   name: chip_sw_pwrmgr_deep_sleep_all_wake_ups
+    //   uvm_test_seq: "chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq"
+    //   sw_images: ["//sw/device/tests/sim_dv:pwrmgr_deep_sleep_all_wake_ups:1"]
+    //   en_run_modes: ["sw_test_mode_test_rom"]
+    //   run_opts: ["+sw_test_timeout_ns=18_000_000"]
+    // }
+    // {
+    //   name: chip_sw_pwrmgr_random_sleep_all_wake_ups
+    //   uvm_test_seq: "chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq"
+    //   sw_images: ["//sw/device/tests/sim_dv:pwrmgr_random_sleep_all_wake_ups:1"]
+    //   en_run_modes: ["sw_test_mode_test_rom"]
+    //   run_opts: ["+sw_test_timeout_ns=18_000_000", "+do_random=1"]
+    // }
     {
       name: chip_rv_dm_ndm_reset_req
       uvm_test_seq: "chip_rv_dm_ndm_reset_vseq"
@@ -1779,7 +1736,6 @@
               // "chip_sw_pwrmgr_sleep_power_glitch_reset",
               "chip_sw_pwrmgr_sleep_disabled",
               "chip_sw_csrng_kat_test",
-              "chip_sw_sysrst_ctrl_inputs",
               // TODO(opentitan-integrated/#332): enable this test again once ROM has been
               // refactored to work without embedded flash.
               // "rom_e2e_smoke"

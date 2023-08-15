@@ -31,8 +31,6 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     prim_pad_wrapper_pkg::BidirStd, // DIO spi_device_sd
     prim_pad_wrapper_pkg::BidirStd, // DIO spi_device_sd
     prim_pad_wrapper_pkg::BidirStd, // DIO spi_device_sd
-    prim_pad_wrapper_pkg::BidirOd,  // DIO sysrst_ctrl_aon_ec_rst_l
-    prim_pad_wrapper_pkg::BidirOd,  // DIO sysrst_ctrl_aon_flash_wp_l
     prim_pad_wrapper_pkg::InputStd, // DIO spi_device_sck
     prim_pad_wrapper_pkg::InputStd, // DIO spi_device_csb
     prim_pad_wrapper_pkg::BidirStd, // DIO spi_host0_sck
@@ -217,7 +215,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     void'(cfg.chip_vif.signal_probe_pinmux_periph_to_mio_oe_i(SignalProbeRelease));
     void'(cfg.chip_vif.signal_probe_pinmux_periph_to_mio_i(SignalProbeRelease));
     void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_oe_i(SignalProbeRelease));
-    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_i_13_0(SignalProbeRelease));
+    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_i_11_0(SignalProbeRelease));
     cfg.chip_vif.mios_if.disconnect();
 
     // Reset the DUT before reenabling the assertions.
@@ -522,8 +520,8 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
 
   function void pinmux_dio_drive_inputs();
     cfg.chip_vif.dios_if.pins_oe = '0;
-    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_i_13_0(SignalProbeForce,
-                                                                periph_to_dio[13:0]));
+    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_i_11_0(SignalProbeForce,
+                                                                periph_to_dio[11:0]));
     void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_oe_i(SignalProbeForce, periph_to_dio_oe));
     for (int i = 0; i < DioCount; i++) begin
       cfg.chip_vif.dios_if.pins_oe[DioToDioPadMap[i]] = dio_to_periph_oe[i];

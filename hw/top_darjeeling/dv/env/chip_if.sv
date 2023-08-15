@@ -74,7 +74,6 @@ interface chip_if;
 `define SRAM_CTRL_MAIN_HIER `TOP_HIER.u_sram_ctrl_main
 `define SRAM_CTRL_RET_HIER  `TOP_HIER.u_sram_ctrl_ret_aon
 `define SRAM_CTRL_MBOX      `TOP_HIER.u_sram_ctrl_mbox
-`define SYSRST_CTRL_HIER    `TOP_HIER.u_sysrst_ctrl_aon
 `define UART_HIER(i)        `TOP_HIER.u_uart``i
 
   // Identifier for logs.
@@ -117,8 +116,6 @@ interface chip_if;
 
       // These are active low, so pull up.
       dios_if.pins_pu[top_darjeeling_pkg::DioPadPorN] = 1;
-      dios_if.pins_pu[top_darjeeling_pkg::DioPadIor8] = 1;
-      dios_if.pins_pu[top_darjeeling_pkg::DioPadIor9] = 1;
 
       // No need of pulls for the SPI host peripheral.
       dios_if.pins_pd[top_darjeeling_pkg::DioPadSpiHostCsL:top_darjeeling_pkg::DioPadSpiHostD0]
@@ -241,31 +238,6 @@ interface chip_if;
     __enable_spi_device[inst_num] = enable;
   endfunction : enable_spi_device
 
-
-  // Functional (dedicated) interface (inout): EC reset.
-  pins_if #(.Width(1), .PullStrength("Weak")) ec_rst_l_if(
-    .pins(dios[top_darjeeling_pkg::DioPadIor8])
-  );
-
-  // Functional (dedicated) interface (inout): flash write protect.
-  pins_if #(.Width(1), .PullStrength("Weak")) flash_wp_l_if(
-    .pins(dios[top_darjeeling_pkg::DioPadIor9])
-  );
-
-  // Functional (dedicated) interface (inout): power button.
-  pins_if #(.Width(1), .PullStrength("Weak")) pwrb_in_if(
-    .pins(mios[top_darjeeling_pkg::MioPadIor13])
-  );  // TODO: move to R0.
-
-  // Functional (muxed) interface: sysrst_ctrl.
-  // TODO: Replace with sysrst_ctrl IP level interface.
-  // TODO; combine all into 1 single sysrst_ctrl_if.
-  pins_if #(.Width(8), .PullStrength("Weak")) sysrst_ctrl_if(
-    .pins({mios[top_darjeeling_pkg::MioPadIor6], mios[top_darjeeling_pkg::MioPadIor5],
-           mios[top_darjeeling_pkg::MioPadIoc9], mios[top_darjeeling_pkg::MioPadIoc7],
-           mios[top_darjeeling_pkg::MioPadIob9], mios[top_darjeeling_pkg::MioPadIob8],
-           mios[top_darjeeling_pkg::MioPadIob6], mios[top_darjeeling_pkg::MioPadIob3]})
-  );
 
   // Functional (muxed) interface: DFT straps.
   pins_if #(.Width(2), .PullStrength("Weak")) dft_straps_if(
@@ -804,10 +776,6 @@ interface chip_if;
     mios_if.disconnect();
     cc_if.disconnect();
     otp_ext_volt_if.disconnect();
-    ec_rst_l_if.disconnect();
-    flash_wp_l_if.disconnect();
-    pwrb_in_if.disconnect();
-    sysrst_ctrl_if.disconnect();
     ast_misc_if.disconnect();
     dft_straps_if.disconnect();
     tap_straps_if.disconnect();
@@ -899,7 +867,6 @@ interface chip_if;
       PeripheralSpiHost0:       path = {path, ".", `DV_STRINGIFY(`SPI_HOST_HIER(0))};
       PeripheralSramCtrlMain:   path = {path, ".", `DV_STRINGIFY(`SRAM_CTRL_MAIN_HIER)};
       PeripheralSramCtrlRetAon: path = {path, ".", `DV_STRINGIFY(`SRAM_CTRL_RET_HIER)};
-      PeripheralSysrstCtrlAon:  path = {path, ".", `DV_STRINGIFY(`SYSRST_CTRL_HIER)};
       PeripheralUart0:          path = {path, ".", `DV_STRINGIFY(`UART_HIER(0))};
       default:      `uvm_fatal(MsgId, $sformatf("Bad peripheral: %0s", peripheral.name()))
     endcase
@@ -948,8 +915,8 @@ interface chip_if;
 
   // Signal probe function for peripheral to DIO in pinmux.
   wire [UVM_HDL_MAX_WIDTH-1:0] dio_to_periph = `PINMUX_HIER.dio_to_periph_o;
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pinmux_periph_to_dio_i_13_0,
-      `PINMUX_HIER.periph_to_dio_i[13:0])
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pinmux_periph_to_dio_i_11_0,
+      `PINMUX_HIER.periph_to_dio_i[11:0])
 
   // Signal probe function for peripheral to DIO output enable in pinmux.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pinmux_periph_to_dio_oe_i,
@@ -1101,7 +1068,6 @@ interface chip_if;
 `undef SPI_HOST_HIER
 `undef SRAM_CTRL_MAIN_HIER
 `undef SRAM_CTRL_RET_HIER
-`undef SYSRST_CTRL_HIER
 `undef UART_HIER
 
 endinterface

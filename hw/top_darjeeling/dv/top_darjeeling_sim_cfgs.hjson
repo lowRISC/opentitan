@@ -52,7 +52,6 @@
              "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_no_exec_8kB_sim_cfg.hjson",
              "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_exec_64kB_sim_cfg.hjson",
              "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_exec_128kB_sim_cfg.hjson",
-             "{proj_root}/hw/ip/sysrst_ctrl/dv/sysrst_ctrl_sim_cfg.hjson",
              "{proj_root}/hw/ip/uart/dv/uart_sim_cfg.hjson",
 
              // Top level IPs.

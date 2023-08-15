@@ -1091,16 +1091,6 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.chip_vif.por_n_if.drive(1);
   endtask // assert_por_reset_deep_sleep
 
-  // push button 50us;
-  // this task requires proper sysrst_ctrl config
-  // see sw/device/tests/pwrmgr_b2b_sleep_reset_test.c
-  // 'static void prgm_push_button_wakeup()' for example
-  task push_button();
-    cfg.chip_vif.pwrb_in_if.drive(0);
-    #50us;
-    cfg.chip_vif.pwrb_in_if.drive(1);
-  endtask // push_button
-
   // This task can be called, when rma is requested by lc_ctrl.
   // Before rma wipe for data partition started (256 pages),
   // this task force total page to 9 pages. So rma process is completed faster.
