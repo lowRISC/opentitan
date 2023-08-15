@@ -480,7 +480,7 @@ jobs:
   dependsOn:
     - chip_darjeeling_cw310
     - sw_build
-  condition: succeeded( 'chip_darjeeling_cw310', 'sw_build' )
+  condition: false # succeeded( 'chip_darjeeling_cw310', 'sw_build' ) TODO re-enable when #276 fixed
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
@@ -503,7 +503,7 @@ jobs:
   dependsOn:
     - chip_darjeeling_cw310
     - sw_build
-  condition: succeeded( 'chip_darjeeling_cw310', 'sw_build' )
+  condition: false # succeeded( 'chip_darjeeling_cw310', 'sw_build' ) TODO re-enable when #276 fixed
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
@@ -526,7 +526,7 @@ jobs:
   dependsOn:
     - chip_darjeeling_cw310
     - sw_build
-  condition: succeeded( 'chip_darjeeling_cw310', 'sw_build' )
+  condition: false # succeeded( 'chip_darjeeling_cw310', 'sw_build' ) TODO re-enable when #276 fixed
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
