@@ -8,12 +8,6 @@ module lc_ctrl_cov_bind;
   bind lc_ctrl_fsm lc_ctrl_fsm_cov_if u_lc_ctrl_fsm_cov_if (.*);
 
   // MUBI coverage
-  bind lc_ctrl cip_mubi_cov_if #(
-    .Width(4)
-  ) u_scanmode_i_if (
-    .rst_ni(rst_ni),
-    .mubi  (scanmode_i)
-  );
   bind lc_ctrl cip_lc_tx_cov_if u_lc_clk_byp_ack_i_if (
     .rst_ni(rst_ni),
     .val(lc_clk_byp_ack_i)

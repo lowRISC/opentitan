@@ -48,6 +48,10 @@ module tb;
   assign lc_ctrl_if.otp_vendor_test_ctrl_o = otp_vendor_test_ctrl;
   assign otp_vendor_test_status = lc_ctrl_if.otp_vendor_test_status_i;
 
+  // Used for JTAG DTM connections via TL-UL.
+  tlul_pkg::tl_h2d_t dmi_tl_h2d;
+  tlul_pkg::tl_d2h_t dmi_tl_d2h;
+
   // HW revision
   lc_hw_rev_t hw_rev_o;
 
@@ -98,11 +102,24 @@ module tb;
 
   `DV_ALERT_IF_CONNECT()
 
+  // Helper module to translate JTAG -> TL-UL requests.
+  // TODO: In the long term this JTAG agent should probably be replaced by a TL-UL agent.
+  tlul_jtag_dtm #(
+    .IdcodeValue(IdcodeValue)
+  ) u_tlul_jtag_dtm (
+    .clk_i       (clk),
+    .rst_ni      (rst_n),
+    .jtag_i      ({jtag_if.tck, jtag_if.tms, jtag_if.trst_n, jtag_if.tdi}),
+    .jtag_o      ({jtag_if.tdo, lc_ctrl_if.tdo_oe}),
+    .scan_rst_ni (lc_ctrl_if.scan_rst_ni),
+    .scanmode_i  (lc_ctrl_if.scanmode_i),
+    .tl_h2d_o    (dmi_tl_h2d),
+    .tl_d2h_i    (dmi_tl_d2h)
+  );
+
   // dut
   lc_ctrl #(
     .AlertAsyncOn(AlertAsyncOn),
-    // Idcode value for the JTAG.
-    .IdcodeValue(IdcodeValue),
     // Random netlist constants
     .RndCnstLcKeymgrDivInvalid(RndCnstLcKeymgrDivInvalid),
     .RndCnstLcKeymgrDivTestDevRma(RndCnstLcKeymgrDivTestDevRma),
@@ -124,10 +141,8 @@ module tb;
     .alert_rx_i(alert_rx),
     .alert_tx_o(alert_tx),
 
-    .jtag_i     ({jtag_if.tck, jtag_if.tms, jtag_if.trst_n, jtag_if.tdi}),
-    .jtag_o     ({jtag_if.tdo, lc_ctrl_if.tdo_oe}),
-    .scanmode_i (lc_ctrl_if.scanmode_i),
-    .scan_rst_ni(lc_ctrl_if.scan_rst_ni),
+    .dmi_tl_h2d_i(dmi_tl_h2d),
+    .dmi_tl_d2h_o(dmi_tl_d2h),
 
     .esc_scrap_state0_tx_i(esc_scrap_state0_if.esc_tx),
     .esc_scrap_state0_rx_o(esc_scrap_state0_if.esc_rx),
@@ -183,9 +198,9 @@ module tb;
 
   // JTAG/TL Mutex claim
   // Need a small delay to filter out glitches
-  assign #1ps lc_ctrl_if.mutex_claim_jtag = (dut.tap_reg2hw.claim_transition_if.qe == 1) &&
+  assign #1ps lc_ctrl_if.mutex_claim_jtag = (dut.dmi_reg2hw.claim_transition_if.qe == 1) &&
       prim_mubi_pkg::mubi8_test_false_loose(
-      dut.tap_claim_transition_if_q
+      dut.dmi_claim_transition_if_q
   );
 
   assign #1ps lc_ctrl_if.mutex_claim_tl = (dut.reg2hw.claim_transition_if.qe == 1) &&
