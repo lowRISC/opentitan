@@ -2,6 +2,30 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 load("@rules_rust//crate_universe:defs.bzl", "crate", "crates_vendor")
+load("@rules_rust//bindgen:bindgen.bzl", "rust_bindgen_toolchain")
+
+config_setting(
+    name = "specify_bindgen_libstdcxx",
+    values = {"define": "SPECIFY_BINDGEN_LIBSTDCXX=true"},
+)
+
+rust_bindgen_toolchain(
+    name = "bindgen_toolchain_impl",
+    bindgen = "@rules_rust//bindgen/3rdparty:bindgen",
+    clang = "@bindgen_clang_linux//:clang",
+    libclang = "@bindgen_clang_linux//:libclang",
+    system_includes = "@bindgen_clang_linux//:system_includes",
+    libstdcxx = select({
+        ":specify_bindgen_libstdcxx": "@bindgen_libstdcxx_linux//:libstdc++",
+        "//conditions:default": None,
+    }),
+)
+
+toolchain(
+    name = "bindgen_toolchain",
+    toolchain = "bindgen_toolchain_impl",
+    toolchain_type = "@rules_rust//bindgen:toolchain_type",
+)
 
 crates_vendor(
     name = "crate_index",
