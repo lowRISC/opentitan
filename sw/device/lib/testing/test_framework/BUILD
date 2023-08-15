@@ -162,6 +162,29 @@ alias(
     }),
 )
 
+cc_library(
+    name = "ottf_isrs",
+    srcs = [
+        "ottf_isrs.S",
+        "ottf_isrs.c",
+        "ottf_macros.h",
+    ],
+    hdrs = [
+        "ottf_isrs.h",
+    ],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":check",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+    ],
+)
+
 # This target provides start files without providing the full OTTF, and can be
 # used to bootstrap post-ROM execution without pulling in the full OTTF. This is
 # useful for programs in `sw/device/examples/` and `sw/device/sca/` that do not
@@ -174,17 +197,13 @@ alias(
 cc_library(
     name = "ottf_start",
     srcs = [
-        "ottf_isrs.S",
-        "ottf_isrs.c",
-        "ottf_start.S",
-    ],
-    hdrs = [
-        "ottf_isrs.h",
         "ottf_macros.h",
+        "ottf_start.S",
     ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":check",
+        ":ottf_isrs",
         ":test_framework_manifest_def",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:csr",
@@ -258,7 +277,7 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             ":check",
-            ":ottf_start",
+            ":ottf_isrs",
             ":ottf_test_config",
             "//sw/device/lib/base:mmio",
             "//sw/device/lib/runtime:print",
