@@ -1417,11 +1417,11 @@
           package: otp_ctrl_pkg
           type: req_rsp
           act: rsp
-          width: 3
+          width: 4
           default: "'0"
           inst_name: otp_ctrl
-          end_idx: -1
-          top_type: one-to-N
+          end_idx: 3
+          top_type: partial-one-to-N
           top_signame: otp_ctrl_sram_otp_key
           index: -1
         }
@@ -15802,11 +15802,11 @@
         package: otp_ctrl_pkg
         type: req_rsp
         act: rsp
-        width: 3
+        width: 4
         default: "'0"
         inst_name: otp_ctrl
-        end_idx: -1
-        top_type: one-to-N
+        end_idx: 3
+        top_type: partial-one-to-N
         top_signame: otp_ctrl_sram_otp_key
         index: -1
       }
@@ -21261,9 +21261,9 @@
         package: otp_ctrl_pkg
         struct: sram_otp_key_req
         signame: otp_ctrl_sram_otp_key_req
-        width: 3
+        width: 4
         type: req_rsp
-        end_idx: -1
+        end_idx: 3
         act: rsp
         suffix: req
         default: "'0"
@@ -21272,9 +21272,9 @@
         package: otp_ctrl_pkg
         struct: sram_otp_key_rsp
         signame: otp_ctrl_sram_otp_key_rsp
-        width: 3
+        width: 4
         type: req_rsp
-        end_idx: -1
+        end_idx: 3
         act: rsp
         suffix: rsp
         default: ""
