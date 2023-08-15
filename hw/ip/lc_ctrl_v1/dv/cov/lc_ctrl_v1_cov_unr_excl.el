@@ -404,17 +404,17 @@ Condition 2 "871061566" "(((|rsp_err)) | rsp_data_err) 1 -1" (3 "10")
 CHECKSUM: "2580972288 547113095"
 INSTANCE: tb.dut.u_lc_ctrl_fsm
 ANNOTATION: "VC_COV_UNR"
-Condition 4 "3444895930" "((lc_state_q == LcStRaw) && (trans_target_i == {lc_ctrl_v1_state_pkg::DecLcStateNumRep {DecLcStTestUnlocked0}}) && ((!trans_invalid_error_o))) 1 -1" (1 "011")
+Condition 4 "3444895930" "((lc_state_q == LcStRaw) && (trans_target_i == {lc_ctrl_state_pkg::DecLcStateNumRep {DecLcStTestUnlocked0}}) && ((!trans_invalid_error_o))) 1 -1" (1 "011")
 ANNOTATION: "VC_COV_UNR"
-Condition 4 "3444895930" "((lc_state_q == LcStRaw) && (trans_target_i == {lc_ctrl_v1_state_pkg::DecLcStateNumRep {DecLcStTestUnlocked0}}) && ((!trans_invalid_error_o))) 1 -1" (2 "101")
+Condition 4 "3444895930" "((lc_state_q == LcStRaw) && (trans_target_i == {lc_ctrl_state_pkg::DecLcStateNumRep {DecLcStTestUnlocked0}}) && ((!trans_invalid_error_o))) 1 -1" (2 "101")
 ANNOTATION: "VC_COV_UNR"
-Condition 4 "3444895930" "((lc_state_q == LcStRaw) && (trans_target_i == {lc_ctrl_v1_state_pkg::DecLcStateNumRep {DecLcStTestUnlocked0}}) && ((!trans_invalid_error_o))) 1 -1" (3 "110")
+Condition 4 "3444895930" "((lc_state_q == LcStRaw) && (trans_target_i == {lc_ctrl_state_pkg::DecLcStateNumRep {DecLcStTestUnlocked0}}) && ((!trans_invalid_error_o))) 1 -1" (3 "110")
 ANNOTATION: "VC_COV_UNR"
-Condition 7 "2326366313" "(unhashed_token_i == lc_ctrl_v1_state_pkg::RndCnstRawUnlockTokenHashed) 1 -1" (1 "0")
+Condition 7 "2326366313" "(unhashed_token_i == lc_ctrl_state_pkg::RndCnstRawUnlockTokenHashed) 1 -1" (1 "0")
 CHECKSUM: "446237080 395597058"
 INSTANCE: tb.dut.u_lc_ctrl_fsm.u_lc_ctrl_state_transition
 ANNOTATION: "VC_COV_UNR"
-Condition 3 "3331120797" "((dec_lc_state_i != {lc_ctrl_v1_state_pkg::DecLcStateNumRep {DecLcStRaw}}) || (trans_target_i != {lc_ctrl_v1_state_pkg::DecLcStateNumRep {DecLcStTestUnlocked0}})) 1 -1" (3 "10")
+Condition 3 "3331120797" "((dec_lc_state_i != {lc_ctrl_state_pkg::DecLcStateNumRep {DecLcStRaw}}) || (trans_target_i != {lc_ctrl_state_pkg::DecLcStateNumRep {DecLcStTestUnlocked0}})) 1 -1" (3 "10")
 ANNOTATION: "VC_COV_UNR"
 Condition 7 "1774000493" "((dec_lc_state_i[0] <= DecLcStScrap) && (trans_target_i[0] <= DecLcStScrap) && (dec_lc_state_i[1] <= DecLcStScrap) && (trans_target_i[1] <= DecLcStScrap)) 1 -1" (1 "0111")
 ANNOTATION: "VC_COV_UNR"

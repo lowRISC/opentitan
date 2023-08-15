@@ -8,7 +8,7 @@
 
 module lc_ctrl_v1_fsm
   import lc_ctrl_pkg::*;
-  import lc_ctrl_v1_state_pkg::*;
+  import lc_ctrl_state_pkg::*;
 #(// Random netlist constants
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivInvalid    = LcKeymgrDivWidth'(0),
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivTestDevRma = LcKeymgrDivWidth'(1),

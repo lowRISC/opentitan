@@ -10,7 +10,7 @@ class lc_ctrl_v1_virtual_sequencer extends cip_base_virtual_sequencer #(
 
   push_pull_sequencer#(.HostDataWidth(OTP_PROG_HDATA_WIDTH),
                        .DeviceDataWidth(OTP_PROG_DDATA_WIDTH))    otp_prog_pull_sequencer_h;
-  push_pull_sequencer#(.HostDataWidth(lc_ctrl_v1_state_pkg::LcTokenWidth)) otp_token_pull_sequencer_h;
+  push_pull_sequencer#(.HostDataWidth(lc_ctrl_state_pkg::LcTokenWidth)) otp_token_pull_sequencer_h;
 
   alert_esc_sequencer esc_wipe_secrets_sequencer_h;
   alert_esc_sequencer esc_scrap_state_sequencer_h;

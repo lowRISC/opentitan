@@ -36,7 +36,7 @@ class lc_ctrl_v1_volatile_unlock_smoke_vseq extends lc_ctrl_v1_smoke_vseq;
     lc_cnt_int = dec_lc_cnt(lc_cnt);
     if (lc_cnt != LcCnt24) begin
       int exp_lc_cnt = lc_cnt_int == 0 ? 1 : lc_cnt_int;
-      lc_ctrl_v1_state_pkg::lc_token_t token_val = lc_ctrl_v1_state_pkg::RndCnstRawUnlockTokenHashed;
+      lc_ctrl_state_pkg::lc_token_t token_val = lc_ctrl_state_pkg::RndCnstRawUnlockTokenHashed;
       csr_wr(ral.claim_transition_if, CLAIM_TRANS_VAL);
       csr_wr(ral.transition_ctrl.volatile_raw_unlock, 1);
       csr_wr(ral.transition_target, {DecLcStateNumRep{next_state[DecLcStateWidth-1:0]}});
@@ -65,7 +65,7 @@ class lc_ctrl_v1_volatile_unlock_smoke_vseq extends lc_ctrl_v1_smoke_vseq;
   endtask : body
 
   virtual task transition_to_next_valid_state(bit volatile_raw_unlock_success);
-    lc_ctrl_v1_state_pkg::lc_token_t token_val = get_random_token();
+    lc_ctrl_state_pkg::lc_token_t token_val = get_random_token();
     lc_ctrl_pkg::token_idx_e token;
     randomize_next_lc_state(next_state);
     lc_state = encode_lc_state(next_state);

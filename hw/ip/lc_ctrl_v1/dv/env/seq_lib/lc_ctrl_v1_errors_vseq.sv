@@ -340,7 +340,7 @@ class lc_ctrl_v1_errors_vseq extends lc_ctrl_v1_smoke_vseq;
       if ((err_inj.state_err || valid_state_for_trans(lc_state)) &&
           (err_inj.count_err || err_inj.transition_count_err ||
           (lc_cnt != LcCnt24 && lc_state != LcStScrap))) begin
-        lc_ctrl_v1_state_pkg::lc_token_t token_val = get_random_token();
+        lc_ctrl_state_pkg::lc_token_t token_val = get_random_token();
         randomize_next_lc_state(dec_lc_state(lc_state));
         `uvm_info(`gfn, $sformatf(
                   "next_LC_state is %0s, input token is %0h", next_lc_state.name, token_val),
@@ -407,7 +407,7 @@ class lc_ctrl_v1_errors_vseq extends lc_ctrl_v1_smoke_vseq;
         // SW transition request
         if ((err_inj.state_err || valid_state_for_trans(lc_state)) &&
             (err_inj.count_err || err_inj.transition_count_err || lc_cnt != LcCnt24)) begin
-          lc_ctrl_v1_state_pkg::lc_token_t token_val = get_random_token();
+          lc_ctrl_state_pkg::lc_token_t token_val = get_random_token();
           randomize_next_lc_state(dec_lc_state(lc_state));
           set_hashed_token();
           set_otp_prog_rsp();
@@ -497,12 +497,12 @@ class lc_ctrl_v1_errors_vseq extends lc_ctrl_v1_smoke_vseq;
   virtual function void set_hashed_token();
     lc_ctrl_pkg::token_idx_e token_idx = get_exp_token(dec_lc_state(lc_state), next_lc_state);
     lc_ctrl_pkg::token_idx_e token_idx_err_inj;
-    lc_ctrl_v1_state_pkg::lc_token_t tokens_a[NumTokens];
-    lc_ctrl_v1_state_pkg::lc_token_t token_err_inj;
+    lc_ctrl_state_pkg::lc_token_t tokens_a[NumTokens];
+    lc_ctrl_state_pkg::lc_token_t token_err_inj;
     kmac_pkg::rsp_digest_t kmac_digest;
 
-    tokens_a[ZeroTokenIdx]       = lc_ctrl_v1_state_pkg::AllZeroTokenHashed;
-    tokens_a[RawUnlockTokenIdx]  = lc_ctrl_v1_state_pkg::RndCnstRawUnlockTokenHashed;
+    tokens_a[ZeroTokenIdx]       = lc_ctrl_state_pkg::AllZeroTokenHashed;
+    tokens_a[RawUnlockTokenIdx]  = lc_ctrl_state_pkg::RndCnstRawUnlockTokenHashed;
     tokens_a[TestUnlockTokenIdx] = cfg.lc_ctrl_v1_vif.otp_i.test_unlock_token;
     tokens_a[TestExitTokenIdx]   = cfg.lc_ctrl_v1_vif.otp_i.test_exit_token;
     tokens_a[RmaTokenIdx]        = cfg.lc_ctrl_v1_vif.otp_i.rma_token;

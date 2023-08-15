@@ -15,7 +15,7 @@ interface lc_ctrl_v1_if (
 
   import uvm_pkg::*;
   import lc_ctrl_pkg::*;
-  import lc_ctrl_v1_state_pkg::*;
+  import lc_ctrl_state_pkg::*;
   import otp_ctrl_pkg::*;
   import otp_ctrl_part_pkg::*;
 

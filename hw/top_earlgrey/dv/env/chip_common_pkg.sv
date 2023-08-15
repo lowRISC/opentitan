@@ -39,12 +39,12 @@ package chip_common_pkg;
   parameter string ROM_LCV_PROD_END       = "25294a52";
   parameter string ROM_LCV_RMA            = "2739ce73";
 
-  string lc_state_2_rom_lcv[lc_ctrl_v1_state_pkg::lc_state_e] = '{
-      lc_ctrl_v1_state_pkg::LcStTestUnlocked0: ROM_LCV_TEST_UNLOCKED0,
-      lc_ctrl_v1_state_pkg::LcStDev: ROM_LCV_DEV,
-      lc_ctrl_v1_state_pkg::LcStProd: ROM_LCV_PROD,
-      lc_ctrl_v1_state_pkg::LcStProdEnd: ROM_LCV_PROD_END,
-      lc_ctrl_v1_state_pkg::LcStRma: ROM_LCV_RMA};
+  string lc_state_2_rom_lcv[lc_ctrl_state_pkg::lc_state_e] = '{
+      lc_ctrl_state_pkg::LcStTestUnlocked0: ROM_LCV_TEST_UNLOCKED0,
+      lc_ctrl_state_pkg::LcStDev: ROM_LCV_DEV,
+      lc_ctrl_state_pkg::LcStProd: ROM_LCV_PROD,
+      lc_ctrl_state_pkg::LcStProdEnd: ROM_LCV_PROD_END,
+      lc_ctrl_state_pkg::LcStRma: ROM_LCV_RMA};
 
   // Auto-generated parameters. TODO: rename to chip_common_pkg__params.svh.
   `include "autogen/chip_env_pkg__params.sv"
@@ -117,42 +117,42 @@ package chip_common_pkg;
   };
 
   typedef struct packed {
-    lc_ctrl_v1_state_pkg::lc_state_e lc_state;
-    lc_ctrl_v1_state_pkg::dec_lc_state_e dec_lc_state;
+    lc_ctrl_state_pkg::lc_state_e lc_state;
+    lc_ctrl_state_pkg::dec_lc_state_e dec_lc_state;
   } lc_state_t;
 
   parameter lc_state_t UnlockedStates[8] = '{
     '{
-      lc_state: lc_ctrl_v1_state_pkg::LcStTestUnlocked0,
-      dec_lc_state: lc_ctrl_v1_state_pkg::DecLcStTestUnlocked0
+      lc_state: lc_ctrl_state_pkg::LcStTestUnlocked0,
+      dec_lc_state: lc_ctrl_state_pkg::DecLcStTestUnlocked0
      },
     '{
-      lc_state: lc_ctrl_v1_state_pkg::LcStTestUnlocked1,
-      dec_lc_state: lc_ctrl_v1_state_pkg::DecLcStTestUnlocked1
+      lc_state: lc_ctrl_state_pkg::LcStTestUnlocked1,
+      dec_lc_state: lc_ctrl_state_pkg::DecLcStTestUnlocked1
      },
     '{
-      lc_state: lc_ctrl_v1_state_pkg::LcStTestUnlocked2,
-      dec_lc_state: lc_ctrl_v1_state_pkg::DecLcStTestUnlocked2
+      lc_state: lc_ctrl_state_pkg::LcStTestUnlocked2,
+      dec_lc_state: lc_ctrl_state_pkg::DecLcStTestUnlocked2
      },
     '{
-      lc_state: lc_ctrl_v1_state_pkg::LcStTestUnlocked3,
-      dec_lc_state: lc_ctrl_v1_state_pkg::DecLcStTestUnlocked3
+      lc_state: lc_ctrl_state_pkg::LcStTestUnlocked3,
+      dec_lc_state: lc_ctrl_state_pkg::DecLcStTestUnlocked3
      },
     '{
-      lc_state: lc_ctrl_v1_state_pkg::LcStTestUnlocked4,
-      dec_lc_state: lc_ctrl_v1_state_pkg::DecLcStTestUnlocked4
+      lc_state: lc_ctrl_state_pkg::LcStTestUnlocked4,
+      dec_lc_state: lc_ctrl_state_pkg::DecLcStTestUnlocked4
      },
     '{
-      lc_state: lc_ctrl_v1_state_pkg::LcStTestUnlocked5,
-      dec_lc_state: lc_ctrl_v1_state_pkg::DecLcStTestUnlocked5
+      lc_state: lc_ctrl_state_pkg::LcStTestUnlocked5,
+      dec_lc_state: lc_ctrl_state_pkg::DecLcStTestUnlocked5
      },
     '{
-      lc_state: lc_ctrl_v1_state_pkg::LcStTestUnlocked6,
-      dec_lc_state: lc_ctrl_v1_state_pkg::DecLcStTestUnlocked6
+      lc_state: lc_ctrl_state_pkg::LcStTestUnlocked6,
+      dec_lc_state: lc_ctrl_state_pkg::DecLcStTestUnlocked6
      },
     '{
-      lc_state: lc_ctrl_v1_state_pkg::LcStTestUnlocked7,
-      dec_lc_state: lc_ctrl_v1_state_pkg::DecLcStTestUnlocked7
+      lc_state: lc_ctrl_state_pkg::LcStTestUnlocked7,
+      dec_lc_state: lc_ctrl_state_pkg::DecLcStTestUnlocked7
      }
   };
 

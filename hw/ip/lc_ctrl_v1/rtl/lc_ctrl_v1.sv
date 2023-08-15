@@ -10,7 +10,7 @@
 module lc_ctrl_v1
   import lc_ctrl_pkg::*;
   import lc_ctrl_v1_reg_pkg::*;
-  import lc_ctrl_v1_state_pkg::*;
+  import lc_ctrl_state_pkg::*;
 #(
   // Enable asynchronous transitions on alerts.
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},

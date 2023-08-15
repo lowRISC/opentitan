@@ -9,7 +9,7 @@
 
 module lc_ctrl_v1_kmac_if
   import lc_ctrl_pkg::*;
-  import lc_ctrl_v1_state_pkg::*;
+  import lc_ctrl_state_pkg::*;
 (
   // Life cycle controller clock
   input                         clk_i,

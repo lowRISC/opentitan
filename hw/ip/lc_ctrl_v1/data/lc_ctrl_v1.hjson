@@ -456,7 +456,7 @@
       desc: '''
             The manufacturing state vector is sparsely encoded.
             Although the encoding is randomly chosen, it satisfies specific Hamming weight and Hamming distance
-            thresholds (see lc_ctrl_v1_state_pkg.sv for the statistics).
+            thresholds (see lc_ctrl_state_pkg.sv for the statistics).
             All manufacturing state encodings (except for the RAW state) have been constructed so that all OTP
             words belonging to the manufacturing state vector have a non-zero value.
             The individual OTP words are unique and have been engineered so that each word can be incrementally
@@ -468,7 +468,7 @@
       desc: '''
             The life cycle transition counter state is sparsely encoded.
             Although the encoding is randomly chosen, it satisfies specific Hamming weight and Hamming distance
-            thresholds (see lc_ctrl_v1_state_pkg.sv for the statistics).
+            thresholds (see lc_ctrl_state_pkg.sv for the statistics).
             All counter state encodings (except for the 0 state) have been constructed so that all OTP
             words belonging to the counter state vector have a non-zero value.
             The individual OTP words are unique and have been engineered so that each word can be incrementally

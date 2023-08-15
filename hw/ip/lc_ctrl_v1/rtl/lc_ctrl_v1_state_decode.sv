@@ -6,7 +6,7 @@
 
 module lc_ctrl_v1_state_decode
   import lc_ctrl_pkg::*;
-  import lc_ctrl_v1_state_pkg::*;
+  import lc_ctrl_state_pkg::*;
 (
   // Life cycle state vector.
   input  logic              lc_state_valid_i,

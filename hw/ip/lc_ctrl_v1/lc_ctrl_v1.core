@@ -17,7 +17,6 @@ filesets:
       - lowrisc:prim:sparse_fsm
       - lowrisc:tlul:headers
       - lowrisc:ip:lc_ctrl_pkg
-      - lowrisc:ip:lc_ctrl_v1_state_pkg
       - lowrisc:ip:tlul
       - lowrisc:ip:pwrmgr_pkg
       - lowrisc:ip:otp_ctrl_pkg

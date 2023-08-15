@@ -13,8 +13,8 @@ class lc_ctrl_v1_base_vseq extends cip_base_vseq #(
   // various knobs to enable certain routines
   bit do_lc_ctrl_v1_init = 1'b1;
 
-  lc_ctrl_v1_state_pkg::lc_state_e lc_state;
-  lc_ctrl_v1_state_pkg::lc_cnt_e lc_cnt;
+  lc_ctrl_state_pkg::lc_state_e lc_state;
+  lc_ctrl_state_pkg::lc_cnt_e lc_cnt;
 
   `uvm_object_new
 

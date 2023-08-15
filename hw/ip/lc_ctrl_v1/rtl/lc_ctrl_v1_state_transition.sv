@@ -7,7 +7,7 @@
 
 module lc_ctrl_v1_state_transition
   import lc_ctrl_pkg::*;
-  import lc_ctrl_v1_state_pkg::*;
+  import lc_ctrl_state_pkg::*;
 #(
   parameter bit             SecVolatileRawUnlockEn = 0
 ) (

@@ -79,7 +79,7 @@ class lc_ctrl_v1_smoke_vseq extends lc_ctrl_v1_base_vseq;
 
       // SW transition request
       if (valid_state_for_trans(lc_state) && lc_cnt != LcCnt24) begin
-        lc_ctrl_v1_state_pkg::lc_token_t token_val = get_random_token();
+        lc_ctrl_state_pkg::lc_token_t token_val = get_random_token();
         randomize_next_lc_state(dec_lc_state(lc_state));
         `uvm_info(`gfn, $sformatf(
                   "next_LC_state is %0s, input token is %0h", next_lc_state.name, token_val),
@@ -126,9 +126,9 @@ class lc_ctrl_v1_smoke_vseq extends lc_ctrl_v1_base_vseq;
     lc_ctrl_pkg::token_idx_e token_idx = get_exp_token(dec_lc_state(lc_state), next_lc_state);
     kmac_pkg::rsp_digest_t kmac_digest;
     // No token for InvalidTokenIdx
-    lc_ctrl_v1_state_pkg::lc_token_t tokens_a[NumTokens-1];
-    tokens_a[ZeroTokenIdx]       = lc_ctrl_v1_state_pkg::AllZeroTokenHashed;
-    tokens_a[RawUnlockTokenIdx]  = lc_ctrl_v1_state_pkg::RndCnstRawUnlockTokenHashed;
+    lc_ctrl_state_pkg::lc_token_t tokens_a[NumTokens-1];
+    tokens_a[ZeroTokenIdx]       = lc_ctrl_state_pkg::AllZeroTokenHashed;
+    tokens_a[RawUnlockTokenIdx]  = lc_ctrl_state_pkg::RndCnstRawUnlockTokenHashed;
     tokens_a[TestUnlockTokenIdx] = cfg.lc_ctrl_v1_vif.otp_i.test_unlock_token;
     tokens_a[TestExitTokenIdx]   = cfg.lc_ctrl_v1_vif.otp_i.test_exit_token;
     tokens_a[RmaTokenIdx]        = cfg.lc_ctrl_v1_vif.otp_i.rma_token;

@@ -8,7 +8,7 @@ module tb;
   import dv_utils_pkg::*;
   import lc_ctrl_pkg::*;
   import lc_ctrl_v1_reg_pkg::*;
-  import lc_ctrl_v1_state_pkg::*;
+  import lc_ctrl_state_pkg::*;
   import lc_ctrl_v1_env_pkg::*;
   import lc_ctrl_v1_test_pkg::*;
   import otp_ctrl_pkg::*;
