@@ -91,7 +91,7 @@ module rv_dm
   tlul_pkg::tl_d2h_t mem_tl_win_d2h;
   rv_dm_reg_pkg::rv_dm_regs_reg2hw_t regs_reg2hw;
   logic regs_intg_error, rom_intg_error, dmi_intg_error;
-  logic sba_gate_intg_error, rom_gate_intg_error;
+  logic sba_gate_intg_error, rom_gate_intg_error, dmi_gate_intg_error;
 
   rv_dm_regs_reg_top u_reg_regs (
     .clk_i,
@@ -113,7 +113,7 @@ module rv_dm
   logic [NumAlerts-1:0] alert_test, alerts;
 
   assign alerts[0] = regs_intg_error | rom_intg_error | dmi_intg_error |
-                     sba_gate_intg_error | rom_gate_intg_error;
+                     sba_gate_intg_error | rom_gate_intg_error | dmi_gate_intg_error;
 
   assign alert_test = {
     regs_reg2hw.alert_test.q &
@@ -200,21 +200,14 @@ module rv_dm
 
   logic reset_req_en;
   logic ndmreset_req;
-  logic ndmreset_ack_rom, ndmreset_ack_dmi;
   logic ndmreset_req_qual;
   // SEC_CM: DM_EN.CTRL.LC_GATED
   assign reset_req_en = lc_tx_test_true_strict(lc_hw_debug_en[LcEnResetReq]);
-  assign ndmreset_req_qual = &{ndmreset_ack_rom, ndmreset_ack_dmi};
   assign ndmreset_req_o = ndmreset_req_qual & reset_req_en;
 
   // SEC_CM: DM_EN.CTRL.LC_GATED
-  mubi4_t dmi_tlul_adapter_en;
-  // Convert LC signal from pinmux to MuBi4 value:  As the multi-bit LC signal may cross clock
-  // domains, it may not have a valid LC value in every clock cycle.  This is not to be interpreted
-  // as an injected fault, so the conversion to a boolean tests for a strictly true LC value and
-  // interprets all other values as false.
-  assign dmi_tlul_adapter_en = prim_mubi_pkg::mubi4_bool_to_mubi(
-                                 lc_tx_test_true_strict(pinmux_hw_debug_en[PmEnDmiTlulAdapter]));
+  logic dmi_en;
+  assign dmi_en = lc_tx_test_true_strict(pinmux_hw_debug_en[PmEnDmiTlulAdapter]);
 
   /////////////////////////////////////////
   // System Bus Access Port (TL-UL Host) //
@@ -308,6 +301,46 @@ module rv_dm
   end
   assign debug_req_o = debug_req & debug_req_en;
 
+  // Bound-in DPI module replaces the TAP
+`ifndef DMIDirectTAP
+  tlul_pkg::tl_h2d_t dmi_tl_h2d_gated;
+  tlul_pkg::tl_d2h_t dmi_tl_d2h_gated;
+  tlul_lc_gate u_tlul_lc_gate_dmi (
+    .clk_i,
+    .rst_ni,
+    .tl_h2d_i      (dmi_tl_h2d_i),
+    .tl_d2h_o      (dmi_tl_d2h_o),
+    .tl_h2d_o      (dmi_tl_h2d_gated),
+    .tl_d2h_i      (dmi_tl_d2h_gated),
+    // The DMI side should not be flushed upon NDM-reset since we keep the
+    // debugger side of the connection stable during an NDM-reset request.
+    .flush_req_i   (1'b0),
+    .flush_ack_o   (),
+    .resp_pending_o(),
+    .lc_en_i       (pinmux_hw_debug_en[PmEnDmiTlulLcGate]),
+    .err_o         (dmi_gate_intg_error)
+  );
+
+  tlul_adapter_dmi u_tlul_adapter_dmi (
+    .clk_i,
+    .rst_ni,
+    .tl_h2d_i        (dmi_tl_h2d_gated),
+    .tl_d2h_o        (dmi_tl_d2h_gated),
+    .intg_error_o    (dmi_intg_error),
+    .dmi_req_valid_o (dmi_req_valid),
+    .dmi_req_ready_i (dmi_req_ready & dmi_en),
+    .dmi_req_o       (dmi_req),
+    .dmi_resp_valid_i(dmi_rsp_valid & dmi_en),
+    .dmi_resp_ready_o(dmi_rsp_ready),
+    .dmi_resp_i      (dmi_rsp)
+  );
+
+  // This only clears the DMI FIFO inside the dm_csrs implementation.
+  // Since the JTAG DTM used in this system can always drain this FIFO,
+  // no additional reset request should be needed in order to clear it.
+  assign dmi_rst_n = rst_ni;
+`endif
+
   // SEC_CM: DM_EN.CTRL.LC_GATED
   // SEC_CM: MEM_TL_LC_GATE.FSM.SPARSE
   tlul_pkg::tl_h2d_t mem_tl_win_h2d_gated;
@@ -322,7 +355,7 @@ module rv_dm
     .tl_h2d_o(mem_tl_win_h2d_gated),
     .tl_d2h_i(mem_tl_win_d2h_gated),
     .flush_req_i(ndmreset_req),
-    .flush_ack_o(ndmreset_ack_rom),
+    .flush_ack_o(ndmreset_req_qual),
     .resp_pending_o(),
     .lc_en_i (lc_hw_debug_en[LcEnRom]),
     .err_o   (rom_gate_intg_error)
@@ -360,103 +393,6 @@ module rv_dm
 
   assign device_req = device_we || device_re;
 
-  //////////////////////////////////////////////
-  // TL-UL-based Debug Module Interface (DMI) //
-  //////////////////////////////////////////////
-
-  tlul_pkg::tl_h2d_t dmi_tl_h2d_gated;
-  tlul_pkg::tl_d2h_t dmi_tl_d2h_gated;
-
-  tlul_lc_gate #(
-    .NumGatesPerDirection(2)
-  ) i_tlul_lc_gate_dmi (
-    .clk_i,
-    .rst_ni,
-    .tl_h2d_i      (dmi_tl_h2d_i),
-    .tl_d2h_o      (dmi_tl_d2h_o),
-    .tl_h2d_o      (dmi_tl_h2d_gated),
-    .tl_d2h_i      (dmi_tl_d2h_gated),
-    .flush_req_i   (ndmreset_req),
-    .flush_ack_o   (ndmreset_ack_dmi),
-    .resp_pending_o(),
-    .lc_en_i       (pinmux_hw_debug_en[PmEnDmiTlulLcGate]),
-    .err_o         (dmi_gate_intg_error)
-  );
-
-  // TL-UL is byte-addressed while DM registers are word-addressed.
-  localparam int unsigned DmiByteAddrWidth = $bits(dmi_req.addr) + 2;
-  localparam int unsigned DmiDataWidth = $bits(dmi_req.data);
-
-  logic                        dmi_re,
-                               dmi_we,
-                               dmi_busy,
-                               dmi_error;
-  logic [DmiByteAddrWidth-1:0] dmi_addr;
-  logic     [DmiDataWidth-1:0] dmi_wdata;
-  logic   [DmiDataWidth/8-1:0] dmi_be;
-
-  tlul_adapter_reg #(
-    .RegAw        (DmiByteAddrWidth),
-    .RegDw        (DmiDataWidth),
-    .AccessLatency(1)
-  ) i_tlul_adapter_dmi (
-    .clk_i,
-    .rst_ni,
-    .tl_i        (dmi_tl_h2d_gated),
-    .tl_o        (dmi_tl_d2h_gated),
-    // SEC_CM: EXEC.CTRL.MUBI
-    .en_ifetch_i (dmi_tlul_adapter_en),
-    // SEC_CM: BUS.INTEGRITY
-    .intg_error_o(dmi_intg_error),
-    .re_o        (dmi_re),
-    .we_o        (dmi_we),
-    .addr_o      (dmi_addr),
-    .wdata_o     (dmi_req.data),
-    .be_o        (dmi_be),
-    .busy_i      (dmi_busy),
-    .rdata_i     (dmi_rsp.data),
-    .error_i     (dmi_error)
-  );
-  assign dmi_rsp_ready = 1'b1; // `tlul_adapter_reg` is always ready to receive responses.
-  assign dmi_req.addr = dmi_addr[DmiByteAddrWidth-1:2]; // Convert from byte to word addressing.
-
-  // The DMI does not support a non-all-ones byte enable. The following FSM intercepts such requests
-  // and injects an error response one cycle later.
-  logic dmi_inject_error_d, dmi_inject_error_q;
-  always_comb begin
-    dmi_inject_error_d = 1'b0;
-    dmi_req.op = dm_pkg::DTM_NOP;
-    dmi_req_valid = 1'b0;
-
-    unique case ({dmi_re, dmi_we})
-      2'b00 /* nop */: ;
-
-      2'b01 /* write */: begin
-        if (dmi_be != '1) begin
-          // Inject error after write with non-all-ones byte enable.
-          dmi_inject_error_d = 1'b1;
-        end else begin
-          dmi_req.op = dm_pkg::DTM_WRITE;
-          dmi_req_valid = 1'b1;
-        end
-      end
-
-      2'b10 /* read */: begin
-        dmi_req.op = dm_pkg::DTM_READ;
-        dmi_req_valid = 1'b1;
-      end
-
-      default /* write & read */: begin
-        // Inject error after write & read.
-        dmi_inject_error_d = 1'b1;
-      end
-    endcase
-  end
-  assign dmi_busy = dmi_inject_error_d ? 1'b0            // when intercepting requets: never
-                                       : ~dmi_req_ready; // when forwarding requests: iff not ready
-  assign dmi_error = dmi_inject_error_q ? 1'b1
-                                        : (dmi_rsp.resp != dm::DTM_SUCCESS);
-
   ///////////////////////////
   // Debug Module Instance //
   ///////////////////////////
@@ -474,50 +410,37 @@ module rv_dm
   ) u_dm_top (
     .clk_i,
     .rst_ni,
-    .testmode_i            (testmode           ),
-    .ndmreset_o            (ndmreset_req       ),
+    .testmode_i            (testmode              ),
+    .ndmreset_o            (ndmreset_req          ),
     .dmactive_o,
-    .debug_req_o           (debug_req          ),
+    .debug_req_o           (debug_req             ),
     .unavailable_i,
-    .hartinfo_i            (hartinfo           ),
-    .slave_req_i           (device_req         ),
-    .slave_we_i            (device_we          ),
-    .slave_addr_i          (device_addr_aligned),
-    .slave_be_i            (device_be          ),
-    .slave_wdata_i         (device_wdata       ),
-    .slave_rdata_o         (device_rdata       ),
-    .slave_err_o           (device_err         ),
-    .master_req_o          (host_req           ),
-    .master_add_o          (host_add           ),
-    .master_we_o           (host_we            ),
-    .master_wdata_o        (host_wdata         ),
-    .master_be_o           (host_be            ),
-    .master_gnt_i          (host_gnt           ),
-    .master_r_valid_i      (host_r_valid       ),
-    .master_r_err_i        (host_r_err         ),
-    .master_r_other_err_i  (host_r_other_err   ),
-    .master_r_rdata_i      (host_r_rdata       ),
-    .dmi_rst_ni            (dmi_rst_n          ),
-    .dmi_req_valid_i       (dmi_req_valid      ),
-    .dmi_req_ready_o       (dmi_req_ready      ),
-    .dmi_req_i             (dmi_req            ),
-    .dmi_resp_valid_o      (dmi_rsp_valid      ),
-    .dmi_resp_ready_i      (dmi_rsp_ready      ),
-    .dmi_resp_o            (dmi_rsp            )
+    .hartinfo_i            (hartinfo              ),
+    .slave_req_i           (device_req            ),
+    .slave_we_i            (device_we             ),
+    .slave_addr_i          (device_addr_aligned   ),
+    .slave_be_i            (device_be             ),
+    .slave_wdata_i         (device_wdata          ),
+    .slave_rdata_o         (device_rdata          ),
+    .slave_err_o           (device_err            ),
+    .master_req_o          (host_req              ),
+    .master_add_o          (host_add              ),
+    .master_we_o           (host_we               ),
+    .master_wdata_o        (host_wdata            ),
+    .master_be_o           (host_be               ),
+    .master_gnt_i          (host_gnt              ),
+    .master_r_valid_i      (host_r_valid          ),
+    .master_r_err_i        (host_r_err            ),
+    .master_r_other_err_i  (host_r_other_err      ),
+    .master_r_rdata_i      (host_r_rdata          ),
+    .dmi_rst_ni            (dmi_rst_n             ),
+    .dmi_req_valid_i       (dmi_req_valid & dmi_en),
+    .dmi_req_ready_o       (dmi_req_ready         ),
+    .dmi_req_i             (dmi_req               ),
+    .dmi_resp_valid_o      (dmi_rsp_valid         ),
+    .dmi_resp_ready_i      (dmi_rsp_ready & dmi_en),
+    .dmi_resp_o            (dmi_rsp               )
   );
-
-
-  ////////////////
-  // Flip-Flops //
-  ////////////////
-
-  always_ff @(posedge clk_i, negedge rst_ni) begin
-    if (!rst_ni) begin
-      dmi_inject_error_q <= 1'b0;
-    end else begin
-      dmi_inject_error_q <= dmi_inject_error_d;
-    end
-  end
 
   ////////////////
   // Assertions //
@@ -546,6 +469,9 @@ module rv_dm
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(RomTlLcGateFsm_A,
     u_tlul_lc_gate_rom.u_state_regs, alert_tx_o[0])
+
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DmiTlLcGateFsm_A,
+    u_tlul_lc_gate_dmi.u_state_regs, alert_tx_o[0])
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_regs, alert_tx_o[0])
