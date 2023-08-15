@@ -11,9 +11,9 @@
 module tlul_adapter_dmi
   import tlul_pkg::*;
 #(
-  parameter  bit CmdIntgCheck      = 0,  // 1: Enable command integrity check
-  parameter  bit EnableRspIntgGen  = 0,  // 1: Generate response integrity
-  parameter  bit EnableDataIntgGen = 0,  // 1: Generate response data integrity
+  parameter  bit CmdIntgCheck      = 1,  // 1: Enable command integrity check
+  parameter  bit EnableRspIntgGen  = 1,  // 1: Generate response integrity
+  parameter  bit EnableDataIntgGen = 1,  // 1: Generate response data integrity
   // This is fixed by the dm_pkg.
   // Unfortunately there only exists a request struct type, hence these
   // values have to be hardcoded here. Two SVAs are added further below to make
