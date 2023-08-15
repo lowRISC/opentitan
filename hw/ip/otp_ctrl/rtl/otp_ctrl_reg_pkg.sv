@@ -8,7 +8,7 @@ package otp_ctrl_reg_pkg;
 
   // Param list
   parameter int NumSramKeyReqSlots = 3;
-  parameter int OtpByteAddrWidth = 11;
+  parameter int OtpByteAddrWidth = 14;
   parameter int NumErrorEntries = 10;
   parameter int NumDaiWords = 2;
   parameter int NumDigestWords = 2;
@@ -21,7 +21,7 @@ package otp_ctrl_reg_pkg;
   parameter int VendorTestDigestOffset = 56;
   parameter int VendorTestDigestSize = 8;
   parameter int CreatorSwCfgOffset = 64;
-  parameter int CreatorSwCfgSize = 800;
+  parameter int CreatorSwCfgSize = 768;
   parameter int CreatorSwCfgAstCfgOffset = 64;
   parameter int CreatorSwCfgAstCfgSize = 156;
   parameter int CreatorSwCfgAstInitEnOffset = 220;
@@ -88,95 +88,95 @@ package otp_ctrl_reg_pkg;
   parameter int CreatorSwCfgRngHealthConfigDigestSize = 4;
   parameter int CreatorSwCfgSramKeyRenewEnOffset = 352;
   parameter int CreatorSwCfgSramKeyRenewEnSize = 4;
-  parameter int CreatorSwCfgDigestOffset = 856;
+  parameter int CreatorSwCfgDigestOffset = 824;
   parameter int CreatorSwCfgDigestSize = 8;
-  parameter int OwnerSwCfgOffset = 864;
-  parameter int OwnerSwCfgSize = 800;
-  parameter int OwnerSwCfgRomErrorReportingOffset = 864;
+  parameter int OwnerSwCfgOffset = 832;
+  parameter int OwnerSwCfgSize = 768;
+  parameter int OwnerSwCfgRomErrorReportingOffset = 832;
   parameter int OwnerSwCfgRomErrorReportingSize = 4;
-  parameter int OwnerSwCfgRomBootstrapDisOffset = 868;
+  parameter int OwnerSwCfgRomBootstrapDisOffset = 836;
   parameter int OwnerSwCfgRomBootstrapDisSize = 4;
-  parameter int OwnerSwCfgRomAlertClassEnOffset = 872;
+  parameter int OwnerSwCfgRomAlertClassEnOffset = 840;
   parameter int OwnerSwCfgRomAlertClassEnSize = 4;
-  parameter int OwnerSwCfgRomAlertEscalationOffset = 876;
+  parameter int OwnerSwCfgRomAlertEscalationOffset = 844;
   parameter int OwnerSwCfgRomAlertEscalationSize = 4;
-  parameter int OwnerSwCfgRomAlertClassificationOffset = 880;
+  parameter int OwnerSwCfgRomAlertClassificationOffset = 848;
   parameter int OwnerSwCfgRomAlertClassificationSize = 320;
-  parameter int OwnerSwCfgRomLocalAlertClassificationOffset = 1200;
+  parameter int OwnerSwCfgRomLocalAlertClassificationOffset = 1168;
   parameter int OwnerSwCfgRomLocalAlertClassificationSize = 64;
-  parameter int OwnerSwCfgRomAlertAccumThreshOffset = 1264;
+  parameter int OwnerSwCfgRomAlertAccumThreshOffset = 1232;
   parameter int OwnerSwCfgRomAlertAccumThreshSize = 16;
-  parameter int OwnerSwCfgRomAlertTimeoutCyclesOffset = 1280;
+  parameter int OwnerSwCfgRomAlertTimeoutCyclesOffset = 1248;
   parameter int OwnerSwCfgRomAlertTimeoutCyclesSize = 16;
-  parameter int OwnerSwCfgRomAlertPhaseCyclesOffset = 1296;
+  parameter int OwnerSwCfgRomAlertPhaseCyclesOffset = 1264;
   parameter int OwnerSwCfgRomAlertPhaseCyclesSize = 64;
-  parameter int OwnerSwCfgRomAlertDigestProdOffset = 1360;
+  parameter int OwnerSwCfgRomAlertDigestProdOffset = 1328;
   parameter int OwnerSwCfgRomAlertDigestProdSize = 4;
-  parameter int OwnerSwCfgRomAlertDigestProdEndOffset = 1364;
+  parameter int OwnerSwCfgRomAlertDigestProdEndOffset = 1332;
   parameter int OwnerSwCfgRomAlertDigestProdEndSize = 4;
-  parameter int OwnerSwCfgRomAlertDigestDevOffset = 1368;
+  parameter int OwnerSwCfgRomAlertDigestDevOffset = 1336;
   parameter int OwnerSwCfgRomAlertDigestDevSize = 4;
-  parameter int OwnerSwCfgRomAlertDigestRmaOffset = 1372;
+  parameter int OwnerSwCfgRomAlertDigestRmaOffset = 1340;
   parameter int OwnerSwCfgRomAlertDigestRmaSize = 4;
-  parameter int OwnerSwCfgRomWatchdogBiteThresholdCyclesOffset = 1376;
+  parameter int OwnerSwCfgRomWatchdogBiteThresholdCyclesOffset = 1344;
   parameter int OwnerSwCfgRomWatchdogBiteThresholdCyclesSize = 4;
-  parameter int OwnerSwCfgRomKeymgrRomExtMeasEnOffset = 1380;
+  parameter int OwnerSwCfgRomKeymgrRomExtMeasEnOffset = 1348;
   parameter int OwnerSwCfgRomKeymgrRomExtMeasEnSize = 4;
-  parameter int OwnerSwCfgManufStateOffset = 1384;
+  parameter int OwnerSwCfgManufStateOffset = 1352;
   parameter int OwnerSwCfgManufStateSize = 4;
-  parameter int OwnerSwCfgRomRstmgrInfoEnOffset = 1388;
+  parameter int OwnerSwCfgRomRstmgrInfoEnOffset = 1356;
   parameter int OwnerSwCfgRomRstmgrInfoEnSize = 4;
-  parameter int OwnerSwCfgDigestOffset = 1656;
+  parameter int OwnerSwCfgDigestOffset = 1592;
   parameter int OwnerSwCfgDigestSize = 8;
-  parameter int HwCfgOffset = 1664;
+  parameter int HwCfgOffset = 1600;
   parameter int HwCfgSize = 80;
-  parameter int DeviceIdOffset = 1664;
+  parameter int DeviceIdOffset = 1600;
   parameter int DeviceIdSize = 32;
-  parameter int ManufStateOffset = 1696;
+  parameter int ManufStateOffset = 1632;
   parameter int ManufStateSize = 32;
-  parameter int EnSramIfetchOffset = 1728;
+  parameter int EnSramIfetchOffset = 1664;
   parameter int EnSramIfetchSize = 1;
-  parameter int EnCsrngSwAppReadOffset = 1729;
+  parameter int EnCsrngSwAppReadOffset = 1665;
   parameter int EnCsrngSwAppReadSize = 1;
-  parameter int EnEntropySrcFwReadOffset = 1730;
+  parameter int EnEntropySrcFwReadOffset = 1666;
   parameter int EnEntropySrcFwReadSize = 1;
-  parameter int EnEntropySrcFwOverOffset = 1731;
+  parameter int EnEntropySrcFwOverOffset = 1667;
   parameter int EnEntropySrcFwOverSize = 1;
-  parameter int HwCfgDigestOffset = 1736;
+  parameter int HwCfgDigestOffset = 1672;
   parameter int HwCfgDigestSize = 8;
-  parameter int Secret0Offset = 1744;
+  parameter int Secret0Offset = 1680;
   parameter int Secret0Size = 40;
-  parameter int TestUnlockTokenOffset = 1744;
+  parameter int TestUnlockTokenOffset = 1680;
   parameter int TestUnlockTokenSize = 16;
-  parameter int TestExitTokenOffset = 1760;
+  parameter int TestExitTokenOffset = 1696;
   parameter int TestExitTokenSize = 16;
-  parameter int Secret0DigestOffset = 1776;
+  parameter int Secret0DigestOffset = 1712;
   parameter int Secret0DigestSize = 8;
-  parameter int Secret1Offset = 1784;
+  parameter int Secret1Offset = 1720;
   parameter int Secret1Size = 88;
-  parameter int FlashAddrKeySeedOffset = 1784;
+  parameter int FlashAddrKeySeedOffset = 1720;
   parameter int FlashAddrKeySeedSize = 32;
-  parameter int FlashDataKeySeedOffset = 1816;
+  parameter int FlashDataKeySeedOffset = 1752;
   parameter int FlashDataKeySeedSize = 32;
-  parameter int SramDataKeySeedOffset = 1848;
+  parameter int SramDataKeySeedOffset = 1784;
   parameter int SramDataKeySeedSize = 16;
-  parameter int Secret1DigestOffset = 1864;
+  parameter int Secret1DigestOffset = 1800;
   parameter int Secret1DigestSize = 8;
-  parameter int Secret2Offset = 1872;
+  parameter int Secret2Offset = 1808;
   parameter int Secret2Size = 88;
-  parameter int RmaTokenOffset = 1872;
+  parameter int RmaTokenOffset = 1808;
   parameter int RmaTokenSize = 16;
-  parameter int CreatorRootKeyShare0Offset = 1888;
+  parameter int CreatorRootKeyShare0Offset = 1824;
   parameter int CreatorRootKeyShare0Size = 32;
-  parameter int CreatorRootKeyShare1Offset = 1920;
+  parameter int CreatorRootKeyShare1Offset = 1856;
   parameter int CreatorRootKeyShare1Size = 32;
-  parameter int Secret2DigestOffset = 1952;
+  parameter int Secret2DigestOffset = 1888;
   parameter int Secret2DigestSize = 8;
-  parameter int LifeCycleOffset = 1960;
+  parameter int LifeCycleOffset = 1896;
   parameter int LifeCycleSize = 88;
-  parameter int LcTransitionCntOffset = 1960;
+  parameter int LcTransitionCntOffset = 1896;
   parameter int LcTransitionCntSize = 48;
-  parameter int LcStateOffset = 2008;
+  parameter int LcStateOffset = 1944;
   parameter int LcStateSize = 40;
   parameter int NumAlerts = 5;
 
@@ -256,7 +256,7 @@ package otp_ctrl_reg_pkg;
   } otp_ctrl_reg2hw_direct_access_cmd_reg_t;
 
   typedef struct packed {
-    logic [10:0] q;
+    logic [13:0] q;
   } otp_ctrl_reg2hw_direct_access_address_reg_t;
 
   typedef struct packed {
@@ -405,12 +405,12 @@ package otp_ctrl_reg_pkg;
 
   // Register -> HW type for core interface
   typedef struct packed {
-    otp_ctrl_reg2hw_intr_state_reg_t intr_state; // [201:200]
-    otp_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [199:198]
-    otp_ctrl_reg2hw_intr_test_reg_t intr_test; // [197:194]
-    otp_ctrl_reg2hw_alert_test_reg_t alert_test; // [193:184]
-    otp_ctrl_reg2hw_direct_access_cmd_reg_t direct_access_cmd; // [183:178]
-    otp_ctrl_reg2hw_direct_access_address_reg_t direct_access_address; // [177:167]
+    otp_ctrl_reg2hw_intr_state_reg_t intr_state; // [204:203]
+    otp_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [202:201]
+    otp_ctrl_reg2hw_intr_test_reg_t intr_test; // [200:197]
+    otp_ctrl_reg2hw_alert_test_reg_t alert_test; // [196:187]
+    otp_ctrl_reg2hw_direct_access_cmd_reg_t direct_access_cmd; // [186:181]
+    otp_ctrl_reg2hw_direct_access_address_reg_t direct_access_address; // [180:167]
     otp_ctrl_reg2hw_direct_access_wdata_mreg_t [1:0] direct_access_wdata; // [166:103]
     otp_ctrl_reg2hw_check_trigger_reg_t check_trigger; // [102:99]
     otp_ctrl_reg2hw_check_timeout_reg_t check_timeout; // [98:67]

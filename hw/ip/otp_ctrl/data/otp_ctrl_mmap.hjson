@@ -20,7 +20,7 @@
 
     otp: {
         width: "2", // bytes
-        depth: "1024"
+        depth: "8192"
     }
 
     // Definition of scrambling and digest constants and keys.
@@ -76,6 +76,7 @@
         {
             name:       "VENDOR_TEST",
             variant:    "Unbuffered",
+            absorb:     false,
             size:       "64", // in bytes
             secret:     false,
             sw_digest:  true,
@@ -101,7 +102,7 @@
         {
             name:       "CREATOR_SW_CFG",
             variant:    "Unbuffered",
-            absorb:     true,
+            absorb:     false,
             size:       "768", // in bytes
             secret:     false,
             sw_digest:  true,
@@ -253,7 +254,7 @@
         {
             name:       "OWNER_SW_CFG",
             variant:    "Unbuffered",
-            absorb:     true,
+            absorb:     false,
             size:       "768", // in bytes
             secret:     false,
             sw_digest:  true,

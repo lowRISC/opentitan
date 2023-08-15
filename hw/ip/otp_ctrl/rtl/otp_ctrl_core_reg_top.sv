@@ -228,8 +228,8 @@ module otp_ctrl_core_reg_top (
   logic direct_access_cmd_wr_wd;
   logic direct_access_cmd_digest_wd;
   logic direct_access_address_we;
-  logic [10:0] direct_access_address_qs;
-  logic [10:0] direct_access_address_wd;
+  logic [13:0] direct_access_address_qs;
+  logic [13:0] direct_access_address_wd;
   logic direct_access_wdata_0_we;
   logic [31:0] direct_access_wdata_0_qs;
   logic [31:0] direct_access_wdata_0_wd;
@@ -1014,9 +1014,9 @@ module otp_ctrl_core_reg_top (
   logic direct_access_address_gated_we;
   assign direct_access_address_gated_we = direct_access_address_we & direct_access_regwen_qs;
   prim_subreg #(
-    .DW      (11),
+    .DW      (14),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (11'h0)
+    .RESVAL  (14'h0)
   ) u_direct_access_address (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1771,7 +1771,7 @@ module otp_ctrl_core_reg_top (
   assign direct_access_cmd_digest_wd = reg_wdata[2];
   assign direct_access_address_we = addr_hit[8] & reg_we & !reg_error;
 
-  assign direct_access_address_wd = reg_wdata[10:0];
+  assign direct_access_address_wd = reg_wdata[13:0];
   assign direct_access_wdata_0_we = addr_hit[9] & reg_we & !reg_error;
 
   assign direct_access_wdata_0_wd = reg_wdata[31:0];
@@ -1936,7 +1936,7 @@ module otp_ctrl_core_reg_top (
       end
 
       addr_hit[8]: begin
-        reg_rdata_next[10:0] = direct_access_address_qs;
+        reg_rdata_next[13:0] = direct_access_address_qs;
       end
 
       addr_hit[9]: begin

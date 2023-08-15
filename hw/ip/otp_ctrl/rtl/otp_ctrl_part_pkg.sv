@@ -122,7 +122,7 @@ package otp_ctrl_part_pkg;
     // VENDOR_TEST
     '{
       variant:    Unbuffered,
-      offset:     11'd0,
+      offset:     14'd0,
       size:       64,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
@@ -135,8 +135,8 @@ package otp_ctrl_part_pkg;
     // CREATOR_SW_CFG
     '{
       variant:    Unbuffered,
-      offset:     11'd64,
-      size:       800,
+      offset:     14'd64,
+      size:       768,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
       sw_digest:  1'b1,
@@ -148,8 +148,8 @@ package otp_ctrl_part_pkg;
     // OWNER_SW_CFG
     '{
       variant:    Unbuffered,
-      offset:     11'd864,
-      size:       800,
+      offset:     14'd832,
+      size:       768,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
       sw_digest:  1'b1,
@@ -161,7 +161,7 @@ package otp_ctrl_part_pkg;
     // HW_CFG
     '{
       variant:    Buffered,
-      offset:     11'd1664,
+      offset:     14'd1600,
       size:       80,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
@@ -174,7 +174,7 @@ package otp_ctrl_part_pkg;
     // SECRET0
     '{
       variant:    Buffered,
-      offset:     11'd1744,
+      offset:     14'd1680,
       size:       40,
       key_sel:    Secret0Key,
       secret:     1'b1,
@@ -187,7 +187,7 @@ package otp_ctrl_part_pkg;
     // SECRET1
     '{
       variant:    Buffered,
-      offset:     11'd1784,
+      offset:     14'd1720,
       size:       88,
       key_sel:    Secret1Key,
       secret:     1'b1,
@@ -200,7 +200,7 @@ package otp_ctrl_part_pkg;
     // SECRET2
     '{
       variant:    Buffered,
-      offset:     11'd1872,
+      offset:     14'd1808,
       size:       88,
       key_sel:    Secret2Key,
       secret:     1'b1,
@@ -213,7 +213,7 @@ package otp_ctrl_part_pkg;
     // LIFE_CYCLE
     '{
       variant:    LifeCycle,
-      offset:     11'd1960,
+      offset:     14'd1896,
       size:       88,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
@@ -282,7 +282,7 @@ package otp_ctrl_part_pkg;
   };
 
   // OTP invalid partition default for buffered partitions.
-  parameter logic [16383:0] PartInvDefault = 16384'({
+  parameter logic [15871:0] PartInvDefault = 15872'({
     704'({
       320'hBCEE0EAF635CC94C13341B2009F127B06D6A802324A832B510525C360F4D65C7B4D832618CCF4986,
       384'h813C1F50880EDCF619237C65265AB0F0C7BE3EA7E34C01040DEFD9C319666A73808EC748F9D19EC735CF8C381C8C5AFE
@@ -314,9 +314,9 @@ package otp_ctrl_part_pkg;
       256'h55BE0BF60F328302F6008FEDD015995F818E6D5088A5CDF93C0F42DCF28BBDCA,
       256'h39D3131745015730931F5DA9AF1C3AACE93BC3CE277DADEF07D7A8934EE34FBD
     }),
-    6400'({
+    6144'({
       64'hA8184B94FC7A6455,
-      2112'h0, // unallocated space
+      1856'h0, // unallocated space
       32'h0,
       32'h0,
       32'h0,
@@ -335,9 +335,9 @@ package otp_ctrl_part_pkg;
       32'h0,
       32'h0
     }),
-    6400'({
+    6144'({
       64'h74501C921B4BAE3A,
-      4000'h0, // unallocated space
+      3744'h0, // unallocated space
       32'h0,
       32'h0,
       32'h0,
