@@ -4,4 +4,3 @@
 #
 # Post elab script, used in GTECH runs to modify the unmapped netlist before
 # writing it out.
-
