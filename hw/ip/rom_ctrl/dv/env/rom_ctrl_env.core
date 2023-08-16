@@ -15,6 +15,7 @@ filesets:
       - lowrisc:dv:mem_bkdr_util
       - lowrisc:dv:kmac_app_agent
     files:
+      - rom_ctrl_prim_ral_pkg.sv
       - rom_ctrl_env_pkg.sv
       - rom_ctrl_if.sv
       - rom_ctrl_env_cfg.sv: {is_include_file: true}
