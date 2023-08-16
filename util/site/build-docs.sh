@@ -121,16 +121,6 @@ book_env+=" MDBOOK_OUTPUT__HTML__PREFERRED_DARK_THEME=unicorn-vomit-light"
 book_args="build"
 book_args+=" --dest-dir ${build_dir}/book/"
 book_args+=" ${proj_root}"
-# ./doc/guides/getting_started/book.toml
-gettingstarted_book_env="env"
-gettingstarted_book_env+=" MDBOOK_PREPROCESSOR__TOOLVERSION__COMMAND=${proj_root}/util/mdbook_toolversion.py"
-gettingstarted_book_env+=" MDBOOK_PREPROCESSOR__README2INDEX__COMMAND=${proj_root}/util/mdbook_readme2index.py"
-gettingstarted_book_env+=" MDBOOK_OUTPUT__HTML__THEME=${proj_root}/doc/guides/getting_started/book-theme/"
-gettingstarted_book_env+=" MDBOOK_OUTPUT__HTML__DEFAULT_THEME=unicorn-vomit-light"
-gettingstarted_book_env+=" MDBOOK_OUTPUT__HTML__PREFERRED_DARK_THEME=unicorn-vomit-light"
-gettingstarted_book_args="build"
-gettingstarted_book_args+=" --dest-dir ${build_dir}/guides/getting_started"
-gettingstarted_book_args+=" ${proj_root}/doc/guides/getting_started"
 
 # Build up Hugo arguments
 hugo_args=""
@@ -156,12 +146,9 @@ buildSite () {
 
     # shellcheck disable=SC2086
     ${book_env} ./bazelisk.sh run --experimental_convenience_symlinks=ignore @crate_index//:mdbook__mdbook -- ${book_args}
-    # shellcheck disable=SC2086
-    ${gettingstarted_book_env} ./bazelisk.sh run --experimental_convenience_symlinks=ignore @crate_index//:mdbook__mdbook -- ${gettingstarted_book_args}
     # Copy additional font files to output directory, as currently mdBook does not have a way to specify them as part of the build.
     local font="Recursive_wght,CASL@300__800,0_5.woff2"
     cp "${proj_root}/site/book-theme/${font}" "${build_dir}/book/site/book-theme/${font}"
-    cp "${proj_root}/site/book-theme/${font}" "${build_dir}/guides/getting_started/book-theme/${font}"
 
     # shellcheck disable=SC2086
     hugo ${hugo_args}
