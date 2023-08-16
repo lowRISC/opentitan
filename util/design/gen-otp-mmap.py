@@ -48,35 +48,21 @@ def main():
                         type=int,
                         metavar='<seed>',
                         help='Custom seed for RNG to compute default values.')
-    parser.add_argument("--entropy-buffer",
-                        type=str,
-                        metavar="<entropy buffer file path>",
-                        help="A file with entropy.")
 
     args = parser.parse_args()
 
     with open(MMAP_DEFINITION_FILE, 'r') as infile:
         config = hjson.load(infile)
 
-        if args.entropy_buffer:
-            if args.seed:
-                log.error(
-                    "'entropy_buffer' option cannot be used with 'seed' option"
-                )
-                exit(1)
-            else:
-                # generate entropy from a buffer
-                config['entropy_buffer'] = args.entropy_buffer
-        else:
-            # If specified, override the seed for random netlist constant computation.
-            if args.seed:
-                log.warning('Commandline override of seed with {}.'.format(
-                    args.seed))
-                config['seed'] = args.seed
-            # Otherwise we make sure a seed exists in the HJSON config file.
-            elif 'seed' not in config:
-                log.error('Seed not found in configuration HJSON.')
-                exit(1)
+        # If specified, override the seed for random netlist constant computation.
+        if args.seed:
+            log.warning('Commandline override of seed with {}.'.format(
+                args.seed))
+            config['seed'] = args.seed
+        # Otherwise we make sure a seed exists in the HJSON config file.
+        elif 'seed' not in config:
+            log.error('Seed not found in configuration HJSON.')
+            exit(1)
 
         try:
             otp_mmap = OtpMemMap(config)

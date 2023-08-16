@@ -55,12 +55,6 @@ ifeq ($(VERBOSE),1)
   toolflags      += -v
 endif
 
-ifeq ($(USE_BUFFER),1)
-  ENTROPY_BUFFER := --entropy-buffer ./util/topgen_entropy_buffer.txt
-  LC_BUFFER      := --entropy-buffer ./util/design/lc_entropy_buffer.txt
-  OTP_MMAP_BUFER := --entropy-buffer ./util/design/otp_mmap_entropy_buffer.txt
-endif
-
 dir_hjson = data
 
 hjson_for_ip = ${PRJ_DIR}/hw/ip/$(1)/$(dir_hjson)/$(1).hjson
@@ -157,11 +151,11 @@ topgen_rust_pkg: topgen_rust
 
 top: $(tops_gen) $(tops_reg)
 $(tops_gen): %_gen:
-	${PRJ_DIR}/util/topgen.py -t $(top-hjson) -o ${PRJ_DIR}/hw/$*/ ${toolflags} ${ENTROPY_BUFFER}
+	${PRJ_DIR}/util/topgen.py -t $(top-hjson) -o ${PRJ_DIR}/hw/$*/ ${toolflags}
 
 $(tops_reg): %_reg:
 	mkdir -p ${REG_OUTPUT_DV_DIR}/$*
-	${PRJ_DIR}/util/topgen.py -t $(top-hjson) -r -o ${REG_OUTPUT_DV_DIR}/$* ${toolflags} ${ENTROPY_BUFFER}
+	${PRJ_DIR}/util/topgen.py -t $(top-hjson) -r -o ${REG_OUTPUT_DV_DIR}/$* ${toolflags}
 
 
 .PHONY: all

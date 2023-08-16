@@ -11,10 +11,8 @@ py_library(
     name = "topgen",
     srcs = [
         "__init__.py",
-        "entropy_buffer_generator.py",
         "gen_top_docs.py",
         "secure_prng.py",
-        "strong_random.py",
         "validate.py",
     ],
     deps = [

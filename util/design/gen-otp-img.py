@@ -27,35 +27,23 @@ IMAGE_DEFINITION_FILE = 'hw/ip/otp_ctrl/data/otp_ctrl_img_dev.hjson'
 MEMORY_MEM_FILE = 'otp-img.BITWIDTH.vmem'
 
 
-def _override_seed(args, seed_name, entropy_buffer_name, config):
+def _override_seed(args, seed_name, config):
     '''Override the seed key in config with value specified in args'''
     arg_seed = getattr(args, seed_name)
-    arg_entropy_buffer = None
-    if entropy_buffer_name:
-        arg_entropy_buffer = getattr(args, entropy_buffer_name)
 
-    if arg_entropy_buffer:
-        if arg_seed:
-            log.error(
-                "{} 'entropy_buffer' option cannot be used with {} 'seed' option"
-                .format(entropy_buffer_name, seed_name))
-            exit(1)
-        else:
-            config['entropy_buffer'] = arg_entropy_buffer
+    # An override seed of 0 will not trigger the override, which is intended, as
+    # the OTP-generation Bazel rule sets the default seed values to 0.
+    if arg_seed:
+        log.warning('Commandline override of {} with {}.'.format(
+            seed_name, arg_seed))
+        config['seed'] = arg_seed
+    # Otherwise, we either take it from the .hjson if present, or
+    # randomly generate a new seed if not.
     else:
-        # An override seed of 0 will not trigger the override, which is intended, as
-        # the OTP-generation Bazel rule sets the default seed values to 0.
-        if arg_seed:
-            log.warning('Commandline override of {} with {}.'.format(
-                seed_name, arg_seed))
-            config['seed'] = arg_seed
-        # Otherwise, we either take it from the .hjson if present, or
-        # randomly generate a new seed if not.
-        else:
-            new_seed = random.getrandbits(64)
-            if config.setdefault('seed', new_seed) == new_seed:
-                log.warning('No {} specified, setting to {}.'.format(
-                    seed_name, new_seed))
+        new_seed = random.getrandbits(64)
+        if config.setdefault('seed', new_seed) == new_seed:
+            log.warning('No {} specified, setting to {}.'.format(
+                seed_name, new_seed))
 
 
 # TODO: this can be removed when we have moved to Python 3.8
@@ -116,13 +104,6 @@ def main():
                         This value typically does not need to be specified as it is taken from
                         the LC state encoding definition Hjson.
                         ''')
-    parser.add_argument("--lc-entropy-buffer",
-                        type=str,
-                        metavar="<entropy buffer file path>",
-                        help="""
-                        A file with entropy used to fill the RNG when the
-                        gen-lc-state-enc.py script was invoked.
-                        """)
     parser.add_argument('--otp-seed',
                         type=int,
                         metavar='<seed>',
@@ -135,13 +116,6 @@ def main():
                         This value typically does not need to be specified as it is taken from
                         the OTP memory map definition Hjson.
                         ''')
-    parser.add_argument("--otp-entropy-buffer",
-                        type=str,
-                        metavar="<entropy buffer file path>",
-                        help="""
-                        A file with entropy used to fill the RNG when the
-                        gen-otp-mmap.py script was invoked.
-                        """)
     parser.add_argument('-o',
                         '--out',
                         type=str,
@@ -242,9 +216,9 @@ def main():
     random.seed(args.seed)
 
     # If specified, override the seeds.
-    _override_seed(args, 'lc_seed', 'lc_entropy_buffer', lc_state_cfg)
-    _override_seed(args, 'otp_seed', 'otp_entropy_buffer', otp_mmap_cfg)
-    _override_seed(args, 'img_seed', None, img_cfg)
+    _override_seed(args, 'lc_seed', lc_state_cfg)
+    _override_seed(args, 'otp_seed', otp_mmap_cfg)
+    _override_seed(args, 'img_seed', img_cfg)
 
     try:
         otp_mem_img = OtpMemImg(lc_state_cfg, otp_mmap_cfg, img_cfg,

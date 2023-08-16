@@ -10,7 +10,6 @@ from math import ceil, log2
 
 from mubi.prim_mubi import is_width_valid, mubi_value_as_int
 from tabulate import tabulate
-from topgen import strong_random
 from topgen import secure_prng as sp
 
 from lib.common import check_bool, check_int, random_or_hexvalue
@@ -24,8 +23,6 @@ OTP_SEED_DIVERSIFIER = 177149201092001677687
 
 # This must match the rtl parameter ScrmblBlockWidth / 8
 SCRAMBLE_BLOCK_WIDTH = 8
-
-ENTROPY_BUFFER_SIZE_BYTES = 2000
 
 
 def _validate_otp(otp):
@@ -354,14 +351,9 @@ class OtpMemMap():
         config["seed"] = check_int(config["seed"])
 
         # Initialize RNG.
-        if 'entropy_buffer' in config:
-            # Load entropy from a file, if the file exists.
-            strong_random.load(config['entropy_buffer'])
-        else:
-            # Generate entropy buffer from the seed.
-            sp.reseed(OTP_SEED_DIVERSIFIER + int(config['seed']))
-            log.info('Seed: {0:x}'.format(config['seed']))
-            log.info('')
+        sp.reseed(OTP_SEED_DIVERSIFIER + int(config['seed']))
+        log.info('Seed: {0:x}'.format(config['seed']))
+        log.info('')
 
         if "otp" not in config:
             raise RuntimeError("Missing otp configuration.")
