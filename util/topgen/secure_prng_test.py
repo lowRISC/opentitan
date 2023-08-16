@@ -265,7 +265,7 @@ class TestNistOfficial(unittest.TestCase):
         ReturnedBits = int(test_point['ReturnedBits'], 16)
         expected = (ReturnedBits % (1 << (512 - offset))) >> (512 - width - offset)
 
-        # Re-seed strong_random with the EntropyInput from the test_point
+        # Re-seed secure_prng with the EntropyInput from the test_point
         entropy_input = int(test_point['EntropyInput'], 16)
         sp.reseed(entropy_input)
         # Call getrandbits function
