@@ -7053,7 +7053,7 @@
           data_intg_passthru: "true"
           exec: True
           byte_write: True
-          size: 0x20000
+          size: 0x10000
         }
       }
       clock_connections:
@@ -7112,7 +7112,7 @@
           desc: Memory size of the RAM (in bytes).
           type: int
           name_top: MemSizeSramCtrlMainRam
-          default: 131072
+          default: 65536
         }
         {
           name: InstrExec
@@ -9324,7 +9324,7 @@
           [
             {
               base_addr: 0x10000000
-              size_byte: 0x20000
+              size_byte: 0x10000
             }
           ]
           xbar: false

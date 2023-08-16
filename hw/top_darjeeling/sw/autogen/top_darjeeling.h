@@ -869,7 +869,7 @@ extern "C" {
  * address between #TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR and
  * `TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR + TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES 0x20000u
+#define TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES 0x10000u
 
 /**
  * Peripheral base address for regs device on rom_ctrl in top darjeeling.
@@ -954,7 +954,7 @@ extern "C" {
 /**
  * Memory size for ram_main in top darjeeling.
  */
-#define TOP_DARJEELING_RAM_MAIN_SIZE_BYTES 0x20000u
+#define TOP_DARJEELING_RAM_MAIN_SIZE_BYTES 0x10000u
 
 /**
  * Memory base address for rom in top darjeeling.

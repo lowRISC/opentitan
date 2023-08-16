@@ -631,7 +631,7 @@ pub const TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR: usize = 0x10000000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR and
 /// `TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR + TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES`.
-pub const TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES: usize = 0x20000;
+pub const TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES: usize = 0x10000;
 /// Peripheral base address for regs device on rom_ctrl in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -686,7 +686,7 @@ pub const EFLASH_SIZE_BYTES: usize = 0x100000;
 pub const RAM_MAIN_BASE_ADDR: usize = 0x10000000;
 
 /// Memory size for ram_main in top darjeeling.
-pub const RAM_MAIN_SIZE_BYTES: usize = 0x20000;
+pub const RAM_MAIN_SIZE_BYTES: usize = 0x10000;
 /// Memory base address for rom in top darjeeling.
 pub const ROM_BASE_ADDR: usize = 0x8000;
 

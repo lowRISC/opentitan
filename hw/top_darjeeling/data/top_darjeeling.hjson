@@ -739,7 +739,7 @@
           data_intg_passthru: "true",
           exec:       "True",
           byte_write: "True",
-          size:       "0x20000"
+          size:       "0x10000"
         }
       }
     },

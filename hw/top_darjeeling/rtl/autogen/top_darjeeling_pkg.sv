@@ -478,7 +478,7 @@ package top_darjeeling_pkg;
   /**
    * Peripheral size in bytes for ram device on sram_ctrl_main in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES = 32'h20000;
+  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES = 32'h10000;
 
   /**
    * Peripheral base address for regs device on rom_ctrl in top darjeeling.
@@ -538,7 +538,7 @@ package top_darjeeling_pkg;
   /**
    * Memory size for ram_main in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_RAM_MAIN_SIZE_BYTES = 32'h20000;
+  parameter int unsigned TOP_DARJEELING_RAM_MAIN_SIZE_BYTES = 32'h10000;
 
   /**
    * Memory base address for rom in top darjeeling.

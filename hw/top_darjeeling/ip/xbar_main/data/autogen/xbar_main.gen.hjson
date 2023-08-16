@@ -611,7 +611,7 @@
       [
         {
           base_addr: 0x10000000
-          size_byte: 0x20000
+          size_byte: 0x10000
         }
       ]
       xbar: false

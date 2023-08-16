@@ -2482,7 +2482,7 @@ module top_darjeeling #(
     .RndCnstSramNonce(RndCnstSramCtrlMainSramNonce),
     .RndCnstLfsrSeed(RndCnstSramCtrlMainLfsrSeed),
     .RndCnstLfsrPerm(RndCnstSramCtrlMainLfsrPerm),
-    .MemSizeRam(131072),
+    .MemSizeRam(65536),
     .InstrExec(SramCtrlMainInstrExec)
   ) u_sram_ctrl_main (
       // [59]: fatal_error
