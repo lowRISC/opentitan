@@ -10,3 +10,5 @@
 `include "rv_dm_sba_tl_access_vseq_lib.sv"
 `include "rv_dm_tap_fsm_vseq.sv"
 `include "rv_dm_cmderr_busy_vseq.sv"
+`include "rv_dm_mem_tl_access_halted_vseq.sv"
+`include "rv_dm_cmderr_exception_vseq.sv"

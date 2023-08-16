@@ -345,7 +345,6 @@
       tests: ["rv_dm_tap_fsm", "rv_dm_tap_fsm_rand_reset"]
     }
     {
-<<<<<<< HEAD
       name: jtag_dmi_cmderr_busy
       desc: '''
             Verify that attempt to generate command error result in cmderr field of abstractcs
@@ -359,18 +358,29 @@
             '''
       stage: V1
       tests: ["rv_dm_cmderr_busy"]
-=======
+    }
+    {
       name: mem_tl_access_halted
       desc: '''
             Verify whether the selected hart has been halted or not.
-            
+
             - Set the haltreq bit of dmcontrol register.
-            - Write into memory mapped register called HALTED(0x100) through tl-device(mem_tl_if) interface. 
+            - Write into memory mapped register called HALTED(0x100) through tl-device(mem_tl_if) interface.
             - Verify that the anyhalted and allhalted bits of the dmstatus register are set.
             '''
       stage: V1
       tests: ["rv_dm_mem_tl_access_halted"]
->>>>>>> 3bd3378a5 ([rv_dm] Halted test)
+    }
+    {
+      name: cmderr_exception
+      desc: '''
+            Verify that tha cmderr should set to 3, if an excepton occurred while executing the command.
+
+             -Write into memory mapped register called EXCEPTION(0x118) through tl-device interface.
+             -Verify that the cmderr field of abstractcs register is set to 3.
+            '''
+      stage: V1
+      tests: ["rv_dm_cmderr_exception"]
     }
     {
       name: stress_all
