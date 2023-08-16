@@ -240,7 +240,7 @@ module dma
 
   logic [top_pkg::TL_AW-1:0]  plic_clear_addr;
   logic [NumLsioTriggers-1:0] lsio_trigger;
-
+  logic                       handshake_interrupt;
   always_comb begin
     lsio_trigger = '0;
     plic_clear_addr = '0;
@@ -251,6 +251,7 @@ module dma
         plic_clear_addr = PlicLsioPlic[i];
       end
     end
+    handshake_interrupt = (|lsio_trigger);
   end
 
   // Following cast is only temporary until FSM becomes sparesly encoded
@@ -873,10 +874,17 @@ module dma
     .q_o   ( read_return_data_q    )
   );
 
+  // Interrupt logic
+
   logic test_done_interrupt;
   logic test_error_interrupt;
   logic test_memory_buffer_limit_interrupt;
   logic send_memory_buffer_limit_interrupt;
+  logic sent_almost_limit_interrupt_d, sent_almost_limit_interrupt_q;
+  logic send_almost_limit_interrupt;
+  logic sent_limit_interrupt_d, sent_limit_interrupt_q;
+  logic send_limit_interrupt;
+
   logic data_move_state, data_move_state_valid;
   logic update_destination_addr_reg, update_source_addr_reg;
 
@@ -892,8 +900,64 @@ module dma
   assign intr_dma_memory_buffer_limit_o = reg2hw.intr_state.dma_memory_buffer_limit.q &&
                                           reg2hw.intr_enable.dma_memory_buffer_limit.q;
 
-  // Calculate remaining amount of data
-  assign remaining_bytes = reg2hw.total_data_size.q - transfer_byte_q;
+  always_comb begin
+    sent_almost_limit_interrupt_d = sent_almost_limit_interrupt_q;
+
+    if (send_almost_limit_interrupt) begin
+      sent_almost_limit_interrupt_d = 1'b1;
+    end else if ((ctrl_state_q == DmaIdle) && handshake_interrupt) begin
+      sent_almost_limit_interrupt_d = 1'b0;
+    end
+  end
+
+  prim_flop #(
+    .Width(1)
+  ) aff_send_almost_limit_interrupt (
+    .clk_i ( gated_clk                     ),
+    .rst_ni( rst_ni                        ),
+    .d_i   ( sent_almost_limit_interrupt_d ),
+    .q_o   ( sent_almost_limit_interrupt_q )
+  );
+
+  assign send_almost_limit_interrupt =
+    (!sent_almost_limit_interrupt_q)    &&  // only want to send once
+    data_move_state_valid               &&  // only trigger for single cycle when data has moved
+    cfg_handshake_en                    &&
+    cfg_memory_buffer_auto_increment_en &&
+    (!cfg_data_direction)               &&
+    (dst_addr_q >= {reg2hw.destination_address_almost_limit_hi.q,
+                    reg2hw.destination_address_almost_limit_lo.q});
+
+  always_comb begin
+    sent_limit_interrupt_d = sent_limit_interrupt_q;
+
+    if (send_limit_interrupt) begin
+      sent_limit_interrupt_d = 1'b1;
+    end else if ((ctrl_state_q == DmaIdle) && handshake_interrupt) begin
+      sent_limit_interrupt_d = 1'b0;
+    end
+  end
+
+  prim_flop #(
+    .Width(1)
+  ) aff_send_limit_interrupt (
+    .clk_i ( gated_clk              ),
+    .rst_ni( rst_ni                 ),
+    .d_i   ( sent_limit_interrupt_d ),
+    .q_o   ( sent_limit_interrupt_q )
+  );
+
+  assign send_limit_interrupt =
+    (!sent_limit_interrupt_q)           &&  // only want to send once
+    data_move_state_valid               &&  // only trigger for single cycle when data has moved
+    cfg_handshake_en                    &&
+    cfg_memory_buffer_auto_increment_en &&
+    (!cfg_data_direction)               &&
+    (dst_addr_q >= {reg2hw.destination_address_limit_hi.q,
+                    reg2hw.destination_address_limit_lo.q});
+
+  // Send out an interrupt whean reaching almost the buffer limit or when really reaching the limit
+  assign send_memory_buffer_limit_interrupt = send_almost_limit_interrupt || send_limit_interrupt;
 
   assign data_move_state_valid =
     (dma_host_tlul_req_valid && (ctrl_state_q == DmaSendHostWrite)) ||
@@ -908,17 +972,6 @@ module dma
                            (ctrl_state_q == DmaWaitCtnWriteResponse)  ||
                            (ctrl_state_q == DmaSendSysWrite);
 
-  // Destination limit logic, only want to trigger for single cycle when data has moved
-  assign send_memory_buffer_limit_interrupt =
-    data_move_state_valid               &&
-    cfg_handshake_en                    &&
-    cfg_memory_buffer_auto_increment_en &&
-    !cfg_data_direction                 &&
-    ((dst_addr_q >= {reg2hw.destination_address_limit_hi.q,
-                     reg2hw.destination_address_limit_lo.q})       ||
-     (dst_addr_q >= {reg2hw.destination_address_almost_limit_hi.q,
-                     reg2hw.destination_address_almost_limit_lo.q}));
-
   assign new_destination_addr = cfg_data_direction ?
     ({reg2hw.destination_address_hi.q, reg2hw.destination_address_lo.q} +
      SYS_ADDR_WIDTH'(transfer_width_q)) :
@@ -930,6 +983,9 @@ module dma
       SYS_ADDR_WIDTH'(reg2hw.total_data_size.q)) :
     ({reg2hw.source_address_hi.q, reg2hw.source_address_lo.q} +
       SYS_ADDR_WIDTH'(transfer_width_q));
+
+    // Calculate remaining amount of data
+  assign remaining_bytes = reg2hw.total_data_size.q - transfer_byte_q;
 
   always_comb begin
     hw2reg = '0;
