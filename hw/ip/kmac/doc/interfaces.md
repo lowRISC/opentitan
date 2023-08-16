@@ -13,7 +13,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | Port Name      | Package::Struct        | Type    | Act   |   Width | Description   |
 |:---------------|:-----------------------|:--------|:------|--------:|:--------------|
 | keymgr_key     | keymgr_pkg::hw_key_req | uni     | rcv   |       1 |               |
-| app            | kmac_pkg::app          | req_rsp | rsp   |       3 |               |
+| app            | kmac_pkg::app          | req_rsp | rsp   |       4 |               |
 | entropy        | edn_pkg::edn           | req_rsp | req   |       1 |               |
 | idle           | prim_mubi_pkg::mubi4   | uni     | req   |       1 |               |
 | en_masking     | logic                  | uni     | req   |       1 |               |
