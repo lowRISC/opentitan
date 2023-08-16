@@ -70,3 +70,6 @@ dif-src-py-regex = 'dif_\S*\.h'
 
 [preprocessor.block-dashboard]
 command = "./util/mdbook-block-dashboard.py"
+
+[preprocessor.toolversion]
+command = "./util/mdbook_toolversion.py"

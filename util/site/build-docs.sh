@@ -106,6 +106,7 @@ doxygen_args="${proj_root}/util/doxygen/Doxyfile"
 # ./book.toml
 book_env="env"
 book_env+=" MDBOOK_PREPROCESSOR__TESTPLAN__COMMAND=${proj_root}/util/mdbook_testplan.py"
+book_env+=" MDBOOK_PREPROCESSOR__TOOLVERSION__COMMAND=${proj_root}/util/mdbook_toolversion.py"
 book_env+=" MDBOOK_PREPROCESSOR__OTBN__COMMAND=${proj_root}/util/mdbook_otbn.py"
 book_env+=" MDBOOK_PREPROCESSOR__CODE_SNIPPET__COMMAND=${proj_root}/util/mdbook_code_snippet.py"
 book_env+=" MDBOOK_PREPROCESSOR__DOXYGEN__COMMAND=${proj_root}/util/mdbook_doxygen.py"
