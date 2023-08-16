@@ -1046,6 +1046,7 @@ def get_dangling_im_def(objs: OrderedDict) -> str:
 
     undriven_def = [obj for obj in objs if obj['end_idx'] > 0 and
                     (obj['act'] == 'req' and obj['suffix'] == 'rsp' or
-                     obj['act'] == 'rsp' and obj['suffix'] == 'req')]
+                     obj['act'] == 'rsp' and obj['suffix'] == 'req' or
+                     obj['act'] == 'rcv')]
 
     return unused_def, undriven_def
