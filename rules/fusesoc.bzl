@@ -76,9 +76,6 @@ def _fusesoc_build_impl(ctx):
         arguments = [args],
         executable = ctx.executable._fusesoc,
         use_default_shell_env = False,
-        execution_requirements = {
-            "no-sandbox": "",
-        },
         env = ENV,
     )
     return [
