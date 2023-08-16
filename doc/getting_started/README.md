@@ -26,7 +26,7 @@ git clone https://github.com/lowRISC/opentitan.git
 ```
 
 If you wish to *contribute* to OpenTitan you will need to make a fork on GitHub and may wish to clone the fork instead.
-We have some [notes for using GitHub](https://opentitan.org/book/doc/contributing/github_notes.html) which explain how to work with your own fork (and perform many other GitHub tasks) in the OpenTitan context.
+We have some [notes for using GitHub](../contributing/github_notes.md) which explain how to work with your own fork (and perform many other GitHub tasks) in the OpenTitan context.
 
 ***Note: throughout the documentation `$REPO_TOP` refers to the path where the OpenTitan repository is checked out.***
 Unless you've specified some other name in the clone, `$REPO_TOP` will be a directory called `opentitan`.
@@ -158,7 +158,7 @@ It also may make sense to stick with the basic setup and come back to these step
 ### Step 7a: Install Verible (optional)
 
 Verible is an open source SystemVerilog style linter and formatting tool.
-The style linter is relatively mature and we use it as part of our [RTL design flow](https://opentitan.org/book/doc/contributing/hw/methodology.html).
+The style linter is relatively mature and we use it as part of our [RTL design flow](../contributing/hw/methodology.md).
 The formatter is still under active development, and hence its usage is more experimental in OpenTitan.
 
 You can download and build Verible from scratch as explained on the [Verible GitHub page](https://github.com/google/verible/).
@@ -210,16 +210,16 @@ As you may have guessed, there are several other pieces of hardware and software
 If you are interested in these, check out the additional resources below.
 
 ### General
-* [Directory Structure](https://opentitan.org/book/doc/contributing/directory_structure.html)
-* [GitHub Notes](https://opentitan.org/book/doc/contributing/github_notes.html)
+* [Directory Structure](../contributing/directory_structure.md)
+* [GitHub Notes](../contributing/github_notes.md)
 * [Building Documentation](./build_docs.md)
-* [Design Methodology within OpenTitan](https://opentitan.org/book/doc/contributing/hw/methodology.html)
+* [Design Methodology within OpenTitan](../contributing/hw/methodology.md)
 
 ### Hardware
-* [Designing Hardware](https://opentitan.org/book/doc/contributing/hw/design.html)
-* [OpenTitan Hardware](https://opentitan.org/book/hw)
+* [Designing Hardware](../contributing/hw/design.md)
+* [OpenTitan Hardware](../../hw/README.md)
 
 ### Software
-* [OpenTitan Software](https://opentitan.org/book/sw)
-* [Writing and Building Software for OTBN](https://opentitan.org/book/doc/contributing/sw/otbn_sw.html)
-* [Rust for Embedded C Programmers](https://opentitan.org/book/doc/rust_for_c_devs.html)
+* [OpenTitan Software](../../sw/README.md)
+* [Writing and Building Software for OTBN](../contributing/sw/otbn_sw.md)
+* [Rust for Embedded C Programmers](../rust_for_c_devs.md)

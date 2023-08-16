@@ -15,7 +15,7 @@ To use the OpenTitan on an FPGA you need two things:
 Depending on the design/target combination that you want to synthesize you will need different tools and boards.
 Refer to the design documentation for information on what exactly is needed.
 
-* [Obtain an FPGA board](https://opentitan.org/book/doc/contributing/fpga/get_a_board.html)
+* [Obtain an FPGA board](../contributing/fpga/get_a_board.md)
 
 ## Obtain an FPGA bitstream
 
@@ -38,7 +38,7 @@ tar -xvf bitstream-latest.tar.gz
 By default, the bitstream is built with a version of the boot ROM used for testing (called the _test ROM_; pulled from `sw/device/lib/testing/test_rom`).
 There is also a version of the boot ROM used in production (called the _ROM_; pulled from `sw/device/silicon_creator/rom`).
 When the bitstream cache is used in bazel flows, the ROMs from the cache are not used.
-Instead, the bazel-built ROMs are spliced into the image to create new bitstreams, using the mechanism described in the [FPGA Reference Manual](https://opentitan.org/book/doc/contributing/fpga/ref_manual_fpga.html#boot-rom-development).
+Instead, the bazel-built ROMs are spliced into the image to create new bitstreams, using the mechanism described in the [FPGA Reference Manual](../contributing/fpga/ref_manual_fpga.md#boot-rom-development).
 The metadata for the latest bitstream (the approximate creation time and the associated commit hash) is also available as a text file and can be [downloaded separately](https://storage.googleapis.com/opentitan-bitstreams/master/latest.txt).
 
 ### Using the `@bitstreams` repository
@@ -404,7 +404,7 @@ riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" \
 
 The above will print out the contents of the registers upon successs.
 Note that you should have the RISC-V toolchain installed and on your `PATH`.
-For example, if you followed the [Getting Started](README.md#step-3-install-the-lowrisc-risc-v-toolchain) instructions, then make sure `/tools/riscv/bin` is on your `PATH`.
+For example, if you followed the [Getting Started](README.md#step-4-install-the-lowrisc-risc-v-toolchain) instructions, then make sure `/tools/riscv/bin` is on your `PATH`.
 
 #### Common operations with GDB
 
