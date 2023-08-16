@@ -73,6 +73,8 @@ filegroup(
         "//hw/rdc:all_files",
         "//hw/syn:all_files",
         "//hw/vendor:all_files",
+        "//util:check_tool_requirements.py",
+        "//util:tool_requirements.py",
     ],
     visibility = [":__subpackages__"],
 )
