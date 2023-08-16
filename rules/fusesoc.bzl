@@ -78,6 +78,8 @@ def _fusesoc_build_impl(ctx):
         use_default_shell_env = False,
         execution_requirements = {
             "no-sandbox": "",
+            # This rule is non-hermetic, so avoid caching outputs.
+            "no-remote-cache": "",
         },
         env = ENV,
     )

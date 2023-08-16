@@ -49,6 +49,7 @@ fusesoc_build(
     tags = [
         "manual",
         "verilator",
+        "no-remote-cache",
     ],
     target = "sim",
     verilator_options = ":verilator_options",

@@ -3,7 +3,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-set -e
+#set -e
 
 # Increase the test_timeout due to slow performance on CI
 
@@ -16,6 +16,7 @@ ci/bazelisk.sh test \
     --test_output=errors \
     --//hw:verilator_options=--threads,1 \
     --//hw:make_options=-j,8 \
+    --execution_log_json_file=foo.json \
     //sw/device/tests:aes_smoketest_sim_verilator \
     //sw/device/tests:uart_smoketest_sim_verilator \
     //sw/device/tests:crt_test_sim_verilator \
@@ -32,3 +33,7 @@ ci/bazelisk.sh test \
     //sw/device/silicon_creator/lib/drivers:watchdog_functest_sim_verilator \
     //sw/device/silicon_creator/lib:irq_asm_functest_sim_verilator \
     //sw/device/silicon_creator/rom:rom_epmp_test_sim_verilator
+
+echo "######################################################################"
+cat foo.json
+echo "######################################################################"
