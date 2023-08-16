@@ -2531,7 +2531,8 @@ module top_earlgrey #(
     .BootRomInitFile(RomCtrlBootRomInitFile),
     .RndCnstScrNonce(RndCnstRomCtrlScrNonce),
     .RndCnstScrKey(RndCnstRomCtrlScrKey),
-    .SecDisableScrambling(SecRomCtrlDisableScrambling)
+    .SecDisableScrambling(SecRomCtrlDisableScrambling),
+    .MemSizeRom(32768)
   ) u_rom_ctrl (
       // [60]: fatal
       .alert_tx_o  ( alert_tx[60:60] ),

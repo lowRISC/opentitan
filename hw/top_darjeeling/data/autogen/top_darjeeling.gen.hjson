@@ -7485,6 +7485,13 @@
           expose: "true"
           name_top: SecRomCtrlDisableScrambling
         }
+        {
+          name: MemSizeRom
+          desc: Memory size of the ROM (in bytes).
+          type: int
+          name_top: MemSizeRomCtrlRom
+          default: 32768
+        }
       ]
       inter_signal_list:
       [

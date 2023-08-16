@@ -7,7 +7,7 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
 
   `uvm_object_new
 
-  localparam int unsigned RomSizeWords = rom_ctrl_reg_pkg::ROM_CTRL_ROM_SIZE >> 2;
+  localparam int unsigned RomSizeWords = ROM_SIZE_WORDS;
   localparam int unsigned RomIndexWidth = prim_util_pkg::vbits(RomSizeWords);
 
   typedef enum bit [2:0] {
@@ -156,7 +156,7 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
         // memory word) and then check that the data that gets read doesn't match the data stored
         // at the glitched address.
         CtrlRedun: begin
-          addr_range_t loc_mem_range[$] = cfg.ral_models["rom_ctrl_rom_reg_block"].mem_ranges;
+          addr_range_t loc_mem_range[$] = cfg.ral_models["rom_ctrl_prim_reg_block"].mem_ranges;
           bit [TL_DW-1:0] rdata, rdata_tgt, corr_data;
           bit [TL_AW-1:0] addr;
           int             mem_idx = $urandom_range(0, loc_mem_range.size - 1);
@@ -179,13 +179,13 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
           corr_bus_rom_rom_index_val = tgt_addr[2 +: RomIndexWidth];
           tl_access_sub(.addr(addr), .write(0), .data(rdata), .completed(completed),
                         .saw_err(saw_err), .check_rsp(1), .rsp(tl_access_rsp),
-                        .tl_sequencer_h(p_sequencer.tl_sequencer_hs["rom_ctrl_rom_reg_block"]));
+                        .tl_sequencer_h(p_sequencer.tl_sequencer_hs["rom_ctrl_prim_reg_block"]));
           void'(tl_access_rsp.is_d_chan_intg_ok(.en_rsp_intg_chk(1),
                                                 .en_data_intg_chk(1),
                                                 .throw_error(1)));
           tl_access_sub(.addr(tgt_addr), .write(0), .data(rdata_tgt), .completed(completed),
                         .saw_err(saw_err), .check_rsp(1), .rsp(tl_access_rsp),
-                        .tl_sequencer_h(p_sequencer.tl_sequencer_hs["rom_ctrl_rom_reg_block"]));
+                        .tl_sequencer_h(p_sequencer.tl_sequencer_hs["rom_ctrl_prim_reg_block"]));
           void'(tl_access_rsp.is_d_chan_intg_ok(.en_rsp_intg_chk(1),
                                                 .en_data_intg_chk(1),
                                                 .throw_error(1)));
@@ -195,7 +195,7 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
               cfg.scoreboard.disable_rom_acc_chk = 1;
               tl_access_sub(.addr(addr), .write(0), .data(corr_data), .completed(completed),
                             .saw_err(saw_err), .check_rsp(1), .rsp(tl_access_rsp),
-                            .tl_sequencer_h(p_sequencer.tl_sequencer_hs["rom_ctrl_rom_reg_block"])
+                            .tl_sequencer_h(p_sequencer.tl_sequencer_hs["rom_ctrl_prim_reg_block"])
                            );
               `DV_CHECK_EQ(completed, 1)
               `DV_CHECK_EQ(saw_err, 0)
@@ -206,10 +206,10 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
               cfg.scoreboard.disable_rom_acc_chk = 0;
             end
             begin
-              wait (cfg.m_tl_agent_cfgs["rom_ctrl_rom_reg_block"].vif.h2d.a_valid);
+              wait (cfg.m_tl_agent_cfgs["rom_ctrl_prim_reg_block"].vif.h2d.a_valid);
               $assertoff(0, "tb.dut.BusRomIndicesMatch_A");
               uvm_hdl_force("tb.dut.bus_rom_rom_index", corr_bus_rom_rom_index_val);
-              wait (!cfg.m_tl_agent_cfgs["rom_ctrl_rom_reg_block"].vif.h2d.a_valid);
+              wait (!cfg.m_tl_agent_cfgs["rom_ctrl_prim_reg_block"].vif.h2d.a_valid);
               uvm_hdl_release("tb.dut.bus_rom_rom_index");
             end
           join

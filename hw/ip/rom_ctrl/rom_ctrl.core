@@ -23,7 +23,6 @@ filesets:
       - lowrisc:ip:tlul
     files:
       - rtl/rom_ctrl_regs_reg_top.sv
-      - rtl/rom_ctrl_rom_reg_top.sv
       - rtl/rom_ctrl.sv
       - rtl/rom_ctrl_compare.sv
       - rtl/rom_ctrl_counter.sv

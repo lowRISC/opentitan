@@ -37,7 +37,7 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
     // We can't just use the mem_bkdr_util randomize_mem function because that doesn't obey the
     // scrambling key. This wouldn't be a problem (the memory is supposed to be random!), except
     // that we also need to pick ECC values that match.
-    for (int i = 0; i < rom_ctrl_reg_pkg::ROM_CTRL_ROM_SIZE / 4; i++) begin
+    for (int i = 0; i < ROM_SIZE_WORDS; i++) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(rnd_data)
       cfg.mem_bkdr_util_h.rom_encrypt_write32_integ(i * 4,
                                                     rnd_data,
@@ -49,7 +49,7 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
 
   // Task to perform `num_ops` fully randomized memory transactions.
   virtual task do_rand_ops(int num_ops, bit read_only = 0);
-    addr_range_t loc_mem_range[$] = cfg.ral_models["rom_ctrl_rom_reg_block"].mem_ranges;
+    addr_range_t loc_mem_range[$] = cfg.ral_models["rom_ctrl_prim_reg_block"].mem_ranges;
 
     bit [TL_DW-1:0] data;
     bit [TL_AW-1:0] addr;
@@ -75,7 +75,7 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
                         .write(write),
                         .blocking(1'b0),
                         .check_rsp(1'b0),
-                        .tl_sequencer_h(p_sequencer.tl_sequencer_hs["rom_ctrl_rom_reg_block"]),
+                        .tl_sequencer_h(p_sequencer.tl_sequencer_hs["rom_ctrl_prim_reg_block"]),
                         .req_abort_pct(do_rom_error_req ? 50 : 0),
                         .tl_access_timeout_ns(cfg.tl_access_timeout_ns));
     end
@@ -99,7 +99,7 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
   // Pull the expected digest value from the top of rom
   virtual function bit [DIGEST_SIZE-1:0] get_expected_digest();
     bit [DIGEST_SIZE-1:0]    digest;
-    bit [rom_ctrl_reg_pkg::RomAw-1:0] dig_addr;
+    bit [`ROM_BYTE_ADDR_WIDTH-1:0] dig_addr;
     // Get the digest from rom
     // The digest is the top 8 words in memory (unscrambled)
     dig_addr = MAX_CHECK_ADDR;

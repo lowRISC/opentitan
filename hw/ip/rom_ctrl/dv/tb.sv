@@ -39,10 +39,18 @@ module tb;
   assign rom_ctrl_if.pwrmgr_data   = pwrmgr_data;
   assign rom_ctrl_if.keymgr_data   = keymgr_data;
 
+  // The exact number of word address bits.
+  // Will be set to 15 for ROM0 and 16 for ROM1.
+`ifndef ROM_BYTE_ADDR_WIDTH
+  `define ROM_BYTE_ADDR_WIDTH 32
+`endif
+
   // dut
   rom_ctrl #(
     .RndCnstScrNonce      (RND_CNST_SCR_NONCE),
-    .RndCnstScrKey        (RND_CNST_SCR_KEY)
+    .RndCnstScrKey        (RND_CNST_SCR_KEY),
+    // ROM size in bytes
+    .MemSizeRom           (ROM_SIZE_BYTES)
    ) dut (
     .clk_i                (clk),
     .rst_ni               (rst_n),
@@ -84,10 +92,10 @@ module tb;
     rom_clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null,
-        "*.env", "clk_rst_vif_rom_ctrl_rom_reg_block", rom_clk_rst_if);
+        "*.env", "clk_rst_vif_rom_ctrl_prim_reg_block", rom_clk_rst_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null,
-        "*.env.m_tl_agent_rom_ctrl_rom_reg_block*", "vif", tl_rom_if);
+        "*.env.m_tl_agent_rom_ctrl_prim_reg_block*", "vif", tl_rom_if);
     uvm_config_db#(virtual tl_if)::set(null,
         "*.env.m_tl_agent_rom_ctrl_regs_reg_block*", "vif", tl_if);
     uvm_config_db#(mem_bkdr_util)::set(null, "*.env", "mem_bkdr_util", m_mem_bkdr_util);

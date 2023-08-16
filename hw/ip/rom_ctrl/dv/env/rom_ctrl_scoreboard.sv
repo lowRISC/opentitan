@@ -100,7 +100,7 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
   // Pull the expected digest value from the top of rom
   virtual function void get_expected_digest();
     bit [DIGEST_SIZE-1:0]    digest;
-    bit [rom_ctrl_reg_pkg::RomAw-1:0] dig_addr;
+    bit [`ROM_BYTE_ADDR_WIDTH-1:0] dig_addr;
     // Get the digest from rom
     // The digest is the top 8 words in memory (unscrambled)
     dig_addr = MAX_CHECK_ADDR;
@@ -179,7 +179,7 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
     bit data_phase_read   = (!write && channel == DataChannel);
     bit data_phase_write  = (write && channel == DataChannel);
 
-    if (ral_name == "rom_ctrl_rom_reg_block") begin
+    if (ral_name == "rom_ctrl_prim_reg_block") begin
       if (channel == DataChannel && !disable_rom_acc_chk) begin
         check_rom_access(item);
       end

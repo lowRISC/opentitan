@@ -74,6 +74,14 @@
       expose:    "true",
       default:   "1'b0"
     }
+    // This parameter is overridden by topgen to set the actual ROM size.
+    // NOTE: This number is replicated in ../util/scramble_image.py: keep the
+    // two in sync.
+    { name:      "MemSizeRom",
+      desc:      "Memory size of the ROM (in bytes).",
+      type:      "int",
+      default:   "0x8000"
+    },
   ]
   alert_list: [
     { name: "fatal"
@@ -312,18 +320,7 @@
     ],
 
     rom: [
-      // ROM size (given as `items` below) must be a power of two.
-      //
-      // NOTE: This number is replicated in ../util/scramble_image.py: keep the
-      // two in sync.
-      { window: {
-          name: "ROM"
-          items: "8192" // 32 KiB
-          swaccess: "ro",
-          data-intg-passthru: "true",
-          desc: '''ROM data'''
-        }
-      }
+      // no CSRs defined here.
     ]
   }
 }

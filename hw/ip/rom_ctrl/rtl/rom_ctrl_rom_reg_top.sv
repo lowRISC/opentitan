@@ -11,11 +11,6 @@ module rom_ctrl_rom_reg_top (
   input rst_ni,
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
-
-  // Output port for window
-  output tlul_pkg::tl_h2d_t tl_win_o,
-  input  tlul_pkg::tl_d2h_t tl_win_i,
-
   // To HW
 
   // Integrity check errors
@@ -28,19 +23,6 @@ module rom_ctrl_rom_reg_top (
   import rom_ctrl_reg_pkg::* ;
 
 
-  // Add an unloaded flop to make use of clock / reset
-  // This is done to specifically address lint complaints of unused clocks/resets
-  // Since the flop is unloaded it will be removed during synthesis
-  logic unused_reg;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      unused_reg <= '0;
-    end else begin
-      unused_reg <= tl_i.a_valid;
-    end
-  end
-
-
 
   // Since there are no registers in this block, commands are routed through to windows which
   // can report their own integrity errors.
@@ -50,14 +32,14 @@ module rom_ctrl_rom_reg_top (
   tlul_pkg::tl_d2h_t tl_o_pre;
   tlul_rsp_intg_gen #(
     .EnableRspIntgGen(1),
-    .EnableDataIntgGen(0)
+    .EnableDataIntgGen(1)
   ) u_rsp_intg_gen (
     .tl_i(tl_o_pre),
     .tl_o(tl_o)
   );
 
-  assign tl_win_o = tl_i;
-  assign tl_o_pre = tl_win_i;
+  assign tl_reg_h2d = tl_i;
+  assign tl_o_pre   = tl_reg_d2h;
 
   // Unused signal tieoff
   // devmode_i is not used if there are no registers
