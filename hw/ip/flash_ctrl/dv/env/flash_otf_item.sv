@@ -231,8 +231,8 @@ class flash_otf_item extends uvm_object;
         if (skip_err_chk == 0 && ecc_err != 0) begin
           `uvm_error("rd_scr", "ecc error is detected")
         end
-        addr++;
       end
+      addr++;
     end
     // collect upto cmd.num_words
     tmp_dq = fq2dq(raw_fq);
