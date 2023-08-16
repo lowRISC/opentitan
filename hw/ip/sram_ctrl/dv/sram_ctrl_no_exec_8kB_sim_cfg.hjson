@@ -2,15 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// sim cfg file for the retention SRAM variant
 {
   // Name of the sim cfg variant
-  variant: ret
+  variant: no_exec_8kB
 
   // Import the base sram_ctrl sim_cfg file
   import_cfgs: ["{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_base_sim_cfg.hjson"]
 
-  // These parameters are used for {top_chip} retention sram
-  build_opts: ["+define+SRAM_WORD_ADDR_WIDTH=10",
+  build_opts: ["+define+SRAM_WORD_ADDR_WIDTH=11",
                "+define+INSTR_EXEC=0"]
 }
