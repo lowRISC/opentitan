@@ -2,7 +2,7 @@
 
 The documentation for OpenTitan is available [online](https://opentitan.org).
 The creation of documentation is mainly based around the conversion from Markdown to HTML files with [mdbook](https://rust-lang.github.io/mdBook/).
-Rules for how to write correct Markdown files can be found in the [reference manual](https://opentitan.org/book/doc/contributing/style_guides/markdown_usage_style.html).
+Rules for how to write correct Markdown files can be found in the [reference manual](../contributing/style_guides/markdown_usage_style.md).
 
 ## Building locally
 

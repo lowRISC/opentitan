@@ -4,11 +4,11 @@ _Before following this guide, make sure you've followed the [dependency installa
 
 This document aims to enable a contributor to get started with a design verification (DV) effort within the OpenTitan project.
 While most of the focus is on development of a testbench from scratch, it should also be useful to understand how to contribute to an existing effort.
-Please refer to the [DV methodology](https://opentitan.org/book/doc/contributing/dv/methodology) document for information on how design verification is done in OpenTitan.
+Please refer to the [DV methodology](../contributing/dv/methodology/README.md) document for information on how design verification is done in OpenTitan.
 
 ## Stages of DV
 
-The life stages of a design / DV effort within the OpenTitan are described in the [Hardware Development Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) document.
+The life stages of a design / DV effort within the OpenTitan are described in the [Hardware Development Stages](../project_governance/development_stages.md) document.
 It separates the life of DV into three broad stages: Initial Work, Under Test and Testing Complete.
 This document attempts to give guidance on how to get going with the first stage and have a smooth transition into the Under Test stage.
 They are not hard and fast rules but methods we have seen work well in the project.
@@ -17,9 +17,9 @@ The design specification, once available, is used as a starting point.
 
 ## Getting Started
 
-The very first thing to do in any DV effort is to [document the plan](https://opentitan.org/book/doc/contributing/dv/methodology#documentation) detailing the overall effort.
+The very first thing to do in any DV effort is to [document the plan](../contributing/dv/methodology/README.md#documentation) detailing the overall effort.
 This is done in conjunction with developing the initial testbench.
-It is recommended to use the [uvmdvgen](https://opentitan.org/book/util/uvmdvgen) tool, which serves both needs.
+It is recommended to use the [uvmdvgen](../../util/uvmdvgen/README.md) tool, which serves both needs.
 
 The `uvmdvgen` tool provides the ability to generate the outputs in a specific directory.
 This should be set to the root of the DUT directory where the `rtl` directory exists.
@@ -31,20 +31,20 @@ One of these for example, is to create appropriate interfaces for the DUT-specif
 
 ## Documentation and Initial Review
 
-The skeleton [DV document](https://opentitan.org/book/doc/contributing/dv/methodology#dv-document) and the [Hjson testplan](https://opentitan.org/book/doc/contributing/dv/methodology#testplan) should be addressed first.
+The skeleton [DV document](../contributing/dv/methodology/README.md#dv-document) and the [Hjson testplan](../contributing/dv/methodology/README.md#testplan) should be addressed first.
 The DV documentation is not expected to be completed in full detail at this point.
 However, it is expected to list all the verification components needed and depict the planned testbench as a block diagram.
 Under the 'design verification' directory in the OpenTitan team drive, some sample testbench block diagrams are available in the `.svg` format, which can be used as a template.
 The Hjson testplan, on the other hand, is required to be completed.
-Please refer to the [testplanner tool](https://opentitan.org/book/util/dvsim/doc/testplanner.html) documentation for additional details on how to write the Hjson testplan.
+Please refer to the [testplanner tool](../../util/dvsim/doc/testplanner.md) documentation for additional details on how to write the Hjson testplan.
 Once done, these documents are to be reviewed with the designer(s) and other project members for completeness and clarity.
 
 ## UVM RAL Model
 
-Before running any test, the [UVM RAL model](https://opentitan.org/book/doc/contributing/dv/methodology#uvm-register-abstraction-layer-ral-model) needs to exist (if the design contains CSRs).
-The [DV simulation flow](https://opentitan.org/book/util/dvsim) has been updated to generate the RAL model automatically at the start of the simulation.
+Before running any test, the [UVM RAL model](../contributing/dv/methodology/README.md#uvm-register-abstraction-layer-ral-model) needs to exist (if the design contains CSRs).
+The [DV simulation flow](../../util/dvsim/README.md) has been updated to generate the RAL model automatically at the start of the simulation.
 As such, nothing extra needs to be done.
-It can be created manually by invoking [`regtool`](https://opentitan.org/book/util/reggen/doc/setup_and_use.html):
+It can be created manually by invoking [`regtool`](../../util/reggen/doc/setup_and_use.md):
 ```console
 $ util/regtool.py -s -t /path-to-dv /path-to-module/data/<dut>.hjson
 ```
@@ -54,7 +54,7 @@ The generated file is placed in the simulation build scratch area instead of bei
 ## Supported Simulators
 
 The use of advanced verification constructs such as SystemVerilog classes (on which UVM is based on) requires commercial simulators.
-The [DV simulation flow](https://opentitan.org/book/util/dvsim) fully supports Synopsys VCS.
+The [DV simulation flow](../../util/dvsim/README.md) fully supports Synopsys VCS.
 There is support for Cadence Xcelium as well, which is being slowly ramped up.
 
 ## Building and Running Tests
@@ -74,19 +74,19 @@ VCS is used as the default simulator. It can be switched to Xcelium by setting `
 To dump waves from the simulation, pass the `--waves <format>` argument to `dvsim.py`.
 If you are using Verdi for waveform viewing, then '--waves fsdb' is probably the best option. For use with other viewers, '--waves shm' is probably the best choice for Xcelium, and '--waves vpd' with vcs.
 
-Please refer to the [DV simulation flow](https://opentitan.org/book/util/dvsim) for additional details.
+Please refer to the [DV simulation flow](../../util/dvsim/README.md) for additional details.
 
 The `uvmdvgen` script also enables the user to run the full suite of CSR tests, if the DUT does have CSRs in it.
 The most basic CSR power-on-reset check test can be run by invoking:
 ```console
 $ util/dvsim/dvsim.py path/to/<dut>_sim_cfg.hjson -i <dut>_csr_hw_reset [--waves <format>] [--tool xcelium]
 ```
-Please refer to [CSR utilities](https://opentitan.org/book/hw/dv/sv/csr_utils) for more information on how to add exclusions for the CSR tests.
+Please refer to [CSR utilities](../../hw/dv/sv/csr_utils/README.md) for more information on how to add exclusions for the CSR tests.
 
 ## Full DV
 
-Running the sanity and CSR suite of tests while making progress toward reaching the [V1 stage](https://opentitan.org/book/doc/project_governance/development_stages.html#hardware-verification-stages-v) should provide a good reference in terms of how to develop tests as outlined in the testplan and running and debugging them.
-Please refer to the [checklist](https://opentitan.org/book/doc/project_governance/checklist) to understand the key requirements for progressing through the subsequent verification stages and final signoff.
+Running the sanity and CSR suite of tests while making progress toward reaching the [V1 stage](../project_governance/development_stages.md#hardware-verification-stages-v) should provide a good reference in terms of how to develop tests as outlined in the testplan and running and debugging them.
+Please refer to the [checklist](../project_governance/checklist) to understand the key requirements for progressing through the subsequent verification stages and final signoff.
 
 The [UART DV](https://github.com/lowRISC/opentitan/tree/master/hw/ip/uart/dv) area can be used as a canonical example for making progress.
 If it is not clear on how to proceed, feel free to file an issue requesting assistance.
