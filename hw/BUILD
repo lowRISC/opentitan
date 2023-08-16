@@ -111,8 +111,10 @@ filegroup(
         # TODO(lowRISC/opentitan#15882): make Verilator work with foundry repo present.
         exclude = ["foundry/**"],
     ) + [
+        "//:tool_requirements.py",
         "//hw/ip:all_files",
         "//hw/top_earlgrey:all_files",
+        "//util:check_tool_requirements.py",
     ],
     visibility = ["//visibility:public"],
 )

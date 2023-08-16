@@ -7,6 +7,7 @@ package(default_visibility = ["//visibility:public"])
 exports_files([
     "WORKSPACE",
     "python-requirements.txt",
+    "tool_requirements.py",
 ])
 
 filegroup(
