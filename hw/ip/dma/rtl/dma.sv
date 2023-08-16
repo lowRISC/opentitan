@@ -150,6 +150,8 @@ module dma
   );
 
   logic reg_intg_error;
+  // SEC_CM: BUS.INTEGRITY
+  // SEC_CM: RANGE_UNLOCK.CONFIG.REGWEN
   dma_reg_top u_dma_reg (
     .clk_i     ( clk_i          ),
     .rst_ni    ( rst_ni         ),
@@ -157,7 +159,6 @@ module dma
     .tl_o      ( tl_dev_o       ),
     .reg2hw    ( reg2hw         ),
     .hw2reg    ( hw2reg         ),
-    // SEC_CM: BUS.INTEGRITY
     .intg_err_o( reg_intg_error ),
     .devmode_i ( 1'b1           )
   );
@@ -509,6 +510,7 @@ module dma
         end
 
         // Ensure that ASIDs have valid values
+        // SEC_CM: ASID.INTERSIG.MUBI
         if (!(reg2hw.address_space_id.source_asid.q inside {OtInternalAddr,
                                                             SocControlAddr,
                                                             SocSystemAddr,
