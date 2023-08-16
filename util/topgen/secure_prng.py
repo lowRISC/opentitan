@@ -92,7 +92,7 @@ class secure_prng():
         # Checks if the PRNG was instantitated before first use.
         if not self.reseed_counter:
             log.error("Seed must be provided before requesting output. " +
-                      "Use strong_random.reseed()")
+                      "Use secure_prng.reseed()")
             sys.exit(1)
 
         # Checks that the requested number of bits is allowed.
