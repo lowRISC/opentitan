@@ -73,7 +73,13 @@ package keymgr_pkg;
   };
 
   // Width calculations
-  // These are the largest calculations in use across all stages
+  // These are the largest calculations in use across all stages\
+  // TODO(opentitan-integrated/issues/251):
+  // Replace below code with commented code once SW and DV model can handle multiple
+  // ROM_CTRL digests.
+  // parameter int AdvDataWidth = SwBindingWidth + KeyWidth +
+  //                              keymgr_reg_pkg::NumRomDigestInputs*KeyWidth +
+  //                              DevIdWidth + HealthStateWidth;
   parameter int AdvDataWidth = SwBindingWidth + 3*KeyWidth + DevIdWidth + HealthStateWidth;
   parameter int IdDataWidth = KeyWidth;
   // key version + salt + key ID + constant

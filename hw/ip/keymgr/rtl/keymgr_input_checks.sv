@@ -11,7 +11,7 @@
 module keymgr_input_checks import keymgr_pkg::*; #(
   parameter bit KmacEnMasking = 1'b1
 ) (
-  input rom_ctrl_pkg::keymgr_data_t rom_digest_i,
+  input rom_ctrl_pkg::keymgr_data_t [keymgr_reg_pkg::NumRomDigestInputs-1:0] rom_digest_i,
   input [2**StageWidth-1:0][31:0] max_key_versions_i,
   input keymgr_stage_e stage_sel_i,
   input hw_key_req_t key_i,
@@ -97,9 +97,19 @@ module keymgr_input_checks import keymgr_pkg::*; #(
 
   assign key_vld_o = &key_chk;
 
-  // rom digest check
-  assign rom_digest_vld_o = rom_digest_i.valid &
-                            valid_chk(MaxWidth'(rom_digest_i.data));
+  // check all ROM digest inputs
+  logic unused_rom_digest;
+  always_comb begin
+    rom_digest_vld_o = 1'b1;
+    // TODO(opentitan-integrated/issues/251):
+    // replace below code with commented code once SW and DV model can handle multiple
+    // ROM_CTRL digests.
+    //  for (int k = 0; k < NumRomDigestInputs; k++) begin
+    for (int k = 0; k < 1; k++) begin
+      rom_digest_vld_o &= rom_digest_i[k].valid && valid_chk(MaxWidth'(rom_digest_i[k].data));
+    end
+    unused_rom_digest = ^rom_digest_i[1];
+  end
 
   // checks for all 0's or all 1's of value
   function automatic logic valid_chk (logic [MaxWidth-1:0] value);

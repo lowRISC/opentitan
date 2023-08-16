@@ -11,6 +11,7 @@ package keymgr_reg_pkg;
   parameter int NumSwBindingReg = 8;
   parameter int NumOutReg = 8;
   parameter int NumKeyVersion = 1;
+  parameter int NumRomDigestInputs = 2;
   parameter int NumAlerts = 2;
 
   // Address widths within the block

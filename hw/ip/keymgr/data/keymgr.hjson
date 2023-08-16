@@ -125,6 +125,8 @@
       name:    "rom_digest"
       act:     "rcv"
       package: "rom_ctrl_pkg"
+      width:   "2"
+      default: "rom_ctrl_pkg::KEYMGR_DATA_DEFAULT"
     },
     { struct:  "logic"
       type:    "uni"
@@ -258,6 +260,12 @@
       desc: "Number of Registers for key version",
       type: "int",
       default: "1",
+      local: "true"
+    },
+    { name: "NumRomDigestInputs",
+      desc: "Number of digest inputs from ROM_CTRL",
+      type: "int",
+      default: "2",
       local: "true"
     },
   ],

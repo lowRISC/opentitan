@@ -66,7 +66,7 @@ module keymgr
   input edn_pkg::edn_rsp_t edn_i,
 
   // connection to rom_ctrl
-  input rom_ctrl_pkg::keymgr_data_t rom_digest_i,
+  input rom_ctrl_pkg::keymgr_data_t [NumRomDigestInputs-1:0] rom_digest_i,
 
   // interrupts and alerts
   output logic intr_op_done_o,
@@ -407,11 +407,27 @@ module keymgr
   // The values coming from otp_ctrl / lc_ctrl are treat as quasi-static for CDC purposes
   logic [KeyWidth-1:0] creator_seed;
   assign creator_seed = flash_i.seeds[flash_ctrl_pkg::CreatorSeedIdx];
+  // TODO(opentitan-integrated/issues/251):
+  // replace below code with commented code once SW and DV model can handle multiple
+  // // ROM_CTRL digests.
+  // logic [KeyWidth*NumRomDigestInputs-1:0] rom_digests;
+  // always_comb begin
+  //   rom_digests = '0;
+  //   for (int k = 0; k < NumRomDigestInputs; k++) begin
+  //     rom_digests[KeyWidth*k +: KeyWidth] = rom_digest_i[k].data;
+  //   end
+  // end
+  // assign adv_matrix[Creator] = AdvDataWidth'({sw_binding,
+  //                                             revision_seed,
+  //                                             otp_device_id_i,
+  //                                             lc_keymgr_div_i,
+  //                                             rom_digests,
+  //                                             creator_seed});
   assign adv_matrix[Creator] = AdvDataWidth'({sw_binding,
                                               revision_seed,
                                               otp_device_id_i,
                                               lc_keymgr_div_i,
-                                              rom_digest_i.data,
+                                              rom_digest_i[0].data,
                                               creator_seed});
 
   assign adv_dvalid[Creator] = creator_seed_vld &

@@ -57,7 +57,9 @@ module tb;
     .lc_keymgr_div_i      (keymgr_if.keymgr_div),
     .otp_key_i            (keymgr_if.otp_key),
     .otp_device_id_i      (keymgr_if.otp_device_id),
-    .rom_digest_i         (keymgr_if.rom_digest),
+    // TODO(opentitan-integrated/issues/251):
+    // Model NumRomDigestInputs
+    .rom_digest_i         ({rom_ctrl_pkg::KEYMGR_DATA_DEFAULT, keymgr_if.rom_digest}),
     .edn_o                (edn_if[0].req),
     .edn_i                ({edn_if[0].ack, edn_if[0].d_data}),
     .flash_i              (keymgr_if.flash),

@@ -6497,10 +6497,12 @@
           package: rom_ctrl_pkg
           type: uni
           act: rcv
-          width: 1
+          width: 2
+          default: rom_ctrl_pkg::KEYMGR_DATA_DEFAULT
           inst_name: keymgr
-          default: ""
-          top_signame: rom_ctrl_keymgr_data
+          end_idx: 1
+          top_type: partial-one-to-N
+          top_signame: keymgr_rom_digest
           index: -1
         }
         {
@@ -7342,10 +7344,8 @@
           width: 1
           inst_name: rom_ctrl
           default: ""
-          end_idx: -1
-          top_type: broadcast
-          top_signame: rom_ctrl_keymgr_data
-          index: -1
+          top_signame: keymgr_rom_digest
+          index: 0
         }
         {
           name: kmac_data
@@ -8177,9 +8177,9 @@
       [
         pwrmgr_aon.rom_ctrl
       ]
-      rom_ctrl.keymgr_data:
+      keymgr.rom_digest:
       [
-        keymgr.rom_digest
+        rom_ctrl.keymgr_data
       ]
       lc_ctrl.lc_flash_rma_req:
       [
@@ -18752,10 +18752,12 @@
         package: rom_ctrl_pkg
         type: uni
         act: rcv
-        width: 1
+        width: 2
+        default: rom_ctrl_pkg::KEYMGR_DATA_DEFAULT
         inst_name: keymgr
-        default: ""
-        top_signame: rom_ctrl_keymgr_data
+        end_idx: 1
+        top_type: partial-one-to-N
+        top_signame: keymgr_rom_digest
         index: -1
       }
       {
@@ -19192,10 +19194,8 @@
         width: 1
         inst_name: rom_ctrl
         default: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: rom_ctrl_keymgr_data
-        index: -1
+        top_signame: keymgr_rom_digest
+        index: 0
       }
       {
         name: kmac_data
@@ -21296,11 +21296,11 @@
       {
         package: rom_ctrl_pkg
         struct: keymgr_data
-        signame: rom_ctrl_keymgr_data
-        width: 1
+        signame: keymgr_rom_digest
+        width: 2
         type: uni
-        end_idx: -1
-        act: req
+        end_idx: 1
+        act: rcv
         suffix: ""
         default: rom_ctrl_pkg::KEYMGR_DATA_DEFAULT
       }

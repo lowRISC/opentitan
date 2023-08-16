@@ -962,7 +962,7 @@
                                    'aon_timer_aon.sleep_mode'],
       'pwrmgr_aon.fetch_en'     : ['rv_core_ibex.pwrmgr_cpu_en'],
       'rom_ctrl.pwrmgr_data'    : ['pwrmgr_aon.rom_ctrl'],
-      'rom_ctrl.keymgr_data'    : ['keymgr.rom_digest'],
+      'keymgr.rom_digest'       : ['rom_ctrl.keymgr_data'],
       'flash_ctrl.keymgr'       : ['keymgr.flash'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
 
