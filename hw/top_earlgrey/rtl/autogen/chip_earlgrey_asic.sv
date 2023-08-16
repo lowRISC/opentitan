@@ -765,7 +765,7 @@ module chip_earlgrey_asic #(
 
   // DFT connections
   logic scan_en;
-  lc_ctrl_pkg::lc_tx_t dft_en;
+  lc_ctrl_pkg::lc_tx_t lc_dft_en;
   pinmux_pkg::dft_strap_test_req_t dft_strap_test;
 
   // Debug connections
@@ -968,7 +968,7 @@ module chip_earlgrey_asic #(
     .alert_req_o           ( ast_alert_req  ),
     // dft
     .dft_strap_test_i      ( dft_strap_test   ),
-    .lc_dft_en_i           ( dft_en           ),
+    .lc_dft_en_i           ( lc_dft_en        ),
     .fla_obs_i             ( fla_obs ),
     .otp_obs_i             ( otp_obs ),
     .otm_obs_i             ( '0 ),
@@ -1175,7 +1175,7 @@ module chip_earlgrey_asic #(
     .rom_cfg_i                    ( rom_cfg                    ),
 
     // DFT signals
-    .ast_lc_dft_en_o              ( dft_en                     ),
+    .ast_lc_dft_en_o              ( lc_dft_en                  ),
     .dft_strap_test_o             ( dft_strap_test             ),
     .dft_hold_tap_sel_i           ( '0                         ),
     .scan_rst_ni                  ( scan_rst_n                 ),

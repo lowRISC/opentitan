@@ -709,7 +709,7 @@ module chip_earlgrey_cw310 #(
 
   // DFT connections
   logic scan_en;
-  lc_ctrl_pkg::lc_tx_t dft_en;
+  lc_ctrl_pkg::lc_tx_t lc_dft_en;
   pinmux_pkg::dft_strap_test_req_t dft_strap_test;
 
   // Debug connections
@@ -929,7 +929,7 @@ module chip_earlgrey_cw310 #(
     .alert_req_o           ( ast_alert_req  ),
     // dft
     .dft_strap_test_i      ( dft_strap_test   ),
-    .lc_dft_en_i           ( dft_en           ),
+    .lc_dft_en_i           ( lc_dft_en        ),
     .fla_obs_i             ( fla_obs ),
     .otp_obs_i             ( otp_obs ),
     .otm_obs_i             ( '0 ),
@@ -1064,18 +1064,20 @@ module chip_earlgrey_cw310 #(
     .ast_init_done_i              ( ast_init_done              ),
 
     // Multiplexed I/O
-    .mio_in_i        ( mio_in   ),
-    .mio_out_o       ( mio_out  ),
-    .mio_oe_o        ( mio_oe   ),
+    .mio_in_i                     ( mio_in                     ),
+    .mio_out_o                    ( mio_out                    ),
+    .mio_oe_o                     ( mio_oe                     ),
 
     // Dedicated I/O
-    .dio_in_i        ( dio_in   ),
-    .dio_out_o       ( dio_out  ),
-    .dio_oe_o        ( dio_oe   ),
+    .dio_in_i                     ( dio_in                     ),
+    .dio_out_o                    ( dio_out                    ),
+    .dio_oe_o                     ( dio_oe                     ),
 
     // Pad attributes
-    .mio_attr_o      ( mio_attr      ),
-    .dio_attr_o      ( dio_attr      ),
+    .mio_attr_o                   ( mio_attr                   ),
+    .dio_attr_o                   ( dio_attr                   ),
+
+
 
     // Memory attributes
     .ram_1p_cfg_i    ( '0 ),
@@ -1083,6 +1085,8 @@ module chip_earlgrey_cw310 #(
     .usb_ram_2p_cfg_i( '0 ),
     .rom_cfg_i       ( '0 ),
 
+     // DFT signals
+    .ast_lc_dft_en_o      ( lc_dft_en                  ),
     // DFT signals
     .dft_hold_tap_sel_i ( '0               ),
     .scan_rst_ni        ( 1'b1             ),

@@ -1653,7 +1653,9 @@
           width: 1
           inst_name: lc_ctrl
           default: ""
-          top_signame: pinmux_aon_lc_jtag
+          external: true
+          top_signame: lc_jtag
+          conn_type: false
           index: -1
         }
         {
@@ -2855,6 +2857,8 @@
           top_type: broadcast
           top_signame: pwrmgr_aon_strap
           index: -1
+          external: true
+          conn_type: true
         }
         {
           name: low_power
@@ -3727,7 +3731,7 @@
       param_decl:
       {
         UsbWkupModuleEn: "1"
-        HwStrapSamplingEn: "1"
+        HwStrapSamplingEn: "0"
         SecVolatileRawUnlockEn: top_pkg::SecVolatileRawUnlockEn
       }
       clock_connections:
@@ -3750,7 +3754,7 @@
           name: HwStrapSamplingEn
           desc: Set to 1 to instantiate the HW strap sampling and TAP selection submodule wake submodule.
           type: bit
-          default: "1"
+          default: "0"
           expose: "true"
           name_top: PinmuxAonHwStrapSamplingEn
         }
@@ -3858,9 +3862,6 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: pinmux_aon
-          end_idx: -1
-          top_type: broadcast
-          top_signame: pinmux_aon_pinmux_hw_debug_en
           index: -1
         }
         {
@@ -3872,9 +3873,6 @@
           act: req
           width: 1
           inst_name: pinmux_aon
-          default: ""
-          end_idx: -1
-          top_signame: pinmux_aon_lc_jtag
           index: -1
         }
         {
@@ -3886,9 +3884,6 @@
           act: req
           width: 1
           inst_name: pinmux_aon
-          default: ""
-          end_idx: -1
-          top_signame: pinmux_aon_rv_jtag
           index: -1
         }
         {
@@ -3900,8 +3895,6 @@
           act: req
           width: 1
           inst_name: pinmux_aon
-          default: ""
-          top_signame: pinmux_aon_dft_jtag
           index: -1
         }
         {
@@ -5189,7 +5182,9 @@
           width: 1
           inst_name: rv_dm
           default: ""
-          top_signame: pinmux_aon_rv_jtag
+          external: true
+          top_signame: rv_jtag
+          conn_type: false
           index: -1
         }
         {
@@ -5225,7 +5220,9 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: rv_dm
-          top_signame: pinmux_aon_pinmux_hw_debug_en
+          external: true
+          top_signame: rv_pinmux_hw_debug_en
+          conn_type: false
           index: -1
         }
         {
@@ -7970,6 +7967,20 @@
           conn_type: true
         }
         {
+          struct: lc_tx
+          type: uni
+          name: lc_hw_debug_en
+          act: req
+          package: lc_ctrl_pkg
+          inst_name: ast
+          width: 1
+          default: ""
+          top_signame: lc_ctrl_lc_hw_debug_en
+          index: -1
+          external: true
+          conn_type: true
+        }
+        {
           struct: ram_1p_cfg
           package: prim_ram_1p_pkg
           type: uni
@@ -8266,18 +8277,6 @@
         kmac.idle
         otbn.idle
       ]
-      pinmux_aon.lc_jtag:
-      [
-        lc_ctrl.jtag
-      ]
-      pinmux_aon.rv_jtag:
-      [
-        rv_dm.jtag
-      ]
-      pinmux_aon.pinmux_hw_debug_en:
-      [
-        rv_dm.pinmux_hw_debug_en
-      ]
       otp_ctrl.otp_lc_data:
       [
         lc_ctrl.otp_lc_data
@@ -8313,6 +8312,7 @@
       [
         sram_ctrl_main.lc_hw_debug_en
         pinmux_aon.lc_hw_debug_en
+        ast.lc_hw_debug_en
         csrng.lc_hw_debug_en
         rv_dm.lc_hw_debug_en
         clkmgr_aon.lc_hw_debug_en
@@ -8641,7 +8641,6 @@
       rv_core_ibex.irq_timer
       rv_core_ibex.hart_id
       rv_core_ibex.boot_addr
-      pinmux_aon.dft_jtag
       otp_ctrl.otp_hw_cfg
       csrng.otp_en_csrng_sw_app_read
       entropy_src.otp_en_entropy_src_fw_read
@@ -8656,6 +8655,7 @@
       adc_ctrl_aon.adc: adc
       ast.edn: ""
       ast.lc_dft_en: ""
+      ast.lc_hw_debug_en: ""
       ast.obs_ctrl: obs_ctrl
       ast.ram_1p_cfg: ram_1p_cfg
       ast.spi_ram_2p_cfg: spi_ram_2p_cfg
@@ -8677,6 +8677,10 @@
       flash_ctrl.fla_obs: flash_obs
       entropy_src.entropy_src_rng: es_rng
       entropy_src.rng_fips: es_rng_fips
+      lc_ctrl.jtag: lc_jtag
+      pwrmgr_aon.strap: pwrmgr_strap_en
+      rv_dm.jtag: rv_jtag
+      rv_dm.pinmux_hw_debug_en: rv_pinmux_hw_debug_en
       peri.tl_ast: ast_tl
       pinmux_aon.dft_strap_test: dft_strap_test
       pinmux_aon.dft_hold_tap_sel: dft_hold_tap_sel
@@ -15764,7 +15768,9 @@
         width: 1
         inst_name: lc_ctrl
         default: ""
-        top_signame: pinmux_aon_lc_jtag
+        external: true
+        top_signame: lc_jtag
+        conn_type: false
         index: -1
       }
       {
@@ -16704,6 +16710,8 @@
         top_type: broadcast
         top_signame: pwrmgr_aon_strap
         index: -1
+        external: true
+        conn_type: true
       }
       {
         name: low_power
@@ -17288,9 +17296,6 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: pinmux_aon
-        end_idx: -1
-        top_type: broadcast
-        top_signame: pinmux_aon_pinmux_hw_debug_en
         index: -1
       }
       {
@@ -17302,9 +17307,6 @@
         act: req
         width: 1
         inst_name: pinmux_aon
-        default: ""
-        end_idx: -1
-        top_signame: pinmux_aon_lc_jtag
         index: -1
       }
       {
@@ -17316,9 +17318,6 @@
         act: req
         width: 1
         inst_name: pinmux_aon
-        default: ""
-        end_idx: -1
-        top_signame: pinmux_aon_rv_jtag
         index: -1
       }
       {
@@ -17330,8 +17329,6 @@
         act: req
         width: 1
         inst_name: pinmux_aon
-        default: ""
-        top_signame: pinmux_aon_dft_jtag
         index: -1
       }
       {
@@ -18129,7 +18126,9 @@
         width: 1
         inst_name: rv_dm
         default: ""
-        top_signame: pinmux_aon_rv_jtag
+        external: true
+        top_signame: rv_jtag
+        conn_type: false
         index: -1
       }
       {
@@ -18165,7 +18164,9 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: rv_dm
-        top_signame: pinmux_aon_pinmux_hw_debug_en
+        external: true
+        top_signame: rv_pinmux_hw_debug_en
+        conn_type: false
         index: -1
       }
       {
@@ -20179,6 +20180,20 @@
         conn_type: true
       }
       {
+        struct: lc_tx
+        type: uni
+        name: lc_hw_debug_en
+        act: req
+        package: lc_ctrl_pkg
+        inst_name: ast
+        width: 1
+        default: ""
+        top_signame: lc_ctrl_lc_hw_debug_en
+        index: -1
+        external: true
+        conn_type: true
+      }
+      {
         struct: ram_1p_cfg
         package: prim_ram_1p_pkg
         type: uni
@@ -20320,6 +20335,18 @@
         conn_type: true
         index: -1
         netname: lc_ctrl_lc_dft_en
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: ast_lc_hw_debug_en_o
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: true
+        index: -1
+        netname: lc_ctrl_lc_hw_debug_en
       }
       {
         package: ast_pkg
@@ -20584,6 +20611,78 @@
         conn_type: false
         index: -1
         netname: es_rng_fips
+      }
+      {
+        package: jtag_pkg
+        struct: jtag_req
+        signame: lc_jtag_req_i
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: lc_jtag_req
+      }
+      {
+        package: jtag_pkg
+        struct: jtag_rsp
+        signame: lc_jtag_rsp_o
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: lc_jtag_rsp
+      }
+      {
+        package: ""
+        struct: logic
+        signame: pwrmgr_strap_en_o
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: true
+        index: -1
+        netname: pwrmgr_aon_strap
+      }
+      {
+        package: jtag_pkg
+        struct: jtag_req
+        signame: rv_jtag_req_i
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: rv_jtag_req
+      }
+      {
+        package: jtag_pkg
+        struct: jtag_rsp
+        signame: rv_jtag_rsp_o
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: rv_jtag_rsp
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: rv_pinmux_hw_debug_en_i
+        width: 1
+        type: uni
+        default: lc_ctrl_pkg::Off
+        direction: in
+        conn_type: false
+        index: -1
+        netname: rv_pinmux_hw_debug_en
       }
       {
         package: tlul_pkg
@@ -21560,61 +21659,6 @@
         act: rcv
         suffix: ""
         default: prim_mubi_pkg::MUBI4_DEFAULT
-      }
-      {
-        package: jtag_pkg
-        struct: jtag_req
-        signame: pinmux_aon_lc_jtag_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: req
-        suffix: req
-        default: ""
-      }
-      {
-        package: jtag_pkg
-        struct: jtag_rsp
-        signame: pinmux_aon_lc_jtag_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: req
-        suffix: rsp
-        default: jtag_pkg::JTAG_RSP_DEFAULT
-      }
-      {
-        package: jtag_pkg
-        struct: jtag_req
-        signame: pinmux_aon_rv_jtag_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: req
-        suffix: req
-        default: ""
-      }
-      {
-        package: jtag_pkg
-        struct: jtag_rsp
-        signame: pinmux_aon_rv_jtag_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: req
-        suffix: rsp
-        default: jtag_pkg::JTAG_RSP_DEFAULT
-      }
-      {
-        package: lc_ctrl_pkg
-        struct: lc_tx
-        signame: pinmux_aon_pinmux_hw_debug_en
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: lc_ctrl_pkg::Off
       }
       {
         package: otp_ctrl_pkg
@@ -23194,24 +23238,6 @@
         signame: rv_core_ibex_boot_addr
         width: 32
         type: uni
-        end_idx: -1
-        default: ""
-      }
-      {
-        package: jtag_pkg
-        struct: jtag_req
-        signame: pinmux_aon_dft_jtag_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        default: ""
-      }
-      {
-        package: jtag_pkg
-        struct: jtag_rsp
-        signame: pinmux_aon_dft_jtag_rsp
-        width: 1
-        type: req_rsp
         end_idx: -1
         default: ""
       }

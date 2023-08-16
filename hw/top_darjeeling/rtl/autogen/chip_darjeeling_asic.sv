@@ -765,7 +765,7 @@ module chip_darjeeling_asic #(
 
   // DFT connections
   logic scan_en;
-  lc_ctrl_pkg::lc_tx_t dft_en;
+  lc_ctrl_pkg::lc_tx_t lc_dft_en;
   pinmux_pkg::dft_strap_test_req_t dft_strap_test;
 
   // Debug connections
@@ -968,7 +968,7 @@ module chip_darjeeling_asic #(
     .alert_req_o           ( ast_alert_req  ),
     // dft
     .dft_strap_test_i      ( dft_strap_test   ),
-    .lc_dft_en_i           ( dft_en           ),
+    .lc_dft_en_i           ( lc_dft_en        ),
     .fla_obs_i             ( fla_obs ),
     .otp_obs_i             ( otp_obs ),
     .otm_obs_i             ( '0 ),
@@ -996,6 +996,73 @@ module chip_darjeeling_asic #(
   );
 
 
+  //////////////////
+  // TAP Instance //
+  //////////////////
+
+  jtag_pkg::jtag_req_t lc_jtag_req;
+  jtag_pkg::jtag_rsp_t lc_jtag_rsp;
+  jtag_pkg::jtag_req_t rv_jtag_req;
+  jtag_pkg::jtag_rsp_t rv_jtag_rsp;
+
+  // TODO: remove this once unified TAP is available.
+  // Until we have a full test harness for the FPGA, we should
+  // probably map the JTAG signals to dedicated locations so that
+  // no such strap sampling hack is needed.
+  // Important things to note:
+  // - the unified TAP clock and reset should be the same as the RV_DM so that it does not get
+  //   reset during NDM reset.
+  // - the pwrmgr_strap_en signal can be removed.
+  // - the lc_gating for the RV_DM on the pinmux side should move into rv_dm.
+  pad_attr_t [pinmux_reg_pkg::NMioPads-1:0] mio_attr_coreside;
+  pad_attr_t [pinmux_reg_pkg::NDioPads-1:0] dio_attr_coreside;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_out_coreside;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe_coreside;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_coreside;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_out_coreside;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe_coreside;
+  logic [pinmux_reg_pkg::NDioPads-1:0] dio_in_coreside;
+  logic pwrmgr_strap_en;
+  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en;
+  pinmux_strap_sampling #(
+    .TargetCfg(PinmuxTargetCfg)
+  ) u_pinmux_strap_sampling_dummy (
+    .clk_i               (clkmgr_aon_clocks.clk_io_div4_powerup),
+    // Inside the pinmux, the strap sampling module is the only module using SYS_RST. The reason for
+    // that is that SYS_RST reset will not be asserted during a NDM reset from the RV_DM and hence
+    // it retains some of the TAP selection state during an active debug session where NDM reset
+    // is triggered. To that end, the strap sampling module latches the lc_hw_debug_en_i signal
+    // whenever pwrmgr_strap_en_i is asserted. Note that this does not affect the DFT TAP selection, since
+    // we always consume the live lc_dft_en_i signal.
+    .rst_ni              (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]),
+    .scanmode_i          (scanmode),
+    .out_padring_o       ({dio_out,  mio_out} ),
+    .oe_padring_o        ({dio_oe ,  mio_oe } ),
+    .in_padring_i        ({dio_in ,  mio_in } ),
+    .attr_padring_o      ({dio_attr, mio_attr}),
+    .out_core_i          ({dio_out_coreside,  mio_out_coreside} ),
+    .oe_core_i           ({dio_oe_coreside,   mio_oe_coreside}  ),
+    .in_core_o           ({dio_in_coreside,   mio_in_coreside}  ),
+    .attr_core_i         ({dio_attr_coreside, mio_attr_coreside}),
+    // This signal can be removed from the top
+    .strap_en_i          (pwrmgr_strap_en),
+    .lc_dft_en_i         (lc_dft_en),
+    .lc_hw_debug_en_i    (lc_hw_debug_en),
+    // Disable extra controls that are needed in the NDM reset case.
+    // This will be handled differently for integrated since we're going to move the
+    // gating into RV_DM.
+    .lc_check_byp_en_i   (lc_ctrl_pkg::Off),
+    .lc_escalate_en_i    (lc_ctrl_pkg::Off),
+    .pinmux_hw_debug_en_o(),
+    .dft_strap_test_o    (),
+    .dft_hold_tap_sel_i  (1'b0),
+    .lc_jtag_o           (lc_jtag_req),
+    .lc_jtag_i           (lc_jtag_rsp),
+    .rv_jtag_o           (rv_jtag_req),
+    .rv_jtag_i           (rv_jtag_rsp),
+    .dft_jtag_o          (),
+    .dft_jtag_i          (jtag_pkg::JTAG_RSP_DEFAULT)
+  );
 
 
   //////////////////////////////////
@@ -1153,19 +1220,32 @@ module chip_darjeeling_asic #(
     // OTP external voltage
     .otp_ext_voltage_h_io         ( OTP_EXT_VOLT               ),
 
+    // JTAG for lc_ctrl
+    .lc_jtag_req_i                ( lc_jtag_req                ),
+    .lc_jtag_rsp_o                ( lc_jtag_rsp                ),
+
+    // JTAG for RV_DM
+    .rv_jtag_req_i                ( rv_jtag_req                ),
+    .rv_jtag_rsp_o                ( rv_jtag_rsp                ),
+
+    // Pinmux strap
+    .pwrmgr_strap_en_o            ( pwrmgr_strap_en            ),
+    // TODO: move the pinmux-side gating into RV_DM
+    .rv_pinmux_hw_debug_en_i      ( lc_ctrl_pkg::On            ),
+
     // Multiplexed I/O
-    .mio_in_i                     ( mio_in                     ),
-    .mio_out_o                    ( mio_out                    ),
-    .mio_oe_o                     ( mio_oe                     ),
+    .mio_in_i                     ( mio_in_coreside            ),
+    .mio_out_o                    ( mio_out_coreside           ),
+    .mio_oe_o                     ( mio_oe_coreside            ),
 
     // Dedicated I/O
-    .dio_in_i                     ( dio_in                     ),
-    .dio_out_o                    ( dio_out                    ),
-    .dio_oe_o                     ( dio_oe                     ),
+    .dio_in_i                     ( dio_in_coreside            ),
+    .dio_out_o                    ( dio_out_coreside           ),
+    .dio_oe_o                     ( dio_oe_coreside            ),
 
     // Pad attributes
-    .mio_attr_o                   ( mio_attr                   ),
-    .dio_attr_o                   ( dio_attr                   ),
+    .mio_attr_o                   ( mio_attr_coreside          ),
+    .dio_attr_o                   ( dio_attr_coreside          ),
 
     // Memory attributes
     .ram_1p_cfg_i                 ( ram_1p_cfg                 ),
@@ -1175,7 +1255,8 @@ module chip_darjeeling_asic #(
     .rom_cfg_i                    ( rom_cfg                    ),
 
     // DFT signals
-    .ast_lc_dft_en_o              ( dft_en                     ),
+    .ast_lc_dft_en_o              ( lc_dft_en                  ),
+    .ast_lc_hw_debug_en_o         ( lc_hw_debug_en             ),
     .dft_strap_test_o             ( dft_strap_test             ),
     .dft_hold_tap_sel_i           ( '0                         ),
     .scan_rst_ni                  ( scan_rst_n                 ),

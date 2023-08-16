@@ -491,7 +491,7 @@
         // TODO: these parameters should be changed
         // for the final configuration of Darjeeling.
         UsbWkupModuleEn: "1",
-        HwStrapSamplingEn: "1",
+        HwStrapSamplingEn: "0",
         // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
         // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED FOR
         // PRODUCTION DEVICES.
@@ -841,6 +841,15 @@
           package: "lc_ctrl_pkg",
         },
 
+        { struct: "lc_tx",
+          type: "uni",
+          name: "lc_hw_debug_en",
+          // The activity direction for a port inter-signal is "opposite" of
+          // what the external module actually needs.
+          act:  "req",
+          package: "lc_ctrl_pkg",
+        },
+
         { struct:  "ram_1p_cfg",
           package: "prim_ram_1p_pkg",
           type:    "uni",
@@ -980,12 +989,6 @@
       // an empty list.
       'clkmgr_aon.idle'         : [],
 
-      // Pinmux JTAG signals
-      'pinmux_aon.lc_jtag' : ['lc_ctrl.jtag'],
-      'pinmux_aon.rv_jtag' : ['rv_dm.jtag'],
-      // Latched HW debug life cycle signal that is forwarded to RV_DM
-      'pinmux_aon.pinmux_hw_debug_en' : ['rv_dm.pinmux_hw_debug_en'],
-
       // OTP LC interface
       'otp_ctrl.otp_lc_data'       : ['lc_ctrl.otp_lc_data'],
       'lc_ctrl.lc_otp_program'     : ['otp_ctrl.lc_otp_program'],
@@ -1006,6 +1009,7 @@
       'lc_ctrl.lc_nvm_debug_en'    : ['flash_ctrl.lc_nvm_debug_en'],
       'lc_ctrl.lc_hw_debug_en'     : ['sram_ctrl_main.lc_hw_debug_en',
                                       'pinmux_aon.lc_hw_debug_en',
+                                      'ast.lc_hw_debug_en',
                                       'csrng.lc_hw_debug_en',
                                       'rv_dm.lc_hw_debug_en',
                                       'clkmgr_aon.lc_hw_debug_en',
@@ -1084,9 +1088,6 @@
 
         // Xbars
 
-        // Pinmux JTAG signals for the tool-inserted DFT TAP
-        'pinmux_aon.dft_jtag',
-
         // OTP HW_CFG Broadcast signals.
         // TODO(#6713): The actual struct breakout and mapping currently needs to
         // be performed by hand in the toplevel template.
@@ -1105,6 +1106,7 @@
         'adc_ctrl_aon.adc'                : 'adc'
         'ast.edn'                         : '',
         'ast.lc_dft_en'                   : '',
+        'ast.lc_hw_debug_en'              : '',
         'ast.obs_ctrl'                    : 'obs_ctrl',
         'ast.ram_1p_cfg'                  : 'ram_1p_cfg',
         'ast.spi_ram_2p_cfg'              : 'spi_ram_2p_cfg',
@@ -1126,6 +1128,10 @@
         'flash_ctrl.fla_obs'              : 'flash_obs',
         'entropy_src.entropy_src_rng'     : 'es_rng',
         'entropy_src.rng_fips'            : 'es_rng_fips',
+        'lc_ctrl.jtag'                    : 'lc_jtag',
+        'pwrmgr_aon.strap'                : 'pwrmgr_strap_en',
+        'rv_dm.jtag'                      : 'rv_jtag',
+        'rv_dm.pinmux_hw_debug_en'        : 'rv_pinmux_hw_debug_en',
         'peri.tl_ast'                     : 'ast_tl',
         'pinmux_aon.dft_strap_test'       : 'dft_strap_test'
         'pinmux_aon.dft_hold_tap_sel'     : 'dft_hold_tap_sel',

@@ -31,8 +31,10 @@ interface chip_if;
   // TODO: In Xcelium, the bind is not exposing the internal hierarchies to chip_if.
   // TODO: Autogen this in top_<top>_pkg.
 `ifdef XCELIUM
+  `define STRAP_HIER        tb.dut.u_pinmux_strap_sampling_dummy
   `define TOP_HIER          tb.dut.top_darjeeling
 `else
+  `define STRAP_HIER        u_pinmux_strap_sampling_dummy
   `define TOP_HIER          top_darjeeling
 `endif
 `define ADC_CTRL_HIER       `TOP_HIER.u_adc_ctrl_aon
@@ -328,23 +330,16 @@ interface chip_if;
   //
   // The pinmux version of lc_dft_en is used below because it goes through synchronizers.
 `ifdef GATE_LEVEL
-  wire pinmux_lc_dft_en =
-  (`PINMUX_HIER.gen_hw_strap_sampling.u_pinmux_strap_sampling.u_prim_lc_sync_lc_dft_en.lc_en_o[3:0]
-    == lc_ctrl_pkg::On);
+  wire pinmux_lc_dft_en = (`STRAP_HIER.u_prim_lc_sync_lc_dft_en.lc_en_o[3:0] == lc_ctrl_pkg::On);
 `else
-  wire pinmux_lc_dft_en = (`PINMUX_HIER.gen_hw_strap_sampling.u_pinmux_strap_sampling.lc_dft_en[0]
-                           == lc_ctrl_pkg::On);
+  wire pinmux_lc_dft_en = (`STRAP_HIER.lc_dft_en[0] == lc_ctrl_pkg::On);
 `endif
-  wire pinmux_lc_hw_debug_en =
-    (`PINMUX_HIER.gen_hw_strap_sampling.u_pinmux_strap_sampling.pinmux_hw_debug_en_o ==
-     lc_ctrl_pkg::On);
+  wire pinmux_lc_hw_debug_en =(`STRAP_HIER.pinmux_hw_debug_en_o == lc_ctrl_pkg::On);
 
 `ifdef GATE_LEVEL
-  wire pwrmgr_fast_pwr_state_strap_en =
-      `PINMUX_HIER.gen_hw_strap_sampling.u_pinmux_strap_sampling.strap_en_q_reg.Q;
+  wire pwrmgr_fast_pwr_state_strap_en = `STRAP_HIER.strap_en_q_reg.Q;
 `else
-  wire pwrmgr_fast_pwr_state_strap_en =
-      `PINMUX_HIER.gen_hw_strap_sampling.u_pinmux_strap_sampling.strap_en_q;
+  wire pwrmgr_fast_pwr_state_strap_en = `STRAP_HIER.strap_en_q;
 `endif
   initial begin
     fork

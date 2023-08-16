@@ -268,6 +268,7 @@ module top_${top["name"]} #(
   assign rv_core_ibex_boot_addr = ADDR_SPACE_ROM;
 % endif
 
+% if top["name"] not in ["darjeeling"]:
   // Struct breakout module tool-inserted DFT TAP signals
   pinmux_jtag_breakout u_dft_tap_breakout (
     .req_i    (pinmux_aon_dft_jtag_req),
@@ -279,6 +280,7 @@ module top_${top["name"]} #(
     .tdo_i    (1'b0),
     .tdo_oe_i (1'b0)
   );
+% endif
 
   // Wire up alert handler LPGs
   prim_mubi_pkg::mubi4_t [alert_pkg::NLpg-1:0] lpg_cg_en;

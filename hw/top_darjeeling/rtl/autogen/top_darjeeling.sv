@@ -49,7 +49,7 @@ module top_darjeeling #(
   // parameters for pwm_aon
   // parameters for pinmux_aon
   parameter bit PinmuxAonUsbWkupModuleEn = 1,
-  parameter bit PinmuxAonHwStrapSamplingEn = 1,
+  parameter bit PinmuxAonHwStrapSamplingEn = 0,
   parameter bit SecPinmuxAonVolatileRawUnlockEn = top_pkg::SecVolatileRawUnlockEn,
   parameter pinmux_pkg::target_cfg_t PinmuxAonTargetCfg = pinmux_pkg::DefaultTargetCfg,
   // parameters for aon_timer_aon
@@ -139,6 +139,7 @@ module top_darjeeling #(
   input  edn_pkg::edn_req_t       ast_edn_req_i,
   output edn_pkg::edn_rsp_t       ast_edn_rsp_o,
   output lc_ctrl_pkg::lc_tx_t       ast_lc_dft_en_o,
+  output lc_ctrl_pkg::lc_tx_t       ast_lc_hw_debug_en_o,
   input  ast_pkg::ast_obs_ctrl_t       obs_ctrl_i,
   input  prim_ram_1p_pkg::ram_1p_cfg_t       ram_1p_cfg_i,
   input  prim_ram_2p_pkg::ram_2p_cfg_t       spi_ram_2p_cfg_i,
@@ -161,6 +162,12 @@ module top_darjeeling #(
   output entropy_src_pkg::entropy_src_rng_req_t       es_rng_req_o,
   input  entropy_src_pkg::entropy_src_rng_rsp_t       es_rng_rsp_i,
   output logic       es_rng_fips_o,
+  input  jtag_pkg::jtag_req_t       lc_jtag_req_i,
+  output jtag_pkg::jtag_rsp_t       lc_jtag_rsp_o,
+  output logic       pwrmgr_strap_en_o,
+  input  jtag_pkg::jtag_req_t       rv_jtag_req_i,
+  output jtag_pkg::jtag_rsp_t       rv_jtag_rsp_o,
+  input  lc_ctrl_pkg::lc_tx_t       rv_pinmux_hw_debug_en_i,
   output tlul_pkg::tl_h2d_t       ast_tl_req_o,
   input  tlul_pkg::tl_d2h_t       ast_tl_rsp_i,
   output pinmux_pkg::dft_strap_test_req_t       dft_strap_test_o,
@@ -587,11 +594,6 @@ module top_darjeeling #(
   kmac_pkg::app_rsp_t [2:0] kmac_app_rsp;
   logic       kmac_en_masking;
   prim_mubi_pkg::mubi4_t [3:0] clkmgr_aon_idle;
-  jtag_pkg::jtag_req_t       pinmux_aon_lc_jtag_req;
-  jtag_pkg::jtag_rsp_t       pinmux_aon_lc_jtag_rsp;
-  jtag_pkg::jtag_req_t       pinmux_aon_rv_jtag_req;
-  jtag_pkg::jtag_rsp_t       pinmux_aon_rv_jtag_rsp;
-  lc_ctrl_pkg::lc_tx_t       pinmux_aon_pinmux_hw_debug_en;
   otp_ctrl_pkg::otp_lc_data_t       otp_ctrl_otp_lc_data;
   otp_ctrl_pkg::lc_otp_program_req_t       lc_ctrl_lc_otp_program_req;
   otp_ctrl_pkg::lc_otp_program_rsp_t       lc_ctrl_lc_otp_program_rsp;
@@ -737,8 +739,6 @@ module top_darjeeling #(
   logic       rv_core_ibex_irq_timer;
   logic [31:0] rv_core_ibex_hart_id;
   logic [31:0] rv_core_ibex_boot_addr;
-  jtag_pkg::jtag_req_t       pinmux_aon_dft_jtag_req;
-  jtag_pkg::jtag_rsp_t       pinmux_aon_dft_jtag_rsp;
   otp_ctrl_part_pkg::otp_hw_cfg_t       otp_ctrl_otp_hw_cfg;
   prim_mubi_pkg::mubi8_t       csrng_otp_en_csrng_sw_app_read;
   prim_mubi_pkg::mubi8_t       entropy_src_otp_en_entropy_src_fw_read;
@@ -752,11 +752,13 @@ module top_darjeeling #(
   assign edn0_edn_req[2] = ast_edn_req_i;
   assign ast_edn_rsp_o = edn0_edn_rsp[2];
   assign ast_lc_dft_en_o = lc_ctrl_lc_dft_en;
+  assign ast_lc_hw_debug_en_o = lc_ctrl_lc_hw_debug_en;
   assign ast_obs_ctrl = obs_ctrl_i;
   assign ast_ram_1p_cfg = ram_1p_cfg_i;
   assign ast_spi_ram_2p_cfg = spi_ram_2p_cfg_i;
   assign ast_usb_ram_2p_cfg = usb_ram_2p_cfg_i;
   assign ast_rom_cfg = rom_cfg_i;
+  assign pwrmgr_strap_en_o = pwrmgr_aon_strap;
 
   // define partial inter-module tie-off
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp1;
@@ -815,17 +817,6 @@ module top_darjeeling #(
 
   assign rv_core_ibex_boot_addr = ADDR_SPACE_ROM_CTRL__ROM;
 
-  // Struct breakout module tool-inserted DFT TAP signals
-  pinmux_jtag_breakout u_dft_tap_breakout (
-    .req_i    (pinmux_aon_dft_jtag_req),
-    .rsp_o    (pinmux_aon_dft_jtag_rsp),
-    .tck_o    (),
-    .trst_no  (),
-    .tms_o    (),
-    .tdi_o    (),
-    .tdo_i    (1'b0),
-    .tdo_oe_i (1'b0)
-  );
 
   // Wire up alert handler LPGs
   prim_mubi_pkg::mubi4_t [alert_pkg::NLpg-1:0] lpg_cg_en;
@@ -1466,8 +1457,8 @@ module top_darjeeling #(
       .alert_rx_i  ( alert_rx[18:16] ),
 
       // Inter-module signals
-      .jtag_i(pinmux_aon_lc_jtag_req),
-      .jtag_o(pinmux_aon_lc_jtag_rsp),
+      .jtag_i(lc_jtag_req_i),
+      .jtag_o(lc_jtag_rsp_o),
       .esc_scrap_state0_tx_i(alert_handler_esc_tx[1]),
       .esc_scrap_state0_rx_o(alert_handler_esc_rx[1]),
       .esc_scrap_state1_tx_i(alert_handler_esc_tx[2]),
@@ -1921,13 +1912,13 @@ module top_darjeeling #(
       .lc_dft_en_i(lc_ctrl_lc_dft_en),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .lc_check_byp_en_i(lc_ctrl_lc_check_byp_en),
-      .pinmux_hw_debug_en_o(pinmux_aon_pinmux_hw_debug_en),
-      .lc_jtag_o(pinmux_aon_lc_jtag_req),
-      .lc_jtag_i(pinmux_aon_lc_jtag_rsp),
-      .rv_jtag_o(pinmux_aon_rv_jtag_req),
-      .rv_jtag_i(pinmux_aon_rv_jtag_rsp),
-      .dft_jtag_o(pinmux_aon_dft_jtag_req),
-      .dft_jtag_i(pinmux_aon_dft_jtag_rsp),
+      .pinmux_hw_debug_en_o(),
+      .lc_jtag_o(),
+      .lc_jtag_i(jtag_pkg::JTAG_RSP_DEFAULT),
+      .rv_jtag_o(),
+      .rv_jtag_i(jtag_pkg::JTAG_RSP_DEFAULT),
+      .dft_jtag_o(),
+      .dft_jtag_i(jtag_pkg::JTAG_RSP_DEFAULT),
       .dft_strap_test_o(dft_strap_test_o),
       .dft_hold_tap_sel_i(dft_hold_tap_sel_i),
       .sleep_en_i(pwrmgr_aon_low_power),
@@ -2147,10 +2138,10 @@ module top_darjeeling #(
       .alert_rx_i  ( alert_rx[40:40] ),
 
       // Inter-module signals
-      .jtag_i(pinmux_aon_rv_jtag_req),
-      .jtag_o(pinmux_aon_rv_jtag_rsp),
+      .jtag_i(rv_jtag_req_i),
+      .jtag_o(rv_jtag_rsp_o),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
-      .pinmux_hw_debug_en_i(pinmux_aon_pinmux_hw_debug_en),
+      .pinmux_hw_debug_en_i(rv_pinmux_hw_debug_en_i),
       .unavailable_i(1'b0),
       .ndmreset_req_o(rv_dm_ndmreset_req),
       .dmactive_o(),
