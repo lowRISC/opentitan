@@ -5851,11 +5851,11 @@
           package: kmac_pkg
           type: req_rsp
           act: rsp
-          width: 3
+          width: 4
           inst_name: kmac
           default: ""
-          end_idx: -1
-          top_type: one-to-N
+          end_idx: 3
+          top_type: partial-one-to-N
           top_signame: kmac_app
           index: -1
         }
@@ -18729,11 +18729,11 @@
         package: kmac_pkg
         type: req_rsp
         act: rsp
-        width: 3
+        width: 4
         inst_name: kmac
         default: ""
-        end_idx: -1
-        top_type: one-to-N
+        end_idx: 3
+        top_type: partial-one-to-N
         top_signame: kmac_app
         index: -1
       }
@@ -21964,9 +21964,9 @@
         package: kmac_pkg
         struct: app_req
         signame: kmac_app_req
-        width: 3
+        width: 4
         type: req_rsp
-        end_idx: -1
+        end_idx: 3
         act: rsp
         suffix: req
         default: kmac_pkg::APP_REQ_DEFAULT
@@ -21975,9 +21975,9 @@
         package: kmac_pkg
         struct: app_rsp
         signame: kmac_app_rsp
-        width: 3
+        width: 4
         type: req_rsp
-        end_idx: -1
+        end_idx: 3
         act: rsp
         suffix: rsp
         default: ""

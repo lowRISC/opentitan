@@ -191,10 +191,11 @@ package kmac_pkg;
   // Currently KMAC has three interface.
   // 0: KeyMgr
   // 1: LC_CTRL
-  // 2: ROM_CTRL
+  // 2: ROM_CTRL0
+  // 3: ROM_CTRL1
   // Make sure to change `width` of app inter-module signal definition
   // if this value is changed.
-  parameter int unsigned NumAppIntf = 3;
+  parameter int unsigned NumAppIntf = 4;
 
   // Application Algorithm
   // Each interface can choose algorithms among SHA3, cSHAKE, KMAC
@@ -257,7 +258,18 @@ package kmac_pkg;
       Prefix: NSPrefixW'({EncodedStringLcCtrl, EncodedStringEmpty})
     },
 
-    // ROM_CTRL
+    // ROM_CTRL0
+    // Uses same customization string as ROM_CTRL1.
+    '{
+      Mode:       AppCShake,
+      Strength:   sha3_pkg::L256,
+      PrefixMode: 1'b 1,     // Use prefix parameter
+      // {fname: encode_string(""), custom_str: encode_string("ROM_CTRL")}
+      Prefix: NSPrefixW'({EncodedStringRomCtrl, EncodedStringEmpty})
+    },
+
+    // ROM_CTRL1
+    // Uses same customization string as ROM_CTRL0.
     '{
       Mode:       AppCShake,
       Strength:   sha3_pkg::L256,

@@ -583,8 +583,8 @@ module top_earlgrey #(
   keymgr_pkg::hw_key_req_t       keymgr_aes_key;
   keymgr_pkg::hw_key_req_t       keymgr_kmac_key;
   keymgr_pkg::otbn_key_req_t       keymgr_otbn_key;
-  kmac_pkg::app_req_t [2:0] kmac_app_req;
-  kmac_pkg::app_rsp_t [2:0] kmac_app_rsp;
+  kmac_pkg::app_req_t [3:0] kmac_app_req;
+  kmac_pkg::app_rsp_t [3:0] kmac_app_rsp;
   logic       kmac_en_masking;
   prim_mubi_pkg::mubi4_t [3:0] clkmgr_aon_idle;
   jtag_pkg::jtag_req_t       pinmux_aon_lc_jtag_req;
@@ -767,6 +767,7 @@ module top_earlgrey #(
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp5;
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp6;
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp7;
+  kmac_pkg::app_rsp_t unused_kmac_app_rsp3;
 
   // assign partial inter-module tie-off
   assign unused_otp_ctrl_sram_otp_key_rsp3 = otp_ctrl_sram_otp_key_rsp[3];
@@ -777,6 +778,7 @@ module top_earlgrey #(
   assign unused_edn1_edn_rsp5 = edn1_edn_rsp[5];
   assign unused_edn1_edn_rsp6 = edn1_edn_rsp[6];
   assign unused_edn1_edn_rsp7 = edn1_edn_rsp[7];
+  assign unused_kmac_app_rsp3 = kmac_app_rsp[3];
   assign otp_ctrl_sram_otp_key_req[3] = '0;
   assign pwrmgr_aon_rom_ctrl[1] = rom_ctrl_pkg::PWRMGR_DATA_DEFAULT;
   assign keymgr_rom_digest[1] = rom_ctrl_pkg::KEYMGR_DATA_DEFAULT;
@@ -787,6 +789,7 @@ module top_earlgrey #(
   assign edn1_edn_req[5] = '0;
   assign edn1_edn_req[6] = '0;
   assign edn1_edn_req[7] = '0;
+  assign kmac_app_req[3] = kmac_pkg::APP_REQ_DEFAULT;
 
 
   // OTP HW_CFG Broadcast signals.

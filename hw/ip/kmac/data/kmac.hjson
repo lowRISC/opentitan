@@ -196,7 +196,7 @@
       name:    "app"
       act:     "rsp"
       package: "kmac_pkg"
-      width:   "3"
+      width:   "4"
     }
     { struct:  "edn"
       type:    "req_rsp"
