@@ -46,6 +46,7 @@ def _fusesoc_build_impl(ctx):
         make_options = ctx.attr.make_options[BuildSettingInfo].value
         flags.append("--make_options={}".format(" ".join(make_options)))
 
+    args.add("--verbose")
     args.add_all(
         ctx.files.cores,
         uniquify = True,
