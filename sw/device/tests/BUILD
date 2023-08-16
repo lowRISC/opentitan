@@ -533,10 +533,6 @@ cc_library(
 opentitan_functest(
     name = "clkmgr_external_clk_src_for_sw_fast_test",
     srcs = ["clkmgr_external_clk_src_for_sw_fast_test.c"],
-    cw310 = cw310_params(
-        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
-        tags = ["broken"],
-    ),
     verilator = verilator_params(
         tags = [
             "broken",
@@ -1585,10 +1581,6 @@ opentitan_functest(
 opentitan_functest(
     name = "pwrmgr_sleep_disabled_test",
     srcs = ["pwrmgr_sleep_disabled_test.c"],
-    cw310 = cw310_params(
-        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
-        tags = ["broken"],
-    ),
     verilator = verilator_params(
         tags = ["broken"],
     ),
