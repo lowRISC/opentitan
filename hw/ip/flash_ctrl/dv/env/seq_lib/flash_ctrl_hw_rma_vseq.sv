@@ -57,7 +57,8 @@ class flash_ctrl_hw_rma_vseq extends flash_ctrl_base_vseq;
 
   // Body
   task body();
-
+    // sw flash_init value
+    int sw_init_val = 0;
     // Local Variables
     logic [RmaSeedWidth-1:0] rma_seed;
 
@@ -116,18 +117,31 @@ class flash_ctrl_hw_rma_vseq extends flash_ctrl_base_vseq;
         begin
           // Assert flash_ctrl.INIT at the beginning of RMA or
           // in the middle
-          int val = $urandom_range(0, 1);
-          `uvm_info(`gfn, $sformatf("INIT val: %0d", val), UVM_MEDIUM)
-          csr_wr(.ptr(ral.init), .value(val));
+          sw_init_val = $urandom_range(0, 1);
+          `uvm_info(`gfn, $sformatf("SW INIT val: %0d", sw_init_val), UVM_MEDIUM)
+          // sw init will be overruled by rma request.
+          // If that happens, sync_req will be dropped without ack.
+          if (sw_init_val) begin
+            $assertoff(0, "tb.dut.u_flash_hw_if.u_data_sync_reqack.SyncReqAckHoldReq");
+          end
+          csr_wr(.ptr(ral.init), .value(sw_init_val));
 
-          if (val == 0) begin
+          if (sw_init_val == 0) begin
             int my_wait = $urandom_range(1,100);
-            val = $urandom_range(0, 1);
+            sw_init_val = $urandom_range(0, 1);
             #(my_wait * 1ms);
-            csr_wr(.ptr(ral.init), .value(val));
+            // sw init will be overruled by rma request.
+            // If that happens, sync_req will be dropped without ack.
+            if (sw_init_val) begin
+              $assertoff(0, "tb.dut.u_flash_hw_if.u_data_sync_reqack.SyncReqAckHoldReq");
+            end
+            csr_wr(.ptr(ral.init), .value(sw_init_val));
           end
         end
       join
+
+      if (sw_init_val) $asserton(0, "tb.dut.u_flash_hw_if.u_data_sync_reqack.SyncReqAckHoldReq");
+
       // CHECK HOST SOFTWARE HAS NO ACCESS TO THE FLASH
 
       // Attempt to Read from FLASH Controller
