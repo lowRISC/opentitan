@@ -71,8 +71,8 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   input pwr_ast_rsp_t ast_i,
 
   // rom_ctrl signals
-  input prim_mubi_pkg::mubi4_t rom_ctrl_done_i,
-  output prim_mubi_pkg::mubi4_t rom_ctrl_done_o,
+  input prim_mubi_pkg::mubi4_t [NumRomInputs-1:0] rom_ctrl_done_i,
+  output prim_mubi_pkg::mubi4_t [NumRomInputs-1:0] rom_ctrl_done_o,
 
   // core sleeping
   input core_sleeping_i,
@@ -306,17 +306,18 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .q_o(otp_o)
   );
 
-  prim_mubi4_sync #(
-    .NumCopies(1),
-    .AsyncOn(1),
-    .StabilityCheck(1)
-  ) u_sync_rom_ctrl (
-    .clk_i,
-    .rst_ni,
-    .mubi_i(rom_ctrl_done_i),
-    .mubi_o({rom_ctrl_done_o})
-  );
-
+  for (genvar k = 0; k < NumRomInputs; k++) begin : gen_rom_inputs
+    prim_mubi4_sync #(
+      .NumCopies(1),
+      .AsyncOn(1),
+      .StabilityCheck(1)
+    ) u_sync_rom_ctrl (
+      .clk_i,
+      .rst_ni,
+      .mubi_i(rom_ctrl_done_i[k]),
+      .mubi_o({rom_ctrl_done_o[k]})
+    );
+  end
   ////////////////////////////////
   // Handshake
   ////////////////////////////////

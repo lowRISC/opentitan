@@ -75,7 +75,7 @@ module pwrmgr
 
   // rom_ctrl interface
   // SEC_CM: ROM_CTRL.INTERSIG.MUBI
-  input rom_ctrl_pkg::pwrmgr_data_t rom_ctrl_i,
+  input rom_ctrl_pkg::pwrmgr_data_t [NumRomInputs-1:0] rom_ctrl_i,
 
   // software issued reset request
   // SEC_CM: RSTMGR.INTERSIG.MUBI
@@ -247,8 +247,10 @@ module pwrmgr
   pwr_flash_t flash_rsp;
   pwr_otp_rsp_t otp_rsp;
 
-  prim_mubi_pkg::mubi4_t rom_ctrl_done;
-  prim_mubi_pkg::mubi4_t rom_ctrl_good;
+  prim_mubi_pkg::mubi4_t [NumRomInputs-1:0] rom_ctrl_done_async;
+  prim_mubi_pkg::mubi4_t [NumRomInputs-1:0] rom_ctrl_done;
+  prim_mubi_pkg::mubi4_t rom_ctrl_done_combined;
+  prim_mubi_pkg::mubi4_t rom_ctrl_good_combined;
 
   logic core_sleeping;
 
@@ -377,6 +379,11 @@ module pwrmgr
   ///  cdc handling
   ////////////////////////////
 
+  // Assign to array for convenience in CDC block below.
+  for (genvar k = 0; k < NumRomInputs; k ++) begin : gen_done_assign
+    assign rom_ctrl_done_async[k] = rom_ctrl_i[k].done;
+  end
+
   pwrmgr_cdc u_cdc (
     .clk_i,
     .rst_ni,
@@ -441,7 +448,7 @@ module pwrmgr
     .otp_o(otp_rsp),
 
     // rom_ctrl signals
-    .rom_ctrl_done_i(rom_ctrl_i.done),
+    .rom_ctrl_done_i(rom_ctrl_done_async),
     .rom_ctrl_done_o(rom_ctrl_done),
 
     // core sleeping
@@ -449,9 +456,20 @@ module pwrmgr
     .core_sleeping_o(core_sleeping)
 
   );
-  // rom_ctrl_i.good is not synchronized as it acts as a "payload" signal
-  // to "done". Good is only observed if "done" is high.
-  assign rom_ctrl_good = rom_ctrl_i.good;
+
+  always_comb begin
+    rom_ctrl_done_combined = prim_mubi_pkg::MuBi4True;
+    rom_ctrl_good_combined = prim_mubi_pkg::MuBi4True;
+    for (int k = 0; k < NumRomInputs; k++) begin
+      rom_ctrl_done_combined =
+          prim_mubi_pkg::mubi4_and_hi(rom_ctrl_done_combined, rom_ctrl_done[k]);
+      // rom_ctrl_i.good is not synchronized as it acts as a "payload" signal
+      // to "done". Good is only observed if "done" is high.
+      rom_ctrl_good_combined =
+          prim_mubi_pkg::mubi4_and_hi(rom_ctrl_good_combined, rom_ctrl_i[k].good);
+    end
+  end
+
   assign hw2reg.cfg_cdc_sync.d = 1'b0;
 
   ////////////////////////////
@@ -609,8 +627,8 @@ module pwrmgr
     .flash_idle_i      (flash_rsp.flash_idle),
 
     // rom_ctrl
-    .rom_ctrl_done_i   (rom_ctrl_done),
-    .rom_ctrl_good_i   (rom_ctrl_good),
+    .rom_ctrl_done_i   (rom_ctrl_done_combined),
+    .rom_ctrl_good_i   (rom_ctrl_good_combined),
 
     // processing element
     .fetch_en_o,

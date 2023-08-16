@@ -77,14 +77,14 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
 
   // Override the default implementation in dv_base_env_cfg.
   //
-  // This is required for the SRAM environment for reuse at the chip level as 2 different
+  // This is required for the ROM environment for reuse at the chip level as 2 different
   // parameterizations of the design and testbench exist, as a result the custom RAL model for the
-  // SRAM memory primitive must also be explicitly parameterized.
+  // ROM memory primitive must also be explicitly parameterized.
   //
   // We cannot instantiate parameterized UVM objects/components using the standard factory
   // mechanisms, so a custom instantiation method is required here.
   //
-  // Note that the SRAM only has 2 RAL models, one is the "default" CSR model,
+  // Note that the ROM only has 2 RAL models, one is the "default" CSR model,
   // and the other is the custom model to represent the memory primitive.
   virtual function dv_base_reg_block create_ral_by_name(string name);
     if (name == RAL_T::type_name) begin

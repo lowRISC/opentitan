@@ -106,7 +106,9 @@ module tb;
     .strap_o    (pwrmgr_if.strap),
     .low_power_o(pwrmgr_if.low_power),
 
-    .rom_ctrl_i(pwrmgr_if.rom_ctrl),
+    // TODO(opentitan-integrated/issues/251):
+    // Need to model NumRomInputs
+    .rom_ctrl_i({rom_ctrl_pkg::PWRMGR_DATA_DEFAULT, pwrmgr_if.rom_ctrl}),
 
     .sw_rst_req_i(pwrmgr_if.sw_rst_req_i),
 

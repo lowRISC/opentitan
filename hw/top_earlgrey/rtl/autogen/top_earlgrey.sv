@@ -561,7 +561,7 @@ module top_earlgrey #(
   logic       pwrmgr_aon_strap;
   logic       pwrmgr_aon_low_power;
   lc_ctrl_pkg::lc_tx_t       pwrmgr_aon_fetch_en;
-  rom_ctrl_pkg::pwrmgr_data_t       rom_ctrl_pwrmgr_data;
+  rom_ctrl_pkg::pwrmgr_data_t [1:0] pwrmgr_aon_rom_ctrl;
   rom_ctrl_pkg::keymgr_data_t [1:0] keymgr_rom_digest;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_flash_rma_req;
   lc_ctrl_pkg::lc_tx_t       flash_ctrl_rma_ack;
@@ -778,6 +778,7 @@ module top_earlgrey #(
   assign unused_edn1_edn_rsp6 = edn1_edn_rsp[6];
   assign unused_edn1_edn_rsp7 = edn1_edn_rsp[7];
   assign otp_ctrl_sram_otp_key_req[3] = '0;
+  assign pwrmgr_aon_rom_ctrl[1] = rom_ctrl_pkg::PWRMGR_DATA_DEFAULT;
   assign keymgr_rom_digest[1] = rom_ctrl_pkg::KEYMGR_DATA_DEFAULT;
   assign edn1_edn_req[1] = '0;
   assign edn1_edn_req[2] = '0;
@@ -1710,7 +1711,7 @@ module top_earlgrey #(
       .ndmreset_req_i(rv_dm_ndmreset_req),
       .strap_o(pwrmgr_aon_strap),
       .low_power_o(pwrmgr_aon_low_power),
-      .rom_ctrl_i(rom_ctrl_pwrmgr_data),
+      .rom_ctrl_i(pwrmgr_aon_rom_ctrl),
       .fetch_en_o(pwrmgr_aon_fetch_en),
       .lc_dft_en_i(lc_ctrl_lc_dft_en),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
@@ -2541,7 +2542,7 @@ module top_earlgrey #(
 
       // Inter-module signals
       .rom_cfg_i(ast_rom_cfg),
-      .pwrmgr_data_o(rom_ctrl_pwrmgr_data),
+      .pwrmgr_data_o(pwrmgr_aon_rom_ctrl[0]),
       .keymgr_data_o(keymgr_rom_digest[0]),
       .kmac_data_o(kmac_app_req[2]),
       .kmac_data_i(kmac_app_rsp[2]),

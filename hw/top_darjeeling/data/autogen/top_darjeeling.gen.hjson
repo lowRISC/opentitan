@@ -2887,10 +2887,12 @@
           package: rom_ctrl_pkg
           type: uni
           act: rcv
-          width: 1
+          width: 2
+          default: rom_ctrl_pkg::PWRMGR_DATA_DEFAULT
           inst_name: pwrmgr_aon
-          default: ""
-          top_signame: rom_ctrl_pwrmgr_data
+          end_idx: 1
+          top_type: partial-one-to-N
+          top_signame: pwrmgr_aon_rom_ctrl
           index: -1
         }
         {
@@ -7518,10 +7520,8 @@
           width: 1
           inst_name: rom_ctrl
           default: ""
-          end_idx: -1
-          top_type: broadcast
-          top_signame: rom_ctrl_pwrmgr_data
-          index: -1
+          top_signame: pwrmgr_aon_rom_ctrl
+          index: 0
         }
         {
           name: keymgr_data
@@ -8369,9 +8369,9 @@
       [
         rv_core_ibex.pwrmgr_cpu_en
       ]
-      rom_ctrl.pwrmgr_data:
+      pwrmgr_aon.rom_ctrl:
       [
-        pwrmgr_aon.rom_ctrl
+        rom_ctrl.pwrmgr_data
       ]
       keymgr.rom_digest:
       [
@@ -17025,10 +17025,12 @@
         package: rom_ctrl_pkg
         type: uni
         act: rcv
-        width: 1
+        width: 2
+        default: rom_ctrl_pkg::PWRMGR_DATA_DEFAULT
         inst_name: pwrmgr_aon
-        default: ""
-        top_signame: rom_ctrl_pwrmgr_data
+        end_idx: 1
+        top_type: partial-one-to-N
+        top_signame: pwrmgr_aon_rom_ctrl
         index: -1
       }
       {
@@ -19550,10 +19552,8 @@
         width: 1
         inst_name: rom_ctrl
         default: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: rom_ctrl_pwrmgr_data
-        index: -1
+        top_signame: pwrmgr_aon_rom_ctrl
+        index: 0
       }
       {
         name: keymgr_data
@@ -21721,11 +21721,11 @@
       {
         package: rom_ctrl_pkg
         struct: pwrmgr_data
-        signame: rom_ctrl_pwrmgr_data
-        width: 1
+        signame: pwrmgr_aon_rom_ctrl
+        width: 2
         type: uni
-        end_idx: -1
-        act: req
+        end_idx: 1
+        act: rcv
         suffix: ""
         default: rom_ctrl_pkg::PWRMGR_DATA_DEFAULT
       }

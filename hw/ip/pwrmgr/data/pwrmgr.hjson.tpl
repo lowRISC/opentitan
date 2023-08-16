@@ -171,7 +171,9 @@
       type:    "uni",
       name:    "rom_ctrl",
       act:     "rcv",
+      width:   "2",
       package: "rom_ctrl_pkg",
+      default: "rom_ctrl_pkg::PWRMGR_DATA_DEFAULT"
     },
 
     { struct:  "lc_tx",
@@ -251,6 +253,12 @@
     },
     % endfor
 
+    { name: "NumRomInputs",
+      desc: "Number of inputs from ROM_CTRL",
+      type: "int",
+      default: "2",
+      local: "true"
+    },
   ],
   countermeasures: [
     { name: "BUS.INTEGRITY",

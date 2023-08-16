@@ -16,14 +16,26 @@ module pwrmgr_cov_bind;
     .val   (lc_hw_debug_en_i)
   );
 
-  bind pwrmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_rom_ctrl_good_mubi_cov_if (
+  // TODO(opentitan-integrated/issues/251):
+  // Need to find a way to make these binds parametric.
+  bind pwrmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_rom_ctrl_good_mubi_0_cov_if (
     .rst_ni (rst_ni),
-    .mubi   (rom_ctrl_i.done)
+    .mubi   (rom_ctrl_i[0].done)
   );
 
-  bind pwrmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_rom_ctrl_done_mubi_cov_if (
+  bind pwrmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_rom_ctrl_done_mubi_0_cov_if (
     .rst_ni (rst_ni),
-    .mubi   (rom_ctrl_i.good)
+    .mubi   (rom_ctrl_i[0].good)
+  );
+
+  bind pwrmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_rom_ctrl_good_mubi_1_cov_if (
+    .rst_ni (rst_ni),
+    .mubi   (rom_ctrl_i[1].done)
+  );
+
+  bind pwrmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_rom_ctrl_done_mubi_1_cov_if (
+    .rst_ni (rst_ni),
+    .mubi   (rom_ctrl_i[1].good)
   );
 
   bind pwrmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_sw_rst_req_mubi_cov_if (
