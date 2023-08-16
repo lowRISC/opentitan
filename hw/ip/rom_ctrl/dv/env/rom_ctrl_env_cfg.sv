@@ -4,6 +4,8 @@
 
 class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block));
 
+  string rom_ral_name = "rom_ctrl_prim_reg_block";
+
   // ext component cfgs
   kmac_app_agent_cfg m_kmac_agent_cfg;
 
@@ -54,7 +56,7 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
     list_of_alerts = rom_ctrl_env_pkg::LIST_OF_ALERTS;
     tl_intg_alert_name = "fatal";
 
-    ral_model_names.push_back("rom_ctrl_rom_reg_block");
+    ral_model_names.push_back("rom_ctrl_prim_reg_block");
 
     super.initialize(csr_base_addr);
     num_interrupts = 0;
@@ -64,12 +66,34 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
     m_kmac_agent_cfg.start_default_device_seq = 1'b1;
     m_kmac_agent_cfg.constant_share_means_error = 1'b0;
 
-    m_tl_agent_cfgs["rom_ctrl_rom_reg_block"].max_outstanding_req = 2;
-    m_tl_agent_cfgs["rom_ctrl_regs_reg_block"].max_outstanding_req = 1;
+    // default TLUL supports 1 outstanding item, the rom TLUL supports 2 outstanding items.
+    m_tl_agent_cfgs[RAL_T::type_name].max_outstanding_req = 1;
+    m_tl_agent_cfgs[rom_ral_name].max_outstanding_req = 2;
 
     // Tell the CIP base code what bit gets set if we see a TL fault.
     tl_intg_alert_fields[ral.fatal_alert_cause.integrity_error] = 1;
     sec_cm_alert_name = "fatal";
+  endfunction
+
+  // Override the default implementation in dv_base_env_cfg.
+  //
+  // This is required for the SRAM environment for reuse at the chip level as 2 different
+  // parameterizations of the design and testbench exist, as a result the custom RAL model for the
+  // SRAM memory primitive must also be explicitly parameterized.
+  //
+  // We cannot instantiate parameterized UVM objects/components using the standard factory
+  // mechanisms, so a custom instantiation method is required here.
+  //
+  // Note that the SRAM only has 2 RAL models, one is the "default" CSR model,
+  // and the other is the custom model to represent the memory primitive.
+  virtual function dv_base_reg_block create_ral_by_name(string name);
+    if (name == RAL_T::type_name) begin
+      return super.create_ral_by_name(name);
+    end else if (name == rom_ral_name) begin
+      return rom_ctrl_prim_reg_block#(ROM_WORD_ADDR_WIDTH)::type_id::create(rom_ral_name);
+    end else begin
+      `uvm_error(`gfn, $sformatf("%0s is an illegal RAL model name", name))
+    end
   endfunction
 
 endclass

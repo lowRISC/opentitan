@@ -121,19 +121,5 @@ The expected digest, stored in the top words of ROM
 |:------:|:------:|:-------:|:-------|:----------------------|
 |  31:0  |   ro   |   0x0   | DIGEST | 32 bits of the digest |
 
-## Summary of the **`rom`** interface's registers
-
-| Name                   | Offset   |   Length | Description   |
-|:-----------------------|:---------|---------:|:--------------|
-| rom_ctrl.[`ROM`](#rom) | 0x0      |    32768 | ROM data      |
-
-## ROM
-ROM data
-
-- Word Aligned Offset Range: `0x0`to`0x7ffc`
-- Size (words): `8192`
-- Access: `ro`
-- Byte writes are *not* supported.
-
-
+This interface does not expose any registers.
 <!-- END CMDGEN -->

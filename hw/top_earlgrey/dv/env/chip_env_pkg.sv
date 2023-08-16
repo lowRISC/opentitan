@@ -64,7 +64,8 @@ package chip_env_pkg;
 
   // ROM digest parameters
   localparam uint RomDigestDw = 256;
-  localparam uint RomMaxCheckAddr = rom_ctrl_reg_pkg::ROM_CTRL_ROM_SIZE - (RomDigestDw / 8);
+  localparam uint RomMaxCheckAddr = top_earlgrey_pkg::TOP_EARLGREY_ROM_SIZE_BYTES -
+                                    (RomDigestDw / 8);
 
   typedef virtual sw_logger_if         sw_logger_vif;
   typedef virtual sw_test_status_if    sw_test_status_vif;
