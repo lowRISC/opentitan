@@ -23,6 +23,12 @@ package rom_ctrl_pkg;
     logic         valid;
   } keymgr_data_t;
 
+  // In the absence of a connection, we just output a valid netlist
+  parameter keymgr_data_t KEYMGR_DATA_DEFAULT = '{
+    data: 256'hf36ffbf4d5a863e396133e9d03f05108b1db512b25f93308c8746e08327108dc,
+    valid: 1'b1
+  };
+
   //
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 3 -m 7 -n 6 -s 2 --language=sv
