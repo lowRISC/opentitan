@@ -17,43 +17,7 @@
   rel_path: "hw/{top_chip}/dv/summary"
 
   // Maintain alphabetical order in each category (e.g., IPs, top level IPs) below.
-  use_cfgs: [// Unit tests for UVCs.
-             "{proj_root}/hw/dv/sv/tl_agent/dv/tl_agent_sim_cfg.hjson",
-             // IPs.
-             "{proj_root}/hw/ip/adc_ctrl/dv/adc_ctrl_sim_cfg.hjson",
-             "{proj_root}/hw/ip/aes/dv/aes_unmasked_sim_cfg.hjson",
-             "{proj_root}/hw/ip/aes/dv/aes_masked_sim_cfg.hjson",
-             "{proj_root}/hw/ip/aon_timer/dv/aon_timer_sim_cfg.hjson",
-             "{proj_root}/hw/ip/csrng/dv/csrng_sim_cfg.hjson",
-             "{proj_root}/hw/ip/edn/dv/edn_sim_cfg.hjson",
-             "{proj_root}/hw/ip/entropy_src/dv/entropy_src_sim_cfg.hjson",
-             "{proj_root}/hw/ip/gpio/dv/gpio_sim_cfg.hjson",
-             "{proj_root}/hw/ip/hmac/dv/hmac_sim_cfg.hjson",
-             "{proj_root}/hw/ip/i2c/dv/i2c_sim_cfg.hjson",
-             "{proj_root}/hw/ip/keymgr/dv/keymgr_sim_cfg.hjson",
-             "{proj_root}/hw/ip/kmac/dv/kmac_masked_sim_cfg.hjson",
-             "{proj_root}/hw/ip/kmac/dv/kmac_unmasked_sim_cfg.hjson",
-             "{proj_root}/hw/ip/lc_ctrl/dv/lc_ctrl_sim_cfg.hjson",
-             "{proj_root}/hw/ip/otbn/dv/uvm/otbn_sim_cfg.hjson",
-             "{proj_root}/hw/ip/pattgen/dv/pattgen_sim_cfg.hjson",
-             "{proj_root}/hw/ip/prim/dv/prim_alert/prim_alert_sim_cfg.hjson",
-             "{proj_root}/hw/ip/prim/dv/prim_esc/prim_esc_sim_cfg.hjson",
-             "{proj_root}/hw/ip/prim/dv/prim_lfsr/prim_lfsr_sim_cfg.hjson",
-             "{proj_root}/hw/ip/prim/dv/prim_present/prim_present_sim_cfg.hjson",
-             "{proj_root}/hw/ip/prim/dv/prim_prince/prim_prince_sim_cfg.hjson",
-             "{proj_root}/hw/ip/pwm/dv/pwm_sim_cfg.hjson",
-             "{proj_root}/hw/ip/rom_ctrl/dv/rom_ctrl_sim_cfg.hjson",
-             "{proj_root}/hw/ip/rv_dm/dv/rv_dm_sim_cfg.hjson",
-             "{proj_root}/hw/ip/rv_timer/dv/rv_timer_sim_cfg.hjson",
-             "{proj_root}/hw/ip/spi_host/dv/spi_host_sim_cfg.hjson",
-             "{proj_root}/hw/ip/spi_device/dv/spi_device_sim_cfg.hjson",
-             "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_main_sim_cfg.hjson",
-             "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_ret_sim_cfg.hjson",
-             "{proj_root}/hw/ip/sysrst_ctrl/dv/sysrst_ctrl_sim_cfg.hjson",
-             "{proj_root}/hw/ip/uart/dv/uart_sim_cfg.hjson",
-             "{proj_root}/hw/ip/usbdev/dv/usbdev_sim_cfg.hjson",
-
-             // Top level IPs.
+  use_cfgs: [// Top level IPs.
              {
                name: alert_handler
                top_chip: top_earlgrey
