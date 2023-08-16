@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends cip_base_vseq #(
+class sram_ctrl_base_vseq #(
+    parameter int AddrWidth = `SRAM_WORD_ADDR_WIDTH
+  ) extends cip_base_vseq #(
     .RAL_T               (sram_ctrl_regs_reg_block),
     .CFG_T               (sram_ctrl_env_cfg#(AddrWidth)),
     .COV_T               (sram_ctrl_env_cov#(AddrWidth)),
