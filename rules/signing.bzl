@@ -385,12 +385,11 @@ sign_bin = rv_rule(
             doc = "SPX public key to validate this image",
         ),
         "manifest": attr.label(allow_single_file = True, mandatory = True),
-        # TODO(lowRISC/opentitan:#11199): explore other options to side-step the
-        # need for this transition, in order to build the ROM_EXT signer tool.
-        "platform": attr.string(default = "@local_config_platform//:host"),
         "_tool": attr.label(
             default = "//sw/host/opentitantool:opentitantool",
             allow_single_file = True,
+            executable = True,
+            cfg = "exec",
         ),
     },
 )
