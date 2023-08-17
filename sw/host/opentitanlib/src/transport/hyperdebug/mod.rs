@@ -21,6 +21,7 @@ use std::rc::Rc;
 
 use crate::io::gpio::{GpioMonitoring, GpioPin};
 use crate::io::i2c::Bus;
+use crate::io::jtag::{Jtag, JtagParams};
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
@@ -29,6 +30,7 @@ use crate::transport::cw310::CW310;
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType, UpdateFirmware,
 };
+use crate::util::openocd::OpenOcdServer;
 use crate::util::usb::UsbBackend;
 
 pub mod c2d2;
@@ -232,6 +234,7 @@ impl<T: Flavor> Hyperdebug<T> {
                 selected_spi: Cell::new(0),
                 i2cs: Default::default(),
                 uarts: Default::default(),
+                jtag: Default::default(),
             }),
             current_firmware_version,
             phantom: PhantomData,
@@ -312,6 +315,7 @@ pub struct Inner {
     selected_spi: Cell<u8>,
     i2cs: RefCell<HashMap<u8, Rc<dyn Bus>>>,
     uarts: RefCell<HashMap<PathBuf, Rc<dyn Uart>>>,
+    jtag: RefCell<Option<Rc<dyn Jtag>>>,
 }
 
 impl Inner {
@@ -576,6 +580,14 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         } else {
             Err(TransportError::UnsupportedOperation.into())
         }
+    }
+
+    fn jtag(&self, opts: &JtagParams) -> Result<Rc<dyn Jtag>> {
+        let mut jtag = self.inner.jtag.borrow_mut();
+        if jtag.is_none() {
+            jtag.replace(Rc::new(OpenOcdServer::new(opts)?));
+        }
+        Ok(Rc::clone(jtag.as_ref().unwrap()))
     }
 }
 
