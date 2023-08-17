@@ -11,10 +11,10 @@ filesets:
       - lowrisc:tlul:headers
       - lowrisc:ip:tlul
     files:
-      - rtl/mbx.sv
       - rtl/mbx_reg_pkg.sv
+      - rtl/mbx.sv
       - rtl/mbx_host_reg_top.sv
-      - rtl/mbx_sys_reg_top.sv
+      - rtl/mbx_hostif.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
