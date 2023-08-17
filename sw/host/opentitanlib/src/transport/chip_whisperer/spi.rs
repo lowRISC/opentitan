@@ -8,29 +8,30 @@ use std::rc::Rc;
 
 use crate::io::spi::{AssertChipSelect, MaxSizes, SpiError, Target, Transfer, TransferMode};
 use crate::transport::chip_whisperer::usb::Backend;
-use crate::transport::chip_whisperer::ChipWhisperer;
 use crate::transport::TransportError;
 
-pub struct Spi {
-    device: Rc<RefCell<Backend>>,
+use super::board::Board;
+
+pub struct Spi<B: Board> {
+    device: Rc<RefCell<Backend<B>>>,
 }
 
-impl Spi {
-    pub fn open(device: Rc<RefCell<Backend>>) -> Result<Self> {
+impl<B: Board> Spi<B> {
+    pub fn open(device: Rc<RefCell<Backend<B>>>) -> Result<Self> {
         {
             let usb = device.borrow();
             usb.spi1_setpins(
                 // For some reason, SDI/SDO are reversed in the python implementation
                 // and this seems to be required to make the transport work.
-                ChipWhisperer::PIN_SDI,
-                ChipWhisperer::PIN_SDO,
-                ChipWhisperer::PIN_CLK,
-                ChipWhisperer::PIN_CS,
+                B::PIN_SDI,
+                B::PIN_SDO,
+                B::PIN_CLK,
+                B::PIN_CS,
             )?;
             usb.spi1_enable(true)?;
 
             // Set the JTAG pin to false to use SPI mode.
-            usb.pin_set_state(ChipWhisperer::PIN_TAP_STRAP1, false)?;
+            usb.pin_set_state(B::PIN_TAP_STRAP1, false)?;
         }
 
         Ok(Spi { device })
@@ -50,7 +51,7 @@ impl Spi {
     }
 }
 
-impl Target for Spi {
+impl<B: Board> Target for Spi<B> {
     fn get_transfer_mode(&self) -> Result<TransferMode> {
         Ok(TransferMode::Mode0)
     }

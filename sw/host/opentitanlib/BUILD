@@ -133,6 +133,7 @@ rust_library(
         "src/transport/common/mod.rs",
         "src/transport/common/fpga.rs",
         "src/transport/common/uart.rs",
+        "src/transport/chip_whisperer/board.rs",
         "src/transport/chip_whisperer/gpio.rs",
         "src/transport/chip_whisperer/mod.rs",
         "src/transport/chip_whisperer/spi.rs",

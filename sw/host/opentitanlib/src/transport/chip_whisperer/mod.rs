@@ -22,7 +22,9 @@ use crate::transport::{
 };
 use crate::util::openocd::OpenOcdServer;
 use crate::util::parse_int::ParseInt;
+use board::Board;
 
+pub mod board;
 pub mod gpio;
 pub mod spi;
 pub mod usb;
@@ -35,27 +37,13 @@ struct Inner {
     jtag: Option<Rc<dyn Jtag>>,
 }
 
-pub struct ChipWhisperer {
-    pub(crate) device: Rc<RefCell<usb::Backend>>,
+pub struct ChipWhisperer<B: Board> {
+    pub(crate) device: Rc<RefCell<usb::Backend<B>>>,
     uart_override: Vec<String>,
     inner: RefCell<Inner>,
 }
 
-impl ChipWhisperer {
-    // Pins needed for SPI on the CW310 board.
-    const PIN_CLK: &'static str = "USB_SPI_SCK";
-    const PIN_SDI: &'static str = "USB_SPI_COPI";
-    const PIN_SDO: &'static str = "USB_SPI_CIPO";
-    const PIN_CS: &'static str = "USB_SPI_CS";
-    // Pins needed for reset & bootstrap on the CW310 board.
-    const PIN_TRST: &'static str = "USB_A13";
-    const PIN_POR_N: &'static str = "USB_A14";
-    const PIN_SW_STRAP0: &'static str = "USB_A15";
-    const PIN_SW_STRAP1: &'static str = "USB_A16";
-    const PIN_SW_STRAP2: &'static str = "USB_A17";
-    const PIN_TAP_STRAP0: &'static str = "USB_A18";
-    const PIN_TAP_STRAP1: &'static str = "USB_A19";
-
+impl<B: Board> ChipWhisperer<B> {
     pub fn new(
         usb_vid: Option<u16>,
         usb_pid: Option<u16>,
@@ -77,26 +65,26 @@ impl ChipWhisperer {
     // Initialize the IO direction of some basic pins on the board.
     fn init_pin_directions(&self) -> anyhow::Result<()> {
         let device = self.device.borrow();
-        device.pin_set_output(Self::PIN_TRST, true)?;
-        device.pin_set_output(Self::PIN_POR_N, true)?;
-        device.pin_set_output(Self::PIN_TAP_STRAP0, true)?;
-        device.pin_set_output(Self::PIN_TAP_STRAP1, true)?;
-        device.pin_set_output(Self::PIN_SW_STRAP0, true)?;
-        device.pin_set_output(Self::PIN_SW_STRAP1, true)?;
-        device.pin_set_output(Self::PIN_SW_STRAP2, true)?;
+        device.pin_set_output(B::PIN_TRST, true)?;
+        device.pin_set_output(B::PIN_POR_N, true)?;
+        device.pin_set_output(B::PIN_TAP_STRAP0, true)?;
+        device.pin_set_output(B::PIN_TAP_STRAP1, true)?;
+        device.pin_set_output(B::PIN_SW_STRAP0, true)?;
+        device.pin_set_output(B::PIN_SW_STRAP1, true)?;
+        device.pin_set_output(B::PIN_SW_STRAP2, true)?;
         Ok(())
     }
 
     // Initialize the values of the output pins on the board.
     fn init_pin_values(&self) -> anyhow::Result<()> {
         let device = self.device.borrow();
-        device.pin_set_state(Self::PIN_TRST, true)?;
-        device.pin_set_state(Self::PIN_POR_N, true)?;
-        device.pin_set_state(Self::PIN_TAP_STRAP0, false)?;
-        device.pin_set_state(Self::PIN_TAP_STRAP1, true)?;
-        device.pin_set_state(Self::PIN_SW_STRAP0, false)?;
-        device.pin_set_state(Self::PIN_SW_STRAP1, false)?;
-        device.pin_set_state(Self::PIN_SW_STRAP2, false)?;
+        device.pin_set_state(B::PIN_TRST, true)?;
+        device.pin_set_state(B::PIN_POR_N, true)?;
+        device.pin_set_state(B::PIN_TAP_STRAP0, false)?;
+        device.pin_set_state(B::PIN_TAP_STRAP1, true)?;
+        device.pin_set_state(B::PIN_SW_STRAP0, false)?;
+        device.pin_set_state(B::PIN_SW_STRAP1, false)?;
+        device.pin_set_state(B::PIN_SW_STRAP2, false)?;
         Ok(())
     }
 
@@ -134,7 +122,7 @@ impl ChipWhisperer {
     }
 }
 
-impl Transport for ChipWhisperer {
+impl<B: Board + 'static> Transport for ChipWhisperer<B> {
     fn capabilities(&self) -> Result<Capabilities> {
         Ok(Capabilities::new(
             Capability::SPI
@@ -191,7 +179,7 @@ impl Transport for ChipWhisperer {
             // Open the console UART.  We do this first so we get the receiver
             // started and the uart buffering data for us.
             let uart = self.uart("0")?;
-            let reset_pin = self.gpio_pin(Self::PIN_POR_N)?;
+            let reset_pin = self.gpio_pin(B::PIN_POR_N)?;
             if fpga_program.skip() {
                 log::info!("Skip loading the __skip__ bitstream.");
                 return Ok(None);
