@@ -30,3 +30,9 @@ alias(
     actual = "@tock_index__ghash-0.4.4//:ghash",
     tags = ["manual"],
 )
+
+alias(
+    name = "libm",
+    actual = "@tock_index__libm-0.2.7//:libm",
+    tags = ["manual"],
+)
