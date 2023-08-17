@@ -175,5 +175,17 @@
       act:    "req"
       package: "tlul_pkg"
     }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_sram_ctrl_mbox__regs"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_sram_ctrl_mbox__ram"
+      act:    "req"
+      package: "tlul_pkg"
+    }
   ]
 }

@@ -55,3 +55,5 @@ initial force dut.rst_spi_host1_ni = rst_n;
 `CONNECT_TL_DEVICE_IF(rv_core_ibex__cfg, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(sram_ctrl_main__regs, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(sram_ctrl_main__ram, dut, clk_main_i, rst_n)
+`CONNECT_TL_DEVICE_IF(sram_ctrl_mbox__regs, dut, clk_main_i, rst_n)
+`CONNECT_TL_DEVICE_IF(sram_ctrl_mbox__ram, dut, clk_main_i, rst_n)

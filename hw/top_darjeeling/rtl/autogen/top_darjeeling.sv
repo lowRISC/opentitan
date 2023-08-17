@@ -89,6 +89,8 @@ module top_darjeeling #(
   // parameters for edn1
   // parameters for sram_ctrl_main
   parameter bit SramCtrlMainInstrExec = 1,
+  // parameters for sram_ctrl_mbox
+  parameter bit SramCtrlMboxInstrExec = 0,
   // parameters for rom_ctrl
   parameter RomCtrlBootRomInitFile = "",
   parameter bit SecRomCtrlDisableScrambling = 1'b0,
@@ -366,6 +368,7 @@ module top_darjeeling #(
   // edn0
   // edn1
   // sram_ctrl_main
+  // sram_ctrl_mbox
   // rom_ctrl
   // rv_core_ibex
 
@@ -673,6 +676,10 @@ module top_darjeeling #(
   tlul_pkg::tl_d2h_t       sram_ctrl_main_regs_tl_rsp;
   tlul_pkg::tl_h2d_t       sram_ctrl_main_ram_tl_req;
   tlul_pkg::tl_d2h_t       sram_ctrl_main_ram_tl_rsp;
+  tlul_pkg::tl_h2d_t       sram_ctrl_mbox_regs_tl_req;
+  tlul_pkg::tl_d2h_t       sram_ctrl_mbox_regs_tl_rsp;
+  tlul_pkg::tl_h2d_t       sram_ctrl_mbox_ram_tl_req;
+  tlul_pkg::tl_d2h_t       sram_ctrl_mbox_ram_tl_rsp;
   tlul_pkg::tl_h2d_t       uart0_tl_req;
   tlul_pkg::tl_d2h_t       uart0_tl_rsp;
   tlul_pkg::tl_h2d_t       uart1_tl_req;
@@ -754,7 +761,6 @@ module top_darjeeling #(
   assign pwrmgr_strap_en_o = pwrmgr_aon_strap;
 
   // define partial inter-module tie-off
-  otp_ctrl_pkg::sram_otp_key_rsp_t unused_otp_ctrl_sram_otp_key_rsp3;
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp1;
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp2;
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp3;
@@ -764,7 +770,6 @@ module top_darjeeling #(
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp7;
 
   // assign partial inter-module tie-off
-  assign unused_otp_ctrl_sram_otp_key_rsp3 = otp_ctrl_sram_otp_key_rsp[3];
   assign unused_edn1_edn_rsp1 = edn1_edn_rsp[1];
   assign unused_edn1_edn_rsp2 = edn1_edn_rsp[2];
   assign unused_edn1_edn_rsp3 = edn1_edn_rsp[3];
@@ -772,7 +777,6 @@ module top_darjeeling #(
   assign unused_edn1_edn_rsp5 = edn1_edn_rsp[5];
   assign unused_edn1_edn_rsp6 = edn1_edn_rsp[6];
   assign unused_edn1_edn_rsp7 = edn1_edn_rsp[7];
-  assign otp_ctrl_sram_otp_key_req[3] = '0;
   assign edn1_edn_req[1] = '0;
   assign edn1_edn_req[2] = '0;
   assign edn1_edn_req[3] = '0;
@@ -2505,16 +2509,47 @@ module top_darjeeling #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
       .rst_otp_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
-  rom_ctrl #(
+  sram_ctrl #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[60:60]),
+    .RndCnstSramKey(RndCnstSramCtrlMboxSramKey),
+    .RndCnstSramNonce(RndCnstSramCtrlMboxSramNonce),
+    .RndCnstLfsrSeed(RndCnstSramCtrlMboxLfsrSeed),
+    .RndCnstLfsrPerm(RndCnstSramCtrlMboxLfsrPerm),
+    .MemSizeRam(4096),
+    .InstrExec(SramCtrlMboxInstrExec)
+  ) u_sram_ctrl_mbox (
+      // [60]: fatal_error
+      .alert_tx_o  ( alert_tx[60:60] ),
+      .alert_rx_i  ( alert_rx[60:60] ),
+
+      // Inter-module signals
+      .sram_otp_key_o(otp_ctrl_sram_otp_key_req[2]),
+      .sram_otp_key_i(otp_ctrl_sram_otp_key_rsp[2]),
+      .cfg_i(ast_ram_1p_cfg),
+      .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
+      .lc_hw_debug_en_i(lc_ctrl_pkg::Off),
+      .otp_en_sram_ifetch_i(prim_mubi_pkg::MuBi8False),
+      .regs_tl_i(sram_ctrl_mbox_regs_tl_req),
+      .regs_tl_o(sram_ctrl_mbox_regs_tl_rsp),
+      .ram_tl_i(sram_ctrl_mbox_ram_tl_req),
+      .ram_tl_o(sram_ctrl_mbox_ram_tl_rsp),
+
+      // Clock and reset connections
+      .clk_i (clkmgr_aon_clocks.clk_main_infra),
+      .clk_otp_i (clkmgr_aon_clocks.clk_io_div4_infra),
+      .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
+      .rst_otp_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
+  );
+  rom_ctrl #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[61:61]),
     .BootRomInitFile(RomCtrlBootRomInitFile),
     .RndCnstScrNonce(RndCnstRomCtrlScrNonce),
     .RndCnstScrKey(RndCnstRomCtrlScrKey),
     .SecDisableScrambling(SecRomCtrlDisableScrambling)
   ) u_rom_ctrl (
-      // [60]: fatal
-      .alert_tx_o  ( alert_tx[60:60] ),
-      .alert_rx_i  ( alert_rx[60:60] ),
+      // [61]: fatal
+      .alert_tx_o  ( alert_tx[61:61] ),
+      .alert_rx_i  ( alert_rx[61:61] ),
 
       // Inter-module signals
       .rom_cfg_i(ast_rom_cfg),
@@ -2532,7 +2567,7 @@ module top_darjeeling #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   rv_core_ibex #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[64:61]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[65:62]),
     .RndCnstLfsrSeed(RndCnstRvCoreIbexLfsrSeed),
     .RndCnstLfsrPerm(RndCnstRvCoreIbexLfsrPerm),
     .RndCnstIbexKeyDefault(RndCnstRvCoreIbexIbexKeyDefault),
@@ -2559,12 +2594,12 @@ module top_darjeeling #(
     .DmExceptionAddr(RvCoreIbexDmExceptionAddr),
     .PipeLine(RvCoreIbexPipeLine)
   ) u_rv_core_ibex (
-      // [61]: fatal_sw_err
-      // [62]: recov_sw_err
-      // [63]: fatal_hw_err
-      // [64]: recov_hw_err
-      .alert_tx_o  ( alert_tx[64:61] ),
-      .alert_rx_i  ( alert_rx[64:61] ),
+      // [62]: fatal_sw_err
+      // [63]: recov_sw_err
+      // [64]: fatal_hw_err
+      // [65]: recov_hw_err
+      .alert_tx_o  ( alert_tx[65:62] ),
+      .alert_rx_i  ( alert_rx[65:62] ),
 
       // Inter-module signals
       .rst_cpu_n_o(),
@@ -2584,8 +2619,8 @@ module top_darjeeling #(
       .nmi_wdog_i(aon_timer_aon_nmi_wdog_timer_bark),
       .edn_o(edn0_edn_req[7]),
       .edn_i(edn0_edn_rsp[7]),
-      .icache_otp_key_o(otp_ctrl_sram_otp_key_req[2]),
-      .icache_otp_key_i(otp_ctrl_sram_otp_key_rsp[2]),
+      .icache_otp_key_o(otp_ctrl_sram_otp_key_req[3]),
+      .icache_otp_key_i(otp_ctrl_sram_otp_key_rsp[3]),
       .fpga_info_i(fpga_info_i),
       .corei_tl_h_o(main_tl_rv_core_ibex__corei_req),
       .corei_tl_h_i(main_tl_rv_core_ibex__corei_rsp),
@@ -2884,6 +2919,14 @@ module top_darjeeling #(
     // port: tl_sram_ctrl_main__ram
     .tl_sram_ctrl_main__ram_o(sram_ctrl_main_ram_tl_req),
     .tl_sram_ctrl_main__ram_i(sram_ctrl_main_ram_tl_rsp),
+
+    // port: tl_sram_ctrl_mbox__regs
+    .tl_sram_ctrl_mbox__regs_o(sram_ctrl_mbox_regs_tl_req),
+    .tl_sram_ctrl_mbox__regs_i(sram_ctrl_mbox_regs_tl_rsp),
+
+    // port: tl_sram_ctrl_mbox__ram
+    .tl_sram_ctrl_mbox__ram_o(sram_ctrl_mbox_ram_tl_req),
+    .tl_sram_ctrl_mbox__ram_i(sram_ctrl_mbox_ram_tl_rsp),
 
 
     .scanmode_i

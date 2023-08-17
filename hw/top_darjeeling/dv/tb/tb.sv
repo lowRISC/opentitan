@@ -441,6 +441,16 @@ module tb;
           .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_RAM_RET_AON_BASE_ADDR));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamRet0], `RAM_RET_MEM_HIER)
 
+      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for RAM MBOX", UVM_MEDIUM)
+      m_mem_bkdr_util[RamMbox0] = new(
+          .name  ("mem_bkdr_util[RamMbox0]"),
+          .path  (`DV_STRINGIFY(`RAM_MBOX_MEM_HIER)),
+          .depth ($size(`RAM_MBOX_MEM_HIER)),
+          .n_bits($bits(`RAM_MBOX_MEM_HIER)),
+          .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
+          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_RAM_MBOX_BASE_ADDR));
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamMbox0], `RAM_MBOX_MEM_HIER)
+
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for ROM", UVM_MEDIUM)
       m_mem_bkdr_util[Rom] = new(
           .name  ("mem_bkdr_util[Rom]"),
@@ -482,6 +492,7 @@ module tb;
       do begin
         if (mem inside {[RamMain1:RamMain15]} ||
             mem inside {[RamRet1:RamRet15]} ||
+            mem inside {[RamMbox1:RamMbox15]} ||
             mem inside {[OtbnDmem1:OtbnDmem15]}) begin
           mem = mem.next();
           continue;

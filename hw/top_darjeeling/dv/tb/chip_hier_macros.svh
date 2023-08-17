@@ -19,6 +19,7 @@
 `define OTP_CTRL_HIER         `CHIP_HIER.u_otp_ctrl
 `define RAM_MAIN_HIER         `CHIP_HIER.u_sram_ctrl_main.u_prim_ram_1p_scr
 `define RAM_RET_HIER          `CHIP_HIER.u_sram_ctrl_ret_aon.u_prim_ram_1p_scr
+`define RAM_MBOX_HIER         `CHIP_HIER.u_sram_ctrl_mbox.u_prim_ram_1p_scr
 `define ROM_CTRL_HIER         `CHIP_HIER.u_rom_ctrl
 `define RSTMGR_HIER           `CHIP_HIER.u_rstmgr_aon
 `define SPI_DEVICE_HIER       `CHIP_HIER.u_spi_device
@@ -55,6 +56,7 @@
 `define ICACHE1_DATA_MEM_HIER `ICACHE_WAY1_HIER.data_bank.u_prim_ram_1p_adv.u_mem.`MEM_ARRAY_SUB
 `define RAM_MAIN_MEM_HIER     `RAM_MAIN_HIER.u_prim_ram_1p_adv.u_mem.`MEM_ARRAY_SUB
 `define RAM_RET_MEM_HIER      `RAM_RET_HIER.u_prim_ram_1p_adv.u_mem.`MEM_ARRAY_SUB
+`define RAM_MBOX_MEM_HIER     `RAM_MBOX_HIER.u_prim_ram_1p_adv.u_mem.`MEM_ARRAY_SUB
 `define ROM_MEM_HIER          `ROM_CTRL_HIER.`ROM_CTRL_INT_PATH
 `define OTP_GENERIC_HIER      `OTP_CTRL_HIER.u_otp.gen_generic.u_impl_generic
 `define OTP_MEM_HIER          `OTP_GENERIC_HIER.u_prim_ram_1p_adv.u_mem.`MEM_ARRAY_SUB

@@ -181,6 +181,10 @@
     },
   ],
   connections: {
+    // Note that only the following masters have access to the peri
+    // crossbar: rv_dm.sba, rv_core_ibex.cored, TODO:dma_ctrl
+    // The ibex instruction fetch port does NOT have access to these
+    // peripherals.
     main:  [
       "uart0", "uart1", "uart2", "uart3", "i2c0", "i2c1", "i2c2", "pattgen",
       "gpio", "spi_device", "rv_timer",

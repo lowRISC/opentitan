@@ -90,6 +90,7 @@ package chip_env_pkg;
     Otp,
     RamMain[16],
     RamRet[16],
+    RamMbox[16],
     Rom
   } chip_mem_e;
 

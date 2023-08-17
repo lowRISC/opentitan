@@ -52,6 +52,16 @@
 #define TOP_DARJEELING_RAM_MAIN_SIZE_BYTES 0x10000
 
 /**
+ * Memory base for sram_ctrl_mbox_ram_mbox in top darjeeling.
+ */
+#define TOP_DARJEELING_RAM_MBOX_BASE_ADDR 0x11000000
+
+/**
+ * Memory size for sram_ctrl_mbox_ram_mbox in top darjeeling.
+ */
+#define TOP_DARJEELING_RAM_MBOX_SIZE_BYTES 0x1000
+
+/**
  * Memory base for rom_ctrl_rom in top darjeeling.
  */
 #define TOP_DARJEELING_ROM_BASE_ADDR 0x00008000
@@ -862,6 +872,40 @@
  * `TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR + TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES`.
  */
 #define TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES 0x10000
+/**
+ * Peripheral base address for regs device on sram_ctrl_mbox in top darjeeling.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_DARJEELING_SRAM_CTRL_MBOX_REGS_BASE_ADDR 0x411D0000
+
+/**
+ * Peripheral size for regs device on sram_ctrl_mbox in top darjeeling.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_DARJEELING_SRAM_CTRL_MBOX_REGS_BASE_ADDR and
+ * `TOP_DARJEELING_SRAM_CTRL_MBOX_REGS_BASE_ADDR + TOP_DARJEELING_SRAM_CTRL_MBOX_REGS_SIZE_BYTES`.
+ */
+#define TOP_DARJEELING_SRAM_CTRL_MBOX_REGS_SIZE_BYTES 0x20
+/**
+ * Peripheral base address for ram device on sram_ctrl_mbox in top darjeeling.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_BASE_ADDR 0x11000000
+
+/**
+ * Peripheral size for ram device on sram_ctrl_mbox in top darjeeling.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_BASE_ADDR and
+ * `TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_BASE_ADDR + TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_SIZE_BYTES`.
+ */
+#define TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_SIZE_BYTES 0x1000
 /**
  * Peripheral base address for regs device on rom_ctrl in top darjeeling.
  *

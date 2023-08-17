@@ -93,6 +93,8 @@
       kmac
       sram_ctrl_main.regs
       rv_core_ibex.cfg
+      sram_ctrl_mbox.ram
+      sram_ctrl_mbox.regs
     ]
     rv_dm.sba:
     [
@@ -120,6 +122,8 @@
       kmac
       sram_ctrl_main.regs
       rv_core_ibex.cfg
+      sram_ctrl_mbox.ram
+      sram_ctrl_mbox.regs
     ]
   }
   nodes:
@@ -612,6 +616,42 @@
         {
           base_addr: 0x10000000
           size_byte: 0x10000
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: sram_ctrl_mbox.regs
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      inst_type: sram_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0x411d0000
+          size_byte: 0x20
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: sram_ctrl_mbox.ram
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      inst_type: sram_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0x11000000
+          size_byte: 0x1000
         }
       ]
       xbar: false

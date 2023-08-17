@@ -83,6 +83,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // Number of RAM tiles for each RAM instance.
   uint num_ram_main_tiles;
   uint num_ram_ret_tiles;
+  uint num_ram_mbox_tiles;
   uint num_otbn_dmem_tiles;
 
   // ext component cfgs
@@ -218,6 +219,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
     `DV_CHECK_LE_FATAL(num_ram_main_tiles, 16)
     `DV_CHECK_LE_FATAL(num_ram_ret_tiles, 16)
+    `DV_CHECK_LE_FATAL(num_ram_mbox_tiles, 16)
     `DV_CHECK_LE_FATAL(num_otbn_dmem_tiles, 16)
 
     // ral_model_names = chip_reg_block // 1 entry
@@ -255,6 +257,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     // Set the number of RAM tiles (1 each).
     num_ram_main_tiles = 1;
     num_ram_ret_tiles = 1;
+    num_ram_mbox_tiles = 1;
     num_otbn_dmem_tiles = 1;
   endfunction
 

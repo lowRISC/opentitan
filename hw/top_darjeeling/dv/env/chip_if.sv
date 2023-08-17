@@ -76,6 +76,7 @@ interface chip_if;
 `define SPI_HOST_HIER(i)    `TOP_HIER.u_spi_host``i
 `define SRAM_CTRL_MAIN_HIER `TOP_HIER.u_sram_ctrl_main
 `define SRAM_CTRL_RET_HIER  `TOP_HIER.u_sram_ctrl_ret_aon
+`define SRAM_CTRL_MBOX      `TOP_HIER.u_sram_ctrl_mbox
 `define SYSRST_CTRL_HIER    `TOP_HIER.u_sysrst_ctrl_aon
 `define UART_HIER(i)        `TOP_HIER.u_uart``i
 `define USBDEV_HIER         `TOP_HIER.u_usbdev
@@ -687,6 +688,7 @@ interface chip_if;
 
   wire sram_main_init_done = 0;
   wire sram_ret_init_done = 0;
+  wire sram_mbox_init_done = 0;
 
   wire flash_core1_host_req = 0;
 `else
@@ -698,6 +700,7 @@ interface chip_if;
 
   wire sram_main_init_done = `SRAM_CTRL_MAIN_HIER.u_reg_regs.status_init_done_qs;
   wire sram_ret_init_done = `SRAM_CTRL_RET_HIER.u_reg_regs.status_init_done_qs;
+  wire sram_mbox_init_done = `SRAM_CTRL_MBOX.u_reg_regs.status_init_done_qs;
 
   wire flash_core1_host_req = `FLASH_CTRL_HIER.u_eflash.gen_flash_cores[1].u_core.host_req_i;
 `endif

@@ -33,6 +33,8 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_SPACE_RV_CORE_IBEX__CFG    = 32'h 411f0000;
   localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_MAIN__REGS = 32'h 411c0000;
   localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_MAIN__RAM  = 32'h 10000000;
+  localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_MBOX__REGS = 32'h 411d0000;
+  localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_MBOX__RAM  = 32'h 11000000;
 
   localparam logic [31:0] ADDR_MASK_RV_DM__REGS          = 32'h 00000003;
   localparam logic [31:0] ADDR_MASK_RV_DM__MEM           = 32'h 00000fff;
@@ -61,9 +63,11 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_RV_CORE_IBEX__CFG    = 32'h 000007ff;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_MAIN__REGS = 32'h 0000001f;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_MAIN__RAM  = 32'h 0000ffff;
+  localparam logic [31:0] ADDR_MASK_SRAM_CTRL_MBOX__REGS = 32'h 0000001f;
+  localparam logic [31:0] ADDR_MASK_SRAM_CTRL_MBOX__RAM  = 32'h 00000fff;
 
   localparam int N_HOST   = 3;
-  localparam int N_DEVICE = 24;
+  localparam int N_DEVICE = 26;
 
   typedef enum int {
     TlRvDmRegs = 0,
@@ -89,7 +93,9 @@ package tl_main_pkg;
     TlKeymgr = 20,
     TlRvCoreIbexCfg = 21,
     TlSramCtrlMainRegs = 22,
-    TlSramCtrlMainRam = 23
+    TlSramCtrlMainRam = 23,
+    TlSramCtrlMboxRegs = 24,
+    TlSramCtrlMboxRam = 25
   } tl_device_e;
 
   typedef enum int {

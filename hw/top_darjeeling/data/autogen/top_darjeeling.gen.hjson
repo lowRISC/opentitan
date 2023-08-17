@@ -1157,7 +1157,7 @@
           randcount: 40
           randtype: data
           name_top: RndCnstOtpCtrlLfsrSeed
-          default: 0xcb0157a3ac
+          default: 0x577a172d04
           randwidth: 40
         }
         {
@@ -1167,7 +1167,7 @@
           randcount: 40
           randtype: perm
           name_top: RndCnstOtpCtrlLfsrPerm
-          default: 0x3946df8032263d64e474a1a110541e61a55770d0a33110222592c19479d2
+          default: 0x7271845d342230948d28156085974898590059e1e53a34422cf61b51a0df
           randwidth: 240
         }
         {
@@ -1177,7 +1177,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstOtpCtrlScrmblKeyInit
-          default: 0x605fefe9977b00b6fdc21d577a172d047dcf0eebbdd268afd4e2506df1d0603f
+          default: 0xebdeee2911062e039f8c7e1afa78a1d42886cc89ae759cf865b22a5f28de2eca
           randwidth: 256
         }
       ]
@@ -1421,8 +1421,8 @@
           width: 4
           default: "'0"
           inst_name: otp_ctrl
-          end_idx: 3
-          top_type: partial-one-to-N
+          end_idx: -1
+          top_type: one-to-N
           top_signame: otp_ctrl_sram_otp_key
           index: -1
         }
@@ -1575,7 +1575,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstLcCtrlLcKeymgrDivInvalid
-          default: 0x9cd62f178adc74d53d8ad0b600e7a1dd
+          default: 0x36afc2e8a402302cbdcf2b4819afaa0a
           randwidth: 128
         }
         {
@@ -1585,7 +1585,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstLcCtrlLcKeymgrDivTestDevRma
-          default: 0x2f1a43c03dd4ff9b887ab7521ca6cbd8
+          default: 0x11cb68371eef174d98315696c49a8ef5
           randwidth: 128
         }
         {
@@ -1595,7 +1595,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstLcCtrlLcKeymgrDivProduction
-          default: 0xd7107bab98b075743f7aeba81e1c4ec8
+          default: 0x3c96f11e4f43ffd421e456b4d6a9d1d2
           randwidth: 128
         }
         {
@@ -1605,7 +1605,7 @@
           randcount: 1024
           randtype: data
           name_top: RndCnstLcCtrlInvalidTokens
-          default: 0xebdeee2911062e039f8c7e1afa78a1d42886cc89ae759cf865b22a5f28de2eca36afc2e8a402302cbdcf2b4819afaa0a11cb68371eef174d98315696c49a8ef53c96f11e4f43ffd421e456b4d6a9d1d2ab4a836f1545ebf50ff87bc3fe8473a3b8a698eb44c3b5821fc5bae3e1bd59723b69b2d7b5330424c30845eb1f7a5eef
+          default: 0xab4a836f1545ebf50ff87bc3fe8473a3b8a698eb44c3b5821fc5bae3e1bd59723b69b2d7b5330424c30845eb1f7a5eef762a1f9129c2b7fcbae1b8009909adec2586c494f5dac82c170b9de79af5b2710ce4bfcac18ed45328d7d63ca958ac39f21abc3925a2b2b291a98470716274c976b8106dd974cc66d7f9c8518eefb75a
           randwidth: 1024
         }
         {
@@ -2141,7 +2141,7 @@
           randcount: 32
           randtype: data
           name_top: RndCnstAlertHandlerLfsrSeed
-          default: 0x762a1f91
+          default: 0xc6b95282
           randwidth: 32
         }
         {
@@ -2151,7 +2151,7 @@
           randcount: 32
           randtype: perm
           name_top: RndCnstAlertHandlerLfsrPerm
-          default: 0x375ed89d2a1d32862f7a7785f940950cc1cbdb05
+          default: 0x8d6fd224f37074b2fe0cf0874b0398799b2dab28
           randwidth: 160
         }
       ]
@@ -4552,7 +4552,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstSramCtrlRetAonSramKey
-          default: 0x3925a2b2b291a98470716274c976b810
+          default: 0x5aca0c8d4b9e2fc1918d324c4cfb1a95
           randwidth: 128
         }
         {
@@ -4562,7 +4562,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstSramCtrlRetAonSramNonce
-          default: 0x6dd974cc66d7f9c8518eefb75ac6b952
+          default: 0x698ea1eb7868f849707838f547a2c2a6
           randwidth: 128
         }
         {
@@ -4572,7 +4572,7 @@
           randcount: 32
           randtype: data
           name_top: RndCnstSramCtrlRetAonLfsrSeed
-          default: 0x8242ce57
+          default: 0x4a91a9d7
           randwidth: 32
         }
         {
@@ -4582,7 +4582,7 @@
           randcount: 32
           randtype: perm
           name_top: RndCnstSramCtrlRetAonLfsrPerm
-          default: 0x9eb0a8f524a38f50a165833821df3607bef3365b
+          default: 0x81b8f4f70d166ba578ffa5ca159243dd98e8cd00
           randwidth: 160
         }
         {
@@ -4762,7 +4762,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstFlashCtrlAddrKey
-          default: 0x4b9e2fc1918d324c4cfb1a95698ea1eb
+          default: 0x4c9576a112cea79b52282399833da888
           randwidth: 128
         }
         {
@@ -4772,7 +4772,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstFlashCtrlDataKey
-          default: 0x7868f849707838f547a2c2a64a91a9d7
+          default: 0xc02546e72eb6f09a26a1661a0d5db701
           randwidth: 128
         }
         {
@@ -4782,7 +4782,7 @@
           randcount: 512
           randtype: data
           name_top: RndCnstFlashCtrlAllSeeds
-          default: 0x3429d8d73dedb65d2b0751b90255ccde50a2c9ab31cafb75c007285a0ae495e2f5f51fd2acf212901174c9576a112cea79b52282399833da888c02546e72eb6
+          default: 0xddf4ed7c6f48878171c320fdf1fdef7913525470e04a549ebdd80d4f7b729f25a1926e5173690709f09e8597d26dfc56265ed80d03e335cb77683af6573e4c84
           randwidth: 512
         }
         {
@@ -4792,7 +4792,7 @@
           randcount: 32
           randtype: data
           name_top: RndCnstFlashCtrlLfsrSeed
-          default: 0xf09a26a1
+          default: 0x4a75ff9a
           randwidth: 32
         }
         {
@@ -4802,7 +4802,7 @@
           randcount: 32
           randtype: perm
           name_top: RndCnstFlashCtrlLfsrPerm
-          default: 0x8d51f3779ea635794ce550b2476e096bc165846c
+          default: 0x1ff2711770952c30e13575fac5bd4dd502e45b9
           randwidth: 160
         }
         {
@@ -5529,7 +5529,7 @@
           randcount: 64
           randtype: data
           name_top: RndCnstAesClearingLfsrSeed
-          default: 0x690709f09e8597d2
+          default: 0x78f79f8769f9e185
           randwidth: 64
         }
         {
@@ -5539,7 +5539,7 @@
           randcount: 64
           randtype: perm
           name_top: RndCnstAesClearingLfsrPerm
-          default: 0x18c918667bfd0701c2e7c825ad6c542918c8e8bbaa737b5fcfb7a8a6cd054048bf9b54a14cff8e69dc8de000f65c955b
+          default: 0x65693bfb3e2f69787c187aed80edd0509a23326c98fde56a0916f621295d3799e23c5d000eec754fda4b12cc1c7fa281
           randwidth: 384
         }
         {
@@ -5549,7 +5549,7 @@
           randcount: 64
           randtype: perm
           name_top: RndCnstAesClearingSharePerm
-          default: 0xf8633cfde5afa6b507549420eaed688c110a9306b63992ea71787dc9f634cc30916f7b484a6e3195d37bb2788f153e40
+          default: 0x516259304f83ad029361772ed0fef98a07f66ff2e98c1b2dcc5025f3255284dbc2448ab1d7a19af5d3a7c24787de6a38
           randwidth: 384
         }
         {
@@ -5559,7 +5559,7 @@
           randcount: 160
           randtype: data
           name_top: RndCnstAesMaskingLfsrSeed
-          default: 0xebdb78aae822f2f444df087b34854b57fa1b481b
+          default: 0x7fbfa00e47bf71dc7947873bf1a7b4cbad77105a
           randwidth: 160
         }
         {
@@ -5569,7 +5569,7 @@
           randcount: 160
           randtype: perm
           name_top: RndCnstAesMaskingLfsrPerm
-          default: 0x35211013031815808909584f6726255d0417556d9e2a227341642e826136760c4e9b0616931f514c8d0b793d6642813037878800200249502b68999d0a6f864d4a94193f54293a1a637746852833577d1c3239749c0f2c05318340271e705e1b758e453e7b52906a8c8a98485b11122f622d083b569a9153781d92238f6e385f47957f964b847e247a72606597597c3c075a43716c0e5c69340d8b446b14019f
+          default: 0x1a06086a775b2b11374d5a9e2a1f9b6f6d4c7e4b9f3160852f654a994f4942724391955523105d15962e2c7d218f44160330530d529d8e092686201898025013834540806c04129a7a54071d79943b6e6235610a75700c2d327b9c5c921774870e331c886b76000141059338571b28145f71847f8947485627193f3e6682293a34978c51678d24396473581e590b633d814e3c8a36788b7c460f69689022255e
           randwidth: 1280
         }
       ]
@@ -5795,7 +5795,7 @@
           randcount: 800
           randtype: data
           name_top: RndCnstKmacLfsrSeed
-          default: 0x48f16180909826998ace3628c0cf0e58b70885718609fa79565dcba540aded8c8d5560af97340ea929aae07c399bb65d74bd1ff16f2816902bbe7ed54814f7451c011afbb712b66e42c1910358162e3fb2368ebde95c97fa3b0e8f6629a16e94d4e43991
+          default: 0x2e3fb2368ebde95c97fa3b0e8f6629a16e94d4e43991fbdc31303ee6bd9c4285be6303d3e48a9fae8ab504b3c162c97e295803bef65b65666292f222316e41c55ea3b7a5ded4be1f548d0a2272ad3124be0e850c631ebf0628dba982a4523510fa7d3b97
           randwidth: 800
         }
         {
@@ -5805,7 +5805,7 @@
           randcount: 800
           randtype: perm
           name_top: RndCnstKmacLfsrPerm
-          default: 0xc116f8ec1bb4a423187784925add5d7f1736506f13c55ab6ab1a707510497a2a30aaf41d15e7b06a0605324a931e4ca206b335f126dc42059684f991522e8483099360995db9a76186a6cb55a44a6637901577fc4838501b71f8534b27ec9c6bcf3c31aebca3a810266d601089e99c92c7cc3ebd711a50368d938c71d234e9e5644c636ee1ae0b88ce78281d70e775fc1eb389ebc09f7c1d1ad4052b89680d1411ee2b68c35e576b91112650c8fe9c0e5371c1b16e89371e5b48e6017a5460a5833a78af684c4e029c1d62fa5a2c4c98468f60c209967aa8276072c090c3b20f1bac18044271bc55a5ca5265ddf621b06b5613d0acc0ee0090a6904d29992b4c87f7d1d9359deb948ab2482591dab12ea3b060a14f1b144a43de23a17587c94bb0118c6ff38a63605c998b171151d0ca38bdc3c3e1c0184cf029215b1a78e4a25014b29e3042e5679ebb4d62b791c625e5f4787b4b68a4d2d0866a29ada8ac86d280510cd399d2297148cbaca4c39bd37c136ec356e1171b8b7460fa8800950e886c8f79d43a5b6fa97589879f779682aba5ec58fd5c4d5afa47b36c1ab24fb0ed461ee313949320a8572862240823846b223d9f50263d66411455e1fe6fdef874801a2682100c5d1f92fccc3a8e56da4a2f6dd3c22d052c286d92148a11f66aa345732d530fd9c00e3c3e696b9dcd4344033698a6e877f4b355633006cc172649bdedc74eba68c1236d33c91531c9d0e221820d9219ddc0a45781a0a9e15a7cad53dc8142fb841300d1a693269c3dcb46a51ac4070b2923987a612245aa5cafdcc89af34f53c6664b068ddb5a2e054bb26e8e0f59f47d0eb7c31762a11c5937e82fadaba4a98b4182d37190ad21a8582383e7c7c6172e81f9ee6e21646754649547336e35619128d0aa1daa4a418549c5a3d9e17dafe1952245969112227a93679a00065dc9b103bf4ef30a4e6fa1cb854c7add0a552fb98954e9db6cd96bbeb9b1f081e00d5954a175630105f5ed3b7d71e08509685f249300a00d09b6d94b946c695bb5706c06a866273bb55f134d19fcb95399b46ebc1d53f2408b09417ae066551504203018da29406c02e5919e0eb185bc41d789d9e3a57c8cb1410e8921d29c54e0244e4c611c0de816ae97986afc6459a2c5681db48357e738b02f1d3104af12d58415a4712d138cfe70570b3e0c8f96e2d4104989a0ba28aa5a55f47c0a47e221ac2ae2544d628148fb29e3c2d6b59c02819412e1ee5dc72545193fea567542369473b4d8638274a22f162db6a8c0aa8b48b2499230a188deba56073dbc94d00b61c2668b63f0a99e4540002b750f584e8368e67b5c064cc98a31313b8d4a46a628efc63214c371f7282854af8b797a41cc562995038a5c14128aa7e03ef942af63ecc4
+          default: 0x3c436606c45e0123ccc4406427e45e278d34f6b33289c9ff176dd0ca8a849311f6c1b5082981dd83b32038ec1824ae074a404ad5ec10baa52a1c797f8765679061ac96dc394b962c9a8eab1931106eb1652049dad3a5cec06a456b885978cf7a44cab84839d5c4f0c3636a85caf46bc9f4746028d0a1fc8a4b685154e865d4d4781143e471a9892b06b484e29c230a42446c93e559f32ee5b43ac2a9c69776e310b05bcad631548880d748d34865c3972293243197cb2450ce4dc3c26c2207654c7d326b52a41acaaf6f624e6a7259371d76be21807074982e8b1601c48be79dc5666d49be392ba2177d82b4b0895dde92d110f8d212adc02aff2648193f0c3581e08c15c54f84d6d9620960c8839a21131a6da38f461c264944787ec87d0a66454311494482469e082b6a75718e19d2bb0e55a1c0dc7a2808d30b7de7d0edfd7fb0082805059e073592b7eedb79744e6129dc6f126ea0918a2c58f28a627c1d85cee4721d91e6dd592d129de24b2730bda86c6bc54871bf8975022d1ededad557bc15982e89a55a91b4a014433576928ae559748cc50a4c4e7c37c137543569d171b9382dd183ea3c02568a9ab83de0f0e9449c69c7fd958ea33892a0b356c9ef1c3f5c03556f586649ea4eb2de559ae26ee4dc0c4e85949ab0a889971be8890208ec5b199cafc40b07641b641145878dd7bdbd0f4805e468a1884031da07cbf330ea39636744bdbf4f092814b861b6fc527c4a11f6888423732e1485dcb00e8f62cf97e9ec7f10d100cdadebabb263670b355638006eb172bfa0a8d0b6f73aeb93048dbccf2454c7274388f6233648667eb0a6a66826968c6be2b54f6e5f81431ba6530809a69a6875e9fb46a6eb40070b22239a08856415ab10b01d67324315d800d1ba0aae78d6651e9a0c0ac196910b1a936e053b544654d845d43f13d0b322a41ccdb9498644a512a876b0ecf615278685a3d9e17daad19522459691123f7a93679a00065dca2903c74ef8b8c29adbe87301531eb742b44bf062553a76db365b0fc2ae6c6078035655285d58c0417d7b4edf53ec21425a17c9243ba9e342afbe52e5180f56ef5630d4b1d98a470d57c4d3469d2e54e66d1bb6c754fc909b08b09417c6866551504203018da29406c02e5919e0ebb85b41dd789d9e3a57c8c80e10e9f21d29294e0244e48a91c0de816aeb6a6e61b3a7e1668b15a076d20d5f9ce2c0bc74c412bc4b56105691c4bc4e33f9c15c2ef8323e5b8b5041262682e8a2a96957d1f0291f8886b0ab8951358a0523ee978c285ad6700a06504b87b9771c951464ffa959db9542369473b4d8638274a22f162fb6a8c0aa8b48b249921ca188dec256073dbc94d00b61c2668b63f0a99e4540002b750f584e8368e67b5c064cc98a3131
           randwidth: 8000
         }
         {
@@ -5815,7 +5815,7 @@
           randcount: 32
           randtype: perm
           name_top: RndCnstKmacLfsrFwdPerm
-          default: 0x6c52bada026047a34f972e09207688729fbcf8ff
+          default: 0xb2f48b907baf5899e1cdf3ff0904b957007150d1
           randwidth: 160
         }
         {
@@ -5825,7 +5825,7 @@
           randcount: 64
           randtype: perm
           name_top: RndCnstKmacMsgPerm
-          default: 0xe16cb1a4455785bd0dc24673fd21eadfe99c19f0e0090daf78e949158b4c20f8ee8944fb00a9fa45d07d2f5a3cb2b6b9
+          default: 0x9e6f6dae8ab2b076765490d350f10b20688df0aede4008db4566016827e1964329defe75c45773ffab8e5f0712e3ed20
           randwidth: 384
         }
       ]
@@ -6003,7 +6003,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstOtbnUrndPrngSeed
-          default: 0x173b021751142eb30b9482bd8e7d31d3e1a2619d66ef6cb916fd6c864a510aed
+          default: 0x2eba3f71e4ebac6f4f9643c62e4091e11907a6734572487f85f60d1f1f254a38
           randwidth: 256
         }
         {
@@ -6039,7 +6039,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstOtbnOtbnKey
-          default: 0x83d2d2e24871c35e3aeabae77182cdef
+          default: 0x1cc3db4db727f0d96de4a0e05a5dc7f
           randwidth: 128
         }
         {
@@ -6049,7 +6049,7 @@
           randcount: 64
           randtype: data
           name_top: RndCnstOtbnOtbnNonce
-          default: 0xf9f77516f1177315
+          default: 0xf64f231d7db9c9bd
           randwidth: 64
         }
       ]
@@ -6234,7 +6234,7 @@
           randcount: 64
           randtype: data
           name_top: RndCnstKeymgrLfsrSeed
-          default: 0x733affa732f4c491
+          default: 0x90cf465b59731b72
           randwidth: 64
         }
         {
@@ -6244,7 +6244,7 @@
           randcount: 64
           randtype: perm
           name_top: RndCnstKeymgrLfsrPerm
-          default: 0x2c629940f4ed827c37884c63aa6a4e7455ec93c21bb87712ed5d4ca1e274c8ddb953f0fe03a46f598ac1e1a09fcfd865
+          default: 0x2e84bd5bff8b63e9c33cbe039fad42a4f6236a115b1d25e0772325e94a63f66b1c195a51f9cc3ec59fed02193411a18
           randwidth: 384
         }
         {
@@ -6254,7 +6254,7 @@
           randcount: 32
           randtype: perm
           name_top: RndCnstKeymgrRandPerm
-          default: 0x5216c347ed2de7aa0bd0c6ebd905eeb73203a483
+          default: 0x26ca8669f97286b178f86ca6985b81fd3a6ac417
           randwidth: 160
         }
         {
@@ -6264,7 +6264,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrRevisionSeed
-          default: 0x414c190ad0a09d144ffc0c0fea081cef945b641f096b9f3e9a494ba35fcfef0d
+          default: 0x8f73d707cd0ec1d33daaef20e285fa658fdd1b426c037151b16c8d444c444f39
           randwidth: 256
         }
         {
@@ -6274,7 +6274,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrCreatorIdentitySeed
-          default: 0xfb223e8ab704f249ee3fa822276c45e588ed40cf52c8fae2d054a71149771822
+          default: 0x6f4479cb795cf94b9e409d18381bd5d56821e2985e47997105c4900f25557467
           randwidth: 256
         }
         {
@@ -6284,7 +6284,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrOwnerIntIdentitySeed
-          default: 0x2ec37360e23d4dda559adabcf099937febbf048fac328ba1bdee0caca987be4a
+          default: 0x5985b210e1a968e45e5b35e460fdaf1ff382ab0195e33689d99bcebf2b79b683
           randwidth: 256
         }
         {
@@ -6294,7 +6294,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrOwnerIdentitySeed
-          default: 0x4abf486b16740b20bc32b13ff07a13ff21ce605e0ac019858f73d707cd0ec1d3
+          default: 0x9264edf4de2b39f394059891a38bd1d16c763bbd90347e58152d7fca99380365
           randwidth: 256
         }
         {
@@ -6304,7 +6304,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrSoftOutputSeed
-          default: 0x3daaef20e285fa658fdd1b426c037151b16c8d444c444f396f4479cb795cf94b
+          default: 0x25aaa3f89e3de8f1278645e11d7cac76310205e19cd3f2ed294a279f3c6d0649
           randwidth: 256
         }
         {
@@ -6314,7 +6314,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrHardOutputSeed
-          default: 0x9e409d18381bd5d56821e2985e47997105c4900f255574675985b210e1a968e4
+          default: 0xa905cc9b10a67a16161fed72416dfd293de3a18a8837b0dd4cb694dd540451d7
           randwidth: 256
         }
         {
@@ -6324,7 +6324,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrAesSeed
-          default: 0x5e5b35e460fdaf1ff382ab0195e33689d99bcebf2b79b6839264edf4de2b39f3
+          default: 0x69d28e1d9e76007b7a9e0f6e3d591a7fd8c7ba264af78f28aee0d28e4d638d95
           randwidth: 256
         }
         {
@@ -6334,7 +6334,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrKmacSeed
-          default: 0x94059891a38bd1d16c763bbd90347e58152d7fca9938036525aaa3f89e3de8f1
+          default: 0xd1806e870336cd961d2049f332011cab7d512b69b6b766dc84760801c9aae19e
           randwidth: 256
         }
         {
@@ -6344,7 +6344,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrOtbnSeed
-          default: 0x278645e11d7cac76310205e19cd3f2ed294a279f3c6d0649a905cc9b10a67a16
+          default: 0x8a6dd42f94a9a15fa77f118b21ba52c5d59d755f58d2d86244d2dc258ca12cc7
           randwidth: 256
         }
         {
@@ -6354,7 +6354,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrCdi
-          default: 0x161fed72416dfd293de3a18a8837b0dd4cb694dd540451d769d28e1d9e76007b
+          default: 0xb776b16dd95013b9569bd77059093ed3ce77aea86ffd82cb1cdee3fcd6039c7
           randwidth: 256
         }
         {
@@ -6364,7 +6364,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrNoneSeed
-          default: 0x7a9e0f6e3d591a7fd8c7ba264af78f28aee0d28e4d638d95d1806e870336cd96
+          default: 0xc04024965b7c1e1c07548a9bf5956e7482848de7d401512a2573043a8e0ad9b1
           randwidth: 256
         }
       ]
@@ -6574,7 +6574,7 @@
           randcount: 384
           randtype: data
           name_top: RndCnstCsrngCsKeymgrDivNonProduction
-          default: 0x1d2049f332011cab7d512b69b6b766dc84760801c9aae19e8a6dd42f94a9a15fa77f118b21ba52c5d59d755f58d2d862
+          default: 0x56d761ad532f38f0767aff4bbb54571d7ba3ebc393927b56cc945c44b53488920a7555f77bfc936fea4111888d196acf
           randwidth: 384
         }
         {
@@ -6584,7 +6584,7 @@
           randcount: 384
           randtype: data
           name_top: RndCnstCsrngCsKeymgrDivProduction
-          default: 0x44d2dc258ca12cc70b776b16dd95013b9569bd77059093ed3ce77aea86ffd82cb1cdee3fcd6039c7c04024965b7c1e1c
+          default: 0x43eef65b7d755cf00bd7432c3f8cd4e7eff1b9ec59ce812447c5714595f17463db6fd530f6331e81c7753e50d3cf1164
           randwidth: 384
         }
         {
@@ -7059,7 +7059,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstSramCtrlMainSramKey
-          default: 0x7548a9bf5956e7482848de7d401512a
+          default: 0x99003d018006371991f8fdf8344add67
           randwidth: 128
         }
         {
@@ -7069,7 +7069,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstSramCtrlMainSramNonce
-          default: 0x2573043a8e0ad9b156d761ad532f38f0
+          default: 0x7afe9e6a7bba1dddc10d8dd7f82d1584
           randwidth: 128
         }
         {
@@ -7079,7 +7079,7 @@
           randcount: 32
           randtype: data
           name_top: RndCnstSramCtrlMainLfsrSeed
-          default: 0x767aff4b
+          default: 0x4e53a6af
           randwidth: 32
         }
         {
@@ -7089,7 +7089,7 @@
           randcount: 32
           randtype: perm
           name_top: RndCnstSramCtrlMainLfsrPerm
-          default: 0x6cd8e17015d40914d8a70990bff7799628f1f957
+          default: 0x8bdd7b67d592a8349a6c0745a6879bc7d0559e04
           randwidth: 160
         }
         {
@@ -7199,6 +7199,204 @@
       ]
     }
     {
+      name: sram_ctrl_mbox
+      type: sram_ctrl
+      clock_srcs:
+      {
+        clk_i: main
+        clk_otp_i: io_div4
+      }
+      clock_group: infra
+      reset_connections:
+      {
+        rst_ni:
+        {
+          name: lc
+          domain: "0"
+        }
+        rst_otp_ni:
+        {
+          name: lc_io_div4
+          domain: "0"
+        }
+      }
+      param_decl:
+      {
+        InstrExec: "0"
+      }
+      base_addrs:
+      {
+        regs: 0x411D0000
+        ram: 0x11000000
+      }
+      memory:
+      {
+        ram:
+        {
+          label: ram_mbox
+          swaccess: rw
+          data_intg_passthru: "true"
+          exec: False
+          byte_write: True
+          size: 0x1000
+        }
+      }
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_main_infra
+        clk_otp_i: clkmgr_aon_clocks.clk_io_div4_infra
+      }
+      domain:
+      [
+        "0"
+      ]
+      param_list:
+      [
+        {
+          name: RndCnstSramKey
+          desc: Compile-time random reset value for SRAM scrambling key.
+          type: otp_ctrl_pkg::sram_key_t
+          randcount: 128
+          randtype: data
+          name_top: RndCnstSramCtrlMboxSramKey
+          default: 0xd7c90b2b3c3ef8b380c4e835fb113aad
+          randwidth: 128
+        }
+        {
+          name: RndCnstSramNonce
+          desc: Compile-time random reset value for SRAM scrambling nonce.
+          type: otp_ctrl_pkg::sram_nonce_t
+          randcount: 128
+          randtype: data
+          name_top: RndCnstSramCtrlMboxSramNonce
+          default: 0x6d7dca2f2c7d9bf2459d71e795890eb1
+          randwidth: 128
+        }
+        {
+          name: RndCnstLfsrSeed
+          desc: Compile-time random bits for initial LFSR seed
+          type: sram_ctrl_pkg::lfsr_seed_t
+          randcount: 32
+          randtype: data
+          name_top: RndCnstSramCtrlMboxLfsrSeed
+          default: 0x9ba14a52
+          randwidth: 32
+        }
+        {
+          name: RndCnstLfsrPerm
+          desc: Compile-time random permutation for LFSR output
+          type: sram_ctrl_pkg::lfsr_perm_t
+          randcount: 32
+          randtype: perm
+          name_top: RndCnstSramCtrlMboxLfsrPerm
+          default: 0xbc44d0e6acef2ce87e92f1c1bc0cc42a12b569f3
+          randwidth: 160
+        }
+        {
+          name: MemSizeRam
+          desc: Memory size of the RAM (in bytes).
+          type: int
+          name_top: MemSizeSramCtrlMboxRam
+          default: 4096
+        }
+        {
+          name: InstrExec
+          desc: Support execution from SRAM
+          type: bit
+          default: "0"
+          expose: "true"
+          name_top: SramCtrlMboxInstrExec
+        }
+      ]
+      inter_signal_list:
+      [
+        {
+          name: sram_otp_key
+          struct: sram_otp_key
+          package: otp_ctrl_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: sram_ctrl_mbox
+          default: ""
+          top_signame: otp_ctrl_sram_otp_key
+          index: 2
+        }
+        {
+          name: cfg
+          struct: ram_1p_cfg
+          package: prim_ram_1p_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: "'0"
+          inst_name: sram_ctrl_mbox
+          top_signame: ast_ram_1p_cfg
+          index: -1
+        }
+        {
+          name: lc_escalate_en
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: sram_ctrl_mbox
+          top_signame: lc_ctrl_lc_escalate_en
+          index: -1
+        }
+        {
+          name: lc_hw_debug_en
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: sram_ctrl_mbox
+          index: -1
+        }
+        {
+          name: otp_en_sram_ifetch
+          struct: mubi8
+          package: prim_mubi_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: prim_mubi_pkg::MuBi8False
+          inst_name: sram_ctrl_mbox
+          index: -1
+        }
+        {
+          name: regs_tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: sram_ctrl_mbox
+          default: ""
+          end_idx: -1
+          top_signame: sram_ctrl_mbox_regs_tl
+          index: -1
+        }
+        {
+          name: ram_tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: sram_ctrl_mbox
+          default: ""
+          end_idx: -1
+          top_signame: sram_ctrl_mbox_ram_tl
+          index: -1
+        }
+      ]
+    }
+    {
       name: rom_ctrl
       type: rom_ctrl
       clock_srcs:
@@ -7260,7 +7458,7 @@
           randcount: 64
           randtype: data
           name_top: RndCnstRomCtrlScrNonce
-          default: 0x755cf00bd7432c3f
+          default: 0x9042c8c7cff5b4ec
           randwidth: 64
         }
         {
@@ -7270,7 +7468,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstRomCtrlScrKey
-          default: 0x8cd4e7eff1b9ec59ce812447c5714595
+          default: 0x681d5a3ef37cd3f7fef64e04c83e6287
           randwidth: 128
         }
         {
@@ -7457,7 +7655,7 @@
           randcount: 32
           randtype: data
           name_top: RndCnstRvCoreIbexLfsrSeed
-          default: 0xf17463db
+          default: 0xd40d8254
           randwidth: 32
         }
         {
@@ -7467,7 +7665,7 @@
           randcount: 32
           randtype: perm
           name_top: RndCnstRvCoreIbexLfsrPerm
-          default: 0x7d3352c576e13e90efc895c136094776203e9b4d
+          default: 0x14283c14f1d27ad34d7cfbbdb056efc86ca23248
           randwidth: 160
         }
         {
@@ -7477,7 +7675,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstRvCoreIbexIbexKeyDefault
-          default: 0xc10d8dd7f82d15844e53a6af23823858
+          default: 0xd9a0c8e9a6805472c5bac69c84128b66
           randwidth: 128
         }
         {
@@ -7487,7 +7685,7 @@
           randcount: 64
           randtype: data
           name_top: RndCnstRvCoreIbexIbexNonceDefault
-          default: 0x2f4520c32d5e0d6d
+          default: 0xab7b55e03c2c8ea0
           randwidth: 64
         }
         {
@@ -7864,7 +8062,7 @@
           inst_name: rv_core_ibex
           default: ""
           top_signame: otp_ctrl_sram_otp_key
-          index: 2
+          index: 3
         }
         {
           name: fpga_info
@@ -8070,6 +8268,7 @@
         otbn.ram_cfg
         sram_ctrl_main.cfg
         sram_ctrl_ret_aon.cfg
+        sram_ctrl_mbox.cfg
         rv_core_ibex.ram_cfg
       ]
       ast.spi_ram_2p_cfg:
@@ -8127,6 +8326,7 @@
       [
         sram_ctrl_main.sram_otp_key
         sram_ctrl_ret_aon.sram_otp_key
+        sram_ctrl_mbox.sram_otp_key
         rv_core_ibex.icache_otp_key
       ]
       pwrmgr_aon.pwr_flash:
@@ -8319,6 +8519,7 @@
         otp_ctrl.lc_escalate_en
         sram_ctrl_main.lc_escalate_en
         sram_ctrl_ret_aon.lc_escalate_en
+        sram_ctrl_mbox.lc_escalate_en
         aon_timer_aon.lc_escalate_en
         flash_ctrl.lc_escalate_en
         pinmux_aon.lc_escalate_en
@@ -8511,6 +8712,14 @@
       sram_ctrl_main.ram_tl:
       [
         main.tl_sram_ctrl_main__ram
+      ]
+      sram_ctrl_mbox.regs_tl:
+      [
+        main.tl_sram_ctrl_mbox__regs
+      ]
+      sram_ctrl_mbox.ram_tl:
+      [
+        main.tl_sram_ctrl_mbox__ram
       ]
       uart0.tl:
       [
@@ -8782,6 +8991,8 @@
           kmac
           sram_ctrl_main.regs
           rv_core_ibex.cfg
+          sram_ctrl_mbox.ram
+          sram_ctrl_mbox.regs
         ]
         rv_dm.sba:
         [
@@ -8809,6 +9020,8 @@
           kmac
           sram_ctrl_main.regs
           rv_core_ibex.cfg
+          sram_ctrl_mbox.ram
+          sram_ctrl_mbox.regs
         ]
       }
       nodes:
@@ -9307,6 +9520,42 @@
           stub: false
           req_fifo_pass: true
         }
+        {
+          name: sram_ctrl_mbox.regs
+          type: device
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          inst_type: sram_ctrl
+          addr_range:
+          [
+            {
+              base_addr: 0x411d0000
+              size_byte: 0x20
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+        {
+          name: sram_ctrl_mbox.ram
+          type: device
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          inst_type: sram_ctrl
+          addr_range:
+          [
+            {
+              base_addr: 0x11000000
+              size_byte: 0x1000
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
       ]
       clock: clk_main_i
       type: xbar
@@ -9638,6 +9887,30 @@
           inst_name: main
           default: ""
           top_signame: sram_ctrl_main_ram_tl
+          index: -1
+        }
+        {
+          name: tl_sram_ctrl_mbox__regs
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: main
+          default: ""
+          top_signame: sram_ctrl_mbox_regs_tl
+          index: -1
+        }
+        {
+          name: tl_sram_ctrl_mbox__ram
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: main
+          default: ""
+          top_signame: sram_ctrl_mbox_ram_tl
           index: -1
         }
       ]
@@ -14069,6 +14342,7 @@
     edn0
     edn1
     sram_ctrl_main
+    sram_ctrl_mbox
     rom_ctrl
     rv_core_ibex
   ]
@@ -14611,6 +14885,15 @@
       type: alert
       async: "1"
       module_name: sram_ctrl_main
+      lpg_name: infra_lc_0
+      lpg_idx: 17
+    }
+    {
+      name: sram_ctrl_mbox_fatal_error
+      width: 1
+      type: alert
+      async: "1"
+      module_name: sram_ctrl_mbox
       lpg_name: infra_lc_0
       lpg_idx: 17
     }
@@ -15659,8 +15942,8 @@
         width: 4
         default: "'0"
         inst_name: otp_ctrl
-        end_idx: 3
-        top_type: partial-one-to-N
+        end_idx: -1
+        top_type: one-to-N
         top_signame: otp_ctrl_sram_otp_key
         index: -1
       }
@@ -19154,6 +19437,90 @@
         index: -1
       }
       {
+        name: sram_otp_key
+        struct: sram_otp_key
+        package: otp_ctrl_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: sram_ctrl_mbox
+        default: ""
+        top_signame: otp_ctrl_sram_otp_key
+        index: 2
+      }
+      {
+        name: cfg
+        struct: ram_1p_cfg
+        package: prim_ram_1p_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: "'0"
+        inst_name: sram_ctrl_mbox
+        top_signame: ast_ram_1p_cfg
+        index: -1
+      }
+      {
+        name: lc_escalate_en
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: sram_ctrl_mbox
+        top_signame: lc_ctrl_lc_escalate_en
+        index: -1
+      }
+      {
+        name: lc_hw_debug_en
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: sram_ctrl_mbox
+        index: -1
+      }
+      {
+        name: otp_en_sram_ifetch
+        struct: mubi8
+        package: prim_mubi_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: prim_mubi_pkg::MuBi8False
+        inst_name: sram_ctrl_mbox
+        index: -1
+      }
+      {
+        name: regs_tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: sram_ctrl_mbox
+        default: ""
+        end_idx: -1
+        top_signame: sram_ctrl_mbox_regs_tl
+        index: -1
+      }
+      {
+        name: ram_tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: sram_ctrl_mbox
+        default: ""
+        end_idx: -1
+        top_signame: sram_ctrl_mbox_ram_tl
+        index: -1
+      }
+      {
         name: rom_cfg
         struct: rom_cfg
         package: prim_rom_pkg
@@ -19434,7 +19801,7 @@
         inst_name: rv_core_ibex
         default: ""
         top_signame: otp_ctrl_sram_otp_key
-        index: 2
+        index: 3
       }
       {
         name: fpga_info
@@ -19813,6 +20180,30 @@
         inst_name: main
         default: ""
         top_signame: sram_ctrl_main_ram_tl
+        index: -1
+      }
+      {
+        name: tl_sram_ctrl_mbox__regs
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: main
+        default: ""
+        top_signame: sram_ctrl_mbox_regs_tl
+        index: -1
+      }
+      {
+        name: tl_sram_ctrl_mbox__ram
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: main
+        default: ""
+        top_signame: sram_ctrl_mbox_ram_tl
         index: -1
       }
       {
@@ -21172,7 +21563,7 @@
         signame: otp_ctrl_sram_otp_key_req
         width: 4
         type: req_rsp
-        end_idx: 3
+        end_idx: -1
         act: rsp
         suffix: req
         default: "'0"
@@ -21183,7 +21574,7 @@
         signame: otp_ctrl_sram_otp_key_rsp
         width: 4
         type: req_rsp
-        end_idx: 3
+        end_idx: -1
         act: rsp
         suffix: rsp
         default: ""
@@ -22545,6 +22936,50 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: sram_ctrl_main_ram_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: sram_ctrl_mbox_regs_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: sram_ctrl_mbox_regs_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: sram_ctrl_mbox_ram_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: sram_ctrl_mbox_ram_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

@@ -872,6 +872,42 @@ extern "C" {
 #define TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES 0x10000u
 
 /**
+ * Peripheral base address for regs device on sram_ctrl_mbox in top darjeeling.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_DARJEELING_SRAM_CTRL_MBOX_REGS_BASE_ADDR 0x411D0000u
+
+/**
+ * Peripheral size for regs device on sram_ctrl_mbox in top darjeeling.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_DARJEELING_SRAM_CTRL_MBOX_REGS_BASE_ADDR and
+ * `TOP_DARJEELING_SRAM_CTRL_MBOX_REGS_BASE_ADDR + TOP_DARJEELING_SRAM_CTRL_MBOX_REGS_SIZE_BYTES`.
+ */
+#define TOP_DARJEELING_SRAM_CTRL_MBOX_REGS_SIZE_BYTES 0x20u
+
+/**
+ * Peripheral base address for ram device on sram_ctrl_mbox in top darjeeling.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_BASE_ADDR 0x11000000u
+
+/**
+ * Peripheral size for ram device on sram_ctrl_mbox in top darjeeling.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_BASE_ADDR and
+ * `TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_BASE_ADDR + TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_SIZE_BYTES`.
+ */
+#define TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_SIZE_BYTES 0x1000u
+
+/**
  * Peripheral base address for regs device on rom_ctrl in top darjeeling.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -955,6 +991,16 @@ extern "C" {
  * Memory size for ram_main in top darjeeling.
  */
 #define TOP_DARJEELING_RAM_MAIN_SIZE_BYTES 0x10000u
+
+/**
+ * Memory base address for ram_mbox in top darjeeling.
+ */
+#define TOP_DARJEELING_RAM_MBOX_BASE_ADDR 0x11000000u
+
+/**
+ * Memory size for ram_mbox in top darjeeling.
+ */
+#define TOP_DARJEELING_RAM_MBOX_SIZE_BYTES 0x1000u
 
 /**
  * Memory base address for rom in top darjeeling.
@@ -1269,9 +1315,10 @@ typedef enum top_darjeeling_alert_peripheral {
   kTopDarjeelingAlertPeripheralEdn0 = 36, /**< edn0 */
   kTopDarjeelingAlertPeripheralEdn1 = 37, /**< edn1 */
   kTopDarjeelingAlertPeripheralSramCtrlMain = 38, /**< sram_ctrl_main */
-  kTopDarjeelingAlertPeripheralRomCtrl = 39, /**< rom_ctrl */
-  kTopDarjeelingAlertPeripheralRvCoreIbex = 40, /**< rv_core_ibex */
-  kTopDarjeelingAlertPeripheralLast = 40, /**< \internal Final Alert peripheral */
+  kTopDarjeelingAlertPeripheralSramCtrlMbox = 39, /**< sram_ctrl_mbox */
+  kTopDarjeelingAlertPeripheralRomCtrl = 40, /**< rom_ctrl */
+  kTopDarjeelingAlertPeripheralRvCoreIbex = 41, /**< rv_core_ibex */
+  kTopDarjeelingAlertPeripheralLast = 41, /**< \internal Final Alert peripheral */
 } top_darjeeling_alert_peripheral_t;
 
 /**
@@ -1341,12 +1388,13 @@ typedef enum top_darjeeling_alert_id {
   kTopDarjeelingAlertIdEdn1RecovAlert = 57, /**< edn1_recov_alert */
   kTopDarjeelingAlertIdEdn1FatalAlert = 58, /**< edn1_fatal_alert */
   kTopDarjeelingAlertIdSramCtrlMainFatalError = 59, /**< sram_ctrl_main_fatal_error */
-  kTopDarjeelingAlertIdRomCtrlFatal = 60, /**< rom_ctrl_fatal */
-  kTopDarjeelingAlertIdRvCoreIbexFatalSwErr = 61, /**< rv_core_ibex_fatal_sw_err */
-  kTopDarjeelingAlertIdRvCoreIbexRecovSwErr = 62, /**< rv_core_ibex_recov_sw_err */
-  kTopDarjeelingAlertIdRvCoreIbexFatalHwErr = 63, /**< rv_core_ibex_fatal_hw_err */
-  kTopDarjeelingAlertIdRvCoreIbexRecovHwErr = 64, /**< rv_core_ibex_recov_hw_err */
-  kTopDarjeelingAlertIdLast = 64, /**< \internal The Last Valid Alert ID. */
+  kTopDarjeelingAlertIdSramCtrlMboxFatalError = 60, /**< sram_ctrl_mbox_fatal_error */
+  kTopDarjeelingAlertIdRomCtrlFatal = 61, /**< rom_ctrl_fatal */
+  kTopDarjeelingAlertIdRvCoreIbexFatalSwErr = 62, /**< rv_core_ibex_fatal_sw_err */
+  kTopDarjeelingAlertIdRvCoreIbexRecovSwErr = 63, /**< rv_core_ibex_recov_sw_err */
+  kTopDarjeelingAlertIdRvCoreIbexFatalHwErr = 64, /**< rv_core_ibex_fatal_hw_err */
+  kTopDarjeelingAlertIdRvCoreIbexRecovHwErr = 65, /**< rv_core_ibex_recov_hw_err */
+  kTopDarjeelingAlertIdLast = 65, /**< \internal The Last Valid Alert ID. */
 } top_darjeeling_alert_id_t;
 
 /**
@@ -1356,7 +1404,7 @@ typedef enum top_darjeeling_alert_id {
  * `top_darjeeling_alert_peripheral_t`.
  */
 extern const top_darjeeling_alert_peripheral_t
-    top_darjeeling_alert_for_peripheral[65];
+    top_darjeeling_alert_for_peripheral[66];
 
 // PERIPH_INSEL ranges from 0 to TOP_DARJEELING_NUM_MIO_PADS + 2 -1}
 //  0 and 1 are tied to value 0 and 1

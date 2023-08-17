@@ -167,6 +167,7 @@ static dif_rv_core_ibex_t rv_core_ibex;
 static dif_rv_plic_t plic;
 static dif_sram_ctrl_t sram_ctrl_main;
 static dif_sram_ctrl_t sram_ctrl_ret;
+static dif_sram_ctrl_t sram_ctrl_mbox;
 
 static const char *sparse_fsm_check = "prim_sparse_fsm_flop";
 static const char *we_check = "prim_reg_we_check";
@@ -239,6 +240,7 @@ static const char *spi_host1_inst_name = "spi_host1";
 static const char *spi_device_inst_name = "spi_device";
 static const char *sram_ctrl_main_inst_name = "sram_ctrl_main";
 static const char *sram_ctrl_ret_inst_name = "sram_ctrl_ret";
+static const char *sram_ctrl_mbox_inst_name = "sram_ctrl_mbox";
 static const char *sysrst_ctrl_inst_name = "sysrst_ctrl";
 static const char *uart0_inst_name = "uart0";
 static const char *uart1_inst_name = "uart1";
@@ -502,6 +504,11 @@ static void sram_ctrl_ret_fault_checker(bool enable, const char *ip_inst,
   generic_sram_ctrl_fault_checker(&sram_ctrl_ret, enable, ip_inst, type);
 }
 
+static void sram_ctrl_mbox_fault_checker(bool enable, const char *ip_inst,
+                                         const char *type) {
+  generic_sram_ctrl_fault_checker(&sram_ctrl_mbox, enable, ip_inst, type);
+}
+
 /**
  * External ISR.
  *
@@ -686,6 +693,10 @@ static void init_peripherals(void) {
   CHECK_DIF_OK(dif_sram_ctrl_init(
       mmio_region_from_addr(TOP_DARJEELING_SRAM_CTRL_RET_AON_REGS_BASE_ADDR),
       &sram_ctrl_ret));
+
+  CHECK_DIF_OK(dif_sram_ctrl_init(
+      mmio_region_from_addr(TOP_DARJEELING_SRAM_CTRL_MBOX_REGS_BASE_ADDR),
+      &sram_ctrl_mbox));
 }
 
 /**
@@ -1008,6 +1019,11 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
     case kTopDarjeelingAlertIdSramCtrlRetAonFatalError: {
       fault_checker_t fc = {sram_ctrl_ret_fault_checker,
                             sram_ctrl_ret_inst_name, we_check};
+      fault_checker = fc;
+    } break;
+    case kTopDarjeelingAlertIdSramCtrlMboxFatalError: {
+      fault_checker_t fc = {sram_ctrl_mbox_fault_checker,
+                            sram_ctrl_mbox_inst_name, we_check};
       fault_checker = fc;
     } break;
     case kTopDarjeelingAlertIdSysrstCtrlAonFatalFault: {
