@@ -10,9 +10,6 @@
 
 # rstmgr resets_o
 CONNECTION, RSTMGR_LC_IO_DIV4_D0_UART0_RST_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_lc_io_div4_n[1], top_darjeeling.u_uart0, rst_ni
-CONNECTION, RSTMGR_LC_IO_DIV4_D0_UART1_RST_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_lc_io_div4_n[1], top_darjeeling.u_uart1, rst_ni
-CONNECTION, RSTMGR_LC_IO_DIV4_D0_UART2_RST_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_lc_io_div4_n[1], top_darjeeling.u_uart2, rst_ni
-CONNECTION, RSTMGR_LC_IO_DIV4_D0_UART3_RST_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_lc_io_div4_n[1], top_darjeeling.u_uart3, rst_ni
 CONNECTION, RSTMGR_LC_IO_DIV4_D0_GPIO_RST_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_lc_io_div4_n[1], top_darjeeling.u_gpio, rst_ni
 CONNECTION, RSTMGR_SPI_DEVICE_D0_SPI_DEVICE_RST_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_spi_device_n[1], top_darjeeling.u_spi_device, rst_ni
 CONNECTION, RSTMGR_I2C0_D0_I2C0_RST_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_i2c0_n[1], top_darjeeling.u_i2c0, rst_ni

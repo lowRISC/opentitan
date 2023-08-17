@@ -29,9 +29,6 @@
             sends a known payload over RX. On reception, both payloads are checked for integrity.
             SW validates the reception of TX watermark, RX watermark, and the TX empty interrupts.
             Choosing the max supported baud rate for the UART is sufficient.
-
-            Verify each UART instance at the chip level independently. Verify there is no aliasing
-            on all UART ports across the instances.
             '''
       stage: V1
       tests: ["chip_sw_uart_tx_rx"]
@@ -43,13 +40,9 @@
 
             The testbench sends a random payload of size greater than the RX fifo size (32). The SW
             ignores the received the data to allow the RX overflow interrupt to assert.
-
-            Verify each UART instance at the chip level independently. Verify there is no aliasing
-            on all UART ports across the instances.
             '''
       stage: V1
-      tests: ["chip_sw_uart_tx_rx", "chip_sw_uart_tx_rx_idx1", "chip_sw_uart_tx_rx_idx2",
-              "chip_sw_uart_tx_rx_idx3"]
+      tests: ["chip_sw_uart_tx_rx"]
     }
     {
       name: chip_sw_uart_rand_baudrate
@@ -3445,7 +3438,7 @@
           for now)
           - instruction scrambling gated by script availability
         - Simultaneous IO toggling as defined below
-          - ideally for digital activity, 3xUART / I2C modules should be activated
+          - ideally for digital activity, UART / I2C modules should be activated
             - for first pass simplicity can activate IO portion only for now through GPIO
           - for dedicated pins, focus on SPI device quad activity
           - USB activity should be activated

@@ -440,9 +440,6 @@
             - i2c1 clk_i
             - i2c2 clk_i
             - uart0 clk_i
-            - uart1 clk_i
-            - uart2 clk_i
-            - uart3 clk_i
             '''
       stage: V2
       tests: ["clkmgr_peri_clk_adc_ctrl_aon_clk",
@@ -451,10 +448,7 @@
               "clkmgr_peri_clk_i2c0_clk",
               "clkmgr_peri_clk_i2c1_clk",
               "clkmgr_peri_clk_i2c2_clk",
-              "clkmgr_peri_clk_uart0_clk",
-              "clkmgr_peri_clk_uart1_clk",
-              "clkmgr_peri_clk_uart2_clk",
-              "clkmgr_peri_clk_uart3_clk"]
+              "clkmgr_peri_clk_uart0_clk"]
       tags: ["conn"]
     }
     {
@@ -1122,9 +1116,6 @@
             - gpio's rst_ni
             - rv_timer's rst_ni
             - uart0's rst_ni
-            - uart1's rst_ni
-            - uart2's rst_ni
-            - uart3's rst_ni
             - xbar_main's rst_fixed_ni
             - xbar_peri's rst_peri_ni
             '''
@@ -1133,9 +1124,6 @@
               "rstmgr_sys_io_div4_d0_gpio_rst_ni",
               "rstmgr_sys_io_div4_d0_rv_timer_rst_ni",
               "rstmgr_sys_io_div4_d0_uart0_rst_ni",
-              "rstmgr_sys_io_div4_d0_uart1_rst_ni",
-              "rstmgr_sys_io_div4_d0_uart2_rst_ni",
-              "rstmgr_sys_io_div4_d0_uart3_rst_ni",
               "rstmgr_sys_io_div4_d0_xbar_main_rst_fixed_ni",
               "rstmgr_sys_io_div4_d0_xbar_peri_rst_peri_ni"]
       tags: ["conn"]

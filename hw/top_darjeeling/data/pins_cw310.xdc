@@ -37,12 +37,12 @@ set_property -dict { PACKAGE_PIN  U22  IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [ge
 #
 # __Comment_Structure__
 # K410T_PACKAGE_PIN:CW310_SCHEMATIC_SIGNAL_NAME  TEST_PINMUX_MAPPING(typical)   CONNECTED_HW
-#              AA24:SAM_TXD0                     Darjeeling:UART2_RX              (SAM3X)
+#              AA22:SAM_RXD1                     Darjeeling:UART0_TX              (SAM3X)
 ##############
 ## IOA bank ##
 ##############                                                                     #
-set_property -dict { PACKAGE_PIN AA24 IOSTANDARD LVCMOS33 } [get_ports { IOA0  }]; # AA24:SAM_TXD0   Darjeeling:UART2_RX        (SAM3X)
-set_property -dict { PACKAGE_PIN AB22 IOSTANDARD LVCMOS33 } [get_ports { IOA1  }]; # AB22:SAM_RXD0   Darjeeling:UART2_TX        (SAM3X)
+set_property -dict { PACKAGE_PIN AA24 IOSTANDARD LVCMOS33 } [get_ports { IOA0  }]; # AA24:SAM_TXD0                              (SAM3X)
+set_property -dict { PACKAGE_PIN AB22 IOSTANDARD LVCMOS33 } [get_ports { IOA1  }]; # AB22:SAM_RXD0                              (SAM3X)
 set_property -dict { PACKAGE_PIN N17  IOSTANDARD LVCMOS33 } [get_ports { IOA2  }]; #  N17:PMOD1_IO1  Darjeeling:GPIO            (BoB):PMOD2_CSB0
 set_property -dict { PACKAGE_PIN T22  IOSTANDARD LVCMOS33 } [get_ports { IOA3  }]; #  T22:PMOD1_IO4  Darjeeling:SPI_HOST1_SCK   (BoB):PMOD2_SCLK
 set_property -dict { PACKAGE_PIN R23  IOSTANDARD LVCMOS33 } [get_ports { IOA4  }]; #  R23:PMOD1_IO3  Darjeeling:SPI_HOST1_SIO1  (BoB):PMOD2_SIO1
@@ -57,27 +57,27 @@ set_property -dict { PACKAGE_PIN F12  IOSTANDARD LVCMOS33 } [get_ports { IOB0  }
 set_property -dict { PACKAGE_PIN E11  IOSTANDARD LVCMOS33 } [get_ports { IOB1  }]; #  E11:USR_SPI1DQ0
 set_property -dict { PACKAGE_PIN A15  IOSTANDARD LVCMOS33 } [get_ports { IOB2  }]; #  A15:USR_SPI1DQ1
 set_property -dict { PACKAGE_PIN F14  IOSTANDARD LVCMOS33 } [get_ports { IOB3  }]; #  F14:USR_SPI1CS
-set_property -dict { PACKAGE_PIN AE25 IOSTANDARD LVCMOS33 } [get_ports { IOB4  }]; # AE25:CWIO_IO1     Darjeeling:UART1_RX   ChipWhisperer_ConnectorJ14_PIN10
-set_property -dict { PACKAGE_PIN AF25 IOSTANDARD LVCMOS33 } [get_ports { IOB5  }]; # AF25:CWIO_IO2     Darjeeling:UART1_TX   ChipWhisperer_ConnectorJ14_PIN12
-set_property -dict { PACKAGE_PIN U9   IOSTANDARD LVCMOS18 } [get_ports { IOB6  }]; #   U9:USRDIP0                          DIP switches
+set_property -dict { PACKAGE_PIN AE25 IOSTANDARD LVCMOS33 } [get_ports { IOB4  }]; # AE25:CWIO_IO1                           ChipWhisperer_ConnectorJ14_PIN10
+set_property -dict { PACKAGE_PIN AF25 IOSTANDARD LVCMOS33 } [get_ports { IOB5  }]; # AF25:CWIO_IO2                           ChipWhisperer_ConnectorJ14_PIN12
+set_property -dict { PACKAGE_PIN U9   IOSTANDARD LVCMOS18 } [get_ports { IOB6  }]; #   U9:USRDIP0                            DIP switches
 set_property -dict { PACKAGE_PIN N23  IOSTANDARD LVCMOS33 } [get_ports { IOB7  }]; #  N23:PMOD2_IO5    Darjeeling:GPIO       (BoB):PMOD1_CSB7
 set_property -dict { PACKAGE_PIN N26  IOSTANDARD LVCMOS33 } [get_ports { IOB8  }]; #  N26:PMOD2_IO6    Darjeeling:GPIO       (BoB):PMOD1_RST
-set_property -dict { PACKAGE_PIN V7   IOSTANDARD LVCMOS18 } [get_ports { IOB9  }]; #   V7:USRDIP1                          DIP switches
-set_property -dict { PACKAGE_PIN V8   IOSTANDARD LVCMOS18 } [get_ports { IOB10 }]; #   V8:USRDIP2                          DIP switches
+set_property -dict { PACKAGE_PIN V7   IOSTANDARD LVCMOS18 } [get_ports { IOB9  }]; #   V7:USRDIP1                            DIP switches
+set_property -dict { PACKAGE_PIN V8   IOSTANDARD LVCMOS18 } [get_ports { IOB10 }]; #   V8:USRDIP2                            DIP switches
 set_property -dict { PACKAGE_PIN M20  IOSTANDARD LVCMOS33 } [get_ports { IOB11 }]; #  M20:PMOD2_IO7    Darjeeling:I2C0_SCL   (BoB):PMOD1_I2C_SCL
 set_property -dict { PACKAGE_PIN P25  IOSTANDARD LVCMOS33 } [get_ports { IOB12 }]; #  P25:PMOD2_IO8    Darjeeling:I2C0_SDA   (BoB):PMOD1_I2C_SDA
 #############
 ## IOC bank #
 #############
-set_property -dict { PACKAGE_PIN V22  IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC0  }]; #  V22:USB_A15               SW Strap 0          (SAM3X):A15
-set_property -dict { PACKAGE_PIN U21  IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC1  }]; #  U21:USB_A16               SW Strap 1          (SAM3X):A16
-set_property -dict { PACKAGE_PIN V21  IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC2  }]; #  V21:USB_A17               SW Strap 2          (SAM3X):A17
+set_property -dict { PACKAGE_PIN V22  IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC0  }]; #  V22:USB_A15               SW Strap 0            (SAM3X):A15
+set_property -dict { PACKAGE_PIN U21  IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC1  }]; #  U21:USB_A16               SW Strap 1            (SAM3X):A16
+set_property -dict { PACKAGE_PIN V21  IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC2  }]; #  V21:USB_A17               SW Strap 2            (SAM3X):A17
 set_property -dict { PACKAGE_PIN W24  IOSTANDARD LVCMOS33                   } [get_ports { IOC3  }]; #  W24:SAM_TXD1              Darjeeling:UART0_RX   (SAM3X)
 set_property -dict { PACKAGE_PIN AA22 IOSTANDARD LVCMOS33                   } [get_ports { IOC4  }]; # AA22:SAM_RXD1              Darjeeling:UART0_TX   (SAM3X)
-set_property -dict { PACKAGE_PIN W20  IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC5  }]; #  W20:USB_A19               TAP Strap 1         (SAM3X):A19
+set_property -dict { PACKAGE_PIN W20  IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC5  }]; #  W20:USB_A19               TAP Strap 1           (SAM3X):A19
 set_property -dict { PACKAGE_PIN M21  IOSTANDARD LVCMOS33                   } [get_ports { IOC6  }]; #  M21:PMOD2_IO2             Darjeeling:GPIO       (BoB):PMOD1_CSB4
 set_property -dict { PACKAGE_PIN P18  IOSTANDARD LVCMOS33                   } [get_ports { IOC7  }]; #  P18:USRUSB_VBUS_DETECT
-set_property -dict { PACKAGE_PIN W21  IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC8  }]; #  W21:USB_A18               TAP Strap 0         (SAM3X):A18
+set_property -dict { PACKAGE_PIN W21  IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC8  }]; #  W21:USB_A18               TAP Strap 0           (SAM3X):A18
 set_property -dict { PACKAGE_PIN M22  IOSTANDARD LVCMOS33                   } [get_ports { IOC9  }]; #  M22:PMOD2_IO1             Darjeeling:GPIO       (BoB):PMOD1_CSB3
 set_property -dict { PACKAGE_PIN N19  IOSTANDARD LVCMOS33                   } [get_ports { IOC10 }]; #  N19:PMOD2_IO3             Darjeeling:GPIO       (BoB):PMOD1_CSB5
 set_property -dict { PACKAGE_PIN P26  IOSTANDARD LVCMOS33                   } [get_ports { IOC11 }]; #  P26:PMOD2_IO4             Darjeeling:GPIO       (BoB):PMOD1_CSB6
