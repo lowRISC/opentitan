@@ -137,7 +137,11 @@ impl CW310 {
 impl Transport for CW310 {
     fn capabilities(&self) -> Result<Capabilities> {
         Ok(Capabilities::new(
-            Capability::SPI | Capability::GPIO | Capability::UART | Capability::UART_NONBLOCKING,
+            Capability::SPI
+                | Capability::GPIO
+                | Capability::UART
+                | Capability::UART_NONBLOCKING
+                | Capability::JTAG,
         ))
     }
 

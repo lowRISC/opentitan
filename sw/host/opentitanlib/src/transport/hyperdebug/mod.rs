@@ -475,7 +475,8 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 | Capability::SPI
                 | Capability::SPI_DUAL
                 | Capability::SPI_QUAD
-                | Capability::I2C,
+                | Capability::I2C
+                | Capability::JTAG,
         ))
     }
 
