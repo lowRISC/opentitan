@@ -957,14 +957,14 @@ module dma
                     reg2hw.destination_address_limit_lo.q});
 
   // Send out an interrupt whean reaching almost the buffer limit or when really reaching the limit
+  // Ensures that all data until the IRQ is transferred.
   assign send_memory_buffer_limit_interrupt = send_almost_limit_interrupt || send_limit_interrupt;
 
+  // Data was moved if the get a TLUL valid response
   assign data_move_state_valid =
-    (dma_host_tlul_req_valid && (ctrl_state_q == DmaSendHostWrite)) ||
-    (dma_ctn_tlul_req_valid  && (ctrl_state_q == DmaSendCtnWrite))  ||
-    ((sys_o.vld_vec[SysCmdWrite]    &&
-      sys_i.grant_vec[SysCmdWrite]) &&
-     (ctrl_state_q == DmaSendSysWrite));
+    (dma_host_tlul_rsp_valid && (ctrl_state_q == DmaSendHostWrite)) ||
+    (dma_ctn_tlul_rsp_valid  && (ctrl_state_q == DmaSendCtnWrite))  ||
+    (sys_i.grant_vec[SysCmdWrite] && (ctrl_state_q == DmaSendSysWrite));
 
   assign data_move_state = (ctrl_state_q == DmaSendHostWrite)         ||
                            (ctrl_state_q == DmaWaitHostWriteResponse) ||
