@@ -29,6 +29,8 @@ class flash_ctrl_wr_path_intg_vseq extends flash_ctrl_rw_vseq;
       fork
         begin
           uvm_reg_data_t ldata;
+          bit status_clear = 0;
+
           repeat(cfg.otf_num_rw) begin
             `DV_CHECK_RANDOMIZE_FATAL(this)
             ctrl = rand_op;
@@ -66,6 +68,7 @@ class flash_ctrl_wr_path_intg_vseq extends flash_ctrl_rw_vseq;
                                    .compare_op(CompareOpCaseNe), .backdoor(1));
                       // clear op_status for the next round
                       csr_wr(.ptr(ral.op_status), .value(0), .blocking(1));
+                      status_clear = 1;
                     end
                     begin
                       wait(cfg.scb_h.alert_count["fatal_std_err"] > 0);
@@ -82,7 +85,7 @@ class flash_ctrl_wr_path_intg_vseq extends flash_ctrl_rw_vseq;
           collect_err_cov_status(ral.std_fault_status);
           csr_rd_check(.ptr(ral.std_fault_status.prog_intg_err), .compare_value(1));
           csr_rd_check(.ptr(ral.err_code.prog_err), .compare_value(1));
-          csr_rd_check(.ptr(ral.op_status.err), .compare_value(1));
+          if (!status_clear) csr_rd_check(.ptr(ral.op_status.err), .compare_value(1));
           ldata = get_csr_val_with_updated_field(ral.err_code.prog_err, ldata, 1);
           csr_wr(.ptr(ral.err_code), .value(ldata));
           ldata = get_csr_val_with_updated_field(ral.op_status.err, ldata, 0);
