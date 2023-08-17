@@ -2552,10 +2552,6 @@ opentitan_functest(
 opentitan_functest(
     name = "ast_clk_outs_test",
     srcs = ["ast_clk_outs_test.c"],
-    cw310 = cw310_params(
-        # FIXME #13611
-        tags = ["broken"],
-    ),
     verilator = verilator_params(
         # FIXME #13611
         timeout = "eternal",
