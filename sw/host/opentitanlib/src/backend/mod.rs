@@ -9,7 +9,7 @@ use thiserror::Error;
 
 use crate::app::config::process_config_file;
 use crate::app::{TransportWrapper, TransportWrapperBuilder};
-use crate::transport::chip_whisperer::board::Cw310;
+use crate::transport::chip_whisperer::board::{Cw310, Cw340};
 use crate::transport::dediprog::Dediprog;
 use crate::transport::hyperdebug::{
     C2d2Flavor, CW310Flavor, ServoMicroFlavor, StandardFlavor, Ti50Flavor,
@@ -99,6 +99,10 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
         "cw310" => (
             chip_whisperer::create::<Cw310>(args)?,
             Some(Path::new("/__builtin__/opentitan_cw310.json")),
+        ),
+        "cw340" => (
+            chip_whisperer::create::<Cw340>(args)?,
+            Some(Path::new("/__builtin__/opentitan_cw340.json")),
         ),
         "dediprog" => {
             let dediprog: Box<dyn Transport> = Box::new(Dediprog::new(

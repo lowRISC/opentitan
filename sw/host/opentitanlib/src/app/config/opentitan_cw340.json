@@ -1,0 +1,48 @@
+{
+  "includes": ["/__builtin__/cw340.json"],
+  "interface": "cw340",
+  "pins": [
+    {
+      "name": "RESET",
+      "mode": "PushPull",
+      "alias_of": "PC30",
+      "pull_mode": "None"
+    },
+    {
+      "name": "IOC0",
+      "alias_of": "PC23"
+    },
+    {
+      "name": "IOC1",
+      "alias_of": "PC22"
+    },
+    {
+      "name": "IOC2",
+      "alias_of": "PC21"
+    },
+    {
+      "name": "TAP_STRAP0",
+      "mode": "PushPull",
+      "pull_mode": "None",
+      "alias_of": "PB13"
+    },
+    {
+      "name": "TAP_STRAP1",
+      "mode": "PushPull",
+      "pull_mode": "None",
+      "alias_of": "PB12"
+    }
+  ],
+  "spi": [
+    {
+      "name": "BOOTSTRAP",
+      "alias_of": "0"
+    }
+  ],
+  "uarts": [
+    {
+      "name": "console",
+      "alias_of": "0"
+    }
+  ]
+}

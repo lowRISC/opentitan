@@ -40,3 +40,23 @@ impl Board for Cw310 {
     const PIN_TAP_STRAP0: &'static str = "USB_A18";
     const PIN_TAP_STRAP1: &'static str = "USB_A19";
 }
+
+pub struct Cw340 {}
+
+impl Board for Cw340 {
+    const PRODUCT_ID: u16 = 0xc340;
+
+    // Pins needed for SPI on the Chip Whisperer board.
+    const PIN_SDI: &'static str = "PA26";
+    const PIN_SDO: &'static str = "PA25";
+    const PIN_CLK: &'static str = "PA27";
+    const PIN_CS: &'static str = "PA28";
+    // Pins needed for reset & bootstrap on the Chip Whisperer board.
+    const PIN_TRST: &'static str = "USB_A13";
+    const PIN_POR_N: &'static str = "PC30";
+    const PIN_SW_STRAP0: &'static str = "PC23";
+    const PIN_SW_STRAP1: &'static str = "PC22";
+    const PIN_SW_STRAP2: &'static str = "PC21";
+    const PIN_TAP_STRAP0: &'static str = "PB13";
+    const PIN_TAP_STRAP1: &'static str = "PB12";
+}
