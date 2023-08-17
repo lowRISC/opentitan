@@ -35,13 +35,13 @@ struct Inner {
     jtag: Option<Rc<dyn Jtag>>,
 }
 
-pub struct CW310 {
+pub struct ChipWhisperer {
     pub(crate) device: Rc<RefCell<usb::Backend>>,
     uart_override: Vec<String>,
     inner: RefCell<Inner>,
 }
 
-impl CW310 {
+impl ChipWhisperer {
     // Pins needed for SPI on the CW310 board.
     const PIN_CLK: &'static str = "USB_SPI_SCK";
     const PIN_SDI: &'static str = "USB_SPI_COPI";
@@ -62,7 +62,7 @@ impl CW310 {
         usb_serial: Option<&str>,
         uart_override: &[&str],
     ) -> anyhow::Result<Self> {
-        let board = CW310 {
+        let board = ChipWhisperer {
             device: Rc::new(RefCell::new(usb::Backend::new(
                 usb_vid, usb_pid, usb_serial,
             )?)),
@@ -134,7 +134,7 @@ impl CW310 {
     }
 }
 
-impl Transport for CW310 {
+impl Transport for ChipWhisperer {
     fn capabilities(&self) -> Result<Capabilities> {
         Ok(Capabilities::new(
             Capability::SPI
@@ -164,7 +164,7 @@ impl Transport for CW310 {
         let mut inner = self.inner.borrow_mut();
         Ok(match inner.gpio.entry(pinname.to_string()) {
             Entry::Vacant(v) => {
-                let u = v.insert(Rc::new(gpio::CW310GpioPin::open(
+                let u = v.insert(Rc::new(gpio::Pin::open(
                     Rc::clone(&self.device),
                     pinname.to_string(),
                 )?));
@@ -181,7 +181,7 @@ impl Transport for CW310 {
         );
         let mut inner = self.inner.borrow_mut();
         if inner.spi.is_none() {
-            inner.spi = Some(Rc::new(spi::CW310Spi::open(Rc::clone(&self.device))?));
+            inner.spi = Some(Rc::new(spi::Spi::open(Rc::clone(&self.device))?));
         }
         Ok(Rc::clone(inner.spi.as_ref().unwrap()))
     }
@@ -242,5 +242,5 @@ impl Transport for CW310 {
 /// Command for Transport::dispatch().
 pub struct SetPll {}
 
-/// Command for Transport::dispatch(). Resets the CW310's SAM3X chip.
+/// Command for Transport::dispatch(). Resets the Chip whisperer board's SAM3X chip.
 pub struct ResetSam3x {}

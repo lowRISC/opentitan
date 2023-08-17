@@ -9,9 +9,9 @@ use std::any::Any;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::transport::cw310;
+use opentitanlib::transport::chip_whisperer;
 
-/// Resets the SAM3X chip on the CW310 FPGA board.
+/// Resets the SAM3X chip on the Chip Whisperer FPGA board.
 #[derive(Debug, Args)]
 pub struct ResetSam3x {}
 
@@ -22,6 +22,6 @@ impl CommandDispatch for ResetSam3x {
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         log::info!("Resetting the SAM3X chip");
-        transport.dispatch(&cw310::ResetSam3x {})
+        transport.dispatch(&chip_whisperer::ResetSam3x {})
     }
 }

@@ -130,7 +130,7 @@ def main(openocd_path: str = typer.Option(...),
          bitstream_path: str = typer.Option(...),
          opentitantool_path: str = typer.Option(...),
          exit_success_pattern: Optional[str] = typer.Option(None),
-         cw310_uarts: Optional[str] = typer.Option(None)):
+         uarts: Optional[str] = typer.Option(None)):
 
     opentitantool_prefix = [
         opentitantool_path,
@@ -138,8 +138,8 @@ def main(openocd_path: str = typer.Option(...),
         "--logging=info",
         "--interface=cw310",
     ]
-    if cw310_uarts is not None:
-        opentitantool_prefix.append('--cw310-uarts=' + cw310_uarts)
+    if uarts is not None:
+        opentitantool_prefix.append('--uarts=' + uarts)
 
     load_bitstream_command = opentitantool_prefix + [
         "fpga",

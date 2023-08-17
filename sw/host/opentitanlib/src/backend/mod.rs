@@ -16,7 +16,7 @@ use crate::transport::hyperdebug::{
 use crate::transport::{EmptyTransport, Transport};
 use crate::util::parse_int::ParseInt;
 
-mod cw310;
+mod chip_whisperer;
 mod hyperdebug;
 mod proxy;
 mod ti50emulator;
@@ -36,7 +36,7 @@ pub struct BackendOpts {
     pub usb_serial: Option<String>,
 
     #[command(flatten)]
-    pub cw310_opts: cw310::Cw310Opts,
+    pub opts: chip_whisperer::ChipWhispererOpts,
 
     #[command(flatten)]
     pub verilator_opts: verilator::VerilatorOpts,
@@ -96,7 +96,7 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
         ),
         "ti50" => (hyperdebug::create::<Ti50Flavor>(args)?, None),
         "cw310" => (
-            cw310::create(args)?,
+            chip_whisperer::create(args)?,
             Some(Path::new("/__builtin__/opentitan_cw310.json")),
         ),
         "dediprog" => {

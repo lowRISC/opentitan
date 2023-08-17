@@ -7,33 +7,33 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::io::spi::{AssertChipSelect, MaxSizes, SpiError, Target, Transfer, TransferMode};
-use crate::transport::cw310::usb::Backend;
-use crate::transport::cw310::CW310;
+use crate::transport::chip_whisperer::usb::Backend;
+use crate::transport::chip_whisperer::ChipWhisperer;
 use crate::transport::TransportError;
 
-pub struct CW310Spi {
+pub struct Spi {
     device: Rc<RefCell<Backend>>,
 }
 
-impl CW310Spi {
+impl Spi {
     pub fn open(device: Rc<RefCell<Backend>>) -> Result<Self> {
         {
             let usb = device.borrow();
             usb.spi1_setpins(
                 // For some reason, SDI/SDO are reversed in the python implementation
                 // and this seems to be required to make the transport work.
-                CW310::PIN_SDI,
-                CW310::PIN_SDO,
-                CW310::PIN_CLK,
-                CW310::PIN_CS,
+                ChipWhisperer::PIN_SDI,
+                ChipWhisperer::PIN_SDO,
+                ChipWhisperer::PIN_CLK,
+                ChipWhisperer::PIN_CS,
             )?;
             usb.spi1_enable(true)?;
 
             // Set the JTAG pin to false to use SPI mode.
-            usb.pin_set_state(CW310::PIN_TAP_STRAP1, false)?;
+            usb.pin_set_state(ChipWhisperer::PIN_TAP_STRAP1, false)?;
         }
 
-        Ok(CW310Spi { device })
+        Ok(Spi { device })
     }
 
     // Perform a SPI transaction.
@@ -50,7 +50,7 @@ impl CW310Spi {
     }
 }
 
-impl Target for CW310Spi {
+impl Target for Spi {
     fn get_transfer_mode(&self) -> Result<TransferMode> {
         Ok(TransferMode::Mode0)
     }
@@ -73,7 +73,7 @@ impl Target for CW310Spi {
     }
 
     fn get_max_speed(&self) -> Result<u32> {
-        // FIXME: what is the speed of the SAM3U SPI interface on the CW310 board?
+        // FIXME: what is the speed of the SAM3U SPI interface on the Chip Whisperer board?
         Ok(6_000_000)
     }
     fn set_max_speed(&self, frequency: u32) -> Result<()> {
@@ -99,7 +99,7 @@ impl Target for CW310Spi {
     fn run_transaction(&self, transaction: &mut [Transfer]) -> Result<()> {
         // Assert CS# (drive low).
         self.device.borrow().spi1_set_cs_pin(false)?;
-        // Translate SPI Read/Write Transactions into CW310 spi operations.
+        // Translate SPI Read/Write Transactions into Chip Whisperer spi operations.
         let result = self.spi_transaction(transaction);
         // Release CS# (allow to float high).
         self.device.borrow().spi1_set_cs_pin(true)?;
