@@ -968,7 +968,13 @@ module chip_darjeeling_cw310 #(
   jtag_pkg::jtag_req_t rv_jtag_req;
   jtag_pkg::jtag_rsp_t rv_jtag_rsp;
   tlul_jtag_dtm #(
-    .IdcodeValue(jtag_id_pkg::LC_CTRL_JTAG_IDCODE)
+    .IdcodeValue(jtag_id_pkg::LC_CTRL_JTAG_IDCODE),
+    // Notes:
+    // - one RV_DM instance uses 9bits
+    // - our crossbar tooling expects individual IPs to be spaced appart by 12bits at the moment
+    // - the DMI address shifted through jtag is a word address and hence 2bits smaller than this
+    // - setting this to 18bits effectively gives us 2^6 = 64 addressable 12bit ranges
+    .NumDmiByteAbits(18)
   ) u_tlul_jtag_dtm_lc (
     .clk_i      (clkmgr_aon_clocks.clk_io_div4_secure),
     .rst_ni     (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),

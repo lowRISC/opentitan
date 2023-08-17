@@ -13,13 +13,7 @@ module tlul_adapter_dmi
 #(
   parameter  bit CmdIntgCheck      = 1,  // 1: Enable command integrity check
   parameter  bit EnableRspIntgGen  = 1,  // 1: Generate response integrity
-  parameter  bit EnableDataIntgGen = 1,  // 1: Generate response data integrity
-  // This is fixed by the dm_pkg.
-  // Unfortunately there only exists a request struct type, hence these
-  // values have to be hardcoded here. Two SVAs are added further below to make
-  // sure these are aligned with the widths in dm_pkg.
-  localparam int DmiAw             = 7,  // Width of register address
-  localparam int DmiDw             = 32  // Shall be matched with TL_DW
+  parameter  bit EnableDataIntgGen = 1   // 1: Generate response data integrity
 ) (
   input clk_i,
   input rst_ni,
@@ -67,7 +61,7 @@ module tlul_adapter_dmi
   assign dmi_resp_ready_o = outstanding_q && !error_q;
 
   // We expect a word-aligned address here, otherwise an error is returned (see further below).
-  assign dmi_req_o.addr = tl_h2d_i.a_address[DmiAw+2-1:2];
+  assign dmi_req_o.addr = {2'b00, tl_h2d_i.a_address[top_pkg::TL_AW-1:2]};
   assign dmi_req_o.data = tl_h2d_i.a_data;
   assign dmi_req_o.op   = (wr_req) ? dm::DTM_WRITE :
                           (rd_req) ? dm::DTM_READ  : dm::DTM_NOP;
@@ -113,7 +107,7 @@ module tlul_adapter_dmi
     d_source: reqid_q,
     d_sink:   '0,
     // Blank data upon error in the same way as other TL-UL adapters would in OpenTitan.
-    d_data:   (rd_req_q && !(error_resp || wr_req_q)) ? dmi_resp_i.data : {DmiDw{1'b1}},
+    d_data:   (rd_req_q && !(error_resp || wr_req_q)) ? dmi_resp_i.data : {top_pkg::TL_DW{1'b1}},
     d_user:   '0,
     d_error:  error_resp
   };
@@ -152,20 +146,15 @@ module tlul_adapter_dmi
   // Error Handling //
   ////////////////////
 
-  logic addr_oob_err;       // Address out of bounds error.
   logic addr_align_err;     // Size and alignment
   logic be_err;             // Byte enable error.
   logic malformed_meta_err; // User signal format error or unsupported
   logic tl_err;             // Common TL-UL error checker
-  assign error_d = addr_oob_err ||
-                   addr_align_err ||
+  assign error_d = addr_align_err ||
                    be_err ||
                    malformed_meta_err ||
                    tl_err ||
                    intg_error;
-
-  // Error if the address is larger than what can be represented with DmiAw
-  assign addr_oob_err = (wr_req || rd_req) && |(tl_h2d_i.a_address >> (2 + DmiAw));
 
   // addr_align_err
   //    Raised if addr isn't aligned with the size
@@ -188,8 +177,6 @@ module tlul_adapter_dmi
     .err_o (tl_err)
   );
 
-  `ASSERT_INIT(DwMatchedWithTl_A, DmiDw == top_pkg::TL_DW)
-  `ASSERT_INIT(DwMatchedWithDm_A, DmiDw == $bits(dmi_req_o.data))
-  `ASSERT_INIT(AwIsMatchedWithDm, DmiAw == $bits(dmi_req_o.addr))
+  `ASSERT_INIT(DwMatchedWithDm_A, top_pkg::TL_DW == $bits(dmi_req_o.data))
 
 endmodule : tlul_adapter_dmi

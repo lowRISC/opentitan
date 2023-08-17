@@ -11,7 +11,8 @@
 
 module tlul_jtag_dtm #(
   // Idcode value for the JTAG.
-  parameter logic [31:0] IdcodeValue = 32'h00000001
+  parameter logic [31:0] IdcodeValue = 32'h00000001,
+  parameter int unsigned NumDmiByteAbits = 18
 ) (
   input                                              clk_i,
   input                                              rst_ni,
@@ -65,7 +66,8 @@ module tlul_jtag_dtm #(
   assign req_ready = dmi_req_ready && dmi_resp_ready;
 
   dmi_jtag #(
-    .IdcodeValue(IdcodeValue)
+    .IdcodeValue(IdcodeValue),
+    .NumDmiWordAbits(NumDmiByteAbits - 2)
   ) u_dmi_jtag (
     .clk_i,
     .rst_ni,

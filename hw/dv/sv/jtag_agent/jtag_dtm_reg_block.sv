@@ -177,7 +177,7 @@ class jtag_dtm_reg_dtmcs extends jtag_dtm_base_reg;
       .lsb_pos(4),
       .access("RO"),
       .volatile(0),
-      .reset(32'h7),
+      .reset(32'h10),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
@@ -282,7 +282,7 @@ class jtag_dtm_reg_dmi extends jtag_dtm_base_reg;
   `uvm_object_utils(jtag_dtm_reg_dmi)
 
   function new(string       name = "jtag_dtm_reg_dmi",
-               int unsigned n_bits = 41,
+               int unsigned n_bits = 50,
                int          has_coverage = UVM_NO_COVERAGE);
     super.new(name, n_bits, has_coverage);
   endfunction : new
@@ -324,7 +324,7 @@ class jtag_dtm_reg_dmi extends jtag_dtm_base_reg;
     address = (dv_base_reg_field::type_id::create("address"));
     address.configure(
       .parent(this),
-      .size(7 /* Same as abits. */),
+      .size(16 /* Same as abits. */),
       .lsb_pos(34),
       .access("RW"),
       .volatile(0),
