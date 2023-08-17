@@ -399,7 +399,6 @@ TEST_F(MeasureCountTest, Enable) {
 #undef PICK_COUNT_CTRL_FIELDS
     }
     EXPECT_READ32(CLKMGR_MEASURE_CTRL_REGWEN_REG_OFFSET, 1);
-    EXPECT_WRITE32(en_offset, kMultiBitBool4True);
     std::vector<mock_mmio::BitField> thresholds_val = {
         {
             .offset = (uintptr_t)lo_field.index,
@@ -411,6 +410,7 @@ TEST_F(MeasureCountTest, Enable) {
         }};
     EXPECT_WRITE32(reg_offset, thresholds_val);
     EXPECT_WRITE32(reg_offset, thresholds_val);
+    EXPECT_WRITE32(en_offset, kMultiBitBool4True);
     EXPECT_DIF_OK(
         dif_clkmgr_enable_measure_counts(&clkmgr_, clk, lo_val, hi_val));
   }
