@@ -88,12 +88,6 @@ static void sca_init_uart(void) {
       mmio_region_from_addr(TOP_DARJEELING_UART0_BASE_ADDR), &uart0));
   OT_DISCARD(dif_uart_configure(&uart0, uart_config));
   base_uart_stdout(&uart0);
-
-#if !OT_IS_ENGLISH_BREAKFAST
-  OT_DISCARD(dif_uart_init(
-      mmio_region_from_addr(TOP_DARJEELING_UART1_BASE_ADDR), &uart1));
-  OT_DISCARD(dif_uart_configure(&uart1, uart_config));
-#endif
 }
 
 /**
@@ -266,13 +260,7 @@ void sca_init(sca_trigger_source_t trigger, sca_peripherals_t enable) {
   sca_disable_peripherals(~enable);
 }
 
-const dif_uart_t *sca_get_uart(void) {
-#if !OT_IS_ENGLISH_BREAKFAST
-  return &uart1;
-#else
-  return &uart0;
-#endif
-}
+const dif_uart_t *sca_get_uart(void) { return &uart0; }
 
 void sca_set_trigger_high(void) {
   OT_DISCARD(dif_gpio_write(&gpio, kTriggerGateBitIndex, true));

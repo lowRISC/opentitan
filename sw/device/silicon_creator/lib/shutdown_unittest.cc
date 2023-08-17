@@ -95,9 +95,6 @@ constexpr uint32_t Pack32(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
 // clang-format off
 #define ALERTS(Xmacro) \
       Xmacro("Uart0FatalFault",                C, C, X, X), \
-      Xmacro("Uart1FatalFault",                C, C, X, X), \
-      Xmacro("Uart2FatalFault",                C, C, X, X), \
-      Xmacro("Uart3FatalFault",                C, C, X, X), \
       Xmacro("GpioFatalFault",                 C, C, X, X), \
       Xmacro("SpiDeviceFatalFault",            C, C, X, X), \
       Xmacro("SpiHost0FatalFault",             C, C, X, X), \

@@ -53,15 +53,6 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
                                             &out_attr));
   };
 
-  // Configure UART1 RX input to connect to MIO pad IOB4
-  CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInUart1Rx,
-                                       kTopEarlgreyPinmuxInselIob4));
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIob4,
-                                        kTopEarlgreyPinmuxOutselConstantHighZ));
-  // Configure UART1 TX output to connect to MIO pad IOB5
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIob5,
-                                        kTopEarlgreyPinmuxOutselUart1Tx));
 
   // Configure a higher drive strength for the USB_P and USB_N pads because we
   // must the pad drivers must be capable of overpowering the 'pull' signal

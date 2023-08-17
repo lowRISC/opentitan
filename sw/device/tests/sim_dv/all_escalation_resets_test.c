@@ -242,9 +242,6 @@ static const char *sram_ctrl_ret_inst_name = "sram_ctrl_ret";
 static const char *sram_ctrl_mbox_inst_name = "sram_ctrl_mbox";
 static const char *sysrst_ctrl_inst_name = "sysrst_ctrl";
 static const char *uart0_inst_name = "uart0";
-static const char *uart1_inst_name = "uart1";
-static const char *uart2_inst_name = "uart2";
-static const char *uart3_inst_name = "uart3";
 static const char *usbdev_inst_name = "usbdev";
 
 static void trivial_fault_checker(bool enable, const char *ip_inst,
@@ -1040,18 +1037,6 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
     } break;
     case kTopDarjeelingAlertIdUart0FatalFault: {
       fault_checker_t fc = {trivial_fault_checker, uart0_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopDarjeelingAlertIdUart1FatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, uart1_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopDarjeelingAlertIdUart2FatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, uart2_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopDarjeelingAlertIdUart3FatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, uart3_inst_name, we_check};
       fault_checker = fc;
     } break;
     case kTopDarjeelingAlertIdUsbdevFatalFault: {

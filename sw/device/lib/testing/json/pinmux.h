@@ -63,9 +63,6 @@ extern "C" {
     value(_, SpiHost1Sd2, kTopDarjeelingPinmuxPeripheralInSpiHost1Sd2) \
     value(_, SpiHost1Sd3, kTopDarjeelingPinmuxPeripheralInSpiHost1Sd3) \
     value(_, Uart0Rx, kTopDarjeelingPinmuxPeripheralInUart0Rx) \
-    value(_, Uart1Rx, kTopDarjeelingPinmuxPeripheralInUart1Rx) \
-    value(_, Uart2Rx, kTopDarjeelingPinmuxPeripheralInUart2Rx) \
-    value(_, Uart3Rx, kTopDarjeelingPinmuxPeripheralInUart3Rx) \
     value(_, SpiDeviceTpmCsb, kTopDarjeelingPinmuxPeripheralInSpiDeviceTpmCsb) \
     value(_, FlashCtrlTck, kTopDarjeelingPinmuxPeripheralInFlashCtrlTck) \
     value(_, FlashCtrlTms, kTopDarjeelingPinmuxPeripheralInFlashCtrlTms) \
@@ -231,9 +228,6 @@ C_ONLY(UJSON_SERDE_ENUM(PinmuxMioOut, pinmux_mio_out_t, TOP_DARJEELING_PINMUX_MI
     value(_, SpiHost1Sd2, kTopDarjeelingPinmuxOutselSpiHost1Sd2) \
     value(_, SpiHost1Sd3, kTopDarjeelingPinmuxOutselSpiHost1Sd3) \
     value(_, Uart0Tx, kTopDarjeelingPinmuxOutselUart0Tx) \
-    value(_, Uart1Tx, kTopDarjeelingPinmuxOutselUart1Tx) \
-    value(_, Uart2Tx, kTopDarjeelingPinmuxOutselUart2Tx) \
-    value(_, Uart3Tx, kTopDarjeelingPinmuxOutselUart3Tx) \
     value(_, SpiHost1Sck, kTopDarjeelingPinmuxOutselSpiHost1Sck) \
     value(_, SpiHost1Csb, kTopDarjeelingPinmuxOutselSpiHost1Csb) \
     value(_, FlashCtrlTdo, kTopDarjeelingPinmuxOutselFlashCtrlTdo) \

@@ -181,45 +181,6 @@ void update_uart_base_addr_and_irq_id(void) {
       uart_irq_rx_timeout_id = kTopDarjeelingPlicIrqIdUart0RxTimeout;
       uart_irq_rx_parity_err_id = kTopDarjeelingPlicIrqIdUart0RxParityErr;
       break;
-    case 1:
-      uart_base_addr = TOP_DARJEELING_UART1_BASE_ADDR;
-      uart_peripheral_id = kTopDarjeelingPlicPeripheralUart1;
-      uart_irq_tx_watermartk_id = kTopDarjeelingPlicIrqIdUart1TxWatermark;
-      uart_irq_rx_watermartk_id = kTopDarjeelingPlicIrqIdUart1RxWatermark;
-      uart_irq_tx_empty_id = kTopDarjeelingPlicIrqIdUart1TxEmpty;
-      uart_irq_rx_overflow_id = kTopDarjeelingPlicIrqIdUart1RxOverflow;
-      uart_irq_rx_frame_err_id = kTopDarjeelingPlicIrqIdUart1RxFrameErr;
-      uart_irq_rx_frame_err_id = kTopDarjeelingPlicIrqIdUart1RxFrameErr;
-      uart_irq_rx_break_err_id = kTopDarjeelingPlicIrqIdUart1RxBreakErr;
-      uart_irq_rx_timeout_id = kTopDarjeelingPlicIrqIdUart1RxTimeout;
-      uart_irq_rx_parity_err_id = kTopDarjeelingPlicIrqIdUart1RxParityErr;
-      break;
-    case 2:
-      uart_base_addr = TOP_DARJEELING_UART2_BASE_ADDR;
-      uart_peripheral_id = kTopDarjeelingPlicPeripheralUart2;
-      uart_irq_tx_watermartk_id = kTopDarjeelingPlicIrqIdUart2TxWatermark;
-      uart_irq_rx_watermartk_id = kTopDarjeelingPlicIrqIdUart2RxWatermark;
-      uart_irq_tx_empty_id = kTopDarjeelingPlicIrqIdUart2TxEmpty;
-      uart_irq_rx_overflow_id = kTopDarjeelingPlicIrqIdUart2RxOverflow;
-      uart_irq_rx_frame_err_id = kTopDarjeelingPlicIrqIdUart2RxFrameErr;
-      uart_irq_rx_frame_err_id = kTopDarjeelingPlicIrqIdUart2RxFrameErr;
-      uart_irq_rx_break_err_id = kTopDarjeelingPlicIrqIdUart2RxBreakErr;
-      uart_irq_rx_timeout_id = kTopDarjeelingPlicIrqIdUart2RxTimeout;
-      uart_irq_rx_parity_err_id = kTopDarjeelingPlicIrqIdUart2RxParityErr;
-      break;
-    case 3:
-      uart_base_addr = TOP_DARJEELING_UART3_BASE_ADDR;
-      uart_peripheral_id = kTopDarjeelingPlicPeripheralUart3;
-      uart_irq_tx_watermartk_id = kTopDarjeelingPlicIrqIdUart3TxWatermark;
-      uart_irq_rx_watermartk_id = kTopDarjeelingPlicIrqIdUart3RxWatermark;
-      uart_irq_tx_empty_id = kTopDarjeelingPlicIrqIdUart3TxEmpty;
-      uart_irq_rx_overflow_id = kTopDarjeelingPlicIrqIdUart3RxOverflow;
-      uart_irq_rx_frame_err_id = kTopDarjeelingPlicIrqIdUart3RxFrameErr;
-      uart_irq_rx_frame_err_id = kTopDarjeelingPlicIrqIdUart3RxFrameErr;
-      uart_irq_rx_break_err_id = kTopDarjeelingPlicIrqIdUart3RxBreakErr;
-      uart_irq_rx_timeout_id = kTopDarjeelingPlicIrqIdUart3RxTimeout;
-      uart_irq_rx_parity_err_id = kTopDarjeelingPlicIrqIdUart3RxParityErr;
-      break;
     default:
       LOG_FATAL("Unsupported uart ID %x", kUartIdx);
   }
@@ -541,16 +502,6 @@ bool test_main(void) {
   pinmux_connect_uart_to_pads(
       kTopDarjeelingPinmuxInselIoc3, kTopDarjeelingPinmuxPeripheralInUart0Rx,
       kTopDarjeelingPinmuxMioOutIoc4, kTopDarjeelingPinmuxOutselUart0Tx);
-  pinmux_connect_uart_to_pads(
-      kTopDarjeelingPinmuxInselIob4, kTopDarjeelingPinmuxPeripheralInUart1Rx,
-      kTopDarjeelingPinmuxMioOutIob5, kTopDarjeelingPinmuxOutselUart1Tx);
-  // TODO: the UARTs below still need to be mapped to the correct location.
-  pinmux_connect_uart_to_pads(
-      kTopDarjeelingPinmuxInselIoa4, kTopDarjeelingPinmuxPeripheralInUart2Rx,
-      kTopDarjeelingPinmuxMioOutIoa5, kTopDarjeelingPinmuxOutselUart2Tx);
-  pinmux_connect_uart_to_pads(
-      kTopDarjeelingPinmuxInselIoa0, kTopDarjeelingPinmuxPeripheralInUart3Rx,
-      kTopDarjeelingPinmuxMioOutIoa1, kTopDarjeelingPinmuxOutselUart3Tx);
 
   if (kUseExtClk) {
     config_external_clock(&clkmgr);

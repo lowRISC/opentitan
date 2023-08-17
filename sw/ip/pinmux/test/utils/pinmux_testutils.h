@@ -15,8 +15,8 @@
  * Default pinmux initialization.
  *
  * Initializes GPIOs to map to the lowest-numbered MIOs, except where it
- * conflicts with UARTs. Then initializes 2 UART mappings to (IOC3,IOC8) and
- * (IOC4,IOC9), denoted as (RX pin,TX pin).
+ * conflicts with UARTs. Then initializes 1 UART mapping to (IOC3,IOC4),
+ * denoted as (RX pin,TX pin).
  *
  * Also ensures IOR0 and IOR1 outputs are disabled, for use as USB sense inputs.
  *

@@ -93,9 +93,6 @@ The suggested default classification is detailed in the following table.
 | Name                         | ID   | RAW/TEST   | PROD   | PROD_END   | DEV   | RMA   | SCRAP   |
 |------------------------------|------|------------|--------|------------|-------|-------|---------|
 | Uart0FatalFault              | 0    | X          | C      | C          | X     | X     | X       |
-| Uart1FatalFault              | 1    | X          | C      | C          | X     | X     | X       |
-| Uart2FatalFault              | 2    | X          | C      | C          | X     | X     | X       |
-| Uart3FatalFault              | 3    | X          | C      | C          | X     | X     | X       |
 | GpioFatalFault               | 4    | X          | C      | C          | X     | X     | X       |
 | SpiDeviceFatalFault          | 5    | X          | C      | C          | X     | X     | X       |
 | SpiHost0FatalFault           | 6    | X          | C      | C          | D     | X     | X       |

@@ -29,7 +29,6 @@
 #include "sw/ip/spi_device/dif/dif_spi_device.h"
 #include "sw/ip/spi_device/test/utils/spi_device_testutils.h"
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
-#include "sw/ip/uart/dif/dif_uart.h"
 #include "sw/lib/sw/device/base/math.h"
 #include "sw/lib/sw/device/base/multibits.h"
 #include "sw/lib/sw/device/runtime/log.h"
@@ -43,7 +42,6 @@
 #include "i2c_regs.h"       // Generated.
 #include "kmac_regs.h"      // Generated.
 #include "spi_host_regs.h"  // Generated.
-#include "uart_regs.h"      // Generated.
 
 // The autogen rule that creates this header creates it in a directory named
 // after the rule, then manipulates the include path in the
@@ -73,14 +71,10 @@ static dif_i2c_t i2c_2;
 static dif_spi_device_handle_t spi_device;
 static dif_spi_host_t spi_host_0;
 static dif_spi_host_t spi_host_1;
-static dif_uart_t uart_1;
-static dif_uart_t uart_2;
-static dif_uart_t uart_3;
 static dif_flash_ctrl_state_t flash_ctrl;
 static dif_rv_plic_t rv_plic;
 
 static const dif_i2c_t *i2c_handles[] = {&i2c_0, &i2c_1, &i2c_2};
-static const dif_uart_t *uart_handles[] = {&uart_1, &uart_2, &uart_3};
 static dif_kmac_operation_state_t kmac_operation_state;
 
 /**
@@ -132,10 +126,6 @@ enum {
   kI2c0TargetAddress = 0x01,
   kI2c1TargetAddress = 0x02,
   kI2c2TargetAddress = 0x03,
-  /**
-   * UART parameters.
-   */
-  kUartFifoDepth = 32,
   /**
    * SPI Host parameters.
    */
@@ -194,12 +184,6 @@ static rsa_3072_verify_test_vector_t rsa3072_test_vector;
 static rsa_3072_int_t rsa3072_encoded_message;
 static rsa_3072_constants_t rsa3072_constants;
 
-static const uint8_t kUartMessage[] = {
-    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
-    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
-    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
-};
-
 static const uint8_t kI2cMessage[] = {
     0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
     0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
@@ -250,12 +234,6 @@ static void init_peripheral_handles(void) {
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
   // UART 0 is already configured (and used) by the OTTF.
-  CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_DARJEELING_UART1_BASE_ADDR), &uart_1));
-  CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_DARJEELING_UART2_BASE_ADDR), &uart_2));
-  CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_DARJEELING_UART3_BASE_ADDR), &uart_3));
   CHECK_DIF_OK(dif_i2c_init(
       mmio_region_from_addr(TOP_DARJEELING_I2C0_BASE_ADDR), &i2c_0));
   CHECK_DIF_OK(dif_i2c_init(
@@ -263,11 +241,14 @@ static void init_peripheral_handles(void) {
   CHECK_DIF_OK(dif_i2c_init(
       mmio_region_from_addr(TOP_DARJEELING_I2C2_BASE_ADDR), &i2c_2));
   CHECK_DIF_OK(dif_spi_device_init_handle(
-      mmio_region_from_addr(TOP_DARJEELING_SPI_DEVICE_BASE_ADDR), &spi_device));
+      mmio_region_from_addr(TOP_DARJEELING_SPI_DEVICE_BASE_ADDR),
+      &spi_device));
   CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_DARJEELING_SPI_HOST0_BASE_ADDR), &spi_host_0));
+      mmio_region_from_addr(TOP_DARJEELING_SPI_HOST0_BASE_ADDR),
+      &spi_host_0));
   CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_DARJEELING_SPI_HOST1_BASE_ADDR), &spi_host_1));
+      mmio_region_from_addr(TOP_DARJEELING_SPI_HOST1_BASE_ADDR),
+      &spi_host_1));
   CHECK_DIF_OK(dif_otbn_init(
       mmio_region_from_addr(TOP_DARJEELING_OTBN_BASE_ADDR), &otbn));
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
@@ -284,47 +265,6 @@ static void configure_pinmux(void) {
   // Configure GPIO max-power period indicator pin on IOB8.
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopDarjeelingPinmuxMioOutIob8,
                                         kTopDarjeelingPinmuxOutselGpioGpio0));
-
-  // UART1:
-  //    RX on IOA4
-  //    TX on IOA5
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopDarjeelingPinmuxPeripheralInUart1Rx,
-                                       kTopDarjeelingPinmuxInselIoa4));
-  CHECK_DIF_OK(
-      dif_pinmux_output_select(&pinmux, kTopDarjeelingPinmuxMioOutIoa4,
-                               kTopDarjeelingPinmuxOutselConstantHighZ));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopDarjeelingPinmuxMioOutIoa5,
-                                        kTopDarjeelingPinmuxOutselUart1Tx));
-
-  // Apply this configuration only for the FPGA.
-  // For the simulation, apply the config in configure_pinmux_sim().
-  if (kDeviceType == kDeviceFpgaCw305 || kDeviceType == kDeviceFpgaCw310) {
-    // UART2:
-    //    RX on IOB4
-    //    TX on IOB5
-    CHECK_DIF_OK(dif_pinmux_input_select(
-        &pinmux, kTopDarjeelingPinmuxPeripheralInUart2Rx,
-        kTopDarjeelingPinmuxInselIob4));
-    CHECK_DIF_OK(
-        dif_pinmux_output_select(&pinmux, kTopDarjeelingPinmuxMioOutIob4,
-                                 kTopDarjeelingPinmuxOutselConstantHighZ));
-    CHECK_DIF_OK(dif_pinmux_output_select(&pinmux,
-                                          kTopDarjeelingPinmuxMioOutIob5,
-                                          kTopDarjeelingPinmuxOutselUart2Tx));
-  }
-
-  // UART3:
-  //    RX on IOA0
-  //    TX on IOA1
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopDarjeelingPinmuxPeripheralInUart3Rx,
-                                       kTopDarjeelingPinmuxInselIoa0));
-  CHECK_DIF_OK(
-      dif_pinmux_output_select(&pinmux, kTopDarjeelingPinmuxMioOutIoa0,
-                               kTopDarjeelingPinmuxOutselConstantHighZ));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopDarjeelingPinmuxMioOutIoa1,
-                                        kTopDarjeelingPinmuxOutselUart3Tx));
 
   // I2C0:
   //    SDA on IOA7
@@ -513,21 +453,6 @@ static void configure_pinmux_sim(void) {
       &pinmux, kTopDarjeelingPinmuxPeripheralInSpiHost1Sd3,
       kTopDarjeelingPinmuxInselIob6));
 
-  // UART2 (simulation):
-  // On FPGA, UART2 uses IOB4/IOB5 as RX/TX.
-  // In chip_if.sv, IOB4/IOB5 are connected to the spi_device_agent1.
-  // To prevent contamination in DVSIM, switch UART2 RX/TX to other MIOs.
-  //    RX on IOR12
-  //    TX on IOR11
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopDarjeelingPinmuxPeripheralInUart2Rx,
-                                       kTopDarjeelingPinmuxInselIor12));
-  CHECK_DIF_OK(
-      dif_pinmux_output_select(&pinmux, kTopDarjeelingPinmuxMioOutIor12,
-                               kTopDarjeelingPinmuxOutselConstantHighZ));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux,
-                                        kTopDarjeelingPinmuxMioOutIor13,
-                                        kTopDarjeelingPinmuxOutselUart2Tx));
 }
 
 /**
@@ -696,23 +621,6 @@ static void configure_kmac(void) {
   CHECK_DIF_OK(dif_kmac_configure(&kmac, kmac_cfg));
 }
 
-static void configure_uart(dif_uart_t *uart) {
-  CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
-  CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
-        "kClockFreqPeripheralHz must fit in uint32_t");
-  CHECK_DIF_OK(dif_uart_configure(
-      uart, (dif_uart_config_t){
-                .baudrate = (uint32_t)kUartBaudrate,
-                .clk_freq_hz = (uint32_t)kClockFreqPeripheralHz,
-                .parity_enable = kDifToggleEnabled,
-                .parity = kDifUartParityEven,
-                .tx_enable = kDifToggleDisabled,
-                .rx_enable = kDifToggleDisabled,
-            }));
-  CHECK_DIF_OK(
-      dif_uart_loopback_set(uart, kDifUartLoopbackSystem, kDifToggleEnabled));
-}
-
 static void configure_i2c(dif_i2c_t *i2c, uint8_t device_addr_0,
                           uint8_t device_addr_1) {
   dif_i2c_config_t config;
@@ -865,17 +773,7 @@ static void crypto_data_load_task(void *task_parameters) {
 
 static void comms_data_load_task(void *task_parameters) {
   LOG_INFO("Loading communication block FIFOs with data ...");
-  size_t bytes_written;
-  CHECK(ARRAYSIZE(kUartMessage) == kUartFifoDepth);
   CHECK(ARRAYSIZE(kI2cMessage) == (I2C_PARAM_FIFO_DEPTH - 1));
-
-  // Load data into UART FIFOs.
-  for (size_t i = 0; i < ARRAYSIZE(uart_handles); ++i) {
-    bytes_written = 0;
-    CHECK_DIF_OK(dif_uart_bytes_send(uart_handles[i], kUartMessage,
-                                     ARRAYSIZE(kUartMessage), &bytes_written));
-    CHECK(bytes_written == ARRAYSIZE(kUartMessage));
-  }
 
   // Load data into I2C FIFOs.
   static_assert(ARRAYSIZE(i2c_handles) < UINT8_MAX,
@@ -923,12 +821,8 @@ static void max_power_task(void *task_parameters) {
   uint32_t kmac_cmd_reg =
       bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_PROCESS);
 
-  // Prepare UART, I2C, SPI host enablement commands (note, all configurations
+  // Prepare I2C, SPI host enablement commands (note, all configurations
   // between each IP instance should be configured the same).
-  uint32_t uart_ctrl_reg =
-      mmio_region_read32(uart_1.base_addr, UART_CTRL_REG_OFFSET);
-  uart_ctrl_reg = bitfield_bit32_write(uart_ctrl_reg, UART_CTRL_TX_BIT, true);
-  uart_ctrl_reg = bitfield_bit32_write(uart_ctrl_reg, UART_CTRL_RX_BIT, true);
   uint32_t i2c_ctrl_reg =
       mmio_region_read32(i2c_0.base_addr, I2C_CTRL_REG_OFFSET);
   i2c_ctrl_reg =
@@ -958,10 +852,7 @@ static void max_power_task(void *task_parameters) {
   mmio_region_write32(adc_ctrl.base_addr, ADC_CTRL_ADC_EN_CTL_REG_OFFSET,
                       adc_ctrl_reg);
 
-  // Enable all UARTs and I2Cs.
-  mmio_region_write32(uart_1.base_addr, UART_CTRL_REG_OFFSET, uart_ctrl_reg);
-  mmio_region_write32(uart_2.base_addr, UART_CTRL_REG_OFFSET, uart_ctrl_reg);
-  mmio_region_write32(uart_3.base_addr, UART_CTRL_REG_OFFSET, uart_ctrl_reg);
+  // Enable all I2Cs.
   mmio_region_write32(i2c_0.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
   mmio_region_write32(i2c_1.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
   mmio_region_write32(i2c_2.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
@@ -1028,22 +919,6 @@ static void max_power_task(void *task_parameters) {
   hardened_bool_t result;
   CHECK_STATUS_OK(rsa_3072_verify_finalize(&rsa3072_encoded_message, &result));
   CHECK(result == kHardenedBoolTrue);
-
-  // Check UART transactions.
-  uint8_t received_uart_data[kUartFifoDepth];
-  size_t num_uart_rx_bytes;
-  for (size_t i = 0; i < ARRAYSIZE(uart_handles); ++i) {
-    CHECK_DIF_OK(
-        dif_uart_rx_bytes_available(uart_handles[i], &num_uart_rx_bytes));
-    // Note, we don't care if all bytes have been transmitted out of the UART by
-    // the time the fastest processing crypto block (i.e., the AES) has
-    // completed. Likely, we won't have transmitted all data since the UART is
-    // quite a bit slower. We just check that what was transmitted is correct.
-    memset((void *)received_uart_data, 0, kUartFifoDepth);
-    CHECK_DIF_OK(dif_uart_bytes_receive(uart_handles[i], num_uart_rx_bytes,
-                                        received_uart_data, NULL));
-    CHECK_ARRAYS_EQ(received_uart_data, kUartMessage, num_uart_rx_bytes);
-  }
 
   // Check I2C bits TXed were echoed back by the DV agent. (Only for DV.)
   if (kDeviceType == kDeviceSimDV) {
@@ -1126,9 +1001,6 @@ bool test_main(void) {
   CHECK_STATUS_OK(configure_aes());
   configure_hmac();
   configure_kmac();
-  configure_uart(&uart_1);
-  configure_uart(&uart_2);
-  configure_uart(&uart_3);
   configure_i2c(&i2c_0, kI2c0DeviceAddress0, kI2c0DeviceAddress1);
   configure_i2c(&i2c_1, kI2c1DeviceAddress0, kI2c1DeviceAddress1);
   configure_i2c(&i2c_2, kI2c2DeviceAddress0, kI2c2DeviceAddress1);

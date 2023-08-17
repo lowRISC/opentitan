@@ -52,10 +52,10 @@
   - Read alert_info from rstmgr and compare with expected value.
 
   Round 2: Multi Classes profile
-  - Trigger alert from uart0..3 and otp_ctrl.
+  - Trigger alert from uart0 and otp_ctrl.
   - Setup the aon_timer wdog bark and bite timeouts.
   - Let the timer expire to create watchdog bite.
-  - After reset, coalesced alert info from uarts and otp_ctrl
+  - After reset, coalesced alert info from uart and otp_ctrl
     will be available from rstmgr.
   - Read alert_info from rstmgr and compare with expected value.
 
@@ -91,7 +91,7 @@ static const uint32_t kPlicTarget = kTopDarjeelingPlicTargetIbex0;
 static dif_flash_ctrl_state_t flash_ctrl;
 static dif_rstmgr_t rstmgr;
 static dif_alert_handler_t alert_handler;
-static dif_uart_t uart0, uart1, uart2, uart3;
+static dif_uart_t uart0;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_spi_host_t spi_host;
 static dif_rv_plic_t plic;
@@ -342,7 +342,7 @@ static void prgm_alert_handler_round1(void) {
 }
 
 /*
- * Configure alert for uart0..3
+ * Configure alert for uart0
  * .alert class = class C
  * .escalation phase0,1
  * Configure alert from aon timer
@@ -360,7 +360,7 @@ static void prgm_alert_handler_round2(void) {
       kConfigProfiles[kDifAlertHandlerClassB]};
 
   for (int i = kTopDarjeelingAlertPeripheralUart0;
-       i < kTopDarjeelingAlertPeripheralUart3 + 1; ++i) {
+       i < kTopDarjeelingAlertPeripheralUart0 + 1; ++i) {
     CHECK_DIF_OK(dif_alert_handler_configure_alert(
         &alert_handler, test_node[i].alert, test_node[i].class,
         /*enabled=*/kDifToggleEnabled, /*locked=*/kDifToggleEnabled));
@@ -517,12 +517,6 @@ static void peripheral_init(void) {
       mmio_region_from_addr(TOP_DARJEELING_I2C2_BASE_ADDR), &i2c2));
   CHECK_DIF_OK(dif_uart_init(
       mmio_region_from_addr(TOP_DARJEELING_UART0_BASE_ADDR), &uart0));
-  CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_DARJEELING_UART1_BASE_ADDR), &uart1));
-  CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_DARJEELING_UART2_BASE_ADDR), &uart2));
-  CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_DARJEELING_UART3_BASE_ADDR), &uart3));
   CHECK_DIF_OK(dif_otp_ctrl_init(
       mmio_region_from_addr(TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR),
       &otp_ctrl));
@@ -630,24 +624,6 @@ static node_t test_node[kTopDarjeelingAlertPeripheralLast] = {
             .alert = kTopDarjeelingAlertIdUart0FatalFault,
             .class = kDifAlertHandlerClassC,
         },
-    [kTopDarjeelingAlertPeripheralUart1] =
-        {
-            .name = "UART1",
-            .alert = kTopDarjeelingAlertIdUart1FatalFault,
-            .class = kDifAlertHandlerClassC,
-        },
-    [kTopDarjeelingAlertPeripheralUart2] =
-        {
-            .name = "UART2",
-            .alert = kTopDarjeelingAlertIdUart2FatalFault,
-            .class = kDifAlertHandlerClassC,
-        },
-    [kTopDarjeelingAlertPeripheralUart3] =
-        {
-            .name = "UART3",
-            .alert = kTopDarjeelingAlertIdUart3FatalFault,
-            .class = kDifAlertHandlerClassC,
-        },
     [kTopDarjeelingAlertPeripheralI2c0] =
         {
             .name = "I2C0",
@@ -678,12 +654,6 @@ static void init_expected_cause(void) {
 
   kExpectedInfo[kRound2]
       .alert_info.alert_cause[kTopDarjeelingAlertIdUart0FatalFault] = 1;
-  kExpectedInfo[kRound2]
-      .alert_info.alert_cause[kTopDarjeelingAlertIdUart1FatalFault] = 1;
-  kExpectedInfo[kRound2]
-      .alert_info.alert_cause[kTopDarjeelingAlertIdUart2FatalFault] = 1;
-  kExpectedInfo[kRound2]
-      .alert_info.alert_cause[kTopDarjeelingAlertIdUart3FatalFault] = 1;
   kExpectedInfo[kRound2]
       .alert_info.alert_cause[kTopDarjeelingAlertIdOtpCtrlFatalBusIntegError] =
       1;
@@ -793,9 +763,6 @@ bool test_main(void) {
                                                         bite_cycles, false));
 
     CHECK_DIF_OK(dif_uart_alert_force(&uart0, kDifUartAlertFatalFault));
-    CHECK_DIF_OK(dif_uart_alert_force(&uart1, kDifUartAlertFatalFault));
-    CHECK_DIF_OK(dif_uart_alert_force(&uart2, kDifUartAlertFatalFault));
-    CHECK_DIF_OK(dif_uart_alert_force(&uart3, kDifUartAlertFatalFault));
     CHECK_DIF_OK(dif_otp_ctrl_alert_force(&otp_ctrl,
                                           kDifOtpCtrlAlertFatalBusIntegError));
     CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
