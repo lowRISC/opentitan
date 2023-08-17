@@ -12,7 +12,7 @@ set_property -dict { PACKAGE_PIN E22 IOSTANDARD LVCMOS18 } [get_ports { IO_CLK }
 ## set via clocks.xdc
 
 ## Power-on Reset
-set_property -dict { PACKAGE_PIN  G26 IOSTANDARD LVCMOS18 PULLTYPE PULLUP } [get_ports { POR_N }]; # Main PORN, requires jumper to SW0 [was USB_A14 (SAM3X)]
+set_property -dict { PACKAGE_PIN  G26 IOSTANDARD LVCMOS18 PULLTYPE PULLUP } [get_ports { POR_N }]; # Main PORN, requires jumper to SW0 CW340:SAM3X_OT_POR SAM3X:PC30
 
 ## MIOs
 # All MIOS except for IOC7 are connected to nets of the same name (prefixed
@@ -47,15 +47,15 @@ set_property -dict { PACKAGE_PIN AN12 IOSTANDARD LVCMOS18 } [get_ports { IOB12 }
 
 
 ## IOC bank
-set_property -dict { PACKAGE_PIN  T24  IOSTANDARD LVCMOS18 PULLTYPE PULLDOWN } [get_ports { IOC0 }]; # EarlGrey:SW_STRAP0
-set_property -dict { PACKAGE_PIN  T25  IOSTANDARD LVCMOS18 PULLTYPE PULLDOWN } [get_ports { IOC1 }]; # EarlGrey:SW_STRAP1
-set_property -dict { PACKAGE_PIN  R27  IOSTANDARD LVCMOS18 PULLTYPE PULLDOWN } [get_ports { IOC2 }]; # EarlGrey:SW_STRAP2
+set_property -dict { PACKAGE_PIN  T24  IOSTANDARD LVCMOS18 PULLTYPE PULLDOWN } [get_ports { IOC0 }]; # EarlGrey:SW_STRAP0     CW340:PC23 SAM3X:USBSPARE2
+set_property -dict { PACKAGE_PIN  T25  IOSTANDARD LVCMOS18 PULLTYPE PULLDOWN } [get_ports { IOC1 }]; # EarlGrey:SW_STRAP1     CW340:PC22 SAM3X:USBSPARE1
+set_property -dict { PACKAGE_PIN  R27  IOSTANDARD LVCMOS18 PULLTYPE PULLDOWN } [get_ports { IOC2 }]; # EarlGrey:SW_STRAP2     CW340:PC21 SAM3X:USBSPARE0
 set_property -dict { PACKAGE_PIN  P25  IOSTANDARD LVCMOS18 } [get_ports { IOC3 }]; # EarlGrey:UART0_RX
 set_property -dict { PACKAGE_PIN  N24  IOSTANDARD LVCMOS18 } [get_ports { IOC4 }]; # EarlGrey:UART0_TX
-set_property -dict { PACKAGE_PIN  M24  IOSTANDARD LVCMOS18 PULLTYPE PULLDOWN } [get_ports { IOC5 }]; # EarlGrey:TAP_STRAP1
+set_property -dict { PACKAGE_PIN  M24  IOSTANDARD LVCMOS18 PULLTYPE PULLDOWN } [get_ports { IOC5 }]; # EarlGrey:TAP_STRAP1    CW340:PB13 SAM3X:SAM_JTAGSTRAP0
 set_property -dict { PACKAGE_PIN  M27  IOSTANDARD LVCMOS18 } [get_ports { IOC6 }]; # EarlGrey:GPIO
 set_property -dict { PACKAGE_PIN  B29  IOSTANDARD LVCMOS18 } [get_ports { IOC7 }]; # EarlGrey:VBUS_DETECT
-set_property -dict { PACKAGE_PIN  K23  IOSTANDARD LVCMOS18 PULLTYPE PULLDOWN } [get_ports { IOC8 }]; # EarlGrey:TAP_STRAP0
+set_property -dict { PACKAGE_PIN  K23  IOSTANDARD LVCMOS18 PULLTYPE PULLDOWN } [get_ports { IOC8 }]; # EarlGrey:TAP_STRAP0    CW340:PB12 SAM3X:SAM_JTAGSTRAP1
 set_property -dict { PACKAGE_PIN  K26 IOSTANDARD LVCMOS18 } [get_ports { IOC9  }]; # EarlGrey:GPIO
 set_property -dict { PACKAGE_PIN  J26 IOSTANDARD LVCMOS18 } [get_ports { IOC10 }]; # EarlGrey:GPIO
 set_property -dict { PACKAGE_PIN  H24 IOSTANDARD LVCMOS18 } [get_ports { IOC11 }]; # EarlGrey:GPIO
