@@ -266,11 +266,6 @@ dif_result_t dif_clkmgr_enable_measure_counts(const dif_clkmgr_t *clkmgr,
 #undef PICK_COUNT_CTRL_FIELDS
   }
 
-  uint32_t measure_en_reg = 0;
-  measure_en_reg =
-      bitfield_field32_write(measure_en_reg, en_field, kMultiBitBool4True);
-  mmio_region_write32(clkmgr->base_addr, (ptrdiff_t)en_offset, measure_en_reg);
-
   uint32_t measure_ctrl_reg = 0;
   measure_ctrl_reg =
       bitfield_field32_write(measure_ctrl_reg, lo_field, lo_threshold);
@@ -281,6 +276,11 @@ dif_result_t dif_clkmgr_enable_measure_counts(const dif_clkmgr_t *clkmgr,
                       measure_ctrl_reg);
   mmio_region_write32(clkmgr->base_addr, (ptrdiff_t)reg_offset,
                       measure_ctrl_reg);
+
+  uint32_t measure_en_reg = 0;
+  measure_en_reg =
+      bitfield_field32_write(measure_en_reg, en_field, kMultiBitBool4True);
+  mmio_region_write32(clkmgr->base_addr, (ptrdiff_t)en_offset, measure_en_reg);
 
   return kDifOk;
 }
