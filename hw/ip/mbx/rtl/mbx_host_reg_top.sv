@@ -21,7 +21,7 @@ module mbx_host_reg_top (
 
   import mbx_reg_pkg::* ;
 
-  localparam int AW = 4;
+  localparam int AW = 6;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -52,9 +52,9 @@ module mbx_host_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [2:0] reg_we_check;
+  logic [14:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(3)
+    .OneHotWidth(15)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -129,6 +129,47 @@ module mbx_host_reg_top (
   logic intr_enable_wd;
   logic intr_test_we;
   logic intr_test_wd;
+  logic alert_test_we;
+  logic alert_test_wd;
+  logic control_re;
+  logic control_we;
+  logic control_qs;
+  logic control_wd;
+  logic status_re;
+  logic status_we;
+  logic status_busy_qs;
+  logic status_busy_wd;
+  logic status_error_qs;
+  logic status_error_wd;
+  logic status_async_msg_status_qs;
+  logic status_async_msg_status_wd;
+  logic status_ready_qs;
+  logic status_ready_wd;
+  logic address_range_regwen_we;
+  logic address_range_regwen_qs;
+  logic address_range_regwen_wd;
+  logic address_range_valid_we;
+  logic address_range_valid_qs;
+  logic address_range_valid_wd;
+  logic inbound_base_address_we;
+  logic [29:0] inbound_base_address_qs;
+  logic [29:0] inbound_base_address_wd;
+  logic inbound_limit_address_we;
+  logic [29:0] inbound_limit_address_qs;
+  logic [29:0] inbound_limit_address_wd;
+  logic inbound_write_ptr_re;
+  logic [29:0] inbound_write_ptr_qs;
+  logic outbound_base_address_we;
+  logic [29:0] outbound_base_address_qs;
+  logic [29:0] outbound_base_address_wd;
+  logic outbound_limit_address_we;
+  logic [29:0] outbound_limit_address_qs;
+  logic [29:0] outbound_limit_address_wd;
+  logic outbound_read_ptr_re;
+  logic [29:0] outbound_read_ptr_qs;
+  logic outbound_object_size_we;
+  logic [10:0] outbound_object_size_qs;
+  logic [10:0] outbound_object_size_wd;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -207,13 +248,437 @@ module mbx_host_reg_top (
   assign reg2hw.intr_test.qe = intr_test_qe;
 
 
+  // R[alert_test]: V(True)
+  logic alert_test_qe;
+  logic [0:0] alert_test_flds_we;
+  assign alert_test_qe = &alert_test_flds_we;
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (alert_test_flds_we[0]),
+    .q      (reg2hw.alert_test.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.alert_test.qe = alert_test_qe;
 
-  logic [2:0] addr_hit;
+
+  // R[control]: V(True)
+  logic control_qe;
+  logic [0:0] control_flds_we;
+  assign control_qe = &control_flds_we;
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_control (
+    .re     (control_re),
+    .we     (control_we),
+    .wd     (control_wd),
+    .d      (hw2reg.control.d),
+    .qre    (),
+    .qe     (control_flds_we[0]),
+    .q      (reg2hw.control.q),
+    .ds     (),
+    .qs     (control_qs)
+  );
+  assign reg2hw.control.qe = control_qe;
+
+
+  // R[status]: V(True)
+  logic status_qe;
+  logic [3:0] status_flds_we;
+  assign status_qe = &status_flds_we;
+  //   F[busy]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_busy (
+    .re     (status_re),
+    .we     (status_we),
+    .wd     (status_busy_wd),
+    .d      (hw2reg.status.busy.d),
+    .qre    (),
+    .qe     (status_flds_we[0]),
+    .q      (reg2hw.status.busy.q),
+    .ds     (),
+    .qs     (status_busy_qs)
+  );
+  assign reg2hw.status.busy.qe = status_qe;
+
+  //   F[error]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_error (
+    .re     (status_re),
+    .we     (status_we),
+    .wd     (status_error_wd),
+    .d      (hw2reg.status.error.d),
+    .qre    (),
+    .qe     (status_flds_we[1]),
+    .q      (reg2hw.status.error.q),
+    .ds     (),
+    .qs     (status_error_qs)
+  );
+  assign reg2hw.status.error.qe = status_qe;
+
+  //   F[async_msg_status]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_async_msg_status (
+    .re     (status_re),
+    .we     (status_we),
+    .wd     (status_async_msg_status_wd),
+    .d      (hw2reg.status.async_msg_status.d),
+    .qre    (),
+    .qe     (status_flds_we[2]),
+    .q      (reg2hw.status.async_msg_status.q),
+    .ds     (),
+    .qs     (status_async_msg_status_qs)
+  );
+  assign reg2hw.status.async_msg_status.qe = status_qe;
+
+  //   F[ready]: 31:31
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_ready (
+    .re     (status_re),
+    .we     (status_we),
+    .wd     (status_ready_wd),
+    .d      (hw2reg.status.ready.d),
+    .qre    (),
+    .qe     (status_flds_we[3]),
+    .q      (reg2hw.status.ready.q),
+    .ds     (),
+    .qs     (status_ready_qs)
+  );
+  assign reg2hw.status.ready.qe = status_qe;
+
+
+  // R[address_range_regwen]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1)
+  ) u_address_range_regwen (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (address_range_regwen_we),
+    .wd     (address_range_regwen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.address_range_regwen.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (address_range_regwen_qs)
+  );
+
+
+  // R[address_range_valid]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_address_range_valid (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (address_range_valid_we),
+    .wd     (address_range_valid_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.address_range_valid.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (address_range_valid_qs)
+  );
+
+
+  // R[inbound_base_address]: V(False)
+  logic inbound_base_address_qe;
+  logic [0:0] inbound_base_address_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_inbound_base_address0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&inbound_base_address_flds_we),
+    .q_o(inbound_base_address_qe)
+  );
+  // Create REGWEN-gated WE signal
+  logic inbound_base_address_gated_we;
+  assign inbound_base_address_gated_we = inbound_base_address_we & address_range_regwen_qs;
+  prim_subreg #(
+    .DW      (30),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (30'h0)
+  ) u_inbound_base_address (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inbound_base_address_gated_we),
+    .wd     (inbound_base_address_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (inbound_base_address_flds_we[0]),
+    .q      (reg2hw.inbound_base_address.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inbound_base_address_qs)
+  );
+  assign reg2hw.inbound_base_address.qe = inbound_base_address_qe;
+
+
+  // R[inbound_limit_address]: V(False)
+  logic inbound_limit_address_qe;
+  logic [0:0] inbound_limit_address_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_inbound_limit_address0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&inbound_limit_address_flds_we),
+    .q_o(inbound_limit_address_qe)
+  );
+  // Create REGWEN-gated WE signal
+  logic inbound_limit_address_gated_we;
+  assign inbound_limit_address_gated_we = inbound_limit_address_we & address_range_regwen_qs;
+  prim_subreg #(
+    .DW      (30),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (30'h0)
+  ) u_inbound_limit_address (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inbound_limit_address_gated_we),
+    .wd     (inbound_limit_address_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (inbound_limit_address_flds_we[0]),
+    .q      (reg2hw.inbound_limit_address.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inbound_limit_address_qs)
+  );
+  assign reg2hw.inbound_limit_address.qe = inbound_limit_address_qe;
+
+
+  // R[inbound_write_ptr]: V(True)
+  logic inbound_write_ptr_qe;
+  logic [0:0] inbound_write_ptr_flds_we;
+  // In case all fields are read-only the aggregated register QE will be zero as well.
+  assign inbound_write_ptr_qe = &inbound_write_ptr_flds_we;
+  prim_subreg_ext #(
+    .DW    (30)
+  ) u_inbound_write_ptr (
+    .re     (inbound_write_ptr_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.inbound_write_ptr.d),
+    .qre    (),
+    .qe     (inbound_write_ptr_flds_we[0]),
+    .q      (reg2hw.inbound_write_ptr.q),
+    .ds     (),
+    .qs     (inbound_write_ptr_qs)
+  );
+  assign reg2hw.inbound_write_ptr.qe = inbound_write_ptr_qe;
+
+
+  // R[outbound_base_address]: V(False)
+  logic outbound_base_address_qe;
+  logic [0:0] outbound_base_address_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_outbound_base_address0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&outbound_base_address_flds_we),
+    .q_o(outbound_base_address_qe)
+  );
+  // Create REGWEN-gated WE signal
+  logic outbound_base_address_gated_we;
+  assign outbound_base_address_gated_we = outbound_base_address_we & address_range_regwen_qs;
+  prim_subreg #(
+    .DW      (30),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (30'h0)
+  ) u_outbound_base_address (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (outbound_base_address_gated_we),
+    .wd     (outbound_base_address_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (outbound_base_address_flds_we[0]),
+    .q      (reg2hw.outbound_base_address.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (outbound_base_address_qs)
+  );
+  assign reg2hw.outbound_base_address.qe = outbound_base_address_qe;
+
+
+  // R[outbound_limit_address]: V(False)
+  logic outbound_limit_address_qe;
+  logic [0:0] outbound_limit_address_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_outbound_limit_address0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&outbound_limit_address_flds_we),
+    .q_o(outbound_limit_address_qe)
+  );
+  // Create REGWEN-gated WE signal
+  logic outbound_limit_address_gated_we;
+  assign outbound_limit_address_gated_we = outbound_limit_address_we & address_range_regwen_qs;
+  prim_subreg #(
+    .DW      (30),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (30'h0)
+  ) u_outbound_limit_address (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (outbound_limit_address_gated_we),
+    .wd     (outbound_limit_address_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (outbound_limit_address_flds_we[0]),
+    .q      (reg2hw.outbound_limit_address.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (outbound_limit_address_qs)
+  );
+  assign reg2hw.outbound_limit_address.qe = outbound_limit_address_qe;
+
+
+  // R[outbound_read_ptr]: V(True)
+  logic outbound_read_ptr_qe;
+  logic [0:0] outbound_read_ptr_flds_we;
+  // In case all fields are read-only the aggregated register QE will be zero as well.
+  assign outbound_read_ptr_qe = &outbound_read_ptr_flds_we;
+  prim_subreg_ext #(
+    .DW    (30)
+  ) u_outbound_read_ptr (
+    .re     (outbound_read_ptr_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.outbound_read_ptr.d),
+    .qre    (),
+    .qe     (outbound_read_ptr_flds_we[0]),
+    .q      (reg2hw.outbound_read_ptr.q),
+    .ds     (),
+    .qs     (outbound_read_ptr_qs)
+  );
+  assign reg2hw.outbound_read_ptr.qe = outbound_read_ptr_qe;
+
+
+  // R[outbound_object_size]: V(False)
+  logic outbound_object_size_qe;
+  logic [0:0] outbound_object_size_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_outbound_object_size0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&outbound_object_size_flds_we),
+    .q_o(outbound_object_size_qe)
+  );
+  prim_subreg #(
+    .DW      (11),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (11'h0)
+  ) u_outbound_object_size (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (outbound_object_size_we),
+    .wd     (outbound_object_size_wd),
+
+    // from internal hardware
+    .de     (hw2reg.outbound_object_size.de),
+    .d      (hw2reg.outbound_object_size.d),
+
+    // to internal hardware
+    .qe     (outbound_object_size_flds_we[0]),
+    .q      (reg2hw.outbound_object_size.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (outbound_object_size_qs)
+  );
+  assign reg2hw.outbound_object_size.qe = outbound_object_size_qe;
+
+
+
+  logic [14:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[0] = (reg_addr == MBX_INTR_STATE_OFFSET);
-    addr_hit[1] = (reg_addr == MBX_INTR_ENABLE_OFFSET);
-    addr_hit[2] = (reg_addr == MBX_INTR_TEST_OFFSET);
+    addr_hit[ 0] = (reg_addr == MBX_INTR_STATE_OFFSET);
+    addr_hit[ 1] = (reg_addr == MBX_INTR_ENABLE_OFFSET);
+    addr_hit[ 2] = (reg_addr == MBX_INTR_TEST_OFFSET);
+    addr_hit[ 3] = (reg_addr == MBX_ALERT_TEST_OFFSET);
+    addr_hit[ 4] = (reg_addr == MBX_CONTROL_OFFSET);
+    addr_hit[ 5] = (reg_addr == MBX_STATUS_OFFSET);
+    addr_hit[ 6] = (reg_addr == MBX_ADDRESS_RANGE_REGWEN_OFFSET);
+    addr_hit[ 7] = (reg_addr == MBX_ADDRESS_RANGE_VALID_OFFSET);
+    addr_hit[ 8] = (reg_addr == MBX_INBOUND_BASE_ADDRESS_OFFSET);
+    addr_hit[ 9] = (reg_addr == MBX_INBOUND_LIMIT_ADDRESS_OFFSET);
+    addr_hit[10] = (reg_addr == MBX_INBOUND_WRITE_PTR_OFFSET);
+    addr_hit[11] = (reg_addr == MBX_OUTBOUND_BASE_ADDRESS_OFFSET);
+    addr_hit[12] = (reg_addr == MBX_OUTBOUND_LIMIT_ADDRESS_OFFSET);
+    addr_hit[13] = (reg_addr == MBX_OUTBOUND_READ_PTR_OFFSET);
+    addr_hit[14] = (reg_addr == MBX_OUTBOUND_OBJECT_SIZE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -221,9 +686,21 @@ module mbx_host_reg_top (
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((addr_hit[0] & (|(MBX_HOST_PERMIT[0] & ~reg_be))) |
-               (addr_hit[1] & (|(MBX_HOST_PERMIT[1] & ~reg_be))) |
-               (addr_hit[2] & (|(MBX_HOST_PERMIT[2] & ~reg_be)))));
+              ((addr_hit[ 0] & (|(MBX_HOST_PERMIT[ 0] & ~reg_be))) |
+               (addr_hit[ 1] & (|(MBX_HOST_PERMIT[ 1] & ~reg_be))) |
+               (addr_hit[ 2] & (|(MBX_HOST_PERMIT[ 2] & ~reg_be))) |
+               (addr_hit[ 3] & (|(MBX_HOST_PERMIT[ 3] & ~reg_be))) |
+               (addr_hit[ 4] & (|(MBX_HOST_PERMIT[ 4] & ~reg_be))) |
+               (addr_hit[ 5] & (|(MBX_HOST_PERMIT[ 5] & ~reg_be))) |
+               (addr_hit[ 6] & (|(MBX_HOST_PERMIT[ 6] & ~reg_be))) |
+               (addr_hit[ 7] & (|(MBX_HOST_PERMIT[ 7] & ~reg_be))) |
+               (addr_hit[ 8] & (|(MBX_HOST_PERMIT[ 8] & ~reg_be))) |
+               (addr_hit[ 9] & (|(MBX_HOST_PERMIT[ 9] & ~reg_be))) |
+               (addr_hit[10] & (|(MBX_HOST_PERMIT[10] & ~reg_be))) |
+               (addr_hit[11] & (|(MBX_HOST_PERMIT[11] & ~reg_be))) |
+               (addr_hit[12] & (|(MBX_HOST_PERMIT[12] & ~reg_be))) |
+               (addr_hit[13] & (|(MBX_HOST_PERMIT[13] & ~reg_be))) |
+               (addr_hit[14] & (|(MBX_HOST_PERMIT[14] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -236,6 +713,46 @@ module mbx_host_reg_top (
   assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
   assign intr_test_wd = reg_wdata[0];
+  assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
+
+  assign alert_test_wd = reg_wdata[0];
+  assign control_re = addr_hit[4] & reg_re & !reg_error;
+  assign control_we = addr_hit[4] & reg_we & !reg_error;
+
+  assign control_wd = reg_wdata[0];
+  assign status_re = addr_hit[5] & reg_re & !reg_error;
+  assign status_we = addr_hit[5] & reg_we & !reg_error;
+
+  assign status_busy_wd = reg_wdata[0];
+
+  assign status_error_wd = reg_wdata[2];
+
+  assign status_async_msg_status_wd = reg_wdata[3];
+
+  assign status_ready_wd = reg_wdata[31];
+  assign address_range_regwen_we = addr_hit[6] & reg_we & !reg_error;
+
+  assign address_range_regwen_wd = reg_wdata[0];
+  assign address_range_valid_we = addr_hit[7] & reg_we & !reg_error;
+
+  assign address_range_valid_wd = reg_wdata[0];
+  assign inbound_base_address_we = addr_hit[8] & reg_we & !reg_error;
+
+  assign inbound_base_address_wd = reg_wdata[31:2];
+  assign inbound_limit_address_we = addr_hit[9] & reg_we & !reg_error;
+
+  assign inbound_limit_address_wd = reg_wdata[31:2];
+  assign inbound_write_ptr_re = addr_hit[10] & reg_re & !reg_error;
+  assign outbound_base_address_we = addr_hit[11] & reg_we & !reg_error;
+
+  assign outbound_base_address_wd = reg_wdata[31:2];
+  assign outbound_limit_address_we = addr_hit[12] & reg_we & !reg_error;
+
+  assign outbound_limit_address_wd = reg_wdata[31:2];
+  assign outbound_read_ptr_re = addr_hit[13] & reg_re & !reg_error;
+  assign outbound_object_size_we = addr_hit[14] & reg_we & !reg_error;
+
+  assign outbound_object_size_wd = reg_wdata[10:0];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -243,6 +760,18 @@ module mbx_host_reg_top (
     reg_we_check[0] = intr_state_we;
     reg_we_check[1] = intr_enable_we;
     reg_we_check[2] = intr_test_we;
+    reg_we_check[3] = alert_test_we;
+    reg_we_check[4] = control_we;
+    reg_we_check[5] = status_we;
+    reg_we_check[6] = address_range_regwen_we;
+    reg_we_check[7] = address_range_valid_we;
+    reg_we_check[8] = inbound_base_address_gated_we;
+    reg_we_check[9] = inbound_limit_address_gated_we;
+    reg_we_check[10] = 1'b0;
+    reg_we_check[11] = outbound_base_address_gated_we;
+    reg_we_check[12] = outbound_limit_address_gated_we;
+    reg_we_check[13] = 1'b0;
+    reg_we_check[14] = outbound_object_size_we;
   end
 
   // Read data return
@@ -259,6 +788,57 @@ module mbx_host_reg_top (
 
       addr_hit[2]: begin
         reg_rdata_next[0] = '0;
+      end
+
+      addr_hit[3]: begin
+        reg_rdata_next[0] = '0;
+      end
+
+      addr_hit[4]: begin
+        reg_rdata_next[0] = control_qs;
+      end
+
+      addr_hit[5]: begin
+        reg_rdata_next[0] = status_busy_qs;
+        reg_rdata_next[2] = status_error_qs;
+        reg_rdata_next[3] = status_async_msg_status_qs;
+        reg_rdata_next[31] = status_ready_qs;
+      end
+
+      addr_hit[6]: begin
+        reg_rdata_next[0] = address_range_regwen_qs;
+      end
+
+      addr_hit[7]: begin
+        reg_rdata_next[0] = address_range_valid_qs;
+      end
+
+      addr_hit[8]: begin
+        reg_rdata_next[31:2] = inbound_base_address_qs;
+      end
+
+      addr_hit[9]: begin
+        reg_rdata_next[31:2] = inbound_limit_address_qs;
+      end
+
+      addr_hit[10]: begin
+        reg_rdata_next[31:2] = inbound_write_ptr_qs;
+      end
+
+      addr_hit[11]: begin
+        reg_rdata_next[31:2] = outbound_base_address_qs;
+      end
+
+      addr_hit[12]: begin
+        reg_rdata_next[31:2] = outbound_limit_address_qs;
+      end
+
+      addr_hit[13]: begin
+        reg_rdata_next[31:2] = outbound_read_ptr_qs;
+      end
+
+      addr_hit[14]: begin
+        reg_rdata_next[10:0] = outbound_object_size_qs;
       end
 
       default: begin
