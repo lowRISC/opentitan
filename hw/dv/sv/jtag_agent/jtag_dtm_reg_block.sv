@@ -184,7 +184,7 @@ class jtag_dtm_reg_dtmcs extends jtag_dtm_base_reg;
       .access("RO"),
       .mubi_access("NONE"),
       .volatile(0),
-      .reset(32'h7),
+      .reset(32'h07),
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
