@@ -62,15 +62,15 @@
   {
     rv_core_ibex.corei:
     [
-      rom_ctrl.rom
+      rom_ctrl0.rom
       rv_dm.mem
       sram_ctrl_main.ram
       flash_ctrl.mem
     ]
     rv_core_ibex.cored:
     [
-      rom_ctrl.rom
-      rom_ctrl.regs
+      rom_ctrl0.rom
+      rom_ctrl0.regs
       rv_dm.mem
       rv_dm.regs
       sram_ctrl_main.ram
@@ -96,8 +96,8 @@
     ]
     rv_dm.sba:
     [
-      rom_ctrl.rom
-      rom_ctrl.regs
+      rom_ctrl0.rom
+      rom_ctrl0.regs
       rv_dm.mem
       rv_dm.regs
       sram_ctrl_main.ram
@@ -199,7 +199,7 @@
       pipeline: true
     }
     {
-      name: rom_ctrl.rom
+      name: rom_ctrl0.rom
       type: device
       clock: clk_main_i
       reset: rst_main_ni
@@ -218,7 +218,7 @@
       pipeline: true
     }
     {
-      name: rom_ctrl.regs
+      name: rom_ctrl0.regs
       type: device
       clock: clk_main_i
       reset: rst_main_ni

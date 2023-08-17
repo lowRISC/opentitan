@@ -62,15 +62,18 @@
   {
     rv_core_ibex.corei:
     [
-      rom_ctrl.rom
+      rom_ctrl0.rom
+      rom_ctrl1.rom
       rv_dm.mem
       sram_ctrl_main.ram
       flash_ctrl.mem
     ]
     rv_core_ibex.cored:
     [
-      rom_ctrl.rom
-      rom_ctrl.regs
+      rom_ctrl0.rom
+      rom_ctrl0.regs
+      rom_ctrl1.rom
+      rom_ctrl1.regs
       rv_dm.mem
       rv_dm.regs
       sram_ctrl_main.ram
@@ -98,8 +101,10 @@
     ]
     rv_dm.sba:
     [
-      rom_ctrl.rom
-      rom_ctrl.regs
+      rom_ctrl0.rom
+      rom_ctrl0.regs
+      rom_ctrl1.rom
+      rom_ctrl1.regs
       rv_dm.mem
       rv_dm.regs
       sram_ctrl_main.ram
@@ -203,7 +208,7 @@
       pipeline: true
     }
     {
-      name: rom_ctrl.rom
+      name: rom_ctrl0.rom
       type: device
       clock: clk_main_i
       reset: rst_main_ni
@@ -222,7 +227,7 @@
       pipeline: true
     }
     {
-      name: rom_ctrl.regs
+      name: rom_ctrl0.regs
       type: device
       clock: clk_main_i
       reset: rst_main_ni
@@ -233,6 +238,44 @@
       [
         {
           base_addr: 0x411e0000
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: rom_ctrl1.rom
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: true
+      rsp_fifo_pass: false
+      inst_type: rom_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0x50000
+          size_byte: 0x10000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: rom_ctrl1.regs
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: rom_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0x41210000
           size_byte: 0x80
         }
       ]

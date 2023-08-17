@@ -62,7 +62,7 @@ rom_epmp_init:
   csrw pmpaddr1, t0
 
   // ROM
-  li   t0, NAPOT(TOP_DARJEELING_ROM_BASE_ADDR, TOP_DARJEELING_ROM_SIZE_BYTES)
+  li   t0, NAPOT(TOP_DARJEELING_ROM0_BASE_ADDR, TOP_DARJEELING_ROM0_SIZE_BYTES)
   csrw pmpaddr2, t0
 
   // ROM_EXT TEXT (configured after signature verification)

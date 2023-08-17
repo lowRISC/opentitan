@@ -8,8 +8,8 @@ package tl_main_pkg;
 
   localparam logic [31:0] ADDR_SPACE_RV_DM__REGS          = 32'h 41200000;
   localparam logic [31:0] ADDR_SPACE_RV_DM__MEM           = 32'h 00010000;
-  localparam logic [31:0] ADDR_SPACE_ROM_CTRL__ROM        = 32'h 00008000;
-  localparam logic [31:0] ADDR_SPACE_ROM_CTRL__REGS       = 32'h 411e0000;
+  localparam logic [31:0] ADDR_SPACE_ROM_CTRL0__ROM       = 32'h 00008000;
+  localparam logic [31:0] ADDR_SPACE_ROM_CTRL0__REGS      = 32'h 411e0000;
   localparam logic [1:0][31:0] ADDR_SPACE_PERI                 = {
     32'h 40400000,
     32'h 40000000
@@ -36,8 +36,8 @@ package tl_main_pkg;
 
   localparam logic [31:0] ADDR_MASK_RV_DM__REGS          = 32'h 00000003;
   localparam logic [31:0] ADDR_MASK_RV_DM__MEM           = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_ROM_CTRL__ROM        = 32'h 00007fff;
-  localparam logic [31:0] ADDR_MASK_ROM_CTRL__REGS       = 32'h 0000007f;
+  localparam logic [31:0] ADDR_MASK_ROM_CTRL0__ROM       = 32'h 00007fff;
+  localparam logic [31:0] ADDR_MASK_ROM_CTRL0__REGS      = 32'h 0000007f;
   localparam logic [1:0][31:0] ADDR_MASK_PERI                 = {
     32'h 003fffff,
     32'h 001fffff
@@ -68,8 +68,8 @@ package tl_main_pkg;
   typedef enum int {
     TlRvDmRegs = 0,
     TlRvDmMem = 1,
-    TlRomCtrlRom = 2,
-    TlRomCtrlRegs = 3,
+    TlRomCtrl0Rom = 2,
+    TlRomCtrl0Regs = 3,
     TlPeri = 4,
     TlSpiHost0 = 5,
     TlSpiHost1 = 6,

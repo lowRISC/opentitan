@@ -89,20 +89,20 @@ class chip_base_vseq #(
     // We can't just use the mem_bkdr_util randomize_mem function because that doesn't obey the
     // scrambling key. This wouldn't be a problem (the memory is supposed to be random!), except
     // that we also need to pick ECC values that match.
-    for (int addr = 0; addr < RomMaxCheckAddr; addr += TL_DW/8) begin
+    for (int addr = 0; addr < Rom0MaxCheckAddr; addr += TL_DW/8) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(rnd_data)
-      cfg.mem_bkdr_util_h[Rom].rom_encrypt_write32_integ(
+      cfg.mem_bkdr_util_h[Rom0].rom_encrypt_write32_integ(
           addr,
           rnd_data,
-          top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrlScrKey,
-          top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrlScrNonce,
+          top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrl0ScrKey,
+          top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrl0ScrNonce,
           1'b1); // Enable scrambling.
     end
 
     // Update the ROM digest.
-    cfg.mem_bkdr_util_h[Rom].update_rom_digest(
-        top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrlScrKey,
-        top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrlScrNonce);
+    cfg.mem_bkdr_util_h[Rom0].update_rom_digest(
+        top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrl0ScrKey,
+        top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrl0ScrNonce);
   endfunction
 
   // Iniitializes the DUT.
@@ -182,21 +182,21 @@ class chip_base_vseq #(
 
   virtual task wait_rom_check_done();
     // The CSR tests (handled by this class) need to wait until the lc_ctrl has initialized and
-    // rom_ctrl block has finished running KMAC before they can start issuing reads and writes.
+    // rom_ctrl0 block has finished running KMAC before they can start issuing reads and writes.
     // Otherwise, they might write to a KMAC register while KMAC is in operation, or access a
     // register that is gated by life cycle.
     // This would either generate an error or have no effect and a subsequent read
-    // from the register would show a mismatched value. We handle this by considering rom_ctrl's
+    // from the register would show a mismatched value. We handle this by considering rom_ctrl0's
     // operation as "part of reset".
     // Same for the test that uses jtag to access CSRs. We need to wait until rom check is done.
     //
     // This function is meant to be called once the base class reset is finished.
     // Use backdoor, so that this task can be used with or without stub mode enabled.
 
-    `uvm_info(`gfn, "waiting for rom_ctrl after reset", UVM_MEDIUM)
-    csr_spinwait(.ptr(ral.rom_ctrl_regs.digest[0]), .exp_data(0), .compare_op(CompareOpNe),
+    `uvm_info(`gfn, "waiting for rom_ctrl0 after reset", UVM_MEDIUM)
+    csr_spinwait(.ptr(ral.rom_ctrl0_regs.digest[0]), .exp_data(0), .compare_op(CompareOpNe),
                  .backdoor(1), .spinwait_delay_ns(1000));
-    `uvm_info(`gfn, "rom_ctrl check done after reset", UVM_HIGH)
+    `uvm_info(`gfn, "rom_ctrl0 check done after reset", UVM_HIGH)
     csr_spinwait(.ptr(ral.lc_ctrl.status.ready), .exp_data(1), .backdoor(1),
                  .spinwait_delay_ns(1000));
     `uvm_info(`gfn, "lc_ctrl has been initialized", UVM_HIGH)
@@ -213,7 +213,7 @@ class chip_base_vseq #(
     // will load a "real" ROM image later. If the ROM integrity check is disabled, no digest needs
     // to be calculated and we can just randomize the memory.
     `ifdef DISABLE_ROM_INTEGRITY_CHECK
-      cfg.mem_bkdr_util_h[Rom].randomize_mem();
+      cfg.mem_bkdr_util_h[Rom0].randomize_mem();
     `else
       random_rom_init_with_digest();
     `endif
@@ -355,9 +355,9 @@ class chip_base_vseq #(
       end else begin  // if (mem.get_access() == "RW")
         // deposit random data to rom
         int byte_addr = offset * 4;
-        cfg.mem_bkdr_util_h[Rom].rom_encrypt_write32_integ(
-            .addr(byte_addr), .data(wdata), .key(RndCnstRomCtrlScrKey),
-            .nonce(RndCnstRomCtrlScrNonce), .scramble_data(1));
+        cfg.mem_bkdr_util_h[Rom0].rom_encrypt_write32_integ(
+            .addr(byte_addr), .data(wdata), .key(RndCnstRomCtrl0ScrKey),
+            .nonce(RndCnstRomCtrl0ScrNonce), .scramble_data(1));
       end
     end
 

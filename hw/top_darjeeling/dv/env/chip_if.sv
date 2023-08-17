@@ -65,7 +65,8 @@ interface chip_if;
 `define PINMUX_HIER         `TOP_HIER.u_pinmux_aon
 `define PWM_HIER            `TOP_HIER.u_pwm_aon
 `define PWRMGR_HIER         `TOP_HIER.u_pwrmgr_aon
-`define ROM_CTRL_HIER       `TOP_HIER.u_rom_ctrl
+`define ROM_CTRL0_HIER      `TOP_HIER.u_rom_ctrl0
+`define ROM_CTRL1_HIER      `TOP_HIER.u_rom_ctrl1
 `define RSTMGR_HIER         `TOP_HIER.u_rstmgr_aon
 `define RV_CORE_IBEX_HIER   `TOP_HIER.u_rv_core_ibex
 `define RV_DM_HIER          `TOP_HIER.u_rv_dm
@@ -692,8 +693,8 @@ interface chip_if;
 
   wire flash_core1_host_req = 0;
 `else
-  wire rom_ctrl_done = `PWRMGR_HIER.rom_ctrl_i.done == prim_mubi_pkg::MuBi4True;
-  wire rom_ctrl_good = `PWRMGR_HIER.rom_ctrl_i.good == prim_mubi_pkg::MuBi4True;
+  wire rom_ctrl_done = `PWRMGR_HIER.rom_ctrl_done_combined == prim_mubi_pkg::MuBi4True;
+  wire rom_ctrl_good = `PWRMGR_HIER.rom_ctrl_good_combined == prim_mubi_pkg::MuBi4True;
 
   wire rv_core_ibex_icache_otp_key_req = `RV_CORE_IBEX_HIER.icache_otp_key_o.req;
   wire rv_core_ibex_icache_otp_key_ack = `RV_CORE_IBEX_HIER.icache_otp_key_i.ack;
@@ -1001,7 +1002,8 @@ interface chip_if;
       PeripheralPinmuxAon:      path = {path, ".", `DV_STRINGIFY(`PINMUX_HIER)};
       PeripheralPwmAon:         path = {path, ".", `DV_STRINGIFY(`PWM_HIER)};
       PeripheralPwrmgrAon:      path = {path, ".", `DV_STRINGIFY(`PWRMGR_HIER)};
-      PeripheralRomCtrl:        path = {path, ".", `DV_STRINGIFY(`ROM_CTRL_HIER)};
+      PeripheralRomCtrl0:       path = {path, ".", `DV_STRINGIFY(`ROM_CTRL0_HIER)};
+      PeripheralRomCtrl1:       path = {path, ".", `DV_STRINGIFY(`ROM_CTRL1_HIER)};
       PeripheralRstmgrAon:      path = {path, ".", `DV_STRINGIFY(`RSTMGR_HIER)};
       PeripheralRvCoreIbex:     path = {path, ".", `DV_STRINGIFY(`RV_CORE_IBEX_HIER)};
       PeripheralRvDm:           path = {path, ".", `DV_STRINGIFY(`RV_DM_HIER)};
@@ -1271,7 +1273,8 @@ assign spi_host_1_state = {tb.dut.top_darjeeling.u_spi_host1.u_spi_core.u_fsm.st
 `undef PINMUX_HIER
 `undef PWM_HIER
 `undef PWRMGR_HIER
-`undef ROM_CTRL_HIER
+`undef ROM_CTRL0_HIER
+`undef ROM_CTRL1_HIER
 `undef RSTMGR_HIER
 `undef RV_CORE_IBEX_HIER
 `undef RV_DM_HIER

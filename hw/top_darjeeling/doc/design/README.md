@@ -446,8 +446,10 @@ For the purpose of `top_darjeeling`, the first option has been chosen to benefit
 |                   |               | 0x10000000 (ram)  |
 | sram_ctrl_mbox    | sram_ctrl     | 0x411D0000 (regs) |
 |                   |               | 0x11000000 (ram)  |
-| rom_ctrl          | rom_ctrl      | 0x00008000 (rom)  |
+| rom_ctrl0         | rom_ctrl      | 0x00008000 (rom)  |
 |                   |               | 0x411e0000 (regs) |
+| rom_ctrl1         | rom_ctrl      | 0x00050000 (rom)  |
+|                   |               | 0x41210000 (regs) |
 | rv_core_ibex      | rv_core_ibex  | 0x411F0000 (cfg)  |
 
 <!-- END CMDGEN -->

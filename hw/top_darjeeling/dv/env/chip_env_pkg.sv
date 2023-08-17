@@ -62,8 +62,12 @@ package chip_env_pkg;
   localparam uint TokenWidthByte = TokenWidthBit / 8;
 
   // ROM digest parameters
-  localparam uint RomDigestDw = 256;
-  localparam uint RomMaxCheckAddr = rom_ctrl_reg_pkg::ROM_CTRL_ROM_SIZE - (RomDigestDw / 8);
+  localparam uint Rom0DigestDw = 256;
+  localparam uint Rom0MaxCheckAddr = top_darjeeling_pkg::TOP_DARJEELING_ROM0_SIZE_BYTES -
+                                     (Rom0DigestDw / 8);
+  localparam uint Rom1DigestDw = 256;
+  localparam uint Rom1MaxCheckAddr = top_darjeeling_pkg::TOP_DARJEELING_ROM1_SIZE_BYTES -
+                                     (Rom1DigestDw / 8);
 
   typedef virtual sw_logger_if         sw_logger_vif;
   typedef virtual sw_test_status_if    sw_test_status_vif;
@@ -91,7 +95,8 @@ package chip_env_pkg;
     RamMain[16],
     RamRet[16],
     RamMbox[16],
-    Rom
+    Rom0,
+    Rom1
   } chip_mem_e;
 
   // On OpenTitan, we deal with 4 types of SW - ROM, the main test, the OTBN test and the OTP image.

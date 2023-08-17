@@ -8,6 +8,8 @@ from util.py.packages.impl.object_size.types import Memory
 
 @cache
 def parse_memory_file() -> dict[str, Memory]:
+    # TODO(opentitan-integrated/issues/251):
+    # make this able to handle multiple ROMs.
     # FIXME: Actually parse hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
     memories = (
         ("rom", range(0x00008000, 0x00008000 + 0x8000)),

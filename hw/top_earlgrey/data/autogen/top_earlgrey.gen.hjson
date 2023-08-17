@@ -7213,7 +7213,7 @@
       ]
     }
     {
-      name: rom_ctrl
+      name: rom_ctrl0
       type: rom_ctrl
       clock_srcs:
       {
@@ -7237,7 +7237,7 @@
       {
         rom:
         {
-          label: rom
+          label: rom0
           swaccess: ro
           data_intg_passthru: True
           exec: True
@@ -7265,7 +7265,7 @@
           type: ""
           default: '''""'''
           expose: "true"
-          name_top: RomCtrlBootRomInitFile
+          name_top: RomCtrl0BootRomInitFile
         }
         {
           name: RndCnstScrNonce
@@ -7273,7 +7273,7 @@
           type: bit [63:0]
           randcount: 64
           randtype: data
-          name_top: RndCnstRomCtrlScrNonce
+          name_top: RndCnstRomCtrl0ScrNonce
           default: 0x755cf00bd7432c3f
           randwidth: 64
         }
@@ -7283,7 +7283,7 @@
           type: bit [127:0]
           randcount: 128
           randtype: data
-          name_top: RndCnstRomCtrlScrKey
+          name_top: RndCnstRomCtrl0ScrKey
           default: 0x8cd4e7eff1b9ec59ce812447c5714595
           randwidth: 128
         }
@@ -7299,13 +7299,13 @@
           type: bit
           default: 1'b0
           expose: "true"
-          name_top: SecRomCtrlDisableScrambling
+          name_top: SecRomCtrl0DisableScrambling
         }
         {
           name: MemSizeRom
           desc: Memory size of the ROM (in bytes).
           type: int
-          name_top: MemSizeRomCtrlRom
+          name_top: MemSizeRomCtrl0Rom
           default: 32768
         }
       ]
@@ -7318,7 +7318,7 @@
           type: uni
           act: rcv
           width: 1
-          inst_name: rom_ctrl
+          inst_name: rom_ctrl0
           default: ""
           top_signame: ast_rom_cfg
           index: -1
@@ -7330,7 +7330,7 @@
           type: uni
           act: req
           width: 1
-          inst_name: rom_ctrl
+          inst_name: rom_ctrl0
           default: ""
           top_signame: pwrmgr_aon_rom_ctrl
           index: 0
@@ -7342,7 +7342,7 @@
           type: uni
           act: req
           width: 1
-          inst_name: rom_ctrl
+          inst_name: rom_ctrl0
           default: ""
           top_signame: keymgr_rom_digest
           index: 0
@@ -7354,7 +7354,7 @@
           type: req_rsp
           act: req
           width: 1
-          inst_name: rom_ctrl
+          inst_name: rom_ctrl0
           default: ""
           top_signame: kmac_app
           index: 2
@@ -7366,10 +7366,10 @@
           type: req_rsp
           act: rsp
           width: 1
-          inst_name: rom_ctrl
+          inst_name: rom_ctrl0
           default: ""
           end_idx: -1
-          top_signame: rom_ctrl_regs_tl
+          top_signame: rom_ctrl0_regs_tl
           index: -1
         }
         {
@@ -7379,10 +7379,10 @@
           type: req_rsp
           act: rsp
           width: 1
-          inst_name: rom_ctrl
+          inst_name: rom_ctrl0
           default: ""
           end_idx: -1
-          top_signame: rom_ctrl_rom_tl
+          top_signame: rom_ctrl0_rom_tl
           index: -1
         }
       ]
@@ -8085,7 +8085,7 @@
       ]
       ast.rom_cfg:
       [
-        rom_ctrl.rom_cfg
+        rom_ctrl0.rom_cfg
       ]
       alert_handler.crashdump:
       [
@@ -8175,11 +8175,11 @@
       ]
       pwrmgr_aon.rom_ctrl:
       [
-        rom_ctrl.pwrmgr_data
+        rom_ctrl0.pwrmgr_data
       ]
       keymgr.rom_digest:
       [
-        rom_ctrl.keymgr_data
+        rom_ctrl0.keymgr_data
       ]
       lc_ctrl.lc_flash_rma_req:
       [
@@ -8260,7 +8260,7 @@
       [
         keymgr.kmac_data
         lc_ctrl.kmac_data
-        rom_ctrl.kmac_data
+        rom_ctrl0.kmac_data
       ]
       kmac.en_masking:
       [
@@ -8446,13 +8446,13 @@
       [
         main.tl_rv_dm__mem
       ]
-      rom_ctrl.rom_tl:
+      rom_ctrl0.rom_tl:
       [
-        main.tl_rom_ctrl__rom
+        main.tl_rom_ctrl0__rom
       ]
-      rom_ctrl.regs_tl:
+      rom_ctrl0.regs_tl:
       [
-        main.tl_rom_ctrl__regs
+        main.tl_rom_ctrl0__regs
       ]
       main.tl_peri:
       [
@@ -8768,15 +8768,15 @@
       {
         rv_core_ibex.corei:
         [
-          rom_ctrl.rom
+          rom_ctrl0.rom
           rv_dm.mem
           sram_ctrl_main.ram
           flash_ctrl.mem
         ]
         rv_core_ibex.cored:
         [
-          rom_ctrl.rom
-          rom_ctrl.regs
+          rom_ctrl0.rom
+          rom_ctrl0.regs
           rv_dm.mem
           rv_dm.regs
           sram_ctrl_main.ram
@@ -8802,8 +8802,8 @@
         ]
         rv_dm.sba:
         [
-          rom_ctrl.rom
-          rom_ctrl.regs
+          rom_ctrl0.rom
+          rom_ctrl0.regs
           rv_dm.mem
           rv_dm.regs
           sram_ctrl_main.ram
@@ -8905,7 +8905,7 @@
           pipeline: true
         }
         {
-          name: rom_ctrl.rom
+          name: rom_ctrl0.rom
           type: device
           clock: clk_main_i
           reset: rst_main_ni
@@ -8924,7 +8924,7 @@
           pipeline: true
         }
         {
-          name: rom_ctrl.regs
+          name: rom_ctrl0.regs
           type: device
           clock: clk_main_i
           reset: rst_main_ni
@@ -9393,7 +9393,7 @@
           index: -1
         }
         {
-          name: tl_rom_ctrl__rom
+          name: tl_rom_ctrl0__rom
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -9401,11 +9401,11 @@
           width: 1
           inst_name: main
           default: ""
-          top_signame: rom_ctrl_rom_tl
+          top_signame: rom_ctrl0_rom_tl
           index: -1
         }
         {
-          name: tl_rom_ctrl__regs
+          name: tl_rom_ctrl0__regs
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -9413,7 +9413,7 @@
           width: 1
           inst_name: main
           default: ""
-          top_signame: rom_ctrl_regs_tl
+          top_signame: rom_ctrl0_regs_tl
           index: -1
         }
         {
@@ -14086,7 +14086,7 @@
     edn0
     edn1
     sram_ctrl_main
-    rom_ctrl
+    rom_ctrl0
     rv_core_ibex
   ]
   alert:
@@ -14632,11 +14632,11 @@
       lpg_idx: 17
     }
     {
-      name: rom_ctrl_fatal
+      name: rom_ctrl0_fatal
       width: 1
       type: alert
       async: "1"
-      module_name: rom_ctrl
+      module_name: rom_ctrl0
       lpg_name: infra_lc_0
       lpg_idx: 17
     }
@@ -19168,7 +19168,7 @@
         type: uni
         act: rcv
         width: 1
-        inst_name: rom_ctrl
+        inst_name: rom_ctrl0
         default: ""
         top_signame: ast_rom_cfg
         index: -1
@@ -19180,7 +19180,7 @@
         type: uni
         act: req
         width: 1
-        inst_name: rom_ctrl
+        inst_name: rom_ctrl0
         default: ""
         top_signame: pwrmgr_aon_rom_ctrl
         index: 0
@@ -19192,7 +19192,7 @@
         type: uni
         act: req
         width: 1
-        inst_name: rom_ctrl
+        inst_name: rom_ctrl0
         default: ""
         top_signame: keymgr_rom_digest
         index: 0
@@ -19204,7 +19204,7 @@
         type: req_rsp
         act: req
         width: 1
-        inst_name: rom_ctrl
+        inst_name: rom_ctrl0
         default: ""
         top_signame: kmac_app
         index: 2
@@ -19216,10 +19216,10 @@
         type: req_rsp
         act: rsp
         width: 1
-        inst_name: rom_ctrl
+        inst_name: rom_ctrl0
         default: ""
         end_idx: -1
-        top_signame: rom_ctrl_regs_tl
+        top_signame: rom_ctrl0_regs_tl
         index: -1
       }
       {
@@ -19229,10 +19229,10 @@
         type: req_rsp
         act: rsp
         width: 1
-        inst_name: rom_ctrl
+        inst_name: rom_ctrl0
         default: ""
         end_idx: -1
-        top_signame: rom_ctrl_rom_tl
+        top_signame: rom_ctrl0_rom_tl
         index: -1
       }
       {
@@ -19555,7 +19555,7 @@
         index: -1
       }
       {
-        name: tl_rom_ctrl__rom
+        name: tl_rom_ctrl0__rom
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -19563,11 +19563,11 @@
         width: 1
         inst_name: main
         default: ""
-        top_signame: rom_ctrl_rom_tl
+        top_signame: rom_ctrl0_rom_tl
         index: -1
       }
       {
-        name: tl_rom_ctrl__regs
+        name: tl_rom_ctrl0__regs
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -19575,7 +19575,7 @@
         width: 1
         inst_name: main
         default: ""
-        top_signame: rom_ctrl_regs_tl
+        top_signame: rom_ctrl0_regs_tl
         index: -1
       }
       {
@@ -22088,7 +22088,7 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: rom_ctrl_rom_tl_req
+        signame: rom_ctrl0_rom_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -22099,7 +22099,7 @@
       {
         package: tlul_pkg
         struct: tl_d2h
-        signame: rom_ctrl_rom_tl_rsp
+        signame: rom_ctrl0_rom_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1
@@ -22110,7 +22110,7 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: rom_ctrl_regs_tl_req
+        signame: rom_ctrl0_regs_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -22121,7 +22121,7 @@
       {
         package: tlul_pkg
         struct: tl_d2h
-        signame: rom_ctrl_regs_tl_rsp
+        signame: rom_ctrl0_regs_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

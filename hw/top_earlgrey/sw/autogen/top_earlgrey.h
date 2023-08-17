@@ -872,40 +872,40 @@ extern "C" {
 #define TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES 0x20000u
 
 /**
- * Peripheral base address for regs device on rom_ctrl in top earlgrey.
+ * Peripheral base address for regs device on rom_ctrl0 in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR 0x411E0000u
+#define TOP_EARLGREY_ROM_CTRL0_REGS_BASE_ADDR 0x411E0000u
 
 /**
- * Peripheral size for regs device on rom_ctrl in top earlgrey.
+ * Peripheral size for regs device on rom_ctrl0 in top earlgrey.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR and
- * `TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR + TOP_EARLGREY_ROM_CTRL_REGS_SIZE_BYTES`.
+ * address between #TOP_EARLGREY_ROM_CTRL0_REGS_BASE_ADDR and
+ * `TOP_EARLGREY_ROM_CTRL0_REGS_BASE_ADDR + TOP_EARLGREY_ROM_CTRL0_REGS_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_ROM_CTRL_REGS_SIZE_BYTES 0x80u
+#define TOP_EARLGREY_ROM_CTRL0_REGS_SIZE_BYTES 0x80u
 
 /**
- * Peripheral base address for rom device on rom_ctrl in top earlgrey.
+ * Peripheral base address for rom device on rom_ctrl0 in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR 0x8000u
+#define TOP_EARLGREY_ROM_CTRL0_ROM_BASE_ADDR 0x8000u
 
 /**
- * Peripheral size for rom device on rom_ctrl in top earlgrey.
+ * Peripheral size for rom device on rom_ctrl0 in top earlgrey.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR and
- * `TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR + TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES`.
+ * address between #TOP_EARLGREY_ROM_CTRL0_ROM_BASE_ADDR and
+ * `TOP_EARLGREY_ROM_CTRL0_ROM_BASE_ADDR + TOP_EARLGREY_ROM_CTRL0_ROM_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES 0x8000u
+#define TOP_EARLGREY_ROM_CTRL0_ROM_SIZE_BYTES 0x8000u
 
 /**
  * Peripheral base address for cfg device on rv_core_ibex in top earlgrey.
@@ -957,14 +957,14 @@ extern "C" {
 #define TOP_EARLGREY_RAM_MAIN_SIZE_BYTES 0x20000u
 
 /**
- * Memory base address for rom in top earlgrey.
+ * Memory base address for rom0 in top earlgrey.
  */
-#define TOP_EARLGREY_ROM_BASE_ADDR 0x8000u
+#define TOP_EARLGREY_ROM0_BASE_ADDR 0x8000u
 
 /**
- * Memory size for rom in top earlgrey.
+ * Memory size for rom0 in top earlgrey.
  */
-#define TOP_EARLGREY_ROM_SIZE_BYTES 0x8000u
+#define TOP_EARLGREY_ROM0_SIZE_BYTES 0x8000u
 
 
 /**
@@ -1269,7 +1269,7 @@ typedef enum top_earlgrey_alert_peripheral {
   kTopEarlgreyAlertPeripheralEdn0 = 36, /**< edn0 */
   kTopEarlgreyAlertPeripheralEdn1 = 37, /**< edn1 */
   kTopEarlgreyAlertPeripheralSramCtrlMain = 38, /**< sram_ctrl_main */
-  kTopEarlgreyAlertPeripheralRomCtrl = 39, /**< rom_ctrl */
+  kTopEarlgreyAlertPeripheralRomCtrl0 = 39, /**< rom_ctrl0 */
   kTopEarlgreyAlertPeripheralRvCoreIbex = 40, /**< rv_core_ibex */
   kTopEarlgreyAlertPeripheralLast = 40, /**< \internal Final Alert peripheral */
 } top_earlgrey_alert_peripheral_t;
@@ -1341,7 +1341,7 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdEdn1RecovAlert = 57, /**< edn1_recov_alert */
   kTopEarlgreyAlertIdEdn1FatalAlert = 58, /**< edn1_fatal_alert */
   kTopEarlgreyAlertIdSramCtrlMainFatalError = 59, /**< sram_ctrl_main_fatal_error */
-  kTopEarlgreyAlertIdRomCtrlFatal = 60, /**< rom_ctrl_fatal */
+  kTopEarlgreyAlertIdRomCtrl0Fatal = 60, /**< rom_ctrl0_fatal */
   kTopEarlgreyAlertIdRvCoreIbexFatalSwErr = 61, /**< rv_core_ibex_fatal_sw_err */
   kTopEarlgreyAlertIdRvCoreIbexRecovSwErr = 62, /**< rv_core_ibex_recov_sw_err */
   kTopEarlgreyAlertIdRvCoreIbexFatalHwErr = 63, /**< rv_core_ibex_fatal_hw_err */

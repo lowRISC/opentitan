@@ -632,32 +632,32 @@ pub const TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR: usize = 0x10000000;
 /// address between #TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR and
 /// `TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR + TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES`.
 pub const TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES: usize = 0x20000;
-/// Peripheral base address for regs device on rom_ctrl in top earlgrey.
+/// Peripheral base address for regs device on rom_ctrl0 in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR: usize = 0x411E0000;
+pub const TOP_EARLGREY_ROM_CTRL0_REGS_BASE_ADDR: usize = 0x411E0000;
 
-/// Peripheral size for regs device on rom_ctrl in top earlgrey.
+/// Peripheral size for regs device on rom_ctrl0 in top earlgrey.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR and
-/// `TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR + TOP_EARLGREY_ROM_CTRL_REGS_SIZE_BYTES`.
-pub const TOP_EARLGREY_ROM_CTRL_REGS_SIZE_BYTES: usize = 0x80;
-/// Peripheral base address for rom device on rom_ctrl in top earlgrey.
+/// address between #TOP_EARLGREY_ROM_CTRL0_REGS_BASE_ADDR and
+/// `TOP_EARLGREY_ROM_CTRL0_REGS_BASE_ADDR + TOP_EARLGREY_ROM_CTRL0_REGS_SIZE_BYTES`.
+pub const TOP_EARLGREY_ROM_CTRL0_REGS_SIZE_BYTES: usize = 0x80;
+/// Peripheral base address for rom device on rom_ctrl0 in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR: usize = 0x8000;
+pub const TOP_EARLGREY_ROM_CTRL0_ROM_BASE_ADDR: usize = 0x8000;
 
-/// Peripheral size for rom device on rom_ctrl in top earlgrey.
+/// Peripheral size for rom device on rom_ctrl0 in top earlgrey.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR and
-/// `TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR + TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES`.
-pub const TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES: usize = 0x8000;
+/// address between #TOP_EARLGREY_ROM_CTRL0_ROM_BASE_ADDR and
+/// `TOP_EARLGREY_ROM_CTRL0_ROM_BASE_ADDR + TOP_EARLGREY_ROM_CTRL0_ROM_SIZE_BYTES`.
+pub const TOP_EARLGREY_ROM_CTRL0_ROM_SIZE_BYTES: usize = 0x8000;
 /// Peripheral base address for cfg device on rv_core_ibex in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -687,11 +687,11 @@ pub const RAM_MAIN_BASE_ADDR: usize = 0x10000000;
 
 /// Memory size for ram_main in top earlgrey.
 pub const RAM_MAIN_SIZE_BYTES: usize = 0x20000;
-/// Memory base address for rom in top earlgrey.
-pub const ROM_BASE_ADDR: usize = 0x8000;
+/// Memory base address for rom0 in top earlgrey.
+pub const ROM0_BASE_ADDR: usize = 0x8000;
 
-/// Memory size for rom in top earlgrey.
-pub const ROM_SIZE_BYTES: usize = 0x8000;
+/// Memory size for rom0 in top earlgrey.
+pub const ROM0_SIZE_BYTES: usize = 0x8000;
 
 /// PLIC Interrupt Source Peripheral.
 ///
@@ -1469,8 +1469,8 @@ pub enum TopEarlgreyAlertPeripheral {
     Edn1 = 37,
     /// sram_ctrl_main
     SramCtrlMain = 38,
-    /// rom_ctrl
-    RomCtrl = 39,
+    /// rom_ctrl0
+    RomCtrl0 = 39,
     /// rv_core_ibex
     RvCoreIbex = 40,
 }
@@ -1601,8 +1601,8 @@ pub enum TopEarlgreyAlertId {
     Edn1FatalAlert = 58,
     /// sram_ctrl_main_fatal_error
     SramCtrlMainFatalError = 59,
-    /// rom_ctrl_fatal
-    RomCtrlFatal = 60,
+    /// rom_ctrl0_fatal
+    RomCtrl0Fatal = 60,
     /// rv_core_ibex_fatal_sw_err
     RvCoreIbexFatalSwErr = 61,
     /// rv_core_ibex_recov_sw_err
@@ -1677,7 +1677,7 @@ impl TryFrom<u32> for TopEarlgreyAlertId {
             57 => Ok(Self::Edn1RecovAlert),
             58 => Ok(Self::Edn1FatalAlert),
             59 => Ok(Self::SramCtrlMainFatalError),
-            60 => Ok(Self::RomCtrlFatal),
+            60 => Ok(Self::RomCtrl0Fatal),
             61 => Ok(Self::RvCoreIbexFatalSwErr),
             62 => Ok(Self::RvCoreIbexRecovSwErr),
             63 => Ok(Self::RvCoreIbexFatalHwErr),
@@ -2189,8 +2189,8 @@ pub const TOP_EARLGREY_ALERT_FOR_PERIPHERAL: [TopEarlgreyAlertPeripheral; 65] = 
     TopEarlgreyAlertPeripheral::Edn1,
     // SramCtrlMainFatalError -> TopEarlgreyAlertPeripheral::SramCtrlMain
     TopEarlgreyAlertPeripheral::SramCtrlMain,
-    // RomCtrlFatal -> TopEarlgreyAlertPeripheral::RomCtrl
-    TopEarlgreyAlertPeripheral::RomCtrl,
+    // RomCtrl0Fatal -> TopEarlgreyAlertPeripheral::RomCtrl0
+    TopEarlgreyAlertPeripheral::RomCtrl0,
     // RvCoreIbexFatalSwErr -> TopEarlgreyAlertPeripheral::RvCoreIbex
     TopEarlgreyAlertPeripheral::RvCoreIbex,
     // RvCoreIbexRecovSwErr -> TopEarlgreyAlertPeripheral::RvCoreIbex

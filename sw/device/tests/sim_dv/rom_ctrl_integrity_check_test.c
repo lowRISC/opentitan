@@ -14,7 +14,7 @@
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 static dif_lc_ctrl_t lc;
-static dif_rom_ctrl_t rom_ctrl;
+static dif_rom_ctrl_t rom_ctrl0;
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -30,9 +30,9 @@ bool test_main(void) {
   mmio_region_t lc_reg =
       mmio_region_from_addr(TOP_DARJEELING_LC_CTRL_BASE_ADDR);
   CHECK_DIF_OK(dif_lc_ctrl_init(lc_reg, &lc));
-  mmio_region_t rom_ctrl_reg =
-      mmio_region_from_addr(TOP_DARJEELING_ROM_CTRL_REGS_BASE_ADDR);
-  CHECK_DIF_OK(dif_rom_ctrl_init(rom_ctrl_reg, &rom_ctrl));
+  mmio_region_t rom_ctrl0_reg =
+      mmio_region_from_addr(TOP_DARJEELING_ROM_CTRL0_REGS_BASE_ADDR);
+  CHECK_DIF_OK(dif_rom_ctrl_init(rom_ctrl0_reg, &rom_ctrl0));
 
   // Check that the LC_STATE is not PROD as the boot is not
   // expected to be successful in that state.
@@ -45,8 +45,8 @@ bool test_main(void) {
   // then the testbench has not successfully overwritten the digest.
   dif_rom_ctrl_digest_t computed_digest;
   dif_rom_ctrl_digest_t expected_digest;
-  CHECK_DIF_OK(dif_rom_ctrl_get_digest(&rom_ctrl, &computed_digest));
-  CHECK_DIF_OK(dif_rom_ctrl_get_expected_digest(&rom_ctrl, &expected_digest));
+  CHECK_DIF_OK(dif_rom_ctrl_get_digest(&rom_ctrl0, &computed_digest));
+  CHECK_DIF_OK(dif_rom_ctrl_get_expected_digest(&rom_ctrl0, &expected_digest));
   CHECK_ARRAYS_NE(expected_digest.digest, computed_digest.digest,
                   ROM_CTRL_DIGEST_MULTIREG_COUNT);
 

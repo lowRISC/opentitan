@@ -11,7 +11,8 @@
 
 
 module chip_darjeeling_asic #(
-  parameter bit SecRomCtrlDisableScrambling = 1'b0
+  parameter bit SecRomCtrl0DisableScrambling = 1'b0,
+  parameter bit SecRomCtrl1DisableScrambling = 1'b0
 ) (
   // Dedicated Pads
   inout POR_N, // Manual Pad
@@ -1191,7 +1192,8 @@ module chip_darjeeling_asic #(
   top_darjeeling #(
     .PinmuxAonTargetCfg(PinmuxTargetCfg),
     .SecAesAllowForcingMasks(1'b1),
-    .SecRomCtrlDisableScrambling(SecRomCtrlDisableScrambling)
+    .SecRomCtrl0DisableScrambling(SecRomCtrl0DisableScrambling),
+    .SecRomCtrl1DisableScrambling(SecRomCtrl1DisableScrambling)
   ) top_darjeeling (
     // ast connections
     .por_n_i                      ( por_n                      ),

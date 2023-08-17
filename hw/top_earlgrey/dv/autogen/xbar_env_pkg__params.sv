@@ -13,10 +13,10 @@ tl_device_t xbar_devices[$] = '{
     '{"rv_dm__mem", '{
         '{32'h00010000, 32'h00010fff}
     }},
-    '{"rom_ctrl__rom", '{
+    '{"rom_ctrl0__rom", '{
         '{32'h00008000, 32'h0000ffff}
     }},
-    '{"rom_ctrl__regs", '{
+    '{"rom_ctrl0__regs", '{
         '{32'h411e0000, 32'h411e007f}
     }},
     '{"spi_host0", '{
@@ -161,14 +161,14 @@ tl_device_t xbar_devices[$] = '{
   // List of Xbar hosts
 tl_host_t xbar_hosts[$] = '{
     '{"rv_core_ibex__corei", 0, '{
-        "rom_ctrl__rom",
+        "rom_ctrl0__rom",
         "rv_dm__mem",
         "sram_ctrl_main__ram",
         "flash_ctrl__mem"}}
     ,
     '{"rv_core_ibex__cored", 1, '{
-        "rom_ctrl__rom",
-        "rom_ctrl__regs",
+        "rom_ctrl0__rom",
+        "rom_ctrl0__regs",
         "rv_dm__mem",
         "rv_dm__regs",
         "sram_ctrl_main__ram",
@@ -219,8 +219,8 @@ tl_host_t xbar_hosts[$] = '{
         "rv_core_ibex__cfg"}}
     ,
     '{"rv_dm__sba", 2, '{
-        "rom_ctrl__rom",
-        "rom_ctrl__regs",
+        "rom_ctrl0__rom",
+        "rom_ctrl0__regs",
         "rv_dm__mem",
         "rv_dm__regs",
         "sram_ctrl_main__ram",

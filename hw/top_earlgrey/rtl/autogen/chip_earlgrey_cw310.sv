@@ -1006,7 +1006,7 @@ module chip_earlgrey_cw310 #(
     .RvCoreIbexPipeLine(1),
     .SramCtrlRetAonInstrExec(0),
     .UsbdevRcvrWakeTimeUs(10000),
-    .RomCtrlBootRomInitFile(BootRomInitFile),
+    .RomCtrl0BootRomInitFile(BootRomInitFile),
     .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
     .RvCoreIbexSecureIbex(0),
     .SramCtrlMainInstrExec(1),

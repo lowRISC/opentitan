@@ -79,7 +79,12 @@ module chip_${top["name"]}_${target["name"]} #(
 ) (
 % else:
 module chip_${top["name"]}_${target["name"]} #(
-  parameter bit SecRomCtrlDisableScrambling = 1'b0
+% if lib.num_rom_ctrl(top["module"]) > 1:
+  parameter bit SecRomCtrl0DisableScrambling = 1'b0,
+  parameter bit SecRomCtrl1DisableScrambling = 1'b0
+% else:
+  parameter bit SecRomCtrl0DisableScrambling = 1'b0
+% endif
 ) (
 % endif
 <%
@@ -1047,7 +1052,12 @@ module chip_${top["name"]}_${target["name"]} #(
 % else:
     .PinmuxAonTargetCfg(PinmuxTargetCfg),
     .SecAesAllowForcingMasks(1'b1),
-    .SecRomCtrlDisableScrambling(SecRomCtrlDisableScrambling)
+  % if lib.num_rom_ctrl(top["module"]) > 1:
+    .SecRomCtrl0DisableScrambling(SecRomCtrl0DisableScrambling),
+    .SecRomCtrl1DisableScrambling(SecRomCtrl1DisableScrambling)
+  % else:
+    .SecRomCtrl0DisableScrambling(SecRomCtrl0DisableScrambling)
+  % endif
 % endif
   ) top_${top["name"]} (
     // ast connections
@@ -1239,6 +1249,16 @@ module chip_${top["name"]}_${target["name"]} #(
     .RvCoreIbexPipeLine(1),
     .SramCtrlRetAonInstrExec(0),
     .UsbdevRcvrWakeTimeUs(10000),
+  % if lib.num_rom_ctrl(top["module"]) > 1:
+    // TODO(opentitan-integrated/issues/251):
+    // Enable hashing below once the build infrastructure can
+    // load scrambled images on FPGA platforms. The DV can
+    // already partially handle it by initializing the 2nd ROM
+    // with random data via the backdoor loading interface - it
+    // can't load "real" SW images yet since that requires
+    // additional build infrastructure.
+    .SecRomCtrl1DisableScrambling(1),
+  % endif
 % elif target["name"] == "cw305":
     .RvCoreIbexPipeLine(0),
     .SecAesMasking(1'b1),
@@ -1263,7 +1283,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
     .RvCoreIbexPipeLine(1),
 % endif
-    .RomCtrlBootRomInitFile(BootRomInitFile),
+    .RomCtrl0BootRomInitFile(BootRomInitFile),
     .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
     .RvCoreIbexSecureIbex(0),
     .SramCtrlMainInstrExec(1),

@@ -132,10 +132,10 @@ class chip_sw_rom_e2e_asm_init_vseq extends chip_sw_base_vseq;
 
     // ePMP address entries
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[0],
-                 epmp_addr_tor(top_darjeeling_pkg::TOP_DARJEELING_ROM_BASE_ADDR))
+                 epmp_addr_tor(top_darjeeling_pkg::TOP_DARJEELING_ROM0_BASE_ADDR))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[2],
-                 epmp_addr_napot(top_darjeeling_pkg::TOP_DARJEELING_ROM_BASE_ADDR,
-                                 top_darjeeling_pkg::TOP_DARJEELING_ROM_SIZE_BYTES))
+                 epmp_addr_napot(top_darjeeling_pkg::TOP_DARJEELING_ROM0_BASE_ADDR,
+                                 top_darjeeling_pkg::TOP_DARJEELING_ROM0_SIZE_BYTES))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[5],
                  epmp_addr_napot(top_darjeeling_pkg::TOP_DARJEELING_EFLASH_BASE_ADDR,
                                  top_darjeeling_pkg::TOP_DARJEELING_EFLASH_SIZE_BYTES))

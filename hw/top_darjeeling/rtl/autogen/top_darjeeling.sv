@@ -91,9 +91,12 @@ module top_darjeeling #(
   parameter bit SramCtrlMainInstrExec = 1,
   // parameters for sram_ctrl_mbox
   parameter bit SramCtrlMboxInstrExec = 0,
-  // parameters for rom_ctrl
-  parameter RomCtrlBootRomInitFile = "",
-  parameter bit SecRomCtrlDisableScrambling = 1'b0,
+  // parameters for rom_ctrl0
+  parameter RomCtrl0BootRomInitFile = "",
+  parameter bit SecRomCtrl0DisableScrambling = 1'b0,
+  // parameters for rom_ctrl1
+  parameter RomCtrl1BootRomInitFile = "",
+  parameter bit SecRomCtrl1DisableScrambling = 1'b0,
   // parameters for rv_core_ibex
   parameter bit RvCoreIbexPMPEnable = 1,
   parameter int unsigned RvCoreIbexPMPGranularity = 0,
@@ -369,7 +372,8 @@ module top_darjeeling #(
   // edn1
   // sram_ctrl_main
   // sram_ctrl_mbox
-  // rom_ctrl
+  // rom_ctrl0
+  // rom_ctrl1
   // rv_core_ibex
 
 
@@ -632,10 +636,14 @@ module top_darjeeling #(
   tlul_pkg::tl_d2h_t       rv_dm_regs_tl_d_rsp;
   tlul_pkg::tl_h2d_t       rv_dm_mem_tl_d_req;
   tlul_pkg::tl_d2h_t       rv_dm_mem_tl_d_rsp;
-  tlul_pkg::tl_h2d_t       rom_ctrl_rom_tl_req;
-  tlul_pkg::tl_d2h_t       rom_ctrl_rom_tl_rsp;
-  tlul_pkg::tl_h2d_t       rom_ctrl_regs_tl_req;
-  tlul_pkg::tl_d2h_t       rom_ctrl_regs_tl_rsp;
+  tlul_pkg::tl_h2d_t       rom_ctrl0_rom_tl_req;
+  tlul_pkg::tl_d2h_t       rom_ctrl0_rom_tl_rsp;
+  tlul_pkg::tl_h2d_t       rom_ctrl0_regs_tl_req;
+  tlul_pkg::tl_d2h_t       rom_ctrl0_regs_tl_rsp;
+  tlul_pkg::tl_h2d_t       rom_ctrl1_rom_tl_req;
+  tlul_pkg::tl_d2h_t       rom_ctrl1_rom_tl_rsp;
+  tlul_pkg::tl_h2d_t       rom_ctrl1_regs_tl_req;
+  tlul_pkg::tl_d2h_t       rom_ctrl1_regs_tl_rsp;
   tlul_pkg::tl_h2d_t       main_tl_peri_req;
   tlul_pkg::tl_d2h_t       main_tl_peri_rsp;
   tlul_pkg::tl_h2d_t       spi_host0_tl_req;
@@ -768,7 +776,6 @@ module top_darjeeling #(
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp5;
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp6;
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp7;
-  kmac_pkg::app_rsp_t unused_kmac_app_rsp3;
 
   // assign partial inter-module tie-off
   assign unused_edn1_edn_rsp1 = edn1_edn_rsp[1];
@@ -778,9 +785,6 @@ module top_darjeeling #(
   assign unused_edn1_edn_rsp5 = edn1_edn_rsp[5];
   assign unused_edn1_edn_rsp6 = edn1_edn_rsp[6];
   assign unused_edn1_edn_rsp7 = edn1_edn_rsp[7];
-  assign unused_kmac_app_rsp3 = kmac_app_rsp[3];
-  assign pwrmgr_aon_rom_ctrl[1] = rom_ctrl_pkg::PWRMGR_DATA_DEFAULT;
-  assign keymgr_rom_digest[1] = rom_ctrl_pkg::KEYMGR_DATA_DEFAULT;
   assign edn1_edn_req[1] = '0;
   assign edn1_edn_req[2] = '0;
   assign edn1_edn_req[3] = '0;
@@ -788,7 +792,6 @@ module top_darjeeling #(
   assign edn1_edn_req[5] = '0;
   assign edn1_edn_req[6] = '0;
   assign edn1_edn_req[7] = '0;
-  assign kmac_app_req[3] = kmac_pkg::APP_REQ_DEFAULT;
 
 
   // OTP HW_CFG Broadcast signals.
@@ -820,7 +823,7 @@ module top_darjeeling #(
   assign rv_core_ibex_irq_timer = intr_rv_timer_timer_expired_hart0_timer0;
   assign rv_core_ibex_hart_id = '0;
 
-  assign rv_core_ibex_boot_addr = ADDR_SPACE_ROM_CTRL__ROM;
+  assign rv_core_ibex_boot_addr = ADDR_SPACE_ROM_CTRL0__ROM;
 
 
   // Wire up alert handler LPGs
@@ -2547,12 +2550,12 @@ module top_darjeeling #(
   );
   rom_ctrl #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[61:61]),
-    .BootRomInitFile(RomCtrlBootRomInitFile),
-    .RndCnstScrNonce(RndCnstRomCtrlScrNonce),
-    .RndCnstScrKey(RndCnstRomCtrlScrKey),
-    .SecDisableScrambling(SecRomCtrlDisableScrambling),
+    .BootRomInitFile(RomCtrl0BootRomInitFile),
+    .RndCnstScrNonce(RndCnstRomCtrl0ScrNonce),
+    .RndCnstScrKey(RndCnstRomCtrl0ScrKey),
+    .SecDisableScrambling(SecRomCtrl0DisableScrambling),
     .MemSizeRom(32768)
-  ) u_rom_ctrl (
+  ) u_rom_ctrl0 (
       // [61]: fatal
       .alert_tx_o  ( alert_tx[61:61] ),
       .alert_rx_i  ( alert_rx[61:61] ),
@@ -2563,17 +2566,44 @@ module top_darjeeling #(
       .keymgr_data_o(keymgr_rom_digest[0]),
       .kmac_data_o(kmac_app_req[2]),
       .kmac_data_i(kmac_app_rsp[2]),
-      .regs_tl_i(rom_ctrl_regs_tl_req),
-      .regs_tl_o(rom_ctrl_regs_tl_rsp),
-      .rom_tl_i(rom_ctrl_rom_tl_req),
-      .rom_tl_o(rom_ctrl_rom_tl_rsp),
+      .regs_tl_i(rom_ctrl0_regs_tl_req),
+      .regs_tl_o(rom_ctrl0_regs_tl_rsp),
+      .rom_tl_i(rom_ctrl0_rom_tl_req),
+      .rom_tl_o(rom_ctrl0_rom_tl_rsp),
+
+      // Clock and reset connections
+      .clk_i (clkmgr_aon_clocks.clk_main_infra),
+      .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
+  );
+  rom_ctrl #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[62:62]),
+    .BootRomInitFile(RomCtrl1BootRomInitFile),
+    .RndCnstScrNonce(RndCnstRomCtrl1ScrNonce),
+    .RndCnstScrKey(RndCnstRomCtrl1ScrKey),
+    .SecDisableScrambling(SecRomCtrl1DisableScrambling),
+    .MemSizeRom(65536)
+  ) u_rom_ctrl1 (
+      // [62]: fatal
+      .alert_tx_o  ( alert_tx[62:62] ),
+      .alert_rx_i  ( alert_rx[62:62] ),
+
+      // Inter-module signals
+      .rom_cfg_i(ast_rom_cfg),
+      .pwrmgr_data_o(pwrmgr_aon_rom_ctrl[1]),
+      .keymgr_data_o(keymgr_rom_digest[1]),
+      .kmac_data_o(kmac_app_req[3]),
+      .kmac_data_i(kmac_app_rsp[3]),
+      .regs_tl_i(rom_ctrl1_regs_tl_req),
+      .regs_tl_o(rom_ctrl1_regs_tl_rsp),
+      .rom_tl_i(rom_ctrl1_rom_tl_req),
+      .rom_tl_o(rom_ctrl1_rom_tl_rsp),
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_infra),
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   rv_core_ibex #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[65:62]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[66:63]),
     .RndCnstLfsrSeed(RndCnstRvCoreIbexLfsrSeed),
     .RndCnstLfsrPerm(RndCnstRvCoreIbexLfsrPerm),
     .RndCnstIbexKeyDefault(RndCnstRvCoreIbexIbexKeyDefault),
@@ -2600,12 +2630,12 @@ module top_darjeeling #(
     .DmExceptionAddr(RvCoreIbexDmExceptionAddr),
     .PipeLine(RvCoreIbexPipeLine)
   ) u_rv_core_ibex (
-      // [62]: fatal_sw_err
-      // [63]: recov_sw_err
-      // [64]: fatal_hw_err
-      // [65]: recov_hw_err
-      .alert_tx_o  ( alert_tx[65:62] ),
-      .alert_rx_i  ( alert_rx[65:62] ),
+      // [63]: fatal_sw_err
+      // [64]: recov_sw_err
+      // [65]: fatal_hw_err
+      // [66]: recov_hw_err
+      .alert_tx_o  ( alert_tx[66:63] ),
+      .alert_rx_i  ( alert_rx[66:63] ),
 
       // Inter-module signals
       .rst_cpu_n_o(),
@@ -2838,13 +2868,21 @@ module top_darjeeling #(
     .tl_rv_dm__mem_o(rv_dm_mem_tl_d_req),
     .tl_rv_dm__mem_i(rv_dm_mem_tl_d_rsp),
 
-    // port: tl_rom_ctrl__rom
-    .tl_rom_ctrl__rom_o(rom_ctrl_rom_tl_req),
-    .tl_rom_ctrl__rom_i(rom_ctrl_rom_tl_rsp),
+    // port: tl_rom_ctrl0__rom
+    .tl_rom_ctrl0__rom_o(rom_ctrl0_rom_tl_req),
+    .tl_rom_ctrl0__rom_i(rom_ctrl0_rom_tl_rsp),
 
-    // port: tl_rom_ctrl__regs
-    .tl_rom_ctrl__regs_o(rom_ctrl_regs_tl_req),
-    .tl_rom_ctrl__regs_i(rom_ctrl_regs_tl_rsp),
+    // port: tl_rom_ctrl0__regs
+    .tl_rom_ctrl0__regs_o(rom_ctrl0_regs_tl_req),
+    .tl_rom_ctrl0__regs_i(rom_ctrl0_regs_tl_rsp),
+
+    // port: tl_rom_ctrl1__rom
+    .tl_rom_ctrl1__rom_o(rom_ctrl1_rom_tl_req),
+    .tl_rom_ctrl1__rom_i(rom_ctrl1_rom_tl_rsp),
+
+    // port: tl_rom_ctrl1__regs
+    .tl_rom_ctrl1__regs_o(rom_ctrl1_regs_tl_req),
+    .tl_rom_ctrl1__regs_i(rom_ctrl1_regs_tl_rsp),
 
     // port: tl_peri
     .tl_peri_o(main_tl_peri_req),

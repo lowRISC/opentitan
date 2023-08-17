@@ -77,7 +77,8 @@ static dif_pattgen_t pattgen;
 static dif_pinmux_t pinmux_aon;
 static dif_pwm_t pwm_aon;
 static dif_pwrmgr_t pwrmgr_aon;
-static dif_rom_ctrl_t rom_ctrl;
+static dif_rom_ctrl_t rom_ctrl0;
+static dif_rom_ctrl_t rom_ctrl1;
 static dif_rstmgr_t rstmgr_aon;
 static dif_rv_core_ibex_t rv_core_ibex;
 static dif_rv_plic_t rv_plic;
@@ -173,8 +174,11 @@ static void init_peripherals(void) {
   base_addr = mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_pwrmgr_init(base_addr, &pwrmgr_aon));
 
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_ROM_CTRL_REGS_BASE_ADDR);
-  CHECK_DIF_OK(dif_rom_ctrl_init(base_addr, &rom_ctrl));
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_ROM_CTRL0_REGS_BASE_ADDR);
+  CHECK_DIF_OK(dif_rom_ctrl_init(base_addr, &rom_ctrl0));
+
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_ROM_CTRL1_REGS_BASE_ADDR);
+  CHECK_DIF_OK(dif_rom_ctrl_init(base_addr, &rom_ctrl1));
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_rstmgr_init(base_addr, &rstmgr_aon));
@@ -632,10 +636,25 @@ static void trigger_alert_test(void) {
 
   // Write rom_ctrl's alert_test reg and check alert_cause.
   for (dif_rom_ctrl_alert_t i = 0; i < 1; ++i) {
-    CHECK_DIF_OK(dif_rom_ctrl_alert_force(&rom_ctrl, kDifRomCtrlAlertFatal + i));
+    CHECK_DIF_OK(dif_rom_ctrl_alert_force(&rom_ctrl0, kDifRomCtrlAlertFatal + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdRomCtrlFatal + i;
+    exp_alert = kTopDarjeelingAlertIdRomCtrl0Fatal + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
+
+  // Write rom_ctrl's alert_test reg and check alert_cause.
+  for (dif_rom_ctrl_alert_t i = 0; i < 1; ++i) {
+    CHECK_DIF_OK(dif_rom_ctrl_alert_force(&rom_ctrl1, kDifRomCtrlAlertFatal + i));
+
+    // Verify that alert handler received it.
+    exp_alert = kTopDarjeelingAlertIdRomCtrl1Fatal + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);

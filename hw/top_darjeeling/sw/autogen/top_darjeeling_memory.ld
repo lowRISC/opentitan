@@ -12,7 +12,8 @@ MEMORY {
   eflash(rx) : ORIGIN = 0x20000000, LENGTH = 0x100000
   ram_main(rwx) : ORIGIN = 0x10000000, LENGTH = 0x10000
   ram_mbox(rwx) : ORIGIN = 0x11000000, LENGTH = 0x1000
-  rom(rx) : ORIGIN = 0x00008000, LENGTH = 0x8000
+  rom0(rx) : ORIGIN = 0x00008000, LENGTH = 0x8000
+  rom1(rx) : ORIGIN = 0x00050000, LENGTH = 0x10000
   rom_ext_virtual(rx) : ORIGIN = 0x90000000, LENGTH = 0x80000
   owner_virtual(rx) : ORIGIN = 0xa0000000, LENGTH = 0x80000
 }
@@ -31,10 +32,10 @@ _stack_start = _stack_end - _stack_size;
 _static_critical_size = 8136;
 
 /**
- * `.chip_info` at the top of ROM.
+ * `.chip_info` at the top of ROM0.
  */
 _chip_info_size = 128;
-_chip_info_end   = ORIGIN(rom) + LENGTH(rom);
+_chip_info_end   = ORIGIN(rom0) + LENGTH(rom0);
 _chip_info_start = _chip_info_end - _chip_info_size;
 
 /**

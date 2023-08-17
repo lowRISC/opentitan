@@ -65,7 +65,7 @@ parameter string LIST_OF_ALERTS[] = {
   "edn1_recov_alert",
   "edn1_fatal_alert",
   "sram_ctrl_main_fatal_error",
-  "rom_ctrl_fatal",
+  "rom_ctrl0_fatal",
   "rv_core_ibex_fatal_sw_err",
   "rv_core_ibex_recov_sw_err",
   "rv_core_ibex_fatal_hw_err",

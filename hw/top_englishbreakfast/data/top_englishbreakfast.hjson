@@ -419,7 +419,7 @@
         }
       }
     },
-    { name: "rom_ctrl",
+    { name: "rom_ctrl0",
       type: "rom_ctrl",
       clock_srcs: {clk_i: "main"},
       clock_group: "infra",
@@ -427,7 +427,7 @@
       base_addrs: {rom: "0x00008000", regs: "0x411e0000"}
       memory: {
         rom: {
-          label:      "rom",
+          label:      "rom0",
           swaccess:   "ro",
           exec:       "True",
           byte_write: "False",

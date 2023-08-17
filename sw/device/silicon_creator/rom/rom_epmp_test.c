@@ -235,8 +235,8 @@ static bool passed = false;
  */
 static void test_noexec_rodata(void) {
   CHECK(is_in_address_space(illegal_ins_ro,
-                            TOP_DARJEELING_ROM_CTRL_ROM_BASE_ADDR,
-                            TOP_DARJEELING_ROM_CTRL_ROM_SIZE_BYTES));
+                            TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR,
+                            TOP_DARJEELING_ROM_CTRL0_ROM_SIZE_BYTES));
   CHECK(execute(illegal_ins_ro, kIbexExcInstrAccessFault));
 }
 

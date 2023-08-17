@@ -37,9 +37,9 @@ void rom_epmp_state_init(lifecycle_state_t lc_state) {
   // grows downward from _stack_end.
   const epmp_region_t rom_text = {.start = (uintptr_t)_text_start,
                                   .end = (uintptr_t)_text_end};
-  const epmp_region_t rom = {.start = TOP_DARJEELING_ROM_CTRL_ROM_BASE_ADDR,
-                             .end = TOP_DARJEELING_ROM_CTRL_ROM_BASE_ADDR +
-                                    TOP_DARJEELING_ROM_CTRL_ROM_SIZE_BYTES};
+  const epmp_region_t rom = {.start = TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR,
+                             .end = TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR +
+                                    TOP_DARJEELING_ROM_CTRL0_ROM_SIZE_BYTES};
   const epmp_region_t eflash = {.start = TOP_DARJEELING_EFLASH_BASE_ADDR,
                                 .end = TOP_DARJEELING_EFLASH_BASE_ADDR +
                                        TOP_DARJEELING_EFLASH_SIZE_BYTES};

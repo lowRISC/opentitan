@@ -105,7 +105,8 @@ module tb;
     // It causes many rom features to be disabled, including the very slow
     // integrity check, so full chip simulation runs don't do it for each
     // reset.
-    .SecRomCtrlDisableScrambling(1'b1)
+    .SecRomCtrl0DisableScrambling(1'b1),
+    .SecRomCtrl1DisableScrambling(1'b1)
 ) dut (
 `else
   chip_darjeeling_asic dut (
@@ -451,19 +452,33 @@ module tb;
           .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_RAM_MBOX_BASE_ADDR));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamMbox0], `RAM_MBOX_MEM_HIER)
 
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for ROM", UVM_MEDIUM)
-      m_mem_bkdr_util[Rom] = new(
-          .name  ("mem_bkdr_util[Rom]"),
-          .path  (`DV_STRINGIFY(`ROM_MEM_HIER)),
-          .depth ($size(`ROM_MEM_HIER)),
-          .n_bits($bits(`ROM_MEM_HIER)),
+      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for ROM0", UVM_MEDIUM)
+      m_mem_bkdr_util[Rom0] = new(
+          .name  ("mem_bkdr_util[Rom0]"),
+          .path  (`DV_STRINGIFY(`ROM0_MEM_HIER)),
+          .depth ($size(`ROM0_MEM_HIER)),
+          .n_bits($bits(`ROM0_MEM_HIER)),
 `ifdef DISABLE_ROM_INTEGRITY_CHECK
           .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone),
 `else
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
 `endif
-          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_ROM_BASE_ADDR));
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Rom], `ROM_MEM_HIER)
+          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_ROM0_BASE_ADDR));
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Rom0], `ROM0_MEM_HIER)
+
+      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for ROM1", UVM_MEDIUM)
+      m_mem_bkdr_util[Rom1] = new(
+          .name  ("mem_bkdr_util[Rom1]"),
+          .path  (`DV_STRINGIFY(`ROM1_MEM_HIER)),
+          .depth ($size(`ROM1_MEM_HIER)),
+          .n_bits($bits(`ROM1_MEM_HIER)),
+`ifdef DISABLE_ROM_INTEGRITY_CHECK
+          .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone),
+`else
+          .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
+`endif
+          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_ROM0_BASE_ADDR));
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Rom1], `ROM1_MEM_HIER)
 
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for OTBN IMEM", UVM_MEDIUM)
       m_mem_bkdr_util[OtbnImem] = new(.name  ("mem_bkdr_util[OtbnImem]"),

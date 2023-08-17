@@ -16,7 +16,8 @@ CONNECTION, CLKMGR_INFRA_CLK_FLASH_CTRL_CLK,     top_darjeeling.u_clkmgr_aon, cl
 CONNECTION, CLKMGR_INFRA_CLK_RV_DM_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_infra, top_darjeeling.u_rv_dm, clk_i
 
 #rom_ctrl
-CONNECTION, CLKMGR_INFRA_CLK_ROM_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_infra, top_darjeeling.u_rom_ctrl, clk_i
+CONNECTION, CLKMGR_INFRA_CLK_ROM_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_infra, top_darjeeling.u_rom_ctrl0, clk_i
+CONNECTION, CLKMGR_INFRA_CLK_ROM_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_infra, top_darjeeling.u_rom_ctrl1, clk_i
 
 #rv_core_ibex
 CONNECTION, CLKMGR_INFRA_CLK_RV_CORE_IBEX_CLK,     top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_infra, top_darjeeling.u_rv_core_ibex, clk_i

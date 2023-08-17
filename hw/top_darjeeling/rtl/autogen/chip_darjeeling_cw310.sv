@@ -1105,7 +1105,15 @@ module chip_darjeeling_cw310 #(
     .RvCoreIbexPipeLine(1),
     .SramCtrlRetAonInstrExec(0),
     .UsbdevRcvrWakeTimeUs(10000),
-    .RomCtrlBootRomInitFile(BootRomInitFile),
+    // TODO(opentitan-integrated/issues/251):
+    // Enable hashing below once the build infrastructure can
+    // load scrambled images on FPGA platforms. The DV can
+    // already partially handle it by initializing the 2nd ROM
+    // with random data via the backdoor loading interface - it
+    // can't load "real" SW images yet since that requires
+    // additional build infrastructure.
+    .SecRomCtrl1DisableScrambling(1),
+    .RomCtrl0BootRomInitFile(BootRomInitFile),
     .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
     .RvCoreIbexSecureIbex(0),
     .SramCtrlMainInstrExec(1),

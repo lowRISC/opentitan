@@ -101,10 +101,14 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     `uvm_info(`gfn, "Initializing ROM", UVM_MEDIUM)
     // Backdoor load memories with sw images.
+    // TODO(opentitan-integrated/issues/251):
+    // We need to add support for loading a "real" ROM image below.
+    // The DV environment already sets the ROM to valid random values as part of
+    // random_rom_init_with_digest().
 `ifdef DISABLE_ROM_INTEGRITY_CHECK
-    cfg.mem_bkdr_util_h[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".32.vmem"});
+    cfg.mem_bkdr_util_h[Rom0].load_mem_from_file({cfg.sw_images[SwTypeRom], ".32.vmem"});
 `else
-    cfg.mem_bkdr_util_h[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".39.scr.vmem"});
+    cfg.mem_bkdr_util_h[Rom0].load_mem_from_file({cfg.sw_images[SwTypeRom], ".39.scr.vmem"});
 `endif
 
     if (cfg.sw_images.exists(SwTypeTestSlotA)) begin
@@ -568,7 +572,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     // Infer mem from address.
     `DV_CHECK(cfg.get_mem_from_addr(addr, mem))
-    `DV_CHECK_FATAL(mem inside {Rom, [RamMain0:RamMain15], FlashBank0Data, FlashBank1Data},
+    `DV_CHECK_FATAL(mem inside {Rom0, [RamMain0:RamMain15], FlashBank0Data, FlashBank1Data},
         $sformatf("SW symbol %0s is not expected to appear in %0s mem", symbol, mem))
 
     addr_mask = (2**$clog2(cfg.mem_bkdr_util_h[mem].get_size_bytes()))-1;
@@ -582,9 +586,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
       for (int i = 0; i < size; i++) mem_bkdr_write8(mem, mem_addr + i, data[i]);
 
       // TODO: Move this specialization to an extended class called rom_bkdr_util.
-      if (mem == Rom) begin
+      if (mem inside {Rom0, Rom1}) begin
         `uvm_info(`gfn, "Regenerate ROM digest and update via backdoor", UVM_LOW)
-        cfg.mem_bkdr_util_h[mem].update_rom_digest(RndCnstRomCtrlScrKey, RndCnstRomCtrlScrNonce);
+        cfg.mem_bkdr_util_h[mem].update_rom_digest(RndCnstRomCtrl0ScrKey, RndCnstRomCtrl0ScrNonce);
       end
     end else begin
       `uvm_info(`gfn, $sformatf({"Reading symbol \"%s\" via backdoor in %0s: ",
@@ -627,9 +631,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
     byte prev_data;
     // TODO: Move these specializations to extended classes so that no special handling is needed at
     // the call site.
-    if (mem == Rom) begin
-      bit [127:0] key = RndCnstRomCtrlScrKey;
-      bit [63:0] nonce = RndCnstRomCtrlScrNonce;
+    if (mem inside {Rom0, Rom1}) begin
+      bit [127:0] key = RndCnstRomCtrl0ScrKey;
+      bit [63:0] nonce = RndCnstRomCtrl0ScrNonce;
       prev_data = cfg.mem_bkdr_util_h[mem].rom_encrypt_read8(addr, key, nonce);
       cfg.mem_bkdr_util_h[mem].rom_encrypt_write8(addr, data, key, nonce);
     end else begin // flash
@@ -647,9 +651,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
                                        output byte data);
     // TODO: Move these specializations to extended classes so that no special handling is needed at
     // the call site.
-    if (mem == Rom) begin
-      bit [127:0] key = RndCnstRomCtrlScrKey;
-      bit [63:0] nonce = RndCnstRomCtrlScrNonce;
+    if (mem inside {Rom0, Rom1}) begin
+      bit [127:0] key = RndCnstRomCtrl0ScrKey;
+      bit [63:0] nonce = RndCnstRomCtrl0ScrNonce;
       data = cfg.mem_bkdr_util_h[mem].rom_encrypt_read8(addr, key, nonce);
     end else begin // flash
       data = cfg.mem_bkdr_util_h[mem].read8(addr);

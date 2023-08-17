@@ -481,24 +481,24 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES = 32'h20000;
 
   /**
-   * Peripheral base address for regs device on rom_ctrl in top earlgrey.
+   * Peripheral base address for regs device on rom_ctrl0 in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR = 32'h411E0000;
+  parameter int unsigned TOP_EARLGREY_ROM_CTRL0_REGS_BASE_ADDR = 32'h411E0000;
 
   /**
-   * Peripheral size in bytes for regs device on rom_ctrl in top earlgrey.
+   * Peripheral size in bytes for regs device on rom_ctrl0 in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_ROM_CTRL_REGS_SIZE_BYTES = 32'h80;
+  parameter int unsigned TOP_EARLGREY_ROM_CTRL0_REGS_SIZE_BYTES = 32'h80;
 
   /**
-   * Peripheral base address for rom device on rom_ctrl in top earlgrey.
+   * Peripheral base address for rom device on rom_ctrl0 in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR = 32'h8000;
+  parameter int unsigned TOP_EARLGREY_ROM_CTRL0_ROM_BASE_ADDR = 32'h8000;
 
   /**
-   * Peripheral size in bytes for rom device on rom_ctrl in top earlgrey.
+   * Peripheral size in bytes for rom device on rom_ctrl0 in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES = 32'h8000;
+  parameter int unsigned TOP_EARLGREY_ROM_CTRL0_ROM_SIZE_BYTES = 32'h8000;
 
   /**
    * Peripheral base address for cfg device on rv_core_ibex in top earlgrey.
@@ -541,14 +541,14 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_RAM_MAIN_SIZE_BYTES = 32'h20000;
 
   /**
-   * Memory base address for rom in top earlgrey.
+   * Memory base address for rom0 in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_ROM_BASE_ADDR = 32'h8000;
+  parameter int unsigned TOP_EARLGREY_ROM0_BASE_ADDR = 32'h8000;
 
   /**
-   * Memory size for rom in top earlgrey.
+   * Memory size for rom0 in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_ROM_SIZE_BYTES = 32'h8000;
+  parameter int unsigned TOP_EARLGREY_ROM0_SIZE_BYTES = 32'h8000;
 
 
   // Enumeration of alert modules
@@ -592,7 +592,7 @@ package top_earlgrey_pkg;
     TopEarlgreyAlertPeripheralEdn0 = 36,
     TopEarlgreyAlertPeripheralEdn1 = 37,
     TopEarlgreyAlertPeripheralSramCtrlMain = 38,
-    TopEarlgreyAlertPeripheralRomCtrl = 39,
+    TopEarlgreyAlertPeripheralRomCtrl0 = 39,
     TopEarlgreyAlertPeripheralRvCoreIbex = 40,
     TopEarlgreyAlertPeripheralCount
   } alert_peripheral_e;
@@ -659,7 +659,7 @@ package top_earlgrey_pkg;
     TopEarlgreyAlertIdEdn1RecovAlert = 57,
     TopEarlgreyAlertIdEdn1FatalAlert = 58,
     TopEarlgreyAlertIdSramCtrlMainFatalError = 59,
-    TopEarlgreyAlertIdRomCtrlFatal = 60,
+    TopEarlgreyAlertIdRomCtrl0Fatal = 60,
     TopEarlgreyAlertIdRvCoreIbexFatalSwErr = 61,
     TopEarlgreyAlertIdRvCoreIbexRecovSwErr = 62,
     TopEarlgreyAlertIdRvCoreIbexFatalHwErr = 63,
@@ -953,7 +953,7 @@ package top_earlgrey_pkg;
     PeripheralPinmuxAon,
     PeripheralPwmAon,
     PeripheralPwrmgrAon,
-    PeripheralRomCtrl,
+    PeripheralRomCtrl0,
     PeripheralRstmgrAon,
     PeripheralRvCoreIbex,
     PeripheralRvDm,

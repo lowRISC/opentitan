@@ -38,17 +38,17 @@ module xbar_main_bind;
     .h2d    (tl_rv_dm__mem_o),
     .d2h    (tl_rv_dm__mem_i)
   );
-  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_rom_ctrl__rom (
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_rom_ctrl0__rom (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
-    .h2d    (tl_rom_ctrl__rom_o),
-    .d2h    (tl_rom_ctrl__rom_i)
+    .h2d    (tl_rom_ctrl0__rom_o),
+    .d2h    (tl_rom_ctrl0__rom_i)
   );
-  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_rom_ctrl__regs (
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_rom_ctrl0__regs (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
-    .h2d    (tl_rom_ctrl__regs_o),
-    .d2h    (tl_rom_ctrl__regs_i)
+    .h2d    (tl_rom_ctrl0__regs_o),
+    .d2h    (tl_rom_ctrl0__regs_i)
   );
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_peri (
     .clk_i  (clk_fixed_i),

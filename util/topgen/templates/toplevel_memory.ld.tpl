@@ -77,10 +77,10 @@ _stack_start = _stack_end - _stack_size;
 _static_critical_size = 8136;
 
 /**
- * `.chip_info` at the top of ROM.
+ * `.chip_info` at the top of ROM0.
  */
 _chip_info_size = 128;
-_chip_info_end   = ORIGIN(rom) + LENGTH(rom);
+_chip_info_end   = ORIGIN(rom0) + LENGTH(rom0);
 _chip_info_start = _chip_info_end - _chip_info_size;
 
 /**

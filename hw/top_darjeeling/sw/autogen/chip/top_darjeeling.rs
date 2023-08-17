@@ -658,32 +658,58 @@ pub const TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_BASE_ADDR: usize = 0x11000000;
 /// address between #TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_BASE_ADDR and
 /// `TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_BASE_ADDR + TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_SIZE_BYTES`.
 pub const TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_SIZE_BYTES: usize = 0x1000;
-/// Peripheral base address for regs device on rom_ctrl in top darjeeling.
+/// Peripheral base address for regs device on rom_ctrl0 in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const TOP_DARJEELING_ROM_CTRL_REGS_BASE_ADDR: usize = 0x411E0000;
+pub const TOP_DARJEELING_ROM_CTRL0_REGS_BASE_ADDR: usize = 0x411E0000;
 
-/// Peripheral size for regs device on rom_ctrl in top darjeeling.
+/// Peripheral size for regs device on rom_ctrl0 in top darjeeling.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #TOP_DARJEELING_ROM_CTRL_REGS_BASE_ADDR and
-/// `TOP_DARJEELING_ROM_CTRL_REGS_BASE_ADDR + TOP_DARJEELING_ROM_CTRL_REGS_SIZE_BYTES`.
-pub const TOP_DARJEELING_ROM_CTRL_REGS_SIZE_BYTES: usize = 0x80;
-/// Peripheral base address for rom device on rom_ctrl in top darjeeling.
+/// address between #TOP_DARJEELING_ROM_CTRL0_REGS_BASE_ADDR and
+/// `TOP_DARJEELING_ROM_CTRL0_REGS_BASE_ADDR + TOP_DARJEELING_ROM_CTRL0_REGS_SIZE_BYTES`.
+pub const TOP_DARJEELING_ROM_CTRL0_REGS_SIZE_BYTES: usize = 0x80;
+/// Peripheral base address for rom device on rom_ctrl0 in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const TOP_DARJEELING_ROM_CTRL_ROM_BASE_ADDR: usize = 0x8000;
+pub const TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR: usize = 0x8000;
 
-/// Peripheral size for rom device on rom_ctrl in top darjeeling.
+/// Peripheral size for rom device on rom_ctrl0 in top darjeeling.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #TOP_DARJEELING_ROM_CTRL_ROM_BASE_ADDR and
-/// `TOP_DARJEELING_ROM_CTRL_ROM_BASE_ADDR + TOP_DARJEELING_ROM_CTRL_ROM_SIZE_BYTES`.
-pub const TOP_DARJEELING_ROM_CTRL_ROM_SIZE_BYTES: usize = 0x8000;
+/// address between #TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR and
+/// `TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR + TOP_DARJEELING_ROM_CTRL0_ROM_SIZE_BYTES`.
+pub const TOP_DARJEELING_ROM_CTRL0_ROM_SIZE_BYTES: usize = 0x8000;
+/// Peripheral base address for regs device on rom_ctrl1 in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const TOP_DARJEELING_ROM_CTRL1_REGS_BASE_ADDR: usize = 0x41210000;
+
+/// Peripheral size for regs device on rom_ctrl1 in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #TOP_DARJEELING_ROM_CTRL1_REGS_BASE_ADDR and
+/// `TOP_DARJEELING_ROM_CTRL1_REGS_BASE_ADDR + TOP_DARJEELING_ROM_CTRL1_REGS_SIZE_BYTES`.
+pub const TOP_DARJEELING_ROM_CTRL1_REGS_SIZE_BYTES: usize = 0x80;
+/// Peripheral base address for rom device on rom_ctrl1 in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR: usize = 0x50000;
+
+/// Peripheral size for rom device on rom_ctrl1 in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR and
+/// `TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR + TOP_DARJEELING_ROM_CTRL1_ROM_SIZE_BYTES`.
+pub const TOP_DARJEELING_ROM_CTRL1_ROM_SIZE_BYTES: usize = 0x10000;
 /// Peripheral base address for cfg device on rv_core_ibex in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -718,11 +744,16 @@ pub const RAM_MBOX_BASE_ADDR: usize = 0x11000000;
 
 /// Memory size for ram_mbox in top darjeeling.
 pub const RAM_MBOX_SIZE_BYTES: usize = 0x1000;
-/// Memory base address for rom in top darjeeling.
-pub const ROM_BASE_ADDR: usize = 0x8000;
+/// Memory base address for rom0 in top darjeeling.
+pub const ROM0_BASE_ADDR: usize = 0x8000;
 
-/// Memory size for rom in top darjeeling.
-pub const ROM_SIZE_BYTES: usize = 0x8000;
+/// Memory size for rom0 in top darjeeling.
+pub const ROM0_SIZE_BYTES: usize = 0x8000;
+/// Memory base address for rom1 in top darjeeling.
+pub const ROM1_BASE_ADDR: usize = 0x50000;
+
+/// Memory size for rom1 in top darjeeling.
+pub const ROM1_SIZE_BYTES: usize = 0x10000;
 
 /// PLIC Interrupt Source Peripheral.
 ///
@@ -1502,10 +1533,12 @@ pub enum TopDarjeelingAlertPeripheral {
     SramCtrlMain = 38,
     /// sram_ctrl_mbox
     SramCtrlMbox = 39,
-    /// rom_ctrl
-    RomCtrl = 40,
+    /// rom_ctrl0
+    RomCtrl0 = 40,
+    /// rom_ctrl1
+    RomCtrl1 = 41,
     /// rv_core_ibex
-    RvCoreIbex = 41,
+    RvCoreIbex = 42,
 }
 
 /// Alert Handler Alert Source.
@@ -1636,16 +1669,18 @@ pub enum TopDarjeelingAlertId {
     SramCtrlMainFatalError = 59,
     /// sram_ctrl_mbox_fatal_error
     SramCtrlMboxFatalError = 60,
-    /// rom_ctrl_fatal
-    RomCtrlFatal = 61,
+    /// rom_ctrl0_fatal
+    RomCtrl0Fatal = 61,
+    /// rom_ctrl1_fatal
+    RomCtrl1Fatal = 62,
     /// rv_core_ibex_fatal_sw_err
-    RvCoreIbexFatalSwErr = 62,
+    RvCoreIbexFatalSwErr = 63,
     /// rv_core_ibex_recov_sw_err
-    RvCoreIbexRecovSwErr = 63,
+    RvCoreIbexRecovSwErr = 64,
     /// rv_core_ibex_fatal_hw_err
-    RvCoreIbexFatalHwErr = 64,
+    RvCoreIbexFatalHwErr = 65,
     /// rv_core_ibex_recov_hw_err
-    RvCoreIbexRecovHwErr = 65,
+    RvCoreIbexRecovHwErr = 66,
 }
 
 impl TryFrom<u32> for TopDarjeelingAlertId {
@@ -1713,11 +1748,12 @@ impl TryFrom<u32> for TopDarjeelingAlertId {
             58 => Ok(Self::Edn1FatalAlert),
             59 => Ok(Self::SramCtrlMainFatalError),
             60 => Ok(Self::SramCtrlMboxFatalError),
-            61 => Ok(Self::RomCtrlFatal),
-            62 => Ok(Self::RvCoreIbexFatalSwErr),
-            63 => Ok(Self::RvCoreIbexRecovSwErr),
-            64 => Ok(Self::RvCoreIbexFatalHwErr),
-            65 => Ok(Self::RvCoreIbexRecovHwErr),
+            61 => Ok(Self::RomCtrl0Fatal),
+            62 => Ok(Self::RomCtrl1Fatal),
+            63 => Ok(Self::RvCoreIbexFatalSwErr),
+            64 => Ok(Self::RvCoreIbexRecovSwErr),
+            65 => Ok(Self::RvCoreIbexFatalHwErr),
+            66 => Ok(Self::RvCoreIbexRecovHwErr),
             _ => Err(val),
         }
     }
@@ -2104,7 +2140,7 @@ pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeriph
 ///
 /// This array is a mapping from `TopDarjeelingAlertId` to
 /// `TopDarjeelingAlertPeripheral`.
-pub const TOP_DARJEELING_ALERT_FOR_PERIPHERAL: [TopDarjeelingAlertPeripheral; 66] = [
+pub const TOP_DARJEELING_ALERT_FOR_PERIPHERAL: [TopDarjeelingAlertPeripheral; 67] = [
     // Uart0FatalFault -> TopDarjeelingAlertPeripheral::Uart0
     TopDarjeelingAlertPeripheral::Uart0,
     // Uart1FatalFault -> TopDarjeelingAlertPeripheral::Uart1
@@ -2227,8 +2263,10 @@ pub const TOP_DARJEELING_ALERT_FOR_PERIPHERAL: [TopDarjeelingAlertPeripheral; 66
     TopDarjeelingAlertPeripheral::SramCtrlMain,
     // SramCtrlMboxFatalError -> TopDarjeelingAlertPeripheral::SramCtrlMbox
     TopDarjeelingAlertPeripheral::SramCtrlMbox,
-    // RomCtrlFatal -> TopDarjeelingAlertPeripheral::RomCtrl
-    TopDarjeelingAlertPeripheral::RomCtrl,
+    // RomCtrl0Fatal -> TopDarjeelingAlertPeripheral::RomCtrl0
+    TopDarjeelingAlertPeripheral::RomCtrl0,
+    // RomCtrl1Fatal -> TopDarjeelingAlertPeripheral::RomCtrl1
+    TopDarjeelingAlertPeripheral::RomCtrl1,
     // RvCoreIbexFatalSwErr -> TopDarjeelingAlertPeripheral::RvCoreIbex
     TopDarjeelingAlertPeripheral::RvCoreIbex,
     // RvCoreIbexRecovSwErr -> TopDarjeelingAlertPeripheral::RvCoreIbex

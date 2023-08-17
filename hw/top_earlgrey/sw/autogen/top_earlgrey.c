@@ -268,7 +268,7 @@ const top_earlgrey_alert_peripheral_t
   [kTopEarlgreyAlertIdEdn1RecovAlert] = kTopEarlgreyAlertPeripheralEdn1,
   [kTopEarlgreyAlertIdEdn1FatalAlert] = kTopEarlgreyAlertPeripheralEdn1,
   [kTopEarlgreyAlertIdSramCtrlMainFatalError] = kTopEarlgreyAlertPeripheralSramCtrlMain,
-  [kTopEarlgreyAlertIdRomCtrlFatal] = kTopEarlgreyAlertPeripheralRomCtrl,
+  [kTopEarlgreyAlertIdRomCtrl0Fatal] = kTopEarlgreyAlertPeripheralRomCtrl0,
   [kTopEarlgreyAlertIdRvCoreIbexFatalSwErr] = kTopEarlgreyAlertPeripheralRvCoreIbex,
   [kTopEarlgreyAlertIdRvCoreIbexRecovSwErr] = kTopEarlgreyAlertPeripheralRvCoreIbex,
   [kTopEarlgreyAlertIdRvCoreIbexFatalHwErr] = kTopEarlgreyAlertPeripheralRvCoreIbex,

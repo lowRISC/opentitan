@@ -130,7 +130,12 @@ class Scrambler:
             entry_type = entry.get('type')
             assert isinstance(entry_type, str)
 
-            if entry_type == 'rom_ctrl':
+            # TODO(opentitan-integrated/issues/251):
+            # make this able to handle multiple ROMs.
+            entry_name = entry.get('name')
+            assert isinstance(entry_name, str)
+
+            if entry_type == 'rom_ctrl' and entry_name == 'rom_ctrl0':
                 rom_ctrls.append(entry)
 
         assert len(rom_ctrls) == 1

@@ -908,40 +908,76 @@ extern "C" {
 #define TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_SIZE_BYTES 0x1000u
 
 /**
- * Peripheral base address for regs device on rom_ctrl in top darjeeling.
+ * Peripheral base address for regs device on rom_ctrl0 in top darjeeling.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_ROM_CTRL_REGS_BASE_ADDR 0x411E0000u
+#define TOP_DARJEELING_ROM_CTRL0_REGS_BASE_ADDR 0x411E0000u
 
 /**
- * Peripheral size for regs device on rom_ctrl in top darjeeling.
+ * Peripheral size for regs device on rom_ctrl0 in top darjeeling.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_ROM_CTRL_REGS_BASE_ADDR and
- * `TOP_DARJEELING_ROM_CTRL_REGS_BASE_ADDR + TOP_DARJEELING_ROM_CTRL_REGS_SIZE_BYTES`.
+ * address between #TOP_DARJEELING_ROM_CTRL0_REGS_BASE_ADDR and
+ * `TOP_DARJEELING_ROM_CTRL0_REGS_BASE_ADDR + TOP_DARJEELING_ROM_CTRL0_REGS_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_ROM_CTRL_REGS_SIZE_BYTES 0x80u
+#define TOP_DARJEELING_ROM_CTRL0_REGS_SIZE_BYTES 0x80u
 
 /**
- * Peripheral base address for rom device on rom_ctrl in top darjeeling.
+ * Peripheral base address for rom device on rom_ctrl0 in top darjeeling.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_ROM_CTRL_ROM_BASE_ADDR 0x8000u
+#define TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR 0x8000u
 
 /**
- * Peripheral size for rom device on rom_ctrl in top darjeeling.
+ * Peripheral size for rom device on rom_ctrl0 in top darjeeling.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_ROM_CTRL_ROM_BASE_ADDR and
- * `TOP_DARJEELING_ROM_CTRL_ROM_BASE_ADDR + TOP_DARJEELING_ROM_CTRL_ROM_SIZE_BYTES`.
+ * address between #TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR and
+ * `TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR + TOP_DARJEELING_ROM_CTRL0_ROM_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_ROM_CTRL_ROM_SIZE_BYTES 0x8000u
+#define TOP_DARJEELING_ROM_CTRL0_ROM_SIZE_BYTES 0x8000u
+
+/**
+ * Peripheral base address for regs device on rom_ctrl1 in top darjeeling.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_DARJEELING_ROM_CTRL1_REGS_BASE_ADDR 0x41210000u
+
+/**
+ * Peripheral size for regs device on rom_ctrl1 in top darjeeling.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_DARJEELING_ROM_CTRL1_REGS_BASE_ADDR and
+ * `TOP_DARJEELING_ROM_CTRL1_REGS_BASE_ADDR + TOP_DARJEELING_ROM_CTRL1_REGS_SIZE_BYTES`.
+ */
+#define TOP_DARJEELING_ROM_CTRL1_REGS_SIZE_BYTES 0x80u
+
+/**
+ * Peripheral base address for rom device on rom_ctrl1 in top darjeeling.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR 0x50000u
+
+/**
+ * Peripheral size for rom device on rom_ctrl1 in top darjeeling.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR and
+ * `TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR + TOP_DARJEELING_ROM_CTRL1_ROM_SIZE_BYTES`.
+ */
+#define TOP_DARJEELING_ROM_CTRL1_ROM_SIZE_BYTES 0x10000u
 
 /**
  * Peripheral base address for cfg device on rv_core_ibex in top darjeeling.
@@ -1003,14 +1039,24 @@ extern "C" {
 #define TOP_DARJEELING_RAM_MBOX_SIZE_BYTES 0x1000u
 
 /**
- * Memory base address for rom in top darjeeling.
+ * Memory base address for rom0 in top darjeeling.
  */
-#define TOP_DARJEELING_ROM_BASE_ADDR 0x8000u
+#define TOP_DARJEELING_ROM0_BASE_ADDR 0x8000u
 
 /**
- * Memory size for rom in top darjeeling.
+ * Memory size for rom0 in top darjeeling.
  */
-#define TOP_DARJEELING_ROM_SIZE_BYTES 0x8000u
+#define TOP_DARJEELING_ROM0_SIZE_BYTES 0x8000u
+
+/**
+ * Memory base address for rom1 in top darjeeling.
+ */
+#define TOP_DARJEELING_ROM1_BASE_ADDR 0x50000u
+
+/**
+ * Memory size for rom1 in top darjeeling.
+ */
+#define TOP_DARJEELING_ROM1_SIZE_BYTES 0x10000u
 
 
 /**
@@ -1316,9 +1362,10 @@ typedef enum top_darjeeling_alert_peripheral {
   kTopDarjeelingAlertPeripheralEdn1 = 37, /**< edn1 */
   kTopDarjeelingAlertPeripheralSramCtrlMain = 38, /**< sram_ctrl_main */
   kTopDarjeelingAlertPeripheralSramCtrlMbox = 39, /**< sram_ctrl_mbox */
-  kTopDarjeelingAlertPeripheralRomCtrl = 40, /**< rom_ctrl */
-  kTopDarjeelingAlertPeripheralRvCoreIbex = 41, /**< rv_core_ibex */
-  kTopDarjeelingAlertPeripheralLast = 41, /**< \internal Final Alert peripheral */
+  kTopDarjeelingAlertPeripheralRomCtrl0 = 40, /**< rom_ctrl0 */
+  kTopDarjeelingAlertPeripheralRomCtrl1 = 41, /**< rom_ctrl1 */
+  kTopDarjeelingAlertPeripheralRvCoreIbex = 42, /**< rv_core_ibex */
+  kTopDarjeelingAlertPeripheralLast = 42, /**< \internal Final Alert peripheral */
 } top_darjeeling_alert_peripheral_t;
 
 /**
@@ -1389,12 +1436,13 @@ typedef enum top_darjeeling_alert_id {
   kTopDarjeelingAlertIdEdn1FatalAlert = 58, /**< edn1_fatal_alert */
   kTopDarjeelingAlertIdSramCtrlMainFatalError = 59, /**< sram_ctrl_main_fatal_error */
   kTopDarjeelingAlertIdSramCtrlMboxFatalError = 60, /**< sram_ctrl_mbox_fatal_error */
-  kTopDarjeelingAlertIdRomCtrlFatal = 61, /**< rom_ctrl_fatal */
-  kTopDarjeelingAlertIdRvCoreIbexFatalSwErr = 62, /**< rv_core_ibex_fatal_sw_err */
-  kTopDarjeelingAlertIdRvCoreIbexRecovSwErr = 63, /**< rv_core_ibex_recov_sw_err */
-  kTopDarjeelingAlertIdRvCoreIbexFatalHwErr = 64, /**< rv_core_ibex_fatal_hw_err */
-  kTopDarjeelingAlertIdRvCoreIbexRecovHwErr = 65, /**< rv_core_ibex_recov_hw_err */
-  kTopDarjeelingAlertIdLast = 65, /**< \internal The Last Valid Alert ID. */
+  kTopDarjeelingAlertIdRomCtrl0Fatal = 61, /**< rom_ctrl0_fatal */
+  kTopDarjeelingAlertIdRomCtrl1Fatal = 62, /**< rom_ctrl1_fatal */
+  kTopDarjeelingAlertIdRvCoreIbexFatalSwErr = 63, /**< rv_core_ibex_fatal_sw_err */
+  kTopDarjeelingAlertIdRvCoreIbexRecovSwErr = 64, /**< rv_core_ibex_recov_sw_err */
+  kTopDarjeelingAlertIdRvCoreIbexFatalHwErr = 65, /**< rv_core_ibex_fatal_hw_err */
+  kTopDarjeelingAlertIdRvCoreIbexRecovHwErr = 66, /**< rv_core_ibex_recov_hw_err */
+  kTopDarjeelingAlertIdLast = 66, /**< \internal The Last Valid Alert ID. */
 } top_darjeeling_alert_id_t;
 
 /**
@@ -1404,7 +1452,7 @@ typedef enum top_darjeeling_alert_id {
  * `top_darjeeling_alert_peripheral_t`.
  */
 extern const top_darjeeling_alert_peripheral_t
-    top_darjeeling_alert_for_peripheral[66];
+    top_darjeeling_alert_for_peripheral[67];
 
 // PERIPH_INSEL ranges from 0 to TOP_DARJEELING_NUM_MIO_PADS + 2 -1}
 //  0 and 1 are tied to value 0 and 1

@@ -444,7 +444,7 @@ For the purpose of `top_earlgrey`, the first option has been chosen to benefit s
 | edn1              | edn           | 0x41180000 (regs) |
 | sram_ctrl_main    | sram_ctrl     | 0x411C0000 (regs) |
 |                   |               | 0x10000000 (ram)  |
-| rom_ctrl          | rom_ctrl      | 0x00008000 (rom)  |
+| rom_ctrl0         | rom_ctrl      | 0x00008000 (rom)  |
 |                   |               | 0x411e0000 (regs) |
 | rv_core_ibex      | rv_core_ibex  | 0x411F0000 (cfg)  |
 

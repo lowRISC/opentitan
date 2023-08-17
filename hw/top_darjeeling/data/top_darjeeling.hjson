@@ -765,7 +765,7 @@
         }
       }
     },
-    { name: "rom_ctrl",
+    { name: "rom_ctrl0",
       type: "rom_ctrl",
       clock_srcs: {clk_i: "main"},
       clock_group: "infra",
@@ -773,12 +773,35 @@
       base_addrs: {rom: "0x00008000", regs: "0x411e0000"}
       memory: {
         rom: {
-          label:              "rom",
+          label:              "rom0",
           swaccess:           "ro",
           data_intg_passthru: "true",
           exec:               "True",
           byte_write:         "False",
           size:               "0x8000"
+          data_intg_passthru: "True"
+        }
+      },
+      param_decl: {
+        SecDisableScrambling: "1'b0"
+      }
+    },
+    { name: "rom_ctrl1",
+      type: "rom_ctrl",
+      clock_srcs: {clk_i: "main"},
+      clock_group: "infra",
+      reset_connections: {rst_ni: "lc"},
+      // TODO(opentitan-integrated/issues/251):
+      // This is not the final parameterization for Darjeeling.
+      base_addrs: {rom: "0x00050000", regs: "0x41210000"}
+      memory: {
+        rom: {
+          label:              "rom1",
+          swaccess:           "ro",
+          data_intg_passthru: "true",
+          exec:               "True",
+          byte_write:         "False",
+          size:               "0x10000"
           data_intg_passthru: "True"
         }
       },
@@ -933,7 +956,8 @@
                                    'rv_core_ibex.ram_cfg'],
       'ast.spi_ram_2p_cfg'      : ['spi_device.ram_cfg'],
       'ast.usb_ram_2p_cfg'      : ['usbdev.ram_cfg'],
-      'ast.rom_cfg'             : ['rom_ctrl.rom_cfg'],
+      'ast.rom_cfg'             : ['rom_ctrl0.rom_cfg',
+                                   'rom_ctrl1.rom_cfg'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
       'alert_handler.esc_rx'    : ['rv_core_ibex.esc_rx',
                                    'lc_ctrl.esc_scrap_state0_rx',
@@ -961,8 +985,10 @@
       'pwrmgr_aon.low_power'    : ['pinmux_aon.sleep_en',
                                    'aon_timer_aon.sleep_mode'],
       'pwrmgr_aon.fetch_en'     : ['rv_core_ibex.pwrmgr_cpu_en'],
-      'pwrmgr_aon.rom_ctrl'     : ['rom_ctrl.pwrmgr_data'],
-      'keymgr.rom_digest'       : ['rom_ctrl.keymgr_data'],
+      'pwrmgr_aon.rom_ctrl'     : ['rom_ctrl0.pwrmgr_data',
+                                   'rom_ctrl1.pwrmgr_data'],
+      'keymgr.rom_digest'       : ['rom_ctrl0.keymgr_data',
+                                   'rom_ctrl1.keymgr_data'],
       'flash_ctrl.keymgr'       : ['keymgr.flash'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
 
@@ -996,9 +1022,11 @@
       'keymgr.otbn_key'         : ['otbn.keymgr_key'],
 
       // KMAC Application Interface
-      'kmac.app'                : ['keymgr.kmac_data',    // Keymgr needs to be at index 0
-                                   'lc_ctrl.kmac_data',   // LC needs to be at index 1
-                                   'rom_ctrl.kmac_data'], // ROM needs to be at index 2
+      // Note that arbitration is fixed priority top to bottom.
+      'kmac.app'                : ['keymgr.kmac_data',     // Keymgr needs to be at index 0
+                                   'lc_ctrl.kmac_data',    // LC needs to be at index 1
+                                   'rom_ctrl0.kmac_data',  // ROM needs to be at index 2 or 3
+                                   'rom_ctrl1.kmac_data'], // ROM needs to be at index 2 or 3
       'kmac.en_masking'         : ['keymgr.kmac_en_masking']
 
       // The idle connection is automatically connected through topgen.

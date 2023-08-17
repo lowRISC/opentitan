@@ -28,11 +28,11 @@ pub const TOP_EARLGREY_RAM_MAIN_BASE_ADDR: usize = 0x10000000;
 
 /// Memory size for sram_ctrl_main_ram_main in top earlgrey.
 pub const TOP_EARLGREY_RAM_MAIN_SIZE_BYTES: usize = 0x20000;
-/// Memory base for rom_ctrl_rom in top earlgrey.
-pub const TOP_EARLGREY_ROM_BASE_ADDR: usize = 0x00008000;
+/// Memory base for rom_ctrl0_rom0 in top earlgrey.
+pub const TOP_EARLGREY_ROM0_BASE_ADDR: usize = 0x00008000;
 
-/// Memory size for rom_ctrl_rom in top earlgrey.
-pub const TOP_EARLGREY_ROM_SIZE_BYTES: usize = 0x8000;
+/// Memory size for rom_ctrl0_rom0 in top earlgrey.
+pub const TOP_EARLGREY_ROM0_SIZE_BYTES: usize = 0x8000;
 
 /// Peripheral base address for uart0 in top earlgrey.
 ///
@@ -692,33 +692,33 @@ pub const TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR: usize = 0x10000000;
 /// `TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR + TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES`.
 pub const TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES: usize = 0x20000;
 
-/// Peripheral base address for regs device on rom_ctrl in top earlgrey.
+/// Peripheral base address for regs device on rom_ctrl0 in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR: usize = 0x411E0000;
+pub const TOP_EARLGREY_ROM_CTRL0_REGS_BASE_ADDR: usize = 0x411E0000;
 
-/// Peripheral size for regs device on rom_ctrl in top earlgrey.
+/// Peripheral size for regs device on rom_ctrl0 in top earlgrey.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR and
-/// `TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR + TOP_EARLGREY_ROM_CTRL_REGS_SIZE_BYTES`.
-pub const TOP_EARLGREY_ROM_CTRL_REGS_SIZE_BYTES: usize = 0x80;
+/// address between #TOP_EARLGREY_ROM_CTRL0_REGS_BASE_ADDR and
+/// `TOP_EARLGREY_ROM_CTRL0_REGS_BASE_ADDR + TOP_EARLGREY_ROM_CTRL0_REGS_SIZE_BYTES`.
+pub const TOP_EARLGREY_ROM_CTRL0_REGS_SIZE_BYTES: usize = 0x80;
 
-/// Peripheral base address for rom device on rom_ctrl in top earlgrey.
+/// Peripheral base address for rom device on rom_ctrl0 in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR: usize = 0x8000;
+pub const TOP_EARLGREY_ROM_CTRL0_ROM_BASE_ADDR: usize = 0x8000;
 
-/// Peripheral size for rom device on rom_ctrl in top earlgrey.
+/// Peripheral size for rom device on rom_ctrl0 in top earlgrey.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR and
-/// `TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR + TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES`.
-pub const TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES: usize = 0x8000;
+/// address between #TOP_EARLGREY_ROM_CTRL0_ROM_BASE_ADDR and
+/// `TOP_EARLGREY_ROM_CTRL0_ROM_BASE_ADDR + TOP_EARLGREY_ROM_CTRL0_ROM_SIZE_BYTES`.
+pub const TOP_EARLGREY_ROM_CTRL0_ROM_SIZE_BYTES: usize = 0x8000;
 
 /// Peripheral base address for cfg device on rv_core_ibex in top earlgrey.
 ///

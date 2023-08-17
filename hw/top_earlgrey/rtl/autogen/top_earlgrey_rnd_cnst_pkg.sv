@@ -344,15 +344,15 @@ package top_earlgrey_rnd_cnst_pkg;
   };
 
   ////////////////////////////////////////////
-  // rom_ctrl
+  // rom_ctrl0
   ////////////////////////////////////////////
   // Fixed nonce used for address / data scrambling
-  parameter bit [63:0] RndCnstRomCtrlScrNonce = {
+  parameter bit [63:0] RndCnstRomCtrl0ScrNonce = {
     64'h755CF00B_D7432C3F
   };
 
   // Randomised constant used as a scrambling key for ROM data
-  parameter bit [127:0] RndCnstRomCtrlScrKey = {
+  parameter bit [127:0] RndCnstRomCtrl0ScrKey = {
     128'h8CD4E7EF_F1B9EC59_CE812447_C5714595
   };
 

@@ -91,9 +91,9 @@ module top_earlgrey #(
   // parameters for edn1
   // parameters for sram_ctrl_main
   parameter bit SramCtrlMainInstrExec = 1,
-  // parameters for rom_ctrl
-  parameter RomCtrlBootRomInitFile = "",
-  parameter bit SecRomCtrlDisableScrambling = 1'b0,
+  // parameters for rom_ctrl0
+  parameter RomCtrl0BootRomInitFile = "",
+  parameter bit SecRomCtrl0DisableScrambling = 1'b0,
   // parameters for rv_core_ibex
   parameter bit RvCoreIbexPMPEnable = 1,
   parameter int unsigned RvCoreIbexPMPGranularity = 0,
@@ -362,7 +362,7 @@ module top_earlgrey #(
   // edn0
   // edn1
   // sram_ctrl_main
-  // rom_ctrl
+  // rom_ctrl0
   // rv_core_ibex
 
 
@@ -634,10 +634,10 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       rv_dm_regs_tl_d_rsp;
   tlul_pkg::tl_h2d_t       rv_dm_mem_tl_d_req;
   tlul_pkg::tl_d2h_t       rv_dm_mem_tl_d_rsp;
-  tlul_pkg::tl_h2d_t       rom_ctrl_rom_tl_req;
-  tlul_pkg::tl_d2h_t       rom_ctrl_rom_tl_rsp;
-  tlul_pkg::tl_h2d_t       rom_ctrl_regs_tl_req;
-  tlul_pkg::tl_d2h_t       rom_ctrl_regs_tl_rsp;
+  tlul_pkg::tl_h2d_t       rom_ctrl0_rom_tl_req;
+  tlul_pkg::tl_d2h_t       rom_ctrl0_rom_tl_rsp;
+  tlul_pkg::tl_h2d_t       rom_ctrl0_regs_tl_req;
+  tlul_pkg::tl_d2h_t       rom_ctrl0_regs_tl_rsp;
   tlul_pkg::tl_h2d_t       main_tl_peri_req;
   tlul_pkg::tl_d2h_t       main_tl_peri_rsp;
   tlul_pkg::tl_h2d_t       spi_host0_tl_req;
@@ -821,7 +821,7 @@ module top_earlgrey #(
   assign rv_core_ibex_irq_timer = intr_rv_timer_timer_expired_hart0_timer0;
   assign rv_core_ibex_hart_id = '0;
 
-  assign rv_core_ibex_boot_addr = ADDR_SPACE_ROM_CTRL__ROM;
+  assign rv_core_ibex_boot_addr = ADDR_SPACE_ROM_CTRL0__ROM;
 
   // Struct breakout module tool-inserted DFT TAP signals
   pinmux_jtag_breakout u_dft_tap_breakout (
@@ -2533,12 +2533,12 @@ module top_earlgrey #(
   );
   rom_ctrl #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[60:60]),
-    .BootRomInitFile(RomCtrlBootRomInitFile),
-    .RndCnstScrNonce(RndCnstRomCtrlScrNonce),
-    .RndCnstScrKey(RndCnstRomCtrlScrKey),
-    .SecDisableScrambling(SecRomCtrlDisableScrambling),
+    .BootRomInitFile(RomCtrl0BootRomInitFile),
+    .RndCnstScrNonce(RndCnstRomCtrl0ScrNonce),
+    .RndCnstScrKey(RndCnstRomCtrl0ScrKey),
+    .SecDisableScrambling(SecRomCtrl0DisableScrambling),
     .MemSizeRom(32768)
-  ) u_rom_ctrl (
+  ) u_rom_ctrl0 (
       // [60]: fatal
       .alert_tx_o  ( alert_tx[60:60] ),
       .alert_rx_i  ( alert_rx[60:60] ),
@@ -2549,10 +2549,10 @@ module top_earlgrey #(
       .keymgr_data_o(keymgr_rom_digest[0]),
       .kmac_data_o(kmac_app_req[2]),
       .kmac_data_i(kmac_app_rsp[2]),
-      .regs_tl_i(rom_ctrl_regs_tl_req),
-      .regs_tl_o(rom_ctrl_regs_tl_rsp),
-      .rom_tl_i(rom_ctrl_rom_tl_req),
-      .rom_tl_o(rom_ctrl_rom_tl_rsp),
+      .regs_tl_i(rom_ctrl0_regs_tl_req),
+      .regs_tl_o(rom_ctrl0_regs_tl_rsp),
+      .rom_tl_i(rom_ctrl0_rom_tl_req),
+      .rom_tl_o(rom_ctrl0_rom_tl_rsp),
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_infra),
@@ -2824,13 +2824,13 @@ module top_earlgrey #(
     .tl_rv_dm__mem_o(rv_dm_mem_tl_d_req),
     .tl_rv_dm__mem_i(rv_dm_mem_tl_d_rsp),
 
-    // port: tl_rom_ctrl__rom
-    .tl_rom_ctrl__rom_o(rom_ctrl_rom_tl_req),
-    .tl_rom_ctrl__rom_i(rom_ctrl_rom_tl_rsp),
+    // port: tl_rom_ctrl0__rom
+    .tl_rom_ctrl0__rom_o(rom_ctrl0_rom_tl_req),
+    .tl_rom_ctrl0__rom_i(rom_ctrl0_rom_tl_rsp),
 
-    // port: tl_rom_ctrl__regs
-    .tl_rom_ctrl__regs_o(rom_ctrl_regs_tl_req),
-    .tl_rom_ctrl__regs_i(rom_ctrl_regs_tl_rsp),
+    // port: tl_rom_ctrl0__regs
+    .tl_rom_ctrl0__regs_o(rom_ctrl0_regs_tl_req),
+    .tl_rom_ctrl0__regs_i(rom_ctrl0_regs_tl_rsp),
 
     // port: tl_peri
     .tl_peri_o(main_tl_peri_req),

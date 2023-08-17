@@ -20,7 +20,7 @@ bool test_main(void) {
 
   // initialize rom_ctrl
   mmio_region_t rom_ctrl_reg =
-      mmio_region_from_addr(TOP_DARJEELING_ROM_CTRL_REGS_BASE_ADDR);
+      mmio_region_from_addr(TOP_DARJEELING_ROM_CTRL0_REGS_BASE_ADDR);
   CHECK_DIF_OK(dif_rom_ctrl_init(rom_ctrl_reg, &rom_ctrl));
 
   // get computed and expected digests and check that they match

@@ -21,7 +21,7 @@ INCLUDE hw/top_darjeeling/sw/autogen/top_darjeeling_memory.ld
  * The boot address, which indicates the location of the initial interrupt
  * vector.
  */
-_boot_address = ORIGIN(rom);
+_boot_address = ORIGIN(rom0);
 
 /**
  * Symbols to be used in the setup of the address translation for ROM_EXT.
@@ -32,7 +32,7 @@ ASSERT((_rom_ext_virtual_size <= (LENGTH(eflash) / 2)),
   "Error: rom ext flash is bigger than slot.");
 
 _rom_digest_size = 32;
-_chip_info_start = ORIGIN(rom) + LENGTH(rom) - _rom_digest_size - _chip_info_size;
+_chip_info_start = ORIGIN(rom0) + LENGTH(rom0) - _rom_digest_size - _chip_info_size;
 
 /* DV Log offset (has to be different to other boot stages). */
 _dv_log_offset = 0x0;
@@ -57,14 +57,14 @@ SECTIONS {
    */
   .vectors _boot_address : ALIGN(4) {
     KEEP(*(.vectors))
-  } > rom
+  } > rom0
 
   /**
    * C runtime (CRT) section, containing program initialization code.
    */
   .crt : ALIGN(4) {
     KEEP(*(.crt))
-  } > rom
+  } > rom0
 
   /**
    * Standard text section, containing program code.
@@ -72,7 +72,7 @@ SECTIONS {
   .text : ALIGN(4) {
     *(.text)
     *(.text.*)
-  } > rom
+  } > rom0
 
   /**
    * Read-only data section, containing all large compile-time constants, like
@@ -85,7 +85,7 @@ SECTIONS {
     *(.srodata.*)
     *(.rodata)
     *(.rodata.*)
-  } > rom
+  } > rom0
 
   /**
    * Critical static data that is accessible by both the ROM and the ROM
@@ -128,14 +128,14 @@ SECTIONS {
     /* This puts it in ram_main at runtime (for the VMA), but puts the section
      * into rom for load time (for the LMA). This is why `_data_init_*` uses
      * `LOADADDR`. */
-  } > ram_main AT> rom
+  } > ram_main AT> rom0
 
   /**
    * Immutable chip_info data, containing build-time-recorded information.
    */
   .chip_info _chip_info_start : ALIGN(4) {
     KEEP(*(.chip_info))
-  } > rom
+  } > rom0
 
   /**
    * Standard BSS section. This will be zeroed at runtime by the CRT.

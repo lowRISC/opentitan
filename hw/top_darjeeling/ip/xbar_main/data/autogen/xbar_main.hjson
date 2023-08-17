@@ -45,13 +45,25 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_rom_ctrl__rom"
+      name:   "tl_rom_ctrl0__rom"
       act:    "req"
       package: "tlul_pkg"
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_rom_ctrl__regs"
+      name:   "tl_rom_ctrl0__regs"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_rom_ctrl1__rom"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_rom_ctrl1__regs"
       act:    "req"
       package: "tlul_pkg"
     }

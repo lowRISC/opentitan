@@ -161,7 +161,8 @@ static dif_kmac_t kmac;
 static dif_lc_ctrl_t lc_ctrl;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_pwrmgr_t pwrmgr;
-static dif_rom_ctrl_t rom_ctrl;
+static dif_rom_ctrl_t rom_ctrl0;
+static dif_rom_ctrl_t rom_ctrl1;
 static dif_rstmgr_t rstmgr;
 static dif_rv_core_ibex_t rv_core_ibex;
 static dif_rv_plic_t plic;
@@ -227,7 +228,8 @@ static const char *pattgen_inst_name = "pattgen";
 static const char *pinmux_inst_name = "pinmux";
 static const char *pwm_inst_name = "pwm";
 static const char *pwrmgr_inst_name = "pwrmgr";
-static const char *rom_ctrl_inst_name = "rom_ctrl";
+static const char *rom_ctrl0_inst_name = "rom_ctrl0";
+static const char *rom_ctrl1_inst_name = "rom_ctrl1";
 static const char *rstmgr_inst_name = "rstmgr";
 // TODO: test rv_core_ibex fatal SW error, alert 57.
 static const char *rv_core_ibex_inst_name = "rv_core_ibex";
@@ -422,10 +424,22 @@ static void pwrmgr_fault_checker(bool enable, const char *ip_inst,
         ip_inst, codes, expected_codes);
 }
 
-static void rom_ctrl_fault_checker(bool enable, const char *ip_inst,
-                                   const char *type) {
+static void rom_ctrl0_fault_checker(bool enable, const char *ip_inst,
+                                    const char *type) {
   dif_rom_ctrl_fatal_alert_causes_t codes;
-  CHECK_DIF_OK(dif_rom_ctrl_get_fatal_alert_cause(&rom_ctrl, &codes));
+  CHECK_DIF_OK(dif_rom_ctrl_get_fatal_alert_cause(&rom_ctrl0, &codes));
+  uint32_t expected_codes =
+      enable ? bitfield_bit32_write(0, kDifRomCtrlFatalAlertCauseIntegrityError,
+                                    true)
+             : 0;
+  CHECK(codes == expected_codes, "For %s got codes 0x%x, expected 0x%x",
+        ip_inst, codes, expected_codes);
+}
+
+static void rom_ctrl1_fault_checker(bool enable, const char *ip_inst,
+                                    const char *type) {
+  dif_rom_ctrl_fatal_alert_causes_t codes;
+  CHECK_DIF_OK(dif_rom_ctrl_get_fatal_alert_cause(&rom_ctrl1, &codes));
   uint32_t expected_codes =
       enable ? bitfield_bit32_write(0, kDifRomCtrlFatalAlertCauseIntegrityError,
                                     true)
@@ -673,8 +687,12 @@ static void init_peripherals(void) {
       mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR), &pwrmgr));
 
   CHECK_DIF_OK(dif_rom_ctrl_init(
-      mmio_region_from_addr(TOP_DARJEELING_ROM_CTRL_REGS_BASE_ADDR),
-      &rom_ctrl));
+      mmio_region_from_addr(TOP_DARJEELING_ROM_CTRL0_REGS_BASE_ADDR),
+      &rom_ctrl0));
+
+  CHECK_DIF_OK(dif_rom_ctrl_init(
+      mmio_region_from_addr(TOP_DARJEELING_ROM_CTRL1_REGS_BASE_ADDR),
+      &rom_ctrl1));
 
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR), &rstmgr));
@@ -954,8 +972,13 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
       fault_checker_t fc = {pwrmgr_fault_checker, pwrmgr_inst_name, we_check};
       fault_checker = fc;
     } break;
-    case kTopDarjeelingAlertIdRomCtrlFatal: {
-      fault_checker_t fc = {rom_ctrl_fault_checker, rom_ctrl_inst_name,
+    case kTopDarjeelingAlertIdRomCtrl0Fatal: {
+      fault_checker_t fc = {rom_ctrl0_fault_checker, rom_ctrl0_inst_name,
+                            we_check};
+      fault_checker = fc;
+    } break;
+    case kTopDarjeelingAlertIdRomCtrl1Fatal: {
+      fault_checker_t fc = {rom_ctrl1_fault_checker, rom_ctrl1_inst_name,
                             we_check};
       fault_checker = fc;
     } break;

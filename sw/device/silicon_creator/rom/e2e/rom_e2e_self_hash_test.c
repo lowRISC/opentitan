@@ -53,7 +53,7 @@ extern const char _chip_info_start[];
 status_t hash_rom(void) {
   uint32_t rom_hash[kSha256HashSizeIn32BitWords];
   crypto_const_uint8_buf_t input = {
-      .data = (uint8_t *)TOP_DARJEELING_ROM_BASE_ADDR,
+      .data = (uint8_t *)TOP_DARJEELING_ROM0_BASE_ADDR,
       .len = kGoldenRomSizeBytes,
   };
   crypto_uint8_buf_t output = {

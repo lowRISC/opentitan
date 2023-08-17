@@ -9,7 +9,7 @@
 // rv_core_ibex.corei
 //   -> s1n_27
 //     -> sm1_28
-//       -> rom_ctrl.rom
+//       -> rom_ctrl0.rom
 //     -> sm1_29
 //       -> rv_dm.mem
 //     -> sm1_30
@@ -19,9 +19,9 @@
 // rv_core_ibex.cored
 //   -> s1n_32
 //     -> sm1_28
-//       -> rom_ctrl.rom
+//       -> rom_ctrl0.rom
 //     -> sm1_33
-//       -> rom_ctrl.regs
+//       -> rom_ctrl0.regs
 //     -> sm1_29
 //       -> rv_dm.mem
 //     -> sm1_34
@@ -73,9 +73,9 @@
 // rv_dm.sba
 //   -> s1n_57
 //     -> sm1_28
-//       -> rom_ctrl.rom
+//       -> rom_ctrl0.rom
 //     -> sm1_33
-//       -> rom_ctrl.regs
+//       -> rom_ctrl0.regs
 //     -> sm1_29
 //       -> rv_dm.mem
 //     -> sm1_34
@@ -150,10 +150,10 @@ module xbar_main (
   input  tlul_pkg::tl_d2h_t tl_rv_dm__regs_i,
   output tlul_pkg::tl_h2d_t tl_rv_dm__mem_o,
   input  tlul_pkg::tl_d2h_t tl_rv_dm__mem_i,
-  output tlul_pkg::tl_h2d_t tl_rom_ctrl__rom_o,
-  input  tlul_pkg::tl_d2h_t tl_rom_ctrl__rom_i,
-  output tlul_pkg::tl_h2d_t tl_rom_ctrl__regs_o,
-  input  tlul_pkg::tl_d2h_t tl_rom_ctrl__regs_i,
+  output tlul_pkg::tl_h2d_t tl_rom_ctrl0__rom_o,
+  input  tlul_pkg::tl_d2h_t tl_rom_ctrl0__rom_i,
+  output tlul_pkg::tl_h2d_t tl_rom_ctrl0__regs_o,
+  input  tlul_pkg::tl_d2h_t tl_rom_ctrl0__regs_i,
   output tlul_pkg::tl_h2d_t tl_peri_o,
   input  tlul_pkg::tl_d2h_t tl_peri_i,
   output tlul_pkg::tl_h2d_t tl_spi_host0_o,
@@ -585,8 +585,8 @@ module xbar_main (
   assign tl_s1n_27_us_h2d = tl_rv_core_ibex__corei_i;
   assign tl_rv_core_ibex__corei_o = tl_s1n_27_us_d2h;
 
-  assign tl_rom_ctrl__rom_o = tl_sm1_28_ds_h2d;
-  assign tl_sm1_28_ds_d2h = tl_rom_ctrl__rom_i;
+  assign tl_rom_ctrl0__rom_o = tl_sm1_28_ds_h2d;
+  assign tl_sm1_28_ds_d2h = tl_rom_ctrl0__rom_i;
 
   assign tl_rv_dm__mem_o = tl_sm1_29_ds_h2d;
   assign tl_sm1_29_ds_d2h = tl_rv_dm__mem_i;
@@ -600,8 +600,8 @@ module xbar_main (
   assign tl_s1n_32_us_h2d = tl_rv_core_ibex__cored_i;
   assign tl_rv_core_ibex__cored_o = tl_s1n_32_us_d2h;
 
-  assign tl_rom_ctrl__regs_o = tl_sm1_33_ds_h2d;
-  assign tl_sm1_33_ds_d2h = tl_rom_ctrl__regs_i;
+  assign tl_rom_ctrl0__regs_o = tl_sm1_33_ds_h2d;
+  assign tl_sm1_33_ds_d2h = tl_rom_ctrl0__regs_i;
 
   assign tl_rv_dm__regs_o = tl_sm1_34_ds_h2d;
   assign tl_sm1_34_ds_d2h = tl_rv_dm__regs_i;
@@ -679,7 +679,7 @@ module xbar_main (
     // default steering to generate error response if address is not within the range
     dev_sel_s1n_27 = 3'd4;
     if ((tl_s1n_27_us_h2d.a_address &
-         ~(ADDR_MASK_ROM_CTRL__ROM)) == ADDR_SPACE_ROM_CTRL__ROM) begin
+         ~(ADDR_MASK_ROM_CTRL0__ROM)) == ADDR_SPACE_ROM_CTRL0__ROM) begin
       dev_sel_s1n_27 = 3'd0;
 
     end else if ((tl_s1n_27_us_h2d.a_address &
@@ -700,11 +700,11 @@ end
     // default steering to generate error response if address is not within the range
     dev_sel_s1n_32 = 5'd24;
     if ((tl_s1n_32_us_h2d.a_address &
-         ~(ADDR_MASK_ROM_CTRL__ROM)) == ADDR_SPACE_ROM_CTRL__ROM) begin
+         ~(ADDR_MASK_ROM_CTRL0__ROM)) == ADDR_SPACE_ROM_CTRL0__ROM) begin
       dev_sel_s1n_32 = 5'd0;
 
     end else if ((tl_s1n_32_us_h2d.a_address &
-                  ~(ADDR_MASK_ROM_CTRL__REGS)) == ADDR_SPACE_ROM_CTRL__REGS) begin
+                  ~(ADDR_MASK_ROM_CTRL0__REGS)) == ADDR_SPACE_ROM_CTRL0__REGS) begin
       dev_sel_s1n_32 = 5'd1;
 
     end else if ((tl_s1n_32_us_h2d.a_address &
@@ -803,11 +803,11 @@ end
     // default steering to generate error response if address is not within the range
     dev_sel_s1n_57 = 5'd24;
     if ((tl_s1n_57_us_h2d.a_address &
-         ~(ADDR_MASK_ROM_CTRL__ROM)) == ADDR_SPACE_ROM_CTRL__ROM) begin
+         ~(ADDR_MASK_ROM_CTRL0__ROM)) == ADDR_SPACE_ROM_CTRL0__ROM) begin
       dev_sel_s1n_57 = 5'd0;
 
     end else if ((tl_s1n_57_us_h2d.a_address &
-                  ~(ADDR_MASK_ROM_CTRL__REGS)) == ADDR_SPACE_ROM_CTRL__REGS) begin
+                  ~(ADDR_MASK_ROM_CTRL0__REGS)) == ADDR_SPACE_ROM_CTRL0__REGS) begin
       dev_sel_s1n_57 = 5'd1;
 
     end else if ((tl_s1n_57_us_h2d.a_address &

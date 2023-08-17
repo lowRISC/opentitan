@@ -21,7 +21,7 @@ INCLUDE hw/top_darjeeling/sw/autogen/top_darjeeling_memory.ld
  * The boot address, which indicates the location of the initial interrupt
  * vector.
  */
-_rom_boot_address = ORIGIN(rom);
+_rom_boot_address = ORIGIN(rom0);
 
 /**
  * Symbols to be used in the setup of the address translation for ROM_EXT.
@@ -74,7 +74,7 @@ SECTIONS {
   .vectors _rom_boot_address : ALIGN(256) {
     _text_start = .;
     KEEP(*(.vectors))
-  } > rom
+  } > rom0
 
   /**
    * C runtime (CRT) section, containing program initialization code.
@@ -91,7 +91,7 @@ SECTIONS {
         SIZEOF(.vectors) + SIZEOF(.crt) <= _epmp_reset_rx_size,
         "Error: .crt overflows reset ePMP region");
     . = MAX(., _epmp_reset_rx_size - SIZEOF(.vectors));
-  } > rom
+  } > rom0
 
   /**
    * Standard text section, containing program code.
@@ -103,7 +103,7 @@ SECTIONS {
 
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
-  } > rom
+  } > rom0
 
   /**
    * Shutdown text section, containing shutdown function(s).
@@ -117,7 +117,7 @@ SECTIONS {
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
     _text_end = .;
-  } > rom
+  } > rom0
 
   /**
    * Read-only data section, containing all large compile-time constants, like
@@ -130,7 +130,7 @@ SECTIONS {
     *(.srodata.*)
     *(.rodata)
     *(.rodata.*)
-  } > rom
+  } > rom0
 
   /**
    * Critical static data that is accessible by both the ROM and the ROM
@@ -187,7 +187,7 @@ SECTIONS {
    */
   .chip_info _chip_info_start : ALIGN(4) {
     KEEP(*(.chip_info))
-  } > rom
+  } > rom0
 
   INCLUDE sw/device/info_sections.ld
 }

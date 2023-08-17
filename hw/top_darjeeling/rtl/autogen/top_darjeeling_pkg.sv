@@ -501,24 +501,44 @@ package top_darjeeling_pkg;
   parameter int unsigned TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for regs device on rom_ctrl in top darjeeling.
+   * Peripheral base address for regs device on rom_ctrl0 in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_ROM_CTRL_REGS_BASE_ADDR = 32'h411E0000;
+  parameter int unsigned TOP_DARJEELING_ROM_CTRL0_REGS_BASE_ADDR = 32'h411E0000;
 
   /**
-   * Peripheral size in bytes for regs device on rom_ctrl in top darjeeling.
+   * Peripheral size in bytes for regs device on rom_ctrl0 in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_ROM_CTRL_REGS_SIZE_BYTES = 32'h80;
+  parameter int unsigned TOP_DARJEELING_ROM_CTRL0_REGS_SIZE_BYTES = 32'h80;
 
   /**
-   * Peripheral base address for rom device on rom_ctrl in top darjeeling.
+   * Peripheral base address for rom device on rom_ctrl0 in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_ROM_CTRL_ROM_BASE_ADDR = 32'h8000;
+  parameter int unsigned TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR = 32'h8000;
 
   /**
-   * Peripheral size in bytes for rom device on rom_ctrl in top darjeeling.
+   * Peripheral size in bytes for rom device on rom_ctrl0 in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_ROM_CTRL_ROM_SIZE_BYTES = 32'h8000;
+  parameter int unsigned TOP_DARJEELING_ROM_CTRL0_ROM_SIZE_BYTES = 32'h8000;
+
+  /**
+   * Peripheral base address for regs device on rom_ctrl1 in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_ROM_CTRL1_REGS_BASE_ADDR = 32'h41210000;
+
+  /**
+   * Peripheral size in bytes for regs device on rom_ctrl1 in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_ROM_CTRL1_REGS_SIZE_BYTES = 32'h80;
+
+  /**
+   * Peripheral base address for rom device on rom_ctrl1 in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR = 32'h50000;
+
+  /**
+   * Peripheral size in bytes for rom device on rom_ctrl1 in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_ROM_CTRL1_ROM_SIZE_BYTES = 32'h10000;
 
   /**
    * Peripheral base address for cfg device on rv_core_ibex in top darjeeling.
@@ -571,14 +591,24 @@ package top_darjeeling_pkg;
   parameter int unsigned TOP_DARJEELING_RAM_MBOX_SIZE_BYTES = 32'h1000;
 
   /**
-   * Memory base address for rom in top darjeeling.
+   * Memory base address for rom0 in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_ROM_BASE_ADDR = 32'h8000;
+  parameter int unsigned TOP_DARJEELING_ROM0_BASE_ADDR = 32'h8000;
 
   /**
-   * Memory size for rom in top darjeeling.
+   * Memory size for rom0 in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_ROM_SIZE_BYTES = 32'h8000;
+  parameter int unsigned TOP_DARJEELING_ROM0_SIZE_BYTES = 32'h8000;
+
+  /**
+   * Memory base address for rom1 in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_ROM1_BASE_ADDR = 32'h50000;
+
+  /**
+   * Memory size for rom1 in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_ROM1_SIZE_BYTES = 32'h10000;
 
 
   // Enumeration of alert modules
@@ -623,8 +653,9 @@ package top_darjeeling_pkg;
     TopDarjeelingAlertPeripheralEdn1 = 37,
     TopDarjeelingAlertPeripheralSramCtrlMain = 38,
     TopDarjeelingAlertPeripheralSramCtrlMbox = 39,
-    TopDarjeelingAlertPeripheralRomCtrl = 40,
-    TopDarjeelingAlertPeripheralRvCoreIbex = 41,
+    TopDarjeelingAlertPeripheralRomCtrl0 = 40,
+    TopDarjeelingAlertPeripheralRomCtrl1 = 41,
+    TopDarjeelingAlertPeripheralRvCoreIbex = 42,
     TopDarjeelingAlertPeripheralCount
   } alert_peripheral_e;
 
@@ -691,11 +722,12 @@ package top_darjeeling_pkg;
     TopDarjeelingAlertIdEdn1FatalAlert = 58,
     TopDarjeelingAlertIdSramCtrlMainFatalError = 59,
     TopDarjeelingAlertIdSramCtrlMboxFatalError = 60,
-    TopDarjeelingAlertIdRomCtrlFatal = 61,
-    TopDarjeelingAlertIdRvCoreIbexFatalSwErr = 62,
-    TopDarjeelingAlertIdRvCoreIbexRecovSwErr = 63,
-    TopDarjeelingAlertIdRvCoreIbexFatalHwErr = 64,
-    TopDarjeelingAlertIdRvCoreIbexRecovHwErr = 65,
+    TopDarjeelingAlertIdRomCtrl0Fatal = 61,
+    TopDarjeelingAlertIdRomCtrl1Fatal = 62,
+    TopDarjeelingAlertIdRvCoreIbexFatalSwErr = 63,
+    TopDarjeelingAlertIdRvCoreIbexRecovSwErr = 64,
+    TopDarjeelingAlertIdRvCoreIbexFatalHwErr = 65,
+    TopDarjeelingAlertIdRvCoreIbexRecovHwErr = 66,
     TopDarjeelingAlertIdCount
   } alert_id_e;
 
@@ -985,7 +1017,8 @@ package top_darjeeling_pkg;
     PeripheralPinmuxAon,
     PeripheralPwmAon,
     PeripheralPwrmgrAon,
-    PeripheralRomCtrl,
+    PeripheralRomCtrl0,
+    PeripheralRomCtrl1,
     PeripheralRstmgrAon,
     PeripheralRvCoreIbex,
     PeripheralRvDm,

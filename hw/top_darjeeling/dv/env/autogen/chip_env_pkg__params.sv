@@ -66,11 +66,12 @@ parameter string LIST_OF_ALERTS[] = {
   "edn1_fatal_alert",
   "sram_ctrl_main_fatal_error",
   "sram_ctrl_mbox_fatal_error",
-  "rom_ctrl_fatal",
+  "rom_ctrl0_fatal",
+  "rom_ctrl1_fatal",
   "rv_core_ibex_fatal_sw_err",
   "rv_core_ibex_recov_sw_err",
   "rv_core_ibex_fatal_hw_err",
   "rv_core_ibex_recov_hw_err"
 };
 
-parameter uint NUM_ALERTS = 66;
+parameter uint NUM_ALERTS = 67;

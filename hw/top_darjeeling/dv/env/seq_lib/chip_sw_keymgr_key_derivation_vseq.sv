@@ -216,7 +216,7 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
   // SoftwareBinding: program fixed value to keymgr CSRs in the C test
   // HardwareRevisionSecret: backdoor read CSRs at ral.lc_ctrl.device_id
   // HealthMeasurement: HW random constant - RndCnstLcCtrlLcKeymgrDivTestDevRma
-  // RomDigest:  backdoor read CSRs at ral.rom_ctrl_regs.digest
+  // RomDigest:  backdoor read CSRs at ral.rom_ctrl0_regs.digest
   // DiversificationKey: program fixed value to flash in the C test
   virtual task get_creator_data(output bit [keymgr_pkg::AdvDataWidth-1:0] creator_data_out);
     adv_creator_data_t creator_data;
@@ -242,7 +242,7 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
 
     for (int i = 0; i < keymgr_pkg::KeyWidth / TL_DW; i++) begin
       bit [TL_DW-1:0] rdata;
-      csr_peek(ral.rom_ctrl_regs.digest[i], rdata);
+      csr_peek(ral.rom_ctrl0_regs.digest[i], rdata);
       creator_data.RomDigest[TL_DW * i +: TL_DW] = rdata;
     end
     `uvm_info(`gfn, $sformatf("RomDigest 0x%0h", creator_data.RomDigest),

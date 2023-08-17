@@ -45,7 +45,7 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     '{"*pinmux*prim_reg_we_check*", TopEarlgreyAlertIdPinmuxAonFatalFault},
     '{"*pwm*prim_reg_we_check*", TopEarlgreyAlertIdPwmAonFatalFault},
     '{"*pwrmgr*prim_reg_we_check*", TopEarlgreyAlertIdPwrmgrAonFatalFault},
-    '{"*rom_ctrl*prim_reg_we_check*", TopEarlgreyAlertIdRomCtrlFatal},
+    '{"*rom_ctrl0*prim_reg_we_check*", TopEarlgreyAlertIdRomCtrl0Fatal},
     '{"*rstmgr*prim_reg_we_check*", TopEarlgreyAlertIdRstmgrAonFatalFault},
     // TopEarlgreyAlertIdRstmgrAonFatalCnstyFault cannot use this test.
     '{"*rv_core_ibex*sw_fatal_err*", TopEarlgreyAlertIdRvCoreIbexFatalSwErr},
