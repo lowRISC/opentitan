@@ -1,0 +1,75 @@
+From 4333f206097c28f16efefc4025cb5dcb4a57915d Mon Sep 17 00:00:00 2001
+From: Michael Schaffner <msf@opentitan.org>
+Date: Thu, 17 Aug 2023 10:30:17 -0700
+Subject: [PATCH 4/4] Extend DMI address width
+
+Make the DMI interface address 32bits so that larger
+address ranges can be supported (e.g. to take advantage
+of a TL-UL to DMI bridge).
+
+The effective number of address bits is made configurable
+in the TAP so that this can be determined based on
+the specific integration.
+
+Signed-off-by: Michael Schaffner <msf@opentitan.org>
+
+diff --git a/src/dm_pkg.sv b/src/dm_pkg.sv
+index cc2e1eb..a8a27d2 100644
+--- a/src/dm_pkg.sv
++++ b/src/dm_pkg.sv
+@@ -222,7 +222,7 @@ package dm;
+   } sbcs_t;
+ 
+   typedef struct packed {
+-    logic [6:0]  addr;
++    logic [31:0] addr;
+     dtm_op_e     op;
+     logic [31:0] data;
+   } dmi_req_t;
+diff --git a/src/dmi_jtag.sv b/src/dmi_jtag.sv
+index a7e5bff..0ea506e 100644
+--- a/src/dmi_jtag.sv
++++ b/src/dmi_jtag.sv
+@@ -17,7 +17,8 @@
+ */
+ 
+ module dmi_jtag #(
+-  parameter logic [31:0] IdcodeValue = 32'h00000001
++  parameter logic [31:0] IdcodeValue = 32'h00000001,
++  parameter int unsigned NumDmiWordAbits = 16 // Number of DMI address bits (7 - 32)
+ ) (
+   input  logic         clk_i,      // DMI Clock
+   input  logic         rst_ni,     // Asynchronous reset active low
+@@ -78,7 +79,7 @@ module dmi_jtag #(
+                       zero0        : '0,
+                       idle         : 3'd1, // 1: Enter Run-Test/Idle and leave it immediately
+                       dmistat      : error_q, // 0: No error, 2: Op failed, 3: too fast
+-                      abits        : 6'd7, // The size of address in dmi
++                      abits        : 6'(NumDmiWordAbits), // The size of address in dmi
+                       version      : 4'd1  // Version described in spec version 0.13 (and later?)
+                     };
+       end
+@@ -113,7 +114,7 @@ module dmi_jtag #(
+   logic          dmi_resp_ready;
+ 
+   typedef struct packed {
+-    logic [6:0]  address;
++    logic [NumDmiWordAbits-1:0]  address;
+     logic [31:0] data;
+     logic [1:0]  op;
+   } dmi_t;
+@@ -122,12 +123,12 @@ module dmi_jtag #(
+   state_e state_d, state_q;
+ 
+   logic [$bits(dmi_t)-1:0] dr_d, dr_q;
+-  logic [6:0] address_d, address_q;
++  logic [NumDmiWordAbits-1:0] address_d, address_q;
+   logic [31:0] data_d, data_q;
+ 
+   dmi_t  dmi;
+   assign dmi          = dmi_t'(dr_q);
+-  assign dmi_req.addr = address_q;
++  assign dmi_req.addr = $bits(dmi_req.addr)'(address_q);
+   assign dmi_req.data = data_q;
+   assign dmi_req.op   = (state_q == Write) ? dm::DTM_WRITE : dm::DTM_READ;
+   // We will always be ready to accept the data we requested.
