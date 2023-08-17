@@ -22,6 +22,7 @@ rust_library(
         include = ["**"],
         exclude = [
             "**/* *",
+            ".tmp_git_root/**/*",
             "BUILD",
             "BUILD.bazel",
             "WORKSPACE",
@@ -41,6 +42,40 @@ rust_library(
         "noclippy",
         "norustfmt",
     ],
+    target_compatible_with = select({
+        "@rules_rust//rust/platform:aarch64-apple-darwin": [],
+        "@rules_rust//rust/platform:aarch64-apple-ios": [],
+        "@rules_rust//rust/platform:aarch64-apple-ios-sim": [],
+        "@rules_rust//rust/platform:aarch64-fuchsia": [],
+        "@rules_rust//rust/platform:aarch64-linux-android": [],
+        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
+        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
+        "@rules_rust//rust/platform:arm-unknown-linux-gnueabi": [],
+        "@rules_rust//rust/platform:armv7-linux-androideabi": [],
+        "@rules_rust//rust/platform:armv7-unknown-linux-gnueabi": [],
+        "@rules_rust//rust/platform:i686-apple-darwin": [],
+        "@rules_rust//rust/platform:i686-linux-android": [],
+        "@rules_rust//rust/platform:i686-pc-windows-msvc": [],
+        "@rules_rust//rust/platform:i686-unknown-freebsd": [],
+        "@rules_rust//rust/platform:i686-unknown-linux-gnu": [],
+        "@rules_rust//rust/platform:powerpc-unknown-linux-gnu": [],
+        "@rules_rust//rust/platform:riscv32imc-unknown-none-elf": [],
+        "@rules_rust//rust/platform:riscv64gc-unknown-none-elf": [],
+        "@rules_rust//rust/platform:s390x-unknown-linux-gnu": [],
+        "@rules_rust//rust/platform:thumbv7em-none-eabi": [],
+        "@rules_rust//rust/platform:thumbv8m.main-none-eabi": [],
+        "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
+        "@rules_rust//rust/platform:wasm32-wasi": [],
+        "@rules_rust//rust/platform:x86_64-apple-darwin": [],
+        "@rules_rust//rust/platform:x86_64-apple-ios": [],
+        "@rules_rust//rust/platform:x86_64-fuchsia": [],
+        "@rules_rust//rust/platform:x86_64-linux-android": [],
+        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
+        "@rules_rust//rust/platform:x86_64-unknown-freebsd": [],
+        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
+        "@rules_rust//rust/platform:x86_64-unknown-none": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
     version = "1.1.2",
     deps = [
         "@crate_index__cfg-if-1.0.0//:cfg_if",
@@ -61,6 +96,7 @@ cargo_build_script(
         include = ["**"],
         exclude = [
             "**/* *",
+            ".tmp_git_root/**/*",
             "BUILD",
             "BUILD.bazel",
             "WORKSPACE",
@@ -91,6 +127,9 @@ cargo_build_script(
             "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
         "@rules_rust//rust/platform:aarch64-apple-ios-sim": [
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+        ],
+        "@rules_rust//rust/platform:aarch64-fuchsia": [
             "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
         "@rules_rust//rust/platform:aarch64-linux-android": [
@@ -138,6 +177,12 @@ cargo_build_script(
         "@rules_rust//rust/platform:s390x-unknown-linux-gnu": [
             "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
+        "@rules_rust//rust/platform:thumbv7em-none-eabi": [
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+        ],
+        "@rules_rust//rust/platform:thumbv8m.main-none-eabi": [
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+        ],
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [
             "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
@@ -150,6 +195,9 @@ cargo_build_script(
         "@rules_rust//rust/platform:x86_64-apple-ios": [
             "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
+        "@rules_rust//rust/platform:x86_64-fuchsia": [
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+        ],
         "@rules_rust//rust/platform:x86_64-linux-android": [
             "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
@@ -160,6 +208,9 @@ cargo_build_script(
             "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
+            "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-none": [
             "@crate_index__pkg-config-0.3.27//:pkg_config",  # cfg(not(all(windows, target_env = "msvc")))
         ],
         "//conditions:default": [],

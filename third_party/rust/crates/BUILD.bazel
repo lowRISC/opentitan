@@ -110,6 +110,12 @@ alias(
 )
 
 alias(
+    name = "elf",
+    actual = "@crate_index__elf-0.7.2//:elf",
+    tags = ["manual"],
+)
+
+alias(
     name = "elliptic-curve",
     actual = "@crate_index__elliptic-curve-0.13.5//:elliptic_curve",
     tags = ["manual"],
@@ -308,8 +314,20 @@ alias(
 )
 
 alias(
+    name = "ring",
+    actual = "@crate_index__ring-0.16.20//:ring",
+    tags = ["manual"],
+)
+
+alias(
     name = "rsa",
     actual = "@crate_index__rsa-0.8.2//:rsa",
+    tags = ["manual"],
+)
+
+alias(
+    name = "rsa-der",
+    actual = "@crate_index__rsa-der-0.3.0//:rsa_der",
     tags = ["manual"],
 )
 
@@ -370,6 +388,12 @@ alias(
 alias(
     name = "syn",
     actual = "@crate_index__syn-1.0.109//:syn",
+    tags = ["manual"],
+)
+
+alias(
+    name = "tar",
+    actual = "@crate_index__tar-0.4.40//:tar",
     tags = ["manual"],
 )
 

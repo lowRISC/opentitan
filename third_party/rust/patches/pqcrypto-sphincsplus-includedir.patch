@@ -1,0 +1,43 @@
+diff --git a/pqcrypto-sphincsplus/build.rs b/pqcrypto-sphincsplus/build.rs
+index 47c5d0b..710051a 100644
+--- a/pqcrypto-sphincsplus/build.rs
++++ b/pqcrypto-sphincsplus/build.rs
+@@ -4,9 +4,19 @@ extern crate glob;
+ use std::env;
+ use std::path::{Path, PathBuf};
+ 
++fn bazel_include_path() -> PathBuf {
++    let paths = &std::env::var("BAZEL_PQCRYPTO_INTERNALS_INCLUDES").expect("environment variable");
++    let (path, _) = paths.split_once(' ').expect("space separated paths");
++    let path = path.strip_prefix("external/").expect("starts with external/");
++    let mut path = PathBuf::from(path);
++    path.pop();
++    let path = PathBuf::from("..").join(path);
++    path
++}
++
+ macro_rules! build_clean {
+     ($variant:expr) => {
+-        let internals_include_path = &std::env::var("DEP_PQCRYPTO_INTERNALS_INCLUDEPATH").unwrap();
++        let internals_include_path = bazel_include_path();
+         let common_dir = Path::new("pqclean/common");
+ 
+         let mut builder = cc::Build::new();
+@@ -38,7 +48,7 @@ macro_rules! build_clean {
+ 
+ macro_rules! build_aesni {
+     ($variant:expr) => {
+-        let internals_include_path = &std::env::var("DEP_PQCRYPTO_INTERNALS_INCLUDEPATH").unwrap();
++        let internals_include_path = bazel_include_path();
+         let common_dir = Path::new("pqclean/common");
+ 
+         let mut builder = cc::Build::new();
+@@ -75,7 +85,7 @@ macro_rules! build_aesni {
+ 
+ macro_rules! build_avx2 {
+     ($variant:expr) => {
+-        let internals_include_path = &std::env::var("DEP_PQCRYPTO_INTERNALS_INCLUDEPATH").unwrap();
++        let internals_include_path = bazel_include_path();
+         let common_dir = Path::new("pqclean/common");
+ 
+         let mut builder = cc::Build::new();

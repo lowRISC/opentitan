@@ -99,3 +99,9 @@ pest_derive = "2.2"
 
 # documentation generation tools
 mdbook = "0.4.31"
+
+# elf2tab dependencies
+tar = "0.4.36"
+elf = "0.7.1"
+ring = "0.16.20"
+rsa-der = "0.3.0"

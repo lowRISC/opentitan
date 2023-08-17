@@ -63,12 +63,34 @@ crates_vendor(
             """,
         )],
         "pqcrypto-sphincsplus": [crate.annotation(
+            # This patch is necessary because pqcrypto-sphincsplus expects an include file
+            # from pqcrypto-internals to re-define `PQCLEAN_randombytes` as
+            # `PQCRYPTO_RUST_randombytes` during the build process.  Since cargo repackages
+            # repositories when creating downloadable crates _and_ since bazel sandboxes
+            # builds, access to `pqcrypto-internals` is rather difficult.
+            #
+            # In the past, we overcame this by adding an environment variable pointing to
+            # the pqcryptos-internals includes directory, but this was unreliable and bound
+            # to break from either a bazel or rules_rust upgrade (indeed, I think updating
+            # rules_rust broke this, as the `depenv` from pqcrypto-internals got added to
+            # the dependencies of the build.rs for pqcrypto-sphincsplus, overriding the
+            # value set in the env var).
+            #
+            # Instead, we set a custom env var and patch the build.rs script to pick up
+            # our custom environment variable.  Since we aren't trying to reuse the
+            # original env var, we can use standard bazel methods to expand the path and
+            # modify the value appropriately in the build.rs script.
+            # Like the prior solution, this is also a hack.
             build_script_data = [
                 "@crate_index__pqcrypto-internals-0.2.4//:include",
             ],
             build_script_env = {
-                "DEP_PQCRYPTO_INTERNALS_INCLUDEPATH": "../crate_index__pqcrypto-internals-0.2.4/include",
+                "BAZEL_PQCRYPTO_INTERNALS_INCLUDES": "$(rootpaths @crate_index__pqcrypto-internals-0.2.4//:include)",
             },
+            patch_args = ["-p2"],
+            patches = [
+                "@//third_party/rust/patches:pqcrypto-sphincsplus-includedir.patch",
+            ],
         )],
         "serialport": [crate.annotation(
             patch_args = ["-p1"],
