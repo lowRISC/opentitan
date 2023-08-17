@@ -2,8 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@//rules:repo.bzl", "bare_repository")
+load("@//rules:repo.bzl", "bare_repository", "http_archive_or_local")
 load("@//rules:rust.bzl", "crate_build")
+load("@python3//:defs.bzl", "interpreter")
+load("@rules_python//python:pip.bzl", "pip_install")
 
 # Exports the kernel_layout.ld file so it can be used in opentitan rules.
 _KERNEL_LAYOUT = """
@@ -34,7 +36,7 @@ filegroup(
 )
 """
 
-def tock_repos(tock = None, libtock = None):
+def tock_repos(tock = None, libtock = None, elf2tab = None):
     bare_repository(
         name = "tock",
         local = tock,
@@ -231,7 +233,7 @@ def tock_repos(tock = None, libtock = None):
                 crate_name = "libtock_{name}",
                 deps = [
                     "//platform",
-                    "@crate_index//:libm",
+                    "@tock_index//:libm",
                 ],
             ),
             "apis/proximity/BUILD": crate_build(
@@ -282,4 +284,19 @@ def tock_repos(tock = None, libtock = None):
                 additional_build_file_content = _LIBTOCK_LAYOUT,
             ),
         },
+    )
+
+    http_archive_or_local(
+        name = "elf2tab",
+        local = elf2tab,
+        url = "https://github.com/tock/elf2tab/archive/ede1c658a3892d21b076fb2c9df6328ec4c9011e.tar.gz",
+        sha256 = "350514dcd2711fb45fdd38087862055f6006638881d6c0866fadb346bb1b3be9",
+        strip_prefix = "elf2tab-ede1c658a3892d21b076fb2c9df6328ec4c9011e",
+        build_file = Label("//third_party/tock:BUILD.elf2tab.bazel"),
+    )
+
+    pip_install(
+        name = "tockloader_deps",
+        python_interpreter_target = interpreter,
+        requirements = "//:third_party/tock/tockloader_requirements.txt",
     )

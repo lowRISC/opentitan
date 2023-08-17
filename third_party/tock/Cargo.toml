@@ -15,3 +15,6 @@ path = "empty_file_to_appease_cargo.rs"
 [dependencies]
 # Tock's aes-gcm capsules crate dependencies
 ghash = "0.4.4"
+
+# libtock's ninedof API needs libm
+libm = "0.2.7"

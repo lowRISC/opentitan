@@ -37,7 +37,7 @@ def _flatten_dependency_maps(all_dependency_maps):
         # name of the workspace this file is defined in.
         "workspace_member_package": {
 
-            # Not all dependnecies are supported for all platforms.
+            # Not all dependencies are supported for all platforms.
             # the condition key is the condition required to be true
             # on the host platform.
             "condition": {
@@ -202,7 +202,10 @@ def all_crate_deps(
 
     crate_deps = list(dependencies.pop(_COMMON_CONDITION, {}).values())
     for condition, deps in dependencies.items():
-        crate_deps += selects.with_or({_CONDITIONS[condition]: deps.values()})
+        crate_deps += selects.with_or({
+            tuple(_CONDITIONS[condition]): deps.values(),
+            "//conditions:default": [],
+        })
 
     return crate_deps
 
@@ -274,15 +277,16 @@ def aliases(
 
     # Build a single select statement where each conditional has accounted for the
     # common set of aliases.
-    crate_aliases = {"//conditions:default": common_items}
+    crate_aliases = {"//conditions:default": dict(common_items)}
     for condition, deps in aliases.items():
         condition_triples = _CONDITIONS[condition]
-        if condition_triples in crate_aliases:
-            crate_aliases[condition_triples].update(deps)
-        else:
-            crate_aliases.update({_CONDITIONS[condition]: dict(deps.items() + common_items)})
+        for triple in condition_triples:
+            if triple in crate_aliases:
+                crate_aliases[triple].update(deps)
+            else:
+                crate_aliases.update({triple: dict(deps.items() + common_items)})
 
-    return selects.with_or(crate_aliases)
+    return select(crate_aliases)
 
 ###############################################################################
 # WORKSPACE MEMBER DEPS AND ALIASES
@@ -292,6 +296,7 @@ _NORMAL_DEPENDENCIES = {
     "third_party/tock": {
         _COMMON_CONDITION: {
             "ghash": "@tock_index__ghash-0.4.4//:ghash",
+            "libm": "@tock_index__libm-0.2.7//:libm",
         },
     },
 }
@@ -354,10 +359,10 @@ _BUILD_PROC_MACRO_ALIASES = {
 }
 
 _CONDITIONS = {
-    "aarch64-linux-android": ["aarch64-linux-android"],
-    "cfg(all(target_arch = \"aarch64\", target_os = \"linux\"))": ["aarch64-unknown-linux-gnu"],
-    "cfg(all(target_arch = \"aarch64\", target_vendor = \"apple\"))": ["aarch64-apple-darwin", "aarch64-apple-ios", "aarch64-apple-ios-sim"],
-    "cfg(any(target_arch = \"aarch64\", target_arch = \"x86_64\", target_arch = \"x86\"))": ["aarch64-apple-darwin", "aarch64-apple-ios", "aarch64-apple-ios-sim", "aarch64-linux-android", "aarch64-pc-windows-msvc", "aarch64-unknown-linux-gnu", "i686-apple-darwin", "i686-linux-android", "i686-pc-windows-msvc", "i686-unknown-freebsd", "i686-unknown-linux-gnu", "x86_64-apple-darwin", "x86_64-apple-ios", "x86_64-linux-android", "x86_64-pc-windows-msvc", "x86_64-unknown-freebsd", "x86_64-unknown-linux-gnu"],
+    "aarch64-linux-android": ["@rules_rust//rust/platform:aarch64-linux-android"],
+    "cfg(all(target_arch = \"aarch64\", target_os = \"linux\"))": ["@rules_rust//rust/platform:aarch64-unknown-linux-gnu"],
+    "cfg(all(target_arch = \"aarch64\", target_vendor = \"apple\"))": ["@rules_rust//rust/platform:aarch64-apple-darwin", "@rules_rust//rust/platform:aarch64-apple-ios", "@rules_rust//rust/platform:aarch64-apple-ios-sim"],
+    "cfg(any(target_arch = \"aarch64\", target_arch = \"x86_64\", target_arch = \"x86\"))": ["@rules_rust//rust/platform:aarch64-apple-darwin", "@rules_rust//rust/platform:aarch64-apple-ios", "@rules_rust//rust/platform:aarch64-apple-ios-sim", "@rules_rust//rust/platform:aarch64-fuchsia", "@rules_rust//rust/platform:aarch64-linux-android", "@rules_rust//rust/platform:aarch64-pc-windows-msvc", "@rules_rust//rust/platform:aarch64-unknown-linux-gnu", "@rules_rust//rust/platform:i686-apple-darwin", "@rules_rust//rust/platform:i686-linux-android", "@rules_rust//rust/platform:i686-pc-windows-msvc", "@rules_rust//rust/platform:i686-unknown-freebsd", "@rules_rust//rust/platform:i686-unknown-linux-gnu", "@rules_rust//rust/platform:x86_64-apple-darwin", "@rules_rust//rust/platform:x86_64-apple-ios", "@rules_rust//rust/platform:x86_64-fuchsia", "@rules_rust//rust/platform:x86_64-linux-android", "@rules_rust//rust/platform:x86_64-pc-windows-msvc", "@rules_rust//rust/platform:x86_64-unknown-freebsd", "@rules_rust//rust/platform:x86_64-unknown-linux-gnu", "@rules_rust//rust/platform:x86_64-unknown-none"],
 }
 
 ###############################################################################
@@ -412,6 +417,16 @@ def crate_repositories():
         urls = ["https://crates.io/api/v1/crates/libc/0.2.147/download"],
         strip_prefix = "libc-0.2.147",
         build_file = Label("@lowrisc_opentitan//third_party/tock/crates:BUILD.libc-0.2.147.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "tock_index__libm-0.2.7",
+        sha256 = "f7012b1bbb0719e1097c47611d3898568c546d597c2e74d66f6087edd5233ff4",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/libm/0.2.7/download"],
+        strip_prefix = "libm-0.2.7",
+        build_file = Label("@lowrisc_opentitan//third_party/tock/crates:BUILD.libm-0.2.7.bazel"),
     )
 
     maybe(

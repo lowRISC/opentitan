@@ -6,6 +6,7 @@
 #     bazel run @//third_party/tock:tock_index
 ###############################################################################
 
+load("@rules_rust//cargo:defs.bzl", "cargo_build_script")
 load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
@@ -15,7 +16,7 @@ package(default_visibility = ["//visibility:public"])
 # ])
 
 rust_library(
-    name = "universal_hash",
+    name = "libm",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -28,12 +29,15 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
+    crate_features = [
+        "default",
+    ],
     crate_root = "src/lib.rs",
     edition = "2018",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=universal-hash",
+        "crate-name=libm",
         "manual",
         "noclippy",
         "norustfmt",
@@ -72,9 +76,48 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.4.1",
+    version = "0.2.7",
     deps = [
-        "@tock_index__generic-array-0.14.7//:generic_array",
-        "@tock_index__subtle-2.4.1//:subtle",
+        "@tock_index__libm-0.2.7//:build_script_build",
     ],
+)
+
+cargo_build_script(
+    name = "libm_build_script",
+    srcs = glob(["**/*.rs"]),
+    crate_features = [
+        "default",
+    ],
+    crate_name = "build_script_build",
+    crate_root = "build.rs",
+    data = glob(
+        include = ["**"],
+        exclude = [
+            "**/* *",
+            ".tmp_git_root/**/*",
+            "BUILD",
+            "BUILD.bazel",
+            "WORKSPACE",
+            "WORKSPACE.bazel",
+        ],
+    ),
+    edition = "2018",
+    rustc_flags = [
+        "--cap-lints=allow",
+    ],
+    tags = [
+        "cargo-bazel",
+        "crate-name=libm",
+        "manual",
+        "noclippy",
+        "norustfmt",
+    ],
+    version = "0.2.7",
+    visibility = ["//visibility:private"],
+)
+
+alias(
+    name = "build_script_build",
+    actual = "libm_build_script",
+    tags = ["manual"],
 )
