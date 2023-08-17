@@ -51,7 +51,7 @@ clang_format_attrs = {
         doc = "Filename patterns for format checking",
     ),
     "exclude_patterns": attr.string_list(
-        doc = "Filename patterns to exlucde from format checking",
+        doc = "Filename patterns to exclude from format checking",
     ),
     "mode": attr.string(
         default = "diff",
