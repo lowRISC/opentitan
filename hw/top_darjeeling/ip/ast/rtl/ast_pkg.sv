@@ -40,7 +40,7 @@ parameter int unsigned Ot5Sel     = 10;
 parameter int unsigned Lc2HcTrCyc = 102;  // ((99+1)+(3+1))x5 = 520 us
 parameter int unsigned Hc2LcTrCyc = 38;   // ((35+1)+(3+1))x5 = 200 us
 //
-parameter int unsigned EntropyStreams   = 4;
+parameter int unsigned EntropyStreams   = 16;
 parameter int unsigned AdcChannels      = 2;
 parameter int unsigned AdcDataWidth     = 10;
 parameter int unsigned UsbCalibWidth    = 20;

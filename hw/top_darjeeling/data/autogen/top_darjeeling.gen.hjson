@@ -6621,8 +6621,9 @@
           width: 1
           inst_name: csrng
           default: ""
-          end_idx: -1
-          top_signame: csrng_entropy_src_hw_if
+          external: true
+          top_signame: entropy_src_hw_if
+          conn_type: false
           index: -1
         }
         {
@@ -6638,9 +6639,6 @@
           act: rsp
           width: 1
           inst_name: csrng
-          default: ""
-          end_idx: -1
-          top_signame: csrng_cs_aes_halt
           index: -1
         }
         {
@@ -6741,8 +6739,6 @@
           act: rsp
           width: 1
           inst_name: entropy_src
-          default: ""
-          top_signame: csrng_entropy_src_hw_if
           index: -1
         }
         {
@@ -6764,8 +6760,6 @@
           act: req
           width: 1
           inst_name: entropy_src
-          default: ""
-          top_signame: csrng_cs_aes_halt
           index: -1
         }
         {
@@ -6776,10 +6770,6 @@
           act: req
           width: 1
           inst_name: entropy_src
-          default: ""
-          external: true
-          top_signame: es_rng
-          conn_type: false
           index: -1
         }
         {
@@ -6823,11 +6813,6 @@
           act: req
           width: 1
           inst_name: entropy_src
-          default: ""
-          package: ""
-          external: true
-          top_signame: es_rng_fips
-          conn_type: false
           index: -1
         }
         {
@@ -8126,14 +8111,6 @@
         edn0.csrng_cmd
         edn1.csrng_cmd
       ]
-      csrng.entropy_src_hw_if:
-      [
-        entropy_src.entropy_src_hw_if
-      ]
-      csrng.cs_aes_halt:
-      [
-        entropy_src.cs_aes_halt
-      ]
       flash_ctrl.keymgr:
       [
         keymgr.flash
@@ -8677,14 +8654,13 @@
       clkmgr_aon.hi_speed_sel: hi_speed_sel
       clkmgr_aon.div_step_down_req: div_step_down_req
       clkmgr_aon.calib_rdy: calib_rdy
+      csrng.entropy_src_hw_if: entropy_src_hw_if
       flash_ctrl.flash_bist_enable: flash_bist_enable
       flash_ctrl.flash_power_down_h: flash_power_down_h
       flash_ctrl.flash_power_ready_h: flash_power_ready_h
       flash_ctrl.flash_test_mode_a: flash_test_mode_a
       flash_ctrl.flash_test_voltage_h: flash_test_voltage_h
       flash_ctrl.fla_obs: flash_obs
-      entropy_src.entropy_src_rng: es_rng
-      entropy_src.rng_fips: es_rng_fips
       lc_ctrl.dmi_tl_h2d: lc_ctrl_dmi_h2d
       lc_ctrl.dmi_tl_d2h: lc_ctrl_dmi_d2h
       rv_dm.dmi_tl_h2d: rv_dm_dmi_h2d
@@ -18841,8 +18817,9 @@
         width: 1
         inst_name: csrng
         default: ""
-        end_idx: -1
-        top_signame: csrng_entropy_src_hw_if
+        external: true
+        top_signame: entropy_src_hw_if
+        conn_type: false
         index: -1
       }
       {
@@ -18858,9 +18835,6 @@
         act: rsp
         width: 1
         inst_name: csrng
-        default: ""
-        end_idx: -1
-        top_signame: csrng_cs_aes_halt
         index: -1
       }
       {
@@ -18908,8 +18882,6 @@
         act: rsp
         width: 1
         inst_name: entropy_src
-        default: ""
-        top_signame: csrng_entropy_src_hw_if
         index: -1
       }
       {
@@ -18931,8 +18903,6 @@
         act: req
         width: 1
         inst_name: entropy_src
-        default: ""
-        top_signame: csrng_cs_aes_halt
         index: -1
       }
       {
@@ -18943,10 +18913,6 @@
         act: req
         width: 1
         inst_name: entropy_src
-        default: ""
-        external: true
-        top_signame: es_rng
-        conn_type: false
         index: -1
       }
       {
@@ -18990,11 +18956,6 @@
         act: req
         width: 1
         inst_name: entropy_src
-        default: ""
-        package: ""
-        external: true
-        top_signame: es_rng_fips
-        conn_type: false
         index: -1
       }
       {
@@ -20546,6 +20507,30 @@
         netname: calib_rdy
       }
       {
+        package: entropy_src_pkg
+        struct: entropy_src_hw_if_req
+        signame: entropy_src_hw_if_req_o
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: entropy_src_hw_if_req
+      }
+      {
+        package: entropy_src_pkg
+        struct: entropy_src_hw_if_rsp
+        signame: entropy_src_hw_if_rsp_i
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: entropy_src_hw_if_rsp
+      }
+      {
         package: prim_mubi_pkg
         struct: mubi4
         signame: flash_bist_enable_i
@@ -20616,42 +20601,6 @@
         conn_type: false
         index: -1
         netname: flash_obs
-      }
-      {
-        package: entropy_src_pkg
-        struct: entropy_src_rng_req
-        signame: es_rng_req_o
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: es_rng_req
-      }
-      {
-        package: entropy_src_pkg
-        struct: entropy_src_rng_rsp
-        signame: es_rng_rsp_i
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: es_rng_rsp
-      }
-      {
-        package: ""
-        struct: logic
-        signame: es_rng_fips_o
-        width: 1
-        type: uni
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: es_rng_fips
       }
       {
         package: tlul_pkg
@@ -21167,50 +21116,6 @@
         struct: csrng_rsp
         signame: csrng_csrng_cmd_rsp
         width: 2
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
-      }
-      {
-        package: entropy_src_pkg
-        struct: entropy_src_hw_if_req
-        signame: csrng_entropy_src_hw_if_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: req
-        suffix: req
-        default: ""
-      }
-      {
-        package: entropy_src_pkg
-        struct: entropy_src_hw_if_rsp
-        signame: csrng_entropy_src_hw_if_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: req
-        suffix: rsp
-        default: entropy_src_pkg::ENTROPY_SRC_HW_IF_RSP_DEFAULT
-      }
-      {
-        package: entropy_src_pkg
-        struct: cs_aes_halt_req
-        signame: csrng_cs_aes_halt_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: entropy_src_pkg::CS_AES_HALT_REQ_DEFAULT
-      }
-      {
-        package: entropy_src_pkg
-        struct: cs_aes_halt_rsp
-        signame: csrng_cs_aes_halt_rsp
-        width: 1
         type: req_rsp
         end_idx: -1
         act: rsp

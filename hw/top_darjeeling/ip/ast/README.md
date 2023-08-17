@@ -1096,25 +1096,12 @@ edge: [ 'a<->b wakeup time', ] }
 
 # Random Number Generator
 
-AST contains a random number generator that outputs random number
-bitstreams whenever it is enabled. After enabled by the [<u>comportable
-controller</u>](../../../ip/entropy_src/README.md)
-through 'rng_en_i', the AST begins generating multiple
-independent four random bit streams. rng_b_o bit streams are valid and
-can be sampled whenever 'rng_val_o' is asserted according to the
-following diagram.
+AST contains an entropy source vendor IP block that generates random number
+bitstreams, and performs health testing and conditioning of these random
+numbers. The conditioned and FIPS compliant entropy bits are packed into
+384-bit seeds and then fed into the [<u>OpenTitan CSRNG
+module</u>](../../../ip/csrng/README.md).
 
-```wavejson
-{signal: [ {name: 'clk' , wave:
-'p.|......|......|......'}, {name: 'rng_enable' , wave:
-'01|......|......|......'}, {name: 'rng_valid' , wave:
-'0.|..10..|..10..|..10..'}, {name: 'rng_b' , wave:
-'x.|..3...|..4...|..5.....', data: ['es0','es1','es2']}, ]}
-```
-
-The expected rng_b_o valid output rate is about 50KHz. For more
-information on the RNG interface, please see the [<u>OpenTitan entropy
-source module</u>](../../../ip/entropy_src/README.md).
 
 # Entropy Consumption
 

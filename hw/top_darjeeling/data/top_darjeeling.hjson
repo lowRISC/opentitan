@@ -922,8 +922,6 @@
                                    'pwrmgr_aon.esc_rst_tx'],
       'aon_timer_aon.nmi_wdog_timer_bark' : ['rv_core_ibex.nmi_wdog']
       'csrng.csrng_cmd'         : ['edn0.csrng_cmd', 'edn1.csrng_cmd'],
-      'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
-      'csrng.cs_aes_halt'       : ['entropy_src.cs_aes_halt'],
       'flash_ctrl.keymgr'       : ['keymgr.flash'],
       'flash_ctrl.otp'          : ['otp_ctrl.flash_otp_key'],
       'flash_ctrl.rma_seed'     : ['lc_ctrl.lc_flash_rma_seed'],
@@ -943,7 +941,6 @@
       'rom_ctrl.keymgr_data'    : ['keymgr.rom_digest'],
       'flash_ctrl.keymgr'       : ['keymgr.flash'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
-      'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
 
       // Daisy chained LC RMA req/ack interface: LC -> Flash -> OTBN -> LC
       'lc_ctrl.lc_flash_rma_req' : ['flash_ctrl.rma_req'],
@@ -1116,14 +1113,13 @@
         'clkmgr_aon.hi_speed_sel'         : 'hi_speed_sel',
         'clkmgr_aon.div_step_down_req'    : 'div_step_down_req',
         'clkmgr_aon.calib_rdy'            : 'calib_rdy',
+        'csrng.entropy_src_hw_if'         : 'entropy_src_hw_if',
         'flash_ctrl.flash_bist_enable'    : 'flash_bist_enable',
         'flash_ctrl.flash_power_down_h'   : 'flash_power_down_h',
         'flash_ctrl.flash_power_ready_h'  : 'flash_power_ready_h',
         'flash_ctrl.flash_test_mode_a'    : 'flash_test_mode_a',
         'flash_ctrl.flash_test_voltage_h' : 'flash_test_voltage_h',
         'flash_ctrl.fla_obs'              : 'flash_obs',
-        'entropy_src.entropy_src_rng'     : 'es_rng',
-        'entropy_src.rng_fips'            : 'es_rng_fips',
         'lc_ctrl.dmi_tl_h2d'              : 'lc_ctrl_dmi_h2d',
         'lc_ctrl.dmi_tl_d2h'              : 'lc_ctrl_dmi_d2h',
         'rv_dm.dmi_tl_h2d'                : 'rv_dm_dmi_h2d',

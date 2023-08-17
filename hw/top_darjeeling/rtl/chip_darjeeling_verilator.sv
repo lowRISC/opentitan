@@ -290,9 +290,8 @@ module chip_darjeeling_verilator (
 
   // entropy source interface
   // The entropy source pacakge definition should eventually be moved to es
-  entropy_src_pkg::entropy_src_rng_req_t es_rng_req;
-  entropy_src_pkg::entropy_src_rng_rsp_t es_rng_rsp;
-  logic es_rng_fips;
+  entropy_src_pkg::entropy_src_hw_if_req_t entropy_src_hw_if_req;
+  entropy_src_pkg::entropy_src_hw_if_rsp_t entropy_src_hw_if_rsp;
 
   // entropy distribution network
   edn_pkg::edn_req_t ast_edn_edn_req;
@@ -433,11 +432,9 @@ module chip_darjeeling_verilator (
     .adc_chnsel_i          ( adc_req.channel_sel ),
     .adc_d_o               ( adc_rsp.data ),
     .adc_d_val_o           ( adc_rsp.data_valid ),
-    // rng
-    .rng_en_i              ( es_rng_req.rng_enable ),
-    .rng_fips_i            ( es_rng_fips ),
-    .rng_val_o             ( es_rng_rsp.rng_valid ),
-    .rng_b_o               ( es_rng_rsp.rng_b ),
+    // entropy_src
+    .es_req_i              ( entropy_src_hw_if_req ),
+    .es_rsp_o              ( entropy_src_hw_if_rsp ),
     // entropy
     .entropy_rsp_i         ( ast_edn_edn_rsp ),
     .entropy_req_o         ( ast_edn_edn_req ),
@@ -534,9 +531,8 @@ module chip_darjeeling_verilator (
     .flash_bist_enable_i          ( flash_bist_enable          ),
     .flash_power_down_h_i         ( flash_power_down_h         ),
     .flash_power_ready_h_i        ( flash_power_ready_h        ),
-    .es_rng_req_o                 ( es_rng_req                 ),
-    .es_rng_rsp_i                 ( es_rng_rsp                 ),
-    .es_rng_fips_o                ( es_rng_fips                ),
+    .entropy_src_hw_if_req_o      ( entropy_src_hw_if_req      ),
+    .entropy_src_hw_if_rsp_i      ( entropy_src_hw_if_rsp      ),
     .all_clk_byp_req_o            ( all_clk_byp_req            ),
     .all_clk_byp_ack_i            ( all_clk_byp_ack            ),
     .io_clk_byp_req_o             ( io_clk_byp_req             ),

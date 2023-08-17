@@ -706,18 +706,18 @@
       tags: ["conn"]
     }
     /////////////////////////////
-    // ast_entropy_src_cfg.csv //
+    // ast_csrng_cfg.csv //
     /////////////////////////////
     {
-      name: chip_sw_entropy_src_ast_fips
+      name: chip_sw_csrng_ast_fips
       desc: '''
-              Verify the connectivity of rng_fips_o feedback signal to RNG.
+              Verify the connectivity of AST and CSRNG.
             '''
       stage: V2
-      tests: ["ast_entropy_src_rng_val",
-              "ast_entropy_src_rng_b",
-              "ast_entropy_src_rng_fips",
-              "ast_entropy_src_rng_en"]
+      tests: ["ast_csrng_es_req",
+              "ast_csrng_es_rsp_es_ack",
+              "ast_csrng_es_rsp_es_bits",
+              "ast_csrng_es_rsp_es_fips"]
       tags: ["conn"]
     }
 

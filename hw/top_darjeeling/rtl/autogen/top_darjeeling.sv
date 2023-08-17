@@ -151,15 +151,14 @@ module top_darjeeling #(
   output prim_mubi_pkg::mubi4_t       hi_speed_sel_o,
   input  prim_mubi_pkg::mubi4_t       div_step_down_req_i,
   input  prim_mubi_pkg::mubi4_t       calib_rdy_i,
+  output entropy_src_pkg::entropy_src_hw_if_req_t       entropy_src_hw_if_req_o,
+  input  entropy_src_pkg::entropy_src_hw_if_rsp_t       entropy_src_hw_if_rsp_i,
   input  prim_mubi_pkg::mubi4_t       flash_bist_enable_i,
   input  logic       flash_power_down_h_i,
   input  logic       flash_power_ready_h_i,
   inout   [1:0] flash_test_mode_a_io,
   inout         flash_test_voltage_h_io,
   output logic [7:0] flash_obs_o,
-  output entropy_src_pkg::entropy_src_rng_req_t       es_rng_req_o,
-  input  entropy_src_pkg::entropy_src_rng_rsp_t       es_rng_rsp_i,
-  output logic       es_rng_fips_o,
   input  tlul_pkg::tl_h2d_t       lc_ctrl_dmi_h2d_i,
   output tlul_pkg::tl_d2h_t       lc_ctrl_dmi_d2h_o,
   input  tlul_pkg::tl_h2d_t       rv_dm_dmi_h2d_i,
@@ -544,10 +543,6 @@ module top_darjeeling #(
   logic       aon_timer_aon_nmi_wdog_timer_bark;
   csrng_pkg::csrng_req_t [1:0] csrng_csrng_cmd_req;
   csrng_pkg::csrng_rsp_t [1:0] csrng_csrng_cmd_rsp;
-  entropy_src_pkg::entropy_src_hw_if_req_t       csrng_entropy_src_hw_if_req;
-  entropy_src_pkg::entropy_src_hw_if_rsp_t       csrng_entropy_src_hw_if_rsp;
-  entropy_src_pkg::cs_aes_halt_req_t       csrng_cs_aes_halt_req;
-  entropy_src_pkg::cs_aes_halt_rsp_t       csrng_cs_aes_halt_rsp;
   flash_ctrl_pkg::keymgr_flash_t       flash_ctrl_keymgr;
   otp_ctrl_pkg::flash_otp_key_req_t       flash_ctrl_otp_req;
   otp_ctrl_pkg::flash_otp_key_rsp_t       flash_ctrl_otp_rsp;
@@ -2380,10 +2375,10 @@ module top_darjeeling #(
       // Inter-module signals
       .csrng_cmd_i(csrng_csrng_cmd_req),
       .csrng_cmd_o(csrng_csrng_cmd_rsp),
-      .entropy_src_hw_if_o(csrng_entropy_src_hw_if_req),
-      .entropy_src_hw_if_i(csrng_entropy_src_hw_if_rsp),
-      .cs_aes_halt_i(csrng_cs_aes_halt_req),
-      .cs_aes_halt_o(csrng_cs_aes_halt_rsp),
+      .entropy_src_hw_if_o(entropy_src_hw_if_req_o),
+      .entropy_src_hw_if_i(entropy_src_hw_if_rsp_i),
+      .cs_aes_halt_i(entropy_src_pkg::CS_AES_HALT_REQ_DEFAULT),
+      .cs_aes_halt_o(),
       .otp_en_csrng_sw_app_read_i(csrng_otp_en_csrng_sw_app_read),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
       .tl_i(csrng_tl_req),
@@ -2410,17 +2405,17 @@ module top_darjeeling #(
       .alert_rx_i  ( alert_rx[54:53] ),
 
       // Inter-module signals
-      .entropy_src_hw_if_i(csrng_entropy_src_hw_if_req),
-      .entropy_src_hw_if_o(csrng_entropy_src_hw_if_rsp),
-      .cs_aes_halt_o(csrng_cs_aes_halt_req),
-      .cs_aes_halt_i(csrng_cs_aes_halt_rsp),
-      .entropy_src_rng_o(es_rng_req_o),
-      .entropy_src_rng_i(es_rng_rsp_i),
+      .entropy_src_hw_if_i(entropy_src_pkg::ENTROPY_SRC_HW_IF_REQ_DEFAULT),
+      .entropy_src_hw_if_o(),
+      .cs_aes_halt_o(),
+      .cs_aes_halt_i(entropy_src_pkg::CS_AES_HALT_RSP_DEFAULT),
+      .entropy_src_rng_o(),
+      .entropy_src_rng_i(entropy_src_pkg::ENTROPY_SRC_RNG_RSP_DEFAULT),
       .entropy_src_xht_o(),
       .entropy_src_xht_i(entropy_src_pkg::ENTROPY_SRC_XHT_RSP_DEFAULT),
       .otp_en_entropy_src_fw_read_i(entropy_src_otp_en_entropy_src_fw_read),
       .otp_en_entropy_src_fw_over_i(entropy_src_otp_en_entropy_src_fw_over),
-      .rng_fips_o(es_rng_fips_o),
+      .rng_fips_o(),
       .tl_i(entropy_src_tl_req),
       .tl_o(entropy_src_tl_rsp),
 

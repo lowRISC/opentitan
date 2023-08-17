@@ -2,9 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// -------- W A R N I N G: A U T O - G E N E R A T E D  C O D E !! -------- //
-// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED.
-//
 //############################################################################
 // *Name: ast
 // *Module Description: Analog Sensors Top
@@ -15,7 +12,7 @@
 module ast #(
   parameter int unsigned AdcChannels     = 2,
   parameter int unsigned AdcDataWidth    = 10,
-  parameter int unsigned EntropyStreams  = 4,
+  parameter int unsigned EntropyStreams  = 16,
   parameter int unsigned UsbCalibWidth   = 20,
   parameter int unsigned Ast2PadOutWidth = 9,
   parameter int unsigned Pad2AstInWidth  = 9
@@ -105,11 +102,9 @@ module ast #(
   output [AdcDataWidth-1:0] adc_d_o,          // ADC Digital (per channel)
   output adc_d_val_o,                         // ADC Digital Valid
 
-  // rng (entropy source) interface
-  input rng_en_i,                             // RNG Enable
-  input rng_fips_i,                           // RNG FIPS
-  output logic rng_val_o,                     // RNG Valid
-  output logic [EntropyStreams-1:0] rng_b_o,  // RNG Bit(s)
+  // entropy source interface
+  input  entropy_src_pkg::entropy_src_hw_if_req_t es_req_i, // request
+  output entropy_src_pkg::entropy_src_hw_if_rsp_t es_rsp_o, // response
 
   // entropy distribution interface
   input edn_pkg::edn_rsp_t entropy_rsp_i,     // Entropy Response
@@ -673,13 +668,10 @@ rng #(
   .rst_ni ( rst_ast_tlul_ni ),
   .clk_ast_rng_i ( clk_ast_rng_i ),
   .rst_ast_rng_ni ( rst_ast_rng_ni ),
-  .rng_en_i ( rng_en_i ),
-  .rng_fips_i ( rng_fips_i ),
   .scan_mode_i ( scan_mode ),
-  .rng_b_o ( rng_b_o[EntropyStreams-1:0] ),
-  .rng_val_o ( rng_val_o )
+  .rng_req_i ( es_req_i ),
+  .rng_rsp_o ( es_rsp_o )
 );
-
 
 ///////////////////////////////////////
 // Alerts (Always ON)
@@ -953,8 +945,7 @@ assign ast2pad_t1_ao = 1'bz;
 `ASSERT_KNOWN(AdcDKnownO_A, adc_d_o, clk_ast_adc_i, rst_ast_adc_ni)
 `ASSERT_KNOWN(AdcDValKnownO_A, adc_d_val_o, clk_ast_adc_i, rst_ast_adc_ni)
 // RNG
-`ASSERT_KNOWN(RngBKnownO_A, rng_b_o, clk_ast_rng_i, rst_ast_rng_ni)
-`ASSERT_KNOWN(RngValKnownO_A, rng_val_o, clk_ast_rng_i, rst_ast_rng_ni)
+`ASSERT_KNOWN(EsRspKnownO_A, es_rsp_o, clk_ast_rng_i, rst_ast_rng_ni)
 // TLUL
 `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid, clk_ast_tlul_i, rst_ast_tlul_ni)
 `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready, clk_ast_tlul_i, rst_ast_tlul_ni)

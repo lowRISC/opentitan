@@ -519,9 +519,14 @@ module chip_${top["name"]}_${target["name"]} #(
 
   // entropy source interface
   // The entropy source pacakge definition should eventually be moved to es
+% if top["name"] == "darjeeling":
+  entropy_src_pkg::entropy_src_hw_if_req_t entropy_src_hw_if_req;
+  entropy_src_pkg::entropy_src_hw_if_rsp_t entropy_src_hw_if_rsp;
+% else:
   entropy_src_pkg::entropy_src_rng_req_t es_rng_req;
   entropy_src_pkg::entropy_src_rng_rsp_t es_rng_rsp;
   logic es_rng_fips;
+% endif
 
   // entropy distribution network
   edn_pkg::edn_req_t ast_edn_edn_req;
@@ -788,11 +793,17 @@ module chip_${top["name"]}_${target["name"]} #(
     .adc_chnsel_i          ( adc_req.channel_sel ),
     .adc_d_o               ( adc_rsp.data ),
     .adc_d_val_o           ( adc_rsp.data_valid ),
+% if top["name"] == "darjeeling":
+    // entropy_src
+    .es_req_i              ( entropy_src_hw_if_req ),
+    .es_rsp_o              ( entropy_src_hw_if_rsp ),
+% else:
     // rng
     .rng_en_i              ( es_rng_req.rng_enable ),
     .rng_fips_i            ( es_rng_fips ),
     .rng_val_o             ( es_rng_rsp.rng_valid ),
     .rng_b_o               ( es_rng_rsp.rng_b ),
+% endif
     // entropy
     .entropy_rsp_i         ( ast_edn_edn_rsp ),
     .entropy_req_o         ( ast_edn_edn_req ),
@@ -1071,9 +1082,14 @@ module chip_${top["name"]}_${target["name"]} #(
     .flash_power_down_h_i         ( flash_power_down_h         ),
     .flash_power_ready_h_i        ( flash_power_ready_h        ),
     .flash_obs_o                  ( fla_obs                    ),
+% if top["name"] == "darjeeling":
+    .entropy_src_hw_if_req_o      ( entropy_src_hw_if_req      ),
+    .entropy_src_hw_if_rsp_i      ( entropy_src_hw_if_rsp      ),
+% else:
     .es_rng_req_o                 ( es_rng_req                 ),
     .es_rng_rsp_i                 ( es_rng_rsp                 ),
     .es_rng_fips_o                ( es_rng_fips                ),
+% endif
     .io_clk_byp_req_o             ( io_clk_byp_req             ),
     .io_clk_byp_ack_i             ( io_clk_byp_ack             ),
     .all_clk_byp_req_o            ( all_clk_byp_req            ),
@@ -1292,9 +1308,14 @@ module chip_${top["name"]}_${target["name"]} #(
     .sensor_ctrl_ast_alert_req_i  ( ast_alert_req              ),
     .sensor_ctrl_ast_alert_rsp_o  ( ast_alert_rsp              ),
     .sensor_ctrl_ast_status_i     ( ast_pwst.io_pok            ),
+% if top["name"] == "darjeeling":
+    .entropy_src_hw_if_req_o      ( entropy_src_hw_if_req      ),
+    .entropy_src_hw_if_rsp_i      ( entropy_src_hw_if_rsp      ),
+% else:
     .es_rng_req_o                 ( es_rng_req                 ),
     .es_rng_rsp_i                 ( es_rng_rsp                 ),
     .es_rng_fips_o                ( es_rng_fips                ),
+% endif
     .ast2pinmux_i                 ( ast2pinmux                 ),
     .calib_rdy_i                  ( ast_init_done              ),
     .ast_init_done_i              ( ast_init_done              ),
