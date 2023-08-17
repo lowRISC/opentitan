@@ -8,8 +8,10 @@ use std::cmp;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::convert::TryInto;
+use std::marker::PhantomData;
 use std::time::Duration;
 
+use super::board::Board;
 use crate::collection;
 use crate::io::gpio::GpioError;
 use crate::io::spi::SpiError;
@@ -18,8 +20,9 @@ use crate::util::parse_int::ParseInt;
 use crate::util::usb::UsbBackend;
 
 /// The `Backend` struct provides high-level access to the Chip Whisperer board.
-pub struct Backend {
+pub struct Backend<B: Board> {
     usb: UsbBackend,
+    _marker: PhantomData<B>,
 }
 
 /// Multiply and divide settings for the PLLs in the CDCE906 chip.
@@ -34,8 +37,8 @@ struct PllMulDiv {
 #[derive(Ord, PartialOrd, Eq, PartialEq, Debug, Clone)]
 pub struct FirmwareVersion(u8, u8, u8);
 
-impl Backend {
-    /// Commands for the Chip Whisperer board.
+impl<B: Board> Backend<B> {
+    /// Commands for the Chip Whisperer board board.
     pub const CMD_FW_VERSION: u8 = 0x17;
     pub const CMD_CDC_SETTINGS_EN: u8 = 0x31;
     pub const CMD_READMEM_BULK: u8 = 0x10;
@@ -99,9 +102,6 @@ impl Backend {
 
     const LAST_PIN_NUMBER: u8 = 106;
 
-    const VID_NEWAE: u16 = 0x2b3e;
-    const PID_CW310: u16 = 0xc310;
-
     /// Create a new connection to a Chip Whisperer board.
     pub fn new(
         usb_vid: Option<u16>,
@@ -110,10 +110,11 @@ impl Backend {
     ) -> Result<Self> {
         Ok(Backend {
             usb: UsbBackend::new(
-                usb_vid.unwrap_or(Self::VID_NEWAE),
-                usb_pid.unwrap_or(Self::PID_CW310),
+                usb_vid.unwrap_or(B::VENDOR_ID),
+                usb_pid.unwrap_or(B::PRODUCT_ID),
                 usb_serial,
             )?,
+            _marker: PhantomData,
         })
     }
 
@@ -139,29 +140,29 @@ impl Backend {
     /// Get the firmware build date as a string.
     pub fn get_firmware_build_date(&self) -> Result<String> {
         let mut buf = [0u8; 100];
-        let len = self.read_ctrl(Backend::CMD_FW_BUILD_DATE, 0, &mut buf)?;
+        let len = self.read_ctrl(Backend::<B>::CMD_FW_BUILD_DATE, 0, &mut buf)?;
         Ok(String::from_utf8_lossy(&buf[0..len]).to_string())
     }
 
     /// Get the firmware version.
     pub fn get_firmware_version(&self) -> Result<FirmwareVersion> {
         let mut buf = [0u8; 3];
-        self.read_ctrl(Backend::CMD_FW_VERSION, 0, &mut buf)?;
+        self.read_ctrl(Backend::<B>::CMD_FW_VERSION, 0, &mut buf)?;
         Ok(FirmwareVersion(buf[0], buf[1], buf[2]))
     }
 
     /// Set GPIO `pinname` to either output or input mode.
     pub fn pin_set_output(&self, pinname: &str, output: bool) -> Result<()> {
-        let pinnum = Backend::pin_name_to_number(pinname)?;
+        let pinnum = Backend::<B>::pin_name_to_number(pinname)?;
         self.send_ctrl(
-            Backend::CMD_FPGAIO_UTIL,
-            Backend::REQ_IO_CONFIG,
+            Backend::<B>::CMD_FPGAIO_UTIL,
+            Backend::<B>::REQ_IO_CONFIG,
             &[
                 pinnum,
                 if output {
-                    Backend::CONFIG_PIN_OUTPUT
+                    Backend::<B>::CONFIG_PIN_OUTPUT
                 } else {
-                    Backend::CONFIG_PIN_INPUT
+                    Backend::<B>::CONFIG_PIN_INPUT
                 },
             ],
         )?;
@@ -170,21 +171,23 @@ impl Backend {
 
     /// Get the state of GPIO `pinname`.
     pub fn pin_get_state(&self, pinname: &str) -> Result<u8> {
-        let pinnum = Backend::pin_name_to_number(pinname).ok().ok_or_else(|| {
-            TransportError::InvalidInstance(TransportInterfaceType::Gpio, pinname.to_string())
-        })? as u16;
+        let pinnum = Backend::<B>::pin_name_to_number(pinname)
+            .ok()
+            .ok_or_else(|| {
+                TransportError::InvalidInstance(TransportInterfaceType::Gpio, pinname.to_string())
+            })? as u16;
         let mut buf = [0u8; 1];
-        self.read_ctrl(Backend::CMD_FPGAIO_UTIL, pinnum, &mut buf)
+        self.read_ctrl(Backend::<B>::CMD_FPGAIO_UTIL, pinnum, &mut buf)
             .context("USB error")?;
         Ok(buf[0])
     }
 
     /// Set the state of GPIO `pinname`.
     pub fn pin_set_state(&self, pinname: &str, value: bool) -> Result<()> {
-        let pinnum = Backend::pin_name_to_number(pinname)?;
+        let pinnum = Backend::<B>::pin_name_to_number(pinname)?;
         self.send_ctrl(
-            Backend::CMD_FPGAIO_UTIL,
-            Backend::REQ_IO_OUTPUT,
+            Backend::<B>::CMD_FPGAIO_UTIL,
+            Backend::<B>::REQ_IO_OUTPUT,
             &[pinnum, value as u8],
         )?;
         Ok(())
@@ -193,36 +196,36 @@ impl Backend {
     /// Sends a reset signal to the SAM3U chip. Does not wait for the SAM3U to
     /// finish resetting.
     pub fn reset_sam3x(&self) -> Result<()> {
-        self.send_ctrl(Backend::CMD_SAM3X_CFG, Backend::SAM3X_RESET, &[])?;
+        self.send_ctrl(Backend::<B>::CMD_SAM3X_CFG, Backend::<B>::SAM3X_RESET, &[])?;
         Ok(())
     }
 
     /// Configure the SAM3U to perform SPI using the named pins.
     pub fn spi1_setpins(&self, sdo: &str, sdi: &str, sck: &str, cs: &str) -> Result<()> {
-        let sdo = Backend::pin_name_to_number(sdo)?;
-        let sdi = Backend::pin_name_to_number(sdi)?;
-        let sck = Backend::pin_name_to_number(sck)?;
-        let cs = Backend::pin_name_to_number(cs)?;
+        let sdo = Backend::<B>::pin_name_to_number(sdo)?;
+        let sdi = Backend::<B>::pin_name_to_number(sdi)?;
+        let sck = Backend::<B>::pin_name_to_number(sck)?;
+        let cs = Backend::<B>::pin_name_to_number(cs)?;
 
         self.send_ctrl(
-            Backend::CMD_FPGAIO_UTIL,
-            Backend::REQ_IO_CONFIG,
-            &[sdo, Backend::CONFIG_PIN_SPI1_SDO],
+            Backend::<B>::CMD_FPGAIO_UTIL,
+            Backend::<B>::REQ_IO_CONFIG,
+            &[sdo, Backend::<B>::CONFIG_PIN_SPI1_SDO],
         )?;
         self.send_ctrl(
-            Backend::CMD_FPGAIO_UTIL,
-            Backend::REQ_IO_CONFIG,
-            &[sdi, Backend::CONFIG_PIN_SPI1_SDI],
+            Backend::<B>::CMD_FPGAIO_UTIL,
+            Backend::<B>::REQ_IO_CONFIG,
+            &[sdi, Backend::<B>::CONFIG_PIN_SPI1_SDI],
         )?;
         self.send_ctrl(
-            Backend::CMD_FPGAIO_UTIL,
-            Backend::REQ_IO_CONFIG,
-            &[sck, Backend::CONFIG_PIN_SPI1_SCK],
+            Backend::<B>::CMD_FPGAIO_UTIL,
+            Backend::<B>::REQ_IO_CONFIG,
+            &[sck, Backend::<B>::CONFIG_PIN_SPI1_SCK],
         )?;
         self.send_ctrl(
-            Backend::CMD_FPGAIO_UTIL,
-            Backend::REQ_IO_CONFIG,
-            &[cs, Backend::CONFIG_PIN_SPI1_CS],
+            Backend::<B>::CMD_FPGAIO_UTIL,
+            Backend::<B>::REQ_IO_CONFIG,
+            &[cs, Backend::<B>::CONFIG_PIN_SPI1_CS],
         )?;
         Ok(())
     }
@@ -230,11 +233,11 @@ impl Backend {
     /// Enable the spi interface on the SAM3U chip.
     pub fn spi1_enable(&self, enable: bool) -> Result<()> {
         self.send_ctrl(
-            Backend::CMD_FPGASPI1_XFER,
+            Backend::<B>::CMD_FPGASPI1_XFER,
             if enable {
-                Backend::REQ_ENABLE_SPI
+                Backend::<B>::REQ_ENABLE_SPI
             } else {
-                Backend::REQ_DISABLE_SPI
+                Backend::<B>::REQ_DISABLE_SPI
             },
             &[],
         )?;
@@ -244,11 +247,11 @@ impl Backend {
     /// Set the value of the SPI chip-select pin.
     pub fn spi1_set_cs_pin(&self, status: bool) -> Result<()> {
         self.send_ctrl(
-            Backend::CMD_FPGASPI1_XFER,
+            Backend::<B>::CMD_FPGASPI1_XFER,
             if status {
-                Backend::REQ_CS_HIGH
+                Backend::<B>::REQ_CS_HIGH
             } else {
-                Backend::REQ_CS_LOW
+                Backend::<B>::REQ_CS_LOW
             },
             &[],
         )?;
@@ -270,8 +273,12 @@ impl Backend {
             txdata.len() == rxdata.len(),
             SpiError::MismatchedDataLength(txdata.len(), rxdata.len())
         );
-        self.send_ctrl(Backend::CMD_FPGASPI1_XFER, Backend::REQ_SEND_DATA, txdata)?;
-        self.read_ctrl(Backend::CMD_FPGASPI1_XFER, 0, rxdata)?;
+        self.send_ctrl(
+            Backend::<B>::CMD_FPGASPI1_XFER,
+            Backend::<B>::REQ_SEND_DATA,
+            txdata,
+        )?;
+        self.read_ctrl(Backend::<B>::CMD_FPGASPI1_XFER, 0, rxdata)?;
         Ok(())
     }
 
@@ -311,7 +318,7 @@ impl Backend {
     /// Query whether the FPGA is programmed.
     pub fn fpga_is_programmed(&self) -> Result<bool> {
         let mut status = [0u8; 4];
-        self.read_ctrl(Backend::CMD_FPGA_STATUS, 0, &mut status)?;
+        self.read_ctrl(Backend::<B>::CMD_FPGA_STATUS, 0, &mut status)?;
         Ok(status[0] & 0x01 != 0)
     }
 
@@ -320,8 +327,8 @@ impl Backend {
         let supports_variable_speed = self.get_firmware_version()? >= FirmwareVersion(1, 0, 0);
         let speed_hz = speed_hz.to_le_bytes();
         self.send_ctrl(
-            Backend::CMD_FPGA_PROGRAM,
-            Backend::PROGRAM_INIT,
+            Backend::<B>::CMD_FPGA_PROGRAM,
+            Backend::<B>::PROGRAM_INIT,
             if supports_variable_speed {
                 &speed_hz
             } else {
@@ -329,7 +336,11 @@ impl Backend {
             },
         )?;
         std::thread::sleep(Duration::from_millis(1));
-        self.send_ctrl(Backend::CMD_FPGA_PROGRAM, Backend::PROGRAM_PREPARE, &[])?;
+        self.send_ctrl(
+            Backend::<B>::CMD_FPGA_PROGRAM,
+            Backend::<B>::PROGRAM_PREPARE,
+            &[],
+        )?;
         std::thread::sleep(Duration::from_millis(1));
         Ok(())
     }
@@ -353,7 +364,7 @@ impl Backend {
         const CHUNK_LEN: usize = 2048;
         for (chunk_no, chunk) in stream.chunks(CHUNK_LEN).enumerate() {
             progress.progress(CHUNK_LEN * chunk_no);
-            self.usb.write_bulk(Backend::BULK_OUT_EP, chunk)?;
+            self.usb.write_bulk(Backend::<B>::BULK_OUT_EP, chunk)?;
         }
         progress.progress(stream.len());
         Ok(())
@@ -361,7 +372,7 @@ impl Backend {
 
     /// Program a bitstream into the FPGA.
     pub fn fpga_program(&self, bitstream: &[u8], progress: &dyn ProgressIndicator) -> Result<()> {
-        self.fpga_prepare(Backend::FPGA_PROG_SPEED)?;
+        self.fpga_prepare(Backend::<B>::FPGA_PROG_SPEED)?;
         let result = self.fpga_download(bitstream, progress);
 
         let mut status = false;
@@ -374,7 +385,11 @@ impl Backend {
                 std::thread::sleep(Duration::from_millis(1));
             }
         }
-        self.send_ctrl(Backend::CMD_FPGA_PROGRAM, Backend::PROGRAM_EXIT, &[])?;
+        self.send_ctrl(
+            Backend::<B>::CMD_FPGA_PROGRAM,
+            Backend::<B>::PROGRAM_EXIT,
+            &[],
+        )?;
 
         if let Err(e) = result {
             Err(TransportError::FpgaProgramFailed(e.to_string()).into())
@@ -386,8 +401,12 @@ impl Backend {
     }
 
     pub fn clear_bitstream(&self) -> Result<()> {
-        self.fpga_prepare(Backend::FPGA_PROG_SPEED)?;
-        self.send_ctrl(Backend::CMD_FPGA_PROGRAM, Backend::PROGRAM_EXIT, &[])?;
+        self.fpga_prepare(Backend::<B>::FPGA_PROG_SPEED)?;
+        self.send_ctrl(
+            Backend::<B>::CMD_FPGA_PROGRAM,
+            Backend::<B>::PROGRAM_EXIT,
+            &[],
+        )?;
         if self.fpga_is_programmed()? {
             Err(TransportError::ClearBitstreamFailed().into())
         } else {
@@ -401,7 +420,7 @@ impl Backend {
         // is a symbolic name of a pin.
         if let Ok(pinnum) = u8::from_str(pinname) {
             ensure!(
-                pinnum <= Backend::LAST_PIN_NUMBER,
+                pinnum <= Backend::<B>::LAST_PIN_NUMBER,
                 GpioError::InvalidPinNumber(pinnum)
             );
             return Ok(pinnum);
@@ -430,10 +449,14 @@ impl Backend {
             );
             return Ok(());
         }
-        self.send_ctrl(Backend::CMD_PLL, 0, &[Backend::REQ_PLL_WRITE, addr, data])?;
+        self.send_ctrl(
+            Backend::<B>::CMD_PLL,
+            0,
+            &[Backend::<B>::REQ_PLL_WRITE, addr, data],
+        )?;
         let mut resp = [0u8; 2];
-        self.read_ctrl(Backend::CMD_PLL, 0, &mut resp)?;
-        if resp[0] != Backend::RESP_PLL_OK {
+        self.read_ctrl(Backend::<B>::CMD_PLL, 0, &mut resp)?;
+        if resp[0] != Backend::<B>::RESP_PLL_OK {
             Err(
                 TransportError::PllProgramFailed(format!("CDCE906 write error: {}", resp[0]))
                     .into(),
@@ -445,10 +468,14 @@ impl Backend {
 
     /// Read a byte from the CDCE906 PLL chip.
     fn pll_read(&self, addr: u8) -> Result<u8> {
-        self.send_ctrl(Backend::CMD_PLL, 0, &[Backend::REQ_PLL_READ, addr, 0])?;
+        self.send_ctrl(
+            Backend::<B>::CMD_PLL,
+            0,
+            &[Backend::<B>::REQ_PLL_READ, addr, 0],
+        )?;
         let mut resp = [0u8; 2];
-        self.read_ctrl(Backend::CMD_PLL, 0, &mut resp)?;
-        if resp[0] != Backend::RESP_PLL_OK {
+        self.read_ctrl(Backend::<B>::CMD_PLL, 0, &mut resp)?;
+        if resp[0] != Backend::<B>::RESP_PLL_OK {
             Err(TransportError::PllProgramFailed(format!("CDCE906 read error: {}", resp[0])).into())
         } else {
             Ok(resp[1])

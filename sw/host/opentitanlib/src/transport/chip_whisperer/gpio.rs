@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use super::board::Board;
 use anyhow::Result;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -9,13 +10,13 @@ use std::rc::Rc;
 use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
 use crate::transport::chip_whisperer::usb::Backend;
 
-pub struct Pin {
-    device: Rc<RefCell<Backend>>,
+pub struct Pin<B: Board> {
+    device: Rc<RefCell<Backend<B>>>,
     pinname: String,
 }
 
-impl Pin {
-    pub fn open(backend: Rc<RefCell<Backend>>, pinname: String) -> Result<Self> {
+impl<B: Board> Pin<B> {
+    pub fn open(backend: Rc<RefCell<Backend<B>>>, pinname: String) -> Result<Self> {
         Ok(Self {
             device: backend,
             pinname,
@@ -23,7 +24,7 @@ impl Pin {
     }
 }
 
-impl GpioPin for Pin {
+impl<B: Board> GpioPin for Pin<B> {
     fn read(&self) -> Result<bool> {
         let usb = self.device.borrow();
         let pin = usb.pin_get_state(&self.pinname)?;
