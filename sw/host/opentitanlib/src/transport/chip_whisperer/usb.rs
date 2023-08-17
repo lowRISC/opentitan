@@ -17,7 +17,7 @@ use crate::transport::{ProgressIndicator, TransportError, TransportInterfaceType
 use crate::util::parse_int::ParseInt;
 use crate::util::usb::UsbBackend;
 
-/// The `Backend` struct provides high-level access to the CW310 board.
+/// The `Backend` struct provides high-level access to the Chip Whisperer board.
 pub struct Backend {
     usb: UsbBackend,
 }
@@ -35,7 +35,7 @@ struct PllMulDiv {
 pub struct FirmwareVersion(u8, u8, u8);
 
 impl Backend {
-    /// Commands for the CW310 board.
+    /// Commands for the Chip Whisperer board.
     pub const CMD_FW_VERSION: u8 = 0x17;
     pub const CMD_CDC_SETTINGS_EN: u8 = 0x31;
     pub const CMD_READMEM_BULK: u8 = 0x10;
@@ -93,7 +93,7 @@ impl Backend {
     pub const PROGRAM_PREPARE: u16 = 0xA1;
     pub const PROGRAM_EXIT: u16 = 0xA2;
 
-    /// Bulk endpoint numbers for the CW310 board.
+    /// Bulk endpoint numbers for the Chip Whisperer board.
     pub const BULK_IN_EP: u8 = 0x81;
     pub const BULK_OUT_EP: u8 = 0x02;
 
@@ -102,7 +102,7 @@ impl Backend {
     const VID_NEWAE: u16 = 0x2b3e;
     const PID_CW310: u16 = 0xc310;
 
-    /// Create a new connection to a CW310 board.
+    /// Create a new connection to a Chip Whisperer board.
     pub fn new(
         usb_vid: Option<u16>,
         usb_pid: Option<u16>,
@@ -117,14 +117,14 @@ impl Backend {
         })
     }
 
-    /// Send a control write transaction to the CW310 board.
+    /// Send a control write transaction to the Chip Whisperer board.
     pub fn send_ctrl(&self, cmd: u8, value: u16, data: &[u8]) -> Result<usize> {
         log::debug!("WRITE_CTRL: bmRequestType: {:02x}, bRequest: {:02x}, wValue: {:04x}, wIndex: {:04x}, data: {:?}",
                 0x41, cmd, value, 0, data);
         self.usb.write_control(0x41, cmd, value, 0, data)
     }
 
-    /// Send a control read transaction to the CW310 board.
+    /// Send a control read transaction to the Chip Whisperer board.
     pub fn read_ctrl(&self, cmd: u8, value: u16, data: &mut [u8]) -> Result<usize> {
         log::debug!("READ_CTRL: bmRequestType: {:02x}, bRequest: {:02x}, wValue: {:04x}, wIndex: {:04x}, data: {:?}",
                 0xC1, cmd, value, 0, data);
@@ -395,7 +395,7 @@ impl Backend {
         }
     }
 
-    /// Given a CW310 pin name, return its pin number.
+    /// Given a Chip Whisperer board pin name, return its pin number.
     pub fn pin_name_to_number(pinname: &str) -> Result<u8> {
         // If the pinname is an integer, use it; otherwise try to see if it
         // is a symbolic name of a pin.

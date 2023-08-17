@@ -6,26 +6,27 @@ use anyhow::Result;
 use clap::Args;
 
 use crate::backend::BackendOpts;
-use crate::transport::cw310::CW310;
+use crate::transport::chip_whisperer::ChipWhisperer;
 use crate::transport::Transport;
 
 #[derive(Debug, Args)]
-pub struct Cw310Opts {
+pub struct ChipWhispererOpts {
     #[arg(
         long,
-        help = "Comma-separated list of CW310 UARTs for non-udev environments. List the console uart first."
+        alias = "cw310-uarts",
+        help = "Comma-separated list of Chip Whisperer board UARTs for non-udev environments. List the console uart first."
     )]
-    pub cw310_uarts: Option<String>,
+    pub uarts: Option<String>,
 }
 
 pub fn create(args: &BackendOpts) -> Result<Box<dyn Transport>> {
     let uarts = args
-        .cw310_opts
-        .cw310_uarts
+        .opts
+        .uarts
         .as_ref()
         .map(|v| v.split(',').collect::<Vec<&str>>())
         .unwrap_or_default();
-    Ok(Box::new(CW310::new(
+    Ok(Box::new(ChipWhisperer::new(
         args.usb_vid,
         args.usb_pid,
         args.usb_serial.as_deref(),

@@ -7,14 +7,14 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
-use crate::transport::cw310::usb::Backend;
+use crate::transport::chip_whisperer::usb::Backend;
 
-pub struct CW310GpioPin {
+pub struct Pin {
     device: Rc<RefCell<Backend>>,
     pinname: String,
 }
 
-impl CW310GpioPin {
+impl Pin {
     pub fn open(backend: Rc<RefCell<Backend>>, pinname: String) -> Result<Self> {
         Ok(Self {
             device: backend,
@@ -23,7 +23,7 @@ impl CW310GpioPin {
     }
 }
 
-impl GpioPin for CW310GpioPin {
+impl GpioPin for Pin {
     fn read(&self) -> Result<bool> {
         let usb = self.device.borrow();
         let pin = usb.pin_get_state(&self.pinname)?;

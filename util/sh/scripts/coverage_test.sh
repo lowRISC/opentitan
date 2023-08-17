@@ -24,7 +24,7 @@ log "Bitstream path: ${BITSTREAM_PATH}"
 log "Building bitstream..."
 ${BAZEL} build "${BITSTREAM_TARGET}"
 log "Programming the FPGA..."
-${BAZEL} run //sw/host/opentitantool -- --cw310-uarts=/dev/opentitan/cw_310_uart_0,/dev/opentitan/cw_310_uart_1 fpga load-bitstream "${BITSTREAM_PATH}"
+${BAZEL} run //sw/host/opentitantool -- --uarts=/dev/opentitan/cw_310_uart_0,/dev/opentitan/cw_310_uart_1 fpga load-bitstream "${BITSTREAM_PATH}"
 # Measure coverage
 log "Measuring coverage..."
 ${BAZEL} coverage --define bitstream=skip --test_output=streamed --config=ot_coverage_on_target "${COVERAGE_TEST_TARGET}"

@@ -567,7 +567,7 @@ def opentitan_functest(
             target_args = select({
                 # TODO(cfrantz): we may need to do something different here when
                 # the interface is "hyper310".
-                "@//ci:lowrisc_fpga_cw310": ["--cw310-uarts=/dev/ttyACM_CW310_1,/dev/ttyACM_CW310_0"],
+                "@//ci:lowrisc_fpga_cw310": ["--uarts=/dev/ttyACM_CW310_1,/dev/ttyACM_CW310_0"],
                 "//conditions:default": [],
             }) + target_args
 
