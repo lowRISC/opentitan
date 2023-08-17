@@ -54,15 +54,18 @@ UJSON_SERDE_STRUCT(ManufPersonalize, \
 // clang-format on
 
 /**
- * Data imported during device individualization.
+ * Provisioning data imported onto the device in CP.
  */
 // clang-format off
-#define STRUCT_MANUF_INDIVIDUALIZE_TEST_TOKENS(field, string) \
+#define STRUCT_MANUF_CP_PROVISIONING_DATA(field, string) \
+    field(device_id, uint32_t, 4) \
+    field(manuf_state, uint32_t, 4) \
+    field(wafer_auth_secret, uint32_t, 4) \
     field(test_unlock_token, uint32_t, 4) \
     field(test_exit_token, uint32_t, 4)
-UJSON_SERDE_STRUCT(ManufIndividualizeTestTokens, \
-                   manuf_individualize_test_tokens_t, \
-                   STRUCT_MANUF_INDIVIDUALIZE_TEST_TOKENS);
+UJSON_SERDE_STRUCT(ManufCpProvisioningData, \
+                   manuf_cp_provisioning_data_t, \
+                   STRUCT_MANUF_CP_PROVISIONING_DATA);
 // clang-format on
 
 #undef MODULE_ID

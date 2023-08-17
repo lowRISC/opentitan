@@ -65,12 +65,12 @@ status_t manuf_individualize_device_hw_cfg_check(
  *
  * @param lc_ctrl Lifecycle controller instance.
  * @param otp_ctrl OTP controller instance.
- * @param test_tokens Test unlock and exit tokens to provision.
+ * @param provisioning_data Struct with test unlock/exit tokens to provision.
  * @return OK_STATUS if the HW_CFG partition is locked.
  */
 status_t manuf_individualize_device_secret0(
     const dif_lc_ctrl_t *lc_ctrl, const dif_otp_ctrl_t *otp_ctrl,
-    const manuf_individualize_test_tokens_t *tokens);
+    const manuf_cp_provisioning_data_t *provisioning_data);
 
 /**
  * Checks the SECRET0 OTP partition end state.

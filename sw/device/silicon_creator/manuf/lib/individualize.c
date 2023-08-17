@@ -353,7 +353,7 @@ static status_t otp_secret_write(const dif_otp_ctrl_t *otp_ctrl,
 
 status_t manuf_individualize_device_secret0(
     const dif_lc_ctrl_t *lc_ctrl, const dif_otp_ctrl_t *otp_ctrl,
-    const manuf_individualize_test_tokens_t *tokens) {
+    const manuf_cp_provisioning_data_t *provisioning_data) {
   // Check life cycle in TEST_UNLOCKED0.
   TRY(lc_ctrl_testutils_check_lc_state(lc_ctrl, kDifLcCtrlStateTestUnlocked0));
 
@@ -366,10 +366,10 @@ status_t manuf_individualize_device_secret0(
 
   uint64_t hashed_test_unlock_token[kSecret0TestUnlockTokenSizeInBytes];
   uint64_t hashed_test_exit_token[kSecret0TestExitTokenSizeInBytes];
-  TRY(hash_lc_transition_token(tokens->test_unlock_token,
+  TRY(hash_lc_transition_token(provisioning_data->test_unlock_token,
                                kSecret0TestUnlockTokenSizeInBytes,
                                hashed_test_unlock_token));
-  TRY(hash_lc_transition_token(tokens->test_exit_token,
+  TRY(hash_lc_transition_token(provisioning_data->test_exit_token,
                                kSecret0TestExitTokenSizeInBytes,
                                hashed_test_exit_token));
 
