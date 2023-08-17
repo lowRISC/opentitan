@@ -482,12 +482,10 @@ interface chip_if;
 
   // Functional (muxed) interface: UARTs.
   localparam int AssignedUartTxIos[NUM_UARTS] = {
-      top_darjeeling_pkg::MioPadIoc4, top_darjeeling_pkg::MioPadIob5,
-      top_darjeeling_pkg::MioPadIoa5, top_darjeeling_pkg::MioPadIoa1
+      top_darjeeling_pkg::MioPadIoc4
   };
   localparam int AssignedUartRxIos[NUM_UARTS] = {
-      top_darjeeling_pkg::MioPadIoc3, top_darjeeling_pkg::MioPadIob4,
-      top_darjeeling_pkg::MioPadIoa4, top_darjeeling_pkg::MioPadIoa0
+      top_darjeeling_pkg::MioPadIoc3
   };
   bit [NUM_UARTS-1:0] __enable_uart;  // Internal signal.
 
@@ -950,9 +948,6 @@ interface chip_if;
       PeripheralSramCtrlRetAon: path = {path, ".", `DV_STRINGIFY(`SRAM_CTRL_RET_HIER)};
       PeripheralSysrstCtrlAon:  path = {path, ".", `DV_STRINGIFY(`SYSRST_CTRL_HIER)};
       PeripheralUart0:          path = {path, ".", `DV_STRINGIFY(`UART_HIER(0))};
-      PeripheralUart1:          path = {path, ".", `DV_STRINGIFY(`UART_HIER(1))};
-      PeripheralUart2:          path = {path, ".", `DV_STRINGIFY(`UART_HIER(2))};
-      PeripheralUart3:          path = {path, ".", `DV_STRINGIFY(`UART_HIER(3))};
       PeripheralUsbdev:         path = {path, ".", `DV_STRINGIFY(`USBDEV_HIER)};
       default:      `uvm_fatal(MsgId, $sformatf("Bad peripheral: %0s", peripheral.name()))
     endcase

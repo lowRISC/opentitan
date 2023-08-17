@@ -553,9 +553,6 @@ module tb;
           $assertoff(0, dut.top_darjeeling.u_spi_host1);
           $assertoff(0, dut.top_darjeeling.u_sysrst_ctrl_aon);
           $assertoff(0, dut.top_darjeeling.u_uart0);
-          $assertoff(0, dut.top_darjeeling.u_uart1);
-          $assertoff(0, dut.top_darjeeling.u_uart2);
-          $assertoff(0, dut.top_darjeeling.u_uart3);
           $assertoff(0, dut.top_darjeeling.u_usbdev);
         end else begin
           $asserton(0, dut.top_darjeeling.u_flash_ctrl);
@@ -569,9 +566,6 @@ module tb;
           $asserton(0, dut.top_darjeeling.u_spi_host1);
           $asserton(0, dut.top_darjeeling.u_sysrst_ctrl_aon);
           $asserton(0, dut.top_darjeeling.u_uart0);
-          $asserton(0, dut.top_darjeeling.u_uart1);
-          $asserton(0, dut.top_darjeeling.u_uart2);
-          $asserton(0, dut.top_darjeeling.u_uart3);
           $asserton(0, dut.top_darjeeling.u_usbdev);
         end
       end

@@ -59,9 +59,6 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     '{"*sram_ctrl_ret*prim_reg_we_check*", TopDarjeelingAlertIdSramCtrlRetAonFatalError},
     '{"*sysrst_ctrl*prim_reg_we_check*", TopDarjeelingAlertIdSysrstCtrlAonFatalFault},
     '{"*uart0*prim_reg_we_check*", TopDarjeelingAlertIdUart0FatalFault},
-    '{"*uart1*prim_reg_we_check*", TopDarjeelingAlertIdUart1FatalFault},
-    '{"*uart2*prim_reg_we_check*", TopDarjeelingAlertIdUart2FatalFault},
-    '{"*uart3*prim_reg_we_check*", TopDarjeelingAlertIdUart3FatalFault},
     '{"*usbdev*prim_reg_we_check*", TopDarjeelingAlertIdUsbdevFatalFault}
   };
 
