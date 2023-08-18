@@ -217,12 +217,14 @@
     {
       "name": "BOOTSTRAP",
       "bits_per_sec": 8000000,
+      "chip_select": "CN10_6",
       "alias_of": "QSPI"
     },
     {
       "name": "TPM",
       "bits_per_sec": 250000,
-      "alias_of": "SPI2"
+      "chip_select": "IOA7",
+      "alias_of": "QSPI"
     }
   ],
   "uarts": [

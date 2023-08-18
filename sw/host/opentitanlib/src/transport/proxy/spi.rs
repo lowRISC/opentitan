@@ -6,6 +6,7 @@ use anyhow::{bail, ensure, Result};
 use std::rc::Rc;
 
 use super::ProxyError;
+use crate::io::gpio;
 use crate::io::spi::{
     AssertChipSelect, MaxSizes, SpiError, Target, TargetChipDeassert, Transfer, TransferMode,
 };
@@ -78,6 +79,18 @@ impl Target for ProxySpi {
     fn set_max_speed(&self, value: u32) -> Result<()> {
         match self.execute_command(SpiRequest::SetMaxSpeed { value })? {
             SpiResponse::SetMaxSpeed => Ok(()),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+
+    fn set_chip_select(&self, pin: &Rc<dyn gpio::GpioPin>) -> Result<()> {
+        let Some(pin) = pin.get_internal_pin_name() else {
+            bail!(SpiError::InvalidChipSelect)
+        };
+        match self.execute_command(SpiRequest::SetChipSelect {
+            pin: pin.to_string(),
+        })? {
+            SpiResponse::SetChipSelect => Ok(()),
             _ => bail!(ProxyError::UnexpectedReply()),
         }
     }

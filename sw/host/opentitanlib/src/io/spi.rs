@@ -9,7 +9,7 @@ use std::rc::Rc;
 use std::str::FromStr;
 use thiserror::Error;
 
-use super::eeprom;
+use super::{eeprom, gpio};
 use crate::app::TransportWrapper;
 use crate::impl_serializable_error;
 use crate::util::voltage::Voltage;
@@ -21,6 +21,9 @@ pub struct SpiParams {
 
     #[arg(long, help = "SPI bus speed")]
     pub speed: Option<u32>,
+
+    #[arg(long, help = "SPI chip select pin")]
+    pub chip_select: Option<String>,
 
     #[arg(long, help = "SPI bus voltage")]
     pub voltage: Option<Voltage>,
@@ -36,6 +39,9 @@ impl SpiParams {
         default_instance: &str,
     ) -> Result<Rc<dyn Target>> {
         let spi = transport.spi(self.bus.as_deref().unwrap_or(default_instance))?;
+        if let Some(ref cs) = self.chip_select {
+            spi.set_chip_select(&transport.gpio_pin(cs.as_str())?)?;
+        }
         if let Some(speed) = self.speed {
             spi.set_max_speed(speed)?;
         }
@@ -72,13 +78,15 @@ pub enum SpiError {
     InvalidTransferMode(String),
     #[error("Invalid SPI voltage: {0}")]
     InvalidVoltage(Voltage),
+    #[error("Given pin not supported as chip select")]
+    InvalidChipSelect,
 }
 impl_serializable_error!(SpiError);
 
 /// Represents the SPI transfer mode.
 /// See <https://en.wikipedia.org/wiki/Serial_Peripheral_Interface#Clock_polarity_and_phase>
 /// for details about SPI transfer modes.
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Serialize, Deserialize)]
 pub enum TransferMode {
     /// `Mode0` is CPOL=0, CPHA=0.
     Mode0,
@@ -160,6 +168,11 @@ pub trait Target {
     fn get_max_speed(&self) -> Result<u32>;
     /// Sets the maximum allowed speed of the SPI bus.
     fn set_max_speed(&self, max_speed: u32) -> Result<()>;
+
+    /// Sets which pin should be used as Chip Select.  Not supported by most backend transports.
+    fn set_chip_select(&self, _: &Rc<dyn gpio::GpioPin>) -> Result<()> {
+        Err(SpiError::InvalidChipSelect.into())
+    }
 
     /// Returns the maximum number of transfers allowed in a single transaction.
     fn get_max_transfer_count(&self) -> Result<usize>;
