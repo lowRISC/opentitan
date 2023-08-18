@@ -9,6 +9,7 @@ use std::time::Duration;
 use clap::Args;
 use humantime::parse_duration;
 
+use crate::transport::qemu::{Options, Qemu};
 use crate::transport::Transport;
 
 #[derive(Debug, Args)]
@@ -47,6 +48,17 @@ pub struct QemuOpts {
     pub qemu_timeout: Duration,
 }
 
-pub fn create(_args: &QemuOpts) -> anyhow::Result<Box<dyn Transport>> {
-    todo!()
+/// Create a [`Qemu`] transport based on some command line options.
+pub fn create(args: &QemuOpts) -> anyhow::Result<Box<dyn Transport>> {
+    let options = Options {
+        executable: args.qemu_bin.clone(),
+        machine: args.qemu_machine.clone(),
+        machine_props: args.qemu_machine_prop.clone(),
+        rom_image: args.qemu_rom.clone(),
+        flash_image: args.qemu_flash.clone(),
+        otp_image: args.qemu_otp.clone(),
+        extra_args: args.qemu_args.clone(),
+        timeout: args.qemu_timeout,
+    };
+    Ok(Box::new(Qemu::from_options(options)?))
 }
