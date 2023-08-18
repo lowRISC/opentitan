@@ -190,6 +190,11 @@
       uvm_test_seq: rv_dm_cmderr_not_supported_vseq
       reseed: 2
     }
+    {
+      name: rv_dm_cmderr_exception
+      uvm_test_seq: rv_dm_cmderr_exception_vseq
+      reseed: 2
+    }
   ]
 
   // List of regressions.

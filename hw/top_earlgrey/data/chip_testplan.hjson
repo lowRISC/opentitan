@@ -16,6 +16,7 @@
     "hw/top_earlgrey/data/chip_conn_testplan.hjson",
 
     // IP block specific top level test plans.
+    "hw/top_earlgrey/data/ip/chip_hmac_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_kmac_testplan.hjson",
   ]
 
@@ -2029,7 +2030,7 @@
 
     ///////////////////////////////////////////////////////
     // Security Peripherals                              //
-    // AES, HMAC, KMAC, CSRNG, ENTROPY_SRC, KEYMGR, OTBN //
+    // AES, CSRNG, ENTROPY_SRC, KEYMGR, OTBN             //
     ///////////////////////////////////////////////////////
 
     // AES (pre-verified IP) integration tests:
@@ -2123,39 +2124,6 @@
             '''
       stage: V2S
       tests: ["chip_sw_aes_masking_off"]
-    }
-
-    // HMAC (pre-verified IP) integration tests:
-    {
-      name: chip_sw_hmac_enc
-      desc: '''Verify HMAC operation.
-
-            SW test verifies an HMAC operation with a known key, plain text and digest (pick one of
-            the NIST vectors). SW test verifies the digest against the pre-computed value. Verify
-            the HMAC done and FIFO empty interrupts as a part of this test.
-            '''
-      stage: V2
-      tests: ["chip_sw_hmac_enc",
-              "chip_sw_hmac_enc_jitter_en"]
-    }
-    {
-      name: chip_sw_hmac_idle
-      desc: '''Verify the HMAC clk idle signal to clkmgr.
-
-            - Write the HMAC clk hint to 0 within clkmgr to indicate HMAC clk can be gated and
-              verify that the HMAC clk hint status within clkmgr reads 0 (HMAC is disabled).
-            - Write the HMAC clk hint to 1 within clkmgr to indicate HMAC clk can be enabled.
-              Verify that the HMAC clk hint status within clkmgr reads 1 (HMAC is enabled).
-            - Initiate an HMAC operation with a known key, plain text and digest.
-              Write HMAC clock hint to 0 and verify the HMAC clk hint status within clkmgr reads 1
-              (HMAC is enabled), before the HMAC operation is complete.
-            - After the HMAC operation is complete, verify the digest for correctness. Verify that
-              the HMAC clk hint status within clkmgr now reads 0 again (HMAC is disabled).
-            - This process is repeated for two hmac operations needed to verify the resulting hmac
-              digest.
-            '''
-      stage: V2
-      tests: ["chip_sw_hmac_enc_idle"]
     }
 
     // ENTROPY_SRC (pre-verified IP) integration tests:
