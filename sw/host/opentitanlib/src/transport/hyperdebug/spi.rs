@@ -10,6 +10,7 @@ use std::rc::Rc;
 use zerocopy::{AsBytes, FromBytes};
 
 use crate::io::eeprom;
+use crate::io::gpio::GpioPin;
 use crate::io::spi::{
     AssertChipSelect, MaxSizes, SpiError, Target, TargetChipDeassert, Transfer, TransferMode,
 };
@@ -649,6 +650,15 @@ impl Target for HyperdebugSpiTarget {
                 self.inner
                     .cmd_no_output(&format!("spisetspeed {} {}", &self.target_idx, frequency))
             })
+    }
+
+    fn set_chip_select(&self, pin: &Rc<dyn GpioPin>) -> Result<()> {
+        self.inner.cmd_no_output(&format!(
+            "spi set cs {} {}",
+            &self.target_idx,
+            pin.get_internal_pin_name()
+                .ok_or(SpiError::InvalidChipSelect)?
+        ))
     }
 
     fn get_max_transfer_count(&self) -> Result<usize> {

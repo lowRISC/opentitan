@@ -5,6 +5,7 @@
 //! Schema for configuration files, exact encoding json/xml to be worked out.
 
 use crate::io::gpio::{PinMode, PullMode};
+use crate::io::spi::TransferMode;
 
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -105,12 +106,20 @@ pub struct UartConfiguration {
 }
 
 /// Configuration of a particular SPI controller port.
-#[derive(Deserialize, Clone, Debug)]
+#[derive(Default, Deserialize, Clone, Debug)]
 pub struct SpiConfiguration {
     /// The user-visible name of the SPI controller port.
     pub name: String,
+    /// SPI transfer mode to use with this target.
+    /// See <https://en.wikipedia.org/wiki/Serial_Peripheral_Interface#Clock_polarity_and_phase>
+    /// for details about SPI transfer modes.
+    pub mode: Option<TransferMode>,
+    /// Number of bits in each SPI transmissiong "word".
+    pub bits_per_word: Option<u32>,
     /// Data communication rate in bits/second.
     pub bits_per_sec: Option<u32>,
+    /// Which GPIO pin should be used for chip select.
+    pub chip_select: Option<String>,
     /// Name of the SPI controller as defined by the transport.
     pub alias_of: Option<String>,
 }

@@ -179,6 +179,10 @@ impl<'a> TransportCommandHandler<'a> {
                         instance.set_max_speed(*value)?;
                         Ok(Response::Spi(SpiResponse::SetMaxSpeed))
                     }
+                    SpiRequest::SetChipSelect { pin } => {
+                        instance.set_chip_select(&self.transport.gpio_pin(pin)?)?;
+                        Ok(Response::Spi(SpiResponse::SetChipSelect))
+                    }
                     SpiRequest::GetMaxTransferCount => {
                         let number = instance.get_max_transfer_count()?;
                         Ok(Response::Spi(SpiResponse::GetMaxTransferCount { number }))

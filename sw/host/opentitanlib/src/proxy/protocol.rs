@@ -147,6 +147,9 @@ pub enum SpiRequest {
     SetMaxSpeed {
         value: u32,
     },
+    SetChipSelect {
+        pin: String,
+    },
     GetMaxTransferCount,
     GetMaxTransferSizes,
     GetEepromMaxTransferSizes,
@@ -174,6 +177,7 @@ pub enum SpiResponse {
         speed: u32,
     },
     SetMaxSpeed,
+    SetChipSelect,
     GetMaxTransferCount {
         number: usize,
     },

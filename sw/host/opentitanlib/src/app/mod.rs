@@ -6,13 +6,14 @@
 pub mod command;
 pub mod config;
 
+use crate::io::eeprom;
 use crate::io::emu::Emulator;
 use crate::io::gpio::{GpioMonitoring, GpioPin, PinMode, PullMode};
 use crate::io::i2c::Bus;
 use crate::io::ioexpander::IoExpander;
 use crate::io::jtag::{Jtag, JtagParams};
 use crate::io::nonblocking_help::NonblockingHelp;
-use crate::io::spi::Target;
+use crate::io::spi::{self, Target};
 use crate::io::uart::Uart;
 use crate::transport::{
     ioexpander, Capability, ProgressIndicator, ProxyOps, Transport, TransportError,
@@ -114,13 +115,13 @@ pub struct PinConfiguration {
     pub volts: Option<f32>,
 }
 
-fn merge_field<T>(f1: &mut Option<T>, f2: Option<T>) -> Result<(), ()>
+fn merge_field<T>(f1: &mut Option<T>, f2: &Option<T>) -> Result<(), ()>
 where
-    T: PartialEq<T> + Copy,
+    T: PartialEq<T> + Clone,
 {
     match (&*f1, f2) {
-        (Some(v1), Some(v2)) if *v1 != v2 => return Err(()),
-        (None, _) => *f1 = f2,
+        (Some(v1), Some(v2)) if *v1 != *v2 => return Err(()),
+        (None, _) => *f1 = f2.clone(),
         _ => (),
     }
     Ok(())
@@ -132,24 +133,21 @@ impl PinConfiguration {
     /// declarations from multiple files, as long as they are not conflicting (e.g. both PushPull
     /// and OpenDrain, or both high and low level.)
     fn merge(&mut self, other: &PinConfiguration) -> Result<(), ()> {
-        merge_field(&mut self.mode, other.mode)?;
-        merge_field(&mut self.level, other.level)?;
-        merge_field(&mut self.pull_mode, other.pull_mode)?;
-        merge_field(&mut self.volts, other.volts)?;
+        merge_field(&mut self.mode, &other.mode)?;
+        merge_field(&mut self.level, &other.level)?;
+        merge_field(&mut self.pull_mode, &other.pull_mode)?;
+        merge_field(&mut self.volts, &other.volts)?;
         Ok(())
     }
 }
 
 #[derive(Default, Debug)]
 pub struct SpiConfiguration {
+    pub underlying_instance: String,
+    pub mode: Option<spi::TransferMode>,
+    pub chip_select: Option<String>,
+    pub bits_per_word: Option<u32>,
     pub bits_per_sec: Option<u32>,
-}
-
-impl SpiConfiguration {
-    fn merge(&mut self, other: &SpiConfiguration) -> Result<(), ()> {
-        merge_field(&mut self.bits_per_sec, other.bits_per_sec)?;
-        Ok(())
-    }
 }
 
 #[derive(Default, Debug)]
@@ -159,7 +157,7 @@ pub struct I2cConfiguration {
 
 impl I2cConfiguration {
     fn merge(&mut self, other: &I2cConfiguration) -> Result<(), ()> {
-        merge_field(&mut self.bits_per_sec, other.bits_per_sec)?;
+        merge_field(&mut self.bits_per_sec, &other.bits_per_sec)?;
         Ok(())
     }
 }
@@ -171,10 +169,9 @@ pub struct TransportWrapperBuilder {
     pin_alias_map: HashMap<String, String>,
     pin_on_io_expander_map: HashMap<String, config::IoExpanderPin>,
     uart_map: HashMap<String, String>,
-    spi_map: HashMap<String, String>,
     i2c_map: HashMap<String, String>,
     pin_conf_list: Vec<(String, PinConfiguration)>,
-    spi_conf_list: Vec<(String, SpiConfiguration)>,
+    spi_conf_map: HashMap<String, config::SpiConfiguration>,
     i2c_conf_list: Vec<(String, I2cConfiguration)>,
     strapping_conf_map: HashMap<String, Vec<(String, PinConfiguration)>>,
     io_expander_conf_map: HashMap<String, config::IoExpander>,
@@ -189,7 +186,6 @@ pub struct TransportWrapper {
     pin_map: HashMap<String, String>,
     artificial_pin_map: HashMap<String, Rc<dyn GpioPin>>,
     uart_map: HashMap<String, String>,
-    spi_map: HashMap<String, String>,
     i2c_map: HashMap<String, String>,
     pin_conf_map: HashMap<String, PinConfiguration>,
     spi_conf_map: HashMap<String, SpiConfiguration>,
@@ -206,10 +202,9 @@ impl TransportWrapperBuilder {
             pin_alias_map: HashMap::new(),
             pin_on_io_expander_map: HashMap::new(),
             uart_map: HashMap::new(),
-            spi_map: HashMap::new(),
             i2c_map: HashMap::new(),
             pin_conf_list: Vec::new(),
-            spi_conf_list: Vec::new(),
+            spi_conf_map: HashMap::new(),
             i2c_conf_list: Vec::new(),
             strapping_conf_map: HashMap::new(),
             io_expander_conf_map: HashMap::new(),
@@ -247,17 +242,21 @@ impl TransportWrapperBuilder {
     }
 
     fn record_spi_conf(
-        spi_conf_list: &mut Vec<(String, SpiConfiguration)>,
+        spi_conf_map: &mut HashMap<String, config::SpiConfiguration>,
         spi_conf: &config::SpiConfiguration,
-    ) {
-        if spi_conf.bits_per_sec.is_none() {
-            return;
-        }
-        let mut conf_entry: SpiConfiguration = SpiConfiguration::default();
-        if let Some(bits_per_sec) = spi_conf.bits_per_sec {
-            conf_entry.bits_per_sec = Some(bits_per_sec);
-        }
-        spi_conf_list.push((spi_conf.name.to_string(), conf_entry))
+    ) -> Result<(), ()> {
+        let entry = spi_conf_map
+            .entry(spi_conf.name.to_string())
+            .or_insert_with(|| config::SpiConfiguration {
+                name: spi_conf.name.clone(),
+                ..Default::default()
+            });
+        merge_field(&mut entry.mode, &spi_conf.mode)?;
+        merge_field(&mut entry.bits_per_word, &spi_conf.bits_per_word)?;
+        merge_field(&mut entry.bits_per_sec, &spi_conf.bits_per_sec)?;
+        merge_field(&mut entry.chip_select, &spi_conf.chip_select)?;
+        merge_field(&mut entry.alias_of, &spi_conf.alias_of)?;
+        Ok(())
     }
 
     fn record_i2c_conf(
@@ -331,11 +330,12 @@ impl TransportWrapperBuilder {
             }
         }
         for spi_conf in file.spi {
-            if let Some(alias_of) = &spi_conf.alias_of {
-                self.spi_map
-                    .insert(spi_conf.name.to_uppercase(), alias_of.clone());
-            }
-            Self::record_spi_conf(&mut self.spi_conf_list, &spi_conf);
+            Self::record_spi_conf(&mut self.spi_conf_map, &spi_conf).map_err(|_| {
+                TransportError::InconsistentConf(
+                    TransportInterfaceType::Spi,
+                    spi_conf.name.to_string(),
+                )
+            })?;
         }
         for i2c_conf in file.i2c {
             if let Some(alias_of) = &i2c_conf.alias_of {
@@ -429,21 +429,54 @@ impl TransportWrapperBuilder {
         Ok(result_pin_conf_map)
     }
 
-    fn consolidate_spi_conf_map(
-        spi_alias_map: &HashMap<String, String>,
-        spi_conf_list: &Vec<(String, SpiConfiguration)>,
-    ) -> Result<HashMap<String, SpiConfiguration>> {
-        let mut result_spi_conf_map: HashMap<String, SpiConfiguration> = HashMap::new();
-        for (name, conf) in spi_conf_list {
-            result_spi_conf_map
-                .entry(map_name(spi_alias_map, name))
-                .or_default()
-                .merge(conf)
-                .map_err(|_| {
-                    TransportError::InconsistentConf(TransportInterfaceType::Spi, name.to_string())
-                })?;
+    fn resolve_spi_conf(
+        name: &str,
+        spi_conf_map: &HashMap<String, config::SpiConfiguration>,
+        pin_alias_map: &HashMap<String, String>,
+    ) -> SpiConfiguration {
+        if let Some(entry) = spi_conf_map.get(name) {
+            let mut conf = if let Some(ref alias_of) = entry.alias_of {
+                Self::resolve_spi_conf(alias_of.as_str(), spi_conf_map, pin_alias_map)
+            } else {
+                SpiConfiguration {
+                    underlying_instance: name.to_string(),
+                    ..Default::default()
+                }
+            };
+            // Apply configuration from this level
+            if let Some(chip_select) = entry.chip_select.as_ref() {
+                conf.chip_select = Some(map_name(pin_alias_map, chip_select));
+            }
+            if let Some(mode) = entry.mode {
+                conf.mode = Some(mode);
+            }
+            if let Some(bits_per_sec) = entry.bits_per_sec {
+                conf.bits_per_sec = Some(bits_per_sec);
+            }
+            if let Some(bits_per_word) = entry.bits_per_word {
+                conf.bits_per_word = Some(bits_per_word);
+            }
+            conf
+        } else {
+            SpiConfiguration {
+                underlying_instance: name.to_string(),
+                ..Default::default()
+            }
         }
-        Ok(result_spi_conf_map)
+    }
+
+    fn consolidate_spi_conf_map(
+        spi_conf_map: &HashMap<String, config::SpiConfiguration>,
+        pin_alias_map: &HashMap<String, String>,
+    ) -> Result<HashMap<String, SpiConfiguration>> {
+        let mut resolved_spi_conf_map = HashMap::new();
+        for name in spi_conf_map.keys() {
+            resolved_spi_conf_map.insert(
+                name.clone(),
+                Self::resolve_spi_conf(name, spi_conf_map, pin_alias_map),
+            );
+        }
+        Ok(resolved_spi_conf_map)
     }
 
     fn consolidate_i2c_conf_map(
@@ -494,7 +527,7 @@ impl TransportWrapperBuilder {
                 Self::consolidate_pin_conf_map(&self.pin_alias_map, &pin_conf_map)?,
             );
         }
-        let spi_conf_map = Self::consolidate_spi_conf_map(&self.spi_map, &self.spi_conf_list)?;
+        let spi_conf_map = Self::consolidate_spi_conf_map(&self.spi_conf_map, &self.pin_alias_map)?;
         let i2c_conf_map = Self::consolidate_i2c_conf_map(&self.i2c_map, &self.i2c_conf_list)?;
         let mut transport_wrapper = TransportWrapper {
             transport: Rc::from(transport),
@@ -502,7 +535,6 @@ impl TransportWrapperBuilder {
             pin_map: self.pin_alias_map,
             artificial_pin_map: HashMap::new(),
             uart_map: self.uart_map,
-            spi_map: self.spi_map,
             i2c_map: self.i2c_map,
             pin_conf_map,
             spi_conf_map,
@@ -569,7 +601,13 @@ impl TransportWrapper {
 
     /// Returns a SPI [`Target`] implementation.
     pub fn spi(&self, name: &str) -> Result<Rc<dyn Target>> {
-        self.transport.spi(map_name(&self.spi_map, name).as_str())
+        let name = name.to_uppercase();
+        if let Some(spi_conf) = self.spi_conf_map.get(&name) {
+            let wrapper = SpiWrapper::new(&*self.transport, spi_conf)?;
+            Ok(Rc::new(wrapper))
+        } else {
+            self.transport.spi(name.as_str())
+        }
     }
 
     /// Returns a I2C [`Bus`] implementation.
@@ -856,5 +894,115 @@ impl PinStrapping {
             }
         }
         Ok(())
+    }
+}
+
+/// Several `SpiWrapper` objects can exist concurrently, sharing the same underlying transport
+/// target, but e.g. having distinct chip select and clock speed settings.  (Terminology is a
+/// little muddy here, the underlying object is more properly representing the SPI "bus", and this
+/// wrapper a particular target chip on the bus.)
+///
+/// Calling e.g. `set_max_speed()` on a `SpiWrapper` will not immediately be propagated to the
+/// underlying transport, instead, the accumulated settings are kept in the `SpiWrapper`, and
+/// propagated only whenever an actual SPI transaction is initiated.
+struct SpiWrapper {
+    /// Reference to the `Target` instance of the underlying transport.
+    underlying_target: Rc<dyn Target>,
+    my_mode: Cell<Option<spi::TransferMode>>,
+    my_bits_per_word: Cell<Option<u32>>,
+    my_max_speed: Cell<Option<u32>>,
+    my_chip_select: RefCell<Option<Rc<dyn GpioPin>>>,
+}
+
+impl SpiWrapper {
+    fn new(transport: &dyn Transport, conf: &SpiConfiguration) -> Result<Self> {
+        Ok(Self {
+            underlying_target: transport.spi(conf.underlying_instance.as_str())?,
+            my_mode: Cell::new(conf.mode),
+            my_bits_per_word: Cell::new(conf.bits_per_word),
+            my_max_speed: Cell::new(conf.bits_per_sec),
+            my_chip_select: RefCell::new(match conf.chip_select {
+                Some(ref cs) => Some(transport.gpio_pin(cs.as_str())?),
+                None => None,
+            }),
+        })
+    }
+
+    fn apply_settings_to_underlying(&self) -> Result<()> {
+        if let Some(mode) = self.my_mode.get() {
+            self.underlying_target.set_transfer_mode(mode)?;
+        }
+        if let Some(bits_per_word) = self.my_bits_per_word.get() {
+            self.underlying_target.set_bits_per_word(bits_per_word)?;
+        }
+        if let Some(max_speed) = self.my_max_speed.get() {
+            self.underlying_target.set_max_speed(max_speed)?;
+        }
+        if let Some(chip_select) = self.my_chip_select.borrow().as_ref() {
+            self.underlying_target.set_chip_select(chip_select)?;
+        }
+        Ok(())
+    }
+}
+
+impl Target for SpiWrapper {
+    fn get_transfer_mode(&self) -> Result<spi::TransferMode> {
+        self.underlying_target.get_transfer_mode()
+    }
+    fn set_transfer_mode(&self, mode: spi::TransferMode) -> Result<()> {
+        self.my_mode.set(Some(mode));
+        Ok(())
+    }
+
+    fn get_bits_per_word(&self) -> Result<u32> {
+        self.underlying_target.get_bits_per_word()
+    }
+    fn set_bits_per_word(&self, bits_per_word: u32) -> Result<()> {
+        self.my_bits_per_word.set(Some(bits_per_word));
+        Ok(())
+    }
+
+    fn get_max_speed(&self) -> Result<u32> {
+        self.underlying_target.get_max_speed()
+    }
+    fn set_max_speed(&self, max_speed: u32) -> Result<()> {
+        self.my_max_speed.set(Some(max_speed));
+        Ok(())
+    }
+
+    fn set_chip_select(&self, chip_select: &Rc<dyn GpioPin>) -> Result<()> {
+        *self.my_chip_select.borrow_mut() = Some(Rc::clone(chip_select));
+        Ok(())
+    }
+
+    fn get_max_transfer_count(&self) -> Result<usize> {
+        self.underlying_target.get_max_transfer_count()
+    }
+
+    fn get_max_transfer_sizes(&self) -> Result<spi::MaxSizes> {
+        self.underlying_target.get_max_transfer_sizes()
+    }
+
+    fn set_voltage(&self, voltage: crate::util::voltage::Voltage) -> Result<()> {
+        self.underlying_target.set_voltage(voltage)
+    }
+
+    fn run_transaction(&self, transaction: &mut [spi::Transfer]) -> Result<()> {
+        self.apply_settings_to_underlying()?;
+        self.underlying_target.run_transaction(transaction)
+    }
+
+    fn get_eeprom_max_transfer_sizes(&self) -> Result<spi::MaxSizes> {
+        self.underlying_target.get_eeprom_max_transfer_sizes()
+    }
+
+    fn run_eeprom_transactions(&self, transactions: &mut [eeprom::Transaction]) -> Result<()> {
+        self.apply_settings_to_underlying()?;
+        self.underlying_target.run_eeprom_transactions(transactions)
+    }
+
+    fn assert_cs(self: Rc<Self>) -> Result<spi::AssertChipSelect> {
+        self.apply_settings_to_underlying()?;
+        Rc::clone(&self.underlying_target).assert_cs()
     }
 }
