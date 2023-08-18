@@ -176,7 +176,6 @@ module otbn_top_sim (
   bind otbn_core otbn_tracer u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_if));
 
   assign u_otbn_core.i_otbn_trace_if.scramble_state_err_i = '0;
-  assign u_otbn_core.i_otbn_trace_if.ext_mubi_err_i = '0;
   assign u_otbn_core.i_otbn_trace_if.missed_gnt_i = '0;
 
   // Convert from core_err_bits_t to err_bits_t
