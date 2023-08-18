@@ -75,6 +75,33 @@
       local:   "true"
     }
   ],
+  features: [
+    {
+      name: "HMAC.MODE.SHA2",
+      desc: '''SHA2 hashing algorithm supporting the following security strength configurations:
+            SHA2-256. Compliant with NIST FIPS 180-4.
+            '''
+    }
+    {
+      name: "HMAC.MODE.HMAC",
+      desc: '''Keyed-Hash Message Authentication Code (HMAC) supporting the following security
+            strength configurations: HMAC-SHA2-256. Compliant with NIST FIPS 198-1 which will be
+            superseded by NIST SP 800-224.
+            '''
+    }
+    {
+      name: "HMAC.ENDIANNESS.MESSAGE",
+      desc: "Configurable input message endianness."
+    }
+    {
+      name: "HMAC.ENDIANNESS.DIGEST",
+      desc: "Configurable output digest endianness."
+    }
+    {
+      name: "HMAC.SECURE_WIPE",
+      desc: "Wipe of internal state with constant value provided by software."
+    }
+  ]
   countermeasures: [
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."

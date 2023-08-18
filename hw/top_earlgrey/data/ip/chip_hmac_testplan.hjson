@@ -1,0 +1,134 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: chip_hmac
+  testpoints: [
+    // HMAC integration tests
+    {
+      name: chip_sw_hmac_enc
+      desc: '''Verify HMAC operation.
+
+            SW test verifies an HMAC operation with a known key, plain text and digest (pick one of
+            the NIST vectors). SW test verifies the digest against the pre-computed value. Verify
+            the HMAC done and FIFO empty interrupts as a part of this test.
+            '''
+      stage: V2
+      si_stage: SV2
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      tests: ["chip_sw_hmac_enc",
+              "chip_sw_hmac_enc_jitter_en"]
+      bazel: []
+    }
+    {
+      name: chip_sw_hmac_idle
+      desc: '''Verify the HMAC clk idle signal to clkmgr.
+
+            - Write the HMAC clk hint to 0 within clkmgr to indicate HMAC clk can be gated and
+              verify that the HMAC clk hint status within clkmgr reads 0 (HMAC is disabled).
+            - Write the HMAC clk hint to 1 within clkmgr to indicate HMAC clk can be enabled.
+              Verify that the HMAC clk hint status within clkmgr reads 1 (HMAC is enabled).
+            - Initiate an HMAC operation with a known key, plain text and digest.
+              Write HMAC clock hint to 0 and verify the HMAC clk hint status within clkmgr reads 1
+              (HMAC is enabled), before the HMAC operation is complete.
+            - After the HMAC operation is complete, verify the digest for correctness. Verify that
+              the HMAC clk hint status within clkmgr now reads 0 again (HMAC is disabled).
+            - This process is repeated for two hmac operations needed to verify the resulting hmac
+              digest.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      tests: ["chip_sw_hmac_enc_idle"]
+      bazel: []
+    }
+    {
+      name: chip_sw_hmac_sha2_stress
+      desc: '''Verify SHA2 mode of operation.
+
+            - Verify the following digest sizes: 256
+            - Verify input message size of 0 bytes.
+            - Verify multiple input message sizes as defined in NIST test vectors.
+            - Use endianess configuration used in the crypto library.
+            '''
+      features: ["HMAC.MODE.SHA2"]
+      stage: V3
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      tests: []
+      bazel: []
+    }
+    {
+      name: chip_sw_hmac_stress
+      desc: '''Verify HMAC mode of operation.
+
+            - Verify the following security configurations: HMAC-SHA2-256
+            - Verify input message size of 0 bytes.
+            - Verify multiple input message sizes as defined in NIST test vectors.
+            - Use endianess configuration used in the crypto library.
+            '''
+      features: ["HMAC.MODE.HMAC"]
+      stage: V3
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      tests: []
+      bazel: []
+    }
+    {
+      name: chip_sw_hmac_endianess
+      desc: '''Verify all HMAC endinaness options
+
+            This is a low priority test P3.
+
+            Test the permutation of all endinaness configuration options for message and digest
+            registers.
+            '''
+      features: [
+        "HMAC.ENDIANNESS.MESSAGE",
+        "HMAC.ENDIANNESS.DIGEST",
+      ]
+      stage: V3
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      tests: []
+      bazel: []
+    }
+    {
+      name: chip_sw_hmac_secure_wipe
+      desc: '''Verify HMAC secure wipe
+
+            - Perform HMAC operation with known key and message.
+            - Store MAC digest in memory after finalizing HMAC operation.
+            - Perform secure wipe operation.
+            - Read digest registers. They should not match the previously calculated digest.
+            - Process HMAC operation with initial known message.
+            - Compare MAC disgest against original result. The result must not match.
+            '''
+      features: ["HMAC.SECURE_WIPE"]
+      stage: V3
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      tests: []
+      bazel: []
+    }
+    {
+      name: chip_sw_hmac_error_conditions
+      desc: '''Verify reporting of HMAC errors
+
+            This is a negative test case covering the following error conditions:
+
+            - `SwPushMsgWhenShaDisabled`: Push message when SHA is disabled.
+            - `SwHashStartWhenShaDisabled`: Start hash operation when SHA is disabled.
+            - `SwUpdateSecretKeyInProcess`: Update secret key when hash is in progress.
+            - `SwHashStartWhenActive`: Issue hash start when hash is in progress.
+            - `SwPushMsgWhenDisallowed`: Push message when HMAC is not idle.
+            '''
+      features: []
+      stage: V3
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      tests: []
+      bazel: []
+    }
+  ]
+}
