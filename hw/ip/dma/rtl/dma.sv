@@ -13,12 +13,6 @@ module dma
     parameter bit                   EnableDataIntgGen    = 1'b1,
     parameter logic [RsvdWidth-1:0] TlUserRsvd           = '0,
     parameter int                   NumLsioTriggers      = dma_pkg::NUM_LSIO_TRIGGERS,
-    parameter int unsigned PlicLsioPlic[NumLsioTriggers] = '{
-      32'h1234567,
-      32'h1234567,
-      32'h1234567,
-      32'h1234567
-    },
     parameter logic [SYS_RACL_WIDTH-1:0] SysRacl         = '0,
     parameter integer                  OtAgentId         = 0
 ) (
@@ -52,8 +46,9 @@ module dma
   dma_reg2hw_t reg2hw;
   dma_hw2reg_t hw2reg;
 
-  localparam int unsigned TRANSFER_BYTES_WIDTH = $bits(reg2hw.total_data_size.q);
-  localparam int unsigned NR_SHA_DIGEST_ELEMTS = 8;
+  localparam int unsigned TRANSFER_BYTES_WIDTH    = $bits(reg2hw.total_data_size.q);
+  localparam int unsigned INT_CLEAR_SOURCES_WIDTH = $clog2(NumIntClearSources);
+  localparam int unsigned NR_SHA_DIGEST_ELEMTS    = 8;
 
   // Signals for both TL interfaces
   logic                       dma_host_tlul_req_valid,    dma_ctn_tlul_req_valid;
@@ -75,6 +70,9 @@ module dma
   logic dma_state_error;
   dma_ctrl_state_e ctrl_state_q, ctrl_state_d;
 
+  logic [INT_CLEAR_SOURCES_WIDTH-1:0] clear_index_d, clear_index_q;
+  logic                               clear_index_en;
+
   logic [DmaErrLast-1:0] next_error;
   logic bad_src_addr;
   logic bad_dst_addr;
@@ -95,6 +93,17 @@ module dma
 
   logic [SYS_METADATA_WIDTH-1:0] src_metadata;
   assign src_metadata = SYS_METADATA_WIDTH'(1'b1) << OtAgentId;
+
+  // Combine the writes of multiregs to a single signal for clock gating control
+  logic sw_int_source_wr;
+  always_comb begin
+    sw_int_source_wr = 1'b0;
+    for (int i = 0; i < NumIntClearSources; ++i) begin
+      sw_int_source_wr = sw_int_source_wr             ||
+                         reg2hw.int_source_addr[i].qe ||
+                         reg2hw.int_source_wr_val[i].qe;
+    end
+  end
 
   logic sw_reg_wr, sw_reg_wr1, sw_reg_wr2;
   assign sw_reg_wr = reg2hw.source_address_lo.qe                           ||
@@ -118,6 +127,8 @@ module dma
                      reg2hw.status.busy.qe                                 ||
                      reg2hw.status.done.qe                                 ||
                      reg2hw.status.aborted.qe                              ||
+                     reg2hw.clear_int_src.qe                               ||
+                     sw_int_source_wr                                      ||
                      reg2hw.status.error.qe                                ||
                      reg2hw.status.error_code.qe;
   prim_flop #(
@@ -215,7 +226,7 @@ module dma
     .tl_i           ( tl_host_i                        )
   );
 
-  // Adapter from the DMA to the ctn
+  // Adapter from the DMA to the CTN
   tlul_adapter_host #(
     .EnableDataIntgGen(EnableDataIntgGen)
   ) u_dma_ctn_tlul_host (
@@ -240,18 +251,14 @@ module dma
     .tl_i           ( tl_ctn_i                         )
   );
 
-  logic [top_pkg::TL_AW-1:0]  plic_clear_addr;
+  // Masking incoming handshake triggers with their enable
   logic [NumLsioTriggers-1:0] lsio_trigger;
   logic                       handshake_interrupt;
   always_comb begin
     lsio_trigger = '0;
-    plic_clear_addr = '0;
 
     for (int i = 0; i < NumLsioTriggers; i++) begin
       lsio_trigger[i] = lsio_trigger_i[i] && reg2hw.handshake_interrupt_enable.q[i];
-      if (lsio_trigger[i]) begin
-        plic_clear_addr = PlicLsioPlic[i];
-      end
     end
     handshake_interrupt = (|lsio_trigger);
   end
@@ -340,6 +347,16 @@ module dma
     .en_i  ( capture_be   ),
     .d_i   ( req_dst_be_d ),
     .q_o   ( req_dst_be_q )
+  );
+
+  prim_generic_flop_en #(
+    .Width(INT_CLEAR_SOURCES_WIDTH)
+  ) u_clear_index (
+    .clk_i ( gated_clk      ),
+    .rst_ni( rst_ni         ),
+    .en_i  ( clear_index_en ),
+    .d_i   ( clear_index_d  ),
+    .q_o   ( clear_index_q  )
   );
 
   logic use_inline_hashing;
@@ -466,6 +483,9 @@ module dma
     capture_ctn_return_data  = 1'b0;
     capture_sys_return_data  = 1'b0;
 
+    clear_index_d  = '0;
+    clear_index_en = '0;
+
     read_rsp_error  = 1'b0;
     dma_state_error = 1'b0;
 
@@ -493,31 +513,68 @@ module dma
           if (!cfg_handshake_en) begin
             ctrl_state_d = DmaAddrSetup;
           end else if (cfg_handshake_en && |lsio_trigger) begin // if handshake wait for interrupt
-            ctrl_state_d = DmaClearPlic;
+            if (|reg2hw.clear_int_src.q) begin
+              clear_index_en = 1'b1;
+              clear_index_d  = '0;
+              ctrl_state_d   = DmaClearIntrSrc;
+            end else begin
+              ctrl_state_d = DmaAddrSetup;
+            end
           end
         end
       end
 
-      DmaClearPlic: begin
-        dma_ctn_tlul_req_valid = 1'b1;
-        dma_ctn_tlul_req_addr  = plic_clear_addr;  // TLUL 4B aligned
-        dma_ctn_tlul_req_we    = 1'b1;
-        dma_ctn_tlul_req_wdata = '0;
-        dma_ctn_tlul_req_be    = {top_pkg::TL_DBW{1'b1}};
+      DmaClearIntrSrc: begin
+        // Clear the interrupt by writing
+        if(reg2hw.clear_int_src.q[clear_index_q]) begin
+          dma_ctn_tlul_req_valid = 1'b1;
+          dma_ctn_tlul_req_addr  = reg2hw.int_source_addr[clear_index_q].q;  // TLUL 4B aligned
+          dma_ctn_tlul_req_we    = 1'b1;
+          dma_ctn_tlul_req_wdata = reg2hw.int_source_wr_val[clear_index_q].q;
+          dma_ctn_tlul_req_be    = {top_pkg::TL_DBW{1'b1}};
 
-        if (dma_ctn_tlul_gnt) begin
-          ctrl_state_d = DmaWaitClearPlicResponse;
+          if (dma_ctn_tlul_gnt) begin
+            clear_index_en = 1'b1;
+            clear_index_d  = clear_index_q + INT_CLEAR_SOURCES_WIDTH'(1'b1);
+            ctrl_state_d   = DmaWaitIntrSrcResponse;
+          end
+
+          // Writes also get a resp valid, but no data.
+          // Need to wait for this to not overrun TLUL adapter
+          // The response might come immediately
+          if (dma_ctn_tlul_rsp_valid) begin
+            if (cfg_abort_en) begin
+              ctrl_state_d = DmaIdle;
+            end else begin
+              // Abort if we handled all
+              if (32'(clear_index_d) >= NumIntClearSources) begin
+                ctrl_state_d = DmaAddrSetup;
+              end
+            end
+          end
+        end else begin
+          // Do nothing if no clearing requested
+          clear_index_en = 1'b1;
+          clear_index_d  = clear_index_q + INT_CLEAR_SOURCES_WIDTH'(1'b1);
+
+          if (32'(clear_index_d) >= NumIntClearSources) begin
+            ctrl_state_d = DmaAddrSetup;
+          end
         end
       end
 
-      DmaWaitClearPlicResponse: begin
-        // Writes also get a resp valid, but no data, need to wait for this to not
-        // overrun TLUL adapter
+      DmaWaitIntrSrcResponse: begin
+        // Writes also get a resp valid, but no data.
+        // Need to wait for this to not overrun TLUL adapter
         if (dma_ctn_tlul_rsp_valid) begin
           if (cfg_abort_en) begin
             ctrl_state_d = DmaIdle;
           end else begin
-            ctrl_state_d = DmaAddrSetup;
+            if (32'(clear_index_q) < NumIntClearSources) begin
+              ctrl_state_d = DmaClearIntrSrc;
+            end else begin
+              ctrl_state_d = DmaAddrSetup;
+            end
           end
         end
       end
