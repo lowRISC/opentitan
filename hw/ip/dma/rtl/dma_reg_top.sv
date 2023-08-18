@@ -52,9 +52,9 @@ module dma_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [37:0] reg_we_check;
+  logic [48:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(38)
+    .OneHotWidth(49)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -216,6 +216,39 @@ module dma_reg_top (
   logic handshake_interrupt_enable_we;
   logic [31:0] handshake_interrupt_enable_qs;
   logic [31:0] handshake_interrupt_enable_wd;
+  logic clear_int_src_we;
+  logic [4:0] clear_int_src_qs;
+  logic [4:0] clear_int_src_wd;
+  logic int_source_addr_0_we;
+  logic [31:0] int_source_addr_0_qs;
+  logic [31:0] int_source_addr_0_wd;
+  logic int_source_addr_1_we;
+  logic [31:0] int_source_addr_1_qs;
+  logic [31:0] int_source_addr_1_wd;
+  logic int_source_addr_2_we;
+  logic [31:0] int_source_addr_2_qs;
+  logic [31:0] int_source_addr_2_wd;
+  logic int_source_addr_3_we;
+  logic [31:0] int_source_addr_3_qs;
+  logic [31:0] int_source_addr_3_wd;
+  logic int_source_addr_4_we;
+  logic [31:0] int_source_addr_4_qs;
+  logic [31:0] int_source_addr_4_wd;
+  logic int_source_wr_val_0_we;
+  logic [31:0] int_source_wr_val_0_qs;
+  logic [31:0] int_source_wr_val_0_wd;
+  logic int_source_wr_val_1_we;
+  logic [31:0] int_source_wr_val_1_qs;
+  logic [31:0] int_source_wr_val_1_wd;
+  logic int_source_wr_val_2_we;
+  logic [31:0] int_source_wr_val_2_qs;
+  logic [31:0] int_source_wr_val_2_wd;
+  logic int_source_wr_val_3_we;
+  logic [31:0] int_source_wr_val_3_qs;
+  logic [31:0] int_source_wr_val_3_wd;
+  logic int_source_wr_val_4_we;
+  logic [31:0] int_source_wr_val_4_qs;
+  logic [31:0] int_source_wr_val_4_wd;
   logic [31:0] sha2_digest_0_qs;
   logic [31:0] sha2_digest_1_qs;
   logic [31:0] sha2_digest_2_qs;
@@ -1490,6 +1523,445 @@ module dma_reg_top (
   );
 
 
+  // R[clear_int_src]: V(False)
+  logic clear_int_src_qe;
+  logic [0:0] clear_int_src_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_clear_int_src0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&clear_int_src_flds_we),
+    .q_o(clear_int_src_qe)
+  );
+  prim_subreg #(
+    .DW      (5),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (5'h0)
+  ) u_clear_int_src (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (clear_int_src_we),
+    .wd     (clear_int_src_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (clear_int_src_flds_we[0]),
+    .q      (reg2hw.clear_int_src.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clear_int_src_qs)
+  );
+  assign reg2hw.clear_int_src.qe = clear_int_src_qe;
+
+
+  // Subregister 0 of Multireg int_source_addr
+  // R[int_source_addr_0]: V(False)
+  logic int_source_addr_0_qe;
+  logic [0:0] int_source_addr_0_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_int_source_addr0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&int_source_addr_0_flds_we),
+    .q_o(int_source_addr_0_qe)
+  );
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0)
+  ) u_int_source_addr_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (int_source_addr_0_we),
+    .wd     (int_source_addr_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (int_source_addr_0_flds_we[0]),
+    .q      (reg2hw.int_source_addr[0].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (int_source_addr_0_qs)
+  );
+  assign reg2hw.int_source_addr[0].qe = int_source_addr_0_qe;
+
+
+  // Subregister 1 of Multireg int_source_addr
+  // R[int_source_addr_1]: V(False)
+  logic int_source_addr_1_qe;
+  logic [0:0] int_source_addr_1_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_int_source_addr1_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&int_source_addr_1_flds_we),
+    .q_o(int_source_addr_1_qe)
+  );
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0)
+  ) u_int_source_addr_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (int_source_addr_1_we),
+    .wd     (int_source_addr_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (int_source_addr_1_flds_we[0]),
+    .q      (reg2hw.int_source_addr[1].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (int_source_addr_1_qs)
+  );
+  assign reg2hw.int_source_addr[1].qe = int_source_addr_1_qe;
+
+
+  // Subregister 2 of Multireg int_source_addr
+  // R[int_source_addr_2]: V(False)
+  logic int_source_addr_2_qe;
+  logic [0:0] int_source_addr_2_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_int_source_addr2_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&int_source_addr_2_flds_we),
+    .q_o(int_source_addr_2_qe)
+  );
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0)
+  ) u_int_source_addr_2 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (int_source_addr_2_we),
+    .wd     (int_source_addr_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (int_source_addr_2_flds_we[0]),
+    .q      (reg2hw.int_source_addr[2].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (int_source_addr_2_qs)
+  );
+  assign reg2hw.int_source_addr[2].qe = int_source_addr_2_qe;
+
+
+  // Subregister 3 of Multireg int_source_addr
+  // R[int_source_addr_3]: V(False)
+  logic int_source_addr_3_qe;
+  logic [0:0] int_source_addr_3_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_int_source_addr3_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&int_source_addr_3_flds_we),
+    .q_o(int_source_addr_3_qe)
+  );
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0)
+  ) u_int_source_addr_3 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (int_source_addr_3_we),
+    .wd     (int_source_addr_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (int_source_addr_3_flds_we[0]),
+    .q      (reg2hw.int_source_addr[3].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (int_source_addr_3_qs)
+  );
+  assign reg2hw.int_source_addr[3].qe = int_source_addr_3_qe;
+
+
+  // Subregister 4 of Multireg int_source_addr
+  // R[int_source_addr_4]: V(False)
+  logic int_source_addr_4_qe;
+  logic [0:0] int_source_addr_4_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_int_source_addr4_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&int_source_addr_4_flds_we),
+    .q_o(int_source_addr_4_qe)
+  );
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0)
+  ) u_int_source_addr_4 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (int_source_addr_4_we),
+    .wd     (int_source_addr_4_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (int_source_addr_4_flds_we[0]),
+    .q      (reg2hw.int_source_addr[4].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (int_source_addr_4_qs)
+  );
+  assign reg2hw.int_source_addr[4].qe = int_source_addr_4_qe;
+
+
+  // Subregister 0 of Multireg int_source_wr_val
+  // R[int_source_wr_val_0]: V(False)
+  logic int_source_wr_val_0_qe;
+  logic [0:0] int_source_wr_val_0_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_int_source_wr_val0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&int_source_wr_val_0_flds_we),
+    .q_o(int_source_wr_val_0_qe)
+  );
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0)
+  ) u_int_source_wr_val_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (int_source_wr_val_0_we),
+    .wd     (int_source_wr_val_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (int_source_wr_val_0_flds_we[0]),
+    .q      (reg2hw.int_source_wr_val[0].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (int_source_wr_val_0_qs)
+  );
+  assign reg2hw.int_source_wr_val[0].qe = int_source_wr_val_0_qe;
+
+
+  // Subregister 1 of Multireg int_source_wr_val
+  // R[int_source_wr_val_1]: V(False)
+  logic int_source_wr_val_1_qe;
+  logic [0:0] int_source_wr_val_1_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_int_source_wr_val1_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&int_source_wr_val_1_flds_we),
+    .q_o(int_source_wr_val_1_qe)
+  );
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0)
+  ) u_int_source_wr_val_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (int_source_wr_val_1_we),
+    .wd     (int_source_wr_val_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (int_source_wr_val_1_flds_we[0]),
+    .q      (reg2hw.int_source_wr_val[1].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (int_source_wr_val_1_qs)
+  );
+  assign reg2hw.int_source_wr_val[1].qe = int_source_wr_val_1_qe;
+
+
+  // Subregister 2 of Multireg int_source_wr_val
+  // R[int_source_wr_val_2]: V(False)
+  logic int_source_wr_val_2_qe;
+  logic [0:0] int_source_wr_val_2_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_int_source_wr_val2_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&int_source_wr_val_2_flds_we),
+    .q_o(int_source_wr_val_2_qe)
+  );
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0)
+  ) u_int_source_wr_val_2 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (int_source_wr_val_2_we),
+    .wd     (int_source_wr_val_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (int_source_wr_val_2_flds_we[0]),
+    .q      (reg2hw.int_source_wr_val[2].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (int_source_wr_val_2_qs)
+  );
+  assign reg2hw.int_source_wr_val[2].qe = int_source_wr_val_2_qe;
+
+
+  // Subregister 3 of Multireg int_source_wr_val
+  // R[int_source_wr_val_3]: V(False)
+  logic int_source_wr_val_3_qe;
+  logic [0:0] int_source_wr_val_3_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_int_source_wr_val3_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&int_source_wr_val_3_flds_we),
+    .q_o(int_source_wr_val_3_qe)
+  );
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0)
+  ) u_int_source_wr_val_3 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (int_source_wr_val_3_we),
+    .wd     (int_source_wr_val_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (int_source_wr_val_3_flds_we[0]),
+    .q      (reg2hw.int_source_wr_val[3].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (int_source_wr_val_3_qs)
+  );
+  assign reg2hw.int_source_wr_val[3].qe = int_source_wr_val_3_qe;
+
+
+  // Subregister 4 of Multireg int_source_wr_val
+  // R[int_source_wr_val_4]: V(False)
+  logic int_source_wr_val_4_qe;
+  logic [0:0] int_source_wr_val_4_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_int_source_wr_val4_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&int_source_wr_val_4_flds_we),
+    .q_o(int_source_wr_val_4_qe)
+  );
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0)
+  ) u_int_source_wr_val_4 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (int_source_wr_val_4_we),
+    .wd     (int_source_wr_val_4_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (int_source_wr_val_4_flds_we[0]),
+    .q      (reg2hw.int_source_wr_val[4].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (int_source_wr_val_4_qs)
+  );
+  assign reg2hw.int_source_wr_val[4].qe = int_source_wr_val_4_qe;
+
+
   // Subregister 0 of Multireg sha2_digest
   // R[sha2_digest_0]: V(False)
   prim_subreg #(
@@ -1939,7 +2411,7 @@ module dma_reg_top (
 
 
 
-  logic [37:0] addr_hit;
+  logic [48:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == DMA_INTR_STATE_OFFSET);
@@ -1964,22 +2436,33 @@ module dma_reg_top (
     addr_hit[19] = (reg_addr == DMA_STATUS_OFFSET);
     addr_hit[20] = (reg_addr == DMA_CLEAR_STATE_OFFSET);
     addr_hit[21] = (reg_addr == DMA_HANDSHAKE_INTERRUPT_ENABLE_OFFSET);
-    addr_hit[22] = (reg_addr == DMA_SHA2_DIGEST_0_OFFSET);
-    addr_hit[23] = (reg_addr == DMA_SHA2_DIGEST_1_OFFSET);
-    addr_hit[24] = (reg_addr == DMA_SHA2_DIGEST_2_OFFSET);
-    addr_hit[25] = (reg_addr == DMA_SHA2_DIGEST_3_OFFSET);
-    addr_hit[26] = (reg_addr == DMA_SHA2_DIGEST_4_OFFSET);
-    addr_hit[27] = (reg_addr == DMA_SHA2_DIGEST_5_OFFSET);
-    addr_hit[28] = (reg_addr == DMA_SHA2_DIGEST_6_OFFSET);
-    addr_hit[29] = (reg_addr == DMA_SHA2_DIGEST_7_OFFSET);
-    addr_hit[30] = (reg_addr == DMA_SHA2_DIGEST_8_OFFSET);
-    addr_hit[31] = (reg_addr == DMA_SHA2_DIGEST_9_OFFSET);
-    addr_hit[32] = (reg_addr == DMA_SHA2_DIGEST_10_OFFSET);
-    addr_hit[33] = (reg_addr == DMA_SHA2_DIGEST_11_OFFSET);
-    addr_hit[34] = (reg_addr == DMA_SHA2_DIGEST_12_OFFSET);
-    addr_hit[35] = (reg_addr == DMA_SHA2_DIGEST_13_OFFSET);
-    addr_hit[36] = (reg_addr == DMA_SHA2_DIGEST_14_OFFSET);
-    addr_hit[37] = (reg_addr == DMA_SHA2_DIGEST_15_OFFSET);
+    addr_hit[22] = (reg_addr == DMA_CLEAR_INT_SRC_OFFSET);
+    addr_hit[23] = (reg_addr == DMA_INT_SOURCE_ADDR_0_OFFSET);
+    addr_hit[24] = (reg_addr == DMA_INT_SOURCE_ADDR_1_OFFSET);
+    addr_hit[25] = (reg_addr == DMA_INT_SOURCE_ADDR_2_OFFSET);
+    addr_hit[26] = (reg_addr == DMA_INT_SOURCE_ADDR_3_OFFSET);
+    addr_hit[27] = (reg_addr == DMA_INT_SOURCE_ADDR_4_OFFSET);
+    addr_hit[28] = (reg_addr == DMA_INT_SOURCE_WR_VAL_0_OFFSET);
+    addr_hit[29] = (reg_addr == DMA_INT_SOURCE_WR_VAL_1_OFFSET);
+    addr_hit[30] = (reg_addr == DMA_INT_SOURCE_WR_VAL_2_OFFSET);
+    addr_hit[31] = (reg_addr == DMA_INT_SOURCE_WR_VAL_3_OFFSET);
+    addr_hit[32] = (reg_addr == DMA_INT_SOURCE_WR_VAL_4_OFFSET);
+    addr_hit[33] = (reg_addr == DMA_SHA2_DIGEST_0_OFFSET);
+    addr_hit[34] = (reg_addr == DMA_SHA2_DIGEST_1_OFFSET);
+    addr_hit[35] = (reg_addr == DMA_SHA2_DIGEST_2_OFFSET);
+    addr_hit[36] = (reg_addr == DMA_SHA2_DIGEST_3_OFFSET);
+    addr_hit[37] = (reg_addr == DMA_SHA2_DIGEST_4_OFFSET);
+    addr_hit[38] = (reg_addr == DMA_SHA2_DIGEST_5_OFFSET);
+    addr_hit[39] = (reg_addr == DMA_SHA2_DIGEST_6_OFFSET);
+    addr_hit[40] = (reg_addr == DMA_SHA2_DIGEST_7_OFFSET);
+    addr_hit[41] = (reg_addr == DMA_SHA2_DIGEST_8_OFFSET);
+    addr_hit[42] = (reg_addr == DMA_SHA2_DIGEST_9_OFFSET);
+    addr_hit[43] = (reg_addr == DMA_SHA2_DIGEST_10_OFFSET);
+    addr_hit[44] = (reg_addr == DMA_SHA2_DIGEST_11_OFFSET);
+    addr_hit[45] = (reg_addr == DMA_SHA2_DIGEST_12_OFFSET);
+    addr_hit[46] = (reg_addr == DMA_SHA2_DIGEST_13_OFFSET);
+    addr_hit[47] = (reg_addr == DMA_SHA2_DIGEST_14_OFFSET);
+    addr_hit[48] = (reg_addr == DMA_SHA2_DIGEST_15_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -2024,7 +2507,18 @@ module dma_reg_top (
                (addr_hit[34] & (|(DMA_PERMIT[34] & ~reg_be))) |
                (addr_hit[35] & (|(DMA_PERMIT[35] & ~reg_be))) |
                (addr_hit[36] & (|(DMA_PERMIT[36] & ~reg_be))) |
-               (addr_hit[37] & (|(DMA_PERMIT[37] & ~reg_be)))));
+               (addr_hit[37] & (|(DMA_PERMIT[37] & ~reg_be))) |
+               (addr_hit[38] & (|(DMA_PERMIT[38] & ~reg_be))) |
+               (addr_hit[39] & (|(DMA_PERMIT[39] & ~reg_be))) |
+               (addr_hit[40] & (|(DMA_PERMIT[40] & ~reg_be))) |
+               (addr_hit[41] & (|(DMA_PERMIT[41] & ~reg_be))) |
+               (addr_hit[42] & (|(DMA_PERMIT[42] & ~reg_be))) |
+               (addr_hit[43] & (|(DMA_PERMIT[43] & ~reg_be))) |
+               (addr_hit[44] & (|(DMA_PERMIT[44] & ~reg_be))) |
+               (addr_hit[45] & (|(DMA_PERMIT[45] & ~reg_be))) |
+               (addr_hit[46] & (|(DMA_PERMIT[46] & ~reg_be))) |
+               (addr_hit[47] & (|(DMA_PERMIT[47] & ~reg_be))) |
+               (addr_hit[48] & (|(DMA_PERMIT[48] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -2128,6 +2622,39 @@ module dma_reg_top (
   assign handshake_interrupt_enable_we = addr_hit[21] & reg_we & !reg_error;
 
   assign handshake_interrupt_enable_wd = reg_wdata[31:0];
+  assign clear_int_src_we = addr_hit[22] & reg_we & !reg_error;
+
+  assign clear_int_src_wd = reg_wdata[4:0];
+  assign int_source_addr_0_we = addr_hit[23] & reg_we & !reg_error;
+
+  assign int_source_addr_0_wd = reg_wdata[31:0];
+  assign int_source_addr_1_we = addr_hit[24] & reg_we & !reg_error;
+
+  assign int_source_addr_1_wd = reg_wdata[31:0];
+  assign int_source_addr_2_we = addr_hit[25] & reg_we & !reg_error;
+
+  assign int_source_addr_2_wd = reg_wdata[31:0];
+  assign int_source_addr_3_we = addr_hit[26] & reg_we & !reg_error;
+
+  assign int_source_addr_3_wd = reg_wdata[31:0];
+  assign int_source_addr_4_we = addr_hit[27] & reg_we & !reg_error;
+
+  assign int_source_addr_4_wd = reg_wdata[31:0];
+  assign int_source_wr_val_0_we = addr_hit[28] & reg_we & !reg_error;
+
+  assign int_source_wr_val_0_wd = reg_wdata[31:0];
+  assign int_source_wr_val_1_we = addr_hit[29] & reg_we & !reg_error;
+
+  assign int_source_wr_val_1_wd = reg_wdata[31:0];
+  assign int_source_wr_val_2_we = addr_hit[30] & reg_we & !reg_error;
+
+  assign int_source_wr_val_2_wd = reg_wdata[31:0];
+  assign int_source_wr_val_3_we = addr_hit[31] & reg_we & !reg_error;
+
+  assign int_source_wr_val_3_wd = reg_wdata[31:0];
+  assign int_source_wr_val_4_we = addr_hit[32] & reg_we & !reg_error;
+
+  assign int_source_wr_val_4_wd = reg_wdata[31:0];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -2154,22 +2681,33 @@ module dma_reg_top (
     reg_we_check[19] = status_we;
     reg_we_check[20] = clear_state_we;
     reg_we_check[21] = handshake_interrupt_enable_we;
-    reg_we_check[22] = 1'b0;
-    reg_we_check[23] = 1'b0;
-    reg_we_check[24] = 1'b0;
-    reg_we_check[25] = 1'b0;
-    reg_we_check[26] = 1'b0;
-    reg_we_check[27] = 1'b0;
-    reg_we_check[28] = 1'b0;
-    reg_we_check[29] = 1'b0;
-    reg_we_check[30] = 1'b0;
-    reg_we_check[31] = 1'b0;
-    reg_we_check[32] = 1'b0;
+    reg_we_check[22] = clear_int_src_we;
+    reg_we_check[23] = int_source_addr_0_we;
+    reg_we_check[24] = int_source_addr_1_we;
+    reg_we_check[25] = int_source_addr_2_we;
+    reg_we_check[26] = int_source_addr_3_we;
+    reg_we_check[27] = int_source_addr_4_we;
+    reg_we_check[28] = int_source_wr_val_0_we;
+    reg_we_check[29] = int_source_wr_val_1_we;
+    reg_we_check[30] = int_source_wr_val_2_we;
+    reg_we_check[31] = int_source_wr_val_3_we;
+    reg_we_check[32] = int_source_wr_val_4_we;
     reg_we_check[33] = 1'b0;
     reg_we_check[34] = 1'b0;
     reg_we_check[35] = 1'b0;
     reg_we_check[36] = 1'b0;
     reg_we_check[37] = 1'b0;
+    reg_we_check[38] = 1'b0;
+    reg_we_check[39] = 1'b0;
+    reg_we_check[40] = 1'b0;
+    reg_we_check[41] = 1'b0;
+    reg_we_check[42] = 1'b0;
+    reg_we_check[43] = 1'b0;
+    reg_we_check[44] = 1'b0;
+    reg_we_check[45] = 1'b0;
+    reg_we_check[46] = 1'b0;
+    reg_we_check[47] = 1'b0;
+    reg_we_check[48] = 1'b0;
   end
 
   // Read data return
@@ -2282,66 +2820,110 @@ module dma_reg_top (
       end
 
       addr_hit[22]: begin
-        reg_rdata_next[31:0] = sha2_digest_0_qs;
+        reg_rdata_next[4:0] = clear_int_src_qs;
       end
 
       addr_hit[23]: begin
-        reg_rdata_next[31:0] = sha2_digest_1_qs;
+        reg_rdata_next[31:0] = int_source_addr_0_qs;
       end
 
       addr_hit[24]: begin
-        reg_rdata_next[31:0] = sha2_digest_2_qs;
+        reg_rdata_next[31:0] = int_source_addr_1_qs;
       end
 
       addr_hit[25]: begin
-        reg_rdata_next[31:0] = sha2_digest_3_qs;
+        reg_rdata_next[31:0] = int_source_addr_2_qs;
       end
 
       addr_hit[26]: begin
-        reg_rdata_next[31:0] = sha2_digest_4_qs;
+        reg_rdata_next[31:0] = int_source_addr_3_qs;
       end
 
       addr_hit[27]: begin
-        reg_rdata_next[31:0] = sha2_digest_5_qs;
+        reg_rdata_next[31:0] = int_source_addr_4_qs;
       end
 
       addr_hit[28]: begin
-        reg_rdata_next[31:0] = sha2_digest_6_qs;
+        reg_rdata_next[31:0] = int_source_wr_val_0_qs;
       end
 
       addr_hit[29]: begin
-        reg_rdata_next[31:0] = sha2_digest_7_qs;
+        reg_rdata_next[31:0] = int_source_wr_val_1_qs;
       end
 
       addr_hit[30]: begin
-        reg_rdata_next[31:0] = sha2_digest_8_qs;
+        reg_rdata_next[31:0] = int_source_wr_val_2_qs;
       end
 
       addr_hit[31]: begin
-        reg_rdata_next[31:0] = sha2_digest_9_qs;
+        reg_rdata_next[31:0] = int_source_wr_val_3_qs;
       end
 
       addr_hit[32]: begin
-        reg_rdata_next[31:0] = sha2_digest_10_qs;
+        reg_rdata_next[31:0] = int_source_wr_val_4_qs;
       end
 
       addr_hit[33]: begin
-        reg_rdata_next[31:0] = sha2_digest_11_qs;
+        reg_rdata_next[31:0] = sha2_digest_0_qs;
       end
 
       addr_hit[34]: begin
-        reg_rdata_next[31:0] = sha2_digest_12_qs;
+        reg_rdata_next[31:0] = sha2_digest_1_qs;
       end
 
       addr_hit[35]: begin
-        reg_rdata_next[31:0] = sha2_digest_13_qs;
+        reg_rdata_next[31:0] = sha2_digest_2_qs;
       end
 
       addr_hit[36]: begin
-        reg_rdata_next[31:0] = sha2_digest_14_qs;
+        reg_rdata_next[31:0] = sha2_digest_3_qs;
       end
 
       addr_hit[37]: begin
+        reg_rdata_next[31:0] = sha2_digest_4_qs;
+      end
+
+      addr_hit[38]: begin
+        reg_rdata_next[31:0] = sha2_digest_5_qs;
+      end
+
+      addr_hit[39]: begin
+        reg_rdata_next[31:0] = sha2_digest_6_qs;
+      end
+
+      addr_hit[40]: begin
+        reg_rdata_next[31:0] = sha2_digest_7_qs;
+      end
+
+      addr_hit[41]: begin
+        reg_rdata_next[31:0] = sha2_digest_8_qs;
+      end
+
+      addr_hit[42]: begin
+        reg_rdata_next[31:0] = sha2_digest_9_qs;
+      end
+
+      addr_hit[43]: begin
+        reg_rdata_next[31:0] = sha2_digest_10_qs;
+      end
+
+      addr_hit[44]: begin
+        reg_rdata_next[31:0] = sha2_digest_11_qs;
+      end
+
+      addr_hit[45]: begin
+        reg_rdata_next[31:0] = sha2_digest_12_qs;
+      end
+
+      addr_hit[46]: begin
+        reg_rdata_next[31:0] = sha2_digest_13_qs;
+      end
+
+      addr_hit[47]: begin
+        reg_rdata_next[31:0] = sha2_digest_14_qs;
+      end
+
+      addr_hit[48]: begin
         reg_rdata_next[31:0] = sha2_digest_15_qs;
       end
 
