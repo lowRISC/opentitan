@@ -53,6 +53,7 @@ rust_library(
         "src/backend/hyperdebug.rs",
         "src/backend/mod.rs",
         "src/backend/proxy.rs",
+        "src/backend/qemu.rs",
         "src/backend/ti50emulator.rs",
         "src/backend/ultradebug.rs",
         "src/backend/verilator.rs",

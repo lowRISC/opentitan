@@ -22,6 +22,7 @@ use crate::util::parse_int::ParseInt;
 mod chip_whisperer;
 mod hyperdebug;
 mod proxy;
+mod qemu;
 mod ti50emulator;
 mod ultradebug;
 mod verilator;
@@ -47,6 +48,9 @@ pub struct BackendOpts {
 
     #[command(flatten)]
     pub verilator_opts: verilator::VerilatorOpts,
+
+    #[command(flatten)]
+    pub qemu_opts: qemu::QemuOpts,
 
     #[command(flatten)]
     pub proxy_opts: proxy::ProxyOpts,
@@ -109,6 +113,7 @@ fn build_transport(
             args.usb_serial.as_deref(),
             io_mapper,
         )?),
+        "qemu" => qemu::create(&args.qemu_opts)?,
         _ => return Err(Error::UnknownInterface(interface.to_string()).into()),
     })
 }
@@ -125,6 +130,8 @@ fn get_config_file(interface: &str) -> Result<Option<&str>> {
         "cw310" => "/__builtin__/opentitan_cw310.json",
         "cw340" => "/__builtin__/opentitan_cw340.json",
         "dediprog" => "/__builtin__/dediprog.json",
+        "qemu" => "/__builtin__/opentitan_qemu.json",
+
         _ => return Err(Error::UnknownInterface(interface.to_string()).into()),
     }))
 }

@@ -1,0 +1,10 @@
+{
+  "includes": ["/__builtin__/opentitan.json"],
+  "interface": "qemu",
+  "uarts": [
+    {
+      "name": "console",
+      "alias_of": "0"
+    }
+  ]
+}

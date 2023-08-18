@@ -60,16 +60,17 @@ pub fn process_config_file(env: &mut TransportWrapperBuilder, conf_file: &Path) 
 static BUILTINS: Lazy<HashMap<&'static str, &'static str>> = Lazy::new(|| {
     collection! {
         "/__builtin__/dediprog.json" => include_str!("dediprog.json"),
-        "/__builtin__/h1dx_devboard.json" => include_str!("h1dx_devboard.json"),
         "/__builtin__/h1dx_devboard_c2d2.json" => include_str!("h1dx_devboard_c2d2.json"),
-        "/__builtin__/servo_micro.json" => include_str!("servo_micro.json"),
+        "/__builtin__/h1dx_devboard.json" => include_str!("h1dx_devboard.json"),
         "/__builtin__/h1dx_devboard_ultradebug.json" => include_str!("h1dx_devboard_ultradebug.json"),
-        "/__builtin__/ti50emulator.json" => include_str!("ti50emulator.json"),
+        "/__builtin__/hyperdebug_cw310.json" => include_str!("hyperdebug_cw310.json"),
         "/__builtin__/opentitan_cw310.json" => include_str!("opentitan_cw310.json"),
         "/__builtin__/opentitan_cw340.json" => include_str!("opentitan_cw340.json"),
         "/__builtin__/opentitan.json" => include_str!("opentitan.json"),
-        "/__builtin__/hyperdebug_cw310.json" => include_str!("hyperdebug_cw310.json"),
+        "/__builtin__/opentitan_qemu.json" => include_str!("opentitan_qemu.json"),
         "/__builtin__/opentitan_ultradebug.json" => include_str!("opentitan_ultradebug.json"),
         "/__builtin__/opentitan_verilator.json" => include_str!("opentitan_verilator.json"),
+        "/__builtin__/servo_micro.json" => include_str!("servo_micro.json"),
+        "/__builtin__/ti50emulator.json" => include_str!("ti50emulator.json"),
     }
 });
