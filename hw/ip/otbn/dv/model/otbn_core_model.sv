@@ -115,7 +115,7 @@ module otbn_core_model
   // in the Python.
   logic [2:0] escalate_fifo;
   logic [2:0] rma_req_fifo;
-  logic [3:0] lc_mubi_err_fifo;
+  logic [2:0] lc_mubi_err_fifo;
   logic       new_escalation;
   logic       new_rma_req;
   logic       new_lc_mubi_err;
@@ -123,14 +123,13 @@ module otbn_core_model
   logic       valid_lc_esc_req;
   logic       valid_lc_mubi_err;
   logic       invalid_lc_rma_req;
-  logic       invalid_lc_esc_en;
 
   assign invalid_lc_rma_req = lc_ctrl_pkg::lc_tx_test_invalid(lc_rma_req_i);
-  assign invalid_lc_esc_en = lc_ctrl_pkg::lc_tx_test_invalid(lc_escalate_en_i);
 
   assign valid_lc_rma_req = lc_ctrl_pkg::lc_tx_test_true_strict(lc_rma_req_i);
+  // Anything else than OFF is ON.
   assign valid_lc_esc_req = lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i);
-  assign valid_lc_mubi_err =  invalid_lc_rma_req || invalid_lc_esc_en;
+  assign valid_lc_mubi_err = invalid_lc_rma_req;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -140,14 +139,12 @@ module otbn_core_model
     end else begin
       escalate_fifo <= {escalate_fifo[1:0], valid_lc_esc_req};
       rma_req_fifo <= {rma_req_fifo[1:0], valid_lc_rma_req};
-      lc_mubi_err_fifo <= {lc_mubi_err_fifo[2:0], valid_lc_mubi_err};
+      lc_mubi_err_fifo <= {lc_mubi_err_fifo[1:0], valid_lc_mubi_err};
     end
   end
   assign new_escalation = escalate_fifo[1] & ~escalate_fifo[2];
   assign new_rma_req = rma_req_fifo[1] & ~rma_req_fifo[2];
-  // Invalid escalate goes through one cycle faster because its check is done earlier.
-  assign new_lc_mubi_err = invalid_lc_esc_en ? lc_mubi_err_fifo[2] & ~lc_mubi_err_fifo[3] :
-                                               lc_mubi_err_fifo[1] & ~lc_mubi_err_fifo[2];
+  assign new_lc_mubi_err = lc_mubi_err_fifo[1] & ~lc_mubi_err_fifo[2];
 
   assign lock_immediately_d = new_lc_mubi_err | lock_immediately_q;
 
