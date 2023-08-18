@@ -13,6 +13,9 @@ module mbx_hostif
   // Device port to the host side
   input  tlul_pkg::tl_h2d_t           tl_host_i,
   output tlul_pkg::tl_d2h_t           tl_host_o,
+  // Generated interrupt event
+  input  logic                        event_intr_i,
+  output logic                        irq_o,
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
@@ -58,8 +61,8 @@ module mbx_hostif
       .AsyncOn ( AlertAsyncOn[i] ),
       .IsFatal ( 1'b1            )
     ) u_prim_alert_sender (
-      .clk_i,
-      .rst_ni,
+    .clk_i          ( clk_i         ),
+    .rst_ni         ( rst_ni        ),
       .alert_test_i ( alert_test[i] ),
       .alert_req_i  ( alerts[i]     ),
       .alert_ack_o  (               ),
@@ -79,6 +82,20 @@ module mbx_hostif
     .hw2reg     ( hw2reg        ),
     .intg_err_o ( tlul_intg_err ),
     .devmode_i  ( 1'b1          )
+  );
+
+  // instantiate interrupt hardware primitive
+  prim_intr_hw #(.Width(1)) u_intr_hw (
+    .clk_i                  ( clk_i                ),
+    .rst_ni                 ( rst_ni               ),
+    .event_intr_i           ( event_intr_i         ),
+    .reg2hw_intr_enable_q_i ( reg2hw.intr_enable.q ),
+    .reg2hw_intr_test_q_i   ( reg2hw.intr_test.q   ),
+    .reg2hw_intr_test_qe_i  ( reg2hw.intr_test.qe  ),
+    .reg2hw_intr_state_q_i  ( reg2hw.intr_state.q  ),
+    .hw2reg_intr_state_de_o ( hw2reg.intr_state.de ),
+    .hw2reg_intr_state_d_o  ( hw2reg.intr_state.d  ),
+    .intr_o                 ( irq_o                )
   );
 
   // Control Register

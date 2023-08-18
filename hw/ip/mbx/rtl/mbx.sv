@@ -12,7 +12,7 @@ module mbx
   parameter int unsigned CfgSramAddrWidth      = 32,
   parameter int unsigned CfgSramDataWidth      = 32
 ) (
-  input  logic                                       clk_i,
+  input  logic                                      clk_i,
   input  logic                                      rst_ni,
   output logic                                      intr_mbx_ready_o,
   // Alerts
@@ -52,7 +52,7 @@ module mbx
   logic hostif_write_ob_object_size, hostif_read_ob_object_size;
   logic [11:0] hostif_ob_object_size_wdata, hostif_ob_object_size_rdata;
 
-  logic sysif_write_control_abort;
+  logic sysif_write_control_abort, hostif_event_intr;
 
   mbx_hostif #(
     .AlertAsyncOn    ( AlertAsyncOn     ),
@@ -63,6 +63,8 @@ module mbx
     // Device port to the host side
     .tl_host_i                           ( tl_host_i                          ),
     .tl_host_o                           ( tl_host_o                          ),
+    .event_intr_i                        ( hostif_event_intr                  ),
+    .irq_o                               ( irq_o                              ),
     .alert_rx_i                          ( alert_rx_i                         ),
     .alert_tx_o                          ( alert_tx_o                         ),
     // Access to the control register
