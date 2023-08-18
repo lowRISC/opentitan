@@ -24,6 +24,7 @@ import datetime
 import logging as log
 import os
 import random
+import re
 import shlex
 import subprocess
 import sys
@@ -686,6 +687,23 @@ def main():
     if not os.path.exists(args.cfg):
         log.fatal("Path to config file %s appears to be invalid.", args.cfg)
         sys.exit(1)
+
+    # Make sure the proper key and nonce are used for scrambling the ROM image.
+    #
+    # TODO: Remove this dirty hack and find a cleaner and more robust way for selecting the
+    # top-level file to use for scrambling the ROM image.
+    # See also https://github.com/lowRISC/opentitan-integrated/issues/297
+    top_name = "darjeeling"
+    if "earlgrey" in args.cfg:
+        top_name = "earlgrey"
+    with open("rules/opentitan.bzl", "r+") as f:
+        file = f.read()
+        file = re.sub("//hw/top_[a-z]+/data:autogen/top_[a-z]+.gen.hjson",
+                      "//hw/top_" + top_name + "/data:autogen/top_" + top_name + ".gen.hjson",
+                      file)
+        f.seek(0)
+        f.write(file)
+        f.truncate()
 
     # If publishing results, then force full testplan mapping of results.
     if args.publish:
