@@ -306,21 +306,26 @@ pub fn load_sram_program(jtag: &Rc<dyn Jtag>, file: &SramProgramFile) -> Result<
     }
 }
 
-/// Set up the ePMP to enable read/write/execute from SRAM.
-/// This function will set the PMP entry 15 to NAPOT to cover the SRAM as RWX
+/// Set up the ePMP to enable read/write/execute from SRAM and read/write access
+/// to the full MMIO region. Specifically, this function will:
+/// 1. set the PMP entry 15 to NAPOT to cover the SRAM as RWX
+/// 2. set the PMP entry 11 to TOR to cover the MMIO region as RW.
+///
 /// This follows the memory layout used by the ROM [0].
 ///
 /// The Ibex core is initialized with a default ePMP configuration [3]
-/// when it starts. This configuration has no PMP entry for the RAM
-/// and mseccfg.mmwp is set to 1 so accesses that don't match a PMP entry will
+/// when it starts. This configuration has no PMP entry for the RAM, only
+/// partial access to the MMIO region (e.g., RV_PLIC access is denied), and
+/// mseccfg.mmwp is set to 1 so accesses that don't match a PMP entry will
 /// be denied.
 ///
-/// Before transferring the SRAM program to the device, we must configure
-/// the PMP unit to enable reading, writing to and executing from SRAM. Due to
-/// implementation details of OpenTitan's hardware debug module, it is important
-/// that the RV_ROM remains accessible at all times [1]. It uses entry 13 of the
-/// PMP on boot so we want to preserve that. However, we can safely
-/// modify the other PMP configuration registers.
+/// Before transferring the SRAM program to the device, we must configure the
+/// PMP unit to enable reading, writing, and executing from SRAM, and reading
+/// and writing to the entire MMIO region. Due to implementation details of
+/// OpenTitan's hardware debug module, it is important that the RV_ROM remains
+/// accessible at all times [1]. It uses entry 13 of the PMP on boot so we want
+/// to preserve that. However, we can safely modify the other PMP configuration
+/// registers.
 ///
 /// In more detail, the problem is that our debug module implements the
 /// "Access Register" abstract command by assembling instructions in the
@@ -329,32 +334,53 @@ pub fn load_sram_program(jtag: &Rc<dyn Jtag>, file: &SramProgramFile) -> Result<
 /// execution from the program buffer (PMP entry 13),
 /// subsequent instruction fetches will generate exceptions.
 ///
-/// Debug module concepts like abstract commands and the program buffer
-/// buffer are defined in "RISC-V External Debug Support Version 0.13.2"
-/// [2]. OpenTitan's (vendored-in) implementation lives in
-/// hw/vendor/pulp_riscv_dbg.
+/// Debug module concepts like abstract commands and the program buffer are
+/// defined in "RISC-V External Debug Support Version 0.13.2" [2]. OpenTitan's
+/// (vendored-in) implementation lives in hw/vendor/pulp_riscv_dbg.
 ///
 /// [0]: https://opentitan.org/book/sw/device/silicon_creator/rom/doc/memory_protection.html
 /// [1]: https://github.com/lowRISC/opentitan/issues/14978
 /// [2]: https://riscv.org/wp-content/uploads/2019/03/riscv-debug-release.pdf
 /// [3]: https://github.com/lowRISC/opentitan/blob/master/hw/ip/rv_core_ibex/rtl/ibex_pmp_reset.svh
-pub fn prepare_epmp_for_sram(jtag: &Rc<dyn Jtag>) -> Result<()> {
-    log::info!("Configure ePMP for SRAM execution");
+pub fn prepare_epmp(jtag: &Rc<dyn Jtag>) -> Result<()> {
+    // Setup ePMP for SRAM execution.
+    log::info!("Configure ePMP for SRAM execution.");
     let pmpcfg3 = jtag.read_riscv_reg(&RiscvReg::Csr(RiscvCsr::PMPCFG3))?;
     log::info!("Old value of pmpcfg3: {:x}", pmpcfg3);
-    // write "L NAPOT X W R" to pmp3cfg in pmpcfg3
+    // Write "L NAPOT X W R" to pmpcfg3 in region 15.
     let pmpcfg3 = (pmpcfg3 & 0x00ffffffu32) | 0x9f000000;
     log::info!("New value of pmpcfg3: {:x}", pmpcfg3);
     jtag.write_riscv_reg(&RiscvReg::Csr(RiscvCsr::PMPCFG3), pmpcfg3)?;
-    // write pmpaddr15 to map the SRAM range
+    // Write pmpaddr15 to map the SRAM range.
     // hex((0x10000000 >> 2) | ((0x20000 - 1) >> 3)) = 0x4003fff
     let base = top_earlgrey::SRAM_CTRL_MAIN_RAM_BASE_ADDR as u32;
     let size = top_earlgrey::SRAM_CTRL_MAIN_RAM_SIZE_BYTES as u32;
-    // make sure that this is a power of two
+    // Make sure that this is a power of two.
     assert!(size & (size - 1) == 0);
     let pmpaddr15 = (base >> 2) | ((size - 1) >> 3);
     log::info!("New value of pmpaddr15: {:x}", pmpaddr15);
     jtag.write_riscv_reg(&RiscvReg::Csr(RiscvCsr::PMPADDR15), pmpaddr15)?;
+
+    // Setup ePMP for R/W access to MMIO region.
+    log::info!("Configure ePMP for MMIO access.");
+    let pmpcfg2 = jtag.read_riscv_reg(&RiscvReg::Csr(RiscvCsr::PMPCFG2))?;
+    log::info!("Old value of pmpcfg2: {:x}", pmpcfg2);
+    // Write "L TOR X W R" to pmpcfg2 in region 11.
+    let pmpcfg2 = (pmpcfg2 & 0x00ffffffu32) | 0x8f000000;
+    log::info!("New value of pmpcfg2: {:x}", pmpcfg2);
+    jtag.write_riscv_reg(&RiscvReg::Csr(RiscvCsr::PMPCFG2), pmpcfg2)?;
+    // Write pmpaddr10 and pmpaddr11 to map the MMIO range.
+    let base = top_earlgrey::MMIO_BASE_ADDR as u32;
+    let size = top_earlgrey::MMIO_SIZE_BYTES as u32;
+    // make sure that this is a power of two
+    assert!(size & (size - 1) == 0);
+    let pmpaddr10 = base >> 2;
+    let pmpaddr11 = (base + size) >> 2;
+    log::info!("New value of pmpaddr10: {:x}", pmpaddr10);
+    log::info!("New value of pmpaddr11: {:x}", pmpaddr11);
+    jtag.write_riscv_reg(&RiscvReg::Csr(RiscvCsr::PMPADDR10), pmpaddr10)?;
+    jtag.write_riscv_reg(&RiscvReg::Csr(RiscvCsr::PMPADDR11), pmpaddr11)?;
+
     Ok(())
 }
 
@@ -364,7 +390,7 @@ pub fn execute_sram_program(
     prog_info: &SramProgramInfo,
     exec_mode: ExecutionMode,
 ) -> Result<ExecutionResult> {
-    prepare_epmp_for_sram(jtag)?;
+    prepare_epmp(jtag)?;
     // To avoid unexpected behaviors, we always make sure that the return addreess
     // points to an invalid address.
     let ret_addr = 0xdeadbeefu32;
