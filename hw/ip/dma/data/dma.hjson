@@ -63,6 +63,14 @@
       desc: "DMA enabled memory range is software multibit lockable."
     }
   ]
+  param_list: [
+    { name: "NumIntClearSources",
+      desc: "Number of interrupt clearing sources to process",
+      type: "int",
+      default: "5",
+      local: "true"
+    },
+  ],
 
   regwidth: "32"
   registers: [
@@ -556,6 +564,53 @@
         }
       ]
     }
+    { name: "CLEAR_INT_SRC",
+      desc: "Valid bits for which interrupt sources need clearing",
+      swaccess: "rw",
+      hwaccess: "hro",
+      hwqe: "true",
+      fields: [
+        { name: "source"
+          desc: "Source N needs interrupt cleared"
+          bits: "NumIntClearSources-1:0"
+          resval: 0x0
+        }
+      ]
+    }
+    { multireg: {
+        name: "INT_SOURCE_ADDR",
+        desc: "Destination address for interrupt source clearing write",
+        count: "NumIntClearSources",
+        cname: "ADDR",
+        swaccess: "rw",
+        hwaccess: "hro",
+        hwqe: "true",
+        fields: [
+          { name: "addr"
+            desc: "Destination address for interrupt source clearing write"
+            bits: "31:0"
+            resval: 0x0
+          }
+        ]
+      }
+    }
+    { multireg: {
+        name: "INT_SOURCE_WR_VAL",
+        desc: "Write value for interrupt clearing write",
+        count: "NumIntClearSources",
+        cname: "WRVAL",
+        swaccess: "rw",
+        hwaccess: "hro",
+        hwqe: "true",
+        fields: [
+          { name: "wr_val"
+            desc: "Write value for interrupt clearing write"
+            bits: "31:0"
+            resval: 0x0
+          }
+        ]
+      }
+    }
     { multireg: {
         name: "SHA2_DIGEST"
         cname: "DMA"
@@ -570,10 +625,10 @@
         swaccess: "ro",
         hwaccess: "hrw",
         fields: [
-          { name: DATA
-            desc: ""
-            resval: "0"
+          { name: "data"
+            desc: "SHA2 digest data"
             bits: "31:0"
+            resval: "0"
           }
         ]
       }

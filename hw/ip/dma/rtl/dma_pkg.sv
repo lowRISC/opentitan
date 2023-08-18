@@ -36,8 +36,8 @@ package dma_pkg;
 
   typedef enum logic [4:0] {
     DmaIdle                  = 5'b00000,
-    DmaClearPlic             = 5'b00001,
-    DmaWaitClearPlicResponse = 5'b00010,
+    DmaClearIntrSrc          = 5'b00001,
+    DmaWaitIntrSrcResponse   = 5'b00010,
     DmaAddrSetup             = 5'b00011,
     DmaSendHostRead          = 5'b00100,
     DmaWaitHostReadResponse  = 5'b00101,

@@ -7,6 +7,7 @@
 package dma_reg_pkg;
 
   // Param list
+  parameter int NumIntClearSources = 5;
   parameter int NumAlerts = 1;
 
   // Address widths within the block
@@ -199,6 +200,21 @@ package dma_reg_pkg;
   } dma_reg2hw_handshake_interrupt_enable_reg_t;
 
   typedef struct packed {
+    logic [4:0]  q;
+    logic        qe;
+  } dma_reg2hw_clear_int_src_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+    logic        qe;
+  } dma_reg2hw_int_source_addr_mreg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+    logic        qe;
+  } dma_reg2hw_int_source_wr_val_mreg_t;
+
+  typedef struct packed {
     logic [31:0] q;
   } dma_reg2hw_sha2_digest_mreg_t;
 
@@ -303,30 +319,33 @@ package dma_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    dma_reg2hw_intr_state_reg_t intr_state; // [973:971]
-    dma_reg2hw_intr_enable_reg_t intr_enable; // [970:968]
-    dma_reg2hw_intr_test_reg_t intr_test; // [967:962]
-    dma_reg2hw_alert_test_reg_t alert_test; // [961:960]
-    dma_reg2hw_source_address_lo_reg_t source_address_lo; // [959:927]
-    dma_reg2hw_source_address_hi_reg_t source_address_hi; // [926:894]
-    dma_reg2hw_destination_address_lo_reg_t destination_address_lo; // [893:861]
-    dma_reg2hw_destination_address_hi_reg_t destination_address_hi; // [860:828]
-    dma_reg2hw_address_space_id_reg_t address_space_id; // [827:818]
-    dma_reg2hw_enabled_memory_range_base_reg_t enabled_memory_range_base; // [817:785]
-    dma_reg2hw_enabled_memory_range_limit_reg_t enabled_memory_range_limit; // [784:752]
-    dma_reg2hw_range_unlock_regwen_reg_t range_unlock_regwen; // [751:748]
-    dma_reg2hw_total_data_size_reg_t total_data_size; // [747:715]
-    dma_reg2hw_transfer_width_reg_t transfer_width; // [714:712]
-    dma_reg2hw_destination_address_limit_lo_reg_t destination_address_limit_lo; // [711:679]
-    dma_reg2hw_destination_address_limit_hi_reg_t destination_address_limit_hi; // [678:646]
+    dma_reg2hw_intr_state_reg_t intr_state; // [1309:1307]
+    dma_reg2hw_intr_enable_reg_t intr_enable; // [1306:1304]
+    dma_reg2hw_intr_test_reg_t intr_test; // [1303:1298]
+    dma_reg2hw_alert_test_reg_t alert_test; // [1297:1296]
+    dma_reg2hw_source_address_lo_reg_t source_address_lo; // [1295:1263]
+    dma_reg2hw_source_address_hi_reg_t source_address_hi; // [1262:1230]
+    dma_reg2hw_destination_address_lo_reg_t destination_address_lo; // [1229:1197]
+    dma_reg2hw_destination_address_hi_reg_t destination_address_hi; // [1196:1164]
+    dma_reg2hw_address_space_id_reg_t address_space_id; // [1163:1154]
+    dma_reg2hw_enabled_memory_range_base_reg_t enabled_memory_range_base; // [1153:1121]
+    dma_reg2hw_enabled_memory_range_limit_reg_t enabled_memory_range_limit; // [1120:1088]
+    dma_reg2hw_range_unlock_regwen_reg_t range_unlock_regwen; // [1087:1084]
+    dma_reg2hw_total_data_size_reg_t total_data_size; // [1083:1051]
+    dma_reg2hw_transfer_width_reg_t transfer_width; // [1050:1048]
+    dma_reg2hw_destination_address_limit_lo_reg_t destination_address_limit_lo; // [1047:1015]
+    dma_reg2hw_destination_address_limit_hi_reg_t destination_address_limit_hi; // [1014:982]
     dma_reg2hw_destination_address_almost_limit_lo_reg_t
-        destination_address_almost_limit_lo; // [645:613]
+        destination_address_almost_limit_lo; // [981:949]
     dma_reg2hw_destination_address_almost_limit_hi_reg_t
-        destination_address_almost_limit_hi; // [612:580]
-    dma_reg2hw_control_reg_t control; // [579:563]
-    dma_reg2hw_status_reg_t status; // [562:546]
-    dma_reg2hw_clear_state_reg_t clear_state; // [545:544]
-    dma_reg2hw_handshake_interrupt_enable_reg_t handshake_interrupt_enable; // [543:512]
+        destination_address_almost_limit_hi; // [948:916]
+    dma_reg2hw_control_reg_t control; // [915:899]
+    dma_reg2hw_status_reg_t status; // [898:882]
+    dma_reg2hw_clear_state_reg_t clear_state; // [881:880]
+    dma_reg2hw_handshake_interrupt_enable_reg_t handshake_interrupt_enable; // [879:848]
+    dma_reg2hw_clear_int_src_reg_t clear_int_src; // [847:842]
+    dma_reg2hw_int_source_addr_mreg_t [4:0] int_source_addr; // [841:677]
+    dma_reg2hw_int_source_wr_val_mreg_t [4:0] int_source_wr_val; // [676:512]
     dma_reg2hw_sha2_digest_mreg_t [15:0] sha2_digest; // [511:0]
   } dma_reg2hw_t;
 
@@ -366,22 +385,33 @@ package dma_reg_pkg;
   parameter logic [BlockAw-1:0] DMA_STATUS_OFFSET = 8'h 4c;
   parameter logic [BlockAw-1:0] DMA_CLEAR_STATE_OFFSET = 8'h 50;
   parameter logic [BlockAw-1:0] DMA_HANDSHAKE_INTERRUPT_ENABLE_OFFSET = 8'h 54;
-  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_0_OFFSET = 8'h 58;
-  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_1_OFFSET = 8'h 5c;
-  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_2_OFFSET = 8'h 60;
-  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_3_OFFSET = 8'h 64;
-  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_4_OFFSET = 8'h 68;
-  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_5_OFFSET = 8'h 6c;
-  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_6_OFFSET = 8'h 70;
-  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_7_OFFSET = 8'h 74;
-  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_8_OFFSET = 8'h 78;
-  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_9_OFFSET = 8'h 7c;
-  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_10_OFFSET = 8'h 80;
-  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_11_OFFSET = 8'h 84;
-  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_12_OFFSET = 8'h 88;
-  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_13_OFFSET = 8'h 8c;
-  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_14_OFFSET = 8'h 90;
-  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_15_OFFSET = 8'h 94;
+  parameter logic [BlockAw-1:0] DMA_CLEAR_INT_SRC_OFFSET = 8'h 58;
+  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_ADDR_0_OFFSET = 8'h 5c;
+  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_ADDR_1_OFFSET = 8'h 60;
+  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_ADDR_2_OFFSET = 8'h 64;
+  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_ADDR_3_OFFSET = 8'h 68;
+  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_ADDR_4_OFFSET = 8'h 6c;
+  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_WR_VAL_0_OFFSET = 8'h 70;
+  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_WR_VAL_1_OFFSET = 8'h 74;
+  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_WR_VAL_2_OFFSET = 8'h 78;
+  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_WR_VAL_3_OFFSET = 8'h 7c;
+  parameter logic [BlockAw-1:0] DMA_INT_SOURCE_WR_VAL_4_OFFSET = 8'h 80;
+  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_0_OFFSET = 8'h 84;
+  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_1_OFFSET = 8'h 88;
+  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_2_OFFSET = 8'h 8c;
+  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_3_OFFSET = 8'h 90;
+  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_4_OFFSET = 8'h 94;
+  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_5_OFFSET = 8'h 98;
+  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_6_OFFSET = 8'h 9c;
+  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_7_OFFSET = 8'h a0;
+  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_8_OFFSET = 8'h a4;
+  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_9_OFFSET = 8'h a8;
+  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_10_OFFSET = 8'h ac;
+  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_11_OFFSET = 8'h b0;
+  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_12_OFFSET = 8'h b4;
+  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_13_OFFSET = 8'h b8;
+  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_14_OFFSET = 8'h bc;
+  parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_15_OFFSET = 8'h c0;
 
   // Reset values for hwext registers and their fields
   parameter logic [2:0] DMA_INTR_TEST_RESVAL = 3'h 0;
@@ -415,6 +445,17 @@ package dma_reg_pkg;
     DMA_STATUS,
     DMA_CLEAR_STATE,
     DMA_HANDSHAKE_INTERRUPT_ENABLE,
+    DMA_CLEAR_INT_SRC,
+    DMA_INT_SOURCE_ADDR_0,
+    DMA_INT_SOURCE_ADDR_1,
+    DMA_INT_SOURCE_ADDR_2,
+    DMA_INT_SOURCE_ADDR_3,
+    DMA_INT_SOURCE_ADDR_4,
+    DMA_INT_SOURCE_WR_VAL_0,
+    DMA_INT_SOURCE_WR_VAL_1,
+    DMA_INT_SOURCE_WR_VAL_2,
+    DMA_INT_SOURCE_WR_VAL_3,
+    DMA_INT_SOURCE_WR_VAL_4,
     DMA_SHA2_DIGEST_0,
     DMA_SHA2_DIGEST_1,
     DMA_SHA2_DIGEST_2,
@@ -434,7 +475,7 @@ package dma_reg_pkg;
   } dma_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] DMA_PERMIT [38] = '{
+  parameter logic [3:0] DMA_PERMIT [49] = '{
     4'b 0001, // index[ 0] DMA_INTR_STATE
     4'b 0001, // index[ 1] DMA_INTR_ENABLE
     4'b 0001, // index[ 2] DMA_INTR_TEST
@@ -457,22 +498,33 @@ package dma_reg_pkg;
     4'b 0011, // index[19] DMA_STATUS
     4'b 0001, // index[20] DMA_CLEAR_STATE
     4'b 1111, // index[21] DMA_HANDSHAKE_INTERRUPT_ENABLE
-    4'b 1111, // index[22] DMA_SHA2_DIGEST_0
-    4'b 1111, // index[23] DMA_SHA2_DIGEST_1
-    4'b 1111, // index[24] DMA_SHA2_DIGEST_2
-    4'b 1111, // index[25] DMA_SHA2_DIGEST_3
-    4'b 1111, // index[26] DMA_SHA2_DIGEST_4
-    4'b 1111, // index[27] DMA_SHA2_DIGEST_5
-    4'b 1111, // index[28] DMA_SHA2_DIGEST_6
-    4'b 1111, // index[29] DMA_SHA2_DIGEST_7
-    4'b 1111, // index[30] DMA_SHA2_DIGEST_8
-    4'b 1111, // index[31] DMA_SHA2_DIGEST_9
-    4'b 1111, // index[32] DMA_SHA2_DIGEST_10
-    4'b 1111, // index[33] DMA_SHA2_DIGEST_11
-    4'b 1111, // index[34] DMA_SHA2_DIGEST_12
-    4'b 1111, // index[35] DMA_SHA2_DIGEST_13
-    4'b 1111, // index[36] DMA_SHA2_DIGEST_14
-    4'b 1111  // index[37] DMA_SHA2_DIGEST_15
+    4'b 0001, // index[22] DMA_CLEAR_INT_SRC
+    4'b 1111, // index[23] DMA_INT_SOURCE_ADDR_0
+    4'b 1111, // index[24] DMA_INT_SOURCE_ADDR_1
+    4'b 1111, // index[25] DMA_INT_SOURCE_ADDR_2
+    4'b 1111, // index[26] DMA_INT_SOURCE_ADDR_3
+    4'b 1111, // index[27] DMA_INT_SOURCE_ADDR_4
+    4'b 1111, // index[28] DMA_INT_SOURCE_WR_VAL_0
+    4'b 1111, // index[29] DMA_INT_SOURCE_WR_VAL_1
+    4'b 1111, // index[30] DMA_INT_SOURCE_WR_VAL_2
+    4'b 1111, // index[31] DMA_INT_SOURCE_WR_VAL_3
+    4'b 1111, // index[32] DMA_INT_SOURCE_WR_VAL_4
+    4'b 1111, // index[33] DMA_SHA2_DIGEST_0
+    4'b 1111, // index[34] DMA_SHA2_DIGEST_1
+    4'b 1111, // index[35] DMA_SHA2_DIGEST_2
+    4'b 1111, // index[36] DMA_SHA2_DIGEST_3
+    4'b 1111, // index[37] DMA_SHA2_DIGEST_4
+    4'b 1111, // index[38] DMA_SHA2_DIGEST_5
+    4'b 1111, // index[39] DMA_SHA2_DIGEST_6
+    4'b 1111, // index[40] DMA_SHA2_DIGEST_7
+    4'b 1111, // index[41] DMA_SHA2_DIGEST_8
+    4'b 1111, // index[42] DMA_SHA2_DIGEST_9
+    4'b 1111, // index[43] DMA_SHA2_DIGEST_10
+    4'b 1111, // index[44] DMA_SHA2_DIGEST_11
+    4'b 1111, // index[45] DMA_SHA2_DIGEST_12
+    4'b 1111, // index[46] DMA_SHA2_DIGEST_13
+    4'b 1111, // index[47] DMA_SHA2_DIGEST_14
+    4'b 1111  // index[48] DMA_SHA2_DIGEST_15
   };
 
 endpackage
