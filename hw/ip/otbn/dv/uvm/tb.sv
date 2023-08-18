@@ -133,7 +133,6 @@ module tb;
   ) i_otbn_trace_if (.*);
 
   assign dut.u_otbn_core.i_otbn_trace_if.scramble_state_err_i = dut.otbn_scramble_state_error;
-  assign dut.u_otbn_core.i_otbn_trace_if.ext_mubi_err_i = dut.mubi_err;
   assign dut.u_otbn_core.i_otbn_trace_if.missed_gnt_i.imem_gnt_missed_err = dut.imem_missed_gnt;
   assign dut.u_otbn_core.i_otbn_trace_if.missed_gnt_i.dmem_gnt_missed_err = dut.dmem_missed_gnt;
 
