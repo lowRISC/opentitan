@@ -34,23 +34,25 @@ package dma_pkg;
     OpcSha512 = 4'h3
   } opcode_e;
 
-  typedef enum logic [3:0] {
-    DmaIdle                  = 4'b0000,
-    DmaClearPlic             = 4'b0001,
-    DmaWaitClearPlicResponse = 4'b0010,
-    DmaAddrSetup             = 4'b0011,
-    DmaSendHostRead          = 4'b0100,
-    DmaWaitHostReadResponse  = 4'b0101,
-    DmaSendCtnRead           = 4'b0110,
-    DmaWaitCtnReadResponse   = 4'b0111,
-    DmaSendSysRead           = 4'b1000,
-    DmaWaitSysReadResponse   = 4'b1001,
-    DmaSendHostWrite         = 4'b1010,
-    DmaWaitHostWriteResponse = 4'b1011,
-    DmaSendCtnWrite          = 4'b1100,
-    DmaWaitCtnWriteResponse  = 4'b1101,
-    DmaSendSysWrite          = 4'b1110,
-    DmaError                 = 4'b1111
+  typedef enum logic [4:0] {
+    DmaIdle                  = 5'b00000,
+    DmaClearPlic             = 5'b00001,
+    DmaWaitClearPlicResponse = 5'b00010,
+    DmaAddrSetup             = 5'b00011,
+    DmaSendHostRead          = 5'b00100,
+    DmaWaitHostReadResponse  = 5'b00101,
+    DmaSendCtnRead           = 5'b00110,
+    DmaWaitCtnReadResponse   = 5'b00111,
+    DmaSendSysRead           = 5'b01000,
+    DmaWaitSysReadResponse   = 5'b01001,
+    DmaSendHostWrite         = 5'b01010,
+    DmaWaitHostWriteResponse = 5'b01011,
+    DmaSendCtnWrite          = 5'b01100,
+    DmaWaitCtnWriteResponse  = 5'b01101,
+    DmaSendSysWrite          = 5'b01110,
+    DmaError                 = 5'b01111,
+    DmaShaFinalize           = 5'b10000,
+    DmaShaWait               = 5'b10001
   } dma_ctrl_state_e;
 
   ////////////////////////////
