@@ -12,7 +12,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/status.h"
-#include "sw/ip/rv_plic/test/utils/rv_plic_testutils.h"
 #include "sw/ip/adc_ctrl/dif/dif_adc_ctrl.h"
 #include "sw/ip/alert_handler/dif/dif_alert_handler.h"
 #include "sw/ip/aon_timer/dif/dif_aon_timer.h"
@@ -42,6 +41,8 @@
 #include "sw/lib/sw/device/runtime/ibex.h"
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/log.h"
+
+#include "sw/ip/rv_plic/test/utils/rv_plic_testutils.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 

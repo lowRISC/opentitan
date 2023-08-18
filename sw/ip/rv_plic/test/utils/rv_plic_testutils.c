@@ -4,11 +4,11 @@
 
 #include "sw/ip/rv_plic/test/utils/rv_plic_testutils.h"
 
-#include "sw/lib/sw/device/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/base/dif/dif_base.h"
 #include "sw/ip/rv_core_ibex/test/utils/rand_testutils.h"
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 void rv_plic_testutils_irq_range_enable(dif_rv_plic_t *plic,
                                         dif_rv_plic_target_t target,

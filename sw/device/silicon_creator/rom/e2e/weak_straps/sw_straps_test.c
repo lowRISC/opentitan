@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/testing/json/command.h"
-#include "sw/ip/pinmux/test/utils/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/ip/gpio/dif/dif_gpio.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
+#include "sw/ip/pinmux/test/utils/pinmux_testutils.h"
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/base/status.h"

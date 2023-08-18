@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_CONTROLEP_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_CONTROLEP_H_
+#ifndef OPENTITAN_SW_IP_USBDEV_TEST_UTILS_USB_TESTUTILS_CONTROLEP_H_
+#define OPENTITAN_SW_IP_USBDEV_TEST_UTILS_USB_TESTUTILS_CONTROLEP_H_
 
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/lib/sw/device/base/status.h"
 #include "sw/ip/usbdev/test/utils/usb_testutils.h"
+#include "sw/lib/sw/device/base/status.h"
 
 // DPI test numbers
 typedef enum usb_testutils_test_number {
@@ -156,4 +156,4 @@ status_t usb_testutils_controlep_init(usb_testutils_controlep_ctx_t *ctctx,
 
 // KEEP BLANK LINE ABOVE, it is in the macro!
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_CONTROLEP_H_
+#endif  // OPENTITAN_SW_IP_USBDEV_TEST_UTILS_USB_TESTUTILS_CONTROLEP_H_

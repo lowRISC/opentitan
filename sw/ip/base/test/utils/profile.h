@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_PROFILE_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_PROFILE_H_
+#ifndef OPENTITAN_SW_IP_BASE_TEST_UTILS_PROFILE_H_
+#define OPENTITAN_SW_IP_BASE_TEST_UTILS_PROFILE_H_
 
 #include <stdint.h>
 
@@ -54,4 +54,4 @@ uint32_t profile_end_and_print(uint64_t t_start, char *name);
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_PROFILE_H_
+#endif  // OPENTITAN_SW_IP_BASE_TEST_UTILS_PROFILE_H_

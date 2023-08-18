@@ -7,9 +7,9 @@
 
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/ip/rv_core_ibex/test/utils/rand_testutils.h"
 #include "sw/ip/rstmgr/dif/dif_rstmgr.h"
 #include "sw/ip/rstmgr/test/utils/rstmgr_testutils.h"
+#include "sw/ip/rv_core_ibex/test/utils/rand_testutils.h"
 #include "sw/ip/sram_ctrl/test/utils/sram_ctrl_testutils.h"
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/base/mmio.h"

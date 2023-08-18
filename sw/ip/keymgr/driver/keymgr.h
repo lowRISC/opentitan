@@ -16,7 +16,8 @@ extern "C" {
 
 /**
  * @file
- * @brief This header contains declarations of device-specific driver information.
+ * @brief This header contains declarations of device-specific driver
+ * information.
  *
  * This header contains "device-specific" driver declarations, i.e., information
  * that all device implementations must provide, but which is specific to the

@@ -7,11 +7,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/ip/aon_timer/dif/dif_aon_timer.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/math.h"
 #include "sw/lib/sw/device/base/mmio.h"
-#include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/ip/aon_timer/dif/dif_aon_timer.h"
 
 status_t aon_timer_testutils_get_aon_cycles_from_us(uint64_t microseconds,
                                                     uint32_t *cycles) {

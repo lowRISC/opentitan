@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_NV_COUNTER_TESTUTILS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_NV_COUNTER_TESTUTILS_H_
+#ifndef OPENTITAN_SW_IP_FLASH_CTRL_TEST_UTILS_NV_COUNTER_TESTUTILS_H_
+#define OPENTITAN_SW_IP_FLASH_CTRL_TEST_UTILS_NV_COUNTER_TESTUTILS_H_
 
 #include <stdint.h>
 
-#include "sw/lib/sw/device/base/status.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
+#include "sw/lib/sw/device/base/status.h"
 
 /**
  * Returns the value of a non-volatile counter in flash.
@@ -77,4 +77,4 @@ OT_WARN_UNUSED_RESULT
 status_t flash_ctrl_testutils_counter_init_zero(
     dif_flash_ctrl_state_t *flash_state, size_t counter);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_NV_COUNTER_TESTUTILS_H_
+#endif  // OPENTITAN_SW_IP_FLASH_CTRL_TEST_UTILS_NV_COUNTER_TESTUTILS_H_

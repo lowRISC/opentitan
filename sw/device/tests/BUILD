@@ -940,9 +940,9 @@ opentitan_functest(
     name = "example_test_from_flash",
     srcs = ["example_test_from_flash.c"],
     deps = [
-        "//sw/top_darjeeling/sw/test/utils:rand_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/test/utils:rand_testutils",
     ],
 )
 
@@ -1082,11 +1082,11 @@ opentitan_functest(
         "dv",
     ],
     deps = [
-        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:gpio",
         "//sw/top_darjeeling/sw/dif:pinmux",
+        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
     ],
 )
 

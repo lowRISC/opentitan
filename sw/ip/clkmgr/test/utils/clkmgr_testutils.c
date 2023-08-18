@@ -4,8 +4,8 @@
 
 #include "sw/ip/clkmgr/test/utils/clkmgr_testutils.h"
 
-#include "sw/lib/sw/device/base/math.h"
 #include "sw/ip/clkmgr/dif/dif_clkmgr.h"
+#include "sw/lib/sw/device/base/math.h"
 
 static const char *measure_clock_names[kDifClkmgrMeasureClockUsb + 1] = {
     "io_clk", "io_div2_clk", "io_div4_clk", "main_clk", "usb_clk"};
@@ -51,11 +51,11 @@ static uint32_t cast_safely(uint64_t val) {
 }
 
 void initialize_expected_counts(void) {
-  // The expected counts depend on the device, per sw/lib/sw/device/arch/device.h.
-  // Notice the ratios are small enough to fit a uint32_t, even if the Hz number
-  // is in uint64_t.
-  // The expected counts are derived from the ratios of the frequencies of the
-  // various clocks to the AON clock. For example, 48 Mhz / 200 kHz = 240.
+  // The expected counts depend on the device, per
+  // sw/lib/sw/device/arch/device.h. Notice the ratios are small enough to fit a
+  // uint32_t, even if the Hz number is in uint64_t. The expected counts are
+  // derived from the ratios of the frequencies of the various clocks to the AON
+  // clock. For example, 48 Mhz / 200 kHz = 240.
   const uint32_t kDeviceCpuCount =
       cast_safely(udiv64_slow(kClockFreqCpuHz, kClockFreqAonHz,
                               /*rem_out=*/NULL));

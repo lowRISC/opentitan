@@ -6,8 +6,7 @@
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
-
-const i2c_pinmux_conf_t pinmux_conf[] = {
+const i2c_pinmux_conf_t kPinmuxConf[] = {
     // I2C0.
     {.sda =
          {

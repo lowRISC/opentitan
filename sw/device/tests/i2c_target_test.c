@@ -6,8 +6,6 @@
 #include <assert.h>
 
 #include "sw/device/lib/testing/json/command.h"
-#include "sw/ip/pwrmgr/test/utils/pwrmgr_testutils.h"
-#include "sw/ip/rv_plic/test/utils/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
@@ -15,7 +13,9 @@
 #include "sw/ip/i2c/test/utils/i2c_testutils.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
 #include "sw/ip/pwrmgr/dif/dif_pwrmgr.h"
+#include "sw/ip/pwrmgr/test/utils/pwrmgr_testutils.h"
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
+#include "sw/ip/rv_plic/test/utils/rv_plic_testutils.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/base/memory.h"

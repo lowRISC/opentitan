@@ -11,11 +11,9 @@
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
-#include "sw/ip/alert_handler/test/utils/alert_handler_testutils.h"
 #include "sw/ip/adc_ctrl/dif/dif_adc_ctrl.h"
 #include "sw/ip/aes/dif/dif_aes.h"
 #include "sw/ip/alert_handler/dif/dif_alert_handler.h"
-#include "sw/ip/alert_handler/test/utils/alert_handler_testutils.h"
 #include "sw/ip/aon_timer/dif/dif_aon_timer.h"
 #include "sw/ip/clkmgr/dif/dif_clkmgr.h"
 #include "sw/ip/csrng/dif/dif_csrng.h"
@@ -48,6 +46,8 @@
 #include "sw/ip/usbdev/dif/dif_usbdev.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/mmio.h"
+
+#include "sw/ip/alert_handler/test/utils/alert_handler_testutils.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "alert_handler_regs.h"  // Generated.

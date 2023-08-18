@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_AES_TESTUTILS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_AES_TESTUTILS_H_
+#ifndef OPENTITAN_SW_IP_AES_TEST_UTILS_AES_TESTUTILS_H_
+#define OPENTITAN_SW_IP_AES_TEST_UTILS_AES_TESTUTILS_H_
 
-#include "sw/lib/sw/device/runtime/ibex.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/aes/dif/dif_aes.h"
+#include "sw/lib/sw/device/runtime/ibex.h"
 
 /**
  * Returns the value of the AES status flag.
@@ -60,4 +60,4 @@ OT_WARN_UNUSED_RESULT
 status_t aes_testutils_csrng_kat(void);
 #endif
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_AES_TESTUTILS_H_
+#endif  // OPENTITAN_SW_IP_AES_TEST_UTILS_AES_TESTUTILS_H_

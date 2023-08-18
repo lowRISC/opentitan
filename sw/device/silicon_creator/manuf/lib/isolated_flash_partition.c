@@ -4,8 +4,8 @@
 
 #include "sw/device/silicon_creator/manuf/lib/isolated_flash_partition.h"
 
-#include "sw/ip/flash_ctrl/test/utils/flash_ctrl_testutils.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
+#include "sw/ip/flash_ctrl/test/utils/flash_ctrl_testutils.h"
 
 enum {
   /**

@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_SPI_FLASH_TESTUTILS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_SPI_FLASH_TESTUTILS_H_
+#ifndef OPENTITAN_SW_IP_SPI_HOST_TEST_UTILS_SPI_FLASH_TESTUTILS_H_
+#define OPENTITAN_SW_IP_SPI_HOST_TEST_UTILS_SPI_FLASH_TESTUTILS_H_
 
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/ip/spi_host/dif/dif_spi_host.h"
 #include "sw/lib/sw/device/base/bitfield.h"
 #include "sw/lib/sw/device/base/status.h"
-#include "sw/ip/spi_host/dif/dif_spi_host.h"
 
 typedef struct spi_flash_testutils_jedec_id {
   uint16_t device_id;
@@ -324,4 +324,4 @@ status_t spi_flash_testutils_enter_4byte_address_mode(dif_spi_host_t *spih);
  */
 OT_WARN_UNUSED_RESULT
 status_t spi_flash_testutils_exit_4byte_address_mode(dif_spi_host_t *spih);
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_SPI_FLASH_TESTUTILS_H_
+#endif  // OPENTITAN_SW_IP_SPI_HOST_TEST_UTILS_SPI_FLASH_TESTUTILS_H_

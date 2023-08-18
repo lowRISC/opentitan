@@ -8,13 +8,13 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/ip/i2c/dif/dif_i2c.h"
+#include "sw/ip/pinmux/dif/dif_pinmux.h"
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/hart.h"
 #include "sw/lib/sw/device/runtime/ibex.h"
 #include "sw/lib/sw/device/runtime/log.h"
-#include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/ip/i2c/dif/dif_i2c.h"
-#include "sw/ip/pinmux/dif/dif_pinmux.h"
 
 #include "i2c_regs.h"  // Generated.
 
@@ -213,16 +213,16 @@ status_t i2c_testutils_target_check_write(const dif_i2c_t *i2c,
 status_t i2c_testutils_select_pinmux(const dif_pinmux_t *pinmux,
                                      uint8_t i2c_id) {
   // Configure sda pin.
-  TRY(dif_pinmux_input_select(pinmux, pinmux_conf[i2c_id].sda.peripheral_in,
-                              pinmux_conf[i2c_id].sda.insel));
-  TRY(dif_pinmux_output_select(pinmux, pinmux_conf[i2c_id].sda.mio_out,
-                               pinmux_conf[i2c_id].sda.outsel));
+  TRY(dif_pinmux_input_select(pinmux, kPinmuxConf[i2c_id].sda.peripheral_in,
+                              kPinmuxConf[i2c_id].sda.insel));
+  TRY(dif_pinmux_output_select(pinmux, kPinmuxConf[i2c_id].sda.mio_out,
+                               kPinmuxConf[i2c_id].sda.outsel));
 
   // Configure scl pin.
-  TRY(dif_pinmux_input_select(pinmux, pinmux_conf[i2c_id].scl.peripheral_in,
-                              pinmux_conf[i2c_id].scl.insel));
-  TRY(dif_pinmux_output_select(pinmux, pinmux_conf[i2c_id].scl.mio_out,
-                               pinmux_conf[i2c_id].scl.outsel));
+  TRY(dif_pinmux_input_select(pinmux, kPinmuxConf[i2c_id].scl.peripheral_in,
+                              kPinmuxConf[i2c_id].scl.insel));
+  TRY(dif_pinmux_output_select(pinmux, kPinmuxConf[i2c_id].scl.mio_out,
+                               kPinmuxConf[i2c_id].scl.outsel));
   return OK_STATUS();
 }
 

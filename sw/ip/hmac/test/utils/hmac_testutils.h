@@ -2,17 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_HMAC_TESTUTILS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_HMAC_TESTUTILS_H_
+#ifndef OPENTITAN_SW_IP_HMAC_TEST_UTILS_HMAC_TESTUTILS_H_
+#define OPENTITAN_SW_IP_HMAC_TEST_UTILS_HMAC_TESTUTILS_H_
 
 #include <assert.h>
 #include <stdint.h>
 
+#include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/ip/hmac/dif/dif_hmac.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/math.h"
 #include "sw/lib/sw/device/base/status.h"
-#include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/ip/hmac/dif/dif_hmac.h"
 
 /**
  * Timeouts to be used for different HMAC operations.
@@ -156,4 +156,4 @@ OT_WARN_UNUSED_RESULT
 status_t hmac_testutils_push_message(const dif_hmac_t *hmac, const char *data,
                                      size_t len);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_HMAC_TESTUTILS_H_
+#endif  // OPENTITAN_SW_IP_HMAC_TEST_UTILS_HMAC_TESTUTILS_H_

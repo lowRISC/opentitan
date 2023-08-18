@@ -19,43 +19,25 @@
  * @brief Device-specific driver definitions
  */
 
-const uint32_t kCsrngBaseAddr[] = {
-    TOP_EARLGREY_CSRNG_BASE_ADDR
-};
+const uint32_t kCsrngBaseAddr[] = {TOP_EARLGREY_CSRNG_BASE_ADDR};
 
-const uint32_t kEdnBaseAddr[] = {
-    TOP_EARLGREY_EDN0_BASE_ADDR,
-    TOP_EARLGREY_EDN1_BASE_ADDR
-};
+const uint32_t kEdnBaseAddr[] = {TOP_EARLGREY_EDN0_BASE_ADDR,
+                                 TOP_EARLGREY_EDN1_BASE_ADDR};
 
-const uint32_t kEntropySrcBaseAddr[] = {
-    TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
-};
+const uint32_t kEntropySrcBaseAddr[] = {TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR};
 
 const uint32_t kFlashCtrlCoreBaseAddr[] = {
-    TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR
-};
+    TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR};
 
 const uint32_t kFlashCtrlMemBaseAddr[] = {
-    TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR
-};
+    TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR};
 
-const uint32_t kKeymgrBaseAddr[] = {
-    TOP_EARLGREY_KEYMGR_BASE_ADDR
-};
+const uint32_t kKeymgrBaseAddr[] = {TOP_EARLGREY_KEYMGR_BASE_ADDR};
 
-const uint32_t kKmacBaseAddr[] = {
-    TOP_EARLGREY_KMAC_BASE_ADDR
-};
+const uint32_t kKmacBaseAddr[] = {TOP_EARLGREY_KMAC_BASE_ADDR};
 
-const uint32_t kOtpCtrlCoreBaseAddr[] = {
-    TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR
-};
+const uint32_t kOtpCtrlCoreBaseAddr[] = {TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR};
 
-const uint32_t kRstmgrAonBaseAddr[] = {
-    TOP_EARLGREY_RSTMGR_AON_BASE_ADDR
-};
+const uint32_t kRstmgrAonBaseAddr[] = {TOP_EARLGREY_RSTMGR_AON_BASE_ADDR};
 
-const uint32_t kUsbdevBaseAddr[] = {
-    TOP_EARLGREY_USBDEV_BASE_ADDR
-};
+const uint32_t kUsbdevBaseAddr[] = {TOP_EARLGREY_USBDEV_BASE_ADDR};

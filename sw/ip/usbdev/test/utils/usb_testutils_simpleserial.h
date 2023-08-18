@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_SIMPLESERIAL_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_SIMPLESERIAL_H_
+#ifndef OPENTITAN_SW_IP_USBDEV_TEST_UTILS_USB_TESTUTILS_SIMPLESERIAL_H_
+#define OPENTITAN_SW_IP_USBDEV_TEST_UTILS_USB_TESTUTILS_SIMPLESERIAL_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -51,4 +51,4 @@ status_t usb_testutils_simpleserial_init(usb_testutils_ss_ctx_t *ssctx,
                                          usb_testutils_ctx_t *ctx, uint8_t ep,
                                          void (*got_byte)(uint8_t));
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_SIMPLESERIAL_H_
+#endif  // OPENTITAN_SW_IP_USBDEV_TEST_UTILS_USB_TESTUTILS_SIMPLESERIAL_H_

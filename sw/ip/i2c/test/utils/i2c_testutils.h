@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_I2C_TESTUTILS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_I2C_TESTUTILS_H_
+#ifndef OPENTITAN_SW_IP_I2C_TEST_UTILS_I2C_TESTUTILS_H_
+#define OPENTITAN_SW_IP_I2C_TEST_UTILS_I2C_TESTUTILS_H_
 
 #include <stdint.h>
 
-#include "sw/lib/sw/device/base/status.h"
 #include "sw/ip/i2c/dif/dif_i2c.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
+#include "sw/lib/sw/device/base/status.h"
 
 /**
  * Pinmux configuration for a single pin.
@@ -52,7 +52,7 @@ typedef struct i2c_pinmux_conf {
  *
  * This array provides pinmux configuration information for all defined I2Cs.
  */
-extern const i2c_pinmux_conf_t pinmux_conf[];
+extern const i2c_pinmux_conf_t kPinmuxConf[];
 
 /**
  * Construct an I2C write as an I2C host.
@@ -225,4 +225,4 @@ status_t i2c_testutils_wait_host_idle(const dif_i2c_t *i2c);
  * @return The result of the operation.
  */
 status_t i2c_testutils_wait_transaction_finish(const dif_i2c_t *i2c);
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_I2C_TESTUTILS_H_
+#endif  // OPENTITAN_SW_IP_I2C_TEST_UTILS_I2C_TESTUTILS_H_

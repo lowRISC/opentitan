@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_STREAMS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_STREAMS_H_
+#ifndef OPENTITAN_SW_IP_USBDEV_TEST_UTILS_USB_TESTUTILS_STREAMS_H_
+#define OPENTITAN_SW_IP_USBDEV_TEST_UTILS_USB_TESTUTILS_STREAMS_H_
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -336,4 +336,4 @@ OT_WARN_UNUSED_RESULT
 bool usb_testutils_stream_completed(const usb_testutils_streams_ctx_t *ctx,
                                     uint8_t id);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_STREAMS_H_
+#endif  // OPENTITAN_SW_IP_USBDEV_TEST_UTILS_USB_TESTUTILS_STREAMS_H_

@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_SRAM_CTRL_TESTUTILS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_SRAM_CTRL_TESTUTILS_H_
+#ifndef OPENTITAN_SW_IP_SRAM_CTRL_TEST_UTILS_SRAM_CTRL_TESTUTILS_H_
+#define OPENTITAN_SW_IP_SRAM_CTRL_TEST_UTILS_SRAM_CTRL_TESTUTILS_H_
 
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/lib/sw/device/base/status.h"
 #include "sw/ip/sram_ctrl/dif/dif_sram_ctrl.h"
+#include "sw/lib/sw/device/base/status.h"
 
 /**
  * A typed representation of the test data.
@@ -46,4 +46,4 @@ status_t sram_ctrl_testutils_scramble(const dif_sram_ctrl_t *sram_ctrl);
 OT_WARN_UNUSED_RESULT
 status_t sram_ctrl_testutils_wipe(const dif_sram_ctrl_t *sram_ctrl);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_SRAM_CTRL_TESTUTILS_H_
+#endif  // OPENTITAN_SW_IP_SRAM_CTRL_TEST_UTILS_SRAM_CTRL_TESTUTILS_H_

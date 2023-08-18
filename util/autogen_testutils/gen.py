@@ -32,7 +32,7 @@ def gen_testutils(top_name: str, ips_with_difs: List[Ip]) -> None:
 
     # Define input/output directories.
     testutils_templates_dir = REPO_TOP / "util/autogen_testutils/templates"
-    autogen_testutils_dir = REPO_TOP / "sw" / f"top_{top_name}" / "sw/test/utils/autogen"
+    autogen_testutils_dir = REPO_TOP / f"sw/top_{top_name}/sw/test/utils/autogen"
 
     # Create output directories if needed.
     autogen_testutils_dir.mkdir(exist_ok=True)

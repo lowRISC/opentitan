@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_AUTOGEN_ISR_TESTUTILS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_AUTOGEN_ISR_TESTUTILS_H_
+#ifndef OPENTITAN_SW_TOP_${top_name.upper()}_SW_TEST_UTILS_AUTOGEN_ISR_TESTUTILS_H_
+#define OPENTITAN_SW_TOP_${top_name.upper()}_SW_TEST_UTILS_AUTOGEN_ISR_TESTUTILS_H_
 
 ${autogen_banner}
 
@@ -82,4 +82,4 @@ typedef struct plic_isr_ctx {
   % endif
 % endfor
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_AUTOGEN_ISR_TESTUTILS_H_
+#endif  // OPENTITAN_SW_TOP_${top_name.upper()}_SW_TEST_UTILS_AUTOGEN_ISR_TESTUTILS_H_

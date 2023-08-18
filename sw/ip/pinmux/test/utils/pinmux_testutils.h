@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_PINMUX_TESTUTILS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_PINMUX_TESTUTILS_H_
+#ifndef OPENTITAN_SW_IP_PINMUX_TEST_UTILS_PINMUX_TESTUTILS_H_
+#define OPENTITAN_SW_IP_PINMUX_TEST_UTILS_PINMUX_TESTUTILS_H_
 
 #include <stdint.h>
 
-#include "sw/lib/sw/device/base/status.h"
 #include "sw/ip/gpio/dif/dif_gpio.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
+#include "sw/lib/sw/device/base/status.h"
 
 /**
  * Default pinmux initialization.
@@ -87,4 +87,4 @@ void pinmux_testutils_configure_pads(const dif_pinmux_t *pinmux,
                                      const pinmux_pad_attributes_t *attrs,
                                      size_t num_attrs);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_PINMUX_TESTUTILS_H_
+#endif  // OPENTITAN_SW_IP_PINMUX_TEST_UTILS_PINMUX_TESTUTILS_H_

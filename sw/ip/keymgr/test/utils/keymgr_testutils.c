@@ -4,8 +4,6 @@
 
 #include "sw/ip/keymgr/test/utils/keymgr_testutils.h"
 
-#include "sw/lib/sw/device/runtime/ibex.h"
-#include "sw/lib/sw/device/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
@@ -23,6 +21,8 @@
 #include "sw/ip/rstmgr/dif/dif_rstmgr.h"
 #include "sw/ip/rstmgr/driver/rstmgr.h"
 #include "sw/ip/rstmgr/test/utils/rstmgr_testutils.h"
+#include "sw/lib/sw/device/runtime/ibex.h"
+#include "sw/lib/sw/device/runtime/log.h"
 
 enum {
   /** Flash Secret partition ID. */
@@ -101,8 +101,8 @@ status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
 
     // Lock otp secret partition.
     dif_otp_ctrl_t otp;
-    TRY(dif_otp_ctrl_init(
-        mmio_region_from_addr(kOtpCtrlCoreBaseAddr[0]), &otp));
+    TRY(dif_otp_ctrl_init(mmio_region_from_addr(kOtpCtrlCoreBaseAddr[0]),
+                          &otp));
     TRY(otp_ctrl_testutils_lock_partition(&otp, kDifOtpCtrlPartitionSecret2,
                                           0));
 

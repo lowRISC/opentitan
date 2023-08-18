@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_ALERT_HANDLER_TESTUTILS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_ALERT_HANDLER_TESTUTILS_H_
+#ifndef OPENTITAN_SW_IP_ALERT_HANDLER_TEST_UTILS_ALERT_HANDLER_TESTUTILS_H_
+#define OPENTITAN_SW_IP_ALERT_HANDLER_TEST_UTILS_ALERT_HANDLER_TESTUTILS_H_
 
 #include <stdbool.h>
 
-#include "sw/lib/sw/device/base/status.h"
 #include "sw/ip/alert_handler/dif/dif_alert_handler.h"
 #include "sw/ip/base/dif/dif_base.h"
 #include "sw/ip/rstmgr/dif/dif_rstmgr.h"
+#include "sw/lib/sw/device/base/status.h"
 
 #include "alert_handler_regs.h"
 
@@ -105,4 +105,4 @@ status_t alert_handler_testutils_get_cycles_from_us(uint64_t microseconds,
  */
 uint32_t alert_handler_testutils_cycle_rescaling_factor(void);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_ALERT_HANDLER_TESTUTILS_H_
+#endif  // OPENTITAN_SW_IP_ALERT_HANDLER_TEST_UTILS_ALERT_HANDLER_TESTUTILS_H_

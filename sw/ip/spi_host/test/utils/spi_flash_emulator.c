@@ -7,11 +7,11 @@
 #include <stdalign.h>
 #include <stdint.h>
 
+#include "sw/ip/spi_device/test/utils/spi_device_testutils.h"
+#include "sw/ip/spi_host/test/utils/spi_flash_testutils.h"
 #include "sw/lib/sw/device/base/bitfield.h"
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/runtime/log.h"
-#include "sw/ip/spi_device/test/utils/spi_device_testutils.h"
-#include "sw/ip/spi_host/test/utils/spi_flash_testutils.h"
 
 enum {
   // JEDEC standard continuation code.

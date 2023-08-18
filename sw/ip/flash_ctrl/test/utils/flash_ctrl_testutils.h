@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_FLASH_CTRL_TESTUTILS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_FLASH_CTRL_TESTUTILS_H_
+#ifndef OPENTITAN_SW_IP_FLASH_CTRL_TEST_UTILS_FLASH_CTRL_TESTUTILS_H_
+#define OPENTITAN_SW_IP_FLASH_CTRL_TEST_UTILS_FLASH_CTRL_TESTUTILS_H_
 
 #include <stdint.h>
 
-#include "sw/lib/sw/device/base/status.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
+#include "sw/lib/sw/device/base/status.h"
 
 /**
  * Wait for the flash_ctrl to initialize.
@@ -264,4 +264,4 @@ OT_WARN_UNUSED_RESULT
 status_t flash_ctrl_testutils_backdoor_wait_update(
     dif_flash_ctrl_state_t *flash_state, uintptr_t addr, size_t timeout);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_FLASH_CTRL_TESTUTILS_H_
+#endif  // OPENTITAN_SW_IP_FLASH_CTRL_TEST_UTILS_FLASH_CTRL_TESTUTILS_H_

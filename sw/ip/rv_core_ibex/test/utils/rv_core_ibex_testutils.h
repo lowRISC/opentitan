@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_RV_CORE_IBEX_TESTUTILS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_RV_CORE_IBEX_TESTUTILS_H_
+#ifndef OPENTITAN_SW_IP_RV_CORE_IBEX_TEST_UTILS_RV_CORE_IBEX_TESTUTILS_H_
+#define OPENTITAN_SW_IP_RV_CORE_IBEX_TEST_UTILS_RV_CORE_IBEX_TESTUTILS_H_
 
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/lib/sw/device/base/status.h"
 #include "sw/ip/rv_core_ibex/dif/dif_rv_core_ibex.h"
+#include "sw/lib/sw/device/base/status.h"
 
 /**
  * Returns the validity of random data read from the entropy source as bool.
@@ -39,4 +39,4 @@ status_t rv_core_ibex_testutils_get_rnd_data(
     const dif_rv_core_ibex_t *rv_core_ibex, uint32_t timeout_usec,
     uint32_t *rnd);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_RV_CORE_IBEX_TESTUTILS_H_
+#endif  // OPENTITAN_SW_IP_RV_CORE_IBEX_TEST_UTILS_RV_CORE_IBEX_TESTUTILS_H_

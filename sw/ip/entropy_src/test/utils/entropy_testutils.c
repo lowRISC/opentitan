@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/ip/entropy_src/test/utils/entropy_testutils.h"
 
-#include "sw/lib/sw/device/base/mmio.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/csrng/dif/dif_csrng.h"
-#include "sw/ip/csrng/driver/csrng.h"
 #include "sw/ip/csrng/dif/shared/dif_csrng_shared.h"
+#include "sw/ip/csrng/driver/csrng.h"
 #include "sw/ip/edn/dif/dif_edn.h"
 #include "sw/ip/edn/driver/edn.h"
 #include "sw/ip/entropy_src/dif/dif_entropy_src.h"
 #include "sw/ip/entropy_src/driver/entropy_src.h"
+#include "sw/lib/sw/device/base/mmio.h"
 
 static status_t setup_entropy_src(const dif_entropy_src_t *entropy_src) {
   CHECK_DIF_OK(dif_entropy_src_configure(
@@ -33,12 +33,10 @@ dif_entropy_src_config_t entropy_testutils_config_default(void) {
 status_t entropy_testutils_auto_mode_init(void) {
   const dif_entropy_src_t entropy_src = {
       .base_addr = mmio_region_from_addr(kEntropySrcBaseAddr[0])};
-  const dif_csrng_t csrng = {
-      .base_addr = mmio_region_from_addr(kCsrngBaseAddr[0])};
-  const dif_edn_t edn0 = {
-      .base_addr = mmio_region_from_addr(kEdnBaseAddr[0])};
-  const dif_edn_t edn1 = {
-      .base_addr = mmio_region_from_addr(kEdnBaseAddr[1])};
+  const dif_csrng_t csrng = {.base_addr =
+                                 mmio_region_from_addr(kCsrngBaseAddr[0])};
+  const dif_edn_t edn0 = {.base_addr = mmio_region_from_addr(kEdnBaseAddr[0])};
+  const dif_edn_t edn1 = {.base_addr = mmio_region_from_addr(kEdnBaseAddr[1])};
 
   TRY(entropy_testutils_stop_all());
 
@@ -138,12 +136,10 @@ status_t entropy_testutils_auto_mode_init(void) {
 status_t entropy_testutils_boot_mode_init(void) {
   const dif_entropy_src_t entropy_src = {
       .base_addr = mmio_region_from_addr(kEntropySrcBaseAddr[0])};
-  const dif_csrng_t csrng = {
-      .base_addr = mmio_region_from_addr(kCsrngBaseAddr[0])};
-  const dif_edn_t edn0 = {
-      .base_addr = mmio_region_from_addr(kEdnBaseAddr[0])};
-  const dif_edn_t edn1 = {
-      .base_addr = mmio_region_from_addr(kEdnBaseAddr[1])};
+  const dif_csrng_t csrng = {.base_addr =
+                                 mmio_region_from_addr(kCsrngBaseAddr[0])};
+  const dif_edn_t edn0 = {.base_addr = mmio_region_from_addr(kEdnBaseAddr[0])};
+  const dif_edn_t edn1 = {.base_addr = mmio_region_from_addr(kEdnBaseAddr[1])};
 
   TRY(entropy_testutils_stop_all());
 
@@ -193,12 +189,10 @@ status_t entropy_testutils_wait_for_state(const dif_entropy_src_t *entropy_src,
 status_t entropy_testutils_stop_all(void) {
   const dif_entropy_src_t entropy_src = {
       .base_addr = mmio_region_from_addr(kEntropySrcBaseAddr[0])};
-  const dif_csrng_t csrng = {
-      .base_addr = mmio_region_from_addr(kCsrngBaseAddr[0])};
-  const dif_edn_t edn0 = {
-      .base_addr = mmio_region_from_addr(kEdnBaseAddr[0])};
-  const dif_edn_t edn1 = {
-      .base_addr = mmio_region_from_addr(kEdnBaseAddr[1])};
+  const dif_csrng_t csrng = {.base_addr =
+                                 mmio_region_from_addr(kCsrngBaseAddr[0])};
+  const dif_edn_t edn0 = {.base_addr = mmio_region_from_addr(kEdnBaseAddr[0])};
+  const dif_edn_t edn1 = {.base_addr = mmio_region_from_addr(kEdnBaseAddr[1])};
 
   TRY(dif_edn_stop(&edn0));
   TRY(dif_edn_stop(&edn1));

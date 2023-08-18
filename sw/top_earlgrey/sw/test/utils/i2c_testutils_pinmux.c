@@ -6,8 +6,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-
-const i2c_pinmux_conf_t pinmux_conf[] = {
+const i2c_pinmux_conf_t kPinmuxConf[] = {
     // I2C0.
     {.sda =
          {

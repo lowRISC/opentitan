@@ -175,9 +175,9 @@ cc_library(
         ":otp_img",
         "//hw/ip/otp_ctrl/data/sku_darjeeling_a0:otp_img_sku_darjeeling_a0_stage_individualize",
         "//sw/lib/sw/device/base:status",
+        "//sw/top_darjeeling/sw/dif:otp_ctrl",
         "//sw/top_darjeeling/sw/test/utils:lc_ctrl_testutils",
         "//sw/top_darjeeling/sw/test/utils:otp_ctrl_testutils",
-        "//sw/top_darjeeling/sw/dif:otp_ctrl",
     ],
 )
 
@@ -424,8 +424,8 @@ cc_library(
     hdrs = ["isolated_flash_partition.h"],
     deps = [
         "//sw/lib/sw/device/base:status",
-        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
         "//sw/top_darjeeling/sw/dif:flash_ctrl",
+        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
     ],
 )
 

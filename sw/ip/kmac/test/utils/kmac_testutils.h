@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_KMAC_TESTUTILS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_KMAC_TESTUTILS_H_
+#ifndef OPENTITAN_SW_IP_KMAC_TEST_UTILS_KMAC_TESTUTILS_H_
+#define OPENTITAN_SW_IP_KMAC_TEST_UTILS_KMAC_TESTUTILS_H_
 
-#include "sw/lib/sw/device/base/status.h"
 #include "sw/ip/kmac/dif/dif_kmac.h"
+#include "sw/lib/sw/device/base/status.h"
 
 /**
  * Configure the KMAC block.
@@ -49,4 +49,4 @@ status_t kmac_testutils_kmac(const dif_kmac_t *kmac, dif_kmac_mode_kmac_t mode,
                              const char *message, const size_t message_len,
                              const size_t output_len, uint32_t *output);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_KMAC_TESTUTILS_H_
+#endif  // OPENTITAN_SW_IP_KMAC_TEST_UTILS_KMAC_TESTUTILS_H_

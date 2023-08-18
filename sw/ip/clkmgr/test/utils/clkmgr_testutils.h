@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_CLKMGR_TESTUTILS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_CLKMGR_TESTUTILS_H_
+#ifndef OPENTITAN_SW_IP_CLKMGR_TEST_UTILS_CLKMGR_TESTUTILS_H_
+#define OPENTITAN_SW_IP_CLKMGR_TEST_UTILS_CLKMGR_TESTUTILS_H_
 
-#include "sw/lib/sw/device/base/status.h"
-#include "sw/lib/sw/device/runtime/ibex.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/clkmgr/dif/dif_clkmgr.h"
+#include "sw/lib/sw/device/base/status.h"
+#include "sw/lib/sw/device/runtime/ibex.h"
 
 /**
  * Returns the transactional block's clock status.
@@ -182,4 +182,4 @@ status_t clkmgr_testutils_enable_external_clock_blocking(
     OK_STATUS();                                                               \
   })
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_CLKMGR_TESTUTILS_H_
+#endif  // OPENTITAN_SW_IP_CLKMGR_TEST_UTILS_CLKMGR_TESTUTILS_H_

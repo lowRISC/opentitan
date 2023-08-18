@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_AON_TIMER_TESTUTILS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_AON_TIMER_TESTUTILS_H_
+#ifndef OPENTITAN_SW_IP_AON_TIMER_TEST_UTILS_AON_TIMER_TESTUTILS_H_
+#define OPENTITAN_SW_IP_AON_TIMER_TEST_UTILS_AON_TIMER_TESTUTILS_H_
 
 #include <stdint.h>
 
-#include "sw/lib/sw/device/base/status.h"
 #include "sw/ip/aon_timer/dif/dif_aon_timer.h"
+#include "sw/lib/sw/device/base/status.h"
 
 /**
  * Compute the number of AON cycles corresponding to the given microseconds.
@@ -77,4 +77,4 @@ status_t aon_timer_testutils_watchdog_config(const dif_aon_timer_t *aon_timer,
 OT_WARN_UNUSED_RESULT
 status_t aon_timer_testutils_shutdown(const dif_aon_timer_t *aon_timer);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_AON_TIMER_TESTUTILS_H_
+#endif  // OPENTITAN_SW_IP_AON_TIMER_TEST_UTILS_AON_TIMER_TESTUTILS_H_

@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_RAND_TESTUTILS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_RAND_TESTUTILS_H_
+#ifndef OPENTITAN_SW_IP_RV_CORE_IBEX_TEST_UTILS_RAND_TESTUTILS_H_
+#define OPENTITAN_SW_IP_RV_CORE_IBEX_TEST_UTILS_RAND_TESTUTILS_H_
 
 #include <stdint.h>
 
@@ -110,4 +110,4 @@ uint32_t rand_testutils_gen32_range(uint32_t min, uint32_t max);
  */
 void rand_testutils_shuffle(void *array, size_t size, size_t length);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_RAND_TESTUTILS_H_
+#endif  // OPENTITAN_SW_IP_RV_CORE_IBEX_TEST_UTILS_RAND_TESTUTILS_H_

@@ -82,11 +82,10 @@ status_t flash_ctrl_testutils_counter_set_at_least(
     return OK_STATUS();
   }
   uint32_t new_val[FLASH_CTRL_PARAM_BYTES_PER_WORD / sizeof(uint32_t)] = {0, 0};
-  return flash_ctrl_testutils_write(flash_state,
-                                    (uint32_t)&kNvCounters[counter][val - 1] -
-                                        kFlashCtrlMemBaseAddr[0],
-                                    0, new_val, kDifFlashCtrlPartitionTypeData,
-                                    ARRAYSIZE(new_val));
+  return flash_ctrl_testutils_write(
+      flash_state,
+      (uint32_t)&kNvCounters[counter][val - 1] - kFlashCtrlMemBaseAddr[0], 0,
+      new_val, kDifFlashCtrlPartitionTypeData, ARRAYSIZE(new_val));
 }
 
 // At the beginning of the simulation (Verilator, VCS,etc.),
@@ -102,8 +101,8 @@ status_t flash_ctrl_testutils_counter_init_zero(
   for (int ii = 0; ii < kNonVolatileCounterFlashWords; ii++) {
     TRY(flash_ctrl_testutils_erase_and_write_page(
         flash_state,
-        (uint32_t)&kNvCounters[counter][ii] - kFlashCtrlMemBaseAddr[0],
-        0, new_val, kDifFlashCtrlPartitionTypeData, ARRAYSIZE(new_val)));
+        (uint32_t)&kNvCounters[counter][ii] - kFlashCtrlMemBaseAddr[0], 0,
+        new_val, kDifFlashCtrlPartitionTypeData, ARRAYSIZE(new_val)));
   }
   return OK_STATUS();
 }

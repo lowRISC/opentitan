@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_SPI_HOST_TESTUTILS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_SPI_HOST_TESTUTILS_H_
+#ifndef OPENTITAN_SW_IP_SPI_HOST_TEST_UTILS_SPI_HOST_TESTUTILS_H_
+#define OPENTITAN_SW_IP_SPI_HOST_TEST_UTILS_SPI_HOST_TESTUTILS_H_
 
 #include <assert.h>
 #include <stdint.h>
 
-#include "sw/lib/sw/device/base/status.h"
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
+#include "sw/lib/sw/device/base/status.h"
 
 /**
  * Return True if spi host is active.
@@ -34,4 +34,4 @@ static inline status_t spi_host_testutils_is_active(dif_spi_host_t *spi_host) {
 OT_WARN_UNUSED_RESULT
 status_t spi_host_testutils_flush(dif_spi_host_t *spi_host);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_SPI_HOST_TESTUTILS_H_
+#endif  // OPENTITAN_SW_IP_SPI_HOST_TEST_UTILS_SPI_HOST_TESTUTILS_H_

@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_LC_CTRL_TESTUTILS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_LC_CTRL_TESTUTILS_H_
+#ifndef OPENTITAN_SW_IP_LC_CTRL_TEST_UTILS_LC_CTRL_TESTUTILS_H_
+#define OPENTITAN_SW_IP_LC_CTRL_TEST_UTILS_LC_CTRL_TESTUTILS_H_
 
 #include <stdbool.h>
 
-#include "sw/lib/sw/device/base/status.h"
 #include "sw/ip/lc_ctrl/dif/dif_lc_ctrl.h"
+#include "sw/lib/sw/device/base/status.h"
 
 /**
  * Print current life cycle state to the console.
@@ -63,4 +63,4 @@ OT_WARN_UNUSED_RESULT
 status_t lc_ctrl_testutils_operational_state_check(
     const dif_lc_ctrl_t *lc_ctrl);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_LC_CTRL_TESTUTILS_H_
+#endif  // OPENTITAN_SW_IP_LC_CTRL_TEST_UTILS_LC_CTRL_TESTUTILS_H_

@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_KEYMGR_TESTUTILS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_KEYMGR_TESTUTILS_H_
+#ifndef OPENTITAN_SW_IP_KEYMGR_TEST_UTILS_KEYMGR_TESTUTILS_H_
+#define OPENTITAN_SW_IP_KEYMGR_TEST_UTILS_KEYMGR_TESTUTILS_H_
 
-#include "sw/lib/sw/device/base/status.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
 #include "sw/ip/keymgr/dif/dif_keymgr.h"
 #include "sw/ip/kmac/dif/dif_kmac.h"
+#include "sw/lib/sw/device/base/status.h"
 
 /**
  * Versioned key parameters for testing.
@@ -177,4 +177,4 @@ status_t keymgr_testutils_disable(const dif_keymgr_t *keymgr);
 OT_WARN_UNUSED_RESULT
 status_t keymgr_testutils_wait_for_operation_done(const dif_keymgr_t *keymgr);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_KEYMGR_TESTUTILS_H_
+#endif  // OPENTITAN_SW_IP_KEYMGR_TEST_UTILS_KEYMGR_TESTUTILS_H_

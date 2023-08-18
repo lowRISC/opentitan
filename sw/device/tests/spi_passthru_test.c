@@ -8,14 +8,14 @@
 #include <stdint.h>
 
 #include "sw/device/lib/testing/json/command.h"
-#include "sw/ip/spi_device/test/utils/spi_device_testutils.h"
-#include "sw/ip/spi_host/test/utils/spi_flash_emulator.h"
-#include "sw/ip/spi_host/test/utils/spi_flash_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/ip/spi_device/dif/dif_spi_device.h"
+#include "sw/ip/spi_device/test/utils/spi_device_testutils.h"
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
+#include "sw/ip/spi_host/test/utils/spi_flash_emulator.h"
+#include "sw/ip/spi_host/test/utils/spi_flash_testutils.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/status.h"
 #include "sw/lib/sw/device/runtime/log.h"

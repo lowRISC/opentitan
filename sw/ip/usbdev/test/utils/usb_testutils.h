@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_H_
+#ifndef OPENTITAN_SW_IP_USBDEV_TEST_UTILS_USB_TESTUTILS_H_
+#define OPENTITAN_SW_IP_USBDEV_TEST_UTILS_USB_TESTUTILS_H_
 
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/lib/sw/device/base/status.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/usbdev/dif/dif_usbdev.h"
+#include "sw/lib/sw/device/base/status.h"
 #include "usb_testutils_diags.h"
 
 // Result codes to rx/tx callback handlers
@@ -368,4 +368,4 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx);
 OT_WARN_UNUSED_RESULT
 status_t usb_testutils_fin(usb_testutils_ctx_t *ctx);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_H_
+#endif  // OPENTITAN_SW_IP_USBDEV_TEST_UTILS_USB_TESTUTILS_H_

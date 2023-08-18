@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_PWRMGR_TESTUTILS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_PWRMGR_TESTUTILS_H_
+#ifndef OPENTITAN_SW_IP_PWRMGR_TEST_UTILS_PWRMGR_TESTUTILS_H_
+#define OPENTITAN_SW_IP_PWRMGR_TEST_UTILS_PWRMGR_TESTUTILS_H_
 
 #include <stdint.h>
 
-#include "sw/lib/sw/device/base/status.h"
 #include "sw/ip/pwrmgr/dif/dif_pwrmgr.h"
+#include "sw/lib/sw/device/base/status.h"
 
 /**
  * Set the device in low power mode.
@@ -39,4 +39,4 @@ OT_WARN_UNUSED_RESULT
 status_t pwrmgr_testutils_is_wakeup_reason(
     const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_request_sources_t reasons);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_PWRMGR_TESTUTILS_H_
+#endif  // OPENTITAN_SW_IP_PWRMGR_TEST_UTILS_PWRMGR_TESTUTILS_H_

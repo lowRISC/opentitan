@@ -16,7 +16,6 @@ def args(p):
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/status.h"
-#include "sw/ip/rv_plic/test/utils/rv_plic_testutils.h"
 % for n in sorted(irq_peripheral_names + ["rv_plic"]):
 #include "sw/ip/${n}/dif/dif_${n}.h"
 % endfor
@@ -26,6 +25,8 @@ def args(p):
 #include "sw/lib/sw/device/runtime/ibex.h"
 #include "sw/lib/sw/device/runtime/irq.h"
 #include "sw/lib/sw/device/runtime/log.h"
+
+#include "sw/ip/rv_plic/test/utils/rv_plic_testutils.h"
 
 #include "hw/top_${top["name"]}/sw/autogen/top_${top["name"]}.h"
 

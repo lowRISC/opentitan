@@ -5,11 +5,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/ip/entropy_src/test/utils/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/ip/entropy_src/test/utils/entropy_testutils.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "kmac_regs.h"

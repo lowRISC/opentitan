@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_RV_PLIC_TESTUTILS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_RV_PLIC_TESTUTILS_H_
+#ifndef OPENTITAN_SW_IP_RV_PLIC_TEST_UTILS_RV_PLIC_TESTUTILS_H_
+#define OPENTITAN_SW_IP_RV_PLIC_TEST_UTILS_RV_PLIC_TESTUTILS_H_
 
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
 
@@ -26,4 +26,4 @@ void rv_plic_testutils_irq_range_enable(dif_rv_plic_t *plic,
                                         dif_rv_plic_irq_id_t start_irq_id,
                                         dif_rv_plic_irq_id_t end_irq_id);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_RV_PLIC_TESTUTILS_H_
+#endif  // OPENTITAN_SW_IP_RV_PLIC_TEST_UTILS_RV_PLIC_TESTUTILS_H_

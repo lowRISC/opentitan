@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_OTP_CTRL_TESTUTILS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_OTP_CTRL_TESTUTILS_H_
+#ifndef OPENTITAN_SW_IP_OTP_CTRL_TEST_UTILS_OTP_CTRL_TESTUTILS_H_
+#define OPENTITAN_SW_IP_OTP_CTRL_TEST_UTILS_OTP_CTRL_TESTUTILS_H_
 
-#include "sw/lib/sw/device/base/status.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
+#include "sw/lib/sw/device/base/status.h"
 
 /**
  * Enum that encodes the expectation for the check_dai_access_error function.
@@ -114,4 +114,4 @@ status_t otp_ctrl_testutils_dai_write64(const dif_otp_ctrl_t *otp,
                                         uint32_t start_address,
                                         const uint64_t *buffer, size_t len);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_OTP_CTRL_TESTUTILS_H_
+#endif  // OPENTITAN_SW_IP_OTP_CTRL_TEST_UTILS_OTP_CTRL_TESTUTILS_H_

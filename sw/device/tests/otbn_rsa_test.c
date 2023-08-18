@@ -4,10 +4,10 @@
 
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/ip/base/test/utils/profile.h"
 #include "sw/ip/entropy_src/test/utils/entropy_testutils.h"
 #include "sw/ip/otbn/dif/dif_otbn.h"
 #include "sw/ip/otbn/test/utils/otbn_testutils.h"
-#include "sw/ip/base/test/utils/profile.h"
 #include "sw/lib/sw/device/runtime/ibex.h"
 #include "sw/lib/sw/device/runtime/log.h"
 

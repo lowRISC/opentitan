@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_AUTOGEN_ISR_TESTUTILS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_AUTOGEN_ISR_TESTUTILS_H_
+#ifndef OPENTITAN_SW_TOP_EARLGREY_SW_TEST_UTILS_AUTOGEN_ISR_TESTUTILS_H_
+#define OPENTITAN_SW_TOP_EARLGREY_SW_TEST_UTILS_AUTOGEN_ISR_TESTUTILS_H_
 
 // THIS FILE HAS BEEN GENERATED, DO NOT EDIT MANUALLY. COMMAND:
 // util/autogen_testutils.py
@@ -912,4 +912,4 @@ void isr_testutils_usbdev_isr(
     top_earlgrey_plic_peripheral_t *peripheral_serviced,
     dif_usbdev_irq_t *irq_serviced);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_AUTOGEN_ISR_TESTUTILS_H_
+#endif  // OPENTITAN_SW_TOP_EARLGREY_SW_TEST_UTILS_AUTOGEN_ISR_TESTUTILS_H_

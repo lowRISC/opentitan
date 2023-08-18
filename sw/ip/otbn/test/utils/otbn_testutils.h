@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_OTBN_TESTUTILS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_OTBN_TESTUTILS_H_
+#ifndef OPENTITAN_SW_IP_OTBN_TEST_UTILS_OTBN_TESTUTILS_H_
+#define OPENTITAN_SW_IP_OTBN_TEST_UTILS_OTBN_TESTUTILS_H_
 
-#include "sw/lib/sw/device/base/mmio.h"
-#include "sw/lib/sw/device/base/status.h"
 #include "sw/ip/base/dif/dif_base.h"
 #include "sw/ip/otbn/dif/dif_otbn.h"
+#include "sw/lib/sw/device/base/mmio.h"
+#include "sw/lib/sw/device/base/status.h"
 
 /**
  * @file
@@ -219,4 +219,4 @@ status_t otbn_testutils_read_data(const dif_otbn_t *otbn, size_t len_bytes,
 OT_WARN_UNUSED_RESULT
 status_t otbn_testutils_dump_dmem(const dif_otbn_t *otbn, uint32_t max_addr);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_OTBN_TESTUTILS_H_
+#endif  // OPENTITAN_SW_IP_OTBN_TEST_UTILS_OTBN_TESTUTILS_H_

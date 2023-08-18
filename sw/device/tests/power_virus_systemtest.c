@@ -25,6 +25,7 @@
 #include "sw/ip/kmac/dif/dif_kmac.h"
 #include "sw/ip/otbn/dif/dif_otbn.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
+#include "sw/ip/pinmux/test/utils/pinmux_testutils.h"
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
 #include "sw/ip/spi_device/dif/dif_spi_device.h"
 #include "sw/ip/spi_device/test/utils/spi_device_testutils.h"

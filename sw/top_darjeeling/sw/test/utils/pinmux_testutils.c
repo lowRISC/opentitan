@@ -4,35 +4,36 @@
 
 #include "sw/ip/pinmux/test/utils/pinmux_testutils.h"
 
-#include "sw/lib/sw/device/arch/device.h"
-#include "sw/lib/sw/device/base/macros.h"
-#include "sw/lib/sw/device/base/status.h"
-#include "sw/lib/sw/device/runtime/hart.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/base/dif/dif_base.h"
 #include "sw/ip/gpio/dif/dif_gpio.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
+#include "sw/lib/sw/device/arch/device.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/base/status.h"
+#include "sw/lib/sw/device/runtime/hart.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 void pinmux_testutils_init(dif_pinmux_t *pinmux) {
   // Set up SW straps on IOC0-IOC2, for GPIOs 22-24
-  CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
-                                       kTopDarjeelingPinmuxPeripheralInGpioGpio22,
-                                       kTopDarjeelingPinmuxInselIoc0));
-  CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
-                                       kTopDarjeelingPinmuxPeripheralInGpioGpio23,
-                                       kTopDarjeelingPinmuxInselIoc1));
-  CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
-                                       kTopDarjeelingPinmuxPeripheralInGpioGpio24,
-                                       kTopDarjeelingPinmuxInselIoc2));
+  CHECK_DIF_OK(dif_pinmux_input_select(
+      pinmux, kTopDarjeelingPinmuxPeripheralInGpioGpio22,
+      kTopDarjeelingPinmuxInselIoc0));
+  CHECK_DIF_OK(dif_pinmux_input_select(
+      pinmux, kTopDarjeelingPinmuxPeripheralInGpioGpio23,
+      kTopDarjeelingPinmuxInselIoc1));
+  CHECK_DIF_OK(dif_pinmux_input_select(
+      pinmux, kTopDarjeelingPinmuxPeripheralInGpioGpio24,
+      kTopDarjeelingPinmuxInselIoc2));
 
   // Configure UART0 RX input to connect to MIO pad IOC3
   CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
                                        kTopDarjeelingPinmuxPeripheralInUart0Rx,
                                        kTopDarjeelingPinmuxInselIoc3));
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopDarjeelingPinmuxMioOutIoc3,
-                                        kTopDarjeelingPinmuxOutselConstantHighZ));
+  CHECK_DIF_OK(
+      dif_pinmux_output_select(pinmux, kTopDarjeelingPinmuxMioOutIoc3,
+                               kTopDarjeelingPinmuxOutselConstantHighZ));
   // Configure UART0 TX output to connect to MIO pad IOC4
   CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopDarjeelingPinmuxMioOutIoc4,
                                         kTopDarjeelingPinmuxOutselUart0Tx));
@@ -57,8 +58,9 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
   CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
                                        kTopDarjeelingPinmuxPeripheralInUart1Rx,
                                        kTopDarjeelingPinmuxInselIob4));
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopDarjeelingPinmuxMioOutIob4,
-                                        kTopDarjeelingPinmuxOutselConstantHighZ));
+  CHECK_DIF_OK(
+      dif_pinmux_output_select(pinmux, kTopDarjeelingPinmuxMioOutIob4,
+                               kTopDarjeelingPinmuxOutselConstantHighZ));
   // Configure UART1 TX output to connect to MIO pad IOB5
   CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopDarjeelingPinmuxMioOutIob5,
                                         kTopDarjeelingPinmuxOutselUart1Tx));
@@ -89,8 +91,9 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
 #endif
 
   // Configure USBDEV SENSE outputs to be high-Z (IOC7)
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopDarjeelingPinmuxMioOutIoc7,
-                                        kTopDarjeelingPinmuxOutselConstantHighZ));
+  CHECK_DIF_OK(
+      dif_pinmux_output_select(pinmux, kTopDarjeelingPinmuxMioOutIoc7,
+                               kTopDarjeelingPinmuxOutselConstantHighZ));
 }
 
 // Mapping of Chip IOs to the GPIO peripheral.

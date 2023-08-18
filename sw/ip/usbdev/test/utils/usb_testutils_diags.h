@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_DIAGS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_DIAGS_H_
+#ifndef OPENTITAN_SW_IP_USBDEV_TEST_UTILS_USB_TESTUTILS_DIAGS_H_
+#define OPENTITAN_SW_IP_USBDEV_TEST_UTILS_USB_TESTUTILS_DIAGS_H_
 // Diagnostic, testing and performance measurements utilities for verification
 // of usbdev and development of the usb_testutils support software; the
 // requirements of this software are peculiar in that the USBDPI model used in
@@ -34,4 +34,4 @@
 #define TRC_C(c)
 #endif
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_USB_TESTUTILS_DIAGS_H_
+#endif  // OPENTITAN_SW_IP_USBDEV_TEST_UTILS_USB_TESTUTILS_DIAGS_H_

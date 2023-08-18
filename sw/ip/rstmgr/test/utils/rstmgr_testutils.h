@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_RSTMGR_TESTUTILS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_RSTMGR_TESTUTILS_H_
+#ifndef OPENTITAN_SW_IP_RSTMGR_TEST_UTILS_RSTMGR_TESTUTILS_H_
+#define OPENTITAN_SW_IP_RSTMGR_TEST_UTILS_RSTMGR_TESTUTILS_H_
 
 #include <stdint.h>
 
-#include "sw/lib/sw/device/base/status.h"
 #include "sw/ip/rstmgr/dif/dif_rstmgr.h"
+#include "sw/lib/sw/device/base/status.h"
 
 /**
  * Determines if the reset_info matches info.
@@ -116,4 +116,4 @@ dif_rstmgr_reset_info_bitfield_t rstmgr_testutils_reason_get(void);
  */
 void rstmgr_testutils_reason_clear(void);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_RSTMGR_TESTUTILS_H_
+#endif  // OPENTITAN_SW_IP_RSTMGR_TEST_UTILS_RSTMGR_TESTUTILS_H_

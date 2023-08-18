@@ -4,10 +4,10 @@
 
 #include "sw/ip/usbdev/test/utils/usb_testutils_controlep.h"
 
-#include "sw/lib/sw/device/base/macros.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/ip/usbdev/test/utils/usb_testutils.h"
 #include "sw/ip/usbdev/dif/dif_usbdev.h"
+#include "sw/ip/usbdev/test/utils/usb_testutils.h"
+#include "sw/lib/sw/device/base/macros.h"
 
 // Device descriptor
 static uint8_t dev_dscr[] = {

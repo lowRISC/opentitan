@@ -8,13 +8,13 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
+#include "sw/ip/flash_ctrl/driver/flash_ctrl.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/hart.h"
 #include "sw/lib/sw/device/runtime/ibex.h"
-#include "sw/device/lib/testing/test_framework/check.h"
-#include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
-#include "sw/ip/flash_ctrl/driver/flash_ctrl.h"
 
 #include "flash_ctrl_regs.h"
 
@@ -297,8 +297,7 @@ status_t flash_ctrl_testutils_bank_erase(dif_flash_ctrl_state_t *flash_state,
 status_t flash_ctrl_testutils_backdoor_init(
     dif_flash_ctrl_state_t *flash_state) {
   TRY(dif_flash_ctrl_init_state(
-      flash_state,
-      mmio_region_from_addr(kFlashCtrlCoreBaseAddr[0])));
+      flash_state, mmio_region_from_addr(kFlashCtrlCoreBaseAddr[0])));
 
   return flash_ctrl_testutils_default_region_access(flash_state,
                                                     /*rd_en*/ true,
@@ -312,9 +311,9 @@ status_t flash_ctrl_testutils_backdoor_init(
 status_t flash_ctrl_testutils_backdoor_wait_update(
     dif_flash_ctrl_state_t *flash_state, uintptr_t addr, size_t timeout) {
   static uint32_t data = UINT32_MAX;
-  TRY(flash_ctrl_testutils_write(
-      flash_state, (uint32_t)addr - kFlashCtrlMemBaseAddr[0], 0,
-      &data, kDifFlashCtrlPartitionTypeData, 1));
+  TRY(flash_ctrl_testutils_write(flash_state,
+                                 (uint32_t)addr - kFlashCtrlMemBaseAddr[0], 0,
+                                 &data, kDifFlashCtrlPartitionTypeData, 1));
   IBEX_TRY_SPIN_FOR(UINT32_MAX != *(uint32_t *)addr, timeout);
   return OK_STATUS();
 }

@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_SPI_DEVICE_TESTUTILS_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_SPI_DEVICE_TESTUTILS_H_
+#ifndef OPENTITAN_SW_IP_SPI_DEVICE_TEST_UTILS_SPI_DEVICE_TESTUTILS_H_
+#define OPENTITAN_SW_IP_SPI_DEVICE_TEST_UTILS_SPI_DEVICE_TESTUTILS_H_
 
 #include <assert.h>
 #include <stdint.h>
 
-#include "sw/lib/sw/device/base/status.h"
 #include "sw/device/lib/testing/json/spi_passthru.h"
 #include "sw/ip/spi_device/dif/dif_spi_device.h"
+#include "sw/lib/sw/device/base/status.h"
 
 /**
  * A set of typical opcodes for named flash commands.
@@ -107,4 +107,4 @@ OT_WARN_UNUSED_RESULT
 status_t spi_device_testutils_wait_for_upload(dif_spi_device_handle_t *spid,
                                               upload_info_t *info);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_SPI_DEVICE_TESTUTILS_H_
+#endif  // OPENTITAN_SW_IP_SPI_DEVICE_TEST_UTILS_SPI_DEVICE_TESTUTILS_H_

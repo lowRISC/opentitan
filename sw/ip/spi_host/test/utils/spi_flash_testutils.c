@@ -4,11 +4,11 @@
 
 #include "sw/ip/spi_host/test/utils/spi_flash_testutils.h"
 
-#include "sw/lib/sw/device/base/bitfield.h"
-#include "sw/lib/sw/device/base/macros.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/spi_device/test/utils/spi_device_testutils.h"
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
+#include "sw/lib/sw/device/base/bitfield.h"
+#include "sw/lib/sw/device/base/macros.h"
 
 status_t spi_flash_testutils_read_id(dif_spi_host_t *spih,
                                      spi_flash_testutils_jedec_id_t *id) {
