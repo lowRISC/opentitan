@@ -12,6 +12,7 @@ filesets:
     files:
       - dma_env_pkg.sv
       - dma_if.sv
+      - dma_handshake_mode_fifo.sv: {is_include_file: true}
       - dma_env_cfg.sv: {is_include_file: true}
       - dma_env_cov.sv: {is_include_file: true}
       - dma_virtual_sequencer.sv: {is_include_file: true}
