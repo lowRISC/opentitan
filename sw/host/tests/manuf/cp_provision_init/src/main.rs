@@ -13,7 +13,10 @@ use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, DifLcCtrlToken, LcCtrlReg};
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition::trigger_lc_transition;
-use opentitanlib::test_utils::load_sram_program::{ExecutionMode, SramProgramParams};
+use opentitanlib::test_utils::load_sram_program::{
+    ExecutionMode, ExecutionResult, SramProgramParams,
+};
+use opentitanlib::test_utils::rpc::UartSend;
 use opentitanlib::uart::console::UartConsole;
 
 mod provisioning_data;
@@ -90,24 +93,34 @@ fn load_and_run_sram_program(opts: &Opts, transport: &TransportWrapper) -> Resul
     uart.clear_rx_buffer()?;
 
     // Load and execute the SRAM program that contains the provisioning code.
-    opts.sram_program
+    let result = opts
+        .sram_program
         .load_and_execute(&jtag, ExecutionMode::Jump)?;
+    match result {
+        ExecutionResult::Executing => log::info!("SRAM program loaded and is executing."),
+        _ => panic!("SRAM program load/execution failed: {:?}.", result),
+    }
 
     // Get UART, set flow control, and wait for test to start running.
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
     let _ = UartConsole::wait_for(&*uart, r"CP provisioning start.", opts.timeout)?;
-    let _ = UartConsole::wait_for(&*uart, r"CP provisioning end.", opts.timeout)?;
 
     // Inject provisioning data into the device.
-    let _provisioning_data = ManufCpProvisioningData {
+    // TODO(#19453): update provisioning_data sent to the device.
+    let provisioning_data = ManufCpProvisioningData {
         device_id: ArrayVec::from([0u32, 0u32, 0u32, 0u32]),
         manuf_state: ArrayVec::from([0u32, 0u32, 0u32, 0u32]),
         wafer_auth_secret: ArrayVec::from([0u32, 0u32, 0u32, 0u32]),
         test_unlock_token: ArrayVec::from([0u32, 0u32, 0u32, 0u32]),
         test_exit_token: ArrayVec::from([0u32, 0u32, 0u32, 0u32]),
     };
-    // TODO(#19453): send provisioning_data to the device.
+    provisioning_data.send(&*uart)?;
+
+    // Once the SRAM program has printed a message over the console, we can continue with an LC
+    // transition to mission mode, initiated on the host side.
+    let _ = UartConsole::wait_for(&*uart, r"CP provisioning end.", opts.timeout)?;
+    // TODO(#19453): transition to mission mode.
 
     Ok(())
 }
