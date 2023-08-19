@@ -51,6 +51,7 @@ package dma_env_pkg;
 
   // package sources
   `include "dma_seq_item.sv"
+  `include "dma_handshake_mode_fifo.sv"
   `include "dma_env_cfg.sv"
   `include "dma_env_cov.sv"
   `include "dma_virtual_sequencer.sv"
