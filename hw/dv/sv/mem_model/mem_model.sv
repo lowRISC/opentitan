@@ -96,4 +96,15 @@ class mem_model #(int AddrWidth = bus_params_pkg::BUS_AW,
   function bit addr_exists(mem_addr_t addr);
     return system_memory.exists(addr);
   endfunction
+
+  // Method to randomise data in memory model
+  // in contiguous memory locations starting from start_addr
+  function void randomise_mem(mem_addr_t start_addr, mem_addr_t size);
+    mem_addr_t limit = start_addr + size - 1;
+    mem_addr_t addr = start_addr;
+    while (addr <= limit) begin
+      system_memory[addr] = $urandom_range(0, 255);
+      addr++;
+    end
+  endfunction
 endclass
