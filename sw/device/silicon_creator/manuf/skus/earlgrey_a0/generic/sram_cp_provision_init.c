@@ -22,7 +22,7 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"  // Generated.
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
 static dif_otp_ctrl_t otp_ctrl;
 static dif_pinmux_t pinmux;
@@ -49,6 +49,7 @@ bool sram_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
   pinmux_testutils_init(&pinmux);
   ottf_console_init();
+  ujson_t uj = ujson_ottf_console();
 
   // Read LC state and check we are in TEST_UNLOCKED0.
   dif_lc_ctrl_state_t lc_state = kDifLcCtrlStateInvalid;
@@ -57,7 +58,11 @@ bool sram_main(void) {
 
   LOG_INFO("CP provisioning start.");
 
-  // TODO(#19453): Get provisioning data over console.
+  // Get provisioning data over console.
+  manuf_cp_provisioning_data_t provisioning_data;
+  CHECK_STATUS_OK(
+      ujson_deserialize_manuf_cp_provisioning_data_t(&uj, &provisioning_data));
+
   // TODO(#19453): Write Device ID to flash info.
   // TODO(#19453): Write Manuf info to flash info.
   // TODO(#19453): Write Wafer Auth Secret to flash info.
