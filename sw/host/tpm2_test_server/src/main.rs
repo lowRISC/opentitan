@@ -10,7 +10,6 @@ use opentitanlib::backend;
 use opentitanlib::io::i2c::I2cParams;
 use opentitanlib::io::spi::SpiParams;
 use opentitanlib::tpm::{Driver, I2cDriver, SpiDriver};
-use opentitanlib::util::parse_int::ParseInt;
 use std::net::{SocketAddr, TcpListener};
 
 mod interface;
@@ -24,13 +23,6 @@ pub enum TpmBus {
     I2C {
         #[command(flatten)]
         params: I2cParams,
-        #[arg(
-            short,
-            long,
-            help = "7 bit I2C device address.",
-            value_parser = u8::from_str
-        )]
-        address: u8,
     },
 }
 
@@ -83,12 +75,12 @@ pub fn main() -> std::io::Result<()> {
     let transport = backend::create(&options.backend_opts).unwrap();
     let bus: Box<dyn Driver> = match options.bus {
         TpmBus::Spi { params } => {
-            let spi = params.create(&transport, "").unwrap();
+            let spi = params.create(&transport, "TPM").unwrap();
             Box::new(SpiDriver::new(spi))
         }
-        TpmBus::I2C { params, address } => {
-            let i2c = params.create(&transport).unwrap();
-            Box::new(I2cDriver::new(i2c, address))
+        TpmBus::I2C { params } => {
+            let i2c = params.create(&transport, "TPM").unwrap();
+            Box::new(I2cDriver::new(i2c))
         }
     };
     bus.init().unwrap();

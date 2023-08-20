@@ -59,7 +59,7 @@ fn test_read_transaction(opts: &Opts, transport: &TransportWrapper, address: u8)
     let txn = I2cTransaction::new(b"Hello");
     let mut result = vec![0u8; txn.length as usize];
     let rx_result = txn.execute_read(&*uart, || {
-        i2c.run_transaction(address, &mut [Transfer::Read(&mut result)])
+        i2c.run_transaction(Some(address), &mut [Transfer::Read(&mut result)])
     })?;
     assert_eq!(result.as_slice(), txn.data.as_slice());
     assert_eq!(rx_result.address, address);
@@ -72,7 +72,7 @@ fn test_write_transaction(opts: &Opts, transport: &TransportWrapper, address: u8
     let i2c = transport.i2c(&opts.i2c)?;
     log::info!("Testing write transaction at I2C address {address:02x}");
     let result = I2cTransaction::execute_write(&*uart, TestCommand::I2cWriteTransaction, || {
-        i2c.run_transaction(address, &mut [Transfer::Write(b"Hello World")])
+        i2c.run_transaction(Some(address), &mut [Transfer::Write(b"Hello World")])
     })?;
     let len = result.length as usize;
     assert_eq!(&result.data[0..len], b"Hello World");
@@ -91,7 +91,7 @@ fn test_write_transaction_slow(
     log::info!("Testing slow write transaction at I2C address {address:02x}");
     let result =
         I2cTransaction::execute_write(&*uart, TestCommand::I2cWriteTransactionSlow, || {
-            i2c.run_transaction(address, &mut [Transfer::Write(GETTYSBURG.as_bytes())])
+            i2c.run_transaction(Some(address), &mut [Transfer::Write(GETTYSBURG.as_bytes())])
         })?;
     let len = result.length as usize;
     assert_eq!(&result.data[0..len], GETTYSBURG.as_bytes());
@@ -107,7 +107,7 @@ fn test_wakeup_normal_sleep(opts: &Opts, transport: &TransportWrapper, address: 
     std::thread::sleep(Duration::from_secs(2));
     let mut buf = [0u8; 8];
     log::info!("Issuing read transaction to sleeping chip. Expecting transaction error.");
-    let result = i2c.run_transaction(address, &mut [Transfer::Read(&mut buf)]);
+    let result = i2c.run_transaction(Some(address), &mut [Transfer::Read(&mut buf)]);
     log::info!("Transaction error: {}", result.is_err());
     Status::recv(&*uart, Duration::from_secs(5), false)?;
     log::info!("Chip is awake.  Reissuing read transaction.");
@@ -121,7 +121,7 @@ fn test_wakeup_deep_sleep(opts: &Opts, transport: &TransportWrapper, address: u8
     std::thread::sleep(Duration::from_secs(2));
     let mut buf = [0u8; 8];
     log::info!("Issuing read transaction to sleeping chip. Expecting transaction error.");
-    let result = i2c.run_transaction(address, &mut [Transfer::Read(&mut buf)]);
+    let result = i2c.run_transaction(Some(address), &mut [Transfer::Read(&mut buf)]);
     log::info!("Transaction error: {}", result.is_err());
     Status::recv(&*uart, Duration::from_secs(5), false)?;
     log::info!("Chip is awake.  Reissuing read transaction.");

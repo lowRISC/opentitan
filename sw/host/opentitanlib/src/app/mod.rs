@@ -9,7 +9,7 @@ pub mod config;
 use crate::io::eeprom;
 use crate::io::emu::Emulator;
 use crate::io::gpio::{GpioMonitoring, GpioPin, PinMode, PullMode};
-use crate::io::i2c::Bus;
+use crate::io::i2c::{self, Bus};
 use crate::io::ioexpander::IoExpander;
 use crate::io::jtag::{Jtag, JtagParams};
 use crate::io::nonblocking_help::NonblockingHelp;
@@ -160,14 +160,9 @@ pub struct SpiConfiguration {
 
 #[derive(Default, Debug)]
 pub struct I2cConfiguration {
+    pub underlying_instance: String,
+    pub default_addr: Option<u8>,
     pub bits_per_sec: Option<u32>,
-}
-
-impl I2cConfiguration {
-    fn merge(&mut self, other: &I2cConfiguration) -> Result<(), ()> {
-        merge_field(&mut self.bits_per_sec, &other.bits_per_sec)?;
-        Ok(())
-    }
 }
 
 pub struct TransportWrapperBuilder {
@@ -177,10 +172,9 @@ pub struct TransportWrapperBuilder {
     pin_alias_map: HashMap<String, String>,
     pin_on_io_expander_map: HashMap<String, config::IoExpanderPin>,
     uart_map: HashMap<String, String>,
-    i2c_map: HashMap<String, String>,
     pin_conf_list: Vec<(String, PinConfiguration)>,
     spi_conf_map: HashMap<String, config::SpiConfiguration>,
-    i2c_conf_list: Vec<(String, I2cConfiguration)>,
+    i2c_conf_map: HashMap<String, config::I2cConfiguration>,
     strapping_conf_map: HashMap<String, Vec<(String, PinConfiguration)>>,
     io_expander_conf_map: HashMap<String, config::IoExpander>,
 }
@@ -194,7 +188,6 @@ pub struct TransportWrapper {
     pin_map: HashMap<String, String>,
     artificial_pin_map: HashMap<String, Rc<dyn GpioPin>>,
     uart_map: HashMap<String, String>,
-    i2c_map: HashMap<String, String>,
     pin_conf_map: HashMap<String, PinConfiguration>,
     spi_conf_map: HashMap<String, SpiConfiguration>,
     i2c_conf_map: HashMap<String, I2cConfiguration>,
@@ -210,10 +203,9 @@ impl TransportWrapperBuilder {
             pin_alias_map: HashMap::new(),
             pin_on_io_expander_map: HashMap::new(),
             uart_map: HashMap::new(),
-            i2c_map: HashMap::new(),
             pin_conf_list: Vec::new(),
             spi_conf_map: HashMap::new(),
-            i2c_conf_list: Vec::new(),
+            i2c_conf_map: HashMap::new(),
             strapping_conf_map: HashMap::new(),
             io_expander_conf_map: HashMap::new(),
         }
@@ -268,17 +260,19 @@ impl TransportWrapperBuilder {
     }
 
     fn record_i2c_conf(
-        i2c_conf_list: &mut Vec<(String, I2cConfiguration)>,
+        i2c_conf_map: &mut HashMap<String, config::I2cConfiguration>,
         i2c_conf: &config::I2cConfiguration,
-    ) {
-        if i2c_conf.bits_per_sec.is_none() {
-            return;
-        }
-        let mut conf_entry: I2cConfiguration = I2cConfiguration::default();
-        if let Some(bits_per_sec) = i2c_conf.bits_per_sec {
-            conf_entry.bits_per_sec = Some(bits_per_sec);
-        }
-        i2c_conf_list.push((i2c_conf.name.to_string(), conf_entry))
+    ) -> Result<(), ()> {
+        let entry = i2c_conf_map
+            .entry(i2c_conf.name.to_string())
+            .or_insert_with(|| config::I2cConfiguration {
+                name: i2c_conf.name.clone(),
+                ..Default::default()
+            });
+        merge_field(&mut entry.address, &i2c_conf.address)?;
+        merge_field(&mut entry.bits_per_sec, &i2c_conf.bits_per_sec)?;
+        merge_field(&mut entry.alias_of, &i2c_conf.alias_of)?;
+        Ok(())
     }
 
     pub fn add_configuration_file(&mut self, file: config::ConfigurationFile) -> Result<()> {
@@ -346,11 +340,12 @@ impl TransportWrapperBuilder {
             })?;
         }
         for i2c_conf in file.i2c {
-            if let Some(alias_of) = &i2c_conf.alias_of {
-                self.i2c_map
-                    .insert(i2c_conf.name.to_uppercase(), alias_of.clone());
-            }
-            Self::record_i2c_conf(&mut self.i2c_conf_list, &i2c_conf);
+            Self::record_i2c_conf(&mut self.i2c_conf_map, &i2c_conf).map_err(|_| {
+                TransportError::InconsistentConf(
+                    TransportInterfaceType::I2c,
+                    i2c_conf.name.to_string(),
+                )
+            })?;
         }
         for uart_conf in file.uarts {
             if let Some(alias_of) = &uart_conf.alias_of {
@@ -487,21 +482,43 @@ impl TransportWrapperBuilder {
         Ok(resolved_spi_conf_map)
     }
 
-    fn consolidate_i2c_conf_map(
-        i2c_alias_map: &HashMap<String, String>,
-        i2c_conf_list: &Vec<(String, I2cConfiguration)>,
-    ) -> Result<HashMap<String, I2cConfiguration>> {
-        let mut result_i2c_conf_map: HashMap<String, I2cConfiguration> = HashMap::new();
-        for (name, conf) in i2c_conf_list {
-            result_i2c_conf_map
-                .entry(map_name(i2c_alias_map, name))
-                .or_default()
-                .merge(conf)
-                .map_err(|_| {
-                    TransportError::InconsistentConf(TransportInterfaceType::I2c, name.to_string())
-                })?;
+    fn resolve_i2c_conf(
+        name: &str,
+        i2c_conf_map: &HashMap<String, config::I2cConfiguration>,
+    ) -> I2cConfiguration {
+        if let Some(entry) = i2c_conf_map.get(name) {
+            let mut conf = if let Some(ref alias_of) = entry.alias_of {
+                Self::resolve_i2c_conf(alias_of.as_str(), i2c_conf_map)
+            } else {
+                I2cConfiguration {
+                    underlying_instance: name.to_string(),
+                    ..Default::default()
+                }
+            };
+            // Apply configuration from this level
+            if let Some(addr) = entry.address {
+                conf.default_addr = Some(addr);
+            }
+            if let Some(bits_per_sec) = entry.bits_per_sec {
+                conf.bits_per_sec = Some(bits_per_sec);
+            }
+            conf
+        } else {
+            I2cConfiguration {
+                underlying_instance: name.to_string(),
+                ..Default::default()
+            }
         }
-        Ok(result_i2c_conf_map)
+    }
+
+    fn consolidate_i2c_conf_map(
+        i2c_conf_map: &HashMap<String, config::I2cConfiguration>,
+    ) -> Result<HashMap<String, I2cConfiguration>> {
+        let mut resolved_i2c_conf_map = HashMap::new();
+        for name in i2c_conf_map.keys() {
+            resolved_i2c_conf_map.insert(name.clone(), Self::resolve_i2c_conf(name, i2c_conf_map));
+        }
+        Ok(resolved_i2c_conf_map)
     }
 
     pub fn get_interface(&self) -> &str {
@@ -536,14 +553,13 @@ impl TransportWrapperBuilder {
             );
         }
         let spi_conf_map = Self::consolidate_spi_conf_map(&self.spi_conf_map, &self.pin_alias_map)?;
-        let i2c_conf_map = Self::consolidate_i2c_conf_map(&self.i2c_map, &self.i2c_conf_list)?;
+        let i2c_conf_map = Self::consolidate_i2c_conf_map(&self.i2c_conf_map)?;
         let mut transport_wrapper = TransportWrapper {
             transport: Rc::from(transport),
             provides_map,
             pin_map: self.pin_alias_map,
             artificial_pin_map: HashMap::new(),
             uart_map: self.uart_map,
-            i2c_map: self.i2c_map,
             pin_conf_map,
             spi_conf_map,
             i2c_conf_map,
@@ -620,7 +636,13 @@ impl TransportWrapper {
 
     /// Returns a I2C [`Bus`] implementation.
     pub fn i2c(&self, name: &str) -> Result<Rc<dyn Bus>> {
-        self.transport.i2c(map_name(&self.i2c_map, name).as_str())
+        let name = name.to_uppercase();
+        if let Some(i2c_conf) = self.i2c_conf_map.get(&name) {
+            let wrapper = I2cWrapper::new(&*self.transport, i2c_conf)?;
+            Ok(Rc::new(wrapper))
+        } else {
+            self.transport.i2c(name.as_str())
+        }
     }
 
     /// Returns a [`Uart`] implementation.
@@ -1012,5 +1034,60 @@ impl Target for SpiWrapper {
     fn assert_cs(self: Rc<Self>) -> Result<spi::AssertChipSelect> {
         self.apply_settings_to_underlying()?;
         Rc::clone(&self.underlying_target).assert_cs()
+    }
+}
+
+/// Several `I2cWrapper` objects can exist concurrently, sharing the same underlying transport
+/// bus, but having distinct I2C 7-bit address settings.  (Terminology is a little muddy here, in
+/// that the wrapper also implements the I2C "bus" trait, even though it more properly would be
+/// named a "target" or "device".)
+///
+/// Calling e.g. `set_max_speed()` on a `I2cWrapper` will not immediately be propagated to the
+/// underlying transport, instead, the accumulated settings are kept in the `I2cWrapper`, and
+/// propagated only whenever an actual I2C transaction is initiated.
+struct I2cWrapper {
+    /// Reference to the `Bus` instance of the underlying transport.
+    underlying_target: Rc<dyn Bus>,
+    my_default_addr: Cell<Option<u8>>,
+    my_max_speed: Cell<Option<u32>>,
+}
+
+impl I2cWrapper {
+    fn new(transport: &dyn Transport, conf: &I2cConfiguration) -> Result<Self> {
+        Ok(Self {
+            underlying_target: transport.i2c(conf.underlying_instance.as_str())?,
+            my_default_addr: Cell::new(conf.default_addr),
+            my_max_speed: Cell::new(conf.bits_per_sec),
+        })
+    }
+
+    fn apply_settings_to_underlying(&self) -> Result<()> {
+        if let Some(addr) = self.my_default_addr.get() {
+            self.underlying_target.set_default_address(addr)?;
+        }
+        if let Some(speed) = self.my_max_speed.get() {
+            self.underlying_target.set_max_speed(speed)?;
+        }
+        Ok(())
+    }
+}
+
+impl Bus for I2cWrapper {
+    fn get_max_speed(&self) -> Result<u32> {
+        self.underlying_target.get_max_speed()
+    }
+    fn set_max_speed(&self, max_speed: u32) -> Result<()> {
+        self.my_max_speed.set(Some(max_speed));
+        Ok(())
+    }
+
+    fn set_default_address(&self, addr: u8) -> Result<()> {
+        self.my_default_addr.set(Some(addr));
+        Ok(())
+    }
+
+    fn run_transaction(&self, addr: Option<u8>, transaction: &mut [i2c::Transfer]) -> Result<()> {
+        self.apply_settings_to_underlying()?;
+        self.underlying_target.run_transaction(addr, transaction)
     }
 }

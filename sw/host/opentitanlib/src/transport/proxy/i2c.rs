@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{bail, ensure, Result};
+use std::cell::Cell;
 use std::rc::Rc;
 
 use super::ProxyError;
@@ -15,6 +16,7 @@ use crate::transport::proxy::{Inner, Proxy};
 pub struct ProxyI2c {
     inner: Rc<Inner>,
     instance: String,
+    default_address: Cell<Option<u8>>,
 }
 
 impl ProxyI2c {
@@ -22,6 +24,7 @@ impl ProxyI2c {
         let result = Self {
             inner: Rc::clone(&proxy.inner),
             instance: instance.to_string(),
+            default_address: Cell::new(None),
         };
         Ok(result)
     }
@@ -52,7 +55,12 @@ impl Bus for ProxyI2c {
         }
     }
 
-    fn run_transaction(&self, address: u8, transaction: &mut [Transfer]) -> Result<()> {
+    fn set_default_address(&self, addr: u8) -> Result<()> {
+        self.default_address.set(Some(addr));
+        Ok(())
+    }
+
+    fn run_transaction(&self, address: Option<u8>, transaction: &mut [Transfer]) -> Result<()> {
         let mut req: Vec<I2cTransferRequest> = Vec::new();
         for transfer in &*transaction {
             // &* to treat as non-mutable in this loop
@@ -66,7 +74,7 @@ impl Bus for ProxyI2c {
             }
         }
         match self.execute_command(I2cRequest::RunTransaction {
-            address,
+            address: address.or(self.default_address.get()),
             transaction: req,
         })? {
             I2cResponse::RunTransaction { transaction: resp } => {

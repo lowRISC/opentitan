@@ -273,12 +273,11 @@ impl Driver for SpiDriver {
 /// Implementation of the low level interface via Google I2C protocol.
 pub struct I2cDriver {
     i2c: Rc<dyn i2c::Bus>,
-    addr: u8,
 }
 
 impl I2cDriver {
-    pub fn new(i2c: Rc<dyn i2c::Bus>, addr: u8) -> Self {
-        Self { i2c, addr }
+    pub fn new(i2c: Rc<dyn i2c::Bus>) -> Self {
+        Self { i2c }
     }
 
     /// Numerical TPM register address as used in Google I2C protocol.
@@ -301,7 +300,7 @@ impl Driver for I2cDriver {
         let res = loop {
             count += 1;
             let res = self.i2c.run_transaction(
-                self.addr,
+                None, /* default addr */
                 &mut [
                     i2c::Transfer::Write(&[Self::addr(register).unwrap()]),
                     i2c::Transfer::Read(data),
@@ -336,8 +335,10 @@ impl Driver for I2cDriver {
     fn write_register(&self, register: Register, data: &[u8]) -> Result<()> {
         let mut buffer = vec![Self::addr(register).unwrap()];
         buffer.extend_from_slice(data);
-        self.i2c
-            .run_transaction(self.addr, &mut [i2c::Transfer::Write(&buffer)])?;
+        self.i2c.run_transaction(
+            None, /* default addr */
+            &mut [i2c::Transfer::Write(&buffer)],
+        )?;
         Ok(())
     }
 }

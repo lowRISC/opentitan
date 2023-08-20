@@ -214,7 +214,7 @@ pub enum I2cRequest {
         value: u32,
     },
     RunTransaction {
-        address: u8,
+        address: Option<u8>,
         transaction: Vec<I2cTransferRequest>,
     },
 }

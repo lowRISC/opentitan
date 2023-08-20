@@ -227,6 +227,18 @@
       "alias_of": "QSPI"
     }
   ],
+  "i2c": [
+    {
+      "name": "DEFAULT",
+      "alias_of": "I2C1"
+    },
+    {
+      "name": "TPM",
+      "bits_per_sec": 100000,
+      "address": 0x50,
+      "alias_of": "I2C1"
+    }
+  ],
   "uarts": [
     {
       "name": "console",
