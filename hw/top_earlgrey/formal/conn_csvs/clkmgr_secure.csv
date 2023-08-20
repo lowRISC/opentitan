@@ -35,7 +35,7 @@ CONNECTION, CLKMGR_SECURE_CLK_RV_CORE_IBEX_OTP_CLK, top_earlgrey.u_clkmgr_aon, c
 
 CONNECTION, CLKMGR_SECURE_CLK_RV_PLIC_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_secure, top_earlgrey.u_rv_plic, clk_i
 
-CONNECTION, CLKMGR_SECURE_CLK_SENSOR_CTRL_CLK,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_secure, top_earlgrey.u_sensor_ctrl, clk_i
-CONNECTION, CLKMGR_SECURE_CLK_SENSOR_CTRL_AON_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_aon_secure,     top_earlgrey.u_sensor_ctrl, clk_aon_i
+CONNECTION, CLKMGR_SECURE_CLK_SENSOR_CTRL_CLK,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_secure, top_earlgrey.u_sensor_ctrl_aon, clk_i
+CONNECTION, CLKMGR_SECURE_CLK_SENSOR_CTRL_AON_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_aon_secure,     top_earlgrey.u_sensor_ctrl_aon, clk_aon_i
 
 CONNECTION, CLKMGR_SECURE_CLK_SYSRST_CTRL_AON_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_aon_secure,     top_earlgrey.u_sysrst_ctrl_aon, clk_aon_i
