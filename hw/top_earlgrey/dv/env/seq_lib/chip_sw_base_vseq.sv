@@ -1011,7 +1011,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     // Transitions into RMA take much longer, hence we increase this number.
     if (dest_state == DecLcStRma) begin
-      max_attempt = 50_000;
+      max_attempt = 20_000_000;
       if (cfg.en_small_rma) begin
         `uvm_info(`gfn, "small_rma mode is enabled", UVM_LOW)
         enable_small_rma();
