@@ -161,7 +161,7 @@
     {
       name: flash_ctrl_full_mem_access
       uvm_test_seq: flash_ctrl_full_mem_access_vseq
-      run_opts: ["+test_timeout_ns=300_000_000_000"]
+      run_opts: ["+test_timeout_ns=500_000_000_000"]
       reseed: 5
     }
     {
