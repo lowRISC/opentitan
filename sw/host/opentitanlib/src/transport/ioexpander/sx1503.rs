@@ -75,7 +75,7 @@ impl Sx1503 {
     fn read_register(&self, addr: Sx1503Registers) -> Result<u8> {
         let mut val: u8 = 0;
         self.i2c_bus.run_transaction(
-            self.i2c_addr,
+            Some(self.i2c_addr),
             &mut [
                 i2c::Transfer::Write(&[addr as u8]),
                 i2c::Transfer::Read(std::slice::from_mut(&mut val)),
@@ -86,7 +86,7 @@ impl Sx1503 {
 
     fn write_register(&self, addr: Sx1503Registers, data: u8) -> Result<()> {
         self.i2c_bus.run_transaction(
-            self.i2c_addr,
+            Some(self.i2c_addr),
             &mut [i2c::Transfer::Write(&[addr as u8, data])],
         )?;
         Ok(())

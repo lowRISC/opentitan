@@ -125,10 +125,12 @@ pub struct SpiConfiguration {
 }
 
 /// Configuration of a particular I2C bus.
-#[derive(Deserialize, Clone, Debug)]
+#[derive(Default, Deserialize, Clone, Debug)]
 pub struct I2cConfiguration {
     /// The user-visible name of the I2C bus.
     pub name: String,
+    /// I2C address of the "default" device on the bus.
+    pub address: Option<u8>,
     /// Data communication rate in bits/second.
     pub bits_per_sec: Option<u32>,
     /// Name of the I2C bus as defined by the transport.

@@ -126,6 +126,7 @@ pub struct Ti50I2cBus {
     path: PathBuf,
     // last SubProcess ID
     last_id: Cell<u64>,
+    default_address: Cell<Option<u8>>,
 }
 
 impl Ti50I2cBus {
@@ -137,6 +138,7 @@ impl Ti50I2cBus {
             socket: RefCell::default(),
             path: soc_path,
             last_id: Cell::new(EMULATOR_INVALID_ID),
+            default_address: Cell::new(None),
         })
     }
 
@@ -242,7 +244,13 @@ impl Bus for Ti50I2cBus {
         bail!(TransportError::UnsupportedOperation)
     }
 
-    fn run_transaction(&self, addr: u8, transaction: &mut [Transfer]) -> Result<()> {
+    fn set_default_address(&self, addr: u8) -> Result<()> {
+        self.default_address.set(Some(addr));
+        Ok(())
+    }
+
+    fn run_transaction(&self, addr: Option<u8>, transaction: &mut [Transfer]) -> Result<()> {
+        let addr = addr.or(self.default_address.get()).unwrap(); // TODO: Handle None
         self.check_state()?;
         self.reconnect()?;
         for transfer in transaction {

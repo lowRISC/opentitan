@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{bail, ensure, Result};
+use std::cell::Cell;
 use std::cmp;
 use std::rc::Rc;
 use zerocopy::{AsBytes, FromBytes, FromZeroes};
@@ -17,6 +18,7 @@ pub struct HyperdebugI2cBus {
     bus_idx: u8,
     max_write_size: usize,
     max_read_size: usize,
+    default_addr: Cell<Option<u8>>,
 }
 
 const USB_MAX_SIZE: usize = 64;
@@ -82,6 +84,7 @@ impl HyperdebugI2cBus {
             bus_idx: idx,
             max_read_size: 0x8000,
             max_write_size: 0x1000,
+            default_addr: Cell::new(None),
         })
     }
 
@@ -200,7 +203,15 @@ impl Bus for HyperdebugI2cBus {
             .cmd_no_output(&format!("i2c set speed {} {}", &self.bus_idx, max_speed))
     }
 
-    fn run_transaction(&self, addr: u8, mut transaction: &mut [Transfer]) -> Result<()> {
+    fn set_default_address(&self, addr: u8) -> Result<()> {
+        self.default_addr.set(Some(addr));
+        Ok(())
+    }
+
+    fn run_transaction(&self, addr: Option<u8>, mut transaction: &mut [Transfer]) -> Result<()> {
+        let addr = addr
+            .or(self.default_addr.get())
+            .ok_or(I2cError::MissingAddress)?;
         while !transaction.is_empty() {
             match transaction {
                 [Transfer::Write(wbuf), Transfer::Read(rbuf), ..] => {

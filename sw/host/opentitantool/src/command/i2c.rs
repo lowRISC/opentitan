@@ -35,9 +35,9 @@ impl CommandDispatch for I2cRawRead {
     ) -> Result<Option<Box<dyn Annotate>>> {
         transport.capabilities()?.request(Capability::I2C).ok()?;
         let context = context.downcast_ref::<I2cCommand>().unwrap();
-        let i2c_bus = context.params.create(transport)?;
+        let i2c_bus = context.params.create(transport, "DEFAULT")?;
         let mut v = vec![0u8; self.length];
-        i2c_bus.run_transaction(context.addr, &mut [Transfer::Read(&mut v)])?;
+        i2c_bus.run_transaction(None, &mut [Transfer::Read(&mut v)])?;
         Ok(Some(Box::new(I2cRawReadResponse {
             hexdata: hex::encode(v),
         })))
@@ -60,11 +60,8 @@ impl CommandDispatch for I2cRawWrite {
     ) -> Result<Option<Box<dyn Annotate>>> {
         transport.capabilities()?.request(Capability::I2C).ok()?;
         let context = context.downcast_ref::<I2cCommand>().unwrap();
-        let i2c_bus = context.params.create(transport)?;
-        i2c_bus.run_transaction(
-            context.addr,
-            &mut [Transfer::Write(&hex::decode(&self.hexdata)?)],
-        )?;
+        let i2c_bus = context.params.create(transport, "DEFAULT")?;
+        i2c_bus.run_transaction(None, &mut [Transfer::Write(&hex::decode(&self.hexdata)?)])?;
         Ok(None)
     }
 }
@@ -93,10 +90,10 @@ impl CommandDispatch for I2cRawWriteRead {
     ) -> Result<Option<Box<dyn Annotate>>> {
         transport.capabilities()?.request(Capability::I2C).ok()?;
         let context = context.downcast_ref::<I2cCommand>().unwrap();
-        let i2c_bus = context.params.create(transport)?;
+        let i2c_bus = context.params.create(transport, "DEFAULT")?;
         let mut v = vec![0u8; self.length];
         i2c_bus.run_transaction(
-            context.addr,
+            None,
             &mut [
                 Transfer::Write(&hex::decode(&self.hexdata)?),
                 Transfer::Read(&mut v),
@@ -121,7 +118,7 @@ impl CommandDispatch for I2cTpm {
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let context = context.downcast_ref::<I2cCommand>().unwrap();
-        let tpm_driver = tpm::I2cDriver::new(context.params.create(transport)?, context.addr);
+        let tpm_driver = tpm::I2cDriver::new(context.params.create(transport, "TPM")?);
         let bus: Box<dyn tpm::Driver> = Box::new(tpm_driver);
         self.command.run(&bus, transport)
     }
@@ -140,10 +137,6 @@ pub enum InternalI2cCommand {
 pub struct I2cCommand {
     #[command(flatten)]
     params: I2cParams,
-
-    /// 7-bit address of I2C device (0..0x7F).
-    #[arg(short, long, value_parser = u8::from_str)]
-    addr: u8,
 
     #[command(subcommand)]
     command: InternalI2cCommand,
