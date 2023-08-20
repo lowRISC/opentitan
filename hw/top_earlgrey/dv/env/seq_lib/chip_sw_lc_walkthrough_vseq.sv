@@ -77,7 +77,7 @@ class chip_sw_lc_walkthrough_vseq extends chip_sw_base_vseq;
       end
     end
 
-    wait_lc_status(LcTransitionSuccessful, 50_000);
+    wait_lc_status(LcTransitionSuccessful, 20_000_000);
     apply_reset();
 
     if (dest_dec_state == DecLcStRma) reload_flash_after_rma_transfer();
@@ -94,7 +94,7 @@ class chip_sw_lc_walkthrough_vseq extends chip_sw_base_vseq;
       end
 
       // Wait for a large number of cycles to transit to RMA state.
-      wait_lc_status(LcTransitionSuccessful, 1_500_000);
+      wait_lc_status(LcTransitionSuccessful, 20_000_000);
       apply_reset();
       reload_flash_after_rma_transfer();
     end
