@@ -108,6 +108,132 @@ mul448x128:
  *
  * Returns c = a mod m = (x + 2^384 * y) mod m.
  *
+ * This subroutine is specialized to the coordinate field of P-384 and cannot
+ * be used for other moduli.
+ *
+ * Solinas reduction is based on the observation that if the modulus has the
+ * form (2^384 - K), then for all x and y:
+ *   (x + 2^384 * y) mod (2^384 - K) = (x + K * y) mod (2^384 - K).
+ *
+ * For P-384, the constant K is: (2^128 + 2^96 - 2^32 + 1). A "Solinas
+ * reduction step" consists of splitting a large number (such as the result of
+ * a multiplication) into two parts: the lowest 384 bits (x in the formula
+ * above) and any bits above that point (y in the formula above), then
+ * multiplying y by K and adding it to x. Because of K's special form, the
+ * multiplication by K for the P-384 modulus is especially quick.
+ *
+ * This routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in] [w20:w18]: a, input to reduce, max. length 768 bit.
+ * @param[in] [w13, w12]: m, modulus, 2^383 <= m < 2^384.
+ * @param[in] w31: all-zero.
+ * @param[out] [w17, w16]: c, result, max. length 384 bit.
+ *
+ * Clobbered registers: w16 to w24
+ * Clobbered flag groups: FG0
+ */
+.globl p384_reduce_p
+p384_reduce_p:
+  /* Solinas reduction step. Based on the observation that:
+     (x + 2^384 * y) mod (2^384 - K) = (x + K * y) mod (2^384 - K).
+
+    For P-384, the constant K = 2^384 - modulus is: (2^128 + 2^96 - 2^32 + 1)
+   */
+
+  /* Extract the high 128 bits from the middle term and the low 128 bits from
+     the high term:
+       w21 <= ab[639:384] */
+  bn.rshi w21, w20, w19 >> 128
+
+  /* Multiply by K:
+     [w24:w23] <= w21 + (w21 << 128) + (w21 << 96) - (w21 << 32) = ab[639:384] * K */
+  bn.add  w23, w21, w21 << 128
+  bn.addc w24, w31, w21 >> 128
+  bn.add  w23, w23, w21 << 96
+  bn.addc w24, w24, w21 >> 160
+  bn.sub  w23, w23, w21 << 32
+  bn.subb w24, w24, w21 >> 224
+
+  /* Construct a 256-bit mask:
+       w22 <= 2^256 - 1 */
+  bn.not  w22, w31
+
+  /* Isolate the lower 384 bits:
+       w19 <= ab[383:256] */
+  bn.and  w19, w19, w22 >> 128
+
+  /* Add product to the lower 384 bits:
+       [w19:w18] = ab[383:0] + (ab[639:384] * K) */
+  bn.add  w18, w18, w23
+  bn.addc w19, w19, w24
+
+  /* Isolate the highest 128 bits of the product:
+       [w24:w23] <= ab[767:640] */
+  bn.rshi w21, w31, w20 >> 128
+
+  /* Multiply by K:
+     [w24:w23] <= w21 + (w21 << 128) + (w21 << 96) - (w21 << 32) = ab[767:640] * K */
+  bn.add  w23, w21, w21 << 128
+  bn.addc w24, w31, w21 >> 128
+  bn.add  w23, w23, w21 << 96
+  bn.addc w24, w24, w21 >> 160
+  bn.sub  w23, w23, w21 << 32
+  bn.subb w24, w24, w21 >> 224
+
+  /* Add product to the result to complete the reduction step:
+       [w20:w18] = ab[383:0] + (ab[767:384] * K) */
+  bn.add  w19, w19, w23
+  bn.addc w20, w31, w24
+
+  /* At this point, the intermediate result r is max. 576 bits, because:
+       ab[383:0]: 384 bits
+       ab[767:384]: 384 bits
+       ab[767:384] * K : 575 bits
+       r = ab[383:0] + ab[767:384] * K : 576 bits
+
+    Start another Solinas step to reduce the bound further. */
+
+  /* Extract the high 192 bits:
+       w21 <= r[575:384] * K */
+  bn.rshi w21, w20, w19 >> 128
+
+  /* Multiply by K:
+     [w24:w23] <= w21 + (w21 << 128) + (w21 << 96) - (w21 << 32) = r[575:384] * K */
+  bn.add  w23, w21, w21 << 128
+  bn.addc w24, w31, w21 >> 128
+  bn.add  w23, w23, w21 << 96
+  bn.addc w24, w24, w21 >> 160
+  bn.sub  w23, w23, w21 << 32
+  bn.subb w24, w24, w21 >> 224
+
+  /* Isolate the lower 384 bits:
+       w19 <= r[383:256] */
+  bn.and  w19, w19, w22 >> 128
+
+  /* Add product to the lower 384 bits to complete the reduction step:
+       [w19:w18] = r[383:0] + (r[575:384] * K) */
+  bn.add  w18, w18, w23
+  bn.addc w19, w19, w24
+
+  /* At this point, the result is at most 385 bits, and a conditional
+     subtraction is sufficient to fully reduce. */
+  bn.sub  w16, w18, w12
+  bn.subb w17, w19, w13
+
+  /* If the subtraction underflowed (C is set), select the pre-subtraction
+     result; otherwise, select the result of the subtraction. */
+  bn.sel w16, w18, w16, C
+  bn.sel w17, w19, w17, C
+
+  ret
+
+/**
+ * Solinas reduction algorithm.
+ *
+ * Returns c = a mod m = (x + 2^384 * y) mod m.
+ *
  * This subroutine is intended for use with the group order (n) of P-384, but
  * will work for any modulus m such that 2^384 - 2^191 < m < 2^384.
  *
@@ -133,8 +259,8 @@ mul448x128:
  * Clobbered registers: w16 to w24
  * Clobbered flag groups: FG0
  */
- .globl p384_reduce_n
- p384_reduce_n:
+.globl p384_reduce_n
+p384_reduce_n:
   /* Extract the high 128 bits from the middle term and the low 128 bits from
      the high term:
        w21 <= ab[639:384] */
@@ -242,16 +368,7 @@ mul448x128:
  * This subroutine is specialized to the coordinate field of P-384 and cannot
  * be used for other moduli.
  *
- * Solinas reduction is based on the observation that if the modulus has the
- * form (2^384 - K), then for all x and y:
- *   (x + 2^384 * y) mod (2^384 - K) = (x + K * y) mod (2^384 - K).
- *
- * For P-384, the constant K is: (2^128 + 2^96 - 2^32 + 1). A "Solinas
- * reduction step" consists of splitting a large number (such as the result of
- * a multiplication) into two parts: the lowest 384 bits (x in the formula
- * above) and any bits above that point (y in the formula above), then
- * multiplying y by K and adding it to x. Because of K's special form, the
- * multiplication by K for the P-384 modulus is especially quick.
+ * For mor information on the reduction algorith, see 'p384_reduce_p'.
  *
  * This routine runs in constant time.
  *
@@ -272,99 +389,8 @@ p384_mulmod_p:
        ab = [w20:w18] <= a * b */
   jal     x1, mul384
 
-  /* Solinas reduction step. Based on the observation that:
-     (x + 2^384 * y) mod (2^384 - K) = (x + K * y) mod (2^384 - K).
-
-    For P-384, the constant K = 2^384 - modulus is: (2^128 + 2^96 - 2^32 + 1)
-   */
-
-  /* Extract the high 128 bits from the middle term and the low 128 bits from
-     the high term:
-       w21 <= ab[639:384] */
-  bn.rshi w21, w20, w19 >> 128
-
-  /* Multiply by K:
-     [w24:w23] <= w21 + (w21 << 128) + (w21 << 96) - (w21 << 32) = ab[639:384] * K */
-  bn.add  w23, w21, w21 << 128
-  bn.addc w24, w31, w21 >> 128
-  bn.add  w23, w23, w21 << 96
-  bn.addc w24, w24, w21 >> 160
-  bn.sub  w23, w23, w21 << 32
-  bn.subb w24, w24, w21 >> 224
-
-  /* Construct a 256-bit mask:
-       w22 <= 2^256 - 1 */
-  bn.not  w22, w31
-
-  /* Isolate the lower 384 bits:
-       w19 <= ab[383:256] */
-  bn.and  w19, w19, w22 >> 128
-
-  /* Add product to the lower 384 bits:
-       [w19:w18] = ab[383:0] + (ab[639:384] * K) */
-  bn.add  w18, w18, w23
-  bn.addc w19, w19, w24
-
-  /* Isolate the highest 128 bits of the product:
-       [w24:w23] <= ab[767:640] */
-  bn.rshi w21, w31, w20 >> 128
-
-  /* Multiply by K:
-     [w24:w23] <= w21 + (w21 << 128) + (w21 << 96) - (w21 << 32) = ab[767:640] * K */
-  bn.add  w23, w21, w21 << 128
-  bn.addc w24, w31, w21 >> 128
-  bn.add  w23, w23, w21 << 96
-  bn.addc w24, w24, w21 >> 160
-  bn.sub  w23, w23, w21 << 32
-  bn.subb w24, w24, w21 >> 224
-
-  /* Add product to the result to complete the reduction step:
-       [w20:w18] = ab[383:0] + (ab[767:384] * K) */
-  bn.add  w19, w19, w23
-  bn.addc w20, w31, w24
-
-  /* At this point, the intermediate result r is max. 576 bits, because:
-       ab[383:0]: 384 bits
-       ab[767:384]: 384 bits
-       ab[767:384] * K : 575 bits
-       r = ab[383:0] + ab[767:384] * K : 576 bits
-
-    Start another Solinas step to reduce the bound further. */
-
-  /* Extract the high 192 bits:
-       w21 <= r[575:384] * K */
-  bn.rshi w21, w20, w19 >> 128
-
-  /* Multiply by K:
-     [w24:w23] <= w21 + (w21 << 128) + (w21 << 96) - (w21 << 32) = r[575:384] * K */
-  bn.add  w23, w21, w21 << 128
-  bn.addc w24, w31, w21 >> 128
-  bn.add  w23, w23, w21 << 96
-  bn.addc w24, w24, w21 >> 160
-  bn.sub  w23, w23, w21 << 32
-  bn.subb w24, w24, w21 >> 224
-
-  /* Isolate the lower 384 bits:
-       w19 <= r[383:256] */
-  bn.and  w19, w19, w22 >> 128
-
-  /* Add product to the lower 384 bits to complete the reduction step:
-       [w19:w18] = r[383:0] + (r[575:384] * K) */
-  bn.add  w18, w18, w23
-  bn.addc w19, w19, w24
-
-  /* At this point, the result is at most 385 bits, and a conditional
-     subtraction is sufficient to fully reduce. */
-  bn.sub  w16, w18, w12
-  bn.subb w17, w19, w13
-
-  /* If the subtraction underflowed (C is set), select the pre-subtraction
-     result; otherwise, select the result of the subtraction. */
-  bn.sel w16, w18, w16, C
-  bn.sel w17, w19, w17, C
-
-  /* return result: c =[w17, w16] =  a * b % m. */
-  ret
+  /* return [w17, w16] = ab mod m = [w20:w18] mod m */
+  jal     x0, p384_reduce_p
 
 /**
  * 384-bit modular multiplication based on Solinas reduction algorithm.
