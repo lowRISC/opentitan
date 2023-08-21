@@ -56,6 +56,12 @@
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
+    { name: "ASID.INTERSIG.MUBI",
+      desc: "Destination and source ASID signals are multibit encoded."
+    }
+    { name: "RANGE_UNLOCK.CONFIG.REGWEN",
+      desc: "DMA enabled memory range is software lockable."
+    }
   ]
 
   regwidth: "32"
