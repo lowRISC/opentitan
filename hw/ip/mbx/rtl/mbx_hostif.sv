@@ -41,8 +41,8 @@ module mbx_hostif
   output logic [CfgSramAddrWidth-1:0] hostif_ob_limit_o,
   // Read/Write access for the OB DW Count register
   output logic                        hostif_write_ob_object_size_o,
-  output logic [11:0]                 hostif_ob_object_size_o,
-  input  logic [11:0]                 hostif_ob_object_size_i,
+  output logic [10:0]                 hostif_ob_object_size_o,
+  input  logic [10:0]                 hostif_ob_object_size_i,
   input  logic                        hostif_read_ob_object_size_i,
   // Control inputs coming from the system registers interface
   input  logic                        sysif_write_control_abort_i
