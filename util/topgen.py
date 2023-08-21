@@ -442,7 +442,7 @@ def generate_pwrmgr(top, out_path):
     doc_path = out_path / "ip/pwrmgr/data/autogen"
     doc_path.mkdir(parents=True, exist_ok=True)
 
-    # So, read template files from ip directory.
+    # Determine source path for template files from ip directory.
     tpl_path = Path(__file__).resolve().parent / "../hw/ip/pwrmgr/data"
     hjson_tpl_path = tpl_path / "pwrmgr.hjson.tpl"
     original_rtl_path = Path(__file__).resolve().parent / "../hw/ip/pwrmgr/rtl"
@@ -745,7 +745,7 @@ def create_mem(item, addrsep, regwidth):
 
 def generete_rust(topname, completecfg, name_to_block, out_path, version_stamp,
                   src_tree_top, topgen_template_path):
-    # Template render hellper
+    # Template render helper
     def render_template(template_path: str, rendered_path: Path,
                         **other_info):
         template_contents = generate_top(completecfg, name_to_block,
@@ -762,7 +762,7 @@ def generete_rust(topname, completecfg, name_to_block, out_path, version_stamp,
     rust_files = [("toplevel_mod.rs.tpl", "mod.rs"),
                   ("toplevel.rs.tpl", f"top_{topname}.rs")]
 
-    # Creating Rust output directory
+    # Create Rust output directory
     rsformat_dir = out_path / "sw/autogen/chip/"
     rsformat_dir.mkdir(parents=True, exist_ok=True)
 
@@ -772,7 +772,7 @@ def generete_rust(topname, completecfg, name_to_block, out_path, version_stamp,
                         rsformat_dir / source,
                         helper=rs_helper)
 
-    # Generating Rust host-side files
+    # Generate Rust host-side files
     rsformat_dir = src_tree_top / "sw/host/opentitanlib/src/chip/autogen"
     rsformat_dir.mkdir(parents=True, exist_ok=True)
     render_template(topgen_template_path / "host_toplevel.rs.tpl",
@@ -1011,7 +1011,7 @@ def main():
         help=
         'If version stamping, the location of workspace version stamp file.')
 
-    # Generator options: 'no' series. cannot combined with 'only' series
+    # Generator options: 'no' series. Cannot combine with 'only' series.
     parser.add_argument(
         "--no-top",
         action="store_true",
@@ -1098,6 +1098,11 @@ def main():
             "'no' series options cannot be used with 'only' series options")
         raise SystemExit(sys.exc_info()[1])
 
+    if args.no_rust and args.rust_only:
+        log.error(
+            "'no' series options cannot be used with 'only' series options")
+        raise SystemExit(sys.exc_info()[1])
+
     # Don't print warnings when querying the list of blocks.
     log_level = (log.ERROR
                  if args.get_blocks else log.DEBUG if args.verbose else None)
@@ -1152,27 +1157,29 @@ def main():
         exit(1)
     secure_prng.reseed(topcfg["rnd_cnst_seed"])
 
-    # TODO, long term, the levels of dependency should be automatically determined instead
-    # of hardcoded.  The following are a few examples:
-    # Example 1: pinmux depends on amending all modules before calculating the correct number of
-    #            pins.
+    # TODO, long term, the levels of dependency should be automatically
+    # determined instead of hardcoded.  The following are a few examples:
+    # Example 1: pinmux depends on amending all modules before calculating the
+    #            correct number of pins.
     #            This would be 1 level of dependency and require 2 passes.
-    # Example 2: pinmux depends on amending all modules, and pwrmgr depends on pinmux generation to
-    #            know correct number of wakeups.  This would be 2 levels of dependency and require 3
-    #            passes.
+    # Example 2: pinmux depends on amending all modules, and pwrmgr depends on
+    #            pinmux generation to know correct number of wakeups.  This
+    #            would be 2 levels of dependency and require 3 passes.
     #
-    # How does mulit-pass work?
-    # In example 1, the first pass gathers all modules and merges them.  However, the merge process
-    # uses a stale pinmux.  The correct pinmux is then generated using the merged configuration. The
-    # second pass now merges all the correct modules (including the generated pinmux) and creates
-    # the final merged config.
+    # How does multi-pass work?
+    # In example 1, the first pass gathers all modules and merges them.
+    # However, the merge process uses a stale pinmux.  The correct pinmux is
+    # then generated using the merged configuration.  The second pass now merges
+    # all the correct modules (including the generated pinmux) and creates the
+    # final merged config.
     #
-    # In example 2, the first pass gathers all modules and merges them.  However, the merge process
-    # uses a stale pinmux and pwrmgr. The correct pinmux is then generated using the merged
-    # configuration.  However, since pwrmgr is dependent on this new pinmux, it is still generated
-    # incorrectly.  The second pass merge now has an updated pinmux but stale pwrmgr.  The correct
-    # pwrmgr can now be generated.  The final pass then merges all the correct modules and creates
-    # the final configuration.
+    # In example 2, the first pass gathers all modules and merges them.
+    # However, the merge process uses a stale pinmux and pwrmgr.  The correct
+    # pinmux is then generated using the merged configuration.  However, since
+    # pwrmgr is dependent on this new pinmux, it is still generated incorrectly.
+    # The second pass merge now has an updated pinmux but stale pwrmgr.  The
+    # correct pwrmgr can now be generated.  The final pass then merges all the
+    # correct modules and creates the final configuration.
     #
     # This fix is related to #2083
     process_dependencies = 1
@@ -1202,7 +1209,7 @@ def main():
 
     # Create the chip-level RAL only
     if args.top_ral:
-        # See above: we only need `completeconfig` and `name_to_block`, not all
+        # See above: we only need `completecfg` and `name_to_block`, not all
         # the other files (e.g. RTL files) generated through topgen.
         shutil.rmtree(out_path_gen, ignore_errors=True)
 
