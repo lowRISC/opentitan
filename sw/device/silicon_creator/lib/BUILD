@@ -69,6 +69,29 @@ opentitan_functest(
 )
 
 cc_library(
+    name = "boot_log",
+    srcs = ["boot_log.c"],
+    hdrs = ["boot_log.h"],
+    deps = [
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:chip_info",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+    ],
+)
+
+cc_test(
+    name = "boot_log_unittest",
+    srcs = ["boot_log_unittest.cc"],
+    deps = [
+        ":boot_log",
+        "//sw/device/silicon_creator/lib:chip_info",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "cfi",
     hdrs = [
         "cfi.h",

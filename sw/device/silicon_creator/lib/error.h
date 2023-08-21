@@ -45,6 +45,7 @@ enum module_ {
   kModuleRstmgr =          MODULE_CODE('R', 'S'),
   KModuleRnd =             MODULE_CODE('R', 'N'),
   kModuleBootSvc =         MODULE_CODE('B', 'C'),
+  kModuleBootLog =         MODULE_CODE('B', 'L'),
   kModuleRomExt =          MODULE_CODE('R', 'E'),
   kModuleRomExtInterrupt = MODULE_CODE('R', 'I'),
   // clang-format on
@@ -152,7 +153,9 @@ enum module_ {
   X(kErrorRomExtBootFailed,           ERROR_(1, kModuleRomExt, kFailedPrecondition)), \
   \
   /* The high-byte of kErrorInterrupt is modified with the interrupt cause */ \
-  X(kErrorRomExtInterrupt,            ERROR_(0, kModuleRomExtInterrupt, kUnknown))
+  X(kErrorRomExtInterrupt,            ERROR_(0, kModuleRomExtInterrupt, kUnknown)), \
+  \
+  X(kErrorBootLogInvalid,             ERROR_(1, kModuleBootLog, kInternal))
 // clang-format on
 
 #define ERROR_ENUM_INIT(name_, value_) name_ = value_
