@@ -59,8 +59,8 @@
     { name: "ASID.INTERSIG.MUBI",
       desc: "Destination and source ASID signals are multibit encoded."
     }
-    { name: "RANGE_UNLOCK.CONFIG.REGWEN",
-      desc: "DMA enabled memory range is software lockable."
+    { name: "RANGE_UNLOCK.CONFIG.REGWEN_MUBI",
+      desc: "DMA enabled memory range is software multibit lockable."
     }
   ]
 
