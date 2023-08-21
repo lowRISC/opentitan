@@ -4,7 +4,7 @@
 
 load("@rules_rust//rust:defs.bzl", "rust_binary")
 load("//rules:linker.bzl", "ld_library")
-load("//rules:opentitan.bzl", "elf_to_disassembly", "obj_transform")
+load("//rules:opentitan.bzl", "OPENTITAN_CPU", "elf_to_disassembly", "obj_transform")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -47,10 +47,9 @@ rust_binary(
         #"-Clink-arg=-icf=all",
         #"-Cforce-frame-pointers=no",
     ],
-    # We don't want to build the kernel automatically if matched
-    # by a bazel wildcard because the kernel will not fit in the allocated
-    # space if built in `fastbuild` or `dbg` modes.
-    tags = ["manual"],
+    # We specifically restrict our build target to the OpenTitan
+    # CPU because tock does not support an x86_64 target.
+    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":layout",
         ":nostartfiles",
