@@ -424,6 +424,23 @@ filegroup(
 )
 
 cc_library(
+    name = "bootstrap_fuzzer_util",
+    srcs = ["bootstrap_fuzzer_util.cc"],
+    hdrs = ["bootstrap_fuzzer_util.h"],
+    deps = [
+        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib:bootstrap_unittest_util",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/drivers:spi_device",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_absl//absl/types:span",
+    ],
+)
+
+cc_library(
     name = "bootstrap_unittest_util",
     srcs = ["bootstrap_unittest_util.cc"],
     hdrs = ["bootstrap_unittest_util.h"],

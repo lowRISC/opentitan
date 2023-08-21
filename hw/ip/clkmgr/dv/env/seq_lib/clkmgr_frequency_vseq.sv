@@ -162,7 +162,6 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
         int min_threshold;
         int max_threshold;
         int expected = ExpectedCounts[clk];
-        bit block_meas_en;
         if (clk == clk_tested) begin
           min_threshold = expected + min_offset;
           max_threshold = expected + max_offset;
@@ -181,8 +180,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
           min_threshold = expected - 2;
           max_threshold = expected + 2;
         end
-        block_meas_en = calib_rdy == MuBi4False;
-        enable_frequency_measurement(clk_mesr, min_threshold, max_threshold, block_meas_en);
+        enable_frequency_measurement(clk_mesr, min_threshold, max_threshold);
       end
 
       fork

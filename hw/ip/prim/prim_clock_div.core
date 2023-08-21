@@ -6,15 +6,17 @@ CAPI=2:
 name: "lowrisc:prim:clock_div"
 description: "Generic clock divide"
 filesets:
-  files_rtl:
+  primgen_dep:
     depend:
       - lowrisc:prim:prim_pkg
-      - lowrisc:prim:flop
-      - lowrisc:prim:clock_inv
-      - lowrisc:prim:clock_buf
+      - lowrisc:prim:primgen
+
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
     files:
-      - rtl/prim_clock_div.sv
-    file_type: systemVerilogSource
+    file_type: vlt
 
   files_ascentlint_waiver:
     depend:
@@ -24,8 +26,23 @@ filesets:
       - lint/prim_clock_div.waiver
     file_type: waiver
 
+  files_veriblelint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+
+generate:
+  impl:
+    generator: primgen
+    parameters:
+      prim_name: clock_div
+
 targets:
   default:
     filesets:
-      - tool_ascentlint ? (files_ascentlint_waiver)
-      - files_rtl
+      - tool_verilator   ? (files_verilator_waiver)
+      - tool_ascentlint  ? (files_ascentlint_waiver)
+      - tool_veriblelint ? (files_veriblelint_waiver)
+      - primgen_dep
+    generate:
+      - impl

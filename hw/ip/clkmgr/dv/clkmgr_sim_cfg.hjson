@@ -113,6 +113,10 @@
       uvm_test_seq: clkmgr_extclk_vseq
       run_opts: ["+clkmgr_mubi_mode=ClkmgrMubiDiv"]
     }
+    {
+      name: clkmgr_regwen
+      uvm_test_seq: clkmgr_regwen_vseq
+    }
   ]
 
   // List of regressions.

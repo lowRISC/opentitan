@@ -8,6 +8,7 @@ load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_flash_binary")
 load("//rules:linker.bzl", "ld_library")
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:opentitan_test.bzl", "cw310_params", "opentitan_functest")
+load("@rules_fuzzing//fuzzing:cc_defs.bzl", "cc_fuzz_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -56,6 +57,7 @@ cc_library(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:csr",
+        "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:manifest",
     ],
@@ -104,6 +106,21 @@ cc_test(
         "//sw/device/silicon_creator/testing:rom_test",
         "@com_google_absl//absl/types:span",
         "@googletest//:gtest_main",
+    ],
+)
+
+# To test this target, you must specify `--config=asan-libfuzzer`.
+cc_fuzz_test(
+    name = "bootstrap_fuzz_test",
+    srcs = ["bootstrap_fuzz_test.cc"],
+    tags = [
+        "fuzzer",
+        "manual",
+    ],
+    deps = [
+        ":bootstrap",
+        "//sw/device/silicon_creator/lib:bootstrap_fuzzer_util",
+        "@com_google_absl//absl/types:span",
     ],
 )
 
@@ -190,6 +207,7 @@ cc_library(
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:stdasm",
         "//sw/device/lib/runtime:hart",
+        "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:manifest",
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib:rom_print",

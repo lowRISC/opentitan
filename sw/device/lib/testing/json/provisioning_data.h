@@ -40,12 +40,33 @@ extern "C" {
 UJSON_SERDE_STRUCT(WrappedRmaUnlockToken, \
                    wrapped_rma_unlock_token_t, \
                    STRUCT_WRAPPED_RMA_UNLOCK_TOKEN);
+// clang-format on
 
-#define STRUCT_MANUF_PROVISIONING(field, string) \
+/**
+ * Data exported during device personalization.
+ */
+// clang-format off
+#define STRUCT_MANUF_PERSONALIZE(field, string) \
     field(wrapped_rma_unlock_token, wrapped_rma_unlock_token_t)
-UJSON_SERDE_STRUCT(ManufProvisioning, \
-                   manuf_provisioning_t, \
-                   STRUCT_MANUF_PROVISIONING);
+UJSON_SERDE_STRUCT(ManufPersonalize, \
+                   manuf_personalize_t, \
+                   STRUCT_MANUF_PERSONALIZE);
+// clang-format on
+
+/**
+ * Provisioning data imported onto the device in CP.
+ */
+// clang-format off
+#define STRUCT_MANUF_CP_PROVISIONING_DATA(field, string) \
+    field(device_id, uint32_t, 4) \
+    field(manuf_state, uint32_t, 4) \
+    field(wafer_auth_secret, uint32_t, 4) \
+    field(test_unlock_token, uint32_t, 4) \
+    field(test_exit_token, uint32_t, 4)
+UJSON_SERDE_STRUCT(ManufCpProvisioningData, \
+                   manuf_cp_provisioning_data_t, \
+                   STRUCT_MANUF_CP_PROVISIONING_DATA);
+// clang-format on
 
 #undef MODULE_ID
 // clang-format on

@@ -25,6 +25,7 @@ filesets:
       - seq_lib/clkmgr_frequency_timeout_vseq.sv: {is_include_file: true}
       - seq_lib/clkmgr_frequency_vseq.sv: {is_include_file: true}
       - seq_lib/clkmgr_peri_vseq.sv: {is_include_file: true}
+      - seq_lib/clkmgr_regwen_vseq.sv: {is_include_file: true}
       - seq_lib/clkmgr_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/clkmgr_stress_all_vseq.sv: {is_include_file: true}
       - seq_lib/clkmgr_trans_vseq.sv: {is_include_file: true}

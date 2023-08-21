@@ -32,7 +32,11 @@ module prim_subreg_arb
     assign wr_data = (we == 1'b1) ? wd : d; // SW higher priority
     // Unused q - Prevent lint errors.
     logic [DW-1:0] unused_q;
+    //VCS coverage off
+    // pragma coverage off
     assign unused_q = q;
+    //VCS coverage on
+    // pragma coverage on
   end else if (SwAccess == SwAccessRO) begin : gen_ro
     assign wr_en   = de;
     assign wr_data = d;
@@ -40,9 +44,13 @@ module prim_subreg_arb
     logic          unused_we;
     logic [DW-1:0] unused_wd;
     logic [DW-1:0] unused_q;
+    //VCS coverage off
+    // pragma coverage off
     assign unused_we = we;
     assign unused_wd = wd;
     assign unused_q  = q;
+    //VCS coverage on
+    // pragma coverage on
   end else if (SwAccess == SwAccessW1S) begin : gen_w1s
     // If SwAccess is W1S, then assume hw tries to clear.
     // So, give a chance HW to clear when SW tries to set.
@@ -65,7 +73,11 @@ module prim_subreg_arb
     assign wr_data = (de ? d : q) & (we ? '0 : '1);
     // Unused wd - Prevent lint errors.
     logic [DW-1:0] unused_wd;
+    //VCS coverage off
+    // pragma coverage off
     assign unused_wd = wd;
+    //VCS coverage on
+    // pragma coverage on
   end else begin : gen_hw
     assign wr_en   = de;
     assign wr_data = d;
@@ -73,9 +85,13 @@ module prim_subreg_arb
     logic          unused_we;
     logic [DW-1:0] unused_wd;
     logic [DW-1:0] unused_q;
+    //VCS coverage off
+    // pragma coverage off
     assign unused_we = we;
     assign unused_wd = wd;
     assign unused_q  = q;
+    //VCS coverage on
+    // pragma coverage on
   end
 
 endmodule

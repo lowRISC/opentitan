@@ -195,8 +195,8 @@
             maximum value they don't wrap around.
 
             If clock calibration is lost, indicated by the `calib_rdy_i` input
-            being `prim_mubi_pkg::MuBi4False`, the measurements stop and no
-            error is triggered.
+            being `prim_mubi_pkg::MuBi4False`, the measurements stop, no
+            error is triggered, and `measure_ctrl_regwen` is set to 1.
 
             **Stimulus**:
             - Randomly set slow, correct, and fast interval for each counter
@@ -248,6 +248,24 @@
             '''
       stage: V2
       tests: ["clkmgr_frequency"]
+    }
+    {
+      name: regwen
+      desc: '''This tests the behavior of the regwen CSRs.
+
+            When a regwen is clear, any write to CSRs it locks are ignored.
+            Once a regwen is cleared, it will only be set again after a full
+            reset.
+
+            **Stimulus**:
+            - Clear each regwen.
+            - Write to the corresponding locked CSRs.
+
+            **Check**:
+            - The locked CSR value is not updated.
+            '''
+      stage: V3
+      tests: ["clkmgr_regwen"]
     }
     {
       name: stress_all

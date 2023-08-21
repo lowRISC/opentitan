@@ -16,6 +16,7 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 status_t test_ctr_drbg_ctr0(const dif_csrng_t *csrng) {
+  TRY(csrng_testutils_cmd_ready_wait(csrng));
   TRY(dif_csrng_uninstantiate(csrng));
   TRY(csrng_testutils_fips_instantiate_kat(csrng, /*fail_expected=*/false));
   TRY(csrng_testutils_fips_generate_kat(csrng));

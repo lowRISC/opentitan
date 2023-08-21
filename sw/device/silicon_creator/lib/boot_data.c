@@ -559,13 +559,42 @@ static rom_error_t boot_data_default_get(lifecycle_state_t lc_state,
   return res;
 }
 
+/**
+ * Populates fields not present in older versions of `boot_data_t`.
+ *
+ * For older `boot_data_t` entries, some fields may be missing after a call to
+ * `boot_data_read()`. This function will populate fields with their default
+ * values, the same values that `boot_data_read()` uses when returning default
+ * boot data.
+ *
+ * @param boot_data A buffer the holds a boot data entry.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+static rom_error_t boot_data_as_v2(boot_data_t *boot_data) {
+  switch (launder32(boot_data->version)) {
+    case kBootDataVersion1:
+      HARDENED_CHECK_EQ(boot_data->version, kBootDataVersion1);
+      boot_data->primary_bl0_slot = kBootDataSlotA;
+      boot_data->version = kBootDataVersion2;
+      boot_data_digest_compute(boot_data, &boot_data->digest);
+      return kErrorOk;
+    case kBootDataVersion2:
+      HARDENED_CHECK_EQ(boot_data->version, kBootDataVersion2);
+      return kErrorOk;
+    default:
+      HARDENED_TRAP();
+      OT_UNREACHABLE();
+  }
+}
+
 rom_error_t boot_data_read(lifecycle_state_t lc_state, boot_data_t *boot_data) {
   active_page_info_t active_page;
   HARDENED_RETURN_IF_ERROR(boot_data_active_page_find(&active_page, boot_data));
   switch (launder32(active_page.has_valid_entry)) {
     case kHardenedBoolTrue:
       HARDENED_CHECK_EQ(active_page.has_valid_entry, kHardenedBoolTrue);
-      return kErrorOk;
+      return boot_data_as_v2(boot_data);
     case kHardenedBoolFalse:
       HARDENED_CHECK_EQ(active_page.has_valid_entry, kHardenedBoolFalse);
       return boot_data_default_get(lc_state, boot_data);
@@ -665,21 +694,4 @@ rom_error_t boot_data_check(const boot_data_t *boot_data) {
   }
 
   return kErrorBootDataInvalid;
-}
-
-rom_error_t boot_data_as_v2(boot_data_t *boot_data) {
-  switch (launder32(boot_data->version)) {
-    case kBootDataVersion1:
-      HARDENED_CHECK_EQ(boot_data->version, kBootDataVersion1);
-      boot_data->primary_bl0_slot = kBootDataSlotA;
-      boot_data->version = kBootDataVersion2;
-      boot_data_digest_compute(boot_data, &boot_data->digest);
-      return kErrorOk;
-    case kBootDataVersion2:
-      HARDENED_CHECK_EQ(boot_data->version, kBootDataVersion2);
-      return kErrorOk;
-    default:
-      HARDENED_TRAP();
-      OT_UNREACHABLE();
-  }
 }

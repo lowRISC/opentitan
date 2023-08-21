@@ -55,9 +55,186 @@ RUST_INSTRUCTIONS = """
 """
 
 
+class EncodingGenerator:
+
+    def __init__(self, min_hd: int, num_states: int, encoding_len: int,
+                 seed: int, language: str,
+                 avoid_zero: bool) -> "EncodingGenerator":
+        self.encodings = []
+        self.num_states = num_states
+        self.encoding_len = encoding_len
+        self.seed = seed
+        self.avoid_zero = avoid_zero
+        self.language = language
+        self.min_hd = min_hd
+        self.min_popcnt = min_hd if self.avoid_zero else 1
+
+    def _check_candidate(self, cand: str) -> bool:
+        """Check that a candidate integer satisfies the requirements."""
+        # disallow all-zero and all-one states
+        pop_cnt = cand.count('1')
+        if pop_cnt >= self.encoding_len or pop_cnt < self.min_popcnt:
+            return False
+        for k in self.encodings:
+            # disallow candidates that are the complement of other states
+            # The ~ operator cannot be used here as it returns a 2's complement
+            # result. XOR with 1's instead to invert the bits.
+            if int(cand, 2) ^ ((1 << self.encoding_len) - 1) == int(k, 2):
+                return False
+            # disallow candidates that are too close to other states
+            if get_hd(cand, k) < self.min_hd:
+                return False
+        return True
+
+    def generate(self) -> None:
+        """Generate encodings satisfying the desired constraints.
+
+        This is a heuristic that opportunistically draws random state encodings
+        and check whether they fulfill the minimum Hamming distance constraint.
+        Other solutions that use a brute-force approach would be possible as
+        well (see e.g. https://math.stackexchange.com/
+        questions/891528/generating-a-binary-code-with-maximized-hamming-distance).
+        However, due to the sparse nature of the state space, this
+        probabilistic heuristic works pretty well for most practical cases, and
+        it scales favorably to large N.
+        """
+        num_draws = 0
+        num_restarts = 0
+
+        rand = random.Random()
+        rand.seed(self.seed)
+        rnd = rand.getrandbits(self.encoding_len)
+
+        while len(self.encodings) < self.num_states:
+            # if we iterate for too long, start over.
+            if num_draws >= MAX_DRAWS:
+                num_draws = 0
+                num_restarts += 1
+                rnd = rand.getrandbits(self.encoding_len)
+                self.encodings = []
+            # if we restarted for too many times, abort.
+            if num_restarts >= MAX_RESTARTS:
+                log.error(
+                    f'Did not find a solution after restarting {num_restarts} times. '
+                    'This is an indicator that not many (or even no) solutions exist for '
+                    'the current parameterization. Rerun the script and/or adjust '
+                    'the d/m/n parameters. E.g. make the state space more sparse by '
+                    'increasing n, or lower the minimum Hamming distance threshold d.'
+                )
+                sys.exit(1)
+            num_draws += 1
+            # draw a candidate and check whether it fulfills the minimum
+            # distance requirement with respect to other encodings.
+            rnd = rand.getrandbits(self.encoding_len)
+            cand = format(rnd, '0' + str(self.encoding_len) + 'b')
+            if self._check_candidate(cand):
+                self.encodings.append(cand)
+
+        # Get Hamming distance statistics.
+        self.stats = hd_histogram(self.encodings)
+
+    def _print_comment(self):
+        if self.language == "c":
+            comment = " *"
+            print(C_INSTRUCTIONS)
+            print("/*")
+        elif self.language == "sv":
+            comment = "//"
+            print(SV_INSTRUCTIONS)
+        elif self.language == "rust":
+            comment = "///"
+            print(RUST_INSTRUCTIONS)
+            print("///```text")
+        else:
+            raise ValueError(f"Unsupported language: {self.lanugage}")
+
+        print(
+            f"{comment} Encoding generated with:\n"
+            f"{comment} $ ./util/design/sparse-fsm-encode.py -d {self.min_hd} -m {self.num_states} -n {self.encoding_len} \\\n"  # noqa: E501
+            f"{comment}     -s {self.seed} --language={self.language}\n"
+            f"{comment}\n"
+            f"{comment} Hamming distance histogram:\n"
+            f"{comment}")
+        for hist_bar in self.stats['bars']:
+            print(f"{comment} " + hist_bar)
+        print(f"{comment}\n"
+              f"{comment} Minimum Hamming distance: {self.stats['min_hd']}\n"
+              f"{comment} Maximum Hamming distance: {self.stats['max_hd']}\n"
+              f"{comment} Minimum Hamming weight: {self.stats['min_hw']}\n"
+              f"{comment} Maximum Hamming weight: {self.stats['max_hw']}")
+
+        # Print comment footer
+        if self.language == "c":
+            print(" */")
+        elif self.language == "rust":
+            print("///```")
+        elif self.language == "sv":
+            print("//")
+
+    def _print_sv(self):
+        print(f"localparam int StateWidth = {self.encoding_len};\n"
+              "typedef enum logic [StateWidth-1:0] {")
+        fmt_str = "  State{} {}= {}'b{}"
+        state_str = ""
+        for j, k in enumerate(self.encodings):
+            pad = " " * (len(str(self.num_states)) - len(str(j)))
+            comma = "," if j < len(self.encodings) - 1 else ""
+            print(fmt_str.format(j, pad, self.encoding_len, k) + comma)
+            state_str += f"    State{j}: ;\n"
+
+        # print FSM template
+        print(
+            "} state_e;\n"
+            "\n"
+            "state_e state_d, state_q;\n\n"
+            "always_comb begin : p_fsm\n"
+            "  // Default assignments\n"
+            "  state_d = state_q;\n"
+            "\n"
+            "  unique case (state_q)\n"
+            f"{state_str}    default: ; // Consider triggering an error or alert in this case.\n"
+            "  endcase\n"
+            "end\n"
+            "\n"
+            "`PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, State0)"
+        )
+
+    def _print_c(self):
+        print("typedef enum my_state {")
+        fmt_str = "  kMyState{0:} {1:}= 0x{3:0" + str(
+            math.ceil(self.encoding_len / 4)) + "x},"
+        for j, k in enumerate(self.encodings):
+            pad = " " * (len(str(self.num_states)) - len(str(j)))
+            print(fmt_str.format(j, pad, self.encoding_len, int(k, 2)))
+
+        # print FSM template
+        print("} my_state_t;")
+
+    def _print_rust(self):
+        print("#[derive(Clone,Copy,Eq,PartialEq,Ord,ParitalOrd,Hash,Debug)]\n"
+              "#[repr(transparent)]\n"
+              f"struct MyState(u{self.encoding_len});\n"
+              "\n"
+              "impl MyState {")
+        fmt_str = "  const MY_STATE{0:}: MyState {1:}= MyState(0x{3:0" + str(
+            math.ceil(self.encoding_len / 4)) + "x});"
+        for j, k in enumerate(self.encodings):
+            pad = " " * (len(str(self.num_states)) - len(str(j)))
+            print(fmt_str.format(j, pad, self.encoding_len, int(k, 2)))
+        print("}")
+
+    def print_code(self):
+        self._print_comment()
+        if self.language == "sv":
+            self._print_sv()
+        elif self.language == "c":
+            self._print_c()
+        elif self.language == 'rust':
+            self._print_rust()
+
+
 def main():
-    log.basicConfig(level=log.INFO,
-                    format="%(levelname)s: %(message)s")
+    log.basicConfig(level=log.INFO, format="%(levelname)s: %(message)s")
 
     parser = argparse.ArgumentParser(
         prog="sparse-fsm-encode",
@@ -96,26 +273,24 @@ def main():
 
     if args.language in ['c', 'rust']:
         if args.n not in [8, 16, 32]:
-            log.error(
-                "When using C or Rust, widths must be a power-of-two "
-                "at least a byte (8 bits) wide. You chose %d." % (args.n, ))
+            log.error("When using C or Rust, widths must be a power-of-two "
+                      f"at least a byte (8 bits) wide. You chose {args.n}.")
             sys.exit(1)
 
     if args.m < 2:
-        log.error(
-            'Number of states %d must be at least 2.' % (args.m))
+        log.error('Number of states (m) must be at least 2.')
         sys.exit(1)
 
     if args.m > 2**args.n:
         log.error(
-            'Statespace 2^%d not large enough to accommodate %d states.' %
-            (args.n, args.m))
+            f'Statespace 2^{args.n} not large enough to accommodate {args.m} states.'
+        )
         sys.exit(1)
 
     if (args.d >= args.n) and not (args.d == args.n and args.m == 2):
         log.error(
-            'State is only %d bits wide, which is not enough to fulfill a '
-            'minimum Hamming distance constraint of %d. ' % (args.n, args.d))
+            f'State is only {args.n} bits wide, which is not enough to fulfill a '
+            f'minimum Hamming distance constraint of {args.d}.')
         sys.exit(1)
 
     if args.d <= 0:
@@ -134,180 +309,14 @@ def main():
         random.seed()
         args.s = random.getrandbits(32)
 
-    # Create and seed a separate Random instance to avoid sharing state with
-    # other libraries that may use the global random. This will improve the
-    # determinism of this script.
-    rand = random.Random()
-    rand.seed(args.s)
-
-    # This is a heuristic that opportunistically draws random
-    # state encodings and check whether they fulfill the minimum
-    # Hamming distance constraint.
-    # Other solutions that use a brute-force approach would be
-    # possible as well (see e.g. https://math.stackexchange.com/
-    # questions/891528/generating-a-binary-code-with-maximized-hamming-distance).
-    # However, due to the sparse nature of the state space, this
-    # probabilistic heuristic works pretty well for most practical
-    # cases, and it scales favorably to large N.
-    num_draws = 0
-    num_restarts = 0
-    rnd = rand.getrandbits(args.n)
-    encodings = []
-
-    min_popcnt = args.d if args.avoid_zero else 1
-
-    while len(encodings) < args.m:
-        # if we iterate for too long, start over.
-        if num_draws >= MAX_DRAWS:
-            num_draws = 0
-            num_restarts += 1
-            rnd = rand.getrandbits(args.n)
-            encodings = []
-        # if we restarted for too many times, abort.
-        if num_restarts >= MAX_RESTARTS:
-            log.error(
-                'Did not find a solution after restarting {} times. This is '
-                'an indicator that not many (or even no) solutions exist for '
-                'the current parameterization. Rerun the script and/or adjust '
-                'the d/m/n parameters. E.g. make the state space more sparse by '
-                'increasing n, or lower the minimum Hamming distance threshold d.'
-                .format(num_restarts))
-            sys.exit(1)
-        num_draws += 1
-        # draw a candidate and check whether it fulfills the minimum
-        # distance requirement with respect to other encodings.
-        rnd = rand.getrandbits(args.n)
-        cand = format(rnd, '0' + str(args.n) + 'b')
-        # disallow all-zero and all-one states
-        pop_cnt = cand.count('1')
-        if pop_cnt < args.n and pop_cnt >= min_popcnt:
-            for k in encodings:
-                # disallow candidates that are the complement of other states
-                # The ~ operator cannot be used here as it returns a 2's
-                # complement result. XOR with 1's instead to invert the bits.
-                if int(cand, 2) ^ ((1 << args.n) - 1) == int(k, 2):
-                    break
-                # disallow candidates that are too close to other states
-                if get_hd(cand, k) < args.d:
-                    break
-            else:
-                encodings.append(cand)
-
-    # Get Hamming distance statistics.
-    stats = hd_histogram(encodings)
-
-    if args.language == "sv":
-        print(SV_INSTRUCTIONS)
-        print("// Encoding generated with:\n"
-              "// $ ./util/design/sparse-fsm-encode.py -d {} -m {} -n {} \\\n"
-              "//      -s {} --language=sv{}\n"
-              "//\n"
-              "// Hamming distance histogram:\n"
-              "//".format(args.d, args.m, args.n, args.s,
-                          ' --avoid-zero' if args.avoid_zero else ''))
-        for bar in stats['bars']:
-            print('// ' + bar)
-        print("//\n"
-              "// Minimum Hamming distance: {}\n"
-              "// Maximum Hamming distance: {}\n"
-              "// Minimum Hamming weight: {}\n"
-              "// Maximum Hamming weight: {}\n"
-              "//\n"
-              "localparam int StateWidth = {};\n"
-              "typedef enum logic [StateWidth-1:0] {{".format(
-                  stats['min_hd'], stats['max_hd'], stats['min_hw'],
-                  stats['max_hw'], args.n))
-        fmt_str = "  State{} {}= {}'b{}"
-        state_str = ""
-        for j, k in enumerate(encodings):
-            pad = ""
-            for i in range(len(str(args.m)) - len(str(j))):
-                pad += " "
-            comma = "," if j < len(encodings) - 1 else ""
-            print(fmt_str.format(j, pad, args.n, k) + comma)
-            state_str += "    State{}: ;\n".format(j)
-
-        # print FSM template
-        print('''}} state_e;
-
-state_e state_d, state_q;
-
-always_comb begin : p_fsm
-  // Default assignments
-  state_d = state_q;
-
-  unique case (state_q)
-{}    default: ; // Consider triggering an error or alert in this case.
-  endcase
-end
-
-`PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, State0)
-
-'''.format(state_str))
-
-    elif args.language == "c":
-        print(C_INSTRUCTIONS)
-        print("/*\n"
-              " * Encoding generated with\n"
-              " * $ ./util/design/sparse-fsm-encode.py -d {} -m {} -n {} \\\n"
-              " *     -s {} --language=c\n"
-              " *\n"
-              " * Hamming distance histogram:\n"
-              " *".format(args.d, args.m, args.n, args.s))
-        for hist_bar in stats['bars']:
-            print(" * " + hist_bar)
-        print(" *\n"
-              " * Minimum Hamming distance: {}\n"
-              " * Maximum Hamming distance: {}\n"
-              " * Minimum Hamming weight: {}\n"
-              " * Maximum Hamming weight: {}\n"
-              " */\n"
-              "typedef enum my_state {{".format(stats['min_hd'],
-                                                stats['max_hd'],
-                                                stats['min_hw'],
-                                                stats['max_hw']))
-        fmt_str = "  kMyState{0:} {1:}= 0x{3:0" + str(math.ceil(
-            args.n / 4)) + "x}"
-        for j, k in enumerate(encodings):
-            pad = ""
-            for i in range(len(str(args.m)) - len(str(j))):
-                pad += " "
-            print(fmt_str.format(j, pad, args.n, int(k, 2)) + ",")
-
-        # print FSM template
-        print("} my_state_t;")
-    elif args.language == 'rust':
-        print(RUST_INSTRUCTIONS)
-        print("///```text\n"
-              "/// Encoding generated with\n"
-              "/// $ ./util/design/sparse-fsm-encode.py -d {} -m {} -n {} \\\n"
-              "///     -s {} --language=rust\n"
-              "///\n"
-              "/// Hamming distance histogram:\n"
-              "///".format(args.d, args.m, args.n, args.s))
-        for hist_bar in stats['bars']:
-            print("/// " + hist_bar)
-        print("///\n"
-              "/// Minimum Hamming distance: {}\n"
-              "/// Maximum Hamming distance: {}\n"
-              "/// Minimum Hamming weight: {}\n"
-              "/// Maximum Hamming weight: {}\n"
-              "///```\n"
-              "#[derive(Clone,Copy,Eq,PartialEq,Ord,ParitalOrd,Hash,Debug)]\n"
-              "#[repr(transparent)]\n"
-              "struct MyState(u{});\n"
-              "\n"
-              "impl MyState {{".format(stats['min_hd'], stats['max_hd'],
-                                       stats['min_hw'], stats['max_hw'],
-                                       args.n))
-        fmt_str = "  const MY_STATE{0:}: MyState {1:}= MyState(0x{3:0" + str(
-            math.ceil(args.n / 4)) + "x})"
-        for j, k in enumerate(encodings):
-            pad = ""
-            for i in range(len(str(args.m)) - len(str(j))):
-                pad += " "
-            print(fmt_str.format(j, pad, args.n, int(k, 2)) + ";")
-        print("}")
+    generator = EncodingGenerator(min_hd=args.d,
+                                  num_states=args.m,
+                                  encoding_len=args.n,
+                                  seed=args.s,
+                                  language=args.language,
+                                  avoid_zero=args.avoid_zero)
+    generator.generate()
+    generator.print_code()
 
 
 if __name__ == "__main__":

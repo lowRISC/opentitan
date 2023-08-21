@@ -126,7 +126,11 @@ cc_library(
     srcs = ["rsa.c"],
     hdrs = ["//sw/device/lib/crypto/include:rsa.h"],
     deps = [
+        ":integrity",
         ":status",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/impl/rsa:rsa_keygen",
+        "//sw/device/lib/crypto/impl/rsa:rsa_signature",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )

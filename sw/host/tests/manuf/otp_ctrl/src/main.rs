@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-//! This test performs a lifecycle transition from `RAW` to `TEST_UNLOCKED0`.
+//! This test performs a OTP writes/locks over JTAG to confirm this method of OTP memory
+//! programming is functional.
 
 use anyhow::Context;
 use clap::Parser;

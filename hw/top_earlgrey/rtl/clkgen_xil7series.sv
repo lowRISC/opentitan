@@ -17,8 +17,8 @@ module clkgen_xil7series # (
   logic locked_pll;
   logic io_clk_buf;
   logic io_rst_buf_n;
-  logic clk_10_buf;
-  logic clk_10_unbuf;
+  logic clk_main_buf;
+  logic clk_main_unbuf;
   logic clk_fb_buf;
   logic clk_fb_unbuf;
   logic clk_48_buf;
@@ -30,10 +30,11 @@ module clkgen_xil7series # (
     .BANDWIDTH            ("OPTIMIZED"),
     .COMPENSATION         ("ZHOLD"),
     .STARTUP_WAIT         ("FALSE"),
-    .DIVCLK_DIVIDE        (1),
-    .CLKFBOUT_MULT_F      (12.000),
+    .CLKIN1_PERIOD        (10.000), // f_CLKIN = 100 MHz
+    .DIVCLK_DIVIDE        (1),      // f_PFD = 100 MHz
+    .CLKFBOUT_MULT_F      (12.000), // f_VCO = 1200 MHz
     .CLKFBOUT_PHASE       (0.000),
-    .CLKOUT0_DIVIDE_F     (120.0),
+    .CLKOUT0_DIVIDE_F     (50.0),   // f_main = 24 MHz
     .CLKOUT0_PHASE        (0.000),
     .CLKOUT0_DUTY_CYCLE   (0.500),
     .CLKOUT1_DIVIDE       (25),
@@ -45,12 +46,11 @@ module clkgen_xil7series # (
     .CLKOUT4_PHASE        (0.000),
     .CLKOUT4_DUTY_CYCLE   (0.500),
     .CLKOUT4_CASCADE      ("TRUE"),
-    .CLKOUT6_DIVIDE       (120),
-    .CLKIN1_PERIOD        (10.000)
+    .CLKOUT6_DIVIDE       (120)
   ) pll (
     .CLKFBOUT            (clk_fb_unbuf),
     .CLKFBOUTB           (),
-    .CLKOUT0             (clk_10_unbuf),
+    .CLKOUT0             (clk_main_unbuf),
     .CLKOUT0B            (),
     .CLKOUT1             (clk_48_unbuf),
     .CLKOUT1B            (),
@@ -100,9 +100,9 @@ module clkgen_xil7series # (
   );
 
   if (AddClkBuf == 1) begin : gen_clk_bufs
-    BUFG clk_10_bufg (
-      .I (clk_10_unbuf),
-      .O (clk_10_buf)
+    BUFG clk_main_bufg (
+      .I (clk_main_unbuf),
+      .O (clk_main_buf)
     );
 
     BUFG clk_48_bufg (
@@ -111,13 +111,13 @@ module clkgen_xil7series # (
     );
   end else begin : gen_no_clk_bufs
     // BUFGs added by downstream modules, no need to add here
-    assign clk_10_buf = clk_10_unbuf;
+    assign clk_main_buf = clk_main_unbuf;
     assign clk_48_buf = clk_48_unbuf;
   end
 
   // outputs
   // clock
-  assign clk_main_o = clk_10_buf;
+  assign clk_main_o = clk_main_buf;
   assign clk_48MHz_o = clk_48_buf;
   assign clk_aon_o = clk_aon_buf;
 

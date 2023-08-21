@@ -12,7 +12,6 @@ import json
 import logging as log
 import os
 import re
-import subprocess
 import sys
 from collections import OrderedDict
 from pathlib import Path
@@ -21,10 +20,11 @@ from typing import Optional
 from Deploy import CompileSim, CovAnalyze, CovMerge, CovReport, CovUnr, RunTest
 from FlowCfg import FlowCfg
 from Modes import BuildModes, Modes, Regressions, RunModes, Tests
+from results_server import ResultsServer
 from SimResults import SimResults
 from tabulate import tabulate
 from Testplan import Testplan
-from utils import TS_FORMAT, VERBOSE, rm_path
+from utils import TS_FORMAT, rm_path
 
 # This affects the bucketizer failure report.
 _MAX_UNIQUE_TESTS = 5
@@ -920,24 +920,16 @@ class SimCfg(FlowCfg):
         print(self.results_summary_md)
         return self.results_summary_md
 
-    def _publish_results(self):
+    def _publish_results(self, results_server: ResultsServer):
         '''Publish coverage results to the opentitan web server.'''
-        super()._publish_results()
+        super()._publish_results(results_server)
 
         if self.cov_report_deploy is not None:
-            results_server_dir_url = self.results_server_dir.replace(
-                self.results_server_prefix, "https://")
+            log.info("Publishing coverage results to https://{}/{}/latest"
+                     .format(self.results_server,
+                             self.rel_path))
 
-            log.info("Publishing coverage results to %s",
-                     results_server_dir_url)
-            cmd = (self.results_server_cmd + " -m cp -R " +
-                   self.cov_report_dir + " " + self.results_server_dir)
-            try:
-                cmd_output = subprocess.run(args=cmd,
-                                            shell=True,
-                                            stdout=subprocess.PIPE,
-                                            stderr=subprocess.STDOUT)
-                log.log(VERBOSE, cmd_output.stdout.decode("utf-8"))
-            except Exception as e:
-                log.error("%s: Failed to publish results:\n\"%s\"", e,
-                          str(cmd))
+            latest_dir = '{}/latest'.format(self.rel_path)
+            results_server.upload(self.cov_report_dir,
+                                  latest_dir,
+                                  recursive=True)

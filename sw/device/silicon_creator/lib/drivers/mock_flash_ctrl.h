@@ -44,6 +44,7 @@ class MockFlashCtrl : public global_mock::GlobalMock<MockFlashCtrl> {
 }  // namespace internal
 
 using MockFlashCtrl = testing::StrictMock<internal::MockFlashCtrl>;
+using NiceMockFlashCtrl = testing::NiceMock<internal::MockFlashCtrl>;
 
 }  // namespace rom_test
 

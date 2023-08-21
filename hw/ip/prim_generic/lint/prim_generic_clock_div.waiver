@@ -1,0 +1,20 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for prim_generic_clock_div
+
+waive -rules CLOCK_EDGE -location {prim_generic_clock_div.sv} -msg {Falling edge of clock 'clk_i' used here, should use rising edge} \
+      -comment "The clock switch signal is synchronized on negative edge to ensure it is away from any transition"
+
+waive -rules DUAL_EDGE_CLOCK -location {prim_generic_clock_div.sv} -regexp {.*} \
+      -comment "The clock switch signal is synchronized on negative edge to ensure it is away from any transition"
+
+waive -rules CLOCK_MUX -location {prim_generic_clock_div.sv} -regexp {.*reaches a multiplexer here, used as a clock.*} \
+      -comment "A mux is used during scan bypass, and for switching between div by 2 and div by 1 clocks"
+
+waive -rules CLOCK_USE -location {prim_generic_clock_div.sv} -regexp {'clk_i' is connected to 'prim_clock_mux2' port 'clk1_i', and used as a clock} \
+      -comment "This clock mux usage is OK."
+
+waive -rules SAME_NAME_TYPE -location {prim_generic_clock_div.sv} -regexp {'ResetValue' is used as a parameter here, and as an enumeration value at} \
+      -comment "Reused parameter name."

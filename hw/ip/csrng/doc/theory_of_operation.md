@@ -401,7 +401,7 @@ The following waveform shows an example of how the entropy source hardware inter
    {name: 'es_ack'        , wave: '0...|.10.10...|....10.'},
    {name: 'es_bus[383:0]' , wave: '0...|.30.30...|....30.', data: ['es0','es1','es2']},
    {name: 'es_fips'       , wave: '0...|....10...|....10.'},
-]}
+ {},
 ]}
 ```
 

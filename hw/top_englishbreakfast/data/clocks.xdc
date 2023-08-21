@@ -15,11 +15,11 @@ set clks_aon_unbuf [get_clocks -of_objects [get_pin clkgen/pll/CLKOUT4]]
 ## destination flops few enough.
 
 set u_pll clkgen/pll
-set u_div2 top_*/u_clkmgr_aon/u_no_scan_io_div2_div
-create_generated_clock -name clk_io_div2 -source [get_pin ${u_pll}/CLKOUT0] -divide_by 2 [get_pin ${u_div2}/u_clk_div_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/O]
+set u_div2 top_*/u_clkmgr_aon/u_no_scan_io_div2_div/gen_generic.u_impl_generic
+create_generated_clock -name clk_io_div2 -source [get_pins ${u_pll}/CLKOUT0] -divide_by 2 [get_pin ${u_div2}/gen_div2.u_div2/gen_xilinx.u_impl_xilinx/q_o[0]]
 
-set u_div4 top_*/u_clkmgr_aon/u_no_scan_io_div4_div
-create_generated_clock -name clk_io_div4 -source [get_pin ${u_pll}/CLKOUT0] -divide_by 4 [get_pin ${u_div4}/u_clk_div_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/O]
+set u_div4 top_*/u_clkmgr_aon/u_no_scan_io_div4_div/gen_generic.u_impl_generic
+create_generated_clock -name clk_io_div4 -divide_by 4 -source [get_pins ${u_div4}/gen_div.clk_int_reg/C] [get_pins ${u_div4}/gen_div.clk_int_reg/Q]
 
 
 # the step-down mux is implemented with a LUT right now and the mux switches on the falling edge.
@@ -29,7 +29,7 @@ create_generated_clock -name clk_io_div4 -source [get_pin ${u_pll}/CLKOUT0] -div
 set_clock_sense -positive \
   [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_*/u_clkmgr_aon/u_no_scan_io_div2_div/u_clk_div_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.bufg_i/I] \
+      [get_pins top_*/u_clkmgr_aon/u_no_scan_io_div2_div/gen_generic.u_impl_generic/u_clk_div_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/I] \
     ] \
   ]
 

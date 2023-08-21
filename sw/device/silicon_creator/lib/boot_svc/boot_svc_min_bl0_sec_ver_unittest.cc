@@ -31,11 +31,13 @@ TEST_F(BootSvcMinBl0SecVerTest, ReqInit) {
 TEST_F(BootSvcMinBl0SecVerTest, ResInit) {
   boot_svc_min_bl0_sec_ver_res_t msg{};
   constexpr rom_error_t kStatus = kErrorOk;
+  constexpr uint32_t kMinBl0SecVersion = 0x12345678;
   EXPECT_CALL(boot_svc_header_,
               Finalize(kBootSvcMinBl0SecVerResType, sizeof(msg), &msg.header));
 
-  boot_svc_min_bl0_sec_ver_res_init(kStatus, &msg);
+  boot_svc_min_bl0_sec_ver_res_init(kMinBl0SecVersion, kStatus, &msg);
 
+  EXPECT_EQ(msg.min_bl0_sec_ver, kMinBl0SecVersion);
   EXPECT_EQ(msg.status, kStatus);
 }
 

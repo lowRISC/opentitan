@@ -11,14 +11,14 @@ py_library(
     name = "topgen",
     srcs = [
         "__init__.py",
-        "entropy_buffer_generator.py",
         "gen_top_docs.py",
-        "strong_random.py",
+        "secure_prng.py",
         "validate.py",
     ],
     deps = [
         ":merge",
         requirement("tabulate"),
+        requirement("pycryptodome"),
     ],
 )
 

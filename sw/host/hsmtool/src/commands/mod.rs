@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use atty::Stream;
 use cryptoki::session::Session;
+use is_terminal::IsTerminal;
 use serde::{Deserialize, Serialize};
 use serde_annotate::{Annotate, ColorProfile};
 use std::any::Any;
@@ -136,7 +136,7 @@ pub fn print_result(
         }
     };
 
-    let profile = if atty::is(Stream::Stdout) && color.unwrap_or(true) {
+    let profile = if std::io::stdout().is_terminal() && color.unwrap_or(true) {
         ColorProfile::basic()
     } else {
         ColorProfile::default()
@@ -153,7 +153,7 @@ pub fn print_result(
 
 pub fn print_command(format: Format, color: Option<bool>, command: &dyn Dispatch) -> Result<()> {
     let doc = serde_annotate::serialize(command)?;
-    let profile = if atty::is(Stream::Stdout) && color.unwrap_or(true) {
+    let profile = if std::io::stdout().is_terminal() && color.unwrap_or(true) {
         ColorProfile::basic()
     } else {
         ColorProfile::default()

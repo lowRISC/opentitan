@@ -111,6 +111,9 @@ static status_t check_internal_state(
 }
 
 status_t entropy_csrng_kat(void) {
+  // Check that the complex is initialized.
+  TRY(entropy_complex_check());
+
   TRY(entropy_csrng_uninstantiate());
 
   const entropy_seed_material_t kEntropyInput = {
@@ -137,8 +140,10 @@ status_t entropy_csrng_kat(void) {
   };
 
   uint32_t got[kExpectedOutputLen];
-  TRY(entropy_csrng_generate(/*seed_material=*/NULL, got, kExpectedOutputLen));
-  TRY(entropy_csrng_generate(/*seed_material=*/NULL, got, kExpectedOutputLen));
+  TRY(entropy_csrng_generate(/*seed_material=*/NULL, got, kExpectedOutputLen,
+                             /*fips_check=*/kHardenedBoolFalse));
+  TRY(entropy_csrng_generate(/*seed_material=*/NULL, got, kExpectedOutputLen,
+                             /*fips_check=*/kHardenedBoolFalse));
 
   const entropy_csrng_internal_state_t kExpectedStateGenerate = {
       .reseed_counter = 3,
@@ -151,13 +156,12 @@ status_t entropy_csrng_kat(void) {
   };
   TRY(check_internal_state(&kExpectedStateGenerate));
 
-  // TODO(#13342): csrng does not provide a linear output order. For example,
-  // note the test vector output word order: 12,13,14,15 8,9,10,11 4,5,6,7
-  // 0,1,2,3.
+  // Note that the word order here is reversed compared to the NIST test
+  // vectors.
   const uint32_t kExpectedOutput[kExpectedOutputLen] = {
-      0xe48bb8cb, 0x1012c84c, 0x5af8a7f1, 0xd1c07cd9, 0xdf82ab22, 0x771c619b,
-      0xd40fccb1, 0x87189e99, 0x510494b3, 0x64f7ac0c, 0x2581f391, 0x80b1dc2f,
-      0x793e01c5, 0x87b107ae, 0xdb17514c, 0xa43c41b7,
+      0xd1c07cd9, 0x5af8a7f1, 0x1012c84c, 0xe48bb8cb, 0x87189e99, 0xd40fccb1,
+      0x771c619b, 0xdf82ab22, 0x80b1dc2f, 0x2581f391, 0x64f7ac0c, 0x510494b3,
+      0xa43c41b7, 0xdb17514c, 0x87b107ae, 0x793e01c5,
   };
   if (!memcmp(got, kExpectedOutput, sizeof(kExpectedOutput))) {
     return OK_STATUS();

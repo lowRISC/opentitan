@@ -305,6 +305,9 @@ class flash_ctrl_hw_rma_vseq extends flash_ctrl_base_vseq;
     // Select a Random Data Partition Page
     page = $urandom_range(0, MaxNumPages-1);
 
+    // Small rma only stash 2 pages
+    if (cfg.en_small_rma) page = page % 2;
+
     // Assign Address based on Partition Selected, and fixed number of words
     unique case (part)
       FlashData0Part: addr = FlashData0StartAddr+(page*(FullPageNumWords*4)); // Base+Page Offset

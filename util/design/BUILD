@@ -55,3 +55,16 @@ py_binary(
         requirement("hjson"),
     ],
 )
+
+py_binary(
+    name = "sparse-fsm-encode",
+    srcs = ["sparse-fsm-encode.py"],
+    imports = ["."],
+    deps = ["//util/design/lib:common"],
+)
+
+py_test(
+    name = "sparse-fsm-encode-test",
+    srcs = ["sparse-fsm-encode-test.py"],
+    deps = [":sparse-fsm-encode"],
+)

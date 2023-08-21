@@ -16,7 +16,6 @@ path = "empty_file_to_appease_cargo.rs"
 aes = "0.8.2"
 anyhow = { version = "1.0.57", features=["backtrace"] }
 arrayvec = { version = "0.7", features=["serde"] }
-atty = "0.2"
 bitflags = { version = "2.1", features = ["serde"] }
 bitvec = "1.0.1"
 byteorder = "1.4.3"
@@ -33,11 +32,12 @@ hex = "0.4.3"
 humantime = "2.1.0"
 humantime-serde = "1.1"
 indicatif = "0.16.2"
+is-terminal = "0.4"
 log = "0.4"
 memoffset = "0.6.0"
 mio = { version = "0.7.0", features = ["os-poll", "net", "os-ext"] }
 mio-signals = "0.1.5" # mio-signals 0.2.0 exists, but requires mio 0.8.0
-nix = "0.17.0"
+nix = "0.26.1"
 num-bigint-dig = "0.8"
 num-traits = "0.2.14"
 num_enum = "0.5"
@@ -55,12 +55,13 @@ raw_tty = "0.1.0"
 regex = "1.7"
 rsa = "0.8"
 rusb = "0.8.1"
-serde = { version="1.0", features=["serde_derive"] }
-serde_derive = "1.0"
+# TODO(opentitan#19362) serde-derive 1.0.172 uses precompiled binary which
+# does not work well with Bazel.
+serde = { version="=1.0.171", features = ["derive"] }
 
 serde_bytes = "0.11"
 serde_json = "1.0.69"
-serialport = "4.2.0"
+serialport = "4.2.1"
 sha2 = { version = "0.10", features = ["oid"] }
 shellwords = "1.1.0"
 syn = "1.0"
