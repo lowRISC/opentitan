@@ -231,6 +231,163 @@
       }
     ]
     sys: [
+      { name: "extended_cap_header"
+        desc: ""
+        swaccess: "ro"
+        hwaccess: "hrw"
+        fields: [
+          { name: "cap_id"
+            desc: ""
+            bits: "15:0"
+            resval: "0x002E"
+          }
+          { name: "cap_version"
+            desc: ""
+            bits: "19:16"
+            resval: "0x2"
+
+          }
+          { name: "next_capaility_offset"
+            desc: ""
+            bits: "31:20"
+            resval: "0"
+          }
+        ]
+        hwext: "true"
+      }
+      { name: "cap_header"
+        desc: ""
+        swaccess: "ro"
+        hwaccess: "hrw"
+        fields: [
+          { name: "doe_intr_support"
+            desc: ""
+            bits: "0"
+          }
+          { name: "doe_intr_msg_nr"
+            desc: ""
+            bits: "11:1"
+            resval: "0x2"
+
+          }
+        ]
+      }
+      { name: "sys_control"
+        desc: "DOE mailbox control register."
+        hwext: "true"
+        hwaccess: "hrw"
+        hwqe: "true"
+
+        fields: [
+          { name: "abort"
+            desc: '''
+                  A write of 1 to this bit causes all data object transfer operations associated with this DOE instance to be aborted.
+                  '''
+            bits: "0"
+            resval: "0x0"
+            swaccess: "wo"
+          }
+          { name: "doe_intr_en"
+            desc: '''
+                  If DOE interrupt support is set, when this bit is set and MSI/MSI-X is enabled in MSI capability registers, the DOE instance must issue an MSI/MSI-X interrupt.
+                  '''
+            bits: "1"
+            resval: "0x0"
+            swaccess: "rw"
+          }
+          { name: "async_msg_en"
+            desc: '''
+                  If DOE Async Message Support is Set, this bit, when Set, enables the use of the DOE Async Message mechanism.
+                  '''
+            bits: "3"
+            resval: "0x0"
+            swaccess: "rw"
+
+          }
+          { name: "go"
+            desc: '''
+                  A write of 1 to this bit indicates to the DOE instance that it can start consuming the data object transferred through the DOE Write Data Mailbox register.
+                  '''
+            bits: "31"
+            resval: "0x0"
+            swaccess: "wo"
+          }
+        ]
+      }
+      { name: "sys_status"
+        desc: "DOE mailbox status register"
+        fields: [
+          { name: "busy"
+            desc: '''
+                  When Set, this bit indicates the DOE instance is temporarily unable to receive a new data object through the DOE Write Data Mailbox register.
+                  '''
+            bits: "0"
+            resval: "0x1"
+            swaccess: "ro"
+            hwaccess: "hrw"
+          }
+          { name: "doe_intr_status"
+            desc: "This bit is set when an interrupt event occurs."
+            bits: "1"
+            resval: "0x0"
+            swaccess: "rw1c"
+            hwaccess: "hrw"
+            hwqe: "true"
+          }
+          { name: "error"
+            desc: '''
+                  When Set, this bit indicates that there has been an internal error associated with data object received, or that a data object has been received for which the DOE instance is unable to provide a response.
+                  The transition of this bit from Clear to Set is an interrupt triggering event.
+                  '''
+            bits: "2"
+            resval: "0x0"
+            swaccess: "ro"
+            hwaccess: "hrw"
+          }
+          { name: "async_msg_status"
+            desc: '''
+                  When Set, this bit indicates the DOE instance has one or more asynchronous messages to transfer.
+                  The transition of this bit from Clear to Set is an interrupt triggering event.
+                  '''
+            bits: "3"
+            resval: "0x0"
+            swaccess: "ro"
+            hwaccess: "hrw"
+          }
+          { name: "ready"
+            desc: '''
+                  When Set, this bit indicates the DOE instance has a data object available to be read by system firmware/software.
+                  The transition of this bit from Clear to Set is an interrupt triggering event.
+                  '''
+          bits: "31"
+          resval: "0x0"
+          swaccess: "ro"
+          hwaccess: "hrw"
+          }
+        ]
+      }
+      { window: {
+          name: "wdata"
+          items: "1"
+          swaccess: "wo"
+          desc: '''DOE mailbox write data register.
+                The DOE instance receives data objects via writes to this register.
+                A successful write adds one DWORD to the data object being assembled in the DOE instance.
+                A write of 1 to the DOE Go bit in the DOE Control Register marks the completion of the data transfer, i.e, final DWORD for the object has been written.
+                '''
+        }
+      }
+      { window: {
+          name: "rdata"
+          desc: '''DOE mailbox read data register
+                If the Data Object Ready bit is Set, a read of this register returns the current DW of the data object.
+                A write of any value to this register indicates a successful read of the current DWORD.
+                The next read to this register shall return to the next DW from the data object being read
+                '''
+          items: "1"
+          swaccess: "rw"
+        }
+      }
     ]
   }
 }
