@@ -209,6 +209,7 @@ cc_library(
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/runtime:hart",
         "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib:boot_log",
         "//sw/device/silicon_creator/lib:manifest",
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib:rom_print",

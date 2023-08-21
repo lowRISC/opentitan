@@ -14,6 +14,7 @@
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
+#include "sw/device/silicon_creator/lib/boot_log.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_empty.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_header.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
@@ -359,12 +360,25 @@ static rom_error_t rom_ext_try_boot(void) {
     if (error != kErrorOk) {
       continue;
     }
+
+    boot_log_t *boot_log = &retention_sram_get()->creator.boot_log;
+    RETURN_IF_ERROR(boot_log_check(boot_log));
+    if (manifests.ordered[i] == rom_ext_boot_policy_manifest_a_get()) {
+      boot_log->bl0_slot = kBl0BootSlotA;
+    } else if (manifests.ordered[i] == rom_ext_boot_policy_manifest_b_get()) {
+      boot_log->bl0_slot = kBl0BootSlotB;
+    } else {
+      return kErrorRomExtBootFailed;
+    }
+    boot_log_digest_update(boot_log);
+
     // Boot fails if a verified ROM_EXT cannot be booted.
     RETURN_IF_ERROR(rom_ext_boot(manifests.ordered[i]));
     // `rom_ext_boot()` should never return `kErrorOk`, but if it does
     // we must shut down the chip instead of trying the next ROM_EXT.
     return kErrorRomExtBootFailed;
   }
+
   return error;
 }
 
