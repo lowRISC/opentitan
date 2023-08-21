@@ -207,8 +207,8 @@ module dma
     .rdata_intg_o   (                                  ),
     .err_o          ( dma_host_tlul_rsp_err            ),
     .intg_err_o     ( dma_host_tlul_rsp_intg_err       ),
-    .tl_o           ( tl_ctn_o                         ),
-    .tl_i           ( tl_ctn_i                         )
+    .tl_o           ( tl_host_o                        ),
+    .tl_i           ( tl_host_i                        )
   );
 
   // Adapter from the DMA to the ctn
@@ -232,8 +232,8 @@ module dma
     .rdata_intg_o   (                                  ),
     .err_o          ( dma_ctn_tlul_rsp_err             ),
     .intg_err_o     ( dma_ctn_tlul_rsp_intg_err        ),
-    .tl_o           ( tl_host_o                        ),
-    .tl_i           ( tl_host_i                        )
+    .tl_o           ( tl_ctn_o                         ),
+    .tl_i           ( tl_ctn_i                         )
   );
 
   logic [top_pkg::TL_AW-1:0]  plic_clear_addr;
