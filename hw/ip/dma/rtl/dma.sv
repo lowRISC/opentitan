@@ -151,7 +151,7 @@ module dma
 
   logic reg_intg_error;
   // SEC_CM: BUS.INTEGRITY
-  // SEC_CM: RANGE_UNLOCK.CONFIG.REGWEN
+  // SEC_CM: RANGE_UNLOCK.CONFIG.REGWEN_MUBI
   dma_reg_top u_dma_reg (
     .clk_i     ( clk_i          ),
     .rst_ni    ( rst_ni         ),
