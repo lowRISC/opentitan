@@ -377,6 +377,30 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
+    name = "p384_arithmetic_to_boolean_test",
+    srcs = [
+        "p384_arithmetic_to_boolean_test.s",
+    ],
+    exp = "p384_arithmetic_to_boolean_test.exp",
+    deps = [
+        "//sw/otbn/crypto:p384_a2b",
+        "//sw/otbn/crypto:p384_base",
+    ],
+)
+
+otbn_sim_test(
+    name = "p384_arithmetic_to_boolean_mod_test",
+    srcs = [
+        "p384_arithmetic_to_boolean_mod_test.s",
+    ],
+    exp = "p384_arithmetic_to_boolean_mod_test.exp",
+    deps = [
+        "//sw/otbn/crypto:p384_a2b",
+        "//sw/otbn/crypto:p384_base",
+    ],
+)
+
+otbn_sim_test(
     name = "p384_ecdsa_sign_test",
     srcs = [
         "p384_ecdsa_sign_test.s",
