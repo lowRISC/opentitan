@@ -479,6 +479,7 @@ cc_library(
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
+        "//sw/device/silicon_creator/lib:boot_log",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
     ],

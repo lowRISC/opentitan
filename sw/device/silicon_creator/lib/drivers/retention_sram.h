@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/silicon_creator/lib/boot_log.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
@@ -31,6 +32,14 @@ typedef struct retention_sram_creator {
    * communicate with each other.
    */
   boot_svc_msg_t boot_svc_msg;
+
+  /**
+   * Boot log area.
+   *
+   * This buffer tracks information about the boot process.
+   */
+  boot_log_t boot_log;
+
   /**
    * Shutdown reason.
    *
@@ -48,7 +57,7 @@ typedef struct retention_sram_creator {
    * future use.
    */
   uint32_t reserved[(2044 - sizeof(uint32_t) - sizeof(boot_svc_msg_t) -
-                     sizeof(rom_error_t)) /
+                     sizeof(rom_error_t) - sizeof(boot_log_t)) /
                     sizeof(uint32_t)];
 } retention_sram_creator_t;
 OT_ASSERT_SIZE(retention_sram_creator_t, 2044);
