@@ -234,10 +234,6 @@ C_ONLY(UJSON_SERDE_ENUM(PinmuxMioOut, pinmux_mio_out_t, TOP_DARJEELING_PINMUX_MI
     value(_, Uart1Tx, kTopDarjeelingPinmuxOutselUart1Tx) \
     value(_, Uart2Tx, kTopDarjeelingPinmuxOutselUart2Tx) \
     value(_, Uart3Tx, kTopDarjeelingPinmuxOutselUart3Tx) \
-    value(_, PattgenPda0Tx, kTopDarjeelingPinmuxOutselPattgenPda0Tx) \
-    value(_, PattgenPcl0Tx, kTopDarjeelingPinmuxOutselPattgenPcl0Tx) \
-    value(_, PattgenPda1Tx, kTopDarjeelingPinmuxOutselPattgenPda1Tx) \
-    value(_, PattgenPcl1Tx, kTopDarjeelingPinmuxOutselPattgenPcl1Tx) \
     value(_, SpiHost1Sck, kTopDarjeelingPinmuxOutselSpiHost1Sck) \
     value(_, SpiHost1Csb, kTopDarjeelingPinmuxOutselSpiHost1Csb) \
     value(_, FlashCtrlTdo, kTopDarjeelingPinmuxOutselFlashCtrlTdo) \

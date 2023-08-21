@@ -224,7 +224,6 @@ static const char *kmac_inst_name = "kmac";
 static const char *lc_ctrl_inst_name = "lc_ctrl";
 static const char *otbn_inst_name = "otbn";
 static const char *otp_ctrl_inst_name = "otp_ctrl";
-static const char *pattgen_inst_name = "pattgen";
 static const char *pinmux_inst_name = "pinmux";
 static const char *pwm_inst_name = "pwm";
 static const char *pwrmgr_inst_name = "pwrmgr";
@@ -954,10 +953,6 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
     case kTopDarjeelingAlertIdOtpCtrlFatalBusIntegError: {
       fault_checker_t fc = {otp_ctrl_fault_checker, otp_ctrl_inst_name,
                             we_check};
-      fault_checker = fc;
-    } break;
-    case kTopDarjeelingAlertIdPattgenFatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, pattgen_inst_name, we_check};
       fault_checker = fc;
     } break;
     case kTopDarjeelingAlertIdPinmuxAonFatalFault: {
