@@ -128,6 +128,13 @@ otbn_library(
 )
 
 otbn_library(
+    name = "p384_a2b",
+    srcs = [
+        "p384_a2b.s",
+    ],
+)
+
+otbn_library(
     name = "p384_sign",
     srcs = [
         "p384_sign.s",
