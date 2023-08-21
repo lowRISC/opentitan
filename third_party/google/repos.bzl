@@ -30,9 +30,9 @@ def google_repos(
     http_archive_or_local(
         name = "com_google_absl",
         local = absl,
-        sha256 = "1da554cf5670fc119ef5afbeb31d10d51e7554df9dced2967663e679b8d852ed",
-        strip_prefix = "abseil-cpp-e854df09dfcb35056c1d42420028648ee0ebebaf",
-        url = "https://github.com/abseil/abseil-cpp/archive/e854df09dfcb35056c1d42420028648ee0ebebaf.tar.gz",
+        sha256 = "59d2976af9d6ecf001a81a35749a6e551a335b949d34918cfade07737b9d93c5",
+        strip_prefix = "abseil-cpp-20230802.0",
+        url = "https://github.com/abseil/abseil-cpp/archive/refs/tags/20230802.0.tar.gz",
     )
 
     http_archive_or_local(
