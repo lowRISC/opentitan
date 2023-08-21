@@ -1458,8 +1458,8 @@ mod_inv_var:
  * Sets up context and calls internal scalar multiplication routine.
  * This routine runs in constant time.
  *
- * @param[in]      dmem[k0]:  first share of scalar k (256 bits)
- * @param[in]      dmem[k1]:  second share of scalar k (256 bits)
+ * @param[in]      dmem[k0]:  first share of scalar k (320 bits)
+ * @param[in]      dmem[k1]:  second share of scalar k (320 bits)
  * @param[in]      dmem[x]:   affine x-coordinate in dmem
  * @param[in]      dmem[y]:   affine y-coordinate in dmem
  * @param[out]     dmem[x]:   affine arithmetically masked x-coordinate in dmem
