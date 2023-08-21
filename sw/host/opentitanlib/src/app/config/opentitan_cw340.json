@@ -6,31 +6,37 @@
       "name": "RESET",
       "mode": "PushPull",
       "alias_of": "PC30",
-      "pull_mode": "None"
+      "pull_mode": "None",
+      "level": false
     },
     {
-      "name": "IOC0",
-      "alias_of": "PC23"
+      "name": "SW_STRAP0",
+      "alias_of": "PC23",
+      "level": false
     },
     {
-      "name": "IOC1",
-      "alias_of": "PC22"
+      "name": "SW_STRAP1",
+      "alias_of": "PC22",
+      "level": false
     },
     {
-      "name": "IOC2",
-      "alias_of": "PC21"
+      "name": "SW_STRAP2",
+      "alias_of": "PC21",
+      "level": false
     },
     {
       "name": "TAP_STRAP0",
       "mode": "PushPull",
       "pull_mode": "None",
-      "alias_of": "PB13"
+      "alias_of": "PB13",
+      "level": false
     },
     {
       "name": "TAP_STRAP1",
       "mode": "PushPull",
       "pull_mode": "None",
-      "alias_of": "PB12"
+      "alias_of": "PB12",
+      "level": true
     }
   ],
   "spi": [
