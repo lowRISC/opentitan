@@ -92,6 +92,10 @@ OT_ASSERT_SIZE(retention_sram_t, 4096);
 
 enum {
   /**
+   * Base address of retention SRAM storage area.
+   */
+  kRetentionSramBase = 0x40600000,
+  /**
    * Engineering sample version.
    */
   kRetentionSramVersion1 = 0x72f4eb2e,
@@ -107,7 +111,9 @@ enum {
  * @return A pointer to the retention SRAM.
  */
 OT_WARN_UNUSED_RESULT
-retention_sram_t *retention_sram_get(void);
+inline retention_sram_t *retention_sram_get(void) {
+  return (retention_sram_t *)kRetentionSramBase;
+}
 
 /**
  * Clear the retention SRAM by setting every word to 0.
