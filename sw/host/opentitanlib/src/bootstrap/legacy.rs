@@ -268,7 +268,7 @@ impl UpdateProtocol for Legacy {
             std::thread::sleep(self.inter_frame_delay);
 
             // Write the frame and read back the ack of a previously transmitted frame.
-            progress.progress(frame.header.flash_offset as usize);
+            progress.progress(frame.header.flash_offset as usize - Frame::FLASH_BASE_ADDRESS);
             let mut response = [0u8; std::mem::size_of::<Frame>()];
             spi.run_transaction(&mut [Transfer::Both(frame.as_bytes(), &mut response)])?;
 
