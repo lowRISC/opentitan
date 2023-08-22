@@ -16,7 +16,6 @@
 #include "sw/lib/sw/device/base/memory.h"
 
 #include "flash_ctrl_regs.h"
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"
 
 static_assert(kBootDataEntriesPerPage ==

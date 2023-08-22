@@ -10,6 +10,14 @@
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
+#include "sw/ip/flash_ctrl/driver/flash_ctrl.h"
+#include "sw/ip/keymgr/driver/keymgr.h"
+#include "sw/ip/lc_ctrl/driver/lc_ctrl.h"
+#include "sw/ip/otp_ctrl/driver/otp_ctrl.h"
+#include "sw/ip/rstmgr/driver/rstmgr.h"
+#include "sw/ip/rv_core_ibex/driver/rv_core_ibex.h"
+#include "sw/ip/sram_ctrl/driver/sram_ctrl.h"
+#include "sw/ip/uart/driver/uart.h"
 #include "sw/lib/sw/device/silicon_creator/epmp_defs.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"
@@ -23,7 +31,6 @@
 
 #include "alert_handler_regs.h"
 #include "flash_ctrl_regs.h"
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "keymgr_regs.h"
 #include "lc_ctrl_regs.h"
 #include "otp_ctrl_regs.h"
@@ -288,7 +295,7 @@ static shutdown_error_redact_t shutdown_redact_policy_inline(
     case LC_CTRL_LC_STATE_STATE_VALUE_PROD_END:
       // In production states use the redaction level specified in OTP.
       return (shutdown_error_redact_t)abs_mmio_read32(
-          TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR +
+          kOtpCtrlCoreBaseAddr[0] +
           OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
           OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ERROR_REPORTING_OFFSET);
     default:
@@ -304,7 +311,7 @@ shutdown_error_redact_t shutdown_redact_policy(void) {
   // Note that we cannot use the lifecycle or OTP libraries since an error
   // may trigger a call to `shutdown_finalize`.
   uint32_t raw_state =
-      bitfield_field32_read(abs_mmio_read32(TOP_DARJEELING_LC_CTRL_BASE_ADDR +
+      bitfield_field32_read(abs_mmio_read32(kLcCtrlBaseAddr[0] +
                                             LC_CTRL_LC_STATE_REG_OFFSET),
                             LC_CTRL_LC_STATE_STATE_FIELD);
   return shutdown_redact_policy_inline(raw_state);
@@ -323,10 +330,6 @@ enum {
    */
   kErrorMsgLen = kHexStrLen + 6,
   /**
-   * Base address of UART.
-   */
-  kUartBase = TOP_DARJEELING_UART0_BASE_ADDR,
-  /**
    * UART TX FIFO size.
    */
   kUartFifoSize = 128,
@@ -344,10 +347,10 @@ enum {
 OT_ALWAYS_INLINE
 static void shutdown_print(shutdown_log_prefix_t prefix, uint32_t val) {
   // Print the 4 character `prefix`.
-  abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET, prefix);
-  abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET, prefix >> 8);
-  abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET, prefix >> 16);
-  abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET, prefix >> 24);
+  abs_mmio_write32(kUartBaseAddr[0] + UART_WDATA_REG_OFFSET, prefix);
+  abs_mmio_write32(kUartBaseAddr[0] + UART_WDATA_REG_OFFSET, prefix >> 8);
+  abs_mmio_write32(kUartBaseAddr[0] + UART_WDATA_REG_OFFSET, prefix >> 16);
+  abs_mmio_write32(kUartBaseAddr[0] + UART_WDATA_REG_OFFSET, prefix >> 24);
 
   // Print the hex representation of `val`.
   const char kHexTable[16] = "0123456789abcdef";
@@ -356,16 +359,16 @@ static void shutdown_print(shutdown_log_prefix_t prefix, uint32_t val) {
   for (size_t i = 0; i < launder32(kHexStrLen); ++i) {
     uint8_t nibble = (uint8_t)bitfield_field32_read(
         val, (bitfield_field32_t){.mask = 0xf, .index = (7 - i) * 4});
-    abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET, kHexTable[nibble]);
+    abs_mmio_write32(kUartBaseAddr[0] + UART_WDATA_REG_OFFSET, kHexTable[nibble]);
   }
 
-  abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET, '\r');
-  abs_mmio_write32(kUartBase + UART_WDATA_REG_OFFSET, '\n');
+  abs_mmio_write32(kUartBaseAddr[0] + UART_WDATA_REG_OFFSET, '\r');
+  abs_mmio_write32(kUartBaseAddr[0] + UART_WDATA_REG_OFFSET, '\n');
 }
 
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_report_error(rom_error_t reason)) {
   uint32_t raw_state =
-      bitfield_field32_read(abs_mmio_read32(TOP_DARJEELING_LC_CTRL_BASE_ADDR +
+      bitfield_field32_read(abs_mmio_read32(kLcCtrlBaseAddr[0] +
                                             LC_CTRL_LC_STATE_REG_OFFSET),
                             LC_CTRL_LC_STATE_STATE_FIELD);
 
@@ -378,11 +381,12 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_report_error(rom_error_t reason)) {
   uint32_t redacted_error = shutdown_redact_inline(reason, policy);
 
   // Reset UART TX fifo and enable TX.
-  abs_mmio_write32(kUartBase + UART_FIFO_CTRL_REG_OFFSET,
+  abs_mmio_write32(kUartBaseAddr[0] + UART_FIFO_CTRL_REG_OFFSET,
                    bitfield_bit32_write(0, UART_FIFO_CTRL_TXRST_BIT, true));
-  uint32_t uart_ctrl_reg = abs_mmio_read32(kUartBase + UART_CTRL_REG_OFFSET);
+  uint32_t uart_ctrl_reg = abs_mmio_read32(kUartBaseAddr[0] +
+                                           UART_CTRL_REG_OFFSET);
   uart_ctrl_reg = bitfield_bit32_write(uart_ctrl_reg, UART_CTRL_TX_BIT, true);
-  abs_mmio_write32(kUartBase + UART_CTRL_REG_OFFSET, uart_ctrl_reg);
+  abs_mmio_write32(kUartBaseAddr[0] + UART_CTRL_REG_OFFSET, uart_ctrl_reg);
 
   // Print the error message and the raw life cycle state as reported by the
   // hardware.
@@ -400,7 +404,8 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_report_error(rom_error_t reason)) {
   bool tx_idle;
   do {
     tx_idle =
-        bitfield_bit32_read(abs_mmio_read32(kUartBase + UART_STATUS_REG_OFFSET),
+        bitfield_bit32_read(abs_mmio_read32(kUartBaseAddr[0] +
+                                            UART_STATUS_REG_OFFSET),
                             UART_STATUS_TXIDLE_BIT);
     CSR_READ(CSR_REG_MCYCLE, &mcycle);
   } while (mcycle < kUartTxFifoCpuCycles && !tx_idle);
@@ -408,51 +413,44 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_report_error(rom_error_t reason)) {
 }
 
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_software_escalate(void)) {
-  enum { kBase = TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR };
   //  Setting rv_core_ibex.SW_FATAL_ERR (rw0c) to any value other than
   // `kMultiBitBool4False` will continuously cause alert events.
-  abs_mmio_write32(kBase + RV_CORE_IBEX_SW_FATAL_ERR_REG_OFFSET, 0);
+  abs_mmio_write32(kRvCoreIbexCfgBaseAddr[0] +
+                   RV_CORE_IBEX_SW_FATAL_ERR_REG_OFFSET, 0);
 }
 
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_keymgr_kill(void)) {
-  enum {
-    kBase = TOP_DARJEELING_KEYMGR_BASE_ADDR,
-  };
   uint32_t reg =
       bitfield_field32_write(0, KEYMGR_CONTROL_SHADOWED_DEST_SEL_FIELD,
                              KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE);
   reg = bitfield_field32_write(reg, KEYMGR_CONTROL_SHADOWED_OPERATION_FIELD,
                                KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_DISABLE);
-  abs_mmio_write32_shadowed(kBase + KEYMGR_CONTROL_SHADOWED_REG_OFFSET, reg);
+  abs_mmio_write32_shadowed(kKeymgrBaseAddr[0] +
+                            KEYMGR_CONTROL_SHADOWED_REG_OFFSET, reg);
 
-  abs_mmio_write32(kBase + KEYMGR_START_REG_OFFSET, 1);
-  abs_mmio_write32(kBase + KEYMGR_SIDELOAD_CLEAR_REG_OFFSET, 1);
+  abs_mmio_write32(kKeymgrBaseAddr[0] + KEYMGR_START_REG_OFFSET, 1);
+  abs_mmio_write32(kKeymgrBaseAddr[0] + KEYMGR_SIDELOAD_CLEAR_REG_OFFSET, 1);
 }
 
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_reset(void)) {
-  enum { kBase = TOP_DARJEELING_RSTMGR_AON_BASE_ADDR };
-  abs_mmio_write32(kBase + RSTMGR_RESET_REQ_REG_OFFSET, kMultiBitBool4True);
+  abs_mmio_write32(kRstmgrAonBaseAddr[0] + RSTMGR_RESET_REQ_REG_OFFSET,
+                   kMultiBitBool4True);
 }
 
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_flash_kill(void)) {
-  enum { kBase = TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR };
   // Setting DIS (rw0c) to a value other than 5 will disable flash permanently.
-  abs_mmio_write32(kBase + FLASH_CTRL_DIS_REG_OFFSET, 0);
+  abs_mmio_write32(kFlashCtrlCoreBaseAddr[0] + FLASH_CTRL_DIS_REG_OFFSET, 0);
 }
 
 SHUTDOWN_FUNC(noreturn, shutdown_hang(void)) {
-  enum {
-    kSramCtrlBase = TOP_DARJEELING_SRAM_CTRL_MAIN_REGS_BASE_ADDR,
-    kRstmgrBase = TOP_DARJEELING_RSTMGR_AON_BASE_ADDR,
-  };
-
   // Disable SRAM execution and lock the register.
   // Note: In addition to this register, which is disabled by default at reset,
   // SRAM execution is gated by the lifecycle state
   // (SRAM_CTRL.INSTR.BUS.LC_GATED) and EN_SRAM_IFETCH item in the HW_CFG1 OTP
   // partition.
-  abs_mmio_write32(kSramCtrlBase + SRAM_CTRL_EXEC_EN_OFFSET, 0);
-  abs_mmio_write32(kSramCtrlBase + SRAM_CTRL_EXEC_REGWEN_REG_OFFSET, 0);
+  abs_mmio_write32(kSramCtrlMainRegsBaseAddr[0] + SRAM_CTRL_EXEC_EN_OFFSET, 0);
+  abs_mmio_write32(kSramCtrlMainRegsBaseAddr[0] +
+                   SRAM_CTRL_EXEC_REGWEN_REG_OFFSET, 0);
 
   // Switch to assembly as RAM (incl. stack) is about to get scrambled.
 #ifdef OT_PLATFORM_RV32
@@ -489,10 +487,10 @@ SHUTDOWN_FUNC(noreturn, shutdown_hang(void)) {
       :
       : [kSramRenewKey] "r"(1 << SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT),
         [kSramCtrlCtrlReg] "I"(SRAM_CTRL_CTRL_REG_OFFSET),
-        [kSramCtrlBase] "r"(kSramCtrlBase),
+        [kSramCtrlBase] "r"(kSramCtrlMainRegsBaseAddr[0]),
         [kMultiBitBool4True] "r"(kMultiBitBool4True),
         [kRstmgrResetReqReg] "I"(RSTMGR_RESET_REQ_REG_OFFSET),
-        [kRstmgrBase] "r"(kRstmgrBase),
+        [kRstmgrBase] "r"(kRstmgrAonBaseAddr[0]),
         [kNapotEntireAddressSpace] "r"(0x7fffffff),
         [kPmpCfg0] "r"((EPMP_CFG_A_TOR | EPMP_CFG_LRX) << 8 |
                        (EPMP_CFG_A_NAPOT | EPMP_CFG_L) << 16),

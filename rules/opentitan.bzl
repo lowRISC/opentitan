@@ -41,7 +41,7 @@ _targets_compatible_with = {
 PER_DEVICE_DEPS = {
     "sim_verilator": ["@//sw/top_darjeeling/sw/device/arch:sim_verilator"],
     "sim_dv": ["@//sw/top_darjeeling/sw/device/arch:sim_dv"],
-    "fpga_cw305": ["@//sw/top_earlgrey/sw/device/arch:fpga_cw305"],
+    "fpga_cw305": ["@//sw/top_darjeeling/sw/device/arch:fpga_cw305"],
     "fpga_cw310": ["@//sw/top_darjeeling/sw/device/arch:fpga_cw310"],
 }
 

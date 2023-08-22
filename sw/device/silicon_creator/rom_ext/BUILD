@@ -40,7 +40,7 @@ dual_cc_library(
         ],
         shared = [
             "//sw/lib/sw/device/silicon_creator/base:chip",
-            "//sw/lib/sw/device/silicon_creator:manifest",
+            "//sw/top_darjeeling/sw/device/silicon_creator:manifest",
             "//sw/lib/sw/device/base:macros",
             "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         ],
@@ -57,7 +57,7 @@ cc_library(
         "//sw/lib/sw/device/base:bitfield",
         "//sw/lib/sw/device/base:csr",
         "//sw/lib/sw/device/silicon_creator:error",
-        "//sw/lib/sw/device/silicon_creator:manifest",
+        "//sw/top_darjeeling/sw/device/silicon_creator:manifest",
     ],
 )
 
@@ -147,10 +147,10 @@ cc_library(
         ":rom_ext_boot_policy",
         ":rom_ext_epmp",
         ":sigverify_keys",
-        "//sw/lib/sw/device/silicon_creator:manifest",
-        "//sw/lib/sw/device/silicon_creator:manifest_def",
+        "//sw/top_darjeeling/sw/device/silicon_creator:manifest",
+        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
         "//sw/lib/sw/device/silicon_creator:rom_print",
-        "//sw/lib/sw/device/silicon_creator:shutdown",
+        "//sw/top_darjeeling/sw/device/silicon_creator:shutdown",
         "//sw/lib/sw/device/silicon_creator/base:chip",
         "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
         "//sw/lib/sw/device/silicon_creator/base:static_critical",
@@ -191,7 +191,7 @@ opentitan_flash_binary(
     deps = [
         ":ld_slot_a",
         ":rom_ext",
-        "//sw/lib/sw/device/silicon_creator:manifest_def",
+        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
         "//sw/lib/sw/device/crt",
     ],
 )
@@ -203,7 +203,7 @@ opentitan_flash_binary(
     deps = [
         ":ld_slot_b",
         ":rom_ext",
-        "//sw/lib/sw/device/silicon_creator:manifest_def",
+        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
         "//sw/lib/sw/device/crt",
     ],
 )
@@ -215,7 +215,7 @@ opentitan_flash_binary(
     deps = [
         ":ld_slot_virtual",
         ":rom_ext",
-        "//sw/lib/sw/device/silicon_creator:manifest_def",
+        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
         "//sw/lib/sw/device/crt",
     ],
 )
@@ -233,7 +233,7 @@ opentitan_flash_binary(
     deps = [
         ":ld_slot_a",
         ":rom_ext",
-        "//sw/lib/sw/device/silicon_creator:manifest_def",
+        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
         "//sw/lib/sw/device/crt",
     ],
 )

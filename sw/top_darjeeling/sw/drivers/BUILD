@@ -158,18 +158,15 @@ cc_library(
     ],
 )
 
-#cc_library(
-#    name = "lc_ctrl_testutils",
-#    srcs = ["//sw/ip/lc_ctrl/test/utils:lc_ctrl_testutils.c"],
-#    hdrs = ["//sw/ip/lc_ctrl/test/utils:lc_ctrl_testutils.h"],
-#    target_compatible_with = [OPENTITAN_CPU],
-#    deps = [
-#        "//sw/lib/sw/device/runtime:log",
-#        "//sw/device/lib/testing/test_framework:check",
-#        "//sw/top_darjeeling/sw/dif:lc_ctrl",
-#    ],
-#)
-#
+cc_library(
+    name = "lc_ctrl",
+    hdrs = ["//sw/ip/lc_ctrl/driver:lc_ctrl.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/lib/sw/device/base:mmio",
+    ],
+)
+
 #cc_library(
 #    name = "otbn_testutils",
 #    srcs = ["//sw/ip/otbn/test/utils:otbn_testutils.c"],
@@ -192,22 +189,15 @@ cc_library(
     ],
 )
 
-#cc_library(
-#    name = "pinmux_testutils",
-#    srcs = ["//sw/ip/pinmux/test/utils:pinmux_testutils.c"],
-#    hdrs = ["//sw/ip/pinmux/test/utils:pinmux_testutils.h"],
-#    target_compatible_with = [OPENTITAN_CPU],
-#    deps = [
-#        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-#        "//sw/lib/sw/device/arch:device",
-#        "//sw/lib/sw/device/runtime:hart",
-#        "//sw/device/lib/testing/test_framework:check",
-#        "//sw/ip/base/dif:base",
-#        "//sw/top_darjeeling/sw/dif:gpio",
-#        "//sw/top_darjeeling/sw/dif:pinmux",
-#    ],
-#)
-#
+cc_library(
+    name = "pinmux",
+    hdrs = ["//sw/ip/pinmux/driver:pinmux.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/lib/sw/device/base:mmio",
+    ],
+)
+
 #cc_library(
 #    name = "pwrmgr_testutils",
 #    srcs = ["//sw/ip/pwrmgr/test/utils:pwrmgr_testutils.c"],
@@ -244,18 +234,15 @@ cc_library(
     ],
 )
 
-#cc_library(
-#    name = "rv_core_ibex_testutils",
-#    srcs = ["//sw/ip/rv_core_ibex/test/utils:rv_core_ibex_testutils.c"],
-#    hdrs = ["//sw/ip/rv_core_ibex/test/utils:rv_core_ibex_testutils.h"],
-#    target_compatible_with = [OPENTITAN_CPU],
-#    deps = [
-#        "//sw/lib/sw/device/runtime:ibex",
-#        "//sw/device/lib/testing/test_framework:check",
-#        "//sw/top_darjeeling/sw/dif:rv_core_ibex",
-#    ],
-#)
-#
+cc_library(
+    name = "rv_core_ibex",
+    hdrs = ["//sw/ip/rv_core_ibex/driver:rv_core_ibex.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/lib/sw/device/base:mmio",
+    ],
+)
+
 #cc_library(
 #    name = "rv_plic_testutils",
 #    srcs = ["//sw/ip/rv_plic/test/utils:rv_plic_testutils.c"],
@@ -281,21 +268,16 @@ cc_library(
 #        "//sw/top_darjeeling/sw/dif:sensor_ctrl",
 #    ],
 #)
-#
-#cc_library(
-#    name = "sram_ctrl_testutils",
-#    srcs = ["//sw/ip/sram_ctrl/test/utils:sram_ctrl_testutils.c"],
-#    hdrs = ["//sw/ip/sram_ctrl/test/utils:sram_ctrl_testutils.h"],
-#    target_compatible_with = [OPENTITAN_CPU],
-#    deps = [
-#        "//sw/lib/sw/device/base:mmio",
-#        "//sw/lib/sw/device/runtime:ibex",
-#        "//sw/lib/sw/device/runtime:log",
-#        "//sw/device/lib/testing/test_framework:check",
-#        "//sw/top_darjeeling/sw/dif:sram_ctrl",
-#    ],
-#)
-#
+
+cc_library(
+    name = "sram_ctrl",
+    hdrs = ["//sw/ip/sram_ctrl/driver:sram_ctrl.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/lib/sw/device/base:mmio",
+    ],
+)
+
 #cc_library(
 #    name = "spi_device_testutils",
 #    srcs = ["//sw/ip/spi_device/test/utils:spi_device_testutils.c"],
@@ -322,10 +304,17 @@ cc_library(
 #)
 
 cc_library(
-    name = "usbdev",
-    hdrs = [
-        "//sw/ip/usbdev/driver:usbdev.h",
+    name = "uart",
+    hdrs = ["//sw/ip/uart/driver:uart.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/lib/sw/device/base:mmio",
     ],
+)
+
+cc_library(
+    name = "usbdev",
+    hdrs = ["//sw/ip/usbdev/driver:usbdev.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//sw/lib/sw/device/base:mmio",

@@ -29,7 +29,7 @@ extern "C" {
  */
 
 /**
- * Peripheral base address for kmac.
+ * Peripheral base address for kmac in top chip.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).

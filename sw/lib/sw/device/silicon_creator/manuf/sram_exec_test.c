@@ -7,14 +7,16 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
+#include "sw/ip/otp_ctrl/driver/otp_ctrl.h"
 #include "sw/ip/otp_ctrl/test/utils/otp_ctrl_testutils.h"
+#include "sw/ip/pinmux/driver/pinmux.h"
 #include "sw/ip/pinmux/test/utils/pinmux_testutils.h"
 #include "sw/ip/uart/dif/dif_uart.h"
+#include "sw/ip/uart/driver/uart.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/runtime/print.h"
 
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"  // Generated.
 
 enum {
@@ -41,11 +43,9 @@ static const uint32_t kTestDeviceId[kDeviceIdSizeIn32BitWords] = {
  */
 static status_t peripheral_handles_init(void) {
   TRY(dif_pinmux_init(
-      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
-  TRY(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR), &otp));
-  TRY(dif_uart_init(mmio_region_from_addr(TOP_DARJEELING_UART0_BASE_ADDR),
-                    &uart0));
+      mmio_region_from_addr(kPinmuxAonBaseAddr[0]), &pinmux));
+  TRY(dif_otp_ctrl_init( mmio_region_from_addr(kOtpCtrlCoreBaseAddr[0]), &otp));
+  TRY(dif_uart_init(mmio_region_from_addr(kUartBaseAddr[0]), &uart0));
   return OK_STATUS();
 }
 

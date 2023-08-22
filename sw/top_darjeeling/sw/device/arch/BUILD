@@ -15,8 +15,13 @@ cc_library(
         "//sw/top_darjeeling/sw/drivers:flash_ctrl",
         "//sw/top_darjeeling/sw/drivers:keymgr",
         "//sw/top_darjeeling/sw/drivers:kmac",
+        "//sw/top_darjeeling/sw/drivers:lc_ctrl",
         "//sw/top_darjeeling/sw/drivers:otp_ctrl",
+        "//sw/top_darjeeling/sw/drivers:pinmux",
         "//sw/top_darjeeling/sw/drivers:rstmgr",
+        "//sw/top_darjeeling/sw/drivers:rv_core_ibex",
+        "//sw/top_darjeeling/sw/drivers:sram_ctrl",
+        "//sw/top_darjeeling/sw/drivers:uart",
         "//sw/top_darjeeling/sw/drivers:usbdev",
     ],
 )

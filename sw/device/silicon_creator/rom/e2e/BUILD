@@ -3,11 +3,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
+    "//rules:const-darjeeling.bzl",
+    "DARJEELING_OPENTITANTOOL_OPENOCD_DATA_DEPS",
+    "DARJEELING_OPENTITANTOOL_OPENOCD_TEST_CMDS",
+)
+load(
     "//rules:opentitan_test.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
     "DEFAULT_TEST_SUCCESS_MSG",
-    "OPENTITANTOOL_OPENOCD_DATA_DEPS",
-    "OPENTITANTOOL_OPENOCD_TEST_CMDS",
     "cw310_params",
     "dv_params",
     "opentitan_functest",
@@ -206,7 +209,7 @@ opentitan_functest(
     ),
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/lib/sw/device/silicon_creator:manifest_def",
+        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
         "//sw/lib/sw/device/silicon_creator/base:static_critical",
         "//sw/top_darjeeling/sw/device/runtime:print",
     ],
@@ -376,7 +379,7 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib/drivers:uart",
         "//sw/lib/sw/device/runtime:hart",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/lib/sw/device/silicon_creator:manifest_def",
+        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
         "//sw/lib/sw/device/silicon_creator/base:static_critical",
         "//sw/top_darjeeling/sw/device/runtime:print",
     ],
@@ -509,9 +512,9 @@ opentitan_functest(
             "--clear-bitstream",
             "--bitstream=\"$(rootpath {bitstream})\"",
             "--bootstrap=\"$(rootpath {flash})\"",
-        ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
+        ] + DARJEELING_OPENTITANTOOL_OPENOCD_TEST_CMDS,
     ),
-    data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
+    data = DARJEELING_OPENTITANTOOL_OPENOCD_DATA_DEPS,
     key_struct = get_key_structs_for_lc_state(
         CONST.LCV.PROD,
         spx = None,
@@ -2294,11 +2297,11 @@ test_suite(
                 "--vmem=\"$(rootpath //sw/device/examples/sram_program:sram_program_fpga_cw310_vmem)\"",
                 # the following values come from the sram linker script
                 "--load-addr=0x10001fc4",
-            ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
+            ] + DARJEELING_OPENTITANTOOL_OPENOCD_TEST_CMDS,
         ),
         data = [
             "//sw/device/examples/sram_program:sram_program_fpga_cw310_vmem",
-        ] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
+        ] + DARJEELING_OPENTITANTOOL_OPENOCD_DATA_DEPS,
         targets = ["cw310_rom_with_fake_keys"],
         test_harness = "//sw/host/tests/chip/jtag:sram_load",
         deps = [
@@ -3567,10 +3570,10 @@ opentitan_flash_binary(
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/silicon_creator:boot_data",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        "//sw/top_darjeeling/sw/device/silicon_creator:boot_data",
         "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
@@ -3740,10 +3743,10 @@ otp_json(
         deps = [
             "//sw/device/lib/testing/test_framework:check",
             "//sw/device/lib/testing/test_framework:ottf_main",
-            "//sw/lib/sw/device/silicon_creator:boot_data",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:rstmgr",
             "//sw/top_darjeeling/sw/device/runtime:print",
+            "//sw/top_darjeeling/sw/device/silicon_creator:boot_data",
             "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
             "//sw/top_darjeeling/sw/test/utils:nv_counter_testutils",
         ],
@@ -3987,7 +3990,7 @@ opentitan_flash_binary(
         "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/silicon_creator:chip_info",
+        "//sw/top_darjeeling/sw/device/silicon_creator:chip_info",
         "//sw/lib/sw/device/base:status",
         "//sw/top_darjeeling/sw/device/runtime:print",
     ],

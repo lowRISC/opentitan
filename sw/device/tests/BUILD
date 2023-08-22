@@ -2,11 +2,14 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load(
+    "//rules:const-darjeeling.bzl",
+    "DARJEELING_OPENTITANTOOL_OPENOCD_DATA_DEPS",
+    "DARJEELING_OPENTITANTOOL_OPENOCD_TEST_CMDS",
+)
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load(
     "//rules:opentitan_test.bzl",
-    "OPENTITANTOOL_OPENOCD_DATA_DEPS",
-    "OPENTITANTOOL_OPENOCD_TEST_CMDS",
     "ROM_BOOT_FAILURE_MSG",
     "cw310_params",
     "dv_params",
@@ -2558,9 +2561,9 @@ opentitan_functest(
         test_cmds = [
             "--bitstream=\"$(rootpath {bitstream})\"",
             "--bootstrap=\"$(rootpath {flash})\"",
-        ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
+        ] + DARJEELING_OPENTITANTOOL_OPENOCD_TEST_CMDS,
     ),
-    data = OPENTITANTOOL_OPENOCD_DATA_DEPS,
+    data = DARJEELING_OPENTITANTOOL_OPENOCD_DATA_DEPS,
     targets = ["cw310_rom_with_fake_keys"],
     test_harness = "//sw/host/tests/chip/jtag:openocd_test",
     deps = [

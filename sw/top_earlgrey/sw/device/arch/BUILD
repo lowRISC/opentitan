@@ -15,8 +15,13 @@ cc_library(
         "//sw/top_earlgrey/sw/drivers:flash_ctrl",
         "//sw/top_earlgrey/sw/drivers:keymgr",
         "//sw/top_earlgrey/sw/drivers:kmac",
+        "//sw/top_earlgrey/sw/drivers:lc_ctrl",
         "//sw/top_earlgrey/sw/drivers:otp_ctrl",
+        "//sw/top_earlgrey/sw/drivers:pinmux",
         "//sw/top_earlgrey/sw/drivers:rstmgr",
+        "//sw/top_earlgrey/sw/drivers:rv_core_ibex",
+        "//sw/top_earlgrey/sw/drivers:sram_ctrl",
+        "//sw/top_earlgrey/sw/drivers:uart",
         "//sw/top_earlgrey/sw/drivers:usbdev",
     ],
 )

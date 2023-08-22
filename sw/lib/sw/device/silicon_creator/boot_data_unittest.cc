@@ -14,7 +14,6 @@
 #include "sw/lib/sw/device/silicon_creator/testing/rom_test.h"
 
 #include "flash_ctrl_regs.h"
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"
 
 bool operator==(flash_ctrl_perms_t lhs, flash_ctrl_perms_t rhs) {

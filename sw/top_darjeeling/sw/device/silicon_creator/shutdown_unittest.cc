@@ -10,6 +10,10 @@
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_alert.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
+#include "sw/ip/flash_ctrl/driver/flash_ctrl.h"
+#include "sw/ip/lc_ctrl/driver/lc_ctrl.h"
+#include "sw/ip/otp_ctrl/driver/otp_ctrl.h"
+#include "sw/ip/rv_core_ibex/driver/rv_core_ibex.h"
 #include "sw/lib/sw/device/silicon_creator/error.h"
 #include "sw/lib/sw/device/silicon_creator/testing/rom_test.h"
 #include "sw/lib/sw/device/base/global_mock.h"
@@ -518,7 +522,7 @@ TEST_F(ShutdownTest, RedactPolicyManufacturing) {
   };
   for (const auto state : kManufacturingStates) {
     EXPECT_ABS_READ32(
-        TOP_DARJEELING_LC_CTRL_BASE_ADDR + LC_CTRL_LC_STATE_REG_OFFSET,
+        kLcCtrlBaseAddr[0] + LC_CTRL_LC_STATE_REG_OFFSET,
         static_cast<uint32_t>(state));
     EXPECT_EQ(shutdown_redact_policy(), kShutdownErrorRedactNone);
   }
@@ -533,10 +537,10 @@ TEST_F(ShutdownTest, RedactPolicyProduction) {
   };
   for (const auto state : kProductionStates) {
     EXPECT_ABS_READ32(
-        TOP_DARJEELING_LC_CTRL_BASE_ADDR + LC_CTRL_LC_STATE_REG_OFFSET,
+        kLcCtrlBaseAddr[0] + LC_CTRL_LC_STATE_REG_OFFSET,
         static_cast<uint32_t>(state));
     EXPECT_ABS_READ32(
-        TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR +
+        kOtpCtrlCoreBaseAddr[0] +
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
             OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ERROR_REPORTING_OFFSET,
         static_cast<uint32_t>(kShutdownErrorRedactModule));
@@ -547,8 +551,7 @@ TEST_F(ShutdownTest, RedactPolicyProduction) {
 TEST_F(ShutdownTest, RedactPolicyInvalid) {
   // Invalid states should result in the highest redaction level regardless of
   // the redaction level set by OTP.
-  EXPECT_ABS_READ32(
-      TOP_DARJEELING_LC_CTRL_BASE_ADDR + LC_CTRL_LC_STATE_REG_OFFSET, 0);
+  EXPECT_ABS_READ32(kLcCtrlBaseAddr[0] + LC_CTRL_LC_STATE_REG_OFFSET, 0);
   EXPECT_EQ(shutdown_redact_policy(), kShutdownErrorRedactAll);
 }
 
@@ -589,8 +592,7 @@ TEST_F(ShutdownTest, ShutdownFinalize) {
 }
 
 TEST_F(ShutdownTest, FlashKill) {
-  EXPECT_ABS_WRITE32(
-      TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR + FLASH_CTRL_DIS_REG_OFFSET, 0);
+  EXPECT_ABS_WRITE32(kFlashCtrlCoreBaseAddr[0] + FLASH_CTRL_DIS_REG_OFFSET, 0);
   unmocked_shutdown_flash_kill();
 }
 
@@ -606,7 +608,7 @@ TEST_F(ShutdownTest, ShutdownIfErrorUnknown) {
 }
 
 TEST_F(ShutdownTest, SoftwareEscalate) {
-  EXPECT_ABS_WRITE32(TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR +
+  EXPECT_ABS_WRITE32(kRvCoreIbexCfgBaseAddr[0] +
                          RV_CORE_IBEX_SW_FATAL_ERR_REG_OFFSET,
                      0);
   unmocked_shutdown_software_escalate();

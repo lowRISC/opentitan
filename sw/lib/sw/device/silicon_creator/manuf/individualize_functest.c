@@ -5,15 +5,18 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
+#include "sw/ip/flash_ctrl/driver/flash_ctrl.h"
 #include "sw/ip/lc_ctrl/dif/dif_lc_ctrl.h"
+#include "sw/ip/lc_ctrl/driver/lc_ctrl.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
+#include "sw/ip/otp_ctrl/driver/otp_ctrl.h"
 #include "sw/ip/rstmgr/dif/dif_rstmgr.h"
+#include "sw/ip/rstmgr/driver/rstmgr.h"
 #include "sw/ip/rstmgr/test/utils/rstmgr_testutils.h"
 #include "sw/lib/sw/device/base/status.h"
 #include "sw/lib/sw/device/silicon_creator/manuf/individualize.h"
 
 #include "flash_ctrl_regs.h"  // Generated
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "lc_ctrl_regs.h"   // Generated
 #include "otp_ctrl_regs.h"  // Generated
 
@@ -35,14 +38,13 @@ static dif_rstmgr_t rstmgr;
 static status_t peripheral_handles_init(void) {
   TRY(dif_flash_ctrl_init_state(
       &flash_state,
-      mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR)));
-  TRY(dif_lc_ctrl_init(mmio_region_from_addr(TOP_DARJEELING_LC_CTRL_BASE_ADDR),
-                       &lc_ctrl));
+      mmio_region_from_addr(kFlashCtrlCoreBaseAddr[0])));
+  TRY(dif_lc_ctrl_init(mmio_region_from_addr(kLcCtrlBaseAddr[0]), &lc_ctrl));
   TRY(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR),
+      mmio_region_from_addr(kOtpCtrlCoreBaseAddr[0]),
       &otp_ctrl));
   TRY(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(kRstmgrAonBaseAddr[0]), &rstmgr));
   return OK_STATUS();
 }
 

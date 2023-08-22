@@ -4,14 +4,19 @@
 
 #include <stdint.h>
 
-#include "otp_img_sku_darjeeling_a0_stage_individualize.h"  // Generated.
+#include "otp_img_stage_individualize.h"  // Generated.
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
+#include "sw/ip/flash_ctrl/driver/flash_ctrl.h"
 #include "sw/ip/lc_ctrl/dif/dif_lc_ctrl.h"
+#include "sw/ip/lc_ctrl/driver/lc_ctrl.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
+#include "sw/ip/otp_ctrl/driver/otp_ctrl.h"
 #include "sw/ip/otp_ctrl/test/utils/otp_ctrl_testutils.h"
+#include "sw/ip/pinmux/driver/pinmux.h"
 #include "sw/ip/pinmux/test/utils/pinmux_testutils.h"
 #include "sw/ip/uart/dif/dif_uart.h"
+#include "sw/ip/uart/driver/uart.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/runtime/print.h"
@@ -20,7 +25,6 @@
 #include "sw/lib/sw/device/silicon_creator/manuf/otp_img.h"
 #include "sw/lib/sw/device/silicon_creator/manuf/test_wafer_auth_secret.h"
 
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"  // Generated.
 
 static dif_uart_t uart;
@@ -35,16 +39,13 @@ static dif_lc_ctrl_t lc_ctrl;
 static status_t peripheral_handles_init(void) {
   TRY(dif_flash_ctrl_init_state(
       &flash_ctrl_state,
-      mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR)));
-  TRY(dif_lc_ctrl_init(mmio_region_from_addr(TOP_DARJEELING_LC_CTRL_BASE_ADDR),
-                       &lc_ctrl));
+      mmio_region_from_addr(kFlashCtrlCoreBaseAddr[0])));
+  TRY(dif_lc_ctrl_init(mmio_region_from_addr(kLcCtrlBaseAddr[0]), &lc_ctrl));
   TRY(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR),
+      mmio_region_from_addr(kOtpCtrlCoreBaseAddr[0]),
       &otp_ctrl));
-  TRY(dif_pinmux_init(
-      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
-  TRY(dif_uart_init(mmio_region_from_addr(TOP_DARJEELING_UART0_BASE_ADDR),
-                    &uart));
+  TRY(dif_pinmux_init(mmio_region_from_addr(kPinmuxAonBaseAddr[0]), &pinmux));
+  TRY(dif_uart_init(mmio_region_from_addr(kUartBaseAddr[0]), &uart));
   return OK_STATUS();
 }
 

@@ -13,7 +13,7 @@ otp_json(
 )
 
 otp_image_header(
-    name = "otp_img_sku_darjeeling_a0_stage_individualize",
+    name = "otp_img_stage_individualize",
     src = ":otp_json_baseline",
     overlays = [
         "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",

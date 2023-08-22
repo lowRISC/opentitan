@@ -7,13 +7,13 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
+#include "sw/ip/flash_ctrl/driver/flash_ctrl.h"
 #include "sw/ip/lc_ctrl/dif/dif_lc_ctrl.h"
+#include "sw/ip/lc_ctrl/driver/lc_ctrl.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/silicon_creator/manuf/isolated_flash_partition.h"
 #include "sw/lib/sw/device/silicon_creator/manuf/test_wafer_auth_secret.h"
-
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -26,9 +26,8 @@ static dif_lc_ctrl_t lc_ctrl;
 static status_t peripheral_handles_init(void) {
   TRY(dif_flash_ctrl_init_state(
       &flash_ctrl_state,
-      mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR)));
-  TRY(dif_lc_ctrl_init(mmio_region_from_addr(TOP_DARJEELING_LC_CTRL_BASE_ADDR),
-                       &lc_ctrl));
+      mmio_region_from_addr(kFlashCtrlCoreBaseAddr[0])));
+  TRY(dif_lc_ctrl_init(mmio_region_from_addr(kLcCtrlBaseAddr[0]), &lc_ctrl));
   return OK_STATUS();
 }
 

@@ -3,12 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
-load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load(
-    "//rules:opentitan_test.bzl",
-    "cw310_params",
-    "opentitan_functest",
-    "verilator_params",
+    "//rules:cross_platform.bzl",
+    "dual_cc_device_library_of",
+    "dual_cc_library",
+    "dual_inputs"
 )
 load("//rules:otbn.bzl", "otbn_insn_count_range")
 
@@ -73,40 +72,6 @@ cc_test(
     ],
 )
 
-opentitan_functest(
-    name = "mod_exp_ibex_functest_hardcoded",
-    srcs = ["mod_exp_ibex_functest.c"],
-    verilator = verilator_params(
-        timeout = "long",
-        tags = [
-            "manual",
-        ],
-    ),
-    deps = [
-        ":mod_exp_ibex",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
-        "//sw/lib/sw/device/silicon_creator/sigverify/sigverify_tests:sigverify_testvectors_hardcoded",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-    ],
-)
-
-opentitan_functest(
-    name = "mod_exp_ibex_functest_wycheproof",
-    srcs = ["mod_exp_ibex_functest.c"],
-    cw310 = cw310_params(
-        timeout = "long",
-    ),
-    targets = ["cw310_test_rom"],  # Test set is too large to run in simulation
-    deps = [
-        ":mod_exp_ibex",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
-        "//sw/lib/sw/device/silicon_creator/sigverify/sigverify_tests:sigverify_testvectors_wycheproof",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-    ],
-)
-
 dual_cc_library(
     name = "mod_exp_otbn",
     srcs = dual_inputs(
@@ -139,47 +104,6 @@ dual_cc_library(
             "//sw/lib/sw/device/silicon_creator:error",
         ],
     ),
-)
-
-opentitan_functest(
-    name = "mod_exp_otbn_functest_hardcoded",
-    srcs = ["mod_exp_otbn_functest.c"],
-    verilator = verilator_params(
-        timeout = "long",
-        tags = [
-            "manual",
-        ],
-    ),
-    deps = [
-        ":mod_exp_otbn",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
-        "//sw/lib/sw/device/silicon_creator/sigverify/sigverify_tests:sigverify_testvectors_hardcoded",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-    ],
-)
-
-opentitan_functest(
-    name = "mod_exp_otbn_functest_wycheproof",
-    srcs = ["mod_exp_otbn_functest.c"],
-    targets = [
-        "cw310_test_rom",
-        "verilator",
-        "dv",
-    ],
-    verilator = verilator_params(
-        timeout = "long",
-        tags = [
-            "manual",
-        ],
-    ),
-    deps = [
-        ":mod_exp_otbn",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
-        "//sw/lib/sw/device/silicon_creator/sigverify/sigverify_tests:sigverify_testvectors_wycheproof",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-    ],
 )
 
 # This rule runs the instruction-counting script for OTBN and gets the expected
@@ -222,22 +146,6 @@ cc_library(
     ],
 )
 
-opentitan_functest(
-    name = "rsa_verify_functest",
-    srcs = ["rsa_verify_functest.c"],
-    verilator = verilator_params(
-        timeout = "long",
-        tags = [
-            "manual",
-        ],
-    ),
-    deps = [
-        ":rsa_verify",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-    ],
-)
-
 cc_library(
     name = "spx_verify",
     srcs = ["spx_verify.c"],
@@ -253,29 +161,13 @@ cc_library(
     ],
 )
 
-opentitan_functest(
-    name = "spx_verify_functest",
-    srcs = ["spx_verify_functest.c"],
-    verilator = verilator_params(
-        timeout = "long",
-        tags = [
-            "manual",
-        ],
-    ),
-    deps = [
-        ":spx_verify",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-    ],
-)
-
 cc_library(
     name = "usage_constraints",
     srcs = ["usage_constraints.c"],
     hdrs = ["usage_constraints.h"],
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//sw/lib/sw/device/silicon_creator:manifest",
+        "//sw/top_darjeeling/sw/device/silicon_creator:manifest",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/lib/sw/device/base:bitfield",
         "//sw/lib/sw/device/base:hardened",
@@ -288,17 +180,6 @@ cc_library(
     deps = [
         ":rsa_verify",
         ":spx_verify",
-    ],
-)
-
-cc_test(
-    name = "flash_exec_unittest",
-    srcs = ["flash_exec_unittest.cc"],
-    deps = [
-        ":flash_exec",
-        "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
-        "//sw/lib/sw/device/silicon_creator/testing:rom_test",
-        "@googletest//:gtest_main",
     ],
 )
 
@@ -322,36 +203,14 @@ cc_test(
     ],
 )
 
-opentitan_functest(
-    name = "sigverify_dynamic_functest_hardcoded",
-    srcs = ["sigverify_dynamic_functest.c"],
-    verilator = verilator_params(
-        timeout = "long",
-        tags = [
-            "manual",
-        ],
-    ),
-    deps = [
-        ":sigverify",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
-        "//sw/lib/sw/device/silicon_creator/sigverify/sigverify_tests:sigverify_testvectors_hardcoded",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-    ],
-)
-
-opentitan_functest(
-    name = "sigverify_dynamic_functest_wycheproof",
-    srcs = ["sigverify_dynamic_functest.c"],
-    cw310 = cw310_params(
-        timeout = "long",
-    ),
-    targets = ["cw310_test_rom"],  # Test set is too large to run in simulation
-    deps = [
-        ":sigverify",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
-        "//sw/lib/sw/device/silicon_creator/sigverify/sigverify_tests:sigverify_testvectors_wycheproof",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-    ],
-)
+exports_files([
+    "mod_exp_ibex_functest.c",
+    "mod_exp_ibex_functest.c",
+    "mod_exp_otbn_functest.c",
+    "mod_exp_otbn_functest.c",
+    "rsa_verify_functest.c",
+    "spx_verify_functest.c",
+    "flash_exec_unittest.cc",
+    "sigverify_dynamic_functest.c",
+    "sigverify_dynamic_functest.c",
+])

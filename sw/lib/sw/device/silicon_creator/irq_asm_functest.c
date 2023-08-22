@@ -19,8 +19,6 @@
 #include "sw/lib/sw/device/runtime/print.h"
 #include "sw/lib/sw/device/silicon_creator/error.h"
 
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
-
 /**
  * Exception handler written in assembly.
  *

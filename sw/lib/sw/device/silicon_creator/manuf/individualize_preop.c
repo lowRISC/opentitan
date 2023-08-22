@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/lib/sw/device/silicon_creator/manuf/individualize_preop.h"
 
-#include "otp_img_sku_darjeeling_a0_stage_individualize.h"  // Generated.
+#include "otp_img_stage_individualize.h"  // Generated.
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
 #include "sw/lib/sw/device/silicon_creator/manuf/otp_img.h"
 

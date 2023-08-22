@@ -11,8 +11,6 @@
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/base/memory.h"
 
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
-
 OTBN_DECLARE_APP_SYMBOLS(
     run_rsa_verify_3072_rr_modexp);  // The OTBN RSA-3072 app.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072_rr_modexp,

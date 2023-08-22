@@ -29,7 +29,7 @@ extern "C" {
  */
 
 /**
- * Peripheral base address for core device on flash_ctrl.
+ * Peripheral base address for core device on flash_ctrl in top chip.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).

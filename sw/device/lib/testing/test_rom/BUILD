@@ -104,7 +104,7 @@ alias(
     name = "test_rom_manifest",
     actual = select({
         "//sw/device:is_english_breakfast": ":english_breakfast_test_rom_manifest",
-        "//conditions:default": "//sw/lib/sw/device/silicon_creator:manifest",
+        "//conditions:default": "//sw/top_darjeeling/sw/device/silicon_creator:manifest",
     }),
 )
 
@@ -136,7 +136,7 @@ cc_library(
         "//sw/lib/sw/device/crt",
         "//sw/lib/sw/device/runtime:hart",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/lib/sw/device/silicon_creator:chip_info",
+        "//sw/top_darjeeling/sw/device/silicon_creator:chip_info",
         "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
         "//sw/lib/sw/device/silicon_creator/base:static_critical",
         "//sw/top_darjeeling/sw/device/runtime:print",

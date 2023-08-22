@@ -269,6 +269,7 @@ cc_library(
     hdrs = ["//sw/ip/pinmux/test/utils:pinmux_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/ip/base/dif:base",
         "//sw/lib/sw/device/arch:device",
