@@ -1051,7 +1051,8 @@ module dma
 
   // The DMA enabled memory should not be changed after lock
   `ASSERT_NEVER(NoDmaEnabledMemoryChangeAfterLock_A,
-                prim_mubi_pkg::mubi4_test_false_loose(reg2hw.range_register_unlock_regwen.q) &&
-                (reg2hw.enabled_memory_range_base.qe ||
-                 reg2hw.enabled_memory_range_limit.qe))
+                prim_mubi_pkg::mubi4_test_false_loose(
+                  prim_mubi_pkg::mubi4_t'(reg2hw.range_unlock_regwen.q)) &&
+                  (reg2hw.enabled_memory_range_base.qe ||
+                  reg2hw.enabled_memory_range_limit.qe))
 endmodule
