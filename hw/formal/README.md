@@ -233,7 +233,7 @@ The macro <code>`COVER(name, prop, clk, rst)</code> of [prim_assert.sv](https://
 
 ### Cadence JasperGold
 If you have access to JasperGold from Cadence, you can formally verify your assertions.
-Before running FPV, please make sure the target has been added to one of the [three batch scripts](../../doc/guides/getting_started/src/setup_formal.md#formal-property-verification-fpv).
+Before running FPV, please make sure the target has been added to one of the [three batch scripts](../../doc/getting_started/setup_formal.md#formal-property-verification-fpv).
 
 For example, to run formal property verification (FPV) using JasperGold on the prim module `prim_arbiter_fixed`, type:
 ```

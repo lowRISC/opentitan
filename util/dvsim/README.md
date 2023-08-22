@@ -18,7 +18,7 @@ The following flows are currently supported:
 
 # Installation
 
-Clone the OpenTitan repository by following the [Getting Started](https://opentitan.org/guides/getting_started) steps.
+Clone the OpenTitan repository by following the [Getting Started](../../doc/getting_started/README.md) steps.
 The rest of the documentation will assume `$REPO_TOP` as the root of the local OpenTitan repository.
 DVSim is located at `$REPO_TOP/util/dvsim/dvsim.py`.
 

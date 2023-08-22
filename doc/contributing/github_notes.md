@@ -5,7 +5,7 @@ The OpenTitan source tree is maintained on GitHub in a [monolithic repository](h
 These notes are for people who intend to contribute back to OpenTitan (based on
 notes taken by a relatively inexperienced git user). If you don't intend to do
 this you can simply clone the main repository, instructions are in [install
-instructions](../guides/getting_started/src/README.md) and this document can be
+instructions](../getting_started/README.md) and this document can be
 ignored. There is much more to using git; a possible next step is to refer to
 [Resources to learn Git](https://try.github.io/).
 

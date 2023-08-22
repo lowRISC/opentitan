@@ -44,7 +44,7 @@ Within the OpenTitan project there are two important tooling components to effic
 
 The first is the [Hugo](https://gohugo.io) tool, which converts an annotated Markdown file into a rendered HTML file (including this document).
 See the linked manual for information about the annotations and how to use it to create enhanced auto-generated additions to standard Markdown files.
-To automate the process a script [build-docs.sh](https://opentitan.org/guides/getting_started/build_docs.html) is provided for generating the documentation.
+To automate the process a script [build-docs.sh](../../getting_started/build_docs.md) is provided for generating the documentation.
 
 The second is the [reggen](../../../util/reggen/README.md) register tool that helps define the methodology and description language for specifying hardware registers.
 These descriptions are used by `build-docs.sh` to ensure that the technical specifications for the IP are accurate and up to date with the hardware being built.
@@ -71,7 +71,7 @@ Running lint is faster than running a simulation.
 
 ### Semantic Linting using Verilator (Open Source)
 
-The Verilator tool is open source, thus enabling all project contributors to conveniently download, install and run the tool locally as described [in the installation instructions](../../guides/getting_started/src/setup_verilator.md), without the need for buying a lint tool license.
+The Verilator tool is open source, thus enabling all project contributors to conveniently download, install and run the tool locally as described [in the installation instructions](../../getting_started/setup_verilator.md), without the need for buying a lint tool license.
 
 For developers of design IP, the recommendation is thus to set up the Verilator lint flow for their IP as described in the [Lint Flow README](../../../hw/lint/README.md).
 Developers should run their code through the Verilator lint tool before creating a design pull request.
@@ -85,7 +85,7 @@ Note that a pull request cannot be merged if it is not lint-clean, since the con
 To complement the Verilator lint explained above, we also leverage the Verible style linter, which captures different aspects of the code and detects style elements that are in violation of our [Verilog Style Guide](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md).
 
 The tool is open source and freely available on the [Verible GitHub page](https://github.com/google/verible/).
-Hence, we recommend IP designers install the tool as described [here](../../guides/getting_started/src/README.md#step-6a-install-verible-optional) and in the [Lint Flow README](../../../hw/lint/README.md), and use the flow locally to close the errors and warnings.
+Hence, we recommend IP designers install the tool as described [here](../../getting_started/README.md#step-6a-install-verible-optional) and in the [Lint Flow README](../../../hw/lint/README.md), and use the flow locally to close the errors and warnings.
 
 Developers should run their code through the Verible style lint tool before creating a design pull request.
 Linting errors and warnings can be closed by fixing the code in question (preferred), or waiving the error.
@@ -204,7 +204,7 @@ Note that this formatter is still under development and not entirely production 
 However, the tool is mature enough for manual use on individual files (i.e., certain edits may have to be manually amended after using it).
 
 The tool is open source and freely available on the [Verible GitHub page](https://github.com/google/verible/).
-Hence, we encourage IP designers to install the tool as described [here](../../guides/getting_started/src/README.md#step-6a-install-verible-optional), and run their code through the formatter tool before creating a design pull request.
+Hence, we encourage IP designers to install the tool as described [here](../../getting_started/README.md#step-6a-install-verible-optional), and run their code through the formatter tool before creating a design pull request.
 
 The tool can be invoked on specific SystemVerilog files with the following command:
 ```shell
@@ -224,7 +224,7 @@ These are discussed in the [Getting Started Designing Hardware](./design.md) doc
 ## FPGA vs Silicon
 
 One output of the OpenTitan project will be silicon instantiations of hardware functionality described in this open source repository.
-The RTL repository defines design functionality at a level satisfactory to prove the hardware and software functionality in an FPGA (see [user guides](https://opentitan.org/guides/getting_started)).
+The RTL repository defines design functionality at a level satisfactory to prove the hardware and software functionality in an FPGA (see [user guides](../../getting_started/README.md)).
 That level is so-called "tapeout ready".
 Once the project reaches that milestone, the team will work with a vendor or vendors to ensure a trustworthy, industry-quality, fully functional OpenTitan chip is manufactured.
 

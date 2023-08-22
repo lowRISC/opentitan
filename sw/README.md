@@ -1,7 +1,7 @@
 # Software
 
 This is the landing spot for software documentation within the OpenTitan project.
-More description and information can be found within the [Reference Manual](../util/README.md) and [User Guide](https://opentitan.org/guides/getting_started) areas.
+More description and information can be found within the [Reference Manual](../util/README.md) and [User Guide](../doc/getting_started/README.md) areas.
 
 There are three major parts to the OpenTitan software stack:
 
