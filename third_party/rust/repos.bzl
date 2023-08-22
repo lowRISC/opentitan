@@ -95,9 +95,9 @@ def rust_repos(rules_rust = None, safe_ftdi = None, serde_annotate = None):
     http_archive_or_local(
         name = "rules_rust",
         local = rules_rust,
-        sha256 = "3df12ac1fc4377bf9a54753e2d421d7f9f4c6c7345639846d79420319f378156",
-        strip_prefix = "rules_rust-rebase-20230814_01",
-        url = "https://github.com/lowRISC/rules_rust/archive/refs/tags/rebase-20230814_01.tar.gz",
+        sha256 = "a5cd81f9ffbe4dfff73767ecc1f5469d17f4f819fd4bc6b482fd775c6b08b11f",
+        strip_prefix = "rules_rust-rebase-20230822_01",
+        url = "https://github.com/lowRISC/rules_rust/archive/refs/tags/rebase-20230822_01.tar.gz",
     )
 
     http_archive_or_local(
