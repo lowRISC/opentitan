@@ -1316,6 +1316,17 @@
       tests: ["chip_sw_pwrmgr_sleep_disabled"]
     }
     {
+      name: chip_sw_pwrmgr_usb_clk_disabled_when_active
+      desc: '''Verify that the USB stops responding when its clock is disabled in active state.
+
+            Configure the pwrmgr CONTROL CSR with USB_CLK_EN_ACTIVE off, and issue a CSR read
+	    to the USB.  This CSR read should cause the CPU to hung.  Prior to this read,
+	    configure the watchdog to bite, and the test passes if there is a watchdog reset.
+	    '''
+      stage: V3
+      tests: ["chip_sw_pwrmgr_usb_clk_disabled_when_active"]
+    }
+    {
       name: chip_sw_pwrmgr_escalation_reset
       desc: '''Verify the power manager resets to a clean state after an escalation reset.
 

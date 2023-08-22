@@ -1006,6 +1006,12 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      name: chip_sw_pwrmgr_usb_clk_disabled_when_active
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:pwrmgr_usb_clk_disabled_when_active_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_rv_timer_irq
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:rv_timer_smoketest:1"]
