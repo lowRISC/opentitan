@@ -20,29 +20,11 @@
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/silicon_creator/manuf/keys/manuf_keys.h"
+#include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 
 #include "otp_ctrl_regs.h"  // Generated.
 
 enum {
-  /**
-   * RMA unlock token OTP offset.
-   */
-  kRmaUnlockTokenOffset =
-      OTP_CTRL_PARAM_RMA_TOKEN_OFFSET - OTP_CTRL_PARAM_SECRET2_OFFSET,
-
-  /**
-   * RootKey sizes and offsets.
-   *
-   * The RootKey is stored in OTP, and is used to derive CreatorRootKey.
-   */
-  kRootKeyShareSizeInBytes = OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE0_SIZE,
-  kRootKeyShareSizeIn32BitWords = kRootKeyShareSizeInBytes / sizeof(uint32_t),
-  kRootKeyShareSizeIn64BitWords = kRootKeyShareSizeInBytes / sizeof(uint64_t),
-  kRootKeyOffsetShare0 = OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE0_OFFSET -
-                         OTP_CTRL_PARAM_SECRET2_OFFSET,
-  kRootKeyOffsetShare1 = OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE1_OFFSET -
-                         OTP_CTRL_PARAM_SECRET2_OFFSET,
-
   /**
    * CreatorSeed and OwnerSeed sizes.
    *

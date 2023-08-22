@@ -16,67 +16,11 @@
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
+#include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 
 #include "otp_ctrl_regs.h"
 
 enum {
-  /**
-   * Secret0 Parition OTP fields.
-   */
-  kSecret0TestUnlockTokenOffset =
-      OTP_CTRL_PARAM_TEST_UNLOCK_TOKEN_OFFSET - OTP_CTRL_PARAM_SECRET0_OFFSET,
-  kSecret0TestUnlockTokenSizeInBytes = OTP_CTRL_PARAM_TEST_UNLOCK_TOKEN_SIZE,
-  kSecret0TestUnlockTokenSizeIn64BitWords =
-      kSecret0TestUnlockTokenSizeInBytes / sizeof(uint64_t),
-
-  kSecret0TestExitTokenOffset =
-      OTP_CTRL_PARAM_TEST_EXIT_TOKEN_OFFSET - OTP_CTRL_PARAM_SECRET0_OFFSET,
-  kSecret0TestExitTokenSizeInBytes = OTP_CTRL_PARAM_TEST_EXIT_TOKEN_SIZE,
-  kSecret0TestExitTokenSizeIn64BitWords =
-      kSecret0TestExitTokenSizeInBytes / sizeof(uint64_t),
-
-  /**
-   * Secret1 Parition OTP fields.
-   */
-  kSecret1FlashAddrKeySeedOffset =
-      OTP_CTRL_PARAM_FLASH_ADDR_KEY_SEED_OFFSET - OTP_CTRL_PARAM_SECRET1_OFFSET,
-  kSecret1FlashAddrKeySeed64BitWords =
-      OTP_CTRL_PARAM_FLASH_ADDR_KEY_SEED_SIZE / sizeof(uint64_t),
-
-  kSecret1FlashDataKeySeedOffset =
-      OTP_CTRL_PARAM_FLASH_DATA_KEY_SEED_OFFSET - OTP_CTRL_PARAM_SECRET1_OFFSET,
-  kSecret1FlashDataKeySeed64BitWords =
-      OTP_CTRL_PARAM_FLASH_DATA_KEY_SEED_SIZE / sizeof(uint64_t),
-
-  kSecret1SramDataKeySeedOffset =
-      OTP_CTRL_PARAM_SRAM_DATA_KEY_SEED_OFFSET - OTP_CTRL_PARAM_SECRET1_OFFSET,
-  kSecret1SramDataKeySeed64Bitwords =
-      OTP_CTRL_PARAM_SRAM_DATA_KEY_SEED_SIZE / sizeof(uint64_t),
-
-  /**
-   * DeviceId offset and length.
-   * The offset is relative to the start of the HW_CFG OTP partition.
-   */
-  kHwCfgDeviceIdOffset =
-      OTP_CTRL_PARAM_DEVICE_ID_OFFSET - OTP_CTRL_PARAM_HW_CFG_OFFSET,
-  kHwCfgDeviceIdWordCount = OTP_CTRL_PARAM_DEVICE_ID_SIZE / sizeof(uint32_t),
-
-  /**
-   * ManufState offset and length.
-   * The offset is relative to the start of the HW_CFG OTP parition.
-   */
-  kHwCfgManufStateOffset =
-      OTP_CTRL_PARAM_MANUF_STATE_OFFSET - OTP_CTRL_PARAM_HW_CFG_OFFSET,
-  kHwCfgManufStateWordCount =
-      OTP_CTRL_PARAM_MANUF_STATE_SIZE / sizeof(uint32_t),
-
-  /**
-   * Offset to the EN_SRAM_IFETCH OTP bits relative to the start of the HW_CFG
-   * partition.
-   */
-  kHwCfgEnSramIfetchOffset =
-      OTP_CTRL_PARAM_EN_SRAM_IFETCH_OFFSET - OTP_CTRL_PARAM_HW_CFG_OFFSET,
-
   /**
    * DeviceID info flash location. This assumes the device ID is written to
    * flash during CP testing. This test case is provided as a reference
@@ -87,7 +31,7 @@ enum {
   kFlashInfoDeviceIdBankId = 0,
   kFlashInfoDeviceIdPageId = 0,
   kFlashInfoDeviceIdByteAddress = 0,
-  kFlashInfoDeviceIdWordCount = kHwCfgDeviceIdWordCount,
+  kFlashInfoDeviceIdWordCount = kHwCfgDeviceIdSizeIn32BitWords,
 
   /**
    * ManufState info flash location. This assumes the manuf state is written to
@@ -96,8 +40,8 @@ enum {
   kFlashInfoManufStatePartitionId = 0,
   kFlashInfoManufStateBankId = 0,
   kFlashInfoManufStatePageId = 0,
-  kFlashInfoManufStateByteAddress = kHwCfgDeviceIdWordCount * sizeof(uint32_t),
-  kFlashInfoManufStateWordCount = kHwCfgManufStateWordCount,
+  kFlashInfoManufStateByteAddress = kHwCfgDeviceIdSizeInBytes,
+  kFlashInfoManufStateWordCount = kHwCfgManufStateSizeIn32BitWords,
 };
 
 typedef struct hw_cfg_settings {
@@ -284,20 +228,20 @@ status_t manuf_individualize_device_hw_cfg(dif_flash_ctrl_state_t *flash_state,
   uint32_t device_id[kFlashInfoDeviceIdWordCount];
   TRY(flash_info_read(flash_state, kFlashInfoDeviceIdByteAddress,
                       kFlashInfoDeviceIdPartitionId, kFlashInfoDeviceIdPageId,
-                      device_id, kFlashInfoDeviceIdWordCount));
+                      device_id, kHwCfgDeviceIdSizeIn32BitWords));
   TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionHwCfg,
                                      kHwCfgDeviceIdOffset, device_id,
-                                     kHwCfgDeviceIdWordCount));
+                                     kHwCfgDeviceIdSizeIn32BitWords));
 
   // Configure ManufState
   uint32_t manuf_state[kFlashInfoManufStateWordCount];
   TRY(flash_info_read(flash_state, kFlashInfoManufStateByteAddress,
                       kFlashInfoManufStatePartitionId,
                       kFlashInfoManufStatePageId, manuf_state,
-                      kFlashInfoManufStateWordCount));
+                      kHwCfgManufStateSizeIn32BitWords));
   TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionHwCfg,
                                      kHwCfgManufStateOffset, manuf_state,
-                                     kHwCfgManufStateWordCount));
+                                     kHwCfgManufStateSizeIn32BitWords));
 
   TRY(otp_ctrl_testutils_lock_partition(otp_ctrl, kDifOtpCtrlPartitionHwCfg,
                                         /*digest=*/0));
