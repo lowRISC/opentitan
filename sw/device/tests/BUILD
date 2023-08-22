@@ -2592,7 +2592,6 @@ opentitan_functest(
     dv = dv_params(
         otp = ":power_virus_systemtest_otp_img_rma",
     ),
-    tags = ["earlgrey"],
     targets = [
         # TODO(#14814): add more targets
         "cw310_test_rom",
