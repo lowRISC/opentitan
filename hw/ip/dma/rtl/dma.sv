@@ -1046,13 +1046,27 @@ module dma
   // The RTL code assumes the BE signal is 4-bit wide
   `ASSERT_NEVER(BeLengthMustBe4_A, top_pkg::TL_DBW != 4)
 
-  // There should be no register writes after GO bit is set
-  `ASSERT_NEVER(NoRegWritesAfterGo_A, reg2hw.control.go && sw_reg_wr)
+  `ASSERT_IF(RegsWritesInIdleExceptAbort_A,
+             ctrl_state_q == DmaIdle, sw_reg_wr && (!cfg_abort_en))
+`ifdef INC_ASSERT
+  logic assert_last_config_go;
+  prim_flop #(
+    .Width(1)
+  ) u_last_go (
+    .clk_i ( gated_clk ),
+    .rst_ni( rst_ni ),
+    .d_i   ( reg2hw.control.go.q ),
+    .q_o   ( assert_last_config_go )
+  );
+`endif
+
+  `ASSERT_IF(SwMustClearGoForReconfig_A, assert_last_config_go ? (!reg2hw.control.go.q) : 1'b1,
+                                         sw_reg_wr && (!cfg_abort_en))
 
   // The DMA enabled memory should not be changed after lock
   `ASSERT_NEVER(NoDmaEnabledMemoryChangeAfterLock_A,
                 prim_mubi_pkg::mubi4_test_false_loose(
                   prim_mubi_pkg::mubi4_t'(reg2hw.range_unlock_regwen.q)) &&
                   (reg2hw.enabled_memory_range_base.qe ||
-                  reg2hw.enabled_memory_range_limit.qe))
+                   reg2hw.enabled_memory_range_limit.qe))
 endmodule
