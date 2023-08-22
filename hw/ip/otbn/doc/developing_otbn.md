@@ -18,7 +18,7 @@ through the [GitHub issue tracker](https://github.com/lowRISC/opentitan/issues).
 An assembler, linker and disassembler for OTBN can be found in
 `hw/ip/otbn/util`. These are wrappers around a RISC-V GCC and binutils toolchain
 so one must be available (see the OpenTitan documentation on [obtaining a
-toolchain](https://opentitan.org/guides/getting_started#step-3-install-the-lowrisc-risc-v-toolchain).
+toolchain](../../../../doc/getting_started/README.md#step-3-install-the-lowrisc-risc-v-toolchain).
 For more details about the toolchain, see the [user
 guide](../../../../doc/contributing/sw/otbn_sw.md)).
 
