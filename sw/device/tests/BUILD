@@ -1596,6 +1596,21 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "pwrmgr_usb_clk_disabled_when_active_test",
+    srcs = ["pwrmgr_usb_clk_disabled_when_active_test.c"],
+    deps = [
+        "//sw/device/lib/dif:aon_timer",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:usbdev",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "rstmgr_smoketest",
     srcs = ["rstmgr_smoketest.c"],
     deps = [

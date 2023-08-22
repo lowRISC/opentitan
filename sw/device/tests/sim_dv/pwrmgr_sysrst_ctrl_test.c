@@ -45,7 +45,7 @@ static void config_sysrst(const dif_pwrmgr_t *pwrmgr,
 
   // Configure sysrst key combo
   // reset pulse : 50 us
-  // detect durration : 50 us
+  // detect duration : 50 us
 
   dif_sysrst_ctrl_key_combo_config_t sysrst_ctrl_key_combo_config = {
       .keys = kDifSysrstCtrlKeyAll,
@@ -56,7 +56,7 @@ static void config_sysrst(const dif_pwrmgr_t *pwrmgr,
   CHECK_DIF_OK(dif_sysrst_ctrl_key_combo_detect_configure(
       sysrst_ctrl_aon, kDifSysrstCtrlKeyCombo0, sysrst_ctrl_key_combo_config));
   // Configure sysrst input change
-  // debounce durration : 100 us
+  // debounce duration : 100 us
   dif_sysrst_ctrl_input_change_config_t sysrst_ctrl_input_change_config = {
       .input_changes = kDifSysrstCtrlInputAll, .debounce_time_threshold = 20};
 
