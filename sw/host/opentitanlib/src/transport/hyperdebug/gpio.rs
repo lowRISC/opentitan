@@ -139,23 +139,6 @@ impl GpioPin for HyperdebugGpioPin {
                     "-".to_string()
                 },
             ))
-            .or_else(|_| {
-                // HyperDebug firmware does not support atomically setting all three, fall back to
-                // separate commands.
-                if let Some(mode) = mode {
-                    self.set_mode(mode)?;
-                }
-                if let Some(pull) = pull {
-                    self.set_pull_mode(pull)?;
-                }
-                if let Some(value) = value {
-                    self.write(value)?;
-                }
-                if let Some(volts) = volts {
-                    self.analog_write(volts)?;
-                }
-                Ok(())
-            })
     }
 
     fn get_internal_pin_name(&self) -> Option<&str> {
