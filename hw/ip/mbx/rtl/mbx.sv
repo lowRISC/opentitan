@@ -47,7 +47,6 @@ module mbx
   logic hostif_status_async_msg_status, hostif_status_ready;
 
   logic [CfgSramAddrWidth-1:0] ibmbx_hostif_sram_write_ptr;
-  logic [CfgSramDataWidth-1:0] ibmbx_write_data;
   logic [CfgSramAddrWidth-1:0] obmbx_hostif_sram_read_ptr;
   logic [CfgSramDataWidth-1:0] obmbx_hostif_sram_read_resp;
 
@@ -60,7 +59,10 @@ module mbx
 
   logic sysif_status_doe_intr_status, sysif_status_doe_intr_status_set;
   logic sysif_write_control_abort, hostif_event_intr;
-  logic sysif_intg_er, tl_sram_intg_err;
+  logic sysif_intg_err, tl_sram_intg_err,  ibmbx_state_error, alert_signal;
+
+  // Collect all error sources
+  assign alert_signal = sysif_intg_err | tl_sram_intg_err | ibmbx_state_error;
 
   mbx_hostif #(
     .AlertAsyncOn    ( AlertAsyncOn     ),
@@ -71,7 +73,7 @@ module mbx
     // Device port to the host side
     .tl_host_i                           ( tl_host_i                          ),
     .tl_host_o                           ( tl_host_o                          ),
-    .intg_err_i                          ( sysif_intg_err | tl_sram_intg_err  ),
+    .intg_err_i                          ( alert_signal                       ),
     .event_intr_i                        ( hostif_event_intr                  ),
     .irq_o                               ( intr_mbx_ready_o                   ),
     .alert_rx_i                          ( alert_rx_i                         ),
@@ -159,12 +161,46 @@ module mbx
     .read_data_write_valid_o             ( sysif_read_data_write_valid        )
   );
 
+  // Interface signals for SRAM host access
   logic ibmbx_hostif_sram_write_req, ibmbx_hostif_sram_write_gnt;
   logic ibmbx_hostif_sram_write_resp_vld;
   logic obmbx_hostif_sram_read_req, obmbx_hostif_sram_read_gnt;
   logic obmbx_hostif_sram_read_resp_vld;
 
-  // Host port conecction to access the private SRAM.
+
+  mbx_ibmbx #(
+    .CfgSramAddrWidth( CfgSramAddrWidth ),
+    .CfgSramDataWidth( CfgSramDataWidth )
+  ) u_ibmbx (
+    .clk_i                      ( clk_i                            ),
+    .rst_ni                     ( rst_ni                           ),
+    // Interface to the host port
+    .ibmbx_state_error_o        ( ibmbx_state_error                ),
+    .ibmbx_pending_o            ( ibmbx_pending                    ),
+    .ibmbx_irq_host_o           ( hostif_event_intr                ),
+    .ibmbx_status_busy_update_o ( ibmbx_status_busy_valid          ),
+    .ibmbx_status_busy_o        ( ibmbx_status_busy                ),
+
+    .hostif_control_abort_set_i ( hostif_set_control_abort         ),
+    .hostif_status_busy_clear_i ( hostif_clear_status_busy         ),
+    .hostif_status_error_set_i  ( hostif_status_error              ),
+
+    .hostif_base_valid_i        ( hostif_ib_base_valid             ),
+    .hostif_base_i              ( hostif_ib_base                   ),
+    .hostif_limit_valid_i       ( hostif_ib_limit_valid            ),
+    .hostif_limit_i             ( hostif_ib_limit                  ),
+    // Interface to the system port
+    .sysif_status_busy_i        ( sysif_status_busy ),
+    .sysif_control_go_set_i     ( sysif_set_control_go             ),
+    .sysif_control_abort_set_i  ( sysif_set_control_abort          ),
+    .sysif_data_write_valid_i   ( sysif_write_data_write_valid     ),
+    // Host interface to access private SRAM
+    .hostif_sram_write_req_o    ( ibmbx_hostif_sram_write_req      ),
+    .hostif_sram_write_gnt_i    ( ibmbx_hostif_sram_write_gnt      ),
+    .hostif_sram_write_ptr_o    ( ibmbx_hostif_sram_write_ptr      )
+  );
+
+  // Host port connection to access the private SRAM.
   // Arbitrates between inbound and outbound mailbox
   mbx_sramrwarb #(
     .CfgSramAddrWidth(CfgSramAddrWidth),
