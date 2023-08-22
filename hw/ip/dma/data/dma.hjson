@@ -564,11 +564,11 @@
         }
       ]
     }
-    { name: "CLEAR_INT_SRC",
-      desc: "Valid bits for which interrupt sources need clearing",
-      swaccess: "rw",
-      hwaccess: "hro",
-      hwqe: "true",
+    { name: "CLEAR_INT_SRC"
+      desc: "Valid bits for which interrupt sources need clearing"
+      swaccess: "rw"
+      hwaccess: "hro"
+      hwqe: "true"
       fields: [
         { name: "source"
           desc: "Source N needs interrupt cleared"
@@ -577,17 +577,33 @@
         }
       ]
     }
+    { name: "CLEAR_INT_BUS"
+      desc: '''Bus selection bit where the clearing command should be performed."
+            0: CTN/System faric
+            1: OT-internal crossbar
+            '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      hwqe: "true"
+      fields: [
+        { name: "bus"
+          desc: "Bus selection bit for source N."
+          bits: "NumIntClearSources-1:0"
+          resval: 0x0
+        }
+      ]
+    }
     { multireg: {
-        name: "INT_SOURCE_ADDR",
-        desc: "Destination address for interrupt source clearing write",
-        count: "NumIntClearSources",
-        cname: "ADDR",
-        swaccess: "rw",
-        hwaccess: "hro",
-        hwqe: "true",
+        name: "INT_SOURCE_ADDR"
+        desc: "Destination address for interrupt source clearing write."
+        count: "NumIntClearSources"
+        cname: "ADDR"
+        swaccess: "rw"
+        hwaccess: "hro"
+        hwqe: "true"
         fields: [
           { name: "addr"
-            desc: "Destination address for interrupt source clearing write"
+            desc: "Destination address for interrupt source clearing write."
             bits: "31:0"
             resval: 0x0
           }
@@ -595,16 +611,16 @@
       }
     }
     { multireg: {
-        name: "INT_SOURCE_WR_VAL",
-        desc: "Write value for interrupt clearing write",
-        count: "NumIntClearSources",
-        cname: "WRVAL",
-        swaccess: "rw",
-        hwaccess: "hro",
-        hwqe: "true",
+        name: "INT_SOURCE_WR_VAL"
+        desc: "Write value for interrupt clearing write."
+        count: "NumIntClearSources"
+        cname: "WRVAL"
+        swaccess: "rw"
+        hwaccess: "hro"
+        hwqe: "true"
         fields: [
           { name: "wr_val"
-            desc: "Write value for interrupt clearing write"
+            desc: "Write value for interrupt clearing write."
             bits: "31:0"
             resval: 0x0
           }
