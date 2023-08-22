@@ -12,7 +12,7 @@ title: "Documentation"
 
 ## Getting Started
 
-To get started with OpenTitan, see the [Getting Started](/guides/getting_started) page. For additional resources when working with OpenTitan, see the [contribution guide](https://opentitan.org/book/doc/contributing) and the [tools guide](https://opentitan.org/book/util). Lastly, the [Hardware book](https://opentitan.org/book/hw) contains technical documentation on the SoC, the Ibex processor core, and the individual IP blocks. For questions about how the project is organized, see the [project landing spot](https://opentitan.org/book/doc/project_governance) for more information.
+To get started with OpenTitan, see the [Getting Started](/book/doc/getting_started) page. For additional resources when working with OpenTitan, see the [contribution guide](https://opentitan.org/book/doc/contributing) and the [tools guide](https://opentitan.org/book/util). Lastly, the [Hardware book](https://opentitan.org/book/hw) contains technical documentation on the SoC, the Ibex processor core, and the individual IP blocks. For questions about how the project is organized, see the [project landing spot](https://opentitan.org/book/doc/project_governance) for more information.
 
 ## Understanding OpenTitan
 
@@ -30,6 +30,6 @@ To get started with OpenTitan, see the [Getting Started](/guides/getting_started
 
 ## Development
 
-- [Getting Started](/guides/getting_started)
+- [Getting Started](/book/doc/getting_started)
 - [Contributing](https://opentitan.org/book/doc/contributing)
 - [Tools](https://opentitan.org/book/util)
