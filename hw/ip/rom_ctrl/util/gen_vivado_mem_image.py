@@ -106,7 +106,9 @@ def parse_otp_init_strings(init_line_groups: List[List[str]]) -> List[int]:
             bram_scratch.append(bits)
         brams.append(bram_scratch)
 
-    for i in range(1024):
+    # TODO(lowRISC/opentitan-integrated#288): make this size parametric so that
+    # it can be adjusted to the actual OTP size
+    for i in range(8192):
         # Slice off the first 22 bits.
         bits = []
         for bram in brams:
@@ -128,7 +130,9 @@ def otp_words_to_updatemem_pieces(words: List[int]) -> List[str]:
     """Transform `words` into pieces of an updatemem-compatible MEM file."""
 
     assert len(words) % 4 == 0
-    assert len(words) <= 1024
+    # TODO(lowRISC/opentitan-integrated#288): make this size parametric so that
+    # it can be adjusted to the actual OTP size
+    assert len(words) <= 8192
     mask_22_bits = (1 << 22) - 1
     assert all(word == (word & mask_22_bits) for word in words)
 
@@ -170,7 +174,9 @@ def otp_words_to_updatemem_pieces(words: List[int]) -> List[str]:
     # the real updatemem would print. We also know how to recover OTP memory
     # contents from INIT_XX strings. Composing these two functions should bring
     # us back to the original `words` input.
-    updatemem_sim = UpdatememSimulator(0x40, 22)
+    # TODO(lowRISC/opentitan-integrated#288): make this size parametric so that
+    # it can be adjusted to the actual OTP size
+    updatemem_sim = UpdatememSimulator(0x200, 22)
     for piece in mem_pieces[1:]:
         updatemem_sim.write_updatemem_hex_string(piece)
     init_lines = updatemem_sim.render_init_lines()
