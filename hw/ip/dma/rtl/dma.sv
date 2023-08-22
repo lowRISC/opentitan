@@ -71,7 +71,7 @@ module dma
   dma_ctrl_state_e ctrl_state_q, ctrl_state_d;
 
   logic [INT_CLEAR_SOURCES_WIDTH-1:0] clear_index_d, clear_index_q;
-  logic                               clear_index_en;
+  logic                               clear_index_en, int_clear_tlul_rsp_valid;
 
   logic [DmaErrLast-1:0] next_error;
   logic bad_src_addr;
@@ -128,6 +128,7 @@ module dma
                      reg2hw.status.done.qe                                 ||
                      reg2hw.status.aborted.qe                              ||
                      reg2hw.clear_int_src.qe                               ||
+                     reg2hw.clear_int_bus.qe                               ||
                      sw_int_source_wr                                      ||
                      reg2hw.status.error.qe                                ||
                      reg2hw.status.error_code.qe;
@@ -486,6 +487,9 @@ module dma
     clear_index_d  = '0;
     clear_index_en = '0;
 
+    // Mux the TLUL response signal depending on the selected bus interface
+    int_clear_tlul_rsp_valid = reg2hw.clear_int_bus.q[clear_index_q]? dma_host_tlul_rsp_valid :
+                                                                      dma_ctn_tlul_rsp_valid;
     read_rsp_error  = 1'b0;
     dma_state_error = 1'b0;
 
@@ -527,22 +531,36 @@ module dma
       DmaClearIntrSrc: begin
         // Clear the interrupt by writing
         if(reg2hw.clear_int_src.q[clear_index_q]) begin
-          dma_ctn_tlul_req_valid = 1'b1;
-          dma_ctn_tlul_req_addr  = reg2hw.int_source_addr[clear_index_q].q;  // TLUL 4B aligned
-          dma_ctn_tlul_req_we    = 1'b1;
-          dma_ctn_tlul_req_wdata = reg2hw.int_source_wr_val[clear_index_q].q;
-          dma_ctn_tlul_req_be    = {top_pkg::TL_DBW{1'b1}};
+          if (reg2hw.clear_int_bus.q[clear_index_q]) begin
+            dma_host_tlul_req_valid = 1'b1;
+            dma_host_tlul_req_addr  = reg2hw.int_source_addr[clear_index_q].q;  // TLUL 4B aligned
+            dma_host_tlul_req_we    = 1'b1;
+            dma_host_tlul_req_wdata = reg2hw.int_source_wr_val[clear_index_q].q;
+            dma_host_tlul_req_be    = {top_pkg::TL_DBW{1'b1}};
 
-          if (dma_ctn_tlul_gnt) begin
-            clear_index_en = 1'b1;
-            clear_index_d  = clear_index_q + INT_CLEAR_SOURCES_WIDTH'(1'b1);
-            ctrl_state_d   = DmaWaitIntrSrcResponse;
+            if (dma_host_tlul_gnt) begin
+              clear_index_en = 1'b1;
+              clear_index_d  = clear_index_q + INT_CLEAR_SOURCES_WIDTH'(1'b1);
+              ctrl_state_d   = DmaWaitIntrSrcResponse;
+            end
+          end else begin
+            dma_ctn_tlul_req_valid = 1'b1;
+            dma_ctn_tlul_req_addr  = reg2hw.int_source_addr[clear_index_q].q;  // TLUL 4B aligned
+            dma_ctn_tlul_req_we    = 1'b1;
+            dma_ctn_tlul_req_wdata = reg2hw.int_source_wr_val[clear_index_q].q;
+            dma_ctn_tlul_req_be    = {top_pkg::TL_DBW{1'b1}};
+
+            if (dma_ctn_tlul_gnt) begin
+              clear_index_en = 1'b1;
+              clear_index_d  = clear_index_q + INT_CLEAR_SOURCES_WIDTH'(1'b1);
+              ctrl_state_d   = DmaWaitIntrSrcResponse;
+            end
           end
 
           // Writes also get a resp valid, but no data.
           // Need to wait for this to not overrun TLUL adapter
           // The response might come immediately
-          if (dma_ctn_tlul_rsp_valid) begin
+          if (int_clear_tlul_rsp_valid) begin
             if (cfg_abort_en) begin
               ctrl_state_d = DmaIdle;
             end else begin
@@ -566,7 +584,7 @@ module dma
       DmaWaitIntrSrcResponse: begin
         // Writes also get a resp valid, but no data.
         // Need to wait for this to not overrun TLUL adapter
-        if (dma_ctn_tlul_rsp_valid) begin
+        if (int_clear_tlul_rsp_valid) begin
           if (cfg_abort_en) begin
             ctrl_state_d = DmaIdle;
           end else begin
