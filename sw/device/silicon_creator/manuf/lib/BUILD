@@ -48,6 +48,12 @@ cc_library(
 )
 
 cc_library(
+    name = "otp_fields",
+    hdrs = ["otp_fields.h"],
+    deps = ["//hw/ip/otp_ctrl/data:otp_ctrl_regs"],
+)
+
+cc_library(
     name = "otp_img_types",
     hdrs = ["otp_img_types.h"],
 )
@@ -59,6 +65,7 @@ cc_library(
         "individualize.h",
     ],
     deps = [
+        ":otp_fields",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:hash",
@@ -152,6 +159,7 @@ cc_library(
     srcs = ["personalize.c"],
     hdrs = ["personalize.h"],
     deps = [
+        ":otp_fields",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:aes",

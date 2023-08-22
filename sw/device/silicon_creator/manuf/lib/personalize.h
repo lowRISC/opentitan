@@ -15,17 +15,6 @@
 
 #include "otp_ctrl_regs.h"  // Generated.
 
-enum {
-  /**
-   * RMA unlock token sizes and offsets.
-   */
-  kRmaUnlockTokenSizeInBytes = OTP_CTRL_PARAM_RMA_TOKEN_SIZE,
-  kRmaUnlockTokenSizeIn32BitWords =
-      kRmaUnlockTokenSizeInBytes / sizeof(uint32_t),
-  kRmaUnlockTokenSizeIn64BitWords =
-      kRmaUnlockTokenSizeInBytes / sizeof(uint64_t),
-};
-
 /**
  * Personalize device with unique secrets.
  *
