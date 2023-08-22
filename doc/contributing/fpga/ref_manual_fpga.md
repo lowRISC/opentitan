@@ -2,13 +2,13 @@
 
 This manual provides additional usage details about the FPGA.
 Specifically, it provides instructions on SW development flows and testing procedures.
-Refer to the [FPGA Setup](../../guides/getting_started/src/setup_fpga.md) guide for more information on initial setup.
+Refer to the [FPGA Setup](../../getting_started/setup_fpga.md) guide for more information on initial setup.
 
 ## FPGA SW Development Flow
 
 The FPGA is meant for both boot ROM and general software development.
 The flow for each is different, as the boot ROM is meant to be fairly static while general software can change very frequently.
-However, for both flows, Vivado must be installed, with instructions described [here](../../guides/getting_started/src/install_vivado/README.md).
+However, for both flows, Vivado must be installed, with instructions described [here](../../getting_started/install_vivado/README.md).
 
 ### Boot ROM development
 
@@ -44,7 +44,7 @@ For example, see the `//hw/bitstream:rom` target defined in [hw/bitstream/BUILD]
     $ bazel run //sw/host/opentitantool fpga load-bitstream build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit
     ```
 
-    The script assumes that there is an existing bitfile `build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit` (this is created after following the steps in [FPGA Setup](../../guides/getting_started/src/setup_fpga.md)).
+    The script assumes that there is an existing bitfile `build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit` (this is created after following the steps in [FPGA Setup](../../getting_started/setup_fpga.md)).
 
     The script assumes that there is an existing boot ROM image under `build-bin/sw/device/lib/testing/test_rom` and then creates a new bitfile of the same name at the same location.
     The original input bitfile is moved to `build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig`.

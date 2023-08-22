@@ -63,7 +63,7 @@ The testplan is parsed into a data structure that serves the following purposes:
 *  Annotate the nightly regression results to allow us to track our progress towards executing the testplan and coverage collection
 
 The [testplanner](../../../../util/dvsim/README.md) tool provides some additional information on the Hjson testplan anatomy and some of the features and constructs supported.
-The [build_docs](../../../guides/getting_started/src/build_docs.md) tool works in conjunction with the `testplanner` tool to enable its insertion into the DV document as a table.
+The [build_docs](../../../getting_started/build_docs.md) tool works in conjunction with the `testplanner` tool to enable its insertion into the DV document as a table.
 
 ### DV document
 
@@ -174,7 +174,7 @@ Please see the [Ibex DV documentation](https://ibex-core.readthedocs.io/en/lates
 The chip level DV effort is aimed at ensuring that all of the IPs are integrated correctly into the chip.
 For IPs that are pre-verified sub-modules, we perform [integration testing](#integration-testing).
 These are simple functional tests written in C which are cross-compiled and run natively on the Ibex core.
-The software compilation flow to enable this is explained in further detail in the [Building Software](../../../guides/getting_started/src/build_sw.md) document.
+The software compilation flow to enable this is explained in further detail in the [Building Software](../../../getting_started/build_sw.md) document.
 Further, there is a mechanism for the C test running on the CPU to signal the SystemVerilog testbench the test pass or fail indication based on the observed DUT behavior.
 We also provide an environment knob to 'stub' the CPU and use a TL agent to drive the traffic via the CPU's data channel instead, in cases where more intensive testing is needed.
 <!-- TODO: add link to chip DV document -->
@@ -629,4 +629,4 @@ We use the [OpenTitan GitHub Issue tracker](https://github.com/lowRISC/opentitan
 ## Getting Started with DV
 
 The process for getting started with DV involves many steps, including getting clarity on its purpose, setting up the testbench, documentation, etc.
-These are discussed in the [Getting Started with DV](https://opentitan.org/guides/getting_started/setup_dv.html) document.
+These are discussed in the [Getting Started with DV](../../../../doc/getting_started/setup_dv.md) document.

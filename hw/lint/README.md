@@ -13,7 +13,7 @@ The lint flow run scripts and waiver files are available in the GitHub repositor
 However, the _"lowRISC Lint Rules"_ are available as part of the default policies in AscentLint release 2019.A.p3 or newer (as `LRLR-v1.0.policy`).
 This enables designers that have access to this tool to run the lint flow provided locally on their premises.
 
-Our linting flow leverages FuseSoC to resolve dependencies, build file lists and call the linting tools. See [here](https://github.com/olofk/fusesoc) for an introduction to this open source package manager and [here](https://opentitan.org/guides/getting_started) for installation instructions.
+Our linting flow leverages FuseSoC to resolve dependencies, build file lists and call the linting tools. See [here](https://github.com/olofk/fusesoc) for an introduction to this open source package manager and [here](../../doc/getting_started/README.md) for installation instructions.
 
 In order to run lint on a [comportable IP](../../doc/contributing/hw/comportability/README.md) block, the corresponding FuseSoC core file must have a lint target and include (optional) waiver files as shown in the following example taken from the FuseSoC core of the AES comportable IP:
 ```

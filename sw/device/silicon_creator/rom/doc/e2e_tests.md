@@ -34,11 +34,11 @@ Some tests will use the JTAG interface to interact with OpenTitan, as the CW310 
 
 ## Software setup
 The software dependencies are covered by other guides in this book and are linked below.
-- Clone the OpenTitan repository and install the software dependencies: [Get started](https://opentitan.org/guides/getting_started).
-- Setup the FPGA: [FPGA guide](https://opentitan.org/guides/getting_started/setup_fpga.html).
-- Install Vivado to be able to splice bitstreams: [Installing Vivado](https://opentitan.org/guides/getting_started/install_vivado).
+- Clone the OpenTitan repository and install the software dependencies: [Get started](../../../../../doc/getting_started/README.md).
+- Setup the FPGA: [FPGA guide](../../../../../doc/getting_started/setup_fpga.md).
+- Install Vivado to be able to splice bitstreams: [Installing Vivado](../../../../../doc/getting_started/install_vivado).
 
-**Note**: Make sure that you added the udev rules for the [FPGA](https://opentitan.org/guides/getting_started/install_vivado#device-permissions-udev-rules) board and the [JTAG](https://opentitan.org/guides/getting_started/setup_fpga.html#device-permissions-udev-rules) adapter.
+**Note**: Make sure that you added the udev rules for the [FPGA](../../../../../doc/getting_started/install_vivado#device-permissions-udev-rules) board and the [JTAG](../../../../../doc/getting_started/setup_fpga.md#device-permissions-udev-rules) adapter.
 
 ## Running the ROM E2E tests
 The ROM E2E tests are listed in the bazel [BUILD file](https://github.com/lowRISC/OpenTitan/blob/master/sw/device/silicon_creator/rom/e2e/BUILD), alternatively they can be listed with the command:

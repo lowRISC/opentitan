@@ -1,7 +1,7 @@
 # Bazel Notes
 
 Both OpenTitan hardware and software is built with Bazel.
-While our [Getting Started](https://opentitan.org/guides/getting_started) guides detail some of the Bazel commands that can be used to build both types of artifacts, below are detailed notes on:
+While our [Getting Started](../../doc/getting_started/README.md) guides detail some of the Bazel commands that can be used to build both types of artifacts, below are detailed notes on:
 * how Bazel is configured for our project, and
 * brief examples of Bazel commands that are useful for:
     * querying,
@@ -24,7 +24,7 @@ The `WORKSPACE` file controls external dependencies such that builds can be made
 Bazel loads specific external dependencies, such as various language toolchains.
 It uses them to build OpenTitan targets (like it does with bazel\_embedded) or to satisfy dependencies (as it does with abseil).
 To produce increasingly stable releases the external dependencies loaded in `WORKSPACE` file attempts to fix a all external `http_archive`s to a specific SHA.
-As we add more dependencies to the workspace, builds and tests will become less sensitive to external updates, and we will vastly simplify the [Getting Started](https://opentitan.org/guides/getting_started) instructions.
+As we add more dependencies to the workspace, builds and tests will become less sensitive to external updates, and we will vastly simplify the [Getting Started](../../doc/getting_started/README.md) instructions.
 
 ## BUILD files
 
@@ -67,11 +67,11 @@ Therefore, it cannot be run with a standalone `bazel ...` invocation.
   ```
   Note: `<device>` will be in {`sim_dv`, `sim_verilator`, `fpga_cw310`}.
 
-See [Building (and Testing) Software](../guides/getting_started/src/build_sw.md#device-artifacts), device software can be built for multiple OpenTitan devices and memories, using OpenTitan-specific Bazel macros.
+See [Building (and Testing) Software](../getting_started/build_sw.md#device-artifacts), device software can be built for multiple OpenTitan devices and memories, using OpenTitan-specific Bazel macros.
 
 ## `opentitan_functest` Artifacts
 
-As described [Building (and Testing) Software](../guides/getting_started/src/build_sw.md#device-artifacts), device software can be built for multiple OpenTitan devices and memories, using OpenTitan-specific Bazel macros.
+As described [Building (and Testing) Software](../getting_started/build_sw.md#device-artifacts), device software can be built for multiple OpenTitan devices and memories, using OpenTitan-specific Bazel macros.
 Since running tests on multiple OpenTitan devices (whether DV or Verilator simulation, or an FPGA) involves building several software images for multiple memories, we provide a Bazel macro for this.
 This macro is called `opentitan_functest`.
 
@@ -99,7 +99,7 @@ This macro is called `opentitan_functest`.
 
 # Building Software
 
-* To build OpenTitan software see [here](../guides/getting_started/src/build_sw.md#building-software-with-bazel), or run
+* To build OpenTitan software see [here](../getting_started/build_sw.md#building-software-with-bazel), or run
   ```console
   bazel build <target>
   ```
@@ -108,7 +108,7 @@ This macro is called `opentitan_functest`.
 
 ## On-Host Tests
 
-* To query-for/run *on-host* software tests see [here](../guides/getting_started/src/build_sw.md#running-tests-with-bazel).
+* To query-for/run *on-host* software tests see [here](../getting_started/build_sw.md#running-tests-with-bazel).
 
 ## On-Device Tests
 
@@ -228,8 +228,8 @@ bazel run //quality:license_check --test_output=streamed
 Note, to run (software) tests on these OpenTitan hardware platforms **does not** require these Bazel commands be invoked before the test commands above.
 Bazel is aware of all dependency relationships, and knows what prerequisites to build to run a test.
 
-- Build FPGA bitstream with (test) ROM, see [here](../guides/getting_started/src/setup_fpga.md#build-an-fpga-bitstream).
-- Build FPGA bitstream with (production) ROM, see [here](../guides/getting_started/src/setup_fpga.md#build-an-fpga-bitstream).
+- Build FPGA bitstream with (test) ROM, see [here](../getting_started/setup_fpga.md#build-an-fpga-bitstream).
+- Build FPGA bitstream with (production) ROM, see [here](../getting_started/setup_fpga.md#build-an-fpga-bitstream).
 - Build Verilator simulation binary:
   ```console
   bazel build //hw:verilator
