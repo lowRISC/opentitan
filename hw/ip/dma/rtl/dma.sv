@@ -25,8 +25,10 @@ module dma
   input logic                                       clk_i,
   input logic                                       rst_ni,
   input logic                                       test_en_i,
-  // DMA interrupt and incoming LSIO triggers
-  output  logic                                     intr_dma_o,
+  // DMA interrupts and incoming LSIO triggers
+  output  logic                                     intr_dma_done_o,
+  output  logic                                     intr_dma_error_o,
+  output  logic                                     intr_dma_memory_buffer_limit_o,
   input   logic [(NumLsioTriggers-1):0]             lsio_trigger_i,
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
@@ -879,12 +881,11 @@ module dma
     reg2hw.intr_test.dma_memory_buffer_limit.q &&
     reg2hw.intr_test.dma_memory_buffer_limit.qe;
 
-  // Signal interrupt controller whenever an enabled intrrupt info bit is set
-  assign intr_dma_o =
-    (reg2hw.intr_state.dma_done.q  && reg2hw.intr_enable.dma_done.q)  ||
-    (reg2hw.intr_state.dma_error.q && reg2hw.intr_enable.dma_error.q) ||
-    (reg2hw.intr_state.dma_memory_buffer_limit.q &&
-     reg2hw.intr_enable.dma_memory_buffer_limit.q);
+  // Signal interrupt controller whenever an enabled interrupt info bit is set
+  assign intr_dma_done_o  = reg2hw.intr_state.dma_done.q  && reg2hw.intr_enable.dma_done.q;
+  assign intr_dma_error_o = reg2hw.intr_state.dma_error.q && reg2hw.intr_enable.dma_error.q;
+  assign intr_dma_memory_buffer_limit_o = reg2hw.intr_state.dma_memory_buffer_limit.q &&
+                                          reg2hw.intr_enable.dma_memory_buffer_limit.q;
 
   // Calculate remaining amount of data
   assign remaining_bytes = reg2hw.total_data_size.q - transfer_byte_q;
