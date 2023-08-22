@@ -17,6 +17,7 @@ filesets:
       - rtl/mbx_sys_reg_top.sv
       - rtl/mbx_hostif.sv
       - rtl/mbx_sysif.sv
+      - rtl/mbx_sramrwarb.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

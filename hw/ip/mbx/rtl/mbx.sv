@@ -60,7 +60,7 @@ module mbx
 
   logic sysif_status_doe_intr_status, sysif_status_doe_intr_status_set;
   logic sysif_write_control_abort, hostif_event_intr;
-  logic sysif_intg_err;
+  logic sysif_intg_er, tl_sram_intg_err;
 
   mbx_hostif #(
     .AlertAsyncOn    ( AlertAsyncOn     ),
@@ -71,7 +71,7 @@ module mbx
     // Device port to the host side
     .tl_host_i                           ( tl_host_i                          ),
     .tl_host_o                           ( tl_host_o                          ),
-    .intg_err_i                          ( sysif_intg_err                     ),
+    .intg_err_i                          ( sysif_intg_err | tl_sram_intg_err  ),
     .event_intr_i                        ( hostif_event_intr                  ),
     .irq_o                               ( intr_mbx_ready_o                   ),
     .alert_rx_i                          ( alert_rx_i                         ),
@@ -157,6 +157,36 @@ module mbx
     .read_data_i                         ( sysif_read_data                    ),
     .read_data_read_valid_o              ( sysif_read_data_read_valid         ),
     .read_data_write_valid_o             ( sysif_read_data_write_valid        )
+  );
+
+  logic ibmbx_hostif_sram_write_req, ibmbx_hostif_sram_write_gnt;
+  logic ibmbx_hostif_sram_write_resp_vld;
+  logic obmbx_hostif_sram_read_req, obmbx_hostif_sram_read_gnt;
+  logic obmbx_hostif_sram_read_resp_vld;
+
+  // Host port conecction to access the private SRAM.
+  // Arbitrates between inbound and outbound mailbox
+  mbx_sramrwarb #(
+    .CfgSramAddrWidth(CfgSramAddrWidth),
+    .CfgSramDataWidth(CfgSramDataWidth)
+  ) u_sramrwarb (
+    .clk_i                             ( clk_i                            ),
+    .rst_ni                            ( rst_ni                           ),
+    .tl_host_o                         ( tl_sram_o                        ),
+    .tl_host_i                         ( tl_sram_i                        ),
+    .intg_err_o                        ( tl_sram_intg_err                 ),
+    // Interface to the inbound mailbox
+    .ibmbx_hostif_sram_write_req_i     ( ibmbx_hostif_sram_write_req      ),
+    .ibmbx_hostif_sram_write_gnt_o     ( ibmbx_hostif_sram_write_gnt      ),
+    .ibmbx_hostif_sram_write_ptr_i     ( ibmbx_hostif_sram_write_ptr      ),
+    .ibmbx_hostif_sram_write_resp_vld_o( ibmbx_hostif_sram_write_resp_vld ),
+    .ibmbx_write_data_i                ( sysif_write_data                 ),
+    // Interface to the outbound mailbox
+    .obmbx_hostif_sram_read_req_i      ( obmbx_hostif_sram_read_req       ),
+    .obmbx_hostif_sram_read_gnt_o      ( obmbx_hostif_sram_read_gnt       ),
+    .obmbx_hostif_sram_read_ptr_i      ( obmbx_hostif_sram_read_ptr       ),
+    .obmbx_hostif_sram_read_resp_vld_o ( obmbx_hostif_sram_read_resp_vld  ),
+    .obmbx_hostif_sram_read_resp_o     ( obmbx_hostif_sram_read_resp      )
   );
 
 endmodule
