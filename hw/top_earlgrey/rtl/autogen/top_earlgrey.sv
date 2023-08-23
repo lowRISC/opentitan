@@ -740,9 +740,6 @@ module top_earlgrey #(
   jtag_pkg::jtag_req_t       pinmux_aon_dft_jtag_req;
   jtag_pkg::jtag_rsp_t       pinmux_aon_dft_jtag_rsp;
   otp_ctrl_part_pkg::otp_broadcast_t       otp_ctrl_otp_broadcast;
-  prim_mubi_pkg::mubi8_t       csrng_otp_en_csrng_sw_app_read;
-  prim_mubi_pkg::mubi8_t       entropy_src_otp_en_entropy_src_fw_read;
-  prim_mubi_pkg::mubi8_t       entropy_src_otp_en_entropy_src_fw_over;
   otp_ctrl_pkg::otp_device_id_t       lc_ctrl_otp_device_id;
   otp_ctrl_pkg::otp_manuf_state_t       lc_ctrl_otp_manuf_state;
   otp_ctrl_pkg::otp_device_id_t       keymgr_otp_device_id;
@@ -795,12 +792,6 @@ module top_earlgrey #(
   // OTP HW_CFG Broadcast signals.
   // TODO(#6713): The actual struct breakout and mapping currently needs to
   // be performed by hand.
-  assign csrng_otp_en_csrng_sw_app_read =
-      otp_ctrl_otp_broadcast.hw_cfg0_data.en_csrng_sw_app_read;
-  assign entropy_src_otp_en_entropy_src_fw_read =
-      otp_ctrl_otp_broadcast.hw_cfg0_data.en_entropy_src_fw_read;
-  assign entropy_src_otp_en_entropy_src_fw_over =
-      otp_ctrl_otp_broadcast.hw_cfg0_data.en_entropy_src_fw_over;
   assign sram_ctrl_main_otp_en_sram_ifetch =
       otp_ctrl_otp_broadcast.hw_cfg0_data.en_sram_ifetch;
   assign lc_ctrl_otp_device_id =
@@ -2415,7 +2406,7 @@ module top_earlgrey #(
       .entropy_src_hw_if_i(csrng_entropy_src_hw_if_rsp),
       .cs_aes_halt_i(csrng_cs_aes_halt_req),
       .cs_aes_halt_o(csrng_cs_aes_halt_rsp),
-      .otp_en_csrng_sw_app_read_i(csrng_otp_en_csrng_sw_app_read),
+      .otp_en_csrng_sw_app_read_i(prim_mubi_pkg::MuBi8True),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
       .tl_i(csrng_tl_req),
       .tl_o(csrng_tl_rsp),
@@ -2449,8 +2440,8 @@ module top_earlgrey #(
       .entropy_src_rng_i(es_rng_rsp_i),
       .entropy_src_xht_o(),
       .entropy_src_xht_i(entropy_src_pkg::ENTROPY_SRC_XHT_RSP_DEFAULT),
-      .otp_en_entropy_src_fw_read_i(entropy_src_otp_en_entropy_src_fw_read),
-      .otp_en_entropy_src_fw_over_i(entropy_src_otp_en_entropy_src_fw_over),
+      .otp_en_entropy_src_fw_read_i(prim_mubi_pkg::MuBi8True),
+      .otp_en_entropy_src_fw_over_i(prim_mubi_pkg::MuBi8True),
       .rng_fips_o(es_rng_fips_o),
       .tl_i(entropy_src_tl_req),
       .tl_o(entropy_src_tl_rsp),

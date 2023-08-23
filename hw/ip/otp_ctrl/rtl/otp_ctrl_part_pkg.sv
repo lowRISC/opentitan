@@ -248,10 +248,7 @@ package otp_ctrl_part_pkg;
   // Breakout types for easier access of individual items.
   typedef struct packed {
     logic [63:0] hw_cfg0_digest;
-    logic [31:0] unallocated;
-    prim_mubi_pkg::mubi8_t en_entropy_src_fw_over;
-    prim_mubi_pkg::mubi8_t en_entropy_src_fw_read;
-    prim_mubi_pkg::mubi8_t en_csrng_sw_app_read;
+    logic [55:0] unallocated;
     prim_mubi_pkg::mubi8_t en_sram_ifetch;
     logic [255:0] manuf_state;
     logic [255:0] device_id;
@@ -260,10 +257,7 @@ package otp_ctrl_part_pkg;
   // default value used for intermodule
   parameter otp_hw_cfg0_data_t OTP_HW_CFG0_DATA_DEFAULT = '{
     hw_cfg0_digest: 64'hD2BF0E2CFC07120E,
-    unallocated: 32'h0,
-    en_entropy_src_fw_over: prim_mubi_pkg::mubi8_t'(8'h69),
-    en_entropy_src_fw_read: prim_mubi_pkg::mubi8_t'(8'h69),
-    en_csrng_sw_app_read: prim_mubi_pkg::mubi8_t'(8'h69),
+    unallocated: 56'h0,
     en_sram_ifetch: prim_mubi_pkg::mubi8_t'(8'h69),
     manuf_state: 256'h55BE0BF60F328302F6008FEDD015995F818E6D5088A5CDF93C0F42DCF28BBDCA,
     device_id: 256'h39D3131745015730931F5DA9AF1C3AACE93BC3CE277DADEF07D7A8934EE34FBD
@@ -306,10 +300,7 @@ package otp_ctrl_part_pkg;
     }),
     640'({
       64'hD2BF0E2CFC07120E,
-      32'h0, // unallocated space
-      8'h69,
-      8'h69,
-      8'h69,
+      56'h0, // unallocated space
       8'h69,
       256'h55BE0BF60F328302F6008FEDD015995F818E6D5088A5CDF93C0F42DCF28BBDCA,
       256'h39D3131745015730931F5DA9AF1C3AACE93BC3CE277DADEF07D7A8934EE34FBD

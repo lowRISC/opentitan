@@ -908,42 +908,6 @@
       default: "1",
       local: "true"
     },
-    { name: "EnCsrngSwAppReadOffset",
-      desc: "Offset of EN_CSRNG_SW_APP_READ",
-      type: "int",
-      default: "1665",
-      local: "true"
-    },
-    { name: "EnCsrngSwAppReadSize",
-      desc: "Size of EN_CSRNG_SW_APP_READ",
-      type: "int",
-      default: "1",
-      local: "true"
-    },
-    { name: "EnEntropySrcFwReadOffset",
-      desc: "Offset of EN_ENTROPY_SRC_FW_READ",
-      type: "int",
-      default: "1666",
-      local: "true"
-    },
-    { name: "EnEntropySrcFwReadSize",
-      desc: "Size of EN_ENTROPY_SRC_FW_READ",
-      type: "int",
-      default: "1",
-      local: "true"
-    },
-    { name: "EnEntropySrcFwOverOffset",
-      desc: "Offset of EN_ENTROPY_SRC_FW_OVER",
-      type: "int",
-      default: "1667",
-      local: "true"
-    },
-    { name: "EnEntropySrcFwOverSize",
-      desc: "Size of EN_ENTROPY_SRC_FW_OVER",
-      type: "int",
-      default: "1",
-      local: "true"
-    },
     { name: "HwCfg0DigestOffset",
       desc: "Offset of HW_CFG0_DIGEST",
       type: "int",

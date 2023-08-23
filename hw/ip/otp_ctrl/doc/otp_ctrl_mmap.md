@@ -62,9 +62,6 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |    3    |    HW_CFG0     |     80     |      32bit       |                       DEVICE_ID                       |     0x640      |     32     |
 |         |                |            |      32bit       |                      MANUF_STATE                      |     0x660      |     32     |
 |         |                |            |      32bit       |                    EN_SRAM_IFETCH                     |     0x680      |     1      |
-|         |                |            |      32bit       |                 EN_CSRNG_SW_APP_READ                  |     0x681      |     1      |
-|         |                |            |      32bit       |                EN_ENTROPY_SRC_FW_READ                 |     0x682      |     1      |
-|         |                |            |      32bit       |                EN_ENTROPY_SRC_FW_OVER                 |     0x683      |     1      |
 |         |                |            |      64bit       |        [HW_CFG0_DIGEST](#Reg_hw_cfg0_digest_0)        |     0x688      |     8      |
 |    4    |    SECRET0     |     40     |      64bit       |                   TEST_UNLOCK_TOKEN                   |     0x690      |     16     |
 |         |                |            |      64bit       |                    TEST_EXIT_TOKEN                    |     0x6A0      |     16     |

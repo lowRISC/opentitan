@@ -87,21 +87,6 @@ typedef struct hw_cfg0_settings {
    * Enable / disable execute from SRAM CSR switch.
    */
   multi_bit_bool_t en_sram_ifetch;
-  /**
-   * This input efuse is used to enable access to the NIST internal state per
-   * instance.
-   */
-  multi_bit_bool_t en_csrng_sw_app_read;
-  /**
-   * This input efuse is used to enable access to the ENTROPY_DATA register
-   * directly.
-   */
-  multi_bit_bool_t en_entropy_src_fw_read;
-  /**
-   * This input efuse is used to enable access to the firmware override FIFO and
-   * other related functions.
-   */
-  multi_bit_bool_t en_entropy_src_fw_over;
 } hw_cfg0_settings_t;
 
 // Changing any of the following values may result in unexpected device
@@ -114,9 +99,6 @@ typedef struct hw_cfg0_settings {
 //   entropy_src conditioner KAT.
 const hw_cfg0_settings_t kHwCfg0Settings = {
     .en_sram_ifetch = kMultiBitBool8True,
-    .en_csrng_sw_app_read = kMultiBitBool8True,
-    .en_entropy_src_fw_read = kMultiBitBool8True,
-    .en_entropy_src_fw_over = kMultiBitBool8True,
 };
 
 /**
@@ -129,20 +111,10 @@ OT_WARN_UNUSED_RESULT
 static status_t hw_cfg0_enable_knobs_set(const dif_otp_ctrl_t *otp) {
 #define HW_CFG0_EN_OFFSET(m, i) ((bitfield_field32_t){.mask = m, .index = i})
   static const bitfield_field32_t kSramFetch = HW_CFG0_EN_OFFSET(0xff, 0);
-  static const bitfield_field32_t kCsrngAppRead = HW_CFG0_EN_OFFSET(0xff, 8);
-  static const bitfield_field32_t kEntropySrcFwRd = HW_CFG0_EN_OFFSET(0xff, 16);
-  static const bitfield_field32_t kEntropySrcFwOvr =
-      HW_CFG0_EN_OFFSET(0xff, 24);
 #undef HW_CFG0_EN_OFFSET
 
   uint32_t val =
       bitfield_field32_write(0, kSramFetch, kHwCfg0Settings.en_sram_ifetch);
-  val = bitfield_field32_write(val, kCsrngAppRead,
-                               kHwCfg0Settings.en_csrng_sw_app_read);
-  val = bitfield_field32_write(val, kEntropySrcFwRd,
-                               kHwCfg0Settings.en_entropy_src_fw_read);
-  val = bitfield_field32_write(val, kEntropySrcFwOvr,
-                               kHwCfg0Settings.en_entropy_src_fw_over);
 
   TRY(otp_ctrl_testutils_dai_write32(otp, kDifOtpCtrlPartitionHwCfg0,
                                      kHwCfg0EnSramIfetchOffset, &val,
