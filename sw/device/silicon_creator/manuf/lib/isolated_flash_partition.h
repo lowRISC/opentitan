@@ -10,16 +10,6 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 
-enum {
-  /**
-   * Wafer authentication secret sizes.
-   *
-   * The wafer authentication secret is stored in the isolated flash partition.
-   */
-  kWaferAuthSecretSizeInBytes = 32,
-  kWaferAuthSecretSizeInWords = kWaferAuthSecretSizeInBytes / sizeof(uint32_t),
-};
-
 /**
  * Reads the wafer authentication secret to the isolated flash partition.
  *

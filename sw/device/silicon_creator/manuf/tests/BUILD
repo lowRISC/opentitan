@@ -11,7 +11,6 @@ load(
 )
 load(
     "//rules:opentitan.bzl",
-    "OPENTITAN_PLATFORM",
     "RSA_ONLY_KEY_STRUCTS",
     "filter_key_structs_for_lc_state",
     "opentitan_ram_binary",
@@ -240,7 +239,7 @@ cc_library(
     srcs = ["test_wafer_auth_secret.h"],
     visibility = ["//visibility:private"],
     deps = [
-        "//sw/device/silicon_creator/manuf/lib:isolated_flash_partition",
+        "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
     ],
 )
 
@@ -304,6 +303,7 @@ opentitan_ram_binary(
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
+        "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
         "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_a0_sku_test",
         "//sw/device/silicon_creator/manuf/lib:isolated_flash_partition",
         "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
@@ -345,6 +345,7 @@ opentitan_ram_binary(
             "//sw/device/lib/dif:lc_ctrl",
             "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
             "//sw/device/silicon_creator/manuf/lib:isolated_flash_partition",
         ],
     )

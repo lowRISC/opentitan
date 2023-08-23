@@ -188,36 +188,34 @@ static status_t otp_partition_secret2_is_locked(const dif_otp_ctrl_t *otp_ctrl,
  * flash info page.
  *
  * @param flash_state Flash controller instance.
- * @param page_id Region page index.
- * @param bank_id The required bank.
- * @param partition_id The partition index.
+ * @param field Info flash field location information.
  * @param len The number of uint32_t words to program starting at the begining
  * of the target flash info page.
  * @return OK_STATUS on success.
  */
 OT_WARN_UNUSED_RESULT
 static status_t flash_ctrl_secret_write(dif_flash_ctrl_state_t *flash_state,
-                                        uint32_t page_id, uint32_t bank_id,
-                                        uint32_t partition_id, size_t len) {
+                                        flash_info_field_t field, size_t len) {
   TRY(entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolFalse,
                                 /*seed_material=*/NULL));
 
-  uint32_t seed[kFlashInfoCreatorSeedSizeInWords];
+  uint32_t seed[kFlashInfoKeySeedSizeIn32BitWords];
   TRY(entropy_csrng_generate(/*seed_material=*/NULL, seed, len,
                              /*fips_check*/ kHardenedBoolTrue));
   TRY(entropy_csrng_uninstantiate());
 
   uint32_t address = 0;
   TRY(flash_ctrl_testutils_info_region_scrambled_setup(
-      flash_state, page_id, bank_id, partition_id, &address));
+      flash_state, field.page, field.bank, field.partition, &address));
 
   TRY(flash_ctrl_testutils_erase_and_write_page(
-      flash_state, address, partition_id, seed, kDifFlashCtrlPartitionTypeInfo,
-      len));
+      flash_state, address, field.partition, seed,
+      kDifFlashCtrlPartitionTypeInfo, len));
 
-  uint32_t seed_result[kFlashInfoCreatorSeedSizeInWords];
-  TRY(flash_ctrl_testutils_read(flash_state, address, partition_id, seed_result,
-                                kDifFlashCtrlPartitionTypeInfo, len,
+  uint32_t seed_result[kFlashInfoKeySeedSizeIn32BitWords];
+  TRY(flash_ctrl_testutils_read(flash_state, address, field.partition,
+                                seed_result, kDifFlashCtrlPartitionTypeInfo,
+                                len,
                                 /*delay=*/0));
   bool found_error = false;
   for (size_t i = 0; i < len; ++i) {
@@ -368,15 +366,13 @@ status_t manuf_personalize_device(dif_flash_ctrl_state_t *flash_state,
 
   // Provision secret Creator / Owner key seeds in flash.
   // Provision CreatorSeed into target flash info page.
-  TRY(flash_ctrl_secret_write(
-      flash_state, kFlashInfoCreatorSeedPageId, kFlashInfoCreatorSeedBankId,
-      kFlashInfoCreatorSeedPartitionId, kFlashInfoCreatorSeedSizeInWords));
+  TRY(flash_ctrl_secret_write(flash_state, kFlashInfoFieldCreatorSeed,
+                              kFlashInfoKeySeedSizeIn32BitWords));
   // Provision preliminary OwnerSeed into target flash info page (with
   // expectation that SiliconOwner will rotate this value during ownership
   // transfer).
-  TRY(flash_ctrl_secret_write(
-      flash_state, kFlashInfoOwnerSeedPageId, kFlashInfoOwnerSeedBankId,
-      kFlashInfoOwnerSeedPartitionId, kFlashInfoOwnerSeedSizeInWords));
+  TRY(flash_ctrl_secret_write(flash_state, kFlashInfoFieldOwnerSeed,
+                              kFlashInfoKeySeedSizeIn32BitWords));
 
   // Provision the OTP SECRET2 partition.
   TRY(otp_partition_secret2_configure(otp_ctrl,

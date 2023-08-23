@@ -49,6 +49,7 @@ cc_library(
 
 cc_library(
     name = "flash_info_fields",
+    srcs = ["flash_info_fields.c"],
     hdrs = ["flash_info_fields.h"],
     deps = ["//hw/ip/otp_ctrl/data:otp_ctrl_regs"],
 )
