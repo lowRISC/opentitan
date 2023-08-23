@@ -7,16 +7,34 @@
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 
 #include "otp_ctrl_regs.h"
 
 enum {
+  /**
+   * Secret0 Parition OTP fields.
+   */
+  kSecret0TestUnlockTokenOffset =
+      OTP_CTRL_PARAM_TEST_UNLOCK_TOKEN_OFFSET - OTP_CTRL_PARAM_SECRET0_OFFSET,
+  kSecret0TestUnlockTokenSizeInBytes = OTP_CTRL_PARAM_TEST_UNLOCK_TOKEN_SIZE,
+  kSecret0TestUnlockTokenSizeIn64BitWords =
+      kSecret0TestUnlockTokenSizeInBytes / sizeof(uint64_t),
+
+  kSecret0TestExitTokenOffset =
+      OTP_CTRL_PARAM_TEST_EXIT_TOKEN_OFFSET - OTP_CTRL_PARAM_SECRET0_OFFSET,
+  kSecret0TestExitTokenSizeInBytes = OTP_CTRL_PARAM_TEST_EXIT_TOKEN_SIZE,
+  kSecret0TestExitTokenSizeIn64BitWords =
+      kSecret0TestExitTokenSizeInBytes / sizeof(uint64_t),
+
   /**
    * Secret1 Parition OTP fields.
    */
@@ -126,7 +144,7 @@ const hw_cfg_settings_t kHwCfgSettings = {
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static status_t hw_cfg_enable_knobs_set(const dif_otp_ctrl_t *otp) {
+static status_t hw_cfg_enable_knobs_set(const dif_otp_ctrl_t *otp_ctrl) {
 #define HW_CFG_EN_OFFSET(m, i) ((bitfield_field32_t){.mask = m, .index = i})
   static const bitfield_field32_t kSramFetch = HW_CFG_EN_OFFSET(0xff, 0);
   static const bitfield_field32_t kCsrngAppRead = HW_CFG_EN_OFFSET(0xff, 8);
@@ -143,7 +161,7 @@ static status_t hw_cfg_enable_knobs_set(const dif_otp_ctrl_t *otp) {
   val = bitfield_field32_write(val, kEntropySrcFwOvr,
                                kHwCfgSettings.en_entropy_src_fw_over);
 
-  TRY(otp_ctrl_testutils_dai_write32(otp, kDifOtpCtrlPartitionHwCfg,
+  TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionHwCfg,
                                      kHwCfgEnSramIfetchOffset, &val,
                                      /*len=*/1));
   return OK_STATUS();
@@ -203,27 +221,71 @@ static status_t flash_info_read(dif_flash_ctrl_state_t *flash_state,
   return OK_STATUS();
 }
 
-status_t individualize_dev_hw_cfg_start(dif_flash_ctrl_state_t *flash_state,
-                                        const dif_lc_ctrl_t *lc_ctrl,
-                                        const dif_otp_ctrl_t *otp) {
+/**
+ * Hashes a lifecycle transition token to prepare it to be written to OTP.
+ *
+ * According to the Lifecycle Controller's specification:
+ *
+ * "All 128bit lock and unlock tokens are passed through a cryptographic one way
+ * function in hardware before the life cycle controller compares them to the
+ * provisioned values ...", and
+ * "The employed one way function is a 128bit cSHAKE hash with the function name
+ * “” and customization string “LC_CTRL”".
+ *
+ * @param raw_token The raw token to be hashed.
+ * @param token_size The expected hashed token size in bytes.
+ * @param[out] hashed_token The hashed token.
+ * @return Result of the hash operation.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t hash_lc_transition_token(const uint32_t *raw_token,
+                                         size_t token_size,
+                                         uint64_t *hashed_token) {
+  crypto_const_uint8_buf_t input = {
+      .data = (uint8_t *)raw_token,
+      .len = token_size,
+  };
+  crypto_const_uint8_buf_t function_name_string = {
+      .data = (uint8_t *)"",
+      .len = 0,
+  };
+  crypto_const_uint8_buf_t customization_string = {
+      .data = (uint8_t *)"LC_CTRL",
+      .len = 7,
+  };
+  crypto_uint8_buf_t output = {
+      .data = (uint8_t *)hashed_token,
+      .len = token_size,
+  };
+
+  TRY(otcrypto_xof(input, kXofModeSha3Cshake128, function_name_string,
+                   customization_string, token_size, &output));
+
+  return OK_STATUS();
+}
+
+status_t manuf_individualize_device_hw_cfg(dif_flash_ctrl_state_t *flash_state,
+                                           const dif_lc_ctrl_t *lc_ctrl,
+                                           const dif_otp_ctrl_t *otp_ctrl) {
+  // Check life cycle in either PROD, PROD_END, or DEV.
   TRY(lc_ctrl_testutils_operational_state_check(lc_ctrl));
 
   bool is_locked;
-  TRY(dif_otp_ctrl_is_digest_computed(otp, kDifOtpCtrlPartitionHwCfg,
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionHwCfg,
                                       &is_locked));
   if (is_locked) {
     return OK_STATUS();
   }
 
   // Configure byte-sized hardware enable knobs.
-  TRY(hw_cfg_enable_knobs_set(otp));
+  TRY(hw_cfg_enable_knobs_set(otp_ctrl));
 
   // Configure DeviceID
   uint32_t device_id[kFlashInfoDeviceIdWordCount];
   TRY(flash_info_read(flash_state, kFlashInfoDeviceIdByteAddress,
                       kFlashInfoDeviceIdPartitionId, kFlashInfoDeviceIdPageId,
                       device_id, kFlashInfoDeviceIdWordCount));
-  TRY(otp_ctrl_testutils_dai_write32(otp, kDifOtpCtrlPartitionHwCfg,
+  TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionHwCfg,
                                      kHwCfgDeviceIdOffset, device_id,
                                      kHwCfgDeviceIdWordCount));
 
@@ -233,30 +295,31 @@ status_t individualize_dev_hw_cfg_start(dif_flash_ctrl_state_t *flash_state,
                       kFlashInfoManufStatePartitionId,
                       kFlashInfoManufStatePageId, manuf_state,
                       kFlashInfoManufStateWordCount));
-  TRY(otp_ctrl_testutils_dai_write32(otp, kDifOtpCtrlPartitionHwCfg,
+  TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionHwCfg,
                                      kHwCfgManufStateOffset, manuf_state,
                                      kHwCfgManufStateWordCount));
 
-  TRY(otp_ctrl_testutils_lock_partition(otp, kDifOtpCtrlPartitionHwCfg,
+  TRY(otp_ctrl_testutils_lock_partition(otp_ctrl, kDifOtpCtrlPartitionHwCfg,
                                         /*digest=*/0));
   return OK_STATUS();
 }
 
-status_t individualize_dev_hw_cfg_end(const dif_otp_ctrl_t *otp) {
+status_t manuf_individualize_device_hw_cfg_check(
+    const dif_otp_ctrl_t *otp_ctrl) {
   // TODO: Add DeviceId by comparing OTP flash value against the value reported
   // by lc_ctrl. Consider erasing the data from the flash info pages.
   bool is_locked;
-  TRY(dif_otp_ctrl_is_digest_computed(otp, kDifOtpCtrlPartitionHwCfg,
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionHwCfg,
                                       &is_locked));
   uint64_t digest;
-  TRY(dif_otp_ctrl_get_digest(otp, kDifOtpCtrlPartitionHwCfg, &digest));
+  TRY(dif_otp_ctrl_get_digest(otp_ctrl, kDifOtpCtrlPartitionHwCfg, &digest));
 
   return is_locked ? OK_STATUS() : INTERNAL();
 }
 
 OT_WARN_UNUSED_RESULT
-status_t otp_secret_write(const dif_otp_ctrl_t *otp, uint32_t offset,
-                          size_t len) {
+static status_t otp_secret_write(const dif_otp_ctrl_t *otp_ctrl,
+                                 uint32_t offset, size_t len) {
   enum {
     kBufferSize = 4,
   };
@@ -270,7 +333,8 @@ status_t otp_secret_write(const dif_otp_ctrl_t *otp, uint32_t offset,
   size_t len_in_32bit_words = len * 2;
   uint64_t data[kBufferSize];
   TRY(entropy_csrng_generate(/*seed_material=*/NULL, (uint32_t *)data,
-                             len_in_32bit_words));
+                             len_in_32bit_words,
+                             /*fips_check=*/kHardenedBoolTrue));
 
   bool found_error = false;
   uint64_t prev_val = 0;
@@ -282,18 +346,61 @@ status_t otp_secret_write(const dif_otp_ctrl_t *otp, uint32_t offset,
     return INTERNAL();
   }
 
-  TRY(otp_ctrl_testutils_dai_write64(otp, kDifOtpCtrlPartitionSecret1, offset,
-                                     data, len));
+  TRY(otp_ctrl_testutils_dai_write64(otp_ctrl, kDifOtpCtrlPartitionSecret1,
+                                     offset, data, len));
   return OK_STATUS();
 }
 
-status_t individualize_dev_secret1_start(const dif_lc_ctrl_t *lc_ctrl,
-                                         const dif_otp_ctrl_t *otp) {
+status_t manuf_individualize_device_secret0(
+    const dif_lc_ctrl_t *lc_ctrl, const dif_otp_ctrl_t *otp_ctrl,
+    const manuf_cp_provisioning_data_t *provisioning_data) {
+  // Check life cycle in TEST_UNLOCKED0.
+  TRY(lc_ctrl_testutils_check_lc_state(lc_ctrl, kDifLcCtrlStateTestUnlocked0));
+
+  bool is_locked;
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionSecret0,
+                                      &is_locked));
+  if (is_locked) {
+    return OK_STATUS();
+  }
+
+  uint64_t hashed_test_unlock_token[kSecret0TestUnlockTokenSizeInBytes];
+  uint64_t hashed_test_exit_token[kSecret0TestExitTokenSizeInBytes];
+  TRY(hash_lc_transition_token(provisioning_data->test_unlock_token,
+                               kSecret0TestUnlockTokenSizeInBytes,
+                               hashed_test_unlock_token));
+  TRY(hash_lc_transition_token(provisioning_data->test_exit_token,
+                               kSecret0TestExitTokenSizeInBytes,
+                               hashed_test_exit_token));
+
+  TRY(otp_ctrl_testutils_dai_write64(
+      otp_ctrl, kDifOtpCtrlPartitionSecret0, kSecret0TestUnlockTokenOffset,
+      hashed_test_unlock_token, kSecret0TestUnlockTokenSizeIn64BitWords));
+  TRY(otp_ctrl_testutils_dai_write64(
+      otp_ctrl, kDifOtpCtrlPartitionSecret0, kSecret0TestExitTokenOffset,
+      hashed_test_exit_token, kSecret0TestExitTokenSizeIn64BitWords));
+
+  TRY(otp_ctrl_testutils_lock_partition(otp_ctrl, kDifOtpCtrlPartitionSecret0,
+                                        /*digest=*/0));
+
+  return OK_STATUS();
+}
+
+status_t manuf_individualize_device_secret0_check(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  bool is_locked;
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionSecret0,
+                                      &is_locked));
+  return is_locked ? OK_STATUS() : INTERNAL();
+}
+
+status_t manuf_individualize_device_secret1(const dif_lc_ctrl_t *lc_ctrl,
+                                            const dif_otp_ctrl_t *otp_ctrl) {
   // Check life cycle in either PROD or DEV.
   TRY(lc_ctrl_testutils_operational_state_check(lc_ctrl));
 
   bool is_locked;
-  TRY(dif_otp_ctrl_is_digest_computed(otp, kDifOtpCtrlPartitionSecret1,
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionSecret1,
                                       &is_locked));
   if (is_locked) {
     return OK_STATUS();
@@ -303,23 +410,24 @@ status_t individualize_dev_secret1_start(const dif_lc_ctrl_t *lc_ctrl,
   TRY(entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolFalse,
                                 /*seed_material=*/NULL));
 
-  TRY(otp_secret_write(otp, kSecret1FlashAddrKeySeedOffset,
+  TRY(otp_secret_write(otp_ctrl, kSecret1FlashAddrKeySeedOffset,
                        kSecret1FlashAddrKeySeed64BitWords));
-  TRY(otp_secret_write(otp, kSecret1FlashDataKeySeedOffset,
+  TRY(otp_secret_write(otp_ctrl, kSecret1FlashDataKeySeedOffset,
                        kSecret1FlashDataKeySeed64BitWords));
-  TRY(otp_secret_write(otp, kSecret1SramDataKeySeedOffset,
+  TRY(otp_secret_write(otp_ctrl, kSecret1SramDataKeySeedOffset,
                        kSecret1SramDataKeySeed64Bitwords));
 
   TRY(entropy_csrng_uninstantiate());
-  TRY(otp_ctrl_testutils_lock_partition(otp, kDifOtpCtrlPartitionSecret1,
+  TRY(otp_ctrl_testutils_lock_partition(otp_ctrl, kDifOtpCtrlPartitionSecret1,
                                         /*digest=*/0));
 
   return OK_STATUS();
 }
 
-status_t individualize_dev_secret1_end(const dif_otp_ctrl_t *otp) {
+status_t manuf_individualize_device_secret1_check(
+    const dif_otp_ctrl_t *otp_ctrl) {
   bool is_locked;
-  TRY(dif_otp_ctrl_is_digest_computed(otp, kDifOtpCtrlPartitionSecret1,
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionSecret1,
                                       &is_locked));
   return is_locked ? OK_STATUS() : INTERNAL();
 }

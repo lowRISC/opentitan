@@ -533,10 +533,6 @@ cc_library(
 opentitan_functest(
     name = "clkmgr_external_clk_src_for_sw_fast_test",
     srcs = ["clkmgr_external_clk_src_for_sw_fast_test.c"],
-    cw310 = cw310_params(
-        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
-        tags = ["broken"],
-    ),
     verilator = verilator_params(
         tags = [
             "broken",
@@ -1256,6 +1252,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing:otbn_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -1584,10 +1581,6 @@ opentitan_functest(
 opentitan_functest(
     name = "pwrmgr_sleep_disabled_test",
     srcs = ["pwrmgr_sleep_disabled_test.c"],
-    cw310 = cw310_params(
-        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
-        tags = ["broken"],
-    ),
     verilator = verilator_params(
         tags = ["broken"],
     ),
@@ -1598,6 +1591,21 @@ opentitan_functest(
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
+    name = "pwrmgr_usb_clk_disabled_when_active_test",
+    srcs = ["pwrmgr_usb_clk_disabled_when_active_test.c"],
+    deps = [
+        "//sw/device/lib/dif:aon_timer",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:usbdev",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -2559,10 +2567,6 @@ opentitan_functest(
 opentitan_functest(
     name = "ast_clk_outs_test",
     srcs = ["ast_clk_outs_test.c"],
-    cw310 = cw310_params(
-        # FIXME #13611
-        tags = ["broken"],
-    ),
     verilator = verilator_params(
         # FIXME #13611
         timeout = "eternal",

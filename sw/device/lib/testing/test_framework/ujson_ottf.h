@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/ujson/ujson.h"
 #ifdef __cplusplus
 extern "C" {
@@ -20,6 +21,22 @@ extern "C" {
 ujson_t ujson_ottf_console(void);
 
 /**
+ * Add a CRC to the response.
+ * Should not be used directly.
+ * It is used by other macros such as `RESP_ERR`.
+ *
+ * @param uj_ctx_ A `ujson_t` representing the IO context.
+ */
+#define RESP_CRC(uj_ctx_)                         \
+  ({                                              \
+    uint32_t crc = ujson_crc32_finish(uj_ctx_);   \
+    TRY(ujson_putbuf(uj_ctx_, " CRC:", 5));       \
+    TRY(ujson_serialize_uint32_t(uj_ctx_, &crc)); \
+    TRY(ujson_putbuf(uj_ctx_, "\n", 1));          \
+    OK_STATUS();                                  \
+  })
+
+/**
  * Respond with an OK result and JSON encoded data.
  *
  * @param responder_ A ujson serializer function for `data_`.
@@ -29,8 +46,9 @@ ujson_t ujson_ottf_console(void);
 #define RESP_OK(responder_, uj_ctx_, data_)    \
   ({                                           \
     TRY(ujson_putbuf(uj_ctx_, "RESP_OK:", 8)); \
+    ujson_crc32_reset(uj_ctx_);                \
     TRY(responder_(uj_ctx_, data_));           \
-    TRY(ujson_putbuf(uj_ctx_, "\r\n", 2));     \
+    RESP_CRC(uj_ctx_);                         \
     OK_STATUS();                               \
   })
 
@@ -59,7 +77,7 @@ ujson_t ujson_ottf_console(void);
     if (!status_ok(sts)) {                          \
       TRY(ujson_putbuf(uj_ctx_, "RESP_ERR:", 9));   \
       TRY(ujson_serialize_status_t(uj_ctx_, &sts)); \
-      TRY(ujson_putbuf(uj_ctx_, "\r\n", 2));        \
+      RESP_CRC(uj_ctx_);                            \
     }                                               \
   } while (0)
 

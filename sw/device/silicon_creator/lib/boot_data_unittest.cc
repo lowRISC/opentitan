@@ -33,10 +33,11 @@ constexpr boot_data_t kValidEntry0 = {
                0x00000000, 0x11111111, 0x22222222, 0x33333333, 0x44444444},
     .is_valid = kBootDataValidEntry,
     .identifier = kBootDataIdentifier,
-    .version = kBootDataVersion1,
+    .version = kBootDataVersion2,
     .counter = kBootDataDefaultCounterVal,
     .min_security_version_rom_ext = 0,
     .min_security_version_bl0 = 0,
+    .primary_bl0_slot = kBootDataSlotA,
 };
 
 /**
@@ -47,25 +48,25 @@ constexpr boot_data_t kValidEntry1 = {
                0x44444444, 0x33333333, 0x22222222, 0x11111111, 0x00000000},
     .is_valid = kBootDataValidEntry,
     .identifier = kBootDataIdentifier,
-    .version = kBootDataVersion1,
+    .version = kBootDataVersion2,
     .counter = kBootDataDefaultCounterVal + 1,
     .min_security_version_rom_ext = 0,
     .min_security_version_bl0 = 0,
+    .primary_bl0_slot = kBootDataSlotA,
 };
 
 /**
- * Example version2 boot data entry.
+ * Example version 1 boot data entry.
  */
-constexpr boot_data_t kValidEntry2 = {
+constexpr boot_data_t kValidEntryV1 = {
     .digest = {kBootDataIdentifier, kBootDataIdentifier, kBootDataIdentifier,
                0x00000000, 0x11111111, 0x22222222, 0x33333333, 0x44444444},
     .is_valid = kBootDataValidEntry,
     .identifier = kBootDataIdentifier,
-    .version = kBootDataVersion2,
+    .version = kBootDataVersion1,
     .counter = kBootDataDefaultCounterVal,
     .min_security_version_rom_ext = 0,
     .min_security_version_bl0 = 0,
-    .primary_bl0_slot = kBootDataSlotA,
 };
 
 /**
@@ -430,21 +431,18 @@ TEST_F(BootDataReadTest, ReadDefaultNotAllowedInProdTest) {
 
 TEST_F(BootDataReadTest, ReadV1AsV2Test) {
   // Expect both to be searched, but only provide an entry in one.
-  ExpectPageScan(&kFlashCtrlInfoPageBootData0, EntryPage(kValidEntry0));
+  ExpectPageScan(&kFlashCtrlInfoPageBootData0, EntryPage(kValidEntryV1));
   ExpectPageScan(&kFlashCtrlInfoPageBootData1, ErasedPage());
+
+  // Expect a new digest computation on version 2 of the boot data.
+  ExpectDigestCompute(kValidEntry0, true);
 
   // Expect to read the version 1 boot data.
   boot_data_t boot_data = {{0}};
   EXPECT_EQ(boot_data_read(kLcStateTest, &boot_data), kErrorOk);
   EXPECT_EQ(boot_data, kValidEntry0);
 
-  // Expect a new digest computation on version 2 of the boot data.
-  ExpectDigestCompute(kValidEntry2, true);
-
-  // Populate the version 1 fields with default version 2 data.
-  EXPECT_EQ(boot_data_as_v2(&boot_data), kErrorOk);
-
-  EXPECT_EQ(boot_data, kValidEntry2);
+  EXPECT_EQ(boot_data, kValidEntry0);
 }
 
 }  // namespace

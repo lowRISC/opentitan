@@ -13,6 +13,21 @@ load(
     "opentitan_multislot_flash_binary",
 )
 load("//rules:opentitan_test.bzl", "cw310_params", "opentitan_functest")
+load(
+    "//rules:otp.bzl",
+    "STD_OTP_OVERLAYS",
+    "otp_alert_classification",
+    "otp_alert_digest",
+    "otp_bytestring",
+    "otp_hex",
+    "otp_image",
+    "otp_json",
+    "otp_partition",
+    "otp_per_class_bytes",
+    "otp_per_class_ints",
+    "otp_per_class_lists",
+)
+load("//rules:splice.bzl", "bitstream_splice")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -132,11 +147,45 @@ opentitan_multislot_flash_binary(
     },
 )
 
+otp_json(
+    name = "otp_json_secret2_locked",
+    partitions = [
+        otp_partition(
+            name = "SECRET2",
+            items = {
+                "CREATOR_ROOT_KEY_SHARE0": "<random>",
+                "CREATOR_ROOT_KEY_SHARE1": "<random>",
+            },
+            lock = True,
+        ),
+    ],
+    visibility = ["//visibility:private"],
+)
+
+otp_image(
+    name = "otp_img_secret2_locked_rma",
+    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
+    overlays = STD_OTP_OVERLAYS + [
+        ":otp_json_secret2_locked",
+    ],
+    visibility = ["//visibility:private"],
+)
+
+bitstream_splice(
+    name = "bitstream_secret2_locked",
+    src = "//hw/bitstream:rom_with_fake_keys",
+    data = ":otp_img_secret2_locked_rma",
+    meminfo = "//hw/bitstream:otp_mmi",
+    update_usr_access = True,
+    visibility = ["//visibility:private"],
+)
+
 BOOT_SUCCESS_MSG = "Bare metal PASS!"
 
 opentitan_functest(
     name = "rom_ext_virtual_bare_metal_virtual_boot_test",
     cw310 = cw310_params(
+        bitstream = ":bitstream_secret2_locked",
         exit_success = BOOT_SUCCESS_MSG,
     ),
     key_struct = "multislot",
@@ -175,6 +224,9 @@ opentitan_multislot_flash_binary(
 
 opentitan_functest(
     name = "rom_ext_virtual_ottf_bl0_virtual_test",
+    cw310 = cw310_params(
+        bitstream = ":bitstream_secret2_locked",
+    ),
     key_struct = "multislot",
     ot_flash_binary = ":rom_ext_virtual_ottf_bl0_virtual",
     signed = True,

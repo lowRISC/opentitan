@@ -167,7 +167,7 @@ impl Uart for SerialPortUart {
                 .write_all(std::slice::from_ref(b))
                 .context("UART write error")?;
             // Sleep one uart character time after writing to the uart to pace characters into the
-            // usb-serial device so that we don't fill any device-internal buffers.  The CW310 (for
+            // usb-serial device so that we don't fill any device-internal buffers.  The Chip Whisperer board (for
             // example) appears to have a large internal buffer that will keep transmitting to OT
             // even if an XOFF is sent.
             std::thread::sleep(pacing);

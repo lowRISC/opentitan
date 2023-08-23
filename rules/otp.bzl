@@ -39,7 +39,7 @@ format expected by the image generation tool.
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("//rules:host.bzl", "host_tools_transition")
-load("//rules:const.bzl", "CONST", "hex", "hex_digits")
+load("//rules:const.bzl", "CONST", "hex")
 
 def get_otp_images():
     """Returns a list of (otp_name, img_target) tuples.
@@ -246,8 +246,8 @@ otp_image = rule(
     },
 )
 
-def _otp_image_header(ctx):
-    output = ctx.actions.declare_file(ctx.attr.name + ".h")
+def _otp_image_consts_impl(ctx):
+    output = ctx.actions.declare_file(ctx.attr.name + ".c")
     args = ctx.actions.args()
     if not ctx.attr.verbose:
         args.add("--quiet")
@@ -257,14 +257,14 @@ def _otp_image_header(ctx):
     args.add("--lc-seed", ctx.attr.lc_seed[BuildSettingInfo].value)
     args.add("--otp-seed", ctx.attr.otp_seed[BuildSettingInfo].value)
     args.add("--img-cfg", ctx.file.src)
-    args.add("--header-template", ctx.file.header_template)
-    args.add("--header-out", "{}/{}.h".format(output.dirname, ctx.attr.name))
+    args.add("--c-template", ctx.file.c_template)
+    args.add("--c-out", "{}/{}.c".format(output.dirname, ctx.attr.name))
     args.add_all(ctx.files.overlays, before_each = "--add-cfg")
     ctx.actions.run(
         outputs = [output],
         inputs = [
             ctx.file.src,
-            ctx.file.header_template,
+            ctx.file.c_template,
             ctx.file.lc_state_def,
             ctx.file.mmap_def,
         ] + ctx.files.overlays,
@@ -272,19 +272,11 @@ def _otp_image_header(ctx):
         executable = ctx.executable._tool,
     )
     return [
-        CcInfo(compilation_context = cc_common.create_compilation_context(
-            includes = depset([output.dirname]),
-            headers = depset([output]),
-            defines = depset(["RULE_NAME=\"{}\"".format(ctx.label.name)]),
-        )),
         DefaultInfo(files = depset([output]), runfiles = ctx.runfiles(files = [output])),
-        OutputGroupInfo(
-            header = depset([output]),
-        ),
     ]
 
-otp_image_header = rule(
-    implementation = _otp_image_header,
+otp_image_consts = rule(
+    implementation = _otp_image_consts_impl,
     attrs = {
         "src": attr.label(
             allow_single_file = [".json", ".hjson"],
@@ -316,9 +308,9 @@ otp_image_header = rule(
             default = "//hw/ip/otp_ctrl/data:otp_seed",
             doc = "Configuration override seed used to randomize OTP netlist constants.",
         ),
-        "header_template": attr.label(
+        "c_template": attr.label(
             allow_single_file = True,
-            default = "//hw/ip/otp_ctrl/data:otp_ctrl_img.h.tpl",
+            default = "//hw/ip/otp_ctrl/data:otp_ctrl_img.c.tpl",
             doc = "OTP image header template.",
         ),
         "verbose": attr.bool(

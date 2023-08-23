@@ -12,7 +12,7 @@ from pathlib import Path
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
 
-from topgen import strong_random  # noqa : E402
+from topgen import secure_prng as sp  # noqa : E402
 
 
 def wrapped_docstring():
@@ -145,10 +145,15 @@ def hist_to_bars(hist, m):
     return bars
 
 
-def get_hd(word1, word2):
+def get_hd(word1: str, word2: str) -> int:
     '''Calculate Hamming distance between two words.'''
     if len(word1) != len(word2):
         raise RuntimeError('Words are not of equal size')
+    # Python's int(n, 2) function will accept both strings of bits and
+    # 0b-prefixed strings. This can lead to edge cases such as get_hd('1001',
+    # '0b01'). We forbid the usage of "0b" with this function.
+    if '0b' in word1 or '0b' in word2:
+        raise ValueError('Words should not contain the "0b" prefix')
     return bin(int(word1, 2) ^ int(word2, 2)).count('1')
 
 
@@ -297,7 +302,7 @@ def random_or_hexvalue(dict_obj, key, num_bits):
 
     # Generate a random number of requested size in this case.
     if dict_obj[key] == '<random>':
-        dict_obj[key] = strong_random.getrandbits(num_bits)
+        dict_obj[key] = sp.getrandbits(num_bits)
     # Otherwise attempt to convert this number to an int.
     # Check that the range is correct.
     else:

@@ -60,4 +60,10 @@ class chip_common_vseq extends chip_stub_cpu_base_vseq;
                                  top_earlgrey_pkg::DioPadSpiHostD0] = '0;
   endtask
 
+  // Wait for cpu fetch enable before primary sequence start
+  // in stub cpu test.
+  virtual task run_common_vseq_wrapper(int num_times = 1);
+    wait(cfg.chip_vif.pwrmgr_cpu_fetch_en == 1);
+    super.run_common_vseq_wrapper(num_times);
+  endtask
 endclass

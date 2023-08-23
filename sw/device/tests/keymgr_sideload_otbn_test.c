@@ -12,6 +12,7 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
+#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/otbn_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -160,6 +161,12 @@ bool test_main(void) {
   dif_otbn_t otbn;
   CHECK_DIF_OK(
       dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+
+  // Put entropy source into auto mode. If the entropy source was merely left
+  // with the entropy it generated at boot, this test may exhaust the supply
+  // with no renewal.
+  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
+
   // Test OTBN sideloading.
   test_otbn_with_sideloaded_key(&keymgr, &otbn);
 

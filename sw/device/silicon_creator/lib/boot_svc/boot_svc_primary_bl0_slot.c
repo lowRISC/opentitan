@@ -14,8 +14,10 @@ void boot_svc_primary_bl0_slot_req_init(uint32_t primary_bl0_slot,
                            &msg->header);
 }
 
-void boot_svc_primary_bl0_slot_res_init(rom_error_t status,
+void boot_svc_primary_bl0_slot_res_init(uint32_t primary_bl0_slot,
+                                        rom_error_t status,
                                         boot_svc_primary_bl0_slot_res_t *msg) {
+  msg->primary_bl0_slot = primary_bl0_slot;
   msg->status = status;
   boot_svc_header_finalize(kBootSvcPrimaryBl0SlotResType,
                            sizeof(boot_svc_primary_bl0_slot_res_t),

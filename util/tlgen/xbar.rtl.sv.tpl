@@ -8,6 +8,7 @@
 // Interconnect
 <%
   import tlgen.lib as lib
+  from tlgen.item import Host, Device, AsyncFifo, Socket1N, SocketM1
 %>\
 % for host in xbar.hosts:
 ${xbar.repr_tree(host, 0)}
@@ -46,14 +47,14 @@ module xbar_${xbar.name} (
 
 % for block in xbar.nodes:
   ## Create enum type for Upstream and Downstream ports connection
-  % if block.node_type.name   == "ASYNC_FIFO":
+  % if isinstance(block, AsyncFifo):
     ## One US, one DS
   tl_h2d_t tl_${block.name}_us_h2d ;
   tl_d2h_t tl_${block.name}_us_d2h ;
   tl_h2d_t tl_${block.name}_ds_h2d ;
   tl_d2h_t tl_${block.name}_ds_d2h ;
 
-  % elif block.node_type.name == "SOCKET_1N":
+  % elif isinstance(block, Socket1N):
     ## One US, multiple DS
   tl_h2d_t tl_${block.name}_us_h2d ;
   tl_d2h_t tl_${block.name}_us_d2h ;
@@ -72,7 +73,7 @@ module xbar_${xbar.name} (
   // Create steering signal
   logic [${len(block.ds).bit_length()-1}:0] dev_sel_${block.name};
 
-  % elif block.node_type.name == "SOCKET_M1":
+  % elif isinstance(block, SocketM1):
     ## Multiple US, one DS
     ## typedef enum int {
     ##   % for port in block.us:
@@ -100,36 +101,36 @@ module xbar_${xbar.name} (
     ds_name = conn.ds.name.replace('.', '__')
     us_name = conn.us.name.replace('.', '__')
 
-    if conn.ds.node_type.name == "ASYNC_FIFO":
+    if isinstance(conn.ds, AsyncFifo):
       ds_h2d_name = 'tl_' + ds_name + '_us_h2d'
       ds_d2h_name = 'tl_' + ds_name + '_us_d2h'
       ds_index = -1
-    elif conn.ds.node_type.name == "SOCKET_1N":
+    elif isinstance(conn.ds, Socket1N):
       ds_h2d_name = 'tl_' + ds_name + '_us_h2d'
       ds_d2h_name = 'tl_' + ds_name + '_us_d2h'
       ds_index = -1
-    elif conn.ds.node_type.name == "SOCKET_M1":
+    elif isinstance(conn.ds, SocketM1):
       ds_h2d_name = 'tl_' + ds_name + '_us_h2d'
       ds_d2h_name = 'tl_' + ds_name + '_us_d2h'
       ds_index = conn.ds.us.index(conn)
-    elif conn.ds.node_type.name == "DEVICE":
+    elif isinstance(conn.ds, Device):
       ds_h2d_name = 'tl_' + ds_name + '_o'
       ds_d2h_name = 'tl_' + ds_name + '_i'
       ds_index = -1
 
-    if conn.us.node_type.name == "ASYNC_FIFO":
+    if isinstance(conn.us, AsyncFifo):
       us_h2d_name = 'tl_' + us_name + '_ds_h2d'
       us_d2h_name = 'tl_' + us_name + '_ds_d2h'
       us_index = -1
-    elif conn.us.node_type.name == "SOCKET_1N":
+    elif isinstance(conn.us, Socket1N):
       us_h2d_name = 'tl_' + us_name + '_ds_h2d'
       us_d2h_name = 'tl_' + us_name + '_ds_d2h'
       us_index = conn.us.ds.index(conn)
-    elif conn.us.node_type.name == "SOCKET_M1":
+    elif isinstance(conn.us, SocketM1):
       us_h2d_name = 'tl_' + us_name + '_ds_h2d'
       us_d2h_name = 'tl_' + us_name + '_ds_d2h'
       us_index = -1
-    elif conn.us.node_type.name == "HOST":
+    elif isinstance(conn.us, Host):
       us_h2d_name = 'tl_' + us_name + '_i'
       us_d2h_name = 'tl_' + us_name + '_o'
       us_index = -1
@@ -206,7 +207,7 @@ ${"end" if loop.last else ""}
   stripped_name = block.name.replace('.', '__')
   # TODO #15754: Pass this parameter through the tlgen script instead of hardcoding
 %>\
-  % if block.node_type.name   == "ASYNC_FIFO":
+  % if isinstance(block, AsyncFifo):
   tlul_fifo_async #(
     .ReqDepth        (1),
     .RspDepth        (1)
@@ -220,7 +221,7 @@ ${"end" if loop.last else ""}
     .tl_d_o       (tl_${stripped_name}_ds_h2d),
     .tl_d_i       (tl_${stripped_name}_ds_d2h)
   );
-  % elif block.node_type.name == "SOCKET_1N":
+  % elif isinstance(block, Socket1N):
   tlul_socket_1n #(
     % if block.hreq_pass != 1:
     .HReqPass  (1'b${block.hreq_pass}),
@@ -252,7 +253,7 @@ ${"end" if loop.last else ""}
     .tl_d_i       (tl_${stripped_name}_ds_d2h),
     .dev_select_i (dev_sel_${stripped_name})
   );
-  % elif block.node_type.name == "SOCKET_M1":
+  % elif isinstance(block, SocketM1):
   tlul_socket_m1 #(
     % if block.hreq_pass != 2**(len(block.us)) - 1:
     .HReqPass  (${len(block.us)}'h${"%x" % block.hreq_pass}),

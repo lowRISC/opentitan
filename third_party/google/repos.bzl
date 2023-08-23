@@ -30,9 +30,9 @@ def google_repos(
     http_archive_or_local(
         name = "com_google_absl",
         local = absl,
-        sha256 = "1da554cf5670fc119ef5afbeb31d10d51e7554df9dced2967663e679b8d852ed",
-        strip_prefix = "abseil-cpp-e854df09dfcb35056c1d42420028648ee0ebebaf",
-        url = "https://github.com/abseil/abseil-cpp/archive/e854df09dfcb35056c1d42420028648ee0ebebaf.tar.gz",
+        sha256 = "59d2976af9d6ecf001a81a35749a6e551a335b949d34918cfade07737b9d93c5",
+        strip_prefix = "abseil-cpp-20230802.0",
+        url = "https://github.com/abseil/abseil-cpp/archive/refs/tags/20230802.0.tar.gz",
     )
 
     http_archive_or_local(
@@ -48,4 +48,11 @@ def google_repos(
         strip_prefix = "rules_foreign_cc-0.9.0",
         sha256 = "2a4d07cd64b0719b39a7c12218a3e507672b82a97b98c6a89d38565894cf7c51",
         url = "https://github.com/bazelbuild/rules_foreign_cc/archive/refs/tags/0.9.0.tar.gz",
+    )
+
+    http_archive_or_local(
+        name = "rules_fuzzing",
+        sha256 = "f85dc70bb9672af0e350686461fe6fdd0d61e10e75645f9e44fedf549b21e369",
+        strip_prefix = "rules_fuzzing-0.3.2",
+        urls = ["https://github.com/bazelbuild/rules_fuzzing/archive/v0.3.2.tar.gz"],
     )

@@ -64,14 +64,12 @@ static rom_error_t expected_state_check(uint32_t expected_state) {
   return kErrorKeymgrInternal;
 }
 
-rom_error_t keymgr_init(uint16_t entropy_reseed_interval) {
-  SEC_MMIO_ASSERT_WRITE_INCREMENT(kKeymgrSecMmioInit, 1);
-  RETURN_IF_ERROR(expected_state_check(kKeymgrStateReset));
+void keymgr_entropy_reseed_interval_set(uint16_t entropy_reseed_interval) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kKeymgrSecMmioEntropyReseedIntervalSet, 1);
   uint32_t reg = bitfield_field32_write(
       0, KEYMGR_RESEED_INTERVAL_SHADOWED_VAL_FIELD, entropy_reseed_interval);
   sec_mmio_write32_shadowed(kBase + KEYMGR_RESEED_INTERVAL_SHADOWED_REG_OFFSET,
                             reg);
-  return kErrorOk;
 }
 
 void keymgr_sw_binding_set(

@@ -19,6 +19,7 @@
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
+#include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/epmp_defs.h"
 
 #include "alert_handler_regs.h"
@@ -376,6 +377,9 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_report_error(rom_error_t reason)) {
   // Call the inline variant of `shutdown_redact` because we want to guarantee
   // that we won't jump to a different function.
   uint32_t redacted_error = shutdown_redact_inline(reason, policy);
+
+  // Store redacted shutdown reason in retention SRAM.
+  retention_sram_get()->creator.last_shutdown_reason = redacted_error;
 
   // Reset UART TX fifo and enable TX.
   abs_mmio_write32(kUartBase + UART_FIFO_CTRL_REG_OFFSET,

@@ -45,7 +45,7 @@
 /**
  * Maximum size of a boot services message.
  */
-#define CHIP_BOOT_SVC_MSG_SIZE_MAX 48
+#define CHIP_BOOT_SVC_MSG_SIZE_MAX 52
 
 /**
  * Maximum payload size for a boot services message.

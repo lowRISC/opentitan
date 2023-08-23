@@ -192,18 +192,18 @@ class flash_ctrl_mid_op_rst_vseq extends flash_ctrl_base_vseq;
           begin
             cfg.clk_rst_vif.wait_clks(19);
             low_ready_h();
+            apply_reset();
           end
         join
       end : isolation_fork_read
     join
-   wait_cfg_prog_rd();
-
   endtask : body
 
   // Task to wait and then do random program and read transactions and check that they complete
   //  successfully (and by this making sure the flash recovered from the power-loss)
   task wait_cfg_prog_rd();
     data_q_t exp_data;
+    flash_op_t myop;
     // Wait some time to make sure flash is stable again.
     cfg.clk_rst_vif.wait_clks(1_000);
     // Make sure that flash initialization is complete.
@@ -220,8 +220,12 @@ class flash_ctrl_mid_op_rst_vseq extends flash_ctrl_base_vseq;
     exp_data = cfg.calculate_expected_data(flash_op, flash_op_data);
     cfg.flash_mem_bkdr_read_check(flash_op, exp_data);
     cfg.clk_rst_vif.wait_clks(100);
-    // Do random read transaction, then check it completed successfully.
+    // Store program op for read back.
+    myop = flash_op;
+
+    // Do read back transaction, then check it completed successfully.
     `DV_CHECK_RANDOMIZE_WITH_FATAL(this, flash_op.op == FlashOpRead;
+                                         flash_op.addr == myop.addr;
                                          flash_op.partition == FlashPartData;
                                          flash_op.num_words == 1;)
     do_read(flash_op);

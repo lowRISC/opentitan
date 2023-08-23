@@ -14,16 +14,15 @@
 
 enum {
   /**
-   * Base address of retention SRAM controller.
+   * Base address of retention SRAM control registers.
    */
   kBase = TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR,
 };
 
-retention_sram_t *retention_sram_get(void) {
-  static_assert(sizeof(retention_sram_t) == TOP_EARLGREY_RAM_RET_AON_SIZE_BYTES,
-                "Unexpected retention SRAM size.");
-  return (retention_sram_t *)TOP_EARLGREY_RAM_RET_AON_BASE_ADDR;
-}
+static_assert(kRetentionSramBase == TOP_EARLGREY_RAM_RET_AON_BASE_ADDR,
+              "Unexpected retention SRAM base address.");
+static_assert(sizeof(retention_sram_t) == TOP_EARLGREY_RAM_RET_AON_SIZE_BYTES,
+              "Unexpected retention SRAM size.");
 
 void retention_sram_clear(void) {
   memset(retention_sram_get(), 0, sizeof(retention_sram_t));
@@ -42,3 +41,6 @@ void retention_sram_scramble(void) {
   ctrl = bitfield_bit32_write(ctrl, SRAM_CTRL_CTRL_INIT_BIT, true);
   abs_mmio_write32(kBase + SRAM_CTRL_CTRL_REG_OFFSET, ctrl);
 }
+
+// Extern declarations for the inline functions in the header.
+extern retention_sram_t *retention_sram_get(void);

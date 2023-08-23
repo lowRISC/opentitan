@@ -70,6 +70,7 @@ class flash_ctrl_base_test #(
     void'($value$plusargs("en_always_prog=%0d", cfg.en_always_prog));
     void'($value$plusargs("en_all_info_acc=%0d", cfg.en_all_info_acc));
     void'($value$plusargs("rd_buf_en_to=%0d", cfg.wait_rd_buf_en_timeout_ns));
+    void'($value$plusargs("en_rnd_data=%0b", cfg.wr_rnd_data));
     if (cfg.en_always_all) begin
       cfg.en_always_read = 1;
       cfg.en_always_prog = 1;

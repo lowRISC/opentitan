@@ -21,14 +21,17 @@ use std::rc::Rc;
 
 use crate::io::gpio::{GpioMonitoring, GpioPin};
 use crate::io::i2c::Bus;
+use crate::io::jtag::{Jtag, JtagParams};
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
+use crate::transport::chip_whisperer::board::Cw310;
+use crate::transport::chip_whisperer::ChipWhisperer;
 use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
 use crate::transport::common::uart::{flock_serial, SerialPortExclusiveLock, SerialPortUart};
-use crate::transport::cw310::CW310;
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType, UpdateFirmware,
 };
+use crate::util::openocd::OpenOcdServer;
 use crate::util::usb::UsbBackend;
 
 pub mod c2d2;
@@ -232,6 +235,7 @@ impl<T: Flavor> Hyperdebug<T> {
                 selected_spi: Cell::new(0),
                 i2cs: Default::default(),
                 uarts: Default::default(),
+                jtag: Default::default(),
             }),
             current_firmware_version,
             phantom: PhantomData,
@@ -312,6 +316,7 @@ pub struct Inner {
     selected_spi: Cell<u8>,
     i2cs: RefCell<HashMap<u8, Rc<dyn Bus>>>,
     uarts: RefCell<HashMap<PathBuf, Rc<dyn Uart>>>,
+    jtag: RefCell<Option<Rc<dyn Jtag>>>,
 }
 
 impl Inner {
@@ -471,7 +476,8 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 | Capability::SPI
                 | Capability::SPI_DUAL
                 | Capability::SPI_QUAD
-                | Capability::I2C,
+                | Capability::I2C
+                | Capability::JTAG,
         ))
     }
 
@@ -577,6 +583,14 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
             Err(TransportError::UnsupportedOperation.into())
         }
     }
+
+    fn jtag(&self, opts: &JtagParams) -> Result<Rc<dyn Jtag>> {
+        let mut jtag = self.inner.jtag.borrow_mut();
+        if jtag.is_none() {
+            jtag.replace(Rc::new(OpenOcdServer::new(opts)?));
+        }
+        Ok(Rc::clone(jtag.as_ref().unwrap()))
+    }
 }
 
 /// A `StandardFlavor` is a plain Hyperdebug board.
@@ -647,9 +661,9 @@ impl Flavor for StandardFlavor {
     }
 }
 
-/// A `CW310Flavor` is a Hyperdebug attached to a CW310 board.  Furthermore,
-/// both the Hyperdebug and CW310 USB interfaces are attached to the host.
-/// Hyperdebug is used for all IO with the CW310 board except for bitstream
+/// A `CW310Flavor` is a Hyperdebug attached to a Chip Whisperer board.  Furthermore,
+/// both the Hyperdebug and Chip Whisperer board USB interfaces are attached to the host.
+/// Hyperdebug is used for all IO with the Chip Whisperer board except for bitstream
 /// programming.
 pub struct CW310Flavor;
 
@@ -675,9 +689,9 @@ impl Flavor for CW310Flavor {
             return Ok(());
         }
 
-        // First, try to establish a connection to the native CW310 interface
+        // First, try to establish a connection to the native Chip Whisperer interface
         // which we will use for bitstream loading.
-        let cw310 = CW310::new(None, None, None, &[])?;
+        let board = ChipWhisperer::<Cw310>::new(None, None, None, &[])?;
 
         // The transport does not provide name resolution for the IO interface
         // names, so: console=UART2 and RESET=CN10_29 on the Hyp+CW310.
@@ -691,14 +705,14 @@ impl Flavor for CW310Flavor {
 
         // Program the FPGA bitstream.
         log::info!("Programming the FPGA bitstream.");
-        let usb = cw310.device.borrow();
+        let usb = board.device.borrow();
         usb.spi1_enable(false)?;
         usb.fpga_program(&fpga_program.bitstream, fpga_program.progress.as_ref())?;
         Ok(())
     }
     fn clear_bitstream(_clear: &ClearBitstream) -> Result<()> {
-        let cw310 = CW310::new(None, None, None, &[])?;
-        let usb = cw310.device.borrow();
+        let board = ChipWhisperer::<Cw310>::new(None, None, None, &[])?;
+        let usb = board.device.borrow();
         usb.spi1_enable(false)?;
         usb.clear_bitstream()?;
         Ok(())

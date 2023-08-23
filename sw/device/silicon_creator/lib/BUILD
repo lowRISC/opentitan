@@ -315,6 +315,7 @@ dual_cc_library(
             "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
             "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/silicon_creator/lib/drivers:retention_sram",
             "//sw/device/lib/arch:device",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:bitfield",
@@ -420,6 +421,23 @@ filegroup(
     srcs = [
         "bootstrap.c",
         "bootstrap.h",
+    ],
+)
+
+cc_library(
+    name = "bootstrap_fuzzer_util",
+    srcs = ["bootstrap_fuzzer_util.cc"],
+    hdrs = ["bootstrap_fuzzer_util.h"],
+    deps = [
+        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib:bootstrap_unittest_util",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/drivers:spi_device",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_absl//absl/types:span",
     ],
 )
 

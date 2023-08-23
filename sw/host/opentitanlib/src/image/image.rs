@@ -175,7 +175,7 @@ impl Image {
         extension_slice.copy_from_slice(ext_bytes.as_slice());
         self.size = std::cmp::max(end_index as usize, self.size);
 
-        let mut manifest = self.borrow_manifest_mut()?;
+        let manifest = self.borrow_manifest_mut()?;
         manifest.extensions.entries = ext_table;
 
         Ok(())

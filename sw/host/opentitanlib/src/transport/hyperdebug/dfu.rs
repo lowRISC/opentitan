@@ -143,11 +143,12 @@ const EC_FIRMWARE_NAME_LEN: usize = 32;
 fn get_hyperdebug_firmware_version(firmware: &[u8]) -> Result<&str> {
     let Some(pos) = firmware[0..1024]
         .chunks(4)
-        .position(|c| c[0..4] == EC_COOKIE) else {
-            bail!(TransportError::FirmwareProgramFailed(
-                "File is not a HyperDebug firmware image".to_string()
-            ));
-        };
+        .position(|c| c[0..4] == EC_COOKIE)
+    else {
+        bail!(TransportError::FirmwareProgramFailed(
+            "File is not a HyperDebug firmware image".to_string()
+        ));
+    };
     let firmware_name_field = &firmware[(pos + 1) * 4..(pos + 1) * 4 + EC_FIRMWARE_NAME_LEN];
     let end = firmware_name_field
         .iter()
@@ -231,7 +232,7 @@ pub fn update_firmware(
 
     let dfu_desc = scan_usb_descriptor(&dfu_device)?;
     dfu_device.claim_interface(dfu_desc.dfu_interface)?;
-    do_update_firmware(&mut dfu_device, dfu_desc, firmware, progress)?;
+    do_update_firmware(&dfu_device, dfu_desc, firmware, progress)?;
 
     // At this point, the new firmware has been completely transferred, and the USB device is
     // resetting and booting the new firmware.  Wait a second, then verify that device can now be
@@ -248,7 +249,7 @@ pub fn update_firmware(
 }
 
 fn do_update_firmware(
-    usb_device: &mut UsbBackend,
+    usb_device: &UsbBackend,
     dfu_desc: DfuDescriptor,
     firmware: &[u8],
     progress: &dyn ProgressIndicator,

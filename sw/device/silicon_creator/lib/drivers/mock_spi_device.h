@@ -25,6 +25,7 @@ class MockSpiDevice : public global_mock::GlobalMock<MockSpiDevice> {
 }  // namespace internal
 
 using MockSpiDevice = testing::StrictMock<internal::MockSpiDevice>;
+using NiceMockSpiDevice = testing::NiceMock<internal::MockSpiDevice>;
 
 }  // namespace rom_test
 

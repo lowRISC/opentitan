@@ -58,32 +58,40 @@ typedef struct boot_svc_min_bl0_sec_ver_res {
    */
   boot_svc_header_t header;
   /**
-   * Minimum security version to set.
+   * Minimum security version read from flash.
+   */
+  uint32_t min_bl0_sec_ver;
+  /**
+   * Status response from ROM_EXT.
    */
   rom_error_t status;
 } boot_svc_min_bl0_sec_ver_res_t;
 
 OT_ASSERT_MEMBER_OFFSET(boot_svc_min_bl0_sec_ver_res_t, header, 0);
-OT_ASSERT_MEMBER_OFFSET(boot_svc_min_bl0_sec_ver_res_t, status,
+OT_ASSERT_MEMBER_OFFSET(boot_svc_min_bl0_sec_ver_res_t, min_bl0_sec_ver,
                         CHIP_BOOT_SVC_MSG_HEADER_SIZE);
-OT_ASSERT_SIZE(boot_svc_min_bl0_sec_ver_res_t, 48);
+OT_ASSERT_MEMBER_OFFSET(boot_svc_min_bl0_sec_ver_res_t, status,
+                        CHIP_BOOT_SVC_MSG_HEADER_SIZE + 4);
+OT_ASSERT_SIZE(boot_svc_min_bl0_sec_ver_res_t, 52);
 
 /**
  * Initialize a set minimum security version request message.
  *
- * @param min_bl0_sec_ver_version The minimum security version to set.
+ * @param min_bl0_sec_ver The minimum security version to set.
  * @param[out] msg Output buffer for the message.
  */
-void boot_svc_min_bl0_sec_ver_req_init(uint32_t min_bl0_sec_ver_version,
+void boot_svc_min_bl0_sec_ver_req_init(uint32_t min_bl0_sec_ver,
                                        boot_svc_min_bl0_sec_ver_req_t *msg);
 
 /**
  * Initialize a set minimum security version response message.
  *
+ * @param min_bl0_sec_ver The minimum security version read from flash.
  * @param status The result of this request.
  * @param[out] msg Output buffer for the message.
  */
-void boot_svc_min_bl0_sec_ver_res_init(rom_error_t status,
+void boot_svc_min_bl0_sec_ver_res_init(uint32_t min_bl0_sec_ver,
+                                       rom_error_t status,
                                        boot_svc_min_bl0_sec_ver_res_t *msg);
 
 #ifdef __cplusplus

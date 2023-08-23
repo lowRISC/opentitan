@@ -43,7 +43,7 @@ The software dependencies are covered by other guides in this book and are linke
 ## Running the ROM E2E tests
 The ROM E2E tests are listed in the bazel [BUILD file](https://github.com/lowRISC/OpenTitan/blob/master/sw/device/silicon_creator/rom/e2e/BUILD), alternatively they can be listed with the command:
 ```sh
-bazel query 'attr(tags, cw310, tests(//sw/device/silicon_creator/rom/e2e/...))
+bazel query 'attr(tags, cw310, tests(//sw/device/silicon_creator/rom/e2e/...))'
 ```
 Once the hardware setup is done and the FPGA is connected to the USB, the full suite of ROM E2E tests can be executed with the command `bazel test` with the wildcard `sw/device/silicon_creator/rom/e2e`.
 ```sh

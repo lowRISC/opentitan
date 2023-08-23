@@ -167,10 +167,6 @@ module aon_timer import aon_timer_reg_pkg::*;
   // cause register resides in AON domain.
   assign wkup_req_o = reg2hw.wkup_cause.q;
 
-  // The wakeup signal is not latched in the pwrmgr so must be held until acked by software
-  `ASSERT(WkupStable_A, wkup_req_o |=> wkup_req_o ||
-      $fell(reg2hw.wkup_cause.q) && !aon_sleep_mode, clk_aon_i, !rst_aon_ni)
-
   ////////////////////////
   // Interrupt Handling //
   ////////////////////////

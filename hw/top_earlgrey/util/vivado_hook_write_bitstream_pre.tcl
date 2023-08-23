@@ -148,6 +148,20 @@ proc dump_init_strings {filename brams designtask_count} {
     send_msg "${designtask_count}-4" INFO "INIT_XX strings dumped to ${filepath}"
 }
 
+set fpga_family [get_property FAMILY [get_parts [get_property PART [current_design]]]]
+
+switch ${fpga_family} {
+  kintex7 {
+    set bram_regex "BMEM.*.*"
+  }
+  kintexu {
+    set bram_regex "BLOCKRAM.*.*"
+  }
+  default {
+    set bram_regex "BMEM.*.*"
+  }
+}
+
 # The scrambled Boot ROM is actually 39 bits wide, but we need to pretend that
 # it's 40 bits, or else we will be unable to encode our ROM data in a MEM file
 # that updatemem will understand.
@@ -162,7 +176,7 @@ proc dump_init_strings {filename brams designtask_count} {
 #
 # A hack that works is to pretend the data width is actually 40 bits. Updatemem
 # seems to write that extra zero bit into the ether without complaint.
-set rom_brams [split [get_cells -hierarchical -filter { PRIMITIVE_TYPE =~ BMEM.bram.* && NAME =~ *u_rom_ctrl*}] " "]
+set rom_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_rom_ctrl*"] " "]
 generate_mmi "rom.mmi" $rom_brams "RAMB36" 40 1 1
 
 # OTP does not require faking the word width, but it has its own quirk. It seems
@@ -170,7 +184,7 @@ generate_mmi "rom.mmi" $rom_brams "RAMB36" 40 1 1
 # and <AddressRange> tags need to account for this or else updatemem will think
 # that its data input overruns the address space. The workaround is to pretend
 # the address space is 16 times larger than we would normally compute.
-set otp_brams [split [get_cells -hierarchical -filter { PRIMITIVE_TYPE =~ BMEM.bram.* && NAME =~ *u_otp_ctrl*}] " "]
+set otp_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_otp_ctrl*"] " "]
 generate_mmi "otp.mmi" $otp_brams "RAMB18" 0 16 2
 
 # For debugging purposes, dump the INIT_XX strings for ROM and OTP.

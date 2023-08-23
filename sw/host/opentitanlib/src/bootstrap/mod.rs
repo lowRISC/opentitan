@@ -90,7 +90,7 @@ pub struct BootstrapOptions {
     pub protocol: BootstrapProtocol,
     #[arg(
         long,
-        help = "Whether to reset target and clear UART RX buffer after bootstrap. For CW310 only."
+        help = "Whether to reset target and clear UART RX buffer after bootstrap. For Chip Whisperer board only."
     )]
     pub clear_uart: Option<bool>,
     #[arg(long, value_parser = parse_duration, default_value = "100ms", help = "Duration of the reset pulse")]

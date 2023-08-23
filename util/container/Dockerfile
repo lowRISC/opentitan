@@ -147,7 +147,7 @@ RUN curl https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add \
 
 # Install Verible
 RUN curl -f -Ls -o verible.tar.gz \
-        https://github.com/chipsalliance/verible/releases/download/${VERIBLE_VERSION}/verible-${VERIBLE_VERSION}-Ubuntu-18.04-bionic-x86_64.tar.gz \
+        https://github.com/chipsalliance/verible/releases/download/${VERIBLE_VERSION}/verible-${VERIBLE_VERSION}-Ubuntu-20.04-focal-x86_64.tar.gz \
     && mkdir -p /tools/verible \
     && tar -C /tools/verible -xf verible.tar.gz --strip-components=1
 ENV PATH "/tools/verible/bin:${PATH}"

@@ -199,3 +199,12 @@ rustfmt_fix(
 html_coverage_report(
     name = "html_coverage_report",
 )
+
+sh_test(
+    name = "shellcheck_check",
+    srcs = ["//util/sh/scripts:run-shellcheck.sh"],
+    data = [
+        "//:WORKSPACE",
+        "@shellcheck",
+    ],
+)

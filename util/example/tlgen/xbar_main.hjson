@@ -10,7 +10,7 @@
     clk_periph_i: "fixed"
     clk_crypt_i:  "main"
   }
-  reset: "rst_main_ni" 
+  reset: "rst_main_ni"
   reset_connections: {
     rst_main_ni:   "sys"
     rst_jtag_ni:   "sys"
@@ -24,7 +24,7 @@
       reset: "rst_main_ni",
 
       xbar: false
-      pipeline: "false"
+      pipeline: false
     },
     { name:  "ibexlsu",
       type:  "host",
@@ -32,7 +32,7 @@
       reset: "rst_periph_ni",
 
       xbar: false
-      pipeline: "false"
+      pipeline: false
     },
     { name:  "dm_sba", // DM
       type:  "host",
@@ -40,7 +40,7 @@
       reset: "rst_jtag_ni",
 
       xbar: false
-      pipeline_byp: "false"
+      pipeline_byp: false
     },
     { name:  "rom",
       type:  "device",

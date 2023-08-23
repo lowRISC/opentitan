@@ -12,7 +12,7 @@
 #################################
 CONNECTION, AST_PAD0,            u_ast,                      ast2pad_t0_ao,                                       , IOA2,
 CONNECTION, AST_PAD1,            u_ast,                      ast2pad_t1_ao,                                       , IOA3,
-CONNECTION, AST_PINMUX,          u_ast,                      ast2padmux_o,              top_earlgrey.u_sensor_ctrl, ast2pinmux_i,
+CONNECTION, AST_PINMUX,          u_ast,                      ast2padmux_o,              top_earlgrey.u_sensor_ctrl_aon, ast2pinmux_i,
 CONNECTION, PAD_AST,                  ,                      "{AST_MISC, IOC3, IOC2, IOC1, IOB2, IOB1, IOB0, IOA5, IOA4}", u_ast, padmux2ast_i,
 
 #################################

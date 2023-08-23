@@ -352,7 +352,7 @@ impl EmulatorProcess {
             for _retry in 0..MAX_RETRY {
                 match signal::kill(Pid::from_raw(pid), Signal::SIGKILL) {
                     Ok(()) => {}
-                    Err(nix::Error::Sys(nix::errno::Errno::ESRCH)) => {}
+                    Err(nix::errno::Errno::ESRCH) => {}
                     Err(e) => {
                         self.proc = None;
                         self.state = EmuState::Error;

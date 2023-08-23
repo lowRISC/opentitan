@@ -797,7 +797,12 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // checks.
   virtual function data_q_t calculate_expected_data(flash_op_t flash_op,
                                                     const ref data_q_t exp_data);
-    return exp_data;
+    data_q_t rdata;
+    data_q_t data;
+    flash_mem_bkdr_read(flash_op, rdata);
+    foreach(exp_data[i]) data[i] = exp_data[i] & rdata[i];
+
+    return data;
   endfunction : calculate_expected_data
 
   // Writing data to the scoreboard memory model, this writes one word of data to the selected

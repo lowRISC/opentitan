@@ -16,15 +16,15 @@
 
 const device_type_t kDeviceType = kDeviceFpgaCw310;
 
-const uint64_t kClockFreqCpuMhz = 10;
+const uint64_t kClockFreqCpuMhz = 24;
 
 const uint64_t kClockFreqCpuHz = kClockFreqCpuMhz * 1000 * 1000;
 
 uint64_t to_cpu_cycles(uint64_t usec) { return usec * kClockFreqCpuMhz; }
 
-const uint64_t kClockFreqHiSpeedPeripheralHz = 10 * 1000 * 1000;  // 10MHz
+const uint64_t kClockFreqHiSpeedPeripheralHz = 24 * 1000 * 1000;  // 24MHz
 
-const uint64_t kClockFreqPeripheralHz = 25 * 100 * 1000;  // 2.5MHz
+const uint64_t kClockFreqPeripheralHz = 6 * 1000 * 1000;  // 6MHz
 
 const uint64_t kClockFreqUsbHz = 48 * 1000 * 1000;  // 48MHz
 

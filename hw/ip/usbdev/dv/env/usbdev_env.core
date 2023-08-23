@@ -22,6 +22,7 @@ filesets:
       - seq_lib/usbdev_base_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_common_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_csr_test_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

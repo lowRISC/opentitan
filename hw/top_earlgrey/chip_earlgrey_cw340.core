@@ -1,0 +1,111 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:systems:chip_earlgrey_cw340:0.1"
+description: "Earl Grey toplevel for the ChipWhisperer CW340 board"
+filesets:
+  files_rtl_cw340:
+    depend:
+      - lowrisc:systems:top_earlgrey:0.1
+      - lowrisc:systems:top_earlgrey_pkg
+      - lowrisc:systems:ast
+      - lowrisc:systems:padring
+    files:
+      - rtl/clkgen_xil_ultrascale.sv
+      - rtl/usr_access_xil7series.sv
+      - rtl/autogen/chip_earlgrey_cw340.sv
+    file_type: systemVerilogSource
+
+  files_constraints:
+    files:
+      - data/clocks_cw341.xdc
+      - data/pins_cw341.xdc
+    file_type: xdc
+
+  files_tcl:
+    files:
+      - util/vivado_setup_hooks.tcl: { file_type: tclSource }
+      # File copied by fusesoc into the workroot (the file containing the
+      # .eda.yml file), and referenced from vivado_setup_hooks.tcl
+      - util/vivado_hook_synth_design_pre.tcl: { file_type: user, copyto: vivado_hook_synth_design_pre.tcl }
+      - util/vivado_hook_init_design_post.tcl: { file_type: user, copyto: vivado_hook_init_design_post.tcl }
+      - util/vivado_hook_write_bitstream_pre.tcl: { file_type: user, copyto: vivado_hook_write_bitstream_pre.tcl }
+      - util/vivado_hook_opt_design_post.tcl: { file_type: user, copyto: vivado_hook_opt_design_post.tcl }
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+    file_type: waiver
+
+parameters:
+  # XXX: This parameter needs to be absolute, or relative to the *.runs/synth_1
+  # directory. It's best to pass it as absolute path when invoking fusesoc, e.g.
+  # --BootRomInitFile=$PWD/build-bin/sw/device/lib/testing/test_rom/test_rom_fpga_cw310.scr.39.vmem
+  # XXX: The VMEM file should be added to the sources of the Vivado project to
+  # make the Vivado dependency tracking work. However this requires changes to
+  # fusesoc first.
+  BootRomInitFile:
+    datatype: str
+    description: Scrambled boot ROM initialization file in 40 bit vmem hex format
+    default: ""
+    paramtype: vlogparam
+  OtpCtrlMemInitFile:
+    datatype: str
+    description: OTP initialization file in vmem hex format
+    default: ""
+    paramtype: vlogparam
+  # For value definition, please see ip/prim/rtl/prim_pkg.sv
+  PRIM_DEFAULT_IMPL:
+    datatype: str
+    paramtype: vlogdefine
+    description: Primitives implementation to use, e.g. "prim_pkg::ImplGeneric".
+  AST_BYPASS_CLK:
+    datatype: bool
+    paramtype: vlogdefine
+  IBEX_CUSTOM_PMP_RESET_VALUES:
+    datatype: bool
+    default: true
+    paramtype: vlogdefine
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl_cw340
+      - files_ascentlint_waiver
+    toplevel: chip_earlgrey_cw340
+    parameters:
+      - IBEX_CUSTOM_PMP_RESET_VALUES
+      - AST_BYPASS_CLK=true
+
+  synth:
+    default_tool: vivado
+    filesets:
+      - files_rtl_cw340
+      - files_constraints
+      - files_tcl
+    toplevel: chip_earlgrey_cw340
+    parameters:
+      - BootRomInitFile
+      - OtpCtrlMemInitFile
+      - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx_ultrascale
+      - IBEX_CUSTOM_PMP_RESET_VALUES
+      - AST_BYPASS_CLK=true
+    tools:
+      vivado:
+        part: "xcku095-ffva1156-1-c" # CW341 with KU095
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+      - AST_BYPASS_CLK=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"

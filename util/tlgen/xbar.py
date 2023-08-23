@@ -3,48 +3,26 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging as log
+from typing import Any, List, Tuple
 
-from .item import Edge, NodeType
+from .item import Edge, Node, Host, Device, AsyncFifo, Socket1N, SocketM1
 
 
 class Xbar:
     """Xbar contains configurations to generate TL-UL crossbar.
     """
-    def __init__(self):
+    def __init__(self) -> None:
         self.clock = ""  # str  # primary clock of xbar
         self.reset = ""  # str  # primary reset of xbar
         self.name = ""  # str  # e.g. "main" --> main_xbar
         self.ip_path = ""  # additional path to generated rtl/dv folders: outdir/ip_path/rtl
 
-        self.blocks = []
-        self.nodes = []
-        self.edges = []
-        self.clocks = []
-        self.resets = []
+        self.nodes: List[Node] = []
+        self.edges: List[Edge] = []
+        self.clocks: List[Any] = []
+        self.resets: List[Any] = []
 
-    def __repr__(self):
-        out = "<Xbar(%s) #nodes:%d clock:%s" % (self.name, len(
-            self.nodes), self.clock)
-        out += " #edges:%d>\n" % (len(self.edges))
-
-        # print nodes
-        out += "  Nodes:\n"
-        for node in self.nodes:
-            out += "    - " + node.name + "\n"
-
-        out += "  Edges:\n"
-        for edge in self.edges:
-            out += "    - " + edge.us.name + " => " + edge.ds.name + "\n"
-        # print edges
-        return out
-
-    def get_edges_from_node(self, node):  # Node -> Edges
-        return [
-            edge for edge in self.edges
-            if node.name in (edge.us.name, edge.ns.name)
-        ]
-
-    def get_node(self, node):  # str -> Node
+    def get_node(self, node: str) -> Node:
         result = [x for x in self.nodes if x.name == node]
         if len(result) != 1:
             raise  # Exception
@@ -52,19 +30,19 @@ class Xbar:
         return result[0]
 
     @property
-    def hosts(self):
-        return [x for x in self.nodes if x.node_type == NodeType.HOST]
+    def hosts(self) -> List[Host]:
+        return [x for x in self.nodes if isinstance(x, Host)]
 
     @property
-    def devices(self):
-        return [x for x in self.nodes if x.node_type == NodeType.DEVICE]
+    def devices(self) -> List[Device]:
+        return [x for x in self.nodes if isinstance(x, Device)]
 
     @property
-    def socket_1ns(self):
-        return [x for x in self.nodes if x.node_type == NodeType.SOCKET_1N]
+    def socket_1ns(self) -> List[Socket1N]:
+        return [x for x in self.nodes if isinstance(x, Socket1N)]
 
-    def get_downstream_device(self, node):  # Node -> Node
-        if (node.node_type == NodeType.DEVICE):
+    def get_downstream_device(self, node: Node) -> Device:
+        if isinstance(node, Device):
             return node
 
         if len(node.ds) == 0:
@@ -74,10 +52,10 @@ class Xbar:
                     map(repr, node.ds))))
         return self.get_downstream_device(node.ds[0].ds)
 
-    def get_downstream_device_from_edge(self, edge):  # Edge -> Node
+    def get_downstream_device_from_edge(self, edge: Edge) -> Device:
         return self.get_downstream_device(edge.ds)
 
-    def get_leaf_from_s1n(self, node, idx):  # Node -> int -> Node
+    def get_leaf_from_s1n(self, node: Node, idx: int) -> Device:
         """ get end-device node from Socket_1n's Downstream port
 
         Current implementation can't have multiple devices under the tree of
@@ -85,17 +63,17 @@ class Xbar:
         """
         return self.get_downstream_device(node.ds[idx].ds)
 
-    def get_s1n_if_exist(self, node):  # Node -> Node
+    def get_s1n_if_exist(self, node: Node) -> Node:
         """ return SOCKET_1N if exists down from the node, if not return itself
         """
-        if node.node_type == NodeType.DEVICE:
+        if isinstance(node, Device):
             log.error("get_s1n_if_exist hits DEVICE type (unexpected)")
             return node
-        if node.node_type == NodeType.SOCKET_1N:
+        if isinstance(node, Socket1N):
             return node
         return self.get_s1n_if_exist(node.ds[0].ds)
 
-    def get_leaf_from_node(self, node, idx):  # Node -> int -> Node
+    def get_leaf_from_node(self, node: Node, idx: int) -> Node:
         """ get end device node from any node, idx is given to look down.
         """
         num_dev = len(self.get_s1n_if_exist(node).ds)
@@ -105,20 +83,20 @@ class Xbar:
 
         return self.get_leaf_from_s1n(self.get_s1n_if_exist(node), idx)
 
-    def get_devices_from_host(self, host):  # Node -> Nodes
+    def get_devices_from_host(self, host: Node) -> List[Device]:
         devices = list(
             map(self.get_downstream_device_from_edge,
                 self.get_s1n_if_exist(host).ds))
 
         return devices
 
-    def get_addr(self, device):  # Node -> Tuple[int,int]
-        if device.node_type != NodeType.DEVICE:
+    def get_addr(self, device: Node) -> Tuple[int, int]:
+        if not isinstance(device, Device):
             log.error("get_addr receives non DEVICE type node")
 
         return (device.address_from, device.address_to)
 
-    def connect_nodes(self, u_node, d_node):  # str -> str -> bool
+    def connect_nodes(self, u_node: str, d_node: str) -> bool:
         # Create edges between Nodes
         # Return false if Nodes aren't exist or same connection exists
         upNode = self.get_node(u_node)
@@ -139,9 +117,9 @@ class Xbar:
 
         return True
 
-    def insert_node(self, new_node, node):
-        if new_node.node_type == NodeType.ASYNC_FIFO:
-            if node.node_type == NodeType.HOST:
+    def insert_node(self, new_node: Node, node: Node) -> 'Xbar':
+        if isinstance(new_node, AsyncFifo):
+            if isinstance(node, Host):
                 # Insert node to downstream
                 edge = Edge(node, new_node)
                 new_node.ds = node.ds
@@ -152,11 +130,11 @@ class Xbar:
                 for e in new_node.ds:
                     # replace us to new_node
                     e.us = new_node
-            elif node.node_type == NodeType.DEVICE:
+            elif isinstance(node, Device):
                 # insert node to upstream
                 edge = Edge(new_node, node)
                 new_node.us = node.us
-                new_node.ds = node
+                new_node.ds = node.ds
                 node.us = [edge]
                 new_node.ds = [edge]
                 self.nodes.append(new_node)
@@ -166,7 +144,7 @@ class Xbar:
                     e.ds = new_node
             else:
                 raise
-        elif new_node.node_type == NodeType.SOCKET_M1:
+        elif isinstance(new_node, SocketM1):
             # Revise every upstream
             edge = Edge(new_node, node)
             new_node.us = node.us
@@ -177,7 +155,7 @@ class Xbar:
             for e in new_node.us:
                 e.ds = new_node
 
-        elif new_node.node_type == NodeType.SOCKET_1N:
+        elif isinstance(new_node, Socket1N):
             # Revise every downstream
             edge = Edge(node, new_node)
             new_node.ds = node.ds
@@ -196,7 +174,7 @@ class Xbar:
 
         return self
 
-    def repr_tree(self, node, indent):
+    def repr_tree(self, node: Node, indent: int) -> str:
         """string format of tree connection from node to devices
 
         Desired output:
@@ -216,7 +194,7 @@ class Xbar:
 
         out += node.name
 
-        if node.node_type != NodeType.DEVICE:
+        if not isinstance(node, Device):
             # still more nodes exist under this node
             for ds in node.ds:
                 out += '\n'

@@ -25,7 +25,7 @@ module otbn_top_sim (
   logic      otbn_done, otbn_done_r, otbn_done_rr;
   core_err_bits_t core_err_bits;
   err_bits_t otbn_err_bits, otbn_err_bits_r, otbn_err_bits_rr;
-  logic      otbn_start;
+  logic      otbn_start, otbn_start_r;
 
   // Intialise otbn_start_done to 1 so that we only signal otbn_start after we have seen a reset. If
   // you don't do this, we start OTBN before the reset, which can generate confusing trace messages.
@@ -75,7 +75,7 @@ module otbn_top_sim (
     .clk_i                       ( IO_CLK                     ),
     .rst_ni                      ( IO_RST_N                   ),
 
-    .start_i                     ( otbn_start                 ),
+    .start_i                     ( otbn_start_r               ),
     .done_o                      ( otbn_done                  ),
     .locking_o                   (                            ),
     .secure_wipe_running_o       ( secure_wipe_running        ),
@@ -219,6 +219,7 @@ module otbn_top_sim (
   always @(posedge IO_CLK or negedge IO_RST_N) begin
     if (!IO_RST_N) begin
       otbn_start       <= 1'b0;
+      otbn_start_r     <= 1'b0;
       otbn_start_done  <= 1'b0;
       otbn_done_r      <= 1'b0;
       otbn_done_rr     <= 1'b0;
@@ -232,6 +233,7 @@ module otbn_top_sim (
         otbn_start <= 1'b0;
       end
 
+      otbn_start_r <= otbn_start;
       otbn_done_r <= otbn_done;
       otbn_done_rr <= otbn_done_r;
       otbn_err_bits_r <= otbn_err_bits;

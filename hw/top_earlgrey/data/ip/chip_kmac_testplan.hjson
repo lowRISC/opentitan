@@ -1,0 +1,289 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: chip_kmac
+  testpoints: [
+    // KMAC integration tests
+    {
+      name: chip_sw_kmac_enc
+      desc: '''Verify the SHA3 operation.
+
+            SW test verifies SHA3 operation with a known key, plain text and digest (pick one of
+            the NIST vectors). SW validates the reception of kmac done and fifo empty interrupts.
+            '''
+      stage: V2
+      si_stage: SV2
+      tests: [
+        "chip_sw_kmac_mode_cshake",
+        "chip_sw_kmac_mode_kmac",
+        "chip_sw_kmac_mode_kmac_jitter_en",
+      ]
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      bazel: []
+    }
+    {
+      name: chip_sw_kmac_app_keymgr
+      desc: '''Verify the keymgr interface to KMAC.
+
+            - Configure the keymgr to start sending known message data to the KMAC.
+            - Keymgr should transmit a sideloaded key to the KMAC as well.
+            - KMAC should finish hashing successfully (not visible to SW) and return digest to
+              keymgr.
+            - This digest is compared against the known digest value for correctness.
+            - Verify that the keymgr has received valid output from the KMAC.
+
+            X-ref'ed with keymgr test.
+            '''
+      stage: V2
+      tests: ["chip_sw_keymgr_key_derivation"]
+    }
+    {
+      name: chip_sw_kmac_app_lc
+      desc: '''Verify the LC interface to KMAC.
+
+            - Configure the LC_CTRL to start a token hash using KMAC interface.
+            - KMAC should finish hashing successfully (not visible to SW) and return digest to
+            LC_CTRL.
+
+            X-ref'ed with LC_CTRL test/env.
+            '''
+      stage: V2
+      tests: ["chip_sw_lc_ctrl_transition"]
+    }
+    {
+      name: chip_sw_kmac_app_rom
+      desc: '''Verify the ROM interface to KMAC.
+
+            - Backdoor initialize ROM memory immediately out of reset.
+            - ROM will send message to the KMAC containing its memory contents,
+            - KMAC will hash and return the digest to the ROM.
+            - ROM will compare received digest against its first 8 logical memory lines for
+            correctness.
+
+            X-ref'ed with ROM_CTRL test/env.
+            '''
+      stage: V2
+      tests: ["chip_sw_kmac_app_rom"]
+    }
+    {
+      name: chip_sw_kmac_entropy
+      desc: '''Verify the EDN interface to KMAC.
+
+            Requires `EnMasking` parameter to be enabled.
+            SW randomly configures the KMAC in any hashing mode/strength, and enable EDN mode.
+            Randomly enable/disable the `entropy_refresh`.
+            Randomly configure `wait_timer` values (zero for disable, non-zero for timer expire).
+              - Program `wait_timer` to a small value.
+                Check if EDN timeout error occurs after issuing the hashing op.
+              - Adjust `wait_timer` greater than expected EDN latency (with correct `prescaler`
+                too). Then check if Digest is correct.
+            KMAC should send EDN request after `entropy_ready` is set.
+            KMAC also should send out another request to EDN when either:
+              - kmac hash counter hits the configured threshold (assuming it is non-zero)
+              - Hash count exceeds the threshold.
+            SW verifies that KMAC produces the correct digest value.
+
+            TODO: This is pending security review discussion. It is unclear if this feature will be
+            implemented.
+
+            X-ref'ed with EDN test/env.
+            '''
+      stage: V2
+      tests: ["chip_sw_kmac_entropy"]
+    }
+    {
+      name: chip_sw_kmac_idle
+      desc: '''Verify the KMAC idle signaling to clkmgr.
+
+            - Write the KMAC clk hint to 0 within clkmgr to indicate KMAC clk can be gated and
+              verify that the KMAC clk hint status within clkmgr reads 0 (KMAC is disabled).
+            - Write the KMAC clk hint to 1 within clkmgr to indicate KMAC clk can be enabled.
+              Verify that the KMAC clk hint status within clkmgr reads 1 (KMAC is enabled).
+            - Initiate a KMAC operation with a known key, plain text and digest.
+              Write KMAC clock hint to 0 and verify the KMAC clk hint status within clkmgr reads 1
+              (KMAC is enabled), before the KMAC operation is complete.
+            - After the KMAC operation is complete, verify the digest for correctness. Verify that
+              the KMAC clk hint status within clkmgr now reads 0 again (KMAC is disabled).
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      tests: ["chip_sw_kmac_idle"]
+      bazel: []
+    }
+    {
+      name: chip_sw_kmac_sha3_stress
+      desc: '''Verify all SHA3 modes of operation.
+
+            - Verify the following digest sizes: 224, 256, 384, 512
+            - Verify input message size of 0 bytes.
+            - Verify multiple input message sizes as defined in NIST test vectors.
+            - Use endianess configuration used in the crypto library.
+            '''
+      features: ["KMAC.MODE.SHA3"]
+      stage: V3
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      tests: []
+      bazel: []
+    }
+    {
+      name: chip_sw_kmac_shake_stress
+      desc: '''Verify all SHAKE modes of operation.
+
+            - Verify the following security configurations: 128, 256
+            - Verify input message size of 0 bytes.
+            - Verify multiple input message sizes as defined in NIST test vectors.
+            - Use endianess configuration used in the crypto library.
+            - Verify multiple XOF configurations.
+            '''
+      features: [
+        "KMAC.MODE.SHAKE",
+        "KMAC.MODE.XOF",
+      ]
+      stage: V3
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      tests: []
+      bazel: []
+    }
+    {
+      name: chip_sw_kmac_cshake_stress
+      desc: '''Verify all cSHAKE modes of operation.
+
+            - Verify the following security configurations: 128, 256
+            - Verify input message size of 0 bytes.
+            - Verify multiple input message sizes as defined in NIST test vectors.
+            - Use endianess configuration used in the crypto library.
+            - Verify multiple XOF configurations.
+            '''
+      features: [
+        "KMAC.MODE.CSHAKE",
+        "KMAC.MODE.XOF",
+      ]
+      stage: V3
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      tests: []
+      bazel: []
+    }
+    {
+      name: chip_sw_kmac_kmac_stress
+      desc: '''Verify all KMAC modes of operation.
+
+            - Verify the following security configurations: 128, 256
+            - Verify input message size of 0 bytes.
+            - Verify multiple input message sizes as defined in NIST test vectors.
+            - Use endianess configuration used in the crypto library.
+            - Verify multiple XOF configurations.
+            '''
+      features: [
+        "KMAC.MODE.KMAC",
+        "KMAC.MODE.XOF",
+      ]
+      stage: V3
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      tests: []
+      bazel: []
+    }
+    {
+      name: chip_sw_kmac_kmac_key_sideload
+      desc: '''Verify all KMAC key sideload.
+
+            Procedure:
+
+            - Configure the keymgr to sideload a key to KMAC.
+            - Generate a KMAC output and store it in retention RAM.
+            - Clear sideload key from keymgr.
+            - Verify that KMAC can no longer reproduce the same KMAC output.
+            - Perform software initiated reset.
+            - Configure the keymgr again to sideload a key to KMAC.
+            - Verify digest against value stored in retention RAM.
+
+            Additional test configurations:
+
+            - Verify the following security configurations: 128, 256
+            - Use endianess configuration used in the crypto library.
+            '''
+      features: ["KMAC.KEY.SIDELOAD"]
+      stage: V3
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      tests: []
+      bazel: []
+    }
+    {
+      name: chip_sw_kmac_endianess
+      desc: '''Verify all KMAC endinaness options
+
+            This is a low priority test P3.
+
+            Test the permutation of all endinaness configuration options for message and digest
+            registers.
+            '''
+      features: [
+        "KMAC.ENDIANNESS.MESSAGE",
+        "KMAC.ENDIANNESS.DIGEST",
+      ]
+      stage: V3
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      tests: []
+      bazel: []
+    }
+    {
+      name: chip_sw_kmac_entropy_stress
+      desc: '''Verify all KMAC entropy configuration options.
+
+            Verify all entropy modes of operation (e.g. software, EDN). Depending on the mode of
+            operation, exercise relevant functionality, for example:
+
+            - Entropy period
+            - Entropy refresh hash count
+            - Entropy seed
+
+            Process many message blocks in KMAC configuration for all entropy modes, and verify
+            that there are no error conditions.
+            '''
+      features: [
+        "KMAC.ENDIANNESS.MESSAGE",
+        "KMAC.ENDIANNESS.DIGEST",
+      ]
+      stage: V3
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      tests: []
+      bazel: []
+    }
+    {
+      name: chip_sw_kmac_error_conditions
+      desc: '''Verify reporting of KMAC errors
+
+            This is a negative test case covering the following error conditions:
+
+            - ErrKeyNotValid: covers that secret key is invalid when KeyMgr initiates App operation
+            - ErrSwPushedMsgFifo: covers that SW writes the msgfifo while App interface is active
+            - ErrSwIssuedCmdInAppActive: covers that SW writes all possible commands to the KMAC
+                                         while App interface is active
+            - ErrWaitTimerExpired: covers that the KMAC timed out while waiting for EDN entropy
+            - ErrIncorrectEntropyMode: covers that incorrect entropy modes are detected by the KMAC
+            - ErrUnexpectedModeStrength: covers that 128-bit strength is seen for SHA3, and all but
+                                         128/256 bit strengths are seen for XOF functions
+            - ErrIncorrectFunctionName: covers that the function name is configured incorrectly
+                                        when KMAC mode is enabled
+            - ErrSwCmdSequence: covers that SW issues commands to the KMAC out of order
+
+            Some of the error conditions may be difficult to reproduce in silicon. In such cases,
+            update the test description to capture any limitations.
+            '''
+      features: []
+      stage: V3
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      tests: []
+      bazel: []
+    }
+  ]
+}

@@ -2,16 +2,16 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+"""Elaborate crossbar, creating internal FIFOS and sockets."""
+
 import logging as log
 
-from .item import Node, NodeType
+from .item import Node, AsyncFifo, Host, SocketM1, Socket1N
 from .xbar import Xbar
 
 
 def elaborate(xbar: Xbar) -> bool:
-    """elaborate reads all nodes and edges then
-    construct internal FIFOs, Sockets.
-    """
+    """Read nodes/edges and create internal FIFOs & sockets."""
     # Condition check
     if len(xbar.nodes) <= 1 or len(xbar.edges) == 0:
         log.error(
@@ -31,8 +31,8 @@ def elaborate(xbar: Xbar) -> bool:
     return True
 
 
-def process_node(node, xbar):  # node: Node -> xbar: Xbar -> Xbar
-    """process each node based on algorithm
+def process_node(node: Node, xbar: Xbar) -> Xbar:
+    """Process each node based on the following algorithm.
 
     1. If a node has different clock from main clock and not ASYNC_FIFO:
        a. (New Node) Create ASYNC_FIFO node.
@@ -54,75 +54,56 @@ def process_node(node, xbar):  # node: Node -> xbar: Xbar -> Xbar
        c. (New Edge) Create a edge from the node to SOCKET_1N node.
        d. (for loop) Repeat the algorithm with SOCKET_1N's other side node.
     """
-
     # If a node has different clock from main clock and not ASYNC_FIFO:
-    if node.node_type != NodeType.ASYNC_FIFO and node.clocks[0] != xbar.clock:
+    if node.clocks[0] != xbar.clock and not isinstance(node, AsyncFifo):
         # (New Node) Create ASYNC_FIFO node
-        new_node = Node(name="asf_" + str(len(xbar.nodes)),
-                        node_type=NodeType.ASYNC_FIFO,
-                        clock=xbar.clock,
-                        reset=xbar.reset)
+        new_fifo = AsyncFifo(name="asf_" + str(len(xbar.nodes)),
+                             clock=xbar.clock,
+                             reset=xbar.reset)
 
         # if node is HOST, host clock synchronizes into xbar domain
         # if node is DEVICE, xbar synchronizes into device clock domain
-        if node.node_type == NodeType.HOST:
-            new_node.clocks.insert(0, node.clocks[0])
-            new_node.resets.insert(0, node.resets[0])
+        if isinstance(node, Host):
+            new_fifo.clocks.insert(0, node.clocks[0])
+            new_fifo.resets.insert(0, node.resets[0])
         else:
-            new_node.clocks.append(node.clocks[0])
-            new_node.resets.append(node.resets[0])
+            new_fifo.clocks.append(node.clocks[0])
+            new_fifo.resets.append(node.resets[0])
 
-        xbar.insert_node(new_node, node)
+        xbar.insert_node(new_fifo, node)
 
-        process_node(new_node, xbar)
+        process_node(new_fifo, xbar)
 
     # If a node has multiple edges having it as a end node and not SOCKET_M1:
-    elif node.node_type != NodeType.SOCKET_M1 and len(node.us) > 1:
+    elif len(node.us) > 1 and not isinstance(node, SocketM1):
         # (New node) Create SOCKET_M1 node
-        new_node = Node(name="sm1_" + str(len(xbar.nodes)),
-                        node_type=NodeType.SOCKET_M1,
-                        clock=xbar.clock,
-                        reset=xbar.reset)
+        new_sm1 = SocketM1(hwidth=len(node.us),
+                           name="sm1_" + str(len(xbar.nodes)),
+                           clock=xbar.clock,
+                           reset=xbar.reset)
 
-        # By default, assume connecting to SOCKET_1N upstream and bypass all FIFOs
-        # If upstream requires pipelining, it will be added through process pipeline
-        new_node.hdepth = 0
-        new_node.hreq_pass = 2**len(node.us) - 1
-        new_node.hrsp_pass = 2**len(node.us) - 1
-        new_node.ddepth = 0
-        new_node.dreq_pass = 1
-        new_node.drsp_pass = 1
-        xbar.insert_node(new_node, node)
-        process_node(new_node, xbar)
+        xbar.insert_node(new_sm1, node)
+        process_node(new_sm1, xbar)
 
     # If a node has multiple edges having it as a start node and not SOCKET_1N:
-    elif node.node_type != NodeType.SOCKET_1N and len(node.ds) > 1:
+    elif len(node.ds) > 1 and not isinstance(node, Socket1N):
         # (New node) Create SOCKET_1N node
-        new_node = Node(name="s1n_" + str(len(xbar.nodes)),
-                        node_type=NodeType.SOCKET_1N,
-                        clock=xbar.clock,
-                        reset=xbar.reset)
+        new_s1n = Socket1N(dwidth=len(node.ds),
+                           name="s1n_" + str(len(xbar.nodes)),
+                           clock=xbar.clock,
+                           reset=xbar.reset)
 
-        # By default, assume connecting to SOCKET_M1 downstream and bypass all FIFOs
-        # If upstream requires pipelining, it will be added through process pipeline
-        new_node.hdepth = 0
-        new_node.hreq_pass = 1
-        new_node.hrsp_pass = 1
-        new_node.ddepth = 0
-        new_node.dreq_pass = 2**len(node.ds) - 1
-        new_node.drsp_pass = 2**len(node.ds) - 1
-        xbar.insert_node(new_node, node)
+        xbar.insert_node(new_s1n, node)
 
         # (for loop) Repeat the algorithm with SOCKET_1N's other side node
-        for edge in new_node.ds:
+        for edge in new_s1n.ds:
             process_node(edge.ds, xbar)
 
     return xbar
 
 
-def process_pipeline(xbar):
-    """Check if HOST, DEVICE has settings different from default, then propagate it to end
-    """
+def process_pipeline(xbar: Xbar) -> None:
+    """If HOST/DEVICE has non-default settings, propagate them to end."""
     for host in xbar.hosts:
         # go downstream and change the HReqPass/Depth at the first instance.
         # If it is async, skip.
@@ -153,12 +134,12 @@ def process_pipeline(xbar):
 
         dnode = host.ds[0].ds
 
-        if dnode.node_type == NodeType.ASYNC_FIFO:
+        if isinstance(dnode, AsyncFifo):
             continue
 
         req_pass = 1 if host.req_fifo_pass else 0
         rsp_pass = 1 if host.rsp_fifo_pass else 0
-        if dnode.node_type == NodeType.SOCKET_1N:
+        if isinstance(dnode, Socket1N):
             if full_fifo:
                 dnode.hreq_pass = 0
                 dnode.hrsp_pass = 0
@@ -176,7 +157,7 @@ def process_pipeline(xbar):
                 "Finished processing socket1n {}, req pass={}, rsp pass={}, depth={}".format(
                     dnode.name, dnode.hreq_pass, dnode.hrsp_pass, dnode.hdepth))
 
-        elif dnode.node_type == NodeType.SOCKET_M1:
+        elif isinstance(dnode, SocketM1):
             idx = dnode.us.index(host.ds[0])
 
             # first clear out entry
@@ -229,12 +210,12 @@ def process_pipeline(xbar):
 
         unode = device.us[0].us
 
-        if unode.node_type == NodeType.ASYNC_FIFO:
+        if isinstance(unode, AsyncFifo):
             continue
 
         req_pass = 1 if device.req_fifo_pass else 0
         rsp_pass = 1 if device.rsp_fifo_pass else 0
-        if unode.node_type == NodeType.SOCKET_1N:
+        if isinstance(unode, Socket1N):
             idx = unode.ds.index(device.us[0])
 
             # first clear out entry
@@ -254,7 +235,7 @@ def process_pipeline(xbar):
             log.info("Finished processing socket1n {}, req pass={:x}, req pass={:x} depth={:x}".
                      format(unode.name, unode.dreq_pass, unode.drsp_pass, unode.ddepth))
 
-        elif unode.node_type == NodeType.SOCKET_M1:
+        elif isinstance(unode, SocketM1):
             if full_fifo:
                 log.info("Fifo present with no passthrough")
                 unode.dreq_pass = 0
@@ -273,5 +254,3 @@ def process_pipeline(xbar):
 
             log.info("Finished processing socketm1 {}, req pass={:x}, rsp pass={:x}, depth={:x}".
                      format(unode.name, unode.dreq_pass, unode.drsp_pass, unode.ddepth))
-
-    return xbar

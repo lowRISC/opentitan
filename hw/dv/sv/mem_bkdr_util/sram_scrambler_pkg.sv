@@ -211,7 +211,7 @@ package sram_scrambler_pkg;
 
   endfunction : encrypt_sram_addr
 
-  // Deccrypts the target SRAM address using the custom S&P network.
+  // Decrypts the target SRAM address using the custom S&P network.
   function automatic state_t decrypt_sram_addr(logic addr[], int addr_width,
                                                logic full_nonce[]);
 

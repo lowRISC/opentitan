@@ -38,7 +38,7 @@ class flash_ctrl_prog_reset_vseq extends flash_ctrl_otf_base_vseq;
   virtual task body();
     flash_op_t ctrl;
     int num, bank, iter;
-    int state_long_timeout_ns = 10000000; // 10ms
+    int state_long_timeout_ns = 50_000_000; // 50ms
     int state_timeout_ns = 100000; // 100us
 
     // Don't select a partition defined as read-only

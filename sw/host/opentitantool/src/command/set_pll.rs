@@ -9,7 +9,7 @@ use std::any::Any;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::transport::cw310;
+use opentitanlib::transport::chip_whisperer;
 
 /// Program the CDCE906 PLL chip with defaults.
 #[derive(Debug, Args)]
@@ -22,6 +22,6 @@ impl CommandDispatch for SetPll {
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         log::info!("Programming the CDCE906 PLL chip with defaults");
-        transport.dispatch(&cw310::SetPll {})
+        transport.dispatch(&chip_whisperer::SetPll {})
     }
 }

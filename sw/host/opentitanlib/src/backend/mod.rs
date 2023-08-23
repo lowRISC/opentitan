@@ -9,6 +9,7 @@ use thiserror::Error;
 
 use crate::app::config::process_config_file;
 use crate::app::{TransportWrapper, TransportWrapperBuilder};
+use crate::transport::chip_whisperer::board::{Cw310, Cw340};
 use crate::transport::dediprog::Dediprog;
 use crate::transport::hyperdebug::{
     C2d2Flavor, CW310Flavor, ServoMicroFlavor, StandardFlavor, Ti50Flavor,
@@ -16,7 +17,7 @@ use crate::transport::hyperdebug::{
 use crate::transport::{EmptyTransport, Transport};
 use crate::util::parse_int::ParseInt;
 
-mod cw310;
+mod chip_whisperer;
 mod hyperdebug;
 mod proxy;
 mod ti50emulator;
@@ -36,7 +37,7 @@ pub struct BackendOpts {
     pub usb_serial: Option<String>,
 
     #[command(flatten)]
-    pub cw310_opts: cw310::Cw310Opts,
+    pub opts: chip_whisperer::ChipWhispererOpts,
 
     #[command(flatten)]
     pub verilator_opts: verilator::VerilatorOpts,
@@ -96,8 +97,12 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
         ),
         "ti50" => (hyperdebug::create::<Ti50Flavor>(args)?, None),
         "cw310" => (
-            cw310::create(args)?,
+            chip_whisperer::create::<Cw310>(args)?,
             Some(Path::new("/__builtin__/opentitan_cw310.json")),
+        ),
+        "cw340" => (
+            chip_whisperer::create::<Cw340>(args)?,
+            Some(Path::new("/__builtin__/opentitan_cw340.json")),
         ),
         "dediprog" => {
             let dediprog: Box<dyn Transport> = Box::new(Dediprog::new(

@@ -15,6 +15,12 @@ py_library(
     ],
 )
 
+py_test(
+    name = "common_test",
+    srcs = ["common_test.py"],
+    deps = [":common"],
+)
+
 py_library(
     name = "lc_st_enc",
     srcs = ["LcStEnc.py"],

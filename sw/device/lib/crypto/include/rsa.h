@@ -85,17 +85,22 @@ typedef struct rsa_public_key {
  * modulus (n).
  *
  * The caller should allocate and partially populate all blinded and unblinded
- * key structs underneath `rsa_private_key` and `rsa_public_key`. For unblinded
- * keys, this means setting the key mode, allocating a buffer for the key
- * material, and recording the length of the allocated buffer in `key_length`.
- * If the buffer size does not match expectations, this function will return an
- * error.  For blinded key structs, the caller should fully populate the key
+ * key structs underneath `rsa_private_key` and `rsa_public_key`.
+ *
+ * For unblinded keys, this means setting the key mode, allocating a buffer for
+ * the key material, and recording the length of the allocated buffer in
+ * `key_length`. If the buffer size does not match expectations, this function
+ * will return an error. RSA public key exponents should always have 32 bits (4
+ * bytes) allocated for them.
+ *
+ * For blinded key structs, the caller should fully populate the key
  * configuration and allocate space for the keyblob. As for unblinded keys, the
  * caller should record the allocated buffer length and this function will
  * return an error if the keyblob length does not match expectations. The
- * keyblob should be twice the length of the key. The value in the `checksum`
- * field of the blinded key struct will be populated by the key generation
- * function.
+ * keyblob should be twice the length of the key.
+ *
+ * The value in the `checksum` field of key structs is not checked here and
+ * will be populated by the key generation function.
  *
  * @param required_key_len Requested key length.
  * @param[out] rsa_public_key Pointer to RSA public exponent struct.

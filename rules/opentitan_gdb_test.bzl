@@ -239,7 +239,7 @@ def opentitan_gdb_fpga_cw310_test(
             "jtag",
         ],
         opentitantool_cw310_uarts = select({
-            "@//ci:lowrisc_fpga_cw310": "--cw310-uarts=/dev/ttyACM_CW310_1,/dev/ttyACM_CW310_0",
+            "@//ci:lowrisc_fpga_cw310": "--uarts=/dev/ttyACM_CW310_1,/dev/ttyACM_CW310_0",
             "//conditions:default": "",
         }),
         **kwargs

@@ -12,6 +12,10 @@ enum {
    * Static critical region format version 1 value.
    */
   kStaticCriticalVersion1 = 0xb86fa4b0,
+  /**
+   * Static critical region format version 2 value.
+   */
+  kStaticCriticalVersion2 = 0x8d9fc439,
 };
 
 /**

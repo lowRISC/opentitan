@@ -27,35 +27,23 @@ IMAGE_DEFINITION_FILE = 'hw/ip/otp_ctrl/data/otp_ctrl_img_dev.hjson'
 MEMORY_MEM_FILE = 'otp-img.BITWIDTH.vmem'
 
 
-def _override_seed(args, seed_name, entropy_buffer_name, config):
+def _override_seed(args, seed_name, config):
     '''Override the seed key in config with value specified in args'''
     arg_seed = getattr(args, seed_name)
-    arg_entropy_buffer = None
-    if entropy_buffer_name:
-        arg_entropy_buffer = getattr(args, entropy_buffer_name)
 
-    if arg_entropy_buffer:
-        if arg_seed:
-            log.error(
-                "{} 'entropy_buffer' option cannot be used with {} 'seed' option"
-                .format(entropy_buffer_name, seed_name))
-            exit(1)
-        else:
-            config['entropy_buffer'] = arg_entropy_buffer
+    # An override seed of 0 will not trigger the override, which is intended, as
+    # the OTP-generation Bazel rule sets the default seed values to 0.
+    if arg_seed:
+        log.warning('Commandline override of {} with {}.'.format(
+            seed_name, arg_seed))
+        config['seed'] = arg_seed
+    # Otherwise, we either take it from the .hjson if present, or
+    # randomly generate a new seed if not.
     else:
-        # An override seed of 0 will not trigger the override, which is intended, as
-        # the OTP-generation Bazel rule sets the default seed values to 0.
-        if arg_seed:
-            log.warning('Commandline override of {} with {}.'.format(
-                seed_name, arg_seed))
-            config['seed'] = arg_seed
-        # Otherwise, we either take it from the .hjson if present, or
-        # randomly generate a new seed if not.
-        else:
-            new_seed = random.getrandbits(64)
-            if config.setdefault('seed', new_seed) == new_seed:
-                log.warning('No {} specified, setting to {}.'.format(
-                    seed_name, new_seed))
+        new_seed = random.getrandbits(64)
+        if config.setdefault('seed', new_seed) == new_seed:
+            log.warning('No {} specified, setting to {}.'.format(
+                seed_name, new_seed))
 
 
 # TODO: this can be removed when we have moved to Python 3.8
@@ -116,13 +104,6 @@ def main():
                         This value typically does not need to be specified as it is taken from
                         the LC state encoding definition Hjson.
                         ''')
-    parser.add_argument("--lc-entropy-buffer",
-                        type=str,
-                        metavar="<entropy buffer file path>",
-                        help="""
-                        A file with entropy used to fill the RNG when the
-                        gen-lc-state-enc.py script was invoked.
-                        """)
     parser.add_argument('--otp-seed',
                         type=int,
                         metavar='<seed>',
@@ -135,13 +116,6 @@ def main():
                         This value typically does not need to be specified as it is taken from
                         the OTP memory map definition Hjson.
                         ''')
-    parser.add_argument("--otp-entropy-buffer",
-                        type=str,
-                        metavar="<entropy buffer file path>",
-                        help="""
-                        A file with entropy used to fill the RNG when the
-                        gen-otp-mmap.py script was invoked.
-                        """)
     parser.add_argument('-o',
                         '--out',
                         type=str,
@@ -207,18 +181,18 @@ def main():
                         The mapping must be bijective - otherwise this will generate
                         an error.
                         ''')
-    parser.add_argument('--header-template',
+    parser.add_argument('--c-template',
                         type=Path,
                         metavar='<path>',
                         help='''
-                        Template file used to generate C header version of the OTP image.
-                        This flag is only required when --header-out is set.
+                        Template file used to generate C version of the OTP image.
+                        This flag is only required when --c-out is set.
                         ''')
-    parser.add_argument('--header-out',
+    parser.add_argument('--c-out',
                         type=Path,
                         metavar='<path>',
                         help='''
-                        C header output path. Requires the --header-template flag to be
+                        C output path. Requires the --c-template flag to be
                         set. The --out flag is ignored when this flag is set.
                         ''')
 
@@ -242,9 +216,9 @@ def main():
     random.seed(args.seed)
 
     # If specified, override the seeds.
-    _override_seed(args, 'lc_seed', 'lc_entropy_buffer', lc_state_cfg)
-    _override_seed(args, 'otp_seed', 'otp_entropy_buffer', otp_mmap_cfg)
-    _override_seed(args, 'img_seed', None, img_cfg)
+    _override_seed(args, 'lc_seed', lc_state_cfg)
+    _override_seed(args, 'otp_seed', otp_mmap_cfg)
+    _override_seed(args, 'img_seed', img_cfg)
 
     try:
         otp_mem_img = OtpMemImg(lc_state_cfg, otp_mmap_cfg, img_cfg,
@@ -280,12 +254,10 @@ def main():
     file_header = '// Generated on {} with\n// $ gen-otp-img.py {}\n//\n'.format(
         dtstr, argstr)
 
-    if args.header_out:
-        log.info(f'Generating header file: {args.header_out}')
-        file_body = otp_mem_img.generate_headerfile(args.header_out,
-                                                    file_header,
-                                                    args.header_template)
-        with open(args.header_out, 'wb') as outfile:
+    if args.c_out:
+        log.info(f'Generating C file: {args.c_out}')
+        file_body = otp_mem_img.generate_c_file(file_header, args.c_template)
+        with open(args.c_out, 'wb') as outfile:
             outfile.write(file_body.encode('utf-8'))
         exit(0)
 
