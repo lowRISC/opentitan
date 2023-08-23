@@ -160,7 +160,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     end
     if (cfg.en_all_info_acc) allow_spec_info_acc = 3'h7;
 
-    // overwrite secret_partition cfg with hw_cfg
+    // overwrite secret_partition cfg with hw_cfg0
     rand_info[0][0][1] = conv2env_mp_info(flash_ctrl_pkg::CfgAllowRead);
     rand_info[0][0][2] = conv2env_mp_info(flash_ctrl_pkg::CfgAllowRead);
   endfunction : post_randomize
@@ -1345,7 +1345,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       if (scr_mode != OTFCfgRand) cfg.mp_info[i][j][k].scramble_en = scr_en;
       if (ecc_mode != OTFCfgRand) cfg.mp_info[i][j][k].ecc_en = ecc_en;
 
-      // overwrite secret_partition cfg with hw_cfg
+      // overwrite secret_partition cfg with hw_cfg0
       cfg.mp_info[0][0][1] = conv2env_mp_info(flash_ctrl_pkg::CfgAllowRead);
       cfg.mp_info[0][0][2] = conv2env_mp_info(flash_ctrl_pkg::CfgAllowRead);
 

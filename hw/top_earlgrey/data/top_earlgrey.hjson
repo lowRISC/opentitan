@@ -1082,10 +1082,10 @@
         // Pinmux JTAG signals for the tool-inserted DFT TAP
         'pinmux_aon.dft_jtag',
 
-        // OTP HW_CFG Broadcast signals.
+        // OTP HW_CFG* Broadcast signals.
         // TODO(#6713): The actual struct breakout and mapping currently needs to
         // be performed by hand in the toplevel template.
-        'otp_ctrl.otp_hw_cfg',
+        'otp_ctrl.otp_broadcast',
         'csrng.otp_en_csrng_sw_app_read',
         'entropy_src.otp_en_entropy_src_fw_read',
         'entropy_src.otp_en_entropy_src_fw_over',

@@ -214,10 +214,10 @@ otp_alert_digest(
 )
 
 otp_json(
-    name = "otp_json_hw_cfg",
+    name = "otp_json_hw_cfg0",
     partitions = [
         otp_partition(
-            name = "HW_CFG",
+            name = "HW_CFG0",
             items = {
                 "DEVICE_ID": "<random>",
                 # Enable code execution from SRAM in PROD state.
@@ -295,7 +295,7 @@ MANUF_SW_INITIALIZED = [
 # The `MANUF_INDIVIDUALIZED` OTP profile configures the HW_CFG, CREATOR_SW and
 # OWNER_SW OTP partitions. It also includes the `MANUF_INITIALIZED`.
 MANUF_INDIVIDUALIZED = MANUF_INITIALIZED + MANUF_SW_INITIALIZED + [
-    ":otp_json_hw_cfg",
+    ":otp_json_hw_cfg0",
 ]
 
 # The `MANUF_PERSONALIZED` OTP profile configures the SECRET1 and SECRET2 OTP

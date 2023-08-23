@@ -57,7 +57,7 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
       `uvm_info(`gfn, $sformatf("starting dai access seq %0d/%0d with addr %0h in partition %0d",
                 i, num_dai_op, dai_addr, part_idx), UVM_MEDIUM)
 
-      if (i > num_to_lock_digests && part_idx inside {[HwCfgIdx: Secret2Idx]} &&
+      if (i > num_to_lock_digests && part_idx inside {[HwCfg0Idx: Secret2Idx]} &&
           !used_dai_addrs.exists(dai_addr)) begin
         init_chk_err[part_idx] = 1;
       end
@@ -155,10 +155,10 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
 
         if (part_locked) begin
           // Digest check failure because the memory is cleared.
-          // Since OtpHwCfg is the first partition with HW digest, this partition's check error
+          // Since OtpHwCfg0 is the first partition with HW digest, this partition's check error
           // will be triggered first.
           `uvm_info(`gfn, "OTP digest check failure", UVM_LOW)
-          exp_status[OtpHwCfgErrIdx] = 1;
+          exp_status[OtpHwCfg0ErrIdx] = 1;
         end else begin
           // Create LC check failure.
           `uvm_info(`gfn, "OTP_init LC failure", UVM_LOW)

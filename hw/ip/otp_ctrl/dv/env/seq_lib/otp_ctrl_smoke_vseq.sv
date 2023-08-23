@@ -32,7 +32,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
     if (part_idx == VendorTestIdx)   dai_addr inside `PART_CONTENT_RANGE(VendorTestIdx);
     if (part_idx == CreatorSwCfgIdx) dai_addr inside `PART_CONTENT_RANGE(CreatorSwCfgIdx);
     if (part_idx == OwnerSwCfgIdx)   dai_addr inside `PART_CONTENT_RANGE(OwnerSwCfgIdx);
-    if (part_idx == HwCfgIdx)        dai_addr inside `PART_CONTENT_RANGE(HwCfgIdx);
+    if (part_idx == HwCfg0Idx)       dai_addr inside `PART_CONTENT_RANGE(HwCfg0Idx);
     if (part_idx == Secret0Idx)      dai_addr inside `PART_CONTENT_RANGE(Secret0Idx);
     if (part_idx == Secret1Idx)      dai_addr inside `PART_CONTENT_RANGE(Secret1Idx);
     if (part_idx == Secret2Idx)      dai_addr inside `PART_CONTENT_RANGE(Secret2Idx);

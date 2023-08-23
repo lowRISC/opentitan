@@ -273,10 +273,10 @@
               - EN_CSRNG_SW_APP_READ
               - EN_ENTROPY_SRC_FW_READ
               - EN_ENTROPY_SRC_FW_OVER
-            - Configure remaining HW_CFG OTP fields:
+            - Configure remaining HW_CFG0 OTP fields:
               - DEVICE_ID
               - MANUF_STATE
-            - Lock HW_CFG OPT partition.
+            - Lock HW_CFG0 OPT partition.
             - Perform reset trigered by software.
             - Initialize entropy_src in FIPS mode. Check health status after setting appropriate
               health test parameters. Configure SW csrng instance to generate enough data to
@@ -334,7 +334,7 @@
             ***Prep steps***
             - Pre-load the OTP state with an image of an individualized device. See
               manuf_ft_sku_individualization for more details.
-            - Check expected ls_state and OTP locked partitions (SECRET1, HW_CFG).
+            - Check expected ls_state and OTP locked partitions (SECRET1, HW_CFG0).
             - Check the device lifecyle to be set in DEV, PROD or PROD_END state.
             - Initialize entropy source in FIPS mode. Check health status after setting appropriate
               health test parameters.

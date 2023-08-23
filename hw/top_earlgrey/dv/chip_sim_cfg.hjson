@@ -259,31 +259,31 @@
         ''',
         '''{gen_otp_images_cmd} \
               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_test_unlocked0.hjson \
-              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg0.hjson \
               --out {run_dir}/otp_ctrl_img_test_unlocked0.vmem \
               {gen_otp_images_cmd_opts}
         ''',
         '''{gen_otp_images_cmd} \
               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_test_unlocked1.hjson \
-              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg0.hjson \
               --out {run_dir}/otp_ctrl_img_test_unlocked1.vmem \
               {gen_otp_images_cmd_opts}
         ''',
         '''{gen_otp_images_cmd} \
               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_test_unlocked2.hjson \
-              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg0.hjson \
               --out {run_dir}/otp_ctrl_img_test_unlocked2.vmem \
               {gen_otp_images_cmd_opts}
         ''',
         '''{gen_otp_images_cmd} \
               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_test_locked0.hjson \
-              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg0.hjson \
               --out {run_dir}/otp_ctrl_img_test_locked0.vmem \
               {gen_otp_images_cmd_opts}
         ''',
         '''{gen_otp_images_cmd} \
               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_test_locked1.hjson \
-              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg0.hjson \
               --out {run_dir}/otp_ctrl_img_test_locked1.vmem \
               {gen_otp_images_cmd_opts}
         ''',
@@ -291,7 +291,7 @@
               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_dev.hjson \
               --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_creator_sw_cfg.hjson \
               --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_owner_sw_cfg.hjson \
-              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg0.hjson \
               --out {run_dir}/otp_ctrl_img_dev.vmem \
               {gen_otp_images_cmd_opts}
         ''',
@@ -299,7 +299,7 @@
               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_prod.hjson \
               --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_creator_sw_cfg.hjson \
               --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_owner_sw_cfg.hjson \
-              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg0.hjson \
               --out {run_dir}/otp_ctrl_img_prod.vmem \
               {gen_otp_images_cmd_opts}
         ''',
@@ -307,7 +307,7 @@
               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_rma.hjson \
               --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_creator_sw_cfg.hjson \
               --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_owner_sw_cfg.hjson \
-              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg0.hjson \
               --out {run_dir}/otp_ctrl_img_rma.vmem \
               {gen_otp_images_cmd_opts}
         ''',
@@ -789,9 +789,9 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
-      name: chip_sw_lc_ctrl_otp_hw_cfg
+      name: chip_sw_lc_ctrl_otp_hw_cfg0
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:lc_ctrl_otp_hw_cfg_test:1:new_rules"]
+      sw_images: ["//sw/device/tests:lc_ctrl_otp_hw_cfg0_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {

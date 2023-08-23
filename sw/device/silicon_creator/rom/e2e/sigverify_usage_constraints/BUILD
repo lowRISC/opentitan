@@ -72,7 +72,7 @@ otp_json(
     name = "otp_json_set_usage_constraint_params_overlay",
     partitions = [
         otp_partition(
-            name = "HW_CFG",
+            name = "HW_CFG0",
             items = {"DEVICE_ID": _test_device_id_joined},
         ),
         otp_partition(

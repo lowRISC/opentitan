@@ -44,7 +44,7 @@ typedef struct manifest_usage_constraints {
   uint32_t selector_bits;
   /**
    * Device identifier value which is compared against the `DEVICE_ID` value
-   * stored in the `HW_CFG` partition in OTP.
+   * stored in the `HW_CFG0` partition in OTP.
    *
    * Mapped to bits 0-7 of `selector_bits`.
    */

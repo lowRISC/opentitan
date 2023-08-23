@@ -33,7 +33,7 @@ state.
 
 ### `MANUF_INDIVIDUALIZED`
 
-In the `MANUF_INDIVIDUALIZED` state the HW_CFG, CREATOR_SW and OWNER_SW OTP
+In the `MANUF_INDIVIDUALIZED` state the HW_CFG0, CREATOR_SW and OWNER_SW OTP
 partitions are configured. This state also includes the OTP configuration
 performed in the `MANUF_INITIALIZED` state.
 
@@ -47,7 +47,7 @@ partitions. This state also includes the OTP configuration performed in the
 
 Partition / Manuf | `EMPTY` | `INITIALIZED` | `INDIVIDUALIZED` | `PERSONALIZED`
 :-----------------|:-------:|:-------------:|:----------------:|:--------------:
-`HW_CFG`          |         |               | Y                | Y
+`HW_CFG0`         |         |               | Y                | Y
 `CREATOR_SW_CFG`  |         |               | Y                | Y
 `OWNER_SW_CFG`    |         |               | Y                | Y
 `SECRET0`         |         | Y             | Y                | Y

@@ -88,9 +88,9 @@ static status_t print_flash_info_0_data_to_console(void) {
 static status_t provision(ujson_t *uj) {
   LOG_INFO("Waiting for FT SRAM provisioning data ...");
   TRY(ujson_deserialize_manuf_ft_individualize_data_t(uj, &in_data));
-  TRY(manuf_individualize_device_hw_cfg(&flash_ctrl_state, &otp_ctrl,
-                                        kFlashInfoPage0Permissions,
-                                        in_data.device_id));
+  TRY(manuf_individualize_device_hw_cfg0(&flash_ctrl_state, &otp_ctrl,
+                                         kFlashInfoPage0Permissions,
+                                         in_data.device_id));
   TRY(manuf_individualize_device_creator_sw_cfg(&otp_ctrl, &flash_ctrl_state));
   TRY(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
   LOG_INFO("FT SRAM provisioning done.");

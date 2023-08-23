@@ -123,7 +123,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       @(posedge cfg.otp_ctrl_vif.pwr_otp_done_o || cfg.under_reset ||
                 cfg.otp_ctrl_vif.alert_reqs) begin
         if (!cfg.under_reset && !cfg.otp_ctrl_vif.alert_reqs && cfg.en_scb) begin
-          otp_ctrl_part_pkg::otp_hw_cfg_data_t   exp_hwcfg_data;
+          otp_ctrl_part_pkg::otp_hw_cfg0_data_t   exp_hw_cfg0_data;
           otp_ctrl_pkg::otp_keymgr_key_t         exp_keymgr_data;
           otp_ctrl_pkg::otp_lc_data_t            exp_lc_data;
           bit [otp_ctrl_pkg::KeyMgrKeyWidth-1:0] exp_keymgr_key0, exp_keymgr_key1;
@@ -145,11 +145,11 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           end
 
           // Hwcfg_o gets data from OTP HW cfg partition
-          exp_hwcfg_data = cfg.otp_ctrl_vif.under_error_states() ?
-                           otp_ctrl_part_pkg::PartInvDefault[HwCfgOffset*8 +: HwCfgSize*8] :
-                           otp_hw_cfg_data_t'({<<32 {otp_a[HwCfgOffset/4 +: HwCfgSize/4]}});
-          `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_hw_cfg_o.valid, lc_ctrl_pkg::On)
-          `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_hw_cfg_o.data, exp_hwcfg_data)
+          exp_hw_cfg0_data = cfg.otp_ctrl_vif.under_error_states() ?
+                             otp_ctrl_part_pkg::PartInvDefault[HwCfg0Offset*8 +: HwCfg0Size*8] :
+                             otp_hw_cfg0_data_t'({<<32 {otp_a[HwCfg0Offset/4 +: HwCfg0Size/4]}});
+          `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_broadcast_o.valid, lc_ctrl_pkg::On)
+          `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_broadcast_o.hw_cfg0_data, exp_hw_cfg0_data)
 
           if (!cfg.otp_ctrl_vif.under_error_states()) begin
             // ---------------------- Check lc_data_o output -----------------------------------
@@ -913,7 +913,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           cov.collect_err_code_cov(item.d_data, part_idx);
         end
       end
-      "hw_cfg_digest_0", "hw_cfg_digest_1", "secret0_digest_0", "secret0_digest_1",
+      "hw_cfg0_digest_0", "hw_cfg0_digest_1", "secret0_digest_0", "secret0_digest_1",
       "secret1_digest_0", "secret1_digest_1", "secret2_digest_0", "secret2_digest_1",
       "creator_sw_cfg_digest_0", "creator_sw_cfg_digest_1", "owner_sw_cfg_digest_0",
       "owner_sw_cfg_digest_1", "vendor_test_digest_0", "vendor_test_digest_1": begin
@@ -1080,9 +1080,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     void'(ral.owner_sw_cfg_digest[1].predict(
           .value(otp_a[PART_OTP_DIGEST_ADDRS[OwnerSwCfgIdx] + 1]), .kind(UVM_PREDICT_DIRECT)));
 
-    void'(ral.hw_cfg_digest[0].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfgIdx]]),
+    void'(ral.hw_cfg0_digest[0].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfg0Idx]]),
         .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.hw_cfg_digest[1].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfgIdx] + 1]),
+    void'(ral.hw_cfg0_digest[1].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfg0Idx] + 1]),
         .kind(UVM_PREDICT_DIRECT)));
 
     void'(ral.secret0_digest[0].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx]]),
@@ -1136,7 +1136,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       dai_digest_ip = part_idx;
     end
     case (part_idx)
-      HwCfgIdx:   mem_q = otp_a[HW_CFG_START_ADDR:HW_CFG_END_ADDR];
+      HwCfg0Idx:   mem_q = otp_a[HW_CFG0_START_ADDR:HW_CFG0_END_ADDR];
       Secret0Idx: mem_q = otp_a[SECRET0_START_ADDR:SECRET0_END_ADDR];
       Secret1Idx: mem_q = otp_a[SECRET1_START_ADDR:SECRET1_END_ADDR];
       Secret2Idx: mem_q = otp_a[SECRET2_START_ADDR:SECRET2_END_ADDR];
@@ -1283,7 +1283,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         digest = {`gmv(ral.creator_sw_cfg_digest[1]), `gmv(ral.creator_sw_cfg_digest[0])};
       end
       OwnerSwCfgIdx: digest = {`gmv(ral.owner_sw_cfg_digest[1]), `gmv(ral.owner_sw_cfg_digest[0])};
-      HwCfgIdx: digest = {`gmv(ral.hw_cfg_digest[1]), `gmv(ral.hw_cfg_digest[0])};
+      HwCfg0Idx: digest = {`gmv(ral.hw_cfg0_digest[1]), `gmv(ral.hw_cfg0_digest[0])};
       Secret0Idx: digest = {`gmv(ral.secret0_digest[1]), `gmv(ral.secret0_digest[0])};
       Secret1Idx: digest = {`gmv(ral.secret1_digest[1]), `gmv(ral.secret1_digest[0])};
       Secret2Idx: digest = {`gmv(ral.secret2_digest[1]), `gmv(ral.secret2_digest[0])};

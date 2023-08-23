@@ -198,7 +198,7 @@ This is however rare and should not happen after fabrication testing.
 ### Locking Partitions
 
 Once a partition has been fully populated, write access to that partition has to be permanently locked.
-For the HW_CFG and SECRET* partitions, this can be achieved as follows:
+For the HW_CFG* and SECRET* partitions, this can be achieved as follows:
 
 1. [Trigger](#digest-calculation-sequence) a digest calculation via the DAI.
 2. [Read back](#readout-sequence) and verify the digest location via the DAI.

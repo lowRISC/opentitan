@@ -42,7 +42,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   import cip_base_pkg::*;
 
   // Output from DUT
-  otp_hw_cfg_t       otp_hw_cfg_o;
+  otp_broadcast_t    otp_broadcast_o;
   otp_keymgr_key_t   keymgr_key_o;
   otp_lc_data_t      lc_data_o;
   logic              pwr_otp_done_o, pwr_otp_idle_o;
@@ -204,7 +204,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   task automatic force_invalid_part_cmd_o(int part_idx);
     @(posedge clk_i);
     case (part_idx)
-      HwCfgIdx:     force `BUF_PART_OTP_CMD_PATH(HwCfgIdx)   = prim_otp_pkg::cmd_e'(2'b10);
+      HwCfg0Idx:     force `BUF_PART_OTP_CMD_PATH(HwCfg0Idx)   = prim_otp_pkg::cmd_e'(2'b10);
       Secret0Idx:   force `BUF_PART_OTP_CMD_PATH(Secret0Idx) = prim_otp_pkg::cmd_e'(2'b10);
       Secret1Idx:   force `BUF_PART_OTP_CMD_PATH(Secret1Idx) = prim_otp_pkg::cmd_e'(2'b10);
       Secret2Idx:   force `BUF_PART_OTP_CMD_PATH(Secret2Idx) = prim_otp_pkg::cmd_e'(2'b10);
@@ -219,7 +219,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   task automatic release_invalid_part_cmd_o(int part_idx);
     @(posedge clk_i);
     case (part_idx)
-      HwCfgIdx:     release `BUF_PART_OTP_CMD_PATH(HwCfgIdx);
+      HwCfg0Idx:     release `BUF_PART_OTP_CMD_PATH(HwCfg0Idx);
       Secret0Idx:   release `BUF_PART_OTP_CMD_PATH(Secret0Idx);
       Secret1Idx:   release `BUF_PART_OTP_CMD_PATH(Secret1Idx);
       Secret2Idx:   release `BUF_PART_OTP_CMD_PATH(Secret2Idx);
@@ -239,7 +239,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(VendorTestIdx)
     `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(CreatorSwCfgIdx)
     `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(OwnerSwCfgIdx)
-    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(HwCfgIdx)
+    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(HwCfg0Idx)
     `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(Secret0Idx)
     `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(Secret1Idx)
     `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(Secret2Idx)
@@ -268,15 +268,16 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   // If pwr_otp_idle is set only if pwr_otp init is done
   `OTP_ASSERT_WO_LC_ESC(OtpPwrDoneWhenIdle_A, pwr_otp_idle_o |-> pwr_otp_done_o)
 
-  // Otp_hw_cfg_o is valid only when otp init is done
-  `OTP_ASSERT_WO_LC_ESC(OtpHwCfgValidOn_A, pwr_otp_done_o |->
-                        otp_hw_cfg_o.valid == lc_ctrl_pkg::On)
-  // If otp_hw_cfg is Off, then hw partition is not finished calculation, then otp init is not done
-  `OTP_ASSERT_WO_LC_ESC(OtpHwCfgValidOff_A, otp_hw_cfg_o.valid == lc_ctrl_pkg::Off |->
+  // Otp_hw_cfg0_o is valid only when otp init is done
+  `OTP_ASSERT_WO_LC_ESC(OtpHwCfg0ValidOn_A, pwr_otp_done_o |->
+                        otp_broadcast_o.valid == lc_ctrl_pkg::On)
+  // If otp_broadcast is Off, then hw partition is not finished calculation,
+  // then otp init is not done
+  `OTP_ASSERT_WO_LC_ESC(OtpHwCfg0ValidOff_A, otp_broadcast_o.valid == lc_ctrl_pkg::Off |->
                         pwr_otp_done_o == 0)
-  // Once OTP init is done, hw_cfg_o output value stays stable until next power cycle
-  `OTP_ASSERT_WO_LC_ESC(OtpHwCfgStable_A, otp_hw_cfg_o.valid == lc_ctrl_pkg::On |=>
-                        $stable(otp_hw_cfg_o))
+  // Once OTP init is done, hw_cfg0_o output value stays stable until next power cycle
+  `OTP_ASSERT_WO_LC_ESC(OtpHwCfg0Stable_A, otp_broadcast_o.valid == lc_ctrl_pkg::On |=>
+                        $stable(otp_broadcast_o))
 
   // Otp_keymgr valid is related to part_digest, should not be changed after otp_pwr_init
   `OTP_ASSERT_WO_LC_ESC(OtpKeymgrValidStable_A, pwr_otp_done_o |-> $stable(keymgr_key_o.valid))
@@ -307,9 +308,9 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
                         keymgr_key_o.key_share1 ==
                         PartInvDefault[CreatorRootKeyShare1Offset*8+:CreatorRootKeyShare1Size*8])
 
-  `OTP_FATAL_ERR_ASSERT(HwCfgOValid_A, otp_hw_cfg_o.valid == lc_ctrl_pkg::Off)
-  `OTP_FATAL_ERR_ASSERT(HwCfgOData_A, otp_hw_cfg_o.data ==
-                        PartInvDefault[HwCfgOffset*8+:HwCfgSize*8])
+  `OTP_FATAL_ERR_ASSERT(HwCfg0OValid_A, otp_broadcast_o.valid == lc_ctrl_pkg::Off)
+  `OTP_FATAL_ERR_ASSERT(HwCfg0OData_A, otp_broadcast_o.hw_cfg0_data ==
+                        PartInvDefault[HwCfg0Offset*8+:HwCfg0Size*8])
 
   `OTP_FATAL_ERR_ASSERT(LcProgAck_A, lc_prog_ack == 0)
   `OTP_FATAL_ERR_ASSERT(FlashAcks_A, flash_acks == 0)

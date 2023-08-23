@@ -24,14 +24,14 @@
 | lc_ctrl.[`LC_ID_STATE`](#lc_id_state)                               | 0x40     |        4 | This register exposes the id state of the device.                                        |
 | lc_ctrl.[`HW_REVISION0`](#hw_revision0)                             | 0x44     |        4 | This register holds the SILICON_CREATOR_ID and the PRODUCT_ID.                           |
 | lc_ctrl.[`HW_REVISION1`](#hw_revision1)                             | 0x48     |        4 | This register holds the REVISION_ID.                                                     |
-| lc_ctrl.[`DEVICE_ID_0`](#device_id)                                 | 0x4c     |        4 | This is the 256bit DEVICE_ID value that is stored in the HW_CFG partition in OTP.        |
-| lc_ctrl.[`DEVICE_ID_1`](#device_id)                                 | 0x50     |        4 | This is the 256bit DEVICE_ID value that is stored in the HW_CFG partition in OTP.        |
-| lc_ctrl.[`DEVICE_ID_2`](#device_id)                                 | 0x54     |        4 | This is the 256bit DEVICE_ID value that is stored in the HW_CFG partition in OTP.        |
-| lc_ctrl.[`DEVICE_ID_3`](#device_id)                                 | 0x58     |        4 | This is the 256bit DEVICE_ID value that is stored in the HW_CFG partition in OTP.        |
-| lc_ctrl.[`DEVICE_ID_4`](#device_id)                                 | 0x5c     |        4 | This is the 256bit DEVICE_ID value that is stored in the HW_CFG partition in OTP.        |
-| lc_ctrl.[`DEVICE_ID_5`](#device_id)                                 | 0x60     |        4 | This is the 256bit DEVICE_ID value that is stored in the HW_CFG partition in OTP.        |
-| lc_ctrl.[`DEVICE_ID_6`](#device_id)                                 | 0x64     |        4 | This is the 256bit DEVICE_ID value that is stored in the HW_CFG partition in OTP.        |
-| lc_ctrl.[`DEVICE_ID_7`](#device_id)                                 | 0x68     |        4 | This is the 256bit DEVICE_ID value that is stored in the HW_CFG partition in OTP.        |
+| lc_ctrl.[`DEVICE_ID_0`](#device_id)                                 | 0x4c     |        4 | This is the 256bit DEVICE_ID value that is stored in the HW_CFG0 partition in OTP.       |
+| lc_ctrl.[`DEVICE_ID_1`](#device_id)                                 | 0x50     |        4 | This is the 256bit DEVICE_ID value that is stored in the HW_CFG0 partition in OTP.       |
+| lc_ctrl.[`DEVICE_ID_2`](#device_id)                                 | 0x54     |        4 | This is the 256bit DEVICE_ID value that is stored in the HW_CFG0 partition in OTP.       |
+| lc_ctrl.[`DEVICE_ID_3`](#device_id)                                 | 0x58     |        4 | This is the 256bit DEVICE_ID value that is stored in the HW_CFG0 partition in OTP.       |
+| lc_ctrl.[`DEVICE_ID_4`](#device_id)                                 | 0x5c     |        4 | This is the 256bit DEVICE_ID value that is stored in the HW_CFG0 partition in OTP.       |
+| lc_ctrl.[`DEVICE_ID_5`](#device_id)                                 | 0x60     |        4 | This is the 256bit DEVICE_ID value that is stored in the HW_CFG0 partition in OTP.       |
+| lc_ctrl.[`DEVICE_ID_6`](#device_id)                                 | 0x64     |        4 | This is the 256bit DEVICE_ID value that is stored in the HW_CFG0 partition in OTP.       |
+| lc_ctrl.[`DEVICE_ID_7`](#device_id)                                 | 0x68     |        4 | This is the 256bit DEVICE_ID value that is stored in the HW_CFG0 partition in OTP.       |
 | lc_ctrl.[`MANUF_STATE_0`](#manuf_state)                             | 0x6c     |        4 | This is a 256bit field used for keeping track of the manufacturing state.                |
 | lc_ctrl.[`MANUF_STATE_1`](#manuf_state)                             | 0x70     |        4 | This is a 256bit field used for keeping track of the manufacturing state.                |
 | lc_ctrl.[`MANUF_STATE_2`](#manuf_state)                             | 0x74     |        4 | This is a 256bit field used for keeping track of the manufacturing state.                |
@@ -568,8 +568,8 @@ I.e., each base or metal layer respin must be reflected so that software can rel
 Zero is an invalid value.
 
 ## DEVICE_ID
-This is the 256bit DEVICE_ID value that is stored in the HW_CFG partition in OTP.
-If this register reads all-one, the HW_CFG partition has not been initialized yet or is in error state.
+This is the 256bit DEVICE_ID value that is stored in the HW_CFG0 partition in OTP.
+If this register reads all-one, the HW_CFG0 partition has not been initialized yet or is in error state.
 If this register reads all-zero, this is indicative that the value has not been programmed to OTP yet.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`

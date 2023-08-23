@@ -23,11 +23,11 @@ OTTF_DEFINE_TEST_CONFIG();
  * OTP HW partition relative IFETCH offset in bytes.
  *
  * x = OTP_CTRL_PARAM_EN_SRAM_IFETCH_OFFSET (1728)
- * y = OTP_CTRL_PARAM_HW_CFG_OFFSET (1664)
+ * y = OTP_CTRL_PARAM_HW_CFG0_OFFSET (1664)
  * IFETCH_OFFSET = (x - y) = 64
  */
 static const uint32_t kOtpIfetchHwRelativeOffset =
-    OTP_CTRL_PARAM_EN_SRAM_IFETCH_OFFSET - OTP_CTRL_PARAM_HW_CFG_OFFSET;
+    OTP_CTRL_PARAM_EN_SRAM_IFETCH_OFFSET - OTP_CTRL_PARAM_HW_CFG0_OFFSET;
 
 /**
  * OTP can only be accessed by 32b aligned addresses. As `csrng_sw_app_read` is
@@ -79,7 +79,7 @@ static void check_csrng_fuse_enabled(bool expected) {
 
   uint32_t value;
   // Read the current value of the partition.
-  CHECK_DIF_OK(dif_otp_ctrl_dai_read_start(&otp, kDifOtpCtrlPartitionHwCfg,
+  CHECK_DIF_OK(dif_otp_ctrl_dai_read_start(&otp, kDifOtpCtrlPartitionHwCfg0,
                                            kOtpIfetchHwRelativeOffset));
   CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
   CHECK_DIF_OK(dif_otp_ctrl_dai_read32_end(&otp, &value));

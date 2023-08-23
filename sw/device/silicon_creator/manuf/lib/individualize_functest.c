@@ -58,7 +58,7 @@ bool test_main(void) {
   CHECK_STATUS_OK(
       lc_ctrl_testutils_check_lc_state(&lc_ctrl, kDifLcCtrlStateTestUnlocked1));
 
-  if (!status_ok(manuf_individualize_device_hw_cfg_check(&otp_ctrl))) {
+  if (!status_ok(manuf_individualize_device_hw_cfg0_check(&otp_ctrl))) {
     dif_flash_ctrl_region_properties_t kFlashInfoPage0Permissions = {
         .ecc_en = kMultiBitBool4True,
         .high_endurance_en = kMultiBitBool4False,
@@ -69,7 +69,7 @@ bool test_main(void) {
     uint32_t device_id[kHwCfgDeviceIdSizeIn32BitWords] = {
         0xAAAAAAAA, 0xBBBBBBBB, 0xAAAAAAAA, 0xBBBBBBBB,
         0xAAAAAAAA, 0xBBBBBBBB, 0xAAAAAAAA, 0xBBBBBBBB};
-    CHECK_STATUS_OK(manuf_individualize_device_hw_cfg(
+    CHECK_STATUS_OK(manuf_individualize_device_hw_cfg0(
         &flash_state, &otp_ctrl, kFlashInfoPage0Permissions, device_id));
     sw_reset();
   }

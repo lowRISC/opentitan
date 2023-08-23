@@ -872,14 +872,14 @@
       default: "8",
       local: "true"
     },
-    { name: "HwCfgOffset",
-      desc: "Offset of the HW_CFG partition",
+    { name: "HwCfg0Offset",
+      desc: "Offset of the HW_CFG0 partition",
       type: "int",
       default: "1664",
       local: "true"
     },
-    { name: "HwCfgSize",
-      desc: "Size of the HW_CFG partition",
+    { name: "HwCfg0Size",
+      desc: "Size of the HW_CFG0 partition",
       type: "int",
       default: "80",
       local: "true"
@@ -956,14 +956,14 @@
       default: "1",
       local: "true"
     },
-    { name: "HwCfgDigestOffset",
-      desc: "Offset of HW_CFG_DIGEST",
+    { name: "HwCfg0DigestOffset",
+      desc: "Offset of HW_CFG0_DIGEST",
       type: "int",
       default: "1736",
       local: "true"
     },
-    { name: "HwCfgDigestSize",
-      desc: "Size of HW_CFG_DIGEST",
+    { name: "HwCfg0DigestSize",
+      desc: "Size of HW_CFG0_DIGEST",
       type: "int",
       default: "8",
       local: "true"
@@ -1348,13 +1348,13 @@
       desc:    "Key derivation interface for OTBN scrambling devices."
     }
     // Hardware config partition
-    { struct:  "otp_hw_cfg"
+    { struct:  "otp_broadcast"
       type:    "uni"
-      name:    "otp_hw_cfg"
+      name:    "otp_broadcast"
       act:     "req"
       default: "'0"
       package: "otp_ctrl_part_pkg"
-      desc:    "Output of the HW_CFG partition."
+      desc:    "Output of the HW partitions with breakout data types."
     }
     // AST observability control
     { struct: "ast_obs_ctrl",
@@ -1543,13 +1543,13 @@
     {
       name: "OTP_CTRL.INIT"
       desc: '''When power is up, OTP controller reads devices status.
-      After all reads complete, the controller performs integrity check on the HW_CFG and SECRET partitions.
+      After all reads complete, the controller performs integrity check on the HW_CFG* and SECRET partitions.
       Once all integrity checks are complete, the controller marks outputs as valid.
       '''
     }
     {
       name: "OTP_CTRL.ENTROPY_READ"
-      desc: '''Firmware can read entropy from ENTROPY_SRC block by configuring following field of HW_CFG partition.
+      desc: '''Firmware can read entropy from ENTROPY_SRC block by configuring following field of HW_CFG* partition.
         - EN_CSRNG_SW_APP_READ
         - EN_ENTROPY_SRC_FW_READ
         - EN_ENTROPY_SRC_FW_OVER
@@ -1665,7 +1665,7 @@
                   '''
           }
           { bits: "3"
-            name: "HW_CFG_ERROR"
+            name: "HW_CFG0_ERROR"
             desc: '''
                   Set to 1 if an error occurred in this partition.
                   If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
@@ -2067,7 +2067,7 @@
       { name: "INTEGRITY_CHECK_PERIOD",
         desc: '''
               This value specifies the maximum period that can be generated pseudo-randomly.
-              Only applies to the HW_CFG and SECRET* partitions once they are locked.
+              Only applies to the HW_CFG* and SECRET* partitions once they are locked.
               '''
         swaccess: "rw",
         hwaccess: "hro",
@@ -2089,7 +2089,7 @@
       { name: "CONSISTENCY_CHECK_PERIOD",
         desc: '''
               This value specifies the maximum period that can be generated pseudo-randomly.
-              This applies to the LIFE_CYCLE partition and the HW_CFG and SECRET* partitions once they are locked.
+              This applies to the LIFE_CYCLE partition and the HW_CFG* and SECRET* partitions once they are locked.
               '''
         swaccess: "rw",
         hwaccess: "hro",
@@ -2249,9 +2249,9 @@
         }
       },
       { multireg: {
-          name:     "HW_CFG_DIGEST",
+          name:     "HW_CFG0_DIGEST",
           desc:     '''
-                    Integrity digest for the HW_CFG partition.
+                    Integrity digest for the HW_CFG0 partition.
                     The integrity digest is 0 by default. The digest calculation can be triggered via the !!DIRECT_ACCESS_CMD.
                     After a reset, the digest then becomes visible in this CSR, and the corresponding partition becomes write-locked.
                     ''',

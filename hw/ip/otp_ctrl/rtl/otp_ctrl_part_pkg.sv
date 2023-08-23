@@ -158,7 +158,7 @@ package otp_ctrl_part_pkg;
       read_lock:  1'b0,
       integrity:  1'b1
     },
-    // HW_CFG
+    // HW_CFG0
     '{
       variant:    Buffered,
       offset:     11'd1664,
@@ -229,7 +229,7 @@ package otp_ctrl_part_pkg;
     VendorTestIdx,
     CreatorSwCfgIdx,
     OwnerSwCfgIdx,
-    HwCfgIdx,
+    HwCfg0Idx,
     Secret0Idx,
     Secret1Idx,
     Secret2Idx,
@@ -247,19 +247,19 @@ package otp_ctrl_part_pkg;
 
   // Breakout types for easier access of individual items.
   typedef struct packed {
-    logic [63:0] hw_cfg_digest;
-      logic [31:0] unallocated;
+    logic [63:0] hw_cfg0_digest;
+    logic [31:0] unallocated;
     prim_mubi_pkg::mubi8_t en_entropy_src_fw_over;
     prim_mubi_pkg::mubi8_t en_entropy_src_fw_read;
     prim_mubi_pkg::mubi8_t en_csrng_sw_app_read;
     prim_mubi_pkg::mubi8_t en_sram_ifetch;
     logic [255:0] manuf_state;
     logic [255:0] device_id;
-  } otp_hw_cfg_data_t;
+  } otp_hw_cfg0_data_t;
 
   // default value used for intermodule
-  parameter otp_hw_cfg_data_t OTP_HW_CFG_DATA_DEFAULT = '{
-    hw_cfg_digest: 64'h15F164D7930C9D19,
+  parameter otp_hw_cfg0_data_t OTP_HW_CFG0_DATA_DEFAULT = '{
+    hw_cfg0_digest: 64'h15F164D7930C9D19,
     unallocated: 32'h0,
     en_entropy_src_fw_over: prim_mubi_pkg::mubi8_t'(8'h69),
     en_entropy_src_fw_read: prim_mubi_pkg::mubi8_t'(8'h69),
@@ -268,18 +268,18 @@ package otp_ctrl_part_pkg;
     manuf_state: 256'hDF3888886BD10DC67ABB319BDA0529AE40119A3C6E63CDF358840E458E4029A6,
     device_id: 256'h63B9485A3856C417CF7A50A9A91EF7F7B3A5B4421F462370FFF698183664DC7E
   };
-
   typedef struct packed {
     // This reuses the same encoding as the life cycle signals for indicating valid status.
     lc_ctrl_pkg::lc_tx_t valid;
-    otp_hw_cfg_data_t data;
-  } otp_hw_cfg_t;
+    otp_hw_cfg0_data_t hw_cfg0_data;
+  } otp_broadcast_t;
 
   // default value for intermodule
-  parameter otp_hw_cfg_t OTP_HW_CFG_DEFAULT = '{
+  parameter otp_broadcast_t OTP_BROADCAST_DEFAULT = '{
     valid: lc_ctrl_pkg::Off,
-    data: OTP_HW_CFG_DATA_DEFAULT
+    hw_cfg0_data: OTP_HW_CFG0_DATA_DEFAULT
   };
+
 
   // OTP invalid partition default for buffered partitions.
   parameter logic [16383:0] PartInvDefault = 16384'({
@@ -391,7 +391,7 @@ package otp_ctrl_part_pkg;
     hw2reg.vendor_test_digest = part_digest[VendorTestIdx];
     hw2reg.creator_sw_cfg_digest = part_digest[CreatorSwCfgIdx];
     hw2reg.owner_sw_cfg_digest = part_digest[OwnerSwCfgIdx];
-    hw2reg.hw_cfg_digest = part_digest[HwCfgIdx];
+    hw2reg.hw_cfg0_digest = part_digest[HwCfg0Idx];
     hw2reg.secret0_digest = part_digest[Secret0Idx];
     hw2reg.secret1_digest = part_digest[Secret1Idx];
     hw2reg.secret2_digest = part_digest[Secret2Idx];
@@ -419,5 +419,33 @@ package otp_ctrl_part_pkg;
     end
     return part_access_pre;
   endfunction : named_part_access_pre
+
+  function automatic otp_broadcast_t named_broadcast_assign(
+      logic [NumPart-1:0] part_init_done,
+      logic [$bits(PartInvDefault)/8-1:0][7:0] part_buf_data);
+    otp_broadcast_t otp_broadcast;
+    logic valid, unused;
+    unused = 1'b0;
+    valid = 1'b1;
+    unused ^= ^{part_init_done[LifeCycleIdx],
+                part_buf_data[LifeCycleOffset +: LifeCycleSize]};
+    unused ^= ^{part_init_done[Secret2Idx],
+                part_buf_data[Secret2Offset +: Secret2Size]};
+    unused ^= ^{part_init_done[Secret1Idx],
+                part_buf_data[Secret1Offset +: Secret1Size]};
+    unused ^= ^{part_init_done[Secret0Idx],
+                part_buf_data[Secret0Offset +: Secret0Size]};
+    valid &= part_init_done[HwCfg0Idx];
+    otp_broadcast.hw_cfg0_data = otp_hw_cfg0_data_t'(part_buf_data[HwCfg0Offset +: HwCfg0Size]);
+    unused ^= ^{part_init_done[OwnerSwCfgIdx],
+                part_buf_data[OwnerSwCfgOffset +: OwnerSwCfgSize]};
+    unused ^= ^{part_init_done[CreatorSwCfgIdx],
+                part_buf_data[CreatorSwCfgOffset +: CreatorSwCfgSize]};
+    unused ^= ^{part_init_done[VendorTestIdx],
+                part_buf_data[VendorTestOffset +: VendorTestSize]};
+    otp_broadcast.valid = lc_ctrl_pkg::lc_tx_bool_to_lc_tx(valid);
+    return otp_broadcast;
+  endfunction : named_broadcast_assign
+
 
 endpackage : otp_ctrl_part_pkg

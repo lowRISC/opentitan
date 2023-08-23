@@ -49,7 +49,7 @@ typedef enum dif_otp_ctrl_partition {
   /**
    * The hardware configuration area.
    */
-  kDifOtpCtrlPartitionHwCfg,
+  kDifOtpCtrlPartitionHwCfg0,
   /**
    * The device lifecycle area.
    */
@@ -134,9 +134,9 @@ typedef enum dif_otp_ctrl_status_code {
    */
   kDifOtpCtrlStatusCodeOwnerSwCfgError,
   /**
-   * Indicates an error occurred in the `HwCfg` partition.
+   * Indicates an error occurred in the `HwCfg0` partition.
    */
-  kDifOtpCtrlStatusCodeHwCfgError,
+  kDifOtpCtrlStatusCodeHwCfg0Error,
   /**
    * Indicates an error occurred in the `LifeCycle` partition.
    */

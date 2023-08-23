@@ -63,7 +63,7 @@ the manifest is 896 bytes.
     `manuf_state_owner`, and `life_cycle_state`, respectively.
 
 *   `device_id`: Device identifier value which is compared against the
-    `DEVICE_ID` value stored in the `HW_CFG` partition in OTP. Mapped to bits
+    `DEVICE_ID` value stored in the `HW_CFG0` partition in OTP. Mapped to bits
      0-7 of `selector_bits`.
 
 *   `manuf_state_creator`: Device silicon creator manufacturing status compared
