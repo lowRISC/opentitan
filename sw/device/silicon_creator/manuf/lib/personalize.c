@@ -20,44 +20,10 @@
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/silicon_creator/manuf/keys/manuf_keys.h"
+#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 
 #include "otp_ctrl_regs.h"  // Generated.
-
-enum {
-  /**
-   * CreatorSeed and OwnerSeed sizes.
-   *
-   * Both seeds are stored in flash info pages. The CreatorSeed is used to
-   * derive the CreatorRootKey, and also referred to as the `DiversificationKey`
-   * in the "Identities and Root Keys" OpenTitan specification. The OwnerSeed is
-   * used to derive the OwnerIntermediateKey, and is also referred to as the
-   * `OwnerRootSecret` in the aforementioned spec.
-   */
-  kCreatorSeedSizeInBytes = 32,
-  kCreatorSeedSizeInWords = kCreatorSeedSizeInBytes / sizeof(uint32_t),
-  kOwnerSeedSizeInWords = kCreatorSeedSizeInWords,
-
-  /**
-   * Creator/Owner seed flash partition ID.
-   */
-  kSeedFlashInfoPartitionId = 0,
-
-  /**
-   * Creator/Owner seed flash bank ID.
-   */
-  kSeedFlashInfoBankId = 0,
-
-  /**
-   * CreatorSeed flash info page ID.
-   */
-  kCreatorSeedFlashInfoPageId = 1,
-
-  /**
-   * OwnerSeed flash info page ID.
-   */
-  kOwnerSeedFlashInfoPageId = 2,
-};
 
 static_assert(OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE0_SIZE ==
                   OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE1_SIZE,
@@ -236,7 +202,7 @@ static status_t flash_ctrl_secret_write(dif_flash_ctrl_state_t *flash_state,
   TRY(entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolFalse,
                                 /*seed_material=*/NULL));
 
-  uint32_t seed[kCreatorSeedSizeInWords];
+  uint32_t seed[kFlashInfoCreatorSeedSizeInWords];
   TRY(entropy_csrng_generate(/*seed_material=*/NULL, seed, len,
                              /*fips_check*/ kHardenedBoolTrue));
   TRY(entropy_csrng_uninstantiate());
@@ -249,7 +215,7 @@ static status_t flash_ctrl_secret_write(dif_flash_ctrl_state_t *flash_state,
       flash_state, address, partition_id, seed, kDifFlashCtrlPartitionTypeInfo,
       len));
 
-  uint32_t seed_result[kCreatorSeedSizeInWords];
+  uint32_t seed_result[kFlashInfoCreatorSeedSizeInWords];
   TRY(flash_ctrl_testutils_read(flash_state, address, partition_id, seed_result,
                                 kDifFlashCtrlPartitionTypeInfo, len,
                                 /*delay=*/0));
@@ -402,15 +368,15 @@ status_t manuf_personalize_device(dif_flash_ctrl_state_t *flash_state,
 
   // Provision secret Creator / Owner key seeds in flash.
   // Provision CreatorSeed into target flash info page.
-  TRY(flash_ctrl_secret_write(flash_state, kCreatorSeedFlashInfoPageId,
-                              kSeedFlashInfoBankId, kSeedFlashInfoPartitionId,
-                              kCreatorSeedSizeInWords));
+  TRY(flash_ctrl_secret_write(
+      flash_state, kFlashInfoCreatorSeedPageId, kFlashInfoCreatorSeedBankId,
+      kFlashInfoCreatorSeedPartitionId, kFlashInfoCreatorSeedSizeInWords));
   // Provision preliminary OwnerSeed into target flash info page (with
   // expectation that SiliconOwner will rotate this value during ownership
   // transfer).
-  TRY(flash_ctrl_secret_write(flash_state, kOwnerSeedFlashInfoPageId,
-                              kSeedFlashInfoBankId, kSeedFlashInfoPartitionId,
-                              kOwnerSeedSizeInWords));
+  TRY(flash_ctrl_secret_write(
+      flash_state, kFlashInfoOwnerSeedPageId, kFlashInfoOwnerSeedBankId,
+      kFlashInfoOwnerSeedPartitionId, kFlashInfoOwnerSeedSizeInWords));
 
   // Provision the OTP SECRET2 partition.
   TRY(otp_partition_secret2_configure(otp_ctrl,

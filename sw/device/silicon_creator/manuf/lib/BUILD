@@ -48,6 +48,12 @@ cc_library(
 )
 
 cc_library(
+    name = "flash_info_fields",
+    hdrs = ["flash_info_fields.h"],
+    deps = ["//hw/ip/otp_ctrl/data:otp_ctrl_regs"],
+)
+
+cc_library(
     name = "otp_fields",
     hdrs = ["otp_fields.h"],
     deps = ["//hw/ip/otp_ctrl/data:otp_ctrl_regs"],
@@ -65,6 +71,7 @@ cc_library(
         "individualize.h",
     ],
     deps = [
+        ":flash_info_fields",
         ":otp_fields",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
@@ -159,6 +166,7 @@ cc_library(
     srcs = ["personalize.c"],
     hdrs = ["personalize.h"],
     deps = [
+        ":flash_info_fields",
         ":otp_fields",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
@@ -226,6 +234,7 @@ cc_library(
     srcs = ["isolated_flash_partition.c"],
     hdrs = ["isolated_flash_partition.h"],
     deps = [
+        ":flash_info_fields",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/testing:flash_ctrl_testutils",
