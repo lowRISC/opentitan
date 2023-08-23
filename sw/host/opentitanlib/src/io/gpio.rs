@@ -150,6 +150,9 @@ pub trait GpioPin {
         Ok(())
     }
 
+    /// Reset pin level to the default value.
+    fn reset(&self) -> Result<()>;
+
     /// Not meant for API clients, this method returns the pin name as it is known to the
     /// transport (which may have been through one or more alias mappings from the name provided
     /// by the API client.)  This method is used by implementations of `GpioMonitoring`.

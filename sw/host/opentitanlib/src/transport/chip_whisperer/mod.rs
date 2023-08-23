@@ -138,9 +138,12 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
         ))
     }
 
+    fn apply_default_configuration(&self) -> Result<()> {
+        self.init_pin_values()
+    }
+
     fn uart(&self, instance: &str) -> Result<Rc<dyn Uart>> {
         let resolved = self.io_mapper.resolve_uart(instance);
-
         let mut inner = self.inner.borrow_mut();
         let instance = u32::from_str(&resolved).ok().ok_or_else(|| {
             TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
@@ -157,6 +160,7 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
 
     fn gpio_pin(&self, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         let resolved_pin = self.io_mapper.resolve_pin(pinname);
+        let config = self.io_mapper.pin_config(pinname)?;
 
         let mut inner = self.inner.borrow_mut();
         Ok(match inner.gpio.entry(resolved_pin.clone()) {
@@ -164,6 +168,7 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
                 let u = v.insert(Rc::new(gpio::Pin::open(
                     Rc::clone(&self.device),
                     resolved_pin,
+                    *config,
                 )?));
                 Rc::clone(u)
             }

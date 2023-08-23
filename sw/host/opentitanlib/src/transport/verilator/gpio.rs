@@ -21,16 +21,18 @@ pub struct VerilatorGpioPin {
     out_value: Cell<bool>,
     pinmode: Cell<PinMode>,
     pullmode: Cell<PullMode>,
+    default_level: bool,
 }
 
 impl VerilatorGpioPin {
-    pub(crate) fn new(inner: Rc<RefCell<Inner>>, pinname: u8) -> Rc<Self> {
+    pub(crate) fn new(inner: Rc<RefCell<Inner>>, pinname: u8, default_level: bool) -> Rc<Self> {
         Rc::new(VerilatorGpioPin {
             inner,
             pinname,
             out_value: Cell::new(false),
             pinmode: Cell::new(PinMode::PushPull),
             pullmode: Cell::new(PullMode::None),
+            default_level,
         })
     }
 
@@ -54,6 +56,10 @@ impl GpioPin for VerilatorGpioPin {
     fn write(&self, value: bool) -> Result<()> {
         self.out_value.set(value);
         self.set()
+    }
+
+    fn reset(&self) -> Result<()> {
+        self.write(self.default_level)
     }
 
     fn set_mode(&self, mode: PinMode) -> Result<()> {

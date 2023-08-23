@@ -7,19 +7,26 @@ use anyhow::Result;
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use crate::io::gpio::PinConfiguration;
 use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
 use crate::transport::chip_whisperer::usb::Backend;
 
 pub struct Pin<B: Board> {
     device: Rc<RefCell<Backend<B>>>,
     pinname: String,
+    config: PinConfiguration,
 }
 
 impl<B: Board> Pin<B> {
-    pub fn open(backend: Rc<RefCell<Backend<B>>>, pinname: String) -> Result<Self> {
+    pub fn open(
+        backend: Rc<RefCell<Backend<B>>>,
+        pinname: String,
+        config: PinConfiguration,
+    ) -> Result<Self> {
         Ok(Self {
             device: backend,
             pinname,
+            config,
         })
     }
 }
@@ -52,5 +59,9 @@ impl<B: Board> GpioPin for Pin<B> {
             PullMode::None => Ok(()),
             _ => Err(GpioError::UnsupportedPullMode(mode).into()),
         }
+    }
+
+    fn reset(&self) -> Result<()> {
+        self.write(self.config.level.unwrap_or(false))
     }
 }
