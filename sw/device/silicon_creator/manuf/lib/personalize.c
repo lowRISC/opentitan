@@ -10,7 +10,6 @@
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/aes.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
-#include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -22,6 +21,7 @@
 #include "sw/device/silicon_creator/manuf/keys/manuf_keys.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
+#include "sw/device/silicon_creator/manuf/lib/util.h"
 
 #include "otp_ctrl_regs.h"  // Generated.
 
@@ -226,48 +226,6 @@ static status_t flash_ctrl_secret_write(dif_flash_ctrl_state_t *flash_state,
 }
 
 /**
- * Hashes a lifecycle transition token to prepare it to be written to OTP.
- *
- * According to the Lifecycle Controller's specification:
- *
- * "All 128bit lock and unlock tokens are passed through a cryptographic one way
- * function in hardware before the life cycle controller compares them to the
- * provisioned values ...", and
- * "The employed one way function is a 128bit cSHAKE hash with the function name
- * “” and customization string “LC_CTRL”".
- *
- * @param raw_token The raw token to be hashed.
- * @param token_size The expected hashed token size in bytes.
- * @param[out] hashed_token The hashed token.
- * @return Result of the hash operation.
- */
-OT_WARN_UNUSED_RESULT
-static status_t hash_lc_transition_token(uint32_t *raw_token, size_t token_size,
-                                         uint64_t *hashed_token) {
-  crypto_const_uint8_buf_t input = {
-      .data = (uint8_t *)raw_token,
-      .len = token_size,
-  };
-  crypto_const_uint8_buf_t function_name_string = {
-      .data = (uint8_t *)"",
-      .len = 0,
-  };
-  crypto_const_uint8_buf_t customization_string = {
-      .data = (uint8_t *)"LC_CTRL",
-      .len = 7,
-  };
-  crypto_uint8_buf_t output = {
-      .data = (uint8_t *)hashed_token,
-      .len = token_size,
-  };
-
-  TRY(otcrypto_xof(input, kXofModeSha3Cshake128, function_name_string,
-                   customization_string, token_size, &output));
-
-  return OK_STATUS();
-}
-
-/**
  * Configures the RMA unlock token and Silicon Creator seed secret shares in the
  * SECRET2 OTP partition.
  *
@@ -294,9 +252,9 @@ static status_t otp_partition_secret2_configure(
   TRY(entropy_csrng_reseed(/*disable_trng_input=*/kHardenedBoolFalse,
                            /*seed_material=*/NULL));
   uint64_t hashed_rma_unlock_token[kRmaUnlockTokenSizeIn64BitWords];
-  TRY(hash_lc_transition_token(rma_unlock_token->data,
-                               kRmaUnlockTokenSizeInBytes,
-                               hashed_rma_unlock_token));
+  TRY(manuf_util_hash_lc_transition_token(rma_unlock_token->data,
+                                          kRmaUnlockTokenSizeInBytes,
+                                          hashed_rma_unlock_token));
 
   // Generate RootKey shares.
   uint64_t share0[kRootKeyShareSizeIn64BitWords];
