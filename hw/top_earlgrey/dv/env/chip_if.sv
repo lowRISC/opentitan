@@ -697,32 +697,13 @@ interface chip_if;
   wire flash_core1_host_req = `FLASH_CTRL_HIER.u_eflash.gen_flash_cores[1].u_core.host_req_i;
 `endif
   wire adc_data_valid = `AST_HIER.u_adc.adc_d_val_o;
-  wire [9:0] adc_data_o = `AST_HIER.adc_d_o;
 
   task static force_adc_d_o(input bit [9:0] channel_val);
-    force adc_data_o[0] = channel_val[0];
-    force adc_data_o[1] = channel_val[1];
-    force adc_data_o[2] = channel_val[2];
-    force adc_data_o[3] = channel_val[3];
-    force adc_data_o[4] = channel_val[4];
-    force adc_data_o[5] = channel_val[5];
-    force adc_data_o[6] = channel_val[6];
-    force adc_data_o[7] = channel_val[7];
-    force adc_data_o[8] = channel_val[8];
-    force adc_data_o[9] = channel_val[9];
+    force `AST_HIER.adc_d_o = channel_val;
   endtask
 
   task static release_adc_d_o();
-    release adc_data_o[0];
-    release adc_data_o[1];
-    release adc_data_o[2];
-    release adc_data_o[3];
-    release adc_data_o[4];
-    release adc_data_o[5];
-    release adc_data_o[6];
-    release adc_data_o[7];
-    release adc_data_o[8];
-    release adc_data_o[9];
+    release `AST_HIER.adc_d_o;
   endtask
 
   // alert_esc_if alert_if[NUM_ALERTS](.clk  (`ALERT_HANDLER_HIER.clk_i),
