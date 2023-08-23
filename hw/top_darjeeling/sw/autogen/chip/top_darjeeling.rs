@@ -307,19 +307,6 @@ pub const TOP_DARJEELING_ADC_CTRL_AON_BASE_ADDR: usize = 0x40440000;
 /// address between #TOP_DARJEELING_ADC_CTRL_AON_BASE_ADDR and
 /// `TOP_DARJEELING_ADC_CTRL_AON_BASE_ADDR + TOP_DARJEELING_ADC_CTRL_AON_SIZE_BYTES`.
 pub const TOP_DARJEELING_ADC_CTRL_AON_SIZE_BYTES: usize = 0x80;
-/// Peripheral base address for pwm_aon in top darjeeling.
-///
-/// This should be used with #mmio_region_from_addr to access the memory-mapped
-/// registers associated with the peripheral (usually via a DIF).
-pub const TOP_DARJEELING_PWM_AON_BASE_ADDR: usize = 0x40450000;
-
-/// Peripheral size for pwm_aon in top darjeeling.
-///
-/// This is the size (in bytes) of the peripheral's reserved memory area. All
-/// memory-mapped registers associated with this peripheral should have an
-/// address between #TOP_DARJEELING_PWM_AON_BASE_ADDR and
-/// `TOP_DARJEELING_PWM_AON_BASE_ADDR + TOP_DARJEELING_PWM_AON_SIZE_BYTES`.
-pub const TOP_DARJEELING_PWM_AON_SIZE_BYTES: usize = 0x80;
 /// Peripheral base address for pinmux_aon in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -1471,50 +1458,48 @@ pub enum TopDarjeelingAlertPeripheral {
     SysrstCtrlAon = 18,
     /// adc_ctrl_aon
     AdcCtrlAon = 19,
-    /// pwm_aon
-    PwmAon = 20,
     /// pinmux_aon
-    PinmuxAon = 21,
+    PinmuxAon = 20,
     /// aon_timer_aon
-    AonTimerAon = 22,
+    AonTimerAon = 21,
     /// sensor_ctrl
-    SensorCtrl = 23,
+    SensorCtrl = 22,
     /// sram_ctrl_ret_aon
-    SramCtrlRetAon = 24,
+    SramCtrlRetAon = 23,
     /// flash_ctrl
-    FlashCtrl = 25,
+    FlashCtrl = 24,
     /// rv_dm
-    RvDm = 26,
+    RvDm = 25,
     /// rv_plic
-    RvPlic = 27,
+    RvPlic = 26,
     /// aes
-    Aes = 28,
+    Aes = 27,
     /// hmac
-    Hmac = 29,
+    Hmac = 28,
     /// kmac
-    Kmac = 30,
+    Kmac = 29,
     /// otbn
-    Otbn = 31,
+    Otbn = 30,
     /// keymgr
-    Keymgr = 32,
+    Keymgr = 31,
     /// csrng
-    Csrng = 33,
+    Csrng = 32,
     /// entropy_src
-    EntropySrc = 34,
+    EntropySrc = 33,
     /// edn0
-    Edn0 = 35,
+    Edn0 = 34,
     /// edn1
-    Edn1 = 36,
+    Edn1 = 35,
     /// sram_ctrl_main
-    SramCtrlMain = 37,
+    SramCtrlMain = 36,
     /// sram_ctrl_mbox
-    SramCtrlMbox = 38,
+    SramCtrlMbox = 37,
     /// rom_ctrl0
-    RomCtrl0 = 39,
+    RomCtrl0 = 38,
     /// rom_ctrl1
-    RomCtrl1 = 40,
+    RomCtrl1 = 39,
     /// rv_core_ibex
-    RvCoreIbex = 41,
+    RvCoreIbex = 40,
 }
 
 /// Alert Handler Alert Source.
@@ -1579,82 +1564,80 @@ pub enum TopDarjeelingAlertId {
     SysrstCtrlAonFatalFault = 26,
     /// adc_ctrl_aon_fatal_fault
     AdcCtrlAonFatalFault = 27,
-    /// pwm_aon_fatal_fault
-    PwmAonFatalFault = 28,
     /// pinmux_aon_fatal_fault
-    PinmuxAonFatalFault = 29,
+    PinmuxAonFatalFault = 28,
     /// aon_timer_aon_fatal_fault
-    AonTimerAonFatalFault = 30,
+    AonTimerAonFatalFault = 29,
     /// sensor_ctrl_recov_alert
-    SensorCtrlRecovAlert = 31,
+    SensorCtrlRecovAlert = 30,
     /// sensor_ctrl_fatal_alert
-    SensorCtrlFatalAlert = 32,
+    SensorCtrlFatalAlert = 31,
     /// sram_ctrl_ret_aon_fatal_error
-    SramCtrlRetAonFatalError = 33,
+    SramCtrlRetAonFatalError = 32,
     /// flash_ctrl_recov_err
-    FlashCtrlRecovErr = 34,
+    FlashCtrlRecovErr = 33,
     /// flash_ctrl_fatal_std_err
-    FlashCtrlFatalStdErr = 35,
+    FlashCtrlFatalStdErr = 34,
     /// flash_ctrl_fatal_err
-    FlashCtrlFatalErr = 36,
+    FlashCtrlFatalErr = 35,
     /// flash_ctrl_fatal_prim_flash_alert
-    FlashCtrlFatalPrimFlashAlert = 37,
+    FlashCtrlFatalPrimFlashAlert = 36,
     /// flash_ctrl_recov_prim_flash_alert
-    FlashCtrlRecovPrimFlashAlert = 38,
+    FlashCtrlRecovPrimFlashAlert = 37,
     /// rv_dm_fatal_fault
-    RvDmFatalFault = 39,
+    RvDmFatalFault = 38,
     /// rv_plic_fatal_fault
-    RvPlicFatalFault = 40,
+    RvPlicFatalFault = 39,
     /// aes_recov_ctrl_update_err
-    AesRecovCtrlUpdateErr = 41,
+    AesRecovCtrlUpdateErr = 40,
     /// aes_fatal_fault
-    AesFatalFault = 42,
+    AesFatalFault = 41,
     /// hmac_fatal_fault
-    HmacFatalFault = 43,
+    HmacFatalFault = 42,
     /// kmac_recov_operation_err
-    KmacRecovOperationErr = 44,
+    KmacRecovOperationErr = 43,
     /// kmac_fatal_fault_err
-    KmacFatalFaultErr = 45,
+    KmacFatalFaultErr = 44,
     /// otbn_fatal
-    OtbnFatal = 46,
+    OtbnFatal = 45,
     /// otbn_recov
-    OtbnRecov = 47,
+    OtbnRecov = 46,
     /// keymgr_recov_operation_err
-    KeymgrRecovOperationErr = 48,
+    KeymgrRecovOperationErr = 47,
     /// keymgr_fatal_fault_err
-    KeymgrFatalFaultErr = 49,
+    KeymgrFatalFaultErr = 48,
     /// csrng_recov_alert
-    CsrngRecovAlert = 50,
+    CsrngRecovAlert = 49,
     /// csrng_fatal_alert
-    CsrngFatalAlert = 51,
+    CsrngFatalAlert = 50,
     /// entropy_src_recov_alert
-    EntropySrcRecovAlert = 52,
+    EntropySrcRecovAlert = 51,
     /// entropy_src_fatal_alert
-    EntropySrcFatalAlert = 53,
+    EntropySrcFatalAlert = 52,
     /// edn0_recov_alert
-    Edn0RecovAlert = 54,
+    Edn0RecovAlert = 53,
     /// edn0_fatal_alert
-    Edn0FatalAlert = 55,
+    Edn0FatalAlert = 54,
     /// edn1_recov_alert
-    Edn1RecovAlert = 56,
+    Edn1RecovAlert = 55,
     /// edn1_fatal_alert
-    Edn1FatalAlert = 57,
+    Edn1FatalAlert = 56,
     /// sram_ctrl_main_fatal_error
-    SramCtrlMainFatalError = 58,
+    SramCtrlMainFatalError = 57,
     /// sram_ctrl_mbox_fatal_error
-    SramCtrlMboxFatalError = 59,
+    SramCtrlMboxFatalError = 58,
     /// rom_ctrl0_fatal
-    RomCtrl0Fatal = 60,
+    RomCtrl0Fatal = 59,
     /// rom_ctrl1_fatal
-    RomCtrl1Fatal = 61,
+    RomCtrl1Fatal = 60,
     /// rv_core_ibex_fatal_sw_err
-    RvCoreIbexFatalSwErr = 62,
+    RvCoreIbexFatalSwErr = 61,
     /// rv_core_ibex_recov_sw_err
-    RvCoreIbexRecovSwErr = 63,
+    RvCoreIbexRecovSwErr = 62,
     /// rv_core_ibex_fatal_hw_err
-    RvCoreIbexFatalHwErr = 64,
+    RvCoreIbexFatalHwErr = 63,
     /// rv_core_ibex_recov_hw_err
-    RvCoreIbexRecovHwErr = 65,
+    RvCoreIbexRecovHwErr = 64,
 }
 
 impl TryFrom<u32> for TopDarjeelingAlertId {
@@ -1689,44 +1672,43 @@ impl TryFrom<u32> for TopDarjeelingAlertId {
             25 => Ok(Self::ClkmgrAonFatalFault),
             26 => Ok(Self::SysrstCtrlAonFatalFault),
             27 => Ok(Self::AdcCtrlAonFatalFault),
-            28 => Ok(Self::PwmAonFatalFault),
-            29 => Ok(Self::PinmuxAonFatalFault),
-            30 => Ok(Self::AonTimerAonFatalFault),
-            31 => Ok(Self::SensorCtrlRecovAlert),
-            32 => Ok(Self::SensorCtrlFatalAlert),
-            33 => Ok(Self::SramCtrlRetAonFatalError),
-            34 => Ok(Self::FlashCtrlRecovErr),
-            35 => Ok(Self::FlashCtrlFatalStdErr),
-            36 => Ok(Self::FlashCtrlFatalErr),
-            37 => Ok(Self::FlashCtrlFatalPrimFlashAlert),
-            38 => Ok(Self::FlashCtrlRecovPrimFlashAlert),
-            39 => Ok(Self::RvDmFatalFault),
-            40 => Ok(Self::RvPlicFatalFault),
-            41 => Ok(Self::AesRecovCtrlUpdateErr),
-            42 => Ok(Self::AesFatalFault),
-            43 => Ok(Self::HmacFatalFault),
-            44 => Ok(Self::KmacRecovOperationErr),
-            45 => Ok(Self::KmacFatalFaultErr),
-            46 => Ok(Self::OtbnFatal),
-            47 => Ok(Self::OtbnRecov),
-            48 => Ok(Self::KeymgrRecovOperationErr),
-            49 => Ok(Self::KeymgrFatalFaultErr),
-            50 => Ok(Self::CsrngRecovAlert),
-            51 => Ok(Self::CsrngFatalAlert),
-            52 => Ok(Self::EntropySrcRecovAlert),
-            53 => Ok(Self::EntropySrcFatalAlert),
-            54 => Ok(Self::Edn0RecovAlert),
-            55 => Ok(Self::Edn0FatalAlert),
-            56 => Ok(Self::Edn1RecovAlert),
-            57 => Ok(Self::Edn1FatalAlert),
-            58 => Ok(Self::SramCtrlMainFatalError),
-            59 => Ok(Self::SramCtrlMboxFatalError),
-            60 => Ok(Self::RomCtrl0Fatal),
-            61 => Ok(Self::RomCtrl1Fatal),
-            62 => Ok(Self::RvCoreIbexFatalSwErr),
-            63 => Ok(Self::RvCoreIbexRecovSwErr),
-            64 => Ok(Self::RvCoreIbexFatalHwErr),
-            65 => Ok(Self::RvCoreIbexRecovHwErr),
+            28 => Ok(Self::PinmuxAonFatalFault),
+            29 => Ok(Self::AonTimerAonFatalFault),
+            30 => Ok(Self::SensorCtrlRecovAlert),
+            31 => Ok(Self::SensorCtrlFatalAlert),
+            32 => Ok(Self::SramCtrlRetAonFatalError),
+            33 => Ok(Self::FlashCtrlRecovErr),
+            34 => Ok(Self::FlashCtrlFatalStdErr),
+            35 => Ok(Self::FlashCtrlFatalErr),
+            36 => Ok(Self::FlashCtrlFatalPrimFlashAlert),
+            37 => Ok(Self::FlashCtrlRecovPrimFlashAlert),
+            38 => Ok(Self::RvDmFatalFault),
+            39 => Ok(Self::RvPlicFatalFault),
+            40 => Ok(Self::AesRecovCtrlUpdateErr),
+            41 => Ok(Self::AesFatalFault),
+            42 => Ok(Self::HmacFatalFault),
+            43 => Ok(Self::KmacRecovOperationErr),
+            44 => Ok(Self::KmacFatalFaultErr),
+            45 => Ok(Self::OtbnFatal),
+            46 => Ok(Self::OtbnRecov),
+            47 => Ok(Self::KeymgrRecovOperationErr),
+            48 => Ok(Self::KeymgrFatalFaultErr),
+            49 => Ok(Self::CsrngRecovAlert),
+            50 => Ok(Self::CsrngFatalAlert),
+            51 => Ok(Self::EntropySrcRecovAlert),
+            52 => Ok(Self::EntropySrcFatalAlert),
+            53 => Ok(Self::Edn0RecovAlert),
+            54 => Ok(Self::Edn0FatalAlert),
+            55 => Ok(Self::Edn1RecovAlert),
+            56 => Ok(Self::Edn1FatalAlert),
+            57 => Ok(Self::SramCtrlMainFatalError),
+            58 => Ok(Self::SramCtrlMboxFatalError),
+            59 => Ok(Self::RomCtrl0Fatal),
+            60 => Ok(Self::RomCtrl1Fatal),
+            61 => Ok(Self::RvCoreIbexFatalSwErr),
+            62 => Ok(Self::RvCoreIbexRecovSwErr),
+            63 => Ok(Self::RvCoreIbexFatalHwErr),
+            64 => Ok(Self::RvCoreIbexRecovHwErr),
             _ => Err(val),
         }
     }
@@ -2109,7 +2091,7 @@ pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeriph
 ///
 /// This array is a mapping from `TopDarjeelingAlertId` to
 /// `TopDarjeelingAlertPeripheral`.
-pub const TOP_DARJEELING_ALERT_FOR_PERIPHERAL: [TopDarjeelingAlertPeripheral; 66] = [
+pub const TOP_DARJEELING_ALERT_FOR_PERIPHERAL: [TopDarjeelingAlertPeripheral; 65] = [
     // Uart0FatalFault -> TopDarjeelingAlertPeripheral::Uart0
     TopDarjeelingAlertPeripheral::Uart0,
     // Uart1FatalFault -> TopDarjeelingAlertPeripheral::Uart1
@@ -2166,8 +2148,6 @@ pub const TOP_DARJEELING_ALERT_FOR_PERIPHERAL: [TopDarjeelingAlertPeripheral; 66
     TopDarjeelingAlertPeripheral::SysrstCtrlAon,
     // AdcCtrlAonFatalFault -> TopDarjeelingAlertPeripheral::AdcCtrlAon
     TopDarjeelingAlertPeripheral::AdcCtrlAon,
-    // PwmAonFatalFault -> TopDarjeelingAlertPeripheral::PwmAon
-    TopDarjeelingAlertPeripheral::PwmAon,
     // PinmuxAonFatalFault -> TopDarjeelingAlertPeripheral::PinmuxAon
     TopDarjeelingAlertPeripheral::PinmuxAon,
     // AonTimerAonFatalFault -> TopDarjeelingAlertPeripheral::AonTimerAon
@@ -2879,31 +2859,19 @@ pub enum TopDarjeelingPinmuxOutsel {
     /// Peripheral Output 57
     SensorCtrlAstDebugOut8 = 60,
     /// Peripheral Output 58
-    PwmAonPwm0 = 61,
+    OtpCtrlTest0 = 61,
     /// Peripheral Output 59
-    PwmAonPwm1 = 62,
+    SysrstCtrlAonBatDisable = 62,
     /// Peripheral Output 60
-    PwmAonPwm2 = 63,
+    SysrstCtrlAonKey0Out = 63,
     /// Peripheral Output 61
-    PwmAonPwm3 = 64,
+    SysrstCtrlAonKey1Out = 64,
     /// Peripheral Output 62
-    PwmAonPwm4 = 65,
+    SysrstCtrlAonKey2Out = 65,
     /// Peripheral Output 63
-    PwmAonPwm5 = 66,
+    SysrstCtrlAonPwrbOut = 66,
     /// Peripheral Output 64
-    OtpCtrlTest0 = 67,
-    /// Peripheral Output 65
-    SysrstCtrlAonBatDisable = 68,
-    /// Peripheral Output 66
-    SysrstCtrlAonKey0Out = 69,
-    /// Peripheral Output 67
-    SysrstCtrlAonKey1Out = 70,
-    /// Peripheral Output 68
-    SysrstCtrlAonKey2Out = 71,
-    /// Peripheral Output 69
-    SysrstCtrlAonPwrbOut = 72,
-    /// Peripheral Output 70
-    SysrstCtrlAonZ3Wakeup = 73,
+    SysrstCtrlAonZ3Wakeup = 67,
 }
 
 impl TryFrom<u32> for TopDarjeelingPinmuxOutsel {
@@ -2971,19 +2939,13 @@ impl TryFrom<u32> for TopDarjeelingPinmuxOutsel {
             58 => Ok(Self::SensorCtrlAstDebugOut6),
             59 => Ok(Self::SensorCtrlAstDebugOut7),
             60 => Ok(Self::SensorCtrlAstDebugOut8),
-            61 => Ok(Self::PwmAonPwm0),
-            62 => Ok(Self::PwmAonPwm1),
-            63 => Ok(Self::PwmAonPwm2),
-            64 => Ok(Self::PwmAonPwm3),
-            65 => Ok(Self::PwmAonPwm4),
-            66 => Ok(Self::PwmAonPwm5),
-            67 => Ok(Self::OtpCtrlTest0),
-            68 => Ok(Self::SysrstCtrlAonBatDisable),
-            69 => Ok(Self::SysrstCtrlAonKey0Out),
-            70 => Ok(Self::SysrstCtrlAonKey1Out),
-            71 => Ok(Self::SysrstCtrlAonKey2Out),
-            72 => Ok(Self::SysrstCtrlAonPwrbOut),
-            73 => Ok(Self::SysrstCtrlAonZ3Wakeup),
+            61 => Ok(Self::OtpCtrlTest0),
+            62 => Ok(Self::SysrstCtrlAonBatDisable),
+            63 => Ok(Self::SysrstCtrlAonKey0Out),
+            64 => Ok(Self::SysrstCtrlAonKey1Out),
+            65 => Ok(Self::SysrstCtrlAonKey2Out),
+            66 => Ok(Self::SysrstCtrlAonPwrbOut),
+            67 => Ok(Self::SysrstCtrlAonZ3Wakeup),
             _ => Err(val),
         }
     }

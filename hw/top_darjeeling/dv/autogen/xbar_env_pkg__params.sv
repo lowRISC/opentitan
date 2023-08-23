@@ -109,9 +109,6 @@ tl_device_t xbar_devices[$] = '{
     '{"i2c2", '{
         '{32'h400a0000, 32'h400a007f}
     }},
-    '{"pwm_aon", '{
-        '{32'h40450000, 32'h4045007f}
-    }},
     '{"gpio", '{
         '{32'h40040000, 32'h4004003f}
     }},
@@ -209,7 +206,6 @@ tl_host_t xbar_hosts[$] = '{
         "aon_timer_aon",
         "adc_ctrl_aon",
         "sysrst_ctrl_aon",
-        "pwm_aon",
         "spi_host0",
         "spi_host1",
         "usbdev",
@@ -264,7 +260,6 @@ tl_host_t xbar_hosts[$] = '{
         "aon_timer_aon",
         "adc_ctrl_aon",
         "sysrst_ctrl_aon",
-        "pwm_aon",
         "spi_host0",
         "spi_host1",
         "usbdev",

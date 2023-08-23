@@ -352,20 +352,6 @@ pub const TOP_DARJEELING_ADC_CTRL_AON_BASE_ADDR: usize = 0x40440000;
 /// `TOP_DARJEELING_ADC_CTRL_AON_BASE_ADDR + TOP_DARJEELING_ADC_CTRL_AON_SIZE_BYTES`.
 pub const TOP_DARJEELING_ADC_CTRL_AON_SIZE_BYTES: usize = 0x80;
 
-/// Peripheral base address for pwm_aon in top darjeeling.
-///
-/// This should be used with #mmio_region_from_addr to access the memory-mapped
-/// registers associated with the peripheral (usually via a DIF).
-pub const TOP_DARJEELING_PWM_AON_BASE_ADDR: usize = 0x40450000;
-
-/// Peripheral size for pwm_aon in top darjeeling.
-///
-/// This is the size (in bytes) of the peripheral's reserved memory area. All
-/// memory-mapped registers associated with this peripheral should have an
-/// address between #TOP_DARJEELING_PWM_AON_BASE_ADDR and
-/// `TOP_DARJEELING_PWM_AON_BASE_ADDR + TOP_DARJEELING_PWM_AON_SIZE_BYTES`.
-pub const TOP_DARJEELING_PWM_AON_SIZE_BYTES: usize = 0x80;
-
 /// Peripheral base address for pinmux_aon in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped

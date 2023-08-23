@@ -419,7 +419,6 @@ For the purpose of `top_darjeeling`, the first option has been chosen to benefit
 | clkmgr_aon        | clkmgr        | 0x40420000 (regs) |
 | sysrst_ctrl_aon   | sysrst_ctrl   | 0x40430000 (regs) |
 | adc_ctrl_aon      | adc_ctrl      | 0x40440000 (regs) |
-| pwm_aon           | pwm           | 0x40450000 (regs) |
 | pinmux_aon        | pinmux        | 0x40460000 (regs) |
 | aon_timer_aon     | aon_timer     | 0x40470000 (regs) |
 | ast               | ast           | 0x40480000 (regs) |

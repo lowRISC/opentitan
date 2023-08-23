@@ -3605,60 +3605,6 @@
       }
     }
     {
-      name: pwm_aon
-      type: pwm
-      clock_srcs:
-      {
-        clk_i: io_div4
-        clk_core_i: aon
-      }
-      clock_group: peri
-      reset_connections:
-      {
-        rst_ni:
-        {
-          name: lc_io_div4
-          domain: Aon
-        }
-        rst_core_ni:
-        {
-          name: lc_aon
-          domain: Aon
-        }
-      }
-      domain:
-      [
-        Aon
-      ]
-      clock_connections:
-      {
-        clk_i: clkmgr_aon_clocks.clk_io_div4_peri
-        clk_core_i: clkmgr_aon_clocks.clk_aon_peri
-      }
-      param_decl: {}
-      param_list: []
-      inter_signal_list:
-      [
-        {
-          name: tl
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: pwm_aon
-          default: ""
-          end_idx: -1
-          top_signame: pwm_aon_tl
-          index: -1
-        }
-      ]
-      base_addrs:
-      {
-        null: 0x40450000
-      }
-    }
-    {
       name: pinmux_aon
       type: pinmux
       clock_srcs:
@@ -8893,10 +8839,6 @@
       [
         peri.tl_i2c2
       ]
-      pwm_aon.tl:
-      [
-        peri.tl_pwm_aon
-      ]
       gpio.tl:
       [
         peri.tl_gpio
@@ -10172,7 +10114,6 @@
           aon_timer_aon
           adc_ctrl_aon
           sysrst_ctrl_aon
-          pwm_aon
         ]
       }
       nodes:
@@ -10308,24 +10249,6 @@
           [
             {
               base_addr: 0x400a0000
-              size_byte: 0x80
-            }
-          ]
-          xbar: false
-          stub: false
-          req_fifo_pass: true
-        }
-        {
-          name: pwm_aon
-          type: device
-          clock: clk_peri_i
-          reset: rst_peri_ni
-          pipeline: false
-          inst_type: pwm
-          addr_range:
-          [
-            {
-              base_addr: 0x40450000
               size_byte: 0x80
             }
           ]
@@ -10756,18 +10679,6 @@
           inst_name: peri
           default: ""
           top_signame: i2c2_tl
-          index: -1
-        }
-        {
-          name: tl_pwm_aon
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: peri
-          default: ""
-          top_signame: pwm_aon_tl
           index: -1
         }
         {
@@ -11840,14 +11751,6 @@
       }
       {
         instance: sensor_ctrl
-        port: ""
-        connection: muxed
-        pad: ""
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: pwm_aon
         port: ""
         connection: muxed
         pad: ""
@@ -12967,72 +12870,6 @@
         glob_idx: 57
       }
       {
-        name: pwm_aon_pwm
-        width: 6
-        type: output
-        idx: 0
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 58
-      }
-      {
-        name: pwm_aon_pwm
-        width: 6
-        type: output
-        idx: 1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 59
-      }
-      {
-        name: pwm_aon_pwm
-        width: 6
-        type: output
-        idx: 2
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 60
-      }
-      {
-        name: pwm_aon_pwm
-        width: 6
-        type: output
-        idx: 3
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 61
-      }
-      {
-        name: pwm_aon_pwm
-        width: 6
-        type: output
-        idx: 4
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 62
-      }
-      {
-        name: pwm_aon_pwm
-        width: 6
-        type: output
-        idx: 5
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 63
-      }
-      {
         name: otp_ctrl_test
         width: 8
         type: output
@@ -13041,7 +12878,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 64
+        glob_idx: 58
       }
       {
         name: sysrst_ctrl_aon_bat_disable
@@ -13052,7 +12889,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 65
+        glob_idx: 59
       }
       {
         name: sysrst_ctrl_aon_key0_out
@@ -13063,7 +12900,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 66
+        glob_idx: 60
       }
       {
         name: sysrst_ctrl_aon_key1_out
@@ -13074,7 +12911,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 67
+        glob_idx: 61
       }
       {
         name: sysrst_ctrl_aon_key2_out
@@ -13085,7 +12922,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 68
+        glob_idx: 62
       }
       {
         name: sysrst_ctrl_aon_pwrb_out
@@ -13096,7 +12933,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 69
+        glob_idx: 63
       }
       {
         name: sysrst_ctrl_aon_z3_wakeup
@@ -13107,7 +12944,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 70
+        glob_idx: 64
       }
     ]
     io_counts:
@@ -13123,7 +12960,7 @@
       {
         inouts: 42
         inputs: 15
-        outputs: 29
+        outputs: 23
         pads: 47
       }
     }
@@ -14431,7 +14268,6 @@
     clkmgr_aon
     sysrst_ctrl_aon
     adc_ctrl_aon
-    pwm_aon
     pinmux_aon
     aon_timer_aon
     sensor_ctrl
@@ -14705,15 +14541,6 @@
       type: alert
       async: "1"
       module_name: adc_ctrl_aon
-      lpg_name: peri_lc_io_div4_Aon
-      lpg_idx: 13
-    }
-    {
-      name: pwm_aon_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: pwm_aon
       lpg_name: peri_lc_io_div4_Aon
       lpg_idx: 13
     }
@@ -17586,19 +17413,6 @@
         default: ""
         end_idx: -1
         top_signame: adc_ctrl_aon_tl
-        index: -1
-      }
-      {
-        name: tl
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: pwm_aon
-        default: ""
-        end_idx: -1
-        top_signame: pwm_aon_tl
         index: -1
       }
       {
@@ -20493,18 +20307,6 @@
         index: -1
       }
       {
-        name: tl_pwm_aon
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: peri
-        default: ""
-        top_signame: pwm_aon_tl
-        index: -1
-      }
-      {
         name: tl_gpio
         struct: tl
         package: tlul_pkg
@@ -23356,28 +23158,6 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: i2c2_tl_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        signame: pwm_aon_tl_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: pwm_aon_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

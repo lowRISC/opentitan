@@ -30,7 +30,6 @@
 #include "sw/ip/otbn/dif/dif_otbn.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
-#include "sw/ip/pwm/dif/dif_pwm.h"
 #include "sw/ip/pwrmgr/dif/dif_pwrmgr.h"
 #include "sw/ip/rom_ctrl/dif/dif_rom_ctrl.h"
 #include "sw/ip/rstmgr/dif/dif_rstmgr.h"
@@ -73,7 +72,6 @@ static dif_lc_ctrl_t lc_ctrl;
 static dif_otbn_t otbn;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_pinmux_t pinmux_aon;
-static dif_pwm_t pwm_aon;
 static dif_pwrmgr_t pwrmgr_aon;
 static dif_rom_ctrl_t rom_ctrl0;
 static dif_rom_ctrl_t rom_ctrl1;
@@ -162,9 +160,6 @@ static void init_peripherals(void) {
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux_aon));
-
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_PWM_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_pwm_init(base_addr, &pwm_aon));
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_pwrmgr_init(base_addr, &pwrmgr_aon));
@@ -575,21 +570,6 @@ static void trigger_alert_test(void) {
 
     // Verify that alert handler received it.
     exp_alert = kTopDarjeelingAlertIdPinmuxAonFatalFault + i;
-    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-        &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %d!", exp_alert);
-
-    // Clear alert cause register
-    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
-        &alert_handler, exp_alert));
-  }
-
-  // Write pwm's alert_test reg and check alert_cause.
-  for (dif_pwm_alert_t i = 0; i < 1; ++i) {
-    CHECK_DIF_OK(dif_pwm_alert_force(&pwm_aon, kDifPwmAlertFatalFault + i));
-
-    // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdPwmAonFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);

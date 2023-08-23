@@ -86,7 +86,6 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:otbn",
         "//sw/top_darjeeling/sw/dif:otp_ctrl",
         "//sw/top_darjeeling/sw/dif:pinmux",
-        "//sw/top_darjeeling/sw/dif:pwm",
         "//sw/top_darjeeling/sw/dif:pwrmgr",
         "//sw/top_darjeeling/sw/dif:rom_ctrl",
         "//sw/top_darjeeling/sw/dif:rstmgr",
