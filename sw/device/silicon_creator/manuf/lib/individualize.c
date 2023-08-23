@@ -95,24 +95,21 @@ static status_t hw_cfg_enable_knobs_set(const dif_otp_ctrl_t *otp_ctrl) {
  * and ECC enabled.
  *
  * @param flash_state Flash controller instance.
- * @param relative_address Byte address relative to the start of the page.
- * @param partition_id Info flash partition Id.
- * @param page_id Page Id.
+ * @param field Info flash field location information.
  * @param[out] data_out Output buffer.
  * @param word_count Number of words to read from flash and write to `data_out`.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 static status_t flash_info_read(dif_flash_ctrl_state_t *flash_state,
-                                uint32_t relative_address,
-                                uint32_t partition_id, uint32_t page_id,
-                                uint32_t *data_out, uint32_t word_count) {
+                                flash_info_field_t field, uint32_t *data_out,
+                                uint32_t word_count) {
   uint32_t byte_address = 0;
 
   // Enable read access and calculate the `byte_address` with respect to the
   // flash bank.
   TRY(flash_ctrl_testutils_info_region_setup_properties(
-      flash_state, page_id, /*bank=*/0, partition_id,
+      flash_state, field.page, field.bank, field.partition,
       (dif_flash_ctrl_region_properties_t){
           .ecc_en = kMultiBitBool4True,
           .high_endurance_en = kMultiBitBool4False,
@@ -122,14 +119,14 @@ static status_t flash_info_read(dif_flash_ctrl_state_t *flash_state,
           .scramble_en = kMultiBitBool4False},
       &byte_address));
 
-  TRY(flash_ctrl_testutils_read(flash_state, byte_address, partition_id,
+  TRY(flash_ctrl_testutils_read(flash_state, byte_address, field.partition,
                                 data_out, kDifFlashCtrlPartitionTypeInfo,
                                 word_count,
                                 /*delay=*/0));
 
   // Disable all access after done.
   TRY(flash_ctrl_testutils_info_region_setup_properties(
-      flash_state, page_id, /*bank=*/0, partition_id,
+      flash_state, field.page, field.bank, field.partition,
       (dif_flash_ctrl_region_properties_t){
           .ecc_en = kMultiBitBool4True,
           .high_endurance_en = kMultiBitBool4False,
@@ -203,18 +200,15 @@ status_t manuf_individualize_device_hw_cfg(dif_flash_ctrl_state_t *flash_state,
 
   // Configure DeviceID
   uint32_t device_id[kHwCfgDeviceIdSizeIn32BitWords];
-  TRY(flash_info_read(flash_state, kFlashInfoDeviceIdByteAddress,
-                      kFlashInfoDeviceIdPartitionId, kFlashInfoDeviceIdPageId,
-                      device_id, kHwCfgDeviceIdSizeIn32BitWords));
+  TRY(flash_info_read(flash_state, kFlashInfoFieldDeviceId, device_id,
+                      kHwCfgDeviceIdSizeIn32BitWords));
   TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionHwCfg,
                                      kHwCfgDeviceIdOffset, device_id,
                                      kHwCfgDeviceIdSizeIn32BitWords));
 
   // Configure ManufState
   uint32_t manuf_state[kHwCfgManufStateSizeIn32BitWords];
-  TRY(flash_info_read(flash_state, kFlashInfoManufStateByteAddress,
-                      kFlashInfoManufStatePartitionId,
-                      kFlashInfoManufStatePageId, manuf_state,
+  TRY(flash_info_read(flash_state, kFlashInfoFieldManufState, manuf_state,
                       kHwCfgManufStateSizeIn32BitWords));
   TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionHwCfg,
                                      kHwCfgManufStateOffset, manuf_state,

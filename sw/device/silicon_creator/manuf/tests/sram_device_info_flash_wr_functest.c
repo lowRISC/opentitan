@@ -14,6 +14,7 @@
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
 #include "sw/device/silicon_creator/manuf/lib/isolated_flash_partition.h"
 #include "sw/device/silicon_creator/manuf/tests/test_wafer_auth_secret.h"
@@ -71,7 +72,8 @@ bool sram_main(void) {
   dif_lc_ctrl_state_t lc_state = kDifLcCtrlStateInvalid;
   CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc_ctrl, &lc_state));
 
-  uint32_t actual_wafer_auth_secret[kWaferAuthSecretSizeInWords] = {0};
+  uint32_t actual_wafer_auth_secret[kFlashInfoWaferAuthSecretSizeIn32BitWords] =
+      {0};
 
   switch (lc_state) {
     case kDifLcCtrlStateTestUnlocked0:
@@ -85,10 +87,10 @@ bool sram_main(void) {
       LOG_INFO("Writing to the isolated flash partition.");
       CHECK_STATUS_OK(isolated_flash_partition_write(
           &flash_ctrl_state, kExpectedWaferAuthSecret,
-          kWaferAuthSecretSizeInWords));
+          kFlashInfoWaferAuthSecretSizeIn32BitWords));
       LOG_INFO("Attempting to read back what was written.");
       CHECK_STATUS_NOT_OK(isolated_flash_partition_read(
-          &flash_ctrl_state, kWaferAuthSecretSizeInWords,
+          &flash_ctrl_state, kFlashInfoWaferAuthSecretSizeIn32BitWords,
           actual_wafer_auth_secret));
       LOG_INFO("Enabling ROM execution to enable bootstrap after reset.");
       CHECK_STATUS_OK(manuf_individualize_device_sw_cfg(&otp_ctrl));
