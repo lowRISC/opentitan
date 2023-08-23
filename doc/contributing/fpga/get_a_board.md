@@ -1,20 +1,23 @@
 # Get an FPGA Board
 
-FPGA boards come at different price points, with the price being a good indicator for how much logic the FPGA can hold.
-The following sections give details of how to obtain our supported FPGA boards.
+This page lists the FPGA boards supported by the OpenTitan project.
+
+## ChipWhisperer CW340 OpenTitan Kit (recommended)
+
+The ChipWhisperer CW340 OpenTitan Kit is produced by [NewAE Technology](https://www.newae.com/).
+The kit consists of the CW340 baseboard and the CW341 Kintex UltraScale KU095 FPGA.
+This platform is the primary development target for the OpenTitan project with an FPGA that is large enough to run all current variants of OpenTitan.
+
+You can get the ChipWhisperer CW340 OpenTitan Kit from [Mouser](https://www.mouser.com/access/?pn=343-NAE-CW340-OTKIT).
 
 ## ChipWhisperer CW310
 
 The ChipWhisperer CW310 board is produced by [NewAE Technology](https://www.newae.com/).
 It is available with a Xilinx Kintex 7 XC7K160T or XC7K410T FPGA.
 At the moment, the version with the smaller Xilinx Kintex 7 XC7K160T FPGA is not supported by OpenTitan.
-The ChipWhisperer CW310 board with the bigger Xilinx Kintex 7 XC7K410T FPGA is the main development FPGA board for OpenTitan.
+The ChipWhisperer CW310 board with the bigger Xilinx Kintex 7 XC7K410T FPGA is an FPGA board that can be used for general purpose OpenTitan development (though some features may need to be disabled).
 
-### Ordering
-
-You can get the ChipWhisperer CW310 board from the [NewAE Technology web store](https://store.newae.com/cw310-bergen-board-large-fpga-k410t-for-full-emulation/).
-
-In the future, the board might also be listed on [Mouser](https://eu.mouser.com/manufacturer/newae-technology/).
+You can get the ChipWhisperer CW310 from [Mouser](https://www.mouser.com/access/?pn=343-NACW310K410TNORM) or the [NewAE Technology web store](https://store.newae.com/cw310-bergen-board-large-fpga-k410t-for-full-emulation/).
 
 ### Notes
 
