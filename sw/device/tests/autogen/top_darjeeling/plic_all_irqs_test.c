@@ -27,7 +27,6 @@
 #include "sw/ip/kmac/dif/dif_kmac.h"
 #include "sw/ip/otbn/dif/dif_otbn.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
-#include "sw/ip/pattgen/dif/dif_pattgen.h"
 #include "sw/ip/pwrmgr/dif/dif_pwrmgr.h"
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
 #include "sw/ip/rv_timer/dif/dif_rv_timer.h"
@@ -63,7 +62,6 @@ static dif_keymgr_t keymgr;
 static dif_kmac_t kmac;
 static dif_otbn_t otbn;
 static dif_otp_ctrl_t otp_ctrl;
-static dif_pattgen_t pattgen;
 static dif_pwrmgr_t pwrmgr_aon;
 static dif_rv_timer_t rv_timer;
 static dif_sensor_ctrl_t sensor_ctrl;
@@ -122,8 +120,6 @@ static volatile dif_otbn_irq_t otbn_irq_expected;
 static volatile dif_otbn_irq_t otbn_irq_serviced;
 static volatile dif_otp_ctrl_irq_t otp_ctrl_irq_expected;
 static volatile dif_otp_ctrl_irq_t otp_ctrl_irq_serviced;
-static volatile dif_pattgen_irq_t pattgen_irq_expected;
-static volatile dif_pattgen_irq_t pattgen_irq_serviced;
 static volatile dif_pwrmgr_irq_t pwrmgr_irq_expected;
 static volatile dif_pwrmgr_irq_t pwrmgr_irq_serviced;
 static volatile dif_rv_timer_irq_t rv_timer_irq_expected;
@@ -539,28 +535,6 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopDarjeelingPlicPeripheralPattgen: {
-      dif_pattgen_irq_t irq = (dif_pattgen_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdPattgenDoneCh0);
-      CHECK(irq == pattgen_irq_expected,
-            "Incorrect pattgen IRQ triggered: exp = %d, obs = %d",
-            pattgen_irq_expected, irq);
-      pattgen_irq_serviced = irq;
-
-      dif_pattgen_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_pattgen_irq_get_state(&pattgen, &snapshot));
-      CHECK(snapshot == (dif_pattgen_irq_state_snapshot_t)(1 << irq),
-            "Only pattgen IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
-
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_pattgen_irq_force(&pattgen, irq, false));
-      CHECK_DIF_OK(dif_pattgen_irq_acknowledge(&pattgen, irq));
-      break;
-    }
-
     case kTopDarjeelingPlicPeripheralPwrmgrAon: {
       dif_pwrmgr_irq_t irq = (dif_pwrmgr_irq_t)(
           plic_irq_id -
@@ -891,9 +865,6 @@ static void peripherals_init(void) {
   base_addr = mmio_region_from_addr(TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR);
   CHECK_DIF_OK(dif_otp_ctrl_init(base_addr, &otp_ctrl));
 
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_PATTGEN_BASE_ADDR);
-  CHECK_DIF_OK(dif_pattgen_init(base_addr, &pattgen));
-
   base_addr = mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_pwrmgr_init(base_addr, &pwrmgr_aon));
 
@@ -955,7 +926,6 @@ static void peripheral_irqs_clear(void) {
   CHECK_DIF_OK(dif_kmac_irq_acknowledge_all(&kmac));
   CHECK_DIF_OK(dif_otbn_irq_acknowledge_all(&otbn));
   CHECK_DIF_OK(dif_otp_ctrl_irq_acknowledge_all(&otp_ctrl));
-  CHECK_DIF_OK(dif_pattgen_irq_acknowledge_all(&pattgen));
   CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge_all(&pwrmgr_aon));
   CHECK_DIF_OK(dif_rv_timer_irq_acknowledge_all(&rv_timer, kHart));
   CHECK_DIF_OK(dif_sensor_ctrl_irq_acknowledge_all(&sensor_ctrl));
@@ -1000,8 +970,6 @@ static void peripheral_irqs_enable(void) {
       (dif_otbn_irq_state_snapshot_t)UINT_MAX;
   dif_otp_ctrl_irq_state_snapshot_t otp_ctrl_irqs =
       (dif_otp_ctrl_irq_state_snapshot_t)UINT_MAX;
-  dif_pattgen_irq_state_snapshot_t pattgen_irqs =
-      (dif_pattgen_irq_state_snapshot_t)UINT_MAX;
   dif_pwrmgr_irq_state_snapshot_t pwrmgr_irqs =
       (dif_pwrmgr_irq_state_snapshot_t)UINT_MAX;
   dif_rv_timer_irq_state_snapshot_t rv_timer_irqs =
@@ -1051,8 +1019,6 @@ static void peripheral_irqs_enable(void) {
       dif_otbn_irq_restore_all(&otbn, &otbn_irqs));
   CHECK_DIF_OK(
       dif_otp_ctrl_irq_restore_all(&otp_ctrl, &otp_ctrl_irqs));
-  CHECK_DIF_OK(
-      dif_pattgen_irq_restore_all(&pattgen, &pattgen_irqs));
   CHECK_DIF_OK(
       dif_pwrmgr_irq_restore_all(&pwrmgr_aon, &pwrmgr_irqs));
   CHECK_DIF_OK(
@@ -1312,19 +1278,6 @@ static void peripheral_irqs_trigger(void) {
     // entering the ISR.
     IBEX_SPIN_FOR(otp_ctrl_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from otp_ctrl is serviced.", irq);
-  }
-
-  peripheral_expected = kTopDarjeelingPlicPeripheralPattgen;
-  for (dif_pattgen_irq_t irq = kDifPattgenIrqDoneCh0;
-       irq <= kDifPattgenIrqDoneCh1; ++irq) {
-    pattgen_irq_expected = irq;
-    LOG_INFO("Triggering pattgen IRQ %d.", irq);
-    CHECK_DIF_OK(dif_pattgen_irq_force(&pattgen, irq, true));
-
-    // This avoids a race where *irq_serviced is read before
-    // entering the ISR.
-    IBEX_SPIN_FOR(pattgen_irq_serviced == irq, 1);
-    LOG_INFO("IRQ %d from pattgen is serviced.", irq);
   }
 
   peripheral_expected = kTopDarjeelingPlicPeripheralPwrmgrAon;

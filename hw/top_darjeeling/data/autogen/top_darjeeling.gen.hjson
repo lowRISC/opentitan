@@ -1009,53 +1009,6 @@
       }
     }
     {
-      name: pattgen
-      type: pattgen
-      clock_srcs:
-      {
-        clk_i: io_div4
-      }
-      clock_group: peri
-      reset_connections:
-      {
-        rst_ni:
-        {
-          name: lc_io_div4
-          domain: "0"
-        }
-      }
-      clock_connections:
-      {
-        clk_i: clkmgr_aon_clocks.clk_io_div4_peri
-      }
-      domain:
-      [
-        "0"
-      ]
-      param_decl: {}
-      param_list: []
-      inter_signal_list:
-      [
-        {
-          name: tl
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: pattgen
-          default: ""
-          end_idx: -1
-          top_signame: pattgen_tl
-          index: -1
-        }
-      ]
-      base_addrs:
-      {
-        null: 0x400E0000
-      }
-    }
-    {
       name: rv_timer
       type: rv_timer
       clock_srcs:
@@ -8940,10 +8893,6 @@
       [
         peri.tl_i2c2
       ]
-      pattgen.tl:
-      [
-        peri.tl_pattgen
-      ]
       pwm_aon.tl:
       [
         peri.tl_pwm_aon
@@ -10205,7 +10154,6 @@
           i2c0
           i2c1
           i2c2
-          pattgen
           gpio
           spi_device
           rv_timer
@@ -10361,24 +10309,6 @@
             {
               base_addr: 0x400a0000
               size_byte: 0x80
-            }
-          ]
-          xbar: false
-          stub: false
-          req_fifo_pass: true
-        }
-        {
-          name: pattgen
-          type: device
-          clock: clk_peri_i
-          reset: rst_peri_ni
-          pipeline: false
-          inst_type: pattgen
-          addr_range:
-          [
-            {
-              base_addr: 0x400e0000
-              size_byte: 0x40
             }
           ]
           xbar: false
@@ -10826,18 +10756,6 @@
           inst_name: peri
           default: ""
           top_signame: i2c2_tl
-          index: -1
-        }
-        {
-          name: tl_pattgen
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: peri
-          default: ""
-          top_signame: pattgen_tl
           index: -1
         }
         {
@@ -11897,14 +11815,6 @@
         attr: ""
       }
       {
-        instance: pattgen
-        port: ""
-        connection: muxed
-        pad: ""
-        desc: ""
-        attr: ""
-      }
-      {
         instance: spi_device
         port: tpm_csb
         connection: muxed
@@ -12925,7 +12835,7 @@
         glob_idx: 45
       }
       {
-        name: pattgen_pda0_tx
+        name: spi_host1_sck
         width: 1
         type: output
         idx: -1
@@ -12936,7 +12846,7 @@
         glob_idx: 46
       }
       {
-        name: pattgen_pcl0_tx
+        name: spi_host1_csb
         width: 1
         type: output
         idx: -1
@@ -12947,7 +12857,7 @@
         glob_idx: 47
       }
       {
-        name: pattgen_pda1_tx
+        name: flash_ctrl_tdo
         width: 1
         type: output
         idx: -1
@@ -12958,10 +12868,10 @@
         glob_idx: 48
       }
       {
-        name: pattgen_pcl1_tx
-        width: 1
+        name: sensor_ctrl_ast_debug_out
+        width: 9
         type: output
-        idx: -1
+        idx: 0
         pad: ""
         attr: ""
         connection: muxed
@@ -12969,10 +12879,10 @@
         glob_idx: 49
       }
       {
-        name: spi_host1_sck
-        width: 1
+        name: sensor_ctrl_ast_debug_out
+        width: 9
         type: output
-        idx: -1
+        idx: 1
         pad: ""
         attr: ""
         connection: muxed
@@ -12980,10 +12890,10 @@
         glob_idx: 50
       }
       {
-        name: spi_host1_csb
-        width: 1
+        name: sensor_ctrl_ast_debug_out
+        width: 9
         type: output
-        idx: -1
+        idx: 2
         pad: ""
         attr: ""
         connection: muxed
@@ -12991,10 +12901,10 @@
         glob_idx: 51
       }
       {
-        name: flash_ctrl_tdo
-        width: 1
+        name: sensor_ctrl_ast_debug_out
+        width: 9
         type: output
-        idx: -1
+        idx: 3
         pad: ""
         attr: ""
         connection: muxed
@@ -13005,7 +12915,7 @@
         name: sensor_ctrl_ast_debug_out
         width: 9
         type: output
-        idx: 0
+        idx: 4
         pad: ""
         attr: ""
         connection: muxed
@@ -13016,7 +12926,7 @@
         name: sensor_ctrl_ast_debug_out
         width: 9
         type: output
-        idx: 1
+        idx: 5
         pad: ""
         attr: ""
         connection: muxed
@@ -13027,7 +12937,7 @@
         name: sensor_ctrl_ast_debug_out
         width: 9
         type: output
-        idx: 2
+        idx: 6
         pad: ""
         attr: ""
         connection: muxed
@@ -13038,7 +12948,7 @@
         name: sensor_ctrl_ast_debug_out
         width: 9
         type: output
-        idx: 3
+        idx: 7
         pad: ""
         attr: ""
         connection: muxed
@@ -13049,56 +12959,12 @@
         name: sensor_ctrl_ast_debug_out
         width: 9
         type: output
-        idx: 4
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 57
-      }
-      {
-        name: sensor_ctrl_ast_debug_out
-        width: 9
-        type: output
-        idx: 5
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 58
-      }
-      {
-        name: sensor_ctrl_ast_debug_out
-        width: 9
-        type: output
-        idx: 6
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 59
-      }
-      {
-        name: sensor_ctrl_ast_debug_out
-        width: 9
-        type: output
-        idx: 7
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 60
-      }
-      {
-        name: sensor_ctrl_ast_debug_out
-        width: 9
-        type: output
         idx: 8
         pad: ""
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 61
+        glob_idx: 57
       }
       {
         name: pwm_aon_pwm
@@ -13109,7 +12975,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 62
+        glob_idx: 58
       }
       {
         name: pwm_aon_pwm
@@ -13120,7 +12986,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 63
+        glob_idx: 59
       }
       {
         name: pwm_aon_pwm
@@ -13131,7 +12997,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 64
+        glob_idx: 60
       }
       {
         name: pwm_aon_pwm
@@ -13142,7 +13008,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 65
+        glob_idx: 61
       }
       {
         name: pwm_aon_pwm
@@ -13153,7 +13019,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 66
+        glob_idx: 62
       }
       {
         name: pwm_aon_pwm
@@ -13164,7 +13030,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 67
+        glob_idx: 63
       }
       {
         name: otp_ctrl_test
@@ -13175,7 +13041,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 68
+        glob_idx: 64
       }
       {
         name: sysrst_ctrl_aon_bat_disable
@@ -13186,7 +13052,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 69
+        glob_idx: 65
       }
       {
         name: sysrst_ctrl_aon_key0_out
@@ -13197,7 +13063,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 70
+        glob_idx: 66
       }
       {
         name: sysrst_ctrl_aon_key1_out
@@ -13208,7 +13074,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 71
+        glob_idx: 67
       }
       {
         name: sysrst_ctrl_aon_key2_out
@@ -13219,7 +13085,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 72
+        glob_idx: 68
       }
       {
         name: sysrst_ctrl_aon_pwrb_out
@@ -13230,7 +13096,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 73
+        glob_idx: 69
       }
       {
         name: sysrst_ctrl_aon_z3_wakeup
@@ -13241,7 +13107,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 74
+        glob_idx: 70
       }
     ]
     io_counts:
@@ -13257,7 +13123,7 @@
       {
         inouts: 42
         inputs: 15
-        outputs: 33
+        outputs: 29
         pads: 47
       }
     }
@@ -13613,7 +13479,6 @@
     i2c0
     i2c1
     i2c2
-    pattgen
     rv_timer
     otp_ctrl
     alert_handler
@@ -14178,18 +14043,6 @@
       module_name: i2c2
     }
     {
-      name: pattgen_done_ch0
-      width: 1
-      type: interrupt
-      module_name: pattgen
-    }
-    {
-      name: pattgen_done_ch1
-      width: 1
-      type: interrupt
-      module_name: pattgen
-    }
-    {
       name: rv_timer_timer_expired_hart0_timer0
       width: 1
       type: interrupt
@@ -14567,7 +14420,6 @@
     i2c0
     i2c1
     i2c2
-    pattgen
     rv_timer
     otp_ctrl
     lc_ctrl
@@ -14684,15 +14536,6 @@
       module_name: i2c2
       lpg_name: peri_i2c2_0
       lpg_idx: 4
-    }
-    {
-      name: pattgen_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: pattgen
-      lpg_name: peri_lc_io_div4_0
-      lpg_idx: 0
     }
     {
       name: rv_timer_fatal_fault
@@ -15941,19 +15784,6 @@
         default: ""
         end_idx: -1
         top_signame: i2c2_tl
-        index: -1
-      }
-      {
-        name: tl
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: pattgen
-        default: ""
-        end_idx: -1
-        top_signame: pattgen_tl
         index: -1
       }
       {
@@ -20663,18 +20493,6 @@
         index: -1
       }
       {
-        name: tl_pattgen
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: peri
-        default: ""
-        top_signame: pattgen_tl
-        index: -1
-      }
-      {
         name: tl_pwm_aon
         struct: tl
         package: tlul_pkg
@@ -23538,28 +23356,6 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: i2c2_tl_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        signame: pattgen_tl_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: pattgen_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

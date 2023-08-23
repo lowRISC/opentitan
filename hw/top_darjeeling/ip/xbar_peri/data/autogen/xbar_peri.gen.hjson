@@ -41,7 +41,6 @@
       i2c0
       i2c1
       i2c2
-      pattgen
       gpio
       spi_device
       rv_timer
@@ -197,24 +196,6 @@
         {
           base_addr: 0x400a0000
           size_byte: 0x80
-        }
-      ]
-      xbar: false
-      stub: false
-      req_fifo_pass: true
-    }
-    {
-      name: pattgen
-      type: device
-      clock: clk_peri_i
-      reset: rst_peri_ni
-      pipeline: false
-      inst_type: pattgen
-      addr_range:
-      [
-        {
-          base_addr: 0x400e0000
-          size_byte: 0x40
         }
       ]
       xbar: false

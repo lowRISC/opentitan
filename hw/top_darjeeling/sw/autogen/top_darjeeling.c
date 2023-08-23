@@ -11,7 +11,7 @@
  * `top_darjeeling_plic_peripheral_t`.
  */
 const top_darjeeling_plic_peripheral_t
-    top_darjeeling_plic_interrupt_for_peripheral[185] = {
+    top_darjeeling_plic_interrupt_for_peripheral[183] = {
   [kTopDarjeelingPlicIrqIdNone] = kTopDarjeelingPlicPeripheralUnknown,
   [kTopDarjeelingPlicIrqIdUart0TxWatermark] = kTopDarjeelingPlicPeripheralUart0,
   [kTopDarjeelingPlicIrqIdUart0RxWatermark] = kTopDarjeelingPlicPeripheralUart0,
@@ -134,8 +134,6 @@ const top_darjeeling_plic_peripheral_t
   [kTopDarjeelingPlicIrqIdI2c2AcqFull] = kTopDarjeelingPlicPeripheralI2c2,
   [kTopDarjeelingPlicIrqIdI2c2UnexpStop] = kTopDarjeelingPlicPeripheralI2c2,
   [kTopDarjeelingPlicIrqIdI2c2HostTimeout] = kTopDarjeelingPlicPeripheralI2c2,
-  [kTopDarjeelingPlicIrqIdPattgenDoneCh0] = kTopDarjeelingPlicPeripheralPattgen,
-  [kTopDarjeelingPlicIrqIdPattgenDoneCh1] = kTopDarjeelingPlicPeripheralPattgen,
   [kTopDarjeelingPlicIrqIdRvTimerTimerExpiredHart0Timer0] = kTopDarjeelingPlicPeripheralRvTimer,
   [kTopDarjeelingPlicIrqIdOtpCtrlOtpOperationDone] = kTopDarjeelingPlicPeripheralOtpCtrl,
   [kTopDarjeelingPlicIrqIdOtpCtrlOtpError] = kTopDarjeelingPlicPeripheralOtpCtrl,
@@ -207,7 +205,7 @@ const top_darjeeling_plic_peripheral_t
  * `top_darjeeling_alert_peripheral_t`.
  */
 const top_darjeeling_alert_peripheral_t
-    top_darjeeling_alert_for_peripheral[67] = {
+    top_darjeeling_alert_for_peripheral[66] = {
   [kTopDarjeelingAlertIdUart0FatalFault] = kTopDarjeelingAlertPeripheralUart0,
   [kTopDarjeelingAlertIdUart1FatalFault] = kTopDarjeelingAlertPeripheralUart1,
   [kTopDarjeelingAlertIdUart2FatalFault] = kTopDarjeelingAlertPeripheralUart2,
@@ -217,7 +215,6 @@ const top_darjeeling_alert_peripheral_t
   [kTopDarjeelingAlertIdI2c0FatalFault] = kTopDarjeelingAlertPeripheralI2c0,
   [kTopDarjeelingAlertIdI2c1FatalFault] = kTopDarjeelingAlertPeripheralI2c1,
   [kTopDarjeelingAlertIdI2c2FatalFault] = kTopDarjeelingAlertPeripheralI2c2,
-  [kTopDarjeelingAlertIdPattgenFatalFault] = kTopDarjeelingAlertPeripheralPattgen,
   [kTopDarjeelingAlertIdRvTimerFatalFault] = kTopDarjeelingAlertPeripheralRvTimer,
   [kTopDarjeelingAlertIdOtpCtrlFatalMacroError] = kTopDarjeelingAlertPeripheralOtpCtrl,
   [kTopDarjeelingAlertIdOtpCtrlFatalCheckError] = kTopDarjeelingAlertPeripheralOtpCtrl,

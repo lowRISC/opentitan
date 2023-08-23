@@ -406,7 +406,6 @@ For the purpose of `top_darjeeling`, the first option has been chosen to benefit
 | i2c0              | i2c           | 0x40080000 (regs) |
 | i2c1              | i2c           | 0x40090000 (regs) |
 | i2c2              | i2c           | 0x400A0000 (regs) |
-| pattgen           | pattgen       | 0x400E0000 (regs) |
 | rv_timer          | rv_timer      | 0x40100000 (regs) |
 | otp_ctrl          | otp_ctrl      | 0x40130000 (core) |
 |                   |               | 0x40132000 (prim) |
