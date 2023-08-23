@@ -8,6 +8,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 use crate::io::gpio::GpioPin;
+use crate::io::io_mapper::IoMapper;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 use crate::transport::{
@@ -24,6 +25,7 @@ pub struct Ultradebug {
     pub usb_vid: Option<u16>,
     pub usb_pid: Option<u16>,
     pub usb_serial: Option<String>,
+    io_mapper: Rc<IoMapper>,
     // A ref-counted pointer to an MPSSE context for FTDI interface B.  This is needed because
     // interface B contains both the SPI and GPIO functions on ultradebug.
     mpsse_b: RefCell<Option<Rc<RefCell<mpsse::Context>>>>,
@@ -42,11 +44,17 @@ impl Ultradebug {
     pub const PID_ULTRADEBUG: u16 = 0x0304;
 
     /// Create a new `Ultradebug` struct, optionally specifying the USB vid/pid/serial number.
-    pub fn new(usb_vid: Option<u16>, usb_pid: Option<u16>, usb_serial: Option<String>) -> Self {
+    pub fn new(
+        usb_vid: Option<u16>,
+        usb_pid: Option<u16>,
+        usb_serial: Option<String>,
+        io_mapper: Rc<IoMapper>,
+    ) -> Self {
         Ultradebug {
             usb_vid,
             usb_pid,
             usb_serial,
+            io_mapper,
             ..Default::default()
         }
     }
@@ -133,14 +141,20 @@ impl Transport for Ultradebug {
     }
 
     fn gpio_pin(&self, instance: &str) -> Result<Rc<dyn GpioPin>> {
+        let resolved_pin = self.io_mapper.resolve_pin(instance);
+
         let mut inner = self.inner.borrow_mut();
         if inner.gpio.is_none() {
             inner.gpio = Some(Rc::new(gpio::UltradebugGpio::open(self)?));
         }
-        Ok(Rc::new(inner.gpio.as_ref().unwrap().pin(instance)?))
+        Ok(Rc::new(
+            inner.gpio.as_ref().unwrap().pin(resolved_pin.as_str())?,
+        ))
     }
 
     fn spi(&self, instance: &str) -> Result<Rc<dyn Target>> {
+        let instance = self.io_mapper.resolve_spi(instance)?;
+
         ensure!(
             instance == "0",
             TransportError::InvalidInstance(TransportInterfaceType::Spi, instance.to_string())

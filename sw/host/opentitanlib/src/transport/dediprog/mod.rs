@@ -16,6 +16,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
+use crate::io::io_mapper::IoMapper;
 use crate::io::spi::Target;
 use crate::io::uart::{Uart, UartError};
 use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
@@ -87,6 +88,7 @@ impl Inner {
 
 pub struct Dediprog {
     inner: Rc<RefCell<Inner>>,
+    io_mapper: Rc<IoMapper>,
 }
 
 #[derive(Copy, Clone)]
@@ -129,6 +131,7 @@ impl Dediprog {
         usb_vid: Option<u16>,
         usb_pid: Option<u16>,
         usb_serial: Option<&str>,
+        io_mapper: Rc<IoMapper>,
     ) -> anyhow::Result<Self> {
         let mut device = UsbBackend::new(
             usb_vid.unwrap_or(Self::VID_ST_MICROELECTRONICS),
@@ -219,6 +222,7 @@ impl Dediprog {
         inner.set_voltage()?;
         let board = Self {
             inner: Rc::new(RefCell::new(inner)),
+            io_mapper,
         };
         Ok(board)
     }
@@ -293,12 +297,15 @@ impl Transport for Dediprog {
         if pinname == "VCC" {
             return Ok(Rc::new(VoltagePin::open(&self.inner)?));
         }
+
+        let resolved_pin = self.io_mapper.resolve_pin(pinname);
+
         let mut inner = self.inner.borrow_mut();
-        Ok(match inner.gpio.entry(pinname.to_string()) {
+        Ok(match inner.gpio.entry(resolved_pin.clone()) {
             Entry::Vacant(v) => {
                 let u = v.insert(Rc::new(gpio::DediprogPin::open(
                     Rc::clone(&self.inner),
-                    pinname,
+                    resolved_pin.as_str(),
                 )?));
                 Rc::clone(u)
             }
@@ -307,6 +314,7 @@ impl Transport for Dediprog {
     }
 
     fn spi(&self, instance: &str) -> Result<Rc<dyn Target>> {
+        let instance = self.io_mapper.resolve_spi(instance)?;
         ensure!(
             instance == "0",
             TransportError::InvalidInstance(TransportInterfaceType::Spi, instance.to_string())

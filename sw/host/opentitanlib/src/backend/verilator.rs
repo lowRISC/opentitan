@@ -5,8 +5,10 @@
 use anyhow::Result;
 use clap::Args;
 use humantime::parse_duration;
+use std::rc::Rc;
 use std::time::Duration;
 
+use crate::io::io_mapper::IoMapper;
 use crate::transport::verilator::{Options, Verilator};
 use crate::transport::Transport;
 
@@ -30,7 +32,7 @@ pub struct VerilatorOpts {
     verilator_timeout: Duration,
 }
 
-pub fn create(args: &VerilatorOpts) -> Result<Box<dyn Transport>> {
+pub fn create(args: &VerilatorOpts, io_mapper: Rc<IoMapper>) -> Result<Box<dyn Transport>> {
     let options = Options {
         executable: args.verilator_bin.clone(),
         rom_image: args.verilator_rom.clone(),
@@ -39,5 +41,5 @@ pub fn create(args: &VerilatorOpts) -> Result<Box<dyn Transport>> {
         extra_args: args.verilator_args.clone(),
         timeout: args.verilator_timeout,
     };
-    Ok(Box::new(Verilator::from_options(options)?))
+    Ok(Box::new(Verilator::from_options(options, io_mapper)?))
 }
