@@ -162,7 +162,20 @@ package otp_ctrl_part_pkg;
     '{
       variant:    Buffered,
       offset:     14'd1600,
-      size:       80,
+      size:       72,
+      key_sel:    key_sel_e'('0),
+      secret:     1'b0,
+      sw_digest:  1'b0,
+      hw_digest:  1'b1,
+      write_lock: 1'b1,
+      read_lock:  1'b0,
+      integrity:  1'b1
+    },
+    // HW_CFG1
+    '{
+      variant:    Buffered,
+      offset:     14'd1672,
+      size:       16,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
       sw_digest:  1'b0,
@@ -174,7 +187,7 @@ package otp_ctrl_part_pkg;
     // SECRET0
     '{
       variant:    Buffered,
-      offset:     14'd1680,
+      offset:     14'd1688,
       size:       40,
       key_sel:    Secret0Key,
       secret:     1'b1,
@@ -187,7 +200,7 @@ package otp_ctrl_part_pkg;
     // SECRET1
     '{
       variant:    Buffered,
-      offset:     14'd1720,
+      offset:     14'd1728,
       size:       88,
       key_sel:    Secret1Key,
       secret:     1'b1,
@@ -200,7 +213,7 @@ package otp_ctrl_part_pkg;
     // SECRET2
     '{
       variant:    Buffered,
-      offset:     14'd1808,
+      offset:     14'd1816,
       size:       88,
       key_sel:    Secret2Key,
       secret:     1'b1,
@@ -213,7 +226,7 @@ package otp_ctrl_part_pkg;
     // LIFE_CYCLE
     '{
       variant:    LifeCycle,
-      offset:     14'd1896,
+      offset:     14'd1904,
       size:       88,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
@@ -230,6 +243,7 @@ package otp_ctrl_part_pkg;
     CreatorSwCfgIdx,
     OwnerSwCfgIdx,
     HwCfg0Idx,
+    HwCfg1Idx,
     Secret0Idx,
     Secret1Idx,
     Secret2Idx,
@@ -248,8 +262,6 @@ package otp_ctrl_part_pkg;
   // Breakout types for easier access of individual items.
   typedef struct packed {
     logic [63:0] hw_cfg0_digest;
-    logic [55:0] unallocated;
-    prim_mubi_pkg::mubi8_t en_sram_ifetch;
     logic [255:0] manuf_state;
     logic [255:0] device_id;
   } otp_hw_cfg0_data_t;
@@ -257,51 +269,66 @@ package otp_ctrl_part_pkg;
   // default value used for intermodule
   parameter otp_hw_cfg0_data_t OTP_HW_CFG0_DATA_DEFAULT = '{
     hw_cfg0_digest: 64'hD2BF0E2CFC07120E,
-    unallocated: 56'h0,
-    en_sram_ifetch: prim_mubi_pkg::mubi8_t'(8'h69),
     manuf_state: 256'h55BE0BF60F328302F6008FEDD015995F818E6D5088A5CDF93C0F42DCF28BBDCA,
     device_id: 256'h39D3131745015730931F5DA9AF1C3AACE93BC3CE277DADEF07D7A8934EE34FBD
   };
   typedef struct packed {
+    logic [63:0] hw_cfg1_digest;
+    logic [55:0] unallocated;
+    prim_mubi_pkg::mubi8_t en_sram_ifetch;
+  } otp_hw_cfg1_data_t;
+
+  // default value used for intermodule
+  parameter otp_hw_cfg1_data_t OTP_HW_CFG1_DATA_DEFAULT = '{
+    hw_cfg1_digest: 64'hBFD510D7D174D3C2,
+    unallocated: 56'h0,
+    en_sram_ifetch: prim_mubi_pkg::mubi8_t'(8'h69)
+  };
+  typedef struct packed {
     // This reuses the same encoding as the life cycle signals for indicating valid status.
     lc_ctrl_pkg::lc_tx_t valid;
+    otp_hw_cfg1_data_t hw_cfg1_data;
     otp_hw_cfg0_data_t hw_cfg0_data;
   } otp_broadcast_t;
 
   // default value for intermodule
   parameter otp_broadcast_t OTP_BROADCAST_DEFAULT = '{
     valid: lc_ctrl_pkg::Off,
+    hw_cfg1_data: OTP_HW_CFG1_DATA_DEFAULT,
     hw_cfg0_data: OTP_HW_CFG0_DATA_DEFAULT
   };
 
 
   // OTP invalid partition default for buffered partitions.
-  parameter logic [15871:0] PartInvDefault = 15872'({
+  parameter logic [15935:0] PartInvDefault = 15936'({
     704'({
       320'hBCEE0EAF635CC94C13341B2009F127B06D6A802324A832B510525C360F4D65C7B4D832618CCF4986,
       384'h813C1F50880EDCF619237C65265AB0F0C7BE3EA7E34C01040DEFD9C319666A73808EC748F9D19EC735CF8C381C8C5AFE
     }),
     704'({
-      64'h9EBCF683C0FC7778,
+      64'hFA9CE9B9595C0B9D,
       256'h7FDBA3FABBB202307AE064132CE3E678577E62959EFB89B7A2059F462D20F72,
       256'h27D331CD45A0EF7756EC4F708F6120840D5F33333CE062950E21D4D55ADB2645,
       128'hC20EEF44B66C882A67F85AFE2A82CBE0
     }),
     704'({
-      64'hA8DEB8ABE2DA8416,
+      64'h9EBCF683C0FC7778,
       128'h5ACC5965CAAD333087782B16192CB31F,
       256'h8C2B4F3535255D0B9EE36806F4741D1FF361DABDEC71147847CFC21F565393A4,
       256'h88EFD6E008A8D1E756E1E07F5EBCD245FA43D4382195A330424EDF34DF61C686
     }),
     320'({
-      64'hBFD510D7D174D3C2,
+      64'hA8DEB8ABE2DA8416,
       128'h827AA3F6BBFB187728C1F8823EC901A4,
       128'hEA922083D08D74C031E0F4A706AC2F4C
     }),
-    640'({
-      64'hD2BF0E2CFC07120E,
+    128'({
+      64'hBFD510D7D174D3C2,
       56'h0, // unallocated space
-      8'h69,
+      8'h69
+    }),
+    576'({
+      64'hD2BF0E2CFC07120E,
       256'h55BE0BF60F328302F6008FEDD015995F818E6D5088A5CDF93C0F42DCF28BBDCA,
       256'h39D3131745015730931F5DA9AF1C3AACE93BC3CE277DADEF07D7A8934EE34FBD
     }),
@@ -382,6 +409,7 @@ package otp_ctrl_part_pkg;
     hw2reg.creator_sw_cfg_digest = part_digest[CreatorSwCfgIdx];
     hw2reg.owner_sw_cfg_digest = part_digest[OwnerSwCfgIdx];
     hw2reg.hw_cfg0_digest = part_digest[HwCfg0Idx];
+    hw2reg.hw_cfg1_digest = part_digest[HwCfg1Idx];
     hw2reg.secret0_digest = part_digest[Secret0Idx];
     hw2reg.secret1_digest = part_digest[Secret1Idx];
     hw2reg.secret2_digest = part_digest[Secret2Idx];
@@ -425,6 +453,8 @@ package otp_ctrl_part_pkg;
                 part_buf_data[Secret1Offset +: Secret1Size]};
     unused ^= ^{part_init_done[Secret0Idx],
                 part_buf_data[Secret0Offset +: Secret0Size]};
+    valid &= part_init_done[HwCfg1Idx];
+    otp_broadcast.hw_cfg1_data = otp_hw_cfg1_data_t'(part_buf_data[HwCfg1Offset +: HwCfg1Size]);
     valid &= part_init_done[HwCfg0Idx];
     otp_broadcast.hw_cfg0_data = otp_hw_cfg0_data_t'(part_buf_data[HwCfg0Offset +: HwCfg0Size]);
     unused ^= ^{part_init_done[OwnerSwCfgIdx],

@@ -206,8 +206,14 @@ package otp_ctrl_part_pkg;
   typedef struct packed {
     // This reuses the same encoding as the life cycle signals for indicating valid status.
     lc_ctrl_pkg::lc_tx_t valid;
-% for part in otp_mmap.config["partitions"][::-1]:
+<%
+  last_bkout_idx = 0
+%>\
+% for k, part in enumerate(otp_mmap.config["partitions"][::-1]):
   % if part["bkout_type"]:
+<%
+    last_bkout_idx = k
+%>\
     otp_${part["name"].lower()}_data_t ${part["name"].lower()}_data;
   % endif
 % endfor
@@ -216,9 +222,9 @@ package otp_ctrl_part_pkg;
   // default value for intermodule
   parameter otp_broadcast_t OTP_BROADCAST_DEFAULT = '{
     valid: lc_ctrl_pkg::Off,
-% for part in otp_mmap.config["partitions"][::-1]:
+% for k, part in enumerate(otp_mmap.config["partitions"][::-1]):
   % if part["bkout_type"]:
-    ${part["name"].lower()}_data: OTP_${part["name"].upper()}_DATA_DEFAULT
+    ${part["name"].lower()}_data: OTP_${part["name"].upper()}_DATA_DEFAULT${"" if k == last_bkout_idx else ","}
   % endif
 % endfor
   };

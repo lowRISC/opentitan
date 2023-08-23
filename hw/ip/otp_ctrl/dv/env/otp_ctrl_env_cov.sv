@@ -65,7 +65,9 @@ class otp_ctrl_csr_rd_after_alert_cg_wrap;
                                   ral.owner_sw_cfg_digest[0].get_offset(),
                                   ral.owner_sw_cfg_digest[1].get_offset()};
       bins hw_digests          = {ral.hw_cfg0_digest[0].get_offset(),
-                                  ral.hw_cfg0_digest[1].get_offset()};
+                                  ral.hw_cfg0_digest[1].get_offset(),
+                                  ral.hw_cfg1_digest[0].get_offset(),
+                                  ral.hw_cfg1_digest[1].get_offset()};
       bins secret_digests      = {ral.secret0_digest[0].get_offset(),
                                   ral.secret0_digest[1].get_offset(),
                                   ral.secret1_digest[0].get_offset(),
@@ -84,7 +86,8 @@ class otp_ctrl_csr_rd_after_alert_cg_wrap;
                                   ral.err_code[6].get_offset(),
                                   ral.err_code[7].get_offset(),
                                   ral.err_code[8].get_offset(),
-                                  ral.err_code[9].get_offset()};
+                                  ral.err_code[9].get_offset(),
+                                  ral.err_code[10].get_offset()};
     }
   endgroup
 
@@ -146,9 +149,10 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
     creator_sw_lock: coverpoint parts_locked[1];
     owner_sw_lock:   coverpoint parts_locked[2];
     hw_cfg0_lock:    coverpoint parts_locked[3];
-    secret0_lock:    coverpoint parts_locked[4];
-    secret1_lock:    coverpoint parts_locked[5];
-    secret2_lock:    coverpoint parts_locked[6];
+    hw_cfg1_lock:    coverpoint parts_locked[4];
+    secret0_lock:    coverpoint parts_locked[5];
+    secret1_lock:    coverpoint parts_locked[6];
+    secret2_lock:    coverpoint parts_locked[7];
   endgroup
 
   // This covergroup is sampled only if flash request passed scb check.
@@ -214,6 +218,7 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
       bins creator_sw_cfg = {CreatorSwCfgIdx};
       bins owner_sw_cfg   = {OwnerSwCfgIdx};
       bins hw_cfg0        = {HwCfg0Idx};
+      bins hw_cfg1        = {HwCfg1Idx};
       bins secret0        = {Secret0Idx};
       bins secret1        = {Secret1Idx};
       bins secret2        = {Secret2Idx};
@@ -315,7 +320,7 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
       OtpVendorTestErrIdx, OtpCreatorSwCfgErrIdx, OtpOwnerSwCfgErrIdx: begin
         unbuf_err_code_cg_wrap[field_idx].unbuf_err_code_cg.sample(val);
       end
-      OtpHwCfg0ErrIdx, OtpSecret0ErrIdx, OtpSecret1ErrIdx, OtpSecret2ErrIdx,
+      OtpHwCfg0ErrIdx, OtpHwCfg1ErrIdx, OtpSecret0ErrIdx, OtpSecret1ErrIdx, OtpSecret2ErrIdx,
       OtpLifeCycleErrIdx: begin
         buf_err_code_cg_wrap[field_idx - NUM_UNBUFF_PARTS].buf_err_code_cg.sample(val);
       end

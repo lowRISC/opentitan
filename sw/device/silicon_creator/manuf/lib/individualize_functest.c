@@ -64,6 +64,12 @@ bool test_main(void) {
     sw_reset();
   }
 
+  if (!status_ok(individualize_dev_hw_cfg1_end(&otp_ctrl))) {
+    CHECK_STATUS_OK(
+        individualize_dev_hw_cfg1_start(&flash_state, &lc_ctrl, &otp_ctrl));
+    sw_reset();
+  }
+
   if (!status_ok(individualize_dev_secret1_end(&otp_ctrl))) {
     CHECK_STATUS_OK(individualize_dev_secret1_start(&lc_ctrl, &otp_ctrl));
     sw_reset();

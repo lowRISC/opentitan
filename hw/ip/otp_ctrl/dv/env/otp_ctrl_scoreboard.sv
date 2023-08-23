@@ -123,7 +123,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       @(posedge cfg.otp_ctrl_vif.pwr_otp_done_o || cfg.under_reset ||
                 cfg.otp_ctrl_vif.alert_reqs) begin
         if (!cfg.under_reset && !cfg.otp_ctrl_vif.alert_reqs && cfg.en_scb) begin
-          otp_ctrl_part_pkg::otp_hw_cfg0_data_t   exp_hw_cfg0_data;
+          otp_ctrl_part_pkg::otp_hw_cfg0_data_t  exp_hw_cfg0_data;
+          otp_ctrl_part_pkg::otp_hw_cfg1_data_t  exp_hw_cfg1_data;
           otp_ctrl_pkg::otp_keymgr_key_t         exp_keymgr_data;
           otp_ctrl_pkg::otp_lc_data_t            exp_lc_data;
           bit [otp_ctrl_pkg::KeyMgrKeyWidth-1:0] exp_keymgr_key0, exp_keymgr_key1;
@@ -148,8 +149,12 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           exp_hw_cfg0_data = cfg.otp_ctrl_vif.under_error_states() ?
                              otp_ctrl_part_pkg::PartInvDefault[HwCfg0Offset*8 +: HwCfg0Size*8] :
                              otp_hw_cfg0_data_t'({<<32 {otp_a[HwCfg0Offset/4 +: HwCfg0Size/4]}});
+          exp_hw_cfg1_data = cfg.otp_ctrl_vif.under_error_states() ?
+                             otp_ctrl_part_pkg::PartInvDefault[HwCfg1Offset*8 +: HwCfg1Size*8] :
+                             otp_hw_cfg1_data_t'({<<32 {otp_a[HwCfg1Offset/4 +: HwCfg1Size/4]}});
           `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_broadcast_o.valid, lc_ctrl_pkg::On)
           `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_broadcast_o.hw_cfg0_data, exp_hw_cfg0_data)
+          `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_broadcast_o.hw_cfg1_data, exp_hw_cfg1_data)
 
           if (!cfg.otp_ctrl_vif.under_error_states()) begin
             // ---------------------- Check lc_data_o output -----------------------------------
@@ -905,7 +910,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         end
       end
       "err_code_0", "err_code_1", "err_code_2", "err_code_3", "err_code_4", "err_code_5",
-      "err_code_6", "err_code_7", "err_code_8", "err_code_9": begin
+      "err_code_6", "err_code_7", "err_code_8", "err_code_9", "err_code_10": begin
         // If lc_prog in progress, err_code might update anytime in DUT. Ignore checking until req
         // is acknowledged.
         if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
@@ -915,10 +920,14 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           cov.collect_err_code_cov(item.d_data, part_idx);
         end
       end
-      "hw_cfg0_digest_0", "hw_cfg0_digest_1", "secret0_digest_0", "secret0_digest_1",
-      "secret1_digest_0", "secret1_digest_1", "secret2_digest_0", "secret2_digest_1",
-      "creator_sw_cfg_digest_0", "creator_sw_cfg_digest_1", "owner_sw_cfg_digest_0",
-      "owner_sw_cfg_digest_1", "vendor_test_digest_0", "vendor_test_digest_1": begin
+      "hw_cfg0_digest_0", "hw_cfg0_digest_1",
+      "hw_cfg1_digest_0", "hw_cfg1_digest_1",
+      "secret0_digest_0", "secret0_digest_1",
+      "secret1_digest_0", "secret1_digest_1",
+      "secret2_digest_0", "secret2_digest_1",
+      "creator_sw_cfg_digest_0", "creator_sw_cfg_digest_1",
+      "owner_sw_cfg_digest_0", "owner_sw_cfg_digest_1",
+      "vendor_test_digest_0", "vendor_test_digest_1": begin
         if (ignore_digest_chk) do_read_check = 0;
       end
       "direct_access_rdata_0", "direct_access_rdata_1": do_read_check = check_dai_rd_data;
@@ -1087,6 +1096,11 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     void'(ral.hw_cfg0_digest[1].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfg0Idx] + 1]),
         .kind(UVM_PREDICT_DIRECT)));
 
+    void'(ral.hw_cfg1_digest[0].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfg1Idx]]),
+        .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.hw_cfg1_digest[1].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfg1Idx] + 1]),
+        .kind(UVM_PREDICT_DIRECT)));
+
     void'(ral.secret0_digest[0].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx]]),
         .kind(UVM_PREDICT_DIRECT)));
     void'(ral.secret0_digest[1].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx] + 1]),
@@ -1138,7 +1152,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       dai_digest_ip = part_idx;
     end
     case (part_idx)
-      HwCfg0Idx:   mem_q = otp_a[HW_CFG0_START_ADDR:HW_CFG0_END_ADDR];
+      HwCfg0Idx:  mem_q = otp_a[HW_CFG0_START_ADDR:HW_CFG0_END_ADDR];
+      HwCfg1Idx:  mem_q = otp_a[HW_CFG1_START_ADDR:HW_CFG1_END_ADDR];
       Secret0Idx: mem_q = otp_a[SECRET0_START_ADDR:SECRET0_END_ADDR];
       Secret1Idx: mem_q = otp_a[SECRET1_START_ADDR:SECRET1_END_ADDR];
       Secret2Idx: mem_q = otp_a[SECRET2_START_ADDR:SECRET2_END_ADDR];
@@ -1215,7 +1230,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     // Update status
     exp_status[status_err_idx] = 1;
 
-    // Only first 9 status errors have corresponding err_code
+    // Only first status errors up to the LCI have corresponding err_code
     if (status_err_idx <= OtpLciErrIdx) begin
       dv_base_reg_field err_code_flds[$];
       if (err_code == OtpNoError) begin
@@ -1286,6 +1301,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       end
       OwnerSwCfgIdx: digest = {`gmv(ral.owner_sw_cfg_digest[1]), `gmv(ral.owner_sw_cfg_digest[0])};
       HwCfg0Idx: digest = {`gmv(ral.hw_cfg0_digest[1]), `gmv(ral.hw_cfg0_digest[0])};
+      HwCfg1Idx: digest = {`gmv(ral.hw_cfg1_digest[1]), `gmv(ral.hw_cfg1_digest[0])};
       Secret0Idx: digest = {`gmv(ral.secret0_digest[1]), `gmv(ral.secret0_digest[0])};
       Secret1Idx: digest = {`gmv(ral.secret1_digest[1]), `gmv(ral.secret1_digest[0])};
       Secret2Idx: digest = {`gmv(ral.secret2_digest[1]), `gmv(ral.secret2_digest[0])};

@@ -59,20 +59,21 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |         |                |            |      32bit       |               OWNER_SW_CFG_MANUF_STATE                |     0x548      |     4      |
 |         |                |            |      32bit       |            OWNER_SW_CFG_ROM_RSTMGR_INFO_EN            |     0x54C      |     4      |
 |         |                |            |      64bit       |   [OWNER_SW_CFG_DIGEST](#Reg_owner_sw_cfg_digest_0)   |     0x638      |     8      |
-|    3    |    HW_CFG0     |     80     |      32bit       |                       DEVICE_ID                       |     0x640      |     32     |
+|    3    |    HW_CFG0     |     72     |      32bit       |                       DEVICE_ID                       |     0x640      |     32     |
 |         |                |            |      32bit       |                      MANUF_STATE                      |     0x660      |     32     |
-|         |                |            |      32bit       |                    EN_SRAM_IFETCH                     |     0x680      |     1      |
-|         |                |            |      64bit       |        [HW_CFG0_DIGEST](#Reg_hw_cfg0_digest_0)        |     0x688      |     8      |
-|    4    |    SECRET0     |     40     |      64bit       |                   TEST_UNLOCK_TOKEN                   |     0x690      |     16     |
-|         |                |            |      64bit       |                    TEST_EXIT_TOKEN                    |     0x6A0      |     16     |
-|         |                |            |      64bit       |        [SECRET0_DIGEST](#Reg_secret0_digest_0)        |     0x6B0      |     8      |
-|    5    |    SECRET1     |     88     |      64bit       |                  FLASH_ADDR_KEY_SEED                  |     0x6B8      |     32     |
-|         |                |            |      64bit       |                  FLASH_DATA_KEY_SEED                  |     0x6D8      |     32     |
-|         |                |            |      64bit       |                  SRAM_DATA_KEY_SEED                   |     0x6F8      |     16     |
-|         |                |            |      64bit       |        [SECRET1_DIGEST](#Reg_secret1_digest_0)        |     0x708      |     8      |
-|    6    |    SECRET2     |     88     |      64bit       |                       RMA_TOKEN                       |     0x710      |     16     |
-|         |                |            |      64bit       |                CREATOR_ROOT_KEY_SHARE0                |     0x720      |     32     |
-|         |                |            |      64bit       |                CREATOR_ROOT_KEY_SHARE1                |     0x740      |     32     |
-|         |                |            |      64bit       |        [SECRET2_DIGEST](#Reg_secret2_digest_0)        |     0x760      |     8      |
-|    7    |   LIFE_CYCLE   |     88     |      32bit       |                   LC_TRANSITION_CNT                   |     0x768      |     48     |
-|         |                |            |      32bit       |                       LC_STATE                        |     0x798      |     40     |
+|         |                |            |      64bit       |        [HW_CFG0_DIGEST](#Reg_hw_cfg0_digest_0)        |     0x680      |     8      |
+|    4    |    HW_CFG1     |     16     |      32bit       |                    EN_SRAM_IFETCH                     |     0x688      |     1      |
+|         |                |            |      64bit       |        [HW_CFG1_DIGEST](#Reg_hw_cfg1_digest_0)        |     0x690      |     8      |
+|    5    |    SECRET0     |     40     |      64bit       |                   TEST_UNLOCK_TOKEN                   |     0x698      |     16     |
+|         |                |            |      64bit       |                    TEST_EXIT_TOKEN                    |     0x6A8      |     16     |
+|         |                |            |      64bit       |        [SECRET0_DIGEST](#Reg_secret0_digest_0)        |     0x6B8      |     8      |
+|    6    |    SECRET1     |     88     |      64bit       |                  FLASH_ADDR_KEY_SEED                  |     0x6C0      |     32     |
+|         |                |            |      64bit       |                  FLASH_DATA_KEY_SEED                  |     0x6E0      |     32     |
+|         |                |            |      64bit       |                  SRAM_DATA_KEY_SEED                   |     0x700      |     16     |
+|         |                |            |      64bit       |        [SECRET1_DIGEST](#Reg_secret1_digest_0)        |     0x710      |     8      |
+|    7    |    SECRET2     |     88     |      64bit       |                       RMA_TOKEN                       |     0x718      |     16     |
+|         |                |            |      64bit       |                CREATOR_ROOT_KEY_SHARE0                |     0x728      |     32     |
+|         |                |            |      64bit       |                CREATOR_ROOT_KEY_SHARE1                |     0x748      |     32     |
+|         |                |            |      64bit       |        [SECRET2_DIGEST](#Reg_secret2_digest_0)        |     0x768      |     8      |
+|    8    |   LIFE_CYCLE   |     88     |      32bit       |                   LC_TRANSITION_CNT                   |     0x770      |     48     |
+|         |                |            |      32bit       |                       LC_STATE                        |     0x7A0      |     40     |

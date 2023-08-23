@@ -51,9 +51,9 @@ typedef enum dif_otp_ctrl_partition {
    */
   kDifOtpCtrlPartitionHwCfg0,
   /**
-   * The device lifecycle area.
+   * The hardware configuration area.
    */
-  kDifOtpCtrlPartitionLifeCycle,
+  kDifOtpCtrlPartitionHwCfg1,
   /**
    * Scrambled partition 0.
    *
@@ -72,6 +72,10 @@ typedef enum dif_otp_ctrl_partition {
    * This partition contains the RMA unlock token and the CreatorRootKey.
    */
   kDifOtpCtrlPartitionSecret2,
+  /**
+   * The device lifecycle area.
+   */
+  kDifOtpCtrlPartitionLifeCycle,
 } dif_otp_ctrl_partition_t;
 
 /**
@@ -138,9 +142,9 @@ typedef enum dif_otp_ctrl_status_code {
    */
   kDifOtpCtrlStatusCodeHwCfg0Error,
   /**
-   * Indicates an error occurred in the `LifeCycle` partition.
+   * Indicates an error occurred in the `HwCfg1` partition.
    */
-  kDifOtpCtrlStatusCodeLifeCycleError,
+  kDifOtpCtrlStatusCodeHwCfg1Error,
   /**
    * Indicates an error occurred in the `Secret0` partition.
    */
@@ -153,6 +157,10 @@ typedef enum dif_otp_ctrl_status_code {
    * Indicates an error occurred in the `Secret2` partition.
    */
   kDifOtpCtrlStatusCodeSecret2Error,
+  /**
+   * Indicates an error occurred in the `LifeCycle` partition.
+   */
+  kDifOtpCtrlStatusCodeLifeCycleError,
   /**
    * Indicates an error occurred in the direct access interface.
    */

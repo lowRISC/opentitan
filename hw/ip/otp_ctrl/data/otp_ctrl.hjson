@@ -147,7 +147,7 @@
     { name: "NumErrorEntries",
       desc: "Number of error register entries.",
       type: "int",
-      default: "10", // partitions + DAI/LCI
+      default: "11", // partitions + DAI/LCI
       local: "true"
     },
     { name: "NumDaiWords",
@@ -173,7 +173,7 @@
     { name: "NumPart",
       desc: "Number of partitions",
       type: "int",
-      default: "8",
+      default: "9",
       local: "true"
     },
     { name: "VendorTestOffset",
@@ -869,7 +869,7 @@
     { name: "HwCfg0Size",
       desc: "Size of the HW_CFG0 partition",
       type: "int",
-      default: "80",
+      default: "72",
       local: "true"
     },
     { name: "DeviceIdOffset",
@@ -896,22 +896,10 @@
       default: "32",
       local: "true"
     },
-    { name: "EnSramIfetchOffset",
-      desc: "Offset of EN_SRAM_IFETCH",
-      type: "int",
-      default: "1664",
-      local: "true"
-    },
-    { name: "EnSramIfetchSize",
-      desc: "Size of EN_SRAM_IFETCH",
-      type: "int",
-      default: "1",
-      local: "true"
-    },
     { name: "HwCfg0DigestOffset",
       desc: "Offset of HW_CFG0_DIGEST",
       type: "int",
-      default: "1672",
+      default: "1664",
       local: "true"
     },
     { name: "HwCfg0DigestSize",
@@ -920,10 +908,46 @@
       default: "8",
       local: "true"
     },
+    { name: "HwCfg1Offset",
+      desc: "Offset of the HW_CFG1 partition",
+      type: "int",
+      default: "1672",
+      local: "true"
+    },
+    { name: "HwCfg1Size",
+      desc: "Size of the HW_CFG1 partition",
+      type: "int",
+      default: "16",
+      local: "true"
+    },
+    { name: "EnSramIfetchOffset",
+      desc: "Offset of EN_SRAM_IFETCH",
+      type: "int",
+      default: "1672",
+      local: "true"
+    },
+    { name: "EnSramIfetchSize",
+      desc: "Size of EN_SRAM_IFETCH",
+      type: "int",
+      default: "1",
+      local: "true"
+    },
+    { name: "HwCfg1DigestOffset",
+      desc: "Offset of HW_CFG1_DIGEST",
+      type: "int",
+      default: "1680",
+      local: "true"
+    },
+    { name: "HwCfg1DigestSize",
+      desc: "Size of HW_CFG1_DIGEST",
+      type: "int",
+      default: "8",
+      local: "true"
+    },
     { name: "Secret0Offset",
       desc: "Offset of the SECRET0 partition",
       type: "int",
-      default: "1680",
+      default: "1688",
       local: "true"
     },
     { name: "Secret0Size",
@@ -935,7 +959,7 @@
     { name: "TestUnlockTokenOffset",
       desc: "Offset of TEST_UNLOCK_TOKEN",
       type: "int",
-      default: "1680",
+      default: "1688",
       local: "true"
     },
     { name: "TestUnlockTokenSize",
@@ -947,7 +971,7 @@
     { name: "TestExitTokenOffset",
       desc: "Offset of TEST_EXIT_TOKEN",
       type: "int",
-      default: "1696",
+      default: "1704",
       local: "true"
     },
     { name: "TestExitTokenSize",
@@ -959,7 +983,7 @@
     { name: "Secret0DigestOffset",
       desc: "Offset of SECRET0_DIGEST",
       type: "int",
-      default: "1712",
+      default: "1720",
       local: "true"
     },
     { name: "Secret0DigestSize",
@@ -971,7 +995,7 @@
     { name: "Secret1Offset",
       desc: "Offset of the SECRET1 partition",
       type: "int",
-      default: "1720",
+      default: "1728",
       local: "true"
     },
     { name: "Secret1Size",
@@ -983,7 +1007,7 @@
     { name: "FlashAddrKeySeedOffset",
       desc: "Offset of FLASH_ADDR_KEY_SEED",
       type: "int",
-      default: "1720",
+      default: "1728",
       local: "true"
     },
     { name: "FlashAddrKeySeedSize",
@@ -995,7 +1019,7 @@
     { name: "FlashDataKeySeedOffset",
       desc: "Offset of FLASH_DATA_KEY_SEED",
       type: "int",
-      default: "1752",
+      default: "1760",
       local: "true"
     },
     { name: "FlashDataKeySeedSize",
@@ -1007,7 +1031,7 @@
     { name: "SramDataKeySeedOffset",
       desc: "Offset of SRAM_DATA_KEY_SEED",
       type: "int",
-      default: "1784",
+      default: "1792",
       local: "true"
     },
     { name: "SramDataKeySeedSize",
@@ -1019,7 +1043,7 @@
     { name: "Secret1DigestOffset",
       desc: "Offset of SECRET1_DIGEST",
       type: "int",
-      default: "1800",
+      default: "1808",
       local: "true"
     },
     { name: "Secret1DigestSize",
@@ -1031,7 +1055,7 @@
     { name: "Secret2Offset",
       desc: "Offset of the SECRET2 partition",
       type: "int",
-      default: "1808",
+      default: "1816",
       local: "true"
     },
     { name: "Secret2Size",
@@ -1043,7 +1067,7 @@
     { name: "RmaTokenOffset",
       desc: "Offset of RMA_TOKEN",
       type: "int",
-      default: "1808",
+      default: "1816",
       local: "true"
     },
     { name: "RmaTokenSize",
@@ -1055,7 +1079,7 @@
     { name: "CreatorRootKeyShare0Offset",
       desc: "Offset of CREATOR_ROOT_KEY_SHARE0",
       type: "int",
-      default: "1824",
+      default: "1832",
       local: "true"
     },
     { name: "CreatorRootKeyShare0Size",
@@ -1067,7 +1091,7 @@
     { name: "CreatorRootKeyShare1Offset",
       desc: "Offset of CREATOR_ROOT_KEY_SHARE1",
       type: "int",
-      default: "1856",
+      default: "1864",
       local: "true"
     },
     { name: "CreatorRootKeyShare1Size",
@@ -1079,7 +1103,7 @@
     { name: "Secret2DigestOffset",
       desc: "Offset of SECRET2_DIGEST",
       type: "int",
-      default: "1888",
+      default: "1896",
       local: "true"
     },
     { name: "Secret2DigestSize",
@@ -1091,7 +1115,7 @@
     { name: "LifeCycleOffset",
       desc: "Offset of the LIFE_CYCLE partition",
       type: "int",
-      default: "1896",
+      default: "1904",
       local: "true"
     },
     { name: "LifeCycleSize",
@@ -1103,7 +1127,7 @@
     { name: "LcTransitionCntOffset",
       desc: "Offset of LC_TRANSITION_CNT",
       type: "int",
-      default: "1896",
+      default: "1904",
       local: "true"
     },
     { name: "LcTransitionCntSize",
@@ -1115,7 +1139,7 @@
     { name: "LcStateOffset",
       desc: "Offset of LC_STATE",
       type: "int",
-      default: "1944",
+      default: "1952",
       local: "true"
     },
     { name: "LcStateSize",
@@ -1524,87 +1548,94 @@
                   '''
           }
           { bits: "4"
-            name: "SECRET0_ERROR"
+            name: "HW_CFG1_ERROR"
             desc: '''
                   Set to 1 if an error occurred in this partition.
                   If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
                   '''
           }
           { bits: "5"
-            name: "SECRET1_ERROR"
+            name: "SECRET0_ERROR"
             desc: '''
                   Set to 1 if an error occurred in this partition.
                   If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
                   '''
           }
           { bits: "6"
-            name: "SECRET2_ERROR"
+            name: "SECRET1_ERROR"
             desc: '''
                   Set to 1 if an error occurred in this partition.
                   If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
                   '''
           }
           { bits: "7"
-            name: "LIFE_CYCLE_ERROR"
+            name: "SECRET2_ERROR"
             desc: '''
                   Set to 1 if an error occurred in this partition.
                   If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
                   '''
           }
           { bits: "8"
+            name: "LIFE_CYCLE_ERROR"
+            desc: '''
+                  Set to 1 if an error occurred in this partition.
+                  If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
+                  '''
+          }
+          { bits: "9"
             name: "DAI_ERROR"
             desc: '''
                   Set to 1 if an error occurred in the DAI.
                   If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
                   '''
           }
-          { bits: "9"
+          { bits: "10"
             name: "LCI_ERROR"
             desc: '''
                   Set to 1 if an error occurred in the LCI.
                   If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
                   '''
           }
-          { bits: "10"
+          { bits: "11"
             name: "TIMEOUT_ERROR"
             desc: '''
                   Set to 1 if an integrity or consistency check times out.
                   This raises an fatal_check_error alert and is an unrecoverable error condition.
                   '''
           }
-          { bits: "11"
+          { bits: "12"
             name: "LFSR_FSM_ERROR"
             desc: '''
                   Set to 1 if the LFSR timer FSM has reached an invalid state.
                   This raises an fatal_check_error alert and is an unrecoverable error condition.
                   '''
           }
-          { bits: "12"
+          { bits: "13"
             name: "SCRAMBLING_FSM_ERROR"
             desc: '''
                   Set to 1 if the scrambling datapath FSM has reached an invalid state.
                   This raises an fatal_check_error alert and is an unrecoverable error condition.
                   '''
           }
-          { bits: "13"
+          { bits: "14"
             name: "KEY_DERIV_FSM_ERROR"
             desc: '''
                   Set to 1 if the key derivation FSM has reached an invalid state.
                   This raises an fatal_check_error alert and is an unrecoverable error condition.
                   '''
           }
-          { bits: "14"
+          { bits: "15"
             name: "BUS_INTEG_ERROR"
             desc: '''
                   This bit is set to 1 if a fatal bus integrity fault is detected.
                   This error triggers a fatal_bus_integ_error alert.
                   '''
           }
-          { bits: "15"
+          { bits: "16"
             name: "DAI_IDLE"
             desc: "Set to 1 if the DAI is idle and ready to accept commands."
           }
-          { bits: "16"
+          { bits: "17"
             name: "CHECK_PENDING"
             desc: "Set to 1 if an integrity or consistency check triggered by the LFSR timer or via !!CHECK_TRIGGER is pending."
           }
@@ -2104,6 +2135,27 @@
           name:     "HW_CFG0_DIGEST",
           desc:     '''
                     Integrity digest for the HW_CFG0 partition.
+                    The integrity digest is 0 by default. The digest calculation can be triggered via the !!DIRECT_ACCESS_CMD.
+                    After a reset, the digest then becomes visible in this CSR, and the corresponding partition becomes write-locked.
+                    ''',
+          count:     "NumDigestWords",
+          swaccess:  "ro",
+          hwaccess:  "hwo",
+          hwext:     "true",
+          cname:     "WORD",
+          resval:    0,
+          tags: [ // OTP internal HW will update status so can not auto-predict its value.
+                  "excl:CsrAllTests:CsrExclCheck"],
+          fields: [
+            { bits: "31:0"
+            }
+          ]
+        }
+      },
+      { multireg: {
+          name:     "HW_CFG1_DIGEST",
+          desc:     '''
+                    Integrity digest for the HW_CFG1 partition.
                     The integrity digest is 0 by default. The digest calculation can be triggered via the !!DIRECT_ACCESS_CMD.
                     After a reset, the digest then becomes visible in this CSR, and the corresponding partition becomes write-locked.
                     ''',

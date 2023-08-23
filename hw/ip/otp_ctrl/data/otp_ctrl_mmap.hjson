@@ -364,7 +364,25 @@
                     name:        "MANUF_STATE",
                     size:        "32",
                     inv_default: "<random>",
-                },
+                }
+            ],
+            desc: '''
+            DEVICE_ID: Unique device identifier.
+            MANUF_STATE: Vector for capturing the manufacturing status.
+            '''
+        }
+        {
+            name:       "HW_CFG1",
+            variant:    "Buffered",
+            secret:     false,
+            sw_digest:  false,
+            hw_digest:  true,
+            write_lock: "Digest",
+            read_lock:  "None",
+            key_sel:    "NoKey",
+            integrity:  true,
+            bkout_type: true,
+            items: [
                 {
                     name:        "EN_SRAM_IFETCH",
                     size:        "1",
@@ -373,8 +391,6 @@
                 },
             ],
             desc: '''
-            DEVICE_ID: Unique device identifier.
-            MANUF_STATE: Vector for capturing the manufacturing status.
             EN_SRAM_IFETCH: Enable / disable execute from SRAM CSR switch.
             '''
         }

@@ -56,8 +56,8 @@ enum {
    * Offset to the EN_SRAM_IFETCH OTP bits relative to the start of the HW_CFG0
    * partition.
    */
-  kHwCfg0EnSramIfetchOffset =
-      OTP_CTRL_PARAM_EN_SRAM_IFETCH_OFFSET - OTP_CTRL_PARAM_HW_CFG0_OFFSET,
+  kHwCfg1EnSramIfetchOffset =
+      OTP_CTRL_PARAM_EN_SRAM_IFETCH_OFFSET - OTP_CTRL_PARAM_HW_CFG1_OFFSET,
 
   /**
    * DeviceID info flash location. This assumes the device ID is written to
@@ -82,12 +82,12 @@ enum {
   kFlashInfoManufStateWordCount = kHwCfg0ManufStateWordCount,
 };
 
-typedef struct hw_cfg0_settings {
+typedef struct hw_cfg1_settings {
   /**
    * Enable / disable execute from SRAM CSR switch.
    */
   multi_bit_bool_t en_sram_ifetch;
-} hw_cfg0_settings_t;
+} hw_cfg1_settings_t;
 
 // Changing any of the following values may result in unexpected device
 // behavior.
@@ -97,7 +97,7 @@ typedef struct hw_cfg0_settings {
 // - en_csrng_sw_app_read: required to be able to extract output from CSRNG.
 // - en_entropy_src_fw_read and en_entropy_src_fw_over: Required to implement
 //   entropy_src conditioner KAT.
-const hw_cfg0_settings_t kHwCfg0Settings = {
+const hw_cfg1_settings_t kHwCfg1Settings = {
     .en_sram_ifetch = kMultiBitBool8True,
 };
 
@@ -108,16 +108,16 @@ const hw_cfg0_settings_t kHwCfg0Settings = {
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static status_t hw_cfg0_enable_knobs_set(const dif_otp_ctrl_t *otp) {
-#define HW_CFG0_EN_OFFSET(m, i) ((bitfield_field32_t){.mask = m, .index = i})
-  static const bitfield_field32_t kSramFetch = HW_CFG0_EN_OFFSET(0xff, 0);
-#undef HW_CFG0_EN_OFFSET
+static status_t hw_cfg1_enable_knobs_set(const dif_otp_ctrl_t *otp) {
+#define HW_CFG1_EN_OFFSET(m, i) ((bitfield_field32_t){.mask = m, .index = i})
+  static const bitfield_field32_t kSramFetch = HW_CFG1_EN_OFFSET(0xff, 0);
+#undef HW_CFG1_EN_OFFSET
 
   uint32_t val =
-      bitfield_field32_write(0, kSramFetch, kHwCfg0Settings.en_sram_ifetch);
+      bitfield_field32_write(0, kSramFetch, kHwCfg1Settings.en_sram_ifetch);
 
-  TRY(otp_ctrl_testutils_dai_write32(otp, kDifOtpCtrlPartitionHwCfg0,
-                                     kHwCfg0EnSramIfetchOffset, &val,
+  TRY(otp_ctrl_testutils_dai_write32(otp, kDifOtpCtrlPartitionHwCfg1,
+                                     kHwCfg1EnSramIfetchOffset, &val,
                                      /*len=*/1));
   return OK_STATUS();
 }
@@ -188,9 +188,6 @@ status_t individualize_dev_hw_cfg0_start(dif_flash_ctrl_state_t *flash_state,
     return OK_STATUS();
   }
 
-  // Configure byte-sized hardware enable knobs.
-  TRY(hw_cfg0_enable_knobs_set(otp));
-
   // Configure DeviceID
   uint32_t device_id[kFlashInfoDeviceIdWordCount];
   TRY(flash_info_read(flash_state, kFlashInfoDeviceIdByteAddress,
@@ -223,6 +220,36 @@ status_t individualize_dev_hw_cfg0_end(const dif_otp_ctrl_t *otp) {
                                       &is_locked));
   uint64_t digest;
   TRY(dif_otp_ctrl_get_digest(otp, kDifOtpCtrlPartitionHwCfg0, &digest));
+
+  return is_locked ? OK_STATUS() : INTERNAL();
+}
+
+status_t individualize_dev_hw_cfg1_start(dif_flash_ctrl_state_t *flash_state,
+                                         const dif_lc_ctrl_t *lc_ctrl,
+                                         const dif_otp_ctrl_t *otp) {
+  TRY(lc_ctrl_testutils_operational_state_check(lc_ctrl));
+
+  bool is_locked;
+  TRY(dif_otp_ctrl_is_digest_computed(otp, kDifOtpCtrlPartitionHwCfg1,
+                                      &is_locked));
+  if (is_locked) {
+    return OK_STATUS();
+  }
+
+  // Configure byte-sized hardware enable knobs.
+  TRY(hw_cfg1_enable_knobs_set(otp));
+
+  TRY(otp_ctrl_testutils_lock_partition(otp, kDifOtpCtrlPartitionHwCfg1,
+                                        /*digest=*/0));
+  return OK_STATUS();
+}
+
+status_t individualize_dev_hw_cfg1_end(const dif_otp_ctrl_t *otp) {
+  bool is_locked;
+  TRY(dif_otp_ctrl_is_digest_computed(otp, kDifOtpCtrlPartitionHwCfg1,
+                                      &is_locked));
+  uint64_t digest;
+  TRY(dif_otp_ctrl_get_digest(otp, kDifOtpCtrlPartitionHwCfg1, &digest));
 
   return is_locked ? OK_STATUS() : INTERNAL();
 }

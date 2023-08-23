@@ -201,13 +201,14 @@ module tb;
     `undef MEM_MODULE_PATH
   end : gen_impl_generic
 
+  `define OTP_SVA_PATH gen_buffered.u_part_buf.OtpErrorState_A
   initial begin
     // DV forced otp_cmd_i to reach invalid state, thus violate the assertions
-    $assertoff(0, tb.dut.gen_partitions[3].gen_buffered.u_part_buf.OtpErrorState_A);
-    $assertoff(0, tb.dut.gen_partitions[4].gen_buffered.u_part_buf.OtpErrorState_A);
-    $assertoff(0, tb.dut.gen_partitions[5].gen_buffered.u_part_buf.OtpErrorState_A);
-    $assertoff(0, tb.dut.gen_partitions[6].gen_buffered.u_part_buf.OtpErrorState_A);
-
+    $assertoff(0, tb.dut.gen_partitions[otp_ctrl_part_pkg::HwCfg0Idx].`OTP_SVA_PATH);
+    $assertoff(0, tb.dut.gen_partitions[otp_ctrl_part_pkg::HwCfg1Idx].`OTP_SVA_PATH);
+    $assertoff(0, tb.dut.gen_partitions[otp_ctrl_part_pkg::Secret0Idx].`OTP_SVA_PATH);
+    $assertoff(0, tb.dut.gen_partitions[otp_ctrl_part_pkg::Secret1Idx].`OTP_SVA_PATH);
+    $assertoff(0, tb.dut.gen_partitions[otp_ctrl_part_pkg::Secret2Idx].`OTP_SVA_PATH);
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
@@ -233,5 +234,6 @@ module tb;
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
+  `undef OTP_SVA_PATH
 
 endmodule

@@ -276,6 +276,8 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     csr_rd(.ptr(ral.owner_sw_cfg_digest[1]),   .value(val));
     csr_rd(.ptr(ral.hw_cfg0_digest[0]),        .value(val));
     csr_rd(.ptr(ral.hw_cfg0_digest[1]),        .value(val));
+    csr_rd(.ptr(ral.hw_cfg1_digest[0]),        .value(val));
+    csr_rd(.ptr(ral.hw_cfg1_digest[1]),        .value(val));
     csr_rd(.ptr(ral.secret0_digest[0]),        .value(val));
     csr_rd(.ptr(ral.secret0_digest[1]),        .value(val));
     csr_rd(.ptr(ral.secret1_digest[0]),        .value(val));
@@ -317,6 +319,12 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
         // ICEBOX (#17770): hw_cfg part cannot be read locked.
         // if (!$urandom_range(0, 4)) cfg.forced_mubi_part_access[HwCfg0Idx].read_lock = 1;
         if (!$urandom_range(0, 4)) forced_mubi_part_access[HwCfg0Idx].write_lock = 1;
+      end
+
+      if (`gmv(ral.hw_cfg1_digest[0]) || `gmv(ral.hw_cfg1_digest[1])) begin
+        // ICEBOX (#17770): hw_cfg part cannot be read locked.
+        // if (!$urandom_range(0, 4)) cfg.forced_mubi_part_access[HwCfg1Idx].read_lock = 1;
+        if (!$urandom_range(0, 4)) forced_mubi_part_access[HwCfg1Idx].write_lock = 1;
       end
 
       if (`gmv(ral.secret0_digest[0]) || `gmv(ral.secret0_digest[1])) begin

@@ -47,8 +47,10 @@ pub enum OtpCtrlReg {
     CreatorSwCfgDigest1 = dif::OTP_CTRL_CREATOR_SW_CFG_DIGEST_1_REG_OFFSET,
     OwnerSwCfgDigest0 = dif::OTP_CTRL_OWNER_SW_CFG_DIGEST_0_REG_OFFSET,
     OwnerSwCfgDigest1 = dif::OTP_CTRL_OWNER_SW_CFG_DIGEST_1_REG_OFFSET,
-    HwCfgDigest0 = dif::OTP_CTRL_HW_CFG0_DIGEST_0_REG_OFFSET,
-    HwCfgDigest1 = dif::OTP_CTRL_HW_CFG0_DIGEST_1_REG_OFFSET,
+    HwCfg0Digest0 = dif::OTP_CTRL_HW_CFG0_DIGEST_0_REG_OFFSET,
+    HwCfg0Digest1 = dif::OTP_CTRL_HW_CFG0_DIGEST_1_REG_OFFSET,
+    HwCfg1Digest0 = dif::OTP_CTRL_HW_CFG1_DIGEST_0_REG_OFFSET,
+    HwCfg1Digest1 = dif::OTP_CTRL_HW_CFG1_DIGEST_1_REG_OFFSET,
     Secret0Digest0 = dif::OTP_CTRL_SECRET0_DIGEST_0_REG_OFFSET,
     Secret0Digest1 = dif::OTP_CTRL_SECRET0_DIGEST_1_REG_OFFSET,
     Secret1Digest0 = dif::OTP_CTRL_SECRET1_DIGEST_0_REG_OFFSET,
@@ -76,6 +78,7 @@ bitflags! {
         const DAI_ERROR             = 0b1 << dif::OTP_CTRL_STATUS_DAI_ERROR_BIT;
         const DAI_IDLE              = 0b1 << dif::OTP_CTRL_STATUS_DAI_IDLE_BIT;
         const HW_CFG0_ERROR         = 0b1 << dif::OTP_CTRL_STATUS_HW_CFG0_ERROR_BIT;
+        const HW_CFG1_ERROR         = 0b1 << dif::OTP_CTRL_STATUS_HW_CFG1_ERROR_BIT;
         const KEY_DERIV_FSM_ERROR   = 0b1 << dif::OTP_CTRL_STATUS_KEY_DERIV_FSM_ERROR_BIT;
         const LCI_ERROR             = 0b1 << dif::OTP_CTRL_STATUS_LCI_ERROR_BIT;
         const LFSR_FSM_ERROR        = 0b1 << dif::OTP_CTRL_STATUS_LFSR_FSM_ERROR_BIT;
@@ -93,6 +96,7 @@ bitflags! {
             Self::CREATOR_SW_CFG_ERROR.bits() |
             Self::DAI_ERROR.bits() |
             Self::HW_CFG0_ERROR.bits() |
+            Self::HW_CFG1_ERROR.bits() |
             Self::KEY_DERIV_FSM_ERROR.bits() |
             Self::LCI_ERROR.bits() |
             Self::LFSR_FSM_ERROR.bits() |
@@ -130,6 +134,15 @@ impl Partition {
         digest: OtpParamMmap {
             byte_addr: dif::OTP_CTRL_PARAM_HW_CFG0_DIGEST_OFFSET,
             size: dif::OTP_CTRL_PARAM_HW_CFG0_DIGEST_SIZE,
+        },
+    };
+
+    pub const HW_CFG1: Self = Self {
+        access_granule: Granularity::B32,
+        byte_addr: dif::OTP_CTRL_PARAM_HW_CFG1_OFFSET,
+        digest: OtpParamMmap {
+            byte_addr: dif::OTP_CTRL_PARAM_HW_CFG1_DIGEST_OFFSET,
+            size: dif::OTP_CTRL_PARAM_HW_CFG1_DIGEST_SIZE,
         },
     };
 
@@ -185,9 +198,10 @@ pub struct OtpParamMmap {
 /// The `CREATOR_SW_CFG` and `OWNER_SW_CFG` partitions are omitted for brevity.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DaiParam {
-    // HW_CFG
+    // HW_CFG0
     DeviceId,
     ManufState,
+    // HW_CFG1
     EnSramIfetch,
     // SECRET0
     TestUnlockToken,
@@ -271,7 +285,7 @@ impl DaiParam {
         match self {
             Self::DeviceId => Partition::HW_CFG0,
             Self::ManufState => Partition::HW_CFG0,
-            Self::EnSramIfetch => Partition::HW_CFG0,
+            Self::EnSramIfetch => Partition::HW_CFG1,
             Self::TestUnlockToken => Partition::SECRET0,
             Self::TestExitToken => Partition::SECRET0,
             Self::FlashAddrKeySeed => Partition::SECRET1,

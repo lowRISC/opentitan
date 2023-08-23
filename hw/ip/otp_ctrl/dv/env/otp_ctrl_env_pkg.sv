@@ -59,6 +59,10 @@ package otp_ctrl_env_pkg;
   parameter uint HW_CFG0_DIGEST_ADDR = HwCfg0DigestOffset / (TL_DW / 8);
   parameter uint HW_CFG0_END_ADDR    = HW_CFG0_DIGEST_ADDR - 1;
 
+  parameter uint HW_CFG1_START_ADDR  = HwCfg1Offset / (TL_DW / 8);
+  parameter uint HW_CFG1_DIGEST_ADDR = HwCfg1DigestOffset / (TL_DW / 8);
+  parameter uint HW_CFG1_END_ADDR    = HW_CFG1_DIGEST_ADDR - 1;
+
   parameter uint SECRET0_START_ADDR  = Secret0Offset / (TL_DW / 8);
   parameter uint SECRET0_DIGEST_ADDR = Secret0DigestOffset / (TL_DW / 8);
   parameter uint SECRET0_END_ADDR    = SECRET0_DIGEST_ADDR - 1;
@@ -72,18 +76,18 @@ package otp_ctrl_env_pkg;
   parameter uint SECRET2_END_ADDR    = SECRET2_DIGEST_ADDR - 1;
 
   // LC has its own storage in scb
-  parameter uint OTP_ARRAY_SIZE = (VendorTestSize + CreatorSwCfgSize + OwnerSwCfgSize +
-                                   HwCfg0Size + Secret0Size + Secret1Size + Secret2Size)
+  parameter uint OTP_ARRAY_SIZE = (VendorTestSize + CreatorSwCfgSize + OwnerSwCfgSize + HwCfg0Size +
+                                   HwCfg1Size + Secret0Size + Secret1Size + Secret2Size)
                                    / (TL_DW / 8);
 
-  parameter int OTP_ADDR_WIDTH = 11;
+  parameter int OTP_ADDR_WIDTH = OtpByteAddrWidth-2;
 
   parameter uint NUM_PRIM_REG = 8;
 
   // Total num of valid dai address, secret partitions have a granularity of 8, the rest have
   // a granularity of 4. Subtract 8 for each digest.
   parameter uint DAI_ADDR_SIZE =
-      (VendorTestSize + CreatorSwCfgSize + OwnerSwCfgSize + HwCfg0Size - 4 * 8) / 4 +
+      (VendorTestSize + CreatorSwCfgSize + OwnerSwCfgSize + HwCfg0Size + HwCfg1Size - 4 * 8) / 4 +
       (Secret0Size + Secret1Size + Secret2Size - 3 * 8) / 8 ;
 
   // sram rsp data has 1 bit for seed_valid, the rest are for key and nonce
@@ -99,13 +103,13 @@ package otp_ctrl_env_pkg;
   parameter uint NUM_OTBN_EDN_REQ = 10;
 
   parameter uint NUM_UNBUFF_PARTS = 3;
-  parameter uint NUM_BUFF_PARTS   = 5;
+  parameter uint NUM_BUFF_PARTS   = 6;
 
   parameter uint CHK_TIMEOUT_CYC = 40;
 
-  // When fatal alert triggered, all partitions go to error state and status will be
-  // set to 1.
-  parameter bit [9:0] FATAL_EXP_STATUS = '1;
+  // When fatal alert triggered, all partitions and the DAI & LCI go to error state and status will
+  // be set to 1.
+  parameter bit [NumErrorEntries-1:0] FATAL_EXP_STATUS = '1;
 
   // lc does not have dai access
   parameter int PART_BASE_ADDRS [NumPart-1] = {
@@ -113,6 +117,7 @@ package otp_ctrl_env_pkg;
     CreatorSwCfgOffset,
     OwnerSwCfgOffset,
     HwCfg0Offset,
+    HwCfg1Offset,
     Secret0Offset,
     Secret1Offset,
     Secret2Offset
@@ -124,6 +129,7 @@ package otp_ctrl_env_pkg;
     CreatorSwCfgDigestOffset >> 2,
     OwnerSwCfgDigestOffset   >> 2,
     HwCfg0DigestOffset       >> 2,
+    HwCfg1DigestOffset       >> 2,
     Secret0DigestOffset      >> 2,
     Secret1DigestOffset      >> 2,
     Secret2DigestOffset      >> 2
@@ -141,6 +147,7 @@ package otp_ctrl_env_pkg;
     OtpCreatorSwCfgErrIdx,
     OtpOwnerSwCfgErrIdx,
     OtpHwCfg0ErrIdx,
+    OtpHwCfg1ErrIdx,
     OtpSecret0ErrIdx,
     OtpSecret1ErrIdx,
     OtpSecret2ErrIdx,
@@ -232,8 +239,11 @@ package otp_ctrl_env_pkg;
 
   function automatic bit is_digest(bit [TL_DW-1:0] addr);
     if (is_sw_digest(addr)) return 1;
-    if ({addr[TL_DW-1:3], 3'b0} inside {HwCfg0DigestOffset, Secret0DigestOffset,
-                                        Secret1DigestOffset, Secret2DigestOffset}) begin
+    if ({addr[TL_DW-1:3], 3'b0} inside {HwCfg0DigestOffset,
+                                        HwCfg1DigestOffset,
+                                        Secret0DigestOffset,
+                                        Secret1DigestOffset,
+                                        Secret2DigestOffset}) begin
       return 1;
     end else begin
       return 0;
@@ -246,8 +256,7 @@ package otp_ctrl_env_pkg;
   endfunction
 
   function automatic bit is_sw_part_idx(int part_idx);
-    if (part_idx inside {VendorTestIdx, CreatorSwCfgIdx, OwnerSwCfgIdx}) return 1;
-    else return 0;
+    return (PartInfo[part_idx].variant == Unbuffered);
   endfunction
 
   // Returns true if this partition supports ECC. Otherwise, no ECC errors are reported, and
