@@ -136,6 +136,14 @@ static void gpio_input_test(const dif_gpio_t *gpio, uint32_t mask) {
        ++expected_gpio_pin_irq) {
     wait_for_interrupt();
   }
+  uint32_t read_val;
+  uint32_t gpio_exp_val;
+
+  gpio_exp_val = mask;
+  CHECK_DIF_OK(dif_gpio_read_all(gpio, &read_val));
+  CHECK(gpio_exp_val == read_val,
+        "GPIOs mismatched (expected = %x, actual = %x)", gpio_exp_val,
+        read_val);
 
   // Wait for falling edge interrupt on each pin.
   expected_irq_edge = false;
@@ -143,6 +151,12 @@ static void gpio_input_test(const dif_gpio_t *gpio, uint32_t mask) {
        ++expected_gpio_pin_irq) {
     wait_for_interrupt();
   }
+
+  gpio_exp_val = ~mask;
+  CHECK_DIF_OK(dif_gpio_read_all(gpio, &read_val));
+  CHECK(gpio_exp_val == read_val,
+        "GPIOs mismatched (expected = %x, actual = %x)", gpio_exp_val,
+        read_val);
 }
 
 /**
