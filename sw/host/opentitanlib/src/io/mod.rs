@@ -12,3 +12,15 @@ pub mod jtag;
 pub mod nonblocking_help;
 pub mod spi;
 pub mod uart;
+
+pub fn merge_configuration_field<T>(f1: &mut Option<T>, f2: &Option<T>) -> Option<()>
+where
+    T: PartialEq<T> + Clone,
+{
+    match (&*f1, f2) {
+        (Some(v1), Some(v2)) if *v1 != *v2 => return None,
+        (None, _) => *f1 = f2.clone(),
+        _ => (),
+    }
+    Some(())
+}

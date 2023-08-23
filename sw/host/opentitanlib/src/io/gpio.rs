@@ -10,6 +10,33 @@ use thiserror::Error;
 use crate::impl_serializable_error;
 use crate::transport::TransportError;
 
+#[derive(Clone, Copy, Default, Debug)]
+pub struct PinConfiguration {
+    /// The input/output mode of the GPIO pin.
+    pub mode: Option<PinMode>,
+    /// The default/initial level of the pin (true means high), has effect only in `PushPull` or
+    /// `OpenDrain` modes.
+    pub level: Option<bool>,
+    /// Whether the pin has pullup/down resistor enabled.
+    pub pull_mode: Option<PullMode>,
+    /// The default/initial analog level of the pin in Volts, has effect only in `AnalogOutput`
+    /// mode.
+    pub volts: Option<f32>,
+}
+
+impl PinConfiguration {
+    /// Sometimes one configuration file specifies OpenDrain while leaving out the level, and
+    /// another file specifies high level, while leaving out the mode.  This method will merge
+    /// declarations from multiple files, as long as they are not conflicting (e.g. both PushPull
+    /// and OpenDrain, or both high and low level.)
+    pub fn merge(&mut self, other: &PinConfiguration) -> Option<()> {
+        super::merge_configuration_field(&mut self.mode, &other.mode)?;
+        super::merge_configuration_field(&mut self.level, &other.level)?;
+        super::merge_configuration_field(&mut self.pull_mode, &other.pull_mode)?;
+        super::merge_configuration_field(&mut self.volts, &other.volts)
+    }
+}
+
 /// Errors related to the GPIO interface.
 #[derive(Debug, Error, Serialize, Deserialize)]
 pub enum GpioError {
