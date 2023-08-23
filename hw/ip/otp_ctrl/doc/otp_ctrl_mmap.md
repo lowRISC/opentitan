@@ -62,7 +62,8 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |    3    |    HW_CFG0     |     72     |      32bit       |                       DEVICE_ID                       |     0x640      |     32     |
 |         |                |            |      32bit       |                      MANUF_STATE                      |     0x660      |     32     |
 |         |                |            |      64bit       |        [HW_CFG0_DIGEST](#Reg_hw_cfg0_digest_0)        |     0x680      |     8      |
-|    4    |    HW_CFG1     |     16     |      32bit       |                    EN_SRAM_IFETCH                     |     0x688      |     1      |
+|    4    |    HW_CFG1     |     16     |      32bit       |                     SOC_DBG_STATE                     |     0x688      |     4      |
+|         |                |            |      32bit       |                    EN_SRAM_IFETCH                     |     0x68C      |     1      |
 |         |                |            |      64bit       |        [HW_CFG1_DIGEST](#Reg_hw_cfg1_digest_0)        |     0x690      |     8      |
 |    5    |    SECRET0     |     40     |      64bit       |                   TEST_UNLOCK_TOKEN                   |     0x698      |     16     |
 |         |                |            |      64bit       |                    TEST_EXIT_TOKEN                    |     0x6A8      |     16     |

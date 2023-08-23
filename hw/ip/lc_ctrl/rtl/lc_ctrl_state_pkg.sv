@@ -22,6 +22,9 @@ package lc_ctrl_state_pkg;
   parameter int LcStateWidth = NumLcStateValues * LcValueWidth;
   parameter int NumLcStates = 21;
   parameter int DecLcStateWidth = vbits(NumLcStates);
+  parameter int NumSocDbgStateValues = 2;
+  parameter int SocDbgStateWidth = NumSocDbgStateValues * LcValueWidth;
+
   // Redundant version used in the CSRs.
   parameter int DecLcStateNumRep = 32/DecLcStateWidth;
   parameter int ExtDecLcStateWidth = DecLcStateNumRep*DecLcStateWidth;
@@ -64,21 +67,21 @@ package lc_ctrl_state_pkg;
   //  3: --
   //  4: --
   //  5: --
-  //  6: ||| (5.90%)
+  //  6: ||| (5.85%)
   //  7: --
-  //  8: |||||||||| (16.14%)
+  //  8: |||||||||| (16.27%)
   //  9: --
-  // 10: |||||||||||||||||||| (30.15%)
+  // 10: |||||||||||||||||||| (30.32%)
   // 11: --
-  // 12: |||||||||||||||||| (28.45%)
+  // 12: |||||||||||||||||| (28.24%)
   // 13: --
-  // 14: |||||||||| (15.10%)
+  // 14: ||||||||| (15.07%)
   // 15: --
-  // 16: || (3.87%)
+  // 16: || (3.89%)
   // 17: --
-  // 18:  (0.37%)
+  // 18:  (0.33%)
   // 19: --
-  // 20:  (0.03%)
+  // 20:  (0.02%)
   // 21: --
   // 22: --
   //
@@ -224,6 +227,14 @@ package lc_ctrl_state_pkg;
   parameter logic [15:0] D23 = 16'b1111101111001101; // ECC: 6'b010111
 
 
+  // The F/E values are used for the encoded SOC_DBG state.
+  parameter logic [15:0] E0 = 16'b1111010001000011; // ECC: 6'b100010
+  parameter logic [15:0] F0 = 16'b1111111001011011; // ECC: 6'b110011
+
+  parameter logic [15:0] E1 = 16'b0000011101011010; // ECC: 6'b101100
+  parameter logic [15:0] F1 = 16'b1101011101011010; // ECC: 6'b111111
+
+
   parameter logic [15:0] ZRO = 16'h0;
 
   ////////////////////////
@@ -288,6 +299,13 @@ package lc_ctrl_state_pkg;
     LcCnt23 = {C23, D22, D21, D20, D19, D18, D17, D16, D15, D14, D13, D12, D11, D10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0},
     LcCnt24 = {D23, D22, D21, D20, D19, D18, D17, D16, D15, D14, D13, D12, D11, D10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0}
   } lc_cnt_e;
+
+  typedef logic [SocDbgStateWidth-1:0] soc_dbg_state_t;
+  typedef enum soc_dbg_state_t {
+    SocDbgStSocDbgRaw     = {ZRO, ZRO},
+    SocDbgStSocDbgPreProd = { E1,  E0},
+    SocDbgStSocDbgProd    = { F1,  F0}
+  } soc_dbg_state_e;
 
   // Decoded life cycle state, used to interface with CSRs and TAP.
   typedef enum logic [DecLcStateWidth-1:0] {

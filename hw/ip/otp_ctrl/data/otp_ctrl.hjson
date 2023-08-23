@@ -920,10 +920,22 @@
       default: "16",
       local: "true"
     },
+    { name: "SocDbgStateOffset",
+      desc: "Offset of SOC_DBG_STATE",
+      type: "int",
+      default: "1672",
+      local: "true"
+    },
+    { name: "SocDbgStateSize",
+      desc: "Size of SOC_DBG_STATE",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
     { name: "EnSramIfetchOffset",
       desc: "Offset of EN_SRAM_IFETCH",
       type: "int",
-      default: "1672",
+      default: "1676",
       local: "true"
     },
     { name: "EnSramIfetchSize",

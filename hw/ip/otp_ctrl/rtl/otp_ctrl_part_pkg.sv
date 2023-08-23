@@ -274,15 +274,17 @@ package otp_ctrl_part_pkg;
   };
   typedef struct packed {
     logic [63:0] hw_cfg1_digest;
-    logic [55:0] unallocated;
+    logic [23:0] unallocated;
     prim_mubi_pkg::mubi8_t en_sram_ifetch;
+    logic [31:0] soc_dbg_state;
   } otp_hw_cfg1_data_t;
 
   // default value used for intermodule
   parameter otp_hw_cfg1_data_t OTP_HW_CFG1_DATA_DEFAULT = '{
     hw_cfg1_digest: 64'hBFD510D7D174D3C2,
-    unallocated: 56'h0,
-    en_sram_ifetch: prim_mubi_pkg::mubi8_t'(8'h69)
+    unallocated: 24'h0,
+    en_sram_ifetch: prim_mubi_pkg::mubi8_t'(8'h69),
+    soc_dbg_state: 32'h0
   };
   typedef struct packed {
     // This reuses the same encoding as the life cycle signals for indicating valid status.
@@ -324,8 +326,9 @@ package otp_ctrl_part_pkg;
     }),
     128'({
       64'hBFD510D7D174D3C2,
-      56'h0, // unallocated space
-      8'h69
+      24'h0, // unallocated space
+      8'h69,
+      32'h0
     }),
     576'({
       64'hD2BF0E2CFC07120E,

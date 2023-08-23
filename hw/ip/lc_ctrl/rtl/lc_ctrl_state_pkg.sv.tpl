@@ -78,6 +78,9 @@ package lc_ctrl_state_pkg;
   parameter int LcStateWidth = NumLcStateValues * LcValueWidth;
   parameter int NumLcStates = ${len(lc_st_enc.config['lc_state'])};
   parameter int DecLcStateWidth = vbits(NumLcStates);
+  parameter int NumSocDbgStateValues = ${lc_st_enc.config['num_soc_dbg_state_words']};
+  parameter int SocDbgStateWidth = NumSocDbgStateValues * LcValueWidth;
+
   // Redundant version used in the CSRs.
   parameter int DecLcStateNumRep = 32/DecLcStateWidth;
   parameter int ExtDecLcStateWidth = DecLcStateNumRep*DecLcStateWidth;
@@ -138,6 +141,13 @@ package lc_ctrl_state_pkg;
 
 % endfor
 
+  // The F/E values are used for the encoded SOC_DBG state.
+% for word in lc_st_enc.config['genwords']['soc_dbg_state']:
+  parameter logic [${data_width-1}:0] E${loop.index} = ${data_width}'b${word[0][ecc_width:]}; // ECC: ${ecc_width}'b${word[0][0:ecc_width]}
+  parameter logic [${data_width-1}:0] F${loop.index} = ${data_width}'b${word[1][ecc_width:]}; // ECC: ${ecc_width}'b${word[1][0:ecc_width]}
+
+% endfor
+
   parameter logic [${data_width-1}:0] ZRO = ${data_width}'h0;
 
   ////////////////////////
@@ -158,6 +168,11 @@ ${_print_state_enum('LcSt', 'lc_state', lc_st_enc.config)}
   typedef enum lc_cnt_t {
 ${_print_state_enum('LcCnt', 'lc_cnt', lc_st_enc.config)}
   } lc_cnt_e;
+
+  typedef logic [SocDbgStateWidth-1:0] soc_dbg_state_t;
+  typedef enum soc_dbg_state_t {
+${_print_state_enum('SocDbgSt', 'soc_dbg_state', lc_st_enc.config)}
+  } soc_dbg_state_e;
 
   // Decoded life cycle state, used to interface with CSRs and TAP.
   typedef enum logic [DecLcStateWidth-1:0] {

@@ -794,6 +794,7 @@ module top_darjeeling #(
     otp_ctrl_otp_broadcast.valid,
     otp_ctrl_otp_broadcast.hw_cfg0_data.hw_cfg0_digest,
     otp_ctrl_otp_broadcast.hw_cfg1_data.hw_cfg1_digest,
+    otp_ctrl_otp_broadcast.hw_cfg1_data.soc_dbg_state,
     otp_ctrl_otp_broadcast.hw_cfg1_data.unallocated
   };
 
