@@ -16,33 +16,10 @@
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
+#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 
 #include "otp_ctrl_regs.h"
-
-enum {
-  /**
-   * DeviceID info flash location. This assumes the device ID is written to
-   * flash during CP testing. This test case is provided as a reference
-   * implementation. Manufactures may modify the way DeviceId generated and
-   * written into OTP.
-   */
-  kFlashInfoDeviceIdPartitionId = 0,
-  kFlashInfoDeviceIdBankId = 0,
-  kFlashInfoDeviceIdPageId = 0,
-  kFlashInfoDeviceIdByteAddress = 0,
-  kFlashInfoDeviceIdWordCount = kHwCfgDeviceIdSizeIn32BitWords,
-
-  /**
-   * ManufState info flash location. This assumes the manuf state is written to
-   * flash before invoking this test library.
-   */
-  kFlashInfoManufStatePartitionId = 0,
-  kFlashInfoManufStateBankId = 0,
-  kFlashInfoManufStatePageId = 0,
-  kFlashInfoManufStateByteAddress = kHwCfgDeviceIdSizeInBytes,
-  kFlashInfoManufStateWordCount = kHwCfgManufStateSizeIn32BitWords,
-};
 
 typedef struct hw_cfg_settings {
   /**
@@ -225,7 +202,7 @@ status_t manuf_individualize_device_hw_cfg(dif_flash_ctrl_state_t *flash_state,
   TRY(hw_cfg_enable_knobs_set(otp_ctrl));
 
   // Configure DeviceID
-  uint32_t device_id[kFlashInfoDeviceIdWordCount];
+  uint32_t device_id[kHwCfgDeviceIdSizeIn32BitWords];
   TRY(flash_info_read(flash_state, kFlashInfoDeviceIdByteAddress,
                       kFlashInfoDeviceIdPartitionId, kFlashInfoDeviceIdPageId,
                       device_id, kHwCfgDeviceIdSizeIn32BitWords));
@@ -234,7 +211,7 @@ status_t manuf_individualize_device_hw_cfg(dif_flash_ctrl_state_t *flash_state,
                                      kHwCfgDeviceIdSizeIn32BitWords));
 
   // Configure ManufState
-  uint32_t manuf_state[kFlashInfoManufStateWordCount];
+  uint32_t manuf_state[kHwCfgManufStateSizeIn32BitWords];
   TRY(flash_info_read(flash_state, kFlashInfoManufStateByteAddress,
                       kFlashInfoManufStatePartitionId,
                       kFlashInfoManufStatePageId, manuf_state,
