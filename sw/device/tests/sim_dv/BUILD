@@ -1356,27 +1356,6 @@ opentitan_functest(
 )
 
 opentitan_functest(
-    name = "pattgen_ios_test",
-    srcs = ["pattgen_ios_test.c"],
-    tags = ["earlgrey"],
-    targets = ["dv"],
-    deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:rv_plic_testutils",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/base:memory",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:hart",
-        "//sw/lib/sw/device/runtime:irq",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:pattgen",
-        "//sw/top_darjeeling/sw/dif:pinmux",
-    ],
-)
-
-opentitan_functest(
     name = "otp_ctrl_lc_signals_test",
     srcs = ["otp_ctrl_lc_signals_test.c"],
     targets = ["dv"],
