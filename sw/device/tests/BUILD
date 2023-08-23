@@ -478,59 +478,6 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
-    name = "chip_power_idle_load",
-    srcs = ["chip_power_idle_load.c"],
-    tags = ["earlgrey"],
-    verilator = verilator_params(
-        tags = ["broken"],  # FIXME #16374 test doesn't make progress after enabling PWM
-    ),
-    deps = [
-        "//sw/device/lib/testing:alert_handler_testutils",
-        "//sw/device/lib/testing:aon_timer_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:hart",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:alert_handler",
-        "//sw/top_darjeeling/sw/dif:aon_timer",
-        "//sw/top_darjeeling/sw/dif:gpio",
-        "//sw/top_darjeeling/sw/dif:otp_ctrl",
-        "//sw/top_darjeeling/sw/dif:pinmux",
-        "//sw/top_darjeeling/sw/dif:pwm",
-    ],
-)
-
-opentitan_functest(
-    name = "chip_power_sleep_load",
-    srcs = ["chip_power_sleep_load.c"],
-    tags = ["earlgrey"],
-    verilator = verilator_params(
-        tags = ["broken"],  # FIXME #16374 test doesn't make progress after enabling PWM
-    ),
-    deps = [
-        "//sw/device/lib/testing:alert_handler_testutils",
-        "//sw/device/lib/testing:aon_timer_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:hart",
-        "//sw/lib/sw/device/runtime:irq",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:adc_ctrl",
-        "//sw/top_darjeeling/sw/dif:alert_handler",
-        "//sw/top_darjeeling/sw/dif:aon_timer",
-        "//sw/top_darjeeling/sw/dif:gpio",
-        "//sw/top_darjeeling/sw/dif:otp_ctrl",
-        "//sw/top_darjeeling/sw/dif:pinmux",
-        "//sw/top_darjeeling/sw/dif:pwm",
-        "//sw/top_darjeeling/sw/dif:rv_plic",
-    ],
-)
-
 cc_library(
     name = "clkmgr_external_clk_src_for_sw_impl",
     srcs = ["clkmgr_external_clk_src_for_sw_impl.c"],
@@ -2178,32 +2125,6 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:pwrmgr",
         "//sw/top_darjeeling/sw/dif:rv_plic",
         "//sw/top_darjeeling/sw/dif:sensor_ctrl",
-    ],
-)
-
-opentitan_functest(
-    name = "sleep_pwm_pulses_test",
-    srcs = ["sleep_pwm_pulses_test.c"],
-    tags = ["earlgrey"],
-    verilator = verilator_params(
-        timeout = "eternal",
-        tags = ["broken"],
-    ),
-    deps = [
-        "//hw/ip/pwm/data:pwm_regs",
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing:aon_timer_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:aon_timer",
-        "//sw/top_darjeeling/sw/dif:pinmux",
-        "//sw/top_darjeeling/sw/dif:pwm",
-        "//sw/top_darjeeling/sw/dif:pwrmgr",
-        "//sw/top_darjeeling/sw/dif:rstmgr",
     ],
 )
 
