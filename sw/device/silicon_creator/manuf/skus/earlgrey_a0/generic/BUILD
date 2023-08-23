@@ -40,7 +40,6 @@ opentitan_ram_binary(
         "//sw/device/lib/testing/test_framework:ottf_test_config",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
-        "//sw/device/silicon_creator/manuf/lib:isolated_flash_partition",
         "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
         "//sw/device/silicon_creator/manuf/lib:sram_start",
     ],
