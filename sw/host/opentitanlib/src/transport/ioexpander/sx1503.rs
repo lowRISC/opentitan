@@ -104,11 +104,16 @@ impl Sx1503 {
 struct Sx1503Pin {
     sx1503: Rc<Sx1503>,
     pin_no: u8,
+    default_level: bool,
 }
 
 impl Sx1503Pin {
-    fn new(sx1503: Rc<Sx1503>, pin_no: u8) -> Self {
-        Self { sx1503, pin_no }
+    fn new(sx1503: Rc<Sx1503>, pin_no: u8, default_level: bool) -> Self {
+        Self {
+            sx1503,
+            pin_no,
+            default_level,
+        }
     }
 }
 
@@ -126,6 +131,10 @@ impl GpioPin for Sx1503Pin {
 
     fn write(&self, value: bool) -> Result<()> {
         self.set(None, Some(value), None, None)
+    }
+
+    fn reset(&self) -> Result<()> {
+        self.write(self.default_level)
     }
 
     fn set_mode(&self, mode: PinMode) -> Result<()> {
@@ -234,7 +243,7 @@ pub fn create(
     // Create 16 pins each with a shared reference to the struct created above.
     let mut pins: Vec<Rc<dyn GpioPin>> = Vec::new();
     for i in 0..16 {
-        pins.push(Rc::new(Sx1503Pin::new(sx1503.clone(), i)));
+        pins.push(Rc::new(Sx1503Pin::new(sx1503.clone(), i, false)));
     }
     Ok(IoExpander { pins })
 }

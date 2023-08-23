@@ -559,12 +559,14 @@ impl Emulator for EmulatorImpl {
 pub struct ResetPin {
     /// Handle to EmulatorImpl internal data.
     inner: Rc<Inner>,
+    default_level: bool,
 }
 
 impl ResetPin {
-    pub fn open(inner: &Rc<Inner>) -> Result<Self> {
+    pub fn open(inner: &Rc<Inner>, default_level: bool) -> Result<Self> {
         Ok(Self {
             inner: Rc::clone(inner),
+            default_level,
         })
     }
 }
@@ -624,6 +626,10 @@ impl gpio::GpioPin for ResetPin {
             process.stop_process()?;
         }
         Ok(())
+    }
+
+    fn reset(&self) -> Result<()> {
+        self.write(self.default_level)
     }
 
     // Accept either `PushPull` or `OpenDrain`, make no difference in functionality.

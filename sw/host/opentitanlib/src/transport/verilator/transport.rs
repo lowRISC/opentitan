@@ -115,13 +115,14 @@ impl Transport for Verilator {
 
     fn gpio_pin(&self, instance: &str) -> Result<Rc<dyn GpioPin>> {
         let resolved_pin = self.io_mapper.resolve_pin(instance);
+        let default_level = self.io_mapper.pin_level(instance)?;
 
         let pin =
             u8::from_str(&resolved_pin).with_context(|| format!("can't convert {instance:?}"))?;
         ensure!(pin < 32 || pin == 255, GpioError::InvalidPinNumber(pin));
         let mut inner = self.inner.borrow_mut();
         Ok(Rc::clone(inner.gpio.pins.entry(pin).or_insert_with(|| {
-            VerilatorGpioPin::new(Rc::clone(&self.inner), pin)
+            VerilatorGpioPin::new(Rc::clone(&self.inner), pin, default_level)
         })))
     }
 

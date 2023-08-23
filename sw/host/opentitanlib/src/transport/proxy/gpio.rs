@@ -18,13 +18,15 @@ use crate::transport::proxy::{Inner, Proxy};
 pub struct ProxyGpioPin {
     inner: Rc<Inner>,
     pinname: String,
+    default_level: bool,
 }
 
 impl ProxyGpioPin {
-    pub fn open(proxy: &Proxy, pinname: &str) -> Result<Self> {
+    pub fn open(proxy: &Proxy, pinname: &str, default_level: bool) -> Result<Self> {
         let result = Self {
             inner: Rc::clone(&proxy.inner),
             pinname: pinname.to_string(),
+            default_level,
         };
         Ok(result)
     }
@@ -56,6 +58,10 @@ impl GpioPin for ProxyGpioPin {
             GpioResponse::Write => Ok(()),
             _ => bail!(ProxyError::UnexpectedReply()),
         }
+    }
+
+    fn reset(&self) -> Result<()> {
+        self.write(self.default_level)
     }
 
     fn set_mode(&self, mode: PinMode) -> Result<()> {
