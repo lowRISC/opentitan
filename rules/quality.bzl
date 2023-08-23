@@ -391,16 +391,34 @@ html_coverage_report = rule(
     executable = True,
 )
 
+HasModuleIdInfo = provider()
+
 def _modid_check_aspect_impl(target, ctx):
     """
     Verify that a binary (ELF file) does not contain conflicting module IDs
-    using opentitantool. The result of this aspect is put in modid_check
-    output group.
+    using opentitantool.
     """
 
-    # Make sure that the target is a binary, otherwise ignore it.
-    if ctx.rule.kind != "cc_binary":
+    # If the target is //sw/device/lib/base:status, then it has module ID information,
+    # this is the root of all the information.
+    if ctx.label == Label("@//sw/device/lib/base:status"):
+        return [HasModuleIdInfo()]
+
+    # Ignore everything outside of //sw/device/
+    if not ctx.label.package.startswith("sw/device"):
         return []
+
+    # If any of the dependencies has module ID info, then this target will have it
+    has_modid_info = hasattr(ctx.rule.attr, "deps") and any([HasModuleIdInfo in dep for dep in ctx.rule.attr.deps])
+
+    if not has_modid_info:
+        return []
+
+    # If it is not a binary, propagate up.
+    if ctx.rule.kind != "cc_binary":
+        return [HasModuleIdInfo()]
+
+    print("MODID-CHECK: {}".format(ctx.label))
 
     # We create a file that will not contain anything: this is just to create a "link"
     # between the run action and the output group info. This way if we ask bazel for this
@@ -412,12 +430,12 @@ def _modid_check_aspect_impl(target, ctx):
     # printing anything if the test is successful but by default opentitantool prints
     # unnecessary information that pollutes the output.
     args = ctx.actions.args()
-    args.add_all([ctx.file._opentitantool, generated_file])
+    args.add_all([ctx.file._validator, generated_file])
     args.add_all(target.files)
     ctx.actions.run(
         executable = ctx.executable._modid_check,
         arguments = [args],
-        inputs = depset([ctx.file._opentitantool] + target.files.to_list()),
+        inputs = depset([ctx.file._validator] + target.files.to_list()),
         tools = [],
         outputs = [generated_file],
         progress_message = "Checking module IDs for %{label}",
@@ -425,19 +443,25 @@ def _modid_check_aspect_impl(target, ctx):
 
     return [
         OutputGroupInfo(
-            modid_check = depset(direct = [generated_file]),
+            modid_checks = depset(direct = [generated_file]),
         ),
     ]
 
 modid_check_aspect = aspect(
     implementation = _modid_check_aspect_impl,
-    attr_aspects = [],
+    # Propagate down all dependencies so we go through test suites and other
+    # types of dependencies to reach the binaries.
+    attr_aspects = ["*"],
     attrs = {
         # The rules to which we apply the aspect may not depend on opentitantool
         # so make sure that we depend on it. Make sure that it is built for the
         # execution platform since this aspect will be applied to targets built
         # for the OT platform.
-        "_opentitantool": attr.label(
+        # NOTE: Make sure this is NOT named _opentitantool. Due to how bazel works
+        # https://github.com/bazelbuild/bazel/issues/18286, private aspect attributes
+        # are merged with the attributes of rule they run on, which can cause inexplicable
+        # errors message.
+        "_validator": attr.label(
             default = "//sw/host/opentitantool",
             allow_single_file = True,
             executable = True,
