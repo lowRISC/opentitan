@@ -43,6 +43,26 @@
       "pull_mode": "None",
       "alias_of": "USB_A17",
       "level": false
+    },
+    {
+      "name": "SPI_CLK",
+      "mode": "Alternate",
+      "alias_of": "USB_SPI_SCK"
+    },
+    {
+      "name": "SPI_SDI",
+      "mode": "Alternate",
+      "alias_of": "USB_SPI_COPI"
+    },
+    {
+      "name": "SPI_SDO",
+      "mode": "Alternate",
+      "alias_of": "USB_SPI_CIPO"
+    },
+    {
+      "name": "SPI_CS",
+      "mode": "Alternate",
+      "alias_of": "USB_SPI_CS"
     }
   ],
   "spi": [
