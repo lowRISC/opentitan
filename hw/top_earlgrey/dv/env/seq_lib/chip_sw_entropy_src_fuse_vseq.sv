@@ -20,7 +20,7 @@ class chip_sw_entropy_src_fuse_vseq extends chip_sw_base_vseq;
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
 
-    cfg.mem_bkdr_util_h[Otp].otp_write_hw_cfg_partition(
+    cfg.mem_bkdr_util_h[Otp].otp_write_hw_cfg0_partition(
       .device_id(DEVICE_ID), .manuf_state(MANUF_STATE),
       .en_sram_ifetch(MUBI8FALSE), .en_csrng_sw_app_read(MUBI8TRUE),
       .en_entropy_src_fw_read(MUBI8TRUE),
@@ -36,7 +36,7 @@ class chip_sw_entropy_src_fuse_vseq extends chip_sw_base_vseq;
         20_000_000)
 
       if (cfg.sw_logger_vif.printed_log == "Software resetting!") begin
-        cfg.mem_bkdr_util_h[Otp].otp_write_hw_cfg_partition(
+        cfg.mem_bkdr_util_h[Otp].otp_write_hw_cfg0_partition(
           .device_id(DEVICE_ID), .manuf_state(MANUF_STATE),
           .en_sram_ifetch(MUBI8FALSE), .en_csrng_sw_app_read(MUBI8FALSE),
           .en_entropy_src_fw_read(MUBI8FALSE),

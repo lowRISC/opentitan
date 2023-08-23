@@ -22,11 +22,11 @@ OTTF_DEFINE_TEST_CONFIG();
  * OTP HW partition relative IFETCH offset in bytes.
  *
  * x = OTP_CTRL_PARAM_EN_SRAM_IFETCH_OFFSET (1728)
- * y = OTP_CTRL_PARAM_HW_CFG_OFFSET (1664)
+ * y = OTP_CTRL_PARAM_HW_CFG0_OFFSET (1664)
  * IFETCH_OFFSET = (x - y) = 64
  */
 static const uint32_t kOtpIfetchHwRelativeOffset =
-    OTP_CTRL_PARAM_EN_SRAM_IFETCH_OFFSET - OTP_CTRL_PARAM_HW_CFG_OFFSET;
+    OTP_CTRL_PARAM_EN_SRAM_IFETCH_OFFSET - OTP_CTRL_PARAM_HW_CFG0_OFFSET;
 
 static const uint32_t kOtpEntropySrcFwReadOffset =
     (OTP_CTRL_PARAM_EN_ENTROPY_SRC_FW_READ_OFFSET -
@@ -147,7 +147,7 @@ static void check_entropy_src_fw_read_enable(bool expected) {
 
   uint32_t value;
   // Read the current value of the partition.
-  CHECK_DIF_OK(dif_otp_ctrl_dai_read_start(&otp, kDifOtpCtrlPartitionHwCfg,
+  CHECK_DIF_OK(dif_otp_ctrl_dai_read_start(&otp, kDifOtpCtrlPartitionHwCfg0,
                                            kOtpIfetchHwRelativeOffset));
   CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
   CHECK_DIF_OK(dif_otp_ctrl_dai_read32_end(&otp, &value));

@@ -67,7 +67,7 @@ ci/scripts/check-pr-changes-allowed.py
 # hw/ip/otp_ctrl/data/otp_ctrl_img_test_locked1.hjson
 # hw/ip/otp_ctrl/data/otp_ctrl_img_test_unlocked0.hjson
 # hw/ip/otp_ctrl/data/otp_ctrl_img_creator_sw_cfg.hjson
-# hw/ip/otp_ctrl/data/otp_ctrl_img_hw_cfg.hjson
+# hw/ip/otp_ctrl/data/otp_ctrl_img_hw_cfg0.hjson
 # hw/ip/otp_ctrl/data/otp_ctrl_img_raw.hjson
 # hw/ip/otp_ctrl/data/otp_ctrl_mmap.hjson
 # hw/ip/otp_ctrl/data/otp_ctrl_img_test_unlocked1.hjson

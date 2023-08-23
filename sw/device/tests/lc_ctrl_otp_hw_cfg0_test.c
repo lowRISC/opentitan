@@ -35,7 +35,7 @@ static void otp_ctrl_dai_read_32(const dif_otp_ctrl_t *otp,
 }
 
 /**
- * Tests that the OTP sends correct HW_CFG partition data to the receiving IPs.
+ * Tests that the OTP sends correct HW_CFG0 partition data to the receiving IPs.
  */
 // TODO: needs to support other recipients besides LC_CTRL.
 bool test_main(void) {
@@ -62,7 +62,7 @@ bool test_main(void) {
   // plan to backdoor inject.
   uint32_t otp_device_id;
   for (uint32_t i = 0; i < kNumDeviceId; i++) {
-    otp_ctrl_dai_read_32(&otp, kDifOtpCtrlPartitionHwCfg, i * 4,
+    otp_ctrl_dai_read_32(&otp, kDifOtpCtrlPartitionHwCfg0, i * 4,
                          &otp_device_id);
 
     CHECK(otp_device_id == lc_device_id.data[i],

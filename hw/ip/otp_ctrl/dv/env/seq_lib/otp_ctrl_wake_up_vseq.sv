@@ -44,7 +44,7 @@ class otp_ctrl_wake_up_vseq extends otp_ctrl_base_vseq;
     csr_wr(ral.intr_state, (1'b1 << NumOtpCtrlIntr) - 1);
 
     // digest hw seq
-    csr_wr(ral.direct_access_address, HwCfgDigestOffset);
+    csr_wr(ral.direct_access_address, HwCfg0DigestOffset);
     csr_wr(ral.direct_access_cmd, 4);
     wait(cfg.intr_vif.pins[OtpOperationDone] == 1);
     csr_wr(ral.intr_state, 1'b1 << OtpOperationDone);

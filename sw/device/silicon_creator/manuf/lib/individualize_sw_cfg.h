@@ -104,7 +104,7 @@ status_t manuf_individualize_device_creator_sw_cfg_check(
  *  - The operation will lock the OWNER_SW_CFG OTP partition.
  *
  * @param otp_ctrl OTP controller instance.
- * @return OK_STATUS if the HW_CFG partition is locked.
+ * @return OK_STATUS if the HW_CFG0 partition is locked.
  */
 OT_WARN_UNUSED_RESULT
 status_t manuf_individualize_device_owner_sw_cfg(

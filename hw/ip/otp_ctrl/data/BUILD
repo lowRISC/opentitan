@@ -241,10 +241,10 @@ otp_json(
 )
 
 otp_json(
-    name = "otp_json_hw_cfg",
+    name = "otp_json_hw_cfg0",
     partitions = [
         otp_partition(
-            name = "HW_CFG",
+            name = "HW_CFG0",
             items = {
                 "DEVICE_ID": "<random>",
                 # Enable code execution from SRAM in PROD state.
@@ -496,7 +496,7 @@ otp_image(
 # after the test tokens have been applied and before running individualization.
 # The following partitions are missing to ensure the image is initialized with
 # values that would be present prior to the final individualization
-# manufacturing stage: SECRET1, SECRET2, HW_CFG.
+# manufacturing stage: SECRET1, SECRET2, HW_CFG0.
 # The following partitions are expected to be configured in previous
 # manufacturing stages: SECRET0, CREATOR_SW, OWNER_SW.
 otp_image(

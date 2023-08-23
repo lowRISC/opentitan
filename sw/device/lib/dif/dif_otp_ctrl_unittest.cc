@@ -195,7 +195,7 @@ TEST_F(ReadLockTest, Lock) {
 TEST_F(ReadLockTest, HwPartition) {
   bool flag;
   EXPECT_DIF_BADARG(
-      dif_otp_ctrl_lock_reading(&otp_, kDifOtpCtrlPartitionHwCfg));
+      dif_otp_ctrl_lock_reading(&otp_, kDifOtpCtrlPartitionHwCfg0));
   EXPECT_DIF_BADARG(dif_otp_ctrl_reading_is_locked(
       &otp_, kDifOtpCtrlPartitionSecret0, &flag));
 }
@@ -230,7 +230,7 @@ TEST_F(StatusTest, Errors) {
   EXPECT_READ32(OTP_CTRL_STATUS_REG_OFFSET,
                 {
                     {OTP_CTRL_STATUS_DAI_IDLE_BIT, true},
-                    {OTP_CTRL_STATUS_HW_CFG_ERROR_BIT, true},
+                    {OTP_CTRL_STATUS_HW_CFG0_ERROR_BIT, true},
                     {OTP_CTRL_STATUS_LCI_ERROR_BIT, true},
                 });
 
@@ -243,9 +243,9 @@ TEST_F(StatusTest, Errors) {
 
   EXPECT_DIF_OK(dif_otp_ctrl_get_status(&otp_, &status));
   EXPECT_EQ(status.codes, (1 << kDifOtpCtrlStatusCodeDaiIdle) |
-                              (1 << kDifOtpCtrlStatusCodeHwCfgError) |
+                              (1 << kDifOtpCtrlStatusCodeHwCfg0Error) |
                               (1 << kDifOtpCtrlStatusCodeLciError));
-  EXPECT_EQ(status.causes[kDifOtpCtrlStatusCodeHwCfgError],
+  EXPECT_EQ(status.causes[kDifOtpCtrlStatusCodeHwCfg0Error],
             kDifOtpCtrlErrorMacroRecoverableRead);
   EXPECT_EQ(status.causes[kDifOtpCtrlStatusCodeLciError],
             kDifOtpCtrlErrorMacroUnspecified);
@@ -316,7 +316,7 @@ TEST_F(DaiReadTest, Read32) {
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
                  {{OTP_CTRL_DIRECT_ACCESS_CMD_RD_BIT, true}});
 
-  EXPECT_DIF_OK(dif_otp_ctrl_dai_read_start(&otp_, kDifOtpCtrlPartitionHwCfg,
+  EXPECT_DIF_OK(dif_otp_ctrl_dai_read_start(&otp_, kDifOtpCtrlPartitionHwCfg0,
                                             /*address=*/0x20));
 
   EXPECT_READ32(
@@ -353,7 +353,7 @@ TEST_F(DaiReadTest, Read64) {
 }
 
 TEST_F(DaiReadTest, Unaligned) {
-  EXPECT_EQ(dif_otp_ctrl_dai_read_start(&otp_, kDifOtpCtrlPartitionHwCfg,
+  EXPECT_EQ(dif_otp_ctrl_dai_read_start(&otp_, kDifOtpCtrlPartitionHwCfg0,
                                         /*address=*/0b01),
             kDifUnaligned);
   EXPECT_EQ(dif_otp_ctrl_dai_read_start(&otp_, kDifOtpCtrlPartitionSecret2,
@@ -362,7 +362,7 @@ TEST_F(DaiReadTest, Unaligned) {
 }
 
 TEST_F(DaiReadTest, OutOfRange) {
-  EXPECT_EQ(dif_otp_ctrl_dai_read_start(&otp_, kDifOtpCtrlPartitionHwCfg,
+  EXPECT_EQ(dif_otp_ctrl_dai_read_start(&otp_, kDifOtpCtrlPartitionHwCfg0,
                                         /*address=*/0x100),
             kDifOutOfRange);
 }
@@ -371,7 +371,7 @@ TEST_F(DaiReadTest, Busy) {
   EXPECT_READ32(
       OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,
       {{OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT, false}});
-  EXPECT_EQ(dif_otp_ctrl_dai_read_start(&otp_, kDifOtpCtrlPartitionHwCfg,
+  EXPECT_EQ(dif_otp_ctrl_dai_read_start(&otp_, kDifOtpCtrlPartitionHwCfg0,
                                         /*address=*/0x0),
             kDifUnavailable);
 
@@ -390,7 +390,7 @@ TEST_F(DaiReadTest, Busy) {
 
 TEST_F(DaiReadTest, NullArgs) {
   EXPECT_DIF_BADARG(dif_otp_ctrl_dai_read_start(nullptr,
-                                                kDifOtpCtrlPartitionHwCfg,
+                                                kDifOtpCtrlPartitionHwCfg0,
                                                 /*address=*/0x0));
 
   uint32_t val32;
@@ -414,7 +414,7 @@ TEST_F(DaiProgramTest, Program32) {
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
                  {{OTP_CTRL_DIRECT_ACCESS_CMD_WR_BIT, true}});
 
-  EXPECT_DIF_OK(dif_otp_ctrl_dai_program32(&otp_, kDifOtpCtrlPartitionHwCfg,
+  EXPECT_DIF_OK(dif_otp_ctrl_dai_program32(&otp_, kDifOtpCtrlPartitionHwCfg0,
                                            /*address=*/0x20,
                                            /*value=*/0x12345678));
 }
@@ -439,7 +439,7 @@ TEST_F(DaiProgramTest, BadPartition) {
   EXPECT_EQ(dif_otp_ctrl_dai_program32(&otp_, kDifOtpCtrlPartitionSecret1,
                                        /*address=*/0x0, /*value=*/42),
             kDifError);
-  EXPECT_EQ(dif_otp_ctrl_dai_program64(&otp_, kDifOtpCtrlPartitionHwCfg,
+  EXPECT_EQ(dif_otp_ctrl_dai_program64(&otp_, kDifOtpCtrlPartitionHwCfg0,
                                        /*address=*/0x0, /*value=*/42),
             kDifError);
 
@@ -450,7 +450,7 @@ TEST_F(DaiProgramTest, BadPartition) {
 }
 
 TEST_F(DaiProgramTest, Unaligned) {
-  EXPECT_EQ(dif_otp_ctrl_dai_program32(&otp_, kDifOtpCtrlPartitionHwCfg,
+  EXPECT_EQ(dif_otp_ctrl_dai_program32(&otp_, kDifOtpCtrlPartitionHwCfg0,
                                        /*address=*/0b01, /*value=*/42),
             kDifUnaligned);
   EXPECT_EQ(dif_otp_ctrl_dai_program64(&otp_, kDifOtpCtrlPartitionSecret2,
@@ -477,7 +477,7 @@ TEST_F(DaiProgramTest, Busy) {
   EXPECT_READ32(
       OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,
       {{OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT, false}});
-  EXPECT_EQ(dif_otp_ctrl_dai_program32(&otp_, kDifOtpCtrlPartitionHwCfg,
+  EXPECT_EQ(dif_otp_ctrl_dai_program32(&otp_, kDifOtpCtrlPartitionHwCfg0,
                                        /*address=*/0x0, /*value=*/42),
             kDifUnavailable);
 
@@ -491,7 +491,7 @@ TEST_F(DaiProgramTest, Busy) {
 
 TEST_F(DaiProgramTest, NullArgs) {
   EXPECT_DIF_BADARG(dif_otp_ctrl_dai_program32(nullptr,
-                                               kDifOtpCtrlPartitionHwCfg,
+                                               kDifOtpCtrlPartitionHwCfg0,
                                                /*address=*/0x0, /*value=*/42));
   EXPECT_DIF_BADARG(dif_otp_ctrl_dai_program64(nullptr,
                                                kDifOtpCtrlPartitionSecret0,
@@ -525,7 +525,7 @@ TEST_F(DaiDigestTest, DigestHw) {
                  {{OTP_CTRL_DIRECT_ACCESS_CMD_DIGEST_BIT, true}});
 
   EXPECT_DIF_OK(
-      dif_otp_ctrl_dai_digest(&otp_, kDifOtpCtrlPartitionHwCfg, /*digest=*/0));
+      dif_otp_ctrl_dai_digest(&otp_, kDifOtpCtrlPartitionHwCfg0, /*digest=*/0));
 }
 
 TEST_F(DaiDigestTest, BadPartition) {
@@ -540,12 +540,12 @@ TEST_F(DaiDigestTest, Busy) {
       {{OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT, false}});
 
   EXPECT_EQ(
-      dif_otp_ctrl_dai_digest(&otp_, kDifOtpCtrlPartitionHwCfg, /*digest=*/0),
+      dif_otp_ctrl_dai_digest(&otp_, kDifOtpCtrlPartitionHwCfg0, /*digest=*/0),
       kDifUnavailable);
 }
 
 TEST_F(DaiDigestTest, BadDigest) {
-  EXPECT_DIF_BADARG(dif_otp_ctrl_dai_digest(&otp_, kDifOtpCtrlPartitionHwCfg,
+  EXPECT_DIF_BADARG(dif_otp_ctrl_dai_digest(&otp_, kDifOtpCtrlPartitionHwCfg0,
                                             /*digest=*/0xabcdef0000abcdef));
   EXPECT_DIF_BADARG(dif_otp_ctrl_dai_digest(&otp_,
                                             kDifOtpCtrlPartitionCreatorSwCfg,
@@ -650,9 +650,9 @@ INSTANTIATE_TEST_SUITE_P(AllDigests, GetDigest,
                                  OTP_CTRL_OWNER_SW_CFG_DIGEST_1_REG_OFFSET,
                              },
                              DigestParams{
-                                 kDifOtpCtrlPartitionHwCfg,
-                                 OTP_CTRL_HW_CFG_DIGEST_0_REG_OFFSET,
-                                 OTP_CTRL_HW_CFG_DIGEST_1_REG_OFFSET,
+                                 kDifOtpCtrlPartitionHwCfg0,
+                                 OTP_CTRL_HW_CFG0_DIGEST_0_REG_OFFSET,
+                                 OTP_CTRL_HW_CFG0_DIGEST_1_REG_OFFSET,
                              },
                              DigestParams{
                                  kDifOtpCtrlPartitionSecret0,
@@ -695,7 +695,7 @@ TEST_F(BlockingIoTest, Read) {
 
 TEST_F(BlockingIoTest, BadPartition) {
   std::vector<uint32_t> buf(kWords);
-  EXPECT_EQ(dif_otp_ctrl_read_blocking(&otp_, kDifOtpCtrlPartitionHwCfg, 0x10,
+  EXPECT_EQ(dif_otp_ctrl_read_blocking(&otp_, kDifOtpCtrlPartitionHwCfg0, 0x10,
                                        buf.data(), buf.size()),
             kDifError);
 }

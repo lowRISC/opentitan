@@ -123,15 +123,15 @@ virtual function void otp_write_secret2_partition(bit [RmaTokenSize*8-1:0] rma_u
   write64(Secret2DigestOffset, digest);
 endfunction
 
-virtual function void otp_write_hw_cfg_partition(
+virtual function void otp_write_hw_cfg0_partition(
     bit [DeviceIdSize*8-1:0] device_id, bit [ManufStateSize*8-1:0] manuf_state,
     bit [EnSramIfetchSize*8-1:0] en_sram_ifetch,
     bit [EnCsrngSwAppReadSize*8-1:0] en_csrng_sw_app_read,
     bit [EnEntropySrcFwReadSize*8-1:0] en_entropy_src_fw_read,
     bit [EnEntropySrcFwOverSize*8-1:0] en_entropy_src_fw_over);
-  bit [HwCfgDigestSize*8-1:0] digest;
+  bit [HwCfg0DigestSize*8-1:0] digest;
 
-  bit [bus_params_pkg::BUS_DW-1:0] hw_cfg_data[$];
+  bit [bus_params_pkg::BUS_DW-1:0] hw_cfg0_data[$];
 
   for (int i = 0; i < DeviceIdSize; i += 4) begin
     write32(i + DeviceIdOffset, device_id[i*8+:32]);
@@ -142,11 +142,11 @@ virtual function void otp_write_hw_cfg_partition(
   write32(EnSramIfetchOffset,
           {en_entropy_src_fw_over, en_entropy_src_fw_read, en_csrng_sw_app_read, en_sram_ifetch});
 
-  hw_cfg_data = {<<32 {32'h0, en_entropy_src_fw_over, en_entropy_src_fw_read,
-                       en_csrng_sw_app_read, en_sram_ifetch, manuf_state, device_id}};
-  digest = cal_digest(HwCfgIdx, hw_cfg_data);
+  hw_cfg0_data = {<<32 {32'h0, en_entropy_src_fw_over, en_entropy_src_fw_read,
+                        en_csrng_sw_app_read, en_sram_ifetch, manuf_state, device_id}};
+  digest = cal_digest(HwCfg0Idx, hw_cfg0_data);
 
-  write64(HwCfgDigestOffset, digest);
+  write64(HwCfg0DigestOffset, digest);
 endfunction
 
 // Functions that clear the provisioning state of the buffered partitions.
@@ -169,8 +169,8 @@ virtual function void otp_clear_secret2_partition();
   end
 endfunction
 
-virtual function void otp_clear_hw_cfg_partition();
-  for (int i = 0; i < HwCfgSize; i += 4) begin
-    write32(i + HwCfgOffset, 32'h0);
+virtual function void otp_clear_hw_cfg0_partition();
+  for (int i = 0; i < HwCfg0Size; i += 4) begin
+    write32(i + HwCfg0Offset, 32'h0);
   end
 endfunction

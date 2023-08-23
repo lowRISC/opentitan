@@ -111,8 +111,8 @@ Signal                       | Direction        | Type                          
 `otp_lc_data_i`              | `input`          | `otp_ctrl_pkg::otp_lc_data_t`            | Life cycle state output holding the current life cycle state, the value of the transition counter and the tokens needed for life cycle transitions.
 `lc_keymgr_div_o`            | `output`         | `lc_keymgr_div_t`                        | Life cycle state group diversification value.
 `lc_flash_rma_seed_o`        | `output`         | `lc_flash_rma_seed_t`                    | Seed for flash RMA.
-`otp_device_id_i`            | `input`          | `otp_device_id_t`                        | HW_CFG bits from OTP ([`DEVICE_ID_0`](registers.md#device_id)).
-`otp_manuf_state_i`          | `input`          | `otp_manuf_state_t`                      | HW_CFG bits from OTP ([`MANUF_STATE_0`](registers.md#manuf_state)).
+`otp_device_id_i`            | `input`          | `otp_device_id_t`                        | HW_CFG0 bits from OTP ([`DEVICE_ID_0`](registers.md#device_id)).
+`otp_manuf_state_i`          | `input`          | `otp_manuf_state_t`                      | HW_CFG0 bits from OTP ([`MANUF_STATE_0`](registers.md#manuf_state)).
 `lc_otp_vendor_test_o`       | `output`         | `otp_ctrl_pkg::lc_otp_vendor_test_req_t` | Vendor-specific test bits to OTP ([`OTP_VENDOR_TEST_CTRL`](registers.md#otp_vendor_test_ctrl)).
 `lc_otp_vendor_test_i`       | `input`          | `otp_ctrl_pkg::lc_otp_vendor_test_rsp_t` | Vendor-specific test bits to OTP ([`OTP_VENDOR_TEST_STATUS`](registers.md#otp_vendor_test_status)).
 `lc_dft_en_o`                | `output`         | `lc_tx_t`                                | [Multibit control signal](theory_of_operation.md#life-cycle-decoded-outputs-and-controls).

@@ -67,7 +67,7 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
     cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(encode_lc_state(src_lc_state));
 
     // Override Device ID and Manufacturing state with random values.
-    cfg.mem_bkdr_util_h[Otp].otp_write_hw_cfg_partition(
+    cfg.mem_bkdr_util_h[Otp].otp_write_hw_cfg0_partition(
       .device_id(device_id),
       .manuf_state(manuf_state),
       // Use same default config as in otp_ctrl_img_hw_cfg.hjson

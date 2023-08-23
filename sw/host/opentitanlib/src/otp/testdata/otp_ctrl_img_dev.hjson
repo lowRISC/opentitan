@@ -47,7 +47,7 @@
             ],
         }
         {
-            name:  "HW_CFG",
+            name:  "HW_CFG0",
             // If set to true, this computes the HW digest value
             // and locks the partition.
             lock:  "True",

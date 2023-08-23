@@ -336,7 +336,7 @@ status_t manuf_personalize_device_secrets(
   // provisioned before the keymgr seeds can be written to flash info pages, as
   // these pages must be scrambled.
   //
-  // Note: for SECRET1 partition to be provisioned, the HW_CFG partition must
+  // Note: for SECRET1 partition to be provisioned, the HW_CFG0 partition must
   // have been provisioned, and the CSRNG SW interface should have been enabled,
   // so no need to check again here.
   TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionSecret1,
@@ -444,21 +444,21 @@ status_t manuf_personalize_device_secret1(const dif_lc_ctrl_t *lc_ctrl,
     return OK_STATUS();
   }
 
-  // Check that the HW_CFG OTP partition has been locked (and is activated).
-  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionHwCfg,
+  // Check that the HW_CFG0 OTP partition has been locked (and is activated).
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
                                       &is_locked));
   if (!is_locked) {
     return INTERNAL();
   }
 
-  // Check that the CSRNG SW application interface is enabled in the HW_CFG
+  // Check that the CSRNG SW application interface is enabled in the HW_CFG0
   // partition, as we cannot provision SECRET1 without access to the CSRNG.
-  uint32_t otp_hw_cfg_settings;
-  TRY(otp_ctrl_testutils_dai_read32(otp_ctrl, kDifOtpCtrlPartitionHwCfg,
+  uint32_t otp_hw_cfg0_settings;
+  TRY(otp_ctrl_testutils_dai_read32(otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
                                     kHwCfgEnSramIfetchOffset,
-                                    &otp_hw_cfg_settings));
+                                    &otp_hw_cfg0_settings));
   uint32_t csrng_sw_app_read =
-      bitfield_field32_read(otp_hw_cfg_settings, kCsrngAppRead);
+      bitfield_field32_read(otp_hw_cfg0_settings, kCsrngAppRead);
   if (csrng_sw_app_read != kMultiBitBool8True) {
     return INTERNAL();
   }

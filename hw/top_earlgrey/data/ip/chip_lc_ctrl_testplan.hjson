@@ -49,10 +49,10 @@
       bazel: []
     }
     {
-      name: chip_sw_lc_ctrl_otp_hw_cfg
+      name: chip_sw_lc_ctrl_otp_hw_cfg0
       desc: '''Verify the device_ID and ID_state CSRs.
 
-            - Preload the hw_cfg partition in OTP ctrl with random data.
+            - Preload the hw_cfg0 partition in OTP ctrl with random data.
             - Read the device ID and the ID state CSRs to verify their correctness.
             - Reset the chip and repeat the first 2 steps to verify a different set of values.
 
@@ -64,7 +64,7 @@
       stage: V2
       si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
-      tests: ["chip_sw_lc_ctrl_otp_hw_cfg"]
+      tests: ["chip_sw_lc_ctrl_otp_hw_cfg0"]
       bazel: []
     }
     {

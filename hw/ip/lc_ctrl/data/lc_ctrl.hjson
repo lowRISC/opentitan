@@ -1321,8 +1321,8 @@
     { multireg: {
         name:     "DEVICE_ID",
         desc:     '''
-                  This is the 256bit DEVICE_ID value that is stored in the HW_CFG partition in OTP.
-                  If this register reads all-one, the HW_CFG partition has not been initialized yet or is in error state.
+                  This is the 256bit DEVICE_ID value that is stored in the HW_CFG0 partition in OTP.
+                  If this register reads all-one, the HW_CFG0 partition has not been initialized yet or is in error state.
                   If this register reads all-zero, this is indicative that the value has not been programmed to OTP yet.
                   '''
         count:    "NumDeviceIdWords", // 8 x 32bit = 256bit

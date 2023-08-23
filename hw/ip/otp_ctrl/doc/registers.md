@@ -42,8 +42,8 @@
 | otp_ctrl.[`CREATOR_SW_CFG_DIGEST_1`](#creator_sw_cfg_digest)     | 0x88     |        4 | Integrity digest for the CREATOR_SW_CFG partition.                                                  |
 | otp_ctrl.[`OWNER_SW_CFG_DIGEST_0`](#owner_sw_cfg_digest)         | 0x8c     |        4 | Integrity digest for the OWNER_SW_CFG partition.                                                    |
 | otp_ctrl.[`OWNER_SW_CFG_DIGEST_1`](#owner_sw_cfg_digest)         | 0x90     |        4 | Integrity digest for the OWNER_SW_CFG partition.                                                    |
-| otp_ctrl.[`HW_CFG_DIGEST_0`](#hw_cfg_digest)                     | 0x94     |        4 | Integrity digest for the HW_CFG partition.                                                          |
-| otp_ctrl.[`HW_CFG_DIGEST_1`](#hw_cfg_digest)                     | 0x98     |        4 | Integrity digest for the HW_CFG partition.                                                          |
+| otp_ctrl.[`HW_CFG0_DIGEST_0`](#hw_cfg0_digest)                   | 0x94     |        4 | Integrity digest for the HW_CFG0 partition.                                                         |
+| otp_ctrl.[`HW_CFG0_DIGEST_1`](#hw_cfg0_digest)                   | 0x98     |        4 | Integrity digest for the HW_CFG0 partition.                                                         |
 | otp_ctrl.[`SECRET0_DIGEST_0`](#secret0_digest)                   | 0x9c     |        4 | Integrity digest for the SECRET0 partition.                                                         |
 | otp_ctrl.[`SECRET0_DIGEST_1`](#secret0_digest)                   | 0xa0     |        4 | Integrity digest for the SECRET0 partition.                                                         |
 | otp_ctrl.[`SECRET1_DIGEST_0`](#secret1_digest)                   | 0xa4     |        4 | Integrity digest for the SECRET1 partition.                                                         |
@@ -136,7 +136,7 @@ OTP status register.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "VENDOR_TEST_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CREATOR_SW_CFG_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "OWNER_SW_CFG_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "HW_CFG_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SECRET0_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SECRET1_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SECRET2_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "LIFE_CYCLE_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "DAI_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "LCI_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TIMEOUT_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "LFSR_FSM_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SCRAMBLING_FSM_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "KEY_DERIV_FSM_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "BUS_INTEG_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "DAI_IDLE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CHECK_PENDING", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 15}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
+{"reg": [{"name": "VENDOR_TEST_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CREATOR_SW_CFG_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "OWNER_SW_CFG_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "HW_CFG0_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SECRET0_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SECRET1_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SECRET2_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "LIFE_CYCLE_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "DAI_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "LCI_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TIMEOUT_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "LFSR_FSM_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SCRAMBLING_FSM_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "KEY_DERIV_FSM_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "BUS_INTEG_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "DAI_IDLE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CHECK_PENDING", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 15}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                 | Description                                                                                                                                           |
@@ -155,7 +155,7 @@ OTP status register.
 |   6    |   ro   |   0x0   | SECRET2_ERROR        | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index.        |
 |   5    |   ro   |   0x0   | SECRET1_ERROR        | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index.        |
 |   4    |   ro   |   0x0   | SECRET0_ERROR        | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index.        |
-|   3    |   ro   |   0x0   | HW_CFG_ERROR         | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index.        |
+|   3    |   ro   |   0x0   | HW_CFG0_ERROR        | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index.        |
 |   2    |   ro   |   0x0   | OWNER_SW_CFG_ERROR   | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index.        |
 |   1    |   ro   |   0x0   | CREATOR_SW_CFG_ERROR | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index.        |
 |   0    |   ro   |   0x0   | VENDOR_TEST_ERROR    | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index.        |
@@ -415,7 +415,7 @@ safe side. A value of zero disables the timeout mechanism (default).
 
 ## INTEGRITY_CHECK_PERIOD
 This value specifies the maximum period that can be generated pseudo-randomly.
-Only applies to the HW_CFG and SECRET* partitions once they are locked.
+Only applies to the HW_CFG* and SECRET* partitions once they are locked.
 - Offset: `0x68`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
@@ -441,7 +441,7 @@ A value of zero disables the timer (default). Note that a one-off check can alwa
 
 ## CONSISTENCY_CHECK_PERIOD
 This value specifies the maximum period that can be generated pseudo-randomly.
-This applies to the LIFE_CYCLE partition and the HW_CFG and SECRET* partitions once they are locked.
+This applies to the LIFE_CYCLE partition and the HW_CFG* and SECRET* partitions once they are locked.
 - Offset: `0x6c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
@@ -600,8 +600,8 @@ the digest becomes visible in this CSR.
 |:------:|:------:|:-------:|:--------------------|:--------------|
 |  31:0  |   ro   |   0x0   | OWNER_SW_CFG_DIGEST |               |
 
-## HW_CFG_DIGEST
-Integrity digest for the HW_CFG partition.
+## HW_CFG0_DIGEST
+Integrity digest for the HW_CFG0 partition.
 The integrity digest is 0 by default. The digest calculation can be triggered via the [`DIRECT_ACCESS_CMD.`](#direct_access_cmd)
 After a reset, the digest then becomes visible in this CSR, and the corresponding partition becomes write-locked.
 - Reset default: `0x0`
@@ -609,21 +609,21 @@ After a reset, the digest then becomes visible in this CSR, and the correspondin
 
 ### Instances
 
-| Name            | Offset   |
-|:----------------|:---------|
-| HW_CFG_DIGEST_0 | 0x94     |
-| HW_CFG_DIGEST_1 | 0x98     |
+| Name             | Offset   |
+|:-----------------|:---------|
+| HW_CFG0_DIGEST_0 | 0x94     |
+| HW_CFG0_DIGEST_1 | 0x98     |
 
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "HW_CFG_DIGEST", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "HW_CFG0_DIGEST", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name          | Description   |
-|:------:|:------:|:-------:|:--------------|:--------------|
-|  31:0  |   ro   |   0x0   | HW_CFG_DIGEST |               |
+|  Bits  |  Type  |  Reset  | Name           | Description   |
+|:------:|:------:|:-------:|:---------------|:--------------|
+|  31:0  |   ro   |   0x0   | HW_CFG0_DIGEST |               |
 
 ## SECRET0_DIGEST
 Integrity digest for the SECRET0 partition.

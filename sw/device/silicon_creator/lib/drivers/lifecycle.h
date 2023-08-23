@@ -63,7 +63,7 @@ enum {
 };
 
 /**
- * 256-bit device identifier that is stored in the `HW_CFG` partition in OTP.
+ * 256-bit device identifier that is stored in the `HW_CFG0` partition in OTP.
  */
 typedef struct lifecycle_device_id {
   uint32_t device_id[kLifecycleDeviceIdNumWords];
@@ -106,7 +106,7 @@ uint32_t lifecycle_raw_state_get(void);
  * Get the device identifier.
  *
  * @param[out] device_id 256-bit device identifier that is stored in the
- * `HW_CFG` partition in OTP.
+ * `HW_CFG0` partition in OTP.
  */
 void lifecycle_device_id_get(lifecycle_device_id_t *device_id);
 

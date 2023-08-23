@@ -87,18 +87,18 @@ fn lock_partition(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result<(
         .connect(JtagTap::RiscvTap)
         .context("failed to connect to RISCV TAP over JTAG")?;
 
-    // Read the HW_CFG partition's digest, which should be 0 (unlocked):
-    let digest = OtpPartition::read_digest(&mut *jtag, Partition::HW_CFG)
-        .context("failed to read HW_CFG partition's digest")?;
+    // Read the HW_CFG0 partition's digest, which should be 0 (unlocked):
+    let digest = OtpPartition::read_digest(&mut *jtag, Partition::HW_CFG0)
+        .context("failed to read HW_CFG0 partition's digest")?;
 
     assert_eq!(digest, [0x00; 2]);
 
     // Lock the partition.
-    OtpPartition::lock(&mut *jtag, Partition::HW_CFG).context("failed to lock HW_CFG partition")?;
+    OtpPartition::lock(&mut *jtag, Partition::HW_CFG0).context("failed to lock HW_CFG0 partition")?;
 
     // Read the digest again to see if it's been calculated (locked):
-    let digest = OtpPartition::read_digest(&mut *jtag, Partition::HW_CFG)
-        .context("failed to read HW_CFG partition's digest")?;
+    let digest = OtpPartition::read_digest(&mut *jtag, Partition::HW_CFG0)
+        .context("failed to read HW_CFG0 partition's digest")?;
 
     assert_ne!(digest, [0x00; 2]);
 

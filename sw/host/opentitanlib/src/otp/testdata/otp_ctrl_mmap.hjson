@@ -211,7 +211,7 @@
             '''
         }
         {
-            name:       "HW_CFG",
+            name:       "HW_CFG0",
             variant:    "Buffered",
             secret:     false,
             sw_digest:  false,

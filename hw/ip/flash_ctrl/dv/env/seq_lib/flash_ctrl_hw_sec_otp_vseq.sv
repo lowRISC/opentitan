@@ -238,7 +238,7 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
     foreach (info_regions[i]) begin
       // Get secret partition cfg from flash_ctrl_pkg
       if ( i inside {1, 2}) begin
-        // Copy protection from hw_cfg.
+        // Copy protection from hw_cfg0.
         info_regions[i] = conv2env_mp_info(flash_ctrl_pkg::CfgAllowRead);
         // Update program and erase control for the test purpose.
         info_regions[i].program_en = MuBi4True;

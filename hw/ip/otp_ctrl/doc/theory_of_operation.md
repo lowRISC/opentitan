@@ -141,7 +141,7 @@ Once the appropriate partitions have been locked, the hardware integrity checker
 
 The purpose of this check is NOT to check between the storage flops and the OTP, but whether the buffer register contents remain consistent with the calculated digest.
 This verification is primarily concerned with whether the storage flops have experienced fault attacks.
-This check applies to only the HW_CFG and SECRET* partitions.
+This check applies to only the HW_CFG* and SECRET* partitions.
 If a failure is encountered, the OTP controller will send out a `fatal_check_error` alert and reset all of its hardware outputs to their defaults.
 
 ### Storage Consistency
@@ -152,7 +152,7 @@ Note, given there are integrity checks in parallel, it is not necessary for some
 If there is an integrity digest, only the digest needs to be read; otherwise, all values must be read.
 
 
-This check applies to LIFE_CYCLE, HW_CFG and SECRET* partitions.
+This check applies to LIFE_CYCLE, HW_CFG* and SECRET* partitions.
 If a failure is encountered, the OTP controller will send out a `fatal_check_error` alert and reset all of its hardware outputs to their defaults.
 
 Note that checks applied to life cycle could cause a failure if life cycle is updated, because life cycle is the only partition that may contain live updates.
@@ -172,7 +172,7 @@ This default output must remain until the OTP controller completes all checks.
 
 The OTP controller reads from the OTP IP.
 If the reads pass OTP IP internal checks (for example ECC or redundancy), the partition storage is updated; however the output is still held at the default state via an output mux.
-After all read is complete, the OTP controller performs integrity checks on the HW_CFG and SECRET* partitions.
+After all read is complete, the OTP controller performs integrity checks on the HW_CFG* and SECRET* partitions.
 If a partition fails the integrity checks at this point it would signal an initialization error in the status CSR and abort further initialization.
 
 After all integrity checks are complete, the OTP controller releases the output gating and marks outputs as valid.

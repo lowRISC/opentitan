@@ -16,24 +16,24 @@ extern const bitfield_field32_t kEntropySrcFwOvr;
 
 enum {
   /**
-   * HW_CFG partition OTP fields.
+   * HW_CFG0 partition OTP fields.
    */
   // DEVICE_ID
   kHwCfgDeviceIdOffset =
-      OTP_CTRL_PARAM_DEVICE_ID_OFFSET - OTP_CTRL_PARAM_HW_CFG_OFFSET,
+      OTP_CTRL_PARAM_DEVICE_ID_OFFSET - OTP_CTRL_PARAM_HW_CFG0_OFFSET,
   kHwCfgDeviceIdSizeInBytes = OTP_CTRL_PARAM_DEVICE_ID_SIZE,
   kHwCfgDeviceIdSizeIn32BitWords =
       OTP_CTRL_PARAM_DEVICE_ID_SIZE / sizeof(uint32_t),
 
   // MANUF_STATE
   kHwCfgManufStateOffset =
-      OTP_CTRL_PARAM_MANUF_STATE_OFFSET - OTP_CTRL_PARAM_HW_CFG_OFFSET,
+      OTP_CTRL_PARAM_MANUF_STATE_OFFSET - OTP_CTRL_PARAM_HW_CFG0_OFFSET,
   kHwCfgManufStateSizeIn32BitWords =
       OTP_CTRL_PARAM_MANUF_STATE_SIZE / sizeof(uint32_t),
 
   // EN_SRAM_IFETCH
   kHwCfgEnSramIfetchOffset =
-      OTP_CTRL_PARAM_EN_SRAM_IFETCH_OFFSET - OTP_CTRL_PARAM_HW_CFG_OFFSET,
+      OTP_CTRL_PARAM_EN_SRAM_IFETCH_OFFSET - OTP_CTRL_PARAM_HW_CFG0_OFFSET,
 
   /**
    * SECRET0 partition OTP fields.

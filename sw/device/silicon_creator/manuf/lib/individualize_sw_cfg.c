@@ -46,7 +46,7 @@ static status_t otp_img_write(const dif_otp_ctrl_t *otp,
     // We purposely skip the provisioning of the flash data region default
     // configuration as it must be enabled only after the OTP SECRET1
     // partition has been provisioned. Since OTP SECRET1 provisioning requires
-    // the HW_CFG partition to be provisioned to use the CSRNG SW interface,
+    // the HW_CFG0 partition to be provisioned to use the CSRNG SW interface,
     // there is a delicate order of operations in which this field is
     // provisioned. Therefore we require explicit provisioning of this field
     // immediately before the transport image is loaded, after all other

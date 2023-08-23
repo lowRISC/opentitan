@@ -453,7 +453,7 @@ SHUTDOWN_FUNC(noreturn, shutdown_hang(void)) {
   // Disable SRAM execution and lock the register.
   // Note: In addition to this register, which is disabled by default at reset,
   // SRAM execution is gated by the lifecycle state
-  // (SRAM_CTRL.INSTR.BUS.LC_GATED) and EN_SRAM_IFETCH item in the HW_CFG OTP
+  // (SRAM_CTRL.INSTR.BUS.LC_GATED) and EN_SRAM_IFETCH item in the HW_CFG0 OTP
   // partition.
   abs_mmio_write32(kSramCtrlBase + SRAM_CTRL_EXEC_EN_OFFSET, 0);
   abs_mmio_write32(kSramCtrlBase + SRAM_CTRL_EXEC_REGWEN_REG_OFFSET, 0);

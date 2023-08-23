@@ -738,7 +738,7 @@ module top_earlgrey #(
   logic [31:0] rv_core_ibex_boot_addr;
   jtag_pkg::jtag_req_t       pinmux_aon_dft_jtag_req;
   jtag_pkg::jtag_rsp_t       pinmux_aon_dft_jtag_rsp;
-  otp_ctrl_part_pkg::otp_hw_cfg_t       otp_ctrl_otp_hw_cfg;
+  otp_ctrl_part_pkg::otp_broadcast_t       otp_ctrl_otp_broadcast;
   prim_mubi_pkg::mubi8_t       csrng_otp_en_csrng_sw_app_read;
   prim_mubi_pkg::mubi8_t       entropy_src_otp_en_entropy_src_fw_read;
   prim_mubi_pkg::mubi8_t       entropy_src_otp_en_entropy_src_fw_over;
@@ -783,22 +783,29 @@ module top_earlgrey #(
   assign edn1_edn_req[7] = '0;
 
 
-  // OTP HW_CFG Broadcast signals.
+  // OTP HW_CFG* Broadcast signals.
   // TODO(#6713): The actual struct breakout and mapping currently needs to
   // be performed by hand.
-  assign csrng_otp_en_csrng_sw_app_read = otp_ctrl_otp_hw_cfg.data.en_csrng_sw_app_read;
-  assign entropy_src_otp_en_entropy_src_fw_read = otp_ctrl_otp_hw_cfg.data.en_entropy_src_fw_read;
-  assign entropy_src_otp_en_entropy_src_fw_over = otp_ctrl_otp_hw_cfg.data.en_entropy_src_fw_over;
-  assign sram_ctrl_main_otp_en_sram_ifetch = otp_ctrl_otp_hw_cfg.data.en_sram_ifetch;
-  assign lc_ctrl_otp_device_id = otp_ctrl_otp_hw_cfg.data.device_id;
-  assign lc_ctrl_otp_manuf_state = otp_ctrl_otp_hw_cfg.data.manuf_state;
-  assign keymgr_otp_device_id = otp_ctrl_otp_hw_cfg.data.device_id;
+  assign csrng_otp_en_csrng_sw_app_read =
+      otp_ctrl_otp_broadcast.hw_cfg0_data.en_csrng_sw_app_read;
+  assign entropy_src_otp_en_entropy_src_fw_read =
+      otp_ctrl_otp_broadcast.hw_cfg0_data.en_entropy_src_fw_read;
+  assign entropy_src_otp_en_entropy_src_fw_over =
+      otp_ctrl_otp_broadcast.hw_cfg0_data.en_entropy_src_fw_over;
+  assign sram_ctrl_main_otp_en_sram_ifetch =
+      otp_ctrl_otp_broadcast.hw_cfg0_data.en_sram_ifetch;
+  assign lc_ctrl_otp_device_id =
+      otp_ctrl_otp_broadcast.hw_cfg0_data.device_id;
+  assign lc_ctrl_otp_manuf_state =
+      otp_ctrl_otp_broadcast.hw_cfg0_data.manuf_state;
+  assign keymgr_otp_device_id =
+      otp_ctrl_otp_broadcast.hw_cfg0_data.device_id;
 
-  logic unused_otp_hw_cfg_bits;
-  assign unused_otp_hw_cfg_bits = ^{
-    otp_ctrl_otp_hw_cfg.valid,
-    otp_ctrl_otp_hw_cfg.data.hw_cfg_digest,
-    otp_ctrl_otp_hw_cfg.data.unallocated
+  logic unused_otp_broadcast_bits;
+  assign unused_otp_broadcast_bits = ^{
+    otp_ctrl_otp_broadcast.valid,
+    otp_ctrl_otp_broadcast.hw_cfg0_data.hw_cfg0_digest,
+    otp_ctrl_otp_broadcast.hw_cfg0_data.unallocated
   };
 
   // See #7978 This below is a hack.
@@ -1430,7 +1437,7 @@ module top_earlgrey #(
       .sram_otp_key_o(otp_ctrl_sram_otp_key_rsp),
       .otbn_otp_key_i(otp_ctrl_otbn_otp_key_req),
       .otbn_otp_key_o(otp_ctrl_otbn_otp_key_rsp),
-      .otp_hw_cfg_o(otp_ctrl_otp_hw_cfg),
+      .otp_broadcast_o(otp_ctrl_otp_broadcast),
       .obs_ctrl_i(ast_obs_ctrl),
       .otp_obs_o(otp_obs_o),
       .core_tl_i(otp_ctrl_core_tl_req),

@@ -239,8 +239,8 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   // SW partitions could not be provisioned via DAI interface
   // LC partitions cannot be locked
   virtual task cal_hw_digests(bit [3:0] trigger_digest = $urandom());
-    for (int i = int'(HwCfgIdx); i < int'(LifeCycleIdx); i++) begin
-      if (trigger_digest[i-HwCfgIdx]) cal_digest(i);
+    for (int i = int'(HwCfg0Idx); i < int'(LifeCycleIdx); i++) begin
+      if (trigger_digest[i-HwCfg0Idx]) cal_digest(i);
     end
   endtask
 
@@ -277,8 +277,8 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     csr_rd(.ptr(ral.creator_sw_cfg_digest[1]), .value(val));
     csr_rd(.ptr(ral.owner_sw_cfg_digest[0]),   .value(val));
     csr_rd(.ptr(ral.owner_sw_cfg_digest[1]),   .value(val));
-    csr_rd(.ptr(ral.hw_cfg_digest[0]),         .value(val));
-    csr_rd(.ptr(ral.hw_cfg_digest[1]),         .value(val));
+    csr_rd(.ptr(ral.hw_cfg0_digest[0]),        .value(val));
+    csr_rd(.ptr(ral.hw_cfg0_digest[1]),        .value(val));
     csr_rd(.ptr(ral.secret0_digest[0]),        .value(val));
     csr_rd(.ptr(ral.secret0_digest[1]),        .value(val));
     csr_rd(.ptr(ral.secret1_digest[0]),        .value(val));
@@ -316,10 +316,10 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
         if (!$urandom_range(0, 4)) forced_mubi_part_access[OwnerSwCfgIdx].read_lock = 1;
       end
 
-      if (`gmv(ral.hw_cfg_digest[0]) || `gmv(ral.hw_cfg_digest[1])) begin
+      if (`gmv(ral.hw_cfg0_digest[0]) || `gmv(ral.hw_cfg0_digest[1])) begin
         // ICEBOX (#17770): hw_cfg part cannot be read locked.
-        // if (!$urandom_range(0, 4)) cfg.forced_mubi_part_access[HwCfgIdx].read_lock = 1;
-        if (!$urandom_range(0, 4)) forced_mubi_part_access[HwCfgIdx].write_lock = 1;
+        // if (!$urandom_range(0, 4)) cfg.forced_mubi_part_access[HwCfg0Idx].read_lock = 1;
+        if (!$urandom_range(0, 4)) forced_mubi_part_access[HwCfg0Idx].write_lock = 1;
       end
 
       if (`gmv(ral.secret0_digest[0]) || `gmv(ral.secret0_digest[1])) begin
@@ -379,7 +379,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
     // Backdoor write ECC errors
     if (ecc_err != OtpNoEccErr) begin
-      int part_idx = $urandom_range(HwCfgIdx, LifeCycleIdx);
+      int part_idx = $urandom_range(HwCfg0Idx, LifeCycleIdx);
 
       // Only HW cfgs check digest correctness
       if (part_idx != LifeCycleIdx) begin

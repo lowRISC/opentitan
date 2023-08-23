@@ -6,9 +6,9 @@
 
 #include "sw/device/lib/base/bitfield.h"
 
-#define HW_CFG_EN_OFFSET(m, i) ((bitfield_field32_t){.mask = m, .index = i})
-const bitfield_field32_t kSramFetch = HW_CFG_EN_OFFSET(0xff, 0);
-const bitfield_field32_t kCsrngAppRead = HW_CFG_EN_OFFSET(0xff, 8);
-const bitfield_field32_t kEntropySrcFwRd = HW_CFG_EN_OFFSET(0xff, 16);
-const bitfield_field32_t kEntropySrcFwOvr = HW_CFG_EN_OFFSET(0xff, 24);
-#undef HW_CFG_EN_OFFSET
+#define HW_CFG0_EN_OFFSET(m, i) ((bitfield_field32_t){.mask = m, .index = i})
+const bitfield_field32_t kSramFetch = HW_CFG0_EN_OFFSET(0xff, 0);
+const bitfield_field32_t kCsrngAppRead = HW_CFG0_EN_OFFSET(0xff, 8);
+const bitfield_field32_t kEntropySrcFwRd = HW_CFG0_EN_OFFSET(0xff, 16);
+const bitfield_field32_t kEntropySrcFwOvr = HW_CFG0_EN_OFFSET(0xff, 24);
+#undef HW_CFG0_EN_OFFSET

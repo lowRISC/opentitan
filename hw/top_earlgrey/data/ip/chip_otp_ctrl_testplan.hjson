@@ -110,10 +110,10 @@
       tests: ["chip_sw_lc_ctrl_program_error"]
     }
     {
-      name: chip_sw_otp_ctrl_hw_cfg
-      desc: '''Verify the correctness of otp_hw_cfg bus in all peripherals that receive it.
+      name: chip_sw_otp_ctrl_hw_cfg0
+      desc: '''Verify the correctness of otp_hw_cfg0 bus in all peripherals that receive it.
 
-            Preload the OTP ctrl's `hw_cfg` partition with random data and verify that all
+            Preload the OTP ctrl's `hw_cfg0` partition with random data and verify that all
             consumers of the hardware configuration bits are receiving the correct values.
 
             Xref'ed with corresponding IP tests that receive these bits.
@@ -123,7 +123,7 @@
       features: ["OTP_CTRL.ENTROPY_READ"]
       stage: V2
       si_stage: SV1
-      tests: ["chip_sw_lc_ctrl_otp_hw_cfg"]
+      tests: ["chip_sw_lc_ctrl_otp_hw_cfg0"]
     }
     {
       name: chip_sw_otp_ctrl_lc_signals

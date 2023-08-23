@@ -2098,8 +2098,8 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "lc_ctrl_otp_hw_cfg_test",
-    srcs = ["lc_ctrl_otp_hw_cfg_test.c"],
+    name = "lc_ctrl_otp_hw_cfg0_test",
+    srcs = ["lc_ctrl_otp_hw_cfg0_test.c"],
     exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",

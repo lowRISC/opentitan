@@ -1035,7 +1035,7 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
   // macro.
   if (kExpectedAlertNumber == kTopEarlgreyAlertIdOtpCtrlFatalMacroError) {
     CHECK_DIF_OK(
-        dif_otp_ctrl_dai_read_start(&otp_ctrl, kDifOtpCtrlPartitionHwCfg, 0));
+        dif_otp_ctrl_dai_read_start(&otp_ctrl, kDifOtpCtrlPartitionHwCfg0, 0));
     LOG_INFO("OTP_CTRL error inject done");
   }
 

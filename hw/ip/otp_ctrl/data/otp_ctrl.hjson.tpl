@@ -393,13 +393,13 @@
       desc:    "Key derivation interface for OTBN scrambling devices."
     }
     // Hardware config partition
-    { struct:  "otp_hw_cfg"
+    { struct:  "otp_broadcast"
       type:    "uni"
-      name:    "otp_hw_cfg"
+      name:    "otp_broadcast"
       act:     "req"
       default: "'0"
       package: "otp_ctrl_part_pkg"
-      desc:    "Output of the HW_CFG partition."
+      desc:    "Output of the HW partitions with breakout data types."
     }
     // AST observability control
     { struct: "ast_obs_ctrl",
@@ -588,13 +588,13 @@
     {
       name: "OTP_CTRL.INIT"
       desc: '''When power is up, OTP controller reads devices status.
-      After all reads complete, the controller performs integrity check on the HW_CFG and SECRET partitions.
+      After all reads complete, the controller performs integrity check on the HW_CFG* and SECRET partitions.
       Once all integrity checks are complete, the controller marks outputs as valid.
       '''
     }
     {
       name: "OTP_CTRL.ENTROPY_READ"
-      desc: '''Firmware can read entropy from ENTROPY_SRC block by configuring following field of HW_CFG partition.
+      desc: '''Firmware can read entropy from ENTROPY_SRC block by configuring following field of HW_CFG* partition.
         - EN_CSRNG_SW_APP_READ
         - EN_ENTROPY_SRC_FW_READ
         - EN_ENTROPY_SRC_FW_OVER
@@ -1065,7 +1065,7 @@
       { name: "INTEGRITY_CHECK_PERIOD",
         desc: '''
               This value specifies the maximum period that can be generated pseudo-randomly.
-              Only applies to the HW_CFG and SECRET* partitions once they are locked.
+              Only applies to the HW_CFG* and SECRET* partitions once they are locked.
               '''
         swaccess: "rw",
         hwaccess: "hro",
@@ -1087,7 +1087,7 @@
       { name: "CONSISTENCY_CHECK_PERIOD",
         desc: '''
               This value specifies the maximum period that can be generated pseudo-randomly.
-              This applies to the LIFE_CYCLE partition and the HW_CFG and SECRET* partitions once they are locked.
+              This applies to the LIFE_CYCLE partition and the HW_CFG* and SECRET* partitions once they are locked.
               '''
         swaccess: "rw",
         hwaccess: "hro",

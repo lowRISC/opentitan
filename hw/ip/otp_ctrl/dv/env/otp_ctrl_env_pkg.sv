@@ -55,9 +55,9 @@ package otp_ctrl_env_pkg;
   parameter uint OWNER_SW_CFG_DIGEST_ADDR = OwnerSwCfgDigestOffset / (TL_DW / 8);
   parameter uint OWNER_SW_CFG_END_ADDR    = OWNER_SW_CFG_DIGEST_ADDR - 1;
 
-  parameter uint HW_CFG_START_ADDR  = HwCfgOffset / (TL_DW / 8);
-  parameter uint HW_CFG_DIGEST_ADDR = HwCfgDigestOffset / (TL_DW / 8);
-  parameter uint HW_CFG_END_ADDR    = HW_CFG_DIGEST_ADDR - 1;
+  parameter uint HW_CFG0_START_ADDR  = HwCfg0Offset / (TL_DW / 8);
+  parameter uint HW_CFG0_DIGEST_ADDR = HwCfg0DigestOffset / (TL_DW / 8);
+  parameter uint HW_CFG0_END_ADDR    = HW_CFG0_DIGEST_ADDR - 1;
 
   parameter uint SECRET0_START_ADDR  = Secret0Offset / (TL_DW / 8);
   parameter uint SECRET0_DIGEST_ADDR = Secret0DigestOffset / (TL_DW / 8);
@@ -73,7 +73,7 @@ package otp_ctrl_env_pkg;
 
   // LC has its own storage in scb
   parameter uint OTP_ARRAY_SIZE = (VendorTestSize + CreatorSwCfgSize + OwnerSwCfgSize +
-                                   HwCfgSize + Secret0Size + Secret1Size + Secret2Size)
+                                   HwCfg0Size + Secret0Size + Secret1Size + Secret2Size)
                                    / (TL_DW / 8);
 
   parameter int OTP_ADDR_WIDTH = 11;
@@ -83,7 +83,7 @@ package otp_ctrl_env_pkg;
   // Total num of valid dai address, secret partitions have a granularity of 8, the rest have
   // a granularity of 4. Subtract 8 for each digest.
   parameter uint DAI_ADDR_SIZE =
-      (VendorTestSize + CreatorSwCfgSize + OwnerSwCfgSize + HwCfgSize - 4 * 8) / 4 +
+      (VendorTestSize + CreatorSwCfgSize + OwnerSwCfgSize + HwCfg0Size - 4 * 8) / 4 +
       (Secret0Size + Secret1Size + Secret2Size - 3 * 8) / 8 ;
 
   // sram rsp data has 1 bit for seed_valid, the rest are for key and nonce
@@ -112,7 +112,7 @@ package otp_ctrl_env_pkg;
     VendorTestOffset,
     CreatorSwCfgOffset,
     OwnerSwCfgOffset,
-    HwCfgOffset,
+    HwCfg0Offset,
     Secret0Offset,
     Secret1Offset,
     Secret2Offset
@@ -123,7 +123,7 @@ package otp_ctrl_env_pkg;
     VendorTestDigestOffset   >> 2,
     CreatorSwCfgDigestOffset >> 2,
     OwnerSwCfgDigestOffset   >> 2,
-    HwCfgDigestOffset        >> 2,
+    HwCfg0DigestOffset       >> 2,
     Secret0DigestOffset      >> 2,
     Secret1DigestOffset      >> 2,
     Secret2DigestOffset      >> 2
@@ -140,7 +140,7 @@ package otp_ctrl_env_pkg;
     OtpVendorTestErrIdx,
     OtpCreatorSwCfgErrIdx,
     OtpOwnerSwCfgErrIdx,
-    OtpHwCfgErrIdx,
+    OtpHwCfg0ErrIdx,
     OtpSecret0ErrIdx,
     OtpSecret1ErrIdx,
     OtpSecret2ErrIdx,
@@ -232,7 +232,7 @@ package otp_ctrl_env_pkg;
 
   function automatic bit is_digest(bit [TL_DW-1:0] addr);
     if (is_sw_digest(addr)) return 1;
-    if ({addr[TL_DW-1:3], 3'b0} inside {HwCfgDigestOffset, Secret0DigestOffset,
+    if ({addr[TL_DW-1:3], 3'b0} inside {HwCfg0DigestOffset, Secret0DigestOffset,
                                         Secret1DigestOffset, Secret2DigestOffset}) begin
       return 1;
     end else begin

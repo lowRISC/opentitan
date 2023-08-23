@@ -193,7 +193,7 @@ module otp_ctrl_core_reg_top (
   logic status_vendor_test_error_qs;
   logic status_creator_sw_cfg_error_qs;
   logic status_owner_sw_cfg_error_qs;
-  logic status_hw_cfg_error_qs;
+  logic status_hw_cfg0_error_qs;
   logic status_secret0_error_qs;
   logic status_secret1_error_qs;
   logic status_secret2_error_qs;
@@ -285,10 +285,10 @@ module otp_ctrl_core_reg_top (
   logic [31:0] owner_sw_cfg_digest_0_qs;
   logic owner_sw_cfg_digest_1_re;
   logic [31:0] owner_sw_cfg_digest_1_qs;
-  logic hw_cfg_digest_0_re;
-  logic [31:0] hw_cfg_digest_0_qs;
-  logic hw_cfg_digest_1_re;
-  logic [31:0] hw_cfg_digest_1_qs;
+  logic hw_cfg0_digest_0_re;
+  logic [31:0] hw_cfg0_digest_0_qs;
+  logic hw_cfg0_digest_1_re;
+  logic [31:0] hw_cfg0_digest_1_qs;
   logic secret0_digest_0_re;
   logic [31:0] secret0_digest_0_qs;
   logic secret0_digest_1_re;
@@ -583,19 +583,19 @@ module otp_ctrl_core_reg_top (
     .qs     (status_owner_sw_cfg_error_qs)
   );
 
-  //   F[hw_cfg_error]: 3:3
+  //   F[hw_cfg0_error]: 3:3
   prim_subreg_ext #(
     .DW    (1)
-  ) u_status_hw_cfg_error (
+  ) u_status_hw_cfg0_error (
     .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.status.hw_cfg_error.d),
+    .d      (hw2reg.status.hw_cfg0_error.d),
     .qre    (),
     .qe     (),
     .q      (),
     .ds     (),
-    .qs     (status_hw_cfg_error_qs)
+    .qs     (status_hw_cfg0_error_qs)
   );
 
   //   F[secret0_error]: 4:4
@@ -1549,37 +1549,37 @@ module otp_ctrl_core_reg_top (
   );
 
 
-  // Subregister 0 of Multireg hw_cfg_digest
-  // R[hw_cfg_digest_0]: V(True)
+  // Subregister 0 of Multireg hw_cfg0_digest
+  // R[hw_cfg0_digest_0]: V(True)
   prim_subreg_ext #(
     .DW    (32)
-  ) u_hw_cfg_digest_0 (
-    .re     (hw_cfg_digest_0_re),
+  ) u_hw_cfg0_digest_0 (
+    .re     (hw_cfg0_digest_0_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.hw_cfg_digest[0].d),
+    .d      (hw2reg.hw_cfg0_digest[0].d),
     .qre    (),
     .qe     (),
     .q      (),
     .ds     (),
-    .qs     (hw_cfg_digest_0_qs)
+    .qs     (hw_cfg0_digest_0_qs)
   );
 
 
-  // Subregister 1 of Multireg hw_cfg_digest
-  // R[hw_cfg_digest_1]: V(True)
+  // Subregister 1 of Multireg hw_cfg0_digest
+  // R[hw_cfg0_digest_1]: V(True)
   prim_subreg_ext #(
     .DW    (32)
-  ) u_hw_cfg_digest_1 (
-    .re     (hw_cfg_digest_1_re),
+  ) u_hw_cfg0_digest_1 (
+    .re     (hw_cfg0_digest_1_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.hw_cfg_digest[1].d),
+    .d      (hw2reg.hw_cfg0_digest[1].d),
     .qre    (),
     .qe     (),
     .q      (),
     .ds     (),
-    .qs     (hw_cfg_digest_1_qs)
+    .qs     (hw_cfg0_digest_1_qs)
   );
 
 
@@ -1726,8 +1726,8 @@ module otp_ctrl_core_reg_top (
     addr_hit[34] = (reg_addr == OTP_CTRL_CREATOR_SW_CFG_DIGEST_1_OFFSET);
     addr_hit[35] = (reg_addr == OTP_CTRL_OWNER_SW_CFG_DIGEST_0_OFFSET);
     addr_hit[36] = (reg_addr == OTP_CTRL_OWNER_SW_CFG_DIGEST_1_OFFSET);
-    addr_hit[37] = (reg_addr == OTP_CTRL_HW_CFG_DIGEST_0_OFFSET);
-    addr_hit[38] = (reg_addr == OTP_CTRL_HW_CFG_DIGEST_1_OFFSET);
+    addr_hit[37] = (reg_addr == OTP_CTRL_HW_CFG0_DIGEST_0_OFFSET);
+    addr_hit[38] = (reg_addr == OTP_CTRL_HW_CFG0_DIGEST_1_OFFSET);
     addr_hit[39] = (reg_addr == OTP_CTRL_SECRET0_DIGEST_0_OFFSET);
     addr_hit[40] = (reg_addr == OTP_CTRL_SECRET0_DIGEST_1_OFFSET);
     addr_hit[41] = (reg_addr == OTP_CTRL_SECRET1_DIGEST_0_OFFSET);
@@ -1880,8 +1880,8 @@ module otp_ctrl_core_reg_top (
   assign creator_sw_cfg_digest_1_re = addr_hit[34] & reg_re & !reg_error;
   assign owner_sw_cfg_digest_0_re = addr_hit[35] & reg_re & !reg_error;
   assign owner_sw_cfg_digest_1_re = addr_hit[36] & reg_re & !reg_error;
-  assign hw_cfg_digest_0_re = addr_hit[37] & reg_re & !reg_error;
-  assign hw_cfg_digest_1_re = addr_hit[38] & reg_re & !reg_error;
+  assign hw_cfg0_digest_0_re = addr_hit[37] & reg_re & !reg_error;
+  assign hw_cfg0_digest_1_re = addr_hit[38] & reg_re & !reg_error;
   assign secret0_digest_0_re = addr_hit[39] & reg_re & !reg_error;
   assign secret0_digest_1_re = addr_hit[40] & reg_re & !reg_error;
   assign secret1_digest_0_re = addr_hit[41] & reg_re & !reg_error;
@@ -1970,7 +1970,7 @@ module otp_ctrl_core_reg_top (
         reg_rdata_next[0] = status_vendor_test_error_qs;
         reg_rdata_next[1] = status_creator_sw_cfg_error_qs;
         reg_rdata_next[2] = status_owner_sw_cfg_error_qs;
-        reg_rdata_next[3] = status_hw_cfg_error_qs;
+        reg_rdata_next[3] = status_hw_cfg0_error_qs;
         reg_rdata_next[4] = status_secret0_error_qs;
         reg_rdata_next[5] = status_secret1_error_qs;
         reg_rdata_next[6] = status_secret2_error_qs;
@@ -2118,11 +2118,11 @@ module otp_ctrl_core_reg_top (
       end
 
       addr_hit[37]: begin
-        reg_rdata_next[31:0] = hw_cfg_digest_0_qs;
+        reg_rdata_next[31:0] = hw_cfg0_digest_0_qs;
       end
 
       addr_hit[38]: begin
-        reg_rdata_next[31:0] = hw_cfg_digest_1_qs;
+        reg_rdata_next[31:0] = hw_cfg0_digest_1_qs;
       end
 
       addr_hit[39]: begin

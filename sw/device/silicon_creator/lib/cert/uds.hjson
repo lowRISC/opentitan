@@ -39,8 +39,8 @@
             type: "byte-array",
             size: 20,
         },
-        // Hash of the hw_cfg OTP partition (SHA256).
-        otp_hw_cfg_hash: {
+        // Hash of the hw_cfg0 OTP partition (SHA256).
+        otp_hw_cfg0_hash: {
             type: "byte-array",
             size: 20,
         },
@@ -76,7 +76,7 @@
         fw_ids: [
             { hash_algorithm: "sha256", digest: { var: "otp_creator_sw_cfg_hash" } },
             { hash_algorithm: "sha256", digest: { var: "otp_owner_sw_cfg_hash" } },
-            { hash_algorithm: "sha256", digest: { var: "otp_hw_cfg_hash" } },
+            { hash_algorithm: "sha256", digest: { var: "otp_hw_cfg0_hash" } },
         ],
         flags: {
             not_configured: false,
