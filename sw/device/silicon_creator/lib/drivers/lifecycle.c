@@ -7,10 +7,10 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include "sw/lib/sw/device/silicon_creator/base/sec_mmio.h"
 #include "sw/lib/sw/device/base/bitfield.h"
 #include "sw/lib/sw/device/base/hardened.h"
 #include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/silicon_creator/base/sec_mmio.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "lc_ctrl_regs.h"

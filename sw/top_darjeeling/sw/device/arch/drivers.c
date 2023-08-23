@@ -53,9 +53,6 @@ const uint32_t kRvCoreIbexCfgBaseAddr[] = {
 const uint32_t kSramCtrlMainRegsBaseAddr[] = {
     TOP_DARJEELING_SRAM_CTRL_MAIN_REGS_BASE_ADDR};
 
-const uint32_t kUartBaseAddr[] = {TOP_DARJEELING_UART0_BASE_ADDR,
-                                  TOP_DARJEELING_UART1_BASE_ADDR,
-                                  TOP_DARJEELING_UART2_BASE_ADDR,
-                                  TOP_DARJEELING_UART3_BASE_ADDR};
+const uint32_t kUartBaseAddr[] = {TOP_DARJEELING_UART0_BASE_ADDR};
 
 const uint32_t kUsbdevBaseAddr[] = {TOP_DARJEELING_USBDEV_BASE_ADDR};

@@ -6,7 +6,6 @@
 
 #include <assert.h>
 
-#include "sw/lib/sw/device/silicon_creator/chip_info.h"
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
@@ -18,7 +17,6 @@
 #include "sw/ip/rv_core_ibex/driver/rv_core_ibex.h"
 #include "sw/ip/sram_ctrl/driver/sram_ctrl.h"
 #include "sw/ip/uart/driver/uart.h"
-#include "sw/lib/sw/device/silicon_creator/epmp_defs.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"
 #include "sw/lib/sw/device/base/bitfield.h"
@@ -28,6 +26,8 @@
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/base/multibits.h"
 #include "sw/lib/sw/device/base/stdasm.h"
+#include "sw/lib/sw/device/silicon_creator/chip_info.h"
+#include "sw/lib/sw/device/silicon_creator/epmp_defs.h"
 
 #include "alert_handler_regs.h"
 #include "flash_ctrl_regs.h"
@@ -295,8 +295,7 @@ static shutdown_error_redact_t shutdown_redact_policy_inline(
     case LC_CTRL_LC_STATE_STATE_VALUE_PROD_END:
       // In production states use the redaction level specified in OTP.
       return (shutdown_error_redact_t)abs_mmio_read32(
-          kOtpCtrlCoreBaseAddr[0] +
-          OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
+          kOtpCtrlCoreBaseAddr[0] + OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
           OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ERROR_REPORTING_OFFSET);
     default:
       // Redact everything if in an unexpected lifecycle state.
@@ -310,10 +309,9 @@ shutdown_error_redact_t shutdown_redact_policy(void) {
   //
   // Note that we cannot use the lifecycle or OTP libraries since an error
   // may trigger a call to `shutdown_finalize`.
-  uint32_t raw_state =
-      bitfield_field32_read(abs_mmio_read32(kLcCtrlBaseAddr[0] +
-                                            LC_CTRL_LC_STATE_REG_OFFSET),
-                            LC_CTRL_LC_STATE_STATE_FIELD);
+  uint32_t raw_state = bitfield_field32_read(
+      abs_mmio_read32(kLcCtrlBaseAddr[0] + LC_CTRL_LC_STATE_REG_OFFSET),
+      LC_CTRL_LC_STATE_STATE_FIELD);
   return shutdown_redact_policy_inline(raw_state);
 }
 
@@ -359,7 +357,8 @@ static void shutdown_print(shutdown_log_prefix_t prefix, uint32_t val) {
   for (size_t i = 0; i < launder32(kHexStrLen); ++i) {
     uint8_t nibble = (uint8_t)bitfield_field32_read(
         val, (bitfield_field32_t){.mask = 0xf, .index = (7 - i) * 4});
-    abs_mmio_write32(kUartBaseAddr[0] + UART_WDATA_REG_OFFSET, kHexTable[nibble]);
+    abs_mmio_write32(kUartBaseAddr[0] + UART_WDATA_REG_OFFSET,
+                     kHexTable[nibble]);
   }
 
   abs_mmio_write32(kUartBaseAddr[0] + UART_WDATA_REG_OFFSET, '\r');
@@ -367,10 +366,9 @@ static void shutdown_print(shutdown_log_prefix_t prefix, uint32_t val) {
 }
 
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_report_error(rom_error_t reason)) {
-  uint32_t raw_state =
-      bitfield_field32_read(abs_mmio_read32(kLcCtrlBaseAddr[0] +
-                                            LC_CTRL_LC_STATE_REG_OFFSET),
-                            LC_CTRL_LC_STATE_STATE_FIELD);
+  uint32_t raw_state = bitfield_field32_read(
+      abs_mmio_read32(kLcCtrlBaseAddr[0] + LC_CTRL_LC_STATE_REG_OFFSET),
+      LC_CTRL_LC_STATE_STATE_FIELD);
 
   // Call the inline variant of `shutdown_redact_policy` because we want to
   // guarantee that we won't jump to a different function.
@@ -383,8 +381,8 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_report_error(rom_error_t reason)) {
   // Reset UART TX fifo and enable TX.
   abs_mmio_write32(kUartBaseAddr[0] + UART_FIFO_CTRL_REG_OFFSET,
                    bitfield_bit32_write(0, UART_FIFO_CTRL_TXRST_BIT, true));
-  uint32_t uart_ctrl_reg = abs_mmio_read32(kUartBaseAddr[0] +
-                                           UART_CTRL_REG_OFFSET);
+  uint32_t uart_ctrl_reg =
+      abs_mmio_read32(kUartBaseAddr[0] + UART_CTRL_REG_OFFSET);
   uart_ctrl_reg = bitfield_bit32_write(uart_ctrl_reg, UART_CTRL_TX_BIT, true);
   abs_mmio_write32(kUartBaseAddr[0] + UART_CTRL_REG_OFFSET, uart_ctrl_reg);
 
@@ -403,10 +401,9 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_report_error(rom_error_t reason)) {
   uint32_t mcycle;
   bool tx_idle;
   do {
-    tx_idle =
-        bitfield_bit32_read(abs_mmio_read32(kUartBaseAddr[0] +
-                                            UART_STATUS_REG_OFFSET),
-                            UART_STATUS_TXIDLE_BIT);
+    tx_idle = bitfield_bit32_read(
+        abs_mmio_read32(kUartBaseAddr[0] + UART_STATUS_REG_OFFSET),
+        UART_STATUS_TXIDLE_BIT);
     CSR_READ(CSR_REG_MCYCLE, &mcycle);
   } while (mcycle < kUartTxFifoCpuCycles && !tx_idle);
 #endif
@@ -415,8 +412,8 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_report_error(rom_error_t reason)) {
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_software_escalate(void)) {
   //  Setting rv_core_ibex.SW_FATAL_ERR (rw0c) to any value other than
   // `kMultiBitBool4False` will continuously cause alert events.
-  abs_mmio_write32(kRvCoreIbexCfgBaseAddr[0] +
-                   RV_CORE_IBEX_SW_FATAL_ERR_REG_OFFSET, 0);
+  abs_mmio_write32(
+      kRvCoreIbexCfgBaseAddr[0] + RV_CORE_IBEX_SW_FATAL_ERR_REG_OFFSET, 0);
 }
 
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_keymgr_kill(void)) {
@@ -425,8 +422,8 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_keymgr_kill(void)) {
                              KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE);
   reg = bitfield_field32_write(reg, KEYMGR_CONTROL_SHADOWED_OPERATION_FIELD,
                                KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_DISABLE);
-  abs_mmio_write32_shadowed(kKeymgrBaseAddr[0] +
-                            KEYMGR_CONTROL_SHADOWED_REG_OFFSET, reg);
+  abs_mmio_write32_shadowed(
+      kKeymgrBaseAddr[0] + KEYMGR_CONTROL_SHADOWED_REG_OFFSET, reg);
 
   abs_mmio_write32(kKeymgrBaseAddr[0] + KEYMGR_START_REG_OFFSET, 1);
   abs_mmio_write32(kKeymgrBaseAddr[0] + KEYMGR_SIDELOAD_CLEAR_REG_OFFSET, 1);
@@ -449,8 +446,8 @@ SHUTDOWN_FUNC(noreturn, shutdown_hang(void)) {
   // (SRAM_CTRL.INSTR.BUS.LC_GATED) and EN_SRAM_IFETCH item in the HW_CFG1 OTP
   // partition.
   abs_mmio_write32(kSramCtrlMainRegsBaseAddr[0] + SRAM_CTRL_EXEC_EN_OFFSET, 0);
-  abs_mmio_write32(kSramCtrlMainRegsBaseAddr[0] +
-                   SRAM_CTRL_EXEC_REGWEN_REG_OFFSET, 0);
+  abs_mmio_write32(
+      kSramCtrlMainRegsBaseAddr[0] + SRAM_CTRL_EXEC_REGWEN_REG_OFFSET, 0);
 
   // Switch to assembly as RAM (incl. stack) is about to get scrambled.
 #ifdef OT_PLATFORM_RV32

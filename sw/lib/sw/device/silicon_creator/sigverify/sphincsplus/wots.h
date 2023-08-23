@@ -5,15 +5,15 @@
 // Derived from code in the SPHINCS+ reference implementation (CC0 license):
 // https://github.com/sphincs/sphincsplus/blob/ed15dd78658f63288c7492c00260d86154b84637/ref/wots.h
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_SPHINCSPLUS_WOTS_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_SPHINCSPLUS_WOTS_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_SIGVERIFY_SPHINCSPLUS_WOTS_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_SIGVERIFY_SPHINCSPLUS_WOTS_H_
 
 #include <stdint.h>
 
+#include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/silicon_creator/error.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/address.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/context.h"
-#include "sw/lib/sw/device/base/macros.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,4 +41,4 @@ rom_error_t wots_pk_from_sig(const uint32_t *sig, const uint32_t *msg,
 }
 #endif
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_SPHINCSPLUS_WOTS_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_SIGVERIFY_SPHINCSPLUS_WOTS_H_

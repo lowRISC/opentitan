@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_MOCK_MOD_EXP_OTBN_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_MOCK_MOD_EXP_OTBN_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_SIGVERIFY_MOCK_MOD_EXP_OTBN_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_SIGVERIFY_MOCK_MOD_EXP_OTBN_H_
 
+#include "sw/lib/sw/device/base/global_mock.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/mod_exp_otbn.h"
 #include "sw/lib/sw/device/silicon_creator/testing/rom_test.h"
-#include "sw/lib/sw/device/base/global_mock.h"
 
 namespace rom_test {
 namespace internal {
@@ -29,4 +29,4 @@ using MockSigverifyModExpOtbn =
     testing::StrictMock<internal::MockSigverifyModExpOtbn>;
 }  // namespace rom_test
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_MOCK_MOD_EXP_OTBN_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_SIGVERIFY_MOCK_MOD_EXP_OTBN_H_

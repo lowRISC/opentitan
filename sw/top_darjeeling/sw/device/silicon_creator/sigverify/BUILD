@@ -17,7 +17,7 @@ package(default_visibility = ["//visibility:public"])
 opentitan_functest(
     name = "mod_exp_ibex_functest_hardcoded",
     srcs = [
-        "//sw/lib/sw/device/silicon_creator/sigverify:mod_exp_ibex_functest.c"
+        "//sw/lib/sw/device/silicon_creator/sigverify:mod_exp_ibex_functest.c",
     ],
     verilator = verilator_params(
         timeout = "long",
@@ -37,7 +37,7 @@ opentitan_functest(
 opentitan_functest(
     name = "mod_exp_ibex_functest_wycheproof",
     srcs = [
-        "//sw/lib/sw/device/silicon_creator/sigverify:mod_exp_ibex_functest.c"
+        "//sw/lib/sw/device/silicon_creator/sigverify:mod_exp_ibex_functest.c",
     ],
     cw310 = cw310_params(
         timeout = "long",
@@ -55,7 +55,7 @@ opentitan_functest(
 opentitan_functest(
     name = "mod_exp_otbn_functest_hardcoded",
     srcs = [
-        "//sw/lib/sw/device/silicon_creator/sigverify:mod_exp_otbn_functest.c"
+        "//sw/lib/sw/device/silicon_creator/sigverify:mod_exp_otbn_functest.c",
     ],
     verilator = verilator_params(
         timeout = "long",
@@ -75,7 +75,7 @@ opentitan_functest(
 opentitan_functest(
     name = "mod_exp_otbn_functest_wycheproof",
     srcs = [
-        "//sw/lib/sw/device/silicon_creator/sigverify:mod_exp_otbn_functest.c"
+        "//sw/lib/sw/device/silicon_creator/sigverify:mod_exp_otbn_functest.c",
     ],
     targets = [
         "cw310_test_rom",
@@ -100,7 +100,7 @@ opentitan_functest(
 opentitan_functest(
     name = "rsa_verify_functest",
     srcs = [
-        "//sw/lib/sw/device/silicon_creator/sigverify:rsa_verify_functest.c"
+        "//sw/lib/sw/device/silicon_creator/sigverify:rsa_verify_functest.c",
     ],
     verilator = verilator_params(
         timeout = "long",
@@ -118,7 +118,7 @@ opentitan_functest(
 opentitan_functest(
     name = "spx_verify_functest",
     srcs = [
-        "//sw/lib/sw/device/silicon_creator/sigverify:spx_verify_functest.c"
+        "//sw/lib/sw/device/silicon_creator/sigverify:spx_verify_functest.c",
     ],
     verilator = verilator_params(
         timeout = "long",
@@ -136,7 +136,7 @@ opentitan_functest(
 cc_test(
     name = "flash_exec_unittest",
     srcs = [
-        "//sw/lib/sw/device/silicon_creator/sigverify:flash_exec_unittest.cc"
+        "//sw/lib/sw/device/silicon_creator/sigverify:flash_exec_unittest.cc",
     ],
     deps = [
         "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
@@ -149,18 +149,18 @@ cc_test(
 opentitan_functest(
     name = "sigverify_dynamic_functest_hardcoded",
     srcs = [
-        "//sw/lib/sw/device/silicon_creator/sigverify:sigverify_dynamic_functest.c"
+        "//sw/lib/sw/device/silicon_creator/sigverify:sigverify_dynamic_functest.c",
     ],
     verilator = verilator_params(
         timeout = "long",
         tags = [
-            "manual"
+            "manual",
         ],
     ),
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
-        "//sw/lib/sw/device/silicon_creator/sigverify:sigverify",
+        "//sw/lib/sw/device/silicon_creator/sigverify",
         "//sw/lib/sw/device/silicon_creator/sigverify/sigverify_tests:sigverify_testvectors_hardcoded",
         "//sw/top_darjeeling/sw/device/runtime:print",
     ],
@@ -169,7 +169,7 @@ opentitan_functest(
 opentitan_functest(
     name = "sigverify_dynamic_functest_wycheproof",
     srcs = [
-        "//sw/lib/sw/device/silicon_creator/sigverify:sigverify_dynamic_functest.c"
+        "//sw/lib/sw/device/silicon_creator/sigverify:sigverify_dynamic_functest.c",
     ],
     cw310 = cw310_params(
         timeout = "long",
@@ -178,7 +178,7 @@ opentitan_functest(
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
-        "//sw/lib/sw/device/silicon_creator/sigverify:sigverify",
+        "//sw/lib/sw/device/silicon_creator/sigverify",
         "//sw/lib/sw/device/silicon_creator/sigverify/sigverify_tests:sigverify_testvectors_wycheproof",
         "//sw/top_darjeeling/sw/device/runtime:print",
     ],

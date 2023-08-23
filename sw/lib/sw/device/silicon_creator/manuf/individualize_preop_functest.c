@@ -15,8 +15,8 @@ OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   static dif_otp_ctrl_t otp_ctrl;
-  CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(kOtpCtrlCoreBaseAddr[0]), &otp_ctrl));
+  CHECK_DIF_OK(dif_otp_ctrl_init(mmio_region_from_addr(kOtpCtrlCoreBaseAddr[0]),
+                                 &otp_ctrl));
   CHECK_STATUS_OK(individualize_preop_otp_write(&otp_ctrl));
   return true;
 }

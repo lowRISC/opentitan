@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_MOCK_BOOT_DATA_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_MOCK_BOOT_DATA_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_MOCK_BOOT_DATA_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_MOCK_BOOT_DATA_H_
 
+#include "sw/lib/sw/device/base/global_mock.h"
 #include "sw/lib/sw/device/silicon_creator/boot_data.h"
 #include "sw/lib/sw/device/silicon_creator/testing/rom_test.h"
-#include "sw/lib/sw/device/base/global_mock.h"
 
 namespace rom_test {
 namespace internal {
@@ -29,4 +29,4 @@ using MockBootData = testing::StrictMock<internal::MockBootData>;
 
 }  // namespace rom_test
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_MOCK_BOOT_DATA_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_MOCK_BOOT_DATA_H_

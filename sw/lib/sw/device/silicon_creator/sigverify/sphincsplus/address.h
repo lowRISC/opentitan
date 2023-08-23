@@ -4,8 +4,8 @@
 //
 // Derived from code in the SPHINCS+ reference implementation (CC0 license):
 // https://github.com/sphincs/sphincsplus/blob/ed15dd78658f63288c7492c00260d86154b84637/ref/address.h
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_SPHINCSPLUS_ADDRESS_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_SPHINCSPLUS_ADDRESS_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_SIGVERIFY_SPHINCSPLUS_ADDRESS_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_SIGVERIFY_SPHINCSPLUS_ADDRESS_H_
 
 /**
  * This file provides an interface for working with SPHINCS+ hypertree
@@ -224,4 +224,4 @@ void spx_addr_tree_index_set(spx_addr_t *addr, uint32_t tree_index);
 }
 #endif
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_SPHINCSPLUS_ADDRESS_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_SIGVERIFY_SPHINCSPLUS_ADDRESS_H_

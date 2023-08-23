@@ -162,7 +162,7 @@ cc_library(
 opentitan_functest(
     name = "individualize_preop_functest",
     srcs = [
-        "//sw/lib/sw/device/silicon_creator/manuf:individualize_preop_functest.c"
+        "//sw/lib/sw/device/silicon_creator/manuf:individualize_preop_functest.c",
     ],
     cw310 = cw310_params(
         bitstream = "//hw/top_darjeeling/bitstream:rom_with_fake_keys_otp_test_unlocked0",
@@ -194,8 +194,8 @@ cc_library(
         "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/testing/json:provisioning_data",
         "//sw/device/lib/testing/test_framework:check",
-        "//sw/lib/sw/device/silicon_creator/manuf/keys",
         "//sw/lib/sw/device/base:status",
+        "//sw/lib/sw/device/silicon_creator/manuf/keys",
         "//sw/top_darjeeling/sw/dif:flash_ctrl",
         "//sw/top_darjeeling/sw/dif:lc_ctrl",
         "//sw/top_darjeeling/sw/dif:otp_ctrl",
@@ -236,8 +236,8 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
-        "//sw/lib/sw/device/silicon_creator/manuf/keys/fake",
         "//sw/lib/sw/device/base:status",
+        "//sw/lib/sw/device/silicon_creator/manuf/keys/fake",
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:flash_ctrl",
         "//sw/top_darjeeling/sw/dif:lc_ctrl",
@@ -442,10 +442,10 @@ platform_target(
 opentitan_ram_binary(
     name = "sram_device_info_flash_wr_functest",
     srcs = [
-        "//sw/lib/sw/device/silicon_creator/manuf:sram_device_info_flash_wr_functest.c"
+        "//sw/lib/sw/device/silicon_creator/manuf:sram_device_info_flash_wr_functest.c",
     ],
     hdrs = [
-        "//sw/lib/sw/device/silicon_creator/manuf:sram_device_info_flash_wr_functest.h"
+        "//sw/lib/sw/device/silicon_creator/manuf:sram_device_info_flash_wr_functest.h",
     ],
     archive_symbol_prefix = "sram_device_info_flash_wr_functest",
     deps = [
@@ -489,7 +489,7 @@ platform_target(
             target_lc_state.lower(),
         ),
         srcs = [
-            "//sw/lib/sw/device/silicon_creator/manuf:flash_device_info_flash_wr_functest.c"
+            "//sw/lib/sw/device/silicon_creator/manuf:flash_device_info_flash_wr_functest.c",
         ],
         cw310 = cw310_params(
             bitstream = "bitstream_rom_exec_disabled_{}".format(init_lc_state.lower()),

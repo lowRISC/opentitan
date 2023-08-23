@@ -6,9 +6,9 @@
 
 #include <stddef.h>
 
+#include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/silicon_creator/base/sec_mmio.h"
 #include "sw/lib/sw/device/silicon_creator/error.h"
-#include "sw/lib/sw/device/base/memory.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"  // Generated.

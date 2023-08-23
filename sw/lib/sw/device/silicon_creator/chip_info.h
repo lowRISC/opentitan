@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CHIP_INFO_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CHIP_INFO_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_CHIP_INFO_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_CHIP_INFO_H_
 
 #include <stdint.h>
 
@@ -57,4 +57,4 @@ enum {
  */
 extern const chip_info_t kChipInfo;
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CHIP_INFO_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_CHIP_INFO_H_

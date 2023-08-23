@@ -107,13 +107,13 @@ opentitan_functest(
         timeout = "long",
     ),
     deps = [
-        "//sw/lib/sw/device/silicon_creator:error",
         ":irq_asm",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/device/silicon_creator/lib/drivers:watchdog",
         "//sw/lib/sw/device/base:abs_mmio",
+        "//sw/lib/sw/device/silicon_creator:error",
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
     ],
@@ -123,9 +123,9 @@ cc_test(
     name = "rom_print_unittest",
     srcs = ["//sw/lib/sw/device/silicon_creator:rom_print_unittest.cc"],
     deps = [
+        "//sw/device/silicon_creator/lib/drivers:uart",
         "//sw/lib/sw/device/silicon_creator:error",
         "//sw/lib/sw/device/silicon_creator:rom_print",
-        "//sw/device/silicon_creator/lib/drivers:uart",
         "@googletest//:gtest_main",
     ],
 )
@@ -168,7 +168,7 @@ dual_cc_library(
 dual_cc_library(
     name = "manifest_def",
     srcs = dual_inputs(device = [
-        "//sw/lib/sw/device/silicon_creator:manifest_def.c"
+        "//sw/lib/sw/device/silicon_creator:manifest_def.c",
     ]),
     hdrs = ["//sw/lib/sw/device/silicon_creator:manifest_def.h"],
     target_compatible_with = dual_inputs(device = [OPENTITAN_CPU]),
@@ -195,8 +195,8 @@ cc_test(
     local_defines = ["MANIFEST_UNIT_TEST_"],
     deps = [
         dual_cc_device_library_of(":manifest"),
-        "//sw/lib/sw/device/silicon_creator/testing:rom_test",
         "//sw/lib/sw/device/base:csr",
+        "//sw/lib/sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -289,8 +289,8 @@ opentitan_functest(
     name = "crc32_functest",
     srcs = ["//sw/lib/sw/device/silicon_creator:crc32_functest.c"],
     deps = [
-        "//sw/lib/sw/device/silicon_creator:crc32",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/lib/sw/device/silicon_creator:crc32",
         "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )
@@ -305,13 +305,13 @@ opentitan_functest(
     ),
     targets = ["cw310_test_rom"],
     deps = [
-        "//sw/lib/sw/device/silicon_creator:crc32",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ottf_test_config",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/runtime:ibex",
         "//sw/lib/sw/device/runtime:log",
+        "//sw/lib/sw/device/silicon_creator:crc32",
         "//sw/top_darjeeling/sw/device/runtime:print",
     ],
 )

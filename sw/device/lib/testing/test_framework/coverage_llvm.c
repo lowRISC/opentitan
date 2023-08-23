@@ -6,9 +6,9 @@
 
 #include "external/llvm_compiler_rt/lib/profile/InstrProfiling.h"
 #include "sw/device/lib/testing/test_framework/coverage.h"
-#include "sw/lib/sw/device/silicon_creator/crc32.h"
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/runtime/print.h"
+#include "sw/lib/sw/device/silicon_creator/crc32.h"
 
 /**
  * When the linker finds a definition of this symbol, it knows to skip loading

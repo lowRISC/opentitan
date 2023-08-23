@@ -8,10 +8,10 @@
 
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/hash.h"
-#include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/params.h"
 #include "sw/lib/sw/device/runtime/ibex.h"
 #include "sw/lib/sw/device/runtime/log.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/hash.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/params.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 

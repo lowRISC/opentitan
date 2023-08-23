@@ -5,9 +5,9 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
+#include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/silicon_creator/crc32.h"
 #include "sw/lib/sw/device/silicon_creator/error.h"
-#include "sw/lib/sw/device/base/macros.h"
 
 #define LOG_TEST_PARAMS(x)                                           \
   LOG_INFO("[%s] Test params: input = 0x%!y, expected_crc32 = 0x%x", \

@@ -7,8 +7,8 @@
 #include <array>
 
 #include "gtest/gtest.h"
-#include "sw/lib/sw/device/silicon_creator/testing/rom_test.h"
 #include "sw/lib/sw/device/base/mock_abs_mmio.h"
+#include "sw/lib/sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "kmac_regs.h"  // Generated.

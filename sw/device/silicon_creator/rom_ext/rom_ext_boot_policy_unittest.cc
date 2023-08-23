@@ -5,8 +5,8 @@
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy.h"
 
 #include "gtest/gtest.h"
-#include "sw/lib/sw/device/silicon_creator/mock_manifest.h"
 #include "sw/device/silicon_creator/rom_ext/mock_rom_ext_boot_policy_ptrs.h"
+#include "sw/lib/sw/device/silicon_creator/mock_manifest.h"
 #include "sw/lib/sw/device/silicon_creator/testing/rom_test.h"
 
 namespace manifest_unittest {

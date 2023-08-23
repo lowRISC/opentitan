@@ -42,9 +42,8 @@ static const uint32_t kTestDeviceId[kDeviceIdSizeIn32BitWords] = {
  * Initialize all DIF handles used in this program.
  */
 static status_t peripheral_handles_init(void) {
-  TRY(dif_pinmux_init(
-      mmio_region_from_addr(kPinmuxAonBaseAddr[0]), &pinmux));
-  TRY(dif_otp_ctrl_init( mmio_region_from_addr(kOtpCtrlCoreBaseAddr[0]), &otp));
+  TRY(dif_pinmux_init(mmio_region_from_addr(kPinmuxAonBaseAddr[0]), &pinmux));
+  TRY(dif_otp_ctrl_init(mmio_region_from_addr(kOtpCtrlCoreBaseAddr[0]), &otp));
   TRY(dif_uart_init(mmio_region_from_addr(kUartBaseAddr[0]), &uart0));
   return OK_STATUS();
 }

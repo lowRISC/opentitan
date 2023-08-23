@@ -6,10 +6,10 @@
 
 #include <limits.h>
 
-#include "sw/lib/sw/device/silicon_creator/error.h"
 #include "sw/lib/sw/device/base/bitfield.h"
 #include "sw/lib/sw/device/base/hardened.h"
 #include "sw/lib/sw/device/base/multibits.h"
+#include "sw/lib/sw/device/silicon_creator/error.h"
 
 #ifdef __cplusplus
 extern "C" {

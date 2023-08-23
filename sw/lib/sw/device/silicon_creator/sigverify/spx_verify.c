@@ -5,9 +5,9 @@
 #include "sw/lib/sw/device/silicon_creator/sigverify/spx_verify.h"
 
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
-#include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/verify.h"
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/base/memory.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/verify.h"
 
 #include "otp_ctrl_regs.h"
 

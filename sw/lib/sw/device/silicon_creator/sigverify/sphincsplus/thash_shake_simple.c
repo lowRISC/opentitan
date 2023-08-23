@@ -6,9 +6,9 @@
 // https://github.com/sphincs/sphincsplus/blob/ed15dd78658f63288c7492c00260d86154b84637/ref/thash_shake_simple.h
 
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
+#include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/params.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/thash.h"
-#include "sw/lib/sw/device/base/memory.h"
 
 rom_error_t thash(const uint32_t *in, size_t inblocks, const spx_ctx_t *ctx,
                   const spx_addr_t *addr, uint32_t *out) {

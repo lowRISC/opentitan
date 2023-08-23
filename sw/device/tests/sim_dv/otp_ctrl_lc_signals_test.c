@@ -4,7 +4,6 @@
 
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
-#include "sw/lib/sw/device/silicon_creator/base/chip.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/ip/keymgr/dif/dif_keymgr.h"
 #include "sw/ip/keymgr/test/utils/keymgr_testutils.h"
@@ -19,6 +18,7 @@
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/log.h"
+#include "sw/lib/sw/device/silicon_creator/base/chip.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"

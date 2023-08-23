@@ -8,10 +8,10 @@
 #include <limits>
 
 #include "gtest/gtest.h"
-#include "sw/lib/sw/device/silicon_creator/error.h"
-#include "sw/lib/sw/device/silicon_creator/testing/rom_test.h"
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/base/mock_abs_mmio.h"
+#include "sw/lib/sw/device/silicon_creator/error.h"
+#include "sw/lib/sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hmac_regs.h"  // Generated.
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"

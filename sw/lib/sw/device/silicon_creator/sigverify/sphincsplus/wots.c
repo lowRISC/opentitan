@@ -8,12 +8,12 @@
 #include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/wots.h"
 
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
+#include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/silicon_creator/error.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/address.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/params.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/thash.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/utils.h"
-#include "sw/lib/sw/device/base/memory.h"
 
 // Throughout this file, we need to assume that integers in base-w will fit
 // into a single byte.

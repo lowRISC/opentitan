@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_BASE_MOCK_SEC_MMIO_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_BASE_MOCK_SEC_MMIO_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_BASE_MOCK_SEC_MMIO_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_BASE_MOCK_SEC_MMIO_H_
 
-#include "sw/lib/sw/device/silicon_creator/base/sec_mmio.h"
-#include "sw/lib/sw/device/silicon_creator/testing/rom_test.h"
 #include "sw/lib/sw/device/base/global_mock.h"
 #include "sw/lib/sw/device/base/mock_mmio_test_utils.h"
+#include "sw/lib/sw/device/silicon_creator/base/sec_mmio.h"
+#include "sw/lib/sw/device/silicon_creator/testing/rom_test.h"
 
 namespace rom_test {
 namespace internal {
@@ -64,4 +64,4 @@ using MockSecMmio = testing::StrictMock<internal::MockSecMmio>;
 
 }  // namespace rom_test
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_BASE_MOCK_SEC_MMIO_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_BASE_MOCK_SEC_MMIO_H_

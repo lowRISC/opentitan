@@ -4,12 +4,12 @@
 
 #include "sw/lib/sw/device/silicon_creator/sigverify/mod_exp_otbn.h"
 
-#include "sw/lib/sw/device/silicon_creator/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/otbn.h"
-#include "sw/lib/sw/device/silicon_creator/error.h"
-#include "sw/lib/sw/device/silicon_creator/sigverify/rsa_key.h"
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/base/memory.h"
+#include "sw/lib/sw/device/silicon_creator/base/sec_mmio.h"
+#include "sw/lib/sw/device/silicon_creator/error.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/rsa_key.h"
 
 OTBN_DECLARE_APP_SYMBOLS(
     run_rsa_verify_3072_rr_modexp);  // The OTBN RSA-3072 app.

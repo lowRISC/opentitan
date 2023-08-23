@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_INDIVIDUALIZE_PREOP_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_INDIVIDUALIZE_PREOP_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_MANUF_INDIVIDUALIZE_PREOP_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_MANUF_INDIVIDUALIZE_PREOP_H_
 
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
 #include "sw/lib/sw/device/base/status.h"
@@ -30,4 +30,4 @@
 OT_WARN_UNUSED_RESULT
 status_t individualize_preop_otp_write(const dif_otp_ctrl_t *otp);
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_INDIVIDUALIZE_PREOP_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_MANUF_INDIVIDUALIZE_PREOP_H_

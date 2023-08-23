@@ -8,9 +8,9 @@
 #include <limits>
 
 #include "gtest/gtest.h"
+#include "sw/lib/sw/device/base/mock_abs_mmio.h"
 #include "sw/lib/sw/device/silicon_creator/base/mock_sec_mmio.h"
 #include "sw/lib/sw/device/silicon_creator/error.h"
-#include "sw/lib/sw/device/base/mock_abs_mmio.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "keymgr_regs.h"  // Generated.

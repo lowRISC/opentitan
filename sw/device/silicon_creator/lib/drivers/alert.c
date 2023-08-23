@@ -4,11 +4,11 @@
 
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
 
-#include "sw/lib/sw/device/silicon_creator/crc32.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
-#include "sw/lib/sw/device/silicon_creator/error.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"
 #include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/silicon_creator/crc32.h"
+#include "sw/lib/sw/device/silicon_creator/error.h"
 
 #include "alert_handler_regs.h"
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"

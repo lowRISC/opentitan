@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_INDIVIDUALIZE_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_INDIVIDUALIZE_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_MANUF_INDIVIDUALIZE_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_MANUF_INDIVIDUALIZE_H_
 
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
 #include "sw/ip/lc_ctrl/dif/dif_lc_ctrl.h"
@@ -107,4 +107,4 @@ status_t individualize_dev_secret1_start(const dif_lc_ctrl_t *lc_ctrl,
  */
 status_t individualize_dev_secret1_end(const dif_otp_ctrl_t *otp);
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_INDIVIDUALIZE_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_MANUF_INDIVIDUALIZE_H_

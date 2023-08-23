@@ -7,11 +7,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/lib/sw/device/silicon_creator/base/boot_measurements.h"
-#include "sw/lib/sw/device/silicon_creator/base/sec_mmio.h"
-#include "sw/lib/sw/device/silicon_creator/base/static_critical_version.h"
-#include "sw/lib/sw/device/silicon_creator/boot_data.h"
-#include "sw/lib/sw/device/silicon_creator/cfi.h"
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
 #include "sw/device/silicon_creator/lib/drivers/ast.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
@@ -26,9 +21,6 @@
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
-#include "sw/lib/sw/device/silicon_creator/error.h"
-#include "sw/lib/sw/device/silicon_creator/shutdown.h"
-#include "sw/lib/sw/device/silicon_creator/sigverify/sigverify.h"
 #include "sw/device/silicon_creator/rom/boot_policy.h"
 #include "sw/device/silicon_creator/rom/bootstrap.h"
 #include "sw/device/silicon_creator/rom/rom_epmp.h"
@@ -41,6 +33,14 @@
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/base/stdasm.h"
+#include "sw/lib/sw/device/silicon_creator/base/boot_measurements.h"
+#include "sw/lib/sw/device/silicon_creator/base/sec_mmio.h"
+#include "sw/lib/sw/device/silicon_creator/base/static_critical_version.h"
+#include "sw/lib/sw/device/silicon_creator/boot_data.h"
+#include "sw/lib/sw/device/silicon_creator/cfi.h"
+#include "sw/lib/sw/device/silicon_creator/error.h"
+#include "sw/lib/sw/device/silicon_creator/shutdown.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/sigverify.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"

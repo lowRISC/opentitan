@@ -12,11 +12,11 @@
 #include "gtest/gtest.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
+#include "sw/lib/sw/device/base/hardened.h"
+#include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/mock_mod_exp_ibex.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/mock_mod_exp_otbn.h"
 #include "sw/lib/sw/device/silicon_creator/testing/rom_test.h"
-#include "sw/lib/sw/device/base/hardened.h"
-#include "sw/lib/sw/device/base/macros.h"
 
 #include "otp_ctrl_regs.h"
 

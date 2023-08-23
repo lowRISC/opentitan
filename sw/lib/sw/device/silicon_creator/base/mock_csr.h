@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_BASE_MOCK_CSR_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_BASE_MOCK_CSR_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_BASE_MOCK_CSR_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_BASE_MOCK_CSR_H_
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -76,4 +76,4 @@ using MockCsr = testing::StrictMock<internal::MockCsr>;
 #define EXPECT_CSR_CLEAR_BITS(csr, mask) \
   EXPECT_CALL(::mock_csr::MockCsr::Instance(), ClearBits(csr, mask))
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_BASE_MOCK_CSR_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_BASE_MOCK_CSR_H_

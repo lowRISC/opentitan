@@ -55,9 +55,8 @@ const uint32_t kRvCoreIbexCfgBaseAddr[] = {
 const uint32_t kSramCtrlMainRegsBaseAddr[] = {
     TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR};
 
-const uint32_t kUartBaseAddr[] = {TOP_EARLGREY_UART0_BASE_ADDR,
-                                  TOP_EARLGREY_UART1_BASE_ADDR,
-                                  TOP_EARLGREY_UART2_BASE_ADDR,
-                                  TOP_EARLGREY_UART3_BASE_ADDR};
+const uint32_t kUartBaseAddr[] = {
+    TOP_EARLGREY_UART0_BASE_ADDR, TOP_EARLGREY_UART1_BASE_ADDR,
+    TOP_EARLGREY_UART2_BASE_ADDR, TOP_EARLGREY_UART3_BASE_ADDR};
 
 const uint32_t kUsbdevBaseAddr[] = {TOP_EARLGREY_USBDEV_BASE_ADDR};

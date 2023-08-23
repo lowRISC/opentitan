@@ -57,10 +57,10 @@ cc_library(
     srcs = ["bare_metal.c"],
     hdrs = ["bare_metal.h"],
     deps = [
-        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
+        "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/silicon_creator:rom_print",
         "//sw/lib/sw/device/silicon_creator/base:static_critical",
-        "//sw/lib/sw/device/base:macros",
+        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
     ],
 )
 
@@ -84,8 +84,8 @@ opentitan_flash_binary(
     deps = [
         ":bare_metal",
         ":ld_slot_a",
-        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
         "//sw/lib/sw/device/crt",
+        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
     ],
 )
 
@@ -97,8 +97,8 @@ opentitan_flash_binary(
     deps = [
         ":bare_metal",
         ":ld_slot_b",
-        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
         "//sw/lib/sw/device/crt",
+        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
     ],
 )
 
@@ -110,8 +110,8 @@ opentitan_flash_binary(
     deps = [
         ":bare_metal",
         ":ld_slot_virtual",
-        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
         "//sw/lib/sw/device/crt",
+        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
     ],
 )
 

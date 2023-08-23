@@ -19,10 +19,9 @@ static dif_pinmux_t pinmux;
 
 void sram_main(void) {
   // Initialize UART console.
-  CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(kPinmuxAonBaseAddr[0]), &pinmux));
-  CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(kUartBaseAddr[0]), &uart));
+  CHECK_DIF_OK(
+      dif_pinmux_init(mmio_region_from_addr(kPinmuxAonBaseAddr[0]), &pinmux));
+  CHECK_DIF_OK(dif_uart_init(mmio_region_from_addr(kUartBaseAddr[0]), &uart));
   pinmux_testutils_init(&pinmux);
   CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
   CHECK(kClockFreqPeripheralHz <= UINT32_MAX,

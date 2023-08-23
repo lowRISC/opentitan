@@ -14,12 +14,12 @@
 #include "sw/ip/lc_ctrl/driver/lc_ctrl.h"
 #include "sw/ip/otp_ctrl/driver/otp_ctrl.h"
 #include "sw/ip/rv_core_ibex/driver/rv_core_ibex.h"
-#include "sw/lib/sw/device/silicon_creator/error.h"
-#include "sw/lib/sw/device/silicon_creator/testing/rom_test.h"
 #include "sw/lib/sw/device/base/global_mock.h"
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/base/mock_abs_mmio.h"
+#include "sw/lib/sw/device/silicon_creator/error.h"
+#include "sw/lib/sw/device/silicon_creator/testing/rom_test.h"
 
 #include "alert_handler_regs.h"
 #include "flash_ctrl_regs.h"
@@ -521,9 +521,8 @@ TEST_F(ShutdownTest, RedactPolicyManufacturing) {
       LC_CTRL_LC_STATE_STATE_VALUE_RMA,
   };
   for (const auto state : kManufacturingStates) {
-    EXPECT_ABS_READ32(
-        kLcCtrlBaseAddr[0] + LC_CTRL_LC_STATE_REG_OFFSET,
-        static_cast<uint32_t>(state));
+    EXPECT_ABS_READ32(kLcCtrlBaseAddr[0] + LC_CTRL_LC_STATE_REG_OFFSET,
+                      static_cast<uint32_t>(state));
     EXPECT_EQ(shutdown_redact_policy(), kShutdownErrorRedactNone);
   }
 }
@@ -536,12 +535,10 @@ TEST_F(ShutdownTest, RedactPolicyProduction) {
       LC_CTRL_LC_STATE_STATE_VALUE_PROD_END,
   };
   for (const auto state : kProductionStates) {
+    EXPECT_ABS_READ32(kLcCtrlBaseAddr[0] + LC_CTRL_LC_STATE_REG_OFFSET,
+                      static_cast<uint32_t>(state));
     EXPECT_ABS_READ32(
-        kLcCtrlBaseAddr[0] + LC_CTRL_LC_STATE_REG_OFFSET,
-        static_cast<uint32_t>(state));
-    EXPECT_ABS_READ32(
-        kOtpCtrlCoreBaseAddr[0] +
-            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
+        kOtpCtrlCoreBaseAddr[0] + OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
             OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ERROR_REPORTING_OFFSET,
         static_cast<uint32_t>(kShutdownErrorRedactModule));
     EXPECT_EQ(shutdown_redact_policy(), kShutdownErrorRedactModule);
@@ -608,9 +605,8 @@ TEST_F(ShutdownTest, ShutdownIfErrorUnknown) {
 }
 
 TEST_F(ShutdownTest, SoftwareEscalate) {
-  EXPECT_ABS_WRITE32(kRvCoreIbexCfgBaseAddr[0] +
-                         RV_CORE_IBEX_SW_FATAL_ERR_REG_OFFSET,
-                     0);
+  EXPECT_ABS_WRITE32(
+      kRvCoreIbexCfgBaseAddr[0] + RV_CORE_IBEX_SW_FATAL_ERR_REG_OFFSET, 0);
   unmocked_shutdown_software_escalate();
 }
 }  // namespace

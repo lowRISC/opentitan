@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_OTP_IMG_TYPES_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_OTP_IMG_TYPES_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_MANUF_OTP_IMG_TYPES_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_MANUF_OTP_IMG_TYPES_H_
 
 #include <stdint.h>
 
@@ -59,4 +59,4 @@ typedef struct otp_kv {
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_OTP_IMG_TYPES_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_MANUF_OTP_IMG_TYPES_H_

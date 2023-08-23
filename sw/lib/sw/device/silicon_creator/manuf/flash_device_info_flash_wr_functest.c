@@ -25,8 +25,7 @@ static dif_lc_ctrl_t lc_ctrl;
  */
 static status_t peripheral_handles_init(void) {
   TRY(dif_flash_ctrl_init_state(
-      &flash_ctrl_state,
-      mmio_region_from_addr(kFlashCtrlCoreBaseAddr[0])));
+      &flash_ctrl_state, mmio_region_from_addr(kFlashCtrlCoreBaseAddr[0])));
   TRY(dif_lc_ctrl_init(mmio_region_from_addr(kLcCtrlBaseAddr[0]), &lc_ctrl));
   return OK_STATUS();
 }

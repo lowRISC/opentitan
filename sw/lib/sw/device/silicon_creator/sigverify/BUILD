@@ -7,7 +7,7 @@ load(
     "//rules:cross_platform.bzl",
     "dual_cc_device_library_of",
     "dual_cc_library",
-    "dual_inputs"
+    "dual_inputs",
 )
 load("//rules:otbn.bzl", "otbn_insn_count_range")
 
@@ -27,8 +27,8 @@ cc_library(
     srcs = ["spx_key.c"],
     hdrs = ["spx_key.h"],
     deps = [
-        "//sw/lib/sw/device/silicon_creator/sigverify/sphincsplus:params",
         "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/silicon_creator/sigverify/sphincsplus:params",
     ],
 )
 
@@ -156,8 +156,8 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/lib/sw/device/silicon_creator/sigverify/sphincsplus:verify",
         "//sw/lib/sw/device/base:hardened",
+        "//sw/lib/sw/device/silicon_creator/sigverify/sphincsplus:verify",
     ],
 )
 
@@ -167,10 +167,10 @@ cc_library(
     hdrs = ["usage_constraints.h"],
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//sw/top_darjeeling/sw/device/silicon_creator:manifest",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/lib/sw/device/base:bitfield",
         "//sw/lib/sw/device/base:hardened",
+        "//sw/lib/sw/device/silicon_creator:manifest",
     ],
 )
 

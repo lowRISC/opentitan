@@ -7,9 +7,9 @@
 #include <array>
 
 #include "gtest/gtest.h"
+#include "sw/lib/sw/device/base/mock_abs_mmio.h"
 #include "sw/lib/sw/device/silicon_creator/base/mock_sec_mmio.h"
 #include "sw/lib/sw/device/silicon_creator/testing/rom_test.h"
-#include "sw/lib/sw/device/base/mock_abs_mmio.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "rv_core_ibex_regs.h"

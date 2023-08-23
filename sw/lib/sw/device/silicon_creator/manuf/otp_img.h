@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_OTP_IMG_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_OTP_IMG_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_MANUF_OTP_IMG_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_MANUF_OTP_IMG_H_
 
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
 #include "sw/lib/sw/device/base/status.h"
@@ -27,4 +27,4 @@ status_t otp_img_write(const dif_otp_ctrl_t *otp,
                        dif_otp_ctrl_partition_t partition, const otp_kv_t *kv,
                        size_t len);
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_OTP_IMG_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_MANUF_OTP_IMG_H_

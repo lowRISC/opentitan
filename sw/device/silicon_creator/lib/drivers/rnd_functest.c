@@ -7,13 +7,13 @@
 
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/lib/sw/device/silicon_creator/crc32.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/ip/entropy_src/dif/dif_entropy_src.h"
 #include "sw/ip/entropy_src/test/utils/entropy_testutils.h"
 #include "sw/ip/rv_core_ibex/test/utils/rand_testutils.h"
 #include "sw/lib/sw/device/runtime/log.h"
+#include "sw/lib/sw/device/silicon_creator/crc32.h"
 #include "sw/lib/sw/device/silicon_creator/error.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"

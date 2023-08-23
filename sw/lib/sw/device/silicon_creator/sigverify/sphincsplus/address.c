@@ -7,8 +7,8 @@
 
 #include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/address.h"
 
-#include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/params.h"
 #include "sw/lib/sw/device/base/memory.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/params.h"
 
 static_assert(kSpxTreeHeight * (kSpxD - 1) <= 64,
               "Subtree addressing is currently limited to at most 2^64 trees.");

@@ -28,10 +28,10 @@ cc_library(
     hdrs = ["coverage.h"],
     linkopts = ["-lgcc"],
     deps = [
-        "//sw/lib/sw/device/silicon_creator:crc32",
         "//sw/lib/sw/device/base:memory",
         "//sw/lib/sw/device/runtime:log",
         "//sw/lib/sw/device/runtime:print",
+        "//sw/lib/sw/device/silicon_creator:crc32",
         "//third_party/llvm_compiler_rt",
     ],
 )
@@ -142,7 +142,7 @@ ld_library(
 cc_library(
     name = "english_breakfast_test_framework_manifest_def",
     srcs = [
-        "//sw/lib/sw/device/silicon_creator:english_breakfast_test_framework_manifest_def_srcs",
+        "//sw/top_darjeeling/sw/device/silicon_creator:english_breakfast_test_framework_manifest_def_srcs",
     ],
     # This should be built only for english breakfast and skipped if using wildcards.
     tags = ["manual"],

@@ -4,10 +4,10 @@
 
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
 
-#include "sw/lib/sw/device/silicon_creator/error.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"
 #include "sw/lib/sw/device/base/bitfield.h"
 #include "sw/lib/sw/device/base/memory.h"
+#include "sw/lib/sw/device/silicon_creator/error.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "kmac_regs.h"  // Generated.

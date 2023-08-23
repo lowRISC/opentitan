@@ -7,9 +7,9 @@
 #include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/lib/sw/device/silicon_creator/chip_info.h"
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/base/status.h"
+#include "sw/lib/sw/device/silicon_creator/chip_info.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling_memory.h"

@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "gtest/gtest.h"
+#include "sw/lib/sw/device/base/mock_abs_mmio.h"
 #include "sw/lib/sw/device/silicon_creator/error.h"
 #include "sw/lib/sw/device/silicon_creator/testing/rom_test.h"
-#include "sw/lib/sw/device/base/mock_abs_mmio.h"
 
 namespace sec_mmio_unittest {
 namespace {

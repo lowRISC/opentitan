@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CFI_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CFI_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_CFI_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_CFI_H_
 
 #include "sw/lib/sw/device/base/hardened.h"
 
@@ -185,4 +185,4 @@ enum {
     HARDENED_CHECK_EQ(table[index], CFI_STEP_TO_COUNT(index, step)); \
   } while (0)
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CFI_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_CFI_H_

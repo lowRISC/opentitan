@@ -5,8 +5,8 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_RETENTION_SRAM_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_RETENTION_SRAM_H_
 
-#include "sw/lib/sw/device/silicon_creator/error.h"
 #include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/silicon_creator/error.h"
 
 #ifdef __cplusplus
 extern "C" {

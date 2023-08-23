@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_EPMP_STATE_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_EPMP_STATE_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_EPMP_STATE_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_EPMP_STATE_H_
 
 #include <stdint.h>
 
+#include "sw/lib/sw/device/base/bitfield.h"
 #include "sw/lib/sw/device/silicon_creator/epmp_defs.h"
 #include "sw/lib/sw/device/silicon_creator/error.h"
-#include "sw/lib/sw/device/base/bitfield.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -222,4 +222,4 @@ rom_error_t epmp_state_check(void);
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_EPMP_STATE_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_EPMP_STATE_H_

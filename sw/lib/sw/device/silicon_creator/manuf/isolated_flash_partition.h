@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_ISOLATED_FLASH_PARTITION_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_ISOLATED_FLASH_PARTITION_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_MANUF_ISOLATED_FLASH_PARTITION_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_MANUF_ISOLATED_FLASH_PARTITION_H_
 
 #include <stdint.h>
 
@@ -46,4 +46,4 @@ status_t isolated_flash_partition_write(
     dif_flash_ctrl_state_t *flash_ctrl_state, const uint32_t *wafer_auth_secret,
     size_t num_words);
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_ISOLATED_FLASH_PARTITION_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_MANUF_ISOLATED_FLASH_PARTITION_H_

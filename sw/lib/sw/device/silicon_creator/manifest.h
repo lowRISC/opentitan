@@ -2,19 +2,19 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_MANIFEST_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_MANIFEST_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_MANIFEST_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_MANIFEST_H_
 
 #include <stddef.h>
 
-#include "sw/lib/sw/device/silicon_creator/base/chip.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
+#include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/silicon_creator/base/chip.h"
 #include "sw/lib/sw/device/silicon_creator/epmp_state.h"
 #include "sw/lib/sw/device/silicon_creator/error.h"
 #include "sw/lib/sw/device/silicon_creator/keymgr_binding_value.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/rsa_key.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/spx_key.h"
-#include "sw/lib/sw/device/base/macros.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -564,4 +564,4 @@ rom_error_t manifest_get_ext_spx_signature(
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_MANIFEST_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_MANIFEST_H_

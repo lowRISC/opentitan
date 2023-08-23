@@ -4,11 +4,11 @@
 
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 
-#include "sw/lib/sw/device/silicon_creator/error.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"
 #include "sw/lib/sw/device/base/bitfield.h"
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/base/memory.h"
+#include "sw/lib/sw/device/silicon_creator/error.h"
 
 #include "hmac_regs.h"  // Generated.
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"

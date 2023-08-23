@@ -5,15 +5,15 @@
 // Derived from code in the SPHINCS+ reference implementation (CC0 license):
 // https://github.com/sphincs/sphincsplus/blob/ed15dd78658f63288c7492c00260d86154b84637/ref/api.h
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_SPHINCSPLUS_VERIFY_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_SPHINCSPLUS_VERIFY_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_SIGVERIFY_SPHINCSPLUS_VERIFY_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_SIGVERIFY_SPHINCSPLUS_VERIFY_H_
 
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/silicon_creator/error.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/sphincsplus/params.h"
-#include "sw/lib/sw/device/base/macros.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -79,4 +79,4 @@ void spx_public_key_root(const uint32_t *pk, uint32_t *root);
 }
 #endif
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_SPHINCSPLUS_VERIFY_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_SIGVERIFY_SPHINCSPLUS_VERIFY_H_

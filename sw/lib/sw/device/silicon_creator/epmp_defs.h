@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_EPMP_DEFS_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_EPMP_DEFS_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_EPMP_DEFS_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_EPMP_DEFS_H_
 
 /**
  * Constants for use when interacting with the enhanced Physical Memory
@@ -72,4 +72,4 @@
 #define EPMP_CFG_LRW (EPMP_CFG_L | EPMP_CFG_R | EPMP_CFG_W)
 #define EPMP_CFG_LRWX (EPMP_CFG_L | EPMP_CFG_R | EPMP_CFG_W | EPMP_CFG_X)
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_EPMP_DEFS_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_EPMP_DEFS_H_

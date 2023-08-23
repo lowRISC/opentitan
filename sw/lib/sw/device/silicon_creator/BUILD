@@ -66,6 +66,22 @@ cc_library(
 )
 
 cc_library(
+    name = "manifest",
+    hdrs = [
+        "manifest.h",
+    ],
+    deps = [
+        ":epmp_state",
+        ":error",
+        ":keymgr_binding",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/lib/sw/device/silicon_creator/base:chip",
+        "//sw/lib/sw/device/silicon_creator/sigverify:rsa_key",
+        "//sw/lib/sw/device/silicon_creator/sigverify:spx_key",
+    ],
+)
+
+cc_library(
     name = "rom_print",
     srcs = ["rom_print.c"],
     hdrs = ["rom_print.h"],
@@ -89,8 +105,8 @@ dual_cc_library(
     # This library is a dependancy of the ujson library.
     # TODO: limit the subpackages under sw to top specific sw directories
     visibility = [
-        "//sw/lib/sw/device/ujson:__pkg__",
         "//sw:__subpackages__",
+        "//sw/lib/sw/device/ujson:__pkg__",
     ],
     deps = dual_inputs(
         host = [

@@ -4,8 +4,6 @@
 
 #include "sw/device/silicon_creator/rom_ext/rom_ext.h"
 
-#include "sw/lib/sw/device/silicon_creator/base/chip.h"
-#include "sw/lib/sw/device/silicon_creator/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
@@ -13,12 +11,6 @@
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
-#include "sw/lib/sw/device/silicon_creator/epmp_state.h"
-#include "sw/lib/sw/device/silicon_creator/manifest.h"
-#include "sw/lib/sw/device/silicon_creator/manifest_def.h"
-#include "sw/lib/sw/device/silicon_creator/rom_print.h"
-#include "sw/lib/sw/device/silicon_creator/shutdown.h"
-#include "sw/lib/sw/device/silicon_creator/sigverify/sigverify.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_epmp.h"
 #include "sw/device/silicon_creator/rom_ext/sigverify_keys.h"
@@ -27,6 +19,14 @@
 #include "sw/lib/sw/device/base/macros.h"
 #include "sw/lib/sw/device/base/stdasm.h"
 #include "sw/lib/sw/device/runtime/hart.h"
+#include "sw/lib/sw/device/silicon_creator/base/chip.h"
+#include "sw/lib/sw/device/silicon_creator/base/sec_mmio.h"
+#include "sw/lib/sw/device/silicon_creator/epmp_state.h"
+#include "sw/lib/sw/device/silicon_creator/manifest.h"
+#include "sw/lib/sw/device/silicon_creator/manifest_def.h"
+#include "sw/lib/sw/device/silicon_creator/rom_print.h"
+#include "sw/lib/sw/device/silicon_creator/shutdown.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/sigverify.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"  // Generated.
 

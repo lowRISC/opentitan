@@ -7,11 +7,11 @@
 #include <array>
 
 #include "gtest/gtest.h"
-#include "sw/lib/sw/device/silicon_creator/base/mock_sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
-#include "sw/lib/sw/device/silicon_creator/testing/rom_test.h"
 #include "sw/lib/sw/device/base/mock_abs_mmio.h"
+#include "sw/lib/sw/device/silicon_creator/base/mock_sec_mmio.h"
+#include "sw/lib/sw/device/silicon_creator/testing/rom_test.h"
 
 #include "aon_timer_regs.h"
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"

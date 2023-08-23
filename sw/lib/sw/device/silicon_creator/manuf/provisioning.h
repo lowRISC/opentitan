@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_PROVISIONING_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_PROVISIONING_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_MANUF_PROVISIONING_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_MANUF_PROVISIONING_H_
 
 #include "sw/device/lib/crypto/impl/ecc/p256_common.h"
 #include "sw/device/lib/crypto/include/ecc.h"
@@ -65,4 +65,4 @@ status_t provisioning_device_secrets_start(dif_flash_ctrl_state_t *flash_state,
  */
 status_t provisioning_device_secrets_end(const dif_otp_ctrl_t *otp);
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_PROVISIONING_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_MANUF_PROVISIONING_H_

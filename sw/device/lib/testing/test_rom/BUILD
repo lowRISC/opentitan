@@ -77,8 +77,8 @@ alias(
 cc_library(
     name = "english_breakfast_test_rom_manifest",
     srcs = [
-        "//sw/lib/sw/device/silicon_creator:english_breakfast_test_rom_manifest_srcs",
         "//sw/device/silicon_creator/lib/drivers:english_breakfast_test_rom_driver_srcs",
+        "//sw/top_darjeeling/sw/device/silicon_creator:english_breakfast_test_rom_manifest_srcs",
     ],
     # This should be built only for english breakfast and skipped if using wildcards.
     tags = ["manual"],
@@ -136,10 +136,10 @@ cc_library(
         "//sw/lib/sw/device/crt",
         "//sw/lib/sw/device/runtime:hart",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/silicon_creator:chip_info",
         "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
         "//sw/lib/sw/device/silicon_creator/base:static_critical",
         "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/silicon_creator:chip_info",
         "//sw/top_darjeeling/sw/dif:clkmgr",
         "//sw/top_darjeeling/sw/dif:flash_ctrl",
         "//sw/top_darjeeling/sw/dif:gpio",

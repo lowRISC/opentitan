@@ -17,12 +17,12 @@
 #include "sw/ip/rstmgr/driver/rstmgr.h"
 #include "sw/ip/rstmgr/test/utils/rstmgr_testutils.h"
 #include "sw/lib/sw/device/base/status.h"
-#include "sw/lib/sw/device/ujson/ujson.h"
 #include "sw/lib/sw/device/silicon_creator/manuf/provisioning.h"
+#include "sw/lib/sw/device/ujson/ujson.h"
 
 #include "flash_ctrl_regs.h"  // Generated
-#include "lc_ctrl_regs.h"   // Generated
-#include "otp_ctrl_regs.h"  // Generated
+#include "lc_ctrl_regs.h"     // Generated
+#include "otp_ctrl_regs.h"    // Generated
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
@@ -41,14 +41,11 @@ static dif_rstmgr_t rstmgr;
  */
 static status_t peripheral_handles_init(void) {
   TRY(dif_flash_ctrl_init_state(
-      &flash_state,
-      mmio_region_from_addr(kFlashCtrlCoreBaseAddr[0])));
+      &flash_state, mmio_region_from_addr(kFlashCtrlCoreBaseAddr[0])));
   TRY(dif_lc_ctrl_init(mmio_region_from_addr(kLcCtrlBaseAddr[0]), &lc_ctrl));
-  TRY(dif_otp_ctrl_init(
-      mmio_region_from_addr(kOtpCtrlCoreBaseAddr[0]),
-      &otp_ctrl));
-  TRY(dif_rstmgr_init(
-      mmio_region_from_addr(kRstmgrAonBaseAddr[0]), &rstmgr));
+  TRY(dif_otp_ctrl_init(mmio_region_from_addr(kOtpCtrlCoreBaseAddr[0]),
+                        &otp_ctrl));
+  TRY(dif_rstmgr_init(mmio_region_from_addr(kRstmgrAonBaseAddr[0]), &rstmgr));
   return OK_STATUS();
 }
 

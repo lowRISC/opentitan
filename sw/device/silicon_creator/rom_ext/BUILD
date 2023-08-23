@@ -113,14 +113,14 @@ cc_library(
     hdrs = ["sigverify_keys.h"],
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//sw/lib/sw/device/silicon_creator:error",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:rnd",
-        "//sw/lib/sw/device/silicon_creator/sigverify:rsa_key",
         "//sw/lib/sw/device/base:bitfield",
         "//sw/lib/sw/device/base:hardened",
         "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/silicon_creator:error",
+        "//sw/lib/sw/device/silicon_creator/sigverify:rsa_key",
     ],
 )
 
@@ -147,13 +147,6 @@ cc_library(
         ":rom_ext_boot_policy",
         ":rom_ext_epmp",
         ":sigverify_keys",
-        "//sw/top_darjeeling/sw/device/silicon_creator:manifest",
-        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
-        "//sw/lib/sw/device/silicon_creator:rom_print",
-        "//sw/top_darjeeling/sw/device/silicon_creator:shutdown",
-        "//sw/lib/sw/device/silicon_creator/base:chip",
-        "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
-        "//sw/lib/sw/device/silicon_creator/base:static_critical",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:ibex",
@@ -161,13 +154,20 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:pinmux",
         "//sw/device/silicon_creator/lib/drivers:uart",
-        "//sw/lib/sw/device/silicon_creator/sigverify",
         "//sw/device/silicon_creator/rom_ext/keys/fake",
         "//sw/lib/sw/device/arch:device",
         "//sw/lib/sw/device/base:csr",
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/base:stdasm",
         "//sw/lib/sw/device/runtime:hart",
+        "//sw/lib/sw/device/silicon_creator:rom_print",
+        "//sw/lib/sw/device/silicon_creator/base:chip",
+        "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
+        "//sw/lib/sw/device/silicon_creator/base:static_critical",
+        "//sw/lib/sw/device/silicon_creator/sigverify",
+        "//sw/top_darjeeling/sw/device/silicon_creator:manifest",
+        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
+        "//sw/top_darjeeling/sw/device/silicon_creator:shutdown",
     ],
 )
 
@@ -191,8 +191,8 @@ opentitan_flash_binary(
     deps = [
         ":ld_slot_a",
         ":rom_ext",
-        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
         "//sw/lib/sw/device/crt",
+        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
     ],
 )
 
@@ -203,8 +203,8 @@ opentitan_flash_binary(
     deps = [
         ":ld_slot_b",
         ":rom_ext",
-        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
         "//sw/lib/sw/device/crt",
+        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
     ],
 )
 
@@ -215,8 +215,8 @@ opentitan_flash_binary(
     deps = [
         ":ld_slot_virtual",
         ":rom_ext",
-        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
         "//sw/lib/sw/device/crt",
+        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
     ],
 )
 
@@ -233,7 +233,7 @@ opentitan_flash_binary(
     deps = [
         ":ld_slot_a",
         ":rom_ext",
-        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
         "//sw/lib/sw/device/crt",
+        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
     ],
 )

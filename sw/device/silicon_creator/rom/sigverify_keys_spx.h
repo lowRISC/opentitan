@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
+#include "sw/device/silicon_creator/rom/sigverify_keys.h"
 #include "sw/lib/sw/device/silicon_creator/error.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/spx_key.h"
-#include "sw/device/silicon_creator/rom/sigverify_keys.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -4,8 +4,8 @@
 
 #include "sw/device/silicon_creator/lib/drivers/pwrmgr.h"
 
-#include "sw/lib/sw/device/silicon_creator/base/sec_mmio.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"
+#include "sw/lib/sw/device/silicon_creator/base/sec_mmio.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "pwrmgr_regs.h"

@@ -28,4 +28,3 @@ exports_files([
     "verify_test.c",
     "wots_test.c",
 ])
-

@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SHUTDOWN_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SHUTDOWN_H_
+#ifndef OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_SHUTDOWN_H_
+#define OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_SHUTDOWN_H_
 #include <stdint.h>
 #include <stdnoreturn.h>
 
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
-#include "sw/lib/sw/device/silicon_creator/error.h"
 #include "sw/lib/sw/device/base/hardened.h"
 #include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/silicon_creator/error.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -126,4 +126,4 @@ noreturn
 #ifdef __cplusplus
 }
 #endif
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SHUTDOWN_H_
+#endif  // OPENTITAN_SW_LIB_SW_DEVICE_SILICON_CREATOR_SHUTDOWN_H_

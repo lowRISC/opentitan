@@ -10,8 +10,8 @@
 #include <stdint.h>
 #include <stdnoreturn.h>
 
-#include "sw/lib/sw/device/silicon_creator/error.h"
 #include "sw/lib/sw/device/base/macros.h"
+#include "sw/lib/sw/device/silicon_creator/error.h"
 
 #ifdef __cplusplus
 extern "C" {

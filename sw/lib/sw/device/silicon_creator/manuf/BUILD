@@ -29,4 +29,7 @@ cc_library(
     hdrs = ["otp_img_types.h"],
 )
 
-exports_files(glob(["*.c", "*.h"]))
+exports_files(glob([
+    "*.c",
+    "*.h",
+]))

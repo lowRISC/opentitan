@@ -4,8 +4,8 @@
 
 #include "sw/device/silicon_creator/rom/sigverify_keys_spx.h"
 
-#include "sw/lib/sw/device/silicon_creator/sigverify/spx_verify.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/spx_verify.h"
 
 #include "otp_ctrl_regs.h"
 

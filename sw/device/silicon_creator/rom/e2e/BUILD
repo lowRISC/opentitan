@@ -209,9 +209,9 @@ opentitan_functest(
     ),
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
         "//sw/lib/sw/device/silicon_creator/base:static_critical",
         "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
     ],
 )
 
@@ -379,9 +379,9 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib/drivers:uart",
         "//sw/lib/sw/device/runtime:hart",
         "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
         "//sw/lib/sw/device/silicon_creator/base:static_critical",
         "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/silicon_creator:manifest_def",
     ],
 )
 
@@ -2307,8 +2307,8 @@ test_suite(
         deps = [
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:otp",
-            "//sw/lib/sw/device/silicon_creator/sigverify:spx_verify",
             "//sw/lib/sw/device/runtime:log",
+            "//sw/lib/sw/device/silicon_creator/sigverify:spx_verify",
             "//sw/top_darjeeling/sw/device/runtime:print",
         ],
     )
@@ -2362,9 +2362,9 @@ test_suite(
             "//sw/device/lib/testing/test_framework:check",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/lib/testing/test_framework:status",
-            "//sw/lib/sw/device/silicon_creator:epmp_defs",
             "//sw/lib/sw/device/base:csr",
             "//sw/lib/sw/device/runtime:log",
+            "//sw/lib/sw/device/silicon_creator:epmp_defs",
             "//sw/top_darjeeling/sw/device/runtime:print",
             "//sw/top_darjeeling/sw/dif:lc_ctrl",
             "//sw/top_darjeeling/sw/test/utils:lc_ctrl_testutils",
@@ -3573,8 +3573,8 @@ opentitan_flash_binary(
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
-        "//sw/top_darjeeling/sw/device/silicon_creator:boot_data",
         "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/silicon_creator:boot_data",
     ],
 )
 
@@ -3990,9 +3990,9 @@ opentitan_flash_binary(
         "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/top_darjeeling/sw/device/silicon_creator:chip_info",
         "//sw/lib/sw/device/base:status",
         "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/device/silicon_creator:chip_info",
     ],
 )
 
