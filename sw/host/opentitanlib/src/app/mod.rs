@@ -6,14 +6,16 @@
 pub mod command;
 pub mod config;
 
+use crate::io;
 use crate::io::eeprom;
 use crate::io::emu::Emulator;
-use crate::io::gpio::{GpioMonitoring, GpioPin, PinMode, PullMode};
-use crate::io::i2c::{self, Bus};
+use crate::io::gpio::{GpioMonitoring, GpioPin, PinConfiguration, PinMode, PullMode};
+use crate::io::i2c::{self, Bus, I2cConfiguration};
 use crate::io::ioexpander::IoExpander;
 use crate::io::jtag::{Jtag, JtagParams};
 use crate::io::nonblocking_help::NonblockingHelp;
-use crate::io::spi::{self, Target};
+use crate::io::spi;
+use crate::io::spi::{SpiConfiguration, Target};
 use crate::io::uart::Uart;
 use crate::transport::{
     ioexpander, Capability, ProgressIndicator, ProxyOps, Transport, TransportError,
@@ -109,62 +111,6 @@ impl ProgressIndicator for StagedProgressBar {
     }
 }
 
-#[derive(Clone, Copy, Default, Debug)]
-pub struct PinConfiguration {
-    /// The input/output mode of the GPIO pin.
-    pub mode: Option<PinMode>,
-    /// The default/initial level of the pin (true means high), has effect only in `PushPull` or
-    /// `OpenDrain` modes.
-    pub level: Option<bool>,
-    /// Whether the pin has pullup/down resistor enabled.
-    pub pull_mode: Option<PullMode>,
-    /// The default/initial analog level of the pin in Volts, has effect only in `AnalogOutput`
-    /// mode.
-    pub volts: Option<f32>,
-}
-
-fn merge_field<T>(f1: &mut Option<T>, f2: &Option<T>) -> Result<(), ()>
-where
-    T: PartialEq<T> + Clone,
-{
-    match (&*f1, f2) {
-        (Some(v1), Some(v2)) if *v1 != *v2 => return Err(()),
-        (None, _) => *f1 = f2.clone(),
-        _ => (),
-    }
-    Ok(())
-}
-
-impl PinConfiguration {
-    /// Sometimes one configuration file specifies OpenDrain while leaving out the level, and
-    /// another file specifies high level, while leaving out the mode.  This method will merge
-    /// declarations from multiple files, as long as they are not conflicting (e.g. both PushPull
-    /// and OpenDrain, or both high and low level.)
-    fn merge(&mut self, other: &PinConfiguration) -> Result<(), ()> {
-        merge_field(&mut self.mode, &other.mode)?;
-        merge_field(&mut self.level, &other.level)?;
-        merge_field(&mut self.pull_mode, &other.pull_mode)?;
-        merge_field(&mut self.volts, &other.volts)?;
-        Ok(())
-    }
-}
-
-#[derive(Default, Debug)]
-pub struct SpiConfiguration {
-    pub underlying_instance: String,
-    pub mode: Option<spi::TransferMode>,
-    pub chip_select: Option<String>,
-    pub bits_per_word: Option<u32>,
-    pub bits_per_sec: Option<u32>,
-}
-
-#[derive(Default, Debug)]
-pub struct I2cConfiguration {
-    pub underlying_instance: String,
-    pub default_addr: Option<u8>,
-    pub bits_per_sec: Option<u32>,
-}
-
 pub struct TransportWrapperBuilder {
     interface: String,
     provides_list: Vec<(String, String)>,
@@ -244,35 +190,33 @@ impl TransportWrapperBuilder {
     fn record_spi_conf(
         spi_conf_map: &mut HashMap<String, config::SpiConfiguration>,
         spi_conf: &config::SpiConfiguration,
-    ) -> Result<(), ()> {
+    ) -> Option<()> {
         let entry = spi_conf_map
             .entry(spi_conf.name.to_string())
             .or_insert_with(|| config::SpiConfiguration {
                 name: spi_conf.name.clone(),
                 ..Default::default()
             });
-        merge_field(&mut entry.mode, &spi_conf.mode)?;
-        merge_field(&mut entry.bits_per_word, &spi_conf.bits_per_word)?;
-        merge_field(&mut entry.bits_per_sec, &spi_conf.bits_per_sec)?;
-        merge_field(&mut entry.chip_select, &spi_conf.chip_select)?;
-        merge_field(&mut entry.alias_of, &spi_conf.alias_of)?;
-        Ok(())
+        io::merge_configuration_field(&mut entry.mode, &spi_conf.mode)?;
+        io::merge_configuration_field(&mut entry.bits_per_word, &spi_conf.bits_per_word)?;
+        io::merge_configuration_field(&mut entry.bits_per_sec, &spi_conf.bits_per_sec)?;
+        io::merge_configuration_field(&mut entry.chip_select, &spi_conf.chip_select)?;
+        io::merge_configuration_field(&mut entry.alias_of, &spi_conf.alias_of)
     }
 
     fn record_i2c_conf(
         i2c_conf_map: &mut HashMap<String, config::I2cConfiguration>,
         i2c_conf: &config::I2cConfiguration,
-    ) -> Result<(), ()> {
+    ) -> Option<()> {
         let entry = i2c_conf_map
             .entry(i2c_conf.name.to_string())
             .or_insert_with(|| config::I2cConfiguration {
                 name: i2c_conf.name.clone(),
                 ..Default::default()
             });
-        merge_field(&mut entry.address, &i2c_conf.address)?;
-        merge_field(&mut entry.bits_per_sec, &i2c_conf.bits_per_sec)?;
-        merge_field(&mut entry.alias_of, &i2c_conf.alias_of)?;
-        Ok(())
+        io::merge_configuration_field(&mut entry.address, &i2c_conf.address)?;
+        io::merge_configuration_field(&mut entry.bits_per_sec, &i2c_conf.bits_per_sec)?;
+        io::merge_configuration_field(&mut entry.alias_of, &i2c_conf.alias_of)
     }
 
     pub fn add_configuration_file(&mut self, file: config::ConfigurationFile) -> Result<()> {
@@ -332,20 +276,20 @@ impl TransportWrapperBuilder {
             }
         }
         for spi_conf in file.spi {
-            Self::record_spi_conf(&mut self.spi_conf_map, &spi_conf).map_err(|_| {
+            Self::record_spi_conf(&mut self.spi_conf_map, &spi_conf).ok_or(
                 TransportError::InconsistentConf(
                     TransportInterfaceType::Spi,
                     spi_conf.name.to_string(),
-                )
-            })?;
+                ),
+            )?;
         }
         for i2c_conf in file.i2c {
-            Self::record_i2c_conf(&mut self.i2c_conf_map, &i2c_conf).map_err(|_| {
+            Self::record_i2c_conf(&mut self.i2c_conf_map, &i2c_conf).ok_or(
                 TransportError::InconsistentConf(
                     TransportInterfaceType::I2c,
                     i2c_conf.name.to_string(),
-                )
-            })?;
+                ),
+            )?;
         }
         for uart_conf in file.uarts {
             if let Some(alias_of) = &uart_conf.alias_of {
@@ -425,9 +369,10 @@ impl TransportWrapperBuilder {
                 .entry(map_name(pin_alias_map, name))
                 .or_default()
                 .merge(conf)
-                .map_err(|_| {
-                    TransportError::InconsistentConf(TransportInterfaceType::Gpio, name.to_string())
-                })?;
+                .ok_or(TransportError::InconsistentConf(
+                    TransportInterfaceType::Gpio,
+                    name.to_string(),
+                ))?;
         }
         Ok(result_pin_conf_map)
     }
