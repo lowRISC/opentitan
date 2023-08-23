@@ -360,6 +360,18 @@
       tests: ["rv_dm_cmderr_busy"]
     }
     {
+      name: jtag_dmi_cmderr_not_supported
+      desc: '''
+            Verify that attempt to generate command error result in cmderr field of abstractcs
+            register are set.
+
+            - Try to execute abstract command that is not supported like Quick Access & Access Memory command.
+            - Verify that the cmderr field of abstractcs register is set to 2.
+            '''
+      stage: V1
+      tests: ["rv_dm_cmderr_not_supported"]
+    }
+    {
       name: stress_all
       desc: '''
             A 'bug hunt' test that stresses the DUT to its limits.
