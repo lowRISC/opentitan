@@ -5,6 +5,7 @@
 use anyhow::Result;
 use clap::Args;
 use std::path::{Path, PathBuf};
+use std::rc::Rc;
 use thiserror::Error;
 
 use crate::app::config::process_config_file;
@@ -66,65 +67,63 @@ pub enum Error {
 /// Creates the requested backend interface according to [`BackendOpts`].
 pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
     let interface = args.interface.as_str();
-    let mut env = TransportWrapperBuilder::new(interface.to_string());
+    let mut builder = TransportWrapperBuilder::new(interface.to_string());
 
     for conf_file in &args.conf {
-        process_config_file(&mut env, conf_file.as_ref())?
+        process_config_file(&mut builder, conf_file.as_ref())?
     }
-    let (backend, default_conf) = match env.get_interface() {
-        "" => (create_empty_transport()?, None),
-        "proxy" => (proxy::create(&args.proxy_opts)?, None),
-        "verilator" => (
-            verilator::create(&args.verilator_opts)?,
-            Some(Path::new("/__builtin__/opentitan_verilator.json")),
-        ),
-        "ti50emulator" => (
-            ti50emulator::create(&args.ti50emulator_opts)?,
-            Some(Path::new("/__builtin__/ti50emulator.json")),
-        ),
-        "ultradebug" => (
-            ultradebug::create(args)?,
-            Some(Path::new("/__builtin__/opentitan_ultradebug.json")),
-        ),
-        "hyper310" => (
-            hyperdebug::create::<CW310Flavor>(args)?,
-            Some(Path::new("/__builtin__/hyperdebug_cw310.json")),
-        ),
-        "hyperdebug" => (hyperdebug::create::<StandardFlavor>(args)?, None),
-        "hyperdebug_dfu" => (hyperdebug::create_dfu(args)?, None),
-        "c2d2" => (
-            hyperdebug::create::<C2d2Flavor>(args)?,
-            Some(Path::new("/__builtin__/h1dx_devboard_c2d2.json")),
-        ),
-        "servo_micro" => (
-            hyperdebug::create::<ServoMicroFlavor>(args)?,
-            Some(Path::new("/__builtin__/servo_micro.json")),
-        ),
-        "ti50" => (hyperdebug::create::<Ti50Flavor>(args)?, None),
-        "cw310" => (
-            chip_whisperer::create::<Cw310>(args)?,
-            Some(Path::new("/__builtin__/opentitan_cw310.json")),
-        ),
-        "cw340" => (
-            chip_whisperer::create::<Cw340>(args)?,
-            Some(Path::new("/__builtin__/opentitan_cw340.json")),
-        ),
-        "dediprog" => {
-            let dediprog: Box<dyn Transport> = Box::new(Dediprog::new(
-                args.usb_vid,
-                args.usb_pid,
-                args.usb_serial.as_deref(),
-            )?);
-            (dediprog, Some(Path::new("/__builtin__/dediprog.json")))
-        }
-        _ => return Err(Error::UnknownInterface(interface.to_string()).into()),
-    };
     if args.conf.is_empty() {
-        if let Some(conf_file) = default_conf {
-            process_config_file(&mut env, conf_file)?
+        if let Some(conf_file) = get_config_file(interface)? {
+            process_config_file(&mut builder, Path::new(conf_file))?
         }
     }
-    env.build(backend)
+    let interface = builder.get_interface();
+    let io_mapper = Rc::new(builder.build_io_mapper()?);
+    let backend = build_transport(interface, args)?;
+    builder.build_wrapper(backend, io_mapper)
+}
+
+fn build_transport(
+    interface: &str,
+    args: &BackendOpts,
+) -> Result<Box<dyn crate::transport::Transport>> {
+    Ok(match interface {
+        "" => create_empty_transport()?,
+        "proxy" => proxy::create(&args.proxy_opts)?,
+        "verilator" => verilator::create(&args.verilator_opts)?,
+        "ti50emulator" => ti50emulator::create(&args.ti50emulator_opts)?,
+        "ultradebug" => ultradebug::create(args)?,
+        "hyper310" => hyperdebug::create::<CW310Flavor>(args)?,
+        "hyperdebug" => hyperdebug::create::<StandardFlavor>(args)?,
+        "hyperdebug_dfu" => hyperdebug::create_dfu(args)?,
+        "c2d2" => hyperdebug::create::<C2d2Flavor>(args)?,
+        "servo_micro" => hyperdebug::create::<ServoMicroFlavor>(args)?,
+        "ti50" => hyperdebug::create::<Ti50Flavor>(args)?,
+        "cw310" => chip_whisperer::create::<Cw310>(args)?,
+        "cw340" => chip_whisperer::create::<Cw340>(args)?,
+        "dediprog" => Box::new(Dediprog::new(
+            args.usb_vid,
+            args.usb_pid,
+            args.usb_serial.as_deref(),
+        )?),
+        _ => return Err(Error::UnknownInterface(interface.to_string()).into()),
+    })
+}
+
+fn get_config_file(interface: &str) -> Result<Option<&str>> {
+    Ok(Some(match interface {
+        "" | "proxy" | "hyperdebug" | "hyperdebug_dfu" | "ti50" => return Ok(None),
+        "verilator" => "/__builtin__/opentitan_verilator.json",
+        "ti50emulator" => "/__builtin__/ti50emulator.json",
+        "ultradebug" => "/__builtin__/opentitan_ultradebug.json",
+        "hyper310" => "/__builtin__/hyperdebug_cw310.json",
+        "c2d2" => "/__builtin__/h1dx_devboard_c2d2.json",
+        "servo_micro" => "/__builtin__/servo_micro.json",
+        "cw310" => "/__builtin__/opentitan_cw310.json",
+        "cw340" => "/__builtin__/opentitan_cw340.json",
+        "dediprog" => "/__builtin__/dediprog.json",
+        _ => return Err(Error::UnknownInterface(interface.to_string()).into()),
+    }))
 }
 
 pub fn create_empty_transport() -> Result<Box<dyn Transport>> {
