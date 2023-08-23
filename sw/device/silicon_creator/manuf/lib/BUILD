@@ -66,14 +66,24 @@ cc_library(
 )
 
 cc_library(
+    name = "util",
+    srcs = ["util.c"],
+    hdrs = ["util.h"],
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/impl:hash",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
     name = "individualize",
     srcs = ["individualize.c"],
-    hdrs = [
-        "individualize.h",
-    ],
+    hdrs = ["individualize.h"],
     deps = [
         ":flash_info_fields",
         ":otp_fields",
+        ":util",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:hash",
@@ -169,6 +179,7 @@ cc_library(
     deps = [
         ":flash_info_fields",
         ":otp_fields",
+        ":util",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:aes",

@@ -1,6 +1,7 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
 
 #include "sw/device/lib/base/bitfield.h"
@@ -8,7 +9,6 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
-#include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -18,6 +18,7 @@
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
+#include "sw/device/silicon_creator/manuf/lib/util.h"
 
 #include "otp_ctrl_regs.h"
 
@@ -139,49 +140,6 @@ static status_t flash_info_read(dif_flash_ctrl_state_t *flash_state,
   return OK_STATUS();
 }
 
-/**
- * Hashes a lifecycle transition token to prepare it to be written to OTP.
- *
- * According to the Lifecycle Controller's specification:
- *
- * "All 128bit lock and unlock tokens are passed through a cryptographic one way
- * function in hardware before the life cycle controller compares them to the
- * provisioned values ...", and
- * "The employed one way function is a 128bit cSHAKE hash with the function name
- * “” and customization string “LC_CTRL”".
- *
- * @param raw_token The raw token to be hashed.
- * @param token_size The expected hashed token size in bytes.
- * @param[out] hashed_token The hashed token.
- * @return Result of the hash operation.
- */
-OT_WARN_UNUSED_RESULT
-static status_t hash_lc_transition_token(const uint32_t *raw_token,
-                                         size_t token_size,
-                                         uint64_t *hashed_token) {
-  crypto_const_uint8_buf_t input = {
-      .data = (uint8_t *)raw_token,
-      .len = token_size,
-  };
-  crypto_const_uint8_buf_t function_name_string = {
-      .data = (uint8_t *)"",
-      .len = 0,
-  };
-  crypto_const_uint8_buf_t customization_string = {
-      .data = (uint8_t *)"LC_CTRL",
-      .len = 7,
-  };
-  crypto_uint8_buf_t output = {
-      .data = (uint8_t *)hashed_token,
-      .len = token_size,
-  };
-
-  TRY(otcrypto_xof(input, kXofModeSha3Cshake128, function_name_string,
-                   customization_string, token_size, &output));
-
-  return OK_STATUS();
-}
-
 status_t manuf_individualize_device_hw_cfg(dif_flash_ctrl_state_t *flash_state,
                                            const dif_lc_ctrl_t *lc_ctrl,
                                            const dif_otp_ctrl_t *otp_ctrl) {
@@ -281,12 +239,12 @@ status_t manuf_individualize_device_secret0(
 
   uint64_t hashed_test_unlock_token[kSecret0TestUnlockTokenSizeInBytes];
   uint64_t hashed_test_exit_token[kSecret0TestExitTokenSizeInBytes];
-  TRY(hash_lc_transition_token(provisioning_data->test_unlock_token,
-                               kSecret0TestUnlockTokenSizeInBytes,
-                               hashed_test_unlock_token));
-  TRY(hash_lc_transition_token(provisioning_data->test_exit_token,
-                               kSecret0TestExitTokenSizeInBytes,
-                               hashed_test_exit_token));
+  TRY(manuf_util_hash_lc_transition_token(provisioning_data->test_unlock_token,
+                                          kSecret0TestUnlockTokenSizeInBytes,
+                                          hashed_test_unlock_token));
+  TRY(manuf_util_hash_lc_transition_token(provisioning_data->test_exit_token,
+                                          kSecret0TestExitTokenSizeInBytes,
+                                          hashed_test_exit_token));
 
   TRY(otp_ctrl_testutils_dai_write64(
       otp_ctrl, kDifOtpCtrlPartitionSecret0, kSecret0TestUnlockTokenOffset,
