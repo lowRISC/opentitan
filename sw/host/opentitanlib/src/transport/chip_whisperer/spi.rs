@@ -17,21 +17,25 @@ pub struct Spi<B: Board> {
 }
 
 impl<B: Board> Spi<B> {
-    pub fn open(device: Rc<RefCell<Backend<B>>>) -> Result<Self> {
+    pub fn open(
+        device: Rc<RefCell<Backend<B>>>,
+        sdi: &str,
+        sdo: &str,
+        clk: &str,
+        cs: &str,
+        strap1: &str,
+    ) -> Result<Self> {
         {
             let usb = device.borrow();
             usb.spi1_setpins(
                 // For some reason, SDI/SDO are reversed in the python implementation
                 // and this seems to be required to make the transport work.
-                B::PIN_SDI,
-                B::PIN_SDO,
-                B::PIN_CLK,
-                B::PIN_CS,
+                sdi, sdo, clk, cs,
             )?;
             usb.spi1_enable(true)?;
 
             // Set the JTAG pin to false to use SPI mode.
-            usb.pin_set_state(B::PIN_TAP_STRAP1, false)?;
+            usb.pin_set_state(strap1, false)?;
         }
 
         Ok(Spi { device })
