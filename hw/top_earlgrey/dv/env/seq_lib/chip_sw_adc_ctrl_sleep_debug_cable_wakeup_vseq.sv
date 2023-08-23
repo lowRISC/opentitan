@@ -127,7 +127,7 @@ class chip_sw_adc_ctrl_sleep_debug_cable_wakeup_vseq extends chip_sw_base_vseq;
         end
       end
     end
-    `DV_CHECK(uvm_hdl_force(ADC_CHANNEL_OUT_HDL_PATH, (channel_idx?channel1_data:channel0_data)));
+    cfg.chip_vif.force_adc_d_o(channel_idx?channel1_data:channel0_data);
   endtask
 
   virtual task generate_adc_data();
