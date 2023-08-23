@@ -10,6 +10,7 @@ use thiserror::Error;
 
 use crate::app::config::process_config_file;
 use crate::app::{TransportWrapper, TransportWrapperBuilder};
+use crate::io::io_mapper::IoMapper;
 use crate::transport::chip_whisperer::board::{Cw310, Cw340};
 use crate::transport::dediprog::Dediprog;
 use crate::transport::hyperdebug::{
@@ -79,32 +80,34 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
     }
     let interface = builder.get_interface();
     let io_mapper = Rc::new(builder.build_io_mapper()?);
-    let backend = build_transport(interface, args)?;
+    let backend = build_transport(interface, Rc::clone(&io_mapper), args)?;
     builder.build_wrapper(backend, io_mapper)
 }
 
 fn build_transport(
     interface: &str,
+    io_mapper: Rc<IoMapper>,
     args: &BackendOpts,
 ) -> Result<Box<dyn crate::transport::Transport>> {
     Ok(match interface {
         "" => create_empty_transport()?,
         "proxy" => proxy::create(&args.proxy_opts)?,
-        "verilator" => verilator::create(&args.verilator_opts)?,
+        "verilator" => verilator::create(&args.verilator_opts, io_mapper)?,
         "ti50emulator" => ti50emulator::create(&args.ti50emulator_opts)?,
-        "ultradebug" => ultradebug::create(args)?,
+        "ultradebug" => ultradebug::create(args, io_mapper)?,
         "hyper310" => hyperdebug::create::<CW310Flavor>(args)?,
         "hyperdebug" => hyperdebug::create::<StandardFlavor>(args)?,
         "hyperdebug_dfu" => hyperdebug::create_dfu(args)?,
         "c2d2" => hyperdebug::create::<C2d2Flavor>(args)?,
         "servo_micro" => hyperdebug::create::<ServoMicroFlavor>(args)?,
         "ti50" => hyperdebug::create::<Ti50Flavor>(args)?,
-        "cw310" => chip_whisperer::create::<Cw310>(args)?,
-        "cw340" => chip_whisperer::create::<Cw340>(args)?,
+        "cw310" => chip_whisperer::create::<Cw310>(args, io_mapper)?,
+        "cw340" => chip_whisperer::create::<Cw340>(args, io_mapper)?,
         "dediprog" => Box::new(Dediprog::new(
             args.usb_vid,
             args.usb_pid,
             args.usb_serial.as_deref(),
+            io_mapper,
         )?),
         _ => return Err(Error::UnknownInterface(interface.to_string()).into()),
     })

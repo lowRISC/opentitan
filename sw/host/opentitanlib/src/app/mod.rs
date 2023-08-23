@@ -617,7 +617,7 @@ impl TransportWrapper {
         if let Some(pin) = self.io_expander_map.get(&resolved_pin_name) {
             return Ok(pin.clone());
         }
-        self.transport.gpio_pin(resolved_pin_name.as_str())
+        self.transport.gpio_pin(name)
     }
 
     /// Convenience method, returns a number of [`GpioPin`] implementations.

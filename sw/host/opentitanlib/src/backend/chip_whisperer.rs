@@ -4,8 +4,10 @@
 
 use anyhow::Result;
 use clap::Args;
+use std::rc::Rc;
 
 use crate::backend::BackendOpts;
+use crate::io::io_mapper::IoMapper;
 use crate::transport::chip_whisperer::board::Board;
 use crate::transport::chip_whisperer::ChipWhisperer;
 use crate::transport::Transport;
@@ -17,7 +19,10 @@ pub struct ChipWhispererOpts {
     pub uarts: Option<String>,
 }
 
-pub fn create<B: Board + 'static>(args: &BackendOpts) -> Result<Box<dyn Transport>> {
+pub fn create<B: Board + 'static>(
+    args: &BackendOpts,
+    io_mapper: Rc<IoMapper>,
+) -> Result<Box<dyn Transport>> {
     let uarts = args
         .opts
         .uarts
@@ -26,6 +31,7 @@ pub fn create<B: Board + 'static>(args: &BackendOpts) -> Result<Box<dyn Transpor
         .unwrap_or_default();
 
     Ok(Box::new(ChipWhisperer::<B>::new(
+        io_mapper,
         args.usb_vid,
         args.usb_pid,
         args.usb_serial.as_deref(),
