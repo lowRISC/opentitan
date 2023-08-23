@@ -125,21 +125,6 @@ pub struct TransportWrapperBuilder {
     io_expander_conf_map: HashMap<String, config::IoExpander>,
 }
 
-// This is the structure to be passed to each Command implementation,
-// replacing the "bare" Transport argument.  The fields other than
-// transport will have been computed from a number ConfigurationFiles.
-pub struct TransportWrapper {
-    transport: Rc<dyn Transport>,
-    provides_map: HashMap<String, String>,
-    pin_map: HashMap<String, String>,
-    artificial_pin_map: HashMap<String, Rc<dyn GpioPin>>,
-    uart_map: HashMap<String, String>,
-    pin_conf_map: HashMap<String, PinConfiguration>,
-    spi_conf_map: HashMap<String, SpiConfiguration>,
-    i2c_conf_map: HashMap<String, I2cConfiguration>,
-    strapping_conf_map: HashMap<String, HashMap<String, PinConfiguration>>,
-}
-
 impl TransportWrapperBuilder {
     pub fn new(interface: String) -> Self {
         Self {
@@ -537,6 +522,22 @@ impl TransportWrapperBuilder {
         }
         Ok(transport_wrapper)
     }
+}
+
+// This is the structure to be passed to each Command implementation,
+// replacing the "bare" Transport argument.  The fields other than
+// transport will have been computed from a number ConfigurationFiles.
+pub struct TransportWrapper {
+    transport: Rc<dyn Transport>,
+    provides_map: HashMap<String, String>,
+    pin_map: HashMap<String, String>,
+    artificial_pin_map: HashMap<String, Rc<dyn GpioPin>>,
+    uart_map: HashMap<String, String>,
+    i2c_map: HashMap<String, String>,
+    pin_conf_map: HashMap<String, PinConfiguration>,
+    spi_conf_map: HashMap<String, SpiConfiguration>,
+    i2c_conf_map: HashMap<String, I2cConfiguration>,
+    strapping_conf_map: HashMap<String, HashMap<String, PinConfiguration>>,
 }
 
 impl TransportWrapper {
