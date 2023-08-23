@@ -2,36 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/testing/otp_ctrl_testutils.h"
-#include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/ip/base/dif/dif_base.h"
 #include "sw/ip/entropy_src/dif/dif_entropy_src.h"
-#include "sw/ip/rstmgr/dif/dif_rstmgr.h"
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"  // Generated.
-#include "otp_ctrl_regs.h"                                // Generated
 
 OTTF_DEFINE_TEST_CONFIG();
-
-/**
- * OTP HW partition relative IFETCH offset in bytes.
- *
- * x = OTP_CTRL_PARAM_EN_SRAM_IFETCH_OFFSET (1728)
- * y = OTP_CTRL_PARAM_HW_CFG0_OFFSET (1664)
- * IFETCH_OFFSET = (x - y) = 64
- */
-static const uint32_t kOtpIfetchHwRelativeOffset =
-    OTP_CTRL_PARAM_EN_SRAM_IFETCH_OFFSET - OTP_CTRL_PARAM_HW_CFG0_OFFSET;
-
-static const uint32_t kOtpEntropySrcFwReadOffset =
-    (OTP_CTRL_PARAM_EN_ENTROPY_SRC_FW_READ_OFFSET -
-     OTP_CTRL_PARAM_EN_SRAM_IFETCH_OFFSET) *
-    8;
 
 enum {
   /**
@@ -111,66 +92,15 @@ void test_fuse_enable(dif_entropy_src_t *entropy) {
                   "Unexpected digest value.");
 }
 
-static void test_fuse_disable(dif_entropy_src_t *entropy) {
-  enum {
-    kAttemptsAmount = 4,
-    kAttemptIntervalMicros = 500,
-  };
-
-  uint32_t got;
-  test_fuse_init(entropy);
-  for (uint32_t tries = 0; tries < kAttemptsAmount; --tries) {
-    CHECK(dif_entropy_src_non_blocking_read(entropy, &got) == kDifUnavailable);
-    busy_spin_micros(kAttemptIntervalMicros);
-  }
-}
-
-/**
- * Read the otp at `HW_CFG.EN_ENTROPY_SRC_FW_READ` address and check whether is
- * configured by the `uvm_test_seq` as expected.
- *
- * @param expected Define the expected value for the
- * HW_CFG.EN_ENTROPY_SRC_FW_READ flag.
- */
-static void check_entropy_src_fw_read_enable(bool expected) {
-  dif_otp_ctrl_t otp;
-  CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR), &otp));
-
-  dif_otp_ctrl_config_t config = {
-      .check_timeout = 100000,
-      .integrity_period_mask = 0x3ffff,
-      .consistency_period_mask = 0x3ffffff,
-  };
-  CHECK_DIF_OK(dif_otp_ctrl_configure(&otp, config));
-  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
-
-  uint32_t value;
-  // Read the current value of the partition.
-  CHECK_DIF_OK(dif_otp_ctrl_dai_read_start(&otp, kDifOtpCtrlPartitionHwCfg0,
-                                           kOtpIfetchHwRelativeOffset));
-  CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
-  CHECK_DIF_OK(dif_otp_ctrl_dai_read32_end(&otp, &value));
-  multi_bit_bool_t enable = bitfield_field32_read(
-      value,
-      (bitfield_field32_t){.mask = 0xff, .index = kOtpEntropySrcFwReadOffset});
-  CHECK((enable == kMultiBitBool8True) == expected,
-        "`fw_enable` not expected (%x)", enable);
-}
-
 /**
  * This test:
  *
- * - Initialize the OTP with the `HW_CFG.EN_ENTROPY_SRC_FW_READ` fuse bit set to
- * enabled in the `uvm_test_seq`.
- * - Read and verify the OTP `HW_CFG.EN_ENTROPY_SRC_FW_READ` against the
- * previous step expectation.
  * - Read the entropy_data_fifo via SW; verify that it reads valid values.
- * - Reset the chip, but this time, initialize the OTP with the
- * `HW_CFG.EN_ENTROPY_SRC_FW_READ` fuse bit set to disable.
- * - Read and verify the OTP `HW_CFG.EN_ENTROPY_SRC_FW_READ` against the
- * previous step expectation.
- * - Read the internal state via SW; verify that the entropy valid bit is zero.
+ *
+ * Note that this test has been simplified to just test the test_fuse_enable
+ * path, since the HW has been updated to always hardwire the
+ * EN_ENTROPY_SRC_FW_READ chicken switch to True. The chicken switch itself has
+ * been removed from OTP.
  */
 bool test_main(void) {
   dif_entropy_src_t entropy_src;
@@ -178,32 +108,6 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR),
       &entropy_src));
 
-  dif_rstmgr_t rstmgr;
-  dif_rstmgr_reset_info_bitfield_t info;
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR), &rstmgr));
-  info = rstmgr_testutils_reason_get();
-
-  if (info == kDifRstmgrResetInfoPor) {
-    LOG_INFO("Powered up for the first time");
-    check_entropy_src_fw_read_enable(true);
-    test_fuse_enable(&entropy_src);
-    // Reboot device.
-    rstmgr_testutils_reason_clear();
-    CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
-
-    // This log message is extremely important for the test, as the
-    // `uvm_test_seq` uses it to change the otp values.
-    LOG_INFO("Software resetting!");
-
-    // Wait here until device reset.
-    wait_for_interrupt();
-  } else if (info == kDifRstmgrResetInfoSw) {
-    LOG_INFO("Powered up for the second time");
-
-    check_entropy_src_fw_read_enable(false);
-    test_fuse_disable(&entropy_src);
-    return true;
-  }
-  return false;
+  test_fuse_enable(&entropy_src);
+  return true;
 }

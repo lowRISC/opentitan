@@ -2281,13 +2281,11 @@
       name: chip_sw_entropy_src_fuse_en_fw_read
       desc: '''Verify the fuse input entropy_src.
 
-            - Initialize the OTP with the fuse that controls whether the SW can read the entropy src
-              enabled.
-            - Read the OTP and verify that the fuse is enabled.
             - Read the entropy_data_fifo via SW and verify that it reads valid values.
-            - Reset the chip, but this time, initialize the OTP with the fuse disabled.
-            - Read the OTP and verify that fuse is disabled.
-            - Read the internal state via SW and verify that the entropy valid bit is zero.
+
+            Note that this test has been simplified to just test the test_fuse_enable path,
+            since the HW has been updated to always hardwire the EN_ENTROPY_SRC_FW_READ
+            chicken switch to True. The chicken switch itself has been removed from OTP.
             '''
       stage: V2
       tests: ["chip_sw_entropy_src_fuse_en_fw_read_test"]
@@ -2321,13 +2319,12 @@
       name: chip_sw_csrng_fuse_en_sw_app_read
       desc: '''Verify the fuse input to CSRNG.
 
-            - Initialize the OTP with the fuse that control whether the SW can read the CSRNG state
-              enabled.
             - Issue an instantiate command to request entropy.
             - Verify that SW can read the internal state values.
-            - Reset the chip and repeat the steps above, but this time, initialized the OTP with
-              fuse disabled.
-            - Verify that the SW reads back all zeros when reading the internal state values.
+
+             Note that this test has been simplified to just test the test_fuse_enable path,
+             since the HW has been updated to always hardwire the EN_CSRNG_SW_APP_READ
+             chicken switch to True. The chicken switch itself has been removed from OTP.
             '''
       stage: V2
       tests: ["chip_sw_csrng_fuse_en_sw_app_read_test"]
