@@ -59,13 +59,13 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |         |                |            |      32bit       |               OWNER_SW_CFG_MANUF_STATE                |     0x548      |     4      |
 |         |                |            |      32bit       |            OWNER_SW_CFG_ROM_RSTMGR_INFO_EN            |     0x54C      |     4      |
 |         |                |            |      64bit       |   [OWNER_SW_CFG_DIGEST](#Reg_owner_sw_cfg_digest_0)   |     0x638      |     8      |
-|    3    |     HW_CFG     |     80     |      32bit       |                       DEVICE_ID                       |     0x640      |     32     |
+|    3    |    HW_CFG0     |     80     |      32bit       |                       DEVICE_ID                       |     0x640      |     32     |
 |         |                |            |      32bit       |                      MANUF_STATE                      |     0x660      |     32     |
 |         |                |            |      32bit       |                    EN_SRAM_IFETCH                     |     0x680      |     1      |
 |         |                |            |      32bit       |                 EN_CSRNG_SW_APP_READ                  |     0x681      |     1      |
 |         |                |            |      32bit       |                EN_ENTROPY_SRC_FW_READ                 |     0x682      |     1      |
 |         |                |            |      32bit       |                EN_ENTROPY_SRC_FW_OVER                 |     0x683      |     1      |
-|         |                |            |      64bit       |         [HW_CFG_DIGEST](#Reg_hw_cfg_digest_0)         |     0x688      |     8      |
+|         |                |            |      64bit       |        [HW_CFG0_DIGEST](#Reg_hw_cfg0_digest_0)        |     0x688      |     8      |
 |    4    |    SECRET0     |     40     |      64bit       |                   TEST_UNLOCK_TOKEN                   |     0x690      |     16     |
 |         |                |            |      64bit       |                    TEST_EXIT_TOKEN                    |     0x6A0      |     16     |
 |         |                |            |      64bit       |        [SECRET0_DIGEST](#Reg_secret0_digest_0)        |     0x6B0      |     8      |

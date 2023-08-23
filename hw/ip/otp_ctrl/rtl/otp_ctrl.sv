@@ -75,7 +75,7 @@ module otp_ctrl
   input  otbn_otp_key_req_t                          otbn_otp_key_i,
   output otbn_otp_key_rsp_t                          otbn_otp_key_o,
   // Hardware config bits
-  output otp_hw_cfg_t                                otp_hw_cfg_o,
+  output otp_broadcast_t                             otp_broadcast_o,
   // External voltage for OTP
   inout wire                                         otp_ext_voltage_h_io,
   // Scan
@@ -1289,8 +1289,8 @@ end
   // Output complete hardware config partition.
   // Actual mapping to other IPs is done via the intersignal topgen feature,
   // selection of fields can be done using the otp_hw_cfg_t struct fields.
-  assign otp_hw_cfg_o.valid = (part_init_done[HwCfgIdx]) ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off;
-  assign otp_hw_cfg_o.data = otp_hw_cfg_data_t'(part_buf_data[HwCfgOffset +: HwCfgSize]);
+  assign otp_broadcast_o = named_broadcast_assign(part_init_done, part_buf_data);
+
   // Root keys
   logic otp_keymgr_key_valid_d, otp_keymgr_key_valid_q; // need to latch valid
   assign otp_keymgr_key_valid_d = part_digest[Secret2Idx] != '0;
@@ -1422,7 +1422,7 @@ end
   `ASSERT_KNOWN(FlashOtpKeyRspKnown_A,       flash_otp_key_o)
   `ASSERT_KNOWN(OtpSramKeyKnown_A,           sram_otp_key_o)
   `ASSERT_KNOWN(OtpOtgnKeyKnown_A,           otbn_otp_key_o)
-  `ASSERT_KNOWN(OtpHwCfgKnown_A,             otp_hw_cfg_o)
+  `ASSERT_KNOWN(OtpBroadcastKnown_A,         otp_broadcast_o)
 
   // Alert assertions for sparse FSMs.
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlDaiFsmCheck_A,

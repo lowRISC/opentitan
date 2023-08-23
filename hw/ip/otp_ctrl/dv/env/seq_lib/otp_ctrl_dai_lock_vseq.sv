@@ -29,7 +29,7 @@ class otp_ctrl_dai_lock_vseq extends otp_ctrl_smoke_vseq;
     if (part_idx == VendorTestIdx)   dai_addr inside `PART_ADDR_RANGE(VendorTestIdx);
     if (part_idx == CreatorSwCfgIdx) dai_addr inside `PART_ADDR_RANGE(CreatorSwCfgIdx);
     if (part_idx == OwnerSwCfgIdx)   dai_addr inside `PART_ADDR_RANGE(OwnerSwCfgIdx);
-    if (part_idx == HwCfgIdx)        dai_addr inside `PART_ADDR_RANGE(HwCfgIdx);
+    if (part_idx == HwCfg0Idx)        dai_addr inside `PART_ADDR_RANGE(HwCfg0Idx);
     if (part_idx == Secret0Idx)      dai_addr inside `PART_ADDR_RANGE(Secret0Idx);
     if (part_idx == Secret1Idx)      dai_addr inside `PART_ADDR_RANGE(Secret1Idx);
     if (part_idx == Secret2Idx)      dai_addr inside `PART_ADDR_RANGE(Secret2Idx);
@@ -46,7 +46,7 @@ class otp_ctrl_dai_lock_vseq extends otp_ctrl_smoke_vseq;
 
   constraint dai_wr_digests_c {
     {dai_addr[TL_AW-1:2], 2'b0} dist {
-      {VendorTestDigestOffset, CreatorSwCfgDigestOffset, OwnerSwCfgDigestOffset, HwCfgDigestOffset,
+      {VendorTestDigestOffset, CreatorSwCfgDigestOffset, OwnerSwCfgDigestOffset, HwCfg0DigestOffset,
        Secret0DigestOffset, Secret1DigestOffset, Secret2DigestOffset} :/ 1,
       [VendorTestOffset : '1] :/ 9
     };

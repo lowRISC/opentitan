@@ -13,7 +13,7 @@ class chip_sw_otp_ctrl_escalation_vseq extends chip_sw_base_vseq;
   `uvm_object_new
 
   virtual task body();
-    bit [TL_AW-1:0] hw_cfg_addr = otp_ctrl_reg_pkg::HwCfgOffset;
+    bit [TL_AW-1:0] hw_cfg_addr = otp_ctrl_reg_pkg::HwCfg0Offset;
     bit [TL_DW-1:0] val;
     bit [7:0] sw_alert_num[];
 

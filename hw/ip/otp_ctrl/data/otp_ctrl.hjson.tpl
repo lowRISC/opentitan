@@ -393,13 +393,13 @@
       desc:    "Key derivation interface for OTBN scrambling devices."
     }
     // Hardware config partition
-    { struct:  "otp_hw_cfg"
+    { struct:  "otp_broadcast"
       type:    "uni"
-      name:    "otp_hw_cfg"
+      name:    "otp_broadcast"
       act:     "req"
       default: "'0"
       package: "otp_ctrl_part_pkg"
-      desc:    "Output of the HW_CFG partition."
+      desc:    "Output of the HW partitions with breakout data types."
     }
     // AST observability control
     { struct: "ast_obs_ctrl",
@@ -965,7 +965,7 @@
       { name: "INTEGRITY_CHECK_PERIOD",
         desc: '''
               This value specifies the maximum period that can be generated pseudo-randomly.
-              Only applies to the HW_CFG and SECRET* partitions once they are locked.
+              Only applies to the HW_CFG* and SECRET* partitions once they are locked.
               '''
         swaccess: "rw",
         hwaccess: "hro",
@@ -987,7 +987,7 @@
       { name: "CONSISTENCY_CHECK_PERIOD",
         desc: '''
               This value specifies the maximum period that can be generated pseudo-randomly.
-              This applies to the LIFE_CYCLE partition and the HW_CFG and SECRET* partitions once they are locked.
+              This applies to the LIFE_CYCLE partition and the HW_CFG* and SECRET* partitions once they are locked.
               '''
         swaccess: "rw",
         hwaccess: "hro",

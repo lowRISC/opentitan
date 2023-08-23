@@ -439,7 +439,7 @@ status_t provisioning_device_secrets_start(dif_flash_ctrl_state_t *flash_state,
   // Check life cycle in either PROD, PROD_END, or DEV.
   TRY(lc_ctrl_testutils_operational_state_check(lc_ctrl));
 
-  // TODO(#17393): check SECRET1 and HW_CFG OTP partitions are locked.
+  // TODO(#17393): check SECRET1 and HW_CFG0 OTP partitions are locked.
 
   // Skip if SECRET2 partition is locked. We won't be able to configure the
   // secret info flash page nor the OTP secrets if the OTP SECRET2 partition is

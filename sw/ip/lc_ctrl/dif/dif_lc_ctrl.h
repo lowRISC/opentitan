@@ -286,7 +286,7 @@ typedef struct {
 } dif_lc_ctrl_hw_rev_t;
 
 /**
- * A 256-bit device id stored in OTP's hw_cfg partition.
+ * A 256-bit device id stored in OTP's hw_cfg0 partition.
  */
 typedef struct dif_lc_ctrl_device_id {
   uint32_t data[256 / 32];

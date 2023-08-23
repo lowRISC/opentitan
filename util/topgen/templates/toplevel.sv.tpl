@@ -232,19 +232,26 @@ module top_${top["name"]} #(
   // OTP HW_CFG Broadcast signals.
   // TODO(#6713): The actual struct breakout and mapping currently needs to
   // be performed by hand.
-  assign csrng_otp_en_csrng_sw_app_read = otp_ctrl_otp_hw_cfg.data.en_csrng_sw_app_read;
-  assign entropy_src_otp_en_entropy_src_fw_read = otp_ctrl_otp_hw_cfg.data.en_entropy_src_fw_read;
-  assign entropy_src_otp_en_entropy_src_fw_over = otp_ctrl_otp_hw_cfg.data.en_entropy_src_fw_over;
-  assign sram_ctrl_main_otp_en_sram_ifetch = otp_ctrl_otp_hw_cfg.data.en_sram_ifetch;
-  assign lc_ctrl_otp_device_id = otp_ctrl_otp_hw_cfg.data.device_id;
-  assign lc_ctrl_otp_manuf_state = otp_ctrl_otp_hw_cfg.data.manuf_state;
-  assign keymgr_otp_device_id = otp_ctrl_otp_hw_cfg.data.device_id;
+  assign csrng_otp_en_csrng_sw_app_read =
+      otp_ctrl_otp_broadcast.hw_cfg0_data.en_csrng_sw_app_read;
+  assign entropy_src_otp_en_entropy_src_fw_read =
+      otp_ctrl_otp_broadcast.hw_cfg0_data.en_entropy_src_fw_read;
+  assign entropy_src_otp_en_entropy_src_fw_over =
+      otp_ctrl_otp_broadcast.hw_cfg0_data.en_entropy_src_fw_over;
+  assign sram_ctrl_main_otp_en_sram_ifetch =
+      otp_ctrl_otp_broadcast.hw_cfg0_data.en_sram_ifetch;
+  assign lc_ctrl_otp_device_id =
+      otp_ctrl_otp_broadcast.hw_cfg0_data.device_id;
+  assign lc_ctrl_otp_manuf_state =
+      otp_ctrl_otp_broadcast.hw_cfg0_data.manuf_state;
+  assign keymgr_otp_device_id =
+      otp_ctrl_otp_broadcast.hw_cfg0_data.device_id;
 
-  logic unused_otp_hw_cfg_bits;
-  assign unused_otp_hw_cfg_bits = ^{
-    otp_ctrl_otp_hw_cfg.valid,
-    otp_ctrl_otp_hw_cfg.data.hw_cfg_digest,
-    otp_ctrl_otp_hw_cfg.data.unallocated
+  logic unused_otp_broadcast_bits;
+  assign unused_otp_broadcast_bits = ^{
+    otp_ctrl_otp_broadcast.valid,
+    otp_ctrl_otp_broadcast.hw_cfg0_data.hw_cfg0_digest,
+    otp_ctrl_otp_broadcast.hw_cfg0_data.unallocated
   };
   % endif
 % endfor

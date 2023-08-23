@@ -243,7 +243,7 @@ otp_json(
     name = "otp_json_hw_cfg",
     partitions = [
         otp_partition(
-            name = "HW_CFG",
+            name = "HW_CFG0",
             items = {
                 "DEVICE_ID": "<random>",
                 # Cryptolib and chip-level tests require access to the CSRNG

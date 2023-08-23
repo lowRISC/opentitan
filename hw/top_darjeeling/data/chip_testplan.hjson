@@ -2652,7 +2652,7 @@
       desc: '''Verify that CPU can fetch instructions from SRAM if enabled.
 
             - Create the following combinations of 8 scenarios:
-              - The fetch enable bit in the HW_CFG partition of OTP controller set and not set.
+              - The fetch enable bit in the HW_CFG0 partition of OTP controller set and not set.
               - A life cycle state that enables (TEST_UNLOCKED, DEV or RMA) and disables (PROD)
                 hardware debug.
               - The execution CSR programmed to be enabled and disabled.

@@ -172,7 +172,7 @@ package otp_ctrl_part_pkg;
   typedef struct packed {<% offset = part['offset'] + part['size'] %>
     % for item in part["items"][::-1]:
       % if offset != item['offset'] + item['size']:
-      logic [${(offset - item['size'] - item['offset']) * 8 - 1}:0] unallocated;<% offset = item['offset'] + item['size'] %>
+    logic [${(offset - item['size'] - item['offset']) * 8 - 1}:0] unallocated;<% offset = item['offset'] + item['size'] %>
       % endif
 <%
   if item['ismubi']:
@@ -201,20 +201,28 @@ package otp_ctrl_part_pkg;
     ${item["name"].lower()}: ${item_cast_pre}${"{}'h{:0X}".format(item["size"] * 8, item["inv_default"])}${item_cast_post}${"," if k < len(part["items"])-1 else ""}<% offset -= item['size'] %>
   % endfor
   };
-
+  % endif
+% endfor
   typedef struct packed {
     // This reuses the same encoding as the life cycle signals for indicating valid status.
     lc_ctrl_pkg::lc_tx_t valid;
-    otp_${part["name"].lower()}_data_t data;
-  } otp_${part["name"].lower()}_t;
-
-  // default value for intermodule
-  parameter otp_${part["name"].lower()}_t OTP_${part["name"].upper()}_DEFAULT = '{
-    valid: lc_ctrl_pkg::Off,
-    data: OTP_${part["name"].upper()}_DATA_DEFAULT
-  };
+% for part in otp_mmap.config["partitions"][::-1]:
+  % if part["bkout_type"]:
+    otp_${part["name"].lower()}_data_t ${part["name"].lower()}_data;
   % endif
 % endfor
+  } otp_broadcast_t;
+
+  // default value for intermodule
+  parameter otp_broadcast_t OTP_BROADCAST_DEFAULT = '{
+    valid: lc_ctrl_pkg::Off,
+% for part in otp_mmap.config["partitions"][::-1]:
+  % if part["bkout_type"]:
+    ${part["name"].lower()}_data: OTP_${part["name"].upper()}_DATA_DEFAULT
+  % endif
+% endfor
+  };
+
 <% offset =  int(otp_mmap.config["partitions"][-1]["offset"]) + int(otp_mmap.config["partitions"][-1]["size"]) %>
   // OTP invalid partition default for buffered partitions.
   parameter logic [${offset * 8 - 1}:0] PartInvDefault = ${offset * 8}'({
@@ -266,5 +274,26 @@ package otp_ctrl_part_pkg;
 % endfor
     return part_access_pre;
   endfunction : named_part_access_pre
+
+  function automatic otp_broadcast_t named_broadcast_assign(
+      logic [NumPart-1:0] part_init_done,
+      logic [$bits(PartInvDefault)/8-1:0][7:0] part_buf_data);
+    otp_broadcast_t otp_broadcast;
+    logic valid, unused;
+    unused = 1'b0;
+    valid = 1'b1;
+% for part in otp_mmap.config["partitions"][::-1]:
+  % if part["bkout_type"]:
+    valid &= part_init_done[${_to_pascal_case(part["name"])}Idx];
+    otp_broadcast.${part["name"].lower()}_data = otp_${part["name"].lower()}_data_t'(part_buf_data[${_to_pascal_case(part["name"])}Offset +: ${_to_pascal_case(part["name"])}Size]);
+  % else:
+    unused ^= ^{part_init_done[${_to_pascal_case(part["name"])}Idx],
+                part_buf_data[${_to_pascal_case(part["name"])}Offset +: ${_to_pascal_case(part["name"])}Size]};
+  % endif
+% endfor
+    otp_broadcast.valid = lc_ctrl_pkg::lc_tx_bool_to_lc_tx(valid);
+    return otp_broadcast;
+  endfunction : named_broadcast_assign
+
 
 endpackage : otp_ctrl_part_pkg

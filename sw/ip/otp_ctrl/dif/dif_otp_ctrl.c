@@ -206,7 +206,7 @@ dif_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
           OTP_CTRL_STATUS_CREATOR_SW_CFG_ERROR_BIT,
       [kDifOtpCtrlStatusCodeOwnerSwCfgError] =
           OTP_CTRL_STATUS_OWNER_SW_CFG_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeHwCfgError] = OTP_CTRL_STATUS_HW_CFG_ERROR_BIT,
+      [kDifOtpCtrlStatusCodeHwCfg0Error] = OTP_CTRL_STATUS_HW_CFG0_ERROR_BIT,
       [kDifOtpCtrlStatusCodeLifeCycleError] =
           OTP_CTRL_STATUS_LIFE_CYCLE_ERROR_BIT,
       [kDifOtpCtrlStatusCodeSecret0Error] = OTP_CTRL_STATUS_SECRET0_ERROR_BIT,
@@ -341,10 +341,10 @@ static const partition_info_t kPartitions[] = {
                                         .align_mask = 0x3,
                                         .is_software = true,
                                         .has_digest = true},
-    [kDifOtpCtrlPartitionHwCfg] = {.start_addr = OTP_CTRL_PARAM_HW_CFG_OFFSET,
-                                   .len = OTP_CTRL_PARAM_HW_CFG_SIZE,
-                                   .align_mask = 0x3,
-                                   .has_digest = true},
+    [kDifOtpCtrlPartitionHwCfg0] = {.start_addr = OTP_CTRL_PARAM_HW_CFG0_OFFSET,
+                                    .len = OTP_CTRL_PARAM_HW_CFG0_SIZE,
+                                    .align_mask = 0x3,
+                                    .has_digest = true},
     [kDifOtpCtrlPartitionSecret0] = {.start_addr =
                                          OTP_CTRL_PARAM_SECRET0_OFFSET,
                                      .len = OTP_CTRL_PARAM_SECRET0_SIZE,
@@ -632,9 +632,9 @@ static bool get_digest_regs(dif_otp_ctrl_partition_t partition, ptrdiff_t *reg0,
       *reg0 = OTP_CTRL_OWNER_SW_CFG_DIGEST_0_REG_OFFSET;
       *reg1 = OTP_CTRL_OWNER_SW_CFG_DIGEST_1_REG_OFFSET;
       break;
-    case kDifOtpCtrlPartitionHwCfg:
-      *reg0 = OTP_CTRL_HW_CFG_DIGEST_0_REG_OFFSET;
-      *reg1 = OTP_CTRL_HW_CFG_DIGEST_1_REG_OFFSET;
+    case kDifOtpCtrlPartitionHwCfg0:
+      *reg0 = OTP_CTRL_HW_CFG0_DIGEST_0_REG_OFFSET;
+      *reg1 = OTP_CTRL_HW_CFG0_DIGEST_1_REG_OFFSET;
       break;
     case kDifOtpCtrlPartitionSecret0:
       *reg0 = OTP_CTRL_SECRET0_DIGEST_0_REG_OFFSET;

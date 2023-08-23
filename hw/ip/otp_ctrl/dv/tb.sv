@@ -140,7 +140,7 @@ module tb;
     .otbn_otp_key_i             (otbn_req),
     .otbn_otp_key_o             (otbn_rsp),
 
-    .otp_hw_cfg_o               (otp_ctrl_if.otp_hw_cfg_o),
+    .otp_broadcast_o            (otp_ctrl_if.otp_broadcast_o),
     .otp_ext_voltage_h_io       (otp_ext_voltage_h),
 
     //scan

@@ -1441,16 +1441,16 @@
           index: -1
         }
         {
-          name: otp_hw_cfg
-          desc: Output of the HW_CFG partition.
-          struct: otp_hw_cfg
+          name: otp_broadcast
+          desc: Output of the HW partitions with breakout data types.
+          struct: otp_broadcast
           package: otp_ctrl_part_pkg
           type: uni
           act: req
           width: 1
           default: "'0"
           inst_name: otp_ctrl
-          top_signame: otp_ctrl_otp_hw_cfg
+          top_signame: otp_ctrl_otp_broadcast
           index: -1
         }
         {
@@ -9029,7 +9029,7 @@
       rv_core_ibex.irq_timer
       rv_core_ibex.hart_id
       rv_core_ibex.boot_addr
-      otp_ctrl.otp_hw_cfg
+      otp_ctrl.otp_broadcast
       csrng.otp_en_csrng_sw_app_read
       entropy_src.otp_en_entropy_src_fw_read
       entropy_src.otp_en_entropy_src_fw_over
@@ -16233,16 +16233,16 @@
         index: -1
       }
       {
-        name: otp_hw_cfg
-        desc: Output of the HW_CFG partition.
-        struct: otp_hw_cfg
+        name: otp_broadcast
+        desc: Output of the HW partitions with breakout data types.
+        struct: otp_broadcast
         package: otp_ctrl_part_pkg
         type: uni
         act: req
         width: 1
         default: "'0"
         inst_name: otp_ctrl
-        top_signame: otp_ctrl_otp_hw_cfg
+        top_signame: otp_ctrl_otp_broadcast
         index: -1
       }
       {
@@ -24037,8 +24037,8 @@
       }
       {
         package: otp_ctrl_part_pkg
-        struct: otp_hw_cfg
-        signame: otp_ctrl_otp_hw_cfg
+        struct: otp_broadcast
+        signame: otp_ctrl_otp_broadcast
         width: 1
         type: uni
         end_idx: -1

@@ -37,27 +37,27 @@ enum {
 
   /**
    * DeviceId offset and length.
-   * The offset is relative to the start of the HW_CFG OTP partition.
+   * The offset is relative to the start of the HW_CFG0 OTP partition.
    */
-  kHwCfgDeviceIdOffset =
-      OTP_CTRL_PARAM_DEVICE_ID_OFFSET - OTP_CTRL_PARAM_HW_CFG_OFFSET,
-  kHwCfgDeviceIdWordCount = OTP_CTRL_PARAM_DEVICE_ID_SIZE / sizeof(uint32_t),
+  kHwCfg0DeviceIdOffset =
+      OTP_CTRL_PARAM_DEVICE_ID_OFFSET - OTP_CTRL_PARAM_HW_CFG0_OFFSET,
+  kHwCfg0DeviceIdWordCount = OTP_CTRL_PARAM_DEVICE_ID_SIZE / sizeof(uint32_t),
 
   /**
    * ManufState offset and length.
-   * The offset is relative to the start of the HW_CFG OTP parition.
+   * The offset is relative to the start of the HW_CFG0 OTP parition.
    */
-  kHwCfgManufStateOffset =
-      OTP_CTRL_PARAM_MANUF_STATE_OFFSET - OTP_CTRL_PARAM_HW_CFG_OFFSET,
-  kHwCfgManufStateWordCount =
+  kHwCfg0ManufStateOffset =
+      OTP_CTRL_PARAM_MANUF_STATE_OFFSET - OTP_CTRL_PARAM_HW_CFG0_OFFSET,
+  kHwCfg0ManufStateWordCount =
       OTP_CTRL_PARAM_MANUF_STATE_SIZE / sizeof(uint32_t),
 
   /**
-   * Offset to the EN_SRAM_IFETCH OTP bits relative to the start of the HW_CFG
+   * Offset to the EN_SRAM_IFETCH OTP bits relative to the start of the HW_CFG0
    * partition.
    */
-  kHwCfgEnSramIfetchOffset =
-      OTP_CTRL_PARAM_EN_SRAM_IFETCH_OFFSET - OTP_CTRL_PARAM_HW_CFG_OFFSET,
+  kHwCfg0EnSramIfetchOffset =
+      OTP_CTRL_PARAM_EN_SRAM_IFETCH_OFFSET - OTP_CTRL_PARAM_HW_CFG0_OFFSET,
 
   /**
    * DeviceID info flash location. This assumes the device ID is written to
@@ -69,7 +69,7 @@ enum {
   kFlashInfoDeviceIdBankId = 0,
   kFlashInfoDeviceIdPageId = 0,
   kFlashInfoDeviceIdByteAddress = 0,
-  kFlashInfoDeviceIdWordCount = kHwCfgDeviceIdWordCount,
+  kFlashInfoDeviceIdWordCount = kHwCfg0DeviceIdWordCount,
 
   /**
    * ManufState info flash location. This assumes the manuf state is written to
@@ -78,11 +78,11 @@ enum {
   kFlashInfoManufStatePartitionId = 0,
   kFlashInfoManufStateBankId = 0,
   kFlashInfoManufStatePageId = 0,
-  kFlashInfoManufStateByteAddress = kHwCfgDeviceIdWordCount * sizeof(uint32_t),
-  kFlashInfoManufStateWordCount = kHwCfgManufStateWordCount,
+  kFlashInfoManufStateByteAddress = kHwCfg0DeviceIdWordCount * sizeof(uint32_t),
+  kFlashInfoManufStateWordCount = kHwCfg0ManufStateWordCount,
 };
 
-typedef struct hw_cfg_settings {
+typedef struct hw_cfg0_settings {
   /**
    * Enable / disable execute from SRAM CSR switch.
    */
@@ -102,7 +102,7 @@ typedef struct hw_cfg_settings {
    * other related functions.
    */
   multi_bit_bool_t en_entropy_src_fw_over;
-} hw_cfg_settings_t;
+} hw_cfg0_settings_t;
 
 // Changing any of the following values may result in unexpected device
 // behavior.
@@ -112,7 +112,7 @@ typedef struct hw_cfg_settings {
 // - en_csrng_sw_app_read: required to be able to extract output from CSRNG.
 // - en_entropy_src_fw_read and en_entropy_src_fw_over: Required to implement
 //   entropy_src conditioner KAT.
-const hw_cfg_settings_t kHwCfgSettings = {
+const hw_cfg0_settings_t kHwCfg0Settings = {
     .en_sram_ifetch = kMultiBitBool8True,
     .en_csrng_sw_app_read = kMultiBitBool8True,
     .en_entropy_src_fw_read = kMultiBitBool8True,
@@ -120,31 +120,32 @@ const hw_cfg_settings_t kHwCfgSettings = {
 };
 
 /**
- * Configures digital logic settings in the HW_CFG partition.
+ * Configures digital logic settings in the HW_CFG0 partition.
  *
  * @param otp OTP controller instance.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static status_t hw_cfg_enable_knobs_set(const dif_otp_ctrl_t *otp) {
-#define HW_CFG_EN_OFFSET(m, i) ((bitfield_field32_t){.mask = m, .index = i})
-  static const bitfield_field32_t kSramFetch = HW_CFG_EN_OFFSET(0xff, 0);
-  static const bitfield_field32_t kCsrngAppRead = HW_CFG_EN_OFFSET(0xff, 8);
-  static const bitfield_field32_t kEntropySrcFwRd = HW_CFG_EN_OFFSET(0xff, 16);
-  static const bitfield_field32_t kEntropySrcFwOvr = HW_CFG_EN_OFFSET(0xff, 24);
-#undef HW_CFG_EN_OFFSET
+static status_t hw_cfg0_enable_knobs_set(const dif_otp_ctrl_t *otp) {
+#define HW_CFG0_EN_OFFSET(m, i) ((bitfield_field32_t){.mask = m, .index = i})
+  static const bitfield_field32_t kSramFetch = HW_CFG0_EN_OFFSET(0xff, 0);
+  static const bitfield_field32_t kCsrngAppRead = HW_CFG0_EN_OFFSET(0xff, 8);
+  static const bitfield_field32_t kEntropySrcFwRd = HW_CFG0_EN_OFFSET(0xff, 16);
+  static const bitfield_field32_t kEntropySrcFwOvr =
+      HW_CFG0_EN_OFFSET(0xff, 24);
+#undef HW_CFG0_EN_OFFSET
 
   uint32_t val =
-      bitfield_field32_write(0, kSramFetch, kHwCfgSettings.en_sram_ifetch);
+      bitfield_field32_write(0, kSramFetch, kHwCfg0Settings.en_sram_ifetch);
   val = bitfield_field32_write(val, kCsrngAppRead,
-                               kHwCfgSettings.en_csrng_sw_app_read);
+                               kHwCfg0Settings.en_csrng_sw_app_read);
   val = bitfield_field32_write(val, kEntropySrcFwRd,
-                               kHwCfgSettings.en_entropy_src_fw_read);
+                               kHwCfg0Settings.en_entropy_src_fw_read);
   val = bitfield_field32_write(val, kEntropySrcFwOvr,
-                               kHwCfgSettings.en_entropy_src_fw_over);
+                               kHwCfg0Settings.en_entropy_src_fw_over);
 
-  TRY(otp_ctrl_testutils_dai_write32(otp, kDifOtpCtrlPartitionHwCfg,
-                                     kHwCfgEnSramIfetchOffset, &val,
+  TRY(otp_ctrl_testutils_dai_write32(otp, kDifOtpCtrlPartitionHwCfg0,
+                                     kHwCfg0EnSramIfetchOffset, &val,
                                      /*len=*/1));
   return OK_STATUS();
 }
@@ -203,29 +204,29 @@ static status_t flash_info_read(dif_flash_ctrl_state_t *flash_state,
   return OK_STATUS();
 }
 
-status_t individualize_dev_hw_cfg_start(dif_flash_ctrl_state_t *flash_state,
-                                        const dif_lc_ctrl_t *lc_ctrl,
-                                        const dif_otp_ctrl_t *otp) {
+status_t individualize_dev_hw_cfg0_start(dif_flash_ctrl_state_t *flash_state,
+                                         const dif_lc_ctrl_t *lc_ctrl,
+                                         const dif_otp_ctrl_t *otp) {
   TRY(lc_ctrl_testutils_operational_state_check(lc_ctrl));
 
   bool is_locked;
-  TRY(dif_otp_ctrl_is_digest_computed(otp, kDifOtpCtrlPartitionHwCfg,
+  TRY(dif_otp_ctrl_is_digest_computed(otp, kDifOtpCtrlPartitionHwCfg0,
                                       &is_locked));
   if (is_locked) {
     return OK_STATUS();
   }
 
   // Configure byte-sized hardware enable knobs.
-  TRY(hw_cfg_enable_knobs_set(otp));
+  TRY(hw_cfg0_enable_knobs_set(otp));
 
   // Configure DeviceID
   uint32_t device_id[kFlashInfoDeviceIdWordCount];
   TRY(flash_info_read(flash_state, kFlashInfoDeviceIdByteAddress,
                       kFlashInfoDeviceIdPartitionId, kFlashInfoDeviceIdPageId,
                       device_id, kFlashInfoDeviceIdWordCount));
-  TRY(otp_ctrl_testutils_dai_write32(otp, kDifOtpCtrlPartitionHwCfg,
-                                     kHwCfgDeviceIdOffset, device_id,
-                                     kHwCfgDeviceIdWordCount));
+  TRY(otp_ctrl_testutils_dai_write32(otp, kDifOtpCtrlPartitionHwCfg0,
+                                     kHwCfg0DeviceIdOffset, device_id,
+                                     kHwCfg0DeviceIdWordCount));
 
   // Configure ManufState
   uint32_t manuf_state[kFlashInfoManufStateWordCount];
@@ -233,23 +234,23 @@ status_t individualize_dev_hw_cfg_start(dif_flash_ctrl_state_t *flash_state,
                       kFlashInfoManufStatePartitionId,
                       kFlashInfoManufStatePageId, manuf_state,
                       kFlashInfoManufStateWordCount));
-  TRY(otp_ctrl_testutils_dai_write32(otp, kDifOtpCtrlPartitionHwCfg,
-                                     kHwCfgManufStateOffset, manuf_state,
-                                     kHwCfgManufStateWordCount));
+  TRY(otp_ctrl_testutils_dai_write32(otp, kDifOtpCtrlPartitionHwCfg0,
+                                     kHwCfg0ManufStateOffset, manuf_state,
+                                     kHwCfg0ManufStateWordCount));
 
-  TRY(otp_ctrl_testutils_lock_partition(otp, kDifOtpCtrlPartitionHwCfg,
+  TRY(otp_ctrl_testutils_lock_partition(otp, kDifOtpCtrlPartitionHwCfg0,
                                         /*digest=*/0));
   return OK_STATUS();
 }
 
-status_t individualize_dev_hw_cfg_end(const dif_otp_ctrl_t *otp) {
+status_t individualize_dev_hw_cfg0_end(const dif_otp_ctrl_t *otp) {
   // TODO: Add DeviceId by comparing OTP flash value against the value reported
   // by lc_ctrl. Consider erasing the data from the flash info pages.
   bool is_locked;
-  TRY(dif_otp_ctrl_is_digest_computed(otp, kDifOtpCtrlPartitionHwCfg,
+  TRY(dif_otp_ctrl_is_digest_computed(otp, kDifOtpCtrlPartitionHwCfg0,
                                       &is_locked));
   uint64_t digest;
-  TRY(dif_otp_ctrl_get_digest(otp, kDifOtpCtrlPartitionHwCfg, &digest));
+  TRY(dif_otp_ctrl_get_digest(otp, kDifOtpCtrlPartitionHwCfg0, &digest));
 
   return is_locked ? OK_STATUS() : INTERNAL();
 }

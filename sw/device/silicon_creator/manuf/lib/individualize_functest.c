@@ -58,9 +58,9 @@ void sw_reset(void) {
 bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
 
-  if (!status_ok(individualize_dev_hw_cfg_end(&otp_ctrl))) {
+  if (!status_ok(individualize_dev_hw_cfg0_end(&otp_ctrl))) {
     CHECK_STATUS_OK(
-        individualize_dev_hw_cfg_start(&flash_state, &lc_ctrl, &otp_ctrl));
+        individualize_dev_hw_cfg0_start(&flash_state, &lc_ctrl, &otp_ctrl));
     sw_reset();
   }
 

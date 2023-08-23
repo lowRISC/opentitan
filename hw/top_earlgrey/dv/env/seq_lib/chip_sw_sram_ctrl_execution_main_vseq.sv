@@ -25,7 +25,7 @@ class chip_sw_sram_ctrl_execution_main_vseq extends chip_sw_base_vseq;
     if (set_prod_lc) begin
       cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(LcStProd);
     end
-    cfg.mem_bkdr_util_h[Otp].otp_write_hw_cfg_partition(
+    cfg.mem_bkdr_util_h[Otp].otp_write_hw_cfg0_partition(
         .device_id(DEVICE_ID), .manuf_state(MANUF_STATE), .en_sram_ifetch(en_sram_ifetch),
         .en_csrng_sw_app_read(EN_CSRNG_SW_APP_READ),
         .en_entropy_src_fw_read(EN_ENTROPY_SRC_FW_READ),
