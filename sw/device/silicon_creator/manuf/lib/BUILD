@@ -229,15 +229,3 @@ opentitan_functest(
         "//sw/device/silicon_creator/manuf/keys/fake",
     ],
 )
-
-cc_library(
-    name = "isolated_flash_partition",
-    srcs = ["isolated_flash_partition.c"],
-    hdrs = ["isolated_flash_partition.h"],
-    deps = [
-        ":flash_info_fields",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-    ],
-)
