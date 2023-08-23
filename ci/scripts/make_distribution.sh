@@ -26,7 +26,7 @@ readonly DIST_ARTIFACTS=(
   'sw/device/*.vmem'
   'hw/top_darjeeling/Vchip_darjeeling_verilator'
   'hw/top_darjeeling/chip_darjeeling_cw310/*'
-  'hw/top_earlgrey/chip_earlgrey_cw310/*'
+  # 'hw/top_earlgrey/chip_earlgrey_cw310/*' # currently disabled in Integrated repo
 )
 
 DIST_DIR="$OBJ_DIR/$OT_VERSION"
