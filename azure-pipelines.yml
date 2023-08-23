@@ -247,6 +247,7 @@ jobs:
       echo -//quality/... >> "${TARGET_PATTERN_FILE}"
       echo -//third_party/riscv-compliance/... >> "${TARGET_PATTERN_FILE}"
       echo -//hw/... >> "${TARGET_PATTERN_FILE}"
+      echo -//sw/top_earlgrey/... >> "${TARGET_PATTERN_FILE}"
       ./bazelisk.sh cquery \
         --noinclude_aspects \
         --output=starlark \
