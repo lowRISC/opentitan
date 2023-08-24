@@ -20,12 +20,12 @@ module mbx_hostif
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
   // Access to the control register
-  output logic                        hostif_set_control_abort_o,
+  output logic                        hostif_control_set_abort_o,
   // Access to the status register
-  output logic                        hostif_clear_status_busy_o,
-  output logic                        hostif_set_status_error_o,
-  output logic                        hostif_clear_status_error_o,
-  output logic                        hostif_set_status_async_msg_status_o,
+  output logic                        hostif_status_busy_clear_o,
+  output logic                        hostif_status_error_set_o,
+  output logic                        hostif_status_error_clear_o,
+  output logic                        hostif_status_async_msg_status_set_o,
   input  logic                        hostif_status_busy_i,
   input  logic                        hostif_status_error_i,
   input  logic                        hostif_status_async_msg_status_i,
@@ -103,7 +103,7 @@ module mbx_hostif
   logic abort_d, abort_q;
   assign  hw2reg.control.d = abort_q;
   // External write logic
-  assign hostif_set_control_abort_o = reg2hw.control.qe & tl_host_i.a_data[0];
+  assign hostif_control_set_abort_o = reg2hw.control.qe & tl_host_i.a_data[0];
 
   // Abort computation from system and host interface
   always_comb begin
@@ -111,7 +111,7 @@ module mbx_hostif
 
     if (sysif_write_control_abort_i) begin
       abort_d = 1'b1;
-    end else if (hostif_set_control_abort_o) begin
+    end else if (hostif_control_set_abort_o) begin
       abort_d = 1'b0;
     end
   end
@@ -135,10 +135,10 @@ module mbx_hostif
   assign hw2reg.status.async_msg_status.d = hostif_status_async_msg_status_i;
   assign hw2reg.status.ready.d            = hostif_status_ready_i;
   // External write logic
-  assign hostif_clear_status_busy_o           = reg2hw.status.busy.qe  & ~reg2hw.status.busy.q;
-  assign hostif_set_status_error_o            = reg2hw.status.error.qe &  reg2hw.status.error.q;
-  assign hostif_clear_status_error_o          = reg2hw.status.error.qe & ~reg2hw.status.error.q;
-  assign hostif_set_status_async_msg_status_o =
+  assign hostif_status_busy_clear_o           = reg2hw.status.busy.qe  & ~reg2hw.status.busy.q;
+  assign hostif_status_error_set_o            = reg2hw.status.error.qe &  reg2hw.status.error.q;
+  assign hostif_status_error_clear_o          = reg2hw.status.error.qe & ~reg2hw.status.error.q;
+  assign hostif_status_async_msg_status_set_o =
     reg2hw.status.async_msg_status.qe & reg2hw.status.async_msg_status.q;
 
   // Address config valid
