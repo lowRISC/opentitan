@@ -150,34 +150,36 @@ class rv_dm_base_vseq extends cip_base_vseq #(
       end
     join_none
   endtask
+  task write_chk (input uvm_object ptr,input int cmderr,input int command);
     uvm_reg_data_t data;
     uvm_reg_data_t rdata;
-  task write_chk (input uvm_object ptr,input int cmderr,input int command);
-   repeat ($urandom_range(1, 10)) begin
-    data = $urandom;
-    csr_wr(.ptr(tl_mem_ral.halted), .value(data));
-    cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
-    csr_wr(.ptr(jtag_dmi_ral.command), .value(command));
-    csr_wr(.ptr(ptr), .value(data));
-    cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
-    csr_rd(.ptr(jtag_dmi_ral.abstractcs), .value(rdata));
-    cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
-    `DV_CHECK_EQ(cmderr,get_field_val(jtag_dmi_ral.abstractcs.cmderr,rdata));
-    cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
+    repeat ($urandom_range(1, 10)) begin
+      data = $urandom;
+      csr_wr(.ptr(tl_mem_ral.halted), .value(data));
+      cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
+      csr_wr(.ptr(jtag_dmi_ral.command), .value(command));
+      csr_wr(.ptr(ptr), .value(data));
+      cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
+      csr_rd(.ptr(jtag_dmi_ral.abstractcs), .value(rdata));
+      cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
+      `DV_CHECK_EQ(cmderr,get_field_val(jtag_dmi_ral.abstractcs.cmderr,rdata));
+      cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
     end
   endtask
   task read_chk (input uvm_object ptr,input int cmderr,input int command);
-   repeat ($urandom_range(1, 10)) begin
-    data = $urandom;
-    csr_wr(.ptr(tl_mem_ral.halted), .value(data));
-    cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
-    csr_wr(.ptr(jtag_dmi_ral.command), .value(command));
-    csr_rd(.ptr(ptr), .value(data));
-    cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
-    csr_rd(.ptr(jtag_dmi_ral.abstractcs), .value(rdata));
-    cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
-    `DV_CHECK_EQ(cmderr,get_field_val(jtag_dmi_ral.abstractcs.cmderr,rdata));
-    cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
+    uvm_reg_data_t data;
+    uvm_reg_data_t rdata;
+    repeat ($urandom_range(1, 10)) begin
+      data = $urandom;
+      csr_wr(.ptr(tl_mem_ral.halted), .value(data));
+      cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
+      csr_wr(.ptr(jtag_dmi_ral.command), .value(command));
+      csr_rd(.ptr(ptr), .value(data));
+      cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
+      csr_rd(.ptr(jtag_dmi_ral.abstractcs), .value(rdata));
+      cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
+      `DV_CHECK_EQ(cmderr,get_field_val(jtag_dmi_ral.abstractcs.cmderr,rdata));
+      cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
     end
   endtask
 
