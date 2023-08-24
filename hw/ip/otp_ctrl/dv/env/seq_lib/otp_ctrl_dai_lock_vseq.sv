@@ -34,11 +34,11 @@ class otp_ctrl_dai_lock_vseq extends otp_ctrl_smoke_vseq;
     if (part_idx == Secret0Idx)      dai_addr inside `PART_ADDR_RANGE(Secret0Idx);
     if (part_idx == Secret1Idx)      dai_addr inside `PART_ADDR_RANGE(Secret1Idx);
     if (part_idx == Secret2Idx)      dai_addr inside `PART_ADDR_RANGE(Secret2Idx);
-    if (part_idx == LifeCycleIdx && write_unused_addr) {
+    if (part_idx == LifeCycleIdx) {
       if (write_unused_addr) {
         dai_addr inside {[PartInfo[LifeCycleIdx].offset : {OTP_ADDR_WIDTH{1'b1}}]};
       } else {
-        dai_addr inside {[PartInfo[LifeCycleIdx].offset : '1]};
+        dai_addr inside `PART_ADDR_RANGE(LifeCycleIdx);
       }
     }
     solve part_idx before dai_addr;
