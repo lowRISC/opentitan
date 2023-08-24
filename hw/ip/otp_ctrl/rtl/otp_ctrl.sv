@@ -1292,7 +1292,22 @@ end
   // Output complete hardware config partition.
   // Actual mapping to other IPs is done via the intersignal topgen feature,
   // selection of fields can be done using the otp_hw_cfg_t struct fields.
-  assign otp_broadcast_o = named_broadcast_assign(part_init_done, part_buf_data);
+  otp_broadcast_t otp_broadcast;
+  assign otp_broadcast = named_broadcast_assign(part_init_done, part_buf_data);
+
+  // Make sure the broadcast valid is flopped before sending it out.
+  lc_ctrl_pkg::lc_tx_t otp_broadcast_valid_q;
+  prim_lc_sender u_prim_lc_sender_otp_broadcast_valid (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(otp_broadcast.valid),
+    .lc_en_o(otp_broadcast_valid_q)
+  );
+
+  always_comb begin : p_broadcast_valid
+    otp_broadcast_o       = otp_broadcast;
+    otp_broadcast_o.valid = otp_broadcast_valid_q;
+  end
 
   // Root keys
   logic otp_keymgr_key_valid_d, otp_keymgr_key_valid_q; // need to latch valid
