@@ -18,6 +18,7 @@ module otp_ctrl_ecc_reg #(
   input  logic                        wren_i,
   input  logic [Aw-1:0]               addr_i,
   input  logic [Width-1:0]            wdata_i,
+  output logic [Width-1:0]            rdata_o,
 
   // Concurrent output of the register state.
   output logic [Depth-1:0][Width-1:0] data_o,
@@ -46,8 +47,12 @@ module otp_ctrl_ecc_reg #(
       data_d = data_q;
       ecc_d  = ecc_q;
 
-      if (wren_i && 32'(addr_i) < Depth) begin
-        {ecc_d[0], data_d[0]} = ecc_enc;
+      rdata_o = '0;
+      if (32'(addr_i) < Depth) begin
+        rdata_o = data_q[0];
+        if (wren_i) begin
+          {ecc_d[0], data_d[0]} = ecc_enc;
+        end
       end
     end
   end else begin : gen_multiple_words
@@ -56,8 +61,12 @@ module otp_ctrl_ecc_reg #(
       data_d = data_q;
       ecc_d  = ecc_q;
 
-      if (wren_i && 32'(addr_i) < Depth) begin
-        {ecc_d[addr_i], data_d[addr_i]} = ecc_enc;
+      rdata_o = '0;
+      if (32'(addr_i) < Depth) begin
+        rdata_o = data_q[addr_i];
+        if (wren_i) begin
+          {ecc_d[addr_i], data_d[addr_i]} = ecc_enc;
+        end
       end
     end
   end
@@ -87,9 +96,10 @@ module otp_ctrl_ecc_reg #(
     end
   end
 
-  `ASSERT_KNOWN(EccKnown_A,     ecc_q)
-  `ASSERT_KNOWN(DataKnown_A,    data_q)
-  `ASSERT_KNOWN(DataOutKnown_A, data_o)
-  `ASSERT_KNOWN(EccErrKnown_A,  ecc_err_o)
+  `ASSERT_KNOWN(EccKnown_A,      ecc_q)
+  `ASSERT_KNOWN(DataKnown_A,     data_q)
+  `ASSERT_KNOWN(RDataOutKnown_A, rdata_o)
+  `ASSERT_KNOWN(DataOutKnown_A,  data_o)
+  `ASSERT_KNOWN(EccErrKnown_A,   ecc_err_o)
 
 endmodule : otp_ctrl_ecc_reg
