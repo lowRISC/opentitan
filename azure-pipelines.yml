@@ -171,10 +171,6 @@ jobs:
   - bash: ci/scripts/verible-lint.sh fpv
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Verible FPV (Verilog lint)
-  - bash: ci/scripts/check-module-ids.sh
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Check status_t Module IDs (Experimental)
-    continueOnError: True
 
 - job: sw_build
   displayName: Earl Grey SW Build & Test

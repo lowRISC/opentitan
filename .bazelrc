@@ -132,5 +132,9 @@ build --aspects=@rules_rust//rust:defs.bzl%rust_clippy_aspect
 build --output_groups=+clippy_checks
 build --@rules_rust//:clippy_flags="-Aclippy::bool_assert_comparison,-Aclippy::uninlined_format_args,-Dwarnings"
 
+# Configure the module ID check.
+build --aspects=rules/quality.bzl%modid_check_aspect
+build --output_groups=+modid_checks
+
 # Import site-specific configuration.
 try-import .bazelrc-site
