@@ -16,6 +16,11 @@ package prim_alert_pkg;
     logic ack_n;
   } alert_rx_t;
 
+  typedef struct packed {
+    logic ack_p;
+    logic ack_n;
+  } alert_ack_t;
+
   parameter alert_tx_t ALERT_TX_DEFAULT = '{alert_p:  1'b0,
                                             alert_n:  1'b1};
 
@@ -23,5 +28,8 @@ package prim_alert_pkg;
                                             ping_n: 1'b1,
                                             ack_p: 1'b0,
                                             ack_n: 1'b1};
+
+  parameter alert_ack_t ALERT_ACK_DEFAULT = '{ack_p: 1'b0,
+                                              ack_n: 1'b1};
 
 endpackage : prim_alert_pkg
