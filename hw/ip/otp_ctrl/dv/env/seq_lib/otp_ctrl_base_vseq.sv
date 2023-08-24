@@ -123,8 +123,8 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   virtual task otp_ctrl_init();
     // reset memory to avoid readout X
     clear_otp_memory();
-    lc_state = 0;
-    lc_cnt   = 0;
+    lc_state = lc_state_e'(0);
+    lc_cnt   = lc_cnt_e'(0);
   endtask
 
   virtual function void clear_otp_memory();

@@ -176,6 +176,7 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
     int            error_cnt;
     otp_err_code_e exp_err_code = (alert_name == "fatal_check_error") ?
                                   OtpCheckFailError : OtpMacroEccUncorrError;
+    uvm_reg_data_t err_code_raw;
     otp_err_code_e err_code;
     dv_base_reg_field err_code_flds[$];
 
@@ -201,7 +202,8 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
     for (int i = 0; i <= OtpLciErrIdx; i++) begin
       ral.err_code[i].get_dv_base_reg_fields(err_code_flds);
       if (exp_status[i]) begin
-        csr_rd(err_code_flds[0], err_code);
+        csr_rd(err_code_flds[0], err_code_raw);
+        err_code = otp_err_code_e'(err_code_raw);
         if (err_code == exp_err_code) begin
           error_cnt++;
         end else if (err_code != OtpFsmStateError) begin
