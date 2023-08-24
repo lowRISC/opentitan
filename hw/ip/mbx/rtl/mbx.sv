@@ -32,10 +32,10 @@ module mbx
   logic [CfgSramAddrWidth-1:0] ob_read_ptr;
 
   // External write signals for control and status register
-  logic hostif_set_control_abort;
-  logic hostif_clear_status_busy;
-  logic hostif_set_status_error, hostif_clear_status_error;
-  logic hostif_set_status_async_msg_status;
+  logic hostif_control_abort_set;
+  logic hostif_status_busy_clear;
+  logic hostif_status_error_set, hostif_status_error_clear;
+  logic hostif_status_async_msg_status_set;
   // External read signals for control and status register
   logic hostif_status_busy, hostif_status_error;
   logic hostif_status_async_msg_status, hostif_status_ready;
@@ -68,12 +68,12 @@ module mbx
     .alert_rx_i                          ( alert_rx_i                         ),
     .alert_tx_o                          ( alert_tx_o                         ),
     // Access to the control register
-    .hostif_set_control_abort_o          ( hostif_set_control_abort           ),
+    .hostif_control_abort_set_o          ( hostif_control_abort_set           ),
     // Access to the status register
-    .hostif_clear_status_busy_o          ( hostif_clear_status_busy           ),
-    .hostif_set_status_error_o           ( hostif_set_status_error            ),
-    .hostif_clear_status_error_o         ( hostif_clear_status_error          ),
-    .hostif_set_status_async_msg_status_o( hostif_set_status_async_msg_status ),
+    .hostif_status_busy_clear_o          ( hostif_status_busy_clear           ),
+    .hostif_status_error_set_o           ( hostif_status_error_set            ),
+    .hostif_status_error_clear_o         ( hostif_status_error_clear          ),
+    .hostif_status_async_msg_status_set_o( hostif_status_async_msg_status_set ),
     .hostif_status_busy_i                ( hostif_status_busy                 ),
     .hostif_status_error_i               ( hostif_status_error                ),
     .hostif_status_async_msg_status_i    ( hostif_status_async_msg_status     ),
