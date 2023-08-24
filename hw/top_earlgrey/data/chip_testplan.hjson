@@ -17,6 +17,7 @@
 
     // IP block specific top level test plans.
     "hw/top_earlgrey/data/ip/chip_hmac_testplan.hjson",
+    "hw/top_earlgrey/data/ip/chip_keymgr_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_kmac_testplan.hjson",
   ]
 
@@ -2277,100 +2278,6 @@
       stage: V2
       tests: ["chip_sw_edn_entropy_reqs",
               "chip_sw_csrng_edn_concurrency"]
-    }
-
-    // KEYMGR (pre-verified IP) integration tests:
-    {
-      name: chip_sw_keymgr_key_derivation
-      desc: '''Verify the keymgr advances to all states and generate identity / SW output.
-
-            - In the SW test, write fixed value to OTP for root_key and write creator and owner
-              seeds in flash. And then roboot the chip.
-            - In the SV sequence, backdoor read Device ID and ROM digest through CSRs.
-            - For HardwareRevisionSecret, use the constant values in design.
-            - Configure the keymgr and advance to `CreatorRootKey` and `OwnerIntermediateKey`.
-            - Check keymgr internal keys after advance operations.
-            - Generate identity / SW output for the Sealing CDI.
-               - No need to test the Attestation CDI in chip-level as the only difference is to
-                 use another set of CSR values, and the rest of inputs are the same as the Sealing
-                 CDI.
-            - KMAC should finish hashing successfully (not visible to SW) and return digest to
-              keymgr.
-            - Read keymgr CSRs `SW_SHARE*` and verify the return values.
-            - Advance to `Disabled` and verify keymgr enters the state successfully.
-
-            - For each operation, wait for the interrupt `op_done` to be triggered and check CSR
-              `op_status` is `DONE_SUCCESS`.
-
-            - Note: there are 3 ways of calculating the expected digest for comparison. Any of them
-              is acceptable.
-              - Use SW to calculate that, and it will also exercise the Ibex.
-              - SW sends all the keys through CSRs to KMAC to generate the degist data.
-              - DV calls C functions to generate and backdoor load to a specific memory location
-                for SW. (Adpot this approach.)
-
-            X-ref'ed with kmac test.
-            '''
-      stage: V2
-      tests: ["chip_sw_keymgr_key_derivation", "chip_sw_keymgr_key_derivation_jitter_en"]
-    }
-    {
-      name: chip_sw_keymgr_sideload_kmac
-      desc: '''Verify the keymgr sideload interface to KMAC.
-
-            - Configure the keymgr and advance to the `OwnerIntKey` state.
-            - Request keymgr to generate hw key for KMAC sideload key slot.
-            - Request KMAC operation with sideload key configuration.
-            - Verify the digest for correctness (should match the DV-side result).
-            - Clear keymer's KMAC sideload key slot.
-            - Request KMAC operation with sideload key configuration.
-            - Verify the digest value has changed.
-            - Request keymgr to derive the same key for the KMAC sideload key slot.
-            - Request KMAC operation with sideload key configuration.
-            - Verify the digest for correctness (should match the DV-side result again).
-
-            X-ref'ed with chip_kmac_app_keymgr test.
-            '''
-      stage: V2
-      tests: ["chip_sw_keymgr_sideload_kmac"]
-    }
-    {
-      name: chip_sw_keymgr_sideload_aes
-      desc: '''Verify the keymgr sideload interface to AES.
-
-               Same as `chip_keymgr_sideload_kmac`, except, sideload to AES.
-            '''
-      stage: V2
-      tests: ["chip_sw_keymgr_sideload_aes"]
-    }
-    {
-      name: chip_sw_keymgr_sideload_otbn
-      desc: '''Verify the keymgr sideload interface to OTBN.
-
-               Load OTBN binary image, the rest is similar to `chip_keymgr_sideload_kmac`, except
-               sideloading to otbn.
-
-               Clear the sideload key once done.
-            '''
-      stage: V2
-      tests: ["chip_sw_keymgr_sideload_otbn"]
-    }
-    {
-      name: chip_sw_keymgr_sideload_kmac_error
-      desc: '''
-            Verify the effect of KMAC returning an error during a keymgr operation.
-
-            - Configure keymgr to enter any of the 3 working states.
-            - Issue a keymgr operation.
-            - While the KMAC is actively computing the digest, glitch the KMAC app sparse FSM to
-              trigger a fault.
-            - Verify that KMAC returns an error signal to the keymgr via checking keymgr CSRs, when
-              the operation is done:
-              - Check `op_status` is set to `DONE_ERROR`.
-              - Check `fault_status.kmac_done` is set to 1.
-            '''
-      stage: V3
-      tests: []
     }
 
     // OTBN (pre-verified IP) integration tests:
