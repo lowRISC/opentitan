@@ -1,0 +1,59 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:systems:soc_proxy:0.1"
+description: "SoC Proxy"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:assert
+      - lowrisc:ip:tlul
+      - lowrisc:systems:soc_proxy_pkg
+    files:
+      - rtl/soc_proxy_core_reg_top.sv
+      - rtl/soc_proxy.sv
+    file_type: systemVerilogSource
+
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+    file_type: vlt
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/soc_proxy.waiver
+    file_type: waiver
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+
+targets:
+  default: &default_target
+    filesets:
+      - tool_verilator  ? (files_verilator_waiver)
+      - tool_ascentlint ? (files_ascentlint_waiver)
+      - files_rtl
+    toplevel: soc_proxy
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"

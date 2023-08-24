@@ -59,7 +59,8 @@ KNOWN_CIP_IDS = {
     34: 'ast',
     35: 'sensor_ctrl',
     36: 'dma',
-    37: 'mbx'
+    37: 'mbx',
+    38: 'soc_proxy',
 }
 
 REQUIRED_ALIAS_FIELDS = {
