@@ -372,6 +372,17 @@
       tests: ["rv_dm_cmderr_not_supported"]
     }
     {
+      name: cmderr_exception
+      desc: '''
+             Verify that tha cmderr should set to 3, if an excepton occurred while executing the command.
+
+            -Write into memory mapped register called EXCEPTION(0x118) through tl-device interface.
+            -Verify that the cmderr field of abstractcs register is set to 3.
+            '''
+      stage: V1
+      tests: ["rv_dm_cmderr_exception"]
+    }
+    {
       name: stress_all
       desc: '''
             A 'bug hunt' test that stresses the DUT to its limits.
