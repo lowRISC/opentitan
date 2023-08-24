@@ -254,6 +254,61 @@
       local: "true"
     },
   ],
+  features: [
+    {
+      name: "KEYMGR.SIDELOAD.KMAC",
+      desc: '''Generation of keys for KMAC. The key is only visible to hardware. This is tracked in
+            KMAC as KMAC.KEY.SIDELOAD.
+            '''
+    }
+    {
+      name: "KEYMGR.SIDELOAD.AES",
+      desc: '''Generation of keys for AES. The key is only visible to hardware.
+            '''
+    }
+    {
+      name: "KEYMGR.SIDELOAD.OTBN",
+      desc: '''Generation of keys for KMAC. The key is only visible to hardware and OTBN code.
+            '''
+    }
+    {
+      name: "KEYMGR.DERIVE.ATTESTATION",
+      desc: '''DICE compliant key derivation. Used to generate attestation keys. Derived keys can
+            be directed to registers exposed to software, or sideloaded to OTBN
+            (KEYMGR.SIDELOAD.OTBN). 256Bit measurements can be provided to the key derivation
+            function using a dedicated set of registers.
+            '''
+    }
+    {
+      name: "KEYMGR.DERIVE.SEALING",
+      desc: '''Derivation of sealing keys. Derived keys can be directed to software registers, or
+            sideloaded to hardware security blocks. 256Bit binding words can be provided to the the
+            key derivation function using a dedicated set of registers.
+            '''
+    }
+    {
+      name: "KEYMGR.GENERATE.OUTPUT",
+      desc: '''Derivation of output keys with additional salt and version. Software provided
+            salt and version values are used as inputs in the key derivation function along with
+            the internal key manager state. The derived keys can be directed to software registers,
+            or sideloaded to hardware security blocks.
+            '''
+    }
+    {
+      name: "KEYMGR.GENERATE.IDENTITY",
+      desc: '''Derivation of output keys to software registers. Unlike KEYMGR.GENERATE.OUTPUT, the
+            key derivation function does not support salt or version inputs.
+            '''
+    }
+    {
+      name: "KEYMGR.KEY_VERSIONING",
+      desc: '''The maximum version value supported by KEYMGR.GENERATE.OUTPUT is configurable via a
+            set of write-lockable registers. KEYMGR.GENERATE.OUTPUT will fail to derive a key with
+            a version greater than the version set in the write lockable register for any given
+            key manager internal state.
+            '''
+    }
+  ]
   countermeasures: [
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
