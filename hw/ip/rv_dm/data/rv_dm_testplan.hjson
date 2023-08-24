@@ -408,6 +408,20 @@
       tests: ["rv_dm_mem_tl_access_halted"]
     }
     {
+      name: cmderr_halt_resume
+      desc: '''
+            Verify that attempt to generate command error result in cmderr field of abstractcs
+            register are set.
+
+            - Try to execute abstract command when hart is not in halt/resume state.
+            - Assert unavailable signal through core interface.
+            - The abstract command could not be execute.
+            - Verify that the cmderr field of abstractcs register is set to 4.
+            '''
+      stage: V1
+      tests: ["rv_dm_cmderr_halt_resume"]
+    }
+    {
       name: stress_all
       desc: '''
             A 'bug hunt' test that stresses the DUT to its limits.
