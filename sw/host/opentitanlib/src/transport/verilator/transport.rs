@@ -1,22 +1,22 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
-use anyhow::{ensure, Context, Result};
-use once_cell::sync::Lazy;
-use regex::Regex;
-use serde_annotate::Annotate;
 use std::any::Any;
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::time::{Duration, Instant};
 
+use anyhow::{ensure, Context, Result};
+use once_cell::sync::Lazy;
+use regex::Regex;
+use serde_annotate::Annotate;
+
 use crate::io::gpio::{GpioError, GpioPin};
 use crate::io::io_mapper::IoMapper;
 use crate::io::uart::Uart;
+use crate::transport::common::uart::FileUart;
 use crate::transport::verilator::gpio::{GpioInner, VerilatorGpioPin};
 use crate::transport::verilator::subprocess::{Options, Subprocess};
-use crate::transport::verilator::uart::VerilatorUart;
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
@@ -100,16 +100,24 @@ impl Transport for Verilator {
     }
 
     fn uart(&self, instance: &str) -> Result<Rc<dyn Uart>> {
+        // The verilator UART operates at 7200 baud.
+        // See `sw/device/lib/arch/device_sim_verilator.c`.
+        // The reality of the simulation is that the CPU can
+        // only deal with about 4 chars per second.
+        const BAUD_RATE: u32 = 40;
+
         let instance = self.io_mapper.resolve_uart(instance);
 
         ensure!(
             instance == "0",
             TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
         );
+
         let mut inner = self.inner.borrow_mut();
         if inner.uart.is_none() {
-            inner.uart = Some(Rc::new(VerilatorUart::open(&self.uart_file)?));
+            inner.uart = Some(Rc::new(FileUart::open(&self.uart_file, BAUD_RATE)?));
         }
+
         Ok(Rc::clone(inner.uart.as_ref().unwrap()))
     }
 
