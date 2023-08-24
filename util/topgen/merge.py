@@ -559,7 +559,15 @@ def extract_clocks(top: OrderedDict):
 
     exported_clks = OrderedDict()
 
-    for ep in top['module'] + top['memory'] + top['xbar']:
+    # TODO(#19448): Top-level DV is currently tailored to the clkmgr
+    # parameterization of Earlgrey. Other top-levels might not require certain
+    # clocks but removing them will cause DV to fail. As an intermediate
+    # solution, we can declare dummy endpoints for these clocks. The
+    # corresponding clocks are then always generated but tied off at the
+    # top-level to be compatible with clkmgr DV.
+    dummy_eps = []
+
+    for ep in top['module'] + top['memory'] + top['xbar'] + dummy_eps:
         clock_connections = OrderedDict()
 
         # Ensure each module has a default case
