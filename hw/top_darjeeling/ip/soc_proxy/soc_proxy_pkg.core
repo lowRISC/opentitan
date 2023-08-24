@@ -1,0 +1,19 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:systems:soc_proxy_pkg:0.1"
+description: "SoC Proxy Package"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:tlul:headers
+    files:
+      - rtl/soc_proxy_reg_pkg.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl
