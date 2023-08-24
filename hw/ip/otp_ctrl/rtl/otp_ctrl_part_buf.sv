@@ -637,9 +637,6 @@ module otp_ctrl_part_buf
   // Always transfer 64bit blocks.
   assign otp_size_o = OtpSizeWidth'(unsigned'(ScrmblBlockWidth / OtpWidth) - 1);
 
-  logic [Info.size*8-1:0] data;
-  assign scrmbl_data_o = data[{cnt, {$clog2(ScrmblBlockWidth){1'b0}}} +: ScrmblBlockWidth];
-
   assign data_mux = (data_sel == ScrmblData) ? scrmbl_data_i : otp_rdata_i;
 
   /////////////////
@@ -647,6 +644,7 @@ module otp_ctrl_part_buf
   /////////////////
 
   // SEC_CM: PART.DATA_REG.INTEGRITY
+  logic [Info.size*8-1:0] data;
   otp_ctrl_ecc_reg #(
     .Width ( ScrmblBlockWidth ),
     .Depth ( NumScrmblBlocks  )
@@ -654,8 +652,9 @@ module otp_ctrl_part_buf
     .clk_i,
     .rst_ni,
     .wren_i    ( buffer_reg_en ),
-    .addr_i    ( cnt         ),
+    .addr_i    ( cnt           ),
     .wdata_i   ( data_mux      ),
+    .rdata_o   ( scrmbl_data_o ),
     .data_o    ( data          ),
     .ecc_err_o ( ecc_err       )
   );

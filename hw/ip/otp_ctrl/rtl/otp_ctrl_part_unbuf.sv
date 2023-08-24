@@ -353,11 +353,12 @@ module otp_ctrl_part_unbuf
     ) u_otp_ctrl_ecc_reg (
       .clk_i,
       .rst_ni,
-      .wren_i     ( digest_reg_en ),
-      .addr_i     ( '0            ),
-      .wdata_i    ( otp_rdata_i   ),
-      .data_o     ( digest_o      ),
-      .ecc_err_o  ( ecc_err       )
+      .wren_i    ( digest_reg_en ),
+      .addr_i    ( '0            ),
+      .wdata_i   ( otp_rdata_i   ),
+      .rdata_o   (               ),
+      .data_o    ( digest_o      ),
+      .ecc_err_o ( ecc_err       )
     );
   end else begin : gen_no_ecc_reg
     logic unused_digest_reg_en;
