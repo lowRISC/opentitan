@@ -17,6 +17,7 @@
 | [`hmac`]         | Accelerator for SHA-256-based keyed hash message authentication code and the SHA-256 hash function                                |
 | [`i2c`]          | I2C interface for host and device mode, supporting up to 1 Mbaud data rates                                                       |
 | [`keymgr`]       | Managing identities and root keys; shielding confidential assets from software; providing a key derivation interface for software |
+| [`keymgr_dpe`]   | Manage multiple DICE sessions in a DPE-compatible way                                                                             |
 | [`kmac`]         | Accelerator for Keccak-based keyed hash message authentication code and SHA-3 hash functions; with SCA and FI countermeasures     |
 | [`lc_ctrl`]      | Manages device life cycle states and transitions, and controls key manager, flash, OTP, and debug access                          |
 | [`lc_ctrl_v1`]   | Manages device life cycle states and transitions, and controls key manager, flash, OTP, and debug access                          |
@@ -56,6 +57,7 @@
 [`hmac`]: ./hmac/README.md
 [`i2c`]: ./i2c/README.md
 [`keymgr`]: ./keymgr/README.md
+[`keymgr_dpe`]: ./keymgr_dpe/README.md
 [`kmac`]: ./kmac/README.md
 [`lc_ctrl`]: ./lc_ctrl/README.md
 [`lc_ctrl_v1`]: ./lc_ctrl_v1/README.md

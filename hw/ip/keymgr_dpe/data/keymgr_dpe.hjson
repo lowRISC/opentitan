@@ -1,0 +1,1113 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name:               "keymgr_dpe",
+  human_name:         "Key Manager DPE",
+  one_line_desc:      "Manage multiple DICE sessions in a DPE-compatible way",
+  one_paragraph_desc: '''
+  Key Manager DPE serves as the core hardware block for DPE. DPE stands for DICE Protection Environment.
+  [DPE-version1.0-rev0.6]: https://trustedcomputinggroup.org/wp-content/uploads/TCG-DICE-Protection-Environment-Specification_14february2023-1.pdf
+  '''
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "37",
+  design_spec:        "../doc",
+  dv_doc:             "../doc/dv",
+  hw_checklist:       "../doc/checklist",
+  sw_checklist:       "/sw/device/lib/dif/dif_keymgr_dpe",
+  revisions: [
+    {
+      version:            "1.0.0",
+      life_stage:         "L1",
+      design_stage:       "D1",
+      verification_stage: "V1",
+      dif_stage:          "S1",
+    }
+  ]
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true},
+    {clock: "clk_edn_i", reset: "rst_edn_ni"}
+  ]
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
+  interrupt_list: [
+    { name: "op_done",   desc: "Operation complete" },
+  ],
+  alert_list: [
+    { name: "recov_operation_err",
+      desc: '''
+        Alert for key manager operation errors.  These errors could have been caused by
+        software'''
+    },
+    { name: "fatal_fault_err",
+      desc: "Alert for key manager faults.  These errors cannot be caused by software",
+    },
+
+  ],
+
+  inter_signal_list: [
+    { struct:  "edn",
+      type:    "req_rsp",
+      name:    "edn",
+      act:     "req",
+      package: "edn_pkg",
+    },
+    { struct:  "hw_key_req",  // aes_key_req_t
+      type:    "uni",
+      name:    "aes_key",     // aes_key_o (req)
+      act:     "req",
+      package: "keymgr_dpe_pkg",  // Origin package (only needs for the requester)
+    },
+    { struct:  "hw_key_req",  // kmac_key_req_t
+      type:    "uni",
+      name:    "kmac_key",    // kmac_key_o (req)
+      act:     "req",
+      package: "keymgr_dpe_pkg",  // Origin package (only needs for the requester)
+    },
+    { struct:  "otbn_key_req",
+      type:    "uni",
+      name:    "otbn_key",
+      act:     "req",
+      package: "keymgr_dpe_pkg",
+    },
+    { struct:  "app",   // kmac_pkg::app_req_t, kmac_pkg::app_rsp_t
+      type:    "req_rsp",
+      name:    "kmac_data",   // kmac_data_o (req), kmac_data_i (rsp)
+      act:     "req",
+      package: "kmac_pkg",  // Origin package (only needs for the requester)
+    },
+    { struct:  "otp_keymgr_key",
+      type:    "uni",
+      name:    "otp_key",
+      act:     "rcv",
+      package: "otp_ctrl_pkg",
+    },
+    { struct:  "otp_device_id",
+      type:    "uni",
+      name:    "otp_device_id",
+      act:     "rcv",
+      package: "otp_ctrl_pkg",
+    },
+    { struct:  "keymgr_flash",
+      type:    "uni",
+      name:    "flash",
+      act:     "rcv",
+      package: "flash_ctrl_pkg",
+    },
+    { struct:  "lc_tx",
+      type:    "uni",
+      name:    "lc_keymgr_en",
+      act:     "rcv",
+      package: "lc_ctrl_pkg",
+      default: "lc_ctrl_pkg::On",
+    },
+    { struct:  "lc_keymgr_div",
+      type:    "uni",
+      name:    "lc_keymgr_div",
+      act:     "rcv",
+      package: "lc_ctrl_pkg",
+    },
+    { struct:  "keymgr_data"
+      type:    "uni"
+      name:    "rom_digest"
+      act:     "rcv"
+      package: "rom_ctrl_pkg"
+    },
+    { struct:  "logic"
+      type:    "uni"
+      name:    "kmac_en_masking"
+      act:     "rcv"
+    },
+  ],
+
+  param_list: [
+    { name:      "KmacEnMasking",
+      desc:      "Flag indicating with kmac masking is enabled",
+      type:      "bit",
+      default:   "1",
+      local:     "false",
+      expose:    "true",
+    }
+    // Random netlist constants
+    { name:      "RndCnstLfsrSeed",
+      desc:      "Compile-time random bits for initial LFSR seed",
+      type:      "keymgr_pkg::lfsr_seed_t"
+      randcount: "64",
+      randtype:  "data",
+    }
+    { name:      "RndCnstLfsrPerm",
+      desc:      "Compile-time random permutation for LFSR output",
+      type:      "keymgr_pkg::lfsr_perm_t"
+      randcount: "64",
+      randtype:  "perm",
+    },
+    { name:      "RndCnstRandPerm",
+      desc:      "Compile-time random permutation for entropy used in share overriding",
+      type:      "keymgr_pkg::rand_perm_t"
+      randcount: "32",
+      randtype:  "perm",
+    }
+    { name:      "RndCnstRevisionSeed",
+      desc:      "Compile-time random bits for revision seed",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
+    { name:      "RndCnstCreatorIdentitySeed",
+      desc:      "Compile-time random bits for creator identity seed",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
+    { name:      "RndCnstOwnerIntIdentitySeed",
+      desc:      "Compile-time random bits for owner intermediate identity seed",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
+    { name:      "RndCnstOwnerIdentitySeed",
+      desc:      "Compile-time random bits for owner identity seed",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
+    { name:      "RndCnstSoftOutputSeed",
+      desc:      "Compile-time random bits for software generation seed",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
+    { name:      "RndCnstHardOutputSeed",
+      desc:      "Compile-time random bits for hardware generation seed",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
+    { name:      "RndCnstAesSeed",
+      desc:      "Compile-time random bits for generation seed when aes destination selected",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
+    { name:      "RndCnstKmacSeed",
+      desc:      "Compile-time random bits for generation seed when kmac destination selected",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
+    { name:      "RndCnstOtbnSeed",
+      desc:      "Compile-time random bits for generation seed when otbn destination selected",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
+    { name:      "RndCnstCdi",
+      desc:      "Compile-time random bits for generation seed when no CDI is selected",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
+    { name:      "RndCnstNoneSeed",
+      desc:      "Compile-time random bits for generation seed when no destination selected",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+    { name: "NumSaltReg",
+      desc: "Number of Registers for SW inputs (Salt)",
+      type: "int",
+      default: "8",
+      local: "true"
+    },
+    { name: "NumSwBindingReg",
+      desc: "Number of Registers for SW inputs (SW binding)",
+      type: "int",
+      default: "8",
+      local: "true"
+    },
+    { name: "NumOutReg",
+      desc: "Number of Registers for SW outputs",
+      type: "int",
+      default: "8",
+      local: "true"
+    },
+    { name: "NumKeyVersion",
+      desc: "Number of Registers for key version",
+      type: "int",
+      default: "1",
+      local: "true"
+    },
+  ],
+
+countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    }
+    { name: "CONFIG.SHADOW",
+      desc: '''
+        Various critical registers are shadowed: including operation control, reseed interval,
+        and key max version (creator, owner intermediate, owner).
+      '''
+    }
+    { name: "OP.CONFIG.REGWEN",
+      desc: '''
+        Various controls locked during the duration of an operation: including operation start,
+        operation control, sideload clear, salt and key version.
+      '''
+    }
+    { name: "RESEED.CONFIG.REGWEN",
+      desc: '''
+        Reseed interval is software lockable.
+      '''
+    }
+    { name: "SW_BINDING.CONFIG.REGWEN",
+      desc: '''
+        Software binding is lockable by software in each stage. When keymgr successfully advances,
+        the lock is released to allow the next stage the freedom to program.
+      '''
+    }
+    { name: "MAX_KEY_VER.CONFIG.REGWEN",
+      desc: '''
+        Max key version is software lockable.
+      '''
+    }
+    { name: "LC_CTRL.INTERSIG.MUBI",
+      desc: '''
+        Life cycle control signal is multibit
+      '''
+    }
+    { name: "CONSTANTS.CONSISTENCY",
+      desc: '''
+        Basic consistency checks (all 0's or all 1's) for keymgr diversification constants
+      '''
+    }
+    { name: "INTERSIG.CONSISTENCY",
+      desc: '''
+        Basic consistency checks (all 0's or all 1's) for otp diversification inputs
+      '''
+    }
+    { name: "HW.KEY.SW_NOACCESS",
+      desc: '''
+        Sideload keys are not directly accessible by software.
+      '''
+    }
+    { name: "OUTPUT_KEYS.CTRL.REDUN",
+      desc: '''
+        Software and sideload keys are redundantly controlled. Each generate operation
+        creates a valid and a data enable (software and sideload specific).
+
+        In order for a key to be populated into the software register, both the software valid
+        and the software data enable must be asserted.  The same is true for sideload.
+
+        This makes it more difficult for an attack to fault a sideload key into the software key slot.
+        An attacker would need to fault both the software valid and the software data enable.
+
+        During a sideload operation, if an attacker manages to fault the valid but not the data enable,
+        the software key is populated with random data.  If an atacker manages to fault the data enable but
+        not the valid, then the software key retains its previous value.
+      '''
+    }
+    { name: "CTRL.FSM.SPARSE",
+      desc: '''
+        Main control fsm is sparsely encoded.
+      '''
+    }
+    { name: "DATA.FSM.SPARSE",
+      desc: '''
+        Control data fsm (for redundant data control) is sparsely encoded.
+      '''
+    }
+    { name: "CTRL.FSM.LOCAL_ESC",
+      desc: '''
+        Main control fsm locally escalates based on any detected fault in keymgr.
+        When a fault is detected (sync or async) the fsm transitions to invalid state to prevent
+        further legal operations from executing.
+      '''
+    }
+    { name: "CTRL.FSM.CONSISTENCY",
+      desc: '''
+        Main and operational fsm transitions are consistent with software commands.
+      '''
+    }
+    { name: "CTRL.FSM.GLOBAL_ESC",
+      desc: '''
+        When the system globally escalates, the main control fsm also transitions to invalid state
+        to prevent further legal operations from executing.
+      '''
+    }
+    { name: "CTRL.CTR.REDUN",
+      desc: '''
+        Primary count is duplicated.
+      '''
+    }
+    { name: "KMAC_IF.FSM.SPARSE",
+      desc: '''
+        kmac interface fsm is sparsely encoded.
+      '''
+    }
+    { name: "KMAC_IF.CTR.REDUN",
+      desc: '''
+        Primary count uses cross count.
+      '''
+    }
+    { name: "KMAC_IF_CMD.CTRL.CONSISTENCY",
+      desc: '''
+        One hot check for kmac interface commands.
+        Also, command enable (adv_en, id_en, gen_en) is checked for consistency
+        throughout the operation.
+      '''
+    }
+    { name: "KMAC_IF_DONE.CTRL.CONSISTENCY",
+      desc: '''
+        Spurious kmac done check.
+      '''
+    }
+    { name: "RESEED.CTR.REDUN",
+      desc: '''
+        Primary count is duplicated.
+      '''
+    }
+    { name: "SIDE_LOAD_SEL.CTRL.CONSISTENCY",
+      desc: '''
+        Sideload key slot select is checked for consistency.
+        When a key slot is valid when it should not be, an error is triggered.
+        The reverse case is not checked, since an invalid key cannot be used
+        anyways.
+      '''
+    }
+    { name: "SIDELOAD_CTRL.FSM.SPARSE",
+      desc: '''
+        Sideload control fsm is sparsely encoded.
+      '''
+    }
+    { name: "CTRL.KEY.INTEGRITY",
+      desc: '''
+        Internal secret key is protected with ECC.
+      '''
+    }
+  ]
+
+  regwidth: "32",
+  registers: [
+    { name: "CFG_REGWEN",
+      desc: "Key manager configuration enable",
+      swaccess: "ro",  // this lock is HW managed
+      hwaccess: "hwo",
+      hwext: "true",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          resval: "1"
+          desc: '''
+            key manager configuration enable.
+            When key manager operation is started (see CONTROL), registers protected by this EN are no longer
+            modifiable until the operation completes.
+          '''
+        },
+      ]
+    },
+
+    { name: "START",
+      desc: "Key manager operation start",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      regwen: "CFG_REGWEN",
+      fields: [
+        { bits: "0",
+          hwaccess: "hrw",
+          name: "EN",
+          desc: "Start key manager operations",
+          resval: "0"
+          enum: [
+            { value: "1",
+              name: "Valid state",
+              desc: '''
+                To trigger a start, this value must be programmed.  All other values are considered no operation start.
+                '''
+            },
+          ]
+          tags: [// bit self clears, handle in directed test
+            "excl:CsrNonInitTests:CsrExclWrite"]
+        }
+      ]
+    },
+
+    { name: "CONTROL_SHADOWED",
+      desc: "Key manager operation controls",
+      regwen: "CFG_REGWEN",
+      swaccess: "rw",
+      hwaccess: "hro",
+      shadowed: "true",
+      update_err_alert: "recov_operation_err",
+      storage_err_alert: "fatal_fault_err",
+      fields: [
+        { bits: "6:4",
+          name: "OPERATION",
+          desc: "Key manager DPE operation selection",
+          resval: "1",
+          enum: [
+            { value: "0",
+              name: "Advance",
+              desc: '''
+                Advances a key manager DPE slot.
+                '''
+            },
+            { value: "1",
+              name: "Erase Slot",
+              desc: '''
+                Erases the secrets and resets the valid bit of the destination slot.
+                '''
+            },
+            { value: "2",
+              name: "Generate SW Output",
+              desc: '''
+                Generates a key manager output that is visible to software from the current state.
+                '''
+            },
+            { value: "3",
+              name: "Generate HW Output",
+              desc: '''
+                Generates a cryptographic key that is visible only to hardware crypto blocks.
+                '''
+            },
+            { value: "4",
+              name: "Disable",
+              desc: '''
+                Moves key manager DPE to disabled state.
+                '''
+            },
+          ],
+        },
+
+        { bits: "13:12",
+          name: "DEST_SEL",
+          desc: '''
+            When the OPERATION field is programmed to generate output, this field selects
+            the target cryptograhic use of the key.
+
+            This field should be programmed for both HW / SW generation, as this helps diverisify the output.
+          ''',
+          resval: "0"
+          enum: [
+            { value: "0",
+              name: "None",
+              desc: '''
+                No target selected
+                '''
+            },
+            { value: "1",
+              name: "AES",
+              desc: '''
+                AES selected
+                '''
+            },
+            { value: "2",
+              name: "KMAC",
+              desc: '''
+                KMAC selected
+                '''
+            },
+            { value: "3",
+              name: "OTBN",
+              desc: '''
+                OTBN selected.  Note for OTBN hardware operations, the generated output is 384-bits, while for all
+                other operations (including OTBN software), it is 256-bits.
+
+                Generating a hardware 384-bit seed directly for OTBN sideload reduces some of the OTBN code burden for entropy expansion.
+                When generating for software, this is not a concern.
+                '''
+            },
+          ]
+        },
+
+        { bits: "17:14",
+          name: "SLOT_SRC_SEL",
+          resval: "0x0"
+          desc: '''
+            The source key slot to be used for the invoked operation.
+          '''
+        },
+
+        { bits: "21:18",
+          name: "SLOT_DST_SEL",
+          resval: "0x0"
+          desc: '''
+            The destination key slot to be used for the advance and erase operations.
+          '''
+        },
+      ],
+    },
+
+    { name: "SIDELOAD_CLEAR",
+      desc: "sideload key slots clear"
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen: "CFG_REGWEN",
+      fields: [
+        { bits: "2:0",
+          name: "VAL",
+          resval: "0"
+          desc: '''
+            Depending on the value programmed, a different sideload key slot is cleared.
+            If the value programmed is not one of the enumerated values below, ALL sideload
+            key slots are continuously cleared. In order to stop continuous clearing, SW should
+            toggle the clear bit again (i.e. disable continuous clearing).
+          ''',
+          enum: [
+            { value: "0",
+              name: "None",
+              desc: '''
+                No sideload keys cleared.
+                '''
+            },
+            { value: "1",
+              name: "AES",
+              desc: '''
+                The AES sideload key is continuously cleared with entropy.
+                '''
+            },
+            { value: "2",
+              name: "KMAC",
+              desc: '''
+                The KMAC sideload key is continuously cleared with entropy.
+                '''
+            },
+            { value: "3",
+              name: "OTBN",
+              desc: '''
+                The OTBN sideload key is continuously cleared with entropy.
+                '''
+            },
+          ]
+
+        },
+      ]
+    },
+
+    { name: "RESEED_INTERVAL_REGWEN",
+      desc: "regwen for reseed interval",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          resval: "1"
+          desc: '''
+            Configuration enable for reseed interval
+          '''
+        },
+      ]
+    },
+
+    { name: "RESEED_INTERVAL_SHADOWED",
+      desc: "Reseed interval for key manager entropy reseed",
+      shadowed: "true",
+      update_err_alert: "recov_operation_err",
+      storage_err_alert: "fatal_fault_err",
+      regwen: "RESEED_INTERVAL_REGWEN",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "15:0",
+          name: "VAL",
+          resval: "0x100"
+          desc: '''
+            Number of key manager cycles before the entropy is reseeded
+          '''
+        },
+      ]
+    },
+
+    { name: "SLOT_POLICY_REGWEN",
+      desc: "Register write enable for SLOT_POLICY",
+      swaccess: "rw0c",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          resval: "1"
+          desc: '''
+            Locks SLOT_POLICY register.
+
+            After a successful advance operation, this register is unlocked again.
+          '''
+        },
+      ]
+    },
+
+    { name: "SLOT_POLICY",
+      desc: "Policy bits for the child DPE context",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen: "SLOT_POLICY_REGWEN",
+      fields: [
+        { bits: "0",
+          name: "EXPORTABLE",
+          resval: "0"
+          desc: '''
+            Set whether the key for the target slot is exportable.
+          '''
+        },
+        { bits: "1",
+          name: "ALLOW_CHILD",
+          resval: "0"
+          desc: '''
+            Set whether this context allows derivation of further children.
+          '''
+        },
+      ]
+    },
+
+    { name: "SW_BINDING_REGWEN",
+      desc: "Register write enable for SOFTWARE_BINDING",
+      swaccess: "rw0c",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          resval: "1"
+          desc: '''
+            Software binding register write enable.
+            This is locked by software and unlocked by hardware upon a successful advance call.
+
+            Software binding resets to 1, and its value cannot be altered by software until advancement to Init state.
+          '''
+        },
+      ]
+    },
+
+    { multireg: {
+        cname: "KEYMGR",
+        name: "SW_BINDING",
+        regwen: "SW_BINDING_REGWEN",
+        desc: '''
+          Software binding input of the key manager.
+          This register is lockable and shared between key manager stages.
+          This binding value is not considered secret, however its integrity is very important.
+
+          The software binding is locked by software and unlocked by hardware upon a successful advance operation.
+        ''',
+        count: "NumSwBindingReg",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+            { bits: "31:0",
+              name: "VAL",
+              desc: '''
+                Software binding value
+              ''',
+              resval: "0"
+            },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "KEYMGR",
+        name: "SALT",
+        regwen: "CFG_REGWEN",
+        desc: '''
+          Salt value used as part of output generation
+        ''',
+        count: "NumSaltReg",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+            { bits: "31:0",
+              name: "VAL",
+              desc: '''
+                Salt value
+              ''',
+              resval: "0"
+            },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "KEYMGR",
+        name: "KEY_VERSION",
+        regwen: "CFG_REGWEN",
+        desc: '''
+          Version used as part of output generation
+        ''',
+        count: "NumKeyVersion",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+            { bits: "31:0",
+              name: "VAL",
+              desc: '''
+                Key version
+              ''',
+              resval: "0"
+            },
+        ],
+      },
+    },
+
+    { name: "MAX_KEY_VER_REGWEN",
+      desc: "Register write enable for MAX_KEY_VERSION",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0",
+          name: "EN",
+          resval: "1"
+          desc: '''
+            MAX_KEY_VERSION configure enable.
+          '''
+        },
+      ]
+    },
+
+    { name: "MAX_KEY_VER_SHADOWED",
+      desc: "Max key version",
+      swaccess: "rw",
+      hwaccess: "hro",
+      shadowed: "true",
+      update_err_alert: "recov_operation_err",
+      storage_err_alert: "fatal_fault_err",
+      regwen: "MAX_KEY_VER_REGWEN",
+      fields: [
+        { bits: "31:0",
+          name: "VAL",
+          resval: "0x0"
+          desc: '''
+            Max key version.
+
+            Any key version up to the value specificed in this register is valid.
+          '''
+        },
+      ]
+    },
+
+    { multireg: {
+        cname: "KEYMGR",
+        name: "SW_SHARE0_OUTPUT",
+        desc: '''
+          Key manager software output.
+
+          When a software output operation is selected, the results of the operation are placed
+          here.
+        ''',
+        count: "NumOutReg",
+        swaccess: "rc",
+        hwaccess: "hwo",
+        fields: [
+            { bits: "31:0",
+              name: "VAL",
+              desc: '''
+                Software output value
+              ''',
+              resval: "0"
+            },
+        ],
+        tags: [// HW-update reg
+               // When a fault happens (e.g. when we test TL integrity error), this CSR will be
+               // wiped with random value.
+               "excl:CsrNonInitTests:CsrExclCheck"]
+      },
+    },
+
+    { multireg: {
+        cname: "KEYMGR",
+        name: "SW_SHARE1_OUTPUT",
+        desc: '''
+          Key manager software output.
+
+          When a software output operation is selected, the results of the operation are placed
+          here.
+        ''',
+        count: "NumOutReg",
+        swaccess: "rc",
+        hwaccess: "hwo",
+        fields: [
+            { bits: "31:0",
+              name: "VAL",
+              desc: '''
+                Software output value
+              ''',
+              resval: "0"
+            },
+        ],
+        tags: [// HW-update reg
+               // When a fault happens (e.g. when we test TL integrity error), this CSR will be
+               // wiped with random value.
+               "excl:CsrNonInitTests:CsrExclCheck"]
+      },
+    },
+
+    { name: "WORKING_STATE",
+      desc: '''
+        Key manager working state.
+
+        This is a readout of the current key manager working state
+      ''',
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "1:0",
+          name: "STATE",
+          resval: "0x0"
+          desc: "Key manager control state",
+          enum: [
+            { value: "0",
+              name: "Reset",
+              desc: '''
+                Key manager control is still in reset.  Please wait for initialization complete
+                before issuing operations
+              '''
+            },
+            { value: "1",
+              name: "Available",
+              desc: '''
+                Key manager control has finished latching OTP root key and will now accept
+                software commands.
+              '''
+            },
+            { value: "2",
+              name: "Disabled",
+              desc: '''
+                Key manager currently disabled. Please reset the key manager.
+                Sideload keys are still valid.
+              '''
+            },
+            { value: "3",
+              name: "Invalid",
+              desc: '''
+                Key manager currently invalid. Please reset the key manager.
+                Sideload keys are no longer valid.
+              '''
+            },
+          ]
+        }
+      ]
+    },
+
+    { name: "OP_STATUS",
+      desc: '''
+        Key manager status.
+
+        Hardware sets the status based on software initiated operations.
+        This register must be explicitly cleared by software.
+        Software clears by writing back whatever it reads.
+      ''',
+      swaccess: "rw1c",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "1:0",
+          name: "STATUS",
+          resval: "0x0"
+          desc: "Operation status.",
+          enum: [
+            { value: "0",
+              name: "Idle",
+              desc: '''
+                Key manager is idle
+                '''
+            },
+            { value: "1",
+              name: "WIP",
+              desc: '''
+                Work in progress.
+                A key manager operation has been started and is ongoing
+                '''
+            },
+            { value: "2",
+              name: "DONE_SUCCESS",
+              desc: '''
+                Operation finished without errors
+                '''
+            },
+            { value: "3",
+              name: "DONE_ERROR",
+              desc: '''
+                Operation finished with errors, please see ERR_CODE register.
+                '''
+            },
+          ]
+        },
+      ]
+    },
+
+    { name: "ERR_CODE",
+      desc: '''
+        Key manager error code.
+        This register must be explicitly cleared by software.
+
+        This register represents both synchronous and asynchronous recoverable
+        errors.
+
+        Synchronous errors refer to those that only happen when a keymgr operation is
+        invoked, while asynchronous refers to errors that can happen at any time.
+      ''',
+      swaccess: "rw1c",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0",
+          name: "INVALID_OP",
+          resval: "0x0"
+          desc: "Invalid operation issued to key manager, synchronous error",
+        },
+        { bits: "1",
+          name: "INVALID_KMAC_INPUT",
+          resval: "0x0"
+          desc: "Invalid data issued to kmac interface, synchronous error",
+        },
+        { bits: "2",
+          name: "INVALID_SHADOW_UPDATE",
+          resval: "0x0"
+          desc: "An error observed during shadow register updates, asynchronous error",
+        },
+      ]
+    },
+
+    { name: "FAULT_STATUS",
+      desc: '''
+        This register represents both synchronous and asynchronous fatal faults.
+
+        Synchronous faults refer to those that only happen when a keymgr operation is
+        invoked, while asynchronous refers to faults that can happen at any time.
+
+      ''',
+      swaccess: "ro",
+      hwaccess: "hrw",
+      fields: [
+        { bits: "0",
+          name: "CMD",
+          resval: "0x0"
+          desc: "A non-onehot command was seen in kmac, asynchronous fault.",
+        },
+        { bits: "1",
+          name: "KMAC_FSM",
+          resval: "0x0"
+          desc: "The kmac transfer interface FSM is in an invalid state, asynchronous fault.",
+        },
+        { bits: "2",
+          name: "KMAC_DONE",
+          resval: "0x0"
+          desc: "The kmac transfer interface encountered an unexpected done, asynchronous fault.",
+        },
+        { bits: "3",
+          name: "KMAC_OP",
+          resval: "0x0"
+          desc: "KMAC reported an error during keymgr usage, this should never happen - synchronous fault.",
+        },
+        { bits: "4",
+          name: "KMAC_OUT",
+          resval: "0x0"
+          desc: "KMAC data returned as all 0's or all 1's - synchronous fault",
+        },
+        { bits: "5",
+          name: "REGFILE_INTG",
+          resval: "0x0"
+          desc: "Register file integrity error, asynchronous fault",
+        },
+        { bits: "6",
+          name: "SHADOW",
+          resval: "0x0"
+          desc: "Shadow copy storage error, asynchronous fault",
+        },
+        { bits: "7",
+          name: "CTRL_FSM_INTG",
+          resval: "0x0"
+          desc: "Control FSM integrity error, asynchronous fault",
+        },
+        { bits: "8",
+          name: "CTRL_FSM_CHK",
+          resval: "0x0"
+          desc: "Control FSM cross check error, asynchronous fault",
+        },
+        { bits: "9",
+          name: "CTRL_FSM_CNT",
+          resval: "0x0"
+          desc: "Control FSM counter integrity error, asynchronous fault",
+        },
+        { bits: "10",
+          name: "RESEED_CNT",
+          resval: "0x0"
+          desc: "Reseed counter integrity error, asynchronous fault",
+        },
+        { bits: "11",
+          name: "SIDE_CTRL_FSM",
+          resval: "0x0"
+          desc: "Sideload control FSM integrity error, asynchronous fault",
+        },
+        { bits: "12",
+          name: "SIDE_CTRL_SEL",
+          resval: "0x0"
+          desc: "Sideload control key select error, synchronous fault",
+        },
+        { bits: "13",
+          name: "KEY_ECC",
+          resval: "0x0"
+          desc: "Secret key ecc error, asynchronous fault",
+        },
+      ]
+    },
+
+    { name: "DEBUG",
+      desc: '''
+        The register holds some debug information that may be convenient if keymgr
+        misbehaves.
+      ''',
+      swaccess: "rw0c",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0",
+          name: "INVALID_CREATOR_SEED",
+          resval: "0x0"
+          desc: "Creator seed failed input checks during operation",
+        },
+        { bits: "1",
+          name: "INVALID_OWNER_SEED",
+          resval: "0x0"
+          desc: "Owner seed failed input checks during operation",
+        },
+        { bits: "2",
+          name: "INVALID_DEV_ID",
+          resval: "0x0"
+          desc: "Device ID failed input checks during operation",
+        },
+        { bits: "3",
+          name: "INVALID_HEALTH_STATE",
+          resval: "0x0"
+          desc: "Health state failed input checks during operation",
+        },
+        { bits: "4",
+          name: "INVALID_KEY_VERSION",
+          resval: "0x0"
+          desc: "Key version failed input checks during operation",
+        },
+        { bits: "5",
+          name: "INVALID_KEY",
+          resval: "0x0"
+          desc: "Key fed to kmac failed input checks during operation",
+        },
+        { bits: "6",
+          name: "INVALID_DIGEST",
+          resval: "0x0"
+          desc: "ROM digest failed input checks during operation",
+        },
+
+      ]
+    },
+
+  ],
+}
