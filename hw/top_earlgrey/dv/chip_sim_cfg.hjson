@@ -1976,35 +1976,37 @@
               "chip_sw_flash_init_reduced_freq",
               "chip_sw_csrng_edn_concurrency_reduced_freq"]
     }
-    {
-      name: xcelium_ci_0
-      tests: [
-              "chip_tap_straps_dev",
-              "chip_tap_straps_prod",
-              "chip_tap_straps_rma",
-              // TODO(#138): The following are SW tests, but SW builds for tops other than
-              // Darjeeling are currently disabled.
-              // "chip_plic_all_irqs",
-              // "chip_sw_kmac_app_rom",
-              // "chip_sw_rstmgr_sw_rst",
-              // "chip_sw_hmac_enc",
-              // "chip_sw_clkmgr_jitter",
-              // "chip_sw_rom_ctrl_integrity_check",
-              // "chip_sw_aes_entropy",
-              // "chip_sw_kmac_idle",
-              // "chip_sw_kmac_mode_cshake",
-              // "chip_sw_kmac_mode_kmac",
-              // "chip_sw_kmac_mode_kmac_jitter_en",
-              // "chip_sw_sleep_pin_mio_dio_val",
-              // "chip_sw_power_virus",
-              // TODO: uncomment when these run with Xcelium.
-              // "chip_sw_lc_walkthrough_dev",
-              // "chip_sw_lc_walkthrough_prod",
-              // "chip_sw_lc_walkthrough_prodend",
-              // "chip_sw_lc_walkthrough_rma",
-              // "chip_sw_lc_walkthrough_testunlocks",
-             ]
-    }
+    // This regression currently does not have any tests (see comment below for the reason).  As
+    // DVSim does not support regressions without any tests, it is commented out.
+    // {
+    //   name: xcelium_ci_0
+    //   tests: [
+    //           // TODO(#138): The following are SW tests, but SW builds for tops other than
+    //           // Darjeeling are currently disabled.
+    //           // "chip_tap_straps_dev",
+    //           // "chip_tap_straps_prod",
+    //           // "chip_tap_straps_rma",
+    //           // "chip_plic_all_irqs",
+    //           // "chip_sw_kmac_app_rom",
+    //           // "chip_sw_rstmgr_sw_rst",
+    //           // "chip_sw_hmac_enc",
+    //           // "chip_sw_clkmgr_jitter",
+    //           // "chip_sw_rom_ctrl_integrity_check",
+    //           // "chip_sw_aes_entropy",
+    //           // "chip_sw_kmac_idle",
+    //           // "chip_sw_kmac_mode_cshake",
+    //           // "chip_sw_kmac_mode_kmac",
+    //           // "chip_sw_kmac_mode_kmac_jitter_en",
+    //           // "chip_sw_sleep_pin_mio_dio_val",
+    //           // "chip_sw_power_virus",
+    //           // TODO: uncomment when these run with Xcelium.
+    //           // "chip_sw_lc_walkthrough_dev",
+    //           // "chip_sw_lc_walkthrough_prod",
+    //           // "chip_sw_lc_walkthrough_prodend",
+    //           // "chip_sw_lc_walkthrough_rma",
+    //           // "chip_sw_lc_walkthrough_testunlocks",
+    //          ]
+    // }
     {
       name: xcelium_ci_1
       tests: [

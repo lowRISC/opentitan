@@ -115,7 +115,11 @@
   regressions: [
     {
       name: smoke
-      tests: ["chip_sw_pwrmgr_smoketest"]
+      tests: [
+              // TODO(#138): The following are SW tests, but SW builds for tops other than
+              // Darjeeling are currently disabled.
+              // "chip_sw_pwrmgr_smoketest"
+             ]
     }
     {
       name: dif
