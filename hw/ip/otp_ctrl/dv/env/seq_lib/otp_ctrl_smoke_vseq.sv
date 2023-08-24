@@ -149,7 +149,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
         `DV_CHECK_RANDOMIZE_FATAL(this)
         // recalculate part_idx in case some test turn off constraint dai_wr_legal_addr_c
-        part_idx = get_part_index(dai_addr);
+        part_idx = part_idx_e'(get_part_index(dai_addr));
         `uvm_info(`gfn, $sformatf("starting dai access seq %0d/%0d with addr %0h in partition %0d",
                   i, num_dai_op, dai_addr, part_idx), UVM_HIGH)
 
