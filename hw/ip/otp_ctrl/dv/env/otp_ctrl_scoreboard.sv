@@ -389,7 +389,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 
   virtual task check_flash_rsps();
     for (int i = FlashDataKey; i <= FlashAddrKey; i++) begin
-      automatic digest_sel_e sel_flash = i;
+      automatic digest_sel_e sel_flash = digest_sel_e'(i);
       fork
         forever begin
           push_pull_item#(.DeviceDataWidth(FLASH_DATA_SIZE)) rcv_item;
@@ -568,7 +568,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         // ECC uncorrectable errors are gated by `is_tl_mem_access_allowed` function.
         if (ecc_err != OtpNoEccErr && part_has_integrity(part_idx)) begin
 
-          predict_err(part_idx, OtpMacroEccCorrError);
+          predict_err(otp_status_e'(part_idx), OtpMacroEccCorrError);
           if (ecc_err == OtpEccCorrErr) begin
              `DV_CHECK_EQ(item.d_data, otp_a[otp_addr],
                          $sformatf("mem read mismatch at TLUL addr %0h, csr_addr %0h",
@@ -585,12 +585,12 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           `DV_CHECK_EQ(item.d_data, read_out,
                       $sformatf("mem read mismatch at TLUL addr %0h, csr_addr %0h",
                       csr_addr, dai_addr))
-          predict_no_err(part_idx);
+          predict_no_err(otp_status_e'(part_idx));
         end else if (ecc_err == OtpNoEccErr) begin
           `DV_CHECK_EQ(item.d_data, otp_a[otp_addr],
                       $sformatf("mem read mismatch at TLUL addr %0h, csr_addr %0h",
                       csr_addr, dai_addr))
-          predict_no_err(part_idx);
+          predict_no_err(otp_status_e'(part_idx));
         end
       end
       return;
@@ -680,7 +680,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
               if (part_idx == Secret2Idx) begin
                 cov.dai_access_secret2_cg.sample(
                     !(cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i != lc_ctrl_pkg::On),
-                    item.a_data);
+                    dai_cmd_e'(item.a_data));
               end else if (is_sw_part_idx(part_idx) &&
                            item.a_data inside {DaiRead, DaiWrite}) begin
                 cov.unbuf_access_lock_cg_wrap[part_idx].sample(.read_lock(sw_read_lock),
@@ -881,7 +881,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         end
 
         if (addr_phase_write && `gmv(ral.check_trigger_regwen) && item.a_data inside {[1:3]}) begin
-          bit [TL_DW-1] check_timout = `gmv(ral.check_timeout) == 0 ? '1 : `gmv(ral.check_timeout);
+          bit [TL_DW-1:0] check_timout = `gmv(ral.check_timeout) == 0 ? '1 :
+                                                                        `gmv(ral.check_timeout);
           exp_status[OtpCheckPendingIdx] = 1;
           under_chk = 1;
           if (check_timout <= CHK_TIMEOUT_CYC) begin
@@ -891,11 +892,11 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
             if (get_field_val(ral.check_trigger.consistency, item.a_data)) begin
               foreach (cfg.ecc_chk_err[i]) begin
                 if (cfg.ecc_chk_err[i] == OtpEccCorrErr && part_has_integrity(i)) begin
-                  predict_err(i, OtpMacroEccCorrError);
+                  predict_err(otp_status_e'(i), OtpMacroEccCorrError);
                 end else if (cfg.ecc_chk_err[i] == OtpEccUncorrErr &&
                              part_has_integrity(i)) begin
                   set_exp_alert("fatal_macro_error", 1, check_timout);
-                  predict_err(i, OtpMacroEccUncorrError);
+                  predict_err(otp_status_e'(i), OtpMacroEccUncorrError);
                 end
               end
             end
@@ -1361,7 +1362,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         bit [TL_DW-1:0] read_out;
         int ecc_err = read_a_word_with_ecc(dai_addr, read_out);
         if (ecc_err == OtpEccUncorrErr && part_has_integrity(part_idx)) begin
-           predict_err(part_idx, OtpMacroEccUncorrError);
+           predict_err(otp_status_e'(part_idx), OtpMacroEccUncorrError);
            set_exp_alert("fatal_macro_error", 1, 20);
            custom_err = 1;
            return 0;
