@@ -1,5 +1,5 @@
 {
-  "includes": ["/__builtin__/cw340.json"],
+  "includes": ["/__builtin__/opentitan.json"],
   "interface": "cw340",
   "pins": [
     {
@@ -7,7 +7,8 @@
       "mode": "PushPull",
       "alias_of": "PC30",
       "pull_mode": "None",
-      "level": false
+      "level": true,
+      "invert":true
     },
     {
       "name": "SW_STRAP0",
