@@ -287,9 +287,9 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
                        (pwr_otp_idle_o == 0 || $rose(lc_prog_err)) within lc_prog_req[*1:$])
 
   // During fatal alert, check if otp outputs revert back to default value.
-  // Wait two clock cycles until error propogates to each FSM states and regs.
+  // Wait three clock cycles until error propogates to each FSM states and regs.
   `define OTP_FATAL_ERR_ASSERT(NAME, SEQ) \
-    `ASSERT(FatalErr``NAME``, alert_reqs |-> ##2 SEQ)
+    `ASSERT(FatalErr``NAME``, alert_reqs |-> ##3 SEQ)
 
   `OTP_FATAL_ERR_ASSERT(LcDataValid_A, lc_data_o.valid == 0 && lc_data_o.error == 1)
   `OTP_FATAL_ERR_ASSERT(LcDataState_A, lc_data_o.state ==
