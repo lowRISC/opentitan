@@ -46,6 +46,7 @@ filesets:
       - lowrisc:ip:rom_ctrl
       - lowrisc:systems:clkmgr
       - lowrisc:systems:sensor_ctrl
+      - lowrisc:systems:soc_proxy
       - lowrisc:tlul:headers
       - lowrisc:prim:all
       - lowrisc:prim:usb_diff_rx

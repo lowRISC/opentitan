@@ -14,6 +14,7 @@ filegroup(
         "//hw/top_darjeeling/ip/pwrmgr:all_files",
         "//hw/top_darjeeling/ip/rstmgr:all_files",
         "//hw/top_darjeeling/ip/sensor_ctrl:all_files",
+        "//hw/top_darjeeling/ip/soc_proxy:all_files",
         "//hw/top_darjeeling/ip/xbar:all_files",
         "//hw/top_darjeeling/ip/xbar_main:all_files",
         "//hw/top_darjeeling/ip/xbar_peri:all_files",

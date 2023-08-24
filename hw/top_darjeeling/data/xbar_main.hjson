@@ -92,6 +92,19 @@
       req_fifo_pass: false,
       rsp_fifo_pass: false,
     },
+    { name:      "soc_proxy.core",
+      type:      "device",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "soc_proxy.ctn",
+      type:      "device",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
+      pipefile:  false,
+    },
     // TODO: remove, disentangle wiring in topgen / pinmux
     { name:      "spi_host1",
       type:      "device",
@@ -242,14 +255,15 @@
   connections: {
     // TODO: remove rv_core_ibex.corei - sram_ctrl_main.ram connection
     rv_core_ibex.corei:  ["rom_ctrl0.rom", "rom_ctrl1.rom",
-      "rv_dm.mem", "sram_ctrl_main.ram", "flash_ctrl.mem"],
+      "rv_dm.mem", "sram_ctrl_main.ram", "flash_ctrl.mem", "soc_proxy.ctn"],
     rv_core_ibex.cored:  [
       "rom_ctrl0.rom", "rom_ctrl0.regs", "rom_ctrl1.rom", "rom_ctrl1.regs",
       "rv_dm.mem", "rv_dm.regs", "sram_ctrl_main.ram", "peri",
       "spi_host1", "usbdev", "flash_ctrl.core", "flash_ctrl.prim",
       "flash_ctrl.mem", "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
       "rv_plic", "otbn", "keymgr", "kmac", "sram_ctrl_main.regs",
-      "rv_core_ibex.cfg", "sram_ctrl_mbox.ram", "sram_ctrl_mbox.regs"
+      "rv_core_ibex.cfg", "sram_ctrl_mbox.ram", "sram_ctrl_mbox.regs",
+      "soc_proxy.ctn", "soc_proxy.core",
     ],
     rv_dm.sba: [
       "rom_ctrl0.rom", "rom_ctrl0.regs", "rom_ctrl1.rom", "rom_ctrl1.regs",
@@ -257,7 +271,8 @@
       "spi_host1", "usbdev", "flash_ctrl.core", "flash_ctrl.prim",
       "flash_ctrl.mem", "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
       "rv_plic", "otbn", "keymgr", "kmac", "sram_ctrl_main.regs",
-      "rv_core_ibex.cfg", "sram_ctrl_mbox.ram", "sram_ctrl_mbox.regs"
+      "rv_core_ibex.cfg", "sram_ctrl_mbox.ram", "sram_ctrl_mbox.regs",
+      "soc_proxy.ctn", "soc_proxy.core",
     ],
   },
 }
