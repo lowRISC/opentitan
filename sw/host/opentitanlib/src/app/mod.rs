@@ -149,12 +149,13 @@ impl TransportWrapperBuilder {
         pin_conf_list: &mut Vec<(String, PinConfiguration)>,
         pin_conf: &config::PinConfiguration,
     ) {
-        if (None, None, None, None)
+        if (None, None, None, None, None)
             == (
                 pin_conf.mode,
                 pin_conf.pull_mode,
                 pin_conf.level,
                 pin_conf.volts,
+                pin_conf.invert,
             )
         {
             return;
@@ -172,6 +173,7 @@ impl TransportWrapperBuilder {
         if let Some(volts) = pin_conf.volts {
             conf_entry.volts = Some(volts);
         }
+        conf_entry.invert = pin_conf.invert.unwrap_or(false);
         pin_conf_list.push((pin_conf.name.to_string(), conf_entry))
     }
 
