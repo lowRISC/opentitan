@@ -242,7 +242,11 @@ module testbench_asynch ();
 
 /////////////////////////////// DUT ///////////////////////////////
 
+`ifndef NETLIST
    secure_subsystem_synth_wrap dut (
+`else
+   security_island dut (
+`endif
        .clk_i            ( clk_sys       ),
        .clk_ref_i        ( clk_sys       ),
        .rst_ni           ( rst_sys_n     ),
