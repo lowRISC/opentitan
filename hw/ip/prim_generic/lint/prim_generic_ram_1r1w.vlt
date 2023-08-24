@@ -1,0 +1,9 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+
+`verilator_config
+
+// That is the nature of a dual-port memory: both write ports can access the same storage simultaneously.
+lint_off -rule MULTIDRIVEN -file "*/rtl/prim_generic_ram_2p.sv" -match "Signal has multiple driving blocks with different clocking: '*.mem'*"
