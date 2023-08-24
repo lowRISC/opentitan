@@ -701,6 +701,9 @@ def main():
         file = re.sub("//hw/top_[a-z]+/data:autogen/top_[a-z]+.gen.hjson",
                       "//hw/top_" + top_name + "/data:autogen/top_" + top_name + ".gen.hjson",
                       file)
+        file = re.sub("//sw/top_[a-z]+/sw/device/arch:sim_dv",
+                      "//sw/top_" + top_name + "/sw/device/arch:sim_dv",
+                      file)
         f.seek(0)
         f.write(file)
         f.truncate()

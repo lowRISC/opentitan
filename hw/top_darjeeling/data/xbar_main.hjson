@@ -4,9 +4,9 @@
 { name: "main",
   type: "xbar",
   clock_primary: "clk_main_i", // Main clock, used in sockets
-  other_clock_list: [ "clk_fixed_i", "clk_spi_host0_i", "clk_spi_host1_i", "clk_usb_i"] // Secondary clocks used by specific nodes
+  other_clock_list: [ "clk_fixed_i", "clk_spi_host1_i", "clk_usb_i"] // Secondary clocks used by specific nodes
   reset_primary: "rst_main_ni", // Main reset, used in sockets
-  other_reset_list: [ "rst_fixed_ni", "rst_spi_host0_ni", "rst_spi_host1_ni", "rst_usb_ni"] // Secondary clocks used by specific nodes
+  other_reset_list: [ "rst_fixed_ni", "rst_spi_host1_ni", "rst_usb_ni"] // Secondary resets used by specific nodes
 
   // Rationale for pipeline and req/rsp_fifo_pass:
   // For host interfaces that are used during production state (corei/cored),
@@ -92,13 +92,7 @@
       req_fifo_pass: false,
       rsp_fifo_pass: false,
     },
-    { name:      "spi_host0",
-      type:      "device",
-      clock:     "clk_spi_host0_i",
-      reset:     "rst_spi_host0_ni",
-      req_fifo_pass: false,
-      rsp_fifo_pass: false,
-    },
+    // TODO: remove, disentangle wiring in topgen / pinmux
     { name:      "spi_host1",
       type:      "device",
       clock:     "clk_spi_host1_i",
@@ -106,6 +100,7 @@
       req_fifo_pass: false,
       rsp_fifo_pass: false,
     },
+    // TODO: remove, disentangle wiring in topgen / pinmux
     { name:      "usbdev",
       type:      "device",
       clock:     "clk_usb_i",
@@ -113,6 +108,7 @@
       req_fifo_pass: false,
       rsp_fifo_pass: false,
     },
+    // TODO: remove, disentangle wiring in topgen
     { name:      "flash_ctrl.core",
       type:      "device",
       clock:     "clk_main_i",
@@ -120,6 +116,7 @@
       req_fifo_pass: false,
       rsp_fifo_pass: false,
     },
+    // TODO: remove, disentangle wiring in topgen
     { name:      "flash_ctrl.prim",
       type:      "device",
       clock:     "clk_main_i",
@@ -127,6 +124,7 @@
       req_fifo_pass: false,
       rsp_fifo_pass: false,
     },
+    // TODO: remove, disentangle wiring in topgen
     // Return and examine whether this path
     // latency can be improved.
     { name:      "flash_ctrl.mem",
@@ -157,6 +155,7 @@
       req_fifo_pass: false,
       rsp_fifo_pass: false,
     },
+    // TODO: remove
     { name:      "entropy_src",
       type:      "device",
       clock:     "clk_main_i"
@@ -241,11 +240,12 @@
     },
   ],
   connections: {
+    // TODO: remove rv_core_ibex.corei - sram_ctrl_main.ram connection
     rv_core_ibex.corei:  ["rom_ctrl0.rom", "rom_ctrl1.rom",
       "rv_dm.mem", "sram_ctrl_main.ram", "flash_ctrl.mem"],
     rv_core_ibex.cored:  [
       "rom_ctrl0.rom", "rom_ctrl0.regs", "rom_ctrl1.rom", "rom_ctrl1.regs",
-      "rv_dm.mem", "rv_dm.regs", "sram_ctrl_main.ram", "peri", "spi_host0",
+      "rv_dm.mem", "rv_dm.regs", "sram_ctrl_main.ram", "peri",
       "spi_host1", "usbdev", "flash_ctrl.core", "flash_ctrl.prim",
       "flash_ctrl.mem", "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
       "rv_plic", "otbn", "keymgr", "kmac", "sram_ctrl_main.regs",
@@ -253,7 +253,7 @@
     ],
     rv_dm.sba: [
       "rom_ctrl0.rom", "rom_ctrl0.regs", "rom_ctrl1.rom", "rom_ctrl1.regs",
-      "rv_dm.mem", "rv_dm.regs", "sram_ctrl_main.ram", "peri", "spi_host0",
+      "rv_dm.mem", "rv_dm.regs", "sram_ctrl_main.ram", "peri",
       "spi_host1", "usbdev", "flash_ctrl.core", "flash_ctrl.prim",
       "flash_ctrl.mem", "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
       "rv_plic", "otbn", "keymgr", "kmac", "sram_ctrl_main.regs",

@@ -6,31 +6,32 @@
 
 package tl_peri_pkg;
 
-  localparam logic [31:0] ADDR_SPACE_UART0                   = 32'h 40000000;
-  localparam logic [31:0] ADDR_SPACE_UART1                   = 32'h 40010000;
-  localparam logic [31:0] ADDR_SPACE_UART2                   = 32'h 40020000;
-  localparam logic [31:0] ADDR_SPACE_UART3                   = 32'h 40030000;
-  localparam logic [31:0] ADDR_SPACE_I2C0                    = 32'h 40080000;
-  localparam logic [31:0] ADDR_SPACE_I2C1                    = 32'h 40090000;
-  localparam logic [31:0] ADDR_SPACE_I2C2                    = 32'h 400a0000;
-  localparam logic [31:0] ADDR_SPACE_GPIO                    = 32'h 40040000;
-  localparam logic [31:0] ADDR_SPACE_SPI_DEVICE              = 32'h 40050000;
-  localparam logic [31:0] ADDR_SPACE_RV_TIMER                = 32'h 40100000;
-  localparam logic [31:0] ADDR_SPACE_PWRMGR_AON              = 32'h 40400000;
-  localparam logic [31:0] ADDR_SPACE_RSTMGR_AON              = 32'h 40410000;
-  localparam logic [31:0] ADDR_SPACE_CLKMGR_AON              = 32'h 40420000;
-  localparam logic [31:0] ADDR_SPACE_PINMUX_AON              = 32'h 40460000;
-  localparam logic [31:0] ADDR_SPACE_OTP_CTRL__CORE          = 32'h 40130000;
-  localparam logic [31:0] ADDR_SPACE_OTP_CTRL__PRIM          = 32'h 40132000;
-  localparam logic [31:0] ADDR_SPACE_LC_CTRL                 = 32'h 40140000;
-  localparam logic [31:0] ADDR_SPACE_SENSOR_CTRL             = 32'h 40490000;
-  localparam logic [31:0] ADDR_SPACE_ALERT_HANDLER           = 32'h 40150000;
-  localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_RET_AON__REGS = 32'h 40500000;
-  localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_RET_AON__RAM  = 32'h 40600000;
-  localparam logic [31:0] ADDR_SPACE_AON_TIMER_AON           = 32'h 40470000;
-  localparam logic [31:0] ADDR_SPACE_SYSRST_CTRL_AON         = 32'h 40430000;
-  localparam logic [31:0] ADDR_SPACE_ADC_CTRL_AON            = 32'h 40440000;
-  localparam logic [31:0] ADDR_SPACE_AST                     = 32'h 40480000;
+  localparam logic [31:0] ADDR_SPACE_UART0                   = 32'h 30010000;
+  localparam logic [31:0] ADDR_SPACE_UART1                   = 32'h 31000000;
+  localparam logic [31:0] ADDR_SPACE_UART2                   = 32'h 31010000;
+  localparam logic [31:0] ADDR_SPACE_UART3                   = 32'h 31020000;
+  localparam logic [31:0] ADDR_SPACE_I2C0                    = 32'h 30080000;
+  localparam logic [31:0] ADDR_SPACE_I2C1                    = 32'h 31030000;
+  localparam logic [31:0] ADDR_SPACE_I2C2                    = 32'h 31040000;
+  localparam logic [31:0] ADDR_SPACE_GPIO                    = 32'h 30000000;
+  localparam logic [31:0] ADDR_SPACE_SPI_HOST0               = 32'h 30300000;
+  localparam logic [31:0] ADDR_SPACE_SPI_DEVICE              = 32'h 30310000;
+  localparam logic [31:0] ADDR_SPACE_RV_TIMER                = 32'h 30100000;
+  localparam logic [31:0] ADDR_SPACE_PWRMGR_AON              = 32'h 30400000;
+  localparam logic [31:0] ADDR_SPACE_RSTMGR_AON              = 32'h 30410000;
+  localparam logic [31:0] ADDR_SPACE_CLKMGR_AON              = 32'h 30420000;
+  localparam logic [31:0] ADDR_SPACE_PINMUX_AON              = 32'h 30460000;
+  localparam logic [31:0] ADDR_SPACE_OTP_CTRL__CORE          = 32'h 30130000;
+  localparam logic [31:0] ADDR_SPACE_OTP_CTRL__PRIM          = 32'h 30134000;
+  localparam logic [31:0] ADDR_SPACE_LC_CTRL                 = 32'h 30140000;
+  localparam logic [31:0] ADDR_SPACE_SENSOR_CTRL             = 32'h 30020000;
+  localparam logic [31:0] ADDR_SPACE_ALERT_HANDLER           = 32'h 30150000;
+  localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_RET_AON__REGS = 32'h 30500000;
+  localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_RET_AON__RAM  = 32'h 30600000;
+  localparam logic [31:0] ADDR_SPACE_AON_TIMER_AON           = 32'h 30470000;
+  localparam logic [31:0] ADDR_SPACE_SYSRST_CTRL_AON         = 32'h 31060000;
+  localparam logic [31:0] ADDR_SPACE_ADC_CTRL_AON            = 32'h 31070000;
+  localparam logic [31:0] ADDR_SPACE_AST                     = 32'h 30480000;
 
   localparam logic [31:0] ADDR_MASK_UART0                   = 32'h 0000003f;
   localparam logic [31:0] ADDR_MASK_UART1                   = 32'h 0000003f;
@@ -40,6 +41,7 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_MASK_I2C1                    = 32'h 0000007f;
   localparam logic [31:0] ADDR_MASK_I2C2                    = 32'h 0000007f;
   localparam logic [31:0] ADDR_MASK_GPIO                    = 32'h 0000003f;
+  localparam logic [31:0] ADDR_MASK_SPI_HOST0               = 32'h 0000003f;
   localparam logic [31:0] ADDR_MASK_SPI_DEVICE              = 32'h 00001fff;
   localparam logic [31:0] ADDR_MASK_RV_TIMER                = 32'h 000001ff;
   localparam logic [31:0] ADDR_MASK_PWRMGR_AON              = 32'h 0000007f;
@@ -59,7 +61,7 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_MASK_AST                     = 32'h 000003ff;
 
   localparam int N_HOST   = 1;
-  localparam int N_DEVICE = 25;
+  localparam int N_DEVICE = 26;
 
   typedef enum int {
     TlUart0 = 0,
@@ -70,23 +72,24 @@ package tl_peri_pkg;
     TlI2C1 = 5,
     TlI2C2 = 6,
     TlGpio = 7,
-    TlSpiDevice = 8,
-    TlRvTimer = 9,
-    TlPwrmgrAon = 10,
-    TlRstmgrAon = 11,
-    TlClkmgrAon = 12,
-    TlPinmuxAon = 13,
-    TlOtpCtrlCore = 14,
-    TlOtpCtrlPrim = 15,
-    TlLcCtrl = 16,
-    TlSensorCtrl = 17,
-    TlAlertHandler = 18,
-    TlSramCtrlRetAonRegs = 19,
-    TlSramCtrlRetAonRam = 20,
-    TlAonTimerAon = 21,
-    TlSysrstCtrlAon = 22,
-    TlAdcCtrlAon = 23,
-    TlAst = 24
+    TlSpiHost0 = 8,
+    TlSpiDevice = 9,
+    TlRvTimer = 10,
+    TlPwrmgrAon = 11,
+    TlRstmgrAon = 12,
+    TlClkmgrAon = 13,
+    TlPinmuxAon = 14,
+    TlOtpCtrlCore = 15,
+    TlOtpCtrlPrim = 16,
+    TlLcCtrl = 17,
+    TlSensorCtrl = 18,
+    TlAlertHandler = 19,
+    TlSramCtrlRetAonRegs = 20,
+    TlSramCtrlRetAonRam = 21,
+    TlAonTimerAon = 22,
+    TlSysrstCtrlAon = 23,
+    TlAdcCtrlAon = 24,
+    TlAst = 25
   } tl_device_e;
 
   typedef enum int {

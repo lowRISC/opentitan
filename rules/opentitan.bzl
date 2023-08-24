@@ -39,10 +39,10 @@ _targets_compatible_with = {
 # simulation platforms (DV and Verilator), and two FPGA platforms (CW305
 # and CW310).
 PER_DEVICE_DEPS = {
-    "sim_verilator": ["@//sw/top_earlgrey/sw/device/arch:sim_verilator"],
-    "sim_dv": ["@//sw/top_earlgrey/sw/device/arch:sim_dv"],
+    "sim_verilator": ["@//sw/top_darjeeling/sw/device/arch:sim_verilator"],
+    "sim_dv": ["@//sw/top_darjeeling/sw/device/arch:sim_dv"],
     "fpga_cw305": ["@//sw/top_earlgrey/sw/device/arch:fpga_cw305"],
-    "fpga_cw310": ["@//sw/top_earlgrey/sw/device/arch:fpga_cw310"],
+    "fpga_cw310": ["@//sw/top_darjeeling/sw/device/arch:fpga_cw310"],
 }
 
 def create_key_(name, label, hw_lc_states):

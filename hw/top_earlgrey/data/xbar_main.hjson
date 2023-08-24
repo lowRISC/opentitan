@@ -6,7 +6,7 @@
   clock_primary: "clk_main_i", // Main clock, used in sockets
   other_clock_list: [ "clk_fixed_i", "clk_spi_host0_i", "clk_spi_host1_i", "clk_usb_i"] // Secondary clocks used by specific nodes
   reset_primary: "rst_main_ni", // Main reset, used in sockets
-  other_reset_list: [ "rst_fixed_ni", "rst_spi_host0_ni", "rst_spi_host1_ni", "rst_usb_ni"] // Secondary clocks used by specific nodes
+  other_reset_list: [ "rst_fixed_ni", "rst_spi_host0_ni", "rst_spi_host1_ni", "rst_usb_ni"] // Secondary resets used by specific nodes
 
   // Rationale for pipeline and req/rsp_fifo_pass:
   // For host interfaces that are used during production state (corei/cored),

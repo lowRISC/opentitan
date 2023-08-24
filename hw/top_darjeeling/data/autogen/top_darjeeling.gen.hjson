@@ -130,8 +130,8 @@
           clk_io_div4_infra: io_div4
           clk_main_infra: main
           clk_usb_infra: usb
-          clk_io_infra: io
           clk_io_div2_infra: io_div2
+          clk_io_infra: io
         }
       }
       {
@@ -155,9 +155,9 @@
         {
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
-          clk_io_peri: io
           clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_io_peri: io
         }
       }
       {
@@ -323,7 +323,6 @@
         domains:
         [
           Aon
-          "0"
         ]
         shadowed: false
         sw: false
@@ -430,7 +429,7 @@
         sw: true
         path: rstmgr_aon_resets.rst_spi_host0_n
         parent: lc_src
-        clock: io
+        clock: io_div4
       }
       {
         name: spi_host1
@@ -565,7 +564,7 @@
       ]
       base_addrs:
       {
-        null: 0x40000000
+        null: 0x30010000
       }
     }
     {
@@ -612,7 +611,7 @@
       ]
       base_addrs:
       {
-        null: 0x40010000
+        null: 0x31000000
       }
     }
     {
@@ -659,7 +658,7 @@
       ]
       base_addrs:
       {
-        null: 0x40020000
+        null: 0x31010000
       }
     }
     {
@@ -706,7 +705,7 @@
       ]
       base_addrs:
       {
-        null: 0x40030000
+        null: 0x31020000
       }
     }
     {
@@ -767,7 +766,7 @@
       ]
       base_addrs:
       {
-        null: 0x40040000
+        null: 0x30000000
       }
     }
     {
@@ -864,7 +863,7 @@
       ]
       base_addrs:
       {
-        null: 0x40050000
+        null: 0x30310000
       }
     }
     {
@@ -911,7 +910,7 @@
       ]
       base_addrs:
       {
-        null: 0x40080000
+        null: 0x30080000
       }
     }
     {
@@ -958,7 +957,7 @@
       ]
       base_addrs:
       {
-        null: 0x40090000
+        null: 0x31030000
       }
     }
     {
@@ -1005,7 +1004,7 @@
       ]
       base_addrs:
       {
-        null: 0x400A0000
+        null: 0x31040000
       }
     }
     {
@@ -1052,7 +1051,7 @@
       ]
       base_addrs:
       {
-        null: 0x40100000
+        null: 0x30100000
       }
     }
     {
@@ -1079,8 +1078,8 @@
       }
       base_addrs:
       {
-        core: 0x40130000
-        prim: 0x40132000
+        core: 0x30130000
+        prim: 0x30134000
       }
       clock_connections:
       {
@@ -2048,7 +2047,7 @@
       ]
       base_addrs:
       {
-        null: 0x40140000
+        null: 0x30140000
       }
     }
     {
@@ -2180,7 +2179,7 @@
       ]
       base_addrs:
       {
-        null: 0x40150000
+        null: 0x30150000
       }
     }
     {
@@ -2188,7 +2187,7 @@
       type: spi_host
       clock_srcs:
       {
-        clk_i: io
+        clk_i: io_div4
       }
       clock_group: peri
       reset_connections:
@@ -2201,7 +2200,7 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks.clk_io_peri
+        clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
       domain:
       [
@@ -2239,7 +2238,7 @@
       ]
       base_addrs:
       {
-        null: 0x40300000
+        null: 0x30300000
       }
     }
     {
@@ -2296,7 +2295,7 @@
       ]
       base_addrs:
       {
-        null: 0x40310000
+        null: 0x32000000
       }
     }
     {
@@ -2585,7 +2584,7 @@
       ]
       base_addrs:
       {
-        null: 0x40320000
+        null: 0x32010000
       }
     }
     {
@@ -2914,7 +2913,7 @@
       ]
       base_addrs:
       {
-        null: 0x40400000
+        null: 0x30400000
       }
     }
     {
@@ -3112,7 +3111,7 @@
       ]
       base_addrs:
       {
-        null: 0x40410000
+        null: 0x30410000
       }
     }
     {
@@ -3443,7 +3442,7 @@
       ]
       base_addrs:
       {
-        null: 0x40420000
+        null: 0x30420000
       }
     }
     {
@@ -3521,7 +3520,7 @@
       ]
       base_addrs:
       {
-        null: 0x40430000
+        null: 0x31060000
       }
     }
     {
@@ -3601,7 +3600,7 @@
       ]
       base_addrs:
       {
-        null: 0x40440000
+        null: 0x31070000
       }
     }
     {
@@ -4045,7 +4044,7 @@
       ]
       base_addrs:
       {
-        null: 0x40460000
+        null: 0x30460000
       }
     }
     {
@@ -4161,7 +4160,7 @@
       ]
       base_addrs:
       {
-        null: 0x40470000
+        null: 0x30470000
       }
     }
     {
@@ -4266,7 +4265,7 @@
       ]
       base_addrs:
       {
-        null: 0x40480000
+        null: 0x30480000
       }
     }
     {
@@ -4389,7 +4388,7 @@
       ]
       base_addrs:
       {
-        null: 0x40490000
+        null: 0x30020000
       }
     }
     {
@@ -4424,8 +4423,8 @@
       }
       base_addrs:
       {
-        regs: 0x40500000
-        ram: 0x40600000
+        regs: 0x30500000
+        ram: 0x30600000
       }
       memory:
       {
@@ -4614,9 +4613,9 @@
       }
       base_addrs:
       {
-        core: 0x41000000
-        prim: 0x41008000
-        mem: 0x20000000
+        core: 0x33000000
+        prim: 0x33008000
+        mem: 0x34000000
       }
       param_decl:
       {
@@ -5051,8 +5050,8 @@
       }
       base_addrs:
       {
-        mem: 0x00010000
-        regs: 0x41200000
+        mem: 0x00040000
+        regs: 0x21200000
       }
       clock_connections:
       {
@@ -5315,7 +5314,7 @@
       ]
       base_addrs:
       {
-        null: 0x48000000
+        null: 0x28000000
       }
     }
     {
@@ -5540,7 +5539,7 @@
       ]
       base_addrs:
       {
-        null: 0x41100000
+        null: 0x21100000
       }
     }
     {
@@ -5599,7 +5598,7 @@
       ]
       base_addrs:
       {
-        null: 0x41110000
+        null: 0x21110000
       }
     }
     {
@@ -5824,7 +5823,7 @@
       ]
       base_addrs:
       {
-        null: 0x41120000
+        null: 0x21120000
       }
     }
     {
@@ -6082,7 +6081,7 @@
       ]
       base_addrs:
       {
-        null: 0x41130000
+        null: 0x21130000
       }
     }
     {
@@ -6439,7 +6438,7 @@
       ]
       base_addrs:
       {
-        null: 0x41140000
+        null: 0x21140000
       }
     }
     {
@@ -6583,7 +6582,7 @@
       ]
       base_addrs:
       {
-        null: 0x41150000
+        null: 0x21150000
       }
     }
     {
@@ -6731,7 +6730,7 @@
       ]
       base_addrs:
       {
-        null: 0x41160000
+        null: 0x21160000
       }
     }
     {
@@ -6813,7 +6812,7 @@
       ]
       base_addrs:
       {
-        null: 0x41170000
+        null: 0x21170000
       }
     }
     {
@@ -6895,7 +6894,7 @@
       ]
       base_addrs:
       {
-        null: 0x41180000
+        null: 0x21180000
       }
     }
     {
@@ -6926,7 +6925,7 @@
       }
       base_addrs:
       {
-        regs: 0x411C0000
+        regs: 0x211c0000
         ram: 0x10000000
       }
       memory:
@@ -7126,7 +7125,7 @@
       }
       base_addrs:
       {
-        regs: 0x411D0000
+        regs: 0x211d0000
         ram: 0x11000000
       }
       memory:
@@ -7315,7 +7314,7 @@
       base_addrs:
       {
         rom: 0x00008000
-        regs: 0x411e0000
+        regs: 0x211e0000
       }
       memory:
       {
@@ -7489,8 +7488,8 @@
       }
       base_addrs:
       {
-        rom: 0x00050000
-        regs: 0x41210000
+        rom: 0x00010000
+        regs: 0x211e1000
       }
       memory:
       {
@@ -8196,7 +8195,7 @@
       ]
       base_addrs:
       {
-        cfg: 0x411F0000
+        cfg: 0x211f0000
       }
     }
   ]
@@ -8727,10 +8726,6 @@
       [
         peri.tl_main
       ]
-      spi_host0.tl:
-      [
-        main.tl_spi_host0
-      ]
       spi_host1.tl:
       [
         main.tl_spi_host1
@@ -8842,6 +8837,10 @@
       gpio.tl:
       [
         peri.tl_gpio
+      ]
+      spi_host0.tl:
+      [
+        peri.tl_spi_host0
       ]
       spi_device.tl:
       [
@@ -8990,7 +8989,6 @@
         clk_main_i: main
         clk_fixed_i: io_div4
         clk_usb_i: usb
-        clk_spi_host0_i: io
         clk_spi_host1_i: io_div2
       }
       clock_group: infra
@@ -9012,11 +9010,6 @@
           name: lc_usb
           domain: "0"
         }
-        rst_spi_host0_ni:
-        {
-          name: lc_io
-          domain: "0"
-        }
         rst_spi_host1_ni:
         {
           name: lc_io_div2
@@ -9028,7 +9021,6 @@
         clk_main_i: clkmgr_aon_clocks.clk_main_infra
         clk_fixed_i: clkmgr_aon_clocks.clk_io_div4_infra
         clk_usb_i: clkmgr_aon_clocks.clk_usb_infra
-        clk_spi_host0_i: clkmgr_aon_clocks.clk_io_infra
         clk_spi_host1_i: clkmgr_aon_clocks.clk_io_div2_infra
       }
       domain:
@@ -9055,7 +9047,6 @@
           rv_dm.regs
           sram_ctrl_main.ram
           peri
-          spi_host0
           spi_host1
           usbdev
           flash_ctrl.core
@@ -9086,7 +9077,6 @@
           rv_dm.regs
           sram_ctrl_main.ram
           peri
-          spi_host0
           spi_host1
           usbdev
           flash_ctrl.core
@@ -9157,7 +9147,7 @@
           addr_range:
           [
             {
-              base_addr: 0x41200000
+              base_addr: 0x21200000
               size_byte: 0x4
             }
           ]
@@ -9176,7 +9166,7 @@
           addr_range:
           [
             {
-              base_addr: 0x10000
+              base_addr: 0x40000
               size_byte: 0x1000
             }
           ]
@@ -9214,7 +9204,7 @@
           addr_range:
           [
             {
-              base_addr: 0x411e0000
+              base_addr: 0x211e0000
               size_byte: 0x80
             }
           ]
@@ -9233,7 +9223,7 @@
           addr_range:
           [
             {
-              base_addr: 0x50000
+              base_addr: 0x10000
               size_byte: 0x10000
             }
           ]
@@ -9252,7 +9242,7 @@
           addr_range:
           [
             {
-              base_addr: 0x41210000
+              base_addr: 0x211e1000
               size_byte: 0x80
             }
           ]
@@ -9273,33 +9263,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40000000
-              size_byte: 0x200000
-            }
-            {
-              base_addr: 0x40400000
-              size_byte: 0x400000
+              base_addr: 0x30000000
+              size_byte: 0x2000000
             }
           ]
-        }
-        {
-          name: spi_host0
-          type: device
-          clock: clk_spi_host0_i
-          reset: rst_spi_host0_ni
-          req_fifo_pass: false
-          rsp_fifo_pass: false
-          inst_type: spi_host
-          addr_range:
-          [
-            {
-              base_addr: 0x40300000
-              size_byte: 0x40
-            }
-          ]
-          xbar: false
-          stub: false
-          pipeline: true
         }
         {
           name: spi_host1
@@ -9312,7 +9279,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40310000
+              base_addr: 0x32000000
               size_byte: 0x40
             }
           ]
@@ -9331,7 +9298,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40320000
+              base_addr: 0x32010000
               size_byte: 0x1000
             }
           ]
@@ -9350,7 +9317,7 @@
           addr_range:
           [
             {
-              base_addr: 0x41000000
+              base_addr: 0x33000000
               size_byte: 0x200
             }
           ]
@@ -9369,7 +9336,7 @@
           addr_range:
           [
             {
-              base_addr: 0x41008000
+              base_addr: 0x33008000
               size_byte: 0x80
             }
           ]
@@ -9388,7 +9355,7 @@
           addr_range:
           [
             {
-              base_addr: 0x20000000
+              base_addr: 0x34000000
               size_byte: 0x100000
             }
           ]
@@ -9407,7 +9374,7 @@
           addr_range:
           [
             {
-              base_addr: 0x41110000
+              base_addr: 0x21110000
               size_byte: 0x1000
             }
           ]
@@ -9426,7 +9393,7 @@
           addr_range:
           [
             {
-              base_addr: 0x41120000
+              base_addr: 0x21120000
               size_byte: 0x1000
             }
           ]
@@ -9445,7 +9412,7 @@
           addr_range:
           [
             {
-              base_addr: 0x41100000
+              base_addr: 0x21100000
               size_byte: 0x100
             }
           ]
@@ -9464,7 +9431,7 @@
           addr_range:
           [
             {
-              base_addr: 0x41160000
+              base_addr: 0x21160000
               size_byte: 0x100
             }
           ]
@@ -9483,7 +9450,7 @@
           addr_range:
           [
             {
-              base_addr: 0x41150000
+              base_addr: 0x21150000
               size_byte: 0x80
             }
           ]
@@ -9502,7 +9469,7 @@
           addr_range:
           [
             {
-              base_addr: 0x41170000
+              base_addr: 0x21170000
               size_byte: 0x80
             }
           ]
@@ -9521,7 +9488,7 @@
           addr_range:
           [
             {
-              base_addr: 0x41180000
+              base_addr: 0x21180000
               size_byte: 0x80
             }
           ]
@@ -9540,7 +9507,7 @@
           addr_range:
           [
             {
-              base_addr: 0x48000000
+              base_addr: 0x28000000
               size_byte: 0x8000000
             }
           ]
@@ -9559,7 +9526,7 @@
           addr_range:
           [
             {
-              base_addr: 0x41130000
+              base_addr: 0x21130000
               size_byte: 0x10000
             }
           ]
@@ -9578,7 +9545,7 @@
           addr_range:
           [
             {
-              base_addr: 0x41140000
+              base_addr: 0x21140000
               size_byte: 0x100
             }
           ]
@@ -9597,7 +9564,7 @@
           addr_range:
           [
             {
-              base_addr: 0x411f0000
+              base_addr: 0x211f0000
               size_byte: 0x800
             }
           ]
@@ -9616,7 +9583,7 @@
           addr_range:
           [
             {
-              base_addr: 0x411c0000
+              base_addr: 0x211c0000
               size_byte: 0x20
             }
           ]
@@ -9652,7 +9619,7 @@
           addr_range:
           [
             {
-              base_addr: 0x411d0000
+              base_addr: 0x211d0000
               size_byte: 0x20
             }
           ]
@@ -9805,18 +9772,6 @@
           default: ""
           end_idx: -1
           top_signame: main_tl_peri
-          index: -1
-        }
-        {
-          name: tl_spi_host0
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: main
-          default: ""
-          top_signame: spi_host0_tl
           index: -1
         }
         {
@@ -10097,6 +10052,7 @@
           i2c1
           i2c2
           gpio
+          spi_host0
           spi_device
           rv_timer
           pwrmgr_aon
@@ -10140,7 +10096,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40000000
+              base_addr: 0x30010000
               size_byte: 0x40
             }
           ]
@@ -10158,7 +10114,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40010000
+              base_addr: 0x31000000
               size_byte: 0x40
             }
           ]
@@ -10176,7 +10132,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40020000
+              base_addr: 0x31010000
               size_byte: 0x40
             }
           ]
@@ -10194,7 +10150,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40030000
+              base_addr: 0x31020000
               size_byte: 0x40
             }
           ]
@@ -10212,7 +10168,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40080000
+              base_addr: 0x30080000
               size_byte: 0x80
             }
           ]
@@ -10230,7 +10186,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40090000
+              base_addr: 0x31030000
               size_byte: 0x80
             }
           ]
@@ -10248,7 +10204,7 @@
           addr_range:
           [
             {
-              base_addr: 0x400a0000
+              base_addr: 0x31040000
               size_byte: 0x80
             }
           ]
@@ -10266,7 +10222,25 @@
           addr_range:
           [
             {
-              base_addr: 0x40040000
+              base_addr: 0x30000000
+              size_byte: 0x40
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+        {
+          name: spi_host0
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: false
+          inst_type: spi_host
+          addr_range:
+          [
+            {
+              base_addr: 0x30300000
               size_byte: 0x40
             }
           ]
@@ -10284,7 +10258,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40050000
+              base_addr: 0x30310000
               size_byte: 0x2000
             }
           ]
@@ -10302,7 +10276,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40100000
+              base_addr: 0x30100000
               size_byte: 0x200
             }
           ]
@@ -10320,7 +10294,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40400000
+              base_addr: 0x30400000
               size_byte: 0x80
             }
           ]
@@ -10338,7 +10312,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40410000
+              base_addr: 0x30410000
               size_byte: 0x80
             }
           ]
@@ -10356,7 +10330,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40420000
+              base_addr: 0x30420000
               size_byte: 0x80
             }
           ]
@@ -10374,7 +10348,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40460000
+              base_addr: 0x30460000
               size_byte: 0x1000
             }
           ]
@@ -10392,7 +10366,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40130000
+              base_addr: 0x30130000
               size_byte: 0x2000
             }
           ]
@@ -10410,7 +10384,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40132000
+              base_addr: 0x30134000
               size_byte: 0x20
             }
           ]
@@ -10428,7 +10402,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40140000
+              base_addr: 0x30140000
               size_byte: 0x100
             }
           ]
@@ -10446,7 +10420,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40490000
+              base_addr: 0x30020000
               size_byte: 0x40
             }
           ]
@@ -10464,7 +10438,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40150000
+              base_addr: 0x30150000
               size_byte: 0x800
             }
           ]
@@ -10482,7 +10456,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40500000
+              base_addr: 0x30500000
               size_byte: 0x20
             }
           ]
@@ -10500,7 +10474,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40600000
+              base_addr: 0x30600000
               size_byte: 0x1000
             }
           ]
@@ -10518,7 +10492,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40470000
+              base_addr: 0x30470000
               size_byte: 0x40
             }
           ]
@@ -10536,7 +10510,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40430000
+              base_addr: 0x31060000
               size_byte: 0x100
             }
           ]
@@ -10554,7 +10528,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40440000
+              base_addr: 0x31070000
               size_byte: 0x80
             }
           ]
@@ -10572,7 +10546,7 @@
           addr_range:
           [
             {
-              base_addr: 0x40480000
+              base_addr: 0x30480000
               size_byte: 0x400
             }
           ]
@@ -10691,6 +10665,18 @@
           inst_name: peri
           default: ""
           top_signame: gpio_tl
+          index: -1
+        }
+        {
+          name: tl_spi_host0
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: peri
+          default: ""
+          top_signame: spi_host0_tl
           index: -1
         }
         {
@@ -14893,9 +14879,9 @@
         {
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
-          clk_io_peri: io
           clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_io_peri: io
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
@@ -14917,9 +14903,9 @@
         {
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
-          clk_io_peri: io
           clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_io_peri: io
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
@@ -14941,9 +14927,9 @@
         {
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
-          clk_io_peri: io
           clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_io_peri: io
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
@@ -14965,9 +14951,9 @@
         {
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
-          clk_io_peri: io
           clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_io_peri: io
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
@@ -14989,9 +14975,9 @@
         {
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
-          clk_io_peri: io
           clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_io_peri: io
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
@@ -15056,12 +15042,12 @@
         {
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
-          clk_io_peri: io
           clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_io_peri: io
         }
       }
-      clock_connection: clkmgr_aon_clocks.clk_io_peri
+      clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
       reset_connection:
       {
         name: spi_host0
@@ -15080,9 +15066,9 @@
         {
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
-          clk_io_peri: io
           clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_io_peri: io
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div2_peri
@@ -15104,9 +15090,9 @@
         {
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
-          clk_io_peri: io
           clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_io_peri: io
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_usb_peri
@@ -15200,9 +15186,9 @@
         {
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
-          clk_io_peri: io
           clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_io_peri: io
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
@@ -15246,8 +15232,8 @@
           clk_io_div4_infra: io_div4
           clk_main_infra: main
           clk_usb_infra: usb
-          clk_io_infra: io
           clk_io_div2_infra: io_div2
+          clk_io_infra: io
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_infra
@@ -15270,8 +15256,8 @@
           clk_io_div4_infra: io_div4
           clk_main_infra: main
           clk_usb_infra: usb
-          clk_io_infra: io
           clk_io_div2_infra: io_div2
+          clk_io_infra: io
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_infra
@@ -15294,8 +15280,8 @@
           clk_io_div4_infra: io_div4
           clk_main_infra: main
           clk_usb_infra: usb
-          clk_io_infra: io
           clk_io_div2_infra: io_div2
+          clk_io_infra: io
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_infra
@@ -15318,8 +15304,8 @@
           clk_io_div4_infra: io_div4
           clk_main_infra: main
           clk_usb_infra: usb
-          clk_io_infra: io
           clk_io_div2_infra: io_div2
+          clk_io_infra: io
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_infra
@@ -19959,18 +19945,6 @@
         index: -1
       }
       {
-        name: tl_spi_host0
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: main
-        default: ""
-        top_signame: spi_host0_tl
-        index: -1
-      }
-      {
         name: tl_spi_host1
         struct: tl
         package: tlul_pkg
@@ -20316,6 +20290,18 @@
         inst_name: peri
         default: ""
         top_signame: gpio_tl
+        index: -1
+      }
+      {
+        name: tl_spi_host0
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: peri
+        default: ""
+        top_signame: spi_host0_tl
         index: -1
       }
       {
@@ -22552,28 +22538,6 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: spi_host0_tl_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: spi_host0_tl_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
         signame: spi_host1_tl_req
         width: 1
         type: req_rsp
@@ -23180,6 +23144,28 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: gpio_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: spi_host0_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: spi_host0_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

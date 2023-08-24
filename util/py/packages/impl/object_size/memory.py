@@ -14,8 +14,8 @@ def parse_memory_file() -> dict[str, Memory]:
     memories = (
         ("rom", range(0x00008000, 0x00008000 + 0x8000)),
         ("ram_main", range(0x10000000, 0x10000000 + 0x20000)),
-        ("eflash", range(0x20000000, 0x20000000 + 0x100000)),
-        ("ram_ret_aon", range(0x40600000, 0x40600000 + 0x1000)),
+        ("eflash", range(0x34000000, 0x34000000 + 0x100000)),
+        ("ram_ret_aon", range(0x30600000, 0x30600000 + 0x1000)),
         ("rom_ext_virtual", range(0x90000000, 0x90000000 + 0x80000)),
         ("owner_virtual", range(0xa0000000, 0xa0000000 + 0x80000)),
     )

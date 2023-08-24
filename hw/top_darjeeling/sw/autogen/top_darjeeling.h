@@ -31,7 +31,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_UART0_BASE_ADDR 0x40000000u
+#define TOP_DARJEELING_UART0_BASE_ADDR 0x30010000u
 
 /**
  * Peripheral size for uart0 in top darjeeling.
@@ -49,7 +49,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_UART1_BASE_ADDR 0x40010000u
+#define TOP_DARJEELING_UART1_BASE_ADDR 0x31000000u
 
 /**
  * Peripheral size for uart1 in top darjeeling.
@@ -67,7 +67,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_UART2_BASE_ADDR 0x40020000u
+#define TOP_DARJEELING_UART2_BASE_ADDR 0x31010000u
 
 /**
  * Peripheral size for uart2 in top darjeeling.
@@ -85,7 +85,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_UART3_BASE_ADDR 0x40030000u
+#define TOP_DARJEELING_UART3_BASE_ADDR 0x31020000u
 
 /**
  * Peripheral size for uart3 in top darjeeling.
@@ -103,7 +103,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_GPIO_BASE_ADDR 0x40040000u
+#define TOP_DARJEELING_GPIO_BASE_ADDR 0x30000000u
 
 /**
  * Peripheral size for gpio in top darjeeling.
@@ -121,7 +121,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_SPI_DEVICE_BASE_ADDR 0x40050000u
+#define TOP_DARJEELING_SPI_DEVICE_BASE_ADDR 0x30310000u
 
 /**
  * Peripheral size for spi_device in top darjeeling.
@@ -139,7 +139,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_I2C0_BASE_ADDR 0x40080000u
+#define TOP_DARJEELING_I2C0_BASE_ADDR 0x30080000u
 
 /**
  * Peripheral size for i2c0 in top darjeeling.
@@ -157,7 +157,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_I2C1_BASE_ADDR 0x40090000u
+#define TOP_DARJEELING_I2C1_BASE_ADDR 0x31030000u
 
 /**
  * Peripheral size for i2c1 in top darjeeling.
@@ -175,7 +175,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_I2C2_BASE_ADDR 0x400A0000u
+#define TOP_DARJEELING_I2C2_BASE_ADDR 0x31040000u
 
 /**
  * Peripheral size for i2c2 in top darjeeling.
@@ -193,7 +193,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_RV_TIMER_BASE_ADDR 0x40100000u
+#define TOP_DARJEELING_RV_TIMER_BASE_ADDR 0x30100000u
 
 /**
  * Peripheral size for rv_timer in top darjeeling.
@@ -211,7 +211,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR 0x40130000u
+#define TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR 0x30130000u
 
 /**
  * Peripheral size for core device on otp_ctrl in top darjeeling.
@@ -229,7 +229,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_OTP_CTRL_PRIM_BASE_ADDR 0x40132000u
+#define TOP_DARJEELING_OTP_CTRL_PRIM_BASE_ADDR 0x30134000u
 
 /**
  * Peripheral size for prim device on otp_ctrl in top darjeeling.
@@ -247,7 +247,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_LC_CTRL_BASE_ADDR 0x40140000u
+#define TOP_DARJEELING_LC_CTRL_BASE_ADDR 0x30140000u
 
 /**
  * Peripheral size for lc_ctrl in top darjeeling.
@@ -265,7 +265,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_ALERT_HANDLER_BASE_ADDR 0x40150000u
+#define TOP_DARJEELING_ALERT_HANDLER_BASE_ADDR 0x30150000u
 
 /**
  * Peripheral size for alert_handler in top darjeeling.
@@ -283,7 +283,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_SPI_HOST0_BASE_ADDR 0x40300000u
+#define TOP_DARJEELING_SPI_HOST0_BASE_ADDR 0x30300000u
 
 /**
  * Peripheral size for spi_host0 in top darjeeling.
@@ -301,7 +301,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_SPI_HOST1_BASE_ADDR 0x40310000u
+#define TOP_DARJEELING_SPI_HOST1_BASE_ADDR 0x32000000u
 
 /**
  * Peripheral size for spi_host1 in top darjeeling.
@@ -319,7 +319,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_USBDEV_BASE_ADDR 0x40320000u
+#define TOP_DARJEELING_USBDEV_BASE_ADDR 0x32010000u
 
 /**
  * Peripheral size for usbdev in top darjeeling.
@@ -337,7 +337,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_PWRMGR_AON_BASE_ADDR 0x40400000u
+#define TOP_DARJEELING_PWRMGR_AON_BASE_ADDR 0x30400000u
 
 /**
  * Peripheral size for pwrmgr_aon in top darjeeling.
@@ -355,7 +355,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_RSTMGR_AON_BASE_ADDR 0x40410000u
+#define TOP_DARJEELING_RSTMGR_AON_BASE_ADDR 0x30410000u
 
 /**
  * Peripheral size for rstmgr_aon in top darjeeling.
@@ -373,7 +373,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_CLKMGR_AON_BASE_ADDR 0x40420000u
+#define TOP_DARJEELING_CLKMGR_AON_BASE_ADDR 0x30420000u
 
 /**
  * Peripheral size for clkmgr_aon in top darjeeling.
@@ -391,7 +391,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_SYSRST_CTRL_AON_BASE_ADDR 0x40430000u
+#define TOP_DARJEELING_SYSRST_CTRL_AON_BASE_ADDR 0x31060000u
 
 /**
  * Peripheral size for sysrst_ctrl_aon in top darjeeling.
@@ -409,7 +409,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_ADC_CTRL_AON_BASE_ADDR 0x40440000u
+#define TOP_DARJEELING_ADC_CTRL_AON_BASE_ADDR 0x31070000u
 
 /**
  * Peripheral size for adc_ctrl_aon in top darjeeling.
@@ -427,7 +427,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_PINMUX_AON_BASE_ADDR 0x40460000u
+#define TOP_DARJEELING_PINMUX_AON_BASE_ADDR 0x30460000u
 
 /**
  * Peripheral size for pinmux_aon in top darjeeling.
@@ -445,7 +445,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR 0x40470000u
+#define TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR 0x30470000u
 
 /**
  * Peripheral size for aon_timer_aon in top darjeeling.
@@ -463,7 +463,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_AST_BASE_ADDR 0x40480000u
+#define TOP_DARJEELING_AST_BASE_ADDR 0x30480000u
 
 /**
  * Peripheral size for ast in top darjeeling.
@@ -481,7 +481,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_SENSOR_CTRL_BASE_ADDR 0x40490000u
+#define TOP_DARJEELING_SENSOR_CTRL_BASE_ADDR 0x30020000u
 
 /**
  * Peripheral size for sensor_ctrl in top darjeeling.
@@ -499,7 +499,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_SRAM_CTRL_RET_AON_REGS_BASE_ADDR 0x40500000u
+#define TOP_DARJEELING_SRAM_CTRL_RET_AON_REGS_BASE_ADDR 0x30500000u
 
 /**
  * Peripheral size for regs device on sram_ctrl_ret_aon in top darjeeling.
@@ -517,7 +517,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR 0x40600000u
+#define TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR 0x30600000u
 
 /**
  * Peripheral size for ram device on sram_ctrl_ret_aon in top darjeeling.
@@ -535,7 +535,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR 0x41000000u
+#define TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR 0x33000000u
 
 /**
  * Peripheral size for core device on flash_ctrl in top darjeeling.
@@ -553,7 +553,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_FLASH_CTRL_PRIM_BASE_ADDR 0x41008000u
+#define TOP_DARJEELING_FLASH_CTRL_PRIM_BASE_ADDR 0x33008000u
 
 /**
  * Peripheral size for prim device on flash_ctrl in top darjeeling.
@@ -571,7 +571,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_FLASH_CTRL_MEM_BASE_ADDR 0x20000000u
+#define TOP_DARJEELING_FLASH_CTRL_MEM_BASE_ADDR 0x34000000u
 
 /**
  * Peripheral size for mem device on flash_ctrl in top darjeeling.
@@ -589,7 +589,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_RV_DM_REGS_BASE_ADDR 0x41200000u
+#define TOP_DARJEELING_RV_DM_REGS_BASE_ADDR 0x21200000u
 
 /**
  * Peripheral size for regs device on rv_dm in top darjeeling.
@@ -607,7 +607,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_RV_DM_MEM_BASE_ADDR 0x10000u
+#define TOP_DARJEELING_RV_DM_MEM_BASE_ADDR 0x40000u
 
 /**
  * Peripheral size for mem device on rv_dm in top darjeeling.
@@ -625,7 +625,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_RV_PLIC_BASE_ADDR 0x48000000u
+#define TOP_DARJEELING_RV_PLIC_BASE_ADDR 0x28000000u
 
 /**
  * Peripheral size for rv_plic in top darjeeling.
@@ -643,7 +643,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_AES_BASE_ADDR 0x41100000u
+#define TOP_DARJEELING_AES_BASE_ADDR 0x21100000u
 
 /**
  * Peripheral size for aes in top darjeeling.
@@ -661,7 +661,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_HMAC_BASE_ADDR 0x41110000u
+#define TOP_DARJEELING_HMAC_BASE_ADDR 0x21110000u
 
 /**
  * Peripheral size for hmac in top darjeeling.
@@ -679,7 +679,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_KMAC_BASE_ADDR 0x41120000u
+#define TOP_DARJEELING_KMAC_BASE_ADDR 0x21120000u
 
 /**
  * Peripheral size for kmac in top darjeeling.
@@ -697,7 +697,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_OTBN_BASE_ADDR 0x41130000u
+#define TOP_DARJEELING_OTBN_BASE_ADDR 0x21130000u
 
 /**
  * Peripheral size for otbn in top darjeeling.
@@ -715,7 +715,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_KEYMGR_BASE_ADDR 0x41140000u
+#define TOP_DARJEELING_KEYMGR_BASE_ADDR 0x21140000u
 
 /**
  * Peripheral size for keymgr in top darjeeling.
@@ -733,7 +733,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_CSRNG_BASE_ADDR 0x41150000u
+#define TOP_DARJEELING_CSRNG_BASE_ADDR 0x21150000u
 
 /**
  * Peripheral size for csrng in top darjeeling.
@@ -751,7 +751,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR 0x41160000u
+#define TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR 0x21160000u
 
 /**
  * Peripheral size for entropy_src in top darjeeling.
@@ -769,7 +769,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_EDN0_BASE_ADDR 0x41170000u
+#define TOP_DARJEELING_EDN0_BASE_ADDR 0x21170000u
 
 /**
  * Peripheral size for edn0 in top darjeeling.
@@ -787,7 +787,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_EDN1_BASE_ADDR 0x41180000u
+#define TOP_DARJEELING_EDN1_BASE_ADDR 0x21180000u
 
 /**
  * Peripheral size for edn1 in top darjeeling.
@@ -805,7 +805,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_SRAM_CTRL_MAIN_REGS_BASE_ADDR 0x411C0000u
+#define TOP_DARJEELING_SRAM_CTRL_MAIN_REGS_BASE_ADDR 0x211C0000u
 
 /**
  * Peripheral size for regs device on sram_ctrl_main in top darjeeling.
@@ -841,7 +841,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_SRAM_CTRL_MBOX_REGS_BASE_ADDR 0x411D0000u
+#define TOP_DARJEELING_SRAM_CTRL_MBOX_REGS_BASE_ADDR 0x211D0000u
 
 /**
  * Peripheral size for regs device on sram_ctrl_mbox in top darjeeling.
@@ -877,7 +877,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_ROM_CTRL0_REGS_BASE_ADDR 0x411E0000u
+#define TOP_DARJEELING_ROM_CTRL0_REGS_BASE_ADDR 0x211E0000u
 
 /**
  * Peripheral size for regs device on rom_ctrl0 in top darjeeling.
@@ -913,7 +913,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_ROM_CTRL1_REGS_BASE_ADDR 0x41210000u
+#define TOP_DARJEELING_ROM_CTRL1_REGS_BASE_ADDR 0x211E1000u
 
 /**
  * Peripheral size for regs device on rom_ctrl1 in top darjeeling.
@@ -931,7 +931,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR 0x50000u
+#define TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR 0x10000u
 
 /**
  * Peripheral size for rom device on rom_ctrl1 in top darjeeling.
@@ -949,7 +949,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR 0x411F0000u
+#define TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR 0x211F0000u
 
 /**
  * Peripheral size for cfg device on rv_core_ibex in top darjeeling.
@@ -965,7 +965,7 @@ extern "C" {
 /**
  * Memory base address for ram_ret_aon in top darjeeling.
  */
-#define TOP_DARJEELING_RAM_RET_AON_BASE_ADDR 0x40600000u
+#define TOP_DARJEELING_RAM_RET_AON_BASE_ADDR 0x30600000u
 
 /**
  * Memory size for ram_ret_aon in top darjeeling.
@@ -975,7 +975,7 @@ extern "C" {
 /**
  * Memory base address for eflash in top darjeeling.
  */
-#define TOP_DARJEELING_EFLASH_BASE_ADDR 0x20000000u
+#define TOP_DARJEELING_EFLASH_BASE_ADDR 0x34000000u
 
 /**
  * Memory size for eflash in top darjeeling.
@@ -1015,7 +1015,7 @@ extern "C" {
 /**
  * Memory base address for rom1 in top darjeeling.
  */
-#define TOP_DARJEELING_ROM1_BASE_ADDR 0x50000u
+#define TOP_DARJEELING_ROM1_BASE_ADDR 0x10000u
 
 /**
  * Memory size for rom1 in top darjeeling.
@@ -1790,8 +1790,8 @@ typedef enum top_darjeeling_power_manager_reset_requests {
 typedef enum top_darjeeling_gateable_clocks {
   kTopDarjeelingGateableClocksIoDiv4Peri = 0, /**< Clock clk_io_div4_peri in group peri */
   kTopDarjeelingGateableClocksIoDiv2Peri = 1, /**< Clock clk_io_div2_peri in group peri */
-  kTopDarjeelingGateableClocksIoPeri = 2, /**< Clock clk_io_peri in group peri */
-  kTopDarjeelingGateableClocksUsbPeri = 3, /**< Clock clk_usb_peri in group peri */
+  kTopDarjeelingGateableClocksUsbPeri = 2, /**< Clock clk_usb_peri in group peri */
+  kTopDarjeelingGateableClocksIoPeri = 3, /**< Clock clk_io_peri in group peri */
   kTopDarjeelingGateableClocksLast = 3, /**< \internal Last Valid Gateable Clock */
 } top_darjeeling_gateable_clocks_t;
 
@@ -1816,8 +1816,8 @@ typedef enum top_darjeeling_hintable_clocks {
  * configuration space, i.e. ROM, main SRAM, and flash are excluded but
  * retention SRAM, spi_device memory, or usbdev memory are included.
  */
-#define TOP_DARJEELING_MMIO_BASE_ADDR 0x40000000u
-#define TOP_DARJEELING_MMIO_SIZE_BYTES 0x10000000u
+#define TOP_DARJEELING_MMIO_BASE_ADDR 0x21100000u
+#define TOP_DARJEELING_MMIO_SIZE_BYTES 0x11F08080u
 
 // Header Extern Guard
 #ifdef __cplusplus

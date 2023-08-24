@@ -565,7 +565,20 @@ def extract_clocks(top: OrderedDict):
     # solution, we can declare dummy endpoints for these clocks. The
     # corresponding clocks are then always generated but tied off at the
     # top-level to be compatible with clkmgr DV.
-    dummy_eps = []
+    dummy_eps = [
+        {
+            'name': "io_dummy_peri",
+            'type': "dummy",
+            'clock_srcs': {'clk_i': "io"},
+            'clock_group': "peri",
+        },
+        {
+            'name': "io_dummy_infra",
+            'type': "dummy",
+            'clock_srcs': {'clk_i': "io"},
+            'clock_group': "infra",
+        }
+    ]
 
     for ep in top['module'] + top['memory'] + top['xbar'] + dummy_eps:
         clock_connections = OrderedDict()

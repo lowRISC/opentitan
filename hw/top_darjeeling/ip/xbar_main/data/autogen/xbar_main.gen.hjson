@@ -13,7 +13,6 @@
     clk_main_i: main
     clk_fixed_i: io_div4
     clk_usb_i: usb
-    clk_spi_host0_i: io
     clk_spi_host1_i: io_div2
   }
   clock_group: infra
@@ -35,11 +34,6 @@
       name: lc_usb
       domain: "0"
     }
-    rst_spi_host0_ni:
-    {
-      name: lc_io
-      domain: "0"
-    }
     rst_spi_host1_ni:
     {
       name: lc_io_div2
@@ -51,7 +45,6 @@
     clk_main_i: clkmgr_aon_clocks.clk_main_infra
     clk_fixed_i: clkmgr_aon_clocks.clk_io_div4_infra
     clk_usb_i: clkmgr_aon_clocks.clk_usb_infra
-    clk_spi_host0_i: clkmgr_aon_clocks.clk_io_infra
     clk_spi_host1_i: clkmgr_aon_clocks.clk_io_div2_infra
   }
   domain:
@@ -78,7 +71,6 @@
       rv_dm.regs
       sram_ctrl_main.ram
       peri
-      spi_host0
       spi_host1
       usbdev
       flash_ctrl.core
@@ -109,7 +101,6 @@
       rv_dm.regs
       sram_ctrl_main.ram
       peri
-      spi_host0
       spi_host1
       usbdev
       flash_ctrl.core
@@ -180,7 +171,7 @@
       addr_range:
       [
         {
-          base_addr: 0x41200000
+          base_addr: 0x21200000
           size_byte: 0x4
         }
       ]
@@ -199,7 +190,7 @@
       addr_range:
       [
         {
-          base_addr: 0x10000
+          base_addr: 0x40000
           size_byte: 0x1000
         }
       ]
@@ -237,7 +228,7 @@
       addr_range:
       [
         {
-          base_addr: 0x411e0000
+          base_addr: 0x211e0000
           size_byte: 0x80
         }
       ]
@@ -256,7 +247,7 @@
       addr_range:
       [
         {
-          base_addr: 0x50000
+          base_addr: 0x10000
           size_byte: 0x10000
         }
       ]
@@ -275,7 +266,7 @@
       addr_range:
       [
         {
-          base_addr: 0x41210000
+          base_addr: 0x211e1000
           size_byte: 0x80
         }
       ]
@@ -296,33 +287,10 @@
       addr_range:
       [
         {
-          base_addr: 0x40000000
-          size_byte: 0x200000
-        }
-        {
-          base_addr: 0x40400000
-          size_byte: 0x400000
+          base_addr: 0x30000000
+          size_byte: 0x2000000
         }
       ]
-    }
-    {
-      name: spi_host0
-      type: device
-      clock: clk_spi_host0_i
-      reset: rst_spi_host0_ni
-      req_fifo_pass: false
-      rsp_fifo_pass: false
-      inst_type: spi_host
-      addr_range:
-      [
-        {
-          base_addr: 0x40300000
-          size_byte: 0x40
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: true
     }
     {
       name: spi_host1
@@ -335,7 +303,7 @@
       addr_range:
       [
         {
-          base_addr: 0x40310000
+          base_addr: 0x32000000
           size_byte: 0x40
         }
       ]
@@ -354,7 +322,7 @@
       addr_range:
       [
         {
-          base_addr: 0x40320000
+          base_addr: 0x32010000
           size_byte: 0x1000
         }
       ]
@@ -373,7 +341,7 @@
       addr_range:
       [
         {
-          base_addr: 0x41000000
+          base_addr: 0x33000000
           size_byte: 0x200
         }
       ]
@@ -392,7 +360,7 @@
       addr_range:
       [
         {
-          base_addr: 0x41008000
+          base_addr: 0x33008000
           size_byte: 0x80
         }
       ]
@@ -411,7 +379,7 @@
       addr_range:
       [
         {
-          base_addr: 0x20000000
+          base_addr: 0x34000000
           size_byte: 0x100000
         }
       ]
@@ -430,7 +398,7 @@
       addr_range:
       [
         {
-          base_addr: 0x41110000
+          base_addr: 0x21110000
           size_byte: 0x1000
         }
       ]
@@ -449,7 +417,7 @@
       addr_range:
       [
         {
-          base_addr: 0x41120000
+          base_addr: 0x21120000
           size_byte: 0x1000
         }
       ]
@@ -468,7 +436,7 @@
       addr_range:
       [
         {
-          base_addr: 0x41100000
+          base_addr: 0x21100000
           size_byte: 0x100
         }
       ]
@@ -487,7 +455,7 @@
       addr_range:
       [
         {
-          base_addr: 0x41160000
+          base_addr: 0x21160000
           size_byte: 0x100
         }
       ]
@@ -506,7 +474,7 @@
       addr_range:
       [
         {
-          base_addr: 0x41150000
+          base_addr: 0x21150000
           size_byte: 0x80
         }
       ]
@@ -525,7 +493,7 @@
       addr_range:
       [
         {
-          base_addr: 0x41170000
+          base_addr: 0x21170000
           size_byte: 0x80
         }
       ]
@@ -544,7 +512,7 @@
       addr_range:
       [
         {
-          base_addr: 0x41180000
+          base_addr: 0x21180000
           size_byte: 0x80
         }
       ]
@@ -563,7 +531,7 @@
       addr_range:
       [
         {
-          base_addr: 0x48000000
+          base_addr: 0x28000000
           size_byte: 0x8000000
         }
       ]
@@ -582,7 +550,7 @@
       addr_range:
       [
         {
-          base_addr: 0x41130000
+          base_addr: 0x21130000
           size_byte: 0x10000
         }
       ]
@@ -601,7 +569,7 @@
       addr_range:
       [
         {
-          base_addr: 0x41140000
+          base_addr: 0x21140000
           size_byte: 0x100
         }
       ]
@@ -620,7 +588,7 @@
       addr_range:
       [
         {
-          base_addr: 0x411f0000
+          base_addr: 0x211f0000
           size_byte: 0x800
         }
       ]
@@ -639,7 +607,7 @@
       addr_range:
       [
         {
-          base_addr: 0x411c0000
+          base_addr: 0x211c0000
           size_byte: 0x20
         }
       ]
@@ -675,7 +643,7 @@
       addr_range:
       [
         {
-          base_addr: 0x411d0000
+          base_addr: 0x211d0000
           size_byte: 0x20
         }
       ]

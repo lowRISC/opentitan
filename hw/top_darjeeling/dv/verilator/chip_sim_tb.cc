@@ -53,9 +53,9 @@ int main(int argc, char **argv) {
 
   memutil.RegisterMemoryArea("rom", 0x8000, &rom);
   memutil.RegisterMemoryArea("ram", 0x10000000u, &ram);
-  memutil.RegisterMemoryArea("flash0", 0x20000000u, &flash0);
-  memutil.RegisterMemoryArea("flash1", 0x20080000u, &flash1);
-  memutil.RegisterMemoryArea("otp", 0x40000000u /* (bogus LMA) */, &otp);
+  memutil.RegisterMemoryArea("flash0", 0x34000000u, &flash0);
+  memutil.RegisterMemoryArea("flash1", 0x34080000u, &flash1);
+  memutil.RegisterMemoryArea("otp", 0x30000000u /* (bogus LMA) */, &otp);
   simctrl.RegisterExtension(&memutil);
 
   // The initial reset delay must be long enough such that pwr/rst/clkmgr will

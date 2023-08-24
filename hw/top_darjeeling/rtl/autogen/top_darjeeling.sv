@@ -630,8 +630,6 @@ module top_darjeeling #(
   tlul_pkg::tl_d2h_t       rom_ctrl1_regs_tl_rsp;
   tlul_pkg::tl_h2d_t       main_tl_peri_req;
   tlul_pkg::tl_d2h_t       main_tl_peri_rsp;
-  tlul_pkg::tl_h2d_t       spi_host0_tl_req;
-  tlul_pkg::tl_d2h_t       spi_host0_tl_rsp;
   tlul_pkg::tl_h2d_t       spi_host1_tl_req;
   tlul_pkg::tl_d2h_t       spi_host1_tl_rsp;
   tlul_pkg::tl_h2d_t       usbdev_tl_req;
@@ -688,6 +686,8 @@ module top_darjeeling #(
   tlul_pkg::tl_d2h_t       i2c2_tl_rsp;
   tlul_pkg::tl_h2d_t       gpio_tl_req;
   tlul_pkg::tl_d2h_t       gpio_tl_rsp;
+  tlul_pkg::tl_h2d_t       spi_host0_tl_req;
+  tlul_pkg::tl_d2h_t       spi_host0_tl_rsp;
   tlul_pkg::tl_h2d_t       spi_device_tl_req;
   tlul_pkg::tl_d2h_t       spi_device_tl_rsp;
   tlul_pkg::tl_h2d_t       rv_timer_tl_req;
@@ -833,7 +833,7 @@ module top_darjeeling #(
   assign lpg_cg_en[6] = clkmgr_aon_cg_en.io_div4_secure;
   assign lpg_rst_en[6] = rstmgr_aon_rst_en.lc_io_div4[rstmgr_pkg::Domain0Sel];
   // peri_spi_host0_0
-  assign lpg_cg_en[7] = clkmgr_aon_cg_en.io_peri;
+  assign lpg_cg_en[7] = clkmgr_aon_cg_en.io_div4_peri;
   assign lpg_rst_en[7] = rstmgr_aon_rst_en.spi_host0[rstmgr_pkg::Domain0Sel];
   // peri_spi_host1_0
   assign lpg_cg_en[8] = clkmgr_aon_cg_en.io_div2_peri;
@@ -906,9 +906,11 @@ module top_darjeeling #(
     prim_mubi_pkg::mubi4_t unused_cg_en_8;
     assign unused_cg_en_8 = clkmgr_aon_cg_en.usb_infra;
     prim_mubi_pkg::mubi4_t unused_cg_en_9;
-    assign unused_cg_en_9 = clkmgr_aon_cg_en.io_infra;
+    assign unused_cg_en_9 = clkmgr_aon_cg_en.io_div2_infra;
     prim_mubi_pkg::mubi4_t unused_cg_en_10;
-    assign unused_cg_en_10 = clkmgr_aon_cg_en.io_div2_infra;
+    assign unused_cg_en_10 = clkmgr_aon_cg_en.io_infra;
+    prim_mubi_pkg::mubi4_t unused_cg_en_11;
+    assign unused_cg_en_11 = clkmgr_aon_cg_en.io_peri;
     prim_mubi_pkg::mubi4_t unused_rst_en_0;
     assign unused_rst_en_0 = rstmgr_aon_rst_en.por_aon[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_1;
@@ -1524,7 +1526,7 @@ module top_darjeeling #(
       .tl_o(spi_host0_tl_rsp),
 
       // Clock and reset connections
-      .clk_i (clkmgr_aon_clocks.clk_io_peri),
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
       .rst_ni (rstmgr_aon_resets.rst_spi_host0_n[rstmgr_pkg::Domain0Sel])
   );
   spi_host #(
@@ -2768,12 +2770,10 @@ module top_darjeeling #(
     .clk_main_i (clkmgr_aon_clocks.clk_main_infra),
     .clk_fixed_i (clkmgr_aon_clocks.clk_io_div4_infra),
     .clk_usb_i (clkmgr_aon_clocks.clk_usb_infra),
-    .clk_spi_host0_i (clkmgr_aon_clocks.clk_io_infra),
     .clk_spi_host1_i (clkmgr_aon_clocks.clk_io_div2_infra),
     .rst_main_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
     .rst_fixed_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
     .rst_usb_ni (rstmgr_aon_resets.rst_lc_usb_n[rstmgr_pkg::Domain0Sel]),
-    .rst_spi_host0_ni (rstmgr_aon_resets.rst_lc_io_n[rstmgr_pkg::Domain0Sel]),
     .rst_spi_host1_ni (rstmgr_aon_resets.rst_lc_io_div2_n[rstmgr_pkg::Domain0Sel]),
 
     // port: tl_rv_core_ibex__corei
@@ -2815,10 +2815,6 @@ module top_darjeeling #(
     // port: tl_peri
     .tl_peri_o(main_tl_peri_req),
     .tl_peri_i(main_tl_peri_rsp),
-
-    // port: tl_spi_host0
-    .tl_spi_host0_o(spi_host0_tl_req),
-    .tl_spi_host0_i(spi_host0_tl_rsp),
 
     // port: tl_spi_host1
     .tl_spi_host1_o(spi_host1_tl_req),
@@ -2942,6 +2938,10 @@ module top_darjeeling #(
     // port: tl_gpio
     .tl_gpio_o(gpio_tl_req),
     .tl_gpio_i(gpio_tl_rsp),
+
+    // port: tl_spi_host0
+    .tl_spi_host0_o(spi_host0_tl_req),
+    .tl_spi_host0_i(spi_host0_tl_rsp),
 
     // port: tl_spi_device
     .tl_spi_device_o(spi_device_tl_req),

@@ -397,58 +397,58 @@ For the purpose of `top_darjeeling`, the first option has been chosen to benefit
 <!-- BEGIN CMDGEN util/design/gen-top-docs.py -t hw/top_darjeeling/data/autogen/top_darjeeling.gen.hjson -g mmap -->
 | Name              | Type          | Byte Address      |
 |:------------------|:--------------|:------------------|
-| uart0             | uart          | 0x40000000 (regs) |
-| uart1             | uart          | 0x40010000 (regs) |
-| uart2             | uart          | 0x40020000 (regs) |
-| uart3             | uart          | 0x40030000 (regs) |
-| gpio              | gpio          | 0x40040000 (regs) |
-| spi_device        | spi_device    | 0x40050000 (regs) |
-| i2c0              | i2c           | 0x40080000 (regs) |
-| i2c1              | i2c           | 0x40090000 (regs) |
-| i2c2              | i2c           | 0x400A0000 (regs) |
-| rv_timer          | rv_timer      | 0x40100000 (regs) |
-| otp_ctrl          | otp_ctrl      | 0x40130000 (core) |
-|                   |               | 0x40132000 (prim) |
-| lc_ctrl           | lc_ctrl       | 0x40140000 (regs) |
-| alert_handler     | alert_handler | 0x40150000 (regs) |
-| spi_host0         | spi_host      | 0x40300000 (regs) |
-| spi_host1         | spi_host      | 0x40310000 (regs) |
-| usbdev            | usbdev        | 0x40320000 (regs) |
-| pwrmgr_aon        | pwrmgr        | 0x40400000 (regs) |
-| rstmgr_aon        | rstmgr        | 0x40410000 (regs) |
-| clkmgr_aon        | clkmgr        | 0x40420000 (regs) |
-| sysrst_ctrl_aon   | sysrst_ctrl   | 0x40430000 (regs) |
-| adc_ctrl_aon      | adc_ctrl      | 0x40440000 (regs) |
-| pinmux_aon        | pinmux        | 0x40460000 (regs) |
-| aon_timer_aon     | aon_timer     | 0x40470000 (regs) |
-| ast               | ast           | 0x40480000 (regs) |
-| sensor_ctrl       | sensor_ctrl   | 0x40490000 (regs) |
-| sram_ctrl_ret_aon | sram_ctrl     | 0x40500000 (regs) |
-|                   |               | 0x40600000 (ram)  |
-| flash_ctrl        | flash_ctrl    | 0x41000000 (core) |
-|                   |               | 0x41008000 (prim) |
-|                   |               | 0x20000000 (mem)  |
-| rv_dm             | rv_dm         | 0x00010000 (mem)  |
-|                   |               | 0x41200000 (regs) |
-| rv_plic           | rv_plic       | 0x48000000 (regs) |
-| aes               | aes           | 0x41100000 (regs) |
-| hmac              | hmac          | 0x41110000 (regs) |
-| kmac              | kmac          | 0x41120000 (regs) |
-| otbn              | otbn          | 0x41130000 (regs) |
-| keymgr            | keymgr        | 0x41140000 (regs) |
-| csrng             | csrng         | 0x41150000 (regs) |
-| entropy_src       | entropy_src   | 0x41160000 (regs) |
-| edn0              | edn           | 0x41170000 (regs) |
-| edn1              | edn           | 0x41180000 (regs) |
-| sram_ctrl_main    | sram_ctrl     | 0x411C0000 (regs) |
+| uart0             | uart          | 0x30010000 (regs) |
+| uart1             | uart          | 0x31000000 (regs) |
+| uart2             | uart          | 0x31010000 (regs) |
+| uart3             | uart          | 0x31020000 (regs) |
+| gpio              | gpio          | 0x30000000 (regs) |
+| spi_device        | spi_device    | 0x30310000 (regs) |
+| i2c0              | i2c           | 0x30080000 (regs) |
+| i2c1              | i2c           | 0x31030000 (regs) |
+| i2c2              | i2c           | 0x31040000 (regs) |
+| rv_timer          | rv_timer      | 0x30100000 (regs) |
+| otp_ctrl          | otp_ctrl      | 0x30130000 (core) |
+|                   |               | 0x30134000 (prim) |
+| lc_ctrl           | lc_ctrl       | 0x30140000 (regs) |
+| alert_handler     | alert_handler | 0x30150000 (regs) |
+| spi_host0         | spi_host      | 0x30300000 (regs) |
+| spi_host1         | spi_host      | 0x32000000 (regs) |
+| usbdev            | usbdev        | 0x32010000 (regs) |
+| pwrmgr_aon        | pwrmgr        | 0x30400000 (regs) |
+| rstmgr_aon        | rstmgr        | 0x30410000 (regs) |
+| clkmgr_aon        | clkmgr        | 0x30420000 (regs) |
+| sysrst_ctrl_aon   | sysrst_ctrl   | 0x31060000 (regs) |
+| adc_ctrl_aon      | adc_ctrl      | 0x31070000 (regs) |
+| pinmux_aon        | pinmux        | 0x30460000 (regs) |
+| aon_timer_aon     | aon_timer     | 0x30470000 (regs) |
+| ast               | ast           | 0x30480000 (regs) |
+| sensor_ctrl       | sensor_ctrl   | 0x30020000 (regs) |
+| sram_ctrl_ret_aon | sram_ctrl     | 0x30500000 (regs) |
+|                   |               | 0x30600000 (ram)  |
+| flash_ctrl        | flash_ctrl    | 0x33000000 (core) |
+|                   |               | 0x33008000 (prim) |
+|                   |               | 0x34000000 (mem)  |
+| rv_dm             | rv_dm         | 0x00040000 (mem)  |
+|                   |               | 0x21200000 (regs) |
+| rv_plic           | rv_plic       | 0x28000000 (regs) |
+| aes               | aes           | 0x21100000 (regs) |
+| hmac              | hmac          | 0x21110000 (regs) |
+| kmac              | kmac          | 0x21120000 (regs) |
+| otbn              | otbn          | 0x21130000 (regs) |
+| keymgr            | keymgr        | 0x21140000 (regs) |
+| csrng             | csrng         | 0x21150000 (regs) |
+| entropy_src       | entropy_src   | 0x21160000 (regs) |
+| edn0              | edn           | 0x21170000 (regs) |
+| edn1              | edn           | 0x21180000 (regs) |
+| sram_ctrl_main    | sram_ctrl     | 0x211c0000 (regs) |
 |                   |               | 0x10000000 (ram)  |
-| sram_ctrl_mbox    | sram_ctrl     | 0x411D0000 (regs) |
+| sram_ctrl_mbox    | sram_ctrl     | 0x211d0000 (regs) |
 |                   |               | 0x11000000 (ram)  |
 | rom_ctrl0         | rom_ctrl      | 0x00008000 (rom)  |
-|                   |               | 0x411e0000 (regs) |
-| rom_ctrl1         | rom_ctrl      | 0x00050000 (rom)  |
-|                   |               | 0x41210000 (regs) |
-| rv_core_ibex      | rv_core_ibex  | 0x411F0000 (cfg)  |
+|                   |               | 0x211e0000 (regs) |
+| rom_ctrl1         | rom_ctrl      | 0x00010000 (rom)  |
+|                   |               | 0x211e1000 (regs) |
+| rv_core_ibex      | rv_core_ibex  | 0x211f0000 (cfg)  |
 
 <!-- END CMDGEN -->
 
