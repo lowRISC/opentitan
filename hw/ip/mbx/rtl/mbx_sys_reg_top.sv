@@ -11,7 +11,14 @@ module mbx_sys_reg_top (
   input rst_ni,
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
+
+  // Output port for window
+  output tlul_pkg::tl_h2d_t tl_win_o  [2],
+  input  tlul_pkg::tl_d2h_t tl_win_i  [2],
+
   // To HW
+  output mbx_reg_pkg::mbx_sys_reg2hw_t reg2hw, // Write
+  input  mbx_reg_pkg::mbx_sys_hw2reg_t hw2reg, // Read
 
   // Integrity check errors
   output logic intg_err_o
@@ -19,11 +26,60 @@ module mbx_sys_reg_top (
 
   import mbx_reg_pkg::* ;
 
+  localparam int AW = 5;
+  localparam int DW = 32;
+  localparam int DBW = DW/8;                    // Byte Width
+
+  // register signals
+  logic           reg_we;
+  logic           reg_re;
+  logic [AW-1:0]  reg_addr;
+  logic [DW-1:0]  reg_wdata;
+  logic [DBW-1:0] reg_be;
+  logic [DW-1:0]  reg_rdata;
+  logic           reg_error;
+
+  logic          addrmiss, wr_err;
+
+  logic [DW-1:0] reg_rdata_next;
+  logic reg_busy;
+
+  tlul_pkg::tl_h2d_t tl_reg_h2d;
+  tlul_pkg::tl_d2h_t tl_reg_d2h;
 
 
-  // Since there are no registers in this block, commands are routed through to windows which
-  // can report their own integrity errors.
-  assign intg_err_o = 1'b0;
+  // incoming payload check
+  logic intg_err;
+  tlul_cmd_intg_chk u_chk (
+    .tl_i(tl_i),
+    .err_o(intg_err)
+  );
+
+  // also check for spurious write enables
+  logic reg_we_err;
+  logic [3:0] reg_we_check;
+  prim_reg_we_check #(
+    .OneHotWidth(4)
+  ) u_prim_reg_we_check (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .oh_i  (reg_we_check),
+    .en_i  (reg_we && !addrmiss),
+    .err_o (reg_we_err)
+  );
+
+  logic err_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      err_q <= '0;
+    end else if (intg_err || reg_we_err) begin
+      err_q <= 1'b1;
+    end
+  end
+
+  // integrity error output is permanent and should be used for alert generation
+  // register errors are transactional
+  assign intg_err_o = err_q | intg_err | reg_we_err;
 
   // outgoing integrity generation
   tlul_pkg::tl_d2h_t tl_o_pre;
@@ -35,8 +91,540 @@ module mbx_sys_reg_top (
     .tl_o(tl_o)
   );
 
-  assign tl_reg_h2d = tl_i;
-  assign tl_o_pre   = tl_reg_d2h;
+  tlul_pkg::tl_h2d_t tl_socket_h2d [3];
+  tlul_pkg::tl_d2h_t tl_socket_d2h [3];
+
+  logic [1:0] reg_steer;
+
+  // socket_1n connection
+  assign tl_reg_h2d = tl_socket_h2d[2];
+  assign tl_socket_d2h[2] = tl_reg_d2h;
+
+  assign tl_win_o[0] = tl_socket_h2d[0];
+  assign tl_socket_d2h[0] = tl_win_i[0];
+  assign tl_win_o[1] = tl_socket_h2d[1];
+  assign tl_socket_d2h[1] = tl_win_i[1];
+
+  // Create Socket_1n
+  tlul_socket_1n #(
+    .N            (3),
+    .HReqPass     (1'b1),
+    .HRspPass     (1'b1),
+    .DReqPass     ({3{1'b1}}),
+    .DRspPass     ({3{1'b1}}),
+    .HReqDepth    (4'h0),
+    .HRspDepth    (4'h0),
+    .DReqDepth    ({3{4'h0}}),
+    .DRspDepth    ({3{4'h0}}),
+    .ExplicitErrs (1'b0)
+  ) u_socket (
+    .clk_i  (clk_i),
+    .rst_ni (rst_ni),
+    .tl_h_i (tl_i),
+    .tl_h_o (tl_o_pre),
+    .tl_d_o (tl_socket_h2d),
+    .tl_d_i (tl_socket_d2h),
+    .dev_select_i (reg_steer)
+  );
+
+  // Create steering logic
+  always_comb begin
+    reg_steer =
+        tl_i.a_address[AW-1:0] inside {[16:19]} ? 2'd0 :
+        tl_i.a_address[AW-1:0] inside {[20:23]} ? 2'd1 :
+        // Default set to register
+        2'd2;
+
+    // Override this in case of an integrity error
+    if (intg_err) begin
+      reg_steer = 2'd2;
+    end
+  end
+
+  tlul_adapter_reg #(
+    .RegAw(AW),
+    .RegDw(DW),
+    .EnableDataIntgGen(0)
+  ) u_reg_if (
+    .clk_i  (clk_i),
+    .rst_ni (rst_ni),
+
+    .tl_i (tl_reg_h2d),
+    .tl_o (tl_reg_d2h),
+
+    .en_ifetch_i(prim_mubi_pkg::MuBi4False),
+    .intg_error_o(),
+
+    .we_o    (reg_we),
+    .re_o    (reg_re),
+    .addr_o  (reg_addr),
+    .wdata_o (reg_wdata),
+    .be_o    (reg_be),
+    .busy_i  (reg_busy),
+    .rdata_i (reg_rdata),
+    .error_i (reg_error)
+  );
+
+  // cdc oversampling signals
+
+  assign reg_rdata = reg_rdata_next ;
+  assign reg_error = addrmiss | wr_err | intg_err;
+
+  // Define SW related signals
+  // Format: <reg>_<field>_{wd|we|qs}
+  //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic extended_cap_header_re;
+  logic [15:0] extended_cap_header_cap_id_qs;
+  logic [3:0] extended_cap_header_cap_version_qs;
+  logic [11:0] extended_cap_header_next_capaility_offset_qs;
+  logic cap_header_doe_intr_support_qs;
+  logic [10:0] cap_header_doe_intr_msg_nr_qs;
+  logic sys_control_re;
+  logic sys_control_we;
+  logic sys_control_abort_wd;
+  logic sys_control_doe_intr_en_qs;
+  logic sys_control_doe_intr_en_wd;
+  logic sys_control_async_msg_en_qs;
+  logic sys_control_async_msg_en_wd;
+  logic sys_control_go_wd;
+  logic sys_status_we;
+  logic sys_status_busy_qs;
+  logic sys_status_doe_intr_status_qs;
+  logic sys_status_doe_intr_status_wd;
+  logic sys_status_error_qs;
+  logic sys_status_async_msg_status_qs;
+  logic sys_status_ready_qs;
+
+  // Register instances
+  // R[extended_cap_header]: V(True)
+  //   F[cap_id]: 15:0
+  prim_subreg_ext #(
+    .DW    (16)
+  ) u_extended_cap_header_cap_id (
+    .re     (extended_cap_header_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.extended_cap_header.cap_id.d),
+    .qre    (),
+    .qe     (),
+    .q      (reg2hw.extended_cap_header.cap_id.q),
+    .ds     (),
+    .qs     (extended_cap_header_cap_id_qs)
+  );
+
+  //   F[cap_version]: 19:16
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_extended_cap_header_cap_version (
+    .re     (extended_cap_header_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.extended_cap_header.cap_version.d),
+    .qre    (),
+    .qe     (),
+    .q      (reg2hw.extended_cap_header.cap_version.q),
+    .ds     (),
+    .qs     (extended_cap_header_cap_version_qs)
+  );
+
+  //   F[next_capaility_offset]: 31:20
+  prim_subreg_ext #(
+    .DW    (12)
+  ) u_extended_cap_header_next_capaility_offset (
+    .re     (extended_cap_header_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.extended_cap_header.next_capaility_offset.d),
+    .qre    (),
+    .qe     (),
+    .q      (reg2hw.extended_cap_header.next_capaility_offset.q),
+    .ds     (),
+    .qs     (extended_cap_header_next_capaility_offset_qs)
+  );
+
+
+  // R[cap_header]: V(False)
+  //   F[doe_intr_support]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_cap_header_doe_intr_support (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.cap_header.doe_intr_support.de),
+    .d      (hw2reg.cap_header.doe_intr_support.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cap_header.doe_intr_support.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (cap_header_doe_intr_support_qs)
+  );
+
+  //   F[doe_intr_msg_nr]: 11:1
+  prim_subreg #(
+    .DW      (11),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (11'h2),
+    .Mubi    (1'b0)
+  ) u_cap_header_doe_intr_msg_nr (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.cap_header.doe_intr_msg_nr.de),
+    .d      (hw2reg.cap_header.doe_intr_msg_nr.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cap_header.doe_intr_msg_nr.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (cap_header_doe_intr_msg_nr_qs)
+  );
+
+
+  // R[sys_control]: V(True)
+  logic sys_control_qe;
+  logic [3:0] sys_control_flds_we;
+  assign sys_control_qe = &sys_control_flds_we;
+  //   F[abort]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_sys_control_abort (
+    .re     (1'b0),
+    .we     (sys_control_we),
+    .wd     (sys_control_abort_wd),
+    .d      (hw2reg.sys_control.abort.d),
+    .qre    (),
+    .qe     (sys_control_flds_we[0]),
+    .q      (reg2hw.sys_control.abort.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.sys_control.abort.qe = sys_control_qe;
+
+  //   F[doe_intr_en]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_sys_control_doe_intr_en (
+    .re     (sys_control_re),
+    .we     (sys_control_we),
+    .wd     (sys_control_doe_intr_en_wd),
+    .d      (hw2reg.sys_control.doe_intr_en.d),
+    .qre    (),
+    .qe     (sys_control_flds_we[1]),
+    .q      (reg2hw.sys_control.doe_intr_en.q),
+    .ds     (),
+    .qs     (sys_control_doe_intr_en_qs)
+  );
+  assign reg2hw.sys_control.doe_intr_en.qe = sys_control_qe;
+
+  //   F[async_msg_en]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_sys_control_async_msg_en (
+    .re     (sys_control_re),
+    .we     (sys_control_we),
+    .wd     (sys_control_async_msg_en_wd),
+    .d      (hw2reg.sys_control.async_msg_en.d),
+    .qre    (),
+    .qe     (sys_control_flds_we[2]),
+    .q      (reg2hw.sys_control.async_msg_en.q),
+    .ds     (),
+    .qs     (sys_control_async_msg_en_qs)
+  );
+  assign reg2hw.sys_control.async_msg_en.qe = sys_control_qe;
+
+  //   F[go]: 31:31
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_sys_control_go (
+    .re     (1'b0),
+    .we     (sys_control_we),
+    .wd     (sys_control_go_wd),
+    .d      (hw2reg.sys_control.go.d),
+    .qre    (),
+    .qe     (sys_control_flds_we[3]),
+    .q      (reg2hw.sys_control.go.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.sys_control.go.qe = sys_control_qe;
+
+
+  // R[sys_status]: V(False)
+  logic sys_status_qe;
+  logic [4:0] sys_status_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_sys_status0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&(sys_status_flds_we | 5'h1d)),
+    .q_o(sys_status_qe)
+  );
+  //   F[busy]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_sys_status_busy (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.sys_status.busy.de),
+    .d      (hw2reg.sys_status.busy.d),
+
+    // to internal hardware
+    .qe     (sys_status_flds_we[0]),
+    .q      (reg2hw.sys_status.busy.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (sys_status_busy_qs)
+  );
+
+  //   F[doe_intr_status]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_sys_status_doe_intr_status (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (sys_status_we),
+    .wd     (sys_status_doe_intr_status_wd),
+
+    // from internal hardware
+    .de     (hw2reg.sys_status.doe_intr_status.de),
+    .d      (hw2reg.sys_status.doe_intr_status.d),
+
+    // to internal hardware
+    .qe     (sys_status_flds_we[1]),
+    .q      (reg2hw.sys_status.doe_intr_status.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (sys_status_doe_intr_status_qs)
+  );
+  assign reg2hw.sys_status.doe_intr_status.qe = sys_status_qe;
+
+  //   F[error]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_sys_status_error (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.sys_status.error.de),
+    .d      (hw2reg.sys_status.error.d),
+
+    // to internal hardware
+    .qe     (sys_status_flds_we[2]),
+    .q      (reg2hw.sys_status.error.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (sys_status_error_qs)
+  );
+
+  //   F[async_msg_status]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_sys_status_async_msg_status (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.sys_status.async_msg_status.de),
+    .d      (hw2reg.sys_status.async_msg_status.d),
+
+    // to internal hardware
+    .qe     (sys_status_flds_we[3]),
+    .q      (reg2hw.sys_status.async_msg_status.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (sys_status_async_msg_status_qs)
+  );
+
+  //   F[ready]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_sys_status_ready (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.sys_status.ready.de),
+    .d      (hw2reg.sys_status.ready.d),
+
+    // to internal hardware
+    .qe     (sys_status_flds_we[4]),
+    .q      (reg2hw.sys_status.ready.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (sys_status_ready_qs)
+  );
+
+
+
+  logic [3:0] addr_hit;
+  always_comb begin
+    addr_hit = '0;
+    addr_hit[0] = (reg_addr == MBX_EXTENDED_CAP_HEADER_OFFSET);
+    addr_hit[1] = (reg_addr == MBX_CAP_HEADER_OFFSET);
+    addr_hit[2] = (reg_addr == MBX_SYS_CONTROL_OFFSET);
+    addr_hit[3] = (reg_addr == MBX_SYS_STATUS_OFFSET);
+  end
+
+  assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
+
+  // Check sub-word write is permitted
+  always_comb begin
+    wr_err = (reg_we &
+              ((addr_hit[0] & (|(MBX_SYS_PERMIT[0] & ~reg_be))) |
+               (addr_hit[1] & (|(MBX_SYS_PERMIT[1] & ~reg_be))) |
+               (addr_hit[2] & (|(MBX_SYS_PERMIT[2] & ~reg_be))) |
+               (addr_hit[3] & (|(MBX_SYS_PERMIT[3] & ~reg_be)))));
+  end
+
+  // Generate write-enables
+  assign extended_cap_header_re = addr_hit[0] & reg_re & !reg_error;
+  assign sys_control_re = addr_hit[2] & reg_re & !reg_error;
+  assign sys_control_we = addr_hit[2] & reg_we & !reg_error;
+
+  assign sys_control_abort_wd = reg_wdata[0];
+
+  assign sys_control_doe_intr_en_wd = reg_wdata[1];
+
+  assign sys_control_async_msg_en_wd = reg_wdata[3];
+
+  assign sys_control_go_wd = reg_wdata[31];
+  assign sys_status_we = addr_hit[3] & reg_we & !reg_error;
+
+  assign sys_status_doe_intr_status_wd = reg_wdata[1];
+
+  // Assign write-enables to checker logic vector.
+  always_comb begin
+    reg_we_check = '0;
+    reg_we_check[0] = 1'b0;
+    reg_we_check[1] = 1'b0;
+    reg_we_check[2] = sys_control_we;
+    reg_we_check[3] = sys_status_we;
+  end
+
+  // Read data return
+  always_comb begin
+    reg_rdata_next = '0;
+    unique case (1'b1)
+      addr_hit[0]: begin
+        reg_rdata_next[15:0] = extended_cap_header_cap_id_qs;
+        reg_rdata_next[19:16] = extended_cap_header_cap_version_qs;
+        reg_rdata_next[31:20] = extended_cap_header_next_capaility_offset_qs;
+      end
+
+      addr_hit[1]: begin
+        reg_rdata_next[0] = cap_header_doe_intr_support_qs;
+        reg_rdata_next[11:1] = cap_header_doe_intr_msg_nr_qs;
+      end
+
+      addr_hit[2]: begin
+        reg_rdata_next[0] = '0;
+        reg_rdata_next[1] = sys_control_doe_intr_en_qs;
+        reg_rdata_next[3] = sys_control_async_msg_en_qs;
+        reg_rdata_next[31] = '0;
+      end
+
+      addr_hit[3]: begin
+        reg_rdata_next[0] = sys_status_busy_qs;
+        reg_rdata_next[1] = sys_status_doe_intr_status_qs;
+        reg_rdata_next[2] = sys_status_error_qs;
+        reg_rdata_next[3] = sys_status_async_msg_status_qs;
+        reg_rdata_next[31] = sys_status_ready_qs;
+      end
+
+      default: begin
+        reg_rdata_next = '1;
+      end
+    endcase
+  end
+
+  // shadow busy
+  logic shadow_busy;
+  assign shadow_busy = 1'b0;
+
+  // register busy
+  assign reg_busy = shadow_busy;
 
   // Unused signal tieoff
+
+  // wdata / byte enable are not always fully used
+  // add a blanket unused statement to handle lint waivers
+  logic unused_wdata;
+  logic unused_be;
+  assign unused_wdata = ^reg_wdata;
+  assign unused_be = ^reg_be;
+
+  // Assertions for Register Interface
+  `ASSERT_PULSE(wePulse, reg_we, clk_i, !rst_ni)
+  `ASSERT_PULSE(rePulse, reg_re, clk_i, !rst_ni)
+
+  `ASSERT(reAfterRv, $rose(reg_re || reg_we) |=> tl_o_pre.d_valid, clk_i, !rst_ni)
+
+  `ASSERT(en2addrHit, (reg_we || reg_re) |-> $onehot0(addr_hit), clk_i, !rst_ni)
+
+  // this is formulated as an assumption such that the FPV testbenches do disprove this
+  // property by mistake
+  //`ASSUME(reqParity, tl_reg_h2d.a_valid |-> tl_reg_h2d.a_user.chk_en == tlul_pkg::CheckDis)
+
 endmodule
