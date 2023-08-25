@@ -12,6 +12,9 @@ module keymgr
   import keymgr_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // In case this is set to true, the keymgr will ignore the creator / owner seeds
+  // on the flash_i port and use the seeds provided in otp_key_i instead.
+  parameter bit UseOtpSeedsInsteadOfFlash      = 1'b0,
   parameter bit KmacEnMasking                  = 1'b1,
   parameter lfsr_seed_t RndCnstLfsrSeed        = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t RndCnstLfsrPerm        = RndCnstLfsrPermDefault,
@@ -404,7 +407,32 @@ module keymgr
   // Advance to creator_root_key
   // The values coming from otp_ctrl / lc_ctrl are treat as quasi-static for CDC purposes
   logic [KeyWidth-1:0] creator_seed;
-  assign creator_seed = flash_i.seeds[flash_ctrl_pkg::CreatorSeedIdx];
+  logic unused_creator_seed;
+  if (UseOtpSeedsInsteadOfFlash) begin : gen_otp_creator_seed
+    assign unused_creator_seed = ^{flash_i.seeds[flash_ctrl_pkg::CreatorSeedIdx],
+                                   otp_key_i.creator_seed_valid};
+    assign creator_seed = otp_key_i.creator_seed;
+  end else begin : gen_flash_creator_seed
+    assign unused_creator_seed = ^{otp_key_i.creator_seed,
+                                   otp_key_i.creator_seed_valid};
+    assign creator_seed = flash_i.seeds[flash_ctrl_pkg::CreatorSeedIdx];
+  end
+  // TODO(opentitan-integrated/issues/251):
+  // replace below code with commented code once SW and DV model can handle multiple
+  // // ROM_CTRL digests.
+  // logic [KeyWidth*NumRomDigestInputs-1:0] rom_digests;
+  // always_comb begin
+  //   rom_digests = '0;
+  //   for (int k = 0; k < NumRomDigestInputs; k++) begin
+  //     rom_digests[KeyWidth*k +: KeyWidth] = rom_digest_i[k].data;
+  //   end
+  // end
+  // assign adv_matrix[Creator] = AdvDataWidth'({sw_binding,
+  //                                             revision_seed,
+  //                                             otp_device_id_i,
+  //                                             lc_keymgr_div_i,
+  //                                             rom_digests,
+  //                                             creator_seed});
   assign adv_matrix[Creator] = AdvDataWidth'({sw_binding,
                                               revision_seed,
                                               otp_device_id_i,
@@ -419,7 +447,16 @@ module keymgr
 
   // Advance to owner_intermediate_key
   logic [KeyWidth-1:0] owner_seed;
-  assign owner_seed = flash_i.seeds[flash_ctrl_pkg::OwnerSeedIdx];
+  logic unused_owner_seed;
+  if (UseOtpSeedsInsteadOfFlash) begin : gen_otp_owner_seed
+    assign unused_owner_seed = ^{flash_i.seeds[flash_ctrl_pkg::OwnerSeedIdx],
+                                 otp_key_i.owner_seed_valid};
+    assign owner_seed = otp_key_i.owner_seed;
+  end else begin : gen_flash_owner_seed
+    assign unused_owner_seed = ^{otp_key_i.owner_seed,
+                                 otp_key_i.owner_seed_valid};
+    assign owner_seed = flash_i.seeds[flash_ctrl_pkg::OwnerSeedIdx];
+  end
   assign adv_matrix[OwnerInt] = AdvDataWidth'({sw_binding,owner_seed});
   assign adv_dvalid[OwnerInt] = owner_seed_vld;
 

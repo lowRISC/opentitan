@@ -203,30 +203,45 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
             // ---------------------- Check keymgr_key_o output ---------------------------------
             // Otp_keymgr outputs creator root key shares from the secret2 partition.
             // Depends on lc_seed_hw_rd_en_i, it will output the real keys or a constant
-            exp_keymgr_data.valid = get_otp_digest_val(Secret2Idx) != 0;
+            exp_keymgr_data = '0;
+% for part in otp_mmap.config["partitions"]:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_camel = part_name.as_camel_case()
+  ## Check whether this partition has any key material that needs to be sideloaded.
+  part_has_keys = 0
+  for item in part["items"]:
+    part_has_keys |= item["iskeymgr"]
+%>\
+  % if part_has_keys:
+    % for item in part["items"]:
+<%
+  item_name = Name.from_snake_case(item["name"])
+  item_name_camel = item_name.as_camel_case()
+%>\
+      % if item["iskeymgr"]:
+            exp_keymgr_data.${item["name"].lower()}_valid = get_otp_digest_val(${part_name_camel}Idx) != 0;
             if (cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i == lc_ctrl_pkg::On) begin
-              exp_keymgr_data.key_share0 =
-                  {<<32 {otp_a[CreatorRootKeyShare0Offset/4 +: CreatorRootKeyShare0Size/4]}};
-              exp_keymgr_data.key_share1 =
-                  {<<32 {otp_a[CreatorRootKeyShare1Offset/4 +: CreatorRootKeyShare1Size/4]}};
+              exp_keymgr_data.${item["name"].lower()} =
+                  {<<32 {otp_a[${item_name_camel}Offset/4 +: ${item_name_camel}Size/4]}};
             end else begin
-              exp_keymgr_data.key_share0 =
-                  PartInvDefault[CreatorRootKeyShare0Offset*8 +: CreatorRootKeyShare0Size*8];
-              exp_keymgr_data.key_share1 =
-                  PartInvDefault[CreatorRootKeyShare1Offset*8 +: CreatorRootKeyShare1Size*8];
+              exp_keymgr_data.${item["name"].lower()} =
+                  PartInvDefault[${item_name_camel}Offset*8 +: ${item_name_camel}Size*8];
             end
-
             // Check otp_keymgr_key_t struct by item is easier to debug.
-            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o.valid, exp_keymgr_data.valid)
-            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o.key_share0, exp_keymgr_data.key_share0)
-            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o.key_share1, exp_keymgr_data.key_share1)
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o.${item["name"].lower()}_valid,
+                         exp_keymgr_data.${item["name"].lower()}_valid)
+      % endif
+    % endfor
+  % endif
+% endfor
 
             // Check otp_keymgr_key_t struct all together in case there is any missed item.
             `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o, exp_keymgr_data)
 
             if (cfg.en_cov) begin
               cov.keymgr_o_cg.sample(cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i == lc_ctrl_pkg::On,
-                                     exp_keymgr_data.valid);
+                                     exp_keymgr_data.creator_root_key_share0_valid);
             end
           end
         end else if (cfg.otp_ctrl_vif.alert_reqs) begin
