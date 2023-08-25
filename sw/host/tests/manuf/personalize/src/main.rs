@@ -116,6 +116,8 @@ fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<
     );
 
     // Issue an LC transition to RMA to verify unlock token.
+    // The device program will spin when it detects the RMA state so we can safely
+    // reconnect to the LC TAP after the transition without risking the chip resetting.
     trigger_lc_transition(
         transport,
         jtag.clone(),
@@ -123,6 +125,7 @@ fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<
         Some(rma_unlock_token),
         /*use_external_clk=*/ false,
         opts.init.bootstrap.options.reset_delay,
+        Some(JtagTap::LcTap),
     )?;
 
     // Check the LC state is RMA.

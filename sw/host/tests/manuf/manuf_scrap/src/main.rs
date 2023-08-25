@@ -40,6 +40,8 @@ fn manuf_scrap(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         "Invalid initial LC state.",
     );
 
+    // CPU execution is disabled in the SCRAP state so we can safely reconnect
+    // to the LC TAP after the transition without risking the chip resetting.
     trigger_lc_transition(
         transport,
         jtag.clone(),
@@ -47,6 +49,7 @@ fn manuf_scrap(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         None,
         /*use_external_clk=*/ false,
         opts.init.bootstrap.options.reset_delay,
+        Some(JtagTap::LcTap),
     )?;
 
     // Check the LC state is SCRAP.

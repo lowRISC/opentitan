@@ -10,11 +10,11 @@ use regex::Regex;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::backend;
-use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg, LcCtrlStatus};
+use opentitanlib::dif::lc_ctrl::DifLcCtrlState;
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
-use opentitanlib::test_utils::lc_transition::{trigger_lc_transition, wait_for_status};
+use opentitanlib::test_utils::lc_transition::trigger_lc_transition;
 use opentitanlib::test_utils::load_sram_program::{
     ExecutionMode, ExecutionResult, SramProgramParams,
 };
@@ -87,6 +87,10 @@ fn manuf_cp_device_info_flash_wr(opts: &Opts, transport: &TransportWrapper) -> R
 
     // Issue an LC transition.
     const TEST_EXIT_TOKEN: [u32; 4] = [0x11111111, 0x11111111, 0x11111111, 0x11111111];
+    // After the transition, the device will be in a production state but the flash
+    // is empty so it will reboot constantly and we will not be able to get a JTAG
+    // connection. Instead, the program that we bootstrap will check that the transition
+    // was done correctly.
     trigger_lc_transition(
         transport,
         jtag.clone(),
@@ -94,17 +98,8 @@ fn manuf_cp_device_info_flash_wr(opts: &Opts, transport: &TransportWrapper) -> R
         Some(TEST_EXIT_TOKEN),
         /*use_external_clk=*/ true,
         opts.init.bootstrap.options.reset_delay,
+        /*reconnect_jtag_tap=*/ None,
     )?;
-
-    // Check the LC state is Prod.
-    // We must wait for the lc_ctrl to initialize before the LC state is exposed.
-    wait_for_status(&jtag, Duration::from_secs(3), LcCtrlStatus::INITIALIZED)?;
-    assert_eq!(
-        jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?,
-        opts.target_lc_state.redundant_encoding(),
-        "Failed to transition out of TestUnlocked*.",
-    );
-    jtag.disconnect()?;
 
     // Bootstrap test program into flash and wait for test status pass over the UART.
     uart.clear_rx_buffer()?;
@@ -120,7 +115,6 @@ fn manuf_cp_device_info_flash_wr(opts: &Opts, transport: &TransportWrapper) -> R
     };
     let mut stdout = std::io::stdout();
     let result = console.interact(&*uart, None, Some(&mut stdout))?;
-    jtag.disconnect()?;
     match result {
         ExitStatus::None | ExitStatus::CtrlC => Ok(()),
         ExitStatus::Timeout => {
