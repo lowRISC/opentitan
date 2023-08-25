@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Dual-Port SRAM Wrapper
+// Two-Port SRAM Wrapper
 //
 // Supported configurations:
 // - ECC for 32b and 64b wide memories with no write mask
@@ -15,7 +15,7 @@
 
 `include "prim_assert.sv"
 
-module prim_ram_2p_adv import prim_ram_2p_pkg::*; #(
+module prim_ram_1r1w_adv import prim_ram_2p_pkg::*; #(
   parameter  int Depth                = 512,
   parameter  int Width                = 32,
   parameter  int DataBitsPerMask      = 1,  // Number of data bits per bit of write mask
@@ -37,20 +37,15 @@ module prim_ram_2p_adv import prim_ram_2p_pkg::*; #(
   input                    clk_i,
   input                    rst_ni,
 
+  // Port A can only write
   input                    a_req_i,
-  input                    a_write_i,
   input        [Aw-1:0]    a_addr_i,
   input        [Width-1:0] a_wdata_i,
   input        [Width-1:0] a_wmask_i,  // cannot be used with ECC, tie to 1 in that case
-  output logic [Width-1:0] a_rdata_o,
-  output logic             a_rvalid_o, // read response (a_rdata_o) is valid
-  output logic [1:0]       a_rerror_o, // Bit1: Uncorrectable, Bit0: Correctable
 
+  // Port B can only read
   input                    b_req_i,
-  input                    b_write_i,
   input        [Aw-1:0]    b_addr_i,
-  input        [Width-1:0] b_wdata_i,
-  input        [Width-1:0] b_wmask_i,  // cannot be used with ECC, tie to 1 in that case
   output logic [Width-1:0] b_rdata_o,
   output logic             b_rvalid_o, // read response (b_rdata_o) is valid
   output logic [1:0]       b_rerror_o, // Bit1: Uncorrectable, Bit0: Correctable
@@ -58,7 +53,7 @@ module prim_ram_2p_adv import prim_ram_2p_pkg::*; #(
   input ram_2p_cfg_t       cfg_i
 );
 
-  prim_ram_2p_async_adv #(
+  prim_ram_1r1w_async_adv #(
     .Depth               (Depth),
     .Width               (Width),
     .DataBitsPerMask     (DataBitsPerMask),
@@ -68,28 +63,21 @@ module prim_ram_2p_adv import prim_ram_2p_pkg::*; #(
     .EnableInputPipeline (EnableInputPipeline),
     .EnableOutputPipeline(EnableOutputPipeline),
     .HammingECC          (HammingECC)
-  ) i_prim_ram_2p_async_adv (
+  ) i_prim_ram_1r1w_async_adv (
     .clk_a_i(clk_i),
     .rst_a_ni(rst_ni),
     .clk_b_i(clk_i),
     .rst_b_ni(rst_ni),
     .a_req_i,
-    .a_write_i,
     .a_addr_i,
     .a_wdata_i,
     .a_wmask_i,
-    .a_rdata_o,
-    .a_rvalid_o,
-    .a_rerror_o,
     .b_req_i,
-    .b_write_i,
     .b_addr_i,
-    .b_wdata_i,
-    .b_wmask_i,
     .b_rdata_o,
     .b_rvalid_o,
     .b_rerror_o,
     .cfg_i
   );
 
-endmodule : prim_ram_2p_adv
+endmodule : prim_ram_1r1w_adv
