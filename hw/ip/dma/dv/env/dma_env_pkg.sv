@@ -14,7 +14,6 @@ package dma_env_pkg;
   import dv_base_reg_pkg::*;
   import csr_utils_pkg::*;
   import dma_ral_pkg::*;
-  import dma_reg_pkg::*;
   import prim_mubi_pkg::*;
   import dma_pkg::*;
   import tlul_pkg::*;
@@ -28,6 +27,10 @@ package dma_env_pkg;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
 
   parameter uint NUM_MAX_OUTSTANDING_REQS = 2;   // Max Outstanding TL Requests
+  parameter uint CTN_ADDR_WIDTH = 32;
+  parameter uint CTN_DATA_WIDTH = 32;
+  parameter uint HOST_ADDR_WIDTH = 32;
+  parameter uint HOST_DATA_WIDTH = 32;
 
   // types
   typedef virtual dma_if dma_vif;

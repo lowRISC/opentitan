@@ -28,12 +28,20 @@ class dma_env_cfg extends cip_base_env_cfg #(.RAL_T(dma_reg_block));
   // Names of dir_channel_fifo
   string dma_dir_fifo[string];
 
-  // For each TLUL interface declare a separate mem model
-  // These sequences are used in TL device sequences
+  // For each TLUL interface declare a mem_model instance and a
+  //  dma_handshake_mode_fifo instance to emulate either memory or a
+  // FIFO depending on handshake_mode_en
+  // These models are used in TL device sequences
   // Data comparison is done in scoreboard
-  mem_model mem_host;
-  mem_model mem_ctn;
-  mem_model #(.AddrWidth(SYS_ADDR_WIDTH), .DataWidth(SYS_DATA_WIDTH)) mem_sys;
+  dma_handshake_mode_fifo#(.AddrWidth(HOST_ADDR_WIDTH)) fifo_host;
+  dma_handshake_mode_fifo#(.AddrWidth(CTN_ADDR_WIDTH)) fifo_ctn;
+  dma_handshake_mode_fifo#(.AddrWidth(SYS_ADDR_WIDTH)) fifo_sys;
+  mem_model#(.AddrWidth(HOST_ADDR_WIDTH), .DataWidth(HOST_DATA_WIDTH)) mem_host;
+  mem_model#(.AddrWidth(CTN_ADDR_WIDTH), .DataWidth(CTN_DATA_WIDTH)) mem_ctn;
+  mem_model#(.AddrWidth(SYS_ADDR_WIDTH), .DataWidth(SYS_DATA_WIDTH)) mem_sys;
+
+  // Associative array with mapping of ASID encoding to interface name
+  string asid_interace_map[asid_encoding_e];
 
   // Constraints
   //  TODO
@@ -74,16 +82,6 @@ class dma_env_cfg extends cip_base_env_cfg #(.RAL_T(dma_reg_block));
 
     // TL Agent Configuration - RAL based
     m_tl_agent_cfg.max_outstanding_req = 1;
-
-    // Create memory models
-    `uvm_create_obj(mem_model, mem_host)
-    `uvm_create_obj(mem_model, mem_ctn)
-    mem_sys = mem_model#(.AddrWidth(SYS_ADDR_WIDTH), .DataWidth(SYS_DATA_WIDTH))::type_id::create(
-      "mem_sys");
-    // Initialize memory
-    mem_host.init();
-    mem_ctn.init();
-    mem_sys.init();
 
   endfunction: initialize
 
