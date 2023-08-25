@@ -46,21 +46,22 @@ class dma_generic_smoke_vseq extends dma_base_vseq;
   };
 
   // Function : Rerandomization of address ranges
-  function void randomize_item(ref dma_seq_item m_seq, input int iteration = 0);
+  function void randomize_item(ref dma_seq_item dma_config, input int iteration = 0);
     int num_valid_combinations = valid_combinations.size();
     int index = $urandom_range(0, num_valid_combinations);
     valid_space_id_t valid_combination = valid_combinations.pop_front();
     if (iteration > 0) begin
       // Disable DMA memory region base and limit randomization
-      m_seq.lock_memory_range();
+      dma_config.lock_memory_range();
     end
     `DV_CHECK_RANDOMIZE_WITH_FATAL(
-      m_seq,
+      dma_config,
       valid_dma_config == 1; // Allow only random configurations
       m_src_asid == valid_combination.src_id;
       m_dst_asid == valid_combination.dst_id;
       m_opcode == DmaOperCopy;)
-    `uvm_info(`gfn, $sformatf("DMA: Randomized a new transaction\n %s", m_seq.sprint()), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("DMA: Randomized a new transaction\n %s",
+                              dma_config.sprint()), UVM_HIGH)
   endfunction
 
   virtual task body();
@@ -72,13 +73,13 @@ class dma_generic_smoke_vseq extends dma_base_vseq;
 
     for (int i = 0; i < num_txns; i++) begin
       `uvm_info(`gfn, $sformatf("DMA: Started Sequence #%0d", i), UVM_LOW)
-      randomize_item(m_seq, i);
-      run_common_config(m_seq);
-      set_control_register(m_seq.m_opcode, // OPCODE
-                           m_seq.m_handshake, // Handshake Enable
-                           m_seq.m_auto_inc_buffer, // Auto-increment Buffer Address
-                           m_seq.m_auto_inc_fifo, // Auto-increment FIFO Address
-                           m_seq.m_direction, // Direction
+      randomize_item(dma_config, i);
+      run_common_config(dma_config);
+      set_control_register(dma_config.opcode, // OPCODE
+                           dma_config.handshake, // Handshake Enable
+                           dma_config.auto_inc_buffer, // Auto-increment Buffer Address
+                           dma_config.auto_inc_fifo, // Auto-increment FIFO Address
+                           dma_config.direction, // Direction
                            1'b1); // Go
       poll_status();
       clear();
