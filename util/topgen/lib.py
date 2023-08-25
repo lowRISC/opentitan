@@ -420,7 +420,7 @@ def get_base_and_size(name_to_block: Dict[str, IpBlock],
         # Memories don't have multiple or named interfaces, so this will only
         # work if ifname is None.
         assert ifname is None
-        base_addr = inst['base_addr']
+        base_addrs = deepcopy(inst['base_addr'])
 
     else:
         # If inst is the instantiation of some block, find the register block
@@ -435,7 +435,7 @@ def get_base_and_size(name_to_block: Dict[str, IpBlock],
         else:
             bytes_used = 1 << rb.get_addr_width()
 
-        base_addr = inst['base_addrs'][ifname]
+        base_addrs = deepcopy(inst['base_addrs'][ifname])
 
         # If an instance has a nonempty "memory" field, take the memory
         # size configuration from there.
@@ -455,12 +455,13 @@ def get_base_and_size(name_to_block: Dict[str, IpBlock],
     # Round up to next power of 2.
     size_byte = 1 << (bytes_used - 1).bit_length()
 
-    if isinstance(base_addr, str):
-        base_addr = int(base_addr, 0)
-    else:
-        assert isinstance(base_addr, int)
+    for (asid, base_addr) in base_addrs.items():
+        if isinstance(base_addr, str):
+            base_addrs[asid] = int(base_addr, 0)
+        else:
+            assert isinstance(base_addrs[asid], int)
 
-    return (base_addr, size_byte)
+    return (base_addrs, size_byte)
 
 
 def get_io_enum_literal(sig: Dict, prefix: str) -> str:

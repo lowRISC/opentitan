@@ -167,6 +167,14 @@
   // Number of cores: used in rv_plic and timer
   num_cores: "1",
 
+  // `addr_spaces` names the distinct address spaces present in the device.
+  // All hosts in the same address space share the same base addresses for
+  // all peripherals, though not every peripheral will be accessible to every
+  // host in that address space--Access privileges are separate from addresses.
+  addr_spaces: [
+    { name: "hart", desc: "The main address space, shared between the CPU and DM"},
+  ]
+
   // `module` defines the peripherals.
   // Details are coming from each modules' config file `ip.hjson`
   // TODO: Define parameter here
@@ -191,7 +199,9 @@
       // the ip.hjson will declare the reset port names
       // If none are defined at ip.hjson, rst_ni is used by default
       reset_connections: {rst_ni: "lc_io_div4"},
-      base_addr: "0x40000000",
+      base_addr: {
+        hart: "0x40000000",
+      },
     },
     { name: "uart1",    // instance name
       type: "uart",     // Must be matched to the ip name in `ip.hson` (_reg, _cfg permitted)
@@ -206,14 +216,18 @@
       // the ip.hjson will declare the reset port names
       // If none are defined at ip.hjson, rst_ni is used by default
       reset_connections: {rst_ni: "lc_io_div4"},
-      base_addr: "0x40010000",
+      base_addr: {
+        hart: "0x40010000",
+      },
     },
     { name: "gpio",
       type: "gpio",
       clock_srcs: {clk_i: "io_div4"},
       clock_group: "peri",
       reset_connections: {rst_ni: "sys_io_div4"},
-      base_addr: "0x40040000",
+      base_addr: {
+        hart: "0x40040000",
+      },
       param_decl: {
         GpioAsyncOn: "1"
       }
@@ -223,28 +237,36 @@
       clock_srcs: {clk_i: "io_div4", scan_clk_i: "io_div2"},
       clock_group: "peri",
       reset_connections: {rst_ni: "spi_device"},
-      base_addr: "0x40050000",
+      base_addr: {
+        hart: "0x40050000",
+      },
     },
     { name: "spi_host0",
       type: "spi_host",
       clock_srcs: {clk_i: "io"},
       clock_group: "peri",
       reset_connections: {rst_ni: "spi_host0"},
-      base_addr: "0x40060000",
+      base_addr: {
+        hart: "0x40060000",
+      },
     },
     { name: "rv_timer",
       type: "rv_timer",
       clock_srcs: {clk_i: "io_div4"},
       clock_group: "timers",
       reset_connections: {rst_ni: "sys_io_div4"},
-      base_addr: "0x40100000",
+      base_addr: {
+        hart: "0x40100000",
+      },
     },
     { name: "usbdev",
       type: "usbdev",
       clock_srcs: {clk_i: "usb", clk_aon_i: "aon"},
       clock_group: "peri",
       reset_connections: {rst_ni: "usb", rst_aon_ni: "sys_aon"},
-      base_addr: "0x40320000",
+      base_addr: {
+        hart: "0x40320000",
+      },
     },
     { name: "pwrmgr_aon",
       type: "pwrmgr",
@@ -258,8 +280,11 @@
         rst_slow_ni: "por_aon"
       },
       domain: ["Aon"],
-      base_addr: "0x40400000",
+      base_addr: {
+        hart: "0x40400000",
+      },
       attr: "ipgen",
+
     },
     { name: "rstmgr_aon",
       type: "rstmgr",
@@ -268,7 +293,9 @@
       clock_group: "powerup",
       reset_connections: {rst_ni: "lc_io_div4", rst_por_ni: "por_io_div4"},
       domain: ["Aon"],
-      base_addr: "0x40410000",
+      base_addr: {
+        hart: "0x40410000",
+      },
       param_decl: {
         SecCheck: "0",
       }
@@ -311,7 +338,9 @@
                           rst_root_usb_ni: "por_usb",
                          },
       domain: ["Aon"],
-      base_addr: "0x40420000",
+      base_addr: {
+        hart: "0x40420000",
+      },
       attr: "ipgen",
     },
     { name: "pinmux_aon",
@@ -323,7 +352,9 @@
                           rst_sys_ni: "sys_io_div4"
                          },
       domain: ["Aon"],
-      base_addr: "0x40460000",
+      base_addr: {
+        hart: "0x40460000",
+      },
       attr: "templated",
     },
     { name: "aon_timer_aon",
@@ -332,7 +363,9 @@
       clock_group: "timers",
       reset_connections: {rst_ni: "sys_io_div4", rst_aon_ni: "sys_aon"},
       domain: ["Aon"],
-      base_addr: "0x40470000",
+      base_addr: {
+        hart: "0x40470000",
+      },
     },
     { name: "ast",
       type: "ast",
@@ -356,7 +389,9 @@
         rst_ast_rng_ni: "sys",
         rst_ast_usb_ni: "usb"
       },
-      base_addr: "0x40480000",
+      base_addr: {
+        hart: "0x40480000",
+      },
       attr: "reggen_only",
     },
     { name: "flash_ctrl",
@@ -364,7 +399,11 @@
       clock_srcs: {clk_i: "main", clk_otp_i: "io_div4"},
       clock_group: "infra",
       reset_connections: {rst_ni: "lc", rst_otp_ni: "lc_io_div4"},
-      base_addrs: {core: "0x41000000", prim: "0x41008000", mem: "0x20000000"}
+      base_addrs: {
+        core: {hart: "0x41000000"},
+        prim: {hart: "0x41008000"},
+        mem:  {hart: "0x20000000"}
+      }
       param_decl: {
         SecScrambleEn: "0"
       }
@@ -389,7 +428,9 @@
       clock_srcs: {clk_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "sys"},
-      base_addr: "0x48000000",
+      base_addr: {
+        hart: "0x48000000",
+      },
       attr: "ipgen",
     },
     { name: "aes",
@@ -401,7 +442,9 @@
         SecMasking: "1",
         SecSBoxImpl: "aes_pkg::SBoxImplDom"
       }
-      base_addr: "0x41100000",
+      base_addr: {
+        hart: "0x41100000",
+      },
     },
     { name: "sram_ctrl_main",
       type: "sram_ctrl",
@@ -411,7 +454,10 @@
       param_decl: {
         InstrExec: "1",
       }
-      base_addrs: {regs: "0x411C0000", ram: "0x10000000"},
+      base_addrs: {
+        regs: {hart: "0x411C0000"},
+        ram:  {hart: "0x10000000"},
+      },
       // Memory regions must be associated with a dedicated
       // TL-UL device interface.
       memory: {
@@ -429,7 +475,10 @@
       clock_srcs: {clk_i: "main"},
       clock_group: "infra",
       reset_connections: {rst_ni: "sys"},
-      base_addrs: {rom: "0x00008000", regs: "0x411e0000"}
+      base_addrs: {
+        rom:  {hart: "0x00008000"},
+        regs: {hart: "0x411e0000"},
+      }
       memory: {
         rom: {
           label:      "rom",
@@ -474,7 +523,9 @@
                           rst_edn_ni: "sys",
                           rst_esc_ni: "lc_io_div4",
                           rst_otp_ni: "lc_io_div4"},
-      base_addr: "0x411F0000",
+      base_addr: {
+        hart: "0x411F0000",
+      },
     },
   ]
 
