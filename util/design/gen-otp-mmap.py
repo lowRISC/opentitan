@@ -29,10 +29,20 @@ PARTITIONS_TABLE_FILE = "hw/ip/otp_ctrl/doc/otp_ctrl_partitions.md"
 DIGESTS_TABLE_FILE = "hw/ip/otp_ctrl/doc/otp_ctrl_digests.md"
 MMAP_TABLE_FILE = "hw/ip/otp_ctrl/doc/otp_ctrl_mmap.md"
 # code templates to render
-TEMPLATES = [
-    "hw/ip/otp_ctrl/data/otp_ctrl.hjson.tpl",
-    "hw/ip/otp_ctrl/rtl/otp_ctrl_part_pkg.sv.tpl"
-]
+DATA_TEMPLATES = ["hw/ip/otp_ctrl/data/otp_ctrl.hjson.tpl"]
+RTL_TEMPLATES = ["hw/ip/otp_ctrl/data/otp_ctrl_part_pkg.sv.tpl"]
+
+
+def render_template(template, target_path, otp_mmap):
+    with open(template, 'r') as tplfile:
+        tpl = Template(tplfile.read())
+        try:
+            expansion = tpl.render(otp_mmap=otp_mmap)
+        except:
+            log.error(exceptions.text_error_template().render())
+
+    with target_path.open(mode='w', encoding='UTF-8') as outfile:
+        outfile.write(expansion)
 
 
 def main():
@@ -86,14 +96,14 @@ def main():
             outfile.write('\n'.encode('utf-8'))
 
         # render all templates
-        for template in TEMPLATES:
-            with open(template, 'r') as tplfile:
-                tpl = Template(tplfile.read())
-                with open(Path(template).parent.joinpath(Path(template).stem),
-                          'wb',
-                          buffering=2097152) as outfile:
-                    outfile.write(
-                        tpl.render(otp_mmap=otp_mmap).encode('utf-8'))
+        for template in DATA_TEMPLATES:
+            stem_path = Path(template).stem
+            target_path = Path(template).parent / stem_path
+            render_template(template, target_path, otp_mmap)
+        for template in RTL_TEMPLATES:
+            stem_path = Path(template).stem
+            target_path = Path(template).parents[1] / "rtl" / stem_path
+            render_template(template, target_path, otp_mmap)
 
 
 if __name__ == "__main__":
