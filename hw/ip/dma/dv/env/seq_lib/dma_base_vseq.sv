@@ -36,7 +36,7 @@ class dma_base_vseq extends cip_base_vseq #(
   // TODO add sequence for SYS interface
   mem_model m_mem;
   // DMA configuration item
-  dma_seq_item m_seq;
+  dma_seq_item dma_config;
 
   // Event triggers
   event e_busy;
@@ -46,7 +46,7 @@ class dma_base_vseq extends cip_base_vseq #(
 
   function new (string name = "");
     super.new(name);
-    m_seq = dma_seq_item::type_id::create("m_seq");
+    dma_config = dma_seq_item::type_id::create("dma_config");
   endfunction: new
 
   // Method to randomize data in memory model
@@ -143,21 +143,21 @@ class dma_base_vseq extends cip_base_vseq #(
   endtask: set_transfer_width
 
   // Task: Run above configurations common to both Generic and Handshake Mode of operations
-  task run_common_config(dma_seq_item m_seq);
+  task run_common_config(dma_seq_item dma_config);
     `uvm_info(`gfn, "DMA: Start Common Configuration", UVM_HIGH)
-    set_source_address(m_seq.m_src_addr);
-    set_destination_address(m_seq.m_dst_addr);
-    set_destination_address_range(m_seq.m_mem_buffer_almost_limit,
-                                  m_seq.m_mem_buffer_limit,
-                                  m_seq.m_per_transfer_width);
-    set_address_space_id(m_seq.m_src_asid, m_seq.m_dst_asid);
-    set_total_size(m_seq.m_total_transfer_size);
-    set_transfer_width(m_seq.m_per_transfer_width);
+    set_source_address(dma_config.src_addr);
+    set_destination_address(dma_config.dst_addr);
+    set_destination_address_range(dma_config.mem_buffer_almost_limit,
+                                  dma_config.mem_buffer_limit,
+                                  dma_config.per_transfer_width);
+    set_address_space_id(dma_config.src_asid, dma_config.dst_asid);
+    set_total_size(dma_config.total_transfer_size);
+    set_transfer_width(dma_config.per_transfer_width);
     // Randomize data in source memory model
-    randomize_asid_mem(m_seq.m_src_asid, m_seq.m_src_addr, m_seq.m_total_transfer_size);
-    set_dma_enabled_memory_range(m_seq.m_mem_range_base,
-                                 m_seq.m_mem_range_limit,
-                                 m_seq.m_mem_range_unlock);
+    randomize_asid_mem(dma_config.src_asid, dma_config.src_addr, dma_config.total_transfer_size);
+    set_dma_enabled_memory_range(dma_config.mem_range_base,
+                                 dma_config.mem_range_limit,
+                                 dma_config.mem_range_unlock);
   endtask: run_common_config
 
   // Task: Enable Interrupt

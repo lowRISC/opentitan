@@ -52,8 +52,8 @@ class dma_handshake_vseq extends dma_base_vseq;
 
     fork
       begin
-        txn.m_auto_inc_buffer = 1;
-        txn.m_auto_inc_fifo = 0;
+        txn.auto_inc_buffer = 1;
+        txn.auto_inc_fifo = 0;
         do_dma_op(txn, , 0, 1);
         `uvm_info(`gfn, "[DMA] DMA op func done", UVM_HIGH)
       end
@@ -66,20 +66,20 @@ class dma_handshake_vseq extends dma_base_vseq;
         // Count for every read completion sent
         keepcounting = maxcount > 0;
         do begin
-          `uvm_info(`gfn, $sformatf("[DMA] asid=%d count %d", txn.m_src_asid, maxcount), UVM_HIGH)
-          if (txn.m_src_asid == 0) begin
+          `uvm_info(`gfn, $sformatf("[DMA] asid=%d count %d", txn.src_asid, maxcount), UVM_HIGH)
+          if (txn.src_asid == 0) begin
             @(posedge cfg.dma_vif.read_cmpl_host)
             if (cfg.dma_vif.read_opc_host) begin
               maxcount--;
             end
           end
-          else if (txn.m_src_asid == 1) begin
+          else if (txn.src_asid == 1) begin
             @(posedge cfg.dma_vif.read_cmpl_ctn)
             if (cfg.dma_vif.read_opc_ctn) begin
               maxcount--;
             end
           end
-          else if (txn.m_src_asid == 3) begin
+          else if (txn.src_asid == 3) begin
             @(posedge cfg.dma_vif.read_cmpl_ctn)
             if (cfg.dma_vif.read_opc_ctn) begin
               maxcount--;
@@ -110,8 +110,8 @@ class dma_handshake_vseq extends dma_base_vseq;
 
     fork
       begin
-        txn.m_auto_inc_buffer = 0;
-        txn.m_auto_inc_fifo = 1;
+        txn.auto_inc_buffer = 0;
+        txn.auto_inc_fifo = 1;
         do_dma_op(txn, , 1, 1);
         `uvm_info(`gfn, "[DMA] DMA op func done", UVM_HIGH)
       end
@@ -124,20 +124,20 @@ class dma_handshake_vseq extends dma_base_vseq;
         // Count for every read completion sent
         keepcounting = maxcount > 0;
         do begin
-          `uvm_info(`gfn, $sformatf("[DMA] asid=%d count %d", txn.m_src_asid, maxcount), UVM_HIGH)
-          if (txn.m_src_asid == 0) begin
+          `uvm_info(`gfn, $sformatf("[DMA] asid=%d count %d", txn.src_asid, maxcount), UVM_HIGH)
+          if (txn.src_asid == 0) begin
             @(posedge cfg.dma_vif.read_cmpl_host)
             if (cfg.dma_vif.read_opc_host) begin
               maxcount--;
             end
           end
-          else if (txn.m_src_asid == 1) begin
+          else if (txn.src_asid == 1) begin
             @(posedge cfg.dma_vif.read_cmpl_ctn)
             if (cfg.dma_vif.read_opc_ctn) begin
               maxcount--;
             end
           end
-          else if (txn.m_src_asid == 3) begin
+          else if (txn.src_asid == 3) begin
             @(posedge cfg.dma_vif.read_cmpl_ctn)
             if (cfg.dma_vif.read_opc_ctn) begin
               maxcount--;

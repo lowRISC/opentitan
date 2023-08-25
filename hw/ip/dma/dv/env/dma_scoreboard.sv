@@ -80,69 +80,69 @@ class dma_scoreboard extends cip_base_scoreboard #(
 
     case (csr.get_name())
       "source_address_lo": begin
-        dma_config.m_src_addr[31:0] = item.a_data;
+        dma_config.src_addr[31:0] = item.a_data;
         `uvm_info(`gfn, $sformatf("Got source_address_lo = %0x",
-                                  dma_config.m_src_addr[31:0]), UVM_HIGH)
+                                  dma_config.src_addr[31:0]), UVM_HIGH)
       end
       "source_address_hi": begin
-        dma_config.m_src_addr[63:32] = item.a_data;
+        dma_config.src_addr[63:32] = item.a_data;
         `uvm_info(`gfn, $sformatf("Got source_address_hi = %0x",
-                                  dma_config.m_src_addr[63:32]), UVM_HIGH)
+                                  dma_config.src_addr[63:32]), UVM_HIGH)
       end
       "destination_address_lo": begin
-        dma_config.m_dst_addr[31:0] = item.a_data;
+        dma_config.dst_addr[31:0] = item.a_data;
         `uvm_info(`gfn, $sformatf("Got destination_address_lo = %0x",
-                                  dma_config.m_dst_addr[31:0]), UVM_HIGH)
+                                  dma_config.dst_addr[31:0]), UVM_HIGH)
       end
       "destination_address_hi": begin
-        dma_config.m_dst_addr[63:32] = item.a_data;
+        dma_config.dst_addr[63:32] = item.a_data;
         `uvm_info(`gfn, $sformatf("Got destination_address_hi = %0x",
-                                  dma_config.m_dst_addr[63:32]), UVM_HIGH)
+                                  dma_config.dst_addr[63:32]), UVM_HIGH)
       end
       "address_space_id": begin
         // Get mirrored field value and cast to associated enum in dma_config
-        dma_config.m_src_asid = asid_encoding_e'(`gmv(ral.address_space_id.source_asid));
+        dma_config.src_asid = asid_encoding_e'(`gmv(ral.address_space_id.source_asid));
         `uvm_info(`gfn, $sformatf("Got source address space id : %s",
-                                  dma_config.m_src_asid.name()), UVM_HIGH)
+                                  dma_config.src_asid.name()), UVM_HIGH)
         // Get mirrored field value and cast to associated enum in dma_config
-        dma_config.m_dst_asid = asid_encoding_e'(`gmv(ral.address_space_id.destination_asid));
+        dma_config.dst_asid = asid_encoding_e'(`gmv(ral.address_space_id.destination_asid));
         `uvm_info(`gfn, $sformatf("Got destination address space id : %s",
-                                  dma_config.m_dst_asid.name()), UVM_HIGH)
+                                  dma_config.dst_asid.name()), UVM_HIGH)
       end
       "enabled_memory_range_base": begin
-        dma_config.m_mem_range_base = item.a_data;
+        dma_config.mem_range_base = item.a_data;
         `uvm_info(`gfn, $sformatf("Got enabled_memory_range_base = %0x",
-                                  dma_config.m_mem_range_base), UVM_HIGH)
+                                  dma_config.mem_range_base), UVM_HIGH)
       end
       "enabled_memory_range_limit": begin
-        dma_config.m_mem_range_limit = item.a_data;
+        dma_config.mem_range_limit = item.a_data;
         `uvm_info(`gfn, $sformatf("Got enabled_memory_range_limit = %0x",
-                                  dma_config.m_mem_range_limit), UVM_HIGH)
+                                  dma_config.mem_range_limit), UVM_HIGH)
       end
       "range_unlock_regwen": begin
         // Get mirrored field value and cast to associated enum in dma_config
-        dma_config.m_mem_range_unlock = mubi4_t'(`gmv(ral.range_unlock_regwen.unlock));
+        dma_config.mem_range_unlock = mubi4_t'(`gmv(ral.range_unlock_regwen.unlock));
         `uvm_info(`gfn, $sformatf("Got range register unlock = %s",
-                                  dma_config.m_mem_range_unlock.name()), UVM_HIGH)
+                                  dma_config.mem_range_unlock.name()), UVM_HIGH)
       end
       "total_data_size": begin
-        dma_config.m_total_transfer_size = item.a_data;
+        dma_config.total_transfer_size = item.a_data;
         `uvm_info(`gfn, $sformatf("Got total_data_size = %0d B",
-                                  dma_config.m_total_transfer_size), UVM_HIGH)
+                                  dma_config.total_transfer_size), UVM_HIGH)
       end
       "transfer_width": begin
-        dma_config.m_per_transfer_width = dma_transfer_width_e'(
+        dma_config.per_transfer_width = dma_transfer_width_e'(
                                             `gmv(ral.transfer_width.transaction_width));
         `uvm_info(`gfn, $sformatf("Got transfer_width = %s",
-                                  dma_config.m_per_transfer_width.name()), UVM_HIGH)
+                                  dma_config.per_transfer_width.name()), UVM_HIGH)
       end
       "control": begin
         // bit to indicate start of DMA operation
         bit go = `gmv(ral.control.go);
         `uvm_info(`gfn, $sformatf("Got GO = %0b", go), UVM_HIGH)
         // Get mirrored field value and cast to associated enum in dma_config
-        dma_config.m_opcode = opcode_e'(`gmv(ral.control.opcode));
-        `uvm_info(`gfn, $sformatf("Got opcode = %s", dma_config.m_opcode.name()), UVM_HIGH)
+        dma_config.opcode = opcode_e'(`gmv(ral.control.opcode));
+        `uvm_info(`gfn, $sformatf("Got opcode = %s", dma_config.opcode.name()), UVM_HIGH)
         if (go) begin
           // TODO Do checks once operation starts
         end
