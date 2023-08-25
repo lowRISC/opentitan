@@ -206,7 +206,7 @@ const PID_FILE_LEN: usize = 11;
 /// recognize that the lock file is stale, as they verify whether a process with the given PID is
 /// still running.
 pub struct SerialPortExclusiveLock {
-    lockfilename: String,
+    lockfilename: Option<String>,
 }
 
 impl SerialPortExclusiveLock {
@@ -245,23 +245,58 @@ impl SerialPortExclusiveLock {
                 }
             }
         }
-        let mut lockfile = OpenOptions::new()
+        match OpenOptions::new()
             .write(true)
             .create_new(true)
-            .open(&lockfilename)?;
-        if PID_FILE_LEN != lockfile.write(format!("{:10}\n", nix::unistd::getpid()).as_bytes())? {
-            bail!(TransportError::OpenError(
+            .open(&lockfilename)
+        {
+            Ok(mut lockfile) => {
+                let written = lockfile
+                    .write(format!("{:10}\n", nix::unistd::getpid()).as_bytes())
+                    .map_err(|e| {
+                        TransportError::OpenError(
+                            port_name.to_string(),
+                            format!("Error creating lockfile {}: {}", lockfilename, e),
+                        )
+                    })?;
+                if PID_FILE_LEN != written {
+                    bail!(TransportError::OpenError(
+                        port_name.to_string(),
+                        format!("Error writing lockfile {}: short write", lockfilename)
+                    ));
+                }
+                Ok(Self {
+                    lockfilename: Some(lockfilename),
+                })
+            }
+            Err(e) if e.kind() == ErrorKind::AlreadyExists => {
+                // Possibly some other console created this file in between us unsuccessfuly
+                // attempting to open it, and then attempting to create it.
+                bail!(TransportError::OpenError(
+                    port_name.to_string(),
+                    "Device is locked".to_string()
+                ))
+            }
+            Err(e)
+                if e.kind() == ErrorKind::NotFound || e.kind() == ErrorKind::PermissionDenied =>
+            {
+                // /var/lock may not exist or not allow users to create files.  We proceed without
+                // locking here.  (We will still use flock() in `SerialPortUart::open()`.)
+                Ok(Self { lockfilename: None })
+            }
+            Err(e) => bail!(TransportError::OpenError(
                 port_name.to_string(),
-                "Error writing lockfile".to_string()
-            ));
+                format!("Error creating lockfile {}: {}", lockfilename, e)
+            )),
         }
-        Ok(Self { lockfilename })
     }
 }
 
 impl Drop for SerialPortExclusiveLock {
     fn drop(&mut self) {
-        let _ = std::fs::remove_file(&self.lockfilename);
+        if let Some(ref lockfilename) = self.lockfilename {
+            let _ = std::fs::remove_file(lockfilename);
+        }
     }
 }
 
