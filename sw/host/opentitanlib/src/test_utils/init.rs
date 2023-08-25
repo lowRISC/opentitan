@@ -56,6 +56,7 @@ impl InitializeTest {
             env_logger::Builder::from_default_env()
                 .format_target(true)
                 .format_module_path(false)
+                .format_timestamp_millis()
                 .filter(None, level)
                 .init();
         }
