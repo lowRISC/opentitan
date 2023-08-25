@@ -23,6 +23,7 @@ package prim_mubi_pkg;
     MuBi4True = 4'h6, // enabled
     MuBi4False = 4'h9  // disabled
   } mubi4_t;
+  parameter mubi4_t MUBI4_DEFAULT = mubi4_t'(MuBi4False);
 
   // This is a prerequisite for the multibit functions below to work.
   `ASSERT_STATIC_IN_PACKAGE(CheckMuBi4ValsComplementary_A, MuBi4True == ~MuBi4False)
@@ -155,6 +156,7 @@ package prim_mubi_pkg;
     MuBi8True = 8'h96, // enabled
     MuBi8False = 8'h69  // disabled
   } mubi8_t;
+  parameter mubi8_t MUBI8_DEFAULT = mubi8_t'(MuBi8False);
 
   // This is a prerequisite for the multibit functions below to work.
   `ASSERT_STATIC_IN_PACKAGE(CheckMuBi8ValsComplementary_A, MuBi8True == ~MuBi8False)
@@ -287,6 +289,7 @@ package prim_mubi_pkg;
     MuBi12True = 12'h696, // enabled
     MuBi12False = 12'h969  // disabled
   } mubi12_t;
+  parameter mubi12_t MUBI12_DEFAULT = mubi12_t'(MuBi12False);
 
   // This is a prerequisite for the multibit functions below to work.
   `ASSERT_STATIC_IN_PACKAGE(CheckMuBi12ValsComplementary_A, MuBi12True == ~MuBi12False)
@@ -419,6 +422,7 @@ package prim_mubi_pkg;
     MuBi16True = 16'h9696, // enabled
     MuBi16False = 16'h6969  // disabled
   } mubi16_t;
+  parameter mubi16_t MUBI16_DEFAULT = mubi16_t'(MuBi16False);
 
   // This is a prerequisite for the multibit functions below to work.
   `ASSERT_STATIC_IN_PACKAGE(CheckMuBi16ValsComplementary_A, MuBi16True == ~MuBi16False)

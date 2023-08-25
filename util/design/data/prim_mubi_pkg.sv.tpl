@@ -30,6 +30,7 @@ from mubi import prim_mubi
     MuBi${nbits}True = ${nbits}'h${prim_mubi.mubi_value_as_hexstr(True, nbits)}, // enabled
     MuBi${nbits}False = ${nbits}'h${prim_mubi.mubi_value_as_hexstr(False, nbits)}  // disabled
   } mubi${nbits}_t;
+  parameter mubi${nbits}_t MUBI${nbits}_DEFAULT = mubi${nbits}_t'(MuBi${nbits}False);
 
   // This is a prerequisite for the multibit functions below to work.
   `ASSERT_STATIC_IN_PACKAGE(CheckMuBi${nbits}ValsComplementary_A, MuBi${nbits}True == ~MuBi${nbits}False)
