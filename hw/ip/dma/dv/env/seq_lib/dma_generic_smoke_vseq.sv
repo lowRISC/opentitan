@@ -28,23 +28,6 @@ class dma_generic_smoke_vseq extends dma_base_vseq;
 
   constraint transactions_c {num_txns == valid_combinations.size();}
 
-  typedef struct {
-    dma_address_space_id_t src_id;
-    dma_address_space_id_t dst_id;
-  } valid_space_id_t;
-
-  valid_space_id_t valid_combinations[$] = '{
-      '{OtInternalAddr, SocControlAddr},
-      '{OtInternalAddr, SocControlAddr},
-      // TODO remove once SYS support is enabled'{OtInternalAddr, SocSystemAddr},
-      '{OtInternalAddr, OtExtFlashAddr},
-      '{SocControlAddr, OtInternalAddr},
-      '{SocControlAddr, OtInternalAddr},
-      // TODO remove once SYS support is enabled '{SocSystemAddr, OtInternalAddr},
-      '{OtExtFlashAddr, OtInternalAddr},
-      '{OtInternalAddr,OtInternalAddr}
-  };
-
   // Function : Rerandomization of address ranges
   function void randomize_item(ref dma_seq_item dma_config, input int iteration = 0);
     int num_valid_combinations = valid_combinations.size();

@@ -13,6 +13,19 @@ class dma_base_vseq extends cip_base_vseq #(
   `uvm_object_utils(dma_base_vseq)
 
   bit sim_fatal_exit_on_dma_error=1;
+
+  // Valid address space ID conbinations
+  addr_space_id_t valid_combinations[] = '{
+    '{OtInternalAddr, SocControlAddr},
+    '{OtInternalAddr, SocControlAddr},
+    // TODO remove once SYS support is enabled'{OtInternalAddr, SocSystemAddr},
+    '{OtInternalAddr, OtExtFlashAddr},
+    '{SocControlAddr, OtInternalAddr},
+    '{SocControlAddr, OtInternalAddr},
+    // TODO remove once SYS support is enabled '{SocSystemAddr, OtInternalAddr},
+    '{OtExtFlashAddr, OtInternalAddr},
+    '{OtInternalAddr,OtInternalAddr}
+  };
   // response sequences
   dma_pull_seq #(.AddrWidth(HOST_ADDR_WIDTH)) seq_host;
   dma_pull_seq #(.AddrWidth(CTN_ADDR_WIDTH)) seq_ctn;

@@ -58,6 +58,11 @@ package dma_env_pkg;
     DmaSendData = 1
   } dma_control_data_direction_e;
 
+  typedef struct {
+    asid_encoding_e src_id;
+    asid_encoding_e dst_id;
+  } addr_space_id_t;
+
   // package sources
   `include "dma_seq_item.sv"
   `include "dma_handshake_mode_fifo.sv"
