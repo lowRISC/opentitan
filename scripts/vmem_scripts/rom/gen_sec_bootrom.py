@@ -18,7 +18,7 @@ license = """\
 
 module = """\
 module secure_boot_rom import prim_rom_pkg::*; #(
-  parameter int Width = 32,
+  parameter int Width = 39,
   parameter int Depth = $depth,
   parameter int Aw = 11
 ) (
