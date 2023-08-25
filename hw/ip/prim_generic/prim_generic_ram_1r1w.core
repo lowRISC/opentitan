@@ -3,7 +3,7 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-name: "lowrisc:prim_generic:ram_2p"
+name: "lowrisc:prim_generic:ram_1r1w"
 description: "prim"
 filesets:
   files_rtl:
@@ -12,7 +12,7 @@ filesets:
       - lowrisc:prim:ram_2p_pkg
       - lowrisc:prim:util_memload
     files:
-      - rtl/prim_generic_ram_2p.sv
+      - rtl/prim_generic_ram_1r1w.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
@@ -20,7 +20,7 @@ filesets:
       # common waivers
       - lowrisc:lint:common
     files:
-      - lint/prim_generic_ram_2p.vlt
+      - lint/prim_generic_ram_1r1w.vlt
     file_type: vlt
 
   files_ascentlint_waiver:
@@ -28,7 +28,7 @@ filesets:
       # common waivers
       - lowrisc:lint:common
     files:
-      - lint/prim_generic_ram_2p.waiver
+      - lint/prim_generic_ram_1r1w.waiver
     file_type: waiver
 
   files_veriblelint_waiver:
