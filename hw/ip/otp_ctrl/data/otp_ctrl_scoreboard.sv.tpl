@@ -1,7 +1,15 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+${gen_comment}
+<%
+from topgen.lib import Name
 
+read_locked_csr_parts = [part for part in otp_mmap.config["partitions"] if
+                         part["read_lock"] == "CSR"]
+write_locked_digest_parts = [part for part in otp_mmap.config["partitions"] if
+                             part["write_lock"] == "Digest"]
+%>\
 class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   extends cip_base_scoreboard #(
     .CFG_T(CFG_T),
@@ -664,13 +672,18 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 
           // Check if it is sw partition read lock - this can be used in `DaiRead` branch and also
           // coverage collection.
-          if (part_idx == VendorTestIdx) begin
-            sw_read_lock = `gmv(ral.vendor_test_read_lock) == 0;
-          end else if (part_idx == CreatorSwCfgIdx) begin
-            sw_read_lock = `gmv(ral.creator_sw_cfg_read_lock) == 0;
-          end else if (part_idx == OwnerSwCfgIdx) begin
-            sw_read_lock = `gmv(ral.owner_sw_cfg_read_lock) == 0;
+% for part in read_locked_csr_parts:
+<% part_name = Name.from_snake_case(part["name"]) %>\
+  % if loop.first:
+          if (part_idx == ${part_name.as_camel_case()}Idx) begin
+  % else:
+          end else if (part_idx == ${part_name.as_camel_case()}Idx) begin
+  % endif
+            sw_read_lock = `gmv(ral.${part_name.as_snake_case()}_read_lock) == 0;
+  % if loop.last:
           end
+  %endif
+% endfor
 
           // LC partition cannot be access via DAI
           if (part_idx == LifeCycleIdx) begin
@@ -916,14 +929,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           cov.collect_err_code_cov(item.d_data, part_idx);
         end
       end
-      "hw_cfg0_digest_0", "hw_cfg0_digest_1",
-      "hw_cfg1_digest_0", "hw_cfg1_digest_1",
-      "secret0_digest_0", "secret0_digest_1",
-      "secret1_digest_0", "secret1_digest_1",
-      "secret2_digest_0", "secret2_digest_1",
-      "creator_sw_cfg_digest_0", "creator_sw_cfg_digest_1",
-      "owner_sw_cfg_digest_0", "owner_sw_cfg_digest_1",
-      "vendor_test_digest_0", "vendor_test_digest_1": begin
+% for part in write_locked_digest_parts:
+<% part_name_snake = Name.from_snake_case(part["name"]).as_snake_case() %>\
+      "${part_name_snake}_digest_0", "${part_name_snake}_digest_1"${": begin" if loop.last else ","}
+% endfor
         if (ignore_digest_chk) do_read_check = 0;
       end
       "direct_access_rdata_0", "direct_access_rdata_1": do_read_check = check_dai_rd_data;
@@ -1072,45 +1081,23 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 
   // predict digest registers
   virtual function void predict_digest_csrs();
-    void'(ral.vendor_test_digest[0].predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[VendorTestIdx]]), .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.vendor_test_digest[1].predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[VendorTestIdx] + 1]), .kind(UVM_PREDICT_DIRECT)));
+% for part in write_locked_digest_parts:
+<% part_name = Name.from_snake_case(part["name"]) %>\
+  % if len(part["name"]) < 8:
+    void'(ral.${part_name.as_snake_case()}_digest[0].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[${part_name.as_camel_case()}Idx]]),
+        .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.${part_name.as_snake_case()}_digest[1].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[${part_name.as_camel_case()}Idx] + 1]),
+        .kind(UVM_PREDICT_DIRECT)));
+  % else:
+    void'(ral.${part_name.as_snake_case()}_digest[0].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[${part_name.as_camel_case()}Idx]]), .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.${part_name.as_snake_case()}_digest[1].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[${part_name.as_camel_case()}Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
+  %endif
+  % if not loop.last:
 
-    void'(ral.creator_sw_cfg_digest[0].predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[CreatorSwCfgIdx]]), .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.creator_sw_cfg_digest[1].predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[CreatorSwCfgIdx] + 1]), .kind(UVM_PREDICT_DIRECT)));
-
-    void'(ral.owner_sw_cfg_digest[0].predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[OwnerSwCfgIdx]]), .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.owner_sw_cfg_digest[1].predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[OwnerSwCfgIdx] + 1]), .kind(UVM_PREDICT_DIRECT)));
-
-    void'(ral.hw_cfg0_digest[0].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfg0Idx]]),
-        .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.hw_cfg0_digest[1].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfg0Idx] + 1]),
-        .kind(UVM_PREDICT_DIRECT)));
-
-    void'(ral.hw_cfg1_digest[0].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfg1Idx]]),
-        .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.hw_cfg1_digest[1].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfg1Idx] + 1]),
-        .kind(UVM_PREDICT_DIRECT)));
-
-    void'(ral.secret0_digest[0].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx]]),
-        .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.secret0_digest[1].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx] + 1]),
-        .kind(UVM_PREDICT_DIRECT)));
-
-    void'(ral.secret1_digest[0].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[Secret1Idx]]),
-        .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.secret1_digest[1].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[Secret1Idx] + 1]),
-        .kind(UVM_PREDICT_DIRECT)));
-
-    void'(ral.secret2_digest[0].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[Secret2Idx]]),
-        .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.secret2_digest[1].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[Secret2Idx] + 1]),
-        .kind(UVM_PREDICT_DIRECT)));
+  %endif
+% endfor
   endfunction
 
   function void update_digest_to_otp(int part_idx, bit [TL_DW*2-1:0] digest);
@@ -1289,18 +1276,19 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   virtual function bit [TL_DW*2-1:0] get_digest_reg_val(int part_idx);
     bit [TL_DW*2-1:0] digest;
     case (part_idx)
-      VendorTestIdx: begin
-        digest = {`gmv(ral.vendor_test_digest[1]), `gmv(ral.vendor_test_digest[0])};
+% for part in write_locked_digest_parts:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_snake = part_name.as_snake_case()
+%>\
+  % if len(part["name"]) < 13:
+      ${part_name.as_camel_case()}Idx: digest = {`gmv(ral.${part_name_snake}_digest[1]), `gmv(ral.${part_name_snake}_digest[0])};
+  % else:
+      ${part_name.as_camel_case()}Idx: begin
+        digest = {`gmv(ral.${part_name_snake}_digest[1]), `gmv(ral.${part_name_snake}_digest[0])};
       end
-      CreatorSwCfgIdx: begin
-        digest = {`gmv(ral.creator_sw_cfg_digest[1]), `gmv(ral.creator_sw_cfg_digest[0])};
-      end
-      OwnerSwCfgIdx: digest = {`gmv(ral.owner_sw_cfg_digest[1]), `gmv(ral.owner_sw_cfg_digest[0])};
-      HwCfg0Idx: digest = {`gmv(ral.hw_cfg0_digest[1]), `gmv(ral.hw_cfg0_digest[0])};
-      HwCfg1Idx: digest = {`gmv(ral.hw_cfg1_digest[1]), `gmv(ral.hw_cfg1_digest[0])};
-      Secret0Idx: digest = {`gmv(ral.secret0_digest[1]), `gmv(ral.secret0_digest[0])};
-      Secret1Idx: digest = {`gmv(ral.secret1_digest[1]), `gmv(ral.secret1_digest[0])};
-      Secret2Idx: digest = {`gmv(ral.secret2_digest[1]), `gmv(ral.secret2_digest[0])};
+  % endif
+% endfor
       default: `uvm_fatal(`gfn, $sformatf("Partition %0d does not have digest", part_idx))
     endcase
     return digest;
@@ -1329,45 +1317,25 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         mem_access_allowed) begin
 
       // If sw partition is read locked, then access policy changes from RO to no access
-      if (`gmv(ral.vendor_test_read_lock) == 0 || cfg.otp_ctrl_vif.under_error_states()) begin
-        if (addr inside {[cfg.ral_models[ral_name].mem_ranges[0].start_addr + VendorTestOffset :
-                          cfg.ral_models[ral_name].mem_ranges[0].start_addr + VendorTestOffset +
-                          VendorTestSize - 1]}) begin
-          predict_err(OtpVendorTestErrIdx, OtpAccessError);
+% for part in read_locked_csr_parts:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_camel = part_name.as_camel_case()
+%>\
+      if (`gmv(ral.${part_name.as_snake_case()}_read_lock) == 0 || cfg.otp_ctrl_vif.under_error_states()) begin
+        if (addr inside {[cfg.ral_models[ral_name].mem_ranges[0].start_addr + ${part_name_camel}Offset :
+                          cfg.ral_models[ral_name].mem_ranges[0].start_addr + ${part_name_camel}Offset +
+                          ${part_name_camel}Size - 1]}) begin
+          predict_err(Otp${part_name_camel}ErrIdx, OtpAccessError);
           custom_err = 1;
           if (cfg.en_cov) begin
-            cov.unbuf_access_lock_cg_wrap[VendorTestIdx].sample(.read_lock(1),
-                .write_lock(get_digest_reg_val(VendorTestIdx) != 0), .is_write(0));
+            cov.unbuf_access_lock_cg_wrap[${part_name_camel}Idx].sample(.read_lock(1),
+                .write_lock(get_digest_reg_val(${part_name_camel}Idx) != 0), .is_write(0));
           end
           return 0;
         end
       end
-      if (`gmv(ral.creator_sw_cfg_read_lock) == 0 || cfg.otp_ctrl_vif.under_error_states()) begin
-        if (addr inside {[cfg.ral_models[ral_name].mem_ranges[0].start_addr + CreatorSwCfgOffset :
-                          cfg.ral_models[ral_name].mem_ranges[0].start_addr + CreatorSwCfgOffset +
-                          CreatorSwCfgSize - 1]}) begin
-          predict_err(OtpCreatorSwCfgErrIdx, OtpAccessError);
-          custom_err = 1;
-          if (cfg.en_cov) begin
-            cov.unbuf_access_lock_cg_wrap[CreatorSwCfgIdx].sample(.read_lock(1),
-                .write_lock(get_digest_reg_val(CreatorSwCfgIdx) != 0), .is_write(0));
-          end
-          return 0;
-        end
-      end
-      if (`gmv(ral.owner_sw_cfg_read_lock) == 0 || cfg.otp_ctrl_vif.under_error_states()) begin
-        if (addr inside {[cfg.ral_models[ral_name].mem_ranges[0].start_addr + OwnerSwCfgOffset :
-                          cfg.ral_models[ral_name].mem_ranges[0].start_addr + OwnerSwCfgOffset +
-                          OwnerSwCfgSize - 1]}) begin
-          predict_err(OtpOwnerSwCfgErrIdx, OtpAccessError);
-          custom_err = 1;
-          if (cfg.en_cov) begin
-            cov.unbuf_access_lock_cg_wrap[OwnerSwCfgIdx].sample(.read_lock(1),
-                .write_lock(get_digest_reg_val(OwnerSwCfgIdx) != 0), .is_write(0));
-          end
-          return 0;
-        end
-      end
+% endfor
 
       // Check ECC uncorrectable fatal error.
       if (dai_addr < LifeCycleOffset) begin
