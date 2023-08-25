@@ -106,7 +106,7 @@ def _calc_size(part: Dict, size: int):
     return size
 
 
-def _validate_part(part: Dict, key_names: List[str]):
+def _validate_part(part: Dict, key_names: List[str], is_last: bool):
     '''Validates a partition within the OTP memory map'''
     part.setdefault("name", "unknown_name")
     part.setdefault("variant", "Unbuffered")
@@ -129,6 +129,12 @@ def _validate_part(part: Dict, key_names: List[str]):
     # basic checks
     if part["variant"] not in ["Unbuffered", "Buffered", "LifeCycle"]:
         raise RuntimeError("Invalid partition type {}".format(part["variant"]))
+
+    # the DV and HW assumes that the last partition is always the life cycle
+    # partition.
+    if (part["variant"] == "LifeCycle") != is_last:
+        raise RuntimeError("The last partition must always be the life cycle"
+                           "partition")
 
     if part["key_sel"] not in (["NoKey"] + key_names):
         raise RuntimeError("Invalid key sel {}".format(part["key_sel"]))
@@ -248,8 +254,8 @@ def _validate_mmap(config: Dict):
 
     # validate inputs before use
     allocated = 0
-    for part in config["partitions"]:
-        _validate_part(part, key_names)
+    for k, part in enumerate(config["partitions"]):
+        _validate_part(part, key_names, k == (len(config["partitions"]) - 1))
         allocated += part['size']
 
     # distribute unallocated bits

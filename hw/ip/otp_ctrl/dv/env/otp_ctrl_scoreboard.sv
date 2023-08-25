@@ -88,24 +88,35 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   virtual task process_wipe_mem();
     forever begin
       @(posedge cfg.backdoor_clear_mem) begin
-        bit [SCRAMBLE_DATA_SIZE-1:0] data = descramble_data(0, Secret0Idx);
+        bit [SCRAMBLE_DATA_SIZE-1:0] data;
         otp_a        = '{default:0};
         otp_lc_data  = '{default:0};
         // secret partitions have been scrambled before writing to OTP.
         // here calculate the pre-srambled raw data when clearing internal OTP to all 0s.
-        for (int i = SECRET0_START_ADDR; i <= SECRET0_END_ADDR; i++) begin
-          otp_a[i] = ((i - SECRET0_START_ADDR) % 2) ? data[SCRAMBLE_DATA_SIZE-1:TL_DW] :
-                                                      data[TL_DW-1:0];
+        data = descramble_data(0, Secret0Idx);
+        for (int i = Secret0Offset / TL_SIZE;
+             i <= Secret0DigestOffset / TL_SIZE - 1;
+             i++) begin
+          otp_a[i] = ((i - Secret0Offset / TL_SIZE) % 2) ?
+              data[SCRAMBLE_DATA_SIZE-1:TL_DW] : data[TL_DW-1:0];
         end
+        // secret partitions have been scrambled before writing to OTP.
+        // here calculate the pre-srambled raw data when clearing internal OTP to all 0s.
         data = descramble_data(0, Secret1Idx);
-        for (int i = SECRET1_START_ADDR; i <= SECRET1_END_ADDR; i++) begin
-          otp_a[i] = ((i - SECRET1_START_ADDR) % 2) ? data[SCRAMBLE_DATA_SIZE-1:TL_DW] :
-                                                      data[TL_DW-1:0];
+        for (int i = Secret1Offset / TL_SIZE;
+             i <= Secret1DigestOffset / TL_SIZE - 1;
+             i++) begin
+          otp_a[i] = ((i - Secret1Offset / TL_SIZE) % 2) ?
+              data[SCRAMBLE_DATA_SIZE-1:TL_DW] : data[TL_DW-1:0];
         end
+        // secret partitions have been scrambled before writing to OTP.
+        // here calculate the pre-srambled raw data when clearing internal OTP to all 0s.
         data = descramble_data(0, Secret2Idx);
-        for (int i = SECRET2_START_ADDR; i <= SECRET2_END_ADDR; i++) begin
-          otp_a[i] = ((i - SECRET2_START_ADDR) % 2) ? data[SCRAMBLE_DATA_SIZE-1:TL_DW] :
-                                                      data[TL_DW-1:0];
+        for (int i = Secret2Offset / TL_SIZE;
+             i <= Secret2DigestOffset / TL_SIZE - 1;
+             i++) begin
+          otp_a[i] = ((i - Secret2Offset / TL_SIZE) % 2) ?
+              data[SCRAMBLE_DATA_SIZE-1:TL_DW] : data[TL_DW-1:0];
         end
         `uvm_info(`gfn, "clear internal memory and digest", UVM_HIGH)
         cfg.backdoor_clear_mem = 0;
@@ -1151,11 +1162,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       dai_digest_ip = part_idx;
     end
     case (part_idx)
-      HwCfg0Idx:  mem_q = otp_a[HW_CFG0_START_ADDR:HW_CFG0_END_ADDR];
-      HwCfg1Idx:  mem_q = otp_a[HW_CFG1_START_ADDR:HW_CFG1_END_ADDR];
-      Secret0Idx: mem_q = otp_a[SECRET0_START_ADDR:SECRET0_END_ADDR];
-      Secret1Idx: mem_q = otp_a[SECRET1_START_ADDR:SECRET1_END_ADDR];
-      Secret2Idx: mem_q = otp_a[SECRET2_START_ADDR:SECRET2_END_ADDR];
+      HwCfg0Idx: mem_q = otp_a[HwCfg0Offset / TL_SIZE : HwCfg0DigestOffset / TL_SIZE - 1];
+      Secret0Idx: mem_q = otp_a[Secret0Offset / TL_SIZE : Secret0DigestOffset / TL_SIZE - 1];
+      Secret1Idx: mem_q = otp_a[Secret1Offset / TL_SIZE : Secret1DigestOffset / TL_SIZE - 1];
+      Secret2Idx: mem_q = otp_a[Secret2Offset / TL_SIZE : Secret2DigestOffset / TL_SIZE - 1];
       default: begin
         `uvm_fatal(`gfn, $sformatf("Access unexpected partition %0d", part_idx))
       end

@@ -40,6 +40,7 @@ package otp_ctrl_env_pkg;
 
   parameter uint DIGEST_SIZE             = 8;
   parameter uint SW_WINDOW_BASE_ADDR     = 'h1000;
+<<<<<<< HEAD
   parameter uint SW_WINDOW_SIZE          = 512 * 4;
 
   // convert byte into TLUL width size
@@ -70,7 +71,11 @@ package otp_ctrl_env_pkg;
   parameter uint SECRET2_START_ADDR  = Secret2Offset / (TL_DW / 8);
   parameter uint SECRET2_DIGEST_ADDR = Secret2DigestOffset / (TL_DW / 8);
   parameter uint SECRET2_END_ADDR    = SECRET2_DIGEST_ADDR - 1;
+=======
+  parameter uint SW_WINDOW_SIZE          = NumSwCfgWindowWords * 4;
+>>>>>>> 53eb5972a8 ([otp_ctrl/dv] Replace hardcoded offsets with templating)
 
+  parameter uint TL_SIZE = (TL_DW / 8);
   // LC has its own storage in scb
 <<<<<<< HEAD
   parameter uint OTP_ARRAY_SIZE = (VendorTestSize + CreatorSwCfgSize + OwnerSwCfgSize +
@@ -78,8 +83,12 @@ package otp_ctrl_env_pkg;
                                    / (TL_DW / 8);
 =======
   // we can use the LC offset here because it will always be the last partition.
+<<<<<<< HEAD
   parameter uint OTP_ARRAY_SIZE = LcTransitionCntOffset / (TL_DW / 8);
 >>>>>>> 538f1fe6fc ([otp_ctrl/dv] Use more generated constants in DV env)
+=======
+  parameter uint OTP_ARRAY_SIZE = LcTransitionCntOffset / TL_SIZE;
+>>>>>>> 53eb5972a8 ([otp_ctrl/dv] Replace hardcoded offsets with templating)
 
   parameter int OTP_ADDR_WIDTH = 11;
 
