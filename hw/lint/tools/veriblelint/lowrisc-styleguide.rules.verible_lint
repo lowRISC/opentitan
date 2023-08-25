@@ -14,3 +14,7 @@ parameter-name-style=localparam_style:CamelCase|ALL_CAPS
 
 # we allow nested struct definitions
 -typedef-structs-unions
+
+# TODO(lowRISC/opentitan#19556): remove this suppression and fix the resulting
+# lint warnings.
+-always-comb
