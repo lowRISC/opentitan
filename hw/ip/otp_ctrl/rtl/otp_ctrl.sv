@@ -309,9 +309,14 @@ module otp_ctrl
     part_access_pre[LifeCycleIdx].write_lock = MuBi8True;
     part_access_pre[LifeCycleIdx].read_lock = MuBi8True;
 
-    // The SECRET2 partition can only be accessed (write&read) when provisioning is enabled.
+    // Special partitions for keymgr material only become writable when
+    // provisioning is enabled.
     if (lc_ctrl_pkg::lc_tx_test_false_loose(lc_creator_seed_sw_rw_en)) begin
-      part_access_pre[Secret2Idx] = {2{MuBi8True}};
+      for (int k = 0; k < NumPart; k++) begin
+        if (PartInfo[k].iskeymgr) begin
+          part_access_pre[k] = {2{prim_mubi_pkg::MuBi8True}};
+        end
+      end
     end
   end
 

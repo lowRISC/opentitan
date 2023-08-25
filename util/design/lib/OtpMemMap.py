@@ -117,6 +117,7 @@ def _validate_part(part: Dict, key_names: List[str], is_last: bool):
     part.setdefault("read_lock", "none")
     part.setdefault("key_sel", "NoKey")
     part.setdefault("absorb", False)
+    part.setdefault("iskeymgr", False)
     log.info("Validating partition {}".format(part["name"]))
 
     # Make sure these are boolean types (simplifies the mako templates)
@@ -181,6 +182,10 @@ def _validate_part(part: Dict, key_names: List[str], is_last: bool):
     size = 0
     for item in part["items"]:
         _validate_item(item, part["variant"] == "Buffered", part["secret"])
+        # if any item has key material, we need mark the partition as such
+        if item["iskeymgr"]:
+            part["iskeymgr"] = True
+
         size += item["size"]
 
     # if size not previously defined, set it
