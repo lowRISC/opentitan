@@ -2,6 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 ${gen_comment}
+<%
+from topgen.lib import Name
+
+parts_without_lc = [part for part in otp_mmap.config["partitions"] if
+                    part["variant"] in ["Buffered", "Unbuffered"]]
+%>\
 package otp_ctrl_env_pkg;
   // dep packages
   import uvm_pkg::*;
@@ -71,26 +77,24 @@ package otp_ctrl_env_pkg;
 
   // lc does not have dai access
   parameter int PART_BASE_ADDRS [NumPart-1] = {
-    VendorTestOffset,
-    CreatorSwCfgOffset,
-    OwnerSwCfgOffset,
-    HwCfg0Offset,
-    HwCfg1Offset,
-    Secret0Offset,
-    Secret1Offset,
-    Secret2Offset
+% for part in parts_without_lc:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_camel = part_name.as_camel_case()
+%>\
+    ${part_name_camel}Offset${"" if loop.last else ","}
+% endfor
   };
 
   // lc does not have digest
   parameter int PART_OTP_DIGEST_ADDRS [NumPart-1] = {
-    VendorTestDigestOffset   >> 2,
-    CreatorSwCfgDigestOffset >> 2,
-    OwnerSwCfgDigestOffset   >> 2,
-    HwCfg0DigestOffset       >> 2,
-    HwCfg1DigestOffset       >> 2,
-    Secret0DigestOffset      >> 2,
-    Secret1DigestOffset      >> 2,
-    Secret2DigestOffset      >> 2
+% for part in parts_without_lc:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_camel = part_name.as_camel_case()
+%>\
+    ${part_name_camel}DigestOffset >> 2${"" if loop.last else ","}
+% endfor
   };
 
   // types
@@ -101,15 +105,13 @@ package otp_ctrl_env_pkg;
   } otp_intr_e;
 
   typedef enum bit [5:0] {
-    OtpVendorTestErrIdx,
-    OtpCreatorSwCfgErrIdx,
-    OtpOwnerSwCfgErrIdx,
-    OtpHwCfg0ErrIdx,
-    OtpHwCfg1ErrIdx,
-    OtpSecret0ErrIdx,
-    OtpSecret1ErrIdx,
-    OtpSecret2ErrIdx,
-    OtpLifeCycleErrIdx,
+% for part in otp_mmap.config["partitions"]:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_camel = part_name.as_camel_case()
+%>\
+    Otp${part_name_camel}ErrIdx,
+% endfor
     OtpDaiErrIdx,
     OtpLciErrIdx,
     OtpTimeoutErrIdx,
