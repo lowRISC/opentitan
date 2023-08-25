@@ -21,7 +21,45 @@ BLOCKFILE
 ci/scripts/check-pr-changes-allowed.py
 
 # Earlgrey related RTL
-hw/ip/*/rtl/*
+# enumerated individually so that some discrete-only blocks can be excluded:
+# - usbdev
+hw/ip/adc_ctrl/rtl/*
+hw/ip/aes/rtl/*
+hw/ip/aon_timer/rtl/*
+hw/ip/clkmgr/rtl/*
+hw/ip/csrng/rtl/*
+hw/ip/edn/rtl/*
+hw/ip/entropy_src/rtl/*
+hw/ip/flash_ctrl/rtl/*
+hw/ip/gpio/rtl/*
+hw/ip/hmac/rtl/*
+hw/ip/i2c/rtl/*
+hw/ip/keymgr/rtl/*
+hw/ip/kmac/rtl/*
+hw/ip/lc_ctrl/rtl/*
+hw/ip/otbn/rtl/*
+hw/ip/otp_ctrl/rtl/*
+hw/ip/pattgen/rtl/*
+hw/ip/pinmux/rtl/*
+hw/ip/prim/rtl/*
+hw/ip/prim_generic/rtl/*
+hw/ip/prim_xilinx/rtl/*
+hw/ip/prim_xilinx_ultrascale/rtl/*
+hw/ip/pwm/rtl/*
+hw/ip/pwrmgr/rtl/*
+hw/ip/rom_ctrl/rtl/*
+hw/ip/rstmgr/rtl/*
+hw/ip/rv_core_ibex/rtl/*
+hw/ip/rv_dm/rtl/*
+hw/ip/rv_timer/rtl/*
+hw/ip/spi_device/rtl/*
+hw/ip/spi_host/rtl/*
+hw/ip/sram_ctrl/rtl/*
+hw/ip/sysrst_ctrl/rtl/*
+hw/ip/tlul/rtl/*
+hw/ip/trial1/rtl/*
+hw/ip/uart/rtl/*
+
 hw/ip_templates/*/rtl/*
 hw/top_earlgrey/ip/*/rtl/*
 hw/top_earlgrey/ip_autogen/*/rtl/*
@@ -31,8 +69,10 @@ hw/vendor/lowrisc_ibex/rtl/*
 hw/vendor/pulp_riscv_dbg/src/*
 hw/vendor/pulp_riscv_dbg/debug_rom/*
 
-# Individual HJSON files that effect RTL generation (no wildcard as it's
+# Individual HJSON files that affect RTL generation (no wildcard as it's
 # too broad and will also block DV-only files)
+# exclusions:
+# - usbdev
 hw/ip/pwrmgr/data/pwrmgr.hjson
 hw/ip/lc_ctrl/data/lc_ctrl.hjson
 hw/ip/rv_timer/data/rv_timer.hjson
@@ -45,7 +85,6 @@ hw/ip/pattgen/data/pattgen.hjson
 hw/ip/keymgr/data/keymgr.hjson
 hw/ip/edn/data/edn.hjson
 hw/ip/csrng/data/csrng.hjson
-hw/ip/usbdev/data/usbdev.hjson
 hw/ip/uart/data/uart.hjson
 hw/ip/flash_ctrl/data/flash_ctrl.hjson
 hw/ip/rstmgr/data/rstmgr.hjson
