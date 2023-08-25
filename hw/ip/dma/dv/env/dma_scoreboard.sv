@@ -136,6 +136,22 @@ class dma_scoreboard extends cip_base_scoreboard #(
         `uvm_info(`gfn, $sformatf("Got transfer_width = %s",
                                   dma_config.per_transfer_width.name()), UVM_HIGH)
       end
+      "destination_address_limit_lo": begin
+        dma_config.mem_buffer_limit[31:0] =
+          `gmv(ral.destination_address_limit_lo.address_limit_lo);
+      end
+      "destination_address_limit_hi": begin
+        dma_config.mem_buffer_limit[63:32] =
+          `gmv(ral.destination_address_limit_hi.address_limit_hi);
+      end
+      "destination_address_almost_limit_lo": begin
+        dma_config.mem_buffer_almost_limit[31:0] =
+          `gmv(ral.destination_address_almost_limit_lo.address_limit_lo);
+      end
+      "destination_address_almost_limit_hi": begin
+        dma_config.mem_buffer_almost_limit[63:32] =
+          `gmv(ral.destination_address_almost_limit_hi.address_limit_hi);
+      end
       "control": begin
         // bit to indicate start of DMA operation
         bit go = `gmv(ral.control.go);
