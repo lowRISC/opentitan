@@ -72,9 +72,12 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |         |                |            |      64bit       |                  FLASH_DATA_KEY_SEED                  |     0x6E0      |     32     |
 |         |                |            |      64bit       |                  SRAM_DATA_KEY_SEED                   |     0x700      |     16     |
 |         |                |            |      64bit       |        [SECRET1_DIGEST](#Reg_secret1_digest_0)        |     0x710      |     8      |
-|    7    |    SECRET2     |     88     |      64bit       |                       RMA_TOKEN                       |     0x718      |     16     |
+|    7    |    SECRET2     |    120     |      64bit       |                       RMA_TOKEN                       |     0x718      |     16     |
 |         |                |            |      64bit       |                CREATOR_ROOT_KEY_SHARE0                |     0x728      |     32     |
 |         |                |            |      64bit       |                CREATOR_ROOT_KEY_SHARE1                |     0x748      |     32     |
-|         |                |            |      64bit       |        [SECRET2_DIGEST](#Reg_secret2_digest_0)        |     0x768      |     8      |
-|    8    |   LIFE_CYCLE   |     88     |      32bit       |                   LC_TRANSITION_CNT                   |     0x770      |     48     |
-|         |                |            |      32bit       |                       LC_STATE                        |     0x7A0      |     40     |
+|         |                |            |      64bit       |                     CREATOR_SEED                      |     0x768      |     32     |
+|         |                |            |      64bit       |        [SECRET2_DIGEST](#Reg_secret2_digest_0)        |     0x788      |     8      |
+|    8    |    SECRET3     |     40     |      64bit       |                      OWNER_SEED                       |     0x790      |     32     |
+|         |                |            |      64bit       |        [SECRET3_DIGEST](#Reg_secret3_digest_0)        |     0x7B0      |     8      |
+|    9    |   LIFE_CYCLE   |     88     |      32bit       |                   LC_TRANSITION_CNT                   |     0x7B8      |     48     |
+|         |                |            |      32bit       |                       LC_STATE                        |     0x7E8      |     40     |

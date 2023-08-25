@@ -213,6 +213,7 @@ dif_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
       [kDifOtpCtrlStatusCodeSecret0Error] = OTP_CTRL_STATUS_SECRET0_ERROR_BIT,
       [kDifOtpCtrlStatusCodeSecret1Error] = OTP_CTRL_STATUS_SECRET1_ERROR_BIT,
       [kDifOtpCtrlStatusCodeSecret2Error] = OTP_CTRL_STATUS_SECRET2_ERROR_BIT,
+      [kDifOtpCtrlStatusCodeSecret3Error] = OTP_CTRL_STATUS_SECRET3_ERROR_BIT,
       [kDifOtpCtrlStatusCodeDaiError] = OTP_CTRL_STATUS_DAI_ERROR_BIT,
       [kDifOtpCtrlStatusCodeLciError] = OTP_CTRL_STATUS_LCI_ERROR_BIT,
       [kDifOtpCtrlStatusCodeTimeoutError] = OTP_CTRL_STATUS_TIMEOUT_ERROR_BIT,
@@ -363,6 +364,11 @@ static const partition_info_t kPartitions[] = {
     [kDifOtpCtrlPartitionSecret2] = {.start_addr =
                                          OTP_CTRL_PARAM_SECRET2_OFFSET,
                                      .len = OTP_CTRL_PARAM_SECRET2_SIZE,
+                                     .align_mask = 0x7,
+                                     .has_digest = true},
+    [kDifOtpCtrlPartitionSecret3] = {.start_addr =
+                                         OTP_CTRL_PARAM_SECRET3_OFFSET,
+                                     .len = OTP_CTRL_PARAM_SECRET3_SIZE,
                                      .align_mask = 0x7,
                                      .has_digest = true},
     [kDifOtpCtrlPartitionLifeCycle] = {.start_addr =
@@ -656,6 +662,10 @@ static bool get_digest_regs(dif_otp_ctrl_partition_t partition, ptrdiff_t *reg0,
     case kDifOtpCtrlPartitionSecret2:
       *reg0 = OTP_CTRL_SECRET2_DIGEST_0_REG_OFFSET;
       *reg1 = OTP_CTRL_SECRET2_DIGEST_1_REG_OFFSET;
+      break;
+    case kDifOtpCtrlPartitionSecret3:
+      *reg0 = OTP_CTRL_SECRET3_DIGEST_0_REG_OFFSET;
+      *reg1 = OTP_CTRL_SECRET3_DIGEST_1_REG_OFFSET;
       break;
     default:
       return false;

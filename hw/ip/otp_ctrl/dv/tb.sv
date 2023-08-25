@@ -209,6 +209,7 @@ module tb;
     $assertoff(0, tb.dut.gen_partitions[otp_ctrl_part_pkg::Secret0Idx].`OTP_SVA_PATH);
     $assertoff(0, tb.dut.gen_partitions[otp_ctrl_part_pkg::Secret1Idx].`OTP_SVA_PATH);
     $assertoff(0, tb.dut.gen_partitions[otp_ctrl_part_pkg::Secret2Idx].`OTP_SVA_PATH);
+    $assertoff(0, tb.dut.gen_partitions[otp_ctrl_part_pkg::Secret3Idx].`OTP_SVA_PATH);
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);

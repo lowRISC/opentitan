@@ -340,6 +340,10 @@
       desc: '''Covers whether `lc_creator_seed_sw_rw_en` is On during any DAI accesses.'''
     }
     {
+      name: dai_access_secret3_cg
+      desc: '''Covers whether `lc_creator_seed_sw_rw_en` is On during any DAI accesses.'''
+    }
+    {
       name: status_csr_cg
       desc: '''Covers the value of every bit in `status` CSR.'''
     }

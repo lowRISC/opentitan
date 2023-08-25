@@ -69,9 +69,16 @@ typedef enum dif_otp_ctrl_partition {
   /**
    * Scrambled partition 2.
    *
-   * This partition contains the RMA unlock token and the CreatorRootKey.
+   * This partition contains the RMA unlock token and the CreatorRootKey
+   * and CreatorSeed.
    */
   kDifOtpCtrlPartitionSecret2,
+  /**
+   * Scrambled partition 3.
+   *
+   * This partition contains the OwnerSeed.
+   */
+  kDifOtpCtrlPartitionSecret3,
   /**
    * The device lifecycle area.
    */
@@ -157,6 +164,10 @@ typedef enum dif_otp_ctrl_status_code {
    * Indicates an error occurred in the `Secret2` partition.
    */
   kDifOtpCtrlStatusCodeSecret2Error,
+  /**
+   * Indicates an error occurred in the `Secret3` partition.
+   */
+  kDifOtpCtrlStatusCodeSecret3Error,
   /**
    * Indicates an error occurred in the `LifeCycle` partition.
    */

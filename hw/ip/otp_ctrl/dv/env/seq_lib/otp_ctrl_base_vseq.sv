@@ -284,6 +284,8 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     csr_rd(.ptr(ral.secret1_digest[1]),        .value(val));
     csr_rd(.ptr(ral.secret2_digest[0]),        .value(val));
     csr_rd(.ptr(ral.secret2_digest[1]),        .value(val));
+    csr_rd(.ptr(ral.secret3_digest[0]),        .value(val));
+    csr_rd(.ptr(ral.secret3_digest[1]),        .value(val));
   endtask
 
   // If the partition is read/write locked, there is 20% chance we will force the internal mubi
@@ -340,6 +342,11 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
       if (`gmv(ral.secret2_digest[0]) || `gmv(ral.secret2_digest[1])) begin
         if (!$urandom_range(0, 4)) forced_mubi_part_access[Secret2Idx].read_lock = 1;
         if (!$urandom_range(0, 4)) forced_mubi_part_access[Secret2Idx].write_lock = 1;
+      end
+
+      if (`gmv(ral.secret3_digest[0]) || `gmv(ral.secret3_digest[1])) begin
+        if (!$urandom_range(0, 4)) forced_mubi_part_access[Secret3Idx].read_lock = 1;
+        if (!$urandom_range(0, 4)) forced_mubi_part_access[Secret3Idx].write_lock = 1;
       end
 
       foreach (forced_mubi_part_access[i]) begin

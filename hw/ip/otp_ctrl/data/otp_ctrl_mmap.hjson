@@ -41,6 +41,10 @@
                 name:  "Secret2Key",
                 value: "<random>",
             }
+            {
+                name:  "Secret3Key",
+                value: "<random>",
+            }
         ]
         digests: [
             // This is the consistency digest used by all partitions.
@@ -507,8 +511,36 @@
                     size: "32"
                     iskeymgr: true
                 }
+                {
+                    name: "CREATOR_SEED",
+                    inv_default: "<random>",
+                    size: "32",
+                    iskeymgr: true
+                }
             ],
-            desc: '''RMA unlock token and creator root key.
+            desc: '''RMA unlock token, creator root key and creator seed.
+            '''
+        }
+        {
+            name:       "SECRET3",
+            variant:    "Buffered",
+            secret:     true,
+            sw_digest:  false,
+            hw_digest:  true,
+            write_lock: "Digest",
+            read_lock:  "Digest",
+            key_sel:    "Secret3Key",
+            integrity:  true,
+            bkout_type: false,
+            items: [
+                {
+                    name: "OWNER_SEED",
+                    inv_default: "<random>",
+                    size: "32",
+                    iskeymgr: true
+                }
+            ],
+            desc: '''Owner seed.
             '''
         }
         {

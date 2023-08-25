@@ -146,7 +146,7 @@
     { name: "NumErrorEntries",
       desc: "Number of error register entries.",
       type: "int",
-      default: "11", // partitions + DAI/LCI
+      default: "12", // partitions + DAI/LCI
       local: "true"
     },
     { name: "NumDaiWords",
@@ -172,7 +172,7 @@
     { name: "NumPart",
       desc: "Number of partitions",
       type: "int",
-      default: "9",
+      default: "10",
       local: "true"
     },
     { name: "NumPartUnbuf",
@@ -184,7 +184,7 @@
     { name: "NumPartBuf",
       desc: "Number of buffered partitions (including 1 lifecycle partition)",
       type: "int",
-      default: "6",
+      default: "7",
       local: "true"
     },
     { name: "VendorTestOffset",
@@ -1084,7 +1084,7 @@
     { name: "Secret2Size",
       desc: "Size of the SECRET2 partition",
       type: "int",
-      default: "88",
+      default: "120",
       local: "true"
     },
     { name: "RmaTokenOffset",
@@ -1123,10 +1123,22 @@
       default: "32",
       local: "true"
     },
+    { name: "CreatorSeedOffset",
+      desc: "Offset of CREATOR_SEED",
+      type: "int",
+      default: "1896",
+      local: "true"
+    },
+    { name: "CreatorSeedSize",
+      desc: "Size of CREATOR_SEED",
+      type: "int",
+      default: "32",
+      local: "true"
+    },
     { name: "Secret2DigestOffset",
       desc: "Offset of SECRET2_DIGEST",
       type: "int",
-      default: "1896",
+      default: "1928",
       local: "true"
     },
     { name: "Secret2DigestSize",
@@ -1135,10 +1147,46 @@
       default: "8",
       local: "true"
     },
+    { name: "Secret3Offset",
+      desc: "Offset of the SECRET3 partition",
+      type: "int",
+      default: "1936",
+      local: "true"
+    },
+    { name: "Secret3Size",
+      desc: "Size of the SECRET3 partition",
+      type: "int",
+      default: "40",
+      local: "true"
+    },
+    { name: "OwnerSeedOffset",
+      desc: "Offset of OWNER_SEED",
+      type: "int",
+      default: "1936",
+      local: "true"
+    },
+    { name: "OwnerSeedSize",
+      desc: "Size of OWNER_SEED",
+      type: "int",
+      default: "32",
+      local: "true"
+    },
+    { name: "Secret3DigestOffset",
+      desc: "Offset of SECRET3_DIGEST",
+      type: "int",
+      default: "1968",
+      local: "true"
+    },
+    { name: "Secret3DigestSize",
+      desc: "Size of SECRET3_DIGEST",
+      type: "int",
+      default: "8",
+      local: "true"
+    },
     { name: "LifeCycleOffset",
       desc: "Offset of the LIFE_CYCLE partition",
       type: "int",
-      default: "1904",
+      default: "1976",
       local: "true"
     },
     { name: "LifeCycleSize",
@@ -1150,7 +1198,7 @@
     { name: "LcTransitionCntOffset",
       desc: "Offset of LC_TRANSITION_CNT",
       type: "int",
-      default: "1904",
+      default: "1976",
       local: "true"
     },
     { name: "LcTransitionCntSize",
@@ -1162,7 +1210,7 @@
     { name: "LcStateOffset",
       desc: "Offset of LC_STATE",
       type: "int",
-      default: "1952",
+      default: "2024",
       local: "true"
     },
     { name: "LcStateSize",
@@ -1599,66 +1647,73 @@
                   '''
           }
           { bits: "8"
-            name: "LIFE_CYCLE_ERROR"
+            name: "SECRET3_ERROR"
             desc: '''
                   Set to 1 if an error occurred in this partition.
                   If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
                   '''
           }
           { bits: "9"
+            name: "LIFE_CYCLE_ERROR"
+            desc: '''
+                  Set to 1 if an error occurred in this partition.
+                  If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
+                  '''
+          }
+          { bits: "10"
             name: "DAI_ERROR"
             desc: '''
                   Set to 1 if an error occurred in the DAI.
                   If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
                   '''
           }
-          { bits: "10"
+          { bits: "11"
             name: "LCI_ERROR"
             desc: '''
                   Set to 1 if an error occurred in the LCI.
                   If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
                   '''
           }
-          { bits: "11"
+          { bits: "12"
             name: "TIMEOUT_ERROR"
             desc: '''
                   Set to 1 if an integrity or consistency check times out.
                   This raises an fatal_check_error alert and is an unrecoverable error condition.
                   '''
           }
-          { bits: "12"
+          { bits: "13"
             name: "LFSR_FSM_ERROR"
             desc: '''
                   Set to 1 if the LFSR timer FSM has reached an invalid state.
                   This raises an fatal_check_error alert and is an unrecoverable error condition.
                   '''
           }
-          { bits: "13"
+          { bits: "14"
             name: "SCRAMBLING_FSM_ERROR"
             desc: '''
                   Set to 1 if the scrambling datapath FSM has reached an invalid state.
                   This raises an fatal_check_error alert and is an unrecoverable error condition.
                   '''
           }
-          { bits: "14"
+          { bits: "15"
             name: "KEY_DERIV_FSM_ERROR"
             desc: '''
                   Set to 1 if the key derivation FSM has reached an invalid state.
                   This raises an fatal_check_error alert and is an unrecoverable error condition.
                   '''
           }
-          { bits: "15"
+          { bits: "16"
             name: "BUS_INTEG_ERROR"
             desc: '''
                   This bit is set to 1 if a fatal bus integrity fault is detected.
                   This error triggers a fatal_bus_integ_error alert.
                   '''
           }
-          { bits: "16"
+          { bits: "17"
             name: "DAI_IDLE"
             desc: "Set to 1 if the DAI is idle and ready to accept commands."
           }
-          { bits: "17"
+          { bits: "18"
             name: "CHECK_PENDING"
             desc: "Set to 1 if an integrity or consistency check triggered by the LFSR timer or via !!CHECK_TRIGGER is pending."
           }
@@ -2242,6 +2297,27 @@
           name:     "SECRET2_DIGEST",
           desc:     '''
                     Integrity digest for the SECRET2 partition.
+                    The integrity digest is 0 by default. The digest calculation can be triggered via the !!DIRECT_ACCESS_CMD.
+                    After a reset, the digest then becomes visible in this CSR, and the corresponding partition becomes write-locked.
+                    ''',
+          count:     "NumDigestWords",
+          swaccess:  "ro",
+          hwaccess:  "hwo",
+          hwext:     "true",
+          cname:     "WORD",
+          resval:    0,
+          tags: [ // OTP internal HW will update status so can not auto-predict its value.
+                  "excl:CsrAllTests:CsrExclCheck"],
+          fields: [
+            { bits: "31:0"
+            }
+          ]
+        }
+      },
+      { multireg: {
+          name:     "SECRET3_DIGEST",
+          desc:     '''
+                    Integrity digest for the SECRET3 partition.
                     The integrity digest is 0 by default. The digest calculation can be triggered via the !!DIRECT_ACCESS_CMD.
                     After a reset, the digest then becomes visible in this CSR, and the corresponding partition becomes write-locked.
                     ''',

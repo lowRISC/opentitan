@@ -717,6 +717,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                 cov.dai_access_secret2_cg.sample(
                     !(cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i != lc_ctrl_pkg::On),
                     dai_cmd_e'(item.a_data));
+              end else if (part_idx == Secret3Idx) begin
+                cov.dai_access_secret3_cg.sample(
+                    !(cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i != lc_ctrl_pkg::On),
+                    dai_cmd_e'(item.a_data));
               end else if (is_sw_part_idx(part_idx) &&
                            item.a_data inside {DaiRead, DaiWrite}) begin
                 cov.unbuf_access_lock_cg_wrap[part_idx].sample(.read_lock(sw_read_lock),

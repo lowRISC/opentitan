@@ -237,7 +237,7 @@ TEST_F(StatusTest, Errors) {
   EXPECT_READ32(OTP_CTRL_ERR_CODE_3_REG_OFFSET,
                 {{OTP_CTRL_ERR_CODE_0_ERR_CODE_0_OFFSET,
                   OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_MACRO_ECC_CORR_ERROR}});
-  EXPECT_READ32(OTP_CTRL_ERR_CODE_10_REG_OFFSET,
+  EXPECT_READ32(OTP_CTRL_ERR_CODE_11_REG_OFFSET,
                 {{OTP_CTRL_ERR_CODE_0_ERR_CODE_0_OFFSET,
                   OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_MACRO_ERROR}});
 
@@ -668,6 +668,11 @@ INSTANTIATE_TEST_SUITE_P(AllDigests, GetDigest,
                                  kDifOtpCtrlPartitionSecret2,
                                  OTP_CTRL_SECRET2_DIGEST_0_REG_OFFSET,
                                  OTP_CTRL_SECRET2_DIGEST_1_REG_OFFSET,
+                             },
+                             DigestParams{
+                                 kDifOtpCtrlPartitionSecret3,
+                                 OTP_CTRL_SECRET3_DIGEST_0_REG_OFFSET,
+                                 OTP_CTRL_SECRET3_DIGEST_1_REG_OFFSET,
                              },
                              DigestParams{
                                  kDifOtpCtrlPartitionLifeCycle,

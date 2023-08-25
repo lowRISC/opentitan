@@ -80,7 +80,8 @@ package otp_ctrl_env_pkg;
     HwCfg1Offset,
     Secret0Offset,
     Secret1Offset,
-    Secret2Offset
+    Secret2Offset,
+    Secret3Offset
   };
 
   // lc does not have digest
@@ -92,7 +93,8 @@ package otp_ctrl_env_pkg;
     HwCfg1DigestOffset >> 2,
     Secret0DigestOffset >> 2,
     Secret1DigestOffset >> 2,
-    Secret2DigestOffset >> 2
+    Secret2DigestOffset >> 2,
+    Secret3DigestOffset >> 2
   };
 
   // types
@@ -111,6 +113,7 @@ package otp_ctrl_env_pkg;
     OtpSecret0ErrIdx,
     OtpSecret1ErrIdx,
     OtpSecret2ErrIdx,
+    OtpSecret3ErrIdx,
     OtpLifeCycleErrIdx,
     OtpDaiErrIdx,
     OtpLciErrIdx,

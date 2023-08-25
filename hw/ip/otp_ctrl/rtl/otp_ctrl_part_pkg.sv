@@ -17,7 +17,7 @@ package otp_ctrl_part_pkg;
   // Scrambling Constants and Types //
   ////////////////////////////////////
 
-  parameter int NumScrmblKeys = 3;
+  parameter int NumScrmblKeys = 4;
   parameter int NumDigestSets = 4;
 
   parameter int ScrmblKeySelWidth = vbits(NumScrmblKeys);
@@ -38,7 +38,8 @@ package otp_ctrl_part_pkg;
   typedef enum logic [ConstSelWidth-1:0] {
     Secret0Key,
     Secret1Key,
-    Secret2Key
+    Secret2Key,
+    Secret3Key
   } key_sel_e;
 
   typedef enum logic [ConstSelWidth-1:0] {
@@ -50,6 +51,7 @@ package otp_ctrl_part_pkg;
 
   // SEC_CM: SECRET.MEM.SCRAMBLE
   parameter key_array_t RndCnstKey = {
+    128'hAF12B341A53780AB30FAA0C47E380958,
     128'h64824C61F1EB6AB6879F8EFA78522377,
     128'hA421AEC54CAB821DF597822E4B39C87C,
     128'h9C274174149E2B57DAEE5A6398EA3A04
@@ -59,17 +61,17 @@ package otp_ctrl_part_pkg;
   // Note: digest set 0 is used for computing the partition digests. Constants at
   // higher indices are used to compute the scrambling keys.
   parameter digest_const_array_t RndCnstDigestConst = {
-    128'h5F2C075769000C39CDA36EAB93CD263D,
-    128'hA824CFA99A1E179488280A4961B1644D,
-    128'h26CE77C1EF8AB1D5E029DA11526F75B,
-    128'h30FAA0C47E3809585A24109FBC53E920
+    128'h39D3131745015730931F5DA9AF1C3AAC,
+    128'hF2DAE31D857D1D395F2C075769000C39,
+    128'h6AFB25D55069C52BA824CFA99A1E1794,
+    128'hB198D9A2A7D9B85026CE77C1EF8AB1D
   };
 
   parameter digest_iv_array_t RndCnstDigestIV = {
-    64'hF2DAE31D857D1D39,
-    64'h6AFB25D55069C52B,
-    64'hB198D9A2A7D9B85,
-    64'hAF12B341A53780AB
+    64'hCDA36EAB93CD263D,
+    64'h88280A4961B1644D,
+    64'h5E029DA11526F75B,
+    64'h5A24109FBC53E920
   };
 
 
@@ -221,8 +223,22 @@ package otp_ctrl_part_pkg;
     '{
       variant:    Buffered,
       offset:     14'd1816,
-      size:       88,
+      size:       120,
       key_sel:    Secret2Key,
+      secret:     1'b1,
+      sw_digest:  1'b0,
+      hw_digest:  1'b1,
+      write_lock: 1'b1,
+      read_lock:  1'b1,
+      integrity:  1'b1,
+      iskeymgr:   1'b1
+    },
+    // SECRET3
+    '{
+      variant:    Buffered,
+      offset:     14'd1936,
+      size:       40,
+      key_sel:    Secret3Key,
       secret:     1'b1,
       sw_digest:  1'b0,
       hw_digest:  1'b1,
@@ -234,7 +250,7 @@ package otp_ctrl_part_pkg;
     // LIFE_CYCLE
     '{
       variant:    LifeCycle,
-      offset:     14'd1904,
+      offset:     14'd1976,
       size:       88,
       key_sel:    key_sel_e'('0),
       secret:     1'b0,
@@ -256,6 +272,7 @@ package otp_ctrl_part_pkg;
     Secret0Idx,
     Secret1Idx,
     Secret2Idx,
+    Secret3Idx,
     LifeCycleIdx,
     // These are not "real partitions", but in terms of implementation it is convenient to
     // add these at the end of certain arrays.
@@ -277,9 +294,9 @@ package otp_ctrl_part_pkg;
 
   // default value used for intermodule
   parameter otp_hw_cfg0_data_t OTP_HW_CFG0_DATA_DEFAULT = '{
-    hw_cfg0_digest: 64'hD2BF0E2CFC07120E,
-    manuf_state: 256'h55BE0BF60F328302F6008FEDD015995F818E6D5088A5CDF93C0F42DCF28BBDCA,
-    device_id: 256'h39D3131745015730931F5DA9AF1C3AACE93BC3CE277DADEF07D7A8934EE34FBD
+    hw_cfg0_digest: 64'h46C3B0C61F6A3878,
+    manuf_state: 256'h818E6D5088A5CDF93C0F42DCF28BBDCAEA922083D08D74C031E0F4A706AC2F4C,
+    device_id: 256'hE93BC3CE277DADEF07D7A8934EE34FBD55BE0BF60F328302F6008FEDD015995F
   };
   typedef struct packed {
     logic [63:0] hw_cfg1_digest;
@@ -290,7 +307,7 @@ package otp_ctrl_part_pkg;
 
   // default value used for intermodule
   parameter otp_hw_cfg1_data_t OTP_HW_CFG1_DATA_DEFAULT = '{
-    hw_cfg1_digest: 64'hBFD510D7D174D3C2,
+    hw_cfg1_digest: 64'h74355F8F1877AE23,
     unallocated: 24'h0,
     en_sram_ifetch: prim_mubi_pkg::mubi8_t'(8'h69),
     soc_dbg_state: 32'h0
@@ -311,41 +328,46 @@ package otp_ctrl_part_pkg;
 
 
   // OTP invalid partition default for buffered partitions.
-  parameter logic [15935:0] PartInvDefault = 15936'({
+  parameter logic [16511:0] PartInvDefault = 16512'({
     704'({
-      320'hBCEE0EAF635CC94C13341B2009F127B06D6A802324A832B510525C360F4D65C7B4D832618CCF4986,
-      384'h813C1F50880EDCF619237C65265AB0F0C7BE3EA7E34C01040DEFD9C319666A73808EC748F9D19EC735CF8C381C8C5AFE
-    }),
-    704'({
-      64'hFA9CE9B9595C0B9D,
-      256'h7FDBA3FABBB202307AE064132CE3E678577E62959EFB89B7A2059F462D20F72,
-      256'h27D331CD45A0EF7756EC4F708F6120840D5F33333CE062950E21D4D55ADB2645,
-      128'hC20EEF44B66C882A67F85AFE2A82CBE0
-    }),
-    704'({
-      64'h9EBCF683C0FC7778,
-      128'h5ACC5965CAAD333087782B16192CB31F,
-      256'h8C2B4F3535255D0B9EE36806F4741D1FF361DABDEC71147847CFC21F565393A4,
-      256'h88EFD6E008A8D1E756E1E07F5EBCD245FA43D4382195A330424EDF34DF61C686
+      320'hA8DEB8ABE2DA84169EBCF683C0FC7778FA9CE9B9595C0B9D4DD37041C7746D68FDC9DEC4BF0CD137,
+      384'hB4D832618CCF4986E24632038254ADF274501C921B4BAE3AA8184B94FC7A6455D2BF0E2CFC07120EBFD510D7D174D3C2
     }),
     320'({
-      64'hA8DEB8ABE2DA8416,
-      128'h827AA3F6BBFB187728C1F8823EC901A4,
-      128'hEA922083D08D74C031E0F4A706AC2F4C
+      64'hF6732DBE8F81387C,
+      256'hBCEE0EAF635CC94C13341B2009F127B06D6A802324A832B510525C360F4D65C7
+    }),
+    960'({
+      64'hD190D0D74DC14B2,
+      256'hC7BE3EA7E34C01040DEFD9C319666A73808EC748F9D19EC735CF8C381C8C5AFE,
+      256'h8577E62959EFB89B7A2059F462D20F72813C1F50880EDCF619237C65265AB0F0,
+      256'hD5F33333CE062950E21D4D55ADB264507FDBA3FABBB202307AE064132CE3E67,
+      128'h27D331CD45A0EF7756EC4F708F612084
+    }),
+    704'({
+      64'h1F004389944B1C7C,
+      128'hC20EEF44B66C882A67F85AFE2A82CBE0,
+      256'hF361DABDEC71147847CFC21F565393A45ACC5965CAAD333087782B16192CB31F,
+      256'hFA43D4382195A330424EDF34DF61C6868C2B4F3535255D0B9EE36806F4741D1F
+    }),
+    320'({
+      64'hA7D9FA61FAB8EFE6,
+      128'h88EFD6E008A8D1E756E1E07F5EBCD245,
+      128'h827AA3F6BBFB187728C1F8823EC901A4
     }),
     128'({
-      64'hBFD510D7D174D3C2,
+      64'h74355F8F1877AE23,
       24'h0, // unallocated space
       8'h69,
       32'h0
     }),
     576'({
-      64'hD2BF0E2CFC07120E,
-      256'h55BE0BF60F328302F6008FEDD015995F818E6D5088A5CDF93C0F42DCF28BBDCA,
-      256'h39D3131745015730931F5DA9AF1C3AACE93BC3CE277DADEF07D7A8934EE34FBD
+      64'h46C3B0C61F6A3878,
+      256'h818E6D5088A5CDF93C0F42DCF28BBDCAEA922083D08D74C031E0F4A706AC2F4C,
+      256'hE93BC3CE277DADEF07D7A8934EE34FBD55BE0BF60F328302F6008FEDD015995F
     }),
     6144'({
-      64'hA8184B94FC7A6455,
+      64'hDB55E1EE91EA2689,
       1856'h0, // unallocated space
       32'h0,
       32'h0,
@@ -366,7 +388,7 @@ package otp_ctrl_part_pkg;
       32'h0
     }),
     6144'({
-      64'h74501C921B4BAE3A,
+      64'h796719B62382F28D,
       3744'h0, // unallocated space
       32'h0,
       32'h0,
@@ -403,7 +425,7 @@ package otp_ctrl_part_pkg;
       1248'h0
     }),
     512'({
-      64'hE24632038254ADF2,
+      64'h4CFE80F04234D38,
       448'h0
     })});
 
@@ -425,6 +447,7 @@ package otp_ctrl_part_pkg;
     hw2reg.secret0_digest = part_digest[Secret0Idx];
     hw2reg.secret1_digest = part_digest[Secret1Idx];
     hw2reg.secret2_digest = part_digest[Secret2Idx];
+    hw2reg.secret3_digest = part_digest[Secret3Idx];
     unused_digest ^= ^part_digest[LifeCycleIdx];
     return hw2reg;
   endfunction : named_reg_assign
@@ -484,6 +507,9 @@ package otp_ctrl_part_pkg;
     // SECRET2
     unused ^= ^{part_init_done[Secret2Idx],
                 part_buf_data[Secret2Offset +: Secret2Size]};
+    // SECRET3
+    unused ^= ^{part_init_done[Secret3Idx],
+                part_buf_data[Secret3Offset +: Secret3Size]};
     // LIFE_CYCLE
     unused ^= ^{part_init_done[LifeCycleIdx],
                 part_buf_data[LifeCycleOffset +: LifeCycleSize]};
@@ -542,9 +568,30 @@ package otp_ctrl_part_pkg;
       otp_keymgr_key.creator_root_key_share1 =
           PartInvDefault[CreatorRootKeyShare1Offset*8 +: CreatorRootKeyShare1Size*8];
     end
+    otp_keymgr_key.creator_seed_valid = valid;
+    if (lc_ctrl_pkg::lc_tx_test_true_strict(lc_seed_hw_rd_en)) begin
+      otp_keymgr_key.creator_seed =
+          part_buf_data[CreatorSeedOffset +: CreatorSeedSize];
+    end else begin
+      otp_keymgr_key.creator_seed =
+          PartInvDefault[CreatorSeedOffset*8 +: CreatorSeedSize*8];
+    end
     // This is not used since we consume the
     // ungated digest values from the part_digest array.
     unused ^= ^part_buf_data[Secret2DigestOffset +: Secret2DigestSize];
+    // SECRET3
+    valid = (part_digest[Secret3Idx] != 0);
+    otp_keymgr_key.owner_seed_valid = valid;
+    if (lc_ctrl_pkg::lc_tx_test_true_strict(lc_seed_hw_rd_en)) begin
+      otp_keymgr_key.owner_seed =
+          part_buf_data[OwnerSeedOffset +: OwnerSeedSize];
+    end else begin
+      otp_keymgr_key.owner_seed =
+          PartInvDefault[OwnerSeedOffset*8 +: OwnerSeedSize*8];
+    end
+    // This is not used since we consume the
+    // ungated digest values from the part_digest array.
+    unused ^= ^part_buf_data[Secret3DigestOffset +: Secret3DigestSize];
     // LIFE_CYCLE
     unused ^= ^{part_digest[LifeCycleIdx],
                 part_buf_data[LifeCycleOffset +: LifeCycleSize]};
