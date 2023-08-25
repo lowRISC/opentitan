@@ -48,6 +48,26 @@ jobs:
     artifact: opentitan-repo
     displayName: "Upload repository"
 
+- job: hyperdebug
+  displayName: "Hyperdebug tests"
+  timeoutInMinutes: 30
+  dependsOn: checkout
+  pool: FPGA
+  steps:
+  - template: ../ci/checkout-template.yml
+  - template: ../ci/install-package-dependencies.yml
+  - bash: |
+      set -x
+      module load "xilinx/vivado/$(VIVADO_VERSION)"
+      ci/bazelisk.sh test \
+        --define DISABLE_VERILATOR_BUILD=true \
+        --define bitstream=gcp_splice \
+        --build_tests_only \
+        --test_tag_filters=-broken \
+        --test_output=errors \
+        $(bash ./bazelisk.sh query 'attr("tags", "hyper310", tests(//...))')
+    displayName: "Run all the hyperdebug tests"
+
 - job: rom_e2e
   displayName: "ROM E2E Tests"
   timeoutInMinutes: 180
