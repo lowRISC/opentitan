@@ -73,6 +73,10 @@ gen_hw_and_check_clean "OTP memory map"   otp-mmap     || bad=1
 gen_hw_and_check_clean "LC state"         lc-state-enc || bad=1
 
 gen_and_check_clean \
+    "python-requirements.txt" \
+    util/sh/scripts/gen-python-requirements.sh || bad=1
+
+gen_and_check_clean \
     "flash_ctrl code" \
     hw/ip/flash_ctrl/util/flash_ctrl_gen.py || bad=1
 
