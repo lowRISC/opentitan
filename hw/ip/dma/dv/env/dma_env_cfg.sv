@@ -63,7 +63,11 @@ class dma_env_cfg extends cip_base_env_cfg #(.RAL_T(dma_reg_block));
       dma_d_fifo[fifo_names[i]] = $sformatf("tl_d_%s_fifo", fifo_names[i]);
       dma_dir_fifo[fifo_names[i]] = $sformatf("tl_dir_%s_fifo", fifo_names[i]);
     end
-
+    // Initialize mapping
+    asid_interace_map[OtInternalAddr] = "host";
+    asid_interace_map[SocControlAddr] = "ctn";
+    asid_interace_map[SocSystemAddr] = "sys";
+    asid_interace_map[OtExtFlashAddr] = "ctn";
     // Initialize cip_base_env_cfg
     super.initialize(csr_base_addr);
 

@@ -32,6 +32,11 @@ package dma_env_pkg;
   parameter uint HOST_ADDR_WIDTH = 32;
   parameter uint HOST_DATA_WIDTH = 32;
 
+  // Index of interrupt in intf_vif
+  parameter uint DMA_DONE = 0;
+  parameter uint DMA_ERROR = 1;
+  parameter uint DMA_MEMORY_BUFFER_LIMIT_INTR = 2;
+
   // types
   typedef virtual dma_if dma_vif;
   //typedef virtual clk_if clk_rst_vif;
