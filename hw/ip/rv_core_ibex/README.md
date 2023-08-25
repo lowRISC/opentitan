@@ -1,6 +1,10 @@
 # Ibex RISC-V Core Wrapper Technical Specification
 
-{{#block-dashboard rv_core_ibex}}
+[`rv_core_ibex`](https://ibex.reports.lowrisc.org/opentitan/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/ibex/opentitan/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/ibex/opentitan/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/ibex/opentitan/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/ibex/opentitan/code.svg)
 
 # Overview
 

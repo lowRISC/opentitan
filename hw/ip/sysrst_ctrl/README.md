@@ -1,6 +1,10 @@
 # System Reset Control Technical Specification
 
-{{#block-dashboard sysrst_ctrl}}
+[`sysrst_ctrl`](https://reports.opentitan.org/hw/ip/sysrst_ctrl/dv/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/sysrst_ctrl/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/sysrst_ctrl/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/sysrst_ctrl/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/sysrst_ctrl/code.svg)
 
 # Overview
 

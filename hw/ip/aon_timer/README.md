@@ -1,6 +1,10 @@
 # AON Timer Technical Specification
 
-{{#block-dashboard aon_timer}}
+[`aon_timer`](https://reports.opentitan.org/hw/ip/aon_timer/dv/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/aon_timer/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/aon_timer/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/aon_timer/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/aon_timer/code.svg)
 
 # Overview
 

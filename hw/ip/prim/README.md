@@ -1,6 +1,34 @@
 # lowRISC Hardware Primitives
 
-{{#block-dashboard prim}}
+[`prim_alert`](https://reports.opentitan.org/hw/ip/prim/dv/prim_alert/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/prim_alert/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/prim_alert/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/prim_alert/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/prim_alert/code.svg)
+
+[`prim_esc`](https://reports.opentitan.org/hw/ip/prim/dv/prim_esc/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/prim_esc/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/prim_esc/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/prim_esc/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/prim_esc/code.svg)
+
+[`prim_lfsr`](https://reports.opentitan.org/hw/ip/prim/dv/prim_lfsr/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/prim_lfsr/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/prim_lfsr/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/prim_lfsr/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/prim_lfsr/code.svg)
+
+[`prim_present`](https://reports.opentitan.org/hw/ip/prim/dv/prim_lfsr/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/prim_present/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/prim_present/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/prim_present/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/prim_present/code.svg)
+
+[`prim_prince`](https://reports.opentitan.org/hw/ip/prim/dv/prim_lfsr/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/prim_prince/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/prim_prince/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/prim_prince/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/prim_prince/code.svg)
 
 ## Concepts
 

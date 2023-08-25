@@ -1,6 +1,10 @@
 # Analog to Digital Converter Control Interface
 
-{{#block-dashboard adc_ctrl}}
+[`adc_ctrl`](https://reports.opentitan.org/hw/ip/adc_ctrl/dv/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/adc_ctrl/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/adc_ctrl/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/adc_ctrl/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/adc_ctrl/code.svg)
 
 # Overview
 

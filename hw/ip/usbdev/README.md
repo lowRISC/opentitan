@@ -1,6 +1,10 @@
 # USB 2.0 Full-Speed Device HWIP Technical Specification
 
-{{#block-dashboard usbdev}}
+[`usbdev`](https://reports.opentitan.org/hw/ip/usbdev/dv/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/usbdev/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/usbdev/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/usbdev/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/usbdev/code.svg)
 
 # Overview
 

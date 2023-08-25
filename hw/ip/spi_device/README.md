@@ -1,6 +1,10 @@
 # SPI Device HWIP Technical Specification
 
-{{#block-dashboard spi_device}}
+[`spi_device`](https://reports.opentitan.org/hw/ip/spi_device/dv/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/spi_device/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/spi_device/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/spi_device/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/spi_device/code.svg)
 
 # Overview
 

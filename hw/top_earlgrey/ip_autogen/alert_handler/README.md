@@ -1,6 +1,10 @@
 # Alert Handler Technical Specification
 
-{{#block-dashboard alert_handler}}
+[`alert_handler`](https://reports.opentitan.org/hw/top_earlgrey/ip_autogen/alert_handler/dv/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/alert_handler/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/alert_handler/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/alert_handler/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/alert_handler/code.svg)
 
 # Overview
 
