@@ -251,6 +251,7 @@ def xbar_addhost(top, xbar, host):
             ("clock", xbar['clock']),
             ("reset", xbar['reset']),
             ("type", "host"),
+            ("addr_space", xbar['addr_space']),
             ("inst_type", ""),
             ("stub", False),
             # The default matches RTL default
@@ -374,9 +375,14 @@ def xbar_adddevice(top: Dict[str, object],
     # If we get here, inst points an instance of some block or memory. It
     # shouldn't point at a crossbar (because that would imply a naming clash)
     assert device_base not in other_xbars
-    base_addr, size_byte = lib.get_base_and_size(name_to_block,
-                                                 inst, device_ifname)
-    addr_range = {"base_addr": hex(base_addr), "size_byte": hex(size_byte)}
+    base_addrs, size_byte = lib.get_base_and_size(name_to_block,
+                                                  inst, device_ifname)
+    addr_range = {
+        "base_addrs": {
+            asid: hex(base_addr) for (asid, base_addr) in base_addrs.items()
+        },
+        "size_byte": hex(size_byte),
+    }
 
     stub = not lib.is_inst(inst)
 
@@ -420,6 +426,10 @@ def amend_xbar(top: Dict[str, object],
         topxbar["nodes"] = deepcopy(xbar["nodes"])
     else:
         topxbar["nodes"] = []
+
+    addr_spaces = {x["addr_space"]
+                   for x in topxbar["nodes"] if "addr_space" in x}
+    topxbar["addr_spaces"] = sorted(addr_spaces)
 
     # xbar primary clock and reset
     topxbar["clock"] = xbar["clock_primary"]
@@ -477,11 +487,20 @@ def xbar_cross(xbar, xbars):
     # device_xbar is the crossbar has a device port with name as node["name"].
     # host_xbar is the crossbar has a host port with name as node["name"].
     for node in xbar_nodes:
-        xbar_addr = xbar_cross_node(node["name"], xbar, xbars, visited=[])
-        node["addr_range"] = xbar_addr
+        (asid, xbar_addr) = xbar_cross_node(node["name"], xbar, xbars, visited=[])
+        node["addr_space"] = asid
+        # Filter addresses by ASID
+        addr_range = []
+        for addr in xbar_addr:
+            if asid in addr["base_addrs"]:
+                addr_range.append({
+                    "base_addrs": {asid: addr["base_addrs"][asid]},
+                    "size_byte": addr["size_byte"],
+                })
+        node["addr_range"] = addr_range
 
 
-def xbar_cross_node(node_name, device_xbar, xbars, visited=[]):
+def xbar_cross_node(node_name, device_xbar, xbars, visited=[], asid=None):
     # 1. Get the connected xbar
     host_xbars = [x for x in xbars if x["name"] == node_name]
     assert len(host_xbars) == 1
@@ -489,6 +508,15 @@ def xbar_cross_node(node_name, device_xbar, xbars, visited=[]):
 
     log.info("Processing node {} in Xbar {}.".format(node_name,
                                                      device_xbar["name"]))
+    host_xbar_nodes = [x for x in host_xbar["nodes"] if x["name"] == device_xbar["name"]]
+    assert len(host_xbar_nodes) == 1
+    host_xbar_node = host_xbar_nodes[0]
+    host_xbar_asid = host_xbar_node["addr_space"]
+
+    if asid is None:
+        asid = host_xbar_asid
+    assert asid == host_xbar_asid
+
     result = []  # [(base_addr, size), .. ]
     # Sweep the devices using connections and gather the address.
     # If the device is another xbar, call recursive
@@ -501,15 +529,15 @@ def xbar_cross_node(node_name, device_xbar, xbars, visited=[]):
         if "xbar" in node and node["xbar"] is True:
             if "addr_range" not in node:
                 # Deeper dive into another crossbar
-                xbar_addr = xbar_cross_node(node["name"], host_xbar, xbars,
-                                            visited)
+                (_asid, xbar_addr) = xbar_cross_node(node["name"], host_xbar,
+                                                     xbars, visited, asid)
                 node["addr_range"] = xbar_addr
 
         result.extend(deepcopy(node["addr_range"]))
 
     visited.pop()
 
-    return result
+    return (asid, result)
 
 
 # find the first instance name of a given type

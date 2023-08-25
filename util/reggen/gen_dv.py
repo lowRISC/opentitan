@@ -114,7 +114,7 @@ def gen_core_file(outdir: str,
 def get_dv_base_names_objects(dv_base_names: List[str]) -> Dict[str, DvBaseNames]:
     '''Returns a dictionary mapping a `DvBaseNames` object to a block.
 
-    `dv_bave_names` is a list of base class entity names provided on the command-line, in the
+    `dv_base_names` is a list of base class entity names provided on the command-line, in the
     following format:
     ast:block:ast_base_reg_block ast:pkg:ast_base_reg_pkg otp_ctrl:all:otp_ctrl_base
 

@@ -11,6 +11,7 @@
   nodes: [
     { name:  "main",
       type:  "host",
+      addr_space: "hart",
       clock: "clk_peri_i",
       reset: "rst_peri_ni",
       xbar:  "true",

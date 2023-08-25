@@ -127,6 +127,7 @@
     {
       name: rv_core_ibex.corei
       type: host
+      addr_space: hart
       clock: clk_main_i
       reset: rst_main_ni
       pipeline: false
@@ -139,6 +140,7 @@
     {
       name: rv_core_ibex.cored
       type: host
+      addr_space: hart
       clock: clk_main_i
       reset: rst_main_ni
       pipeline: false
@@ -151,6 +153,7 @@
     {
       name: rv_dm.sba
       type: host
+      addr_space: hart
       clock: clk_main_i
       reset: rst_main_ni
       req_fifo_pass: false
@@ -171,7 +174,10 @@
       addr_range:
       [
         {
-          base_addr: 0x41200000
+          base_addrs:
+          {
+            hart: 0x41200000
+          }
           size_byte: 0x10
         }
       ]
@@ -190,7 +196,10 @@
       addr_range:
       [
         {
-          base_addr: 0x10000
+          base_addrs:
+          {
+            hart: 0x10000
+          }
           size_byte: 0x1000
         }
       ]
@@ -209,7 +218,10 @@
       addr_range:
       [
         {
-          base_addr: 0x8000
+          base_addrs:
+          {
+            hart: 0x8000
+          }
           size_byte: 0x8000
         }
       ]
@@ -228,7 +240,10 @@
       addr_range:
       [
         {
-          base_addr: 0x411e0000
+          base_addrs:
+          {
+            hart: 0x411e0000
+          }
           size_byte: 0x80
         }
       ]
@@ -246,14 +261,21 @@
       xbar: true
       stub: false
       pipeline: true
+      addr_space: hart
       addr_range:
       [
         {
-          base_addr: 0x40000000
+          base_addrs:
+          {
+            hart: 0x40000000
+          }
           size_byte: 0x200000
         }
         {
-          base_addr: 0x40400000
+          base_addrs:
+          {
+            hart: 0x40400000
+          }
           size_byte: 0x400000
         }
       ]
@@ -269,7 +291,10 @@
       addr_range:
       [
         {
-          base_addr: 0x40300000
+          base_addrs:
+          {
+            hart: 0x40300000
+          }
           size_byte: 0x40
         }
       ]
@@ -288,7 +313,10 @@
       addr_range:
       [
         {
-          base_addr: 0x40310000
+          base_addrs:
+          {
+            hart: 0x40310000
+          }
           size_byte: 0x40
         }
       ]
@@ -307,7 +335,10 @@
       addr_range:
       [
         {
-          base_addr: 0x40320000
+          base_addrs:
+          {
+            hart: 0x40320000
+          }
           size_byte: 0x1000
         }
       ]
@@ -326,7 +357,10 @@
       addr_range:
       [
         {
-          base_addr: 0x41000000
+          base_addrs:
+          {
+            hart: 0x41000000
+          }
           size_byte: 0x200
         }
       ]
@@ -345,7 +379,10 @@
       addr_range:
       [
         {
-          base_addr: 0x41008000
+          base_addrs:
+          {
+            hart: 0x41008000
+          }
           size_byte: 0x80
         }
       ]
@@ -364,7 +401,10 @@
       addr_range:
       [
         {
-          base_addr: 0x20000000
+          base_addrs:
+          {
+            hart: 0x20000000
+          }
           size_byte: 0x100000
         }
       ]
@@ -383,7 +423,10 @@
       addr_range:
       [
         {
-          base_addr: 0x41110000
+          base_addrs:
+          {
+            hart: 0x41110000
+          }
           size_byte: 0x2000
         }
       ]
@@ -402,7 +445,10 @@
       addr_range:
       [
         {
-          base_addr: 0x41120000
+          base_addrs:
+          {
+            hart: 0x41120000
+          }
           size_byte: 0x1000
         }
       ]
@@ -421,7 +467,10 @@
       addr_range:
       [
         {
-          base_addr: 0x41100000
+          base_addrs:
+          {
+            hart: 0x41100000
+          }
           size_byte: 0x100
         }
       ]
@@ -440,7 +489,10 @@
       addr_range:
       [
         {
-          base_addr: 0x41160000
+          base_addrs:
+          {
+            hart: 0x41160000
+          }
           size_byte: 0x100
         }
       ]
@@ -459,7 +511,10 @@
       addr_range:
       [
         {
-          base_addr: 0x41150000
+          base_addrs:
+          {
+            hart: 0x41150000
+          }
           size_byte: 0x80
         }
       ]
@@ -478,7 +533,10 @@
       addr_range:
       [
         {
-          base_addr: 0x41170000
+          base_addrs:
+          {
+            hart: 0x41170000
+          }
           size_byte: 0x80
         }
       ]
@@ -497,7 +555,10 @@
       addr_range:
       [
         {
-          base_addr: 0x41180000
+          base_addrs:
+          {
+            hart: 0x41180000
+          }
           size_byte: 0x80
         }
       ]
@@ -516,7 +577,10 @@
       addr_range:
       [
         {
-          base_addr: 0x48000000
+          base_addrs:
+          {
+            hart: 0x48000000
+          }
           size_byte: 0x8000000
         }
       ]
@@ -535,7 +599,10 @@
       addr_range:
       [
         {
-          base_addr: 0x41130000
+          base_addrs:
+          {
+            hart: 0x41130000
+          }
           size_byte: 0x10000
         }
       ]
@@ -554,7 +621,10 @@
       addr_range:
       [
         {
-          base_addr: 0x41140000
+          base_addrs:
+          {
+            hart: 0x41140000
+          }
           size_byte: 0x100
         }
       ]
@@ -573,7 +643,10 @@
       addr_range:
       [
         {
-          base_addr: 0x411f0000
+          base_addrs:
+          {
+            hart: 0x411f0000
+          }
           size_byte: 0x100
         }
       ]
@@ -592,7 +665,10 @@
       addr_range:
       [
         {
-          base_addr: 0x411c0000
+          base_addrs:
+          {
+            hart: 0x411c0000
+          }
           size_byte: 0x40
         }
       ]
@@ -610,7 +686,10 @@
       addr_range:
       [
         {
-          base_addr: 0x10000000
+          base_addrs:
+          {
+            hart: 0x10000000
+          }
           size_byte: 0x20000
         }
       ]
@@ -618,6 +697,10 @@
       stub: false
       req_fifo_pass: true
     }
+  ]
+  addr_spaces:
+  [
+    hart
   ]
   clock: clk_main_i
   type: xbar

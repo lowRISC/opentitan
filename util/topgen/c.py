@@ -111,6 +111,9 @@ class TopGenC:
         # The .c file needs the .h file's relative path, store it here
         self.header_path = None
 
+        # TODO: Don't hardcode the address space used for software.
+        self.addr_space = "hart"
+
         self._init_plic_targets()
         self._init_plic_mapping()
         self._init_alert_mapping()
@@ -147,8 +150,10 @@ class TopGenC:
                 name = self._top_name + full_if_name
                 base, size = get_base_and_size(self._name_to_block,
                                                inst, if_name)
+                if self.addr_space not in base:
+                    continue
 
-                region = MemoryRegion(name, base, size)
+                region = MemoryRegion(name, base[self.addr_space], size)
                 self.device_regions[inst['name']].update({if_name: region})
                 ret.append((full_if, region))
 
@@ -160,7 +165,7 @@ class TopGenC:
             ret.append((m["name"],
                         MemoryRegion(self._top_name +
                                      Name.from_snake_case(m["name"]),
-                                     int(m["base_addr"], 0),
+                                     int(m["base_addr"][self.addr_space], 0),
                                      int(m["size"], 0))))
 
         for inst in self.top['module']:
@@ -168,9 +173,11 @@ class TopGenC:
                 for if_name, val in inst["memory"].items():
                     base, size = get_base_and_size(self._name_to_block,
                                                    inst, if_name)
+                    if self.addr_space not in base:
+                        continue
 
                     name = self._top_name + Name.from_snake_case(val["label"])
-                    region = MemoryRegion(name, base, size)
+                    region = MemoryRegion(name, base[self.addr_space], size)
                     ret.append((val["label"], region))
 
         return ret
