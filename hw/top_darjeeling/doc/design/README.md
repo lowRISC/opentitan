@@ -423,6 +423,8 @@ For the purpose of `top_darjeeling`, the first option has been chosen to benefit
 | aon_timer_aon     | aon_timer     | 0x30470000 (regs) |
 | ast               | ast           | 0x30480000 (regs) |
 | sensor_ctrl       | sensor_ctrl   | 0x30020000 (regs) |
+| soc_proxy         | soc_proxy     | 0x22030000 (core) |
+|                   |               | 0x40000000 (ctn)  |
 | sram_ctrl_ret_aon | sram_ctrl     | 0x30500000 (regs) |
 |                   |               | 0x30600000 (ram)  |
 | flash_ctrl        | flash_ctrl    | 0x33000000 (core) |

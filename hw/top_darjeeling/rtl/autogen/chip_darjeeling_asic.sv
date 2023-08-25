@@ -1181,6 +1181,8 @@ module chip_darjeeling_asic #(
     .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),
     .otp_ctrl_otp_ast_pwr_seq_h_i ( otp_ctrl_otp_ast_pwr_seq_h ),
     .otp_obs_o                    ( otp_obs                    ),
+    .ctn_tl_h2d_o                 (                            ),
+    .ctn_tl_d2h_i                 ( tlul_pkg::TL_D2H_DEFAULT   ),
     .entropy_src_hw_if_req_o      ( entropy_src_hw_if_req      ),
     .entropy_src_hw_if_rsp_i      ( entropy_src_hw_if_rsp      ),
     .io_clk_byp_req_o             ( io_clk_byp_req             ),

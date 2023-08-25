@@ -37,6 +37,7 @@
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
 #include "sw/ip/rv_timer/dif/dif_rv_timer.h"
 #include "sw/ip/sensor_ctrl/dif/dif_sensor_ctrl.h"
+#include "sw/ip/soc_proxy/dif/dif_soc_proxy.h"
 #include "sw/ip/spi_device/dif/dif_spi_device.h"
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
 #include "sw/ip/sram_ctrl/dif/dif_sram_ctrl.h"
@@ -80,6 +81,7 @@ static dif_rv_core_ibex_t rv_core_ibex;
 static dif_rv_plic_t rv_plic;
 static dif_rv_timer_t rv_timer;
 static dif_sensor_ctrl_t sensor_ctrl;
+static dif_soc_proxy_t soc_proxy;
 static dif_spi_device_t spi_device;
 static dif_spi_host_t spi_host0;
 static dif_spi_host_t spi_host1;
@@ -184,6 +186,9 @@ static void init_peripherals(void) {
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_SENSOR_CTRL_BASE_ADDR);
   CHECK_DIF_OK(dif_sensor_ctrl_init(base_addr, &sensor_ctrl));
+
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_SOC_PROXY_CORE_BASE_ADDR);
+  CHECK_DIF_OK(dif_soc_proxy_init(base_addr, &soc_proxy));
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_SPI_DEVICE_BASE_ADDR);
   CHECK_DIF_OK(dif_spi_device_init(base_addr, &spi_device));
@@ -690,6 +695,21 @@ static void trigger_alert_test(void) {
 
     // Verify that alert handler received it.
     exp_alert = kTopDarjeelingAlertIdSensorCtrlRecovAlert + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
+
+  // Write soc_proxy's alert_test reg and check alert_cause.
+  for (dif_soc_proxy_alert_t i = 0; i < 1; ++i) {
+    CHECK_DIF_OK(dif_soc_proxy_alert_force(&soc_proxy, kDifSocProxyAlertFatalAlertIntg + i));
+
+    // Verify that alert handler received it.
+    exp_alert = kTopDarjeelingAlertIdSocProxyFatalAlertIntg + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);

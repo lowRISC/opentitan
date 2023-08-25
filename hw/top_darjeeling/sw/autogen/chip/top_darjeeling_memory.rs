@@ -13,6 +13,11 @@
 //!
 //! This file contains const definitions for use within Rust code.
 
+/// Memory base for soc_proxy_ctn in top darjeeling.
+pub const TOP_DARJEELING_CTN_BASE_ADDR: usize = 0x40000000;
+
+/// Memory size for soc_proxy_ctn in top darjeeling.
+pub const TOP_DARJEELING_CTN_SIZE_BYTES: usize = 0x40000000;
 /// Memory base for sram_ctrl_ret_aon_ram_ret_aon in top darjeeling.
 pub const TOP_DARJEELING_RAM_RET_AON_BASE_ADDR: usize = 0x30600000;
 
@@ -407,6 +412,34 @@ pub const TOP_DARJEELING_SENSOR_CTRL_BASE_ADDR: usize = 0x30020000;
 /// address between #TOP_DARJEELING_SENSOR_CTRL_BASE_ADDR and
 /// `TOP_DARJEELING_SENSOR_CTRL_BASE_ADDR + TOP_DARJEELING_SENSOR_CTRL_SIZE_BYTES`.
 pub const TOP_DARJEELING_SENSOR_CTRL_SIZE_BYTES: usize = 0x40;
+
+/// Peripheral base address for core device on soc_proxy in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const TOP_DARJEELING_SOC_PROXY_CORE_BASE_ADDR: usize = 0x22030000;
+
+/// Peripheral size for core device on soc_proxy in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #TOP_DARJEELING_SOC_PROXY_CORE_BASE_ADDR and
+/// `TOP_DARJEELING_SOC_PROXY_CORE_BASE_ADDR + TOP_DARJEELING_SOC_PROXY_CORE_SIZE_BYTES`.
+pub const TOP_DARJEELING_SOC_PROXY_CORE_SIZE_BYTES: usize = 0x4;
+
+/// Peripheral base address for ctn device on soc_proxy in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const TOP_DARJEELING_SOC_PROXY_CTN_BASE_ADDR: usize = 0x40000000;
+
+/// Peripheral size for ctn device on soc_proxy in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #TOP_DARJEELING_SOC_PROXY_CTN_BASE_ADDR and
+/// `TOP_DARJEELING_SOC_PROXY_CTN_BASE_ADDR + TOP_DARJEELING_SOC_PROXY_CTN_SIZE_BYTES`.
+pub const TOP_DARJEELING_SOC_PROXY_CTN_SIZE_BYTES: usize = 0x40000000;
 
 /// Peripheral base address for regs device on sram_ctrl_ret_aon in top darjeeling.
 ///
