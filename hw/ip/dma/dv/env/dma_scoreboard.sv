@@ -2,19 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// TODO checks for valid configurations
-// Check if DMA memory range register lock is set
-// Transaction checks
-//   - Check a_size on each req item of source and destination interface
-//   - Check data size requested on each item using a_mask
-//   - Check address on each req item of source and destination interface
-//   - Compare data between received data item from source interface and source memory model
-//     (model data updated from sequence)
-//   - Compare data between received data item from destination interface and destination
-//     memory model(model data updated from sequence)
-//   - Check if same data is observed on source and destination interfaces
-//   - After end of operation check if all the addresses in the source and destination
-//     address regions are covered
 
 class dma_scoreboard extends cip_base_scoreboard #(
   .CFG_T(dma_env_cfg),
@@ -51,24 +38,57 @@ class dma_scoreboard extends cip_base_scoreboard #(
 
   endfunction: build_phase
 
+  // Method to process requests on TL interfaces
+  task process_tl_txn(string if_name,
+                      uvm_tlm_analysis_fifo#(tl_channels_e) dir_fifo,
+                      uvm_tlm_analysis_fifo#(tl_seq_item) a_chan_fifo,
+                      uvm_tlm_analysis_fifo#(tl_seq_item) d_chan_fifo);
+    tl_channels_e dir;
+    tl_seq_item   item;
+    fork
+      forever begin
+        dir_fifo.get(dir);
+        `uvm_info(`gfn, $sformatf("dma_config\n %s",
+                                  dma_config.sprint()), UVM_HIGH)
+        // Check if transaction is expected for a valid configuration
+        `DV_CHECK_EQ_FATAL(dma_config.is_valid_config, 1,
+                           $sformatf("transaction observed on %s for invalid configuration",
+                                     if_name))
+        // Check if there is any active operation
+        `DV_CHECK_FATAL(operation_in_progress, "transaction detected with no active operation")
+        case (dir)
+          AddrChannel: begin
+            `DV_CHECK_FATAL(a_chan_fifo.try_get(item),
+                            "dir_fifo pointed at A channel, but a_chan_fifo empty")
+            `uvm_info(`gfn, $sformatf("received %s a_chan %s item with addr: %0x and data: %0x",
+                                      if_name,
+                                      item.is_write() ? "write" : "read",
+                                      item.a_addr,
+                                      item.a_data), UVM_HIGH)
+            // TODO add method to process Address transactions
+          end
+          DataChannel: begin
+            `DV_CHECK_FATAL(d_chan_fifo.try_get(item),
+                            "dir_fifo pointed at D channel, but d_chan_fifo empty")
+            `uvm_info(`gfn, $sformatf("received %s d_chan item with addr: %0x and data: %0x",
+                                      if_name, item.a_addr, item.d_data), UVM_HIGH)
+            // TODO add method to process Data transactions
+          end
+          default: `uvm_fatal(`gfn, "Invalid entry in dir_fifo")
+        endcase
+      end
+    join_none
+  endtask
+
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
-
-    fork
-      process_host_fifo();
-      process_ctn_fifo();
-      process_csr_fifo();
-      //process_tl_access();
-    join
-  endtask
-
-  virtual task process_host_fifo();
-  endtask
-
-  virtual task process_ctn_fifo();
-  endtask
-
-  virtual task process_csr_fifo();
+    // Call process methods on TL fifo
+    foreach (cfg.fifo_names[i]) begin
+      process_tl_txn(cfg.fifo_names[i],
+                     tl_dir_fifos[cfg.dma_dir_fifo[cfg.fifo_names[i]]],
+                     tl_a_chan_fifos[cfg.dma_a_fifo[cfg.fifo_names[i]]],
+                     tl_d_chan_fifos[cfg.dma_d_fifo[cfg.fifo_names[i]]]);
+    end
   endtask
 
   // Method to process DMA register write
@@ -160,7 +180,11 @@ class dma_scoreboard extends cip_base_scoreboard #(
         dma_config.opcode = opcode_e'(`gmv(ral.control.opcode));
         `uvm_info(`gfn, $sformatf("Got opcode = %s", dma_config.opcode.name()), UVM_HIGH)
         if (go) begin
-          // TODO Do checks once operation starts
+          // Check if configuration is valid
+          operation_in_progress = 1'b1;
+          dma_config.is_valid_config = dma_config.check_config();
+          `uvm_info(`gfn, $sformatf("dma_config.is_valid_config = %b",
+                                    dma_config.is_valid_config), UVM_MEDIUM)
         end
       end
       default: begin
@@ -186,8 +210,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
     if (do_read_check) begin
       `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data, $sformatf("reg name: %0s",
                                                                     csr.get_full_name()))
+      void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
-    void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
   endfunction
 
   // Main method to process transactions on register configuration interface
