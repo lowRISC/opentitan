@@ -14,9 +14,9 @@ from reggen.gen_dv import gen_core_file
 from .top import Top
 
 
-def sv_base_addr(top: Top, if_name: Tuple[str, Optional[str]]) -> str:
+def sv_base_addr(top: Top, if_name: Tuple[str, Optional[str]], asid: str) -> str:
     '''Get the base address of a device interface in SV syntax'''
-    return "{}'h{:x}".format(top.regwidth, top.if_addrs[if_name])
+    return "{}'h{:x}".format(top.regwidth, top.if_addrs[if_name][asid])
 
 
 def gen_dv(top: Top,

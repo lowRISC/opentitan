@@ -270,7 +270,7 @@ module top_${top["name"]} #(
   ## For those that do not, reference the ROM directly.
 <% num_rom_ctrl = lib.num_rom_ctrl(top["module"]) %>\
 % if num_rom_ctrl == 1:
-  assign rv_core_ibex_boot_addr = ADDR_SPACE_ROM_CTRL__ROM; 
+  assign rv_core_ibex_boot_addr = ADDR_SPACE_ROM_CTRL__ROM;
 % elif num_rom_ctrl > 1:
   assign rv_core_ibex_boot_addr = ADDR_SPACE_ROM_CTRL0__ROM;
 % else:

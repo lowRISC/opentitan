@@ -54,12 +54,12 @@ MEMORY {
 % for m in top["module"]:
   % if "memory" in m:
     % for key, mem in m["memory"].items():
-  ${mem["label"]}(${flags(mem)}) : ORIGIN = ${m["base_addrs"][key]}, LENGTH = ${mem["size"]}
+  ${mem["label"]}(${flags(mem)}) : ORIGIN = ${m["base_addrs"][key][helper.addr_space]}, LENGTH = ${mem["size"]}
     % endfor
   % endif
 % endfor
 % for m in top["memory"]:
-  ${m["name"]}(${memory_to_flags(m)}) : ORIGIN = ${m["base_addr"]}, LENGTH = ${m["size"]}
+  ${m["name"]}(${memory_to_flags(m)}) : ORIGIN = ${m["base_addr"][helper.addr_space]}, LENGTH = ${m["size"]}
 % endfor
   rom_ext_virtual(rx) : ORIGIN = 0x90000000, LENGTH = ${get_virtual_memory_size(top)}
   owner_virtual(rx) : ORIGIN = 0xa0000000, LENGTH = ${get_virtual_memory_size(top)}
