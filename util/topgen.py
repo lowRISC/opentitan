@@ -505,6 +505,7 @@ def generate_flash(topcfg: Dict[str, object], out_path: Path) -> None:
         "infos_per_bank": [10, 1, 2]
     })
 
+    params.pop('base_addrs', None)
     ipgen_render("flash_ctrl", topname, params, out_path)
 
 
@@ -558,7 +559,7 @@ def generate_top_ral(top: Dict[str, object], name_to_block: Dict[str, IpBlock],
 
         inst_to_block[inst_name] = block_name
         for if_name in block.reg_blocks.keys():
-            if_addr = int(module["base_addrs"][if_name], 0)
+            if_addr = {asid: int(addr, 0) for (asid, addr) in module["base_addrs"][if_name].items()}
             if_addrs[(inst_name, if_name)] = if_addr
 
     # Collect up the memories to add
@@ -603,7 +604,8 @@ def generate_top_ral(top: Dict[str, object], name_to_block: Dict[str, IpBlock],
         if t not in inst_to_block.values():
             del name_to_block[t]
 
-    chip = Top(regwidth, name_to_block, inst_to_block, if_addrs, mems, attrs)
+    addr_spaces = {addr_space["name"] for addr_space in top["addr_spaces"]}
+    chip = Top(regwidth, addr_spaces, name_to_block, inst_to_block, if_addrs, mems, attrs)
 
     # generate the top ral model with template
     return gen_dv(chip, dv_base_names, str(out_path))
@@ -630,7 +632,7 @@ def create_mem(item, addrsep, regwidth):
                          swaccess=swaccess)
 
 
-def generete_rust(topname, completecfg, name_to_block, out_path, version_stamp,
+def generate_rust(topname, completecfg, name_to_block, out_path, version_stamp,
                   src_tree_top, topgen_template_path):
     # Template render helper
     def render_template(template_path: str, rendered_path: Path, **other_info):
@@ -1177,7 +1179,7 @@ def main():
 
     # Generate Rust toplevel definitions
     if not args.no_rust:
-        generete_rust(topname, completecfg, name_to_block, out_path.resolve(),
+        generate_rust(topname, completecfg, name_to_block, out_path.resolve(),
                       version_stamp, SRCTREE_TOP, TOPGEN_TEMPLATE_PATH)
         if args.rust_only:
             sys.exit(0)
@@ -1288,7 +1290,8 @@ def main():
 
             # "toplevel_memory.ld.tpl" -> "sw/autogen/{top_name}_memory.ld"
             render_template(TOPGEN_TEMPLATE_PATH / "toplevel_memory.ld.tpl",
-                            cformat_dir / f"{top_name}_memory.ld")
+                            cformat_dir / f"{top_name}_memory.ld",
+                            helper=c_helper)
 
             # "toplevel_memory.h.tpl" -> "sw/autogen/{top_name}_memory.h"
             memory_cheader_path = cformat_dir / f"{top_name}_memory.h"

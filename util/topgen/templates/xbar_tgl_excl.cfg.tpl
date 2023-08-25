@@ -29,12 +29,16 @@
 %>\
 // [UNR] Exclude unused address bits based on IP address range. It is not possible to cover this.
 % for xbar in top["xbar"]:
+<%
+  # TODO: Add support for multiple ASIDs within an xbar.
+  addr_space = xbar["addr_spaces"][0]
+%>\
   % for device in xbar["nodes"]:
     % if device["type"] == "device" and not device["xbar"]:
 <%
     addr_ranges = []
     for addr in device["addr_range"]:
-      start_addr = int(addr["base_addr"], 0)
+      start_addr = int(addr["base_addrs"][addr_space], 0)
       end_addr = start_addr + int(addr["size_byte"], 0) - 1
       addr_ranges.append((start_addr, end_addr))
     excl_bits = lib.get_toggle_excl_bits(addr_ranges)
