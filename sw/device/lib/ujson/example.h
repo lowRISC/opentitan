@@ -9,6 +9,8 @@
 extern "C" {
 #endif
 
+#define MODULE_ID MAKE_MODULE_ID('e', 'x', 'j')
+
 // clang-format off
 /////////////////////////////////////////////////////////////////////////////
 // Automatic generation of structs with serialize/deserialize functions:
@@ -104,6 +106,8 @@ C_ONLY(UJSON_SERDE_ENUM(FuzzyBool, fuzzy_bool, ENUM_FUZZY_BOOL, WITH_UNKNOWN));
     field(value, bool) \
     field(status, status_t)
 UJSON_SERDE_STRUCT(Misc, misc_t, STRUCT_MISC);
+
+#undef MODULE_ID
 
 // clang-format on
 
