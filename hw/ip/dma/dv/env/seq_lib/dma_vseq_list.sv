@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 `include "dma_base_vseq.sv"
+`include "dma_common_vseq.sv"
 `include "dma_generic_smoke_vseq.sv"
 //`include "dma_handshake_vseq.sv"
 //`include "dma_short_transfer_vseq.sv"
