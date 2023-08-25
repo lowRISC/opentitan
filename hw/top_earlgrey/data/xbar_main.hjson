@@ -26,18 +26,21 @@
   nodes: [
     { name:  "rv_core_ibex.corei",
       type:  "host",
+      addr_space: "hart",
       clock: "clk_main_i",
       reset: "rst_main_ni",
       pipeline: false
     },
     { name:  "rv_core_ibex.cored",
       type:  "host",
+      addr_space: "hart",
       clock: "clk_main_i",
       reset: "rst_main_ni",
       pipeline: false
     },
     { name:      "rv_dm.sba",
       type:      "host",
+      addr_space: "hart",
       clock:     "clk_main_i",
       reset:     "rst_main_ni",
       req_fifo_pass: false,

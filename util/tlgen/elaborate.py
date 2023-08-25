@@ -72,6 +72,9 @@ def process_node(node, xbar):  # node: Node -> xbar: Xbar -> Xbar
             new_node.clocks.append(node.clocks[0])
             new_node.resets.append(node.resets[0])
 
+        # Async FIFOs copy the address spaces from the outer node.
+        new_node.addr_spaces = node.addr_spaces
+
         xbar.insert_node(new_node, node)
 
         process_node(new_node, xbar)
@@ -83,6 +86,8 @@ def process_node(node, xbar):  # node: Node -> xbar: Xbar -> Xbar
                         node_type=NodeType.SOCKET_M1,
                         clock=xbar.clock,
                         reset=xbar.reset)
+        # The SOCKET_M1 must support all the address spaces of downstream
+        new_node.addr_spaces = node.addr_spaces
 
         # By default, assume connecting to SOCKET_1N upstream and bypass all FIFOs
         # If upstream requires pipelining, it will be added through process pipeline
@@ -102,6 +107,8 @@ def process_node(node, xbar):  # node: Node -> xbar: Xbar -> Xbar
                         node_type=NodeType.SOCKET_1N,
                         clock=xbar.clock,
                         reset=xbar.reset)
+        # The SOCKET_1N only supports the address space from upstream.
+        new_node.addr_spaces = node.addr_spaces
 
         # By default, assume connecting to SOCKET_M1 downstream and bypass all FIFOs
         # If upstream requires pipelining, it will be added through process pipeline

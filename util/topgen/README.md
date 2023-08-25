@@ -19,10 +19,11 @@ The top specific Hjson describes how the design looks and how it should connect,
 * Overall fabric data width
 * Clock sources
 * Reset sources
+* Address spaces
 * List of instantiated peripherals
   * Module type of each peripheral (it is possible to have multiple instantiations of a particular module)
   * Clock / reset connectivity of each peripheral
-  * Base address of each peripheral
+  * Base address of each peripheral for each connected address space
 * System memories
 * Fabric construction
   * Clock / reset connectivity of each fabric component

@@ -49,7 +49,8 @@ class Node:
     # Device Node should have address_from, address_to
     # address_from = 0  #: int
     # address_to = 0  #: int
-    addr_range = []
+    addr_ranges = {}
+    addr_spaces = set()
 
     us = []  # Edges  # Number of Ports depends on the NodeType
     # 1 for Host, Device, 2 for Async FIFO, N for Sockets
@@ -76,7 +77,8 @@ class Node:
         self.resets = [reset]
         self.us = []
         self.ds = []
-        self.addr_range = []
+        self.addr_ranges = {}
+        self.addr_spaces = set()
 
     def esc_name(self) -> str:
         '''Return an "escaped name" for this node

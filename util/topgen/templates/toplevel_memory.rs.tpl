@@ -17,7 +17,7 @@ ${helper.file_header.render()}
   % if "memory" in m:
     % for key, val in m["memory"].items():
 /// Memory base for ${m["name"]}_${val["label"]} in top ${top["name"]}.
-pub const TOP_${top["name"].upper()}_${val["label"].upper()}_BASE_ADDR: usize = ${m["base_addrs"][key]};
+pub const TOP_${top["name"].upper()}_${val["label"].upper()}_BASE_ADDR: usize = ${m["base_addrs"][key][helper.addr_space]};
 
 /// Memory size for ${m["name"]}_${val["label"]} in top ${top["name"]}.
 pub const TOP_${top["name"].upper()}_${val["label"].upper()}_SIZE_BYTES: usize = ${val["size"]};
@@ -26,7 +26,7 @@ pub const TOP_${top["name"].upper()}_${val["label"].upper()}_SIZE_BYTES: usize =
 % endfor
 % for m in top["memory"]:
 /// Memory base address for ${m["name"]} in top ${top["name"]}.
-pub const TOP_${top["name"].upper()}_${m["name"].upper()}_BASE_ADDR: usize = ${m["base_addr"]};
+pub const TOP_${top["name"].upper()}_${m["name"].upper()}_BASE_ADDR: usize = ${m["base_addr"][helper.addr_space]};
 
 /// Memory size for ${m["name"]} in top ${top["name"]}.
 pub const TOP_${top["name"].upper()}_${m["name"].upper()}_SIZE_BYTES: usize = ${m["size"]};

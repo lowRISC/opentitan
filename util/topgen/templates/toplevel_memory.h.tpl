@@ -27,7 +27,7 @@
 /**
  * Memory base for ${m["name"]}_${val["label"]} in top ${top["name"]}.
  */
-#define TOP_${top["name"].upper()}_${val["label"].upper()}_BASE_ADDR ${m["base_addrs"][key]}
+#define TOP_${top["name"].upper()}_${val["label"].upper()}_BASE_ADDR ${m["base_addrs"][key][helper.addr_space]}
 
 /**
  * Memory size for ${m["name"]}_${val["label"]} in top ${top["name"]}.
@@ -42,7 +42,7 @@
 /**
  * Memory base address for ${m["name"]} in top ${top["name"]}.
  */
-#define TOP_${top["name"].upper()}_${m["name"].upper()}_BASE_ADDR ${m["base_addr"]}
+#define TOP_${top["name"].upper()}_${m["name"].upper()}_BASE_ADDR ${m["base_addr"][helper.addr_space]}
 
 /**
  * Memory size for ${m["name"]} in top ${top["name"]}.

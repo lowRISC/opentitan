@@ -51,12 +51,16 @@
 // List of Xbar device memory map
 tl_device_t xbar_devices[$] = '{
 % for xbar in top["xbar"]:
+<%
+  # TODO: Add support for multiple ASIDs within an xbar.
+  addr_space = xbar["addr_spaces"][0]
+%>\
   % for device in xbar["nodes"]:
     % if device["type"] == "device" and not device["xbar"]:
     '{"${device["name"].replace('.', '__')}", '{
       % for addr in device["addr_range"]:
 <%
-         start_addr = int(addr["base_addr"], 0)
+         start_addr = int(addr["base_addrs"][addr_space], 0)
          end_addr = start_addr + int(addr["size_byte"], 0) - 1
 %>\
         '{32'h${"%08x" % start_addr}, 32'h${"%08x" % end_addr}}${"," if not loop.last else ""}

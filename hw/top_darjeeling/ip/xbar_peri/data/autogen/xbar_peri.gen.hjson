@@ -64,6 +64,7 @@
     {
       name: main
       type: host
+      addr_space: hart
       clock: clk_peri_i
       reset: rst_peri_ni
       xbar: true
@@ -83,7 +84,10 @@
       addr_range:
       [
         {
-          base_addr: 0x30010000
+          base_addrs:
+          {
+            hart: 0x30010000
+          }
           size_byte: 0x40
         }
       ]
@@ -101,7 +105,10 @@
       addr_range:
       [
         {
-          base_addr: 0x30080000
+          base_addrs:
+          {
+            hart: 0x30080000
+          }
           size_byte: 0x80
         }
       ]
@@ -119,7 +126,10 @@
       addr_range:
       [
         {
-          base_addr: 0x31030000
+          base_addrs:
+          {
+            hart: 0x31030000
+          }
           size_byte: 0x80
         }
       ]
@@ -137,7 +147,10 @@
       addr_range:
       [
         {
-          base_addr: 0x31040000
+          base_addrs:
+          {
+            hart: 0x31040000
+          }
           size_byte: 0x80
         }
       ]
@@ -155,7 +168,10 @@
       addr_range:
       [
         {
-          base_addr: 0x30000000
+          base_addrs:
+          {
+            hart: 0x30000000
+          }
           size_byte: 0x40
         }
       ]
@@ -173,7 +189,10 @@
       addr_range:
       [
         {
-          base_addr: 0x30300000
+          base_addrs:
+          {
+            hart: 0x30300000
+          }
           size_byte: 0x40
         }
       ]
@@ -191,7 +210,10 @@
       addr_range:
       [
         {
-          base_addr: 0x30310000
+          base_addrs:
+          {
+            hart: 0x30310000
+          }
           size_byte: 0x2000
         }
       ]
@@ -209,7 +231,10 @@
       addr_range:
       [
         {
-          base_addr: 0x30100000
+          base_addrs:
+          {
+            hart: 0x30100000
+          }
           size_byte: 0x200
         }
       ]
@@ -227,7 +252,10 @@
       addr_range:
       [
         {
-          base_addr: 0x30400000
+          base_addrs:
+          {
+            hart: 0x30400000
+          }
           size_byte: 0x80
         }
       ]
@@ -245,7 +273,10 @@
       addr_range:
       [
         {
-          base_addr: 0x30410000
+          base_addrs:
+          {
+            hart: 0x30410000
+          }
           size_byte: 0x80
         }
       ]
@@ -263,7 +294,10 @@
       addr_range:
       [
         {
-          base_addr: 0x30420000
+          base_addrs:
+          {
+            hart: 0x30420000
+          }
           size_byte: 0x80
         }
       ]
@@ -281,7 +315,10 @@
       addr_range:
       [
         {
-          base_addr: 0x30460000
+          base_addrs:
+          {
+            hart: 0x30460000
+          }
           size_byte: 0x1000
         }
       ]
@@ -299,7 +336,10 @@
       addr_range:
       [
         {
-          base_addr: 0x30130000
+          base_addrs:
+          {
+            hart: 0x30130000
+          }
           size_byte: 0x8000
         }
       ]
@@ -317,7 +357,10 @@
       addr_range:
       [
         {
-          base_addr: 0x30138000
+          base_addrs:
+          {
+            hart: 0x30138000
+          }
           size_byte: 0x20
         }
       ]
@@ -335,7 +378,10 @@
       addr_range:
       [
         {
-          base_addr: 0x30140000
+          base_addrs:
+          {
+            hart: 0x30140000
+          }
           size_byte: 0x100
         }
       ]
@@ -353,7 +399,10 @@
       addr_range:
       [
         {
-          base_addr: 0x30020000
+          base_addrs:
+          {
+            hart: 0x30020000
+          }
           size_byte: 0x40
         }
       ]
@@ -371,7 +420,10 @@
       addr_range:
       [
         {
-          base_addr: 0x30150000
+          base_addrs:
+          {
+            hart: 0x30150000
+          }
           size_byte: 0x800
         }
       ]
@@ -389,7 +441,10 @@
       addr_range:
       [
         {
-          base_addr: 0x30500000
+          base_addrs:
+          {
+            hart: 0x30500000
+          }
           size_byte: 0x20
         }
       ]
@@ -407,7 +462,10 @@
       addr_range:
       [
         {
-          base_addr: 0x30600000
+          base_addrs:
+          {
+            hart: 0x30600000
+          }
           size_byte: 0x1000
         }
       ]
@@ -425,7 +483,10 @@
       addr_range:
       [
         {
-          base_addr: 0x30470000
+          base_addrs:
+          {
+            hart: 0x30470000
+          }
           size_byte: 0x40
         }
       ]
@@ -443,7 +504,10 @@
       addr_range:
       [
         {
-          base_addr: 0x31060000
+          base_addrs:
+          {
+            hart: 0x31060000
+          }
           size_byte: 0x100
         }
       ]
@@ -461,7 +525,10 @@
       addr_range:
       [
         {
-          base_addr: 0x31070000
+          base_addrs:
+          {
+            hart: 0x31070000
+          }
           size_byte: 0x80
         }
       ]
@@ -479,7 +546,10 @@
       addr_range:
       [
         {
-          base_addr: 0x30480000
+          base_addrs:
+          {
+            hart: 0x30480000
+          }
           size_byte: 0x400
         }
       ]
@@ -487,6 +557,10 @@
       stub: true
       req_fifo_pass: true
     }
+  ]
+  addr_spaces:
+  [
+    hart
   ]
   clock: clk_peri_i
   type: xbar

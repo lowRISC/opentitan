@@ -41,6 +41,7 @@ top_required = {
     'type': ['s', 'type of hjson. Shall be "top" always'],
     'clocks': ['g', 'group of clock properties'],
     'resets': ['l', 'list of resets'],
+    'addr_spaces': ['ln', 'list of address spaces'],
     'module': ['l', 'list of modules to instantiate'],
     'memory': ['l', 'list of memories. At least one memory '
                     'is needed to run the software'],
@@ -194,9 +195,10 @@ module_optional = {
                                 'clocks and resets at the chip level'],
     'attr': ['s', 'optional attribute indicating whether the IP is '
                   '"templated" or "reggen_only"'],
-    'base_addr': ['s', 'hex start address of the peripheral '
+    'base_addr': ['g', 'dict of address space mapped to the corresponding '
+                       'hex start address of the peripheral '
                        '(if the IP has only a single TL-UL interface)'],
-    'base_addrs': ['d', 'hex start addresses of the peripheral '
+    'base_addrs': ['g', 'hex start addresses of the peripheral '
                         ' (if the IP has multiple TL-UL interfaces)'],
     'memory': ['g', 'optional dict with memory region attributes'],
     'param_decl': ['g', 'optional dict that allows to override instantiation parameters']
@@ -281,8 +283,8 @@ class Flash:
     max_banks = 4
     max_pages_per_bank = 1024
 
-    def __init__(self, mem, base_addr=0):
-        self.base_addr = int(base_addr, 16)
+    def __init__(self, mem, base_addrs):
+        self.base_addrs = {asid: int(base, 16) for (asid, base) in base_addrs.items()}
         self.banks = mem.get('banks', 2)
         self.pages_per_bank = mem.get('pages_per_bank', 8)
         self.program_resolution = mem.get('program_resolution', 128)
@@ -302,7 +304,7 @@ class Flash:
 
         size_int = int(self.total_bytes)
         self.size = hex(size_int)
-        self.end_addr = self.base_addr + size_int
+        self.end_addrs = {k: v + size_int for (k, v) in self.base_addrs.items()}
 
     def is_pow2(self, n):
         return (n != 0) and (n & (n - 1) == 0)
