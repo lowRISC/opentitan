@@ -42,7 +42,8 @@ MMAP_TABLE_FILE = "hw/ip/otp_ctrl/doc/otp_ctrl_mmap.md"
 DATA_TEMPLATES = ["hw/ip/otp_ctrl/data/otp_ctrl.hjson.tpl"]
 RTL_TEMPLATES = ["hw/ip/otp_ctrl/data/otp_ctrl_part_pkg.sv.tpl"]
 COV_TEMPLATES = ["hw/ip/otp_ctrl/data/otp_ctrl_cov_bind.sv.tpl"]
-ENV_TEMPLATES = ["hw/ip/otp_ctrl/data/otp_ctrl_scoreboard.sv.tpl"]
+ENV_TEMPLATES = ["hw/ip/otp_ctrl/data/otp_ctrl_scoreboard.sv.tpl",
+                 "hw/ip/otp_ctrl/data/otp_ctrl_env_pkg.sv.tpl"]
 
 
 def render_template(template, target_path, otp_mmap, gen_comment):
