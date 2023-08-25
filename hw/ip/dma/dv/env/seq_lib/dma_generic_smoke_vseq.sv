@@ -31,18 +31,18 @@ class dma_generic_smoke_vseq extends dma_base_vseq;
   // Function : Rerandomization of address ranges
   function void randomize_item(ref dma_seq_item dma_config, input int iteration = 0);
     int num_valid_combinations = valid_combinations.size();
-    int index = $urandom_range(0, num_valid_combinations);
-    valid_space_id_t valid_combination = valid_combinations.pop_front();
-    if (iteration > 0) begin
-      // Disable DMA memory region base and limit randomization
-      dma_config.lock_memory_range();
-    end
+    int index = $urandom_range(0, num_valid_combinations - 1);
+    addr_space_id_t valid_combination = valid_combinations[index];
+    // Allow only valid DMA configurations
+    dma_config.valid_dma_config = 1;
+    // Align address to transfer_width
+    dma_config.align_address = 1;
     `DV_CHECK_RANDOMIZE_WITH_FATAL(
       dma_config,
-      valid_dma_config == 1; // Allow only random configurations
-      m_src_asid == valid_combination.src_id;
-      m_dst_asid == valid_combination.dst_id;
-      m_opcode == DmaOperCopy;)
+      src_asid == valid_combination.src_id;
+      dst_asid == valid_combination.dst_id;
+      handshake == 1'b0; //disable hardware handhake mode
+      opcode == OpcCopy;)
     `uvm_info(`gfn, $sformatf("DMA: Randomized a new transaction\n %s",
                               dma_config.sprint()), UVM_HIGH)
   endfunction
@@ -58,6 +58,7 @@ class dma_generic_smoke_vseq extends dma_base_vseq;
       `uvm_info(`gfn, $sformatf("DMA: Started Sequence #%0d", i), UVM_LOW)
       randomize_item(dma_config, i);
       run_common_config(dma_config);
+      start_device(dma_config);
       set_control_register(dma_config.opcode, // OPCODE
                            dma_config.handshake, // Handshake Enable
                            dma_config.auto_inc_buffer, // Auto-increment Buffer Address
@@ -67,12 +68,13 @@ class dma_generic_smoke_vseq extends dma_base_vseq;
       poll_status();
       clear();
       delay(10);
-      // TODO: reset design to unlock DMA enabled momory range registers
-      // Clear memory contents
-      `uvm_info(`gfn, $sformatf("Clearing memory contents"), UVM_MEDIUM)
-      cfg.mem_host.init();
-      cfg.mem_ctn.init();
-      cfg.mem_sys.init();
+      stop_device();
+      delay(10);
+      apply_resets_concurrently();
+      delay(10);
+      // Reset config
+      dma_config.reset_config();
+      clear_memory();
       `uvm_info(`gfn, $sformatf("DMA: Completed Sequence #%d", i), UVM_LOW)
     end
 
