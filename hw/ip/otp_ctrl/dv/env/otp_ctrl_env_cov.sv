@@ -126,10 +126,10 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
   // the base class provides the following handles for use:
   // otp_ctrl_env_cfg: cfg
 
-  otp_ctrl_unbuf_err_code_cg_wrap     unbuf_err_code_cg_wrap[NUM_UNBUFF_PARTS];
-  otp_ctrl_buf_err_code_cg_wrap       buf_err_code_cg_wrap[NUM_BUFF_PARTS];
+  otp_ctrl_unbuf_err_code_cg_wrap     unbuf_err_code_cg_wrap[NumPartUnbuf];
+  otp_ctrl_buf_err_code_cg_wrap       buf_err_code_cg_wrap[NumPartBuf];
   otp_ctrl_csr_rd_after_alert_cg_wrap csr_rd_after_alert_cg_wrap;
-  otp_ctrl_unbuf_access_lock_cg_wrap  unbuf_access_lock_cg_wrap[NUM_UNBUFF_PARTS];
+  otp_ctrl_unbuf_access_lock_cg_wrap  unbuf_access_lock_cg_wrap[NumPartUnbuf];
 
   bit_toggle_cg_wrap lc_prog_cg;
   bit_toggle_cg_wrap otbn_req_cg;
@@ -317,7 +317,7 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
       end
       OtpHwCfg0ErrIdx, OtpSecret0ErrIdx, OtpSecret1ErrIdx, OtpSecret2ErrIdx,
       OtpLifeCycleErrIdx: begin
-        buf_err_code_cg_wrap[field_idx - NUM_UNBUFF_PARTS].buf_err_code_cg.sample(val);
+        buf_err_code_cg_wrap[field_idx - NumPartUnbuf].buf_err_code_cg.sample(val);
       end
       OtpDaiErrIdx: begin
         dai_err_code_cg.sample(val, part_idx);

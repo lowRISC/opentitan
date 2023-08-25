@@ -9,6 +9,11 @@ ${gen_comment}
 from topgen.lib import Name
 
 num_part = len(otp_mmap.config["partitions"])
+num_part_unbuf = 0
+for part in otp_mmap.config["partitions"]:
+  if part["variant"] == "Unbuffered":
+    num_part_unbuf += 1
+num_part_buf = num_part - num_part_unbuf
 %>\
 {
   name:               "otp_ctrl",
@@ -176,6 +181,18 @@ num_part = len(otp_mmap.config["partitions"])
       desc: "Number of partitions",
       type: "int",
       default: "${num_part}",
+      local: "true"
+    },
+    { name: "NumPartUnbuf",
+      desc: "Number of unbuffered partitions",
+      type: "int",
+      default: "${num_part_unbuf}",
+      local: "true"
+    },
+    { name: "NumPartBuf",
+      desc: "Number of buffered partitions (including 1 lifecycle partition)",
+      type: "int",
+      default: "${num_part_buf}",
       local: "true"
     },
 % for part in otp_mmap.config["partitions"]:

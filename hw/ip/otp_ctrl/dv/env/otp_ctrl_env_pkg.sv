@@ -72,20 +72,28 @@ package otp_ctrl_env_pkg;
   parameter uint SECRET2_END_ADDR    = SECRET2_DIGEST_ADDR - 1;
 
   // LC has its own storage in scb
+<<<<<<< HEAD
   parameter uint OTP_ARRAY_SIZE = (VendorTestSize + CreatorSwCfgSize + OwnerSwCfgSize +
                                    HwCfg0Size + Secret0Size + Secret1Size + Secret2Size)
                                    / (TL_DW / 8);
+=======
+  // we can use the LC offset here because it will always be the last partition.
+  parameter uint OTP_ARRAY_SIZE = LcTransitionCntOffset / (TL_DW / 8);
+>>>>>>> 538f1fe6fc ([otp_ctrl/dv] Use more generated constants in DV env)
 
   parameter int OTP_ADDR_WIDTH = 11;
 
   parameter uint NUM_PRIM_REG = 8;
 
+<<<<<<< HEAD
   // Total num of valid dai address, secret partitions have a granularity of 8, the rest have
   // a granularity of 4. Subtract 8 for each digest.
   parameter uint DAI_ADDR_SIZE =
       (VendorTestSize + CreatorSwCfgSize + OwnerSwCfgSize + HwCfg0Size - 4 * 8) / 4 +
       (Secret0Size + Secret1Size + Secret2Size - 3 * 8) / 8 ;
 
+=======
+>>>>>>> 538f1fe6fc ([otp_ctrl/dv] Use more generated constants in DV env)
   // sram rsp data has 1 bit for seed_valid, the rest are for key and nonce
   parameter uint SRAM_DATA_SIZE = 1 + SramKeyWidth + SramNonceWidth;
   // otbn rsp data has 1 bit for seed_valid, the rest are for key and nonce
@@ -98,9 +106,12 @@ package otp_ctrl_env_pkg;
   parameter uint NUM_SRAM_EDN_REQ = 12;
   parameter uint NUM_OTBN_EDN_REQ = 10;
 
+<<<<<<< HEAD
   parameter uint NUM_UNBUFF_PARTS = 3;
   parameter uint NUM_BUFF_PARTS   = 5;
 
+=======
+>>>>>>> 538f1fe6fc ([otp_ctrl/dv] Use more generated constants in DV env)
   parameter uint CHK_TIMEOUT_CYC = 40;
 
   // When fatal alert triggered, all partitions go to error state and status will be
@@ -216,25 +227,31 @@ package otp_ctrl_env_pkg;
 
   function automatic bit is_secret(bit [TL_DW-1:0] addr);
     int part_index = get_part_index(addr);
-    if (part_index inside {[Secret0Idx:Secret2Idx]}) return 1;
-    else return 0;
+    return PartInfo[part_index].secret;
   endfunction
 
   function automatic bit is_sw_digest(bit [TL_DW-1:0] addr);
-    if ({addr[TL_DW-1:3], 3'b0} inside {VendorTestDigestOffset,
-                                        CreatorSwCfgDigestOffset,
-                                        OwnerSwCfgDigestOffset}) begin
-      return 1;
+    int part_idx = get_part_index(addr);
+    if (PartInfo[part_idx].sw_digest) begin
+      // If the partition contains a digest, it will be located in the last 64bit of the partition.
+      return {addr[TL_DW-1:3], 3'b0} == ((PartInfo[part_idx].offset + PartInfo[part_idx].size) - 8);
     end else begin
       return 0;
     end
   endfunction
 
   function automatic bit is_digest(bit [TL_DW-1:0] addr);
+<<<<<<< HEAD
     if (is_sw_digest(addr)) return 1;
     if ({addr[TL_DW-1:3], 3'b0} inside {HwCfg0DigestOffset, Secret0DigestOffset,
                                         Secret1DigestOffset, Secret2DigestOffset}) begin
       return 1;
+=======
+    int part_idx = get_part_index(addr);
+    if (PartInfo[part_idx].sw_digest || PartInfo[part_idx].hw_digest) begin
+      // If the partition contains a digest, it will be located in the last 64bit of the partition.
+      return {addr[TL_DW-1:3], 3'b0} == ((PartInfo[part_idx].offset + PartInfo[part_idx].size) - 8);
+>>>>>>> 538f1fe6fc ([otp_ctrl/dv] Use more generated constants in DV env)
     end else begin
       return 0;
     end
