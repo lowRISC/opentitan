@@ -110,9 +110,18 @@ fn asm_watchdog_bite(dbg: &ElfDebugger) -> Result<()> {
     // Pretend execution is enabled
     dbg.set_pc("kRomStartBootExecEn")?;
 
-    dbg.run_until("kRomStartWatchdogEnabled", BP_TIMEOUT)?;
+    dbg.run_until("kRomStartStoreT1ToBiteThold", BP_TIMEOUT)?;
 
-    dbg.set_pc("kRomStartBootMaybeHalt")?;
+    // We don't want the bark to trigger for this test.
+    // There's no label before BARK_THOLD is stored, so we need to override the stored value.
+    dbg.write_u32(
+        top_earlgrey::AON_TIMER_AON_BASE_ADDR as u32
+            + opentitanlib::dif::aon_timer::AonTimerReg::WdogBarkThold as u32,
+        0xFFFFFFFF,
+    )?;
+
+    // Double the bite timeout. The current timeout is too short, causing this test to be flaky.
+    dbg.write_reg(RiscvGpr::T1, dbg.read_reg(RiscvGpr::T1)? * 2)?;
 
     // Clear RESET_INFO.
     dbg.write_u32(
@@ -120,6 +129,10 @@ fn asm_watchdog_bite(dbg: &ElfDebugger) -> Result<()> {
             + opentitanlib::dif::rstmgr::RstmgrReg::ResetInfo as u32,
         0,
     )?;
+
+    dbg.run_until("kRomStartWatchdogEnabled", BP_TIMEOUT)?;
+
+    dbg.set_pc("kRomStartBootMaybeHalt")?;
 
     // Set a breakpoint to ensure the NMI handler is not being hit.
     // If the NMI handler is hit then the PC check below will fail.
