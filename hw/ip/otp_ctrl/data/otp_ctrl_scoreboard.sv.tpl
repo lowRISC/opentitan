@@ -211,12 +211,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 <%
   part_name = Name.from_snake_case(part["name"])
   part_name_camel = part_name.as_camel_case()
-  ## Check whether this partition has any key material that needs to be sideloaded.
-  part_has_keys = 0
-  for item in part["items"]:
-    part_has_keys |= item["iskeymgr"]
 %>\
-  % if part_has_keys:
+  % if part["iskeymgr"]:
     % for item in part["items"]:
 <%
   item_name = Name.from_snake_case(item["name"])
@@ -735,9 +731,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                     // However, digest is always readable except SW partitions (Issue #5752).
                     (is_secret(dai_addr) && get_digest_reg_val(part_idx) != 0 &&
                      !is_digest(dai_addr)) ||
-                    // If the partition is secret2 and lc_creator_seed_sw_rw is disable, then
+                    // If the partition is has key material and lc_creator_seed_sw_rw is disable, then
                     // return access error.
-                    (part_idx == Secret2Idx && !is_digest(dai_addr) &&
+                    (PartInfo[part_idx].iskeymgr && !is_digest(dai_addr) &&
                      cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i != lc_ctrl_pkg::On)) begin
                   predict_err(OtpDaiErrIdx, OtpAccessError);
                   predict_rdata(is_secret(dai_addr) || is_digest(dai_addr), 0, 0);
@@ -789,7 +785,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                 bit[TL_AW-1:0] otp_addr = get_scb_otp_addr();
                 // check if write locked
                 if (get_digest_reg_val(part_idx) != 0 ||
-                    (part_idx == Secret2Idx && !is_digest(dai_addr) &&
+                    (PartInfo[part_idx].iskeymgr && !is_digest(dai_addr) &&
                      cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i != lc_ctrl_pkg::On)) begin
                   predict_err(OtpDaiErrIdx, OtpAccessError);
                 end else begin
@@ -1145,7 +1141,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         part_idx inside {VendorTestIdx, CreatorSwCfgIdx, OwnerSwCfgIdx, LifeCycleIdx}) begin
       predict_err(OtpDaiErrIdx, OtpAccessError);
       return;
-    end else if (part_idx == Secret2Idx &&
+    end else if (PartInfo[part_idx].iskeymgr &&
                  cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i != lc_ctrl_pkg::On) begin
       predict_err(OtpDaiErrIdx, OtpAccessError);
       return;

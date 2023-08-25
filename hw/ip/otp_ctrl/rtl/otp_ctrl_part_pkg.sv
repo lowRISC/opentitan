@@ -97,6 +97,7 @@ package otp_ctrl_part_pkg;
     logic write_lock; // Whether the partition is write lockable (via digest)
     logic read_lock;  // Whether the partition is read lockable (via digest)
     logic integrity;  // Whether the partition is integrity protected
+    logic iskeymgr;   // Whether the partition has any key material
   } part_info_t;
 
   parameter part_info_t PartInfoDefault = '{
@@ -109,7 +110,8 @@ package otp_ctrl_part_pkg;
       hw_digest:  1'b0,
       write_lock: 1'b0,
       read_lock:  1'b0,
-      integrity:  1'b0
+      integrity:  1'b0,
+      iskeymgr:   1'b0
   };
 
   ////////////////////////
@@ -128,7 +130,8 @@ package otp_ctrl_part_pkg;
       hw_digest:  1'b0,
       write_lock: 1'b1,
       read_lock:  1'b0,
-      integrity:  1'b0
+      integrity:  1'b0,
+      iskeymgr:   1'b0
     },
     // CREATOR_SW_CFG
     '{
@@ -141,7 +144,8 @@ package otp_ctrl_part_pkg;
       hw_digest:  1'b0,
       write_lock: 1'b1,
       read_lock:  1'b0,
-      integrity:  1'b1
+      integrity:  1'b1,
+      iskeymgr:   1'b0
     },
     // OWNER_SW_CFG
     '{
@@ -154,7 +158,8 @@ package otp_ctrl_part_pkg;
       hw_digest:  1'b0,
       write_lock: 1'b1,
       read_lock:  1'b0,
-      integrity:  1'b1
+      integrity:  1'b1,
+      iskeymgr:   1'b0
     },
     // HW_CFG0
     '{
@@ -167,7 +172,8 @@ package otp_ctrl_part_pkg;
       hw_digest:  1'b1,
       write_lock: 1'b1,
       read_lock:  1'b0,
-      integrity:  1'b1
+      integrity:  1'b1,
+      iskeymgr:   1'b0
     },
     // SECRET0
     '{
@@ -180,7 +186,8 @@ package otp_ctrl_part_pkg;
       hw_digest:  1'b1,
       write_lock: 1'b1,
       read_lock:  1'b1,
-      integrity:  1'b1
+      integrity:  1'b1,
+      iskeymgr:   1'b0
     },
     // SECRET1
     '{
@@ -193,7 +200,8 @@ package otp_ctrl_part_pkg;
       hw_digest:  1'b1,
       write_lock: 1'b1,
       read_lock:  1'b1,
-      integrity:  1'b1
+      integrity:  1'b1,
+      iskeymgr:   1'b0
     },
     // SECRET2
     '{
@@ -206,7 +214,8 @@ package otp_ctrl_part_pkg;
       hw_digest:  1'b1,
       write_lock: 1'b1,
       read_lock:  1'b1,
-      integrity:  1'b1
+      integrity:  1'b1,
+      iskeymgr:   1'b1
     },
     // LIFE_CYCLE
     '{
@@ -219,7 +228,8 @@ package otp_ctrl_part_pkg;
       hw_digest:  1'b0,
       write_lock: 1'b0,
       read_lock:  1'b0,
-      integrity:  1'b1
+      integrity:  1'b1,
+      iskeymgr:   1'b0
     }
   };
 

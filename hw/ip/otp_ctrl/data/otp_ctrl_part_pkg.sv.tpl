@@ -95,6 +95,7 @@ package otp_ctrl_part_pkg;
     logic write_lock; // Whether the partition is write lockable (via digest)
     logic read_lock;  // Whether the partition is read lockable (via digest)
     logic integrity;  // Whether the partition is integrity protected
+    logic iskeymgr;   // Whether the partition has any key material
   } part_info_t;
 
   parameter part_info_t PartInfoDefault = '{
@@ -107,7 +108,8 @@ package otp_ctrl_part_pkg;
       hw_digest:  1'b0,
       write_lock: 1'b0,
       read_lock:  1'b0,
-      integrity:  1'b0
+      integrity:  1'b0,
+      iskeymgr:   1'b0
   };
 
   ////////////////////////
@@ -127,7 +129,8 @@ package otp_ctrl_part_pkg;
       hw_digest:  1'b${"1" if part["hw_digest"] else "0"},
       write_lock: 1'b${"1" if part["write_lock"].lower() == "digest" else "0"},
       read_lock:  1'b${"1" if part["read_lock"].lower() == "digest" else "0"},
-      integrity:  1'b${"1" if part["integrity"] else "0"}
+      integrity:  1'b${"1" if part["integrity"] else "0"},
+      iskeymgr:   1'b${"1" if part["iskeymgr"] else "0"}
     }${"" if loop.last else ","}
 % endfor
   };
@@ -303,12 +306,8 @@ package otp_ctrl_part_pkg;
 <%
   part_name = Name.from_snake_case(part["name"])
   part_name_camel = part_name.as_camel_case()
-  ## Check whether this partition has any key material that needs to be sideloaded.
-  part_has_keys = 0
-  for item in part["items"]:
-    part_has_keys |= item["iskeymgr"]
 %>\
-  % if part_has_keys:
+  % if part["iskeymgr"]:
     valid = (part_digest[${part_name_camel}Idx] != 0);
     % for item in part["items"]:
 <%
