@@ -61,8 +61,7 @@ module soc_proxy
     .tl_i       (core_tl_i),
     .tl_o       (core_tl_o),
     .reg2hw,
-    .intg_err_o (intg_err),
-    .devmode_i  (1'b1)
+    .intg_err_o (intg_err)
   );
 
   // Alert test
