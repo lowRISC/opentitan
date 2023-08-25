@@ -40,44 +40,12 @@ package otp_ctrl_env_pkg;
 
   parameter uint DIGEST_SIZE             = 8;
   parameter uint SW_WINDOW_BASE_ADDR     = 'h1000;
-  parameter uint SW_WINDOW_SIZE          = 512 * 4;
+  parameter uint SW_WINDOW_SIZE          = NumSwCfgWindowWords * 4;
 
-  // convert byte into TLUL width size
-  parameter uint VENDOR_TEST_START_ADDR  = VendorTestOffset / (TL_DW / 8);
-  parameter uint VENDOR_TEST_DIGEST_ADDR = VendorTestDigestOffset / (TL_DW / 8);
-  parameter uint VENDOR_TEST_END_ADDR    = VENDOR_TEST_DIGEST_ADDR - 1;
-
-  parameter uint CREATOR_SW_CFG_START_ADDR  = CreatorSwCfgOffset / (TL_DW / 8);
-  parameter uint CREATOR_SW_CFG_DIGEST_ADDR = CreatorSwCfgDigestOffset / (TL_DW / 8);
-  parameter uint CREATOR_SW_CFG_END_ADDR    = CREATOR_SW_CFG_DIGEST_ADDR - 1;
-
-  parameter uint OWNER_SW_CFG_START_ADDR  = OwnerSwCfgOffset / (TL_DW / 8);
-  parameter uint OWNER_SW_CFG_DIGEST_ADDR = OwnerSwCfgDigestOffset / (TL_DW / 8);
-  parameter uint OWNER_SW_CFG_END_ADDR    = OWNER_SW_CFG_DIGEST_ADDR - 1;
-
-  parameter uint HW_CFG0_START_ADDR  = HwCfg0Offset / (TL_DW / 8);
-  parameter uint HW_CFG0_DIGEST_ADDR = HwCfg0DigestOffset / (TL_DW / 8);
-  parameter uint HW_CFG0_END_ADDR    = HW_CFG0_DIGEST_ADDR - 1;
-
-  parameter uint HW_CFG1_START_ADDR  = HwCfg1Offset / (TL_DW / 8);
-  parameter uint HW_CFG1_DIGEST_ADDR = HwCfg1DigestOffset / (TL_DW / 8);
-  parameter uint HW_CFG1_END_ADDR    = HW_CFG1_DIGEST_ADDR - 1;
-
-  parameter uint SECRET0_START_ADDR  = Secret0Offset / (TL_DW / 8);
-  parameter uint SECRET0_DIGEST_ADDR = Secret0DigestOffset / (TL_DW / 8);
-  parameter uint SECRET0_END_ADDR    = SECRET0_DIGEST_ADDR - 1;
-
-  parameter uint SECRET1_START_ADDR  = Secret1Offset / (TL_DW / 8);
-  parameter uint SECRET1_DIGEST_ADDR = Secret1DigestOffset / (TL_DW / 8);
-  parameter uint SECRET1_END_ADDR    = SECRET1_DIGEST_ADDR - 1;
-
-  parameter uint SECRET2_START_ADDR  = Secret2Offset / (TL_DW / 8);
-  parameter uint SECRET2_DIGEST_ADDR = Secret2DigestOffset / (TL_DW / 8);
-  parameter uint SECRET2_END_ADDR    = SECRET2_DIGEST_ADDR - 1;
-
+  parameter uint TL_SIZE = (TL_DW / 8);
   // LC has its own storage in scb
   // we can use the LC offset here because it will always be the last partition.
-  parameter uint OTP_ARRAY_SIZE = LcTransitionCntOffset / (TL_DW / 8);
+  parameter uint OTP_ARRAY_SIZE = LcTransitionCntOffset / TL_SIZE;
 
   parameter int OTP_ADDR_WIDTH = OtpByteAddrWidth-2;
 
