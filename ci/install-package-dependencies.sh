@@ -97,7 +97,7 @@ export PATH=$HOME/.local/bin:$PATH
 # version, which then fails to run.
 python3 -m pip install --user -U pip "setuptools<66.0.0"
 
-pip3 install --user -r python-requirements.txt
+pip3 install --user -r python-requirements.txt --require-hashes
 
 # Install Verible
 lsb_sr="$(lsb_release -sr)"
