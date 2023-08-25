@@ -50,9 +50,8 @@
       reseed: 1
     }
     {
-      name: dma_handshake
-      uvm_test_seq: dma_handshake_vseq
-      run_opts: ["+en_scb=0"]
+      name: dma_handshake_smoke
+      uvm_test_seq: dma_handshake_smoke_vseq
       reseed: 1
     }
   ]
