@@ -49,6 +49,24 @@ class dma_base_vseq extends cip_base_vseq #(
                                .DataWidth(SYS_DATA_WIDTH))::type_id::create("mem_sys");
   endfunction: new
 
+  function void init_model();
+    // Assign mem_model instance handle to config object
+    cfg.mem_ctn = seq_ctn.mem;
+    cfg.mem_host = seq_host.mem;
+    cfg.mem_sys = seq_sys.mem;
+    // Assign dma_handshake_mode_fifo instance handle to config object
+    cfg.fifo_ctn = seq_ctn.fifo;
+    cfg.fifo_host = seq_host.fifo;
+    cfg.fifo_sys = seq_sys.fifo;
+    // Initialize memory
+    cfg.mem_host.init();
+    cfg.mem_ctn.init();
+    cfg.mem_sys.init();
+    cfg.fifo_host.init();
+    cfg.fifo_ctn.init();
+    cfg.fifo_sys.init();
+  endfunction
+
   // randomise data in source memory model based on source address space id setting
   function void randomise_asid_mem(asid_encoding_e asid,
                                    bit [63:0] start_addr,
@@ -405,6 +423,7 @@ class dma_base_vseq extends cip_base_vseq #(
 
   // Body: Need to override for inherited tests
   task body();
+    init_model();
     enable_interrupt();
   endtask: body
 endclass
