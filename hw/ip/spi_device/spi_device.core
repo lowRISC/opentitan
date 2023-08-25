@@ -14,7 +14,8 @@ filesets:
       - lowrisc:prim:clock_gating
       - lowrisc:prim:clock_inv
       - lowrisc:prim:mubi
-      - lowrisc:prim:ram_2p_adv
+      - lowrisc:prim:ram_2p_pkg
+      - lowrisc:prim:ram_1r1w_async_adv
       - lowrisc:prim:edge_detector
       - lowrisc:prim:rst_sync
       - lowrisc:ip:lc_ctrl_pkg
@@ -26,6 +27,7 @@ filesets:
       - rtl/spi_fwm_txf_ctrl.sv
       - rtl/spi_fwmode.sv
       - rtl/spi_cmdparse.sv
+      - rtl/spid_dpram.sv
       - rtl/spid_readsram.sv
       - rtl/spid_readbuffer.sv
       - rtl/spi_readcmd.sv

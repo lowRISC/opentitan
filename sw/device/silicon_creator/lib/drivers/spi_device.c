@@ -23,11 +23,11 @@ enum {
    * Start address of the SFDP space in spi_device buffer.
    */
   kSfdpAreaStartAddr =
-      kBase + SPI_DEVICE_BUFFER_REG_OFFSET + kSpiDeviceSfdpAreaOffset,
+      kBase + SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET + kSpiDeviceSfdpAreaOffset,
   /**
    * End address (exclusive) of the SFDP space in spi_device buffer.
    */
-  kSfdpAreaEndAddr = kBase + SPI_DEVICE_BUFFER_REG_OFFSET +
+  kSfdpAreaEndAddr = kBase + SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET +
                      kSpiDeviceSfdpAreaOffset + kSpiDeviceSfdpAreaNumBytes,
   /**
    * Flash data partition size in bits.
@@ -548,9 +548,9 @@ void spi_device_init(void) {
   // Reset the payload buffer to prevent access faults when reading beyond
   // current payload depth (see #11782).
   for (size_t i = 0; i < kSpiDevicePayloadAreaNumBytes; i += sizeof(uint32_t)) {
-    abs_mmio_write32(
-        kBase + SPI_DEVICE_BUFFER_REG_OFFSET + kSpiDevicePayloadAreaOffset + i,
-        0);
+    abs_mmio_write32(kBase + SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET +
+                         kSpiDevicePayloadAreaOffset + i,
+                     0);
   }
 
   // Reset status register
@@ -653,7 +653,7 @@ rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd) {
   // `payload_byte_count` can be at most `kSpiDevicePayloadAreaNumBytes`.
   HARDENED_CHECK_LE(cmd->payload_byte_count, kSpiDevicePayloadAreaNumBytes);
   uint32_t src =
-      kBase + SPI_DEVICE_BUFFER_REG_OFFSET + kSpiDevicePayloadAreaOffset;
+      kBase + SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET + kSpiDevicePayloadAreaOffset;
   char *dest = (char *)&cmd->payload;
   for (size_t i = 0; i < cmd->payload_byte_count; i += sizeof(uint32_t)) {
     write_32(abs_mmio_read32(src + i), dest + i);

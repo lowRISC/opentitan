@@ -129,9 +129,27 @@
   scan_reset: "true", // Enable `scan_rst_ni` port
   param_list: [
     { name:    "SramDepth"
-      desc:    "Sram Entries. Word size is 32bit width."
+      desc:    "Sram Total Entries. Word size is 32bit width."
       type:    "int unsigned"
       default: "1024"
+      local:   "true"
+    }
+    { name:    "SramOffset"
+      desc:    "Sram Total Entries. Word size is 32bit width."
+      type:    "int unsigned"
+      default: "4096"
+      local:   "true"
+    }
+    { name:    "SramEgressDepth"
+      desc:    "Sram Egress Entries. Word size is 32bit width."
+      type:    "int unsigned"
+      default: "832"
+      local:   "true"
+    }
+    { name:    "SramIngressDepth"
+      desc:    "Sram Ingress Entries. Word size is 32bit width."
+      type:    "int unsigned"
+      default: "104"
       local:   "true"
     }
     { name:    "NumCmdInfo"
@@ -1379,18 +1397,35 @@
     //---------------------------------------------------------------
     { skipto: "0x1000" }
     { window: {
-        name: "buffer",
-        items: "SramDepth",
+        name: "egress_buffer",
+        items: "SramEgressDepth",
         validbits: "32",
         byte-write: "false",
-        unusual: "false"
-        swaccess: "rw",
+        unusual: "true"
+        swaccess: "wo",
         desc: '''
           SPI internal buffer.
 
           In Generic mode, this buffer is used for RX/TX buffer.  In Flash &
           Passthrough mode, lower 2kB is for Read content emulating eFlash.
-          next 1kB is for Mailbox read/write buffer. The rest is 256B SFDP
+          next 1kB is for Mailbox read buffer. The rest is 256B SFDP
+          buffer, 32B of CmdFIFO, 32B of AddrFIFO, and 256B of payload FIFO.
+          '''
+      },
+    },
+    { window: {
+        name: "ingress_buffer",
+        items: "SramIngressDepth",
+        validbits: "32",
+        byte-write: "false",
+        unusual: "true"
+        swaccess: "ro",
+        desc: '''
+          SPI internal buffer.
+
+          In Generic mode, this buffer is used for RX/TX buffer.  In Flash &
+          Passthrough mode, lower 2kB is for Read content emulating eFlash.
+          next 1kB is for Mailbox read buffer. The rest is 256B SFDP
           buffer, 32B of CmdFIFO, 32B of AddrFIFO, and 256B of payload FIFO.
           '''
       },

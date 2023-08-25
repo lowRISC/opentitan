@@ -26,14 +26,16 @@ class spi_device_mem_parity_vseq extends spi_device_common_vseq;
     string path = $sformatf("tb.dut.u_memory_2p.u_mem.gen_generic.u_impl_generic.mem[%0d]", offset);
 
     repeat (100) begin
-      mem_wr(.ptr(ral.buffer), .offset(offset), .data($urandom));
+      // TODO: Replace this write call. Can't write the ingress buffer through
+      // the front door.
+      mem_wr(.ptr(ral.ingress_buffer), .offset(offset), .data($urandom));
 
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(flip_bits)
       // backdoor read and inject parity errors
       `DV_CHECK(uvm_hdl_read(path, mem_data));
       `DV_CHECK(uvm_hdl_deposit(path, mem_data ^ flip_bits));
       // frontdoor read to check it returns d_error
-      tl_access(.addr(ral.buffer.get_offset() + (offset << 2)),
+      tl_access(.addr(ral.ingress_buffer.get_offset() + (offset << 2)),
                 .write(0),
                 .data(data),
                 .mask(get_rand_contiguous_mask()),

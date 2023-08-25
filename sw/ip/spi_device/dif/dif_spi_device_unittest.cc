@@ -423,7 +423,7 @@ TEST_F(RecvTest, FullFifoAligned) {
                  {SPI_DEVICE_RXF_PTR_RPTR_OFFSET, FifoPtr(0x50, false)}});
 
   auto message = MakeBlob(kFifoLen);
-  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET;
+  auto fifo_base = SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET;
   for (int i = 0; i < kFifoLen; i += 4) {
     auto idx = fifo_base + (i + 0x50) % kFifoLen;
     EXPECT_READ32(idx, LeInt(&message[i]));
@@ -450,7 +450,7 @@ TEST_F(RecvTest, FullFifoSmallBuf) {
                  {SPI_DEVICE_RXF_PTR_RPTR_OFFSET, FifoPtr(0x50, false)}});
 
   auto message = MakeBlob(kFifoLen);
-  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET;
+  auto fifo_base = SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET;
   for (size_t i = 0; i < buf_len; i += 4) {
     auto idx = fifo_base + (i + 0x50) % kFifoLen;
     EXPECT_READ32(idx, LeInt(&message[i]));
@@ -480,7 +480,7 @@ TEST_F(RecvTest, FullyAligned) {
       {{SPI_DEVICE_RXF_PTR_WPTR_OFFSET, FifoPtr(message.size(), false)},
        {SPI_DEVICE_RXF_PTR_RPTR_OFFSET, FifoPtr(0x00, false)}});
 
-  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET;
+  auto fifo_base = SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET;
   EXPECT_READ32(fifo_base + 0x0, LeInt(&message[0x0]));
   EXPECT_READ32(fifo_base + 0x4, LeInt(&message[0x4]));
   EXPECT_READ32(fifo_base + 0x8, LeInt(&message[0x8]));
@@ -508,7 +508,7 @@ TEST_F(RecvTest, UnalignedMessage) {
                 {{SPI_DEVICE_RXF_PTR_WPTR_OFFSET, FifoPtr(cropped_len, false)},
                  {SPI_DEVICE_RXF_PTR_RPTR_OFFSET, FifoPtr(0x00, false)}});
 
-  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET;
+  auto fifo_base = SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET;
   EXPECT_READ32(fifo_base + 0x0, LeInt(&message[0x0]));
   EXPECT_READ32(fifo_base + 0x4, LeInt(&message[0x4]));
   EXPECT_READ32(fifo_base + 0x8, LeInt(&message[0x8]));
@@ -542,7 +542,7 @@ TEST_F(RecvTest, UnalignedStart) {
       {{SPI_DEVICE_RXF_PTR_WPTR_OFFSET, FifoPtr(cropped_len, false)},
        {SPI_DEVICE_RXF_PTR_RPTR_OFFSET, FifoPtr(cropped_start, false)}});
 
-  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET;
+  auto fifo_base = SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET;
   EXPECT_READ32(fifo_base + 0x0, LeInt(&message[0x0]));
   EXPECT_READ32(fifo_base + 0x4, LeInt(&message[0x4]));
   EXPECT_READ32(fifo_base + 0x8, LeInt(&message[0x8]));
@@ -576,7 +576,7 @@ TEST_F(RecvTest, UnalignedSmall) {
       {{SPI_DEVICE_RXF_PTR_WPTR_OFFSET, FifoPtr(cropped_len, false)},
        {SPI_DEVICE_RXF_PTR_RPTR_OFFSET, FifoPtr(cropped_start, false)}});
 
-  auto fifo_base = SPI_DEVICE_BUFFER_REG_OFFSET;
+  auto fifo_base = SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET;
   EXPECT_READ32(fifo_base + 0x0, LeInt(&message[0x0]));
 
   EXPECT_WRITE32(
@@ -634,8 +634,8 @@ TEST_F(SendTest, EmptyToFull) {
                  {SPI_DEVICE_TXF_PTR_RPTR_OFFSET, FifoPtr(0x50, true)}});
 
   auto message = MakeBlob(kFifoLen);
-  auto fifo_base =
-      SPI_DEVICE_BUFFER_REG_OFFSET + spi_.config.mode_cfg.generic.rx_fifo_len;
+  auto fifo_base = SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET +
+                   spi_.config.mode_cfg.generic.rx_fifo_len;
   for (int i = 0; i < kFifoLen; i += 4) {
     auto idx = fifo_base + (i + 0x50) % kFifoLen;
     EXPECT_WRITE32(idx, LeInt(&message[i]));
@@ -660,8 +660,8 @@ TEST_F(SendTest, AlmostFull) {
   uintptr_t value = 0;
   memcpy(&value, message.data(), 2);
 
-  auto fifo_base =
-      SPI_DEVICE_BUFFER_REG_OFFSET + spi_.config.mode_cfg.generic.rx_fifo_len;
+  auto fifo_base = SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET +
+                   spi_.config.mode_cfg.generic.rx_fifo_len;
   EXPECT_MASK32(fifo_base + 0x4c, {{0x10, 0xffff, value}});
 
   EXPECT_WRITE32(SPI_DEVICE_TXF_PTR_REG_OFFSET,
@@ -682,8 +682,8 @@ TEST_F(SendTest, FullyAligned) {
                 {{SPI_DEVICE_TXF_PTR_WPTR_OFFSET, FifoPtr(0x00, false)},
                  {SPI_DEVICE_TXF_PTR_RPTR_OFFSET, FifoPtr(0x00, false)}});
 
-  auto fifo_base =
-      SPI_DEVICE_BUFFER_REG_OFFSET + spi_.config.mode_cfg.generic.rx_fifo_len;
+  auto fifo_base = SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET +
+                   spi_.config.mode_cfg.generic.rx_fifo_len;
   EXPECT_WRITE32(fifo_base + 0x0, LeInt(&message[0x0]));
   EXPECT_WRITE32(fifo_base + 0x4, LeInt(&message[0x4]));
   EXPECT_WRITE32(fifo_base + 0x8, LeInt(&message[0x8]));
@@ -708,8 +708,8 @@ TEST_F(SendTest, UnalignedMessage) {
                 {{SPI_DEVICE_TXF_PTR_WPTR_OFFSET, FifoPtr(0x00, false)},
                  {SPI_DEVICE_TXF_PTR_RPTR_OFFSET, FifoPtr(0x00, false)}});
 
-  auto fifo_base =
-      SPI_DEVICE_BUFFER_REG_OFFSET + spi_.config.mode_cfg.generic.rx_fifo_len;
+  auto fifo_base = SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET +
+                   spi_.config.mode_cfg.generic.rx_fifo_len;
   EXPECT_WRITE32(fifo_base + 0x0, LeInt(&message[0x0]));
   EXPECT_WRITE32(fifo_base + 0x4, LeInt(&message[0x4]));
 
@@ -738,8 +738,8 @@ TEST_F(SendTest, UnalignedStart) {
       {{SPI_DEVICE_TXF_PTR_WPTR_OFFSET, FifoPtr(cropped_start, false)},
        {SPI_DEVICE_TXF_PTR_RPTR_OFFSET, FifoPtr(cropped_start, false)}});
 
-  auto fifo_base =
-      SPI_DEVICE_BUFFER_REG_OFFSET + spi_.config.mode_cfg.generic.rx_fifo_len;
+  auto fifo_base = SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET +
+                   spi_.config.mode_cfg.generic.rx_fifo_len;
 
   uintptr_t start_value = 0;
   memcpy(&start_value, &message[0x0], 3);
@@ -773,8 +773,8 @@ TEST_F(SendTest, UnalignedSmall) {
       {{SPI_DEVICE_TXF_PTR_WPTR_OFFSET, FifoPtr(cropped_start, false)},
        {SPI_DEVICE_TXF_PTR_RPTR_OFFSET, FifoPtr(cropped_start, false)}});
 
-  auto fifo_base =
-      SPI_DEVICE_BUFFER_REG_OFFSET + spi_.config.mode_cfg.generic.rx_fifo_len;
+  auto fifo_base = SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET +
+                   spi_.config.mode_cfg.generic.rx_fifo_len;
 
   uintptr_t start_value = 0;
   memcpy(&start_value, &message[0x0], 2);
@@ -836,8 +836,8 @@ TEST_F(SendPolledTest, InitiallyFullThenEmptyThenFullFifo) {
                  {SPI_DEVICE_TXF_PTR_RPTR_OFFSET, FifoPtr(0x5c, true)}});
 
   auto message = MakeBlob(kFifoLen);
-  auto fifo_base =
-      SPI_DEVICE_BUFFER_REG_OFFSET + spi_.config.mode_cfg.generic.rx_fifo_len;
+  auto fifo_base = SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET +
+                   spi_.config.mode_cfg.generic.rx_fifo_len;
   for (int i = 0; i < kFifoLen; i += 4) {
     auto idx = fifo_base + (i + 0x5c) % kFifoLen;
     EXPECT_WRITE32(idx, LeInt(&message[i]));
@@ -1554,16 +1554,17 @@ TEST_F(FlashTest, MemoryOps) {
   uint32_t buf[64];
   for (uint32_t i = 0; i < (sizeof(buf) / sizeof(buf[0])); i++) {
     buf[i] = i;
-    EXPECT_WRITE32(
-        SPI_DEVICE_BUFFER_REG_OFFSET + kSfdpOffset + i * sizeof(uint32_t), i);
+    EXPECT_WRITE32(SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET + kSfdpOffset +
+                       i * sizeof(uint32_t),
+                   i);
   }
   EXPECT_DIF_OK(dif_spi_device_write_flash_buffer(
       &spi_, kDifSpiDeviceFlashBufferTypeSfdp, /*offset=*/0,
       /*length=*/sizeof(buf), reinterpret_cast<uint8_t *>(buf)));
   for (uint32_t i = 4; i < (sizeof(buf) / sizeof(buf[0])); i++) {
-    EXPECT_READ32(
-        SPI_DEVICE_BUFFER_REG_OFFSET + kMailboxOffset + i * sizeof(uint32_t),
-        0x1000u - i);
+    EXPECT_READ32(SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET + kMailboxOffset +
+                      i * sizeof(uint32_t),
+                  0x1000u - i);
   }
   EXPECT_DIF_OK(dif_spi_device_read_flash_buffer(
       &spi_, kDifSpiDeviceFlashBufferTypeMailbox, /*offset=*/16,

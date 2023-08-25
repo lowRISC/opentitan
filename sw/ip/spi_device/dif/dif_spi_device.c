@@ -12,7 +12,8 @@
 
 #define DIF_SPI_DEVICE_TPM_FIFO_DEPTH 16
 
-const uint16_t kDifSpiDeviceBufferLen = SPI_DEVICE_BUFFER_SIZE_BYTES;
+const uint16_t kDifSpiDeviceBufferLen =
+    SPI_DEVICE_PARAM_SRAM_DEPTH * sizeof(uint32_t);
 
 enum { kDifSpiDeviceFlashStatusWelBit = 1 };
 enum { kDifSpiDeviceEFlashLen = 2048 };
@@ -562,7 +563,7 @@ static size_t spi_memcpy(dif_spi_device_handle_t *spi, fifo_ptrs_t *fifo,
   // operation into chunks that access the device buffer sequentially.
   while (bytes_left > 0) {
     const uint32_t mmio_offset =
-        SPI_DEVICE_BUFFER_REG_OFFSET + fifo_base + ptr->offset;
+        SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET + fifo_base + ptr->offset;
     const uint32_t bytes_until_wrap = fifo_len - ptr->offset;
     uint16_t bytes_to_copy = bytes_left;
     if (bytes_to_copy > bytes_until_wrap) {
@@ -1215,8 +1216,8 @@ dif_result_t dif_spi_device_read_flash_buffer(
                 (ptrdiff_t)offset)) {
     return kDifBadArg;
   }
-  ptrdiff_t offset_from_base =
-      SPI_DEVICE_BUFFER_REG_OFFSET + info.buffer_offset + (ptrdiff_t)offset;
+  ptrdiff_t offset_from_base = SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET +
+                               info.buffer_offset + (ptrdiff_t)offset;
   mmio_region_memcpy_from_mmio32(spi->dev.base_addr, (uint32_t)offset_from_base,
                                  buf, length);
   return kDifOk;
@@ -1240,8 +1241,8 @@ dif_result_t dif_spi_device_write_flash_buffer(
                 (ptrdiff_t)offset)) {
     return kDifBadArg;
   }
-  ptrdiff_t offset_from_base =
-      SPI_DEVICE_BUFFER_REG_OFFSET + info.buffer_offset + (ptrdiff_t)offset;
+  ptrdiff_t offset_from_base = SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET +
+                               info.buffer_offset + (ptrdiff_t)offset;
   mmio_region_memcpy_to_mmio32(spi->dev.base_addr, (uint32_t)offset_from_base,
                                buf, length);
   return kDifOk;
