@@ -3,24 +3,31 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // Binds OTP_CTRL functional coverage interaface to the top level OTP_CTRL module.
-`define PART_MUBI_COV(__part_name, __index)                                           \
-  bind otp_ctrl cip_mubi_cov_if #(.Width(8)) ``__part_name``_read_lock_mubi_cov_if (  \
-    .rst_ni (rst_ni),                                                                 \
-    .mubi   (part_access[``__index``].read_lock)                                      \
-  );                                                                                  \
-  bind otp_ctrl cip_mubi_cov_if #(.Width(8)) ``__part_name``_write_lock_mubi_cov_if ( \
-    .rst_ni (rst_ni),                                                                 \
-    .mubi   (part_access[``__index``].write_lock)                                     \
+//
+${gen_comment}
+<%
+from topgen.lib import Name
+
+# The unsavory ${"\\"} tokens are used to escape the macros newline handling.
+%>\
+`define PART_MUBI_COV(__part_name, __index)                                           ${"\\"}
+  bind otp_ctrl cip_mubi_cov_if #(.Width(8)) ``__part_name``_read_lock_mubi_cov_if (  ${"\\"}
+    .rst_ni (rst_ni),                                                                 ${"\\"}
+    .mubi   (part_access[``__index``].read_lock)                                      ${"\\"}
+  );                                                                                  ${"\\"}
+  bind otp_ctrl cip_mubi_cov_if #(.Width(8)) ``__part_name``_write_lock_mubi_cov_if ( ${"\\"}
+    .rst_ni (rst_ni),                                                                 ${"\\"}
+    .mubi   (part_access[``__index``].write_lock)                                     ${"\\"}
   );
 
-`define DAI_MUBI_COV(__part_name, __index)                                                \
-  bind otp_ctrl cip_mubi_cov_if #(.Width(8)) dai_``__part_name``_read_lock_mubi_cov_if (  \
-    .rst_ni (rst_ni),                                                                     \
-    .mubi   (part_access_dai[``__index``].read_lock)                                      \
-  );                                                                                      \
-  bind otp_ctrl cip_mubi_cov_if #(.Width(8)) dai_``__part_name``_write_lock_mubi_cov_if ( \
-    .rst_ni (rst_ni),                                                                     \
-    .mubi   (part_access_dai[``__index``].write_lock)                                     \
+`define DAI_MUBI_COV(__part_name, __index)                                                ${"\\"}
+  bind otp_ctrl cip_mubi_cov_if #(.Width(8)) dai_``__part_name``_read_lock_mubi_cov_if (  ${"\\"}
+    .rst_ni (rst_ni),                                                                     ${"\\"}
+    .mubi   (part_access_dai[``__index``].read_lock)                                      ${"\\"}
+  );                                                                                      ${"\\"}
+  bind otp_ctrl cip_mubi_cov_if #(.Width(8)) dai_``__part_name``_write_lock_mubi_cov_if ( ${"\\"}
+    .rst_ni (rst_ni),                                                                     ${"\\"}
+    .mubi   (part_access_dai[``__index``].write_lock)                                     ${"\\"}
   );
 
 module otp_ctrl_cov_bind;
@@ -61,24 +68,16 @@ module otp_ctrl_cov_bind;
   );
 
   // Mubi internal coverage for buffered and unbuffered partitions.
-  `PART_MUBI_COV(vendor_test, otp_ctrl_part_pkg::VendorTestIdx)
-  `PART_MUBI_COV(creator_sw, otp_ctrl_part_pkg::CreatorSwCfgIdx)
-  `PART_MUBI_COV(owner_sw, otp_ctrl_part_pkg::OwnerSwCfgIdx)
-  `PART_MUBI_COV(hw_cfg0, otp_ctrl_part_pkg::HwCfg0Idx)
-  `PART_MUBI_COV(hw_cfg1, otp_ctrl_part_pkg::HwCfg1Idx)
-  `PART_MUBI_COV(secret0, otp_ctrl_part_pkg::Secret0Idx)
-  `PART_MUBI_COV(secret1, otp_ctrl_part_pkg::Secret1Idx)
-  `PART_MUBI_COV(secret2, otp_ctrl_part_pkg::Secret2Idx)
+% for part in otp_mmap.config["partitions"][:-1]:
+<% part_name = Name.from_snake_case(part["name"]) %>\
+  `PART_MUBI_COV(${part_name.as_snake_case()}, otp_ctrl_part_pkg::${part_name.as_camel_case()}Idx)
+% endfor
 
   // Mubi internal coverage for DAI interface access
-  `DAI_MUBI_COV(vendor_test, otp_ctrl_part_pkg::VendorTestIdx)
-  `DAI_MUBI_COV(creator_sw, otp_ctrl_part_pkg::CreatorSwCfgIdx)
-  `DAI_MUBI_COV(owner_sw, otp_ctrl_part_pkg::OwnerSwCfgIdx)
-  `DAI_MUBI_COV(hw_cfg0, otp_ctrl_part_pkg::HwCfg0Idx)
-  `DAI_MUBI_COV(hw_cfg1, otp_ctrl_part_pkg::HwCfg1Idx)
-  `DAI_MUBI_COV(secret0, otp_ctrl_part_pkg::Secret0Idx)
-  `DAI_MUBI_COV(secret1, otp_ctrl_part_pkg::Secret1Idx)
-  `DAI_MUBI_COV(secret2, otp_ctrl_part_pkg::Secret2Idx)
+% for part in otp_mmap.config["partitions"][:-1]:
+<% part_name = Name.from_snake_case(part["name"]) %>\
+  `DAI_MUBI_COV(${part_name.as_snake_case()}, otp_ctrl_part_pkg::${part_name.as_camel_case()}Idx)
+% endfor
 
 `undef PART_MUBI_COV
 `undef DAI_MUBI_COV
