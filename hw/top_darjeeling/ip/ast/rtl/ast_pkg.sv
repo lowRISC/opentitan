@@ -168,5 +168,11 @@ typedef struct packed {
   prim_mubi_pkg::mubi4_t obmen;
 } ast_obs_ctrl_t;
 
+parameter ast_obs_ctrl_t AST_OBS_CTRL_DEFAULT = '{
+  obgsl: '0,
+  obmsl: ObsNon,
+  obmen: prim_mubi_pkg::MuBi4False
+};
+
 endpackage  // of ast_pkg
 `endif  // of __AST_PKG_SV
