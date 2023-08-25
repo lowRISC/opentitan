@@ -30,6 +30,23 @@ class dma_base_vseq extends cip_base_vseq #(
   function new (string name = "");
     super.new(name);
     dma_config = dma_seq_item::type_id::create("dma_config");
+    // response sequences
+    seq_ctn = dma_pull_seq::type_id::create("seq_ctn");
+    seq_host = dma_pull_seq::type_id::create("seq_host");
+    seq_sys  = dma_pull_seq::type_id::create("seq_sys");
+    // Create memory models
+    seq_host.fifo = dma_handshake_mode_fifo#(
+                                .AddrWidth(HOST_ADDR_WIDTH))::type_id::create("fifo_host");
+    seq_ctn.fifo = dma_handshake_mode_fifo#(
+                                .AddrWidth(CTN_ADDR_WIDTH))::type_id::create("fifo_ctn");
+    seq_sys.fifo = dma_handshake_mode_fifo#(
+                                .AddrWidth(SYS_ADDR_WIDTH))::type_id::create("fifo_sys");
+    seq_host.mem = mem_model#(.AddrWidth(HOST_ADDR_WIDTH),
+                                .DataWidth(HOST_DATA_WIDTH))::type_id::create("mem_host");
+    seq_ctn.mem = mem_model#(.AddrWidth(CTN_ADDR_WIDTH),
+                                .DataWidth(CTN_DATA_WIDTH))::type_id::create("mem_ctn");
+    seq_sys.mem = mem_model#(.AddrWidth(SYS_ADDR_WIDTH),
+                               .DataWidth(SYS_DATA_WIDTH))::type_id::create("mem_sys");
   endfunction: new
 
   // randomise data in source memory model based on source address space id setting
@@ -63,6 +80,85 @@ class dma_base_vseq extends cip_base_vseq #(
         `uvm_error(`gfn, $sformatf("Unsupported Address space ID %d", asid))
       end
     endcase
+  endfunction
+
+  // Function to randomise FIFO data
+  function void randomise_fifo_data(asid_encoding_e asid, bit [31:0] total_data_size);
+    case (asid)
+      OtInternalAddr: begin
+        cfg.fifo_host.randomise_data(total_data_size);
+      end
+      SocControlAddr, OtExtFlashAddr: begin
+        cfg.fifo_ctn.randomise_data(total_data_size);
+      end
+      SocSystemAddr: begin
+        cfg.fifo_sys.randomise_data(total_data_size);
+      end
+      default: begin
+        `uvm_error(`gfn, $sformatf("Unsupported Address space ID %d", asid))
+      end
+    endcase
+  endfunction
+
+  // Function to set dma_handshake_mode_fifo mode settings
+  function void set_model_fifo_mode(asid_encoding_e asid,
+                                    bit [63:0] start_addr = '0,
+                                    bit [31:0] total_data_size);
+    case (asid)
+      OtInternalAddr: begin
+        cfg.fifo_host.enable_fifo(.fifo_base (start_addr),
+                             .max_size (total_data_size));
+      end
+      SocControlAddr, OtExtFlashAddr: begin
+        cfg.fifo_ctn.enable_fifo(.fifo_base (start_addr),
+                            .max_size (total_data_size));
+      end
+      SocSystemAddr: begin
+        cfg.fifo_sys.enable_fifo(.fifo_base (start_addr),
+                            .max_size (total_data_size));
+      end
+      default: begin
+        `uvm_error(`gfn, $sformatf("Unsupported Address space ID %d", asid))
+      end
+    endcase
+  endfunction
+
+  function bit get_read_fifo_en(ref dma_seq_item dma_config);
+    return dma_config.handshake &&
+           (dma_config.direction == DmaRcvData ? // Read from FIFO
+           !dma_config.auto_inc_fifo: // FIFO address auto increment disabled
+           !dma_config.auto_inc_buffer); // Memory buffer address auto increment disabled
+  endfunction
+
+  function bit get_write_fifo_en(ref dma_seq_item dma_config);
+    return dma_config.handshake &&
+           (dma_config.direction == DmaSendData ? // Write from FIFO
+           !dma_config.auto_inc_fifo: // FIFO address auto increment disabled
+           !dma_config.auto_inc_buffer); // Memory buffer address auto increment disabled
+  endfunction
+
+  // Function to enable FIFO if handshake mode is enabled
+  // else randomise read data in mem_model or FIFO instance
+  function void configure_mem_model(ref dma_seq_item dma_config);
+    // Configure Source model
+    if (get_read_fifo_en(dma_config)) begin
+      // Enable FIFO
+      set_model_fifo_mode(dma_config.src_asid, dma_config.src_addr,
+                          dma_config.total_transfer_size);
+      // Randomise FIFO data
+      randomise_fifo_data(dma_config.src_asid, dma_config.total_transfer_size);
+    end else begin
+      // Randomise mem_model data
+      randomise_asid_mem(dma_config.src_asid, dma_config.src_addr,
+                         dma_config.total_transfer_size);
+    end
+
+    // Configure Destination model
+    if (get_write_fifo_en(dma_config)) begin
+      // Enable Write FIFO but dont randomise since data is written by DMA
+      set_model_fifo_mode(dma_config.dst_asid, dma_config.dst_addr,
+                          dma_config.total_transfer_size);
+    end
   endfunction
 
   // Task: Write to Source Address CSR
@@ -133,6 +229,7 @@ class dma_base_vseq extends cip_base_vseq #(
     set_address_space_id(dma_config.src_asid, dma_config.dst_asid);
     set_total_size(dma_config.total_transfer_size);
     set_transfer_width(dma_config.per_transfer_width);
+    configure_mem_model(dma_config);
     set_dma_enabled_memory_range(dma_config.mem_range_base,
                                  dma_config.mem_range_limit,
                                  dma_config.mem_range_unlock);
@@ -150,8 +247,35 @@ class dma_base_vseq extends cip_base_vseq #(
     csr_wr(ral.handshake_interrupt_enable, 32'd1);
   endtask: enable_handshake_interrupt
 
+  function void set_seq_fifo_mode(asid_encoding_e asid, bit read_fifo_en, bit write_fifo_en);
+    case (asid)
+      OtInternalAddr: begin
+        seq_host.read_fifo_en = read_fifo_en;
+        seq_host.write_fifo_en = write_fifo_en;
+      end
+      SocControlAddr, OtExtFlashAddr: begin
+        seq_ctn.read_fifo_en = read_fifo_en;
+        seq_ctn.write_fifo_en = write_fifo_en;
+      end
+      SocSystemAddr: begin
+        seq_sys.read_fifo_en = read_fifo_en;
+        seq_sys.write_fifo_en = write_fifo_en;
+      end
+      default: begin
+        `uvm_error(`gfn, $sformatf("Unsupported Address space ID %d", asid))
+      end
+    endcase
+  endfunction
+
   // Task: Start TLUL Sequences
   virtual task start_device(ref dma_seq_item dma_config);
+    // Assign memory models used in tl_device_vseq instances
+    bit read_fifo_en = get_read_fifo_en(dma_config);
+    bit write_fifo_en = get_write_fifo_en(dma_config);
+
+    // Set fifo enable bit
+    set_seq_fifo_mode(dma_config.src_asid, read_fifo_en, write_fifo_en);
+    set_seq_fifo_mode(dma_config.dst_asid, read_fifo_en, write_fifo_en);
 
     `uvm_info(`gfn, "DMA: Starting Devices", UVM_HIGH)
     fork
@@ -160,6 +284,29 @@ class dma_base_vseq extends cip_base_vseq #(
       seq_sys.start(p_sequencer.tl_sequencer_dma_sys_h);
     join_none
   endtask: start_device
+
+  // Method to terminate scequences gracefully
+  virtual task stop_device();
+    `uvm_info(`gfn, "DMA: Stopping Devices", UVM_HIGH)
+    fork
+      seq_ctn.seq_stop();
+      seq_host.seq_stop();
+      seq_sys.seq_stop();
+    join
+    // Clear FIFO mode enable bit
+    set_seq_fifo_mode(OtInternalAddr, 0, 0);
+    set_seq_fifo_mode(SocControlAddr, 0, 0);
+    set_seq_fifo_mode(SocSystemAddr, 0, 0);
+  endtask
+
+  // Method to clear memory contents
+  function void clear_memory();
+    // Clear memory contents
+    `uvm_info(`gfn, $sformatf("Clearing memory contents"), UVM_MEDIUM)
+    cfg.mem_host.init();
+    cfg.mem_ctn.init();
+    cfg.mem_sys.init();
+  endfunction
 
   // Task: Configures (optionally executes) DMA control registers
   task set_control_register(opcode_e op = OpcCopy, // OPCODE
@@ -179,8 +326,8 @@ class dma_base_vseq extends cip_base_vseq #(
     ral.control.memory_buffer_auto_increment_enable.set(buff);
     ral.control.fifo_auto_increment_enable.set(fifo);
     ral.control.data_direction.set(dir);
-    // Set GO bit
     csr_update(.csr(ral.control));
+    // Set GO bit
     ral.control.go.set(go);
     csr_update(.csr(ral.control));
   endtask: set_control_register
