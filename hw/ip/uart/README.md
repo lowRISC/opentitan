@@ -1,6 +1,10 @@
 # UART HWIP Technical Specification
 
-{{#block-dashboard uart}}
+[`uart`](https://reports.opentitan.org/hw/ip/uart/dv/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/uart/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/uart/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/uart/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/uart/code.svg)
 
 # Overview
 

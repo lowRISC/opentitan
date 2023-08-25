@@ -1,6 +1,10 @@
 # Key Manager HWIP Technical Specification
 
-{{#block-dashboard keymgr}}
+[`keymgr`](https://reports.opentitan.org/hw/ip/keymgr/dv/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/keymgr/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/keymgr/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/keymgr/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/keymgr/code.svg)
 
 # Overview
 

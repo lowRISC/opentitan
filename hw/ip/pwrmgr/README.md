@@ -1,6 +1,10 @@
 # Power Manager HWIP Technical Specification
 
-{{#block-dashboard pwrmgr}}
+[`pwrmgr`](https://reports.opentitan.org/hw/ip/pwrmgr/dv/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/pwrmgr/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/pwrmgr/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/pwrmgr/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/pwrmgr/code.svg)
 
 # Overview
 

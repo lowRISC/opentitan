@@ -1,6 +1,10 @@
 # HMAC HWIP Technical Specification
 
-{{#block-dashboard hmac}}
+[`hmac`](https://reports.opentitan.org/hw/ip/hmac/dv/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/hmac/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/hmac/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/hmac/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/hmac/code.svg)
 
 # Overview
 

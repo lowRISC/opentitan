@@ -1,6 +1,10 @@
 # Pattern Generator HWIP Technical Specification
 
-{{#block-dashboard pattgen}}
+[`pattgen`](https://reports.opentitan.org/hw/ip/pattgen/dv/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/pattgen/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/pattgen/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/pattgen/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/pattgen/code.svg)
 
 # Overview
 

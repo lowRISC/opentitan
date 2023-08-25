@@ -1,6 +1,16 @@
 # Reset Manager HWIP Technical Specification
 
-{{#block-dashboard rstmgr}}
+[`rstmgr`](https://reports.opentitan.org/hw/ip/rstmgr/dv/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/rstmgr/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/rstmgr/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/rstmgr/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/rstmgr/code.svg)
+
+[`rstmgr_cnsty_chk`](https://reports.opentitan.org/hw/ip/rstmgr/dv/rstmgr_cnsty_chk/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/rstmgr_cnsty_chk/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/rstmgr_cnsty_chk/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/rstmgr_cnsty_chk/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/rstmgr_cnsty_chk/code.svg)
 
 # Overview
 

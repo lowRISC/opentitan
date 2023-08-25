@@ -1,6 +1,10 @@
 # OpenTitan Big Number Accelerator (OTBN) Technical Specification
 
-{{#block-dashboard otbn}}
+[`otbn`](https://reports.opentitan.org/hw/ip/otbn/dv/uvm/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/otbn/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/otbn/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/otbn/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/otbn/code.svg)
 
 # Overview
 

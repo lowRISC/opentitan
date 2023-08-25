@@ -1,6 +1,16 @@
 # AES HWIP Technical Specification
 
-{{#block-dashboard aes}}
+[`aes/masked`](https://reports.opentitan.org/hw/ip/aes_masked/dv/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/aes/masked/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/aes/masked/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/aes/masked/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/aes/masked/code.svg)
+
+[`aes/unmasked`](https://reports.opentitan.org/hw/ip/aes_unmasked/dv/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/aes/unmasked/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/aes/unmasked/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/aes/unmasked/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/aes/unmasked/code.svg)
 
 # Overview
 

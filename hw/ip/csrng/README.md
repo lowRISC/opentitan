@@ -1,6 +1,10 @@
 # CSRNG HWIP Technical Specification
 
-{{#block-dashboard csrng}}
+[`csrng`](https://reports.opentitan.org/hw/ip/csrng/dv/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/csrng/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/csrng/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/csrng/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/csrng/code.svg)
 
 # Overview
 

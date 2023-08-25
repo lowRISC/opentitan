@@ -1,6 +1,16 @@
 # SRAM Controller Technical Specification
 
-{{#block-dashboard sram_ctrl}}
+[`sram_ctrl/main`](https://reports.opentitan.org/hw/ip/sram_ctrl_main/dv/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/main/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/main/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/main/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/main/code.svg)
+
+[`sram_ctrl/ret`](https://reports.opentitan.org/hw/ip/sram_ctrl_ret/dv/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/ret/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/ret/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/ret/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/sram_ctrl/ret/code.svg)
 
 # Overview
 

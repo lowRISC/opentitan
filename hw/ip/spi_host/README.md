@@ -1,6 +1,10 @@
 # SPI_HOST HWIP Technical Specification
 
-{{#block-dashboard spi_host}}
+[`spi_host`](https://reports.opentitan.org/hw/ip/spi_host/dv/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/spi_host/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/spi_host/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/spi_host/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/spi_host/code.svg)
 
 # Overview
 

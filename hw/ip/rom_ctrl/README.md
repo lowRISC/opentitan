@@ -1,6 +1,10 @@
 # ROM Controller Technical Specification
 
-{{#block-dashboard rom_ctrl}}
+[`rom_ctrl`](https://reports.opentitan.org/hw/ip/rom_ctrl/dv/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/rom_ctrl/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/rom_ctrl/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/rom_ctrl/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/rom_ctrl/code.svg)
 
 # Overview
 

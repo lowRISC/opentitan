@@ -1,6 +1,10 @@
 # Timer HWIP Technical Specification
 
-{{#block-dashboard rv_timer}}
+[`rv_timer`](https://reports.opentitan.org/hw/ip/rv_timer/dv/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/rv_timer/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/rv_timer/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/rv_timer/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/rv_timer/code.svg)
 
 # Overview
 

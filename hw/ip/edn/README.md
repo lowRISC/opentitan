@@ -1,6 +1,10 @@
 # EDN HWIP Technical Specification
 
-{{#block-dashboard edn}}
+[`edn`](https://reports.opentitan.org/hw/ip/edn/dv/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/edn/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/edn/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/edn/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/edn/code.svg)
 
 # Overview
 

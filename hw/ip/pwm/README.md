@@ -1,6 +1,10 @@
 # PWM HWIP Technical Specification
 
-{{#block-dashboard pwm}}
+[`pwm`](https://reports.opentitan.org/hw/ip/pwm/dv/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/pwm/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/pwm/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/pwm/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/pwm/code.svg)
 
 # Overview
 

@@ -1,6 +1,10 @@
 # I2C HWIP Technical Specification
 
-{{#block-dashboard i2c}}
+[`i2c`](https://reports.opentitan.org/hw/ip/i2c/dv/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/i2c/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/i2c/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/i2c/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/i2c/code.svg)
 
 # Overview
 

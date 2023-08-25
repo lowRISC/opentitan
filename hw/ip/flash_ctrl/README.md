@@ -1,6 +1,10 @@
 # Flash Controller HWIP Technical Specification
 
-{{#block-dashboard flash_ctrl}}
+[`flash_ctrl`](https://reports.opentitan.org/hw/ip/flash_ctrl/dv/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/flash_ctrl/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/flash_ctrl/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/flash_ctrl/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/flash_ctrl/code.svg)
 
 # Overview
 

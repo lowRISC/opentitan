@@ -1,6 +1,10 @@
 # ENTROPY_SRC HWIP Technical Specification
 
-{{#block-dashboard entropy_src}}
+[`entropy_src`](https://reports.opentitan.org/hw/ip/entropy_src/dv/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/entropy_src/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/entropy_src/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/entropy_src/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/entropy_src/code.svg)
 
 # Overview
 

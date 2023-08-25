@@ -1,8 +1,12 @@
 # RISC-V Debug System Wrapper Technical Specification
 
-# Overview
+[`rv_dm`](https://reports.opentitan.org/hw/ip/rv_dm/dv/latest/report.html):
+![](https://dashboards.lowrisc.org/badges/dv/rv_dm/test.svg)
+![](https://dashboards.lowrisc.org/badges/dv/rv_dm/passing.svg)
+![](https://dashboards.lowrisc.org/badges/dv/rv_dm/functional.svg)
+![](https://dashboards.lowrisc.org/badges/dv/rv_dm/code.svg)
 
-{{#block-dashboard rv_dm}}
+# Overview
 
 This document specifies the RISC-V Debug System wrapper functionality.
 
