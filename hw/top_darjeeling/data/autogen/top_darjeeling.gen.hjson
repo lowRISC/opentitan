@@ -1750,9 +1750,6 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: lc_ctrl
-          end_idx: -1
-          top_type: broadcast
-          top_signame: lc_ctrl_lc_nvm_debug_en
           index: -1
         }
         {
@@ -1862,7 +1859,6 @@
           width: 1
           default: "'0"
           inst_name: lc_ctrl
-          top_signame: flash_ctrl_rma_seed
           index: -1
         }
         {
@@ -1914,9 +1910,6 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: lc_ctrl
-          end_idx: -1
-          top_type: broadcast
-          top_signame: lc_ctrl_lc_owner_seed_sw_rw_en
           index: -1
         }
         {
@@ -1928,9 +1921,6 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: lc_ctrl
-          end_idx: -1
-          top_type: broadcast
-          top_signame: lc_ctrl_lc_iso_part_sw_rd_en
           index: -1
         }
         {
@@ -1942,9 +1932,6 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: lc_ctrl
-          end_idx: -1
-          top_type: broadcast
-          top_signame: lc_ctrl_lc_iso_part_sw_wr_en
           index: -1
         }
         {
@@ -4753,8 +4740,6 @@
           act: rcv
           width: 1
           inst_name: flash_ctrl
-          default: ""
-          top_signame: lc_ctrl_lc_nvm_debug_en
           index: -1
         }
         {
@@ -4765,10 +4750,6 @@
           act: rcv
           width: 1
           inst_name: flash_ctrl
-          default: ""
-          external: true
-          top_signame: flash_bist_enable
-          conn_type: false
           index: -1
         }
         {
@@ -4779,10 +4760,6 @@
           width: 1
           default: 1'b0
           inst_name: flash_ctrl
-          package: ""
-          external: true
-          top_signame: flash_power_down_h
-          conn_type: false
           index: -1
         }
         {
@@ -4793,10 +4770,6 @@
           width: 1
           default: 1'b1
           inst_name: flash_ctrl
-          package: ""
-          external: true
-          top_signame: flash_power_ready_h
-          conn_type: false
           index: -1
         }
         {
@@ -4806,11 +4779,6 @@
           act: none
           width: 2
           inst_name: flash_ctrl
-          default: ""
-          package: ""
-          external: true
-          top_signame: flash_test_mode_a
-          conn_type: false
           index: -1
         }
         {
@@ -4820,11 +4788,6 @@
           act: none
           width: 1
           inst_name: flash_ctrl
-          default: ""
-          package: ""
-          external: true
-          top_signame: flash_test_voltage_h
-          conn_type: false
           index: -1
         }
         {
@@ -4835,8 +4798,6 @@
           act: rcv
           width: 1
           inst_name: flash_ctrl
-          default: ""
-          top_signame: lc_ctrl_lc_creator_seed_sw_rw_en
           index: -1
         }
         {
@@ -4847,8 +4808,6 @@
           act: rcv
           width: 1
           inst_name: flash_ctrl
-          default: ""
-          top_signame: lc_ctrl_lc_owner_seed_sw_rw_en
           index: -1
         }
         {
@@ -4859,8 +4818,6 @@
           act: rcv
           width: 1
           inst_name: flash_ctrl
-          default: ""
-          top_signame: lc_ctrl_lc_iso_part_sw_rd_en
           index: -1
         }
         {
@@ -4871,8 +4828,6 @@
           act: rcv
           width: 1
           inst_name: flash_ctrl
-          default: ""
-          top_signame: lc_ctrl_lc_iso_part_sw_wr_en
           index: -1
         }
         {
@@ -4883,8 +4838,6 @@
           act: rcv
           width: 1
           inst_name: flash_ctrl
-          default: ""
-          top_signame: lc_ctrl_lc_seed_hw_rd_en
           index: -1
         }
         {
@@ -4895,8 +4848,6 @@
           act: rcv
           width: 1
           inst_name: flash_ctrl
-          default: ""
-          top_signame: lc_ctrl_lc_escalate_en
           index: -1
         }
         {
@@ -4907,8 +4858,6 @@
           act: rcv
           width: 1
           inst_name: flash_ctrl
-          default: ""
-          top_signame: lc_ctrl_lc_flash_rma_req
           index: -1
         }
         {
@@ -4919,10 +4868,6 @@
           act: req
           width: 1
           inst_name: flash_ctrl
-          default: ""
-          end_idx: -1
-          top_type: broadcast
-          top_signame: flash_ctrl_rma_ack
           index: -1
         }
         {
@@ -4933,10 +4878,6 @@
           act: rcv
           width: 1
           inst_name: flash_ctrl
-          default: ""
-          end_idx: -1
-          top_type: broadcast
-          top_signame: flash_ctrl_rma_seed
           index: -1
         }
         {
@@ -4959,10 +4900,6 @@
           act: req
           width: 1
           inst_name: flash_ctrl
-          default: ""
-          end_idx: -1
-          top_type: broadcast
-          top_signame: flash_ctrl_keymgr
           index: -1
         }
         {
@@ -4973,8 +4910,6 @@
           act: rcv
           width: 1
           inst_name: flash_ctrl
-          default: ""
-          top_signame: ast_obs_ctrl
           index: -1
         }
         {
@@ -4984,11 +4919,6 @@
           act: req
           width: 8
           inst_name: flash_ctrl
-          default: ""
-          package: ""
-          external: true
-          top_signame: flash_obs
-          conn_type: false
           index: -1
         }
         {
@@ -6036,7 +5966,7 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: otbn
-          top_signame: flash_ctrl_rma_ack
+          top_signame: lc_ctrl_lc_flash_rma_req
           index: -1
         }
         {
@@ -6106,6 +6036,10 @@
           domain: "0"
         }
       }
+      param_decl:
+      {
+        UseOtpSeedsInsteadOfFlash: "1"
+      }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
@@ -6115,7 +6049,6 @@
       [
         "0"
       ]
-      param_decl: {}
       memory: {}
       param_list:
       [
@@ -6129,7 +6062,7 @@
             controller (in which case flash_i should just be tied off).
             '''
           type: bit
-          default: "0"
+          default: "1"
           expose: "true"
           name_top: KeymgrUseOtpSeedsInsteadOfFlash
         }
@@ -6382,8 +6315,6 @@
           act: rcv
           width: 1
           inst_name: keymgr
-          default: ""
-          top_signame: flash_ctrl_keymgr
           index: -1
         }
         {
@@ -8351,7 +8282,6 @@
     {
       ast.obs_ctrl:
       [
-        flash_ctrl.obs_ctrl
         otp_ctrl.obs_ctrl
       ]
       ast.ram_1p_cfg:
@@ -8402,17 +8332,9 @@
         edn0.csrng_cmd
         edn1.csrng_cmd
       ]
-      flash_ctrl.keymgr:
-      [
-        keymgr.flash
-      ]
       flash_ctrl.otp:
       [
         otp_ctrl.flash_otp_key
-      ]
-      flash_ctrl.rma_seed:
-      [
-        lc_ctrl.lc_flash_rma_seed
       ]
       otp_ctrl.sram_otp_key:
       [
@@ -8465,10 +8387,6 @@
         rom_ctrl1.keymgr_data
       ]
       lc_ctrl.lc_flash_rma_req:
-      [
-        flash_ctrl.rma_req
-      ]
-      flash_ctrl.rma_ack:
       [
         otbn.lc_rma_req
       ]
@@ -8584,10 +8502,6 @@
         ast.lc_dft_en
         pwrmgr_aon.lc_dft_en
       ]
-      lc_ctrl.lc_nvm_debug_en:
-      [
-        flash_ctrl.lc_nvm_debug_en
-      ]
       lc_ctrl.lc_hw_debug_en:
       [
         sram_ctrl_main.lc_hw_debug_en
@@ -8616,7 +8530,6 @@
         sram_ctrl_ret_aon.lc_escalate_en
         sram_ctrl_mbox.lc_escalate_en
         aon_timer_aon.lc_escalate_en
-        flash_ctrl.lc_escalate_en
         pinmux_aon.lc_escalate_en
       ]
       lc_ctrl.lc_check_byp_en:
@@ -8635,24 +8548,10 @@
       lc_ctrl.lc_creator_seed_sw_rw_en:
       [
         otp_ctrl.lc_creator_seed_sw_rw_en
-        flash_ctrl.lc_creator_seed_sw_rw_en
-      ]
-      lc_ctrl.lc_owner_seed_sw_rw_en:
-      [
-        flash_ctrl.lc_owner_seed_sw_rw_en
-      ]
-      lc_ctrl.lc_iso_part_sw_rd_en:
-      [
-        flash_ctrl.lc_iso_part_sw_rd_en
-      ]
-      lc_ctrl.lc_iso_part_sw_wr_en:
-      [
-        flash_ctrl.lc_iso_part_sw_wr_en
       ]
       lc_ctrl.lc_seed_hw_rd_en:
       [
         otp_ctrl.lc_seed_hw_rd_en
-        flash_ctrl.lc_seed_hw_rd_en
       ]
       rv_plic.msip:
       [
@@ -8956,12 +8855,6 @@
       clkmgr_aon.div_step_down_req: div_step_down_req
       clkmgr_aon.calib_rdy: calib_rdy
       csrng.entropy_src_hw_if: entropy_src_hw_if
-      flash_ctrl.flash_bist_enable: flash_bist_enable
-      flash_ctrl.flash_power_down_h: flash_power_down_h
-      flash_ctrl.flash_power_ready_h: flash_power_ready_h
-      flash_ctrl.flash_test_mode_a: flash_test_mode_a
-      flash_ctrl.flash_test_voltage_h: flash_test_voltage_h
-      flash_ctrl.fla_obs: flash_obs
       lc_ctrl.dmi_tl_h2d: lc_ctrl_dmi_h2d
       lc_ctrl.dmi_tl_d2h: lc_ctrl_dmi_d2h
       rv_dm.dmi_tl_h2d: rv_dm_dmi_h2d
@@ -10959,40 +10852,13 @@
         idx: 4
       }
       {
-        name: FLASH_TEST_VOLT
-        type: AnalogIn0
-        bank: VCC
-        connection: manual
-        desc: Flash test voltage input
-        port_type: inout
-        idx: 5
-      }
-      {
-        name: FLASH_TEST_MODE0
-        type: InputStd
-        bank: VCC
-        connection: manual
-        desc: Flash test mode signal
-        port_type: inout
-        idx: 6
-      }
-      {
-        name: FLASH_TEST_MODE1
-        type: InputStd
-        bank: VCC
-        connection: manual
-        desc: Flash test mode signal
-        port_type: inout
-        idx: 7
-      }
-      {
         name: OTP_EXT_VOLT
         type: AnalogIn1
         bank: VCC
         connection: manual
         desc: OTP external voltage input
         port_type: inout
-        idx: 8
+        idx: 5
       }
       {
         name: SPI_HOST_D0
@@ -11001,7 +10867,7 @@
         connection: direct
         desc: SPI host data
         port_type: inout
-        idx: 9
+        idx: 6
       }
       {
         name: SPI_HOST_D1
@@ -11010,7 +10876,7 @@
         connection: direct
         desc: SPI host data
         port_type: inout
-        idx: 10
+        idx: 7
       }
       {
         name: SPI_HOST_D2
@@ -11019,7 +10885,7 @@
         connection: direct
         desc: SPI host data
         port_type: inout
-        idx: 11
+        idx: 8
       }
       {
         name: SPI_HOST_D3
@@ -11028,7 +10894,7 @@
         connection: direct
         desc: SPI host data
         port_type: inout
-        idx: 12
+        idx: 9
       }
       {
         name: SPI_HOST_CLK
@@ -11037,7 +10903,7 @@
         connection: direct
         desc: SPI host clock
         port_type: inout
-        idx: 13
+        idx: 10
       }
       {
         name: SPI_HOST_CS_L
@@ -11046,7 +10912,7 @@
         connection: direct
         desc: SPI host chip select
         port_type: inout
-        idx: 14
+        idx: 11
       }
       {
         name: SPI_DEV_D0
@@ -11055,7 +10921,7 @@
         connection: direct
         desc: SPI device data
         port_type: inout
-        idx: 15
+        idx: 12
       }
       {
         name: SPI_DEV_D1
@@ -11064,7 +10930,7 @@
         connection: direct
         desc: SPI device data
         port_type: inout
-        idx: 16
+        idx: 13
       }
       {
         name: SPI_DEV_D2
@@ -11073,7 +10939,7 @@
         connection: direct
         desc: SPI device data
         port_type: inout
-        idx: 17
+        idx: 14
       }
       {
         name: SPI_DEV_D3
@@ -11082,7 +10948,7 @@
         connection: direct
         desc: SPI device data
         port_type: inout
-        idx: 18
+        idx: 15
       }
       {
         name: SPI_DEV_CLK
@@ -11091,7 +10957,7 @@
         connection: direct
         desc: SPI device clock
         port_type: inout
-        idx: 19
+        idx: 16
       }
       {
         name: SPI_DEV_CS_L
@@ -11100,7 +10966,7 @@
         connection: direct
         desc: SPI device chip select
         port_type: inout
-        idx: 20
+        idx: 17
       }
       {
         name: IOA0
@@ -11496,7 +11362,7 @@
         connection: direct
         desc: Dedicated sysrst_ctrl output (ec_rst_l)
         port_type: inout
-        idx: 21
+        idx: 18
       }
       {
         name: IOR9
@@ -11505,7 +11371,7 @@
         connection: direct
         desc: Dedicated sysrst_ctrl output (flash_wp_l))
         port_type: inout
-        idx: 22
+        idx: 19
       }
       {
         name: IOR10
@@ -12954,7 +12820,7 @@
         inouts: 12
         inputs: 2
         outputs: 2
-        pads: 23
+        pads: 20
       }
       muxed:
       {
@@ -13055,10 +12921,7 @@
         [
           CC1
           CC2
-          FLASH_TEST_VOLT
           OTP_EXT_VOLT
-          FLASH_TEST_MODE0
-          FLASH_TEST_MODE1
           USB_P
           USB_N
         ]
@@ -16113,9 +15976,6 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: lc_ctrl
-        end_idx: -1
-        top_type: broadcast
-        top_signame: lc_ctrl_lc_nvm_debug_en
         index: -1
       }
       {
@@ -16225,7 +16085,6 @@
         width: 1
         default: "'0"
         inst_name: lc_ctrl
-        top_signame: flash_ctrl_rma_seed
         index: -1
       }
       {
@@ -16277,9 +16136,6 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: lc_ctrl
-        end_idx: -1
-        top_type: broadcast
-        top_signame: lc_ctrl_lc_owner_seed_sw_rw_en
         index: -1
       }
       {
@@ -16291,9 +16147,6 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: lc_ctrl
-        end_idx: -1
-        top_type: broadcast
-        top_signame: lc_ctrl_lc_iso_part_sw_rd_en
         index: -1
       }
       {
@@ -16305,9 +16158,6 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: lc_ctrl
-        end_idx: -1
-        top_type: broadcast
-        top_signame: lc_ctrl_lc_iso_part_sw_wr_en
         index: -1
       }
       {
@@ -18035,8 +17885,6 @@
         act: rcv
         width: 1
         inst_name: flash_ctrl
-        default: ""
-        top_signame: lc_ctrl_lc_nvm_debug_en
         index: -1
       }
       {
@@ -18047,10 +17895,6 @@
         act: rcv
         width: 1
         inst_name: flash_ctrl
-        default: ""
-        external: true
-        top_signame: flash_bist_enable
-        conn_type: false
         index: -1
       }
       {
@@ -18061,10 +17905,6 @@
         width: 1
         default: 1'b0
         inst_name: flash_ctrl
-        package: ""
-        external: true
-        top_signame: flash_power_down_h
-        conn_type: false
         index: -1
       }
       {
@@ -18075,10 +17915,6 @@
         width: 1
         default: 1'b1
         inst_name: flash_ctrl
-        package: ""
-        external: true
-        top_signame: flash_power_ready_h
-        conn_type: false
         index: -1
       }
       {
@@ -18088,11 +17924,6 @@
         act: none
         width: 2
         inst_name: flash_ctrl
-        default: ""
-        package: ""
-        external: true
-        top_signame: flash_test_mode_a
-        conn_type: false
         index: -1
       }
       {
@@ -18102,11 +17933,6 @@
         act: none
         width: 1
         inst_name: flash_ctrl
-        default: ""
-        package: ""
-        external: true
-        top_signame: flash_test_voltage_h
-        conn_type: false
         index: -1
       }
       {
@@ -18117,8 +17943,6 @@
         act: rcv
         width: 1
         inst_name: flash_ctrl
-        default: ""
-        top_signame: lc_ctrl_lc_creator_seed_sw_rw_en
         index: -1
       }
       {
@@ -18129,8 +17953,6 @@
         act: rcv
         width: 1
         inst_name: flash_ctrl
-        default: ""
-        top_signame: lc_ctrl_lc_owner_seed_sw_rw_en
         index: -1
       }
       {
@@ -18141,8 +17963,6 @@
         act: rcv
         width: 1
         inst_name: flash_ctrl
-        default: ""
-        top_signame: lc_ctrl_lc_iso_part_sw_rd_en
         index: -1
       }
       {
@@ -18153,8 +17973,6 @@
         act: rcv
         width: 1
         inst_name: flash_ctrl
-        default: ""
-        top_signame: lc_ctrl_lc_iso_part_sw_wr_en
         index: -1
       }
       {
@@ -18165,8 +17983,6 @@
         act: rcv
         width: 1
         inst_name: flash_ctrl
-        default: ""
-        top_signame: lc_ctrl_lc_seed_hw_rd_en
         index: -1
       }
       {
@@ -18177,8 +17993,6 @@
         act: rcv
         width: 1
         inst_name: flash_ctrl
-        default: ""
-        top_signame: lc_ctrl_lc_escalate_en
         index: -1
       }
       {
@@ -18189,8 +18003,6 @@
         act: rcv
         width: 1
         inst_name: flash_ctrl
-        default: ""
-        top_signame: lc_ctrl_lc_flash_rma_req
         index: -1
       }
       {
@@ -18201,10 +18013,6 @@
         act: req
         width: 1
         inst_name: flash_ctrl
-        default: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: flash_ctrl_rma_ack
         index: -1
       }
       {
@@ -18215,10 +18023,6 @@
         act: rcv
         width: 1
         inst_name: flash_ctrl
-        default: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: flash_ctrl_rma_seed
         index: -1
       }
       {
@@ -18241,10 +18045,6 @@
         act: req
         width: 1
         inst_name: flash_ctrl
-        default: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: flash_ctrl_keymgr
         index: -1
       }
       {
@@ -18255,8 +18055,6 @@
         act: rcv
         width: 1
         inst_name: flash_ctrl
-        default: ""
-        top_signame: ast_obs_ctrl
         index: -1
       }
       {
@@ -18266,11 +18064,6 @@
         act: req
         width: 8
         inst_name: flash_ctrl
-        default: ""
-        package: ""
-        external: true
-        top_signame: flash_obs
-        conn_type: false
         index: -1
       }
       {
@@ -18783,7 +18576,7 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: otbn
-        top_signame: flash_ctrl_rma_ack
+        top_signame: lc_ctrl_lc_flash_rma_req
         index: -1
       }
       {
@@ -18923,8 +18716,6 @@
         act: rcv
         width: 1
         inst_name: keymgr
-        default: ""
-        top_signame: flash_ctrl_keymgr
         index: -1
       }
       {
@@ -20902,78 +20693,6 @@
         netname: entropy_src_hw_if_rsp
       }
       {
-        package: prim_mubi_pkg
-        struct: mubi4
-        signame: flash_bist_enable_i
-        width: 1
-        type: uni
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: flash_bist_enable
-      }
-      {
-        package: ""
-        struct: logic
-        signame: flash_power_down_h_i
-        width: 1
-        type: uni
-        default: 1'b0
-        direction: in
-        conn_type: false
-        index: -1
-        netname: flash_power_down_h
-      }
-      {
-        package: ""
-        struct: logic
-        signame: flash_power_ready_h_i
-        width: 1
-        type: uni
-        default: 1'b1
-        direction: in
-        conn_type: false
-        index: -1
-        netname: flash_power_ready_h
-      }
-      {
-        package: ""
-        struct: ""
-        signame: flash_test_mode_a_io
-        width: 2
-        type: io
-        default: ""
-        direction: inout
-        conn_type: false
-        index: -1
-        netname: flash_test_mode_a
-      }
-      {
-        package: ""
-        struct: ""
-        signame: flash_test_voltage_h_io
-        width: 1
-        type: io
-        default: ""
-        direction: inout
-        conn_type: false
-        index: -1
-        netname: flash_test_voltage_h
-      }
-      {
-        package: ""
-        struct: logic
-        signame: flash_obs_o
-        width: 8
-        type: uni
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: flash_obs
-      }
-      {
         package: tlul_pkg
         struct: tl_h2d
         signame: lc_ctrl_dmi_h2d_i
@@ -21494,17 +21213,6 @@
         default: ""
       }
       {
-        package: flash_ctrl_pkg
-        struct: keymgr_flash
-        signame: flash_ctrl_keymgr
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: flash_ctrl_pkg::KEYMGR_FLASH_DEFAULT
-      }
-      {
         package: otp_ctrl_pkg
         struct: flash_otp_key_req
         signame: flash_ctrl_otp_req
@@ -21525,17 +21233,6 @@
         act: req
         suffix: rsp
         default: otp_ctrl_pkg::FLASH_OTP_KEY_RSP_DEFAULT
-      }
-      {
-        package: lc_ctrl_pkg
-        struct: lc_flash_rma_seed
-        signame: flash_ctrl_rma_seed
-        width: 1
-        type: uni
-        end_idx: -1
-        act: rcv
-        suffix: ""
-        default: lc_ctrl_pkg::LC_FLASH_RMA_SEED_DEFAULT
       }
       {
         package: otp_ctrl_pkg
@@ -21723,17 +21420,6 @@
         act: req
         suffix: ""
         default: lc_ctrl_pkg::Off
-      }
-      {
-        package: lc_ctrl_pkg
-        struct: lc_tx
-        signame: flash_ctrl_rma_ack
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: lc_ctrl_pkg::LC_TX_DEFAULT
       }
       {
         package: lc_ctrl_pkg
@@ -22068,17 +21754,6 @@
       {
         package: lc_ctrl_pkg
         struct: lc_tx
-        signame: lc_ctrl_lc_nvm_debug_en
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: lc_ctrl_pkg::Off
-      }
-      {
-        package: lc_ctrl_pkg
-        struct: lc_tx
         signame: lc_ctrl_lc_hw_debug_en
         width: 1
         type: uni
@@ -22157,39 +21832,6 @@
         package: lc_ctrl_pkg
         struct: lc_tx
         signame: lc_ctrl_lc_creator_seed_sw_rw_en
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: lc_ctrl_pkg::Off
-      }
-      {
-        package: lc_ctrl_pkg
-        struct: lc_tx
-        signame: lc_ctrl_lc_owner_seed_sw_rw_en
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: lc_ctrl_pkg::Off
-      }
-      {
-        package: lc_ctrl_pkg
-        struct: lc_tx
-        signame: lc_ctrl_lc_iso_part_sw_rd_en
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: lc_ctrl_pkg::Off
-      }
-      {
-        package: lc_ctrl_pkg
-        struct: lc_tx
-        signame: lc_ctrl_lc_iso_part_sw_wr_en
         width: 1
         type: uni
         end_idx: -1

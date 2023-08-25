@@ -541,10 +541,12 @@ module chip_${top["name"]}_${target["name"]} #(
   ast_pkg::ast_alert_rsp_t ast_alert_rsp;
   ast_pkg::ast_alert_req_t ast_alert_req;
 
+  % if top["name"] != "darjeeling":
   // Flash connections
   prim_mubi_pkg::mubi4_t flash_bist_enable;
   logic flash_power_down_h;
   logic flash_power_ready_h;
+  % endif
 
   // clock bypass req/ack
   prim_mubi_pkg::mubi4_t io_clk_byp_req;
@@ -769,8 +771,13 @@ module chip_${top["name"]}_${target["name"]} #(
     .main_env_iso_en_i     ( base_ast_pwr.pwr_clamp_env ),
     .main_pd_ni            ( base_ast_pwr.main_pd_n ),
     // pdm control (flash)/otp
+% if top["name"] == "darjeeling":
+    .flash_power_down_h_o  ( ),
+    .flash_power_ready_h_o ( ),
+% else:
     .flash_power_down_h_o  ( flash_power_down_h ),
     .flash_power_ready_h_o ( flash_power_ready_h ),
+% endif
     .otp_power_seq_i       ( otp_ctrl_otp_ast_pwr_seq ),
     .otp_power_seq_h_o     ( otp_ctrl_otp_ast_pwr_seq_h ),
     // system source clock
@@ -831,7 +838,11 @@ module chip_${top["name"]}_${target["name"]} #(
     .all_clk_byp_ack_o     ( all_clk_byp_ack  ),
     .io_clk_byp_req_i      ( io_clk_byp_req   ),
     .io_clk_byp_ack_o      ( io_clk_byp_ack   ),
+% if top["name"] == "darjeeling":
+    .flash_bist_en_o       ( ),
+% else:
     .flash_bist_en_o       ( flash_bist_enable ),
+% endif
     // Memory configuration connections
     .dpram_rmf_o           ( ast_ram_2p_fcfg ),
     .dpram_rml_o           ( ast_ram_2p_lcfg ),
@@ -975,12 +986,15 @@ module chip_${top["name"]}_${target["name"]} #(
   assign manual_out_cc2 = 1'b0;
   assign manual_oe_cc2 = 1'b0;
 
+  % if top["name"] != "darjeeling":
   assign manual_out_flash_test_mode0 = 1'b0;
   assign manual_oe_flash_test_mode0 = 1'b0;
   assign manual_out_flash_test_mode1 = 1'b0;
   assign manual_oe_flash_test_mode1 = 1'b0;
   assign manual_out_flash_test_volt = 1'b0;
   assign manual_oe_flash_test_volt = 1'b0;
+  % endif
+
   assign manual_out_otp_ext_volt = 1'b0;
   assign manual_oe_otp_ext_volt = 1'b0;
 
@@ -988,18 +1002,22 @@ module chip_${top["name"]}_${target["name"]} #(
   assign manual_attr_por_n = '0;
   assign manual_attr_cc1 = '0;
   assign manual_attr_cc2 = '0;
+  % if top["name"] != "darjeeling":
   assign manual_attr_flash_test_mode0 = '0;
   assign manual_attr_flash_test_mode1 = '0;
   assign manual_attr_flash_test_volt = '0;
+  % endif
   assign manual_attr_otp_ext_volt = '0;
 
   logic unused_manual_sigs;
   assign unused_manual_sigs = ^{
     manual_in_cc2,
     manual_in_cc1,
+    % if top["name"] != "darjeeling":
     manual_in_flash_test_volt,
     manual_in_flash_test_mode0,
     manual_in_flash_test_mode1,
+    % endif
     manual_in_otp_ext_volt
   };
 
@@ -1094,10 +1112,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),
     .otp_ctrl_otp_ast_pwr_seq_h_i ( otp_ctrl_otp_ast_pwr_seq_h ),
     .otp_obs_o                    ( otp_obs                    ),
-    .flash_bist_enable_i          ( flash_bist_enable          ),
-    .flash_power_down_h_i         ( flash_power_down_h         ),
-    .flash_power_ready_h_i        ( flash_power_ready_h        ),
-    .flash_obs_o                  ( fla_obs                    ),
 % if top["name"] == "darjeeling":
     .entropy_src_hw_if_req_o      ( entropy_src_hw_if_req      ),
     .entropy_src_hw_if_rsp_i      ( entropy_src_hw_if_rsp      ),
@@ -1105,6 +1119,14 @@ module chip_${top["name"]}_${target["name"]} #(
     .es_rng_req_o                 ( es_rng_req                 ),
     .es_rng_rsp_i                 ( es_rng_rsp                 ),
     .es_rng_fips_o                ( es_rng_fips                ),
+    .flash_bist_enable_i          ( flash_bist_enable          ),
+    .flash_power_down_h_i         ( flash_power_down_h         ),
+    .flash_power_ready_h_i        ( flash_power_ready_h        ),
+    .flash_obs_o                  ( fla_obs                    ),
+    // Flash test mode voltages
+    .flash_test_mode_a_io         ( {FLASH_TEST_MODE1,
+                                     FLASH_TEST_MODE0}         ),
+    .flash_test_voltage_h_io      ( FLASH_TEST_VOLT            ),
 % endif
     .io_clk_byp_req_o             ( io_clk_byp_req             ),
     .io_clk_byp_ack_i             ( io_clk_byp_ack             ),
@@ -1115,11 +1137,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .ast2pinmux_i                 ( ast2pinmux                 ),
     .calib_rdy_i                  ( ast_init_done              ),
     .ast_init_done_i              ( ast_init_done              ),
-
-    // Flash test mode voltages
-    .flash_test_mode_a_io         ( {FLASH_TEST_MODE1,
-                                     FLASH_TEST_MODE0}         ),
-    .flash_test_voltage_h_io      ( FLASH_TEST_VOLT            ),
 
     // OTP external voltage
     .otp_ext_voltage_h_io         ( OTP_EXT_VOLT               ),
@@ -1312,10 +1329,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .ast_edn_req_i                ( ast_edn_edn_req       ),
     .ast_edn_rsp_o                ( ast_edn_edn_rsp       ),
     .obs_ctrl_i                   ( obs_ctrl              ),
-    .flash_bist_enable_i          ( flash_bist_enable     ),
-    .flash_power_down_h_i         ( 1'b0                  ),
-    .flash_power_ready_h_i        ( 1'b1                  ),
-    .flash_obs_o                  ( flash_obs             ),
     .io_clk_byp_req_o             ( io_clk_byp_req        ),
     .io_clk_byp_ack_i             ( io_clk_byp_ack        ),
     .all_clk_byp_req_o            ( all_clk_byp_req       ),
@@ -1341,6 +1354,10 @@ module chip_${top["name"]}_${target["name"]} #(
     .es_rng_req_o                 ( es_rng_req                 ),
     .es_rng_rsp_i                 ( es_rng_rsp                 ),
     .es_rng_fips_o                ( es_rng_fips                ),
+    .flash_bist_enable_i          ( flash_bist_enable          ),
+    .flash_power_down_h_i         ( 1'b0                       ),
+    .flash_power_ready_h_i        ( 1'b1                       ),
+    .flash_obs_o                  ( flash_obs                  ),
 % endif
     .ast2pinmux_i                 ( ast2pinmux                 ),
     .calib_rdy_i                  ( ast_init_done              ),

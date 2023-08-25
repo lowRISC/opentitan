@@ -694,6 +694,11 @@
       clock_group: "secure",
       reset_connections: {rst_ni: "lc", rst_edn_ni: "lc"},
       base_addr: "0x41140000",
+      param_decl: {
+        // This RoT configuration has embedded flash and hence the
+        // creator / owner seeds do not have to be stored in OTP.
+        UseOtpSeedsInsteadOfFlash: "0"
+      }
     },
     { name: "csrng",
       type: "csrng",

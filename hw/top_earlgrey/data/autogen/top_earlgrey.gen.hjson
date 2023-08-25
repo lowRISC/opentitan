@@ -6203,6 +6203,10 @@
           domain: "0"
         }
       }
+      param_decl:
+      {
+        UseOtpSeedsInsteadOfFlash: "0"
+      }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
@@ -6212,7 +6216,6 @@
       [
         "0"
       ]
-      param_decl: {}
       memory: {}
       param_list:
       [

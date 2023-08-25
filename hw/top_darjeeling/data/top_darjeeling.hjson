@@ -590,7 +590,7 @@
         }
       }
     },
-    // TODO: remove, disentangle wiring in topgen
+    // TODO(opentitan-integrated/issues/332): remove the flash_ctrl.
     { name: "flash_ctrl",
       type: "flash_ctrl",
       clock_srcs: {clk_i: "main", clk_otp_i: "io_div4"},
@@ -687,6 +687,11 @@
       clock_group: "secure",
       reset_connections: {rst_ni: "lc", rst_edn_ni: "lc"},
       base_addr: "0x21140000",
+      param_decl: {
+        // This RoT configuration does not have embedded flash and
+        // hence the creator / owner seeds have to be stored in OTP.
+        UseOtpSeedsInsteadOfFlash: "1"
+      }
     },
     { name: "csrng",
       type: "csrng",
@@ -944,8 +949,7 @@
   //  e.g flash_ctrl0.flash: [flash_phy0.flash_ctrl]
   inter_module: {
     'connect': {
-      'ast.obs_ctrl'            : ['flash_ctrl.obs_ctrl',
-                                   'otp_ctrl.obs_ctrl']
+      'ast.obs_ctrl'            : ['otp_ctrl.obs_ctrl']
       'ast.ram_1p_cfg'          : ['otbn.ram_cfg',
                                    'sram_ctrl_main.cfg',
                                    'sram_ctrl_ret_aon.cfg',
@@ -966,13 +970,13 @@
                                    'pwrmgr_aon.esc_rst_tx'],
       'aon_timer_aon.nmi_wdog_timer_bark' : ['rv_core_ibex.nmi_wdog']
       'csrng.csrng_cmd'         : ['edn0.csrng_cmd', 'edn1.csrng_cmd'],
-      'flash_ctrl.keymgr'       : ['keymgr.flash'],
+      // TODO(opentitan-integrated/issues/332): remove this together with flash_ctrl.
       'flash_ctrl.otp'          : ['otp_ctrl.flash_otp_key'],
-      'flash_ctrl.rma_seed'     : ['lc_ctrl.lc_flash_rma_seed'],
       'otp_ctrl.sram_otp_key'   : ['sram_ctrl_main.sram_otp_key',
                                    'sram_ctrl_ret_aon.sram_otp_key',
                                    'sram_ctrl_mbox.sram_otp_key'
                                    'rv_core_ibex.icache_otp_key']
+      // TODO(opentitan-integrated/issues/332): remove this together with flash_ctrl.
       'pwrmgr_aon.pwr_flash'    : ['flash_ctrl.pwrmgr'],
       'pwrmgr_aon.pwr_rst'      : ['rstmgr_aon.pwr'],
       'pwrmgr_aon.pwr_clk'      : ['clkmgr_aon.pwr'],
@@ -986,12 +990,12 @@
                                    'rom_ctrl1.pwrmgr_data'],
       'keymgr.rom_digest'       : ['rom_ctrl0.keymgr_data',
                                    'rom_ctrl1.keymgr_data'],
-      'flash_ctrl.keymgr'       : ['keymgr.flash'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
 
-      // Daisy chained LC RMA req/ack interface: LC -> Flash -> OTBN -> LC
-      'lc_ctrl.lc_flash_rma_req' : ['flash_ctrl.rma_req'],
-      'flash_ctrl.rma_ack'       : ['otbn.lc_rma_req'],
+      // LC RMA req/ack interface: LC -> OTBN
+      // Note: this RoT configuration has no embedded flash, hence
+      // the RMA request is just routed to OTBN directly.
+      'lc_ctrl.lc_flash_rma_req' : ['otbn.lc_rma_req'],
       'otbn.lc_rma_ack'          : ['lc_ctrl.lc_flash_rma_ack'],
 
       // usbdev connection to pinmux
@@ -1048,7 +1052,6 @@
                                       'ast.lc_dft_en',
                                       'pwrmgr_aon.lc_dft_en',
                                      ],
-      'lc_ctrl.lc_nvm_debug_en'    : ['flash_ctrl.lc_nvm_debug_en'],
       'lc_ctrl.lc_hw_debug_en'     : ['sram_ctrl_main.lc_hw_debug_en',
                                       'pinmux_aon.lc_hw_debug_en',
                                       'ast.lc_hw_debug_en',
@@ -1066,7 +1069,6 @@
                                       'sram_ctrl_ret_aon.lc_escalate_en',
                                       'sram_ctrl_mbox.lc_escalate_en',
                                       'aon_timer_aon.lc_escalate_en',
-                                      'flash_ctrl.lc_escalate_en',
                                       'pinmux_aon.lc_escalate_en'],
 
       'lc_ctrl.lc_check_byp_en'    : ['otp_ctrl.lc_check_byp_en',
@@ -1075,13 +1077,8 @@
       'lc_ctrl.lc_clk_byp_ack'     : ['clkmgr_aon.lc_clk_byp_ack'],
 
       // LC access control signal broadcast
-      'lc_ctrl.lc_creator_seed_sw_rw_en'   : ['otp_ctrl.lc_creator_seed_sw_rw_en',
-                                              'flash_ctrl.lc_creator_seed_sw_rw_en'],
-      'lc_ctrl.lc_owner_seed_sw_rw_en'     : ['flash_ctrl.lc_owner_seed_sw_rw_en'],
-      'lc_ctrl.lc_iso_part_sw_rd_en'       : ['flash_ctrl.lc_iso_part_sw_rd_en'],
-      'lc_ctrl.lc_iso_part_sw_wr_en'       : ['flash_ctrl.lc_iso_part_sw_wr_en'],
-      'lc_ctrl.lc_seed_hw_rd_en'           : ['otp_ctrl.lc_seed_hw_rd_en',
-                                              'flash_ctrl.lc_seed_hw_rd_en'],
+      'lc_ctrl.lc_creator_seed_sw_rw_en'   : ['otp_ctrl.lc_creator_seed_sw_rw_en'],
+      'lc_ctrl.lc_seed_hw_rd_en'           : ['otp_ctrl.lc_seed_hw_rd_en'],
 
       // rv_plic connections
       'rv_plic.msip' : ['rv_core_ibex.irq_software'],
@@ -1161,12 +1158,6 @@
         'clkmgr_aon.div_step_down_req'    : 'div_step_down_req',
         'clkmgr_aon.calib_rdy'            : 'calib_rdy',
         'csrng.entropy_src_hw_if'         : 'entropy_src_hw_if',
-        'flash_ctrl.flash_bist_enable'    : 'flash_bist_enable',
-        'flash_ctrl.flash_power_down_h'   : 'flash_power_down_h',
-        'flash_ctrl.flash_power_ready_h'  : 'flash_power_ready_h',
-        'flash_ctrl.flash_test_mode_a'    : 'flash_test_mode_a',
-        'flash_ctrl.flash_test_voltage_h' : 'flash_test_voltage_h',
-        'flash_ctrl.fla_obs'              : 'flash_obs',
         'lc_ctrl.dmi_tl_h2d'              : 'lc_ctrl_dmi_h2d',
         'lc_ctrl.dmi_tl_d2h'              : 'lc_ctrl_dmi_d2h',
         'rv_dm.dmi_tl_h2d'                : 'rv_dm_dmi_h2d',
@@ -1259,9 +1250,6 @@
       { name: 'USB_N'           , type: 'DualBidirTol', bank: 'VCC' , connection: 'manual', desc: 'USB N signal'},
       { name: 'CC1'             , type: 'InputStd',     bank: 'AVCC', connection: 'manual', desc: 'ADC input 1', port_type: '`INOUT_AI'},
       { name: 'CC2'             , type: 'InputStd',     bank: 'AVCC', connection: 'manual', desc: 'ADC input 2', port_type: '`INOUT_AI'},
-      { name: 'FLASH_TEST_VOLT' , type: 'AnalogIn0',    bank: 'VCC' , connection: 'manual', desc: 'Flash test voltage input'},
-      { name: 'FLASH_TEST_MODE0', type: 'InputStd',     bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
-      { name: 'FLASH_TEST_MODE1', type: 'InputStd',     bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
       { name: 'OTP_EXT_VOLT'    , type: 'AnalogIn1',    bank: 'VCC' , connection: 'manual', desc: 'OTP external voltage input'},
       // Dedicated IOs
       { name: 'SPI_HOST_D0'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
@@ -1398,6 +1386,7 @@
       { instance: "i2c2",            port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "spi_device",      port: 'tpm_csb',        connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "spi_host1",       port: '',               connection: 'muxed' , pad: ''             , desc: ''},
+      // TODO(opentitan-integrated/issues/332): remove this together with flash_ctrl.
       { instance: "flash_ctrl",      port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "sensor_ctrl",     port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "otp_ctrl",        port: 'test[0]',        connection: 'muxed' , pad: ''             , desc: ''},
@@ -1503,8 +1492,7 @@
         remove_ports: [],
         remove_pads: [
           'CC1', 'CC2',
-          'FLASH_TEST_VOLT', 'OTP_EXT_VOLT'
-          'FLASH_TEST_MODE0', 'FLASH_TEST_MODE1',
+          'OTP_EXT_VOLT'
           'USB_P', 'USB_N'
         ],
 

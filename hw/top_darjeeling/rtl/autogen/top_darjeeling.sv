@@ -77,7 +77,7 @@ module top_darjeeling #(
   parameter bit SecOtbnMuteUrnd = 0,
   parameter bit SecOtbnSkipUrndReseedAtStart = 0,
   // parameters for keymgr
-  parameter bit KeymgrUseOtpSeedsInsteadOfFlash = 0,
+  parameter bit KeymgrUseOtpSeedsInsteadOfFlash = 1,
   parameter bit KeymgrKmacEnMasking = 1,
   // parameters for csrng
   parameter aes_pkg::sbox_impl_e CsrngSBoxImpl = aes_pkg::SBoxImplCanright,
@@ -157,12 +157,6 @@ module top_darjeeling #(
   input  prim_mubi_pkg::mubi4_t       calib_rdy_i,
   output entropy_src_pkg::entropy_src_hw_if_req_t       entropy_src_hw_if_req_o,
   input  entropy_src_pkg::entropy_src_hw_if_rsp_t       entropy_src_hw_if_rsp_i,
-  input  prim_mubi_pkg::mubi4_t       flash_bist_enable_i,
-  input  logic       flash_power_down_h_i,
-  input  logic       flash_power_ready_h_i,
-  inout   [1:0] flash_test_mode_a_io,
-  inout         flash_test_voltage_h_io,
-  output logic [7:0] flash_obs_o,
   input  tlul_pkg::tl_h2d_t       lc_ctrl_dmi_h2d_i,
   output tlul_pkg::tl_d2h_t       lc_ctrl_dmi_d2h_o,
   input  tlul_pkg::tl_h2d_t       rv_dm_dmi_h2d_i,
@@ -535,10 +529,8 @@ module top_darjeeling #(
   logic       aon_timer_aon_nmi_wdog_timer_bark;
   csrng_pkg::csrng_req_t [1:0] csrng_csrng_cmd_req;
   csrng_pkg::csrng_rsp_t [1:0] csrng_csrng_cmd_rsp;
-  flash_ctrl_pkg::keymgr_flash_t       flash_ctrl_keymgr;
   otp_ctrl_pkg::flash_otp_key_req_t       flash_ctrl_otp_req;
   otp_ctrl_pkg::flash_otp_key_rsp_t       flash_ctrl_otp_rsp;
-  lc_ctrl_pkg::lc_flash_rma_seed_t       flash_ctrl_rma_seed;
   otp_ctrl_pkg::sram_otp_key_req_t [3:0] otp_ctrl_sram_otp_key_req;
   otp_ctrl_pkg::sram_otp_key_rsp_t [3:0] otp_ctrl_sram_otp_key_rsp;
   pwrmgr_pkg::pwr_flash_t       pwrmgr_aon_pwr_flash;
@@ -556,7 +548,6 @@ module top_darjeeling #(
   rom_ctrl_pkg::pwrmgr_data_t [1:0] pwrmgr_aon_rom_ctrl;
   rom_ctrl_pkg::keymgr_data_t [1:0] keymgr_rom_digest;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_flash_rma_req;
-  lc_ctrl_pkg::lc_tx_t       flash_ctrl_rma_ack;
   lc_ctrl_pkg::lc_tx_t       otbn_lc_rma_ack;
   logic       usbdev_usb_dp_pullup;
   logic       usbdev_usb_dn_pullup;
@@ -587,7 +578,6 @@ module top_darjeeling #(
   lc_ctrl_pkg::lc_keymgr_div_t       lc_ctrl_lc_keymgr_div;
   logic       lc_ctrl_strap_en_override;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_dft_en;
-  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_nvm_debug_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_hw_debug_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_cpu_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_keymgr_en;
@@ -596,9 +586,6 @@ module top_darjeeling #(
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_clk_byp_req;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_clk_byp_ack;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_creator_seed_sw_rw_en;
-  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_owner_seed_sw_rw_en;
-  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_iso_part_sw_rd_en;
-  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_iso_part_sw_wr_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_seed_hw_rd_en;
   logic       rv_plic_msip;
   logic       rv_plic_irq;
@@ -1434,7 +1421,7 @@ module top_darjeeling #(
       .kmac_data_o(kmac_app_req[1]),
       .kmac_data_i(kmac_app_rsp[1]),
       .lc_dft_en_o(lc_ctrl_lc_dft_en),
-      .lc_nvm_debug_en_o(lc_ctrl_lc_nvm_debug_en),
+      .lc_nvm_debug_en_o(),
       .lc_hw_debug_en_o(lc_ctrl_lc_hw_debug_en),
       .lc_cpu_en_o(lc_ctrl_lc_cpu_en),
       .lc_keymgr_en_o(lc_ctrl_lc_keymgr_en),
@@ -1442,13 +1429,13 @@ module top_darjeeling #(
       .lc_clk_byp_req_o(lc_ctrl_lc_clk_byp_req),
       .lc_clk_byp_ack_i(lc_ctrl_lc_clk_byp_ack),
       .lc_flash_rma_req_o(lc_ctrl_lc_flash_rma_req),
-      .lc_flash_rma_seed_o(flash_ctrl_rma_seed),
+      .lc_flash_rma_seed_o(),
       .lc_flash_rma_ack_i(otbn_lc_rma_ack),
       .lc_check_byp_en_o(lc_ctrl_lc_check_byp_en),
       .lc_creator_seed_sw_rw_en_o(lc_ctrl_lc_creator_seed_sw_rw_en),
-      .lc_owner_seed_sw_rw_en_o(lc_ctrl_lc_owner_seed_sw_rw_en),
-      .lc_iso_part_sw_rd_en_o(lc_ctrl_lc_iso_part_sw_rd_en),
-      .lc_iso_part_sw_wr_en_o(lc_ctrl_lc_iso_part_sw_wr_en),
+      .lc_owner_seed_sw_rw_en_o(),
+      .lc_iso_part_sw_rd_en_o(),
+      .lc_iso_part_sw_wr_en_o(),
       .lc_seed_hw_rd_en_o(lc_ctrl_lc_seed_hw_rd_en),
       .lc_keymgr_div_o(lc_ctrl_lc_keymgr_div),
       .otp_device_id_i(lc_ctrl_otp_device_id),
@@ -2031,25 +2018,25 @@ module top_darjeeling #(
       // Inter-module signals
       .otp_o(flash_ctrl_otp_req),
       .otp_i(flash_ctrl_otp_rsp),
-      .lc_nvm_debug_en_i(lc_ctrl_lc_nvm_debug_en),
-      .flash_bist_enable_i(flash_bist_enable_i),
-      .flash_power_down_h_i(flash_power_down_h_i),
-      .flash_power_ready_h_i(flash_power_ready_h_i),
-      .flash_test_mode_a_io(flash_test_mode_a_io),
-      .flash_test_voltage_h_io(flash_test_voltage_h_io),
-      .lc_creator_seed_sw_rw_en_i(lc_ctrl_lc_creator_seed_sw_rw_en),
-      .lc_owner_seed_sw_rw_en_i(lc_ctrl_lc_owner_seed_sw_rw_en),
-      .lc_iso_part_sw_rd_en_i(lc_ctrl_lc_iso_part_sw_rd_en),
-      .lc_iso_part_sw_wr_en_i(lc_ctrl_lc_iso_part_sw_wr_en),
-      .lc_seed_hw_rd_en_i(lc_ctrl_lc_seed_hw_rd_en),
-      .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
-      .rma_req_i(lc_ctrl_lc_flash_rma_req),
-      .rma_ack_o(flash_ctrl_rma_ack),
-      .rma_seed_i(flash_ctrl_rma_seed),
+      .lc_nvm_debug_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
+      .flash_bist_enable_i(prim_mubi_pkg::MUBI4_DEFAULT),
+      .flash_power_down_h_i(1'b0),
+      .flash_power_ready_h_i(1'b1),
+      .flash_test_mode_a_io(),
+      .flash_test_voltage_h_io(),
+      .lc_creator_seed_sw_rw_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
+      .lc_owner_seed_sw_rw_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
+      .lc_iso_part_sw_rd_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
+      .lc_iso_part_sw_wr_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
+      .lc_seed_hw_rd_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
+      .lc_escalate_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
+      .rma_req_i(lc_ctrl_pkg::LC_TX_DEFAULT),
+      .rma_ack_o(),
+      .rma_seed_i(lc_ctrl_pkg::LC_FLASH_RMA_SEED_DEFAULT),
       .pwrmgr_o(pwrmgr_aon_pwr_flash),
-      .keymgr_o(flash_ctrl_keymgr),
-      .obs_ctrl_i(ast_obs_ctrl),
-      .fla_obs_o(flash_obs_o),
+      .keymgr_o(),
+      .obs_ctrl_i(ast_pkg::AST_OBS_CTRL_DEFAULT),
+      .fla_obs_o(),
       .core_tl_i(flash_ctrl_core_tl_req),
       .core_tl_o(flash_ctrl_core_tl_rsp),
       .prim_tl_i(flash_ctrl_prim_tl_req),
@@ -2238,7 +2225,7 @@ module top_darjeeling #(
       .idle_o(clkmgr_aon_idle[3]),
       .ram_cfg_i(ast_ram_1p_cfg),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
-      .lc_rma_req_i(flash_ctrl_rma_ack),
+      .lc_rma_req_i(lc_ctrl_lc_flash_rma_req),
       .lc_rma_ack_o(otbn_lc_rma_ack),
       .keymgr_key_i(keymgr_otbn_key),
       .tl_i(otbn_tl_req),
@@ -2289,7 +2276,7 @@ module top_darjeeling #(
       .kmac_data_i(kmac_app_rsp[0]),
       .otp_key_i(otp_ctrl_otp_keymgr_key),
       .otp_device_id_i(keymgr_otp_device_id),
-      .flash_i(flash_ctrl_keymgr),
+      .flash_i(flash_ctrl_pkg::KEYMGR_FLASH_DEFAULT),
       .lc_keymgr_en_i(lc_ctrl_lc_keymgr_en),
       .lc_keymgr_div_i(lc_ctrl_lc_keymgr_div),
       .rom_digest_i(keymgr_rom_digest),

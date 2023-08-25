@@ -20,9 +20,6 @@ module chip_darjeeling_asic #(
   inout USB_N, // Manual Pad
   `INOUT_AI CC1, // Manual Pad
   `INOUT_AI CC2, // Manual Pad
-  inout FLASH_TEST_VOLT, // Manual Pad
-  inout FLASH_TEST_MODE0, // Manual Pad
-  inout FLASH_TEST_MODE1, // Manual Pad
   inout OTP_EXT_VOLT, // Manual Pad
   inout SPI_HOST_D0, // Dedicated Pad for spi_host0_sd
   inout SPI_HOST_D1, // Dedicated Pad for spi_host0_sd
@@ -219,9 +216,6 @@ module chip_darjeeling_asic #(
   logic manual_in_usb_n, manual_out_usb_n, manual_oe_usb_n;
   logic manual_in_cc1, manual_out_cc1, manual_oe_cc1;
   logic manual_in_cc2, manual_out_cc2, manual_oe_cc2;
-  logic manual_in_flash_test_volt, manual_out_flash_test_volt, manual_oe_flash_test_volt;
-  logic manual_in_flash_test_mode0, manual_out_flash_test_mode0, manual_oe_flash_test_mode0;
-  logic manual_in_flash_test_mode1, manual_out_flash_test_mode1, manual_oe_flash_test_mode1;
   logic manual_in_otp_ext_volt, manual_out_otp_ext_volt, manual_oe_otp_ext_volt;
   logic manual_in_ast_misc, manual_out_ast_misc, manual_oe_ast_misc;
 
@@ -230,9 +224,6 @@ module chip_darjeeling_asic #(
   pad_attr_t manual_attr_usb_n;
   pad_attr_t manual_attr_cc1;
   pad_attr_t manual_attr_cc2;
-  pad_attr_t manual_attr_flash_test_volt;
-  pad_attr_t manual_attr_flash_test_mode0;
-  pad_attr_t manual_attr_flash_test_mode1;
   pad_attr_t manual_attr_otp_ext_volt;
   pad_attr_t manual_attr_ast_misc;
 
@@ -250,7 +241,7 @@ module chip_darjeeling_asic #(
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(24),
+    .NDioPads(21),
     .NMioPads(47),
     .PhysicalPads(1),
     .NIoBanks(int'(IoBankCount)),
@@ -271,9 +262,6 @@ module chip_darjeeling_asic #(
       scan_role_pkg::DioPadSpiHostD1ScanRole,
       scan_role_pkg::DioPadSpiHostD0ScanRole,
       scan_role_pkg::DioPadOtpExtVoltScanRole,
-      scan_role_pkg::DioPadFlashTestMode1ScanRole,
-      scan_role_pkg::DioPadFlashTestMode0ScanRole,
-      scan_role_pkg::DioPadFlashTestVoltScanRole,
       scan_role_pkg::DioPadCc2ScanRole,
       scan_role_pkg::DioPadCc1ScanRole,
       scan_role_pkg::DioPadUsbNScanRole,
@@ -346,9 +334,6 @@ module chip_darjeeling_asic #(
       IoBankVioa, // SPI_HOST_D1
       IoBankVioa, // SPI_HOST_D0
       IoBankVcc, // OTP_EXT_VOLT
-      IoBankVcc, // FLASH_TEST_MODE1
-      IoBankVcc, // FLASH_TEST_MODE0
-      IoBankVcc, // FLASH_TEST_VOLT
       IoBankAvcc, // CC2
       IoBankAvcc, // CC1
       IoBankVcc, // USB_N
@@ -421,9 +406,6 @@ module chip_darjeeling_asic #(
       BidirStd, // SPI_HOST_D1
       BidirStd, // SPI_HOST_D0
       AnalogIn1, // OTP_EXT_VOLT
-      InputStd, // FLASH_TEST_MODE1
-      InputStd, // FLASH_TEST_MODE0
-      AnalogIn0, // FLASH_TEST_VOLT
       InputStd, // CC2
       InputStd, // CC1
       DualBidirTol, // USB_N
@@ -502,9 +484,6 @@ module chip_darjeeling_asic #(
       SPI_HOST_D1,
       SPI_HOST_D0,
       OTP_EXT_VOLT,
-      FLASH_TEST_MODE1,
-      FLASH_TEST_MODE0,
-      FLASH_TEST_VOLT,
 `ifdef ANALOGSIM
       '0,
 `else
@@ -596,9 +575,6 @@ module chip_darjeeling_asic #(
         dio_in[DioSpiHost0Sd1],
         dio_in[DioSpiHost0Sd0],
         manual_in_otp_ext_volt,
-        manual_in_flash_test_mode1,
-        manual_in_flash_test_mode0,
-        manual_in_flash_test_volt,
         manual_in_cc2,
         manual_in_cc1,
         manual_in_usb_n,
@@ -622,9 +598,6 @@ module chip_darjeeling_asic #(
         dio_out[DioSpiHost0Sd1],
         dio_out[DioSpiHost0Sd0],
         manual_out_otp_ext_volt,
-        manual_out_flash_test_mode1,
-        manual_out_flash_test_mode0,
-        manual_out_flash_test_volt,
         manual_out_cc2,
         manual_out_cc1,
         manual_out_usb_n,
@@ -648,9 +621,6 @@ module chip_darjeeling_asic #(
         dio_oe[DioSpiHost0Sd1],
         dio_oe[DioSpiHost0Sd0],
         manual_oe_otp_ext_volt,
-        manual_oe_flash_test_mode1,
-        manual_oe_flash_test_mode0,
-        manual_oe_flash_test_volt,
         manual_oe_cc2,
         manual_oe_cc1,
         manual_oe_usb_n,
@@ -674,9 +644,6 @@ module chip_darjeeling_asic #(
         dio_attr[DioSpiHost0Sd1],
         dio_attr[DioSpiHost0Sd0],
         manual_attr_otp_ext_volt,
-        manual_attr_flash_test_mode1,
-        manual_attr_flash_test_mode0,
-        manual_attr_flash_test_volt,
         manual_attr_cc2,
         manual_attr_cc1,
         manual_attr_usb_n,
@@ -750,10 +717,6 @@ module chip_darjeeling_asic #(
   ast_pkg::ast_alert_rsp_t ast_alert_rsp;
   ast_pkg::ast_alert_req_t ast_alert_req;
 
-  // Flash connections
-  prim_mubi_pkg::mubi4_t flash_bist_enable;
-  logic flash_power_down_h;
-  logic flash_power_ready_h;
 
   // clock bypass req/ack
   prim_mubi_pkg::mubi4_t io_clk_byp_req;
@@ -926,8 +889,8 @@ module chip_darjeeling_asic #(
     .main_env_iso_en_i     ( base_ast_pwr.pwr_clamp_env ),
     .main_pd_ni            ( base_ast_pwr.main_pd_n ),
     // pdm control (flash)/otp
-    .flash_power_down_h_o  ( flash_power_down_h ),
-    .flash_power_ready_h_o ( flash_power_ready_h ),
+    .flash_power_down_h_o  ( ),
+    .flash_power_ready_h_o ( ),
     .otp_power_seq_i       ( otp_ctrl_otp_ast_pwr_seq ),
     .otp_power_seq_h_o     ( otp_ctrl_otp_ast_pwr_seq_h ),
     // system source clock
@@ -980,7 +943,7 @@ module chip_darjeeling_asic #(
     .all_clk_byp_ack_o     ( all_clk_byp_ack  ),
     .io_clk_byp_req_i      ( io_clk_byp_req   ),
     .io_clk_byp_ack_o      ( io_clk_byp_ack   ),
-    .flash_bist_en_o       ( flash_bist_enable ),
+    .flash_bist_en_o       ( ),
     // Memory configuration connections
     .dpram_rmf_o           ( ast_ram_2p_fcfg ),
     .dpram_rml_o           ( ast_ram_2p_lcfg ),
@@ -1118,12 +1081,7 @@ module chip_darjeeling_asic #(
   assign manual_out_cc2 = 1'b0;
   assign manual_oe_cc2 = 1'b0;
 
-  assign manual_out_flash_test_mode0 = 1'b0;
-  assign manual_oe_flash_test_mode0 = 1'b0;
-  assign manual_out_flash_test_mode1 = 1'b0;
-  assign manual_oe_flash_test_mode1 = 1'b0;
-  assign manual_out_flash_test_volt = 1'b0;
-  assign manual_oe_flash_test_volt = 1'b0;
+
   assign manual_out_otp_ext_volt = 1'b0;
   assign manual_oe_otp_ext_volt = 1'b0;
 
@@ -1131,18 +1089,12 @@ module chip_darjeeling_asic #(
   assign manual_attr_por_n = '0;
   assign manual_attr_cc1 = '0;
   assign manual_attr_cc2 = '0;
-  assign manual_attr_flash_test_mode0 = '0;
-  assign manual_attr_flash_test_mode1 = '0;
-  assign manual_attr_flash_test_volt = '0;
   assign manual_attr_otp_ext_volt = '0;
 
   logic unused_manual_sigs;
   assign unused_manual_sigs = ^{
     manual_in_cc2,
     manual_in_cc1,
-    manual_in_flash_test_volt,
-    manual_in_flash_test_mode0,
-    manual_in_flash_test_mode1,
     manual_in_otp_ext_volt
   };
 
@@ -1229,10 +1181,6 @@ module chip_darjeeling_asic #(
     .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),
     .otp_ctrl_otp_ast_pwr_seq_h_i ( otp_ctrl_otp_ast_pwr_seq_h ),
     .otp_obs_o                    ( otp_obs                    ),
-    .flash_bist_enable_i          ( flash_bist_enable          ),
-    .flash_power_down_h_i         ( flash_power_down_h         ),
-    .flash_power_ready_h_i        ( flash_power_ready_h        ),
-    .flash_obs_o                  ( fla_obs                    ),
     .entropy_src_hw_if_req_o      ( entropy_src_hw_if_req      ),
     .entropy_src_hw_if_rsp_i      ( entropy_src_hw_if_rsp      ),
     .io_clk_byp_req_o             ( io_clk_byp_req             ),
@@ -1244,11 +1192,6 @@ module chip_darjeeling_asic #(
     .ast2pinmux_i                 ( ast2pinmux                 ),
     .calib_rdy_i                  ( ast_init_done              ),
     .ast_init_done_i              ( ast_init_done              ),
-
-    // Flash test mode voltages
-    .flash_test_mode_a_io         ( {FLASH_TEST_MODE1,
-                                     FLASH_TEST_MODE0}         ),
-    .flash_test_voltage_h_io      ( FLASH_TEST_VOLT            ),
 
     // OTP external voltage
     .otp_ext_voltage_h_io         ( OTP_EXT_VOLT               ),

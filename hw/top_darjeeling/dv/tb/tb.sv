@@ -122,9 +122,6 @@ module tb;
     .CC1(dut.chip_if.dios[top_darjeeling_pkg::DioPadCc1]),
     .CC2(dut.chip_if.dios[top_darjeeling_pkg::DioPadCc2]),
 `endif
-    .FLASH_TEST_VOLT(dut.chip_if.dios[top_darjeeling_pkg::DioPadFlashTestVolt]),
-    .FLASH_TEST_MODE0(dut.chip_if.dios[top_darjeeling_pkg::DioPadFlashTestMode0]),
-    .FLASH_TEST_MODE1(dut.chip_if.dios[top_darjeeling_pkg::DioPadFlashTestMode1]),
     .OTP_EXT_VOLT(dut.chip_if.dios[top_darjeeling_pkg::DioPadOtpExtVolt]),
     .SPI_HOST_D0(dut.chip_if.dios[top_darjeeling_pkg::DioPadSpiHostD0]),
     .SPI_HOST_D1(dut.chip_if.dios[top_darjeeling_pkg::DioPadSpiHostD1]),

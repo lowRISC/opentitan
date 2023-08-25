@@ -257,7 +257,7 @@ module chip_darjeeling_cw310 #(
   /////////////////////////
 
   // Only signals going to non-custom pads need to be tied off.
-  logic [69:0] unused_sig;
+  logic [66:0] unused_sig;
 
   //////////////////////
   // Padring Instance //
@@ -693,10 +693,6 @@ module chip_darjeeling_cw310 #(
   ast_pkg::ast_alert_rsp_t ast_alert_rsp;
   ast_pkg::ast_alert_req_t ast_alert_req;
 
-  // Flash connections
-  prim_mubi_pkg::mubi4_t flash_bist_enable;
-  logic flash_power_down_h;
-  logic flash_power_ready_h;
 
   // clock bypass req/ack
   prim_mubi_pkg::mubi4_t io_clk_byp_req;
@@ -886,8 +882,8 @@ module chip_darjeeling_cw310 #(
     .main_env_iso_en_i     ( base_ast_pwr.pwr_clamp_env ),
     .main_pd_ni            ( base_ast_pwr.main_pd_n ),
     // pdm control (flash)/otp
-    .flash_power_down_h_o  ( flash_power_down_h ),
-    .flash_power_ready_h_o ( flash_power_ready_h ),
+    .flash_power_down_h_o  ( ),
+    .flash_power_ready_h_o ( ),
     .otp_power_seq_i       ( otp_ctrl_otp_ast_pwr_seq ),
     .otp_power_seq_h_o     ( otp_ctrl_otp_ast_pwr_seq_h ),
     // system source clock
@@ -940,7 +936,7 @@ module chip_darjeeling_cw310 #(
     .all_clk_byp_ack_o     ( all_clk_byp_ack  ),
     .io_clk_byp_req_i      ( io_clk_byp_req   ),
     .io_clk_byp_ack_o      ( io_clk_byp_ack   ),
-    .flash_bist_en_o       ( flash_bist_enable ),
+    .flash_bist_en_o       ( ),
     // Memory configuration connections
     .dpram_rmf_o           ( ast_ram_2p_fcfg ),
     .dpram_rml_o           ( ast_ram_2p_lcfg ),
@@ -1142,10 +1138,6 @@ module chip_darjeeling_cw310 #(
     .ast_edn_req_i                ( ast_edn_edn_req       ),
     .ast_edn_rsp_o                ( ast_edn_edn_rsp       ),
     .obs_ctrl_i                   ( obs_ctrl              ),
-    .flash_bist_enable_i          ( flash_bist_enable     ),
-    .flash_power_down_h_i         ( 1'b0                  ),
-    .flash_power_ready_h_i        ( 1'b1                  ),
-    .flash_obs_o                  ( flash_obs             ),
     .io_clk_byp_req_o             ( io_clk_byp_req        ),
     .io_clk_byp_ack_i             ( io_clk_byp_ack        ),
     .all_clk_byp_req_o            ( all_clk_byp_req       ),

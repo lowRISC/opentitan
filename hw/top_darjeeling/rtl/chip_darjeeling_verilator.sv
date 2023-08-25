@@ -301,11 +301,6 @@ module chip_darjeeling_verilator (
   ast_pkg::ast_alert_rsp_t ast_alert_rsp;
   ast_pkg::ast_alert_req_t ast_alert_req;
 
-  // Flash connections
-  prim_mubi_pkg::mubi4_t flash_bist_enable;
-  logic flash_power_down_h;
-  logic flash_power_ready_h;
-
   // Life cycle clock bypass req/ack
   prim_mubi_pkg::mubi4_t all_clk_byp_req;
   prim_mubi_pkg::mubi4_t all_clk_byp_ack;
@@ -403,8 +398,8 @@ module chip_darjeeling_verilator (
     .main_env_iso_en_i     ( base_ast_pwr.pwr_clamp_env ),
     .main_pd_ni            ( base_ast_pwr.main_pd_n ),
     // pdm control (flash)/otp
-    .flash_power_down_h_o  ( flash_power_down_h ),
-    .flash_power_ready_h_o ( flash_power_ready_h ),
+    .flash_power_down_h_o  (  ),
+    .flash_power_ready_h_o (  ),
     .otp_power_seq_i       ( otp_ctrl_otp_ast_pwr_seq ),
     .otp_power_seq_h_o     ( otp_ctrl_otp_ast_pwr_seq_h ),
     // system source clock
@@ -457,7 +452,7 @@ module chip_darjeeling_verilator (
     .all_clk_byp_ack_o     ( ast_clk_byp_ack ),
     .io_clk_byp_req_i      ( io_clk_byp_req   ),
     .io_clk_byp_ack_o      ( io_clk_byp_ack   ),
-    .flash_bist_en_o       ( flash_bist_enable ),
+    .flash_bist_en_o       (  ),
     // scan
     .dft_scan_md_o         ( scanmode ),
     .scan_shift_en_o       ( scan_en ),
@@ -528,9 +523,6 @@ module chip_darjeeling_verilator (
     .ast_edn_rsp_o                ( ast_edn_edn_rsp  ),
     .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),
     .otp_ctrl_otp_ast_pwr_seq_h_i ( otp_ctrl_otp_ast_pwr_seq_h ),
-    .flash_bist_enable_i          ( flash_bist_enable          ),
-    .flash_power_down_h_i         ( flash_power_down_h         ),
-    .flash_power_ready_h_i        ( flash_power_ready_h        ),
     .entropy_src_hw_if_req_o      ( entropy_src_hw_if_req      ),
     .entropy_src_hw_if_rsp_i      ( entropy_src_hw_if_rsp      ),
     .all_clk_byp_req_o            ( all_clk_byp_req            ),
@@ -556,10 +548,6 @@ module chip_darjeeling_verilator (
     .usbdev_usb_tx_se0_o          (usb_tx_se0),
     .usbdev_usb_tx_use_d_se0_o    (usb_tx_use_d_se0),
     .usbdev_usb_rx_enable_o       (usb_rx_enable),
-
-    // Flash test mode voltages
-    .flash_test_mode_a_io         ( ),
-    .flash_test_voltage_h_io      ( ),
 
     // OTP external voltage
     .otp_ext_voltage_h_io         ( ),

@@ -193,16 +193,6 @@ interface chip_if;
     .pins(dios[top_darjeeling_pkg::DioPadCc2:top_darjeeling_pkg::DioPadCc1])
   );
 
-  // Functional (dedicated) interface (analog input): flash test volt.
-  pins_if #(.Width(1), .PullStrength("Weak")) flash_test_volt_if(
-    .pins(dios[top_darjeeling_pkg::DioPadFlashTestVolt])
-  );
-
-  // Functional (dedicated) interface (input): flash test mode0.
-  pins_if #(.Width(2), .PullStrength("Weak")) flash_test_mode_if(
-    .pins(dios[top_darjeeling_pkg::DioPadFlashTestMode1:top_darjeeling_pkg::DioPadFlashTestMode0])
-  );
-
   // Functional (dedicated) interface (analog input): OTP ext volt.
   pins_if #(.Width(1), .PullStrength("Weak")) otp_ext_volt_if(
     .pins(dios[top_darjeeling_pkg::DioPadOtpExtVolt])
@@ -859,8 +849,6 @@ interface chip_if;
     if (disconnect_default_pulls) dios_if.disconnect();
     mios_if.disconnect();
     cc_if.disconnect();
-    flash_test_volt_if.disconnect();
-    flash_test_mode_if.disconnect();
     otp_ext_volt_if.disconnect();
     ec_rst_l_if.disconnect();
     flash_wp_l_if.disconnect();

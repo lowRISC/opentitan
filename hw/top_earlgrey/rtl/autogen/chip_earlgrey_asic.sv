@@ -1024,6 +1024,7 @@ module chip_earlgrey_asic #(
   assign manual_oe_flash_test_mode1 = 1'b0;
   assign manual_out_flash_test_volt = 1'b0;
   assign manual_oe_flash_test_volt = 1'b0;
+
   assign manual_out_otp_ext_volt = 1'b0;
   assign manual_oe_otp_ext_volt = 1'b0;
 
@@ -1128,13 +1129,17 @@ module chip_earlgrey_asic #(
     .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),
     .otp_ctrl_otp_ast_pwr_seq_h_i ( otp_ctrl_otp_ast_pwr_seq_h ),
     .otp_obs_o                    ( otp_obs                    ),
+    .es_rng_req_o                 ( es_rng_req                 ),
+    .es_rng_rsp_i                 ( es_rng_rsp                 ),
+    .es_rng_fips_o                ( es_rng_fips                ),
     .flash_bist_enable_i          ( flash_bist_enable          ),
     .flash_power_down_h_i         ( flash_power_down_h         ),
     .flash_power_ready_h_i        ( flash_power_ready_h        ),
     .flash_obs_o                  ( fla_obs                    ),
-    .es_rng_req_o                 ( es_rng_req                 ),
-    .es_rng_rsp_i                 ( es_rng_rsp                 ),
-    .es_rng_fips_o                ( es_rng_fips                ),
+    // Flash test mode voltages
+    .flash_test_mode_a_io         ( {FLASH_TEST_MODE1,
+                                     FLASH_TEST_MODE0}         ),
+    .flash_test_voltage_h_io      ( FLASH_TEST_VOLT            ),
     .io_clk_byp_req_o             ( io_clk_byp_req             ),
     .io_clk_byp_ack_i             ( io_clk_byp_ack             ),
     .all_clk_byp_req_o            ( all_clk_byp_req            ),
@@ -1144,11 +1149,6 @@ module chip_earlgrey_asic #(
     .ast2pinmux_i                 ( ast2pinmux                 ),
     .calib_rdy_i                  ( ast_init_done              ),
     .ast_init_done_i              ( ast_init_done              ),
-
-    // Flash test mode voltages
-    .flash_test_mode_a_io         ( {FLASH_TEST_MODE1,
-                                     FLASH_TEST_MODE0}         ),
-    .flash_test_voltage_h_io      ( FLASH_TEST_VOLT            ),
 
     // OTP external voltage
     .otp_ext_voltage_h_io         ( OTP_EXT_VOLT               ),
