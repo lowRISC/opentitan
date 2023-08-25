@@ -9,6 +9,10 @@ read_locked_csr_parts = [part for part in otp_mmap.config["partitions"] if
                          part["read_lock"] == "CSR"]
 write_locked_digest_parts = [part for part in otp_mmap.config["partitions"] if
                              part["write_lock"] == "Digest"]
+buf_parts_without_lc = [part for part in otp_mmap.config["partitions"] if
+                        part["variant"] == "Buffered"]
+secret_parts = [part for part in otp_mmap.config["partitions"] if
+                part["secret"]]
 %>\
 class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   extends cip_base_scoreboard #(
@@ -94,25 +98,24 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   virtual task process_wipe_mem();
     forever begin
       @(posedge cfg.backdoor_clear_mem) begin
-        bit [SCRAMBLE_DATA_SIZE-1:0] data = descramble_data(0, Secret0Idx);
+        bit [SCRAMBLE_DATA_SIZE-1:0] data;
         otp_a        = '{default:0};
         otp_lc_data  = '{default:0};
+% for part in secret_parts:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_camel = part_name.as_camel_case()
+%>\
         // secret partitions have been scrambled before writing to OTP.
         // here calculate the pre-srambled raw data when clearing internal OTP to all 0s.
-        for (int i = SECRET0_START_ADDR; i <= SECRET0_END_ADDR; i++) begin
-          otp_a[i] = ((i - SECRET0_START_ADDR) % 2) ? data[SCRAMBLE_DATA_SIZE-1:TL_DW] :
-                                                      data[TL_DW-1:0];
+        data = descramble_data(0, ${part_name_camel}Idx);
+        for (int i = ${part_name_camel}Offset / TL_SIZE;
+             i <= ${part_name_camel}DigestOffset / TL_SIZE - 1;
+             i++) begin
+          otp_a[i] = ((i - ${part_name_camel}Offset / TL_SIZE) % 2) ?
+              data[SCRAMBLE_DATA_SIZE-1:TL_DW] : data[TL_DW-1:0];
         end
-        data = descramble_data(0, Secret1Idx);
-        for (int i = SECRET1_START_ADDR; i <= SECRET1_END_ADDR; i++) begin
-          otp_a[i] = ((i - SECRET1_START_ADDR) % 2) ? data[SCRAMBLE_DATA_SIZE-1:TL_DW] :
-                                                      data[TL_DW-1:0];
-        end
-        data = descramble_data(0, Secret2Idx);
-        for (int i = SECRET2_START_ADDR; i <= SECRET2_END_ADDR; i++) begin
-          otp_a[i] = ((i - SECRET2_START_ADDR) % 2) ? data[SCRAMBLE_DATA_SIZE-1:TL_DW] :
-                                                      data[TL_DW-1:0];
-        end
+% endfor
         `uvm_info(`gfn, "clear internal memory and digest", UVM_HIGH)
         cfg.backdoor_clear_mem = 0;
         dai_wr_ip = 0;
@@ -1151,11 +1154,13 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       dai_digest_ip = part_idx;
     end
     case (part_idx)
-      HwCfg0Idx:  mem_q = otp_a[HW_CFG0_START_ADDR:HW_CFG0_END_ADDR];
-      HwCfg1Idx:  mem_q = otp_a[HW_CFG1_START_ADDR:HW_CFG1_END_ADDR];
-      Secret0Idx: mem_q = otp_a[SECRET0_START_ADDR:SECRET0_END_ADDR];
-      Secret1Idx: mem_q = otp_a[SECRET1_START_ADDR:SECRET1_END_ADDR];
-      Secret2Idx: mem_q = otp_a[SECRET2_START_ADDR:SECRET2_END_ADDR];
+% for part in buf_parts_without_lc:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_camel = part_name.as_camel_case()
+%>\
+      ${part_name_camel}Idx: mem_q = otp_a[${part_name_camel}Offset / TL_SIZE : ${part_name_camel}DigestOffset / TL_SIZE - 1];
+% endfor
       default: begin
         `uvm_fatal(`gfn, $sformatf("Access unexpected partition %0d", part_idx))
       end
