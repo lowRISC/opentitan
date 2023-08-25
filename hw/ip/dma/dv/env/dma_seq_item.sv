@@ -276,14 +276,23 @@ class dma_seq_item extends uvm_sequence_item;
     return valid_config;
   endfunction: check_config
 
-  // Function to get number of bytes per transfer from enum
-  function int dma_transfer_width_e_to_num_bytes(dma_transfer_width_e transfer_width);
-    case (transfer_width)
-      DmaXfer1BperTxn : return 1;
-      DmaXfer2BperTxn : return 2;
-      DmaXfer4BperTxn : return 4;
-      default : `uvm_fatal(`gfn, $sformatf("Undefined dma_transfer_width_e value : %0d",
-                                           transfer_width))
+  // Method to convert transfer width to a corresponding value for the a_size field
+  function uint transfer_width_to_a_size(dma_transfer_width_e width);
+    case (width)
+      DmaXfer1BperTxn: return 0;
+      DmaXfer2BperTxn: return 1;
+      DmaXfer4BperTxn: return 2;
+      default: `uvm_fatal(`gfn, $sformatf("Unexpected transfer width %d", width))
+    endcase
+  endfunction
+
+  // Method to convert transfer_width enum to number of bytes per transfer
+  function uint transfer_width_to_num_bytes(dma_transfer_width_e width);
+    case (width)
+      DmaXfer1BperTxn: return 1;
+      DmaXfer2BperTxn: return 2;
+      DmaXfer4BperTxn: return 4;
+      default: `uvm_fatal(`gfn, $sformatf("Unexpected transfer width %d", width))
     endcase
   endfunction
 
