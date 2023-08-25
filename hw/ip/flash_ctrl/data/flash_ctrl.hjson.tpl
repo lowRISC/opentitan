@@ -120,12 +120,14 @@
       type: "uni"
       act: "rcv"
       name: "flash_power_down_h"
+      default: "1'b0"
     },
     { struct: "logic"
       package: ""
       type: "uni"
       act: "rcv"
       name: "flash_power_ready_h"
+      default: "1'b1"
     },
     { struct: "",
       package: "",

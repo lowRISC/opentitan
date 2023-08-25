@@ -4879,8 +4879,8 @@
           type: uni
           act: rcv
           width: 1
+          default: 1'b0
           inst_name: flash_ctrl
-          default: ""
           package: ""
           external: true
           top_signame: flash_power_down_h
@@ -4893,8 +4893,8 @@
           type: uni
           act: rcv
           width: 1
+          default: 1'b1
           inst_name: flash_ctrl
-          default: ""
           package: ""
           external: true
           top_signame: flash_power_ready_h
@@ -17883,8 +17883,8 @@
         type: uni
         act: rcv
         width: 1
+        default: 1'b0
         inst_name: flash_ctrl
-        default: ""
         package: ""
         external: true
         top_signame: flash_power_down_h
@@ -17897,8 +17897,8 @@
         type: uni
         act: rcv
         width: 1
+        default: 1'b1
         inst_name: flash_ctrl
-        default: ""
         package: ""
         external: true
         top_signame: flash_power_ready_h
@@ -20507,7 +20507,7 @@
         signame: flash_power_down_h_i
         width: 1
         type: uni
-        default: ""
+        default: 1'b0
         direction: in
         conn_type: false
         index: -1
@@ -20519,7 +20519,7 @@
         signame: flash_power_ready_h_i
         width: 1
         type: uni
-        default: ""
+        default: 1'b1
         direction: in
         conn_type: false
         index: -1
