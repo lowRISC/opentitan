@@ -192,6 +192,21 @@ class dma_base_vseq extends cip_base_vseq #(
     end
   endfunction
 
+  // Function: Set hardware handshake interrupt bits based on
+  //           handshake_intr_en variable
+  function void set_hardware_handshake_intr(ref dma_seq_item dma_config);
+    // Toggle random bit in hardware handshake input interrupt
+    // such that at least one enabled interrupt bit is asserted
+    bit [NUM_LSIO_TRIGGERS-1:0] handshake_value;
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(handshake_value,
+                                       handshake_value & dma_config.handshake_intr_en != 0;)
+    cfg.dma_vif.handshake_i = handshake_value;
+  endfunction
+
+  function void release_hardware_handshake_intr();
+    cfg.dma_vif.handshake_i = '0;
+  endfunction
+
   // Task: Write to Source Address CSR
   task set_source_address(bit [63:0] source_address);
     `uvm_info(`gfn, $sformatf("DMA: Source Address = 0x%016h", source_address), UVM_HIGH)
