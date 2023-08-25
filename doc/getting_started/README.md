@@ -91,7 +91,7 @@ Now install additional Python dependencies:
 
 ```console
 cd $REPO_TOP
-pip3 install --user -r python-requirements.txt
+pip3 install --user -r python-requirements.txt --require-hashes
 ```
 
 ## Step 4: Install the lowRISC RISC-V toolchain
