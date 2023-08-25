@@ -107,13 +107,18 @@ interface keymgr_if(input clk, input rst_n);
     rom_digest.valid = '1;
     if (rand_otp_key) begin
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_otp_key,
-                                         local_otp_key.valid == 1;
-                                         !(local_otp_key.key_share0 inside {0, '1});
-                                         !(local_otp_key.key_share1 inside {0, '1});, , msg_id)
+                                         local_otp_key.creator_root_key_share0_valid == 1;
+                                         local_otp_key.creator_root_key_share1_valid == 1;
+                                         !(local_otp_key.creator_root_key_share0 inside {0, '1});
+                                         !(local_otp_key.creator_root_key_share1 inside {0, '1});
+                                         , , msg_id)
     end else begin
       local_otp_key = otp_ctrl_pkg::OTP_KEYMGR_KEY_DEFAULT;
     end
-    if (invalid_otp_key) local_otp_key.valid = 0;
+    if (invalid_otp_key) begin
+      local_otp_key.creator_root_key_share0_valid = 0;
+      local_otp_key.creator_root_key_share1_valid = 0;
+    end
     otp_key = local_otp_key;
   endtask
 

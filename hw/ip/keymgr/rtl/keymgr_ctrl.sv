@@ -300,6 +300,13 @@ module keymgr_ctrl
     end
   end
 
+  // These are consumed one level above in keymgr.sv
+  logic unused_otp_sigs;
+  assign unused_otp_sigs = ^{root_key_i.creator_seed,
+                             root_key_i.creator_seed_valid,
+                             root_key_i.owner_seed,
+                             root_key_i.owner_seed_valid};
+
   // root key valid sync
   logic root_key_valid_q;
 
@@ -308,7 +315,11 @@ module keymgr_ctrl
   ) u_key_valid_sync (
     .clk_i,
     .rst_ni,
-    .d_i(root_key_i.valid),
+    // Both valid signals are flopped in OTP_CTRL, and they only ever transition from 0 -> 1.
+    // It is hence ok to AND them here before the synchronizer, since we don't expect this
+    // to create glitches.
+    .d_i(root_key_i.creator_root_key_share0_valid &&
+         root_key_i.creator_root_key_share1_valid),
     .q_o(root_key_valid_q)
   );
 
@@ -338,10 +349,11 @@ module keymgr_ctrl
         if (root_key_valid_q) begin
           for (int i = 0; i < CDIs; i++) begin
             if (KmacEnMasking) begin : gen_two_share_key
-              key_state_d[i][0] ^= root_key_i.key_share0;
-              key_state_d[i][1] ^= root_key_i.key_share1;
+              key_state_d[i][0] ^= root_key_i.creator_root_key_share0;
+              key_state_d[i][1] ^= root_key_i.creator_root_key_share1;
             end else begin : gen_one_share_key
-              key_state_d[i][0] = root_key_i.key_share0 ^ root_key_i.key_share1;
+              key_state_d[i][0] = root_key_i.creator_root_key_share0 ^
+                                  root_key_i.creator_root_key_share1;
               key_state_d[i][1] = '0;
             end
           end

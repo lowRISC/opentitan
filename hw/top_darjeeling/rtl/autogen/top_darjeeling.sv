@@ -77,6 +77,7 @@ module top_darjeeling #(
   parameter bit SecOtbnMuteUrnd = 0,
   parameter bit SecOtbnSkipUrndReseedAtStart = 0,
   // parameters for keymgr
+  parameter bit KeymgrUseOtpSeedsInsteadOfFlash = 0,
   parameter bit KeymgrKmacEnMasking = 1,
   // parameters for csrng
   parameter aes_pkg::sbox_impl_e CsrngSBoxImpl = aes_pkg::SBoxImplCanright,
@@ -2253,6 +2254,7 @@ module top_darjeeling #(
   );
   keymgr #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[48:47]),
+    .UseOtpSeedsInsteadOfFlash(KeymgrUseOtpSeedsInsteadOfFlash),
     .KmacEnMasking(KeymgrKmacEnMasking),
     .RndCnstLfsrSeed(RndCnstKeymgrLfsrSeed),
     .RndCnstLfsrPerm(RndCnstKeymgrLfsrPerm),

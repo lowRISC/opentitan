@@ -202,15 +202,25 @@ package otp_ctrl_pkg;
     ((FlashKeyWidth > SramNonceSel)  ? FlashNonceSel  : SramNonceSel);
 
   typedef struct packed {
-    logic valid;
-    logic [KeyMgrKeyWidth-1:0] key_share0;
-    logic [KeyMgrKeyWidth-1:0] key_share1;
+    logic [KeyMgrKeyWidth-1:0] creator_root_key_share0;
+    logic creator_root_key_share0_valid;
+    logic [KeyMgrKeyWidth-1:0] creator_root_key_share1;
+    logic creator_root_key_share1_valid;
+    logic [KeyMgrKeyWidth-1:0] creator_seed;
+    logic creator_seed_valid;
+    logic [KeyMgrKeyWidth-1:0] owner_seed;
+    logic owner_seed_valid;
   } otp_keymgr_key_t;
 
   parameter otp_keymgr_key_t OTP_KEYMGR_KEY_DEFAULT = '{
-    valid: 1'b1,
-    key_share0: 256'hefb7ea7ee90093cf4affd9aaa2d6c0ec446cfdf5f2d5a0bfd7e2d93edc63a102,
-    key_share1: 256'h56d24a00181de99e0f690b447a8dde2a1ffb8bc306707107aa6e2410f15cfc37
+    creator_root_key_share0: 256'hefb7ea7ee90093cf4affd9aaa2d6c0ec446cfdf5f2d5a0bfd7e2d93edc63a102,
+    creator_root_key_share0_valid: 1'b1,
+    creator_root_key_share1: 256'h56d24a00181de99e0f690b447a8dde2a1ffb8bc306707107aa6e2410f15cfc37,
+    creator_root_key_share1_valid: 1'b1,
+    creator_seed: 256'hc7c50b38655cc87f821e5b07fed85d2c07e222a9e00bef308b3eccba0ba406fa,
+    creator_seed_valid: 1'b1,
+    owner_seed: 256'hf5052c0f14782d8b066be9f49c0b2000d3643ff3723ea7db972f69cd3e2e3e68,
+    owner_seed_valid: 1'b1
   };
 
   typedef struct packed {
