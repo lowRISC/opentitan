@@ -406,12 +406,15 @@ package otp_ctrl_part_pkg;
     part_access_pre = {{32'(2*NumPart)}{prim_mubi_pkg::MuBi8False}};
     // Note: these could be made a MuBi CSRs in the future.
     // The main thing that is missing right now is proper support for W0C.
+    // VENDOR_TEST
     if (!reg2hw.vendor_test_read_lock) begin
       part_access_pre[VendorTestIdx].read_lock = prim_mubi_pkg::MuBi8True;
     end
+    // CREATOR_SW_CFG
     if (!reg2hw.creator_sw_cfg_read_lock) begin
       part_access_pre[CreatorSwCfgIdx].read_lock = prim_mubi_pkg::MuBi8True;
     end
+    // OWNER_SW_CFG
     if (!reg2hw.owner_sw_cfg_read_lock) begin
       part_access_pre[OwnerSwCfgIdx].read_lock = prim_mubi_pkg::MuBi8True;
     end
@@ -425,25 +428,90 @@ package otp_ctrl_part_pkg;
     logic valid, unused;
     unused = 1'b0;
     valid = 1'b1;
-    unused ^= ^{part_init_done[LifeCycleIdx],
-                part_buf_data[LifeCycleOffset +: LifeCycleSize]};
-    unused ^= ^{part_init_done[Secret2Idx],
-                part_buf_data[Secret2Offset +: Secret2Size]};
-    unused ^= ^{part_init_done[Secret1Idx],
-                part_buf_data[Secret1Offset +: Secret1Size]};
-    unused ^= ^{part_init_done[Secret0Idx],
-                part_buf_data[Secret0Offset +: Secret0Size]};
-    valid &= part_init_done[HwCfg0Idx];
-    otp_broadcast.hw_cfg0_data = otp_hw_cfg0_data_t'(part_buf_data[HwCfg0Offset +: HwCfg0Size]);
-    unused ^= ^{part_init_done[OwnerSwCfgIdx],
-                part_buf_data[OwnerSwCfgOffset +: OwnerSwCfgSize]};
-    unused ^= ^{part_init_done[CreatorSwCfgIdx],
-                part_buf_data[CreatorSwCfgOffset +: CreatorSwCfgSize]};
+    // VENDOR_TEST
     unused ^= ^{part_init_done[VendorTestIdx],
                 part_buf_data[VendorTestOffset +: VendorTestSize]};
+    // CREATOR_SW_CFG
+    unused ^= ^{part_init_done[CreatorSwCfgIdx],
+                part_buf_data[CreatorSwCfgOffset +: CreatorSwCfgSize]};
+    // OWNER_SW_CFG
+    unused ^= ^{part_init_done[OwnerSwCfgIdx],
+                part_buf_data[OwnerSwCfgOffset +: OwnerSwCfgSize]};
+    // HW_CFG0
+    valid &= part_init_done[HwCfg0Idx];
+    otp_broadcast.hw_cfg0_data = otp_hw_cfg0_data_t'(part_buf_data[HwCfg0Offset +: HwCfg0Size]);
+    // SECRET0
+    unused ^= ^{part_init_done[Secret0Idx],
+                part_buf_data[Secret0Offset +: Secret0Size]};
+    // SECRET1
+    unused ^= ^{part_init_done[Secret1Idx],
+                part_buf_data[Secret1Offset +: Secret1Size]};
+    // SECRET2
+    unused ^= ^{part_init_done[Secret2Idx],
+                part_buf_data[Secret2Offset +: Secret2Size]};
+    // LIFE_CYCLE
+    unused ^= ^{part_init_done[LifeCycleIdx],
+                part_buf_data[LifeCycleOffset +: LifeCycleSize]};
     otp_broadcast.valid = lc_ctrl_pkg::lc_tx_bool_to_lc_tx(valid);
     return otp_broadcast;
   endfunction : named_broadcast_assign
 
+  function automatic otp_keymgr_key_t named_keymgr_key_assign(
+      logic [NumPart-1:0] part_digest,
+      logic [$bits(PartInvDefault)/8-1:0][7:0] part_buf_data,
+      lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en);
+    otp_keymgr_key_t otp_keymgr_key;
+    logic valid, unused;
+    unused = 1'b0;
+    // For now we use a fixed struct type here so that the
+    // interface to the keymgr remains stable. The type contains
+    // a superset of all options, so we have to initialize it to '0 here.
+    otp_keymgr_key = '0;
+    // VENDOR_TEST
+    unused ^= ^{part_digest[VendorTestIdx],
+                part_buf_data[VendorTestOffset +: VendorTestSize]};
+    // CREATOR_SW_CFG
+    unused ^= ^{part_digest[CreatorSwCfgIdx],
+                part_buf_data[CreatorSwCfgOffset +: CreatorSwCfgSize]};
+    // OWNER_SW_CFG
+    unused ^= ^{part_digest[OwnerSwCfgIdx],
+                part_buf_data[OwnerSwCfgOffset +: OwnerSwCfgSize]};
+    // HW_CFG0
+    unused ^= ^{part_digest[HwCfg0Idx],
+                part_buf_data[HwCfg0Offset +: HwCfg0Size]};
+    // SECRET0
+    unused ^= ^{part_digest[Secret0Idx],
+                part_buf_data[Secret0Offset +: Secret0Size]};
+    // SECRET1
+    unused ^= ^{part_digest[Secret1Idx],
+                part_buf_data[Secret1Offset +: Secret1Size]};
+    // SECRET2
+    valid = (part_digest[Secret2Idx] != 0);
+    unused ^= ^part_buf_data[RmaTokenOffset +: RmaTokenSize];
+    otp_keymgr_key.creator_root_key_share0_valid = valid;
+    if (lc_ctrl_pkg::lc_tx_test_true_strict(lc_seed_hw_rd_en)) begin
+      otp_keymgr_key.creator_root_key_share0 =
+          part_buf_data[CreatorRootKeyShare0Offset +: CreatorRootKeyShare0Size];
+    end else begin
+      otp_keymgr_key.creator_root_key_share0 =
+          PartInvDefault[CreatorRootKeyShare0Offset*8 +: CreatorRootKeyShare0Size*8];
+    end
+    otp_keymgr_key.creator_root_key_share1_valid = valid;
+    if (lc_ctrl_pkg::lc_tx_test_true_strict(lc_seed_hw_rd_en)) begin
+      otp_keymgr_key.creator_root_key_share1 =
+          part_buf_data[CreatorRootKeyShare1Offset +: CreatorRootKeyShare1Size];
+    end else begin
+      otp_keymgr_key.creator_root_key_share1 =
+          PartInvDefault[CreatorRootKeyShare1Offset*8 +: CreatorRootKeyShare1Size*8];
+    end
+    // This is not used since we consume the
+    // ungated digest values from the part_digest array.
+    unused ^= ^part_buf_data[Secret2DigestOffset +: Secret2DigestSize];
+    // LIFE_CYCLE
+    unused ^= ^{part_digest[LifeCycleIdx],
+                part_buf_data[LifeCycleOffset +: LifeCycleSize]};
+    unused ^= valid;
+    return otp_keymgr_key;
+  endfunction : named_keymgr_key_assign
 
 endpackage : otp_ctrl_part_pkg

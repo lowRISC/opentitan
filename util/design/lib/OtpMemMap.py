@@ -12,6 +12,7 @@ from lib.common import check_bool, check_int, expand_seed, random_or_hexvalue
 from mubi.prim_mubi import is_width_valid, mubi_value_as_int
 from tabulate import tabulate
 from topgen import secure_prng as sp
+from typing import List, Dict
 
 DIGEST_SUFFIX = "_DIGEST"
 DIGEST_SIZE = 8
@@ -24,7 +25,7 @@ OTP_SEED_DIVERSIFIER = 177149201092001677687
 SCRAMBLE_BLOCK_WIDTH = 8
 
 
-def _validate_otp(otp):
+def _validate_otp(otp: Dict):
     '''Validate OTP entry'''
     otp.setdefault("depth", "1024")
     otp.setdefault("width", "2")
@@ -35,7 +36,7 @@ def _validate_otp(otp):
     otp["byte_addr_width"] = ceil(log2(otp["size"]))
 
 
-def _validate_scrambling(scr):
+def _validate_scrambling(scr: Dict):
     '''Validate SCrambling entry'''
     scr.setdefault("key_size", "16")
     scr.setdefault("iv_size", "8")
@@ -63,12 +64,12 @@ def _validate_scrambling(scr):
 
 
 # if remaining number of bytes are not perfectly aligned, truncate
-def _avail_blocks(size):
+def _avail_blocks(size: int):
     return int(size / SCRAMBLE_BLOCK_WIDTH)
 
 
 # distribute number of blocks among partitions
-def _dist_blocks(num_blocks, parts):
+def _dist_blocks(num_blocks: int, parts: List):
     num_parts = len(parts)
 
     if not num_parts:
@@ -80,7 +81,7 @@ def _dist_blocks(num_blocks, parts):
 
 
 # distribute unused otp bits
-def _dist_unused(config, allocated):
+def _dist_unused(config: Dict, allocated: int):
 
     # determine how many aligned blocks are left
     # unaligned bits are not used
@@ -94,7 +95,7 @@ def _dist_unused(config, allocated):
 
 
 # return aligned partition size
-def _calc_size(part, size):
+def _calc_size(part: Dict, size: int):
 
     size = SCRAMBLE_BLOCK_WIDTH * \
         int((size + SCRAMBLE_BLOCK_WIDTH - 1) / SCRAMBLE_BLOCK_WIDTH)
@@ -105,7 +106,7 @@ def _calc_size(part, size):
     return size
 
 
-def _validate_part(part, key_names):
+def _validate_part(part: Dict, key_names: List[str]):
     '''Validates a partition within the OTP memory map'''
     part.setdefault("name", "unknown_name")
     part.setdefault("variant", "Unbuffered")
@@ -173,7 +174,7 @@ def _validate_part(part, key_names):
     # validate items and calculate partition size if necessary
     size = 0
     for item in part["items"]:
-        _validate_item(item)
+        _validate_item(item, part["variant"] == "Buffered", part["secret"])
         size += item["size"]
 
     # if size not previously defined, set it
@@ -188,18 +189,35 @@ def _validate_part(part, key_names):
         raise RuntimeError("Partition size must be 64bit aligned")
 
 
-def _validate_item(item):
+def _validate_item(item: Dict, buffered: bool, secret: bool):
     '''Validates an item within a partition'''
     item.setdefault("name", "unknown_name")
     item.setdefault("size", "0")
     item.setdefault("isdigest", "false")
     item.setdefault("ismubi", "false")
+    item.setdefault("iskeymgr", "false")
 
     # make sure these have the correct types
+    item["iskeymgr"] = check_bool(item["iskeymgr"])
     item["isdigest"] = check_bool(item["isdigest"])
     item["ismubi"] = check_bool(item["ismubi"])
     item["size"] = check_int(item["size"])
     item_width = item["size"] * 8
+
+    # Key material for the keymgr needs to live in a buffered partition so that
+    # it can be sideloaded. The partition should also be secret for
+    # confidentiality.
+    if item["iskeymgr"]:
+        if not buffered:
+            raise RuntimeError(
+                "Key material {} for sideloading into the key manager needs "
+                "to be stored in a buffered partition.".format(item["name"])
+            )
+        if not secret:
+            raise RuntimeError(
+                "Key material {} for sideloading into the key manager needs "
+                "to be stored in a secret partition.".format(item["name"])
+            )
 
     # defaults are handled differently in case of mubi
     if item["ismubi"]:
@@ -217,7 +235,7 @@ def _validate_item(item):
         random_or_hexvalue(item, "inv_default", item_width)
 
 
-def _validate_mmap(config):
+def _validate_mmap(config: Dict):
     '''Validate the memory map configuration'''
 
     # Get valid key names.
@@ -287,7 +305,9 @@ def _validate_mmap(config):
                 "isdigest":
                 True,
                 "inv_default":
-                "<random>"
+                "<random>",
+                "iskeymgr":
+                False
             })
             # Randomize the digest default.
             random_or_hexvalue(part["items"][-1], "inv_default",

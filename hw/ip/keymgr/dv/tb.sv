@@ -39,7 +39,11 @@ module tb;
   assign keymgr_if.edn_ack   = edn_if[0].ack;
 
   // dut
-  keymgr dut (
+  keymgr #(
+    // TODO(opentitan-integrated/issues/332):
+    // need to model the OTP seed input
+    .UseOtpSeedsInsteadOfFlash(0)
+  ) dut (
     .clk_i                (clk           ),
     .rst_ni               (rst_n         ),
     .rst_shadowed_ni      (rst_shadowed_n),

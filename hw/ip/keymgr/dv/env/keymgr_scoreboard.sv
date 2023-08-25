@@ -756,9 +756,10 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
   virtual function void latch_otp_key();
     key_shares_t otp_key;
-    if (cfg.keymgr_vif.otp_key.valid) begin
-      otp_key = {cfg.keymgr_vif.otp_key.key_share1,
-                 cfg.keymgr_vif.otp_key.key_share0};
+    if (cfg.keymgr_vif.otp_key.creator_root_key_share0_valid &&
+        cfg.keymgr_vif.otp_key.creator_root_key_share1_valid) begin
+      otp_key = {cfg.keymgr_vif.otp_key.creator_root_key_share1,
+                 cfg.keymgr_vif.otp_key.creator_root_key_share0};
     end else begin
       if (cfg.en_cov) cov.invalid_hw_input_cg.sample(OtpRootKeyValidLow);
       `uvm_info(`gfn, "otp_key valid is low", UVM_LOW)

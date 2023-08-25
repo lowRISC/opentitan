@@ -252,6 +252,7 @@ package otp_ctrl_part_pkg;
     // The main thing that is missing right now is proper support for W0C.
 % for k, part in enumerate(otp_mmap.config["partitions"]):
   % if part["read_lock"] == "CSR":
+    // ${part["name"]}
     if (!reg2hw.${part["name"].lower()}_read_lock) begin
 <% part_name = Name.from_snake_case(part["name"]) %>\
       part_access_pre[${part_name.as_camel_case()}Idx].read_lock = prim_mubi_pkg::MuBi8True;
@@ -268,7 +269,8 @@ package otp_ctrl_part_pkg;
     logic valid, unused;
     unused = 1'b0;
     valid = 1'b1;
-% for part in otp_mmap.config["partitions"][::-1]:
+% for part in otp_mmap.config["partitions"]:
+    // ${part["name"]}
 <%
   part_name = Name.from_snake_case(part["name"])
   part_name_camel = part_name.as_camel_case()
@@ -285,5 +287,59 @@ package otp_ctrl_part_pkg;
     return otp_broadcast;
   endfunction : named_broadcast_assign
 
+  function automatic otp_keymgr_key_t named_keymgr_key_assign(
+      logic [NumPart-1:0] part_digest,
+      logic [$bits(PartInvDefault)/8-1:0][7:0] part_buf_data,
+      lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en);
+    otp_keymgr_key_t otp_keymgr_key;
+    logic valid, unused;
+    unused = 1'b0;
+    // For now we use a fixed struct type here so that the
+    // interface to the keymgr remains stable. The type contains
+    // a superset of all options, so we have to initialize it to '0 here.
+    otp_keymgr_key = '0;
+% for part in otp_mmap.config["partitions"]:
+    // ${part["name"]}
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_camel = part_name.as_camel_case()
+  ## Check whether this partition has any key material that needs to be sideloaded.
+  part_has_keys = 0
+  for item in part["items"]:
+    part_has_keys |= item["iskeymgr"]
+%>\
+  % if part_has_keys:
+    valid = (part_digest[${part_name_camel}Idx] != 0);
+    % for item in part["items"]:
+<%
+  item_name = Name.from_snake_case(item["name"])
+  item_name_camel = item_name.as_camel_case()
+%>\
+      % if item["iskeymgr"]:
+    otp_keymgr_key.${item["name"].lower()}_valid = valid;
+    if (lc_ctrl_pkg::lc_tx_test_true_strict(lc_seed_hw_rd_en)) begin
+      otp_keymgr_key.${item["name"].lower()} =
+          part_buf_data[${item_name_camel}Offset +: ${item_name_camel}Size];
+    end else begin
+      otp_keymgr_key.${item["name"].lower()} =
+          PartInvDefault[${item_name_camel}Offset*8 +: ${item_name_camel}Size*8];
+    end
+      % else:
+        % if not item["isdigest"]:
+    unused ^= ^part_buf_data[${item_name_camel}Offset +: ${item_name_camel}Size];
+        % endif
+      % endif
+    % endfor
+    // This is not used since we consume the
+    // ungated digest values from the part_digest array.
+    unused ^= ^part_buf_data[${part_name_camel}DigestOffset +: ${part_name_camel}DigestSize];
+  % else:
+    unused ^= ^{part_digest[${part_name_camel}Idx],
+                part_buf_data[${part_name_camel}Offset +: ${part_name_camel}Size]};
+  % endif
+% endfor
+    unused ^= valid;
+    return otp_keymgr_key;
+  endfunction : named_keymgr_key_assign
 
 endpackage : otp_ctrl_part_pkg

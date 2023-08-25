@@ -1304,40 +1304,77 @@ end
     .lc_en_o(otp_broadcast_valid_q)
   );
 
-  always_comb begin : p_broadcast_valid
+  always_comb begin : p_otp_broadcast_valid
     otp_broadcast_o       = otp_broadcast;
     otp_broadcast_o.valid = otp_broadcast_valid_q;
   end
 
-  // Root keys
-  logic otp_keymgr_key_valid_d, otp_keymgr_key_valid_q; // need to latch valid
-  assign otp_keymgr_key_valid_d = part_digest[Secret2Idx] != '0;
-  assign otp_keymgr_key_o.valid = otp_keymgr_key_valid_q;
-  assign otp_keymgr_key_o.key_share0 = (lc_ctrl_pkg::lc_tx_test_true_strict(lc_seed_hw_rd_en)) ?
-                                       part_buf_data[CreatorRootKeyShare0Offset +:
-                                                     CreatorRootKeyShare0Size] :
-                                       PartInvDefault[CreatorRootKeyShare0Offset*8 +:
-                                                      CreatorRootKeyShare0Size*8];
-  assign otp_keymgr_key_o.key_share1 = (lc_ctrl_pkg::lc_tx_test_true_strict(lc_seed_hw_rd_en)) ?
-                                       part_buf_data[CreatorRootKeyShare1Offset +:
-                                                     CreatorRootKeyShare1Size] :
-                                       PartInvDefault[CreatorRootKeyShare1Offset*8 +:
-                                                      CreatorRootKeyShare1Size*8];
+  // Root keys and seeds.
+  // This uses a generated function to assign all collateral that is marked with "iskeymgr" in
+  // the memory map. Note that in this case the type is static and represents a superset of all
+  // options so that we can maintain a stable interface with keymgr (otherwise keymgr will have
+  // to be templated as well. Unused key material will be tied off to '0. The keymgr has to be
+  // parameterized accordingly (via SV parameters) to consume the correct key material.
+  //
+  // The key material valid signals are set to true if the corresponding digest is nonzero and the
+  // partition is initialized. On top of that, the entire output is gated by lc_seed_hw_rd_en.
+  otp_keymgr_key_t otp_keymgr_key;
+  assign otp_keymgr_key = named_keymgr_key_assign(part_digest,
+                                                  part_buf_data,
+                                                  lc_seed_hw_rd_en);
+
+  // Note regarding these breakouts: named_keymgr_key_assign will tie off unused key material /
+  // valid signals to '0. This is the case for instance in system configurations that keep the seed
+  // material in the flash instead of OTP.
+  logic creator_root_key_share0_valid_d, creator_root_key_share0_valid_q;
+  logic creator_root_key_share1_valid_d, creator_root_key_share1_valid_q;
+  logic creator_seed_valid_d, creator_seed_valid_q;
+  logic owner_seed_valid_d, owner_seed_valid_q;
   prim_flop #(
-    .Width(1)
+    .Width(4)
   ) u_keygmr_key_valid (
     .clk_i,
     .rst_ni,
-    .d_i (otp_keymgr_key_valid_d),
-    .q_o (otp_keymgr_key_valid_q)
+    .d_i ({creator_root_key_share0_valid_d,
+           creator_root_key_share1_valid_d,
+           creator_seed_valid_d,
+           owner_seed_valid_d}),
+    .q_o ({creator_root_key_share0_valid_q,
+           creator_root_key_share1_valid_q,
+           creator_seed_valid_q,
+           owner_seed_valid_q})
   );
-  // as key_share0, key_share1 are directly connected from digest and go
-  // through mux, Assertion is added to check the relationship between
-  // lc_seed_hw_rd_en and key_valid
-  `ASSERT(LcSeedHwRdEnStable_A,
-    $rose(otp_keymgr_key_valid_q) |=> $stable(lc_seed_hw_rd_en) [*1:$],
-    clk_i,
-    !rst_ni || lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i) // Disable if esc asserted
+
+  always_comb begin : p_otp_keymgr_key_valid
+    // Valid reg inputs
+    creator_root_key_share0_valid_d = otp_keymgr_key.creator_root_key_share0_valid;
+    creator_root_key_share1_valid_d = otp_keymgr_key.creator_root_key_share1_valid;
+    creator_seed_valid_d            = otp_keymgr_key.creator_seed_valid;
+    owner_seed_valid_d              = otp_keymgr_key.owner_seed_valid;
+    // Output to keymgr
+    otp_keymgr_key_o                               = otp_keymgr_key;
+    otp_keymgr_key_o.creator_root_key_share0_valid = creator_root_key_share0_valid_q;
+    otp_keymgr_key_o.creator_root_key_share1_valid = creator_root_key_share1_valid_q;
+    otp_keymgr_key_o.creator_seed_valid            = creator_seed_valid_q;
+    otp_keymgr_key_o.owner_seed_valid              = owner_seed_valid_q;
+  end
+
+  // Check that the lc_seed_hw_rd_en remains stable, once the key material is valid.
+  `ASSERT(LcSeedHwRdEnStable0_A,
+    $rose(creator_root_key_share0_valid_q) |=> $stable(lc_seed_hw_rd_en) [*1:$],
+    clk_i, !rst_ni || lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i) // Disable if escalating
+  )
+  `ASSERT(LcSeedHwRdEnStable1_A,
+    $rose(creator_root_key_share1_valid_q) |=> $stable(lc_seed_hw_rd_en) [*1:$],
+    clk_i, !rst_ni || lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i) // Disable if escalating
+  )
+  `ASSERT(LcSeedHwRdEnStable2_A,
+    $rose(creator_seed_valid_q) |=> $stable(lc_seed_hw_rd_en) [*1:$],
+    clk_i, !rst_ni || lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i) // Disable if escalating
+  )
+  `ASSERT(LcSeedHwRdEnStable3_A,
+    $rose(owner_seed_valid_q) |=> $stable(lc_seed_hw_rd_en) [*1:$],
+    clk_i, !rst_ni || lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i) // Disable if escalating
   )
 
   // Scrambling Keys

@@ -80,6 +80,7 @@ module top_earlgrey #(
   parameter bit SecOtbnMuteUrnd = 0,
   parameter bit SecOtbnSkipUrndReseedAtStart = 0,
   // parameters for keymgr
+  parameter bit KeymgrUseOtpSeedsInsteadOfFlash = 0,
   parameter bit KeymgrKmacEnMasking = 1,
   // parameters for csrng
   parameter aes_pkg::sbox_impl_e CsrngSBoxImpl = aes_pkg::SBoxImplCanright,
@@ -2320,6 +2321,7 @@ module top_earlgrey #(
   );
   keymgr #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[50:49]),
+    .UseOtpSeedsInsteadOfFlash(KeymgrUseOtpSeedsInsteadOfFlash),
     .KmacEnMasking(KeymgrKmacEnMasking),
     .RndCnstLfsrSeed(RndCnstKeymgrLfsrSeed),
     .RndCnstLfsrPerm(RndCnstKeymgrLfsrPerm),

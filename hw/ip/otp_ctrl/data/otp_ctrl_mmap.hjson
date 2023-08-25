@@ -484,12 +484,14 @@
                 {
                     name: "CREATOR_ROOT_KEY_SHARE0",
                     inv_default: "<random>",
-                    size: "32"
+                    size: "32",
+                    iskeymgr: true
                 }
                 {
                     name: "CREATOR_ROOT_KEY_SHARE1",
                     inv_default: "<random>",
                     size: "32"
+                    iskeymgr: true
                 }
             ],
             desc: '''RMA unlock token and creator root key.
