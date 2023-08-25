@@ -481,10 +481,28 @@ class dma_scoreboard extends cip_base_scoreboard #(
           `uvm_info(`gfn, $sformatf("dma_config.is_valid_config = %b",
                                     dma_config.is_valid_config), UVM_MEDIUM)
           exp_dma_err_intr = !dma_config.is_valid_config;
+          if (cfg.en_cov) begin
+            // Sample dma configuration
+            cov.config_cg.sample(.dma_config (dma_config),
+                                 .abort (abort_via_reg_write),
+                                 .write_to_dma_mem_register(1'b0),
+                                 .tl_src_err (1'b0),
+                                 .tl_dst_err (1'b0));
+          end
         end
       end
       "clear_state": begin
+        uvm_reg_data_t status = `gmv(ral.status.busy);
         clear_via_reg_write = get_field_val(ral.clear_state.clear, item.d_data);
+        if (cfg.en_cov) begin
+          // Sample dma configuration status
+          cov.status_cg.sample(.busy (get_field_val(ral.status.busy, status)),
+                               .done (get_field_val(ral.status.done, status)),
+                               .aborted (get_field_val(ral.status.aborted, status)),
+                               .error (get_field_val(ral.status.error, status)),
+                               .error_code (get_field_val(ral.status.error_code, status)),
+                               .clear (clear_via_reg_write));
+        end
       end
       default: begin
         `uvm_info(`gfn, $sformatf("%s not processed", csr.get_name()), UVM_MEDIUM)
@@ -529,6 +547,15 @@ class dma_scoreboard extends cip_base_scoreboard #(
         end
         // Check if aborted bit is set if there is a TL error
         `DV_CHECK_EQ(aborted, exp_aborted, "Aborted bit not set with TL error or DMA config err")
+        if (cfg.en_cov) begin
+          // Sample dma configuration status
+          cov.status_cg.sample(.busy (busy),
+                               .done (done),
+                               .aborted (aborted),
+                               .error (error),
+                               .error_code (error_code),
+                               .clear (clear_via_reg_write));
+        end
         // Check data and addresses in source and destination mem models
         if (done) begin
           check_data(dma_config);
