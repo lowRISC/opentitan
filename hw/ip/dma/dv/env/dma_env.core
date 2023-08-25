@@ -21,6 +21,7 @@ filesets:
       - dma_scoreboard.sv: {is_include_file: true}
       - dma_env.sv: {is_include_file: true}
       - seq_lib/dma_vseq_list.sv: {is_include_file: true}
+      - seq_lib/dma_common_vseq.sv: {is_include_file: true}
       - seq_lib/dma_base_vseq.sv: {is_include_file: true}
       - seq_lib/dma_generic_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/dma_handshake_vseq.sv: {is_include_file: true}
