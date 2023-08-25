@@ -5,11 +5,12 @@
 # Keep sorted.
 beautifulsoup4==4.12.2
 hjson==3.1.0
-jsonschema==4.17.3; python_version >= "3.7"
 libclang==16.0.0
 libcst==0.4.1
 lxml==4.9.2
 mako==1.1.6
+pip==23.2.1
+pip-tools==7.1.0
 pluralizer==1.2.0
 pycryptodome==3.15.0
 pyelftools==0.29
@@ -20,6 +21,11 @@ rich==12.6.0  # maximum version compatible with Python 3.6.8 (used on CentOS7 ni
 semantic_version==2.10.0
 tabulate==0.8.10
 typer==0.6.1
+
+# Dependencies: jsonschema, required for bitsreams cache
+importlib-resources==1.4.0; python_version >= "3.7"
+jsonschema==4.17.3; python_version >= "3.7"
+pkgutil_resolve_name==1.3.10; python_version >= "3.7"
 
 # Dependencies: gen-flash-img.py
 pyfinite==1.9.1
@@ -54,12 +60,12 @@ types-tabulate==0.8.11
 anytree==2.8.0
 
 # Development version with OT-specific changes
-git+https://github.com/lowRISC/fusesoc.git@ot-0.3
+https://github.com/lowRISC/fusesoc/archive/refs/tags/ot-0.4.zip
 
 # Development version with OT-specific changes
-git+https://github.com/lowRISC/edalize.git@v0.4.0
+https://github.com/lowRISC/edalize/archive/refs/tags/v0.4.0.zip
 
 # Development version of minimal ChipWhisperer toolchain with latest features
 # and bug fixes. We fix the version for improved stability and manually update
 # if necessary.
-git+https://github.com/newaetech/chipwhisperer-minimal.git@2643131b71e528791446ee1bab7359120288f4ab#egg=chipwhisperer
+https://github.com/newaetech/chipwhisperer-minimal/archive/2643131b71e528791446ee1bab7359120288f4ab.zip
