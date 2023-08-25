@@ -54,7 +54,7 @@ module prim_generic_ram_1r1w import prim_ram_2p_pkg::*; #(
     assign a_wmask[k] = &a_wmask_i[k*DataBitsPerMask +: DataBitsPerMask];
 
     // Ensure that all mask bits within a group have the same value for a write
-    `ASSERT(MaskCheckPortA_A, a_req_i && a_write_i |->
+    `ASSERT(MaskCheckPortA_A, a_req_i |->
         a_wmask_i[k*DataBitsPerMask +: DataBitsPerMask] inside {{DataBitsPerMask{1'b1}}, '0},
         clk_a_i, '0)
   end
