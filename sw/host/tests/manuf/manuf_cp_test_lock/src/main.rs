@@ -93,6 +93,9 @@ fn test_lock(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result<()> {
     let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
     assert_eq!(state, DifLcCtrlState::TestUnlocked0.redundant_encoding());
 
+    // CPU execution is not enabled in the `TEST_LOCKED0` state so we can
+    // safely reconnect to the LC TAP after the transition without risking
+    // the chip to be resetting.
     lc_transition::trigger_lc_transition(
         transport,
         jtag.clone(),
@@ -100,6 +103,7 @@ fn test_lock(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result<()> {
         None,
         true,
         opts.init.bootstrap.options.reset_delay,
+        Some(JtagTap::LcTap),
     )
     .context("failed to trigger transition to TEST_LOCKED0")?;
 
@@ -121,6 +125,8 @@ fn test_unlock(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result<()> 
     let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
     assert_eq!(state, DifLcCtrlState::TestLocked0.redundant_encoding());
 
+    // ROM execution is not enabled in the OTP so we can safely reconnect to the LC TAP after
+    // the transition without risking the chip resetting.
     lc_transition::trigger_lc_transition(
         transport,
         jtag.clone(),
@@ -128,6 +134,7 @@ fn test_unlock(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result<()> 
         Some(TEST_UNLOCK_TOKEN_PREIMAGE),
         true,
         opts.init.bootstrap.options.reset_delay,
+        Some(JtagTap::LcTap),
     )
     .context("failed to trigger transition to TEST_UNLOCKED1")?;
 

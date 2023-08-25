@@ -47,6 +47,8 @@ impl_serializable_error!(LcTransitionError);
 ///
 /// Requires the `jtag` to be already connected to the LC TAP.
 /// The device will be reset into the new lifecycle state.
+/// The `jtag` will be disconnected before resetting the device.
+/// Optionally, the function will reconnect `jtag` to the requested interface.
 ///
 /// # Examples
 ///
@@ -88,6 +90,7 @@ pub fn trigger_lc_transition(
     token: Option<[u32; 4]>,
     use_external_clk: bool,
     reset_delay: Duration,
+    reconnect_jtag_tap: Option<JtagTap>,
 ) -> Result<()> {
     // Check the lc_ctrl is initialized and ready to accept a transition request.
     let status = jtag.read_lc_ctrl_reg(&LcCtrlReg::Status)?;
@@ -166,11 +169,19 @@ pub fn trigger_lc_transition(
         return Err(LcTransitionError::BadPostTransitionState(post_transition_lc_state).into());
     }
 
-    // Reset the chip, keeping LC TAP selected.
+    // Reset the chip, selecting the requested JTAG TAP if necessary
     jtag.disconnect()?;
-    transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
+    if let Some(tap) = reconnect_jtag_tap {
+        transport.pin_strapping("PINMUX_TAP_LC")?.remove()?;
+        match tap {
+            JtagTap::LcTap => transport.pin_strapping("PINMUX_TAP_LC")?.apply()?,
+            JtagTap::RiscvTap => transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?,
+        }
+    }
     transport.reset_target(reset_delay, true)?;
-    jtag.connect(JtagTap::LcTap)?;
+    if let Some(tap) = reconnect_jtag_tap {
+        jtag.connect(tap)?;
+    }
 
     Ok(())
 }

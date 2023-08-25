@@ -65,6 +65,20 @@ bool test_main(void) {
   ujson_t uj = ujson_ottf_console();
   CHECK_STATUS_OK(peripheral_handles_init());
 
+  // If we are in the RMA state, this means that the personalization is complete
+  // and that the host has issued an LC transition to the RMA state. To allow
+  // the host to connect over JTAG and check that we have indeed reached this
+  // state, just spin to prevent a reboot.
+  dif_lc_ctrl_state_t lc_state = kDifLcCtrlStateInvalid;
+  CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc_ctrl, &lc_state));
+  if (lc_state == kDifLcCtrlStateRma) {
+    LOG_INFO("Now in RMA state, spinning for host to connect over JTAG.");
+    // Wait in a loop so that OpenOCD can connect to the TAP without the ROM
+    // resetting the chip.
+    // Abort simply forever loops on a wait_for_interrupt.
+    abort();
+  }
+
   // Restore the export data stored in the retention SRAM. We store the data to
   // be exported from the device (e.g., the encrypted RMA unlock token) in the
   // retention SRAM (namely in the creator partition) as it is faster than
@@ -90,6 +104,11 @@ bool test_main(void) {
     // Send the RMA unlock token data (stored in the retention SRAM) over the
     // console using ujson framework.
     CHECK_STATUS_OK(export_data_over_console(&uj, export_data));
+    // Wait in a loop so that OpenOCD can connect to the TAP without the ROM
+    // resetting the chip.
+    LOG_INFO("Spinning for host to connect over JTAG.");
+    // Abort simply forever loops on a wait_for_interrupt.
+    abort();
   } else {
     LOG_FATAL("Unexpected reset reason: %08x", info);
   }

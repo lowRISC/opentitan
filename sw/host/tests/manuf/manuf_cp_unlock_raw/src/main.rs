@@ -42,6 +42,8 @@ fn manuf_cp_unlock_raw(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
     let token = DifLcCtrlToken::from(lc_raw_unlock_token::RND_CNST_RAW_UNLOCK_TOKEN.to_le_bytes());
     let token_words = token.into_register_values();
 
+    // ROM execution is not enabled in the OTP so we can safely reconnect to the LC TAP after
+    // the transition without risking the chip resetting.
     lc_transition::trigger_lc_transition(
         transport,
         jtag.clone(),
@@ -49,6 +51,7 @@ fn manuf_cp_unlock_raw(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
         Some(token_words),
         true,
         opts.init.bootstrap.options.reset_delay,
+        Some(JtagTap::LcTap)
     )
     .context("failed to transition to TEST_UNLOCKED0")?;
 
