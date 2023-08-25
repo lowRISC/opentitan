@@ -13,6 +13,8 @@ buf_parts_without_lc = [part for part in otp_mmap.config["partitions"] if
                         part["variant"] == "Buffered"]
 secret_parts = [part for part in otp_mmap.config["partitions"] if
                 part["secret"]]
+## Partitions + LCI + DAI
+num_err_code = len(otp_mmap.config["partitions"]) + 2
 %>\
 class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   extends cip_base_scoreboard #(
@@ -932,8 +934,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           end
         end
       end
-      "err_code_0", "err_code_1", "err_code_2", "err_code_3", "err_code_4", "err_code_5",
-      "err_code_6", "err_code_7", "err_code_8", "err_code_9", "err_code_10": begin
+% for k in range(num_err_code):
+      "err_code_${k}"${": begin" if loop.last else ","}
+% endfor
         // If lc_prog in progress, err_code might update anytime in DUT. Ignore checking until req
         // is acknowledged.
         if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
@@ -1165,7 +1168,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     array_size = mem_q.size();
 
     // for secret partitions, need to use otp scrambled value as data input
-    if (part_idx inside {[Secret0Idx:Secret2Idx]}) begin
+    if (PartInfo[part_idx].secret) begin
       bit [TL_DW-1:0] scrambled_mem_q[$];
       for (int i = 0; i < array_size/2; i++) begin
         bit [SCRAMBLE_DATA_SIZE-1:0] scrambled_data;
