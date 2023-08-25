@@ -175,6 +175,18 @@
       default: "8",
       local: "true"
     },
+    { name: "NumPartUnbuf",
+      desc: "Number of unbuffered partitions",
+      type: "int",
+      default: "3",
+      local: "true"
+    },
+    { name: "NumPartBuf",
+      desc: "Number of buffered partitions (including 1 lifecycle partition)",
+      type: "int",
+      default: "5",
+      local: "true"
+    },
     { name: "VendorTestOffset",
       desc: "Offset of the VENDOR_TEST partition",
       type: "int",

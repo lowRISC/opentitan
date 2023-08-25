@@ -14,6 +14,8 @@ package otp_ctrl_reg_pkg;
   parameter int NumDigestWords = 2;
   parameter int NumSwCfgWindowWords = 512;
   parameter int NumPart = 8;
+  parameter int NumPartUnbuf = 3;
+  parameter int NumPartBuf = 5;
   parameter int VendorTestOffset = 0;
   parameter int VendorTestSize = 64;
   parameter int ScratchOffset = 0;
