@@ -1029,6 +1029,36 @@ cc_test(
 )
 
 cc_library(
+    name = "soc_proxy",
+    srcs = [
+        "//sw/ip/soc_proxy/dif:headers",
+        "//sw/ip/soc_proxy/dif:sources",
+    ],
+    hdrs = [
+        "//sw/ip/soc_proxy/dif:api",
+    ],
+    deps = [
+        "//hw/top_darjeeling/ip/soc_proxy/data:soc_proxy_regs",
+        "//sw/ip/base/dif:base",
+        "//sw/lib/sw/device/base:bitfield",
+        "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/base:mmio",
+    ],
+)
+
+cc_test(
+    name = "soc_proxy_unittest",
+    srcs = [
+        "//sw/ip/soc_proxy/dif:test_sources",
+    ],
+    deps = [
+        ":soc_proxy",
+        "//sw/ip/base/dif:test_base",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "sysrst_ctrl",
     srcs = [
         "//sw/ip/sysrst_ctrl/dif:headers",
