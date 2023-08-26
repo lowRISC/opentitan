@@ -143,7 +143,7 @@
     { name:    "SramEgressDepth"
       desc:    "Sram Egress Entries. Word size is 32bit width."
       type:    "int unsigned"
-      default: "832"
+      default: "896"
       local:   "true"
     }
     { name:    "SramIngressDepth"
