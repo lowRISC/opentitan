@@ -113,13 +113,13 @@ class Ip:
                                 self.name_long_lower[1:])
         # Load HJSON data.
         if self.name_snake in ipgen_modules:
-            data_dir = REPO_TOP / "hw/top_earlgrey/ip_autogen/{0}/data".format(
+            data_dir = REPO_TOP / "hw/top_darjeeling/ip_autogen/{0}/data".format(
                 self.name_snake)
         elif self.name_snake in templated_modules:
-            data_dir = REPO_TOP / "hw/top_earlgrey/ip/{0}/data/autogen".format(
+            data_dir = REPO_TOP / "hw/top_darjeeling/ip/{0}/data/autogen".format(
                 self.name_snake)
         elif self.name_snake in reggen_top_modules:
-            data_dir = REPO_TOP / "hw/top_earlgrey/ip/{0}/data/".format(
+            data_dir = REPO_TOP / "hw/top_darjeeling/ip/{0}/data/".format(
                 self.name_snake)
         else:
             data_dir = REPO_TOP / "hw/ip/{0}/data".format(self.name_snake)
