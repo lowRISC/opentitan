@@ -112,26 +112,6 @@
 
     // SPI_DEVICE (pre-verified IP) integration tests:
     {
-      name: chip_sw_spi_device_tx_rx
-      desc: '''Verify the transmission of data on the chip's SPI device port in firmware mode with
-               single mode.
-
-            - The testbench sends a known payload over the chip's SPI device input port.
-            - The SW test, at the same time sends a known payload out over the chip's SPI device
-              output port.
-            - On reception, both payloads are checked for integrity.
-            - SW validates the reception of RX fifo full, RX fifo over level, TX fifo under level,
-              RX overflow and TX underflow interrupts.
-            - Run with min (6MHz), typical (30-48Mhz) and max(48MHz) SPI clk frequencies.
-              should use
-            - Also, ensure that the spi_device does not receive transactions when the csb is high.
-            - TODO, consider to test this mode with a real use case. The actual use case of this
-              mdoe is not clear right now.
-            '''
-      stage: V2
-      tests: ["chip_sw_spi_device_tx_rx"]
-    }
-    {
       name: chip_sw_spi_device_flash_mode
       desc: '''Verify the SPI device in flash mode.
 
