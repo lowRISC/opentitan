@@ -27,6 +27,13 @@ pub struct Console {
     #[arg(short, long, help = "Do not print console start end exit messages.")]
     quiet: bool,
 
+    #[arg(
+        short,
+        long,
+        help = "String to print upon successful startup.  Useful when called from scripts, that want to collect and propagate any startup error messages, and need to know for how long to wait."
+    )]
+    stderr_handshake: Option<String>,
+
     #[arg(short, long, help = "Log console output to a file")]
     logfile: Option<String>,
 
@@ -106,6 +113,11 @@ impl CommandDispatch for Console {
             if let Some(send) = self.send.as_ref() {
                 log::info!("Sending: {:?}", send);
                 uart.write(send.as_bytes())?;
+            }
+            if let Some(handshake) = &self.stderr_handshake {
+                // Inform caller that we have reached the event loop without hitting any fatal
+                // errors.
+                eprintln!("{}", handshake);
             }
             console.interact(&*uart, Some(&mut stdin), Some(&mut stdout))?
         };
