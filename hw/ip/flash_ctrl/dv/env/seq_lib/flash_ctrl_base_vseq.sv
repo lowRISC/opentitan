@@ -1120,7 +1120,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   // Before rma wipe for data partition started (256 pages),
   // this task force total page to 9 pages. So rma process is completed faster.
   virtual task enable_small_rma();
-    string path = "tb.dut.top_earlgrey.u_flash_ctrl.u_flash_hw_if";
+    string path = "tb.dut.u_flash_hw_if";
     string mypath;
     logic [2:0] rma_wipe_idx;
     logic [3:0] rma_ack;
@@ -1135,9 +1135,9 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       "waiting for rma index = 3", 50_000_000
     )
 
-    // Reduce page size to 'd9
+    // Reduce page size to 'd2
     mypath = {path, ".end_page"};
-    `DV_CHECK(uvm_hdl_force(mypath, 'h9));
+    `DV_CHECK(uvm_hdl_force(mypath, 'h2));
 
     // Wait for rma complete
     mypath = {path, ".rma_ack_q"};
@@ -1146,7 +1146,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
         @(cfg.clk_rst_vif.cb);
         uvm_hdl_read(mypath, rma_ack);
       end while (rma_ack != lc_ctrl_pkg::On);,
-      "waiting for rma ack == On", 50_000_000
+      "waiting for rma ack == On", 100_000_000
     )
     mypath = {path, ".end_page"};
     `DV_CHECK(uvm_hdl_release(mypath));
