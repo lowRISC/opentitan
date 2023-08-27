@@ -85,10 +85,6 @@ impl CommandDispatch for Console {
             ..Default::default()
         };
 
-        if !self.quiet {
-            println!("Starting interactive console");
-            println!("[CTRL+C] to exit.\n");
-        }
         let status = {
             // Put the terminal into raw mode.  The tty guard will restore the
             // console settings when it goes out of scope.
@@ -111,10 +107,14 @@ impl CommandDispatch for Console {
                 log::info!("Sending: {:?}", send);
                 uart.write(send.as_bytes())?;
             }
+            if !self.quiet {
+                eprintln!("Starting interactive console");
+                eprintln!("[CTRL+C] to exit.\n");
+            }
             console.interact(&*uart, Some(&mut stdin), Some(&mut stdout))?
         };
         if !self.quiet {
-            println!("\n\nExiting interactive console.");
+            eprintln!("\n\nExiting interactive console.");
         }
 
         match status {
