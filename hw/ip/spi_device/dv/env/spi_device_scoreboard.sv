@@ -901,6 +901,13 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           end
           if (item.mon_item_complete) break;
         end
+        // This thread gets killed when exiting `DV_SPINWAIT` (due to its `disable fork`).  However,
+        // `predict_read_buffer_intr` -> `update_pending_intr_w_delay` has spawned a background task
+        // (with `join_none`) that runs for up to 4 clock cycles.  If `DV_SPINWAIT` exits before
+        // that task completes, its update does not become effective and the scoreboard predicts an
+        // incorrect interrupt state.  Thus, wait for 4 more clock cycles so the background task
+        // certainly completes.
+        cfg.clk_rst_vif.wait_n_clks(4);
       )
       // only update when it has payload
       if (payload_idx > 0) begin
