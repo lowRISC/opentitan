@@ -905,7 +905,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   endfunction
 
   // Corrupt integrity check value only
-  function void flash_icv_flip(mem_bkdr_util _h, addr_t addr, flash_dv_part_e part,
+  virtual function void flash_icv_flip(mem_bkdr_util _h, addr_t addr, flash_dv_part_e part,
                                bit bank, flash_otf_item exp_item);
     flash_otf_item item;
 
@@ -927,7 +927,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
 
   // Create bit error follwing flash_op and  ecc_mode.
   // @caller : 0 controller,  1: host
-  function void add_bit_err(flash_op_t flash_op, read_task_e caller = ReadTaskCtrl,
+  virtual function void add_bit_err(flash_op_t flash_op, read_task_e caller = ReadTaskCtrl,
                             flash_otf_item item = null);
     flash_dv_part_e partition;
     int bank;
@@ -972,7 +972,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
             if (!serr_addr_tbl[addr_cp].exists(partition)) begin
               serr_addr_tbl[addr_cp][partition] = 1;
               `uvm_info(name,
-                        $sformatf({"single bit error is inserted at line:%0d(0x%x) %sz",
+                        $sformatf({"single bit error is inserted at line:%0d(0x%x) %s",
                                    " the databit[%0d]"},
                                   i, addr_cp, partition.name, err_idx), UVM_MEDIUM)
               flash_bit_flip(mem_bkdr_util_h[partition][bank], aligned_addr, err_idx);
@@ -1202,4 +1202,17 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
         load_otf_mem_page(flash_ctrl_env_pkg::FlashPartData, j, i);
     end
   endtask
+
+  // Print a page of the memory
+  function void print_page(int bank, flash_dv_part_e part, int page);
+    string name = $sformatf("%s_bank%0d_page%0d",part.name, bank, page);
+    addr_t addr;
+    bit [75:0] rdata;
+    addr[OTFBankId-1:11] = page;
+    for (int i = 0; i < 256; i++) begin
+      rdata = mem_bkdr_util_h[part][bank].read(addr);
+      `uvm_info(name,$sformatf("addr:%x(%x) data:%x",addr,(addr>>3), rdata), UVM_NONE)
+      addr += 8;
+    end
+  endfunction
 endclass

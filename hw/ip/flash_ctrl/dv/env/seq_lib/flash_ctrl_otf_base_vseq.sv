@@ -293,7 +293,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   // @arg: num : number of 8 words range: [1 : 32]
   // @arg: wd  : number of 4byte (TL bus unit) : default : 16
   // @arg: in_err : inject fatal error causes flash access disable
-  task prog_flash(ref flash_op_t flash_op, input int bank, int num, int wd = 16,
+  virtual task prog_flash(ref flash_op_t flash_op, input int bank, int num, int wd = 16,
                   bit in_err = 0, bit store_prog_data = 0);
     data_q_t flash_data_chunk;
     flash_otf_item exp_item;
@@ -494,7 +494,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   // @arg: wd  : number of 4byte (TL bus unit) : default : 16
   // @arg: overrd : invoke oversize read
   // @arg: in_err : inject fatal error causes flash access disable
-  task read_flash(ref flash_op_t flash_op, input int bank, int num, int wd = 16,
+  virtual task read_flash(ref flash_op_t flash_op, input int bank, int num, int wd = 16,
                   int overrd = 0, bit in_err = 0);
     data_q_t flash_read_data;
     flash_otf_item exp_item;
@@ -734,7 +734,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   // @arg : num  : number of 4byte data to read countinuously
   //               by 4 byte apart.
   // @arg: in_err : inject fatal error causes flash access disable
-  task otf_direct_read(bit [OTFHostId-2:0] addr, int bank, int num, bit in_err);
+  virtual task otf_direct_read(bit [OTFHostId-2:0] addr, int bank, int num, bit in_err);
     bit[TL_AW-1:0] tl_addr, st_addr, end_addr;
     data_4s_t rdata;
     flash_otf_item exp_item;
@@ -1223,7 +1223,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
    endtask
 
   // Update rd / dr tgt of the memory with their page profile
-  function void flash_otf_mem_read_zone_init();
+  virtual function void flash_otf_mem_read_zone_init();
     // 8byte aligned
     addr_t st_addr, ed_addr;
     flash_dv_part_e part;
@@ -1282,7 +1282,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     host.otf_addr[OTFHostId-2:0] = $urandom();
     host.otf_addr[1:0] = 'h0;
     if (num >= 0) host_num = num;
-    else host_num = $urandom_range(1,128);
+    else host_num = $urandom_range(1,32);
     host_bank = $urandom_range(0,1);
 
     otf_direct_read(host.otf_addr, host_bank, host_num, in_err);
@@ -1338,13 +1338,12 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       cfg.mp_info[0][0][1] = conv2env_mp_info(flash_ctrl_pkg::CfgAllowRead);
       cfg.mp_info[0][0][2] = conv2env_mp_info(flash_ctrl_pkg::CfgAllowRead);
 
-      // Add callback to customize mp info
-      callback_vseq.update_env_mp_info();
-
       flash_ctrl_mp_info_page_cfg(i, j, k, cfg.mp_info[i][j][k]);
       `uvm_info("otf_info_cfg", $sformatf("bank:type:page:[%0d][%0d][%0d] = %p",
                                           i, j, k, cfg.mp_info[i][j][k]), UVM_MEDIUM)
     end
+    // Add callback to customize mp info
+    callback_vseq.update_env_mp_info();
   endtask // flash_ctrl_default_info_cfg
 
   virtual task flash_otf_region_cfg(otf_cfg_mode_e scr_mode = OTFCfgFalse,
