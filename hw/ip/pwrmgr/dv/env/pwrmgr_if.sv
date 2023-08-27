@@ -47,7 +47,7 @@ interface pwrmgr_if (
 
   logic                                                        strap;
   logic                                                        low_power;
-  rom_ctrl_pkg::pwrmgr_data_t                                  rom_ctrl;
+  rom_ctrl_pkg::pwrmgr_data_t [pwrmgr_reg_pkg::NumRomInputs-1:0] rom_ctrl;
 
   prim_mubi_pkg::mubi4_t                                       sw_rst_req_i;
 

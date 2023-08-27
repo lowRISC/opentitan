@@ -136,8 +136,10 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
   endtask
 
   local task sample_reset_coverage(bit sleep);
-    cov.hw_reset_0_cg.sample(cfg.pwrmgr_vif.rstreqs_i[0], cfg.pwrmgr_vif.reset_en[0], sleep);
-    cov.hw_reset_1_cg.sample(cfg.pwrmgr_vif.rstreqs_i[1], cfg.pwrmgr_vif.reset_en[1], sleep);
+    foreach (cov.hw_reset_cg_wrap[i]) begin
+      cov.hw_reset_cg_wrap[i].sample(cfg.pwrmgr_vif.rstreqs_i[i], cfg.pwrmgr_vif.reset_en[i],
+                                     sleep);
+    end
     cov.rstmgr_sw_reset_cg.sample(cfg.pwrmgr_vif.sw_rst_req_i == prim_mubi_pkg::MuBi4True);
     cov.main_power_reset_cg.sample(
         cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_reg_pkg::ResetMainPwrIdx], sleep);
@@ -174,14 +176,20 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
   endtask
 
   task rom_coverage_collector();
-    forever
-      @(cfg.pwrmgr_vif.rom_ctrl or cfg.pwrmgr_vif.lc_hw_debug_en or cfg.pwrmgr_vif.lc_dft_en) begin
-        if (cfg.en_cov) begin
-          cov.rom_active_blockers_cg.sample(cfg.pwrmgr_vif.rom_ctrl.done,
-                                            cfg.pwrmgr_vif.rom_ctrl.good, cfg.pwrmgr_vif.lc_dft_en,
-                                            cfg.pwrmgr_vif.lc_hw_debug_en);
-        end
-      end
+    foreach (cfg.pwrmgr_vif.rom_ctrl[k]) begin
+      fork
+        automatic int i = k;
+        forever
+          @(cfg.pwrmgr_vif.rom_ctrl[i] or cfg.pwrmgr_vif.lc_hw_debug_en or
+            cfg.pwrmgr_vif.lc_dft_en) begin
+            if (cfg.en_cov) begin
+              cov.rom_active_blockers_cg_wrap[i].sample(
+                  cfg.pwrmgr_vif.rom_ctrl[i].done, cfg.pwrmgr_vif.rom_ctrl[i].good,
+                  cfg.pwrmgr_vif.lc_dft_en, cfg.pwrmgr_vif.lc_hw_debug_en);
+            end
+          end
+      join_none
+    end
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);

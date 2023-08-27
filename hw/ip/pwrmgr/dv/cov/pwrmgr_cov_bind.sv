@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // Description:
-// Power manager coverage bindings for multi bus input
+// Power manager coverage bindings for multi bus inputs
+
 module pwrmgr_cov_bind;
 
   bind pwrmgr cip_lc_tx_cov_if u_lc_dft_en_mubi_cov_if (
@@ -16,30 +17,15 @@ module pwrmgr_cov_bind;
     .val   (lc_hw_debug_en_i)
   );
 
-  // TODO(opentitan-integrated/issues/251):
-  // Need to find a way to make these binds parametric.
-  bind pwrmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_rom_ctrl_good_mubi_0_cov_if (
-    .rst_ni (rst_ni),
-    .mubi   (rom_ctrl_i[0].done)
-  );
-
-  bind pwrmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_rom_ctrl_done_mubi_0_cov_if (
-    .rst_ni (rst_ni),
-    .mubi   (rom_ctrl_i[0].good)
-  );
-
-  bind pwrmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_rom_ctrl_good_mubi_1_cov_if (
-    .rst_ni (rst_ni),
-    .mubi   (rom_ctrl_i[1].done)
-  );
-
-  bind pwrmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_rom_ctrl_done_mubi_1_cov_if (
-    .rst_ni (rst_ni),
-    .mubi   (rom_ctrl_i[1].good)
+  bind pwrmgr pwrmgr_rom_ctrl_mubi_cov_if #(
+    .Width(pwrmgr_reg_pkg::NumRomInputs)
+  ) u_rom_ctrl_mubi4_cov_if (
+    .rom_ctrl_i(rom_ctrl_i),
+    .rst_ni(rst_ni)
   );
 
   bind pwrmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_sw_rst_req_mubi_cov_if (
     .rst_ni (rst_ni),
     .mubi   (sw_rst_req_i)
   );
-endmodule // pwrmgr_cov_bind
+endmodule : pwrmgr_cov_bind

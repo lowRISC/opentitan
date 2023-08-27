@@ -71,6 +71,66 @@ class pwrmgr_wakeup_intr_cg_wrap;
   endfunction
 endclass
 
+// Wrapper class for rom active blockers covergroup.
+class pwrmgr_rom_active_blockers_cg_wrap;
+  // This covers the rom inputs that should prevent entering the active state.
+  covergroup rom_active_blockers_cg(
+      string name
+  ) with function sample (
+      logic [3:0] done, logic [3:0] good, logic [3:0] dft, logic [3:0] debug
+  );
+    option.name = name;
+    option.per_instance = 1;
+
+    done_cp: coverpoint done {
+      `DV_MUBI4_CP_BINS
+    }
+    good_cp: coverpoint good {
+      `DV_MUBI4_CP_BINS
+    }
+    dft_cp: coverpoint dft {
+      `DV_LC_TX_T_CP_BINS
+    }
+    debug_cp: coverpoint debug {
+      `DV_LC_TX_T_CP_BINS
+    }
+    blockers_cross: cross done_cp, good_cp, dft_cp, debug_cp;
+  endgroup
+
+  function new(string name);
+    rom_active_blockers_cg = new(name);
+  endfunction
+
+  function void sample (logic [3:0] done, logic [3:0] good, logic [3:0] dft, logic [3:0] debug);
+    rom_active_blockers_cg.sample(done, good, dft, debug);
+  endfunction
+endclass
+
+class pwrmgr_hw_reset_cg_wrap;
+  covergroup hw_reset_cg(
+    string name
+  ) with function sample (logic reset, logic enable, bit sleep);
+    option.name = name;
+    option.per_instance = 1;
+
+    reset_cp: coverpoint reset;
+    enable_cp: coverpoint enable;
+    sleep_cp: coverpoint sleep;
+    reset_cross: cross reset_cp, enable_cp, sleep_cp {
+      // Reset and sleep are mutually exclusive.
+      illegal_bins illegal = reset_cross with (reset_cp && sleep_cp);
+    }
+  endgroup
+
+  function new(string name);
+    hw_reset_cg = new(name);
+  endfunction
+
+  function void sample (logic reset, logic enable, logic sleep);
+    hw_reset_cg.sample(reset, enable, sleep);
+  endfunction
+endclass
+
 class pwrmgr_env_cov extends cip_base_env_cov #(
   .CFG_T(pwrmgr_env_cfg)
 );
@@ -82,6 +142,8 @@ class pwrmgr_env_cov extends cip_base_env_cov #(
   // covergroups
   pwrmgr_wakeup_ctrl_cg_wrap wakeup_ctrl_cg_wrap[pwrmgr_reg_pkg::NumWkups];
   pwrmgr_wakeup_intr_cg_wrap wakeup_intr_cg_wrap[pwrmgr_reg_pkg::NumWkups];
+  pwrmgr_rom_active_blockers_cg_wrap rom_active_blockers_cg_wrap[pwrmgr_reg_pkg::NumRomInputs];
+  pwrmgr_hw_reset_cg_wrap hw_reset_cg_wrap[pwrmgr_reg_pkg::NumRstReqs];
 
   // This collects coverage on the clock and power control functionality.
   covergroup control_cg with function sample (control_enables_t control_enables, bit sleep);
@@ -93,26 +155,6 @@ class pwrmgr_env_cov extends cip_base_env_cov #(
     sleep_cp: coverpoint sleep;
 
     control_cross: cross core_cp, io_cp, usb_lp_cp, usb_active_cp, main_pd_n_cp, sleep_cp;
-  endgroup
-
-  covergroup hw_reset_0_cg with function sample (logic reset, logic enable, bit sleep);
-    reset_cp: coverpoint reset;
-    enable_cp: coverpoint enable;
-    sleep_cp: coverpoint sleep;
-    reset_cross: cross reset_cp, enable_cp, sleep_cp {
-      // Reset and sleep are mutually exclusive.
-      illegal_bins illegal = reset_cross with (reset_cp && sleep_cp);
-    }
-  endgroup
-
-  covergroup hw_reset_1_cg with function sample (logic reset, logic enable, bit sleep);
-    reset_cp: coverpoint reset;
-    enable_cp: coverpoint enable;
-    sleep_cp: coverpoint sleep;
-    reset_cross: cross reset_cp, enable_cp, sleep_cp {
-      // Reset and sleep are mutually exclusive.
-      illegal_bins illegal = reset_cross with (reset_cp && sleep_cp);
-    }
   endgroup
 
   // This reset cannot be generated in low power state since it is triggered by software.
@@ -147,25 +189,6 @@ class pwrmgr_env_cov extends cip_base_env_cov #(
     }
   endgroup
 
-  // This covers the rom inputs that should prevent entering the active state.
-  covergroup rom_active_blockers_cg with function sample (
-      logic [3:0] done, logic [3:0] good, logic [3:0] dft, logic [3:0] debug
-  );
-    done_cp: coverpoint done {
-      `DV_MUBI4_CP_BINS
-    }
-    good_cp: coverpoint good {
-      `DV_MUBI4_CP_BINS
-    }
-    dft_cp: coverpoint dft {
-      `DV_LC_TX_T_CP_BINS
-    }
-    debug_cp: coverpoint debug {
-      `DV_LC_TX_T_CP_BINS
-    }
-    blockers_cross: cross done_cp, good_cp, dft_cp, debug_cp;
-  endgroup
-
   function new(string name, uvm_component parent);
     super.new(name, parent);
     foreach (wakeup_ctrl_cg_wrap[i]) begin
@@ -173,14 +196,18 @@ class pwrmgr_env_cov extends cip_base_env_cov #(
       wakeup_ctrl_cg_wrap[i] = new({wakeup.name, "_ctrl_cg"});
       wakeup_intr_cg_wrap[i] = new({wakeup.name, "_intr_cg"});
     end
+    foreach (rom_active_blockers_cg_wrap[i]) begin
+      rom_active_blockers_cg_wrap[i] = new($sformatf("rom_active_blockers_cg[%0d]", i));
+    end
+    foreach (hw_reset_cg_wrap[i]) begin
+      hw_reset_cg_wrap[i] = new($sformatf("hw_reset_cg[%0d]", i));
+    end
+
     control_cg = new();
-    hw_reset_0_cg = new();
-    hw_reset_1_cg = new();
     rstmgr_sw_reset_cg = new();
     main_power_reset_cg = new();
     esc_reset_cg = new();
     reset_wakeup_distance_cg = new();
-    rom_active_blockers_cg = new();
   endfunction : new
 
   virtual function void build_phase(uvm_phase phase);

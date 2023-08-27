@@ -19,15 +19,43 @@ class pwrmgr_repeat_wakeup_reset_vseq extends pwrmgr_wakeup_reset_vseq;
   // add invalid value to rom_ctrl
   virtual task twirl_rom_response();
     add_rom_rsp_noise();
-    cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4False;
-    cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4False;
-    cfg.clk_rst_vif.wait_clks(5);
+    fork
+      begin : first_isolation_fork
+        foreach (cfg.pwrmgr_vif.rom_ctrl[k]) begin : rom_ctrls
+          fork
+            automatic int i = k;
+            begin
+              automatic bit [3:0] wait1;
+              `DV_CHECK_STD_RANDOMIZE_FATAL(wait1)
+              cfg.pwrmgr_vif.rom_ctrl[i].done = prim_mubi_pkg::MuBi4False;
+              cfg.pwrmgr_vif.rom_ctrl[i].good = prim_mubi_pkg::MuBi4False;
+              cfg.clk_rst_vif.wait_clks(wait1);
+            end
+          join_none
+        end : rom_ctrls
+        wait fork;
+      end : first_isolation_fork
+    join
     add_rom_rsp_noise();
     wait(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone);
     add_rom_rsp_noise();
-    cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4True;
-    cfg.clk_rst_vif.wait_clks(5);
-    cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4True;
+    fork
+      begin : second_isolation_fork
+        foreach (cfg.pwrmgr_vif.rom_ctrl[k]) begin : rom_ctrls
+          fork
+            automatic int i = k;
+            begin
+              automatic bit [3:0] wait2;
+              `DV_CHECK_STD_RANDOMIZE_FATAL(wait2)
+              cfg.pwrmgr_vif.rom_ctrl[i].good = prim_mubi_pkg::MuBi4True;
+              cfg.clk_rst_vif.wait_clks(wait2);
+              cfg.pwrmgr_vif.rom_ctrl[i].done = prim_mubi_pkg::MuBi4True;
+            end
+          join_none
+        end : rom_ctrls
+        wait fork;
+      end : second_isolation_fork
+    join
   endtask
 
   task body();
@@ -45,9 +73,18 @@ class pwrmgr_repeat_wakeup_reset_vseq extends pwrmgr_wakeup_reset_vseq;
     join
   endtask : body
 
+  // This function is cumbersome because $asserton/off take literal strings, so we cannot use
+  // $sformatf to create the individual scope strings. It supports up to 3 rom inputs, if more
+  // are needed, extend it.
+  // Better yet, if you find a way to make this cleaner, go ahead.
   function void disable_assert();
-    $assertoff(0, "tb.dut.u_cdc.u_sync_rom_ctrl");
+    int rom_ins = pwrmgr_reg_pkg::NumRomInputs;
+    `DV_CHECK_LE(pwrmgr_reg_pkg::NumRomInputs, 3, "Extend support for more rom inputs here")
+    $assertoff(0, "tb.dut.u_cdc.gen_rom_inputs[0].u_sync_rom_ctrl");
+    if (rom_ins > 1) $assertoff(0, "tb.dut.u_cdc.gen_rom_inputs[1].u_sync_rom_ctrl");
+    if (rom_ins > 2) $assertoff(0, "tb.dut.u_cdc.gen_rom_inputs[2].u_sync_rom_ctrl");
   endfunction : disable_assert
+
 
   task drv_stim(pwrmgr_mubi_e mubi_mode);
     if (mubi_mode == PwrmgrMubiLcCtrl) drv_lc_ctrl();

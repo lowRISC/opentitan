@@ -73,13 +73,13 @@ module pwrmgr_bind;
     .slow_mp_rst_req(slow_peri_reqs.rstreqs[2]),
     .slow_fsm_invalid,
     .fast_fsm_invalid(u_fsm.u_state_regs.unused_err_o),
-    .rom_intg_chk_dis(u_fsm.rom_intg_chk_dis),
-    .rom_intg_chk_ok(prim_mubi_pkg::mubi4_and_hi(u_fsm.rom_intg_chk_done, u_fsm.rom_intg_chk_good)),
     .lc_dft_en_i(u_fsm.lc_dft_en_i),
     .lc_hw_debug_en_i(u_fsm.lc_hw_debug_en_i),
-    .main_pd_ni(u_slow_fsm.main_pd_ni),
+    .rom_intg_chk_dis(u_fsm.rom_intg_chk_dis),
+    .rom_intg_chk_ok(prim_mubi_pkg::mubi4_and_hi(u_fsm.rom_intg_chk_done, u_fsm.rom_intg_chk_good)),
     .rom_ctrl_done_i(u_fsm.rom_ctrl_done_i),
-    .rom_ctrl_good_i(u_fsm.rom_ctrl_good_i)
+    .rom_ctrl_good_i(u_fsm.rom_ctrl_good_i),
+    .slow_fsm_idle(u_slow_fsm.state_q == pwrmgr_pkg::SlowPwrStateIdle)
   );
 `endif
 endmodule

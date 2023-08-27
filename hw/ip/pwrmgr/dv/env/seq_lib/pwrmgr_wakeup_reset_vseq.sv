@@ -24,22 +24,39 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
   constraint escalation_reset_c {escalation_reset == 0;}
 
   // Cause some delays for the rom_ctrl done and good inputs. Simple, enough to hold the
-  // transition to active state.
-  // ICEBOX(lowrisc/opentitan#18236) Consider adding checks to monitor fast state transitions are
-  // compliant with "ROM Integrity Checks" at
-  // https://opentitan.org/book/hw/ip/pwrmgr/doc/theory_of_operation.html#rom-integrity-checks
+  // transition to active state. This makes all rom inputs change in parallel, so it needs
+  // fork subtlety.
   virtual task twirl_rom_response();
-    cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4False;
-    cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4False;
-    @(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateAckPwrUp);
-    cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4True;
-    @(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone);
-    cfg.clk_rst_vif.wait_clks(10);
-    cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4False;
-    cfg.clk_rst_vif.wait_clks(5);
-    cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4True;
-    cfg.clk_rst_vif.wait_clks(5);
-    cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4True;
+    fork
+      begin : isolation_fork
+        foreach (cfg.pwrmgr_vif.rom_ctrl[k]) begin : rom_ctrls
+          fork
+            automatic int i = k;
+            begin
+              automatic bit [3:0] wait1, wait2, wait3;
+              `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wait1, wait1 inside {[5 : 10]};)
+              `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wait2, wait2 inside {[5 : 10]};)
+              `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wait3, wait3 inside {[5 : 10]};)
+              cfg.pwrmgr_vif.rom_ctrl[i].done = prim_mubi_pkg::MuBi4False;
+              cfg.pwrmgr_vif.rom_ctrl[i].good = prim_mubi_pkg::MuBi4False;
+              @(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateAckPwrUp);
+              cfg.pwrmgr_vif.rom_ctrl[i].good = prim_mubi_pkg::MuBi4True;
+              @(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone);
+              cfg.clk_rst_vif.wait_clks(wait1);
+              `uvm_info(`gfn, $sformatf("twirl_rom_response rom %0d past wait1", i), UVM_MEDIUM)
+              cfg.pwrmgr_vif.rom_ctrl[i].good = prim_mubi_pkg::MuBi4False;
+              cfg.clk_rst_vif.wait_clks(wait2);
+              `uvm_info(`gfn, $sformatf("twirl_rom_response rom %0d past wait2", i), UVM_MEDIUM)
+              cfg.pwrmgr_vif.rom_ctrl[i].good = prim_mubi_pkg::MuBi4True;
+              cfg.clk_rst_vif.wait_clks(wait3);
+              `uvm_info(`gfn, $sformatf("twirl_rom_response rom %0d past wait3", i), UVM_MEDIUM)
+              cfg.pwrmgr_vif.rom_ctrl[i].done = prim_mubi_pkg::MuBi4True;
+            end
+          join_none
+        end : rom_ctrls
+        wait fork;
+      end : isolation_fork
+    join
   endtask
 
   task body();
@@ -138,9 +155,22 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
 
       if (mubi_mode == PwrmgrMubiRomCtrl) begin
         add_rom_rsp_noise();
-        cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4True;
-        cfg.clk_rst_vif.wait_clks(5);
-        cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4True;
+        fork
+          begin : isolation_fork
+            foreach (cfg.pwrmgr_vif.rom_ctrl[k]) begin : rom_ctrls
+              fork
+                automatic int i = k;
+                begin
+                  automatic int delay = $urandom_range(3, 8);
+                  cfg.pwrmgr_vif.rom_ctrl[i].good = prim_mubi_pkg::MuBi4True;
+                  cfg.clk_rst_vif.wait_clks(delay);
+                  cfg.pwrmgr_vif.rom_ctrl[i].done = prim_mubi_pkg::MuBi4True;
+                end
+              join_none
+              end : rom_ctrls
+            wait fork;
+          end : isolation_fork
+        join
       end
 
       // This is the expected side-effect of the low power entry reset, since the source of the

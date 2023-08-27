@@ -16,17 +16,17 @@ module pwrmgr_sec_cm_checker_assert
   input clk_slow_i,
   input rst_slow_ni,
   input pwrmgr_pkg::pwr_rst_req_t pwr_rst_o,
-  input slow_fsm_invalid,
-  input fast_fsm_invalid,
-  input prim_mubi_pkg::mubi4_t rom_intg_chk_dis,
-  input prim_mubi_pkg::mubi4_t rom_intg_chk_ok,
-  input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
-  input lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
   input slow_esc_rst_req,
   input slow_mp_rst_req,
-  input main_pd_ni,
+  input slow_fsm_invalid,
+  input fast_fsm_invalid,
+  input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
+  input lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
+  input prim_mubi_pkg::mubi4_t rom_intg_chk_dis,
+  input prim_mubi_pkg::mubi4_t rom_intg_chk_ok,
   input prim_mubi_pkg::mubi4_t rom_ctrl_done_i,
-  input prim_mubi_pkg::mubi4_t rom_ctrl_good_i
+  input prim_mubi_pkg::mubi4_t rom_ctrl_good_i,
+  input slow_fsm_idle
 );
 
   bit disable_sva;
@@ -75,13 +75,17 @@ module pwrmgr_sec_cm_checker_assert
           clk_i,
           reset_or_disable)
 
+  // The assertions of a reset request to an output reset to rstmgr go through a CDC from fast
+  // to slow clock, and a CDC from slow to fast. This means the fast clock must be enabled, which
+  // for simplicity means the slow state machine must be in the idle state.
+
   // pwr_rst_o.rstreqs checker
   // sec_cm_esc_rx_clk_bkgn_chk, sec_cm_esc_rx_clk_local_esc
   // if esc_timeout, rstreqs[ResetEscIdx] should be asserted
   `ASSERT(RstreqChkEsctimeout_A,
           $rose(
-              slow_esc_rst_req
-          ) ##1 slow_esc_rst_req |-> ##[0:10] pwr_rst_o.rstreqs[ResetEscIdx],
+              slow_esc_rst_req && slow_fsm_idle
+          ) ##1 slow_esc_rst_req && slow_fsm_idle |-> ##[0:10] pwr_rst_o.rstreqs[ResetEscIdx],
           clk_i, reset_or_disable)
 
 // sec_cm_fsm_terminal
@@ -89,21 +93,21 @@ module pwrmgr_sec_cm_checker_assert
 // both pwr_rst_o.rst_lc_req and pwr_rst_o.rst_sys_req should be set
 
   `ASSERT(RstreqChkFsmterm_A,
-          $rose(slow_fsm_invalid) || $rose(fast_fsm_invalid)
+          ($rose(slow_fsm_invalid) || $rose(fast_fsm_invalid)) && slow_fsm_idle
           |-> ##[0:10] $rose(pwr_rst_o.rst_lc_req & pwr_rst_o.rst_sys_req),
           clk_i, reset_or_disable)
 
 // sec_cm_ctrl_flow_global_esc
 // if esc_rst_req is set, pwr_rst_o.rstreqs[ResetEscIdx] should be asserted.
   `ASSERT(RstreqChkGlbesc_A,
-          $rose(slow_esc_rst_req) ##1 slow_esc_rst_req |->
+          $rose(slow_esc_rst_req && slow_fsm_idle) ##1 slow_esc_rst_req && slow_fsm_idle |->
           ##[0:10] (pwr_rst_o.rstreqs[ResetEscIdx] | !rst_esc_ni),
           clk_i, reset_or_disable)
 
 // sec_cm_main_pd_rst_local_esc
 // if power is up and rst_main_ni goes low, pwr_rst_o.rstreqs[ResetMainPwrIdx] should be asserted
   `ASSERT(RstreqChkMainpd_A,
-          slow_mp_rst_req |-> ##[0:5] pwr_rst_o.rstreqs[ResetMainPwrIdx], clk_i,
+          slow_mp_rst_req && slow_fsm_idle |-> ##[0:5] pwr_rst_o.rstreqs[ResetMainPwrIdx], clk_i,
           reset_or_disable)
 
 endmodule // pwrmgr_sec_cm_checker_assert
