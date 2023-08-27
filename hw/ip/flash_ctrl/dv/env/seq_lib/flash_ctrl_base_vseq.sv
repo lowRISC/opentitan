@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+typedef class flash_ctrl_callback_vseq;
 class flash_ctrl_base_vseq extends cip_base_vseq #(
   .RAL_T              (flash_ctrl_core_reg_block),
   .CFG_T              (flash_ctrl_env_cfg),

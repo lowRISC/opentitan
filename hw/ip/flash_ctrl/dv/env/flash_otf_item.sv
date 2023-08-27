@@ -22,6 +22,11 @@ class flash_otf_item extends uvm_object;
 
   bit                                    skip_err_chk;
   addr_t                                 err_addr, eaddr_q[$];
+
+  // For closed source features.
+  bit                                    debug_flag;
+  addr_t                                 debug_addr;
+
   function new(string name = "flash_otf_item");
     super.new(name);
     head_pad = 0;
@@ -29,6 +34,7 @@ class flash_otf_item extends uvm_object;
     derr = 0;
     exp_err = 0;
     skip_err_chk = 0;
+    debug_flag = 0;
   endfunction // new
 
   virtual function void print(string name = "flash_otf_item");
@@ -37,7 +43,8 @@ class flash_otf_item extends uvm_object;
     `dv_info($sformatf("op        : %s", cmd.op.name()), UVM_MEDIUM, name)
     `dv_info($sformatf("prog_sel  : %s", cmd.prog_sel.name()), UVM_MEDIUM, name)
     `dv_info($sformatf("num_words : %0d", cmd.num_words), UVM_MEDIUM, name)
-    `dv_info($sformatf("s_addr    : 0x%x", start_addr), UVM_MEDIUM, name)
+    `dv_info($sformatf("s_addr    : 0x%x(page:%0d)", start_addr, start_addr[18:11]),
+                                                                   UVM_MEDIUM, name)
     `dv_info($sformatf("mem_addr  : 0x%x", mem_addr), UVM_MEDIUM, name)
 
     if (dq.size() > 0) begin
@@ -136,7 +143,11 @@ class flash_otf_item extends uvm_object;
       if (ecc_en) begin
         data_with_icv = prim_secded_pkg::prim_secded_hamming_72_64_enc(raw_fq[i][63:0]);
         if (add_icv_err) begin
+          `uvm_info("icv_debug", $sformatf("before:%4b after:%4b",
+                    data_with_icv[67:64], ~data_with_icv[67:64]), UVM_DEBUG)
           data_with_icv[67:64] = ~data_with_icv[67:64];
+          // if icv is all zero, use different patter for error
+          if (data_with_icv[67:64] == 'h0) data_with_icv[67:64] = 4'b1100;
         end
       end else begin
         // We only need bit 67:64 when ecc_en == true.
@@ -232,6 +243,7 @@ class flash_otf_item extends uvm_object;
           `uvm_error("rd_scr", "ecc error is detected")
         end
       end
+      // Increase mem_addr by 1
       addr++;
     end
     // collect upto cmd.num_words
