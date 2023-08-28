@@ -16,10 +16,10 @@ typedef struct flash_info_field {
 
 enum {
   // Creator/Owner Seeds - Bank 0, Pages 1 and 2
-  kFlashInfoKeySeedSizeIn32BitWords = 256 / sizeof(uint32_t),
+  kFlashInfoKeySeedSizeIn32BitWords = 32 / sizeof(uint32_t),
 
   // Wafer Authentication Secret - Bank 0, Page 3
-  kFlashInfoWaferAuthSecretSizeIn32BitWords = 256 / sizeof(uint32_t),
+  kFlashInfoWaferAuthSecretSizeIn32BitWords = 32 / sizeof(uint32_t),
 };
 
 extern const flash_info_field_t kFlashInfoFieldDeviceId;

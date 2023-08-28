@@ -237,8 +237,8 @@ status_t manuf_individualize_device_secret0(
     return OK_STATUS();
   }
 
-  uint64_t hashed_test_unlock_token[kSecret0TestUnlockTokenSizeInBytes];
-  uint64_t hashed_test_exit_token[kSecret0TestExitTokenSizeInBytes];
+  uint64_t hashed_test_unlock_token[kSecret0TestUnlockTokenSizeIn64BitWords];
+  uint64_t hashed_test_exit_token[kSecret0TestExitTokenSizeIn64BitWords];
   TRY(manuf_util_hash_lc_transition_token(provisioning_data->test_unlock_token,
                                           kSecret0TestUnlockTokenSizeInBytes,
                                           hashed_test_unlock_token));
