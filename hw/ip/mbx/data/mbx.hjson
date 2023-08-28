@@ -274,9 +274,10 @@
       }
       { name: "sys_control"
         desc: "DOE mailbox control register."
-        hwext: "true"
+        hwext: "false"
         hwaccess: "hrw"
         hwqe: "true"
+        hwext: "true"
 
         fields: [
           { name: "abort"
@@ -302,6 +303,7 @@
             bits: "3"
             resval: "0x0"
             swaccess: "rw"
+
 
           }
           { name: "go"
