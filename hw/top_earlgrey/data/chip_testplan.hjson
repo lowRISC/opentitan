@@ -15,6 +15,9 @@
     "sw/device/silicon_creator/rom/data/rom_e2e_testplan.hjson",
     "hw/top_earlgrey/data/chip_conn_testplan.hjson",
 
+    // Manufacturing test cases are part of the Silicon Validation (SiVal) test plan.
+    "sw/device/silicon_creator/manuf/data/manuf_testplan.hjson"
+
     // IP block specific top level test plans.
     "hw/top_earlgrey/data/ip/chip_hmac_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_keymgr_testplan.hjson",

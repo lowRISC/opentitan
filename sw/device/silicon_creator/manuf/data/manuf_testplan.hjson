@@ -25,9 +25,14 @@
 
             - Verify that the RAW_UNLOCK process can be re-tried after failed or interrupted attempts.
             '''
+      features: []
       tags: ["dv", "fpga", "silicon"]
       stage: V3
+      si_stage: SV1
+      otp_mutate: true
+      lc_states: ["RAW"]
       tests: []
+      bazel: []
     }
 
     {
@@ -47,8 +52,12 @@
 
             - Verify that the transition to SCRAP mode can be re-tried after failed or interrupted attempts.
             '''
+      features: []
       tags: ["dv", "fpga", "silicon"]
       stage: V3
+      si_stage: SV2
+      otp_mutate: true
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: []
     }
 
@@ -66,9 +75,14 @@
             - Switch to LC TAP by manipulating the strap pins.
             - Verify that read/writes to lc_ctrl work as expected.
             '''
+      features: []
       tags: ["dv", "fpga", "silicon"]
       stage: V3
+      si_stage: SV1
+      otp_mutate: false
+      lc_states: ["TEST_UNLOCKED"]
       tests: []
+      bazel: []
     }
 
     {
@@ -88,9 +102,14 @@
             - Select CPU JTAG via strap pins.
             - Verify that OTP write was successful.
             '''
+      features: []
       tags: ["dv", "fpga", "silicon"]
       stage: V3
+      si_stage: SV1
+      otp_mutate: false
+      lc_states: ["TEST_UNLOCKED"]
       tests: []
+      bazel: []
     }
 
     {
@@ -114,9 +133,14 @@
             - Perform reset by toggling POR pin.
             - Verify isolated flash info partition expected data.
             '''
+      features: []
       tags: ["dv", "fpga", "silicon"]
       stage: V3
+      si_stage: SV1
+      otp_mutate: false
+      lc_states: ["TEST_UNLOCKED"]
       tests: []
+      bazel: []
     }
 
     {
@@ -142,7 +166,7 @@
 
             - Load OTP state generted by previous steps.
             - Select LC TAP via strap pins.
-            - Request transition to TEST_UNLCOKED by providing the TEST_UNLOCK_TOKEN provisioned
+            - Request transition to TEST_UNLOCKED by providing the TEST_UNLOCK_TOKEN provisioned
               in previous steps.
             - Perform reset by toggling POR pin.
             - Select LC TAP via strap pins.
@@ -150,9 +174,14 @@
 
             Repeat the same flow for the number of supported TEST_LOCK/UNLOCKED states.
             '''
+      features: []
       tags: ["dv", "fpga", "silicon"]
       stage: V3
+      si_stage: SV2
+      otp_mutate: true
+      lc_states: ["TEST_UNLOCKED"]
       tests: []
+      bazel: []
     }
 
     {
@@ -179,9 +208,14 @@
             After this test most of the following manuf_ft_* test cases can be loaded into flash via
             boostrap in silicon.
             '''
+      features: []
       tags: ["dv", "fpga", "silicon"]
       stage: V3
+      si_stage: SV1
+      otp_mutate: true
+      lc_states: ["TEST_UNLOCKED"]
       tests: []
+      bazel: []
     }
 
     {
@@ -194,7 +228,7 @@
             using the ROM bootstrap protocol. It is recommended to use the same approach on the FPGA,
             and enable it as a configuration option in DV.
 
-            - Pre-load OTP with a TEST_UNLCOKED* lc_state in pre-silicon
+            - Pre-load OTP with a TEST_UNLOCKED* lc_state in pre-silicon
               environments. Advance to state in silicon.
             - Load test program into flash and start execution.
             - Configure CREATOR_SW_CFG OTP words according to device SKU configuration.
@@ -209,9 +243,14 @@
             interface selection (e.g. SPI versus UART). Make sure the interface design takes
             this constraint into consideration.
             '''
+      features: []
       tags: ["dv", "fpga", "silicon"]
       stage: V3
+      si_stage: SV1
+      otp_mutate: true
+      lc_states: ["TEST_UNLOCKED"]
       tests: []
+      bazel: []
     }
 
     {
@@ -256,9 +295,14 @@
             interface selection (e.g. SPI versus UART). Make sure the interface design takes
             this constraint into consideration.
             '''
+      features: []
       tags: ["dv", "fpga", "silicon"]
       stage: V3
+      si_stage: SV1
+      otp_mutate: true
+      lc_states: ["DEV", "PROD", "PROD_END"]
       tests: []
+      bazel: []
     }
 
     {
@@ -336,9 +380,14 @@
               include the encrypted RMA_UNLOCK_TOKEN, the DEVICE_ID, the public attestation key
               and its hash.
             '''
+      features: []
       tags: ["dv", "fpga", "silicon"]
       stage: V3
+      si_stage: SV1
+      otp_mutate: true
+      lc_states: ["DEV", "PROD", "PROD_END"]
       tests: []
+      bazel: []
     }
 
     {
@@ -355,9 +404,14 @@
             - Reset device by toggling POR pin.
             - Check device firmware version.
             '''
+      features: []
       tags: ["dv", "fpga", "silicon"]
       stage: V3
+      si_stage: SV3
+      otp_mutate: false
+      lc_states: ["DEV", "PROD", "PROD_END"]
       tests: []
+      bazel: []
     }
 
     {
@@ -380,9 +434,14 @@
             - The certificate is then stored into a flash page (info versus regular flash TBD).
             - Send response to the host with test result.
             '''
+      features: []
       tags: ["dv", "fpga", "silicon"]
       stage: V3
+      si_stage: SV3
+      otp_mutate: false
+      lc_states: ["DEV", "PROD", "PROD_END"]
       tests: []
+      bazel: []
     }
 
     {
@@ -397,9 +456,14 @@
             - Trigger software reset.
             - The host sends a command to ensure device is in post-manufacturing state.
             '''
+      features: []
       tags: ["dv", "fpga", "silicon"]
       stage: V3
+      si_stage: SV3
+      otp_mutate: true
+      lc_states: ["DEV", "PROD", "PROD_END"]
       tests: []
+      bazel: []
     }
 
     {
@@ -432,9 +496,14 @@
             connect to the CPU JTAG to continue debug, or bootstrap the device with new a firmware
             image. Otherwise the ROM will fail to boot.
             '''
+      features: []
       tags: ["dv", "fpga", "silicon"]
       stage: V3
+      si_stage: SV2
+      otp_mutate: true
+      lc_states: ["DEV", "PROD", "PROD_END"]
       tests: []
+      bazel: []
     }
 
     {
@@ -449,9 +518,14 @@
             - corrupt a byte in memory (where the program was loaded), try to re-run it and confirm that
               the CRT now reports a CRC mismatch error.
             '''
+      features: []
       tags: ["fpga", "silicon"]
       stage: V3
+      si_stage: SV3
+      otp_mutate: false
+      lc_states: ["TEST_UNLOCKED"]
       tests: []
+      bazel: []
     }
   ]
 }
