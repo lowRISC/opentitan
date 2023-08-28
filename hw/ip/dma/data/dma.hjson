@@ -27,13 +27,28 @@
     { protocol: "tlul", direction: "host", name: "host" }
     { protocol: "tlul", direction: "host", name: "ctn" }
   ]
+  param_list: [
+    { name: "NumIntClearSources",
+      desc: "Number of interrupt clearing sources to process",
+      type: "int",
+      default: "5",
+      local: "true"
+    },
+  ],
   inter_signal_list: [
-    { name:   "sys"
-      type:   "req_rsp"
+    { name: "lsio_trigger"
+      type: "lsio_trigger",
+      act: "rcv",
+      package: "dma_reg_pkg",
+      struct: "lsio_trigger",
+      width: "1"
+    }
+    { name: "sys"
+      type: "req_rsp"
       struct: "sys"
       package: "dma_pkg"
-      act:     "req"
-      width:   "1"
+      act: "req"
+      width: "1"
     }
   ]
   interrupt_list: [
@@ -63,15 +78,6 @@
       desc: "DMA enabled memory range is software multibit lockable."
     }
   ]
-  param_list: [
-    { name: "NumIntClearSources",
-      desc: "Number of interrupt clearing sources to process",
-      type: "int",
-      default: "5",
-      local: "true"
-    },
-  ],
-
   regwidth: "32"
   registers: [
     { name: "SOURCE_ADDRESS_LO"
