@@ -155,9 +155,9 @@
         {
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
+          clk_io_peri: io
           clk_usb_peri: usb
           clk_aon_peri: aon
-          clk_io_peri: io
         }
       }
       {
@@ -15047,9 +15047,9 @@
         {
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
+          clk_io_peri: io
           clk_usb_peri: usb
           clk_aon_peri: aon
-          clk_io_peri: io
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
@@ -15071,9 +15071,9 @@
         {
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
+          clk_io_peri: io
           clk_usb_peri: usb
           clk_aon_peri: aon
-          clk_io_peri: io
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
@@ -15095,9 +15095,9 @@
         {
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
+          clk_io_peri: io
           clk_usb_peri: usb
           clk_aon_peri: aon
-          clk_io_peri: io
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
@@ -15119,9 +15119,9 @@
         {
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
+          clk_io_peri: io
           clk_usb_peri: usb
           clk_aon_peri: aon
-          clk_io_peri: io
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
@@ -15143,9 +15143,9 @@
         {
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
+          clk_io_peri: io
           clk_usb_peri: usb
           clk_aon_peri: aon
-          clk_io_peri: io
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
@@ -15210,9 +15210,9 @@
         {
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
+          clk_io_peri: io
           clk_usb_peri: usb
           clk_aon_peri: aon
-          clk_io_peri: io
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
@@ -15234,9 +15234,9 @@
         {
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
+          clk_io_peri: io
           clk_usb_peri: usb
           clk_aon_peri: aon
-          clk_io_peri: io
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div2_peri
@@ -15258,9 +15258,9 @@
         {
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
+          clk_io_peri: io
           clk_usb_peri: usb
           clk_aon_peri: aon
-          clk_io_peri: io
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_usb_peri
@@ -15354,9 +15354,9 @@
         {
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
+          clk_io_peri: io
           clk_usb_peri: usb
           clk_aon_peri: aon
-          clk_io_peri: io
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri

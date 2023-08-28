@@ -571,6 +571,7 @@ def extract_clocks(top: OrderedDict):
             'type': "dummy",
             'clock_srcs': {'clk_i': "io"},
             'clock_group': "peri",
+            'ep_next': "usbdev",
         },
         {
             'name': "io_dummy_infra",
@@ -580,7 +581,30 @@ def extract_clocks(top: OrderedDict):
         }
     ]
 
-    for ep in top['module'] + top['memory'] + top['xbar'] + dummy_eps:
+    # TODO(#19448): clkmgr block-level DV is currently tailored to the clkmgr
+    # parameterization of Earlgrey. Other top-levels might not require certain
+    # clocks but removing or even re-ordering them can cause block-level DV to
+    # fail. As an intermediate solution, we order the real and the dummy
+    # endpoints such that the order of endpoints is the same as for Earlgrey.
+    modules = top['module'] + top['memory'] + top['xbar']
+    for dummy_ep in dummy_eps:
+        index = None
+        for ep in modules:
+            if 'ep_next' not in dummy_ep:
+                # Simply insert the dummy endpoint at the end of the list.
+                # This works e.g. for infra nodes.
+                index = len(modules)
+                break
+            if dummy_ep['ep_next'] == ep['name']:
+                # Insert the dummy endpoint at this index.
+                index = modules.index(ep)
+                break
+        if index is None:
+            log.error("Could not find specified endpoint {} in modules list".
+                      format(dummy_ep['ep_next']))
+        modules = modules[:index] + [dummy_ep] + modules[index:]
+
+    for ep in modules:
         clock_connections = OrderedDict()
 
         # Ensure each module has a default case

@@ -44,8 +44,8 @@ package clkmgr_pkg;
     logic clk_io_div4_timers;
     logic clk_io_div4_peri;
     logic clk_io_div2_peri;
-    logic clk_usb_peri;
     logic clk_io_peri;
+    logic clk_usb_peri;
   } clkmgr_out_t;
 
   // clock gating indication for alert handler
@@ -73,8 +73,8 @@ package clkmgr_pkg;
     prim_mubi_pkg::mubi4_t io_div4_timers;
     prim_mubi_pkg::mubi4_t io_div4_peri;
     prim_mubi_pkg::mubi4_t io_div2_peri;
-    prim_mubi_pkg::mubi4_t usb_peri;
     prim_mubi_pkg::mubi4_t io_peri;
+    prim_mubi_pkg::mubi4_t usb_peri;
   } clkmgr_cg_en_t;
 
   parameter int NumOutputClk = 25;
