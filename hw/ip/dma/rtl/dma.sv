@@ -545,6 +545,11 @@ module dma
           bad_dst_addr = 1'b1;
         end
 
+        // Source and destination must have the same alignment
+        if (reg2hw.source_address_lo.q[1:0] != reg2hw.destination_address_lo.q[1:0]) begin
+          bad_src_addr = 1'b1;
+          bad_dst_addr = 1'b1;
+        end
         // If data from the SOC system bus, the control bus, or the external flash is transferred to
         // the OT internal memory, we must check if the destination address range falls into the DMA
         // enabled memory region.
