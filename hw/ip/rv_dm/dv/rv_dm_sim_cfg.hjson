@@ -199,6 +199,11 @@
       uvm_test_seq: rv_dm_mem_tl_access_halted_vseq
       reseed: 2
     }
+    {
+      name: rv_dm_mem_tl_access_resuming
+      uvm_test_seq: rv_dm_mem_tl_access_resuming_vseq
+      reseed: 2
+    }
   ]
 
   // List of regressions.
