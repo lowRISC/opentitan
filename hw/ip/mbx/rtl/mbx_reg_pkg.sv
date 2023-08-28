@@ -265,25 +265,14 @@ package mbx_reg_pkg;
   //////////////////////////////////////////////
 
   typedef struct packed {
-    struct packed {
-      logic [11:0] q;
-    } next_capaility_offset;
-    struct packed {
-      logic [3:0]  q;
-    } cap_version;
-    struct packed {
-      logic [15:0] q;
-    } cap_id;
-  } mbx_reg2hw_extended_cap_header_reg_t;
+    logic [31:0] q;
+    logic        qe;
+  } mbx_reg2hw_doe_intr_msg_addr_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic [10:0] q;
-    } doe_intr_msg_nr;
-    struct packed {
-      logic        q;
-    } doe_intr_support;
-  } mbx_reg2hw_cap_header_reg_t;
+    logic [31:0] q;
+    logic        qe;
+  } mbx_reg2hw_doe_intr_msg_data_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -325,29 +314,6 @@ package mbx_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [15:0] d;
-    } cap_id;
-    struct packed {
-      logic [3:0]  d;
-    } cap_version;
-    struct packed {
-      logic [11:0] d;
-    } next_capaility_offset;
-  } mbx_hw2reg_extended_cap_header_reg_t;
-
-  typedef struct packed {
-    struct packed {
-      logic        d;
-      logic        de;
-    } doe_intr_support;
-    struct packed {
-      logic [10:0] d;
-      logic        de;
-    } doe_intr_msg_nr;
-  } mbx_hw2reg_cap_header_reg_t;
-
-  typedef struct packed {
-    struct packed {
       logic        d;
     } abort;
     struct packed {
@@ -386,31 +352,25 @@ package mbx_reg_pkg;
 
   // Register -> HW type for sys interface
   typedef struct packed {
-    mbx_reg2hw_extended_cap_header_reg_t extended_cap_header; // [57:26]
-    mbx_reg2hw_cap_header_reg_t cap_header; // [25:14]
+    mbx_reg2hw_doe_intr_msg_addr_reg_t doe_intr_msg_addr; // [79:47]
+    mbx_reg2hw_doe_intr_msg_data_reg_t doe_intr_msg_data; // [46:14]
     mbx_reg2hw_sys_control_reg_t sys_control; // [13:6]
     mbx_reg2hw_sys_status_reg_t sys_status; // [5:0]
   } mbx_sys_reg2hw_t;
 
   // HW -> register type for sys interface
   typedef struct packed {
-    mbx_hw2reg_extended_cap_header_reg_t extended_cap_header; // [59:28]
-    mbx_hw2reg_cap_header_reg_t cap_header; // [27:14]
     mbx_hw2reg_sys_control_reg_t sys_control; // [13:10]
     mbx_hw2reg_sys_status_reg_t sys_status; // [9:0]
   } mbx_sys_hw2reg_t;
 
   // Register offsets for sys interface
-  parameter logic [SysAw-1:0] MBX_EXTENDED_CAP_HEADER_OFFSET = 5'h 0;
-  parameter logic [SysAw-1:0] MBX_CAP_HEADER_OFFSET = 5'h 4;
+  parameter logic [SysAw-1:0] MBX_DOE_INTR_MSG_ADDR_OFFSET = 5'h 0;
+  parameter logic [SysAw-1:0] MBX_DOE_INTR_MSG_DATA_OFFSET = 5'h 4;
   parameter logic [SysAw-1:0] MBX_SYS_CONTROL_OFFSET = 5'h 8;
   parameter logic [SysAw-1:0] MBX_SYS_STATUS_OFFSET = 5'h c;
 
   // Reset values for hwext registers and their fields for sys interface
-  parameter logic [31:0] MBX_EXTENDED_CAP_HEADER_RESVAL = 32'h 2002e;
-  parameter logic [15:0] MBX_EXTENDED_CAP_HEADER_CAP_ID_RESVAL = 16'h 2e;
-  parameter logic [3:0] MBX_EXTENDED_CAP_HEADER_CAP_VERSION_RESVAL = 4'h 2;
-  parameter logic [11:0] MBX_EXTENDED_CAP_HEADER_NEXT_CAPAILITY_OFFSET_RESVAL = 12'h 0;
   parameter logic [31:0] MBX_SYS_CONTROL_RESVAL = 32'h 0;
   parameter logic [0:0] MBX_SYS_CONTROL_ABORT_RESVAL = 1'h 0;
   parameter logic [0:0] MBX_SYS_CONTROL_DOE_INTR_EN_RESVAL = 1'h 0;
@@ -427,16 +387,16 @@ package mbx_reg_pkg;
 
   // Register index for sys interface
   typedef enum int {
-    MBX_EXTENDED_CAP_HEADER,
-    MBX_CAP_HEADER,
+    MBX_DOE_INTR_MSG_ADDR,
+    MBX_DOE_INTR_MSG_DATA,
     MBX_SYS_CONTROL,
     MBX_SYS_STATUS
   } mbx_sys_id_e;
 
   // Register width information to check illegal writes for sys interface
   parameter logic [3:0] MBX_SYS_PERMIT [4] = '{
-    4'b 1111, // index[0] MBX_EXTENDED_CAP_HEADER
-    4'b 0011, // index[1] MBX_CAP_HEADER
+    4'b 1111, // index[0] MBX_DOE_INTR_MSG_ADDR
+    4'b 1111, // index[1] MBX_DOE_INTR_MSG_DATA
     4'b 1111, // index[2] MBX_SYS_CONTROL
     4'b 1111  // index[3] MBX_SYS_STATUS
   };
