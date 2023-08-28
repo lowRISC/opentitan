@@ -6,7 +6,8 @@ module mbx_sysif
   import tlul_pkg::*;
 #(
   parameter int unsigned CfgSramDataWidth     = 32,
-  parameter int unsigned NextExtDoeOffset     = 12'h800
+  parameter int unsigned NextExtDoeOffset     = 12'h800,
+  parameter bit          DoeIrqSupport        = 1'b1
 ) (
   input  logic                        clk_i,
   input  logic                        rst_ni,
@@ -14,9 +15,12 @@ module mbx_sysif
   input  tlul_pkg::tl_h2d_t           tl_sys_i,
   output tlul_pkg::tl_d2h_t           tl_sys_o,
   output logic                        intg_err_o,
+  // Custom interrupt to the system requester
+  output logic                        doe_intr_support_o,
+  output logic                        doe_intr_en_o,
+  output logic                        doe_intr_o,
   // Access to the control register
   output logic                        sysif_control_abort_set_o,
-  output logic                        sysif_control_doe_intr_en_o,
   output logic                        sysif_control_async_msg_en_o,
   output logic                        sysif_control_go_set_o,
   // Access to the status register
@@ -60,6 +64,10 @@ module mbx_sysif
     .intg_err_o ( intg_err_o ),
     .devmode_i  ( 1'b1       )
   );
+
+  // Interrupt support
+  assign doe_intr_support_o = DoeIrqSupport;
+  assign doe_intr_o         = reg2hw.sys_status.doe_intr_status.q;
 
   // Extended capability register
   assign hw2reg.extended_cap_header.cap_id                = 16'h002E;

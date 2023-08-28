@@ -16,17 +16,21 @@ module mbx_hostif
   // Generated interrupt event
   input  logic                        event_intr_i,
   output logic                        irq_o,
+  // External errors
+  input  logic                        intg_err_i,
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
   // Access to the control register
-  output logic                        hostif_control_set_abort_o,
+  output logic                        hostif_control_abort_set_o,
   // Access to the status register
   output logic                        hostif_status_busy_clear_o,
+  output logic                        hostif_status_doe_intr_status_set_o,
   output logic                        hostif_status_error_set_o,
   output logic                        hostif_status_error_clear_o,
   output logic                        hostif_status_async_msg_status_set_o,
   input  logic                        hostif_status_busy_i,
+  input  logic                        hostif_status_doe_intr_status_i,
   input  logic                        hostif_status_error_i,
   input  logic                        hostif_status_async_msg_status_i,
   input  logic                        hostif_status_ready_i,
@@ -54,7 +58,7 @@ module mbx_hostif
   logic tlul_intg_err;
   logic [NumAlerts-1:0] alert_test, alerts;
   assign alert_test = {reg2hw.alert_test.q & reg2hw.alert_test.qe};
-  assign alerts[0]  = tlul_intg_err;
+  assign alerts[0]  = tlul_intg_err | intg_err_i;
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
@@ -101,9 +105,9 @@ module mbx_hostif
   // Control Register
   // External read logic
   logic abort_d, abort_q;
-  assign  hw2reg.control.d = abort_q;
+  assign  hw2reg.control.abort.d = abort_q;
   // External write logic
-  assign hostif_control_set_abort_o = reg2hw.control.qe & tl_host_i.a_data[0];
+  assign hostif_control_abort_set_o = reg2hw.control.abort.qe & reg2hw.control.abort.q;
 
   // Abort computation from system and host interface
   always_comb begin
@@ -111,7 +115,7 @@ module mbx_hostif
 
     if (sysif_write_control_abort_i) begin
       abort_d = 1'b1;
-    end else if (hostif_control_set_abort_o) begin
+    end else if (hostif_control_abort_set_o) begin
       abort_d = 1'b0;
     end
   end
@@ -131,11 +135,14 @@ module mbx_hostif
 
   // External read logic
   assign hw2reg.status.busy.d             = hostif_status_busy_i;
+  assign hw2reg.status.doe_intr_status.d  = hostif_status_doe_intr_status_i;
   assign hw2reg.status.error.d            = hostif_status_error_i;
   assign hw2reg.status.async_msg_status.d = hostif_status_async_msg_status_i;
   assign hw2reg.status.ready.d            = hostif_status_ready_i;
   // External write logic
   assign hostif_status_busy_clear_o           = reg2hw.status.busy.qe  & ~reg2hw.status.busy.q;
+  assign hostif_status_doe_intr_status_set_o  = reg2hw.status.doe_intr_status.qe &
+                                                reg2hw.status.doe_intr_status.q;
   assign hostif_status_error_set_o            = reg2hw.status.error.qe &  reg2hw.status.error.q;
   assign hostif_status_error_clear_o          = reg2hw.status.error.qe & ~reg2hw.status.error.q;
   assign hostif_status_async_msg_status_set_o =

@@ -11,11 +11,18 @@ module mbx
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   parameter int unsigned CfgSramAddrWidth      = 32,
   parameter int unsigned CfgSramDataWidth      = 32,
-  parameter int unsigned NextExtDoeOffset      = 12'h800
+  parameter int unsigned NextExtDoeOffset      = 12'h800,
+  // PCIe capabilities
+  parameter bit DoeIrqSupport                  = 1'b1
 ) (
   input  logic                                      clk_i,
   input  logic                                      rst_ni,
+  // Comportable interrupt to the OT
   output logic                                      intr_mbx_ready_o,
+  // Custom interrupt to the system requester
+  output logic                                      doe_intr_support_o,
+  output logic                                      doe_intr_en_o,
+  output logic                                      doe_intr_o,
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
@@ -34,7 +41,7 @@ module mbx
 
   // External write signals for control and status register
   logic hostif_control_abort_set;
-  logic hostif_status_busy_clear, hostif_status_irq_status_set;
+  logic hostif_status_busy_clear;
   logic hostif_status_error_set, hostif_status_error_clear;
   logic hostif_status_async_msg_status_set;
   // External read signals for control and status register
@@ -75,11 +82,12 @@ module mbx
     .hostif_control_abort_set_o          ( hostif_control_abort_set           ),
     // Access to the status register
     .hostif_status_busy_clear_o          ( hostif_status_busy_clear           ),
-    .hostif_status_irq_status_set_o      ( hostif_status_irq_status_set       ),
+    .hostif_status_doe_intr_status_set_o ( sysif_status_doe_intr_status_set   ),
     .hostif_status_error_set_o           ( hostif_status_error_set            ),
     .hostif_status_error_clear_o         ( hostif_status_error_clear          ),
     .hostif_status_async_msg_status_set_o( hostif_status_async_msg_status_set ),
     .hostif_status_busy_i                ( hostif_status_busy                 ),
+    .hostif_status_doe_intr_status_i     ( sysif_status_doe_intr_status     ),
     .hostif_status_error_i               ( hostif_status_error                ),
     .hostif_status_async_msg_status_i    ( hostif_status_async_msg_status     ),
     .hostif_status_ready_i               ( hostif_status_ready                ),
@@ -105,9 +113,7 @@ module mbx
   logic ibmbx_status_busy_valid, ibmbx_status_busy;
   logic obmbx_status_ready_valid, obmbx_status_ready;
 
-
-  logic sysif_control_go_set, sysif_control_abort_set;
-  logic sysif_control_doe_intr_en, sysif_control_async_msg_en;
+  logic sysif_control_go_set, sysif_control_abort_set, sysif_control_async_msg_en;
 
   logic sysif_status_intr_support, sysif_status_intr_en;
   logic sysif_status_async_msg_status_set, sysif_status_async_msg_status;
@@ -118,16 +124,20 @@ module mbx
 
   mbx_sysif #(
     .CfgSramDataWidth ( CfgSramDataWidth ),
-    .NextExtDoeOffset ( NextExtDoeOffset )
+    .NextExtDoeOffset ( NextExtDoeOffset ),
+    .DoeIrqSupport    ( DoeIrqSupport    )
   ) u_sysif (
     .clk_i                               ( clk_i                              ),
     .rst_ni                              ( rst_ni                             ),
     .tl_sys_i                            ( tl_sys_i                           ),
     .tl_sys_o                            ( tl_sys_o                           ),
     .intg_err_o                          ( sysif_intg_err                     ),
+    // System interrupt support
+    .doe_intr_support_o                  ( doe_intr_support_o                 ),
+    .doe_intr_en_o                       ( doe_intr_en_o                      ),
+    .doe_intr_o                          ( doe_intr_o                         ),
     // Access to the control register
     .sysif_control_abort_set_o           ( sysif_control_abort_set            ),
-    .sysif_control_doe_intr_en_o         ( sysif_control_doe_intr_en),
     .sysif_control_async_msg_en_o        ( sysif_control_async_msg_en),
     .sysif_control_go_set_o              ( sysif_control_go_set               ),
     // Access to the status register
