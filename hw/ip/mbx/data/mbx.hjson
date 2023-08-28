@@ -270,48 +270,39 @@
       }
     ]
     sys: [
-      { name: "extended_cap_header"
-        desc: ""
-        swaccess: "ro"
-        hwaccess: "hrw"
+      { name: "DOE_INTR_MSG_ADDR"
+      desc: '''
+            Utilized by the mailbox responder to send an interrupt message to the requester via a write to the configured address.
+            Defined only for FW-to-FW mailboxes.
+            '''
         fields: [
-          { name: "cap_id"
-            desc: ""
-            bits: "15:0"
-            resval: "0x002E"
-          }
-          { name: "cap_version"
-            desc: ""
-            bits: "19:16"
-            resval: "0x2"
-
-          }
-          { name: "next_capaility_offset"
-            desc: ""
-            bits: "31:20"
-            resval: "0"
-          }
-        ]
-        hwext: "true"
-      }
-      { name: "cap_header"
-        desc: ""
-        swaccess: "ro"
-        hwaccess: "hrw"
-        fields: [
-          { name: "doe_intr_support"
-            desc: ""
-            bits: "0"
-          }
-          { name: "doe_intr_msg_nr"
-            desc: ""
-            bits: "11:1"
-            resval: "0x2"
-
+          { name: "doe_intr_msg_addr"
+            desc: "Utilized by the mailbox responder to send an interrupt message to the requester via a write to the configured address."
+            bits: "31:0"
+            resval: "0x0"
+            swaccess: "rw"
+            hwaccess: "hro"
+            hwqe: "true"
           }
         ]
       }
-      { name: "sys_control"
+      { name: "DOE_INTR_MSG_DATA"
+        desc: '''
+              Interrupt message data to be sent to the address configured in the DOE_INTR_MSG_ADDR register.
+              Defined only for FW-to-FW mailboxes.
+              '''
+        fields: [
+          { name: "doe_intr_msg_data"
+            desc: "Interrupt message data to be sent to the address configured in the DOE_INTR_MSG_ADDR register."
+            bits: "31:0"
+            resval: "0x0"
+            swaccess: "rw"
+            hwaccess: "hro"
+            hwqe: "true"
+          }
+        ]
+      }
+      { name: "SYS_CONTROL"
         desc: "DOE mailbox control register."
         hwext: "false"
         hwaccess: "hrw"
