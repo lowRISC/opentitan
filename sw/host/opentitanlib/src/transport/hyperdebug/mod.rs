@@ -29,7 +29,8 @@ use crate::transport::chip_whisperer::ChipWhisperer;
 use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
 use crate::transport::common::uart::{flock_serial, SerialPortExclusiveLock, SerialPortUart};
 use crate::transport::{
-    Capabilities, Capability, Transport, TransportError, TransportInterfaceType, UpdateFirmware,
+    Capabilities, Capability, Transport, TransportCommand, TransportCommandTextResponse,
+    TransportError, TransportInterfaceType, UpdateFirmware,
 };
 use crate::util::openocd::OpenOcdServer;
 use crate::util::usb::UsbBackend;
@@ -396,7 +397,7 @@ impl Inner {
             .ok_or(TransportError::UnicodePathError)?;
         let _lock = SerialPortExclusiveLock::lock(port_name)?;
         let mut port = TTYPort::open(
-            &serialport::new(port_name, 115_200).timeout(std::time::Duration::from_millis(100)),
+            &serialport::new(port_name, 115_200).timeout(std::time::Duration::from_millis(1000)),
         )
         .context("Failed to open HyperDebug console")?;
         flock_serial(&port, port_name)?;
@@ -579,6 +580,13 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
             T::load_bitstream(self, fpga_program).map(|_| None)
         } else if let Some(clear) = action.downcast_ref::<ClearBitstream>() {
             T::clear_bitstream(clear).map(|_| None)
+        } else if let Some(cmd) = action.downcast_ref::<TransportCommand>() {
+            let mut lines = vec![];
+            self.inner
+                .execute_command(cmd.command.join(" ").as_str(), |line| {
+                    lines.push(line.to_string());
+                })?;
+            Ok(Some(Box::new(TransportCommandTextResponse { lines })))
         } else {
             Err(TransportError::UnsupportedOperation.into())
         }
