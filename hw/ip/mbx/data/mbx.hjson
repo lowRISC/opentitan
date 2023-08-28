@@ -23,6 +23,29 @@
     { protocol: "tlul", direction: "host",   name: "sram" }
     { protocol: "tlul", direction: "device", name: "sys" }
   ]
+  inter_signal_list: [
+    { struct:  "logic",
+      type:    "uni",
+      name:    "doe_intr_support",
+      act:     "req",
+      package: "",
+      default: "1'b0"
+    }
+    { struct:  "logic",
+      type:    "uni",
+      name:    "doe_intr_en",
+      act:     "req",
+      package: "",
+      default: "1'b0"
+    }
+    { struct:  "logic",
+      type:    "uni",
+      name:    "doe_intr",
+      act:     "req",
+      package: "",
+      default: "1'b0"
+    }
+  ]
   interrupt_list: [
     { name: "mbx_ready"
       desc: "A new object was received in the inbound mailbox."
@@ -52,6 +75,14 @@
             hwaccess: "hrw"
             hwqe: "true"
           }
+          { name: "doe_intr_en"
+            desc: "Alias of the DoE mailbox interrupt enable bit"
+            bits: "1"
+            resval: "0x0"
+            swaccess: "rw"
+            hwaccess: "hrw"
+            hwqe: "true"
+          }
         ]
         hwext: "true"
       }
@@ -62,6 +93,14 @@
             desc: "Alias of the DoE mailbox busy bit"
             bits: "0"
             resval: "0x1"
+            swaccess: "rw"
+            hwaccess: "hrw"
+            hwqe: "true"
+          }
+          { name: "doe_intr_status"
+           desc: "Alias of the DoE mailbox interrupt status bit"
+            bits: "1"
+            resval: "0x0"
             swaccess: "rw"
             hwaccess: "hrw"
             hwqe: "true"
@@ -274,9 +313,10 @@
       }
       { name: "sys_control"
         desc: "DOE mailbox control register."
-        hwext: "true"
+        hwext: "false"
         hwaccess: "hrw"
         hwqe: "true"
+        hwext: "true"
 
         fields: [
           { name: "abort"
@@ -302,7 +342,6 @@
             bits: "3"
             resval: "0x0"
             swaccess: "rw"
-
           }
           { name: "go"
             desc: '''

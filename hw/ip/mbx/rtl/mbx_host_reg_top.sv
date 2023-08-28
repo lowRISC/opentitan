@@ -133,12 +133,16 @@ module mbx_host_reg_top (
   logic alert_test_wd;
   logic control_re;
   logic control_we;
-  logic control_qs;
-  logic control_wd;
+  logic control_abort_qs;
+  logic control_abort_wd;
+  logic control_doe_intr_en_qs;
+  logic control_doe_intr_en_wd;
   logic status_re;
   logic status_we;
   logic status_busy_qs;
   logic status_busy_wd;
+  logic status_doe_intr_status_qs;
+  logic status_doe_intr_status_wd;
   logic status_error_qs;
   logic status_error_wd;
   logic status_async_msg_status_qs;
@@ -270,27 +274,44 @@ module mbx_host_reg_top (
 
   // R[control]: V(True)
   logic control_qe;
-  logic [0:0] control_flds_we;
+  logic [1:0] control_flds_we;
   assign control_qe = &control_flds_we;
+  //   F[abort]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_control (
+  ) u_control_abort (
     .re     (control_re),
     .we     (control_we),
-    .wd     (control_wd),
-    .d      (hw2reg.control.d),
+    .wd     (control_abort_wd),
+    .d      (hw2reg.control.abort.d),
     .qre    (),
     .qe     (control_flds_we[0]),
-    .q      (reg2hw.control.q),
+    .q      (reg2hw.control.abort.q),
     .ds     (),
-    .qs     (control_qs)
+    .qs     (control_abort_qs)
   );
-  assign reg2hw.control.qe = control_qe;
+  assign reg2hw.control.abort.qe = control_qe;
+
+  //   F[doe_intr_en]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_control_doe_intr_en (
+    .re     (control_re),
+    .we     (control_we),
+    .wd     (control_doe_intr_en_wd),
+    .d      (hw2reg.control.doe_intr_en.d),
+    .qre    (),
+    .qe     (control_flds_we[1]),
+    .q      (reg2hw.control.doe_intr_en.q),
+    .ds     (),
+    .qs     (control_doe_intr_en_qs)
+  );
+  assign reg2hw.control.doe_intr_en.qe = control_qe;
 
 
   // R[status]: V(True)
   logic status_qe;
-  logic [3:0] status_flds_we;
+  logic [4:0] status_flds_we;
   assign status_qe = &status_flds_we;
   //   F[busy]: 0:0
   prim_subreg_ext #(
@@ -308,6 +329,22 @@ module mbx_host_reg_top (
   );
   assign reg2hw.status.busy.qe = status_qe;
 
+  //   F[doe_intr_status]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_doe_intr_status (
+    .re     (status_re),
+    .we     (status_we),
+    .wd     (status_doe_intr_status_wd),
+    .d      (hw2reg.status.doe_intr_status.d),
+    .qre    (),
+    .qe     (status_flds_we[1]),
+    .q      (reg2hw.status.doe_intr_status.q),
+    .ds     (),
+    .qs     (status_doe_intr_status_qs)
+  );
+  assign reg2hw.status.doe_intr_status.qe = status_qe;
+
   //   F[error]: 2:2
   prim_subreg_ext #(
     .DW    (1)
@@ -317,7 +354,7 @@ module mbx_host_reg_top (
     .wd     (status_error_wd),
     .d      (hw2reg.status.error.d),
     .qre    (),
-    .qe     (status_flds_we[1]),
+    .qe     (status_flds_we[2]),
     .q      (reg2hw.status.error.q),
     .ds     (),
     .qs     (status_error_qs)
@@ -333,7 +370,7 @@ module mbx_host_reg_top (
     .wd     (status_async_msg_status_wd),
     .d      (hw2reg.status.async_msg_status.d),
     .qre    (),
-    .qe     (status_flds_we[2]),
+    .qe     (status_flds_we[3]),
     .q      (reg2hw.status.async_msg_status.q),
     .ds     (),
     .qs     (status_async_msg_status_qs)
@@ -349,7 +386,7 @@ module mbx_host_reg_top (
     .wd     (status_ready_wd),
     .d      (hw2reg.status.ready.d),
     .qre    (),
-    .qe     (status_flds_we[3]),
+    .qe     (status_flds_we[4]),
     .q      (reg2hw.status.ready.q),
     .ds     (),
     .qs     (status_ready_qs)
@@ -726,11 +763,15 @@ module mbx_host_reg_top (
   assign control_re = addr_hit[4] & reg_re & !reg_error;
   assign control_we = addr_hit[4] & reg_we & !reg_error;
 
-  assign control_wd = reg_wdata[0];
+  assign control_abort_wd = reg_wdata[0];
+
+  assign control_doe_intr_en_wd = reg_wdata[1];
   assign status_re = addr_hit[5] & reg_re & !reg_error;
   assign status_we = addr_hit[5] & reg_we & !reg_error;
 
   assign status_busy_wd = reg_wdata[0];
+
+  assign status_doe_intr_status_wd = reg_wdata[1];
 
   assign status_error_wd = reg_wdata[2];
 
@@ -802,11 +843,13 @@ module mbx_host_reg_top (
       end
 
       addr_hit[4]: begin
-        reg_rdata_next[0] = control_qs;
+        reg_rdata_next[0] = control_abort_qs;
+        reg_rdata_next[1] = control_doe_intr_en_qs;
       end
 
       addr_hit[5]: begin
         reg_rdata_next[0] = status_busy_qs;
+        reg_rdata_next[1] = status_doe_intr_status_qs;
         reg_rdata_next[2] = status_error_qs;
         reg_rdata_next[3] = status_async_msg_status_qs;
         reg_rdata_next[31] = status_ready_qs;

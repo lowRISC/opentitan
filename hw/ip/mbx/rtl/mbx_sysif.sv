@@ -6,7 +6,8 @@ module mbx_sysif
   import tlul_pkg::*;
 #(
   parameter int unsigned CfgSramDataWidth     = 32,
-  parameter int unsigned NextExtDoeOffset     = 12'h800
+  parameter int unsigned NextExtDoeOffset     = 12'h800,
+  parameter bit          DoeIrqSupport        = 1'b1
 ) (
   input  logic                        clk_i,
   input  logic                        rst_ni,
@@ -14,9 +15,12 @@ module mbx_sysif
   input  tlul_pkg::tl_h2d_t           tl_sys_i,
   output tlul_pkg::tl_d2h_t           tl_sys_o,
   output logic                        intg_err_o,
+  // Custom interrupt to the system requester
+  output logic                        doe_intr_support_o,
+  output logic                        doe_intr_en_o,
+  output logic                        doe_intr_o,
   // Access to the control register
   output logic                        sysif_control_abort_set_o,
-  output logic                        sysif_control_doe_intr_en_o,
   output logic                        sysif_control_async_msg_en_o,
   output logic                        sysif_control_go_set_o,
   // Access to the status register
@@ -61,6 +65,10 @@ module mbx_sysif
     .devmode_i  ( 1'b1       )
   );
 
+  // Interrupt support
+  assign doe_intr_support_o = DoeIrqSupport;
+  assign doe_intr_o         = reg2hw.sys_status.doe_intr_status.q;
+
   // Extended capability register
   assign hw2reg.extended_cap_header.cap_id                = 16'h002E;
   assign hw2reg.extended_cap_header.cap_version           = 4'h2;
@@ -72,17 +80,37 @@ module mbx_sysif
 
   // Control register
   assign sysif_control_abort_set_o   = reg2hw.sys_control.abort.qe & reg2hw.sys_control.abort.q;
-  assign  hw2reg.sys_control.go.de = 1'b1;
-  assign  hw2reg.sys_control.go.d  = 1'b0;
+  assign  hw2reg.sys_control.abort.d  = 1'b0;
 
   assign  sysif_control_go_set_o   = reg2hw.sys_control.go.qe & reg2hw.sys_control.go.q;
-  assign  hw2reg.sys_control.go.de = 1'b1;
   assign  hw2reg.sys_control.go.d  = 1'b0;
 
-  assign sysif_control_doe_intr_en_o   = reg2hw.sys_control.doe_intr_en.q;
-  assign sysif_control_async_msg_en_o = reg2hw.sys_control.async_msg_en.q;
+  // Manual implementation of the doe_intr_en bit
+  // SWAccess: RW
+  // HWAccess: RO
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_sys_control_doe_intr_en (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    // from register interface
+    .we     (reg2hw.sys_control.doe_intr_en.qe),
+    .wd     (reg2hw.sys_control.doe_intr_en.q),
+    // HWAccess: hro
+    .de     (1'b0),
+    .d      (1'b0),
+    // to internal hardware
+    .qe     (),
+    .q      (doe_intr_en_o),
+    .ds     (hw2reg.sys_control.doe_intr_en.d),
+    .qs     ()
+  );
 
-    //   F[async_msg_en]: 3:3
+  // Manual implementation of the async_msg_en bit
+  // SWAccess: RW
+  // HWAccess: RO
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -90,25 +118,18 @@ module mbx_sysif
   ) u_sys_control_async_msg_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
-
     // from register interface
-    .we     (sys_control_we),
-    .wd     (sys_control_async_msg_en_wd),
-
-    // from internal hardware
+    .we     (reg2hw.sys_control.async_msg_en.qe),
+    .wd     (reg2hw.sys_control.async_msg_en.q),
+    // HWAccess: hro
     .de     (1'b0),
-    .d      ('0),
-
+    .d      (1'b0),
     // to internal hardware
-    .qe     (sys_control_flds_we[2]),
-    .q      (reg2hw.sys_control.async_msg_en.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (sys_control_async_msg_en_qs)
+    .qe     (),
+    .q      (sysif_control_async_msg_en_o),
+    .ds     (hw2reg.sys_control.async_msg_en.d),
+    .qs     ()
   );
-
-
 
   // Fiddle out status register bits for external write logic
   assign sysif_status_async_msg_status_o = reg2hw.sys_status.async_msg_status.q;
