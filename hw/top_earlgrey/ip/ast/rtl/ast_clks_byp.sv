@@ -87,7 +87,7 @@ always_ff @( posedge clk_aon, negedge rst_aon_n ) begin
   end
 end
 
-logic rst_sw_ckbpe_n, clk_ast_ext_scn, sw_clk_byp_en;
+logic rst_sw_ckbpe_n, clk_ast_ext_scn, da_rst_sw_ckbpe_n, sw_clk_byp_en;
 
 assign rst_sw_ckbpe_n = scan_mode_i ? scan_reset_ni : rst_sw_clk_byp_en;
 `ifndef AST_BYPASS_CLK
@@ -96,9 +96,20 @@ assign clk_ast_ext_scn = scan_mode_i ? clk_osc_sys_i : clk_ast_ext_i;
 assign clk_ast_ext_scn = scan_mode_i ? clk_osc_sys_i : clk_ext_sys_i;
 `endif // of AST_BYPASS_CLK
 
+// De-Assert Sync
+prim_flop_2sync #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_no_scan_rst_sw_ckbpe_dasrt (
+  .clk_i ( clk_ast_ext_scn ),
+  .rst_ni ( rst_sw_ckbpe_n ),
+  .d_i ( 1'b1 ),
+  .q_o ( da_rst_sw_ckbpe_n )
+);
+
 // De-assert with external clock input
-always_ff @( negedge clk_ast_ext_scn, negedge rst_sw_ckbpe_n ) begin
-  if ( !rst_sw_ckbpe_n ) begin
+always_ff @( negedge clk_ast_ext_scn, negedge da_rst_sw_ckbpe_n ) begin
+  if ( !da_rst_sw_ckbpe_n ) begin
     sw_clk_byp_en <= 1'b0;
   end else begin
     sw_clk_byp_en <= 1'b1;
@@ -286,12 +297,15 @@ prim_clock_gating #(
 ////////////////////////////////////////
 logic clk_ext_usb, clk_ext_usb_en, clk_ext_usb_val;
 logic clk_src_usb_en;
+logic clk_src_ext_usb_n;
+
+assign clk_src_ext_usb_n = ~clk_src_ext_usb;
 
 prim_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_no_scan_clk_src_usb_en_sync (
-  .clk_i ( clk_ext ),
+  .clk_i ( clk_src_ext_usb_n ),
   .rst_ni ( rst_aon_exda_n ),
   .d_i ( clk_src_usb_en_i ),
   .q_o ( clk_src_usb_en )
