@@ -701,7 +701,7 @@ pub const TOP_DARJEELING_ROM_CTRL1_REGS_SIZE_BYTES: usize = 0x80;
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR: usize = 0x10000;
+pub const TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR: usize = 0x20000;
 
 /// Peripheral size for rom device on rom_ctrl1 in top darjeeling.
 ///
@@ -755,7 +755,7 @@ pub const ROM0_BASE_ADDR: usize = 0x8000;
 /// Memory size for rom0 in top darjeeling.
 pub const ROM0_SIZE_BYTES: usize = 0x8000;
 /// Memory base address for rom1 in top darjeeling.
-pub const ROM1_BASE_ADDR: usize = 0x10000;
+pub const ROM1_BASE_ADDR: usize = 0x20000;
 
 /// Memory size for rom1 in top darjeeling.
 pub const ROM1_SIZE_BYTES: usize = 0x10000;

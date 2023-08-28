@@ -7621,7 +7621,7 @@
       }
       base_addrs:
       {
-        rom: 0x00010000
+        rom: 0x00020000
         regs: 0x211e1000
       }
       memory:
@@ -9339,7 +9339,7 @@
           addr_range:
           [
             {
-              base_addr: 0x10000
+              base_addr: 0x20000
               size_byte: 0x10000
             }
           ]

@@ -967,7 +967,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR 0x10000u
+#define TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR 0x20000u
 
 /**
  * Peripheral size for rom device on rom_ctrl1 in top darjeeling.
@@ -1061,7 +1061,7 @@ extern "C" {
 /**
  * Memory base address for rom1 in top darjeeling.
  */
-#define TOP_DARJEELING_ROM1_BASE_ADDR 0x10000u
+#define TOP_DARJEELING_ROM1_BASE_ADDR 0x20000u
 
 /**
  * Memory size for rom1 in top darjeeling.

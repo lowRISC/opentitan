@@ -533,7 +533,7 @@ package top_darjeeling_pkg;
   /**
    * Peripheral base address for rom device on rom_ctrl1 in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR = 32'h10000;
+  parameter int unsigned TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR = 32'h20000;
 
   /**
    * Peripheral size in bytes for rom device on rom_ctrl1 in top darjeeling.
@@ -613,7 +613,7 @@ package top_darjeeling_pkg;
   /**
    * Memory base address for rom1 in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_ROM1_BASE_ADDR = 32'h10000;
+  parameter int unsigned TOP_DARJEELING_ROM1_BASE_ADDR = 32'h20000;
 
   /**
    * Memory size for rom1 in top darjeeling.

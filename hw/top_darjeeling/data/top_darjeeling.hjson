@@ -813,7 +813,7 @@
       reset_connections: {rst_ni: "lc"},
       // TODO(opentitan-integrated/issues/251):
       // This is not the final parameterization for Darjeeling.
-      base_addrs: {rom: "0x00010000", regs: "0x211e1000"}
+      base_addrs: {rom: "0x00020000", regs: "0x211e1000"}
       memory: {
         rom: {
           label:              "rom1",
