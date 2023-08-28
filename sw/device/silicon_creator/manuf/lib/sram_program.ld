@@ -30,8 +30,8 @@ ENTRY(sram_start);
 
 /* NOTE This linker script assumes non-page-aligned segments because we skip
  * the first _static_critical_size bytes of the SRAM and we do not want the
- * ELF segments to containt the headers as this would overwrite the content
- * of static critical data */
+ * ELF segments to contain the headers as this would overwrite the contents of
+ * static_critical data. */
 SECTIONS {
   /* The ELF SRAM program loader will automatically read back the data of the section
    * containing the entry point to verify that it is correct. The expectation is that
@@ -44,6 +44,11 @@ SECTIONS {
      * so that we don't have to maintain a separate offset from the start of
      * the RAM to the entry point for VMEM files. */
     KEEP(*(.sram_start))
+    . = ALIGN(256);
+  } > ram_main
+
+  .vectors : ALIGN (256){
+    KEEP(*(.vectors))
     . = ALIGN(4);
   } > ram_main
 

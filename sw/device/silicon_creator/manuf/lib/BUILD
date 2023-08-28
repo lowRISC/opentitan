@@ -44,6 +44,7 @@ cc_library(
     deps = [
         ":sram_start_headers",
         "//sw/device/lib/crt",
+        "//sw/device/lib/testing/test_framework:ottf_isrs",
     ],
 )
 

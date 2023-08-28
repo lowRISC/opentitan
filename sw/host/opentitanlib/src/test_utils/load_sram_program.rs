@@ -241,7 +241,7 @@ pub fn load_elf_sram_program(
             LoadSramProgramError::SegmentNotWordAligned
         );
         ensure!(
-            segment.align() <= 8,
+            segment.align() <= 256,
             LoadSramProgramError::NotCompiledWithNmagic
         );
         // A sanity check to ensure that there are no gaps between segments.
