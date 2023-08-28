@@ -15,12 +15,15 @@
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
 #include "sw/device/silicon_creator/manuf/tests/test_wafer_auth_secret.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"  // Generated.
+
+OTTF_DEFINE_TEST_CONFIG();
 
 static dif_uart_t uart;
 static dif_otp_ctrl_t otp_ctrl;

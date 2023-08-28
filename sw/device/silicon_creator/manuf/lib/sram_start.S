@@ -5,6 +5,93 @@
 #include "sram_start.h"
 
 /**
+ * SRAM Program Interrupt Vector.
+ *
+ * We reuse the OTTF interrupt handlers.
+ */
+  .section .vectors, "ax"
+  .option push
+
+  // Disable RISC-V instruction compression: we need all instructions to
+  // be exactly word wide in the interrupt vector.
+  .option norvc
+
+  // Disable RISC-V linker relaxation, as it can compress instructions at
+  // link-time, which we also really don't want.
+  .option norelax
+
+  /**
+   * `_ottf_interrupt_vector` is an ibex-compatible interrupt vector.
+   *
+   * Interrupt vectors in Ibex have 32 4-byte entries for 32 possible interrupts.
+   * The vector must be 256-byte aligned, as Ibex's vectoring mechanism requires
+   * that.
+   *
+   * Only the following will be used by Ibex:
+   * - Exception Handler (Entry 0)
+   * - Machine Software Interrupt Handler (Entry 3)
+   * - Machine Timer Interrupt Handler (Entry 7)
+   * - Machine External Interrupt Handler (Entry 11)
+   * - Vendor Interrupt Handlers (Entries 16-31)
+   *
+   * More information about Ibex's interrupts can be found here:
+   *   https://ibex-core.readthedocs.io/en/latest/03_reference/exception_interrupts.html
+   */
+  .balign 256
+  .global sram_interrupt_vector
+  .type sram_interrupt_vector, @function
+sram_interrupt_vector:
+  // RISC-V Standard (Vectored) Interrupt Handlers:
+
+  // Exception and User Software Interrupt Handler.
+  j handler_exception
+  // Supervisor Software Interrupt Handler.
+  unimp
+  // Reserved.
+  unimp
+  // Machine Software Interrupt Handler.
+  j handler_irq_software
+
+  // User Timer Interrupt Handler.
+  unimp
+  // Supervisor Timer Interrupt Handler.
+  unimp
+  // Reserved.
+  unimp
+  // Machine Timer Interrupt Handler.
+  j handler_irq_timer
+
+  // User External Interrupt Handler.
+  unimp
+  // Supervisor External Interrupt Handler.
+  unimp
+  // Reserved.
+  unimp
+  // Machine External Interrupt Handler.
+  j handler_irq_external
+
+  // Reserved.
+  unimp
+  unimp
+  unimp
+  unimp
+
+  // Vendor Interrupt Handlers:
+
+  // On Ibex, interrupt IDs 16-30 are for "fast" interrupts.
+  .rept 15
+  unimp
+  .endr
+
+  // On Ibex, interrupt ID 31 is for non-maskable interrupts
+  j handler_irq_internal
+
+  // Set size so vector can be disassembled.
+  .size sram_interrupt_vector, .-sram_interrupt_vector
+
+  .option pop
+
+/**
  * CRT library for SRAM programs.
  *
  * The purpose of this small library is to setup the stack pointer, global
@@ -40,6 +127,15 @@ sram_start:
 .L_crc_match:
   // Set up the stack.
   la  sp, _stack_end
+
+  /**
+   * Setup the interrupt/exception handlers.
+   *
+   * These are the same interrupt handlers used in the OTTF. The lowest two bits
+   * should be `0b01` to ensure we use vectored interrupts.
+   */
+  la   t0, (sram_interrupt_vector + 1)
+  csrw mtvec, t0
 
   // Zero out the `.bss` segment.
   la   a0, _bss_start
