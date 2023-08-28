@@ -5,9 +5,9 @@
 module mbx_sysif
   import tlul_pkg::*;
 #(
-  parameter int unsigned CfgSramDataWidth     = 32,
-  parameter int unsigned NextExtDoeOffset     = 12'h800,
-  parameter bit          DoeIrqSupport        = 1'b1
+  parameter int unsigned CfgSramDataWidth = 32,
+  // PCIe capabilities
+  parameter bit          DoeIrqSupport    = 1'b1
 ) (
   input  logic                        clk_i,
   input  logic                        rst_ni,
@@ -65,18 +65,8 @@ module mbx_sysif
     .devmode_i  ( 1'b1       )
   );
 
-  // Interrupt support
   assign doe_intr_support_o = DoeIrqSupport;
   assign doe_intr_o         = reg2hw.sys_status.doe_intr_status.q;
-
-  // Extended capability register
-  assign hw2reg.extended_cap_header.cap_id                = 16'h002E;
-  assign hw2reg.extended_cap_header.cap_version           = 4'h2;
-  assign hw2reg.extended_cap_header.next_capaility_offset = NextExtDoeOffset;
-
-  // Capability header register
-  assign hw2reg.cap_header.doe_intr_support = 1'b1;
-  assign hw2reg.cap_header.doe_intr_msg_nr  = '0;
 
   // Control register
   assign sysif_control_abort_set_o   = reg2hw.sys_control.abort.qe & reg2hw.sys_control.abort.q;
