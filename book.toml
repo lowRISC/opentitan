@@ -28,6 +28,7 @@ additional-css = [
     "./util/mdbook/wavejson/wavejson.css",
     "./site/book-theme/pagetoc.css",
     "./site/book-theme/recursive.css",
+    "./site/book-theme/tweaks.css",
 ]
 
 [output.html.print]
