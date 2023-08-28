@@ -11,9 +11,7 @@ module mbx
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   parameter int unsigned CfgSramAddrWidth      = 32,
   parameter int unsigned CfgSramDataWidth      = 32,
-  parameter int unsigned NextExtDoeOffset      = 12'h800,
-  // PCIe capabilities
-  parameter bit DoeIrqSupport                  = 1'b1
+  parameter bit          DoeIrqSupport         = 1'b1
 ) (
   input  logic                                      clk_i,
   input  logic                                      rst_ni,
@@ -124,7 +122,6 @@ module mbx
 
   mbx_sysif #(
     .CfgSramDataWidth ( CfgSramDataWidth ),
-    .NextExtDoeOffset ( NextExtDoeOffset ),
     .DoeIrqSupport    ( DoeIrqSupport    )
   ) u_sysif (
     .clk_i                               ( clk_i                              ),

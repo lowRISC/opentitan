@@ -173,12 +173,12 @@ module mbx_sys_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic extended_cap_header_re;
-  logic [15:0] extended_cap_header_cap_id_qs;
-  logic [3:0] extended_cap_header_cap_version_qs;
-  logic [11:0] extended_cap_header_next_capaility_offset_qs;
-  logic cap_header_doe_intr_support_qs;
-  logic [10:0] cap_header_doe_intr_msg_nr_qs;
+  logic doe_intr_msg_addr_we;
+  logic [31:0] doe_intr_msg_addr_qs;
+  logic [31:0] doe_intr_msg_addr_wd;
+  logic doe_intr_msg_data_we;
+  logic [31:0] doe_intr_msg_data_qs;
+  logic [31:0] doe_intr_msg_data_wd;
   logic sys_control_re;
   logic sys_control_we;
   logic sys_control_abort_wd;
@@ -196,107 +196,84 @@ module mbx_sys_reg_top (
   logic sys_status_ready_qs;
 
   // Register instances
-  // R[extended_cap_header]: V(True)
-  //   F[cap_id]: 15:0
-  prim_subreg_ext #(
-    .DW    (16)
-  ) u_extended_cap_header_cap_id (
-    .re     (extended_cap_header_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.extended_cap_header.cap_id.d),
-    .qre    (),
-    .qe     (),
-    .q      (reg2hw.extended_cap_header.cap_id.q),
-    .ds     (),
-    .qs     (extended_cap_header_cap_id_qs)
+  // R[doe_intr_msg_addr]: V(False)
+  logic doe_intr_msg_addr_qe;
+  logic [0:0] doe_intr_msg_addr_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_doe_intr_msg_addr0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&doe_intr_msg_addr_flds_we),
+    .q_o(doe_intr_msg_addr_qe)
   );
-
-  //   F[cap_version]: 19:16
-  prim_subreg_ext #(
-    .DW    (4)
-  ) u_extended_cap_header_cap_version (
-    .re     (extended_cap_header_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.extended_cap_header.cap_version.d),
-    .qre    (),
-    .qe     (),
-    .q      (reg2hw.extended_cap_header.cap_version.q),
-    .ds     (),
-    .qs     (extended_cap_header_cap_version_qs)
-  );
-
-  //   F[next_capaility_offset]: 31:20
-  prim_subreg_ext #(
-    .DW    (12)
-  ) u_extended_cap_header_next_capaility_offset (
-    .re     (extended_cap_header_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.extended_cap_header.next_capaility_offset.d),
-    .qre    (),
-    .qe     (),
-    .q      (reg2hw.extended_cap_header.next_capaility_offset.q),
-    .ds     (),
-    .qs     (extended_cap_header_next_capaility_offset_qs)
-  );
-
-
-  // R[cap_header]: V(False)
-  //   F[doe_intr_support]: 0:0
   prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0),
     .Mubi    (1'b0)
-  ) u_cap_header_doe_intr_support (
+  ) u_doe_intr_msg_addr (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (doe_intr_msg_addr_we),
+    .wd     (doe_intr_msg_addr_wd),
 
     // from internal hardware
-    .de     (hw2reg.cap_header.doe_intr_support.de),
-    .d      (hw2reg.cap_header.doe_intr_support.d),
+    .de     (1'b0),
+    .d      ('0),
 
     // to internal hardware
-    .qe     (),
-    .q      (reg2hw.cap_header.doe_intr_support.q),
+    .qe     (doe_intr_msg_addr_flds_we[0]),
+    .q      (reg2hw.doe_intr_msg_addr.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (cap_header_doe_intr_support_qs)
+    .qs     (doe_intr_msg_addr_qs)
   );
+  assign reg2hw.doe_intr_msg_addr.qe = doe_intr_msg_addr_qe;
 
-  //   F[doe_intr_msg_nr]: 11:1
+
+  // R[doe_intr_msg_data]: V(False)
+  logic doe_intr_msg_data_qe;
+  logic [0:0] doe_intr_msg_data_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_doe_intr_msg_data0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&doe_intr_msg_data_flds_we),
+    .q_o(doe_intr_msg_data_qe)
+  );
   prim_subreg #(
-    .DW      (11),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (11'h2),
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0),
     .Mubi    (1'b0)
-  ) u_cap_header_doe_intr_msg_nr (
+  ) u_doe_intr_msg_data (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (doe_intr_msg_data_we),
+    .wd     (doe_intr_msg_data_wd),
 
     // from internal hardware
-    .de     (hw2reg.cap_header.doe_intr_msg_nr.de),
-    .d      (hw2reg.cap_header.doe_intr_msg_nr.d),
+    .de     (1'b0),
+    .d      ('0),
 
     // to internal hardware
-    .qe     (),
-    .q      (reg2hw.cap_header.doe_intr_msg_nr.q),
+    .qe     (doe_intr_msg_data_flds_we[0]),
+    .q      (reg2hw.doe_intr_msg_data.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (cap_header_doe_intr_msg_nr_qs)
+    .qs     (doe_intr_msg_data_qs)
   );
+  assign reg2hw.doe_intr_msg_data.qe = doe_intr_msg_data_qe;
 
 
   // R[sys_control]: V(True)
@@ -521,8 +498,8 @@ module mbx_sys_reg_top (
   logic [3:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[0] = (reg_addr == MBX_EXTENDED_CAP_HEADER_OFFSET);
-    addr_hit[1] = (reg_addr == MBX_CAP_HEADER_OFFSET);
+    addr_hit[0] = (reg_addr == MBX_DOE_INTR_MSG_ADDR_OFFSET);
+    addr_hit[1] = (reg_addr == MBX_DOE_INTR_MSG_DATA_OFFSET);
     addr_hit[2] = (reg_addr == MBX_SYS_CONTROL_OFFSET);
     addr_hit[3] = (reg_addr == MBX_SYS_STATUS_OFFSET);
   end
@@ -539,7 +516,12 @@ module mbx_sys_reg_top (
   end
 
   // Generate write-enables
-  assign extended_cap_header_re = addr_hit[0] & reg_re & !reg_error;
+  assign doe_intr_msg_addr_we = addr_hit[0] & reg_we & !reg_error;
+
+  assign doe_intr_msg_addr_wd = reg_wdata[31:0];
+  assign doe_intr_msg_data_we = addr_hit[1] & reg_we & !reg_error;
+
+  assign doe_intr_msg_data_wd = reg_wdata[31:0];
   assign sys_control_re = addr_hit[2] & reg_re & !reg_error;
   assign sys_control_we = addr_hit[2] & reg_we & !reg_error;
 
@@ -557,8 +539,8 @@ module mbx_sys_reg_top (
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
-    reg_we_check[0] = 1'b0;
-    reg_we_check[1] = 1'b0;
+    reg_we_check[0] = doe_intr_msg_addr_we;
+    reg_we_check[1] = doe_intr_msg_data_we;
     reg_we_check[2] = sys_control_we;
     reg_we_check[3] = sys_status_we;
   end
@@ -568,14 +550,11 @@ module mbx_sys_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[15:0] = extended_cap_header_cap_id_qs;
-        reg_rdata_next[19:16] = extended_cap_header_cap_version_qs;
-        reg_rdata_next[31:20] = extended_cap_header_next_capaility_offset_qs;
+        reg_rdata_next[31:0] = doe_intr_msg_addr_qs;
       end
 
       addr_hit[1]: begin
-        reg_rdata_next[0] = cap_header_doe_intr_support_qs;
-        reg_rdata_next[11:1] = cap_header_doe_intr_msg_nr_qs;
+        reg_rdata_next[31:0] = doe_intr_msg_data_qs;
       end
 
       addr_hit[2]: begin
