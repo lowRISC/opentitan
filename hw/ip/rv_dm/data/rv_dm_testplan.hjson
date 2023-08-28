@@ -382,6 +382,19 @@
       stage: V1
       tests: ["rv_dm_cmderr_exception"]
     }
+     {
+      name: mem_tl_access_resuming
+      desc: '''
+             Verify whether the selected hart has been resumed or not.
+
+            -Write into memory mapped register called RESUMING(0x110) through tl-device interface.
+            -Verify that the anyresumeack and allresumeack bits of the dmstatus register are set.
+            -After that, set the resumereq bit of dmcontrol register.
+            -Verify that the anyresumeack and allresumeack bits of the dmstatus register are cleared.
+            '''
+      stage: V1
+      tests: ["rv_dm_mem_tl_access_resuming"]
+    }
     {
       name: mem_tl_access_halted
       desc: '''
