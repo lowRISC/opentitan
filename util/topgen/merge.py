@@ -806,6 +806,15 @@ def amend_resets(top, name_to_block):
             rsts = [rst for rst in module['reset_connections'].values()]
             exported_rsts[intf][module['name']] = rsts
 
+    # TODO(#19538): rstmgr DV is currently tailored to the rstmgr
+    # parameterization of Earlgrey. Other top-levels might not require certain
+    # resets in certain power domains but removing them will cause rstmgr DV to
+    # fail. As an intermediate solution, we make sure to add the required power
+    # domains to these nodes here.
+    for reset_node in top_resets.nodes:
+        if reset_node == "lc_io":
+            top_resets.add_reset_domain(reset_node, "0")
+
     # ensure xbar resets are also covered.
     # unless otherwise stated, xbars always fall into the default power domain.
     for xbar in top["xbar"]:

@@ -323,6 +323,7 @@
         domains:
         [
           Aon
+          "0"
         ]
         shadowed: false
         sw: false
