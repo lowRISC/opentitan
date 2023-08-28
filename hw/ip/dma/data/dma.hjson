@@ -87,7 +87,10 @@
       ]
     }
     { name: "SOURCE_ADDRESS_HI"
-      desc: "Upper 32 bits of the source address."
+      desc: '''Upper 32 bits of the source address.
+            Must be aligned to the transfer width.
+            Source and destination address must have the same alignment.
+            '''
       swaccess: "rw"
       hwaccess: "hrw"
       hwqe: "true"
@@ -98,6 +101,7 @@
           desc: '''
                 Upper 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
                 Must be aligned to the transfer width.
+                Source and destination address must have the same alignment.
                 '''
         }
       ]
@@ -108,6 +112,7 @@
             Data is written to this location in a copy operation.
             The address may be an IO virtual address.
             Must be aligned to the transfer width.
+            Source and destination address must have the same alignment.
             '''
       swaccess: "rw"
       hwaccess: "hrw"
@@ -118,6 +123,7 @@
           resval: 0x0
           desc: '''Lower 32 bits of the destination address.
                 Must be aligned to the transfer width.
+                Source and destination address must have the same alignment.
                 '''
         }
       ]
@@ -125,6 +131,7 @@
     { name: "DESTINATION_ADDRESS_HI"
       desc: '''Upper 32 bits of the destination address.
             Must be aligned to the transfer width.
+            Source and destination address must have the same alignment.
             '''
       swaccess: "rw"
       hwaccess: "hrw"
@@ -136,6 +143,7 @@
           desc: '''
                 Upper 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
                 Must be aligned to the transfer width.
+                Source and destination address must have the same alignment.
                 '''
         }
       ]
