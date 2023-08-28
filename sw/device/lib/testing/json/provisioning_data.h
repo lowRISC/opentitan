@@ -58,9 +58,9 @@ UJSON_SERDE_STRUCT(ManufPersonalize, \
  */
 // clang-format off
 #define STRUCT_MANUF_CP_PROVISIONING_DATA(field, string) \
-    field(device_id, uint32_t, 4) \
-    field(manuf_state, uint32_t, 4) \
-    field(wafer_auth_secret, uint32_t, 4) \
+    field(device_id, uint32_t, 8) \
+    field(manuf_state, uint32_t, 8) \
+    field(wafer_auth_secret, uint32_t, 8) \
     field(test_unlock_token, uint32_t, 4) \
     field(test_exit_token, uint32_t, 4)
 UJSON_SERDE_STRUCT(ManufCpProvisioningData, \

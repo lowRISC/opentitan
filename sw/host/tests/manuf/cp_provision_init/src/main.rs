@@ -72,7 +72,7 @@ fn unlock_raw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         opts.init.bootstrap.options.reset_delay,
         Some(JtagTap::LcTap),
     )
-    .context("failed to transition to TEST_UNLOCKED0")?;
+    .context("failed to transition to TEST_UNLOCKED0.")?;
 
     // Check that LC state is `TEST_UNLOCKED0`.
     let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
@@ -112,9 +112,9 @@ fn load_and_run_sram_program(opts: &Opts, transport: &TransportWrapper) -> Resul
     // Inject provisioning data into the device.
     // TODO(#19453): update provisioning_data sent to the device.
     let provisioning_data = ManufCpProvisioningData {
-        device_id: ArrayVec::from([0u32, 0u32, 0u32, 0u32]),
-        manuf_state: ArrayVec::from([0u32, 0u32, 0u32, 0u32]),
-        wafer_auth_secret: ArrayVec::from([0u32, 0u32, 0u32, 0u32]),
+        device_id: ArrayVec::from([0u32, 0u32, 0u32, 0u32, 0u32, 0u32, 0u32, 0u32]),
+        manuf_state: ArrayVec::from([0u32, 0u32, 0u32, 0u32, 0u32, 0u32, 0u32, 0u32]),
+        wafer_auth_secret: ArrayVec::from([0u32, 0u32, 0u32, 0u32, 0u32, 0u32, 0u32, 0u32]),
         test_unlock_token: ArrayVec::from([0u32, 0u32, 0u32, 0u32]),
         test_exit_token: ArrayVec::from([0u32, 0u32, 0u32, 0u32]),
     };
@@ -123,6 +123,7 @@ fn load_and_run_sram_program(opts: &Opts, transport: &TransportWrapper) -> Resul
     // Once the SRAM program has printed a message over the console, we can continue with an LC
     // transition to mission mode, initiated on the host side.
     let _ = UartConsole::wait_for(&*uart, r"CP provisioning end.", opts.timeout)?;
+
     // TODO(#19453): transition to mission mode.
 
     Ok(())
