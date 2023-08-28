@@ -737,7 +737,8 @@
       clock_srcs: {clk_i: "main", clk_otp_i: "io_div4"},
       clock_group: "infra",
       reset_connections: {rst_ni: "lc", rst_otp_ni: "lc_io_div4"},
-      // TODO: Instruction execution from SRAM won't be allowed.
+      // Note that while it might be useful to allow execution from SRAM for early testing, it can
+      // later be permanently disabled using the EN_SRAM_IFETCH switch in OTP.
       param_decl: {
         InstrExec: "1",
       }
