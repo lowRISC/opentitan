@@ -332,7 +332,7 @@
               `unavailable` input value
             '''
       stage: V2
-      tests: [] // TODO(#17036)
+      tests: ["rv_dm_hart_unavail"]
     }
     {
       name: tap_ctrl_transitions

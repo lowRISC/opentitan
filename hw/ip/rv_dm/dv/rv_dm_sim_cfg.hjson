@@ -204,6 +204,11 @@
       uvm_test_seq: rv_dm_mem_tl_access_resuming_vseq
       reseed: 2
     }
+    {
+      name: hart_unavail
+      uvm_test_seq: rv_dm_hart_unavail_vseq
+      reseed: 5
+    }
   ]
 
   // List of regressions.
