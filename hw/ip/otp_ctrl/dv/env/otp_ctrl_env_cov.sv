@@ -9,7 +9,6 @@
  * only in build_phase can be defined here
  * Covergroups may also be wrapped inside helper classes if needed.
  */
-
 class otp_ctrl_unbuf_err_code_cg_wrap;
   // Unbuffered partition can use TLUL interface to read out but cannot write, thus error_code does
   // not have write_blank_err.
@@ -60,39 +59,51 @@ class otp_ctrl_csr_rd_after_alert_cg_wrap;
   covergroup csr_rd_after_alert_cg(otp_ctrl_core_reg_block ral) with function sample(bit[TL_DW-1:0]
                                                                                      csr_offset);
     read_csr_after_alert_issued: coverpoint csr_offset {
-      bins unbuffered_digests  = {ral.vendor_test_digest[0].get_offset(),
-                                  ral.vendor_test_digest[1].get_offset(),
-                                  ral.creator_sw_cfg_digest[0].get_offset(),
-                                  ral.creator_sw_cfg_digest[1].get_offset(),
-                                  ral.owner_sw_cfg_digest[0].get_offset(),
-                                  ral.owner_sw_cfg_digest[1].get_offset()};
-      bins hw_digests          = {ral.hw_cfg0_digest[0].get_offset(),
-                                  ral.hw_cfg0_digest[1].get_offset(),
-                                  ral.hw_cfg1_digest[0].get_offset(),
-                                  ral.hw_cfg1_digest[1].get_offset()};
-      bins secret_digests      = {ral.secret0_digest[0].get_offset(),
-                                  ral.secret0_digest[1].get_offset(),
-                                  ral.secret1_digest[0].get_offset(),
-                                  ral.secret1_digest[1].get_offset(),
-                                  ral.secret2_digest[0].get_offset(),
-                                  ral.secret2_digest[1].get_offset(),
-                                  ral.secret3_digest[0].get_offset(),
-                                  ral.secret3_digest[1].get_offset()};
-      bins direct_access_rdata = {ral.direct_access_rdata[0].get_offset(),
-                                  ral.direct_access_rdata[1].get_offset()};
-      bins status              = {ral.status.get_offset()};
-      bins error_code          = {ral.err_code[0].get_offset(),
-                                  ral.err_code[1].get_offset(),
-                                  ral.err_code[2].get_offset(),
-                                  ral.err_code[3].get_offset(),
-                                  ral.err_code[4].get_offset(),
-                                  ral.err_code[5].get_offset(),
-                                  ral.err_code[6].get_offset(),
-                                  ral.err_code[7].get_offset(),
-                                  ral.err_code[8].get_offset(),
-                                  ral.err_code[9].get_offset(),
-                                  ral.err_code[10].get_offset(),
-                                  ral.err_code[11].get_offset()};
+      bins unbuffered_digests  = {
+        ral.vendor_test_digest[0].get_offset(),
+        ral.vendor_test_digest[1].get_offset(),
+        ral.creator_sw_cfg_digest[0].get_offset(),
+        ral.creator_sw_cfg_digest[1].get_offset(),
+        ral.owner_sw_cfg_digest[0].get_offset(),
+        ral.owner_sw_cfg_digest[1].get_offset()
+      };
+      bins hw_digests          = {
+        ral.hw_cfg0_digest[0].get_offset(),
+        ral.hw_cfg0_digest[1].get_offset(),
+        ral.hw_cfg1_digest[0].get_offset(),
+        ral.hw_cfg1_digest[1].get_offset()
+      };
+      bins secret_digests      = {
+        ral.secret0_digest[0].get_offset(),
+        ral.secret0_digest[1].get_offset(),
+        ral.secret1_digest[0].get_offset(),
+        ral.secret1_digest[1].get_offset(),
+        ral.secret2_digest[0].get_offset(),
+        ral.secret2_digest[1].get_offset(),
+        ral.secret3_digest[0].get_offset(),
+        ral.secret3_digest[1].get_offset()
+      };
+      bins direct_access_rdata = {
+        ral.direct_access_rdata[0].get_offset(),
+        ral.direct_access_rdata[1].get_offset()
+      };
+      bins status              = {
+        ral.status.get_offset()
+      };
+      bins error_code          = {
+        ral.err_code[0].get_offset(),
+        ral.err_code[1].get_offset(),
+        ral.err_code[2].get_offset(),
+        ral.err_code[3].get_offset(),
+        ral.err_code[4].get_offset(),
+        ral.err_code[5].get_offset(),
+        ral.err_code[6].get_offset(),
+        ral.err_code[7].get_offset(),
+        ral.err_code[8].get_offset(),
+        ral.err_code[9].get_offset(),
+        ral.err_code[10].get_offset(),
+        ral.err_code[11].get_offset()
+      };
     }
   endgroup
 
@@ -150,15 +161,15 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
   // - If each partition is locked (expect LC)
   covergroup power_on_cg with function sample (bit lc_esc_en, bit[NumPart-2:0] parts_locked);
     lc_esc:          coverpoint lc_esc_en;
-    vendor_sw_lock:  coverpoint parts_locked[0];
-    creator_sw_lock: coverpoint parts_locked[1];
-    owner_sw_lock:   coverpoint parts_locked[2];
-    hw_cfg0_lock:    coverpoint parts_locked[3];
-    hw_cfg1_lock:    coverpoint parts_locked[4];
-    secret0_lock:    coverpoint parts_locked[5];
-    secret1_lock:    coverpoint parts_locked[6];
-    secret2_lock:    coverpoint parts_locked[7];
-    secret3_lock:    coverpoint parts_locked[8];
+    vendor_test_lock: coverpoint parts_locked[0];
+    creator_sw_cfg_lock: coverpoint parts_locked[1];
+    owner_sw_cfg_lock: coverpoint parts_locked[2];
+    hw_cfg0_lock: coverpoint parts_locked[3];
+    hw_cfg1_lock: coverpoint parts_locked[4];
+    secret0_lock: coverpoint parts_locked[5];
+    secret1_lock: coverpoint parts_locked[6];
+    secret2_lock: coverpoint parts_locked[7];
+    secret3_lock: coverpoint parts_locked[8];
   endgroup
 
   // This covergroup is sampled only if flash request passed scb check.
@@ -185,6 +196,7 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
   // This covergroup is sampled only if keymgr output passed scb check.
   covergroup keymgr_o_cg with function sample (bit lc_seed_hw_rd_en, bit locked);
     keymgr_rd_en: coverpoint lc_seed_hw_rd_en;
+    // TODO: probably should add all partitions with keymgr material here.
     secret2_lock: coverpoint locked;
     keymgr_output_conditions: cross keymgr_rd_en, secret2_lock;
   endgroup
