@@ -4,6 +4,13 @@
 
 #include "sram_start.h"
 
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include "sw/device/lib/base/multibits_asm.h"
+
+#include "csrng_regs.h"  // Generated.
+#include "edn_regs.h"  // Generated.
+#include "entropy_src_regs.h"  // Generated.
+
 /**
  * SRAM Program Interrupt Vector.
  *
@@ -141,6 +148,30 @@ sram_start:
   la   a0, _bss_start
   la   a1, _bss_end
   call crt_section_clear
+
+  // The following sequence enables the minimum level of entropy required to
+  // initialize memory scrambling, as well as the entropy distribution network.
+  // This enables writing to the SECRET* OTP partitions, required for
+  // provisioning the test unlock/exit tokens.
+  li a0, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
+  li t0, (MULTIBIT_ASM_BOOL4_FALSE << ENTROPY_SRC_CONF_FIPS_ENABLE_OFFSET) | \
+         (MULTIBIT_ASM_BOOL4_FALSE << ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_OFFSET) | \
+         (MULTIBIT_ASM_BOOL4_FALSE << ENTROPY_SRC_CONF_THRESHOLD_SCOPE_OFFSET) | \
+         (MULTIBIT_ASM_BOOL4_FALSE << ENTROPY_SRC_CONF_RNG_BIT_ENABLE_OFFSET)
+  sw t0, ENTROPY_SRC_CONF_REG_OFFSET(a0)
+  li t0, (MULTIBIT_ASM_BOOL4_TRUE << ENTROPY_SRC_MODULE_ENABLE_MODULE_ENABLE_OFFSET)
+  sw t0, ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET(a0)
+  li a0, TOP_EARLGREY_CSRNG_BASE_ADDR
+  li t0, (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_ENABLE_OFFSET) | \
+         (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_SW_APP_ENABLE_OFFSET) | \
+         (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_READ_INT_STATE_OFFSET)
+  sw t0, CSRNG_CTRL_REG_OFFSET(a0)
+  li a0, TOP_EARLGREY_EDN0_BASE_ADDR
+  li t0, (MULTIBIT_ASM_BOOL4_TRUE << EDN_CTRL_EDN_ENABLE_OFFSET) | \
+         (MULTIBIT_ASM_BOOL4_TRUE << EDN_CTRL_BOOT_REQ_MODE_OFFSET) | \
+         (MULTIBIT_ASM_BOOL4_FALSE << EDN_CTRL_AUTO_REQ_MODE_OFFSET) | \
+         (MULTIBIT_ASM_BOOL4_FALSE << EDN_CTRL_CMD_FIFO_RST_OFFSET)
+  sw t0, EDN_CTRL_REG_OFFSET(a0)
 
   // Jump into the C program entry point.
   call sram_main
