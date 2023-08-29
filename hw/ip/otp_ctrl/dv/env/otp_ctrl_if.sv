@@ -206,10 +206,10 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   task automatic force_invalid_part_cmd_o(int part_idx);
     @(posedge clk_i);
     case (part_idx)
-      HwCfg0Idx:     force `BUF_PART_OTP_CMD_PATH(HwCfg0Idx)   = prim_otp_pkg::cmd_e'(2'b10);
-      Secret0Idx:   force `BUF_PART_OTP_CMD_PATH(Secret0Idx) = prim_otp_pkg::cmd_e'(2'b10);
-      Secret1Idx:   force `BUF_PART_OTP_CMD_PATH(Secret1Idx) = prim_otp_pkg::cmd_e'(2'b10);
-      Secret2Idx:   force `BUF_PART_OTP_CMD_PATH(Secret2Idx) = prim_otp_pkg::cmd_e'(2'b10);
+      HwCfg0Idx: force `BUF_PART_OTP_CMD_PATH(HwCfg0Idx) = prim_otp_pkg::cmd_e'(2'b10);
+      Secret0Idx: force `BUF_PART_OTP_CMD_PATH(Secret0Idx) = prim_otp_pkg::cmd_e'(2'b10);
+      Secret1Idx: force `BUF_PART_OTP_CMD_PATH(Secret1Idx) = prim_otp_pkg::cmd_e'(2'b10);
+      Secret2Idx: force `BUF_PART_OTP_CMD_PATH(Secret2Idx) = prim_otp_pkg::cmd_e'(2'b10);
       LifeCycleIdx: force `LC_PART_OTP_CMD_PATH              = prim_otp_pkg::cmd_e'(2'b10);
       default: begin
         `uvm_fatal("otp_ctrl_if",
@@ -221,10 +221,10 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   task automatic release_invalid_part_cmd_o(int part_idx);
     @(posedge clk_i);
     case (part_idx)
-      HwCfg0Idx:     release `BUF_PART_OTP_CMD_PATH(HwCfg0Idx);
-      Secret0Idx:   release `BUF_PART_OTP_CMD_PATH(Secret0Idx);
-      Secret1Idx:   release `BUF_PART_OTP_CMD_PATH(Secret1Idx);
-      Secret2Idx:   release `BUF_PART_OTP_CMD_PATH(Secret2Idx);
+      HwCfg0Idx: release `BUF_PART_OTP_CMD_PATH(HwCfg0Idx);
+      Secret0Idx: release `BUF_PART_OTP_CMD_PATH(Secret0Idx);
+      Secret1Idx: release `BUF_PART_OTP_CMD_PATH(Secret1Idx);
+      Secret2Idx: release `BUF_PART_OTP_CMD_PATH(Secret2Idx);
       LifeCycleIdx: release `LC_PART_OTP_CMD_PATH;
       default: begin
         `uvm_fatal("otp_ctrl_if",
