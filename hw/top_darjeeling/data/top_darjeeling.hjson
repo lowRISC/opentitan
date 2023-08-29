@@ -829,6 +829,13 @@
         SecDisableScrambling: "1'b0"
       }
     },
+    { name: "dma",
+      type: "dma",
+      clock_srcs: {clk_i: "main"}
+      clock_group: "infra",
+      reset_connections: {rst_ni: "lc"},
+      base_addr: "0x22010000",
+    },
     { name: "rv_core_ibex",
       type: "rv_core_ibex",
       param_decl: {PMPEnable: "1",
@@ -1010,6 +1017,9 @@
                                    'rom_ctrl1.keymgr_data'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
 
+      // DMA LSIO triggers
+      'dma.lsio_trigger'        : ['soc_proxy.dma_lsio_trigger'],
+
       // LC RMA req/ack interface: LC -> OTBN
       // Note: this RoT configuration has no embedded flash, hence
       // the RMA request is just routed to OTBN directly.
@@ -1176,6 +1186,9 @@
         'clkmgr_aon.div_step_down_req'    : 'div_step_down_req',
         'clkmgr_aon.calib_rdy'            : 'calib_rdy',
         'csrng.entropy_src_hw_if'         : 'entropy_src_hw_if',
+        'dma.sys'                         : 'dma_sys',
+        'dma.ctn_tl_h2d'                  : 'dma_ctn_tl_h2d',
+        'dma.ctn_tl_d2h'                  : 'dma_ctn_tl_d2h',
         'lc_ctrl.dmi_tl_h2d'              : 'lc_ctrl_dmi_h2d',
         'lc_ctrl.dmi_tl_d2h'              : 'lc_ctrl_dmi_d2h',
         'rv_dm.dmi_tl_h2d'                : 'rv_dm_dmi_h2d',

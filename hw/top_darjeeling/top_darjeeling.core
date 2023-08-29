@@ -23,6 +23,7 @@ filesets:
       - lowrisc:ip:entropy_src
       - lowrisc:ip:csrng
       - lowrisc:ip:edn
+      - lowrisc:ip:dma
       - lowrisc:ip:hmac
       - lowrisc:ip:kmac
       - lowrisc:ip:otbn

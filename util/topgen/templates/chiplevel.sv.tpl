@@ -1115,6 +1115,10 @@ module chip_${top["name"]}_${target["name"]} #(
 % if top["name"] == "darjeeling":
     .ctn_tl_h2d_o                 (                            ),
     .ctn_tl_d2h_i                 ( tlul_pkg::TL_D2H_DEFAULT   ),
+    .dma_sys_req_o                (                            ),
+    .dma_sys_rsp_i                ( '0                         ),
+    .dma_ctn_tl_h2d_o             (                            ),
+    .dma_ctn_tl_d2h_i             ( tlul_pkg::TL_D2H_DEFAULT   ),
 % endif
 % if top["name"] == "darjeeling":
     .entropy_src_hw_if_req_o      ( entropy_src_hw_if_req      ),
