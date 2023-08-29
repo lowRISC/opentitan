@@ -271,16 +271,28 @@ value = "{}'h {:x}".format(aw, r.offset)
     reg_width = reg.get_width()
     reg_msb = reg_width - 1
     reg_resval = "{}'h {:x}".format(reg_width, reg.resval)
+    resval_str = "parameter logic [{}:0] {} = {};".format(reg_msb, reg_resname(reg), reg_resval)
 %>\
-  parameter logic [${reg_msb}:0] ${reg_resname(reg)} = ${reg_resval};
+    % if len(resval_str) > 100-2:
+  parameter logic [${reg_msb}:0]
+      ${reg_resname(reg)} = ${reg_resval};
+    % else:
+  ${resval_str}
+    % endif
     % for field in reg.fields:
       % if field.resval is not None:
 <%
     field_width = field.bits.width()
     field_msb = field_width - 1
     field_resval = "{}'h {:x}".format(field_width, field.resval)
+    resval_str = "parameter logic [{}:0] {} = {};".format(field_msb, field_resname(reg, field), field_resval)
 %>\
-  parameter logic [${field_msb}:0] ${field_resname(reg, field)} = ${field_resval};
+        % if len(resval_str) > 100-2:
+  parameter logic [${field_msb}:0]
+      ${field_resname(reg, field)} = ${field_resval};
+        % else:
+  ${resval_str}
+        % endif
       % endif
     % endfor
   % endfor
