@@ -22,6 +22,11 @@ package lc_ctrl_state_pkg;
   parameter int LcStateWidth = NumLcStateValues * LcValueWidth;
   parameter int NumLcStates = 21;
   parameter int DecLcStateWidth = vbits(NumLcStates);
+  parameter int NumSocDbgStateValues = 2;
+  parameter int SocDbgStateWidth = NumSocDbgStateValues * LcValueWidth;
+  parameter int NumOwnershipStateValues = 8;
+  parameter int OwnershipStateWidth = NumOwnershipStateValues * LcValueWidth;
+
   // Redundant version used in the CSRs.
   parameter int DecLcStateNumRep = 32/DecLcStateWidth;
   parameter int ExtDecLcStateWidth = DecLcStateNumRep*DecLcStateWidth;
@@ -64,19 +69,19 @@ package lc_ctrl_state_pkg;
   //  3: --
   //  4: --
   //  5: --
-  //  6: ||| (5.41%)
+  //  6: ||| (5.19%)
   //  7: --
-  //  8: ||||||||||| (17.69%)
+  //  8: ||||||||||| (17.06%)
   //  9: --
-  // 10: |||||||||||||||||||| (30.62%)
+  // 10: |||||||||||||||||||| (30.24%)
   // 11: --
-  // 12: |||||||||||||||||| (28.47%)
+  // 12: ||||||||||||||||||| (29.02%)
   // 13: --
-  // 14: ||||||||| (13.87%)
+  // 14: ||||||||| (14.28%)
   // 15: --
-  // 16: || (3.50%)
+  // 16: || (3.79%)
   // 17: --
-  // 18:  (0.44%)
+  // 18:  (0.42%)
   // 19: --
   // 20: --
   // 21: --
@@ -224,6 +229,40 @@ package lc_ctrl_state_pkg;
   parameter logic [15:0] D23 = 16'b1101111011100111; // ECC: 6'b101110
 
 
+  // The F/E values are used for the encoded SOC_DBG state.
+  parameter logic [15:0] E0 = 16'b0000101001000100; // ECC: 6'b010010
+  parameter logic [15:0] F0 = 16'b1001111001101100; // ECC: 6'b110111
+
+  parameter logic [15:0] E1 = 16'b0000110111111000; // ECC: 6'b110000
+  parameter logic [15:0] F1 = 16'b1100111111111001; // ECC: 6'b111100
+
+
+  // The G/H values are used for the encoded OWNERSHIP state.
+  parameter logic [15:0] G0 = 16'b0110000100111100; // ECC: 6'b001000
+  parameter logic [15:0] H0 = 16'b0111010110111100; // ECC: 6'b111001
+
+  parameter logic [15:0] G1 = 16'b1000110100111001; // ECC: 6'b100001
+  parameter logic [15:0] H1 = 16'b1011110101111101; // ECC: 6'b101101
+
+  parameter logic [15:0] G2 = 16'b0110100001100010; // ECC: 6'b010010
+  parameter logic [15:0] H2 = 16'b1111100111101010; // ECC: 6'b010011
+
+  parameter logic [15:0] G3 = 16'b1001001110000101; // ECC: 6'b001101
+  parameter logic [15:0] H3 = 16'b1101001110110111; // ECC: 6'b011111
+
+  parameter logic [15:0] G4 = 16'b1010011000011101; // ECC: 6'b001100
+  parameter logic [15:0] H4 = 16'b1110011101011101; // ECC: 6'b111110
+
+  parameter logic [15:0] G5 = 16'b1110110101100000; // ECC: 6'b000000
+  parameter logic [15:0] H5 = 16'b1110111111101001; // ECC: 6'b000110
+
+  parameter logic [15:0] G6 = 16'b1011000100101010; // ECC: 6'b110001
+  parameter logic [15:0] H6 = 16'b1111101110101011; // ECC: 6'b110101
+
+  parameter logic [15:0] G7 = 16'b0000111110001010; // ECC: 6'b010011
+  parameter logic [15:0] H7 = 16'b1100111110111110; // ECC: 6'b010111
+
+
   parameter logic [15:0] ZRO = 16'h0;
 
   ////////////////////////
@@ -288,6 +327,26 @@ package lc_ctrl_state_pkg;
     LcCnt23 = {C23, D22, D21, D20, D19, D18, D17, D16, D15, D14, D13, D12, D11, D10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0},
     LcCnt24 = {D23, D22, D21, D20, D19, D18, D17, D16, D15, D14, D13, D12, D11, D10,  D9,  D8,  D7,  D6,  D5,  D4,  D3,  D2,  D1,  D0}
   } lc_cnt_e;
+
+  typedef logic [SocDbgStateWidth-1:0] soc_dbg_state_t;
+  typedef enum soc_dbg_state_t {
+    SocDbgStRaw     = {ZRO, ZRO},
+    SocDbgStPreProd = { E1,  E0},
+    SocDbgStProd    = { F1,  F0}
+  } soc_dbg_state_e;
+
+  typedef logic [OwnershipStateWidth-1:0] ownership_state_t;
+  typedef enum ownership_state_t {
+    OwnershipStRaw       = {ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO},
+    OwnershipStLocked0   = { G7,  G6,  G5,  G4,  G3,  G2,  G1,  G0},
+    OwnershipStReleased0 = { G7,  G6,  G5,  G4,  G3,  G2,  G1,  H0},
+    OwnershipStLocked1   = { G7,  G6,  G5,  G4,  G3,  G2,  H1,  H0},
+    OwnershipStReleased1 = { G7,  G6,  G5,  G4,  G3,  H2,  H1,  H0},
+    OwnershipStLocked2   = { G7,  G6,  G5,  G4,  H3,  H2,  H1,  H0},
+    OwnershipStReleased2 = { G7,  G6,  G5,  H4,  H3,  H2,  H1,  H0},
+    OwnershipStLocked3   = { G7,  G6,  H5,  H4,  H3,  H2,  H1,  H0},
+    OwnershipStScrapped  = { H7,  H6,  H5,  H4,  H3,  H2,  H1,  H0}
+  } ownership_state_e;
 
   // Decoded life cycle state, used to interface with CSRs and TAP.
   typedef enum logic [DecLcStateWidth-1:0] {

@@ -21,7 +21,9 @@ LC_SEED_DIVERSIFIER = 1939944205722120255
 # The format is index dependent, e.g. ['0', 'A1', 'B1'] for index 1
 LC_STATE_TYPES = {
     'lc_state': ['0', 'A{}', 'B{}'],
-    'lc_cnt': ['0', 'C{}', 'D{}']
+    'lc_cnt': ['0', 'C{}', 'D{}'],
+    'soc_dbg_state': ['0', 'E{}', 'F{}'],
+    'ownership_state': ['0', 'G{}', 'H{}']
 }
 
 
