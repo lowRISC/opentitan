@@ -260,7 +260,7 @@ impl Rescue {
             eprint!("Resetting...");
             container.reset_pin.write(false)?; // Low active
             uart.write(&[3])?; // Send a character to ensure that HyperDebug UART->USB
-                               // forwarding has "woken up", see b/298075416.
+                               // forwarding has "woken up", see issue #19564.
             self.flush_rx(uart, container.reset_delay);
             container.reset_pin.write(true)?; // Release reset
 
