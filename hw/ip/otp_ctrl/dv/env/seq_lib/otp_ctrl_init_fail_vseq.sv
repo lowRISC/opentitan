@@ -57,7 +57,7 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
       `uvm_info(`gfn, $sformatf("starting dai access seq %0d/%0d with addr %0h in partition %0d",
                 i, num_dai_op, dai_addr, part_idx), UVM_MEDIUM)
 
-      if (i > num_to_lock_digests && part_idx inside {[HwCfg0Idx: Secret2Idx]} &&
+      if (i > num_to_lock_digests && PartInfo[part_idx].hw_digest &&
           !used_dai_addrs.exists(dai_addr)) begin
         init_chk_err[part_idx] = 1;
       end
@@ -104,7 +104,7 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
       for (int i = 0; i < NumPart; i++) begin
         `DV_CHECK_RANDOMIZE_FATAL(this);
 
-        if (i inside {VendorTestIdx, CreatorSwCfgIdx, OwnerSwCfgIdx}) begin
+        if (PartInfo[i].sw_digest) begin
           // During OTP init, SW partitions only read digest value
           addr = PART_OTP_DIGEST_ADDRS[i] << 2;
         end else begin
