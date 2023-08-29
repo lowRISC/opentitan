@@ -38,7 +38,7 @@ def gen_md_reg_block(
     output: TextIO, rb: RegBlock, comp: str, width: int, iface_name: Optional[str] = None
 ) -> None:
     if len(rb.entries) == 0:
-        output.write('This interface does not expose any registers.')
+        output.write('This interface does not expose any registers.\n')
         return
 
     # Generate overview table.
