@@ -27,20 +27,26 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
   constraint no_access_err_c {access_locked_parts == 0;}
 
-  // LC partition does not allow DAI access
-  constraint partition_index_c {part_idx inside {[VendorTestIdx:Secret3Idx]};}
+  // LC partition does not allow DAI access (the LC partition is always the last one)
+  constraint partition_index_c {part_idx inside {[0:LifeCycleIdx-1]};}
 
   constraint dai_wr_legal_addr_c {
-    if (part_idx == VendorTestIdx)   dai_addr inside `PART_CONTENT_RANGE(VendorTestIdx);
-    if (part_idx == CreatorSwCfgIdx) dai_addr inside `PART_CONTENT_RANGE(CreatorSwCfgIdx);
-    if (part_idx == OwnerSwCfgIdx)   dai_addr inside `PART_CONTENT_RANGE(OwnerSwCfgIdx);
-    if (part_idx == HwCfg0Idx)       dai_addr inside `PART_CONTENT_RANGE(HwCfg0Idx);
-    if (part_idx == HwCfg1Idx)       dai_addr inside `PART_CONTENT_RANGE(HwCfg1Idx);
-    if (part_idx == Secret0Idx)      dai_addr inside `PART_CONTENT_RANGE(Secret0Idx);
-    if (part_idx == Secret1Idx)      dai_addr inside `PART_CONTENT_RANGE(Secret1Idx);
-    if (part_idx == Secret2Idx)      dai_addr inside `PART_CONTENT_RANGE(Secret2Idx);
-    if (part_idx == Secret3Idx)      dai_addr inside `PART_CONTENT_RANGE(Secret3Idx);
-    if (part_idx == LifeCycleIdx)    dai_addr inside `PART_CONTENT_RANGE(LifeCycleIdx);
+    if (part_idx == VendorTestIdx)
+        dai_addr inside `PART_CONTENT_RANGE(VendorTestIdx);
+    if (part_idx == CreatorSwCfgIdx)
+        dai_addr inside `PART_CONTENT_RANGE(CreatorSwCfgIdx);
+    if (part_idx == OwnerSwCfgIdx)
+        dai_addr inside `PART_CONTENT_RANGE(OwnerSwCfgIdx);
+    if (part_idx == HwCfg0Idx)
+        dai_addr inside `PART_CONTENT_RANGE(HwCfg0Idx);
+    if (part_idx == Secret0Idx)
+        dai_addr inside `PART_CONTENT_RANGE(Secret0Idx);
+    if (part_idx == Secret1Idx)
+        dai_addr inside `PART_CONTENT_RANGE(Secret1Idx);
+    if (part_idx == Secret2Idx)
+        dai_addr inside `PART_CONTENT_RANGE(Secret2Idx);
+    if (part_idx == LifeCycleIdx)
+        dai_addr inside `PART_CONTENT_RANGE(LifeCycleIdx);
     solve part_idx before dai_addr;
   }
 
