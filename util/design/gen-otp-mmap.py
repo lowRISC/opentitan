@@ -46,6 +46,9 @@ ENV_TEMPLATES = ["hw/ip/otp_ctrl/data/otp_ctrl_env_cov.sv.tpl",
                  "hw/ip/otp_ctrl/data/otp_ctrl_env_pkg.sv.tpl",
                  "hw/ip/otp_ctrl/data/otp_ctrl_if.sv.tpl",
                  "hw/ip/otp_ctrl/data/otp_ctrl_scoreboard.sv.tpl"]
+SEQ_TEMPLATES = ["hw/ip/otp_ctrl/data/otp_ctrl_base_vseq.sv.tpl",
+                 "hw/ip/otp_ctrl/data/otp_ctrl_dai_lock_vseq.sv.tpl",
+                 "hw/ip/otp_ctrl/data/otp_ctrl_smoke_vseq.sv.tpl"]
 
 
 def render_template(template, target_path, otp_mmap, gen_comment):
@@ -126,6 +129,11 @@ def main():
         for template in ENV_TEMPLATES:
             stem_path = Path(template).stem
             target_path = Path(template).parents[1] / "dv" / "env" / stem_path
+            render_template(template, target_path, otp_mmap, TPL_GEN_COMMENT)
+        for template in SEQ_TEMPLATES:
+            stem_path = Path(template).stem
+            target_path = (Path(template).parents[1] / "dv" / "env" /
+                           "seq_lib" / stem_path)
             render_template(template, target_path, otp_mmap, TPL_GEN_COMMENT)
 
 
