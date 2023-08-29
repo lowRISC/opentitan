@@ -22,7 +22,8 @@ LC_SEED_DIVERSIFIER = 1939944205722120255
 LC_STATE_TYPES = {
     'lc_state': ['0', 'A{}', 'B{}'],
     'lc_cnt': ['0', 'C{}', 'D{}'],
-    'soc_dbg_state': ['0', 'E{}', 'F{}']
+    'soc_dbg_state': ['0', 'E{}', 'F{}'],
+    'ownership_state': ['0', 'G{}', 'H{}']
 }
 
 ENTROPY_BUFFER_SIZE_BYTES = 1000

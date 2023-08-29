@@ -80,6 +80,8 @@ package lc_ctrl_state_pkg;
   parameter int DecLcStateWidth = vbits(NumLcStates);
   parameter int NumSocDbgStateValues = ${lc_st_enc.config['num_soc_dbg_state_words']};
   parameter int SocDbgStateWidth = NumSocDbgStateValues * LcValueWidth;
+  parameter int NumOwnershipStateValues = ${lc_st_enc.config['num_ownership_state_words']};
+  parameter int OwnershipStateWidth = NumOwnershipStateValues * LcValueWidth;
 
   // Redundant version used in the CSRs.
   parameter int DecLcStateNumRep = 32/DecLcStateWidth;
@@ -148,6 +150,13 @@ package lc_ctrl_state_pkg;
 
 % endfor
 
+  // The G/H values are used for the encoded OWNERSHIP state.
+% for word in lc_st_enc.config['genwords']['ownership_state']:
+  parameter logic [${data_width-1}:0] G${loop.index} = ${data_width}'b${word[0][ecc_width:]}; // ECC: ${ecc_width}'b${word[0][0:ecc_width]}
+  parameter logic [${data_width-1}:0] H${loop.index} = ${data_width}'b${word[1][ecc_width:]}; // ECC: ${ecc_width}'b${word[1][0:ecc_width]}
+
+% endfor
+
   parameter logic [${data_width-1}:0] ZRO = ${data_width}'h0;
 
   ////////////////////////
@@ -173,6 +182,11 @@ ${_print_state_enum('LcCnt', 'lc_cnt', lc_st_enc.config)}
   typedef enum soc_dbg_state_t {
 ${_print_state_enum('SocDbgSt', 'soc_dbg_state', lc_st_enc.config)}
   } soc_dbg_state_e;
+
+  typedef logic [OwnershipStateWidth-1:0] ownership_state_t;
+  typedef enum ownership_state_t {
+${_print_state_enum('OwnershipSt', 'ownership_state', lc_st_enc.config)}
+  } ownership_state_e;
 
   // Decoded life cycle state, used to interface with CSRs and TAP.
   typedef enum logic [DecLcStateWidth-1:0] {
