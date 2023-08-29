@@ -62,7 +62,7 @@ fn unlock_raw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let token_words = token.into_register_values();
 
     // ROM execution is not enabled in the OTP so we can safely reconnect to the LC TAP after
-    // the transition without risking the chip to be reset.
+    // the transition without risking the chip resetting.
     trigger_lc_transition(
         transport,
         jtag.clone(),
@@ -78,11 +78,12 @@ fn unlock_raw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
     assert_eq!(state, DifLcCtrlState::TestUnlocked0.redundant_encoding());
     jtag.disconnect()?;
+    transport.pin_strapping("PINMUX_TAP_LC")?.remove()?;
 
     Ok(())
 }
 
-fn load_and_run_sram_program(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+fn run_sram_cp_provision(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Set CPU TAP straps, reset, and connect to the JTAG interface.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
@@ -123,8 +124,45 @@ fn load_and_run_sram_program(opts: &Opts, transport: &TransportWrapper) -> Resul
     // Once the SRAM program has printed a message over the console, we can continue with an LC
     // transition to mission mode, initiated on the host side.
     let _ = UartConsole::wait_for(&*uart, r"CP provisioning end.", opts.timeout)?;
+    jtag.disconnect()?;
+    transport.pin_strapping("PINMUX_TAP_RISCV")?.remove()?;
 
-    // TODO(#19453): transition to mission mode.
+    Ok(())
+}
+
+fn reset_and_lock(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+    // Set the TAP straps for the lifecycle controller and reset.
+    transport
+        .pin_strapping("PINMUX_TAP_LC")?
+        .apply()
+        .context("failed to apply LC TAP strapping")?;
+    transport
+        .reset_target(opts.init.bootstrap.options.reset_delay, true)
+        .context("failed to reset")?;
+
+    // Connect to the LC TAP via JTAG.
+    let jtag = opts.init.jtag_params.create(transport)?;
+    jtag.connect(JtagTap::LcTap)
+        .context("failed to connect to LC TAP over JTAG")?;
+
+    // CPU execution is not enabled in TEST_LOCKED0 so we can safely reconnect to the LC TAP
+    // after the transition without risking the chip resetting.
+    trigger_lc_transition(
+        transport,
+        jtag.clone(),
+        DifLcCtrlState::TestLocked0,
+        None,
+        true,
+        opts.init.bootstrap.options.reset_delay,
+        Some(JtagTap::LcTap),
+    )
+    .context("failed to transition to TEST_LOCKED0.")?;
+
+    // Check that LC state is `TEST_LOCKED0`.
+    let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
+    assert_eq!(state, DifLcCtrlState::TestLocked0.redundant_encoding());
+    jtag.disconnect()?;
+    transport.pin_strapping("PINMUX_TAP_LC")?.remove()?;
 
     Ok(())
 }
@@ -135,7 +173,8 @@ fn main() -> Result<()> {
     let transport = opts.init.init_target()?;
 
     unlock_raw(&opts, &transport)?;
-    load_and_run_sram_program(&opts, &transport)?;
+    run_sram_cp_provision(&opts, &transport)?;
+    reset_and_lock(&opts, &transport)?;
 
     Ok(())
 }
