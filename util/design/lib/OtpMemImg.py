@@ -35,8 +35,6 @@ _OTP_SW_WRITE_BYTE_ALIGNMENT = {
     'SECRET2': 8,
 }
 
-ENTROPY_BUFFER_SIZE_BYTES = 10000
-
 
 def _present_64bit_encrypt(plain, key):
     '''Scramble a 64bit block with PRESENT cipher'''
