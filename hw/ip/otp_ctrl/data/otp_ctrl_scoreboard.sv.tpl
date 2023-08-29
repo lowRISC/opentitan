@@ -958,14 +958,26 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 % endfor
         if (ignore_digest_chk) do_read_check = 0;
       end
-      "direct_access_rdata_0", "direct_access_rdata_1": do_read_check = check_dai_rd_data;
-      "direct_access_regwen", "direct_access_wdata_0", "direct_access_wdata_1",
-      "direct_access_address", "check_regwen", "check_trigger_regwen", "check_trigger",
-      "check_timeout", "intr_enable", "creator_sw_cfg_read_lock", "owner_sw_cfg_read_lock",
-      "integrity_check_period", "consistency_check_period", "alert_test",
-      "vendor_test_read_lock": begin
+% for part in read_locked_csr_parts:
+<% part_name_snake = Name.from_snake_case(part["name"]).as_snake_case() %>\
+      "${part_name_snake}_read_lock",
+% endfor
+      "direct_access_regwen",
+      "direct_access_wdata_0",
+      "direct_access_wdata_1",
+      "direct_access_address",
+      "check_regwen",
+      "check_trigger_regwen",
+      "check_trigger",
+      "check_timeout",
+      "intr_enable",
+      "integrity_check_period",
+      "consistency_check_period",
+      "alert_test": begin
         // Do nothing
       end
+      // DAI read data
+      "direct_access_rdata_0", "direct_access_rdata_1": do_read_check = check_dai_rd_data;
       default: begin
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
       end
