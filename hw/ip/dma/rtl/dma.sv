@@ -31,8 +31,8 @@ module dma
   input   tlul_pkg::tl_h2d_t                        tl_d_i,
   output  tlul_pkg::tl_d2h_t                        tl_d_o,
   // Facing CTN
-  input   tlul_pkg::tl_d2h_t                        tl_ctn_i,
-  output  tlul_pkg::tl_h2d_t                        tl_ctn_o,
+  input   tlul_pkg::tl_d2h_t                        ctn_tl_d2h_i,
+  output  tlul_pkg::tl_h2d_t                        ctn_tl_h2d_o,
   // Host port
   input   tlul_pkg::tl_d2h_t                        host_tl_h_i,
   output  tlul_pkg::tl_h2d_t                        host_tl_h_o,
@@ -252,8 +252,8 @@ module dma
     .rdata_intg_o   (                                  ),
     .err_o          ( dma_ctn_tlul_rsp_err             ),
     .intg_err_o     ( dma_ctn_tlul_rsp_intg_err        ),
-    .tl_o           ( tl_ctn_o                         ),
-    .tl_i           ( tl_ctn_i                         )
+    .tl_o           ( ctn_tl_h2d_o                     ),
+    .tl_i           ( ctn_tl_d2h_i                     )
   );
 
   // Masking incoming handshake triggers with their enable
