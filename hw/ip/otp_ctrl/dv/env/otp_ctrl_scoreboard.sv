@@ -1106,39 +1106,53 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   // predict digest registers
   virtual function void predict_digest_csrs();
     void'(ral.vendor_test_digest[0].predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[VendorTestIdx]]), .kind(UVM_PREDICT_DIRECT)));
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[VendorTestIdx]]),
+          .kind(UVM_PREDICT_DIRECT)));
     void'(ral.vendor_test_digest[1].predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[VendorTestIdx] + 1]), .kind(UVM_PREDICT_DIRECT)));
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[VendorTestIdx] + 1]),
+          .kind(UVM_PREDICT_DIRECT)));
 
     void'(ral.creator_sw_cfg_digest[0].predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[CreatorSwCfgIdx]]), .kind(UVM_PREDICT_DIRECT)));
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[CreatorSwCfgIdx]]),
+          .kind(UVM_PREDICT_DIRECT)));
     void'(ral.creator_sw_cfg_digest[1].predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[CreatorSwCfgIdx] + 1]), .kind(UVM_PREDICT_DIRECT)));
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[CreatorSwCfgIdx] + 1]),
+          .kind(UVM_PREDICT_DIRECT)));
 
     void'(ral.owner_sw_cfg_digest[0].predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[OwnerSwCfgIdx]]), .kind(UVM_PREDICT_DIRECT)));
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[OwnerSwCfgIdx]]),
+          .kind(UVM_PREDICT_DIRECT)));
     void'(ral.owner_sw_cfg_digest[1].predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[OwnerSwCfgIdx] + 1]), .kind(UVM_PREDICT_DIRECT)));
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[OwnerSwCfgIdx] + 1]),
+          .kind(UVM_PREDICT_DIRECT)));
 
     void'(ral.hw_cfg0_digest[0].predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfg0Idx]]), .kind(UVM_PREDICT_DIRECT)));
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfg0Idx]]),
+          .kind(UVM_PREDICT_DIRECT)));
     void'(ral.hw_cfg0_digest[1].predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfg0Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfg0Idx] + 1]),
+          .kind(UVM_PREDICT_DIRECT)));
 
     void'(ral.secret0_digest[0].predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx]]), .kind(UVM_PREDICT_DIRECT)));
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx]]),
+          .kind(UVM_PREDICT_DIRECT)));
     void'(ral.secret0_digest[1].predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx] + 1]),
+          .kind(UVM_PREDICT_DIRECT)));
 
     void'(ral.secret1_digest[0].predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret1Idx]]), .kind(UVM_PREDICT_DIRECT)));
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret1Idx]]),
+          .kind(UVM_PREDICT_DIRECT)));
     void'(ral.secret1_digest[1].predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret1Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret1Idx] + 1]),
+          .kind(UVM_PREDICT_DIRECT)));
 
     void'(ral.secret2_digest[0].predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret2Idx]]), .kind(UVM_PREDICT_DIRECT)));
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret2Idx]]),
+          .kind(UVM_PREDICT_DIRECT)));
     void'(ral.secret2_digest[1].predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret2Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret2Idx] + 1]),
+          .kind(UVM_PREDICT_DIRECT)));
   endfunction
 
   function void update_digest_to_otp(int part_idx, bit [TL_DW*2-1:0] digest);
@@ -1317,25 +1331,32 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     bit [TL_DW*2-1:0] digest;
     case (part_idx)
       VendorTestIdx: begin
-        digest = {`gmv(ral.vendor_test_digest[1]), `gmv(ral.vendor_test_digest[0])};
+        digest = {`gmv(ral.vendor_test_digest[1]),
+                  `gmv(ral.vendor_test_digest[0])};
       end
       CreatorSwCfgIdx: begin
-        digest = {`gmv(ral.creator_sw_cfg_digest[1]), `gmv(ral.creator_sw_cfg_digest[0])};
+        digest = {`gmv(ral.creator_sw_cfg_digest[1]),
+                  `gmv(ral.creator_sw_cfg_digest[0])};
       end
       OwnerSwCfgIdx: begin
-        digest = {`gmv(ral.owner_sw_cfg_digest[1]), `gmv(ral.owner_sw_cfg_digest[0])};
+        digest = {`gmv(ral.owner_sw_cfg_digest[1]),
+                  `gmv(ral.owner_sw_cfg_digest[0])};
       end
       HwCfg0Idx: begin
-        digest = {`gmv(ral.hw_cfg0_digest[1]), `gmv(ral.hw_cfg0_digest[0])};
+        digest = {`gmv(ral.hw_cfg0_digest[1]),
+                  `gmv(ral.hw_cfg0_digest[0])};
       end
       Secret0Idx: begin
-        digest = {`gmv(ral.secret0_digest[1]), `gmv(ral.secret0_digest[0])};
+        digest = {`gmv(ral.secret0_digest[1]),
+                  `gmv(ral.secret0_digest[0])};
       end
       Secret1Idx: begin
-        digest = {`gmv(ral.secret1_digest[1]), `gmv(ral.secret1_digest[0])};
+        digest = {`gmv(ral.secret1_digest[1]),
+                  `gmv(ral.secret1_digest[0])};
       end
       Secret2Idx: begin
-        digest = {`gmv(ral.secret2_digest[1]), `gmv(ral.secret2_digest[0])};
+        digest = {`gmv(ral.secret2_digest[1]),
+                  `gmv(ral.secret2_digest[0])};
       end
       default: `uvm_fatal(`gfn, $sformatf("Partition %0d does not have digest", part_idx))
     endcase
@@ -1360,15 +1381,18 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 
     // Ensure the address is within the memory window range.
     // Also will skip checking if memory access is not allowed due to TLUL bus error.
-    if (addr inside {[cfg.ral_models[ral_name].mem_ranges[0].start_addr :
-                      cfg.ral_models[ral_name].mem_ranges[0].end_addr]} &&
+    if (addr inside {
+        [cfg.ral_models[ral_name].mem_ranges[0].start_addr :
+         cfg.ral_models[ral_name].mem_ranges[0].end_addr]} &&
         mem_access_allowed) begin
 
       // If sw partition is read locked, then access policy changes from RO to no access
-      if (`gmv(ral.vendor_test_read_lock) == 0 || cfg.otp_ctrl_vif.under_error_states()) begin
-        if (addr inside {[cfg.ral_models[ral_name].mem_ranges[0].start_addr + VendorTestOffset :
-                          cfg.ral_models[ral_name].mem_ranges[0].start_addr + VendorTestOffset +
-                          VendorTestSize - 1]}) begin
+      if (`gmv(ral.vendor_test_read_lock) == 0 ||
+          cfg.otp_ctrl_vif.under_error_states()) begin
+        if (addr inside {
+            [cfg.ral_models[ral_name].mem_ranges[0].start_addr + VendorTestOffset :
+             cfg.ral_models[ral_name].mem_ranges[0].start_addr + VendorTestOffset +
+             VendorTestSize - 1]}) begin
           predict_err(OtpVendorTestErrIdx, OtpAccessError);
           custom_err = 1;
           if (cfg.en_cov) begin
@@ -1378,10 +1402,12 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           return 0;
         end
       end
-      if (`gmv(ral.creator_sw_cfg_read_lock) == 0 || cfg.otp_ctrl_vif.under_error_states()) begin
-        if (addr inside {[cfg.ral_models[ral_name].mem_ranges[0].start_addr + CreatorSwCfgOffset :
-                          cfg.ral_models[ral_name].mem_ranges[0].start_addr + CreatorSwCfgOffset +
-                          CreatorSwCfgSize - 1]}) begin
+      if (`gmv(ral.creator_sw_cfg_read_lock) == 0 ||
+          cfg.otp_ctrl_vif.under_error_states()) begin
+        if (addr inside {
+            [cfg.ral_models[ral_name].mem_ranges[0].start_addr + CreatorSwCfgOffset :
+             cfg.ral_models[ral_name].mem_ranges[0].start_addr + CreatorSwCfgOffset +
+             CreatorSwCfgSize - 1]}) begin
           predict_err(OtpCreatorSwCfgErrIdx, OtpAccessError);
           custom_err = 1;
           if (cfg.en_cov) begin
@@ -1391,10 +1417,12 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           return 0;
         end
       end
-      if (`gmv(ral.owner_sw_cfg_read_lock) == 0 || cfg.otp_ctrl_vif.under_error_states()) begin
-        if (addr inside {[cfg.ral_models[ral_name].mem_ranges[0].start_addr + OwnerSwCfgOffset :
-                          cfg.ral_models[ral_name].mem_ranges[0].start_addr + OwnerSwCfgOffset +
-                          OwnerSwCfgSize - 1]}) begin
+      if (`gmv(ral.owner_sw_cfg_read_lock) == 0 ||
+          cfg.otp_ctrl_vif.under_error_states()) begin
+        if (addr inside {
+            [cfg.ral_models[ral_name].mem_ranges[0].start_addr + OwnerSwCfgOffset :
+             cfg.ral_models[ral_name].mem_ranges[0].start_addr + OwnerSwCfgOffset +
+             OwnerSwCfgSize - 1]}) begin
           predict_err(OtpOwnerSwCfgErrIdx, OtpAccessError);
           custom_err = 1;
           if (cfg.en_cov) begin

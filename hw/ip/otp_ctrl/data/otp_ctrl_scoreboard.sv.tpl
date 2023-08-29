@@ -1108,9 +1108,11 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 % for part in write_locked_digest_parts:
 <% part_name = Name.from_snake_case(part["name"]) %>\
     void'(ral.${part_name.as_snake_case()}_digest[0].predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[${part_name.as_camel_case()}Idx]]), .kind(UVM_PREDICT_DIRECT)));
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[${part_name.as_camel_case()}Idx]]),
+          .kind(UVM_PREDICT_DIRECT)));
     void'(ral.${part_name.as_snake_case()}_digest[1].predict(
-          .value(otp_a[PART_OTP_DIGEST_ADDRS[${part_name.as_camel_case()}Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[${part_name.as_camel_case()}Idx] + 1]),
+          .kind(UVM_PREDICT_DIRECT)));
   % if not loop.last:
 
   %endif
@@ -1301,7 +1303,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   part_name_snake = part_name.as_snake_case()
 %>\
       ${part_name.as_camel_case()}Idx: begin
-        digest = {`gmv(ral.${part_name_snake}_digest[1]), `gmv(ral.${part_name_snake}_digest[0])};
+        digest = {`gmv(ral.${part_name_snake}_digest[1]),
+                  `gmv(ral.${part_name_snake}_digest[0])};
       end
 % endfor
       default: `uvm_fatal(`gfn, $sformatf("Partition %0d does not have digest", part_idx))
@@ -1327,8 +1330,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 
     // Ensure the address is within the memory window range.
     // Also will skip checking if memory access is not allowed due to TLUL bus error.
-    if (addr inside {[cfg.ral_models[ral_name].mem_ranges[0].start_addr :
-                      cfg.ral_models[ral_name].mem_ranges[0].end_addr]} &&
+    if (addr inside {
+        [cfg.ral_models[ral_name].mem_ranges[0].start_addr :
+         cfg.ral_models[ral_name].mem_ranges[0].end_addr]} &&
         mem_access_allowed) begin
 
       // If sw partition is read locked, then access policy changes from RO to no access
@@ -1337,10 +1341,12 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   part_name = Name.from_snake_case(part["name"])
   part_name_camel = part_name.as_camel_case()
 %>\
-      if (`gmv(ral.${part_name.as_snake_case()}_read_lock) == 0 || cfg.otp_ctrl_vif.under_error_states()) begin
-        if (addr inside {[cfg.ral_models[ral_name].mem_ranges[0].start_addr + ${part_name_camel}Offset :
-                          cfg.ral_models[ral_name].mem_ranges[0].start_addr + ${part_name_camel}Offset +
-                          ${part_name_camel}Size - 1]}) begin
+      if (`gmv(ral.${part_name.as_snake_case()}_read_lock) == 0 ||
+          cfg.otp_ctrl_vif.under_error_states()) begin
+        if (addr inside {
+            [cfg.ral_models[ral_name].mem_ranges[0].start_addr + ${part_name_camel}Offset :
+             cfg.ral_models[ral_name].mem_ranges[0].start_addr + ${part_name_camel}Offset +
+             ${part_name_camel}Size - 1]}) begin
           predict_err(Otp${part_name_camel}ErrIdx, OtpAccessError);
           custom_err = 1;
           if (cfg.en_cov) begin
