@@ -35,8 +35,9 @@ impl_serializable_error!(BootstrapError);
 /// `BootstrapProtocol` describes the supported types of bootstrap.
 /// The `Primitive` SPI protocol is used by OpenTitan during development.
 /// The `Legacy` SPI protocol is used by previous generations of Google Titan-class chips.
+/// The `LegacyRescue` UART protocol is used by previous generations of Google Titan-class chips.
 /// The `Eeprom` SPI protocol is planned to be implemented for OpenTitan.
-/// The `Rescue` UART protocol is used by Google Ti50 firmware.
+/// The `Rescue` value is a deprecated alias for `LegacyRescue`.
 /// The 'Emulator' value indicates that this tool has a direct way
 /// of communicating with the OpenTitan emulator, to replace the
 /// contents of the emulated flash storage.
@@ -44,6 +45,7 @@ impl_serializable_error!(BootstrapError);
 pub enum BootstrapProtocol {
     Primitive,
     Legacy,
+    LegacyRescue,
     Eeprom,
     Rescue,
     Emulator,
@@ -145,6 +147,7 @@ impl<'a> Bootstrap<'a> {
         let updater: Box<dyn UpdateProtocol> = match options.protocol {
             BootstrapProtocol::Primitive => Box::new(primitive::Primitive::new(options)),
             BootstrapProtocol::Legacy => Box::new(legacy::Legacy::new(options)),
+            BootstrapProtocol::LegacyRescue => Box::new(rescue::Rescue::new(options)),
             BootstrapProtocol::Rescue => Box::new(rescue::Rescue::new(options)),
             BootstrapProtocol::Eeprom => Box::new(eeprom::Eeprom::new()),
             BootstrapProtocol::Emulator => {
