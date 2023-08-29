@@ -23,29 +23,47 @@ enum {
 };
 
 /**
- * Check that the values in the retention SRAM have not changed
- * from kPattern. The 0th word of the SRAM is exempt as it is
- * used to store the reset reason.
+ * Check that a region within the retention SRAM has not changed from kPattern.
+ *
+ * @param start A pointer to the start of the region to check.
+ * @param length The number of 32-bit words to check.
+ * @return Whether the region has changed.
  */
-bool check_ram_unchanged(retention_sram_t *ret) {
-  LOG_INFO("Checking that retention SRAM values are unchanged");
-
+bool check_ram_region_unchanged(char *start, size_t length) {
   uint32_t pattern32;
   memset(&pattern32, kPattern, sizeof(pattern32));
 
-  // Ensure that all written sections were saved
   bool unchanged = true;
-  // Skip checking the first two words since that is used to store the
-  // version and reset reason.
-  for (size_t i = 2 * sizeof(uint32_t); i < sizeof(retention_sram_t);
-       i += sizeof(uint32_t)) {
-    uint32_t val = read_32((char *)ret + i);
+  for (size_t i = 0; i < length; i += sizeof(uint32_t)) {
+    uint32_t val = read_32(start + i);
     if (val != pattern32) {
       LOG_ERROR("Retention SRAM changed at word %u (%x --> %x).",
                 i / sizeof(uint32_t), pattern32, val);
       unchanged = false;
     }
   }
+  return unchanged;
+}
+
+/**
+ * Check that the values in the retention SRAM have not changed from kPattern.
+ * Only the reserved sections of the silicon_owner and siilicon_creator
+ * sections are checked as other entries may be updated during boot.
+ */
+bool check_ram_unchanged(retention_sram_t *ret) {
+  LOG_INFO("Checking that retention SRAM values are unchanged");
+  bool unchanged = true;
+  const size_t creator_resv_size = sizeof(ret->creator.reserved);
+  const size_t owner_resv_size = sizeof(ret->owner.reserved);
+  // Ensure that the reserved section is sufficiently large for a robust check.
+  // 1 word is an arbitrary limit, but if the reserved section is filled up, a
+  // new testing approach will be needed.
+  CHECK(creator_resv_size > sizeof(uint32_t));
+  CHECK(owner_resv_size > sizeof(uint32_t));
+  unchanged &= check_ram_region_unchanged((char *)&ret->creator.reserved,
+                                          creator_resv_size);
+  unchanged &=
+      check_ram_region_unchanged((char *)&ret->owner.reserved, owner_resv_size);
   return unchanged;
 }
 
