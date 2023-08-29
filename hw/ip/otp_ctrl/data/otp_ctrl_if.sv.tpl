@@ -2,6 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 ${gen_comment}
+<%
+from topgen.lib import Name
+unbuf_parts_with_digest = [part for part in otp_mmap.config["partitions"] if
+                           part["variant"] == "Unbuffered" and
+                           (part["sw_digest"] or part["hw_digest"])]
+parts_without_lc = [part for part in otp_mmap.config["partitions"] if
+                    part["variant"] in ["Buffered", "Unbuffered"]]
+buf_parts_without_lc = [part for part in otp_mmap.config["partitions"] if
+                        part["variant"] == "Buffered"]
+%>\
 // This interface collect the broadcast output data from OTP,
 // and drive input requests coming into OTP.
 `define ECC_REG_PATH gen_ecc_reg.u_otp_ctrl_ecc_reg.gen_ecc_dec[0].u_prim_secded_inv_72_64_dec
@@ -153,40 +163,32 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   task automatic force_sw_check_fail(
       bit[NumPartUnbuf-1:0] fail_idx = $urandom_range(1, (1'b1 << NumPartUnbuf) - 1));
     @(posedge clk_i);
-    if (fail_idx[VendorTestIdx]) begin
-      force tb.dut.gen_partitions[VendorTestIdx].gen_unbuffered.
+% for part in unbuf_parts_with_digest:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_camel = part_name.as_camel_case()
+%>\
+    if (fail_idx[${part_name_camel}Idx]) begin
+      force tb.dut.gen_partitions[${part_name_camel}Idx].gen_unbuffered.
             u_part_unbuf.`ECC_REG_PATH.data_i[0] = 1;
-      force_sw_parts_ecc_reg[VendorTestIdx] = 1;
+      force_sw_parts_ecc_reg[${part_name_camel}Idx] = 1;
     end
-    if (fail_idx[CreatorSwCfgIdx]) begin
-      force tb.dut.gen_partitions[CreatorSwCfgIdx].gen_unbuffered.
-            u_part_unbuf.`ECC_REG_PATH.data_i[0] = 1;
-      force_sw_parts_ecc_reg[CreatorSwCfgIdx] = 1;
-    end
-    if (fail_idx[OwnerSwCfgIdx]) begin
-      force tb.dut.gen_partitions[OwnerSwCfgIdx].gen_unbuffered.
-            u_part_unbuf.`ECC_REG_PATH.data_i[0] = 1;
-      force_sw_parts_ecc_reg[OwnerSwCfgIdx] = 1;
-    end
+% endfor
   endtask
 
   task automatic release_sw_check_fail();
     @(posedge clk_i);
-    if (force_sw_parts_ecc_reg[VendorTestIdx]) begin
-      release tb.dut.gen_partitions[VendorTestIdx].gen_unbuffered.
+% for part in unbuf_parts_with_digest:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_camel = part_name.as_camel_case()
+%>\
+    if (force_sw_parts_ecc_reg[${part_name_camel}Idx]) begin
+      release tb.dut.gen_partitions[${part_name_camel}Idx].gen_unbuffered.
               u_part_unbuf.`ECC_REG_PATH.data_i[0];
-      force_sw_parts_ecc_reg[VendorTestIdx] = 0;
+      force_sw_parts_ecc_reg[${part_name_camel}Idx] = 0;
     end
-    if (force_sw_parts_ecc_reg[CreatorSwCfgIdx]) begin
-      release tb.dut.gen_partitions[CreatorSwCfgIdx].gen_unbuffered.
-              u_part_unbuf.`ECC_REG_PATH.data_i[0];
-      force_sw_parts_ecc_reg[CreatorSwCfgIdx] = 0;
-    end
-    if (force_sw_parts_ecc_reg[OwnerSwCfgIdx]) begin
-      release tb.dut.gen_partitions[OwnerSwCfgIdx].gen_unbuffered.
-              u_part_unbuf.`ECC_REG_PATH.data_i[0];
-      force_sw_parts_ecc_reg[OwnerSwCfgIdx] = 0;
-    end
+% endfor
   endtask
 
   // Force prim_generic_otp input cmd_i to a invalid value.
@@ -204,12 +206,13 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   task automatic force_invalid_part_cmd_o(int part_idx);
     @(posedge clk_i);
     case (part_idx)
-      HwCfg0Idx:    force `BUF_PART_OTP_CMD_PATH(HwCfg0Idx)  = prim_otp_pkg::cmd_e'(2'b10);
-      HwCfg1Idx:    force `BUF_PART_OTP_CMD_PATH(HwCfg1Idx)  = prim_otp_pkg::cmd_e'(2'b10);
-      Secret0Idx:   force `BUF_PART_OTP_CMD_PATH(Secret0Idx) = prim_otp_pkg::cmd_e'(2'b10);
-      Secret1Idx:   force `BUF_PART_OTP_CMD_PATH(Secret1Idx) = prim_otp_pkg::cmd_e'(2'b10);
-      Secret2Idx:   force `BUF_PART_OTP_CMD_PATH(Secret2Idx) = prim_otp_pkg::cmd_e'(2'b10);
-      Secret3Idx:   force `BUF_PART_OTP_CMD_PATH(Secret3Idx) = prim_otp_pkg::cmd_e'(2'b10);
+% for part in buf_parts_without_lc:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_camel = part_name.as_camel_case()
+%>\
+      ${part_name_camel}Idx: force `BUF_PART_OTP_CMD_PATH(${part_name_camel}Idx) = prim_otp_pkg::cmd_e'(2'b10);
+% endfor
       LifeCycleIdx: force `LC_PART_OTP_CMD_PATH              = prim_otp_pkg::cmd_e'(2'b10);
       default: begin
         `uvm_fatal("otp_ctrl_if",
@@ -221,12 +224,13 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   task automatic release_invalid_part_cmd_o(int part_idx);
     @(posedge clk_i);
     case (part_idx)
-      HwCfg0Idx:    release `BUF_PART_OTP_CMD_PATH(HwCfg0Idx);
-      HwCfg1Idx:    release `BUF_PART_OTP_CMD_PATH(HwCfg1Idx);
-      Secret0Idx:   release `BUF_PART_OTP_CMD_PATH(Secret0Idx);
-      Secret1Idx:   release `BUF_PART_OTP_CMD_PATH(Secret1Idx);
-      Secret2Idx:   release `BUF_PART_OTP_CMD_PATH(Secret2Idx);
-      Secret3Idx:   release `BUF_PART_OTP_CMD_PATH(Secret3Idx);
+% for part in buf_parts_without_lc:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_camel = part_name.as_camel_case()
+%>\
+      ${part_name_camel}Idx: release `BUF_PART_OTP_CMD_PATH(${part_name_camel}Idx);
+% endfor
       LifeCycleIdx: release `LC_PART_OTP_CMD_PATH;
       default: begin
         `uvm_fatal("otp_ctrl_if",
@@ -240,15 +244,13 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   // false. Then scb will check if design treats these values as locking the partition access.
   task automatic force_part_access_mubi(otp_part_access_lock_t forced_part_access_sel[NumPart-1]);
     @(posedge clk_i);
-    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(VendorTestIdx)
-    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(CreatorSwCfgIdx)
-    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(OwnerSwCfgIdx)
-    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(HwCfg0Idx)
-    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(HwCfg1Idx)
-    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(Secret0Idx)
-    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(Secret1Idx)
-    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(Secret2Idx)
-    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(Secret3Idx)
+% for part in parts_without_lc:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_camel = part_name.as_camel_case()
+%>\
+    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(${part_name_camel}Idx)
+% endfor
   endtask
 
   task automatic release_part_access_mubi();
@@ -283,17 +285,6 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
                         pwr_otp_done_o == 0)
   // Once OTP init is done, hw_cfg0_o output value stays stable until next power cycle
   `OTP_ASSERT_WO_LC_ESC(OtpHwCfg0Stable_A, otp_broadcast_o.valid == lc_ctrl_pkg::On |=>
-                        $stable(otp_broadcast_o))
-
-  // Otp_hw_cfg1_o is valid only when otp init is done
-  `OTP_ASSERT_WO_LC_ESC(OtpHwCfg1ValidOn_A, pwr_otp_done_o |->
-                        otp_broadcast_o.valid == lc_ctrl_pkg::On)
-  // If otp_broadcast is Off, then hw partition is not finished calculation,
-  // then otp init is not done
-  `OTP_ASSERT_WO_LC_ESC(OtpHwCfg1ValidOff_A, otp_broadcast_o.valid == lc_ctrl_pkg::Off |->
-                        pwr_otp_done_o == 0)
-  // Once OTP init is done, hw_cfg0_o output value stays stable until next power cycle
-  `OTP_ASSERT_WO_LC_ESC(OtpHwCfg1Stable_A, otp_broadcast_o.valid == lc_ctrl_pkg::On |=>
                         $stable(otp_broadcast_o))
 
   // Otp_keymgr valid is related to part_digest, should not be changed after otp_pwr_init
@@ -335,9 +326,6 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   `OTP_FATAL_ERR_ASSERT(HwCfg0OValid_A, otp_broadcast_o.valid == lc_ctrl_pkg::Off)
   `OTP_FATAL_ERR_ASSERT(HwCfg0OData_A, otp_broadcast_o.hw_cfg0_data ==
                         PartInvDefault[HwCfg0Offset*8+:HwCfg0Size*8])
-  `OTP_FATAL_ERR_ASSERT(HwCfg1OValid_A, otp_broadcast_o.valid == lc_ctrl_pkg::Off)
-  `OTP_FATAL_ERR_ASSERT(HwCfg1OData_A, otp_broadcast_o.hw_cfg1_data ==
-                        PartInvDefault[HwCfg1Offset*8+:HwCfg1Size*8])
 
   `OTP_FATAL_ERR_ASSERT(LcProgAck_A, lc_prog_ack == 0)
   `OTP_FATAL_ERR_ASSERT(FlashAcks_A, flash_acks == 0)
