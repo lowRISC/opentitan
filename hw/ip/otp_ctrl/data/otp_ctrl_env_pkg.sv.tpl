@@ -93,7 +93,11 @@ package otp_ctrl_env_pkg;
   part_name = Name.from_snake_case(part["name"])
   part_name_camel = part_name.as_camel_case()
 %>\
+% if part["sw_digest"] or part["hw_digest"]:
     ${part_name_camel}DigestOffset >> 2${"" if loop.last else ","}
+% else:
+    -1${"" if loop.last else ","} // This partition does not have a digest.
+% endif
 % endfor
   };
 
