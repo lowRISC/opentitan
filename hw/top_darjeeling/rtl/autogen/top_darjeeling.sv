@@ -99,6 +99,11 @@ module top_darjeeling #(
   // parameters for rom_ctrl1
   parameter RomCtrl1BootRomInitFile = "",
   parameter bit SecRomCtrl1DisableScrambling = 1'b0,
+  // parameters for dma
+  parameter bit DmaEnableDataIntgGen = 1'b1,
+  parameter logic [tlul_pkg::RsvdWidth-1:0] DmaTlUserRsvd = '0,
+  parameter logic [dma_pkg::SYS_RACL_WIDTH-1:0] DmaSysRacl = '0,
+  parameter int unsigned DmaOtAgentId = 0,
   // parameters for rv_core_ibex
   parameter bit RvCoreIbexPMPEnable = 1,
   parameter int unsigned RvCoreIbexPMPGranularity = 0,
@@ -160,6 +165,10 @@ module top_darjeeling #(
   input  prim_mubi_pkg::mubi4_t       calib_rdy_i,
   output entropy_src_pkg::entropy_src_hw_if_req_t       entropy_src_hw_if_req_o,
   input  entropy_src_pkg::entropy_src_hw_if_rsp_t       entropy_src_hw_if_rsp_i,
+  output dma_pkg::sys_req_t       dma_sys_req_o,
+  input  dma_pkg::sys_rsp_t       dma_sys_rsp_i,
+  output tlul_pkg::tl_h2d_t       dma_ctn_tl_h2d_o,
+  input  tlul_pkg::tl_d2h_t       dma_ctn_tl_d2h_i,
   input  tlul_pkg::tl_h2d_t       lc_ctrl_dmi_h2d_i,
   output tlul_pkg::tl_d2h_t       lc_ctrl_dmi_d2h_o,
   input  tlul_pkg::tl_h2d_t       rv_dm_dmi_h2d_i,
@@ -365,10 +374,11 @@ module top_darjeeling #(
   // sram_ctrl_mbox
   // rom_ctrl0
   // rom_ctrl1
+  // dma
   // rv_core_ibex
 
 
-  logic [182:0]  intr_vector;
+  logic [185:0]  intr_vector;
   // Interrupt source list
   logic intr_uart0_tx_watermark;
   logic intr_uart0_rx_watermark;
@@ -521,6 +531,9 @@ module top_darjeeling #(
   logic intr_edn0_edn_fatal_err;
   logic intr_edn1_edn_cmd_req_done;
   logic intr_edn1_edn_fatal_err;
+  logic intr_dma_dma_done;
+  logic intr_dma_dma_error;
+  logic intr_dma_dma_memory_buffer_limit;
 
   // Alert list
   prim_alert_pkg::alert_tx_t [alert_pkg::NAlerts-1:0]  alert_tx;
@@ -557,6 +570,7 @@ module top_darjeeling #(
   lc_ctrl_pkg::lc_tx_t       pwrmgr_aon_fetch_en;
   rom_ctrl_pkg::pwrmgr_data_t [1:0] pwrmgr_aon_rom_ctrl;
   rom_ctrl_pkg::keymgr_data_t [1:0] keymgr_rom_digest;
+  dma_pkg::lsio_trigger_t       dma_lsio_trigger;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_flash_rma_req;
   lc_ctrl_pkg::lc_tx_t       otbn_lc_rma_ack;
   logic       usbdev_usb_dp_pullup;
@@ -672,6 +686,10 @@ module top_darjeeling #(
   tlul_pkg::tl_d2h_t       sram_ctrl_mbox_regs_tl_rsp;
   tlul_pkg::tl_h2d_t       sram_ctrl_mbox_ram_tl_req;
   tlul_pkg::tl_d2h_t       sram_ctrl_mbox_ram_tl_rsp;
+  tlul_pkg::tl_h2d_t       dma_tl_d_req;
+  tlul_pkg::tl_d2h_t       dma_tl_d_rsp;
+  tlul_pkg::tl_h2d_t       main_tl_dma__host_req;
+  tlul_pkg::tl_d2h_t       main_tl_dma__host_rsp;
   tlul_pkg::tl_h2d_t       uart0_tl_req;
   tlul_pkg::tl_d2h_t       uart0_tl_rsp;
   tlul_pkg::tl_h2d_t       uart1_tl_req;
@@ -1973,6 +1991,7 @@ module top_darjeeling #(
       .wkup_internal_req_o(pwrmgr_aon_wakeups[6]),
       .wkup_external_req_o(pwrmgr_aon_wakeups[7]),
       .ctn_tl_h2d_o(ctn_tl_h2d_o),
+      .dma_lsio_trigger_o(dma_lsio_trigger),
       .ctn_tl_d2h_i(ctn_tl_d2h_i),
       .soc_alert_req_i(soc_alert_req_i),
       .soc_alert_ack_o(soc_alert_ack_o),
@@ -2562,8 +2581,40 @@ module top_darjeeling #(
       .clk_i (clkmgr_aon_clocks.clk_main_infra),
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
+  dma #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[62:62]),
+    .EnableDataIntgGen(DmaEnableDataIntgGen),
+    .TlUserRsvd(DmaTlUserRsvd),
+    .SysRacl(DmaSysRacl),
+    .OtAgentId(DmaOtAgentId)
+  ) u_dma (
+
+      // Interrupt
+      .intr_dma_done_o                (intr_dma_dma_done),
+      .intr_dma_error_o               (intr_dma_dma_error),
+      .intr_dma_memory_buffer_limit_o (intr_dma_dma_memory_buffer_limit),
+      // [62]: fatal_fault
+      .alert_tx_o  ( alert_tx[62:62] ),
+      .alert_rx_i  ( alert_rx[62:62] ),
+
+      // Inter-module signals
+      .lsio_trigger_i(dma_lsio_trigger),
+      .sys_o(dma_sys_req_o),
+      .sys_i(dma_sys_rsp_i),
+      .ctn_tl_h2d_o(dma_ctn_tl_h2d_o),
+      .ctn_tl_d2h_i(dma_ctn_tl_d2h_i),
+      .host_tl_h_o(main_tl_dma__host_req),
+      .host_tl_h_i(main_tl_dma__host_rsp),
+      .tl_d_i(dma_tl_d_req),
+      .tl_d_o(dma_tl_d_rsp),
+      .scanmode_i,
+
+      // Clock and reset connections
+      .clk_i (clkmgr_aon_clocks.clk_main_infra),
+      .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
+  );
   rv_core_ibex #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[65:62]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[66:63]),
     .RndCnstLfsrSeed(RndCnstRvCoreIbexLfsrSeed),
     .RndCnstLfsrPerm(RndCnstRvCoreIbexLfsrPerm),
     .RndCnstIbexKeyDefault(RndCnstRvCoreIbexIbexKeyDefault),
@@ -2590,12 +2641,12 @@ module top_darjeeling #(
     .DmExceptionAddr(RvCoreIbexDmExceptionAddr),
     .PipeLine(RvCoreIbexPipeLine)
   ) u_rv_core_ibex (
-      // [62]: fatal_sw_err
-      // [63]: recov_sw_err
-      // [64]: fatal_hw_err
-      // [65]: recov_hw_err
-      .alert_tx_o  ( alert_tx[65:62] ),
-      .alert_rx_i  ( alert_rx[65:62] ),
+      // [63]: fatal_sw_err
+      // [64]: recov_sw_err
+      // [65]: fatal_hw_err
+      // [66]: recov_hw_err
+      .alert_tx_o  ( alert_tx[66:63] ),
+      .alert_rx_i  ( alert_rx[66:63] ),
 
       // Inter-module signals
       .rst_cpu_n_o(),
@@ -2639,6 +2690,9 @@ module top_darjeeling #(
   );
   // interrupt assignments
   assign intr_vector = {
+      intr_dma_dma_memory_buffer_limit, // IDs [185 +: 1]
+      intr_dma_dma_error, // IDs [184 +: 1]
+      intr_dma_dma_done, // IDs [183 +: 1]
       intr_edn1_edn_fatal_err, // IDs [182 +: 1]
       intr_edn1_edn_cmd_req_done, // IDs [181 +: 1]
       intr_edn0_edn_fatal_err, // IDs [180 +: 1]
@@ -2816,6 +2870,10 @@ module top_darjeeling #(
     .tl_rv_dm__sba_i(main_tl_rv_dm__sba_req),
     .tl_rv_dm__sba_o(main_tl_rv_dm__sba_rsp),
 
+    // port: tl_dma__host
+    .tl_dma__host_i(main_tl_dma__host_req),
+    .tl_dma__host_o(main_tl_dma__host_rsp),
+
     // port: tl_rv_dm__regs
     .tl_rv_dm__regs_o(rv_dm_regs_tl_d_req),
     .tl_rv_dm__regs_i(rv_dm_regs_tl_d_rsp),
@@ -2931,6 +2989,10 @@ module top_darjeeling #(
     // port: tl_sram_ctrl_mbox__ram
     .tl_sram_ctrl_mbox__ram_o(sram_ctrl_mbox_ram_tl_req),
     .tl_sram_ctrl_mbox__ram_i(sram_ctrl_mbox_ram_tl_rsp),
+
+    // port: tl_dma
+    .tl_dma_o(dma_tl_d_req),
+    .tl_dma_i(dma_tl_d_rsp),
 
 
     .scanmode_i

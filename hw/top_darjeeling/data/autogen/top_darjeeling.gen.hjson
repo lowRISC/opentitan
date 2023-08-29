@@ -4465,6 +4465,19 @@
           index: -1
         }
         {
+          name: dma_lsio_trigger
+          desc: Collated LSIO trigger signals for DMA
+          struct: lsio_trigger
+          package: dma_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: soc_proxy
+          default: ""
+          top_signame: dma_lsio_trigger
+          index: -1
+        }
+        {
           name: ctn_tl_d2h
           desc: TL-UL host port for egress into CTN (response part), synchronous
           struct: tl_d2h
@@ -7780,6 +7793,158 @@
       ]
     }
     {
+      name: dma
+      type: dma
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: infra
+      reset_connections:
+      {
+        rst_ni:
+        {
+          name: lc
+          domain: "0"
+        }
+      }
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_main_infra
+      }
+      domain:
+      [
+        "0"
+      ]
+      param_decl: {}
+      memory: {}
+      param_list:
+      [
+        {
+          name: EnableDataIntgGen
+          desc: Compute integrity bits for A channel data on all TL-UL host ports
+          type: bit
+          default: 1'b1
+          expose: "true"
+          name_top: DmaEnableDataIntgGen
+        }
+        {
+          name: TlUserRsvd
+          desc: Value of `rsvd` field in A channel of all TL-UL host ports
+          type: logic [tlul_pkg::RsvdWidth-1:0]
+          default: "'0"
+          expose: "true"
+          name_top: DmaTlUserRsvd
+        }
+        {
+          name: SysRacl
+          desc: Value of `racl_vec` field in `sys` output
+          type: logic [dma_pkg::SYS_RACL_WIDTH-1:0]
+          default: "'0"
+          expose: "true"
+          name_top: DmaSysRacl
+        }
+        {
+          name: OtAgentId
+          desc: OT Agent ID
+          type: int unsigned
+          default: "0"
+          expose: "true"
+          name_top: DmaOtAgentId
+        }
+      ]
+      inter_signal_list:
+      [
+        {
+          name: lsio_trigger
+          struct: lsio_trigger
+          package: dma_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: dma
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: dma_lsio_trigger
+          index: -1
+        }
+        {
+          name: sys
+          struct: sys
+          package: dma_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: dma
+          default: ""
+          external: true
+          top_signame: dma_sys
+          conn_type: false
+          index: -1
+        }
+        {
+          name: ctn_tl_h2d
+          desc: TL-UL host port for egress into CTN (request part), synchronous
+          struct: tl_h2d
+          package: tlul_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: dma
+          default: ""
+          external: true
+          top_signame: dma_ctn_tl_h2d
+          conn_type: false
+          index: -1
+        }
+        {
+          name: ctn_tl_d2h
+          desc: TL-UL host port for egress into CTN (response part), synchronous
+          struct: tl_d2h
+          package: tlul_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: dma
+          default: ""
+          external: true
+          top_signame: dma_ctn_tl_d2h
+          conn_type: false
+          index: -1
+        }
+        {
+          name: host_tl_h
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: dma
+          default: ""
+          top_signame: main_tl_dma__host
+          index: -1
+        }
+        {
+          name: tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: dma
+          default: ""
+          end_idx: -1
+          top_signame: dma_tl_d
+          index: -1
+        }
+      ]
+      base_addrs:
+      {
+        null: 0x22010000
+      }
+    }
+    {
       name: rv_core_ibex
       type: rv_core_ibex
       param_decl:
@@ -8575,6 +8740,10 @@
         rom_ctrl0.keymgr_data
         rom_ctrl1.keymgr_data
       ]
+      dma.lsio_trigger:
+      [
+        soc_proxy.dma_lsio_trigger
+      ]
       lc_ctrl.lc_flash_rma_req:
       [
         otbn.lc_rma_req
@@ -8918,6 +9087,14 @@
       [
         main.tl_sram_ctrl_mbox__ram
       ]
+      dma.tl_d:
+      [
+        main.tl_dma
+      ]
+      main.tl_dma__host:
+      [
+        dma.host_tl_h
+      ]
       uart0.tl:
       [
         peri.tl_uart0
@@ -9054,6 +9231,9 @@
       clkmgr_aon.div_step_down_req: div_step_down_req
       clkmgr_aon.calib_rdy: calib_rdy
       csrng.entropy_src_hw_if: entropy_src_hw_if
+      dma.sys: dma_sys
+      dma.ctn_tl_h2d: dma_ctn_tl_h2d
+      dma.ctn_tl_d2h: dma_ctn_tl_d2h
       lc_ctrl.dmi_tl_h2d: lc_ctrl_dmi_h2d
       lc_ctrl.dmi_tl_d2h: lc_ctrl_dmi_d2h
       rv_dm.dmi_tl_h2d: rv_dm_dmi_h2d
@@ -9181,6 +9361,7 @@
           sram_ctrl_mbox.regs
           soc_proxy.ctn
           soc_proxy.core
+          dma
         ]
         rv_dm.sba:
         [
@@ -9213,6 +9394,12 @@
           sram_ctrl_mbox.regs
           soc_proxy.ctn
           soc_proxy.core
+          dma
+        ]
+        dma.host:
+        [
+          sram_ctrl_main.ram
+          peri
         ]
       }
       nodes:
@@ -9800,6 +9987,37 @@
           stub: false
           req_fifo_pass: true
         }
+        {
+          name: dma
+          type: device
+          clock: clk_main_i
+          reset: rst_main_ni
+          req_fifo_pass: false
+          rsp_fifo_pass: false
+          inst_type: dma
+          addr_range:
+          [
+            {
+              base_addr: 0x22010000
+              size_byte: 0x100
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline: true
+        }
+        {
+          name: dma.host
+          type: host
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          xbar: false
+          stub: false
+          inst_type: ""
+          req_fifo_pass: true
+          rsp_fifo_pass: true
+        }
       ]
       clock: clk_main_i
       type: xbar
@@ -9842,6 +10060,19 @@
           default: ""
           end_idx: -1
           top_signame: main_tl_rv_dm__sba
+          index: -1
+        }
+        {
+          name: tl_dma__host
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: main
+          default: ""
+          end_idx: -1
+          top_signame: main_tl_dma__host
           index: -1
         }
         {
@@ -10191,6 +10422,18 @@
           inst_name: main
           default: ""
           top_signame: sram_ctrl_mbox_ram_tl
+          index: -1
+        }
+        {
+          name: tl_dma
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: main
+          default: ""
+          top_signame: dma_tl_d
           index: -1
         }
       ]
@@ -13481,6 +13724,7 @@
     entropy_src
     edn0
     edn1
+    dma
   ]
   interrupt:
   [
@@ -14390,6 +14634,24 @@
       type: interrupt
       module_name: edn1
     }
+    {
+      name: dma_dma_done
+      width: 1
+      type: interrupt
+      module_name: dma
+    }
+    {
+      name: dma_dma_error
+      width: 1
+      type: interrupt
+      module_name: dma
+    }
+    {
+      name: dma_dma_memory_buffer_limit
+      width: 1
+      type: interrupt
+      module_name: dma
+    }
   ]
   alert_module:
   [
@@ -14434,6 +14696,7 @@
     sram_ctrl_mbox
     rom_ctrl0
     rom_ctrl1
+    dma
     rv_core_ibex
   ]
   alert:
@@ -14993,6 +15256,15 @@
       type: alert
       async: "1"
       module_name: rom_ctrl1
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: dma_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: dma
       lpg_name: infra_lc_0
       lpg_idx: 16
     }
@@ -18112,6 +18384,19 @@
         index: -1
       }
       {
+        name: dma_lsio_trigger
+        desc: Collated LSIO trigger signals for DMA
+        struct: lsio_trigger
+        package: dma_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: soc_proxy
+        default: ""
+        top_signame: dma_lsio_trigger
+        index: -1
+      }
+      {
         name: ctn_tl_d2h
         desc: TL-UL host port for egress into CTN (response part), synchronous
         struct: tl_d2h
@@ -19802,6 +20087,89 @@
         index: -1
       }
       {
+        name: lsio_trigger
+        struct: lsio_trigger
+        package: dma_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: dma
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: dma_lsio_trigger
+        index: -1
+      }
+      {
+        name: sys
+        struct: sys
+        package: dma_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: dma
+        default: ""
+        external: true
+        top_signame: dma_sys
+        conn_type: false
+        index: -1
+      }
+      {
+        name: ctn_tl_h2d
+        desc: TL-UL host port for egress into CTN (request part), synchronous
+        struct: tl_h2d
+        package: tlul_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: dma
+        default: ""
+        external: true
+        top_signame: dma_ctn_tl_h2d
+        conn_type: false
+        index: -1
+      }
+      {
+        name: ctn_tl_d2h
+        desc: TL-UL host port for egress into CTN (response part), synchronous
+        struct: tl_d2h
+        package: tlul_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: dma
+        default: ""
+        external: true
+        top_signame: dma_ctn_tl_d2h
+        conn_type: false
+        index: -1
+      }
+      {
+        name: host_tl_h
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: dma
+        default: ""
+        top_signame: main_tl_dma__host
+        index: -1
+      }
+      {
+        name: tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: dma
+        default: ""
+        end_idx: -1
+        top_signame: dma_tl_d
+        index: -1
+      }
+      {
         name: rst_cpu_n
         struct: logic
         type: uni
@@ -20094,6 +20462,19 @@
         default: ""
         end_idx: -1
         top_signame: main_tl_rv_dm__sba
+        index: -1
+      }
+      {
+        name: tl_dma__host
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: main
+        default: ""
+        end_idx: -1
+        top_signame: main_tl_dma__host
         index: -1
       }
       {
@@ -20443,6 +20824,18 @@
         inst_name: main
         default: ""
         top_signame: sram_ctrl_mbox_ram_tl
+        index: -1
+      }
+      {
+        name: tl_dma
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: main
+        default: ""
+        top_signame: dma_tl_d
         index: -1
       }
       {
@@ -21147,6 +21540,54 @@
         conn_type: false
         index: -1
         netname: entropy_src_hw_if_rsp
+      }
+      {
+        package: dma_pkg
+        struct: sys_req
+        signame: dma_sys_req_o
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: dma_sys_req
+      }
+      {
+        package: dma_pkg
+        struct: sys_rsp
+        signame: dma_sys_rsp_i
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: dma_sys_rsp
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: dma_ctn_tl_h2d_o
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: dma_ctn_tl_h2d
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: dma_ctn_tl_d2h_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: dma_ctn_tl_d2h
       }
       {
         package: tlul_pkg
@@ -21937,6 +22378,17 @@
         act: rcv
         suffix: ""
         default: rom_ctrl_pkg::KEYMGR_DATA_DEFAULT
+      }
+      {
+        package: dma_pkg
+        struct: lsio_trigger
+        signame: dma_lsio_trigger
+        width: 1
+        type: uni
+        end_idx: -1
+        act: rcv
+        suffix: ""
+        default: dma_pkg::LSIO_TRIGGER_DEFAULT
       }
       {
         package: lc_ctrl_pkg
@@ -23196,6 +23648,50 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: sram_ctrl_mbox_ram_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: dma_tl_d_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: dma_tl_d_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: main_tl_dma__host_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: main_tl_dma__host_rsp
         width: 1
         type: req_rsp
         end_idx: -1

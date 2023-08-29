@@ -24,6 +24,12 @@ module xbar_main_bind;
     .h2d    (tl_rv_dm__sba_i),
     .d2h    (tl_rv_dm__sba_o)
   );
+  bind xbar_main tlul_assert #(.EndpointType("Device")) tlul_assert_host_dma__host (
+    .clk_i  (clk_main_i),
+    .rst_ni (rst_main_ni),
+    .h2d    (tl_dma__host_i),
+    .d2h    (tl_dma__host_o)
+  );
 
   // Device interfaces
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_rv_dm__regs (
@@ -199,6 +205,12 @@ module xbar_main_bind;
     .rst_ni (rst_main_ni),
     .h2d    (tl_sram_ctrl_mbox__ram_o),
     .d2h    (tl_sram_ctrl_mbox__ram_i)
+  );
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_dma (
+    .clk_i  (clk_main_i),
+    .rst_ni (rst_main_ni),
+    .h2d    (tl_dma_o),
+    .d2h    (tl_dma_i)
   );
 `endif
 endmodule

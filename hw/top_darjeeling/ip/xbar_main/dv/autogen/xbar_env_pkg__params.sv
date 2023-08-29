@@ -93,6 +93,9 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"sram_ctrl_mbox__ram", '{
         '{32'h11000000, 32'h11000fff}
+    }},
+    '{"dma", '{
+        '{32'h22010000, 32'h220100ff}
 }}};
 
   // List of Xbar hosts
@@ -134,7 +137,8 @@ tl_host_t xbar_hosts[$] = '{
         "sram_ctrl_mbox__ram",
         "sram_ctrl_mbox__regs",
         "soc_proxy__ctn",
-        "soc_proxy__core"}}
+        "soc_proxy__core",
+        "dma"}}
     ,
     '{"rv_dm__sba", 2, '{
         "rom_ctrl0__rom",
@@ -165,5 +169,10 @@ tl_host_t xbar_hosts[$] = '{
         "sram_ctrl_mbox__ram",
         "sram_ctrl_mbox__regs",
         "soc_proxy__ctn",
-        "soc_proxy__core"}}
+        "soc_proxy__core",
+        "dma"}}
+    ,
+    '{"dma__host", 3, '{
+        "sram_ctrl_main__ram",
+        "peri"}}
 };

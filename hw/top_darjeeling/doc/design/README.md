@@ -450,6 +450,7 @@ For the purpose of `top_darjeeling`, the first option has been chosen to benefit
 |                   |               | 0x211e0000 (regs) |
 | rom_ctrl1         | rom_ctrl      | 0x00020000 (rom)  |
 |                   |               | 0x211e1000 (regs) |
+| dma               | dma           | 0x22010000 (regs) |
 | rv_core_ibex      | rv_core_ibex  | 0x211f0000 (cfg)  |
 
 <!-- END CMDGEN -->

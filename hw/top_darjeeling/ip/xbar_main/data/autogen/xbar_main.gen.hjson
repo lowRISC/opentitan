@@ -93,6 +93,7 @@
       sram_ctrl_mbox.regs
       soc_proxy.ctn
       soc_proxy.core
+      dma
     ]
     rv_dm.sba:
     [
@@ -125,6 +126,12 @@
       sram_ctrl_mbox.regs
       soc_proxy.ctn
       soc_proxy.core
+      dma
+    ]
+    dma.host:
+    [
+      sram_ctrl_main.ram
+      peri
     ]
   }
   nodes:
@@ -711,6 +718,37 @@
       xbar: false
       stub: false
       req_fifo_pass: true
+    }
+    {
+      name: dma
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: dma
+      addr_range:
+      [
+        {
+          base_addr: 0x22010000
+          size_byte: 0x100
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: dma.host
+      type: host
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      xbar: false
+      stub: false
+      inst_type: ""
+      req_fifo_pass: true
+      rsp_fifo_pass: true
     }
   ]
   clock: clk_main_i

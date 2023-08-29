@@ -17,6 +17,7 @@
 #include "sw/ip/aon_timer/dif/dif_aon_timer.h"
 #include "sw/ip/clkmgr/dif/dif_clkmgr.h"
 #include "sw/ip/csrng/dif/dif_csrng.h"
+#include "sw/ip/dma/dif/dif_dma.h"
 #include "sw/ip/edn/dif/dif_edn.h"
 #include "sw/ip/entropy_src/dif/dif_entropy_src.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
@@ -59,6 +60,7 @@ static dif_aes_t aes;
 static dif_aon_timer_t aon_timer_aon;
 static dif_clkmgr_t clkmgr_aon;
 static dif_csrng_t csrng;
+static dif_dma_t dma;
 static dif_edn_t edn0;
 static dif_edn_t edn1;
 static dif_entropy_src_t entropy_src;
@@ -118,6 +120,9 @@ static void init_peripherals(void) {
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_CSRNG_BASE_ADDR);
   CHECK_DIF_OK(dif_csrng_init(base_addr, &csrng));
+
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_DMA_BASE_ADDR);
+  CHECK_DIF_OK(dif_dma_init(base_addr, &dma));
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_EDN0_BASE_ADDR);
   CHECK_DIF_OK(dif_edn_init(base_addr, &edn0));
@@ -351,6 +356,21 @@ static void trigger_alert_test(void) {
 
     // Verify that alert handler received it.
     exp_alert = kTopDarjeelingAlertIdCsrngRecovAlert + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
+
+  // Write dma's alert_test reg and check alert_cause.
+  for (dif_dma_alert_t i = 0; i < 1; ++i) {
+    CHECK_DIF_OK(dif_dma_alert_force(&dma, kDifDmaAlertFatalFault + i));
+
+    // Verify that alert handler received it.
+    exp_alert = kTopDarjeelingAlertIdDmaFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);

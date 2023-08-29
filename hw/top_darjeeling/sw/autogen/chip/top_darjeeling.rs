@@ -710,6 +710,19 @@ pub const TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR: usize = 0x20000;
 /// address between #TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR and
 /// `TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR + TOP_DARJEELING_ROM_CTRL1_ROM_SIZE_BYTES`.
 pub const TOP_DARJEELING_ROM_CTRL1_ROM_SIZE_BYTES: usize = 0x10000;
+/// Peripheral base address for dma in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const TOP_DARJEELING_DMA_BASE_ADDR: usize = 0x22010000;
+
+/// Peripheral size for dma in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #TOP_DARJEELING_DMA_BASE_ADDR and
+/// `TOP_DARJEELING_DMA_BASE_ADDR + TOP_DARJEELING_DMA_SIZE_BYTES`.
+pub const TOP_DARJEELING_DMA_SIZE_BYTES: usize = 0x100;
 /// Peripheral base address for cfg device on rv_core_ibex in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -826,6 +839,8 @@ pub enum TopDarjeelingPlicPeripheral {
     Edn0 = 28,
     /// edn1
     Edn1 = 29,
+    /// dma
+    Dma = 30,
 }
 
 impl TryFrom<u32> for TopDarjeelingPlicPeripheral {
@@ -862,6 +877,7 @@ impl TryFrom<u32> for TopDarjeelingPlicPeripheral {
             27 => Ok(Self::EntropySrc),
             28 => Ok(Self::Edn0),
             29 => Ok(Self::Edn1),
+            30 => Ok(Self::Dma),
             _ => Err(val),
         }
     }
@@ -1239,6 +1255,12 @@ pub enum TopDarjeelingPlicIrqId {
     Edn1EdnCmdReqDone = 181,
     /// edn1_edn_fatal_err
     Edn1EdnFatalErr = 182,
+    /// dma_dma_done
+    DmaDmaDone = 183,
+    /// dma_dma_error
+    DmaDmaError = 184,
+    /// dma_dma_memory_buffer_limit
+    DmaDmaMemoryBufferLimit = 185,
 }
 
 impl TryFrom<u32> for TopDarjeelingPlicIrqId {
@@ -1428,6 +1450,9 @@ impl TryFrom<u32> for TopDarjeelingPlicIrqId {
             180 => Ok(Self::Edn0EdnFatalErr),
             181 => Ok(Self::Edn1EdnCmdReqDone),
             182 => Ok(Self::Edn1EdnFatalErr),
+            183 => Ok(Self::DmaDmaDone),
+            184 => Ok(Self::DmaDmaError),
+            185 => Ok(Self::DmaDmaMemoryBufferLimit),
             _ => Err(val),
         }
     }
@@ -1531,8 +1556,10 @@ pub enum TopDarjeelingAlertPeripheral {
     RomCtrl0 = 39,
     /// rom_ctrl1
     RomCtrl1 = 40,
+    /// dma
+    Dma = 41,
     /// rv_core_ibex
-    RvCoreIbex = 41,
+    RvCoreIbex = 42,
 }
 
 /// Alert Handler Alert Source.
@@ -1665,14 +1692,16 @@ pub enum TopDarjeelingAlertId {
     RomCtrl0Fatal = 60,
     /// rom_ctrl1_fatal
     RomCtrl1Fatal = 61,
+    /// dma_fatal_fault
+    DmaFatalFault = 62,
     /// rv_core_ibex_fatal_sw_err
-    RvCoreIbexFatalSwErr = 62,
+    RvCoreIbexFatalSwErr = 63,
     /// rv_core_ibex_recov_sw_err
-    RvCoreIbexRecovSwErr = 63,
+    RvCoreIbexRecovSwErr = 64,
     /// rv_core_ibex_fatal_hw_err
-    RvCoreIbexFatalHwErr = 64,
+    RvCoreIbexFatalHwErr = 65,
     /// rv_core_ibex_recov_hw_err
-    RvCoreIbexRecovHwErr = 65,
+    RvCoreIbexRecovHwErr = 66,
 }
 
 impl TryFrom<u32> for TopDarjeelingAlertId {
@@ -1741,10 +1770,11 @@ impl TryFrom<u32> for TopDarjeelingAlertId {
             59 => Ok(Self::SramCtrlMboxFatalError),
             60 => Ok(Self::RomCtrl0Fatal),
             61 => Ok(Self::RomCtrl1Fatal),
-            62 => Ok(Self::RvCoreIbexFatalSwErr),
-            63 => Ok(Self::RvCoreIbexRecovSwErr),
-            64 => Ok(Self::RvCoreIbexFatalHwErr),
-            65 => Ok(Self::RvCoreIbexRecovHwErr),
+            62 => Ok(Self::DmaFatalFault),
+            63 => Ok(Self::RvCoreIbexFatalSwErr),
+            64 => Ok(Self::RvCoreIbexRecovSwErr),
+            65 => Ok(Self::RvCoreIbexFatalHwErr),
+            66 => Ok(Self::RvCoreIbexRecovHwErr),
             _ => Err(val),
         }
     }
@@ -1754,7 +1784,7 @@ impl TryFrom<u32> for TopDarjeelingAlertId {
 ///
 /// This array is a mapping from `TopDarjeelingPlicIrqId` to
 /// `TopDarjeelingPlicPeripheral`.
-pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeripheral; 183] = [
+pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeripheral; 186] = [
     // None -> TopDarjeelingPlicPeripheral::Unknown
     TopDarjeelingPlicPeripheral::Unknown,
     // Uart0TxWatermark -> TopDarjeelingPlicPeripheral::Uart0
@@ -2121,13 +2151,19 @@ pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeriph
     TopDarjeelingPlicPeripheral::Edn1,
     // Edn1EdnFatalErr -> TopDarjeelingPlicPeripheral::Edn1
     TopDarjeelingPlicPeripheral::Edn1,
+    // DmaDmaDone -> TopDarjeelingPlicPeripheral::Dma
+    TopDarjeelingPlicPeripheral::Dma,
+    // DmaDmaError -> TopDarjeelingPlicPeripheral::Dma
+    TopDarjeelingPlicPeripheral::Dma,
+    // DmaDmaMemoryBufferLimit -> TopDarjeelingPlicPeripheral::Dma
+    TopDarjeelingPlicPeripheral::Dma,
 ];
 
 /// Alert Handler Alert Source to Peripheral Map
 ///
 /// This array is a mapping from `TopDarjeelingAlertId` to
 /// `TopDarjeelingAlertPeripheral`.
-pub const TOP_DARJEELING_ALERT_FOR_PERIPHERAL: [TopDarjeelingAlertPeripheral; 66] = [
+pub const TOP_DARJEELING_ALERT_FOR_PERIPHERAL: [TopDarjeelingAlertPeripheral; 67] = [
     // Uart0FatalFault -> TopDarjeelingAlertPeripheral::Uart0
     TopDarjeelingAlertPeripheral::Uart0,
     // Uart1FatalFault -> TopDarjeelingAlertPeripheral::Uart1
@@ -2252,6 +2288,8 @@ pub const TOP_DARJEELING_ALERT_FOR_PERIPHERAL: [TopDarjeelingAlertPeripheral; 66
     TopDarjeelingAlertPeripheral::RomCtrl0,
     // RomCtrl1Fatal -> TopDarjeelingAlertPeripheral::RomCtrl1
     TopDarjeelingAlertPeripheral::RomCtrl1,
+    // DmaFatalFault -> TopDarjeelingAlertPeripheral::Dma
+    TopDarjeelingAlertPeripheral::Dma,
     // RvCoreIbexFatalSwErr -> TopDarjeelingAlertPeripheral::RvCoreIbex
     TopDarjeelingAlertPeripheral::RvCoreIbex,
     // RvCoreIbexRecovSwErr -> TopDarjeelingAlertPeripheral::RvCoreIbex

@@ -980,6 +980,24 @@ extern "C" {
 #define TOP_DARJEELING_ROM_CTRL1_ROM_SIZE_BYTES 0x10000u
 
 /**
+ * Peripheral base address for dma in top darjeeling.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_DARJEELING_DMA_BASE_ADDR 0x22010000u
+
+/**
+ * Peripheral size for dma in top darjeeling.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_DARJEELING_DMA_BASE_ADDR and
+ * `TOP_DARJEELING_DMA_BASE_ADDR + TOP_DARJEELING_DMA_SIZE_BYTES`.
+ */
+#define TOP_DARJEELING_DMA_SIZE_BYTES 0x100u
+
+/**
  * Peripheral base address for cfg device on rv_core_ibex in top darjeeling.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -1106,7 +1124,8 @@ typedef enum top_darjeeling_plic_peripheral {
   kTopDarjeelingPlicPeripheralEntropySrc = 27, /**< entropy_src */
   kTopDarjeelingPlicPeripheralEdn0 = 28, /**< edn0 */
   kTopDarjeelingPlicPeripheralEdn1 = 29, /**< edn1 */
-  kTopDarjeelingPlicPeripheralLast = 29, /**< \internal Final PLIC peripheral */
+  kTopDarjeelingPlicPeripheralDma = 30, /**< dma */
+  kTopDarjeelingPlicPeripheralLast = 30, /**< \internal Final PLIC peripheral */
 } top_darjeeling_plic_peripheral_t;
 
 /**
@@ -1299,7 +1318,10 @@ typedef enum top_darjeeling_plic_irq_id {
   kTopDarjeelingPlicIrqIdEdn0EdnFatalErr = 180, /**< edn0_edn_fatal_err */
   kTopDarjeelingPlicIrqIdEdn1EdnCmdReqDone = 181, /**< edn1_edn_cmd_req_done */
   kTopDarjeelingPlicIrqIdEdn1EdnFatalErr = 182, /**< edn1_edn_fatal_err */
-  kTopDarjeelingPlicIrqIdLast = 182, /**< \internal The Last Valid Interrupt ID. */
+  kTopDarjeelingPlicIrqIdDmaDmaDone = 183, /**< dma_dma_done */
+  kTopDarjeelingPlicIrqIdDmaDmaError = 184, /**< dma_dma_error */
+  kTopDarjeelingPlicIrqIdDmaDmaMemoryBufferLimit = 185, /**< dma_dma_memory_buffer_limit */
+  kTopDarjeelingPlicIrqIdLast = 185, /**< \internal The Last Valid Interrupt ID. */
 } top_darjeeling_plic_irq_id_t;
 
 /**
@@ -1309,7 +1331,7 @@ typedef enum top_darjeeling_plic_irq_id {
  * `top_darjeeling_plic_peripheral_t`.
  */
 extern const top_darjeeling_plic_peripheral_t
-    top_darjeeling_plic_interrupt_for_peripheral[183];
+    top_darjeeling_plic_interrupt_for_peripheral[186];
 
 /**
  * PLIC Interrupt Target.
@@ -1370,8 +1392,9 @@ typedef enum top_darjeeling_alert_peripheral {
   kTopDarjeelingAlertPeripheralSramCtrlMbox = 38, /**< sram_ctrl_mbox */
   kTopDarjeelingAlertPeripheralRomCtrl0 = 39, /**< rom_ctrl0 */
   kTopDarjeelingAlertPeripheralRomCtrl1 = 40, /**< rom_ctrl1 */
-  kTopDarjeelingAlertPeripheralRvCoreIbex = 41, /**< rv_core_ibex */
-  kTopDarjeelingAlertPeripheralLast = 41, /**< \internal Final Alert peripheral */
+  kTopDarjeelingAlertPeripheralDma = 41, /**< dma */
+  kTopDarjeelingAlertPeripheralRvCoreIbex = 42, /**< rv_core_ibex */
+  kTopDarjeelingAlertPeripheralLast = 42, /**< \internal Final Alert peripheral */
 } top_darjeeling_alert_peripheral_t;
 
 /**
@@ -1443,11 +1466,12 @@ typedef enum top_darjeeling_alert_id {
   kTopDarjeelingAlertIdSramCtrlMboxFatalError = 59, /**< sram_ctrl_mbox_fatal_error */
   kTopDarjeelingAlertIdRomCtrl0Fatal = 60, /**< rom_ctrl0_fatal */
   kTopDarjeelingAlertIdRomCtrl1Fatal = 61, /**< rom_ctrl1_fatal */
-  kTopDarjeelingAlertIdRvCoreIbexFatalSwErr = 62, /**< rv_core_ibex_fatal_sw_err */
-  kTopDarjeelingAlertIdRvCoreIbexRecovSwErr = 63, /**< rv_core_ibex_recov_sw_err */
-  kTopDarjeelingAlertIdRvCoreIbexFatalHwErr = 64, /**< rv_core_ibex_fatal_hw_err */
-  kTopDarjeelingAlertIdRvCoreIbexRecovHwErr = 65, /**< rv_core_ibex_recov_hw_err */
-  kTopDarjeelingAlertIdLast = 65, /**< \internal The Last Valid Alert ID. */
+  kTopDarjeelingAlertIdDmaFatalFault = 62, /**< dma_fatal_fault */
+  kTopDarjeelingAlertIdRvCoreIbexFatalSwErr = 63, /**< rv_core_ibex_fatal_sw_err */
+  kTopDarjeelingAlertIdRvCoreIbexRecovSwErr = 64, /**< rv_core_ibex_recov_sw_err */
+  kTopDarjeelingAlertIdRvCoreIbexFatalHwErr = 65, /**< rv_core_ibex_fatal_hw_err */
+  kTopDarjeelingAlertIdRvCoreIbexRecovHwErr = 66, /**< rv_core_ibex_recov_hw_err */
+  kTopDarjeelingAlertIdLast = 66, /**< \internal The Last Valid Alert ID. */
 } top_darjeeling_alert_id_t;
 
 /**
@@ -1457,7 +1481,7 @@ typedef enum top_darjeeling_alert_id {
  * `top_darjeeling_alert_peripheral_t`.
  */
 extern const top_darjeeling_alert_peripheral_t
-    top_darjeeling_alert_for_peripheral[66];
+    top_darjeeling_alert_for_peripheral[67];
 
 // PERIPH_INSEL ranges from 0 to TOP_DARJEELING_NUM_MIO_PADS + 2 -1}
 //  0 and 1 are tied to value 0 and 1
