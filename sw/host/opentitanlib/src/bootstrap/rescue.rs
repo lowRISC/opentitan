@@ -209,10 +209,10 @@ impl Rescue {
 
     /// Reads and discards any characters in the receive buffer, waiting a little while for any
     /// more which will also be discarded.
-    fn flush_rx(&self, uart: &dyn Uart) {
+    fn flush_rx(&self, uart: &dyn Uart, timeout: Duration) {
         let mut response = [0u8; Frame::HASH_LEN];
         loop {
-            match uart.read_timeout(&mut response, Duration::from_millis(500)) {
+            match uart.read_timeout(&mut response, timeout) {
                 Ok(0) | Err(_) => break,
                 Ok(_) => continue,
             }
@@ -234,7 +234,7 @@ impl Rescue {
                 // A response at this point must mean that more than 16 bytes had already been
                 // sent before entering this method.  This will be resolved by doing another
                 // slower round of 1024 bytes with delay in between every one.
-                self.flush_rx(uart);
+                self.flush_rx(uart, Duration::from_millis(500));
                 1024
             }
         };
@@ -243,7 +243,7 @@ impl Rescue {
             match uart.read_timeout(&mut response, Duration::from_millis(50)) {
                 Ok(0) | Err(_) => (),
                 Ok(_) => {
-                    self.flush_rx(uart);
+                    self.flush_rx(uart, Duration::from_millis(500));
                     return Ok(());
                 }
             }
@@ -259,8 +259,11 @@ impl Rescue {
         for _ in 0..Self::MAX_CONSECUTIVE_ERRORS {
             eprint!("Resetting...");
             container.reset_pin.write(false)?; // Low active
-            std::thread::sleep(container.reset_delay);
+            uart.write(&[3])?; // Send a character to ensure that HyperDebug UART->USB
+                               // forwarding has "woken up", see b/298075416.
+            self.flush_rx(uart, container.reset_delay);
             container.reset_pin.write(true)?; // Release reset
+
             let stopwatch = Instant::now();
             while stopwatch.elapsed() < timeout {
                 if !self.expect_string(uart, "Bldr |") {
@@ -350,7 +353,7 @@ impl UpdateProtocol for Rescue {
                 } else if response == frame.frame_hash() {
                     continue 'next_block;
                 } else {
-                    self.flush_rx(&*uart);
+                    self.flush_rx(&*uart, Duration::from_millis(500));
                     if consecutive_errors >= Self::RESYNC_AFTER_CONSECUTIVE_ERRORS {
                         eprint!("sync.");
                         self.synchronize(&*uart)?;
