@@ -141,7 +141,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           otp_ctrl_pkg::otp_lc_data_t            exp_lc_data;
           bit [otp_ctrl_pkg::KeyMgrKeyWidth-1:0] exp_keymgr_key0, exp_keymgr_key1;
 
-          if (dai_digest_ip != LifeCycleIdx) begin
+          if (PartInfo[dai_digest_ip].sw_digest || PartInfo[dai_digest_ip].hw_digest) begin
             bit [TL_DW-1:0] otp_addr = PART_OTP_DIGEST_ADDRS[dai_digest_ip];
             otp_a[otp_addr]   = cfg.mem_bkdr_util_h.read32(otp_addr << 2);
             otp_a[otp_addr+1] = cfg.mem_bkdr_util_h.read32((otp_addr << 2) + 4);
@@ -733,7 +733,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                     // However, digest is always readable except SW partitions (Issue #5752).
                     (is_secret(dai_addr) && get_digest_reg_val(part_idx) != 0 &&
                      !is_digest(dai_addr)) ||
-                    // If the partition is has key material and lc_creator_seed_sw_rw is disable, then
+                    // If the partition has key material and lc_creator_seed_sw_rw is disable, then
                     // return access error.
                     (PartInfo[part_idx].iskeymgr && !is_digest(dai_addr) &&
                      cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i != lc_ctrl_pkg::On)) begin
@@ -785,9 +785,15 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
               end
               DaiWrite: begin
                 bit[TL_AW-1:0] otp_addr = get_scb_otp_addr();
+                bit is_write_locked;
                 // check if write locked
-                if (get_digest_reg_val(part_idx) != 0 ||
-                    (PartInfo[part_idx].iskeymgr && !is_digest(dai_addr) &&
+                if (PartInfo[part_idx].hw_digest || PartInfo[part_idx].sw_digest) begin
+                  is_write_locked = get_digest_reg_val(part_idx) != 0;
+                end else begin
+                  is_write_locked = 0;
+                end
+
+                if (is_write_locked || (PartInfo[part_idx].iskeymgr && !is_digest(dai_addr) &&
                      cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i != lc_ctrl_pkg::On)) begin
                   predict_err(OtpDaiErrIdx, OtpAccessError);
                 end else begin
@@ -1101,17 +1107,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   virtual function void predict_digest_csrs();
 % for part in write_locked_digest_parts:
 <% part_name = Name.from_snake_case(part["name"]) %>\
-  % if len(part["name"]) < 8:
-    void'(ral.${part_name.as_snake_case()}_digest[0].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[${part_name.as_camel_case()}Idx]]),
-        .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.${part_name.as_snake_case()}_digest[1].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[${part_name.as_camel_case()}Idx] + 1]),
-        .kind(UVM_PREDICT_DIRECT)));
-  % else:
     void'(ral.${part_name.as_snake_case()}_digest[0].predict(
           .value(otp_a[PART_OTP_DIGEST_ADDRS[${part_name.as_camel_case()}Idx]]), .kind(UVM_PREDICT_DIRECT)));
     void'(ral.${part_name.as_snake_case()}_digest[1].predict(
           .value(otp_a[PART_OTP_DIGEST_ADDRS[${part_name.as_camel_case()}Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
-  %endif
   % if not loop.last:
 
   %endif
@@ -1301,13 +1300,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   part_name = Name.from_snake_case(part["name"])
   part_name_snake = part_name.as_snake_case()
 %>\
-  % if len(part["name"]) < 13:
-      ${part_name.as_camel_case()}Idx: digest = {`gmv(ral.${part_name_snake}_digest[1]), `gmv(ral.${part_name_snake}_digest[0])};
-  % else:
       ${part_name.as_camel_case()}Idx: begin
         digest = {`gmv(ral.${part_name_snake}_digest[1]), `gmv(ral.${part_name_snake}_digest[0])};
       end
-  % endif
 % endfor
       default: `uvm_fatal(`gfn, $sformatf("Partition %0d does not have digest", part_idx))
     endcase
@@ -1349,8 +1344,15 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           predict_err(Otp${part_name_camel}ErrIdx, OtpAccessError);
           custom_err = 1;
           if (cfg.en_cov) begin
+  % if part["write_lock"] == "Digest":
             cov.unbuf_access_lock_cg_wrap[${part_name_camel}Idx].sample(.read_lock(1),
                 .write_lock(get_digest_reg_val(${part_name_camel}Idx) != 0), .is_write(0));
+  % else:
+            // TODO: we should probably create a different covergroup
+            // for unbuffered partitions without digest.
+            cov.unbuf_access_lock_cg_wrap[${part_name_camel}Idx].sample(.read_lock(1),
+                .write_lock(0), .is_write(0));
+  % endif
           end
           return 0;
         end

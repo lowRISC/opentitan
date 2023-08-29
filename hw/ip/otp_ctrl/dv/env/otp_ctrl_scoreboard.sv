@@ -141,7 +141,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           otp_ctrl_pkg::otp_lc_data_t            exp_lc_data;
           bit [otp_ctrl_pkg::KeyMgrKeyWidth-1:0] exp_keymgr_key0, exp_keymgr_key1;
 
-          if (dai_digest_ip != LifeCycleIdx) begin
+          if (PartInfo[dai_digest_ip].sw_digest || PartInfo[dai_digest_ip].hw_digest) begin
             bit [TL_DW-1:0] otp_addr = PART_OTP_DIGEST_ADDRS[dai_digest_ip];
             otp_a[otp_addr]   = cfg.mem_bkdr_util_h.read32(otp_addr << 2);
             otp_a[otp_addr+1] = cfg.mem_bkdr_util_h.read32((otp_addr << 2) + 4);
@@ -723,7 +723,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                     // However, digest is always readable except SW partitions (Issue #5752).
                     (is_secret(dai_addr) && get_digest_reg_val(part_idx) != 0 &&
                      !is_digest(dai_addr)) ||
-                    // If the partition is has key material and lc_creator_seed_sw_rw is disable, then
+                    // If the partition has key material and lc_creator_seed_sw_rw is disable, then
                     // return access error.
                     (PartInfo[part_idx].iskeymgr && !is_digest(dai_addr) &&
                      cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i != lc_ctrl_pkg::On)) begin
@@ -775,9 +775,15 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
               end
               DaiWrite: begin
                 bit[TL_AW-1:0] otp_addr = get_scb_otp_addr();
+                bit is_write_locked;
                 // check if write locked
-                if (get_digest_reg_val(part_idx) != 0 ||
-                    (PartInfo[part_idx].iskeymgr && !is_digest(dai_addr) &&
+                if (PartInfo[part_idx].hw_digest || PartInfo[part_idx].sw_digest) begin
+                  is_write_locked = get_digest_reg_val(part_idx) != 0;
+                end else begin
+                  is_write_locked = 0;
+                end
+
+                if (is_write_locked || (PartInfo[part_idx].iskeymgr && !is_digest(dai_addr) &&
                      cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i != lc_ctrl_pkg::On)) begin
                   predict_err(OtpDaiErrIdx, OtpAccessError);
                 end else begin
@@ -1114,25 +1120,25 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     void'(ral.owner_sw_cfg_digest[1].predict(
           .value(otp_a[PART_OTP_DIGEST_ADDRS[OwnerSwCfgIdx] + 1]), .kind(UVM_PREDICT_DIRECT)));
 
-    void'(ral.hw_cfg0_digest[0].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfg0Idx]]),
-        .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.hw_cfg0_digest[1].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfg0Idx] + 1]),
-        .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.hw_cfg0_digest[0].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfg0Idx]]), .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.hw_cfg0_digest[1].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfg0Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
 
-    void'(ral.secret0_digest[0].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx]]),
-        .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.secret0_digest[1].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx] + 1]),
-        .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.secret0_digest[0].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx]]), .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.secret0_digest[1].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
 
-    void'(ral.secret1_digest[0].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[Secret1Idx]]),
-        .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.secret1_digest[1].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[Secret1Idx] + 1]),
-        .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.secret1_digest[0].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret1Idx]]), .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.secret1_digest[1].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret1Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
 
-    void'(ral.secret2_digest[0].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[Secret2Idx]]),
-        .kind(UVM_PREDICT_DIRECT)));
-    void'(ral.secret2_digest[1].predict(.value(otp_a[PART_OTP_DIGEST_ADDRS[Secret2Idx] + 1]),
-        .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.secret2_digest[0].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret2Idx]]), .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.secret2_digest[1].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret2Idx] + 1]), .kind(UVM_PREDICT_DIRECT)));
   endfunction
 
   function void update_digest_to_otp(int part_idx, bit [TL_DW*2-1:0] digest);
@@ -1310,15 +1316,27 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   virtual function bit [TL_DW*2-1:0] get_digest_reg_val(int part_idx);
     bit [TL_DW*2-1:0] digest;
     case (part_idx)
-      VendorTestIdx: digest = {`gmv(ral.vendor_test_digest[1]), `gmv(ral.vendor_test_digest[0])};
+      VendorTestIdx: begin
+        digest = {`gmv(ral.vendor_test_digest[1]), `gmv(ral.vendor_test_digest[0])};
+      end
       CreatorSwCfgIdx: begin
         digest = {`gmv(ral.creator_sw_cfg_digest[1]), `gmv(ral.creator_sw_cfg_digest[0])};
       end
-      OwnerSwCfgIdx: digest = {`gmv(ral.owner_sw_cfg_digest[1]), `gmv(ral.owner_sw_cfg_digest[0])};
-      HwCfg0Idx: digest = {`gmv(ral.hw_cfg0_digest[1]), `gmv(ral.hw_cfg0_digest[0])};
-      Secret0Idx: digest = {`gmv(ral.secret0_digest[1]), `gmv(ral.secret0_digest[0])};
-      Secret1Idx: digest = {`gmv(ral.secret1_digest[1]), `gmv(ral.secret1_digest[0])};
-      Secret2Idx: digest = {`gmv(ral.secret2_digest[1]), `gmv(ral.secret2_digest[0])};
+      OwnerSwCfgIdx: begin
+        digest = {`gmv(ral.owner_sw_cfg_digest[1]), `gmv(ral.owner_sw_cfg_digest[0])};
+      end
+      HwCfg0Idx: begin
+        digest = {`gmv(ral.hw_cfg0_digest[1]), `gmv(ral.hw_cfg0_digest[0])};
+      end
+      Secret0Idx: begin
+        digest = {`gmv(ral.secret0_digest[1]), `gmv(ral.secret0_digest[0])};
+      end
+      Secret1Idx: begin
+        digest = {`gmv(ral.secret1_digest[1]), `gmv(ral.secret1_digest[0])};
+      end
+      Secret2Idx: begin
+        digest = {`gmv(ral.secret2_digest[1]), `gmv(ral.secret2_digest[0])};
+      end
       default: `uvm_fatal(`gfn, $sformatf("Partition %0d does not have digest", part_idx))
     endcase
     return digest;
