@@ -23,7 +23,6 @@
   bus_interfaces: [
     { protocol: "tlul", direction: "device", hier_path: "u_dma_reg" }
     { protocol: "tlul", direction: "host", name: "host" }
-    { protocol: "tlul", direction: "host", name: "ctn" }
   ]
   param_list: [
     { name: "NumIntClearSources",
@@ -47,6 +46,20 @@
       package: "dma_pkg"
       act: "req"
       width: "1"
+    }
+    { struct:  "tl_h2d"
+      package: "tlul_pkg"
+      type:    "uni"
+      name:    "ctn_tl_h2d"
+      act:     "req"
+      desc:    "TL-UL host port for egress into CTN (request part), synchronous"
+    }
+    { struct:  "tl_d2h"
+      package: "tlul_pkg"
+      type:    "uni"
+      name:    "ctn_tl_d2h"
+      act:     "rcv"
+      desc:    "TL-UL host port for egress into CTN (response part), synchronous"
     }
   ]
   interrupt_list: [
