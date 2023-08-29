@@ -44,6 +44,7 @@ RTL_TEMPLATES = ["hw/ip/otp_ctrl/data/otp_ctrl_part_pkg.sv.tpl"]
 COV_TEMPLATES = ["hw/ip/otp_ctrl/data/otp_ctrl_cov_bind.sv.tpl"]
 ENV_TEMPLATES = ["hw/ip/otp_ctrl/data/otp_ctrl_env_cov.sv.tpl",
                  "hw/ip/otp_ctrl/data/otp_ctrl_env_pkg.sv.tpl",
+                 "hw/ip/otp_ctrl/data/otp_ctrl_if.sv.tpl",
                  "hw/ip/otp_ctrl/data/otp_ctrl_scoreboard.sv.tpl"]
 
 
