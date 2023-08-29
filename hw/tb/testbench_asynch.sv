@@ -366,32 +366,33 @@ module testbench_asynch ();
     case(boot_mode)
         0:begin
           bootmode = 2'b00;
-          riscv_dbg.reset_master();     
+          riscv_dbg.reset_master();
           if (sram != "") begin
                repeat(10000)
-                 @(posedge clk_sys); 
+                 @(posedge clk_sys);
                debug_secd_module_init();
                load_secd_binary(sram);
                jtag_secd_data_preload();
                jtag_secd_wakeup(32'h e0000080); //preload the flashif
-          `ifdef JTAG_SEC_BOOT             
+          `ifdef JTAG_SEC_BOOT
                repeat(250000)
                  @(posedge clk_sys);
                jtag_secd_wakeup(32'h d0008080); //secure boot
           `endif
+               jtag_secd_wait_eoc();
           end
         end
         1:begin
           bootmode = 2'b01;
-          riscv_dbg.reset_master();     
+          riscv_dbg.reset_master();
+          jtag_secd_wait_eoc();
         end
         default:begin
-          bootmode = 2'b00;
           $fatal("Unsupported bootmode");
         end
     endcase // case (boot_mode)
   end // block: bootmodes
-      
+
 ///////////////////////////// Tasks ///////////////////////////////
    
   task debug_secd_module_init;
@@ -528,4 +529,42 @@ module testbench_asynch ();
     end
 
   endtask // load_secd_binary
+
+  task jtag_secd_wait_eoc;
+    automatic dm_ot::sbcs_t sbcs = '{
+      sbautoincrement: 1'b1,
+      sbreadondata   : 1'b1,
+      default        : 1'b0
+    };
+    logic [31:0] retval;
+    logic [31:0] to_host_addr;
+    to_host_addr = 32'h c11c0018;
+
+    // Initialize the dm module again, otherwise it will not work
+    debug_secd_module_init();
+    sbcs.sbreadonaddr = 1;
+    sbcs.sbautoincrement = 0;
+    riscv_dbg.write_dmi(dm_ot::SBCS, sbcs);
+    do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs);
+    while (sbcs.sbbusy);
+
+    riscv_dbg.write_dmi(dm_ot::SBAddress0, to_host_addr); // tohost address
+    riscv_dbg.wait_idle(10);
+    do begin 
+	     do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs);
+	     while (sbcs.sbbusy);
+       riscv_dbg.write_dmi(dm_ot::SBAddress0, to_host_addr); // tohost address
+	     do riscv_dbg.read_dmi(dm_ot::SBCS, sbcs);
+	     while (sbcs.sbbusy);
+       riscv_dbg.read_dmi(dm_ot::SBData0, retval);
+       # 400ns;
+    end while (~retval[0]);
+
+    if (retval != 32'h00000001) $error("[JTAG] FAILED: return code %0d", retval);
+    else $display("[JTAG] SUCCESS");
+
+    $finish;
+
+  endtask // jtag_read_eoc
+
 endmodule

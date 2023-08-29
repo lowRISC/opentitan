@@ -322,6 +322,18 @@
           },
         ]
       },
+      { name: "EOC",
+        desc: "Reports end of computation to TB",
+        swaccess: "rw",
+        hwaccess: "none",
+        fields: [
+          { bits: "31:0",
+            name: "eoc",
+            resval: "0",
+            desc: "Reports end of computation to TB",
+          }
+        ],
+      },
     ],
 
     ram: [

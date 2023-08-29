@@ -102,6 +102,7 @@ package sram_ctrl_reg_pkg;
   parameter logic [RegsAw-1:0] SRAM_CTRL_EXEC_OFFSET = 5'h c;
   parameter logic [RegsAw-1:0] SRAM_CTRL_CTRL_REGWEN_OFFSET = 5'h 10;
   parameter logic [RegsAw-1:0] SRAM_CTRL_CTRL_OFFSET = 5'h 14;
+  parameter logic [RegsAw-1:0] SRAM_CTRL_EOC_OFFSET = 5'h 18;
 
   // Reset values for hwext registers and their fields for regs interface
   parameter logic [0:0] SRAM_CTRL_ALERT_TEST_RESVAL = 1'h 0;
@@ -114,17 +115,19 @@ package sram_ctrl_reg_pkg;
     SRAM_CTRL_EXEC_REGWEN,
     SRAM_CTRL_EXEC,
     SRAM_CTRL_CTRL_REGWEN,
-    SRAM_CTRL_CTRL
+    SRAM_CTRL_CTRL,
+    SRAM_CTRL_EOC
   } sram_ctrl_regs_id_e;
 
   // Register width information to check illegal writes for regs interface
-  parameter logic [3:0] SRAM_CTRL_REGS_PERMIT [6] = '{
+  parameter logic [3:0] SRAM_CTRL_REGS_PERMIT [7] = '{
     4'b 0001, // index[0] SRAM_CTRL_ALERT_TEST
     4'b 0001, // index[1] SRAM_CTRL_STATUS
     4'b 0001, // index[2] SRAM_CTRL_EXEC_REGWEN
     4'b 0001, // index[3] SRAM_CTRL_EXEC
     4'b 0001, // index[4] SRAM_CTRL_CTRL_REGWEN
-    4'b 0001  // index[5] SRAM_CTRL_CTRL
+    4'b 0001, // index[5] SRAM_CTRL_CTRL
+    4'b 1111  // index[6] SRAM_CTRL_EOC
   };
 
 endpackage
