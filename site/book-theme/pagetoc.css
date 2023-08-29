@@ -14,7 +14,7 @@
 @media only screen and (min-width:1440px) {
     .sidetoc {
         position: sticky;
-        margin: 0 calc(var(--page-padding) + 15px);
+        margin: 0 calc(var(--page-padding) + 15px) 0 0;
         width: calc(40% - 15vw + 100px);
         max-width: 400px;
         top: calc(var(--menu-bar-height) + 8rem);

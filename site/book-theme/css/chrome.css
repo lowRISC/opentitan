@@ -176,7 +176,7 @@ a > .hljs {
 }
 
 .nav-wrapper {
-    margin-top: 50px;
+    margin: 50px 0 var(--page-padding) 0;
     display: none;
 }
 
@@ -186,7 +186,7 @@ a > .hljs {
     text-decoration: none;
     width: 90px;
     border-radius: 5px;
-    background-color: var(--sidebar-bg);
+    background-color: var(--theme-hover);
 }
 
 .previous {
@@ -203,7 +203,7 @@ a > .hljs {
     .nav-wrapper { display: block; }
 }
 
-@media only screen and (max-width: 1380px) {
+@media only screen and (max-width: 1720px) {
     .sidebar-visible .nav-wide-wrapper { display: none; }
     .sidebar-visible .nav-wrapper { display: block; }
 }
