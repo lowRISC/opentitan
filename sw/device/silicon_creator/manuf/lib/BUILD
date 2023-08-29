@@ -43,6 +43,10 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":sram_start_headers",
+        "//hw/ip/csrng/data:csrng_regs",
+        "//hw/ip/edn/data:edn_regs",
+        "//hw/ip/entropy_src/data:entropy_src_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/crt",
         "//sw/device/lib/testing/test_framework:ottf_isrs",
     ],
