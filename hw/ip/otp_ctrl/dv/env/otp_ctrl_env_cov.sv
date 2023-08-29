@@ -9,7 +9,6 @@
  * only in build_phase can be defined here
  * Covergroups may also be wrapped inside helper classes if needed.
  */
-
 class otp_ctrl_unbuf_err_code_cg_wrap;
   // Unbuffered partition can use TLUL interface to read out but cannot write, thus error_code does
   // not have write_blank_err.
@@ -60,33 +59,45 @@ class otp_ctrl_csr_rd_after_alert_cg_wrap;
   covergroup csr_rd_after_alert_cg(otp_ctrl_core_reg_block ral) with function sample(bit[TL_DW-1:0]
                                                                                      csr_offset);
     read_csr_after_alert_issued: coverpoint csr_offset {
-      bins unbuffered_digests  = {ral.vendor_test_digest[0].get_offset(),
-                                  ral.vendor_test_digest[1].get_offset(),
-                                  ral.creator_sw_cfg_digest[0].get_offset(),
-                                  ral.creator_sw_cfg_digest[1].get_offset(),
-                                  ral.owner_sw_cfg_digest[0].get_offset(),
-                                  ral.owner_sw_cfg_digest[1].get_offset()};
-      bins hw_digests          = {ral.hw_cfg0_digest[0].get_offset(),
-                                  ral.hw_cfg0_digest[1].get_offset()};
-      bins secret_digests      = {ral.secret0_digest[0].get_offset(),
-                                  ral.secret0_digest[1].get_offset(),
-                                  ral.secret1_digest[0].get_offset(),
-                                  ral.secret1_digest[1].get_offset(),
-                                  ral.secret2_digest[0].get_offset(),
-                                  ral.secret2_digest[1].get_offset()};
-      bins direct_access_rdata = {ral.direct_access_rdata[0].get_offset(),
-                                  ral.direct_access_rdata[1].get_offset()};
-      bins status              = {ral.status.get_offset()};
-      bins error_code          = {ral.err_code[0].get_offset(),
-                                  ral.err_code[1].get_offset(),
-                                  ral.err_code[2].get_offset(),
-                                  ral.err_code[3].get_offset(),
-                                  ral.err_code[4].get_offset(),
-                                  ral.err_code[5].get_offset(),
-                                  ral.err_code[6].get_offset(),
-                                  ral.err_code[7].get_offset(),
-                                  ral.err_code[8].get_offset(),
-                                  ral.err_code[9].get_offset()};
+      bins unbuffered_digests  = {
+        ral.vendor_test_digest[0].get_offset(),
+        ral.vendor_test_digest[1].get_offset(),
+        ral.creator_sw_cfg_digest[0].get_offset(),
+        ral.creator_sw_cfg_digest[1].get_offset(),
+        ral.owner_sw_cfg_digest[0].get_offset(),
+        ral.owner_sw_cfg_digest[1].get_offset()
+      };
+      bins hw_digests          = {
+        ral.hw_cfg0_digest[0].get_offset(),
+        ral.hw_cfg0_digest[1].get_offset()
+      };
+      bins secret_digests      = {
+        ral.secret0_digest[0].get_offset(),
+        ral.secret0_digest[1].get_offset(),
+        ral.secret1_digest[0].get_offset(),
+        ral.secret1_digest[1].get_offset(),
+        ral.secret2_digest[0].get_offset(),
+        ral.secret2_digest[1].get_offset()
+      };
+      bins direct_access_rdata = {
+        ral.direct_access_rdata[0].get_offset(),
+        ral.direct_access_rdata[1].get_offset()
+      };
+      bins status              = {
+        ral.status.get_offset()
+      };
+      bins error_code          = {
+        ral.err_code[0].get_offset(),
+        ral.err_code[1].get_offset(),
+        ral.err_code[2].get_offset(),
+        ral.err_code[3].get_offset(),
+        ral.err_code[4].get_offset(),
+        ral.err_code[5].get_offset(),
+        ral.err_code[6].get_offset(),
+        ral.err_code[7].get_offset(),
+        ral.err_code[8].get_offset(),
+        ral.err_code[9].get_offset()
+      };
     }
   endgroup
 
@@ -144,13 +155,13 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
   // - If each partition is locked (expect LC)
   covergroup power_on_cg with function sample (bit lc_esc_en, bit[NumPart-2:0] parts_locked);
     lc_esc:          coverpoint lc_esc_en;
-    vendor_sw_lock:  coverpoint parts_locked[0];
-    creator_sw_lock: coverpoint parts_locked[1];
-    owner_sw_lock:   coverpoint parts_locked[2];
-    hw_cfg0_lock:    coverpoint parts_locked[3];
-    secret0_lock:    coverpoint parts_locked[4];
-    secret1_lock:    coverpoint parts_locked[5];
-    secret2_lock:    coverpoint parts_locked[6];
+    vendor_test_lock: coverpoint parts_locked[0];
+    creator_sw_cfg_lock: coverpoint parts_locked[1];
+    owner_sw_cfg_lock: coverpoint parts_locked[2];
+    hw_cfg0_lock: coverpoint parts_locked[3];
+    secret0_lock: coverpoint parts_locked[4];
+    secret1_lock: coverpoint parts_locked[5];
+    secret2_lock: coverpoint parts_locked[6];
   endgroup
 
   // This covergroup is sampled only if flash request passed scb check.
@@ -177,6 +188,7 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
   // This covergroup is sampled only if keymgr output passed scb check.
   covergroup keymgr_o_cg with function sample (bit lc_seed_hw_rd_en, bit locked);
     keymgr_rd_en: coverpoint lc_seed_hw_rd_en;
+    // TODO: probably should add all partitions with keymgr material here.
     secret2_lock: coverpoint locked;
     keymgr_output_conditions: cross keymgr_rd_en, secret2_lock;
   endgroup
@@ -216,9 +228,11 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
       bins creator_sw_cfg = {CreatorSwCfgIdx};
       bins owner_sw_cfg   = {OwnerSwCfgIdx};
       bins hw_cfg0        = {HwCfg0Idx};
+      bins hw_cfg1        = {HwCfg1Idx};
       bins secret0        = {Secret0Idx};
       bins secret1        = {Secret1Idx};
       bins secret2        = {Secret2Idx};
+      bins secret3        = {Secret3Idx};
       bins lc_or_oob      = {LifeCycleIdx};
       bins illegal_idx    = default;
     }
@@ -255,6 +269,16 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
     dai_access_secret2: cross lc_creator_seed_sw_rw_en, dai_access_cmd;
   endgroup
 
+  covergroup dai_access_secret3_cg with function sample(bit lc_rw_en, dai_cmd_e dai_cmd);
+    lc_creator_seed_sw_rw_en: coverpoint lc_rw_en;
+    dai_access_cmd: coverpoint dai_cmd {
+      bins dai_rd     = {DaiRead};
+      bins dai_wr     = {DaiWrite};
+      bins dai_digest = {DaiDigest};
+    }
+    dai_access_secret3: cross lc_creator_seed_sw_rw_en, dai_access_cmd;
+  endgroup
+
   function new(string name, uvm_component parent);
     super.new(name, parent);
     // Create coverage from local covergroups.
@@ -267,6 +291,7 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
     dai_err_code_cg               = new();
     lci_err_code_cg               = new();
     dai_access_secret2_cg         = new();
+    dai_access_secret3_cg         = new();
   endfunction : new
 
   virtual function void build_phase(uvm_phase phase);
@@ -317,8 +342,8 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
       OtpVendorTestErrIdx, OtpCreatorSwCfgErrIdx, OtpOwnerSwCfgErrIdx: begin
         unbuf_err_code_cg_wrap[field_idx].unbuf_err_code_cg.sample(val);
       end
-      OtpHwCfg0ErrIdx, OtpSecret0ErrIdx, OtpSecret1ErrIdx, OtpSecret2ErrIdx,
-      OtpLifeCycleErrIdx: begin
+      OtpHwCfg0ErrIdx, OtpHwCfg1ErrIdx, OtpSecret0ErrIdx, OtpSecret1ErrIdx, OtpSecret2ErrIdx,
+      OtpSecret3ErrIdx, OtpLifeCycleErrIdx: begin
         buf_err_code_cg_wrap[field_idx - NumPartUnbuf].buf_err_code_cg.sample(val);
       end
       OtpDaiErrIdx: begin
