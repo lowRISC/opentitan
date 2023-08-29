@@ -2,6 +2,21 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 ${gen_comment}
+<%
+from topgen.lib import Name
+
+unbuf_parts_with_digest = [part for part in otp_mmap.config["partitions"] if
+                           part["variant"] == "Unbuffered" and
+                           (part["sw_digest"] or part["hw_digest"])]
+parts_with_digest = [part for part in otp_mmap.config["partitions"] if
+                     (part["sw_digest"] or part["hw_digest"])]
+read_locked_csr_parts = [part for part in otp_mmap.config["partitions"] if
+                         part["read_lock"] == "CSR"]
+write_locked_digest_parts = [part for part in otp_mmap.config["partitions"] if
+                             part["write_lock"] == "Digest"]
+secret_parts = [part for part in otp_mmap.config["partitions"] if
+                part["secret"]]
+%>\
 class otp_ctrl_base_vseq extends cip_base_vseq #(
     .RAL_T               (otp_ctrl_core_reg_block),
     .CFG_T               (otp_ctrl_env_cfg),
@@ -235,9 +250,11 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   // this task provisions all HW partitions
   // SW partitions could not be provisioned via DAI interface
   // LC partitions cannot be locked
-  virtual task cal_hw_digests(bit [3:0] trigger_digest = $urandom());
-    for (int i = int'(HwCfg0Idx); i < int'(LifeCycleIdx); i++) begin
-      if (trigger_digest[i-HwCfg0Idx]) cal_digest(i);
+  virtual task cal_hw_digests(bit [NumPart-1:0] trigger_digest = $urandom());
+    foreach (PartInfo[i]) begin
+      if (PartInfo[i].hw_digest && trigger_digest[i]) begin
+        cal_digest(i);
+      end
     end
   endtask
 
@@ -245,47 +262,35 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   // Here to simplify testbench, write random data to sw digest.
   virtual task write_sw_digests(bit [NumPartUnbuf-1:0] wr_digest = $urandom());
     bit [TL_DW*2-1:0] wdata;
-    if (wr_digest[VendorTestIdx]) begin
+  % for part in unbuf_parts_with_digest:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_camel = part_name.as_camel_case()
+%>\
+    if (wr_digest[${part_name_camel}Idx]) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
-      dai_wr(CreatorSwCfgDigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
+      dai_wr(${part_name_camel}DigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
     end
-    if (wr_digest[CreatorSwCfgIdx]) begin
-      `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
-      dai_wr(CreatorSwCfgDigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
-    end
-    if (wr_digest[OwnerSwCfgIdx]) begin
-      `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
-      dai_wr(OwnerSwCfgDigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
-    end
+% endfor
   endtask
 
   virtual task write_sw_rd_locks(bit [NumPartUnbuf-1:0] do_rd_lock= $urandom());
-    if (do_rd_lock[VendorTestIdx])   csr_wr(ral.vendor_test_read_lock, 0);
-    if (do_rd_lock[CreatorSwCfgIdx]) csr_wr(ral.creator_sw_cfg_read_lock, 0);
-    if (do_rd_lock[OwnerSwCfgIdx])   csr_wr(ral.owner_sw_cfg_read_lock, 0);
+% for part in read_locked_csr_parts:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_camel = part_name.as_camel_case()
+%>\
+    if (do_rd_lock[${part_name_camel}Idx]) csr_wr(ral.${part["name"].lower()}_read_lock, 0);
+% endfor
   endtask
 
   // The digest CSR values are verified in otp_ctrl_scoreboard
   virtual task rd_digests();
     bit [TL_DW-1:0] val;
-    csr_rd(.ptr(ral.vendor_test_digest[0]),    .value(val));
-    csr_rd(.ptr(ral.vendor_test_digest[1]),    .value(val));
-    csr_rd(.ptr(ral.creator_sw_cfg_digest[0]), .value(val));
-    csr_rd(.ptr(ral.creator_sw_cfg_digest[1]), .value(val));
-    csr_rd(.ptr(ral.owner_sw_cfg_digest[0]),   .value(val));
-    csr_rd(.ptr(ral.owner_sw_cfg_digest[1]),   .value(val));
-    csr_rd(.ptr(ral.hw_cfg0_digest[0]),        .value(val));
-    csr_rd(.ptr(ral.hw_cfg0_digest[1]),        .value(val));
-    csr_rd(.ptr(ral.hw_cfg1_digest[0]),        .value(val));
-    csr_rd(.ptr(ral.hw_cfg1_digest[1]),        .value(val));
-    csr_rd(.ptr(ral.secret0_digest[0]),        .value(val));
-    csr_rd(.ptr(ral.secret0_digest[1]),        .value(val));
-    csr_rd(.ptr(ral.secret1_digest[0]),        .value(val));
-    csr_rd(.ptr(ral.secret1_digest[1]),        .value(val));
-    csr_rd(.ptr(ral.secret2_digest[0]),        .value(val));
-    csr_rd(.ptr(ral.secret2_digest[1]),        .value(val));
-    csr_rd(.ptr(ral.secret3_digest[0]),        .value(val));
-    csr_rd(.ptr(ral.secret3_digest[1]),        .value(val));
+% for part in parts_with_digest:
+    csr_rd(.ptr(ral.${part["name"].lower()}_digest[0]), .value(val));
+    csr_rd(.ptr(ral.${part["name"].lower()}_digest[1]), .value(val));
+% endfor
   endtask
 
   // If the partition is read/write locked, there is 20% chance we will force the internal mubi
@@ -296,58 +301,43 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     if (cfg.otp_ctrl_vif.alert_reqs == 0 && !cfg.under_reset) begin
       otp_part_access_lock_t forced_mubi_part_access[NumPart-1];
 
-      if (`gmv(ral.vendor_test_digest[0]) || `gmv(ral.vendor_test_digest[1])) begin
-        if (!$urandom_range(0, 4)) forced_mubi_part_access[VendorTestIdx].write_lock = 1;
+      // Digest write locks
+% for part in write_locked_digest_parts:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_camel = part_name.as_camel_case()
+%>\
+      if ((`gmv(ral.${part["name"].lower()}_digest[0]) ||
+           `gmv(ral.${part["name"].lower()}_digest[1])) &&
+          !$urandom_range(0, 4)) begin
+        forced_mubi_part_access[${part_name_camel}Idx].write_lock = 1;
       end
-      if (`gmv(ral.vendor_test_read_lock) == 0) begin
-        if (!$urandom_range(0, 4)) forced_mubi_part_access[VendorTestIdx].read_lock = 1;
-      end
+% endfor
 
-      if (`gmv(ral.creator_sw_cfg_digest[0]) || `gmv(ral.creator_sw_cfg_digest[1])) begin
-        if (!$urandom_range(0, 4)) forced_mubi_part_access[CreatorSwCfgIdx].write_lock = 1;
+      // CSR read locks
+% for part in read_locked_csr_parts:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_camel = part_name.as_camel_case()
+%>\
+      if ((`gmv(ral.${part["name"].lower()}_read_lock) == 0) && !$urandom_range(0, 4)) begin
+        forced_mubi_part_access[${part_name_camel}Idx].read_lock = 1;
       end
-      if (`gmv(ral.creator_sw_cfg_read_lock) == 0) begin
-        if (!$urandom_range(0, 4)) forced_mubi_part_access[CreatorSwCfgIdx].read_lock = 1;
-      end
+% endfor
 
-      if (`gmv(ral.owner_sw_cfg_digest[0]) || `gmv(ral.owner_sw_cfg_digest[1])) begin
-        if ($urandom_range(0, 4) == 0) forced_mubi_part_access[OwnerSwCfgIdx].write_lock = 1;
-      end
-      if (`gmv(ral.owner_sw_cfg_read_lock) == 0) begin
-        if (!$urandom_range(0, 4)) forced_mubi_part_access[OwnerSwCfgIdx].read_lock = 1;
-      end
 
-      if (`gmv(ral.hw_cfg0_digest[0]) || `gmv(ral.hw_cfg0_digest[1])) begin
-        // ICEBOX (#17770): hw_cfg part cannot be read locked.
-        // if (!$urandom_range(0, 4)) cfg.forced_mubi_part_access[HwCfg0Idx].read_lock = 1;
-        if (!$urandom_range(0, 4)) forced_mubi_part_access[HwCfg0Idx].write_lock = 1;
+      // Digest read locks
+% for part in secret_parts:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_camel = part_name.as_camel_case()
+%>\
+      if ((`gmv(ral.${part["name"].lower()}_digest[0]) ||
+           `gmv(ral.${part["name"].lower()}_digest[1])) &&
+          !$urandom_range(0, 4)) begin
+        forced_mubi_part_access[${part_name_camel}Idx].read_lock = 1;
       end
-
-      if (`gmv(ral.hw_cfg1_digest[0]) || `gmv(ral.hw_cfg1_digest[1])) begin
-        // ICEBOX (#17770): hw_cfg part cannot be read locked.
-        // if (!$urandom_range(0, 4)) cfg.forced_mubi_part_access[HwCfg1Idx].read_lock = 1;
-        if (!$urandom_range(0, 4)) forced_mubi_part_access[HwCfg1Idx].write_lock = 1;
-      end
-
-      if (`gmv(ral.secret0_digest[0]) || `gmv(ral.secret0_digest[1])) begin
-        if (!$urandom_range(0, 4)) forced_mubi_part_access[Secret0Idx].read_lock = 1;
-        if (!$urandom_range(0, 4)) forced_mubi_part_access[Secret0Idx].write_lock = 1;
-      end
-
-      if (`gmv(ral.secret1_digest[0]) || `gmv(ral.secret1_digest[1])) begin
-        if (!$urandom_range(0, 4)) forced_mubi_part_access[Secret1Idx].read_lock = 1;
-        if (!$urandom_range(0, 4)) forced_mubi_part_access[Secret1Idx].write_lock = 1;
-      end
-
-      if (`gmv(ral.secret2_digest[0]) || `gmv(ral.secret2_digest[1])) begin
-        if (!$urandom_range(0, 4)) forced_mubi_part_access[Secret2Idx].read_lock = 1;
-        if (!$urandom_range(0, 4)) forced_mubi_part_access[Secret2Idx].write_lock = 1;
-      end
-
-      if (`gmv(ral.secret3_digest[0]) || `gmv(ral.secret3_digest[1])) begin
-        if (!$urandom_range(0, 4)) forced_mubi_part_access[Secret3Idx].read_lock = 1;
-        if (!$urandom_range(0, 4)) forced_mubi_part_access[Secret3Idx].write_lock = 1;
-      end
+% endfor
 
       foreach (forced_mubi_part_access[i]) begin
         `uvm_info(`gfn, $sformatf("partition %0d inject mubi value: read=%0b, write=%0b", i,
