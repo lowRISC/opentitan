@@ -20,8 +20,6 @@
 
   clocking: [{clock: "clk_i", reset: "rst_ni", primary: true}]
   scan: "true"        // Enable `scanmode_i` port
-  scan_reset: "true"  // Enable `scan_rst_ni` port
-  scan_en: "true"     // Enable `scan_en_i` port
   bus_interfaces: [
     { protocol: "tlul", direction: "device", hier_path: "u_dma_reg" }
     { protocol: "tlul", direction: "host", name: "host" }
