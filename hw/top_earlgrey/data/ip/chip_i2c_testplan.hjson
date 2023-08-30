@@ -19,8 +19,13 @@
             - Verify the virtual / true open drain capability.
 
             Verify all instances of I2C in the chip.
+
+            Notes for silicon targets:
+            - The testbench in this case will be a device that physically toggles/inspects the appropriate SCL and SDA lines.
             '''
+      features: ["I2C.MODE.HOST", "I2C.OPERATION.READ", "I2C.OPERATION.WRITE"]
       stage: V2
+      si_stage: SV2
       tests: ["chip_sw_i2c_host_tx_rx",
               "chip_sw_i2c_host_tx_rx_idx1",
               "chip_sw_i2c_host_tx_rx_idx2"]
@@ -37,9 +42,119 @@
             - Verify the virtual / true open drain capability.
 
             Verify all instances of I2C in the chip.
+
+            Notes for silicon targets:
+            - The testbench in this case will be a device that physically toggles/inspects the appropriate SCL and SDA lines.
             '''
+      features: ["I2C.MODE.TARGET", "I2C.OPERATION.READ", "I2C.OPERATION.WRITE"]
       stage: V2
+      si_stage: SV2
       tests: ["chip_sw_i2c_device_tx_rx"]
+    }
+    {
+      name: chip_sw_i2c_speed
+      desc: '''Verify the transmission speed of data over the chip's I2C interfaces.
+
+            Run the following for standard, fast and fast plus speeds:
+            - Program the I2C to be in the appropriate mode (host/target).
+            - For hosts, the SW test writes a known payload over the chip's I2C host interface.
+              It should then receive back that payload plus one.
+              The test checks whether the payload is sent at the appropriate baud-rate.
+            - For targets, the test sends data at the appropriate baud-rate and checks whether an ack is received.
+              The test should also do a read request.
+
+            Verify all instances of I2C in the chip.
+
+            Notes for silicon targets:
+            - The testbench in this case will be a device that physically toggles/inspects the appropriate SCL and SDA lines.
+            - To check the baud rate the test bench should time the packets and average this time out over multiple runs.
+            Then check whether these timings match the appropriate baud-rate within an acceptable range:
+            Fast-mode should be faster than standard-mode and fast-mode plus should be faster than fast-mode.
+            '''
+      features: ["I2C.MODE.HOST", "I2C.MODE.TARGET", "I2C.SPEED.STANDARD", "I2C.SPEED.FAST", "I2C.SPEED.FASTPLUS"]
+      stage: V3
+      si_stage: SV2
+      tests: []
+    }
+    {
+      name: chip_sw_i2c_override
+      desc: '''Verify overriding SDA and SCL on I2C interfaces.
+
+            For all I2C host mode instances:
+            - Software cycles through all SDA/SCL combinations with long delays.
+            - Test monitors the SDA/SCL lines and checks whether it receives the values in the expected order and delay.
+
+            Verify all instances of I2C in the chip.
+
+            Notes for silicon targets:
+            - The testbench in this case will be a device that physically toggles/inspects the appropriate SCL and SDA lines.
+            '''
+      features: ["I2C.MODE.HOST", "I2C.OVERRIDE"]
+      stage: V3
+      si_stage: SV2
+      tests: []
+    }
+    {
+      name: chip_sw_i2c_clockstretching
+      desc: '''Verify clock stretching on I2C interfaces.
+
+            For all I2C host mode instances:
+            - Do a read and make target stretch after reading an address.
+            - Do a write and make the target stretch during that write.
+            - Do a read and make the target stretch during that read.
+
+            For all I2C target mode instances:
+            - Have a queue of 10 I2C transactions where the data increments by one.
+            - The test bench host tries to send these transactions one after the other without pausing.
+            - On the chip, the Ibex waits to receive the first transaction, then it goes to sleep for 1 second and refuses to pull transactions out of the ACQ FIFO, which should cause clock stretching to happen.
+            - Afterwards Ibex repeats the reading transaction and sleeping for 1 second.
+            - The Ibex checks that it receives 10 transactions total and that the data in each of the transactions are incremented by one. After that, it sends back a transactions with the data value of the final transaction.
+            - The test bench checks that the transaction received from the chip has the same data value as the final packet sent.
+
+            Notes for silicon targets:
+            - The testbench in this case will be a device that physically toggles/inspects the appropriate SCL and SDA lines.
+            '''
+      features: ["I2C.MODE.HOST", "I2C.PROTOCOL.CLOCKSTRETCHING"]
+      stage: V3
+      si_stage: SV2
+      tests: []
+    }
+    {
+      name: chip_sw_i2c_nack
+      desc: '''Verify correct behavior of nack detection.
+
+            For all I2C host mode instances:
+            - Program the I2C to be in host mode.
+            - Fail to send an acknowledgement after the address.
+            - Fail to send an acknowledgment after a random data byte.
+
+            The host mode should successfully detect this nack and raise the appropriate interrupt.
+
+            Notes for silicon targets:
+            - The testbench in this case will be a device that physically toggles/inspects the appropriate SCL and SDA lines.
+            '''
+      features: ["I2C.MODE.HOST", "I2C.PROTOCOL.NACK"]
+      stage: V3
+      si_stage: SV2
+      tests: []
+    }
+    {
+      name: chip_sw_i2c_repeatedstart
+      desc: '''Verify correct behavior of repeated start.
+
+            For all I2C target mode instances:
+            - Program the I2C to be in target mode.
+            - Start a transaction, but fail to send a stop.
+            - Send a repeated start with a specific data value and stop the transaction as usual.
+            - Perform a read from the I2C device and check that the target sends back the data val
+
+            Notes for silicon targets:
+            - The testbench in this case will be a device that physically toggles/inspects the appropriate SCL and SDA lines.
+            '''
+      features: ["I2C.MODE.TARGET", "I2C.PROTOCOL.REPEATEDSTART"]
+      stage: V3
+      si_stage: SV2
+      tests: []
     }
   ]
 }
