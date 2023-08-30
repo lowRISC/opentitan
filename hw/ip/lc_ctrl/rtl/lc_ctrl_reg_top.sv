@@ -469,7 +469,8 @@ module lc_ctrl_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
-    .RESVAL  (1'h1)
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
   ) u_claim_transition_if_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

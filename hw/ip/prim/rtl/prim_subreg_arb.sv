@@ -8,7 +8,8 @@ module prim_subreg_arb
   import prim_subreg_pkg::*;
 #(
   parameter int         DW       = 32,
-  parameter sw_access_e SwAccess = SwAccessRW
+  parameter sw_access_e SwAccess = SwAccessRW,
+  parameter bit         Mubi     = 1'b0
 ) (
   // From SW: valid for RW, WO, W1C, W1S, W0C, RC.
   // In case of RC, top connects read pulse to we.
@@ -26,6 +27,7 @@ module prim_subreg_arb
   output logic          wr_en,
   output logic [DW-1:0] wr_data
 );
+  import prim_mubi_pkg::*;
 
   if (SwAccess inside {SwAccessRW, SwAccessWO}) begin : gen_w
     assign wr_en   = we | de;
@@ -56,21 +58,109 @@ module prim_subreg_arb
     // So, give a chance HW to clear when SW tries to set.
     // If both try to set/clr at the same bit pos, SW wins.
     assign wr_en   = we | de;
-    assign wr_data = (de ? d : q) | (we ? wd : '0);
+    if (Mubi) begin : gen_mubi
+      if (DW == 4) begin : gen_mubi4
+        assign wr_data = prim_mubi_pkg::mubi4_and_hi(prim_mubi_pkg::mubi4_t'(de ? d : q),
+                                                     (we ? prim_mubi_pkg::mubi4_t'(wd) :
+                                                           prim_mubi_pkg::MuBi4False));
+      end else if (DW == 8) begin : gen_mubi8
+        assign wr_data = prim_mubi_pkg::mubi8_and_hi(prim_mubi_pkg::mubi8_t'(de ? d : q),
+                                                     (we ? prim_mubi_pkg::mubi8_t'(wd) :
+                                                           prim_mubi_pkg::MuBi8False));
+      end else if (DW == 12) begin : gen_mubi12
+        assign wr_data = prim_mubi_pkg::mubi12_and_hi(prim_mubi_pkg::mubi12_t'(de ? d : q),
+                                                      (we ? prim_mubi_pkg::mubi12_t'(wd) :
+                                                            prim_mubi_pkg::MuBi12False));
+      end else if (DW == 16) begin : gen_mubi16
+        assign wr_data = prim_mubi_pkg::mubi16_and_hi(prim_mubi_pkg::mubi16_t'(de ? d : q),
+                                                      (we ? prim_mubi_pkg::mubi16_t'(wd) :
+                                                            prim_mubi_pkg::MuBi16False));
+      end else begin : gen_invalid_mubi
+        $error("%m: Invalid width for MuBi");
+      end
+    end else begin : gen_non_mubi
+      assign wr_data = (de ? d : q) | (we ? wd : '0);
+    end
   end else if (SwAccess == SwAccessW1C) begin : gen_w1c
     // If SwAccess is W1C, then assume hw tries to set.
     // So, give a chance HW to set when SW tries to clear.
     // If both try to set/clr at the same bit pos, SW wins.
     assign wr_en   = we | de;
-    assign wr_data = (de ? d : q) & (we ? ~wd : '1);
+    if (Mubi) begin : gen_mubi
+      if (DW == 4) begin : gen_mubi4
+        assign wr_data = prim_mubi_pkg::mubi4_or_hi(prim_mubi_pkg::mubi4_t'(de ? d : q),
+                                                    (we ? prim_mubi_pkg::mubi4_t'(~wd) :
+                                                          prim_mubi_pkg::MuBi4True));
+      end else if (DW == 8) begin : gen_mubi8
+        assign wr_data = prim_mubi_pkg::mubi8_or_hi(prim_mubi_pkg::mubi8_t'(de ? d : q),
+                                                    (we ? prim_mubi_pkg::mubi8_t'(~wd) :
+                                                          prim_mubi_pkg::MuBi8True));
+      end else if (DW == 12) begin : gen_mubi12
+        assign wr_data = prim_mubi_pkg::mubi12_or_hi(prim_mubi_pkg::mubi12_t'(de ? d : q),
+                                                     (we ? prim_mubi_pkg::mubi12_t'(~wd) :
+                                                           prim_mubi_pkg::MuBi12True));
+      end else if (DW == 16) begin : gen_mubi16
+        assign wr_data = prim_mubi_pkg::mubi16_or_hi(prim_mubi_pkg::mubi16_t'(de ? d : q),
+                                                     (we ? prim_mubi_pkg::mubi16_t'(~wd) :
+                                                           prim_mubi_pkg::MuBi16True));
+      end else begin : gen_invalid_mubi
+        $error("%m: Invalid width for MuBi");
+      end
+    end else begin : gen_non_mubi
+      assign wr_data = (de ? d : q) & (we ? ~wd : '1);
+    end
   end else if (SwAccess == SwAccessW0C) begin : gen_w0c
     assign wr_en   = we | de;
-    assign wr_data = (de ? d : q) & (we ? wd : '1);
+    if (Mubi) begin : gen_mubi
+      if (DW == 4) begin : gen_mubi4
+        assign wr_data = prim_mubi_pkg::mubi4_and_hi(prim_mubi_pkg::mubi4_t'(de ? d : q),
+                                                     (we ? prim_mubi_pkg::mubi4_t'(wd) :
+                                                           prim_mubi_pkg::MuBi4True));
+      end else if (DW == 8) begin : gen_mubi8
+        assign wr_data = prim_mubi_pkg::mubi8_and_hi(prim_mubi_pkg::mubi8_t'(de ? d : q),
+                                                     (we ? prim_mubi_pkg::mubi8_t'(wd) :
+                                                           prim_mubi_pkg::MuBi8True));
+      end else if (DW == 12) begin : gen_mubi12
+        assign wr_data = prim_mubi_pkg::mubi12_and_hi(prim_mubi_pkg::mubi12_t'(de ? d : q),
+                                                      (we ? prim_mubi_pkg::mubi12_t'(wd) :
+                                                            prim_mubi_pkg::MuBi12True));
+      end else if (DW == 16) begin : gen_mubi16
+        assign wr_data = prim_mubi_pkg::mubi16_and_hi(prim_mubi_pkg::mubi16_t'(de ? d : q),
+                                                      (we ? prim_mubi_pkg::mubi16_t'(wd) :
+                                                            prim_mubi_pkg::MuBi16True));
+      end else begin : gen_invalid_mubi
+        $error("%m: Invalid width for MuBi");
+      end
+    end else begin : gen_non_mubi
+      assign wr_data = (de ? d : q) & (we ? wd : '1);
+    end
   end else if (SwAccess == SwAccessRC) begin : gen_rc
     // This swtype is not recommended but exists for compatibility.
     // WARN: we signal is actually read signal not write enable.
     assign wr_en  = we | de;
-    assign wr_data = (de ? d : q) & (we ? '0 : '1);
+    if (Mubi) begin : gen_mubi
+      if (DW == 4) begin : gen_mubi4
+        assign wr_data = prim_mubi_pkg::mubi4_and_hi(prim_mubi_pkg::mubi4_t'(de ? d : q),
+                                                     (we ? prim_mubi_pkg::MuBi4False :
+                                                           prim_mubi_pkg::MuBi4True));
+      end else if (DW == 8) begin : gen_mubi8
+        assign wr_data = prim_mubi_pkg::mubi8_and_hi(prim_mubi_pkg::mubi8_t'(de ? d : q),
+                                                     (we ? prim_mubi_pkg::MuBi8False :
+                                                           prim_mubi_pkg::MuBi8True));
+      end else if (DW == 12) begin : gen_mubi12
+        assign wr_data = prim_mubi_pkg::mubi12_and_hi(prim_mubi_pkg::mubi12_t'(de ? d : q),
+                                                      (we ? prim_mubi_pkg::MuBi12False :
+                                                            prim_mubi_pkg::MuBi12True));
+      end else if (DW == 16) begin : gen_mubi16
+        assign wr_data = prim_mubi_pkg::mubi16_and_hi(prim_mubi_pkg::mubi16_t'(de ? d : q),
+                                                      (we ? prim_mubi_pkg::mubi16_t'(wd) :
+                                                            prim_mubi_pkg::MuBi16True));
+      end else begin : gen_invalid_mubi
+        $error("%m: Invalid width for MuBi");
+      end
+    end else begin : gen_non_mubi
+      assign wr_data = (de ? d : q) & (we ? '0 : '1);
+    end
     // Unused wd - Prevent lint errors.
     logic [DW-1:0] unused_wd;
     //VCS coverage off

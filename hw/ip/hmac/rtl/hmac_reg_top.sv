@@ -254,7 +254,8 @@ module hmac_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_state_hmac_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -280,7 +281,8 @@ module hmac_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_state_fifo_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -306,7 +308,8 @@ module hmac_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_state_hmac_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -334,7 +337,8 @@ module hmac_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_enable_hmac_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -360,7 +364,8 @@ module hmac_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_enable_fifo_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -386,7 +391,8 @@ module hmac_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_enable_hmac_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -639,7 +645,8 @@ module hmac_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_err_code (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -990,7 +997,8 @@ module hmac_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_msg_length_lower (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1017,7 +1025,8 @@ module hmac_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_msg_length_upper (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

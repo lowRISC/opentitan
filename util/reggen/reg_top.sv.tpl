@@ -942,6 +942,11 @@ ${bits.msb}\
     else:
       q_expr = ''
 
+    if field.mubi:
+      mubi_expr = "1'b1"
+    else:
+      mubi_expr = "1'b0"
+    
     # when async, the outputs are aggregated first by the cdc module
     async_suffix = '_int' if reg.async_clk else ''
     qs_expr = f'{clk_base_name}{finst_name}_qs{async_suffix}' if field.swaccess.allows_read() else ''
@@ -1010,7 +1015,8 @@ ${bits.msb}\
   ${subreg_block} #(
     .DW      (${field.bits.width()}),
     .SwAccess(prim_subreg_pkg::SwAccess${field.swaccess.value[1].name.upper()}),
-    .RESVAL  (${resval_expr})
+    .RESVAL  (${resval_expr}),
+    .Mubi    (${mubi_expr})
   ) u_${finst_name} (
       % if reg.sync_clk:
     // sync clock and reset required for this register

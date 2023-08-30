@@ -9,7 +9,8 @@ module prim_subreg
 #(
   parameter int            DW       = 32,
   parameter sw_access_e    SwAccess = SwAccessRW,
-  parameter logic [DW-1:0] RESVAL   = '0    // reset value
+  parameter logic [DW-1:0] RESVAL   = '0 ,   // reset value
+  parameter bit            Mubi     = 1'b0
 ) (
   input clk_i,
   input rst_ni,
@@ -39,7 +40,8 @@ module prim_subreg
 
   prim_subreg_arb #(
     .DW       ( DW       ),
-    .SwAccess ( SwAccess )
+    .SwAccess ( SwAccess ),
+    .Mubi     ( Mubi     )
   ) wr_en_data_arb (
     .we,
     .wd,
