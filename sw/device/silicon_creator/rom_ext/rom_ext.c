@@ -116,6 +116,16 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
                               lc_state, &flash_exec);
 }
 
+/* Disable access to silicon creator info pages and OTP partitions until next
+ * reset.
+ */
+static void rom_ext_lockdown(void) {
+  flash_ctrl_creator_info_pages_lockdown();
+  otp_creator_sw_cfg_lockdown();
+  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCreatorInfoPagesLockdown +
+                           kOtpSecMmioCreatorSwCfgLockDown);
+}
+
 /* These symbols are defined in
  * `opentitan/sw/device/silicon_creator/rom_ext/rom_ext.ld`, and describe the
  * location of the flash header.
@@ -162,12 +172,7 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
   sec_mmio_check_values(rnd_uint32());
   sec_mmio_check_counters(1);
 
-  // Disable access to silicon creator info pages and OTP partitions until next
-  // reset.
-  flash_ctrl_creator_info_pages_lockdown();
-  otp_creator_sw_cfg_lockdown();
-  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCreatorInfoPagesLockdown +
-                           kOtpSecMmioCreatorSwCfgLockDown);
+  rom_ext_lockdown();
 
   // Configure address translation, compute the epmp regions and the entry
   // point for the virtual address in case the address translation is enabled.
