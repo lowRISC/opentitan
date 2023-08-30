@@ -25,11 +25,8 @@ pub struct Verify {
     label: Option<String>,
     #[arg(short, long, value_enum, default_value = "sha256-hash")]
     format: SignData,
-    #[arg(
-        short = 'r',
-        long,
-        help = "Reverse the input data and result (for little-endian targets)"
-    )]
+    /// Reverse the input data and result (for little-endian targets).
+    #[arg(short = 'r', long)]
     little_endian: bool,
     input: PathBuf,
     signature: PathBuf,

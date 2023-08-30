@@ -56,7 +56,7 @@ pub struct RsaKeyInfoInWords {
 /// Show public information of a private or public RSA key
 #[derive(Debug, Args)]
 pub struct RsaKeyShowCommand {
-    #[arg(help = "RSA public or private key file in DER format")]
+    /// RSA public or private key file in DER format.
     der_file: PathBuf,
 }
 
@@ -83,9 +83,9 @@ impl CommandDispatch for RsaKeyShowCommand {
 /// <OUTPUT_DIR>/<BASENAME>.pub.der
 #[derive(Debug, Args)]
 pub struct RsaKeyGenerateCommand {
-    #[arg(help = "Output directory")]
+    /// Output directory.
     output_dir: PathBuf,
-    #[arg(help = "Basename for the generated key pair")]
+    /// Basename for the generated key pair.
     basename: String,
 }
 
@@ -112,9 +112,9 @@ impl CommandDispatch for RsaKeyGenerateCommand {
 /// to a C header that can be used in the ROM or ROM_EXT
 #[derive(Debug, Args)]
 pub struct RsaKeyExportCommand {
-    #[arg(help = "RSA public or private key file in DER format")]
+    /// RSA public or private key file in DER format.
     der_file: PathBuf,
-    #[arg(help = "output header file to generate")]
+    /// output header file to generate.
     output_file: Option<PathBuf>,
 }
 
@@ -256,22 +256,21 @@ pub struct RsaSignResult {
 
 #[derive(Debug, Args)]
 pub struct RsaSignCommand {
-    #[arg(short, long, help = "File containing a SHA256 digest")]
+    /// File containing a SHA256 digest.
+    #[arg(short, long)]
     input: Option<PathBuf>,
-    #[arg(short, long, help = "File name to write the signature to")]
+    /// File name to write the signature to.
+    #[arg(short, long)]
     output: Option<PathBuf>,
 
-    #[arg(
-        value_name = "DER_FILE",
-        value_parser = load_priv_key,
-        help = "RSA private key file in PKCS#1 DER format"
-    )]
+    /// RSA private key file in PKCS#1 DER format.
+    #[arg(value_name = "DER_FILE", value_parser = load_priv_key)]
     private_key: RsaPrivateKey,
+    /// SHA256 digest of the message.
     #[arg(
         value_name = "SHA256_DIGEST",
         value_parser = Sha256Digest::from_str,
-        required_unless_present = "input",
-        help = "SHA256 digest of the message"
+        required_unless_present = "input"
     )]
     digest: Option<Sha256Digest>,
 }
@@ -301,14 +300,13 @@ impl CommandDispatch for RsaSignCommand {
 
 #[derive(Debug, Args)]
 pub struct RsaVerifyCommand {
-    #[arg(value_name = "KEY", help = "Key file in DER format")]
+    /// Key file in DER format.
+    #[arg(value_name = "KEY")]
     der_file: PathBuf,
-    #[arg(
-        value_name = "SHA256_DIGEST",
-        help = "SHA256 digest of the message as a hex string (big-endian), i.e. 0x..."
-    )]
+    /// SHA256 digest of the message as a hex string (big-endian), i.e. 0x...
+    #[arg(value_name = "SHA256_DIGEST")]
     digest: String,
-    #[arg(help = "Signature to be verified as a hex string (big-endian), i.e. 0x...")]
+    /// Signature to be verified as a hex string (big-endian), i.e. 0x...
     signature: String,
 }
 

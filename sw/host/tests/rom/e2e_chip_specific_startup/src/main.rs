@@ -25,15 +25,12 @@ struct Opts {
     #[command(flatten)]
     init: InitializeTest,
 
-    #[arg(
-        long,
-        value_parser = humantime::parse_duration,
-        default_value = "10s",
-        help = "Console receive timeout",
-    )]
+    /// Console receive timeout.
+    #[arg(long, value_parser = humantime::parse_duration, default_value = "10s")]
     timeout: Duration,
 
-    #[arg(long, help = "OTP is unprogrammed; be permissive with OTP values")]
+    /// OTP is unprogrammed; be permissive with OTP values.
+    #[arg(long)]
     otp_unprogrammed: bool,
 }
 

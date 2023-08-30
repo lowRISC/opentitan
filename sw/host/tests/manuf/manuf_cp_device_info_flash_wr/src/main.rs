@@ -28,20 +28,12 @@ struct Opts {
     #[command(flatten)]
     sram_program: SramProgramParams,
 
-    #[arg(
-        long,
-        value_parser = DifLcCtrlState::parse_lc_state_str,
-        default_value = "prod",
-        help = "LC state to transition to from TEST_UNLOCKED*."
-    )]
+    /// LC state to transition to from TEST_UNLOCKED*.
+    #[arg(long, value_parser = DifLcCtrlState::parse_lc_state_str, default_value = "prod")]
     target_lc_state: DifLcCtrlState,
 
-    #[arg(
-        long,
-        value_parser = humantime::parse_duration,
-        default_value = "600s",
-        help = "Console receive timeout",
-    )]
+    /// Console receive timeout.
+    #[arg(long, value_parser = humantime::parse_duration, default_value = "600s")]
     timeout: Duration,
 }
 

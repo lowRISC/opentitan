@@ -20,12 +20,8 @@ struct Opts {
     #[command(flatten)]
     init: InitializeTest,
 
-    #[arg(
-        long,
-        value_parser = humantime::parse_duration,
-        default_value = "180s",
-        help = "Console receive timeout",
-    )]
+    /// Console receive timeout.
+    #[arg(long, value_parser = humantime::parse_duration, default_value = "180s")]
     timeout: Duration,
 }
 

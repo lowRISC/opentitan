@@ -17,12 +17,8 @@ use opentitanlib::util::parse_int::ParseInt;
 /// Read plain data bytes from a I2C device.
 #[derive(Debug, Args)]
 pub struct I2cRawRead {
-    #[arg(
-        short = 'n',
-        long,
-        value_parser = usize::from_str,
-        help = "Number of bytes to read."
-    )]
+    /// Number of bytes to read.
+    #[arg(short = 'n', long, value_parser = usize::from_str)]
     length: usize,
 }
 
@@ -51,7 +47,8 @@ impl CommandDispatch for I2cRawRead {
 /// Write plain data bytes to a I2C device.
 #[derive(Debug, Args)]
 pub struct I2cRawWrite {
-    #[arg(short = 'd', long, help = "Hex data bytes to write.")]
+    /// Hex data bytes to write.
+    #[arg(short = 'd', long)]
     hexdata: String,
 }
 
@@ -75,14 +72,11 @@ impl CommandDispatch for I2cRawWrite {
 /// Write data bytes to a I2C device, then read back a response.
 #[derive(Debug, Args)]
 pub struct I2cRawWriteRead {
-    #[arg(short = 'd', long, help = "Hex data bytes to write.")]
+    /// Hex data bytes to write.
+    #[arg(short = 'd', long)]
     hexdata: String,
-    #[arg(
-        short = 'n',
-        long,
-        value_parser = usize::from_str,
-        help = "Number of bytes to read."
-    )]
+    /// Number of bytes to read.
+    #[arg(short = 'n', long, value_parser = usize::from_str)]
     length: usize,
 }
 
@@ -147,12 +141,8 @@ pub struct I2cCommand {
     #[command(flatten)]
     params: I2cParams,
 
-    #[arg(
-        short,
-        long,
-        value_parser = u8::from_str,
-        help = "7-bit address of I2C device (0..0x7F)."
-    )]
+    /// 7-bit address of I2C device (0..0x7F).
+    #[arg(short, long, value_parser = u8::from_str)]
     addr: u8,
 
     #[command(subcommand)]

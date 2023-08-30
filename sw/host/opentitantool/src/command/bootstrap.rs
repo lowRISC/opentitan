@@ -20,26 +20,14 @@ use opentitanlib::util::parse_int::ParseInt;
 pub struct BootstrapCommand {
     #[command(flatten)]
     bootstrap_options: BootstrapOptions,
-    #[arg(
-        long,
-        value_parser = usize::from_str,
-        default_value = "1048576",
-        help = "The size of the image to assemble (only valid with mutliple FILE arguments)"
-    )]
+    /// The size of the image to assemble (only valid with mutliple FILE arguments).
+    #[arg(long, value_parser = usize::from_str, default_value = "1048576")]
     size: usize,
-    #[arg(
-        long,
-        action = clap::ArgAction::Set,
-        default_value = "true",
-        help = "Whether or not the assembled image is mirrored (only valid with mutliple FILE arguments)"
-    )]
+    /// Whether or not the assembled image is mirrored (only valid with mutliple FILE arguments).
+    #[arg(long, action = clap::ArgAction::Set, default_value = "true")]
     mirror: bool,
-    #[arg(
-        value_name = "FILE",
-        required = true,
-        num_args = 1..,
-        help = "An image to bootstrap or multiple filename@offset specifiers to assemble into a bootstrap image."
-    )]
+    /// An image to bootstrap or multiple filename@offset specifiers to assemble into a bootstrap image.
+    #[arg(value_name = "FILE", required = true, num_args = 1..)]
     filename: Vec<String>,
 }
 

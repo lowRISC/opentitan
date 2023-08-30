@@ -23,12 +23,8 @@ use crate::io::jtag::JtagParams;
 
 #[derive(Debug, Args)]
 pub struct InitializeTest {
-    #[arg(
-        long,
-        value_parser = PathBuf::from_str,
-        default_value = "config",
-        help = "Filename of a default flagsfile.  Relative to $XDG_CONFIG_HOME/opentitantool."
-    )]
+    /// Filename of a default flagsfile.  Relative to $XDG_CONFIG_HOME/opentitantool.
+    #[arg(long, value_parser = PathBuf::from_str, default_value = "config")]
     pub rcfile: PathBuf,
 
     #[arg(long, default_value = "off")]

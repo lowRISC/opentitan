@@ -20,19 +20,11 @@ pub struct LoadBitstream {
     #[arg(value_name = "FILE")]
     filename: PathBuf,
 
-    #[arg(
-        long,
-        value_parser = humantime::parse_duration,
-        default_value = "50ms",
-        help = "Duration of the reset pulse."
-    )]
+    /// Duration of the reset pulse.
+    #[arg(long, value_parser = humantime::parse_duration, default_value = "50ms")]
     pub rom_reset_pulse: Duration,
-    #[arg(
-        long,
-        value_parser = humantime::parse_duration,
-        default_value = "2s",
-        help = "Duration of ROM detection timeout"
-    )]
+    /// Duration of ROM detection timeout.
+    #[arg(long, value_parser = humantime::parse_duration, default_value = "2s")]
     pub rom_timeout: Duration,
 }
 

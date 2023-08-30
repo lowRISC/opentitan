@@ -14,16 +14,20 @@ use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
 /// Load a bitstream into the FPGA.
 #[derive(Debug, Args)]
 pub struct LoadBitstream {
-    #[arg(long, help = "Whether to clear out any existing bitstream.")]
+    /// Whether to clear out any existing bitstream.
+    #[arg(long)]
     pub clear_bitstream: bool,
 
-    #[arg(long, help = "The bitstream to load for the test")]
+    /// The bitstream to load for the test.
+    #[arg(long)]
     pub bitstream: Option<PathBuf>,
 
-    #[arg(long, value_parser = humantime::parse_duration, default_value = "50ms", help = "Duration of the reset pulse.")]
+    /// Duration of the reset pulse.
+    #[arg(long, value_parser = humantime::parse_duration, default_value = "50ms")]
     pub rom_reset_pulse: Duration,
 
-    #[arg(long, value_parser = humantime::parse_duration, default_value = "2s", help = "Duration of ROM detection timeout")]
+    /// Duration of ROM detection timeout.
+    #[arg(long, value_parser = humantime::parse_duration, default_value = "2s")]
     pub rom_timeout: Duration,
 }
 

@@ -25,7 +25,8 @@ pub struct VerilatorOpts {
     #[arg(long, required = false)]
     verilator_args: Vec<String>,
 
-    #[arg(long, value_parser = parse_duration, default_value = "60s", help = "Verilator startup timeout")]
+    /// Verilator startup timeout.
+    #[arg(long, value_parser = parse_duration, default_value = "60s")]
     verilator_timeout: Duration,
 }
 

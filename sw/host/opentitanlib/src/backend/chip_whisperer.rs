@@ -12,11 +12,8 @@ use crate::transport::Transport;
 
 #[derive(Debug, Args)]
 pub struct ChipWhispererOpts {
-    #[arg(
-        long,
-        alias = "cw310-uarts",
-        help = "Comma-separated list of Chip Whisperer board UARTs for non-udev environments. List the console uart first."
-    )]
+    /// Comma-separated list of Chip Whisperer board UARTs for non-udev environments. List the console uart first.
+    #[arg(long, alias = "cw310-uarts")]
     pub uarts: Option<String>,
 }
 

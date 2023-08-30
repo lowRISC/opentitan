@@ -16,19 +16,24 @@ use crate::util::voltage::Voltage;
 
 #[derive(Clone, Debug, Args, Serialize, Deserialize)]
 pub struct SpiParams {
-    #[arg(long, help = "SPI instance")]
+    /// SPI instance.
+    #[arg(long)]
     pub bus: Option<String>,
 
-    #[arg(long, help = "SPI bus speed")]
+    /// SPI bus speed.
+    #[arg(long)]
     pub speed: Option<u32>,
 
-    #[arg(long, help = "SPI chip select pin")]
+    /// SPI chip select pin.
+    #[arg(long)]
     pub chip_select: Option<String>,
 
-    #[arg(long, help = "SPI bus voltage")]
+    /// SPI bus voltage.
+    #[arg(long)]
     pub voltage: Option<Voltage>,
 
-    #[arg(long, help = "SPI polarity/phase mode")]
+    /// SPI polarity/phase mode.
+    #[arg(long)]
     pub mode: Option<TransferMode>,
 }
 

@@ -42,23 +42,23 @@ impl CommandDispatch for EmuGetState {
 #[derive(Debug, Args)]
 /// Start Emulator instance
 pub struct EmuStart {
-    #[arg(
-        long,
-        help = "Reset all presistent storage (For example: flash, otp, eeprom) to factory state"
-    )]
+    /// Reset all presistent storage (For example: flash, otp, eeprom) to factory state.
+    #[arg(long)]
     pub factory_reset: bool,
-    #[arg(long, help = "Emulator executable file name")]
+    /// Emulator executable file name.
+    #[arg(long)]
     pub emulator_exec: Option<String>,
-    #[arg(
-        long,
-        help = "List of application names that will be provided in flash images"
-    )]
+    /// List of application names that will be provided in flash images.
+    #[arg(long)]
     pub apps_list: Option<Vec<String>>,
-    #[arg(long, help = "List of file paths representing Flash images")]
+    /// List of file paths representing Flash images.
+    #[arg(long)]
     pub flash_list: Option<Vec<PathBuf>>,
-    #[arg(long, help = "Path to file representing Emulator version state")]
+    /// Path to file representing Emulator version state.
+    #[arg(long)]
     pub version_init_state: Option<PathBuf>,
-    #[arg(long, help = "Path to file representing PMU initial state")]
+    /// Path to file representing PMU initial state.
+    #[arg(long)]
     pub pmu_init_state: Option<PathBuf>,
 }
 

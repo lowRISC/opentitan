@@ -15,54 +15,44 @@ use hsmtool::util::attribute::AttributeMap;
 
 #[derive(Debug, Parser)]
 struct Args {
-    #[arg(long, default_value = "warn", help = "Logging level")]
+    /// Logging level.
+    #[arg(long, default_value = "warn")]
     logging: LevelFilter,
 
-    #[arg(
-        short,
-        long,
-        value_enum,
-        default_value = "json",
-        help = "Output format"
-    )]
+    /// Output format.
+    #[arg(short, long, value_enum, default_value = "json")]
     format: Format,
 
-    #[arg(short, long, help = "Use color in the output")]
+    /// Use color in the output.
+    #[arg(short, long)]
     color: Option<bool>,
 
-    #[arg(
-        long,
-        default_value = "profiles.json",
-        help = "Filename of HSM profiles.  Relative to $XDG_CONFIG_HOME/hsmtool."
-    )]
+    /// Filename of HSM profiles.  Relative to $XDG_CONFIG_HOME/hsmtool.
+    #[arg(long, default_value = "profiles.json")]
     profiles: PathBuf,
 
-    #[arg(long, help = "The name of an HSM profile to use")]
+    /// The name of an HSM profile to use.
+    #[arg(long)]
     profile: Option<String>,
 
-    #[arg(long, env = "HSMTOOL_MODULE", help = "Path to a PKCS11 shared library")]
+    /// Path to a PKCS11 shared library.
+    #[arg(long, env = "HSMTOOL_MODULE")]
     module: String,
 
-    #[arg(short, long, env = "HSMTOOL_TOKEN", help = "HSM Token to use")]
+    /// HSM Token to use.
+    #[arg(short, long, env = "HSMTOOL_TOKEN")]
     token: Option<String>,
 
-    #[arg(
-        short,
-        long,
-        env = "HSMTOOL_USER",
-        value_parser = module::parse_user_type,
-        help="User type ('so' or 'user')"
-    )]
+    /// User type ('so' or 'user').
+    #[arg(short, long, env = "HSMTOOL_USER", value_parser = module::parse_user_type)]
     user: Option<UserType>,
 
-    #[arg(short, long, env = "HSMTOOL_PIN", help = "Pin")]
+    /// Pin.
+    #[arg(short, long, env = "HSMTOOL_PIN")]
     pin: Option<String>,
 
-    #[arg(
-        long,
-        default_value = "false",
-        help = "Show JSON encode of the command"
-    )]
+    /// Show JSON encode of the command.
+    #[arg(long, default_value = "false")]
     show_json: bool,
 
     #[command(subcommand)]

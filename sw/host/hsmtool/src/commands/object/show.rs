@@ -21,11 +21,8 @@ pub struct Show {
     id: Option<String>,
     #[arg(short, long)]
     label: Option<String>,
-    #[arg(long,
-        action = clap::ArgAction::Set,
-        default_value = "true",
-        help="Redact senitive data",
-    )]
+    /// Redact senitive data.
+    #[arg(long, action = clap::ArgAction::Set, default_value = "true")]
     redact: bool,
 }
 

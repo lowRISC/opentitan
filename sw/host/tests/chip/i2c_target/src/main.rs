@@ -21,19 +21,12 @@ struct Opts {
     #[command(flatten)]
     init: InitializeTest,
 
-    #[arg(
-        long,
-        value_parser = humantime::parse_duration,
-        default_value = "600s",
-        help = "Console receive timeout",
-    )]
+    /// Console receive timeout.
+    #[arg(long, value_parser = humantime::parse_duration, default_value = "600s")]
     timeout: Duration,
 
-    #[arg(
-        long,
-        default_value = "0",
-        help = "Name of the debugger's I2C interface"
-    )]
+    /// Name of the debugger's I2C interface.
+    #[arg(long, default_value = "0")]
     i2c: String,
 }
 

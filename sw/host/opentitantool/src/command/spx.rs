@@ -23,7 +23,7 @@ pub struct SpxPublicKeyInfo {
 /// Show public information of a SPHINCS+ public key or key pair.
 #[derive(Debug, Args)]
 pub struct SpxKeyShowCommand {
-    #[arg(help = "SPHINCS+ key file (either just the public key or full keypair)")]
+    /// SPHINCS+ key file (either just the public key or full keypair).
     key_file: PathBuf,
 }
 
@@ -51,9 +51,9 @@ impl CommandDispatch for SpxKeyShowCommand {
 /// <OUTPUT_DIR>/<BASENAME>.pub.key.
 #[derive(Debug, Args)]
 pub struct SpxKeyGenerateCommand {
-    #[arg(help = "Output directory")]
+    /// Output directory.
     output_dir: PathBuf,
-    #[arg(help = "Basename for the generated key pair")]
+    /// Basename for the generated key pair.
     basename: String,
 }
 
@@ -89,12 +89,14 @@ pub struct SpxSignResult {
 
 #[derive(Debug, Args)]
 pub struct SpxSignCommand {
-    #[arg(help = "The filename for the message to sign")]
+    /// The filename for the message to sign.
     message: PathBuf,
 
-    #[arg(value_name = "KEY_FILE", help = "The file contianing SPHICS+ keypair")]
+    /// The file contianing SPHICS+ keypair.
+    #[arg(value_name = "KEY_FILE")]
     keypair: PathBuf,
-    #[arg(short, long, help = "The filename to write the signature to")]
+    /// The filename to write the signature to.
+    #[arg(short, long)]
     output: Option<PathBuf>,
 }
 
@@ -119,11 +121,12 @@ impl CommandDispatch for SpxSignCommand {
 
 #[derive(Debug, Args)]
 pub struct SpxVerifyCommand {
-    #[arg(value_name = "KEY", help = "Key file")]
+    /// Key file.
+    #[arg(value_name = "KEY")]
     key_file: PathBuf,
-    #[arg(help = "Message file to verify the signature against")]
+    /// Message file to verify the signature against.
     message: PathBuf,
-    #[arg(help = "SPHINCS+ signature file to verify")]
+    /// SPHINCS+ signature file to verify.
     signature: PathBuf,
 }
 
