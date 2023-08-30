@@ -20,7 +20,7 @@ pub struct Update {
     id: Option<String>,
     #[arg(short, long)]
     label: Option<String>,
-    #[arg(help = "Attributes to update")]
+    /// Attributes to update.
     attribute: AttributeMap,
 }
 

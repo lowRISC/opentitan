@@ -75,38 +75,27 @@ enum Format {
     about = "A tool for interacting with OpenTitan chips."
 )]
 struct Opts {
-    #[arg(
-        long,
-        value_parser = PathBuf::from_str,
-        default_value = "config",
-        help = "Filename of a default flagsfile.  Relative to $XDG_CONFIG_HOME/opentitantool."
-    )]
+    /// Filename of a default flagsfile.  Relative to $XDG_CONFIG_HOME/opentitantool.
+    #[arg(long, value_parser = PathBuf::from_str, default_value = "config")]
     rcfile: PathBuf,
 
     #[arg(long, default_value = "warn")]
     logging: LevelFilter,
 
-    #[arg(
-        short,
-        long,
-        value_enum,
-        ignore_case = true,
-        default_value = "hjson",
-        help = "Preferred output format"
-    )]
+    /// Preferred output format.
+    #[arg(short, long, value_enum, ignore_case = true, default_value = "hjson")]
     format: Format,
 
-    #[arg(short, long, value_parser = bool::from_str, help = "Use color in the output")]
+    /// Use color in the output.
+    #[arg(short, long, value_parser = bool::from_str)]
     color: Option<bool>,
 
-    #[arg(short, long, help = "Do not print command results")]
+    /// Do not print command results.
+    #[arg(short, long)]
     quiet: bool,
 
-    #[arg(
-        long,
-        num_args = 1,
-        help = "Parse and execute the argument as a command"
-    )]
+    /// Parse and execute the argument as a command.
+    #[arg(long, num_args = 1)]
     exec: Vec<String>,
 
     #[command(flatten)]

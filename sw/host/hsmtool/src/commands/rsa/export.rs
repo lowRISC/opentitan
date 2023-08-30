@@ -25,9 +25,11 @@ pub struct Export {
     id: Option<String>,
     #[arg(short, long)]
     label: Option<String>,
-    #[arg(long, help = "Export the private key")]
+    /// Export the private key.
+    #[arg(long)]
     private: bool,
-    #[arg(long, help = "Wrap the exported key a wrapping key")]
+    /// Wrap the exported key a wrapping key.
+    #[arg(long)]
     wrap: Option<String>,
     #[arg(short, long, value_enum, default_value = "pem")]
     format: KeyEncoding,

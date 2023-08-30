@@ -23,11 +23,8 @@ pub struct UpdateUsrAccess {
     #[arg(value_name = "OUTPUT_FILE")]
     output: PathBuf,
 
-    #[arg(
-        long,
-        value_parser = u32::from_str,
-        help="New USR_ACCESS value, default = crc32"
-    )]
+    /// New USR_ACCESS value, default = crc32.
+    #[arg(long, value_parser = u32::from_str)]
     usr_access: Option<u32>,
 }
 

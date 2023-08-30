@@ -23,18 +23,12 @@ use opentitanlib::transport::ProgressIndicator;
 /// Read and parse an SFDP table.
 #[derive(Debug, Args)]
 pub struct SpiSfdp {
-    #[arg(
-        short,
-        long,
-        help = "Display raw SFDP bytes rather than the parsed struct."
-    )]
+    /// Display raw SFDP bytes rather than the parsed struct.
+    #[arg(short, long)]
     raw: Option<usize>,
 
-    #[arg(
-        short,
-        long,
-        help = "Start reading SFDP at offset.  Only valid with --raw."
-    )]
+    /// Start reading SFDP at offset.  Only valid with --raw.
+    #[arg(short, long)]
     offset: Option<u32>,
 }
 
@@ -99,12 +93,8 @@ impl CommandDispatch for SpiSfdp {
 /// Read the JEDEC ID of a SPI EEPROM.
 #[derive(Debug, Args)]
 pub struct SpiReadId {
-    #[arg(
-        short = 'n',
-        long,
-        default_value = "15",
-        help = "Number of JEDEC ID bytes to read."
-    )]
+    /// Number of JEDEC ID bytes to read.
+    #[arg(short = 'n', long, default_value = "15")]
     length: usize,
 }
 
@@ -131,25 +121,23 @@ impl CommandDispatch for SpiReadId {
 /// Read data from a SPI EEPROM.
 #[derive(Debug, Args)]
 pub struct SpiRead {
-    #[arg(short, long, default_value = "0", help = "Start offset.")]
+    /// Start offset.
+    #[arg(short, long, default_value = "0")]
     start: u32,
-    #[arg(
-        short = 'n',
-        long,
-        default_value = "4096",
-        help = "Number of bytes to read."
-    )]
+    /// Number of bytes to read.
+    #[arg(short = 'n', long, default_value = "4096")]
     length: usize,
+    /// Read mode.
     #[arg(
         short,
         long,
         value_enum,
         ignore_case = true,
-        default_value = "standard",
-        help = "Read mode"
+        default_value = "standard"
     )]
     pub mode: ReadMode,
-    #[arg(long, help = "Hexdump the data.")]
+    /// Hexdump the data.
+    #[arg(long)]
     hexdump: bool,
     #[arg(value_name = "FILE", default_value = "-")]
     filename: PathBuf,
@@ -206,24 +194,22 @@ impl CommandDispatch for SpiRead {
 /// Erase sectors of a SPI EEPROM.
 #[derive(Debug, Args)]
 pub struct SpiErase {
-    #[arg(short, long, required_unless_present = "chip", help = "Start offset.")]
+    /// Start offset.
+    #[arg(short, long, required_unless_present = "chip")]
     start: Option<u32>,
-    #[arg(
-        short = 'n',
-        long,
-        required_unless_present = "chip",
-        help = "Number of bytes to erase."
-    )]
+    /// Number of bytes to erase.
+    #[arg(short = 'n', long, required_unless_present = "chip")]
     length: Option<u32>,
-    #[arg(long, help = "Erase the whole chip.")]
+    /// Erase the whole chip.
+    #[arg(long)]
     chip: bool,
+    /// Erase mode.
     #[arg(
         short,
         long,
         value_enum,
         ignore_case = true,
-        default_value = "standard",
-        help = "Erase mode"
+        default_value = "standard"
     )]
     pub mode: EraseMode,
 }
@@ -276,7 +262,8 @@ impl CommandDispatch for SpiErase {
 /// Program data into a SPI EEPROM.
 #[derive(Debug, Args)]
 pub struct SpiProgram {
-    #[arg(short, long, default_value = "0", help = "Start offset.")]
+    /// Start offset.
+    #[arg(short, long, default_value = "0")]
     start: u32,
     #[arg(value_name = "FILE")]
     filename: PathBuf,
@@ -334,7 +321,8 @@ impl CommandDispatch for SpiTpm {
 /// Read plain data bytes from a SPI device (not necessarily SPI EEPROM/flash).
 #[derive(Debug, Args)]
 pub struct SpiRawRead {
-    #[arg(short = 'n', long, help = "Number of bytes to read.")]
+    /// Number of bytes to read.
+    #[arg(short = 'n', long)]
     length: usize,
 }
 
@@ -363,7 +351,8 @@ impl CommandDispatch for SpiRawRead {
 /// Write plain data bytes to a SPI device (not necessarily SPI EEPROM/flash).
 #[derive(Debug, Args)]
 pub struct SpiRawWrite {
-    #[arg(short = 'd', long, help = "Hex data bytes to write.")]
+    /// Hex data bytes to write.
+    #[arg(short = 'd', long)]
     hexdata: String,
 }
 
@@ -384,10 +373,12 @@ impl CommandDispatch for SpiRawWrite {
 /// Write data bytes to a SPI device then read data (not necessarily SPI EEPROM/flash).
 #[derive(Debug, Args)]
 pub struct SpiRawWriteRead {
-    #[arg(short = 'd', long, help = "Hex data bytes to write.")]
+    /// Hex data bytes to write.
+    #[arg(short = 'd', long)]
     hexdata: String,
 
-    #[arg(short = 'n', long, help = "Number of bytes to read.")]
+    /// Number of bytes to read.
+    #[arg(short = 'n', long)]
     length: usize,
 }
 
@@ -414,7 +405,8 @@ impl CommandDispatch for SpiRawWriteRead {
 /// Simultaneously write and read plain data bytes to a SPI device (not SPI EEPROM/flash).
 #[derive(Debug, Args)]
 pub struct SpiRawTransceive {
-    #[arg(short = 'd', long, help = "Hex data bytes to write.")]
+    /// Hex data bytes to write.
+    #[arg(short = 'd', long)]
     hexdata: String,
 }
 

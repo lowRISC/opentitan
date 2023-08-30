@@ -19,12 +19,8 @@ struct Opts {
     #[command(flatten)]
     init: InitializeTest,
 
-    #[arg(
-        long,
-        value_parser = humantime::parse_duration,
-        default_value = "5s",
-        help = "Bootstrap detection timeout",
-    )]
+    /// Bootstrap detection timeout.
+    #[arg(long, value_parser = humantime::parse_duration, default_value = "5s")]
     timeout: Duration,
 }
 

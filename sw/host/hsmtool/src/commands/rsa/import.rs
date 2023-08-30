@@ -24,13 +24,17 @@ pub struct Import {
     id: Option<String>,
     #[arg(short, long)]
     label: Option<String>,
-    #[arg(short, long, help = "The key is a public key only")]
+    /// The key is a public key only.
+    #[arg(short, long)]
     public: bool,
-    #[arg(long, help = "Attributes to apply to the public key")]
+    /// Attributes to apply to the public key.
+    #[arg(long)]
     public_attrs: Option<AttributeMap>,
-    #[arg(long, help = "Attributes to apply to the private key")]
+    /// Attributes to apply to the private key.
+    #[arg(long)]
     private_attrs: Option<AttributeMap>,
-    #[arg(long, help = "Unwrap the imported key with a wrapping key")]
+    /// Unwrap the imported key with a wrapping key.
+    #[arg(long)]
     unwrap: Option<String>,
     filename: PathBuf,
 }

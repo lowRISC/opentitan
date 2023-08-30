@@ -24,30 +24,34 @@ pub struct Console {
     #[command(flatten)]
     params: UartParams,
 
-    #[arg(short, long, help = "Do not print console start end exit messages.")]
+    /// Do not print console start end exit messages.
+    #[arg(short, long)]
     quiet: bool,
 
-    #[arg(short, long, help = "Log console output to a file")]
+    /// Log console output to a file.
+    #[arg(short, long)]
     logfile: Option<String>,
 
-    #[arg(long, help = "Send a string into the console at startup.")]
+    /// Send a string into the console at startup.
+    #[arg(long)]
     send: Option<String>,
 
-    #[arg(
-        short,
-        long,
-        value_parser = humantime::parse_duration,
-        help = "Duration of ROM detection timeout",
-    )]
+    /// Duration of ROM detection timeout.
+    #[arg(short,
+    long,
+    value_parser = humantime::parse_duration)]
     timeout: Option<Duration>,
 
-    #[arg(long, help = "Print a timestamp on each line of console output.")]
+    /// Print a timestamp on each line of console output.
+    #[arg(long)]
     timestamp: bool,
 
-    #[arg(long, help = "Exit with success if the specified regex is matched.")]
+    /// Exit with success if the specified regex is matched.
+    #[arg(long)]
     exit_success: Option<String>,
 
-    #[arg(long, help = "Exit with failure if the specified regex is matched.")]
+    /// Exit with failure if the specified regex is matched.
+    #[arg(long)]
     exit_failure: Option<String>,
 }
 

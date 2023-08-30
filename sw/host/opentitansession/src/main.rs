@@ -29,12 +29,8 @@ use opentitanlib::{backend, util};
     about = "A tool for interacting with OpenTitan chips."
 )]
 struct Opts {
-    #[arg(
-        long,
-        value_parser = PathBuf::from_str,
-        default_value = "config",
-        help = "Filename of a default flagsfile.  Relative to $XDG_CONFIG_HOME/opentitantool."
-    )]
+    /// Filename of a default flagsfile.  Relative to $XDG_CONFIG_HOME/opentitantool.
+    #[arg(long, value_parser = PathBuf::from_str, default_value = "config")]
     rcfile: PathBuf,
 
     #[arg(long, default_value = "off")]
@@ -43,28 +39,20 @@ struct Opts {
     #[command(flatten)]
     backend_opts: backend::BackendOpts,
 
-    #[arg(
-        long,
-        help = "Stop a running session, optionally combine with --listen_port for disambiguation"
-    )]
+    /// Stop a running session, optionally combine with --listen_port for disambiguation.
+    #[arg(long)]
     stop: bool,
 
-    #[arg(
-        long,
-        help = "Optional, defaults to 9900 or nearest higher available port."
-    )]
+    /// Optional, defaults to 9900 or nearest higher available port.
+    #[arg(long)]
     listen_port: Option<u16>,
 
-    #[arg(
-        long,
-        help = "Start session, staying in foreground (do not daemonize).  Session process will terminate if its parent dies."
-    )]
+    /// Start session, staying in foreground (do not daemonize).  Session process will terminate if its parent dies.
+    #[arg(long)]
     foreground: bool,
 
-    #[arg(
-        long,
-        help = "Internal, used to tell the child process to run as a daemon."
-    )]
+    /// Internal, used to tell the child process to run as a daemon.
+    #[arg(long)]
     child: bool,
 }
 

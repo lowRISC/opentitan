@@ -26,14 +26,18 @@ mod verilator;
 
 #[derive(Debug, Args)]
 pub struct BackendOpts {
-    #[arg(long, default_value = "", help = "Name of the debug interface")]
+    /// Name of the debug interface.
+    #[arg(long, default_value = "")]
     pub interface: String,
 
-    #[arg(long, value_parser = u16::from_str, help = "USB Vendor ID of the interface")]
+    /// USB Vendor ID of the interface.
+    #[arg(long, value_parser = u16::from_str)]
     pub usb_vid: Option<u16>,
-    #[arg(long, value_parser = u16::from_str, help = "USB Product ID of the interface")]
+    /// USB Product ID of the interface.
+    #[arg(long, value_parser = u16::from_str)]
     pub usb_pid: Option<u16>,
-    #[arg(long, help = "USB serial number of the interface")]
+    /// USB serial number of the interface.
+    #[arg(long)]
     pub usb_serial: Option<String>,
 
     #[command(flatten)]
@@ -48,7 +52,8 @@ pub struct BackendOpts {
     #[command(flatten)]
     pub ti50emulator_opts: ti50emulator::Ti50EmulatorOpts,
 
-    #[arg(long, num_args = 1, help = "Configuration files")]
+    /// Configuration files.
+    #[arg(long, num_args = 1)]
     pub conf: Vec<PathBuf>,
 }
 

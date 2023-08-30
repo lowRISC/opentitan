@@ -16,7 +16,8 @@ use crate::util::attribute::{AttributeMap, AttributeType};
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
 pub struct List {
-    #[arg(short, long, value_parser=AttributeType::from_str, help="Attributes to show")]
+    /// Attributes to show.
+    #[arg(short, long, value_parser=AttributeType::from_str)]
     #[serde(default)]
     attribute: Vec<AttributeType>,
 }

@@ -49,12 +49,8 @@ struct Opts {
     #[command(flatten)]
     backend_opts: backend::BackendOpts,
 
-    #[arg(
-        short,
-        long,
-        default_value = "9883",
-        help = "TCP port for incoming connections."
-    )]
+    /// TCP port for incoming connections.
+    #[arg(short, long, default_value = "9883")]
     tpm_port: u16,
 }
 

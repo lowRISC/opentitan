@@ -16,7 +16,8 @@ pub struct Bootstrap {
     #[command(flatten)]
     pub options: BootstrapOptions,
 
-    #[arg(long, help = "RV32 test binary to load")]
+    /// RV32 test binary to load.
+    #[arg(long)]
     pub bootstrap: Option<PathBuf>,
 }
 

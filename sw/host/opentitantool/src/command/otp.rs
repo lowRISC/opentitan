@@ -22,18 +22,13 @@ use opentitanlib::otp::otp_img::{OtpImg, OtpImgItem, OtpImgPartition, OtpImgValu
 /// Generate CRC magic value for alert_handler configuration.
 #[derive(Debug, Args)]
 pub struct AlertDigest {
-    #[arg(help = "OTP memory map file containing alert_handler config in HJSON format")]
+    /// OTP memory map file containing alert_handler config in HJSON format.
     alert_cfg: PathBuf,
-    #[arg(
-        long,
-        help = "Output file to write the new OTP overlay to instead of printing"
-    )]
+    /// Output file to write the new OTP overlay to instead of printing.
+    #[arg(long)]
     output: Option<PathBuf>,
-    #[arg(
-        long,
-        default_value = "OWNER_SW_CFG",
-        help = "Override switch to specify a custom partition"
-    )]
+    /// Override switch to specify a custom partition.
+    #[arg(long, default_value = "OWNER_SW_CFG")]
     partition: String,
 }
 

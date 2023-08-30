@@ -42,17 +42,12 @@ impl CommandDispatch for TransportInit {
 /// https://docs.google.com/document/d/1ZEH7L5j9-wMw4tkW28-xt6JU5B6hTX0RdZD4h4OZzDo .
 #[derive(Debug, Args)]
 pub struct TransportUpdateFirmware {
-    #[arg(
-        short,
-        long,
-        help = "Local firmware file to use instead of official release"
-    )]
+    /// Local firmware file to use instead of official release.
+    #[arg(short, long)]
     filename: Option<PathBuf>,
 
-    #[arg(
-        long,
-        help = "Update even if transport already reports identical version number"
-    )]
+    /// Update even if transport already reports identical version number.
+    #[arg(long)]
     force: bool,
 }
 
@@ -79,13 +74,10 @@ impl CommandDispatch for TransportUpdateFirmware {
 /// Watch verilator's stdout for a regex or until a timeout is reached.
 #[derive(Debug, Args)]
 pub struct VerilatorWatch {
-    #[arg(help = "Regular expresion to watch for")]
+    /// Regular expresion to watch for.
     regex: String,
-    #[arg(
-        short,
-        long, value_parser=humantime::parse_duration,
-        help = "Duration to watch for the expresion",
-    )]
+    /// Duration to watch for the expresion.
+    #[arg(short, long, value_parser=humantime::parse_duration)]
     timeout: Option<Duration>,
 }
 
@@ -105,7 +97,7 @@ impl CommandDispatch for VerilatorWatch {
 
 #[derive(Debug, Args)]
 pub struct TransportQuery {
-    #[arg(help = "User defined key to look up")]
+    /// User defined key to look up.
     key: String,
 }
 

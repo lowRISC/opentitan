@@ -15,10 +15,12 @@ use opentitanlib::tpm;
 /// Read the value of a given TPM register.
 #[derive(Debug, Args)]
 pub struct TpmReadRegister {
-    #[arg(value_enum, ignore_case = true, help = "The TPM register to inspect")]
+    /// The TPM register to inspect.
+    #[arg(value_enum, ignore_case = true)]
     register: tpm::Register,
 
-    #[arg(long, help = "Number of bytes to read.")]
+    /// Number of bytes to read.
+    #[arg(long)]
     length: Option<usize>,
 }
 
@@ -65,28 +67,29 @@ impl CommandDispatch for TpmReadRegister {
 /// Write to a given TPM register.
 #[derive(Debug, Args)]
 pub struct TpmWriteRegister {
-    #[arg(value_enum, ignore_case = true, help = "The TPM register to modify")]
+    /// The TPM register to modify.
+    #[arg(value_enum, ignore_case = true)]
     register: tpm::Register,
 
+    /// Data to write, specify only one kind.
     #[arg(
         short = 'd',
         long,
-        conflicts_with_all=&["uint32", "uint8"],
-        help = "Data to write, specify only one kind.",
+        conflicts_with_all=&["uint32", "uint8"]
     )]
     hexdata: Option<String>,
+    /// Data to write, specify only one kind.
     #[arg(
         short = 'w',
         long,
-        conflicts_with_all=&["hexdata", "uint8"],
-        help = "Data to write, specify only one kind.",
+        conflicts_with_all=&["hexdata", "uint8"]
     )]
     uint32: Option<u32>,
+    /// Data to write, specify only one kind.
     #[arg(
         short = 'b',
         long,
-        conflicts_with_all=&["hexdata", "uint32"],
-        help = "Data to write, specify only one kind.",
+        conflicts_with_all=&["hexdata", "uint32"]
     )]
     uint8: Option<u8>,
 }
@@ -115,7 +118,8 @@ impl CommandDispatch for TpmWriteRegister {
 /// Write to a given TPM register.
 #[derive(Debug, Args)]
 pub struct TpmExecuteCommand {
-    #[arg(short = 'd', long, help = "Hex encoding of TPM command to execute.")]
+    /// Hex encoding of TPM command to execute.
+    #[arg(short = 'd', long)]
     hexdata: String,
 }
 

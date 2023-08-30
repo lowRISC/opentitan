@@ -79,30 +79,23 @@ pub struct BootstrapOptions {
     pub uart_params: UartParams,
     #[command(flatten)]
     pub spi_params: SpiParams,
-    #[arg(
-        short,
-        long,
-        value_enum,
-        ignore_case = true,
-        default_value = "eeprom",
-        help = "Bootstrap protocol to use"
-    )]
+    /// Bootstrap protocol to use.
+    #[arg(short, long, value_enum, ignore_case = true, default_value = "eeprom")]
     pub protocol: BootstrapProtocol,
-    #[arg(
-        long,
-        help = "Whether to reset target and clear UART RX buffer after bootstrap. For Chip Whisperer board only."
-    )]
+    /// Whether to reset target and clear UART RX buffer after bootstrap. For Chip Whisperer board only.
+    #[arg(long)]
     pub clear_uart: Option<bool>,
-    #[arg(long, value_parser = parse_duration, default_value = "100ms", help = "Duration of the reset pulse")]
+    /// Duration of the reset pulse.
+    #[arg(long, value_parser = parse_duration, default_value = "100ms")]
     pub reset_delay: Duration,
-    #[arg(
-        long,
-        help = "If set, leave the reset signal asserted after completed bootstrapping."
-    )]
+    /// If set, leave the reset signal asserted after completed bootstrapping.
+    #[arg(long)]
     pub leave_in_reset: bool,
-    #[arg(long, value_parser = parse_duration, help = "Duration of the inter-frame delay")]
+    /// Duration of the inter-frame delay.
+    #[arg(long, value_parser = parse_duration)]
     pub inter_frame_delay: Option<Duration>,
-    #[arg(long, value_parser = parse_duration, help = "Duration of the flash-erase delay")]
+    /// Duration of the flash-erase delay.
+    #[arg(long, value_parser = parse_duration)]
     pub flash_erase_delay: Option<Duration>,
 }
 

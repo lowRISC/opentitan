@@ -28,30 +28,17 @@ use opentitanlib::util::parse_int::ParseInt;
 /// Bootstrap the target device.
 #[derive(Debug, Args)]
 pub struct AssembleCommand {
-    #[arg(
-        short,
-        long,
-        value_parser = usize::from_str,
-        default_value="1048576",
-        help="The size of the image to assemble"
-    )]
+    /// The size of the image to assemble.
+    #[arg(short, long, value_parser = usize::from_str, default_value="1048576")]
     size: usize,
-    #[arg(
-        short,
-        long,
-        action = clap::ArgAction::Set,
-        default_value = "true",
-        help = "Whether or not the assembled image is mirrored"
-    )]
+    /// Whether or not the assembled image is mirrored.
+    #[arg(short, long, action = clap::ArgAction::Set, default_value = "true")]
     mirror: bool,
-    #[arg(short, long, help = "Filename to write the assembled image to")]
+    /// Filename to write the assembled image to.
+    #[arg(short, long)]
     output: PathBuf,
-    #[arg(
-        value_name = "FILE",
-        required = true,
-        num_args = 1..,
-        help = "One or more filename@offset specifiers to assemble into an image"
-    )]
+    /// One or more filename@offset specifiers to assemble into an image.
+    #[arg(value_name = "FILE", required = true, num_args = 1..)]
     filename: Vec<String>,
 }
 
@@ -77,7 +64,7 @@ impl CommandDispatch for AssembleCommand {
 /// Manifest show command.
 #[derive(Debug, Args)]
 pub struct ManifestShowCommand {
-    #[arg(help = "Filename for the image to display")]
+    /// Filename for the image to display.
     image: PathBuf,
 }
 
@@ -96,29 +83,22 @@ impl CommandDispatch for ManifestShowCommand {
 /// Manifest update command.
 #[derive(Debug, Args)]
 pub struct ManifestUpdateCommand {
-    #[arg(help = "Filename for the image to update")]
+    /// Filename for the image to update.
     image: PathBuf,
-    #[arg(
-        short,
-        long,
-        help = "Filename for an HJSON configuration specifying manifest fields"
-    )]
+    /// Filename for an HJSON configuration specifying manifest fields.
+    #[arg(short, long)]
     manifest: Option<PathBuf>,
-    #[arg(
-        long,
-        help = "Filename for an HJSON configuration specifying manifest extension fields"
-    )]
+    /// Filename for an HJSON configuration specifying manifest extension fields.
+    #[arg(long)]
     manifest_ext: Option<PathBuf>,
-    #[arg(
-        long,
-        action = clap::ArgAction::Set,
-        default_value = "true",
-        help = "Update the length field of the manifest automatically"
-    )]
+    /// Update the length field of the manifest automatically.
+    #[arg(long, action = clap::ArgAction::Set, default_value = "true")]
     update_length: bool,
-    #[arg(long, help = "Filename for an external RSA signature file")]
+    /// Filename for an external RSA signature file.
+    #[arg(long)]
     rsa_signature: Option<PathBuf>,
-    #[arg(short, long, help = "Filename for an external SPHINCS+ signature file")]
+    /// Filename for an external SPHINCS+ signature file.
+    #[arg(short, long)]
     spx_signature: Option<PathBuf>,
     #[arg(
         long,
@@ -132,11 +112,8 @@ pub struct ManifestUpdateCommand {
         long_help = "Passing a private key indicates the key will be used for signing."
     )]
     spx_key: Option<PathBuf>,
-    #[arg(
-        short,
-        long,
-        help = "Filename to write the output to instead of updating the input file"
-    )]
+    /// Filename to write the output to instead of updating the input file.
+    #[arg(short, long)]
     output: Option<PathBuf>,
 }
 
@@ -258,9 +235,10 @@ impl CommandDispatch for ManifestUpdateCommand {
 /// Manifest verify command.
 #[derive(Debug, Args)]
 pub struct ManifestVerifyCommand {
-    #[arg(help = "Filename for the image to verify")]
+    /// Filename for the image to verify.
     image: PathBuf,
-    #[arg(short, long, help = "Run verification for SPHINCS+")]
+    /// Run verification for SPHINCS+.
+    #[arg(short, long)]
     spx: bool,
 }
 
@@ -297,9 +275,10 @@ impl CommandDispatch for ManifestVerifyCommand {
 /// Compute digest command.
 #[derive(Debug, Args)]
 pub struct DigestCommand {
-    #[arg(help = "Filename for the image to calculate the digest for")]
+    /// Filename for the image to calculate the digest for.
     image: PathBuf,
-    #[arg(short, long, help = "Filename for an output bin file")]
+    /// Filename for an output bin file.
+    #[arg(short, long)]
     bin: Option<PathBuf>,
 }
 
@@ -332,9 +311,10 @@ impl CommandDispatch for DigestCommand {
 /// Compute spx-message command.
 #[derive(Debug, Args)]
 pub struct SpxMessageCommand {
-    #[arg(help = "Filename for the image to calculate the digest for")]
+    /// Filename for the image to calculate the digest for.
     image: PathBuf,
-    #[arg(short, long, help = "Filename for an output bin file")]
+    /// Filename for an output bin file.
+    #[arg(short, long)]
     output: PathBuf,
 }
 

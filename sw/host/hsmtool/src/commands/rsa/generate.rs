@@ -26,16 +26,17 @@ pub struct Generate {
     key_length: u64,
     #[arg(short = 'e', long, default_value = "65537")]
     public_exponent: u64,
-    #[arg(
-        long,
-        help = "Permit the generated key to be used for wrapping other keys"
-    )]
+    /// Permit the generated key to be used for wrapping other keys.
+    #[arg(long)]
     wrapping: bool,
-    #[arg(long, help = "Permit the generated key to be extractable")]
+    /// Permit the generated key to be extractable.
+    #[arg(long)]
     extractable: bool,
-    #[arg(long, help = "Template for creating the public key")]
+    /// Template for creating the public key.
+    #[arg(long)]
     public_template: Option<AttributeMap>,
-    #[arg(long, help = "Template for creating the private key")]
+    /// Template for creating the private key.
+    #[arg(long)]
     private_template: Option<AttributeMap>,
 }
 

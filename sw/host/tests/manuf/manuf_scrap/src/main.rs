@@ -17,11 +17,11 @@ struct Opts {
     #[command(flatten)]
     init: InitializeTest,
 
+    /// LC state to expect the chip to be initialized in.
     #[arg(
         long,
         value_parser = DifLcCtrlState::parse_lc_state_str,
-        default_value = "test_unlocked0",
-        help = "LC state to expect the chip to be initialized in."
+        default_value = "test_unlocked0"
     )]
     initial_lc_state: DifLcCtrlState,
 }

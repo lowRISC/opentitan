@@ -18,19 +18,12 @@ struct Opts {
     #[command(flatten)]
     init: InitializeTest,
 
-    #[arg(
-    long,
-    value_parser = humantime::parse_duration,
-    default_value = "600s",
-    help = "Console receive timeout",
-    )]
+    /// Console receive timeout.
+    #[arg(long, value_parser = humantime::parse_duration, default_value = "600s")]
     timeout: Duration,
 
-    #[arg(
-        long,
-        default_value = "BOOTSTRAP",
-        help = "Name of the SPI interface to connect to the OTTF console."
-    )]
+    /// Name of the SPI interface to connect to the OTTF console.
+    #[arg(long, default_value = "BOOTSTRAP")]
     console_spi: String,
 }
 

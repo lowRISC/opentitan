@@ -26,44 +26,24 @@ struct Opts {
     #[command(flatten)]
     init: InitializeTest,
 
-    #[arg(
-        long,
-        value_parser = humantime::parse_duration,
-        default_value = "5s",
-        help = "Bootstrap detection timeout",
-    )]
+    /// Bootstrap detection timeout.
+    #[arg(long, value_parser = humantime::parse_duration, default_value = "5s")]
     timeout: Duration,
 
-    #[arg(
-        long,
-        value_parser = usize::from_str,
-        default_value = "12",
-        help = "JEDEC page of manufacturer",
-    )]
+    /// JEDEC page of manufacturer.
+    #[arg(long, value_parser = usize::from_str, default_value = "12")]
     jedec_page: usize,
 
-    #[arg(
-        long,
-        value_parser = u8::from_str,
-        default_value = "0xEF",
-        help = "JEDEC ID of manufacturer",
-    )]
+    /// JEDEC ID of manufacturer.
+    #[arg(long, value_parser = u8::from_str, default_value = "0xEF")]
     jedec_id: u8,
 
-    #[arg(
-        long,
-        value_parser = u8::from_str,
-        default_value = "0x29",
-        help = "JEDEC manufacturer product ID",
-    )]
+    /// JEDEC manufacturer product ID.
+    #[arg(long, value_parser = u8::from_str, default_value = "0x29")]
     jedec_product: u8,
 
-    #[arg(
-        long,
-        value_parser = u32::from_str,
-        default_value = "0x100000",
-        help = "Size of the internal flash",
-    )]
+    /// Size of the internal flash.
+    #[arg(long, value_parser = u32::from_str, default_value = "0x100000")]
     flash_size: u32,
 }
 

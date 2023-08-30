@@ -28,9 +28,10 @@ pub enum StatusCommand {
 #[derive(Debug, Args)]
 /// List all records in an ELF file.
 pub struct ListCommand {
-    #[arg(short, long, help = "Display the raw status create records.")]
+    /// Display the raw status create records.
+    #[arg(short, long)]
     raw_records: bool,
-    #[arg(help = "Filename for the executable to analyze.")]
+    /// Filename for the executable to analyze.
     elf_file: PathBuf,
 }
 
@@ -71,9 +72,10 @@ pub struct LintCommand {
     // Bazel needs any command to create at least one output file, but we want to
     // print to stderr in this case. This option simplies tells the tool to create
     // an empty file to make bazel happy.
-    #[arg(short, long, help = "Create an empty file to make bazel happy.")]
+    /// Create an empty file to make bazel happy.
+    #[arg(short, long)]
     touch: Option<PathBuf>,
-    #[arg(help = "Filenames of the executable to analyze.")]
+    /// Filenames of the executable to analyze.
     elf_files: Vec<PathBuf>,
 }
 
@@ -139,11 +141,8 @@ pub struct DecodeCommand {
         value_parser = u32::from_str,
     )]
     raw_status: u32,
-    #[arg(
-        long,
-        value_name = "ELF_FILE",
-        help = "Filename for the executable to analyze."
-    )]
+    /// Filename for the executable to analyze.
+    #[arg(long, value_name = "ELF_FILE")]
     elf: Option<PathBuf>,
 }
 

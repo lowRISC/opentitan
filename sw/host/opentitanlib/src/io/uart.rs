@@ -19,10 +19,12 @@ pub struct UartParams {
     #[arg(long, help = "UART instance", default_value = "CONSOLE")]
     uart: String,
 
-    #[arg(long, help = "UART baudrate")]
+    /// UART baudrate.
+    #[arg(long)]
     baudrate: Option<u32>,
 
-    #[arg(long, help = "Enable software flow control")]
+    /// Enable software flow control.
+    #[arg(long)]
     flow_control: bool,
 }
 

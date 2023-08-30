@@ -26,7 +26,7 @@ use opentitanlib::util::voltage::Voltage;
 #[derive(Debug, Args)]
 /// Reads a GPIO pin.
 pub struct GpioRead {
-    #[arg(help = "The GPIO pin to read")]
+    /// The GPIO pin to read.
     pub pin: String,
 }
 
@@ -55,12 +55,10 @@ impl CommandDispatch for GpioRead {
 #[derive(Debug, Args)]
 /// Writes a GPIO pin.
 pub struct GpioWrite {
-    #[arg(help = "The GPIO pin to write")]
+    /// The GPIO pin to write.
     pub pin: String,
-    #[arg(
-        action = clap::ArgAction::Set,
-        help = "The value to write to the pin"
-    )]
+    /// The value to write to the pin.
+    #[arg(action = clap::ArgAction::Set)]
     pub value: bool,
 }
 
@@ -81,9 +79,10 @@ impl CommandDispatch for GpioWrite {
 #[derive(Debug, Args)]
 /// Set the I/O mode of a GPIO pin (Input/OpenDrain/PushPull).
 pub struct GpioSetMode {
-    #[arg(help = "The GPIO pin to modify")]
+    /// The GPIO pin to modify.
     pub pin: String,
-    #[arg(value_enum, ignore_case = true, help = "The I/O mode of the pin")]
+    /// The I/O mode of the pin.
+    #[arg(value_enum, ignore_case = true)]
     pub mode: PinMode,
 }
 
@@ -103,14 +102,10 @@ impl CommandDispatch for GpioSetMode {
 #[derive(Debug, Args)]
 /// Set the I/O weak pull mode of a GPIO pin (PullUp/PullDown/None).
 pub struct GpioSetPullMode {
-    #[arg(help = "The GPIO pin to modify")]
+    /// The GPIO pin to modify.
     pub pin: String,
-    #[arg(
-        value_name = "PULLMODE",
-        value_enum,
-        ignore_case = true,
-        help = "The weak pull mode of the pin"
-    )]
+    /// The weak pull mode of the pin.
+    #[arg(value_name = "PULLMODE", value_enum, ignore_case = true)]
     pub pull_mode: PullMode,
 }
 
@@ -130,23 +125,19 @@ impl CommandDispatch for GpioSetPullMode {
 #[derive(Debug, Args)]
 /// Simultaneously set mode, pull and output value of a GPIO pin.
 pub struct GpioSet {
-    #[arg(help = "The GPIO pin to modify")]
+    /// The GPIO pin to modify.
     pub pin: String,
-    #[arg(long, ignore_case = true, help = "The I/O mode of the pin")]
+    /// The I/O mode of the pin.
+    #[arg(long, ignore_case = true)]
     pub mode: Option<PinMode>,
-    #[arg(
-        long,
-        value_parser = bool::from_str,
-        help = "The value to write to the pin, has effect only in PushPull and OpenDrain modes"
-    )]
+    /// The value to write to the pin, has effect only in PushPull and OpenDrain modes.
+    #[arg(long, value_parser = bool::from_str)]
     pub value: Option<bool>,
-    #[arg(long, ignore_case = true, help = "The weak pull mode of the pin")]
+    /// The weak pull mode of the pin.
+    #[arg(long, ignore_case = true)]
     pub pull: Option<PullMode>,
-    #[arg(
-        long,
-        value_parser = bool::from_str,
-        help = "The analog value to write to the pin in volts, has effect only in AnalogOutput mode"
-    )]
+    /// The analog value to write to the pin in volts, has effect only in AnalogOutput mode.
+    #[arg(long, value_parser = bool::from_str)]
     pub voltage: Option<Voltage>,
 }
 
@@ -172,7 +163,7 @@ impl CommandDispatch for GpioSet {
 #[derive(Debug, Args)]
 /// Reads a GPIO pin.
 pub struct GpioAnalogRead {
-    #[arg(help = "The GPIO pin to read")]
+    /// The GPIO pin to read.
     pub pin: String,
 }
 
@@ -201,12 +192,10 @@ impl CommandDispatch for GpioAnalogRead {
 #[derive(Debug, Args)]
 /// Writes an analog voltage to a GPIO pin.
 pub struct GpioAnalogWrite {
-    #[arg(help = "The GPIO pin to write")]
+    /// The GPIO pin to write.
     pub pin: String,
-    #[arg(
-        value_parser = bool::from_str,
-        help = "The analog value to write to the pin in volts, has effect only in AnalogOutput mode"
-    )]
+    /// The analog value to write to the pin in volts, has effect only in AnalogOutput mode.
+    #[arg(value_parser = bool::from_str)]
     pub volts: f32,
 }
 
@@ -227,7 +216,7 @@ impl CommandDispatch for GpioAnalogWrite {
 #[derive(Debug, Args)]
 /// Apply a configuration-named pin strapping
 pub struct GpioApplyStrapping {
-    #[arg(help = "The pin strapping to apply")]
+    /// The pin strapping to apply.
     pub name: String,
 }
 
@@ -253,7 +242,7 @@ pub enum GpioMonitoringCommand {
 #[derive(Debug, Args)]
 /// Begin logic-analyzer style monitoring of a set of pins.
 pub struct GpioMonitoringStart {
-    #[arg(help = "The list of GPIO pins to monitor (space separated)")]
+    /// The list of GPIO pins to monitor (space separated).
     pub pins: Vec<String>,
 }
 
@@ -309,7 +298,7 @@ impl CommandDispatch for GpioMonitoringStart {
 /// Retrieve logic-analyzer style monitoring events detected so far, on a set of pins.  Optionally
 /// continue monitoring, in which case `monitoring read` must be called again later.
 pub struct GpioMonitoringRead {
-    #[arg(help = "The list of GPIO pins being monitored (space separated)")]
+    /// The list of GPIO pins being monitored (space separated).
     pub pins: Vec<String>,
 
     #[arg(long)]
@@ -374,13 +363,15 @@ impl CommandDispatch for GpioMonitoringRead {
 /// standard VCD format, which can be loaded into e.g. Pulseview (or probably also Saleae
 /// software), to get a logic analyzer view of what transpired.
 pub struct GpioMonitoringVcd {
-    #[arg(help = "The list of GPIO pins to monitor (space separated)")]
+    /// The list of GPIO pins to monitor (space separated).
     pub pins: Vec<String>,
 
-    #[arg(short, long, help = "Output file")]
+    /// Output file.
+    #[arg(short, long)]
     outfile: String,
 
-    #[arg(short, long, help = "Do not print start end exit messages.")]
+    /// Do not print start end exit messages.
+    #[arg(short, long)]
     quiet: bool,
 }
 
@@ -527,7 +518,7 @@ impl CommandDispatch for GpioMonitoringVcd {
 #[derive(Debug, Args)]
 /// Remove a configuration-named pin strapping
 pub struct GpioRemoveStrapping {
-    #[arg(help = "The pin strapping to release")]
+    /// The pin strapping to release.
     pub name: String,
 }
 

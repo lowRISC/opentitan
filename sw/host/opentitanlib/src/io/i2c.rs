@@ -16,7 +16,8 @@ pub struct I2cParams {
     #[arg(long, help = "I2C instance", default_value = "0")]
     pub bus: String,
 
-    #[arg(long, help = "I2C bus speed (typically: 100000, 400000, 1000000)")]
+    /// I2C bus speed (typically: 100000, 400000, 1000000).
+    #[arg(long)]
     pub speed: Option<u32>,
 }
 
