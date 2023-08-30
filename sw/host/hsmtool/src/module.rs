@@ -8,6 +8,7 @@ use cryptoki::context::Pkcs11;
 use cryptoki::session::Session;
 use cryptoki::session::UserType;
 use cryptoki::slot::Slot;
+use cryptoki::types::AuthPin;
 use serde::de::{Deserialize, Deserializer};
 
 use crate::error::HsmError;
@@ -18,7 +19,7 @@ pub struct Module {
 
 impl Module {
     pub fn initialize(module: &str) -> Result<Self> {
-        let mut pkcs11 = Pkcs11::new(module)?;
+        let pkcs11 = Pkcs11::new(module)?;
         pkcs11.initialize(CInitializeArgs::OsThreads)?;
         Ok(Module { pkcs11 })
     }
@@ -43,7 +44,10 @@ impl Module {
         let slot = self.get_token(token)?;
         let session = self.pkcs11.open_rw_session(slot)?;
         if let Some(user) = user {
-            session.login(user, pin).context("Failed HSM Login")?;
+            let pin = pin.map(|x| AuthPin::new(x.to_owned()));
+            session
+                .login(user, pin.as_ref())
+                .context("Failed HSM Login")?;
         }
         Ok(session)
     }

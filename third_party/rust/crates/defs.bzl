@@ -305,7 +305,7 @@ _NORMAL_DEPENDENCIES = {
             "chrono": "@crate_index__chrono-0.4.27//:chrono",
             "clap": "@crate_index__clap-4.4.1//:clap",
             "crc": "@crate_index__crc-3.0.1//:crc",
-            "cryptoki": "@crate_index__cryptoki-0.4.1//:cryptoki",
+            "cryptoki": "@crate_index__cryptoki-0.5.0//:cryptoki",
             "cryptoki-sys": "@crate_index__cryptoki-sys-0.1.6//:cryptoki_sys",
             "deser-hjson": "@crate_index__deser-hjson-2.1.0//:deser_hjson",
             "directories": "@crate_index__directories-5.0.1//:directories",
@@ -1014,19 +1014,18 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "crate_index__cryptoki-0.4.1",
+        name = "crate_index__cryptoki-0.5.0",
         patch_args = [
             "-p2",
         ],
         patches = [
-            "@//third_party/rust/patches:cryptoki-pr-116.patch",
             "@//third_party/rust/patches:cryptoki-vendor-defined-mechanism-type.patch",
         ],
-        sha256 = "7da58729f419780655e9b82f5c5e0c3eba3aab46ea48f610cc615b10d5baad53",
+        sha256 = "95d9fb68c88020896fa3741a10e41f206b2ace927724170a753a3f2ba5f77c2b",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/cryptoki/0.4.1/download"],
-        strip_prefix = "cryptoki-0.4.1",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.cryptoki-0.4.1.bazel"),
+        urls = ["https://crates.io/api/v1/crates/cryptoki/0.5.0/download"],
+        strip_prefix = "cryptoki-0.5.0",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.cryptoki-0.5.0.bazel"),
     )
 
     maybe(
@@ -1057,16 +1056,6 @@ def crate_repositories():
         urls = ["https://crates.io/api/v1/crates/deranged/0.3.8/download"],
         strip_prefix = "deranged-0.3.8",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.deranged-0.3.8.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "crate_index__derivative-2.2.0",
-        sha256 = "fcc3dd5e9e9c0b295d6e1e4d811fb6f157d5ffd784b8d202fc62eac8035a770b",
-        type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/derivative/2.2.0/download"],
-        strip_prefix = "derivative-2.2.0",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.derivative-2.2.0.bazel"),
     )
 
     maybe(

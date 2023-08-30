@@ -43,7 +43,6 @@ crates_vendor(
             patch_args = ["-p2"],
             patches = [
                 "@//third_party/rust/patches:cryptoki-vendor-defined-mechanism-type.patch",
-                "@//third_party/rust/patches:cryptoki-pr-116.patch",
             ],
         )],
         "cryptoki-sys": [crate.annotation(
