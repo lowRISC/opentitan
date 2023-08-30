@@ -363,7 +363,7 @@ alias(
 
 alias(
     name = "serialport",
-    actual = "@crate_index__serialport-4.2.1//:serialport",
+    actual = "@crate_index__serialport-4.2.2//:serialport",
     tags = ["manual"],
 )
 

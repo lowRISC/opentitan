@@ -76,7 +76,7 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "4.2.1",
+    version = "4.2.2",
     deps = [
         "@crate_index__scopeguard-1.2.0//:scopeguard",
     ] + select({
