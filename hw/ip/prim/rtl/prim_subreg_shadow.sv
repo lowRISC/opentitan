@@ -11,7 +11,8 @@ module prim_subreg_shadow
 #(
   parameter int            DW       = 32,
   parameter sw_access_e    SwAccess = SwAccessRW,
-  parameter logic [DW-1:0] RESVAL   = '0    // reset value
+  parameter logic [DW-1:0] RESVAL   = '0,    // reset value
+  parameter bit            Mubi     = 1'b0
 ) (
   input clk_i,
   input rst_ni,
@@ -186,5 +187,8 @@ module prim_subreg_shadow
   assign qe = committed_qe;
   assign q  = committed_q;
   assign qs = committed_qs;
+
+  // prim_subreg_shadow does not support multi-bit software access yet
+  `ASSERT_NEVER(MubiIsNotYetSupported_A, Mubi)
 
 endmodule

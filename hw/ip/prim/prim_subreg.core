@@ -18,6 +18,7 @@ filesets:
     file_type: systemVerilogSource
     depend:
       - lowrisc:prim:assert
+      - lowrisc:prim:mubi
 
   files_verilator_waiver:
     depend:

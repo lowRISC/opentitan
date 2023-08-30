@@ -709,7 +709,8 @@ module aes_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_data_in_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -749,7 +750,8 @@ module aes_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_data_in_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -789,7 +791,8 @@ module aes_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_data_in_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -829,7 +832,8 @@ module aes_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_data_in_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1030,7 +1034,8 @@ module aes_reg_top (
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h1)
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
   ) u_ctrl_aux_shadowed_key_touch_forces_reseed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1065,7 +1070,8 @@ module aes_reg_top (
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_ctrl_aux_shadowed_force_masks (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1101,7 +1107,8 @@ module aes_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
-    .RESVAL  (1'h1)
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
   ) u_ctrl_aux_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1129,7 +1136,8 @@ module aes_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_trigger_start (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1155,7 +1163,8 @@ module aes_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h1)
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
   ) u_trigger_key_iv_data_in_clear (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1181,7 +1190,8 @@ module aes_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h1)
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
   ) u_trigger_data_out_clear (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1207,7 +1217,8 @@ module aes_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h1)
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
   ) u_trigger_prng_reseed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1235,7 +1246,8 @@ module aes_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_status_idle (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1261,7 +1273,8 @@ module aes_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_status_stall (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1287,7 +1300,8 @@ module aes_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_status_output_lost (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1313,7 +1327,8 @@ module aes_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_status_output_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1339,7 +1354,8 @@ module aes_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_status_input_ready (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1365,7 +1381,8 @@ module aes_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_status_alert_recov_ctrl_update_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1391,7 +1408,8 @@ module aes_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_status_alert_fatal_fault (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
