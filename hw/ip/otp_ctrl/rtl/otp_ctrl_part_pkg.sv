@@ -467,7 +467,7 @@ package otp_ctrl_part_pkg;
   endfunction : named_broadcast_assign
 
   function automatic otp_keymgr_key_t named_keymgr_key_assign(
-      logic [NumPart-1:0] part_digest,
+      logic [NumPart-1:0][ScrmblBlockWidth-1:0] part_digest,
       logic [$bits(PartInvDefault)/8-1:0][7:0] part_buf_data,
       lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en);
     otp_keymgr_key_t otp_keymgr_key;
