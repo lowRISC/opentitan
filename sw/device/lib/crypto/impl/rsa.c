@@ -5,6 +5,7 @@
 #include "sw/device/lib/crypto/include/rsa.h"
 
 #include "sw/device/lib/base/hardened_memory.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_keygen.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_signature.h"
@@ -165,6 +166,9 @@ static status_t key_length_from_modulus(const crypto_unblinded_key_t *modulus,
 
 crypto_status_t otcrypto_rsa_keygen_async_start(
     rsa_key_size_t required_key_len) {
+  // Check that the entropy complex is initialized.
+  HARDENED_TRY(entropy_complex_check());
+
   switch (required_key_len) {
     case kRsaKeySize2048:
       return rsa_keygen_2048_start();

@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/crypto/include/ecc.h"
 
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/impl/ecc/ecdh_p256.h"
 #include "sw/device/lib/crypto/impl/ecc/ecdsa_p256.h"
@@ -156,6 +157,9 @@ crypto_status_t otcrypto_ecdsa_keygen_async_start(
 
   // Check the key configuration.
   HARDENED_TRY(key_config_check(elliptic_curve, config, kKeyModeEcdsa));
+
+  // Check that the entropy complex is initialized.
+  HARDENED_TRY(entropy_complex_check());
 
   // Select the correct keygen operation and start it.
   switch (launder32(elliptic_curve->curve_type)) {
@@ -399,6 +403,9 @@ crypto_status_t otcrypto_ecdsa_sign_async_start(
   HARDENED_TRY(
       key_config_check(elliptic_curve, &private_key->config, kKeyModeEcdsa));
 
+  // Check that the entropy complex is initialized.
+  HARDENED_TRY(entropy_complex_check());
+
   // Select the correct signing operation and start it.
   switch (launder32(elliptic_curve->curve_type)) {
     case kEccCurveTypeNistP256:
@@ -641,6 +648,9 @@ crypto_status_t otcrypto_ecdh_keygen_async_start(
 
   // Check the key configuration.
   HARDENED_TRY(key_config_check(elliptic_curve, config, kKeyModeEcdh));
+
+  // Check that the entropy complex is initialized.
+  HARDENED_TRY(entropy_complex_check());
 
   // Select the correct keygen operation and start it.
   switch (launder32(elliptic_curve->curve_type)) {
