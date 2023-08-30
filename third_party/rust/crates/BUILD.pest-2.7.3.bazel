@@ -30,6 +30,7 @@ rust_library(
     ),
     crate_features = [
         "default",
+        "memchr",
         "std",
     ],
     crate_root = "src/lib.rs",
@@ -76,8 +77,9 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "2.7.2",
+    version = "2.7.3",
     deps = [
+        "@crate_index__memchr-2.6.2//:memchr",
         "@crate_index__thiserror-1.0.47//:thiserror",
         "@crate_index__ucd-trie-0.1.6//:ucd_trie",
     ],

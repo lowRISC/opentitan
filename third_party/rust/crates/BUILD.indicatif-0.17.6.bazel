@@ -80,7 +80,7 @@ rust_library(
     deps = [
         "@crate_index__console-0.15.7//:console",
         "@crate_index__number_prefix-0.4.0//:number_prefix",
-        "@crate_index__portable-atomic-1.4.2//:portable_atomic",
+        "@crate_index__portable-atomic-1.4.3//:portable_atomic",
         "@crate_index__unicode-width-0.1.10//:unicode_width",
     ] + select({
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [

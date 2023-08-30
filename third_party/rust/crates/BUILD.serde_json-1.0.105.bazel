@@ -81,7 +81,7 @@ rust_library(
     deps = [
         "@crate_index__itoa-1.0.9//:itoa",
         "@crate_index__ryu-1.0.15//:ryu",
-        "@crate_index__serde-1.0.171//:serde",
+        "@crate_index__serde-1.0.188//:serde",
         "@crate_index__serde_json-1.0.105//:build_script_build",
     ],
 )

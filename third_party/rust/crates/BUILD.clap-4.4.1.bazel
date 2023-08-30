@@ -6,7 +6,7 @@
 #     bazel run @//third_party/rust:crate_index
 ###############################################################################
 
-load("@rules_rust//rust:defs.bzl", "rust_proc_macro")
+load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -14,8 +14,8 @@ package(default_visibility = ["//visibility:public"])
 #     "TODO",  # MIT OR Apache-2.0
 # ])
 
-rust_proc_macro(
-    name = "pest_derive",
+rust_library(
+    name = "clap",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -29,15 +29,28 @@ rust_proc_macro(
         ],
     ),
     crate_features = [
+        "cargo",
+        "color",
         "default",
+        "deprecated",
+        "derive",
+        "env",
+        "error-context",
+        "help",
         "std",
+        "suggestions",
+        "usage",
+        "wrap_help",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
+    proc_macro_deps = [
+        "@crate_index__clap_derive-4.4.0//:clap_derive",
+    ],
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=pest_derive",
+        "crate-name=clap",
         "manual",
         "noclippy",
         "norustfmt",
@@ -76,9 +89,9 @@ rust_proc_macro(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "2.7.2",
+    version = "4.4.1",
     deps = [
-        "@crate_index__pest-2.7.2//:pest",
-        "@crate_index__pest_generator-2.7.2//:pest_generator",
+        "@crate_index__clap_builder-4.4.1//:clap_builder",
+        "@crate_index__once_cell-1.18.0//:once_cell",
     ],
 )

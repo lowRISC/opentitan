@@ -89,7 +89,7 @@ rust_library(
     version = "0.32.0",
     deps = [
         "@crate_index__flate2-1.0.27//:flate2",
-        "@crate_index__memchr-2.6.1//:memchr",
+        "@crate_index__memchr-2.6.2//:memchr",
         "@crate_index__ruzstd-0.4.0//:ruzstd",
     ],
 )

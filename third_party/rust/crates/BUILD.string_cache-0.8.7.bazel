@@ -84,6 +84,6 @@ rust_library(
         "@crate_index__parking_lot-0.12.1//:parking_lot",
         "@crate_index__phf_shared-0.10.0//:phf_shared",
         "@crate_index__precomputed-hash-0.1.1//:precomputed_hash",
-        "@crate_index__serde-1.0.171//:serde",
+        "@crate_index__serde-1.0.188//:serde",
     ],
 )

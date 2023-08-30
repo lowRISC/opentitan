@@ -91,7 +91,7 @@ rust_library(
         "@crate_index__pin-project-1.1.3//:pin_project",
         "@crate_index__rustls-pemfile-1.0.3//:rustls_pemfile",
         "@crate_index__scoped-tls-1.0.1//:scoped_tls",
-        "@crate_index__serde-1.0.171//:serde",
+        "@crate_index__serde-1.0.188//:serde",
         "@crate_index__serde_json-1.0.105//:serde_json",
         "@crate_index__serde_urlencoded-0.7.1//:serde_urlencoded",
         "@crate_index__tokio-1.32.0//:tokio",

@@ -77,6 +77,6 @@ rust_library(
     }),
     version = "4.4.0",
     deps = [
-        "@crate_index__clap-4.2.7//:clap",
+        "@crate_index__clap-4.4.1//:clap",
     ],
 )
