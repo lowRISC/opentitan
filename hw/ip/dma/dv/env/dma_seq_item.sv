@@ -42,7 +42,7 @@ class dma_seq_item extends uvm_sequence_item;
   rand asid_encoding_e m_dst_asid;
   rand dma_control_data_direction_e m_direction;
   // Variable to control which trigger_i signals are active
-  rand bit [NUM_LSIO_TRIGGERS-1:0] m_handshake_intr_en;
+  rand bit [dma_reg_pkg::NumIntClearSources-1:0] m_handshake_intr_en;
   // variable used to constrain randomization to only valid configs
   bit valid_dma_config;
   // Variable used to constrain randomization of all addresses values
