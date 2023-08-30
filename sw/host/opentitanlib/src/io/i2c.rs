@@ -13,7 +13,8 @@ use crate::impl_serializable_error;
 
 #[derive(Debug, Args)]
 pub struct I2cParams {
-    #[arg(long, help = "I2C instance", default_value = "0")]
+    /// I2C instance.
+    #[arg(long, default_value = "0")]
     pub bus: String,
 
     /// I2C bus speed (typically: 100000, 400000, 1000000).

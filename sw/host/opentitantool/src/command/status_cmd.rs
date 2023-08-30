@@ -136,10 +136,8 @@ impl CommandDispatch for LintCommand {
 #[derive(Debug, Args)]
 /// Decode a raw status. Optionally accepts an ELF file to recover the filename.
 pub struct DecodeCommand {
-    #[arg(
-        help = "Raw status to decode (can be in hexadecimal using 0x).",
-        value_parser = u32::from_str,
-    )]
+    /// Raw status to decode (can be in hexadecimal using 0x).
+    #[arg(value_parser = u32::from_str)]
     raw_status: u32,
     /// Filename for the executable to analyze.
     #[arg(long, value_name = "ELF_FILE")]
