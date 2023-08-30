@@ -92,10 +92,6 @@ crates_vendor(
                 "@//third_party/rust/patches:pqcrypto-sphincsplus-includedir.patch",
             ],
         )],
-        "serialport": [crate.annotation(
-            patch_args = ["-p1"],
-            patches = ["@//third_party/rust/patches:serialport-pci-workaround.patch"],
-        )],
     },
     cargo_lockfile = "//third_party/rust:Cargo.lock",
     manifests = ["//third_party/rust:Cargo.toml"],
