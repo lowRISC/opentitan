@@ -30,7 +30,7 @@ rust_library(
         ],
     ),
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2021",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
@@ -73,11 +73,11 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.2.4",
+    version = "0.2.5",
     deps = [
         "@crate_index__getrandom-0.2.10//:getrandom",
         "@crate_index__libc-0.2.147//:libc",
-        "@crate_index__pqcrypto-internals-0.2.4//:build_script_build",
+        "@crate_index__pqcrypto-internals-0.2.5//:build_script_build",
     ],
 )
 
@@ -97,7 +97,7 @@ cargo_build_script(
             "WORKSPACE.bazel",
         ],
     ),
-    edition = "2018",
+    edition = "2021",
     links = "pqcrypto_internals",
     rustc_flags = [
         "--cap-lints=allow",
@@ -109,7 +109,7 @@ cargo_build_script(
         "noclippy",
         "norustfmt",
     ],
-    version = "0.2.4",
+    version = "0.2.5",
     visibility = ["//visibility:private"],
     deps = [
         "@crate_index__cc-1.0.83//:cc",
