@@ -12,7 +12,6 @@ module dma
     parameter logic [NumAlerts-1:0] AlertAsyncOn         = {NumAlerts{1'b1}},
     parameter bit                   EnableDataIntgGen    = 1'b1,
     parameter logic [RsvdWidth-1:0] TlUserRsvd           = '0,
-    parameter int                   NumLsioTriggers      = dma_pkg::NUM_LSIO_TRIGGERS,
     parameter logic [SYS_RACL_WIDTH-1:0] SysRacl         = '0,
     parameter integer                  OtAgentId         = 0
 ) (
@@ -23,7 +22,7 @@ module dma
   output  logic                                     intr_dma_done_o,
   output  logic                                     intr_dma_error_o,
   output  logic                                     intr_dma_memory_buffer_limit_o,
-  input   logic [(NumLsioTriggers-1):0]             lsio_trigger_i,
+  input   lsio_trigger_t                            lsio_trigger_i,
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
@@ -259,12 +258,12 @@ module dma
   );
 
   // Masking incoming handshake triggers with their enable
-  logic [NumLsioTriggers-1:0] lsio_trigger;
-  logic                       handshake_interrupt;
+  lsio_trigger_t lsio_trigger;
+  logic          handshake_interrupt;
   always_comb begin
     lsio_trigger = '0;
 
-    for (int i = 0; i < NumLsioTriggers; i++) begin
+    for (int i = 0; i < NumIntClearSources; i++) begin
       lsio_trigger[i] = lsio_trigger_i[i] && reg2hw.handshake_interrupt_enable.q[i];
     end
     handshake_interrupt = (|lsio_trigger);
@@ -1363,7 +1362,7 @@ module dma
 
   // Handshake interrupt enable register must be expanded if there are more than 32 handshake
   // trigger wires
-  `ASSERT_NEVER(LimitHandshakeTriggerWires_A, NumLsioTriggers > 32)
+  `ASSERT_NEVER(LimitHandshakeTriggerWires_A, NumIntClearSources > 32)
 
   // The RTL code assumes the BE signal is 4-bit wide
   `ASSERT_NEVER(BeLengthMustBe4_A, top_pkg::TL_DBW != 4)
