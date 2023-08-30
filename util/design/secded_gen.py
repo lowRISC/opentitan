@@ -17,10 +17,11 @@ import itertools
 import logging as log
 import math
 import random
-import hjson
 import subprocess
-from typing import Any, Dict, List, Tuple
 from pathlib import Path
+from typing import Any, Dict, List, Tuple
+
+import hjson
 
 COPYRIGHT = """// Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -74,10 +75,12 @@ C_H_FOOT = """
 #endif  // OPENTITAN_HW_IP_PRIM_DV_PRIM_SECDED_SECDED_ENC_H_
 """
 
-CODE_OPTIONS = {'hsiao': '',
-                'inv_hsiao': '_inv',
-                'hamming': '_hamming',
-                'inv_hamming': '_inv_hamming'}
+CODE_OPTIONS = {
+    'hsiao': '',
+    'inv_hsiao': '_inv',
+    'hamming': '_hamming',
+    'inv_hamming': '_inv_hamming'
+}
 
 # secded configurations
 SECDED_CFG_FILE = "util/design/data/secded_cfg.hjson"
@@ -252,8 +255,8 @@ def print_fn(n, k, m, codes, suffix, codetype, inv=False):
     return dec;
 
   endfunction
-'''.format((n - 1), module_name, (k - 1), (n - 1), enc_out,
-           typename, module_name, (n - 1), (k - 1), (m - 1), typename, dec_out)
+'''.format((n - 1), module_name, (k - 1), (n - 1), enc_out, typename,
+           module_name, (n - 1), (k - 1), (m - 1), typename, dec_out)
 
     return outstr
 
@@ -325,18 +328,21 @@ def verify(cfgs):
     for cfg in cfgs['cfgs']:
         if (cfg['k'] <= 1 or cfg['k'] > 120):
             error += 1
-            log.error("Current tool doesn't support the value k (%d)", cfg['k'])
+            log.error("Current tool doesn't support the value k (%d)",
+                      cfg['k'])
 
         if (cfg['m'] <= 1 or cfg['m'] > 20):
             error += 1
-            log.error("Current tool doesn't support the value m (%d)", cfg['m'])
+            log.error("Current tool doesn't support the value m (%d)",
+                      cfg['m'])
 
         # Calculate 'm' (parity size)
         min_m = min_paritysize(cfg['k'])
         if (cfg['m'] < min_m):
             error += 1
-            log.error("given \'m\' argument is smaller than minimum requirement " +
-                      "using calculated minimum (%d)", min_m)
+            log.error(
+                "given \'m\' argument is smaller than minimum requirement " +
+                "using calculated minimum (%d)", min_m)
 
         # Error check code selection
         if (cfg['code_type'] not in CODE_OPTIONS):
@@ -347,7 +353,8 @@ def verify(cfgs):
     return error
 
 
-def _ecc_pick_code(config: Dict[str, Any], codetype: str, k: int) -> Tuple[int, List[int], int]:
+def _ecc_pick_code(config: Dict[str, Any], codetype: str,
+                   k: int) -> Tuple[int, List[int], int]:
     # first check to see if bit width is supported among configuration
 
     codes = None
@@ -366,8 +373,7 @@ def _ecc_pick_code(config: Dict[str, Any], codetype: str, k: int) -> Tuple[int, 
 
 
 @functools.lru_cache(maxsize=None)
-def _ecc_encode(k: int,
-                m: int, bitmasks: List[int], invert: int,
+def _ecc_encode(k: int, m: int, bitmasks: List[int], invert: int,
                 dataword: int) -> int:
     assert 0 <= dataword < (1 << k)
 
@@ -394,7 +400,8 @@ def _ecc_encode(k: int,
     return codeword
 
 
-def ecc_encode(config: Dict[str, Any], codetype: str, k: int, dataword: int) -> Tuple[int, int]:
+def ecc_encode(config: Dict[str, Any], codetype: str, k: int,
+               dataword: int) -> Tuple[int, int]:
     log.info(f"Encoding ECC for {hex(dataword)}")
 
     m, bitmasks, invert = _ecc_pick_code(config, codetype, k)
@@ -406,13 +413,12 @@ def ecc_encode(config: Dict[str, Any], codetype: str, k: int, dataword: int) -> 
     return int(codeword, 2), m
 
 
-def ecc_encode_some(config: Dict[str, Any],
-                    codetype: str,
-                    k: int,
+def ecc_encode_some(config: Dict[str, Any], codetype: str, k: int,
                     datawords: int) -> Tuple[List[int], int]:
     m, bitmasks, invert = _ecc_pick_code(config, codetype, k)
-    codewords = [int(_ecc_encode(k, m, bitmasks, invert, w), 2)
-                 for w in datawords]
+    codewords = [
+        int(_ecc_encode(k, m, bitmasks, invert, w), 2) for w in datawords
+    ]
     return codewords, m
 
 
@@ -597,10 +603,11 @@ def _hamming_code(data_cnt, parity_cnt):
     # Include the closest previous parity bit if it's odd.
     # Also include the final parity bit since it includes everything.
     codes = [
-        tuple(p for p in range(last_parity) if (b >> p) & 1) + (last_parity,) for b in data_bits
+        tuple(p for p in range(last_parity) if (b >> p) & 1) + (last_parity, )
+        for b in data_bits
     ]
     # Final parity bit includes all ECC bits.
-    codes += [(last_parity,)] * last_parity
+    codes += [(last_parity, )] * last_parity
     log.info("Hamming codes %s", codes)
     return codes
 
@@ -658,7 +665,7 @@ def write_c_files(n, k, m, codes, suffix, c_src_filename, c_h_filename,
         # Form a single word from the incoming byte data
         f.write(f"{in_type} word = ")
         f.write(" | ".join(
-                [f"(({in_type})bytes[{i}] << {i*8})" for i in range(in_bytes)]))
+            [f"(({in_type})bytes[{i}] << {i*8})" for i in range(in_bytes)]))
         f.write(";\n\n")
 
         # AND the word with the codes, calculating parity of each and combine
@@ -666,10 +673,11 @@ def write_c_files(n, k, m, codes, suffix, c_src_filename, c_h_filename,
         f.write("return ")
         parity_bit_masks = enumerate(calc_bitmasks(k, m, codes, False))
         # Add ECC bit inversion if needed (see print_enc function).
-        f.write(" | ".join(
-                [f"(calc_parity(word & 0x{mask:x}, "
-                 f"{'true' if invert and (par_bit % 2) else 'false'}) << {par_bit})"
-                 for par_bit, mask in parity_bit_masks]))
+        f.write(" | ".join([
+            f"(calc_parity(word & 0x{mask:x}, "
+            f"{'true' if invert and (par_bit % 2) else 'false'}) << {par_bit})"
+            for par_bit, mask in parity_bit_masks
+        ]))
 
         f.write(";\n}\n")
 
@@ -683,8 +691,11 @@ def format_c_files(c_src_filename, c_h_filename):
     try:
         # Call clang-format to in-place format generated C code. If there are
         # any issues log a warning.
-        result = subprocess.run(['./ci/bazelisk.sh', 'run', '//quality:clang_format_fix', '--',
-                                c_src_filename, c_h_filename], stderr=subprocess.PIPE,
+        result = subprocess.run([
+            './ci/bazelisk.sh', 'run', '//quality:clang_format_fix', '--',
+            c_src_filename, c_h_filename
+        ],
+                                stderr=subprocess.PIPE,
                                 universal_newlines=True)
         result.check_returncode()
     except Exception as e:
@@ -730,8 +741,8 @@ module {}_dec (
   always_comb begin : p_encode
 {}  end
 endmodule : {}_dec
-'''.format(COPYRIGHT, module_name, (n - 1), (k - 1), (m - 1),
-           dec_out, module_name)
+'''.format(COPYRIGHT, module_name, (n - 1), (k - 1), (m - 1), dec_out,
+           module_name)
         f.write(outstr)
 
 
