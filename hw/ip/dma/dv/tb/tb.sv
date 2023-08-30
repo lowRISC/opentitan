@@ -21,7 +21,7 @@ module tb;
   clk_rst_if  clk_rst_if(.clk(clk), .rst_n(rst_n));
 
   // Common wire - Handshake/Interrupt Inputs
-  wire [NUM_LSIO_TRIGGERS-1:0] handshake_i;
+  wire [dma_reg_pkg::NumIntClearSources-1:0] handshake_i;
   dma_if dma_intf(.clk_i(clk), .rst_ni(rst_n));
   assign handshake_i = dma_intf.handshake_i;
 
