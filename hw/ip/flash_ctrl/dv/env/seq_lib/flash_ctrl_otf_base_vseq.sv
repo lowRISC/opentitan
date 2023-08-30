@@ -833,7 +833,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       if (cfg.ecc_mode > FlashSerrTestMode) begin
         if (derr & cfg.scb_h.do_alert_check) begin
           cfg.scb_h.expected_alert["fatal_err"].expected = 1;
-          cfg.scb_h.expected_alert["fatal_err"].max_delay = 2000;
+          cfg.scb_h.expected_alert["fatal_err"].max_delay = cfg.seq_cfg.long_fatal_err_delay;
           cfg.scb_h.exp_alert_contd["fatal_err"] = 10000;
         end
       end
