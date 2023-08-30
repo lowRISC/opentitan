@@ -162,7 +162,9 @@ module dma
                         (ctrl_state_q != DmaIdle) ||
                         sw_reg_wr_extended;
 
-  prim_clock_gating dma_clk_gate (
+  prim_clock_gating #(
+    .FpgaBufGlobal(1'b0) // Instantiate a local instead of a global clock buffer on FPGAs
+  ) dma_clk_gate (
     .clk_i    ( clk_i        ),
     .en_i     ( gated_clk_en ),
     .test_en_i( scanmode     ),     ///< Test On to turn off the clock gating during test
