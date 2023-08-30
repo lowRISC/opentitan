@@ -31,7 +31,6 @@ rust_library(
     crate_root = "src/lib.rs",
     edition = "2018",
     proc_macro_deps = [
-        "@crate_index__derivative-2.2.0//:derivative",
         "@crate_index__paste-1.0.14//:paste",
     ],
     rustc_flags = ["--cap-lints=allow"],
@@ -76,11 +75,12 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.4.1",
+    version = "0.5.0",
     deps = [
         "@crate_index__bitflags-1.3.2//:bitflags",
         "@crate_index__cryptoki-sys-0.1.6//:cryptoki_sys",
         "@crate_index__libloading-0.7.4//:libloading",
         "@crate_index__log-0.4.20//:log",
+        "@crate_index__secrecy-0.8.0//:secrecy",
     ],
 )

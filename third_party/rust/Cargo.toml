@@ -68,7 +68,7 @@ typetag = "0.2"
 zerocopy = "0.6.3"
 
 # hsmtool dependencies
-cryptoki = "0.4.1"
+cryptoki = "0.5.0"
 cryptoki-sys = "0.1.6"
 indexmap = { version = "2.0", features = ["serde"] }
 secrecy = "0.8"
