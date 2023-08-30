@@ -23,6 +23,7 @@
     "hw/top_earlgrey/data/ip/chip_clkmgr_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_flash_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_hmac_testplan.hjson",
+    "hw/top_earlgrey/data/ip/chip_i2c_testplan.hjson"
     "hw/top_earlgrey/data/ip/chip_keymgr_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_kmac_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_lc_ctrl_testplan.hjson",
@@ -273,44 +274,6 @@
             '''
       stage: V2
       tests: ["chip_sw_spi_host_tx_rx"]
-    }
-
-    // I2C (pre-verified IP) integration tests:
-    {
-      name: chip_sw_i2c_host_tx_rx
-      desc: '''Verify the transmission of data over the chip's I2C host interface.
-
-            - Program the I2C to be in host mode.
-            - The SW test writes a known payload over the chip's I2C host interface, which is
-              received by the testbench.
-            - The testbench then loops this data back to the chip's I2C host and exercises the
-              read interface.
-            - SW validates the reception of FMT watermark and trans complete interrupts.
-            - SW validates that the data read matches the original data written.
-            - Verify the virtual / true open drain capability.
-
-            Verify all instances of I2C in the chip.
-            '''
-      stage: V2
-      tests: ["chip_sw_i2c_host_tx_rx",
-              "chip_sw_i2c_host_tx_rx_idx1",
-              "chip_sw_i2c_host_tx_rx_idx2"]
-    }
-    {
-      name: chip_sw_i2c_device_tx_rx
-      desc: '''Verify the transmission of data over the chip's I2C device interface.
-
-            - Program the I2C to be in device mode.
-            - The testbench writes a known payload over the chip's I2C device interface, which is
-              received and verified by the SW test for correctness.
-            - The testbench reads and verifies a known payload over the chip's I2C device interface,
-            - SW validates the reception of tx empty and trans complete interrupts.
-            - Verify the virtual / true open drain capability.
-
-            Verify all instances of I2C in the chip.
-            '''
-      stage: V2
-      tests: ["chip_sw_i2c_device_tx_rx"]
     }
 
     // USB (pre-verified IP) integration tests:
