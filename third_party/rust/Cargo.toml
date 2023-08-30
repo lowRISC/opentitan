@@ -20,8 +20,7 @@ bitflags = { version = "2.1", features = ["serde"] }
 bitvec = "1.0.1"
 byteorder = "1.4.3"
 chrono = "0.4"
-# We're hitting a rustc bug in the nightly version we use that's exposed by clap >= 4.3
-clap = { version = "4.1, <=4.2.7", features = ["derive", "env", "deprecated"] }
+clap = { version = "4.4", features = ["derive", "env", "deprecated"] }
 crc = "3.0"
 deser-hjson = "2.0.0"
 directories = "5.0.1"
@@ -55,9 +54,7 @@ raw_tty = "0.1.0"
 regex = "1.7"
 rsa = "0.9.2"
 rusb = "0.9.3"
-# TODO(opentitan#19362) serde-derive 1.0.172 uses precompiled binary which
-# does not work well with Bazel.
-serde = { version="=1.0.171", features = ["derive"] }
+serde = { version = "1.0.188", features = ["derive"] }
 
 serde_bytes = "0.11"
 serde_json = "1.0.69"

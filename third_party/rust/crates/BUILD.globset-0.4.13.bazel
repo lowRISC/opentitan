@@ -79,7 +79,7 @@ rust_library(
     version = "0.4.13",
     deps = [
         "@crate_index__aho-corasick-1.0.5//:aho_corasick",
-        "@crate_index__bstr-1.6.1//:bstr",
+        "@crate_index__bstr-1.6.2//:bstr",
         "@crate_index__fnv-1.0.7//:fnv",
         "@crate_index__log-0.4.20//:log",
         "@crate_index__regex-1.9.4//:regex",

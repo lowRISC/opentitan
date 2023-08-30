@@ -6,7 +6,7 @@
 #     bazel run @//third_party/rust:crate_index
 ###############################################################################
 
-load("@rules_rust//rust:defs.bzl", "rust_library")
+load("@rules_rust//rust:defs.bzl", "rust_proc_macro")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -14,8 +14,8 @@ package(default_visibility = ["//visibility:public"])
 #     "TODO",  # MIT OR Apache-2.0
 # ])
 
-rust_library(
-    name = "opener",
+rust_proc_macro(
+    name = "time_macros",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -28,12 +28,16 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
+    crate_features = [
+        "formatting",
+        "parsing",
+    ],
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2021",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=opener",
+        "crate-name=time-macros",
         "manual",
         "noclippy",
         "norustfmt",
@@ -72,38 +76,8 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.5.2",
-    deps = select({
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crate_index__winapi-0.3.9//:winapi",  # cfg(windows)
-        ],
-        "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@crate_index__bstr-1.6.1//:bstr",  # cfg(target_os = "linux")
-        ],
-        "@rules_rust//rust/platform:arm-unknown-linux-gnueabi": [
-            "@crate_index__bstr-1.6.1//:bstr",  # cfg(target_os = "linux")
-        ],
-        "@rules_rust//rust/platform:armv7-unknown-linux-gnueabi": [
-            "@crate_index__bstr-1.6.1//:bstr",  # cfg(target_os = "linux")
-        ],
-        "@rules_rust//rust/platform:i686-pc-windows-msvc": [
-            "@crate_index__winapi-0.3.9//:winapi",  # cfg(windows)
-        ],
-        "@rules_rust//rust/platform:i686-unknown-linux-gnu": [
-            "@crate_index__bstr-1.6.1//:bstr",  # cfg(target_os = "linux")
-        ],
-        "@rules_rust//rust/platform:powerpc-unknown-linux-gnu": [
-            "@crate_index__bstr-1.6.1//:bstr",  # cfg(target_os = "linux")
-        ],
-        "@rules_rust//rust/platform:s390x-unknown-linux-gnu": [
-            "@crate_index__bstr-1.6.1//:bstr",  # cfg(target_os = "linux")
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crate_index__winapi-0.3.9//:winapi",  # cfg(windows)
-        ],
-        "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@crate_index__bstr-1.6.1//:bstr",  # cfg(target_os = "linux")
-        ],
-        "//conditions:default": [],
-    }),
+    version = "0.2.14",
+    deps = [
+        "@crate_index__time-core-0.1.1//:time_core",
+    ],
 )

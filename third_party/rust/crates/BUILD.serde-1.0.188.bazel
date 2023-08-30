@@ -6,6 +6,7 @@
 #     bazel run @//third_party/rust:crate_index
 ###############################################################################
 
+load("@rules_rust//cargo:defs.bzl", "cargo_build_script")
 load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
@@ -15,7 +16,7 @@ package(default_visibility = ["//visibility:public"])
 # ])
 
 rust_library(
-    name = "time",
+    name = "serde",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -30,20 +31,20 @@ rust_library(
     ),
     crate_features = [
         "alloc",
-        "formatting",
-        "macros",
-        "parsing",
+        "default",
+        "derive",
+        "serde_derive",
         "std",
     ],
     crate_root = "src/lib.rs",
-    edition = "2021",
+    edition = "2018",
     proc_macro_deps = [
-        "@crate_index__time-macros-0.2.12//:time_macros",
+        "@crate_index__serde_derive-1.0.188//:serde_derive",
     ],
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=time",
+        "crate-name=serde",
         "manual",
         "noclippy",
         "norustfmt",
@@ -82,10 +83,52 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.3.26",
+    version = "1.0.188",
     deps = [
-        "@crate_index__deranged-0.3.8//:deranged",
-        "@crate_index__itoa-1.0.9//:itoa",
-        "@crate_index__time-core-0.1.1//:time_core",
+        "@crate_index__serde-1.0.188//:build_script_build",
     ],
+)
+
+cargo_build_script(
+    name = "serde_build_script",
+    srcs = glob(["**/*.rs"]),
+    crate_features = [
+        "alloc",
+        "default",
+        "derive",
+        "serde_derive",
+        "std",
+    ],
+    crate_name = "build_script_build",
+    crate_root = "build.rs",
+    data = glob(
+        include = ["**"],
+        exclude = [
+            "**/* *",
+            ".tmp_git_root/**/*",
+            "BUILD",
+            "BUILD.bazel",
+            "WORKSPACE",
+            "WORKSPACE.bazel",
+        ],
+    ),
+    edition = "2018",
+    rustc_flags = [
+        "--cap-lints=allow",
+    ],
+    tags = [
+        "cargo-bazel",
+        "crate-name=serde",
+        "manual",
+        "noclippy",
+        "norustfmt",
+    ],
+    version = "1.0.188",
+    visibility = ["//visibility:private"],
+)
+
+alias(
+    name = "build_script_build",
+    actual = "serde_build_script",
+    tags = ["manual"],
 )

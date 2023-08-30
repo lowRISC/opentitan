@@ -15,7 +15,7 @@ package(default_visibility = ["//visibility:public"])
 # ])
 
 rust_library(
-    name = "pest_generator",
+    name = "clap_lex",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -28,15 +28,12 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "std",
-    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=pest_generator",
+        "crate-name=clap_lex",
         "manual",
         "noclippy",
         "norustfmt",
@@ -75,12 +72,5 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "2.7.2",
-    deps = [
-        "@crate_index__pest-2.7.2//:pest",
-        "@crate_index__pest_meta-2.7.2//:pest_meta",
-        "@crate_index__proc-macro2-1.0.66//:proc_macro2",
-        "@crate_index__quote-1.0.33//:quote",
-        "@crate_index__syn-2.0.29//:syn",
-    ],
+    version = "0.5.1",
 )

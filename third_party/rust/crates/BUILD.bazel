@@ -75,7 +75,7 @@ alias(
 
 alias(
     name = "clap",
-    actual = "@crate_index__clap-4.2.7//:clap",
+    actual = "@crate_index__clap-4.4.1//:clap",
     tags = ["manual"],
 )
 
@@ -183,7 +183,7 @@ alias(
 
 alias(
     name = "mdbook",
-    actual = "@crate_index__mdbook-0.4.31//:mdbook",
+    actual = "@crate_index__mdbook-0.4.34//:mdbook",
     tags = ["manual"],
 )
 
@@ -255,13 +255,13 @@ alias(
 
 alias(
     name = "pest",
-    actual = "@crate_index__pest-2.7.2//:pest",
+    actual = "@crate_index__pest-2.7.3//:pest",
     tags = ["manual"],
 )
 
 alias(
     name = "pest_derive",
-    actual = "@crate_index__pest_derive-2.7.2//:pest_derive",
+    actual = "@crate_index__pest_derive-2.7.3//:pest_derive",
     tags = ["manual"],
 )
 
@@ -345,7 +345,7 @@ alias(
 
 alias(
     name = "serde",
-    actual = "@crate_index__serde-1.0.171//:serde",
+    actual = "@crate_index__serde-1.0.188//:serde",
     tags = ["manual"],
 )
 
@@ -424,6 +424,6 @@ alias(
 # Binaries
 alias(
     name = "mdbook__mdbook",
-    actual = "@crate_index__mdbook-0.4.31//:mdbook__bin",
+    actual = "@crate_index__mdbook-0.4.34//:mdbook__bin",
     tags = ["manual"],
 )

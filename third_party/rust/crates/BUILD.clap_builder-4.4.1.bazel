@@ -11,11 +11,11 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # Unlicense OR MIT
+#     "TODO",  # MIT OR Apache-2.0
 # ])
 
 rust_library(
-    name = "memchr",
+    name = "clap_builder",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -29,16 +29,23 @@ rust_library(
         ],
     ),
     crate_features = [
-        "alloc",
-        "default",
+        "cargo",
+        "color",
+        "deprecated",
+        "env",
+        "error-context",
+        "help",
         "std",
+        "suggestions",
+        "usage",
+        "wrap_help",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=memchr",
+        "crate-name=clap_builder",
         "manual",
         "noclippy",
         "norustfmt",
@@ -77,5 +84,13 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "2.6.1",
+    version = "4.4.1",
+    deps = [
+        "@crate_index__anstream-0.5.0//:anstream",
+        "@crate_index__anstyle-1.0.2//:anstyle",
+        "@crate_index__clap_lex-0.5.1//:clap_lex",
+        "@crate_index__once_cell-1.18.0//:once_cell",
+        "@crate_index__strsim-0.10.0//:strsim",
+        "@crate_index__terminal_size-0.2.6//:terminal_size",
+    ],
 )
