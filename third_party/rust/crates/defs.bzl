@@ -2493,12 +2493,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "crate_index__pqcrypto-internals-0.2.4",
-        sha256 = "0127cbc0239f585139a56effd7867921eae3425a000a72dde2b0a156062346b2",
+        name = "crate_index__pqcrypto-internals-0.2.5",
+        sha256 = "d9d34bec6abe2283e6de7748b68b292d1ffa2203397e3e71380ff8418a49fb46",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/pqcrypto-internals/0.2.4/download"],
-        strip_prefix = "pqcrypto-internals-0.2.4",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.pqcrypto-internals-0.2.4.bazel"),
+        urls = ["https://crates.io/api/v1/crates/pqcrypto-internals/0.2.5/download"],
+        strip_prefix = "pqcrypto-internals-0.2.5",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.pqcrypto-internals-0.2.5.bazel"),
     )
 
     maybe(

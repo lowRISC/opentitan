@@ -82,10 +82,10 @@ crates_vendor(
             # modify the value appropriately in the build.rs script.
             # Like the prior solution, this is also a hack.
             build_script_data = [
-                "@crate_index__pqcrypto-internals-0.2.4//:include",
+                "@crate_index__pqcrypto-internals-0.2.5//:include",
             ],
             build_script_env = {
-                "BAZEL_PQCRYPTO_INTERNALS_INCLUDES": "$(rootpaths @crate_index__pqcrypto-internals-0.2.4//:include)",
+                "BAZEL_PQCRYPTO_INTERNALS_INCLUDES": "$(rootpaths @crate_index__pqcrypto-internals-0.2.5//:include)",
             },
             patch_args = ["-p2"],
             patches = [
