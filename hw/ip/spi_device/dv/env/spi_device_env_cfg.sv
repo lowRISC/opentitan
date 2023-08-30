@@ -30,7 +30,7 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
   // TODO(#15543) SW can only configure addr_4b after reset
   bit                 do_addr_4b_cfg;
 
-  // when asserted this will reinitialise the scoreboard's memory models
+  // when asserted this will reinitialize the scoreboard's memory models
   bit                 scb_clear_mems = 0;
 
   // in some sequence, both SW and HW may want to update this interrupt at the same time,

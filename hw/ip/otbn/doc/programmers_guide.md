@@ -10,7 +10,7 @@ The section [Writing OTBN applications](#writing-otbn-applications) describes ho
 
 The high-level sequence by which the host processor should use OTBN is as follows.
 
-1. Optional: Initialise [`LOAD_CHECKSUM`](registers.md#load_checksum).
+1. Optional: Initialize [`LOAD_CHECKSUM`](registers.md#load_checksum).
 1. Write the OTBN application binary to [`IMEM`](registers.md#imem), starting at address 0.
 1. Optional: Write constants and input arguments, as mandated by the calling convention of the loaded application, to the half of DMEM accessible through the [`DMEM`](registers.md#dmem) window.
 1. Optional: Read back [`LOAD_CHECKSUM`](registers.md#load_checksum) and perform an integrity check.

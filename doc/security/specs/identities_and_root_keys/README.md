@@ -553,7 +553,7 @@ typedef enum kmgr_state {
 } kmgr_state_t;
 
 /**
- * Initialise an instance of the Key Manager
+ * Initialize an instance of the Key Manager
  *
  * @param base_addr Base address of an instance of the Key Manager
  * @param kmgr Key Manager state data.

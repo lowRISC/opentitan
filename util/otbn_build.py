@@ -236,7 +236,7 @@ def main() -> int:
         # it from Ibex, the host processor. To make this work, we generate an
         # ELF file that can be linked into the Ibex image.
         #
-        # This ELF contains all initialised data (the .text and .data
+        # This ELF contains all initialized data (the .text and .data
         # sections). We change the flags to treat them like rodata (since
         # they're not executable on Ibex, nor does it make sense for Ibex code
         # to manipulate OTBN data sections "in place") and add a .rodata.otbn
@@ -248,7 +248,7 @@ def main() -> int:
         # application-specific prefix. (Note: This prefix is used in driver
         # code: so needs to be kept in sync with that).
         #
-        # As well as the initialised data and relocated symbols, we also want
+        # As well as the initialized data and relocated symbols, we also want
         # to add (absolute) symbols that have the OTBN addresses of the symbols
         # in question. Unfortunately, objcopy doesn't seem to have a "make all
         # symbols absolute" command, so we have to do it by hand. This also

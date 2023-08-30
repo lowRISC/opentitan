@@ -9,7 +9,7 @@
 
 .section .text
 
-/* Initialise WDRs before using them */
+/* Initialize WDRs before using them */
 bn.xor w14, w14, w14
 bn.xor w15, w15, w15
 bn.xor w16, w16, w16
@@ -214,7 +214,7 @@ solinas384:
 wrap_solinas384:
   /* Initialize all-zero register. */
   bn.xor w31, w31, w31
-  /* Initialise WDRs before using them */
+  /* Initialize WDRs before using them */
   bn.xor w14, w14, w14
   bn.xor w15, w15, w15
   bn.xor w16, w16, w16

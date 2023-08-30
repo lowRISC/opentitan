@@ -118,7 +118,7 @@ typedef struct otbn_app {
 /**
  * Generate the prefix to add to an OTBN symbol name used on the Ibex side
  *
- * The result is a pointer to Ibex's rodata that should be used to initialise
+ * The result is a pointer to Ibex's rodata that should be used to initialize
  * memory for that symbol.
  *
  * This is needed by the OTBN driver to support DMEM/IMEM ranges but

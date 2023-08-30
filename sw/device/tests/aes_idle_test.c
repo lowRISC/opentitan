@@ -140,7 +140,7 @@ bool test_main(void) {
   dif_aes_t aes;
   CHECK_STATUS_OK(initialize_clkmgr());
 
-  // Initialise AES.
+  // Initialize AES.
   CHECK_DIF_OK(
       dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
   CHECK_DIF_OK(dif_aes_reset(&aes));

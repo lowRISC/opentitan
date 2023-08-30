@@ -47,7 +47,7 @@ fn main() -> anyhow::Result<()> {
     let transport = opts
         .init
         .init_target()
-        .context("failed to initialise target")?;
+        .context("failed to initialize target")?;
 
     execute_test!(test_no_rma_command, &opts, &transport);
     execute_test!(test_rma_command, &opts, &transport);

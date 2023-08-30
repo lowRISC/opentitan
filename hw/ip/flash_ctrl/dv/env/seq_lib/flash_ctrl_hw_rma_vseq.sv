@@ -5,7 +5,7 @@
 // flash_ctrl_hw_rma Test
 
 // Pseudo Code
-// Initialise (All)
+// Initialize (All)
 // Loop {
 //   Erase Partitions(#)
 //   Program Partitions(#)
@@ -13,7 +13,7 @@
 //   RMA REQUEST (Random Seed)
 //   Check Software has NO Access to the FLASH
 //   Reset DUT (No Flash Init)
-//   Initialise
+//   Initialize
 //   Read Partitions#() Compare Data (MISMATCH Expected)
 //     (additionally check Data Read is not all 1's
 //     indicating Erase but not RMA Wipe)

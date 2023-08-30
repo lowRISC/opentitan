@@ -160,7 +160,7 @@ extern "C" int OtbnTopInstallLoopWarps() {
   Votbn_top_sim &top = *verilator_top;
 
   // Grab the model handle from the otbn_core_model module. This should have
-  // been initialised by now because it gets set up in an initial block and
+  // been initialized by now because it gets set up in an initial block and
   // this code doesn't run until the first clock edge.
   auto sv_model_handle = top.otbn_top_sim->u_otbn_core_model->model_handle;
 

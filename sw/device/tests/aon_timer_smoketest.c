@@ -61,7 +61,7 @@ bool test_main(void) {
 
   LOG_INFO("Running AON timer test");
 
-  // Initialise AON Timer.
+  // Initialize AON Timer.
   CHECK_DIF_OK(dif_aon_timer_init(
       mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon));
 

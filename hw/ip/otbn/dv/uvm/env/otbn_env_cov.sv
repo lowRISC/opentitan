@@ -378,7 +378,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   logic [31:0] last_err_bits = 0;
 
   // The last mnemonic that we saw. Used to implement the pairwise mnemonic covergroup. Gets
-  // initialised to 0 (not a valid mnemonic!)
+  // initialized to 0 (not a valid mnemonic!)
   mnem_str_t last_mnem = '0;
 
   // Non-core covergroups //////////////////////////////////////////////////////

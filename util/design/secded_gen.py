@@ -88,7 +88,7 @@ SECDED_CFG_FILE = "util/design/data/secded_cfg.hjson"
 PROJ_ROOT = Path(__file__).parent.parent.parent
 SECDED_CFG_PATH = Path(PROJ_ROOT) / SECDED_CFG_FILE
 
-# The seed we use to initialise the PRNG when running the randomized algorithm
+# The seed we use to initialize the PRNG when running the randomized algorithm
 # to choose constants for Hsiao codes.
 _RND_SEED = 123
 

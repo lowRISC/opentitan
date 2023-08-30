@@ -53,7 +53,7 @@ status_t execute_test(void) {
   // Initialize EDN and CSRNG to generate the required seed.
   CHECK_STATUS_OK(aes_testutils_masking_prng_zero_output_seed());
 
-  // Initialise AES.
+  // Initialize AES.
   dif_aes_t aes;
   CHECK_DIF_OK(
       dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));

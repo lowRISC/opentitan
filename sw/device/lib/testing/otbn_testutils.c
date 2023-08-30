@@ -61,7 +61,7 @@ status_t otbn_testutils_wait_for_done(const dif_otbn_t *otbn,
 static void check_app_address_ranges(const otbn_app_t *app) {
   // IMEM must have a strictly positive range (cannot be backwards or empty)
   CHECK(app->imem_end > app->imem_start);
-  // Initialised DMEM section must not be backwards
+  // Initialized DMEM section must not be backwards
   CHECK(app->dmem_data_end >= app->dmem_data_start);
 }
 

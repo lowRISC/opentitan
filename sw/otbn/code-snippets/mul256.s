@@ -7,7 +7,7 @@
    in w3). */
 
 .section .text.start
-/* Initialise WDRs before using them */
+/* Initialize WDRs before using them */
 bn.xor w2, w2, w2
 bn.xor w3, w3, w3
 

@@ -10,7 +10,7 @@
 //!     let _mux_otbn = crate::otbn::AccelMuxComponent::new(&peripherals.otbn)
 //!         .finalize(otbn_mux_component_static!());
 //!
-//!     peripherals.otbn.initialise(
+//!     peripherals.otbn.initialize(
 //!         dynamic_deferred_caller
 //!             .register(&peripherals.otbn)
 //!             .unwrap(), // Unwrap fail = dynamic deferred caller out of slots

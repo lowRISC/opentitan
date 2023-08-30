@@ -317,15 +317,15 @@ static void *server_create(void *ctx_void) {
     goto err_cleanup_return;
   }
 
-  // Initialise timeout
+  // Initialize timeout
   timeout.tv_sec = 0;
 
-  // Initialise fd_set
+  // Initialize fd_set
 
   // Start waiting for connection / data
   char xfer_data;
   while (ctx->socket_run) {
-    // Initialise structure of fds
+    // Initialize structure of fds
     fd_set read_fds;
     FD_ZERO(&read_fds);
     if (ctx->sfd) {

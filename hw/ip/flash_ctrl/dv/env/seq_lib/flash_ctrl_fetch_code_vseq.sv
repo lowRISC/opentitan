@@ -5,7 +5,7 @@
 // flash_ctrl_fetch_code Test
 
 // Pseudo Code
-// Initialise (All)
+// Initialize (All)
 // Loop { 32 .. 64
 //   Randomize (Read Cycle, Data Partition, Exec Key, Instruction Type)
 //   Model and Verify Expected Functionality

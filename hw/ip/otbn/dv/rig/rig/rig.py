@@ -38,11 +38,11 @@ def gen_program(config: Config, fuel: int,
                       mems.dmem_address, mems.dmem_size_bytes)
     model = Model(mems.dmem_size_bytes, fuel)
 
-    # Generate some initialised data to start with. Otherwise, it takes a while
+    # Generate some initialized data to start with. Otherwise, it takes a while
     # before we start issuing loads (because we need stores to happen first).
     # Tell the model that we've done so.
     #
-    # Note that we only use the bus-accessible part of DMEM for initialised
+    # Note that we only use the bus-accessible part of DMEM for initialized
     # data.
     init_data = InitData.gen(mems.dmem_bus_size_bytes)
     for addr in init_data.keys():
@@ -52,7 +52,7 @@ def gen_program(config: Config, fuel: int,
         gens = SnippetGens(config, insns_file)
     except ValueError as err:
         raise RuntimeError(
-            'Failed to initialise snippet generators: {}'.format(
+            'Failed to initialize snippet generators: {}'.format(
                 err)) from None
 
     snippet, end_addr = gens.gen_program(model, program)

@@ -94,7 +94,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     join_none
   endtask
 
-  // reinitialises memory models when cfg.scb_clear_mems is asserted.
+  // reinitializes memory models when cfg.scb_clear_mems is asserted.
   task process_clear_mems();
     forever begin
       wait(cfg.scb_clear_mems);
@@ -1352,7 +1352,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     return space_bytes;
   endfunction
 
-  // reinitialises the scoreboard's memory models
+  // reinitializes the scoreboard's memory models
   function void clear_mems();
     spi_mem.init();
     tx_mem.init();

@@ -25,7 +25,7 @@ extern "C" {
  *
  * This API assumes transactional nature of work, where the peripheral is
  * configured once per message (data consisting of 1..N 128-bit blocks), and
- * then "de-initialised" when this message has been fully encrypted/decrypted.
+ * then "de-initialized" when this message has been fully encrypted/decrypted.
  *
  * The peripheral is configured through one of the cipher mode "start"
  * functions:

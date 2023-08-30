@@ -235,7 +235,7 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
       // Control HW Access to Info Partitions if Selected
       control_hw_access(flash_op);
 
-      // Initialise Flash Content
+      // Initialize Flash Content
       cfg.flash_mem_bkdr_init(flash_op.partition, FlashMemInitInvalidate);
       if (flash_op.op == flash_ctrl_pkg::FlashOpProgram) begin
         cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitSet));

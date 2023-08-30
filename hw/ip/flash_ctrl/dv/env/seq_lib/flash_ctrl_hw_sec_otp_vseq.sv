@@ -7,7 +7,7 @@
 //  Power Up Initialisation (With Secret Seeds and Keys Enabled)
 //  Loop {
 //    Randomize OTP Keys, Grab During INIT
-//    Initialise Data and Info Partitions
+//    Initialize Data and Info Partitions
 //    FLASH READ    : Creator and Owner Partition and Compare Seeds Read with Key Manager.
 //                    Additionally check Partitions with the previous data programmed
 //                    after initial power (if programmed)
@@ -16,7 +16,7 @@
 //    FLASH READ    : Creator/Owner Partition (Save Programmed Data)
 //    Check OTP Keys At Destination in Flash Ctrl Module
 //    Reset DUT - Enable Secret Key INIT
-//    Do Not Randomly Initialise Flash Content
+//    Do Not Randomly Initialize Flash Content
 //  Repeat
 //  }
 
@@ -60,7 +60,7 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
 
     `uvm_info(`gfn, "TEST : FLASH CTRL SECRET PARTITION & OTP KEY TESTS", UVM_LOW)
 
-    // Initialise Partion Flags to Indicate Unwritten (from Frontdoor)
+    // Initialize Partion Flags to Indicate Unwritten (from Frontdoor)
     creator_prog_flag = 1'b0;
     owner_prog_flag   = 1'b0;
 

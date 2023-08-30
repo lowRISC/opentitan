@@ -54,16 +54,16 @@ simplest possible snippet is a sequence of straight-line instructions.
 There are also more complicated snippets like conditional branches and
 loops. The JSON output format represents this tree of snippets.
 
-### Initialised data
+### Initialized data
 
 The generated program is designed never to trigger architecturally
 unspecified behavior. It might trigger errors, but its execution will
 never depend on things like the initial contents of the register file
-or uninitialised memories.
+or uninitialized memories.
 
 To provide some data so that RIG can generate load instructions even
 near the start of the run, the generated program also includes a few
-words of (randomly) initialised data, scattered around dmem.
+words of (randomly) initialized data, scattered around dmem.
 
 ## The asm command
 

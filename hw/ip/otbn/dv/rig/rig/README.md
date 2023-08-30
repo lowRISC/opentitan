@@ -9,7 +9,7 @@ The main constraint while generating these snippets is called `fuel` and it's an
 The `SnippetGens` class involves a list of these smaller snippet generators defined in `_CLASSES`.
 
 This main script also constructs a `Program` and a `Model`.
-`Program` reflects both data memory that gets initialised and also the instruction memory that gets set with the generated snippets.
+`Program` reflects both data memory that gets initialized and also the instruction memory that gets set with the generated snippets.
 
 The generated program then gets used in `otbn-rig` (which lives in the parent directory) to create proper output files to simulate the generated instructions.
 

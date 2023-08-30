@@ -229,7 +229,7 @@ barrett384:
 wrap_barrett384:
   /* Initialize all-zero register. */
   bn.xor w31, w31, w31
-  /* Initialise WDRs before using them */
+  /* Initialize WDRs before using them */
   bn.xor w16, w16, w16
   bn.xor w17, w17, w17
   bn.xor w18, w18, w18

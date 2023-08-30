@@ -5,7 +5,7 @@
 // flash_ctrl_host_ctrl_arb Test
 
 // Pseudo Code
-// Initialise (All)
+// Initialize (All)
 // Loop (2) {
 //   Initialize Flash Regions (Enable All MP Regions)
 //   Number of Flash Operations is set to 64
@@ -121,7 +121,7 @@ class flash_ctrl_host_ctrl_arb_vseq extends flash_ctrl_fetch_code_vseq;
     // Note: Once the RMA has started, these backdoor calls fail,
     //       so only apply them when SW has access
     if (op_cnt <= apply_rma) begin
-      // Initialise Flash Content
+      // Initialize Flash Content
       cfg.flash_mem_bkdr_init(flash_op.partition, FlashMemInitInvalidate);
       if (flash_op.op == flash_ctrl_pkg::FlashOpProgram) begin
         cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitSet));

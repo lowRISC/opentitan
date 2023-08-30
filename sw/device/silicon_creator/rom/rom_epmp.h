@@ -36,7 +36,7 @@ extern "C" {
  */
 
 /**
- * Initialise the ePMP in-memory copy of the register state to reflect the
+ * Initialize the ePMP in-memory copy of the register state to reflect the
  * hardware configuration expected at entry to the ROM C code.
  *
  * The actual hardware configuration is performed separately, either by reset

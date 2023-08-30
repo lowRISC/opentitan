@@ -119,7 +119,7 @@ class OTBNState:
 
         # This is the number of cycles left for wiping. When we're in the
         # WIPING_GOOD or WIPING_BAD state, this should be a non-negative
-        # number. Initialise to -1 to catch bugs if we forget to set it.
+        # number. Initialize to -1 to catch bugs if we forget to set it.
         self.wipe_cycles = -1
 
         # If this is nonzero, there's been an error injected from outside. The

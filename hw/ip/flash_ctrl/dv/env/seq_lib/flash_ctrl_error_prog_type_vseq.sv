@@ -200,7 +200,7 @@ class flash_ctrl_error_prog_type_vseq extends flash_ctrl_base_vseq;
         // Model Expected Response (Violation Expected / Pass)
         exp_alert = predict_expected_err_rsp(prog_type_en, flash_op.prog_sel);
 
-        // Initialise Flash Content
+        // Initialize Flash Content
         cfg.flash_mem_bkdr_init(flash_op.partition, FlashMemInitInvalidate);
         cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitSet));
 

@@ -7,7 +7,7 @@ from typing import Dict, List, Tuple
 
 
 class InitData:
-    '''Initialised data, written to the random binary to be loaded.'''
+    '''Initialized data, written to the random binary to be loaded.'''
 
     def __init__(self, values: Dict[int, int]):
         self._values = values
@@ -88,9 +88,9 @@ class InitData:
 
     @staticmethod
     def gen(dmem_size: int) -> 'InitData':
-        '''Generate some initialised data
+        '''Generate some initialized data
 
-        This will be inserted into the program as initialised data
+        This will be inserted into the program as initialized data
         (pre-loaded). The dictionary maps (word-aligned) byte addresses to u32
         values.
 

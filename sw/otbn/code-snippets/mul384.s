@@ -9,7 +9,7 @@
 
 .section .text.start
 
-/* Initialise WDRs before using them */
+/* Initialize WDRs before using them */
 bn.xor w4, w4, w4
 bn.xor w5, w5, w5
 bn.xor w6, w6, w6

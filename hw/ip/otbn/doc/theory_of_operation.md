@@ -525,7 +525,7 @@ The wiping procedure is a two-step process:
 * Overwrite the state with randomness from reseeded URND.
 
 Note that after internal secure wipe, the state of registers is undefined.
-In order to prevent mismatches between ISS and RTL, software needs to initialise a register with a full-word write before using its value.
+In order to prevent mismatches between ISS and RTL, software needs to initialize a register with a full-word write before using its value.
 
 Loop and call stack pointers are reset.
 

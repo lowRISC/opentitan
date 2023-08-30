@@ -232,7 +232,7 @@ bool test_main(void) {
     xfr_types[s] = kUsbTransferTypeIsochronous;
   }
 
-  // Initialise the state of the streams
+  // Initialize the state of the streams
   CHECK_STATUS_OK(usb_testutils_streams_init(
       ctx, nstreams, xfr_types, transfer_bytes, test_flags, verbose));
 

@@ -108,7 +108,7 @@ class flash_ctrl_error_prog_win_vseq extends flash_ctrl_fetch_code_vseq;
           flash_op_data_prog_win), UVM_MEDIUM)
       end
 
-      // Initialise Flash Content
+      // Initialize Flash Content
       cfg.flash_mem_bkdr_init(flash_op_prog_win.partition, FlashMemInitInvalidate);
       cfg.flash_mem_bkdr_write(.flash_op(flash_op_prog_win), .scheme(FlashMemInitSet));
 
