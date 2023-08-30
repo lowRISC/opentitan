@@ -32,7 +32,7 @@ static const crypto_key_config_t kRsaPrivateKeyConfig = {
     .key_length = kRsa2048NumBytes,
     .hw_backed = kHardenedBoolFalse,
     .diversification_hw_backed =
-        (crypto_const_uint8_buf_t){.data = NULL, .len = 0},
+        (crypto_const_byte_buf_t){.data = NULL, .len = 0},
     .security_level = kSecurityLevelLow,
 };
 
@@ -97,17 +97,17 @@ status_t keygen_then_sign_test(void) {
   }
   TRY_CHECK(d_large_enough);
 
-  crypto_const_uint8_buf_t msg_buf = {
+  crypto_const_byte_buf_t msg_buf = {
       .len = kTestMessageLen,
       .data = kTestMessage,
   };
 
   uint32_t sig[kRsa2048NumWords];
-  crypto_uint8_buf_t sig_buf = {
+  crypto_byte_buf_t sig_buf = {
       .data = (unsigned char *)sig,
       .len = kRsa2048NumBytes,
   };
-  crypto_const_uint8_buf_t const_sig_buf = {
+  crypto_const_byte_buf_t const_sig_buf = {
       .data = (unsigned char *)sig,
       .len = kRsa2048NumBytes,
   };

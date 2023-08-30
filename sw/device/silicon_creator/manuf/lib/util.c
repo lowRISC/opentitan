@@ -13,19 +13,19 @@
 status_t manuf_util_hash_lc_transition_token(const uint32_t *raw_token,
                                              size_t token_size,
                                              uint64_t *hashed_token) {
-  crypto_const_uint8_buf_t input = {
+  crypto_const_byte_buf_t input = {
       .data = (uint8_t *)raw_token,
       .len = token_size,
   };
-  crypto_const_uint8_buf_t function_name_string = {
+  crypto_const_byte_buf_t function_name_string = {
       .data = (uint8_t *)"",
       .len = 0,
   };
-  crypto_const_uint8_buf_t customization_string = {
+  crypto_const_byte_buf_t customization_string = {
       .data = (uint8_t *)"LC_CTRL",
       .len = 7,
   };
-  crypto_uint8_buf_t output = {
+  crypto_byte_buf_t output = {
       .data = (uint8_t *)hashed_token,
       .len = token_size,
   };

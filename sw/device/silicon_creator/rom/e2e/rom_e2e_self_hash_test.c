@@ -52,11 +52,11 @@ extern const char _chip_info_start[];
 // We hash the ROM using the SHA256 algorithm and print the hash to the console.
 status_t hash_rom(void) {
   uint32_t rom_hash[kSha256HashSizeIn32BitWords];
-  crypto_const_uint8_buf_t input = {
+  crypto_const_byte_buf_t input = {
       .data = (uint8_t *)TOP_EARLGREY_ROM_BASE_ADDR,
       .len = kGoldenRomSizeBytes,
   };
-  crypto_uint8_buf_t output = {
+  crypto_byte_buf_t output = {
       .data = (uint8_t *)rom_hash,
       .len = kSha256HashSizeInBytes,
   };

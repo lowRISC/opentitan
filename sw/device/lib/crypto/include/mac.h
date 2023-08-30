@@ -73,8 +73,8 @@ crypto_status_t otcrypto_mac_keygen(crypto_blinded_key_t *key);
  * @return The result of the HMAC operation.
  */
 crypto_status_t otcrypto_hmac(const crypto_blinded_key_t *key,
-                              crypto_const_uint8_buf_t input_message,
-                              crypto_uint8_buf_t *tag);
+                              crypto_const_byte_buf_t input_message,
+                              crypto_byte_buf_t *tag);
 
 /**
  * Performs the KMAC function on the input data.
@@ -98,11 +98,11 @@ crypto_status_t otcrypto_hmac(const crypto_blinded_key_t *key,
  * @return The result of the KMAC operation.
  */
 crypto_status_t otcrypto_kmac(const crypto_blinded_key_t *key,
-                              crypto_const_uint8_buf_t input_message,
+                              crypto_const_byte_buf_t input_message,
                               kmac_mode_t kmac_mode,
-                              crypto_const_uint8_buf_t customization_string,
+                              crypto_const_byte_buf_t customization_string,
                               size_t required_output_len,
-                              crypto_uint8_buf_t *tag);
+                              crypto_byte_buf_t *tag);
 
 /**
  * Performs the INIT operation for HMAC.
@@ -138,7 +138,7 @@ crypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
  * @return Result of the HMAC update operation.
  */
 crypto_status_t otcrypto_hmac_update(hmac_context_t *const ctx,
-                                     crypto_const_uint8_buf_t input_message);
+                                     crypto_const_byte_buf_t input_message);
 
 /**
  * Performs the FINAL operation for HMAC.
@@ -158,7 +158,7 @@ crypto_status_t otcrypto_hmac_update(hmac_context_t *const ctx,
  * @return Result of the HMAC final operation.
  */
 crypto_status_t otcrypto_hmac_final(hmac_context_t *const ctx,
-                                    crypto_uint8_buf_t *tag);
+                                    crypto_byte_buf_t *tag);
 
 #ifdef __cplusplus
 }  // extern "C"

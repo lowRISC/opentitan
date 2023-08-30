@@ -87,9 +87,8 @@ typedef struct hash_context {
  * @param[out] digest Output digest after hashing the input message.
  * @return Result of the hash operation.
  */
-crypto_status_t otcrypto_hash(crypto_const_uint8_buf_t input_message,
-                              hash_mode_t hash_mode,
-                              crypto_uint8_buf_t *digest);
+crypto_status_t otcrypto_hash(crypto_const_byte_buf_t input_message,
+                              hash_mode_t hash_mode, crypto_byte_buf_t *digest);
 
 /**
  * Performs the required extendable output function on the input data.
@@ -116,12 +115,12 @@ crypto_status_t otcrypto_hash(crypto_const_uint8_buf_t input_message,
  * @param[out] digest Output from the extendable output function.
  * @return Result of the xof operation.
  */
-crypto_status_t otcrypto_xof(crypto_const_uint8_buf_t input_message,
+crypto_status_t otcrypto_xof(crypto_const_byte_buf_t input_message,
                              xof_mode_t xof_mode,
-                             crypto_const_uint8_buf_t function_name_string,
-                             crypto_const_uint8_buf_t customization_string,
+                             crypto_const_byte_buf_t function_name_string,
+                             crypto_const_byte_buf_t customization_string,
                              size_t required_output_len,
-                             crypto_uint8_buf_t *digest);
+                             crypto_byte_buf_t *digest);
 
 /**
  * Performs the INIT operation for a cryptographic hash function.
@@ -158,7 +157,7 @@ crypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
  * @return Result of the hash update operation.
  */
 crypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
-                                     crypto_const_uint8_buf_t input_message);
+                                     crypto_const_byte_buf_t input_message);
 
 /**
  * Performs the FINAL operation for a cryptographic hash function.
@@ -179,7 +178,7 @@ crypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
  * @return Result of the hash final operation.
  */
 crypto_status_t otcrypto_hash_final(hash_context_t *const ctx,
-                                    crypto_uint8_buf_t *digest);
+                                    crypto_byte_buf_t *digest);
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -119,7 +119,7 @@ static status_t run_rsa_2048_sign(const uint8_t *msg, size_t msg_len,
       .key_length = kRsa2048NumBytes,
       .hw_backed = kHardenedBoolFalse,
       .diversification_hw_backed =
-          (crypto_const_uint8_buf_t){.data = NULL, .len = 0},
+          (crypto_const_byte_buf_t){.data = NULL, .len = 0},
       .security_level = kSecurityLevelLow,
   };
 
@@ -137,12 +137,12 @@ static status_t run_rsa_2048_sign(const uint8_t *msg, size_t msg_len,
   private_key.n.checksum = integrity_unblinded_checksum(&private_key.n);
   private_key.d.checksum = integrity_blinded_checksum(&private_key.d);
 
-  crypto_const_uint8_buf_t msg_buf = {
+  crypto_const_byte_buf_t msg_buf = {
       .data = msg,
       .len = msg_len,
   };
 
-  crypto_uint8_buf_t sig_buf = {
+  crypto_byte_buf_t sig_buf = {
       .data = (unsigned char *)sig,
       .len = kRsa2048NumBytes,
   };
@@ -196,12 +196,12 @@ static status_t run_rsa_2048_verify(const uint8_t *msg, size_t msg_len,
   public_key.n.checksum = integrity_unblinded_checksum(&public_key.n);
   public_key.e.checksum = integrity_unblinded_checksum(&public_key.e);
 
-  crypto_const_uint8_buf_t msg_buf = {
+  crypto_const_byte_buf_t msg_buf = {
       .data = msg,
       .len = msg_len,
   };
 
-  crypto_const_uint8_buf_t sig_buf = {
+  crypto_const_byte_buf_t sig_buf = {
       .data = (unsigned char *)sig,
       .len = kRsa2048NumBytes,
   };

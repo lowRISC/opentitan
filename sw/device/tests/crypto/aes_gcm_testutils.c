@@ -58,7 +58,7 @@ uint32_t call_aes_gcm_encrypt(aes_gcm_test_t test) {
       .key_length = test.key_len * sizeof(uint32_t),
       .hw_backed = kHardenedBoolFalse,
       .diversification_hw_backed =
-          (crypto_const_uint8_buf_t){.data = NULL, .len = 0},
+          (crypto_const_byte_buf_t){.data = NULL, .len = 0},
       .security_level = kSecurityLevelLow,
   };
 
@@ -78,27 +78,27 @@ uint32_t call_aes_gcm_encrypt(aes_gcm_test_t test) {
   // Set the checksum.
   key.checksum = integrity_blinded_checksum(&key);
 
-  crypto_const_uint8_buf_t iv = {
+  crypto_const_byte_buf_t iv = {
       .data = test.iv,
       .len = test.iv_len,
   };
-  crypto_const_uint8_buf_t plaintext = {
+  crypto_const_byte_buf_t plaintext = {
       .data = test.plaintext,
       .len = test.plaintext_len,
   };
-  crypto_const_uint8_buf_t aad = {
+  crypto_const_byte_buf_t aad = {
       .data = test.aad,
       .len = test.aad_len,
   };
 
   uint8_t actual_tag_data[test.tag_len];
-  crypto_uint8_buf_t actual_tag = {
+  crypto_byte_buf_t actual_tag = {
       .data = actual_tag_data,
       .len = sizeof(actual_tag_data),
   };
 
   uint8_t actual_ciphertext_data[test.plaintext_len];
-  crypto_uint8_buf_t actual_ciphertext = {
+  crypto_byte_buf_t actual_ciphertext = {
       .data = actual_ciphertext_data,
       .len = sizeof(actual_ciphertext_data),
   };
@@ -131,7 +131,7 @@ uint32_t call_aes_gcm_decrypt(aes_gcm_test_t test, bool tag_valid) {
       .key_length = test.key_len * sizeof(uint32_t),
       .hw_backed = kHardenedBoolFalse,
       .diversification_hw_backed =
-          (crypto_const_uint8_buf_t){.data = NULL, .len = 0},
+          (crypto_const_byte_buf_t){.data = NULL, .len = 0},
       .security_level = kSecurityLevelLow,
   };
 
@@ -151,25 +151,25 @@ uint32_t call_aes_gcm_decrypt(aes_gcm_test_t test, bool tag_valid) {
   // Set the checksum.
   key.checksum = integrity_blinded_checksum(&key);
 
-  crypto_const_uint8_buf_t iv = {
+  crypto_const_byte_buf_t iv = {
       .data = test.iv,
       .len = test.iv_len,
   };
-  crypto_const_uint8_buf_t ciphertext = {
+  crypto_const_byte_buf_t ciphertext = {
       .data = test.ciphertext,
       .len = test.plaintext_len,
   };
-  crypto_const_uint8_buf_t aad = {
+  crypto_const_byte_buf_t aad = {
       .data = test.aad,
       .len = test.aad_len,
   };
-  crypto_const_uint8_buf_t tag = {
+  crypto_const_byte_buf_t tag = {
       .data = test.tag,
       .len = test.tag_len,
   };
 
   uint8_t actual_plaintext_data[test.plaintext_len];
-  crypto_uint8_buf_t actual_plaintext = {
+  crypto_byte_buf_t actual_plaintext = {
       .data = actual_plaintext_data,
       .len = sizeof(actual_plaintext_data),
   };

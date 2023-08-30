@@ -55,8 +55,7 @@ static const uint32_t kTestMask[ARRAYSIZE(kLongTestKey)] = {
  * @return Result (OK or error).
  */
 static status_t run_test(const uint32_t *key, size_t key_len,
-                         crypto_const_uint8_buf_t msg,
-                         const uint32_t *exp_tag) {
+                         crypto_const_byte_buf_t msg, const uint32_t *exp_tag) {
   // Construct blinded key.
   crypto_key_config_t config = {
       .version = kCryptoLibVersion1,
@@ -79,7 +78,7 @@ static status_t run_test(const uint32_t *key, size_t key_len,
   blinded_key.checksum = integrity_blinded_checksum(&blinded_key);
 
   uint32_t act_tag[kTagLenWords];
-  crypto_uint8_buf_t tag_buf = {
+  crypto_byte_buf_t tag_buf = {
       .data = (unsigned char *)act_tag,
       .len = sizeof(act_tag),
   };
@@ -97,7 +96,7 @@ static status_t run_test(const uint32_t *key, size_t key_len,
  */
 static status_t simple_test(void) {
   const char plaintext[] = "Test message.";
-  crypto_const_uint8_buf_t msg_buf = {
+  crypto_const_byte_buf_t msg_buf = {
       .data = (unsigned char *)plaintext,
       .len = sizeof(plaintext) - 1,
   };
@@ -119,7 +118,7 @@ static status_t empty_test(void) {
       0xbb5c42a9, 0x0e3ad140, 0x61679107, 0xa34a6cc0,
       0x53306979, 0xfa8a5061, 0xbc8b2ee6, 0xa499c0a5,
   };
-  crypto_const_uint8_buf_t msg_buf = {
+  crypto_const_byte_buf_t msg_buf = {
       .data = NULL,
       .len = 0,
   };
@@ -134,7 +133,7 @@ static status_t empty_test(void) {
  */
 static status_t short_key_test(void) {
   const char plaintext[] = "Test message.";
-  crypto_const_uint8_buf_t msg_buf = {
+  crypto_const_byte_buf_t msg_buf = {
       .data = (unsigned char *)plaintext,
       .len = sizeof(plaintext) - 1,
   };
@@ -153,7 +152,7 @@ static status_t short_key_test(void) {
  */
 static status_t long_key_test(void) {
   const char plaintext[] = "Test message.";
-  crypto_const_uint8_buf_t msg_buf = {
+  crypto_const_byte_buf_t msg_buf = {
       .data = (unsigned char *)plaintext,
       .len = sizeof(plaintext) - 1,
   };

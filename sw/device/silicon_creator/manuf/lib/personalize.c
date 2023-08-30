@@ -38,10 +38,10 @@ static const ecc_curve_t kCurveP256 = {
     .curve_type = kEccCurveTypeNistP256,
     .domain_parameter =
         (ecc_domain_t){
-            .p = (crypto_const_uint8_buf_t){.data = NULL, .len = 0},
-            .a = (crypto_const_uint8_buf_t){.data = NULL, .len = 0},
-            .b = (crypto_const_uint8_buf_t){.data = NULL, .len = 0},
-            .q = (crypto_const_uint8_buf_t){.data = NULL, .len = 0},
+            .p = (crypto_const_byte_buf_t){.data = NULL, .len = 0},
+            .a = (crypto_const_byte_buf_t){.data = NULL, .len = 0},
+            .b = (crypto_const_byte_buf_t){.data = NULL, .len = 0},
+            .q = (crypto_const_byte_buf_t){.data = NULL, .len = 0},
             .gx = NULL,
             .gy = NULL,
             .cofactor = 0u,
@@ -56,7 +56,7 @@ static const crypto_key_config_t kEcdhPrivateKeyConfig = {
     .key_length = kP256ScalarBytes,
     .hw_backed = kHardenedBoolFalse,
     .diversification_hw_backed =
-        (crypto_const_uint8_buf_t){.data = NULL, .len = 0},
+        (crypto_const_byte_buf_t){.data = NULL, .len = 0},
     .security_level = kSecurityLevelHigh,
 };
 
@@ -67,7 +67,7 @@ static const crypto_key_config_t kRmaUnlockTokenAesKeyConfig = {
     .key_length = kP256CoordBytes,
     .hw_backed = kHardenedBoolFalse,
     .diversification_hw_backed =
-        (crypto_const_uint8_buf_t){.data = NULL, .len = 0},
+        (crypto_const_byte_buf_t){.data = NULL, .len = 0},
     .security_level = kSecurityLevelHigh,
 };
 
@@ -117,13 +117,13 @@ OT_WARN_UNUSED_RESULT
 static status_t encrypt_rma_unlock_token(
     crypto_blinded_key_t *aes_key, wrapped_rma_unlock_token_t *wrapped_token) {
   // Construct IV, which since we are using ECB mode, is empty.
-  crypto_uint8_buf_t iv = {
+  crypto_byte_buf_t iv = {
       .data = NULL,
       .len = 0,
   };
 
   // Construct plaintext buffer.
-  crypto_const_uint8_buf_t plaintext = {
+  crypto_const_byte_buf_t plaintext = {
       .data = (const unsigned char *)wrapped_token->data,
       .len = kRmaUnlockTokenSizeInBytes,
   };
@@ -131,7 +131,7 @@ static status_t encrypt_rma_unlock_token(
   // Construct ciphertext buffer. (No need for padding since RMA unlock token
   // is 128-bits already.)
   uint32_t ciphertext_data[kRmaUnlockTokenSizeInBytes];
-  crypto_uint8_buf_t ciphertext = {
+  crypto_byte_buf_t ciphertext = {
       .data = (unsigned char *)ciphertext_data,
       .len = kRmaUnlockTokenSizeInBytes,
   };

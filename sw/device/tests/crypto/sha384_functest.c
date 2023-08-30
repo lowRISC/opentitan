@@ -40,14 +40,14 @@ static const uint8_t kTwoBlockExpDigest[] = {
 status_t sha384_test(const unsigned char *msg, const size_t msg_len,
                      const uint8_t *expected_digest) {
   // Construct a buffer for the message.
-  crypto_const_uint8_buf_t input_message = {
+  crypto_const_byte_buf_t input_message = {
       .data = msg,
       .len = msg_len,
   };
 
   // Allocate space for the computed digest.
   uint8_t actual_digest_data[384 / 8];
-  crypto_uint8_buf_t actual_digest = {
+  crypto_byte_buf_t actual_digest = {
       .data = (unsigned char *)actual_digest_data,
       .len = sizeof(actual_digest_data),
   };
@@ -72,7 +72,7 @@ status_t sha384_streaming_test(const unsigned char *msg, size_t msg_len,
   while (msg_len > 0) {
     // Construct a buffer for the next update.
     size_t len = (msg_len <= 5) ? msg_len : 5;
-    crypto_const_uint8_buf_t input_message = {
+    crypto_const_byte_buf_t input_message = {
         .data = msg,
         .len = len,
     };
@@ -83,7 +83,7 @@ status_t sha384_streaming_test(const unsigned char *msg, size_t msg_len,
 
   // Allocate space for the computed digest.
   uint8_t actual_digest_data[384 / 8];
-  crypto_uint8_buf_t actual_digest = {
+  crypto_byte_buf_t actual_digest = {
       .data = (unsigned char *)actual_digest_data,
       .len = sizeof(actual_digest_data),
   };

@@ -156,12 +156,11 @@ crypto_status_t otcrypto_aes_padded_plaintext_length(size_t plaintext_len,
  * @return The result of the cipher operation.
  */
 crypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
-                             crypto_uint8_buf_t iv,
-                             block_cipher_mode_t aes_mode,
+                             crypto_byte_buf_t iv, block_cipher_mode_t aes_mode,
                              aes_operation_t aes_operation,
-                             crypto_const_uint8_buf_t cipher_input,
+                             crypto_const_byte_buf_t cipher_input,
                              aes_padding_t aes_padding,
-                             crypto_uint8_buf_t cipher_output);
+                             crypto_byte_buf_t cipher_output);
 
 /**
  * Performs the AES-GCM authenticated encryption operation.
@@ -188,12 +187,12 @@ crypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
  * operation
  */
 crypto_status_t otcrypto_aes_encrypt_gcm(const crypto_blinded_key_t *key,
-                                         crypto_const_uint8_buf_t plaintext,
-                                         crypto_const_uint8_buf_t iv,
-                                         crypto_const_uint8_buf_t aad,
+                                         crypto_const_byte_buf_t plaintext,
+                                         crypto_const_byte_buf_t iv,
+                                         crypto_const_byte_buf_t aad,
                                          aead_gcm_tag_len_t tag_len,
-                                         crypto_uint8_buf_t *ciphertext,
-                                         crypto_uint8_buf_t *auth_tag);
+                                         crypto_byte_buf_t *ciphertext,
+                                         crypto_byte_buf_t *auth_tag);
 
 /**
  * Performs the AES-GCM authenticated decryption operation.
@@ -223,10 +222,10 @@ crypto_status_t otcrypto_aes_encrypt_gcm(const crypto_blinded_key_t *key,
  * operation
  */
 crypto_status_t otcrypto_aes_decrypt_gcm(
-    const crypto_blinded_key_t *key, crypto_const_uint8_buf_t ciphertext,
-    crypto_const_uint8_buf_t iv, crypto_const_uint8_buf_t aad,
-    aead_gcm_tag_len_t tag_len, crypto_const_uint8_buf_t auth_tag,
-    crypto_uint8_buf_t *plaintext, hardened_bool_t *success);
+    const crypto_blinded_key_t *key, crypto_const_byte_buf_t ciphertext,
+    crypto_const_byte_buf_t iv, crypto_const_byte_buf_t aad,
+    aead_gcm_tag_len_t tag_len, crypto_const_byte_buf_t auth_tag,
+    crypto_byte_buf_t *plaintext, hardened_bool_t *success);
 
 /**
  * Internal GHASH operation of Galois Counter Mode (GCM).
@@ -266,7 +265,7 @@ crypto_status_t otcrypto_gcm_ghash_init(const crypto_blinded_key_t *hash_subkey,
  * @return Result of the operation.
  */
 crypto_status_t otcrypto_gcm_ghash_update(gcm_ghash_context_t *ctx,
-                                          crypto_const_uint8_buf_t input);
+                                          crypto_const_byte_buf_t input);
 
 /**
  * Internal GHASH operation of Galois Counter Mode (GCM).
@@ -286,7 +285,7 @@ crypto_status_t otcrypto_gcm_ghash_update(gcm_ghash_context_t *ctx,
  * @return Result of the operation.
  */
 crypto_status_t otcrypto_gcm_ghash_final(gcm_ghash_context_t *ctx,
-                                         crypto_uint8_buf_t digest);
+                                         crypto_byte_buf_t digest);
 
 /**
  * Internal AES-GCTR operation of AES Galois Counter Mode (AES-GCM).
@@ -307,9 +306,9 @@ crypto_status_t otcrypto_gcm_ghash_final(gcm_ghash_context_t *ctx,
  * @return Result of the operation.
  */
 crypto_status_t otcrypto_aes_gcm_gctr(const crypto_blinded_key_t *key,
-                                      crypto_const_uint8_buf_t icb,
-                                      crypto_const_uint8_buf_t input,
-                                      crypto_uint8_buf_t output);
+                                      crypto_const_byte_buf_t icb,
+                                      crypto_const_byte_buf_t input,
+                                      crypto_byte_buf_t output);
 
 /**
  * Performs the AES-KWP authenticated encryption operation.
@@ -329,7 +328,7 @@ crypto_status_t otcrypto_aes_gcm_gctr(const crypto_blinded_key_t *key,
  */
 crypto_status_t otcrypto_aes_kwp_encrypt(
     const crypto_blinded_key_t *key_to_wrap,
-    const crypto_blinded_key_t *key_kek, crypto_uint8_buf_t *wrapped_key);
+    const crypto_blinded_key_t *key_kek, crypto_byte_buf_t *wrapped_key);
 
 /**
  * Performs the AES-KWP authenticated decryption operation.
@@ -342,7 +341,7 @@ crypto_status_t otcrypto_aes_kwp_encrypt(
  * @param[out] unwrapped_key Pointer to the output unwrapped key struct.
  * @return Result of the aes-kwp decrypt operation.
  */
-crypto_status_t otcrypto_aes_kwp_decrypt(crypto_const_uint8_buf_t wrapped_key,
+crypto_status_t otcrypto_aes_kwp_decrypt(crypto_const_byte_buf_t wrapped_key,
                                          const crypto_blinded_key_t *key_kek,
                                          crypto_blinded_key_t *unwrapped_key);
 

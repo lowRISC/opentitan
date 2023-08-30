@@ -25,7 +25,7 @@ crypto_status_t otcrypto_ecdsa_keygen(const ecc_curve_t *elliptic_curve,
 }
 
 crypto_status_t otcrypto_ecdsa_sign(const crypto_blinded_key_t *private_key,
-                                    crypto_const_uint8_buf_t input_message,
+                                    crypto_const_byte_buf_t input_message,
                                     const ecc_curve_t *elliptic_curve,
                                     const ecc_signature_t *signature) {
   HARDENED_TRY(otcrypto_ecdsa_sign_async_start(private_key, input_message,
@@ -34,7 +34,7 @@ crypto_status_t otcrypto_ecdsa_sign(const crypto_blinded_key_t *private_key,
 }
 
 crypto_status_t otcrypto_ecdsa_verify(const ecc_public_key_t *public_key,
-                                      crypto_const_uint8_buf_t input_message,
+                                      crypto_const_byte_buf_t input_message,
                                       const ecc_signature_t *signature,
                                       const ecc_curve_t *elliptic_curve,
                                       hardened_bool_t *verification_result) {
@@ -69,7 +69,7 @@ crypto_status_t otcrypto_ed25519_keygen(crypto_blinded_key_t *private_key,
 }
 
 crypto_status_t otcrypto_ed25519_sign(const crypto_blinded_key_t *private_key,
-                                      crypto_const_uint8_buf_t input_message,
+                                      crypto_const_byte_buf_t input_message,
                                       eddsa_sign_mode_t sign_mode,
                                       const ecc_signature_t *signature) {
   // TODO: Ed25519 is not yet implemented.
@@ -78,7 +78,7 @@ crypto_status_t otcrypto_ed25519_sign(const crypto_blinded_key_t *private_key,
 
 crypto_status_t otcrypto_ed25519_verify(
     const crypto_unblinded_key_t *public_key,
-    crypto_const_uint8_buf_t input_message, eddsa_sign_mode_t sign_mode,
+    crypto_const_byte_buf_t input_message, eddsa_sign_mode_t sign_mode,
     const ecc_signature_t *signature, hardened_bool_t *verification_result) {
   // TODO: Ed25519 is not yet implemented.
   return OTCRYPTO_NOT_IMPLEMENTED;
@@ -354,7 +354,7 @@ crypto_status_t otcrypto_ecdsa_keygen_async_finalize(
  */
 static status_t internal_ecdsa_p256_sign_start(
     const crypto_blinded_key_t *private_key,
-    crypto_const_uint8_buf_t input_message) {
+    crypto_const_byte_buf_t input_message) {
   if (private_key->config.hw_backed != kHardenedBoolFalse) {
     // TODO: Implement support for sideloaded keys.
     return OTCRYPTO_NOT_IMPLEMENTED;
@@ -385,7 +385,7 @@ static status_t internal_ecdsa_p256_sign_start(
 
 crypto_status_t otcrypto_ecdsa_sign_async_start(
     const crypto_blinded_key_t *private_key,
-    crypto_const_uint8_buf_t input_message, const ecc_curve_t *elliptic_curve) {
+    crypto_const_byte_buf_t input_message, const ecc_curve_t *elliptic_curve) {
   if (private_key == NULL || elliptic_curve == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -498,7 +498,7 @@ crypto_status_t otcrypto_ecdsa_sign_async_finalize(
  * @return OK or error.
  */
 static status_t internal_ecdsa_p256_verify_start(
-    const ecc_public_key_t *public_key, crypto_const_uint8_buf_t input_message,
+    const ecc_public_key_t *public_key, crypto_const_byte_buf_t input_message,
     const ecc_signature_t *signature) {
   // Check the public key size.
   HARDENED_TRY(p256_public_key_length_check(public_key));
@@ -532,7 +532,7 @@ static status_t internal_ecdsa_p256_verify_start(
 }
 
 crypto_status_t otcrypto_ecdsa_verify_async_start(
-    const ecc_public_key_t *public_key, crypto_const_uint8_buf_t input_message,
+    const ecc_public_key_t *public_key, crypto_const_byte_buf_t input_message,
     const ecc_signature_t *signature, const ecc_curve_t *elliptic_curve) {
   if (public_key == NULL || elliptic_curve == NULL || signature == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -925,7 +925,7 @@ crypto_status_t otcrypto_ed25519_keygen_async_finalize(
 
 crypto_status_t otcrypto_ed25519_sign_async_start(
     const crypto_blinded_key_t *private_key,
-    crypto_const_uint8_buf_t input_message, eddsa_sign_mode_t sign_mode,
+    crypto_const_byte_buf_t input_message, eddsa_sign_mode_t sign_mode,
     const ecc_signature_t *signature) {
   // TODO: Ed25519 is not yet implemented.
   return OTCRYPTO_NOT_IMPLEMENTED;
@@ -939,7 +939,7 @@ crypto_status_t otcrypto_ed25519_sign_async_finalize(
 
 crypto_status_t otcrypto_ed25519_verify_async_start(
     const crypto_unblinded_key_t *public_key,
-    crypto_const_uint8_buf_t input_message, eddsa_sign_mode_t sign_mode,
+    crypto_const_byte_buf_t input_message, eddsa_sign_mode_t sign_mode,
     const ecc_signature_t *signature) {
   // TODO: Ed25519 is not yet implemented.
   return OTCRYPTO_NOT_IMPLEMENTED;

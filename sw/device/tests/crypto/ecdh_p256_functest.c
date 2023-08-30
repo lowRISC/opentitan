@@ -16,10 +16,10 @@ static const ecc_curve_t kCurveP256 = {
     .curve_type = kEccCurveTypeNistP256,
     .domain_parameter =
         (ecc_domain_t){
-            .p = (crypto_const_uint8_buf_t){.data = NULL, .len = 0},
-            .a = (crypto_const_uint8_buf_t){.data = NULL, .len = 0},
-            .b = (crypto_const_uint8_buf_t){.data = NULL, .len = 0},
-            .q = (crypto_const_uint8_buf_t){.data = NULL, .len = 0},
+            .p = (crypto_const_byte_buf_t){.data = NULL, .len = 0},
+            .a = (crypto_const_byte_buf_t){.data = NULL, .len = 0},
+            .b = (crypto_const_byte_buf_t){.data = NULL, .len = 0},
+            .q = (crypto_const_byte_buf_t){.data = NULL, .len = 0},
             .gx = NULL,
             .gy = NULL,
             .cofactor = 0u,
@@ -34,7 +34,7 @@ static const crypto_key_config_t kEcdhPrivateKeyConfig = {
     .key_length = kP256ScalarBytes,
     .hw_backed = kHardenedBoolFalse,
     .diversification_hw_backed =
-        (crypto_const_uint8_buf_t){.data = NULL, .len = 0},
+        (crypto_const_byte_buf_t){.data = NULL, .len = 0},
     .security_level = kSecurityLevelLow,
 };
 
@@ -47,7 +47,7 @@ static const crypto_key_config_t kEcdhSharedKeyConfig = {
     .key_length = kP256CoordBytes,
     .hw_backed = kHardenedBoolFalse,
     .diversification_hw_backed =
-        (crypto_const_uint8_buf_t){.data = NULL, .len = 0},
+        (crypto_const_byte_buf_t){.data = NULL, .len = 0},
     .security_level = kSecurityLevelLow,
 };
 

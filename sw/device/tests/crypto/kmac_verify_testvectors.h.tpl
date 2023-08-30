@@ -33,10 +33,10 @@ typedef struct kmac_test_vector {
   hash_mode_t hash_mode;
   kmac_mode_t mac_mode;
   crypto_blinded_key_t key;
-  crypto_const_uint8_buf_t input_msg;
-  crypto_const_uint8_buf_t func_name;
-  crypto_const_uint8_buf_t cust_str;
-  crypto_const_uint8_buf_t digest;
+  crypto_const_byte_buf_t input_msg;
+  crypto_const_byte_buf_t func_name;
+  crypto_const_byte_buf_t cust_str;
+  crypto_const_byte_buf_t digest;
 } kmac_test_vector_t;
 
 static size_t nist_kmac_nr_of_vectors = ${len(tests)};

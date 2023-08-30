@@ -29,7 +29,7 @@ bool test_main(void) {
              current_test_vector->vector_identifier);
 
     uint8_t digest[current_test_vector->digest.len];
-    crypto_uint8_buf_t digest_buf = {
+    crypto_byte_buf_t digest_buf = {
         .data = digest,
         .len = current_test_vector->digest.len,
     };
