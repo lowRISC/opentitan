@@ -412,7 +412,7 @@ class flash_ctrl_scoreboard #(
   // Update scb_flash_* with bank erase command.
   // If data partition is selected, erase data partition only,
   // otherwise all partitions in the bank will be erased.
-  function void erase_bank(int bank, bit part_sel);
+  virtual function void erase_bank(int bank, bit part_sel);
     uint partition_words_num;
     data_model_t scb_flash_model;
     flash_mem_addr_attrs addr_attr;
@@ -504,6 +504,9 @@ class flash_ctrl_scoreboard #(
     endcase
   endfunction
 
+  // In opensource, `sel` is always 0.
+  // When `sel` is 1, which indicates bank erase,
+  // task `erase_bank` is called.
   virtual function void erase_data(flash_dv_part_e part, addr_t addr, bit sel);
     case (part)
       FlashPartData: begin
