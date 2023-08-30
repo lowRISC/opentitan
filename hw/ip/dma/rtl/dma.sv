@@ -13,7 +13,7 @@ module dma
     parameter bit                   EnableDataIntgGen    = 1'b1,
     parameter logic [RsvdWidth-1:0] TlUserRsvd           = '0,
     parameter logic [SYS_RACL_WIDTH-1:0] SysRacl         = '0,
-    parameter integer                  OtAgentId         = 0
+    parameter int unsigned          OtAgentId            = 0
 ) (
   input logic                                       clk_i,
   input logic                                       rst_ni,
