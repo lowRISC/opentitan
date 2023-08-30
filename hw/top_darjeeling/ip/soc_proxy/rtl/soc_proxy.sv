@@ -28,6 +28,8 @@ module soc_proxy
   output logic wkup_internal_req_o,
   output logic wkup_external_req_o,
 
+  output dma_pkg::lsio_trigger_t dma_lsio_trigger_o,
+
   output tlul_pkg::tl_h2d_t ctn_tl_h2d_o,
   input  tlul_pkg::tl_d2h_t ctn_tl_d2h_i,
 
@@ -44,6 +46,7 @@ module soc_proxy
   assign ctn_tl_o = tlul_pkg::TL_D2H_DEFAULT;
 
   // Tie off unimplemented outputs temporarily.
+  assign dma_lsio_trigger_o = '0;
   assign intr_external_o = '0;
   assign wkup_internal_req_o = 1'b0;
   assign wkup_external_req_o = 1'b0;
