@@ -28,14 +28,14 @@ module dma
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
   // Device port
-  input   tlul_pkg::tl_h2d_t                        tl_dev_i,
-  output  tlul_pkg::tl_d2h_t                        tl_dev_o,
+  input   tlul_pkg::tl_h2d_t                        tl_d_i,
+  output  tlul_pkg::tl_d2h_t                        tl_d_o,
   // Facing CTN
   input   tlul_pkg::tl_d2h_t                        tl_ctn_i,
   output  tlul_pkg::tl_h2d_t                        tl_ctn_o,
   // Host port
-  input   tlul_pkg::tl_d2h_t                        tl_host_i,
-  output  tlul_pkg::tl_h2d_t                        tl_host_o,
+  input   tlul_pkg::tl_d2h_t                        host_tl_h_i,
+  output  tlul_pkg::tl_h2d_t                        host_tl_h_o,
   // System port
   input  dma_pkg::sys_rsp_t                         sys_i,
   output dma_pkg::sys_req_t                         sys_o
@@ -175,8 +175,8 @@ module dma
   dma_reg_top u_dma_reg (
     .clk_i     ( clk_i          ),
     .rst_ni    ( rst_ni         ),
-    .tl_i      ( tl_dev_i       ),
-    .tl_o      ( tl_dev_o       ),
+    .tl_i      ( tl_d_i         ),
+    .tl_o      ( tl_d_o         ),
     .reg2hw    ( reg2hw         ),
     .hw2reg    ( hw2reg         ),
     .intg_err_o( reg_intg_error )
@@ -227,8 +227,8 @@ module dma
     .rdata_intg_o   (                                  ),
     .err_o          ( dma_host_tlul_rsp_err            ),
     .intg_err_o     ( dma_host_tlul_rsp_intg_err       ),
-    .tl_o           ( tl_host_o                        ),
-    .tl_i           ( tl_host_i                        )
+    .tl_o           ( host_tl_h_o                      ),
+    .tl_i           ( host_tl_h_i                      )
   );
 
   // Adapter from the DMA to the CTN
