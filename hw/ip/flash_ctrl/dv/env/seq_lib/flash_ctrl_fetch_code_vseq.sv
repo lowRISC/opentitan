@@ -241,7 +241,7 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
          "Flash Op : Bank: %0d, flash_op: %0p, flash_op_data: %0p, EXEC Key: 0x%0x, instr_type: %s",
            bank, flash_op, flash_op_data, exec_key, instr_type.name()), UVM_LOW)
 
-      // Note: 'exec_key' and 'instr_type' are randomised with the rest of the class
+      // Note: 'exec_key' and 'instr_type' are randomized with the rest of the class
 
       // Write Randomly Selected Code Execution Key
       csr_wr(.ptr(ral.exec), .value(exec_key));

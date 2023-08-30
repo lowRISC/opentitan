@@ -11,7 +11,7 @@ class spi_device_tpm_rw_vseq extends spi_device_tpm_base_vseq;
     bit [7:0] spi_byte_q[$];
     bit [7:0] sw_byte_q[$];
 
-    // randomised tpm configuration.
+    // randomized tpm configuration.
     tpm_init(TpmCrbMode);
     repeat (num_trans) begin
       bit write = $urandom;

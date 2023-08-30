@@ -161,7 +161,7 @@ class otbn_base_vseq extends cip_base_vseq #(
     get_queue_entries(1'b1, to_load);
 
     // Temporarily configure the TL agent to run much quicker 90% of the time. There's no real
-    // benefit to testing randomised delays here: we're just writing to a bunch of memory addresses!
+    // benefit to testing randomized delays here: we're just writing to a bunch of memory addresses!
     save_tl_config();
     run_fast = $urandom_range(0, 99) < 90;
     if (run_fast) begin
@@ -299,7 +299,7 @@ class otbn_base_vseq extends cip_base_vseq #(
   // command when it was running, but were a little bit late. That would still be fine because we
   // know that we've got an ELF file loaded up)
   //
-  // Note that the CMD register just contains an 8-bit field. We randomise the top bits here, but
+  // Note that the CMD register just contains an 8-bit field. We randomize the top bits here, but
   // they should have no effect.
   protected task _send_random_cmd();
     logic [31:0] val;

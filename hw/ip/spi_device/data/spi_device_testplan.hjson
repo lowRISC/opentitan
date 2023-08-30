@@ -192,9 +192,9 @@
       name: tpm_read
       desc: '''
             - Set TPM_CFG.TPM_MODE to CRB mode and set TPM_CFG.EN.
-            - Randomise other fields in TPM_CFG.
+            - Randomize other fields in TPM_CFG.
             - Assert the tpm_csb.
-            - Send TPM read command over the SPI bus with a randomised address.
+            - Send TPM read command over the SPI bus with a randomized address.
             - Check TPM_CMD_ADDR.
             - Confirm FIFO behaviour dictated by TPM_CFG.tpm_mode.
             - Check TPM_STATUS.cmdaddr_notempty and INTR_STATE.tpm_header_notempty, they should be asserted if hw_reg_dis == 0.
@@ -210,9 +210,9 @@
       name: tpm_write
       desc: '''
             - Set TPM_CFG.TPM_MODE to CRB mode and set TPM_CFG.EN.
-            - Randomise other fields in TPM_CFG.
+            - Randomize other fields in TPM_CFG.
             - Assert the tpm_csb.
-            - Send TPM write command with a randomised address.
+            - Send TPM write command with a randomized address.
             - Check TPM_CMD_ADDR and write FIFO.
             - Check TPM_STATUS.cmdaddr_notempty and INTR_STATE.tpm_header_notempty.
             - Based on FIFO status, check SPI bus to confirm WAIT or START sent.

@@ -316,7 +316,7 @@ interface clk_rst_if #(
         while (!done) #(clk_period_ps * 1ps);
       join
 
-      // If there might be multiple clocks in the system, wait another (randomised) short time to
+      // If there might be multiple clocks in the system, wait another (randomized) short time to
       // desynchronise.
       if (!sole_clock) #($urandom_range(0, clk_period_ps) * 1ps);
 

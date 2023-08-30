@@ -48,7 +48,7 @@ The unscrambled ROM data for (logical) address 12 is denoted `d12`.
 ```
 
 The `prim_prince` primitive and the two substitution-permutation networks are all parameterised by "keys".
-For `rom_ctrl`, these keys are global randomised netlist constants: they are assumed to be difficult to recover, but aren't considered secret data.
+For `rom_ctrl`, these keys are global randomized netlist constants: they are assumed to be difficult to recover, but aren't considered secret data.
 
 ## The startup ROM check
 
