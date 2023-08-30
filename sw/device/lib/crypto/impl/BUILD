@@ -34,6 +34,7 @@ cc_library(
     hdrs = ["//sw/device/lib/crypto/include:drbg.h"],
     deps = [
         ":status",
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
@@ -45,6 +46,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":keyblob",
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/impl/ecc:ecdh_p256",
         "//sw/device/lib/crypto/impl/ecc:ecdsa_p256",
@@ -129,6 +131,7 @@ cc_library(
         ":integrity",
         ":status",
         "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl/rsa:rsa_keygen",
         "//sw/device/lib/crypto/impl/rsa:rsa_signature",
         "//sw/device/lib/crypto/include:datatypes",
