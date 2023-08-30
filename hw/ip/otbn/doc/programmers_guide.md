@@ -84,7 +84,7 @@ OTBN permits loop nesting and branches and jumps inside loops.
 However, it doesn't have support for early termination of loops: there's no way to pop an entry from the loop stack without executing the last instruction of the loop the correct number of times.
 It can also only pop one level of the loop stack per instruction.
 
-To avoid polluting the loop stack and avoid surprising behaviour, the programmer must ensure that:
+To avoid polluting the loop stack and avoid surprising behavior, the programmer must ensure that:
 * Even if there are branches and jumps within a loop body, the final instruction of the loop body gets executed exactly once per iteration.
 * Nested loops have distinct end addresses.
 * The end instruction of an outer loop is not executed before an inner loop finishes.

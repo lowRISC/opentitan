@@ -146,7 +146,7 @@ def on_step(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     if insn is not None:
         hdr = insn.rtl_trace(pc)  # type: Optional[str]
     elif was_wiping:
-        # The trailing space is a bit naff but matches the behaviour in the RTL
+        # The trailing space is a bit naff but matches the behavior in the RTL
         # tracer, where it's rather difficult to change.
         hdr = 'U ' if sim.state.wiping() else 'V '
     elif sim.state.executing():

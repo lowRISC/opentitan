@@ -20,7 +20,7 @@ class CallStackReg(Reg):
         self.saw_read = False
         self.gpr_parent = parent
 
-    # We overload read_unsigned here, to handle the read-sensitive behaviour
+    # We overload read_unsigned here, to handle the read-sensitive behavior
     # without needing the base class to deal with it.
     def read_unsigned(self, backdoor: bool = False) -> int:
         if backdoor:

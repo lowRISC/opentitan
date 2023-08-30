@@ -288,7 +288,7 @@
       name: interrupts
       desc: '''
             Perform accesses in order to raise all interrupts given in register map.
-            Check behaviour of Interrupt Enable and Status Registers.
+            Check behavior of Interrupt Enable and Status Registers.
             '''
       stage: V2
       tests: ["flash_ctrl_intr_rd", "flash_ctrl_intr_wr",

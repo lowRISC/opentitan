@@ -28,7 +28,7 @@ typedef enum {
 
   // Read test configuration
   // This is a bespoke 'vendor' command via which we inquire of the CPU
-  // software what behaviour is required
+  // software what behavior is required
   STEP_GET_TEST_CONFIG,
   // Report test status (pass/failure) to the CPU software
   STEP_SET_TEST_STATUS,

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Test to check the behaviour of DUT in case of RSTART or STOP githces in Target mode
+// Test to check the behavior of DUT in case of RSTART or STOP githces in Target mode
 // Sequence:
 // > Initialize DUT in Target mode
 // > Randomly introduce glitches specified by enum `glitch_e`

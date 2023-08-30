@@ -46,7 +46,7 @@ sw a1, mtimecmp+4 # No smaller than new value.
 sw a0, mtimecmp   # New value.
 ```
 
-## Timer behaviour close to 2^64
+## Timer behavior close to 2^64
 
 There are some peculiarities when `mtime` and `mtimecmp` get close to the end of
 the 64-bit integer range. In particular, because an unsigned comparison is done

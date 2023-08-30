@@ -86,7 +86,7 @@ class RegFile:
     '''A base class for register files (used for both GPRs and WDRs).
 
     For GPRs, we override it (see gpr.py) to support our magic x0 and x1
-    behaviour.
+    behavior.
 
     '''
     def __init__(self,

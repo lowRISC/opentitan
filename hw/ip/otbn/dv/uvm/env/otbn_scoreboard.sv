@@ -217,7 +217,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
           end
         end
         default: begin
-          // No other special behaviour for writes
+          // No other special behavior for writes
         end
       endcase
       return;

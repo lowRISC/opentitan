@@ -102,7 +102,7 @@ class VerilatorSimCtrl {
    *
    * This can be overridden by the user (in either direction) with the
    * --term-after-cycles command-line argument. Setting to zero means
-   * no timeout, which is the default behaviour.
+   * no timeout, which is the default behavior.
    */
   void SetTimeout(unsigned int cycles);
 

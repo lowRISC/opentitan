@@ -11,7 +11,7 @@ As such, we implement the toolchain as a thin wrapper around RISC-V binutils.
 ## Assembly format and examples
 
 The OTBN ISA and programmer model are described in the [OTBN reference manual](../../../hw/ip/otbn/README.md).
-In particular, note that the register `x1` has special stack-like behaviour.
+In particular, note that the register `x1` has special stack-like behavior.
 There are some example programs at `sw/otbn/code-snippets`.
 These range from simple examples of how to use pseudo-operations up to example cryptographic primitives.
 

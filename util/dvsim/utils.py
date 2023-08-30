@@ -248,7 +248,7 @@ def subst_wildcards(var, mdict, ignored_wildcards=[], ignore_error=False):
 
     If a wildcard appears in var but is not in mdict, the environment is
     checked for the variable. If the name still isn't found, the default
-    behaviour is to log an error and exit. If ignore_error is True, the
+    behavior is to log an error and exit. If ignore_error is True, the
     wildcard is ignored (as if it appeared in ignore_wildcards).
 
     If {eval_cmd} appears in the string and 'eval_cmd' is not in

@@ -12,7 +12,7 @@
   bn.lid    x0, 0(x0)
 
   /*
-    Checks for increment behaviour. First, incrementing <grd>: set x2 to 1,
+    Checks for increment behavior. First, incrementing <grd>: set x2 to 1,
     then load-with-increment (from address 0x20, to distinguish from the
     previous load). We should have data from 0x20 in w1 and x2 should equal 2.
   */

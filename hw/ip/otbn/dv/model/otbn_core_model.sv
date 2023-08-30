@@ -110,7 +110,7 @@ module otbn_core_model
 
   // The lc_escalate_en_i and lc_rma_req_i signals in the design go through a prim_lc_sync
   // which always injects exactly two cycles of delay (this is a synchroniser, not a CDC, so
-  // its behaviour is easy to predict).
+  // its behavior is easy to predict).
   // We model those delays in the SystemVerilog here, since it's much easier than handling it
   // in the Python.
   logic [2:0] escalate_fifo;

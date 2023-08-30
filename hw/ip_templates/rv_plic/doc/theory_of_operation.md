@@ -56,7 +56,7 @@ Note that there is no ability for a level triggered interrupt to be cancelled.
 If the interrupt drops after the gateway has set a bit in [`IP`](../data/rv_plic.hjson#ip), the bit will
 remain set until the interrupt is completed. The SW handler should be conscious
 of this and check the interrupt still requires handling in the handler if this
-behaviour is possible.
+behavior is possible.
 
 ### Interrupt Enables
 

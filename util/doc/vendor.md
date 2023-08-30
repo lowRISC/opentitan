@@ -122,7 +122,7 @@ In order to document which version of a repository has been cloned and committed
 This contains only the upstream information, including the URL and the exact git revision that was cloned.
 
 Beyond just documentation, this enables users to re-clone the previously-cloned upstream repository -- including re-applying patches, choosing subdirectories, and excluding additional files -- without having to integrate any upstream changes.
-Indeed the default behaviour of the vendor tool is to use the upstream information from `<vendor>_<name>.lock.hjson` if this file exists.
+Indeed the default behavior of the vendor tool is to use the upstream information from `<vendor>_<name>.lock.hjson` if this file exists.
 
 Once the lock file exists, the vendor tool will only use the upstream information in `<vendor>_<name>.vendor.json` if the `--update` command-line option is used.
 

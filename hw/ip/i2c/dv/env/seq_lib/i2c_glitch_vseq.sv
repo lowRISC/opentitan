@@ -88,7 +88,7 @@ class i2c_glitch_vseq extends i2c_target_smoke_vseq;
     print_time_property();
     program_registers();
     // Set maximum and minimum number of transactions to 1 since
-    // only once sequence can be used to test behaviour of DUT after glitch
+    // only once sequence can be used to test behavior of DUT after glitch
     cfg.seq_cfg.i2c_min_num_trans = 1;
     cfg.seq_cfg.i2c_max_num_trans = 1;
     cfg.min_data = 1;

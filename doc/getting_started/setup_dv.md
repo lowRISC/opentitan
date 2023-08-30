@@ -109,7 +109,7 @@ $ git checkout -b <temp_branch> FETCH_HEAD
 ```console
 $ util/dvsim/dvsim.py hw/top_earlgrey/dv/top_earlgrey_sim_cfgs.hjson -i smoke --fixed-seed=1
 ```
-Since the CI runs tests with pseudo-random behaviour driven from 'seed' numbers, to be confident of reproducing the failure we must supply the exact seed that CI used.
+Since the CI runs tests with pseudo-random behavior driven from 'seed' numbers, to be confident of reproducing the failure we must supply the exact seed that CI used.
 
 Assume there is a failure in the `uart_smoke` test. To reproduce this with the DV simulation environment we use the following command, remembering to replace '<seed>' with the seed number, and to choose an appropriate waveform '<format>':
 

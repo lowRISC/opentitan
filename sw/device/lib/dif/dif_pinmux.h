@@ -169,7 +169,7 @@ typedef struct dif_pinmux_pad_attr {
 /**
  * A sleep mode for a Padring DIO/MIO pad.
  *
- * This determines the behaviour of a pad in deep sleep state.
+ * This determines the behavior of a pad in deep sleep state.
  *
  * NOTE:
  * After the chip has come back from deep sleep, the mode of the pad
@@ -187,7 +187,7 @@ typedef enum dif_pinmux_sleep_mode {
    */
   kDifPinmuxSleepModeHigh,
   /**
-   * The pad is left undriven. Note that the actual driving behaviour will
+   * The pad is left undriven. Note that the actual driving behavior will
    * depend on the pull-up/-down configuration.
    */
   kDifPinmuxSleepModeHighZ,

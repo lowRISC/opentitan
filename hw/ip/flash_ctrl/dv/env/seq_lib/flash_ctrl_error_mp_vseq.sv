@@ -376,7 +376,7 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
     cfg.flash_ctrl_vif.lc_iso_part_sw_wr_en     = hw_access;
   endfunction : control_hw_access
 
-  // Model Flash Data Partition Behaviour
+  // Model Flash Data Partition Behavior
   virtual function do_data_part(flash_op_t flash_op);
 
     // Local Variables
@@ -432,7 +432,7 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
 
   endfunction : do_data_part
 
-  // Model Flash Info Partition Behaviour
+  // Model Flash Info Partition Behavior
   virtual function do_info_part(flash_op_t flash_op);
 
     // Local Variables

@@ -3,7 +3,7 @@
 ## Goals
   * Verify compliance with the RISC-V specifications used by OpenTitan.
   * Verify Ibex's security hardening features.
-  * Ensure correct functionality is maintained across all possible behaviours of Ibex's external interfaces when integrated into OpenTitan.
+  * Ensure correct functionality is maintained across all possible behaviors of Ibex's external interfaces when integrated into OpenTitan.
   * Verify additional features provided by the wrapper.
 
 ## Design features

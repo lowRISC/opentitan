@@ -913,7 +913,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
         cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
         cfg.clk_rst_vif.wait_clks(1);
       end else begin
-        // Normal behaviour
+        // Normal behavior
         rsp = on_val;
         cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
         cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
@@ -925,7 +925,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
         cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
         cfg.clk_rst_vif.wait_clks(1);
       end else begin
-        // Normal behaviour
+        // Normal behavior
         rsp = off_val;
         cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
         cfg.lc_ctrl_vif.set_clk_byp_ack(rsp);
@@ -970,7 +970,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
         cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
         cfg.clk_rst_vif.wait_clks(1);
       end else begin
-        // Normal behaviour
+        // Normal behavior
         rsp = On;
         cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
         cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
@@ -991,7 +991,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
         cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);
         cfg.clk_rst_vif.wait_clks(1);
       end else begin
-        // Normal behaviour
+        // Normal behavior
         rsp = off_val;
         cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
         cfg.lc_ctrl_vif.set_flash_rma_ack(rsp);

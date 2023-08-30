@@ -21,7 +21,7 @@ class Trace:
 
         This is used by the stepped interface (which gets compared with the RTL
         model). Return None if the RTL trace doesn't have an entry for this
-        item (the default behaviour).
+        item (the default behavior).
 
         '''
         return None

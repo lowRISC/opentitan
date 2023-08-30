@@ -198,7 +198,7 @@ We also want to see a read in each operational state.
 This is tracked in `state_cp`.
 
 We want to see a write to this register in each operational state when it was previously nonzero.
-This checks that the clearing behaviour works properly.
+This checks that the clearing behavior works properly.
 We don't have to follow up with another read because we've got continuous checks that the RTL value of this register matches the ISS.
 This is tracked in `clear_state_cross`.
 
@@ -226,7 +226,7 @@ We also want to see a read in every operational state.
 This is tracked in `state_cp`.
 
 We want to see a write to this register in each operational state when it was previously nonzero.
-This checks that the clearing behaviour works properly.
+This checks that the clearing behavior works properly.
 We don't have to follow up with another read because we've got continuous checks that the RTL value of this register matches the ISS.
 This is tracked in `clear_state_cross`.
 
@@ -989,7 +989,7 @@ The possible errors are: underflow call stack (for `grs1`), underflow call stack
 If we underflow the call stack for `grs1`, there's no architectural address, so that can't happen at the same time as a bad data address.
 Similarly, if we underflow the call stack for `grd`, there's no WDR index, so that can't cause an invalid WDR index.
 However, every other combination is possible.
-Binning together the two underflows unless it makes a difference to the possible behaviour gives the following list:
+Binning together the two underflows unless it makes a difference to the possible behavior gives the following list:
 
 - Underflow call stack and set both increments.
   Tracked as `underflow_and_inc_both_cross`.
@@ -1045,7 +1045,7 @@ The possible errors are: underflow call stack (for `grs1`), underflow call stack
 If we underflow the call stack for `grs1`, there's no architectural address, so that can't happen at the same time as a bad data address.
 Similarly, if we underflow the call stack for `grs2`, there's no WDR index, so that can't cause an invalid WDR index.
 However, every other combination is possible.
-Binning together the two underflows unless it makes a difference to the possible behaviour gives the following list:
+Binning together the two underflows unless it makes a difference to the possible behavior gives the following list:
 
 - Underflow call stack and set both increments.
   Tracked as `underflow_and_inc_both_cross`.
@@ -1087,7 +1087,7 @@ It is possible for BN.MOVR to trigger multiple errors in a single cycle.
 The possible errors are: underflow call stack (for `grs`), underflow call stack (for `grd`), both increments set, invalid WDR index (from `*grs`) and invalid WDR index (from `*grd`).
 If we underflow the call stack for `grs`, there's no WDR index from `*grs`, so it's not also possible to see an invalid WDR index from that.
 Similarly, if we underflow the call stack for `grd` then there's no WDR index from `*grd`, so it's not also possible to see an invalid WDR index from that.
-Binning together the two underflows and WDR indices unless it makes a difference to the possible behaviour gives the following list:
+Binning together the two underflows and WDR indices unless it makes a difference to the possible behavior gives the following list:
 
 - Underflow call stack and set both increments.
   Tracked as `underflow_and_inc_both_cp`.

@@ -1,3 +1,3 @@
-This directory contains directed tests that check error behaviour for
+This directory contains directed tests that check error behavior for
 the various instructions in the ISA. Tests are named after the
 instruction, with a numeric suffix to de-duplicate the names.

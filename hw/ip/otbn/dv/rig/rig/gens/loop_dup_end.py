@@ -65,7 +65,7 @@ class LoopDupEnd(Loop):
     Such a loop nesting is bad news in normal operation: we'll never be able to
     pop off the rest of the loop stack. But we've got some coverage points for
     this happening, so we need to be able to generate it. Note that, unlike
-    most "bad behaviour" generators, this doesn't set the ends_program flag:
+    most "bad behavior" generators, this doesn't set the ends_program flag:
     OTBN won't spot any error, we'll just use up some of the loop stack.
 
     '''

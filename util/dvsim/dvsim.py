@@ -485,7 +485,7 @@ def parse_args():
 
     rung.add_argument("--no-rerun",
                       action='store_true',
-                      help=("Disable the default behaviour, where failing "
+                      help=("Disable the default behavior, where failing "
                             "tests are automatically rerun with waves "
                             "enabled."))
 

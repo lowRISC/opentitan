@@ -196,7 +196,7 @@
             - Assert the tpm_csb.
             - Send TPM read command over the SPI bus with a randomized address.
             - Check TPM_CMD_ADDR.
-            - Confirm FIFO behaviour dictated by TPM_CFG.tpm_mode.
+            - Confirm FIFO behavior dictated by TPM_CFG.tpm_mode.
             - Check TPM_STATUS.cmdaddr_notempty and INTR_STATE.tpm_header_notempty, they should be asserted if hw_reg_dis == 0.
             - If hw_reg_dis == 0, the data is returned to the host via return-by-HW register, else the data is returned via read FIFO.
             - Confirm that the TPM submodule sends WAIT until the read FIFO is available.

@@ -218,7 +218,7 @@ pub fn load_elf_sram_program(
     // be an inconsistency between data loaded this way and data loaded via VMEM because the gap
     // at the beginning is ignored by objcopy and is not covered by the CRC.
     //
-    // Fortunately there is a flag, confusingly named as `nmagic`, that changes the behaviour and
+    // Fortunately there is a flag, confusingly named as `nmagic`, that changes the behavior and
     // disables this excessive alignment. The code below has a sanity check to ensure that the
     // program is indeed compiled with `nmagic` enabeld by making sure tha the alignment does not
     // exceed 8.

@@ -119,7 +119,7 @@ void OtbnMemUtil::AddLoopWarp(uint32_t addr, uint32_t from_cnt,
     // We didn't actually insert anything, which means that there was already a
     // value stored for this address/from_cnt pair. Since the ordering of ELF
     // symbols isn't something that the user can control, we don't really have a
-    // sensible behaviour at this point: throw an error.
+    // sensible behavior at this point: throw an error.
     std::ostringstream oss;
     oss << "Duplicate loop warp symbols for address 0x" << std::hex << addr
         << " and initial count " << std::dec << from_cnt << ".";

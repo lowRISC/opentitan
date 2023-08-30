@@ -16,13 +16,13 @@ Array.prototype.forEach.call(document.getElementsByClassName("pagetoc")[0].child
 });
 
 /* The following functionality highlights the pagetoc entry of the highest visible heading on the page.
- * This gives the pagetoc the dynamic highlighting behaviour as you scroll the page. */
+ * This gives the pagetoc the dynamic highlighting behavior as you scroll the page. */
 var updateDynamicHighlight = function() {
     var id;
     let elements = document.getElementsByClassName("header");
     // Set id == the highest "header" element visible in the window.
     // Define an offset to account for the menubar, and bump the decision-point a
-    // bit further down the page, which makes the behaviour feel more natural.
+    // bit further down the page, which makes the behavior feel more natural.
     const highestVisibleHeaderOffset = 350; // px
     Array.prototype.forEach.call(elements, function(el) {
         if ((window.pageYOffset + highestVisibleHeaderOffset) >= el.offsetTop) {
@@ -250,7 +250,7 @@ var create_pagetoc_structure = function(el_pagetoc) {
 
 /* Populate the pagetoc sidebar on load
  * - Create a tree structure of elements within the pagetoc nav item
- * - Update the overflow height behaviour when the rendered size is known. */
+ * - Update the overflow height behavior when the rendered size is known. */
 window.addEventListener('load', function() {
     let pagetoc = document.getElementsByClassName("pagetoc")[0];
     create_pagetoc_structure(pagetoc);

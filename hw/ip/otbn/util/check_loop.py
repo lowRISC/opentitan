@@ -161,7 +161,7 @@ def _check_loop_stack(program: OTBNProgram,
     The checks here are based on the OTBN hardware IP documentation on loop
     nesting. From the docs:
 
-        To avoid polluting the loop stack and avoid surprising behaviour, the
+        To avoid polluting the loop stack and avoid surprising behavior, the
         programmer must ensure that:
 
         * Even if there are branches and jumps within a loop body, the final

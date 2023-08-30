@@ -78,14 +78,14 @@ This Python-based simulator can be found at `hw/ip/otbn/dv/otbnsim`.
 
 When testing OTBN, we are careful to distinguish between
 
-- behaviour that can be triggered by particular instruction streams
-- behaviour that is triggered by particular external stimuli (register writes; surprise resets etc.)
+- behavior that can be triggered by particular instruction streams
+- behavior that is triggered by particular external stimuli (register writes; surprise resets etc.)
 
 Testing lots of different instruction streams doesn't really use the UVM machinery, so we have a "pre-DV" phase of testing that generates constrained-random instruction streams (as ELF binaries) and runs a simple block-level simulation on each to check that the RTL matches the model.
 The idea is that this is much quicker for designers to use to smoke-test proposed changes, and can be run with Verilator, so it doesn't require an EDA tool licence.
 This pre-DV phase cannot drive sign-off, but it does use much of the same tooling.
 
-Once we are running full DV tests, we re-use this work, by using the same collection of randomised instruction streams and randomly picking from them for most of the sequences.
+Once we are running full DV tests, we re-use this work, by using the same collection of randomized instruction streams and randomly picking from them for most of the sequences.
 At the moment, the full DV tests create binaries on the fly by running `hw/ip/otbn/dv/uvm/gen-binaries.py`.
 This results in one or more ELF files in a directory, which the simulation then picks from at random.
 
@@ -108,7 +108,7 @@ We also check things like the correct operation of the interrupt registers.
 ## Self-checking strategy
 ### Scoreboard
 
-Much of the checking for these tests is actually performed in `otbn_core_model`, which ensures that the RTL and ISS have the same behaviour.
+Much of the checking for these tests is actually performed in `otbn_core_model`, which ensures that the RTL and ISS have the same behavior.
 However, the scoreboard does have some checks, to ensure that interrupt and idle signals are high at the expected times.
 
 ### Assertions

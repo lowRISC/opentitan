@@ -76,7 +76,7 @@ To get this right, we normally set up tests as follows:
 - Pick a start count slightly below the threshold value
 
 Occasionally, we'll pick a start count above the threshold value, to make sure nothing triggers when it shouldn't.
-To ensure that we check wrap-around behaviour and see toggles on counter bits, we are careful to pick threshold values more often if they are near zero, the maximum value, or powers of two.
+To ensure that we check wrap-around behavior and see toggles on counter bits, we are careful to pick threshold values more often if they are near zero, the maximum value, or powers of two.
 
 Since the two timers are essentially independent, we use two test sequences, driving them separately.
 
@@ -121,7 +121,7 @@ This does not include precise modelling for the CDC timing.
 
 The second part of the self-checking logic looks at the configuration registers of the timers.
 After calculating the amount of clock cycles, it starts checking for an interrupt from either wake-up timer or watchdog timer.
-Here, there is a single clock domain (the AON clock) and easily predictable behaviour.
+Here, there is a single clock domain (the AON clock) and easily predictable behavior.
 The scoreboard contains an exact model of how the interrupts generated from this specific configuration.
 
 Putting the two parts of the scoreboard together gives a full checker for the block.

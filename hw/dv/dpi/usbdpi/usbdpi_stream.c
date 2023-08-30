@@ -581,7 +581,7 @@ void streams_service(usbdpi_ctx_t *ctx) {
       // Decide whether we have enough time within this frame to attempt
       // another fetch
       //
-      // TODO:  find out what the host behaviour should be at this point;
+      // TODO:  find out what the host behavior should be at this point;
       //        the device must be required to respond within a certain
       //        time interval, and then the bus transmission speed
       //        determines the maximum delay

@@ -96,7 +96,7 @@ module tb;
     .tl_i(tl_if.h2d),
     .tl_o(tl_if.d2h),
 
-    // Correct behaviour of the idle output is ensured by the bound-in otbn_idle_checker instance.
+    // Correct behavior of the idle output is ensured by the bound-in otbn_idle_checker instance.
     .idle_o(),
 
     .intr_done_o(intr_done),

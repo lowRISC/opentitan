@@ -51,7 +51,7 @@ The secure wipe phase at the end of OTBN's operation will be represented by
 zero or more `U` records, followed by a final `V` record.
 
 Whilst the tracer does not aim to detect bugs, there may be instances where the
-signals it traces do something unexpected that requires special behaviour.
+signals it traces do something unexpected that requires special behavior.
 Where this happens, the string `"ERR"` will be placed somewhere in the line
 that contains information about the unexpected signals. See information on
 Memory Write (`W`) lines below for an example. `ERR` will not be present in

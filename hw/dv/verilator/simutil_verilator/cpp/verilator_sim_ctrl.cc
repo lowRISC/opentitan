@@ -68,7 +68,7 @@ static bool read_ul_arg(unsigned long *arg_val, const char *arg_name,
   bool out_of_range = false;
 
   // We have a stricter input format that strtoul: no leading space and no
-  // leading plus or minus signs (strtoul has magic behaviour if the input
+  // leading plus or minus signs (strtoul has magic behavior if the input
   // starts with a minus sign, but we don't want that). We're using auto base
   // detection, but a valid number will always start with 0-9 (since hex
   // constants start with "0x")

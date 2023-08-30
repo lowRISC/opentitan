@@ -173,7 +173,7 @@ class StraightLineInsn(SnippetGen):
         '''Fill out an instruction with no LSU component'''
         assert insn.lsu is None
         # For each operand, pick a value that's allowed by the model (i.e.
-        # one that won't trigger any undefined behaviour)
+        # one that won't trigger any undefined behavior)
         op_vals = []
         for operand in insn.operands:
             op_val = model.pick_operand_value(operand.op_type)

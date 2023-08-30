@@ -312,7 +312,7 @@ dif_result_t dif_uart_fifo_reset(const dif_uart_t *uart,
  * routines.
  *
  * Loopback should only be enabled when device is in the IDLE state to prevent
- * data loss/coruption. Behaviour depends on the `loopback` parameter:
+ * data loss/coruption. Behavior depends on the `loopback` parameter:
  *    - `kDifUartLoopbackSystem`:
  *      Receives the data that is being transmitted. No external data can be
  *      received (from the RX line). When enabled the TX line goes high.

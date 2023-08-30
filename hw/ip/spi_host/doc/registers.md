@@ -279,7 +279,7 @@ The phase of the sck clock signal relative to the data. When
    [`CONFIGOPTS.FULLCYC`](#configopts) bit.
 
 ### CONFIGOPTS . FULLCYC
-Full cycle.  Modifies the CPHA sampling behaviour to allow
+Full cycle.  Modifies the CPHA sampling behavior to allow
    for longer device logic setup times.  Rather than sampling the SD
    bus a half cycle after shifting out data, the data is sampled
    a full cycle after shifting data out.  This means that if

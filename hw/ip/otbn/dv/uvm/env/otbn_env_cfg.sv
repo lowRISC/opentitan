@@ -60,7 +60,7 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
 
   // By default, FIPS field is always high when we request RND EDN word. This is because if it is
   // low, OTBN generates a recoverable error. We want to control this knob whenever we want to see
-  // that behaviour but not anytime else.
+  // that behavior but not anytime else.
   int unsigned rnd_fips_pct = 100;
 
   // The hierarchical scope of the DUT instance in the testbench. This is used when constructing the

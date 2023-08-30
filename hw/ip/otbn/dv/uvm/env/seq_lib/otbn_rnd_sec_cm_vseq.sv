@@ -4,8 +4,8 @@
 
 // Test sequence to check both RND.RNG.DIGEST and RND.BUS.CONSISTENCY security countermeasures.
 // The main skeleton is otbn_multi test in which we run multiple programs. It is better suited
-// to see RND behaviour between different OTBN operations.
-// Behaviour of the test changes with accordance to the randomized number of repeated EDN words
+// to see RND behavior between different OTBN operations.
+// Behavior of the test changes with accordance to the randomized number of repeated EDN words
 // as an answer to the RND request. If number of repeated EDN words is zero, only error will be
 // about FIPS non-compliant cases. In the case of repeats being greater or equal than eight
 // -the number of total EDN words for RND, only repetition errors will be seen.
@@ -28,7 +28,7 @@ class otbn_rnd_sec_cm_vseq extends otbn_multi_vseq;
       @(negedge cfg.clk_rst_vif.clk);
       if(cfg.poll_rnd_edn_req() && ~cfg.rnd_vif.edn_rnd_ack_i) begin
         `DV_CHECK_STD_RANDOMIZE_FATAL(entropy)
-        // Distrubution of num_repeated_edn will determine the behaviour of the test.
+        // Distrubution of num_repeated_edn will determine the behavior of the test.
         // For detailed explanation see the comments above.
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(num_repeated_edn,
                                            num_repeated_edn dist { 0      :/ 25,

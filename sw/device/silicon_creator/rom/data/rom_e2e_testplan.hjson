@@ -850,10 +850,10 @@
             - Verify that ROM can be debugged in TEST, DEV, and RMA life cycle states.
               - Test debugging with commands to GDB connected via OpenOCD and JTAG (or the
                 SystemVerilog based JTAG debugger model in case of DV simulations).
-              - Read back GDB responses to check they match expected behaviour
+              - Read back GDB responses to check they match expected behavior
               - Connect a debugger and verify that ROM halts very early in `rom_start.S`.
               - Trial the following activities within GDB, ensuring the correct
-                behaviour is seen:
+                behavior is seen:
                 - Halting execution and resetting
                 - Setting, hitting and deleting breakpoints using all available hardware breakpoints
                 - Single stepping

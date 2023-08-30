@@ -585,7 +585,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     // 3 possible values of fullness (empty, partially full, full)
     fullness_cp: coverpoint fullness;
 
-    // Cross push/pop behaviour with fullness of the call stack to give 8 * 3 = 24 bins.
+    // Cross push/pop behavior with fullness of the call stack to give 8 * 3 = 24 bins.
     flags_fullness_cross: cross flags_cp, fullness_cp;
 
   endgroup

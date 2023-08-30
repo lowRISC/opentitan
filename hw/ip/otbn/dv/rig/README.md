@@ -57,7 +57,7 @@ loops. The JSON output format represents this tree of snippets.
 ### Initialised data
 
 The generated program is designed never to trigger architecturally
-unspecified behaviour. It might trigger errors, but its execution will
+unspecified behavior. It might trigger errors, but its execution will
 never depend on things like the initial contents of the register file
 or uninitialised memories.
 

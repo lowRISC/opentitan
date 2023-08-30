@@ -208,7 +208,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
       // one of two times:
       //   1'b0 - Push when we write to the COMMAND csr (which starts the DUT).
       //   1'b1 - Push when we write to TXFIFO.
-      // This behaviour allows us to test TX stalling behaviour, which requires
+      // This behavior allows us to test TX stalling behavior, which requires
       // the DUT to be attempting a write operation with no data to be popped off
       // the TXFIFO.
       if (commit_exp_txn_at_txfifo_write) begin

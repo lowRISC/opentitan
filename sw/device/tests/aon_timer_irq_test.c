@@ -50,7 +50,7 @@ static volatile uint64_t irq_tick;
  * This is fine due to the test running in a single thread of execution,
  * however, care should be taken in case it changes. OTTF configures the
  * timer in vPortSetupTimerInterrupt, and re-initialising it inside the test
- * could potentially break or cause unexpected behaviour of the test framework.
+ * could potentially break or cause unexpected behavior of the test framework.
  */
 static_assert(configUSE_PREEMPTION == 0,
               "rv_timer may be initialized already by FreeRtos");

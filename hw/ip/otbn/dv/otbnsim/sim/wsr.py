@@ -76,7 +76,7 @@ class WSR:
 
 
 class DumbWSR(WSR):
-    '''Models a WSR without special behaviour'''
+    '''Models a WSR without special behavior'''
     def __init__(self, name: str):
         super().__init__(name)
         self._value = 0

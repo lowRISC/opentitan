@@ -21,7 +21,7 @@ class spi_host_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_host_reg_block));
   int         min_dummy_cycles = 0;
   // Setting this variable = 1'b1 makes the scoreboard commit the expected transaction
   // to the queue for checking when writing to the TXFIFO instead of the COMMAND csr.
-  // This allow checking of the stretching behaviour.
+  // This allow checking of the stretching behavior.
   bit         tx_stall_check = 1'b0;
 
   // bumber of address bytes
