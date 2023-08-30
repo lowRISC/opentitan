@@ -357,7 +357,7 @@
 - [Build Software](./sw/doc/build_software.md)
 
 - [Device Software](./sw/device/README.md)
-  - [Device Libraries](./sw/device/lib/README.md)
+  - [Device Libraries](./sw/lib/sw/device/README.md)
     - [DIF Library](./sw/ip/base/dif/README.md)
       - [ADC Checklist](sw/ip/adc_ctrl/dif/dif_adc_ctrl.md)
       - [AES Checklist](sw/ip/aes/dif/dif_aes.md)
