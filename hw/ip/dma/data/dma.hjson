@@ -35,9 +35,9 @@
   ],
   inter_signal_list: [
     { name: "lsio_trigger"
-      type: "lsio_trigger",
+      type: "uni",
       act: "rcv",
-      package: "dma_reg_pkg",
+      package: "dma_pkg",
       struct: "lsio_trigger",
       width: "1"
     }
