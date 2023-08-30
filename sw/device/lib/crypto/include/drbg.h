@@ -25,7 +25,7 @@ extern "C" {
  * @param perso_string Pointer to personalization bitstring.
  * @return Result of the DRBG instantiate operation.
  */
-crypto_status_t otcrypto_drbg_instantiate(crypto_uint8_buf_t perso_string);
+crypto_status_t otcrypto_drbg_instantiate(crypto_byte_buf_t perso_string);
 
 /**
  * Reseeds the DRBG with fresh entropy.
@@ -36,7 +36,7 @@ crypto_status_t otcrypto_drbg_instantiate(crypto_uint8_buf_t perso_string);
  * @param additional_input Pointer to the additional input for DRBG.
  * @return Result of the DRBG reseed operation.
  */
-crypto_status_t otcrypto_drbg_reseed(crypto_uint8_buf_t additional_input);
+crypto_status_t otcrypto_drbg_reseed(crypto_byte_buf_t additional_input);
 
 /**
  * Instantiates the DRBG system.
@@ -53,7 +53,7 @@ crypto_status_t otcrypto_drbg_reseed(crypto_uint8_buf_t additional_input);
  * @return Result of the DRBG manual instantiation.
  */
 crypto_status_t otcrypto_drbg_manual_instantiate(
-    crypto_uint8_buf_t entropy, crypto_uint8_buf_t perso_string);
+    crypto_byte_buf_t entropy, crypto_byte_buf_t perso_string);
 
 /**
  * Reseeds the DRBG with fresh entropy.
@@ -65,8 +65,8 @@ crypto_status_t otcrypto_drbg_manual_instantiate(
  * @param additional_input Pointer to the additional input for DRBG.
  * @return Result of the manual DRBG reseed operation.
  */
-crypto_status_t otcrypto_drbg_manual_reseed(
-    crypto_uint8_buf_t entropy, crypto_uint8_buf_t additional_input);
+crypto_status_t otcrypto_drbg_manual_reseed(crypto_byte_buf_t entropy,
+                                            crypto_byte_buf_t additional_input);
 
 /**
  * DRBG function for generating random bits.
@@ -89,9 +89,9 @@ crypto_status_t otcrypto_drbg_manual_reseed(
  * @param[out] drbg_output Pointer to the generated pseudo random bits.
  * @return Result of the DRBG generate operation.
  */
-crypto_status_t otcrypto_drbg_generate(crypto_uint8_buf_t additional_input,
+crypto_status_t otcrypto_drbg_generate(crypto_byte_buf_t additional_input,
                                        size_t output_len,
-                                       crypto_uint8_buf_t *drbg_output);
+                                       crypto_byte_buf_t *drbg_output);
 
 /**
  * Uninstantiates DRBG and clears the context.

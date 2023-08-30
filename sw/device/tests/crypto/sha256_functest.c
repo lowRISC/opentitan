@@ -53,10 +53,10 @@ static const uint8_t kExactBlockExpDigest[] = {
  * @param msg Input message.
  * @param exp_digest Expected digest (256 bits).
  */
-static status_t run_test(crypto_const_uint8_buf_t msg,
+static status_t run_test(crypto_const_byte_buf_t msg,
                          const uint32_t *exp_digest) {
   uint32_t act_digest[kHmacDigestNumWords];
-  crypto_uint8_buf_t digest_buf = {
+  crypto_byte_buf_t digest_buf = {
       .data = (unsigned char *)act_digest,
       .len = sizeof(act_digest),
   };
@@ -73,7 +73,7 @@ static status_t run_test(crypto_const_uint8_buf_t msg,
  */
 static status_t simple_test(void) {
   const char plaintext[] = "Test message.";
-  crypto_const_uint8_buf_t msg_buf = {
+  crypto_const_byte_buf_t msg_buf = {
       .data = (unsigned char *)plaintext,
       .len = sizeof(plaintext) - 1,
   };
@@ -95,7 +95,7 @@ static status_t empty_test(void) {
       0x7852b855, 0xa495991b, 0x649b934c, 0x27ae41e4,
       0x996fb924, 0x9afbf4c8, 0x98fc1c14, 0xe3b0c442,
   };
-  crypto_const_uint8_buf_t msg_buf = {
+  crypto_const_byte_buf_t msg_buf = {
       .data = NULL,
       .len = 0,
   };
@@ -109,14 +109,14 @@ static status_t one_update_streaming_test(void) {
   hash_context_t ctx;
   TRY(otcrypto_hash_init(&ctx, kHashModeSha256));
 
-  crypto_const_uint8_buf_t msg_buf = {
+  crypto_const_byte_buf_t msg_buf = {
       .data = kExactBlockMessage,
       .len = kExactBlockMessageLen,
   };
   TRY(otcrypto_hash_update(&ctx, msg_buf));
 
   uint8_t act_digest[ARRAYSIZE(kExactBlockExpDigest)];
-  crypto_uint8_buf_t digest_buf = {
+  crypto_byte_buf_t digest_buf = {
       .data = act_digest,
       .len = sizeof(act_digest),
   };
@@ -139,7 +139,7 @@ static status_t multiple_update_streaming_test(void) {
   size_t update_size = 0;
   while (len > 0) {
     update_size = len <= update_size ? len : update_size;
-    crypto_const_uint8_buf_t msg_buf = {
+    crypto_const_byte_buf_t msg_buf = {
         .data = next,
         .len = update_size,
     };
@@ -149,7 +149,7 @@ static status_t multiple_update_streaming_test(void) {
     TRY(otcrypto_hash_update(&ctx, msg_buf));
   }
   uint8_t act_digest[ARRAYSIZE(kTwoBlockExpDigest)];
-  crypto_uint8_buf_t digest_buf = {
+  crypto_byte_buf_t digest_buf = {
       .data = act_digest,
       .len = sizeof(act_digest),
   };

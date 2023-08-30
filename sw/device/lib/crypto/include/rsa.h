@@ -128,10 +128,10 @@ crypto_status_t otcrypto_rsa_keygen(rsa_key_size_t required_key_len,
  * @return The result of the RSA signature generation.
  */
 crypto_status_t otcrypto_rsa_sign(const rsa_private_key_t *rsa_private_key,
-                                  crypto_const_uint8_buf_t input_message,
+                                  crypto_const_byte_buf_t input_message,
                                   rsa_padding_t padding_mode,
                                   rsa_hash_t hash_mode,
-                                  crypto_uint8_buf_t *signature);
+                                  crypto_byte_buf_t *signature);
 
 /**
  * Verifies the authenticity of the input signature.
@@ -149,10 +149,10 @@ crypto_status_t otcrypto_rsa_sign(const rsa_private_key_t *rsa_private_key,
  * @return Result of the RSA verify operation.
  */
 crypto_status_t otcrypto_rsa_verify(const rsa_public_key_t *rsa_public_key,
-                                    crypto_const_uint8_buf_t input_message,
+                                    crypto_const_byte_buf_t input_message,
                                     rsa_padding_t padding_mode,
                                     rsa_hash_t hash_mode,
-                                    crypto_const_uint8_buf_t signature,
+                                    crypto_const_byte_buf_t signature,
                                     hardened_bool_t *verification_result);
 
 /**
@@ -204,7 +204,7 @@ crypto_status_t otcrypto_rsa_keygen_async_finalize(
  */
 crypto_status_t otcrypto_rsa_sign_async_start(
     const rsa_private_key_t *rsa_private_key,
-    crypto_const_uint8_buf_t input_message, rsa_padding_t padding_mode,
+    crypto_const_byte_buf_t input_message, rsa_padding_t padding_mode,
     rsa_hash_t hash_mode);
 
 /**
@@ -223,7 +223,7 @@ crypto_status_t otcrypto_rsa_sign_async_start(
  * @param[out] signature Pointer to generated signature struct.
  * @return Result of async RSA sign finalize operation.
  */
-crypto_status_t otcrypto_rsa_sign_async_finalize(crypto_uint8_buf_t *signature);
+crypto_status_t otcrypto_rsa_sign_async_finalize(crypto_byte_buf_t *signature);
 
 /**
  * Starts the asynchronous signature verification function.
@@ -236,7 +236,7 @@ crypto_status_t otcrypto_rsa_sign_async_finalize(crypto_uint8_buf_t *signature);
  * @return Result of async RSA verify start operation.
  */
 crypto_status_t otcrypto_rsa_verify_async_start(
-    const rsa_public_key_t *rsa_public_key, crypto_const_uint8_buf_t signature);
+    const rsa_public_key_t *rsa_public_key, crypto_const_byte_buf_t signature);
 
 /**
  * Finalizes the asynchronous signature verification function.
@@ -255,7 +255,7 @@ crypto_status_t otcrypto_rsa_verify_async_start(
  * @return Result of async RSA verify finalize operation.
  */
 crypto_status_t otcrypto_rsa_verify_async_finalize(
-    crypto_const_uint8_buf_t input_message, rsa_padding_t padding_mode,
+    crypto_const_byte_buf_t input_message, rsa_padding_t padding_mode,
     rsa_hash_t hash_mode, hardened_bool_t *verification_result);
 
 #ifdef __cplusplus

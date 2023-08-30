@@ -204,7 +204,7 @@ static status_t num_padded_blocks_get(size_t plaintext_len,
  * @param padding Padding mode.
  * @returns Number of AES blocks required.
  */
-static status_t get_block(crypto_const_uint8_buf_t input, aes_padding_t padding,
+static status_t get_block(crypto_const_byte_buf_t input, aes_padding_t padding,
                           size_t index, aes_block_t *block) {
   size_t num_full_blocks = input.len / kAesBlockNumBytes;
 
@@ -244,12 +244,11 @@ crypto_status_t otcrypto_aes_padded_plaintext_length(size_t plaintext_len,
 }
 
 crypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
-                             crypto_uint8_buf_t iv,
-                             block_cipher_mode_t aes_mode,
+                             crypto_byte_buf_t iv, block_cipher_mode_t aes_mode,
                              aes_operation_t aes_operation,
-                             crypto_const_uint8_buf_t cipher_input,
+                             crypto_const_byte_buf_t cipher_input,
                              aes_padding_t aes_padding,
-                             crypto_uint8_buf_t cipher_output) {
+                             crypto_byte_buf_t cipher_output) {
   // Check for NULL pointers in input pointers and data buffers.
   if (key == NULL || (aes_mode != kBlockCipherModeEcb && iv.data == NULL) ||
       cipher_input.data == NULL || cipher_output.data == NULL) {
@@ -464,12 +463,12 @@ status_t aes_gcm_check_tag_length(size_t byte_len, aead_gcm_tag_len_t tag_len) {
 }
 
 crypto_status_t otcrypto_aes_encrypt_gcm(const crypto_blinded_key_t *key,
-                                         crypto_const_uint8_buf_t plaintext,
-                                         crypto_const_uint8_buf_t iv,
-                                         crypto_const_uint8_buf_t aad,
+                                         crypto_const_byte_buf_t plaintext,
+                                         crypto_const_byte_buf_t iv,
+                                         crypto_const_byte_buf_t aad,
                                          aead_gcm_tag_len_t tag_len,
-                                         crypto_uint8_buf_t *ciphertext,
-                                         crypto_uint8_buf_t *auth_tag) {
+                                         crypto_byte_buf_t *ciphertext,
+                                         crypto_byte_buf_t *auth_tag) {
   // Check for NULL pointers in input pointers and required-nonzero-length data
   // buffers.
   if (key == NULL || iv.data == NULL || ciphertext == NULL ||
@@ -507,10 +506,10 @@ crypto_status_t otcrypto_aes_encrypt_gcm(const crypto_blinded_key_t *key,
 }
 
 crypto_status_t otcrypto_aes_decrypt_gcm(
-    const crypto_blinded_key_t *key, crypto_const_uint8_buf_t ciphertext,
-    crypto_const_uint8_buf_t iv, crypto_const_uint8_buf_t aad,
-    aead_gcm_tag_len_t tag_len, crypto_const_uint8_buf_t auth_tag,
-    crypto_uint8_buf_t *plaintext, hardened_bool_t *success) {
+    const crypto_blinded_key_t *key, crypto_const_byte_buf_t ciphertext,
+    crypto_const_byte_buf_t iv, crypto_const_byte_buf_t aad,
+    aead_gcm_tag_len_t tag_len, crypto_const_byte_buf_t auth_tag,
+    crypto_byte_buf_t *plaintext, hardened_bool_t *success) {
   // Check for NULL pointers in input pointers and required-nonzero-length data
   // buffers.
   if (key == NULL || iv.data == NULL || plaintext == NULL ||
@@ -594,7 +593,7 @@ crypto_status_t otcrypto_gcm_ghash_init(const crypto_blinded_key_t *hash_subkey,
 }
 
 crypto_status_t otcrypto_gcm_ghash_update(gcm_ghash_context_t *ctx,
-                                          crypto_const_uint8_buf_t input) {
+                                          crypto_const_byte_buf_t input) {
   if (ctx == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -610,7 +609,7 @@ crypto_status_t otcrypto_gcm_ghash_update(gcm_ghash_context_t *ctx,
 }
 
 crypto_status_t otcrypto_gcm_ghash_final(gcm_ghash_context_t *ctx,
-                                         crypto_uint8_buf_t digest) {
+                                         crypto_byte_buf_t digest) {
   if (ctx == NULL || digest.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -631,9 +630,9 @@ crypto_status_t otcrypto_gcm_ghash_final(gcm_ghash_context_t *ctx,
 }
 
 crypto_status_t otcrypto_aes_gcm_gctr(const crypto_blinded_key_t *key,
-                                      crypto_const_uint8_buf_t icb,
-                                      crypto_const_uint8_buf_t input,
-                                      crypto_uint8_buf_t output) {
+                                      crypto_const_byte_buf_t icb,
+                                      crypto_const_byte_buf_t input,
+                                      crypto_byte_buf_t output) {
   if (key == NULL || icb.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -670,12 +669,12 @@ crypto_status_t otcrypto_aes_gcm_gctr(const crypto_blinded_key_t *key,
 
 crypto_status_t otcrypto_aes_kwp_encrypt(
     const crypto_blinded_key_t *key_to_wrap,
-    const crypto_blinded_key_t *key_kek, crypto_uint8_buf_t *wrapped_key) {
+    const crypto_blinded_key_t *key_kek, crypto_byte_buf_t *wrapped_key) {
   // TODO: AES-KWP is not yet implemented.
   return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
-crypto_status_t otcrypto_aes_kwp_decrypt(crypto_const_uint8_buf_t wrapped_key,
+crypto_status_t otcrypto_aes_kwp_decrypt(crypto_const_byte_buf_t wrapped_key,
                                          const crypto_blinded_key_t *key_kek,
                                          crypto_blinded_key_t *unwrapped_key) {
   // TODO: AES-KWP is not yet implemented.

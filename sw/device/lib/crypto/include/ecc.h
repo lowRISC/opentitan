@@ -61,13 +61,13 @@ typedef struct ecc_public_key {
  */
 typedef struct ecc_domain {
   // Prime P (modulus of coordinate finite field).
-  crypto_const_uint8_buf_t p;
+  crypto_const_byte_buf_t p;
   // Coefficient a.
-  crypto_const_uint8_buf_t a;
+  crypto_const_byte_buf_t a;
   // Coefficient b.
-  crypto_const_uint8_buf_t b;
+  crypto_const_byte_buf_t b;
   // q (order of G).
-  crypto_const_uint8_buf_t q;
+  crypto_const_byte_buf_t q;
   // Value of x coordinate of G (basepoint). Same length as p.
   const uint32_t *gx;
   // Value of y coordinate of G (basepoint). Same length as p.
@@ -149,7 +149,7 @@ crypto_status_t otcrypto_ecdsa_keygen(const ecc_curve_t *elliptic_curve,
  */
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdsa_sign(const crypto_blinded_key_t *private_key,
-                                    crypto_const_uint8_buf_t input_message,
+                                    crypto_const_byte_buf_t input_message,
                                     const ecc_curve_t *elliptic_curve,
                                     const ecc_signature_t *signature);
 
@@ -170,7 +170,7 @@ crypto_status_t otcrypto_ecdsa_sign(const crypto_blinded_key_t *private_key,
  */
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdsa_verify(const ecc_public_key_t *public_key,
-                                      crypto_const_uint8_buf_t input_message,
+                                      crypto_const_byte_buf_t input_message,
                                       const ecc_signature_t *signature,
                                       const ecc_curve_t *elliptic_curve,
                                       hardened_bool_t *verification_result);
@@ -258,7 +258,7 @@ crypto_status_t otcrypto_ed25519_keygen(crypto_blinded_key_t *private_key,
  */
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ed25519_sign(const crypto_blinded_key_t *private_key,
-                                      crypto_const_uint8_buf_t input_message,
+                                      crypto_const_byte_buf_t input_message,
                                       eddsa_sign_mode_t sign_mode,
                                       const ecc_signature_t *signature);
 
@@ -276,7 +276,7 @@ crypto_status_t otcrypto_ed25519_sign(const crypto_blinded_key_t *private_key,
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ed25519_verify(
     const crypto_unblinded_key_t *public_key,
-    crypto_const_uint8_buf_t input_message, eddsa_sign_mode_t sign_mode,
+    crypto_const_byte_buf_t input_message, eddsa_sign_mode_t sign_mode,
     const ecc_signature_t *signature, hardened_bool_t *verification_result);
 
 /**
@@ -378,7 +378,7 @@ crypto_status_t otcrypto_ecdsa_keygen_async_finalize(
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdsa_sign_async_start(
     const crypto_blinded_key_t *private_key,
-    crypto_const_uint8_buf_t input_message, const ecc_curve_t *elliptic_curve);
+    crypto_const_byte_buf_t input_message, const ecc_curve_t *elliptic_curve);
 
 /**
  * Finalizes the asynchronous ECDSA digital signature generation.
@@ -415,7 +415,7 @@ crypto_status_t otcrypto_ecdsa_sign_async_finalize(
  */
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ecdsa_verify_async_start(
-    const ecc_public_key_t *public_key, crypto_const_uint8_buf_t input_message,
+    const ecc_public_key_t *public_key, crypto_const_byte_buf_t input_message,
     const ecc_signature_t *signature, const ecc_curve_t *elliptic_curve);
 
 /**
@@ -574,7 +574,7 @@ crypto_status_t otcrypto_ed25519_keygen_async_finalize(
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ed25519_sign_async_start(
     const crypto_blinded_key_t *private_key,
-    crypto_const_uint8_buf_t input_message, eddsa_sign_mode_t sign_mode,
+    crypto_const_byte_buf_t input_message, eddsa_sign_mode_t sign_mode,
     const ecc_signature_t *signature);
 
 /**
@@ -606,7 +606,7 @@ crypto_status_t otcrypto_ed25519_sign_async_finalize(
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_ed25519_verify_async_start(
     const crypto_unblinded_key_t *public_key,
-    crypto_const_uint8_buf_t input_message, eddsa_sign_mode_t sign_mode,
+    crypto_const_byte_buf_t input_message, eddsa_sign_mode_t sign_mode,
     const ecc_signature_t *signature);
 
 /**

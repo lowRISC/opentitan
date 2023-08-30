@@ -23,7 +23,7 @@ constexpr crypto_key_config_t kConfigCtr128 = {
     .key_mode = kKeyModeAesCtr,
     .key_length = 16,
     .hw_backed = kHardenedBoolFalse,
-    .diversification_hw_backed = {.data = NULL, .len = 0},
+    .diversification_hw_backed = {.len = 0, .data = NULL},
     .security_level = kSecurityLevelLow,
 };
 
@@ -34,7 +34,7 @@ constexpr crypto_key_config_t kConfigOddBytes = {
     .key_mode = kKeyModeAesCtr,
     .key_length = 31,
     .hw_backed = kHardenedBoolFalse,
-    .diversification_hw_backed = {.data = NULL, .len = 0},
+    .diversification_hw_backed = {.len = 0, .data = NULL},
     .security_level = kSecurityLevelLow,
 };
 
@@ -45,7 +45,7 @@ constexpr crypto_key_config_t kConfigHuge = {
     .key_mode = kKeyModeAesCtr,
     .key_length = SIZE_MAX,
     .hw_backed = kHardenedBoolFalse,
-    .diversification_hw_backed = {.data = NULL, .len = 0},
+    .diversification_hw_backed = {.len = 0, .data = NULL},
     .security_level = kSecurityLevelLow,
 };
 

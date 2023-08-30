@@ -74,29 +74,33 @@ typedef enum crypto_status_value {
 } crypto_status_value_t;
 
 /**
- * Struct to handle crypto data buffer with pointer and length.
- * Note: If the crypto_uint8_buf_t is used for output data, it is
- * expected that the user (1) sets the length of the expected output
- * in the `len` field, and (2) allocates the required space for buffer
- * (`len` bytes). If the output length set by the user doesn’t match
- * the generated output length, an error is thrown and code exits.
+ * Struct to hold a fixed-length byte array.
+ *
+ * Note: the caller must (1) allocate sufficient space and (2) set the `len`
+ * field and `data` pointer when `crypto_byte_buf_t` is used for output. The
+ * crypto library will throw an error if `len` doesn't match expectations.
  */
-typedef struct crypto_uint8_buf {
+typedef struct crypto_byte_buf {
+  // Length of the data in bytes.
+  size_t len;
   // Pointer to the data.
   uint8_t *data;
-  // Length of the data in bytes.
-  size_t len;
-} crypto_uint8_buf_t;
+} crypto_byte_buf_t;
 
 /**
- * Struct to handle crypto const data buffer with pointer and length.
+ * Struct to hold a constant fixed-length byte array.
+ *
+ * The const annotations prevent any changes to the byte buffer. It is
+ * necessary to have this structure separate from `crypto_byte_buf_t` because
+ * data pointed to by a struct does not inherit `const`, so `const
+ * crypto_byte_buf_t` would still allow data to change.
  */
-typedef struct crypto_const_uint8_buf {
-  // Pointer to the data.
-  const uint8_t *data;
+typedef struct crypto_const_byte_buf {
   // Length of the data in bytes.
-  size_t len;
-} crypto_const_uint8_buf_t;
+  const size_t len;
+  // Pointer to the data.
+  const uint8_t *const data;
+} crypto_const_byte_buf_t;
 
 /**
  * Enum to denote the key type of the handled key.
@@ -318,7 +322,7 @@ typedef struct crypto_key_config {
   hardened_bool_t hw_backed;
   // Diversification input for key manager (ignored and may be
   // `NULL` if `hw_backed` is false).
-  crypto_const_uint8_buf_t diversification_hw_backed;
+  crypto_const_byte_buf_t diversification_hw_backed;
   // Whether the key should be exportable (if this is true,
   // `hw_backed` must be false).
   hardened_bool_t exportable;

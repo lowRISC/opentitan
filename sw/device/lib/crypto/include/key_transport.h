@@ -28,7 +28,7 @@ extern "C" {
  * @return Result of the build unblinded key operation.
  */
 crypto_status_t otcrypto_build_unblinded_key(
-    crypto_const_uint8_buf_t plain_key, key_mode_t key_mode,
+    crypto_const_byte_buf_t plain_key, key_mode_t key_mode,
     crypto_unblinded_key_t unblinded_key);
 
 /**
@@ -51,7 +51,7 @@ crypto_status_t otcrypto_build_unblinded_key(
  * @param[out] blinded_key Destination blinded key struct.
  * @return Result of the build blinded key operation.
  */
-crypto_status_t otcrypto_build_blinded_key(crypto_const_uint8_buf_t plain_key,
+crypto_status_t otcrypto_build_blinded_key(crypto_const_byte_buf_t plain_key,
                                            crypto_blinded_key_t blinded_key);
 
 /**

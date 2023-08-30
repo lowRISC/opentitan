@@ -53,7 +53,7 @@ static crypto_key_config_t make_key_config(const aes_test_t *test) {
       .key_length = test->key_len,
       .hw_backed = kHardenedBoolFalse,
       .diversification_hw_backed =
-          (crypto_const_uint8_buf_t){.data = NULL, .len = 0},
+          (crypto_const_byte_buf_t){.data = NULL, .len = 0},
       .security_level = kSecurityLevelLow,
   };
 }
@@ -74,13 +74,13 @@ static void encrypt_decrypt_test(const aes_test_t *test) {
   key.checksum = integrity_blinded_checksum(&key);
 
   // Construct IV buffer.
-  crypto_uint8_buf_t iv = {
+  crypto_byte_buf_t iv = {
       .data = (unsigned char *)test->iv,
       .len = kAesBlockBytes,
   };
 
   // Construct plaintext buffer.
-  crypto_const_uint8_buf_t plaintext = {
+  crypto_const_byte_buf_t plaintext = {
       .data = (const unsigned char *)test->plaintext,
       .len = test->plaintext_len,
   };
@@ -93,7 +93,7 @@ static void encrypt_decrypt_test(const aes_test_t *test) {
 
   // Create buffer for ciphertext.
   uint32_t ciphertext_data[padded_len_bytes / sizeof(uint32_t)];
-  crypto_uint8_buf_t ciphertext = {
+  crypto_byte_buf_t ciphertext = {
       .data = (unsigned char *)ciphertext_data,
       .len = padded_len_bytes,
   };
@@ -106,14 +106,14 @@ static void encrypt_decrypt_test(const aes_test_t *test) {
                   ARRAYSIZE(ciphertext_data));
 
   // Create a const buffer for the ciphertext.
-  crypto_const_uint8_buf_t const_ciphertext = {
+  crypto_const_byte_buf_t const_ciphertext = {
       .data = (const unsigned char *)ciphertext_data,
       .len = padded_len_bytes,
   };
 
   // Construct a buffer for the recovered plaintext.
   uint32_t recovered_plaintext_data[ARRAYSIZE(ciphertext_data)];
-  crypto_uint8_buf_t recovered_plaintext = {
+  crypto_byte_buf_t recovered_plaintext = {
       .data = (unsigned char *)recovered_plaintext_data,
       .len = padded_len_bytes,
   };
