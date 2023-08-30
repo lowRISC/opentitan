@@ -4,3 +4,6 @@
 
 waive -rules INPUT_NOT_READ       -location {prim_subreg.sv} -regexp {Input port 'wd' is not read from} \
       -comment "for RO wd is not used"
+
+waive -rules {PARAM_NOT_USED} -location {prim_subreg_shadow.sv} -regexp {Mubi} \
+      -comment "Mubi is not yet supported in prim_subreg_shadow."

@@ -307,7 +307,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_state_fmt_threshold (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -333,7 +334,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_state_rx_threshold (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -359,7 +361,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_state_fmt_overflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -385,7 +388,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_state_rx_overflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -411,7 +415,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_state_nak (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -437,7 +442,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_state_scl_interference (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -463,7 +469,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_state_sda_interference (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -489,7 +496,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_state_stretch_timeout (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -515,7 +523,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_state_sda_unstable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -541,7 +550,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_state_cmd_complete (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -567,7 +577,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_state_tx_stretch (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -593,7 +604,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_state_tx_overflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -619,7 +631,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_state_acq_full (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -645,7 +658,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_state_unexp_stop (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -671,7 +685,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_state_host_timeout (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -699,7 +714,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_enable_fmt_threshold (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -725,7 +741,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_enable_rx_threshold (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -751,7 +768,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_enable_fmt_overflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -777,7 +795,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_enable_rx_overflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -803,7 +822,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_enable_nak (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -829,7 +849,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_enable_scl_interference (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -855,7 +876,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_enable_sda_interference (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -881,7 +903,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_enable_stretch_timeout (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -907,7 +930,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_enable_sda_unstable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -933,7 +957,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_enable_cmd_complete (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -959,7 +984,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_enable_tx_stretch (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -985,7 +1011,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_enable_tx_overflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1011,7 +1038,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_enable_acq_full (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1037,7 +1065,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_enable_unexp_stop (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1063,7 +1092,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_enable_host_timeout (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1356,7 +1386,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_ctrl_enablehost (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1382,7 +1413,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_ctrl_enabletarget (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1408,7 +1440,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_ctrl_llpbk (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1615,7 +1648,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (8'h0)
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
   ) u_fdata_fbyte (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1642,7 +1676,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_fdata_start (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1669,7 +1704,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_fdata_stop (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1696,7 +1732,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_fdata_read (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1723,7 +1760,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_fdata_rcont (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1750,7 +1788,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_fdata_nakok (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1790,7 +1829,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_fifo_ctrl_rxrst (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1817,7 +1857,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_fifo_ctrl_fmtrst (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1844,7 +1885,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h0)
+    .RESVAL  (3'h0),
+    .Mubi    (1'b0)
   ) u_fifo_ctrl_rxilvl (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1871,7 +1913,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0)
+    .RESVAL  (2'h0),
+    .Mubi    (1'b0)
   ) u_fifo_ctrl_fmtilvl (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1898,7 +1941,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_fifo_ctrl_acqrst (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1925,7 +1969,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_fifo_ctrl_txrst (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2016,7 +2061,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_ovrd_txovrden (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2042,7 +2088,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_ovrd_sclval (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2068,7 +2115,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_ovrd_sdaval (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2128,7 +2176,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0)
+    .RESVAL  (16'h0),
+    .Mubi    (1'b0)
   ) u_timing0_thigh (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2154,7 +2203,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0)
+    .RESVAL  (16'h0),
+    .Mubi    (1'b0)
   ) u_timing0_tlow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2182,7 +2232,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0)
+    .RESVAL  (16'h0),
+    .Mubi    (1'b0)
   ) u_timing1_t_r (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2208,7 +2259,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0)
+    .RESVAL  (16'h0),
+    .Mubi    (1'b0)
   ) u_timing1_t_f (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2236,7 +2288,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0)
+    .RESVAL  (16'h0),
+    .Mubi    (1'b0)
   ) u_timing2_tsu_sta (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2262,7 +2315,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0)
+    .RESVAL  (16'h0),
+    .Mubi    (1'b0)
   ) u_timing2_thd_sta (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2290,7 +2344,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0)
+    .RESVAL  (16'h0),
+    .Mubi    (1'b0)
   ) u_timing3_tsu_dat (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2316,7 +2371,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0)
+    .RESVAL  (16'h0),
+    .Mubi    (1'b0)
   ) u_timing3_thd_dat (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2344,7 +2400,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0)
+    .RESVAL  (16'h0),
+    .Mubi    (1'b0)
   ) u_timing4_tsu_sto (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2370,7 +2427,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0)
+    .RESVAL  (16'h0),
+    .Mubi    (1'b0)
   ) u_timing4_t_buf (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2398,7 +2456,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (31),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (31'h0)
+    .RESVAL  (31'h0),
+    .Mubi    (1'b0)
   ) u_timeout_ctrl_val (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2424,7 +2483,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_timeout_ctrl_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2452,7 +2512,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (7'h0)
+    .RESVAL  (7'h0),
+    .Mubi    (1'b0)
   ) u_target_id_address0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2478,7 +2539,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (7'h0)
+    .RESVAL  (7'h0),
+    .Mubi    (1'b0)
   ) u_target_id_mask0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2504,7 +2566,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (7'h0)
+    .RESVAL  (7'h0),
+    .Mubi    (1'b0)
   ) u_target_id_address1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2530,7 +2593,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (7'h0)
+    .RESVAL  (7'h0),
+    .Mubi    (1'b0)
   ) u_target_id_mask1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2600,7 +2664,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (8'h0)
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
   ) u_txdata (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2628,7 +2693,8 @@ module i2c_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_host_timeout_ctrl (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

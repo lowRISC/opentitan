@@ -468,7 +468,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_halted (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -495,7 +496,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_going (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -522,7 +524,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_resuming (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -549,7 +552,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_exception (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -576,7 +580,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_whereto (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -604,7 +609,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_abstractcmd_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -632,7 +638,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_abstractcmd_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -660,7 +667,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_abstractcmd_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -688,7 +696,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_abstractcmd_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -716,7 +725,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_abstractcmd_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -744,7 +754,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_abstractcmd_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -772,7 +783,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_abstractcmd_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -800,7 +812,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_abstractcmd_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -828,7 +841,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_abstractcmd_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -856,7 +870,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_abstractcmd_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -884,7 +899,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_program_buffer_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -912,7 +928,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_program_buffer_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -940,7 +957,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_program_buffer_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -968,7 +986,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_program_buffer_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -996,7 +1015,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_program_buffer_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1024,7 +1044,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_program_buffer_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1052,7 +1073,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_program_buffer_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1080,7 +1102,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_program_buffer_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1108,7 +1131,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_dataaddr_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1136,7 +1160,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_dataaddr_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1164,7 +1189,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1192,7 +1218,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1220,7 +1247,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1248,7 +1276,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1276,7 +1305,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1304,7 +1334,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1332,7 +1363,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1360,7 +1392,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1388,7 +1421,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1416,7 +1450,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1444,7 +1479,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1472,7 +1508,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1500,7 +1537,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1528,7 +1566,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1556,7 +1595,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1584,7 +1624,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1612,7 +1653,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1640,7 +1682,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1668,7 +1711,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1696,7 +1740,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1724,7 +1769,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1752,7 +1798,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1780,7 +1827,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1808,7 +1856,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1836,7 +1885,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_24 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1864,7 +1914,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_25 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1892,7 +1943,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_26 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1920,7 +1972,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_27 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1948,7 +2001,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_28 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1976,7 +2030,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_29 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2004,7 +2059,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_30 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2032,7 +2088,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_31 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2060,7 +2117,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_32 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2088,7 +2146,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_33 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2116,7 +2175,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_34 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2144,7 +2204,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_35 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2172,7 +2233,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_36 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2200,7 +2262,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_37 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2228,7 +2291,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_38 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2256,7 +2320,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_39 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2284,7 +2349,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_40 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2312,7 +2378,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_41 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2340,7 +2407,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_42 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2368,7 +2436,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_43 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2396,7 +2465,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_44 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2424,7 +2494,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_45 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2452,7 +2523,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_46 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2480,7 +2552,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_47 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2508,7 +2581,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_48 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2536,7 +2610,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_49 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2564,7 +2639,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_50 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2592,7 +2668,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_51 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2620,7 +2697,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_52 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2648,7 +2726,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_53 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2676,7 +2755,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_54 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2704,7 +2784,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_55 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2732,7 +2813,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_56 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2760,7 +2842,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_57 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2788,7 +2871,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_58 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2816,7 +2900,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_59 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2844,7 +2929,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_60 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2872,7 +2958,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_61 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2900,7 +2987,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_62 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2928,7 +3016,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_63 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2956,7 +3045,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_64 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2984,7 +3074,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_65 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3012,7 +3103,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_66 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3040,7 +3132,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_67 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3068,7 +3161,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_68 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3096,7 +3190,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_69 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3124,7 +3219,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_70 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3152,7 +3248,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_71 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3180,7 +3277,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_72 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3208,7 +3306,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_73 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3236,7 +3335,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_74 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3264,7 +3364,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_75 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3292,7 +3393,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_76 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3320,7 +3422,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_77 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3348,7 +3451,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_78 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3376,7 +3480,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_79 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3404,7 +3509,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_80 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3432,7 +3538,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_81 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3460,7 +3567,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_82 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3488,7 +3596,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_83 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3516,7 +3625,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_84 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3544,7 +3654,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_85 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3572,7 +3683,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_86 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3600,7 +3712,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_87 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3628,7 +3741,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_88 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3656,7 +3770,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_89 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3684,7 +3799,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_90 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3712,7 +3828,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_91 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3740,7 +3857,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_92 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3768,7 +3886,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_93 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3796,7 +3915,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_94 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3824,7 +3944,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_95 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3852,7 +3973,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_96 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3880,7 +4002,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_97 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3908,7 +4031,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_98 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3936,7 +4060,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_99 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3964,7 +4089,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_100 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3992,7 +4118,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_101 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4020,7 +4147,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_102 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4048,7 +4176,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_103 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4076,7 +4205,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_104 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4104,7 +4234,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_105 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4132,7 +4263,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_106 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4160,7 +4292,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_107 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4188,7 +4321,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_108 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4216,7 +4350,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_109 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4244,7 +4379,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_110 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4272,7 +4408,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_111 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4300,7 +4437,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_112 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4328,7 +4466,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_113 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4356,7 +4495,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_114 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4384,7 +4524,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_115 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4412,7 +4553,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_116 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4440,7 +4582,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_117 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4468,7 +4611,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_118 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4496,7 +4640,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_119 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4524,7 +4669,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_120 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4552,7 +4698,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_121 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4580,7 +4727,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_122 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4608,7 +4756,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_123 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4636,7 +4785,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_124 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4664,7 +4814,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_125 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4692,7 +4843,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_126 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4720,7 +4872,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_127 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4748,7 +4901,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_128 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4776,7 +4930,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_129 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4804,7 +4959,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_130 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4832,7 +4988,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_131 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4860,7 +5017,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_132 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4888,7 +5046,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_133 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4916,7 +5075,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_134 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4944,7 +5104,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_135 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4972,7 +5133,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_136 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5000,7 +5162,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_137 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5028,7 +5191,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_138 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5056,7 +5220,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_139 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5084,7 +5249,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_140 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5112,7 +5278,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_141 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5140,7 +5307,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_142 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5168,7 +5336,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_143 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5196,7 +5365,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_144 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5224,7 +5394,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_145 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5252,7 +5423,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_146 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5280,7 +5452,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_147 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5308,7 +5481,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_148 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5336,7 +5510,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_149 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5364,7 +5539,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_150 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5392,7 +5568,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_151 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5420,7 +5597,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_152 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5448,7 +5626,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_153 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5476,7 +5655,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_154 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5504,7 +5684,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_155 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5532,7 +5713,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_156 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5560,7 +5742,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_157 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5588,7 +5771,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_158 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5616,7 +5800,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_159 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5644,7 +5829,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_160 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5672,7 +5858,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_161 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5700,7 +5887,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_162 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5728,7 +5916,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_163 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5756,7 +5945,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_164 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5784,7 +5974,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_165 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5812,7 +6003,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_166 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5840,7 +6032,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_167 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5868,7 +6061,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_168 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5896,7 +6090,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_169 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5924,7 +6119,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_170 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5952,7 +6148,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_171 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5980,7 +6177,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_172 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6008,7 +6206,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_173 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6036,7 +6235,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_174 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6064,7 +6264,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_175 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6092,7 +6293,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_176 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6120,7 +6322,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_177 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6148,7 +6351,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_178 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6176,7 +6380,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_179 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6204,7 +6409,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_180 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6232,7 +6438,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_181 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6260,7 +6467,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_182 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6288,7 +6496,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_183 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6316,7 +6525,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_184 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6344,7 +6554,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_185 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6372,7 +6583,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_186 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6400,7 +6612,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_187 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6428,7 +6641,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_188 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6456,7 +6670,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_189 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6484,7 +6699,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_190 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6512,7 +6728,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_191 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6540,7 +6757,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_192 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6568,7 +6786,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_193 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6596,7 +6815,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_194 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6624,7 +6844,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_195 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6652,7 +6873,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_196 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6680,7 +6902,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_197 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6708,7 +6931,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_198 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6736,7 +6960,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_199 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6764,7 +6989,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_200 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6792,7 +7018,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_201 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6820,7 +7047,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_202 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6848,7 +7076,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_203 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6876,7 +7105,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_204 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6904,7 +7134,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_205 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6932,7 +7163,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_206 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6960,7 +7192,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_207 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6988,7 +7221,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_208 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7016,7 +7250,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_209 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7044,7 +7279,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_210 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7072,7 +7308,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_211 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7100,7 +7337,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_212 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7128,7 +7366,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_213 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7156,7 +7395,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_214 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7184,7 +7424,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_215 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7212,7 +7453,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_216 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7240,7 +7482,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_217 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7268,7 +7511,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_218 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7296,7 +7540,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_219 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7324,7 +7569,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_220 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7352,7 +7598,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_221 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7380,7 +7627,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_222 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7408,7 +7656,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_223 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7436,7 +7685,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_224 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7464,7 +7714,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_225 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7492,7 +7743,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_226 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7520,7 +7772,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_227 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7548,7 +7801,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_228 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7576,7 +7830,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_229 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7604,7 +7859,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_230 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7632,7 +7888,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_231 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7660,7 +7917,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_232 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7688,7 +7946,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_233 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7716,7 +7975,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_234 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7744,7 +8004,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_235 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7772,7 +8033,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_236 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7800,7 +8062,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_237 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7828,7 +8091,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_238 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7856,7 +8120,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_239 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7884,7 +8149,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_240 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7912,7 +8178,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_241 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7940,7 +8207,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_242 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7968,7 +8236,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_243 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7996,7 +8265,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_244 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8024,7 +8294,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_245 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8052,7 +8323,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_246 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8080,7 +8352,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_247 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8108,7 +8381,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_248 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8136,7 +8410,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_249 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8164,7 +8439,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_250 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8192,7 +8468,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_251 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8220,7 +8497,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_252 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8248,7 +8526,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_253 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8276,7 +8555,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_254 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8304,7 +8584,8 @@ module rv_dm_mem_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_flags_255 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

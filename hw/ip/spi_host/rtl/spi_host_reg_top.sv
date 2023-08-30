@@ -283,7 +283,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_state_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -309,7 +310,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_state_spi_event (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -337,7 +339,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_enable_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -363,7 +366,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_enable_spi_event (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -448,7 +452,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h7f)
+    .RESVAL  (8'h7f),
+    .Mubi    (1'b0)
   ) u_control_rx_watermark (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -474,7 +479,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0)
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
   ) u_control_tx_watermark (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -500,7 +506,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_control_output_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -526,7 +533,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_control_sw_rst (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -552,7 +560,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_control_spien (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -580,7 +589,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (8'h0)
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
   ) u_status_txqd (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -606,7 +616,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (8'h0)
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
   ) u_status_rxqd (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -632,7 +643,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (4'h0)
+    .RESVAL  (4'h0),
+    .Mubi    (1'b0)
   ) u_status_cmdqd (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -658,7 +670,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_status_rxwm (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -684,7 +697,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_status_byteorder (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -710,7 +724,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_status_rxstall (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -736,7 +751,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_status_rxempty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -762,7 +778,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_status_rxfull (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -788,7 +805,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_status_txwm (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -814,7 +832,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_status_txstall (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -840,7 +859,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_status_txempty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -866,7 +886,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_status_txfull (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -892,7 +913,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_status_active (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -918,7 +940,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_status_ready (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -947,7 +970,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0)
+    .RESVAL  (16'h0),
+    .Mubi    (1'b0)
   ) u_configopts_clkdiv_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -973,7 +997,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0)
+    .RESVAL  (4'h0),
+    .Mubi    (1'b0)
   ) u_configopts_csnidle_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -999,7 +1024,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0)
+    .RESVAL  (4'h0),
+    .Mubi    (1'b0)
   ) u_configopts_csntrail_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1025,7 +1051,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0)
+    .RESVAL  (4'h0),
+    .Mubi    (1'b0)
   ) u_configopts_csnlead_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1051,7 +1078,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_configopts_fullcyc_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1077,7 +1105,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_configopts_cpha_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1103,7 +1132,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_configopts_cpol_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1130,7 +1160,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_csid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1227,7 +1258,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h1)
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
   ) u_error_enable_cmdbusy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1253,7 +1285,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h1)
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
   ) u_error_enable_overflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1279,7 +1312,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h1)
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
   ) u_error_enable_underflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1305,7 +1339,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h1)
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
   ) u_error_enable_cmdinval (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1331,7 +1366,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h1)
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
   ) u_error_enable_csidinval (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1359,7 +1395,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_error_status_cmdbusy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1385,7 +1422,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_error_status_overflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1411,7 +1449,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_error_status_underflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1437,7 +1476,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_error_status_cmdinval (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1463,7 +1503,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_error_status_csidinval (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1489,7 +1530,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_error_status_accessinval (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1517,7 +1559,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_event_enable_rxfull (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1543,7 +1586,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_event_enable_txempty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1569,7 +1613,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_event_enable_rxwm (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1595,7 +1640,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_event_enable_txwm (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1621,7 +1667,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_event_enable_ready (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1647,7 +1694,8 @@ module spi_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_event_enable_idle (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
