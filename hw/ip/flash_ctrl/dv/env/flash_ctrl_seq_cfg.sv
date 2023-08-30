@@ -77,6 +77,9 @@ class flash_ctrl_seq_cfg extends uvm_object;
   bit use_vendor_flash = 0;
   string vendor_flash_path = "";  // Use to indicate a vendor flash hierarchical path.
   bit exclude_info2 = 0;
+  // Used for expected_alert["fatal_err"].max_delay
+  // Vendor can use larger value
+  int long_fatal_err_delay = 2000;
 
   uint op_erase_type_bank_pc;
   uint op_prog_type_repair_pc;
