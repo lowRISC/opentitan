@@ -16,7 +16,8 @@ use crate::io::console::ConsoleDevice;
 
 #[derive(Clone, Debug, Args, Serialize, Deserialize)]
 pub struct UartParams {
-    #[arg(long, help = "UART instance", default_value = "CONSOLE")]
+    /// UART instance.
+    #[arg(long, default_value = "CONSOLE")]
     uart: String,
 
     /// UART baudrate.

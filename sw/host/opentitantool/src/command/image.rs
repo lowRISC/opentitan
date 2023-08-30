@@ -100,17 +100,15 @@ pub struct ManifestUpdateCommand {
     /// Filename for an external SPHINCS+ signature file.
     #[arg(short, long)]
     spx_signature: Option<PathBuf>,
-    #[arg(
-        long,
-        help = "Filename for the RSA PKCS8 key corresponding to the signature",
-        long_help = "Passing a private key indicates the key will be used for signing."
-    )]
+    /// Filename for the RSA PKCS8 key corresponding to the signature.
+    ///
+    /// Passing a private key indicates the key will be used for signing.
+    #[arg(long)]
     rsa_key: Option<PathBuf>,
-    #[arg(
-        long,
-        help = "Filename for the SPHINCS+ key corresponding to the signature",
-        long_help = "Passing a private key indicates the key will be used for signing."
-    )]
+    /// Filename for the SPHINCS+ key corresponding to the signature.
+    ///
+    /// Passing a private key indicates the key will be used for signing.
+    #[arg(long)]
     spx_key: Option<PathBuf>,
     /// Filename to write the output to instead of updating the input file.
     #[arg(short, long)]

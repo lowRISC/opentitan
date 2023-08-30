@@ -36,12 +36,8 @@ use opentitanlib::app::TransportWrapper;
 #[derive(Debug, Args)]
 /// No Operation.
 pub struct NoOp {
-    #[arg(
-        short = 'd',
-        long,
-        help = "Delay execution",
-        value_parser = humantime::parse_duration
-    )]
+    /// Delay execution.
+    #[arg(short = 'd', long, value_parser = humantime::parse_duration)]
     delay: Option<Duration>,
 }
 
