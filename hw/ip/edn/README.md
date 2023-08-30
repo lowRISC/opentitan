@@ -23,7 +23,7 @@ A primary objective of the EDN block is to provide a simpler hardware interface 
 - There are two interrupts that are supported:
   - CSRNG application command has completed.
   - An internal FIFO error has occurred.
-- There are two alerts that are implemented in is revision:
+- There are two alerts that are implemented in this revision:
   - A fatal alert to report common security fatal errors and EDN specific fatal errors. A list of fatal errors are listed in the [`ERR_CODE`](data/edn.hjson#err_code) register.
   - A recoverable alert to report recoverable error. A list of fatal errors are listed in the [`RECOV_ALERT_STS`](data/edn.hjson#recov_alert_sts) register.
 
