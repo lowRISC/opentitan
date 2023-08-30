@@ -28,7 +28,7 @@
     { name: "NumIntClearSources",
       desc: "Number of interrupt clearing sources to process",
       type: "int",
-      default: "5",
+      default: "8",
       local: "true"
     },
   ],
