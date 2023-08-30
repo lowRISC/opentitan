@@ -18,7 +18,7 @@ module dma
 ) (
   input logic                                       clk_i,
   input logic                                       rst_ni,
-  input logic                                       test_en_i,
+  input prim_mubi_pkg::mubi4_t                      scanmode_i,
   // DMA interrupts and incoming LSIO triggers
   output  logic                                     intr_dma_done_o,
   output  logic                                     intr_dma_error_o,
@@ -94,6 +94,10 @@ module dma
   logic [SYS_METADATA_WIDTH-1:0] src_metadata;
   assign src_metadata = SYS_METADATA_WIDTH'(1'b1) << OtAgentId;
 
+  // Decode scan mode enable MuBi signal.
+  logic scanmode;
+  assign scanmode = mubi4_test_true_strict(scanmode_i);
+
   // Combine the writes of multiregs to a single signal for clock gating control
   logic sw_int_source_wr;
   always_comb begin
@@ -161,7 +165,7 @@ module dma
   prim_clock_gating dma_clk_gate (
     .clk_i    ( clk_i        ),
     .en_i     ( gated_clk_en ),
-    .test_en_i( test_en_i    ),     ///< Test On to turn off the clock gating during test
+    .test_en_i( scanmode     ),     ///< Test On to turn off the clock gating during test
     .clk_o    ( gated_clk    )
   );
 
