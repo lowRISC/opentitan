@@ -8,6 +8,7 @@ from .trace import Trace
 
 
 class TraceRegister(Trace):
+
     def __init__(self, name: str, width: int, new_value: Optional[int]):
         self.name = name
         self.width = width
@@ -26,10 +27,8 @@ class TraceRegister(Trace):
 
 
 class Reg:
-    def __init__(self,
-                 parent: Optional['RegFile'],
-                 idx: int,
-                 width: int,
+
+    def __init__(self, parent: Optional['RegFile'], idx: int, width: int,
                  uval: int):
         assert 0 <= width
         assert 0 <= uval < (1 << width)
@@ -89,10 +88,8 @@ class RegFile:
     behavior.
 
     '''
-    def __init__(self,
-                 name_pfx: str,
-                 width: int,
-                 depth: int):
+
+    def __init__(self, name_pfx: str, width: int, depth: int):
         assert 0 <= width
         assert 0 <= depth
 
@@ -115,9 +112,9 @@ class RegFile:
         for idx in sorted(self._pending_writes):
             assert 0 <= idx < len(self._registers)
             next_val = self.get_reg(idx).read_next()
-            ret.append(TraceRegister('{}{:02}'.format(self._name_pfx, idx),
-                                     self._width,
-                                     next_val))
+            ret.append(
+                TraceRegister('{}{:02}'.format(self._name_pfx, idx),
+                              self._width, next_val))
         return ret
 
     def commit(self) -> None:

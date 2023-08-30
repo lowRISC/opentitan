@@ -613,10 +613,10 @@ def clean_odirs(odir, max_odirs, ts_format=TS_FORMAT):
     if not pdir.exists():
         return []
 
-    dirs = sorted([old for old in pdir.iterdir() if (old.is_dir() and
-                                                     old != 'summary')],
-                  key=os.path.getctime,
-                  reverse=True)
+    dirs = sorted(
+        [old for old in pdir.iterdir() if (old.is_dir() and old != 'summary')],
+        key=os.path.getctime,
+        reverse=True)
 
     for old in dirs[max(0, max_odirs - 1):]:
         shutil.rmtree(old, ignore_errors=True)

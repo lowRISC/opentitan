@@ -9,14 +9,13 @@ from shared.mem_layout import get_memory_layout
 
 from .config import Config
 from .init_data import InitData
-from .program import Program
 from .model import Model
-from .snippet_gens import SnippetGens
+from .program import Program
 from .snippet import Snippet
+from .snippet_gens import SnippetGens
 
 
-def gen_program(config: Config,
-                fuel: int,
+def gen_program(config: Config, fuel: int,
                 insns_file: InsnsFile) -> Tuple[InitData, Snippet, int]:
     '''Generate a random program for OTBN
 
@@ -52,8 +51,9 @@ def gen_program(config: Config,
     try:
         gens = SnippetGens(config, insns_file)
     except ValueError as err:
-        raise RuntimeError('Failed to initialise snippet generators: {}'
-                           .format(err)) from None
+        raise RuntimeError(
+            'Failed to initialise snippet generators: {}'.format(
+                err)) from None
 
     snippet, end_addr = gens.gen_program(model, program)
     return init_data, snippet, end_addr

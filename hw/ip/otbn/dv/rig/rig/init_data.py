@@ -8,6 +8,7 @@ from typing import Dict, List, Tuple
 
 class InitData:
     '''Initialised data, written to the random binary to be loaded.'''
+
     def __init__(self, values: Dict[int, int]):
         self._values = values
 
@@ -63,23 +64,23 @@ class InitData:
         init_data = {}
         for idx, item in enumerate(parsed):
             if not (isinstance(item, list) and len(item) == 2):
-                raise ValueError('Item {} of init_data is not a length 2 list.'
-                                 .format(item))
+                raise ValueError(
+                    'Item {} of init_data is not a length 2 list.'.format(
+                        item))
             addr, value = item
 
             if not (isinstance(addr, int) and isinstance(value, int)):
                 raise ValueError('Item {} of init_data has addr or value '
-                                 'that is not an int.'
-                                 .format(idx))
+                                 'that is not an int.'.format(idx))
 
             if addr < 0 or addr & 3:
                 raise ValueError('Item {} of init_data has '
-                                 'an invalid address, 0x{:x}.'
-                                 .format(idx, addr))
+                                 'an invalid address, 0x{:x}.'.format(
+                                     idx, addr))
             if not (0 <= value < (1 << 32)):
                 raise ValueError('Item {} of init_data has '
-                                 'invalid data ({} is not a u32).'
-                                 .format(idx, value))
+                                 'invalid data ({} is not a u32).'.format(
+                                     idx, value))
 
             init_data[addr] = value
 

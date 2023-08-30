@@ -7,9 +7,9 @@ from typing import Dict, List, Optional
 
 from shared.mem_layout import get_memory_layout
 
+from .constants import ErrBits, Status
 from .csr import CSRFile
 from .dmem import Dmem
-from .constants import ErrBits, Status
 from .edn_client import EdnClient
 from .ext_regs import OTBNExtRegs
 from .flags import FlagReg
@@ -78,6 +78,7 @@ class InitSecWipeState(IntEnum):
 
 
 class OTBNState:
+
     def __init__(self) -> None:
         self.gprs = GPRs()
         self.wdrs = RegFile('w', 256, 32)
@@ -232,9 +233,9 @@ class OTBNState:
         return c
 
     def executing(self) -> bool:
-        return self._fsm_state not in [FsmState.IDLE,
-                                       FsmState.LOCKED,
-                                       FsmState.MEM_SEC_WIPE]
+        return self._fsm_state not in [
+            FsmState.IDLE, FsmState.LOCKED, FsmState.MEM_SEC_WIPE
+        ]
 
     def wiping(self) -> bool:
         return self._fsm_state in [FsmState.WIPING_GOOD, FsmState.WIPING_BAD]
@@ -278,8 +279,9 @@ class OTBNState:
         # register) but nothing else. This is just an optimisation: if
         # everything is working properly, there won't be any other pending
         # changes.
-        if old_state not in [FsmState.EXEC,
-                             FsmState.WIPING_GOOD, FsmState.WIPING_BAD]:
+        if old_state not in [
+                FsmState.EXEC, FsmState.WIPING_GOOD, FsmState.WIPING_BAD
+        ]:
             return
 
         self.gprs.commit()
@@ -388,10 +390,11 @@ class OTBNState:
                 self.ext_regs.regs['WIPE_START'].commit()
 
                 # Switch to a 'wiping' state
-                self.set_fsm_state(FsmState.WIPING_BAD if should_lock
-                                   else FsmState.WIPING_GOOD)
-            elif self._fsm_state in [FsmState.WIPING_BAD,
-                                     FsmState.WIPING_GOOD]:
+                self.set_fsm_state(FsmState.WIPING_BAD
+                                   if should_lock else FsmState.WIPING_GOOD)
+            elif self._fsm_state in [
+                    FsmState.WIPING_BAD, FsmState.WIPING_GOOD
+            ]:
                 assert should_lock
                 self._next_fsm_state = FsmState.WIPING_BAD
             elif self._init_sec_wipe_state in [InitSecWipeState.IN_PROGRESS]:

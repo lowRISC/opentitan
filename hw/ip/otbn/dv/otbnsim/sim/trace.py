@@ -52,6 +52,7 @@ class Trace:
 
 
 class TracePC(Trace):
+
     def __init__(self, pc: int):
         self.pc = pc
 

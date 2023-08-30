@@ -4,12 +4,12 @@
 
 from typing import List, Optional, Sequence, Tuple
 
-from .trace import Trace
-
 from .ext_regs import OTBNExtRegs
+from .trace import Trace
 
 
 class TraceWSR(Trace):
+
     def __init__(self, wsr_name: str, new_value: Optional[int]):
         self.wsr_name = wsr_name
         self.new_value = new_value
@@ -29,6 +29,7 @@ class TraceWSR(Trace):
 
 class WSR:
     '''Models a Wide Status Register'''
+
     def __init__(self, name: str):
         self.name = name
         self._pending_write = False
@@ -77,6 +78,7 @@ class WSR:
 
 class DumbWSR(WSR):
     '''Models a WSR without special behavior'''
+
     def __init__(self, name: str):
         super().__init__(name)
         self._value = 0
@@ -123,6 +125,7 @@ class RandWSR(WSR):
     returns True if the value is available.
 
     '''
+
     def __init__(self, name: str, ext_regs: OTBNExtRegs):
         super().__init__(name)
 
@@ -206,10 +209,13 @@ class RandWSR(WSR):
 
 class URNDWSR(WSR):
     '''Models URND PRNG Structure'''
+
     def __init__(self, name: str):
         super().__init__(name)
-        seed = [0x84ddfadaf7e1134d, 0x70aa1c59de6197ff,
-                0x25a4fe335d095f1e, 0x2cba89acbe4a07e9]
+        seed = [
+            0x84ddfadaf7e1134d, 0x70aa1c59de6197ff, 0x25a4fe335d095f1e,
+            0x2cba89acbe4a07e9
+        ]
         self.state = [seed, 4 * [0], 4 * [0], 4 * [0], 4 * [0]]
         self.out = 4 * [0]
         self._next_value = None  # type: Optional[int]
@@ -284,6 +290,7 @@ class URNDWSR(WSR):
 
 
 class KeyTrace(Trace):
+
     def __init__(self, name: str, new_value: Optional[int]):
         self.name = name
         self.new_value = new_value
@@ -295,6 +302,7 @@ class KeyTrace(Trace):
 
 class SideloadKey:
     '''Represents a sideloaded key, with 384 bits of data and a valid signal'''
+
     def __init__(self, name: str):
         self.name = name
         self._value = None  # type: Optional[int]
@@ -334,6 +342,7 @@ class SideloadKey:
 
 
 class KeyWSR(WSR):
+
     def __init__(self, name: str, shift: int, key_reg: SideloadKey):
         assert 0 <= shift < 384
         super().__init__(name)
@@ -352,6 +361,7 @@ class KeyWSR(WSR):
 
 class WSRFile:
     '''A model of the WSR file'''
+
     def __init__(self, ext_regs: OTBNExtRegs) -> None:
         self.KeyS0 = SideloadKey('KeyS0')
         self.KeyS1 = SideloadKey('KeyS1')
@@ -441,8 +451,7 @@ class WSRFile:
         ret += self.KeyS1.changes()
         return ret
 
-    def set_sideload_keys(self,
-                          key0: Optional[int],
+    def set_sideload_keys(self, key0: Optional[int],
                           key1: Optional[int]) -> None:
         self.KeyS0.set_unsigned(key0)
         self.KeyS1.set_unsigned(key1)

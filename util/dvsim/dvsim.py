@@ -427,13 +427,14 @@ def parse_args():
                         help=('The options for each build_mode in this list '
                               'are applied to all build and run targets.'))
 
-    buildg.add_argument("--build-timeout-mins",
-                        type=int,
-                        metavar="MINUTES",
-                        help=('Wall-clock timeout for builds in minutes: if '
-                              'the build takes longer it will be killed. If '
-                              'GUI mode is enabled, this timeout mechanism will '
-                              'be disabled.'))
+    buildg.add_argument(
+        "--build-timeout-mins",
+        type=int,
+        metavar="MINUTES",
+        help=('Wall-clock timeout for builds in minutes: if '
+              'the build takes longer it will be killed. If '
+              'GUI mode is enabled, this timeout mechanism will '
+              'be disabled.'))
 
     disg.add_argument("--gui",
                       action='store_true',
@@ -576,11 +577,12 @@ def parse_args():
                              'includes both tests scheduled for run and those '
                              'that are automatically rerun.'))
 
-    waveg.add_argument("--dump-script",
-                       "-ds",
-                       help=('Use user define custom dump script file'
-                             'The custom file should be located in {proj_root}'
-                             'Default file is {proj_root}/hw/dv/tools/sim.tcl'))
+    waveg.add_argument(
+        "--dump-script",
+        "-ds",
+        help=('Use user define custom dump script file'
+              'The custom file should be located in {proj_root}'
+              'Default file is {proj_root}/hw/dv/tools/sim.tcl'))
 
     covg = parser.add_argument_group('Generating simulation coverage')
 
