@@ -10,12 +10,12 @@ All checklist items refer to the content in the [Checklist.](../../../../doc/pro
 Type          | Item                           | Resolution  | Note/Collaterals
 --------------|--------------------------------|-------------|------------------
 Documentation | [SPEC_COMPLETE][]              | WIP         | [KEYMGR_DPE Design Spec](../README.md)
-Documentation | [CSR_DEFINED][]                | WIP         |
-RTL           | [CLKRST_CONNECTED][]           | Not Started |
-RTL           | [IP_TOP][]                     | Not Started |
-RTL           | [IP_INSTANTIABLE][]            | Not Started |
+Documentation | [CSR_DEFINED][]                | Done        |
+RTL           | [CLKRST_CONNECTED][]           | Done        |
+RTL           | [IP_TOP][]                     | Done        |
+RTL           | [IP_INSTANTIABLE][]            | WIP         |
 RTL           | [PHYSICAL_MACROS_DEFINED_80][] | Not Started |
-RTL           | [FUNC_IMPLEMENTED][]           | Not Started |
+RTL           | [FUNC_IMPLEMENTED][]           | WIP         |
 RTL           | [ASSERT_KNOWN_ADDED][]         | Not Started |
 Code Quality  | [LINT_SETUP][]                 | Not Started |
 Security      | [SEC_CM_SCOPED][]              | Not Started |
@@ -145,7 +145,7 @@ Code Quality  | [TB_LINT_SETUP][]                     | Not Started |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | Not Started |
 Review        | [DESIGN_SPEC_REVIEWED][]              | Not Started |
 Review        | [TESTPLAN_REVIEWED][]                 | Not Started |
-Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Not Started | Exception (?)
+Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Not Started |
 Review        | [V2_CHECKLIST_SCOPED][]               | Not Started |
 
 [DV_DOC_DRAFT_COMPLETED]:             /doc/project_governance/checklist/README.md#dv_doc_draft_completed
