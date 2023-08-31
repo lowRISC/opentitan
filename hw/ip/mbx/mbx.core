@@ -19,7 +19,6 @@ filesets:
       - rtl/mbx_sysif.sv
       - rtl/mbx_sramrwarb.sv
       - rtl/mbx_fsm.sv
-      - rtl/mbx_wrsrm_req_ack.sv
       - rtl/mbx_ibmbx.sv
     file_type: systemVerilogSource
 
