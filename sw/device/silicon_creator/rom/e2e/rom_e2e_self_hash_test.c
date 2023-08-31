@@ -56,9 +56,9 @@ status_t hash_rom(void) {
       .data = (uint8_t *)TOP_EARLGREY_ROM_BASE_ADDR,
       .len = kGoldenRomSizeBytes,
   };
-  crypto_byte_buf_t output = {
-      .data = (uint8_t *)rom_hash,
-      .len = kSha256HashSizeInBytes,
+  crypto_word_buf_t output = {
+      .data = rom_hash,
+      .len = ARRAYSIZE(rom_hash),
   };
 
   TRY(otcrypto_hash(input, kHashModeSha256, &output));
