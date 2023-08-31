@@ -11,6 +11,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/json/provisioning_command.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
@@ -129,6 +130,59 @@ static status_t write_wafer_auth_secret_flash_info_page(
   return OK_STATUS();
 }
 
+status_t command_processor(ujson_t *uj,
+                           manuf_cp_provisioning_data_t *provisioning_data) {
+  while (true) {
+    LOG_INFO("Waiting for provisioning command from host ...");
+    cp_provisioning_command_t command;
+    TRY(ujson_deserialize_cp_provisioning_command_t(uj, &command));
+    switch (command) {
+      case kCpProvisioningCommandEraseAndWriteAll:
+        // Write DeviceId, ManufState, & WaferAuthSecret to flash info pages 0
+        // & 3, and write Test Unlock/Exit tokens to OTP secret0 partition.
+        CHECK_STATUS_OK(
+            erase_device_id_and_manuf_state_flash_info_page(provisioning_data));
+        CHECK_STATUS_OK(
+            erase_wafer_auth_secret_flash_info_page(provisioning_data));
+        CHECK_STATUS_OK(
+            write_device_id_and_manuf_state_flash_info_page(provisioning_data));
+        CHECK_STATUS_OK(
+            write_wafer_auth_secret_flash_info_page(provisioning_data));
+        CHECK_STATUS_OK(manuf_individualize_device_secret0(&lc_ctrl, &otp_ctrl,
+                                                           provisioning_data));
+        break;
+      case kCpProvisioningCommandFlashInfoEraseDeviceIdAndManufState:
+        CHECK_STATUS_OK(
+            erase_device_id_and_manuf_state_flash_info_page(provisioning_data));
+        break;
+      case kCpProvisioningCommandFlashInfoWriteDeviceIdAndManufState:
+        CHECK_STATUS_OK(
+            write_device_id_and_manuf_state_flash_info_page(provisioning_data));
+        break;
+      case kCpProvisioningCommandFlashInfoEraseWaferAuthSecret:
+        CHECK_STATUS_OK(
+            erase_wafer_auth_secret_flash_info_page(provisioning_data));
+        break;
+      case kCpProvisioningCommandFlashInfoWriteWaferAuthSecret:
+        CHECK_STATUS_OK(
+            write_wafer_auth_secret_flash_info_page(provisioning_data));
+        break;
+      case kCpProvisioningCommandOtpSecret0WriteAndLock:
+        CHECK_STATUS_OK(manuf_individualize_device_secret0(&lc_ctrl, &otp_ctrl,
+                                                           provisioning_data));
+        break;
+      case kCpProvisioningCommandDone:
+        return RESP_OK_STATUS(uj);
+      default:
+        LOG_ERROR("Unrecognized command: %d", command);
+        RESP_ERR(uj, INVALID_ARGUMENT());
+    }
+    RESP_OK_STATUS(uj);
+  }
+  // We should never reach here.
+  return INTERNAL();
+}
+
 bool sram_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
   pinmux_testutils_init(&pinmux);
@@ -150,17 +204,8 @@ bool sram_main(void) {
   // done before provisioning the test unlock/exit tokens below, as these write
   // to a scrambled (SECRET0) partition, which requires entropy.
 
-  // Write DeviceId, ManufState, & WaferAuthSecret to flash info pages 0 & 3.
-  CHECK_STATUS_OK(
-      erase_device_id_and_manuf_state_flash_info_page(&provisioning_data));
-  CHECK_STATUS_OK(erase_wafer_auth_secret_flash_info_page(&provisioning_data));
-  CHECK_STATUS_OK(
-      write_device_id_and_manuf_state_flash_info_page(&provisioning_data));
-  CHECK_STATUS_OK(write_wafer_auth_secret_flash_info_page(&provisioning_data));
-
-  // Write Test Unlock/Exit tokens to OTP.
-  CHECK_STATUS_OK(manuf_individualize_device_secret0(&lc_ctrl, &otp_ctrl,
-                                                     &provisioning_data));
+  // Process provisioning commands.
+  CHECK_STATUS_OK(command_processor(&uj, &provisioning_data));
 
   LOG_INFO("CP provisioning end.");
 
