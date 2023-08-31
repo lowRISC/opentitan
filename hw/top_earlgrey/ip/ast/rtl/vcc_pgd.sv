@@ -24,22 +24,15 @@ assign gen_supp_a = 1'b1;
 ////////////////////////////////////////
 // The initial is needed to clear the X of the delays at the start
 // Also to force a power-up effect at the bgining.
-logic init_start;
-
 initial begin
-  init_start = 1'b1; #1;
-  init_start = 1'b0;
-end
-
-always (* xprop_off *) @( * ) begin
-  if ( init_start ) begin
-    vcc_pok_o <= 1'b0;
-  end
-  if ( !init_start && gen_supp_a ) begin
-    vcc_pok_o <= #(ast_bhv_pkg::VCC_POK_RDLY) gen_supp_a;
-  end
-  if ( !init_start && !gen_supp_a ) begin
-    vcc_pok_o <= #(ast_bhv_pkg::VCC_POK_FDLY) gen_supp_a;
+  #1; // Wait until the assignment to gen_supp_a has happened above
+  vcc_pok_o = 1'b0;
+  if (gen_supp_a) begin
+    #(ast_bhv_pkg::VCC_POK_RDLY);
+    vcc_pok_o = 1'b1;
+  end else begin
+    #(ast_bhv_pkg::VCC_POK_FDLY);
+    vcc_pok_o = 1'b0;
   end
 end
 `else
