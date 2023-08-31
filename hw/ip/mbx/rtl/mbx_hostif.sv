@@ -35,21 +35,21 @@ module mbx_hostif
   input  logic                        hostif_status_async_msg_status_i,
   input  logic                        hostif_status_ready_i,
   // Access to the IB/OB RD/WR pointers
-  input  logic [CfgSramAddrWidth-1:0] hostif_ib_write_ptr_i,
-  input  logic [CfgSramAddrWidth-1:0] hostif_ob_read_ptr_i,
+  input  logic [CfgSramAddrWidth-1:0] hostif_imbx_write_ptr_i,
+  input  logic [CfgSramAddrWidth-1:0] hostif_ombx_read_ptr_i,
   // Base/Limit for in/outbound mailbox
   output logic                        hostif_address_range_valid_o,
-  output logic [CfgSramAddrWidth-1:0] hostif_ib_base_o,
-  output logic [CfgSramAddrWidth-1:0] hostif_ib_limit_o,
-  output logic [CfgSramAddrWidth-1:0] hostif_ob_base_o,
-  output logic [CfgSramAddrWidth-1:0] hostif_ob_limit_o,
+  output logic [CfgSramAddrWidth-1:0] hostif_imbx_base_o,
+  output logic [CfgSramAddrWidth-1:0] hostif_imbx_limit_o,
+  output logic [CfgSramAddrWidth-1:0] hostif_ombx_base_o,
+  output logic [CfgSramAddrWidth-1:0] hostif_ombx_limit_o,
   // Read/Write access for the OB DW Count register
-  output logic                        hostif_write_ob_object_size_o,
-  output logic [10:0]                 hostif_ob_object_size_o,
-  input  logic [10:0]                 hostif_ob_object_size_i,
-  input  logic                        hostif_read_ob_object_size_i,
+  output logic                        hostif_ombx_object_size_write_o,
+  output logic [10:0]                 hostif_ombx_object_size_o,
+  input  logic                        hostif_ombx_object_size_read_i,
+  input  logic [10:0]                 hostif_ombx_object_size_i,
   // Control inputs coming from the system registers interface
-  input  logic                        sysif_write_control_abort_i
+  input  logic                        sysif_control_abort_write_i
 );
   mbx_reg_pkg::mbx_host_reg2hw_t reg2hw;
   mbx_reg_pkg::mbx_host_hw2reg_t hw2reg;
@@ -113,7 +113,7 @@ module mbx_hostif
   always_comb begin
     abort_d = abort_q;
 
-    if (sysif_write_control_abort_i) begin
+    if (sysif_control_abort_write_i) begin
       abort_d = 1'b1;
     end else if (hostif_control_abort_set_o) begin
       abort_d = 1'b0;
@@ -152,22 +152,22 @@ module mbx_hostif
   assign hostif_address_range_valid_o = reg2hw.address_range_valid.q;
 
   // Inbound Mailbox Base/Limit Register
-  assign  hostif_ib_base_o  = { reg2hw.inbound_base_address.q, {2{1'b0}} };
-  assign  hostif_ib_limit_o = { reg2hw.inbound_limit_address.q, {2{1'b0}} };
+  assign  hostif_imbx_base_o  = { reg2hw.inbound_base_address.q, {2{1'b0}} };
+  assign  hostif_imbx_limit_o = { reg2hw.inbound_limit_address.q, {2{1'b0}} };
 
   // Outbound Mailbox Base/Limit Register
-  assign  hostif_ob_base_o  = { reg2hw.outbound_base_address.q, {2{1'b0}} };
-  assign  hostif_ob_limit_o = { reg2hw.outbound_limit_address.q, {2{1'b0}} };
+  assign  hostif_ombx_base_o  = { reg2hw.outbound_base_address.q, {2{1'b0}} };
+  assign  hostif_ombx_limit_o = { reg2hw.outbound_limit_address.q, {2{1'b0}} };
 
   // Read/Write pointers
-  assign  hw2reg.inbound_write_ptr.d  = hostif_ib_write_ptr_i[CfgSramAddrWidth-1:2];
-  assign  hw2reg.outbound_read_ptr.d  = hostif_ob_read_ptr_i[CfgSramAddrWidth-1:2];
+  assign  hw2reg.inbound_write_ptr.d = hostif_imbx_write_ptr_i[CfgSramAddrWidth-1:2];
+  assign  hw2reg.outbound_read_ptr.d = hostif_ombx_read_ptr_i[CfgSramAddrWidth-1:2];
 
   // Outbound object size Register
   // External read logic
-  assign  hw2reg.outbound_object_size.d   = hostif_ob_object_size_i;
-  assign  hw2reg.outbound_object_size.de  = hostif_read_ob_object_size_i;
+  assign  hw2reg.outbound_object_size.d   = hostif_ombx_object_size_i;
+  assign  hw2reg.outbound_object_size.de  = hostif_ombx_object_size_read_i;
   // External write logic
-  assign  hostif_write_ob_object_size_o = reg2hw.outbound_object_size.qe;
-  assign  hostif_ob_object_size_o       = reg2hw.outbound_object_size.q;
+  assign  hostif_ombx_object_size_write_o = reg2hw.outbound_object_size.qe;
+  assign  hostif_ombx_object_size_o       = reg2hw.outbound_object_size.q;
 endmodule
