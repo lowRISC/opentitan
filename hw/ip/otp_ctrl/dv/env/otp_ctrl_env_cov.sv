@@ -326,36 +326,53 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
     end
   endfunction
 
-  function void collect_err_code_cov(bit [TL_DW-1:0] val, int part_idx = DaiIdx);
+  // Collect coverage for err_code when it is a compact multi-reg. For DAI error it uses the given
+  // access_part_idx as the target of the DAI access.
+  function void collect_compact_err_code_cov(bit [TL_DW-1:0] val, int access_part_idx = DaiIdx);
     dv_base_reg_field err_code_flds[$];
-    for (int k = 0; k <= OtpLciErrIdx; k++) begin
-      cfg.ral.err_code[k].get_dv_base_reg_fields(err_code_flds);
-      collect_err_code_field_cov(k, get_field_val(err_code_flds[0], val), part_idx);
+    cfg.ral.err_code[0].get_dv_base_reg_fields(err_code_flds);
+    foreach (err_code_flds[part]) begin
+      collect_err_code_cov(part, get_field_val(err_code_flds[part], val), access_part_idx);
     end
   endfunction
 
-  // Collect coverage according to the field_index. For DAI index, user needs to input
-  // which partition causes the DAI error. Default part_idx `DaiIdx` won't be collected.
-  function void collect_err_code_field_cov(int field_idx, bit [TL_DW-1:0] val,
-                                           int part_idx = DaiIdx);
-    case (field_idx)
-      OtpVendorTestErrIdx, OtpCreatorSwCfgErrIdx, OtpOwnerSwCfgErrIdx: begin
-        unbuf_err_code_cg_wrap[field_idx].unbuf_err_code_cg.sample(val);
+  // Collect coverage for a given partition error_code. For DAI error it uses the given
+  // access_part_idx as the target of the DAI access.
+  function void collect_err_code_cov(int part_idx, bit [TL_DW-1:0] val,
+                                     int access_part_idx = DaiIdx);
+    case (part_idx)
+      OtpVendorTestErrIdx: begin
+        unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
-      OtpHwCfg0ErrIdx, OtpHwCfg1ErrIdx, OtpSecret0ErrIdx, OtpSecret1ErrIdx, OtpSecret2ErrIdx,
-      OtpSecret3ErrIdx, OtpLifeCycleErrIdx: begin
-        buf_err_code_cg_wrap[field_idx - NumPartUnbuf].buf_err_code_cg.sample(val);
+      OtpCreatorSwCfgErrIdx: begin
+        unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
+      end
+      OtpOwnerSwCfgErrIdx: begin
+        unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
+      end
+      OtpHwCfg0ErrIdx: begin
+        buf_err_code_cg_wrap[part_idx - NumPartUnbuf].buf_err_code_cg.sample(val);
+      end
+      OtpSecret0ErrIdx: begin
+        buf_err_code_cg_wrap[part_idx - NumPartUnbuf].buf_err_code_cg.sample(val);
+      end
+      OtpSecret1ErrIdx: begin
+        buf_err_code_cg_wrap[part_idx - NumPartUnbuf].buf_err_code_cg.sample(val);
+      end
+      OtpSecret2ErrIdx: begin
+        buf_err_code_cg_wrap[part_idx - NumPartUnbuf].buf_err_code_cg.sample(val);
+      end
+      OtpLifeCycleErrIdx: begin
       end
       OtpDaiErrIdx: begin
-        dai_err_code_cg.sample(val, part_idx);
+        dai_err_code_cg.sample(val, access_part_idx);
       end
       OtpLciErrIdx: begin
         lci_err_code_cg.sample(val);
       end
       default: begin
-        `uvm_fatal(`gfn, $sformatf("invalid err_code index %0d", field_idx))
+        `uvm_fatal(`gfn, $sformatf("invalid err_code index %0d", part_idx))
       end
     endcase
   endfunction
-
 endclass

@@ -940,18 +940,23 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           end
         end
       end
+      // For error codes, if lc_prog in progress, err_code might update anytime in DUT. Ignore
+      // checking until req is acknowledged.
+
 % for k in range(num_err_code):
-      "err_code_${k}"${": begin" if loop.last else ","}
-% endfor
-        // If lc_prog in progress, err_code might update anytime in DUT. Ignore checking until req
-        // is acknowledged.
+<%
+  # This code should depend on whether the error code is compact. This
+  # assumes it is not compact.
+%>\
+      "err_code_${k}": begin
         if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
-        if (cfg.en_cov && do_read_check) begin
+        if (cfg.en_cov && do_read_check && data_phase_read) begin
           bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
-          int part_idx = get_part_index(dai_addr);
-          cov.collect_err_code_cov(item.d_data, part_idx);
+          int access_part_idx = get_part_index(dai_addr);
+          cov.collect_err_code_cov(${k}, item.d_data, access_part_idx);
         end
       end
+% endfor
 % for part in write_locked_digest_parts:
 <% part_name_snake = Name.from_snake_case(part["name"]).as_snake_case() %>\
       "${part_name_snake}_digest_0", "${part_name_snake}_digest_1"${": begin" if loop.last else ","}
