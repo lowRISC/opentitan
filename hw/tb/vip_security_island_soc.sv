@@ -7,8 +7,11 @@
 // collects all existing verification ip (vip) for carfield SoC
 
 module vip_security_island_soc
+<<<<<<< HEAD
   import carfield_pkg::*;
   import cheshire_pkg::*;
+=======
+>>>>>>> 504e8530a (Added EOC register to stop simulation from TB.)
 #(
   // Timing
   parameter time         ClkPeriodSys      = 10ns,
@@ -326,7 +329,10 @@ module vip_security_island_soc
 	     do jtag_secd_dbg.read_dmi(dm_ot::SBCS, sbcs);
 	     while (sbcs.sbbusy);
        jtag_secd_dbg.read_dmi(dm_ot::SBData0, retval);
+<<<<<<< HEAD
        $display(retval);
+=======
+>>>>>>> 504e8530a (Added EOC register to stop simulation from TB.)
        # 400ns;
     end while (~retval[0]);
 
@@ -336,7 +342,11 @@ module vip_security_island_soc
     $finish;
 
   endtask // jtag_read_eoc
+<<<<<<< HEAD
 
+=======
+/*
+>>>>>>> 504e8530a (Added EOC register to stop simulation from TB.)
   //////////
   // UART //
   //////////
@@ -510,5 +520,9 @@ module vip_security_island_soc
     if (exit_code) $error("[UART] FAILED: return code %0d", exit_code);
     else $display("[UART] SUCCESS");
   endtask
+<<<<<<< HEAD
  
+=======
+*/ 
+>>>>>>> 504e8530a (Added EOC register to stop simulation from TB.)
 endmodule

@@ -98,24 +98,27 @@ static void run_test(const dif_hmac_t *hmac, const char *data, size_t len,
 }
 
 bool test_main(void) {
-  LOG_INFO("Running HMAC DIF test...");
+  //LOG_INFO("Running HMAC DIF test...");
 
+  int volatile * a;
   dif_hmac_t hmac;
   test_setup(mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR), &hmac);
-
-  LOG_INFO("Running test SHA256 pass 1...");
+  
+  //LOG_INFO("Running test SHA256 pass 1...");
   run_test(&hmac, kData, sizeof(kData), NULL, &kExpectedShaDigest);
 
-  LOG_INFO("Running test SHA256 pass 2...");
+  //LOG_INFO("Running test SHA256 pass 2...");
   run_test(&hmac, kData, sizeof(kData), NULL, &kExpectedShaDigest);
 
-  LOG_INFO("Running test HMAC pass 1...");
+  //LOG_INFO("Running test HMAC pass 1...");
   run_test(&hmac, kData, sizeof(kData), (uint8_t *)(&kHmacKey[0]),
            &kExpectedHmacDigest);
 
-  LOG_INFO("Running test HMAC pass 2...");
+  //LOG_INFO("Running test HMAC pass 2...");
   run_test(&hmac, kData, sizeof(kData), (uint8_t *)(&kHmacKey[0]),
            &kExpectedHmacDigest);
-
+  a = (int *) 0xc11c0018;
+  *a = 0x1;
+  
   return true;
 }

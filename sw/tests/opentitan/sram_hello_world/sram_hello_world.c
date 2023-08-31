@@ -10,7 +10,7 @@
 //
 //
 
-#include "hw/top_earlgrey/sw/tests/common/utils.h"
+//#include "hw/top_earlgrey/sw/tests/common/utils.h"
 //#include "/sw/device/tests/hmac_smoketest.c"
 #include <stdbool.h>
 
