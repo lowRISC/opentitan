@@ -31,6 +31,7 @@ package dma_env_pkg;
   parameter uint CTN_DATA_WIDTH = 32;
   parameter uint HOST_ADDR_WIDTH = 32;
   parameter uint HOST_DATA_WIDTH = 32;
+  parameter uint SYS_ADDR_WIDTH = 64;
 
   // Index of interrupt in intf_vif
   parameter uint DMA_DONE = 0;

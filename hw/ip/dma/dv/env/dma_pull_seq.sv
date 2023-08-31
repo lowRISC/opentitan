@@ -2,9 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class dma_pull_seq extends tl_device_seq;
+class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrWidth));
 
-  `uvm_object_utils(dma_pull_seq)
+  `uvm_object_param_utils(dma_pull_seq#(AddrWidth))
+
+  // FIFO enable bits
+  bit read_fifo_en;
+  bit write_fifo_en;
+  // FIFO instance
+  dma_handshake_mode_fifo #(AddrWidth) fifo;
 
   function new (string name = "");
     super.new(name);
@@ -14,8 +20,31 @@ class dma_pull_seq extends tl_device_seq;
 
   virtual function void update_mem(REQ rsp);
     bit [65:0] intg;
-
-    super.update_mem(rsp);
+    if (mem != null) begin
+      if (rsp.a_opcode inside {PutFullData, PutPartialData}) begin
+        bit [tl_agent_pkg::DataWidth-1:0] data;
+        data = rsp.a_data;
+        for (int i = 0; i < $bits(rsp.a_mask); i++) begin
+          if (rsp.a_mask[i]) begin
+            if (write_fifo_en) begin
+              fifo.write_byte(rsp.a_addr + i, data[7:0]);
+            end else begin
+              mem.write_byte(rsp.a_addr + i, data[7:0]);
+            end
+          end
+          data = data >> 8;
+        end
+      end else begin
+        for (int i = 2**rsp.a_size - 1; i >= 0; i--) begin
+          rsp.d_data = rsp.d_data << 8;
+          if (read_fifo_en) begin
+            rsp.d_data[7:0] = fifo.read_byte(rsp.a_addr+i);
+          end else begin
+            rsp.d_data[7:0] = mem.read_byte(rsp.a_addr+i);
+          end
+        end
+      end
+    end
     intg = prim_secded_pkg::prim_secded_inv_64_57_enc({51'b0,
                                                        rsp.d_opcode,
                                                        rsp.d_size,
