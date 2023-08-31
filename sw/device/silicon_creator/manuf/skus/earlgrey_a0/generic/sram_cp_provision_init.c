@@ -61,37 +61,71 @@ static status_t peripheral_handles_init(void) {
   return OK_STATUS();
 }
 
-static status_t write_flash_info_fields(
+static status_t erase_device_id_and_manuf_state_flash_info_page(
     manuf_cp_provisioning_data_t *provisioning_data) {
-  const flash_info_field_t fields[kNumFlashInfoFields] = {
-      kFlashInfoFieldDeviceId, kFlashInfoFieldManufState,
-      kFlashInfoFieldWaferAuthSecret};
-  const uint32_t *data[kNumFlashInfoFields] = {
-      provisioning_data->device_id, provisioning_data->manuf_state,
-      provisioning_data->wafer_auth_secret};
-  const uint32_t data_sizes[kNumFlashInfoFields] = {
-      kHwCfgDeviceIdSizeIn32BitWords, kHwCfgManufStateSizeIn32BitWords,
-      kFlashInfoWaferAuthSecretSizeIn32BitWords};
-  uint32_t byte_address;
+  uint32_t byte_address = 0;
+  // DeviceId and ManufState are located on the same flash info page.
+  TRY(flash_ctrl_testutils_info_region_setup(
+      &flash_ctrl_state, kFlashInfoFieldDeviceId.page,
+      kFlashInfoFieldDeviceId.bank, kFlashInfoFieldDeviceId.partition,
+      &byte_address));
+  TRY(flash_ctrl_testutils_erase_page(&flash_ctrl_state, byte_address,
+                                      kFlashInfoFieldDeviceId.partition,
+                                      kDifFlashCtrlPartitionTypeInfo));
+  return OK_STATUS();
+}
 
-  for (size_t i = 0; i < ARRAYSIZE(fields); ++i) {
-    byte_address = 0;
-    TRY(flash_ctrl_testutils_info_region_setup(
-        &flash_ctrl_state, fields[i].page, fields[i].bank, fields[i].partition,
-        &byte_address));
-    // We skip the erasing of the ManufState (at index 1 in the arrays above)
-    // field page as this field shares a page with the DeviceId field.
-    if (i == 1) {
-      TRY(flash_ctrl_testutils_write(
-          &flash_ctrl_state, byte_address, fields[i].partition, data[i],
-          kDifFlashCtrlPartitionTypeInfo, data_sizes[i]));
-    } else {
-      TRY(flash_ctrl_testutils_erase_and_write_page(
-          &flash_ctrl_state, byte_address, fields[i].partition, data[i],
-          kDifFlashCtrlPartitionTypeInfo, data_sizes[i]));
-    }
-  }
+static status_t write_device_id_and_manuf_state_flash_info_page(
+    manuf_cp_provisioning_data_t *provisioning_data) {
+  // Write DeviceId.
+  uint32_t byte_address = 0;
+  TRY(flash_ctrl_testutils_info_region_setup(
+      &flash_ctrl_state, kFlashInfoFieldDeviceId.page,
+      kFlashInfoFieldDeviceId.bank, kFlashInfoFieldDeviceId.partition,
+      &byte_address));
+  TRY(flash_ctrl_testutils_write(
+      &flash_ctrl_state, byte_address, kFlashInfoFieldDeviceId.partition,
+      provisioning_data->device_id, kDifFlashCtrlPartitionTypeInfo,
+      kHwCfgDeviceIdSizeIn32BitWords));
 
+  // Write ManufState.
+  byte_address = 0;
+  TRY(flash_ctrl_testutils_info_region_setup(
+      &flash_ctrl_state, kFlashInfoFieldManufState.page,
+      kFlashInfoFieldManufState.bank, kFlashInfoFieldManufState.partition,
+      &byte_address));
+  TRY(flash_ctrl_testutils_write(
+      &flash_ctrl_state, byte_address, kFlashInfoFieldManufState.partition,
+      provisioning_data->manuf_state, kDifFlashCtrlPartitionTypeInfo,
+      kHwCfgManufStateSizeIn32BitWords));
+
+  return OK_STATUS();
+}
+
+static status_t erase_wafer_auth_secret_flash_info_page(
+    manuf_cp_provisioning_data_t *provisioning_data) {
+  uint32_t byte_address = 0;
+  TRY(flash_ctrl_testutils_info_region_setup(
+      &flash_ctrl_state, kFlashInfoFieldWaferAuthSecret.page,
+      kFlashInfoFieldWaferAuthSecret.bank,
+      kFlashInfoFieldWaferAuthSecret.partition, &byte_address));
+  TRY(flash_ctrl_testutils_erase_page(&flash_ctrl_state, byte_address,
+                                      kFlashInfoFieldWaferAuthSecret.partition,
+                                      kDifFlashCtrlPartitionTypeInfo));
+  return OK_STATUS();
+}
+
+static status_t write_wafer_auth_secret_flash_info_page(
+    manuf_cp_provisioning_data_t *provisioning_data) {
+  uint32_t byte_address = 0;
+  TRY(flash_ctrl_testutils_info_region_setup(
+      &flash_ctrl_state, kFlashInfoFieldWaferAuthSecret.page,
+      kFlashInfoFieldWaferAuthSecret.bank,
+      kFlashInfoFieldWaferAuthSecret.partition, &byte_address));
+  TRY(flash_ctrl_testutils_write(
+      &flash_ctrl_state, byte_address, kFlashInfoFieldWaferAuthSecret.partition,
+      provisioning_data->manuf_state, kDifFlashCtrlPartitionTypeInfo,
+      kFlashInfoWaferAuthSecretSizeIn32BitWords));
   return OK_STATUS();
 }
 
@@ -117,7 +151,12 @@ bool sram_main(void) {
   // to a scrambled (SECRET0) partition, which requires entropy.
 
   // Write DeviceId, ManufState, & WaferAuthSecret to flash info pages 0 & 3.
-  CHECK_STATUS_OK(write_flash_info_fields(&provisioning_data));
+  CHECK_STATUS_OK(
+      erase_device_id_and_manuf_state_flash_info_page(&provisioning_data));
+  CHECK_STATUS_OK(erase_wafer_auth_secret_flash_info_page(&provisioning_data));
+  CHECK_STATUS_OK(
+      write_device_id_and_manuf_state_flash_info_page(&provisioning_data));
+  CHECK_STATUS_OK(write_wafer_auth_secret_flash_info_page(&provisioning_data));
 
   // Write Test Unlock/Exit tokens to OTP.
   CHECK_STATUS_OK(manuf_individualize_device_secret0(&lc_ctrl, &otp_ctrl,
