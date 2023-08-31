@@ -78,9 +78,12 @@ uint32_t call_aes_gcm_encrypt(aes_gcm_test_t test) {
   // Set the checksum.
   key.checksum = integrity_blinded_checksum(&key);
 
-  crypto_const_byte_buf_t iv = {
-      .data = test.iv,
-      .len = test.iv_len,
+  size_t iv_num_words = (test.iv_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
+  uint32_t iv_data[iv_num_words];
+  memcpy(iv_data, test.iv, test.iv_len);
+  crypto_const_word_buf_t iv = {
+      .data = iv_data,
+      .len = iv_num_words,
   };
   crypto_const_byte_buf_t plaintext = {
       .data = test.plaintext,
@@ -151,9 +154,12 @@ uint32_t call_aes_gcm_decrypt(aes_gcm_test_t test, bool tag_valid) {
   // Set the checksum.
   key.checksum = integrity_blinded_checksum(&key);
 
-  crypto_const_byte_buf_t iv = {
-      .data = test.iv,
-      .len = test.iv_len,
+  size_t iv_num_words = (test.iv_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
+  uint32_t iv_data[iv_num_words];
+  memcpy(iv_data, test.iv, test.iv_len);
+  crypto_const_word_buf_t iv = {
+      .data = iv_data,
+      .len = iv_num_words,
   };
   crypto_const_byte_buf_t ciphertext = {
       .data = test.ciphertext,

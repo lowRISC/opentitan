@@ -28,7 +28,7 @@ extern "C" {
  * This implementation does not support short tags.
  *
  * @param key AES key
- * @param iv_len length of IV in bytes
+ * @param iv_len length of IV in 32-bit words
  * @param iv IV value (may be NULL if iv_len is 0)
  * @param plaintext_len length of plaintext in bytes
  * @param plaintext plaintext value (may be NULL if plaintext_len is 0)
@@ -42,7 +42,7 @@ extern "C" {
  */
 OT_WARN_UNUSED_RESULT
 status_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
-                         const uint8_t *iv, const size_t plaintext_len,
+                         const uint32_t *iv, const size_t plaintext_len,
                          const uint8_t *plaintext, const size_t aad_len,
                          const uint8_t *aad, const size_t tag_len, uint8_t *tag,
                          uint8_t *ciphertext);
@@ -66,7 +66,7 @@ status_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
  * `success`.
  *
  * @param key AES key
- * @param iv_len length of IV in bytes
+ * @param iv_len length of IV in 32-bit words
  * @param iv IV value (may be NULL if iv_len is 0)
  * @param ciphertext_len length of ciphertext in bytes
  * @param ciphertext plaintext value (may be NULL if ciphertext_len is 0)
@@ -80,7 +80,7 @@ status_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
  */
 OT_WARN_UNUSED_RESULT
 status_t aes_gcm_decrypt(const aes_key_t key, const size_t iv_len,
-                         const uint8_t *iv, const size_t ciphertext_len,
+                         const uint32_t *iv, const size_t ciphertext_len,
                          const uint8_t *ciphertext, const size_t aad_len,
                          const uint8_t *aad, const size_t tag_len,
                          const uint8_t *tag, uint8_t *plaintext,
