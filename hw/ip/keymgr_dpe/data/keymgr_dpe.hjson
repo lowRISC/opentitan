@@ -57,19 +57,19 @@
       type:    "uni",
       name:    "aes_key",     // aes_key_o (req)
       act:     "req",
-      package: "keymgr_dpe_pkg",  // Origin package (only needs for the requester)
+      package: "keymgr_pkg",  // Origin package (only needs for the requester)
     },
     { struct:  "hw_key_req",  // kmac_key_req_t
       type:    "uni",
       name:    "kmac_key",    // kmac_key_o (req)
       act:     "req",
-      package: "keymgr_dpe_pkg",  // Origin package (only needs for the requester)
+      package: "keymgr_pkg",  // Origin package (only needs for the requester)
     },
     { struct:  "otbn_key_req",
       type:    "uni",
       name:    "otbn_key",
       act:     "req",
-      package: "keymgr_dpe_pkg",
+      package: "keymgr_pkg",
     },
     { struct:  "app",   // kmac_pkg::app_req_t, kmac_pkg::app_rsp_t
       type:    "req_rsp",
@@ -113,6 +113,8 @@
       name:    "rom_digest"
       act:     "rcv"
       package: "rom_ctrl_pkg"
+      width:   "2"
+      default: "rom_ctrl_pkg::KEYMGR_DATA_DEFAULT"
     },
     { struct:  "logic"
       type:    "uni"
@@ -122,6 +124,18 @@
   ],
 
   param_list: [
+    { name:      "UseOtpSeedsInsteadOfFlash",
+      desc:      '''
+                 Flag indicating whether to use the creator / owner seeds provided
+                 via otp_key_i instead of the the ones provided in flash_i. This option
+                 can be used in integrations where that do not have an embedded flash
+                 controller (in which case flash_i should just be tied off).
+                 ''',
+      type:      "bit",
+      default:   "0",
+      local:     "false",
+      expose:    "true",
+    }
     { name:      "KmacEnMasking",
       desc:      "Flag indicating with kmac masking is enabled",
       type:      "bit",
@@ -150,27 +164,6 @@
     }
     { name:      "RndCnstRevisionSeed",
       desc:      "Compile-time random bits for revision seed",
-      type:      "keymgr_pkg::seed_t"
-      randcount: "256",
-      randtype:  "data",
-    },
-
-    { name:      "RndCnstCreatorIdentitySeed",
-      desc:      "Compile-time random bits for creator identity seed",
-      type:      "keymgr_pkg::seed_t"
-      randcount: "256",
-      randtype:  "data",
-    },
-
-    { name:      "RndCnstOwnerIntIdentitySeed",
-      desc:      "Compile-time random bits for owner intermediate identity seed",
-      type:      "keymgr_pkg::seed_t"
-      randcount: "256",
-      randtype:  "data",
-    },
-
-    { name:      "RndCnstOwnerIdentitySeed",
-      desc:      "Compile-time random bits for owner identity seed",
       type:      "keymgr_pkg::seed_t"
       randcount: "256",
       randtype:  "data",
@@ -211,13 +204,6 @@
       randtype:  "data",
     },
 
-    { name:      "RndCnstCdi",
-      desc:      "Compile-time random bits for generation seed when no CDI is selected",
-      type:      "keymgr_pkg::seed_t"
-      randcount: "256",
-      randtype:  "data",
-    },
-
     { name:      "RndCnstNoneSeed",
       desc:      "Compile-time random bits for generation seed when no destination selected",
       type:      "keymgr_pkg::seed_t"
@@ -246,6 +232,12 @@
       desc: "Number of Registers for key version",
       type: "int",
       default: "1",
+      local: "true"
+    },
+    { name: "NumRomDigestInputs",
+      desc: "Number of digest inputs from ROM_CTRL",
+      type: "int",
+      default: "2",
       local: "true"
     },
   ],
@@ -531,7 +523,7 @@ countermeasures: [
           ]
         },
 
-        { bits: "17:14",
+        { bits: "15:14",
           name: "SLOT_SRC_SEL",
           resval: "0x0"
           desc: '''
@@ -539,7 +531,7 @@ countermeasures: [
           '''
         },
 
-        { bits: "21:18",
+        { bits: "19:18",
           name: "SLOT_DST_SEL",
           resval: "0x0"
           desc: '''
