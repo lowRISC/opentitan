@@ -181,18 +181,19 @@
       reseed: 40
     }
      {
-      name: jtag_dmi_cmderr_busy
+      name: rv_dm_cmderr_busy
       uvm_test_seq: rv_dm_cmderr_busy_vseq
       reseed: 2
     }
     {
-      name: jtag_dmi_cmderr_not_supported
+      name: rv_dm_cmderr_not_supported
       uvm_test_seq: rv_dm_cmderr_not_supported_vseq
       reseed: 2
     }
     {
       name: rv_dm_cmderr_exception
       uvm_test_seq: rv_dm_cmderr_exception_vseq
+      reseed: 2
     }
     {
       name: rv_dm_mem_tl_access_halted
@@ -205,12 +206,12 @@
       reseed: 2
     }
     {
-      name: hart_unavail
+      name: rv_dm_hart_unavail
       uvm_test_seq: rv_dm_hart_unavail_vseq
       reseed: 5
     }
     {
-      name: cmderr_halt_resume
+      name: rv_dm_cmderr_halt_resume
       uvm_test_seq: rv_dm_cmderr_halt_resume_vseq
       reseed: 2
     }
