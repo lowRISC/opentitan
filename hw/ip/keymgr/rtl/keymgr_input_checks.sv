@@ -12,8 +12,7 @@ module keymgr_input_checks import keymgr_pkg::*; #(
   parameter bit KmacEnMasking = 1'b1
 ) (
   input rom_ctrl_pkg::keymgr_data_t rom_digest_i,
-  input [2**StageWidth-1:0][31:0] max_key_versions_i,
-  input keymgr_stage_e stage_sel_i,
+  input [KeyVersionWidth-1:0] cur_max_key_version_i,
   input hw_key_req_t key_i,
   input [31:0] key_version_i,
   input [KeyWidth-1:0] creator_seed_i,
@@ -28,17 +27,13 @@ module keymgr_input_checks import keymgr_pkg::*; #(
   output logic key_vld_o,
   output logic rom_digest_vld_o
 );
-
   // checks for all 0's or all 1's of value
   function automatic logic valid_chk (logic [MaxWidth-1:0] value);
     return |value & ~&value;
   endfunction // valid_chk
 
-  logic [31:0] cur_max_key_version;
-  assign cur_max_key_version = max_key_versions_i[stage_sel_i];
-
   // key version must be smaller than or equal to max version
-  assign key_version_vld_o = key_version_i <= cur_max_key_version;
+  assign key_version_vld_o = key_version_i <= cur_max_key_version_i;
 
   // general data check
   logic [MaxWidth-1:0] creator_seed_padded, owner_seed_padded, devid_padded, health_state_padded;

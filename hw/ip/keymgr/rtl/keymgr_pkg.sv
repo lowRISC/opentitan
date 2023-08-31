@@ -18,6 +18,7 @@ package keymgr_pkg;
   parameter int SaltWidth = 32 * keymgr_reg_pkg::NumSaltReg;
   parameter int Shares = 2; // number of key shares
   parameter int EdnWidth = edn_pkg::ENDPOINT_BUS_WIDTH;
+  parameter int KeyVersionWidth = 32;  // Key version length for individual DICE stage
 
   // These should be defined in another module's package
   parameter int HealthStateWidth = 128;
