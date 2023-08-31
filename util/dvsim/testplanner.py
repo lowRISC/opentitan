@@ -27,7 +27,7 @@ def main():
                         '-o',
                         type=argparse.FileType('w'),
                         default=sys.stdout,
-                        help='output HTML file (without CSS)')
+                        help='output markdown file')
     args = parser.parse_args()
     outfile = args.outfile
 
@@ -36,9 +36,8 @@ def main():
         if args.sim_results:
             outfile.write(
                 testplan.get_sim_results(args.sim_results, fmt="html"))
-
         else:
-            outfile.write(testplan.get_testplan_table("html"))
+            testplan.write_testplan_doc(outfile)
 
         outfile.write('\n')
 
