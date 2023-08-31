@@ -435,11 +435,97 @@
       default: "1'b0"
     },
   ] // inter_signal_list
+  features: [
+    {
+      name: "LC_CTRL.STATE.RAW"
+      desc: '''Initial state. No functions other than transition to `TEST_UNLOCKED0` are available.
+            '''
+    }
+    {
+      name: "LC_CTRL.STATE.TEST_UNLOCKED"
+      desc: '''State used for manufacturing and production testing. CPU execution and all debug
+            functionality is enabled in this state. The key manager (`keymgr`) is disabled.
+            '''
+    }
+    {
+      name: "LC_CTRL.STATE.TEST_LOCKED"
+      desc: '''This state is logically equivalent to `RAW`, where only transitions to
+            `TEST_UNLOCKED` states are available. The transition requires a test unlock token which
+            needs to be provisioned in the `TEST_UNLOCKED0` state.
+            '''
+    }
+    {
+      name: "LC_CTRL.STATE.DEV"
+      desc: '''This state is used to develop provisioning and mission mode software. It can also
+            be used to debug software via `rv_dm`. All other debug functionality is disabled. The
+            key manager (`keymgr`) is enabled. This is a mutually exclusive state to `PROD` and
+            `PROD_END`.
 
-  /////////////////////
-  // Countermeasures //
-  /////////////////////
+            Entry into `DEV` from any `TEST_UNLOCKED` state requires a valid test exit token which
+            needs to be provisioned in a `TEST_UNLOCKED` state.
+            '''
+    }
+    {
+      name: "LC_CTRL.STATE.PROD"
+      desc: '''This state state is used both for provisioning and mission mode. CPU execution and
+            all debug functionality is disabled. The key manager (`keymgr`) is enabled. This is a
+            mutually exclusive state to `DEV` and `PROD_END`.
 
+            Entry into `PROD` from any `TEST_UNLOCKED` state requires a valid test exit token which
+            needs to be provisioned in a `TEST_UNLOCKED` state.
+            '''
+    }
+    {
+      name: "LC_CTRL.STATE.PROD_END"
+      desc: '''This state is used both for provisioning and mission mode. This state is logically
+            equivalent to `PROD`, with the only difference being that transitions from this state
+            to `RMA` are not allowed.
+            '''
+    }
+    {
+      name: "LC_CTRL.STATE.RMA"
+      desc: '''This state is logically equivalent to `TEST_UNLOCKED`. It can be entered from any
+            mission mode state (`DEV`, `PROD` and `PROD_END`) states using an authentication
+            token provisioned at manufacturing time by the Silicon Creator.
+            '''
+    }
+    {
+      name: "LC_CTRL.STATE.SCRAP"
+      desc: '''This state is logically equivalent to `RAW` state, with the following exceptions:
+            1) `SCRAP` is a final state; and, 2) Life cycle JTAG interface is disabled upon
+            successful entry into this state.
+            '''
+    }
+    {
+      name: "LC_CTRL.ACCESS.JTAG"
+      desc: '''Lifecycle controller CSRs are accessible via a dedicated JTAG interface, supporting
+            manufacturing life cycle transitions and RMA flows. The CSRs support a hardware mutex
+            to arbitrate access through the JTAG interface versus from the TL-UL bus.
+            '''
+    }
+    {
+      name: "LC_CTRL.ACCESS.EXT_CLK"
+      desc: '''The lifecycle controller supports switching to an external clock source via a CSR
+            interface.
+            '''
+    }
+    {
+      name: "LC_CTRL.AUTHENTICATED_TRANSITIONS"
+      desc: '''The following transitions require an user provided token, which is verified against
+            a pre-hashed image stored in OTP: 1) Transition from `RAW` into `TEST_UNLOCKED0` state,
+            2) Transition from any `TEST_LOCKED` state into a `TEST_UNLOCKED` state, 3) Transition
+            from any `TEST_UNLOCKED` state into `PROD`, `DEV` or `PROD_END` states; or 4)
+            Transition into `RMA` state.
+            '''
+    }
+    {
+      name: "LC_CTRL.LOGICAL_SCRAP"
+      desc: '''The lifecycle controller supports escalating to a logical scrap state as part of
+            alert escalations. The life cycle can be reverted to the configured state by
+            performing a hard reset.
+            '''
+    }
+  ]
   countermeasures: [
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
