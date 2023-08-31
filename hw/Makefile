@@ -25,6 +25,7 @@ IPS ?= aes           \
        hmac          \
        i2c           \
        keymgr        \
+       keymgr_dpe    \
        kmac          \
        lc_ctrl       \
        otbn          \
