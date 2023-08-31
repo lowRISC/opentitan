@@ -4,17 +4,17 @@
 
 `include "prim_assert.sv"
 
-module mbx_ibmbx #(
+module mbx_imbx #(
   parameter int unsigned CfgSramAddrWidth = 32,
   parameter int unsigned CfgSramDataWidth = 32
 ) (
   input  logic                        clk_i,
   input  logic                        rst_ni,
-  output logic                        ibmbx_state_error_o,
-  output logic                        ibmbx_pending_o,
-  output logic                        ibmbx_irq_host_o,
-  output logic                        ibmbx_status_busy_update_o,
-  output logic                        ibmbx_status_busy_o,
+  output logic                        imbx_state_error_o,
+  output logic                        imbx_pending_o,
+  output logic                        imbx_irq_host_o,
+  output logic                        imbx_status_busy_update_o,
+  output logic                        imbx_status_busy_o,
 
   // Device interface from the host side
   input  logic                        hostif_control_abort_set_i,
@@ -62,8 +62,6 @@ module mbx_ibmbx #(
     .q_o   ( req_q                                              )
   );
 
-
-
   logic sys_abort;
   logic load_write_ptr, advance_write_ptr;
 
@@ -107,34 +105,34 @@ module mbx_ibmbx #(
   prim_flop #(
     .Width(1)
   ) u_pending (
-    .clk_i ( clk_i                                            ),
-    .rst_ni( rst_ni                                           ),
-    .d_i   ( ~clear_pending & (set_pending | ibmbx_pending_o) ),
-    .q_o   ( ibmbx_pending_o                                  )
+    .clk_i ( clk_i                                           ),
+    .rst_ni( rst_ni                                          ),
+    .d_i   ( ~clear_pending & (set_pending | imbx_pending_o) ),
+    .q_o   ( imbx_pending_o                                  )
   );
 
   // Busy logic
-  logic ibmbx_set_busy, ibmbx_clear_busy;
-  assign ibmbx_set_busy  = (mbx_write                  &
-                            sysif_control_go_set_i     &
-                            ~hostif_status_error_set_i &
-                            ~sysif_control_abort_set_i) |
+  logic imbx_set_busy, imbx_clear_busy;
+  assign imbx_set_busy  = (mbx_write                   &
+                           sysif_control_go_set_i      &
+                           ~hostif_status_error_set_i  &
+                           ~sysif_control_abort_set_i) |
                            sysif_control_abort_set_i;
 
-  // Exit of mailbox read is used to clear ibmbx.busy and ibmbx.ready
+  // Exit of mailbox read is used to clear imbx.busy and imbx.ready
   // Not yet qualified with mbx_read
-  assign ibmbx_clear_busy = hostif_status_error_set_i |
+  assign imbx_clear_busy = hostif_status_error_set_i |
                             sysif_control_abort_set_i |
                             hostif_status_busy_clear_i;
 
   // External busy update interface
-  assign ibmbx_status_busy_update_o = ibmbx_set_busy | ibmbx_clear_busy;
-  assign ibmbx_status_busy_o        = ibmbx_set_busy;
+  assign imbx_status_busy_update_o = imbx_set_busy | imbx_clear_busy;
+  assign imbx_status_busy_o        = imbx_set_busy;
 
   // Generate host interrupt
   //   on sys_write go, when host enters state to process the received objects
   //   on abort
-  assign ibmbx_irq_host_o = mbx_read | sys_abort;
+  assign imbx_irq_host_o = mbx_read | sys_abort;
 
   mbx_fsm #(
     .CfgObMbx ( 0 )
@@ -156,13 +154,15 @@ module mbx_ibmbx #(
     .mbx_sys_abort_o           ( mbx_sys_abort              ),
     .mbx_ob_ready_update_o     (                            ),
     .mbx_ob_ready_o            (                            ),
-    .mbx_state_error_o         ( ibmbx_state_error_o        )
+    .mbx_state_error_o         ( imbx_state_error_o         )
   );
 
+  //////////////////////////////////////////////////////////////////////////////
   // Assertions
+  //////////////////////////////////////////////////////////////////////////////
 
   // Don't write the mailbox if it is full
-  `ASSERT(NeverWriteMbxIfFull_A, ibmbx_is_full & hostif_sram_write_req_o);
+  `ASSERT(NeverWriteMbxIfFull_A, imbx_is_full & hostif_sram_write_req_o)
 
 `ifdef INC_ASSERT
   logic[CfgSramAddrWidth-1:0] sram_write_ptr_assert_q;
@@ -180,12 +180,12 @@ module mbx_ibmbx #(
 `endif
 
   // The write pointer should not be advanced if there  is not yet acked request
-  `ASSERT_IF(WrPtrShouldNotAdvanceIfNoAck_A, ~ibmbx_pending_o, advance_write_ptr & ibmbx_pending_o)
+  `ASSERT_IF(WrPtrShouldNotAdvanceIfNoAck_A, ~imbx_pending_o, advance_write_ptr & imbx_pending_o)
   // Clear busy/abort does not clear the IRQ
-  `ASSERT_IF(ClearBusyAbortDoesNotClearIrq_A, sysif_status_busy_i == ibmbx_irq_host_o,
-             sysif_status_busy_i & ibmbx_irq_host_o)
+  `ASSERT_IF(ClearBusyAbortDoesNotClearIrq_A, sysif_status_busy_i == imbx_irq_host_o,
+             sysif_status_busy_i & imbx_irq_host_o)
   // Busy and host IRQ are not set together
-  `ASSERT_IF(BusyIrqNotSetTogether_A, sysif_status_busy_i & ibmbx_irq_host_o,
+  `ASSERT_IF(BusyIrqNotSetTogether_A, sysif_status_busy_i & imbx_irq_host_o,
              sysif_control_go_set_i | sysif_control_abort_set_i)
   // When writing to the mailbox, DOE status busy must be low
   `ASSERT_NEVER(WriteToMbxBusyMustBeLow_A, hostif_sram_write_req_o & sysif_status_busy_i)
