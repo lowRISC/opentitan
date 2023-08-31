@@ -10,8 +10,7 @@ module mbx_fsm #(
   input  logic clk_i,
   input  logic rst_ni,
   // Control input signals
-  input  logic mbx_base_valid_i,
-  input  logic mbx_limit_valid_i,
+  input  logic mbx_range_valid_i,
   input  logic hostif_abort_ack_i,
   input  logic hostif_status_error_set_i,
   input  logic hostif_status_busy_clear_i,
@@ -54,7 +53,7 @@ module mbx_fsm #(
   // Control signals for external usage
   logic mbx_idle;
   assign  mbx_idle        = (ctrl_state_q == MbxIdle);
-  assign  mbx_empty_o     = mbx_idle & mbx_base_valid_i & mbx_limit_valid_i;
+  assign  mbx_empty_o     = mbx_idle & mbx_range_valid_i;
   assign  mbx_write_o     = (ctrl_state_q == MbxWrite);
   assign  mbx_read_o      = (ctrl_state_q == MbxRead);
   assign  mbx_sys_abort_o = (ctrl_state_q == MbxSysAbortHost);
@@ -63,7 +62,7 @@ module mbx_fsm #(
   // Outbound mailbox is ready
   assign ob_set_ready = CfgObMbx
                             & mbx_idle
-                            & mbx_base_valid_i & mbx_limit_valid_i & writer_close_mbx_i
+                            & mbx_range_valid_i & writer_close_mbx_i
                             & ~sysif_control_abort_set_i;
 
   // MbxRead is a common state for imbx and ombx
@@ -82,11 +81,11 @@ module mbx_fsm #(
     unique case (ctrl_state_q)
       MbxIdle: begin
         if (CfgObMbx) begin
-          if (mbx_base_valid_i & mbx_limit_valid_i & writer_close_mbx_i) begin
+          if (mbx_range_valid_i & writer_close_mbx_i) begin
             ctrl_state_d = MbxWrite;
           end
         end else begin
-          if (mbx_base_valid_i & mbx_limit_valid_i & writer_write_valid_i) begin
+          if (mbx_range_valid_i & writer_write_valid_i) begin
             ctrl_state_d = MbxRead;
           end
         end

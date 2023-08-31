@@ -21,9 +21,8 @@ module mbx_ibmbx #(
   input  logic                        hostif_status_busy_clear_i,
   input  logic                        hostif_status_error_set_i,
 
-  input  logic                        hostif_base_valid_i,
+  input  logic                        hostif_range_valid_i,
   input  logic [CfgSramAddrWidth-1:0] hostif_base_i,
-  input  logic                        hostif_limit_valid_i,
   input  logic [CfgSramAddrWidth-1:0] hostif_limit_i,
   // Device interface from the system side
   input  logic                        sysif_status_busy_i,
@@ -40,28 +39,30 @@ module mbx_ibmbx #(
 
   logic [CfgSramAddrWidth-1:0] sram_write_ptr_d, sram_write_ptr_q;
 
-  logic req_ack_state_error, fsm_state_error;
-  assign ibmbx_state_error_o = req_ack_state_error | fsm_state_error;
-
   // Status signals from the FSM
   logic mbx_empty, mbx_write, mbx_read, mbx_sys_abort;
 
   // hostif_sram_write_req_o is actually sticky because the sys-side TLUL_adapter_reg is
-  // NOT ack'ed until the command is grated by the host-side TLUL_adapter_host
+  // NOT ack'ed until the command is granted by the host-side TLUL_adapter_host
   // RW2A = sticky from DEC/RW-stage to (srm command) ACK
   logic   write_req;
   assign  write_req = (mbx_empty & sysif_data_write_valid_i) |
                       (mbx_write & sysif_data_write_valid_i & (sram_write_ptr_q < hostif_limit_i));
 
-  // Create TLUL write request
-  mbxwrsrm_req_ack u_mbxwrsrm_req_ack(
-    .clk_i        ( clk_i                   ),
-    .rst_ni       ( rst_ni                  ),
-    .req_i        ( write_req               ),
-    .gnt_i        ( hostif_sram_write_gnt_i ),
-    .tlul_req_o   ( hostif_sram_write_req_o ),
-    .state_error_o( req_ack_state_error     )
+  // Create a sticky TLUL write request until its granted
+  logic req_q;
+  assign hostif_sram_write_req_o = write_req | req_q;
+
+  prim_flop #(
+    .Width(1)
+  ) u_req_state (
+    .clk_i ( clk_i                                              ),
+    .rst_ni( rst_ni                                             ),
+    .d_i   ( hostif_sram_write_req_o & ~hostif_sram_write_req_o ),
+    .q_o   ( req_q                                              )
   );
+
+
 
   logic sys_abort;
   logic load_write_ptr, advance_write_ptr;
@@ -140,8 +141,7 @@ module mbx_ibmbx #(
   ) u_mbxfsm(
     .clk_i                     ( clk_i                      ),
     .rst_ni                    ( rst_ni                     ),
-    .mbx_base_valid_i          ( hostif_base_valid_i        ),
-    .mbx_limit_valid_i         ( hostif_limit_valid_i       ),
+    .mbx_range_valid_i         ( hostif_range_valid_i       ),
     .hostif_abort_ack_i        ( hostif_control_abort_set_i ),
     .hostif_status_error_set_i ( hostif_status_error_set_i  ),
     .hostif_status_busy_clear_i( hostif_status_busy_clear_i ),
@@ -154,9 +154,9 @@ module mbx_ibmbx #(
     .mbx_write_o               ( mbx_write                  ),
     .mbx_read_o                ( mbx_read                   ),
     .mbx_sys_abort_o           ( mbx_sys_abort              ),
-    .obmbx_ready_update_o      (                            ),
-    .obmbx_ready_o             (                            ),
-    .mbx_state_error_o         ( fsm_state_error            )
+    .mbx_ob_ready_update_o     (                            ),
+    .mbx_ob_ready_o            (                            ),
+    .mbx_state_error_o         ( ibmbx_state_error_o        )
   );
 
   // Assertions
