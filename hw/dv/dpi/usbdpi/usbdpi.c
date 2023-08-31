@@ -1144,7 +1144,6 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
     // In the event that the device disconnected, we must start anew in
     // anticipation of a reconnection
     bus_reset(ctx);
-    ctx->driving = set_driving(ctx, d2p, 0, true);  // SE0
     ctx->recovery_time = ctx->tick + 4 * 48;
     return ctx->driving;
   }
