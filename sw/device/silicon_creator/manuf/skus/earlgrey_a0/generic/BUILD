@@ -36,6 +36,7 @@ opentitan_ram_binary(
         "//sw/device/lib/testing:lc_ctrl_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing/json:provisioning_command",
         "//sw/device/lib/testing/json:provisioning_data",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_console",

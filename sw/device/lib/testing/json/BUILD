@@ -69,6 +69,13 @@ cc_library(
 )
 
 cc_library(
+    name = "provisioning_command",
+    srcs = ["provisioning_command.c"],
+    hdrs = ["provisioning_command.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
     name = "provisioning_data",
     srcs = ["provisioning_data.c"],
     hdrs = ["provisioning_data.h"],
