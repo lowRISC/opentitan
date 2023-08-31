@@ -152,6 +152,8 @@ enum module_ {
   \
   X(kErrorRomExtBootFailed,           ERROR_(1, kModuleRomExt, kFailedPrecondition)), \
   \
+  X(kErrorRomExtBadOffsetLen,         ERROR_(2, kModuleRomExt, kInternal)), \
+  \
   /* The high-byte of kErrorInterrupt is modified with the interrupt cause */ \
   X(kErrorRomExtInterrupt,            ERROR_(0, kModuleRomExtInterrupt, kUnknown)), \
   \

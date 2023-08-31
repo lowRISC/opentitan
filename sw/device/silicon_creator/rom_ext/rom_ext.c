@@ -40,6 +40,7 @@
 #include "sw/device/silicon_creator/rom_ext/rom_ext_epmp.h"
 #include "sw/device/silicon_creator/rom_ext/sigverify_keys.h"
 
+#include "flash_ctrl_regs.h"                          // Generated
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
 // Life cycle state of the chip.
@@ -116,14 +117,42 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
                               lc_state, &flash_exec);
 }
 
+extern char _rom_ext_start_address[];
+extern char _rom_ext_size[];
+
 /* Disable access to silicon creator info pages and OTP partitions until next
  * reset.
  */
-static void rom_ext_lockdown(void) {
+OT_WARN_UNUSED_RESULT
+static rom_error_t rom_ext_lockdown(void) {
   flash_ctrl_creator_info_pages_lockdown();
   otp_creator_sw_cfg_lockdown();
   SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCreatorInfoPagesLockdown +
                            kOtpSecMmioCreatorSwCfgLockDown);
+
+  if ((uintptr_t)_rom_ext_start_address % FLASH_CTRL_PARAM_BYTES_PER_PAGE !=
+          0 ||
+      (uintptr_t)_rom_ext_size % FLASH_CTRL_PARAM_BYTES_PER_PAGE != 0) {
+    return kErrorRomExtBadOffsetLen;
+  }
+
+  flash_ctrl_data_region_protect(
+      kFlashCtrlDataRegionActiveRomExt, (uint32_t)_rom_ext_start_address,
+      (uintptr_t)_rom_ext_size / FLASH_CTRL_PARAM_BYTES_PER_PAGE,
+      (flash_ctrl_perms_t){
+          .read = kMultiBitBool4True,
+          .write = kMultiBitBool4False,
+          .erase = kMultiBitBool4False,
+      },
+      (flash_ctrl_cfg_t){
+          .ecc = kMultiBitBool4False,
+          .he = kMultiBitBool4False,
+          .scrambling = kMultiBitBool4False,
+      });
+
+  flash_ctrl_data_region_lock(kFlashCtrlDataRegionActiveRomExt);
+
+  return kErrorOk;
 }
 
 /* These symbols are defined in
@@ -172,7 +201,7 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
   sec_mmio_check_values(rnd_uint32());
   sec_mmio_check_counters(1);
 
-  rom_ext_lockdown();
+  HARDENED_RETURN_IF_ERROR(rom_ext_lockdown());
 
   // Configure address translation, compute the epmp regions and the entry
   // point for the virtual address in case the address translation is enabled.
