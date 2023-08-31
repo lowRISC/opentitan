@@ -123,10 +123,6 @@ bool sram_main(void) {
   CHECK_STATUS_OK(manuf_individualize_device_secret0(&lc_ctrl, &otp_ctrl,
                                                      &provisioning_data));
 
-  // Reset the device and check OTP state.
-  CHECK_STATUS_OK(manuf_individualize_device_secret0(&lc_ctrl, &otp_ctrl,
-                                                     &provisioning_data));
-
   LOG_INFO("CP provisioning end.");
 
   return true;
