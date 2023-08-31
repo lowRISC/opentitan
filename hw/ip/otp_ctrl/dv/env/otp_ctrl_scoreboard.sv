@@ -930,23 +930,87 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           end
         end
       end
-      "err_code_0",
-      "err_code_1",
-      "err_code_2",
-      "err_code_3",
-      "err_code_4",
-      "err_code_5",
-      "err_code_6",
-      "err_code_7",
-      "err_code_8",
-      "err_code_9": begin
-        // If lc_prog in progress, err_code might update anytime in DUT. Ignore checking until req
-        // is acknowledged.
+      // For error codes, if lc_prog in progress, err_code might update anytime in DUT. Ignore
+      // checking until req is acknowledged.
+
+      "err_code_0": begin
         if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
-        if (cfg.en_cov && do_read_check) begin
+        if (cfg.en_cov && do_read_check && data_phase_read) begin
           bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
-          int part_idx = get_part_index(dai_addr);
-          cov.collect_err_code_cov(item.d_data, part_idx);
+          int access_part_idx = get_part_index(dai_addr);
+          cov.collect_err_code_cov(0, item.d_data, access_part_idx);
+        end
+      end
+      "err_code_1": begin
+        if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
+        if (cfg.en_cov && do_read_check && data_phase_read) begin
+          bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
+          int access_part_idx = get_part_index(dai_addr);
+          cov.collect_err_code_cov(1, item.d_data, access_part_idx);
+        end
+      end
+      "err_code_2": begin
+        if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
+        if (cfg.en_cov && do_read_check && data_phase_read) begin
+          bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
+          int access_part_idx = get_part_index(dai_addr);
+          cov.collect_err_code_cov(2, item.d_data, access_part_idx);
+        end
+      end
+      "err_code_3": begin
+        if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
+        if (cfg.en_cov && do_read_check && data_phase_read) begin
+          bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
+          int access_part_idx = get_part_index(dai_addr);
+          cov.collect_err_code_cov(3, item.d_data, access_part_idx);
+        end
+      end
+      "err_code_4": begin
+        if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
+        if (cfg.en_cov && do_read_check && data_phase_read) begin
+          bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
+          int access_part_idx = get_part_index(dai_addr);
+          cov.collect_err_code_cov(4, item.d_data, access_part_idx);
+        end
+      end
+      "err_code_5": begin
+        if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
+        if (cfg.en_cov && do_read_check && data_phase_read) begin
+          bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
+          int access_part_idx = get_part_index(dai_addr);
+          cov.collect_err_code_cov(5, item.d_data, access_part_idx);
+        end
+      end
+      "err_code_6": begin
+        if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
+        if (cfg.en_cov && do_read_check && data_phase_read) begin
+          bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
+          int access_part_idx = get_part_index(dai_addr);
+          cov.collect_err_code_cov(6, item.d_data, access_part_idx);
+        end
+      end
+      "err_code_7": begin
+        if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
+        if (cfg.en_cov && do_read_check && data_phase_read) begin
+          bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
+          int access_part_idx = get_part_index(dai_addr);
+          cov.collect_err_code_cov(7, item.d_data, access_part_idx);
+        end
+      end
+      "err_code_8": begin
+        if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
+        if (cfg.en_cov && do_read_check && data_phase_read) begin
+          bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
+          int access_part_idx = get_part_index(dai_addr);
+          cov.collect_err_code_cov(8, item.d_data, access_part_idx);
+        end
+      end
+      "err_code_9": begin
+        if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
+        if (cfg.en_cov && do_read_check && data_phase_read) begin
+          bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
+          int access_part_idx = get_part_index(dai_addr);
+          cov.collect_err_code_cov(9, item.d_data, access_part_idx);
         end
       end
       "vendor_test_digest_0", "vendor_test_digest_1",
