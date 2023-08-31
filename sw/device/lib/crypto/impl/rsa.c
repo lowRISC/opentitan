@@ -26,7 +26,7 @@ crypto_status_t otcrypto_rsa_sign(const rsa_private_key_t *rsa_private_key,
                                   crypto_const_byte_buf_t input_message,
                                   rsa_padding_t padding_mode,
                                   rsa_hash_t hash_mode,
-                                  crypto_byte_buf_t *signature) {
+                                  crypto_word_buf_t *signature) {
   HARDENED_TRY(otcrypto_rsa_sign_async_start(rsa_private_key, input_message,
                                              padding_mode, hash_mode));
   return otcrypto_rsa_sign_async_finalize(signature);
@@ -36,7 +36,7 @@ crypto_status_t otcrypto_rsa_verify(const rsa_public_key_t *rsa_public_key,
                                     crypto_const_byte_buf_t input_message,
                                     rsa_padding_t padding_mode,
                                     rsa_hash_t hash_mode,
-                                    crypto_const_byte_buf_t signature,
+                                    crypto_const_word_buf_t signature,
                                     hardened_bool_t *verification_result) {
   HARDENED_TRY(otcrypto_rsa_verify_async_start(rsa_public_key, signature));
   return otcrypto_rsa_verify_async_finalize(input_message, padding_mode,
@@ -310,7 +310,7 @@ crypto_status_t otcrypto_rsa_sign_async_start(
   return OTCRYPTO_FATAL_ERR;
 }
 
-crypto_status_t otcrypto_rsa_sign_async_finalize(crypto_byte_buf_t *signature) {
+crypto_status_t otcrypto_rsa_sign_async_finalize(crypto_word_buf_t *signature) {
   // Check for NULL pointers.
   if (signature == NULL || signature->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -318,11 +318,10 @@ crypto_status_t otcrypto_rsa_sign_async_finalize(crypto_byte_buf_t *signature) {
 
   // Determine the size based on the signature buffer length.
   switch (signature->len) {
-    case kRsa2048NumBytes: {
+    case kRsa2048NumWords: {
       rsa_2048_int_t sig;
       HARDENED_TRY(rsa_signature_generate_2048_finalize(&sig));
-      // TODO(#17711) Change to `hardened_memcpy`.
-      memcpy(signature->data, sig.data, kRsa2048NumBytes);
+      hardened_memcpy(signature->data, sig.data, kRsa2048NumWords);
       break;
     }
     case kRsa3072NumBytes:
@@ -338,7 +337,7 @@ crypto_status_t otcrypto_rsa_sign_async_finalize(crypto_byte_buf_t *signature) {
 }
 
 crypto_status_t otcrypto_rsa_verify_async_start(
-    const rsa_public_key_t *rsa_public_key, crypto_const_byte_buf_t signature) {
+    const rsa_public_key_t *rsa_public_key, crypto_const_word_buf_t signature) {
   // Check the caller-provided public key buffer.
   HARDENED_TRY(public_key_structural_check(rsa_public_key));
 
@@ -370,12 +369,11 @@ crypto_status_t otcrypto_rsa_verify_async_start(
       public_key2k.e = rsa_public_key->e.key[0];
 
       // Construct the signature buffer.
-      if (signature.len != kRsa2048NumBytes) {
+      if (signature.len != kRsa2048NumWords) {
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_2048_int_t sig2k;
-      // TODO(#17711) Change to `hardened_memcpy`.
-      memcpy(sig2k.data, signature.data, kRsa2048NumBytes);
+      hardened_memcpy(sig2k.data, signature.data, kRsa2048NumWords);
 
       // Start signature verification.
       return rsa_signature_verify_2048_start(&public_key2k, &sig2k);

@@ -88,7 +88,7 @@ typedef struct hash_context {
  * @return Result of the hash operation.
  */
 crypto_status_t otcrypto_hash(crypto_const_byte_buf_t input_message,
-                              hash_mode_t hash_mode, crypto_byte_buf_t *digest);
+                              hash_mode_t hash_mode, crypto_word_buf_t *digest);
 
 /**
  * Performs the required extendable output function on the input data.
@@ -101,11 +101,11 @@ crypto_status_t otcrypto_hash(crypto_const_byte_buf_t input_message,
  * are ignored when the `xof_mode` is set to kHashModeSha3Shake128 or
  * kHashModeSha3Shake256.
  *
- * The caller should allocate space for the `digest` buffer,
- * (expected length same as `required_output_len`), and set the length
- * of expected output in the `len` field of `digest`. If the user-set
- * length and the output length does not match, an error message will
- * be returned.
+ * The caller should allocate space for the `digest` buffer, with a word-length
+ * long enough to hold `required_output_len`, and set the `len` field of
+ * `digest` to the word-length of the allocated buffer. If the `len` field of
+ * digest does not match `required_output_len`, the function will return an
+ * error.
  *
  * @param input_message Input message for extendable output function.
  * @param xof_mode Required extendable output function.
@@ -120,7 +120,7 @@ crypto_status_t otcrypto_xof(crypto_const_byte_buf_t input_message,
                              crypto_const_byte_buf_t function_name_string,
                              crypto_const_byte_buf_t customization_string,
                              size_t required_output_len,
-                             crypto_byte_buf_t *digest);
+                             crypto_word_buf_t *digest);
 
 /**
  * Performs the INIT operation for a cryptographic hash function.
@@ -178,7 +178,7 @@ crypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
  * @return Result of the hash final operation.
  */
 crypto_status_t otcrypto_hash_final(hash_context_t *const ctx,
-                                    crypto_byte_buf_t *digest);
+                                    crypto_word_buf_t *digest);
 
 #ifdef __cplusplus
 }  // extern "C"

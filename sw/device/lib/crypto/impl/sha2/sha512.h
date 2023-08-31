@@ -129,7 +129,7 @@ typedef sha512_state_t sha384_state_t;
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t sha384(const uint8_t *msg, const size_t msg_len, uint8_t *digest);
+status_t sha384(const uint8_t *msg, const size_t msg_len, uint32_t *digest);
 
 /**
  * Set up a SHA-384 hash computation.
@@ -180,7 +180,7 @@ status_t sha384_update(sha384_state_t *state, const uint8_t *msg,
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t sha384_final(sha384_state_t *state, uint8_t *digest);
+status_t sha384_final(sha384_state_t *state, uint32_t *digest);
 
 /**
  * One-shot SHA-512 hash computation.
@@ -193,7 +193,7 @@ status_t sha384_final(sha384_state_t *state, uint8_t *digest);
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t sha512(const uint8_t *msg, const size_t msg_len, uint8_t *digest);
+status_t sha512(const uint8_t *msg, const size_t msg_len, uint32_t *digest);
 
 /**
  * Set up a SHA-512 hash computation.
@@ -244,7 +244,7 @@ status_t sha512_update(sha512_state_t *state, const uint8_t *msg,
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t sha512_final(sha512_state_t *state, uint8_t *digest);
+status_t sha512_final(sha512_state_t *state, uint32_t *digest);
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -142,9 +142,9 @@ static status_t run_rsa_2048_sign(const uint8_t *msg, size_t msg_len,
       .len = msg_len,
   };
 
-  crypto_byte_buf_t sig_buf = {
-      .data = (unsigned char *)sig,
-      .len = kRsa2048NumBytes,
+  crypto_word_buf_t sig_buf = {
+      .data = sig,
+      .len = kRsa2048NumWords,
   };
 
   return otcrypto_rsa_sign(&private_key, msg_buf, padding_mode, hash_mode,
@@ -201,9 +201,9 @@ static status_t run_rsa_2048_verify(const uint8_t *msg, size_t msg_len,
       .len = msg_len,
   };
 
-  crypto_const_byte_buf_t sig_buf = {
-      .data = (unsigned char *)sig,
-      .len = kRsa2048NumBytes,
+  crypto_const_word_buf_t sig_buf = {
+      .data = sig,
+      .len = kRsa2048NumWords,
   };
 
   return otcrypto_rsa_verify(&public_key, msg_buf, padding_mode, hash_mode,

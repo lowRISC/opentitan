@@ -128,43 +128,51 @@ static void sha512_state_restore(const hash_context_t *restrict ctx,
 }
 
 /**
- * Return the digest size (in bytes) for given hashing mode.
+ * Ensure that the digest length matches the hashing mode.
  *
  * @param hash_mode Hashing mode (e.g. kHashModeSha256).
- * @param digest_len Result digest size in bytes.
+ * @param digest_len Expected digest size in 32-bit words.
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-static status_t get_digest_size(hash_mode_t hash_mode, size_t *digest_len) {
-  if (digest_len == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Below `digest_len` is in bytes, therefore magic values are obtained
-  // after division by 8.
-  switch (hash_mode) {
+static status_t check_digest_len(hash_mode_t hash_mode, size_t digest_len) {
+  switch (launder32(hash_mode)) {
     case kHashModeSha3_224:
-      *digest_len = 224 / 8;
-      break;
+      if (launder32(digest_len) == (224 / 32)) {
+        HARDENED_CHECK_EQ(digest_len * sizeof(uint32_t) * 8, 224);
+        return OTCRYPTO_OK;
+      }
+      return OTCRYPTO_BAD_ARGS;
     case kHashModeSha256:
       OT_FALLTHROUGH_INTENDED;
     case kHashModeSha3_256:
-      *digest_len = 256 / 8;
-      break;
+      if (launder32(digest_len) == (256 / 32)) {
+        HARDENED_CHECK_EQ(digest_len * sizeof(uint32_t) * 8, 256);
+        return OTCRYPTO_OK;
+      }
+      return OTCRYPTO_BAD_ARGS;
     case kHashModeSha384:
       OT_FALLTHROUGH_INTENDED;
     case kHashModeSha3_384:
-      *digest_len = 384 / 8;
-      break;
+      if (launder32(digest_len) == (384 / 32)) {
+        HARDENED_CHECK_EQ(digest_len * sizeof(uint32_t) * 8, 384);
+        return OTCRYPTO_OK;
+      }
+      return OTCRYPTO_BAD_ARGS;
     case kHashModeSha512:
       OT_FALLTHROUGH_INTENDED;
     case kHashModeSha3_512:
-      *digest_len = 512 / 8;
-      break;
+      if (launder32(digest_len) == (512 / 32)) {
+        HARDENED_CHECK_EQ(digest_len * sizeof(uint32_t) * 8, 512);
+        return OTCRYPTO_OK;
+      }
+      return OTCRYPTO_BAD_ARGS;
     default:
       return OTCRYPTO_BAD_ARGS;
   }
-  return OTCRYPTO_OK;
+  // Should be unreachable.
+  HARDENED_TRAP();
+  return OTCRYPTO_FATAL_ERR;
 }
 
 /**
@@ -175,8 +183,8 @@ static status_t get_digest_size(hash_mode_t hash_mode, size_t *digest_len) {
  */
 OT_WARN_UNUSED_RESULT
 static status_t hmac_sha256(crypto_const_byte_buf_t message,
-                            crypto_byte_buf_t *digest) {
-  HARDENED_CHECK_EQ(digest->len, kHmacDigestNumBytes);
+                            crypto_word_buf_t *digest) {
+  HARDENED_CHECK_EQ(digest->len, kHmacDigestNumWords);
 
   // Initialize the hardware.
   hmac_sha_init();
@@ -187,14 +195,14 @@ static status_t hmac_sha256(crypto_const_byte_buf_t message,
   // Retrieve the digest and copy it to the destination buffer.
   hmac_digest_t hmac_digest;
   hmac_final(&hmac_digest);
-  memcpy(digest->data, hmac_digest.digest, kHmacDigestNumBytes);
+  hardened_memcpy(digest->data, hmac_digest.digest, kHmacDigestNumWords);
 
   return OTCRYPTO_OK;
 }
 
 crypto_status_t otcrypto_hash(crypto_const_byte_buf_t input_message,
                               hash_mode_t hash_mode,
-                              crypto_byte_buf_t *digest) {
+                              crypto_word_buf_t *digest) {
   if (input_message.data == NULL && input_message.len != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -204,11 +212,7 @@ crypto_status_t otcrypto_hash(crypto_const_byte_buf_t input_message,
   }
 
   // Check `digest->len` is consistent with `hash_mode`
-  size_t expected_digest_len;
-  HARDENED_TRY(get_digest_size(hash_mode, &expected_digest_len));
-  if (expected_digest_len != digest->len) {
-    return OTCRYPTO_BAD_ARGS;
-  }
+  HARDENED_TRY(check_digest_len(hash_mode, digest->len));
 
   switch (hash_mode) {
     case kHashModeSha3_224:
@@ -250,9 +254,12 @@ crypto_status_t otcrypto_xof(crypto_const_byte_buf_t input_message,
                              crypto_const_byte_buf_t function_name_string,
                              crypto_const_byte_buf_t customization_string,
                              size_t required_output_len,
-                             crypto_byte_buf_t *digest) {
+                             crypto_word_buf_t *digest) {
   // TODO: (#16410) Add error checks
-  if (required_output_len != digest->len) {
+
+  // Check that the output lengths match.
+  if (required_output_len > digest->len * sizeof(uint32_t) ||
+      digest->len > SIZE_MAX / sizeof(uint32_t)) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -368,17 +375,13 @@ crypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
 }
 
 crypto_status_t otcrypto_hash_final(hash_context_t *const ctx,
-                                    crypto_byte_buf_t *digest) {
+                                    crypto_word_buf_t *digest) {
   if (ctx == NULL || digest == NULL || digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Check `digest->len` is consistent with `ctx->mode`
-  size_t expected_digest_len;
-  HARDENED_TRY(get_digest_size(ctx->mode, &expected_digest_len));
-  if (expected_digest_len != digest->len) {
-    return OTCRYPTO_BAD_ARGS;
-  }
+  HARDENED_TRY(check_digest_len(ctx->mode, digest->len));
 
   switch (ctx->mode) {
     case kHashModeSha256: {

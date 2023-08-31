@@ -90,7 +90,7 @@ typedef struct sha256_state {
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t sha256(const uint8_t *msg, const size_t msg_len, uint8_t *digest);
+status_t sha256(const uint8_t *msg, const size_t msg_len, uint32_t *digest);
 
 /**
  * Set up a SHA-256 hash computation.
@@ -141,7 +141,7 @@ status_t sha256_update(sha256_state_t *state, const uint8_t *msg,
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t sha256_final(sha256_state_t *state, uint8_t *digest);
+status_t sha256_final(sha256_state_t *state, uint32_t *digest);
 
 #ifdef __cplusplus
 }  // extern "C"
