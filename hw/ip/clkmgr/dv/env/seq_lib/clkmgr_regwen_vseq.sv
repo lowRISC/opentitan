@@ -33,7 +33,7 @@ class clkmgr_regwen_vseq extends clkmgr_base_vseq;
     foreach (ExpectedCounts[clk]) begin
       clk_mesr_e clk_mesr = clk_mesr_e'(clk);
       uvm_reg ctrl_shadowed = meas_ctrl_regs[clk_mesr].ctrl_lo.get_dv_base_reg_parent();
-      mubi4_t prev_en;
+      uvm_reg_data_t prev_en;
       mubi4_t new_en = get_rand_mubi4_val(1, 1, 2);
       int prev_ctrl;
       int new_ctrl = $urandom();
@@ -50,7 +50,7 @@ class clkmgr_regwen_vseq extends clkmgr_base_vseq;
       csr_wr(.ptr(ctrl_shadowed), .value(new_ctrl));
       csr_wr(.ptr(meas_ctrl_regs[clk_mesr].en), .value(new_en));
       csr_rd_check(.ptr(meas_ctrl_regs[clk_mesr].en),
-                   .compare_value(regwen_enable ? new_en : prev_en));
+                   .compare_value(mubi4_t'(regwen_enable ? new_en : prev_en)));
       csr_rd_check(.ptr(ctrl_shadowed), .compare_value(regwen_enable ? new_ctrl : prev_ctrl),
                    .compare_mask(lo_mask | hi_mask));
       `uvm_info(`gfn, $sformatf("Check %0s regwen end", meas_ctrl_regs[clk_mesr].name),
