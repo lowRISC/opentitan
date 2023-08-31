@@ -130,6 +130,13 @@ module vip_security_island_soc
   endtask
 
   //////////
+  // UART //
+  //////////
+
+  uart_bus #(.BAUD_RATE(1250000), .PARITY_EN(0)) i_uart0_bus (.rx(uart_tx),
+             .tx(uart_rx), .rx_en(1'b1)); //1470588
+
+  //////////
   // JTAG //
   //////////
 
