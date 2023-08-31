@@ -492,6 +492,8 @@ module keymgr
   assign max_key_versions[OwnerInt] = reg2hw.max_owner_int_key_ver_shadowed.q;
   assign max_key_versions[Owner]    = reg2hw.max_owner_key_ver_shadowed.q;
 
+  logic [KeyVersionWidth-1:0] cur_max_key_version;
+  assign cur_max_key_version = max_key_versions[stage_sel];
 
   // General module for checking inputs
   logic key_vld;
@@ -501,8 +503,7 @@ module keymgr
     .KmacEnMasking(KmacEnMasking)
   ) u_checks (
     .rom_digest_i,
-    .max_key_versions_i(max_key_versions),
-    .stage_sel_i(stage_sel),
+    .cur_max_key_version_i(cur_max_key_version),
     .key_version_i(reg2hw.key_version),
     .creator_seed_i(creator_seed),
     .owner_seed_i(owner_seed),
