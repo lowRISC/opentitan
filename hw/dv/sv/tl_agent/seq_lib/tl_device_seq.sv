@@ -9,7 +9,7 @@
 // the originally written data is returned. This sequence runs forever, i.e.
 // it needs to be forked off as a separate thread. It can be stopped gracefully
 // by invoking the seq_stop() method.
-class tl_device_seq #(type REQ = tl_seq_item) extends dv_base_seq #(
+class tl_device_seq #(type REQ = tl_seq_item, int unsigned AddrWidth = 32) extends dv_base_seq #(
     .REQ        (REQ),
     .CFG_T      (tl_agent_cfg),
     .SEQUENCER_T(tl_sequencer));
@@ -21,7 +21,7 @@ class tl_device_seq #(type REQ = tl_seq_item) extends dv_base_seq #(
 
   int                      min_rsp_delay = 0;
   int                      max_rsp_delay = 10;
-  mem_model_pkg::mem_model mem;
+  mem_model_pkg::mem_model#(.AddrWidth(AddrWidth)) mem;
   REQ                      req_q[$];
   bit                      out_of_order_rsp = 0;
 
@@ -42,6 +42,7 @@ class tl_device_seq #(type REQ = tl_seq_item) extends dv_base_seq #(
   }
 
   virtual task body();
+    stop = 0; // Allow sequence to restart after stop
     fork
       begin: isolation_thread
         fork
