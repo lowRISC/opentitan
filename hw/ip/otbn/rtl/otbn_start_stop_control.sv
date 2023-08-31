@@ -354,12 +354,12 @@ module otbn_start_stop_control
     end
 
     // If the MuBi signals take on invalid values, something bad is happening. Put them back to
-    // a safe value (if possible) and signal an error.
+    // a safe value (if possible) and signal an error. The only exception is rma_req_i. This LC
+    // signal may experience staggered transitions due to CDCs leading to invalid values. In
+    // accordance with the spec, invalid values of non-escalation LC signals must be treated as
+    // OFF. rma_ack_d/q is driven by rma_req_i but only at the end of the secure wipe. By that
+    // time rma_req_i has for sure stabilized.
     if (mubi4_test_invalid(escalate_en_i)) begin
-      mubi_err_d = 1'b1;
-      state_d = OtbnStartStopStateLocked;
-    end
-    if (mubi4_test_invalid(rma_req_i)) begin
       mubi_err_d = 1'b1;
       state_d = OtbnStartStopStateLocked;
     end
