@@ -117,7 +117,7 @@ OT_WARN_UNUSED_RESULT
 static status_t encrypt_rma_unlock_token(
     crypto_blinded_key_t *aes_key, wrapped_rma_unlock_token_t *wrapped_token) {
   // Construct IV, which since we are using ECB mode, is empty.
-  crypto_byte_buf_t iv = {
+  crypto_word_buf_t iv = {
       .data = NULL,
       .len = 0,
   };
