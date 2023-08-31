@@ -150,7 +150,6 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
     logic [6:0] otbn_fsm_state;
     logic [8:0] edn_0_fsm_state;
     logic [8:0] edn_1_fsm_state;
-    logic [8:0] entropy_src_fsm_state;
 
     // Wait for max-power indicator GPIO pin (IOB8) to go up.
     wait (cfg.chip_vif.mios[top_darjeeling_pkg::MioPadIob8]);
@@ -168,7 +167,6 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
     `_DV_PROBE_AND_CHECK_IDLE(otbn_fsm_state, otbn_pkg::OtbnStartStopStateInitial)
     `_DV_PROBE_AND_CHECK_IDLE(edn_0_fsm_state, edn_pkg::Idle)
     `_DV_PROBE_AND_CHECK_IDLE(edn_1_fsm_state, edn_pkg::Idle)
-    `_DV_PROBE_AND_CHECK_IDLE(entropy_src_fsm_state, entropy_src_main_sm_pkg::Idle)
   endtask
 
   task pre_start();

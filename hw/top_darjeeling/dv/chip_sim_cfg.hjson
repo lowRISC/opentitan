@@ -116,7 +116,6 @@
                        "{top_dv_path}/cov/conn_flash_ctrl_ast_obs_test_volt.el",
                        "{top_dv_path}/cov/conn_otp_ctrl_ast_obs_ext_volt.el",
                        "{top_dv_path}/cov/edn1_unr_tied_off_ports.el",
-                       "{top_dv_path}/cov/entropy_src_tied_off_xht_port.el",
                        "{top_dv_path}/cov/lc_ctrl_hw_rev_tied_off.el",
                        "{top_dv_path}/cov/pinmux_pad_attr.el",
                        "{top_dv_path}/cov/plic_le_i_tied_off.el",
@@ -1232,29 +1231,6 @@
       run_opts: ["+sw_test_timeout_ns=15_000_000"]
     }
     {
-      name: chip_sw_entropy_src_fuse_en_fw_read_test
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests/sim_dv:entropy_src_fuse_en_fw_read_test:1"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=18000000"]
-    }
-    {
-      name: chip_sw_entropy_src_kat_test
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:entropy_src_kat_test:1"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=18_000_000"]
-    }
-    {
-      name: chip_sw_csrng_lc_hw_debug_en_test
-      uvm_test_seq: chip_sw_csrng_lc_hw_debug_en_vseq
-      sw_images: ["//sw/device/tests/sim_dv:csrng_lc_hw_debug_en_test:1"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=15_000_000", "+rng_srate_value_min=15",
-                 "+use_otp_image=OtpTypeLcStTestUnlocked0"]
-      run_timeout_mins: 60
-    }
-    {
       name: chip_sw_csrng_edn_concurrency
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:csrng_edn_concurrency_test:1"]
@@ -1274,13 +1250,6 @@
       name: chip_sw_csrng_fuse_en_sw_app_read_test
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests/sim_dv:csrng_fuse_en_sw_app_read:1"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=15_000_000"]
-    }
-    {
-      name: chip_sw_entropy_src_ast_rng_req
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:entropy_src_ast_rng_req_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=15_000_000"]
     }

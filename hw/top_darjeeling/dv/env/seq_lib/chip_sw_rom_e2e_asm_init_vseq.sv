@@ -62,9 +62,6 @@ class chip_sw_rom_e2e_asm_init_vseq extends chip_sw_base_vseq;
                  .backdoor(1));
 
     `uvm_info(`gfn, "Checking ROM entropy complex configuration ...", UVM_LOW)
-    csr_rd_check(.ptr(ral.entropy_src.conf.fips_enable),
-                 .compare_value(prim_mubi_pkg::MuBi4False),
-                 .backdoor(1));
     csr_rd_check(.ptr(ral.csrng.ctrl.enable),
                  .compare_value(prim_mubi_pkg::MuBi4True),
                  .backdoor(1));

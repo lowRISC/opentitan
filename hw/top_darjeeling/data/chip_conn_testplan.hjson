@@ -597,7 +597,6 @@
             - csrgn clk_i
             - edn0 clk_i
             - edn1 clk_i
-            - entropy_src clk_i
             - keymgr clk_i
             - keymgr clk_edn_i
             - lc_ctrl clk_kmac_i
@@ -610,7 +609,6 @@
               "clkmgr_secure_clk_csrng_clk",
               "clkmgr_secure_clk_edn0_clk",
               "clkmgr_secure_clk_edn1_clk",
-              "clkmgr_secure_clk_entropy_src_clk",
               "clkmgr_secure_clk_keymgr_clk",
               "clkmgr_secure_clk_keymgr_edn_clk",
               "clkmgr_secure_clk_lc_ctrl_kmac_clk",
@@ -1151,7 +1149,6 @@
             - csrng's rst_ni
             - edn0's rst_ni
             - edn1's rst_ni
-            - entropy_src's rst_ni
             - flash_ctrl's rst_ni
             - hmac's rst_ni
             - keymgr's rst_edn_ni
@@ -1175,7 +1172,6 @@
               "rstmgr_sys_d0_csrng_rst_ni",
               "rstmgr_sys_d0_edn0_rst_ni",
               "rstmgr_sys_d0_edn1_rst_ni",
-              "rstmgr_sys_d0_entropy_src_rst_ni",
               "rstmgr_sys_d0_flash_ctrl_rst_ni",
               "rstmgr_sys_d0_hmac_rst_ni",
               "rstmgr_sys_d0_keymgr_rst_edn_ni",

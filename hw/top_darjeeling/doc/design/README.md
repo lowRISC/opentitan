@@ -439,7 +439,6 @@ For the purpose of `top_darjeeling`, the first option has been chosen to benefit
 | otbn              | otbn          | 0x21130000 (regs) |
 | keymgr            | keymgr        | 0x21140000 (regs) |
 | csrng             | csrng         | 0x21150000 (regs) |
-| entropy_src       | entropy_src   | 0x21160000 (regs) |
 | edn0              | edn           | 0x21170000 (regs) |
 | edn1              | edn           | 0x21180000 (regs) |
 | sram_ctrl_main    | sram_ctrl     | 0x211c0000 (regs) |

@@ -168,14 +168,6 @@
       req_fifo_pass: false,
       rsp_fifo_pass: false,
     },
-    // TODO: remove
-    { name:      "entropy_src",
-      type:      "device",
-      clock:     "clk_main_i"
-      reset:     "rst_main_ni"
-      req_fifo_pass: false,
-      rsp_fifo_pass: false,
-    },
     { name:      "csrng",
       type:      "device",
       clock:     "clk_main_i"
@@ -273,7 +265,7 @@
       "rom_ctrl0.rom", "rom_ctrl0.regs", "rom_ctrl1.rom", "rom_ctrl1.regs",
       "rv_dm.mem", "rv_dm.regs", "sram_ctrl_main.ram", "peri",
       "spi_host1", "usbdev", "flash_ctrl.core", "flash_ctrl.prim",
-      "flash_ctrl.mem", "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
+      "flash_ctrl.mem", "aes", "csrng", "edn0", "edn1", "hmac",
       "rv_plic", "otbn", "keymgr", "kmac", "sram_ctrl_main.regs",
       "rv_core_ibex.cfg", "sram_ctrl_mbox.ram", "sram_ctrl_mbox.regs",
       "soc_proxy.ctn", "soc_proxy.core", "dma",
@@ -282,7 +274,7 @@
       "rom_ctrl0.rom", "rom_ctrl0.regs", "rom_ctrl1.rom", "rom_ctrl1.regs",
       "rv_dm.mem", "rv_dm.regs", "sram_ctrl_main.ram", "peri",
       "spi_host1", "usbdev", "flash_ctrl.core", "flash_ctrl.prim",
-      "flash_ctrl.mem", "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
+      "flash_ctrl.mem", "aes", "csrng", "edn0", "edn1", "hmac",
       "rv_plic", "otbn", "keymgr", "kmac", "sram_ctrl_main.regs",
       "rv_core_ibex.cfg", "sram_ctrl_mbox.ram", "sram_ctrl_mbox.regs",
       "soc_proxy.ctn", "soc_proxy.core", "dma",

@@ -81,7 +81,6 @@ CONNECTION, RSTMGR_LC_D0_KEYMGR_RST_NI, top_darjeeling.u_rstmgr_aon, resets_o.rs
 CONNECTION, RSTMGR_LC_SHADOWED_D0_KEYMGR_RST_SHADOWED_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_lc_shadowed_n[1], top_darjeeling.u_keymgr, rst_shadowed_ni
 CONNECTION, RSTMGR_LC_D0_KEYMGR_RST_EDN_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_lc_n[1], top_darjeeling.u_keymgr, rst_edn_ni
 CONNECTION, RSTMGR_LC_D0_CSRNG_RST_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_lc_n[1], top_darjeeling.u_csrng, rst_ni
-CONNECTION, RSTMGR_LC_D0_ENTROPY_SRC_RST_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_lc_n[1], top_darjeeling.u_entropy_src, rst_ni
 CONNECTION, RSTMGR_LC_D0_EDN0_RST_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_lc_n[1], top_darjeeling.u_edn0, rst_ni
 CONNECTION, RSTMGR_LC_D0_EDN1_RST_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_lc_n[1], top_darjeeling.u_edn1, rst_ni
 CONNECTION, RSTMGR_LC_D0_SRAM_CTRL_MAIN_RST_NI, top_darjeeling.u_rstmgr_aon, resets_o.rst_lc_n[1], top_darjeeling.u_sram_ctrl_main, rst_ni

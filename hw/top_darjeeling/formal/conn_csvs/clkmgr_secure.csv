@@ -16,8 +16,6 @@ CONNECTION, CLKMGR_SECURE_CLK_CSRNG_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.c
 CONNECTION, CLKMGR_SECURE_CLK_EDN0_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_secure, top_darjeeling.u_edn0, clk_i
 CONNECTION, CLKMGR_SECURE_CLK_EDN1_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_secure, top_darjeeling.u_edn1, clk_i
 
-CONNECTION, CLKMGR_SECURE_CLK_ENTROPY_SRC_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_secure, top_darjeeling.u_entropy_src, clk_i
-
 CONNECTION, CLKMGR_SECURE_CLK_KEYMGR_CLK,     top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_secure, top_darjeeling.u_keymgr, clk_i
 CONNECTION, CLKMGR_SECURE_CLK_KEYMGR_EDN_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_secure, top_darjeeling.u_keymgr, clk_edn_i
 

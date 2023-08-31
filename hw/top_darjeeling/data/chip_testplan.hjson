@@ -2191,28 +2191,13 @@
 
     // ENTROPY_SRC (pre-verified IP) integration tests:
     {
-      name: chip_sw_entropy_src_ast_rng_req
-      //TODO(#13460): A dv enginner should add an assertion to check the connectivity for this test.
-      desc: '''Verify the RNG req to ast.
-
-            - Program the entropy src in normal RNG mode.
-            - Route the entropy data received from RNG to the FIFO.
-            - Verify that the FIFO depth is non-zero via SW - indicating the reception of data over
-              the AST RNG interface.
-            - Verify the correctness of the received data with assertion based connectivity checks.
-            '''
-      stage: V2
-      tests: ["chip_sw_entropy_src_ast_rng_req"]
-    }
-    {
       name: chip_sw_entropy_src_csrng
       desc: '''Verify the transfer of entropy bits to CSRNG.
 
             Verify the entropy valid interrupt.
             At the CSRNG, validate the reception of entropy req interrupt.
 
-            - Disable edn0, edn1, csrng and entropy_src, as these are enabled by the test ROM.
-            - Enable entropy_src in fips mode routing data to csrng.
+            - Disable edn0, edn1, and csrng, as these are enabled by the test ROM.
             - Enable csrng and enable the entropy request interrupt.
             - Issue csrng instantiate and reseed commands. Check that for each csrng command,
               there is a corresponding entropy request interrupt.
@@ -2223,30 +2208,6 @@
             '''
       stage: V2
       tests: ["chip_sw_entropy_src_csrng"]
-    }
-    {
-      name: chip_sw_entropy_src_fuse_en_fw_read
-      desc: '''Verify the fuse input entropy_src.
-
-            - Read the entropy_data_fifo via SW and verify that it reads valid values.
-
-            Note that this test has been simplified to just test the test_fuse_enable path,
-            since the HW has been updated to always hardwire the EN_ENTROPY_SRC_FW_READ
-            chicken switch to True. The chicken switch itself has been removed from OTP.
-            '''
-      stage: V2
-      tests: ["chip_sw_entropy_src_fuse_en_fw_read_test"]
-    }
-    {
-      name: chip_sw_entropy_src_known_answer_tests
-      desc: '''Verify our ability to run known-answer tests in SW.
-
-            - Configure the device in firmware-bypass mode.
-            - Feed NIST test-defined entropy sequences into the conditioner
-            - Read the entropy_data_fifo via SW; verify that it reads the expected values.
-            '''
-      stage: V2
-      tests: ["chip_sw_entropy_src_kat_test"]
     }
 
     // CSRNG (pre-verified IP) integration tests:
@@ -2275,26 +2236,6 @@
             '''
       stage: V2
       tests: ["chip_sw_csrng_fuse_en_sw_app_read_test"]
-    }
-    {
-      name: chip_sw_csrng_lc_hw_debug_en
-      desc: '''Verify the effect of LC HW debug enable on CSRNG.
-
-            lc_hw_debug_en is used to diversify the csrng seed.
-            - Configure entropy_src into bypassing the conditioner and directly inject known
-              entropy.
-            - Instantiate CSRNG with the known entropy while in TEST state (hw_debug_en = 1).
-            - Retrieve entropy from csrng and save it in flash and reset the system.
-            - Run the process again and ensure the exact same result can be reproduced (similar to
-              KAT).
-            - Advance the device to PROD or DEV state.
-            - Again configure entropy_src to bypass the conditioner and use direct injection.
-            - Instantiate CSRNG with the same fixed seed and fetch entropy again while in the NEW
-              state.
-            - The newly fetched entropy and the old entropy stored in flash should not match.
-            '''
-      stage: V2
-      tests: ["chip_sw_csrng_lc_hw_debug_en_test"]
     }
     {
       name: chip_sw_csrng_known_answer_tests
@@ -3298,7 +3239,6 @@
               "chip_sw_aon_timer_smoketest",
               "chip_sw_clkmgr_smoketest",
               "chip_sw_csrng_smoketest",
-              "chip_sw_entropy_src_smoketest",
               "chip_sw_gpio_smoketest",
               "chip_sw_hmac_smoketest",
               "chip_sw_kmac_smoketest",

@@ -48,7 +48,6 @@ interface chip_if;
 `define CPU_CORE_HIER       `CPU_HIER.u_core
 `define CPU_TL_ADAPT_D_HIER `CPU_HIER.tl_adapter_host_d_ibex
 `define CSRNG_HIER          `TOP_HIER.u_csrng
-`define ENTROPY_SRC_HIER    `TOP_HIER.u_entropy_src
 `define EDN_HIER(i)         `TOP_HIER.u_edn``i
 `define FLASH_CTRL_HIER     `TOP_HIER.u_flash_ctrl
 `define GPIO_HIER           `TOP_HIER.u_gpio
@@ -923,7 +922,6 @@ interface chip_if;
       PeripheralCsrng:          path = {path, ".", `DV_STRINGIFY(`CSRNG_HIER)};
       PeripheralEdn0:           path = {path, ".", `DV_STRINGIFY(`EDN_HIER(0))};
       PeripheralEdn1:           path = {path, ".", `DV_STRINGIFY(`EDN_HIER(1))};
-      PeripheralEntropySrc:     path = {path, ".", `DV_STRINGIFY(`ENTROPY_SRC_HIER)};
       PeripheralFlashCtrl:      path = {path, ".", `DV_STRINGIFY(`FLASH_CTRL_HIER)};
       PeripheralGpio:           path = {path, ".", `DV_STRINGIFY(`GPIO_HIER)};
       PeripheralHmac:           path = {path, ".", `DV_STRINGIFY(`HMAC_HIER)};
@@ -1149,16 +1147,6 @@ assign spi_host_1_state = {tb.dut.top_darjeeling.u_spi_host1.u_spi_core.u_fsm.st
 `endif
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_edn_1_fsm_state,
       edn_1_fsm_state, 9)
-
-  // Signal probe function for `state_q` of ENTROPY_SOURCE_MAIN_SM
-  wire [8:0] entropy_src_fsm_state;
-`ifdef GATE_LEVEL
-  assign entropy_src_fsm_state = 0;
-`else
-  assign entropy_src_fsm_state = `ENTROPY_SRC_HIER.u_entropy_src_core.u_entropy_src_main_sm.state_q;
-`endif
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_entropy_src_fsm_state,
-      entropy_src_fsm_state, 9)
 
 `undef TOP_HIER
 `undef ADC_CTRL_HIER
