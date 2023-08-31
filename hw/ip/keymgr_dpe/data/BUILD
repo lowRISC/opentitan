@@ -7,9 +7,9 @@ package(default_visibility = ["//visibility:public"])
 load("//rules:autogen.bzl", "autogen_hjson_header")
 
 autogen_hjson_header(
-    name = "keymgr_regs",
+    name = "keymgr_dpe_regs",
     srcs = [
-        "keymgr.hjson",
+        "keymgr_dpe.hjson",
     ],
 )
 
