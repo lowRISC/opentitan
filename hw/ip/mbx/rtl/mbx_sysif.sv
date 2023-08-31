@@ -26,23 +26,26 @@ module mbx_sysif
   // Access to the status register
   input  logic                        sysif_status_busy_valid_i,
   input  logic                        sysif_status_busy_i,
+  output logic                        sysif_status_busy_o,
   input  logic                        sysif_status_doe_intr_status_set_i,
   output logic                        sysif_status_doe_intr_status_o,
   input  logic                        sysif_status_error_set_i,
   input  logic                        sysif_status_error_clear_i,
-  output logic                        sysif_status_async_msg_status_o,
+  output logic                        sysif_status_error_o,
   input  logic                        sysif_status_async_msg_status_set_i,
+  output logic                        sysif_status_async_msg_status_o,
   input  logic                        sysif_status_ready_valid_i,
   input  logic                        sysif_status_ready_i,
+  output logic                        sysif_status_ready_o,
   // Control lines for backpressuring the bus
-  input  logic                        ibmbx_pending_i,
-  input  logic                        obmbx_pending_i,
+  input  logic                        imbx_pending_i,
+  input  logic                        ombx_pending_i,
   // Data interface for inbound and outbound mailbox
   output logic                        write_data_write_valid_o,
   output logic [CfgSramDataWidth-1:0] write_data_o,
-  input  logic [CfgSramDataWidth-1:0] read_data_i,
   output logic                        read_data_read_valid_o,
-  output logic                        read_data_write_valid_o
+  output logic                        read_data_write_valid_o,
+  input  logic [CfgSramDataWidth-1:0] read_data_i
 );
   import mbx_reg_pkg::*;
 
@@ -70,10 +73,10 @@ module mbx_sysif
 
   // Control register
   assign sysif_control_abort_set_o   = reg2hw.sys_control.abort.qe & reg2hw.sys_control.abort.q;
-  assign  hw2reg.sys_control.abort.d  = 1'b0;
+  assign hw2reg.sys_control.abort.d  = 1'b0;
 
-  assign  sysif_control_go_set_o   = reg2hw.sys_control.go.qe & reg2hw.sys_control.go.q;
-  assign  hw2reg.sys_control.go.d  = 1'b0;
+  assign sysif_control_go_set_o   = reg2hw.sys_control.go.qe & reg2hw.sys_control.go.q;
+  assign hw2reg.sys_control.go.d  = 1'b0;
 
   // Manual implementation of the doe_intr_en bit
   // SWAccess: RW
@@ -124,6 +127,9 @@ module mbx_sysif
   // Fiddle out status register bits for external write logic
   assign sysif_status_async_msg_status_o = reg2hw.sys_status.async_msg_status.q;
   assign sysif_status_doe_intr_status_o  = reg2hw.sys_status.doe_intr_status.q;
+  assign sysif_status_busy_o             = reg2hw.sys_status.busy.q;
+  assign sysif_status_ready_o            = reg2hw.sys_status.ready.q;
+  assign sysif_status_error_o            = reg2hw.sys_status.error.q;
 
   // External read logic
   assign hw2reg.sys_status.busy.de = sysif_status_busy_valid_i;
@@ -166,7 +172,7 @@ module mbx_sysif
     .addr_o       (                           ),
     .wdata_o      ( reg_wdata_wdata           ),
     .be_o         (                           ),
-    .busy_i       ( ibmbx_pending_i           ),
+    .busy_i       ( imbx_pending_i           ),
     .rdata_i      ( '0                        ),
     .error_i      ( 1'b0                      )
   );
@@ -193,7 +199,7 @@ module mbx_sysif
     // Write values are ignored. A Write simply means the read has occured.
     .wdata_o      (                            ),
     .be_o         (                            ),
-    .busy_i       ( obmbx_pending_i            ),
+    .busy_i       ( ombx_pending_i            ),
     .rdata_i      ( read_data_i                ),
     .error_i      ( 1'b0                       )
   );
