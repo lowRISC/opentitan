@@ -334,6 +334,18 @@
           }
         ],
       },
+      { name: "dummy_register",
+        desc: "Needed for testing purposes",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "31:0",
+            name: "dummy_register",
+            resval: "0",
+            desc: "Needed for testing purposes",
+          }
+        ],
+      },
     ],
 
     ram: [

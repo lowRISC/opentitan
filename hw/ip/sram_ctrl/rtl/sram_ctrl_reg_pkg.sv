@@ -56,6 +56,10 @@ package sram_ctrl_reg_pkg;
   } sram_ctrl_reg2hw_ctrl_reg_t;
 
   typedef struct packed {
+    logic [31:0] q;
+  } sram_ctrl_reg2hw_dummy_register_reg_t;
+
+  typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
@@ -84,10 +88,11 @@ package sram_ctrl_reg_pkg;
 
   // Register -> HW type for regs interface
   typedef struct packed {
-    sram_ctrl_reg2hw_alert_test_reg_t alert_test; // [14:13]
-    sram_ctrl_reg2hw_status_reg_t status; // [12:8]
-    sram_ctrl_reg2hw_exec_reg_t exec; // [7:4]
-    sram_ctrl_reg2hw_ctrl_reg_t ctrl; // [3:0]
+    sram_ctrl_reg2hw_alert_test_reg_t alert_test; // [46:45]
+    sram_ctrl_reg2hw_status_reg_t status; // [44:40]
+    sram_ctrl_reg2hw_exec_reg_t exec; // [39:36]
+    sram_ctrl_reg2hw_ctrl_reg_t ctrl; // [35:32]
+    sram_ctrl_reg2hw_dummy_register_reg_t dummy_register; // [31:0]
   } sram_ctrl_regs_reg2hw_t;
 
   // HW -> register type for regs interface
@@ -103,6 +108,7 @@ package sram_ctrl_reg_pkg;
   parameter logic [RegsAw-1:0] SRAM_CTRL_CTRL_REGWEN_OFFSET = 5'h 10;
   parameter logic [RegsAw-1:0] SRAM_CTRL_CTRL_OFFSET = 5'h 14;
   parameter logic [RegsAw-1:0] SRAM_CTRL_EOC_OFFSET = 5'h 18;
+  parameter logic [RegsAw-1:0] SRAM_CTRL_DUMMY_REGISTER_OFFSET = 5'h 1c;
 
   // Reset values for hwext registers and their fields for regs interface
   parameter logic [0:0] SRAM_CTRL_ALERT_TEST_RESVAL = 1'h 0;
@@ -116,18 +122,20 @@ package sram_ctrl_reg_pkg;
     SRAM_CTRL_EXEC,
     SRAM_CTRL_CTRL_REGWEN,
     SRAM_CTRL_CTRL,
-    SRAM_CTRL_EOC
+    SRAM_CTRL_EOC,
+    SRAM_CTRL_DUMMY_REGISTER
   } sram_ctrl_regs_id_e;
 
   // Register width information to check illegal writes for regs interface
-  parameter logic [3:0] SRAM_CTRL_REGS_PERMIT [7] = '{
+  parameter logic [3:0] SRAM_CTRL_REGS_PERMIT [8] = '{
     4'b 0001, // index[0] SRAM_CTRL_ALERT_TEST
     4'b 0001, // index[1] SRAM_CTRL_STATUS
     4'b 0001, // index[2] SRAM_CTRL_EXEC_REGWEN
     4'b 0001, // index[3] SRAM_CTRL_EXEC
     4'b 0001, // index[4] SRAM_CTRL_CTRL_REGWEN
     4'b 0001, // index[5] SRAM_CTRL_CTRL
-    4'b 1111  // index[6] SRAM_CTRL_EOC
+    4'b 1111, // index[6] SRAM_CTRL_EOC
+    4'b 1111  // index[7] SRAM_CTRL_DUMMY_REGISTER
   };
 
 endpackage
