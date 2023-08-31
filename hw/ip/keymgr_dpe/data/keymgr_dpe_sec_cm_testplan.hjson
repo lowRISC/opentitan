@@ -1,0 +1,177 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Security countermeasures testplan extracted from the IP Hjson using reggen.
+//
+// This testplan is auto-generated only the first time it is created. This is
+// because this testplan needs to be hand-editable. It is possible that these
+// testpoints can go out of date if the spec is updated with new
+// countermeasures. When `reggen` is invoked when this testplan already exists,
+// It checks if the list of testpoints is up-to-date and enforces the user to
+// make further manual updates.
+//
+// These countermeasures and their descriptions can be found here:
+// .../keymgr_dpe/data/keymgr_dpe.hjson
+//
+// It is possible that the testing of some of these countermeasures may already
+// be covered as a testpoint in a different testplan. This duplication is ok -
+// the test would have likely already been developed. We simply map those tests
+// to the testpoints below using the `tests` key.
+//
+// Please ensure that this testplan is imported in:
+// .../keymgr_dpe/data/keymgr_dpe_testplan.hjson
+{
+  testpoints: [
+    {
+      name: sec_cm_bus_integrity
+      desc: "Verify the countermeasure(s) BUS.INTEGRITY."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_config_shadow
+      desc: "Verify the countermeasure(s) CONFIG.SHADOW."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_op_config_regwen
+      desc: "Verify the countermeasure(s) OP.CONFIG.REGWEN."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_reseed_config_regwen
+      desc: "Verify the countermeasure(s) RESEED.CONFIG.REGWEN."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_sw_binding_config_regwen
+      desc: "Verify the countermeasure(s) SW_BINDING.CONFIG.REGWEN."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_max_key_ver_config_regwen
+      desc: "Verify the countermeasure(s) MAX_KEY_VER.CONFIG.REGWEN."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_lc_ctrl_intersig_mubi
+      desc: "Verify the countermeasure(s) LC_CTRL.INTERSIG.MUBI."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_constants_consistency
+      desc: "Verify the countermeasure(s) CONSTANTS.CONSISTENCY."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_intersig_consistency
+      desc: "Verify the countermeasure(s) INTERSIG.CONSISTENCY."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_hw_key_sw_noaccess
+      desc: "Verify the countermeasure(s) HW.KEY.SW_NOACCESS."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_output_keys_ctrl_redun
+      desc: "Verify the countermeasure(s) OUTPUT_KEYS.CTRL.REDUN."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_ctrl_fsm_sparse
+      desc: "Verify the countermeasure(s) CTRL.FSM.SPARSE."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_data_fsm_sparse
+      desc: "Verify the countermeasure(s) DATA.FSM.SPARSE."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_ctrl_fsm_local_esc
+      desc: "Verify the countermeasure(s) CTRL.FSM.LOCAL_ESC."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_ctrl_fsm_consistency
+      desc: "Verify the countermeasure(s) CTRL.FSM.CONSISTENCY."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_ctrl_fsm_global_esc
+      desc: "Verify the countermeasure(s) CTRL.FSM.GLOBAL_ESC."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_ctrl_ctr_redun
+      desc: "Verify the countermeasure(s) CTRL.CTR.REDUN."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_kmac_if_fsm_sparse
+      desc: "Verify the countermeasure(s) KMAC_IF.FSM.SPARSE."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_kmac_if_ctr_redun
+      desc: "Verify the countermeasure(s) KMAC_IF.CTR.REDUN."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_kmac_if_cmd_ctrl_consistency
+      desc: "Verify the countermeasure(s) KMAC_IF_CMD.CTRL.CONSISTENCY."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_kmac_if_done_ctrl_consistency
+      desc: "Verify the countermeasure(s) KMAC_IF_DONE.CTRL.CONSISTENCY."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_reseed_ctr_redun
+      desc: "Verify the countermeasure(s) RESEED.CTR.REDUN."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_side_load_sel_ctrl_consistency
+      desc: "Verify the countermeasure(s) SIDE_LOAD_SEL.CTRL.CONSISTENCY."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_sideload_ctrl_fsm_sparse
+      desc: "Verify the countermeasure(s) SIDELOAD_CTRL.FSM.SPARSE."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_ctrl_key_integrity
+      desc: "Verify the countermeasure(s) CTRL.KEY.INTEGRITY."
+      stage: V2S
+      tests: []
+    }
+  ]
+}
