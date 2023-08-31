@@ -17,7 +17,10 @@ static const uint32_t kKeyMask[8] = {
     0x8acdcb7e, 0x15e76440, 0x8459b2ce, 0xdc2110cc,
 };
 
-static const size_t kAesBlockBytes = 128 / 8;
+enum {
+  kAesBlockBytes = 128 / 8,
+  kAesBlockWords = kAesBlockBytes / sizeof(uint32_t),
+};
 
 static crypto_key_config_t make_key_config(const aes_test_t *test) {
   key_mode_t key_mode;
@@ -73,10 +76,12 @@ static void encrypt_decrypt_test(const aes_test_t *test) {
   };
   key.checksum = integrity_blinded_checksum(&key);
 
-  // Construct IV buffer.
-  crypto_byte_buf_t iv = {
-      .data = (unsigned char *)test->iv,
-      .len = kAesBlockBytes,
+  // Construct non-constant version of IV buffer.
+  uint32_t iv_data[kAesBlockWords];
+  memcpy(iv_data, test->iv, kAesBlockBytes);
+  crypto_word_buf_t iv = {
+      .data = iv_data,
+      .len = kAesBlockWords,
   };
 
   // Construct plaintext buffer.

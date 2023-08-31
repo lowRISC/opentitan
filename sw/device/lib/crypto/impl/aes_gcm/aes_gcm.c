@@ -134,7 +134,7 @@ status_t aes_gcm_gctr(const aes_key_t key, const aes_block_t *icb, size_t len,
  * decryption; the lengths of the plaintext and ciphertext always match, and
  * `plaintext_len` may represent either.
  *
- * @param iv_len IV length in bytes
+ * @param iv_len IV length in 32-bit words
  * @param plaintext_len Plaintext/ciphertext length in bytes
  * @param aad_len Associated data length in bytes
  * @return `OTCRYPTO_OK` if the lengths are OK, and `OTCRYPTO_BAD_ARGS`
@@ -144,8 +144,8 @@ OT_WARN_UNUSED_RESULT
 static status_t check_buffer_lengths(const size_t iv_len,
                                      const size_t plaintext_len,
                                      const size_t aad_len) {
-  // Check IV length (must be 96 or 128 bits = 12 or 16 bytes).
-  if (iv_len != 12 && iv_len != 16) {
+  // Check IV length (must be 96 or 128 bits = 3 or 4 words).
+  if (iv_len != 3 && iv_len != 4) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -191,25 +191,25 @@ static status_t aes_gcm_hash_subkey(const aes_key_t key, ghash_context_t *ctx) {
  * This block is called J0 in the NIST documentation, and is the same for both
  * encryption and decryption.
  *
- * @param iv_len IV length in bytes
+ * @param iv_len IV length in 32-bit words
  * @param iv IV value
  * @param ctx GHASH context with product table for hash subkey H
  * @param[out] j0 Destination for the output counter block
  * @return OK or error
  */
 OT_WARN_UNUSED_RESULT
-static status_t aes_gcm_counter(const size_t iv_len, const uint8_t *iv,
+static status_t aes_gcm_counter(const size_t iv_len, const uint32_t *iv,
                                 ghash_context_t *ctx, aes_block_t *j0) {
-  if (iv_len == 12) {
+  if (iv_len == 3) {
     // If the IV is 96 bits, then J0 = (IV || {0}^31 || 1).
-    memcpy(j0->data, iv, iv_len);
+    hardened_memcpy(j0->data, iv, iv_len);
     // Set the last word to 1 (as a big-endian integer).
     j0->data[kAesBlockNumWords - 1] = __builtin_bswap32(1);
-  } else if (iv_len == 16) {
+  } else if (iv_len == 4) {
     // If the IV is 128 bits, then J0 = GHASH(H, IV || {0}^120 || 0x80), where
     // {0}^120 means 120 zero bits (15 0x00 bytes).
     ghash_init(ctx);
-    ghash_update(ctx, iv_len, iv);
+    ghash_update(ctx, iv_len * sizeof(uint32_t), (unsigned char *)iv);
     uint8_t buffer[kAesBlockNumBytes];
     memset(buffer, 0, kAesBlockNumBytes);
     buffer[kAesBlockNumBytes - 1] = 0x80;
@@ -282,7 +282,7 @@ static status_t aes_gcm_compute_tag(const aes_key_t key, ghash_context_t *ctx,
 }
 
 status_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
-                         const uint8_t *iv, const size_t plaintext_len,
+                         const uint32_t *iv, const size_t plaintext_len,
                          const uint8_t *plaintext, const size_t aad_len,
                          const uint8_t *aad, const size_t tag_len, uint8_t *tag,
                          uint8_t *ciphertext) {
@@ -312,7 +312,7 @@ status_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
 }
 
 status_t aes_gcm_decrypt(const aes_key_t key, const size_t iv_len,
-                         const uint8_t *iv, const size_t ciphertext_len,
+                         const uint32_t *iv, const size_t ciphertext_len,
                          const uint8_t *ciphertext, const size_t aad_len,
                          const uint8_t *aad, const size_t tag_len,
                          const uint8_t *tag, uint8_t *plaintext,
