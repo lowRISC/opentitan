@@ -111,9 +111,9 @@ impl Frame {
 
         // Round up to multiple of 128 bytes, this is to ensure that the bootloader flushes the
         // last data transmitted, even in the absense of the "EOF" flag.  The reason we do not
-        // send that flag is that it causes immediate boot into the code just programmed, and we
-        // want to allow the user to use --leave_in_reset to control exactly when the newly
-        // programmed code should first run.
+        // send that flag is that doing so would cause an immediate boot into the code just
+        // programmed, and we want to allow the user to use --leave_in_reset to control exactly
+        // when the newly programmed code should first run.
         let max_addr = (max_addr + Self::FLASH_BUFFER_SIZE - 1) & !Self::FLASH_BUFFER_MASK;
 
         let mut frames = Vec::new();
@@ -125,7 +125,7 @@ impl Frame {
                 + payload[addr..]
                     .chunks(4)
                     .position(|c| c != [0xff; 4])
-                    .unwrap()
+                    .unwrap_or(0)
                     * 4;
             let skip_addr = nonempty_addr & !Self::FLASH_SECTOR_MASK;
             if skip_addr > addr && (addr == 0 || addr & Self::FLASH_BUFFER_MASK != 0) {
