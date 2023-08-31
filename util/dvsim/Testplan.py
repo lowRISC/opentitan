@@ -7,6 +7,7 @@ r"""Testpoint and Testplan classes for maintaining the testplan
 import os
 import re
 import sys
+from typing import TextIO
 from collections import defaultdict
 from pathlib import Path
 
@@ -481,73 +482,32 @@ class Testplan:
             "tests": list(regressions[ms])
         } for ms in regressions]
 
-    def get_testplan_table(self, fmt="pipe"):
-        """Generate testplan table from hjson testplan.
+    def write_testplan_doc(self, output: TextIO) -> None:
+        """Write testplan documentation in markdown from the hjson testplan."""
 
-        fmt is either 'pipe' (markdown) or 'html'. 'pipe' is the name used by
-        tabulate to generate a markdown formatted table.
-        """
-        assert fmt in ["pipe", "html"]
+        stages = {}
+        for tp in self.testpoints:
+            stages.setdefault(tp.stage, list()).append(tp)
 
-        # Map between the requested format and a pair (tabfmt, formatter) where
-        # tabfmt is the "tablefmt" argument for tabulate.tabulate and formatter
-        # converts the input Markdown text to something we can pass to the
-        # formatter.
-        fmt_configs = {
-            # For Markdown output, we pass the input text straight through
-            'pipe': ('pipe', lambda x: x),
-            # For HTML output, we convert the Markdown to HTML using the
-            # mistletoe library. The tablefmt argument should be 'unsafehtml'
-            # in this case because this already escapes things like '<' and
-            # don't want to double-escape them when tabulating.
-            'html': ('unsafehtml', mistletoe.markdown)
-        }
-        tabfmt, formatter = fmt_configs[fmt]
+        output.write("# Testplan\n\n## Testpoints\n\n")
+        for (stage, testpoints) in stages.items():
+            output.write(f"### Stage {stage} Testpoints\n\n")
+            for tp in testpoints:
+                output.write(f"#### `{tp.name}`\n\n")
+                if len(tp.tests) == 0:
+                    output.write("No Tests Implemented")
+                elif len(tp.tests) == 1:
+                    output.write(f"Test: `{tp.tests[0]}`")
+                else:
+                    output.write("Tests:\n")
+                    output.writelines([f"- `{test}`\n" for test in tp.tests])
 
-        if self.testpoints:
-            lines = [formatter("\n### Testpoints\n")]
-            header = ["Stage", "Name", "Tests", "Description"]
-            colalign = ("center", "center", "left", "left")
-            table = []
-            for tp in self.testpoints:
-                desc = formatter(tp.desc.strip())
-
-                # tests is a list of strings. We want to insert them into a
-                # table and (conveniently) we can put one on each line in both
-                # Markdown and HTML mode by interspersing with '<br>' tags.
-                tests = "<br>\n".join(tp.tests)
-
-                table.append([tp.stage, tp.name, tests, desc])
-            lines += [
-                tabulate(table,
-                         headers=header,
-                         tablefmt=tabfmt,
-                         colalign=colalign)
-            ]
+                output.write("\n\n" + tp.desc.strip() + "\n\n")
 
         if self.covergroups:
-            lines += [formatter("\n### Covergroups\n")]
-            header = ["Name", "Description"]
-            colalign = ("center", "left")
-            table = []
+            output.write("## Covergroups\n\n")
             for covergroup in self.covergroups:
-                desc = formatter(covergroup.desc.strip())
-                table.append([covergroup.name, desc])
-            lines += [
-                tabulate(table,
-                         headers=header,
-                         tablefmt=tabfmt,
-                         colalign=colalign)
-            ]
-
-        text = "\n".join(lines)
-        if fmt == "html":
-            text = self.get_dv_style_css() + text
-            text = text.replace("<table>", "<table class=\"dv\">")
-
-            # Tabulate does not support HTML tags.
-            text = text.replace("&lt;", "<").replace("&gt;", ">")
-        return text
+                output.write(f"### {covergroup.name}\n\n{covergroup.desc.strip()}\n\n")
 
     def map_test_results(self, test_results):
         """Map test results to testpoints."""

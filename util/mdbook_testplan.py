@@ -45,7 +45,7 @@ def main() -> None:
                 book_root / chapter["source_path"],
                 repo_top = book_root)
             buffer = io.StringIO()
-            buffer.write(plan.get_testplan_table("html"))
+            plan.write_testplan_doc(buffer)
             chapter["content"] = buffer.getvalue()
 
         testplan_files.add(Path(chapter["source_path"]))
