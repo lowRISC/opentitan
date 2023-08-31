@@ -103,13 +103,13 @@ status_t keygen_then_sign_test(void) {
   };
 
   uint32_t sig[kRsa2048NumWords];
-  crypto_byte_buf_t sig_buf = {
-      .data = (unsigned char *)sig,
-      .len = kRsa2048NumBytes,
+  crypto_word_buf_t sig_buf = {
+      .data = sig,
+      .len = kRsa2048NumWords,
   };
-  crypto_const_byte_buf_t const_sig_buf = {
-      .data = (unsigned char *)sig,
-      .len = kRsa2048NumBytes,
+  crypto_const_word_buf_t const_sig_buf = {
+      .data = sig,
+      .len = kRsa2048NumWords,
   };
 
   // Generate a signature.

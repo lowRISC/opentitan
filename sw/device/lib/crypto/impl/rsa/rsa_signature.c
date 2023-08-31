@@ -86,19 +86,19 @@ static status_t digest_info_write(const uint8_t *message,
   size_t digest_words = 0;
   switch (hash_mode) {
     case kRsaSignatureHashSha256:
-      HARDENED_TRY(sha256(message, message_len, (unsigned char *)encoding));
+      HARDENED_TRY(sha256(message, message_len, encoding));
       memcpy(encoding + kSha256DigestWords, &kSha256DigestIdentifier,
              sizeof(kSha256DigestIdentifier));
       digest_words = kSha256DigestWords;
       break;
     case kRsaSignatureHashSha384:
-      HARDENED_TRY(sha384(message, message_len, (unsigned char *)encoding));
+      HARDENED_TRY(sha384(message, message_len, encoding));
       memcpy(encoding + kSha384DigestWords, &kSha384DigestIdentifier,
              sizeof(kSha384DigestIdentifier));
       digest_words = kSha384DigestWords;
       break;
     case kRsaSignatureHashSha512:
-      HARDENED_TRY(sha512(message, message_len, (unsigned char *)encoding));
+      HARDENED_TRY(sha512(message, message_len, encoding));
       memcpy(encoding + kSha512DigestWords, &kSha512DigestIdentifier,
              sizeof(kSha512DigestIdentifier));
       digest_words = kSha512DigestWords;

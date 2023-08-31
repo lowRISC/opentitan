@@ -295,17 +295,16 @@ static void state_shred(sha256_state_t *state) {
  * @param state Context object.
  * @param[out] digest Destination buffer for digest.
  */
-static void digest_get(sha256_state_t *state, uint8_t *digest) {
+static void digest_get(sha256_state_t *state, uint32_t *digest) {
   for (size_t i = 0; i < kSha256StateWords / 2; i++) {
     uint32_t tmp = __builtin_bswap32(state->H[i]);
     state->H[i] = __builtin_bswap32(state->H[kSha256StateWords - 1 - i]);
     state->H[kSha256StateWords - 1 - i] = tmp;
   }
-  // TODO(#17711): this can be `hardened_memcpy` if `digest` is aligned.
-  memcpy(digest, state->H, kSha256StateBytes);
+  hardened_memcpy(digest, state->H, kSha256StateWords);
 }
 
-status_t sha256_final(sha256_state_t *state, uint8_t *digest) {
+status_t sha256_final(sha256_state_t *state, uint32_t *digest) {
   // Construct padding.
   HARDENED_TRY(process_message(state, NULL, 0, kHardenedBoolTrue));
 
@@ -315,7 +314,7 @@ status_t sha256_final(sha256_state_t *state, uint8_t *digest) {
   return OTCRYPTO_OK;
 }
 
-status_t sha256(const uint8_t *msg, const size_t msg_len, uint8_t *digest) {
+status_t sha256(const uint8_t *msg, const size_t msg_len, uint32_t *digest) {
   sha256_state_t state;
   sha256_init(&state);
 

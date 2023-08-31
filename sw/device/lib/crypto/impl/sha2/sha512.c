@@ -359,13 +359,12 @@ static void state_shred(sha512_state_t *state) {
  * @param state Context object.
  * @param[out] digest Destination buffer for digest.
  */
-static void sha512_digest_get(sha512_state_t *state, uint8_t *digest) {
+static void sha512_digest_get(sha512_state_t *state, uint32_t *digest) {
   // Reverse the bytes in each word to match FIPS 180-4.
   for (size_t i = 0; i < kSha512StateWords; i++) {
     state->H[i] = __builtin_bswap32(state->H[i]);
   }
-  // TODO(#17711): this can be `hardened_memcpy` if `digest` is aligned.
-  memcpy(digest, state->H, kSha512DigestBytes);
+  hardened_memcpy(digest, state->H, kSha512DigestWords);
 }
 
 /**
@@ -377,16 +376,15 @@ static void sha512_digest_get(sha512_state_t *state, uint8_t *digest) {
  * @param state Context object.
  * @param[out] digest Destination buffer for digest.
  */
-static void sha384_digest_get(sha512_state_t *state, uint8_t *digest) {
+static void sha384_digest_get(sha512_state_t *state, uint32_t *digest) {
   // Reverse the bytes in each word to match FIPS 180-4.
   for (size_t i = 0; i < kSha512StateWords; i++) {
     state->H[i] = __builtin_bswap32(state->H[i]);
   }
-  // TODO(#17711): this can be `hardened_memcpy` if `digest` is aligned.
-  memcpy(digest, state->H, kSha384DigestBytes);
+  hardened_memcpy(digest, state->H, kSha384DigestWords);
 }
 
-status_t sha512_final(sha512_state_t *state, uint8_t *digest) {
+status_t sha512_final(sha512_state_t *state, uint32_t *digest) {
   // Construct padding.
   HARDENED_TRY(process_message(state, NULL, 0, kHardenedBoolTrue));
 
@@ -396,7 +394,7 @@ status_t sha512_final(sha512_state_t *state, uint8_t *digest) {
   return OTCRYPTO_OK;
 }
 
-status_t sha512(const uint8_t *msg, const size_t msg_len, uint8_t *digest) {
+status_t sha512(const uint8_t *msg, const size_t msg_len, uint32_t *digest) {
   sha512_state_t state;
   sha512_init(&state);
 
@@ -413,7 +411,7 @@ status_t sha384_update(sha384_state_t *state, const uint8_t *msg,
   return sha512_update(state, msg, msg_len);
 }
 
-status_t sha384_final(sha384_state_t *state, uint8_t *digest) {
+status_t sha384_final(sha384_state_t *state, uint32_t *digest) {
   // Construct padding.
   HARDENED_TRY(process_message(state, NULL, 0, kHardenedBoolTrue));
 
@@ -423,7 +421,7 @@ status_t sha384_final(sha384_state_t *state, uint8_t *digest) {
   return OTCRYPTO_OK;
 }
 
-status_t sha384(const uint8_t *msg, const size_t msg_len, uint8_t *digest) {
+status_t sha384(const uint8_t *msg, const size_t msg_len, uint32_t *digest) {
   sha384_state_t state;
   sha384_init(&state);
 

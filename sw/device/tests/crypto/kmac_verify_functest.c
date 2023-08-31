@@ -28,10 +28,15 @@ bool test_main(void) {
     LOG_INFO("loop counter = %d, vector identifier: %s", i,
              current_test_vector->vector_identifier);
 
-    uint8_t digest[current_test_vector->digest.len];
-    crypto_byte_buf_t digest_buf = {
+    size_t digest_len_words =
+        current_test_vector->digest.len / sizeof(uint32_t);
+    if (current_test_vector->digest.len % sizeof(uint32_t) != 0) {
+      digest_len_words++;
+    }
+    uint32_t digest[digest_len_words];
+    crypto_word_buf_t digest_buf = {
         .data = digest,
-        .len = current_test_vector->digest.len,
+        .len = digest_len_words,
     };
 
     crypto_status_t err_status;
@@ -58,7 +63,8 @@ bool test_main(void) {
     }
 
     CHECK_STATUS_OK(err_status);
-    CHECK_ARRAYS_EQ(digest_buf.data, current_test_vector->digest.data,
+    CHECK_ARRAYS_EQ((unsigned char *)digest_buf.data,
+                    current_test_vector->digest.data,
                     current_test_vector->digest.len);
   }
 
