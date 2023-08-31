@@ -94,6 +94,17 @@ status_t usb_testutils_controlep_init(usb_testutils_controlep_ctx_t *ctctx,
                                       const uint8_t *test_dscr,
                                       size_t test_dscr_len);
 
+/**
+ * Wait until the device configuration has been set by the host.
+ *
+ * @param ctctx uninitialized context for this instance.
+ * @param ctx initialized context for usbdev driver.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t usb_testutils_controlep_config_wait(
+    usb_testutils_controlep_ctx_t *ctctx, usb_testutils_ctx_t *ctx);
+
 /***********************************************************************/
 /* Below this point are macros used to construct the USB configuration */
 /* descriptor. Use them to initialize a uint8_t array for cfg_dscr     */
