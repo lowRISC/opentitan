@@ -61,6 +61,7 @@ opentitan_functest(
             "--clear-bitstream",
             "--bitstream=\"$(location {bitstream})\"",
             "--elf=\"$(rootpath :sram_cp_provision_init_fpga_cw310_elf_transition)\"",
+            "--all-steps",
         ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
     ),
     data = [
