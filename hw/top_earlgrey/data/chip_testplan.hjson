@@ -21,6 +21,7 @@
     // IP block specific top level test plans.
     "hw/top_earlgrey/data/ip/chip_hmac_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_keymgr_testplan.hjson",
+    "hw/top_earlgrey/data/ip/chip_lc_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_kmac_testplan.hjson",
   ]
 
@@ -575,7 +576,7 @@
 
     //////////////////////////////////////////////////////////////////////////////////////
     // System Peripherals                                                               //
-    // XBAR, RV_DM, RV_TIMER, AON_TIMER, PLIC, CLK/RST/PWR MGR, ALERT_HANDLER, LC_CTRL, //
+    // XBAR, RV_DM, RV_TIMER, AON_TIMER, PLIC, CLK/RST/PWR MGR, ALERT_HANDLER,          //
     // ADC_CTRL, SYSRST_CTRL                                                            //
     //////////////////////////////////////////////////////////////////////////////////////
 
@@ -1666,176 +1667,6 @@
       stage: V2
       tests: ["chip_sw_alert_handler_reverse_ping_in_deep_sleep"]
     }
-
-    // LC_CTRL (pre-verified IP) integration tests:
-    {
-      name: chip_sw_lc_ctrl_alert_handler_escalation
-      desc: '''Verify that the escalation signals from the alert handler are connected to LC ctrl.
-
-            - Trigger an alert to initiate the escalations.
-            - Check that the escalation signals are connected to the LC ctrl:
-              - First escalation has no effect on the LC ctrl.  Read LC_STATE CSR to confirm
-                this is the case.
-              - Second escalation should cause the `lc_escalation_en` output to be asserted and for
-                the LC_STATE to transition to scrap state.  Confirm by reading the LC_STATE CSR
-              - Verify that all decoded outputs except for escalate_en are
-                disabled. X-ref'ed with the respective IP tests that consume these signals.
-
-            X-ref'ed with chip_sw_lc_ctrl_broadcast test, which verifies the connectivity of the LC
-            decoded outputs to other IPs.
-            X-ref'ed with alert_handler's escalation test.
-            '''
-      stage: V2
-      tests: ["chip_sw_alert_handler_escalation"]
-    }
-    {
-      name: chip_sw_lc_ctrl_jtag_access
-      desc: '''Verify enable to access LC ctrl via JTAG.
-
-            Using the JTAG agent, write and read LC ctrl CSRs, verify the read value for
-            correctness.
-            '''
-      stage: V2
-      tests: ["chip_tap_straps_dev", "chip_tap_straps_prod", "chip_tap_straps_rma"]
-    }
-    {
-      name: chip_sw_lc_ctrl_otp_hw_cfg
-      desc: '''Verify the device_ID and ID_state CSRs.
-
-            - Preload the hw_cfg partition in OTP ctrl with random data.
-            - Read the device ID and the ID state CSRs to verify their correctness.
-            - Reset the chip and repeat the first 2 steps to verify a different set of values.
-            '''
-      stage: V2
-      tests: ["chip_sw_lc_ctrl_otp_hw_cfg"]
-    }
-    {
-      name: chip_sw_lc_ctrl_init
-      desc: '''Verify the LC ctrl initialization on power up.
-
-            Verify that the chip powers up correctly on POR.
-            - The pwrmgr initiates a handshake with OTP ctrl and later, with LC ctrl in subsequent
-              FSM states. Ensure that the whole power up sequence does not hang.
-            - Verify with connectivity assertion checks, the handshake signals are connected.
-            - Ensure that no interrupts or alerts are triggered.
-            '''
-      stage: V2
-      tests: ["chip_sw_lc_ctrl_transition"]
-    }
-    {
-      name: chip_sw_lc_ctrl_transitions
-      desc: '''Verify the LC ctrl can transit from one state to another valid state with the
-            correct tokens.
-
-            - Preload OTP image with a LC state and required tokens to transfer to next state.
-            - Initiate an LC ctrl state transition via SW if CPU is enabled, or via JTAG interface
-              if CPU is disable.
-            - Ensure that the LC program request is received by the OTP ctrl.
-            - Verify the updated data output from OTP ctrl to LC ctrl is correct.
-            - Ensure that there is no background or otp_init error.
-            - Verify that the LC ctrl has transitioned to the programmed state after a reboot.
-            Re-randomize the lc_transition tokens and repeat the sequence above.
-
-            X-ref'ed chip_sw_otp_ctrl_program.
-            '''
-      stage: V2
-      tests: ["chip_sw_lc_ctrl_transition"]
-    }
-    {
-      name: chip_sw_lc_ctrl_kmac_req
-      desc: '''Verify the token requested from KMAC.
-
-            - For conditional transition, the LC ctrl will send out a token request to KMAC.
-            - Verify that the KMAC returns a hashed token, which should match one of the
-              transition token CSRs.
-
-            X-ref'ed with chip_kmac_lc_req.
-            '''
-      stage: V2
-      tests: ["chip_sw_lc_ctrl_transition"]
-    }
-    {
-      name: chip_sw_lc_ctrl_key_div
-      desc: '''Verify the keymgr div output to keymgr.
-
-            - Verify in different LC states, LC ctrl outputs the correct `key_div_o` to keymgr.
-            - Verify that the keymgr uses the given `key_div_o` value to compute the keys.
-            '''
-      stage: V2
-      tests: ["chip_sw_keymgr_key_derivation_prod"]
-    }
-    {
-      name: chip_sw_lc_ctrl_broadcast
-      desc: '''Verify broadcast signals from lc_ctrl.
-
-            - Preload the LC partition in the otp_ctrl with the following states: RMA, DEV,
-              TEST_LOCKED[N] & SCRAP.
-            - Verify that the following broadcast signals are having the right effect in the
-              respective IPs that consume them:
-              - lc_dft_en_o: impacts pinmux, pwrmgr, otp_ctrl, AST
-              - lc_hw_debug_en_o: impacts pinmux, pwrmgr, sram_ctrl (main and ret) & the rv_dm
-              - lc_keymgr_en_o: impacts keymgr
-              - lc_clk_byp_req_o: impacts clkmgr (handshake with lc_clk_byp_ack_i)
-              - lc_flash_rma_req_o: impacts flash_ctrl (handshake with lc_flash_ram_ack_i)
-              - lc_flash_rma_seed_o: impacts flash_ctrl
-              - lc_check_byp_en_o: impacts otp_ctrl
-              - lc_creator_seed_sw_rw_en_o: impacts flash_ctrl & otp_ctrl
-              - lc_owner_seed_sw_rw_en_o: impacts flash_ctrl
-              - lc_iso_part_sw_rd_en_o: impacts flash_ctrl
-              - lc_iso_part_sw_wr_en_o: impacts flash_ctrl
-              - lc_seed_hw_rd_en_o: impacts flash_ctrl & otp_ctrl
-            - These outputs are enabled per the
-              [life cycle architecture spec](doc/security/specs/device_life_cycle/README.md#architecture).
-
-            X-ref'ed with the respective IP tests that consume these signals.
-
-            Note that the following signals are already verified with connectivity tests and SVAs:
-              - lc_dft_en_o (AST connection)
-              - lc_cpu_en_o (rv_core_ibex)
-              - lc_nvm_debug_en_o (flash_ctrl)
-              - lc_escalate_en_o (multiple)
-            '''
-      stage: V2
-      tests: [
-        "chip_prim_tl_access",                         // lc_dft_en_o: otp_ctrl
-        "chip_tap_straps_dev",                         // lc_dft_en_o, lc_hw_debug_en_o: pinmux
-        "chip_tap_straps_prod",                        // lc_dft_en_o, lc_hw_debug_en_o: pinmux
-        "chip_tap_straps_rma",                         // lc_dft_en_o, lc_hw_debug_en_o: pinmux
-        "chip_sw_rom_ctrl_integrity_check",            // lc_dft_en_o, lc_hw_debug_en_o: pwrmgr
-        "chip_sw_clkmgr_external_clk_src_for_sw_fast_test_unlocked0", // lc_hw_debug_en_o: clkmgr
-        "chip_sw_clkmgr_external_clk_src_for_sw_slow_test_unlocked0", // lc_hw_debug_en_o: clkmgr
-        "chip_sw_clkmgr_external_clk_src_for_sw_fast_dev",            // lc_hw_debug_en_o: clkmgr
-        "chip_sw_clkmgr_external_clk_src_for_sw_slow_dev",            // lc_hw_debug_en_o: clkmgr
-        "chip_sw_clkmgr_external_clk_src_for_sw_fast_rma",            // lc_hw_debug_en_o: clkmgr
-        "chip_sw_clkmgr_external_clk_src_for_sw_slow_rma",            // lc_hw_debug_en_o: clkmgr
-        "chip_sw_sram_ctrl_execution_main",            // lc_hw_debug_en_o: sram_ctrl main
-        "chip_rv_dm_lc_disabled"                       // lc_hw_debug_en_o: rv_dm
-        "chip_sw_keymgr_key_derivation",               // lc_keymgr_en_o: keymgr
-        "chip_sw_clkmgr_external_clk_src_for_lc",      // lc_clk_byp_req_o: clkmgr
-        "chip_sw_flash_rma_unlocked",                  // lc_flash_rma_req_o, lc_flash_rma_seed_o: flash_ctrl
-        "chip_sw_lc_ctrl_transition",                  // lc_check_byp_en_o: otp_ctrl
-        "chip_sw_flash_ctrl_lc_rw_en",                 // lc_creator*, lc_seed*, lc_owner*, lc_iso*: flash_ctrl
-        "chip_sw_otp_ctrl_lc_signals_test_unlocked0",  // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
-        "chip_sw_otp_ctrl_lc_signals_dev",             // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
-        "chip_sw_otp_ctrl_lc_signals_prod",            // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
-        "chip_sw_otp_ctrl_lc_signals_rma",             // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
-      ]
-    }
-    {
-      name: chip_sw_lc_ctrl_kmac_error
-      desc: '''
-            Verify the effect of KMAC returning an error during the hash generation of LC tokens.
-
-            - Follow the steps in `chip_sw_lc_ctrl_kmac_req` test.
-            - While the KMAC is actively computing the digest, glitch the KMAC app sparse FSM to
-              trigger a fault.
-            - Verify that KMAC returns an error signal to the LC controller.
-            - TBD
-            '''
-      stage: V3
-      tests: []
-    }
-
 
     // SYSRST_CTRL (pre-verified IP) integration tests:
     {
@@ -3232,86 +3063,6 @@
              '''
       stage: V2
       tests: ["rom_e2e_smoke"]
-    }
-    {
-      name: chip_lc_scrap
-      desc: '''Ensure it is possible to enter scrap state from every legal life cycle state.
-
-            -  Request transition to SCRAP state using the JTAG interface.
-            -  It should be possible to transition from every legal state using external clock.
-            -  Where it is allowed, transition using internal clocks should also be checked.
-            -  After transition, verify that the device is in SCRAP state through LC read.
-            -  Verify while in SCRAP state:
-               - RV JTAG interface is unavailable.
-               - Ibex is not executing.
-               - RV_DM is unreachable by the stub CPU.
-
-            - X-ref'd with manuf_scrap from the manufacturing testplan.
-            - X-ref'd with chip_lc_test_locked.
-            - X-ref'd with chip_tap_strap_sampling
-            '''
-      stage: V2
-      tests: ["chip_sw_lc_ctrl_rand_to_scrap",
-              "chip_sw_lc_ctrl_raw_to_scrap",
-              "chip_sw_lc_ctrl_rma_to_scrap",
-              "chip_sw_lc_ctrl_test_locked0_to_scrap"]
-    }
-    {
-      name: chip_lc_test_locked
-      desc: '''Transition from TEST_UNLOCKED to TEST_LOCKED using LC JTAG interface.
-
-            -  Check in TEST_UNLOCKED RV JTAG interface is available.
-            -  Verify When in TEST_LOCKED state:
-               - RV JTAG interface is unavailable.
-               - Ibex is not executing.
-               - RV_DM is unreachable by the stub CPU.
-
-            - X-ref'd with manuf_cp_test_lock from the manufacturing testplan.
-            - X-ref'd with chip_lc_scrap.
-            - X-ref'd with chip_tap_strap_sampling
-            - X-ref'd with chip_sw_lc_walkthrough
-            - X-ref'd with chip_rv_dm_lc_disabled
-            '''
-      stage: V2
-      tests: ["chip_sw_lc_walkthrough_testunlocks",
-              "chip_rv_dm_lc_disabled"]
-    }
-    {
-      name: chip_sw_lc_walkthrough
-      desc: '''Walk through the life cycle stages from RAW state and reseting the chip each time.
-
-             - Pre-load OTP image with RAW lc_state.
-             - Initiate the LC transition to one of the test unlock state.
-             - Program test_unlock_token, test_exit_token, rma_unlock_token into OTP partitions.
-             - Move forward to next valid LC states via JTAG interface or SW interface if CPU is
-               enabled.
-             Verify that the features that should indeed be disabled are indeed disabled.
-             '''
-      stage: V2
-      tests: ["chip_sw_lc_walkthrough_dev",
-              "chip_sw_lc_walkthrough_prod",
-              "chip_sw_lc_walkthrough_prodend",
-              "chip_sw_lc_walkthrough_rma",
-              "chip_sw_lc_walkthrough_testunlocks"]
-    }
-    {
-      name: chip_sw_lc_ctrl_volatile_raw_unlock
-      desc: '''Configure VOLATILE_RAW_UNLOCK via LC TAP interface and enable CPU execution.
-
-             - Pre-load OTP image with RAW lc_state.
-             - Initiate the LC transition to test_unlocked0 state using the
-               VOLATILE_RAW_UNLOCK mode of operation.
-             - As part of the transition to test_unlocked0, switch the TAP interface to rv_dm.
-             - Enable ROM execution via rv_dm, and perform POR.
-             - Initiate a second transition to test_unlocked0 using VOLATILE_RAW_UNLOCK.
-             - Verify that the CPU is able to execute.
-
-             Test ext_clk injection before enabling ROM execution.
-             '''
-      stage: V2
-      tests: ["chip_sw_lc_ctrl_volatile_raw_unlock",
-              "chip_sw_lc_ctrl_volatile_raw_unlock_ext_clk_48mhz",
-              "rom_volatile_raw_unlock"]
     }
     {
       name: chip_sw_rom_raw_unlock
