@@ -47,12 +47,22 @@ virtual task run_shadow_reg_errors(int num_times, bit en_csr_rw_seq = 0);
   end
 
   for (int trans = 1; trans <= num_times; trans++) begin
-    `uvm_info(`gfn, $sformatf("Running shadow reg error test iteration %0d/%0d", trans,
-                              num_times), UVM_LOW)
+    // Iterate over shadowed CSRs, corrupting them in turn and checking that we get errors. The
+    // easiest thing to write would be a loop over all the CSRs, but that takes longer if you have
+    // lots of CSRs (obviously) and we don't want to time out on a single test run.
+    //
+    // Instead, we do the first 50 (if there are that many) in the shuffled list. If there are lots
+    // of CSRs, we can run more seeds to ensure we try them all.
+    int max_idx = shadowed_csrs.size() - 1;
+    if (max_idx > 49)
+      max_idx = 49;
+
+    `uvm_info(`gfn, $sformatf("Running shadow reg error test iteration %0d/%0d. max_idx=%0d",
+                              trans, num_times, max_idx), UVM_LOW)
 
     shadowed_csrs.shuffle();
 
-    foreach (shadowed_csrs[i]) begin
+    for (int i = 0; i < max_idx; i++) begin
       `uvm_info(`gfn, $sformatf("mycsr: %s    en_csr_rw_seq:%d",
                 shadowed_csrs[i].get_name(), en_csr_rw_seq), UVM_HIGH);
 
