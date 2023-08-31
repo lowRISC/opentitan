@@ -1,0 +1,42 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "keymgr_dpe"
+  import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/shadow_reg_errors_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/sec_cm_count_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/sec_cm_fsm_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson"]
+  testpoints: [
+    {
+      name: smoke
+      desc: '''
+            Smoke test accessing a major datapath within the keymgr_dpe.
+            Test operations (advance, gen-sw-out, gen-hw-out) at every stage.
+
+            Stimulus:
+            - Randomly select a destination slot x and issue advance call
+              (which should latch the root key into slot x).
+            - At each stage, issue gen-hw-out and gen-sw-out by using the previously loaded key slot.
+            - At each stage, advance to the next stage by randomly picking a new destination slot y,
+              and advancing to it from slot x (x = y is also allowed).
+            - Use fixed values for max_key_version = 0 and policy.allow_child = 1, during advance calls.
+            - Use default/fixed values for HW/SW inputs. Use key_version = 0 during key generation.
+
+            Checks:
+            - Check STATUS reg for each operation.
+            - Check interrupts `op_done` is triggered when operation is done.
+            - Check `err` and alert `recov_operation_err` are triggered after invalid operation.
+            - Check that valid bit is set to 1 in the destination slot.
+            - Check that policy field is correctly updated from POLICY_SLOT CSR.
+            - Check KMAC key, KMAC data and output SW data for correctness.
+            '''
+      stage: V1
+      tests: ["keymgr_dpe_smoke"]
+    }
+  ]
+}
