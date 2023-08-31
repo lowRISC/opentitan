@@ -166,14 +166,14 @@ module mbx_sysif
     .addr_o       (                           ),
     .wdata_o      ( reg_wdata_wdata           ),
     .be_o         (                           ),
-    .busy_i       ( obmbx_pending_i           ),
+    .busy_i       ( ibmbx_pending_i           ),
     .rdata_i      ( '0                        ),
     .error_i      ( 1'b0                      )
   );
 
   // Dedicated TLUL adapter for implementing the read data mailbox register via a register window.
   // We use the register window to access the internal bus signals, allowing the mailbox to halt
-  // the bus if there are too many outstanding requests. The register is immplemented as hwext
+  // the bus if there are too many outstanding requests. The register is implemented as hwext
   // outside of this hierarchy
   tlul_adapter_reg #(
     .RegAw             ( SysAw          ),
@@ -193,7 +193,7 @@ module mbx_sysif
     // Write values are ignored. A Write simply means the read has occured.
     .wdata_o      (                            ),
     .be_o         (                            ),
-    .busy_i       ( ibmbx_pending_i            ),
+    .busy_i       ( obmbx_pending_i            ),
     .rdata_i      ( read_data_i                ),
     .error_i      ( 1'b0                       )
   );

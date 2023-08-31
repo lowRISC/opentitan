@@ -37,32 +37,52 @@ module mbx
   logic [CfgSramAddrWidth-1:0] ib_write_ptr;
   logic [CfgSramAddrWidth-1:0] ob_read_ptr;
 
+  //////////////////////////////////////////////////////////////////////////////  
+  // General signals for the mailbox
+  //////////////////////////////////////////////////////////////////////////////
+
+  // Collect all error sources
+  logic sysif_intg_err, tl_sram_intg_err, ibmbx_state_error, alert_signal;
+  assign alert_signal = sysif_intg_err     | 
+                        tl_sram_intg_err   | 
+                        ibmbx_state_error;
+
+  //////////////////////////////////////////////////////////////////////////////  
+  // Control and Status signals of the host interface
+  //////////////////////////////////////////////////////////////////////////////
+
   // External write signals for control and status register
   logic hostif_control_abort_set;
   logic hostif_status_busy_clear;
   logic hostif_status_error_set, hostif_status_error_clear;
   logic hostif_status_async_msg_status_set;
+  
   // External read signals for control and status register
   logic hostif_status_busy, hostif_status_error;
   logic hostif_status_async_msg_status, hostif_status_ready;
 
-  logic [CfgSramAddrWidth-1:0] ibmbx_hostif_sram_write_ptr;
-  logic [CfgSramAddrWidth-1:0] obmbx_hostif_sram_read_ptr;
-  logic [CfgSramDataWidth-1:0] obmbx_hostif_sram_read_resp;
-
+  logic hostif_event_intr;
   logic hostif_address_range_valid;
+
+  logic sysif_status_doe_intr_status, sysif_status_doe_intr_status_set;
+  logic sysif_write_control_abort, ;
+
+  //////////////////////////////////////////////////////////////////////////////  
+  // Signals for the Inbox
+  //////////////////////////////////////////////////////////////////////////////
+
   logic [CfgSramAddrWidth-1:0] hostif_ib_base, hostif_ib_limit;
+  logic [CfgSramAddrWidth-1:0] ibmbx_hostif_sram_write_ptr;
+
+  //////////////////////////////////////////////////////////////////////////////  
+  // Signals for the Outbox
+  //////////////////////////////////////////////////////////////////////////////
+
   logic [CfgSramAddrWidth-1:0] hostif_ob_base, hostif_ob_limit;
+  logic [CfgSramAddrWidth-1:0] obmbx_hostif_sram_read_ptr;
 
   logic hostif_write_ob_object_size, hostif_read_ob_object_size;
   logic [10:0] hostif_ob_object_size_wdata, hostif_ob_object_size_rdata;
-
-  logic sysif_status_doe_intr_status, sysif_status_doe_intr_status_set;
-  logic sysif_write_control_abort, hostif_event_intr;
-  logic sysif_intg_err, tl_sram_intg_err,  ibmbx_state_error, alert_signal;
-
-  // Collect all error sources
-  assign alert_signal = sysif_intg_err | tl_sram_intg_err | ibmbx_state_error;
 
   mbx_hostif #(
     .AlertAsyncOn    ( AlertAsyncOn     ),
@@ -109,17 +129,35 @@ module mbx
     .sysif_write_control_abort_i         ( sysif_write_control_abort          )
   );
 
-  logic ibmbx_pending, obmbx_pending;
-  logic ibmbx_status_busy_valid, ibmbx_status_busy;
-  logic obmbx_status_ready_valid, obmbx_status_ready;
-
+  //////////////////////////////////////////////////////////////////////////////  
+  // Control and Status signals of the system interface
+  //////////////////////////////////////////////////////////////////////////////
   logic sysif_control_go_set, sysif_control_abort_set, sysif_control_async_msg_en;
 
   logic sysif_status_intr_support, sysif_status_intr_en;
   logic sysif_status_async_msg_status_set, sysif_status_async_msg_status;
 
-  logic sysif_write_data_write_valid;
-  logic [CfgSramDataWidth-1:0] sysif_write_data, sysif_read_data;
+  //////////////////////////////////////////////////////////////////////////////  
+  // Signals for the Inbox
+  //////////////////////////////////////////////////////////////////////////////  
+  logic ibmbx_pending;
+  logic ibmbx_status_busy_valid, ibmbx_status_busy;
+  
+  // Interface signals for SRAM host access to write the incoming data to memory
+  logic ibmbx_hostif_sram_write_req, ibmbx_hostif_sram_write_gnt;
+  logic ibmbx_hostif_sram_write_resp_vld;
+  logic [CfgSramDataWidth-1:0] sysif_write_data,
+
+  //////////////////////////////////////////////////////////////////////////////  
+  // Signals for the Outbox
+  //////////////////////////////////////////////////////////////////////////////  
+  logic obmbx_pending;
+  logic obmbx_status_ready_valid, obmbx_status_ready;
+
+  // Interface signals for SRAM host access to read the memory and serve it to the outbox
+  logic obmbx_hostif_sram_read_req, obmbx_hostif_sram_read_gnt;
+  logic obmbx_hostif_sram_read_resp_vld;
+  logic [CfgSramDataWidth-1:0] sysif_read_data;
   logic sysif_read_data_read_valid, sysif_read_data_write_valid;
 
   mbx_sysif #(
@@ -161,13 +199,7 @@ module mbx
     .read_data_write_valid_o             ( sysif_read_data_write_valid        )
   );
 
-  // Interface signals for SRAM host access
-  logic ibmbx_hostif_sram_write_req, ibmbx_hostif_sram_write_gnt;
-  logic ibmbx_hostif_sram_write_resp_vld;
-  logic obmbx_hostif_sram_read_req, obmbx_hostif_sram_read_gnt;
-  logic obmbx_hostif_sram_read_resp_vld;
-
-
+  
   mbx_ibmbx #(
     .CfgSramAddrWidth( CfgSramAddrWidth ),
     .CfgSramDataWidth( CfgSramDataWidth )
@@ -185,9 +217,8 @@ module mbx
     .hostif_status_busy_clear_i ( hostif_clear_status_busy         ),
     .hostif_status_error_set_i  ( hostif_status_error              ),
 
-    .hostif_base_valid_i        ( hostif_ib_base_valid             ),
+    .hostif_range_valid_i       ( hostif_address_range_valid       ),
     .hostif_base_i              ( hostif_ib_base                   ),
-    .hostif_limit_valid_i       ( hostif_ib_limit_valid            ),
     .hostif_limit_i             ( hostif_ib_limit                  ),
     // Interface to the system port
     .sysif_status_busy_i        ( sysif_status_busy ),
@@ -222,7 +253,7 @@ module mbx
     .obmbx_hostif_sram_read_gnt_o      ( obmbx_hostif_sram_read_gnt       ),
     .obmbx_hostif_sram_read_ptr_i      ( obmbx_hostif_sram_read_ptr       ),
     .obmbx_hostif_sram_read_resp_vld_o ( obmbx_hostif_sram_read_resp_vld  ),
-    .obmbx_hostif_sram_read_resp_o     ( obmbx_hostif_sram_read_resp      )
+    .obmbx_hostif_sram_read_resp_o     ( sysif_read_data                  )
   );
 
 endmodule
