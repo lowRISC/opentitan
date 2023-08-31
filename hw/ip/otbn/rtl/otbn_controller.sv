@@ -552,7 +552,6 @@ module otbn_controller
   // into fatal_escalate_en_i, RND errors factor into recov_escalate_en_i).
   assign mubi_err_d = |{mubi4_test_invalid(fatal_escalate_en_i),
                         mubi4_test_invalid(recov_escalate_en_i),
-                        mubi4_test_invalid(rma_req_i),
                         mubi_err_q};
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -648,7 +647,7 @@ module otbn_controller
   // and eventually acknowledging the RMA request.
   assign fatal_err = |{internal_fatal_err,
                        mubi4_test_true_loose(fatal_escalate_en_i),
-                       mubi4_test_true_loose(rma_req_i)};
+                       mubi4_test_true_strict(rma_req_i)};
 
   assign recoverable_err_o = recoverable_err | (software_err & ~software_errs_fatal_i);
   assign mems_sec_wipe_o   = (state_d == OtbnStateLocked) & (state_q != OtbnStateLocked);
@@ -664,7 +663,7 @@ module otbn_controller
   `ASSERT(ErrBitSetOnErr,
       err & (mubi4_test_false_strict(fatal_escalate_en_i) &
              mubi4_test_false_strict(recov_escalate_en_i) &
-             mubi4_test_false_strict(rma_req_i)) |=>
+             mubi4_test_false_loose(rma_req_i)) |=>
           err_bits_o)
   `ASSERT(ErrSetOnFatalErr, fatal_err |-> err)
   `ASSERT(SoftwareErrIfNonInsnAddrSoftwareErr, non_insn_addr_software_err |-> software_err)
