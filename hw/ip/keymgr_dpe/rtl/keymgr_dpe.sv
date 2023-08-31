@@ -7,9 +7,9 @@
 
 `include "prim_assert.sv"
 
-module keymgr
-  import keymgr_pkg::*;
-  import keymgr_reg_pkg::*;
+module keymgr_dpe
+  import keymgr_dpe_pkg::*;
+  import keymgr_dpe_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   // In case this is set to true, the keymgr will ignore the creator / owner seeds
@@ -128,8 +128,8 @@ module keymgr
   );
 
   // Register module
-  keymgr_reg2hw_t reg2hw;
-  keymgr_hw2reg_t hw2reg;
+  keymgr_dpe_reg2hw_t reg2hw;
+  keymgr_dpe_hw2reg_t hw2reg;
 
   logic regfile_intg_err;
   logic shadowed_storage_err;
@@ -138,7 +138,7 @@ module keymgr
   // SEC_CM: CONFIG.SHADOW
   // SEC_CM: OP.CONFIG.REGWEN, RESEED.CONFIG.REGWEN, SW_BINDING.CONFIG.REGWEN
   // SEC_CM: MAX_KEY_VER.CONFIG.REGWEN
-  keymgr_reg_top u_reg (
+  keymgr_dpe_reg_top u_reg (
     .clk_i,
     .rst_ni,
     .rst_shadowed_ni,
@@ -275,7 +275,7 @@ module keymgr
 
   logic op_start;
   assign op_start = reg2hw.start.q;
-  keymgr_ctrl #(
+  keymgr_dpe_ctrl #(
     .KmacEnMasking(KmacEnMasking)
   ) u_ctrl (
     .clk_i,
@@ -802,4 +802,4 @@ module keymgr
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
-endmodule // keymgr
+endmodule // keymgr_dpe

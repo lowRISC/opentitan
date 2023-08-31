@@ -2,8 +2,8 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:keymgr:0.1"
-description: "Key Manager"
+name: "lowrisc:ip:keymgr_dpe:0.1"
+description: "Key Manager DPE"
 
 filesets:
   files_rtl:
@@ -19,24 +19,16 @@ filesets:
       - lowrisc:prim:secded
       - lowrisc:prim:sparse_fsm
       - lowrisc:ip:flash_ctrl_pkg
-      - lowrisc:ip:keymgr_pkg
+      - lowrisc:ip:keymgr_dpe_pkg
       - lowrisc:ip:kmac_pkg
       - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:ip:rom_ctrl_pkg
       - lowrisc:ip:tlul
     files:
-      - rtl/keymgr.sv
-      - rtl/keymgr_ctrl.sv
-      - rtl/keymgr_cfg_en.sv
-      - rtl/keymgr_data_en_state.sv
-      - rtl/keymgr_err.sv
-      - rtl/keymgr_input_checks.sv
-      - rtl/keymgr_kmac_if.sv
-      - rtl/keymgr_op_state_ctrl.sv
-      - rtl/keymgr_reg_top.sv
-      - rtl/keymgr_reseed_ctrl.sv
-      - rtl/keymgr_sideload_key.sv
-      - rtl/keymgr_sideload_key_ctrl.sv
+      - rtl/keymgr_dpe.sv
+      - rtl/keymgr_dpe_ctrl.sv
+      - rtl/keymgr_dpe_op_state_ctrl.sv
+      - rtl/keymgr_dpe_reg_top.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
@@ -45,7 +37,7 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
     files:
-      - lint/keymgr.vlt
+      - lint/keymgr_dpe.vlt
     file_type: vlt
 
   files_ascentlint_waiver:
@@ -54,7 +46,7 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
     files:
-      - lint/keymgr.waiver
+      - lint/keymgr_dpe.waiver
     file_type: waiver
 
 parameters:
@@ -69,7 +61,7 @@ targets:
       - tool_verilator  ? (files_verilator_waiver)
       - tool_ascentlint ? (files_ascentlint_waiver)
       - files_rtl
-    toplevel: keymgr
+    toplevel: keymgr_dpe
 
   lint:
     <<: *default_target
@@ -94,4 +86,4 @@ targets:
   formal:
     filesets:
       - files_rtl
-    toplevel: keymgr_ctrl
+    toplevel: keymgr_dpe_ctrl

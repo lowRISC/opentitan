@@ -7,9 +7,9 @@
 
 `include "prim_assert.sv"
 
-module keymgr_op_state_ctrl
-  import keymgr_pkg::*;
-  import keymgr_reg_pkg::*;
+module keymgr_dpe_op_state_ctrl
+  import keymgr_dpe_pkg::*;
+  import keymgr_dpe_reg_pkg::*;
 (
   input clk_i,
   input rst_ni,
@@ -107,4 +107,4 @@ module keymgr_op_state_ctrl
   end
 
 
-endmodule // keymgr_op_state_ctrl
+endmodule // keymgr_dpe_op_state_ctrl
