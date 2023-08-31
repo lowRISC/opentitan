@@ -7,9 +7,9 @@
 
 `include "prim_assert.sv"
 
-module keymgr_ctrl
-  import keymgr_pkg::*;
-  import keymgr_reg_pkg::*;
+module keymgr_dpe_ctrl
+  import keymgr_dpe_pkg::*;
+  import keymgr_dpe_reg_pkg::*;
 #(
   parameter bit KmacEnMasking = 1'b1
 ) (
@@ -712,7 +712,7 @@ module keymgr_ctrl
   /////////////////////////
 
   logic op_fsm_err;
-  keymgr_op_state_ctrl u_op_state (
+  keymgr_dpe_op_state_ctrl u_op_state (
     .clk_i,
     .rst_ni,
     .adv_req_i(adv_req),
@@ -845,7 +845,7 @@ module keymgr_ctrl
 
   // This assertion will not work if fault_status ever takes on metafields such as
   // qe / re etc.
-  `ASSERT_INIT(SameErrCnt_A, $bits(keymgr_reg2hw_fault_status_reg_t) ==
+  `ASSERT_INIT(SameErrCnt_A, $bits(keymgr_dpe_reg2hw_fault_status_reg_t) ==
                              (SyncFaultLastIdx + AsyncFaultLastIdx))
 
   // stage select should always be Disable whenever it is not enabled
