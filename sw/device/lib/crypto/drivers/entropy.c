@@ -280,6 +280,28 @@ static const entropy_complex_config_t
             },
 };
 
+// TODO(#19568): CSRNG commands may hang if the main FSM is not idle.
+// This function is used as a workaround to poll for the internal FSM state,
+// blocking until it reaches the `kCsrngMainSmIdle` state. The function
+// attempts `kCsrngIdleNumTries` before returning `OTCRYPTO_RECOV_ERR` if
+// unable to detect idle state.
+OT_WARN_UNUSED_RESULT
+static status_t csrng_fsm_idle_wait(void) {
+  enum {
+    kCsrngIdleNumTries = 100000,
+
+    // This value needs to match `MainSmIdle` in csrng_pkg.sv.
+    kCsrngMainSmIdle = 0x4e,
+  };
+  for (size_t i = 0; i < kCsrngIdleNumTries; ++i) {
+    uint32_t reg = abs_mmio_read32(kBaseCsrng + CSRNG_MAIN_SM_STATE_REG_OFFSET);
+    if (reg == kCsrngMainSmIdle) {
+      return OTCRYPTO_OK;
+    }
+  }
+  return OTCRYPTO_RECOV_ERR;
+}
+
 // Write a CSRNG command to a register.  That register can be the SW interface
 // of CSRNG, in which case the `check_completion` argument should be `true`.
 // That register can alternatively be one of EDN's that holds commands that EDN
@@ -298,6 +320,8 @@ static status_t csrng_send_app_cmd(uint32_t reg_address,
   if (cmd.generate_len > kMaxGenerateSizeIn128BitBlocks) {
     return OUT_OF_RANGE();
   }
+
+  HARDENED_TRY(csrng_fsm_idle_wait());
 
   uint32_t reg;
   bool cmd_ready;
