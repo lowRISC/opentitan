@@ -431,16 +431,6 @@ package top_darjeeling_pkg;
   parameter int unsigned TOP_DARJEELING_CSRNG_SIZE_BYTES = 32'h80;
 
   /**
-   * Peripheral base address for entropy_src in top darjeeling.
-   */
-  parameter int unsigned TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR = 32'h21160000;
-
-  /**
-   * Peripheral size in bytes for entropy_src in top darjeeling.
-   */
-  parameter int unsigned TOP_DARJEELING_ENTROPY_SRC_SIZE_BYTES = 32'h100;
-
-  /**
    * Peripheral base address for edn0 in top darjeeling.
    */
   parameter int unsigned TOP_DARJEELING_EDN0_BASE_ADDR = 32'h21170000;
@@ -667,15 +657,14 @@ package top_darjeeling_pkg;
     TopDarjeelingAlertPeripheralOtbn = 31,
     TopDarjeelingAlertPeripheralKeymgr = 32,
     TopDarjeelingAlertPeripheralCsrng = 33,
-    TopDarjeelingAlertPeripheralEntropySrc = 34,
-    TopDarjeelingAlertPeripheralEdn0 = 35,
-    TopDarjeelingAlertPeripheralEdn1 = 36,
-    TopDarjeelingAlertPeripheralSramCtrlMain = 37,
-    TopDarjeelingAlertPeripheralSramCtrlMbox = 38,
-    TopDarjeelingAlertPeripheralRomCtrl0 = 39,
-    TopDarjeelingAlertPeripheralRomCtrl1 = 40,
-    TopDarjeelingAlertPeripheralDma = 41,
-    TopDarjeelingAlertPeripheralRvCoreIbex = 42,
+    TopDarjeelingAlertPeripheralEdn0 = 34,
+    TopDarjeelingAlertPeripheralEdn1 = 35,
+    TopDarjeelingAlertPeripheralSramCtrlMain = 36,
+    TopDarjeelingAlertPeripheralSramCtrlMbox = 37,
+    TopDarjeelingAlertPeripheralRomCtrl0 = 38,
+    TopDarjeelingAlertPeripheralRomCtrl1 = 39,
+    TopDarjeelingAlertPeripheralDma = 40,
+    TopDarjeelingAlertPeripheralRvCoreIbex = 41,
     TopDarjeelingAlertPeripheralCount
   } alert_peripheral_e;
 
@@ -733,21 +722,19 @@ package top_darjeeling_pkg;
     TopDarjeelingAlertIdKeymgrFatalFaultErr = 49,
     TopDarjeelingAlertIdCsrngRecovAlert = 50,
     TopDarjeelingAlertIdCsrngFatalAlert = 51,
-    TopDarjeelingAlertIdEntropySrcRecovAlert = 52,
-    TopDarjeelingAlertIdEntropySrcFatalAlert = 53,
-    TopDarjeelingAlertIdEdn0RecovAlert = 54,
-    TopDarjeelingAlertIdEdn0FatalAlert = 55,
-    TopDarjeelingAlertIdEdn1RecovAlert = 56,
-    TopDarjeelingAlertIdEdn1FatalAlert = 57,
-    TopDarjeelingAlertIdSramCtrlMainFatalError = 58,
-    TopDarjeelingAlertIdSramCtrlMboxFatalError = 59,
-    TopDarjeelingAlertIdRomCtrl0Fatal = 60,
-    TopDarjeelingAlertIdRomCtrl1Fatal = 61,
-    TopDarjeelingAlertIdDmaFatalFault = 62,
-    TopDarjeelingAlertIdRvCoreIbexFatalSwErr = 63,
-    TopDarjeelingAlertIdRvCoreIbexRecovSwErr = 64,
-    TopDarjeelingAlertIdRvCoreIbexFatalHwErr = 65,
-    TopDarjeelingAlertIdRvCoreIbexRecovHwErr = 66,
+    TopDarjeelingAlertIdEdn0RecovAlert = 52,
+    TopDarjeelingAlertIdEdn0FatalAlert = 53,
+    TopDarjeelingAlertIdEdn1RecovAlert = 54,
+    TopDarjeelingAlertIdEdn1FatalAlert = 55,
+    TopDarjeelingAlertIdSramCtrlMainFatalError = 56,
+    TopDarjeelingAlertIdSramCtrlMboxFatalError = 57,
+    TopDarjeelingAlertIdRomCtrl0Fatal = 58,
+    TopDarjeelingAlertIdRomCtrl1Fatal = 59,
+    TopDarjeelingAlertIdDmaFatalFault = 60,
+    TopDarjeelingAlertIdRvCoreIbexFatalSwErr = 61,
+    TopDarjeelingAlertIdRvCoreIbexRecovSwErr = 62,
+    TopDarjeelingAlertIdRvCoreIbexFatalHwErr = 63,
+    TopDarjeelingAlertIdRvCoreIbexRecovHwErr = 64,
     TopDarjeelingAlertIdCount
   } alert_id_e;
 
@@ -1009,7 +996,6 @@ package top_darjeeling_pkg;
     PeripheralDma,
     PeripheralEdn0,
     PeripheralEdn1,
-    PeripheralEntropySrc,
     PeripheralFlashCtrl,
     PeripheralGpio,
     PeripheralHmac,

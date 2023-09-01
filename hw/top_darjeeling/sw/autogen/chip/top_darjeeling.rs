@@ -567,19 +567,6 @@ pub const TOP_DARJEELING_CSRNG_BASE_ADDR: usize = 0x21150000;
 /// address between #TOP_DARJEELING_CSRNG_BASE_ADDR and
 /// `TOP_DARJEELING_CSRNG_BASE_ADDR + TOP_DARJEELING_CSRNG_SIZE_BYTES`.
 pub const TOP_DARJEELING_CSRNG_SIZE_BYTES: usize = 0x80;
-/// Peripheral base address for entropy_src in top darjeeling.
-///
-/// This should be used with #mmio_region_from_addr to access the memory-mapped
-/// registers associated with the peripheral (usually via a DIF).
-pub const TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR: usize = 0x21160000;
-
-/// Peripheral size for entropy_src in top darjeeling.
-///
-/// This is the size (in bytes) of the peripheral's reserved memory area. All
-/// memory-mapped registers associated with this peripheral should have an
-/// address between #TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR and
-/// `TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR + TOP_DARJEELING_ENTROPY_SRC_SIZE_BYTES`.
-pub const TOP_DARJEELING_ENTROPY_SRC_SIZE_BYTES: usize = 0x100;
 /// Peripheral base address for edn0 in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -833,14 +820,12 @@ pub enum TopDarjeelingPlicPeripheral {
     Keymgr = 25,
     /// csrng
     Csrng = 26,
-    /// entropy_src
-    EntropySrc = 27,
     /// edn0
-    Edn0 = 28,
+    Edn0 = 27,
     /// edn1
-    Edn1 = 29,
+    Edn1 = 28,
     /// dma
-    Dma = 30,
+    Dma = 29,
 }
 
 impl TryFrom<u32> for TopDarjeelingPlicPeripheral {
@@ -874,10 +859,9 @@ impl TryFrom<u32> for TopDarjeelingPlicPeripheral {
             24 => Ok(Self::Otbn),
             25 => Ok(Self::Keymgr),
             26 => Ok(Self::Csrng),
-            27 => Ok(Self::EntropySrc),
-            28 => Ok(Self::Edn0),
-            29 => Ok(Self::Edn1),
-            30 => Ok(Self::Dma),
+            27 => Ok(Self::Edn0),
+            28 => Ok(Self::Edn1),
+            29 => Ok(Self::Dma),
             _ => Err(val),
         }
     }
@@ -1239,28 +1223,20 @@ pub enum TopDarjeelingPlicIrqId {
     CsrngCsHwInstExc = 173,
     /// csrng_cs_fatal_err
     CsrngCsFatalErr = 174,
-    /// entropy_src_es_entropy_valid
-    EntropySrcEsEntropyValid = 175,
-    /// entropy_src_es_health_test_failed
-    EntropySrcEsHealthTestFailed = 176,
-    /// entropy_src_es_observe_fifo_ready
-    EntropySrcEsObserveFifoReady = 177,
-    /// entropy_src_es_fatal_err
-    EntropySrcEsFatalErr = 178,
     /// edn0_edn_cmd_req_done
-    Edn0EdnCmdReqDone = 179,
+    Edn0EdnCmdReqDone = 175,
     /// edn0_edn_fatal_err
-    Edn0EdnFatalErr = 180,
+    Edn0EdnFatalErr = 176,
     /// edn1_edn_cmd_req_done
-    Edn1EdnCmdReqDone = 181,
+    Edn1EdnCmdReqDone = 177,
     /// edn1_edn_fatal_err
-    Edn1EdnFatalErr = 182,
+    Edn1EdnFatalErr = 178,
     /// dma_dma_done
-    DmaDmaDone = 183,
+    DmaDmaDone = 179,
     /// dma_dma_error
-    DmaDmaError = 184,
+    DmaDmaError = 180,
     /// dma_dma_memory_buffer_limit
-    DmaDmaMemoryBufferLimit = 185,
+    DmaDmaMemoryBufferLimit = 181,
 }
 
 impl TryFrom<u32> for TopDarjeelingPlicIrqId {
@@ -1442,17 +1418,13 @@ impl TryFrom<u32> for TopDarjeelingPlicIrqId {
             172 => Ok(Self::CsrngCsEntropyReq),
             173 => Ok(Self::CsrngCsHwInstExc),
             174 => Ok(Self::CsrngCsFatalErr),
-            175 => Ok(Self::EntropySrcEsEntropyValid),
-            176 => Ok(Self::EntropySrcEsHealthTestFailed),
-            177 => Ok(Self::EntropySrcEsObserveFifoReady),
-            178 => Ok(Self::EntropySrcEsFatalErr),
-            179 => Ok(Self::Edn0EdnCmdReqDone),
-            180 => Ok(Self::Edn0EdnFatalErr),
-            181 => Ok(Self::Edn1EdnCmdReqDone),
-            182 => Ok(Self::Edn1EdnFatalErr),
-            183 => Ok(Self::DmaDmaDone),
-            184 => Ok(Self::DmaDmaError),
-            185 => Ok(Self::DmaDmaMemoryBufferLimit),
+            175 => Ok(Self::Edn0EdnCmdReqDone),
+            176 => Ok(Self::Edn0EdnFatalErr),
+            177 => Ok(Self::Edn1EdnCmdReqDone),
+            178 => Ok(Self::Edn1EdnFatalErr),
+            179 => Ok(Self::DmaDmaDone),
+            180 => Ok(Self::DmaDmaError),
+            181 => Ok(Self::DmaDmaMemoryBufferLimit),
             _ => Err(val),
         }
     }
@@ -1542,24 +1514,22 @@ pub enum TopDarjeelingAlertPeripheral {
     Keymgr = 32,
     /// csrng
     Csrng = 33,
-    /// entropy_src
-    EntropySrc = 34,
     /// edn0
-    Edn0 = 35,
+    Edn0 = 34,
     /// edn1
-    Edn1 = 36,
+    Edn1 = 35,
     /// sram_ctrl_main
-    SramCtrlMain = 37,
+    SramCtrlMain = 36,
     /// sram_ctrl_mbox
-    SramCtrlMbox = 38,
+    SramCtrlMbox = 37,
     /// rom_ctrl0
-    RomCtrl0 = 39,
+    RomCtrl0 = 38,
     /// rom_ctrl1
-    RomCtrl1 = 40,
+    RomCtrl1 = 39,
     /// dma
-    Dma = 41,
+    Dma = 40,
     /// rv_core_ibex
-    RvCoreIbex = 42,
+    RvCoreIbex = 41,
 }
 
 /// Alert Handler Alert Source.
@@ -1672,36 +1642,32 @@ pub enum TopDarjeelingAlertId {
     CsrngRecovAlert = 50,
     /// csrng_fatal_alert
     CsrngFatalAlert = 51,
-    /// entropy_src_recov_alert
-    EntropySrcRecovAlert = 52,
-    /// entropy_src_fatal_alert
-    EntropySrcFatalAlert = 53,
     /// edn0_recov_alert
-    Edn0RecovAlert = 54,
+    Edn0RecovAlert = 52,
     /// edn0_fatal_alert
-    Edn0FatalAlert = 55,
+    Edn0FatalAlert = 53,
     /// edn1_recov_alert
-    Edn1RecovAlert = 56,
+    Edn1RecovAlert = 54,
     /// edn1_fatal_alert
-    Edn1FatalAlert = 57,
+    Edn1FatalAlert = 55,
     /// sram_ctrl_main_fatal_error
-    SramCtrlMainFatalError = 58,
+    SramCtrlMainFatalError = 56,
     /// sram_ctrl_mbox_fatal_error
-    SramCtrlMboxFatalError = 59,
+    SramCtrlMboxFatalError = 57,
     /// rom_ctrl0_fatal
-    RomCtrl0Fatal = 60,
+    RomCtrl0Fatal = 58,
     /// rom_ctrl1_fatal
-    RomCtrl1Fatal = 61,
+    RomCtrl1Fatal = 59,
     /// dma_fatal_fault
-    DmaFatalFault = 62,
+    DmaFatalFault = 60,
     /// rv_core_ibex_fatal_sw_err
-    RvCoreIbexFatalSwErr = 63,
+    RvCoreIbexFatalSwErr = 61,
     /// rv_core_ibex_recov_sw_err
-    RvCoreIbexRecovSwErr = 64,
+    RvCoreIbexRecovSwErr = 62,
     /// rv_core_ibex_fatal_hw_err
-    RvCoreIbexFatalHwErr = 65,
+    RvCoreIbexFatalHwErr = 63,
     /// rv_core_ibex_recov_hw_err
-    RvCoreIbexRecovHwErr = 66,
+    RvCoreIbexRecovHwErr = 64,
 }
 
 impl TryFrom<u32> for TopDarjeelingAlertId {
@@ -1760,21 +1726,19 @@ impl TryFrom<u32> for TopDarjeelingAlertId {
             49 => Ok(Self::KeymgrFatalFaultErr),
             50 => Ok(Self::CsrngRecovAlert),
             51 => Ok(Self::CsrngFatalAlert),
-            52 => Ok(Self::EntropySrcRecovAlert),
-            53 => Ok(Self::EntropySrcFatalAlert),
-            54 => Ok(Self::Edn0RecovAlert),
-            55 => Ok(Self::Edn0FatalAlert),
-            56 => Ok(Self::Edn1RecovAlert),
-            57 => Ok(Self::Edn1FatalAlert),
-            58 => Ok(Self::SramCtrlMainFatalError),
-            59 => Ok(Self::SramCtrlMboxFatalError),
-            60 => Ok(Self::RomCtrl0Fatal),
-            61 => Ok(Self::RomCtrl1Fatal),
-            62 => Ok(Self::DmaFatalFault),
-            63 => Ok(Self::RvCoreIbexFatalSwErr),
-            64 => Ok(Self::RvCoreIbexRecovSwErr),
-            65 => Ok(Self::RvCoreIbexFatalHwErr),
-            66 => Ok(Self::RvCoreIbexRecovHwErr),
+            52 => Ok(Self::Edn0RecovAlert),
+            53 => Ok(Self::Edn0FatalAlert),
+            54 => Ok(Self::Edn1RecovAlert),
+            55 => Ok(Self::Edn1FatalAlert),
+            56 => Ok(Self::SramCtrlMainFatalError),
+            57 => Ok(Self::SramCtrlMboxFatalError),
+            58 => Ok(Self::RomCtrl0Fatal),
+            59 => Ok(Self::RomCtrl1Fatal),
+            60 => Ok(Self::DmaFatalFault),
+            61 => Ok(Self::RvCoreIbexFatalSwErr),
+            62 => Ok(Self::RvCoreIbexRecovSwErr),
+            63 => Ok(Self::RvCoreIbexFatalHwErr),
+            64 => Ok(Self::RvCoreIbexRecovHwErr),
             _ => Err(val),
         }
     }
@@ -1784,7 +1748,7 @@ impl TryFrom<u32> for TopDarjeelingAlertId {
 ///
 /// This array is a mapping from `TopDarjeelingPlicIrqId` to
 /// `TopDarjeelingPlicPeripheral`.
-pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeripheral; 186] = [
+pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeripheral; 182] = [
     // None -> TopDarjeelingPlicPeripheral::Unknown
     TopDarjeelingPlicPeripheral::Unknown,
     // Uart0TxWatermark -> TopDarjeelingPlicPeripheral::Uart0
@@ -2135,14 +2099,6 @@ pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeriph
     TopDarjeelingPlicPeripheral::Csrng,
     // CsrngCsFatalErr -> TopDarjeelingPlicPeripheral::Csrng
     TopDarjeelingPlicPeripheral::Csrng,
-    // EntropySrcEsEntropyValid -> TopDarjeelingPlicPeripheral::EntropySrc
-    TopDarjeelingPlicPeripheral::EntropySrc,
-    // EntropySrcEsHealthTestFailed -> TopDarjeelingPlicPeripheral::EntropySrc
-    TopDarjeelingPlicPeripheral::EntropySrc,
-    // EntropySrcEsObserveFifoReady -> TopDarjeelingPlicPeripheral::EntropySrc
-    TopDarjeelingPlicPeripheral::EntropySrc,
-    // EntropySrcEsFatalErr -> TopDarjeelingPlicPeripheral::EntropySrc
-    TopDarjeelingPlicPeripheral::EntropySrc,
     // Edn0EdnCmdReqDone -> TopDarjeelingPlicPeripheral::Edn0
     TopDarjeelingPlicPeripheral::Edn0,
     // Edn0EdnFatalErr -> TopDarjeelingPlicPeripheral::Edn0
@@ -2163,7 +2119,7 @@ pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeriph
 ///
 /// This array is a mapping from `TopDarjeelingAlertId` to
 /// `TopDarjeelingAlertPeripheral`.
-pub const TOP_DARJEELING_ALERT_FOR_PERIPHERAL: [TopDarjeelingAlertPeripheral; 67] = [
+pub const TOP_DARJEELING_ALERT_FOR_PERIPHERAL: [TopDarjeelingAlertPeripheral; 65] = [
     // Uart0FatalFault -> TopDarjeelingAlertPeripheral::Uart0
     TopDarjeelingAlertPeripheral::Uart0,
     // Uart1FatalFault -> TopDarjeelingAlertPeripheral::Uart1
@@ -2268,10 +2224,6 @@ pub const TOP_DARJEELING_ALERT_FOR_PERIPHERAL: [TopDarjeelingAlertPeripheral; 67
     TopDarjeelingAlertPeripheral::Csrng,
     // CsrngFatalAlert -> TopDarjeelingAlertPeripheral::Csrng
     TopDarjeelingAlertPeripheral::Csrng,
-    // EntropySrcRecovAlert -> TopDarjeelingAlertPeripheral::EntropySrc
-    TopDarjeelingAlertPeripheral::EntropySrc,
-    // EntropySrcFatalAlert -> TopDarjeelingAlertPeripheral::EntropySrc
-    TopDarjeelingAlertPeripheral::EntropySrc,
     // Edn0RecovAlert -> TopDarjeelingAlertPeripheral::Edn0
     TopDarjeelingAlertPeripheral::Edn0,
     // Edn0FatalAlert -> TopDarjeelingAlertPeripheral::Edn0

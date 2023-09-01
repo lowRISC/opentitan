@@ -782,24 +782,6 @@ extern "C" {
 #define TOP_DARJEELING_CSRNG_SIZE_BYTES 0x80u
 
 /**
- * Peripheral base address for entropy_src in top darjeeling.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR 0x21160000u
-
-/**
- * Peripheral size for entropy_src in top darjeeling.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR and
- * `TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR + TOP_DARJEELING_ENTROPY_SRC_SIZE_BYTES`.
- */
-#define TOP_DARJEELING_ENTROPY_SRC_SIZE_BYTES 0x100u
-
-/**
  * Peripheral base address for edn0 in top darjeeling.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -1121,11 +1103,10 @@ typedef enum top_darjeeling_plic_peripheral {
   kTopDarjeelingPlicPeripheralOtbn = 24, /**< otbn */
   kTopDarjeelingPlicPeripheralKeymgr = 25, /**< keymgr */
   kTopDarjeelingPlicPeripheralCsrng = 26, /**< csrng */
-  kTopDarjeelingPlicPeripheralEntropySrc = 27, /**< entropy_src */
-  kTopDarjeelingPlicPeripheralEdn0 = 28, /**< edn0 */
-  kTopDarjeelingPlicPeripheralEdn1 = 29, /**< edn1 */
-  kTopDarjeelingPlicPeripheralDma = 30, /**< dma */
-  kTopDarjeelingPlicPeripheralLast = 30, /**< \internal Final PLIC peripheral */
+  kTopDarjeelingPlicPeripheralEdn0 = 27, /**< edn0 */
+  kTopDarjeelingPlicPeripheralEdn1 = 28, /**< edn1 */
+  kTopDarjeelingPlicPeripheralDma = 29, /**< dma */
+  kTopDarjeelingPlicPeripheralLast = 29, /**< \internal Final PLIC peripheral */
 } top_darjeeling_plic_peripheral_t;
 
 /**
@@ -1310,18 +1291,14 @@ typedef enum top_darjeeling_plic_irq_id {
   kTopDarjeelingPlicIrqIdCsrngCsEntropyReq = 172, /**< csrng_cs_entropy_req */
   kTopDarjeelingPlicIrqIdCsrngCsHwInstExc = 173, /**< csrng_cs_hw_inst_exc */
   kTopDarjeelingPlicIrqIdCsrngCsFatalErr = 174, /**< csrng_cs_fatal_err */
-  kTopDarjeelingPlicIrqIdEntropySrcEsEntropyValid = 175, /**< entropy_src_es_entropy_valid */
-  kTopDarjeelingPlicIrqIdEntropySrcEsHealthTestFailed = 176, /**< entropy_src_es_health_test_failed */
-  kTopDarjeelingPlicIrqIdEntropySrcEsObserveFifoReady = 177, /**< entropy_src_es_observe_fifo_ready */
-  kTopDarjeelingPlicIrqIdEntropySrcEsFatalErr = 178, /**< entropy_src_es_fatal_err */
-  kTopDarjeelingPlicIrqIdEdn0EdnCmdReqDone = 179, /**< edn0_edn_cmd_req_done */
-  kTopDarjeelingPlicIrqIdEdn0EdnFatalErr = 180, /**< edn0_edn_fatal_err */
-  kTopDarjeelingPlicIrqIdEdn1EdnCmdReqDone = 181, /**< edn1_edn_cmd_req_done */
-  kTopDarjeelingPlicIrqIdEdn1EdnFatalErr = 182, /**< edn1_edn_fatal_err */
-  kTopDarjeelingPlicIrqIdDmaDmaDone = 183, /**< dma_dma_done */
-  kTopDarjeelingPlicIrqIdDmaDmaError = 184, /**< dma_dma_error */
-  kTopDarjeelingPlicIrqIdDmaDmaMemoryBufferLimit = 185, /**< dma_dma_memory_buffer_limit */
-  kTopDarjeelingPlicIrqIdLast = 185, /**< \internal The Last Valid Interrupt ID. */
+  kTopDarjeelingPlicIrqIdEdn0EdnCmdReqDone = 175, /**< edn0_edn_cmd_req_done */
+  kTopDarjeelingPlicIrqIdEdn0EdnFatalErr = 176, /**< edn0_edn_fatal_err */
+  kTopDarjeelingPlicIrqIdEdn1EdnCmdReqDone = 177, /**< edn1_edn_cmd_req_done */
+  kTopDarjeelingPlicIrqIdEdn1EdnFatalErr = 178, /**< edn1_edn_fatal_err */
+  kTopDarjeelingPlicIrqIdDmaDmaDone = 179, /**< dma_dma_done */
+  kTopDarjeelingPlicIrqIdDmaDmaError = 180, /**< dma_dma_error */
+  kTopDarjeelingPlicIrqIdDmaDmaMemoryBufferLimit = 181, /**< dma_dma_memory_buffer_limit */
+  kTopDarjeelingPlicIrqIdLast = 181, /**< \internal The Last Valid Interrupt ID. */
 } top_darjeeling_plic_irq_id_t;
 
 /**
@@ -1331,7 +1308,7 @@ typedef enum top_darjeeling_plic_irq_id {
  * `top_darjeeling_plic_peripheral_t`.
  */
 extern const top_darjeeling_plic_peripheral_t
-    top_darjeeling_plic_interrupt_for_peripheral[186];
+    top_darjeeling_plic_interrupt_for_peripheral[182];
 
 /**
  * PLIC Interrupt Target.
@@ -1385,16 +1362,15 @@ typedef enum top_darjeeling_alert_peripheral {
   kTopDarjeelingAlertPeripheralOtbn = 31, /**< otbn */
   kTopDarjeelingAlertPeripheralKeymgr = 32, /**< keymgr */
   kTopDarjeelingAlertPeripheralCsrng = 33, /**< csrng */
-  kTopDarjeelingAlertPeripheralEntropySrc = 34, /**< entropy_src */
-  kTopDarjeelingAlertPeripheralEdn0 = 35, /**< edn0 */
-  kTopDarjeelingAlertPeripheralEdn1 = 36, /**< edn1 */
-  kTopDarjeelingAlertPeripheralSramCtrlMain = 37, /**< sram_ctrl_main */
-  kTopDarjeelingAlertPeripheralSramCtrlMbox = 38, /**< sram_ctrl_mbox */
-  kTopDarjeelingAlertPeripheralRomCtrl0 = 39, /**< rom_ctrl0 */
-  kTopDarjeelingAlertPeripheralRomCtrl1 = 40, /**< rom_ctrl1 */
-  kTopDarjeelingAlertPeripheralDma = 41, /**< dma */
-  kTopDarjeelingAlertPeripheralRvCoreIbex = 42, /**< rv_core_ibex */
-  kTopDarjeelingAlertPeripheralLast = 42, /**< \internal Final Alert peripheral */
+  kTopDarjeelingAlertPeripheralEdn0 = 34, /**< edn0 */
+  kTopDarjeelingAlertPeripheralEdn1 = 35, /**< edn1 */
+  kTopDarjeelingAlertPeripheralSramCtrlMain = 36, /**< sram_ctrl_main */
+  kTopDarjeelingAlertPeripheralSramCtrlMbox = 37, /**< sram_ctrl_mbox */
+  kTopDarjeelingAlertPeripheralRomCtrl0 = 38, /**< rom_ctrl0 */
+  kTopDarjeelingAlertPeripheralRomCtrl1 = 39, /**< rom_ctrl1 */
+  kTopDarjeelingAlertPeripheralDma = 40, /**< dma */
+  kTopDarjeelingAlertPeripheralRvCoreIbex = 41, /**< rv_core_ibex */
+  kTopDarjeelingAlertPeripheralLast = 41, /**< \internal Final Alert peripheral */
 } top_darjeeling_alert_peripheral_t;
 
 /**
@@ -1456,22 +1432,20 @@ typedef enum top_darjeeling_alert_id {
   kTopDarjeelingAlertIdKeymgrFatalFaultErr = 49, /**< keymgr_fatal_fault_err */
   kTopDarjeelingAlertIdCsrngRecovAlert = 50, /**< csrng_recov_alert */
   kTopDarjeelingAlertIdCsrngFatalAlert = 51, /**< csrng_fatal_alert */
-  kTopDarjeelingAlertIdEntropySrcRecovAlert = 52, /**< entropy_src_recov_alert */
-  kTopDarjeelingAlertIdEntropySrcFatalAlert = 53, /**< entropy_src_fatal_alert */
-  kTopDarjeelingAlertIdEdn0RecovAlert = 54, /**< edn0_recov_alert */
-  kTopDarjeelingAlertIdEdn0FatalAlert = 55, /**< edn0_fatal_alert */
-  kTopDarjeelingAlertIdEdn1RecovAlert = 56, /**< edn1_recov_alert */
-  kTopDarjeelingAlertIdEdn1FatalAlert = 57, /**< edn1_fatal_alert */
-  kTopDarjeelingAlertIdSramCtrlMainFatalError = 58, /**< sram_ctrl_main_fatal_error */
-  kTopDarjeelingAlertIdSramCtrlMboxFatalError = 59, /**< sram_ctrl_mbox_fatal_error */
-  kTopDarjeelingAlertIdRomCtrl0Fatal = 60, /**< rom_ctrl0_fatal */
-  kTopDarjeelingAlertIdRomCtrl1Fatal = 61, /**< rom_ctrl1_fatal */
-  kTopDarjeelingAlertIdDmaFatalFault = 62, /**< dma_fatal_fault */
-  kTopDarjeelingAlertIdRvCoreIbexFatalSwErr = 63, /**< rv_core_ibex_fatal_sw_err */
-  kTopDarjeelingAlertIdRvCoreIbexRecovSwErr = 64, /**< rv_core_ibex_recov_sw_err */
-  kTopDarjeelingAlertIdRvCoreIbexFatalHwErr = 65, /**< rv_core_ibex_fatal_hw_err */
-  kTopDarjeelingAlertIdRvCoreIbexRecovHwErr = 66, /**< rv_core_ibex_recov_hw_err */
-  kTopDarjeelingAlertIdLast = 66, /**< \internal The Last Valid Alert ID. */
+  kTopDarjeelingAlertIdEdn0RecovAlert = 52, /**< edn0_recov_alert */
+  kTopDarjeelingAlertIdEdn0FatalAlert = 53, /**< edn0_fatal_alert */
+  kTopDarjeelingAlertIdEdn1RecovAlert = 54, /**< edn1_recov_alert */
+  kTopDarjeelingAlertIdEdn1FatalAlert = 55, /**< edn1_fatal_alert */
+  kTopDarjeelingAlertIdSramCtrlMainFatalError = 56, /**< sram_ctrl_main_fatal_error */
+  kTopDarjeelingAlertIdSramCtrlMboxFatalError = 57, /**< sram_ctrl_mbox_fatal_error */
+  kTopDarjeelingAlertIdRomCtrl0Fatal = 58, /**< rom_ctrl0_fatal */
+  kTopDarjeelingAlertIdRomCtrl1Fatal = 59, /**< rom_ctrl1_fatal */
+  kTopDarjeelingAlertIdDmaFatalFault = 60, /**< dma_fatal_fault */
+  kTopDarjeelingAlertIdRvCoreIbexFatalSwErr = 61, /**< rv_core_ibex_fatal_sw_err */
+  kTopDarjeelingAlertIdRvCoreIbexRecovSwErr = 62, /**< rv_core_ibex_recov_sw_err */
+  kTopDarjeelingAlertIdRvCoreIbexFatalHwErr = 63, /**< rv_core_ibex_fatal_hw_err */
+  kTopDarjeelingAlertIdRvCoreIbexRecovHwErr = 64, /**< rv_core_ibex_recov_hw_err */
+  kTopDarjeelingAlertIdLast = 64, /**< \internal The Last Valid Alert ID. */
 } top_darjeeling_alert_id_t;
 
 /**
@@ -1481,7 +1455,7 @@ typedef enum top_darjeeling_alert_id {
  * `top_darjeeling_alert_peripheral_t`.
  */
 extern const top_darjeeling_alert_peripheral_t
-    top_darjeeling_alert_for_peripheral[67];
+    top_darjeeling_alert_for_peripheral[65];
 
 // PERIPH_INSEL ranges from 0 to TOP_DARJEELING_NUM_MIO_PADS + 2 -1}
 //  0 and 1 are tied to value 0 and 1

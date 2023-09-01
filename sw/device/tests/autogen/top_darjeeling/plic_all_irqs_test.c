@@ -18,7 +18,6 @@
 #include "sw/ip/csrng/dif/dif_csrng.h"
 #include "sw/ip/dma/dif/dif_dma.h"
 #include "sw/ip/edn/dif/dif_edn.h"
-#include "sw/ip/entropy_src/dif/dif_entropy_src.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
 #include "sw/ip/gpio/dif/dif_gpio.h"
 #include "sw/ip/hmac/dif/dif_hmac.h"
@@ -54,7 +53,6 @@ static dif_csrng_t csrng;
 static dif_dma_t dma;
 static dif_edn_t edn0;
 static dif_edn_t edn1;
-static dif_entropy_src_t entropy_src;
 static dif_flash_ctrl_t flash_ctrl;
 static dif_gpio_t gpio;
 static dif_hmac_t hmac;
@@ -107,8 +105,6 @@ static volatile dif_dma_irq_t dma_irq_expected;
 static volatile dif_dma_irq_t dma_irq_serviced;
 static volatile dif_edn_irq_t edn_irq_expected;
 static volatile dif_edn_irq_t edn_irq_serviced;
-static volatile dif_entropy_src_irq_t entropy_src_irq_expected;
-static volatile dif_entropy_src_irq_t entropy_src_irq_serviced;
 static volatile dif_flash_ctrl_irq_t flash_ctrl_irq_expected;
 static volatile dif_flash_ctrl_irq_t flash_ctrl_irq_serviced;
 static volatile dif_gpio_irq_t gpio_irq_expected;
@@ -317,28 +313,6 @@ void ottf_external_isr(void) {
       // TODO: Check Interrupt type then clear INTR_TEST if needed.
       CHECK_DIF_OK(dif_edn_irq_force(&edn1, irq, false));
       CHECK_DIF_OK(dif_edn_irq_acknowledge(&edn1, irq));
-      break;
-    }
-
-    case kTopDarjeelingPlicPeripheralEntropySrc: {
-      dif_entropy_src_irq_t irq = (dif_entropy_src_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdEntropySrcEsEntropyValid);
-      CHECK(irq == entropy_src_irq_expected,
-            "Incorrect entropy_src IRQ triggered: exp = %d, obs = %d",
-            entropy_src_irq_expected, irq);
-      entropy_src_irq_serviced = irq;
-
-      dif_entropy_src_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_entropy_src_irq_get_state(&entropy_src, &snapshot));
-      CHECK(snapshot == (dif_entropy_src_irq_state_snapshot_t)(1 << irq),
-            "Only entropy_src IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
-
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_entropy_src_irq_force(&entropy_src, irq, false));
-      CHECK_DIF_OK(dif_entropy_src_irq_acknowledge(&entropy_src, irq));
       break;
     }
 
@@ -862,9 +836,6 @@ static void peripherals_init(void) {
   base_addr = mmio_region_from_addr(TOP_DARJEELING_EDN1_BASE_ADDR);
   CHECK_DIF_OK(dif_edn_init(base_addr, &edn1));
 
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR);
-  CHECK_DIF_OK(dif_entropy_src_init(base_addr, &entropy_src));
-
   base_addr = mmio_region_from_addr(TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR);
   CHECK_DIF_OK(dif_flash_ctrl_init(base_addr, &flash_ctrl));
 
@@ -946,7 +917,6 @@ static void peripheral_irqs_clear(void) {
   CHECK_DIF_OK(dif_dma_irq_acknowledge_all(&dma));
   CHECK_DIF_OK(dif_edn_irq_acknowledge_all(&edn0));
   CHECK_DIF_OK(dif_edn_irq_acknowledge_all(&edn1));
-  CHECK_DIF_OK(dif_entropy_src_irq_acknowledge_all(&entropy_src));
   CHECK_DIF_OK(dif_flash_ctrl_irq_acknowledge_all(&flash_ctrl));
   CHECK_DIF_OK(dif_gpio_irq_acknowledge_all(&gpio));
   CHECK_DIF_OK(dif_hmac_irq_acknowledge_all(&hmac));
@@ -985,8 +955,6 @@ static void peripheral_irqs_enable(void) {
       (dif_dma_irq_state_snapshot_t)UINT_MAX;
   dif_edn_irq_state_snapshot_t edn_irqs =
       (dif_edn_irq_state_snapshot_t)UINT_MAX;
-  dif_entropy_src_irq_state_snapshot_t entropy_src_irqs =
-      (dif_entropy_src_irq_state_snapshot_t)UINT_MAX;
   dif_flash_ctrl_irq_state_snapshot_t flash_ctrl_irqs =
       (dif_flash_ctrl_irq_state_snapshot_t)UINT_MAX;
   dif_gpio_irq_state_snapshot_t gpio_irqs =
@@ -1032,8 +1000,6 @@ static void peripheral_irqs_enable(void) {
       dif_edn_irq_restore_all(&edn0, &edn_irqs));
   CHECK_DIF_OK(
       dif_edn_irq_restore_all(&edn1, &edn_irqs));
-  CHECK_DIF_OK(
-      dif_entropy_src_irq_restore_all(&entropy_src, &entropy_src_irqs));
   CHECK_DIF_OK(
       dif_flash_ctrl_irq_restore_all(&flash_ctrl, &flash_ctrl_irqs));
   CHECK_DIF_OK(
@@ -1183,19 +1149,6 @@ static void peripheral_irqs_trigger(void) {
     // entering the ISR.
     IBEX_SPIN_FOR(edn_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from edn1 is serviced.", irq);
-  }
-
-  peripheral_expected = kTopDarjeelingPlicPeripheralEntropySrc;
-  for (dif_entropy_src_irq_t irq = kDifEntropySrcIrqEsEntropyValid;
-       irq <= kDifEntropySrcIrqEsFatalErr; ++irq) {
-    entropy_src_irq_expected = irq;
-    LOG_INFO("Triggering entropy_src IRQ %d.", irq);
-    CHECK_DIF_OK(dif_entropy_src_irq_force(&entropy_src, irq, true));
-
-    // This avoids a race where *irq_serviced is read before
-    // entering the ISR.
-    IBEX_SPIN_FOR(entropy_src_irq_serviced == irq, 1);
-    LOG_INFO("IRQ %d from entropy_src is serviced.", irq);
   }
 
   peripheral_expected = kTopDarjeelingPlicPeripheralFlashCtrl;

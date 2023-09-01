@@ -25,7 +25,6 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_SPACE_HMAC                 = 32'h 21110000;
   localparam logic [31:0] ADDR_SPACE_KMAC                 = 32'h 21120000;
   localparam logic [31:0] ADDR_SPACE_AES                  = 32'h 21100000;
-  localparam logic [31:0] ADDR_SPACE_ENTROPY_SRC          = 32'h 21160000;
   localparam logic [31:0] ADDR_SPACE_CSRNG                = 32'h 21150000;
   localparam logic [31:0] ADDR_SPACE_EDN0                 = 32'h 21170000;
   localparam logic [31:0] ADDR_SPACE_EDN1                 = 32'h 21180000;
@@ -58,7 +57,6 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_HMAC                 = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_KMAC                 = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_AES                  = 32'h 000000ff;
-  localparam logic [31:0] ADDR_MASK_ENTROPY_SRC          = 32'h 000000ff;
   localparam logic [31:0] ADDR_MASK_CSRNG                = 32'h 0000007f;
   localparam logic [31:0] ADDR_MASK_EDN0                 = 32'h 0000007f;
   localparam logic [31:0] ADDR_MASK_EDN1                 = 32'h 0000007f;
@@ -73,7 +71,7 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_DMA                  = 32'h 000000ff;
 
   localparam int N_HOST   = 4;
-  localparam int N_DEVICE = 30;
+  localparam int N_DEVICE = 29;
 
   typedef enum int {
     TlRvDmRegs = 0,
@@ -93,19 +91,18 @@ package tl_main_pkg;
     TlHmac = 14,
     TlKmac = 15,
     TlAes = 16,
-    TlEntropySrc = 17,
-    TlCsrng = 18,
-    TlEdn0 = 19,
-    TlEdn1 = 20,
-    TlRvPlic = 21,
-    TlOtbn = 22,
-    TlKeymgr = 23,
-    TlRvCoreIbexCfg = 24,
-    TlSramCtrlMainRegs = 25,
-    TlSramCtrlMainRam = 26,
-    TlSramCtrlMboxRegs = 27,
-    TlSramCtrlMboxRam = 28,
-    TlDma = 29
+    TlCsrng = 17,
+    TlEdn0 = 18,
+    TlEdn1 = 19,
+    TlRvPlic = 20,
+    TlOtbn = 21,
+    TlKeymgr = 22,
+    TlRvCoreIbexCfg = 23,
+    TlSramCtrlMainRegs = 24,
+    TlSramCtrlMainRam = 25,
+    TlSramCtrlMboxRegs = 26,
+    TlSramCtrlMboxRam = 27,
+    TlDma = 28
   } tl_device_e;
 
   typedef enum int {

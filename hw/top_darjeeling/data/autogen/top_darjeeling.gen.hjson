@@ -6733,154 +6733,6 @@
       }
     }
     {
-      name: entropy_src
-      type: entropy_src
-      clock_srcs:
-      {
-        clk_i: main
-      }
-      clock_group: secure
-      reset_connections:
-      {
-        rst_ni:
-        {
-          name: lc
-          domain: "0"
-        }
-      }
-      clock_connections:
-      {
-        clk_i: clkmgr_aon_clocks.clk_main_secure
-      }
-      domain:
-      [
-        "0"
-      ]
-      param_decl: {}
-      memory: {}
-      param_list:
-      [
-        {
-          name: EsFifoDepth
-          desc: Number of 384-bit entries in the esfinal FIFO
-          type: int
-          default: "4"
-          expose: "true"
-          name_top: EntropySrcEsFifoDepth
-        }
-        {
-          name: Stub
-          desc: Stub out the core of entropy_src logic
-          type: bit
-          default: "0"
-          expose: "true"
-          name_top: EntropySrcStub
-        }
-      ]
-      inter_signal_list:
-      [
-        {
-          name: entropy_src_hw_if
-          struct: entropy_src_hw_if
-          package: entropy_src_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: entropy_src
-          index: -1
-        }
-        {
-          name: cs_aes_halt
-          desc:
-            '''
-            Coordinate activity between CSRNG's AES and Entropy Source's SHA3.
-            The idea is that Entropy Source requests CSRNG's AES to halt and waits for CSRNG to acknowledge before it starts its SHA3.
-            While SHA3 runs, Entropy Source keeps the request high.
-            CSRNG may not drop the acknowledge before Entropy Source drops the request.
-
-            Current limitations:
-            1. During startup and in Firmware Override - Extract & Insert mode, Entropy Source makes no AES Halt requests but still activates its SHA3 engine.
-            2. Outside Firmware Override - Extract & Insert mode, Entropy Source may activate its SHA3 engine without requesting AES Halt, but no more than for 24 Keccak rounds (24 clock cycles) every 512 clock cycles.
-            '''
-          struct: cs_aes_halt
-          package: entropy_src_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: entropy_src
-          index: -1
-        }
-        {
-          name: entropy_src_rng
-          struct: entropy_src_rng
-          package: entropy_src_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: entropy_src
-          index: -1
-        }
-        {
-          name: entropy_src_xht
-          struct: entropy_src_xht
-          package: entropy_src_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: entropy_src
-          index: -1
-        }
-        {
-          name: otp_en_entropy_src_fw_read
-          struct: mubi8
-          package: prim_mubi_pkg
-          type: uni
-          act: rcv
-          width: 1
-          default: prim_mubi_pkg::MuBi8True
-          inst_name: entropy_src
-          index: -1
-        }
-        {
-          name: otp_en_entropy_src_fw_over
-          struct: mubi8
-          package: prim_mubi_pkg
-          type: uni
-          act: rcv
-          width: 1
-          default: prim_mubi_pkg::MuBi8True
-          inst_name: entropy_src
-          index: -1
-        }
-        {
-          name: rng_fips
-          struct: logic
-          type: uni
-          act: req
-          width: 1
-          inst_name: entropy_src
-          index: -1
-        }
-        {
-          name: tl
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: entropy_src
-          default: ""
-          end_idx: -1
-          top_signame: entropy_src_tl
-          index: -1
-        }
-      ]
-      base_addrs:
-      {
-        null: 0x21160000
-      }
-    }
-    {
       name: edn0
       type: edn
       clock_srcs:
@@ -9039,10 +8891,6 @@
       [
         main.tl_aes
       ]
-      entropy_src.tl:
-      [
-        main.tl_entropy_src
-      ]
       csrng.tl:
       [
         main.tl_csrng
@@ -9346,7 +9194,6 @@
           flash_ctrl.prim
           flash_ctrl.mem
           aes
-          entropy_src
           csrng
           edn0
           edn1
@@ -9379,7 +9226,6 @@
           flash_ctrl.prim
           flash_ctrl.mem
           aes
-          entropy_src
           csrng
           edn0
           edn1
@@ -9755,25 +9601,6 @@
           [
             {
               base_addr: 0x21100000
-              size_byte: 0x100
-            }
-          ]
-          xbar: false
-          stub: false
-          pipeline: true
-        }
-        {
-          name: entropy_src
-          type: device
-          clock: clk_main_i
-          reset: rst_main_ni
-          req_fifo_pass: false
-          rsp_fifo_pass: false
-          inst_type: entropy_src
-          addr_range:
-          [
-            {
-              base_addr: 0x21160000
               size_byte: 0x100
             }
           ]
@@ -10278,18 +10105,6 @@
           inst_name: main
           default: ""
           top_signame: aes_tl
-          index: -1
-        }
-        {
-          name: tl_entropy_src
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: main
-          default: ""
-          top_signame: entropy_src_tl
           index: -1
         }
         {
@@ -13721,7 +13536,6 @@
     otbn
     keymgr
     csrng
-    entropy_src
     edn0
     edn1
     dma
@@ -14587,30 +14401,6 @@
       module_name: csrng
     }
     {
-      name: entropy_src_es_entropy_valid
-      width: 1
-      type: interrupt
-      module_name: entropy_src
-    }
-    {
-      name: entropy_src_es_health_test_failed
-      width: 1
-      type: interrupt
-      module_name: entropy_src
-    }
-    {
-      name: entropy_src_es_observe_fifo_ready
-      width: 1
-      type: interrupt
-      module_name: entropy_src
-    }
-    {
-      name: entropy_src_es_fatal_err
-      width: 1
-      type: interrupt
-      module_name: entropy_src
-    }
-    {
       name: edn0_edn_cmd_req_done
       width: 1
       type: interrupt
@@ -14689,7 +14479,6 @@
     otbn
     keymgr
     csrng
-    entropy_src
     edn0
     edn1
     sram_ctrl_main
@@ -15166,24 +14955,6 @@
       type: alert
       async: "1"
       module_name: csrng
-      lpg_name: secure_lc_0
-      lpg_idx: 19
-    }
-    {
-      name: entropy_src_recov_alert
-      width: 1
-      type: alert
-      async: "1"
-      module_name: entropy_src
-      lpg_name: secure_lc_0
-      lpg_idx: 19
-    }
-    {
-      name: entropy_src_fatal_alert
-      width: 1
-      type: alert
-      async: "1"
-      module_name: entropy_src
       lpg_name: secure_lc_0
       lpg_idx: 19
     }
@@ -19578,101 +19349,6 @@
         index: -1
       }
       {
-        name: entropy_src_hw_if
-        struct: entropy_src_hw_if
-        package: entropy_src_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: entropy_src
-        index: -1
-      }
-      {
-        name: cs_aes_halt
-        desc:
-          '''
-          Coordinate activity between CSRNG's AES and Entropy Source's SHA3.
-          The idea is that Entropy Source requests CSRNG's AES to halt and waits for CSRNG to acknowledge before it starts its SHA3.
-          While SHA3 runs, Entropy Source keeps the request high.
-          CSRNG may not drop the acknowledge before Entropy Source drops the request.
-
-          Current limitations:
-          1. During startup and in Firmware Override - Extract & Insert mode, Entropy Source makes no AES Halt requests but still activates its SHA3 engine.
-          2. Outside Firmware Override - Extract & Insert mode, Entropy Source may activate its SHA3 engine without requesting AES Halt, but no more than for 24 Keccak rounds (24 clock cycles) every 512 clock cycles.
-          '''
-        struct: cs_aes_halt
-        package: entropy_src_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: entropy_src
-        index: -1
-      }
-      {
-        name: entropy_src_rng
-        struct: entropy_src_rng
-        package: entropy_src_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: entropy_src
-        index: -1
-      }
-      {
-        name: entropy_src_xht
-        struct: entropy_src_xht
-        package: entropy_src_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: entropy_src
-        index: -1
-      }
-      {
-        name: otp_en_entropy_src_fw_read
-        struct: mubi8
-        package: prim_mubi_pkg
-        type: uni
-        act: rcv
-        width: 1
-        default: prim_mubi_pkg::MuBi8True
-        inst_name: entropy_src
-        index: -1
-      }
-      {
-        name: otp_en_entropy_src_fw_over
-        struct: mubi8
-        package: prim_mubi_pkg
-        type: uni
-        act: rcv
-        width: 1
-        default: prim_mubi_pkg::MuBi8True
-        inst_name: entropy_src
-        index: -1
-      }
-      {
-        name: rng_fips
-        struct: logic
-        type: uni
-        act: req
-        width: 1
-        inst_name: entropy_src
-        index: -1
-      }
-      {
-        name: tl
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: entropy_src
-        default: ""
-        end_idx: -1
-        top_signame: entropy_src_tl
-        index: -1
-      }
-      {
         name: csrng_cmd
         desc: EDN supports a signal CSRNG application interface.
         struct: csrng
@@ -20680,18 +20356,6 @@
         inst_name: main
         default: ""
         top_signame: aes_tl
-        index: -1
-      }
-      {
-        name: tl_entropy_src
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: main
-        default: ""
-        top_signame: entropy_src_tl
         index: -1
       }
       {
@@ -23384,28 +23048,6 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: aes_tl_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        signame: entropy_src_tl_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: entropy_src_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

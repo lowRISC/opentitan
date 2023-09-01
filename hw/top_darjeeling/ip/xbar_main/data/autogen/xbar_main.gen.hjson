@@ -78,7 +78,6 @@
       flash_ctrl.prim
       flash_ctrl.mem
       aes
-      entropy_src
       csrng
       edn0
       edn1
@@ -111,7 +110,6 @@
       flash_ctrl.prim
       flash_ctrl.mem
       aes
-      entropy_src
       csrng
       edn0
       edn1
@@ -487,25 +485,6 @@
       [
         {
           base_addr: 0x21100000
-          size_byte: 0x100
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: true
-    }
-    {
-      name: entropy_src
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      req_fifo_pass: false
-      rsp_fifo_pass: false
-      inst_type: entropy_src
-      addr_range:
-      [
-        {
-          base_addr: 0x21160000
           size_byte: 0x100
         }
       ]

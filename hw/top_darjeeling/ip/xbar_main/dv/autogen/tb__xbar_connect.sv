@@ -46,7 +46,6 @@ initial force dut.rst_spi_host1_ni = rst_n;
 `CONNECT_TL_DEVICE_IF(hmac, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(kmac, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(aes, dut, clk_main_i, rst_n)
-`CONNECT_TL_DEVICE_IF(entropy_src, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(csrng, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(edn0, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(edn1, dut, clk_main_i, rst_n)

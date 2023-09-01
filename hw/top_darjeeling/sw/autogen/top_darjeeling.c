@@ -11,7 +11,7 @@
  * `top_darjeeling_plic_peripheral_t`.
  */
 const top_darjeeling_plic_peripheral_t
-    top_darjeeling_plic_interrupt_for_peripheral[186] = {
+    top_darjeeling_plic_interrupt_for_peripheral[182] = {
   [kTopDarjeelingPlicIrqIdNone] = kTopDarjeelingPlicPeripheralUnknown,
   [kTopDarjeelingPlicIrqIdUart0TxWatermark] = kTopDarjeelingPlicPeripheralUart0,
   [kTopDarjeelingPlicIrqIdUart0RxWatermark] = kTopDarjeelingPlicPeripheralUart0,
@@ -187,10 +187,6 @@ const top_darjeeling_plic_peripheral_t
   [kTopDarjeelingPlicIrqIdCsrngCsEntropyReq] = kTopDarjeelingPlicPeripheralCsrng,
   [kTopDarjeelingPlicIrqIdCsrngCsHwInstExc] = kTopDarjeelingPlicPeripheralCsrng,
   [kTopDarjeelingPlicIrqIdCsrngCsFatalErr] = kTopDarjeelingPlicPeripheralCsrng,
-  [kTopDarjeelingPlicIrqIdEntropySrcEsEntropyValid] = kTopDarjeelingPlicPeripheralEntropySrc,
-  [kTopDarjeelingPlicIrqIdEntropySrcEsHealthTestFailed] = kTopDarjeelingPlicPeripheralEntropySrc,
-  [kTopDarjeelingPlicIrqIdEntropySrcEsObserveFifoReady] = kTopDarjeelingPlicPeripheralEntropySrc,
-  [kTopDarjeelingPlicIrqIdEntropySrcEsFatalErr] = kTopDarjeelingPlicPeripheralEntropySrc,
   [kTopDarjeelingPlicIrqIdEdn0EdnCmdReqDone] = kTopDarjeelingPlicPeripheralEdn0,
   [kTopDarjeelingPlicIrqIdEdn0EdnFatalErr] = kTopDarjeelingPlicPeripheralEdn0,
   [kTopDarjeelingPlicIrqIdEdn1EdnCmdReqDone] = kTopDarjeelingPlicPeripheralEdn1,
@@ -208,7 +204,7 @@ const top_darjeeling_plic_peripheral_t
  * `top_darjeeling_alert_peripheral_t`.
  */
 const top_darjeeling_alert_peripheral_t
-    top_darjeeling_alert_for_peripheral[67] = {
+    top_darjeeling_alert_for_peripheral[65] = {
   [kTopDarjeelingAlertIdUart0FatalFault] = kTopDarjeelingAlertPeripheralUart0,
   [kTopDarjeelingAlertIdUart1FatalFault] = kTopDarjeelingAlertPeripheralUart1,
   [kTopDarjeelingAlertIdUart2FatalFault] = kTopDarjeelingAlertPeripheralUart2,
@@ -261,8 +257,6 @@ const top_darjeeling_alert_peripheral_t
   [kTopDarjeelingAlertIdKeymgrFatalFaultErr] = kTopDarjeelingAlertPeripheralKeymgr,
   [kTopDarjeelingAlertIdCsrngRecovAlert] = kTopDarjeelingAlertPeripheralCsrng,
   [kTopDarjeelingAlertIdCsrngFatalAlert] = kTopDarjeelingAlertPeripheralCsrng,
-  [kTopDarjeelingAlertIdEntropySrcRecovAlert] = kTopDarjeelingAlertPeripheralEntropySrc,
-  [kTopDarjeelingAlertIdEntropySrcFatalAlert] = kTopDarjeelingAlertPeripheralEntropySrc,
   [kTopDarjeelingAlertIdEdn0RecovAlert] = kTopDarjeelingAlertPeripheralEdn0,
   [kTopDarjeelingAlertIdEdn0FatalAlert] = kTopDarjeelingAlertPeripheralEdn0,
   [kTopDarjeelingAlertIdEdn1RecovAlert] = kTopDarjeelingAlertPeripheralEdn1,
