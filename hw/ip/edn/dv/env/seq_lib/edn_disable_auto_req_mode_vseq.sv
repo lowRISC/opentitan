@@ -9,7 +9,7 @@ class edn_disable_auto_req_mode_vseq extends edn_base_vseq;
   push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)
       m_endpoint_pull_seq[MAX_NUM_ENDPOINTS];
 
-  mailbox mbox_kill_endpoint_reqs, mbox_kill_edn_init;
+  mailbox #(bit) mbox_kill_endpoint_reqs, mbox_kill_edn_init;
   bit edn_reenable_done;
   bit [MAX_NUM_ENDPOINTS-1:0] endpoint_reqs_done;
 
@@ -83,8 +83,8 @@ class edn_disable_auto_req_mode_vseq extends edn_base_vseq;
         cfg.abort_sw_cmd = 1;
         wait_no_outstanding_access();
         // Kill EDN initialization and endpoint requests if necessary.
-        mbox_kill_edn_init.put(1);
-        mbox_kill_endpoint_reqs.put(1);
+        mbox_kill_edn_init.put(1'b1);
+        mbox_kill_endpoint_reqs.put(1'b1);
         // Wait before re-enabling EDN.
         `uvm_info(`gfn, $sformatf("Waiting before re-enabling EDN"), UVM_LOW)
         cfg.clk_rst_vif.wait_n_clks($urandom_range(1, 1000));
