@@ -16,3 +16,4 @@
 `include "rv_dm_mem_tl_access_resuming_vseq.sv"
 `include "rv_dm_hart_unavail_vseq.sv"
 `include "rv_dm_cmderr_halt_resume_vseq.sv"
+`include "rv_dm_tl_dmem_csr_vseq.sv"

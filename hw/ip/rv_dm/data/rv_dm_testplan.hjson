@@ -131,6 +131,53 @@
       tests: ["rv_dm_jtag_dmi_csr_aliasing"]
     }
     {
+      name: tl_dmem_csr_hw_reset
+      desc: '''
+            Verify the reset values of Debug Memory CSRs as indicated in the RAL specification.
+
+            See hw/dv/tools/dvsim/testplans/csr_testplan.hjson for more description, This follows
+            the same approach, but applies to the Debug Memory regisers.
+
+            In these set of tests, the lc_hw_debug_en is set to true, scanmode & scan_rst_n inputs
+            to false.
+            '''
+      stage: V1
+      tests: ["rv_dm_tl_dmem_csr_hw_reset"]
+    }
+    {
+      name: tl_dmem_csr_rw
+      desc: '''
+            Verify accessibility of Debug Memory CSRs as indicated in the RAL specification.
+
+            See hw/dv/tools/dvsim/testplans/csr_testplan.hjson for more description, This follows
+            the same approach, but applies to the Debug Memory regisers.
+            '''
+      stage: V1
+      tests: ["rv_dm_tl_dmem_csr_rw"]
+    }
+    {
+      name: tl_dmem_csr_bit_bash
+      desc: '''
+            Verify no aliasing within individual bits of Debug Memory CSR.
+
+            See hw/dv/tools/dvsim/testplans/csr_testplan.hjson for more description, This follows
+            the same approach, but applies to the Debug Memory regisers.
+            '''
+      stage: V1
+      tests: ["rv_dm_tl_dmem_csr_bit_bash"]
+    }
+    {
+      name: tl_dmem_csr_aliasing
+      desc: '''
+            Verify no aliasing within the Debug Memory CSR address space.
+
+            See hw/dv/tools/dvsim/testplans/csr_testplan.hjson for more description, This follows
+            the same approach, but applies to the Debug Memory CSR regisers.
+            '''
+      stage: V1
+      tests: ["rv_dm_tl_dmem_csr_aliasing"]
+    }
+    {
       name: idcode
       desc: '''
             Verify that the JTAG IDCODE reads the correct value.

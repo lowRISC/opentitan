@@ -151,6 +151,34 @@
       reseed: 5
     }
     {
+      name: rv_dm_tl_dmem_csr_hw_reset
+      uvm_test_seq: rv_dm_tl_dmem_csr_vseq
+      build_mode: "cover_reg_top"
+      run_opts: ["+en_scb=0", "+csr_hw_reset"]
+      reseed: 5
+    }
+    {
+      name: rv_dm_tl_dmem_csr_rw
+      uvm_test_seq: rv_dm_tl_dmem_csr_vseq
+      build_mode: "cover_reg_top"
+      run_opts: ["+en_scb=0", "+csr_rw"]
+      reseed: 20
+    }
+    {
+      name: rv_dm_tl_dmem_csr_bit_bash
+      uvm_test_seq: rv_dm_tl_dmem_csr_vseq
+      build_mode: "cover_reg_top"
+      run_opts: ["+en_scb=0", "+csr_bit_bash"]
+      reseed: 5
+    }
+    {
+      name: rv_dm_tl_dmem_csr_aliasing
+      uvm_test_seq: rv_dm_tl_dmem_csr_vseq
+      build_mode: "cover_reg_top"
+      run_opts: ["+en_scb=0", "+csr_aliasing"]
+      reseed: 5
+    }
+    {
       name: rv_dm_sba_tl_access
       uvm_test_seq: rv_dm_sba_tl_access_vseq
       reseed: 20
