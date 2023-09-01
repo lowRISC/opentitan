@@ -2,8 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-name: Chip-Level Test
-description: Issue to track the development of a chip-level test.
+name: Chip-Level / SiVal Test
+description: Issue to track the development of a chip-level tests for either pre-silicon and post-silicon environments.
 title: "[chip-test] "
 labels: ["Component:ChipLevelTest"]
 body:
@@ -36,6 +36,22 @@ body:
         - Unknown
         - "Yes"
         - "No"
+  - type: dropdown
+    id: sival-test
+    attributes:
+      label: Silicon Validation (SiVal)
+      description: Does the test need to run in SiVal targets? If the answer is yes, the test will required to be enabled in the relevant FPGA target platform. Add the "Component:SiliconValidation" after creating the issue.
+      options:
+        - Unkown
+        - "Yes"
+        - "No"
+  - type: checkboxes
+    id: emulation-target
+    attibutes: Select the emulation targets compatible with this test case.
+    options:
+      - None
+      - CW310
+      - Hyperdebug + CW310
   - type: input
     id: contact
     attributes:
@@ -53,3 +69,4 @@ body:
         - [ ] Host-side component developed
         - [ ] HJSON test plan updated with test name (so it shows up in the dashboard)
         - [ ] Test added to dvsim nightly regression (and passing at time of checking)
+        - [ ] For SiVal test cases, test is running relevant FPGA or silicon regression
