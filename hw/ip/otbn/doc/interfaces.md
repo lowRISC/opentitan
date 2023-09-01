@@ -95,3 +95,13 @@ To maintain its security properties, OTBN requires the following configuration f
   For performance reasons, requests on this EDN connection should be answered quickly.
 * `edn_rnd` must provide AIS31-compliant class PTG.3 random numbers.
   The randomness from this interface is made available through the `RND` WSR and intended to be used for key generation.
+
+### Life Cycle Controller (LC_CTRL)
+
+OTBN has three LC_CTRL connections: one for triggering life cycle escalation requests (`lc_escalate_en`) and two for handling RMA entry (`lc_rma_req/ack`).
+
+As LC_CTRL might sit in a different clock domain and since all these connections are using multi-bit signals, OTBN might observe staggered signal transitions due to the clock domain crossings.
+To avoid spurious life cycle escalations and to enable reliable RMA entry, it should be ensured that:
+
+* The `lc_escalate_en` and `lc_rma_req` inputs are stably driven to `lc_ctrl_pkg::Off` before releasing the reset of OTBN.
+* When triggering RMA entry, the `lc_rma_req` input switches from `lc_ctrl_pkg::Off` to `lc_ctrl_pkg::On` exactly once, and then remains `On` until OTBN signals completion of the secure wipe operation with the `lc_rma_ack` output switching to `lc_ctrl_pkg::On`.
