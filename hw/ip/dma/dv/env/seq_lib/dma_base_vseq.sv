@@ -252,6 +252,17 @@ class dma_base_vseq extends cip_base_vseq #(
                               transfer_width.name()), UVM_HIGH)
   endtask: set_transfer_width
 
+  // Task: Set handshake interrupt register
+  task set_handshake_int_regs(ref dma_seq_item dma_config);
+    `uvm_info(`gfn, "Set DMA Handshake mode interrupt registers", UVM_HIGH)
+    csr_wr(ral.clear_int_src, dma_config.clear_int_src);
+    csr_wr(ral.clear_int_bus, dma_config.clear_int_bus);
+    foreach (dma_config.int_src_addr[i]) begin
+      csr_wr(ral.int_source_addr[i], dma_config.int_src_addr[i]);
+      csr_wr(ral.int_source_wr_val[i], dma_config.int_src_wr_val[i]);
+    end
+  endtask: set_handshake_int_regs
+
   // Task: Run above configurations common to both Generic and Handshake Mode of operations
   task run_common_config(ref dma_seq_item dma_config);
     `uvm_info(`gfn, "DMA: Start Common Configuration", UVM_HIGH)
@@ -263,6 +274,7 @@ class dma_base_vseq extends cip_base_vseq #(
     set_total_size(dma_config.total_transfer_size);
     set_transfer_width(dma_config.per_transfer_width);
     configure_mem_model(dma_config);
+    set_handshake_int_regs(dma_config);
     set_dma_enabled_memory_range(dma_config.mem_range_base,
                                  dma_config.mem_range_limit,
                                  dma_config.mem_range_unlock);

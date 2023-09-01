@@ -41,8 +41,23 @@ class dma_seq_item extends uvm_sequence_item;
   rand asid_encoding_e src_asid;
   rand asid_encoding_e dst_asid;
   rand dma_control_data_direction_e direction;
+  // Variable to indicate if interrupt needs clearing before reading from FIFO
+  rand bit [dma_reg_pkg::NumIntClearSources - 1:0] clear_int_src;
+  // Variable to indicate interrupt source interface
+  // 0 - CTN/SYS fabric
+  // 1 - OT internal
+  rand bit clear_int_bus;
+  // Array with interrupt register addresses
+  // size of array will be number of Handshake interrupts(dma_reg_pkg::NumIntClearSources)
+  rand bit [31:0] int_src_addr[];
+  // Array with interrupt register value to clear interrupt
+  // size of array will be number of Handshake interrupts(dma_reg_pkg::NumIntClearSources)
+  rand bit [31:0] int_src_wr_val[];
+  // Initial value of SHA digest
+  // size of array will be 16 to support SHA256, SHA-382 and SHA512 algorithms
+  rand bit [31:0] sha2_digest[];
   // Variable to control which trigger_i signals are active
-  rand bit [dma_reg_pkg::NumIntClearSources-1:0] handshake_intr_en;
+  rand lsio_trigger_t handshake_intr_en;
   // variable used to constrain randomization to only valid configs
   bit valid_dma_config;
   // Variable used to constrain randomization of all addresses values
@@ -72,7 +87,26 @@ class dma_seq_item extends uvm_sequence_item;
     `uvm_field_int(mem_buffer_almost_limit, UVM_DEFAULT)
     `uvm_field_int(mem_buffer_limit, UVM_DEFAULT)
     `uvm_field_int(handshake_intr_en, UVM_DEFAULT)
+    `uvm_field_int(clear_int_src, UVM_DEFAULT)
+    `uvm_field_array_int(int_src_addr, UVM_DEFAULT)
+    `uvm_field_array_int(int_src_wr_val, UVM_DEFAULT)
+    `uvm_field_array_int(sha2_digest, UVM_DEFAULT)
   `uvm_object_utils_end
+
+  // Constrain the size of sha digest array to support SHA-256, SHA-382 and SHA-512
+  constraint sha2_digest_c {
+    sha2_digest.size() == 16;
+  }
+
+  // Constrain array size to number of handshake interrupt signals
+  constraint int_src_addr_c {
+    int_src_addr.size() == dma_reg_pkg::NumIntClearSources;
+  }
+
+  // Constrain array size to number of handshake interrupt signals
+  constraint int_src_wr_val_c{
+    int_src_wr_val.size() == dma_reg_pkg::NumIntClearSources;
+  }
 
   // Constrain source and destinatination address space ids for valid configurations
   constraint asid_c {
