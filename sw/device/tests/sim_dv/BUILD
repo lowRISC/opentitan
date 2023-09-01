@@ -1227,25 +1227,6 @@ opentitan_functest(
 )
 
 opentitan_functest(
-    name = "entropy_src_fuse_en_fw_read_test",
-    srcs = ["entropy_src_fuse_en_fw_read_test.c"],
-    targets = ["dv"],
-    deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/ip/base/dif:base",
-        "//sw/lib/sw/device/base:memory",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:entropy_src",
-        "//sw/top_darjeeling/sw/dif:rstmgr",
-        "//sw/top_darjeeling/sw/test/utils:otp_ctrl_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
-    ],
-)
-
-opentitan_functest(
     name = "ast_usb_clk_calib",
     srcs = ["ast_usb_clk_calib.c"],
     targets = ["dv"],
@@ -1281,32 +1262,6 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:rstmgr",
         "//sw/top_darjeeling/sw/test/utils:csrng_testutils",
         "//sw/top_darjeeling/sw/test/utils:otp_ctrl_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
-    ],
-)
-
-opentitan_functest(
-    name = "csrng_lc_hw_debug_en_test",
-    srcs = ["csrng_lc_hw_debug_en_test.c"],
-    targets = ["dv"],
-    deps = [
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/base:macros",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:csrng",
-        "//sw/top_darjeeling/sw/dif:entropy_src",
-        "//sw/top_darjeeling/sw/dif:flash_ctrl",
-        "//sw/top_darjeeling/sw/dif:kmac",
-        "//sw/top_darjeeling/sw/dif:lc_ctrl",
-        "//sw/top_darjeeling/sw/dif:otp_ctrl",
-        "//sw/top_darjeeling/sw/dif:rstmgr",
-        "//sw/top_darjeeling/sw/test/utils:csrng_testutils",
-        "//sw/top_darjeeling/sw/test/utils:entropy_testutils",
-        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
-        "//sw/top_darjeeling/sw/test/utils:otp_ctrl_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rand_testutils",
         "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
     ],
 )

@@ -568,23 +568,6 @@ cc_test(
     ],
 )
 
-opentitan_functest(
-    name = "rnd_functest",
-    srcs = ["rnd_functest.c"],
-    deps = [
-        ":otp",
-        ":rnd",
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:crc32",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:entropy_src",
-        "//sw/top_darjeeling/sw/test/utils:entropy_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rand_testutils",
-    ],
-)
-
 dual_cc_library(
     name = "rstmgr",
     srcs = dual_inputs(
