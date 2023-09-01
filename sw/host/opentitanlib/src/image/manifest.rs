@@ -11,8 +11,7 @@
 #![deny(unused)]
 #![deny(unsafe_code)]
 
-use zerocopy::AsBytes;
-use zerocopy::FromBytes;
+use zerocopy::{AsBytes, FromBytes, FromZeroes};
 
 // Currently, these definitions must be updated manually but they can be
 // generated using the following commands (requires bindgen):
@@ -44,7 +43,7 @@ pub const CHIP_BL0_SIZE_MAX: u32 = 0x70000;
 
 /// Manifest for boot stage images stored in flash.
 #[repr(C)]
-#[derive(FromBytes, AsBytes, Debug, Default)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug, Default)]
 pub struct Manifest {
     pub rsa_signature: SigverifyRsaBuffer,
     pub usage_constraints: ManifestUsageConstraints,
@@ -68,7 +67,7 @@ pub struct Manifest {
 
 /// A type that holds 2 16-bit values for manifest major and minor format versions.
 #[repr(C)]
-#[derive(FromBytes, AsBytes, Debug, Default, Copy, Clone)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug, Default, Copy, Clone)]
 pub struct ManifestVersion {
     pub minor: u16,
     pub major: u16,
@@ -76,7 +75,7 @@ pub struct ManifestVersion {
 
 /// A type that holds 1964 32-bit words for SPHINCS+ signatures.
 #[repr(C)]
-#[derive(FromBytes, AsBytes, Debug, Copy, Clone)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug, Copy, Clone)]
 pub struct SigverifySpxSignature {
     pub data: [u32; 1964usize],
 }
@@ -91,7 +90,7 @@ impl Default for SigverifySpxSignature {
 
 /// Extension header.
 #[repr(C)]
-#[derive(FromBytes, AsBytes, Debug, Default)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug, Default)]
 pub struct ManifestExtHeader {
     pub identifier: u32,
     pub name: u32,
@@ -99,7 +98,7 @@ pub struct ManifestExtHeader {
 
 /// SPHINCS+ signature manifest extension.
 #[repr(C)]
-#[derive(FromBytes, AsBytes, Debug, Default)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug, Default)]
 pub struct ManifestExtSpxSignature {
     pub header: ManifestExtHeader,
     pub signature: SigverifySpxSignature,
@@ -107,14 +106,14 @@ pub struct ManifestExtSpxSignature {
 
 /// A type that holds 8 32-bit words for SPHINCS+ public keys.
 #[repr(C)]
-#[derive(FromBytes, AsBytes, Debug, Default, Copy, Clone)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug, Default, Copy, Clone)]
 pub struct SigverifySpxKey {
     pub data: [u32; 8usize],
 }
 
 /// SPHINCS+ public key manifest extension.
 #[repr(C)]
-#[derive(FromBytes, AsBytes, Debug, Default)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug, Default)]
 pub struct ManifestExtSpxKey {
     pub header: ManifestExtHeader,
     pub key: SigverifySpxKey,
@@ -122,7 +121,7 @@ pub struct ManifestExtSpxKey {
 
 /// A type that holds 96 32-bit words for RSA-3072.
 #[repr(C)]
-#[derive(FromBytes, AsBytes, Debug)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug)]
 pub struct SigverifyRsaBuffer {
     pub data: [u32; 96usize],
 }
@@ -135,14 +134,14 @@ impl Default for SigverifyRsaBuffer {
 
 /// A type that holds the 256-bit device identifier.
 #[repr(C)]
-#[derive(FromBytes, AsBytes, Debug, Default)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug, Default)]
 pub struct LifecycleDeviceId {
     pub device_id: [u32; 8usize],
 }
 
 /// Manifest usage constraints.
 #[repr(C)]
-#[derive(FromBytes, AsBytes, Debug)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug)]
 pub struct ManifestUsageConstraints {
     pub selector_bits: u32,
     pub device_id: LifecycleDeviceId,
@@ -167,27 +166,27 @@ impl Default for ManifestUsageConstraints {
 
 /// Manifest timestamp
 #[repr(C)]
-#[derive(FromBytes, AsBytes, Debug, Default)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug, Default)]
 pub struct Timestamp {
     pub timestamp_low: u32,
     pub timestamp_high: u32,
 }
 
 #[repr(C)]
-#[derive(FromBytes, AsBytes, Debug, Default)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug, Default)]
 pub struct KeymgrBindingValue {
     pub data: [u32; 8usize],
 }
 
 #[repr(C)]
-#[derive(FromBytes, AsBytes, Debug, Default, Copy, Clone)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug, Default, Copy, Clone)]
 pub struct ManifestExtTableEntry {
     pub identifier: u32,
     pub offset: u32,
 }
 
 #[repr(C)]
-#[derive(FromBytes, AsBytes, Debug, Default, Copy, Clone)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug, Default, Copy, Clone)]
 pub struct ManifestExtTable {
     pub entries: [ManifestExtTableEntry; CHIP_MANIFEST_EXT_TABLE_COUNT],
 }

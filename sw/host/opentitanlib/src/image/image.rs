@@ -12,8 +12,6 @@ use std::mem::{align_of, size_of};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 
-use zerocopy::LayoutVerified;
-
 use crate::crypto::rsa::Modulus;
 use crate::crypto::rsa::Signature as RsaSignature;
 use crate::crypto::sha256;
@@ -245,16 +243,16 @@ impl Image {
 
     pub fn borrow_manifest(&self) -> Result<&Manifest> {
         let manifest_slice = &self.data.bytes[0..size_of::<Manifest>()];
-        let manifest_layout: LayoutVerified<&[u8], Manifest> =
-            LayoutVerified::new(manifest_slice).ok_or(ImageError::Parse)?;
+        let manifest_layout: zerocopy::Ref<_, Manifest> =
+            zerocopy::Ref::new(manifest_slice).ok_or(ImageError::Parse)?;
         let manifest: &Manifest = manifest_layout.into_ref();
         Ok(manifest)
     }
 
     pub fn borrow_manifest_mut(&mut self) -> Result<&mut Manifest> {
         let manifest_slice = &mut self.data.bytes[0..size_of::<Manifest>()];
-        let manifest_layout: LayoutVerified<&mut [u8], Manifest> =
-            LayoutVerified::new(&mut *manifest_slice).ok_or(ImageError::Parse)?;
+        let manifest_layout: zerocopy::Ref<_, Manifest> =
+            zerocopy::Ref::new(manifest_slice).ok_or(ImageError::Parse)?;
         let manifest: &mut Manifest = manifest_layout.into_mut();
         Ok(manifest)
     }

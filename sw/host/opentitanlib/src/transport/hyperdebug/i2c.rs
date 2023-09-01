@@ -5,7 +5,7 @@
 use anyhow::{bail, ensure, Result};
 use std::cmp;
 use std::rc::Rc;
-use zerocopy::{AsBytes, FromBytes};
+use zerocopy::{AsBytes, FromBytes, FromZeroes};
 
 use crate::io::i2c::{Bus, I2cError, Transfer};
 use crate::transport::hyperdebug::{BulkInterface, Inner};
@@ -23,7 +23,7 @@ const USB_MAX_SIZE: usize = 64;
 
 /// Wire format of USB packet to request a short I2C transaction
 /// (receiving at most 127 bytes).
-#[derive(AsBytes, FromBytes, Debug)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug)]
 #[repr(C)]
 struct CmdTransferShort {
     port: u8,
@@ -35,7 +35,7 @@ struct CmdTransferShort {
 
 /// Wire format of USB packet to request a long I2C transaction
 /// (receiving up to 32767 bytes).
-#[derive(AsBytes, FromBytes, Debug)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug)]
 #[repr(C)]
 struct CmdTransferLong {
     port: u8,
@@ -48,7 +48,7 @@ struct CmdTransferLong {
 }
 
 /// Wire format of USB packet containing I2C transaction response.
-#[derive(AsBytes, FromBytes, Debug)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug)]
 #[repr(C)]
 struct RspTransfer {
     status_code: u16,

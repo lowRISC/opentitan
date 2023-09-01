@@ -66,7 +66,6 @@ rust_binary(
         "@crate_index//:serde_json",
         "@crate_index//:shellwords",
         "@crate_index//:thiserror",
-        "@crate_index//:zerocopy",
         "@lowrisc_serde_annotate//:serde_annotate",
     ],
 )

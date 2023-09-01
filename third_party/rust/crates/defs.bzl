@@ -359,7 +359,7 @@ _NORMAL_DEPENDENCIES = {
             "tempfile": "@crate_index__tempfile-3.8.0//:tempfile",
             "thiserror": "@crate_index__thiserror-1.0.47//:thiserror",
             "typetag": "@crate_index__typetag-0.2.13//:typetag",
-            "zerocopy": "@crate_index__zerocopy-0.6.3//:zerocopy",
+            "zerocopy": "@crate_index__zerocopy-0.7.1//:zerocopy",
         },
     },
 }
@@ -4088,22 +4088,22 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "crate_index__zerocopy-0.6.3",
-        sha256 = "f3b9c234616391070b0b173963ebc65a9195068e7ed3731c6edac2ec45ebe106",
+        name = "crate_index__zerocopy-0.7.1",
+        sha256 = "2f00a66029e63d181fa590cc5694cf2afbc0974a4604824e80017b1789f99c07",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/zerocopy/0.6.3/download"],
-        strip_prefix = "zerocopy-0.6.3",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.zerocopy-0.6.3.bazel"),
+        urls = ["https://crates.io/api/v1/crates/zerocopy/0.7.1/download"],
+        strip_prefix = "zerocopy-0.7.1",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.zerocopy-0.7.1.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "crate_index__zerocopy-derive-0.6.3",
-        sha256 = "8f7f3a471f98d0a61c34322fbbfd10c384b07687f680d4119813713f72308d91",
+        name = "crate_index__zerocopy-derive-0.7.1",
+        sha256 = "e9c682f46403e5d567cb27b79f6279c145759528ba9450fe371f43b921b452bd",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/zerocopy-derive/0.6.3/download"],
-        strip_prefix = "zerocopy-derive-0.6.3",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.zerocopy-derive-0.6.3.bazel"),
+        urls = ["https://crates.io/api/v1/crates/zerocopy-derive/0.7.1/download"],
+        strip_prefix = "zerocopy-derive-0.7.1",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.zerocopy-derive-0.7.1.bazel"),
     )
 
     maybe(

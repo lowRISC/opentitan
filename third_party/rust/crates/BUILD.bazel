@@ -417,7 +417,7 @@ alias(
 
 alias(
     name = "zerocopy",
-    actual = "@crate_index__zerocopy-0.6.3//:zerocopy",
+    actual = "@crate_index__zerocopy-0.7.1//:zerocopy",
     tags = ["manual"],
 )
 
