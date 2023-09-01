@@ -18,7 +18,6 @@ UJSON_SERDE_STRUCT(RomOtpConfig, rom_otp_config_t, STRUCT_ROM_OTP_CONFIG);
 
 // Configuration values from the entropy/rng IPs.
 #define STRUCT_ROM_ENTROPY_CONFIG(field, string) \
-    field(entropy_src, uint32_t) \
     field(csrng, uint32_t) \
     field(edn, uint32_t)
 UJSON_SERDE_STRUCT(RomEntropyConfig, rom_entropy_config_t, STRUCT_ROM_ENTROPY_CONFIG);

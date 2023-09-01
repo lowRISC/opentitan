@@ -8,7 +8,6 @@
 #include "ast_regs.h"
 #include "csrng_regs.h"
 #include "edn_regs.h"
-#include "entropy_src_regs.h"
 #include "otp_ctrl_regs.h"
 #include "sensor_ctrl_regs.h"
 #include "sram_ctrl_regs.h"
@@ -172,18 +171,6 @@ _start:
 .L_ast_init_skip:
   // The following sequence enables the minimum level of entropy required to
   // initialize memory scrambling, as well as the entropy distribution network.
-  li a0, TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR
-  // Note for BOOT_ROM initialization the FIPS_ENABLE bit is set to kMultiBitBool4False
-  // to prevent the release of FIPS entropy until all the thresholds are set
-  li t0, (MULTIBIT_ASM_BOOL4_FALSE << ENTROPY_SRC_CONF_FIPS_ENABLE_OFFSET) | \
-         (MULTIBIT_ASM_BOOL4_FALSE << ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_OFFSET) | \
-         (MULTIBIT_ASM_BOOL4_FALSE << ENTROPY_SRC_CONF_THRESHOLD_SCOPE_OFFSET) | \
-         (MULTIBIT_ASM_BOOL4_FALSE << ENTROPY_SRC_CONF_RNG_BIT_ENABLE_OFFSET)
-  sw t0, ENTROPY_SRC_CONF_REG_OFFSET(a0)
-
-  li t0, (MULTIBIT_ASM_BOOL4_TRUE << ENTROPY_SRC_MODULE_ENABLE_MODULE_ENABLE_OFFSET)
-  sw t0, ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET(a0)
-
   li a0, TOP_DARJEELING_CSRNG_BASE_ADDR
   li t0, (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_ENABLE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_SW_APP_ENABLE_OFFSET) | \

@@ -9,7 +9,6 @@
 #include "sw/ip/aes/test/utils/aes_testutils.h"
 #include "sw/ip/alert_handler/dif/dif_alert_handler.h"
 #include "sw/ip/alert_handler/test/utils/alert_handler_testutils.h"
-#include "sw/ip/entropy_src/dif/dif_entropy_src.h"
 #include "sw/ip/entropy_src/test/utils/entropy_testutils.h"
 #include "sw/ip/keymgr/dif/dif_keymgr.h"
 #include "sw/ip/keymgr/test/utils/keymgr_testutils.h"
@@ -31,7 +30,6 @@ static dif_aes_t aes;
 static dif_csrng_t csrng;
 static dif_edn_t edn0;
 static dif_edn_t edn1;
-static dif_entropy_src_t entropy_src;
 static dif_kmac_t kmac;
 static dif_keymgr_t kmgr;
 static dif_otbn_t otbn;
@@ -184,9 +182,6 @@ static void alert_handler_test(const dif_pwrmgr_t *pwrmgr) {
 }
 
 void test_initialize(void) {
-  CHECK_DIF_OK(dif_entropy_src_init(
-      mmio_region_from_addr(TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR),
-      &entropy_src));
   CHECK_DIF_OK(dif_csrng_init(
       mmio_region_from_addr(TOP_DARJEELING_CSRNG_BASE_ADDR), &csrng));
   CHECK_DIF_OK(dif_edn_init(
@@ -232,8 +227,7 @@ status_t execute_test(void) {
     CHECK_STATUS_OK(keymgr_testutils_wait_for_operation_done(&kmgr));
     CHECK_STATUS_OK(
         keymgr_testutils_check_state(&kmgr, kDifKeymgrStateInitialized));
-    CHECK_STATUS_OK(
-        entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1));
+    CHECK_STATUS_OK(entropy_testutils_error_check(&csrng, &edn0, &edn1));
   }
 
   return OK_STATUS();
@@ -248,10 +242,6 @@ bool test_main(void) {
 
   alert_handler_configure(&alert_handler);
   CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
-
-  // ensure health tests are actually running
-  CHECK_STATUS_OK(entropy_testutils_wait_for_state(
-      &entropy_src, kDifEntropySrcMainFsmStateContHTRunning));
 
   return status_ok(execute_test());
 }

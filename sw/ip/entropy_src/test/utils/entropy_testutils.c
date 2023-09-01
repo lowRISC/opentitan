@@ -9,30 +9,10 @@
 #include "sw/ip/csrng/driver/csrng.h"
 #include "sw/ip/edn/dif/dif_edn.h"
 #include "sw/ip/edn/driver/edn.h"
-#include "sw/ip/entropy_src/dif/dif_entropy_src.h"
 #include "sw/ip/entropy_src/driver/entropy_src.h"
 #include "sw/lib/sw/device/base/mmio.h"
 
-static status_t setup_entropy_src(const dif_entropy_src_t *entropy_src) {
-  CHECK_DIF_OK(dif_entropy_src_configure(
-      entropy_src, entropy_testutils_config_default(), kDifToggleEnabled));
-  return OK_STATUS();
-}
-
-dif_entropy_src_config_t entropy_testutils_config_default(void) {
-  return (dif_entropy_src_config_t){
-      .fips_enable = true,
-      .route_to_firmware = false,
-      .bypass_conditioner = false,
-      .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
-      .health_test_window_size = 0x0200,
-      .alert_threshold = 2,
-  };
-}
-
 status_t entropy_testutils_auto_mode_init(void) {
-  const dif_entropy_src_t entropy_src = {
-      .base_addr = mmio_region_from_addr(kEntropySrcBaseAddr[0])};
   const dif_csrng_t csrng = {.base_addr =
                                  mmio_region_from_addr(kCsrngBaseAddr[0])};
   const dif_edn_t edn0 = {.base_addr = mmio_region_from_addr(kEdnBaseAddr[0])};
@@ -40,8 +20,7 @@ status_t entropy_testutils_auto_mode_init(void) {
 
   TRY(entropy_testutils_stop_all());
 
-  // re-eanble entropy src and csrng
-  setup_entropy_src(&entropy_src);
+  // re-eanble csrng
   TRY(dif_csrng_configure(&csrng));
 
   // Re-enable EDN0 in auto mode.
@@ -134,8 +113,6 @@ status_t entropy_testutils_auto_mode_init(void) {
 }
 
 status_t entropy_testutils_boot_mode_init(void) {
-  const dif_entropy_src_t entropy_src = {
-      .base_addr = mmio_region_from_addr(kEntropySrcBaseAddr[0])};
   const dif_csrng_t csrng = {.base_addr =
                                  mmio_region_from_addr(kCsrngBaseAddr[0])};
   const dif_edn_t edn0 = {.base_addr = mmio_region_from_addr(kEdnBaseAddr[0])};
@@ -143,7 +120,6 @@ status_t entropy_testutils_boot_mode_init(void) {
 
   TRY(entropy_testutils_stop_all());
 
-  setup_entropy_src(&entropy_src);
   TRY(dif_csrng_configure(&csrng));
   TRY(dif_edn_set_boot_mode(&edn0));
   TRY(dif_edn_set_boot_mode(&edn1));
@@ -152,43 +128,7 @@ status_t entropy_testutils_boot_mode_init(void) {
   return OK_STATUS();
 }
 
-status_t entropy_testutils_fw_override_enable(dif_entropy_src_t *entropy_src,
-                                              uint8_t buffer_threshold,
-                                              bool route_to_firmware,
-                                              bool bypass_conditioner) {
-  const dif_entropy_src_fw_override_config_t fw_override_config = {
-      .entropy_insert_enable = true,
-      .buffer_threshold = buffer_threshold,
-  };
-  TRY(dif_entropy_src_fw_override_configure(entropy_src, fw_override_config,
-                                            kDifToggleEnabled));
-
-  const dif_entropy_src_config_t config = {
-      .fips_enable = true,
-      .route_to_firmware = route_to_firmware,
-      .bypass_conditioner = bypass_conditioner,
-      .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
-      .health_test_threshold_scope = false,
-      .health_test_window_size = 0x0200,
-      .alert_threshold = 2,
-  };
-  TRY(dif_entropy_src_configure(entropy_src, config, kDifToggleEnabled));
-  return OK_STATUS();
-}
-
-status_t entropy_testutils_wait_for_state(const dif_entropy_src_t *entropy_src,
-                                          dif_entropy_src_main_fsm_t state) {
-  dif_entropy_src_main_fsm_t cur_state;
-
-  do {
-    TRY(dif_entropy_src_get_main_fsm_state(entropy_src, &cur_state));
-  } while (cur_state != state);
-  return OK_STATUS();
-}
-
 status_t entropy_testutils_stop_all(void) {
-  const dif_entropy_src_t entropy_src = {
-      .base_addr = mmio_region_from_addr(kEntropySrcBaseAddr[0])};
   const dif_csrng_t csrng = {.base_addr =
                                  mmio_region_from_addr(kCsrngBaseAddr[0])};
   const dif_edn_t edn0 = {.base_addr = mmio_region_from_addr(kEdnBaseAddr[0])};
@@ -197,22 +137,14 @@ status_t entropy_testutils_stop_all(void) {
   TRY(dif_edn_stop(&edn0));
   TRY(dif_edn_stop(&edn1));
   TRY(dif_csrng_stop(&csrng));
-  TRY(dif_entropy_src_stop(&entropy_src));
   return OK_STATUS();
 }
 
-status_t entropy_testutils_error_check(const dif_entropy_src_t *entropy_src,
-                                       const dif_csrng_t *csrng,
+status_t entropy_testutils_error_check(const dif_csrng_t *csrng,
                                        const dif_edn_t *edn0,
                                        const dif_edn_t *edn1) {
   uint32_t err_code;
   bool found_error = false;
-  TRY(dif_entropy_src_get_errors(entropy_src, &err_code));
-  if (err_code) {
-    found_error = true;
-    LOG_ERROR("entropy_src status. err: 0x%x", err_code);
-  }
-
   dif_csrng_cmd_status_t status;
   TRY(dif_csrng_get_cmd_interface_status(csrng, &status));
   if (status.errors) {

@@ -14,19 +14,6 @@ extern "C" {
 #endif
 
 /**
- * Compare the CRC32 of the configuration registers with the value in OTP.
- *
- * This function does not check the CRC32 in TEST_UNLOCKED* life cycle states to
- * allow a test program to configure the entropy src before transitioning to
- * other life cycle states.
- *
- * @param lc_state Life cycle state of the device.
- * @return result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-rom_error_t rnd_health_config_check(lifecycle_state_t lc_state);
-
-/**
  * Returns a random word from the RISC-V Ibex core wrapper.
  *
  * Requires the CREATOR_SW_CFG_RNG_EN OTP value set to `kHardenedBoolTrue`

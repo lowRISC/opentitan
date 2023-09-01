@@ -77,13 +77,10 @@ fn check_jitter(opts: &Opts, cs: &ChipStartup) -> Result<()> {
 }
 
 fn check_entropy_config(_opts: &Opts, cs: &ChipStartup) -> Result<()> {
-    let fips_enable = MultiBitBool4::try_from(cs.entropy.entropy_src & 0x0000_000F)?;
     let csrng_enable = MultiBitBool4::try_from(cs.entropy.csrng & 0x0000_000F)?;
     let edn_enable = MultiBitBool4::try_from(cs.entropy.edn & 0x0000_000F)?;
     let edn_boot_mode = MultiBitBool4::try_from((cs.entropy.edn >> 4) & 0x0000_000F)?;
 
-    // No FIPS entropy for bootup.
-    assert_eq!(fips_enable, MultiBitBool4::False);
     // CSRNG should be enabled.
     assert_eq!(csrng_enable, MultiBitBool4::True);
     // EDN should be enabled and in boot mode.

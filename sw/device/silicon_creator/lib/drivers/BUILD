@@ -529,7 +529,6 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             ":otp",
-            "//hw/ip/entropy_src/data:entropy_src_regs",
             "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
             "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
             "//hw/top_darjeeling/sw/autogen:top_darjeeling",

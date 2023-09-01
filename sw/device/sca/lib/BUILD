@@ -53,7 +53,6 @@ cc_library(
         "//sw/top_darjeeling/sw/dif:clkmgr",
         "//sw/top_darjeeling/sw/dif:csrng",
         "//sw/top_darjeeling/sw/dif:edn",
-        "//sw/top_darjeeling/sw/dif:entropy_src",
         "//sw/top_darjeeling/sw/dif:gpio",
         "//sw/top_darjeeling/sw/dif:pinmux",
         "//sw/top_darjeeling/sw/dif:rv_timer",

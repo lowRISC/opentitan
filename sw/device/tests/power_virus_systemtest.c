@@ -14,7 +14,6 @@
 #include "sw/ip/csrng/dif/dif_csrng.h"
 #include "sw/ip/csrng/dif/shared/dif_csrng_shared.h"
 #include "sw/ip/edn/dif/dif_edn.h"
-#include "sw/ip/entropy_src/dif/dif_entropy_src.h"
 #include "sw/ip/entropy_src/test/utils/entropy_testutils.h"
 #include "sw/ip/flash_ctrl/dif/dif_flash_ctrl.h"
 #include "sw/ip/gpio/dif/dif_gpio.h"
@@ -35,12 +34,11 @@
 #include "sw/lib/sw/device/base/multibits.h"
 #include "sw/lib/sw/device/runtime/log.h"
 
-#include "adc_ctrl_regs.h"     // Generated.
-#include "aes_regs.h"          // Generated.
-#include "csrng_regs.h"        // Generated.
-#include "entropy_src_regs.h"  // Generated.
-#include "gpio_regs.h"         // Generated.
-#include "hmac_regs.h"         // Generated.
+#include "adc_ctrl_regs.h"  // Generated.
+#include "aes_regs.h"       // Generated.
+#include "csrng_regs.h"     // Generated.
+#include "gpio_regs.h"      // Generated.
+#include "hmac_regs.h"      // Generated.
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "i2c_regs.h"       // Generated.
 #include "kmac_regs.h"      // Generated.
@@ -62,7 +60,6 @@ OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true,
 static dif_pinmux_t pinmux;
 static dif_gpio_t gpio;
 static dif_adc_ctrl_t adc_ctrl;
-static dif_entropy_src_t entropy_src;
 static dif_csrng_t csrng;
 static dif_edn_t edn_0;
 static dif_edn_t edn_1;
@@ -212,38 +209,6 @@ static const uint8_t kI2cMessage[] = {
     0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
 };
 
-static void log_entropy_src_alert_failures(void) {
-  dif_entropy_src_alert_fail_counts_t counts;
-  CHECK_DIF_OK(dif_entropy_src_get_alert_fail_counts(&entropy_src, &counts));
-  LOG_INFO("Entropy source health test failure encountered.");
-  LOG_INFO("Total Fails: %d", counts.total_fails);
-  for (size_t i = 0; i < kDifEntropySrcTestNumVariants; ++i) {
-    switch (i) {
-      case kDifEntropySrcTestRepetitionCount:
-        LOG_INFO("Fails (Repetition Count): %d", counts.high_fails[i]);
-        break;
-      case kDifEntropySrcTestRepetitionCountSymbol:
-        LOG_INFO("Fails (Repetition Symbol Count): %d", counts.high_fails[i]);
-        break;
-      case kDifEntropySrcTestAdaptiveProportion:
-        LOG_INFO("High Fails (Adaptive Proportion): %d", counts.high_fails[i]);
-        LOG_INFO("Low Fails (Adaptive Proportion): %d", counts.low_fails[i]);
-        break;
-      case kDifEntropySrcTestBucket:
-        LOG_INFO("Fails (Bucket): %d", counts.high_fails[i]);
-        break;
-      case kDifEntropySrcTestMarkov:
-        LOG_INFO("High Fails (Markov): %d", counts.high_fails[i]);
-        LOG_INFO("Low Fails (Markov): %d", counts.low_fails[i]);
-        break;
-      case kDifEntropySrcTestMailbox:
-        LOG_INFO("High Fails (Mailbox): %d", counts.high_fails[i]);
-        LOG_INFO("Low Fails (Mailbox): %d", counts.low_fails[i]);
-        break;
-    }
-  }
-}
-
 /**
  * External (OTTF) ISR override.
  */
@@ -256,10 +221,6 @@ void ottf_external_isr(void) {
   top_darjeeling_plic_peripheral_t periph =
       top_darjeeling_plic_interrupt_for_peripheral[irq_id];
   switch (periph) {
-    case kTopDarjeelingPlicPeripheralEntropySrc:
-      log_entropy_src_alert_failures();
-      CHECK(false);
-      break;
     default:
       CHECK(false, "Unexpected IRQ fired with ID: %d", irq_id);
       break;
@@ -280,9 +241,6 @@ static void init_peripheral_handles(void) {
       mmio_region_from_addr(TOP_DARJEELING_EDN0_BASE_ADDR), &edn_0));
   CHECK_DIF_OK(dif_edn_init(
       mmio_region_from_addr(TOP_DARJEELING_EDN1_BASE_ADDR), &edn_1));
-  CHECK_DIF_OK(dif_entropy_src_init(
-      mmio_region_from_addr(TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR),
-      &entropy_src));
   CHECK_DIF_OK(dif_hmac_init(
       mmio_region_from_addr(TOP_DARJEELING_HMAC_BASE_ADDR), &hmac));
   CHECK_DIF_OK(dif_gpio_init(
@@ -612,63 +570,6 @@ static void configure_entropy_complex(void) {
   // The (test) ROM enables the entropy complex, and to reconfigure it
   // requires temporarily disabling it.
   CHECK_STATUS_OK(entropy_testutils_stop_all());
-
-  // Enable entropy_src interrupts for health-test alert detection.
-  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-      &rv_plic, kTopDarjeelingPlicIrqIdEntropySrcEsHealthTestFailed, 0x1));
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      &rv_plic, kTopDarjeelingPlicIrqIdEntropySrcEsHealthTestFailed,
-      kTopDarjeelingPlicTargetIbex0, kDifToggleEnabled));
-  CHECK_DIF_OK(dif_entropy_src_irq_set_enabled(
-      &entropy_src, kDifEntropySrcIrqEsHealthTestFailed, kDifToggleEnabled));
-
-  // Configure entropy_src and health tests.
-  CHECK_DIF_OK(dif_entropy_src_health_test_configure(
-      &entropy_src, (dif_entropy_src_health_test_config_t){
-                        .test_type = kDifEntropySrcTestRepetitionCount,
-                        .high_threshold = 0xf,
-                        .low_threshold = 0}));
-  CHECK_DIF_OK(dif_entropy_src_health_test_configure(
-      &entropy_src, (dif_entropy_src_health_test_config_t){
-                        .test_type = kDifEntropySrcTestRepetitionCountSymbol,
-                        .high_threshold = 0xf,
-                        .low_threshold = 0}));
-  CHECK_DIF_OK(dif_entropy_src_health_test_configure(
-      &entropy_src,
-      (dif_entropy_src_health_test_config_t){
-          .test_type = kDifEntropySrcTestAdaptiveProportion,
-          .high_threshold =
-              kEntropySrcAdaptiveProportionHealthTestHighThreshold,
-          .low_threshold =
-              kEntropySrcAdaptiveProportionHealthTestLowThreshold}));
-  CHECK_DIF_OK(dif_entropy_src_health_test_configure(
-      &entropy_src, (dif_entropy_src_health_test_config_t){
-                        .test_type = kDifEntropySrcTestBucket,
-                        .high_threshold = 0xff,
-                        .low_threshold = 0}));
-  CHECK_DIF_OK(dif_entropy_src_health_test_configure(
-      &entropy_src, (dif_entropy_src_health_test_config_t){
-                        .test_type = kDifEntropySrcTestMarkov,
-                        .high_threshold = 0xff,
-                        .low_threshold = 0}));
-  CHECK_DIF_OK(dif_entropy_src_fw_override_configure(
-      &entropy_src,
-      (dif_entropy_src_fw_override_config_t){
-          .entropy_insert_enable = false,
-          .buffer_threshold = ENTROPY_SRC_OBSERVE_FIFO_THRESH_REG_RESVAL,
-      },
-      kDifToggleDisabled));
-  CHECK_DIF_OK(dif_entropy_src_configure(
-      &entropy_src,
-      (dif_entropy_src_config_t){
-          .fips_enable = true,
-          .route_to_firmware = false,
-          .bypass_conditioner = false,
-          .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
-          .health_test_threshold_scope = false,
-          .health_test_window_size = kEntropySrcHealthTestWindowSize,
-          .alert_threshold = UINT16_MAX},
-      kDifToggleEnabled));
 
   // Configure CSRNG and create reseed command header for later use during max
   // power epoch.

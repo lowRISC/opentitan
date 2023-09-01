@@ -94,9 +94,6 @@ typedef struct hw_cfg1_settings {
 //
 // - en_sram_ifetch: required to enable SRAM code execution during
 //   manufacturing.
-// - en_csrng_sw_app_read: required to be able to extract output from CSRNG.
-// - en_entropy_src_fw_read and en_entropy_src_fw_over: Required to implement
-//   entropy_src conditioner KAT.
 const hw_cfg1_settings_t kHwCfg1Settings = {
     .en_sram_ifetch = kMultiBitBool8True,
 };

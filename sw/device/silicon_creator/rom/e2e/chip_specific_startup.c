@@ -21,7 +21,6 @@
 
 #include "csrng_regs.h"
 #include "edn_regs.h"
-#include "entropy_src_regs.h"
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "lc_ctrl_regs.h"  // Generated.
 #include "otp_ctrl_regs.h"
@@ -64,13 +63,9 @@ void epmp_read(rom_epmp_config_t *epmp) {
 void entropy_config_read(rom_entropy_config_t *entropy) {
   // We read the entropy and rng configs directly from the peripherals because
   // we want to evaluate the mubi values in the test harness.
-  mmio_region_t entropy_src =
-      mmio_region_from_addr(TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR);
   mmio_region_t csrng = mmio_region_from_addr(TOP_DARJEELING_CSRNG_BASE_ADDR);
   mmio_region_t edn = mmio_region_from_addr(TOP_DARJEELING_EDN0_BASE_ADDR);
 
-  entropy->entropy_src =
-      mmio_region_read32(entropy_src, ENTROPY_SRC_CONF_REG_OFFSET);
   entropy->csrng = mmio_region_read32(csrng, CSRNG_CTRL_REG_OFFSET);
   entropy->edn = mmio_region_read32(edn, EDN_CTRL_REG_OFFSET);
 }

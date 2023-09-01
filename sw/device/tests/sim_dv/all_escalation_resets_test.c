@@ -211,7 +211,6 @@ static const char *clkmgr_inst_name = "clkmgr";
 static const char *csrng_inst_name = "csrng";
 static const char *edn0_inst_name = "edn0";
 static const char *edn1_inst_name = "edn1";
-static const char *entropy_src_inst_name = "entropy_src";
 static const char *flash_ctrl_inst_name = "flash_ctrl";
 static const char *gpio_inst_name = "gpio";
 static const char *hmac_inst_name = "hmac";
@@ -847,11 +846,6 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
     } break;
     case kTopDarjeelingAlertIdEdn1FatalAlert: {
       fault_checker_t fc = {trivial_fault_checker, edn1_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopDarjeelingAlertIdEntropySrcFatalAlert: {
-      fault_checker_t fc = {trivial_fault_checker, entropy_src_inst_name,
-                            we_check};
       fault_checker = fc;
     } break;
     case kTopDarjeelingAlertIdFlashCtrlFatalErr: {

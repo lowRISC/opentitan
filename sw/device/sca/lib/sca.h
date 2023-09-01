@@ -64,10 +64,6 @@ typedef enum sca_peripheral {
    */
   kScaPeripheralCsrng = 1 << 1,
   /**
-   * Entropy source.
-   */
-  kScaPeripheralEntropy = 1 << 2,
-  /**
    * AES.
    */
   kScaPeripheralAes = 1 << 3,

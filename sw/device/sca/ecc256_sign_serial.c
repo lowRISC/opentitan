@@ -271,9 +271,9 @@ static void ecc256_ecdsa(const uint8_t *arg, size_t len) {
 static void simple_serial_main(void) {
   SS_CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
-  sca_init(kScaTriggerSourceOtbn, kScaPeripheralEntropy | kScaPeripheralIoDiv4 |
-                                      kScaPeripheralOtbn | kScaPeripheralCsrng |
-                                      kScaPeripheralEdn | kScaPeripheralHmac);
+  sca_init(kScaTriggerSourceOtbn, kScaPeripheralIoDiv4 | kScaPeripheralOtbn |
+                                      kScaPeripheralCsrng | kScaPeripheralEdn |
+                                      kScaPeripheralHmac);
 
   LOG_INFO("Running ECC serial");
   LOG_INFO("Initializing simple serial interface to capture board.");

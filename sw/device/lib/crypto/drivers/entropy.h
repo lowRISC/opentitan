@@ -36,7 +36,7 @@ typedef struct entropy_seed_material {
  * Configures the entropy complex in continuous mode.
  *
  * The complex is configured in continuous mode with FIPS mode enabled. This is
- * the default operational mode of the entropy_src, csrng, edn0 and edn1 blocks.
+ * the default operational mode of the csrng, edn0 and edn1 blocks.
  *
  * @return Operation status in `status_t` format.
  */

@@ -12,7 +12,6 @@
 #include "sw/ip/edn/dif/dif_edn.h"
 #endif
 #include "sw/ip/clkmgr/dif/dif_clkmgr.h"
-#include "sw/ip/entropy_src/dif/dif_entropy_src.h"
 #include "sw/ip/gpio/dif/dif_gpio.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
 #include "sw/ip/pinmux/test/utils/pinmux_testutils.h"
@@ -206,12 +205,6 @@ void sca_disable_peripherals(sca_peripherals_t disable) {
   }
   if (disable & kScaPeripheralCsrng) {
     OT_DISCARD(dif_csrng_stop(&csrng));
-  }
-  if (disable & kScaPeripheralEntropy) {
-    dif_entropy_src_t entropy;
-    OT_DISCARD(dif_entropy_src_init(
-        mmio_region_from_addr(TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR), &entropy));
-    OT_DISCARD(dif_entropy_src_set_enabled(&entropy, kDifToggleDisabled));
   }
 #endif
 

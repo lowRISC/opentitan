@@ -319,7 +319,6 @@ static void rom_pre_boot_check(void) {
 
   // Check the alert_handler configuration.
   SHUTDOWN_IF_ERROR(alert_config_check(lc_state));
-  SHUTDOWN_IF_ERROR(rnd_health_config_check(lc_state));
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 2);
 
   // Check cached life cycle state against the value reported by hardware.

@@ -85,7 +85,6 @@ cc_library(
         "//hw/ip/aon_timer/data:aon_timer_regs",
         "//hw/ip/csrng/data:csrng_regs",
         "//hw/ip/edn/data:edn_regs",
-        "//hw/ip/entropy_src/data:entropy_src_regs",
         "//hw/ip/gpio/data:gpio_regs",
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",

@@ -1353,7 +1353,6 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:alert_handler",
         "//sw/top_darjeeling/sw/dif:aon_timer",
         "//sw/top_darjeeling/sw/dif:clkmgr",
-        "//sw/top_darjeeling/sw/dif:entropy_src",
         "//sw/top_darjeeling/sw/dif:pwrmgr",
         "//sw/top_darjeeling/sw/dif:rstmgr",
         "//sw/top_darjeeling/sw/dif:rv_plic",

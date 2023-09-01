@@ -582,7 +582,6 @@ opentitan_functest(
         deps = [
             "//hw/ip/csrng/data:csrng_regs",
             "//hw/ip/edn/data:edn_regs",
-            "//hw/ip/entropy_src/data:entropy_src_regs",
             "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
             "//hw/top_darjeeling/ip/sensor_ctrl/data:sensor_ctrl_regs",
             "//hw/top_darjeeling/sw/autogen:top_darjeeling",

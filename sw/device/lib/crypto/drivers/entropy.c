@@ -10,9 +10,8 @@
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/base/multibits.h"
 
-#include "csrng_regs.h"        // Generated
-#include "edn_regs.h"          // Generated
-#include "entropy_src_regs.h"  // Generated
+#include "csrng_regs.h"  // Generated
+#include "edn_regs.h"    // Generated
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 // Module ID for status codes.
@@ -20,7 +19,6 @@
 
 enum {
   kBaseCsrng = TOP_DARJEELING_CSRNG_BASE_ADDR,
-  kBaseEntropySrc = TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR,
   kBaseEdn0 = TOP_DARJEELING_EDN0_BASE_ADDR,
   kBaseEdn1 = TOP_DARJEELING_EDN1_BASE_ADDR,
 
@@ -108,7 +106,7 @@ typedef struct edn_config {
 /**
  * Entropy complex configuration settings.
  *
- * Contains configuration paramenters for entropy_src, csrng, edn0 and edn1.
+ * Contains configuration paramenters for csrng, edn0 and edn1.
  */
 typedef struct entropy_complex_config {
   /**
@@ -408,28 +406,6 @@ static status_t edn_configure(const edn_config_t *config) {
 }
 
 /**
- * Stops the current mode of operation and disables the entropy_src module.
- *
- * All configuration registers are set to their reset values to avoid
- * synchronization issues with internal FIFOs.
- */
-static void entropy_src_stop(void) {
-  abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET,
-                   ENTROPY_SRC_MODULE_ENABLE_REG_RESVAL);
-
-  // Set default values for other critical registers to avoid synchronization
-  // issues.
-  abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET,
-                   ENTROPY_SRC_ENTROPY_CONTROL_REG_RESVAL);
-  abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_CONF_REG_OFFSET,
-                   ENTROPY_SRC_CONF_REG_RESVAL);
-  abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_OFFSET,
-                   ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_RESVAL);
-  abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET,
-                   ENTROPY_SRC_ALERT_THRESHOLD_REG_RESVAL);
-}
-
-/**
  * Disables the entropy complex.
  *
  * The order of operations is important to avoid synchronization issues across
@@ -437,10 +413,9 @@ static void entropy_src_stop(void) {
  * CSRNG instances. Such FIFOs are not cleared when EDN is reconfigured, and an
  * explicit clear FIFO command needs to be set by software (see #14506). There
  * may be additional race conditions for downstream blocks that are
- * processing requests from an upstream endpoint (e.g. entropy_src processing a
- * request from CSRNG, or CSRNG processing a request from EDN). To avoid these
- * issues, it is recommended to first disable EDN, then CSRNG and entropy_src
- * last.
+ * processing requests from an upstream endpoint (e.g. CSRNG processing a
+ * request from EDN). To avoid these issues, it is recommended to first disable
+ * EDN and then CSRNG.
  *
  * See hw/ip/csrng/doc/_index.md#module-enable-and-disable for more details.
  */
@@ -448,60 +423,6 @@ static void entropy_complex_stop_all(void) {
   edn_stop(kBaseEdn0);
   edn_stop(kBaseEdn1);
   abs_mmio_write32(kBaseCsrng + CSRNG_CTRL_REG_OFFSET, CSRNG_CTRL_REG_RESVAL);
-  entropy_src_stop();
-}
-
-/**
- * Configures the entropy_src with based on `config` options.
- *
- * @param config Entropy Source configuration options.
- * @return error on failure.
- */
-OT_WARN_UNUSED_RESULT
-static status_t entropy_src_configure(const entropy_complex_config_t *config) {
-  // Control register configuration.
-  uint32_t reg = bitfield_field32_write(
-      0, ENTROPY_SRC_ENTROPY_CONTROL_ES_ROUTE_FIELD, config->route_to_firmware);
-  reg = bitfield_field32_write(reg, ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_FIELD,
-                               config->bypass_conditioner);
-  abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET,
-                   reg);
-
-  // Config register configuration
-  reg = bitfield_field32_write(0, ENTROPY_SRC_CONF_FIPS_ENABLE_FIELD,
-                               config->fips_enable);
-  reg = bitfield_field32_write(reg,
-                               ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_FIELD,
-                               config->route_to_firmware);
-  reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_THRESHOLD_SCOPE_FIELD,
-                               kMultiBitBool4False);
-  reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_RNG_BIT_ENABLE_FIELD,
-                               config->single_bit_mode);
-  reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_RNG_BIT_SEL_FIELD, 0);
-  abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_CONF_REG_OFFSET, reg);
-
-  // Configure health test windw. Conditioning bypass is not supported.
-  abs_mmio_write32(
-      kBaseEntropySrc + ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_OFFSET,
-      bitfield_field32_write(ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_RESVAL,
-                             ENTROPY_SRC_HEALTH_TEST_WINDOWS_FIPS_WINDOW_FIELD,
-                             config->fips_test_window_size));
-
-  // Configure alert threshold
-  reg = bitfield_field32_write(
-      0, ENTROPY_SRC_ALERT_THRESHOLD_ALERT_THRESHOLD_FIELD,
-      config->alert_threshold);
-  reg = bitfield_field32_write(
-      reg, ENTROPY_SRC_ALERT_THRESHOLD_ALERT_THRESHOLD_INV_FIELD,
-      ~config->alert_threshold);
-  abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET,
-                   reg);
-
-  abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET,
-                   kMultiBitBool4True);
-
-  // TODO: Add FI checks.
-  return OTCRYPTO_OK;
 }
 
 status_t entropy_complex_init(void) {
@@ -515,7 +436,6 @@ status_t entropy_complex_init(void) {
 
   // TODO: Add health check configuration.
 
-  HARDENED_TRY(entropy_src_configure(config));
   csrng_configure();
   HARDENED_TRY(edn_configure(&config->edn0));
   return edn_configure(&config->edn1);

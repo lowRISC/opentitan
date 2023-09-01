@@ -64,7 +64,6 @@ cc_library(
     deps = [
         "//hw/ip/csrng/data:csrng_regs",
         "//hw/ip/edn/data:edn_regs",
-        "//hw/ip/entropy_src/data:entropy_src_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/crypto/impl:status",
         "//sw/lib/sw/device/base:abs_mmio",

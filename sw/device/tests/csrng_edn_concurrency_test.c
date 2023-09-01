@@ -10,7 +10,6 @@
 #include "sw/ip/csrng/dif/shared/dif_csrng_shared.h"
 #include "sw/ip/csrng/test/utils/csrng_testutils.h"
 #include "sw/ip/edn/dif/dif_edn.h"
-#include "sw/ip/entropy_src/dif/dif_entropy_src.h"
 #include "sw/ip/entropy_src/test/utils/entropy_testutils.h"
 #include "sw/ip/otbn/test/utils/otbn_testutils.h"
 #include "sw/ip/rv_core_ibex/test/utils/rand_testutils.h"
@@ -26,7 +25,6 @@
 static dif_csrng_t csrng;
 static dif_edn_t edn0;
 static dif_edn_t edn1;
-static dif_entropy_src_t entropy_src;
 static dif_otbn_t otbn;
 static dif_rv_plic_t plic;
 static dif_rv_core_ibex_t rv_core_ibex;
@@ -114,9 +112,6 @@ static void init_peripherals(void) {
       mmio_region_from_addr(TOP_DARJEELING_EDN0_BASE_ADDR), &edn0));
   CHECK_DIF_OK(dif_edn_init(
       mmio_region_from_addr(TOP_DARJEELING_EDN1_BASE_ADDR), &edn1));
-  CHECK_DIF_OK(dif_entropy_src_init(
-      mmio_region_from_addr(TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR),
-      &entropy_src));
   CHECK_DIF_OK(dif_rv_plic_init(
       mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &plic));
   CHECK_DIF_OK(dif_rv_core_ibex_init(
@@ -282,8 +277,6 @@ static void entropy_config(void) {
       rand_testutils_gen32_range(/*min=*/1, kTestParamNumIbexIterationsMax);
 
   CHECK_STATUS_OK(entropy_testutils_stop_all());
-  CHECK_DIF_OK(dif_entropy_src_configure(
-      &entropy_src, entropy_testutils_config_default(), kDifToggleEnabled));
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
   CHECK_DIF_OK(dif_edn_set_auto_mode(&edn0, edn_params0));
   CHECK_DIF_OK(dif_edn_set_auto_mode(&edn1, edn_params1));
@@ -333,8 +326,7 @@ static void main_task(void *task_parameters) {
         break;
       }
       CHECK_STATUS_OK((csrng_testutils_recoverable_alerts_check(&csrng)));
-      CHECK_STATUS_OK(
-          entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1));
+      CHECK_STATUS_OK(entropy_testutils_error_check(&csrng, &edn0, &edn1));
       execution_state_update(kTestStateSetup);
     }
     // The rest of this code block is executed when

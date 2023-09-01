@@ -10,7 +10,6 @@
 #include "sw/ip/aon_timer/test/utils/aon_timer_testutils.h"
 #include "sw/ip/clkmgr/dif/dif_clkmgr.h"
 #include "sw/ip/clkmgr/test/utils/clkmgr_testutils.h"
-#include "sw/ip/entropy_src/dif/dif_entropy_src.h"
 #include "sw/ip/pwrmgr/test/utils/pwrmgr_testutils.h"
 #include "sw/ip/rstmgr/test/utils/rstmgr_testutils.h"
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
@@ -55,7 +54,6 @@ static dif_rv_plic_t rv_plic;
 static dif_rv_plic_t plic;
 static dif_pwrmgr_t pwrmgr;
 static dif_rstmgr_t rstmgr;
-static dif_entropy_src_t entropy_src;
 
 static dif_clkmgr_t clkmgr;
 static dif_adc_ctrl_t adc_ctrl;
@@ -74,12 +72,6 @@ enum {
 enum {
   kPowerUpTimeInUs = 30,
 };
-
-static uint32_t read_fifo_depth(dif_entropy_src_t *entropy) {
-  uint32_t fifo_depth = 0;
-  CHECK_DIF_OK(dif_entropy_src_get_fifo_depth(entropy, &fifo_depth));
-  return fifo_depth;
-}
 
 static uint32_t get_events(dif_toggle_t fatal) {
   dif_sensor_ctrl_events_t events = 0;
@@ -170,9 +162,6 @@ void init_units(void) {
       mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR), &pwrmgr));
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR), &rstmgr));
-  CHECK_DIF_OK(dif_entropy_src_init(
-      mmio_region_from_addr(TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR),
-      &entropy_src));
   CHECK_DIF_OK(dif_aon_timer_init(
       mmio_region_from_addr(TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR),
       &aon_timer));
@@ -285,26 +274,9 @@ void adc_setup(bool first_adc_setup) {
   }
 }
 
-void entropy_config(dif_entropy_src_config_t entropy_src_config) {
-  CHECK_DIF_OK(dif_entropy_src_set_enabled(&entropy_src, kDifToggleDisabled));
-
-  const dif_entropy_src_fw_override_config_t fw_override_config = {
-      .entropy_insert_enable = true,
-      .buffer_threshold = kEntropyFifoBufferSize,
-  };
-
-  CHECK_DIF_OK(dif_entropy_src_fw_override_configure(
-      &entropy_src, fw_override_config, kDifToggleEnabled));
-
-  CHECK_DIF_OK(dif_entropy_src_configure(&entropy_src, entropy_src_config,
-                                         kDifToggleEnabled));
-}
-
 void ast_enter_sleep_states_and_check_functionality(
-    dif_pwrmgr_domain_config_t pwrmgr_config,
-    dif_entropy_src_config_t entropy_src_config, uint32_t alert_idx) {
+    dif_pwrmgr_domain_config_t pwrmgr_config, uint32_t alert_idx) {
   bool deepsleep;
-  uint32_t read_fifo_depth_val = 0;
   uint32_t unhealthy_fifos, errors, alerts;
 
   const dif_edn_t edn0 = {
@@ -320,12 +292,6 @@ void ast_enter_sleep_states_and_check_functionality(
 
   if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, kDifNoWakeup)) ==
       true) {
-    entropy_config(entropy_src_config);
-
-    // Verify that the FIFO depth is non-zero via SW - indicating the reception
-    // of data over the AST RNG interface.
-    IBEX_SPIN_FOR(read_fifo_depth(&entropy_src) > 0, 1000);
-
     // test recoverable event
     test_event(alert_idx, kDifToggleDisabled, kAlertSet);
 
@@ -338,11 +304,6 @@ void ast_enter_sleep_states_and_check_functionality(
 
     // Setup low power.
     CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
-
-    if (!deepsleep) {
-      // read fifo depth before enter sleep mode
-      read_fifo_depth_val = read_fifo_depth(&entropy_src);
-    }
 
     // Configure ADC
     adc_setup(first_adc_setup);
@@ -364,29 +325,11 @@ void ast_enter_sleep_states_and_check_functionality(
   } else if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(
                  &pwrmgr, kDifPwrmgrWakeupRequestSourceTwo)) == true) {
     if (deepsleep) {
-      if (read_fifo_depth(&entropy_src) != 0)
-        LOG_ERROR("read_fifo_depth after reset=%0d should be 0",
-                  read_fifo_depth(&entropy_src));
-
       first_adc_setup = false;
       // Configure ADC after deep sleep
       adc_setup(first_adc_setup);
     }
-
-    entropy_config(entropy_src_config);
-
-    IBEX_SPIN_FOR(read_fifo_depth(&entropy_src) > 0, 1000);
   }
-
-  if (!deepsleep) {
-    if (read_fifo_depth_val >= read_fifo_depth(&entropy_src))
-      LOG_ERROR(
-          "read_fifo_depth after exit from idle=%0d should be equal/greater "
-          "than previous read value (%0d)",
-          read_fifo_depth(&entropy_src), read_fifo_depth_val);
-  }
-
-  IBEX_SPIN_FOR(read_fifo_depth(&entropy_src) > 0, 1000);
 
   test_event(alert_idx, kDifToggleDisabled, kAlertClear);
 
@@ -516,16 +459,6 @@ void ottf_external_isr(void) {
 bool test_main(void) {
   dif_pwrmgr_domain_config_t pwrmgr_config;
 
-  const dif_entropy_src_config_t entropy_src_config = {
-      .fips_enable = true,
-      // Route the entropy data received from RNG to the FIFO.
-      .route_to_firmware = true,
-      .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
-      .health_test_threshold_scope = false,
-      .health_test_window_size = 0x0200,
-      .alert_threshold = 2,
-  };
-
   init_units();
 
   set_edn_auto_mode();
@@ -541,23 +474,20 @@ bool test_main(void) {
 
   LOG_INFO("1 test alert/rng after Deep sleep 1");
   pwrmgr_config = kDifPwrmgrDomainOptionUsbClockInActivePower;
-  ast_enter_sleep_states_and_check_functionality(
-      pwrmgr_config, entropy_src_config, kAlertVal7);
+  ast_enter_sleep_states_and_check_functionality(pwrmgr_config, kAlertVal7);
 
   LOG_INFO("2 test alert/rng after regular sleep (usb clk enabled)");
   LOG_INFO("force new adc conv set");
   pwrmgr_config = kDifPwrmgrDomainOptionUsbClockInActivePower |
                   kDifPwrmgrDomainOptionUsbClockInLowPower |
                   kDifPwrmgrDomainOptionMainPowerInLowPower;
-  ast_enter_sleep_states_and_check_functionality(
-      pwrmgr_config, entropy_src_config, kAlertVal8);
+  ast_enter_sleep_states_and_check_functionality(pwrmgr_config, kAlertVal8);
 
   LOG_INFO("3 test alert/rng after regular sleep (all clk disabled in lp)");
   LOG_INFO("force new adc conv set");
   pwrmgr_config = kDifPwrmgrDomainOptionMainPowerInLowPower |
                   kDifPwrmgrDomainOptionUsbClockInActivePower;
-  ast_enter_sleep_states_and_check_functionality(
-      pwrmgr_config, entropy_src_config, kAlertVal7);
+  ast_enter_sleep_states_and_check_functionality(pwrmgr_config, kAlertVal7);
 
   LOG_INFO("c code is finished");
 

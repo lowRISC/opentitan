@@ -450,8 +450,7 @@ status_t provisioning_device_secrets_start(dif_flash_ctrl_state_t *flash_state,
     return OK_STATUS();
   }
 
-  // Re-initialize the entropy complex in continous mode. This also configures
-  // the entropy_src health checks in FIPS mode.
+  // Re-initialize the entropy complex in continous mode.
   TRY(entropy_complex_init());
 
   // Generate AES encryption key and IV for exporting the RMA unlock token.

@@ -11,7 +11,6 @@
 #include "clkmgr_regs.h"
 #include "csrng_regs.h"
 #include "edn_regs.h"
-#include "entropy_src_regs.h"
 #include "gpio_regs.h"
 #include "lc_ctrl_regs.h"
 #include "otp_ctrl_regs.h"
@@ -243,7 +242,7 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_RMA_SPIN_EN_OFFSET(a0)
   li   t6, HARDENED_BOOL_TRUE
-  bne  t0, t6, .L_rma_spin_skip
+  bne  t0, t6, .L_entropy_enable
 
   li   a1, (TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
@@ -297,7 +296,7 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   and  t0, t0, t5
   li   t4, (HARDENED_BOOL_TRUE ^ SW_STRAP_RMA_ENTRY)
   xor  t0, t0, t4
-  bne  t0, t6, .L_rma_spin_skip
+  bne  t0, t6, .L_entropy_enable
 
   // Double-check the GPIO strap value.
   li   t6, HARDENED_BOOL_TRUE
@@ -334,48 +333,9 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   unimp
   unimp
 
-.L_rma_spin_skip:
-  // Skip the `entropy_src` health checks configuration if the
-  // `RNG_HEALTH_CONFIG_DIGEST` is not programmed. The default digest value is
-  // 0 given that it is stored in a software OTP partition.
-  li   a0, (TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR + \
-            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
-  lw t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST_OFFSET(a0)
-  beqz t0, .L_entropy_enable
-
-  // Copy the entropy source health checks configuration thresholds from OTP.
-  li   a0, (TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR + \
-            ENTROPY_SRC_REPCNT_THRESHOLDS_REG_OFFSET)
-  li   a1, (TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR + \
-            ENTROPY_SRC_EXTHT_LO_THRESHOLDS_REG_OFFSET + 4)
-  li   a2, (TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR + \
-            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + \
-            OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS_OFFSET)
-  call crt_section_copy
-
-  // Configure the entropy source health alert threshold.
-  li a0, TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR
-  li a1, (TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR + \
-            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
-  lw t1, OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_ALERT_THRESHOLD_OFFSET(a1)
-  sw t1, ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET(a0)
-
 .L_entropy_enable:
   // The following sequence enables the minimum level of entropy required to
   // initialize memory scrambling, as well as the entropy distribution network.
-  li a0, TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR
-
-  // Note for BOOT_ROM initialization the FIPS_ENABLE bit is set to kMultiBitBool4False
-  // to prevent the release of FIPS entropy until all the thresholds are set
-  li t0, (MULTIBIT_ASM_BOOL4_FALSE << ENTROPY_SRC_CONF_FIPS_ENABLE_OFFSET) | \
-         (MULTIBIT_ASM_BOOL4_FALSE << ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_OFFSET) | \
-         (MULTIBIT_ASM_BOOL4_FALSE << ENTROPY_SRC_CONF_THRESHOLD_SCOPE_OFFSET) | \
-         (MULTIBIT_ASM_BOOL4_FALSE << ENTROPY_SRC_CONF_RNG_BIT_ENABLE_OFFSET)
-  sw t0, ENTROPY_SRC_CONF_REG_OFFSET(a0)
-
-  li t0, (MULTIBIT_ASM_BOOL4_TRUE << ENTROPY_SRC_MODULE_ENABLE_MODULE_ENABLE_OFFSET)
-  sw t0, ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET(a0)
-
   li a0, TOP_DARJEELING_CSRNG_BASE_ADDR
   li t0, (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_ENABLE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_SW_APP_ENABLE_OFFSET) | \
