@@ -145,6 +145,21 @@ typedef struct epmp_state {
 extern epmp_state_t epmp_state;
 
 /**
+ * Un-configure the given PMP entry in state.
+ *
+ * @param entry The index of the entry to update.
+ */
+inline void epmp_state_unconfigure(uint32_t entry) {
+  // Set configuration register.
+  bitfield_field32_t field = {.mask = 0xff, .index = (entry % 4) * 8};
+  epmp_state.pmpcfg[entry / 4] =
+      bitfield_field32_write(epmp_state.pmpcfg[entry / 4], field, 0);
+
+  // Set address registers.
+  epmp_state.pmpaddr[entry] = 0;
+}
+
+/**
  * Configure the given PMP entry in state using the Top-Of-Range addressing
  * mode.
  *

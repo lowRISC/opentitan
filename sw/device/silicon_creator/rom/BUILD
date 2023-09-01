@@ -82,6 +82,16 @@ ld_library(
     ],
 )
 
+ld_library(
+    name = "second_rom_linker_script",
+    script = "second_rom.ld",
+    deps = [
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling_memory",
+        "//sw/device:info_sections",
+        "//sw/lib/sw/device/silicon_creator/base:static_critical_sections",
+    ],
+)
+
 cc_library(
     name = "rom_without_keys",
     srcs = [
@@ -122,6 +132,38 @@ cc_library(
     deps = [
         ":base_rom",
         ":base_rom_linker_script",
+        "//hw/ip/csrng/data:csrng_regs",
+        "//hw/ip/edn/data:edn_regs",
+        "//hw/ip/entropy_src/data:entropy_src_regs",
+        "//hw/ip/gpio/data:gpio_regs",
+        "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
+        "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
+        "//hw/top_darjeeling/ip/ast/data:ast_regs",
+        "//hw/top_darjeeling/ip/clkmgr/data/autogen:clkmgr_regs",
+        "//hw/top_darjeeling/ip/pinmux/data/autogen:pinmux_regs",
+        "//hw/top_darjeeling/ip/pwrmgr/data/autogen:pwrmgr_regs",
+        "//hw/top_darjeeling/ip/sensor_ctrl/data:sensor_ctrl_regs",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//sw/lib/sw/device/base:hardened",
+        "//sw/lib/sw/device/base:multibits",
+        "//sw/lib/sw/device/silicon_creator/base:chip",
+    ],
+    alwayslink = True,
+)
+
+cc_library(
+    name = "second_rom_without_keys",
+    srcs = [
+        "second_rom_start.S",
+    ],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":second_rom",
+        ":second_rom_epmp",
+        ":second_rom_linker_script",
+        "//hw/ip/aon_timer/data:aon_timer_regs",
         "//hw/ip/csrng/data:csrng_regs",
         "//hw/ip/edn/data:edn_regs",
         "//hw/ip/entropy_src/data:entropy_src_regs",
@@ -235,6 +277,56 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "second_rom",
+    srcs = [
+        "second_rom.c",
+        "second_rom.h",
+    ],
+    deps = [
+        ":boot_policy",
+        ":bootstrap",
+        ":second_rom_epmp",
+        ":sigverify_keys",
+        ":sigverify_keys_rsa",
+        ":sigverify_keys_spx",
+        "//hw/ip/aon_timer/data:aon_timer_regs",
+        "//sw/device/silicon_creator/lib/drivers:alert",
+        "//sw/device/silicon_creator/lib/drivers:ast",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:ibex",
+        "//sw/device/silicon_creator/lib/drivers:keymgr",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/drivers:pinmux",
+        "//sw/device/silicon_creator/lib/drivers:pwrmgr",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/drivers:rnd",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        "//sw/device/silicon_creator/lib/drivers:uart",
+        "//sw/device/silicon_creator/lib/drivers:watchdog",
+        "//sw/lib/sw/device/arch:device",
+        "//sw/lib/sw/device/base:bitfield",
+        "//sw/lib/sw/device/base:csr",
+        "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/base:memory",
+        "//sw/lib/sw/device/base:stdasm",
+        "//sw/lib/sw/device/crt",
+        "//sw/lib/sw/device/runtime:hart",
+        "//sw/lib/sw/device/silicon_creator:cfi",
+        "//sw/lib/sw/device/silicon_creator:epmp_state",
+        "//sw/lib/sw/device/silicon_creator:error",
+        "//sw/lib/sw/device/silicon_creator:rom_print",
+        "//sw/lib/sw/device/silicon_creator/base:chip",
+        "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
+        "//sw/lib/sw/device/silicon_creator/base:static_critical",
+        "//sw/lib/sw/device/silicon_creator/sigverify",
+        "//sw/top_darjeeling/sw/device/silicon_creator:irq_asm",
+        "//sw/top_darjeeling/sw/device/silicon_creator:manifest",
+        "//sw/top_darjeeling/sw/device/silicon_creator:shutdown",
+    ],
+)
+
 opentitan_rom_binary(
     name = "rom_with_fake_keys",
     testonly = True,
@@ -272,6 +364,27 @@ opentitan_rom_binary(
     mode = "base-rom",
     deps = [
         ":base_rom_without_keys",
+        "//sw/device/silicon_creator/rom/keys/real/rsa",
+        "//sw/device/silicon_creator/rom/keys/real/spx",
+    ],
+)
+
+opentitan_rom_binary(
+    name = "second_rom_with_fake_keys",
+    testonly = True,
+    mode = "second-rom",
+    deps = [
+        ":second_rom_without_keys",
+        "//sw/device/silicon_creator/rom/keys/fake/rsa",
+        "//sw/device/silicon_creator/rom/keys/fake/spx",
+    ],
+)
+
+opentitan_rom_binary(
+    name = "second_rom_with_real_keys_from_src",
+    mode = "second-rom",
+    deps = [
+        ":second_rom_without_keys",
         "//sw/device/silicon_creator/rom/keys/real/rsa",
         "//sw/device/silicon_creator/rom/keys/real/spx",
     ],
@@ -342,6 +455,24 @@ cc_library(
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/lib/sw/device/silicon_creator:epmp_state",
+    ],
+)
+
+cc_library(
+    name = "second_rom_epmp",
+    srcs = [
+        "second_rom_epmp.c",
+    ],
+    hdrs = ["second_rom_epmp.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/lib/sw/device/base:bitfield",
+        "//sw/lib/sw/device/base:csr",
+        "//sw/lib/sw/device/base:memory",
+        "//sw/lib/sw/device/silicon_creator:epmp_state",
+        "//sw/lib/sw/device/silicon_creator:rom_print",
     ],
 )
 

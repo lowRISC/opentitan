@@ -23,6 +23,11 @@ extern "C" {
 typedef void rom_ext_entry_point(void);
 
 /**
+ * Type alias for the second stage ROM entry point.
+ */
+typedef void second_rom_entry_point(void);
+
+/**
  * Manifests of ROM_EXTs in descending order according to their security
  * versions.
  *
