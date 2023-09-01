@@ -53,7 +53,6 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
                                             &out_attr));
   };
 
-
   // Configure a higher drive strength for the USB_P and USB_N pads because we
   // must the pad drivers must be capable of overpowering the 'pull' signal
   // strength of the internal pull ups in the differential receiver.

@@ -241,14 +241,11 @@ static void init_peripheral_handles(void) {
   CHECK_DIF_OK(dif_i2c_init(
       mmio_region_from_addr(TOP_DARJEELING_I2C2_BASE_ADDR), &i2c_2));
   CHECK_DIF_OK(dif_spi_device_init_handle(
-      mmio_region_from_addr(TOP_DARJEELING_SPI_DEVICE_BASE_ADDR),
-      &spi_device));
+      mmio_region_from_addr(TOP_DARJEELING_SPI_DEVICE_BASE_ADDR), &spi_device));
   CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_DARJEELING_SPI_HOST0_BASE_ADDR),
-      &spi_host_0));
+      mmio_region_from_addr(TOP_DARJEELING_SPI_HOST0_BASE_ADDR), &spi_host_0));
   CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_DARJEELING_SPI_HOST1_BASE_ADDR),
-      &spi_host_1));
+      mmio_region_from_addr(TOP_DARJEELING_SPI_HOST1_BASE_ADDR), &spi_host_1));
   CHECK_DIF_OK(dif_otbn_init(
       mmio_region_from_addr(TOP_DARJEELING_OTBN_BASE_ADDR), &otbn));
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
@@ -452,7 +449,6 @@ static void configure_pinmux_sim(void) {
   CHECK_DIF_OK(dif_pinmux_input_select(
       &pinmux, kTopDarjeelingPinmuxPeripheralInSpiHost1Sd3,
       kTopDarjeelingPinmuxInselIob6));
-
 }
 
 /**
@@ -496,8 +492,8 @@ static void configure_entropy_complex(void) {
   // requires temporarily disabling it.
   CHECK_STATUS_OK(entropy_testutils_stop_all());
 
-  // Configure CSRNG and create reseed command header for later use during max
-  // power epoch.
+  // Configure CSRNG and create reseed command header for later use during
+  // max power epoch.
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
   csrng_reseed_cmd_header = csrng_cmd_header_build(
       kCsrngAppCmdReseed, kDifCsrngEntropySrcToggleEnable, /*cmd_len=*/0,
@@ -577,9 +573,9 @@ static status_t configure_aes(void) {
       .ctrl_aux_lock = false,
   };
 
-  // Start the AES operation. Since we are in manual-mode, the encryption will
-  // not start until plain text data is loaded into the appropriate CSRs, and
-  // the encryption operation is triggered.
+  // Start the AES operation. Since we are in manual-mode, the encryption
+  // will not start until plain text data is loaded into the appropriate
+  // CSRs, and the encryption operation is triggered.
   AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true,
                                 kTestTimeoutMicros);
   CHECK_DIF_OK(dif_aes_start(&aes, &aes_transaction_cfg, &aes_key, &aes_iv));
@@ -591,7 +587,8 @@ static void configure_hmac(void) {
       .digest_endianness = kDifHmacEndiannessLittle,
       .message_endianness = kDifHmacEndiannessLittle,
   };
-  // Use HMAC in SHA256 mode to generate a 256bit key from `kHmacRefLongKey`.
+  // Use HMAC in SHA256 mode to generate a 256bit key from
+  // `kHmacRefLongKey`.
   CHECK_DIF_OK(dif_hmac_mode_sha256_start(&hmac, hmac_transaction_cfg));
   CHECK_STATUS_OK(hmac_testutils_push_message(&hmac, (char *)kHmacRefLongKey,
                                               sizeof(kHmacRefLongKey)));
@@ -807,8 +804,8 @@ static void max_power_task(void *task_parameters) {
   // ***************************************************************************
   // Trigger all chip operations.
   //
-  // Note: We trigger the activations of each operation manually, rather than
-  // use the DIFs, so that we can maximize the time overlap between all
+  // Note: We trigger the activations of each operation manually, rather
+  // than use the DIFs, so that we can maximize the time overlap between all
   // operations.
   // ***************************************************************************
 
@@ -866,8 +863,9 @@ static void max_power_task(void *task_parameters) {
   mmio_region_write32(spi_host_1.base_addr, SPI_HOST_CONTROL_REG_OFFSET,
                       spi_host_1_ctrl_reg);
 
-  // Request entropy during max power epoch. Since AES is so fast, realistically
-  // we will only be able to request a single block of entropy.
+  // Request entropy during max power epoch. Since AES is so fast,
+  // realistically we will only be able to request a single block of
+  // entropy.
   mmio_region_write32(csrng.base_addr, CSRNG_CMD_REQ_REG_OFFSET,
                       csrng_reseed_cmd_header);
 
@@ -876,9 +874,9 @@ static void max_power_task(void *task_parameters) {
   kmac_operation_state.squeezing = true;
   mmio_region_write32(kmac.base_addr, KMAC_CMD_REG_OFFSET, kmac_cmd_reg);
 
-  // Toggle GPIO pin to indicate we are in max power consumption epoch. Note, we
-  // do this BEFORE triggering the AES, since by the type the new value
-  // propagates to the pin, the AES will already be active.
+  // Toggle GPIO pin to indicate we are in max power consumption epoch.
+  // Note, we do this BEFORE triggering the AES, since by the type the new
+  // value propagates to the pin, the AES will already be active.
   mmio_region_write32(gpio.base_addr, GPIO_MASKED_OUT_LOWER_REG_OFFSET,
                       gpio_on_reg_val);
 
@@ -927,9 +925,10 @@ static void max_power_task(void *task_parameters) {
     // Make sure all TX FIFOs have been drained.
     for (size_t ii = 0; ii < ARRAYSIZE(i2c_handles); ++ii) {
       do {
-        CHECK_DIF_OK(dif_i2c_get_fifo_levels(
-            i2c_handles[ii], &fmt_fifo_lvl,
-            /*rx_fifo_lvl=*/NULL, /*tx_fifo_lvl=*/NULL, /*acq_fifo_lvl=*/NULL));
+        CHECK_DIF_OK(dif_i2c_get_fifo_levels(i2c_handles[ii], &fmt_fifo_lvl,
+                                             /*rx_fifo_lvl=*/NULL,
+                                             /*tx_fifo_lvl=*/NULL,
+                                             /*acq_fifo_lvl=*/NULL));
       } while (fmt_fifo_lvl > 0);
     };
 
@@ -976,7 +975,8 @@ static void check_otp_csr_configs(void) {
 bool test_main(void) {
   peripheral_clock_period_ns =
       (uint32_t)udiv64_slow(1000000000, kClockFreqPeripheralHz, NULL);
-  // Note: DO NOT change this message string without updating the DV testbench.
+  // Note: DO NOT change this message string without updating the DV
+  // testbench.
   LOG_INFO("Computed peripheral clock period.");
 
   // ***************************************************************************
@@ -1005,8 +1005,9 @@ bool test_main(void) {
   configure_i2c(&i2c_1, kI2c1DeviceAddress0, kI2c1DeviceAddress1);
   configure_i2c(&i2c_2, kI2c2DeviceAddress0, kI2c2DeviceAddress1);
   configure_spi_host(&spi_host_0, /*enable=*/true);
-  // We don't enable SPI host 1 just yet, as we want to pre-load its FIFO with
-  // data before enabling it at the last moment, to initiate max power draw.
+  // We don't enable SPI host 1 just yet, as we want to pre-load its FIFO
+  // with data before enabling it at the last moment, to initiate max power
+  // draw.
   configure_spi_host(&spi_host_1, /*enable=*/false);
   CHECK_STATUS_OK(spi_device_testutils_configure_passthrough(
       &spi_device, /*filters=*/0,
@@ -1030,9 +1031,9 @@ bool test_main(void) {
 
   // ***************************************************************************
   // Yield control flow to the highest priority task in the run queue. Since
-  // the tasks created above all have a higher priority level than the current
-  // "test_main" task, and no tasks block, execution will not be returned to the
-  // current task until the above tasks have been deleted.
+  // the tasks created above all have a higher priority level than the
+  // current "test_main" task, and no tasks block, execution will not be
+  // returned to the current task until the above tasks have been deleted.
   // ***************************************************************************
   LOG_INFO("Yielding execution to another task.");
   ottf_task_yield();
