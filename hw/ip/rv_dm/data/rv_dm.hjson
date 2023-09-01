@@ -167,7 +167,7 @@
       // accessible over the TL interface only if debug mode is active.
       { skipto: "0x100" }
       { name:  "HALTED"
-        desc: "Write to this address to acknowledge that the core has halted.",
+        desc: "Write halt index (0) to this address to acknowledge that the core has halted.",
         swaccess: "wo",
         hwaccess: "hrw", // updated by write to RESUMING
         fields: [
@@ -189,7 +189,7 @@
       },
       { skipto: "0x110" }
      {  name:  "RESUMING"
-        desc: "Write to this address to acknowledge that the core is resuming non-debug operation.",
+        desc: "Write halt index (0) to this address to acknowledge that the core is resuming non-debug operation.",
         swaccess: "wo",
         hwaccess: "hro",
         fields: [
