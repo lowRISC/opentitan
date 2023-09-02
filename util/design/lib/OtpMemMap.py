@@ -64,7 +64,7 @@ def _validate_scrambling(scr: Dict):
 
 
 # if remaining number of bytes are not perfectly aligned, truncate
-def _avail_blocks(size: int):
+def _avail_blocks(size: int) -> int:
     return int(size / SCRAMBLE_BLOCK_WIDTH)
 
 
@@ -95,7 +95,7 @@ def _dist_unused(config: Dict, allocated: int):
 
 
 # return aligned partition size
-def _calc_size(part: Dict, size: int):
+def _calc_size(part: Dict, size: int) -> int:
 
     size = SCRAMBLE_BLOCK_WIDTH * \
         int((size + SCRAMBLE_BLOCK_WIDTH - 1) / SCRAMBLE_BLOCK_WIDTH)
@@ -162,8 +162,7 @@ def _validate_part(part: Dict, key_names: List[str], is_last: bool):
 
     if part["variant"] == "Buffered" and part["read_lock"].lower() == "csr":
         raise RuntimeError(
-            "CSR read lock is only supported for SW partitions."
-        )
+            "CSR read lock is only supported for SW partitions.")
 
     if not part["sw_digest"] and not part["hw_digest"]:
         if part["write_lock"].lower() == "digest" or part["read_lock"].lower(
@@ -222,13 +221,11 @@ def _validate_item(item: Dict, buffered: bool, secret: bool):
         if not buffered:
             raise RuntimeError(
                 "Key material {} for sideloading into the key manager needs "
-                "to be stored in a buffered partition.".format(item["name"])
-            )
+                "to be stored in a buffered partition.".format(item["name"]))
         if not secret:
             raise RuntimeError(
                 "Key material {} for sideloading into the key manager needs "
-                "to be stored in a secret partition.".format(item["name"])
-            )
+                "to be stored in a secret partition.".format(item["name"]))
 
     # defaults are handled differently in case of mubi
     if item["ismubi"]:
@@ -246,7 +243,7 @@ def _validate_item(item: Dict, buffered: bool, secret: bool):
         random_or_hexvalue(item, "inv_default", item_width)
 
 
-def _validate_mmap(config: Dict):
+def _validate_mmap(config: Dict) -> Dict:
     '''Validate the memory map configuration'''
 
     # Get valid key names.
@@ -410,14 +407,13 @@ class OtpMemMap():
         log.info('Successfully parsed and translated OTP memory map.')
         log.info('')
 
-    def create_partitions_table(self):
+    def create_partitions_table(self) -> str:
         header = [
             "Partition", "Secret", "Buffered", "Integrity", "WR Lockable",
             "RD Lockable", "Description"
         ]
         table = [header]
-        colalign = ("center", ) * len(header)
-
+        colalign = ("center", ) * len(header[:-1]) + ("left", )
         for part in self.config["partitions"]:
             is_secret = "yes" if check_bool(part["secret"]) else "no"
             is_buffered = "yes" if part["variant"] in [
@@ -432,8 +428,7 @@ class OtpMemMap():
             integrity = "no"
             if part["integrity"]:
                 integrity = "yes"
-            # remove newlines
-            desc = ' '.join(part["desc"].split())
+            desc = part["desc"]
             row = [
                 part["name"], is_secret, is_buffered, integrity, wr_lockable,
                 rd_lockable, desc
@@ -445,7 +440,7 @@ class OtpMemMap():
                         tablefmt="pipe",
                         colalign=colalign)
 
-    def create_mmap_table(self):
+    def create_mmap_table(self) -> str:
         header = [
             "Index", "Partition", "Size [B]", "Access Granule", "Item",
             "Byte Address", "Size [B]"
@@ -481,7 +476,7 @@ class OtpMemMap():
                         tablefmt="pipe",
                         colalign=colalign)
 
-    def create_digests_table(self):
+    def create_digests_table(self) -> str:
         header = ["Digest Name", " Affected Partition", "Calculated by HW"]
         table = [header]
         colalign = ("center", ) * len(header)
@@ -505,13 +500,13 @@ class OtpMemMap():
                         tablefmt="pipe",
                         colalign=colalign)
 
-    def get_part(self, part_name):
+    def get_part(self, part_name) -> str:
         ''' Get partition by name, return None if it does not exist'''
         entry = self.part_dict.get(part_name)
         return (None if entry is None else
                 self.config['partitions'][entry['index']])
 
-    def get_item(self, part_name, item_name):
+    def get_item(self, part_name, item_name) -> str:
         ''' Get item by name, return None if it does not exist'''
         entry = self.part_dict.get(part_name)
         if entry is not None:

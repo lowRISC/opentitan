@@ -7,15 +7,15 @@ map definition file (hjson).
 """
 import argparse
 import logging as log
-from pathlib import Path
 import sys
+from pathlib import Path
+from typing import Dict
 
 import hjson
-from mako import exceptions
-from mako.template import Template
-
 from lib.common import wrapped_docstring
 from lib.OtpMemMap import OtpMemMap
+from mako import exceptions
+from mako.template import Template
 
 # This makes topgen libraries available to template files.
 sys.path.append(Path(__file__).parent)
@@ -39,19 +39,31 @@ DIGESTS_TABLE_FILE = "hw/ip/otp_ctrl/doc/otp_ctrl_digests.md"
 MMAP_TABLE_FILE = "hw/ip/otp_ctrl/doc/otp_ctrl_mmap.md"
 
 # code templates to render
-DATA_TEMPLATES = ["hw/ip/otp_ctrl/data/otp_ctrl.hjson.tpl"]
-RTL_TEMPLATES = ["hw/ip/otp_ctrl/data/otp_ctrl_part_pkg.sv.tpl"]
 COV_TEMPLATES = ["hw/ip/otp_ctrl/data/otp_ctrl_cov_bind.sv.tpl"]
-ENV_TEMPLATES = ["hw/ip/otp_ctrl/data/otp_ctrl_env_cov.sv.tpl",
-                 "hw/ip/otp_ctrl/data/otp_ctrl_env_pkg.sv.tpl",
-                 "hw/ip/otp_ctrl/data/otp_ctrl_if.sv.tpl",
-                 "hw/ip/otp_ctrl/data/otp_ctrl_scoreboard.sv.tpl"]
-SEQ_TEMPLATES = ["hw/ip/otp_ctrl/data/otp_ctrl_base_vseq.sv.tpl",
-                 "hw/ip/otp_ctrl/data/otp_ctrl_dai_lock_vseq.sv.tpl",
-                 "hw/ip/otp_ctrl/data/otp_ctrl_smoke_vseq.sv.tpl"]
+DATA_TEMPLATES = ["hw/ip/otp_ctrl/data/otp_ctrl.hjson.tpl"]
+ENV_TEMPLATES = [
+    "hw/ip/otp_ctrl/data/otp_ctrl_env_cov.sv.tpl",
+    "hw/ip/otp_ctrl/data/otp_ctrl_env_pkg.sv.tpl",
+    "hw/ip/otp_ctrl/data/otp_ctrl_if.sv.tpl",
+    "hw/ip/otp_ctrl/data/otp_ctrl_scoreboard.sv.tpl"
+]
+RTL_TEMPLATES = ["hw/ip/otp_ctrl/data/otp_ctrl_part_pkg.sv.tpl"]
+SEQ_TEMPLATES = [
+    "hw/ip/otp_ctrl/data/otp_ctrl_base_vseq.sv.tpl",
+    "hw/ip/otp_ctrl/data/otp_ctrl_dai_lock_vseq.sv.tpl",
+    "hw/ip/otp_ctrl/data/otp_ctrl_smoke_vseq.sv.tpl"
+]
 
 
-def render_template(template, target_path, otp_mmap, gen_comment):
+def check_in_repo_top():
+    dot_git_path = Path.cwd() / ".git"
+    if not dot_git_path.exists():
+        log.error('This utility must be run from repo_top')
+        exit(1)
+
+
+def render_template(template: str, target_path: Path, otp_mmap: Dict,
+                    gen_comment: str):
     with open(template, 'r') as tplfile:
         tpl = Template(tplfile.read())
         try:
@@ -78,6 +90,9 @@ def main():
                         help='Custom seed for RNG to compute default values.')
 
     args = parser.parse_args()
+
+    # The placement of sw difs requires this be run from repo_top.
+    check_in_repo_top()
 
     with open(MMAP_DEFINITION_FILE, 'r') as infile:
         config = hjson.load(infile)
@@ -114,21 +129,21 @@ def main():
             outfile.write('\n'.encode('utf-8'))
 
         # render all templates
-        for template in DATA_TEMPLATES:
-            stem_path = Path(template).stem
-            target_path = Path(template).parent / stem_path
-            render_template(template, target_path, otp_mmap, TPL_GEN_COMMENT)
-        for template in RTL_TEMPLATES:
-            stem_path = Path(template).stem
-            target_path = Path(template).parents[1] / "rtl" / stem_path
-            render_template(template, target_path, otp_mmap, TPL_GEN_COMMENT)
         for template in COV_TEMPLATES:
             stem_path = Path(template).stem
             target_path = Path(template).parents[1] / "dv" / "cov" / stem_path
             render_template(template, target_path, otp_mmap, TPL_GEN_COMMENT)
+        for template in DATA_TEMPLATES:
+            stem_path = Path(template).stem
+            target_path = Path(template).parent / stem_path
+            render_template(template, target_path, otp_mmap, TPL_GEN_COMMENT)
         for template in ENV_TEMPLATES:
             stem_path = Path(template).stem
             target_path = Path(template).parents[1] / "dv" / "env" / stem_path
+            render_template(template, target_path, otp_mmap, TPL_GEN_COMMENT)
+        for template in RTL_TEMPLATES:
+            stem_path = Path(template).stem
+            target_path = Path(template).parents[1] / "rtl" / stem_path
             render_template(template, target_path, otp_mmap, TPL_GEN_COMMENT)
         for template in SEQ_TEMPLATES:
             stem_path = Path(template).stem
