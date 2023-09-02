@@ -13,9 +13,6 @@ also mixed into the Creator Identity.
 
 Further, this scheme is compatible with the [Open DICE profile](https://pigweed.googlesource.com/open-dice/+/refs/heads/main/docs/specification.md).
 
-Overall identity flow:
-<img src="identities_and_root_keys_fig1.svg" alt="Fig1" style="width: 1000px;"/>
-
 DICE compatible identity flow:
 <img src="identities_and_root_keys_DICE_fig1b.svg" alt="Fig1b" style="width: 1000px;"/>
 
@@ -99,24 +96,8 @@ The following sequence describes the creation of the `CreatorRootKey`. All
 inputs into the key manager can be locked down during ROM execution.
 
 The size of the inputs is dependent on the security strength and masking
-configuration of the implementation. Depending on the KM\_DERIVE intrinsic
-function, one of the following two mixing operations is acceptable:
-
-Cascading:
-
-```
-Key0 = KM_DERIVE(RootKey, DiversificationKey)
-Key1 = KM_DERIVE(Key0, HealthStateMeasurement)
-Key2 = KM_DERIVE(Key1, DeviceIdentifier)
-Key3 = KM_DERIVE(Key2, ROMExtSecurityDescriptor)
-
-CreatorRootKey = KM_DERIVE(Key3, HardwareRevisionSecret)
-```
-
-Collapsed:
-
-The concatenation function must be injective. This can be achieved by fixing the
-width of all the operands.
+configuration of the implementation. The input concatenation function must be
+injective. This can be achieved by fixing the width of all the operands.
 
 ```
 CreatorRootKey = KM_DERIVE(RootKey,
@@ -347,21 +328,6 @@ The key manager supports the generation of versioned keys with lineage to the
 OwnerRootKey =
    KM_DERIVE(OwnerIntermediateKey, SoftwareBindingValue)
 
-Key0 = KM_DERIVE(OwnerRootKey, KeyVersion)
-Key1 = KM_DERIVE(Key0, KeyID)
-Key2 = KM_DERIVE(Key1, Salt)
-VersionedKey = KM_DERIVE(Key2, SoftwareExportConstant)
-
-CLEAR_AFTER_USE(VersionedKey)
-```
-
-If the implementation allows it, the generation of the version key can be
-collapsed as follows:
-
-```
-OwnerRootKey =
-   KM_DERIVE(OwnerIntermediateKey, SoftwareBindingValue)
-
 VersionedKey = KM_DERIVE(OwnerRootKey,
     KeyVersion | KeyID | Salt | SoftwareExportConstant)
 ```
@@ -520,9 +486,9 @@ The hardware may opt to implement a software interface with higher level one-way
 step functions to advance the internal state of the key manager. The following
 are the minimum set of steps required:
 
-1   [CreatorRootKey](#creator-root-key-creatorrootkey)
-2   [OwnerIntermediateKey](#ownerintermediatekey)
-3   [OwnerRootKey](#owner-root-key-and-versioned-keys)
+1.   [CreatorRootKey](#creator-root-key-creatorrootkey)
+2.   [OwnerIntermediateKey](#ownerintermediatekey)
+3.   [OwnerRootKey](#owner-root-key-and-versioned-keys)
 
 <table>
   <tr>
@@ -539,51 +505,6 @@ Instantiations of the key manager can be conditioned to start at the current
 internal state of the key manager, for example, kernel-level instantiations may
 always start at the `OwnerRootKey` level, assuming the previous boot stages
 advanced the state of the key manager.
-
-The following code block presents a simplified version of an API implemented on
-hardware with support for high level step functions.
-
-```
-typedef enum kmgr_state {
-  kKMgrUninitialized = 0,
-  kKMgrCreatorRootKey,
-  kKMgrOwnerIntermediateKey,
-  kKMgrOwnerRootKey,
-  kKMgrDisabled,
-} kmgr_state_t;
-
-/**
- * Initialise an instance of the Key Manager
- *
- * @param base_addr Base address of an instance of the Key Manager
- * @param kmgr Key Manager state data.
- * @return true if the function was successful, false otherwise
- */
-bool keymgr_init(mmio_region_t base_addr, kmgr_t* kmgr);
-
-/**
- * Advance Key Manager state
- *
- * Advances internal state of Key Manager. All state transitions
- * persist until the next system reset.
- *
- * The hardware supports the following transitions:
- * Uninitialized --> CreatorRootKey -->
- * OwnerIntermediateKey --> OwnerRootKey
- *
- * Defensive measures may trigger a state transition to Disabled.
- *
- * @param kmgr Key Manager state data.
- * @return true if the function was successful, false otherwise.
- */
-bool keymgr_advance_state(const kmgr_t* kmgr);
-
-/**
- * @return Current Key Manager state associated with |kmgr|
- * instance
- */
-kmgr_state_t keymgr_get_state(const kmgr_t* kmgr);
-```
 
 ### Versioned Keys
 
@@ -617,44 +538,11 @@ bool keymgr_generate_vk(const kmgr_t *kmgr,
                         uint32_t *versioned_key[8]);
 ```
 
-## Alternatives Considered
-
-### Collapse Creator and Owner Identities
-
-The Silicon Creator and Silicon Owner identities may be collapsed, leaving the
-Silicon Creator identity as the sole identity supported by the platform. This
-would require the Ownership Transfer flow to support a Certificate Signing
-Request (CSR) command to be able to endorse the identity by the owner PKI.
-
-The current approach enforces a separate
-[OwnerRootSecret](#owner-root-secret) provisioned at Ownership Transfer
-time to provide isolation between device owners.
-
-### Support Identities Outside of the Key Manager
-
-The identities can be generated outside the key manager and be completely
-managed by software. The key manager in this case can be used to generate
-storage wrapping keys for the identity seeds.
-
-<img src="identities_and_root_keys_fig5.svg" alt="Fig1" style="width: 800px;"/>
-
-The current design includes support for identity states which forces the mixing
-of class level constants (i.e. `IdentityDiversificationConstant`,
-`OwnerRootIdentityKey`) for each identity seed. This ensures lineage to the
-RootKey and the Device Identifier. Additional provisioning requirements would
-have to be considered if the Identity Seeds are not derived from the Root Key.
-
-### Alternatives Considered for Software Binding
-
-The hardware may be required to support more than 256b of software binding data.
-Additional bits may be added in 256b increments to support more complex software
-binding schemes.
-
 ## Requirements
 
-_KM\_DERIVE function and security strength claims_
+### _`KM_DERIVE` function and security strength claims_
 
-Key Manager derive functions should support at least 256b of security strength.
+The Key Manager derive function should support at least 256b of security strength.
 
 Note on standards: The key derivation function (`KM_DERIVE`), when instantiated
 with a Pseudorandom Function (PRF), shall be compatible with
@@ -673,127 +561,64 @@ Security strength for the `KM_DERIVE` function based on a Pseudorandom Function
     <td><strong>Notes</strong></td>
   </tr>
   <tr>
-    <td>CMAC-AES-256</td>
-    <td>128</td>
-    <td>
-Security strength limited to AES block size.
-
-SCA countermeasures for AES are more widely available in literature.
-    </td>
-  </tr>
-  <tr>
-    <td>HMAC-SHA2-256</td>
-    <td>256</td>
-    <td>
-There are no plans for hardening the OpenTitan HMAC hardware implementation due
-to complexity.
-
-No planned support for HMAC-SHA3.
-    </td>
-  </tr>
-  <tr>
     <td>KMAC256</td>
     <td>256</td>
     <td>
-Security hardening is under consideration for the OpenTitan KMAC hardware
-implementation.
-
-Need to verify with a lab that the claim for 800-133r2 section 6.3 compliance
-holds.
-
-Certification using a KMAC construction is challenged by the following issues.
-
-Common Criteria:
-
-1.   Even though SHA-3 is an approved SOG-IS algorithm, KMAC is not[^4].
-
-FIPS - NIST specs:
-
-1.   NIST 800-56Cr1 lists KMAC as an approved one-step KDF, although the spec is
-     focused on key establishment applications; but,
-2.   NIST 800-108, which focuses on PRF key derivation functions, does not list
-     KMAC as a primitive. Note however that the document is pretty old.
+1.   NIST 800-108, which focuses on PRF key derivation functions, lists
+     KMAC as a primitive.
     </td>
   </tr>
 </table>
 
-Security strength for the KM\_DERIVE function based on a Deterministic RNG
-(DRNG):
-
-<table>
-  <tr>
-    <td><strong>PRF</strong></td>
-    <td><strong>Security Strength</strong></td>
-    <td><strong>Notes</strong></td>
-  </tr>
-  <tr>
-    <td>CTR-DRBG</td>
-    <td>256</td>
-    <td>
-Additional requirements:
-
-1.   Factory time provisioned entropy (seed).
-2.   Hash function required to compress additional data into DRBG
-     (additional_data or perso_string).
-3.   Global counter to keep track of key derivations (requires device lifetime
-     key manager keygen counter, which can be implemented in software? This can
-     be very difficult since the key derivation paths change per ownership
-     transfer).
-
-Compliant to NIST 800-133r2 section 4 (Need to verify claim with a lab).
-    </td>
-  </tr>
-</table>
-
-_Key recovery attacks on user inputs_
+### _Key recovery attacks on user inputs_
 
 The hardware shall support countermeasures against key recovery attacks for all
 software controlled inputs.
 
-_Version comparison registers_
+### _Version comparison registers_
 
 The hardware shall support at least 8 32b write-lockable version comparison
 registers to provide key versioning functionality.
 
-_Software-Hardware binding registers_
+### _Software-Hardware binding registers_
 
 The hardware shall support at least 256b of software write-lockable registers to
 implement software-hardware key manager binding as part of the secure boot
 implementation.
 
-_Support for key IDs (key handles or salt value)_
+### _Support for key IDs (key handles or salt value)_
 
 The hardware shall support [versioned key](#versioned-key) derivations for
 software provided key IDs. A key ID is defined as a 256b value used as a key
 handle.
 
-_Root secrets isolation from software_
+### _Root secrets isolation from software_
 
 The hardware shall isolate the `RootKey` and other provisioned secrets from
 software after completion of personalization at manufacturing time.
 
-_Isolation between boot stages_
+### _Isolation between boot stages_
 
 Later boot stages shall have no access to secrets maintained by previous boot
 stages.
 
-_Lockable inputs_
+### _Lockable inputs_
 
 The software shall configure runtime lockable inputs as part of the secure boot
 implementation to fix the construction of identities and root keys in the key
 manager.
 
-_Integrity and confidentiality of secret values_
+### _Integrity and confidentiality of secret values_
 
 Hardware secrets stored in OTP and flash shall be scrambled to increase the
 difficulty of physical attacks.
 
-_Silicon Creator identity invalidation (optional)_
+### _Silicon Creator identity invalidation (optional)_
 
 ROM Extension updates may invalidate the Silicon Owner and Silicon Creator
 identities as well as the root keys.
 
-_Fallback support_
+### _Fallback support_
 
 The implementation should consider a software based backup mechanism to mitigate
 security and/or certification issues with the main implementation. The backup
@@ -813,6 +638,3 @@ mechanism shall not rely on secrets from the main implementation.
 [^3]: Security strengths for PRF functions as documented in:
     [Recommendation for Key-Derivation Methods in Key-Establishment Schemes](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-56Cr1.pdf)
     (NIST 800-56Cr1)
-
-[^4]: <a href="https://www.sogis.eu/documents/cc/crypto/SOGIS-Agreed-Cryptographic-Mechanisms-1.1.pdf">SOG-IS
-    Crypto Working Group SOG-IS Crypto Evaluation Scheme Agreed Cryptographic Mechanisms</a>
