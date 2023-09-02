@@ -2,6 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 ${gen_comment}
+<%
+from topgen.lib import Name
+
+parts = otp_mmap.config["partitions"]
+digest_parts = [part for part in parts if
+                part["hw_digest"] or part["sw_digest"]]
+hw_digest_parts = [part for part in parts if part["hw_digest"]]
+sw_digest_parts = [part for part in parts if part["sw_digest"]]
+read_locked_csr_parts = [part for part in parts if part["read_lock"] == "CSR"]
+secret_parts = [part for part in parts if part["secret"]]
+%>\
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
 
 #include <cstring>
@@ -134,81 +145,99 @@ TEST_F(CheckTest, NullArgs) {
 
 class ReadLockTest : public OtpTest {};
 
+// Too many formatting variants in template code, so disabling clang-format.
+// clang-format off
 TEST_F(ReadLockTest, IsLocked) {
   bool flag;
 
+% for part in read_locked_csr_parts:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_camel = part_name.as_camel_case()
+  part_name_define = part_name.as_c_define()
+%>\
   EXPECT_READ32(
-      OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_REG_OFFSET,
-      {{OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_CREATOR_SW_CFG_READ_LOCK_BIT, true}});
+      OTP_CTRL_${part_name_define}_READ_LOCK_REG_OFFSET,
+      {{OTP_CTRL_${part_name_define}_READ_LOCK_${part_name_define}_READ_LOCK_BIT,
+        true}});
   EXPECT_DIF_OK(dif_otp_ctrl_reading_is_locked(
-      &otp_, kDifOtpCtrlPartitionCreatorSwCfg, &flag));
+      &otp_, kDifOtpCtrlPartition${part_name_camel}, &flag));
   EXPECT_FALSE(flag);
 
   EXPECT_READ32(
-      OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_REG_OFFSET,
-      {{OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_CREATOR_SW_CFG_READ_LOCK_BIT,
+      OTP_CTRL_${part_name_define}_READ_LOCK_REG_OFFSET,
+      {{OTP_CTRL_${part_name_define}_READ_LOCK_${part_name_define}_READ_LOCK_BIT,
         false}});
   EXPECT_DIF_OK(dif_otp_ctrl_reading_is_locked(
-      &otp_, kDifOtpCtrlPartitionCreatorSwCfg, &flag));
+      &otp_, kDifOtpCtrlPartition${part_name_camel}, &flag));
   EXPECT_TRUE(flag);
+  % if not loop.last:
 
-  EXPECT_READ32(
-      OTP_CTRL_OWNER_SW_CFG_READ_LOCK_REG_OFFSET,
-      {{OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_CREATOR_SW_CFG_READ_LOCK_BIT, true}});
-  EXPECT_DIF_OK(dif_otp_ctrl_reading_is_locked(
-      &otp_, kDifOtpCtrlPartitionOwnerSwCfg, &flag));
-  EXPECT_FALSE(flag);
-
-  EXPECT_READ32(
-      OTP_CTRL_OWNER_SW_CFG_READ_LOCK_REG_OFFSET,
-      {{OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_CREATOR_SW_CFG_READ_LOCK_BIT,
-        false}});
-  EXPECT_DIF_OK(dif_otp_ctrl_reading_is_locked(
-      &otp_, kDifOtpCtrlPartitionOwnerSwCfg, &flag));
-  EXPECT_TRUE(flag);
+  %endif
+% endfor
 }
 
 TEST_F(ReadLockTest, Lock) {
+% for part in read_locked_csr_parts:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_camel = part_name.as_camel_case()
+  part_name_define = part_name.as_c_define()
+%>\
   EXPECT_READ32(OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET, 1);
   EXPECT_WRITE32(
-      OTP_CTRL_VENDOR_TEST_READ_LOCK_REG_OFFSET,
-      {{OTP_CTRL_VENDOR_TEST_READ_LOCK_VENDOR_TEST_READ_LOCK_BIT, false}});
-  EXPECT_DIF_OK(
-      dif_otp_ctrl_lock_reading(&otp_, kDifOtpCtrlPartitionVendorTest));
-
-  EXPECT_READ32(OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET, 1);
-  EXPECT_WRITE32(
-      OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_REG_OFFSET,
-      {{OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_CREATOR_SW_CFG_READ_LOCK_BIT,
+      OTP_CTRL_${part_name_define}_READ_LOCK_REG_OFFSET,
+      {{OTP_CTRL_${part_name_define}_READ_LOCK_${part_name_define}_READ_LOCK_BIT,
         false}});
-  EXPECT_DIF_OK(
-      dif_otp_ctrl_lock_reading(&otp_, kDifOtpCtrlPartitionCreatorSwCfg));
+  EXPECT_DIF_OK(dif_otp_ctrl_lock_reading(
+      &otp_, kDifOtpCtrlPartition${part_name_camel}));
+  % if not loop.last:
 
-  EXPECT_READ32(OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET, 1);
-  EXPECT_WRITE32(
-      OTP_CTRL_OWNER_SW_CFG_READ_LOCK_REG_OFFSET,
-      {{OTP_CTRL_OWNER_SW_CFG_READ_LOCK_OWNER_SW_CFG_READ_LOCK_BIT, false}});
-  EXPECT_DIF_OK(
-      dif_otp_ctrl_lock_reading(&otp_, kDifOtpCtrlPartitionOwnerSwCfg));
+  %endif
+% endfor
 }
 
-TEST_F(ReadLockTest, HwPartition) {
+TEST_F(ReadLockTest, NotLockablePartitions) {
   bool flag;
+% for part in [p for p in parts if p not in read_locked_csr_parts]:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_camel = part_name.as_camel_case()
+%>\
   EXPECT_DIF_BADARG(
-      dif_otp_ctrl_lock_reading(&otp_, kDifOtpCtrlPartitionHwCfg0));
+      dif_otp_ctrl_lock_reading(&otp_, kDifOtpCtrlPartition${part_name_camel}));
   EXPECT_DIF_BADARG(dif_otp_ctrl_reading_is_locked(
-      &otp_, kDifOtpCtrlPartitionSecret0, &flag));
+      &otp_, kDifOtpCtrlPartition${part_name_camel}, &flag));
+  % if not loop.last:
+
+  %endif
+% endfor
 }
+// clang-format on
 
 TEST_F(ReadLockTest, NullArgs) {
   bool flag;
+% for part in read_locked_csr_parts:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_camel = part_name.as_camel_case()
+  lock_reading_line = f"dif_otp_ctrl_lock_reading(nullptr, kDifOtpCtrlPartition{part_name_camel}));"
+%>\
   EXPECT_DIF_BADARG(dif_otp_ctrl_reading_is_locked(
-      nullptr, kDifOtpCtrlPartitionOwnerSwCfg, &flag));
+      nullptr, kDifOtpCtrlPartition${part_name_camel}, &flag));
   EXPECT_DIF_BADARG(dif_otp_ctrl_reading_is_locked(
-      &otp_, kDifOtpCtrlPartitionOwnerSwCfg, nullptr));
-
+      &otp_, kDifOtpCtrlPartition${part_name_camel}, nullptr));
+  % if len(lock_reading_line) > 80 - 6:
+  EXPECT_DIF_BADARG(dif_otp_ctrl_lock_reading(
+      nullptr, kDifOtpCtrlPartition${part_name_camel}));
+  % else:
   EXPECT_DIF_BADARG(
-      dif_otp_ctrl_lock_reading(nullptr, kDifOtpCtrlPartitionOwnerSwCfg));
+      ${lock_reading_line}
+  % endif
+  % if not loop.last:
+
+  %endif
+% endfor
 }
 
 class StatusTest : public OtpTest {};
@@ -234,10 +263,15 @@ TEST_F(StatusTest, Errors) {
                     {OTP_CTRL_STATUS_LCI_ERROR_BIT, true},
                 });
 
-  EXPECT_READ32(OTP_CTRL_ERR_CODE_3_REG_OFFSET,
+<%
+  hw_cfg0_error_index = [i for i, p in enumerate(parts)
+                         if p["name"] == "HW_CFG0"][0]
+  lci_error_index = len(parts) + 1
+%>\
+  EXPECT_READ32(OTP_CTRL_ERR_CODE_${hw_cfg0_error_index}_REG_OFFSET,
                 {{OTP_CTRL_ERR_CODE_0_ERR_CODE_0_OFFSET,
                   OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_MACRO_ECC_CORR_ERROR}});
-  EXPECT_READ32(OTP_CTRL_ERR_CODE_11_REG_OFFSET,
+  EXPECT_READ32(OTP_CTRL_ERR_CODE_${lci_error_index}_REG_OFFSET,
                 {{OTP_CTRL_ERR_CODE_0_ERR_CODE_0_OFFSET,
                   OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_MACRO_ERROR}});
 
@@ -259,6 +293,7 @@ TEST_F(StatusTest, NullArgs) {
 }
 
 struct RelativeAddressParams {
+  std::string name;
   dif_otp_ctrl_partition_t partition;
   uint32_t abs_address;
   dif_result_t expected_result;
@@ -277,33 +312,58 @@ TEST_P(RelativeAddress, RelativeAddress) {
   EXPECT_EQ(got_relative_address, GetParam().expected_relative_address);
 }
 
-INSTANTIATE_TEST_SUITE_P(AllPartitions, RelativeAddress,
-                         testing::Values(
-                             RelativeAddressParams{
-                                 kDifOtpCtrlPartitionCreatorSwCfg,
-                                 OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET + 4,
-                                 kDifOk,
-                                 4,
-                             },
-                             RelativeAddressParams{
-                                 kDifOtpCtrlPartitionCreatorSwCfg,
-                                 OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET + 1,
-                                 kDifUnaligned,
-                                 0,
-                             },
-                             RelativeAddressParams{
-                                 kDifOtpCtrlPartitionCreatorSwCfg,
-                                 OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET - 4,
-                                 kDifOutOfRange,
-                                 0,
-                             },
-                             RelativeAddressParams{
-                                 kDifOtpCtrlPartitionCreatorSwCfg,
-                                 OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET +
-                                     OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE,
-                                 kDifOutOfRange,
-                                 0,
-                             }));
+INSTANTIATE_TEST_SUITE_P(
+    AllPartitions, RelativeAddress,
+    testing::Values(
+% for part in parts:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_camel = part_name.as_camel_case()
+  part_name_define = part_name.as_c_define()
+  step = 8 if part["secret"] else 4
+%>\
+        RelativeAddressParams{
+            "${part_name_camel}Okay",
+            kDifOtpCtrlPartition${part_name_camel},
+            OTP_CTRL_PARAM_${part_name_define}_OFFSET + ${step},
+            kDifOk,
+            ${step},
+        },
+        RelativeAddressParams{
+            "${part_name_camel}Unaligned",
+            kDifOtpCtrlPartition${part_name_camel},
+            OTP_CTRL_PARAM_${part_name_define}_OFFSET + 1,
+            kDifUnaligned,
+            0,
+        },
+<%
+  ## Exclude first partition to avoid a negative offset.
+%>\
+  % if not loop.first:
+        RelativeAddressParams{
+            "${part_name_camel}OutOfRangeBeforeStart",
+            kDifOtpCtrlPartition${part_name_camel},
+            OTP_CTRL_PARAM_${part_name_define}_OFFSET - ${step},
+            kDifOutOfRange,
+            0,
+        },
+  % endif
+        RelativeAddressParams{
+            "${part_name_camel}OutOfRangePastEnd",
+            kDifOtpCtrlPartition${part_name_camel},
+  % if len(f"OTP_CTRL_PARAM_{part_name_define}_OFFSET + OTP_CTRL_PARAM_{part_name_define}_SIZE,") <= 80 - 12:
+            OTP_CTRL_PARAM_${part_name_define}_OFFSET + OTP_CTRL_PARAM_${part_name_define}_SIZE,
+  % else:
+            OTP_CTRL_PARAM_${part_name_define}_OFFSET +
+                OTP_CTRL_PARAM_${part_name_define}_SIZE,
+  % endif
+            kDifOutOfRange,
+            0,
+        }${")," if loop.last else ","}
+% endfor
+    [](const testing::TestParamInfo<RelativeAddress::ParamType> &info) {
+      return info.param.name;
+    });
 
 class DaiReadTest : public OtpTest {};
 
@@ -330,15 +390,22 @@ TEST_F(DaiReadTest, Read32) {
 }
 
 TEST_F(DaiReadTest, Read64) {
+  uint64_t val;
+% for part in secret_parts:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_camel = part_name.as_camel_case()
+  part_name_define = part_name.as_c_define()
+%>\
   EXPECT_READ32(
       OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,
       {{OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT, true}});
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
-                 OTP_CTRL_PARAM_SECRET2_OFFSET + 0x8);
+                 OTP_CTRL_PARAM_${part_name_define}_OFFSET + 0x8);
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
                  {{OTP_CTRL_DIRECT_ACCESS_CMD_RD_BIT, true}});
 
-  EXPECT_DIF_OK(dif_otp_ctrl_dai_read_start(&otp_, kDifOtpCtrlPartitionSecret2,
+  EXPECT_DIF_OK(dif_otp_ctrl_dai_read_start(&otp_, kDifOtpCtrlPartition${part_name_camel},
                                             /*address=*/0x8));
 
   EXPECT_READ32(
@@ -347,9 +414,12 @@ TEST_F(DaiReadTest, Read64) {
   EXPECT_READ32(OTP_CTRL_DIRECT_ACCESS_RDATA_1_REG_OFFSET, 0x12345678);
   EXPECT_READ32(OTP_CTRL_DIRECT_ACCESS_RDATA_0_REG_OFFSET, 0x90abcdef);
 
-  uint64_t val;
   EXPECT_DIF_OK(dif_otp_ctrl_dai_read64_end(&otp_, &val));
   EXPECT_EQ(val, 0x1234567890abcdef);
+  % if not loop.last:
+
+  % endif
+% endfor
 }
 
 TEST_F(DaiReadTest, Unaligned) {
@@ -501,31 +571,60 @@ TEST_F(DaiProgramTest, NullArgs) {
 class DaiDigestTest : public OtpTest {};
 
 TEST_F(DaiDigestTest, DigestSw) {
+% for part in sw_digest_parts:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_define = part_name.as_c_define()
+  part_name_camel = part_name.as_camel_case()
+  dai_digest_line = ("EXPECT_DIF_OK(dif_otp_ctrl_dai_digest(&otp_, "
+                     + f"kDifOtpCtrlPartition{part_name_camel},")
+%>\
   EXPECT_READ32(
       OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,
       {{OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT, true}});
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
-                 OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_OFFSET);
+                 OTP_CTRL_PARAM_${part_name.as_c_define()}_DIGEST_OFFSET);
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET, 0x00abcdef);
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_WDATA_1_REG_OFFSET, 0xabcdef00);
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
                  {{OTP_CTRL_DIRECT_ACCESS_CMD_WR_BIT, true}});
 
-  EXPECT_DIF_OK(dif_otp_ctrl_dai_digest(&otp_, kDifOtpCtrlPartitionCreatorSwCfg,
+  % if len(dai_digest_line) > 80 - 2:
+  EXPECT_DIF_OK(dif_otp_ctrl_dai_digest(&otp_,
+                                        kDifOtpCtrlPartition${part_name_camel},
+  % else:
+  ${dai_digest_line}
+  % endif
                                         /*digest=*/0xabcdef0000abcdef));
+  % if not loop.last:
+
+  % endif
+% endfor
 }
 
 TEST_F(DaiDigestTest, DigestHw) {
+% for part in hw_digest_parts:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_define = part_name.as_c_define()
+  part_name_camel = part_name.as_camel_case()
+  dai_digest_line = ("EXPECT_DIF_OK(dif_otp_ctrl_dai_digest(&otp_, "
+                     + f"kDifOtpCtrlPartition{part_name_camel},")
+%>\
   EXPECT_READ32(
       OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,
       {{OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT, true}});
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
-                 OTP_CTRL_PARAM_DEVICE_ID_OFFSET);
+                 OTP_CTRL_PARAM_${part_name_define}_OFFSET);
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
                  {{OTP_CTRL_DIRECT_ACCESS_CMD_DIGEST_BIT, true}});
 
-  EXPECT_DIF_OK(
-      dif_otp_ctrl_dai_digest(&otp_, kDifOtpCtrlPartitionHwCfg0, /*digest=*/0));
+  EXPECT_DIF_OK(dif_otp_ctrl_dai_digest(&otp_, kDifOtpCtrlPartition${part_name_camel},
+                                        /*digest=*/0));
+  % if not loop.last:
+
+  % endif
+% endfor
 }
 
 TEST_F(DaiDigestTest, BadPartition) {
@@ -594,6 +693,7 @@ TEST_F(IsDigestComputed, Success) {
 
 struct DigestParams {
   dif_otp_ctrl_partition_t partition;
+  bool has_digest;
   ptrdiff_t reg0, reg1;
 };
 
@@ -601,7 +701,7 @@ class GetDigest : public OtpTest,
                   public testing::WithParamInterface<DigestParams> {};
 
 TEST_P(GetDigest, GetDigest) {
-  if (GetParam().partition == kDifOtpCtrlPartitionLifeCycle) {
+  if (!GetParam().has_digest) {
     uint64_t digest;
     EXPECT_DIF_BADARG(
         dif_otp_ctrl_get_digest(&otp_, GetParam().partition, &digest));
@@ -617,7 +717,7 @@ TEST_P(GetDigest, GetDigest) {
 }
 
 TEST_P(GetDigest, BadDigest) {
-  if (GetParam().partition == kDifOtpCtrlPartitionLifeCycle) {
+  if (!GetParam().has_digest) {
     return;
   }
 
@@ -637,48 +737,35 @@ TEST_P(GetDigest, NullArgs) {
       dif_otp_ctrl_get_digest(&otp_, GetParam().partition, nullptr));
 }
 
-INSTANTIATE_TEST_SUITE_P(AllDigests, GetDigest,
-                         testing::Values(
-                             DigestParams{
-                                 kDifOtpCtrlPartitionCreatorSwCfg,
-                                 OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_REG_OFFSET,
-                                 OTP_CTRL_CREATOR_SW_CFG_DIGEST_1_REG_OFFSET,
-                             },
-                             DigestParams{
-                                 kDifOtpCtrlPartitionOwnerSwCfg,
-                                 OTP_CTRL_OWNER_SW_CFG_DIGEST_0_REG_OFFSET,
-                                 OTP_CTRL_OWNER_SW_CFG_DIGEST_1_REG_OFFSET,
-                             },
-                             DigestParams{
-                                 kDifOtpCtrlPartitionHwCfg0,
-                                 OTP_CTRL_HW_CFG0_DIGEST_0_REG_OFFSET,
-                                 OTP_CTRL_HW_CFG0_DIGEST_1_REG_OFFSET,
-                             },
-                             DigestParams{
-                                 kDifOtpCtrlPartitionSecret0,
-                                 OTP_CTRL_SECRET0_DIGEST_0_REG_OFFSET,
-                                 OTP_CTRL_SECRET0_DIGEST_1_REG_OFFSET,
-                             },
-                             DigestParams{
-                                 kDifOtpCtrlPartitionSecret1,
-                                 OTP_CTRL_SECRET1_DIGEST_0_REG_OFFSET,
-                                 OTP_CTRL_SECRET1_DIGEST_1_REG_OFFSET,
-                             },
-                             DigestParams{
-                                 kDifOtpCtrlPartitionSecret2,
-                                 OTP_CTRL_SECRET2_DIGEST_0_REG_OFFSET,
-                                 OTP_CTRL_SECRET2_DIGEST_1_REG_OFFSET,
-                             },
-                             DigestParams{
-                                 kDifOtpCtrlPartitionSecret3,
-                                 OTP_CTRL_SECRET3_DIGEST_0_REG_OFFSET,
-                                 OTP_CTRL_SECRET3_DIGEST_1_REG_OFFSET,
-                             },
-                             DigestParams{
-                                 kDifOtpCtrlPartitionLifeCycle,
-                                 0,
-                                 0,
-                             }));
+// This depends on the maximum length of partition names, which will
+// be changing, so turn formatting off.
+// clang-format off
+INSTANTIATE_TEST_SUITE_P(
+    AllDigests, GetDigest,
+    testing::Values(
+% for part in parts:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_camel = part_name.as_camel_case()
+  part_name_define = part_name.as_c_define()
+%>\
+  % if part in digest_parts:
+        DigestParams{
+            kDifOtpCtrlPartition${part_name_camel},
+            true,
+            OTP_CTRL_${part_name_define}_DIGEST_0_REG_OFFSET,
+            OTP_CTRL_${part_name_define}_DIGEST_1_REG_OFFSET,
+        }${"" if loop.last else ","}
+  % else:
+        DigestParams{
+            kDifOtpCtrlPartition${part_name_camel},
+            false,
+            0,
+            0,
+        }${"));" if loop.last else ","}
+  % endif
+% endfor
+// clang-format on
 
 class BlockingIoTest : public OtpTest {
  protected:

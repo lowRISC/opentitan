@@ -13,6 +13,7 @@ from lib.common import check_bool, check_int, random_or_hexvalue
 from mubi.prim_mubi import is_width_valid, mubi_value_as_int
 from tabulate import tabulate
 from topgen import secure_prng as sp
+from topgen import strong_random
 
 DIGEST_SUFFIX = "_DIGEST"
 DIGEST_SIZE = 8

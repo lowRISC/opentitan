@@ -31,58 +31,100 @@ extern "C" {
  */
 typedef enum dif_otp_ctrl_partition {
   /**
-   * The vendor test area.
+   * Vendor test partition.
    *
-   * This partition is reserved for macro-specific smoke tests.
+   * This is reserved for manufacturing smoke checks. The OTP wrapper
+   * control logic inside prim_otp is allowed to read/write to this
+   * region. ECC uncorrectable errors seen on the functional prim_otp
+   * interface will not lead to an alert for this partition.
+   * Instead, such errors will be reported as correctable ECC errors.
    */
   kDifOtpCtrlPartitionVendorTest,
   /**
-   * The creator software configuration area.
+   * Software configuration partition.
    *
-   * This partition contains device-specific calibration data.
+   * This is for device-specific calibration data. For example, clock,
+   * LDO, RNG.
    */
   kDifOtpCtrlPartitionCreatorSwCfg,
   /**
-   * The owner software configuration area.
+   * Software configuration partition.
    *
-   * This partition contains data to e.g. enable ROM hardening features.
+   * This contains data that changes software behavior in the ROM, for
+   * example enabling defensive features in ROM or selecting failure
+   * modes if verification fails.
    */
   kDifOtpCtrlPartitionOwnerSwCfg,
   /**
-   * The hardware configuration area.
+   * Hardware configuration 0 partition.
+   *
+   * This contains
+   * - DEVICE_ID: Unique device identifier.
+   * - MANUF_STATE: Vector for capturing the manufacturing status.
    */
   kDifOtpCtrlPartitionHwCfg0,
   /**
-   * The hardware configuration area.
+   * Hardware configuration 1 partition.
+   *
+   * This contains
+   * EN_SRAM_IFETCH: Enable / disable execute from SRAM CSR switch.
+   * SOC_DBG_STATE: Multibit enable value for the SOC debug authorization.
+   * Note SOC_DBG_STATE will be written twice in a device lifetime. The
+   * values to be written are engineered in the same way as the LC_CTRL
+   * state encoding words: the ECC encoding remains valid even after
+   * writing the second value on top of the first.
+   *
+   * The constants can be found in the lc_ctrl_state_pkg.sv package.
+   *
+   * Encoding:
+   * SOC_DBG_RAW: this value is all-zeroes and will be the NOP state;
+   * the LC controller will take precedence.
+   * SOC_DBG_PRE_PROD: this is where the ROT will be in PROD state
+   * but SOC will be in the pre-production unlock state
+   * SOC_DBG_PROD: this is the state where the SOC moves to production,
+   * and the challenge-response based authentication protocol is
+   * required to unlock SOC debug features
+   *
+   * The programming order has to adhere to:
+   *
+   * SOC_DBG_RAW -> SOC_DBG_PRE_PROD -> SOC_DBG_PROD.
    */
   kDifOtpCtrlPartitionHwCfg1,
   /**
-   * Scrambled partition 0.
+   * Secret partition 0.
    *
-   * This partition contains TEST lifecycle state unlock tokens.
+   * This contains TEST lifecycle unlock tokens.
    */
   kDifOtpCtrlPartitionSecret0,
   /**
-   * Scrambled partition 1.
+   * Secret partition 1.
    *
-   * This partition contains SRAM and flash scrambling keys.
+   * This contains SRAM and flash scrambling keys.
    */
   kDifOtpCtrlPartitionSecret1,
   /**
-   * Scrambled partition 2.
+   * Secret partition 2.
    *
-   * This partition contains the RMA unlock token and the CreatorRootKey
-   * and CreatorSeed.
+   * This contains RMA unlock token, creator root key, and creator seed.
    */
   kDifOtpCtrlPartitionSecret2,
   /**
-   * Scrambled partition 3.
+   * Secret partition 3.
    *
-   * This partition contains the OwnerSeed.
+   * This contains the owner seed.
    */
   kDifOtpCtrlPartitionSecret3,
   /**
-   * The device lifecycle area.
+   * Lifecycle partition.
+   *
+   * This contains lifecycle transition count and state. This partition
+   * cannot be locked since the life cycle state needs to advance to RMA
+   * in-field. Note that while this partition is not marked secret, it
+   * is not readable nor writeable via the DAI. Only the LC controller
+   * can access this partition, and even via the LC controller it is not
+   * possible to read the raw manufacturing life cycle state in encoded
+   * form, since that encoding is considered a netlist secret. The LC
+   * controller only exposes a decoded version of this state.
    */
   kDifOtpCtrlPartitionLifeCycle,
 } dif_otp_ctrl_partition_t;

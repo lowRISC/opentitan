@@ -2,6 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 ${gen_comment}
+<%
+from topgen.lib import Name
+
+parts = otp_mmap.config["partitions"]
+digest_parts = [part for part in parts if
+                part["hw_digest"] == "true" or part["sw_digest"] == "true"]
+read_locked_csr_parts = [part for part in parts if part["read_lock"] == "CSR"]
+secret_parts = [part for part in parts if part["secret"] == "true"]
+%>\
 #ifndef OPENTITAN_SW_IP_OTP_CTRL_DIF_DIF_OTP_CTRL_H_
 #define OPENTITAN_SW_IP_OTP_CTRL_DIF_DIF_OTP_CTRL_H_
 
@@ -28,61 +37,21 @@ extern "C" {
  * A partition within OTP memory.
  */
 typedef enum dif_otp_ctrl_partition {
+% for part in parts:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  short_desc = part["desc"].split(".")[0].strip().replace("\n", " ")
+  long_desc_lines = part["desc"].split(".", 1)[1].strip().splitlines()
+  long_desc = "\n".join(["   *" + (" " if line else "") + line for
+                         line in long_desc_lines])
+%>\
   /**
-   * The vendor test area.
+   * ${short_desc}.
    *
-   * This partition is reserved for macro-specific smoke tests.
+${long_desc}
    */
-  kDifOtpCtrlPartitionVendorTest,
-  /**
-   * The creator software configuration area.
-   *
-   * This partition contains device-specific calibration data.
-   */
-  kDifOtpCtrlPartitionCreatorSwCfg,
-  /**
-   * The owner software configuration area.
-   *
-   * This partition contains data to e.g. enable ROM hardening features.
-   */
-  kDifOtpCtrlPartitionOwnerSwCfg,
-  /**
-   * The hardware configuration area.
-   */
-  kDifOtpCtrlPartitionHwCfg0,
-  /**
-   * The hardware configuration area.
-   */
-  kDifOtpCtrlPartitionHwCfg1,
-  /**
-   * Scrambled partition 0.
-   *
-   * This partition contains TEST lifecycle state unlock tokens.
-   */
-  kDifOtpCtrlPartitionSecret0,
-  /**
-   * Scrambled partition 1.
-   *
-   * This partition contains SRAM and flash scrambling keys.
-   */
-  kDifOtpCtrlPartitionSecret1,
-  /**
-   * Scrambled partition 2.
-   *
-   * This partition contains the RMA unlock token and the CreatorRootKey
-   * and CreatorSeed.
-   */
-  kDifOtpCtrlPartitionSecret2,
-  /**
-   * Scrambled partition 3.
-   *
-   * This partition contains the OwnerSeed.
-   */
-  kDifOtpCtrlPartitionSecret3,
-  /**
-   * The device lifecycle area.
-   */
-  kDifOtpCtrlPartitionLifeCycle,
+  kDifOtpCtrlPartition${part_name.as_camel_case()},
+% endfor
 } dif_otp_ctrl_partition_t;
 
 /**
@@ -132,46 +101,16 @@ typedef enum dif_otp_ctrl_status_code {
   //
   // Note furthermore that these enum variants are intended as bit indices, so
   // their values should not be randomized.
+% for part in parts:
+<%
+  part_name = Name.from_snake_case(part["name"])
+  part_name_camel = part_name.as_camel_case()
+%>\
   /**
-   * Indicates an error occurred in the `VendorTest` partition.
+   * Indicates an error occurred in the `${part_name_camel}` partition.
    */
-  kDifOtpCtrlStatusCodeVendorTestError = 0,
-  /**
-   * Indicates an error occurred in the `CreatorSwCfg` partition.
-   */
-  kDifOtpCtrlStatusCodeCreatorSwCfgError,
-  /**
-   * Indicates an error occurred in the `OwnerSwCfg` partition.
-   */
-  kDifOtpCtrlStatusCodeOwnerSwCfgError,
-  /**
-   * Indicates an error occurred in the `HwCfg0` partition.
-   */
-  kDifOtpCtrlStatusCodeHwCfg0Error,
-  /**
-   * Indicates an error occurred in the `HwCfg1` partition.
-   */
-  kDifOtpCtrlStatusCodeHwCfg1Error,
-  /**
-   * Indicates an error occurred in the `Secret0` partition.
-   */
-  kDifOtpCtrlStatusCodeSecret0Error,
-  /**
-   * Indicates an error occurred in the `Secret1` partition.
-   */
-  kDifOtpCtrlStatusCodeSecret1Error,
-  /**
-   * Indicates an error occurred in the `Secret2` partition.
-   */
-  kDifOtpCtrlStatusCodeSecret2Error,
-  /**
-   * Indicates an error occurred in the `Secret3` partition.
-   */
-  kDifOtpCtrlStatusCodeSecret3Error,
-  /**
-   * Indicates an error occurred in the `LifeCycle` partition.
-   */
-  kDifOtpCtrlStatusCodeLifeCycleError,
+  kDifOtpCtrlStatusCode${part_name_camel}Error${" = 0" if loop.first else ""},
+% endfor
   /**
    * Indicates an error occurred in the direct access interface.
    */
