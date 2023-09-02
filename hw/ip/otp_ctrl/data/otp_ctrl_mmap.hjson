@@ -91,11 +91,12 @@
                     size: "56"
                 }
             ],
-            desc: '''Vendor test partition for OTP smoke checks
-            during manufacturing. The OTP wrapper control logic inside prim_otp is allowed
-            to read/write to this region. ECC uncorrectable errors seen on the functional
-            prim_otp interface will not lead to an alert for this partition. Instead, such errors
-            will be reported as correctable ECC errors.
+            desc: '''Vendor test partition.
+            This is reserved for manufacturing smoke checks. The OTP wrapper
+            control logic inside prim_otp is allowed to read/write to this
+            region. ECC uncorrectable errors seen on the functional prim_otp
+            interface will not lead to an alert for this partition.
+            Instead, such errors will be reported as correctable ECC errors.
             '''
         }
         {
@@ -245,9 +246,9 @@
                     size: "4"
                 }
             ],
-            desc: '''Software configuration partition for
-            device-specific calibration data (Clock, LDO,
-            RNG, device identity).
+            desc: '''Software configuration partition.
+            This is for device-specific calibration data. For example, clock,
+            LDO, RNG.
             '''
         }
         {
@@ -337,10 +338,10 @@
                     size: "4"
                 }
             ],
-            desc: '''Software configuration partition for
-            data that changes software behavior, specifically
-            in the ROM. E.g., enabling defensive features in
-            ROM or selecting failure modes if verification fails.
+            desc: '''Software configuration partition.
+            This contains data that changes software behavior in the ROM, for
+            example enabling defensive features in ROM or selecting failure
+            modes if verification fails.
             '''
         }
         {
@@ -393,13 +394,16 @@
                     inv_default: false
                 },
             ],
-            desc: '''
-            EN_SRAM_IFETCH: Enable / disable execute from SRAM CSR switch.
-            EN_CSRNG_SW_APP_READ: This input efuse is used to enable access
+            desc: '''Hardware configuration 0 partition.
+            This contains
+            - DEVICE_ID: Unique device identifier.
+            - MANUF_STATE: Vector for capturing the manufacturing status.
+            - EN_SRAM_IFETCH: Enable / disable execute from SRAM CSR switch.
+            - EN_CSRNG_SW_APP_READ: This input efuse is used to enable access
             to the NIST internal state per instance.
-            EN_ENTROPY_SRC_FW_READ: This input efuse is used to enable access
+            - EN_ENTROPY_SRC_FW_READ: This input efuse is used to enable access
             to the ENTROPY_DATA register directly.
-            EN_ENTROPY_SRC_FW_OVER: This input efuse is used to enable access
+            - EN_ENTROPY_SRC_FW_OVER: This input efuse is used to enable access
             to the firmware override FIFO and other related functions.
             '''
         }
@@ -429,7 +433,8 @@
                     size: "16"
                 }
             ],
-            desc: '''Test unlock tokens.
+            desc: '''Secret partition 0.
+            This contains TEST lifecycle unlock tokens.
             '''
         }
         {
@@ -460,8 +465,8 @@
                     size: "16"
                 }
             ],
-            desc: '''SRAM and FLASH scrambling key roots
-            used for scrambling key derivation.
+            desc: '''Secret partition 1.
+            This contains SRAM and flash scrambling keys.
             '''
         }
         {
@@ -494,7 +499,8 @@
                     iskeymgr: true
                 }
             ],
-            desc: '''RMA unlock token and creator root key.
+            desc: '''Secret partition 2.
+            This contains RMA unlock token, creator root key, and creator seed.
             '''
         }
         {
@@ -531,18 +537,15 @@
                     size: "40"
                 }
             ],
-            desc: '''Life-cycle related bits. This
-            partition cannot be locked as the life cycle
-            state needs to be able to advance to RMA in-field.
-            Note that while this partition is not marked secret
-            (i.e. it is not scrambled) it is not readable
-            nor writeable via the DAI. Only the LC controller
-            can access this partition, and even via the LC
-            controller it is not possible to read the
-            raw manufacturing life cycle state in encoded form,
-            since that encoding is considered a netlist secret.
-            The LC controller only exposes a decoded version of
-            this state.
+            desc: '''Lifecycle partition.
+            This contains lifecycle transition count and state. This partition
+            cannot be locked since the life cycle state needs to advance to RMA
+            in-field. Note that while this partition is not marked secret, it
+            is not readable nor writeable via the DAI. Only the LC controller
+            can access this partition, and even via the LC controller it is not
+            possible to read the raw manufacturing life cycle state in encoded
+            form, since that encoding is considered a netlist secret. The LC
+            controller only exposes a decoded version of this state.
             '''
         }
     ]
