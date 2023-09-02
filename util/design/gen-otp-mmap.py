@@ -41,6 +41,11 @@ MMAP_TABLE_FILE = "hw/ip/otp_ctrl/doc/otp_ctrl_mmap.md"
 # code templates to render
 COV_TEMPLATES = ["hw/ip/otp_ctrl/data/otp_ctrl_cov_bind.sv.tpl"]
 DATA_TEMPLATES = ["hw/ip/otp_ctrl/data/otp_ctrl.hjson.tpl"]
+DIF_TEMPLATES = [
+    "hw/ip/otp_ctrl/data/dif_otp_ctrl.c.tpl",
+    "hw/ip/otp_ctrl/data/dif_otp_ctrl.h.tpl",
+    "hw/ip/otp_ctrl/data/dif_otp_ctrl_unittest.cc.tpl"
+]
 ENV_TEMPLATES = [
     "hw/ip/otp_ctrl/data/otp_ctrl_env_cov.sv.tpl",
     "hw/ip/otp_ctrl/data/otp_ctrl_env_pkg.sv.tpl",
@@ -151,6 +156,11 @@ def main():
         for template in DATA_TEMPLATES:
             stem_path = Path(template).stem
             target_path = Path(template).parent / stem_path
+            render_template(template, target_path, otp_mmap, TPL_GEN_COMMENT)
+        for template in DIF_TEMPLATES:
+            stem_path = Path(template).stem
+            target_path = (Path.cwd() / "sw" / "ip" / "otp_ctrl" / "dif" /
+                           stem_path)
             render_template(template, target_path, otp_mmap, TPL_GEN_COMMENT)
         for template in ENV_TEMPLATES:
             stem_path = Path(template).stem
