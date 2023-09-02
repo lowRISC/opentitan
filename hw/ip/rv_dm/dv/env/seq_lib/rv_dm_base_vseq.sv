@@ -155,7 +155,7 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     uvm_reg_data_t rdata;
     repeat ($urandom_range(1, 10)) begin
       data = $urandom;
-      csr_wr(.ptr(tl_mem_ral.halted), .value(data));
+      csr_wr(.ptr(tl_mem_ral.halted), .value(0));
       cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
       csr_wr(.ptr(jtag_dmi_ral.command), .value(command));
       csr_wr(.ptr(ptr), .value(data));
@@ -171,7 +171,7 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     uvm_reg_data_t rdata;
     repeat ($urandom_range(1, 10)) begin
       data = $urandom;
-      csr_wr(.ptr(tl_mem_ral.halted), .value(data));
+      csr_wr(.ptr(tl_mem_ral.halted), .value(0));
       cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
       csr_wr(.ptr(jtag_dmi_ral.command), .value(command));
       csr_rd(.ptr(ptr), .value(data));
