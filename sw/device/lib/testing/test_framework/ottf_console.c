@@ -124,19 +124,9 @@ void ottf_console_init(void) {
 }
 
 static uint32_t get_flow_control_watermark_plic_id(void) {
-  switch (kOttfTestConfig.console.base_addr) {
-#if !OT_IS_ENGLISH_BREAKFAST
-    case TOP_DARJEELING_UART1_BASE_ADDR:
-      return kTopDarjeelingPlicIrqIdUart1RxWatermark;
-    case TOP_DARJEELING_UART2_BASE_ADDR:
-      return kTopDarjeelingPlicIrqIdUart2RxWatermark;
-    case TOP_DARJEELING_UART3_BASE_ADDR:
-      return kTopDarjeelingPlicIrqIdUart3RxWatermark;
-#endif
-    case TOP_DARJEELING_UART0_BASE_ADDR:
-    default:
-      return kTopDarjeelingPlicIrqIdUart0RxWatermark;
-  }
+  // TODO: make this toplevel-agnostic.
+  // Temporarily hardcode to use UART0
+  return kTopDarjeelingPlicIrqIdUart0RxWatermark;
 }
 
 void ottf_console_flow_control_enable(void) {

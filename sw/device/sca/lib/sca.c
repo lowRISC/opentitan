@@ -59,12 +59,9 @@ static dif_gpio_t gpio;
 static dif_pinmux_t pinmux;
 static dif_rv_timer_t timer;
 
-#if !OT_IS_ENGLISH_BREAKFAST
-static dif_uart_t uart1;
 static dif_csrng_t csrng;
 static dif_edn_t edn0;
 static dif_edn_t edn1;
-#endif
 
 // TODO(alphan): Handle return values as long as they don't affect capture rate.
 
