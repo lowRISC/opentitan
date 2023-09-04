@@ -35,9 +35,6 @@
     main:
     [
       uart0
-      uart1
-      uart2
-      uart3
       i2c0
       i2c1
       i2c2
@@ -87,60 +84,6 @@
       [
         {
           base_addr: 0x30010000
-          size_byte: 0x40
-        }
-      ]
-      xbar: false
-      stub: false
-      req_fifo_pass: true
-    }
-    {
-      name: uart1
-      type: device
-      clock: clk_peri_i
-      reset: rst_peri_ni
-      pipeline: false
-      inst_type: uart
-      addr_range:
-      [
-        {
-          base_addr: 0x31000000
-          size_byte: 0x40
-        }
-      ]
-      xbar: false
-      stub: false
-      req_fifo_pass: true
-    }
-    {
-      name: uart2
-      type: device
-      clock: clk_peri_i
-      reset: rst_peri_ni
-      pipeline: false
-      inst_type: uart
-      addr_range:
-      [
-        {
-          base_addr: 0x31010000
-          size_byte: 0x40
-        }
-      ]
-      xbar: false
-      stub: false
-      req_fifo_pass: true
-    }
-    {
-      name: uart3
-      type: device
-      clock: clk_peri_i
-      reset: rst_peri_ni
-      pipeline: false
-      inst_type: uart
-      addr_range:
-      [
-        {
-          base_addr: 0x31020000
           size_byte: 0x40
         }
       ]

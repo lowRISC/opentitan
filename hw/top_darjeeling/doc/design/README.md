@@ -398,9 +398,6 @@ For the purpose of `top_darjeeling`, the first option has been chosen to benefit
 | Name              | Type          | Byte Address      |
 |:------------------|:--------------|:------------------|
 | uart0             | uart          | 0x30010000 (regs) |
-| uart1             | uart          | 0x31000000 (regs) |
-| uart2             | uart          | 0x31010000 (regs) |
-| uart3             | uart          | 0x31020000 (regs) |
 | gpio              | gpio          | 0x30000000 (regs) |
 | spi_device        | spi_device    | 0x30310000 (regs) |
 | i2c0              | i2c           | 0x30080000 (regs) |

@@ -569,147 +569,6 @@
       }
     }
     {
-      name: uart1
-      type: uart
-      clock_srcs:
-      {
-        clk_i: io_div4
-      }
-      clock_group: peri
-      reset_connections:
-      {
-        rst_ni:
-        {
-          name: lc_io_div4
-          domain: "0"
-        }
-      }
-      clock_connections:
-      {
-        clk_i: clkmgr_aon_clocks.clk_io_div4_peri
-      }
-      domain:
-      [
-        "0"
-      ]
-      param_decl: {}
-      param_list: []
-      inter_signal_list:
-      [
-        {
-          name: tl
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: uart1
-          default: ""
-          end_idx: -1
-          top_signame: uart1_tl
-          index: -1
-        }
-      ]
-      base_addrs:
-      {
-        null: 0x31000000
-      }
-    }
-    {
-      name: uart2
-      type: uart
-      clock_srcs:
-      {
-        clk_i: io_div4
-      }
-      clock_group: peri
-      reset_connections:
-      {
-        rst_ni:
-        {
-          name: lc_io_div4
-          domain: "0"
-        }
-      }
-      clock_connections:
-      {
-        clk_i: clkmgr_aon_clocks.clk_io_div4_peri
-      }
-      domain:
-      [
-        "0"
-      ]
-      param_decl: {}
-      param_list: []
-      inter_signal_list:
-      [
-        {
-          name: tl
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: uart2
-          default: ""
-          end_idx: -1
-          top_signame: uart2_tl
-          index: -1
-        }
-      ]
-      base_addrs:
-      {
-        null: 0x31010000
-      }
-    }
-    {
-      name: uart3
-      type: uart
-      clock_srcs:
-      {
-        clk_i: io_div4
-      }
-      clock_group: peri
-      reset_connections:
-      {
-        rst_ni:
-        {
-          name: lc_io_div4
-          domain: "0"
-        }
-      }
-      clock_connections:
-      {
-        clk_i: clkmgr_aon_clocks.clk_io_div4_peri
-      }
-      domain:
-      [
-        "0"
-      ]
-      param_decl: {}
-      param_list: []
-      inter_signal_list:
-      [
-        {
-          name: tl
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: uart3
-          default: ""
-          end_idx: -1
-          top_signame: uart3_tl
-          index: -1
-        }
-      ]
-      base_addrs:
-      {
-        null: 0x31020000
-      }
-    }
-    {
       name: gpio
       type: gpio
       clock_srcs:
@@ -8947,18 +8806,6 @@
       [
         peri.tl_uart0
       ]
-      uart1.tl:
-      [
-        peri.tl_uart1
-      ]
-      uart2.tl:
-      [
-        peri.tl_uart2
-      ]
-      uart3.tl:
-      [
-        peri.tl_uart3
-      ]
       i2c0.tl:
       [
         peri.tl_i2c0
@@ -10282,9 +10129,6 @@
         main:
         [
           uart0
-          uart1
-          uart2
-          uart3
           i2c0
           i2c1
           i2c2
@@ -10334,60 +10178,6 @@
           [
             {
               base_addr: 0x30010000
-              size_byte: 0x40
-            }
-          ]
-          xbar: false
-          stub: false
-          req_fifo_pass: true
-        }
-        {
-          name: uart1
-          type: device
-          clock: clk_peri_i
-          reset: rst_peri_ni
-          pipeline: false
-          inst_type: uart
-          addr_range:
-          [
-            {
-              base_addr: 0x31000000
-              size_byte: 0x40
-            }
-          ]
-          xbar: false
-          stub: false
-          req_fifo_pass: true
-        }
-        {
-          name: uart2
-          type: device
-          clock: clk_peri_i
-          reset: rst_peri_ni
-          pipeline: false
-          inst_type: uart
-          addr_range:
-          [
-            {
-              base_addr: 0x31010000
-              size_byte: 0x40
-            }
-          ]
-          xbar: false
-          stub: false
-          req_fifo_pass: true
-        }
-        {
-          name: uart3
-          type: device
-          clock: clk_peri_i
-          reset: rst_peri_ni
-          pipeline: false
-          inst_type: uart
-          addr_range:
-          [
-            {
-              base_addr: 0x31020000
               size_byte: 0x40
             }
           ]
@@ -10818,42 +10608,6 @@
           inst_name: peri
           default: ""
           top_signame: uart0_tl
-          index: -1
-        }
-        {
-          name: tl_uart1
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: peri
-          default: ""
-          top_signame: uart1_tl
-          index: -1
-        }
-        {
-          name: tl_uart2
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: peri
-          default: ""
-          top_signame: uart2_tl
-          index: -1
-        }
-        {
-          name: tl_uart3
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: peri
-          default: ""
-          top_signame: uart3_tl
           index: -1
         }
         {
@@ -11874,30 +11628,6 @@
         attr: ""
       }
       {
-        instance: uart1
-        port: ""
-        connection: muxed
-        pad: ""
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: uart2
-        port: ""
-        connection: muxed
-        pad: ""
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: uart3
-        port: ""
-        connection: muxed
-        pad: ""
-        desc: ""
-        attr: ""
-      }
-      {
         instance: i2c0
         port: ""
         connection: muxed
@@ -12714,7 +12444,7 @@
         glob_idx: 42
       }
       {
-        name: uart1_rx
+        name: spi_device_tpm_csb
         width: 1
         type: input
         idx: -1
@@ -12725,7 +12455,7 @@
         glob_idx: 43
       }
       {
-        name: uart2_rx
+        name: flash_ctrl_tck
         width: 1
         type: input
         idx: -1
@@ -12736,7 +12466,7 @@
         glob_idx: 44
       }
       {
-        name: uart3_rx
+        name: flash_ctrl_tms
         width: 1
         type: input
         idx: -1
@@ -12747,7 +12477,7 @@
         glob_idx: 45
       }
       {
-        name: spi_device_tpm_csb
+        name: flash_ctrl_tdi
         width: 1
         type: input
         idx: -1
@@ -12758,7 +12488,7 @@
         glob_idx: 46
       }
       {
-        name: flash_ctrl_tck
+        name: sysrst_ctrl_aon_ac_present
         width: 1
         type: input
         idx: -1
@@ -12769,7 +12499,7 @@
         glob_idx: 47
       }
       {
-        name: flash_ctrl_tms
+        name: sysrst_ctrl_aon_key0_in
         width: 1
         type: input
         idx: -1
@@ -12780,7 +12510,7 @@
         glob_idx: 48
       }
       {
-        name: flash_ctrl_tdi
+        name: sysrst_ctrl_aon_key1_in
         width: 1
         type: input
         idx: -1
@@ -12791,7 +12521,7 @@
         glob_idx: 49
       }
       {
-        name: sysrst_ctrl_aon_ac_present
+        name: sysrst_ctrl_aon_key2_in
         width: 1
         type: input
         idx: -1
@@ -12802,7 +12532,7 @@
         glob_idx: 50
       }
       {
-        name: sysrst_ctrl_aon_key0_in
+        name: sysrst_ctrl_aon_pwrb_in
         width: 1
         type: input
         idx: -1
@@ -12813,7 +12543,7 @@
         glob_idx: 51
       }
       {
-        name: sysrst_ctrl_aon_key1_in
+        name: sysrst_ctrl_aon_lid_open
         width: 1
         type: input
         idx: -1
@@ -12824,39 +12554,6 @@
         glob_idx: 52
       }
       {
-        name: sysrst_ctrl_aon_key2_in
-        width: 1
-        type: input
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 53
-      }
-      {
-        name: sysrst_ctrl_aon_pwrb_in
-        width: 1
-        type: input
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 54
-      }
-      {
-        name: sysrst_ctrl_aon_lid_open
-        width: 1
-        type: input
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 55
-      }
-      {
         name: usbdev_sense
         width: 1
         type: input
@@ -12865,7 +12562,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 56
+        glob_idx: 53
       }
       {
         name: spi_host0_sck
@@ -12901,7 +12598,7 @@
         glob_idx: 42
       }
       {
-        name: uart1_tx
+        name: spi_host1_sck
         width: 1
         type: output
         idx: -1
@@ -12912,7 +12609,7 @@
         glob_idx: 43
       }
       {
-        name: uart2_tx
+        name: spi_host1_csb
         width: 1
         type: output
         idx: -1
@@ -12923,7 +12620,7 @@
         glob_idx: 44
       }
       {
-        name: uart3_tx
+        name: flash_ctrl_tdo
         width: 1
         type: output
         idx: -1
@@ -12934,39 +12631,6 @@
         glob_idx: 45
       }
       {
-        name: spi_host1_sck
-        width: 1
-        type: output
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 46
-      }
-      {
-        name: spi_host1_csb
-        width: 1
-        type: output
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 47
-      }
-      {
-        name: flash_ctrl_tdo
-        width: 1
-        type: output
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        glob_idx: 48
-      }
-      {
         name: sensor_ctrl_ast_debug_out
         width: 9
         type: output
@@ -12975,7 +12639,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 49
+        glob_idx: 46
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -12986,7 +12650,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 50
+        glob_idx: 47
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -12997,7 +12661,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 51
+        glob_idx: 48
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -13008,7 +12672,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 52
+        glob_idx: 49
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -13019,7 +12683,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 53
+        glob_idx: 50
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -13030,7 +12694,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 54
+        glob_idx: 51
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -13041,7 +12705,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 55
+        glob_idx: 52
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -13052,7 +12716,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 56
+        glob_idx: 53
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -13063,7 +12727,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 57
+        glob_idx: 54
       }
       {
         name: otp_ctrl_test
@@ -13074,7 +12738,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 58
+        glob_idx: 55
       }
       {
         name: sysrst_ctrl_aon_bat_disable
@@ -13085,7 +12749,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 59
+        glob_idx: 56
       }
       {
         name: sysrst_ctrl_aon_key0_out
@@ -13096,7 +12760,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 60
+        glob_idx: 57
       }
       {
         name: sysrst_ctrl_aon_key1_out
@@ -13107,7 +12771,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 61
+        glob_idx: 58
       }
       {
         name: sysrst_ctrl_aon_key2_out
@@ -13118,7 +12782,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 62
+        glob_idx: 59
       }
       {
         name: sysrst_ctrl_aon_pwrb_out
@@ -13129,7 +12793,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 63
+        glob_idx: 60
       }
       {
         name: sysrst_ctrl_aon_z3_wakeup
@@ -13140,7 +12804,7 @@
         attr: ""
         connection: muxed
         desc: ""
-        glob_idx: 64
+        glob_idx: 61
       }
     ]
     io_counts:
@@ -13155,8 +12819,8 @@
       muxed:
       {
         inouts: 42
-        inputs: 15
-        outputs: 23
+        inputs: 12
+        outputs: 20
         pads: 47
       }
     }
@@ -13511,9 +13175,6 @@
   interrupt_module:
   [
     uart0
-    uart1
-    uart2
-    uart3
     gpio
     spi_device
     i2c0
@@ -13589,150 +13250,6 @@
       width: 1
       type: interrupt
       module_name: uart0
-    }
-    {
-      name: uart1_tx_watermark
-      width: 1
-      type: interrupt
-      module_name: uart1
-    }
-    {
-      name: uart1_rx_watermark
-      width: 1
-      type: interrupt
-      module_name: uart1
-    }
-    {
-      name: uart1_tx_empty
-      width: 1
-      type: interrupt
-      module_name: uart1
-    }
-    {
-      name: uart1_rx_overflow
-      width: 1
-      type: interrupt
-      module_name: uart1
-    }
-    {
-      name: uart1_rx_frame_err
-      width: 1
-      type: interrupt
-      module_name: uart1
-    }
-    {
-      name: uart1_rx_break_err
-      width: 1
-      type: interrupt
-      module_name: uart1
-    }
-    {
-      name: uart1_rx_timeout
-      width: 1
-      type: interrupt
-      module_name: uart1
-    }
-    {
-      name: uart1_rx_parity_err
-      width: 1
-      type: interrupt
-      module_name: uart1
-    }
-    {
-      name: uart2_tx_watermark
-      width: 1
-      type: interrupt
-      module_name: uart2
-    }
-    {
-      name: uart2_rx_watermark
-      width: 1
-      type: interrupt
-      module_name: uart2
-    }
-    {
-      name: uart2_tx_empty
-      width: 1
-      type: interrupt
-      module_name: uart2
-    }
-    {
-      name: uart2_rx_overflow
-      width: 1
-      type: interrupt
-      module_name: uart2
-    }
-    {
-      name: uart2_rx_frame_err
-      width: 1
-      type: interrupt
-      module_name: uart2
-    }
-    {
-      name: uart2_rx_break_err
-      width: 1
-      type: interrupt
-      module_name: uart2
-    }
-    {
-      name: uart2_rx_timeout
-      width: 1
-      type: interrupt
-      module_name: uart2
-    }
-    {
-      name: uart2_rx_parity_err
-      width: 1
-      type: interrupt
-      module_name: uart2
-    }
-    {
-      name: uart3_tx_watermark
-      width: 1
-      type: interrupt
-      module_name: uart3
-    }
-    {
-      name: uart3_rx_watermark
-      width: 1
-      type: interrupt
-      module_name: uart3
-    }
-    {
-      name: uart3_tx_empty
-      width: 1
-      type: interrupt
-      module_name: uart3
-    }
-    {
-      name: uart3_rx_overflow
-      width: 1
-      type: interrupt
-      module_name: uart3
-    }
-    {
-      name: uart3_rx_frame_err
-      width: 1
-      type: interrupt
-      module_name: uart3
-    }
-    {
-      name: uart3_rx_break_err
-      width: 1
-      type: interrupt
-      module_name: uart3
-    }
-    {
-      name: uart3_rx_timeout
-      width: 1
-      type: interrupt
-      module_name: uart3
-    }
-    {
-      name: uart3_rx_parity_err
-      width: 1
-      type: interrupt
-      module_name: uart3
     }
     {
       name: gpio_gpio
@@ -14446,9 +13963,6 @@
   alert_module:
   [
     uart0
-    uart1
-    uart2
-    uart3
     gpio
     spi_device
     i2c0
@@ -14496,33 +14010,6 @@
       type: alert
       async: "1"
       module_name: uart0
-      lpg_name: peri_lc_io_div4_0
-      lpg_idx: 0
-    }
-    {
-      name: uart1_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: uart1
-      lpg_name: peri_lc_io_div4_0
-      lpg_idx: 0
-    }
-    {
-      name: uart2_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: uart2
-      lpg_name: peri_lc_io_div4_0
-      lpg_idx: 0
-    }
-    {
-      name: uart3_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: uart3
       lpg_name: peri_lc_io_div4_0
       lpg_idx: 0
     }
@@ -15657,45 +15144,6 @@
         default: ""
         end_idx: -1
         top_signame: uart0_tl
-        index: -1
-      }
-      {
-        name: tl
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: uart1
-        default: ""
-        end_idx: -1
-        top_signame: uart1_tl
-        index: -1
-      }
-      {
-        name: tl
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: uart2
-        default: ""
-        end_idx: -1
-        top_signame: uart2_tl
-        index: -1
-      }
-      {
-        name: tl
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: uart3
-        default: ""
-        end_idx: -1
-        top_signame: uart3_tl
         index: -1
       }
       {
@@ -20527,42 +19975,6 @@
         index: -1
       }
       {
-        name: tl_uart1
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: peri
-        default: ""
-        top_signame: uart1_tl
-        index: -1
-      }
-      {
-        name: tl_uart2
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: peri
-        default: ""
-        top_signame: uart2_tl
-        index: -1
-      }
-      {
-        name: tl_uart3
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: peri
-        default: ""
-        top_signame: uart3_tl
-        index: -1
-      }
-      {
         name: tl_i2c0
         struct: tl
         package: tlul_pkg
@@ -23356,72 +22768,6 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: uart0_tl_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        signame: uart1_tl_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: uart1_tl_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        signame: uart2_tl_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: uart2_tl_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        signame: uart3_tl_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: uart3_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

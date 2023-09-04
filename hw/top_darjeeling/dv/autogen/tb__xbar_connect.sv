@@ -69,9 +69,6 @@ tl_if sram_ctrl_mbox__regs_tl_if(clk_main, rst_n);
 tl_if sram_ctrl_mbox__ram_tl_if(clk_main, rst_n);
 tl_if dma_tl_if(clk_main, rst_n);
 tl_if uart0_tl_if(clk_io_div4, rst_n);
-tl_if uart1_tl_if(clk_io_div4, rst_n);
-tl_if uart2_tl_if(clk_io_div4, rst_n);
-tl_if uart3_tl_if(clk_io_div4, rst_n);
 tl_if i2c0_tl_if(clk_io_div4, rst_n);
 tl_if i2c1_tl_if(clk_io_div4, rst_n);
 tl_if i2c2_tl_if(clk_io_div4, rst_n);
@@ -154,9 +151,6 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(dma, dma, tl_d)
     `DRIVE_CHIP_TL_HOST_IF(dma__host, dma, host_tl_h)
     `DRIVE_CHIP_TL_DEVICE_IF(uart0, uart0, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(uart1, uart1, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(uart2, uart2, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(uart3, uart3, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(i2c0, i2c0, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(i2c1, i2c1, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(i2c2, i2c2, tl)

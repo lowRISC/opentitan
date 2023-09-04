@@ -5,14 +5,11 @@
   instance_name: top_darjeeling_alert_handler
   param_values:
   {
-    n_alerts: 65
+    n_alerts: 62
     esc_cnt_dw: 32
     accu_cnt_dw: 16
     async_on:
     [
-      1'b1
-      1'b1
-      1'b1
       1'b1
       1'b1
       1'b1
@@ -80,9 +77,6 @@
     n_lpg: 24
     lpg_map:
     [
-      5'd0
-      5'd0
-      5'd0
       5'd0
       5'd0
       5'd1

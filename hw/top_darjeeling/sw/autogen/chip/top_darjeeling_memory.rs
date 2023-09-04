@@ -63,48 +63,6 @@ pub const TOP_DARJEELING_UART0_BASE_ADDR: usize = 0x30010000;
 /// `TOP_DARJEELING_UART0_BASE_ADDR + TOP_DARJEELING_UART0_SIZE_BYTES`.
 pub const TOP_DARJEELING_UART0_SIZE_BYTES: usize = 0x40;
 
-/// Peripheral base address for uart1 in top darjeeling.
-///
-/// This should be used with #mmio_region_from_addr to access the memory-mapped
-/// registers associated with the peripheral (usually via a DIF).
-pub const TOP_DARJEELING_UART1_BASE_ADDR: usize = 0x31000000;
-
-/// Peripheral size for uart1 in top darjeeling.
-///
-/// This is the size (in bytes) of the peripheral's reserved memory area. All
-/// memory-mapped registers associated with this peripheral should have an
-/// address between #TOP_DARJEELING_UART1_BASE_ADDR and
-/// `TOP_DARJEELING_UART1_BASE_ADDR + TOP_DARJEELING_UART1_SIZE_BYTES`.
-pub const TOP_DARJEELING_UART1_SIZE_BYTES: usize = 0x40;
-
-/// Peripheral base address for uart2 in top darjeeling.
-///
-/// This should be used with #mmio_region_from_addr to access the memory-mapped
-/// registers associated with the peripheral (usually via a DIF).
-pub const TOP_DARJEELING_UART2_BASE_ADDR: usize = 0x31010000;
-
-/// Peripheral size for uart2 in top darjeeling.
-///
-/// This is the size (in bytes) of the peripheral's reserved memory area. All
-/// memory-mapped registers associated with this peripheral should have an
-/// address between #TOP_DARJEELING_UART2_BASE_ADDR and
-/// `TOP_DARJEELING_UART2_BASE_ADDR + TOP_DARJEELING_UART2_SIZE_BYTES`.
-pub const TOP_DARJEELING_UART2_SIZE_BYTES: usize = 0x40;
-
-/// Peripheral base address for uart3 in top darjeeling.
-///
-/// This should be used with #mmio_region_from_addr to access the memory-mapped
-/// registers associated with the peripheral (usually via a DIF).
-pub const TOP_DARJEELING_UART3_BASE_ADDR: usize = 0x31020000;
-
-/// Peripheral size for uart3 in top darjeeling.
-///
-/// This is the size (in bytes) of the peripheral's reserved memory area. All
-/// memory-mapped registers associated with this peripheral should have an
-/// address between #TOP_DARJEELING_UART3_BASE_ADDR and
-/// `TOP_DARJEELING_UART3_BASE_ADDR + TOP_DARJEELING_UART3_SIZE_BYTES`.
-pub const TOP_DARJEELING_UART3_SIZE_BYTES: usize = 0x40;
-
 /// Peripheral base address for gpio in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped

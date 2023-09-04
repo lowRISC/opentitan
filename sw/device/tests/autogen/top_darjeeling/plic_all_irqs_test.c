@@ -71,9 +71,6 @@ static dif_spi_host_t spi_host0;
 static dif_spi_host_t spi_host1;
 static dif_sysrst_ctrl_t sysrst_ctrl_aon;
 static dif_uart_t uart0;
-static dif_uart_t uart1;
-static dif_uart_t uart2;
-static dif_uart_t uart3;
 static dif_usbdev_t usbdev;
 static dif_rv_plic_t plic;
 static const top_darjeeling_plic_target_t kHart = kTopDarjeelingPlicTargetIbex0;
@@ -712,72 +709,6 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopDarjeelingPlicPeripheralUart1: {
-      dif_uart_irq_t irq = (dif_uart_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdUart1TxWatermark);
-      CHECK(irq == uart_irq_expected,
-            "Incorrect uart1 IRQ triggered: exp = %d, obs = %d",
-            uart_irq_expected, irq);
-      uart_irq_serviced = irq;
-
-      dif_uart_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_uart_irq_get_state(&uart1, &snapshot));
-      CHECK(snapshot == (dif_uart_irq_state_snapshot_t)(1 << irq),
-            "Only uart1 IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
-
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_uart_irq_force(&uart1, irq, false));
-      CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart1, irq));
-      break;
-    }
-
-    case kTopDarjeelingPlicPeripheralUart2: {
-      dif_uart_irq_t irq = (dif_uart_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdUart2TxWatermark);
-      CHECK(irq == uart_irq_expected,
-            "Incorrect uart2 IRQ triggered: exp = %d, obs = %d",
-            uart_irq_expected, irq);
-      uart_irq_serviced = irq;
-
-      dif_uart_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_uart_irq_get_state(&uart2, &snapshot));
-      CHECK(snapshot == (dif_uart_irq_state_snapshot_t)(1 << irq),
-            "Only uart2 IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
-
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_uart_irq_force(&uart2, irq, false));
-      CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart2, irq));
-      break;
-    }
-
-    case kTopDarjeelingPlicPeripheralUart3: {
-      dif_uart_irq_t irq = (dif_uart_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopDarjeelingPlicIrqIdUart3TxWatermark);
-      CHECK(irq == uart_irq_expected,
-            "Incorrect uart3 IRQ triggered: exp = %d, obs = %d",
-            uart_irq_expected, irq);
-      uart_irq_serviced = irq;
-
-      dif_uart_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_uart_irq_get_state(&uart3, &snapshot));
-      CHECK(snapshot == (dif_uart_irq_state_snapshot_t)(1 << irq),
-            "Only uart3 IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
-
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_uart_irq_force(&uart3, irq, false));
-      CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart3, irq));
-      break;
-    }
-
     case kTopDarjeelingPlicPeripheralUsbdev: {
       dif_usbdev_irq_t irq = (dif_usbdev_irq_t)(
           plic_irq_id -
@@ -890,15 +821,6 @@ static void peripherals_init(void) {
   base_addr = mmio_region_from_addr(TOP_DARJEELING_UART0_BASE_ADDR);
   CHECK_DIF_OK(dif_uart_init(base_addr, &uart0));
 
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_UART1_BASE_ADDR);
-  CHECK_DIF_OK(dif_uart_init(base_addr, &uart1));
-
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_UART2_BASE_ADDR);
-  CHECK_DIF_OK(dif_uart_init(base_addr, &uart2));
-
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_UART3_BASE_ADDR);
-  CHECK_DIF_OK(dif_uart_init(base_addr, &uart3));
-
   base_addr = mmio_region_from_addr(TOP_DARJEELING_USBDEV_BASE_ADDR);
   CHECK_DIF_OK(dif_usbdev_init(base_addr, &usbdev));
 
@@ -935,9 +857,6 @@ static void peripheral_irqs_clear(void) {
   CHECK_DIF_OK(dif_spi_host_irq_acknowledge_all(&spi_host1));
   CHECK_DIF_OK(dif_sysrst_ctrl_irq_acknowledge_all(&sysrst_ctrl_aon));
   CHECK_DIF_OK(dif_uart_irq_acknowledge_all(&uart0));
-  CHECK_DIF_OK(dif_uart_irq_acknowledge_all(&uart1));
-  CHECK_DIF_OK(dif_uart_irq_acknowledge_all(&uart2));
-  CHECK_DIF_OK(dif_uart_irq_acknowledge_all(&uart3));
   CHECK_DIF_OK(dif_usbdev_irq_acknowledge_all(&usbdev));
 }
 
@@ -1040,12 +959,6 @@ static void peripheral_irqs_enable(void) {
     CHECK_DIF_OK(
         dif_uart_irq_restore_all(&uart0, &uart_irqs));
   }
-  CHECK_DIF_OK(
-      dif_uart_irq_restore_all(&uart1, &uart_irqs));
-  CHECK_DIF_OK(
-      dif_uart_irq_restore_all(&uart2, &uart_irqs));
-  CHECK_DIF_OK(
-      dif_uart_irq_restore_all(&uart3, &uart_irqs));
   CHECK_DIF_OK(
       dif_usbdev_irq_restore_all(&usbdev, &usbdev_irqs));
 }
@@ -1387,45 +1300,6 @@ static void peripheral_irqs_trigger(void) {
       IBEX_SPIN_FOR(uart_irq_serviced == irq, 1);
       LOG_INFO("IRQ %d from uart0 is serviced.", irq);
     }
-  }
-
-  peripheral_expected = kTopDarjeelingPlicPeripheralUart1;
-  for (dif_uart_irq_t irq = kDifUartIrqTxWatermark;
-       irq <= kDifUartIrqRxParityErr; ++irq) {
-    uart_irq_expected = irq;
-    LOG_INFO("Triggering uart1 IRQ %d.", irq);
-    CHECK_DIF_OK(dif_uart_irq_force(&uart1, irq, true));
-
-    // This avoids a race where *irq_serviced is read before
-    // entering the ISR.
-    IBEX_SPIN_FOR(uart_irq_serviced == irq, 1);
-    LOG_INFO("IRQ %d from uart1 is serviced.", irq);
-  }
-
-  peripheral_expected = kTopDarjeelingPlicPeripheralUart2;
-  for (dif_uart_irq_t irq = kDifUartIrqTxWatermark;
-       irq <= kDifUartIrqRxParityErr; ++irq) {
-    uart_irq_expected = irq;
-    LOG_INFO("Triggering uart2 IRQ %d.", irq);
-    CHECK_DIF_OK(dif_uart_irq_force(&uart2, irq, true));
-
-    // This avoids a race where *irq_serviced is read before
-    // entering the ISR.
-    IBEX_SPIN_FOR(uart_irq_serviced == irq, 1);
-    LOG_INFO("IRQ %d from uart2 is serviced.", irq);
-  }
-
-  peripheral_expected = kTopDarjeelingPlicPeripheralUart3;
-  for (dif_uart_irq_t irq = kDifUartIrqTxWatermark;
-       irq <= kDifUartIrqRxParityErr; ++irq) {
-    uart_irq_expected = irq;
-    LOG_INFO("Triggering uart3 IRQ %d.", irq);
-    CHECK_DIF_OK(dif_uart_irq_force(&uart3, irq, true));
-
-    // This avoids a race where *irq_serviced is read before
-    // entering the ISR.
-    IBEX_SPIN_FOR(uart_irq_serviced == irq, 1);
-    LOG_INFO("IRQ %d from uart3 is serviced.", irq);
   }
 
   peripheral_expected = kTopDarjeelingPlicPeripheralUsbdev;

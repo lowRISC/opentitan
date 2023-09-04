@@ -11,7 +11,7 @@
  * `top_darjeeling_plic_peripheral_t`.
  */
 const top_darjeeling_plic_peripheral_t
-    top_darjeeling_plic_interrupt_for_peripheral[182] = {
+    top_darjeeling_plic_interrupt_for_peripheral[158] = {
   [kTopDarjeelingPlicIrqIdNone] = kTopDarjeelingPlicPeripheralUnknown,
   [kTopDarjeelingPlicIrqIdUart0TxWatermark] = kTopDarjeelingPlicPeripheralUart0,
   [kTopDarjeelingPlicIrqIdUart0RxWatermark] = kTopDarjeelingPlicPeripheralUart0,
@@ -21,30 +21,6 @@ const top_darjeeling_plic_peripheral_t
   [kTopDarjeelingPlicIrqIdUart0RxBreakErr] = kTopDarjeelingPlicPeripheralUart0,
   [kTopDarjeelingPlicIrqIdUart0RxTimeout] = kTopDarjeelingPlicPeripheralUart0,
   [kTopDarjeelingPlicIrqIdUart0RxParityErr] = kTopDarjeelingPlicPeripheralUart0,
-  [kTopDarjeelingPlicIrqIdUart1TxWatermark] = kTopDarjeelingPlicPeripheralUart1,
-  [kTopDarjeelingPlicIrqIdUart1RxWatermark] = kTopDarjeelingPlicPeripheralUart1,
-  [kTopDarjeelingPlicIrqIdUart1TxEmpty] = kTopDarjeelingPlicPeripheralUart1,
-  [kTopDarjeelingPlicIrqIdUart1RxOverflow] = kTopDarjeelingPlicPeripheralUart1,
-  [kTopDarjeelingPlicIrqIdUart1RxFrameErr] = kTopDarjeelingPlicPeripheralUart1,
-  [kTopDarjeelingPlicIrqIdUart1RxBreakErr] = kTopDarjeelingPlicPeripheralUart1,
-  [kTopDarjeelingPlicIrqIdUart1RxTimeout] = kTopDarjeelingPlicPeripheralUart1,
-  [kTopDarjeelingPlicIrqIdUart1RxParityErr] = kTopDarjeelingPlicPeripheralUart1,
-  [kTopDarjeelingPlicIrqIdUart2TxWatermark] = kTopDarjeelingPlicPeripheralUart2,
-  [kTopDarjeelingPlicIrqIdUart2RxWatermark] = kTopDarjeelingPlicPeripheralUart2,
-  [kTopDarjeelingPlicIrqIdUart2TxEmpty] = kTopDarjeelingPlicPeripheralUart2,
-  [kTopDarjeelingPlicIrqIdUart2RxOverflow] = kTopDarjeelingPlicPeripheralUart2,
-  [kTopDarjeelingPlicIrqIdUart2RxFrameErr] = kTopDarjeelingPlicPeripheralUart2,
-  [kTopDarjeelingPlicIrqIdUart2RxBreakErr] = kTopDarjeelingPlicPeripheralUart2,
-  [kTopDarjeelingPlicIrqIdUart2RxTimeout] = kTopDarjeelingPlicPeripheralUart2,
-  [kTopDarjeelingPlicIrqIdUart2RxParityErr] = kTopDarjeelingPlicPeripheralUart2,
-  [kTopDarjeelingPlicIrqIdUart3TxWatermark] = kTopDarjeelingPlicPeripheralUart3,
-  [kTopDarjeelingPlicIrqIdUart3RxWatermark] = kTopDarjeelingPlicPeripheralUart3,
-  [kTopDarjeelingPlicIrqIdUart3TxEmpty] = kTopDarjeelingPlicPeripheralUart3,
-  [kTopDarjeelingPlicIrqIdUart3RxOverflow] = kTopDarjeelingPlicPeripheralUart3,
-  [kTopDarjeelingPlicIrqIdUart3RxFrameErr] = kTopDarjeelingPlicPeripheralUart3,
-  [kTopDarjeelingPlicIrqIdUart3RxBreakErr] = kTopDarjeelingPlicPeripheralUart3,
-  [kTopDarjeelingPlicIrqIdUart3RxTimeout] = kTopDarjeelingPlicPeripheralUart3,
-  [kTopDarjeelingPlicIrqIdUart3RxParityErr] = kTopDarjeelingPlicPeripheralUart3,
   [kTopDarjeelingPlicIrqIdGpioGpio0] = kTopDarjeelingPlicPeripheralGpio,
   [kTopDarjeelingPlicIrqIdGpioGpio1] = kTopDarjeelingPlicPeripheralGpio,
   [kTopDarjeelingPlicIrqIdGpioGpio2] = kTopDarjeelingPlicPeripheralGpio,
@@ -204,11 +180,8 @@ const top_darjeeling_plic_peripheral_t
  * `top_darjeeling_alert_peripheral_t`.
  */
 const top_darjeeling_alert_peripheral_t
-    top_darjeeling_alert_for_peripheral[65] = {
+    top_darjeeling_alert_for_peripheral[62] = {
   [kTopDarjeelingAlertIdUart0FatalFault] = kTopDarjeelingAlertPeripheralUart0,
-  [kTopDarjeelingAlertIdUart1FatalFault] = kTopDarjeelingAlertPeripheralUart1,
-  [kTopDarjeelingAlertIdUart2FatalFault] = kTopDarjeelingAlertPeripheralUart2,
-  [kTopDarjeelingAlertIdUart3FatalFault] = kTopDarjeelingAlertPeripheralUart3,
   [kTopDarjeelingAlertIdGpioFatalFault] = kTopDarjeelingAlertPeripheralGpio,
   [kTopDarjeelingAlertIdSpiDeviceFatalFault] = kTopDarjeelingAlertPeripheralSpiDevice,
   [kTopDarjeelingAlertIdI2c0FatalFault] = kTopDarjeelingAlertPeripheralI2c0,
