@@ -55,7 +55,7 @@ interface chip_if;
 `define IBEX_HIER           `CPU_CORE_HIER.u_ibex_core
 `define IBEX_CSRS_HIER      `IBEX_HIER.cs_registers_i
 `define KMAC_HIER           `TOP_HIER.u_kmac
-`define KEYMGR_HIER         `TOP_HIER.u_keymgr
+`define KEYMGR_DPE_HIER     `TOP_HIER.u_keymgr_dpe
 `define LC_CTRL_HIER        `TOP_HIER.u_lc_ctrl
 `define OTP_CTRL_HIER       `TOP_HIER.u_otp_ctrl
 `define OTBN_HIER           `TOP_HIER.u_otbn
@@ -920,7 +920,7 @@ interface chip_if;
       PeripheralI2c0:           path = {path, ".", `DV_STRINGIFY(`I2C_HIER(0))};
       PeripheralI2c1:           path = {path, ".", `DV_STRINGIFY(`I2C_HIER(1))};
       PeripheralI2c2:           path = {path, ".", `DV_STRINGIFY(`I2C_HIER(2))};
-      PeripheralKeymgr:         path = {path, ".", `DV_STRINGIFY(`KEYMGR_HIER)};
+      PeripheralKeymgrDpe:      path = {path, ".", `DV_STRINGIFY(`KEYMGR_DPE_HIER)};
       PeripheralKmac:           path = {path, ".", `DV_STRINGIFY(`KMAC_HIER)};
       PeripheralLcCtrl:         path = {path, ".", `DV_STRINGIFY(`LC_CTRL_HIER)};
       PeripheralOtbn:           path = {path, ".", `DV_STRINGIFY(`OTBN_HIER)};
@@ -967,15 +967,17 @@ interface chip_if;
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_alert_handler_ping_timer_wait_cyc_mask_i,
       `ALERT_HANDLER_HIER.u_ping_timer.wait_cyc_mask_i)
 
+  // TODO(#462): Decide if we need this probing function (only used in alert handler escalation
+  // sequence)
   // Signal probe function for keymgr key state.
-`ifdef GATE_LEVEL
-  bit dummy_signal_probe_keymgr_key_state;
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_keymgr_key_state,
-      dummy_signal_probe_keymgr_key_state)
-`else
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_keymgr_key_state,
-      `KEYMGR_HIER.u_ctrl.key_state_q)
-`endif
+  // `ifdef GATE_LEVEL
+  //   bit dummy_signal_probe_keymgr_key_state;
+  //   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_keymgr_key_state,
+  //       dummy_signal_probe_keymgr_key_state)
+  // `else
+  //   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_keymgr_key_state,
+  //       `KEYMGR_DPE_HIER.u_ctrl.key_state_q)
+  // `endif
   // Signal probe function for RX idle detection in usbdev.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_usbdev_rx_idle_det_o,
       `USBDEV_HIER.usbdev_impl.u_usb_fs_nb_pe.u_usb_fs_rx.rx_idle_det_o)
@@ -1155,7 +1157,7 @@ assign spi_host_1_state = {tb.dut.top_darjeeling.u_spi_host1.u_spi_core.u_fsm.st
 `undef HMAC_HIER
 `undef I2C_HIER
 `undef KMAC_HIER
-`undef KEYMGR_HIER
+`undef KEYMGR_DPE_HIER
 `undef LC_CTRL_HIER
 `undef OTP_CTRL_HIER
 `undef OTBN_HIER

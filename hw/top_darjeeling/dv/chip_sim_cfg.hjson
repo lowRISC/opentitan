@@ -1206,49 +1206,51 @@
       sw_images: ["//sw/device/tests:hmac_enc_idle_test:6"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
-    {
-      name: chip_sw_keymgr_key_derivation
-      uvm_test_seq: chip_sw_keymgr_key_derivation_vseq
-      sw_images: ["//sw/device/tests:keymgr_key_derivation_test:6"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=20_000_000"]
-    }
-    {
-      name: chip_sw_keymgr_key_derivation_prod
-      uvm_test_seq: chip_sw_keymgr_key_derivation_vseq
-      sw_images: ["//sw/device/tests:keymgr_key_derivation_test:6"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+lc_at_prod=1", "+sw_test_timeout_ns=20_000_000"]
-    }
-    {
-      name: chip_sw_keymgr_key_derivation_jitter_en
-      uvm_test_seq: chip_sw_keymgr_key_derivation_vseq
-      sw_images: ["//sw/device/tests:keymgr_key_derivation_test:6"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=20_000_000", "+en_jitter=1"]
-    }
-    {
-      name: chip_sw_keymgr_sideload_kmac
-      uvm_test_seq: chip_sw_keymgr_sideload_kmac_vseq
-      sw_images: ["//sw/device/tests:keymgr_sideload_kmac_test:6"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=20_000_000"]
-    }
-    {
-      name: chip_sw_keymgr_sideload_aes
-      uvm_test_seq: chip_sw_keymgr_sideload_aes_vseq
-      sw_images: ["//sw/device/tests:keymgr_sideload_aes_test:6"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=20_000_000"]
-    }
-    {
-      name: chip_sw_keymgr_sideload_otbn
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:keymgr_sideload_otbn_test:6"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=20_000_000"]
-      run_timeout_mins: 180
-    }
+    // TODO(#462): Bring back top-level keymgr tests
+    // after adapting them to keymgr_dpe.
+    // {
+    //   name: chip_sw_keymgr_key_derivation
+    //   uvm_test_seq: chip_sw_keymgr_key_derivation_vseq
+    //   sw_images: ["//sw/device/tests:keymgr_key_derivation_test:6"]
+    //   en_run_modes: ["sw_test_mode_test_rom"]
+    //   run_opts: ["+sw_test_timeout_ns=20_000_000"]
+    // }
+    // {
+    //   name: chip_sw_keymgr_key_derivation_prod
+    //   uvm_test_seq: chip_sw_keymgr_key_derivation_vseq
+    //   sw_images: ["//sw/device/tests:keymgr_key_derivation_test:6"]
+    //   en_run_modes: ["sw_test_mode_test_rom"]
+    //   run_opts: ["+lc_at_prod=1", "+sw_test_timeout_ns=20_000_000"]
+    // }
+    // {
+    //   name: chip_sw_keymgr_key_derivation_jitter_en
+    //   uvm_test_seq: chip_sw_keymgr_key_derivation_vseq
+    //   sw_images: ["//sw/device/tests:keymgr_key_derivation_test:6"]
+    //   en_run_modes: ["sw_test_mode_test_rom"]
+    //   run_opts: ["+sw_test_timeout_ns=20_000_000", "+en_jitter=1"]
+    // }
+    // {
+    //   name: chip_sw_keymgr_sideload_kmac
+    //   uvm_test_seq: chip_sw_keymgr_sideload_kmac_vseq
+    //   sw_images: ["//sw/device/tests:keymgr_sideload_kmac_test:6"]
+    //   en_run_modes: ["sw_test_mode_test_rom"]
+    //   run_opts: ["+sw_test_timeout_ns=20_000_000"]
+    // }
+    // {
+    //   name: chip_sw_keymgr_sideload_aes
+    //   uvm_test_seq: chip_sw_keymgr_sideload_aes_vseq
+    //   sw_images: ["//sw/device/tests:keymgr_sideload_aes_test:6"]
+    //   en_run_modes: ["sw_test_mode_test_rom"]
+    //   run_opts: ["+sw_test_timeout_ns=20_000_000"]
+    // }
+    // {
+    //   name: chip_sw_keymgr_sideload_otbn
+    //   uvm_test_seq: chip_sw_base_vseq
+    //   sw_images: ["//sw/device/tests:keymgr_sideload_otbn_test:6"]
+    //   en_run_modes: ["sw_test_mode_test_rom"]
+    //   run_opts: ["+sw_test_timeout_ns=20_000_000"]
+    //   run_timeout_mins: 180
+    // }
     {
       name: chip_sw_kmac_mode_cshake
       uvm_test_seq: chip_sw_base_vseq

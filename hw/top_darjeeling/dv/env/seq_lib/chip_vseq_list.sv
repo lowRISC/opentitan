@@ -52,9 +52,10 @@
 `include "chip_sw_sleep_pin_mio_dio_val_vseq.sv"
 `include "chip_sw_sleep_pin_wake_vseq.sv"
 `include "chip_sw_sleep_pin_retention_vseq.sv"
-`include "chip_sw_keymgr_key_derivation_vseq.sv"
-`include "chip_sw_keymgr_sideload_kmac_vseq.sv"
-`include "chip_sw_keymgr_sideload_aes_vseq.sv"
+// TODO(#462): Adapt keymgr tests to keymgr_dpe
+// `include "chip_sw_keymgr_key_derivation_vseq.sv"
+// `include "chip_sw_keymgr_sideload_kmac_vseq.sv"
+// `include "chip_sw_keymgr_sideload_aes_vseq.sv"
 `include "chip_sw_ast_clk_outputs_vseq.sv"
 `include "chip_sw_sensor_ctrl_status_intr_vseq.sv"
 `include "chip_sw_rv_dm_access_after_wakeup_vseq.sv"
