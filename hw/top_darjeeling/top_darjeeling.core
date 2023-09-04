@@ -29,7 +29,7 @@ filesets:
       - lowrisc:ip:otbn
       - lowrisc:prim:ram_1p_scr
       - lowrisc:ip:sram_ctrl
-      - lowrisc:ip:keymgr
+      - lowrisc:ip:keymgr_dpe
       - lowrisc:constants:top_pkg
       - lowrisc:constants:jtag_id_pkg
       - lowrisc:ip:otp_ctrl

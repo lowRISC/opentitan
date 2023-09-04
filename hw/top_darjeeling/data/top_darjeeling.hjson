@@ -698,8 +698,8 @@
         hart: "0x21130000",
       },
     },
-    { name: "keymgr",
-      type: "keymgr",
+    { name: "keymgr_dpe",
+      type: "keymgr_dpe",
       clock_srcs: {clk_i: "main", clk_edn_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "lc", rst_edn_ni: "lc"},
@@ -1123,7 +1123,7 @@
       'pwrmgr_aon.fetch_en'     : ['rv_core_ibex.pwrmgr_cpu_en'],
       'pwrmgr_aon.rom_ctrl'     : ['rom_ctrl0.pwrmgr_data',
                                    'rom_ctrl1.pwrmgr_data'],
-      'keymgr.rom_digest'       : ['rom_ctrl0.keymgr_data',
+      'keymgr_dpe.rom_digest'   : ['rom_ctrl0.keymgr_data',
                                    'rom_ctrl1.keymgr_data'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
 
@@ -1149,7 +1149,7 @@
       'pinmux_aon.usbdev_wake_detect_active' : ['usbdev.usb_aon_wake_detect_active'],
 
       // Edn connections
-      'edn0.edn'              : ['keymgr.edn', 'otp_ctrl.edn', 'ast.edn', 'kmac.entropy',
+      'edn0.edn'              : ['keymgr_dpe.edn', 'otp_ctrl.edn', 'ast.edn', 'kmac.entropy',
                                  'alert_handler.edn', 'aes.edn', 'otbn.edn_urnd',
                                  'rv_core_ibex.edn'],
       'edn1.edn'              : ['otbn.edn_rnd'],
@@ -1158,18 +1158,18 @@
       'otp_ctrl.otbn_otp_key' : ['otbn.otbn_otp_key'],
 
       // KeyMgr Sideload & KDF function
-      'otp_ctrl.otp_keymgr_key' : ['keymgr.otp_key'],
-      'keymgr.aes_key'          : ['aes.keymgr_key'],
-      'keymgr.kmac_key'         : ['kmac.keymgr_key'],
-      'keymgr.otbn_key'         : ['otbn.keymgr_key'],
+      'otp_ctrl.otp_keymgr_key' : ['keymgr_dpe.otp_key'],
+      'keymgr_dpe.aes_key'      : ['aes.keymgr_key'],
+      'keymgr_dpe.kmac_key'     : ['kmac.keymgr_key'],
+      'keymgr_dpe.otbn_key'     : ['otbn.keymgr_key'],
 
       // KMAC Application Interface
       // Note that arbitration is fixed priority top to bottom.
-      'kmac.app'                : ['keymgr.kmac_data',     // Keymgr needs to be at index 0
+      'kmac.app'                : ['keymgr_dpe.kmac_data',     // Keymgr needs to be at index 0
                                    'lc_ctrl.kmac_data',    // LC needs to be at index 1
                                    'rom_ctrl0.kmac_data',  // ROM needs to be at index 2 or 3
                                    'rom_ctrl1.kmac_data'], // ROM needs to be at index 2 or 3
-      'kmac.en_masking'         : ['keymgr.kmac_en_masking']
+      'kmac.en_masking'         : ['keymgr_dpe.kmac_en_masking']
 
       // The idle connection is automatically connected through topgen.
       // The user does not need to explicitly declare anything other than
@@ -1182,7 +1182,7 @@
       'lc_ctrl.lc_otp_vendor_test' : ['otp_ctrl.lc_otp_vendor_test'],
 
       // Diversification constant coming from life cycle
-      'lc_ctrl.lc_keymgr_div'  : ['keymgr.lc_keymgr_div'],
+      'lc_ctrl.lc_keymgr_div'  : ['keymgr_dpe.lc_keymgr_div'],
 
       // Strap enable override signal, only used when SecVolatileRawUnlockEn = 1.
       'lc_ctrl.strap_en_override'  : ['pinmux_aon.strap_en_override'],
@@ -1201,7 +1201,7 @@
                                       'clkmgr_aon.lc_hw_debug_en',
                                       'pwrmgr_aon.lc_hw_debug_en',],
       'lc_ctrl.lc_cpu_en'          : ['rv_core_ibex.lc_cpu_en'],
-      'lc_ctrl.lc_keymgr_en'       : ['keymgr.lc_keymgr_en'],
+      'lc_ctrl.lc_keymgr_en'       : ['keymgr_dpe.lc_keymgr_en'],
       'lc_ctrl.lc_escalate_en'     : ['aes.lc_escalate_en',
                                       'kmac.lc_escalate_en',
                                       'otbn.lc_escalate_en',
@@ -1275,7 +1275,7 @@
         'otp_ctrl.otp_broadcast',
         'lc_ctrl.otp_device_id',
         'lc_ctrl.otp_manuf_state',
-        'keymgr.otp_device_id',
+        'keymgr_dpe.otp_device_id',
         'sram_ctrl_main.otp_en_sram_ifetch',
     ],
 
