@@ -10,7 +10,7 @@
   [DPE-version1.0-rev0.6]: https://trustedcomputinggroup.org/wp-content/uploads/TCG-DICE-Protection-Environment-Specification_14february2023-1.pdf
   '''
   // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
-  cip_id:             "37",
+  cip_id:             "39",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
