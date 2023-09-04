@@ -26,11 +26,11 @@ See that document for integration overview within the broader OpenTitan top leve
 - Support arbitrary output length for SHAKE, cSHAKE, KMAC
 - Support customization input string S, and function-name N up to 36 bytes total
 - 64b x 10 depth Message FIFO
-- 1600b of internal state (internally represented in two shares for 1st-order masking)
-- Performance goals of >= 72 Mb/s @ 100MHz (when entropy is available always)
-    - SHA3-512: roughly 66 MB/s at most
-    - SHA3-224: 120 MB/s at most
-- Implement 1st-order masked Keccak permutations for Side-Channel Analysis (SCA) protection
+- First-order masking of the Keccak core using domain-oriented masking (DOM) to deter side-channel analysis (SCA), can optionally be disabled using compile-time Verilog parameters (for more details see [Keccak Round below](doc/theory_of_operation.md#keccak-round))
+- 1600b of internal state (internally represented in two shares if masking is enabled)
+- Performance (at 100 MHz):
+  - SHA3-224: 2.93 B/cycle, 2.34 Gbit/s (masking disabled) - 1.19 B/cycle, 952 Mbit/s (DOM)
+  - SHA3-512: 1.47 B/cycle, 1.18 Gbit/s (masking disabled) - 0.59 B/cycle, 472 Mbit/s (DOM)
 
 ## Description
 
