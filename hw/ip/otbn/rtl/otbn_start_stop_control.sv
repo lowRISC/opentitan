@@ -191,22 +191,22 @@ module otbn_start_stop_control
         end
       end
       OtbnStartStopStateHalt: begin
-        if (stop && !rma_request) begin
-          state_d = OtbnStartStopStateLocked;
-        end else if (start_i || rma_request) begin
+        if (rma_request) begin
           ispr_init_o   = 1'b1;
           state_reset_o = 1'b1;
-          if (rma_request) begin
-            // Do not reseed URND before secure wipe for RMA, as the entropy complex may not be able
-            // to provide entropy at this point.
-            state_d = OtbnStartStopSecureWipeWdrUrnd;
-            // As we don't reseed URND, there's no point in doing two rounds of wiping, so we
-            // pretend that the first round is already the second round.
-            wipe_after_urnd_refresh_d = MuBi4True;
-          end else begin // start_i
-            urnd_reseed_req_o = ~SecSkipUrndReseedAtStart;
-            state_d           = OtbnStartStopStateUrndRefresh;
-          end
+          // Do not reseed URND before secure wipe for RMA, as the entropy complex may not be able
+          // to provide entropy at this point.
+          state_d = OtbnStartStopSecureWipeWdrUrnd;
+          // As we don't reseed URND, there's no point in doing two rounds of wiping, so we
+          // pretend that the first round is already the second round.
+          wipe_after_urnd_refresh_d = MuBi4True;
+        end else if (stop) begin
+          state_d = OtbnStartStopStateLocked;
+        end else if (start_i) begin
+          ispr_init_o       = 1'b1;
+          state_reset_o     = 1'b1;
+          urnd_reseed_req_o = ~SecSkipUrndReseedAtStart;
+          state_d           = OtbnStartStopStateUrndRefresh;
         end
       end
       OtbnStartStopStateUrndRefresh: begin
