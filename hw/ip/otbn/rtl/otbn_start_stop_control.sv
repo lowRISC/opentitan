@@ -211,37 +211,24 @@ module otbn_start_stop_control
       end
       OtbnStartStopStateUrndRefresh: begin
         urnd_reseed_req_o = ~skip_reseed_q;
-        if (stop) begin
-          if (mubi4_test_false_strict(wipe_after_urnd_refresh_q)) begin
-            // We are told to stop and don't have to wipe after the current URND refresh is ack'd,
-            // so we lock immediately.
-            state_d = OtbnStartStopStateLocked;
-          end else begin
-            // We are told to stop but should wipe after the current URND refresh is ack'd, so we
-            // wait for the ACK and then do a secure wipe.
-            allow_secure_wipe     = 1'b1;
-            expect_secure_wipe    = 1'b1;
-            secure_wipe_running_o = 1'b1;
-            if (urnd_reseed_ack_i) begin
-              state_d = OtbnStartStopSecureWipeWdrUrnd;
-            end
+        if (mubi4_test_true_loose(wipe_after_urnd_refresh_q)) begin
+          // We should wipe after the current URND refresh is ack'd, so we wait for the ACK and then
+          // do a secure wipe.
+          allow_secure_wipe     = 1'b1;
+          expect_secure_wipe    = 1'b1;
+          secure_wipe_running_o = 1'b1;
+          if (urnd_reseed_ack_i) begin
+            state_d = OtbnStartStopSecureWipeWdrUrnd;
           end
+        end else if (stop) begin
+          // We are told to stop and don't have to wipe after the current URND refresh is ack'd,
+          // so we lock immediately.
+          state_d = OtbnStartStopStateLocked;
         end else begin
-          if (mubi4_test_false_strict(wipe_after_urnd_refresh_q)) begin
-            // We are not stopping and we don't have to wipe after the current URND refresh is
-            // ack'd, so we wait for the ACK and then start executing.
-            if (urnd_reseed_ack_i || skip_reseed_q) begin
-              state_d = OtbnStartStopStateRunning;
-            end
-          end else begin
-            // We are not stopping but should wipe after the current URND refresh is ack'd, so we
-            // wait for the ACK and then do a secure wipe.
-            allow_secure_wipe     = 1'b1;
-            expect_secure_wipe    = 1'b1;
-            secure_wipe_running_o = 1'b1;
-            if (urnd_reseed_ack_i) begin
-              state_d = OtbnStartStopSecureWipeWdrUrnd;
-            end
+          // We are not stopping and we don't have to wipe after the current URND refresh is
+          // ack'd, so we wait for the ACK and then start executing.
+          if (urnd_reseed_ack_i || skip_reseed_q) begin
+            state_d = OtbnStartStopStateRunning;
           end
         end
       end
