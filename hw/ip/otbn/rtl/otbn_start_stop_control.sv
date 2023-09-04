@@ -74,7 +74,7 @@ module otbn_start_stop_control
 
   otbn_start_stop_state_e state_q, state_d;
   logic init_sec_wipe_done_q, init_sec_wipe_done_d;
-  mubi4_t wipe_after_urnd_refresh_q, wipe_after_urnd_refresh_d;
+  mubi4_t first_wipe_phase_done_q, first_wipe_phase_done_d;
   mubi4_t rma_ack_d, rma_ack_q;
   logic state_error_q, state_error_d;
   logic mubi_err_q, mubi_err_d;
@@ -170,7 +170,7 @@ module otbn_start_stop_control
     allow_secure_wipe         = 1'b0;
     expect_secure_wipe        = 1'b0;
     spurious_urnd_ack_error   = 1'b0;
-    wipe_after_urnd_refresh_d = wipe_after_urnd_refresh_q;
+    first_wipe_phase_done_d   = first_wipe_phase_done_q;
     rma_ack_d                 = rma_ack_q;
     mubi_err_d                = mubi_err_q;
 
@@ -184,7 +184,7 @@ module otbn_start_stop_control
           state_d = OtbnStartStopSecureWipeWdrUrnd;
           // As we don't reseed URND, there's no point in doing two rounds of wiping, so we pretend
           // that the first round is already the second round.
-          wipe_after_urnd_refresh_d = MuBi4True;
+          first_wipe_phase_done_d = MuBi4True;
         end else if (urnd_reseed_ack_i) begin
           urnd_advance_o = 1'b1;
           state_d        = OtbnStartStopSecureWipeWdrUrnd;
@@ -199,7 +199,7 @@ module otbn_start_stop_control
           state_d = OtbnStartStopSecureWipeWdrUrnd;
           // As we don't reseed URND, there's no point in doing two rounds of wiping, so we
           // pretend that the first round is already the second round.
-          wipe_after_urnd_refresh_d = MuBi4True;
+          first_wipe_phase_done_d = MuBi4True;
         end else if (stop) begin
           state_d = OtbnStartStopStateLocked;
         end else if (start_i) begin
@@ -211,7 +211,7 @@ module otbn_start_stop_control
       end
       OtbnStartStopStateUrndRefresh: begin
         urnd_reseed_req_o = ~skip_reseed_q;
-        if (mubi4_test_true_loose(wipe_after_urnd_refresh_q)) begin
+        if (mubi4_test_true_loose(first_wipe_phase_done_q)) begin
           // We should wipe after the current URND refresh is ack'd, so we wait for the ACK and then
           // do a secure wipe.
           allow_secure_wipe     = 1'b1;
@@ -295,11 +295,11 @@ module otbn_start_stop_control
 
         // Leave this state after a single cycle, which is sufficient to reset the CSRs and the
         // stack.
-        if (mubi4_test_false_strict(wipe_after_urnd_refresh_q)) begin
+        if (mubi4_test_false_strict(first_wipe_phase_done_q)) begin
           // This is the first round of wiping with random numbers, refresh URND and do a second
           // round.
           state_d = OtbnStartStopStateUrndRefresh;
-          wipe_after_urnd_refresh_d = MuBi4True;
+          first_wipe_phase_done_d = MuBi4True;
         end else begin
           // This is the second round of wiping with random numbers, so the secure wipe is
           // complete.
@@ -311,7 +311,7 @@ module otbn_start_stop_control
         urnd_advance_o = 1'b1;
         rma_ack_d = rma_req_i;
         state_d = should_lock_d ? OtbnStartStopStateLocked : OtbnStartStopStateHalt;
-        wipe_after_urnd_refresh_d = MuBi4False;
+        first_wipe_phase_done_d = MuBi4False;
       end
       OtbnStartStopStateLocked: begin
         // SEC_CM: START_STOP_CTRL.FSM.GLOBAL_ESC
@@ -346,8 +346,8 @@ module otbn_start_stop_control
       mubi_err_d = 1'b1;
       state_d = OtbnStartStopStateLocked;
     end
-    if (mubi4_test_invalid(wipe_after_urnd_refresh_q)) begin
-      wipe_after_urnd_refresh_d = MuBi4False;
+    if (mubi4_test_invalid(first_wipe_phase_done_q)) begin
+      first_wipe_phase_done_d = MuBi4False;
       mubi_err_d = 1'b1;
       state_d = OtbnStartStopStateLocked;
     end
@@ -366,11 +366,11 @@ module otbn_start_stop_control
   assign controller_start_o =
     // The controller start pulse is fired when finishing the initial URND reseed.
     ((state_q == OtbnStartStopStateUrndRefresh) & (urnd_reseed_ack_i | skip_reseed_q) &
-      mubi4_test_false_strict(wipe_after_urnd_refresh_q));
+      mubi4_test_false_strict(first_wipe_phase_done_q));
 
   assign done_o = ((state_q == OtbnStartStopSecureWipeComplete && init_sec_wipe_done_q) ||
                    (stop && (state_q == OtbnStartStopStateUrndRefresh) &&
-                    mubi4_test_false_strict(wipe_after_urnd_refresh_q)) ||
+                    mubi4_test_false_strict(first_wipe_phase_done_q)) ||
                    (spurious_urnd_ack_error && !(state_q inside {OtbnStartStopStateHalt,
                                                                  OtbnStartStopStateLocked}) &&
                     init_sec_wipe_done_q) || (mubi_err_d && !mubi_err_q));
@@ -390,11 +390,11 @@ module otbn_start_stop_control
   prim_mubi4_sender #(
     .AsyncOn(1),
     .ResetValue(MuBi4False)
-  ) u_wipe_after_urnd_refresh_flop (
+  ) u_first_wipe_phase_done_flop (
     .clk_i,
     .rst_ni,
-    .mubi_i(wipe_after_urnd_refresh_d),
-    .mubi_o(wipe_after_urnd_refresh_q)
+    .mubi_i(first_wipe_phase_done_d),
+    .mubi_o(first_wipe_phase_done_q)
   );
 
   // Clip the secure wipe address to [0..31].  This is safe because the wipe enable signals are

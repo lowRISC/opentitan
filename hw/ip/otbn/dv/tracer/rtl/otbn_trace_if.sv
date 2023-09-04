@@ -440,7 +440,7 @@ interface otbn_trace_if
   assign start_stop_bad_int_i.mubi_rma_err = u_otbn_start_stop_control.mubi_err_d &&
     prim_mubi_pkg::mubi4_test_invalid(u_otbn_start_stop_control.rma_ack_q);
   assign start_stop_bad_int_i.mubi_urnd_err = u_otbn_start_stop_control.mubi_err_d &&
-    prim_mubi_pkg::mubi4_test_invalid(u_otbn_start_stop_control.wipe_after_urnd_refresh_q);
+    prim_mubi_pkg::mubi4_test_invalid(u_otbn_start_stop_control.first_wipe_phase_done_q);
 
   assign controller_bad_int_i.loop_hw_cnt_err =
     (|u_otbn_controller.u_otbn_loop_controller.loop_counter_err);
