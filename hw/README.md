@@ -50,4 +50,9 @@ Finally, we provide the same set of information for all available [top level des
 
 ### Darjeeling-specific comportable IPs
 
-{{#dashboard top_darjeeling }}
+<!--
+  Note: there should be a dashboard link here, but we don't currently
+  have any dashboard to serve! The missing data caused the
+  documentation build to fail, so we've chopped it out for now.
+-->
+TODO: There is no dashboard yet!

@@ -177,8 +177,14 @@ buildSite () {
     chmod +w -R "${rustdoc_dir}"
 
     # Block diagram stats
-    mkdir -p "${build_dir}/reports"
-    python3 "${proj_root}/util/site/fetch_block_stats.py" "${build_dir}/reports/earlgrey-stats.json"
+
+    # TODO:
+    #
+    # Re-enable fetching block stats (and probably change the name)
+    # once we've got stats for this repository at all.
+    #
+    #    mkdir -p "${build_dir}/reports"
+    #    python3 "${proj_root}/util/site/fetch_block_stats.py" "${build_dir}/reports/earlgrey-stats.json"
 
     # CLEANUP
     # Remove (larger) files from the ${build_dir} that do not need to be deployed
