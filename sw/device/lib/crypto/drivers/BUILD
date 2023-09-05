@@ -39,6 +39,41 @@ opentitan_functest(
 )
 
 cc_library(
+    name = "keymgr",
+    srcs = ["keymgr.c"],
+    hdrs = [
+        "keymgr.h",
+    ],
+    deps = [
+        ":entropy",
+        "//hw/ip/keymgr/data:keymgr_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/lib/runtime:hart",
+    ],
+)
+
+opentitan_functest(
+    name = "keymgr_test",
+    srcs = ["keymgr_test.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":keymgr",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+cc_library(
     name = "kmac",
     srcs = ["kmac.c"],
     hdrs = [

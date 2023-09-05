@@ -50,6 +50,26 @@ static const dif_keymgr_state_params_t kOwnerIntParams = {
 };
 
 /**
+ * Software binding value for advancing to owner root key state.
+ *
+ * Values were randomly generated.
+ */
+static const dif_keymgr_state_params_t kOwnerRootKeyParams = {
+    .binding_value =
+        {
+            0xd8a812ea,
+            0xb6ebe129,
+            0x217773d4,
+            0x35b37c77,
+            0xec8298be,
+            0x1f7dec77,
+            0x1803199e,
+            0xa02ad81d,
+        },
+    .max_key_version = 0xaa,
+};
+
+/**
  * Struct to hold the creator or owner secrets for the key manager.
  */
 typedef struct keymgr_testutils_secret {
