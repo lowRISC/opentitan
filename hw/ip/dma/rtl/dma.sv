@@ -1389,6 +1389,7 @@ module dma
     .q_o   ( sys_o.metadata_vec[SysCmdWrite]     )
   );
 
+  logic [$bits(sys_opc_e)-1:0] sys_req_opcode_write_vec_q;
   prim_generic_flop_en #(
     .Width($bits(sys_opc_e))
   ) u_sys_opcode_write_vec (
@@ -1396,8 +1397,9 @@ module dma
     .rst_ni( rst_ni                            ),
     .en_i  ( sys_req_d.vld_vec[SysCmdWrite]    ),
     .d_i   ( sys_req_d.opcode_vec[SysCmdWrite] ),
-    .q_o   ( sys_o.opcode_vec[SysCmdWrite]     )
+    .q_o   ( sys_req_opcode_write_vec_q        )
   );
+  assign sys_o.opcode_vec[SysCmdWrite] = sys_opc_e'(sys_req_opcode_write_vec_q);
 
   prim_generic_flop_en #(
     .Width(SYS_ADDR_WIDTH)
@@ -1429,6 +1431,7 @@ module dma
     .q_o   ( sys_o.metadata_vec[SysCmdRead]     )
   );
 
+  logic [$bits(sys_opc_e)-1:0] sys_req_opcode_read_vec_q;
   prim_generic_flop_en #(
     .Width($bits(sys_opc_e))
   ) u_sys_opcode_read_vec (
@@ -1436,8 +1439,9 @@ module dma
     .rst_ni( rst_ni                           ),
     .en_i  ( sys_req_d.vld_vec[SysCmdRead]    ),
     .d_i   ( sys_req_d.opcode_vec[SysCmdRead] ),
-    .q_o   ( sys_o.opcode_vec[SysCmdRead]     )
+    .q_o   ( sys_req_opcode_read_vec_q        )
   );
+  assign sys_o.opcode_vec[SysCmdRead] = sys_opc_e'(sys_req_opcode_read_vec_q);
 
   prim_generic_flop_en #(
     .Width(SYS_ADDR_WIDTH)
