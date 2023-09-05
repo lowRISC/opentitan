@@ -51,6 +51,4 @@ const uintptr_t kDeviceLogBypassUartAddress =
     TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR +
     RV_CORE_IBEX_DV_SIM_WINDOW_REG_OFFSET + 0x04;
 
-const bool kJitterEnabled = false;
-
 void device_fpga_version_print(void) {}

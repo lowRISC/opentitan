@@ -175,11 +175,6 @@ extern const uintptr_t kDeviceTestStatusAddress;
 extern const uintptr_t kDeviceLogBypassUartAddress;
 
 /**
- * A knob to set jitter_enable in clkmgr.
- */
-extern const bool kJitterEnabled;
-
-/**
  * A platform-specific function to convert microseconds to cpu cycles.
  *
  * This is primarily used for spin waits that use the cpu cycle counters.

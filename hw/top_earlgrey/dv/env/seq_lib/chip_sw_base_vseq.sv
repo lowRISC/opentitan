@@ -130,23 +130,14 @@ class chip_sw_base_vseq extends chip_base_vseq;
     `uvm_info(`gfn, "cpu_init completed", UVM_MEDIUM)
   endtask
 
-  // The jitter enable mechanism is different from test_rom and rom right now.
-  // That's why below there is both a symbol overwrite and an otp backdoor load.
-  // Once test_rom and rom are consistent in this area, the symbol backdoor load
-  // can be removed.
   task config_jitter();
     bit en_jitter;
     void'($value$plusargs("en_jitter=%0d", en_jitter));
+    // ROM blindly copies from OTP, backdoor load a true or false value.
     if (en_jitter) begin
-      // enable for test_rom
-      bit [7:0] en_jitter_arr[] = {1};
-      sw_symbol_backdoor_overwrite("kJitterEnabled", en_jitter_arr, SwTypeRom);
-
-      // enable for rom
       cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgJitterEnOffset,
                                        prim_mubi_pkg::MuBi4True);
     end else begin
-      // rom blindly copies from otp, backdoor load a false value
       cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgJitterEnOffset,
                                        prim_mubi_pkg::MuBi4False);
     end
