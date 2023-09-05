@@ -13,7 +13,7 @@
 #include "kmac_regs.h"  // Generated.
 
 // Module ID for status codes.
-#define MODULE_ID MAKE_MODULE_ID('d', 'k', 'm')
+#define MODULE_ID MAKE_MODULE_ID('d', 'k', 'c')
 
 /**
  * Security strength values.
