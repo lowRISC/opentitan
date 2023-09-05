@@ -82,11 +82,11 @@ module mbx_fsm #(
       MbxIdle: begin
         if (CfgObMbx) begin
           if (mbx_range_valid_i & writer_close_mbx_i) begin
-            ctrl_state_d = MbxWrite;
+            ctrl_state_d = MbxRead;
           end
         end else begin
           if (mbx_range_valid_i & writer_write_valid_i) begin
-            ctrl_state_d = MbxRead;
+            ctrl_state_d = MbxWrite;
           end
         end
 

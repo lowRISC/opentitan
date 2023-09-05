@@ -77,6 +77,7 @@ module mbx_hostif
   end
 
   // SEC_CM: BUS.INTEGRITY
+  // SEC_CM: ADDRESS_RANGE.CONFIG.REGWEN_MUBI
   mbx_host_reg_top u_regs(
     .clk_i      ( clk_i         ),
     .rst_ni     ( rst_ni        ),
