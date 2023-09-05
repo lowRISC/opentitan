@@ -87,13 +87,47 @@ void keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
   hardened_memcpy(keyblob + share_words, share1, share_words);
 }
 
+status_t keyblob_to_keymgr_diversification(
+    const crypto_blinded_key_t *key,
+    keymgr_diversification_t *diversification) {
+  if (key->config.hw_backed != kHardenedBoolTrue || key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (key->keyblob_length != kKeymgrSaltNumWords * sizeof(uint32_t)) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Set the version to the first word of the keyblob.
+  diversification->version = key->keyblob[0];
+
+  // Copy the remainder of the keyblob into the salt.
+  hardened_memcpy(diversification->salt, &key->keyblob[1],
+                  kKeymgrSaltNumWords - 1);
+
+  // Set the key mode as the last word of the salt.
+  diversification->salt[kKeymgrSaltNumWords - 1] = key->config.key_mode;
+
+  return OTCRYPTO_OK;
+}
+
 /**
- * Checks that the configuration represents a symmetric key.
+ * Checks that the configuration represents a key masked with XOR.
+ *
+ * Returns false if the key is for an algorithm that uses a different masking
+ * method (e.g. arithmetic masking for asymmetric crypto) or if the key is
+ * hardware-backed.
  *
  * @param config Key configuration.
- * @return OK if `config` represents a symmetric key, BAD_ARGS otherwise.
+ * @return OK if `config` represents an XOR-masked key, BAD_ARGS otherwise.
  */
-static status_t ensure_symmetric(const crypto_key_config_t config) {
+static status_t ensure_xor_masked(const crypto_key_config_t config) {
+  // Reject hardware-backed keys, since the keyblob is not the actual key
+  // material in this case but the version/salt.
+  if (config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(config.hw_backed, kHardenedBoolFalse);
+
   // Get the key type from the top 16 bits of the full mode.
   key_type_t key_type =
       (key_type_t)(launder32((uint32_t)config.key_mode) >> 16);
@@ -135,9 +169,8 @@ static status_t ensure_symmetric(const crypto_key_config_t config) {
 status_t keyblob_from_key_and_mask(const uint32_t *key, const uint32_t *mask,
                                    const crypto_key_config_t config,
                                    uint32_t *keyblob) {
-  // This only works for symmetric keys; asymmetric keys may use masking
-  // schemes that are more complex than XOR.
-  HARDENED_TRY(ensure_symmetric(config));
+  // Check that the key is masked with XOR.
+  HARDENED_TRY(ensure_xor_masked(config));
 
   size_t key_words = keyblob_share_num_words(config);
   // share0 = key ^ mask, share1 = mask
@@ -150,9 +183,8 @@ status_t keyblob_from_key_and_mask(const uint32_t *key, const uint32_t *mask,
 }
 
 status_t keyblob_remask(crypto_blinded_key_t *key, const uint32_t *mask) {
-  // This only works for symmetric keys; asymmetric keys may use masking
-  // schemes that are more complex than XOR.
-  HARDENED_TRY(ensure_symmetric(key->config));
+  // Check that the key is masked with XOR.
+  HARDENED_TRY(ensure_xor_masked(key->config));
 
   size_t key_share_words = keyblob_share_num_words(key->config);
   size_t keyblob_words = keyblob_num_words(key->config);

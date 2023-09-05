@@ -16,6 +16,7 @@ namespace {
 using ::testing::ElementsAreArray;
 
 #define EXPECT_OK(status_) EXPECT_EQ(status_.value, OTCRYPTO_OK.value)
+#define EXPECT_NOT_OK(status_) EXPECT_NE(status_.value, OTCRYPTO_OK.value)
 
 // Key configuration for testing (128-bit AES-CTR software key).
 constexpr crypto_key_config_t kConfigCtr128 = {
@@ -23,7 +24,6 @@ constexpr crypto_key_config_t kConfigCtr128 = {
     .key_mode = kKeyModeAesCtr,
     .key_length = 16,
     .hw_backed = kHardenedBoolFalse,
-    .diversification_hw_backed = {.len = 0, .data = NULL},
     .security_level = kSecurityLevelLow,
 };
 
@@ -34,7 +34,6 @@ constexpr crypto_key_config_t kConfigOddBytes = {
     .key_mode = kKeyModeAesCtr,
     .key_length = 31,
     .hw_backed = kHardenedBoolFalse,
-    .diversification_hw_backed = {.len = 0, .data = NULL},
     .security_level = kSecurityLevelLow,
 };
 
@@ -45,7 +44,24 @@ constexpr crypto_key_config_t kConfigHuge = {
     .key_mode = kKeyModeAesCtr,
     .key_length = SIZE_MAX,
     .hw_backed = kHardenedBoolFalse,
-    .diversification_hw_backed = {.len = 0, .data = NULL},
+    .security_level = kSecurityLevelLow,
+};
+
+// Key configuration for testing (sideloaded AES-CTR key).
+constexpr crypto_key_config_t kConfigCtrSideloaded = {
+    .version = kCryptoLibVersion1,
+    .key_mode = kKeyModeAesCtr,
+    .key_length = 16,
+    .hw_backed = kHardenedBoolTrue,
+    .security_level = kSecurityLevelLow,
+};
+
+// Key configuration for testing (sideloaded AES-OFB key).
+constexpr crypto_key_config_t kConfigOfbSideloaded = {
+    .version = kCryptoLibVersion1,
+    .key_mode = kKeyModeAesOfb,
+    .key_length = 16,
+    .hw_backed = kHardenedBoolTrue,
     .security_level = kSecurityLevelLow,
 };
 
@@ -184,7 +200,113 @@ TEST(Keyblob, FromKeyMaskDoesNotChangeKey) {
   }
 }
 
-TEST(Keyblob, RemaskDoesNotChangKey) {
+TEST(Keyblob, ToKeymgrDiversificationSimple) {
+  // Salt and version for the hardware-backed key.
+  std::array<uint32_t, 7> test_salt = {0x01234567, 0x89abcdef, 0x00010203,
+                                       0x04050607, 0x08090a0b, 0x0c0d0e0f,
+                                       0xffffffff};
+  uint32_t test_version = 0xdeadbeef;
+
+  // Pack (version, salt) into a keyblob array.
+  uint32_t keyblob[test_salt.size() + 1];
+  keyblob[0] = test_version;
+  for (size_t i = 0; i < test_salt.size(); i++) {
+    keyblob[i + 1] = test_salt[i];
+  }
+
+  // Construct blinded key.
+  crypto_blinded_key_t key = {
+      .config = kConfigCtrSideloaded,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+      .checksum = 0,
+  };
+
+  // Extract the keymgr diversification data.
+  keymgr_diversification_t diversification;
+  EXPECT_OK(keyblob_to_keymgr_diversification(&key, &diversification));
+
+  // Check that the version and salt match expectations.
+  EXPECT_EQ(diversification.version, test_version);
+  for (size_t i = 0; i < test_salt.size(); i++) {
+    EXPECT_EQ(diversification.salt[i], test_salt[i]);
+  }
+  EXPECT_EQ(diversification.salt[test_salt.size()], key.config.key_mode);
+}
+
+TEST(Keyblob, ToKeymgrDiversificationBadlength) {
+  // Salt and version for the hardware-backed keys.
+  std::array<uint32_t, 6> test_salt = {0x01234567, 0x89abcdef, 0x00010203,
+                                       0x04050607, 0x08090a0b, 0x0c0d0e0f};
+  uint32_t test_version = 0xdeadbeef;
+
+  // Pack (version, salt) into a keyblob array.
+  uint32_t keyblob[test_salt.size() + 1];
+  keyblob[0] = test_version;
+  for (size_t i = 0; i < test_salt.size(); i++) {
+    keyblob[i + 1] = test_salt[i];
+  }
+
+  // Construct blinded key.
+  crypto_blinded_key_t key = {
+      .config = kConfigCtrSideloaded,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+      .checksum = 0,
+  };
+
+  // Try to extract the keymgr diversification data.
+  keymgr_diversification_t diversification;
+  EXPECT_NOT_OK(keyblob_to_keymgr_diversification(&key, &diversification));
+}
+
+TEST(Keyblob, ToKeymgrDiversificationDifferentModes) {
+  // Salt for the hardware-backed key (one word too short).
+  std::array<uint32_t, 7> test_salt = {0x01234567, 0x89abcdef, 0x00010203,
+                                       0x04050607, 0x08090a0b, 0x0c0d0e0f,
+                                       0xffffffff};
+  uint32_t test_version = 0xdeadbeef;
+
+  // Pack (version, salt) into a keyblob array.
+  uint32_t keyblob[test_salt.size() + 1];
+  keyblob[0] = test_version;
+  for (size_t i = 0; i < test_salt.size(); i++) {
+    keyblob[i + 1] = test_salt[i];
+  }
+
+  // Construct blinded key for CTR mode.
+  crypto_blinded_key_t key1 = {
+      .config = kConfigCtrSideloaded,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+      .checksum = 0,
+  };
+
+  // Construct blinded key for OFB mode.
+  crypto_blinded_key_t key2 = {
+      .config = kConfigOfbSideloaded,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+      .checksum = 0,
+  };
+
+  // Extract the keymgr diversification data for both keys.
+  keymgr_diversification_t diversification1;
+  EXPECT_OK(keyblob_to_keymgr_diversification(&key1, &diversification1));
+  keymgr_diversification_t diversification2;
+  EXPECT_OK(keyblob_to_keymgr_diversification(&key2, &diversification2));
+
+  // Expect different salts.
+  bool salts_equal = true;
+  for (size_t i = 0; i < ARRAYSIZE(diversification1.salt); i++) {
+    if (diversification1.salt[i] != diversification2.salt[i]) {
+      salts_equal = false;
+    }
+  }
+  EXPECT_EQ(salts_equal, false);
+}
+
+TEST(Keyblob, RemaskDoesNotChangeKey) {
   std::array<uint32_t, 4> test_key = {0x01234567, 0x89abcdef, 0x00010203,
                                       0x04050607};
   std::array<uint32_t, 4> test_mask0 = {0x08090a0b, 0x0c0d0e0f, 0x10111213,

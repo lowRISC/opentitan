@@ -118,8 +118,6 @@ static status_t run_rsa_2048_sign(const uint8_t *msg, size_t msg_len,
       .key_mode = key_mode,
       .key_length = kRsa2048NumBytes,
       .hw_backed = kHardenedBoolFalse,
-      .diversification_hw_backed =
-          (crypto_const_byte_buf_t){.data = NULL, .len = 0},
       .security_level = kSecurityLevelLow,
   };
 

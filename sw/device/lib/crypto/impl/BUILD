@@ -100,6 +100,7 @@ cc_library(
         ":integrity",
         ":status",
         "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/drivers:keymgr",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
