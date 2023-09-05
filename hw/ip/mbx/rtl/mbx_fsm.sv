@@ -5,7 +5,7 @@
 `include "prim_assert.sv"
 
 module mbx_fsm #(
-  parameter bit CfgObMbx = 1'b1   // 1'b1: Obmbx, 1'b0: Ibmbx
+  parameter bit CfgOmbx = 1'b1   // 1'b1: Obmbx, 1'b0: Ibmbx
 ) (
   input  logic clk_i,
   input  logic rst_ni,
@@ -60,18 +60,18 @@ module mbx_fsm #(
 
   logic ob_set_ready, ob_clear_ready;
   // Outbound mailbox is ready
-  assign ob_set_ready = CfgObMbx
+  assign ob_set_ready = CfgOmbx
                             & mbx_idle
                             & mbx_range_valid_i & writer_close_mbx_i
                             & ~sysif_control_abort_set_i;
 
   // MbxRead is a common state for imbx and ombx
   // Exit of MbxRead is used to clear imbx.Busy and ombx.Ready
-  assign ob_clear_ready = CfgObMbx & (hostif_status_error_set_i |
+  assign ob_clear_ready = CfgOmbx & (hostif_status_error_set_i |
                                       sysif_control_abort_set_i |
                                       mbx_read_o & sys_read_all_i);
 
-  assign mbx_ob_ready_update_o = CfgObMbx & (ob_set_ready | ob_clear_ready);  // MUTEX(set,clr)
+  assign mbx_ob_ready_update_o = CfgOmbx & (ob_set_ready | ob_clear_ready);  // MUTEX(set,clr)
   assign mbx_ob_ready_o        = ob_set_ready;
 
   always_comb begin
@@ -80,7 +80,7 @@ module mbx_fsm #(
 
     unique case (ctrl_state_q)
       MbxIdle: begin
-        if (CfgObMbx) begin
+        if (CfgOmbx) begin
           if (mbx_range_valid_i & writer_close_mbx_i) begin
             ctrl_state_d = MbxRead;
           end
