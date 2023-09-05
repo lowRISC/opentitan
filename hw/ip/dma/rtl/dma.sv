@@ -549,7 +549,6 @@ module dma
 
             if (dma_host_tlul_gnt) begin
               clear_index_en = 1'b1;
-              clear_index_d  = clear_index_q + INT_CLEAR_SOURCES_WIDTH'(1'b1);
               ctrl_state_d   = DmaWaitIntrSrcResponse;
             end
           end else begin
@@ -561,7 +560,6 @@ module dma
 
             if (dma_ctn_tlul_gnt) begin
               clear_index_en = 1'b1;
-              clear_index_d  = clear_index_q + INT_CLEAR_SOURCES_WIDTH'(1'b1);
               ctrl_state_d   = DmaWaitIntrSrcResponse;
             end
           end
@@ -597,8 +595,9 @@ module dma
           if (cfg_abort_en) begin
             ctrl_state_d = DmaIdle;
           end else begin
-            if (32'(clear_index_q) < NumIntClearSources) begin
-              ctrl_state_d = DmaClearIntrSrc;
+            if (32'(clear_index_q) < (NumIntClearSources - 1)) begin
+              clear_index_d = clear_index_q + INT_CLEAR_SOURCES_WIDTH'(1'b1);
+              ctrl_state_d  = DmaClearIntrSrc;
             end else begin
               ctrl_state_d = DmaAddrSetup;
             end
