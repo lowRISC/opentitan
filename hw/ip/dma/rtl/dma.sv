@@ -49,6 +49,10 @@ module dma
   localparam int unsigned INT_CLEAR_SOURCES_WIDTH = $clog2(NumIntClearSources);
   localparam int unsigned NR_SHA_DIGEST_ELEMTS    = 8;
 
+  // Flopped bus for SYS interface
+  dma_pkg::sys_req_t sys_req_d;
+  dma_pkg::sys_rsp_t sys_resp_q;
+
   // Signals for both TL interfaces
   logic                       dma_host_tlul_req_valid,    dma_ctn_tlul_req_valid;
   logic [top_pkg::TL_AW-1:0]  dma_host_tlul_req_addr,     dma_ctn_tlul_req_addr;
@@ -476,14 +480,14 @@ module dma
     dma_ctn_tlul_req_wdata   =   '0;
     dma_ctn_tlul_req_be      =   '0;
 
-    sys_o.vld_vec            = '0;
-    sys_o.metadata_vec       = '0;
-    sys_o.opcode_vec         = { SysOpcWrite, SysOpcRead };
-    sys_o.iova_vec           = '0;
-    sys_o.racl_vec           = '0;
-    sys_o.write_data         = '0;
-    sys_o.write_be           = '0;
-    sys_o.read_be            = '0;
+    sys_req_d.vld_vec            = '0;
+    sys_req_d.metadata_vec       = '0;
+    sys_req_d.opcode_vec         = { SysOpcWrite, SysOpcRead };
+    sys_req_d.iova_vec           = '0;
+    sys_req_d.racl_vec           = '0;
+    sys_req_d.write_data         = '0;
+    sys_req_d.write_be           = '0;
+    sys_req_d.read_be            = '0;
 
     capture_host_return_data = 1'b0;
     capture_ctn_return_data  = 1'b0;
@@ -903,14 +907,18 @@ module dma
       end
 
       DmaSendSysRead: begin
-        sys_o.vld_vec     [SysCmdRead] = 1'b1;
-        sys_o.metadata_vec[SysCmdRead] = src_metadata;
-        sys_o.opcode_vec  [SysCmdRead] = SysOpcRead;
-        sys_o.iova_vec    [SysCmdRead] = {src_addr_q[(SYS_ADDR_WIDTH-1):2], 2'b0};
-        sys_o.racl_vec    [SysCmdRead] = SysRacl[SYS_RACL_WIDTH-1:0];
-        sys_o.read_be                  = req_src_be_q;
+        sys_req_d.vld_vec     [SysCmdRead] = 1'b1;
+        sys_req_d.metadata_vec[SysCmdRead] = src_metadata;
+        sys_req_d.opcode_vec  [SysCmdRead] = SysOpcRead;
+        sys_req_d.iova_vec    [SysCmdRead] = {src_addr_q[(SYS_ADDR_WIDTH-1):2], 2'b0};
+        sys_req_d.racl_vec    [SysCmdRead] = SysRacl[SYS_RACL_WIDTH-1:0];
+        sys_req_d.read_be                  = req_src_be_q;
 
-        if (sys_i.grant_vec[SysCmdRead]) begin
+        ctrl_state_d                       = DmaWaitSysReadGrant;
+      end
+
+      DmaWaitSysReadGrant: begin
+        if (sys_resp_q.grant_vec[SysCmdRead]) begin
           ctrl_state_d = DmaWaitSysReadResponse;
         end else if (cfg_abort_en) begin
           ctrl_state_d = DmaIdle;
@@ -918,10 +926,10 @@ module dma
       end
 
       DmaWaitSysReadResponse: begin
-        read_rsp_error          = sys_i.read_data_vld && sys_i.error_vld;
-        capture_sys_return_data = sys_i.read_data_vld && (!sys_i.error_vld);
+        read_rsp_error          = sys_resp_q.read_data_vld && sys_resp_q.error_vld;
+        capture_sys_return_data = sys_resp_q.read_data_vld && (!sys_resp_q.error_vld);
 
-        if (sys_i.read_data_vld) begin
+        if (sys_resp_q.read_data_vld) begin
           if (read_rsp_error) begin
             next_error[DmaCompletionErr] = 1'b1;
 
@@ -1028,22 +1036,25 @@ module dma
       end
 
       DmaSendSysWrite: begin
-        sys_o.vld_vec     [SysCmdWrite] = 1'b1;
-        sys_o.metadata_vec[SysCmdWrite] = src_metadata;
-        sys_o.opcode_vec  [SysCmdWrite] = SysOpcWrite;
-        sys_o.iova_vec    [SysCmdWrite] = {dst_addr_q[(SYS_ADDR_WIDTH-1):2], 2'b0};
-        sys_o.racl_vec    [SysCmdWrite] = SysRacl[SysOpcWrite-1:0];
+        sys_req_d.vld_vec     [SysCmdWrite] = 1'b1;
+        sys_req_d.metadata_vec[SysCmdWrite] = src_metadata;
+        sys_req_d.opcode_vec  [SysCmdWrite] = SysOpcWrite;
+        sys_req_d.iova_vec    [SysCmdWrite] = {dst_addr_q[(SYS_ADDR_WIDTH-1):2], 2'b0};
+        sys_req_d.racl_vec    [SysCmdWrite] = SysRacl[SysOpcWrite-1:0];
 
-        sys_o.write_data = read_return_data_q;
-        sys_o.write_be   = req_dst_be_q;
+        sys_req_d.write_data = read_return_data_q;
+        sys_req_d.write_be   = req_dst_be_q;
+        ctrl_state_d         = DmaWaitSysWriteGrant;
 
-        // If using inline hashing and data is not yet comsumed, apply it
+        // If using inline hashing and data is not yet consumed, apply it
         if (use_inline_hashing && !sha2_consumed_q) begin
           sha2_valid = 1'b1;
           sha2_consumed_d = sha2_ready;
         end
+      end
 
-        if (sys_i.grant_vec[SysCmdWrite]) begin
+      DmaWaitSysWriteGrant: begin
+        if (sys_resp_q.grant_vec[SysCmdWrite]) begin
           transfer_byte_d       = transfer_byte_q + TRANSFER_BYTES_WIDTH'(transfer_width_q);
           capture_transfer_byte = 1'b1;
 
@@ -1106,7 +1117,7 @@ module dma
     read_return_data_d = '0;
     if (capture_host_return_data) read_return_data_d = dma_host_tlul_rsp_data;
     if (capture_ctn_return_data)  read_return_data_d = dma_ctn_tlul_rsp_data;
-    if (capture_sys_return_data)  read_return_data_d = sys_i.read_data;
+    if (capture_sys_return_data)  read_return_data_d = sys_resp_q.read_data;
   end
 
   assign capture_return_data = capture_host_return_data ||
@@ -1209,7 +1220,7 @@ module dma
     (dst_addr_q >= {reg2hw.destination_address_limit_hi.q,
                     reg2hw.destination_address_limit_lo.q});
 
-  // Send out an interrupt whean reaching almost the buffer limit or when really reaching the limit
+  // Send out an interrupt when reaching almost the buffer limit or when really reaching the limit
   // Ensures that all data until the IRQ is transferred.
   assign send_memory_buffer_limit_interrupt = send_almost_limit_interrupt || send_limit_interrupt;
 
@@ -1217,14 +1228,15 @@ module dma
   assign data_move_state_valid =
     (dma_host_tlul_rsp_valid && (ctrl_state_q == DmaSendHostWrite)) ||
     (dma_ctn_tlul_rsp_valid  && (ctrl_state_q == DmaSendCtnWrite))  ||
-    (sys_i.grant_vec[SysCmdWrite] && (ctrl_state_q == DmaSendSysWrite));
+    (sys_resp_q.grant_vec[SysCmdWrite] && (ctrl_state_q == DmaWaitSysWriteGrant));
 
   assign data_move_state = (ctrl_state_q == DmaSendHostWrite)         ||
                            (ctrl_state_q == DmaWaitHostWriteResponse) ||
                            (ctrl_state_q == DmaSendCtnWrite)          ||
                            (ctrl_state_q == DmaWaitCtnWriteResponse)  ||
                            (ctrl_state_q == DmaSendSysWrite)          ||
-                           ctrl_state_d == DmaShaFinalize;
+                           (ctrl_state_q == DmaWaitSysWriteGrant)     ||
+                           (ctrl_state_d == DmaShaFinalize);
 
   assign new_destination_addr = cfg_data_direction ?
     ({reg2hw.destination_address_hi.q, reg2hw.destination_address_lo.q} +
@@ -1353,6 +1365,187 @@ module dma
     cfg_memory_buffer_auto_increment_en = reg2hw.control.memory_buffer_auto_increment_enable.q;
     cfg_abort_en                        = reg2hw.control.abort.q;
   end
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Interface signal flopping
+  //////////////////////////////////////////////////////////////////////////////
+
+  prim_flop #(
+    .Width(SYS_NUM_REQ_CH)
+  ) u_sys_vld_vec (
+    .clk_i ( gated_clk         ),
+    .rst_ni( rst_ni            ),
+    .d_i   ( sys_req_d.vld_vec ),
+    .q_o   ( sys_o.vld_vec     )
+  );
+
+  prim_generic_flop_en #(
+    .Width(SYS_METADATA_WIDTH)
+  ) u_sys_metadata_write_vec (
+    .clk_i ( gated_clk                           ),
+    .rst_ni( rst_ni                              ),
+    .en_i  ( sys_req_d.vld_vec[SysCmdWrite]      ),
+    .d_i   ( sys_req_d.metadata_vec[SysCmdWrite] ),
+    .q_o   ( sys_o.metadata_vec[SysCmdWrite]     )
+  );
+
+  prim_generic_flop_en #(
+    .Width($bits(sys_opc_e))
+  ) u_sys_opcode_write_vec (
+    .clk_i ( gated_clk                         ),
+    .rst_ni( rst_ni                            ),
+    .en_i  ( sys_req_d.vld_vec[SysCmdWrite]    ),
+    .d_i   ( sys_req_d.opcode_vec[SysCmdWrite] ),
+    .q_o   ( sys_o.opcode_vec[SysCmdWrite]     )
+  );
+
+  prim_generic_flop_en #(
+    .Width(SYS_ADDR_WIDTH)
+  ) u_sys_iova_write_vec (
+    .clk_i ( gated_clk                       ),
+    .rst_ni( rst_ni                          ),
+    .en_i  ( sys_req_d.vld_vec[SysCmdWrite]  ),
+    .d_i   ( sys_req_d.iova_vec[SysCmdWrite] ),
+    .q_o   ( sys_o.iova_vec[SysCmdWrite]     )
+  );
+
+  prim_generic_flop_en #(
+    .Width(SYS_RACL_WIDTH)
+  ) u_sys_racl_write_vec (
+    .clk_i ( gated_clk                       ),
+    .rst_ni( rst_ni                          ),
+    .en_i  ( sys_req_d.vld_vec[SysCmdWrite]  ),
+    .d_i   ( sys_req_d.racl_vec[SysCmdWrite] ),
+    .q_o   ( sys_o.racl_vec[SysCmdWrite]     )
+  );
+
+  prim_generic_flop_en #(
+    .Width(SYS_METADATA_WIDTH)
+  ) u_sys_metadata_read_vec (
+    .clk_i ( gated_clk                          ),
+    .rst_ni( rst_ni                             ),
+    .en_i  ( sys_req_d.vld_vec[SysCmdRead]      ),
+    .d_i   ( sys_req_d.metadata_vec[SysCmdRead] ),
+    .q_o   ( sys_o.metadata_vec[SysCmdRead]     )
+  );
+
+  prim_generic_flop_en #(
+    .Width($bits(sys_opc_e))
+  ) u_sys_opcode_read_vec (
+    .clk_i ( gated_clk                        ),
+    .rst_ni( rst_ni                           ),
+    .en_i  ( sys_req_d.vld_vec[SysCmdRead]    ),
+    .d_i   ( sys_req_d.opcode_vec[SysCmdRead] ),
+    .q_o   ( sys_o.opcode_vec[SysCmdRead]     )
+  );
+
+  prim_generic_flop_en #(
+    .Width(SYS_ADDR_WIDTH)
+  ) u_sys_iova_read_vec (
+    .clk_i ( gated_clk                      ),
+    .rst_ni( rst_ni                         ),
+    .en_i  ( sys_req_d.vld_vec[SysCmdRead]  ),
+    .d_i   ( sys_req_d.iova_vec[SysCmdRead] ),
+    .q_o   ( sys_o.iova_vec[SysCmdRead]     )
+  );
+
+  prim_generic_flop_en #(
+    .Width(SYS_RACL_WIDTH)
+  ) u_sys_racl_read_vec (
+    .clk_i ( gated_clk                      ),
+    .rst_ni( rst_ni                         ),
+    .en_i  ( sys_req_d.vld_vec[SysCmdRead]  ),
+    .d_i   ( sys_req_d.racl_vec[SysCmdRead] ),
+    .q_o   ( sys_o.racl_vec[SysCmdRead]     )
+  );
+
+  prim_generic_flop_en #(
+    .Width(SYS_DATA_WIDTH)
+  ) u_sys_write_data (
+    .clk_i ( gated_clk                      ),
+    .rst_ni( rst_ni                         ),
+    .en_i  ( sys_req_d.vld_vec[SysCmdWrite] ),
+    .d_i   ( sys_req_d.write_data           ),
+    .q_o   ( sys_o.write_data               )
+  );
+
+  prim_generic_flop_en #(
+    .Width(SYS_DATA_BYTEWIDTH)
+  ) u_sys_write_be (
+    .clk_i ( gated_clk                      ),
+    .rst_ni( rst_ni                         ),
+    .en_i  ( sys_req_d.vld_vec[SysCmdWrite] ),
+    .d_i   ( sys_req_d.write_be             ),
+    .q_o   ( sys_o.write_be                 )
+  );
+
+  prim_generic_flop_en #(
+    .Width(SYS_DATA_BYTEWIDTH)
+  ) u_sys_read_be (
+    .clk_i ( gated_clk                      ),
+    .rst_ni( rst_ni                         ),
+    .en_i  ( sys_req_d.vld_vec[SysCmdWrite] ),
+    .d_i   ( sys_req_d.read_be              ),
+    .q_o   ( sys_o.read_be                  )
+  );
+
+  prim_flop #(
+    .Width(SYS_NUM_REQ_CH)
+  ) u_sys_gnt_vec (
+    .clk_i ( gated_clk            ),
+    .rst_ni( rst_ni               ),
+    .d_i   ( sys_i.grant_vec      ),
+    .q_o   ( sys_resp_q.grant_vec )
+  );
+
+  prim_flop #(
+    .Width(1)
+  ) u_sys_read_data_valid (
+    .clk_i ( gated_clk                ),
+    .rst_ni( rst_ni                   ),
+    .d_i   ( sys_i.read_data_vld      ),
+    .q_o   ( sys_resp_q.read_data_vld )
+  );
+
+  prim_flop #(
+    .Width(SYS_DATA_WIDTH)
+  ) u_sys_read_data (
+    .clk_i ( gated_clk            ),
+    .rst_ni( rst_ni               ),
+    .d_i   ( sys_i.read_data      ),
+    .q_o   ( sys_resp_q.read_data )
+  );
+
+  prim_flop #(
+    .Width(SYS_METADATA_WIDTH)
+  ) u_sys_read_metadata (
+    .clk_i ( gated_clk                ),
+    .rst_ni( rst_ni                   ),
+    .d_i   ( sys_i.read_metadata      ),
+    .q_o   ( sys_resp_q.read_metadata )
+  );
+
+  prim_flop #(
+    .Width(1)
+  ) u_sys_read_error_valid (
+    .clk_i ( gated_clk            ),
+    .rst_ni( rst_ni               ),
+    .d_i   ( sys_i.error_vld      ),
+    .q_o   ( sys_resp_q.error_vld )
+  );
+
+  prim_flop #(
+    .Width(SYS_NUM_ERROR_TYPES)
+  ) u_sys_read_error (
+    .clk_i ( gated_clk            ),
+    .rst_ni( rst_ni               ),
+    .d_i   ( sys_i.error_vec      ),
+    .q_o   ( sys_resp_q.error_vec )
+  );
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Assertions
+  //////////////////////////////////////////////////////////////////////////////
 
   // All outputs should be known value after reset
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
