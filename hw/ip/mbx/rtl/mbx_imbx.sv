@@ -135,7 +135,7 @@ module mbx_imbx #(
   assign imbx_irq_abort_o = mbx_sys_abort;
 
   mbx_fsm #(
-    .CfgObMbx ( 0 )
+    .CfgOmbx ( 0 )
   ) u_mbxfsm(
     .clk_i                     ( clk_i                      ),
     .rst_ni                    ( rst_ni                     ),
