@@ -8,7 +8,6 @@
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
-#include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
@@ -50,7 +49,6 @@ extern char _rom_ext_virtual_size[];
  */
 typedef void ottf_entry_point(void);
 
-static dif_clkmgr_t clkmgr;
 static dif_flash_ctrl_state_t flash_ctrl;
 static dif_pinmux_t pinmux;
 static dif_rstmgr_t rstmgr;
@@ -184,17 +182,6 @@ bool rom_test_main(void) {
   CHECK_DIF_OK(dif_rv_core_ibex_read_fpga_info(&ibex, &fpga));
   if (fpga != 0) {
     LOG_INFO("TestROM:%08x", fpga);
-  }
-
-  // Enable clock jitter if requested.
-  // The kJitterEnabled symbol defaults to false across all hardware platforms.
-  // However, in DV simulation, it may be overridden via a backdoor write with
-  // the plusarg: `+en_jitter=1`.
-  if (kJitterEnabled) {
-    CHECK_DIF_OK(dif_clkmgr_init(
-        mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
-    CHECK_DIF_OK(dif_clkmgr_jitter_set_enabled(&clkmgr, kDifToggleEnabled));
-    LOG_INFO("Jitter is enabled");
   }
 
   if (bootstrap_requested() == kHardenedBoolTrue) {
