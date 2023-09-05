@@ -452,6 +452,7 @@
       - [Signoff Test Plan](./sw/device/silicon_creator/rom/data/rom_manual_testplan.hjson)
       - [Shutdown Specification](./sw/device/silicon_creator/rom/doc/shutdown.md)
     - [Manifest Format](./sw/device/silicon_creator/rom_ext/doc/manifest.md)
+    - [Boot Log](./sw/device/silicon_creator/doc/boot_log.md)
   - [Top-Level Tests](./sw/device/tests/README.md)
     - [Manufacturer Test Hooks](./sw/device/tests/closed_source/README.md)
     - [Crypto Library Tests](./sw/device/tests/crypto/README.md)
