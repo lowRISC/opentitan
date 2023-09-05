@@ -6,6 +6,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/multibits_asm.h"
 #include "ast_regs.h"
+#include "clkmgr_regs.h"
 #include "csrng_regs.h"
 #include "edn_regs.h"
 #include "entropy_src_regs.h"
@@ -168,6 +169,13 @@ _start:
   srli t0, t0, SENSOR_CTRL_STATUS_AST_INIT_DONE_BIT // no-op as bit index is currently 0
   andi t0, t0, 0x1
   beqz t0, .L_ast_done_loop
+
+  // Enable jittery clock if enabled in OTP.
+  li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
+  lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_JITTER_EN_OFFSET(a0)
+  li   a0, TOP_EARLGREY_CLKMGR_AON_BASE_ADDR
+  sw   t0, CLKMGR_JITTER_ENABLE_REG_OFFSET(a0)
 
 .L_ast_init_skip:
   // The following sequence enables the minimum level of entropy required to

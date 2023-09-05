@@ -52,6 +52,4 @@ const uintptr_t kDeviceTestStatusAddress = 0x411f0080;
 
 const uintptr_t kDeviceLogBypassUartAddress = 0;
 
-const bool kJitterEnabled = false;
-
 void device_fpga_version_print(void) {}
