@@ -11,6 +11,7 @@ module mbx
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   parameter int unsigned CfgSramAddrWidth      = 32,
   parameter int unsigned CfgSramDataWidth      = 32,
+  parameter int unsigned CfgOmbxDwCntWidth     = 11,
   parameter bit          DoeIrqSupport         = 1'b1
 ) (
   input  logic                                      clk_i,
@@ -40,11 +41,12 @@ module mbx
   //////////////////////////////////////////////////////////////////////////////
 
   // Collect all error sources
-  logic sysif_intg_err, tl_sram_intg_err, imbx_state_error, alert_signal;
-  logic sram_err;
+  logic sysif_intg_err, tl_sram_intg_err, imbx_state_error, ombx_state_error;
+  logic alert_signal, sram_err;
 
   assign alert_signal = sysif_intg_err     |
                         tl_sram_intg_err   |
+                        ombx_state_error   |
                         imbx_state_error;
 
   //////////////////////////////////////////////////////////////////////////////
@@ -81,7 +83,7 @@ module mbx
   logic [CfgSramAddrWidth-1:0] ombx_sram_read_ptr;
 
   logic hostif_ombx_object_size_write, hostif_ombx_object_size_read;
-  logic [10:0] hostif_ombx_object_size_wdata, hostif_ombx_object_size_rdata;
+  logic [CfgOmbxDwCntWidth-1:0] hostif_ombx_object_size_wdata, hostif_ombx_object_size_rdata;
 
   mbx_hostif #(
     .AlertAsyncOn    ( AlertAsyncOn     ),
@@ -158,7 +160,7 @@ module mbx
   // Interface signals for SRAM host access to read the memory and serve it to the outbox
   logic ombx_sram_read_req, ombx_sram_read_gnt;
   logic ombx_sram_read_resp_vld;
-  logic [CfgSramDataWidth-1:0] sysif_read_data;
+  logic [CfgSramDataWidth-1:0] ombx_sram_read_data, sysif_read_data;
   logic sysif_read_data_read_valid, sysif_read_data_write_valid;
 
   mbx_sysif #(
@@ -225,7 +227,7 @@ module mbx
     .hostif_control_abort_set_i ( hostif_control_abort_set     ),
     .hostif_status_busy_clear_i ( hostif_status_busy_clear     ),
     .hostif_status_error_set_i  ( hostif_status_error_set      ),
-
+    // SRAM range configuration
     .hostif_range_valid_i       ( hostif_address_range_valid   ),
     .hostif_base_i              ( hostif_imbx_base             ),
     .hostif_limit_i             ( hostif_imbx_limit            ),
@@ -238,6 +240,44 @@ module mbx
     .hostif_sram_write_req_o    ( imbx_sram_write_req          ),
     .hostif_sram_write_gnt_i    ( imbx_sram_write_gnt          ),
     .hostif_sram_write_ptr_o    ( imbx_sram_write_ptr          )
+  );
+
+
+  mbx_ombx #(
+    .CfgSramAddrWidth  ( CfgSramAddrWidth ),
+    .CfgSramDataWidth  ( CfgSramDataWidth ),
+    .CfgOmbxDwCntWidth (CfgOmbxDwCntWidth )
+  ) u_ombx (
+    .clk_i                          ( clk_i                         ),
+    .rst_ni                         ( rst_ni                        ),
+    // Interface to the host port
+    .ombx_state_error_o             ( ombx_state_error              ),
+    .ombx_pending_o                 ( ombx_pending                  ),
+    .ombx_status_ready_update_o     ( ombx_status_ready_valid       ),
+    .ombx_status_ready_o            ( ombx_status_ready             ),
+    // SRAM range configuration
+    .hostif_range_valid_i           ( hostif_address_range_valid    ),
+    .hostif_base_i                  ( hostif_ombx_base              ),
+    .hostif_limit_i                 ( hostif_ombx_limit             ),
+    // Control signals from the host and system interface
+    .hostif_control_abort_set_i     ( hostif_control_abort_set      ),
+    .hostif_status_error_set_i      ( hostif_status_error_set       ),
+    .sysif_control_abort_set_i      ( sysif_control_abort_set       ),
+    .sysif_read_data_read_valid_i   ( sysif_read_data_read_valid    ),
+    .sysif_read_data_write_valid_i  ( sysif_read_data_write_valid   ),
+    // Interface for the object size register
+    .hostif_ombx_object_size_write_i( hostif_ombx_object_size_write ),
+    .hostif_ombx_object_size_i      ( hostif_ombx_object_size_wdata ),
+    .hostif_ombx_object_size_read_o ( hostif_ombx_object_size_read  ),
+    .hostif_ombx_object_size_o      ( hostif_ombx_object_size_rdata ),
+    // DOE data coming from the SRAM
+    .ombx_read_data_o               ( sysif_read_data               ),
+    // Host interface to access private SRAM
+    .ombx_sram_read_req_o           ( ombx_sram_read_req            ),
+    .ombx_sram_read_gnt_i           ( ombx_sram_read_gnt            ),
+    .ombx_sram_read_ptr_o           ( ombx_sram_read_ptr            ),
+    .ombx_sram_read_resp_valid_i    ( ombx_sram_read_resp_vld       ),
+    .ombx_sram_read_resp_i          ( ombx_sram_read_data           )
   );
 
   // Host port connection to access the private SRAM.
@@ -263,7 +303,7 @@ module mbx
     .ombx_sram_read_gnt_o      ( ombx_sram_read_gnt       ),
     .ombx_sram_read_ptr_i      ( ombx_sram_read_ptr       ),
     .ombx_sram_read_resp_vld_o ( ombx_sram_read_resp_vld  ),
-    .ombx_sram_read_resp_o     ( sysif_read_data          )
+    .ombx_sram_read_resp_o     ( ombx_sram_read_data      )
   );
 
 endmodule
