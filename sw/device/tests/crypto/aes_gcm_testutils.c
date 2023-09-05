@@ -57,8 +57,6 @@ uint32_t call_aes_gcm_encrypt(aes_gcm_test_t test) {
       .key_mode = kKeyModeAesGcm,
       .key_length = test.key_len * sizeof(uint32_t),
       .hw_backed = kHardenedBoolFalse,
-      .diversification_hw_backed =
-          (crypto_const_byte_buf_t){.data = NULL, .len = 0},
       .security_level = kSecurityLevelLow,
   };
 
@@ -133,8 +131,6 @@ uint32_t call_aes_gcm_decrypt(aes_gcm_test_t test, bool tag_valid) {
       .key_mode = kKeyModeAesGcm,
       .key_length = test.key_len * sizeof(uint32_t),
       .hw_backed = kHardenedBoolFalse,
-      .diversification_hw_backed =
-          (crypto_const_byte_buf_t){.data = NULL, .len = 0},
       .security_level = kSecurityLevelLow,
   };
 

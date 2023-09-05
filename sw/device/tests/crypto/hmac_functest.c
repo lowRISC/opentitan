@@ -62,7 +62,6 @@ static status_t run_test(const uint32_t *key, size_t key_len,
       .key_mode = kKeyModeHmacSha256,
       .key_length = key_len,
       .hw_backed = kHardenedBoolFalse,
-      .diversification_hw_backed = {.data = NULL, .len = 0},
       .exportable = kHardenedBoolFalse,
       .security_level = kSecurityLevelLow,
   };

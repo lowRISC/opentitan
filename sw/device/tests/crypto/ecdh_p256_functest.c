@@ -33,8 +33,6 @@ static const crypto_key_config_t kEcdhPrivateKeyConfig = {
     .key_mode = kKeyModeEcdh,
     .key_length = kP256ScalarBytes,
     .hw_backed = kHardenedBoolFalse,
-    .diversification_hw_backed =
-        (crypto_const_byte_buf_t){.data = NULL, .len = 0},
     .security_level = kSecurityLevelLow,
 };
 
@@ -46,8 +44,6 @@ static const crypto_key_config_t kEcdhSharedKeyConfig = {
     .key_mode = kKeyModeAesCtr,
     .key_length = kP256CoordBytes,
     .hw_backed = kHardenedBoolFalse,
-    .diversification_hw_backed =
-        (crypto_const_byte_buf_t){.data = NULL, .len = 0},
     .security_level = kSecurityLevelLow,
 };
 

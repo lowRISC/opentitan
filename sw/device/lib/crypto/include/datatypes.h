@@ -348,12 +348,10 @@ typedef struct crypto_key_config {
   // Length in bytes of the unblinded form of this key.
   size_t key_length;
   // Whether the hardware key manager should produce this key.
+  // If this is set to `true`, the keyblob must be exactly 8 words long, where
+  // the first word is the version and the remaining 7 words are the salt.
   hardened_bool_t hw_backed;
-  // Diversification input for key manager (ignored and may be
-  // `NULL` if `hw_backed` is false).
-  crypto_const_byte_buf_t diversification_hw_backed;
-  // Whether the key should be exportable (if this is true,
-  // `hw_backed` must be false).
+  // Whether the key can be exported (always false if `hw_backed` is true).
   hardened_bool_t exportable;
   // Key security level.
   crypto_key_security_level_t security_level;

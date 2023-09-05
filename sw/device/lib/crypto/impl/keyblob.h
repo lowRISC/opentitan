@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_KEYBLOB_H_
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_KEYBLOB_H_
 
+#include "sw/device/lib/crypto/drivers/keymgr.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 
@@ -62,6 +63,24 @@ status_t keyblob_to_shares(const crypto_blinded_key_t *key, uint32_t **share0,
  */
 void keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
                          const crypto_key_config_t config, uint32_t *keyblob);
+
+/**
+ * Construct key manager diversification data from a blinded key.
+ *
+ * The keyblob for a hardware-backed key must be exactly 8 32-bit words long.
+ * The first word is the version and subsequent words are the salt. The key
+ * mode is appended to the salt to prevent key manager keys being used for
+ * different modes.
+ *
+ * If the key configuration states that the key is not hardware-backed, or if
+ * the keyblob is the wrong length, this function will return an error.
+ *
+ * @param key Blinded key to use.
+ * @param[out] Destination key manager diversification struct.
+ */
+OT_WARN_UNUSED_RESULT
+status_t keyblob_to_keymgr_diversification(
+    const crypto_blinded_key_t *key, keymgr_diversification_t *diversification);
 
 /**
  * Construct a blinded keyblob from the given key and mask.
