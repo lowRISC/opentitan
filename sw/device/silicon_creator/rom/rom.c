@@ -49,7 +49,9 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/testing/rand_testutils.h"
-
+#include "sw/device/silicon_creator/rom/alsaqr-padframe/bitfield.h"
+#include "sw/device/silicon_creator/rom/alsaqr-padframe/alsaqr_periph_padframe_periphs_regs.h"
+#include "sw/device/silicon_creator/rom/alsaqr-padframe/alsaqr_periph_padframe.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
 
@@ -153,7 +155,12 @@ void spi_flash_load_data(void){
   address    = (int *) 0xff00000C;
   start      = (int *) 0xff000010;
   datapath   = (int *) 0xff00001C;
-   
+
+  alsaqr_periph_padframe_periphs_ot_qspi_00_mux_set( 1 );
+  alsaqr_periph_padframe_periphs_ot_qspi_01_mux_set( 1 );
+  alsaqr_periph_padframe_periphs_ot_qspi_02_mux_set( 1 );
+  alsaqr_periph_padframe_periphs_ot_qspi_03_mux_set( 1 );
+  
   CHECK_DIF_OK(dif_spi_host_init(mmio_region_from_addr(base_addr), &spi_host));
   init_spi_host(&spi_host, (uint32_t)clkHz);
 
