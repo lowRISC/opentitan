@@ -43,8 +43,6 @@ const uintptr_t kDeviceTestStatusAddress = 0;
 
 const uintptr_t kDeviceLogBypassUartAddress = 0;
 
-const bool kJitterEnabled = false;
-
 void device_fpga_version_print(void) {
   // This value is guaranteed to be zero on all non-FPGA implementations.
   uint32_t fpga = ibex_fpga_version();
