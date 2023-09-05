@@ -305,7 +305,6 @@ class OTBNExtRegs:
         assert len(reg.fields) == 1
         fld = reg.fields[0]
         reg.write(min(fld.value + 1, (1 << 32) - 1), True)
-        self._dirty = 2
 
     def read(self, reg_name: str, from_hw: bool) -> int:
         reg = self.regs.get(reg_name)
@@ -317,8 +316,11 @@ class OTBNExtRegs:
         self._rnd_req.step()
 
     def changes(self) -> Sequence[Trace]:
+        # If the dirty flag is not set, we know the only possible change is to
+        # the INSN_CNT register.
         if self._dirty == 0:
-            return []
+            return [TraceExtRegChange('INSN_CNT', erc)
+                    for erc in self.regs['INSN_CNT'].changes()]
 
         trace = []
         for name, reg in self.regs.items():
@@ -326,12 +328,19 @@ class OTBNExtRegs:
         return trace
 
     def commit(self) -> None:
-        # We know that we'll only have any pending changes if self._dirty is
-        # positive, so needn't bother calling commit on each register if not.
+        # If self._dirty is positive, there might be some pending changes to an
+        # ext register. In that case, we need to iterate over all of them,
+        # calling commit() to make the changes land.
+        #
+        # If self._dirty is zero, we know there are no pending changes to ext
+        # registers except possibly INSN_CNT. Writes to *that* don't trigger
+        # the dirty flag because they happen most cycles.
         if self._dirty > 0:
             for reg in self.regs.values():
                 reg.commit()
             self._dirty = max(0, self._dirty - 1)
+        else:
+            self.regs['INSN_CNT'].commit()
 
     def abort(self) -> None:
         for reg in self.regs.values():
