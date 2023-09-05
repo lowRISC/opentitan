@@ -15,12 +15,11 @@ module mbx_imbx #(
   output logic                        imbx_irq_host_o,
   output logic                        imbx_status_busy_update_o,
   output logic                        imbx_status_busy_o,
-
-  // Device interface from the host side
+  // Access to the control and status registers of host interface
   input  logic                        hostif_control_abort_set_i,
   input  logic                        hostif_status_busy_clear_i,
   input  logic                        hostif_status_error_set_i,
-
+  // Range configuration for the private SRAM
   input  logic                        hostif_range_valid_i,
   input  logic [CfgSramAddrWidth-1:0] hostif_base_i,
   input  logic [CfgSramAddrWidth-1:0] hostif_limit_i,
@@ -34,8 +33,7 @@ module mbx_imbx #(
   input  logic                        hostif_sram_write_gnt_i,
   output logic [CfgSramAddrWidth-1:0] hostif_sram_write_ptr_o
 );
-  localparam int unsigned LCFG_SRM_ADDRINC      = CfgSramDataWidth / 8;
-  localparam int unsigned LCFG_SRM_ADDRINC_LOG2 = $clog2(LCFG_SRM_ADDRINC);
+  localparam int unsigned LCFG_SRM_ADDRINC = CfgSramDataWidth / 8;
 
   logic [CfgSramAddrWidth-1:0] sram_write_ptr_d, sram_write_ptr_q;
 
@@ -47,7 +45,7 @@ module mbx_imbx #(
   // RW2A = sticky from DEC/RW-stage to (srm command) ACK
   logic   write_req;
   assign  write_req = (mbx_empty & sysif_data_write_valid_i) |
-                      (mbx_write & sysif_data_write_valid_i & (sram_write_ptr_q < hostif_limit_i));
+                      (mbx_write & sysif_data_write_valid_i & (sram_write_ptr_q <= hostif_limit_i));
 
   // Create a sticky TLUL write request until its granted
   logic req_q;
@@ -58,17 +56,17 @@ module mbx_imbx #(
   ) u_req_state (
     .clk_i ( clk_i                                              ),
     .rst_ni( rst_ni                                             ),
-    .d_i   ( hostif_sram_write_req_o & ~hostif_sram_write_req_o ),
+    .d_i   ( hostif_sram_write_req_o & ~hostif_sram_write_gnt_i ),
     .q_o   ( req_q                                              )
   );
 
-  logic sys_abort;
+  logic sys_clear_abort;
   logic load_write_ptr, advance_write_ptr;
 
-  assign sys_abort = hostif_control_abort_set_i & mbx_sys_abort;
+  assign sys_clear_abort = hostif_control_abort_set_i & mbx_sys_abort;
 
   // Rewind the write pointer to the base
-  assign load_write_ptr = mbx_empty | sys_abort |
+  assign load_write_ptr = mbx_empty | sys_clear_abort |
                          (mbx_read & hostif_status_busy_clear_i);
 
   // Advance the write pointer when the valid write command is granted by the tlul_adaptor_host
@@ -80,7 +78,7 @@ module mbx_imbx #(
     if (load_write_ptr) begin
       sram_write_ptr_d = hostif_base_i;
     end else if (advance_write_ptr) begin
-      sram_write_ptr_d = sram_write_ptr_q + (1'b1 << LCFG_SRM_ADDRINC_LOG2);
+      sram_write_ptr_d = sram_write_ptr_q + LCFG_SRM_ADDRINC;
     end
   end
 
@@ -99,7 +97,7 @@ module mbx_imbx #(
   logic set_pending, clear_pending;
 
   // Block the request from TLUL until the SRAM write is complete
-  assign set_pending   = mbx_write & sysif_data_write_valid_i & (sram_write_ptr_q < hostif_limit_i);
+  assign set_pending   = write_req;
   assign clear_pending = hostif_sram_write_gnt_i;
 
   prim_flop #(
@@ -122,8 +120,8 @@ module mbx_imbx #(
   // Exit of mailbox read is used to clear imbx.busy and imbx.ready
   // Not yet qualified with mbx_read
   assign imbx_clear_busy = hostif_status_error_set_i |
-                            sysif_control_abort_set_i |
-                            hostif_status_busy_clear_i;
+                           sysif_control_abort_set_i |
+                           hostif_status_busy_clear_i;
 
   // External busy update interface
   assign imbx_status_busy_update_o = imbx_set_busy | imbx_clear_busy;
@@ -132,7 +130,7 @@ module mbx_imbx #(
   // Generate host interrupt
   //   on sys_write go, when host enters state to process the received objects
   //   on abort
-  assign imbx_irq_host_o = mbx_read | sys_abort;
+  assign imbx_irq_host_o = mbx_read | mbx_sys_abort;
 
   mbx_fsm #(
     .CfgObMbx ( 0 )
