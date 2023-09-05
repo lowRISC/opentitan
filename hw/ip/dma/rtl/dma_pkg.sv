@@ -47,15 +47,17 @@ package dma_pkg;
     DmaSendCtnRead           = 5'b00110,
     DmaWaitCtnReadResponse   = 5'b00111,
     DmaSendSysRead           = 5'b01000,
-    DmaWaitSysReadResponse   = 5'b01001,
-    DmaSendHostWrite         = 5'b01010,
-    DmaWaitHostWriteResponse = 5'b01011,
-    DmaSendCtnWrite          = 5'b01100,
-    DmaWaitCtnWriteResponse  = 5'b01101,
-    DmaSendSysWrite          = 5'b01110,
-    DmaError                 = 5'b01111,
-    DmaShaFinalize           = 5'b10000,
-    DmaShaWait               = 5'b10001
+    DmaWaitSysReadGrant      = 5'b01001,
+    DmaWaitSysReadResponse   = 5'b01010,
+    DmaSendHostWrite         = 5'b01011,
+    DmaWaitHostWriteResponse = 5'b01100,
+    DmaSendCtnWrite          = 5'b01101,
+    DmaWaitCtnWriteResponse  = 5'b01110,
+    DmaSendSysWrite          = 5'b01111,
+    DmaWaitSysWriteGrant     = 5'b10000,
+    DmaError                 = 5'b10001,
+    DmaShaFinalize           = 5'b10010,
+    DmaShaWait               = 5'b10011
   } dma_ctrl_state_e;
 
   ////////////////////////////
@@ -104,7 +106,7 @@ package dma_pkg;
   typedef struct packed {
     logic [SYS_NUM_REQ_CH-1:0]         grant_vec;
     logic                              read_data_vld;
-    logic [(SYS_DATA_BYTEWIDTH*8)-1:0] read_data;
+    logic [SYS_DATA_WIDTH-1:0]         read_data;
     logic [SYS_METADATA_WIDTH-1:0]     read_metadata;
     logic                              error_vld;
     logic [SYS_NUM_ERROR_TYPES-1:0]    error_vec;
