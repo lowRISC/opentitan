@@ -617,7 +617,12 @@
       ]
     }
     { name: "CLEAR_INT_SRC"
-      desc: "Valid bits for which interrupt sources need clearing"
+      desc: '''
+            Valid bits for which interrupt sources need clearing.
+            When HANDSHAKE_INTERRUPT_ENABLE is non-zero and corresponding lsio_trigger becomes set,
+            DMA issues writes with address from INT_SOURCE_ADDR and write value from INT_SOURCE_WR_VAL corresponding to each
+            bit set in this register.
+            '''
       swaccess: "rw"
       hwaccess: "hro"
       hwqe: "true"
