@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
+#include "sw/device/lib/crypto/drivers/keymgr.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/aes_gcm.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/ghash.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
@@ -61,12 +62,25 @@ static status_t aes_key_construct(const crypto_blinded_key_t *blinded_key,
   HARDENED_CHECK_EQ(integrity_blinded_key_check(blinded_key),
                     kHardenedBoolTrue);
 
-  // TODO(#15590): add support for sideloaded keys by actuating keymgr here if
-  // needed (this requires a keymgr driver).
-  if (blinded_key->config.hw_backed != kHardenedBoolFalse) {
-    return OTCRYPTO_NOT_IMPLEMENTED;
+  if (blinded_key->config.hw_backed == kHardenedBoolTrue) {
+    // Call keymgr to sideload the key into AES.
+    keymgr_diversification_t diversification;
+    HARDENED_TRY(
+        keyblob_to_keymgr_diversification(blinded_key, &diversification));
+    HARDENED_TRY(keymgr_generate_key_aes(diversification));
+    aes_key->key_shares[0] = NULL;
+    aes_key->key_shares[1] = NULL;
+  } else if (blinded_key->config.hw_backed == kHardenedBoolFalse) {
+    // Get pointers to the individual shares.
+    uint32_t *share0;
+    uint32_t *share1;
+    HARDENED_TRY(keyblob_to_shares(blinded_key, &share0, &share1));
+    aes_key->key_shares[0] = share0;
+    aes_key->key_shares[1] = share1;
+  } else {
+    return OTCRYPTO_BAD_ARGS;
   }
-  aes_key->sideload = kHardenedBoolFalse;
+  aes_key->sideload = blinded_key->config.hw_backed;
 
   // Check for null pointer (not allowed for non-sideloaded keys).
   if (blinded_key->keyblob == NULL) {
@@ -102,13 +116,6 @@ static status_t aes_key_construct(const crypto_blinded_key_t *blinded_key,
 
   // Set the AES key length (in words).
   aes_key->key_len = keyblob_share_num_words(blinded_key->config);
-
-  // Get pointers to the individual shares.
-  uint32_t *share0;
-  uint32_t *share1;
-  HARDENED_TRY(keyblob_to_shares(blinded_key, &share0, &share1));
-  aes_key->key_shares[0] = share0;
-  aes_key->key_shares[1] = share1;
 
   return OTCRYPTO_OK;
 }
@@ -356,6 +363,11 @@ crypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
     hardened_memcpy(iv.data, aes_iv.data, kAesBlockNumWords);
   }
 
+  // If the key was sideloaded, clear it.
+  if (key->config.hw_backed == kHardenedBoolTrue) {
+    HARDENED_TRY(keymgr_sideload_clear_aes());
+  }
+
   return OTCRYPTO_OK;
 }
 
@@ -388,12 +400,16 @@ static status_t aes_gcm_key_construct(const crypto_blinded_key_t *blinded_key,
   // underlying block cipher mode for GCM).
   aes_key->mode = kAesCipherModeCtr;
 
-  // TODO(#15590): add support for sideloaded keys by actuating keymgr here if
-  // needed (this requires a keymgr driver).
-  if (blinded_key->config.hw_backed != kHardenedBoolFalse) {
-    return OTCRYPTO_NOT_IMPLEMENTED;
+  if (blinded_key->config.hw_backed == kHardenedBoolTrue) {
+    // Call keymgr to sideload the key into AES.
+    keymgr_diversification_t diversification;
+    HARDENED_TRY(
+        keyblob_to_keymgr_diversification(blinded_key, &diversification));
+    HARDENED_TRY(keymgr_generate_key_aes(diversification));
+  } else if (blinded_key->config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_BAD_ARGS;
   }
-  aes_key->sideload = kHardenedBoolFalse;
+  aes_key->sideload = blinded_key->config.hw_backed;
 
   // Check for null pointer (not allowed for non-sideloaded keys).
   if (blinded_key->keyblob == NULL) {
@@ -511,6 +527,11 @@ crypto_status_t otcrypto_aes_encrypt_gcm(const crypto_blinded_key_t *key,
                                plaintext.data, aad.len, aad.data, auth_tag->len,
                                auth_tag->data, ciphertext->data));
 
+  // If the key was sideloaded, clear it.
+  if (key->config.hw_backed == kHardenedBoolTrue) {
+    HARDENED_TRY(keymgr_sideload_clear_aes());
+  }
+
   return OTCRYPTO_OK;
 }
 
@@ -551,6 +572,11 @@ crypto_status_t otcrypto_aes_decrypt_gcm(
   HARDENED_TRY(aes_gcm_decrypt(aes_key, iv.len, iv.data, ciphertext.len,
                                ciphertext.data, aad.len, aad.data, auth_tag.len,
                                auth_tag.data, plaintext->data, success));
+
+  // If the key was sideloaded, clear it.
+  if (key->config.hw_backed == kHardenedBoolTrue) {
+    HARDENED_TRY(keymgr_sideload_clear_aes());
+  }
 
   return OTCRYPTO_OK;
 }
@@ -667,6 +693,11 @@ crypto_status_t otcrypto_aes_gcm_gctr(const crypto_blinded_key_t *key,
 
   HARDENED_TRY(
       aes_gcm_gctr(aes_key, &aes_icb, input.len, input.data, output.data));
+
+  // If the key was sideloaded, clear it.
+  if (key->config.hw_backed == kHardenedBoolTrue) {
+    HARDENED_TRY(keymgr_sideload_clear_aes());
+  }
 
   return OTCRYPTO_OK;
 }
