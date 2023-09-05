@@ -244,7 +244,7 @@ class URNDWSR(WSR):
         a_out = a_in ^ b_in ^ d_in
         b_out = a_in ^ b_in ^ c_in
         c_out = a_in ^ ((b_in << 17) & ((1 << 64) - 1)) ^ c_in
-        d_out = self.rol(d_in, 45) ^ self.rol(b_in, 45)
+        d_out = self.rol(d_in ^ b_in, 45)
         assert a_out < (1 << 64)
         assert b_out < (1 << 64)
         assert c_out < (1 << 64)
