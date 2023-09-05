@@ -33,12 +33,12 @@ module mbx_sramrwarb
   localparam  int unsigned LCFG_MAX_REQS = 4;
   localparam  int unsigned LCFG_MAX_REQS_LOG2 = $clog2(LCFG_MAX_REQS) + 1;
 
-  // We prioritze the read request.
+  // We prioritize the read request.
   // Winner has an outstanding read request.
   logic arb_read_winner;
   assign arb_read_winner = ombx_sram_read_req_i;
 
-  // Winnder has an outstanding write request but there is no read request
+  // Winner has an outstanding write request but there is no read request
   logic arb_write_winner;
   assign arb_write_winner = imbx_sram_write_req_i & ~arb_read_winner;
 

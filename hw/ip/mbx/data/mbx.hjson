@@ -137,7 +137,7 @@
         hwext: "true"
       }
       { name: "ADDRESS_RANGE_REGWEN"
-        desc: "Used to lock the inound/outbound base/limit configuration registers."
+        desc: "Used to lock the inbound/outbound base/limit configuration registers."
         swaccess: "rw0c"
         fields: [
           { name: "regwen"
@@ -148,7 +148,7 @@
         ]
       }
       { name: "ADDRESS_RANGE_VALID"
-        desc: "Used to lock the inound/outbound base/limit configuration registers."
+        desc: "Used to mark the inbound/outbound base/limit configuration registers to have a valid configuration."
         swaccess: "rw"
         hwaccess: "hro"
         fields: [
