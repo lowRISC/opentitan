@@ -20,6 +20,7 @@ filesets:
       - rtl/mbx_sramrwarb.sv
       - rtl/mbx_fsm.sv
       - rtl/mbx_imbx.sv
+      - rtl/mbx_ombx.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
