@@ -787,9 +787,11 @@ this memory space.
 ## MSG_FIFO
 Message FIFO.
 
-Any write to this window will be appended to the FIFO. Only lower
-2 bits `[1:0]` of the address matter to writes within the window
-in order to handle with sub-word writes.
+Any write operation to this window will be appended to MSG_FIFO. SW can
+simply write bytes/words to any address within this address range.
+Ordering and packing of the incoming bytes/words are handled
+internally. Therefore, the least significant 12 bits of the address
+are ignored.
 
 - Word Aligned Offset Range: `0x800`to`0xffc`
 - Size (words): `512`
