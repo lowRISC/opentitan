@@ -273,9 +273,6 @@ class URNDWSR(WSR):
         if self._next_value is not None:
             self._value = self._next_value
 
-    def abort(self) -> None:
-        self._next_value = 0
-
     def changes(self) -> List[TraceWSR]:
         return ([])
 
