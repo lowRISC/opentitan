@@ -209,8 +209,8 @@ class URNDWSR(WSR):
         seed = [0x84ddfadaf7e1134d, 0x70aa1c59de6197ff,
                 0x25a4fe335d095f1e, 0x2cba89acbe4a07e9]
         self._state = [seed, 4 * [0], 4 * [0], 4 * [0], 4 * [0]]
-        self._next_value = None  # type: Optional[int]
-        self._value = None  # type: Optional[int]
+        self._next_value = 0
+        self._value = 0
         self.running = False
 
     def rol(self, n: int, d: int) -> int:
@@ -229,7 +229,6 @@ class URNDWSR(WSR):
         self.running = False
 
     def read_unsigned(self) -> int:
-        assert self._value is not None
         return self._value
 
     def state_update(self, data_in: List[int]) -> List[int]:
@@ -268,8 +267,7 @@ class URNDWSR(WSR):
             self._next_value = nv
 
     def commit(self) -> None:
-        if self._next_value is not None:
-            self._value = self._next_value
+        self._value = self._next_value
 
     def changes(self) -> List[TraceWSR]:
         return ([])
