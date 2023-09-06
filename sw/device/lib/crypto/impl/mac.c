@@ -107,7 +107,7 @@ crypto_status_t otcrypto_mac_keygen(crypto_blinded_key_t *key) {
 OT_WARN_UNUSED_RESULT
 crypto_status_t otcrypto_hmac(const crypto_blinded_key_t *key,
                               crypto_const_byte_buf_t input_message,
-                              crypto_word_buf_t *tag) {
+                              crypto_word32_buf_t *tag) {
   // Compute HMAC using the streaming API.
   hmac_context_t ctx;
   HARDENED_TRY(otcrypto_hmac_init(&ctx, key));
@@ -121,7 +121,7 @@ crypto_status_t otcrypto_kmac(const crypto_blinded_key_t *key,
                               kmac_mode_t kmac_mode,
                               crypto_const_byte_buf_t customization_string,
                               size_t required_output_len,
-                              crypto_word_buf_t *tag) {
+                              crypto_word32_buf_t *tag) {
   // TODO (#16410) Revisit/complete error checks
 
   // Check for null pointers.
@@ -272,7 +272,7 @@ crypto_status_t otcrypto_hmac_update(hmac_context_t *const ctx,
 }
 
 crypto_status_t otcrypto_hmac_final(hmac_context_t *const ctx,
-                                    crypto_word_buf_t *tag) {
+                                    crypto_word32_buf_t *tag) {
   if (ctx == NULL || tag == NULL || tag->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }

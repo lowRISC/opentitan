@@ -81,7 +81,7 @@ uint32_t call_aes_gcm_encrypt(aes_gcm_test_t test) {
   size_t iv_num_words = (test.iv_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
   uint32_t iv_data[iv_num_words];
   memcpy(iv_data, test.iv, test.iv_len);
-  crypto_const_word_buf_t iv = {
+  crypto_const_word32_buf_t iv = {
       .data = iv_data,
       .len = iv_num_words,
   };
@@ -157,7 +157,7 @@ uint32_t call_aes_gcm_decrypt(aes_gcm_test_t test, bool tag_valid) {
   size_t iv_num_words = (test.iv_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
   uint32_t iv_data[iv_num_words];
   memcpy(iv_data, test.iv, test.iv_len);
-  crypto_const_word_buf_t iv = {
+  crypto_const_word32_buf_t iv = {
       .data = iv_data,
       .len = iv_num_words,
   };

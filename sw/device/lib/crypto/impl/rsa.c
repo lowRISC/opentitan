@@ -26,7 +26,7 @@ crypto_status_t otcrypto_rsa_sign(const rsa_private_key_t *rsa_private_key,
                                   crypto_const_byte_buf_t input_message,
                                   rsa_padding_t padding_mode,
                                   rsa_hash_t hash_mode,
-                                  crypto_word_buf_t *signature) {
+                                  crypto_word32_buf_t *signature) {
   HARDENED_TRY(otcrypto_rsa_sign_async_start(rsa_private_key, input_message,
                                              padding_mode, hash_mode));
   return otcrypto_rsa_sign_async_finalize(signature);
@@ -36,7 +36,7 @@ crypto_status_t otcrypto_rsa_verify(const rsa_public_key_t *rsa_public_key,
                                     crypto_const_byte_buf_t input_message,
                                     rsa_padding_t padding_mode,
                                     rsa_hash_t hash_mode,
-                                    crypto_const_word_buf_t signature,
+                                    crypto_const_word32_buf_t signature,
                                     hardened_bool_t *verification_result) {
   HARDENED_TRY(otcrypto_rsa_verify_async_start(rsa_public_key, signature));
   return otcrypto_rsa_verify_async_finalize(input_message, padding_mode,
@@ -310,7 +310,8 @@ crypto_status_t otcrypto_rsa_sign_async_start(
   return OTCRYPTO_FATAL_ERR;
 }
 
-crypto_status_t otcrypto_rsa_sign_async_finalize(crypto_word_buf_t *signature) {
+crypto_status_t otcrypto_rsa_sign_async_finalize(
+    crypto_word32_buf_t *signature) {
   // Check for NULL pointers.
   if (signature == NULL || signature->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -337,7 +338,8 @@ crypto_status_t otcrypto_rsa_sign_async_finalize(crypto_word_buf_t *signature) {
 }
 
 crypto_status_t otcrypto_rsa_verify_async_start(
-    const rsa_public_key_t *rsa_public_key, crypto_const_word_buf_t signature) {
+    const rsa_public_key_t *rsa_public_key,
+    crypto_const_word32_buf_t signature) {
   // Check the caller-provided public key buffer.
   HARDENED_TRY(public_key_structural_check(rsa_public_key));
 

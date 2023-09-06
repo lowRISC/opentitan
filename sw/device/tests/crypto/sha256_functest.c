@@ -56,7 +56,7 @@ static const uint8_t kExactBlockExpDigest[] = {
 static status_t run_test(crypto_const_byte_buf_t msg,
                          const uint32_t *exp_digest) {
   uint32_t act_digest[kHmacDigestNumWords];
-  crypto_word_buf_t digest_buf = {
+  crypto_word32_buf_t digest_buf = {
       .data = act_digest,
       .len = kHmacDigestNumWords,
   };
@@ -118,7 +118,7 @@ static status_t one_update_streaming_test(void) {
   size_t digest_num_words =
       (sizeof(kExactBlockExpDigest) + sizeof(uint32_t) - 1) / sizeof(uint32_t);
   uint32_t act_digest[digest_num_words];
-  crypto_word_buf_t digest_buf = {
+  crypto_word32_buf_t digest_buf = {
       .data = act_digest,
       .len = digest_num_words,
   };
@@ -153,7 +153,7 @@ static status_t multiple_update_streaming_test(void) {
   size_t digest_num_words =
       (sizeof(kTwoBlockExpDigest) + sizeof(uint32_t) - 1) / sizeof(uint32_t);
   uint32_t act_digest[digest_num_words];
-  crypto_word_buf_t digest_buf = {
+  crypto_word32_buf_t digest_buf = {
       .data = act_digest,
       .len = digest_num_words,
   };

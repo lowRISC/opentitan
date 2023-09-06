@@ -79,7 +79,7 @@ static void encrypt_decrypt_test(const aes_test_t *test) {
   // Construct non-constant version of IV buffer.
   uint32_t iv_data[kAesBlockWords];
   memcpy(iv_data, test->iv, kAesBlockBytes);
-  crypto_word_buf_t iv = {
+  crypto_word32_buf_t iv = {
       .data = iv_data,
       .len = kAesBlockWords,
   };

@@ -78,7 +78,7 @@ static status_t run_test(const uint32_t *key, size_t key_len,
   blinded_key.checksum = integrity_blinded_checksum(&blinded_key);
 
   uint32_t act_tag[kTagLenWords];
-  crypto_word_buf_t tag_buf = {
+  crypto_word32_buf_t tag_buf = {
       .data = act_tag,
       .len = ARRAYSIZE(act_tag),
   };

@@ -88,7 +88,8 @@ typedef struct hash_context {
  * @return Result of the hash operation.
  */
 crypto_status_t otcrypto_hash(crypto_const_byte_buf_t input_message,
-                              hash_mode_t hash_mode, crypto_word_buf_t *digest);
+                              hash_mode_t hash_mode,
+                              crypto_word32_buf_t *digest);
 
 /**
  * Performs the required extendable output function on the input data.
@@ -120,7 +121,7 @@ crypto_status_t otcrypto_xof(crypto_const_byte_buf_t input_message,
                              crypto_const_byte_buf_t function_name_string,
                              crypto_const_byte_buf_t customization_string,
                              size_t required_output_len,
-                             crypto_word_buf_t *digest);
+                             crypto_word32_buf_t *digest);
 
 /**
  * Performs the INIT operation for a cryptographic hash function.
@@ -178,7 +179,7 @@ crypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
  * @return Result of the hash final operation.
  */
 crypto_status_t otcrypto_hash_final(hash_context_t *const ctx,
-                                    crypto_word_buf_t *digest);
+                                    crypto_word32_buf_t *digest);
 
 #ifdef __cplusplus
 }  // extern "C"
