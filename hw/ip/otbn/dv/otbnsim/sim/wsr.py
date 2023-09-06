@@ -210,8 +210,8 @@ class URNDWSR(WSR):
         super().__init__(name)
         seed = [0x84ddfadaf7e1134d, 0x70aa1c59de6197ff,
                 0x25a4fe335d095f1e, 0x2cba89acbe4a07e9]
-        self.state = [seed, 4 * [0], 4 * [0], 4 * [0], 4 * [0]]
-        self.out = 4 * [0]
+        self._state = [seed, 4 * [0], 4 * [0], 4 * [0], 4 * [0]]
+        self._out = 4 * [0]
         self._next_value = None  # type: Optional[int]
         self._value = None  # type: Optional[int]
         self.running = False
@@ -254,7 +254,7 @@ class URNDWSR(WSR):
     def set_seed(self, value: List[int]) -> None:
         assert len(value) == 4
         self.running = True
-        self.state[0] = value
+        self._state[0] = value
         # Step immediately to update the internal state with the new seed
         self.step()
 
@@ -264,13 +264,13 @@ class URNDWSR(WSR):
             mid = 4 * [0]
             nv = 0
             for i in range(4):
-                st_i = self.state[i]
-                self.state[i + 1] = self.state_update(st_i)
+                st_i = self._state[i]
+                self._state[i + 1] = self.state_update(st_i)
                 mid[i] = (st_i[3] + st_i[0]) & mask64
-                self.out[i] = (self.rol(mid[i], 23) + st_i[3]) & mask64
-                nv |= self.out[i] << (64 * i)
+                self._out[i] = (self.rol(mid[i], 23) + st_i[3]) & mask64
+                nv |= self._out[i] << (64 * i)
             self._next_value = nv
-            self.state[0] = self.state[4]
+            self._state[0] = self._state[4]
 
     def commit(self) -> None:
         if self._next_value is not None:
