@@ -14,7 +14,7 @@ from .edn_client import EdnClient
 from .trace import Trace
 
 
-class ExtRegChange(Trace):
+class ExtRegChange:
     def __init__(self, op: str, written: int, from_hw: bool, new_value: int):
         self.op = op
         self.written = written
@@ -129,8 +129,8 @@ class RGReg:
     def __init__(self, fields: List[RGField], double_flopped: bool):
         self.fields = fields
         self.double_flopped = double_flopped
-        self._trace = []  # type: List[ExtRegChange]
-        self._next_trace = []  # type: List[ExtRegChange]
+        self._changes = []  # type: List[ExtRegChange]
+        self._next_changes = []  # type: List[ExtRegChange]
 
     @staticmethod
     def from_register(reg: Register, double_flopped: bool) -> 'RGReg':
@@ -155,14 +155,14 @@ class RGReg:
         '''
         assert value >= 0
         now = self._apply_fields(lambda fld, fv: fld.write(fv, from_hw), value)
-        trace = self._next_trace if self.double_flopped else self._trace
-        trace.append(ExtRegChange('=', value, from_hw, now))
+        changes = self._next_changes if self.double_flopped else self._changes
+        changes.append(ExtRegChange('=', value, from_hw, now))
 
     def set_bits(self, value: int) -> None:
         assert value >= 0
         now = self._apply_fields(lambda fld, fv: fld.set_bits(fv), value)
-        trace = self._next_trace if self.double_flopped else self._trace
-        trace.append(ExtRegChange('=', value, False, now))
+        changes = self._next_changes if self.double_flopped else self._changes
+        changes.append(ExtRegChange('=', value, False, now))
 
     def read(self, from_hw: bool) -> int:
         value = 0
@@ -173,17 +173,17 @@ class RGReg:
     def commit(self) -> None:
         for field in self.fields:
             field.commit()
-        self._trace = self._next_trace
-        self._next_trace = []
+        self._changes = self._next_changes
+        self._next_changes = []
 
     def abort(self) -> None:
         for field in self.fields:
             field.abort()
-        self._trace = []
-        self._next_trace = []
+        self._changes = []
+        self._next_changes = []
 
     def changes(self) -> List[ExtRegChange]:
-        return self._trace
+        return self._changes
 
 
 class RndReq(RGReg):
