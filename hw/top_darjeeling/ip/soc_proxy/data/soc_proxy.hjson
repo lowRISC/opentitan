@@ -112,7 +112,7 @@
     { struct:  "alert_tx"
       package: "prim_alert_pkg"
       type:    "uni"
-      name:    "soc_alert_req"
+      name:    "soc_fatal_alert_req"
       act:     "rcv"
       desc:    "Differential fatal alert from SoC (input port), synchronous"
       width:   4
@@ -120,9 +120,25 @@
     { struct:  "alert_ack"
       package: "prim_alert_pkg"
       type:    "uni"
-      name:    "soc_alert_ack"
+      name:    "soc_fatal_alert_ack"
       act:     "req"
       desc:    "Differential fatal alert from SoC (acknowledge port), synchronous"
+      width:   4
+    }
+    { struct:  "alert_tx"
+      package: "prim_alert_pkg"
+      type:    "uni"
+      name:    "soc_recov_alert_req"
+      act:     "rcv"
+      desc:    "Differential recoverable alert from SoC (input port), synchronous"
+      width:   4
+    }
+    { struct:  "alert_ack"
+      package: "prim_alert_pkg"
+      type:    "uni"
+      name:    "soc_recov_alert_ack"
+      act:     "req"
+      desc:    "Differential recoverable alert from SoC (acknowledge port), synchronous"
       width:   4
     }
     { struct:  "logic"

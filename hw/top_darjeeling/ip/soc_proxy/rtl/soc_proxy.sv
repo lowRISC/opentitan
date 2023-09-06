@@ -33,8 +33,10 @@ module soc_proxy
   output tlul_pkg::tl_h2d_t ctn_tl_h2d_o,
   input  tlul_pkg::tl_d2h_t ctn_tl_d2h_i,
 
-  input  prim_alert_pkg::alert_tx_t [3:0]  soc_alert_req_i,
-  output prim_alert_pkg::alert_ack_t [3:0] soc_alert_ack_o,
+  input  prim_alert_pkg::alert_tx_t  [3:0] soc_fatal_alert_req_i,
+  output prim_alert_pkg::alert_ack_t [3:0] soc_fatal_alert_ack_o,
+  input  prim_alert_pkg::alert_tx_t  [3:0] soc_recov_alert_req_i,
+  output prim_alert_pkg::alert_ack_t [3:0] soc_recov_alert_ack_o,
 
   input  logic soc_wkup_async_i,
 
@@ -51,7 +53,8 @@ module soc_proxy
   assign wkup_internal_req_o = 1'b0;
   assign wkup_external_req_o = 1'b0;
   for (genvar i = 0; i < 4; i++) begin : gen_tieoff_soc_alert_ack
-    assign soc_alert_ack_o[i] = prim_alert_pkg::ALERT_ACK_DEFAULT;
+    assign soc_fatal_alert_ack_o[i] = prim_alert_pkg::ALERT_ACK_DEFAULT;
+    assign soc_recov_alert_ack_o[i] = prim_alert_pkg::ALERT_ACK_DEFAULT;
   end
 
   // Register node
