@@ -270,7 +270,9 @@ class URNDWSR(WSR):
         self._value = self._next_value
 
     def changes(self) -> List[TraceWSR]:
-        return ([])
+        # Our URND model doesn't track (or report) changes to its internal
+        # state.
+        raise NotImplementedError
 
 
 class KeyTrace(Trace):
@@ -425,7 +427,6 @@ class WSRFile:
         ret = []  # type: List[Trace]
         ret += self.MOD.changes()
         ret += self.RND.changes()
-        ret += self.URND.changes()
         ret += self.ACC.changes()
         ret += self.KeyS0.changes()
         ret += self.KeyS1.changes()
