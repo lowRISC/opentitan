@@ -37,7 +37,7 @@ status_t manuf_util_hash_lc_transition_token(const uint32_t *raw_token,
   }
   uint32_t token_data[token_num_words];
   memset(token_data, 0, sizeof(token_data));
-  crypto_word_buf_t output = {
+  crypto_word32_buf_t output = {
       .data = token_data,
       .len = token_num_words,
   };

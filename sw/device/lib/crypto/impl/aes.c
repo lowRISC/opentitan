@@ -244,7 +244,8 @@ crypto_status_t otcrypto_aes_padded_plaintext_length(size_t plaintext_len,
 }
 
 crypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
-                             crypto_word_buf_t iv, block_cipher_mode_t aes_mode,
+                             crypto_word32_buf_t iv,
+                             block_cipher_mode_t aes_mode,
                              aes_operation_t aes_operation,
                              crypto_const_byte_buf_t cipher_input,
                              aes_padding_t aes_padding,
@@ -467,7 +468,7 @@ status_t aes_gcm_check_tag_length(size_t byte_len, aead_gcm_tag_len_t tag_len) {
 
 crypto_status_t otcrypto_aes_encrypt_gcm(const crypto_blinded_key_t *key,
                                          crypto_const_byte_buf_t plaintext,
-                                         crypto_const_word_buf_t iv,
+                                         crypto_const_word32_buf_t iv,
                                          crypto_const_byte_buf_t aad,
                                          aead_gcm_tag_len_t tag_len,
                                          crypto_byte_buf_t *ciphertext,
@@ -510,7 +511,7 @@ crypto_status_t otcrypto_aes_encrypt_gcm(const crypto_blinded_key_t *key,
 
 crypto_status_t otcrypto_aes_decrypt_gcm(
     const crypto_blinded_key_t *key, crypto_const_byte_buf_t ciphertext,
-    crypto_const_word_buf_t iv, crypto_const_byte_buf_t aad,
+    crypto_const_word32_buf_t iv, crypto_const_byte_buf_t aad,
     aead_gcm_tag_len_t tag_len, crypto_const_byte_buf_t auth_tag,
     crypto_byte_buf_t *plaintext, hardened_bool_t *success) {
   // Check for NULL pointers in input pointers and required-nonzero-length data
@@ -612,7 +613,7 @@ crypto_status_t otcrypto_gcm_ghash_update(gcm_ghash_context_t *ctx,
 }
 
 crypto_status_t otcrypto_gcm_ghash_final(gcm_ghash_context_t *ctx,
-                                         crypto_word_buf_t digest) {
+                                         crypto_word32_buf_t digest) {
   if (ctx == NULL || digest.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -629,7 +630,7 @@ crypto_status_t otcrypto_gcm_ghash_final(gcm_ghash_context_t *ctx,
 }
 
 crypto_status_t otcrypto_aes_gcm_gctr(const crypto_blinded_key_t *key,
-                                      crypto_const_word_buf_t icb,
+                                      crypto_const_word32_buf_t icb,
                                       crypto_const_byte_buf_t input,
                                       crypto_byte_buf_t output) {
   if (key == NULL || icb.data == NULL) {
@@ -667,12 +668,12 @@ crypto_status_t otcrypto_aes_gcm_gctr(const crypto_blinded_key_t *key,
 
 crypto_status_t otcrypto_aes_kwp_encrypt(
     const crypto_blinded_key_t *key_to_wrap,
-    const crypto_blinded_key_t *key_kek, crypto_word_buf_t *wrapped_key) {
+    const crypto_blinded_key_t *key_kek, crypto_word32_buf_t *wrapped_key) {
   // TODO: AES-KWP is not yet implemented.
   return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
-crypto_status_t otcrypto_aes_kwp_decrypt(crypto_const_word_buf_t wrapped_key,
+crypto_status_t otcrypto_aes_kwp_decrypt(crypto_const_word32_buf_t wrapped_key,
                                          const crypto_blinded_key_t *key_kek,
                                          crypto_blinded_key_t *unwrapped_key) {
   // TODO: AES-KWP is not yet implemented.

@@ -142,7 +142,7 @@ static status_t run_rsa_2048_sign(const uint8_t *msg, size_t msg_len,
       .len = msg_len,
   };
 
-  crypto_word_buf_t sig_buf = {
+  crypto_word32_buf_t sig_buf = {
       .data = sig,
       .len = kRsa2048NumWords,
   };
@@ -201,7 +201,7 @@ static status_t run_rsa_2048_verify(const uint8_t *msg, size_t msg_len,
       .len = msg_len,
   };
 
-  crypto_const_word_buf_t sig_buf = {
+  crypto_const_word32_buf_t sig_buf = {
       .data = sig,
       .len = kRsa2048NumWords,
   };

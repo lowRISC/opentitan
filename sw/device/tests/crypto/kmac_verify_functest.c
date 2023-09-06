@@ -34,7 +34,7 @@ bool test_main(void) {
       digest_len_words++;
     }
     uint32_t digest[digest_len_words];
-    crypto_word_buf_t digest_buf = {
+    crypto_word32_buf_t digest_buf = {
         .data = digest,
         .len = digest_len_words,
     };

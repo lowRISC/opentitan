@@ -56,7 +56,7 @@ status_t hash_rom(void) {
       .data = (uint8_t *)TOP_EARLGREY_ROM_BASE_ADDR,
       .len = kGoldenRomSizeBytes,
   };
-  crypto_word_buf_t output = {
+  crypto_word32_buf_t output = {
       .data = rom_hash,
       .len = ARRAYSIZE(rom_hash),
   };

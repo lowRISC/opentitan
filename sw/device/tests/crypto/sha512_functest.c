@@ -52,7 +52,7 @@ status_t sha512_test(const unsigned char *msg, const size_t msg_len,
 
   // Allocate space for the computed digest.
   uint32_t actual_digest_data[512 / 32];
-  crypto_word_buf_t actual_digest = {
+  crypto_word32_buf_t actual_digest = {
       .data = actual_digest_data,
       .len = ARRAYSIZE(actual_digest_data),
   };
@@ -88,7 +88,7 @@ status_t sha512_streaming_test(const unsigned char *msg, size_t msg_len,
 
   // Allocate space for the computed digest.
   uint32_t actual_digest_data[512 / 32];
-  crypto_word_buf_t actual_digest = {
+  crypto_word32_buf_t actual_digest = {
       .data = actual_digest_data,
       .len = ARRAYSIZE(actual_digest_data),
   };

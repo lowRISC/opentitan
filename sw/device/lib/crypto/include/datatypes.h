@@ -106,30 +106,30 @@ typedef struct crypto_const_byte_buf {
  * Struct to hold a fixed-length word array.
  *
  * Note: the caller must (1) allocate sufficient space and (2) set the `len`
- * field and `data` pointer when `crypto_word_buf_t` is used for output. The
+ * field and `data` pointer when `crypto_word32_buf_t` is used for output. The
  * crypto library will throw an error if `len` doesn't match expectations.
  */
-typedef struct crypto_word_buf {
+typedef struct crypto_word32_buf {
   // Length of the data in words.
   size_t len;
   // Pointer to the data.
   uint32_t *data;
-} crypto_word_buf_t;
+} crypto_word32_buf_t;
 
 /**
  * Struct to hold a constant fixed-length word array.
  *
  * The const annotations prevent any changes to the word buffer. It is
- * necessary to have this structure separate from `crypto_word_buf_t` because
+ * necessary to have this structure separate from `crypto_word32_buf_t` because
  * data pointed to by a struct does not inherit `const`, so `const
- * crypto_word_buf_t` would still allow data to change.
+ * crypto_word32_buf_t` would still allow data to change.
  */
-typedef struct crypto_const_word_buf {
+typedef struct crypto_const_word32_buf {
   // Length of the data in words.
   const size_t len;
   // Pointer to the data.
   const uint32_t *const data;
-} crypto_const_word_buf_t;
+} crypto_const_word32_buf_t;
 
 /**
  * Enum to denote the key type of the handled key.

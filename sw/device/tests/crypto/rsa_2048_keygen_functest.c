@@ -103,11 +103,11 @@ status_t keygen_then_sign_test(void) {
   };
 
   uint32_t sig[kRsa2048NumWords];
-  crypto_word_buf_t sig_buf = {
+  crypto_word32_buf_t sig_buf = {
       .data = sig,
       .len = kRsa2048NumWords,
   };
-  crypto_const_word_buf_t const_sig_buf = {
+  crypto_const_word32_buf_t const_sig_buf = {
       .data = sig,
       .len = kRsa2048NumWords,
   };

@@ -183,7 +183,7 @@ static status_t check_digest_len(hash_mode_t hash_mode, size_t digest_len) {
  */
 OT_WARN_UNUSED_RESULT
 static status_t hmac_sha256(crypto_const_byte_buf_t message,
-                            crypto_word_buf_t *digest) {
+                            crypto_word32_buf_t *digest) {
   HARDENED_CHECK_EQ(digest->len, kHmacDigestNumWords);
 
   // Initialize the hardware.
@@ -202,7 +202,7 @@ static status_t hmac_sha256(crypto_const_byte_buf_t message,
 
 crypto_status_t otcrypto_hash(crypto_const_byte_buf_t input_message,
                               hash_mode_t hash_mode,
-                              crypto_word_buf_t *digest) {
+                              crypto_word32_buf_t *digest) {
   if (input_message.data == NULL && input_message.len != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -254,7 +254,7 @@ crypto_status_t otcrypto_xof(crypto_const_byte_buf_t input_message,
                              crypto_const_byte_buf_t function_name_string,
                              crypto_const_byte_buf_t customization_string,
                              size_t required_output_len,
-                             crypto_word_buf_t *digest) {
+                             crypto_word32_buf_t *digest) {
   // TODO: (#16410) Add error checks
 
   // Check that the output lengths match.
@@ -375,7 +375,7 @@ crypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
 }
 
 crypto_status_t otcrypto_hash_final(hash_context_t *const ctx,
-                                    crypto_word_buf_t *digest) {
+                                    crypto_word32_buf_t *digest) {
   if (ctx == NULL || digest == NULL || digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
