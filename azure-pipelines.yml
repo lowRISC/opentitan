@@ -211,6 +211,7 @@ jobs:
       # This command builds all software and runs all unit tests that run on the
       # host, with a few exceptions:
       # * It excludes //quality because that's the purview of `slow_lints`.
+      # * It excludes //sw/otbn/crypto because that's tested in `otbn_crypto_tests`.
       # * It excludes the tests from //third_party/riscv-compliance because
       #   they're already covered by `execute_fpga_tests_cw310`.
       # * It excludes //hw:all to avoid building Verilator, which is pulled in
@@ -223,6 +224,7 @@ jobs:
       TARGET_PATTERN_FILE=$(mktemp)
       echo //... > "${TARGET_PATTERN_FILE}"
       echo -//quality/... >> "${TARGET_PATTERN_FILE}"
+      echo -//sw/otbn/crypto/... >> "${TARGET_PATTERN_FILE}"
       echo -//third_party/riscv-compliance/... >> "${TARGET_PATTERN_FILE}"
       echo -//hw:all >> "${TARGET_PATTERN_FILE}"
       ./bazelisk.sh cquery \
@@ -395,6 +397,19 @@ jobs:
   - bash: |
       make -C hw/ip/otbn/util asm-check
     displayName: Assemble & link code snippets
+
+- job: otbn_crypto_tests
+  displayName: Run OTBN crypto tests
+  dependsOn: lint
+  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
+  pool:
+    vmImage: ubuntu-20.04
+  timeoutInMinutes: 180
+  steps:
+  - template: ci/checkout-template.yml
+  - template: ci/install-package-dependencies.yml
+  - bash: |
+      ci/bazelisk.sh test //sw/otbn/crypto/...
 
 - job: chip_earlgrey_cw310
   displayName: CW310's Earl Grey Bitstream
