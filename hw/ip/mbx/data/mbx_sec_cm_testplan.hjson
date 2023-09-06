@@ -29,5 +29,11 @@
       stage: V2S
       tests: []
     }
+    {
+      name: sec_cm_address_range_config_regwen_mubi
+      desc: "Verify the countermeasure(s) ADDRESS_RANGE.CONFIG.REGWEN_MUBI."
+      stage: V2S
+      tests: []
+    }
   ]
 }
