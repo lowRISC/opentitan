@@ -60,6 +60,9 @@
     { name: "BUS.INTEGRITY"
       desc: "End-to-end bus integrity scheme."
     }
+    { name: "ADDRESS_RANGE.CONFIG.REGWEN_MUBI",
+      desc: "Private SRAM memory range is software multibit lockable."
+    }
   ]
   regwidth: "32"
   registers: {
@@ -141,9 +144,14 @@
         swaccess: "rw0c"
         fields: [
           { name: "regwen"
-            desc: "Once cleared the mailbox inbound/outbound base/limit registers will be locked until the next reset."
-            bits: "0"
-            resval: "1"
+            desc: '''
+                  Once cleared the mailbox inbound/outbound base/limit registers will be locked until the next reset.
+
+                  Default Value = kMultiBitBool4True -> Unlocked at reset.
+                  '''
+            bits: "3:0"
+            mubi: "true"
+            resval: true
           }
         ]
       }
