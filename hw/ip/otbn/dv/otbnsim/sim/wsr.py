@@ -211,7 +211,6 @@ class URNDWSR(WSR):
         seed = [0x84ddfadaf7e1134d, 0x70aa1c59de6197ff,
                 0x25a4fe335d095f1e, 0x2cba89acbe4a07e9]
         self._state = [seed, 4 * [0], 4 * [0], 4 * [0], 4 * [0]]
-        self._out = 4 * [0]
         self._next_value = None  # type: Optional[int]
         self._value = None  # type: Optional[int]
         self.running = False
@@ -267,8 +266,7 @@ class URNDWSR(WSR):
                 st_i = self._state[i]
                 self._state[i + 1] = self.state_update(st_i)
                 mid[i] = (st_i[3] + st_i[0]) & mask64
-                self._out[i] = (self.rol(mid[i], 23) + st_i[3]) & mask64
-                nv |= self._out[i] << (64 * i)
+                nv |= ((self.rol(mid[i], 23) + st_i[3]) & mask64) << (64 * i)
             self._next_value = nv
             self._state[0] = self._state[4]
 
