@@ -183,10 +183,12 @@ cc_library(
         "//sw/device/lib/crypto/include:mac.h",
     ],
     deps = [
+        ":hash",
         ":integrity",
         ":keyblob",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/crypto/drivers:kmac",
         "//sw/device/lib/crypto/impl/sha2:sha256",
+        "//sw/device/lib/crypto/impl/sha2:sha512",
     ],
 )
