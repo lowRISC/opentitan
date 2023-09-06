@@ -264,11 +264,10 @@ class URNDWSR(WSR):
             nv = 0
             for i in range(4):
                 st_i = self._state[i]
-                self._state[i + 1] = self.state_update(st_i)
+                self._state[(i + 1) & 3] = self.state_update(st_i)
                 mid[i] = (st_i[3] + st_i[0]) & mask64
                 nv |= ((self.rol(mid[i], 23) + st_i[3]) & mask64) << (64 * i)
             self._next_value = nv
-            self._state[0] = self._state[4]
 
     def commit(self) -> None:
         if self._next_value is not None:
