@@ -63,12 +63,10 @@ class WSR:
     def commit(self) -> None:
         '''Commit pending changes'''
         self._pending_write = False
-        return
 
     def abort(self) -> None:
         '''Abort pending changes'''
         self._pending_write = False
-        return
 
     def changes(self) -> Sequence[Trace]:
         '''Return list of pending architectural changes'''
