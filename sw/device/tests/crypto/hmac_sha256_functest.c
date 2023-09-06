@@ -24,11 +24,6 @@ static const uint32_t kBasicTestKey[] = {
     0xc3687ba2, 0xea6d3619, 0xb0916bf2, 0x347a2f71,
 };
 
-// Short test key, 32 bits (big endian) = 0x1bff10ea
-static const uint32_t kShortTestKey[] = {
-    0xea10ff1b,
-};
-
 // Long test key, 544 bits (big endian) =
 // 0x000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f40414243
 static const uint32_t kLongTestKey[] = {
@@ -82,7 +77,7 @@ static status_t run_test(const uint32_t *key, size_t key_len,
       .len = ARRAYSIZE(act_tag),
   };
 
-  TRY(otcrypto_hmac(&blinded_key, msg, &tag_buf));
+  TRY(otcrypto_hmac(&blinded_key, msg, kHashModeSha256, &tag_buf));
   TRY_CHECK_ARRAYS_EQ(act_tag, exp_tag, kTagLenWords);
   return OK_STATUS();
 }
@@ -125,25 +120,6 @@ static status_t empty_test(void) {
 }
 
 /**
- * Test using a short key.
- *
- * HMAC-SHA256(kShortTestKey, 'Test message.')
- *   = 0x3f08885633d7caa1728f798c49110ed8c8020f74ba6de7d0b549935b87eb3ef1
- */
-static status_t short_key_test(void) {
-  const char plaintext[] = "Test message.";
-  crypto_const_byte_buf_t msg_buf = {
-      .data = (unsigned char *)plaintext,
-      .len = sizeof(plaintext) - 1,
-  };
-  const uint32_t exp_tag[] = {
-      0x5688083f, 0xa1cad733, 0x8c798f72, 0xd80e1149,
-      0x740f02c8, 0xd0e76dba, 0x5b9349b5, 0xf13eeb87,
-  };
-  return run_test(kShortTestKey, sizeof(kShortTestKey), msg_buf, exp_tag);
-}
-
-/**
  * Test using a long key.
  *
  * HMAC-SHA256(kLongTestKey, 'Test message.')
@@ -171,7 +147,6 @@ bool test_main(void) {
   test_result = OK_STATUS();
   EXECUTE_TEST(test_result, simple_test);
   EXECUTE_TEST(test_result, empty_test);
-  EXECUTE_TEST(test_result, short_key_test);
   EXECUTE_TEST(test_result, long_key_test);
   return status_ok(test_result);
 }

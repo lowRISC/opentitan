@@ -323,8 +323,8 @@ py_binary(
 )
 
 opentitan_functest(
-    name = "hmac_functest",
-    srcs = ["hmac_functest.c"],
+    name = "hmac_sha256_functest",
+    srcs = ["hmac_sha256_functest.c"],
     verilator = verilator_params(
         timeout = "long",
     ),

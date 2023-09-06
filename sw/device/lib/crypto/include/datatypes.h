@@ -186,7 +186,11 @@ typedef enum aes_key_mode {
  */
 typedef enum hmac_key_mode {
   // Mode HMAC SHA256.
-  kHmacKeyModeSha256 = 0xc1d,
+  kHmacKeyModeSha256 = 0x7fd,
+  // Mode HMAC SHA384.
+  kHmacKeyModeSha384 = 0x43b,
+  // Mode HMAC SHA512.
+  kHmacKeyModeSha512 = 0x7a2,
 } hmac_key_mode_t;
 
 /**
@@ -279,6 +283,10 @@ typedef enum key_mode {
   kKeyModeAesKwp = kKeyTypeAes << 16 | kAesKeyModeKwp,
   // Key is intended for HMAC SHA256 mode.
   kKeyModeHmacSha256 = kKeyTypeHmac << 16 | kHmacKeyModeSha256,
+  // Key is intended for HMAC SHA384 mode.
+  kKeyModeHmacSha384 = kKeyTypeHmac << 16 | kHmacKeyModeSha384,
+  // Key is intended for HMAC SHA512 mode.
+  kKeyModeHmacSha512 = kKeyTypeHmac << 16 | kHmacKeyModeSha512,
   // Key is intended for KMAC128 mode.
   kKeyModeKmac128 = kKeyTypeKmac << 16 | kKmacKeyModeKmac128,
   // Key is intended for KMAC256 mode.
