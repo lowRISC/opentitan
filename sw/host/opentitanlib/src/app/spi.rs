@@ -4,34 +4,67 @@
 
 use crate::io::eeprom;
 use crate::io::gpio::GpioPin;
-use crate::io::spi::{self, Target};
+use crate::io::spi;
+use crate::io::spi::Target;
 use crate::transport::Transport;
 
 use anyhow::Result;
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
-/// Several `SpiWrapper` objects can exist concurrently, sharing the same underlying transport
-/// target, but e.g. having distinct chip select and clock speed settings.  (Terminology is a
-/// little muddy here, the underlying object is more properly representing the SPI "bus", and this
-/// wrapper a particular target chip on the bus.)
-///
-/// Calling e.g. `set_max_speed()` on a `SpiWrapper` will not immediately be propagated to the
-/// underlying transport, instead, the accumulated settings are kept in the `SpiWrapper`, and
-/// propagated only whenever an actual SPI transaction is initiated.
-pub struct SpiWrapper {
+/// Exactly one `PhysicalSpiWrapper` exists for every underlying tranport `Target` instance that
+/// has been accessed through the `TransportWrapper`.  It is used to keep track of which
+/// `LogicalSpiWrapper` has already applied its settings to the hardware, in order to avoid
+/// repeated invocations of e.g. `set_max_speed()` on the `Target`.
+pub struct PhysicalSpiWrapper {
     /// Reference to the `Target` instance of the underlying transport.
     underlying_target: Rc<dyn Target>,
+    /// Unique ID of the LogicalSpiWrapper which last used this physical SPI port.
+    last_used_by_uid: Cell<Option<usize>>,
+}
+
+impl PhysicalSpiWrapper {
+    /// Create new instance, should only be called from `TransportWrapper`
+    pub fn new(underlying_target: Rc<dyn Target>) -> Self {
+        Self {
+            underlying_target,
+            last_used_by_uid: Cell::new(None),
+        }
+    }
+}
+
+/// Several `LogicalSpiWrapper` objects can exist concurrently, sharing the same underlying
+/// transport target, but e.g. having distinct chip select and clock speed settings.  (Terminology
+/// is a little muddy here, the underlying object is more properly representing the SPI "bus", and
+/// this wrapper a particular target chip on the bus.)
+///
+/// Calling e.g. `set_max_speed()` on a `LogicalSpiWrapper` will not immediately be propagated to
+/// the underlying transport, instead, the accumulated settings are kept in the
+/// `LogicalSpiWrapper`, and propagated only whenever an actual SPI transaction is initiated.
+pub struct LogicalSpiWrapper {
+    /// Reference to the underlying port.
+    physical_wrapper: Rc<PhysicalSpiWrapper>,
+    /// Unique ID of this `LogicalSpiWrapper`.
+    uid: usize,
+    // SPI port settings applying to this named logical SPI port.
     mode: Cell<Option<spi::TransferMode>>,
     bits_per_word: Cell<Option<u32>>,
     max_speed: Cell<Option<u32>>,
     chip_select: RefCell<Option<Rc<dyn GpioPin>>>,
 }
 
-impl SpiWrapper {
-    pub fn new(transport: &dyn Transport, conf: &super::SpiConfiguration) -> Result<Self> {
+impl LogicalSpiWrapper {
+    /// Create new instance, should only be called from `TransportWrapper`
+    pub fn new(
+        transport: &dyn Transport,
+        conf: &super::SpiConfiguration,
+        physical_wrapper: Rc<PhysicalSpiWrapper>,
+    ) -> Result<Self> {
+        static COUNTER: AtomicUsize = AtomicUsize::new(0);
         Ok(Self {
-            underlying_target: transport.spi(conf.underlying_instance.as_str())?,
+            physical_wrapper,
+            uid: COUNTER.fetch_add(1, Ordering::Relaxed),
             mode: Cell::new(conf.mode),
             bits_per_word: Cell::new(conf.bits_per_word),
             max_speed: Cell::new(conf.bits_per_sec),
@@ -43,25 +76,38 @@ impl SpiWrapper {
     }
 
     fn apply_settings_to_underlying(&self) -> Result<()> {
+        if self.physical_wrapper.last_used_by_uid.get() == Some(self.uid) {
+            // Physical SPI port last used by this same LogicalSpiWrapper, no need to re-apply our
+            // settings.
+            return Ok(());
+        }
         if let Some(mode) = self.mode.get() {
-            self.underlying_target.set_transfer_mode(mode)?;
+            self.physical_wrapper
+                .underlying_target
+                .set_transfer_mode(mode)?;
         }
         if let Some(bits_per_word) = self.bits_per_word.get() {
-            self.underlying_target.set_bits_per_word(bits_per_word)?;
+            self.physical_wrapper
+                .underlying_target
+                .set_bits_per_word(bits_per_word)?;
         }
         if let Some(max_speed) = self.max_speed.get() {
-            self.underlying_target.set_max_speed(max_speed)?;
+            self.physical_wrapper
+                .underlying_target
+                .set_max_speed(max_speed)?;
         }
         if let Some(chip_select) = self.chip_select.borrow().as_ref() {
-            self.underlying_target.set_chip_select(chip_select)?;
+            self.physical_wrapper
+                .underlying_target
+                .set_chip_select(chip_select)?;
         }
         Ok(())
     }
 }
 
-impl Target for SpiWrapper {
+impl Target for LogicalSpiWrapper {
     fn get_transfer_mode(&self) -> Result<spi::TransferMode> {
-        self.underlying_target.get_transfer_mode()
+        self.physical_wrapper.underlying_target.get_transfer_mode()
     }
     fn set_transfer_mode(&self, mode: spi::TransferMode) -> Result<()> {
         self.mode.set(Some(mode));
@@ -69,7 +115,7 @@ impl Target for SpiWrapper {
     }
 
     fn get_bits_per_word(&self) -> Result<u32> {
-        self.underlying_target.get_bits_per_word()
+        self.physical_wrapper.underlying_target.get_bits_per_word()
     }
     fn set_bits_per_word(&self, bits_per_word: u32) -> Result<()> {
         self.bits_per_word.set(Some(bits_per_word));
@@ -77,7 +123,7 @@ impl Target for SpiWrapper {
     }
 
     fn get_max_speed(&self) -> Result<u32> {
-        self.underlying_target.get_max_speed()
+        self.physical_wrapper.underlying_target.get_max_speed()
     }
     fn set_max_speed(&self, max_speed: u32) -> Result<()> {
         self.max_speed.set(Some(max_speed));
@@ -85,7 +131,9 @@ impl Target for SpiWrapper {
     }
 
     fn supports_bidirectional_transfer(&self) -> Result<bool> {
-        self.underlying_target.supports_bidirectional_transfer()
+        self.physical_wrapper
+            .underlying_target
+            .supports_bidirectional_transfer()
     }
 
     fn set_chip_select(&self, chip_select: &Rc<dyn GpioPin>) -> Result<()> {
@@ -94,33 +142,43 @@ impl Target for SpiWrapper {
     }
 
     fn get_max_transfer_count(&self) -> Result<usize> {
-        self.underlying_target.get_max_transfer_count()
+        self.physical_wrapper
+            .underlying_target
+            .get_max_transfer_count()
     }
 
     fn get_max_transfer_sizes(&self) -> Result<spi::MaxSizes> {
-        self.underlying_target.get_max_transfer_sizes()
+        self.physical_wrapper
+            .underlying_target
+            .get_max_transfer_sizes()
     }
 
     fn set_voltage(&self, voltage: crate::util::voltage::Voltage) -> Result<()> {
-        self.underlying_target.set_voltage(voltage)
+        self.physical_wrapper.underlying_target.set_voltage(voltage)
     }
 
     fn run_transaction(&self, transaction: &mut [spi::Transfer]) -> Result<()> {
         self.apply_settings_to_underlying()?;
-        self.underlying_target.run_transaction(transaction)
+        self.physical_wrapper
+            .underlying_target
+            .run_transaction(transaction)
     }
 
     fn get_eeprom_max_transfer_sizes(&self) -> Result<spi::MaxSizes> {
-        self.underlying_target.get_eeprom_max_transfer_sizes()
+        self.physical_wrapper
+            .underlying_target
+            .get_eeprom_max_transfer_sizes()
     }
 
     fn run_eeprom_transactions(&self, transactions: &mut [eeprom::Transaction]) -> Result<()> {
         self.apply_settings_to_underlying()?;
-        self.underlying_target.run_eeprom_transactions(transactions)
+        self.physical_wrapper
+            .underlying_target
+            .run_eeprom_transactions(transactions)
     }
 
     fn assert_cs(self: Rc<Self>) -> Result<spi::AssertChipSelect> {
         self.apply_settings_to_underlying()?;
-        Rc::clone(&self.underlying_target).assert_cs()
+        Rc::clone(&self.physical_wrapper.underlying_target).assert_cs()
     }
 }
