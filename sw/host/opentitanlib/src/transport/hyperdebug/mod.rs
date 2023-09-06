@@ -51,7 +51,8 @@ pub use ti50::Ti50Flavor;
 /// Nucleo-L552ZE-Q.
 pub struct Hyperdebug<T: Flavor> {
     spi_interface: BulkInterface,
-    i2c_interface: BulkInterface,
+    i2c_interface: Option<BulkInterface>,
+    cmsis_interface: Option<BulkInterface>,
     uart_ttys: HashMap<String, PathBuf>,
     inner: Rc<Inner>,
     current_firmware_version: Option<String>,
@@ -125,6 +126,7 @@ impl<T: Flavor> Hyperdebug<T> {
         let mut console_tty: Option<PathBuf> = None;
         let mut spi_interface: Option<BulkInterface> = None;
         let mut i2c_interface: Option<BulkInterface> = None;
+        let mut cmsis_interface: Option<BulkInterface> = None;
         let mut uart_ttys: HashMap<String, PathBuf> = HashMap::new();
 
         let config_desc = device.active_config_descriptor()?;
@@ -190,6 +192,7 @@ impl<T: Flavor> Hyperdebug<T> {
                         uart_ttys
                             .insert(interface_name.to_string(), Self::find_tty(&interface_path)?);
                     }
+                    continue;
                 }
                 if interface_desc.class_code() == Self::USB_CLASS_VENDOR
                     && interface_desc.sub_class_code() == Self::USB_SUBCLASS_SPI
@@ -202,6 +205,7 @@ impl<T: Flavor> Hyperdebug<T> {
                         &interface,
                         &interface_desc,
                     )?;
+                    continue;
                 }
                 if interface_desc.class_code() == Self::USB_CLASS_VENDOR
                     && interface_desc.sub_class_code() == Self::USB_SUBCLASS_I2C
@@ -214,6 +218,29 @@ impl<T: Flavor> Hyperdebug<T> {
                         &interface,
                         &interface_desc,
                     )?;
+                    continue;
+                }
+                if interface_desc.class_code() == Self::USB_CLASS_VENDOR {
+                    // A serial console interface, use the ascii name to determine if it is the
+                    // HyperDebug Shell, or a UART forwarding interface.
+                    let idx = match interface_desc.description_string_index() {
+                        Some(idx) => idx,
+                        None => continue,
+                    };
+                    let interface_name = match device.read_string_descriptor_ascii(idx) {
+                        Ok(interface_name) => interface_name,
+                        _ => continue,
+                    };
+                    if interface_name.ends_with("CMSIS-DAP") {
+                        // We found the I2C forwarding USB interface (this one interface allows
+                        // multiplexing physical I2C ports.)
+                        Self::find_endpoints_for_interface(
+                            &mut cmsis_interface,
+                            &interface,
+                            &interface_desc,
+                        )?;
+                        continue;
+                    }
                 }
             }
         }
@@ -221,9 +248,8 @@ impl<T: Flavor> Hyperdebug<T> {
             spi_interface: spi_interface.ok_or_else(|| {
                 TransportError::CommunicationError("Missing SPI interface".to_string())
             })?,
-            i2c_interface: i2c_interface.ok_or_else(|| {
-                TransportError::CommunicationError("Missing I2C interface".to_string())
-            })?,
+            i2c_interface,
+            cmsis_interface,
             uart_ttys,
             inner: Rc::new(Inner {
                 console_tty: console_tty.ok_or_else(|| {
@@ -510,11 +536,26 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         if let Some(instance) = self.inner.i2cs.borrow().get(&idx) {
             return Ok(Rc::clone(instance));
         }
-        let instance: Rc<dyn Bus> = Rc::new(i2c::HyperdebugI2cBus::open(
-            &self.inner,
-            &self.i2c_interface,
-            idx,
-        )?);
+        let instance: Rc<dyn Bus> = Rc::new(
+            match (self.cmsis_interface.as_ref(), self.i2c_interface.as_ref()) {
+                (Some(cmsis_interface), _) => i2c::HyperdebugI2cBus::open(
+                    &self.inner,
+                    cmsis_interface,
+                    true, /* cmsis_encapsulation */
+                    idx,
+                )?,
+                (None, Some(i2c_interface)) => i2c::HyperdebugI2cBus::open(
+                    &self.inner,
+                    i2c_interface,
+                    false, /* cmsis_encapsulation */
+                    idx,
+                )?,
+                (None, None) => bail!(TransportError::InvalidInstance(
+                    TransportInterfaceType::I2c,
+                    instance.to_string()
+                )),
+            },
+        );
         self.inner
             .i2cs
             .borrow_mut()

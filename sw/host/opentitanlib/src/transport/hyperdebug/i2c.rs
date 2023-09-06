@@ -15,6 +15,7 @@ use crate::transport::{TransportError, TransportInterfaceType};
 pub struct HyperdebugI2cBus {
     inner: Rc<Inner>,
     interface: BulkInterface,
+    cmsis_encapsulation: bool,
     bus_idx: u8,
     max_write_size: usize,
     max_read_size: usize,
@@ -28,6 +29,7 @@ const USB_MAX_SIZE: usize = 64;
 #[derive(AsBytes, FromBytes, FromZeroes, Debug)]
 #[repr(C)]
 struct CmdTransferShort {
+    encapsulation_header: u8,
     port: u8,
     addr: u8,
     write_count: u8,
@@ -40,6 +42,7 @@ struct CmdTransferShort {
 #[derive(AsBytes, FromBytes, FromZeroes, Debug)]
 #[repr(C)]
 struct CmdTransferLong {
+    encapsulation_header: u8,
     port: u8,
     addr: u8,
     write_count: u8,
@@ -53,6 +56,7 @@ struct CmdTransferLong {
 #[derive(AsBytes, FromBytes, FromZeroes, Debug)]
 #[repr(C)]
 struct RspTransfer {
+    encapsulation_header: [u8; 2],
     status_code: u16,
     reserved: u16,
     data: [u8; USB_MAX_SIZE - 4],
@@ -60,6 +64,7 @@ struct RspTransfer {
 impl RspTransfer {
     fn new() -> Self {
         Self {
+            encapsulation_header: [0u8; 2],
             status_code: 0,
             reserved: 0,
             data: [0; USB_MAX_SIZE - 4],
@@ -68,7 +73,17 @@ impl RspTransfer {
 }
 
 impl HyperdebugI2cBus {
-    pub fn open(inner: &Rc<Inner>, i2c_interface: &BulkInterface, idx: u8) -> Result<Self> {
+    /// If `cmsis_encapsulation` is set to true, then every request on the USB bus will have an
+    /// extra byte "in front" containing this value.  Correspondingly, every response is expected
+    /// to carry this same value as the first byte.
+    const CMSIS_DAP_CUSTOM_COMMAND_I2C: u8 = 0x81;
+
+    pub fn open(
+        inner: &Rc<Inner>,
+        i2c_interface: &BulkInterface,
+        cmsis_encapsulation: bool,
+        idx: u8,
+    ) -> Result<Self> {
         ensure!(
             idx < 16,
             TransportError::InvalidInstance(TransportInterfaceType::I2c, idx.to_string())
@@ -81,6 +96,7 @@ impl HyperdebugI2cBus {
         Ok(Self {
             inner: Rc::clone(inner),
             interface: *i2c_interface,
+            cmsis_encapsulation,
             bus_idx: idx,
             max_read_size: 0x8000,
             max_write_size: 0x1000,
@@ -98,22 +114,25 @@ impl HyperdebugI2cBus {
             wbuf.len() < self.max_write_size,
             I2cError::InvalidDataLength(wbuf.len())
         );
+        let encapsulation_header_size = if self.cmsis_encapsulation { 1 } else { 0 };
         let mut index = if rbuf.len() < 128 {
             // Short format header
             let mut req = CmdTransferShort {
+                encapsulation_header: Self::CMSIS_DAP_CUSTOM_COMMAND_I2C,
                 port: self.bus_idx | (((wbuf.len() & 0x0F00) >> 4) as u8),
                 addr,
                 write_count: (wbuf.len() & 0x00FF) as u8,
                 read_count: rbuf.len() as u8,
                 data: [0; USB_MAX_SIZE - 4],
             };
-            let databytes = cmp::min(USB_MAX_SIZE - 4, wbuf.len());
+            let databytes = cmp::min(USB_MAX_SIZE - 4 - encapsulation_header_size, wbuf.len());
             req.data[..databytes].clone_from_slice(&wbuf[..databytes]);
-            self.usb_write_bulk(&req.as_bytes()[..4 + databytes])?;
+            self.usb_write_bulk(&req.as_bytes()[1 - encapsulation_header_size..1 + 4 + databytes])?;
             databytes
         } else {
             // Long format header
             let mut req = CmdTransferLong {
+                encapsulation_header: Self::CMSIS_DAP_CUSTOM_COMMAND_I2C,
                 port: self.bus_idx | (((wbuf.len() & 0x0F00) >> 4) as u8),
                 addr,
                 write_count: (wbuf.len() & 0x00FF) as u8,
@@ -122,9 +141,9 @@ impl HyperdebugI2cBus {
                 reserved: 0,
                 data: [0; USB_MAX_SIZE - 6],
             };
-            let databytes = cmp::min(USB_MAX_SIZE - 6, wbuf.len());
+            let databytes = cmp::min(USB_MAX_SIZE - 6 - encapsulation_header_size, wbuf.len());
             req.data[..databytes].clone_from_slice(&wbuf[..databytes]);
-            self.usb_write_bulk(&req.as_bytes()[..6 + databytes])?;
+            self.usb_write_bulk(&req.as_bytes()[1 - encapsulation_header_size..1 + 6 + databytes])?;
             databytes
         };
 
@@ -136,9 +155,20 @@ impl HyperdebugI2cBus {
         }
 
         let mut resp = RspTransfer::new();
-        let bytecount = self.usb_read_bulk(resp.as_bytes_mut())?;
+        let bytecount = self.usb_read_bulk(
+            &mut resp.as_bytes_mut()
+                [2 - encapsulation_header_size..2 - encapsulation_header_size + 64],
+        )?;
+        if encapsulation_header_size == 1 {
+            ensure!(
+                resp.encapsulation_header[1] == Self::CMSIS_DAP_CUSTOM_COMMAND_I2C,
+                TransportError::CommunicationError(
+                    "Unrecognized CMSIS-DAP response to I2C request".to_string()
+                )
+            );
+        }
         ensure!(
-            bytecount >= 4,
+            bytecount >= 4 + encapsulation_header_size,
             TransportError::CommunicationError("Unrecognized response to I2C request".to_string())
         );
         match resp.status_code {
@@ -150,7 +180,7 @@ impl HyperdebugI2cBus {
                 n
             ))),
         }
-        let databytes = bytecount - 4;
+        let databytes = bytecount - 4 - encapsulation_header_size;
         rbuf[..databytes].clone_from_slice(&resp.data[..databytes]);
         let mut index = databytes;
         while index < rbuf.len() {
