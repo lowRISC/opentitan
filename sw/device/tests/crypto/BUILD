@@ -21,6 +21,23 @@ opentitan_functest(
     ],
 )
 
+opentitan_functest(
+    name = "aes_sideload_functest",
+    srcs = ["aes_sideload_functest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/drivers:aes",
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/drivers:keymgr",
+        "//sw/device/lib/crypto/impl:aes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 cc_library(
     name = "aes_testvectors",
     srcs = ["aes_testvectors.h"],
