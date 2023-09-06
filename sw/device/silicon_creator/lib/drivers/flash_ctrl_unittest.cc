@@ -883,5 +883,37 @@ TEST_P(DataRegionProtectTestSuite, ProtectRegionReadWriteEraseEnabled) {
       });
 }
 
+class DataRegionLockTestSuite : public testing::TestWithParam<size_t> {
+ protected:
+  static const size_t kNumMemoryProtectionRegions = 8;
+  static constexpr size_t
+      kFlashCtrlRegionCfgRegwenOffset[kNumMemoryProtectionRegions]{
+          FLASH_CTRL_REGION_CFG_REGWEN_0_REG_OFFSET,
+          FLASH_CTRL_REGION_CFG_REGWEN_1_REG_OFFSET,
+          FLASH_CTRL_REGION_CFG_REGWEN_2_REG_OFFSET,
+          FLASH_CTRL_REGION_CFG_REGWEN_3_REG_OFFSET,
+          FLASH_CTRL_REGION_CFG_REGWEN_4_REG_OFFSET,
+          FLASH_CTRL_REGION_CFG_REGWEN_5_REG_OFFSET,
+          FLASH_CTRL_REGION_CFG_REGWEN_6_REG_OFFSET,
+          FLASH_CTRL_REGION_CFG_REGWEN_7_REG_OFFSET,
+      };
+
+  static constexpr uint32_t kBase = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR;
+
+  rom_test::MockSecMmio sec_mmio_;
+};
+
+constexpr size_t DataRegionLockTestSuite::kFlashCtrlRegionCfgRegwenOffset[];
+
+INSTANTIATE_TEST_SUITE_P(DataRegionLockTestInstance, DataRegionLockTestSuite,
+                         testing::Values(0, 1, 2, 3, 4, 5, 6, 7));
+
+TEST_P(DataRegionLockTestSuite, RegionLockTest) {
+  size_t region = GetParam();
+  EXPECT_CALL(sec_mmio_,
+              Write32(kBase + kFlashCtrlRegionCfgRegwenOffset[region], 0x1u));
+  flash_ctrl_data_region_lock(region);
+}
+
 }  // namespace
 }  // namespace flash_ctrl_unittest
