@@ -70,7 +70,7 @@ package mbx_reg_pkg;
   } mbx_reg2hw_status_reg_t;
 
   typedef struct packed {
-    logic        q;
+    logic [3:0]  q;
   } mbx_reg2hw_address_range_regwen_reg_t;
 
   typedef struct packed {
@@ -159,13 +159,13 @@ package mbx_reg_pkg;
 
   // Register -> HW type for host interface
   typedef struct packed {
-    mbx_reg2hw_intr_state_reg_t intr_state; // [219:219]
-    mbx_reg2hw_intr_enable_reg_t intr_enable; // [218:218]
-    mbx_reg2hw_intr_test_reg_t intr_test; // [217:216]
-    mbx_reg2hw_alert_test_reg_t alert_test; // [215:214]
-    mbx_reg2hw_control_reg_t control; // [213:210]
-    mbx_reg2hw_status_reg_t status; // [209:200]
-    mbx_reg2hw_address_range_regwen_reg_t address_range_regwen; // [199:199]
+    mbx_reg2hw_intr_state_reg_t intr_state; // [222:222]
+    mbx_reg2hw_intr_enable_reg_t intr_enable; // [221:221]
+    mbx_reg2hw_intr_test_reg_t intr_test; // [220:219]
+    mbx_reg2hw_alert_test_reg_t alert_test; // [218:217]
+    mbx_reg2hw_control_reg_t control; // [216:213]
+    mbx_reg2hw_status_reg_t status; // [212:203]
+    mbx_reg2hw_address_range_regwen_reg_t address_range_regwen; // [202:199]
     mbx_reg2hw_address_range_valid_reg_t address_range_valid; // [198:198]
     mbx_reg2hw_inbound_base_address_reg_t inbound_base_address; // [197:167]
     mbx_reg2hw_inbound_limit_address_reg_t inbound_limit_address; // [166:136]

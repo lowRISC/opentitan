@@ -214,7 +214,8 @@ module mbx_sys_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_doe_intr_msg_addr (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -253,7 +254,8 @@ module mbx_sys_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0)
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
   ) u_doe_intr_msg_data (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -362,7 +364,8 @@ module mbx_sys_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h1)
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
   ) u_sys_status_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -388,7 +391,8 @@ module mbx_sys_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_sys_status_doe_intr_status (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -415,7 +419,8 @@ module mbx_sys_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_sys_status_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -441,7 +446,8 @@ module mbx_sys_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_sys_status_async_msg_status (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -467,7 +473,8 @@ module mbx_sys_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_sys_status_ready (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

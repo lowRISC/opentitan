@@ -153,8 +153,8 @@ module mbx_host_reg_top (
   logic status_ready_qs;
   logic status_ready_wd;
   logic address_range_regwen_we;
-  logic address_range_regwen_qs;
-  logic address_range_regwen_wd;
+  logic [3:0] address_range_regwen_qs;
+  logic [3:0] address_range_regwen_wd;
   logic address_range_valid_we;
   logic address_range_valid_qs;
   logic address_range_valid_wd;
@@ -183,7 +183,8 @@ module mbx_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_state (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -210,7 +211,8 @@ module mbx_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_intr_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -397,9 +399,10 @@ module mbx_host_reg_top (
 
   // R[address_range_regwen]: V(False)
   prim_subreg #(
-    .DW      (1),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
-    .RESVAL  (1'h1)
+    .RESVAL  (4'h6),
+    .Mubi    (1'b1)
   ) u_address_range_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -426,7 +429,8 @@ module mbx_host_reg_top (
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_address_range_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -463,11 +467,14 @@ module mbx_host_reg_top (
   );
   // Create REGWEN-gated WE signal
   logic inbound_base_address_gated_we;
-  assign inbound_base_address_gated_we = inbound_base_address_we & address_range_regwen_qs;
+  assign inbound_base_address_gated_we =
+    inbound_base_address_we &
+          prim_mubi_pkg::mubi4_test_true_strict(prim_mubi_pkg::mubi4_t'(address_range_regwen_qs));
   prim_subreg #(
     .DW      (30),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (30'h0)
+    .RESVAL  (30'h0),
+    .Mubi    (1'b0)
   ) u_inbound_base_address (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -505,11 +512,14 @@ module mbx_host_reg_top (
   );
   // Create REGWEN-gated WE signal
   logic inbound_limit_address_gated_we;
-  assign inbound_limit_address_gated_we = inbound_limit_address_we & address_range_regwen_qs;
+  assign inbound_limit_address_gated_we =
+    inbound_limit_address_we &
+          prim_mubi_pkg::mubi4_test_true_strict(prim_mubi_pkg::mubi4_t'(address_range_regwen_qs));
   prim_subreg #(
     .DW      (30),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (30'h0)
+    .RESVAL  (30'h0),
+    .Mubi    (1'b0)
   ) u_inbound_limit_address (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -568,11 +578,14 @@ module mbx_host_reg_top (
   );
   // Create REGWEN-gated WE signal
   logic outbound_base_address_gated_we;
-  assign outbound_base_address_gated_we = outbound_base_address_we & address_range_regwen_qs;
+  assign outbound_base_address_gated_we =
+    outbound_base_address_we &
+          prim_mubi_pkg::mubi4_test_true_strict(prim_mubi_pkg::mubi4_t'(address_range_regwen_qs));
   prim_subreg #(
     .DW      (30),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (30'h0)
+    .RESVAL  (30'h0),
+    .Mubi    (1'b0)
   ) u_outbound_base_address (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -610,11 +623,14 @@ module mbx_host_reg_top (
   );
   // Create REGWEN-gated WE signal
   logic outbound_limit_address_gated_we;
-  assign outbound_limit_address_gated_we = outbound_limit_address_we & address_range_regwen_qs;
+  assign outbound_limit_address_gated_we =
+    outbound_limit_address_we &
+          prim_mubi_pkg::mubi4_test_true_strict(prim_mubi_pkg::mubi4_t'(address_range_regwen_qs));
   prim_subreg #(
     .DW      (30),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (30'h0)
+    .RESVAL  (30'h0),
+    .Mubi    (1'b0)
   ) u_outbound_limit_address (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -674,7 +690,8 @@ module mbx_host_reg_top (
   prim_subreg #(
     .DW      (11),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (11'h0)
+    .RESVAL  (11'h0),
+    .Mubi    (1'b0)
   ) u_outbound_object_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -774,7 +791,7 @@ module mbx_host_reg_top (
   assign status_ready_wd = reg_wdata[31];
   assign address_range_regwen_we = addr_hit[6] & reg_we & !reg_error;
 
-  assign address_range_regwen_wd = reg_wdata[0];
+  assign address_range_regwen_wd = reg_wdata[3:0];
   assign address_range_valid_we = addr_hit[7] & reg_we & !reg_error;
 
   assign address_range_valid_wd = reg_wdata[0];
@@ -850,7 +867,7 @@ module mbx_host_reg_top (
       end
 
       addr_hit[6]: begin
-        reg_rdata_next[0] = address_range_regwen_qs;
+        reg_rdata_next[3:0] = address_range_regwen_qs;
       end
 
       addr_hit[7]: begin
