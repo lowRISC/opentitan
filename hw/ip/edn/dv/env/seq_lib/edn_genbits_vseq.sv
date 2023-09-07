@@ -129,6 +129,10 @@ class edn_genbits_vseq extends edn_base_vseq;
             (p_sequencer.endpoint_sequencer_h[endpoint_q[extra_requester]]);
       end
     end
+
+    // uninstantiate CSRNG instance
+    wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::UNI));
+
   endtask
 
 endclass
