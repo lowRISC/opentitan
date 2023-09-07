@@ -404,7 +404,7 @@ jobs:
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
   pool:
     vmImage: ubuntu-20.04
-  timeoutInMinutes: 180
+  timeoutInMinutes: 60
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
