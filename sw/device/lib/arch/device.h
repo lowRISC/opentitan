@@ -56,6 +56,11 @@ typedef enum device_type {
    * development board with SCA capability, containing a Xilinx FPGA.
    */
   kDeviceFpgaCw305 = 3,
+  /**
+   * Represents the "ChipWhisperer CW340 FPGA" device, i.e., the particular
+   * FPGA board blessed for OpenTitan development, containing a Xilinx FPGA.
+   */
+  kDeviceFpgaCw340 = 4,
 } device_type_t;
 
 /**

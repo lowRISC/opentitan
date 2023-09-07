@@ -35,6 +35,17 @@ cc_library(
 )
 
 cc_library(
+    name = "fpga_cw340",
+    srcs = ["device_fpga_cw340.c"],
+    deps = [
+        ":device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:rom_print",
+        "//sw/device/silicon_creator/lib/drivers:ibex",
+    ],
+)
+
+cc_library(
     name = "sim_dv",
     srcs = ["device_sim_dv.c"],
     deps = [
