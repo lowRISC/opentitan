@@ -279,6 +279,23 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "rsa_4096_keygen_functest",
+    srcs = ["rsa_4096_keygen_functest.c"],
+    cw310 = cw310_params(
+        timeout = "long",
+    ),
+    verilator = verilator_params(
+        tags = ["broken"],  # This test is too slow to run on verilator.
+    ),
+    deps = [
+        "//sw/device/lib/crypto/impl:rsa",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "rsa_4096_signature_functest",
     srcs = ["rsa_4096_signature_functest.c"],
     verilator = verilator_params(
