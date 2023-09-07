@@ -336,6 +336,20 @@ opentitan_functest(
     ],
 )
 
+opentitan_functest(
+    name = "hmac_sha384_functest",
+    srcs = ["hmac_sha384_functest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/drivers:hmac",
+        "//sw/device/lib/crypto/impl:mac",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 py_binary(
     name = "rsa_3072_verify_set_testvectors",
     srcs = ["rsa_3072_verify_set_testvectors.py"],
