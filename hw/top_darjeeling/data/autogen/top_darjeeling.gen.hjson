@@ -14605,6 +14605,78 @@
       lpg_idx: 16
     }
     {
+      name: soc_proxy_fatal_alert_external_0
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: soc_proxy_fatal_alert_external_1
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: soc_proxy_fatal_alert_external_2
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: soc_proxy_fatal_alert_external_3
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: soc_proxy_recov_alert_external_0
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: soc_proxy_recov_alert_external_1
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: soc_proxy_recov_alert_external_2
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: soc_proxy_recov_alert_external_3
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
       name: sram_ctrl_ret_aon_fatal_error
       width: 1
       type: alert

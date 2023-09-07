@@ -1241,6 +1241,13 @@ module chip_darjeeling_asic #(
     .input_o           ( usb_rx_d              )
   );
 
+  soc_proxy_pkg::soc_alert_req_t [soc_proxy_pkg::NumFatalExternalAlerts-1:0] soc_fatal_alert_req;
+  soc_proxy_pkg::soc_alert_req_t [soc_proxy_pkg::NumRecovExternalAlerts-1:0] soc_recov_alert_req;
+  assign soc_fatal_alert_req =
+      {soc_proxy_pkg::NumFatalExternalAlerts{soc_proxy_pkg::SOC_ALERT_REQ_DEFAULT}};
+  assign soc_recov_alert_req =
+      {soc_proxy_pkg::NumRecovExternalAlerts{soc_proxy_pkg::SOC_ALERT_REQ_DEFAULT}};
+
   //////////////////////
   // Top-level design //
   //////////////////////
@@ -1290,6 +1297,10 @@ module chip_darjeeling_asic #(
     .dma_sys_rsp_i                ( '0                         ),
     .dma_ctn_tl_h2d_o             (                            ),
     .dma_ctn_tl_d2h_i             ( tlul_pkg::TL_D2H_DEFAULT   ),
+    .soc_fatal_alert_req_i        ( soc_fatal_alert_req        ),
+    .soc_fatal_alert_rsp_o        (                            ),
+    .soc_recov_alert_req_i        ( soc_recov_alert_req        ),
+    .soc_recov_alert_rsp_o        (                            ),
     .entropy_src_hw_if_req_o      ( entropy_src_hw_if_req      ),
     .entropy_src_hw_if_rsp_i      ( entropy_src_hw_if_rsp      ),
     .io_clk_byp_req_o             ( io_clk_byp_req             ),

@@ -18,4 +18,26 @@ package soc_proxy_pkg;
   parameter soc_alert_req_t SOC_ALERT_REQ_DEFAULT = '{alert_p: 1'b0, alert_n: 1'b1};
   parameter soc_alert_rsp_t SOC_ALERT_RSP_DEFAULT = '{ack_p: 1'b0, ack_n: 1'b1};
 
+  // This defines the index of each of SoC Proxy's alerts.  If you add, change, or remove an alert,
+  // update this enum as well.
+  typedef enum logic [$clog2(soc_proxy_reg_pkg::NumAlerts+1)-1:0] {
+    FatalAlertIntg,
+    FatalAlertExternal0,
+    FatalAlertExternal1,
+    FatalAlertExternal2,
+    FatalAlertExternal3,
+    RecovAlertExternal0,
+    RecovAlertExternal1,
+    RecovAlertExternal2,
+    RecovAlertExternal3,
+    NumAlertSources
+  } soc_proxy_alert_e;
+
+  // Assertions on these constants are part of the `soc_proxy` module (since they can't be put into
+  // this package).
+  localparam int unsigned NumInternalAlerts = FatalAlertIntg - FatalAlertIntg + 1;
+  localparam int unsigned NumFatalExternalAlerts = FatalAlertExternal3 - FatalAlertExternal0 + 1;
+  localparam int unsigned NumRecovExternalAlerts = RecovAlertExternal3 - RecovAlertExternal0 + 1;
+  localparam int unsigned NumExternalAlerts = NumFatalExternalAlerts + NumRecovExternalAlerts;
+
 endpackage

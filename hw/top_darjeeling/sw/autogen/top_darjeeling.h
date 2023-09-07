@@ -1326,39 +1326,47 @@ typedef enum top_darjeeling_alert_id {
   kTopDarjeelingAlertIdSensorCtrlRecovAlert = 27, /**< sensor_ctrl_recov_alert */
   kTopDarjeelingAlertIdSensorCtrlFatalAlert = 28, /**< sensor_ctrl_fatal_alert */
   kTopDarjeelingAlertIdSocProxyFatalAlertIntg = 29, /**< soc_proxy_fatal_alert_intg */
-  kTopDarjeelingAlertIdSramCtrlRetAonFatalError = 30, /**< sram_ctrl_ret_aon_fatal_error */
-  kTopDarjeelingAlertIdFlashCtrlRecovErr = 31, /**< flash_ctrl_recov_err */
-  kTopDarjeelingAlertIdFlashCtrlFatalStdErr = 32, /**< flash_ctrl_fatal_std_err */
-  kTopDarjeelingAlertIdFlashCtrlFatalErr = 33, /**< flash_ctrl_fatal_err */
-  kTopDarjeelingAlertIdFlashCtrlFatalPrimFlashAlert = 34, /**< flash_ctrl_fatal_prim_flash_alert */
-  kTopDarjeelingAlertIdFlashCtrlRecovPrimFlashAlert = 35, /**< flash_ctrl_recov_prim_flash_alert */
-  kTopDarjeelingAlertIdRvDmFatalFault = 36, /**< rv_dm_fatal_fault */
-  kTopDarjeelingAlertIdRvPlicFatalFault = 37, /**< rv_plic_fatal_fault */
-  kTopDarjeelingAlertIdAesRecovCtrlUpdateErr = 38, /**< aes_recov_ctrl_update_err */
-  kTopDarjeelingAlertIdAesFatalFault = 39, /**< aes_fatal_fault */
-  kTopDarjeelingAlertIdHmacFatalFault = 40, /**< hmac_fatal_fault */
-  kTopDarjeelingAlertIdKmacRecovOperationErr = 41, /**< kmac_recov_operation_err */
-  kTopDarjeelingAlertIdKmacFatalFaultErr = 42, /**< kmac_fatal_fault_err */
-  kTopDarjeelingAlertIdOtbnFatal = 43, /**< otbn_fatal */
-  kTopDarjeelingAlertIdOtbnRecov = 44, /**< otbn_recov */
-  kTopDarjeelingAlertIdKeymgrRecovOperationErr = 45, /**< keymgr_recov_operation_err */
-  kTopDarjeelingAlertIdKeymgrFatalFaultErr = 46, /**< keymgr_fatal_fault_err */
-  kTopDarjeelingAlertIdCsrngRecovAlert = 47, /**< csrng_recov_alert */
-  kTopDarjeelingAlertIdCsrngFatalAlert = 48, /**< csrng_fatal_alert */
-  kTopDarjeelingAlertIdEdn0RecovAlert = 49, /**< edn0_recov_alert */
-  kTopDarjeelingAlertIdEdn0FatalAlert = 50, /**< edn0_fatal_alert */
-  kTopDarjeelingAlertIdEdn1RecovAlert = 51, /**< edn1_recov_alert */
-  kTopDarjeelingAlertIdEdn1FatalAlert = 52, /**< edn1_fatal_alert */
-  kTopDarjeelingAlertIdSramCtrlMainFatalError = 53, /**< sram_ctrl_main_fatal_error */
-  kTopDarjeelingAlertIdSramCtrlMboxFatalError = 54, /**< sram_ctrl_mbox_fatal_error */
-  kTopDarjeelingAlertIdRomCtrl0Fatal = 55, /**< rom_ctrl0_fatal */
-  kTopDarjeelingAlertIdRomCtrl1Fatal = 56, /**< rom_ctrl1_fatal */
-  kTopDarjeelingAlertIdDmaFatalFault = 57, /**< dma_fatal_fault */
-  kTopDarjeelingAlertIdRvCoreIbexFatalSwErr = 58, /**< rv_core_ibex_fatal_sw_err */
-  kTopDarjeelingAlertIdRvCoreIbexRecovSwErr = 59, /**< rv_core_ibex_recov_sw_err */
-  kTopDarjeelingAlertIdRvCoreIbexFatalHwErr = 60, /**< rv_core_ibex_fatal_hw_err */
-  kTopDarjeelingAlertIdRvCoreIbexRecovHwErr = 61, /**< rv_core_ibex_recov_hw_err */
-  kTopDarjeelingAlertIdLast = 61, /**< \internal The Last Valid Alert ID. */
+  kTopDarjeelingAlertIdSocProxyFatalAlertExternal0 = 30, /**< soc_proxy_fatal_alert_external_0 */
+  kTopDarjeelingAlertIdSocProxyFatalAlertExternal1 = 31, /**< soc_proxy_fatal_alert_external_1 */
+  kTopDarjeelingAlertIdSocProxyFatalAlertExternal2 = 32, /**< soc_proxy_fatal_alert_external_2 */
+  kTopDarjeelingAlertIdSocProxyFatalAlertExternal3 = 33, /**< soc_proxy_fatal_alert_external_3 */
+  kTopDarjeelingAlertIdSocProxyRecovAlertExternal0 = 34, /**< soc_proxy_recov_alert_external_0 */
+  kTopDarjeelingAlertIdSocProxyRecovAlertExternal1 = 35, /**< soc_proxy_recov_alert_external_1 */
+  kTopDarjeelingAlertIdSocProxyRecovAlertExternal2 = 36, /**< soc_proxy_recov_alert_external_2 */
+  kTopDarjeelingAlertIdSocProxyRecovAlertExternal3 = 37, /**< soc_proxy_recov_alert_external_3 */
+  kTopDarjeelingAlertIdSramCtrlRetAonFatalError = 38, /**< sram_ctrl_ret_aon_fatal_error */
+  kTopDarjeelingAlertIdFlashCtrlRecovErr = 39, /**< flash_ctrl_recov_err */
+  kTopDarjeelingAlertIdFlashCtrlFatalStdErr = 40, /**< flash_ctrl_fatal_std_err */
+  kTopDarjeelingAlertIdFlashCtrlFatalErr = 41, /**< flash_ctrl_fatal_err */
+  kTopDarjeelingAlertIdFlashCtrlFatalPrimFlashAlert = 42, /**< flash_ctrl_fatal_prim_flash_alert */
+  kTopDarjeelingAlertIdFlashCtrlRecovPrimFlashAlert = 43, /**< flash_ctrl_recov_prim_flash_alert */
+  kTopDarjeelingAlertIdRvDmFatalFault = 44, /**< rv_dm_fatal_fault */
+  kTopDarjeelingAlertIdRvPlicFatalFault = 45, /**< rv_plic_fatal_fault */
+  kTopDarjeelingAlertIdAesRecovCtrlUpdateErr = 46, /**< aes_recov_ctrl_update_err */
+  kTopDarjeelingAlertIdAesFatalFault = 47, /**< aes_fatal_fault */
+  kTopDarjeelingAlertIdHmacFatalFault = 48, /**< hmac_fatal_fault */
+  kTopDarjeelingAlertIdKmacRecovOperationErr = 49, /**< kmac_recov_operation_err */
+  kTopDarjeelingAlertIdKmacFatalFaultErr = 50, /**< kmac_fatal_fault_err */
+  kTopDarjeelingAlertIdOtbnFatal = 51, /**< otbn_fatal */
+  kTopDarjeelingAlertIdOtbnRecov = 52, /**< otbn_recov */
+  kTopDarjeelingAlertIdKeymgrRecovOperationErr = 53, /**< keymgr_recov_operation_err */
+  kTopDarjeelingAlertIdKeymgrFatalFaultErr = 54, /**< keymgr_fatal_fault_err */
+  kTopDarjeelingAlertIdCsrngRecovAlert = 55, /**< csrng_recov_alert */
+  kTopDarjeelingAlertIdCsrngFatalAlert = 56, /**< csrng_fatal_alert */
+  kTopDarjeelingAlertIdEdn0RecovAlert = 57, /**< edn0_recov_alert */
+  kTopDarjeelingAlertIdEdn0FatalAlert = 58, /**< edn0_fatal_alert */
+  kTopDarjeelingAlertIdEdn1RecovAlert = 59, /**< edn1_recov_alert */
+  kTopDarjeelingAlertIdEdn1FatalAlert = 60, /**< edn1_fatal_alert */
+  kTopDarjeelingAlertIdSramCtrlMainFatalError = 61, /**< sram_ctrl_main_fatal_error */
+  kTopDarjeelingAlertIdSramCtrlMboxFatalError = 62, /**< sram_ctrl_mbox_fatal_error */
+  kTopDarjeelingAlertIdRomCtrl0Fatal = 63, /**< rom_ctrl0_fatal */
+  kTopDarjeelingAlertIdRomCtrl1Fatal = 64, /**< rom_ctrl1_fatal */
+  kTopDarjeelingAlertIdDmaFatalFault = 65, /**< dma_fatal_fault */
+  kTopDarjeelingAlertIdRvCoreIbexFatalSwErr = 66, /**< rv_core_ibex_fatal_sw_err */
+  kTopDarjeelingAlertIdRvCoreIbexRecovSwErr = 67, /**< rv_core_ibex_recov_sw_err */
+  kTopDarjeelingAlertIdRvCoreIbexFatalHwErr = 68, /**< rv_core_ibex_fatal_hw_err */
+  kTopDarjeelingAlertIdRvCoreIbexRecovHwErr = 69, /**< rv_core_ibex_recov_hw_err */
+  kTopDarjeelingAlertIdLast = 69, /**< \internal The Last Valid Alert ID. */
 } top_darjeeling_alert_id_t;
 
 /**
@@ -1368,7 +1376,7 @@ typedef enum top_darjeeling_alert_id {
  * `top_darjeeling_alert_peripheral_t`.
  */
 extern const top_darjeeling_alert_peripheral_t
-    top_darjeeling_alert_for_peripheral[62];
+    top_darjeeling_alert_for_peripheral[70];
 
 // PERIPH_INSEL ranges from 0 to TOP_DARJEELING_NUM_MIO_PADS + 2 -1}
 //  0 and 1 are tied to value 0 and 1
