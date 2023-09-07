@@ -25,16 +25,15 @@ class flash_ctrl_rd_path_intg_vseq extends flash_ctrl_legacy_base_vseq;
       //  hw/ip/flash_ctrl/rtl/flash_phy_rd.sv;drc=8046c2896fa50aaf3a186a7ce8c0570db9f99eaf;l=481)
       // Enable ecc for all regions
       flash_otf_region_cfg(.scr_mode(OTFCfgTrue), .ecc_mode(OTFCfgTrue));
-      // Set path to subset of both upperword [63:32] and lowerword[31:0]
-      path1 = {"tb.dut.u_eflash.gen_flash_cores[0].u_core",
-               ".u_rd.gen_bufs[0].u_rd_buf.data_i[35:28]"};
-      path2 = {"tb.dut.u_eflash.gen_flash_cores[1].u_core",
-               ".u_rd.gen_bufs[0].u_rd_buf.data_i[35:28]"};
-
       cfg.clk_rst_vif.wait_clks(10);
-
-      `DV_CHECK(uvm_hdl_force(path1, $urandom()))
-      `DV_CHECK(uvm_hdl_force(path2, $urandom()))
+      for (int k = 0; k < 4; k++) begin
+        path1 = $sformatf({"tb.dut.u_eflash.gen_flash_cores[0].u_core",
+                           ".u_rd.gen_bufs[%0d].u_rd_buf.data_i[35:28]"}, k);
+        path2 = $sformatf({"tb.dut.u_eflash.gen_flash_cores[1].u_core",
+                           ".u_rd.gen_bufs[%0d].u_rd_buf.data_i[35:28]"}, k);
+        `DV_CHECK(uvm_hdl_force(path1, $urandom()))
+        `DV_CHECK(uvm_hdl_force(path2, $urandom()))
+      end
       cfg.scb_h.expected_alert["fatal_err"].expected = 1;
       cfg.scb_h.expected_alert["fatal_err"].max_delay = 2000;
       cfg.scb_h.exp_alert_contd["fatal_err"] = 10000;
