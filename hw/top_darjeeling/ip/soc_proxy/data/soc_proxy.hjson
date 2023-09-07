@@ -12,6 +12,15 @@
   hw_checklist:       "../doc/checklist"
   sw_checklist:       "/sw/ip/soc_proxy/dif/dif_soc_proxy"
 
+  param_list: [
+    { name:     "NumExternalIrqs"
+      type:     "int unsigned"
+      default:  "4"
+      desc:     "Number of external interrupt requests"
+      local:    "true"
+    }
+  ]
+
   revisions: [
     {
       version:            "1.0.0"
@@ -35,30 +44,30 @@
     { name: "fatal_alert_intg"
       desc: "Fatal bus integrity alert"
     }
-    // { name: "fatal_alert_external_0"
-    //   desc: "Fatal external alert channel 0"
-    // }
-    // { name: "fatal_alert_external_1"
-    //   desc: "Fatal external alert channel 1"
-    // }
-    // { name: "fatal_alert_external_2"
-    //   desc: "Fatal external alert channel 2"
-    // }
-    // { name: "fatal_alert_external_3"
-    //   desc: "Fatal external alert channel 3"
-    // }
-    // { name: "recov_alert_external_0"
-    //   desc: "Recoverable external alert channel 0"
-    // }
-    // { name: "recov_alert_external_1"
-    //   desc: "Recoverable external alert channel 1"
-    // }
-    // { name: "recov_alert_external_2"
-    //   desc: "Recoverable external alert channel 2"
-    // }
-    // { name: "recov_alert_external_3"
-    //   desc: "Recoverable external alert channel 3"
-    // }
+    { name: "fatal_alert_external_0"
+      desc: "Fatal external alert channel 0"
+    }
+    { name: "fatal_alert_external_1"
+      desc: "Fatal external alert channel 1"
+    }
+    { name: "fatal_alert_external_2"
+      desc: "Fatal external alert channel 2"
+    }
+    { name: "fatal_alert_external_3"
+      desc: "Fatal external alert channel 3"
+    }
+    { name: "recov_alert_external_0"
+      desc: "Recoverable external alert channel 0"
+    }
+    { name: "recov_alert_external_1"
+      desc: "Recoverable external alert channel 1"
+    }
+    { name: "recov_alert_external_2"
+      desc: "Recoverable external alert channel 2"
+    }
+    { name: "recov_alert_external_3"
+      desc: "Recoverable external alert channel 3"
+    }
   ]
 
   wakeup_list: [
@@ -71,10 +80,10 @@
   ]
 
   interrupt_list: [
-    // { name: "external"
-    //   desc: "External interrupt request"
-    //   width: 4
-    // }
+    { name: "external"
+      desc: "External interrupt request"
+      width: 4 // keep equal to `NumExternalIrqs`
+    }
   ]
 
   inter_signal_list: [
