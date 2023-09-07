@@ -247,6 +247,20 @@ opentitan_test(
     ],
 )
 
+opentitan_functest(
+    name = "rsa_3072_signature_functest",
+    srcs = ["rsa_3072_signature_functest.c"],
+    verilator = verilator_params(
+        timeout = "eternal",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:rsa",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 autogen_cryptotest_header(
     name = "rsa_3072_verify_testvectors_wycheproof_header",
     hjson = "//sw/device/tests/crypto/testvectors:rsa_3072_verify_testvectors_wycheproof",
