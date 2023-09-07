@@ -147,6 +147,7 @@ pub enum SpiRequest {
     SetMaxSpeed {
         value: u32,
     },
+    SupportsBidirectionalTransfer,
     SetChipSelect {
         pin: String,
     },
@@ -177,6 +178,9 @@ pub enum SpiResponse {
         speed: u32,
     },
     SetMaxSpeed,
+    SupportsBidirectionalTransfer {
+        has_support: bool,
+    },
     SetChipSelect,
     GetMaxTransferCount {
         number: usize,

@@ -346,6 +346,10 @@ impl Target for DediprogSpi {
         self.set_spi_clock()
     }
 
+    fn supports_bidirectional_transfer(&self) -> Result<bool> {
+        Ok(false)
+    }
+
     fn get_max_transfer_count(&self) -> Result<usize> {
         // Arbitrary value: number of `Transfers` that can be in a single transaction.
         Ok(42)
