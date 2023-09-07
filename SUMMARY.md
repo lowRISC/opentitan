@@ -6,10 +6,6 @@
 
 - [Getting Started](./doc/getting_started/README.md)
 
-## Unofficial Setup Guides
-
-- [RedHat/Fedora](unofficial/fedora.md)
-
 - [Workflows](./doc/getting_started/workflows.md)
   - [Design Verification](./doc/getting_started/setup_dv.md)
   - [Formal Verification](./doc/getting_started/setup_formal.md)
@@ -21,6 +17,9 @@
   - [FPGA Setup](./doc/getting_started/setup_fpga.md)
   - [Verilator Setup](./doc/getting_started/setup_verilator.md)
   - [Installing Vivado](./doc/getting_started/install_vivado/README.md)
+
+- [Unofficial Guides](./doc/getting_started/unofficial/README.md)
+  - [RedHat/Fedora](./doc/getting_started/unofficial/fedora.md)
 
 # Hardware
 
