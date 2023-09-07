@@ -11,7 +11,7 @@ set -e
 rm -f sw/vendor/eembc_coremark/docs/html/index/General2.html
 
 # Run Offline Link Check
-ci/bazelisk.sh run @lychee//:lychee -- hw/ sw/ doc/ util/ \
+ci/bazelisk.sh run @lychee//:lychee -- SUMMARY.md hw/ sw/ doc/ util/ \
     --offline --no-progress \
     --exclude-path sw/vendor \
     --exclude-path util/i2csvg/smbus/SMBus.md \
