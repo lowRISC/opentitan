@@ -51,9 +51,9 @@ body:
       label: Emulation Targets
       description: Select the emulation targets compatible with this test case.
       options:
-        - None
-        - CW310
-        - Hyperdebug + CW310
+        - label: "None"
+        - label: "CW310"
+        - label: "Hyperdebug + CW310"
   - type: input
     id: contact
     attributes:
