@@ -233,12 +233,10 @@ crypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
 
   // Start computing outer hash = H(K0 ^ opad || inner).
   HARDENED_TRY(otcrypto_hash_init(&ctx->outer, hash_mode));
-  HARDENED_TRY(otcrypto_hash_update(
+  return otcrypto_hash_update(
       &ctx->outer,
       (crypto_const_byte_buf_t){.len = sizeof(outer_block),
-                                .data = (unsigned char *)outer_block}));
-
-  return OTCRYPTO_OK;
+                                .data = (unsigned char *)outer_block});
 }
 
 crypto_status_t otcrypto_hmac_update(hmac_context_t *const ctx,
@@ -248,8 +246,7 @@ crypto_status_t otcrypto_hmac_update(hmac_context_t *const ctx,
   }
 
   // Append the message to the inner block.
-  HARDENED_TRY(otcrypto_hash_update(&ctx->inner, input_message));
-  return OTCRYPTO_OK;
+  return otcrypto_hash_update(&ctx->inner, input_message);
 }
 
 crypto_status_t otcrypto_hmac_final(hmac_context_t *const ctx,
@@ -268,7 +265,5 @@ crypto_status_t otcrypto_hmac_final(hmac_context_t *const ctx,
       &ctx->outer,
       (crypto_const_byte_buf_t){.len = sizeof(uint32_t) * tag->len,
                                 .data = (unsigned char *)tag->data}));
-  HARDENED_TRY(otcrypto_hash_final(&ctx->outer, tag));
-
-  return OTCRYPTO_OK;
+  return otcrypto_hash_final(&ctx->outer, tag);
 }
