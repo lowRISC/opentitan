@@ -45,6 +45,7 @@ PER_DEVICE_DEPS = {
     "sim_dv": ["@//sw/device/lib/arch:sim_dv"],
     "fpga_cw305": ["@//sw/device/lib/arch:fpga_cw305"],
     "fpga_cw310": ["@//sw/device/lib/arch:fpga_cw310"],
+    "fpga_cw340": ["@//sw/device/lib/arch:fpga_cw340"],
 }
 
 def create_key_(name, label, hw_lc_states):

@@ -12,7 +12,43 @@ load("@bazel_skylib//lib:shell.bzl", "shell")
 load("@bazel_skylib//lib:collections.bzl", "collections")
 load("@bazel_skylib//lib:sets.bzl", "sets")
 
-VALID_TARGETS = ["dv", "verilator", "cw310_rom_with_fake_keys", "cw310_rom_with_real_keys", "cw310_test_rom"]
+def _fpga_from_fpga_target(target):
+    """
+    Return the FPGA part of an FPGA target name:
+      cw310_rom_with_fake_key -> cw310
+    """
+    return target.split("_")[0]
+
+def _rom_from_fpga_target(target):
+    """
+    Return the ROM part of an FPGA target name:
+      cw310_rom_with_fake_key -> rom_with_fake_key
+    """
+    return target.partition("_")[2]
+
+def _fpga_target(fpga, rom):
+    """
+    Return the target name for a given FPGA and ROM.
+    """
+    return "{}_{}".format(fpga, rom)
+
+_FPGAS = ["cw310", "cw340"]
+_ROMS = ["rom_with_fake_keys", "rom_with_real_keys", "test_rom"]
+
+# We do not have a signed CW340 ROM yet.
+_BLACKLIST_TARGETS = [("cw340", "rom_with_real_keys")]
+FPGA_TARGETS = [
+    _fpga_target(fpga, rom)
+    for fpga in _FPGAS
+    for rom in _ROMS
+    if (fpga, rom) not in _BLACKLIST_TARGETS
+]
+FPGA_TARGETS_WITH_REAL_KEYS = [
+    _fpga_target(fpga, "rom_with_real_keys")
+    for fpga in _FPGAS
+    if (fpga, "rom_with_real_keys") not in _BLACKLIST_TARGETS
+]
+VALID_TARGETS = ["dv", "verilator"] + FPGA_TARGETS
 
 OTTF_SUCCESS_MSG = r"PASS.*\n"
 OTTF_FAILURE_MSG = r"(FAIL|FAULT).*\n"
@@ -187,7 +223,7 @@ def verilator_params(
     )
     return kwargs
 
-def cw310_params(
+def fpga_params(
         # Base Parameters
         args = _BASE_PARAMS["args"],
         data = _BASE_PARAMS["data"] + ["{bitstream}"],
@@ -203,24 +239,23 @@ def cw310_params(
             "--exec=\"console --exit-success={exit_success} --exit-failure={exit_failure}\"",
             "{clear_bitstream}",
         ],
-        # CW310-specific Parameters
+        # CW-specific Parameters
         bitstream = None,  # A bitstream value of None will cause the default bitstream values to be used
         clear_bitstream = False,
         # None
         timeout = "short",
-        interface = "cw310",
+        interface = None,
         **kwargs):
-    """A macro to create CW310 parameters for OpenTitan functional tests.
+    """A macro to create ChipWhisperer parameters for OpenTitan functional tests.
 
     This macro emits a dictionary of parameters which are pasted into the
-    ChipWhisperer-310 FPGA specific test rule.
+    ChipWhisperer FPGA specific test rule.
 
     Parameters:
         @param args: Extra arguments to pass the test runner `opentitantool`.
         @param data: Data dependencies of the test.
         @param local: Whether the test should be run locally without sandboxing.
-        @param interface: Which communication interface to use with the CW310
-                          board.  Choices are "cw310" or "hyper310".
+        @param interface: Which communication interface to use with opentitantool.
         @param otp: The OTP image to use.
         @param tags: The test tags to apply to the test rule.
         @param test_cmds: A list of required commands and args that make up the
@@ -231,9 +266,6 @@ def cw310_params(
                           baked into the bitstream).
         @param clear_bitstream: Clear FPGA bitstream at the end of the test.
     """
-    if interface not in ("cw310", "hyper310"):
-        fail("The interface must be either 'cw310' or 'hyper310'")
-
     default_args = [
         "--rcfile=",
         "--logging={logging}",
@@ -262,9 +294,39 @@ def cw310_params(
     )
     return kwargs
 
+def cw310_params(
+        interface = "cw310",
+        **kwargs):
+    """A macro to create CW310-specific parameters for OpenTitan functional tests.
+
+    Parameters:
+        @param interface: Which communication interface to use with the CW310
+                          board.  Choices are "cw310" or "hyper310".
+    All others parameters are forwarded to fpga_params()
+    """
+    if interface not in ("cw310", "hyper310"):
+        fail("The interface must be either 'cw310' or 'hyper310'")
+    kwargs.update(interface = interface)
+    return fpga_params(**kwargs)
+
+def cw340_params(
+        interface = "cw340",
+        **kwargs):
+    """A macro to create CW340-specific parameters for OpenTitan functional tests.
+
+    Parameters:
+        @param interface: Which communication interface to use with the CW340
+                          board.  Choices are "cw340".
+    All others parameters are forwarded to fpga_params()
+    """
+    if interface not in ("cw340"):
+        fail("The interface must be 'cw340'.")
+    kwargs.update(interface = interface)
+    return fpga_params(**kwargs)
+
 def opentitan_functest(
         name,
-        targets = sets.to_list(sets.remove(sets.make(VALID_TARGETS), "cw310_rom_with_real_keys")),
+        targets = sets.to_list(sets.difference(sets.make(VALID_TARGETS), sets.make(FPGA_TARGETS_WITH_REAL_KEYS))),
         args = [],
         data = [],
         test_in_rom = False,
@@ -277,7 +339,6 @@ def opentitan_functest(
         logging = "info",
         dv = None,
         verilator = None,
-        cw310 = None,
         **kwargs):
     """A helper macro for generating OpenTitan functional tests.
 
@@ -307,6 +368,7 @@ def opentitan_functest(
       @param dv: DV test parameters.
       @param verilator: Verilator test parameters.
       @param cw310: CW310 test parameters.
+      @param cw340: CW340 test parameters.
       @param **kwargs: Arguments to forward to `opentitan_flash_binary`.
 
     This macro emits the following rules:
@@ -318,10 +380,13 @@ def opentitan_functest(
         sh_test                named: {name}_fpga_cw310
         test_suite             named: {name}
     """
-
     deps = kwargs.pop("deps", [])
     all_tests = []
     target_params = {}
+
+    fpga_params_ = {}
+    for fpga in _FPGAS:
+        fpga_params_[fpga] = kwargs.pop(fpga, fpga_params(interface = fpga))
 
     # Only build SW for devices we are running tests on.
     devices_to_build_for = []
@@ -332,46 +397,48 @@ def opentitan_functest(
         elif target == "verilator":
             devices_to_build_for.append("sim_verilator")
             target_params["sim_verilator"] = verilator_params() if not verilator else verilator
-        elif target in ["cw310_rom_with_fake_keys", "cw310_rom_with_real_keys", "cw310_test_rom"]:
-            devices_to_build_for.append("fpga_cw310")
+        elif target in FPGA_TARGETS:
+            fpga_name = _fpga_from_fpga_target(target)
+            rom_name = _rom_from_fpga_target(target)
+            devices_to_build_for.append("fpga_{}".format(fpga_name))
 
-            # Copy `cw310` for each `target`. This is not a deep copy, thus we
+            # Copy parameters for each `target`. This is not a deep copy, thus we
             # also copy tags below.
-            cw310_ = cw310_params() if not cw310 else dict(cw310.items())
-            cw310_["tags"] = [t for t in cw310_["tags"]]
+            params = dict(fpga_params_[fpga_name].items())
+            params["tags"] = [t for t in params["tags"]]
 
-            # If the cw310 parameter was not provided or was provided without
+            # If the parameter was not provided or was provided without
             # the bitstream field, determine the bitstream argument based on
             # the target. Otherwise, use the provided bitstream argument.
-            if cw310_["interface"] == "cw310":
-                DEFAULT_BITSTREAM = {
-                    "cw310_test_rom": "@//hw/bitstream:test_rom",
-                    "cw310_rom_with_fake_keys": "@//hw/bitstream:rom_with_fake_keys",
-                    "cw310_rom_with_real_keys": "@//hw/bitstream:rom_with_real_keys",
-                }
-            else:
-                DEFAULT_BITSTREAM = {
-                    "cw310_test_rom": "@//hw/bitstream/hyperdebug:test_rom",
-                    "cw310_rom_with_fake_keys": "@//hw/bitstream/hyperdebug:rom_with_fake_keys",
-                    "cw310_rom_with_real_keys": "@//hw/bitstream/hyperdebug:rom_with_real_keys",
-                }
-            if (cw310 == None) or (cw310.get("bitstream") == None):
-                cw310_["bitstream"] = DEFAULT_BITSTREAM[target]
+            _DEFAULT_BITSTREAM_PATH = {
+                "cw310": {
+                    "cw310": "@//hw/bitstream",
+                    "hyper310": "@//hw/bitstream/hyperdebug",
+                },
+                "cw340": {
+                    "cw340": "@//hw/bitstream/cw340",
+                },
+            }
+            if params.get("bitstream") == None:
+                if fpga_name not in _DEFAULT_BITSTREAM_PATH:
+                    fail("Could not find a default bitstream for FPGA target '{}'", fpga_name)
+                intf = params["interface"]
+                if intf not in _DEFAULT_BITSTREAM_PATH[fpga_name]:
+                    fail(
+                        "Could not find a default bitstream for interface {} for FPGA target '{}'",
+                        intf,
+                        fpga_name,
+                    )
+                params["bitstream"] = "{}:{}".format(
+                    _DEFAULT_BITSTREAM_PATH[fpga_name][intf],
+                    rom_name,
+                )
 
-            # If the bitstream field was provided, it will already have been copied into cw310_
+            # If the bitstream field was provided, it will already have been copied into the parameters.
 
-            # Fill in the remaining bitstream arguments
-            if target == "cw310_test_rom":
-                cw310_["tags"].append("cw310_test_rom")
-                target_params["fpga_cw310_test_rom"] = cw310_
-            elif target == "cw310_rom_with_fake_keys":
-                cw310_["tags"].append("cw310_rom_with_fake_keys")
-                target_params["fpga_cw310_rom_with_fake_keys"] = cw310_
-            elif target == "cw310_rom_with_real_keys":
-                cw310_["tags"].append("cw310_rom_with_real_keys")
-                target_params["fpga_cw310_rom_with_real_keys"] = cw310_
-            else:
-                fail("Expected `cw310_test_rom` or `cw310_rom_with_fake_keys` or `cw310_rom_with_real_keys` as the target name")
+            # Fill in the remaining arguments
+            params["tags"].append(target)
+            target_params[target] = params
         else:
             fail("Invalid target {}. Target must be in {}".format(target, VALID_TARGETS))
     devices_to_build_for = collections.uniq(devices_to_build_for)
@@ -380,7 +447,7 @@ def opentitan_functest(
     if test_in_rom:
         if ot_flash_binary:
             fail("Tests that run in ROM stage cannot use pre-built flash binary.")
-        if any(["cw310" in t for t in targets]):
+        if target in FPGA_TARGETS:
             fail("Tests that run in ROM stage cannot run on FPGA.")
         ot_flash_binary = name + "_rom_prog"
         opentitan_rom_binary(
@@ -472,8 +539,8 @@ def opentitan_functest(
         # Set flash image.
         if target in ["sim_dv", "sim_verilator"]:
             flash = "{}_{}_scr_vmem64".format(ot_flash_binary, target)
-        elif target in ["fpga_cw310_rom_with_fake_keys", "fpga_cw310_rom_with_real_keys", "fpga_cw310_test_rom"]:
-            flash = "{}_fpga_cw310_bin".format(ot_flash_binary)
+        elif target in FPGA_TARGETS:
+            flash = "{}_fpga_{}_bin".format(ot_flash_binary, _fpga_from_fpga_target(target))
         else:
             fail("Unexpected target: {}".format(target))
         if signed:
@@ -502,8 +569,8 @@ def opentitan_functest(
             flash = rom
         else:
             target_data.append(flash)
-            if target in ["fpga_cw310_rom_with_fake_keys", "fpga_cw310_rom_with_real_keys", "fpga_cw310_test_rom"]:
-                target_data.append("{}_fpga_cw310".format(ot_flash_binary))
+            if target in FPGA_TARGETS:
+                target_data.append("{}_fpga_{}".format(ot_flash_binary, _fpga_from_fpga_target(target)))
             else:
                 target_data.append("{}_{}".format(ot_flash_binary, target))
 
@@ -525,7 +592,7 @@ def opentitan_functest(
         # Set success/failure strings for target platforms that print test
         # results over the UART (e.g., Verilator and FPGA).
         exit_strings_kwargs = {}
-        if target in ["fpga_cw310_rom_with_fake_keys", "fpga_cw310_rom_with_real_keys", "fpga_cw310_test_rom", "sim_verilator"]:
+        if target in FPGA_TARGETS + ["sim_verilator"]:
             exit_strings_kwargs = {
                 "exit_success": shell.quote(params.pop("exit_success")),
                 "exit_failure": shell.quote(params.pop("exit_failure")),
@@ -560,16 +627,22 @@ def opentitan_functest(
         target_test_cmds = [s.format(**format_dict) for s in target_test_cmds]
         env["TEST_CMDS"] = " ".join(target_test_cmds)
 
-        if target in ["fpga_cw310_rom_with_real_keys", "fpga_cw310_rom_with_fake_keys", "fpga_cw310_test_rom"]:
+        if target in FPGA_TARGETS:
             # We attach the UART configuration to the front of the command line
             # so that they'll be parsed as global options rather than
             # command-specific options.
-            target_args = select({
-                # TODO(cfrantz): we may need to do something different here when
-                # the interface is "hyper310".
-                "@//ci:lowrisc_fpga_cw310": ["--uarts=/dev/ttyACM_CW310_1,/dev/ttyACM_CW310_0"],
+            select_options = {
                 "//conditions:default": [],
-            }) + target_args
+            }
+            fpga_name = _fpga_from_fpga_target(target)
+            if fpga_name == "cw310":
+                select_options["@//ci:lowrisc_fpga_cw310"] = ["--uarts=/dev/ttyACM_CW310_1,/dev/ttyACM_CW310_0"]
+            elif fpga_name == "cw340":
+                # The CW340 supports different options for the UARTs: they can be wired to the SAM3x or the FTDI.
+                # The CI currently uses the FTDI.
+                select_options["@//ci:lowrisc_fpga_cw340"] = ["--uarts=/dev/ttyCW340_FTDI_2,/dev/ttyCW340_FTDI_3"]
+
+            target_args = select(select_options) + target_args
 
         ########################################################################
         # Instantiate the test rule.
