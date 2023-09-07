@@ -408,8 +408,18 @@ jobs:
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
+  - task: DownloadSecureFile@1
+    condition: eq(variables['Build.SourceBranchName'], 'master')
+    name: bazelCacheGcpKey
+    inputs:
+      secureFile: "bazel_cache_gcp_key.json"
+  - bash: echo "##vso[task.setvariable variable=bazelCacheGcpKeyPath]$(bazelCacheGcpKey.secureFilePath)"
+    condition: eq(variables['Build.SourceBranchName'], 'master')
+    displayName: GCP key path
+    # Set the remote cache GCP key path
   - bash: |
       ci/bazelisk.sh test //sw/otbn/crypto/...
+    displayName: Execute tests
 
 - job: chip_earlgrey_cw310
   displayName: CW310's Earl Grey Bitstream
