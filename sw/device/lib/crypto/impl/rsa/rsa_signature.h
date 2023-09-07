@@ -110,6 +110,90 @@ status_t rsa_signature_verify_finalize(
     const rsa_signature_padding_t padding_mode,
     const rsa_signature_hash_t hash_mode, hardened_bool_t *verification_result);
 
+/**
+ * Starts generating an RSA-3072 signature; returns immediately.
+ *
+ * The key exponent must be F4=65537; no other exponents are supported.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @param private_key RSA private key.
+ * @param message Message to sign.
+ * @param message_len Message length in bytes.
+ * @param padding_mode Signature padding mode.
+ * @param hash_mode Hash function to use.
+ * @return Result of the operation (OK or error).
+ */
+status_t rsa_signature_generate_3072_start(
+    const rsa_3072_private_key_t *private_key, const uint8_t *message,
+    const size_t message_len, const rsa_signature_padding_t padding_mode,
+    const rsa_signature_hash_t hash_mode);
+
+/**
+ * Waits for an RSA-3072 signature generation to complete.
+ *
+ * Should be invoked only after `rsa_3072_sign_start`. Blocks until OTBN is
+ * done processing.
+ *
+ * @param[out] signature Generated signature.
+ * @return Result of the operation (OK or error).
+ */
+status_t rsa_signature_generate_3072_finalize(rsa_3072_int_t *signature);
+
+/**
+ * Starts verifying an RSA-3072 signature; returns immediately.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @param public_key RSA public key.
+ * @param signature Signature to verify.
+ * @return Result of the operation (OK or error).
+ */
+status_t rsa_signature_verify_3072_start(
+    const rsa_3072_public_key_t *public_key, const rsa_3072_int_t *signature);
+
+/**
+ * Starts generating an RSA-4096 signature; returns immediately.
+ *
+ * The key exponent must be F4=65537; no other exponents are supported.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @param private_key RSA private key.
+ * @param message Message to sign.
+ * @param message_len Message length in bytes.
+ * @param padding_mode Signature padding mode.
+ * @param hash_mode Hash function to use.
+ * @return Result of the operation (OK or error).
+ */
+status_t rsa_signature_generate_4096_start(
+    const rsa_4096_private_key_t *private_key, const uint8_t *message,
+    const size_t message_len, const rsa_signature_padding_t padding_mode,
+    const rsa_signature_hash_t hash_mode);
+
+/**
+ * Waits for an RSA-4096 signature generation to complete.
+ *
+ * Should be invoked only after `rsa_4096_sign_start`. Blocks until OTBN is
+ * done processing.
+ *
+ * @param[out] signature Generated signature.
+ * @return Result of the operation (OK or error).
+ */
+status_t rsa_signature_generate_4096_finalize(rsa_4096_int_t *signature);
+
+/**
+ * Starts verifying an RSA-4096 signature; returns immediately.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @param public_key RSA public key.
+ * @param signature Signature to verify.
+ * @return Result of the operation (OK or error).
+ */
+status_t rsa_signature_verify_4096_start(
+    const rsa_4096_public_key_t *public_key, const rsa_4096_int_t *signature);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
