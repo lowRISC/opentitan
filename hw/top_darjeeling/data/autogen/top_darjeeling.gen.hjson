@@ -4406,19 +4406,6 @@
           index: -1
         }
         {
-          name: dma_lsio_trigger
-          desc: Collated LSIO trigger signals for DMA
-          struct: lsio_trigger
-          package: dma_pkg
-          type: uni
-          act: req
-          width: 1
-          inst_name: soc_proxy
-          default: ""
-          top_signame: dma_lsio_trigger
-          index: -1
-        }
-        {
           name: ctn_tl_d2h
           desc: TL-UL host port for egress into CTN (response part), synchronous
           struct: tl_d2h
@@ -4431,6 +4418,19 @@
           external: true
           top_signame: ctn_tl_d2h
           conn_type: false
+          index: -1
+        }
+        {
+          name: dma_lsio_trigger
+          desc: Collated LSIO trigger signals for DMA
+          struct: lsio_trigger
+          package: dma_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: soc_proxy
+          default: ""
+          top_signame: dma_lsio_trigger
           index: -1
         }
         {
@@ -17965,19 +17965,6 @@
         index: -1
       }
       {
-        name: dma_lsio_trigger
-        desc: Collated LSIO trigger signals for DMA
-        struct: lsio_trigger
-        package: dma_pkg
-        type: uni
-        act: req
-        width: 1
-        inst_name: soc_proxy
-        default: ""
-        top_signame: dma_lsio_trigger
-        index: -1
-      }
-      {
         name: ctn_tl_d2h
         desc: TL-UL host port for egress into CTN (response part), synchronous
         struct: tl_d2h
@@ -17990,6 +17977,19 @@
         external: true
         top_signame: ctn_tl_d2h
         conn_type: false
+        index: -1
+      }
+      {
+        name: dma_lsio_trigger
+        desc: Collated LSIO trigger signals for DMA
+        struct: lsio_trigger
+        package: dma_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: soc_proxy
+        default: ""
+        top_signame: dma_lsio_trigger
         index: -1
       }
       {
