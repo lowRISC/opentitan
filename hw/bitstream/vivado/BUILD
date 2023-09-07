@@ -185,6 +185,30 @@ fusesoc_build(
     target = "synth",
 )
 
+filegroup(
+    name = "fpga_cw340_test_rom",
+    testonly = True,
+    srcs = [":fpga_cw340"],
+    output_group = "bitstream",
+    tags = ["manual"],
+)
+
+filegroup(
+    name = "fpga_cw340_rom_mmi",
+    testonly = True,
+    srcs = [":fpga_cw340"],
+    output_group = "rom_mmi",
+    tags = ["manual"],
+)
+
+filegroup(
+    name = "fpga_cw340_otp_mmi",
+    testonly = True,
+    srcs = [":fpga_cw340"],
+    output_group = "otp_mmi",
+    tags = ["manual"],
+)
+
 # Bitstream cache manifest fragment targets
 bitstream_manifest_fragment(
     name = "earlgrey_cw310_manifest",
