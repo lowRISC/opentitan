@@ -19,11 +19,15 @@ class dma_handshake_smoke_vseq extends dma_base_vseq;
     addr_space_id_t valid_combination = valid_combinations[index];
     // Allow only valid DMA configurations
     dma_config.valid_dma_config = 1;
+    // Limit all parameters to 4B alignment
     `DV_CHECK_RANDOMIZE_WITH_FATAL(
       dma_config,
       src_asid == valid_combination.src_id;
       dst_asid == valid_combination.dst_id;
-      handshake == 1'b1; // Enable hardware handshake mode
+      src_addr[1:0] == dst_addr[1:0]; // Use same alignment for source and destination address
+      total_transfer_size % 4 == 0; // Limit to multiples of 4B
+      per_transfer_width == DmaXfer4BperTxn; // Limit to only 4B transfers
+      handshake == 1'b1; //disable hardware handhake mode
       opcode == OpcCopy;)
     `uvm_info(`gfn, $sformatf("DMA: Randomized a new transaction\n %s",
                               dma_config.sprint()), UVM_HIGH)
@@ -58,6 +62,7 @@ class dma_handshake_smoke_vseq extends dma_base_vseq;
       // Reset config
       dma_config.reset_config();
       clear_memory();
+      enable_interrupt();
       `uvm_info(`gfn, $sformatf("DMA: Completed Sequence #%d", i), UVM_LOW)
     end
 
