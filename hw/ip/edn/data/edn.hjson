@@ -158,6 +158,7 @@
                 entropy complex may only be enabled and disabled in a specific order, see
                 Programmers Guide for details.
                 '''
+          // keep this in line with the resval parameters above
           resval: false
         },
         { bits: "7:4",
@@ -169,6 +170,7 @@
                 The purpose of this feature is to request entropy as fast as possible after reset,
                 and during chip boot-time.
                 '''
+          // keep this in line with the resval parameters above
           resval: false
         },
         { bits: "11:8",
@@ -186,6 +188,7 @@
                 The !!GENERATE_CMD, !!RESEED_CMD, and !!MAX_NUM_REQS_BETWEEN_RESEEDS registers must
                 set up before the !!SW_CMD_REQ register command is issued.
                 '''
+          // keep this in line with the resval parameters above
           resval: false
         },
         { bits: "15:12",
@@ -197,6 +200,7 @@
                 set to the reset state by software before any further commands can be issued to
                 these FIFOs.
                 '''
+          // keep this in line with the resval parameters above
           resval: false
         },
       ]
@@ -213,6 +217,7 @@
           desc: '''
                 This field is used as the value for Instantiate command at boot time.
                 '''
+         // keep this in line with the resval parameters above
          resval: 0x0000_0901
         }
       ]
@@ -229,6 +234,7 @@
           desc: '''
                 This field is used as the value for generate command at boot time.
                 '''
+         // keep this in line with the resval parameters above
          resval: 0x00ff_f003
        }
       ]

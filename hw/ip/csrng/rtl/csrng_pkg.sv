@@ -45,6 +45,15 @@ package csrng_pkg;
     GENU = 3'h7
   } acmd_e;
 
+  typedef struct packed {
+    logic [7:0]       resv;
+    logic [11:0]      glen;
+    logic [3:0]       flag0;
+    logic [3:0]       clen;
+    logic             gap; // acmd is defined as 4 bits wide but only 3 are used
+    acmd_e            acmd;
+  } csrng_cmd_t;
+
 
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 3 -m 15 -n 8 \
