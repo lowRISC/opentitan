@@ -163,6 +163,7 @@ pub struct MaxSizes {
 pub enum Transfer<'rd, 'wr> {
     Read(&'rd mut [u8]),
     Write(&'wr [u8]),
+    // Check supports_bidirectional_transfer before using this.
     Both(&'wr [u8], &'rd mut [u8]),
 }
 
@@ -182,6 +183,9 @@ pub trait Target {
     fn get_max_speed(&self) -> Result<u32>;
     /// Sets the maximum allowed speed of the SPI bus.
     fn set_max_speed(&self, max_speed: u32) -> Result<()>;
+
+    /// Indicates whether `Transfer::Both()` is supported.
+    fn supports_bidirectional_transfer(&self) -> Result<bool>;
 
     /// Sets which pin should be used as Chip Select.  Not supported by most backend transports.
     fn set_chip_select(&self, _: &Rc<dyn gpio::GpioPin>) -> Result<()> {

@@ -42,6 +42,11 @@ impl Target for Ti50Spi {
         Err(TransportError::UnsupportedOperation.into())
     }
 
+    /// Indicates whether `Transfer::Both()` is supported.
+    fn supports_bidirectional_transfer(&self) -> Result<bool> {
+        Err(TransportError::UnsupportedOperation.into())
+    }
+
     /// Returns the maximum number of transfers allowed in a single transaction.
     fn get_max_transfer_count(&self) -> Result<usize> {
         Err(TransportError::UnsupportedOperation.into())

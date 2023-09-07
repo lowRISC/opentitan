@@ -246,14 +246,6 @@ impl HyperdebugSpiTarget {
                 "Unrecognized reponse to GET_USB_SPI_CONFIG".to_string()
             )
         );
-        // Verify that interface supports concurrent read/write.
-        ensure!(
-            (resp.feature_bitmap & FEATURE_BIT_FULL_DUPLEX) != 0,
-            TransportError::CommunicationError(
-                "HyperDebug does not support bidirectional SPI".to_string()
-            )
-        );
-
         log::info!("HyperDebug feature bitmap: 0x{:04x}", resp.feature_bitmap);
 
         Ok(Self {
@@ -652,6 +644,10 @@ impl Target for HyperdebugSpiTarget {
             })
     }
 
+    fn supports_bidirectional_transfer(&self) -> Result<bool> {
+        Ok((self.feature_bitmap & FEATURE_BIT_FULL_DUPLEX) != 0)
+    }
+
     fn set_chip_select(&self, pin: &Rc<dyn GpioPin>) -> Result<()> {
         self.inner.cmd_no_output(&format!(
             "spi set cs {} {}",
@@ -764,6 +760,12 @@ impl Target for HyperdebugSpiTarget {
                     self.receive(rbuf)?;
                 }
                 [Transfer::Both(wbuf, rbuf), ..] => {
+                    ensure!(
+                        (self.feature_bitmap & FEATURE_BIT_FULL_DUPLEX) != 0,
+                        TransportError::CommunicationError(
+                            "HyperDebug does not support bidirectional SPI".to_string()
+                        )
+                    );
                     ensure!(
                         rbuf.len() == wbuf.len(),
                         SpiError::MismatchedDataLength(wbuf.len(), rbuf.len())

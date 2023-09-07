@@ -179,6 +179,12 @@ impl<'a> TransportCommandHandler<'a> {
                         instance.set_max_speed(*value)?;
                         Ok(Response::Spi(SpiResponse::SetMaxSpeed))
                     }
+                    SpiRequest::SupportsBidirectionalTransfer => {
+                        let has_support = instance.supports_bidirectional_transfer()?;
+                        Ok(Response::Spi(SpiResponse::SupportsBidirectionalTransfer {
+                            has_support,
+                        }))
+                    }
                     SpiRequest::SetChipSelect { pin } => {
                         instance.set_chip_select(&self.transport.gpio_pin(pin)?)?;
                         Ok(Response::Spi(SpiResponse::SetChipSelect))

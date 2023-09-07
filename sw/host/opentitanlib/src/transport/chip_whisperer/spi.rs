@@ -89,6 +89,10 @@ impl<B: Board> Target for Spi<B> {
         Ok(())
     }
 
+    fn supports_bidirectional_transfer(&self) -> Result<bool> {
+        Ok(true)
+    }
+
     fn get_max_transfer_count(&self) -> Result<usize> {
         // Arbitrary value: number of `Transfers` that can be in a single transaction.
         Ok(42)

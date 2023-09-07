@@ -214,9 +214,7 @@ impl SpiDriver {
         }
     }
 
-    /// Write a transaction header for the given register and length.
-    fn write_header(&self, register: Register, len: usize, is_read: bool) -> Result<()> {
-        let mut buffer = vec![0u8; 4];
+    fn compose_header(&self, register: Register, len: usize, is_read: bool) -> [u8; 4] {
         let mut req: u32 = ((len as u32 - 1) << SPI_TPM_DATA_LEN_POS)
             | SPI_TPM_ADDRESS_OFFSET
             | (Self::addr(register) as u32);
@@ -225,8 +223,15 @@ impl SpiDriver {
         } else {
             req |= SPI_TPM_WRITE;
         }
+        req.to_be_bytes()
+    }
+
+    /// Write a transaction header for the given register and length.
+    fn write_header(&self, register: Register, len: usize, is_read: bool) -> Result<()> {
+        let mut buffer = [0u8; 4];
+        let req = self.compose_header(register, len, is_read);
         self.spi
-            .run_transaction(&mut [spi::Transfer::Both(&req.to_be_bytes(), &mut buffer)])?;
+            .run_transaction(&mut [spi::Transfer::Both(&req, &mut buffer)])?;
         if buffer[3] & 1 == 0 {
             let mut retries = 10;
             while {
@@ -255,6 +260,19 @@ const MAX_RESPONSE_SIZE: usize = 4096;
 
 impl Driver for SpiDriver {
     fn read_register(&self, register: Register, data: &mut [u8]) -> Result<()> {
+        if !self.spi.supports_bidirectional_transfer()? {
+            // SPI transport does not support bidirectional transfer.  Assume that the TPM will
+            // send 0x01 on the byte immediately following the fourth and final request byte.
+            let req = self.compose_header(register, data.len(), true);
+            let mut buffer = vec![0u8; data.len() + 1];
+            self.spi.run_transaction(&mut [
+                spi::Transfer::Write(&req),
+                spi::Transfer::Read(&mut buffer),
+            ])?;
+            ensure!(buffer[0] & 1 != 0, "TPM did not respond as expected",);
+            data.clone_from_slice(&buffer[1..]);
+            return Ok(());
+        }
         let _cs_asserted = Rc::clone(&self.spi).assert_cs()?; // Deasserts when going out of scope.
         self.write_header(register, data.len(), true)?;
         self.spi.run_transaction(&mut [spi::Transfer::Read(data)])?;
@@ -262,6 +280,21 @@ impl Driver for SpiDriver {
     }
 
     fn write_register(&self, register: Register, data: &[u8]) -> Result<()> {
+        if !self.spi.supports_bidirectional_transfer()? {
+            /*
+             * SPI transport does not support bidirectional transfer.  Assume that the TPM will
+             * send 0x01 on the byte immediately following the fourth and final request byte.
+             */
+            let req = self.compose_header(register, data.len(), true);
+            let mut buffer = [0u8; 1];
+            self.spi.run_transaction(&mut [
+                spi::Transfer::Write(&req),
+                spi::Transfer::Read(&mut buffer),
+                spi::Transfer::Write(data),
+            ])?;
+            ensure!(buffer[0] & 1 != 0, "TPM did not respond as expected",);
+            return Ok(());
+        }
         let _cs_asserted = Rc::clone(&self.spi).assert_cs()?; // Deasserts when going out of scope.
         self.write_header(register, data.len(), false)?;
         self.spi

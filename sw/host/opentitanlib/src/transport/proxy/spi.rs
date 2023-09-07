@@ -83,6 +83,13 @@ impl Target for ProxySpi {
         }
     }
 
+    fn supports_bidirectional_transfer(&self) -> Result<bool> {
+        match self.execute_command(SpiRequest::SupportsBidirectionalTransfer)? {
+            SpiResponse::SupportsBidirectionalTransfer { has_support } => Ok(has_support),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+
     fn set_chip_select(&self, pin: &Rc<dyn gpio::GpioPin>) -> Result<()> {
         let Some(pin) = pin.get_internal_pin_name() else {
             bail!(SpiError::InvalidChipSelect)

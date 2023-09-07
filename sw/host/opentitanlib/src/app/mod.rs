@@ -916,6 +916,10 @@ impl Target for SpiWrapper {
         Ok(())
     }
 
+    fn supports_bidirectional_transfer(&self) -> Result<bool> {
+        self.underlying_target.supports_bidirectional_transfer()
+    }
+
     fn set_chip_select(&self, chip_select: &Rc<dyn GpioPin>) -> Result<()> {
         *self.my_chip_select.borrow_mut() = Some(Rc::clone(chip_select));
         Ok(())
