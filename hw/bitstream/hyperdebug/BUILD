@@ -27,8 +27,8 @@ filegroup(
         srcs = select({
             "//hw/bitstream:bitstream_skip": ["skip.bit"],
             "//hw/bitstream:bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw310_rom_with_{}_keys".format(authenticity)],
-            "//hw/bitstream:bitstream_gcp_splice": [":gcp_spliced_rom_with_{}_fake_keys".format(authenticity)],
-            "//conditions:default": [":gcp_spliced_rom_with_fake_keys"],
+            "//hw/bitstream:bitstream_gcp_splice": [":gcp_spliced_rom_with_{}_keys".format(authenticity)],
+            "//conditions:default": [":gcp_spliced_rom_with_{}_keys".format(authenticity)],
         }),
         tags = ["manual"],
     )
