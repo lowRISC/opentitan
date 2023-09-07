@@ -74,55 +74,6 @@ void sha256_init(sha256_state_t *state) {
 }
 
 /**
- * Pad the block as described in FIPS 180-4, section 5.1.2.
- *
- * Padding fills the current block and may require one additional block.
- *
- * The length of real data in the partial block should be the byte-length of
- * the message so far (total_len >> 3) modulo `kSha256MessageBlockBytes`.
- *
- * @param total_len Total length of message so far.
- * @param block Current (partial) block, updated in-place.
- * @param[out] additional_block Buffer for an additional padding block.
- * @return Length of padding added in bytes.
- * @return Result of the operation.
- */
-static size_t add_padding(const uint64_t total_len,
-                          sha256_message_block_t *block,
-                          sha256_message_block_t *additional_block) {
-  size_t partial_block_len = (total_len >> 3) % kSha256MessageBlockBytes;
-
-  // Get a byte-sized pointer to the end of the real data within the block.
-  unsigned char *data_end = (unsigned char *)block->data + partial_block_len;
-
-  // Fill the remainder of the block with zeroes.
-  size_t padding_len = kSha256MessageBlockBytes - partial_block_len;
-  memset(data_end, 0, padding_len);
-
-  // Set the last byte after the message to 0x80. There must be at least one
-  // unfilled byte in the partial block, since partial_block_len is always <
-  // kSha256MessageBlockBytes.
-  memset(data_end, 0x80, 1);
-
-  sha256_message_block_t *final_block = block;
-  if (partial_block_len + 1 + sizeof(total_len) > kSha256MessageBlockBytes) {
-    // We need the additional block; partial data + 0x80 + 8-byte encoding of
-    // length will not fit in the current block.
-    memset(additional_block, 0, kSha256MessageBlockBytes);
-    padding_len += kSha256MessageBlockBytes;
-    final_block = additional_block;
-  }
-
-  // Set the last 64 bits of the final block to the bit-length in big-endian
-  // form.
-  final_block->data[kSha256MessageBlockWords - 1] =
-      __builtin_bswap32(total_len & UINT32_MAX);
-  final_block->data[kSha256MessageBlockWords - 2] =
-      __builtin_bswap32(total_len >> 32);
-  return padding_len;
-}
-
-/**
  * Run OTBN to process the data currently in DMEM.
  *
  * @param ctx OTBN message buffer context information (updated in place).
@@ -169,6 +120,56 @@ static status_t process_block(sha256_otbn_ctx_t *ctx,
     HARDENED_TRY(process_message_buffer(ctx));
   }
   return OTCRYPTO_OK;
+}
+
+/**
+ * Pad the block as described in FIPS 180-4, section 5.1.1.
+ *
+ * Padding fills the current block and may require one additional block. This
+ * function calls `process_block` to load the padded block(s) into OTBN.
+ *
+ * The length of real data in the partial block should be the byte-length of
+ * the message so far (total_len >> 3) modulo `kSha256MessageBlockBytes`.
+ *
+ * @param ctx OTBN message buffer context information (updated in place).
+ * @param total_len Total length of message so far.
+ * @param block Current (partial) block.
+ * @return Result of the operation.
+ */
+static status_t process_padding(sha256_otbn_ctx_t *ctx,
+                                const uint64_t total_len,
+                                sha256_message_block_t *block) {
+  size_t partial_block_len = (total_len >> 3) % kSha256MessageBlockBytes;
+
+  // Get a byte-sized pointer to the end of the real data within the block.
+  unsigned char *data_end = (unsigned char *)block->data + partial_block_len;
+
+  // Fill the remainder of the block with zeroes.
+  size_t padding_len = kSha256MessageBlockBytes - partial_block_len;
+  memset(data_end, 0, padding_len);
+
+  // Set the last byte after the message to 0x80. There must be at least one
+  // unfilled byte in the partial block, since partial_block_len is always <
+  // kSha256MessageBlockBytes.
+  memset(data_end, 0x80, 1);
+
+  if (partial_block_len + 1 + sizeof(total_len) > kSha256MessageBlockBytes) {
+    // We need to use the additional block. The first block is already
+    // complete, so process it and then zero out the block data again to
+    // prepare the next one.
+    HARDENED_TRY(process_block(ctx, block));
+    memset(block, 0, kSha256MessageBlockBytes);
+  }
+
+  // Set the last 64 bits of the final block to the bit-length in big-endian
+  // form.
+  block->data[kSha256MessageBlockWords - 1] =
+      __builtin_bswap32(total_len & UINT32_MAX);
+  block->data[kSha256MessageBlockWords - 2] =
+      __builtin_bswap32(total_len >> 32);
+
+  // Process the last block.
+  return process_block(ctx, block);
 }
 
 /**
@@ -233,15 +234,7 @@ static status_t process_message(sha256_state_t *state, const uint8_t *msg,
 
   // Add padding if necessary.
   if (padding_needed == kHardenedBoolTrue) {
-    sha256_message_block_t additional_block;
-    size_t padding_len =
-        add_padding(new_state.total_len, &block, &additional_block);
-    // We always fill `block`; process it.
-    HARDENED_TRY(process_block(&ctx, &block));
-    // Check if `additional_block` was used, and process it if so.
-    if (padding_len > kSha256MessageBlockBytes) {
-      HARDENED_TRY(process_block(&ctx, &additional_block));
-    }
+    HARDENED_TRY(process_padding(&ctx, new_state.total_len, &block));
   }
 
   // If there are any unprocessed blocks currently in DMEM, run the program one
