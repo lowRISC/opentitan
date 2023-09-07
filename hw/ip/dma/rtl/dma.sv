@@ -548,8 +548,7 @@ module dma
             dma_host_tlul_req_be    = {top_pkg::TL_DBW{1'b1}};
 
             if (dma_host_tlul_gnt) begin
-              clear_index_en = 1'b1;
-              ctrl_state_d   = DmaWaitIntrSrcResponse;
+              ctrl_state_d = DmaWaitIntrSrcResponse;
             end
           end else begin
             dma_ctn_tlul_req_valid = 1'b1;
@@ -559,8 +558,7 @@ module dma
             dma_ctn_tlul_req_be    = {top_pkg::TL_DBW{1'b1}};
 
             if (dma_ctn_tlul_gnt) begin
-              clear_index_en = 1'b1;
-              ctrl_state_d   = DmaWaitIntrSrcResponse;
+              ctrl_state_d = DmaWaitIntrSrcResponse;
             end
           end
 
@@ -572,7 +570,7 @@ module dma
               ctrl_state_d = DmaIdle;
             end else begin
               // Abort if we handled all
-              if (32'(clear_index_d) >= NumIntClearSources) begin
+              if (32'(clear_index_q) >= (NumIntClearSources - 1)) begin
                 ctrl_state_d = DmaAddrSetup;
               end
             end
@@ -596,8 +594,9 @@ module dma
             ctrl_state_d = DmaIdle;
           end else begin
             if (32'(clear_index_q) < (NumIntClearSources - 1)) begin
-              clear_index_d = clear_index_q + INT_CLEAR_SOURCES_WIDTH'(1'b1);
-              ctrl_state_d  = DmaClearIntrSrc;
+              clear_index_en = 1'b1;
+              clear_index_d  = clear_index_q + INT_CLEAR_SOURCES_WIDTH'(1'b1);
+              ctrl_state_d   = DmaClearIntrSrc;
             end else begin
               ctrl_state_d = DmaAddrSetup;
             end
