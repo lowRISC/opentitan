@@ -95,19 +95,19 @@
       act:     "req"
       desc:    "TL-UL host port for egress into CTN (request part), synchronous"
     }
-    { struct:  "lsio_trigger"
-      package: "dma_pkg"
-      type:    "uni"
-      name:    "dma_lsio_trigger"
-      act:     "req"
-      desc:    "Collated LSIO trigger signals for DMA"
-    }
     { struct:  "tl_d2h"
       package: "tlul_pkg"
       type:    "uni"
       name:    "ctn_tl_d2h"
       act:     "rcv"
       desc:    "TL-UL host port for egress into CTN (response part), synchronous"
+    }
+    { struct:  "lsio_trigger"
+      package: "dma_pkg"
+      type:    "uni"
+      name:    "dma_lsio_trigger"
+      act:     "req"
+      desc:    "Collated LSIO trigger signals for DMA"
     }
     { struct:  "alert_tx"
       package: "prim_alert_pkg"
