@@ -79,8 +79,8 @@ Callers who do not wish to use `status_t` infrastructure may compare to these va
 
 ### Data buffers
 
-{{#header-snippet sw/device/lib/crypto/include/datatypes.h crypto_uint8_buf }}
-{{#header-snippet sw/device/lib/crypto/include/datatypes.h crypto_const_uint8_buf }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h crypto_byte_buf }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h crypto_const_byte_buf }}
 
 ### Key data structures
 
