@@ -170,117 +170,6 @@ opentitan_functest(
 )
 
 opentitan_functest(
-    name = "sysrst_ctrl_inputs_test",
-    srcs = ["sysrst_ctrl_inputs_test.c"],
-    targets = ["dv"],
-    deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:ibex",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:pinmux",
-        "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
-    ],
-)
-
-opentitan_functest(
-    name = "sysrst_ctrl_in_irq_test",
-    srcs = ["sysrst_ctrl_in_irq_test.c"],
-    targets = ["dv"],
-    deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:ibex",
-        "//sw/lib/sw/device/runtime:irq",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:pinmux",
-        "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
-        "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
-    ],
-)
-
-opentitan_functest(
-    name = "sysrst_ctrl_ulp_z3_wakeup_test",
-    srcs = ["sysrst_ctrl_ulp_z3_wakeup_test.c"],
-    targets = ["dv"],
-    deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:ibex",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:pinmux",
-        "//sw/top_darjeeling/sw/dif:pwrmgr",
-        "//sw/top_darjeeling/sw/dif:rstmgr",
-        "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
-        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
-        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
-    ],
-)
-
-opentitan_functest(
-    name = "sysrst_ctrl_reset_test",
-    srcs = ["sysrst_ctrl_reset_test.c"],
-    targets = ["dv"],
-    deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:pinmux",
-        "//sw/top_darjeeling/sw/dif:pwrmgr",
-        "//sw/top_darjeeling/sw/dif:rstmgr",
-        "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
-        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
-    ],
-)
-
-opentitan_functest(
-    name = "sysrst_ctrl_outputs_test",
-    srcs = ["sysrst_ctrl_outputs_test.c"],
-    targets = ["dv"],
-    deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:ibex",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:pinmux",
-        "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
-        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
-    ],
-)
-
-opentitan_functest(
-    name = "sysrst_ctrl_ec_rst_l_test",
-    srcs = ["sysrst_ctrl_ec_rst_l_test.c"],
-    targets = ["dv"],
-    deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:ibex",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:pinmux",
-        "//sw/top_darjeeling/sw/dif:pwrmgr",
-        "//sw/top_darjeeling/sw/dif:rstmgr",
-        "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
-        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
-    ],
-)
-
-opentitan_functest(
     name = "lc_ctrl_scrap_test",
     srcs = ["lc_ctrl_scrap_test.c"],
     targets = ["dv"],
@@ -523,33 +412,6 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/device/runtime:print",
         "//sw/top_darjeeling/sw/dif:pwrmgr",
         "//sw/top_darjeeling/sw/dif:rstmgr",
-        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
-    ],
-)
-
-opentitan_functest(
-    name = "pwrmgr_sysrst_ctrl_test",
-    srcs = ["pwrmgr_sysrst_ctrl_test.c"],
-    targets = ["dv"],
-    deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/base:abs_mmio",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:aon_timer",
-        "//sw/top_darjeeling/sw/dif:flash_ctrl",
-        "//sw/top_darjeeling/sw/dif:pinmux",
-        "//sw/top_darjeeling/sw/dif:pwrmgr",
-        "//sw/top_darjeeling/sw/dif:rstmgr",
-        "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
-        "//sw/top_darjeeling/sw/test/utils:aon_timer_testutils",
-        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
-        "//sw/top_darjeeling/sw/test/utils:nv_counter_testutils",
-        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
         "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
         "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
     ],
@@ -1107,30 +969,31 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
-    name = "pwrmgr_b2b_sleep_reset_test",
-    srcs = ["pwrmgr_b2b_sleep_reset_test.c"],
-    targets = ["dv"],
-    deps = [
-        "//hw/ip/aon_timer/data:aon_timer_regs",
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/base:abs_mmio",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:flash_ctrl",
-        "//sw/top_darjeeling/sw/dif:pinmux",
-        "//sw/top_darjeeling/sw/dif:pwrmgr",
-        "//sw/top_darjeeling/sw/dif:rstmgr",
-        "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
-        "//sw/top_darjeeling/sw/test/utils:aon_timer_testutils",
-        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
-        "//sw/top_darjeeling/sw/test/utils:nv_counter_testutils",
-        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
-    ],
-)
+# opentitan_functest(
+#     name = "pwrmgr_b2b_sleep_reset_test",
+#     srcs = ["pwrmgr_b2b_sleep_reset_test.c"],
+#     tags = ["earlgrey"],
+#     targets = ["dv"],
+#     deps = [
+#         "//hw/ip/aon_timer/data:aon_timer_regs",
+#         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+#         "//sw/device/lib/testing/test_framework:ottf_main",
+#         "//sw/lib/sw/device/base:abs_mmio",
+#         "//sw/lib/sw/device/base:mmio",
+#         "//sw/lib/sw/device/runtime:log",
+#         "//sw/top_darjeeling/sw/device/runtime:print",
+#         "//sw/top_darjeeling/sw/dif:flash_ctrl",
+#         "//sw/top_darjeeling/sw/dif:pinmux",
+#         "//sw/top_darjeeling/sw/dif:pwrmgr",
+#         "//sw/top_darjeeling/sw/dif:rstmgr",
+#         "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
+#         "//sw/top_darjeeling/sw/test/utils:aon_timer_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:nv_counter_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
+#     ],
+# )
 
 opentitan_functest(
     name = "sensor_ctrl_status_test",
