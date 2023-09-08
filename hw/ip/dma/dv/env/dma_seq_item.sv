@@ -101,8 +101,9 @@ class dma_seq_item extends uvm_sequence_item;
       // If OT internal address space is the source then source address must be
       // greater than the memory base address
       if (src_asid == OtInternalAddr){
-        src_addr >= mem_range_base;
+        src_addr inside {[mem_range_base : (mem_range_limit - total_transfer_size)]};
       }
+      src_asid != SocSystemAddr -> src_addr[63:32] == '0;
     }
     // Address alignment constraint
     if (align_address) {
@@ -119,8 +120,9 @@ class dma_seq_item extends uvm_sequence_item;
       // If OT internal address space is the destination then destination address must be
       // greater than the memory base address
       if (dst_asid == OtInternalAddr) {
-        dst_addr >= mem_range_base;
+        dst_addr inside {[mem_range_base : (mem_range_limit - total_transfer_size)]};
       }
+      dst_asid != SocSystemAddr -> dst_addr[63:32] == '0;
     }
     // Address alignment constraint
     if (align_address) {
