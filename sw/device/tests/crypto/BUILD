@@ -228,6 +228,7 @@ opentitan_test(
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -243,6 +244,7 @@ opentitan_test(
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -260,6 +262,7 @@ opentitan_functest(
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -274,6 +277,7 @@ opentitan_functest(
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -291,6 +295,7 @@ opentitan_functest(
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -305,6 +310,7 @@ opentitan_functest(
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
