@@ -58,7 +58,6 @@ rust_library(
         "@crate_index//:directories",
         "@crate_index//:hex",
         "@crate_index//:indexmap",
-        "@crate_index//:is-terminal",
         "@crate_index//:log",
         "@crate_index//:num_enum",
         "@crate_index//:once_cell",

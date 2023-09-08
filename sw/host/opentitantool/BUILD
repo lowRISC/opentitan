@@ -54,7 +54,6 @@ rust_binary(
         "@crate_index//:erased-serde",
         "@crate_index//:hex",
         "@crate_index//:humantime",
-        "@crate_index//:is-terminal",
         "@crate_index//:log",
         "@crate_index//:mio",
         "@crate_index//:mio-signals",

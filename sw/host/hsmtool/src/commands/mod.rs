@@ -4,10 +4,10 @@
 
 use anyhow::Result;
 use cryptoki::session::Session;
-use is_terminal::IsTerminal;
 use serde::{Deserialize, Serialize};
 use serde_annotate::{Annotate, ColorProfile};
 use std::any::Any;
+use std::io::IsTerminal;
 
 use crate::module::Module;
 use crate::util::attribute::AttrData;

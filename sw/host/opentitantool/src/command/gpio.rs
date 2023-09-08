@@ -4,12 +4,12 @@
 
 use anyhow::Result;
 use clap::{Args, Subcommand};
-use is_terminal::IsTerminal;
 use raw_tty::TtyModeGuard;
 use serde_annotate::Annotate;
 use std::any::Any;
 use std::borrow::Borrow;
 use std::fs::File;
+use std::io::IsTerminal;
 use std::io::{Read, Write};
 use std::os::unix::io::AsRawFd;
 use std::rc::Rc;
