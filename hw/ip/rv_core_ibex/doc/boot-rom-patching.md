@@ -135,7 +135,8 @@ The second ROM partition with patching capability is added to the architecture d
     In case such a scenario occurs, upon reboot, the patch loader applies the last known good patch that was programmed successfully and continues to boot to a stable environment prior to reprogramming the unsuccessful patch.
 
   - **Lock Valid**: The Lock Valid MuBi is set only after the entire patch code is successfully programmed and passes full signature verification after programming.
-    Indicates whether to spend time verifying the signature of the patch during boot.
+    Base ROM must verify the signature that is stored in OTP before loading a patch region that does not have the `Lock Valid` bit set.
+    The verification step is optional when this bit is set.
 
 - **The patch table** includes:
 
@@ -370,21 +371,26 @@ The steps involved are as follows:
     - *Separate patch SRAM or*
     - *Carved out region from private SRAM as patch SRAM (preferred)*
 
-  - Base ROM performs the signature verification of the patch in the latest region.
+  - Depending on the patch region `Lock Valid` MuBi value, base ROM may perform the signature verification of the patch in the selected region:
+    - If `Lock Valid` is set, base ROM can skip the OTP signature verificaton step.
+    - if `Lock Valid` is not set:
+      - Base ROM performs the signature verification of the patch in the latest region.
+        - If signature verification fails, then it moves to the previous, successfully programmed (i.e. with the `Program Start` bit set) patch region to check for a valid patch, and starts the OTP signature verification process over.
+        - If signature verification passes, it sets the `Lock Valid` bit.
 
-    - If signature verification fails, then it moves to the previous, successfully programmed (i.e. with the `Program Start` bit set) patch region to check for a valid patch.
-    - If signature verification passes, it stores the hash in a secure location for later check.
+  - Base ROM stores the selected patch region signature in a secure location for later check.
 
-  - Once signature verification passes, base ROM reads out the patch code section, row by row and places it into the patch SRAM region.
+  - Base ROM reads out the selected patch region code section, row by row and places it into the patch SRAM region.
 
     - Bus errors if any during this time are handled by the base ROM appropriately (may be retry).
 
   - Base ROM reads out the patch match table and places them in the patch match registers.
 
   - Base ROM computes the hash of the patch code in SRAM and the patch match register configuration following the same order as used for digital signature computation.
-    It then compares the computed hash with the value stored after verification passed.
 
-  - If the hash check passes, the patch is ready to be enabled.
+  - Base ROM verifies that the computed hash matches the stored patch region signature.
+
+  - If the verification passes, the patch is ready to be enabled.
     Base ROM sets the enable bits for the patch match registers and locks them from further modification.
 
   - At this point, the patch for the second ROM partition is enabled and it is ready for its execution.
