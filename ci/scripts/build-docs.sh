@@ -6,7 +6,7 @@
 # Build docs and tell the Azure runner to upload any doxygen warnings
 
 set -e
-util/site/build-docs.sh || {
+util/site/build-docs.sh build-local || {
   echo -n "##vso[task.logissue type=error]"
   echo "Documentation build failed."
   exit 1
