@@ -18,10 +18,10 @@ load(
 package(default_visibility = ["//visibility:public"])
 
 opentitan_ram_binary(
-    name = "sram_cp_provision_init",
-    srcs = ["sram_cp_provision_init.c"],
-    hdrs = ["sram_cp_provision_init.h"],
-    archive_symbol_prefix = "sram_cp_provision_init",
+    name = "sram_cp_provision",
+    srcs = ["sram_cp_provision.c"],
+    hdrs = ["sram_cp_provision.h"],
+    archive_symbol_prefix = "sram_cp_provision",
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -52,7 +52,7 @@ opentitan_ram_binary(
 )
 
 opentitan_functest(
-    name = "cp_provision_init",
+    name = "cp_provision",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_raw",
@@ -60,16 +60,16 @@ opentitan_functest(
         test_cmds = [
             "--clear-bitstream",
             "--bitstream=\"$(location {bitstream})\"",
-            "--elf=\"$(rootpath :sram_cp_provision_init_fpga_cw310_elf_transition)\"",
+            "--elf=\"$(rootpath :sram_cp_provision_fpga_cw310_elf_transition)\"",
             "--all-steps",
         ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
     ),
     data = [
-        ":sram_cp_provision_init_fpga_cw310_elf_transition",
+        ":sram_cp_provision_fpga_cw310_elf_transition",
     ] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
     key_struct = RSA_ONLY_KEY_STRUCTS[0],
     targets = ["cw310_rom_with_fake_keys"],
-    test_harness = "//sw/host/tests/manuf/cp_provision_init",
+    test_harness = "//sw/host/tests/manuf/provisioning/cp",
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -80,7 +80,7 @@ opentitan_functest(
 )
 
 opentitan_functest(
-    name = "cp_provision_init_test",
+    name = "cp_provision_test",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_raw",
@@ -97,7 +97,7 @@ opentitan_functest(
     ] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
     key_struct = RSA_ONLY_KEY_STRUCTS[0],
     targets = ["cw310_rom_with_fake_keys"],
-    test_harness = "//sw/host/tests/manuf/cp_provision_init",
+    test_harness = "//sw/host/tests/manuf/provisioning/cp",
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/testing/test_framework:ottf_main",
