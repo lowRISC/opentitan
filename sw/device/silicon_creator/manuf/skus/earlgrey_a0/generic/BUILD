@@ -3,16 +3,16 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
+    "//rules:opentitan.bzl",
+    "RSA_ONLY_KEY_STRUCTS",
+    "opentitan_ram_binary",
+)
+load(
     "//rules:opentitan_test.bzl",
     "OPENTITANTOOL_OPENOCD_DATA_DEPS",
     "OPENTITANTOOL_OPENOCD_TEST_CMDS",
     "cw310_params",
     "opentitan_functest",
-)
-load(
-    "//rules:opentitan.bzl",
-    "RSA_ONLY_KEY_STRUCTS",
-    "opentitan_ram_binary",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -53,6 +53,34 @@ opentitan_ram_binary(
 
 opentitan_functest(
     name = "cp_provision_init",
+    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
+    cw310 = cw310_params(
+        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_raw",
+        tags = ["manuf"],
+        test_cmds = [
+            "--clear-bitstream",
+            "--bitstream=\"$(location {bitstream})\"",
+            "--elf=\"$(rootpath :sram_cp_provision_init_fpga_cw310_elf_transition)\"",
+            "--all-steps",
+        ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
+    ),
+    data = [
+        ":sram_cp_provision_init_fpga_cw310_elf_transition",
+    ] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
+    key_struct = RSA_ONLY_KEY_STRUCTS[0],
+    targets = ["cw310_rom_with_fake_keys"],
+    test_harness = "//sw/host/tests/manuf/cp_provision_init",
+    deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+    ],
+)
+
+opentitan_functest(
+    name = "cp_provision_init_test",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_raw",
