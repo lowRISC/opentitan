@@ -362,7 +362,8 @@ The steps involved are as follows:
 
 - OTP Patch load
 
-  - Base ROM probes the [*OTP patch regions*](#e-fuse--otp-patch) to identify the latest enabled patch section.
+  - Base ROM probes the [*OTP patch regions*](#e-fuse--otp-patch) to identify the latest programmed patch region.
+    - The latest programmed patch region is the region with the highest `Patch Revision` number, among all patch regions that have been successfully programmed, i.e. those with the `Program Start` MuBi set.
 
   - Base ROM configures the patch SRAM region based on implementation choice (*OPEN: choices*).
 
@@ -371,7 +372,7 @@ The steps involved are as follows:
 
   - Base ROM performs the signature verification of the patch in the latest region.
 
-    - If signature verification fails, then it moves to the previous region ID to check for a valid patch.
+    - If signature verification fails, then it moves to the previous, successfully programmed (i.e. with the `Program Start` bit set) patch region to check for a valid patch.
     - If signature verification passes, it stores the hash in a secure location for later check.
 
   - Once signature verification passes, base ROM reads out the patch code section, row by row and places it into the patch SRAM region.
