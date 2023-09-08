@@ -380,11 +380,14 @@ The steps involved are as follows:
 
   - Base ROM stores the selected patch region signature in a secure location for later check.
 
+  - Base ROM reads out the register values from the patch match table and places them in the patch match registers.
+
+    - Base ROM stores the `r_base` value from the first redirection register, i.e. `pa_rb_r0`.
+
   - Base ROM reads out the selected patch region code section, row by row and places it into the patch SRAM region.
 
+    - The patch SRAM region start address is the first redirection register base address (`pa_rb_r0.r_base`), as stored in the previous step.
     - Bus errors if any during this time are handled by the base ROM appropriately (may be retry).
-
-  - Base ROM reads out the patch match table and places them in the patch match registers.
 
   - Base ROM computes the hash of the patch code in SRAM and the patch match register configuration following the same order as used for digital signature computation.
 
