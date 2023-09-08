@@ -7,7 +7,7 @@ load("@rules_rust//rust:defs.bzl", "rust_binary")
 package(default_visibility = ["//visibility:public"])
 
 rust_binary(
-    name = "cp_provision_init",
+    name = "cp",
     srcs = [
         "src/main.rs",
     ],
