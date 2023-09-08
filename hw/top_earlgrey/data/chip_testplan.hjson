@@ -19,10 +19,11 @@
     "sw/device/silicon_creator/manuf/data/manuf_testplan.hjson"
 
     // IP block specific top level test plans.
+    "hw/top_earlgrey/data/ip/chip_flash_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_hmac_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_keymgr_testplan.hjson",
-    "hw/top_earlgrey/data/ip/chip_lc_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_kmac_testplan.hjson",
+    "hw/top_earlgrey/data/ip/chip_lc_ctrl_testplan.hjson",
   ]
 
   testpoints: [
@@ -1339,9 +1340,9 @@
       desc: '''Verify that the USB stops responding when its clock is disabled in active state.
 
             Configure the pwrmgr CONTROL CSR with USB_CLK_EN_ACTIVE off, and issue a CSR read
-	    to the USB.  This CSR read should cause the CPU to hung.  Prior to this read,
-	    configure the watchdog to bite, and the test passes if there is a watchdog reset.
-	    '''
+            to the USB.  This CSR read should cause the CPU to hang.  Prior to this read,
+            configure the watchdog to bite, and the test passes if there is a watchdog reset.
+            '''
       stage: V3
       tests: ["chip_sw_pwrmgr_usb_clk_disabled_when_active"]
     }
@@ -2417,7 +2418,7 @@
             - Use the rstmgr alert info and the fault CSRs to check the alert cause is right.
             - Keep state across resets in flash to check that no NMI or regular ISR interrupt run
               for kTopEarlgreyAlertIdLcCtrlFatalProgError.
-	    - Verify that, after escalation reset, the alert handler cause and the fault register are cleared.
+            - Verify that, after escalation reset, the alert handler cause and the fault register are cleared.
             - Verify after the escalation reset that the alert info captured the correct alert.
             '''
 
@@ -2510,214 +2511,6 @@
             '''
       stage: V3
       tests: ["chip_sw_otp_ctrl_escalation"]
-    }
-
-    // FLASH (pre-verified IP) integration tests:
-    {
-      name: chip_sw_flash_init
-      desc: '''Verify that flash initialization routine works correctly.
-
-            - Initialize the flash ctrl by writing 1 to the INIT register.
-            - Poll the status register for the initialization to complete.
-            - Verify that during the init process, the flash ctrl requested keys from OTP. Verify
-              with different sets of key values programmed in OTP.
-            - Verify the flash ctrl can read seeds when lc_seed_hw_rd_en is set, otherwise all 1s.
-            - Verify that the flash ctrl sent the creator and owner seeds to keymgr. Verify with
-              different seed values.
-
-            - This test needs to execute as a boot rom image.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_init"]
-    }
-    {
-      name: chip_sw_flash_host_access
-      desc: '''Verify that the flash memory contents can be read by the CPU.
-
-            Nothing extra to do here - most SW based tests fetch code from flash.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_ctrl_access",
-              "chip_sw_flash_ctrl_access_jitter_en"]
-    }
-    {
-      name: chip_sw_flash_ctrl_ops
-      desc: '''Verify the SW can initiate flash operations via the controller.
-
-            Verify that the CPU can read / program and erase the flash mem. Pick an operation on
-            all data and info partitions. Erase both, bank and page. SW validates the reception of
-            prog empty, prog level, rd full, rd level and op done interrupts.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_ctrl_ops", "chip_sw_flash_ctrl_ops_jitter_en"]
-    }
-    {
-      name: chip_sw_flash_rma_unlocked
-      desc: '''Verify the flash memory contents can be accessed after in RMA unlock.
-
-            - Provision an RMA_UNLOCK token in OTP.
-            - Repeat the following a few times:
-              - Randomize the otp contents for device id, manufacturing state and RMA_UNLOCK token.
-              - Reset the chip.
-              - Ensure chip revision, device id and manufacturing state can be read through the LC JTAG.
-            - Enable RMA mode, and verify that the SW can access the flash after RMA completion.
-
-            - RMA entry should be done through the  JTAG interface.
-
-            - X-ref'ed with manuf_ft_provision_rma_token_and_personalization from the manufacturing
-              testplan.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_rma_unlocked"]
-    }
-    {
-      name: chip_sw_flash_scramble
-      desc: '''Verify flash scrambling via the controller.
-
-            - Extends the chip_flash_init test.
-            - Verify flash scrambling with different key values programmed in OTP.
-            - Verify read of scrambled contents via both, controller and direct host read.
-
-            - Program a new scramble key in OTP and reboot - this time we need to backdoor load the
-              flash with new test image that is re-scrambled with the new key.
-            - Need to understand the bootstrapping requirements.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_init"]
-    }
-    {
-      name: chip_sw_flash_idle_low_power
-      desc: '''Verify flash_idle signaling to pwrmgr.
-
-            - Initiate flash program or erase over the controller.
-            - Program the pwrmgr to go into deep sleep.
-            - Issue a WFI.
-            - Ensure that the low power entry does not happen due to the ongoing flash operation.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_ctrl_idle_low_power"]
-    }
-    {
-      name: chip_sw_flash_keymgr_seeds
-      desc: '''Verify the creator and owner seeds are read on flash init provided lc_hw_seed_rd_en
-            is set.
-
-            X-ref'ed with keymgr test.
-            '''
-      stage: V2
-      tests: ["chip_sw_keymgr_key_derivation"]
-    }
-    {
-      name: chip_sw_flash_lc_creator_seed_sw_rw_en
-      desc: '''Verify the lc_creator_seed_sw_rw_en signal from LC ctrl.
-
-            - Transition from TEST_LOCKED to DEV/PROD to ESCALATION/SCRAP state via OTP and verify
-              that this LC signal transitions from 0 to 1 and back to 0. Verify that the SW
-              accessibility of the corresponding partition depending on the signal value.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_ctrl_lc_rw_en"]
-    }
-    {
-      name: chip_sw_flash_creator_seed_wipe_on_rma
-      desc: '''Verify that the creator seed is wiped by the flash ctrl on RMA entry.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_rma_unlocked"]
-    }
-    {
-      name: chip_sw_flash_lc_owner_seed_sw_rw_en
-      desc: '''Verify the lc_owner_seed_sw_rw_en signal from LC ctrl.
-
-            - Transition from TEST_LOCKED to DEV/PROD to ESCALATION/SCRAP state via OTP and verify
-              that this LC signal transitions from 0 to 1 and back to 0. Verify that the SW
-              accessibility of the corresponding partition depending on the signal value.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_ctrl_lc_rw_en"]
-    }
-    {
-      name: chip_sw_flash_lc_iso_part_sw_rd_en
-      desc: '''Verify the lc_iso_part_sw_rd_en signal from LC ctrl.
-
-            - Transition from DEV to PROD to ESCALATION/SCRAP state via OTP and verify
-              that this LC signal transitions from 0 to 1 and back to 0. Verify that the SW
-              accessibility of the corresponding partition depending on the signal value.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_ctrl_lc_rw_en"]
-    }
-    {
-      name: chip_sw_flash_lc_iso_part_sw_wr_en
-      desc: '''Verify the lc_creator_seed_sw_wr_en signal from LC ctrl.
-
-            - Transition from TEST_LOCKED to DEV/PROD to ESCALATION/SCRAP state via OTP and verify
-              that this LC signal transitions from 0 to 1 and back to 0. Verify that the SW
-              accessibility of the corresponding partition depending on the signal value.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_ctrl_lc_rw_en"]
-    }
-    {
-      name: chip_sw_flash_lc_seed_hw_rd_en
-      desc: '''Verify the lc_seed_hw_rd_en signal from LC ctrl.
-
-            - Transition from TEST_LOCKED to DEV/PROD to ESCALATION/SCRAP state via OTP and verify
-              that this LC signal transitions from 0 to 1 and back to 0. Verify that the flash ctrl
-              does (or does not) read the creator and owner partitions to fetch the seeds for the
-              keymgr.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_ctrl_lc_rw_en"]
-    }
-    {
-      name: chip_sw_flash_lc_escalate_en
-      desc: '''Verify the lc_escalate_en signal from LC ctrl.
-
-            - Trigger an LC escalation signal by generating an alert.
-            - Verify that all flash accesses are disabled when the escalation kicks in.
-            - Confirm flash accesses are disabled by erroing if the device executes the ISR.
-            - Use assertion based connectivity check to prove that this signal is connected to the
-              flash ctrl.
-
-            X-ref with chip_sw_all_escalation_resets.
-            '''
-      stage: V2
-      tests: ["chip_sw_all_escalation_resets"]
-    }
-    {
-      name: chip_sw_flash_prim_tl_access
-      desc: '''Verify that the SW can read / write the prim tlul interface in flash phy.
-
-            - The prim tlul interface is a open source placeholder for the closed source CSRs that
-              will be implemented in a translation 'shim'.
-            - Verify that this region can be read / written to by the SW in any LC state.
-            '''
-      stage: V2
-      tests: ["chip_prim_tl_access"]
-    }
-    {
-      name: chip_sw_flash_ctrl_clock_freqs
-      desc: '''Verify flash program and erase operations over the ctrl over a range of clock freqs.
-
-            - Enable jitter on the clock while performing erase, write and read operations
-              to the flash.
-            - This sets the test for closed source where the flash access timing matters.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_ctrl_clock_freqs"]
-    }
-    {
-      name: chip_sw_flash_ctrl_escalation_reset
-      desc: '''Verify the flash ctrl fatal error does not disturb escalation process
-            and operation of ibex core.
-
-            Trigger an internal fatal fault (host_gnt_err) from flash_ctrl
-            and let it escalate to reset. Upon alert escalation reset,
-            the internal status should be clean and should not send out more alerts.
-            '''
-      stage: V2
-      tests: ["chip_sw_flash_crash_alert"]
     }
 
     ////////////////////////
