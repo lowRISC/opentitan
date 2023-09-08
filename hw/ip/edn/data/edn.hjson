@@ -70,6 +70,33 @@
       package: "edn_pkg",
     }
   ],
+  // Keep the following parameters in line with the literal values defined in the corresponding registers below
+  param_list: [
+    { name:    "EdnBootInsCmdResval",
+      type:    "logic [31:0]",
+      default: "32'h901",
+      desc:    "Reset value for the boot_ins_cmd register.",
+      local:   "true",
+    },
+    { name:    "EdnBootGenCmdResval",
+      type:    "logic [31:0]",
+      default: "32'hfff003",
+      desc:    "Reset value for the boot_gen_cmd register.",
+      local:   "true",
+    },
+    { name:    "CtrlResval",
+      type:    "logic [31:0]",
+      default: "32'h9999",
+      desc:    "Reset value for the ctrl register.",
+      local:   "true",
+    },
+    { name:    "MaxNumReqsBetweenReseedsResval",
+      type:    "logic [31:0]",
+      default: "32'h0",
+      desc:    "Reset value for the max_num_reqs_between_reseeds register.",
+      local:   "true",
+    },
+  ],
   countermeasures: [
     { name: "CONFIG.REGWEN"
       desc: "Registers are protected from writes."
