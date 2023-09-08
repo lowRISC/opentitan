@@ -127,7 +127,7 @@ module mbx_sysif
   // We use the register window to access the internal bus signals, allowing the mailbox to halt
   // the bus if there are too many outstanding requests.
   logic reg_wdata_we;
-  logic [top_pkg::TL_DW-1:0] reg_wdata_wdata, reg_wdata_rdata;
+  logic [top_pkg::TL_DW-1:0] reg_wdata_wdata;
   tlul_adapter_reg #(
     .RegAw             ( SysAw          ),
     .RegDw             ( top_pkg::TL_DW ),
@@ -169,7 +169,7 @@ module mbx_sysif
     .we_o         ( read_data_write_valid_o    ),
     .re_o         ( read_data_read_valid_o     ),
     .addr_o       (                            ),
-    // Write values are ignored. A Write simply means the read has occured.
+    // Write values are ignored. A Write simply means the read has occurred.
     .wdata_o      (                            ),
     .be_o         (                            ),
     .busy_i       ( ombx_pending_i            ),
