@@ -164,12 +164,6 @@ alias(
 )
 
 alias(
-    name = "is-terminal",
-    actual = "@crate_index__is-terminal-0.4.9//:is_terminal",
-    tags = ["manual"],
-)
-
-alias(
     name = "libftdi1-sys",
     actual = "@crate_index__libftdi1-sys-1.1.2//:libftdi1_sys",
     tags = ["manual"],

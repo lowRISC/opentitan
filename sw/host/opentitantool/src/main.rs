@@ -6,13 +6,13 @@
 use anyhow::Result;
 use clap::{Parser, ValueEnum};
 use directories::ProjectDirs;
-use is_terminal::IsTerminal;
 use log::LevelFilter;
 use serde_annotate::Annotate;
 use serde_annotate::ColorProfile;
 use std::env::{args_os, ArgsOs};
 use std::ffi::OsString;
 use std::io::ErrorKind;
+use std::io::IsTerminal;
 use std::iter::{IntoIterator, Iterator};
 use std::path::PathBuf;
 use std::str::FromStr;

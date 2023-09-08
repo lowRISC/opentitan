@@ -298,7 +298,6 @@ dependencies = [
  "humantime-serde",
  "indexmap 2.0.0",
  "indicatif",
- "is-terminal",
  "libftdi1-sys",
  "log",
  "mdbook",

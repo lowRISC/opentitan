@@ -157,7 +157,7 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     @ninja_1.10.2_linux//... \
     @cmake-3.22.2-linux-x86_64//... \
     @rustfmt_nightly-2023-07-13__x86_64-unknown-linux-gnu_tools//... \
-    @rust_analyzer_1.67.0_tools//... \
+    @rust_analyzer_1.71.1_tools//... \
     @rust_linux_x86_64__x86_64-unknown-linux-gnu__nightly_tools//... \
     @rust_linux_x86_64__riscv32imc-unknown-none-elf__nightly_tools//...
   cp -R "$(${BAZELISK} info output_base)"/external/${BAZEL_PYTHON_WHEEL_REPO} \

@@ -4,12 +4,12 @@
 
 use anyhow::{anyhow, Result};
 use clap::Args;
-use is_terminal::IsTerminal;
 use raw_tty::TtyModeGuard;
 use regex::Regex;
 use serde_annotate::Annotate;
 use std::any::Any;
 use std::fs::File;
+use std::io::IsTerminal;
 use std::os::unix::io::AsRawFd;
 use std::time::Duration;
 
