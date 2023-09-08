@@ -7,10 +7,8 @@ load("@rules_rust//rust:defs.bzl", "rust_binary")
 package(default_visibility = ["//visibility:public"])
 
 rust_binary(
-    name = "cp",
-    srcs = [
-        "src/main.rs",
-    ],
+    name = "cp_test",
+    srcs = ["src/main.rs"],
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/provisioning/cp_lib",
