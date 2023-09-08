@@ -88,7 +88,8 @@ class dma_seq_item extends uvm_sequence_item;
     // Set solve order to make sure mem_range_base is randomized correctly in
     // case align_address is set
     if (align_address) {
-      mem_range_base % int'(per_transfer_width) == 0;
+      per_transfer_width == DmaXfer2BperTxn -> mem_range_base % 2 == 0;
+      per_transfer_width == DmaXfer4BperTxn -> mem_range_base % 4 == 0;
     }
   }
 
@@ -105,7 +106,8 @@ class dma_seq_item extends uvm_sequence_item;
     }
     // Address alignment constraint
     if (align_address) {
-      src_addr % per_transfer_width == 0;
+      per_transfer_width == DmaXfer2BperTxn -> src_addr % 2 == 0;
+      per_transfer_width == DmaXfer4BperTxn -> src_addr % 4 == 0;
     }
   }
 
@@ -122,7 +124,8 @@ class dma_seq_item extends uvm_sequence_item;
     }
     // Address alignment constraint
     if (align_address) {
-      dst_addr % per_transfer_width == 0;
+      per_transfer_width == DmaXfer2BperTxn -> dst_addr % 2 == 0;
+      per_transfer_width == DmaXfer4BperTxn -> dst_addr % 4 == 0;
     }
   }
 
@@ -141,7 +144,8 @@ class dma_seq_item extends uvm_sequence_item;
       mem_range_limit >= (mem_range_base + total_transfer_size);
     }
     if (align_address) {
-      mem_range_limit % int'(per_transfer_width) == 0;
+      per_transfer_width == DmaXfer2BperTxn -> mem_range_limit % 2 == 0;
+      per_transfer_width == DmaXfer4BperTxn -> mem_range_limit % 4 == 0;
     }
   }
 
@@ -157,7 +161,8 @@ class dma_seq_item extends uvm_sequence_item;
        }
     }
     if (align_address) {
-      mem_buffer_limit % int'(per_transfer_width) == 0;
+      per_transfer_width == DmaXfer2BperTxn -> mem_buffer_limit % 2 == 0;
+      per_transfer_width == DmaXfer4BperTxn -> mem_buffer_limit % 4 == 0;
     }
   }
 
@@ -173,7 +178,8 @@ class dma_seq_item extends uvm_sequence_item;
        }
     }
     if (align_address) {
-      mem_buffer_almost_limit % int'(per_transfer_width) == 0;
+      per_transfer_width == DmaXfer2BperTxn -> mem_buffer_almost_limit % 2 == 0;
+      per_transfer_width == DmaXfer4BperTxn -> mem_buffer_almost_limit % 4 == 0;
     }
   }
 
