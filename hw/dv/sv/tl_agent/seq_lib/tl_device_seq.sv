@@ -115,7 +115,7 @@ class tl_device_seq #(type REQ = tl_seq_item, int unsigned AddrWidth = 32) exten
       get_response(rsp);
       // Remove from req_q if response is completed.
       if (rsp.rsp_completed) begin
-        req_q = req_q[1:$];
+        void'(req_q.pop_front());
         `uvm_info(`gfn, $sformatf("Sent rsp[%0d] : %0s, req: %0s",
                                   rsp_cnt, rsp.convert2string(), req.convert2string()), UVM_HIGH)
         rsp_cnt++;

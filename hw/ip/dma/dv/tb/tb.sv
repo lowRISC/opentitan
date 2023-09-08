@@ -16,21 +16,21 @@ module tb;
   `include "cip_macros.svh"
 
   // Common Interface - Clock and Reset
-  wire        clk;
-  wire        rst_n;
-  clk_rst_if  clk_rst_if(.clk(clk), .rst_n(rst_n));
+  wire clk;
+  wire rst_n;
+  clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
 
   // Common wire - Handshake/Interrupt Inputs
-  wire [dma_reg_pkg::NumIntClearSources-1:0] handshake_i;
+  wire [dma_reg_pkg::NumIntClearSources - 1 : 0] handshake_i;
   dma_if dma_intf(.clk_i(clk), .rst_ni(rst_n));
   assign handshake_i = dma_intf.handshake_i;
 
   // Common Interface - Interrupt Outputs
-  wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
+  wire [NUM_MAX_INTERRUPTS - 1 : 0] interrupts;
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
 
   // CIP Interface
-  wire         devmode;
+  wire devmode;
   pins_if #(1) devmode_if (devmode);
 
   // TL Interface
@@ -45,37 +45,35 @@ module tb;
   dma #(
     .EnableDataIntgGen (1)
   ) dut (
-    .clk_i           (clk),
-    .rst_ni          (rst_n),
-    .test_en_i       (1'b0), // TODO (DV) update
-
-    .lsio_trigger_i  (handshake_i),
-    .intr_dma_o      (interrupts[0]),
-
-    .alert_rx_i      (alert_rx),
-    .alert_tx_o      (alert_tx),
-
+    .clk_i (clk),
+    .rst_ni (rst_n),
+    .scanmode_i (prim_mubi_pkg::MuBi4False),
+    .lsio_trigger_i (handshake_i),
+    .intr_dma_done_o (interrupts[0]),
+    .intr_dma_error_o (interrupts[1]),
+    .intr_dma_memory_buffer_limit_o (interrupts[2]),
+    .alert_rx_i (alert_rx),
+    .alert_tx_o (alert_tx),
     // TL Interface
-    .tl_host_o       (tl_host_if.h2d),
-    .tl_host_i       (tl_host_if.d2h),
-
+    .host_tl_h_o (tl_host_if.h2d),
+    .host_tl_h_i (tl_host_if.d2h),
     // TL Interface for CSR
-    .tl_dev_o        (tl_if.h2d),
-    .tl_dev_i        (tl_if.d2h),
+    .tl_d_o (tl_if.d2h),
+    .tl_d_i (tl_if.h2d),
 
-    .tl_ctn_o       (tl_ctn_if.h2d),
-    .tl_ctn_i       (tl_ctn_if.d2h),
+    .ctn_tl_h2d_o (tl_ctn_if.h2d),
+    .ctn_tl_d2h_i (tl_ctn_if.d2h),
 
-    .sys_o           (),
-    .sys_i           ('0)
+    .sys_o (),
+    .sys_i ('0)
   );
 
-  // assign dma_intf.remaining     = dut.remaining_bytes; // Add after implementation is done
-  assign dma_intf.read_cmpl_host = dut.tl_host_i.d_valid;
-  assign dma_intf.read_cmpl_ctn = dut.tl_ctn_i.d_valid;
+  assign dma_intf.remaining     = dut.remaining_bytes;
+  assign dma_intf.read_cmpl_host = tl_host_if.d2h.d_valid;
+  assign dma_intf.read_cmpl_ctn = tl_ctn_if.d2h.d_valid;
 
-  assign dma_intf.read_opc_host = dut.tl_host_i.d_opcode;
-  assign dma_intf.read_opc_ctn = dut.tl_ctn_i.d_opcode;
+  assign dma_intf.read_opc_host = tl_host_if.d2h.d_opcode;
+  assign dma_intf.read_opc_ctn = tl_ctn_if.d2h.d_opcode;
 
 
   // Clocking related
