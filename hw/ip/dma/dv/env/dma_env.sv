@@ -55,15 +55,27 @@ class dma_env extends cip_base_env #(
     virtual_sequencer.tl_sequencer_dma_host_h = tl_agent_dma_host.sequencer;
     virtual_sequencer.tl_sequencer_dma_ctn_h = tl_agent_dma_ctn.sequencer;
     virtual_sequencer.tl_sequencer_dma_sys_h  = tl_agent_dma_sys.sequencer;
-    // Connect tl_monitor ports to scoreboard analysis_fifo
-    foreach (cfg.fifo_names[i]) begin
-      tl_agent_dma_host.monitor.a_chan_port.connect(
-        scoreboard.tl_a_chan_fifos[cfg.dma_a_fifo[cfg.fifo_names[i]]].analysis_export);
-      tl_agent_dma_host.monitor.d_chan_port.connect(
-        scoreboard.tl_d_chan_fifos[cfg.dma_d_fifo[cfg.fifo_names[i]]].analysis_export);
-      tl_agent_dma_host.monitor.channel_dir_port.connect(
-        scoreboard.tl_dir_fifos[cfg.dma_dir_fifo[cfg.fifo_names[i]]].analysis_export);
-    end
+    // Connect host tl_monitor ports to scoreboard analysis_fifo
+    tl_agent_dma_host.monitor.a_chan_port.connect(
+        scoreboard.tl_a_chan_fifos[cfg.dma_a_fifo["host"]].analysis_export);
+    tl_agent_dma_host.monitor.d_chan_port.connect(
+        scoreboard.tl_d_chan_fifos[cfg.dma_d_fifo["host"]].analysis_export);
+    tl_agent_dma_host.monitor.channel_dir_port.connect(
+        scoreboard.tl_dir_fifos[cfg.dma_dir_fifo["host"]].analysis_export);
+    // Connect ctn tl_monitor ports to scoreboard analysis_fifo
+    tl_agent_dma_ctn.monitor.a_chan_port.connect(
+        scoreboard.tl_a_chan_fifos[cfg.dma_a_fifo["ctn"]].analysis_export);
+    tl_agent_dma_ctn.monitor.d_chan_port.connect(
+        scoreboard.tl_d_chan_fifos[cfg.dma_d_fifo["ctn"]].analysis_export);
+    tl_agent_dma_ctn.monitor.channel_dir_port.connect(
+        scoreboard.tl_dir_fifos[cfg.dma_dir_fifo["ctn"]].analysis_export);
+    // Connect sys tl_monitor ports to scoreboard analysis_fifo
+    tl_agent_dma_sys.monitor.a_chan_port.connect(
+        scoreboard.tl_a_chan_fifos[cfg.dma_a_fifo["sys"]].analysis_export);
+    tl_agent_dma_sys.monitor.d_chan_port.connect(
+        scoreboard.tl_d_chan_fifos[cfg.dma_d_fifo["sys"]].analysis_export);
+    tl_agent_dma_sys.monitor.channel_dir_port.connect(
+        scoreboard.tl_dir_fifos[cfg.dma_dir_fifo["sys"]].analysis_export);
   endfunction: connect_phase
 
   // Display sequencer fifo connections for debug
