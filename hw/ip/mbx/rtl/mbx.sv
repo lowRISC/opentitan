@@ -17,6 +17,7 @@ module mbx
   input  logic                                      rst_ni,
   // Comportable interrupt to the OT
   output logic                                      intr_mbx_ready_o,
+  output logic                                      intr_mbx_abort_o,
   // Custom interrupt to the system requester
   output logic                                      doe_intr_support_o,
   output logic                                      doe_intr_en_o,
@@ -48,7 +49,7 @@ module mbx
   // Control and Status signals of the host interface
   //////////////////////////////////////////////////////////////////////////////
 
-  logic hostif_event_intr;
+  logic hostif_event_intr_ready, hostif_event_intr_abort;
   logic hostif_address_range_valid;
   logic sysif_control_abort_write;
 
@@ -88,8 +89,10 @@ module mbx
     .tl_host_i                           ( tl_host_i                          ),
     .tl_host_o                           ( tl_host_o                          ),
     .intg_err_i                          ( alert_signal                       ),
-    .event_intr_i                        ( hostif_event_intr                  ),
-    .irq_o                               ( intr_mbx_ready_o                   ),
+    .event_intr_ready_i                  ( hostif_event_intr_ready            ),
+    .event_intr_abort_i                  ( hostif_event_intr_abort            ),
+    .intr_ready_o                        ( intr_mbx_ready_o                   ),
+    .intr_abort_o                        ( intr_mbx_abort_o                   ),
     .alert_rx_i                          ( alert_rx_i                         ),
     .alert_tx_o                          ( alert_tx_o                         ),
     // Access to the control register
@@ -209,7 +212,8 @@ module mbx
     // Interface to the host port
     .imbx_state_error_o        ( imbx_state_error              ),
     .imbx_pending_o            ( imbx_pending                  ),
-    .imbx_irq_host_o           ( hostif_event_intr             ),
+    .imbx_irq_ready_o          ( hostif_event_intr_ready       ),
+    .imbx_irq_abort_o          ( hostif_event_intr_abort       ),
     .imbx_status_busy_update_o ( imbx_status_busy_valid        ),
     .imbx_status_busy_o        ( imbx_status_busy              ),
 

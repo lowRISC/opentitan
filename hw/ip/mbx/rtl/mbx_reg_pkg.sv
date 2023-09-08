@@ -18,16 +18,32 @@ package mbx_reg_pkg;
   ///////////////////////////////////////////////
 
   typedef struct packed {
-    logic        q;
+    struct packed {
+      logic        q;
+    } mbx_ready;
+    struct packed {
+      logic        q;
+    } mbx_abort;
   } mbx_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
-    logic        q;
+    struct packed {
+      logic        q;
+    } mbx_ready;
+    struct packed {
+      logic        q;
+    } mbx_abort;
   } mbx_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
-    logic        q;
-    logic        qe;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } mbx_ready;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } mbx_abort;
   } mbx_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
@@ -113,8 +129,14 @@ package mbx_reg_pkg;
   } mbx_reg2hw_outbound_object_size_reg_t;
 
   typedef struct packed {
-    logic        d;
-    logic        de;
+    struct packed {
+      logic        d;
+      logic        de;
+    } mbx_ready;
+    struct packed {
+      logic        d;
+      logic        de;
+    } mbx_abort;
   } mbx_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
@@ -159,9 +181,9 @@ package mbx_reg_pkg;
 
   // Register -> HW type for host interface
   typedef struct packed {
-    mbx_reg2hw_intr_state_reg_t intr_state; // [222:222]
-    mbx_reg2hw_intr_enable_reg_t intr_enable; // [221:221]
-    mbx_reg2hw_intr_test_reg_t intr_test; // [220:219]
+    mbx_reg2hw_intr_state_reg_t intr_state; // [226:225]
+    mbx_reg2hw_intr_enable_reg_t intr_enable; // [224:223]
+    mbx_reg2hw_intr_test_reg_t intr_test; // [222:219]
     mbx_reg2hw_alert_test_reg_t alert_test; // [218:217]
     mbx_reg2hw_control_reg_t control; // [216:213]
     mbx_reg2hw_status_reg_t status; // [212:203]
@@ -178,7 +200,7 @@ package mbx_reg_pkg;
 
   // HW -> register type for host interface
   typedef struct packed {
-    mbx_hw2reg_intr_state_reg_t intr_state; // [80:79]
+    mbx_hw2reg_intr_state_reg_t intr_state; // [82:79]
     mbx_hw2reg_control_reg_t control; // [78:77]
     mbx_hw2reg_status_reg_t status; // [76:72]
     mbx_hw2reg_inbound_write_ptr_reg_t inbound_write_ptr; // [71:42]
@@ -204,8 +226,9 @@ package mbx_reg_pkg;
   parameter logic [HostAw-1:0] MBX_OUTBOUND_OBJECT_SIZE_OFFSET = 6'h 38;
 
   // Reset values for hwext registers and their fields for host interface
-  parameter logic [0:0] MBX_INTR_TEST_RESVAL = 1'h 0;
+  parameter logic [1:0] MBX_INTR_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] MBX_INTR_TEST_MBX_READY_RESVAL = 1'h 0;
+  parameter logic [0:0] MBX_INTR_TEST_MBX_ABORT_RESVAL = 1'h 0;
   parameter logic [0:0] MBX_ALERT_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] MBX_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
   parameter logic [1:0] MBX_CONTROL_RESVAL = 2'h 0;

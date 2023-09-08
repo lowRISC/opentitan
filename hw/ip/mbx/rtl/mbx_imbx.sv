@@ -12,7 +12,8 @@ module mbx_imbx #(
   input  logic                        rst_ni,
   output logic                        imbx_state_error_o,
   output logic                        imbx_pending_o,
-  output logic                        imbx_irq_host_o,
+  output logic                        imbx_irq_ready_o,
+  output logic                        imbx_irq_abort_o,
   output logic                        imbx_status_busy_update_o,
   output logic                        imbx_status_busy_o,
   // Access to the control and status registers of host interface
@@ -130,7 +131,8 @@ module mbx_imbx #(
   // Generate host interrupt
   //   on sys_write go, when host enters state to process the received objects
   //   on abort
-  assign imbx_irq_host_o = mbx_read | mbx_sys_abort;
+  assign imbx_irq_ready_o = mbx_read;
+  assign imbx_irq_abort_o = mbx_sys_abort;
 
   mbx_fsm #(
     .CfgObMbx ( 0 )

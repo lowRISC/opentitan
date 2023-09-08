@@ -14,8 +14,10 @@ module mbx_hostif
   input  tlul_pkg::tl_h2d_t           tl_host_i,
   output tlul_pkg::tl_d2h_t           tl_host_o,
   // Generated interrupt event
-  input  logic                        event_intr_i,
-  output logic                        irq_o,
+  input  logic                        event_intr_ready_i,
+  input  logic                        event_intr_abort_i,
+  output logic                        intr_ready_o,
+  output logic                        intr_abort_o,
   // External errors
   input  logic                        intg_err_i,
   // Alerts
@@ -89,18 +91,31 @@ module mbx_hostif
     .devmode_i  ( 1'b1          )
   );
 
-  // instantiate interrupt hardware primitive
-  prim_intr_hw #(.Width(1)) u_intr_hw (
-    .clk_i                  ( clk_i                ),
-    .rst_ni                 ( rst_ni               ),
-    .event_intr_i           ( event_intr_i         ),
-    .reg2hw_intr_enable_q_i ( reg2hw.intr_enable.q ),
-    .reg2hw_intr_test_q_i   ( reg2hw.intr_test.q   ),
-    .reg2hw_intr_test_qe_i  ( reg2hw.intr_test.qe  ),
-    .reg2hw_intr_state_q_i  ( reg2hw.intr_state.q  ),
-    .hw2reg_intr_state_de_o ( hw2reg.intr_state.de ),
-    .hw2reg_intr_state_d_o  ( hw2reg.intr_state.d  ),
-    .intr_o                 ( irq_o                )
+  // Instantiate interrupt hardware primitives for ready and abort IRQ
+  prim_intr_hw #(.Width(1)) u_intr_ready (
+    .clk_i                  ( clk_i                          ),
+    .rst_ni                 ( rst_ni                         ),
+    .event_intr_i           ( event_intr_ready_i             ),
+    .reg2hw_intr_enable_q_i ( reg2hw.intr_enable.mbx_ready.q ),
+    .reg2hw_intr_test_q_i   ( reg2hw.intr_test.mbx_ready.q   ),
+    .reg2hw_intr_test_qe_i  ( reg2hw.intr_test.mbx_ready.qe  ),
+    .reg2hw_intr_state_q_i  ( reg2hw.intr_state.mbx_ready.q  ),
+    .hw2reg_intr_state_de_o ( hw2reg.intr_state.mbx_ready.de ),
+    .hw2reg_intr_state_d_o  ( hw2reg.intr_state.mbx_ready.d  ),
+    .intr_o                 ( intr_ready_o                   )
+  );
+
+  prim_intr_hw #(.Width(1)) u_intr_abort (
+    .clk_i                  ( clk_i                          ),
+    .rst_ni                 ( rst_ni                         ),
+    .event_intr_i           ( event_intr_abort_i             ),
+    .reg2hw_intr_enable_q_i ( reg2hw.intr_enable.mbx_abort.q ),
+    .reg2hw_intr_test_q_i   ( reg2hw.intr_test.mbx_abort.q   ),
+    .reg2hw_intr_test_qe_i  ( reg2hw.intr_test.mbx_abort.qe  ),
+    .reg2hw_intr_state_q_i  ( reg2hw.intr_state.mbx_abort.q  ),
+    .hw2reg_intr_state_de_o ( hw2reg.intr_state.mbx_abort.de ),
+    .hw2reg_intr_state_d_o  ( hw2reg.intr_state.mbx_abort.d  ),
+    .intr_o                 ( intr_abort_o                   )
   );
 
   // Control Register
