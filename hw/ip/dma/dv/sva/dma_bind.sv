@@ -10,16 +10,16 @@ module dma_bind;
   ) tlul_assert_device (
     .clk_i,
     .rst_ni,
-    .h2d  (tl_dev_i),
-    .d2h  (tl_dev_o)
+    .h2d  (tl_d_i),
+    .d2h  (tl_d_o)
   );
 
   // Bind CSR assertion module on config interface
   bind dma dma_csr_assert_fpv dma_csr_assert (
     .clk_i,
     .rst_ni,
-    .h2d    (tl_dev_i),
-    .d2h    (tl_dev_o)
+    .h2d    (tl_d_i),
+    .d2h    (tl_d_o)
   );
 
   // Bind assertion module to CTN interface
@@ -28,8 +28,8 @@ module dma_bind;
   ) tlul_assert_ctn (
     .clk_i,
     .rst_ni,
-    .h2d  (tl_ctn_o),
-    .d2h  (tl_ctn_i)
+    .h2d  (ctn_tl_h2d_o),
+    .d2h  (ctn_tl_d2h_i)
   );
 
   // Bind assertion module to HOST interface
@@ -38,8 +38,8 @@ module dma_bind;
   ) tlul_assert_host (
     .clk_i,
     .rst_ni,
-    .h2d  (tl_host_o),
-    .d2h  (tl_host_i)
+    .h2d  (host_tl_h_o),
+    .d2h  (host_tl_h_i)
   );
 
   // TODO: bins tlul_assert to SYS interface
