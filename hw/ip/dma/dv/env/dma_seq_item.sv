@@ -75,7 +75,7 @@ class dma_seq_item extends uvm_sequence_item;
   `uvm_object_utils_end
 
   // Constrain source and destinatination address space ids for valid configurations
-  constraint m_asid_c {
+  constraint asid_c {
     if (valid_dma_config) {
       // For valid DMA config, either source or destination address space Id must point
       // to OT internal address space
@@ -263,12 +263,14 @@ class dma_seq_item extends uvm_sequence_item;
     end else if (dst_asid == OtInternalAddr) begin
       // If destination address space ID points to OT internal address space
       // it must be within DMA enabled address range.
-      `uvm_info(`gfn,
-                $sformatf(
-                  "Invalid dst addr range found lo: %08x hi: %08x with base: %08x limit: %0x",
-                  dst_addr[31:0], dst_addr[63:32], mem_range_base, mem_range_limit),
-                UVM_MEDIUM)
-      valid_config = 0;
+      if (!is_address_in_dma_memory_region(dst_addr[31:0])) begin
+        `uvm_info(`gfn,
+                  $sformatf(
+                    "Invalid dst addr range found lo: %08x hi: %08x with base: %08x limit: %0x",
+                    dst_addr[31:0], dst_addr[63:32], mem_range_base, mem_range_limit),
+                  UVM_MEDIUM)
+        valid_config = 0;
+      end
     end else begin
       // OT internal address space is neither source nor destination for the operation
       `uvm_info(`gfn, $sformatf("Invalid source : %s and destination : %s combination",
