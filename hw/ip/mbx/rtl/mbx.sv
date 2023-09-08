@@ -11,7 +11,7 @@ module mbx
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   parameter int unsigned CfgSramAddrWidth      = 32,
   parameter int unsigned CfgSramDataWidth      = 32,
-  parameter int unsigned CfgOmbxDwCntWidth     = 11,
+  parameter int unsigned CfgObjectSizeWidth    = 11,
   parameter bit          DoeIrqSupport         = 1'b1
 ) (
   input  logic                                      clk_i,
@@ -55,13 +55,13 @@ module mbx
 
   logic hostif_event_intr_ready, hostif_event_intr_abort;
   logic hostif_address_range_valid;
-  logic sysif_control_abort_write;
+  logic sysif_control_abort_set;
 
   // Status signal inputs from the sysif to the hostif
   logic sysif_status_busy, sysif_status_doe_intr_status, sysif_status_error;
 
   // Setter signals from the hostif to the sysif
-  logic hostif_status_doe_intr_status_set, hostif_control_abort_set, hostif_status_busy_clear,
+  logic hostif_status_doe_intr_status_set, hostif_control_abort_clear, hostif_status_busy_clear,
         hostif_status_error_set, hostif_status_error_clear;
 
   // Alias signals from the sys interface
@@ -82,13 +82,14 @@ module mbx
   logic [CfgSramAddrWidth-1:0] hostif_ombx_base, hostif_ombx_limit;
   logic [CfgSramAddrWidth-1:0] ombx_sram_read_ptr;
 
-  logic hostif_ombx_object_size_write, hostif_ombx_object_size_read;
-  logic [CfgOmbxDwCntWidth-1:0] hostif_ombx_object_size_wdata, hostif_ombx_object_size_rdata;
+  logic hostif_ombx_object_size_write, hostif_ombx_object_size_update;
+  logic [CfgObjectSizeWidth-1:0] hostif_ombx_object_size_wdata, hostif_ombx_object_size_rdata;
 
   mbx_hostif #(
-    .AlertAsyncOn    ( AlertAsyncOn     ),
-    .CfgSramAddrWidth( CfgSramAddrWidth ),
-    .CfgSramDataWidth( CfgSramDataWidth )
+    .AlertAsyncOn      ( AlertAsyncOn       ),
+    .CfgSramAddrWidth  ( CfgSramAddrWidth   ),
+    .CfgSramDataWidth  ( CfgSramDataWidth   ),
+    .CfgObjectSizeWidth( CfgObjectSizeWidth )
   ) u_hostif (
     .clk_i                               ( clk_i                              ),
     .rst_ni                              ( rst_ni                             ),
@@ -104,11 +105,11 @@ module mbx
     .alert_rx_i                          ( alert_rx_i                         ),
     .alert_tx_o                          ( alert_tx_o                         ),
     // Access to the control register
-    .hostif_control_abort_set_o          ( hostif_control_abort_set           ),
+    .hostif_control_abort_clear_o        ( hostif_control_abort_clear         ),
     // Access to the status register
     .hostif_status_busy_clear_o          ( hostif_status_busy_clear           ),
     .hostif_status_busy_i                ( sysif_status_busy                  ),
-    .hostif_status_doe_intr_status_set_o ( hostif_status_doe_intr_status_set   ),
+    .hostif_status_doe_intr_status_set_o ( hostif_status_doe_intr_status_set  ),
     .hostif_status_doe_intr_status_i     ( sysif_status_doe_intr_status       ),
     .hostif_status_error_set_o           ( hostif_status_error_set            ),
     .hostif_status_error_clear_o         ( hostif_status_error_clear          ),
@@ -125,19 +126,19 @@ module mbx
     // Read/Write access for the OB DW Count register
     .hostif_ombx_object_size_write_o      ( hostif_ombx_object_size_write     ),
     .hostif_ombx_object_size_o            ( hostif_ombx_object_size_wdata     ),
-    .hostif_ombx_object_size_read_i       ( hostif_ombx_object_size_read      ),
+    .hostif_ombx_object_size_update_i     ( hostif_ombx_object_size_update    ),
     .hostif_ombx_object_size_i            ( hostif_ombx_object_size_rdata     ),
     // Alias of the interrupt address and data registers from the SYS interface
     .sysif_intr_msg_addr_i                ( sysif_intr_msg_addr               ),
     .sysif_intr_msg_data_i                ( sysif_intr_msg_data               ),
     // Control inputs coming from the system registers interface
-    .sysif_control_abort_write_i          ( sysif_control_abort_write         )
+    .sysif_control_abort_set_i            ( sysif_control_abort_set           )
   );
 
   //////////////////////////////////////////////////////////////////////////////
   // Control and Status signals of the system interface
   //////////////////////////////////////////////////////////////////////////////
-  logic sysif_control_go_set, sysif_control_abort_set;
+  logic sysif_control_go_set;
 
   //////////////////////////////////////////////////////////////////////////////
   // Signals for the Inbox
@@ -184,15 +185,11 @@ module mbx
     .sysif_status_busy_valid_i           ( imbx_status_busy_valid             ),
     .sysif_status_busy_i                 ( imbx_status_busy                   ),
     .sysif_status_busy_o                 ( sysif_status_busy                  ),
-
-
-    .sysif_status_doe_intr_status_set_i  ( hostif_status_doe_intr_status_set   ),
+    .sysif_status_doe_intr_status_set_i  ( hostif_status_doe_intr_status_set  ),
     .sysif_status_doe_intr_status_o      ( sysif_status_doe_intr_status       ),
-
     .sysif_status_error_set_i            ( hostif_status_error_set            ),
     .sysif_status_error_clear_i          ( hostif_status_error_clear          ),
-    .sysif_status_error_o                ( sysif_status_error          ),
-
+    .sysif_status_error_o                ( sysif_status_error                 ),
     .sysif_status_ready_valid_i          ( ombx_status_ready_valid            ),
     .sysif_status_ready_i                ( ombx_status_ready                  ),
     // Alias of the interrupt address and data registers to the host interface
@@ -223,61 +220,61 @@ module mbx
     .imbx_irq_abort_o          ( hostif_event_intr_abort       ),
     .imbx_status_busy_update_o ( imbx_status_busy_valid        ),
     .imbx_status_busy_o        ( imbx_status_busy              ),
-
-    .hostif_control_abort_set_i ( hostif_control_abort_set     ),
-    .hostif_status_busy_clear_i ( hostif_status_busy_clear     ),
-    .hostif_status_error_set_i  ( hostif_status_error_set      ),
+    .hostif_control_abort_clear_i( hostif_control_abort_clear   ),
+    .hostif_status_busy_clear_i  ( hostif_status_busy_clear     ),
+    .hostif_status_error_set_i   ( hostif_status_error_set      ),
     // SRAM range configuration
-    .hostif_range_valid_i       ( hostif_address_range_valid   ),
-    .hostif_base_i              ( hostif_imbx_base             ),
-    .hostif_limit_i             ( hostif_imbx_limit            ),
+    .hostif_range_valid_i        ( hostif_address_range_valid   ),
+    .hostif_base_i               ( hostif_imbx_base             ),
+    .hostif_limit_i              ( hostif_imbx_limit            ),
     // Interface to the system port
-    .sysif_status_busy_i        ( sysif_status_busy            ),
-    .sysif_control_go_set_i     ( sysif_control_go_set         ),
-    .sysif_control_abort_set_i  ( sysif_control_abort_set      ),
-    .sysif_data_write_valid_i   ( sysif_write_data_write_valid ),
+    .sysif_status_busy_i         ( sysif_status_busy            ),
+    .sysif_control_go_set_i      ( sysif_control_go_set         ),
+    .sysif_control_abort_set_i   ( sysif_control_abort_set      ),
+    .sysif_data_write_valid_i    ( sysif_write_data_write_valid ),
     // Host interface to access private SRAM
-    .hostif_sram_write_req_o    ( imbx_sram_write_req          ),
-    .hostif_sram_write_gnt_i    ( imbx_sram_write_gnt          ),
-    .hostif_sram_write_ptr_o    ( imbx_sram_write_ptr          )
+    .hostif_sram_write_req_o     ( imbx_sram_write_req          ),
+    .hostif_sram_write_gnt_i     ( imbx_sram_write_gnt          ),
+    .hostif_sram_write_ptr_o     ( imbx_sram_write_ptr          )
   );
 
 
   mbx_ombx #(
-    .CfgSramAddrWidth  ( CfgSramAddrWidth ),
-    .CfgSramDataWidth  ( CfgSramDataWidth ),
-    .CfgOmbxDwCntWidth (CfgOmbxDwCntWidth )
+    .CfgSramAddrWidth   ( CfgSramAddrWidth   ),
+    .CfgSramDataWidth   ( CfgSramDataWidth   ),
+    .CfgObjectSizeWidth ( CfgObjectSizeWidth )
   ) u_ombx (
-    .clk_i                          ( clk_i                         ),
-    .rst_ni                         ( rst_ni                        ),
+    .clk_i                           ( clk_i                          ),
+    .rst_ni                          ( rst_ni                         ),
     // Interface to the host port
-    .ombx_state_error_o             ( ombx_state_error              ),
-    .ombx_pending_o                 ( ombx_pending                  ),
-    .ombx_status_ready_update_o     ( ombx_status_ready_valid       ),
-    .ombx_status_ready_o            ( ombx_status_ready             ),
+    .ombx_state_error_o              ( ombx_state_error               ),
+    .ombx_pending_o                  ( ombx_pending                   ),
+    .ombx_status_ready_update_o      ( ombx_status_ready_valid        ),
+    .ombx_status_ready_o             ( ombx_status_ready              ),
     // SRAM range configuration
-    .hostif_range_valid_i           ( hostif_address_range_valid    ),
-    .hostif_base_i                  ( hostif_ombx_base              ),
-    .hostif_limit_i                 ( hostif_ombx_limit             ),
+    .hostif_range_valid_i            ( hostif_address_range_valid     ),
+    .hostif_base_i                   ( hostif_ombx_base               ),
+    .hostif_limit_i                  ( hostif_ombx_limit              ),
     // Control signals from the host and system interface
-    .hostif_control_abort_set_i     ( hostif_control_abort_set      ),
-    .hostif_status_error_set_i      ( hostif_status_error_set       ),
-    .sysif_control_abort_set_i      ( sysif_control_abort_set       ),
-    .sysif_read_data_read_valid_i   ( sysif_read_data_read_valid    ),
-    .sysif_read_data_write_valid_i  ( sysif_read_data_write_valid   ),
+    // Writing a 1 to control.abort register clears the abort condition
+    .hostif_control_abort_clear_i    ( hostif_control_abort_clear     ),
+    .hostif_status_error_set_i       ( hostif_status_error_set        ),
+    .sysif_control_abort_set_i       ( sysif_control_abort_set        ),
+    .sysif_read_data_read_valid_i    ( sysif_read_data_read_valid     ),
+    .sysif_read_data_write_valid_i   ( sysif_read_data_write_valid    ),
     // Interface for the object size register
-    .hostif_ombx_object_size_write_i( hostif_ombx_object_size_write ),
-    .hostif_ombx_object_size_i      ( hostif_ombx_object_size_wdata ),
-    .hostif_ombx_object_size_read_o ( hostif_ombx_object_size_read  ),
-    .hostif_ombx_object_size_o      ( hostif_ombx_object_size_rdata ),
+    .hostif_ombx_object_size_write_i ( hostif_ombx_object_size_write  ),
+    .hostif_ombx_object_size_i       ( hostif_ombx_object_size_wdata  ),
+    .hostif_ombx_object_size_update_o( hostif_ombx_object_size_update ),
+    .hostif_ombx_object_size_o       ( hostif_ombx_object_size_rdata  ),
     // DOE data coming from the SRAM
-    .ombx_read_data_o               ( sysif_read_data               ),
+    .ombx_read_data_o                ( sysif_read_data                ),
     // Host interface to access private SRAM
-    .ombx_sram_read_req_o           ( ombx_sram_read_req            ),
-    .ombx_sram_read_gnt_i           ( ombx_sram_read_gnt            ),
-    .ombx_sram_read_ptr_o           ( ombx_sram_read_ptr            ),
-    .ombx_sram_read_resp_valid_i    ( ombx_sram_read_resp_vld       ),
-    .ombx_sram_read_resp_i          ( ombx_sram_read_data           )
+    .ombx_sram_read_req_o            ( ombx_sram_read_req             ),
+    .ombx_sram_read_gnt_i            ( ombx_sram_read_gnt             ),
+    .ombx_sram_read_ptr_o            ( ombx_sram_read_ptr             ),
+    .ombx_sram_read_resp_valid_i     ( ombx_sram_read_resp_vld        ),
+    .ombx_sram_read_resp_i           ( ombx_sram_read_data            )
   );
 
   // Host port connection to access the private SRAM.
