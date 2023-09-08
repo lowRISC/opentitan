@@ -225,7 +225,6 @@ static const char *spi_device_inst_name = "spi_device";
 static const char *sram_ctrl_main_inst_name = "sram_ctrl_main";
 static const char *sram_ctrl_ret_inst_name = "sram_ctrl_ret";
 static const char *sram_ctrl_mbox_inst_name = "sram_ctrl_mbox";
-static const char *sysrst_ctrl_inst_name = "sysrst_ctrl";
 static const char *uart0_inst_name = "uart0";
 
 static void trivial_fault_checker(bool enable, const char *ip_inst,
@@ -950,11 +949,6 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
     case kTopDarjeelingAlertIdSramCtrlMboxFatalError: {
       fault_checker_t fc = {sram_ctrl_mbox_fault_checker,
                             sram_ctrl_mbox_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopDarjeelingAlertIdSysrstCtrlAonFatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, sysrst_ctrl_inst_name,
-                            we_check};
       fault_checker = fc;
     } break;
     case kTopDarjeelingAlertIdUart0FatalFault: {

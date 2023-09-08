@@ -558,6 +558,7 @@ opentitan_functest(
 opentitan_functest(
     name = "pwrmgr_random_sleep_all_reset_reqs_test",
     srcs = ["pwrmgr_random_sleep_all_reset_reqs_test.c"],
+    tags = ["earlgrey"],
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
@@ -590,6 +591,7 @@ opentitan_functest(
 opentitan_functest(
     name = "pwrmgr_deep_sleep_all_reset_reqs_test",
     srcs = ["pwrmgr_deep_sleep_all_reset_reqs_test.c"],
+    tags = ["earlgrey"],
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
@@ -622,6 +624,7 @@ opentitan_functest(
 opentitan_functest(
     name = "pwrmgr_normal_sleep_all_reset_reqs_test",
     srcs = ["pwrmgr_normal_sleep_all_reset_reqs_test.c"],
+    tags = ["earlgrey"],
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
@@ -701,37 +704,38 @@ opentitan_functest(
 #     ],
 # )
 
-opentitan_functest(
-    name = "rv_dm_access_after_wakeup",
-    srcs = ["rv_dm_access_after_wakeup.c"],
-    targets = ["dv"],
-    deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/base:abs_mmio",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:irq",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:alert_handler",
-        "//sw/top_darjeeling/sw/dif:aon_timer",
-        "//sw/top_darjeeling/sw/dif:flash_ctrl",
-        "//sw/top_darjeeling/sw/dif:pinmux",
-        "//sw/top_darjeeling/sw/dif:pwrmgr",
-        "//sw/top_darjeeling/sw/dif:rstmgr",
-        "//sw/top_darjeeling/sw/dif:rv_plic",
-        "//sw/top_darjeeling/sw/dif:rv_timer",
-        "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
-        "//sw/top_darjeeling/sw/test/utils:alert_handler_testutils",
-        "//sw/top_darjeeling/sw/test/utils:aon_timer_testutils",
-        "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
-        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
-        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
-        "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
-    ],
-)
+# Removed, needs to be rewritten to use an alternate wake-up source
+# opentitan_functest(
+#     name = "rv_dm_access_after_wakeup",
+#     srcs = ["rv_dm_access_after_wakeup.c"],
+#     targets = ["dv"],
+#     deps = [
+#         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+#         "//sw/device/lib/testing/test_framework:check",
+#         "//sw/device/lib/testing/test_framework:ottf_main",
+#         "//sw/lib/sw/device/base:abs_mmio",
+#         "//sw/lib/sw/device/base:mmio",
+#         "//sw/lib/sw/device/runtime:irq",
+#         "//sw/lib/sw/device/runtime:log",
+#         "//sw/top_darjeeling/sw/device/runtime:print",
+#         "//sw/top_darjeeling/sw/dif:alert_handler",
+#         "//sw/top_darjeeling/sw/dif:aon_timer",
+#         "//sw/top_darjeeling/sw/dif:flash_ctrl",
+#         "//sw/top_darjeeling/sw/dif:pinmux",
+#         "//sw/top_darjeeling/sw/dif:pwrmgr",
+#         "//sw/top_darjeeling/sw/dif:rstmgr",
+#         "//sw/top_darjeeling/sw/dif:rv_plic",
+#         "//sw/top_darjeeling/sw/dif:rv_timer",
+#         "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
+#         "//sw/top_darjeeling/sw/test/utils:alert_handler_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:aon_timer_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:rstmgr_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:rv_plic_testutils",
+#     ],
+# )
 
 opentitan_functest(
     name = "rom_ctrl_integrity_check_test",
@@ -1017,6 +1021,7 @@ cc_library(
 opentitan_functest(
     name = "pwrmgr_normal_sleep_all_wake_ups",
     srcs = ["pwrmgr_normal_sleep_all_wake_ups.c"],
+    tags = ["earlgrey"],
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/ip/pwrmgr/data/autogen:pwrmgr_regs",
@@ -1036,6 +1041,7 @@ opentitan_functest(
 opentitan_functest(
     name = "pwrmgr_deep_sleep_all_wake_ups",
     srcs = ["pwrmgr_deep_sleep_all_wake_ups.c"],
+    tags = ["earlgrey"],
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/ip/pwrmgr/data/autogen:pwrmgr_regs",
@@ -1058,6 +1064,7 @@ opentitan_functest(
 opentitan_functest(
     name = "pwrmgr_random_sleep_all_wake_ups",
     srcs = ["pwrmgr_random_sleep_all_wake_ups.c"],
+    tags = ["earlgrey"],
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/ip/pwrmgr/data/autogen:pwrmgr_regs",

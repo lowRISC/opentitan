@@ -56,12 +56,6 @@ extern "C" {
     value(_, I2c0Scl, kTopDarjeelingPinmuxPeripheralInI2c0Scl) \
     value(_, Uart0Rx, kTopDarjeelingPinmuxPeripheralInUart0Rx) \
     value(_, SpiDeviceTpmCsb, kTopDarjeelingPinmuxPeripheralInSpiDeviceTpmCsb) \
-    value(_, SysrstCtrlAonAcPresent, kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonAcPresent) \
-    value(_, SysrstCtrlAonKey0In, kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonKey0In) \
-    value(_, SysrstCtrlAonKey1In, kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonKey1In) \
-    value(_, SysrstCtrlAonKey2In, kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonKey2In) \
-    value(_, SysrstCtrlAonPwrbIn, kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonPwrbIn) \
-    value(_, SysrstCtrlAonLidOpen, kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonLidOpen) \
     value(_, End, kTopDarjeelingPinmuxPeripheralInLast + 1)
 C_ONLY(UJSON_SERDE_ENUM(PinmuxPeripheralIn, pinmux_peripheral_in_t, TOP_DARJEELING_PINMUX_PERIPHERAL_IN, WITH_UNKNOWN));
 
@@ -218,12 +212,6 @@ C_ONLY(UJSON_SERDE_ENUM(PinmuxMioOut, pinmux_mio_out_t, TOP_DARJEELING_PINMUX_MI
     value(_, SensorCtrlAstDebugOut7, kTopDarjeelingPinmuxOutselSensorCtrlAstDebugOut7) \
     value(_, SensorCtrlAstDebugOut8, kTopDarjeelingPinmuxOutselSensorCtrlAstDebugOut8) \
     value(_, OtpCtrlTest0, kTopDarjeelingPinmuxOutselOtpCtrlTest0) \
-    value(_, SysrstCtrlAonBatDisable, kTopDarjeelingPinmuxOutselSysrstCtrlAonBatDisable) \
-    value(_, SysrstCtrlAonKey0Out, kTopDarjeelingPinmuxOutselSysrstCtrlAonKey0Out) \
-    value(_, SysrstCtrlAonKey1Out, kTopDarjeelingPinmuxOutselSysrstCtrlAonKey1Out) \
-    value(_, SysrstCtrlAonKey2Out, kTopDarjeelingPinmuxOutselSysrstCtrlAonKey2Out) \
-    value(_, SysrstCtrlAonPwrbOut, kTopDarjeelingPinmuxOutselSysrstCtrlAonPwrbOut) \
-    value(_, SysrstCtrlAonZ3Wakeup, kTopDarjeelingPinmuxOutselSysrstCtrlAonZ3Wakeup) \
     value(_, End, kTopDarjeelingPinmuxOutselLast + 1)
 C_ONLY(UJSON_SERDE_ENUM(PinmuxOutsel, pinmux_outsel_t, TOP_DARJEELING_PINMUX_OUTSEL, WITH_UNKNOWN));
 
@@ -236,8 +224,6 @@ C_ONLY(UJSON_SERDE_ENUM(PinmuxOutsel, pinmux_outsel_t, TOP_DARJEELING_PINMUX_OUT
     value(_, SpiDeviceSd1, kTopDarjeelingDirectPadsSpiDeviceSd1) \
     value(_, SpiDeviceSd2, kTopDarjeelingDirectPadsSpiDeviceSd2) \
     value(_, SpiDeviceSd3, kTopDarjeelingDirectPadsSpiDeviceSd3) \
-    value(_, SysrstCtrlAonEcRstL, kTopDarjeelingDirectPadsSysrstCtrlAonEcRstL) \
-    value(_, SysrstCtrlAonFlashWpL, kTopDarjeelingDirectPadsSysrstCtrlAonFlashWpL) \
     value(_, SpiDeviceSck, kTopDarjeelingDirectPadsSpiDeviceSck) \
     value(_, SpiDeviceCsb, kTopDarjeelingDirectPadsSpiDeviceCsb) \
     value(_, SpiHost0Sck, kTopDarjeelingDirectPadsSpiHost0Sck) \

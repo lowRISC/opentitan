@@ -25,7 +25,6 @@
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
 #include "sw/ip/rv_plic/test/utils/rv_plic_testutils.h"
 #include "sw/ip/rv_timer/dif/dif_rv_timer.h"
-#include "sw/ip/sysrst_ctrl/dif/dif_sysrst_ctrl.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"
 #include "sw/lib/sw/device/base/math.h"
 #include "sw/lib/sw/device/base/mmio.h"
@@ -423,12 +422,10 @@ bool test_main(void) {
   LOG_INFO("reset info = %02X", rst_info);
 
   CHECK(rst_info == kDifRstmgrResetInfoPor ||
-            rst_info == kDifRstmgrResetInfoSysRstCtrl ||
             rst_info == kDifRstmgrResetInfoWatchdog ||
             rst_info == kDifRstmgrResetInfoEscalation ||
             rst_info == kDifRstmgrResetInfoLowPowerExit ||
-            rst_info == (kDifRstmgrResetInfoSysRstCtrl |
-                         kDifRstmgrResetInfoLowPowerExit) ||
+            rst_info == kDifRstmgrResetInfoLowPowerExit ||
             rst_info == (kDifRstmgrResetInfoPowerUnstable |
                          kDifRstmgrResetInfoLowPowerExit) ||
             rst_info == (kDifRstmgrResetInfoPowerUnstable |

@@ -30,7 +30,6 @@
 #include "sw/ip/soc_proxy/dif/dif_soc_proxy.h"
 #include "sw/ip/spi_device/dif/dif_spi_device.h"
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
-#include "sw/ip/sysrst_ctrl/dif/dif_sysrst_ctrl.h"
 #include "sw/ip/uart/dif/dif_uart.h"
 #include "sw/lib/sw/device/arch/device.h"
 
@@ -841,49 +840,6 @@ void isr_testutils_spi_host_isr(
   CHECK_DIF_OK(dif_spi_host_irq_get_type(spi_host_ctx.spi_host, irq, &type));
   if (type == kDifIrqTypeEvent) {
     CHECK_DIF_OK(dif_spi_host_irq_acknowledge(spi_host_ctx.spi_host, irq));
-  }
-
-  // Complete the IRQ at the PLIC.
-  CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
-                                        plic_irq_id));
-}
-
-void isr_testutils_sysrst_ctrl_isr(
-    plic_isr_ctx_t plic_ctx, sysrst_ctrl_isr_ctx_t sysrst_ctrl_ctx,
-    top_darjeeling_plic_peripheral_t *peripheral_serviced,
-    dif_sysrst_ctrl_irq_t *irq_serviced) {
-  // Claim the IRQ at the PLIC.
-  dif_rv_plic_irq_id_t plic_irq_id;
-  CHECK_DIF_OK(
-      dif_rv_plic_irq_claim(plic_ctx.rv_plic, plic_ctx.hart_id, &plic_irq_id));
-
-  // Get the peripheral the IRQ belongs to.
-  *peripheral_serviced = (top_darjeeling_plic_peripheral_t)
-      top_darjeeling_plic_interrupt_for_peripheral[plic_irq_id];
-
-  // Get the IRQ that was fired from the PLIC IRQ ID.
-  dif_sysrst_ctrl_irq_t irq =
-      (dif_sysrst_ctrl_irq_t)(plic_irq_id -
-                              sysrst_ctrl_ctx.plic_sysrst_ctrl_start_irq_id);
-  *irq_serviced = irq;
-
-  // Check if it is supposed to be the only IRQ fired.
-  if (sysrst_ctrl_ctx.is_only_irq) {
-    dif_sysrst_ctrl_irq_state_snapshot_t snapshot;
-    CHECK_DIF_OK(
-        dif_sysrst_ctrl_irq_get_state(sysrst_ctrl_ctx.sysrst_ctrl, &snapshot));
-    CHECK(snapshot == (dif_sysrst_ctrl_irq_state_snapshot_t)(1 << irq),
-          "Only sysrst_ctrl IRQ %d expected to fire. Actual IRQ state = %x",
-          irq, snapshot);
-  }
-
-  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
-  dif_irq_type_t type;
-  CHECK_DIF_OK(
-      dif_sysrst_ctrl_irq_get_type(sysrst_ctrl_ctx.sysrst_ctrl, irq, &type));
-  if (type == kDifIrqTypeEvent) {
-    CHECK_DIF_OK(
-        dif_sysrst_ctrl_irq_acknowledge(sysrst_ctrl_ctx.sysrst_ctrl, irq));
   }
 
   // Complete the IRQ at the PLIC.

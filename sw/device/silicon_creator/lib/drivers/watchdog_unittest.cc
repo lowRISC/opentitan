@@ -39,7 +39,7 @@ class WatchdogTest : public rom_test::RomTest {
 
     EXPECT_SEC_WRITE32(pwrmgr_ + PWRMGR_RESET_EN_REG_OFFSET,
                        {
-                           {PWRMGR_RESET_EN_EN_1_BIT, true},
+                           {PWRMGR_RESET_EN_EN_0_BIT, true},
                        });
     EXPECT_ABS_WRITE32(pwrmgr_ + PWRMGR_CFG_CDC_SYNC_REG_OFFSET, 1);
     EXPECT_SEC_WRITE32(wdog_ + AON_TIMER_WDOG_CTRL_REG_OFFSET,

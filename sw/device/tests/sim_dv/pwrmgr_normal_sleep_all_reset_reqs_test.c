@@ -25,7 +25,6 @@
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
 #include "sw/ip/rv_plic/test/utils/rv_plic_testutils.h"
 #include "sw/ip/rv_timer/dif/dif_rv_timer.h"
-#include "sw/ip/sysrst_ctrl/dif/dif_sysrst_ctrl.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"
 #include "sw/lib/sw/device/base/math.h"
 #include "sw/lib/sw/device/base/mmio.h"
@@ -35,7 +34,7 @@
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
-static volatile const uint8_t RST_IDX[7] = {0, 1, 2, 3, 4, 5, 6};
+static volatile const uint8_t RST_IDX[6] = {0, 1, 2, 3, 4, 5};
 static const uint32_t kPlicTarget = kTopDarjeelingPlicTargetIbex0;
 
 /**
@@ -46,7 +45,6 @@ static dif_rv_plic_t plic;
 static dif_alert_handler_t alert_handler;
 static dif_aon_timer_t aon_timer;
 static dif_pwrmgr_t pwrmgr;
-static dif_sysrst_ctrl_t sysrst_ctrl_aon;
 static dif_rstmgr_t rstmgr;
 
 /**
@@ -134,11 +132,6 @@ void init_peripherals(void) {
   // Initialize pwrmgr.
   CHECK_DIF_OK(dif_pwrmgr_init(
       mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR), &pwrmgr));
-
-  // Initialize sysrst_ctrl.
-  CHECK_DIF_OK(dif_sysrst_ctrl_init(
-      mmio_region_from_addr(TOP_DARJEELING_SYSRST_CTRL_AON_BASE_ADDR),
-      &sysrst_ctrl_aon));
 
   // Initialize rstmgr to check the reset reason.
   CHECK_DIF_OK(dif_rstmgr_init(
@@ -256,64 +249,6 @@ static void config_escalate(dif_aon_timer_t *aon_timer,
   // Trigger the alert handler to escalate.
   dif_pwrmgr_alert_t alert = kDifPwrmgrAlertFatalFault;
   CHECK_DIF_OK(dif_pwrmgr_alert_force(pwrmgr, alert));
-}
-
-/**
- * Configure the sysrst.
- */
-static void config_sysrst(const dif_pwrmgr_t *pwrmgr,
-                          const dif_sysrst_ctrl_t *sysrst_ctrl_aon) {
-  LOG_INFO("sysrst enabled");
-
-  // Set sysrst as a reset source.
-  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(pwrmgr, kDifPwrmgrReqTypeReset,
-                                              kDifPwrmgrResetRequestSourceOne,
-                                              kDifToggleEnabled));
-  LOG_INFO("Reset Request SourceOne is set");
-
-  // Configure sysrst key combo
-  // reset pulse : 50 us
-  // detect durration : 50 us
-
-  dif_sysrst_ctrl_key_combo_config_t sysrst_ctrl_key_combo_config = {
-      .keys = kDifSysrstCtrlKeyAll,
-      .detection_time_threshold = 10,
-      .actions = kDifSysrstCtrlKeyComboActionAll,
-      .embedded_controller_reset_duration = 10};
-
-  CHECK_DIF_OK(dif_sysrst_ctrl_key_combo_detect_configure(
-      sysrst_ctrl_aon, kDifSysrstCtrlKeyCombo0, sysrst_ctrl_key_combo_config));
-  // Configure sysrst input change
-  // debounce durration : 100 us
-  dif_sysrst_ctrl_input_change_config_t sysrst_ctrl_input_change_config = {
-      .input_changes = kDifSysrstCtrlInputAll, .debounce_time_threshold = 20};
-
-  // Configure pinmux
-  dif_pinmux_t pinmux;
-  CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
-
-  CHECK_DIF_OK(dif_sysrst_ctrl_input_change_detect_configure(
-      sysrst_ctrl_aon, sysrst_ctrl_input_change_config));
-
-  CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonKey0In,
-      kTopDarjeelingPinmuxInselIor13));
-}
-
-static void normal_sleep_sysrst(const dif_pwrmgr_t *pwrmgr) {
-  // Place device into low power and immediately wake.
-  dif_pwrmgr_domain_config_t config;
-  config = kDifPwrmgrDomainOptionUsbClockInLowPower |
-           kDifPwrmgrDomainOptionCoreClockInLowPower |
-           kDifPwrmgrDomainOptionIoClockInLowPower |
-           kDifPwrmgrDomainOptionMainPowerInLowPower;
-  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-      pwrmgr, kDifPwrmgrWakeupRequestSourceOne, config));
-  LOG_INFO("Normal sleep set for sysrst");
-
-  // Enter in low power mode.
-  wait_for_interrupt();
 }
 
 static void timer_on(uint32_t usec) {
@@ -436,12 +371,10 @@ bool test_main(void) {
   rstmgr_testutils_reason_clear();
 
   CHECK(rst_info == kDifRstmgrResetInfoPor ||
-            rst_info == kDifRstmgrResetInfoSysRstCtrl ||
             rst_info == kDifRstmgrResetInfoWatchdog ||
             rst_info == kDifRstmgrResetInfoEscalation ||
             rst_info == kDifRstmgrResetInfoLowPowerExit ||
-            rst_info == (kDifRstmgrResetInfoSysRstCtrl |
-                         kDifRstmgrResetInfoLowPowerExit) ||
+            rst_info == kDifRstmgrResetInfoLowPowerExit ||
             rst_info ==
                 (kDifRstmgrResetInfoPor | kDifRstmgrResetInfoLowPowerExit) ||
             rst_info == (kDifRstmgrResetInfoWatchdog |
@@ -453,17 +386,11 @@ bool test_main(void) {
 
   switch (RST_IDX[event_idx]) {
     case 0:
-      LOG_INFO("Booting and setting normal sleep followed by sysrst");
-      config_sysrst(&pwrmgr, &sysrst_ctrl_aon);
-      normal_sleep_sysrst(&pwrmgr);
-      timer_on(kWdogBiteMicros);
-      break;
-    case 1:
       LOG_INFO("Booting and setting normal sleep followed by hw por");
       normal_sleep_por(&pwrmgr);
       timer_on(kWdogBiteMicros);
       break;
-    case 2:
+    case 1:
       LOG_INFO(
           "Booting and setting normal sleep mode followed for low_power "
           "entry reset");
@@ -474,7 +401,7 @@ bool test_main(void) {
       normal_sleep_wdog(&pwrmgr);
       timer_on(kEscalationPhase0MicrosCpu);
       break;
-    case 3:
+    case 2:
       LOG_INFO(
           "Booting and setting normal sleep followed by watchdog reset "
           "combined "
@@ -490,7 +417,7 @@ bool test_main(void) {
       normal_sleep_wdog(&pwrmgr);
       timer_on(kEscalationPhase0MicrosCpu);
       break;
-    case 4:
+    case 3:
       LOG_INFO("Booting and setting normal sleep followed by watchdog reset");
       LOG_INFO("Let SV wait timer reset");
       // Executing the wdog bite reset during sleep test.
@@ -499,13 +426,13 @@ bool test_main(void) {
       normal_sleep_wdog(&pwrmgr);
       timer_on(kEscalationPhase0MicrosCpu);
       break;
-    case 5:
+    case 4:
       LOG_INFO("Booting and running normal sleep followed by escalation reset");
       LOG_INFO("Let SV wait timer reset");
       config_escalate(&aon_timer, &pwrmgr);
       timer_on(kEscalationPhase0MicrosCpu);
       break;
-    case 6:
+    case 5:
       LOG_INFO("Last Booting");
       return true;
       break;

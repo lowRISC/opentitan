@@ -86,11 +86,11 @@ rom_error_t retention_ram_keep_test(void) {
         aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold));
 
     // Enter low-power
-    static_assert(kDifPwrmgrWakeupRequestSourceFive ==
+    static_assert(kDifPwrmgrWakeupRequestSourceFour ==
                       (1u << PWRMGR_PARAM_AON_TIMER_AON_WKUP_REQ_IDX),
                   "Layout of WAKE_INFO register changed.");
     CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-        &pwrmgr, kDifPwrmgrWakeupRequestSourceFive, 0));
+        &pwrmgr, kDifPwrmgrWakeupRequestSourceFour, 0));
     LOG_INFO("Issue WFI to enter sleep");
     wait_for_interrupt();  // Enter low-power
   } else if (bitfield_bit32_read(reset_reasons, kRstmgrReasonLowPowerExit)) {

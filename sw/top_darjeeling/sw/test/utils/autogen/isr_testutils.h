@@ -34,7 +34,6 @@
 #include "sw/ip/soc_proxy/dif/dif_soc_proxy.h"
 #include "sw/ip/spi_device/dif/dif_spi_device.h"
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
-#include "sw/ip/sysrst_ctrl/dif/dif_sysrst_ctrl.h"
 #include "sw/ip/uart/dif/dif_uart.h"
 #include "sw/lib/sw/device/arch/device.h"
 
@@ -495,28 +494,6 @@ typedef struct spi_host_isr_ctx {
 } spi_host_isr_ctx_t;
 
 /**
- * A handle to a sysrst_ctrl ISR context struct.
- */
-typedef struct sysrst_ctrl_isr_ctx {
-  /**
-   * A handle to a sysrst_ctrl.
-   */
-  dif_sysrst_ctrl_t *sysrst_ctrl;
-  /**
-   * The PLIC IRQ ID where this sysrst_ctrl instance's IRQs start.
-   */
-  dif_rv_plic_irq_id_t plic_sysrst_ctrl_start_irq_id;
-  /**
-   * The sysrst_ctrl IRQ that is expected to be encountered in the ISR.
-   */
-  dif_sysrst_ctrl_irq_t expected_irq;
-  /**
-   * Whether or not a single IRQ is expected to be encountered in the ISR.
-   */
-  bool is_only_irq;
-} sysrst_ctrl_isr_ctx_t;
-
-/**
  * A handle to a uart ISR context struct.
  */
 typedef struct uart_isr_ctx {
@@ -817,20 +794,6 @@ void isr_testutils_spi_host_isr(
     plic_isr_ctx_t plic_ctx, spi_host_isr_ctx_t spi_host_ctx,
     top_darjeeling_plic_peripheral_t *peripheral_serviced,
     dif_spi_host_irq_t *irq_serviced);
-
-/**
- * Services an sysrst_ctrl IRQ.
- *
- * @param plic_ctx A PLIC ISR context handle.
- * @param sysrst_ctrl_ctx A(n) sysrst_ctrl ISR context handle.
- * @param[out] peripheral_serviced Out param for the peripheral that was
- * serviced.
- * @param[out] irq_serviced Out param for the IRQ that was serviced.
- */
-void isr_testutils_sysrst_ctrl_isr(
-    plic_isr_ctx_t plic_ctx, sysrst_ctrl_isr_ctx_t sysrst_ctrl_ctx,
-    top_darjeeling_plic_peripheral_t *peripheral_serviced,
-    dif_sysrst_ctrl_irq_t *irq_serviced);
 
 /**
  * Services an uart IRQ.

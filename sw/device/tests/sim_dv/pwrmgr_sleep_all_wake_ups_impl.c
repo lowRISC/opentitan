@@ -13,7 +13,6 @@
 #include "sw/ip/pwrmgr/dif/dif_pwrmgr.h"
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
 #include "sw/ip/sensor_ctrl/dif/dif_sensor_ctrl.h"
-#include "sw/ip/sysrst_ctrl/dif/dif_sysrst_ctrl.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "pwrmgr_regs.h"
@@ -28,23 +27,6 @@ dif_pinmux_t pinmux;
 dif_pwrmgr_t pwrmgr;
 dif_rv_plic_t rv_plic;
 dif_sensor_ctrl_t sensor_ctrl;
-dif_sysrst_ctrl_t sysrst_ctrl;
-
-/**
- * sysrst_ctrl config for test #1
- * . set sysrst_ctrl.KEY_INTR_CTL.pwrb_in_H2L to 1
- * . use IOR13 as pwrb_in
- */
-static void prgm_sysrst_ctrl_wakeup(void *dif) {
-  dif_sysrst_ctrl_input_change_config_t config = {
-      .input_changes = kDifSysrstCtrlInputPowerButtonH2L,
-      .debounce_time_threshold = 1,  // 5us
-  };
-  CHECK_DIF_OK(dif_sysrst_ctrl_input_change_detect_configure(dif, config));
-  CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonPwrbIn,
-      kTopDarjeelingPinmuxInselIor13));
-}
 
 /**
  * adc_ctrl config for test #2
@@ -114,12 +96,6 @@ static void prgm_sensor_ctrl_wakeup(void *dif) {
 
 const test_wakeup_sources_t kTestWakeupSources[PWRMGR_PARAM_NUM_WKUPS] = {
     {
-        .name = "SYSRST_CTRL",
-        .dif_handle = &sysrst_ctrl,
-        .wakeup_src = kDifPwrmgrWakeupRequestSourceOne,
-        .config = prgm_sysrst_ctrl_wakeup,
-    },
-    {
         .name = "ADC_CTRL",
         .dif_handle = &adc_ctrl,
         .wakeup_src = kDifPwrmgrWakeupRequestSourceTwo,
@@ -160,9 +136,6 @@ void init_units(void) {
       mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR), &pwrmgr));
   CHECK_DIF_OK(dif_rv_plic_init(
       mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &rv_plic));
-  CHECK_DIF_OK(dif_sysrst_ctrl_init(
-      mmio_region_from_addr(TOP_DARJEELING_SYSRST_CTRL_AON_BASE_ADDR),
-      &sysrst_ctrl));
   CHECK_DIF_OK(dif_sensor_ctrl_init(
       mmio_region_from_addr(TOP_DARJEELING_SENSOR_CTRL_BASE_ADDR),
       &sensor_ctrl));
@@ -204,9 +177,6 @@ static bool get_wakeup_status(void) {
  */
 void cleanup(uint32_t test_idx) {
   switch (test_idx) {
-    case PWRMGR_PARAM_SYSRST_CTRL_AON_WKUP_REQ_IDX:
-      CHECK_DIF_OK(dif_sysrst_ctrl_ulp_wakeup_clear_status(&sysrst_ctrl));
-      break;
     case PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX:
       CHECK_DIF_OK(dif_adc_ctrl_filter_match_wakeup_set_enabled(
           &adc_ctrl, kDifAdcCtrlFilter5, kDifToggleDisabled));

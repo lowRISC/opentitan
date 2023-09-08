@@ -75,7 +75,6 @@ bool test_main(void) {
 
   dif_pinmux_t pinmux;
   dif_pwrmgr_t pwrmgr;
-  dif_sysrst_ctrl_t sysrst_ctrl;
 
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
@@ -83,9 +82,6 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR), &pwrmgr));
   CHECK_DIF_OK(dif_rv_plic_init(
       mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &rv_plic));
-  CHECK_DIF_OK(dif_sysrst_ctrl_init(
-      mmio_region_from_addr(TOP_DARJEELING_SYSRST_CTRL_AON_BASE_ADDR),
-      &sysrst_ctrl));
 
   switch (rstmgr_testutils_reason_get()) {
     case kDifRstmgrResetInfoPor:  // The first power-up.

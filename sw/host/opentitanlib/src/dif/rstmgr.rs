@@ -10,7 +10,6 @@ with_unknown! {
         LowPowerExit = bindgen::dif::dif_rstmgr_reset_info_kDifRstmgrResetInfoLowPowerExit,
         Sw = bindgen::dif::dif_rstmgr_reset_info_kDifRstmgrResetInfoSw,
         HwReq  = bindgen::dif::dif_rstmgr_reset_info_kDifRstmgrResetInfoHwReq,
-        SysRstCtrl  = bindgen::dif::dif_rstmgr_reset_info_kDifRstmgrResetInfoSysRstCtrl,
         Watchdog  = bindgen::dif::dif_rstmgr_reset_info_kDifRstmgrResetInfoWatchdog,
         PowerUnstable = bindgen::dif::dif_rstmgr_reset_info_kDifRstmgrResetInfoPowerUnstable,
         Escalation = bindgen::dif::dif_rstmgr_reset_info_kDifRstmgrResetInfoEscalation,
