@@ -11,7 +11,7 @@ package chip_common_pkg;
   parameter dv_utils_pkg::uint NUM_GPIOS = 32;
   parameter dv_utils_pkg::uint NUM_UARTS = 1;
   parameter dv_utils_pkg::uint NUM_SPI_HOSTS = 2;
-  parameter dv_utils_pkg::uint NUM_I2CS = 3;
+  parameter dv_utils_pkg::uint NUM_I2CS = 1;
 
   // SW constants - use unmapped address space with at least 32 bytes.
   parameter bit [top_pkg::TL_AW-1:0] SW_DV_START_ADDR = tl_main_pkg::ADDR_SPACE_RV_CORE_IBEX__CFG +

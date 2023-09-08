@@ -30,20 +30,6 @@
       reset:     "rst_peri_ni",
       pipeline:  false
     },
-    // TODO: remove
-    { name:      "i2c1",
-      type:      "device",
-      clock:     "clk_peri_i",
-      reset:     "rst_peri_ni",
-      pipeline:  false
-    },
-    // TODO: remove
-    { name:      "i2c2",
-      type:      "device",
-      clock:     "clk_peri_i",
-      reset:     "rst_peri_ni",
-      pipeline:  false
-    },
     { name:      "gpio",
       type:      "device",
       clock:     "clk_peri_i",
@@ -167,7 +153,7 @@
     // The ibex instruction fetch port does NOT have access to these
     // peripherals.
     main:  [
-      "uart0", "i2c0", "i2c1", "i2c2",
+      "uart0", "i2c0"
       "gpio", "spi_host0", "spi_device", "rv_timer",
       "pwrmgr_aon", "rstmgr_aon", "clkmgr_aon", "pinmux_aon",
       "otp_ctrl.core", "otp_ctrl.prim", "lc_ctrl", "sensor_ctrl",

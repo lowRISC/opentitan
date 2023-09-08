@@ -422,8 +422,6 @@
             - gpio clk_i
             - spi_device clk_i
             - i2c0 clk_i
-            - i2c1 clk_i
-            - i2c2 clk_i
             - uart0 clk_i
             '''
       stage: V2
@@ -431,8 +429,6 @@
               "clkmgr_peri_clk_gpio_clk",
               "clkmgr_peri_clk_spi_device_clk",
               "clkmgr_peri_clk_i2c0_clk",
-              "clkmgr_peri_clk_i2c1_clk",
-              "clkmgr_peri_clk_i2c2_clk",
               "clkmgr_peri_clk_uart0_clk"]
       tags: ["conn"]
     }
@@ -838,20 +834,6 @@
       tags: ["conn"]
     }
     {
-      name: rst_i2c1_n_d0
-      desc: '''Verify rstmgr's rst_i2c1_n[1] is connected to i2c1's rst_ni.'''
-      stage: V2
-      tests: ["rstmgr_i2c0_d0_i2c1_rst_ni"]
-      tags: ["conn"]
-    }
-    {
-      name: rst_i2c2_n_d0
-      desc: '''Verify rstmgr's rst_i2c2_n[1] is connected to i2c2's rst_ni.'''
-      stage: V2
-      tests: ["rstmgr_i2c2_d0_i2c2_rst_ni"]
-      tags: ["conn"]
-    }
-    {
       name: rst_lc_aon_aon
       desc: '''Verify rstmgr's rst_lc_aon_n[0] is connected to the following:
             - aon_timer's rst_aon_ni
@@ -867,7 +849,7 @@
 
     {
       name: rst_lc_io_div2_n_aon
-      desc: '''Verify rstmgr's rst_i2c2_n[1] is connected to clkmgr's rst_io_div2_ni.'''
+      desc: '''Verify rstmgr's lc_io_div2_aon is connected to clkmgr's rst_io_div2_ni.'''
       stage: V2
       tests: ["rstmgr_lc_io_div2_aon_clkmgr_rst_io_div2_ni"]
       tags: ["conn"]
@@ -1146,20 +1128,6 @@
       desc: '''Verify rstmgr's rst_en_o.i2c0[1] connects to alert_handler's lpg_rst_en[2].'''
       stage: V2
       tests: ["rstmgr_i2c0_d0_alert_2_rst_en"]
-      tags: ["conn"]
-    }
-    {
-      name: rst_en_i2c1_d0
-      desc: '''Verify rstmgr's rst_en_o.i2c1[1] connects to alert_handler's lpg_rst_en[3].'''
-      stage: V2
-      tests: ["rstmgr_i2c1_d0_alert_3_rst_en"]
-      tags: ["conn"]
-    }
-    {
-      name: rst_en_i2c2_d0
-      desc: '''Verify rstmgr's rst_en_o.i2c2[1] connects to alert_handler's lpg_rst_en[4].'''
-      stage: V2
-      tests: ["rstmgr_i2c2_d0_alert_4_rst_en"]
       tags: ["conn"]
     }
     {

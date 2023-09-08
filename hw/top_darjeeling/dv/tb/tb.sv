@@ -489,8 +489,6 @@ module tb;
         if (dut.chip_if.chip_padctrl_attributes_test_sva_disable) begin
           $assertoff(0, dut.top_darjeeling.u_gpio);
           $assertoff(0, dut.top_darjeeling.u_i2c0);
-          $assertoff(0, dut.top_darjeeling.u_i2c1);
-          $assertoff(0, dut.top_darjeeling.u_i2c2);
           $assertoff(0, dut.top_darjeeling.u_pinmux_aon);
           $assertoff(0, dut.top_darjeeling.u_spi_device);
           $assertoff(0, dut.top_darjeeling.u_spi_host0);
@@ -500,8 +498,6 @@ module tb;
         end else begin
           $asserton(0, dut.top_darjeeling.u_gpio);
           $asserton(0, dut.top_darjeeling.u_i2c0);
-          $asserton(0, dut.top_darjeeling.u_i2c1);
-          $asserton(0, dut.top_darjeeling.u_i2c2);
           $asserton(0, dut.top_darjeeling.u_pinmux_aon);
           $asserton(0, dut.top_darjeeling.u_spi_device);
           $asserton(0, dut.top_darjeeling.u_spi_host0);

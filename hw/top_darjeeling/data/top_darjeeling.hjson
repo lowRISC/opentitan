@@ -156,8 +156,6 @@
       { name: "spi_host0",      gen: true,  type: "top", parent: "lc_src", clk: "io_div4", sw: true }
       { name: "spi_host1",      gen: true,  type: "top", parent: "lc_src", clk: "io_div2", sw: true }
       { name: "i2c0",           gen: true,  type: "top", parent: "lc_src", clk: "io_div4", sw: true },
-      { name: "i2c1",           gen: true,  type: "top", parent: "lc_src", clk: "io_div4", sw: true },
-      { name: "i2c2",           gen: true,  type: "top", parent: "lc_src", clk: "io_div4", sw: true },
     ]
   }
 
@@ -232,26 +230,6 @@
       reset_connections: {rst_ni: "i2c0"},
       base_addr: {
         hart: "0x30080000",
-      },
-    },
-    // TODO: remove
-    { name: "i2c1",
-      type: "i2c",
-      clock_srcs: {clk_i: "io_div4"},
-      clock_group: "peri",
-      reset_connections: {rst_ni: "i2c1"},
-      base_addr: {
-        hart: "0x31030000",
-      },
-    },
-    // TODO: remove
-    { name: "i2c2",
-      type: "i2c",
-      clock_srcs: {clk_i: "io_div4"},
-      clock_group: "peri",
-      reset_connections: {rst_ni: "i2c2"},
-      base_addr: {
-        hart: "0x31040000",
       },
     },
     { name: "rv_timer",
@@ -1528,8 +1506,6 @@
       { instance: "gpio",            port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "uart0",           port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "i2c0",            port: '',               connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "i2c1",            port: '',               connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "i2c2",            port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "spi_device",      port: 'tpm_csb',        connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "spi_host1",       port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "sensor_ctrl",     port: '',               connection: 'muxed' , pad: ''             , desc: ''},
