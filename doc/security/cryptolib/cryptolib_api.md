@@ -79,8 +79,17 @@ Callers who do not wish to use `status_t` infrastructure may compare to these va
 
 ### Data buffers
 
+The cryptolib uses byte buffers for data that may not be 32-bit aligned, such as message inputs to hash functions.
+
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h crypto_byte_buf }}
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h crypto_const_byte_buf }}
+
+The cryptolib uses word buffers to enforce alignment where either the data is guaranteed to be aligned or where it is especially helpful for implementation reasons.
+Since most OpenTitan hardware interfaces expect aligned data, this is important sometimes for security and simplicity.
+Word buffers can be safely interpreted as byte streams by the caller; the bytes are arranged so that on a little-endian processor like Ibex, they will read as the correct byte-stream even if the specification calls for big-endian.
+
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h crypto_word32_buf }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h crypto_const_word32_buf }}
 
 ### Key data structures
 
