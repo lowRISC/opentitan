@@ -23,8 +23,8 @@ module mbx_fsm #(
   output logic mbx_write_o,
   output logic mbx_read_o,
   output logic mbx_sys_abort_o,
-  output logic mbx_ob_ready_update_o,
-  output logic mbx_ob_ready_o,
+  output logic mbx_ready_update_o,
+  output logic mbx_ready_o,
   output logic mbx_state_error_o
 );
   typedef enum logic [1:0] {
@@ -58,21 +58,22 @@ module mbx_fsm #(
   assign  mbx_read_o      = (ctrl_state_q == MbxRead);
   assign  mbx_sys_abort_o = (ctrl_state_q == MbxSysAbortHost);
 
-  logic ob_set_ready, ob_clear_ready;
+  logic ombx_set_ready, ombx_clear_ready;
   // Outbound mailbox is ready
-  assign ob_set_ready = CfgOmbx
+  assign ombx_set_ready = CfgOmbx
                             & mbx_idle
-                            & mbx_range_valid_i & writer_close_mbx_i
+                            & mbx_range_valid_i
+                            & writer_close_mbx_i
                             & ~sysif_control_abort_set_i;
 
   // MbxRead is a common state for imbx and ombx
   // Exit of MbxRead is used to clear imbx.Busy and ombx.Ready
-  assign ob_clear_ready = CfgOmbx & (hostif_status_error_set_i |
-                                      sysif_control_abort_set_i |
-                                      mbx_read_o & sys_read_all_i);
+  assign ombx_clear_ready = CfgOmbx & (hostif_status_error_set_i |
+                                       sysif_control_abort_set_i |
+                                       mbx_read_o & sys_read_all_i);
 
-  assign mbx_ob_ready_update_o = CfgOmbx & (ob_set_ready | ob_clear_ready);  // MUTEX(set,clr)
-  assign mbx_ob_ready_o        = ob_set_ready;
+  assign mbx_ready_update_o = CfgOmbx & (ombx_set_ready | ombx_clear_ready);  // MUTEX(set,clr)
+  assign mbx_ready_o        = ombx_set_ready;
 
   always_comb begin
     ctrl_state_d      = ctrl_state_q;
