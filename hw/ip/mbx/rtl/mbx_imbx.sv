@@ -17,7 +17,8 @@ module mbx_imbx #(
   output logic                        imbx_status_busy_update_o,
   output logic                        imbx_status_busy_o,
   // Access to the control and status registers of host interface
-  input  logic                        hostif_control_abort_set_i,
+  // Writing a 1 to control.abort register clears the abort condition
+  input  logic                        hostif_control_abort_clear_i,
   input  logic                        hostif_status_busy_clear_i,
   input  logic                        hostif_status_error_set_i,
   // Range configuration for the private SRAM
@@ -64,7 +65,7 @@ module mbx_imbx #(
   logic sys_clear_abort;
   logic load_write_ptr, advance_write_ptr;
 
-  assign sys_clear_abort = hostif_control_abort_set_i & mbx_sys_abort;
+  assign sys_clear_abort = hostif_control_abort_clear_i & mbx_sys_abort;
 
   // Rewind the write pointer to the base
   assign load_write_ptr = mbx_empty | sys_clear_abort |
@@ -137,24 +138,24 @@ module mbx_imbx #(
   mbx_fsm #(
     .CfgOmbx ( 0 )
   ) u_mbxfsm(
-    .clk_i                     ( clk_i                      ),
-    .rst_ni                    ( rst_ni                     ),
-    .mbx_range_valid_i         ( hostif_range_valid_i       ),
-    .hostif_abort_ack_i        ( hostif_control_abort_set_i ),
-    .hostif_status_error_set_i ( hostif_status_error_set_i  ),
-    .hostif_status_busy_clear_i( hostif_status_busy_clear_i ),
-    .sysif_control_abort_set_i ( sysif_control_abort_set_i  ),
-    .sys_read_all_i            ( 1'b0                       ),
-    .writer_close_mbx_i        ( sysif_control_go_set_i     ),
-    .writer_write_valid_i      ( sysif_data_write_valid_i   ),
+    .clk_i                     ( clk_i                        ),
+    .rst_ni                    ( rst_ni                       ),
+    .mbx_range_valid_i         ( hostif_range_valid_i         ),
+    .hostif_abort_ack_i        ( hostif_control_abort_clear_i ),
+    .hostif_status_error_set_i ( hostif_status_error_set_i    ),
+    .hostif_status_busy_clear_i( hostif_status_busy_clear_i   ),
+    .sysif_control_abort_set_i ( sysif_control_abort_set_i    ),
+    .sys_read_all_i            ( 1'b0                         ),
+    .writer_close_mbx_i        ( sysif_control_go_set_i       ),
+    .writer_write_valid_i      ( sysif_data_write_valid_i     ),
     // Status signals
-    .mbx_empty_o               ( mbx_empty                  ),
-    .mbx_write_o               ( mbx_write                  ),
-    .mbx_read_o                ( mbx_read                   ),
-    .mbx_sys_abort_o           ( mbx_sys_abort              ),
-    .mbx_ob_ready_update_o     (                            ),
-    .mbx_ob_ready_o            (                            ),
-    .mbx_state_error_o         ( imbx_state_error_o         )
+    .mbx_empty_o               ( mbx_empty                    ),
+    .mbx_write_o               ( mbx_write                    ),
+    .mbx_read_o                ( mbx_read                     ),
+    .mbx_sys_abort_o           ( mbx_sys_abort                ),
+    .mbx_ready_update_o        (                              ),
+    .mbx_ready_o               (                              ),
+    .mbx_state_error_o         ( imbx_state_error_o           )
   );
 
   //////////////////////////////////////////////////////////////////////////////

@@ -7,26 +7,28 @@ module mbx_hostif
 #(
     parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
     parameter int unsigned CfgSramAddrWidth      = 32,
-    parameter int unsigned CfgSramDataWidth      = 32
+    parameter int unsigned CfgSramDataWidth      = 32,
+    parameter int unsigned CfgObjectSizeWidth    = 11
 ) (
-  input  logic                        clk_i,
-  input  logic                        rst_ni,
+  input  logic                          clk_i,
+  input  logic                          rst_ni,
   // Device port to the host side
-  input  tlul_pkg::tl_h2d_t           tl_host_i,
-  output tlul_pkg::tl_d2h_t           tl_host_o,
+  input  tlul_pkg::tl_h2d_t             tl_host_i,
+  output tlul_pkg::tl_d2h_t             tl_host_o,
   // Generated interrupt event
-  input  logic                        event_intr_ready_i,
-  input  logic                        event_intr_abort_i,
-  output logic                        intr_ready_o,
-  output logic                        intr_abort_o,
+  input  logic                          event_intr_ready_i,
+  input  logic                          event_intr_abort_i,
+  output logic                          intr_ready_o,
+  output logic                          intr_abort_o,
   // External errors
-  input  logic                        intg_err_i,
-  input  logic                        sram_err_i,
+  input  logic                          intg_err_i,
+  input  logic                          sram_err_i,
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
   // Access to the control register
-  output logic                        hostif_control_abort_set_o,
+  // Writing a 1 to control.abort register clears the abort condition
+  output logic                          hostif_control_abort_clear_o,
   // Access to the status register
   output logic                        hostif_status_busy_clear_o,
   output logic                        hostif_status_doe_intr_status_set_o,
@@ -36,24 +38,24 @@ module mbx_hostif
   input  logic                        hostif_status_doe_intr_status_i,
   input  logic                        hostif_status_error_i,
   // Access to the IB/OB RD/WR pointers
-  input  logic [CfgSramAddrWidth-1:0] hostif_imbx_write_ptr_i,
-  input  logic [CfgSramAddrWidth-1:0] hostif_ombx_read_ptr_i,
+  input  logic [CfgSramAddrWidth-1:0]   hostif_imbx_write_ptr_i,
+  input  logic [CfgSramAddrWidth-1:0]   hostif_ombx_read_ptr_i,
   // Base/Limit for in/outbound mailbox
-  output logic                        hostif_address_range_valid_o,
-  output logic [CfgSramAddrWidth-1:0] hostif_imbx_base_o,
-  output logic [CfgSramAddrWidth-1:0] hostif_imbx_limit_o,
-  output logic [CfgSramAddrWidth-1:0] hostif_ombx_base_o,
-  output logic [CfgSramAddrWidth-1:0] hostif_ombx_limit_o,
+  output logic                          hostif_address_range_valid_o,
+  output logic [CfgSramAddrWidth-1:0]   hostif_imbx_base_o,
+  output logic [CfgSramAddrWidth-1:0]   hostif_imbx_limit_o,
+  output logic [CfgSramAddrWidth-1:0]   hostif_ombx_base_o,
+  output logic [CfgSramAddrWidth-1:0]   hostif_ombx_limit_o,
   // Read/Write access for the object size register
-  output logic                        hostif_ombx_object_size_write_o,
-  output logic [10:0]                 hostif_ombx_object_size_o,
-  input  logic                        hostif_ombx_object_size_read_i,
-  input  logic [10:0]                 hostif_ombx_object_size_i,
+  output logic                          hostif_ombx_object_size_write_o,
+  output logic [CfgObjectSizeWidth-1:0] hostif_ombx_object_size_o,
+  input  logic                          hostif_ombx_object_size_update_i,
+  input  logic [CfgObjectSizeWidth-1:0] hostif_ombx_object_size_i,
   // Alias of the interrupt address and data registers from the SYS interface
-  input  logic [CfgSramAddrWidth-1:0] sysif_intr_msg_addr_i,
-  input  logic [CfgSramDataWidth-1:0] sysif_intr_msg_data_i,
+  input  logic [CfgSramAddrWidth-1:0]   sysif_intr_msg_addr_i,
+  input  logic [CfgSramDataWidth-1:0]   sysif_intr_msg_data_i,
   // Control inputs coming from the system registers interface
-  input  logic                        sysif_control_abort_write_i
+  input  logic                          sysif_control_abort_set_i
 );
   mbx_reg_pkg::mbx_host_reg2hw_t reg2hw;
   mbx_reg_pkg::mbx_host_hw2reg_t hw2reg;
@@ -134,15 +136,16 @@ module mbx_hostif
   logic abort_d, abort_q;
   assign  hw2reg.control.abort.d = abort_q;
   // External write logic
-  assign hostif_control_abort_set_o = reg2hw.control.abort.qe & reg2hw.control.abort.q;
+  // Writing a 1 to control.abort means clearing the abort condition
+  assign hostif_control_abort_clear_o = reg2hw.control.abort.qe & reg2hw.control.abort.q;
 
   // Abort computation from system and host interface
   always_comb begin
     abort_d = abort_q;
 
-    if (sysif_control_abort_write_i) begin
+    if (sysif_control_abort_set_i) begin
       abort_d = 1'b1;
-    end else if (hostif_control_abort_set_o) begin
+    end else if (hostif_control_abort_clear_o) begin
       abort_d = 1'b0;
     end
   end
@@ -189,7 +192,7 @@ module mbx_hostif
   // Outbound object size Register
   // External read logic
   assign  hw2reg.outbound_object_size.d   = hostif_ombx_object_size_i;
-  assign  hw2reg.outbound_object_size.de  = hostif_ombx_object_size_read_i;
+  assign  hw2reg.outbound_object_size.de  = hostif_ombx_object_size_update_i;
   // External write logic
   assign  hostif_ombx_object_size_write_o = reg2hw.outbound_object_size.qe;
   assign  hostif_ombx_object_size_o       = reg2hw.outbound_object_size.q;

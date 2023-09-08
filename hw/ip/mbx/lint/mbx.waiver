@@ -3,3 +3,16 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # waiver file for mbx
+
+waive -rules INPUT_NOT_READ    -location {mbx_imbx.sv} -regexp {Input port 'sysif_status_busy_i' is not read from} \
+      -comment "Signal only used for assertions"
+waive -rules INPUT_NOT_READ    -location {mbx_imbx.sv} -regexp {Input port 'hostif_imbx_write_ptr_i[1:0]' is not read from} \
+      -comment "Write pointer is always 4B aligned"
+waive -rules INPUT_NOT_READ    -location {mbx_imbx.sv} -regexp {Input port 'hostif_imbx_read_ptr_i[1:0]' is not read from} \
+      -comment "Read pointer is always 4B aligned"
+waive -rules INPUT_NOT_READ    -location {mbx_ombx.sv} -regexp {Input port 'sysif_status_ready_i' is not read from} \
+      -comment "Signal only used for assertions"
+waive -rules INPUT_NOT_READ    -location {mbx_ombx.sv} -regexp {Input port 'sysif_read_data_read_valid_i' is not read from} \
+      -comment "Signal only used for assertions"
+waive -rules NOT_READ    -location {mbx_ombx.sv} -regexp {Signal 'ombx_is_empty' is not read from} \
+      -comment "Signal only used for assertions"
