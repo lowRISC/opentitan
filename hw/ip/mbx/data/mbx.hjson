@@ -50,6 +50,9 @@
     { name: "mbx_ready"
       desc: "A new object was received in the inbound mailbox."
     }
+    { name: "mbx_abort"
+      desc: "An abort request was received from the requester."
+    }
   ]
   alert_list: [
     { name: "fatal_fault"
