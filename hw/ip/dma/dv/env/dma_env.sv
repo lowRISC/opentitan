@@ -109,7 +109,7 @@ class dma_env extends cip_base_env #(
   endfunction
 
   // Display scoreboard analysis fifo connections for debug
-  function display_scoreboard_connections(string intf_name);
+  function void display_scoreboard_connections(string intf_name);
     `uvm_info(`gfn, $sformatf("[CONNECTION] SCB DEBUG %s agent - FANIN", intf_name), UVM_HIGH)
     scoreboard.tl_a_chan_fifos[cfg.dma_a_fifo[intf_name]].analysis_export.debug_provided_to();
     scoreboard.tl_d_chan_fifos[cfg.dma_d_fifo[intf_name]].analysis_export.debug_provided_to();

@@ -67,7 +67,6 @@ class dma_seq_item extends uvm_sequence_item;
     `uvm_field_int(auto_inc_buffer, UVM_DEFAULT)
     `uvm_field_int(auto_inc_fifo, UVM_DEFAULT)
     `uvm_field_int(handshake, UVM_DEFAULT)
-    `uvm_field_int(valid_address_space_id, UVM_DEFAULT)
     `uvm_field_int(align_address, UVM_DEFAULT)
     `uvm_field_int(is_valid_config, UVM_DEFAULT)
     `uvm_field_int(mem_buffer_almost_limit, UVM_DEFAULT)
@@ -310,7 +309,7 @@ class dma_seq_item extends uvm_sequence_item;
     dst_addr = 0;
     src_asid = OtInternalAddr;
     dst_asid = OtInternalAddr;
-    opcode = DmaOperCopy;
+    opcode = OpcCopy;
     direction = DmaRcvData;
     mem_range_base = 0;
     mem_range_limit = 0;
