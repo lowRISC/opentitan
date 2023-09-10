@@ -13,9 +13,10 @@ interface jtag_if #(parameter int unsigned JtagDefaultTckPeriodPs = 20_000) ();
   logic tms;
   logic tdi;
   logic tdo;
-
   // generate local tck
   bit tck_en;
+  int clk_hi_ps;
+  int clk_lo_ps;
   int unsigned tck_period_ps = JtagDefaultTckPeriodPs;
 
   // Use negedge to drive jtag inputs because design also use posedge clock edge to sample.
@@ -64,13 +65,16 @@ interface jtag_if #(parameter int unsigned JtagDefaultTckPeriodPs = 20_000) ();
   endtask
 
   // Generate the tck, with UartDefaultClkPeriodNs period as default
+  assign clk_hi_ps = tck_period_ps / 2;
+  assign clk_lo_ps = tck_period_ps - clk_hi_ps;
+
   initial begin
     tck = 1'b1;
     forever begin
       if (tck_en) begin
-        #(tck_period_ps / 2 * 1ps);
+        #(clk_hi_ps * 1ps);
         tck = ~tck;
-        #(tck_period_ps / 2 * 1ps);
+        #(clk_lo_ps * 1ps);
         tck = ~tck;
       end else begin
         @(tck_en);
