@@ -154,25 +154,11 @@ class dma_base_vseq extends cip_base_vseq #(
     endcase
   endfunction
 
-  function bit get_read_fifo_en(ref dma_seq_item dma_config);
-    return dma_config.handshake &&
-           (dma_config.direction == DmaRcvData ? // Read from FIFO
-           !dma_config.auto_inc_fifo: // FIFO address auto increment disabled
-           !dma_config.auto_inc_buffer); // Memory buffer address auto increment disabled
-  endfunction
-
-  function bit get_write_fifo_en(ref dma_seq_item dma_config);
-    return dma_config.handshake &&
-           (dma_config.direction == DmaSendData ? // Write from FIFO
-           !dma_config.auto_inc_fifo: // FIFO address auto increment disabled
-           !dma_config.auto_inc_buffer); // Memory buffer address auto increment disabled
-  endfunction
-
   // Function to enable FIFO if handshake mode is enabled
   // else randomise read data in mem_model or FIFO instance
   function void configure_mem_model(ref dma_seq_item dma_config);
     // Configure Source model
-    if (get_read_fifo_en(dma_config)) begin
+    if (dma_config.get_read_fifo_en()) begin
       // Enable FIFO
       set_model_fifo_mode(dma_config.src_asid, dma_config.src_addr,
                           dma_config.total_transfer_size);
@@ -185,7 +171,7 @@ class dma_base_vseq extends cip_base_vseq #(
     end
 
     // Configure Destination model
-    if (get_write_fifo_en(dma_config)) begin
+    if (dma_config.get_write_fifo_en()) begin
       // Enable Write FIFO but dont randomise since data is written by DMA
       set_model_fifo_mode(dma_config.dst_asid, dma_config.dst_addr,
                           dma_config.total_transfer_size);
@@ -316,8 +302,8 @@ class dma_base_vseq extends cip_base_vseq #(
   // Task: Start TLUL Sequences
   virtual task start_device(ref dma_seq_item dma_config);
     // Assign memory models used in tl_device_vseq instances
-    bit read_fifo_en = get_read_fifo_en(dma_config);
-    bit write_fifo_en = get_write_fifo_en(dma_config);
+    bit read_fifo_en = dma_config.get_read_fifo_en();
+    bit write_fifo_en = dma_config.get_write_fifo_en();
 
     // Set fifo enable bit
     set_seq_fifo_mode(dma_config.src_asid, read_fifo_en, write_fifo_en);
