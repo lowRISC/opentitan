@@ -312,6 +312,13 @@ class dma_seq_item extends uvm_sequence_item;
                                 src_asid.name(), dst_asid.name()), UVM_MEDIUM)
       valid_config = 0;
     end
+    // Source and destination address must have same alignment for valid DMA configuration
+    if (src_addr[1:0] != dst_addr[1:0]) begin
+      `uvm_info(`gfn,
+                $sformatf("Invalid addr alignment src_addr[1:0](0x%0x) != dst_addr[1:0](0x%0x)"),
+                UVM_MEDIUM)
+      valid_config = 0;
+    end
     // Check if memory range is locked
     if (mem_range_unlock == MuBi4True) begin
       `uvm_info(`gfn, "Memory range registers unlocked", UVM_MEDIUM)
