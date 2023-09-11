@@ -346,6 +346,515 @@
             '''
         }
         {
+            name:       "OWNERSHIP_SLOT_STATE",
+            variant:    "Unbuffered",
+            absorb:     false,
+            secret:     false,
+            sw_digest:  false,
+            hw_digest:  false,
+            write_lock: "None",
+            read_lock:  "CSR",
+            key_sel:    "NoKey",
+            integrity:  true,
+            bkout_type: false,
+            items: [
+                {
+                    name: "OWNERSHIP_SLOT_STATE_ROT_OWNER_AUTH",
+                    size: "16"
+                    desc: ''' Creator Ownership transfer state management
+                    OWNERSHIP_ST_RAW:       ownership not yet claimed (factory default)
+                    OWNERSHIP_ST_LOCKED0:   first ownership slot claimed
+                    OWNERSHIP_ST_RELEASED0: first ownership slot released (assets have been cleared, ready to xfer)
+                    OWNERSHIP_ST_LOCKED1:   second ownership slot claimed
+                    OWNERSHIP_ST_SCRAPPED:  scrap state - terminal
+                    '''
+                }
+                {
+                    name: "OWNERSHIP_SLOT_STATE_PLAT_INTEG_AUTH",
+                    size: "16"
+                    desc: ''' Creator Ownership transfer state management
+                    OWNERSHIP_ST_RAW:       ownership not yet claimed (factory default)
+                    OWNERSHIP_ST_LOCKED0:   first ownership slot claimed
+                    OWNERSHIP_ST_RELEASED0: first ownership slot released (assets have been cleared, ready to xfer)
+                    OWNERSHIP_ST_LOCKED1:   second ownership slot claimed
+                    OWNERSHIP_ST_SCRAPPED:  scrap state - terminal
+                    '''
+                }
+                {
+                    name: "OWNERSHIP_SLOT_STATE_PLAT_OWNER_AUTH",
+                    size: "16"
+                    desc: ''' Creator Ownership transfer state management
+                    OWNERSHIP_ST_RAW:       ownership not yet claimed (factory default)
+                    OWNERSHIP_ST_LOCKED0:   first ownership slot claimed
+                    OWNERSHIP_ST_RELEASED0: first ownership slot released (assets have been cleared, ready to xfer)
+                    OWNERSHIP_ST_LOCKED1:   second ownership slot claimed
+                    OWNERSHIP_ST_RELEASED1: second ownership slot released (assets have been cleared, ready to xfer)
+                    OWNERSHIP_ST_LOCKED2:   third ownership slot claimed
+                    OWNERSHIP_ST_RELEASED2: third ownership slot released (assets have been cleared, ready to xfer)
+                    OWNERSHIP_ST_LOCKED3:   fourth ownership slot claimed
+                    OWNERSHIP_ST_SCRAPPED:  scrap state - terminal
+                    '''
+                }
+            ]
+            desc: '''SW managed asset ownership states partition.
+
+            Multibit enable value for the tracking the asset ownership states.
+            Note that the states can be written multiple times in a device lifetime.
+            The values to be written are engineered in the same way as the LC_CTRL
+            state encoding words so that the ECC encoding remains valid even after
+            updating the values.
+
+            The constants can be found in the lc_ctrl_state_pkg.sv package.
+
+            The programming order has to adhere to:
+
+            OWNERSHIP_ST_RAW (factory all-zero state) ->
+            OWNERSHIP_ST_LOCKED0 ->
+            OWNERSHIP_ST_RELEASED0 ->
+            ...
+            OWNERSHIP_ST_SCRAPPED
+
+            Note that if there are less than 4 slots available the higher slot states
+            become logically equivalent to OWNERSHIP_SCRAPPED (firmware has to handle
+            this correctly).
+            '''
+        }
+        {
+            name:       "ROT_CREATOR_AUTH",
+            variant:    "Unbuffered",
+            absorb:     false,
+            secret:     false,
+            sw_digest:  true,
+            hw_digest:  false,
+            write_lock: "Digest",
+            read_lock:  "CSR",
+            key_sel:    "NoKey",
+            integrity:  true,
+            bkout_type: false,
+            items: [
+                {
+                    name: "ROT_CREATOR_AUTH_NON_RAW_MFW_CODESIGN_KEY",
+                    size: "160"
+                    desc: ''' Pub Key used to verify the manufacturing provisioning Software container
+                    160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                    It is expected to be provisioned at Chip Probe stage when LC = TEST
+                    i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                    '''
+                }
+                {
+                    name: "ROT_CREATOR_AUTH_OWNERSHIP_STATE",
+                    size: "4"
+                    desc: ''' Creator Ownership transfer state management
+                    UNLOCKED - ownership of ROT not yet claimed
+                    LOCKED   - ownership claimed and
+                    RELEASED - Release ownership (assets have been cleared, ready to xfer
+                    '''
+                }
+                {
+                    name: "ROT_CREATOR_AUTH_ROM2_PATCH_SIGVERIFY_KEY",
+                    size: "160"
+                    desc: ''' Pub Key used to verify the ROM2 OTP based patch
+                    160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                    It is expected to be provisioned at Chip Probe stage when LC = TEST
+                    i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                            OTP based key (instead of ROM) facilitates easy key rotation
+                    '''
+                }
+                {
+                    name: "ROT_CREATOR_AUTH_KEYMANIFEST_KEY",
+                    size: "160"
+                    desc: ''' Pub Key used to verify the ROT CREATOR KEY MANIFEST.
+                    KM is used to provisioning additional keys in (external) flash
+                    160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                    It is expected to be provisioned at Chip Probe stage when LC = TEST
+                    i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                    '''
+                }
+                {
+                    name: "ROT_CREATOR_AUTH_UNLOCK4XFER_KEY",
+                    size: "160"
+                    desc: ''' Pub Key used to verify the ROT CREATOR KEY MANIFEST.
+                    Used to authenticate the Unlock Ownership payload. Key Type: ECC NIST-P384 Curve.
+                    160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                    Can be made part bound i.e. unique per part key cert
+                    i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                    '''
+                }
+                {
+                    name: "ROT_CREATOR_AUTH_IDENTITY_CERT",
+                    size: "768"
+                    desc: ''' ROT Device Identity Certificate endorsed by Silicon Creator stable off device PKI
+                    '''
+                }
+            ],
+            desc: '''Software managed creator partition.
+            '''
+        }
+        {
+            name:       "ROT_OWNER_AUTH_SLOT0",
+            variant:    "Unbuffered",
+            absorb:     false,
+            secret:     false,
+            sw_digest:  true,
+            hw_digest:  false,
+            write_lock: "Digest",
+            read_lock:  "CSR",
+            key_sel:    "NoKey",
+            integrity:  true,
+            bkout_type: false,
+            items: [
+                {
+                    name: "ROT_OWNER_AUTH_SLOT0_KEYMANIFEST_KEY",
+                    size: "160"
+                    desc: ''' Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                    KM is used to provisioning additional keys in (external) flash
+                    160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                    It is expected to be provisioned at Chip Probe stage when LC = TEST
+                    i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                    '''
+                }
+                {
+                    name: "ROT_OWNER_AUTH_SLOT0_UNLOCK4XFER_KEY",
+                    size: "160"
+                    desc: ''' Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                    Used to authenticate the Unlock Ownership payload. Key Type: ECC NIST-P384 Curve.
+                    160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                    Can be made part bound i.e. unique per part key cert
+                    i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                    '''
+                }
+            ],
+            desc: '''Software managed owner slot 0 partition.
+            '''
+        }
+        {
+            name:       "ROT_OWNER_AUTH_SLOT1",
+            variant:    "Unbuffered",
+            absorb:     false,
+            secret:     false,
+            sw_digest:  true,
+            hw_digest:  false,
+            write_lock: "Digest",
+            read_lock:  "CSR",
+            key_sel:    "NoKey",
+            integrity:  true,
+            bkout_type: false,
+            items: [
+                {
+                    name: "ROT_OWNER_AUTH_SLOT1_KEYMANIFEST_KEY",
+                    size: "160"
+                    desc: ''' Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                    KM is used to provisioning additional keys in (external) flash
+                    160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                    It is expected to be provisioned at Chip Probe stage when LC = TEST
+                    i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                    '''
+                }
+                {
+                    name: "ROT_OWNER_AUTH_SLOT1_UNLOCK4XFER_KEY",
+                    size: "160"
+                    desc: ''' Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                    Used to authenticate the Unlock Ownership payload. Key Type: ECC NIST-P384 Curve.
+                    160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                    Can be made part bound i.e. unique per part key cert
+                    i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                    '''
+                }
+            ],
+            desc: '''Software managed owner slot 1 partition.
+            '''
+        }
+        {
+            name:       "PLAT_INTEG_AUTH_SLOT0",
+            variant:    "Unbuffered",
+            absorb:     false,
+            secret:     false,
+            sw_digest:  true,
+            hw_digest:  false,
+            write_lock: "Digest",
+            read_lock:  "CSR",
+            key_sel:    "NoKey",
+            integrity:  true,
+            bkout_type: false,
+            items: [
+                {
+                    name: "PLAT_INTEG_AUTH_SLOT0_KEYMANIFEST_KEY",
+                    size: "160"
+                    desc: ''' Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                    KM is used to provisioning additional keys in (external) flash
+                    160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                    It is expected to be provisioned at Chip Probe stage when LC = TEST
+                    i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                    '''
+                }
+                {
+                    name: "PLAT_INTEG_AUTH_SLOT0_UNLOCK4XFER_KEY",
+                    size: "160"
+                    desc: ''' Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                    Used to authenticate the Unlock Ownership payload. Key Type: ECC NIST-P384 Curve.
+                    160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                    Can be made part bound i.e. unique per part key cert
+                    i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                    '''
+                }
+            ],
+            desc: '''Software managed platform integrator slot 0 partition.
+            '''
+        }
+        {
+            name:       "PLAT_INTEG_AUTH_SLOT1",
+            variant:    "Unbuffered",
+            absorb:     false,
+            secret:     false,
+            sw_digest:  true,
+            hw_digest:  false,
+            write_lock: "Digest",
+            read_lock:  "CSR",
+            key_sel:    "NoKey",
+            integrity:  true,
+            bkout_type: false,
+            items: [
+                {
+                    name: "PLAT_INTEG_AUTH_SLOT1_KEYMANIFEST_KEY",
+                    size: "160"
+                    desc: ''' Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                    KM is used to provisioning additional keys in (external) flash
+                    160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                    It is expected to be provisioned at Chip Probe stage when LC = TEST
+                    i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                    '''
+                }
+                {
+                    name: "PLAT_INTEG_AUTH_SLOT1_UNLOCK4XFER_KEY",
+                    size: "160"
+                    desc: ''' Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                    Used to authenticate the Unlock Ownership payload. Key Type: ECC NIST-P384 Curve.
+                    160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                    Can be made part bound i.e. unique per part key cert
+                    i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                    '''
+                }
+            ],
+            desc: '''Software managed platform integrator slot 1 partition.
+            '''
+        }
+        {
+            name:       "PLAT_OWNER_AUTH_SLOT0",
+            variant:    "Unbuffered",
+            absorb:     false,
+            secret:     false,
+            sw_digest:  true,
+            hw_digest:  false,
+            write_lock: "Digest",
+            read_lock:  "CSR",
+            key_sel:    "NoKey",
+            integrity:  true,
+            bkout_type: false,
+            items: [
+                {
+                    name: "PLAT_OWNER_AUTH_SLOT0_KEYMANIFEST_KEY",
+                    size: "160"
+                    desc: ''' Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                    KM is used to provisioning additional keys in (external) flash
+                    160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                    It is expected to be provisioned at Chip Probe stage when LC = TEST
+                    i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                    '''
+                }
+                {
+                    name: "PLAT_OWNER_AUTH_SLOT0_UNLOCK4XFER_KEY",
+                    size: "160"
+                    desc: ''' Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                    Used to authenticate the Unlock Ownership payload. Key Type: ECC NIST-P384 Curve.
+                    160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                    Can be made part bound i.e. unique per part key cert
+                    i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                    '''
+                }
+            ],
+            desc: '''Software managed platform owner slot 0 partition.
+            '''
+        }
+        {
+            name:       "PLAT_OWNER_AUTH_SLOT1",
+            variant:    "Unbuffered",
+            absorb:     false,
+            secret:     false,
+            sw_digest:  true,
+            hw_digest:  false,
+            write_lock: "Digest",
+            read_lock:  "CSR",
+            key_sel:    "NoKey",
+            integrity:  true,
+            bkout_type: false,
+            items: [
+                {
+                    name: "PLAT_OWNER_AUTH_SLOT1_KEYMANIFEST_KEY",
+                    size: "160"
+                    desc: ''' Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                    KM is used to provisioning additional keys in (external) flash
+                    160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                    It is expected to be provisioned at Chip Probe stage when LC = TEST
+                    i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                    '''
+                }
+                {
+                    name: "PLAT_OWNER_AUTH_SLOT1_UNLOCK4XFER_KEY",
+                    size: "160"
+                    desc: ''' Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                    Used to authenticate the Unlock Ownership payload. Key Type: ECC NIST-P384 Curve.
+                    160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                    Can be made part bound i.e. unique per part key cert
+                    i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                    '''
+                }
+            ],
+            desc: '''Software managed platform owner slot 1 partition.
+            '''
+        }
+        {
+            name:       "PLAT_OWNER_AUTH_SLOT2",
+            variant:    "Unbuffered",
+            absorb:     false,
+            secret:     false,
+            sw_digest:  true,
+            hw_digest:  false,
+            write_lock: "Digest",
+            read_lock:  "CSR",
+            key_sel:    "NoKey",
+            integrity:  true,
+            bkout_type: false,
+            items: [
+                {
+                    name: "PLAT_OWNER_AUTH_SLOT2_KEYMANIFEST_KEY",
+                    size: "160"
+                    desc: ''' Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                    KM is used to provisioning additional keys in (external) flash
+                    160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                    It is expected to be provisioned at Chip Probe stage when LC = TEST
+                    i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                    '''
+                }
+                {
+                    name: "PLAT_OWNER_AUTH_SLOT2_UNLOCK4XFER_KEY",
+                    size: "160"
+                    desc: ''' Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                    Used to authenticate the Unlock Ownership payload. Key Type: ECC NIST-P384 Curve.
+                    160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                    Can be made part bound i.e. unique per part key cert
+                    i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                    '''
+                }
+            ],
+            desc: '''Software managed platform owner slot 2 partition.
+            '''
+        }
+        {
+            name:       "PLAT_OWNER_AUTH_SLOT3",
+            variant:    "Unbuffered",
+            absorb:     false,
+            secret:     false,
+            sw_digest:  true,
+            hw_digest:  false,
+            write_lock: "Digest",
+            read_lock:  "CSR",
+            key_sel:    "NoKey",
+            integrity:  true,
+            bkout_type: false,
+            items: [
+                {
+                    name: "PLAT_OWNER_AUTH_SLOT3_KEYMANIFEST_KEY",
+                    size: "160"
+                    desc: ''' Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                    KM is used to provisioning additional keys in (external) flash
+                    160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                    It is expected to be provisioned at Chip Probe stage when LC = TEST
+                    i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                    '''
+                }
+                {
+                    name: "PLAT_OWNER_AUTH_SLOT3_UNLOCK4XFER_KEY",
+                    size: "160"
+                    desc: ''' Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                    Used to authenticate the Unlock Ownership payload. Key Type: ECC NIST-P384 Curve.
+                    160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                    Can be made part bound i.e. unique per part key cert
+                    i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                    '''
+                }
+            ],
+            desc: '''Software managed platform owner slot 3 partition.
+            '''
+        }
+        {
+            name:       "EXT_NVM",
+            variant:    "Unbuffered",
+            absorb:     false,
+            secret:     false,
+            sw_digest:  false,
+            hw_digest:  false,
+            write_lock: "None",
+            read_lock:  "CSR",
+            key_sel:    "NoKey",
+            // This is a strike counter, hence we need to disable ECC integrity for this to work.
+            // Integrity is handled at a higher level by SW as described below.
+            integrity:  false,
+            bkout_type: false,
+            items: [
+                {
+                    name: "EXT_NVM_ANTIREPLAY_FRESHNESS_CNT0",
+                    size: "512"
+                    desc: ''' Fully SW managed patition
+                    1 bit (double bit allocated for redundancy - i.e. 2 physical bits for every logical bit) per day
+                    assuming 10 year product lifecycle, allocating 4096 bits of freshness protection.
+                    Implemented as thermometer encoding. Redundant bit programming & logical OR-ing managed by
+                    software accross both _CNT items in this partition. Cannot be ECC protected since different bits
+                    in a fuse row are programmed at different times.
+                    '''
+                }
+                {
+                    name: "EXT_NVM_ANTIREPLAY_FRESHNESS_CNT1",
+                    size: "512"
+                    desc: ''' Fully SW managed patition
+                    1 bit (double bit allocated for redundancy - i.e. 2 physical bits for every logical bit) per day
+                    assuming 10 year product lifecycle, allocating 4096 bits of freshness protection.
+                    Implemented as thermometer encoding. Redundant bit programming & logical OR-ing managed by
+                    software accross both _CNT items in this partition. Cannot be ECC protected since different bits
+                    in a fuse row are programmed at different times.
+                    '''
+                }
+            ],
+            desc: '''Anti-replay protection Strike Counters partition.
+            '''
+        }
+        {
+            name:       "ROM_PATCH",
+            variant:    "Unbuffered",
+            absorb:     true,
+            secret:     false,
+            sw_digest:  true,
+            hw_digest:  false,
+            write_lock: "Digest",
+            read_lock:  "CSR",
+            key_sel:    "NoKey",
+            integrity:  true,
+            bkout_type: false,
+            items: [
+                {
+                    name: "ROM_PATCH_DATA",
+                    size: "9192"
+                    desc: ''' Fully SW managed patition
+                    ROM patch section
+                    signed patch(es)
+                    Each patch Contains header, signature, patch match/redirect configuration and patch code
+                    Please refer to the ROM boot & patching specification for Integrated OT for more details
+                    '''
+                }
+            ],
+            desc: '''ROM Patch Code section. May contain multiple signed ROM2 patches.
+            '''
+        }
+        {
             name:       "HW_CFG0",
             variant:    "Buffered",
             secret:     false,
@@ -393,6 +902,16 @@
                     name:        "SOC_DBG_STATE",
                     size:        "4",
                     inv_default: "0x0"
+                    desc: '''Multibit enable value for the SOC debug authorization.
+                    Encoding:
+                      SOC_DBG_RAW: this value is all-zeroes and will be the NOP state;
+                        the LC controller will take precedence.
+                      SOC_DBG_PRE_PROD: this is where the ROT will be in PROD state
+                        but SOC will be in the pre-production unlock state
+                      SOC_DBG_PROD: this is the state where the SOC moves to production,
+                        and the challenge-response based authentication protocol is
+                        required to unlock SOC debug features
+                    '''
                 },
                 {
                     name:        "EN_SRAM_IFETCH",
@@ -411,15 +930,6 @@
             writing the second value on top of the first.
 
             The constants can be found in the lc_ctrl_state_pkg.sv package.
-
-            Encoding:
-              SOC_DBG_RAW: this value is all-zeroes and will be the NOP state;
-                the LC controller will take precedence.
-              SOC_DBG_PRE_PROD: this is where the ROT will be in PROD state
-                but SOC will be in the pre-production unlock state
-              SOC_DBG_PROD: this is the state where the SOC moves to production,
-                and the challenge-response based authentication protocol is
-                required to unlock SOC debug features
 
             The programming order has to adhere to:
 

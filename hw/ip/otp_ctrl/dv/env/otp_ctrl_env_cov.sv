@@ -65,7 +65,27 @@ class otp_ctrl_csr_rd_after_alert_cg_wrap;
         ral.creator_sw_cfg_digest[0].get_offset(),
         ral.creator_sw_cfg_digest[1].get_offset(),
         ral.owner_sw_cfg_digest[0].get_offset(),
-        ral.owner_sw_cfg_digest[1].get_offset()
+        ral.owner_sw_cfg_digest[1].get_offset(),
+        ral.rot_creator_auth_digest[0].get_offset(),
+        ral.rot_creator_auth_digest[1].get_offset(),
+        ral.rot_owner_auth_slot0_digest[0].get_offset(),
+        ral.rot_owner_auth_slot0_digest[1].get_offset(),
+        ral.rot_owner_auth_slot1_digest[0].get_offset(),
+        ral.rot_owner_auth_slot1_digest[1].get_offset(),
+        ral.plat_integ_auth_slot0_digest[0].get_offset(),
+        ral.plat_integ_auth_slot0_digest[1].get_offset(),
+        ral.plat_integ_auth_slot1_digest[0].get_offset(),
+        ral.plat_integ_auth_slot1_digest[1].get_offset(),
+        ral.plat_owner_auth_slot0_digest[0].get_offset(),
+        ral.plat_owner_auth_slot0_digest[1].get_offset(),
+        ral.plat_owner_auth_slot1_digest[0].get_offset(),
+        ral.plat_owner_auth_slot1_digest[1].get_offset(),
+        ral.plat_owner_auth_slot2_digest[0].get_offset(),
+        ral.plat_owner_auth_slot2_digest[1].get_offset(),
+        ral.plat_owner_auth_slot3_digest[0].get_offset(),
+        ral.plat_owner_auth_slot3_digest[1].get_offset(),
+        ral.rom_patch_digest[0].get_offset(),
+        ral.rom_patch_digest[1].get_offset()
       };
       bins hw_digests          = {
         ral.hw_cfg0_digest[0].get_offset(),
@@ -102,7 +122,19 @@ class otp_ctrl_csr_rd_after_alert_cg_wrap;
         ral.err_code[8].get_offset(),
         ral.err_code[9].get_offset(),
         ral.err_code[10].get_offset(),
-        ral.err_code[11].get_offset()
+        ral.err_code[11].get_offset(),
+        ral.err_code[12].get_offset(),
+        ral.err_code[13].get_offset(),
+        ral.err_code[14].get_offset(),
+        ral.err_code[15].get_offset(),
+        ral.err_code[16].get_offset(),
+        ral.err_code[17].get_offset(),
+        ral.err_code[18].get_offset(),
+        ral.err_code[19].get_offset(),
+        ral.err_code[20].get_offset(),
+        ral.err_code[21].get_offset(),
+        ral.err_code[22].get_offset(),
+        ral.err_code[23].get_offset()
       };
     }
   endgroup
@@ -164,12 +196,24 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
     vendor_test_lock: coverpoint parts_locked[0];
     creator_sw_cfg_lock: coverpoint parts_locked[1];
     owner_sw_cfg_lock: coverpoint parts_locked[2];
-    hw_cfg0_lock: coverpoint parts_locked[3];
-    hw_cfg1_lock: coverpoint parts_locked[4];
-    secret0_lock: coverpoint parts_locked[5];
-    secret1_lock: coverpoint parts_locked[6];
-    secret2_lock: coverpoint parts_locked[7];
-    secret3_lock: coverpoint parts_locked[8];
+    ownership_slot_state_lock: coverpoint parts_locked[3];
+    rot_creator_auth_lock: coverpoint parts_locked[4];
+    rot_owner_auth_slot0_lock: coverpoint parts_locked[5];
+    rot_owner_auth_slot1_lock: coverpoint parts_locked[6];
+    plat_integ_auth_slot0_lock: coverpoint parts_locked[7];
+    plat_integ_auth_slot1_lock: coverpoint parts_locked[8];
+    plat_owner_auth_slot0_lock: coverpoint parts_locked[9];
+    plat_owner_auth_slot1_lock: coverpoint parts_locked[10];
+    plat_owner_auth_slot2_lock: coverpoint parts_locked[11];
+    plat_owner_auth_slot3_lock: coverpoint parts_locked[12];
+    ext_nvm_lock: coverpoint parts_locked[13];
+    rom_patch_lock: coverpoint parts_locked[14];
+    hw_cfg0_lock: coverpoint parts_locked[15];
+    hw_cfg1_lock: coverpoint parts_locked[16];
+    secret0_lock: coverpoint parts_locked[17];
+    secret1_lock: coverpoint parts_locked[18];
+    secret2_lock: coverpoint parts_locked[19];
+    secret3_lock: coverpoint parts_locked[20];
   endgroup
 
   // This covergroup is sampled only if flash request passed scb check.
@@ -356,6 +400,42 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
       OtpOwnerSwCfgErrIdx: begin
+        unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
+      end
+      OtpOwnershipSlotStateErrIdx: begin
+        unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
+      end
+      OtpRotCreatorAuthErrIdx: begin
+        unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
+      end
+      OtpRotOwnerAuthSlot0ErrIdx: begin
+        unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
+      end
+      OtpRotOwnerAuthSlot1ErrIdx: begin
+        unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
+      end
+      OtpPlatIntegAuthSlot0ErrIdx: begin
+        unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
+      end
+      OtpPlatIntegAuthSlot1ErrIdx: begin
+        unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
+      end
+      OtpPlatOwnerAuthSlot0ErrIdx: begin
+        unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
+      end
+      OtpPlatOwnerAuthSlot1ErrIdx: begin
+        unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
+      end
+      OtpPlatOwnerAuthSlot2ErrIdx: begin
+        unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
+      end
+      OtpPlatOwnerAuthSlot3ErrIdx: begin
+        unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
+      end
+      OtpExtNvmErrIdx: begin
+        unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
+      end
+      OtpRomPatchErrIdx: begin
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
       end
       OtpHwCfg0ErrIdx: begin

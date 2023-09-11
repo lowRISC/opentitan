@@ -37,6 +37,30 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
         dai_addr inside `PART_CONTENT_RANGE(CreatorSwCfgIdx);
     if (part_idx == OwnerSwCfgIdx)
         dai_addr inside `PART_CONTENT_RANGE(OwnerSwCfgIdx);
+    if (part_idx == OwnershipSlotStateIdx)
+        dai_addr inside `PART_CONTENT_RANGE(OwnershipSlotStateIdx);
+    if (part_idx == RotCreatorAuthIdx)
+        dai_addr inside `PART_CONTENT_RANGE(RotCreatorAuthIdx);
+    if (part_idx == RotOwnerAuthSlot0Idx)
+        dai_addr inside `PART_CONTENT_RANGE(RotOwnerAuthSlot0Idx);
+    if (part_idx == RotOwnerAuthSlot1Idx)
+        dai_addr inside `PART_CONTENT_RANGE(RotOwnerAuthSlot1Idx);
+    if (part_idx == PlatIntegAuthSlot0Idx)
+        dai_addr inside `PART_CONTENT_RANGE(PlatIntegAuthSlot0Idx);
+    if (part_idx == PlatIntegAuthSlot1Idx)
+        dai_addr inside `PART_CONTENT_RANGE(PlatIntegAuthSlot1Idx);
+    if (part_idx == PlatOwnerAuthSlot0Idx)
+        dai_addr inside `PART_CONTENT_RANGE(PlatOwnerAuthSlot0Idx);
+    if (part_idx == PlatOwnerAuthSlot1Idx)
+        dai_addr inside `PART_CONTENT_RANGE(PlatOwnerAuthSlot1Idx);
+    if (part_idx == PlatOwnerAuthSlot2Idx)
+        dai_addr inside `PART_CONTENT_RANGE(PlatOwnerAuthSlot2Idx);
+    if (part_idx == PlatOwnerAuthSlot3Idx)
+        dai_addr inside `PART_CONTENT_RANGE(PlatOwnerAuthSlot3Idx);
+    if (part_idx == ExtNvmIdx)
+        dai_addr inside `PART_CONTENT_RANGE(ExtNvmIdx);
+    if (part_idx == RomPatchIdx)
+        dai_addr inside `PART_CONTENT_RANGE(RomPatchIdx);
     if (part_idx == HwCfg0Idx)
         dai_addr inside `PART_CONTENT_RANGE(HwCfg0Idx);
     if (part_idx == HwCfg1Idx)

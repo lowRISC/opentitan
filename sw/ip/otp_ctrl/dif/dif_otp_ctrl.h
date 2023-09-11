@@ -56,6 +56,86 @@ typedef enum dif_otp_ctrl_partition {
    */
   kDifOtpCtrlPartitionOwnerSwCfg,
   /**
+   * SW managed asset ownership states partition.
+   *
+   * Multibit enable value for the tracking the asset ownership states.
+   * Note that the states can be written multiple times in a device lifetime.
+   * The values to be written are engineered in the same way as the LC_CTRL
+   * state encoding words so that the ECC encoding remains valid even after
+   * updating the values.
+   *
+   * The constants can be found in the lc_ctrl_state_pkg.sv package.
+   *
+   * The programming order has to adhere to:
+   *
+   * OWNERSHIP_ST_RAW (factory all-zero state) ->
+   * OWNERSHIP_ST_LOCKED0 ->
+   * OWNERSHIP_ST_RELEASED0 ->
+   * ...
+   * OWNERSHIP_ST_SCRAPPED
+   *
+   * Note that if there are less than 4 slots available the higher slot states
+   * become logically equivalent to OWNERSHIP_SCRAPPED (firmware has to handle
+   * this correctly).
+   */
+  kDifOtpCtrlPartitionOwnershipSlotState,
+  /**
+   * Software managed creator partition.
+   *
+   */
+  kDifOtpCtrlPartitionRotCreatorAuth,
+  /**
+   * Software managed owner slot 0 partition.
+   *
+   */
+  kDifOtpCtrlPartitionRotOwnerAuthSlot0,
+  /**
+   * Software managed owner slot 1 partition.
+   *
+   */
+  kDifOtpCtrlPartitionRotOwnerAuthSlot1,
+  /**
+   * Software managed platform integrator slot 0 partition.
+   *
+   */
+  kDifOtpCtrlPartitionPlatIntegAuthSlot0,
+  /**
+   * Software managed platform integrator slot 1 partition.
+   *
+   */
+  kDifOtpCtrlPartitionPlatIntegAuthSlot1,
+  /**
+   * Software managed platform owner slot 0 partition.
+   *
+   */
+  kDifOtpCtrlPartitionPlatOwnerAuthSlot0,
+  /**
+   * Software managed platform owner slot 1 partition.
+   *
+   */
+  kDifOtpCtrlPartitionPlatOwnerAuthSlot1,
+  /**
+   * Software managed platform owner slot 2 partition.
+   *
+   */
+  kDifOtpCtrlPartitionPlatOwnerAuthSlot2,
+  /**
+   * Software managed platform owner slot 3 partition.
+   *
+   */
+  kDifOtpCtrlPartitionPlatOwnerAuthSlot3,
+  /**
+   * Anti-replay protection Strike Counters partition.
+   *
+   */
+  kDifOtpCtrlPartitionExtNvm,
+  /**
+   * ROM Patch Code section.
+   *
+   * May contain multiple signed ROM2 patches.
+   */
+  kDifOtpCtrlPartitionRomPatch,
+  /**
    * Hardware configuration 0 partition.
    *
    * This contains
@@ -75,15 +155,6 @@ typedef enum dif_otp_ctrl_partition {
    * writing the second value on top of the first.
    *
    * The constants can be found in the lc_ctrl_state_pkg.sv package.
-   *
-   * Encoding:
-   * SOC_DBG_RAW: this value is all-zeroes and will be the NOP state;
-   * the LC controller will take precedence.
-   * SOC_DBG_PRE_PROD: this is where the ROT will be in PROD state
-   * but SOC will be in the pre-production unlock state
-   * SOC_DBG_PROD: this is the state where the SOC moves to production,
-   * and the challenge-response based authentication protocol is
-   * required to unlock SOC debug features
    *
    * The programming order has to adhere to:
    *
@@ -188,6 +259,54 @@ typedef enum dif_otp_ctrl_status_code {
    * Indicates an error occurred in the `OwnerSwCfg` partition.
    */
   kDifOtpCtrlStatusCodeOwnerSwCfgError,
+  /**
+   * Indicates an error occurred in the `OwnershipSlotState` partition.
+   */
+  kDifOtpCtrlStatusCodeOwnershipSlotStateError,
+  /**
+   * Indicates an error occurred in the `RotCreatorAuth` partition.
+   */
+  kDifOtpCtrlStatusCodeRotCreatorAuthError,
+  /**
+   * Indicates an error occurred in the `RotOwnerAuthSlot0` partition.
+   */
+  kDifOtpCtrlStatusCodeRotOwnerAuthSlot0Error,
+  /**
+   * Indicates an error occurred in the `RotOwnerAuthSlot1` partition.
+   */
+  kDifOtpCtrlStatusCodeRotOwnerAuthSlot1Error,
+  /**
+   * Indicates an error occurred in the `PlatIntegAuthSlot0` partition.
+   */
+  kDifOtpCtrlStatusCodePlatIntegAuthSlot0Error,
+  /**
+   * Indicates an error occurred in the `PlatIntegAuthSlot1` partition.
+   */
+  kDifOtpCtrlStatusCodePlatIntegAuthSlot1Error,
+  /**
+   * Indicates an error occurred in the `PlatOwnerAuthSlot0` partition.
+   */
+  kDifOtpCtrlStatusCodePlatOwnerAuthSlot0Error,
+  /**
+   * Indicates an error occurred in the `PlatOwnerAuthSlot1` partition.
+   */
+  kDifOtpCtrlStatusCodePlatOwnerAuthSlot1Error,
+  /**
+   * Indicates an error occurred in the `PlatOwnerAuthSlot2` partition.
+   */
+  kDifOtpCtrlStatusCodePlatOwnerAuthSlot2Error,
+  /**
+   * Indicates an error occurred in the `PlatOwnerAuthSlot3` partition.
+   */
+  kDifOtpCtrlStatusCodePlatOwnerAuthSlot3Error,
+  /**
+   * Indicates an error occurred in the `ExtNvm` partition.
+   */
+  kDifOtpCtrlStatusCodeExtNvmError,
+  /**
+   * Indicates an error occurred in the `RomPatch` partition.
+   */
+  kDifOtpCtrlStatusCodeRomPatchError,
   /**
    * Indicates an error occurred in the `HwCfg0` partition.
    */
