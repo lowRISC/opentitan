@@ -94,7 +94,9 @@ package chip_env_pkg;
     RamMbox[16],
     RamCtn[16],
     Rom0,
-    Rom1
+    Rom1,
+    SpiDeviceEgressMem,
+    SpiDeviceIngressMem
   } chip_mem_e;
 
   // On OpenTitan, we deal with 4 types of SW - ROM, the main test, the OTBN test and the OTP image.

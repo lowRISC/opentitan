@@ -20,12 +20,18 @@ enum { kDifSpiDeviceEFlashLen = 2048 };
 enum { kDifSpiDeviceMailboxLen = 1024 };
 enum { kDifSpiDeviceSfdpLen = 256 };
 enum { kDifSpiDevicePayloadLen = 256 };
+enum {
+  kDifSpiDeviceEgressOffset =
+      SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET - SPI_DEVICE_PARAM_SRAM_OFFSET,
+  kDifSpiDeviceIngressOffset =
+      SPI_DEVICE_INGRESS_BUFFER_REG_OFFSET - SPI_DEVICE_PARAM_SRAM_OFFSET,
+};
 
 enum {
-  kDifSpiDeviceEFlashOffset = 0,
-  kDifSpiDeviceMailboxOffset = 2048,
-  kDifSpiDeviceSfdpOffset = 3072,
-  kDifSpiDevicePayloadOffset = 3328,
+  kDifSpiDeviceEFlashOffset = kDifSpiDeviceEgressOffset + 0,
+  kDifSpiDeviceMailboxOffset = kDifSpiDeviceEgressOffset + 2048,
+  kDifSpiDeviceSfdpOffset = kDifSpiDeviceEgressOffset + 3072,
+  kDifSpiDevicePayloadOffset = kDifSpiDeviceIngressOffset + 0,
 };
 
 /**

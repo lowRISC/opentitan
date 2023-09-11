@@ -19,13 +19,6 @@ status_t spi_device_testutils_configure_passthrough(
   };
   TRY(dif_spi_device_configure(spi_device, spi_device_config));
 
-  // Zero-init the payload memory to avoid X-triggered assertions in sim.
-  uint8_t zeroes[256];
-  memset(zeroes, 0, sizeof(zeroes));
-  TRY(dif_spi_device_write_flash_buffer(spi_device,
-                                        kDifSpiDeviceFlashBufferTypePayload, 0,
-                                        sizeof(zeroes), zeroes));
-
   dif_spi_device_passthrough_intercept_config_t intercept_config = {
       .status = upload_write_commands,
       .jedec_id = false,

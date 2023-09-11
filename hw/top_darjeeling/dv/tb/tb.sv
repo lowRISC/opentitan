@@ -512,6 +512,22 @@ module tb;
                                        .n_bits($bits(`USBDEV_BUF_HIER)),
                                        .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone));
 
+      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for SPI_DEVICE EGRESS MEM", UVM_MEDIUM)
+      m_mem_bkdr_util[SpiDeviceEgressMem] =
+        new(.name  ("mem_bkdr_util[SpiDeviceEgressMem]"),
+            .path  (`DV_STRINGIFY(`SPI_DEVICE_EGRESS_HIER)),
+            .depth ($size(`SPI_DEVICE_EGRESS_HIER)),
+            .n_bits($bits(`SPI_DEVICE_EGRESS_HIER)),
+            .err_detection_scheme(mem_bkdr_util_pkg::ParityOdd));
+
+      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for SPI_DEVICE INGRESS MEM", UVM_MEDIUM)
+      m_mem_bkdr_util[SpiDeviceIngressMem] =
+        new(.name  ("mem_bkdr_util[SpiDeviceIngressMem]"),
+            .path  (`DV_STRINGIFY(`SPI_DEVICE_INGRESS_HIER)),
+            .depth ($size(`SPI_DEVICE_INGRESS_HIER)),
+            .n_bits($bits(`SPI_DEVICE_INGRESS_HIER)),
+            .err_detection_scheme(mem_bkdr_util_pkg::ParityOdd));
+
       mem = mem.first();
       do begin
         if (mem inside {[RamMain1:RamMain15]} ||

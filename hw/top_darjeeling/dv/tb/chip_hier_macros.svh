@@ -61,6 +61,8 @@
 `define RAM_CTN_MEM_HIER      `DUT_HIER.u_prim_ram_1p_adv_ctn.u_mem.`MEM_ARRAY_SUB
 `define ROM0_MEM_HIER         `ROM_CTRL0_HIER.`ROM_CTRL_INT_PATH
 `define ROM1_MEM_HIER         `ROM_CTRL1_HIER.`ROM_CTRL_INT_PATH
+`define SPI_DEVICE_EGRESS_HIER  `SPI_DEVICE_HIER.u_spid_dpram.u_sys2spi_mem.u_mem.`MEM_ARRAY_SUB
+`define SPI_DEVICE_INGRESS_HIER `SPI_DEVICE_HIER.u_spid_dpram.u_spi2sys_mem.u_mem.`MEM_ARRAY_SUB
 `define OTP_GENERIC_HIER      `OTP_CTRL_HIER.u_otp.gen_generic.u_impl_generic
 `define OTP_MEM_HIER          `OTP_GENERIC_HIER.u_prim_ram_1p_adv.u_mem.`MEM_ARRAY_SUB
 `define OTBN_IMEM_HIER        `OTBN_HIER.u_imem.u_prim_ram_1p_adv.u_mem.`MEM_ARRAY_SUB

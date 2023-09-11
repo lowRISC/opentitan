@@ -461,7 +461,15 @@ package spi_device_pkg;
   endfunction : sram_mask2strb
 
   // Calculate each space's base and size
-  parameter sram_addr_t SramReadBufferIdx  = sram_addr_t'(0);
+  import spi_device_reg_pkg::SPI_DEVICE_EGRESS_BUFFER_OFFSET;
+  import spi_device_reg_pkg::SPI_DEVICE_INGRESS_BUFFER_OFFSET;
+  import spi_device_reg_pkg::SramOffset;
+  parameter int unsigned SramEgressByteOffset = SPI_DEVICE_EGRESS_BUFFER_OFFSET - SramOffset;
+  parameter int unsigned SramIngressByteOffset = SPI_DEVICE_INGRESS_BUFFER_OFFSET - SramOffset;
+
+  parameter sram_addr_t SramEgressIdx =
+    sram_addr_t'(SramEgressByteOffset[$clog2(SramDw / 8) +: SramAw]);
+  parameter sram_addr_t SramReadBufferIdx  = SramEgressIdx;
   parameter sram_addr_t SramReadBufferSize = sram_addr_t'(SramMsgDepth);
 
   parameter sram_addr_t SramMailboxIdx  = SramReadBufferIdx + SramReadBufferSize;
@@ -470,7 +478,9 @@ package spi_device_pkg;
   parameter sram_addr_t SramSfdpIdx  = SramMailboxIdx + SramMailboxSize;
   parameter sram_addr_t SramSfdpSize = sram_addr_t'(SramSfdpDepth);
 
-  parameter sram_addr_t SramPayloadIdx  = SramSfdpIdx + SramSfdpSize;
+  parameter sram_addr_t SramIngressIdx =
+    sram_addr_t'(SramIngressByteOffset[$clog2(SramDw / 8) +: SramAw]);
+  parameter sram_addr_t SramPayloadIdx  = SramIngressByteOffset;
   parameter sram_addr_t SramPayloadSize = sram_addr_t'(SramPayloadDepth);
 
   parameter sram_addr_t SramCmdFifoIdx  = SramPayloadIdx + SramPayloadSize ;

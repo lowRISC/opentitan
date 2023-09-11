@@ -130,6 +130,8 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(passthrough_filters);
     sw_filter_config = {<<byte{passthrough_filters}};
     sw_symbol_backdoor_overwrite("kFilteredCommands", sw_filter_config);
+    cfg.mem_bkdr_util_h[SpiDeviceEgressMem].randomize_mem();
+    cfg.mem_bkdr_util_h[SpiDeviceIngressMem].randomize_mem();
   endtask
 
   virtual task body();
