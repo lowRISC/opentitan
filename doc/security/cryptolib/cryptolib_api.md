@@ -1,10 +1,26 @@
-# OpenTitan Cryptography Library Specification
+# OpenTitan Cryptography Library User Guide
 
 This page is intended for users of the OpenTitan cryptographic library.
 The library is written in C and uses OpenTitan's hardware blocks for accelerated cryptography.
 It generally attempts to minimize code size and protect against side-channel and fault-injection attacks, including by physically present attackers.
 
 **Note: at the time of writing, the crypto library is still under development, and not all algorithms described in this page are fully implemented and tested.**
+
+This page:
+- Lists a quick reference for [supported algorithms](#supported-algorithms)
+- Enumerates all of the cryptolib's [data structures](#data-structures)
+- Shows and explains the interfaces for:
+  - [AES-based operations](#aes)
+  - [Hash functions](#hash-functions)
+  - [Message authentication](#message-authentication)
+  - [RSA operations](#rsa)
+  - [Elliptic curve cryptography](#elliptic-curve-cryptography)
+  - [Deterministic random bit generation (DRBG)](#deterministic-random-bit-generation)
+  - [Key derivation functions (KDF)](#key-derivation)
+  - [Key import and export](#key-import-and-export)
+- Explains how [asynchronous operations](#asynchronous-operations) work
+- Lists the [security strength](#security-strength) of each algorithm
+- Lists [references](#reference) for further reading
 
 ## Supported Algorithms
 
@@ -20,45 +36,6 @@ For more details, see later sections (links in the "category" column).
 | [**Elliptic curve cryptography**](#elliptic-curve-cryptography) | ECDSA-{P256,P384}<br>ECDH-{P256,P384}<br>Ed25519<br>X25519 |
 | [**Deterministic random bit generation**](#deterministic-random-bit-generation) | AES-CTR-DRBG |
 | [**Key derivation**](#key-derivation) | HMAC-KDF-CTR<br>KMAC-KDF-CTR |
-
-
-## Asynchronous operations
-
-For some functions, OpenTitan's cryptolib supports asynchronous calls.
-All operations which take longer than 10ms should have an asychronous interface.
-This is helpful for compatibility with TockOS, which has a low latency return call programming model.
-
-The OpenTitan cryptolib does not implement any thread management.
-Instead, it treats the OTBN coprocessor as a "separate thread" to achieve non-blocking operation with virtually zero overhead.
-OTBN sends an interrupt when processing is complete.
-
-All asynchronous operations have two functions:
-
-- **\<algorithm\>\_async\_start**
-    - Takes input arguments. Checks that OTBN is available and idle. If
-      so: does any necessary synchronous preprocessing, initializes
-      OTBN, and starts the OTBN routine.
-- **\<algorithm\>\_async\_finalize**
-    - Takes caller-allocated output buffers. Blocks until OTBN is done
-      processing if needed, then checks whether it had errors. If not, does any
-      necessary postprocessing and writes results to the buffers.
-
-The caller should call the `start` function, wait for the interrupt, and then call `finalize`.
-
-A few noteworthy aspects of this setup:
-- While an asynchronous operation is running, OTBN will be unavailable and attempts to use it will return errors.
-- Only one asynchronous operation may be in progress at any given time.
-- The caller is responsible for properly managing asynchronous calls, including ensuring that the entity receiving the `finalize` results is the same as the one who called `start`.
-
-The following operations can run asynchronously:
-
-| Scheme   | Operations           |
-|----------|----------------------|
-| ECDSA    | keygen, sign, verify |
-| ECDH     | keygen, key exchange |
-| Ed25519  | keygen, sign, verify |
-| X25519   | keygen, key exchange |
-| RSA      | keygen, sign, verify |
 
 ## Data structures
 
@@ -538,6 +515,45 @@ To export a blinded key, the user can convert it to an unblinded key, at which p
 
 {{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_blinded_to_unblinded_key }}
 {{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_unblinded_to_blinded_key }}
+
+## Asynchronous operations
+
+For some functions, OpenTitan's cryptolib supports asynchronous calls.
+All operations which take longer than 10ms should have an asychronous interface.
+This is helpful for compatibility with TockOS, which has a low latency return call programming model.
+
+The OpenTitan cryptolib does not implement any thread management.
+Instead, it treats the OTBN coprocessor as a "separate thread" to achieve non-blocking operation with virtually zero overhead.
+OTBN sends an interrupt when processing is complete.
+
+All asynchronous operations have two functions:
+
+- **\<algorithm\>\_async\_start**
+    - Takes input arguments. Checks that OTBN is available and idle. If
+      so: does any necessary synchronous preprocessing, initializes
+      OTBN, and starts the OTBN routine.
+- **\<algorithm\>\_async\_finalize**
+    - Takes caller-allocated output buffers. Blocks until OTBN is done
+      processing if needed, then checks whether it had errors. If not, does any
+      necessary postprocessing and writes results to the buffers.
+
+The caller should call the `start` function, wait for the interrupt, and then call `finalize`.
+
+A few noteworthy aspects of this setup:
+- While an asynchronous operation is running, OTBN will be unavailable and attempts to use it will return errors.
+- Only one asynchronous operation may be in progress at any given time.
+- The caller is responsible for properly managing asynchronous calls, including ensuring that the entity receiving the `finalize` results is the same as the one who called `start`.
+
+The following operations can run asynchronously:
+
+| Scheme   | Operations           |
+|----------|----------------------|
+| ECDSA    | keygen, sign, verify |
+| ECDH     | keygen, key exchange |
+| Ed25519  | keygen, sign, verify |
+| X25519   | keygen, key exchange |
+| RSA      | keygen, sign, verify |
+
 
 ## Security Strength
 
