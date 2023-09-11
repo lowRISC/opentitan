@@ -166,7 +166,7 @@ class dma_seq_item extends uvm_sequence_item;
 
   constraint total_transfer_size_c {
     // Add a soft constrain the total transfer size to limit the amount of time test takes to run
-    soft total_transfer_size <= 1024;
+    soft total_transfer_size inside {[1:1024]};
   }
 
   constraint mem_range_limit_c {
