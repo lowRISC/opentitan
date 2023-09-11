@@ -25,6 +25,7 @@ filesets:
       - seq_lib/dma_base_vseq.sv: {is_include_file: true}
       - seq_lib/dma_generic_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/dma_handshake_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/dma_generic_dma_memory_region_lock_vseq.sv: {is_include_file: true}
       - seq_lib/dma_short_transfer_vseq.sv: {is_include_file: true}
       - seq_lib/dma_intr_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
