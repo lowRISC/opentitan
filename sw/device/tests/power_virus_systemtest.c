@@ -65,14 +65,12 @@ static dif_hmac_t hmac;
 static dif_kmac_t kmac;
 static dif_otbn_t otbn;
 static dif_i2c_t i2c_0;
-static dif_i2c_t i2c_1;
-static dif_i2c_t i2c_2;
 static dif_spi_device_handle_t spi_device;
 static dif_spi_host_t spi_host_0;
 static dif_spi_host_t spi_host_1;
 static dif_rv_plic_t rv_plic;
 
-static const dif_i2c_t *i2c_handles[] = {&i2c_0, &i2c_1, &i2c_2};
+static const dif_i2c_t *i2c_handles[] = {&i2c_0};
 static dif_kmac_operation_state_t kmac_operation_state;
 
 /**
@@ -117,13 +115,7 @@ enum {
   kI2cDeviceMask = 0x7f,
   kI2c0DeviceAddress0 = 0x11,
   kI2c0DeviceAddress1 = 0x22,
-  kI2c1DeviceAddress0 = 0x33,
-  kI2c1DeviceAddress1 = 0x44,
-  kI2c2DeviceAddress0 = 0x55,
-  kI2c2DeviceAddress1 = 0x66,
   kI2c0TargetAddress = 0x01,
-  kI2c1TargetAddress = 0x02,
-  kI2c2TargetAddress = 0x03,
   /**
    * SPI Host parameters.
    */
@@ -234,10 +226,6 @@ static void init_peripheral_handles(void) {
   // UART 0 is already configured (and used) by the OTTF.
   CHECK_DIF_OK(dif_i2c_init(
       mmio_region_from_addr(TOP_DARJEELING_I2C0_BASE_ADDR), &i2c_0));
-  CHECK_DIF_OK(dif_i2c_init(
-      mmio_region_from_addr(TOP_DARJEELING_I2C1_BASE_ADDR), &i2c_1));
-  CHECK_DIF_OK(dif_i2c_init(
-      mmio_region_from_addr(TOP_DARJEELING_I2C2_BASE_ADDR), &i2c_2));
   CHECK_DIF_OK(dif_spi_device_init_handle(
       mmio_region_from_addr(TOP_DARJEELING_SPI_DEVICE_BASE_ADDR), &spi_device));
   CHECK_DIF_OK(dif_spi_host_init(
@@ -271,37 +259,6 @@ static void configure_pinmux(void) {
                                         kTopDarjeelingPinmuxOutselI2c0Scl));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopDarjeelingPinmuxMioOutIoa7,
                                         kTopDarjeelingPinmuxOutselI2c0Sda));
-
-  // I2C1:
-  //    SCL on IOB9
-  //    SDA on IOB10
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopDarjeelingPinmuxPeripheralInI2c1Scl,
-                                       kTopDarjeelingPinmuxInselIob9));
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopDarjeelingPinmuxPeripheralInI2c1Sda,
-                                       kTopDarjeelingPinmuxInselIob10));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopDarjeelingPinmuxMioOutIob9,
-                                        kTopDarjeelingPinmuxOutselI2c1Scl));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux,
-                                        kTopDarjeelingPinmuxMioOutIob10,
-                                        kTopDarjeelingPinmuxOutselI2c1Sda));
-
-  // I2C2:
-  //    SCL on IOB11
-  //    SDA on IOB12
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopDarjeelingPinmuxPeripheralInI2c2Scl,
-                                       kTopDarjeelingPinmuxInselIob11));
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopDarjeelingPinmuxPeripheralInI2c2Sda,
-                                       kTopDarjeelingPinmuxInselIob12));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux,
-                                        kTopDarjeelingPinmuxMioOutIob11,
-                                        kTopDarjeelingPinmuxOutselI2c2Scl));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux,
-                                        kTopDarjeelingPinmuxMioOutIob12,
-                                        kTopDarjeelingPinmuxOutselI2c2Sda));
 
   // Apply this configuration only for the FPGA.
   // For the simulation, apply the config in configure_pinmux_sim().
@@ -846,8 +803,6 @@ static void max_power_task(void *task_parameters) {
 
   // Enable all I2Cs.
   mmio_region_write32(i2c_0.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
-  mmio_region_write32(i2c_1.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
-  mmio_region_write32(i2c_2.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
 
   // Issue OTBN start command.
   CHECK_STATUS_OK(rsa_3072_verify_start(&rsa3072_test_vector.signature,
@@ -988,8 +943,6 @@ bool test_main(void) {
   configure_hmac();
   configure_kmac();
   configure_i2c(&i2c_0, kI2c0DeviceAddress0, kI2c0DeviceAddress1);
-  configure_i2c(&i2c_1, kI2c1DeviceAddress0, kI2c1DeviceAddress1);
-  configure_i2c(&i2c_2, kI2c2DeviceAddress0, kI2c2DeviceAddress1);
   configure_spi_host(&spi_host_0, /*enable=*/true);
   // We don't enable SPI host 1 just yet, as we want to pre-load its FIFO
   // with data before enabling it at the last moment, to initiate max power

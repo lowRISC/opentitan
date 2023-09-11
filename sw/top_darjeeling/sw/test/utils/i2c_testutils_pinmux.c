@@ -22,34 +22,4 @@ const i2c_pinmux_conf_t kPinmuxConf[] = {
              .peripheral_in = kTopDarjeelingPinmuxPeripheralInI2c0Scl,
              .outsel = kTopDarjeelingPinmuxOutselI2c0Scl,
          }},
-    // I2C1.
-    {.sda =
-         {
-             .mio_out = kTopDarjeelingPinmuxMioOutIob10,
-             .insel = kTopDarjeelingPinmuxInselIob10,
-             .peripheral_in = kTopDarjeelingPinmuxPeripheralInI2c1Sda,
-             .outsel = kTopDarjeelingPinmuxOutselI2c1Sda,
-         },
-     .scl =
-         {
-             .mio_out = kTopDarjeelingPinmuxMioOutIob9,
-             .insel = kTopDarjeelingPinmuxInselIob9,
-             .peripheral_in = kTopDarjeelingPinmuxPeripheralInI2c1Scl,
-             .outsel = kTopDarjeelingPinmuxOutselI2c1Scl,
-         }},
-    // I2C2.
-    {.sda =
-         {
-             .mio_out = kTopDarjeelingPinmuxMioOutIob12,
-             .insel = kTopDarjeelingPinmuxInselIob12,
-             .peripheral_in = kTopDarjeelingPinmuxPeripheralInI2c2Sda,
-             .outsel = kTopDarjeelingPinmuxOutselI2c2Sda,
-         },
-     .scl =
-         {
-             .mio_out = kTopDarjeelingPinmuxMioOutIob11,
-             .insel = kTopDarjeelingPinmuxInselIob11,
-             .peripheral_in = kTopDarjeelingPinmuxPeripheralInI2c2Scl,
-             .outsel = kTopDarjeelingPinmuxOutselI2c2Scl,
-         }},
 };

@@ -91,23 +91,7 @@ const i2c_conf_t i2c_configuration[] = {
                    kTopDarjeelingPlicIrqIdI2c0TxOverflow,
                    kTopDarjeelingPlicIrqIdI2c0AcqFull,
                    kTopDarjeelingPlicIrqIdI2c0UnexpStop,
-                   kTopDarjeelingPlicIrqIdI2c0HostTimeout}},
-    {.base_addr = TOP_DARJEELING_I2C1_BASE_ADDR,
-     .i2c_irq_fmt_threshold_id = kTopDarjeelingPlicIrqIdI2c1FmtThreshold,
-     .plic_irqs = {kTopDarjeelingPlicIrqIdI2c1CmdComplete,
-                   kTopDarjeelingPlicIrqIdI2c1TxStretch,
-                   kTopDarjeelingPlicIrqIdI2c1TxOverflow,
-                   kTopDarjeelingPlicIrqIdI2c1AcqFull,
-                   kTopDarjeelingPlicIrqIdI2c1UnexpStop,
-                   kTopDarjeelingPlicIrqIdI2c1HostTimeout}},
-    {.base_addr = TOP_DARJEELING_I2C2_BASE_ADDR,
-     .i2c_irq_fmt_threshold_id = kTopDarjeelingPlicIrqIdI2c2FmtThreshold,
-     .plic_irqs = {kTopDarjeelingPlicIrqIdI2c2CmdComplete,
-                   kTopDarjeelingPlicIrqIdI2c2TxStretch,
-                   kTopDarjeelingPlicIrqIdI2c2TxOverflow,
-                   kTopDarjeelingPlicIrqIdI2c2AcqFull,
-                   kTopDarjeelingPlicIrqIdI2c2UnexpStop,
-                   kTopDarjeelingPlicIrqIdI2c2HostTimeout}}};
+                   kTopDarjeelingPlicIrqIdI2c0HostTimeout}}};
 
 /**
  * Provides external irq handling for this test.

@@ -35,7 +35,6 @@
 #include "alert_handler_regs.h"
 #include "hmac_regs.h"
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
-#include "i2c_regs.h"
 #include "kmac_regs.h"
 #include "otbn_regs.h"
 #include "spi_host_regs.h"

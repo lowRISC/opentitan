@@ -159,68 +159,6 @@ void config_i2c_with_index(void) {
                                             kTopDarjeelingPinmuxMioOutIoa7,
                                             kTopDarjeelingPinmuxOutselI2c0Sda));
       break;
-    case 1:
-      i2c_base_addr = TOP_DARJEELING_I2C1_BASE_ADDR;
-      i2c_irq_fmt_threshold_id = kTopDarjeelingPlicIrqIdI2c1FmtThreshold;
-
-      plic_irqs[i++] = kTopDarjeelingPlicIrqIdI2c1FmtThreshold;
-      plic_irqs[i++] = kTopDarjeelingPlicIrqIdI2c1RxThreshold;
-      plic_irqs[i++] = kTopDarjeelingPlicIrqIdI2c1FmtOverflow;
-      plic_irqs[i++] = kTopDarjeelingPlicIrqIdI2c1RxOverflow;
-      plic_irqs[i++] = kTopDarjeelingPlicIrqIdI2c1Nak;
-      plic_irqs[i++] = kTopDarjeelingPlicIrqIdI2c1SclInterference;
-      plic_irqs[i++] = kTopDarjeelingPlicIrqIdI2c1SdaInterference;
-      plic_irqs[i++] = kTopDarjeelingPlicIrqIdI2c1StretchTimeout;
-      // TODO, leave out sda unstable for now until DV side is improved. Sda
-      // instability during the high cycle is intentionally being introduced
-      // right now.
-      // plic_irqs[i++] = kTopDarjeelingPlicIrqIdI2c1SdaUnstable;
-      plic_irqs[i++] = kTopDarjeelingPlicIrqIdI2c1CmdComplete;
-
-      CHECK_DIF_OK(dif_pinmux_input_select(
-          &pinmux, kTopDarjeelingPinmuxPeripheralInI2c1Scl,
-          kTopDarjeelingPinmuxInselIob9));
-      CHECK_DIF_OK(dif_pinmux_input_select(
-          &pinmux, kTopDarjeelingPinmuxPeripheralInI2c1Sda,
-          kTopDarjeelingPinmuxInselIob10));
-      CHECK_DIF_OK(dif_pinmux_output_select(&pinmux,
-                                            kTopDarjeelingPinmuxMioOutIob9,
-                                            kTopDarjeelingPinmuxOutselI2c1Scl));
-      CHECK_DIF_OK(dif_pinmux_output_select(&pinmux,
-                                            kTopDarjeelingPinmuxMioOutIob10,
-                                            kTopDarjeelingPinmuxOutselI2c1Sda));
-      break;
-    case 2:
-      i2c_base_addr = TOP_DARJEELING_I2C2_BASE_ADDR;
-      i2c_irq_fmt_threshold_id = kTopDarjeelingPlicIrqIdI2c2FmtThreshold;
-
-      plic_irqs[i++] = kTopDarjeelingPlicIrqIdI2c2FmtThreshold;
-      plic_irqs[i++] = kTopDarjeelingPlicIrqIdI2c2RxThreshold;
-      plic_irqs[i++] = kTopDarjeelingPlicIrqIdI2c2FmtOverflow;
-      plic_irqs[i++] = kTopDarjeelingPlicIrqIdI2c2RxOverflow;
-      plic_irqs[i++] = kTopDarjeelingPlicIrqIdI2c2Nak;
-      plic_irqs[i++] = kTopDarjeelingPlicIrqIdI2c2SclInterference;
-      plic_irqs[i++] = kTopDarjeelingPlicIrqIdI2c2SdaInterference;
-      plic_irqs[i++] = kTopDarjeelingPlicIrqIdI2c2StretchTimeout;
-      // TODO, leave out sda unstable for now until DV side is improved. Sda
-      // instability during the high cycle is intentionally being introduced
-      // right now.
-      // plic_irqs[i++] = kTopDarjeelingPlicIrqIdI2c2SdaUnstable;
-      plic_irqs[i++] = kTopDarjeelingPlicIrqIdI2c2CmdComplete;
-
-      CHECK_DIF_OK(dif_pinmux_input_select(
-          &pinmux, kTopDarjeelingPinmuxPeripheralInI2c2Scl,
-          kTopDarjeelingPinmuxInselIob11));
-      CHECK_DIF_OK(dif_pinmux_input_select(
-          &pinmux, kTopDarjeelingPinmuxPeripheralInI2c2Sda,
-          kTopDarjeelingPinmuxInselIob12));
-      CHECK_DIF_OK(dif_pinmux_output_select(&pinmux,
-                                            kTopDarjeelingPinmuxMioOutIob11,
-                                            kTopDarjeelingPinmuxOutselI2c2Scl));
-      CHECK_DIF_OK(dif_pinmux_output_select(&pinmux,
-                                            kTopDarjeelingPinmuxMioOutIob12,
-                                            kTopDarjeelingPinmuxOutselI2c2Sda));
-      break;
     default:
       LOG_FATAL("Unsupported i2c index %d", kI2cIdx);
   }

@@ -97,7 +97,7 @@ static dif_rv_plic_t plic;
 static dif_rv_core_ibex_t rv_core_ibex;
 static dif_aon_timer_t aon_timer;
 static dif_pwrmgr_t pwrmgr;
-static dif_i2c_t i2c0, i2c1, i2c2;
+static dif_i2c_t i2c0;
 
 typedef struct node {
   const char *name;
@@ -317,7 +317,7 @@ static void print_alert_cause(alert_handler_testutils_info_t info) {
 }
 
 /*
- * Configure alert for i2c0..i2c2 s.t.
+ * Configure alert for i2c0 s.t.
  * .alert class = class A
  * .escalation phase0,1
  * .disable ping timer
@@ -325,12 +325,10 @@ static void print_alert_cause(alert_handler_testutils_info_t info) {
 static void prgm_alert_handler_round1(void) {
   dif_alert_handler_class_t alert_class = kDifAlertHandlerClassA;
 
-  for (int i = kTopDarjeelingAlertPeripheralI2c0;
-       i < kTopDarjeelingAlertPeripheralI2c2 + 1; ++i) {
-    CHECK_DIF_OK(dif_alert_handler_configure_alert(
-        &alert_handler, test_node[i].alert, test_node[i].class,
-        /*enabled=*/kDifToggleEnabled, /*locked=*/kDifToggleEnabled));
-  }
+  CHECK_DIF_OK(dif_alert_handler_configure_alert(
+      &alert_handler, test_node[kTopDarjeelingAlertPeripheralI2c0].alert,
+      test_node[kTopDarjeelingAlertPeripheralI2c0].class,
+      /*enabled=*/kDifToggleEnabled, /*locked=*/kDifToggleEnabled));
 
   CHECK_DIF_OK(dif_alert_handler_configure_class(
       &alert_handler, alert_class, kConfigProfiles[alert_class],
@@ -510,10 +508,6 @@ static void peripheral_init(void) {
       mmio_region_from_addr(TOP_DARJEELING_SPI_HOST0_BASE_ADDR), &spi_host));
   CHECK_DIF_OK(dif_i2c_init(
       mmio_region_from_addr(TOP_DARJEELING_I2C0_BASE_ADDR), &i2c0));
-  CHECK_DIF_OK(dif_i2c_init(
-      mmio_region_from_addr(TOP_DARJEELING_I2C1_BASE_ADDR), &i2c1));
-  CHECK_DIF_OK(dif_i2c_init(
-      mmio_region_from_addr(TOP_DARJEELING_I2C2_BASE_ADDR), &i2c2));
   CHECK_DIF_OK(dif_uart_init(
       mmio_region_from_addr(TOP_DARJEELING_UART0_BASE_ADDR), &uart0));
   CHECK_DIF_OK(dif_otp_ctrl_init(
@@ -629,27 +623,11 @@ static node_t test_node[kTopDarjeelingAlertPeripheralLast] = {
             .alert = kTopDarjeelingAlertIdI2c0FatalFault,
             .class = kDifAlertHandlerClassA,
         },
-    [kTopDarjeelingAlertPeripheralI2c1] =
-        {
-            .name = "I2C1",
-            .alert = kTopDarjeelingAlertIdI2c1FatalFault,
-            .class = kDifAlertHandlerClassA,
-        },
-    [kTopDarjeelingAlertPeripheralI2c2] =
-        {
-            .name = "I2C2",
-            .alert = kTopDarjeelingAlertIdI2c2FatalFault,
-            .class = kDifAlertHandlerClassA,
-        },
 };
 
 static void init_expected_cause(void) {
   kExpectedInfo[kRound1]
       .alert_info.alert_cause[kTopDarjeelingAlertIdI2c0FatalFault] = 1;
-  kExpectedInfo[kRound1]
-      .alert_info.alert_cause[kTopDarjeelingAlertIdI2c1FatalFault] = 1;
-  kExpectedInfo[kRound1]
-      .alert_info.alert_cause[kTopDarjeelingAlertIdI2c2FatalFault] = 1;
 
   kExpectedInfo[kRound2]
       .alert_info.alert_cause[kTopDarjeelingAlertIdUart0FatalFault] = 1;
@@ -727,8 +705,6 @@ bool test_main(void) {
     prgm_alert_handler_round1();
 
     CHECK_DIF_OK(dif_i2c_alert_force(&i2c0, kDifI2cAlertFatalFault));
-    CHECK_DIF_OK(dif_i2c_alert_force(&i2c1, kDifI2cAlertFatalFault));
-    CHECK_DIF_OK(dif_i2c_alert_force(&i2c2, kDifI2cAlertFatalFault));
     CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
         &alert_handler, kDifAlertHandlerIrqClassa, kDifToggleEnabled));
 

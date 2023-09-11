@@ -43,8 +43,6 @@ static dif_spi_device_handle_t spi_dev;
 static dif_spi_host_t spi_host0;
 static dif_spi_host_t spi_host1;
 static dif_i2c_t i2c0;
-static dif_i2c_t i2c1;
-static dif_i2c_t i2c2;
 static dif_rv_core_ibex_t ibex;
 static dif_flash_ctrl_state_t flash_ctrl;
 static const uint32_t kPlicTarget = kTopDarjeelingPlicTargetIbex0;
@@ -76,12 +74,6 @@ static void init_peripherals(void) {
   CHECK_DIF_OK(dif_i2c_init(
       mmio_region_from_addr(TOP_DARJEELING_I2C0_BASE_ADDR), &i2c0));
 
-  CHECK_DIF_OK(dif_i2c_init(
-      mmio_region_from_addr(TOP_DARJEELING_I2C1_BASE_ADDR), &i2c1));
-
-  CHECK_DIF_OK(dif_i2c_init(
-      mmio_region_from_addr(TOP_DARJEELING_I2C2_BASE_ADDR), &i2c2));
-
   mmio_region_t ibex_addr =
       mmio_region_from_addr(TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_core_ibex_init(ibex_addr, &ibex));
@@ -104,19 +96,14 @@ static const uint32_t spihost0_alerts[] = {
 static const uint32_t spihost1_alerts[] = {
     kTopDarjeelingAlertIdSpiHost1FatalFault};
 static const uint32_t i2c0_alerts[] = {kTopDarjeelingAlertIdI2c0FatalFault};
-static const uint32_t i2c1_alerts[] = {kTopDarjeelingAlertIdI2c1FatalFault};
-static const uint32_t i2c2_alerts[] = {kTopDarjeelingAlertIdI2c2FatalFault};
 
 static const uint32_t num_spihost0_alerts = ARRAYSIZE(spihost0_alerts);
 static const uint32_t num_spihost1_alerts = ARRAYSIZE(spihost1_alerts);
 static const uint32_t num_spidev_alerts = ARRAYSIZE(spidev_alerts);
 static const uint32_t num_i2c0_alerts = ARRAYSIZE(i2c0_alerts);
-static const uint32_t num_i2c1_alerts = ARRAYSIZE(i2c1_alerts);
-static const uint32_t num_i2c2_alerts = ARRAYSIZE(i2c2_alerts);
 
 static const size_t num_alerts = num_spihost0_alerts + num_spihost1_alerts +
-                                 num_i2c0_alerts + num_i2c1_alerts +
-                                 num_i2c2_alerts + num_spidev_alerts;
+                                 num_i2c0_alerts + num_spidev_alerts;
 
 /**
  * A structure to keep the info for peripheral IPs
@@ -181,22 +168,6 @@ static const test_t kPeripherals[] = {
         .alert_ids = i2c0_alerts,
         .num_alert_peri = num_i2c0_alerts,
         .reset_index = kTopDarjeelingResetManagerSwResetsI2c0,
-    },
-    {
-        .name = "I2C1",
-        .base = TOP_DARJEELING_I2C1_BASE_ADDR,
-        .dif = &i2c1,
-        .alert_ids = i2c1_alerts,
-        .num_alert_peri = num_i2c1_alerts,
-        .reset_index = kTopDarjeelingResetManagerSwResetsI2c1,
-    },
-    {
-        .name = "I2C2",
-        .base = TOP_DARJEELING_I2C2_BASE_ADDR,
-        .dif = &i2c2,
-        .alert_ids = i2c2_alerts,
-        .num_alert_peri = num_i2c2_alerts,
-        .reset_index = kTopDarjeelingResetManagerSwResetsI2c2,
     },
 };
 

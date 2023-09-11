@@ -34,8 +34,6 @@ OTTF_DEFINE_TEST_CONFIG();
  * // 1     | SPI_HOST0  |  CONFIGOPTS    |  0x0         |  0x3210000
  * // 2     | SPI_HOST1  |  CONFIGOPTS    |  0x0         |  0x6540000
  * // 4     | I2C0       |  TIMING0       |  0x0         |  0x8b00cfe
- * // 5     | I2C1       |  TIMING1       |  0x0         |  0x114010d8
- * // 6     | I2C2       |  TIMING2       |  0x0         |  0x19ec1595
  *
  * 'test register' is a rw type register under each peripheral device.
  * During the test, these registers are programmed with arbitrary values. ('prgm
@@ -118,28 +116,10 @@ static void i2c0_config(void *dif) {
   CHECK_DIF_OK(dif_i2c_configure(dif, cfg));
 }
 
-static void i2c1_config(void *dif) {
-  dif_i2c_config_t cfg = {
-      .rise_cycles = 4312,
-      .fall_cycles = 4416,
-  };
-  CHECK_DIF_OK(dif_i2c_configure(dif, cfg));
-}
-
-static void i2c2_config(void *dif) {
-  dif_i2c_config_t cfg = {
-      .start_signal_setup_cycles = 5525,
-      .start_signal_hold_cycles = 6636,
-  };
-  CHECK_DIF_OK(dif_i2c_configure(dif, cfg));
-}
-
 static dif_spi_device_handle_t spi_dev;
 static dif_spi_host_t spi_host0;
 static dif_spi_host_t spi_host1;
 static dif_i2c_t i2c0;
-static dif_i2c_t i2c1;
-static dif_i2c_t i2c2;
 
 typedef struct test {
   /**
@@ -221,26 +201,6 @@ static const test_t kPeripherals[] = {
         .config = i2c0_config,
         .program_val = 0x8b00cfe,
         .reset_index = kTopDarjeelingResetManagerSwResetsI2c0,
-    },
-    {
-        .name = "I2C1",
-        .base = TOP_DARJEELING_I2C1_BASE_ADDR,
-        .offset = I2C_TIMING1_REG_OFFSET,
-        .dif = &i2c1,
-        .init = i2c_init,
-        .config = i2c1_config,
-        .program_val = 0x114010d8,
-        .reset_index = kTopDarjeelingResetManagerSwResetsI2c1,
-    },
-    {
-        .name = "I2C2",
-        .base = TOP_DARJEELING_I2C2_BASE_ADDR,
-        .offset = I2C_TIMING2_REG_OFFSET,
-        .dif = &i2c2,
-        .init = i2c_init,
-        .config = i2c2_config,
-        .program_val = 0x19ec1595,
-        .reset_index = kTopDarjeelingResetManagerSwResetsI2c2,
     },
 };
 
