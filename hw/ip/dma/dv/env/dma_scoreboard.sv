@@ -58,6 +58,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
       tl_dir_fifos[cfg.dma_dir_fifo[key]] = new(cfg.dma_dir_fifo[key], this);
     end
     dma_config = dma_seq_item::type_id::create("dma_config");
+    dma_config.randomize();
 
   endfunction: build_phase
 
@@ -379,6 +380,13 @@ class dma_scoreboard extends cip_base_scoreboard #(
     end
   endfunction
 
+  // Return the index that a register name refers to e.g. "int_source_addr_1" yields 1
+  function uint get_index_from_reg_name(string reg_name);
+    int str_len = reg_name.len();
+    string index_str = reg_name.substr(str_len-2, str_len-1);
+    return index_str.atoi();
+  endfunction
+
   // Method to process DMA register write
   function void process_reg_write(tl_seq_item item, uvm_reg csr);
     `uvm_info(`gfn, $sformatf("Got reg_write to %s with addr : %0x and data : %0x ",
@@ -460,6 +468,38 @@ class dma_scoreboard extends cip_base_scoreboard #(
         dma_config.mem_buffer_almost_limit[63:32] =
           `gmv(ral.destination_address_almost_limit_hi.address_limit_hi);
       end
+      "clear_int_bus": begin
+        dma_config.clear_int_bus = `gmv(ral.clear_int_bus.bus);
+      end
+      "clear_int_src": begin
+        dma_config.clear_int_src = `gmv(ral.clear_int_src.source);
+      end
+      "int_source_addr_0",
+      "int_source_addr_1",
+      "int_source_addr_2",
+      "int_source_addr_3",
+      "int_source_addr_4",
+      "int_source_addr_5",
+      "int_source_addr_6",
+      "int_source_addr_7": begin
+        int index;
+        `uvm_info(`gfn, $sformatf("Update %s", csr.get_name()), UVM_DEBUG)
+        index = get_index_from_reg_name(csr.get_name());
+        dma_config.int_src_addr[index] = item.a_data;
+      end
+      "int_source_wr_val_0",
+      "int_source_wr_val_1",
+      "int_source_wr_val_2",
+      "int_source_wr_val_3",
+      "int_source_wr_val_4",
+      "int_source_wr_val_5",
+      "int_source_wr_val_6",
+      "int_source_wr_val_7": begin
+        int index;
+        `uvm_info(`gfn, $sformatf("Update %s", csr.get_name()), UVM_DEBUG)
+        index = get_index_from_reg_name(csr.get_name());
+        dma_config.int_src_wr_val[index] = item.a_data;
+      end
       "control": begin
         // bit to indicate start of DMA operation
         bit go = `gmv(ral.control.go);
@@ -467,11 +507,18 @@ class dma_scoreboard extends cip_base_scoreboard #(
         // Get mirrored field value and cast to associated enum in dma_config
         dma_config.opcode = opcode_e'(`gmv(ral.control.opcode));
         `uvm_info(`gfn, $sformatf("Got opcode = %s", dma_config.opcode.name()), UVM_HIGH)
+        // Get handshake mode enable bit
+        dma_config.handshake = `gmv(ral.control.hardware_handshake_enable);
+        `uvm_info(`gfn, $sformatf("Got hardware_handshake_mode = %0b", dma_config.handshake),
+                  UVM_HIGH)
         // Update the value of abort as this stops the DMA operation
         abort_via_reg_write = `gmv(ral.control.abort);
         if (abort_via_reg_write) begin
           `uvm_info(`gfn, "Detected Abort operation", UVM_LOW)
         end
+        // Get auto-increment bit
+        dma_config.auto_inc_buffer = `gmv(ral.control.memory_buffer_auto_increment_enable);
+        dma_config.auto_inc_fifo = `gmv(ral.control.fifo_auto_increment_enable);
         if (go) begin
           // Check if configuration is valid
           operation_in_progress = 1'b1;
