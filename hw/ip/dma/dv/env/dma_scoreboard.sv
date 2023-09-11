@@ -293,7 +293,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
                             "dir_fifo pointed at D channel, but d_chan_fifo empty")
             `uvm_info(`gfn, $sformatf("received %s d_chan item with addr: %0x and data: %0x",
                                       if_name, item.a_addr, item.d_data), UVM_HIGH)
-            // TODO add method to process Data transactions
+            process_tl_data_txn(if_name, item);
           end
           default: `uvm_fatal(`gfn, "Invalid entry in dir_fifo")
         endcase
