@@ -47,7 +47,7 @@ package tl_main_pkg;
   localparam logic [0:0][31:0] ADDR_MASK_PERI                 = {
     32'h 01ffffff
   };
-  localparam logic [31:0] ADDR_MASK_SOC_PROXY__CORE      = 32'h 00000003;
+  localparam logic [31:0] ADDR_MASK_SOC_PROXY__CORE      = 32'h 0000000f;
   localparam logic [31:0] ADDR_MASK_SOC_PROXY__CTN       = 32'h 3fffffff;
   localparam logic [31:0] ADDR_MASK_SPI_HOST1            = 32'h 0000003f;
   localparam logic [31:0] ADDR_MASK_USBDEV               = 32'h 00000fff;

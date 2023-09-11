@@ -48,6 +48,7 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:rv_plic",
         "//sw/top_darjeeling/sw/dif:rv_timer",
         "//sw/top_darjeeling/sw/dif:sensor_ctrl",
+        "//sw/top_darjeeling/sw/dif:soc_proxy",
         "//sw/top_darjeeling/sw/dif:spi_device",
         "//sw/top_darjeeling/sw/dif:spi_host",
         "//sw/top_darjeeling/sw/dif:sysrst_ctrl",

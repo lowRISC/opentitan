@@ -383,7 +383,7 @@ pub const TOP_DARJEELING_SOC_PROXY_CORE_BASE_ADDR: usize = 0x22030000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #TOP_DARJEELING_SOC_PROXY_CORE_BASE_ADDR and
 /// `TOP_DARJEELING_SOC_PROXY_CORE_BASE_ADDR + TOP_DARJEELING_SOC_PROXY_CORE_SIZE_BYTES`.
-pub const TOP_DARJEELING_SOC_PROXY_CORE_SIZE_BYTES: usize = 0x4;
+pub const TOP_DARJEELING_SOC_PROXY_CORE_SIZE_BYTES: usize = 0x10;
 
 /// Peripheral base address for ctn device on soc_proxy in top darjeeling.
 ///

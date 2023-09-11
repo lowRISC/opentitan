@@ -9465,7 +9465,7 @@
               {
                 hart: 0x22030000
               }
-              size_byte: 0x4
+              size_byte: 0x10
             }
           ]
           xbar: false
@@ -13521,6 +13521,7 @@
     adc_ctrl_aon
     aon_timer_aon
     sensor_ctrl
+    soc_proxy
     flash_ctrl
     hmac
     kmac
@@ -14138,6 +14139,12 @@
       width: 1
       type: interrupt
       module_name: sensor_ctrl
+    }
+    {
+      name: soc_proxy_external
+      width: 4
+      type: interrupt
+      module_name: soc_proxy
     }
     {
       name: flash_ctrl_prog_empty

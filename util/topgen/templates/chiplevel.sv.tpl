@@ -1234,6 +1234,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .soc_fatal_alert_rsp_o        (                            ),
     .soc_recov_alert_req_i        ( soc_recov_alert_req        ),
     .soc_recov_alert_rsp_o        (                            ),
+    .soc_intr_async_i             ( '0                         ),
 % endif
 % if top["name"] == "darjeeling":
     .entropy_src_hw_if_req_o      ( entropy_src_hw_if_req      ),

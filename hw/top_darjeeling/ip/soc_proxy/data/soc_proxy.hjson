@@ -12,6 +12,15 @@
   hw_checklist:       "../doc/checklist"
   sw_checklist:       "/sw/ip/soc_proxy/dif/dif_soc_proxy"
 
+  param_list: [
+    { name:     "NumExternalIrqs"
+      type:     "int unsigned"
+      default:  "4"
+      desc:     "Number of external interrupt requests"
+      local:    "true"
+    }
+  ]
+
   revisions: [
     {
       version:            "1.0.0"
@@ -71,10 +80,10 @@
   ]
 
   interrupt_list: [
-    // { name: "external"
-    //   desc: "External interrupt request"
-    //   width: 4
-    // }
+    { name: "external"
+      desc: "External interrupt request"
+      width: 4 // keep equal to `NumExternalIrqs`
+    }
   ]
 
   inter_signal_list: [

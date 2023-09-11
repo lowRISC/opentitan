@@ -249,7 +249,7 @@ package top_darjeeling_pkg;
   /**
    * Peripheral size in bytes for core device on soc_proxy in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_SOC_PROXY_CORE_SIZE_BYTES = 32'h4;
+  parameter int unsigned TOP_DARJEELING_SOC_PROXY_CORE_SIZE_BYTES = 32'h10;
 
   /**
    * Peripheral base address for ctn device on soc_proxy in top darjeeling.

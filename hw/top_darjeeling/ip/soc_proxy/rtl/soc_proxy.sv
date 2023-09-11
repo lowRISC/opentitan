@@ -24,7 +24,7 @@ module soc_proxy
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
-  output logic [3:0] intr_external_o,
+  output logic [NumExternalIrqs-1:0] intr_external_o,
 
   output logic wkup_internal_req_o,
   output logic wkup_external_req_o,
@@ -41,7 +41,7 @@ module soc_proxy
 
   input  logic soc_wkup_async_i,
 
-  input  logic [3:0] soc_intr_async_i
+  input  logic [NumExternalIrqs-1:0] soc_intr_async_i
 );
 
   // Feed CTN TL-UL ports through.
@@ -50,13 +50,12 @@ module soc_proxy
 
   // Tie off unimplemented outputs temporarily.
   assign dma_lsio_trigger_o = '0;
-  assign intr_external_o = '0;
   assign wkup_internal_req_o = 1'b0;
   assign wkup_external_req_o = 1'b0;
 
   // Register node
   soc_proxy_core_reg2hw_t reg2hw;
-  // soc_proxy_core_hw2reg_t hw2reg;
+  soc_proxy_core_hw2reg_t hw2reg;
   logic reg_top_intg_err;
   soc_proxy_core_reg_top u_reg (
     .clk_i,
@@ -64,6 +63,7 @@ module soc_proxy
     .tl_i       (core_tl_i),
     .tl_o       (core_tl_o),
     .reg2hw,
+    .hw2reg,
     .intg_err_o (reg_top_intg_err),
     .devmode_i  (1'b1)
   );
@@ -179,6 +179,35 @@ module soc_proxy
       .alert_tx_o(alert_tx_o[RecovAlertExternal0 + i])
     );
   end
+
+  // Synchronize external interrupt signals
+  logic [NumExternalIrqs-1:0] soc_intr;
+  for (genvar i = 0; i < NumExternalIrqs; i++) begin : gen_sync_external_irqs
+    prim_flop_2sync #(
+      .Width(1)
+    ) u_prim_flop_2sync (
+      .clk_i,
+      .rst_ni,
+      .d_i(soc_intr_async_i[i]),
+      .q_o(soc_intr[i])
+    );
+  end
+
+  // Handle external interrupts
+  prim_intr_hw #(
+    .Width(NumExternalIrqs)
+  ) u_prim_intr_hw (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (soc_intr),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.d),
+    .intr_o                 (intr_external_o)
+  );
 
   // Assertions
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A,

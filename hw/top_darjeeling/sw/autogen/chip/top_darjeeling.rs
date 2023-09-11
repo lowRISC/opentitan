@@ -332,7 +332,7 @@ pub const TOP_DARJEELING_SOC_PROXY_CORE_BASE_ADDR: usize = 0x22030000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #TOP_DARJEELING_SOC_PROXY_CORE_BASE_ADDR and
 /// `TOP_DARJEELING_SOC_PROXY_CORE_BASE_ADDR + TOP_DARJEELING_SOC_PROXY_CORE_SIZE_BYTES`.
-pub const TOP_DARJEELING_SOC_PROXY_CORE_SIZE_BYTES: usize = 0x4;
+pub const TOP_DARJEELING_SOC_PROXY_CORE_SIZE_BYTES: usize = 0x10;
 /// Peripheral base address for ctn device on soc_proxy in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -763,24 +763,26 @@ pub enum TopDarjeelingPlicPeripheral {
     AonTimerAon = 16,
     /// sensor_ctrl
     SensorCtrl = 17,
+    /// soc_proxy
+    SocProxy = 18,
     /// flash_ctrl
-    FlashCtrl = 18,
+    FlashCtrl = 19,
     /// hmac
-    Hmac = 19,
+    Hmac = 20,
     /// kmac
-    Kmac = 20,
+    Kmac = 21,
     /// otbn
-    Otbn = 21,
+    Otbn = 22,
     /// keymgr
-    Keymgr = 22,
+    Keymgr = 23,
     /// csrng
-    Csrng = 23,
+    Csrng = 24,
     /// edn0
-    Edn0 = 24,
+    Edn0 = 25,
     /// edn1
-    Edn1 = 25,
+    Edn1 = 26,
     /// dma
-    Dma = 26,
+    Dma = 27,
 }
 
 impl TryFrom<u32> for TopDarjeelingPlicPeripheral {
@@ -805,15 +807,16 @@ impl TryFrom<u32> for TopDarjeelingPlicPeripheral {
             15 => Ok(Self::AdcCtrlAon),
             16 => Ok(Self::AonTimerAon),
             17 => Ok(Self::SensorCtrl),
-            18 => Ok(Self::FlashCtrl),
-            19 => Ok(Self::Hmac),
-            20 => Ok(Self::Kmac),
-            21 => Ok(Self::Otbn),
-            22 => Ok(Self::Keymgr),
-            23 => Ok(Self::Csrng),
-            24 => Ok(Self::Edn0),
-            25 => Ok(Self::Edn1),
-            26 => Ok(Self::Dma),
+            18 => Ok(Self::SocProxy),
+            19 => Ok(Self::FlashCtrl),
+            20 => Ok(Self::Hmac),
+            21 => Ok(Self::Kmac),
+            22 => Ok(Self::Otbn),
+            23 => Ok(Self::Keymgr),
+            24 => Ok(Self::Csrng),
+            25 => Ok(Self::Edn0),
+            26 => Ok(Self::Edn1),
+            27 => Ok(Self::Dma),
             _ => Err(val),
         }
     }
@@ -1091,56 +1094,64 @@ pub enum TopDarjeelingPlicIrqId {
     SensorCtrlIoStatusChange = 131,
     /// sensor_ctrl_init_status_change
     SensorCtrlInitStatusChange = 132,
+    /// soc_proxy_external 0
+    SocProxyExternal0 = 133,
+    /// soc_proxy_external 1
+    SocProxyExternal1 = 134,
+    /// soc_proxy_external 2
+    SocProxyExternal2 = 135,
+    /// soc_proxy_external 3
+    SocProxyExternal3 = 136,
     /// flash_ctrl_prog_empty
-    FlashCtrlProgEmpty = 133,
+    FlashCtrlProgEmpty = 137,
     /// flash_ctrl_prog_lvl
-    FlashCtrlProgLvl = 134,
+    FlashCtrlProgLvl = 138,
     /// flash_ctrl_rd_full
-    FlashCtrlRdFull = 135,
+    FlashCtrlRdFull = 139,
     /// flash_ctrl_rd_lvl
-    FlashCtrlRdLvl = 136,
+    FlashCtrlRdLvl = 140,
     /// flash_ctrl_op_done
-    FlashCtrlOpDone = 137,
+    FlashCtrlOpDone = 141,
     /// flash_ctrl_corr_err
-    FlashCtrlCorrErr = 138,
+    FlashCtrlCorrErr = 142,
     /// hmac_hmac_done
-    HmacHmacDone = 139,
+    HmacHmacDone = 143,
     /// hmac_fifo_empty
-    HmacFifoEmpty = 140,
+    HmacFifoEmpty = 144,
     /// hmac_hmac_err
-    HmacHmacErr = 141,
+    HmacHmacErr = 145,
     /// kmac_kmac_done
-    KmacKmacDone = 142,
+    KmacKmacDone = 146,
     /// kmac_fifo_empty
-    KmacFifoEmpty = 143,
+    KmacFifoEmpty = 147,
     /// kmac_kmac_err
-    KmacKmacErr = 144,
+    KmacKmacErr = 148,
     /// otbn_done
-    OtbnDone = 145,
+    OtbnDone = 149,
     /// keymgr_op_done
-    KeymgrOpDone = 146,
+    KeymgrOpDone = 150,
     /// csrng_cs_cmd_req_done
-    CsrngCsCmdReqDone = 147,
+    CsrngCsCmdReqDone = 151,
     /// csrng_cs_entropy_req
-    CsrngCsEntropyReq = 148,
+    CsrngCsEntropyReq = 152,
     /// csrng_cs_hw_inst_exc
-    CsrngCsHwInstExc = 149,
+    CsrngCsHwInstExc = 153,
     /// csrng_cs_fatal_err
-    CsrngCsFatalErr = 150,
+    CsrngCsFatalErr = 154,
     /// edn0_edn_cmd_req_done
-    Edn0EdnCmdReqDone = 151,
+    Edn0EdnCmdReqDone = 155,
     /// edn0_edn_fatal_err
-    Edn0EdnFatalErr = 152,
+    Edn0EdnFatalErr = 156,
     /// edn1_edn_cmd_req_done
-    Edn1EdnCmdReqDone = 153,
+    Edn1EdnCmdReqDone = 157,
     /// edn1_edn_fatal_err
-    Edn1EdnFatalErr = 154,
+    Edn1EdnFatalErr = 158,
     /// dma_dma_done
-    DmaDmaDone = 155,
+    DmaDmaDone = 159,
     /// dma_dma_error
-    DmaDmaError = 156,
+    DmaDmaError = 160,
     /// dma_dma_memory_buffer_limit
-    DmaDmaMemoryBufferLimit = 157,
+    DmaDmaMemoryBufferLimit = 161,
 }
 
 impl TryFrom<u32> for TopDarjeelingPlicIrqId {
@@ -1280,31 +1291,35 @@ impl TryFrom<u32> for TopDarjeelingPlicIrqId {
             130 => Ok(Self::AonTimerAonWdogTimerBark),
             131 => Ok(Self::SensorCtrlIoStatusChange),
             132 => Ok(Self::SensorCtrlInitStatusChange),
-            133 => Ok(Self::FlashCtrlProgEmpty),
-            134 => Ok(Self::FlashCtrlProgLvl),
-            135 => Ok(Self::FlashCtrlRdFull),
-            136 => Ok(Self::FlashCtrlRdLvl),
-            137 => Ok(Self::FlashCtrlOpDone),
-            138 => Ok(Self::FlashCtrlCorrErr),
-            139 => Ok(Self::HmacHmacDone),
-            140 => Ok(Self::HmacFifoEmpty),
-            141 => Ok(Self::HmacHmacErr),
-            142 => Ok(Self::KmacKmacDone),
-            143 => Ok(Self::KmacFifoEmpty),
-            144 => Ok(Self::KmacKmacErr),
-            145 => Ok(Self::OtbnDone),
-            146 => Ok(Self::KeymgrOpDone),
-            147 => Ok(Self::CsrngCsCmdReqDone),
-            148 => Ok(Self::CsrngCsEntropyReq),
-            149 => Ok(Self::CsrngCsHwInstExc),
-            150 => Ok(Self::CsrngCsFatalErr),
-            151 => Ok(Self::Edn0EdnCmdReqDone),
-            152 => Ok(Self::Edn0EdnFatalErr),
-            153 => Ok(Self::Edn1EdnCmdReqDone),
-            154 => Ok(Self::Edn1EdnFatalErr),
-            155 => Ok(Self::DmaDmaDone),
-            156 => Ok(Self::DmaDmaError),
-            157 => Ok(Self::DmaDmaMemoryBufferLimit),
+            133 => Ok(Self::SocProxyExternal0),
+            134 => Ok(Self::SocProxyExternal1),
+            135 => Ok(Self::SocProxyExternal2),
+            136 => Ok(Self::SocProxyExternal3),
+            137 => Ok(Self::FlashCtrlProgEmpty),
+            138 => Ok(Self::FlashCtrlProgLvl),
+            139 => Ok(Self::FlashCtrlRdFull),
+            140 => Ok(Self::FlashCtrlRdLvl),
+            141 => Ok(Self::FlashCtrlOpDone),
+            142 => Ok(Self::FlashCtrlCorrErr),
+            143 => Ok(Self::HmacHmacDone),
+            144 => Ok(Self::HmacFifoEmpty),
+            145 => Ok(Self::HmacHmacErr),
+            146 => Ok(Self::KmacKmacDone),
+            147 => Ok(Self::KmacFifoEmpty),
+            148 => Ok(Self::KmacKmacErr),
+            149 => Ok(Self::OtbnDone),
+            150 => Ok(Self::KeymgrOpDone),
+            151 => Ok(Self::CsrngCsCmdReqDone),
+            152 => Ok(Self::CsrngCsEntropyReq),
+            153 => Ok(Self::CsrngCsHwInstExc),
+            154 => Ok(Self::CsrngCsFatalErr),
+            155 => Ok(Self::Edn0EdnCmdReqDone),
+            156 => Ok(Self::Edn0EdnFatalErr),
+            157 => Ok(Self::Edn1EdnCmdReqDone),
+            158 => Ok(Self::Edn1EdnFatalErr),
+            159 => Ok(Self::DmaDmaDone),
+            160 => Ok(Self::DmaDmaError),
+            161 => Ok(Self::DmaDmaMemoryBufferLimit),
             _ => Err(val),
         }
     }
@@ -1637,7 +1652,7 @@ impl TryFrom<u32> for TopDarjeelingAlertId {
 ///
 /// This array is a mapping from `TopDarjeelingPlicIrqId` to
 /// `TopDarjeelingPlicPeripheral`.
-pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeripheral; 158] = [
+pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeripheral; 162] = [
     // None -> TopDarjeelingPlicPeripheral::Unknown
     TopDarjeelingPlicPeripheral::Unknown,
     // Uart0TxWatermark -> TopDarjeelingPlicPeripheral::Uart0
@@ -1904,6 +1919,14 @@ pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeriph
     TopDarjeelingPlicPeripheral::SensorCtrl,
     // SensorCtrlInitStatusChange -> TopDarjeelingPlicPeripheral::SensorCtrl
     TopDarjeelingPlicPeripheral::SensorCtrl,
+    // SocProxyExternal0 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal1 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal2 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal3 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
     // FlashCtrlProgEmpty -> TopDarjeelingPlicPeripheral::FlashCtrl
     TopDarjeelingPlicPeripheral::FlashCtrl,
     // FlashCtrlProgLvl -> TopDarjeelingPlicPeripheral::FlashCtrl
