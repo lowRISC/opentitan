@@ -426,14 +426,18 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                   dma_config.dst_asid.name()), UVM_HIGH)
       end
       "enabled_memory_range_base": begin
-        dma_config.mem_range_base = item.a_data;
-        `uvm_info(`gfn, $sformatf("Got enabled_memory_range_base = %0x",
-                                  dma_config.mem_range_base), UVM_HIGH)
+        if (dma_config.mem_range_unlock == MuBi4True) begin
+          dma_config.mem_range_base = item.a_data;
+          `uvm_info(`gfn, $sformatf("Got enabled_memory_range_base = %0x",
+                                    dma_config.mem_range_base), UVM_HIGH)
+        end
       end
       "enabled_memory_range_limit": begin
-        dma_config.mem_range_limit = item.a_data;
-        `uvm_info(`gfn, $sformatf("Got enabled_memory_range_limit = %0x",
-                                  dma_config.mem_range_limit), UVM_HIGH)
+        if (dma_config.mem_range_unlock == MuBi4True) begin
+          dma_config.mem_range_limit = item.a_data;
+          `uvm_info(`gfn, $sformatf("Got enabled_memory_range_limit = %0x",
+                                    dma_config.mem_range_limit), UVM_HIGH)
+        end
       end
       "range_unlock_regwen": begin
         // Get mirrored field value and cast to associated enum in dma_config
