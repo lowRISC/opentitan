@@ -7,7 +7,7 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 def hyperdebug_repos():
     http_archive(
         name = "hyperdebug_firmware",
-        urls = ["https://github.com/lowRISC/hyperdebug-firmware/releases/download/20230823_02/hyperdebug-firmware.tar.gz"],
-        sha256 = "f58516660b86769a34680a80b9ac65a47296f64669a9a6f5cee805abc2f42ac1",
+        urls = ["https://github.com/lowRISC/hyperdebug-firmware/releases/download/20230911_01/hyperdebug-firmware.tar.gz"],
+        sha256 = "695600f7466839a16214b4a39a9be3a5802a158dc89de9862a31390e56f0bec4",
         build_file = "@//third_party/hyperdebug:BUILD",
     )
