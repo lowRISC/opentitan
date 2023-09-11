@@ -295,7 +295,7 @@
       clock_srcs: {clk_i: "io_div4", clk_edn_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "lc_io_div4", rst_edn_ni: "lc"},
-      base_addrs: {core: "0x40130000", prim: "0x40132000"}
+      base_addrs: {core: "0x40130000", prim: "0x40138000"}
     },
     { name: "lc_ctrl",
       type: "lc_ctrl",

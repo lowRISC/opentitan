@@ -14,6 +14,8 @@ for part in otp_mmap.config["partitions"]:
   if part["variant"] == "Unbuffered":
     num_part_unbuf += 1
 num_part_buf = num_part - num_part_unbuf
+otp_size_as_bytes = 2 ** otp_mmap.config["otp"]["byte_addr_width"]
+otp_size_as_uint32 = otp_size_as_bytes // 4
 %>\
 {
   name:               "otp_ctrl",
@@ -172,7 +174,7 @@ num_part_buf = num_part - num_part_unbuf
     { name: "NumSwCfgWindowWords",
       desc: "Size of the TL-UL window in 32bit words. Note that the effective partition size is smaller than that.",
       type: "int",
-      default: "512",
+      default: "${otp_size_as_uint32}",
       local: "true"
     }
 
@@ -1206,7 +1208,7 @@ num_part_buf = num_part - num_part_unbuf
       ////////////////////////////////
       // Software Config Partitions //
       ////////////////////////////////
-      { skipto: "0x1000" }
+      { skipto: "${hex(otp_size_as_bytes)}" }
 
       { window: {
           name: "SW_CFG_WINDOW"

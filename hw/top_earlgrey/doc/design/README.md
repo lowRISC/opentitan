@@ -409,7 +409,7 @@ For the purpose of `top_earlgrey`, the first option has been chosen to benefit s
 | pattgen           | pattgen       | 0x400E0000 (regs) |
 | rv_timer          | rv_timer      | 0x40100000 (regs) |
 | otp_ctrl          | otp_ctrl      | 0x40130000 (core) |
-|                   |               | 0x40132000 (prim) |
+|                   |               | 0x40138000 (prim) |
 | lc_ctrl           | lc_ctrl       | 0x40140000 (regs) |
 | alert_handler     | alert_handler | 0x40150000 (regs) |
 | spi_host0         | spi_host      | 0x40300000 (regs) |

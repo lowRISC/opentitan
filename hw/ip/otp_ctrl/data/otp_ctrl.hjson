@@ -2347,7 +2347,7 @@
       ////////////////////////////////
       // Software Config Partitions //
       ////////////////////////////////
-      { skipto: "0x1000" }
+      { skipto: "0x800" }
 
       { window: {
           name: "SW_CFG_WINDOW"

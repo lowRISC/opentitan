@@ -187,13 +187,13 @@ pub const OTP_CTRL_CORE_BASE_ADDR: usize = 0x40130000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #OTP_CTRL_CORE_BASE_ADDR and
 /// `OTP_CTRL_CORE_BASE_ADDR + OTP_CTRL_CORE_SIZE_BYTES`.
-pub const OTP_CTRL_CORE_SIZE_BYTES: usize = 0x2000;
+pub const OTP_CTRL_CORE_SIZE_BYTES: usize = 0x1000;
 
 /// Peripheral base address for prim device on otp_ctrl in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const OTP_CTRL_PRIM_BASE_ADDR: usize = 0x40132000;
+pub const OTP_CTRL_PRIM_BASE_ADDR: usize = 0x40138000;
 
 /// Peripheral size for prim device on otp_ctrl in top earlgrey.
 ///
