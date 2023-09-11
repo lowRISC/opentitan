@@ -1425,8 +1425,9 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
         } else {
           ctx->state = ST_IDLE;
         }
+      } else {
+        ctx->bit <<= 1;
       }
-      ctx->bit <<= 1;
       break;
 
     case ST_GET:
