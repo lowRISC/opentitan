@@ -23,13 +23,14 @@ import argparse
 import datetime
 import logging as log
 import os
+from pathlib import Path
 import random
 import re
 import shlex
 import subprocess
 import sys
 import textwrap
-from pathlib import Path
+from typing import Dict
 
 import Launcher
 import LauncherFactory
@@ -121,6 +122,24 @@ def resolve_max_parallel(arg):
                         'value (16).'.format(from_env))
 
     return 16
+
+
+def resolve_top_chip(cfg: Dict, proj_root_src: str) -> str:
+    '''Determine the top level used for this invocation.
+
+    This is not a good solution yet, and should be done right when multi-top
+    is implemented, but it is an improvement considering things are not
+    working right.
+    '''
+    if "earlgrey" in cfg:
+        return "top_earlgrey"
+    elif "darjeeling" in cfg:
+        return "top_darjeeling"
+    else:
+        if (Path(proj_root_src) / "hw" / "top_darjeeling").exists():
+            return "top_darjeeling"
+        else:
+            return "top_earlgrey"
 
 
 def resolve_branch(branch):
@@ -285,6 +304,13 @@ def parse_args():
     parser.add_argument("cfg",
                         metavar=cfg_metavar,
                         help="""Configuration hjson file.""")
+
+    parser.add_argument("--top-chip",
+                        type=str,
+                        help=('The name of the top level, as in '
+                              '"top_earlgrey", or "top_darjeeling". If not '
+                              'present, it is determined by whether '
+                              '"hw/top_darjeeling" exists.'))
 
     parser.add_argument("--version",
                         action='store_true',
@@ -688,22 +714,25 @@ def main():
         log.fatal("Path to config file %s appears to be invalid.", args.cfg)
         sys.exit(1)
 
+    proj_root_src, proj_root = resolve_proj_root(args)
+
     # Make sure the proper key and nonce are used for scrambling the ROM image.
     #
-    # TODO: Remove this dirty hack and find a cleaner and more robust way for selecting the
-    # top-level file to use for scrambling the ROM image.
+    # TODO: Remove this dirty hack and find a cleaner and more robust way for
+    # selecting the top-level file to use for scrambling the ROM image.
     # See also https://github.com/lowRISC/opentitan-integrated/issues/297
-    top_name = "darjeeling"
-    if "earlgrey" in args.cfg:
-        top_name = "earlgrey"
+    if not args.top_chip:
+        log.warning("resolve_top_chip for %s", args.cfg)
+        args.top_chip = resolve_top_chip(args.cfg, proj_root_src)
+
     with open("rules/opentitan.bzl", "r+") as f:
         file = f.read()
-        file = re.sub("//hw/top_[a-z]+/data:autogen/top_[a-z]+.gen.hjson",
-                      "//hw/top_" + top_name + "/data:autogen/top_" + top_name + ".gen.hjson",
-                      file)
+        file = re.sub(
+            "//hw/top_[a-z]+/data:autogen/top_[a-z]+.gen.hjson", "//hw/" +
+            args.top_chip + "/data:autogen/" + args.top_chip + ".gen.hjson",
+            file)
         file = re.sub("//sw/top_[a-z]+/sw/device/arch:sim_dv",
-                      "//sw/top_" + top_name + "/sw/device/arch:sim_dv",
-                      file)
+                      "//sw/" + args.top_chip + "/sw/device/arch:sim_dv", file)
         f.seek(0)
         f.write(file)
         f.truncate()
@@ -713,7 +742,6 @@ def main():
         args.map_full_testplan = True
 
     args.branch = resolve_branch(args.branch)
-    proj_root_src, proj_root = resolve_proj_root(args)
     args.scratch_root = resolve_scratch_root(args.scratch_root, proj_root)
     log.info("[proj_root]: %s", proj_root)
 

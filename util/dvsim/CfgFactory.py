@@ -98,6 +98,8 @@ def make_cfg(path, args, proj_root):
     }
     if args.tool is not None:
         initial_values['tool'] = args.tool
+    if args.top_chip is not None:
+        initial_values['top_chip'] = args.top_chip
 
     try:
         cls, hjson_data = _load_cfg(path, initial_values)

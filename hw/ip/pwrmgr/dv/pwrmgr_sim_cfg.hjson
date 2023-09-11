@@ -31,15 +31,9 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
-                "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson"]
-
-  // Overrides
-  overrides: [
-    {
-      name: design_level
-      value: "top"
-    }
-  ]
+                "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
+                // Top-level-specific configuration
+                "{proj_root}/hw/{top_chip}/data/chip_cfg.hjson"]
 
   // Exclusion files
   vcs_cov_excl_files: ["{proj_root}/hw/ip/pwrmgr/dv/cov/pwrmgr_cov_manual_excl.el"]

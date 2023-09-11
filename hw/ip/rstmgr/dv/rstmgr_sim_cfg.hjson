@@ -34,18 +34,15 @@
                 // Just run the stress_all sequence, and don't inject random
                 // resets since we may get overlapping resets due to sequences
                 // that inject them.
-                "{proj_root}/hw/dv/tools/dvsim/tests/stress_all_test.hjson"
-                ]
+                "{proj_root}/hw/dv/tools/dvsim/tests/stress_all_test.hjson",
+                // Top-level-specific configuration
+                "{proj_root}/hw/{top_chip}/data/chip_cfg.hjson"]
 
   // Specific exclusion files.
   vcs_cov_excl_files: ["{proj_root}/hw/ip/rstmgr/dv/cov/rstmgr_unr_excl.el"]
 
   // Overrides
   overrides: [
-    {
-      name: design_level
-      value: "top"
-    }
     {
       name: default_vcs_cov_cfg_file
       value: "-cm_hier {proj_root}/hw/dv/tools/vcs/cover.cfg+{proj_root}/hw/dv/tools/vcs/common_cov_excl.cfg+{proj_root}/hw/ip/rstmgr/dv/cov/rstmgr_cover.cfg"
