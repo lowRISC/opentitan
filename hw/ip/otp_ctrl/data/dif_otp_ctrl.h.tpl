@@ -48,7 +48,9 @@ typedef enum dif_otp_ctrl_partition {
   /**
    * ${short_desc}.
    *
+  % if long_desc:
 ${long_desc}
+  %endif
    */
   kDifOtpCtrlPartition${part_name.as_camel_case()},
 % endfor
