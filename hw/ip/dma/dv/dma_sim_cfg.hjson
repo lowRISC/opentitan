@@ -54,6 +54,11 @@
       uvm_test_seq: dma_handshake_smoke_vseq
       reseed: 1
     }
+    {
+      name: dma_generic_dma_memory_region_lock
+      uvm_test_seq: dma_generic_dma_memory_region_lock_vseq
+      reseed: 5
+    }
   ]
 
   // List of regressions.
