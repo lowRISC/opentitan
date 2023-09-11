@@ -44,6 +44,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
   bit exp_dma_done_intr;
   // bit to indicate dma config clear via register write
   bit clear_via_reg_write;
+  // True if in hardware handshake mode and the FIFO interrupt has been cleared
+  bit fifo_intr_cleared;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -67,13 +69,13 @@ class dma_scoreboard extends cip_base_scoreboard #(
   function void check_for_valid_addr(bit [63:0] addr,
                                      bit [63:0] last_addr,
                                      bit handshake_mode,
-                                     bit auto_increment,
+                                     bit fifo_en,
                                      bit [63:0] start_addr,
                                      bit [31:0] total_data_size,
                                      string check_type = "Source");
     `DV_CHECK(addr[1:0] == 0, $sformatf("Address is not 4 Byte aligned"))
-    // Handshake mode with no auto increment
-    if (handshake_mode && !auto_increment) begin
+    // Handshake mode when the fifo is enabled
+    if (handshake_mode && fifo_en) begin
       `DV_CHECK(addr == start_addr,
                 $sformatf("0x%0x doesn't match start addr:0x%0x (handshake mode no auto-incr)",
                           addr, start_addr))
@@ -115,7 +117,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
       check_for_valid_addr(item.a_addr,
                            last_src_addr,
                            dma_config.handshake,
-                           dma_config.auto_inc_fifo,
+                           dma_config.get_read_fifo_en(),
                            dma_config.src_addr,
                            dma_config.total_transfer_size,
                            "Source");
@@ -138,20 +140,24 @@ class dma_scoreboard extends cip_base_scoreboard #(
       // check if a_mask matches the data size
       `DV_CHECK_EQ(num_bytes_this_txn, exp_a_mask_count_ones,
                    $sformatf("unexpected a_mask: %x for %0d byte transfer",
-                             item.a_mask, exp_a_mask_count_ones))
-      // Check destination ASID for write transaction
-      `DV_CHECK_EQ(if_name,
-                   cfg.asid_interace_map[dma_config.dst_asid],
-                   $sformatf("Unexpected write txn on %s interface with destination ASID %s",
-                             if_name, dma_config.dst_asid.name()))
-      // Check if the transaction address is in destination address range
-      check_for_valid_addr(item.a_addr,
-                           last_dst_addr,
-                           dma_config.handshake,
-                           dma_config.auto_inc_buffer,
-                           dma_config.dst_addr,
-                           dma_config.total_transfer_size,
-                           "Destination");
+                           item.a_mask, expected_per_txn_bytes))
+      // Enable write address check if handshake mode is disabled or
+      // if the FIFO interrupt has been cleared even though handshake mode is enabled
+      if (!dma_config.handshake || fifo_intr_cleared) begin
+        // Check destination ASID for write transaction
+        `DV_CHECK_EQ(if_name,
+                     cfg.asid_interace_map[dma_config.dst_asid],
+                     $sformatf("Unexpected write txn on %s interface with destination ASID %s",
+                               if_name, dma_config.dst_asid.name()))
+        // Check if the transaction address is in destination address range
+        check_for_valid_addr(item.a_addr,
+                             last_dst_addr,
+                             dma_config.handshake,
+                             dma_config.get_write_fifo_en(),
+                             dma_config.dst_addr,
+                             dma_config.total_transfer_size,
+                             "Destination");
+      end
       // Check if opcode is as expected
       if ((dma_config.per_transfer_width != DmaXfer4BperTxn) ||
           (remaining_bytes < dma_config.per_transfer_width)) begin
@@ -267,7 +273,9 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                       item.is_write() ? "write" : "read",
                                       item.a_addr,
                                       item.a_data), UVM_HIGH)
-            // TODO add method to process Address transactions
+            process_tl_addr_txn(if_name, item);
+            // Clear status bit after first transaction
+            fifo_intr_cleared = !fifo_intr_cleared;
           end
           DataChannel: begin
             `DV_CHECK_FATAL(d_chan_fifo.try_get(item),
@@ -298,6 +306,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
     exp_buffer_limit_intr = 0;
     exp_dma_done_intr = 0;
     exp_dma_err_intr = 0;
+    fifo_intr_cleared = 0;
   endfunction
 
   // Method to check if DMA interrupt is expected
@@ -540,6 +549,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                  .tl_src_err (1'b0),
                                  .tl_dst_err (1'b0));
           end
+          fifo_intr_cleared = 0;
         end
       end
       "clear_state": begin
