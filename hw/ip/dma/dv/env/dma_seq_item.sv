@@ -342,4 +342,18 @@ class dma_seq_item extends uvm_sequence_item;
     handshake.rand_mode(0);
   endfunction
 
+  // Return if Read address increment is disabled
+  function bit get_read_fifo_en();
+    return handshake && // Handshake mode enabled
+           direction == DmaRcvData && // Read from FIFO
+           !auto_inc_fifo; // FIFO address auto increment disabled
+  endfunction
+
+  // Return if Write address increment is disabled
+  function bit get_write_fifo_en();
+    return handshake && // Handshake mode enabled
+           direction == DmaSendData && // Write to FIFO
+           !auto_inc_fifo; // FIFO address auto increment disabled
+  endfunction
+
 endclass : dma_seq_item
