@@ -357,6 +357,7 @@ class dma_seq_item extends uvm_sequence_item;
     // reset non random variables
     valid_dma_config = 0;
     align_address = 0;
+    mem_range_unlock = MuBi4True;
   endfunction
 
   // Disable randomization of all variables
@@ -374,6 +375,7 @@ class dma_seq_item extends uvm_sequence_item;
     auto_inc_buffer.rand_mode(0);
     auto_inc_fifo.rand_mode(0);
     handshake.rand_mode(0);
+    mem_range_unlock.rand_mode(0);
   endfunction
 
   // Return if Read address increment is disabled
