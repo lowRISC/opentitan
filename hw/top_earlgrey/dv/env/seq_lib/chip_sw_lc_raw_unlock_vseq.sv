@@ -70,6 +70,9 @@ class chip_sw_lc_raw_unlock_vseq extends chip_sw_base_vseq;
     jtag_lc_state_transition(DecLcStRaw, DecLcStTestUnlocked0);
     // Complete state transition
     apply_reset();
+    // Needed to add extra delay between the reset and the JTAG read of the lc_ctrl status
+    // register.
+    #(10us);
     wait_lc_ready();
 
     // After reset, clock bypass back to 'off'.
