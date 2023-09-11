@@ -50,7 +50,7 @@
 | otp_ctrl.[`SECRET1_DIGEST_1`](#secret1_digest)                   | 0xa8     |        4 | Integrity digest for the SECRET1 partition.                                                         |
 | otp_ctrl.[`SECRET2_DIGEST_0`](#secret2_digest)                   | 0xac     |        4 | Integrity digest for the SECRET2 partition.                                                         |
 | otp_ctrl.[`SECRET2_DIGEST_1`](#secret2_digest)                   | 0xb0     |        4 | Integrity digest for the SECRET2 partition.                                                         |
-| otp_ctrl.[`SW_CFG_WINDOW`](#sw_cfg_window)                       | 0x1000   |     2048 | Any read to this window directly maps to the corresponding offset in the creator and owner software |
+| otp_ctrl.[`SW_CFG_WINDOW`](#sw_cfg_window)                       | 0x800    |     2048 | Any read to this window directly maps to the corresponding offset in the creator and owner software |
 
 ## INTR_STATE
 Interrupt State Register
@@ -705,7 +705,7 @@ Any read to this window directly maps to the corresponding offset in the creator
 config partitions, and triggers an OTP readout of the bytes requested. Note that the transaction
 will block until OTP readout has completed.
 
-- Word Aligned Offset Range: `0x1000`to`0x17fc`
+- Word Aligned Offset Range: `0x800`to`0xffc`
 - Size (words): `512`
 - Access: `ro`
 - Byte writes are *not* supported.

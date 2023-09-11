@@ -185,7 +185,7 @@ package otp_ctrl_reg_pkg;
   parameter int NumAlerts = 5;
 
   // Address widths within the block
-  parameter int CoreAw = 13;
+  parameter int CoreAw = 12;
   parameter int PrimAw = 5;
 
   ///////////////////////////////////////////////
@@ -442,51 +442,51 @@ package otp_ctrl_reg_pkg;
   } otp_ctrl_core_hw2reg_t;
 
   // Register offsets for core interface
-  parameter logic [CoreAw-1:0] OTP_CTRL_INTR_STATE_OFFSET = 13'h 0;
-  parameter logic [CoreAw-1:0] OTP_CTRL_INTR_ENABLE_OFFSET = 13'h 4;
-  parameter logic [CoreAw-1:0] OTP_CTRL_INTR_TEST_OFFSET = 13'h 8;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ALERT_TEST_OFFSET = 13'h c;
-  parameter logic [CoreAw-1:0] OTP_CTRL_STATUS_OFFSET = 13'h 10;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_0_OFFSET = 13'h 14;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_1_OFFSET = 13'h 18;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_2_OFFSET = 13'h 1c;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_3_OFFSET = 13'h 20;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_4_OFFSET = 13'h 24;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_5_OFFSET = 13'h 28;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_6_OFFSET = 13'h 2c;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_7_OFFSET = 13'h 30;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_8_OFFSET = 13'h 34;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_9_OFFSET = 13'h 38;
-  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_REGWEN_OFFSET = 13'h 3c;
-  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_CMD_OFFSET = 13'h 40;
-  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_ADDRESS_OFFSET = 13'h 44;
-  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_WDATA_0_OFFSET = 13'h 48;
-  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_WDATA_1_OFFSET = 13'h 4c;
-  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_RDATA_0_OFFSET = 13'h 50;
-  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_RDATA_1_OFFSET = 13'h 54;
-  parameter logic [CoreAw-1:0] OTP_CTRL_CHECK_TRIGGER_REGWEN_OFFSET = 13'h 58;
-  parameter logic [CoreAw-1:0] OTP_CTRL_CHECK_TRIGGER_OFFSET = 13'h 5c;
-  parameter logic [CoreAw-1:0] OTP_CTRL_CHECK_REGWEN_OFFSET = 13'h 60;
-  parameter logic [CoreAw-1:0] OTP_CTRL_CHECK_TIMEOUT_OFFSET = 13'h 64;
-  parameter logic [CoreAw-1:0] OTP_CTRL_INTEGRITY_CHECK_PERIOD_OFFSET = 13'h 68;
-  parameter logic [CoreAw-1:0] OTP_CTRL_CONSISTENCY_CHECK_PERIOD_OFFSET = 13'h 6c;
-  parameter logic [CoreAw-1:0] OTP_CTRL_VENDOR_TEST_READ_LOCK_OFFSET = 13'h 70;
-  parameter logic [CoreAw-1:0] OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_OFFSET = 13'h 74;
-  parameter logic [CoreAw-1:0] OTP_CTRL_OWNER_SW_CFG_READ_LOCK_OFFSET = 13'h 78;
-  parameter logic [CoreAw-1:0] OTP_CTRL_VENDOR_TEST_DIGEST_0_OFFSET = 13'h 7c;
-  parameter logic [CoreAw-1:0] OTP_CTRL_VENDOR_TEST_DIGEST_1_OFFSET = 13'h 80;
-  parameter logic [CoreAw-1:0] OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_OFFSET = 13'h 84;
-  parameter logic [CoreAw-1:0] OTP_CTRL_CREATOR_SW_CFG_DIGEST_1_OFFSET = 13'h 88;
-  parameter logic [CoreAw-1:0] OTP_CTRL_OWNER_SW_CFG_DIGEST_0_OFFSET = 13'h 8c;
-  parameter logic [CoreAw-1:0] OTP_CTRL_OWNER_SW_CFG_DIGEST_1_OFFSET = 13'h 90;
-  parameter logic [CoreAw-1:0] OTP_CTRL_HW_CFG0_DIGEST_0_OFFSET = 13'h 94;
-  parameter logic [CoreAw-1:0] OTP_CTRL_HW_CFG0_DIGEST_1_OFFSET = 13'h 98;
-  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET0_DIGEST_0_OFFSET = 13'h 9c;
-  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET0_DIGEST_1_OFFSET = 13'h a0;
-  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET1_DIGEST_0_OFFSET = 13'h a4;
-  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET1_DIGEST_1_OFFSET = 13'h a8;
-  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET2_DIGEST_0_OFFSET = 13'h ac;
-  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET2_DIGEST_1_OFFSET = 13'h b0;
+  parameter logic [CoreAw-1:0] OTP_CTRL_INTR_STATE_OFFSET = 12'h 0;
+  parameter logic [CoreAw-1:0] OTP_CTRL_INTR_ENABLE_OFFSET = 12'h 4;
+  parameter logic [CoreAw-1:0] OTP_CTRL_INTR_TEST_OFFSET = 12'h 8;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ALERT_TEST_OFFSET = 12'h c;
+  parameter logic [CoreAw-1:0] OTP_CTRL_STATUS_OFFSET = 12'h 10;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_0_OFFSET = 12'h 14;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_1_OFFSET = 12'h 18;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_2_OFFSET = 12'h 1c;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_3_OFFSET = 12'h 20;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_4_OFFSET = 12'h 24;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_5_OFFSET = 12'h 28;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_6_OFFSET = 12'h 2c;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_7_OFFSET = 12'h 30;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_8_OFFSET = 12'h 34;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_9_OFFSET = 12'h 38;
+  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_REGWEN_OFFSET = 12'h 3c;
+  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_CMD_OFFSET = 12'h 40;
+  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_ADDRESS_OFFSET = 12'h 44;
+  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_WDATA_0_OFFSET = 12'h 48;
+  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_WDATA_1_OFFSET = 12'h 4c;
+  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_RDATA_0_OFFSET = 12'h 50;
+  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_RDATA_1_OFFSET = 12'h 54;
+  parameter logic [CoreAw-1:0] OTP_CTRL_CHECK_TRIGGER_REGWEN_OFFSET = 12'h 58;
+  parameter logic [CoreAw-1:0] OTP_CTRL_CHECK_TRIGGER_OFFSET = 12'h 5c;
+  parameter logic [CoreAw-1:0] OTP_CTRL_CHECK_REGWEN_OFFSET = 12'h 60;
+  parameter logic [CoreAw-1:0] OTP_CTRL_CHECK_TIMEOUT_OFFSET = 12'h 64;
+  parameter logic [CoreAw-1:0] OTP_CTRL_INTEGRITY_CHECK_PERIOD_OFFSET = 12'h 68;
+  parameter logic [CoreAw-1:0] OTP_CTRL_CONSISTENCY_CHECK_PERIOD_OFFSET = 12'h 6c;
+  parameter logic [CoreAw-1:0] OTP_CTRL_VENDOR_TEST_READ_LOCK_OFFSET = 12'h 70;
+  parameter logic [CoreAw-1:0] OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_OFFSET = 12'h 74;
+  parameter logic [CoreAw-1:0] OTP_CTRL_OWNER_SW_CFG_READ_LOCK_OFFSET = 12'h 78;
+  parameter logic [CoreAw-1:0] OTP_CTRL_VENDOR_TEST_DIGEST_0_OFFSET = 12'h 7c;
+  parameter logic [CoreAw-1:0] OTP_CTRL_VENDOR_TEST_DIGEST_1_OFFSET = 12'h 80;
+  parameter logic [CoreAw-1:0] OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_OFFSET = 12'h 84;
+  parameter logic [CoreAw-1:0] OTP_CTRL_CREATOR_SW_CFG_DIGEST_1_OFFSET = 12'h 88;
+  parameter logic [CoreAw-1:0] OTP_CTRL_OWNER_SW_CFG_DIGEST_0_OFFSET = 12'h 8c;
+  parameter logic [CoreAw-1:0] OTP_CTRL_OWNER_SW_CFG_DIGEST_1_OFFSET = 12'h 90;
+  parameter logic [CoreAw-1:0] OTP_CTRL_HW_CFG0_DIGEST_0_OFFSET = 12'h 94;
+  parameter logic [CoreAw-1:0] OTP_CTRL_HW_CFG0_DIGEST_1_OFFSET = 12'h 98;
+  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET0_DIGEST_0_OFFSET = 12'h 9c;
+  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET0_DIGEST_1_OFFSET = 12'h a0;
+  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET1_DIGEST_0_OFFSET = 12'h a4;
+  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET1_DIGEST_1_OFFSET = 12'h a8;
+  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET2_DIGEST_0_OFFSET = 12'h ac;
+  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET2_DIGEST_1_OFFSET = 12'h b0;
 
   // Reset values for hwext registers and their fields for core interface
   parameter logic [1:0] OTP_CTRL_INTR_TEST_RESVAL = 2'h 0;
@@ -579,7 +579,7 @@ package otp_ctrl_reg_pkg;
   parameter logic [31:0] OTP_CTRL_SECRET2_DIGEST_1_SECRET2_DIGEST_1_RESVAL = 32'h 0;
 
   // Window parameters for core interface
-  parameter logic [CoreAw-1:0] OTP_CTRL_SW_CFG_WINDOW_OFFSET = 13'h 1000;
+  parameter logic [CoreAw-1:0] OTP_CTRL_SW_CFG_WINDOW_OFFSET = 12'h 800;
   parameter int unsigned       OTP_CTRL_SW_CFG_WINDOW_SIZE   = 'h 800;
   parameter int unsigned       OTP_CTRL_SW_CFG_WINDOW_IDX    = 0;
 

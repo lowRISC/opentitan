@@ -26,7 +26,7 @@ module otp_ctrl_core_reg_top (
 
   import otp_ctrl_reg_pkg::* ;
 
-  localparam int AW = 13;
+  localparam int AW = 12;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -128,7 +128,7 @@ module otp_ctrl_core_reg_top (
   // Create steering logic
   always_comb begin
     reg_steer =
-        tl_i.a_address[AW-1:0] inside {[4096:6143]} ? 1'd0 :
+        tl_i.a_address[AW-1:0] inside {[2048:4095]} ? 1'd0 :
         // Default set to register
         1'd1;
 

@@ -7,6 +7,7 @@ from topgen.lib import Name
 
 parts_without_lc = [part for part in otp_mmap.config["partitions"] if
                     part["variant"] in ["Buffered", "Unbuffered"]]
+otp_size_as_hex_text =  f'{(2 ** otp_mmap.config["otp"]["byte_addr_width"]):x}'
 %>\
 package otp_ctrl_env_pkg;
   // dep packages
@@ -45,7 +46,7 @@ package otp_ctrl_env_pkg;
   parameter uint NUM_EDN                 = 1;
 
   parameter uint DIGEST_SIZE             = 8;
-  parameter uint SW_WINDOW_BASE_ADDR     = 'h1000;
+  parameter uint SW_WINDOW_BASE_ADDR     = 'h${otp_size_as_hex_text};
   parameter uint SW_WINDOW_SIZE          = NumSwCfgWindowWords * 4;
 
   parameter uint TL_SIZE = (TL_DW / 8);
