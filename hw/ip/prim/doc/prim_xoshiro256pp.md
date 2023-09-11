@@ -1,8 +1,7 @@
 # Primitive Component: XoShiRo256++
 
-# Overviewtitle
 
-`prim_xoshiro256pp` is a PRNG with 256 bit state.
+`prim_xoshiro256pp` is a PRNG with 256-bit state.
 For more information refer to [this page](https://arxiv.org/pdf/1805.01407.pdf).
 
 ## Parameters
@@ -42,22 +41,22 @@ entropy_i    |   DefaultSeed  |  all_zero_o
 ```
 
 Xoshiro256++ PRNG consists of:
- * 256b state
+ * A 256-bit state
  * A single-cycle state-update function.
  * A state output function.
 
-The basic xoshiro256++ PRNG has a 64 bit output.
-This implementation enables the output size to be any multiple of 64 bits.
-The output size controlled using the `OutputDW` parameter.
+The basic xoshiro256++ PRNG has a 64-bit output.
+This implementation supports an output size of any multiple of 64 bits.
+The output size is controlled using the `OutputDW` parameter.
 
 The xoshiro256++ module has an enable input and an additional entropy input that is
-XOR'ed into the PRNG state (connect to zero if this feature is unused).
+XORed into the PRNG state (connect to zero if this feature is unused).
 As the PRNG may jump into the all-zero state (e.g. due to an active attack), the PRNG
 state-update function contains a lockup protection which re-seeds the state with
 `DefaultSeed` and raises the alert signal `all_zero_o`, once this condition is detected.
 
 When the seed enable signal `seed_en_i` is raised, the internal state of xoshiro256++ is updated
-with the value provided at the 256b input 'seed_i'.
+with the value provided at the 256-bit input 'seed_i'.
 The state is internally updated in every clock cycle whenever the enable signal `xoshiro_en_i` is raised.
 The timing diagram below visualizes this process.
 
