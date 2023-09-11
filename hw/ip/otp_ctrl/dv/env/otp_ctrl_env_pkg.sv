@@ -183,6 +183,14 @@ package otp_ctrl_env_pkg;
     return PartInfo[part_index].secret;
   endfunction
 
+  function automatic bit part_has_digest(int part_idx);
+    return PartInfo[part_idx].hw_digest || PartInfo[part_idx].sw_digest;
+  endfunction
+
+  function automatic bit part_has_hw_digest(int part_idx);
+    return PartInfo[part_idx].hw_digest;
+  endfunction
+
   function automatic bit is_sw_digest(bit [TL_DW-1:0] addr);
     int part_idx = get_part_index(addr);
     if (PartInfo[part_idx].sw_digest) begin
