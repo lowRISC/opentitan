@@ -164,7 +164,7 @@
     { name: "NumSwCfgWindowWords",
       desc: "Size of the TL-UL window in 32bit words. Note that the effective partition size is smaller than that.",
       type: "int",
-      default: "512",
+      default: "4096",
       local: "true"
     }
 
@@ -2339,7 +2339,7 @@
       ////////////////////////////////
       // Software Config Partitions //
       ////////////////////////////////
-      { skipto: "0x1000" }
+      { skipto: "0x4000" }
 
       { window: {
           name: "SW_CFG_WINDOW"

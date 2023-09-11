@@ -41,7 +41,7 @@ package otp_ctrl_env_pkg;
   parameter uint NUM_EDN                 = 1;
 
   parameter uint DIGEST_SIZE             = 8;
-  parameter uint SW_WINDOW_BASE_ADDR     = 'h1000;
+  parameter uint SW_WINDOW_BASE_ADDR     = 'h4000;
   parameter uint SW_WINDOW_SIZE          = NumSwCfgWindowWords * 4;
 
   parameter uint TL_SIZE = (TL_DW / 8);
@@ -187,6 +187,14 @@ package otp_ctrl_env_pkg;
   function automatic bit is_secret(bit [TL_DW-1:0] addr);
     int part_index = get_part_index(addr);
     return PartInfo[part_index].secret;
+  endfunction
+
+  function automatic bit part_has_digest(int part_idx);
+    return PartInfo[part_idx].hw_digest || PartInfo[part_idx].sw_digest;
+  endfunction
+
+  function automatic bit part_has_hw_digest(int part_idx);
+    return PartInfo[part_idx].hw_digest;
   endfunction
 
   function automatic bit is_sw_digest(bit [TL_DW-1:0] addr);

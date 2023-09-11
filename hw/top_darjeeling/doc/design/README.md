@@ -405,7 +405,7 @@ For the purpose of `top_darjeeling`, the first option has been chosen to benefit
 | i2c2              | i2c           | 0x31040000 (regs) |
 | rv_timer          | rv_timer      | 0x30100000 (regs) |
 | otp_ctrl          | otp_ctrl      | 0x30130000 (core) |
-|                   |               | 0x30134000 (prim) |
+|                   |               | 0x30138000 (prim) |
 | lc_ctrl           | lc_ctrl       | 0x30140000 (regs) |
 | alert_handler     | alert_handler | 0x30150000 (regs) |
 | spi_host0         | spi_host      | 0x30300000 (regs) |

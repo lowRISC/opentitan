@@ -939,7 +939,7 @@
       base_addrs:
       {
         core: 0x30130000
-        prim: 0x30134000
+        prim: 0x30138000
       }
       clock_connections:
       {
@@ -10394,7 +10394,7 @@
           [
             {
               base_addr: 0x30130000
-              size_byte: 0x2000
+              size_byte: 0x8000
             }
           ]
           xbar: false
@@ -10411,7 +10411,7 @@
           addr_range:
           [
             {
-              base_addr: 0x30134000
+              base_addr: 0x30138000
               size_byte: 0x20
             }
           ]

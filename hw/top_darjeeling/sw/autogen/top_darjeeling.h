@@ -167,7 +167,7 @@ extern "C" {
  * address between #TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR and
  * `TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR + TOP_DARJEELING_OTP_CTRL_CORE_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_OTP_CTRL_CORE_SIZE_BYTES 0x2000u
+#define TOP_DARJEELING_OTP_CTRL_CORE_SIZE_BYTES 0x8000u
 
 /**
  * Peripheral base address for prim device on otp_ctrl in top darjeeling.
@@ -175,7 +175,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_OTP_CTRL_PRIM_BASE_ADDR 0x30134000u
+#define TOP_DARJEELING_OTP_CTRL_PRIM_BASE_ADDR 0x30138000u
 
 /**
  * Peripheral size for prim device on otp_ctrl in top darjeeling.
