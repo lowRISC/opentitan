@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-
 <svg
    version="1.1"
    width="1151px"
@@ -24,9 +23,9 @@
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      showgrid="false"
-     inkscape:zoom="1.0432283"
-     inkscape:cx="225.74158"
-     inkscape:cy="418.41273"
+     inkscape:zoom="1.4753476"
+     inkscape:cx="447.0133"
+     inkscape:cy="381.26608"
      inkscape:window-width="3366"
      inkscape:window-height="1376"
      inkscape:window-x="0"
@@ -35,11 +34,27 @@
      inkscape:current-layer="g799" />
   <defs
      id="defs427">
+    <linearGradient
+       id="linearGradient76776"
+       inkscape:swatch="solid">
+      <stop
+         style="stop-color:#fad7ac;stop-opacity:1;"
+         offset="0"
+         id="stop76774" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient68181"
+       inkscape:swatch="solid">
+      <stop
+         style="stop-color:#fad7ac;stop-opacity:1;"
+         offset="0"
+         id="stop68179" />
+    </linearGradient>
     <rect
        x="84.340432"
        y="560.3156"
-       width="391.27715"
-       height="55.68277"
+       width="428.80579"
+       height="56.118214"
        id="rect200164" />
     <rect
        x="95.875014"
@@ -64,25 +79,27 @@
      id="g799"
      style="mix-blend-mode:normal">
     <rect
-       x="0"
-       y="0"
-       width="550"
-       height="660"
-       rx="82.5"
-       ry="82.5"
+       x="0.0099789333"
+       y="0.0099789333"
+       width="559.83734"
+       height="674.5423"
+       rx="83.975609"
+       ry="84.317787"
        fill="#fff5e0"
        stroke="#d6b656"
        pointer-events="all"
-       id="rect429" />
+       id="rect429"
+       style="stroke-width:1.01996" />
     <rect
-       x="570"
-       y="40"
-       width="580"
-       height="580"
+       x="578.73248"
+       y="40.272381"
+       width="560.50769"
+       height="618.06903"
        fill="#e1d5e7"
        stroke="#000000"
        pointer-events="all"
-       id="rect431" />
+       id="rect431"
+       style="stroke-width:1.0148" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:12px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none"
@@ -339,7 +356,7 @@
       </switch>
     </g>
     <path
-       d="m 600.25763,400.2533 h 519.99997 l 1.3482,180 H 581.60575 l -1.19833,-160 z"
+       d="m 610.97015,416.93634 h 519.99995 l 1.3482,180 H 592.31827 l -1.19833,-160 z"
        fill="#dae8fc"
        stroke="#6c8ebf"
        stroke-miterlimit="10"
@@ -355,7 +372,7 @@
        pointer-events="all"
        id="rect563" />
     <path
-       d="M 560,630 V 60"
+       d="M 566.20352,628.83237 V 58.832373"
        fill="none"
        stroke="#000000"
        stroke-width="2"
@@ -384,7 +401,8 @@
        fill="#fad7ac"
        stroke="#000000"
        pointer-events="none"
-       id="rect579" />
+       id="rect579"
+       style="stroke-width:0.676;stroke-miterlimit:4;stroke-dasharray:none" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:13.3333px;line-height:1.25;font-family:sans-serif;mix-blend-mode:normal;fill:#000000;fill-opacity:1;stroke:none"
@@ -405,12 +423,15 @@
        fill="#fad7ac"
        stroke="#000000"
        pointer-events="none"
-       id="rect587" />
+       id="rect587"
+       style="stroke-width:0.676;stroke-miterlimit:4;stroke-dasharray:none" />
     <g
        id="g73918"
-       transform="matrix(1.0220869,0,0,0.99939,-15.839355,-1.1113537)">
+       transform="matrix(0.9510664,0,0,1.0003925,-4.3610179,-1.2817723)"
+       style="stroke-width:0.693036;stroke-miterlimit:10;stroke-dasharray:none">
       <g
-         id="g73921">
+         id="g73921"
+         style="stroke-width:0.693036;stroke-miterlimit:10;stroke-dasharray:none">
         <rect
            x="90.067581"
            y="160.06758"
@@ -422,7 +443,7 @@
            stroke="#000000"
            pointer-events="none"
            id="rect595"
-           style="stroke-width:1.13516" />
+           style="stroke-width:0.693036;stroke-miterlimit:10;stroke-dasharray:none" />
       </g>
     </g>
     <text
@@ -636,403 +657,15 @@
        stroke-dasharray="3, 3"
        pointer-events="none"
        id="rect643" />
-    <rect
-       x="310"
-       y="50"
-       width="240"
-       height="400"
-       rx="36"
-       ry="36"
-       fill="#fff2cc"
-       stroke="#d6b656"
-       pointer-events="none"
-       id="rect657" />
-    <rect
-       x="330"
-       y="80"
-       width="120"
-       height="20"
-       rx="3"
-       ry="3"
-       fill="#fad7ac"
-       stroke="#000000"
-       pointer-events="none"
-       id="rect659" />
-    <g
-       transform="translate(-0.5,-0.5)"
-       id="g665">
-      <switch
-         id="switch663">
-        <foreignObject
-           pointer-events="none"
-           width="100%"
-           height="100%"
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           style="overflow: visible; text-align: left;">
-          <xhtml:div
-             style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 118px; height: 1px; padding-top: 90px; margin-left: 331px;">
-            <xhtml:div
-               data-drawio-colors="color: rgb(0, 0, 0); "
-               style="box-sizing: border-box; font-size: 0px; text-align: center;">
-              <xhtml:div
-                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">dma_reg_block - RAL</xhtml:div>
-            </xhtml:div>
-          </xhtml:div>
-        </foreignObject>
-        <text
-           x="390"
-           y="94"
-           fill="#000000"
-           font-family="Helvetica"
-           font-size="12px"
-           text-anchor="middle"
-           id="text661">dma_reg_block - RAL</text>
-      </switch>
-    </g>
-    <rect
-       x="330"
-       y="120"
-       width="120"
-       height="20"
-       rx="3"
-       ry="3"
-       fill="#f8cecc"
-       stroke="#b85450"
-       pointer-events="none"
-       id="rect667" />
-    <g
-       transform="translate(-0.5,-0.5)"
-       id="g673">
-      <switch
-         id="switch671">
-        <foreignObject
-           pointer-events="none"
-           width="100%"
-           height="100%"
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           style="overflow: visible; text-align: left;">
-          <xhtml:div
-             style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 118px; height: 1px; padding-top: 130px; margin-left: 331px;">
-            <xhtml:div
-               data-drawio-colors="color: rgb(0, 0, 0); "
-               style="box-sizing: border-box; font-size: 0px; text-align: center;">
-              <xhtml:div
-                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">clk_rst_vif</xhtml:div>
-            </xhtml:div>
-          </xhtml:div>
-        </foreignObject>
-        <text
-           x="390"
-           y="134"
-           fill="#000000"
-           font-family="Helvetica"
-           font-size="12px"
-           text-anchor="middle"
-           id="text669">clk_rst_vif</text>
-      </switch>
-    </g>
-    <rect
-       x="330"
-       y="150"
-       width="120"
-       height="20"
-       rx="3"
-       ry="3"
-       fill="#f8cecc"
-       stroke="#b85450"
-       pointer-events="none"
-       id="rect675" />
-    <g
-       transform="translate(-0.5,-0.5)"
-       id="g681">
-      <switch
-         id="switch679">
-        <foreignObject
-           pointer-events="none"
-           width="100%"
-           height="100%"
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           style="overflow: visible; text-align: left;">
-          <xhtml:div
-             style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 118px; height: 1px; padding-top: 160px; margin-left: 331px;">
-            <xhtml:div
-               data-drawio-colors="color: rgb(0, 0, 0); "
-               style="box-sizing: border-box; font-size: 0px; text-align: center;">
-              <xhtml:div
-                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">intr_vif</xhtml:div>
-            </xhtml:div>
-          </xhtml:div>
-        </foreignObject>
-        <text
-           x="390"
-           y="164"
-           fill="#000000"
-           font-family="Helvetica"
-           font-size="12px"
-           text-anchor="middle"
-           id="text677">intr_vif</text>
-      </switch>
-    </g>
-    <rect
-       x="330"
-       y="180"
-       width="120"
-       height="20"
-       rx="3"
-       ry="3"
-       fill="#f8cecc"
-       stroke="#b85450"
-       pointer-events="none"
-       id="rect683" />
-    <g
-       transform="translate(-0.5,-0.5)"
-       id="g689">
-      <switch
-         id="switch687">
-        <foreignObject
-           pointer-events="none"
-           width="100%"
-           height="100%"
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           style="overflow: visible; text-align: left;">
-          <xhtml:div
-             style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 118px; height: 1px; padding-top: 190px; margin-left: 331px;">
-            <xhtml:div
-               data-drawio-colors="color: rgb(0, 0, 0); "
-               style="box-sizing: border-box; font-size: 0px; text-align: center;">
-              <xhtml:div
-                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">alerts_vif</xhtml:div>
-            </xhtml:div>
-          </xhtml:div>
-        </foreignObject>
-        <text
-           x="390"
-           y="194"
-           fill="#000000"
-           font-family="Helvetica"
-           font-size="12px"
-           text-anchor="middle"
-           id="text685">alerts_vif</text>
-      </switch>
-    </g>
-    <rect
-       x="330"
-       y="210"
-       width="120"
-       height="20"
-       rx="3"
-       ry="3"
-       fill="#f8cecc"
-       stroke="#b85450"
-       pointer-events="none"
-       id="rect691" />
-    <g
-       transform="translate(-0.5,-0.5)"
-       id="g697">
-      <switch
-         id="switch695">
-        <foreignObject
-           pointer-events="none"
-           width="100%"
-           height="100%"
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           style="overflow: visible; text-align: left;">
-          <xhtml:div
-             style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 118px; height: 1px; padding-top: 220px; margin-left: 331px;">
-            <xhtml:div
-               data-drawio-colors="color: rgb(0, 0, 0); "
-               style="box-sizing: border-box; font-size: 0px; text-align: center;">
-              <xhtml:div
-                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">devmode_if</xhtml:div>
-            </xhtml:div>
-          </xhtml:div>
-        </foreignObject>
-        <text
-           x="390"
-           y="224"
-           fill="#000000"
-           font-family="Helvetica"
-           font-size="12px"
-           text-anchor="middle"
-           id="text693">devmode_if</text>
-      </switch>
-    </g>
-    <rect
-       x="330"
-       y="240"
-       width="190"
-       height="20"
-       rx="3"
-       ry="3"
-       fill="#d5e8d4"
-       stroke="#82b366"
-       pointer-events="none"
-       id="rect699" />
-    <g
-       transform="translate(-0.5,-0.5)"
-       id="g705">
-      <switch
-         id="switch703">
-        <foreignObject
-           pointer-events="none"
-           width="100%"
-           height="100%"
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           style="overflow: visible; text-align: left;">
-          <xhtml:div
-             style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 188px; height: 1px; padding-top: 250px; margin-left: 331px;">
-            <xhtml:div
-               data-drawio-colors="color: rgb(0, 0, 0); "
-               style="box-sizing: border-box; font-size: 0px; text-align: center;">
-              <xhtml:div
-                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">m_tl_agent_cfg (tl_agent_cfg)</xhtml:div>
-            </xhtml:div>
-          </xhtml:div>
-        </foreignObject>
-        <text
-           x="425"
-           y="254"
-           fill="#000000"
-           font-family="Helvetica"
-           font-size="12px"
-           text-anchor="middle"
-           id="text701">m_tl_agent_cfg (tl_agent_cfg)</text>
-      </switch>
-    </g>
-    <rect
-       x="330"
-       y="270"
-       width="190"
-       height="20"
-       rx="3"
-       ry="3"
-       fill="#d5e8d4"
-       stroke="#82b366"
-       pointer-events="none"
-       id="rect707" />
-    <g
-       transform="translate(-0.5,-0.5)"
-       id="g713">
-      <switch
-         id="switch711">
-        <foreignObject
-           pointer-events="none"
-           width="100%"
-           height="100%"
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           style="overflow: visible; text-align: left;">
-          <xhtml:div
-             style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 188px; height: 1px; padding-top: 280px; margin-left: 331px;">
-            <xhtml:div
-               data-drawio-colors="color: rgb(0, 0, 0); "
-               style="box-sizing: border-box; font-size: 0px; text-align: center;">
-              <xhtml:div
-                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">tl_agent_dma_host _cfg(tl_agent_cfg)</xhtml:div>
-            </xhtml:div>
-          </xhtml:div>
-        </foreignObject>
-        <text
-           x="425"
-           y="284"
-           fill="#000000"
-           font-family="Helvetica"
-           font-size="12px"
-           text-anchor="middle"
-           id="text709">tl_agent_dma_host _cfg(tl_agent_cfg)</text>
-      </switch>
-    </g>
-    <rect
-       x="330"
-       y="300"
-       width="190"
-       height="20"
-       rx="3"
-       ry="3"
-       fill="#d5e8d4"
-       stroke="#82b366"
-       pointer-events="none"
-       id="rect715" />
-    <g
-       transform="translate(-0.5,-0.5)"
-       id="g721">
-      <switch
-         id="switch719">
-        <foreignObject
-           pointer-events="none"
-           width="100%"
-           height="100%"
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           style="overflow: visible; text-align: left;">
-          <xhtml:div
-             style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 188px; height: 1px; padding-top: 310px; margin-left: 331px;">
-            <xhtml:div
-               data-drawio-colors="color: rgb(0, 0, 0); "
-               style="box-sizing: border-box; font-size: 0px; text-align: center;">
-              <xhtml:div
-                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">tl_agent_dma_ctn_cfg(tl_agent_cfg)</xhtml:div>
-            </xhtml:div>
-          </xhtml:div>
-        </foreignObject>
-        <text
-           x="425"
-           y="314"
-           fill="#000000"
-           font-family="Helvetica"
-           font-size="12px"
-           text-anchor="middle"
-           id="text717">tl_agent_dma_ctn_cfg(tl_agent_cfg)</text>
-      </switch>
-    </g>
-    <rect
-       x="330"
-       y="330"
-       width="190"
-       height="20"
-       rx="3"
-       ry="3"
-       fill="#d5e8d4"
-       stroke="#82b366"
-       pointer-events="none"
-       id="rect723" />
-    <g
-       transform="translate(-0.5,-0.5)"
-       id="g729">
-      <switch
-         id="switch727">
-        <foreignObject
-           pointer-events="none"
-           width="100%"
-           height="100%"
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           style="overflow: visible; text-align: left;">
-          <xhtml:div
-             style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 188px; height: 1px; padding-top: 340px; margin-left: 331px;">
-            <xhtml:div
-               data-drawio-colors="color: rgb(0, 0, 0); "
-               style="box-sizing: border-box; font-size: 0px; text-align: center;">
-              <xhtml:div
-                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">tl_agent_dma_sys_cfg(tl_agent_cfg)</xhtml:div>
-            </xhtml:div>
-          </xhtml:div>
-        </foreignObject>
-        <text
-           x="425"
-           y="344"
-           fill="#000000"
-           font-family="Helvetica"
-           font-size="12px"
-           text-anchor="middle"
-           id="text725">tl_agent_dma_sys_cfg(tl_agent_cfg)</text>
-      </switch>
-    </g>
     <path
-       d="m 80,90 q -59.97,0 -59.97,185 0,185 187.49,185 187.48,0 187.48,-5 0,-5 28.63,-5"
+       d="m 80,90 c -39.98,0 -59.97,61.66667 -59.97,185 0,123.33333 -12.8510421,180.04089 112.14229,180.04089 124.98667,0 195.01927,4.55804 195.01927,1.2247 0,-3.33333 101.33579,1.72776 96.43844,-6.26559"
        fill="none"
        stroke="#000000"
        stroke-miterlimit="10"
        stroke-dasharray="3, 3"
        pointer-events="none"
-       id="path731" />
+       id="path731"
+       sodipodi:nodetypes="csssc" />
     <path
        d="m 428.88,450 -7,3.5 1.75,-3.5 -1.75,-3.5 z"
        fill="#000000"
@@ -1041,32 +674,36 @@
        pointer-events="none"
        id="path733" />
     <path
-       d="m 70.91,460 h 440 v 180 h -460 V 480 Z"
+       d="M 65.587467,460.02643 H 510.88357 V 659.58758 H 45.346737 V 482.1999 Z"
        fill="#dae8fc"
        stroke="#6c8ebf"
        stroke-miterlimit="10"
        pointer-events="none"
-       id="path735" />
+       id="path735"
+       style="stroke-width:1.05926" />
     <rect
-       x="55"
-       y="530"
-       width="445"
-       height="100"
-       rx="15"
-       ry="15"
+       x="54.430271"
+       y="526.65076"
+       width="444.92285"
+       height="121.91959"
+       rx="14.997399"
+       ry="18.287937"
        fill="#fff2cc"
        stroke="#d6b656"
        pointer-events="none"
-       id="rect743" />
+       id="rect743"
+       style="stroke-width:1.10408" />
     <path
-       d="m 90,550 h 400 v 70 H 60 v -40 z"
+       d="m 78.89652,547.12327 413.98381,-0.139 v 88.51898 H 62.510227 l 0.190633,-71.50293 z"
        fill="#dae8fc"
        stroke="#6c8ebf"
        stroke-miterlimit="10"
        pointer-events="none"
-       id="path745" />
+       id="path745"
+       style="stroke-width:1.12501"
+       sodipodi:nodetypes="cccccc" />
     <g
-       transform="translate(0.42860783,-3.9654296)"
+       transform="translate(-1.5465623,-10.584632)"
        id="g757">
       <switch
          id="switch755">
@@ -1093,51 +730,18 @@
            font-family="Helvetica"
            font-size="12px"
            text-anchor="middle"
-           id="text753">dma_base_vseq.sv.</text>
-      </switch>
-    </g>
-    <g
-       transform="translate(-0.5,-0.5)"
-       id="g763">
-      <switch
-         id="switch761">
-        <foreignObject
-           pointer-events="none"
-           width="100%"
-           height="100%"
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           style="overflow: visible; text-align: left;">
-          <xhtml:div
-             style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 58px; height: 1px; padding-top: 65px; margin-left: 356px;">
-            <xhtml:div
-               data-drawio-colors="color: rgb(0, 0, 0); "
-               style="box-sizing: border-box; font-size: 0px; text-align: center;">
-              <xhtml:div
-                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">
-                <xhtml:b>dma_env_cfg</xhtml:b>
-              </xhtml:div>
-            </xhtml:div>
-          </xhtml:div>
-        </foreignObject>
-        <text
-           x="385"
-           y="69"
-           fill="#000000"
-           font-family="Helvetica"
-           font-size="12px"
-           text-anchor="middle"
-           id="text759">dma_env_cfg</text>
+           id="text753">dma_base_vseq.sv</text>
       </switch>
     </g>
     <path
-       d="m 75.950836,167.86607 q -65.9784589,0 -65.9784589,188.60304 0,188.59301 30.2934279,188.56283"
+       d="m 80.920069,168.34011 q -70.926567,0 -70.926567,188.36042 0,188.3504 32.565308,188.32026"
        fill="none"
        stroke="#000000"
        stroke-miterlimit="10"
-       stroke-dasharray="2.66534, 2.66534"
+       stroke-dasharray="2.7617, 2.7617"
        pointer-events="none"
        id="path771"
-       style="stroke-width:0.888446" />
+       style="stroke-width:0.920566" />
     <path
        d="m 53.88,545 -7,2.34 1.75,-2.34 -1.75,-2.33 z"
        fill="#000000"
@@ -1145,109 +749,6 @@
        stroke-miterlimit="10"
        pointer-events="none"
        id="path773" />
-    <rect
-       x="330"
-       y="360"
-       width="180"
-       height="20"
-       rx="3"
-       ry="3"
-       fill="#fad7ac"
-       stroke="#000000"
-       pointer-events="none"
-       id="rect775" />
-    <g
-       transform="translate(-0.5,-0.5)"
-       id="g781">
-      <switch
-         id="switch779">
-        <foreignObject
-           pointer-events="none"
-           width="100%"
-           height="100%"
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           style="overflow: visible; text-align: left;">
-          <xhtml:div
-             style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 178px; height: 1px; padding-top: 370px; margin-left: 331px;">
-            <xhtml:div
-               data-drawio-colors="color: rgb(0, 0, 0); "
-               style="box-sizing: border-box; font-size: 0px; text-align: center;">
-              <xhtml:div
-                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">m_mem_host(mem_model)</xhtml:div>
-            </xhtml:div>
-          </xhtml:div>
-        </foreignObject>
-        <text
-           x="420"
-           y="374"
-           fill="#000000"
-           font-family="Helvetica"
-           font-size="12px"
-           text-anchor="middle"
-           id="text777">m_mem_host(mem_model)</text>
-      </switch>
-    </g>
-    <rect
-       x="330"
-       y="390"
-       width="180"
-       height="20"
-       rx="3"
-       ry="3"
-       fill="#fad7ac"
-       stroke="#000000"
-       pointer-events="none"
-       id="rect783" />
-    <g
-       transform="translate(-0.5,-0.5)"
-       id="g789">
-      <switch
-         id="switch787">
-        <foreignObject
-           pointer-events="none"
-           width="100%"
-           height="100%"
-           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-           style="overflow: visible; text-align: left;">
-          <xhtml:div
-             style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 178px; height: 1px; padding-top: 400px; margin-left: 331px;">
-            <xhtml:div
-               data-drawio-colors="color: rgb(0, 0, 0); "
-               style="box-sizing: border-box; font-size: 0px; text-align: center;">
-              <xhtml:div
-                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">m_mem_ctn(mem_model)</xhtml:div>
-            </xhtml:div>
-          </xhtml:div>
-        </foreignObject>
-        <text
-           x="420"
-           y="404"
-           fill="#000000"
-           font-family="Helvetica"
-           font-size="12px"
-           text-anchor="middle"
-           id="text785">m_mem_ctn(mem_model)</text>
-      </switch>
-    </g>
-    <rect
-       x="330"
-       y="420"
-       width="180"
-       height="20"
-       rx="3"
-       ry="3"
-       fill="#fad7ac"
-       stroke="#000000"
-       pointer-events="none"
-       id="rect791" />
-    <text
-       x="420"
-       y="434"
-       fill="#000000"
-       font-family="Helvetica"
-       font-size="12px"
-       text-anchor="middle"
-       id="text793">m_mem_sys(mem_model)</text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:13.3333px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none"
@@ -1311,111 +812,107 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.6667px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none"
-       x="589.42224"
-       y="425.23416"
+       x="619.60583"
+       y="453.16983"
        id="text78461"><tspan
          id="tspan78459"
-         x="589.42224"
-         y="425.23416"
+         x="619.60583"
+         y="453.16983"
          sodipodi:role="line">Initial block: set common interfaces in config_db</tspan><tspan
-         x="589.42224"
-         y="438.56754"
+         x="619.60583"
+         y="466.5032"
          id="tspan87525"
          sodipodi:role="line">tl_host_if:    retrieved by tl_agent_dma_host</tspan><tspan
-         x="589.42224"
-         y="451.90091"
+         x="619.60583"
+         y="479.83658"
          id="tspan87527"
          sodipodi:role="line">tl_ctn_if:    retrieved by tl_agent_dma_ctn</tspan><tspan
-         x="589.42224"
-         y="465.23428"
+         x="619.60583"
+         y="493.16995"
          id="tspan87529"
          sodipodi:role="line">tl_if:            retrieved by m_tl_agent</tspan><tspan
-         x="589.42224"
-         y="478.56766"
+         x="619.60583"
+         y="506.50333"
          id="tspan87531"
          sodipodi:role="line">tl_sys_if:      retrieved by tl_agent_dma_sys</tspan><tspan
-         x="589.42224"
-         y="491.90103"
+         x="619.60583"
+         y="519.83673"
          id="tspan87533"
          sodipodi:role="line">clk_rst_if:    retrieved by cip_base_env_cfg::clk_rst_vif</tspan><tspan
-         x="589.42224"
-         y="505.23441"
+         x="619.60583"
+         y="533.1701"
          id="tspan87535"
          sodipodi:role="line">intr_if:         This is created as pins_if with NUM_MAX_INTERRUPTS(set to 64) </tspan><tspan
-         x="589.42224"
-         y="518.56781"
+         x="619.60583"
+         y="546.50348"
          id="tspan101571"
          sodipodi:role="line">                   IP is expected to have much fewer interrupts</tspan><tspan
-         x="589.42224"
-         y="531.90118"
+         x="619.60583"
+         y="559.83685"
          id="tspan87537"
          sodipodi:role="line">handhake_i: retrieved by dma_env using dma_if </tspan><tspan
-         x="589.42224"
-         y="545.23456"
+         x="619.60583"
+         y="573.17023"
          id="tspan102497"
          sodipodi:role="line">                    lsio_trigger_i is connected to this signal</tspan></text>
     <text
        xml:space="preserve"
-       transform="matrix(1.0205193,0,0,1.0441609,-12.077556,-32.038779)"
+       transform="matrix(1.0205193,0,0,1.0441609,-18.344617,-6.8381502)"
        id="text112243"
        style="font-style:normal;font-weight:normal;font-size:12px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect112245);fill:#000000;fill-opacity:1;stroke:none"><tspan
          x="595.58789"
          y="662.67188"
-         id="tspan78424">Methodology:
+         id="tspan15384">Methodology:
 </tspan><tspan
          x="595.58789"
          y="677.67188"
-         id="tspan78426"> - Most components extended from cip_base with the right type parameter
+         id="tspan15386"> - Most components extended from cip_base with the right type parameter
 </tspan><tspan
          x="595.58789"
          y="692.67188"
-         id="tspan78428"> - Ideally, all tests use the same base test class; only the test sequence is changed
+         id="tspan15388"> - Ideally, all tests use the same base test class; only the test sequence is changed
 </tspan><tspan
          x="595.58789"
          y="707.67188"
-         id="tspan78430">   using the UVM_TEST_SEQ plusarg</tspan></text>
+         id="tspan15390">   using the UVM_TEST_SEQ plusarg</tspan></text>
     <text
        xml:space="preserve"
-       transform="matrix(1.0205193,0,0,1.0441609,-0.86610037,-29.243314)"
+       transform="matrix(1.0205193,0,0,1.0441609,-0.53514023,-20.066451)"
        id="text122091"
        style="font-style:normal;font-weight:normal;font-size:12px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect122093);fill:#000000;fill-opacity:1;stroke:none"><tspan
          x="17.748047"
          y="680.47852"
-         id="tspan78432">Legend:
+         id="tspan15392">Legend:
 </tspan><tspan
          x="17.748047"
          y="695.47852"
-         id="tspan78434">Square boxes: SV modules / interfaces (static)
+         id="tspan15394">Square boxes: SV modules / interfaces (static)
 </tspan><tspan
          x="17.748047"
          y="710.47852"
-         id="tspan78436">Round boxes: SV classes (dynamic)
+         id="tspan15396">Round boxes: SV classes (dynamic)
 </tspan><tspan
          x="17.748047"
          y="725.47852"
-         id="tspan78438">Blue Rectange with folder corner: code blocks (initial, tasks, etc)
+         id="tspan15398">Blue Rectange with folder corner: code blocks (initial, tasks, etc)
 </tspan><tspan
          x="17.748047"
          y="740.47852"
-         id="tspan78440">Dotted blocks: Indicate handles inside parent entity
+         id="tspan15400">Dotted blocks: Indicate handles inside parent entity
 </tspan><tspan
          x="17.748047"
          y="755.47852"
-         id="tspan78442">Alternate dash and dot blocks: component exist sonly in extended IP tb
+         id="tspan15402">Light dotted lines: Indicdate handle to instance passed on to components
 </tspan><tspan
          x="17.748047"
          y="770.47852"
-         id="tspan78444">Light dotted lines: Indicdate handle to instance passed on to components
-</tspan><tspan
-         x="17.748047"
-         y="785.47852"
-         id="tspan78446">
+         id="tspan15404">
 </tspan><tspan
          x="17.748047"
          y="793.65625"
-         id="tspan78450"><tspan
+         id="tspan15408"><tspan
            dx="0 6.6855469 3.3339844 7.6171875 7.6054688 4.7050781 7.6171875 3.3339844 4.7050781 4.7050781 7.3828125 7.6171875 3.8144531 3.3339844 3.3339844 7.6054688 7.3828125 6.2519531 4.0429688 3.8144531 3.5390625 7.6054688 7.6171875 3.3339844 6.5976562 7.3535156 4.7050781 7.3828125 3.8144531 7.6054688 7.3535156 7.6054688 7.6171875 3.3339844 7.3828125 3.8144531 4.7050781 7.3417969 3.8144531 3.3339844 7.6054688 6.2519531 4.7050781 7.3535156 7.6054688 6.5976562 7.3828125 3.8144531 7.6171875 7.3535156 6.2519531 6.2519531 7.3828125 7.6171875 7.3417969 3.3339844 7.6054688 3.8144531 4.7050781 7.3417969 7.6171875 3.8144531 6.5976562 7.3417969 11.689453 7.6171875 7.3417969 7.6054688 7.3828125 7.6054688 4.7050781"
-           id="tspan78448">Lightditted lines: Indicate handle to instance passedoin top components</tspan></tspan></text>
+           id="tspan15406">Lightditted lines: Indicate handle to instance passedoin top components</tspan></tspan></text>
     <text
        xml:space="preserve"
        transform="translate(-16.426748,-92.581951)"
@@ -1423,34 +920,34 @@
        style="font-style:normal;font-weight:normal;font-size:12px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect178521);fill:#000000;fill-opacity:1;stroke:none"><tspan
          x="95.875"
          y="578.83008"
-         id="tspan78452">run_phase(): calls run_seq() which creates and runs sequence      </tspan><tspan
+         id="tspan15410">run_phase(): calls run_seq() which creates and runs sequence      </tspan><tspan
          x="95.875"
          y="593.83008"
-         id="tspan78454">passed externally using UVM_TEST_VSEQ plusarg. 
+         id="tspan15412">passed externally using UVM_TEST_VSEQ plusarg. 
 </tspan><tspan
          x="95.875"
          y="608.83008"
-         id="tspan78456"> All vseqs are eventually derived from cip_base_vseq</tspan></text>
+         id="tspan15414"> All vseqs are eventually derived from cip_base_vseq</tspan></text>
     <text
        xml:space="preserve"
-       transform="matrix(1.0647108,0,0,1.1000082,-28.349126,-61.23961)"
+       transform="matrix(1.0647108,0,0,1.1000082,-27.745455,-44.932542)"
        id="text200162"
        style="font-style:normal;font-weight:normal;font-size:10.6667px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect200164);fill:#000000;fill-opacity:1;stroke:none"><tspan
          x="84.339844"
          y="569.75394"
-         id="tspan78458">          - Extended from cip_base_vseq
+         id="tspan15416">     - Extended from cip_base_vseq
 </tspan><tspan
          x="84.339844"
          y="583.08731"
-         id="tspan78460">          - Proivides most commonly used tasks among all vseqs.
+         id="tspan15418">     - Proivides most commonly used tasks among all vseqs.
 </tspan><tspan
          x="84.339844"
          y="596.42068"
-         id="tspan78462">          - All DMA vseqs are derived from dma_base_vseq
+         id="tspan15420">     - All DMA vseqs are derived from dma_base_vseq
 </tspan><tspan
          x="84.339844"
          y="609.75406"
-         id="tspan78464">          - For each interface a mem_model is instantiated</tspan></text>
+         id="tspan15422">     - For each interface a dma_mem_model and mem_model is instantiated</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:12px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none"
@@ -1531,5 +1028,579 @@
          id="tspan16593-9-2-0-3-6"
          x="84.395599"
          y="93.969803">cov</tspan></text>
+    <g
+       id="g44865-8"
+       style="mix-blend-mode:normal"
+       transform="translate(0.58815779,42.68113)" />
+    <rect
+       x="263.96429"
+       y="37.88776"
+       width="277.59219"
+       height="407.13638"
+       rx="42.094257"
+       ry="36.642273"
+       fill="#fff2cc"
+       stroke="#d6b656"
+       pointer-events="none"
+       id="rect657"
+       style="stroke-width:1.08503" />
+    <rect
+       x="270.76837"
+       y="68.468483"
+       width="120"
+       height="19.54022"
+       rx="3"
+       ry="2.9310331"
+       fill="#fad7ac"
+       stroke="#000000"
+       pointer-events="none"
+       id="rect659"
+       style="stroke-width:0.788;stroke-miterlimit:4;stroke-dasharray:none" />
+    <g
+       transform="matrix(1,0,0,0.97701103,-57.718732,-10.444114)"
+       id="g665"
+       style="stroke-width:0.79721688;stroke-miterlimit:4;stroke-dasharray:none">
+      <switch
+         id="switch663"
+         style="stroke-width:0.79721688;stroke-miterlimit:4;stroke-dasharray:none">
+        <foreignObject
+           pointer-events="none"
+           width="100%"
+           height="100%"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
+           style="overflow: visible; text-align: left;">
+          <xhtml:div
+             style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 118px; height: 1px; padding-top: 90px; margin-left: 331px;">
+            <xhtml:div
+               data-drawio-colors="color: rgb(0, 0, 0); "
+               style="box-sizing: border-box; font-size: 0px; text-align: center;">
+              <xhtml:div
+                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">dma_reg_block - RAL</xhtml:div>
+            </xhtml:div>
+          </xhtml:div>
+        </foreignObject>
+        <text
+           x="390"
+           y="94"
+           fill="#000000"
+           font-family="Helvetica"
+           font-size="12px"
+           text-anchor="middle"
+           id="text661"
+           style="stroke-width:0.79721688;stroke-miterlimit:4;stroke-dasharray:none">dma_reg_block - RAL</text>
+      </switch>
+    </g>
+    <g
+       id="g1417"
+       transform="matrix(1,0,0,0.97701103,-18.229946,9.4474902)">
+      <g
+         id="g1404"
+         transform="translate(-17.771236,0.66986332)">
+        <rect
+           x="307.71521"
+           y="86.190193"
+           width="120"
+           height="20"
+           rx="3"
+           ry="3"
+           fill="#f8cecc"
+           stroke="#b85450"
+           pointer-events="none"
+           id="rect667" />
+      </g>
+      <g
+         transform="translate(-44.526311,-33.547955)"
+         id="g673">
+        <switch
+           id="switch671">
+          <foreignObject
+             pointer-events="none"
+             width="100%"
+             height="100%"
+             requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
+             style="overflow: visible; text-align: left;">
+            <xhtml:div
+               style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 118px; height: 1px; padding-top: 130px; margin-left: 331px;">
+              <xhtml:div
+                 data-drawio-colors="color: rgb(0, 0, 0); "
+                 style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                <xhtml:div
+                   style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">clk_rst_vif</xhtml:div>
+              </xhtml:div>
+            </xhtml:div>
+          </foreignObject>
+          <text
+             x="390"
+             y="134"
+             fill="#000000"
+             font-family="Helvetica"
+             font-size="12px"
+             text-anchor="middle"
+             id="text669">clk_rst_vif</text>
+        </switch>
+      </g>
+    </g>
+    <g
+       id="g1423"
+       transform="matrix(1,0,0,0.97701103,-36.866974,10.275271)">
+      <rect
+         x="308.75998"
+         y="111.9795"
+         width="120"
+         height="20"
+         rx="3"
+         ry="3"
+         fill="#f8cecc"
+         stroke="#b85450"
+         pointer-events="none"
+         id="rect675" />
+      <g
+         transform="translate(-24.639305,-38.623356)"
+         id="g681">
+        <switch
+           id="switch679">
+          <foreignObject
+             pointer-events="none"
+             width="100%"
+             height="100%"
+             requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
+             style="overflow: visible; text-align: left;">
+            <xhtml:div
+               style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 118px; height: 1px; padding-top: 160px; margin-left: 331px;">
+              <xhtml:div
+                 data-drawio-colors="color: rgb(0, 0, 0); "
+                 style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                <xhtml:div
+                   style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">intr_vif</xhtml:div>
+              </xhtml:div>
+            </xhtml:div>
+          </foreignObject>
+          <text
+             x="390"
+             y="164"
+             fill="#000000"
+             font-family="Helvetica"
+             font-size="12px"
+             text-anchor="middle"
+             id="text677">intr_vif</text>
+        </switch>
+      </g>
+    </g>
+    <g
+       id="g1429"
+       transform="matrix(1,0,0,0.97701103,-35.613958,10.109068)">
+      <rect
+         x="308.66544"
+         y="137.28218"
+         width="120"
+         height="20"
+         rx="3"
+         ry="3"
+         fill="#f8cecc"
+         stroke="#b85450"
+         pointer-events="none"
+         id="rect683" />
+      <g
+         transform="translate(-21.799943,-42.319181)"
+         id="g689">
+        <switch
+           id="switch687"
+           transform="translate(-1.8533768,-0.44172687)">
+          <foreignObject
+             pointer-events="none"
+             width="100%"
+             height="100%"
+             requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
+             style="overflow: visible; text-align: left;">
+            <xhtml:div
+               style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 118px; height: 1px; padding-top: 190px; margin-left: 331px;">
+              <xhtml:div
+                 data-drawio-colors="color: rgb(0, 0, 0); "
+                 style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                <xhtml:div
+                   style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">alerts_vif</xhtml:div>
+              </xhtml:div>
+            </xhtml:div>
+          </foreignObject>
+          <text
+             x="390"
+             y="194"
+             fill="#000000"
+             font-family="Helvetica"
+             font-size="12px"
+             text-anchor="middle"
+             id="text685">alerts_vif</text>
+        </switch>
+      </g>
+    </g>
+    <g
+       id="g1435"
+       transform="matrix(1,0,0,0.97701103,-35.580201,9.1791083)">
+      <rect
+         x="308.27133"
+         y="162.39575"
+         width="120"
+         height="20"
+         rx="3"
+         ry="3"
+         fill="#f8cecc"
+         stroke="#b85450"
+         pointer-events="none"
+         id="rect691" />
+      <g
+         transform="translate(-23.613163,-48.203484)"
+         id="g697">
+        <switch
+           id="switch695">
+          <foreignObject
+             pointer-events="none"
+             width="100%"
+             height="100%"
+             requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
+             style="overflow: visible; text-align: left;">
+            <xhtml:div
+               style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 118px; height: 1px; padding-top: 220px; margin-left: 331px;">
+              <xhtml:div
+                 data-drawio-colors="color: rgb(0, 0, 0); "
+                 style="box-sizing: border-box; font-size: 0px; text-align: center;">
+                <xhtml:div
+                   style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">devmode_if</xhtml:div>
+              </xhtml:div>
+            </xhtml:div>
+          </foreignObject>
+          <text
+             x="390"
+             y="224"
+             fill="#000000"
+             font-family="Helvetica"
+             font-size="12px"
+             text-anchor="middle"
+             id="text693">devmode_if</text>
+        </switch>
+      </g>
+    </g>
+    <g
+       transform="matrix(1,0,0,0.97701103,-3.724042,-8.2291784)"
+       id="g763">
+      <switch
+         id="switch761">
+        <foreignObject
+           pointer-events="none"
+           width="100%"
+           height="100%"
+           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
+           style="overflow: visible; text-align: left;">
+          <xhtml:div
+             style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 58px; height: 1px; padding-top: 65px; margin-left: 356px;">
+            <xhtml:div
+               data-drawio-colors="color: rgb(0, 0, 0); "
+               style="box-sizing: border-box; font-size: 0px; text-align: center;">
+              <xhtml:div
+                 style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">
+                <xhtml:b>dma_env_cfg</xhtml:b>
+              </xhtml:div>
+            </xhtml:div>
+          </xhtml:div>
+        </foreignObject>
+        <text
+           x="385"
+           y="69"
+           fill="#000000"
+           font-family="Helvetica"
+           font-size="12px"
+           text-anchor="middle"
+           id="text759">dma_env_cfg</text>
+      </switch>
+    </g>
+    <g
+       id="g44865"
+       transform="matrix(1,0,0,0.97701103,-20.614845,10.605736)">
+      <rect
+         x="419.90689"
+         y="105.98685"
+         width="134.2364"
+         height="35.49427"
+         rx="2.1195223"
+         ry="5.3241405"
+         fill="#d5e8d4"
+         stroke="#82b366"
+         pointer-events="none"
+         id="rect707"
+         style="stroke-width:1.11975" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:10.6667px;line-height:1.25;font-family:sans-serif;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5"
+         x="486.99963"
+         y="118.71909"
+         id="text22513"><tspan
+           sodipodi:role="line"
+           id="tspan22511"
+           x="486.99963"
+           y="118.71909"
+           style="font-size:10.6667px;text-align:center;text-anchor:middle;stroke-width:0.5">tl_agent_dma_host_cfg</tspan><tspan
+           sodipodi:role="line"
+           x="486.99963"
+           y="132.05247"
+           style="font-size:10.6667px;text-align:center;text-anchor:middle;stroke-width:0.5"
+           id="tspan33051">(tl_agent_cfg)</tspan></text>
+    </g>
+    <g
+       id="g41063-2"
+       style="mix-blend-mode:normal"
+       transform="matrix(1,0,0,0.97701103,-20.357878,-35.536043)">
+      <rect
+         x="419.90689"
+         y="105.98685"
+         width="134.2364"
+         height="35.49427"
+         rx="2.1195223"
+         ry="5.3241405"
+         fill="#d5e8d4"
+         stroke="#82b366"
+         pointer-events="none"
+         id="rect707-7"
+         style="stroke-width:1.11975" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:10.6667px;line-height:1.25;font-family:sans-serif;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5"
+         x="480.80453"
+         y="120.97695"
+         id="text22513-0"><tspan
+           sodipodi:role="line"
+           id="tspan22511-9"
+           x="480.80453"
+           y="120.97695"
+           style="font-size:10.6667px;text-align:center;text-anchor:middle;stroke-width:0.5">m_tl_agent_cfg</tspan><tspan
+           sodipodi:role="line"
+           x="480.80453"
+           y="134.31033"
+           style="font-size:10.6667px;text-align:center;text-anchor:middle;stroke-width:0.5"
+           id="tspan33051-3">(tl_agent_cfg)</tspan></text>
+    </g>
+    <g
+       id="g49242"
+       transform="matrix(1,0,0,0.97701103,-20.614845,10.605736)">
+      <rect
+         x="420.25372"
+         y="148.55229"
+         width="134.2364"
+         height="35.49427"
+         rx="2.1195223"
+         ry="5.3241405"
+         fill="#d5e8d4"
+         stroke="#82b366"
+         pointer-events="none"
+         id="rect48501"
+         style="stroke-width:1.11975" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:10.6667px;line-height:1.25;font-family:sans-serif;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5"
+         x="487.34647"
+         y="161.28455"
+         id="text48507"><tspan
+           sodipodi:role="line"
+           id="tspan48503"
+           x="487.34647"
+           y="161.28455"
+           style="font-size:10.6667px;text-align:center;text-anchor:middle;stroke-width:0.5">tl_agent_dma_ctn_cfg</tspan><tspan
+           sodipodi:role="line"
+           x="487.34647"
+           y="174.61792"
+           style="font-size:10.6667px;text-align:center;text-anchor:middle;stroke-width:0.5"
+           id="tspan48505">(tl_agent_cfg)</tspan></text>
+    </g>
+    <g
+       id="g57311"
+       transform="matrix(1,0,0,0.97701103,-20.614845,10.605736)">
+      <rect
+         x="308.55545"
+         y="192.10475"
+         width="215.38103"
+         height="35.201511"
+         rx="3.4007533"
+         ry="5.2802267"
+         fill="#d5e8d4"
+         stroke="#82b366"
+         pointer-events="none"
+         id="rect49989"
+         style="stroke-width:1.41251" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-weight:normal;font-size:10.6667px;line-height:1.25;font-family:sans-serif;text-align:center;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5"
+         x="404.09018"
+         y="205.16991"
+         id="text49995"><tspan
+           sodipodi:role="line"
+           id="tspan49991"
+           x="404.09018"
+           y="205.16991"
+           style="font-size:10.6667px;text-align:center;text-anchor:middle;stroke-width:0.5">tl_agent_dma_ctn_cfg</tspan><tspan
+           sodipodi:role="line"
+           x="404.09018"
+           y="218.50328"
+           style="font-size:10.6667px;text-align:center;text-anchor:middle;stroke-width:0.5"
+           id="tspan49993">(tl_agent_cfg)</tspan></text>
+    </g>
+    <g
+       id="g116587"
+       transform="matrix(1,0,0,0.97701103,-20.614845,10.605736)">
+      <g
+         id="g112754"
+         transform="translate(2.1035826,-14.421919)">
+        <rect
+           x="307.84229"
+           y="253.34601"
+           width="215.60265"
+           height="24.999218"
+           rx="3.4042525"
+           ry="3.7498825"
+           fill="#d5e8d4"
+           stroke="#82b366"
+           pointer-events="none"
+           id="rect93483"
+           style="fill:#fad7ac;fill-opacity:1;stroke:#fad74f;stroke-width:1.19137;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-weight:normal;font-size:10.6667px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none"
+           x="323.29935"
+           y="267.94522"
+           id="text60935"><tspan
+             sodipodi:role="line"
+             id="tspan60933"
+             x="323.29935"
+             y="267.94522"
+             style="font-size:10.6667px">mem_host (mem_model#(32,32))</tspan></text>
+      </g>
+      <rect
+         x="310.52042"
+         y="271.64545"
+         width="215.60265"
+         height="24.999218"
+         rx="3.4042525"
+         ry="3.7498825"
+         fill="#d5e8d4"
+         stroke="#82b366"
+         pointer-events="none"
+         id="rect112756"
+         style="fill:#fad7ac;fill-opacity:1;stroke:#fad74f;stroke-width:1.19137;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      <rect
+         x="311.25912"
+         y="304.44229"
+         width="215.60265"
+         height="24.999218"
+         rx="3.4042525"
+         ry="3.7498825"
+         fill="#d5e8d4"
+         stroke="#82b366"
+         pointer-events="none"
+         id="rect115195"
+         style="fill:#fad7ac;fill-opacity:1;stroke:#fad74f;stroke-width:1.19137;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      <g
+         id="g17037">
+        <rect
+           x="310.3476"
+           y="335.39386"
+           width="216.77539"
+           height="21.381847"
+           rx="3.4227691"
+           ry="3.2072771"
+           fill="#d5e8d4"
+           stroke="#82b366"
+           pointer-events="none"
+           id="rect117515"
+           style="fill:#fad7ac;fill-opacity:1;stroke:#fad74f;stroke-width:1.10481;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-weight:normal;font-size:8px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1"
+           x="312.76559"
+           y="348.81558"
+           id="text117519"><tspan
+             sodipodi:role="line"
+             id="tspan117517"
+             x="312.76559"
+             y="348.81558"
+             style="font-size:8px;stroke-width:1">mem_host_fifo (dma_handshake_mode_fifo#(32,32))</tspan></text>
+      </g>
+      <g
+         id="g17029"
+         transform="matrix(0.98505742,0,0,1.0327885,17.443357,-10.388921)">
+        <rect
+           x="297.01578"
+           y="366.43616"
+           width="221.57784"
+           height="19.985571"
+           rx="3.4985974"
+           ry="2.9978354"
+           fill="#d5e8d4"
+           stroke="#82b366"
+           pointer-events="none"
+           id="rect119637"
+           style="fill:#fad7ac;fill-opacity:1;stroke:#fad74f;stroke-width:1.07989;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-weight:normal;font-size:8px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none"
+           x="304.4462"
+           y="378.47589"
+           id="text119641"><tspan
+             sodipodi:role="line"
+             id="tspan119639"
+             x="304.4462"
+             y="378.47589"
+             style="font-size:8px">mem_ctn_fifo (dma_handshake_mode_fifo#(32,32))</tspan></text>
+      </g>
+      <g
+         id="g19916">
+        <rect
+           x="309.30847"
+           y="400.08151"
+           width="217.66222"
+           height="20.293354"
+           rx="3.4367719"
+           ry="3.0440032"
+           fill="#d5e8d4"
+           stroke="#82b366"
+           pointer-events="none"
+           id="rect121397"
+           style="fill:#fad7ac;fill-opacity:1;stroke:#fad74f;stroke-width:1.07852;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+        <text
+           xml:space="preserve"
+           style="font-style:normal;font-weight:normal;font-size:8px;line-height:1.25;font-family:sans-serif;mix-blend-mode:normal;fill:#000000;fill-opacity:1;stroke:none"
+           x="314.55273"
+           y="411.91357"
+           id="text119641-5"><tspan
+             sodipodi:role="line"
+             id="tspan119639-0"
+             x="314.55273"
+             y="411.91357"
+             style="font-size:8px">mem_sys_fifo (dma_handshake_mode_fifo#(64,32))</tspan></text>
+      </g>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.5434px;line-height:1.25;font-family:sans-serif;mix-blend-mode:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.988439"
+       x="303.80411"
+       y="325.29388"
+       id="text112760-2"
+       transform="scale(1.0116965,0.98843868)"><tspan
+         sodipodi:role="line"
+         id="tspan112758-9"
+         x="303.80411"
+         y="325.29388"
+         style="font-size:10.5434px;stroke-width:0.988439">mem_sys (mem_model#(64,32))</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.5434px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.988439"
+       x="301.83224"
+       y="293.66507"
+       id="text112760"
+       transform="scale(1.0116965,0.98843868)"><tspan
+         sodipodi:role="line"
+         id="tspan112758"
+         x="301.83224"
+         y="293.66507"
+         style="font-size:10.5434px;stroke-width:0.988439">mem_ctn (mem_model#(32,32))</tspan></text>
+    <g
+       id="g116664"
+       transform="translate(-0.31507405,99.724909)" />
   </g>
 </svg>
