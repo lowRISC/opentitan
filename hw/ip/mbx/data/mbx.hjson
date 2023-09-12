@@ -58,6 +58,9 @@
     { name: "fatal_fault"
       desc: "This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected."
     }
+    { name: "recov_fault",
+      desc: "This recoverable alert is triggered when memory with invalid ECC (e.g., uninitialized memory) or at an invalid address is accessed."
+    }
   ]
   countermeasures: [
     { name: "BUS.INTEGRITY"

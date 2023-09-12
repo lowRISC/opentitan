@@ -41,6 +41,8 @@ module mbx
 
   // Collect all error sources
   logic sysif_intg_err, tl_sram_intg_err, imbx_state_error, alert_signal;
+  logic sram_err;
+
   assign alert_signal = sysif_intg_err     |
                         tl_sram_intg_err   |
                         imbx_state_error;
@@ -93,11 +95,12 @@ module mbx
     // Device port to the host side
     .tl_host_i                           ( tl_host_i                          ),
     .tl_host_o                           ( tl_host_o                          ),
-    .intg_err_i                          ( alert_signal                       ),
     .event_intr_ready_i                  ( hostif_event_intr_ready            ),
     .event_intr_abort_i                  ( hostif_event_intr_abort            ),
     .intr_ready_o                        ( intr_mbx_ready_o                   ),
     .intr_abort_o                        ( intr_mbx_abort_o                   ),
+    .intg_err_i                          ( alert_signal                       ),
+    .sram_err_i                          ( sram_err                           ),
     .alert_rx_i                          ( alert_rx_i                         ),
     .alert_tx_o                          ( alert_tx_o                         ),
     // Access to the control register
@@ -258,6 +261,7 @@ module mbx
     .tl_host_o                 ( tl_sram_o                ),
     .tl_host_i                 ( tl_sram_i                ),
     .intg_err_o                ( tl_sram_intg_err         ),
+    .sram_err_o                ( sram_err                 ),
     // Interface to the inbound mailbox
     .imbx_sram_write_req_i     ( imbx_sram_write_req      ),
     .imbx_sram_write_gnt_o     ( imbx_sram_write_gnt      ),

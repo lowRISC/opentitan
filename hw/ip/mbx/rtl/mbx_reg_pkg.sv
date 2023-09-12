@@ -7,7 +7,7 @@
 package mbx_reg_pkg;
 
   // Param list
-  parameter int NumAlerts = 1;
+  parameter int NumAlerts = 2;
 
   // Address widths within the block
   parameter int HostAw = 7;
@@ -47,8 +47,14 @@ package mbx_reg_pkg;
   } mbx_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
-    logic        q;
-    logic        qe;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } fatal_fault;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } recov_fault;
   } mbx_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
@@ -197,10 +203,10 @@ package mbx_reg_pkg;
 
   // Register -> HW type for host interface
   typedef struct packed {
-    mbx_reg2hw_intr_state_reg_t intr_state; // [290:289]
-    mbx_reg2hw_intr_enable_reg_t intr_enable; // [288:287]
-    mbx_reg2hw_intr_test_reg_t intr_test; // [286:283]
-    mbx_reg2hw_alert_test_reg_t alert_test; // [282:281]
+    mbx_reg2hw_intr_state_reg_t intr_state; // [292:291]
+    mbx_reg2hw_intr_enable_reg_t intr_enable; // [290:289]
+    mbx_reg2hw_intr_test_reg_t intr_test; // [288:285]
+    mbx_reg2hw_alert_test_reg_t alert_test; // [284:281]
     mbx_reg2hw_control_reg_t control; // [280:277]
     mbx_reg2hw_status_reg_t status; // [276:267]
     mbx_reg2hw_address_range_regwen_reg_t address_range_regwen; // [266:263]
@@ -251,8 +257,9 @@ package mbx_reg_pkg;
   parameter logic [1:0] MBX_INTR_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] MBX_INTR_TEST_MBX_READY_RESVAL = 1'h 0;
   parameter logic [0:0] MBX_INTR_TEST_MBX_ABORT_RESVAL = 1'h 0;
-  parameter logic [0:0] MBX_ALERT_TEST_RESVAL = 1'h 0;
+  parameter logic [1:0] MBX_ALERT_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] MBX_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
+  parameter logic [0:0] MBX_ALERT_TEST_RECOV_FAULT_RESVAL = 1'h 0;
   parameter logic [1:0] MBX_CONTROL_RESVAL = 2'h 0;
   parameter logic [0:0] MBX_CONTROL_ABORT_RESVAL = 1'h 0;
   parameter logic [0:0] MBX_CONTROL_DOE_INTR_EN_RESVAL = 1'h 0;
