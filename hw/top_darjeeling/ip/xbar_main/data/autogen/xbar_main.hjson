@@ -213,7 +213,7 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_keymgr"
+      name:   "tl_keymgr_dpe"
       act:    "req"
       package: "tlul_pkg"
     }

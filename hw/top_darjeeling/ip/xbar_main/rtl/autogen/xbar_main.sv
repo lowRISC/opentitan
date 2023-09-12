@@ -58,7 +58,7 @@
 //     -> sm1_72
 //       -> otbn
 //     -> sm1_73
-//       -> keymgr
+//       -> keymgr_dpe
 //     -> sm1_74
 //       -> kmac
 //     -> sm1_75
@@ -135,7 +135,7 @@
 //     -> sm1_72
 //       -> otbn
 //     -> sm1_73
-//       -> keymgr
+//       -> keymgr_dpe
 //     -> sm1_74
 //       -> kmac
 //     -> sm1_75
@@ -299,8 +299,8 @@ module xbar_main (
   input  tlul_pkg::tl_d2h_t tl_rv_plic_i,
   output tlul_pkg::tl_h2d_t tl_otbn_o,
   input  tlul_pkg::tl_d2h_t tl_otbn_i,
-  output tlul_pkg::tl_h2d_t tl_keymgr_o,
-  input  tlul_pkg::tl_d2h_t tl_keymgr_i,
+  output tlul_pkg::tl_h2d_t tl_keymgr_dpe_o,
+  input  tlul_pkg::tl_d2h_t tl_keymgr_dpe_i,
   output tlul_pkg::tl_h2d_t tl_rv_core_ibex__cfg_o,
   input  tlul_pkg::tl_d2h_t tl_rv_core_ibex__cfg_i,
   output tlul_pkg::tl_h2d_t tl_sram_ctrl_main__regs_o,
@@ -1090,8 +1090,8 @@ module xbar_main (
   assign tl_otbn_o = tl_sm1_72_ds_h2d;
   assign tl_sm1_72_ds_d2h = tl_otbn_i;
 
-  assign tl_keymgr_o = tl_sm1_73_ds_h2d;
-  assign tl_sm1_73_ds_d2h = tl_keymgr_i;
+  assign tl_keymgr_dpe_o = tl_sm1_73_ds_h2d;
+  assign tl_sm1_73_ds_d2h = tl_keymgr_dpe_i;
 
   assign tl_kmac_o = tl_sm1_74_ds_h2d;
   assign tl_sm1_74_ds_d2h = tl_kmac_i;
@@ -1277,7 +1277,7 @@ end
       dev_sel_s1n_56 = 6'd16;
 
     end else if ((tl_s1n_56_us_h2d.a_address &
-                  ~(ADDR_MASK_KEYMGR)) == ADDR_SPACE_KEYMGR) begin
+                  ~(ADDR_MASK_KEYMGR_DPE)) == ADDR_SPACE_KEYMGR_DPE) begin
       dev_sel_s1n_56 = 6'd17;
 
     end else if ((tl_s1n_56_us_h2d.a_address &
@@ -1426,7 +1426,7 @@ end
       dev_sel_s1n_91 = 6'd16;
 
     end else if ((tl_s1n_91_us_h2d.a_address &
-                  ~(ADDR_MASK_KEYMGR)) == ADDR_SPACE_KEYMGR) begin
+                  ~(ADDR_MASK_KEYMGR_DPE)) == ADDR_SPACE_KEYMGR_DPE) begin
       dev_sel_s1n_91 = 6'd17;
 
     end else if ((tl_s1n_91_us_h2d.a_address &

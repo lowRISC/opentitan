@@ -73,9 +73,9 @@ module top_darjeeling #(
   parameter otbn_pkg::regfile_e OtbnRegFile = otbn_pkg::RegFileFF,
   parameter bit SecOtbnMuteUrnd = 0,
   parameter bit SecOtbnSkipUrndReseedAtStart = 0,
-  // parameters for keymgr
-  parameter bit KeymgrUseOtpSeedsInsteadOfFlash = 1,
-  parameter bit KeymgrKmacEnMasking = 1,
+  // parameters for keymgr_dpe
+  parameter bit KeymgrDpeUseOtpSeedsInsteadOfFlash = 1,
+  parameter bit KeymgrDpeKmacEnMasking = 1,
   // parameters for csrng
   parameter aes_pkg::sbox_impl_e CsrngSBoxImpl = aes_pkg::SBoxImplCanright,
   // parameters for edn0
@@ -386,7 +386,7 @@ module top_darjeeling #(
   // hmac
   // kmac
   // otbn
-  // keymgr
+  // keymgr_dpe
   // csrng
   // edn0
   // edn1
@@ -519,7 +519,7 @@ module top_darjeeling #(
   logic intr_kmac_fifo_empty;
   logic intr_kmac_kmac_err;
   logic intr_otbn_done;
-  logic intr_keymgr_op_done;
+  logic intr_keymgr_dpe_op_done;
   logic intr_csrng_cs_cmd_req_done;
   logic intr_csrng_cs_entropy_req;
   logic intr_csrng_cs_hw_inst_exc;
@@ -583,7 +583,7 @@ module top_darjeeling #(
   logic       pwrmgr_aon_low_power;
   lc_ctrl_pkg::lc_tx_t       pwrmgr_aon_fetch_en;
   rom_ctrl_pkg::pwrmgr_data_t [1:0] pwrmgr_aon_rom_ctrl;
-  rom_ctrl_pkg::keymgr_data_t [1:0] keymgr_rom_digest;
+  rom_ctrl_pkg::keymgr_data_t [1:0] keymgr_dpe_rom_digest;
   dma_pkg::lsio_trigger_t       dma_lsio_trigger;
   logic       i2c0_lsio_trigger;
   logic       spi_host0_lsio_trigger;
@@ -604,9 +604,9 @@ module top_darjeeling #(
   otp_ctrl_pkg::otbn_otp_key_req_t       otp_ctrl_otbn_otp_key_req;
   otp_ctrl_pkg::otbn_otp_key_rsp_t       otp_ctrl_otbn_otp_key_rsp;
   otp_ctrl_pkg::otp_keymgr_key_t       otp_ctrl_otp_keymgr_key;
-  keymgr_pkg::hw_key_req_t       keymgr_aes_key;
-  keymgr_pkg::hw_key_req_t       keymgr_kmac_key;
-  keymgr_pkg::otbn_key_req_t       keymgr_otbn_key;
+  keymgr_pkg::hw_key_req_t       keymgr_dpe_aes_key;
+  keymgr_pkg::hw_key_req_t       keymgr_dpe_kmac_key;
+  keymgr_pkg::otbn_key_req_t       keymgr_dpe_otbn_key;
   kmac_pkg::app_req_t [3:0] kmac_app_req;
   kmac_pkg::app_rsp_t [3:0] kmac_app_rsp;
   logic       kmac_en_masking;
@@ -683,8 +683,8 @@ module top_darjeeling #(
   tlul_pkg::tl_d2h_t       rv_plic_tl_rsp;
   tlul_pkg::tl_h2d_t       otbn_tl_req;
   tlul_pkg::tl_d2h_t       otbn_tl_rsp;
-  tlul_pkg::tl_h2d_t       keymgr_tl_req;
-  tlul_pkg::tl_d2h_t       keymgr_tl_rsp;
+  tlul_pkg::tl_h2d_t       keymgr_dpe_tl_req;
+  tlul_pkg::tl_d2h_t       keymgr_dpe_tl_rsp;
   tlul_pkg::tl_h2d_t       rv_core_ibex_cfg_tl_d_req;
   tlul_pkg::tl_d2h_t       rv_core_ibex_cfg_tl_d_rsp;
   tlul_pkg::tl_h2d_t       sram_ctrl_main_regs_tl_req;
@@ -813,7 +813,7 @@ module top_darjeeling #(
   otp_ctrl_part_pkg::otp_broadcast_t       otp_ctrl_otp_broadcast;
   otp_ctrl_pkg::otp_device_id_t       lc_ctrl_otp_device_id;
   otp_ctrl_pkg::otp_manuf_state_t       lc_ctrl_otp_manuf_state;
-  otp_ctrl_pkg::otp_device_id_t       keymgr_otp_device_id;
+  otp_ctrl_pkg::otp_device_id_t       keymgr_dpe_otp_device_id;
   prim_mubi_pkg::mubi8_t       sram_ctrl_main_otp_en_sram_ifetch;
 
   // define mixed connection to port
@@ -863,7 +863,7 @@ module top_darjeeling #(
       otp_ctrl_otp_broadcast.hw_cfg0_data.device_id;
   assign lc_ctrl_otp_manuf_state =
       otp_ctrl_otp_broadcast.hw_cfg0_data.manuf_state;
-  assign keymgr_otp_device_id =
+  assign keymgr_dpe_otp_device_id =
       otp_ctrl_otp_broadcast.hw_cfg0_data.device_id;
 
   logic unused_otp_broadcast_bits;
@@ -2104,7 +2104,7 @@ module top_darjeeling #(
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .edn_o(edn0_edn_req[5]),
       .edn_i(edn0_edn_rsp[5]),
-      .keymgr_key_i(keymgr_aes_key),
+      .keymgr_key_i(keymgr_dpe_aes_key),
       .tl_i(aes_tl_req),
       .tl_o(aes_tl_rsp),
 
@@ -2158,7 +2158,7 @@ module top_darjeeling #(
       .alert_rx_i  ( alert_rx[45:44] ),
 
       // Inter-module signals
-      .keymgr_key_i(keymgr_kmac_key),
+      .keymgr_key_i(keymgr_dpe_kmac_key),
       .app_i(kmac_app_req),
       .app_o(kmac_app_rsp),
       .entropy_o(edn0_edn_req[3]),
@@ -2206,7 +2206,7 @@ module top_darjeeling #(
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .lc_rma_req_i(lc_ctrl_lc_flash_rma_req),
       .lc_rma_ack_o(otbn_lc_rma_ack),
-      .keymgr_key_i(keymgr_otbn_key),
+      .keymgr_key_i(keymgr_dpe_otbn_key),
       .tl_i(otbn_tl_req),
       .tl_o(otbn_tl_rsp),
 
@@ -2218,28 +2218,24 @@ module top_darjeeling #(
       .rst_edn_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
       .rst_otp_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
-  keymgr #(
+  keymgr_dpe #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[49:48]),
-    .UseOtpSeedsInsteadOfFlash(KeymgrUseOtpSeedsInsteadOfFlash),
-    .KmacEnMasking(KeymgrKmacEnMasking),
-    .RndCnstLfsrSeed(RndCnstKeymgrLfsrSeed),
-    .RndCnstLfsrPerm(RndCnstKeymgrLfsrPerm),
-    .RndCnstRandPerm(RndCnstKeymgrRandPerm),
-    .RndCnstRevisionSeed(RndCnstKeymgrRevisionSeed),
-    .RndCnstCreatorIdentitySeed(RndCnstKeymgrCreatorIdentitySeed),
-    .RndCnstOwnerIntIdentitySeed(RndCnstKeymgrOwnerIntIdentitySeed),
-    .RndCnstOwnerIdentitySeed(RndCnstKeymgrOwnerIdentitySeed),
-    .RndCnstSoftOutputSeed(RndCnstKeymgrSoftOutputSeed),
-    .RndCnstHardOutputSeed(RndCnstKeymgrHardOutputSeed),
-    .RndCnstAesSeed(RndCnstKeymgrAesSeed),
-    .RndCnstKmacSeed(RndCnstKeymgrKmacSeed),
-    .RndCnstOtbnSeed(RndCnstKeymgrOtbnSeed),
-    .RndCnstCdi(RndCnstKeymgrCdi),
-    .RndCnstNoneSeed(RndCnstKeymgrNoneSeed)
-  ) u_keymgr (
+    .UseOtpSeedsInsteadOfFlash(KeymgrDpeUseOtpSeedsInsteadOfFlash),
+    .KmacEnMasking(KeymgrDpeKmacEnMasking),
+    .RndCnstLfsrSeed(RndCnstKeymgrDpeLfsrSeed),
+    .RndCnstLfsrPerm(RndCnstKeymgrDpeLfsrPerm),
+    .RndCnstRandPerm(RndCnstKeymgrDpeRandPerm),
+    .RndCnstRevisionSeed(RndCnstKeymgrDpeRevisionSeed),
+    .RndCnstSoftOutputSeed(RndCnstKeymgrDpeSoftOutputSeed),
+    .RndCnstHardOutputSeed(RndCnstKeymgrDpeHardOutputSeed),
+    .RndCnstAesSeed(RndCnstKeymgrDpeAesSeed),
+    .RndCnstKmacSeed(RndCnstKeymgrDpeKmacSeed),
+    .RndCnstOtbnSeed(RndCnstKeymgrDpeOtbnSeed),
+    .RndCnstNoneSeed(RndCnstKeymgrDpeNoneSeed)
+  ) u_keymgr_dpe (
 
       // Interrupt
-      .intr_op_done_o (intr_keymgr_op_done),
+      .intr_op_done_o (intr_keymgr_dpe_op_done),
       // [48]: recov_operation_err
       // [49]: fatal_fault_err
       .alert_tx_o  ( alert_tx[49:48] ),
@@ -2248,20 +2244,20 @@ module top_darjeeling #(
       // Inter-module signals
       .edn_o(edn0_edn_req[0]),
       .edn_i(edn0_edn_rsp[0]),
-      .aes_key_o(keymgr_aes_key),
-      .kmac_key_o(keymgr_kmac_key),
-      .otbn_key_o(keymgr_otbn_key),
+      .aes_key_o(keymgr_dpe_aes_key),
+      .kmac_key_o(keymgr_dpe_kmac_key),
+      .otbn_key_o(keymgr_dpe_otbn_key),
       .kmac_data_o(kmac_app_req[0]),
       .kmac_data_i(kmac_app_rsp[0]),
       .otp_key_i(otp_ctrl_otp_keymgr_key),
-      .otp_device_id_i(keymgr_otp_device_id),
+      .otp_device_id_i(keymgr_dpe_otp_device_id),
       .flash_i(flash_ctrl_pkg::KEYMGR_FLASH_DEFAULT),
       .lc_keymgr_en_i(lc_ctrl_lc_keymgr_en),
       .lc_keymgr_div_i(lc_ctrl_lc_keymgr_div),
-      .rom_digest_i(keymgr_rom_digest),
+      .rom_digest_i(keymgr_dpe_rom_digest),
       .kmac_en_masking_i(kmac_en_masking),
-      .tl_i(keymgr_tl_req),
-      .tl_o(keymgr_tl_rsp),
+      .tl_i(keymgr_dpe_tl_req),
+      .tl_o(keymgr_dpe_tl_rsp),
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_secure),
@@ -2428,7 +2424,7 @@ module top_darjeeling #(
       // Inter-module signals
       .rom_cfg_i(ast_rom_cfg),
       .pwrmgr_data_o(pwrmgr_aon_rom_ctrl[0]),
-      .keymgr_data_o(keymgr_rom_digest[0]),
+      .keymgr_data_o(keymgr_dpe_rom_digest[0]),
       .kmac_data_o(kmac_app_req[2]),
       .kmac_data_i(kmac_app_rsp[2]),
       .regs_tl_i(rom_ctrl0_regs_tl_req),
@@ -2455,7 +2451,7 @@ module top_darjeeling #(
       // Inter-module signals
       .rom_cfg_i(ast_rom_cfg),
       .pwrmgr_data_o(pwrmgr_aon_rom_ctrl[1]),
-      .keymgr_data_o(keymgr_rom_digest[1]),
+      .keymgr_data_o(keymgr_dpe_rom_digest[1]),
       .kmac_data_o(kmac_app_req[3]),
       .kmac_data_i(kmac_app_rsp[3]),
       .regs_tl_i(rom_ctrl1_regs_tl_req),
@@ -2877,7 +2873,7 @@ module top_darjeeling #(
       intr_csrng_cs_hw_inst_exc, // IDs [151 +: 1]
       intr_csrng_cs_entropy_req, // IDs [150 +: 1]
       intr_csrng_cs_cmd_req_done, // IDs [149 +: 1]
-      intr_keymgr_op_done, // IDs [148 +: 1]
+      intr_keymgr_dpe_op_done, // IDs [148 +: 1]
       intr_otbn_done, // IDs [147 +: 1]
       intr_kmac_kmac_err, // IDs [146 +: 1]
       intr_kmac_fifo_empty, // IDs [145 +: 1]
@@ -3133,9 +3129,9 @@ module top_darjeeling #(
     .tl_otbn_o(otbn_tl_req),
     .tl_otbn_i(otbn_tl_rsp),
 
-    // port: tl_keymgr
-    .tl_keymgr_o(keymgr_tl_req),
-    .tl_keymgr_i(keymgr_tl_rsp),
+    // port: tl_keymgr_dpe
+    .tl_keymgr_dpe_o(keymgr_dpe_tl_req),
+    .tl_keymgr_dpe_i(keymgr_dpe_tl_rsp),
 
     // port: tl_rv_core_ibex__cfg
     .tl_rv_core_ibex__cfg_o(rv_core_ibex_cfg_tl_d_req),

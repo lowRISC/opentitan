@@ -1059,7 +1059,7 @@
           randcount: 40
           randtype: data
           name_top: RndCnstOtpCtrlLfsrSeed
-          default: 0xe5492495fb
+          default: 0xe30fad54ff
           randwidth: 40
         }
         {
@@ -1069,7 +1069,7 @@
           randcount: 40
           randtype: perm
           name_top: RndCnstOtpCtrlLfsrPerm
-          default: 0x64826294745701858a3c69c176035290e99571f6a131311b2c27a3143510
+          default: 0x2258669e26e380658f61731f1491d19022c378438d75929341568151c480
           randwidth: 240
         }
         {
@@ -1079,7 +1079,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstOtpCtrlScrmblKeyInit
-          default: 0x9b54cb121f7002a405ecdcf1feb0fa7a14877ec8863787af272efaa51f0de710
+          default: 0x17b58d8577a87d8f67508e576e4353ebb9c766709e58b27214878d6e689f385b
           randwidth: 256
         }
       ]
@@ -1476,7 +1476,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstLcCtrlLcKeymgrDivInvalid
-          default: 0xc891d47ff7209f95d614848e38361cd9
+          default: 0xa2acfe0b0057f563f3450b66aab3d8ec
           randwidth: 128
         }
         {
@@ -1486,7 +1486,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstLcCtrlLcKeymgrDivTestDevRma
-          default: 0xb7eb23d532c0ab44e1e92ccfebadad91
+          default: 0x2e66b6f85ce5492495fb42530fcad915
           randwidth: 128
         }
         {
@@ -1496,7 +1496,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstLcCtrlLcKeymgrDivProduction
-          default: 0x93a3ee4ecd8c032462b3e18549cb1e70
+          default: 0x8dc97ad60b2fdd23f3986313d612fdcd
           randwidth: 128
         }
         {
@@ -1506,7 +1506,7 @@
           randcount: 1024
           randtype: data
           name_top: RndCnstLcCtrlInvalidTokens
-          default: 0xd5a83de6673d2c1c0a7b55176264e55c329c8ae4725aeaf6728150127ac755d70063277642b5309a163990b966cd494444c3bcdf8087b7facd65e9654cd85bc66d10208c4fb51b97bbf4d12c378ccfd6a5a5bf3032db51fa1eb92f6ce10e90f9c5c06f733dc911a321dd4c0ac2406d467215dab3f2b54a52e6728678af071806
+          default: 0x62afd0c3a5fc772ceb91c16f5d6e17dff0661bfba6f4e0571eae0fc6e6a1a665f042709b54cb121f7002a405ecdcf1feb0fa7a14877ec8863787af272efaa51f0de710c891d47ff7209f95d614848e38361cd9b7eb23d532c0ab44e1e92ccfebadad9193a3ee4ecd8c032462b3e18549cb1e70d5a83de6673d2c1c0a7b551762
           randwidth: 1024
         }
         {
@@ -2032,7 +2032,7 @@
           randcount: 32
           randtype: data
           name_top: RndCnstAlertHandlerLfsrSeed
-          default: 0x8e344d2e
+          default: 0x64e55c32
           randwidth: 32
         }
         {
@@ -2042,7 +2042,7 @@
           randcount: 32
           randtype: perm
           name_top: RndCnstAlertHandlerLfsrPerm
-          default: 0x9f9b7fe840e948c81c267cb63462cbe522acb935
+          default: 0xa7ed5c94f7919be0a47b4688c061e2543ab77233
           randwidth: 160
         }
       ]
@@ -4750,7 +4750,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstSramCtrlRetAonSramKey
-          default: 0x9a1f7544716551512a112ded678ce824
+          default: 0xcd65e9654cd85bc66d10208c4fb51b97
           randwidth: 128
         }
         {
@@ -4760,7 +4760,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstSramCtrlRetAonSramNonce
-          default: 0xa08e29c772795a358ec30f1bedd1af0e
+          default: 0xbbf4d12c378ccfd6a5a5bf3032db51fa
           randwidth: 128
         }
         {
@@ -4770,7 +4770,7 @@
           randcount: 32
           randtype: data
           name_top: RndCnstSramCtrlRetAonLfsrSeed
-          default: 0xc9d9a9cf
+          default: 0x1eb92f6c
           randwidth: 32
         }
         {
@@ -4780,7 +4780,7 @@
           randcount: 32
           randtype: perm
           name_top: RndCnstSramCtrlRetAonLfsrPerm
-          default: 0x533af241d5cb7d38813842e413df7c188bafda86
+          default: 0xbe4d00586a796ac5c67bee91e492823b9bfc483c
           randwidth: 160
         }
         {
@@ -5293,7 +5293,7 @@
           randcount: 64
           randtype: data
           name_top: RndCnstAesClearingLfsrSeed
-          default: 0x7fb1e11df367c1c1
+          default: 0x344d2eae4d73c8fa
           randwidth: 64
         }
         {
@@ -5303,7 +5303,7 @@
           randcount: 64
           randtype: perm
           name_top: RndCnstAesClearingLfsrPerm
-          default: 0xbecebf0def50254a65c6739d119595ad38858487cccca0114b006481ad8698ba18d32d4f36e1c2b7ee77a9c6e35fce3b
+          default: 0x6e35d2eaa4e727237d078b48da53cec39d6f9ae802ef128c73e7470cb874005cd06197c469e93fad4191a2c5bca62dd5
           randwidth: 384
         }
         {
@@ -5313,7 +5313,7 @@
           randcount: 64
           randtype: perm
           name_top: RndCnstAesClearingSharePerm
-          default: 0xa85cff026c68f563e5341b218890edbb5bd96b6e8c7dcac8c144f92bedc47586c2569c971f48101bce0e8d14a793b78b
+          default: 0x1987b4b0b449b523c4fdd033de0f7ca13154327970695866dabbb9c5b8f86727e9896088edc1ef07af905f5903a8e34a
           randwidth: 384
         }
         {
@@ -5323,7 +5323,7 @@
           randcount: 160
           randtype: data
           name_top: RndCnstAesMaskingLfsrSeed
-          default: 0x265c9cb3b2f1c44a7287ab4c0618822e92a084a0
+          default: 0x9a6f99b1a7ac084224ade4612980d48e6c6493a5
           randwidth: 160
         }
         {
@@ -5333,7 +5333,7 @@
           randcount: 160
           randtype: perm
           name_top: RndCnstAesMaskingLfsrPerm
-          default: 0x7e0673518c7a754559718364876d217b992423072f7f2a574137956f0d788a9e1b19818811321c6c9f6568042b923c420f252d982e49538d0c546a39175c7408001012461a318e2889829a3f664c099c7c85761e91603620389d4d1590353461025d9718694a268b0b9b5b1f13299327220e405a4750564e8401621d8f707758437d4f6b3d723a05639467169630446e522c335e033e3b5f4b5580790a148648
+          default: 0x35375081637b5e7021060d623d67573a51029907044b89688622163f38154d7f319e854c931a691c34655a986d00744a6c322d713052118e14723e280b8f9a361977018d1d2f582a406605609c24427617876e03265543842559805d132e5b540a90647d4f5f3c127c0f533b7e270c971e8b4696786a88454833207308239f294e442b79941075616f0956825c1f1b8341189195398c4749929d2c9b8a7a6b0e
           randwidth: 1280
         }
       ]
@@ -5384,7 +5384,7 @@
           width: 1
           inst_name: aes
           default: ""
-          top_signame: keymgr_aes_key
+          top_signame: keymgr_dpe_aes_key
           index: -1
         }
         {
@@ -5565,7 +5565,7 @@
           randcount: 800
           randtype: data
           name_top: RndCnstKmacLfsrSeed
-          default: 0xc8ccc2b1be4599775614975d3d2b32e933d88e2e1cf65460f23fb780499e6fcce64ceafd282c0e33fd2c07986c2a511755f072ee7a8e2fc45e111df07fa067f64056d9bf30d48543bec2e9a075d7d536d6f82505255ea0645554dd5f9355f5a89085a95a
+          default: 0x416dc904583df8bae9c46dee80a869a1ce14c113994cf87eda86140651ac88eb62e834aa3425c620c68ce20120a0d95ce4ee55b032c07a29b920b7953e485f23ad102c6a0efce9f0ec4c712146a4ab60da8b656eabb0b3ef6e9b197ce582fc9b5965d697
           randwidth: 800
         }
         {
@@ -5575,7 +5575,7 @@
           randcount: 800
           randtype: perm
           name_top: RndCnstKmacLfsrPerm
-          default: 0x3d28047e70a54ff0743c7c92170579671c96d518291c231582610011088d81d78bc4df56dd6492d858056b8ece536350c1044408842512bdedc594939997795d2a87553732aebf1e427091366c161a8a7e6670d046a40244bf1d39e146166531d575fa2d6e2a862eecc39b723a822f82325ec9c46fa32de091058638dc7290116edda7930a6cca78a408ceb73193e9d0b9ad9661506a1f99b435cb446f41c942bca175b93b1d555786bf4ba511562b056aa7dcda45f17b0c866bd760617d51a121d8f20bde770e3d838821e1fa3dec0353023a64d75655b31db135399bac4c308ac592b03eba8d8b8144483f0ba664fe73857c65b33bd38ba1aa2f09b2aaef07e7563135822b4719912424686c0ec6c2205ee5381a6689291907989dae1b41600ac26c13239ab59489a9f045068a392af54eae91010c745e919a508bae74b6e69781b7fe5964a2c712d568f1f2eeed4fdab094d5a8dfd5271c35e53959626fc280f541a52d23427d628702610e124998e16c88e8db6d7a9330754ada2a16a9a26c869b9c500642a792c7091de782c24b7eebda06d3afa2f9c59334d884dc92ac1d25625d2d54e7714529dfc762d933d4b322cb020c483e3730151819905f231ae6888004b8aa490a8443e20d59c744667e1f25444d3c3b9347bcb60e9475d2cd284e52042b8a053014ec7a0dd10d409de76a98d260313a4e1c1767f09ce2b145c498e4531ed0cd1eaac3e6ed1578d4a2bcc1862325cad497e83b81876d04ea85a987cfba442c89021408800342e1a6cfac8bf91c7a255bd43cd17d1a7b788b3f419a11f8752968ea0248c038547b099c8be0db82ae18644c30d1b80efd5bc5fbfcb3baad11795ca3907415d77c114c569763ee2275226f1b6bbaca3ce109696490e632503b7b8717cdc55521148096281ac5203501ceb7d400225752a500c071819ea065d9558c84c20591f4ce1ae8c768609620b1693d74e22beead20d9f214f187a21ab06c65242a959e79a1357413bf8bdbc25b50e9d98414aed1d3e57319452ac6b84b0381b9a4c4012a247f91441c36f393a640e4616586856a629ca9fbd90b58571c7ad07c437386b330a9273e6abe700c3e69a69eb1bec8830e3b7c0c28a3e2d2d7079d05a18111f06a17053d9e5080629207327d255655089a7b905b18591a23e25c0dbab598349ea42dceac290802e3f7fa7a806873c20504239a61b24cf120da6d696eb02ae4b19039826fa9cde53dad71e20b1c50010316f80993cb25b5cd41a865ad314d8fa68673aa4cc66832470a5298298c209a66af775983257f2b23c3581c77c6327811682a23d58d8131a459d9675569730b2ad285ecd86a2bcc10ad231f6a3dec9accda2ced3a15fa72348a55e7783f7a82d5a589700ae21e3b5c14413c4a
+          default: 0xb6e1ca67009a2a60a96f146dc2b4b17414d0f992c5c46aaaa3138d0028b5235fc8331509e361eac41414b3b296421c80cc608bd6eaf6b4369e6966c701818be83fc2b13496d2b41791d9a89514732cf93847f22d241a5186418902543b963ec61cb375f17e6e368c6c406077d8e4190e9a28a00acf32fa465929ebc2fb4d16c579569e1a15869f6a9d535d230d01f9b0f79c1ed6c1df744575f20ba0a8746d40824166b0aac1244848408a9f7199e24e9867345f90cc6232c2345009031e6d89a8865d64c0e6c92b428c80954eb20bf894c9349b9bade55a4123d86a512bca26beb3d772e87bc71d84b20f3be499461b4c622482284a1bc90a9069ab33c41e22081bbd97456741b4682420a5ad36840f0b9c2d0e1c3379bb75872b049b5d9802668b7282e295d2054eda50679998849c79800956e9482ecff9ecee0c90673c002be8329c96389f50c2e0b2ef171955696263595d6b60230214aa59b8d27e80e32412e14730f932c36cdd73a1be18b0e5f6e68f065c06a81ac244fd70a9eb96c5d4298861c59ea3e6224cfc38e41ba4291066776d8139b05786de9b44f086f8430d57322e7918e86028ae0136fd8c91e4ec6c873127aa90a38830b69e2c652bab52290d492541fa156fd11d2252a6bb8a9844529ba160a4c9f3615c942cd868d36ad2a9f635161c27b8802ba8c60aea98205129af33031a947da6b1f075fd17945abcc76d00f3eef95ee84960c530975c419a442885c62d30ec5674bc7a223bb99602deb425c7664f29d6082cd631225f0ddec1f8b6211f4bd475372119149c74e5e0221712ed10369d4499539cb77c2bf3f4fa89d0d2864ba38a4474942293c8924d67105589d90049e4e63a8765c79d6728ab27256a37c85329a07ec4962e570650b532da6b93b2caca008a8a56922263149b162757fb56c06d58d1b8107c83d41e6543e7c8fece569510d8d91713e09b0c7e2ada86b1bdda4153090161fa462b99149779e94c15f6df111d1ce8edf3ad6eca185aadb0608afe9bc3b06db86897316eaec34420f0826166ea71c4b664a4515918def3ae040b2f298dea63dbd3352e7fa55485547fd3d706523d1e31e23323a1962903bda0605d3208d4633998b5e0d855525c917396481cd4f3d44c9a456b4e76032c9c0e6a1dc97addc08c1354e16d9c64fbce130e941a35dc47e7220cb4a5c04bb6bb8df126101c14ee44099f61d13114436a470c08ab96e53a6c6fb59580823db6178246ab465658e461478e09ff141647c3041a780f8c74ea509da352800e67723d1a87a85a81c5b31370bd2f4b44db765601cbd04673ab31a85aa255d7e54d915e81436eff43b1956e8111238174a99870733cb04ce79804fe60cb82b174149dd45ac600c98598b996afc5a2f4b7eb083b08
           randwidth: 8000
         }
         {
@@ -5585,7 +5585,7 @@
           randcount: 32
           randtype: perm
           name_top: RndCnstKmacLfsrFwdPerm
-          default: 0x61e179d4b88db29f68c4405d4e8f6d92dfc103ea
+          default: 0x2bbe63ce991c1f1ee1225825a432ed22b76af83c
           randwidth: 160
         }
         {
@@ -5595,7 +5595,7 @@
           randcount: 64
           randtype: perm
           name_top: RndCnstKmacMsgPerm
-          default: 0x1a6c2b38ce96a742d4d5c3c26435eedcde60615485f5d6eaa3127312ddbf7fbb3e0641d346786323888abc0f326a541e
+          default: 0x7ed0d0b148179e6346a1939806bc768de27074ffc0869d7adf21cabb445512a90c59ce3dbc88b3f252c26bee7b1526d3
           randwidth: 384
         }
       ]
@@ -5610,7 +5610,7 @@
           width: 1
           inst_name: kmac
           default: ""
-          top_signame: keymgr_kmac_key
+          top_signame: keymgr_dpe_kmac_key
           index: -1
         }
         {
@@ -5776,7 +5776,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstOtbnUrndPrngSeed
-          default: 0xe24be7e1c96737b726a4c6f04993b3e6aae70f22aaf748b57c320264e157e2c7
+          default: 0xda2d53e7ca15201a8f56530010117f58c9e9946c11180407feb4710f404e6e4f
           randwidth: 256
         }
         {
@@ -5812,7 +5812,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstOtbnOtbnKey
-          default: 0x4a28033261ee6cec10075c55a820f842
+          default: 0xace59b972d1fdcaf711c0569397bfc41
           randwidth: 128
         }
         {
@@ -5822,7 +5822,7 @@
           randcount: 64
           randtype: data
           name_top: RndCnstOtbnOtbnNonce
-          default: 0xd43ee1ab1b3d78f9
+          default: 0x976ac86b02bf2b89
           randwidth: 64
         }
       ]
@@ -5935,7 +5935,7 @@
           width: 1
           inst_name: otbn
           default: ""
-          top_signame: keymgr_otbn_key
+          top_signame: keymgr_dpe_otbn_key
           index: -1
         }
         {
@@ -5961,8 +5961,8 @@
       }
     }
     {
-      name: keymgr
-      type: keymgr
+      name: keymgr_dpe
+      type: keymgr_dpe
       clock_srcs:
       {
         clk_i: main
@@ -6010,7 +6010,7 @@
           type: bit
           default: "1"
           expose: "true"
-          name_top: KeymgrUseOtpSeedsInsteadOfFlash
+          name_top: KeymgrDpeUseOtpSeedsInsteadOfFlash
         }
         {
           name: KmacEnMasking
@@ -6018,7 +6018,7 @@
           type: bit
           default: "1"
           expose: "true"
-          name_top: KeymgrKmacEnMasking
+          name_top: KeymgrDpeKmacEnMasking
         }
         {
           name: RndCnstLfsrSeed
@@ -6026,8 +6026,8 @@
           type: keymgr_pkg::lfsr_seed_t
           randcount: 64
           randtype: data
-          name_top: RndCnstKeymgrLfsrSeed
-          default: 0x92d223469898eb2a
+          name_top: RndCnstKeymgrDpeLfsrSeed
+          default: 0xbe218eced8859f46
           randwidth: 64
         }
         {
@@ -6036,8 +6036,8 @@
           type: keymgr_pkg::lfsr_perm_t
           randcount: 64
           randtype: perm
-          name_top: RndCnstKeymgrLfsrPerm
-          default: 0xba87c33dd8319de0a103ececead9692398efc95d9b9383505fc4b550b9b459caa265a3b0311f582412ab4c5ec71371bf
+          name_top: RndCnstKeymgrDpeLfsrPerm
+          default: 0xfb57082d176500f49758cea76199a0de8ffbc1a573a6c14d1833946f8ab22ad0b6d09e63bc4f627ab7e1f2ec500641d3
           randwidth: 384
         }
         {
@@ -6046,8 +6046,8 @@
           type: keymgr_pkg::rand_perm_t
           randcount: 32
           randtype: perm
-          name_top: RndCnstKeymgrRandPerm
-          default: 0xbce268203cc807b4b242f394f262a5b535f3f5ab
+          name_top: RndCnstKeymgrDpeRandPerm
+          default: 0x7ea93bf630aecee0c876413cbc89ac300a9c7d5c
           randwidth: 160
         }
         {
@@ -6056,38 +6056,8 @@
           type: keymgr_pkg::seed_t
           randcount: 256
           randtype: data
-          name_top: RndCnstKeymgrRevisionSeed
-          default: 0x5e456f3b26d15f5584bb9879bd2497852c23d0fa289c3348ce364ed534970e1f
-          randwidth: 256
-        }
-        {
-          name: RndCnstCreatorIdentitySeed
-          desc: Compile-time random bits for creator identity seed
-          type: keymgr_pkg::seed_t
-          randcount: 256
-          randtype: data
-          name_top: RndCnstKeymgrCreatorIdentitySeed
-          default: 0xd45ec606be134fc08318bd29b22b08df647bdc30068e7513200fa828bfee3ecc
-          randwidth: 256
-        }
-        {
-          name: RndCnstOwnerIntIdentitySeed
-          desc: Compile-time random bits for owner intermediate identity seed
-          type: keymgr_pkg::seed_t
-          randcount: 256
-          randtype: data
-          name_top: RndCnstKeymgrOwnerIntIdentitySeed
-          default: 0xf02417fa68d004534267f60b34a8f072e77ee4859b243f92ceb098be6e65c359
-          randwidth: 256
-        }
-        {
-          name: RndCnstOwnerIdentitySeed
-          desc: Compile-time random bits for owner identity seed
-          type: keymgr_pkg::seed_t
-          randcount: 256
-          randtype: data
-          name_top: RndCnstKeymgrOwnerIdentitySeed
-          default: 0x480858c39611e658c97fb8d3e9cc0e7f8fa8725200c726c8f90ef5e2b74beee2
+          name_top: RndCnstKeymgrDpeRevisionSeed
+          default: 0x121f1e164eac29042563ae4733313ad2696788a8735b27982f5007a24a125f87
           randwidth: 256
         }
         {
@@ -6096,8 +6066,8 @@
           type: keymgr_pkg::seed_t
           randcount: 256
           randtype: data
-          name_top: RndCnstKeymgrSoftOutputSeed
-          default: 0x7cfa19ea576ca8a8225c8e17053e44b68dd7822a6859f2cf52a55fd181b082d0
+          name_top: RndCnstKeymgrDpeSoftOutputSeed
+          default: 0x6c9ca6ddeb52ac92f5600d2a41bc465efe57aa3b59bd6b0a40216363420f041e
           randwidth: 256
         }
         {
@@ -6106,8 +6076,8 @@
           type: keymgr_pkg::seed_t
           randcount: 256
           randtype: data
-          name_top: RndCnstKeymgrHardOutputSeed
-          default: 0x3c583756f11aa5b37f9544c4aa90eb97e1c0f8086f627a281c5681d6566641ee
+          name_top: RndCnstKeymgrDpeHardOutputSeed
+          default: 0xd29a965b68faea3e59d4f2e2a0b42eb9a8c3ab227b50766d2eaec89eb13b07e9
           randwidth: 256
         }
         {
@@ -6116,8 +6086,8 @@
           type: keymgr_pkg::seed_t
           randcount: 256
           randtype: data
-          name_top: RndCnstKeymgrAesSeed
-          default: 0xcccc88876ad113c50ad1be4d94dce8fca54128a3860ae1d3493fbef6b9ba5dfe
+          name_top: RndCnstKeymgrDpeAesSeed
+          default: 0xbf4ee42784136d42c85e456f3b26d15f5584bb9879bd2497852c23d0fa289c33
           randwidth: 256
         }
         {
@@ -6126,8 +6096,8 @@
           type: keymgr_pkg::seed_t
           randcount: 256
           randtype: data
-          name_top: RndCnstKeymgrKmacSeed
-          default: 0x4463a4615ef46762a794a8c2597e69fb259b961914cd75bbfd36ba48e780d27c
+          name_top: RndCnstKeymgrDpeKmacSeed
+          default: 0x48ce364ed534970e1fd45ec606be134fc08318bd29b22b08df647bdc30068e75
           randwidth: 256
         }
         {
@@ -6136,18 +6106,8 @@
           type: keymgr_pkg::seed_t
           randcount: 256
           randtype: data
-          name_top: RndCnstKeymgrOtbnSeed
-          default: 0xd582540c7a68ff254edfd852829fecccabd4af9c9032da20bdaf59fe2ae209b8
-          randwidth: 256
-        }
-        {
-          name: RndCnstCdi
-          desc: Compile-time random bits for generation seed when no CDI is selected
-          type: keymgr_pkg::seed_t
-          randcount: 256
-          randtype: data
-          name_top: RndCnstKeymgrCdi
-          default: 0x325d2c8c35fc960679b106a87e59e6aeb1b5302d33401070251696fbb4ba169a
+          name_top: RndCnstKeymgrDpeOtbnSeed
+          default: 0x13200fa828bfee3eccf02417fa68d004534267f60b34a8f072e77ee4859b243f
           randwidth: 256
         }
         {
@@ -6156,8 +6116,8 @@
           type: keymgr_pkg::seed_t
           randcount: 256
           randtype: data
-          name_top: RndCnstKeymgrNoneSeed
-          default: 0x6cd82fad46a0a5c04009bb934c7ef7b83b6e40610b4309fcb9dc54d4276137f9
+          name_top: RndCnstKeymgrDpeNoneSeed
+          default: 0x92ceb098be6e65c359480858c39611e658c97fb8d3e9cc0e7f8fa8725200c726
           randwidth: 256
         }
       ]
@@ -6170,7 +6130,7 @@
           type: req_rsp
           act: req
           width: 1
-          inst_name: keymgr
+          inst_name: keymgr_dpe
           default: ""
           top_signame: edn0_edn
           index: 0
@@ -6182,11 +6142,11 @@
           type: uni
           act: req
           width: 1
-          inst_name: keymgr
+          inst_name: keymgr_dpe
           default: ""
           end_idx: -1
           top_type: broadcast
-          top_signame: keymgr_aes_key
+          top_signame: keymgr_dpe_aes_key
           index: -1
         }
         {
@@ -6196,11 +6156,11 @@
           type: uni
           act: req
           width: 1
-          inst_name: keymgr
+          inst_name: keymgr_dpe
           default: ""
           end_idx: -1
           top_type: broadcast
-          top_signame: keymgr_kmac_key
+          top_signame: keymgr_dpe_kmac_key
           index: -1
         }
         {
@@ -6210,11 +6170,11 @@
           type: uni
           act: req
           width: 1
-          inst_name: keymgr
+          inst_name: keymgr_dpe
           default: ""
           end_idx: -1
           top_type: broadcast
-          top_signame: keymgr_otbn_key
+          top_signame: keymgr_dpe_otbn_key
           index: -1
         }
         {
@@ -6224,7 +6184,7 @@
           type: req_rsp
           act: req
           width: 1
-          inst_name: keymgr
+          inst_name: keymgr_dpe
           default: ""
           top_signame: kmac_app
           index: 0
@@ -6236,7 +6196,7 @@
           type: uni
           act: rcv
           width: 1
-          inst_name: keymgr
+          inst_name: keymgr_dpe
           default: ""
           top_signame: otp_ctrl_otp_keymgr_key
           index: -1
@@ -6248,9 +6208,9 @@
           type: uni
           act: rcv
           width: 1
-          inst_name: keymgr
+          inst_name: keymgr_dpe
           default: ""
-          top_signame: keymgr_otp_device_id
+          top_signame: keymgr_dpe_otp_device_id
           index: -1
         }
         {
@@ -6260,7 +6220,7 @@
           type: uni
           act: rcv
           width: 1
-          inst_name: keymgr
+          inst_name: keymgr_dpe
           index: -1
         }
         {
@@ -6271,7 +6231,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::On
-          inst_name: keymgr
+          inst_name: keymgr_dpe
           top_signame: lc_ctrl_lc_keymgr_en
           index: -1
         }
@@ -6282,7 +6242,7 @@
           type: uni
           act: rcv
           width: 1
-          inst_name: keymgr
+          inst_name: keymgr_dpe
           default: ""
           top_signame: lc_ctrl_lc_keymgr_div
           index: -1
@@ -6295,10 +6255,10 @@
           act: rcv
           width: 2
           default: rom_ctrl_pkg::KEYMGR_DATA_DEFAULT
-          inst_name: keymgr
+          inst_name: keymgr_dpe
           end_idx: -1
           top_type: one-to-N
-          top_signame: keymgr_rom_digest
+          top_signame: keymgr_dpe_rom_digest
           index: -1
         }
         {
@@ -6307,7 +6267,7 @@
           type: uni
           act: rcv
           width: 1
-          inst_name: keymgr
+          inst_name: keymgr_dpe
           default: ""
           package: ""
           top_signame: kmac_en_masking
@@ -6320,10 +6280,10 @@
           type: req_rsp
           act: rsp
           width: 1
-          inst_name: keymgr
+          inst_name: keymgr_dpe
           default: ""
           end_idx: -1
-          top_signame: keymgr_tl
+          top_signame: keymgr_dpe_tl
           index: -1
         }
       ]
@@ -6370,7 +6330,7 @@
           randcount: 384
           randtype: data
           name_top: RndCnstCsrngCsKeymgrDivNonProduction
-          default: 0x901d09a76aeaa19de5c579fd38bdf38f0c21d6a52226b6a4a7bdb05fe921615bf2ff984540f7d43ece76b4eb13363774
+          default: 0xc8f90ef5e2b74beee27cfa19ea576ca8a8225c8e17053e44b68dd7822a6859f2cf52a55fd181b082d03c583756f11aa5
           randwidth: 384
         }
         {
@@ -6380,7 +6340,7 @@
           randcount: 384
           randtype: data
           name_top: RndCnstCsrngCsKeymgrDivProduction
-          default: 0xed2ed45545e927f6d9e4abac398d42c745eef646c1464dca86dafd7c7c71e6058ddfd871c51cacbaf4410f06dcc036fc
+          default: 0xb37f9544c4aa90eb97e1c0f8086f627a281c5681d6566641eecccc88876ad113c50ad1be4d94dce8fca54128a3860ae1
           randwidth: 384
         }
         {
@@ -6719,7 +6679,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstSramCtrlMainSramKey
-          default: 0xd16fcde97d171891105dd895e3a1d0a1
+          default: 0xd3493fbef6b9ba5dfe4463a4615ef467
           randwidth: 128
         }
         {
@@ -6729,7 +6689,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstSramCtrlMainSramNonce
-          default: 0x9a16d6dbd8b20fc9e662e1e1b4982b3e
+          default: 0x62a794a8c2597e69fb259b961914cd75
           randwidth: 128
         }
         {
@@ -6739,7 +6699,7 @@
           randcount: 32
           randtype: data
           name_top: RndCnstSramCtrlMainLfsrSeed
-          default: 0x8eff6389
+          default: 0xbbfd36ba
           randwidth: 32
         }
         {
@@ -6749,7 +6709,7 @@
           randcount: 32
           randtype: perm
           name_top: RndCnstSramCtrlMainLfsrPerm
-          default: 0x20cf1518026733e2da13ff70e4256fa6f4d956e1
+          default: 0xb4ce88d2ec181c592c553671f23761577cfd4389
           randwidth: 160
         }
         {
@@ -6925,7 +6885,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstSramCtrlMboxSramKey
-          default: 0xeacf8ed4d5b616177dd43b56fa754e1f
+          default: 0x79b106a87e59e6aeb1b5302d33401070
           randwidth: 128
         }
         {
@@ -6935,7 +6895,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstSramCtrlMboxSramNonce
-          default: 0x53ad658193b563d9bdc6d2aee84852f0
+          default: 0x251696fbb4ba169a6cd82fad46a0a5c0
           randwidth: 128
         }
         {
@@ -6945,7 +6905,7 @@
           randcount: 32
           randtype: data
           name_top: RndCnstSramCtrlMboxLfsrSeed
-          default: 0xcc7371ed
+          default: 0x4009bb93
           randwidth: 32
         }
         {
@@ -6955,7 +6915,7 @@
           randcount: 32
           randtype: perm
           name_top: RndCnstSramCtrlMboxLfsrPerm
-          default: 0x1c018097939229aeb33f5ba247dafb3245e555a7
+          default: 0xdd053595d00763cffa55b0cd922b1a0b10d3dde9
           randwidth: 160
         }
         {
@@ -7130,7 +7090,7 @@
           randcount: 64
           randtype: data
           name_top: RndCnstRomCtrl0ScrNonce
-          default: 0xbec9fc1a7a5722a9
+          default: 0xa7bdb05fe921615b
           randwidth: 64
         }
         {
@@ -7140,7 +7100,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstRomCtrl0ScrKey
-          default: 0xaaca4db84a32e5c6985a1a6435118b5f
+          default: 0xf2ff984540f7d43ece76b4eb13363774
           randwidth: 128
         }
         {
@@ -7200,7 +7160,7 @@
           width: 1
           inst_name: rom_ctrl0
           default: ""
-          top_signame: keymgr_rom_digest
+          top_signame: keymgr_dpe_rom_digest
           index: 0
         }
         {
@@ -7311,7 +7271,7 @@
           randcount: 64
           randtype: data
           name_top: RndCnstRomCtrl1ScrNonce
-          default: 0x5f3fd3b9313116b6
+          default: 0xed2ed45545e927f6
           randwidth: 64
         }
         {
@@ -7321,7 +7281,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstRomCtrl1ScrKey
-          default: 0x7192d856dd742d40e072e417ad9a5f26
+          default: 0xd9e4abac398d42c745eef646c1464dca
           randwidth: 128
         }
         {
@@ -7381,7 +7341,7 @@
           width: 1
           inst_name: rom_ctrl1
           default: ""
-          top_signame: keymgr_rom_digest
+          top_signame: keymgr_dpe_rom_digest
           index: 1
         }
         {
@@ -8876,7 +8836,7 @@
           randcount: 32
           randtype: data
           name_top: RndCnstRvCoreIbexLfsrSeed
-          default: 0x1204cbcc
+          default: 0x86dafd7c
           randwidth: 32
         }
         {
@@ -8886,7 +8846,7 @@
           randcount: 32
           randtype: perm
           name_top: RndCnstRvCoreIbexLfsrPerm
-          default: 0x22e6eaab1b8c328497fdd1c3c33017f4ac378a8d
+          default: 0x242d9a30f392d5a2ed3717da6e85151e3d1071cf
           randwidth: 160
         }
         {
@@ -8896,7 +8856,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstRvCoreIbexIbexKeyDefault
-          default: 0xff5c710b67838adfb99a5eca671672cf
+          default: 0xe1b4982b3e8eff63890dbeae926fd468
           randwidth: 128
         }
         {
@@ -8906,7 +8866,7 @@
           randcount: 64
           randtype: data
           name_top: RndCnstRvCoreIbexIbexNonceDefault
-          default: 0x19bca6adc1ebfab6
+          default: 0xa77efde3de5b4caf
           randwidth: 64
         }
         {
@@ -9575,7 +9535,7 @@
         rom_ctrl0.pwrmgr_data
         rom_ctrl1.pwrmgr_data
       ]
-      keymgr.rom_digest:
+      keymgr_dpe.rom_digest:
       [
         rom_ctrl0.keymgr_data
         rom_ctrl1.keymgr_data
@@ -9634,7 +9594,7 @@
       ]
       edn0.edn:
       [
-        keymgr.edn
+        keymgr_dpe.edn
         otp_ctrl.edn
         ast.edn
         kmac.entropy
@@ -9653,30 +9613,30 @@
       ]
       otp_ctrl.otp_keymgr_key:
       [
-        keymgr.otp_key
+        keymgr_dpe.otp_key
       ]
-      keymgr.aes_key:
+      keymgr_dpe.aes_key:
       [
         aes.keymgr_key
       ]
-      keymgr.kmac_key:
+      keymgr_dpe.kmac_key:
       [
         kmac.keymgr_key
       ]
-      keymgr.otbn_key:
+      keymgr_dpe.otbn_key:
       [
         otbn.keymgr_key
       ]
       kmac.app:
       [
-        keymgr.kmac_data
+        keymgr_dpe.kmac_data
         lc_ctrl.kmac_data
         rom_ctrl0.kmac_data
         rom_ctrl1.kmac_data
       ]
       kmac.en_masking:
       [
-        keymgr.kmac_en_masking
+        keymgr_dpe.kmac_en_masking
       ]
       clkmgr_aon.idle:
       [
@@ -9699,7 +9659,7 @@
       ]
       lc_ctrl.lc_keymgr_div:
       [
-        keymgr.lc_keymgr_div
+        keymgr_dpe.lc_keymgr_div
       ]
       lc_ctrl.strap_en_override:
       [
@@ -9728,7 +9688,7 @@
       ]
       lc_ctrl.lc_keymgr_en:
       [
-        keymgr.lc_keymgr_en
+        keymgr_dpe.lc_keymgr_en
       ]
       lc_ctrl.lc_escalate_en:
       [
@@ -9900,9 +9860,9 @@
       [
         main.tl_otbn
       ]
-      keymgr.tl:
+      keymgr_dpe.tl:
       [
-        main.tl_keymgr
+        main.tl_keymgr_dpe
       ]
       rv_core_ibex.cfg_tl_d:
       [
@@ -10153,7 +10113,7 @@
       otp_ctrl.otp_broadcast
       lc_ctrl.otp_device_id
       lc_ctrl.otp_manuf_state
-      keymgr.otp_device_id
+      keymgr_dpe.otp_device_id
       sram_ctrl_main.otp_en_sram_ifetch
     ]
     external:
@@ -10327,7 +10287,7 @@
           hmac
           rv_plic
           otbn
-          keymgr
+          keymgr_dpe
           kmac
           sram_ctrl_main.regs
           rv_core_ibex.cfg
@@ -10366,7 +10326,7 @@
           hmac
           rv_plic
           otbn
-          keymgr
+          keymgr_dpe
           kmac
           sram_ctrl_main.regs
           rv_core_ibex.cfg
@@ -10892,13 +10852,13 @@
           pipeline: true
         }
         {
-          name: keymgr
+          name: keymgr_dpe
           type: device
           clock: clk_main_i
           reset: rst_main_ni
           req_fifo_pass: false
           rsp_fifo_pass: false
-          inst_type: keymgr
+          inst_type: keymgr_dpe
           addr_range:
           [
             {
@@ -11826,7 +11786,7 @@
           index: -1
         }
         {
-          name: tl_keymgr
+          name: tl_keymgr_dpe
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -11834,7 +11794,7 @@
           width: 1
           inst_name: main
           default: ""
-          top_signame: keymgr_tl
+          top_signame: keymgr_dpe_tl
           index: -1
         }
         {
@@ -15644,7 +15604,7 @@
     hmac
     kmac
     otbn
-    keymgr
+    keymgr_dpe
     csrng
     edn0
     edn1
@@ -16317,10 +16277,10 @@
       module_name: otbn
     }
     {
-      name: keymgr_op_done
+      name: keymgr_dpe_op_done
       width: 1
       type: interrupt
-      module_name: keymgr
+      module_name: keymgr_dpe
     }
     {
       name: csrng_cs_cmd_req_done
@@ -16539,7 +16499,7 @@
     hmac
     kmac
     otbn
-    keymgr
+    keymgr_dpe
     csrng
     edn0
     edn1
@@ -16995,20 +16955,20 @@
       lpg_idx: 23
     }
     {
-      name: keymgr_recov_operation_err
+      name: keymgr_dpe_recov_operation_err
       width: 1
       type: alert
       async: "1"
-      module_name: keymgr
+      module_name: keymgr_dpe
       lpg_name: secure_lc_0
       lpg_idx: 19
     }
     {
-      name: keymgr_fatal_fault_err
+      name: keymgr_dpe_fatal_fault_err
       width: 1
       type: alert
       async: "1"
-      module_name: keymgr
+      module_name: keymgr_dpe
       lpg_name: secure_lc_0
       lpg_idx: 19
     }
@@ -20974,7 +20934,7 @@
         width: 1
         inst_name: aes
         default: ""
-        top_signame: keymgr_aes_key
+        top_signame: keymgr_dpe_aes_key
         index: -1
       }
       {
@@ -21024,7 +20984,7 @@
         width: 1
         inst_name: kmac
         default: ""
-        top_signame: keymgr_kmac_key
+        top_signame: keymgr_dpe_kmac_key
         index: -1
       }
       {
@@ -21211,7 +21171,7 @@
         width: 1
         inst_name: otbn
         default: ""
-        top_signame: keymgr_otbn_key
+        top_signame: keymgr_dpe_otbn_key
         index: -1
       }
       {
@@ -21234,7 +21194,7 @@
         type: req_rsp
         act: req
         width: 1
-        inst_name: keymgr
+        inst_name: keymgr_dpe
         default: ""
         top_signame: edn0_edn
         index: 0
@@ -21246,11 +21206,11 @@
         type: uni
         act: req
         width: 1
-        inst_name: keymgr
+        inst_name: keymgr_dpe
         default: ""
         end_idx: -1
         top_type: broadcast
-        top_signame: keymgr_aes_key
+        top_signame: keymgr_dpe_aes_key
         index: -1
       }
       {
@@ -21260,11 +21220,11 @@
         type: uni
         act: req
         width: 1
-        inst_name: keymgr
+        inst_name: keymgr_dpe
         default: ""
         end_idx: -1
         top_type: broadcast
-        top_signame: keymgr_kmac_key
+        top_signame: keymgr_dpe_kmac_key
         index: -1
       }
       {
@@ -21274,11 +21234,11 @@
         type: uni
         act: req
         width: 1
-        inst_name: keymgr
+        inst_name: keymgr_dpe
         default: ""
         end_idx: -1
         top_type: broadcast
-        top_signame: keymgr_otbn_key
+        top_signame: keymgr_dpe_otbn_key
         index: -1
       }
       {
@@ -21288,7 +21248,7 @@
         type: req_rsp
         act: req
         width: 1
-        inst_name: keymgr
+        inst_name: keymgr_dpe
         default: ""
         top_signame: kmac_app
         index: 0
@@ -21300,7 +21260,7 @@
         type: uni
         act: rcv
         width: 1
-        inst_name: keymgr
+        inst_name: keymgr_dpe
         default: ""
         top_signame: otp_ctrl_otp_keymgr_key
         index: -1
@@ -21312,9 +21272,9 @@
         type: uni
         act: rcv
         width: 1
-        inst_name: keymgr
+        inst_name: keymgr_dpe
         default: ""
-        top_signame: keymgr_otp_device_id
+        top_signame: keymgr_dpe_otp_device_id
         index: -1
       }
       {
@@ -21324,7 +21284,7 @@
         type: uni
         act: rcv
         width: 1
-        inst_name: keymgr
+        inst_name: keymgr_dpe
         index: -1
       }
       {
@@ -21335,7 +21295,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::On
-        inst_name: keymgr
+        inst_name: keymgr_dpe
         top_signame: lc_ctrl_lc_keymgr_en
         index: -1
       }
@@ -21346,7 +21306,7 @@
         type: uni
         act: rcv
         width: 1
-        inst_name: keymgr
+        inst_name: keymgr_dpe
         default: ""
         top_signame: lc_ctrl_lc_keymgr_div
         index: -1
@@ -21359,10 +21319,10 @@
         act: rcv
         width: 2
         default: rom_ctrl_pkg::KEYMGR_DATA_DEFAULT
-        inst_name: keymgr
+        inst_name: keymgr_dpe
         end_idx: -1
         top_type: one-to-N
-        top_signame: keymgr_rom_digest
+        top_signame: keymgr_dpe_rom_digest
         index: -1
       }
       {
@@ -21371,7 +21331,7 @@
         type: uni
         act: rcv
         width: 1
-        inst_name: keymgr
+        inst_name: keymgr_dpe
         default: ""
         package: ""
         top_signame: kmac_en_masking
@@ -21384,10 +21344,10 @@
         type: req_rsp
         act: rsp
         width: 1
-        inst_name: keymgr
+        inst_name: keymgr_dpe
         default: ""
         end_idx: -1
-        top_signame: keymgr_tl
+        top_signame: keymgr_dpe_tl
         index: -1
       }
       {
@@ -21768,7 +21728,7 @@
         width: 1
         inst_name: rom_ctrl0
         default: ""
-        top_signame: keymgr_rom_digest
+        top_signame: keymgr_dpe_rom_digest
         index: 0
       }
       {
@@ -21842,7 +21802,7 @@
         width: 1
         inst_name: rom_ctrl1
         default: ""
-        top_signame: keymgr_rom_digest
+        top_signame: keymgr_dpe_rom_digest
         index: 1
       }
       {
@@ -23434,7 +23394,7 @@
         index: -1
       }
       {
-        name: tl_keymgr
+        name: tl_keymgr_dpe
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -23442,7 +23402,7 @@
         width: 1
         inst_name: main
         default: ""
-        top_signame: keymgr_tl
+        top_signame: keymgr_dpe_tl
         index: -1
       }
       {
@@ -25705,7 +25665,7 @@
       {
         package: rom_ctrl_pkg
         struct: keymgr_data
-        signame: keymgr_rom_digest
+        signame: keymgr_dpe_rom_digest
         width: 2
         type: uni
         end_idx: -1
@@ -25936,7 +25896,7 @@
       {
         package: keymgr_pkg
         struct: hw_key_req
-        signame: keymgr_aes_key
+        signame: keymgr_dpe_aes_key
         width: 1
         type: uni
         end_idx: -1
@@ -25947,7 +25907,7 @@
       {
         package: keymgr_pkg
         struct: hw_key_req
-        signame: keymgr_kmac_key
+        signame: keymgr_dpe_kmac_key
         width: 1
         type: uni
         end_idx: -1
@@ -25958,7 +25918,7 @@
       {
         package: keymgr_pkg
         struct: otbn_key_req
-        signame: keymgr_otbn_key
+        signame: keymgr_dpe_otbn_key
         width: 1
         type: uni
         end_idx: -1
@@ -26805,7 +26765,7 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: keymgr_tl_req
+        signame: keymgr_dpe_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -26816,7 +26776,7 @@
       {
         package: tlul_pkg
         struct: tl_d2h
-        signame: keymgr_tl_rsp
+        signame: keymgr_dpe_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1
@@ -28215,7 +28175,7 @@
       {
         package: otp_ctrl_pkg
         struct: otp_device_id
-        signame: keymgr_otp_device_id
+        signame: keymgr_dpe_otp_device_id
         width: 1
         type: uni
         end_idx: -1

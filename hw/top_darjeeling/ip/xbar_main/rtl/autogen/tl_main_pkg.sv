@@ -27,7 +27,7 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_SPACE_EDN1                 = 32'h 21180000;
   localparam logic [31:0] ADDR_SPACE_RV_PLIC              = 32'h 28000000;
   localparam logic [31:0] ADDR_SPACE_OTBN                 = 32'h 21130000;
-  localparam logic [31:0] ADDR_SPACE_KEYMGR               = 32'h 21140000;
+  localparam logic [31:0] ADDR_SPACE_KEYMGR_DPE           = 32'h 21140000;
   localparam logic [31:0] ADDR_SPACE_RV_CORE_IBEX__CFG    = 32'h 211f0000;
   localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_MAIN__REGS = 32'h 211c0000;
   localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_MAIN__RAM  = 32'h 10000000;
@@ -66,7 +66,7 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_EDN1                 = 32'h 0000007f;
   localparam logic [31:0] ADDR_MASK_RV_PLIC              = 32'h 07ffffff;
   localparam logic [31:0] ADDR_MASK_OTBN                 = 32'h 0000ffff;
-  localparam logic [31:0] ADDR_MASK_KEYMGR               = 32'h 000000ff;
+  localparam logic [31:0] ADDR_MASK_KEYMGR_DPE           = 32'h 000000ff;
   localparam logic [31:0] ADDR_MASK_RV_CORE_IBEX__CFG    = 32'h 000007ff;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_MAIN__REGS = 32'h 0000001f;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_MAIN__RAM  = 32'h 0000ffff;
@@ -107,7 +107,7 @@ package tl_main_pkg;
     TlEdn1 = 16,
     TlRvPlic = 17,
     TlOtbn = 18,
-    TlKeymgr = 19,
+    TlKeymgrDpe = 19,
     TlRvCoreIbexCfg = 20,
     TlSramCtrlMainRegs = 21,
     TlSramCtrlMainRam = 22,

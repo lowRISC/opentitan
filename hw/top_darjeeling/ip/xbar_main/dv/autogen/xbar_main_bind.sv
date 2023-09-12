@@ -206,11 +206,11 @@ module xbar_main_bind;
     .h2d    (tl_otbn_o),
     .d2h    (tl_otbn_i)
   );
-  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_keymgr (
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_keymgr_dpe (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
-    .h2d    (tl_keymgr_o),
-    .d2h    (tl_keymgr_i)
+    .h2d    (tl_keymgr_dpe_o),
+    .d2h    (tl_keymgr_dpe_i)
   );
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_rv_core_ibex__cfg (
     .clk_i  (clk_main_i),

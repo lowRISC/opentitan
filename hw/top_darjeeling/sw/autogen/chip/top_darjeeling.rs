@@ -463,19 +463,19 @@ pub const TOP_DARJEELING_OTBN_BASE_ADDR: usize = 0x21130000;
 /// address between #TOP_DARJEELING_OTBN_BASE_ADDR and
 /// `TOP_DARJEELING_OTBN_BASE_ADDR + TOP_DARJEELING_OTBN_SIZE_BYTES`.
 pub const TOP_DARJEELING_OTBN_SIZE_BYTES: usize = 0x10000;
-/// Peripheral base address for keymgr in top darjeeling.
+/// Peripheral base address for keymgr_dpe in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const TOP_DARJEELING_KEYMGR_BASE_ADDR: usize = 0x21140000;
+pub const TOP_DARJEELING_KEYMGR_DPE_BASE_ADDR: usize = 0x21140000;
 
-/// Peripheral size for keymgr in top darjeeling.
+/// Peripheral size for keymgr_dpe in top darjeeling.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #TOP_DARJEELING_KEYMGR_BASE_ADDR and
-/// `TOP_DARJEELING_KEYMGR_BASE_ADDR + TOP_DARJEELING_KEYMGR_SIZE_BYTES`.
-pub const TOP_DARJEELING_KEYMGR_SIZE_BYTES: usize = 0x100;
+/// address between #TOP_DARJEELING_KEYMGR_DPE_BASE_ADDR and
+/// `TOP_DARJEELING_KEYMGR_DPE_BASE_ADDR + TOP_DARJEELING_KEYMGR_DPE_SIZE_BYTES`.
+pub const TOP_DARJEELING_KEYMGR_DPE_SIZE_BYTES: usize = 0x100;
 /// Peripheral base address for csrng in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -867,8 +867,8 @@ pub enum TopDarjeelingPlicPeripheral {
     Kmac = 20,
     /// otbn
     Otbn = 21,
-    /// keymgr
-    Keymgr = 22,
+    /// keymgr_dpe
+    KeymgrDpe = 22,
     /// csrng
     Csrng = 23,
     /// edn0
@@ -925,7 +925,7 @@ impl TryFrom<u32> for TopDarjeelingPlicPeripheral {
             19 => Ok(Self::Hmac),
             20 => Ok(Self::Kmac),
             21 => Ok(Self::Otbn),
-            22 => Ok(Self::Keymgr),
+            22 => Ok(Self::KeymgrDpe),
             23 => Ok(Self::Csrng),
             24 => Ok(Self::Edn0),
             25 => Ok(Self::Edn1),
@@ -1247,8 +1247,8 @@ pub enum TopDarjeelingPlicIrqId {
     KmacKmacErr = 146,
     /// otbn_done
     OtbnDone = 147,
-    /// keymgr_op_done
-    KeymgrOpDone = 148,
+    /// keymgr_dpe_op_done
+    KeymgrDpeOpDone = 148,
     /// csrng_cs_cmd_req_done
     CsrngCsCmdReqDone = 149,
     /// csrng_cs_entropy_req
@@ -1465,7 +1465,7 @@ impl TryFrom<u32> for TopDarjeelingPlicIrqId {
             145 => Ok(Self::KmacFifoEmpty),
             146 => Ok(Self::KmacKmacErr),
             147 => Ok(Self::OtbnDone),
-            148 => Ok(Self::KeymgrOpDone),
+            148 => Ok(Self::KeymgrDpeOpDone),
             149 => Ok(Self::CsrngCsCmdReqDone),
             150 => Ok(Self::CsrngCsEntropyReq),
             151 => Ok(Self::CsrngCsHwInstExc),
@@ -1574,8 +1574,8 @@ pub enum TopDarjeelingAlertPeripheral {
     Kmac = 26,
     /// otbn
     Otbn = 27,
-    /// keymgr
-    Keymgr = 28,
+    /// keymgr_dpe
+    KeymgrDpe = 28,
     /// csrng
     Csrng = 29,
     /// edn0
@@ -1718,10 +1718,10 @@ pub enum TopDarjeelingAlertId {
     OtbnFatal = 46,
     /// otbn_recov
     OtbnRecov = 47,
-    /// keymgr_recov_operation_err
-    KeymgrRecovOperationErr = 48,
-    /// keymgr_fatal_fault_err
-    KeymgrFatalFaultErr = 49,
+    /// keymgr_dpe_recov_operation_err
+    KeymgrDpeRecovOperationErr = 48,
+    /// keymgr_dpe_fatal_fault_err
+    KeymgrDpeFatalFaultErr = 49,
     /// csrng_recov_alert
     CsrngRecovAlert = 50,
     /// csrng_fatal_alert
@@ -1846,8 +1846,8 @@ impl TryFrom<u32> for TopDarjeelingAlertId {
             45 => Ok(Self::KmacFatalFaultErr),
             46 => Ok(Self::OtbnFatal),
             47 => Ok(Self::OtbnRecov),
-            48 => Ok(Self::KeymgrRecovOperationErr),
-            49 => Ok(Self::KeymgrFatalFaultErr),
+            48 => Ok(Self::KeymgrDpeRecovOperationErr),
+            49 => Ok(Self::KeymgrDpeFatalFaultErr),
             50 => Ok(Self::CsrngRecovAlert),
             51 => Ok(Self::CsrngFatalAlert),
             52 => Ok(Self::Edn0RecovAlert),
@@ -2189,8 +2189,8 @@ pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeriph
     TopDarjeelingPlicPeripheral::Kmac,
     // OtbnDone -> TopDarjeelingPlicPeripheral::Otbn
     TopDarjeelingPlicPeripheral::Otbn,
-    // KeymgrOpDone -> TopDarjeelingPlicPeripheral::Keymgr
-    TopDarjeelingPlicPeripheral::Keymgr,
+    // KeymgrDpeOpDone -> TopDarjeelingPlicPeripheral::KeymgrDpe
+    TopDarjeelingPlicPeripheral::KeymgrDpe,
     // CsrngCsCmdReqDone -> TopDarjeelingPlicPeripheral::Csrng
     TopDarjeelingPlicPeripheral::Csrng,
     // CsrngCsEntropyReq -> TopDarjeelingPlicPeripheral::Csrng
@@ -2356,10 +2356,10 @@ pub const TOP_DARJEELING_ALERT_FOR_PERIPHERAL: [TopDarjeelingAlertPeripheral; 85
     TopDarjeelingAlertPeripheral::Otbn,
     // OtbnRecov -> TopDarjeelingAlertPeripheral::Otbn
     TopDarjeelingAlertPeripheral::Otbn,
-    // KeymgrRecovOperationErr -> TopDarjeelingAlertPeripheral::Keymgr
-    TopDarjeelingAlertPeripheral::Keymgr,
-    // KeymgrFatalFaultErr -> TopDarjeelingAlertPeripheral::Keymgr
-    TopDarjeelingAlertPeripheral::Keymgr,
+    // KeymgrDpeRecovOperationErr -> TopDarjeelingAlertPeripheral::KeymgrDpe
+    TopDarjeelingAlertPeripheral::KeymgrDpe,
+    // KeymgrDpeFatalFaultErr -> TopDarjeelingAlertPeripheral::KeymgrDpe
+    TopDarjeelingAlertPeripheral::KeymgrDpe,
     // CsrngRecovAlert -> TopDarjeelingAlertPeripheral::Csrng
     TopDarjeelingAlertPeripheral::Csrng,
     // CsrngFatalAlert -> TopDarjeelingAlertPeripheral::Csrng

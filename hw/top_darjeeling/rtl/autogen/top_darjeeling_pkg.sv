@@ -352,14 +352,14 @@ package top_darjeeling_pkg;
   parameter int unsigned TOP_DARJEELING_OTBN_SIZE_BYTES = 32'h10000;
 
   /**
-   * Peripheral base address for keymgr in top darjeeling.
+   * Peripheral base address for keymgr_dpe in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_KEYMGR_BASE_ADDR = 32'h21140000;
+  parameter int unsigned TOP_DARJEELING_KEYMGR_DPE_BASE_ADDR = 32'h21140000;
 
   /**
-   * Peripheral size in bytes for keymgr in top darjeeling.
+   * Peripheral size in bytes for keymgr_dpe in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_KEYMGR_SIZE_BYTES = 32'h100;
+  parameter int unsigned TOP_DARJEELING_KEYMGR_DPE_SIZE_BYTES = 32'h100;
 
   /**
    * Peripheral base address for csrng in top darjeeling.
@@ -692,7 +692,7 @@ package top_darjeeling_pkg;
     TopDarjeelingAlertPeripheralHmac = 25,
     TopDarjeelingAlertPeripheralKmac = 26,
     TopDarjeelingAlertPeripheralOtbn = 27,
-    TopDarjeelingAlertPeripheralKeymgr = 28,
+    TopDarjeelingAlertPeripheralKeymgrDpe = 28,
     TopDarjeelingAlertPeripheralCsrng = 29,
     TopDarjeelingAlertPeripheralEdn0 = 30,
     TopDarjeelingAlertPeripheralEdn1 = 31,
@@ -765,8 +765,8 @@ package top_darjeeling_pkg;
     TopDarjeelingAlertIdKmacFatalFaultErr = 45,
     TopDarjeelingAlertIdOtbnFatal = 46,
     TopDarjeelingAlertIdOtbnRecov = 47,
-    TopDarjeelingAlertIdKeymgrRecovOperationErr = 48,
-    TopDarjeelingAlertIdKeymgrFatalFaultErr = 49,
+    TopDarjeelingAlertIdKeymgrDpeRecovOperationErr = 48,
+    TopDarjeelingAlertIdKeymgrDpeFatalFaultErr = 49,
     TopDarjeelingAlertIdCsrngRecovAlert = 50,
     TopDarjeelingAlertIdCsrngFatalAlert = 51,
     TopDarjeelingAlertIdEdn0RecovAlert = 52,
@@ -1058,7 +1058,7 @@ package top_darjeeling_pkg;
     PeripheralI2c0,
     PeripheralI2c1,
     PeripheralI2c2,
-    PeripheralKeymgr,
+    PeripheralKeymgrDpe,
     PeripheralKmac,
     PeripheralLcCtrl,
     PeripheralMbx0,

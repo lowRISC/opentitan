@@ -22,7 +22,7 @@
 #include "sw/ip/gpio/dif/dif_gpio.h"
 #include "sw/ip/hmac/dif/dif_hmac.h"
 #include "sw/ip/i2c/dif/dif_i2c.h"
-#include "sw/ip/keymgr/dif/dif_keymgr.h"
+#include "sw/ip/keymgr_dpe/dif/dif_keymgr_dpe.h"
 #include "sw/ip/kmac/dif/dif_kmac.h"
 #include "sw/ip/lc_ctrl/dif/dif_lc_ctrl.h"
 #include "sw/ip/mbx/dif/dif_mbx.h"
@@ -67,7 +67,7 @@ static dif_hmac_t hmac;
 static dif_i2c_t i2c0;
 static dif_i2c_t i2c1;
 static dif_i2c_t i2c2;
-static dif_keymgr_t keymgr;
+static dif_keymgr_dpe_t keymgr_dpe;
 static dif_kmac_t kmac;
 static dif_lc_ctrl_t lc_ctrl;
 static dif_mbx_t mbx0;
@@ -149,8 +149,8 @@ static void init_peripherals(void) {
   base_addr = mmio_region_from_addr(TOP_DARJEELING_I2C2_BASE_ADDR);
   CHECK_DIF_OK(dif_i2c_init(base_addr, &i2c2));
 
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_KEYMGR_BASE_ADDR);
-  CHECK_DIF_OK(dif_keymgr_init(base_addr, &keymgr));
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_KEYMGR_DPE_BASE_ADDR);
+  CHECK_DIF_OK(dif_keymgr_dpe_init(base_addr, &keymgr_dpe));
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_KMAC_BASE_ADDR);
   CHECK_DIF_OK(dif_kmac_init(base_addr, &kmac));
@@ -504,12 +504,12 @@ static void trigger_alert_test(void) {
         &alert_handler, exp_alert));
   }
 
-  // Write keymgr's alert_test reg and check alert_cause.
-  for (dif_keymgr_alert_t i = 0; i < 2; ++i) {
-    CHECK_DIF_OK(dif_keymgr_alert_force(&keymgr, kDifKeymgrAlertRecovOperationErr + i));
+  // Write keymgr_dpe's alert_test reg and check alert_cause.
+  for (dif_keymgr_dpe_alert_t i = 0; i < 2; ++i) {
+    CHECK_DIF_OK(dif_keymgr_dpe_alert_force(&keymgr_dpe, kDifKeymgrDpeAlertRecovOperationErr + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdKeymgrRecovOperationErr + i;
+    exp_alert = kTopDarjeelingAlertIdKeymgrDpeRecovOperationErr + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);

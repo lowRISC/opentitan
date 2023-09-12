@@ -496,19 +496,19 @@ pub const TOP_DARJEELING_OTBN_BASE_ADDR: usize = 0x21130000;
 /// address between #TOP_DARJEELING_OTBN_BASE_ADDR and
 /// `TOP_DARJEELING_OTBN_BASE_ADDR + TOP_DARJEELING_OTBN_SIZE_BYTES`.
 pub const TOP_DARJEELING_OTBN_SIZE_BYTES: usize = 0x10000;
-/// Peripheral base address for keymgr in top darjeeling.
+/// Peripheral base address for keymgr_dpe in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const TOP_DARJEELING_KEYMGR_BASE_ADDR: usize = 0x21140000;
+pub const TOP_DARJEELING_KEYMGR_DPE_BASE_ADDR: usize = 0x21140000;
 
-/// Peripheral size for keymgr in top darjeeling.
+/// Peripheral size for keymgr_dpe in top darjeeling.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #TOP_DARJEELING_KEYMGR_BASE_ADDR and
-/// `TOP_DARJEELING_KEYMGR_BASE_ADDR + TOP_DARJEELING_KEYMGR_SIZE_BYTES`.
-pub const TOP_DARJEELING_KEYMGR_SIZE_BYTES: usize = 0x100;
+/// address between #TOP_DARJEELING_KEYMGR_DPE_BASE_ADDR and
+/// `TOP_DARJEELING_KEYMGR_DPE_BASE_ADDR + TOP_DARJEELING_KEYMGR_DPE_SIZE_BYTES`.
+pub const TOP_DARJEELING_KEYMGR_DPE_SIZE_BYTES: usize = 0x100;
 /// Peripheral base address for csrng in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
