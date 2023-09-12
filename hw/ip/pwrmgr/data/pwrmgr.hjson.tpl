@@ -256,7 +256,7 @@
     { name: "NumRomInputs",
       desc: "Number of inputs from ROM_CTRL",
       type: "int",
-      default: "2",
+      default: "${NumRomInputs}",
       local: "true"
     },
   ],

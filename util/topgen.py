@@ -437,23 +437,29 @@ def generate_pwrmgr(top, out_path):
 
     # Count number of wakeups
     n_wkups = len(top["wakeups"])
-    log.info("Found {} wakeup signals".format(n_wkups))
-
-    # Count number of reset requests
-    n_rstreqs = len(top["reset_requests"]["peripheral"])
-    log.info("Found {} reset request signals".format(n_rstreqs))
-
+    log.info("Found %d wakeup signals", n_wkups)
     if n_wkups < 1:
         n_wkups = 1
         log.warning(
             "The design has no wakeup sources. Low power not supported.")
 
+    # Count number of reset requests
+    n_rstreqs = len(top["reset_requests"]["peripheral"])
+    log.info("Found %d reset request signals", n_rstreqs)
     if n_rstreqs < 1:
         n_rstreqs = 1
         log.warning("The design has no reset request sources. "
                     "Reset requests are not supported.")
 
-    # Define target path using the top specific ip path
+    # Count number of rom_ctrls.
+    n_rom_ctrls = len([r for r in top["module"] if r["type"] == "rom_ctrl"])
+    log.info("Found %d rom_ctrl inputs.", n_rom_ctrls)
+    if n_rom_ctrls < 1:
+        n_rom_ctrls = 1
+        log.error("There are no rom controllers to monitor. "
+                  "The fast state may get stuck.")
+
+    # Define target paths using the top specific ip path
     spec_ip_path = out_path / "ip" / "pwrmgr"
     rtl_path = spec_ip_path / "rtl" / "autogen"
     rtl_path.mkdir(parents=True, exist_ok=True)
@@ -471,6 +477,7 @@ def generate_pwrmgr(top, out_path):
     # Render and write out hjson
     render_dict = {"NumWkups": n_wkups,
                    "Wkups": top["wakeups"],
+                   "NumRomInputs": n_rom_ctrls,
                    "rst_reqs": top["reset_requests"],
                    "NumRstReqs": n_rstreqs}
 
