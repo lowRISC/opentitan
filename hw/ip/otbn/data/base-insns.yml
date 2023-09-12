@@ -592,7 +592,7 @@
     `LOOP`, `LOOPI`, jump and branch instructions are all permitted inside a loop but may not appear as the last instruction in a loop.
     OTBN will stop on that instruction, setting bit `loop` in `ERR_BITS`.
 
-    For more information on how to correctly use `LOOP` see [loop nesting](../#loop-nesting).
+    For more information on how to correctly use `LOOP` see [loop nesting](programmers_guide.md#loop-nesting).
   errs:
     - &grs-call-stack A `CALL_STACK` error from using `x1` as `grs` when the call stack is empty.
     - A `LOOP` error if the value in `grs` is zero.
@@ -624,7 +624,7 @@
     `LOOP`, `LOOPI`, jump and branch instructions are all permitted inside a loop but may not appear as the last instruction in a loop.
     OTBN will stop on that instruction, setting bit `loop` in `ERR_BITS`.
 
-    For more information on how to correctly use `LOOPI` see [loop nesting](../#loop-nesting).
+    For more information on how to correctly use `LOOPI` see [loop nesting](programmers_guide.md#loop-nesting).
   encoding:
     scheme: loopi
     mapping:
