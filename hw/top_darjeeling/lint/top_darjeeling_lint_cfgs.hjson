@@ -86,6 +86,11 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/keymgr/lint/{tool}"
              },
+             {    name: keymgr_dpe
+                  fusesoc_core: lowrisc:ip:keymgr_dpe
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/keymgr_dpe/lint/{tool}"
+             },
              {    name: otbn
                   fusesoc_core: lowrisc:ip:otbn
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
