@@ -9,8 +9,9 @@ package(default_visibility = ["//visibility:public"])
 
 offline_presigning_artifacts(
     name = "presigning",
+    testonly = True,
     srcs = [
-        "//sw/device/examples/hello_world:hello_world_bin",
+        "//sw/device/examples/hello_world",
     ],
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     # To sign with real keys, replace the rsa_key with the label of a real
@@ -25,6 +26,7 @@ offline_presigning_artifacts(
 
 pkg_tar(
     name = "digests",
+    testonly = True,
     srcs = [":presigning"],
     mode = "0644",
     tags = ["manual"],
@@ -36,6 +38,7 @@ pkg_tar(
 # to the binaries to test the offline signing flow without an HSM operation.
 offline_fake_rsa_sign(
     name = "fake",
+    testonly = True,
     srcs = [":presigning"],
     rsa_key = {
         "//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "fake_test_key_0",
@@ -45,6 +48,7 @@ offline_fake_rsa_sign(
 
 offline_signature_attach(
     name = "signed",
+    testonly = True,
     srcs = [
         ":presigning",
     ],
