@@ -50,14 +50,9 @@ jobs:
   displayName: Quality (quick lint)
   # Run code quality checks (quick lint)
   dependsOn: checkout
-  pool:
-    vmImage: ubuntu-20.04
+  pool: ci-public
   steps:
   - template: ci/checkout-template.yml
-  - bash: |
-      sudo apt-get remove -y clang-6.0 libclang-common-6.0-dev libclang1-6.0 libllvm6.0
-    displayName: Uninstall Clang
-    # Remove existing Clang installation
   - template: ci/install-package-dependencies.yml
     ## !!!
     ##
