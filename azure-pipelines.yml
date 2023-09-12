@@ -653,7 +653,31 @@ jobs:
       set -e
       . util/build_consts.sh
       module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/run-fpga-cw310-tests.sh cw310_rom_with_fake_keys,cw310_rom_with_real_keys,-manuf || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
+      ci/scripts/run-fpga-tests.sh cw310 cw310_rom_with_fake_keys,cw310_rom_with_real_keys,-manuf || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
+    displayName: Execute tests
+  - template: ci/publish-bazel-test-results.yml
+
+- job: execute_rom_fpga_tests_cw340
+  displayName: CW340 ROM Tests
+  pool: FPGA CW340
+  timeoutInMinutes: 60
+  dependsOn:
+    - chip_earlgrey_cw340
+    - sw_build
+  condition: succeeded( 'chip_earlgrey_cw340', 'sw_build' )
+  steps:
+  - template: ci/checkout-template.yml
+  - template: ci/install-package-dependencies.yml
+  - template: ci/download-artifacts-template.yml
+    parameters:
+      downloadPartialBuildBinFrom:
+        - chip_earlgrey_cw340
+        - sw_build
+  - bash: |
+      set -e
+      . util/build_consts.sh
+      module load "xilinx/vivado/$(VIVADO_VERSION)"
+      ci/scripts/run-fpga-tests.sh cw340 cw340_rom_with_fake_keys,cw340_rom_with_real_keys,-manuf || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
     displayName: Execute tests
   - template: ci/publish-bazel-test-results.yml
 
