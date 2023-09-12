@@ -7,7 +7,7 @@
 package mbx_reg_pkg;
 
   // Param list
-  parameter int NumAlerts = 1;
+  parameter int NumAlerts = 2;
 
   // Address widths within the block
   parameter int HostAw = 7;
@@ -20,35 +20,41 @@ package mbx_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } mbx_ready;
+    } mbx_abort;
     struct packed {
       logic        q;
-    } mbx_abort;
+    } mbx_ready;
   } mbx_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } mbx_ready;
+    } mbx_abort;
     struct packed {
       logic        q;
-    } mbx_abort;
+    } mbx_ready;
   } mbx_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } mbx_ready;
+    } mbx_abort;
     struct packed {
       logic        q;
       logic        qe;
-    } mbx_abort;
+    } mbx_ready;
   } mbx_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
-    logic        q;
-    logic        qe;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } recov_fault;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } fatal_fault;
   } mbx_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
@@ -63,14 +69,6 @@ package mbx_reg_pkg;
   } mbx_reg2hw_control_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic        q;
-      logic        qe;
-    } ready;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } async_msg_status;
     struct packed {
       logic        q;
       logic        qe;
@@ -166,12 +164,6 @@ package mbx_reg_pkg;
     struct packed {
       logic        d;
     } error;
-    struct packed {
-      logic        d;
-    } async_msg_status;
-    struct packed {
-      logic        d;
-    } ready;
   } mbx_hw2reg_status_reg_t;
 
   typedef struct packed {
@@ -197,12 +189,12 @@ package mbx_reg_pkg;
 
   // Register -> HW type for host interface
   typedef struct packed {
-    mbx_reg2hw_intr_state_reg_t intr_state; // [290:289]
-    mbx_reg2hw_intr_enable_reg_t intr_enable; // [288:287]
-    mbx_reg2hw_intr_test_reg_t intr_test; // [286:283]
-    mbx_reg2hw_alert_test_reg_t alert_test; // [282:281]
-    mbx_reg2hw_control_reg_t control; // [280:277]
-    mbx_reg2hw_status_reg_t status; // [276:267]
+    mbx_reg2hw_intr_state_reg_t intr_state; // [288:287]
+    mbx_reg2hw_intr_enable_reg_t intr_enable; // [286:285]
+    mbx_reg2hw_intr_test_reg_t intr_test; // [284:281]
+    mbx_reg2hw_alert_test_reg_t alert_test; // [280:277]
+    mbx_reg2hw_control_reg_t control; // [276:273]
+    mbx_reg2hw_status_reg_t status; // [272:267]
     mbx_reg2hw_address_range_regwen_reg_t address_range_regwen; // [266:263]
     mbx_reg2hw_address_range_valid_reg_t address_range_valid; // [262:262]
     mbx_reg2hw_inbound_base_address_reg_t inbound_base_address; // [261:231]
@@ -218,9 +210,9 @@ package mbx_reg_pkg;
 
   // HW -> register type for host interface
   typedef struct packed {
-    mbx_hw2reg_intr_state_reg_t intr_state; // [146:143]
-    mbx_hw2reg_control_reg_t control; // [142:141]
-    mbx_hw2reg_status_reg_t status; // [140:136]
+    mbx_hw2reg_intr_state_reg_t intr_state; // [144:141]
+    mbx_hw2reg_control_reg_t control; // [140:139]
+    mbx_hw2reg_status_reg_t status; // [138:136]
     mbx_hw2reg_inbound_write_ptr_reg_t inbound_write_ptr; // [135:106]
     mbx_hw2reg_outbound_read_ptr_reg_t outbound_read_ptr; // [105:76]
     mbx_hw2reg_outbound_object_size_reg_t outbound_object_size; // [75:64]
@@ -251,17 +243,16 @@ package mbx_reg_pkg;
   parameter logic [1:0] MBX_INTR_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] MBX_INTR_TEST_MBX_READY_RESVAL = 1'h 0;
   parameter logic [0:0] MBX_INTR_TEST_MBX_ABORT_RESVAL = 1'h 0;
-  parameter logic [0:0] MBX_ALERT_TEST_RESVAL = 1'h 0;
+  parameter logic [1:0] MBX_ALERT_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] MBX_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
+  parameter logic [0:0] MBX_ALERT_TEST_RECOV_FAULT_RESVAL = 1'h 0;
   parameter logic [1:0] MBX_CONTROL_RESVAL = 2'h 0;
   parameter logic [0:0] MBX_CONTROL_ABORT_RESVAL = 1'h 0;
   parameter logic [0:0] MBX_CONTROL_DOE_INTR_EN_RESVAL = 1'h 0;
-  parameter logic [31:0] MBX_STATUS_RESVAL = 32'h 1;
+  parameter logic [2:0] MBX_STATUS_RESVAL = 3'h 1;
   parameter logic [0:0] MBX_STATUS_BUSY_RESVAL = 1'h 1;
   parameter logic [0:0] MBX_STATUS_DOE_INTR_STATUS_RESVAL = 1'h 0;
   parameter logic [0:0] MBX_STATUS_ERROR_RESVAL = 1'h 0;
-  parameter logic [0:0] MBX_STATUS_ASYNC_MSG_STATUS_RESVAL = 1'h 0;
-  parameter logic [0:0] MBX_STATUS_READY_RESVAL = 1'h 0;
   parameter logic [31:0] MBX_INBOUND_WRITE_PTR_RESVAL = 32'h 0;
   parameter logic [29:0] MBX_INBOUND_WRITE_PTR_INBOUND_READ_PTR_RESVAL = 30'h 0;
   parameter logic [31:0] MBX_OUTBOUND_READ_PTR_RESVAL = 32'h 0;
@@ -299,7 +290,7 @@ package mbx_reg_pkg;
     4'b 0001, // index[ 2] MBX_INTR_TEST
     4'b 0001, // index[ 3] MBX_ALERT_TEST
     4'b 0001, // index[ 4] MBX_CONTROL
-    4'b 1111, // index[ 5] MBX_STATUS
+    4'b 0001, // index[ 5] MBX_STATUS
     4'b 0001, // index[ 6] MBX_ADDRESS_RANGE_REGWEN
     4'b 0001, // index[ 7] MBX_ADDRESS_RANGE_VALID
     4'b 1111, // index[ 8] MBX_INBOUND_BASE_ADDRESS
@@ -335,10 +326,6 @@ package mbx_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } async_msg_en;
-    struct packed {
-      logic        q;
-      logic        qe;
     } doe_intr_en;
     struct packed {
       logic        q;
@@ -350,9 +337,6 @@ package mbx_reg_pkg;
     struct packed {
       logic        q;
     } ready;
-    struct packed {
-      logic        q;
-    } async_msg_status;
     struct packed {
       logic        q;
     } error;
@@ -374,9 +358,6 @@ package mbx_reg_pkg;
     } doe_intr_en;
     struct packed {
       logic        d;
-    } async_msg_en;
-    struct packed {
-      logic        d;
     } go;
   } mbx_hw2reg_sys_control_reg_t;
 
@@ -396,25 +377,21 @@ package mbx_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } async_msg_status;
-    struct packed {
-      logic        d;
-      logic        de;
     } ready;
   } mbx_hw2reg_sys_status_reg_t;
 
   // Register -> HW type for sys interface
   typedef struct packed {
-    mbx_reg2hw_sys_doe_intr_msg_addr_reg_t sys_doe_intr_msg_addr; // [79:47]
-    mbx_reg2hw_sys_doe_intr_msg_data_reg_t sys_doe_intr_msg_data; // [46:14]
-    mbx_reg2hw_sys_control_reg_t sys_control; // [13:6]
-    mbx_reg2hw_sys_status_reg_t sys_status; // [5:0]
+    mbx_reg2hw_sys_doe_intr_msg_addr_reg_t sys_doe_intr_msg_addr; // [76:44]
+    mbx_reg2hw_sys_doe_intr_msg_data_reg_t sys_doe_intr_msg_data; // [43:11]
+    mbx_reg2hw_sys_control_reg_t sys_control; // [10:5]
+    mbx_reg2hw_sys_status_reg_t sys_status; // [4:0]
   } mbx_sys_reg2hw_t;
 
   // HW -> register type for sys interface
   typedef struct packed {
-    mbx_hw2reg_sys_control_reg_t sys_control; // [13:10]
-    mbx_hw2reg_sys_status_reg_t sys_status; // [9:0]
+    mbx_hw2reg_sys_control_reg_t sys_control; // [10:8]
+    mbx_hw2reg_sys_status_reg_t sys_status; // [7:0]
   } mbx_sys_hw2reg_t;
 
   // Register offsets for sys interface
@@ -427,7 +404,6 @@ package mbx_reg_pkg;
   parameter logic [31:0] MBX_SYS_CONTROL_RESVAL = 32'h 0;
   parameter logic [0:0] MBX_SYS_CONTROL_ABORT_RESVAL = 1'h 0;
   parameter logic [0:0] MBX_SYS_CONTROL_DOE_INTR_EN_RESVAL = 1'h 0;
-  parameter logic [0:0] MBX_SYS_CONTROL_ASYNC_MSG_EN_RESVAL = 1'h 0;
   parameter logic [0:0] MBX_SYS_CONTROL_GO_RESVAL = 1'h 0;
 
   // Window parameters for sys interface

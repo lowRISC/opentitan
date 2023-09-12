@@ -41,6 +41,8 @@ module mbx
 
   // Collect all error sources
   logic sysif_intg_err, tl_sram_intg_err, imbx_state_error, alert_signal;
+  logic sram_err;
+
   assign alert_signal = sysif_intg_err     |
                         tl_sram_intg_err   |
                         imbx_state_error;
@@ -54,12 +56,10 @@ module mbx
   logic sysif_control_abort_write;
 
   // Status signal inputs from the sysif to the hostif
-  logic sysif_status_busy, sysif_status_doe_intr_status, sysif_status_async_msg_status,
-        sysif_status_error, sysif_status_ready;
+  logic sysif_status_busy, sysif_status_doe_intr_status, sysif_status_error;
 
   // Setter signals from the hostif to the sysif
-  logic hostif_status_doe_intr_status_set, hostif_status_async_msg_status_set,
-        hostif_control_abort_set, hostif_status_busy_clear,
+  logic hostif_status_doe_intr_status_set, hostif_control_abort_set, hostif_status_busy_clear,
         hostif_status_error_set, hostif_status_error_clear;
 
   // Alias signals from the sys interface
@@ -93,11 +93,12 @@ module mbx
     // Device port to the host side
     .tl_host_i                           ( tl_host_i                          ),
     .tl_host_o                           ( tl_host_o                          ),
-    .intg_err_i                          ( alert_signal                       ),
     .event_intr_ready_i                  ( hostif_event_intr_ready            ),
     .event_intr_abort_i                  ( hostif_event_intr_abort            ),
     .intr_ready_o                        ( intr_mbx_ready_o                   ),
     .intr_abort_o                        ( intr_mbx_abort_o                   ),
+    .intg_err_i                          ( alert_signal                       ),
+    .sram_err_i                          ( sram_err                           ),
     .alert_rx_i                          ( alert_rx_i                         ),
     .alert_tx_o                          ( alert_tx_o                         ),
     // Access to the control register
@@ -107,12 +108,9 @@ module mbx
     .hostif_status_busy_i                ( sysif_status_busy                  ),
     .hostif_status_doe_intr_status_set_o ( hostif_status_doe_intr_status_set   ),
     .hostif_status_doe_intr_status_i     ( sysif_status_doe_intr_status       ),
-    .hostif_status_async_msg_status_set_o( hostif_status_async_msg_status_set ),
-    .hostif_status_async_msg_status_i    ( sysif_status_async_msg_status      ),
     .hostif_status_error_set_o           ( hostif_status_error_set            ),
     .hostif_status_error_clear_o         ( hostif_status_error_clear          ),
     .hostif_status_error_i               ( sysif_status_error                 ),
-    .hostif_status_ready_i               ( sysif_status_ready                 ),
     // Access to the IB/OB RD/WR Pointers
     .hostif_imbx_write_ptr_i             ( imbx_sram_write_ptr                ),
     .hostif_ombx_read_ptr_i              ( ombx_sram_read_ptr                 ),
@@ -137,7 +135,7 @@ module mbx
   //////////////////////////////////////////////////////////////////////////////
   // Control and Status signals of the system interface
   //////////////////////////////////////////////////////////////////////////////
-  logic sysif_control_go_set, sysif_control_abort_set, sysif_control_async_msg_en;
+  logic sysif_control_go_set, sysif_control_abort_set;
 
   //////////////////////////////////////////////////////////////////////////////
   // Signals for the Inbox
@@ -179,7 +177,6 @@ module mbx
     .doe_intr_o                          ( doe_intr_o                         ),
     // Access to the control register
     .sysif_control_abort_set_o           ( sysif_control_abort_set            ),
-    .sysif_control_async_msg_en_o        ( sysif_control_async_msg_en         ),
     .sysif_control_go_set_o              ( sysif_control_go_set               ),
     // Access to the status register
     .sysif_status_busy_valid_i           ( imbx_status_busy_valid             ),
@@ -194,12 +191,8 @@ module mbx
     .sysif_status_error_clear_i          ( hostif_status_error_clear          ),
     .sysif_status_error_o                ( sysif_status_error          ),
 
-    .sysif_status_async_msg_status_set_i ( hostif_status_async_msg_status_set  ),
-    .sysif_status_async_msg_status_o     ( sysif_status_async_msg_status      ),
-
     .sysif_status_ready_valid_i          ( ombx_status_ready_valid            ),
     .sysif_status_ready_i                ( ombx_status_ready                  ),
-    .sysif_status_ready_o                ( sysif_status_ready                 ),
     // Alias of the interrupt address and data registers to the host interface
     .sysif_intr_msg_addr_o               ( sysif_intr_msg_addr                ),
     .sysif_intr_msg_data_o               ( sysif_intr_msg_data                ),
@@ -258,6 +251,7 @@ module mbx
     .tl_host_o                 ( tl_sram_o                ),
     .tl_host_i                 ( tl_sram_i                ),
     .intg_err_o                ( tl_sram_intg_err         ),
+    .sram_err_o                ( sram_err                 ),
     // Interface to the inbound mailbox
     .imbx_sram_write_req_i     ( imbx_sram_write_req      ),
     .imbx_sram_write_gnt_o     ( imbx_sram_write_gnt      ),

@@ -21,6 +21,7 @@ module mbx_hostif
   output logic                        intr_abort_o,
   // External errors
   input  logic                        intg_err_i,
+  input  logic                        sram_err_i,
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
@@ -31,12 +32,9 @@ module mbx_hostif
   output logic                        hostif_status_doe_intr_status_set_o,
   output logic                        hostif_status_error_set_o,
   output logic                        hostif_status_error_clear_o,
-  output logic                        hostif_status_async_msg_status_set_o,
   input  logic                        hostif_status_busy_i,
   input  logic                        hostif_status_doe_intr_status_i,
   input  logic                        hostif_status_error_i,
-  input  logic                        hostif_status_async_msg_status_i,
-  input  logic                        hostif_status_ready_i,
   // Access to the IB/OB RD/WR pointers
   input  logic [CfgSramAddrWidth-1:0] hostif_imbx_write_ptr_i,
   input  logic [CfgSramAddrWidth-1:0] hostif_ombx_read_ptr_i,
@@ -60,16 +58,25 @@ module mbx_hostif
   mbx_reg_pkg::mbx_host_reg2hw_t reg2hw;
   mbx_reg_pkg::mbx_host_hw2reg_t hw2reg;
 
-  // Alerts
+  //////////////////////////////////////////////////////////////////////////////
+  // Assertions
+  //////////////////////////////////////////////////////////////////////////////
   logic tlul_intg_err;
   logic [NumAlerts-1:0] alert_test, alerts;
-  assign alert_test = {reg2hw.alert_test.q & reg2hw.alert_test.qe};
-  assign alerts[0]  = tlul_intg_err | intg_err_i;
 
+  assign alert_test = {
+    reg2hw.alert_test.recov_fault.q & reg2hw.alert_test.recov_fault.qe,
+    reg2hw.alert_test.fatal_fault.q & reg2hw.alert_test.fatal_fault.qe
+  };
+
+  assign alerts[0] = tlul_intg_err | intg_err_i;
+  assign alerts[1] = sram_err_i;
+
+  localparam logic [NumAlerts-1:0] IsFatal = {1'b0, 1'b1};
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn ( AlertAsyncOn[i] ),
-      .IsFatal ( 1'b1            )
+      .IsFatal ( IsFatal[i]      )
     ) u_prim_alert_sender (
     .clk_i          ( clk_i         ),
     .rst_ni         ( rst_ni        ),
@@ -157,16 +164,12 @@ module mbx_hostif
   assign hw2reg.status.busy.d             = hostif_status_busy_i;
   assign hw2reg.status.doe_intr_status.d  = hostif_status_doe_intr_status_i;
   assign hw2reg.status.error.d            = hostif_status_error_i;
-  assign hw2reg.status.async_msg_status.d = hostif_status_async_msg_status_i;
-  assign hw2reg.status.ready.d            = hostif_status_ready_i;
   // External write logic
   assign hostif_status_busy_clear_o           = reg2hw.status.busy.qe  & ~reg2hw.status.busy.q;
   assign hostif_status_doe_intr_status_set_o  = reg2hw.status.doe_intr_status.qe &
                                                 reg2hw.status.doe_intr_status.q;
   assign hostif_status_error_set_o            = reg2hw.status.error.qe &  reg2hw.status.error.q;
   assign hostif_status_error_clear_o          = reg2hw.status.error.qe & ~reg2hw.status.error.q;
-  assign hostif_status_async_msg_status_set_o =
-    reg2hw.status.async_msg_status.qe & reg2hw.status.async_msg_status.q;
 
   // Address config valid
   assign hostif_address_range_valid_o = reg2hw.address_range_valid.q;
