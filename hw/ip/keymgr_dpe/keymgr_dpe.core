@@ -24,6 +24,7 @@ filesets:
       - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:ip:rom_ctrl_pkg
       - lowrisc:ip:tlul
+      - lowrisc:ip:keymgr_common
     files:
       - rtl/keymgr_dpe.sv
       - rtl/keymgr_dpe_ctrl.sv

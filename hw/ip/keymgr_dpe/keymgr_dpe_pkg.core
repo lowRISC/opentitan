@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:constants:top_pkg
       - lowrisc:ip:edn_pkg
+      - lowrisc:ip:keymgr_pkg
     files:
       - rtl/keymgr_dpe_reg_pkg.sv
       - rtl/keymgr_dpe_pkg.sv
