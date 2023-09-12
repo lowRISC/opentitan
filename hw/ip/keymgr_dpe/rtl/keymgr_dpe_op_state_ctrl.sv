@@ -15,17 +15,17 @@ module keymgr_dpe_op_state_ctrl
   input rst_ni,
 
   input adv_req_i,
-  input dis_req_i,
-  input id_req_i,
   input gen_req_i,
-  input [CdiWidth-1:0] cnt_i,
+  input erase_req_i,
+
+  // `op_ack_o` signals to the top module that the requested operation is completed
   output logic op_ack_o,
   output logic op_busy_o,
+  // `op_update_o` signals to the keygmr slot MUX that destination slot needs to be updated
   output logic op_update_o,
 
   input kmac_done_i,
   output logic adv_en_o,
-  output logic id_en_o,
   output logic gen_en_o,
 
   output logic op_fsm_err_o
@@ -36,7 +36,7 @@ module keymgr_dpe_op_state_ctrl
   typedef enum logic [OpStateWidth-1:0] {
     StIdle   = 8'b10010101,
     StAdv    = 8'b00101000,
-    StAdvAck = 8'b01000011,
+    StErase  = 8'b01000011,
     StWait   = 8'b11111110
   } state_e;
 
@@ -44,14 +44,13 @@ module keymgr_dpe_op_state_ctrl
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, StIdle)
 
   logic gen_en;
-  assign id_en_o = gen_en & id_req_i;
   assign gen_en_o = gen_en & gen_req_i;
 
   always_comb begin
     state_d = state_q;
     op_update_o = 1'b0;
     op_ack_o = 1'b0;
-    op_busy_o = 1'b1;
+    op_busy_o = 1'b0;
 
     // output to kmac interface
     adv_en_o = 1'b0;
@@ -61,34 +60,39 @@ module keymgr_dpe_op_state_ctrl
 
     unique case (state_q)
       StIdle: begin
-        op_busy_o = '0;
-        if (adv_req_i || dis_req_i) begin
+        if (adv_req_i) begin
           state_d = StAdv;
-        end else if (id_req_i || gen_req_i) begin
+        end else if (gen_req_i) begin
           state_d = StWait;
+        end else if (erase_req_i) begin
+          state_d = StErase;
         end
+      end
+
+      // Erasing happens in a single clock cycle in keymgr slot MUX of ctrl, therefore:
+      // `op_update_o` signal is used as input to MUX (so that MUX is activated to update the slot)
+      // `op_ack_o` signal is used to communicate successful completion of command
+      StErase:begin
+        op_ack_o = 1'b1;
+        op_update_o = 1'b1;
+        state_d = StIdle;
       end
 
       StAdv: begin
         adv_en_o = 1'b1;
+        op_busy_o = 1'b1;
 
-        if (kmac_done_i && (int'(cnt_i) == CDIs-1)) begin
+        if (kmac_done_i) begin
           op_ack_o = 1'b1;
-          state_d = StIdle;
-        end else if (kmac_done_i && (int'(cnt_i) < CDIs-1)) begin
           op_update_o = 1'b1;
-          state_d = StAdvAck;
+          state_d = StIdle;
         end
-      end
-
-      // drop adv_en_o to allow kmac interface handshake
-      StAdvAck: begin
-        state_d = StAdv;
       end
 
       // Not an advanced operation
       StWait: begin
         gen_en = 1'b1;
+        op_busy_o = 1'b1;
 
         if (kmac_done_i) begin
           op_ack_o = 1'b1;
@@ -101,6 +105,7 @@ module keymgr_dpe_op_state_ctrl
         // allow completion of transaction
         op_ack_o = 1'b1;
         op_fsm_err_o = 1'b1;
+        op_busy_o = 1'b1;
       end
 
     endcase // unique case (adv_state_q)
