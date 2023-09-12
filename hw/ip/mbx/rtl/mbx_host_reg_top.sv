@@ -135,7 +135,8 @@ module mbx_host_reg_top (
   logic intr_test_mbx_ready_wd;
   logic intr_test_mbx_abort_wd;
   logic alert_test_we;
-  logic alert_test_wd;
+  logic alert_test_fatal_fault_wd;
+  logic alert_test_recov_fault_wd;
   logic control_re;
   logic control_we;
   logic control_abort_qs;
@@ -336,22 +337,39 @@ module mbx_host_reg_top (
 
   // R[alert_test]: V(True)
   logic alert_test_qe;
-  logic [0:0] alert_test_flds_we;
+  logic [1:0] alert_test_flds_we;
   assign alert_test_qe = &alert_test_flds_we;
+  //   F[fatal_fault]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_alert_test (
+  ) u_alert_test_fatal_fault (
     .re     (1'b0),
     .we     (alert_test_we),
-    .wd     (alert_test_wd),
+    .wd     (alert_test_fatal_fault_wd),
     .d      ('0),
     .qre    (),
     .qe     (alert_test_flds_we[0]),
-    .q      (reg2hw.alert_test.q),
+    .q      (reg2hw.alert_test.fatal_fault.q),
     .ds     (),
     .qs     ()
   );
-  assign reg2hw.alert_test.qe = alert_test_qe;
+  assign reg2hw.alert_test.fatal_fault.qe = alert_test_qe;
+
+  //   F[recov_fault]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_recov_fault (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_recov_fault_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (alert_test_flds_we[1]),
+    .q      (reg2hw.alert_test.recov_fault.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.alert_test.recov_fault.qe = alert_test_qe;
 
 
   // R[control]: V(True)
@@ -891,7 +909,9 @@ module mbx_host_reg_top (
   assign intr_test_mbx_abort_wd = reg_wdata[1];
   assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
 
-  assign alert_test_wd = reg_wdata[0];
+  assign alert_test_fatal_fault_wd = reg_wdata[0];
+
+  assign alert_test_recov_fault_wd = reg_wdata[1];
   assign control_re = addr_hit[4] & reg_re & !reg_error;
   assign control_we = addr_hit[4] & reg_we & !reg_error;
 
@@ -979,6 +999,7 @@ module mbx_host_reg_top (
 
       addr_hit[3]: begin
         reg_rdata_next[0] = '0;
+        reg_rdata_next[1] = '0;
       end
 
       addr_hit[4]: begin

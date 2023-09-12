@@ -21,6 +21,7 @@ module mbx_hostif
   output logic                        intr_abort_o,
   // External errors
   input  logic                        intg_err_i,
+  input  logic                        sram_err_i,
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
@@ -60,16 +61,25 @@ module mbx_hostif
   mbx_reg_pkg::mbx_host_reg2hw_t reg2hw;
   mbx_reg_pkg::mbx_host_hw2reg_t hw2reg;
 
-  // Alerts
+  //////////////////////////////////////////////////////////////////////////////
+  // Assertions
+  //////////////////////////////////////////////////////////////////////////////
   logic tlul_intg_err;
   logic [NumAlerts-1:0] alert_test, alerts;
-  assign alert_test = {reg2hw.alert_test.q & reg2hw.alert_test.qe};
-  assign alerts[0]  = tlul_intg_err | intg_err_i;
 
+  assign alert_test = {
+    reg2hw.alert_test.recov_fault.q & reg2hw.alert_test.recov_fault.qe,
+    reg2hw.alert_test.fatal_fault.q & reg2hw.alert_test.fatal_fault.qe
+  };
+
+  assign alerts[0] = tlul_intg_err | intg_err_i;
+  assign alerts[1] = sram_err_i;
+
+  localparam logic [NumAlerts-1:0] IsFatal = {1'b0, 1'b1};
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn ( AlertAsyncOn[i] ),
-      .IsFatal ( 1'b1            )
+      .IsFatal ( IsFatal[i]      )
     ) u_prim_alert_sender (
     .clk_i          ( clk_i         ),
     .rst_ni         ( rst_ni        ),
