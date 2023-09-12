@@ -111,6 +111,31 @@
       act:     "rcv"
       desc:    "TL-UL host port for egress into CTN (response part), synchronous"
     }
+    { struct:  "logic"
+      type:    "uni"
+      name:    "i2c_lsio_trigger"
+      act:     "rcv"
+      desc:    "LSIO trigger signal from I2C"
+    }
+    { struct:  "logic"
+      type:    "uni"
+      name:    "spi_host_lsio_trigger"
+      act:     "rcv"
+      desc:    "LSIO trigger signal from SPI Host"
+    }
+    { struct:  "logic"
+      type:    "uni"
+      name:    "uart_lsio_trigger"
+      act:     "rcv"
+      desc:    "LSIO trigger signal from UART"
+    }
+    { struct:  "logic"
+      width:   2
+      type:    "uni"
+      name:    "soc_lsio_trigger"
+      act:     "rcv"
+      desc:    "LSIO trigger signal from SoC, synchronous"
+    }
     { struct:  "lsio_trigger"
       package: "dma_pkg"
       type:    "uni"

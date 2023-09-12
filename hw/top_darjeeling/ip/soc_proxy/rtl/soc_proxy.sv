@@ -29,6 +29,10 @@ module soc_proxy
   output logic wkup_internal_req_o,
   output logic wkup_external_req_o,
 
+  input  logic       i2c_lsio_trigger_i,
+  input  logic       spi_host_lsio_trigger_i,
+  input  logic       uart_lsio_trigger_i,
+  input  logic [1:0] soc_lsio_trigger_i,
   output dma_pkg::lsio_trigger_t dma_lsio_trigger_o,
 
   output tlul_pkg::tl_h2d_t ctn_tl_h2d_o,
@@ -49,7 +53,6 @@ module soc_proxy
   assign ctn_tl_o = ctn_tl_d2h_i;
 
   // Tie off unimplemented outputs temporarily.
-  assign dma_lsio_trigger_o = '0;
   assign wkup_internal_req_o = 1'b0;
 
   // Register node
@@ -216,6 +219,14 @@ module soc_proxy
     .d_i    (soc_wkup_async_i),
     .q_o    (wkup_external_req_o)
   );
+
+  // Collate LSIO trigger inputs into signal for DMA
+  assign dma_lsio_trigger_o = {
+    soc_lsio_trigger_i,
+    uart_lsio_trigger_i,
+    spi_host_lsio_trigger_i,
+    i2c_lsio_trigger_i
+  };
 
   // Assertions
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A,
