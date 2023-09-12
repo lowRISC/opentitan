@@ -1302,6 +1302,7 @@ module chip_darjeeling_asic #(
     .soc_recov_alert_req_i        ( soc_recov_alert_req        ),
     .soc_recov_alert_rsp_o        (                            ),
     .soc_intr_async_i             ( '0                         ),
+    .soc_wkup_async_i             ( 1'b0                       ),
     .entropy_src_hw_if_req_o      ( entropy_src_hw_if_req      ),
     .entropy_src_hw_if_rsp_i      ( entropy_src_hw_if_rsp      ),
     .io_clk_byp_req_o             ( io_clk_byp_req             ),
