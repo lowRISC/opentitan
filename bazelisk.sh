@@ -81,6 +81,9 @@ function outquery_starlark_expr() {
         -all)
             echo "\"\\n\".join([f.path for f in target.files.to_list()])"
             ;;
+        -providers)
+            echo "providers(target)"
+            ;;
         -*)
             echo "\"\\n\".join([f.path for f in target.files.to_list() if \"$q\"[1:] in f.path])"
             ;;
