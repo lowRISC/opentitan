@@ -4,6 +4,7 @@
 
 load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
+load("//rules/opentitan:defs.bzl", "opentitan_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -206,9 +207,13 @@ cc_test(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "hmac_functest",
     srcs = ["hmac_functest.c"],
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:sim_verilator",
+    ],
     deps = [
         ":hmac",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
