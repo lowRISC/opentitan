@@ -51,7 +51,6 @@ module soc_proxy
   // Tie off unimplemented outputs temporarily.
   assign dma_lsio_trigger_o = '0;
   assign wkup_internal_req_o = 1'b0;
-  assign wkup_external_req_o = 1'b0;
 
   // Register node
   soc_proxy_core_reg2hw_t reg2hw;
@@ -206,6 +205,16 @@ module soc_proxy
     .hw2reg_intr_state_de_o (hw2reg.intr_state.de),
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.d),
     .intr_o                 (intr_external_o)
+  );
+
+  // Synchronize external wakeup request
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_prim_flop_2sync_soc_wkup (
+    .clk_i  (clk_aon_i),
+    .rst_ni (rst_aon_ni),
+    .d_i    (soc_wkup_async_i),
+    .q_o    (wkup_external_req_o)
   );
 
   // Assertions
