@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("//rules:rv.bzl", "rv_rule")
+load("//rules/opentitan:providers.bzl", "get_binary_files")
+load("//rules/opentitan:util.bzl", "get_override")
 
 PreSigningBinaryInfo = provider(fields = ["files"])
 
@@ -216,7 +218,7 @@ def _offline_presigning_artifacts(ctx):
     spx_key = key_from_dict(ctx.attr.spx_key, "spx_key")
     digests = []
     bins = []
-    for src in ctx.files.srcs:
+    for src in get_binary_files(ctx.attr.srcs):
         artifacts = _presigning_artifacts(
             ctx,
             ctx.executable._tool,
@@ -339,22 +341,42 @@ offline_signature_attach = rule(
     },
 )
 
-def _sign_bin_impl(ctx):
-    rsa_key = key_from_dict(ctx.attr.rsa_key, "rsa_key")
-    spx_key = key_from_dict(ctx.attr.spx_key, "spx_key")
+def sign_binary(ctx, **kwargs):
+    """Sign a binary.
+
+    Args:
+      ctx: The rule context.
+      kwargs: Overrides of values normally retrived from the context object.
+        rsa_key: The RSA signing key.
+        spx_key: The SPHINCS+ signing key.
+        bin: The input binary.
+        manifest: The manifest header.
+        _tool: The signing tool (opentitantool).
+    Returns:
+        A dict of all of the signing artifacts:
+          pre: The pre-signing binary (input binary with manifest changes applied).
+          digest: The SHA256 hash over the pre-signing binary.
+          spxmsg: The SPHINCS+ message to be signed.
+          rsa_sig: The RSA signature of the digest.
+          spx_sig: The SPHINCS+ signature over the message.
+          signed: The final signed binary.
+    """
+    rsa_key = key_from_dict(get_override(ctx, "attr.rsa_key", kwargs), "rsa_key")
+    spx_key = key_from_dict(get_override(ctx, "attr.spx_key", kwargs), "spx_key")
+    opentitantool = get_override(ctx, "file._tool", kwargs)
 
     artifacts = _presigning_artifacts(
         ctx,
-        ctx.file._tool,
-        ctx.file.bin,
-        ctx.file.manifest,
+        opentitantool,
+        get_override(ctx, "file.bin", kwargs),
+        get_override(ctx, "file.manifest", kwargs),
         rsa_key,
         spx_key,
         keyname_in_filenames = True,
     )
     rsa_sig, spx_sig = _local_sign(
         ctx,
-        ctx.file._tool,
+        opentitantool,
         artifacts.digest,
         rsa_key,
         artifacts.spxmsg,
@@ -362,13 +384,24 @@ def _sign_bin_impl(ctx):
     )
     signed = _post_signing_attach(
         ctx,
-        ctx.file._tool,
+        opentitantool,
         artifacts.pre,
         rsa_sig,
         spx_sig,
     )
+    return {
+        "pre": artifacts.pre,
+        "digest": artifacts.digest,
+        "spxmsg": artifacts.spxmsg,
+        "rsa_sig": rsa_sig,
+        "spx_sig": spx_sig,
+        "signed": signed,
+    }
+
+def _sign_bin_impl(ctx):
+    result = sign_binary(ctx)
     return [
-        DefaultInfo(files = depset([signed]), data_runfiles = ctx.runfiles(files = [signed])),
+        DefaultInfo(files = depset([result["signed"]]), data_runfiles = ctx.runfiles(files = [result["signed"]])),
     ]
 
 sign_bin = rv_rule(
