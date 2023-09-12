@@ -14,6 +14,7 @@ module mbx_sramrwarb
   output  tlul_pkg::tl_h2d_t          tl_host_o,
   input   tlul_pkg::tl_d2h_t          tl_host_i,
   output  logic                       intg_err_o,
+  output  logic                       sram_err_o,
 
   // Interface to the inbound mailbox
   input  logic                        imbx_sram_write_req_i,
@@ -96,7 +97,7 @@ module mbx_sramrwarb
     .valid_o           ( sram_valid                               ),
     .rdata_o           ( ombx_sram_read_resp_o                    ),
     .rdata_intg_o      (                                          ),
-    .err_o             (                                          ),
+    .err_o             ( sram_err_o                               ),
     .intg_err_o        ( intg_err_o                               ),
     // Bus interface
     .tl_o              ( tl_host_o                                ),
