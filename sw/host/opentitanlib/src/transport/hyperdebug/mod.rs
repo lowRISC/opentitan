@@ -732,7 +732,7 @@ impl Flavor for CW310Flavor {
 
         // First, try to establish a connection to the native Chip Whisperer interface
         // which we will use for bitstream loading.
-        let board = ChipWhisperer::<Cw310>::new(Default::default(), None, None, None, &[])?;
+        let board = ChipWhisperer::<Cw310>::new(None, None, None, &[])?;
 
         // The transport does not provide name resolution for the IO interface
         // names, so: console=UART2 and RESET=CN10_29 on the Hyp+CW310.
@@ -752,7 +752,7 @@ impl Flavor for CW310Flavor {
         Ok(())
     }
     fn clear_bitstream(_clear: &ClearBitstream) -> Result<()> {
-        let board = ChipWhisperer::<Cw310>::new(Default::default(), None, None, None, &[])?;
+        let board = ChipWhisperer::<Cw310>::new(None, None, None, &[])?;
         let usb = board.device.borrow();
         usb.spi1_enable(false)?;
         usb.clear_bitstream()?;

@@ -12,7 +12,6 @@ use std::rc::Rc;
 use std::time::{Duration, Instant};
 
 use crate::io::gpio::{GpioError, GpioPin};
-use crate::io::io_mapper::IoMapper;
 use crate::io::uart::Uart;
 use crate::transport::verilator::gpio::{GpioInner, VerilatorGpioPin};
 use crate::transport::verilator::subprocess::{Options, Subprocess};
@@ -36,12 +35,11 @@ pub struct Verilator {
     pub gpio_write_file: String,
 
     inner: Rc<RefCell<Inner>>,
-    io_mapper: Rc<IoMapper>,
 }
 
 impl Verilator {
     /// Creates a verilator subprocess-hosting transport from `options`.
-    pub fn from_options(options: Options, io_mapper: Rc<IoMapper>) -> Result<Self> {
+    pub fn from_options(options: Options) -> Result<Self> {
         static UART: Lazy<Regex> =
             Lazy::new(|| Regex::new("UART: Created ([^ ]+) for uart0").unwrap());
         static SPI: Lazy<Regex> =
@@ -74,7 +72,6 @@ impl Verilator {
             gpio_read_file: gpio_rd,
             gpio_write_file: gpio_wr,
             inner: Rc::new(RefCell::new(Inner { uart: None, gpio })),
-            io_mapper,
         })
     }
 
@@ -100,8 +97,6 @@ impl Transport for Verilator {
     }
 
     fn uart(&self, instance: &str) -> Result<Rc<dyn Uart>> {
-        let instance = self.io_mapper.resolve_uart(instance);
-
         ensure!(
             instance == "0",
             TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
@@ -114,10 +109,7 @@ impl Transport for Verilator {
     }
 
     fn gpio_pin(&self, instance: &str) -> Result<Rc<dyn GpioPin>> {
-        let resolved_pin = self.io_mapper.resolve_pin(instance);
-
-        let pin =
-            u8::from_str(&resolved_pin).with_context(|| format!("can't convert {instance:?}"))?;
+        let pin = u8::from_str(instance).with_context(|| format!("can't convert {instance:?}"))?;
         ensure!(pin < 32 || pin == 255, GpioError::InvalidPinNumber(pin));
         let mut inner = self.inner.borrow_mut();
         Ok(Rc::clone(inner.gpio.pins.entry(pin).or_insert_with(|| {
