@@ -18,12 +18,13 @@ echo Invoking test: {test_harness} {args} {test_cmd}
 RUST_BACKTRACE=1 {test_harness} {args} {test_cmd}
 """
 
-def _transform(ctx, exec_env, elf, binary, signed_bin, disassembly, mapfile):
+def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfile):
     """Transform binaries into the preferred forms for fpga_cw310.
 
     Args:
       ctx: The rule context.
       exec_env: The ExecEnvInfo for this environment.
+      name: The rule name/basename.
       elf: The compiled elf program.
       binary: The raw binary of the compiled program.
       signed_bin: The signed binary (if available).
@@ -92,8 +93,10 @@ def _test_dispatch(ctx, exec_env, provider):
     data_files.append(provider.default)
     data_files.append(test_harness)
 
-    # Construct a param dictionary from the provided dict and some extra file references.
-    param = dict(get_fallback(ctx, "attr.param", exec_env))
+    # Construct a param dictionary by combining the exec_env.param, the rule's
+    # param and and some extra file references.
+    param = dict(exec_env.param)
+    param.update(ctx.attr.param)
     if bitstream and "bitstream" not in param:
         param["bitstream"] = bitstream.short_path
     if rom and "rom" not in param:
@@ -142,3 +145,43 @@ fpga_cw310 = rule(
     implementation = _fpga_cw310,
     attrs = exec_env_common_attrs(),
 )
+
+def cw310_params(
+        tags = [],
+        timeout = "short",
+        local = True,
+        test_harness = None,
+        rom = None,
+        otp = None,
+        bitstream = None,
+        test_cmd = "",
+        data = [],
+        **kwargs):
+    """A macro to create CW310 parameters for OpenTitan tests.
+
+    Args:
+      tags: The test tags to apply to the test rule.
+      timeout: The timeout to apply to the test rule.
+      local: Whether to set the `local` flag on this test.
+      test_harness: Use an alternative test harness for this test.
+      rom: Use an alternate ROM for this test.
+      otp: Use an alternate OTP configuration for this test.
+      bitstream: Use an alternate bitstream for this test.
+      test_cmd: Use an alternate test_cmd for this test.
+      data: Additional files needed by this test.
+      kwargs: Additional key-value pairs to override in the test `param` dict.
+    Returns:
+      struct of test parameters.
+    """
+    return struct(
+        tags = ["cw310", "exclusive"] + tags,
+        timeout = timeout,
+        local = local,
+        test_harness = test_harness,
+        rom = rom,
+        otp = otp,
+        bitstream = bitstream,
+        test_cmd = test_cmd,
+        data = data,
+        param = kwargs,
+    )

@@ -5,7 +5,7 @@
 package(default_visibility = ["//visibility:public"])
 
 load("//rules:autogen.bzl", "autogen_hjson_header")
-load("//rules/opentitan:defs.bzl", "fpga_cw310", "sim_verilator")
+load("//rules/opentitan:defs.bzl", "fpga_cw310", "sim_dv", "sim_verilator")
 
 autogen_hjson_header(
     name = "rv_plic_regs",
@@ -99,4 +99,25 @@ sim_verilator(
         --exec="console --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
         no-op
     """,
+)
+
+sim_dv(
+    name = "sim_dv",
+    testonly = True,
+    args = [
+        "{dvsim_config}",
+    ],
+    data = [
+        "//hw/top_earlgrey/dv:chip_sim_cfg.hjson",
+    ],
+    design = "earlgrey",
+    exec_env = "sim_dv",
+    lib = "//sw/device/lib/arch:sim_dv",
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    otp = "//hw/ip/otp_ctrl/data:img_rma",
+    param = {
+        "dvsim_config": "$(location //hw/top_earlgrey/dv:chip_sim_cfg.hjson)",
+    },
+    rom = "//sw/device/lib/testing/test_rom:test_rom_sim_dv_scr_vmem",
+    #extract_sw_logs = "//util/device_sw_utils:extract_sw_logs_db",
 )

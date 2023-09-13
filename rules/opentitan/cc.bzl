@@ -116,17 +116,28 @@ def ot_binary(ctx, **kwargs):
 def _as_group_info(name, items):
     """Prepare a dict of files for OutputGroupInfo.
 
+    This renames all of the items to have `name` as a prefix and
+    transforms the values into a depset.
+
     Args:
       name: A prefix for each dictionary key.
       items: A dict str:File to prepare.
     Returns:
       dict
     """
-    return {
-        "{}_{}".format(name, k): depset([v])
-        for k, v in items.items()
-        if v
-    }
+    groups = {}
+    for k, v in items.items():
+        if not v:
+            continue
+        elif type(v) == "list":
+            # Depset wants a list; nothing to do.
+            pass
+        elif type(v) == "tuple":
+            v = list(v)
+        else:
+            v = [v]
+        groups["{}_{}".format(name, k)] = depset(v)
+    return groups
 
 def _binary_name(ctx, exec_env):
     """Create a binary name according to a naming convention.
@@ -191,6 +202,7 @@ def _build_binary(ctx, exec_env, name, deps):
     provides = exec_env.transform(
         ctx,
         exec_env,
+        name = name,
         elf = elf,
         binary = binary,
         signed_bin = signed.get("signed"),
@@ -214,6 +226,11 @@ def _opentitan_binary(ctx):
             **provides
         ))
         default_info.append(provides["default"])
+
+        # FIXME(cfrantz): logs are a special case and get added into
+        # the DefaultInfo provider.
+        if "logs" in provides:
+            default_info.extend(provides["logs"])
         groups.update(_as_group_info(exec_env.exec_env, signed))
         groups.update(_as_group_info(exec_env.exec_env, provides))
 
@@ -253,6 +270,14 @@ common_binary_attrs = {
         doc = "Naming convention for binary artifacts.",
         default = "{name}_{exec_env}",
     ),
+    # FIXME(cfrantz): This should come from the ExecEnvInfo provider, but
+    # I was unable to make that work.  See the comment in `exec_env.bzl`.
+    "extract_sw_logs": attr.label(
+        doc = "Software logs extraction script.",
+        default = "//util/device_sw_utils:extract_sw_logs_db",
+        executable = True,
+        cfg = "exec",
+    ),
     "_cleanup_script": attr.label(
         allow_single_file = True,
         default = "@//rules/scripts:expand_tabs.sh",
@@ -275,6 +300,7 @@ opentitan_binary = rv_rule(
 
 def _opentitan_test(ctx):
     exec_env = ctx.attr.exec_env[ExecEnvInfo]
+
     # If the test is supplied exactly one file and no deps _and_ that file
     # is a provider for the current exec_env, then we assume that it's a
     # pre-built binary.

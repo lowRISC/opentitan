@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "SimVerilatorBinaryInfo")
+load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "SimDvBinaryInfo")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_files", "get_override")
 load(
     "//rules/opentitan:exec_env.bzl",
@@ -10,17 +10,22 @@ load(
     "exec_env_as_dict",
     "exec_env_common_attrs",
 )
-load("@lowrisc_opentitan//rules/opentitan:transform.bzl", "convert_to_vmem")
+load(
+    "@lowrisc_opentitan//rules/opentitan:transform.bzl",
+    "convert_to_vmem",
+    "extract_software_logs",
+)
 
 _TEST_SCRIPT = """#!/bin/bash
 set -e
 
-echo Invoking test: {test_harness} {args} {test_cmd}
-RUST_BACKTRACE=1 {test_harness} {args} {test_cmd}
+readonly DVSIM="util/dvsim/dvsim.py"
+echo "At this time, dvsim.py must be run manually (after building SW) via:
+${{DVSIM}} {args} {test_cmd}"
 """
 
 def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfile):
-    """Transform binaries into the preferred forms for sim_verilator.
+    """Transform binaries into the preferred forms for sim_dv.
 
     Args:
       ctx: The rule context.
@@ -41,39 +46,46 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         src = default,
         word_size = 64,
     )
+    logs = extract_software_logs(
+        ctx,
+        name = name,
+        src = elf,
+        _tool = ctx.executable.extract_sw_logs,
+    )
     return {
         "elf": elf,
         "binary": binary,
         "default": vmem,
         "signed_bin": signed_bin,
         "disassembly": disassembly,
+        "logs": logs,
         "mapfile": mapfile,
         "vmem": vmem,
     }
 
 def _create_provider(ctx, exec_env, **kwargs):
     """Create a provider for this exec_env."""
-    return SimVerilatorBinaryInfo(**kwargs)
+    return SimDvBinaryInfo(**kwargs)
 
 def _get_provider(item):
-    """Given an attr from a rule, return the SimVerilatorBinaryInfo provider if preseent.
+    """Given an attr from a rule, return the SimDvBinaryInfo provider if preseent.
 
     Args:
       item: a label that may have a provider attached.
     Returns:
-      SimVerilatorBinaryInfo or None
+      SimDvBinaryInfo or None
     """
-    if SimVerilatorBinaryInfo in item:
-        return item[SimVerilatorBinaryInfo]
+    if SimDvBinaryInfo in item:
+        return item[SimDvBinaryInfo]
     return None
 
 def _test_dispatch(ctx, exec_env, provider):
-    """Dispatch a test for the sim_verilator environment.
+    """Dispatch a test for the sim_dv environment.
 
     Args:
       ctx: The rule context.
       exec_env: The ExecEnvInfo for this environment.
-      provider: A label with a SimVerilatorBinaryInfo provider attached.
+      provider: A label with a SimDvBinaryInfo provider attached.
     Returns:
       (File, List[File]) The test script and needed runfiles.
     """
@@ -93,6 +105,7 @@ def _test_dispatch(ctx, exec_env, provider):
     if otp:
         data_files.append(otp)
     data_files.append(provider.default)
+    data_files.extend(provider.logs)
     data_files.append(test_harness)
 
     # Construct a param dictionary by combining the exec_env.param, the rule's
@@ -129,7 +142,7 @@ def _test_dispatch(ctx, exec_env, provider):
     )
     return script, data_files
 
-def _sim_verilator(ctx):
+def _sim_dv(ctx):
     fields = exec_env_as_dict(ctx)
     return ExecEnvInfo(
         get_provider = _get_provider,
@@ -139,22 +152,22 @@ def _sim_verilator(ctx):
         **fields
     )
 
-sim_verilator = rule(
-    implementation = _sim_verilator,
+sim_dv = rule(
+    implementation = _sim_dv,
     attrs = exec_env_common_attrs(),
 )
 
-def verilator_params(
+def dv_params(
         tags = [],
-        timeout = "moderate",
-        local = True,
+        timeout = "short",
+        local = False,
         test_harness = None,
         rom = None,
         otp = None,
         test_cmd = "",
         data = [],
         **kwargs):
-    """A macro to create verilator parameters for OpenTitan tests.
+    """A macro to create dv parameters for OpenTitan tests.
 
     Args:
       tags: The test tags to apply to the test rule.
@@ -170,7 +183,7 @@ def verilator_params(
       struct of test parameters.
     """
     return struct(
-        tags = ["verilator"] + tags,
+        tags = ["dv"] + tags,
         timeout = timeout,
         local = local,
         test_harness = test_harness,
