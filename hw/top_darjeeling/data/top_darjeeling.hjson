@@ -1062,6 +1062,7 @@
 
       // DMA LSIO triggers
       'dma.lsio_trigger'        : ['soc_proxy.dma_lsio_trigger'],
+      'i2c0.lsio_trigger'       : ['soc_proxy.i2c_lsio_trigger'],
 
       // LC RMA req/ack interface: LC -> OTBN
       // Note: this RoT configuration has no embedded flash, hence

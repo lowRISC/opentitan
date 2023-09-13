@@ -111,6 +111,14 @@
     }
   ]
 
+  inter_signal_list: [
+    { struct: "logic"
+      type:   "uni"
+      name:   "lsio_trigger"
+      act:    "req"
+    }
+  ]
+
   // REGISTER definition
   regwidth: "32"
   registers: [

@@ -921,6 +921,15 @@
       inter_signal_list:
       [
         {
+          name: lsio_trigger
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: i2c0
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -971,6 +980,15 @@
       inter_signal_list:
       [
         {
+          name: lsio_trigger
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: i2c1
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -1020,6 +1038,15 @@
       param_list: []
       inter_signal_list:
       [
+        {
+          name: lsio_trigger
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: i2c2
+          index: -1
+        }
         {
           name: tl
           struct: tl
@@ -15711,6 +15738,15 @@
         index: -1
       }
       {
+        name: lsio_trigger
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: i2c0
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -15724,6 +15760,15 @@
         index: -1
       }
       {
+        name: lsio_trigger
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: i2c1
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -15734,6 +15779,15 @@
         default: ""
         end_idx: -1
         top_signame: i2c1_tl
+        index: -1
+      }
+      {
+        name: lsio_trigger
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: i2c2
         index: -1
       }
       {
