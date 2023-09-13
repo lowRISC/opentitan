@@ -6,43 +6,31 @@
       "name": "RESET",
       "mode": "PushPull",
       "alias_of": "USB_A14",
-      "pull_mode": "None",
-      "level": true
+      "pull_mode": "None"
+    },
+    {
+      "name": "IOC0",
+      "alias_of": "USB_A15"
+    },
+    {
+      "name": "IOC1",
+      "alias_of": "USB_A16"
+    },
+    {
+      "name": "IOC2",
+      "alias_of": "USB_A17"
     },
     {
       "name": "TAP_STRAP0",
       "mode": "PushPull",
       "pull_mode": "None",
-      "alias_of": "USB_A18",
-      "level": false
+      "alias_of": "USB_A18"
     },
     {
       "name": "TAP_STRAP1",
       "mode": "PushPull",
       "pull_mode": "None",
-      "alias_of": "USB_A19",
-      "level": true
-    },
-    {
-      "name": "SW_STRAP0",
-      "mode": "PushPull",
-      "pull_mode": "None",
-      "alias_of": "USB_A15",
-      "level": false
-    },
-    {
-      "name": "SW_STRAP1",
-      "mode": "PushPull",
-      "pull_mode": "None",
-      "alias_of": "USB_A16",
-      "level": false
-    },
-    {
-      "name": "SW_STRAP2",
-      "mode": "PushPull",
-      "pull_mode": "None",
-      "alias_of": "USB_A17",
-      "level": false
+      "alias_of": "USB_A19"
     }
   ],
   "spi": [
