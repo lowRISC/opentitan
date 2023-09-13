@@ -82,7 +82,7 @@ impl Ti50Emulator {
         let mut i2c_map = HashMap::new();
         let mut uart_map = HashMap::new();
 
-        let reset_pin = ResetPin::open(&inner, false)?;
+        let reset_pin = ResetPin::open(&inner)?;
         gpio_map.insert("RESET".to_string(), Rc::new(reset_pin));
         for (name, state) in conf.gpio.iter() {
             inner

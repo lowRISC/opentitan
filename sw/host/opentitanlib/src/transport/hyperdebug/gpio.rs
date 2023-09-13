@@ -17,15 +17,13 @@ use crate::transport::TransportError;
 pub struct HyperdebugGpioPin {
     inner: Rc<Inner>,
     pinname: String,
-    default_level: bool,
 }
 
 impl HyperdebugGpioPin {
-    pub fn open(inner: &Rc<Inner>, pinname: &str, default_level: bool) -> Result<Self> {
+    pub fn open(inner: &Rc<Inner>, pinname: &str) -> Result<Self> {
         let result = Self {
             inner: Rc::clone(inner),
             pinname: pinname.to_string(),
-            default_level,
         };
         Ok(result)
     }
@@ -44,10 +42,6 @@ impl GpioPin for HyperdebugGpioPin {
     fn write(&self, value: bool) -> Result<()> {
         self.inner
             .cmd_no_output(&format!("gpioset {} {}", &self.pinname, u32::from(value)))
-    }
-
-    fn reset(&self) -> Result<()> {
-        self.write(self.default_level)
     }
 
     fn set_mode(&self, mode: PinMode) -> Result<()> {

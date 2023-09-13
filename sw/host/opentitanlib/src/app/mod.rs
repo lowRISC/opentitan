@@ -646,6 +646,7 @@ impl TransportWrapper {
                 pins.push(StrappedPin {
                     pin: self.gpio_pin(pin_name)?,
                     strapped: *conf,
+                    original: self.io_mapper.pin_conf_map.get(pin_name).copied(),
                 });
             }
         } else if proxy.is_none() {
@@ -677,10 +678,36 @@ impl TransportWrapper {
         self.transport.nonblocking_help()
     }
 
-    fn apply_spi_configurations(&self) -> Result<()> {
-        let conf_map = &self.io_mapper.spi_conf_map;
+    /// Apply given configuration to a single pins.
+    fn apply_pin_configuration(&self, name: &str, conf: &PinConfiguration) -> Result<()> {
+        let pin = self.gpio_pin(name)?;
+        pin.set(conf.mode, conf.level, conf.pull_mode, conf.volts)
+    }
+
+    /// Apply given configuration to a all the given pins.
+    fn apply_pin_configurations(&self, conf_map: &HashMap<String, PinConfiguration>) -> Result<()> {
+        // Pins on IO expanders will rely on some "direct" pins being configured for I2C and
+        // possibly MUX strappings.  To account for that, first apply the configuration to all
+        // "direct" (non-artificial) pins, and then to the rest.  (In theory, an IO expander could
+        // be cascaded behind other IO expanders, requiring more complicated management of a
+        // dependency graph, if that ever becomes an issue, a topological sort in
+        // `TransportWrapperBuilder.build()` would probably be appropriate.)
         for (name, conf) in conf_map {
-            let spi = self.spi(name.as_str())?;
+            if !self.io_expander_map.contains_key(name) {
+                self.apply_pin_configuration(name, conf)?;
+            }
+        }
+        for (name, conf) in conf_map {
+            if self.io_expander_map.contains_key(name) {
+                self.apply_pin_configuration(name, conf)?;
+            }
+        }
+        Ok(())
+    }
+
+    fn apply_spi_configurations(&self, conf_map: &HashMap<String, SpiConfiguration>) -> Result<()> {
+        for (name, conf) in conf_map {
+            let spi = self.spi(name)?;
             if let Some(bits_per_sec) = conf.bits_per_sec {
                 spi.set_max_speed(bits_per_sec)?;
             }
@@ -688,10 +715,9 @@ impl TransportWrapper {
         Ok(())
     }
 
-    fn apply_i2c_configurations(&self) -> Result<()> {
-        let conf_map = &self.io_mapper.i2c_conf_map;
+    fn apply_i2c_configurations(&self, conf_map: &HashMap<String, I2cConfiguration>) -> Result<()> {
         for (name, conf) in conf_map {
-            let i2c = self.i2c(name.as_str())?;
+            let i2c = self.i2c(name)?;
             if let Some(bits_per_sec) = conf.bits_per_sec {
                 i2c.set_max_speed(bits_per_sec)?;
             }
@@ -703,8 +729,9 @@ impl TransportWrapper {
     /// Also configure SPI port mode/speed, and other similar settings.
     pub fn apply_default_configuration(&self) -> Result<()> {
         self.transport.apply_default_configuration()?;
-        self.apply_spi_configurations()?;
-        self.apply_i2c_configurations()?;
+        self.apply_pin_configurations(&self.io_mapper.pin_conf_map)?;
+        self.apply_spi_configurations(&self.io_mapper.spi_conf_map)?;
+        self.apply_i2c_configurations(&self.io_mapper.i2c_conf_map)?;
         Ok(())
     }
 
@@ -768,11 +795,6 @@ impl GpioPin for NullPin {
         self.warn();
         Ok(())
     }
-
-    fn reset(&self) -> Result<()> {
-        self.warn();
-        Ok(())
-    }
 }
 
 /// Represents configuration of a set of pins as strong/weak pullup/pulldown as declared in
@@ -786,6 +808,7 @@ pub struct PinStrapping {
 struct StrappedPin {
     pin: Rc<dyn GpioPin>,
     strapped: PinConfiguration,
+    original: Option<PinConfiguration>,
 }
 
 impl PinStrapping {
@@ -809,6 +832,7 @@ impl PinStrapping {
         for StrappedPin {
             pin,
             strapped: conf,
+            original: _,
         } in &self.pins
         {
             pin.set(conf.mode, conf.level, conf.pull_mode, conf.volts)?
@@ -834,8 +858,15 @@ impl PinStrapping {
                 }
             }
         }
-        for StrappedPin { pin, strapped: _ } in &self.pins {
-            pin.reset()?
+        for StrappedPin {
+            pin,
+            strapped: _,
+            original,
+        } in &self.pins
+        {
+            if let Some(conf) = original {
+                pin.set(conf.mode, conf.level, conf.pull_mode, conf.volts)?
+            }
         }
         Ok(())
     }

@@ -154,8 +154,6 @@ pub struct Ti50GpioPin {
     last_id: Cell<u64>,
     /// Current state of DUT GPIO
     dut_state: Cell<Logic>,
-    /// Default state of the DUT GPIO
-    default_level: Logic,
 }
 
 impl Ti50GpioPin {
@@ -172,7 +170,6 @@ impl Ti50GpioPin {
             path: soc_path,
             last_id: Cell::new(0),
             dut_state: Cell::new(state),
-            default_level: state,
         })
     }
 
@@ -264,12 +261,6 @@ impl GpioPin for Ti50GpioPin {
     /// Sets the value of the GPIO pin to `value`.
     fn write(&self, value: bool) -> Result<()> {
         self.update_and_notify(|host_state| host_state.value = value)
-    }
-
-    fn reset(&self) -> Result<()> {
-        // An error is never expected due to the Weak::* host.
-        let state = resolve_state("Unreachable", Logic::WeakZero, self.default_level).unwrap();
-        self.write(state)
     }
 
     /// Sets the mode of the GPIO pin as input, output, or open drain I/O.

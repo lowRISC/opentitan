@@ -142,18 +142,13 @@ impl Transport for Ultradebug {
 
     fn gpio_pin(&self, instance: &str) -> Result<Rc<dyn GpioPin>> {
         let resolved_pin = self.io_mapper.resolve_pin(instance);
-        let default_level = self.io_mapper.pin_level(instance)?;
 
         let mut inner = self.inner.borrow_mut();
         if inner.gpio.is_none() {
             inner.gpio = Some(Rc::new(gpio::UltradebugGpio::open(self)?));
         }
         Ok(Rc::new(
-            inner
-                .gpio
-                .as_ref()
-                .unwrap()
-                .pin(resolved_pin.as_str(), default_level)?,
+            inner.gpio.as_ref().unwrap().pin(resolved_pin.as_str())?,
         ))
     }
 

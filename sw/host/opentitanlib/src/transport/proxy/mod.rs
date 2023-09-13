@@ -331,7 +331,7 @@ impl Transport for Proxy {
 
     // Create GpioPin instance, or return one from a cache of previously created instances.
     fn gpio_pin(&self, pinname: &str) -> Result<Rc<dyn GpioPin>> {
-        Ok(Rc::new(gpio::ProxyGpioPin::open(self, pinname, false)?))
+        Ok(Rc::new(gpio::ProxyGpioPin::open(self, pinname)?))
     }
 
     // Create ProxyOps instance.

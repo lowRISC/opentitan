@@ -639,9 +639,7 @@ pub struct StandardFlavor;
 
 impl Flavor for StandardFlavor {
     fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>> {
-        Ok(Rc::new(gpio::HyperdebugGpioPin::open(
-            inner, pinname, false,
-        )?))
+        Ok(Rc::new(gpio::HyperdebugGpioPin::open(inner, pinname)?))
     }
 
     fn spi_index(inner: &Rc<Inner>, instance: &str) -> Result<(u8, u8)> {

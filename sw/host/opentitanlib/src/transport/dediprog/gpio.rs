@@ -16,17 +16,15 @@ use crate::util::parse_int::ParseInt;
 pub struct DediprogPin {
     inner: Rc<RefCell<Inner>>,
     index: u8,
-    default_level: bool,
 }
 
 impl DediprogPin {
     const LAST_PIN_NUM: u8 = 15;
 
-    pub fn open(inner: Rc<RefCell<Inner>>, pinname: &str, default_level: bool) -> Result<Self> {
+    pub fn open(inner: Rc<RefCell<Inner>>, pinname: &str) -> Result<Self> {
         Ok(Self {
             inner,
             index: Self::pin_name_to_number(pinname)?,
-            default_level,
         })
     }
 
@@ -63,10 +61,6 @@ impl GpioPin for DediprogPin {
             inner.gpio_levels &= !(1u16 << self.index)
         }
         inner.set_gpio_levels()
-    }
-
-    fn reset(&self) -> Result<()> {
-        self.write(self.default_level)
     }
 
     fn set_mode(&self, mode: PinMode) -> Result<()> {
