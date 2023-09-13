@@ -148,8 +148,11 @@ pub enum SpiRequest {
         value: u32,
     },
     SupportsBidirectionalTransfer,
-    SetChipSelect {
-        pin: String,
+    SetPins {
+        serial_clock: Option<String>,
+        host_out_device_in: Option<String>,
+        host_in_device_out: Option<String>,
+        chip_select: Option<String>,
     },
     GetMaxTransferCount,
     GetMaxTransferSizes,
@@ -181,7 +184,7 @@ pub enum SpiResponse {
     SupportsBidirectionalTransfer {
         has_support: bool,
     },
-    SetChipSelect,
+    SetPins,
     GetMaxTransferCount {
         number: usize,
     },

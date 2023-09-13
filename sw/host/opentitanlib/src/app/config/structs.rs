@@ -120,6 +120,12 @@ pub struct SpiConfiguration {
     pub bits_per_word: Option<u32>,
     /// Data communication rate in bits/second.
     pub bits_per_sec: Option<u32>,
+    /// Which GPIO pin should be used for clock.
+    pub serial_clock: Option<String>,
+    /// Which GPIO pin should be used for signal from debugger to OpenTitan.
+    pub host_out_device_in: Option<String>,
+    /// Which GPIO pin should be used for signal from OpenTitan to debugger.
+    pub host_in_device_out: Option<String>,
     /// Which GPIO pin should be used for chip select.
     pub chip_select: Option<String>,
     /// Name of the SPI controller as defined by the transport.

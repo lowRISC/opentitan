@@ -634,13 +634,24 @@ impl Target for HyperdebugSpiTarget {
         Ok((self.feature_bitmap & FEATURE_BIT_FULL_DUPLEX) != 0)
     }
 
-    fn set_chip_select(&self, pin: &Rc<dyn GpioPin>) -> Result<()> {
-        self.inner.cmd_no_output(&format!(
-            "spi set cs {} {}",
-            &self.target_idx,
-            pin.get_internal_pin_name()
-                .ok_or(SpiError::InvalidChipSelect)?
-        ))
+    fn set_pins(
+        &self,
+        serial_clock: Option<&Rc<dyn GpioPin>>,
+        host_out_device_in: Option<&Rc<dyn GpioPin>>,
+        host_in_device_out: Option<&Rc<dyn GpioPin>>,
+        chip_select: Option<&Rc<dyn GpioPin>>,
+    ) -> Result<()> {
+        if serial_clock.is_some() || host_out_device_in.is_some() || host_in_device_out.is_some() {
+            bail!(SpiError::InvalidPin);
+        }
+        if let Some(pin) = chip_select {
+            self.inner.cmd_no_output(&format!(
+                "spi set cs {} {}",
+                &self.target_idx,
+                pin.get_internal_pin_name().ok_or(SpiError::InvalidPin)?
+            ))?;
+        }
+        Ok(())
     }
 
     fn get_max_transfer_count(&self) -> Result<usize> {
