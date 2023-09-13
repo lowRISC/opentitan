@@ -80,9 +80,9 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                      bit [31:0] total_data_size,
                                      string check_type = "Source");
     `DV_CHECK(addr[1:0] == 0, $sformatf("Address is not 4 Byte aligned"))
-    // Handshake mode when the fifo is enabled
+    // Handshake mode when fifo is enabled
     if (handshake_mode && fifo_en) begin
-      `DV_CHECK(addr == start_addr,
+      `DV_CHECK(addr[63:2] == start_addr[63:2],
                 $sformatf("0x%0x doesn't match start addr:0x%0x (handshake mode no auto-incr)",
                           addr, start_addr))
     end else begin
@@ -571,6 +571,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
         // Get auto-increment bit
         dma_config.auto_inc_buffer = `gmv(ral.control.memory_buffer_auto_increment_enable);
         dma_config.auto_inc_fifo = `gmv(ral.control.fifo_auto_increment_enable);
+        dma_config.direction = dma_control_data_direction_e'(`gmv(ral.control.data_direction));
         if (go) begin
           `uvm_info(`gfn, $sformatf("dma_config\n %s",
                                     dma_config.sprint()), UVM_HIGH)

@@ -400,6 +400,10 @@ class dma_base_vseq extends cip_base_vseq #(
     seq_ctn.set_fifo_clear(0);
     seq_host.set_fifo_clear(0);
     seq_sys.set_fifo_clear(0);
+    // Clear bytes_sent
+    seq_ctn.bytes_sent = 0;
+    seq_host.bytes_sent = 0;
+    seq_sys.bytes_sent = 0;
   endtask
 
   // Method to clear memory contents
@@ -505,6 +509,27 @@ class dma_base_vseq extends cip_base_vseq #(
   virtual task delay(int num = 1);
     cfg.clk_rst_vif.wait_clks(num);
   endtask: delay
+
+  // Return number of bytes transferred from interface corresponding to source ASID
+  virtual function uint get_bytes_sent(ref dma_seq_item dma_config);
+    case (dma_config.src_asid)
+      OtInternalAddr: begin
+        `uvm_info(`gfn, $sformatf("OTInternal bytes_sent = %0d", seq_host.bytes_sent), UVM_HIGH)
+        return seq_host.bytes_sent;
+      end
+      SocControlAddr, OtExtFlashAddr: begin
+        `uvm_info(`gfn, $sformatf("SocControlAddr bytes_sent = %0d", seq_ctn.bytes_sent), UVM_HIGH)
+        return seq_ctn.bytes_sent;
+      end
+      SocSystemAddr: begin
+        `uvm_info(`gfn, $sformatf("SocSystemAddr bytes_sent = %0d", seq_sys.bytes_sent), UVM_HIGH)
+        return seq_sys.bytes_sent;
+      end
+      default: begin
+        `uvm_error(`gfn, $sformatf("Unsupported Address space ID %d", dma_config.src_asid))
+      end
+    endcase
+  endfunction
 
   // Body: Need to override for inherited tests
   task body();
