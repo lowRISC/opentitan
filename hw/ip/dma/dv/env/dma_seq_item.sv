@@ -136,6 +136,9 @@ class dma_seq_item extends uvm_sequence_item;
       // greater than the memory base address
       if (src_asid == OtInternalAddr){
         src_addr inside {[mem_range_base : (mem_range_limit - total_transfer_size)]};
+        // For valid configurations, Address must be aligned to transfer width
+        per_transfer_width == DmaXfer2BperTxn -> src_addr[0] == 1'b0;
+        per_transfer_width == DmaXfer4BperTxn -> src_addr[1:0] == 2'd0;
       }
       src_asid != SocSystemAddr -> src_addr[63:32] == '0;
     }
@@ -155,6 +158,9 @@ class dma_seq_item extends uvm_sequence_item;
       // greater than the memory base address
       if (dst_asid == OtInternalAddr) {
         dst_addr inside {[mem_range_base : (mem_range_limit - total_transfer_size)]};
+        // For valid configurations, Address must be aligned to transfer width
+        per_transfer_width == DmaXfer2BperTxn -> dst_addr[0] == 1'b0;
+        per_transfer_width == DmaXfer4BperTxn -> dst_addr[1:0] == 2'd0;
       }
       dst_asid != SocSystemAddr -> dst_addr[63:32] == '0;
     }
