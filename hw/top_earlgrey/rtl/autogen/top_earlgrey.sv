@@ -1045,6 +1045,7 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[0:0] ),
 
       // Inter-module signals
+      .lsio_trigger_o(),
       .tl_i(uart0_tl_req),
       .tl_o(uart0_tl_rsp),
 
@@ -1077,6 +1078,7 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[1:1] ),
 
       // Inter-module signals
+      .lsio_trigger_o(),
       .tl_i(uart1_tl_req),
       .tl_o(uart1_tl_rsp),
 
@@ -1109,6 +1111,7 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[2:2] ),
 
       // Inter-module signals
+      .lsio_trigger_o(),
       .tl_i(uart2_tl_req),
       .tl_o(uart2_tl_rsp),
 
@@ -1141,6 +1144,7 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[3:3] ),
 
       // Inter-module signals
+      .lsio_trigger_o(),
       .tl_i(uart3_tl_req),
       .tl_o(uart3_tl_rsp),
 

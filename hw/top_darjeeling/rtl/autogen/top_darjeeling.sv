@@ -530,6 +530,7 @@ module top_darjeeling #(
   rom_ctrl_pkg::keymgr_data_t [1:0] keymgr_rom_digest;
   dma_pkg::lsio_trigger_t       dma_lsio_trigger;
   logic       i2c0_lsio_trigger;
+  logic       uart0_lsio_trigger;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_flash_rma_req;
   lc_ctrl_pkg::lc_tx_t       otbn_lc_rma_ack;
   logic       usbdev_usb_dp_pullup;
@@ -985,6 +986,7 @@ module top_darjeeling #(
       .alert_rx_i  ( alert_rx[0:0] ),
 
       // Inter-module signals
+      .lsio_trigger_o(uart0_lsio_trigger),
       .tl_i(uart0_tl_req),
       .tl_o(uart0_tl_rsp),
 
@@ -1863,7 +1865,7 @@ module top_darjeeling #(
       .ctn_tl_d2h_i(ctn_tl_d2h_i),
       .i2c_lsio_trigger_i(i2c0_lsio_trigger),
       .spi_host_lsio_trigger_i('0),
-      .uart_lsio_trigger_i('0),
+      .uart_lsio_trigger_i(uart0_lsio_trigger),
       .soc_lsio_trigger_i(soc_lsio_trigger_i),
       .dma_lsio_trigger_o(dma_lsio_trigger),
       .soc_fatal_alert_i(soc_fatal_alert_req_i),

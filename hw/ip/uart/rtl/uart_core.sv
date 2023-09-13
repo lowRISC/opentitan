@@ -15,6 +15,8 @@ module uart_core (
   input                  rx,
   output logic           tx,
 
+  output logic           lsio_trigger_o,
+
   output logic           intr_tx_watermark_o,
   output logic           intr_rx_watermark_o,
   output logic           intr_tx_empty_o,
@@ -318,6 +320,8 @@ module uart_core (
       default: tx_watermark_d = (tx_fifo_depth < 8'd64);
     endcase
   end
+
+  assign lsio_trigger_o = tx_watermark_prev_q | rx_watermark_prev_q;
 
   assign event_tx_watermark = tx_watermark_d & ~tx_watermark_prev_q;
 

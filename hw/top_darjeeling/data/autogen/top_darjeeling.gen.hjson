@@ -557,6 +557,20 @@
       inter_signal_list:
       [
         {
+          name: lsio_trigger
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: uart0
+          default: ""
+          package: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: uart0_lsio_trigger
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -4483,6 +4497,9 @@
           act: rcv
           width: 1
           inst_name: soc_proxy
+          default: ""
+          package: ""
+          top_signame: uart0_lsio_trigger
           index: -1
         }
         {
@@ -8698,6 +8715,10 @@
       i2c0.lsio_trigger:
       [
         soc_proxy.i2c_lsio_trigger
+      ]
+      uart0.lsio_trigger:
+      [
+        soc_proxy.uart_lsio_trigger
       ]
       lc_ctrl.lc_flash_rma_req:
       [
@@ -15628,6 +15649,20 @@
     signals:
     [
       {
+        name: lsio_trigger
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: uart0
+        default: ""
+        package: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: uart0_lsio_trigger
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -18174,6 +18209,9 @@
         act: rcv
         width: 1
         inst_name: soc_proxy
+        default: ""
+        package: ""
+        top_signame: uart0_lsio_trigger
         index: -1
       }
       {
@@ -22080,6 +22118,17 @@
         package: ""
         struct: logic
         signame: i2c0_lsio_trigger
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        signame: uart0_lsio_trigger
         width: 1
         type: uni
         end_idx: -1
