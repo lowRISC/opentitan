@@ -32,8 +32,6 @@ pub struct PinConfiguration {
     /// If present, this pin is not natively supported by the transport, but is to be accessed
     /// through an IO expander.  This field is mutually exclusive with `alias_of`.
     pub on_io_expander: Option<IoExpanderPin>,
-    /// Whether the pin is inverted when we write to it. This feature can be used to account transistor on the pin line.
-    pub invert: Option<bool>,
 }
 
 /// Declaration of a name of an IO expander and pin number on it.
