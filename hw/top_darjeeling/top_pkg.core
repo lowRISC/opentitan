@@ -10,6 +10,8 @@ name: "lowrisc:constants:top_pkg"
 description: "Toplevel-wide constants for Darjeeling"
 filesets:
   files_rtl:
+    depend:
+      - lowrisc:prim:util
     files:
       - rtl/top_pkg.sv
     file_type: systemVerilogSource

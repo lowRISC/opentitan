@@ -19,4 +19,18 @@ localparam int TL_SZW=$clog2($clog2(TL_DBW)+1);
 // PRODUCTION DEVICES.
 localparam int SecVolatileRawUnlockEn = 1;
 
+// TODO: Set the CTN SRAM to the same size as the discrete flash (2 x 512kB). We currently set
+// this to 1kB to keep the FPGA build alive until the flash_ctrl can be removed.
+localparam int CtnSramSize = 1024; // 2 * 512 * 1024;
+localparam int CtnSramDepth = CtnSramSize / TL_DBW;
+localparam int CtnSramAw = prim_util_pkg::vbits(CtnSramDepth);
+
+// Addresses leaving the RoT have an internal 1G address space of 0x4000_0000 - 0x8000_0000.
+// However, the address base is already filtered away by the SoC proxy module, hence valid
+// requests are mapped to the 1G space are already filtered through the SoC proxy module, and
+// thus they are mapped to the range 0x0000_0000 - 0x4000_0000 at this point.
+// The CTN SRAM covers a 1MB memory range of mapped to 0x0100_0000 - 0x0110_0000.
+localparam logic [TL_AW-1:0] CtnSramAddrMask = CtnSramSize - 1;
+localparam logic [TL_AW-1:0] CtnSramAddrBase = 32'h01000000;
+
 endpackage
