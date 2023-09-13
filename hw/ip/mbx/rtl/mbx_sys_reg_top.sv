@@ -173,12 +173,12 @@ module mbx_sys_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic doe_intr_msg_addr_we;
-  logic [31:0] doe_intr_msg_addr_qs;
-  logic [31:0] doe_intr_msg_addr_wd;
-  logic doe_intr_msg_data_we;
-  logic [31:0] doe_intr_msg_data_qs;
-  logic [31:0] doe_intr_msg_data_wd;
+  logic sys_doe_intr_msg_addr_we;
+  logic [31:0] sys_doe_intr_msg_addr_qs;
+  logic [31:0] sys_doe_intr_msg_addr_wd;
+  logic sys_doe_intr_msg_data_we;
+  logic [31:0] sys_doe_intr_msg_data_qs;
+  logic [31:0] sys_doe_intr_msg_data_wd;
   logic sys_control_re;
   logic sys_control_we;
   logic sys_control_abort_wd;
@@ -196,84 +196,84 @@ module mbx_sys_reg_top (
   logic sys_status_ready_qs;
 
   // Register instances
-  // R[doe_intr_msg_addr]: V(False)
-  logic doe_intr_msg_addr_qe;
-  logic [0:0] doe_intr_msg_addr_flds_we;
+  // R[sys_doe_intr_msg_addr]: V(False)
+  logic sys_doe_intr_msg_addr_qe;
+  logic [0:0] sys_doe_intr_msg_addr_flds_we;
   prim_flop #(
     .Width(1),
     .ResetValue(0)
-  ) u_doe_intr_msg_addr0_qe (
+  ) u_sys_doe_intr_msg_addr0_qe (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .d_i(&doe_intr_msg_addr_flds_we),
-    .q_o(doe_intr_msg_addr_qe)
+    .d_i(&sys_doe_intr_msg_addr_flds_we),
+    .q_o(sys_doe_intr_msg_addr_qe)
   );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0)
-  ) u_doe_intr_msg_addr (
+  ) u_sys_doe_intr_msg_addr (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (doe_intr_msg_addr_we),
-    .wd     (doe_intr_msg_addr_wd),
+    .we     (sys_doe_intr_msg_addr_we),
+    .wd     (sys_doe_intr_msg_addr_wd),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0),
 
     // to internal hardware
-    .qe     (doe_intr_msg_addr_flds_we[0]),
-    .q      (reg2hw.doe_intr_msg_addr.q),
+    .qe     (sys_doe_intr_msg_addr_flds_we[0]),
+    .q      (reg2hw.sys_doe_intr_msg_addr.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (doe_intr_msg_addr_qs)
+    .qs     (sys_doe_intr_msg_addr_qs)
   );
-  assign reg2hw.doe_intr_msg_addr.qe = doe_intr_msg_addr_qe;
+  assign reg2hw.sys_doe_intr_msg_addr.qe = sys_doe_intr_msg_addr_qe;
 
 
-  // R[doe_intr_msg_data]: V(False)
-  logic doe_intr_msg_data_qe;
-  logic [0:0] doe_intr_msg_data_flds_we;
+  // R[sys_doe_intr_msg_data]: V(False)
+  logic sys_doe_intr_msg_data_qe;
+  logic [0:0] sys_doe_intr_msg_data_flds_we;
   prim_flop #(
     .Width(1),
     .ResetValue(0)
-  ) u_doe_intr_msg_data0_qe (
+  ) u_sys_doe_intr_msg_data0_qe (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .d_i(&doe_intr_msg_data_flds_we),
-    .q_o(doe_intr_msg_data_qe)
+    .d_i(&sys_doe_intr_msg_data_flds_we),
+    .q_o(sys_doe_intr_msg_data_qe)
   );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0)
-  ) u_doe_intr_msg_data (
+  ) u_sys_doe_intr_msg_data (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (doe_intr_msg_data_we),
-    .wd     (doe_intr_msg_data_wd),
+    .we     (sys_doe_intr_msg_data_we),
+    .wd     (sys_doe_intr_msg_data_wd),
 
     // from internal hardware
     .de     (1'b0),
     .d      ('0),
 
     // to internal hardware
-    .qe     (doe_intr_msg_data_flds_we[0]),
-    .q      (reg2hw.doe_intr_msg_data.q),
+    .qe     (sys_doe_intr_msg_data_flds_we[0]),
+    .q      (reg2hw.sys_doe_intr_msg_data.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (doe_intr_msg_data_qs)
+    .qs     (sys_doe_intr_msg_data_qs)
   );
-  assign reg2hw.doe_intr_msg_data.qe = doe_intr_msg_data_qe;
+  assign reg2hw.sys_doe_intr_msg_data.qe = sys_doe_intr_msg_data_qe;
 
 
   // R[sys_control]: V(True)
@@ -498,8 +498,8 @@ module mbx_sys_reg_top (
   logic [3:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[0] = (reg_addr == MBX_DOE_INTR_MSG_ADDR_OFFSET);
-    addr_hit[1] = (reg_addr == MBX_DOE_INTR_MSG_DATA_OFFSET);
+    addr_hit[0] = (reg_addr == MBX_SYS_DOE_INTR_MSG_ADDR_OFFSET);
+    addr_hit[1] = (reg_addr == MBX_SYS_DOE_INTR_MSG_DATA_OFFSET);
     addr_hit[2] = (reg_addr == MBX_SYS_CONTROL_OFFSET);
     addr_hit[3] = (reg_addr == MBX_SYS_STATUS_OFFSET);
   end
@@ -516,12 +516,12 @@ module mbx_sys_reg_top (
   end
 
   // Generate write-enables
-  assign doe_intr_msg_addr_we = addr_hit[0] & reg_we & !reg_error;
+  assign sys_doe_intr_msg_addr_we = addr_hit[0] & reg_we & !reg_error;
 
-  assign doe_intr_msg_addr_wd = reg_wdata[31:0];
-  assign doe_intr_msg_data_we = addr_hit[1] & reg_we & !reg_error;
+  assign sys_doe_intr_msg_addr_wd = reg_wdata[31:0];
+  assign sys_doe_intr_msg_data_we = addr_hit[1] & reg_we & !reg_error;
 
-  assign doe_intr_msg_data_wd = reg_wdata[31:0];
+  assign sys_doe_intr_msg_data_wd = reg_wdata[31:0];
   assign sys_control_re = addr_hit[2] & reg_re & !reg_error;
   assign sys_control_we = addr_hit[2] & reg_we & !reg_error;
 
@@ -539,8 +539,8 @@ module mbx_sys_reg_top (
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
-    reg_we_check[0] = doe_intr_msg_addr_we;
-    reg_we_check[1] = doe_intr_msg_data_we;
+    reg_we_check[0] = sys_doe_intr_msg_addr_we;
+    reg_we_check[1] = sys_doe_intr_msg_data_we;
     reg_we_check[2] = sys_control_we;
     reg_we_check[3] = sys_status_we;
   end
@@ -550,11 +550,11 @@ module mbx_sys_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[31:0] = doe_intr_msg_addr_qs;
+        reg_rdata_next[31:0] = sys_doe_intr_msg_addr_qs;
       end
 
       addr_hit[1]: begin
-        reg_rdata_next[31:0] = doe_intr_msg_data_qs;
+        reg_rdata_next[31:0] = sys_doe_intr_msg_data_qs;
       end
 
       addr_hit[2]: begin
