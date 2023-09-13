@@ -13,6 +13,9 @@ rust_binary(
         "//sw/host/opentitanlib",
         "//sw/host/provisioning/cp_lib",
         "@crate_index//:anyhow",
+        "@crate_index//:arrayvec",
         "@crate_index//:clap",
+        "@crate_index//:log",
+        "@crate_index//:rand",
     ],
 )

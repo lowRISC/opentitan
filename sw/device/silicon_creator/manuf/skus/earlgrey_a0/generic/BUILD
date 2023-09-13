@@ -81,7 +81,7 @@ opentitan_functest(
 
 opentitan_functest(
     name = "cp_provision_test",
-    srcs = ["flash_cp_provision_test.c"],
+    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_raw",
         tags = ["manuf"],
@@ -99,20 +99,10 @@ opentitan_functest(
     targets = ["cw310_rom_with_fake_keys"],
     test_harness = "//sw/host/tests/manuf/provisioning/cp_test",
     deps = [
-        "//hw/ip/flash_ctrl/data:flash_ctrl_regs",
-        "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:lc_ctrl",
-        "//sw/device/lib/dif:otp_ctrl",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:lc_ctrl_testutils",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
-        "//sw/device/silicon_creator/manuf/lib:individualize",
-        "//sw/device/silicon_creator/manuf/lib:otp_fields",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/sigverify:spx_verify",
     ],
 )
