@@ -65,6 +65,10 @@ pub enum TransportError {
     InconsistentConf(TransportInterfaceType, String),
     #[error("Inconsistent configuration of transport interface \"{0}\" vs. \"{1}\"")]
     InconsistentInterfaceConf(String, String),
+    #[error("Strapping \"{0}\" pin \"{1}\" cannot declare \"alias_of\"")]
+    InvalidConfStrapAlias(String, String),
+    #[error("Strapping \"{0}\" pin \"{1}\" cannot declare \"invert\"")]
+    InvalidConfStrapInvert(String, String),
     #[error("Expected value \"{1}\" for key \"{0}\", found \"{2}\"")]
     RequiresUnequal(String, String, String),
     #[error("Expected value \"{1}\" for key \"{0}\", found none")]

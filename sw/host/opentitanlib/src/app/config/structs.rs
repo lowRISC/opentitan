@@ -29,6 +29,8 @@ pub struct PinConfiguration {
     /// named in this field, (which may by defined by the transport natively, or through alias in
     /// nother PinConfiguration).  This field is mutually exclusive with `on_io_expander`.
     pub alias_of: Option<String>,
+    /// If true, value of this pins will be inverted both at reading and writing.
+    pub invert: Option<bool>,
     /// If present, this pin is not natively supported by the transport, but is to be accessed
     /// through an IO expander.  This field is mutually exclusive with `alias_of`.
     pub on_io_expander: Option<IoExpanderPin>,
