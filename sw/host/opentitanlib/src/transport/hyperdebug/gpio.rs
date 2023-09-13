@@ -109,36 +109,35 @@ impl GpioPin for HyperdebugGpioPin {
                 return Err(GpioError::UnsupportedPinVoltage(v).into());
             }
         }
-        self.inner
-            .cmd_no_output(&format!(
-                "gpio multiset {} {} {} {} {}",
-                &self.pinname,
-                match value {
-                    Some(false) => "0",
-                    Some(true) => "1",
-                    None => "-",
-                },
-                match mode {
-                    Some(PinMode::Input) => "input",
-                    Some(PinMode::OpenDrain) => "opendrain",
-                    Some(PinMode::PushPull) => "pushpull",
-                    Some(PinMode::AnalogInput) => "adc",
-                    Some(PinMode::AnalogOutput) => "dac",
-                    Some(PinMode::Alternate) => "alternate",
-                    None => "-",
-                },
-                match pull {
-                    Some(PullMode::None) => "none",
-                    Some(PullMode::PullUp) => "up",
-                    Some(PullMode::PullDown) => "down",
-                    None => "-",
-                },
-                if let Some(v) = volts {
-                    format!("{}", (v * 1000.0) as u32)
-                } else {
-                    "-".to_string()
-                },
-            ))
+        self.inner.cmd_no_output(&format!(
+            "gpio multiset {} {} {} {} {}",
+            &self.pinname,
+            match value {
+                Some(false) => "0",
+                Some(true) => "1",
+                None => "-",
+            },
+            match mode {
+                Some(PinMode::Input) => "input",
+                Some(PinMode::OpenDrain) => "opendrain",
+                Some(PinMode::PushPull) => "pushpull",
+                Some(PinMode::AnalogInput) => "adc",
+                Some(PinMode::AnalogOutput) => "dac",
+                Some(PinMode::Alternate) => "alternate",
+                None => "-",
+            },
+            match pull {
+                Some(PullMode::None) => "none",
+                Some(PullMode::PullUp) => "up",
+                Some(PullMode::PullDown) => "down",
+                None => "-",
+            },
+            if let Some(v) = volts {
+                format!("{}", (v * 1000.0) as u32)
+            } else {
+                "-".to_string()
+            },
+        ))
     }
 
     fn get_internal_pin_name(&self) -> Option<&str> {
