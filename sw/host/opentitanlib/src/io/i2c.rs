@@ -12,18 +12,6 @@ use crate::app::TransportWrapper;
 use crate::impl_serializable_error;
 use crate::util::parse_int::ParseInt;
 
-#[derive(Default, Debug)]
-pub struct I2cConfiguration {
-    pub underlying_instance: String,
-    pub default_addr: Option<u8>,
-    pub bits_per_sec: Option<u32>,
-}
-
-impl I2cConfiguration {
-    pub fn merge(&mut self, other: &I2cConfiguration) -> Option<()> {
-        super::merge_configuration_field(&mut self.bits_per_sec, &other.bits_per_sec)
-    }
-}
 #[derive(Debug, Args)]
 pub struct I2cParams {
     /// I2C instance.
