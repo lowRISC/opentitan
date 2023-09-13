@@ -49,7 +49,7 @@
             - Verify the following digest sizes: 256
             - Verify input message size of 0 bytes.
             - Verify multiple input message sizes as defined in NIST test vectors.
-            - Use endianess configuration used in the crypto library.
+            - Use endianness configuration used in the crypto library.
             '''
       features: ["HMAC.MODE.SHA2"]
       stage: V3
@@ -65,7 +65,7 @@
             - Verify the following security configurations: HMAC-SHA2-256
             - Verify input message size of 0 bytes.
             - Verify multiple input message sizes as defined in NIST test vectors.
-            - Use endianess configuration used in the crypto library.
+            - Use endianness configuration used in the crypto library.
             '''
       features: ["HMAC.MODE.HMAC"]
       stage: V3
@@ -75,12 +75,12 @@
       bazel: []
     }
     {
-      name: chip_sw_hmac_endianess
-      desc: '''Verify all HMAC endinaness options
+      name: chip_sw_hmac_endianness
+      desc: '''Verify all HMAC endianness options
 
             This is a low priority test P3.
 
-            Test the permutation of all endinaness configuration options for message and digest
+            Test the permutation of all endianness configuration options for message and digest
             registers.
             '''
       features: [
