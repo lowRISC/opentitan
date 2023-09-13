@@ -37,26 +37,6 @@
       "pull_mode": "None",
       "alias_of": "PB12",
       "level": true
-    },
-    {
-      "name": "SPI_CLK",
-      "mode": "Alternate",
-      "alias_of": "PA27"
-    },
-    {
-      "name": "SPI_SDI",
-      "mode": "Alternate",
-      "alias_of": "PA26"
-    },
-    {
-      "name": "SPI_SDO",
-      "mode": "Alternate",
-      "alias_of": "PA25"
-    },
-    {
-      "name": "SPI_CS",
-      "mode": "Alternate",
-      "alias_of": "PA28"
     }
   ],
   "spi": [
