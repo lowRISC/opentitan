@@ -11,8 +11,7 @@ use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::io::gpio::{GpioPin, PinMode};
-use crate::io::io_mapper::IoMapper;
+use crate::io::gpio::GpioPin;
 use crate::io::jtag::{Jtag, JtagParams};
 use crate::io::spi::Target;
 use crate::io::uart::{Uart, UartError};
@@ -42,12 +41,10 @@ pub struct ChipWhisperer<B: Board> {
     pub(crate) device: Rc<RefCell<usb::Backend<B>>>,
     uart_override: Vec<String>,
     inner: RefCell<Inner>,
-    io_mapper: Rc<IoMapper>,
 }
 
 impl<B: Board> ChipWhisperer<B> {
     pub fn new(
-        io_mapper: Rc<IoMapper>,
         usb_vid: Option<u16>,
         usb_pid: Option<u16>,
         usb_serial: Option<&str>,
@@ -59,7 +56,6 @@ impl<B: Board> ChipWhisperer<B> {
             )?)),
             uart_override: uart_override.iter().map(|s| s.to_string()).collect(),
             inner: RefCell::default(),
-            io_mapper,
         };
         board.init_pin_directions()?;
         board.init_pin_values()?;
@@ -69,27 +65,26 @@ impl<B: Board> ChipWhisperer<B> {
     // Initialize the IO direction of some basic pins on the board.
     fn init_pin_directions(&self) -> anyhow::Result<()> {
         let device = self.device.borrow();
-        for pin in self.io_mapper.list_gpio_pins() {
-            let config = self.io_mapper.pin_config(pin).unwrap();
-            let mode = config.mode.unwrap_or(PinMode::PushPull);
-            if mode == PinMode::PushPull {
-                device.pin_set_output(pin, true)?;
-            }
-        }
+        device.pin_set_output(B::PIN_TRST, true)?;
+        device.pin_set_output(B::PIN_POR_N, true)?;
+        device.pin_set_output(B::PIN_TAP_STRAP0, true)?;
+        device.pin_set_output(B::PIN_TAP_STRAP1, true)?;
+        device.pin_set_output(B::PIN_SW_STRAP0, true)?;
+        device.pin_set_output(B::PIN_SW_STRAP1, true)?;
+        device.pin_set_output(B::PIN_SW_STRAP2, true)?;
         Ok(())
     }
 
     // Initialize the values of the output pins on the board.
     fn init_pin_values(&self) -> anyhow::Result<()> {
         let device = self.device.borrow();
-        for pin in self.io_mapper.list_gpio_pins() {
-            let config = self.io_mapper.pin_config(pin).unwrap();
-            let mode = config.mode.unwrap_or(PinMode::PushPull);
-            if mode != PinMode::Alternate {
-                let level = config.level.unwrap_or(false);
-                device.pin_set_state(pin, level)?;
-            }
-        }
+        device.pin_set_state(B::PIN_TRST, true)?;
+        device.pin_set_state(B::PIN_POR_N, true)?;
+        device.pin_set_state(B::PIN_TAP_STRAP0, false)?;
+        device.pin_set_state(B::PIN_TAP_STRAP1, true)?;
+        device.pin_set_state(B::PIN_SW_STRAP0, false)?;
+        device.pin_set_state(B::PIN_SW_STRAP1, false)?;
+        device.pin_set_state(B::PIN_SW_STRAP2, false)?;
         Ok(())
     }
 
@@ -139,10 +134,8 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
     }
 
     fn uart(&self, instance: &str) -> Result<Rc<dyn Uart>> {
-        let resolved = self.io_mapper.resolve_uart(instance);
-
         let mut inner = self.inner.borrow_mut();
-        let instance = u32::from_str(&resolved).ok().ok_or_else(|| {
+        let instance = u32::from_str(instance).ok().ok_or_else(|| {
             TransportError::InvalidInstance(TransportInterfaceType::Uart, instance.to_string())
         })?;
         let uart = match inner.uart.entry(instance) {
@@ -156,14 +149,12 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
     }
 
     fn gpio_pin(&self, pinname: &str) -> Result<Rc<dyn GpioPin>> {
-        let resolved_pin = self.io_mapper.resolve_pin(pinname);
-
         let mut inner = self.inner.borrow_mut();
-        Ok(match inner.gpio.entry(resolved_pin.clone()) {
+        Ok(match inner.gpio.entry(pinname.to_string()) {
             Entry::Vacant(v) => {
                 let u = v.insert(Rc::new(gpio::Pin::open(
                     Rc::clone(&self.device),
-                    resolved_pin,
+                    pinname.to_string(),
                 )?));
                 Rc::clone(u)
             }
@@ -188,11 +179,11 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
             // Open the console UART.  We do this first so we get the receiver
             // started and the uart buffering data for us.
             let uart = self.uart("0")?;
+            let reset_pin = self.gpio_pin(B::PIN_POR_N)?;
             if fpga_program.skip() {
                 log::info!("Skip loading the __skip__ bitstream.");
                 return Ok(None);
             }
-            let reset_pin = self.gpio_pin("RESET")?;
             if fpga_program.check_correct_version(&*uart, &*reset_pin)? {
                 return Ok(None);
             }
