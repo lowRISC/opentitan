@@ -139,7 +139,7 @@ See also accessibility description of the [isolated flash partition](#iso_part_s
 HW_DEBUG_EN refers to the general ungating of both invasive (JTAG control of the processor, bidirectional analog test points) and non-invasive debug (debug bus observation, and register access error returns).
 
 This signal thus needs to be routed to all security-aware and debug capable peripherals.
-This signal is used to determine whether OpenTitan peripheral register interfaces should [silently error](../../../util/reggen/README.md#error_responses" >}}).
+This signal is used to determine whether OpenTitan peripheral register interfaces should [silently error](../../../../util/reggen/README.md#error-responses).
 If HW_DEBUG_EN is set to ON, normal errors should be returned.
 If HW_DEBUG_EN is set to OFF, errors should return silently.
 
