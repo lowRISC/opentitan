@@ -45,7 +45,7 @@ impl SpiParams {
     ) -> Result<Rc<dyn Target>> {
         let spi = transport.spi(self.bus.as_deref().unwrap_or(default_instance))?;
         if let Some(ref cs) = self.chip_select {
-            spi.set_chip_select(&transport.gpio_pin(cs.as_str())?)?;
+            spi.set_pins(None, None, None, Some(&transport.gpio_pin(cs.as_str())?))?;
         }
         if let Some(speed) = self.speed {
             spi.set_max_speed(speed)?;
@@ -83,8 +83,8 @@ pub enum SpiError {
     InvalidTransferMode(String),
     #[error("Invalid SPI voltage: {0}")]
     InvalidVoltage(Voltage),
-    #[error("Given pin not supported as chip select")]
-    InvalidChipSelect,
+    #[error("Given pin does not support requested SPI function")]
+    InvalidPin,
 }
 impl_serializable_error!(SpiError);
 
@@ -178,9 +178,18 @@ pub trait Target {
     /// Indicates whether `Transfer::Both()` is supported.
     fn supports_bidirectional_transfer(&self) -> Result<bool>;
 
-    /// Sets which pin should be used as Chip Select.  Not supported by most backend transports.
-    fn set_chip_select(&self, _: &Rc<dyn gpio::GpioPin>) -> Result<()> {
-        Err(SpiError::InvalidChipSelect.into())
+    /// Sets which pins should be used for SPI communication.  `None` value means use the same pin
+    /// as previously, or the implementation default if never before specified.  This call is not
+    /// supported by most backend transports, and ones that do support it may still have
+    /// restrictions on which set of pins can be used in which roles.
+    fn set_pins(
+        &self,
+        _serial_clock: Option<&Rc<dyn gpio::GpioPin>>,
+        _host_out_device_in: Option<&Rc<dyn gpio::GpioPin>>,
+        _host_in_device_out: Option<&Rc<dyn gpio::GpioPin>>,
+        _chip_select: Option<&Rc<dyn gpio::GpioPin>>,
+    ) -> Result<()> {
+        Err(SpiError::InvalidPin.into())
     }
 
     /// Returns the maximum number of transfers allowed in a single transaction.

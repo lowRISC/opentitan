@@ -43,6 +43,14 @@ impl<'a> TransportCommandHandler<'a> {
         })
     }
 
+    fn optional_pin(&self, pin: &Option<String>) -> Result<Option<Rc<dyn GpioPin>>> {
+        if let Some(pin) = pin {
+            Ok(Some(self.transport.gpio_pin(pin)?))
+        } else {
+            Ok(None)
+        }
+    }
+
     /// This method will perform whatever action on the underlying `Transport` that is requested
     /// by the given `Request`, and return a response to be sent to the client.  Any `Err`
     /// return from this method will be propagated to the remote client, without any server-side
@@ -185,9 +193,19 @@ impl<'a> TransportCommandHandler<'a> {
                             has_support,
                         }))
                     }
-                    SpiRequest::SetChipSelect { pin } => {
-                        instance.set_chip_select(&self.transport.gpio_pin(pin)?)?;
-                        Ok(Response::Spi(SpiResponse::SetChipSelect))
+                    SpiRequest::SetPins {
+                        serial_clock,
+                        host_out_device_in,
+                        host_in_device_out,
+                        chip_select,
+                    } => {
+                        instance.set_pins(
+                            self.optional_pin(serial_clock)?.as_ref(),
+                            self.optional_pin(host_out_device_in)?.as_ref(),
+                            self.optional_pin(host_in_device_out)?.as_ref(),
+                            self.optional_pin(chip_select)?.as_ref(),
+                        )?;
+                        Ok(Response::Spi(SpiResponse::SetPins))
                     }
                     SpiRequest::GetMaxTransferCount => {
                         let number = instance.get_max_transfer_count()?;

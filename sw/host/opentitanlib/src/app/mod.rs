@@ -158,6 +158,9 @@ impl PinConfiguration {
 pub struct SpiConfiguration {
     pub underlying_instance: String,
     pub mode: Option<TransferMode>,
+    pub serial_clock: Option<String>,
+    pub host_out_device_in: Option<String>,
+    pub host_in_device_out: Option<String>,
     pub chip_select: Option<String>,
     pub bits_per_word: Option<u32>,
     pub bits_per_sec: Option<u32>,
@@ -267,6 +270,9 @@ impl TransportWrapperBuilder {
         merge_field(&mut entry.mode, &spi_conf.mode)?;
         merge_field(&mut entry.bits_per_word, &spi_conf.bits_per_word)?;
         merge_field(&mut entry.bits_per_sec, &spi_conf.bits_per_sec)?;
+        merge_field(&mut entry.serial_clock, &spi_conf.serial_clock)?;
+        merge_field(&mut entry.host_out_device_in, &spi_conf.host_out_device_in)?;
+        merge_field(&mut entry.host_in_device_out, &spi_conf.host_in_device_out)?;
         merge_field(&mut entry.chip_select, &spi_conf.chip_select)?;
         merge_field(&mut entry.alias_of, &spi_conf.alias_of)?;
         Ok(())

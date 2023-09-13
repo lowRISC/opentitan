@@ -47,11 +47,19 @@ pub struct LogicalSpiWrapper {
     physical_wrapper: Rc<PhysicalSpiWrapper>,
     /// Unique ID of this `LogicalSpiWrapper`.
     uid: usize,
-    // SPI port settings applying to this named logical SPI port.
-    mode: Cell<Option<spi::TransferMode>>,
-    bits_per_word: Cell<Option<u32>>,
-    max_speed: Cell<Option<u32>>,
-    chip_select: RefCell<Option<Rc<dyn GpioPin>>>,
+    /// SPI port settings applying to this named logical SPI port.
+    inner: RefCell<Inner>,
+}
+
+/// SPI port settings applying to this named logical SPI port.
+struct Inner {
+    mode: Option<spi::TransferMode>,
+    bits_per_word: Option<u32>,
+    max_speed: Option<u32>,
+    serial_clock: Option<Rc<dyn GpioPin>>,
+    host_out_device_in: Option<Rc<dyn GpioPin>>,
+    host_in_device_out: Option<Rc<dyn GpioPin>>,
+    chip_select: Option<Rc<dyn GpioPin>>,
 }
 
 impl LogicalSpiWrapper {
@@ -65,14 +73,27 @@ impl LogicalSpiWrapper {
         Ok(Self {
             physical_wrapper,
             uid: COUNTER.fetch_add(1, Ordering::Relaxed),
-            mode: Cell::new(conf.mode),
-            bits_per_word: Cell::new(conf.bits_per_word),
-            max_speed: Cell::new(conf.bits_per_sec),
-            chip_select: RefCell::new(match conf.chip_select {
-                Some(ref cs) => Some(transport.gpio_pin(cs.as_str())?),
-                None => None,
+            inner: RefCell::new(Inner {
+                mode: conf.mode,
+                bits_per_word: conf.bits_per_word,
+                max_speed: conf.bits_per_sec,
+                serial_clock: Self::lookup_pin(transport, &conf.serial_clock)?,
+                host_out_device_in: Self::lookup_pin(transport, &conf.host_out_device_in)?,
+                host_in_device_out: Self::lookup_pin(transport, &conf.host_in_device_out)?,
+                chip_select: Self::lookup_pin(transport, &conf.chip_select)?,
             }),
         })
+    }
+
+    fn lookup_pin(
+        transport: &dyn Transport,
+        conf_pin: &Option<String>,
+    ) -> Result<Option<Rc<dyn GpioPin>>> {
+        if let Some(pin) = conf_pin {
+            Ok(Some(transport.gpio_pin(pin.as_str())?))
+        } else {
+            Ok(None)
+        }
     }
 
     fn apply_settings_to_underlying(&self) -> Result<()> {
@@ -81,25 +102,33 @@ impl LogicalSpiWrapper {
             // settings.
             return Ok(());
         }
-        if let Some(mode) = self.mode.get() {
+        let inner = self.inner.borrow();
+        if let Some(mode) = inner.mode {
             self.physical_wrapper
                 .underlying_target
                 .set_transfer_mode(mode)?;
         }
-        if let Some(bits_per_word) = self.bits_per_word.get() {
+        if let Some(bits_per_word) = inner.bits_per_word {
             self.physical_wrapper
                 .underlying_target
                 .set_bits_per_word(bits_per_word)?;
         }
-        if let Some(max_speed) = self.max_speed.get() {
+        if let Some(max_speed) = inner.max_speed {
             self.physical_wrapper
                 .underlying_target
                 .set_max_speed(max_speed)?;
         }
-        if let Some(chip_select) = self.chip_select.borrow().as_ref() {
-            self.physical_wrapper
+        match (
+            inner.serial_clock.as_ref(),
+            inner.host_out_device_in.as_ref(),
+            inner.host_in_device_out.as_ref(),
+            inner.chip_select.as_ref(),
+        ) {
+            (None, None, None, None) => (),
+            (clock, hodi, hido, cs) => self
+                .physical_wrapper
                 .underlying_target
-                .set_chip_select(chip_select)?;
+                .set_pins(clock, hodi, hido, cs)?,
         }
         Ok(())
     }
@@ -110,7 +139,7 @@ impl Target for LogicalSpiWrapper {
         self.physical_wrapper.underlying_target.get_transfer_mode()
     }
     fn set_transfer_mode(&self, mode: spi::TransferMode) -> Result<()> {
-        self.mode.set(Some(mode));
+        self.inner.borrow_mut().mode = Some(mode);
         Ok(())
     }
 
@@ -118,7 +147,7 @@ impl Target for LogicalSpiWrapper {
         self.physical_wrapper.underlying_target.get_bits_per_word()
     }
     fn set_bits_per_word(&self, bits_per_word: u32) -> Result<()> {
-        self.bits_per_word.set(Some(bits_per_word));
+        self.inner.borrow_mut().bits_per_word = Some(bits_per_word);
         Ok(())
     }
 
@@ -126,7 +155,7 @@ impl Target for LogicalSpiWrapper {
         self.physical_wrapper.underlying_target.get_max_speed()
     }
     fn set_max_speed(&self, max_speed: u32) -> Result<()> {
-        self.max_speed.set(Some(max_speed));
+        self.inner.borrow_mut().max_speed = Some(max_speed);
         Ok(())
     }
 
@@ -136,8 +165,26 @@ impl Target for LogicalSpiWrapper {
             .supports_bidirectional_transfer()
     }
 
-    fn set_chip_select(&self, chip_select: &Rc<dyn GpioPin>) -> Result<()> {
-        *self.chip_select.borrow_mut() = Some(Rc::clone(chip_select));
+    fn set_pins(
+        &self,
+        serial_clock: Option<&Rc<dyn GpioPin>>,
+        host_out_device_in: Option<&Rc<dyn GpioPin>>,
+        host_in_device_out: Option<&Rc<dyn GpioPin>>,
+        chip_select: Option<&Rc<dyn GpioPin>>,
+    ) -> Result<()> {
+        let mut inner = self.inner.borrow_mut();
+        if serial_clock.is_some() {
+            inner.serial_clock = serial_clock.map(Rc::clone);
+        }
+        if host_out_device_in.is_some() {
+            inner.host_out_device_in = host_out_device_in.map(Rc::clone);
+        }
+        if host_in_device_out.is_some() {
+            inner.host_in_device_out = host_in_device_out.map(Rc::clone);
+        }
+        if chip_select.is_some() {
+            inner.chip_select = chip_select.map(Rc::clone);
+        }
         Ok(())
     }
 

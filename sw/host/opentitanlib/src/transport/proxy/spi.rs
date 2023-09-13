@@ -42,6 +42,17 @@ impl ProxySpi {
     }
 }
 
+fn spi_pin_name(pin: Option<&Rc<dyn gpio::GpioPin>>) -> Result<Option<String>> {
+    if let Some(pin) = pin {
+        let Some(name) = pin.get_internal_pin_name() else {
+            bail!(SpiError::InvalidPin)
+        };
+        Ok(Some(name.to_string()))
+    } else {
+        Ok(None)
+    }
+}
+
 impl Target for ProxySpi {
     fn get_transfer_mode(&self) -> Result<TransferMode> {
         match self.execute_command(SpiRequest::GetTransferMode)? {
@@ -90,14 +101,20 @@ impl Target for ProxySpi {
         }
     }
 
-    fn set_chip_select(&self, pin: &Rc<dyn gpio::GpioPin>) -> Result<()> {
-        let Some(pin) = pin.get_internal_pin_name() else {
-            bail!(SpiError::InvalidChipSelect)
-        };
-        match self.execute_command(SpiRequest::SetChipSelect {
-            pin: pin.to_string(),
+    fn set_pins(
+        &self,
+        serial_clock: Option<&Rc<dyn gpio::GpioPin>>,
+        host_out_device_in: Option<&Rc<dyn gpio::GpioPin>>,
+        host_in_device_out: Option<&Rc<dyn gpio::GpioPin>>,
+        chip_select: Option<&Rc<dyn gpio::GpioPin>>,
+    ) -> Result<()> {
+        match self.execute_command(SpiRequest::SetPins {
+            serial_clock: spi_pin_name(serial_clock)?,
+            host_out_device_in: spi_pin_name(host_out_device_in)?,
+            host_in_device_out: spi_pin_name(host_in_device_out)?,
+            chip_select: spi_pin_name(chip_select)?,
         })? {
-            SpiResponse::SetChipSelect => Ok(()),
+            SpiResponse::SetPins => Ok(()),
             _ => bail!(ProxyError::UnexpectedReply()),
         }
     }
