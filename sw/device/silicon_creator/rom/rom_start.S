@@ -143,7 +143,6 @@ _rom_shadow_stack:
   .type _rom_start_boot, @function
 _rom_start_boot:
   // Set up the global pointer and re-enable linker relaxations.
-  la gp, __global_pointer$
   .option pop
 
 LABEL_FOR_TEST(kRomStartBootMaybeHalt)

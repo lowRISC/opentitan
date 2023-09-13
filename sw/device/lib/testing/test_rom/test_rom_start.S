@@ -92,7 +92,6 @@ _reset_start:
   // (or it will be relaxed to `mv gp, gp`).
   .option push
   .option norelax
-  la  gp, __global_pointer$
   .option pop
 
   // Clobber all writeable registers.

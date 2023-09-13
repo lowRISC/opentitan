@@ -119,7 +119,6 @@ _ottf_start:
    */
   .option push
   .option norelax
-  la gp, __global_pointer$
   .option pop
 
   /**
