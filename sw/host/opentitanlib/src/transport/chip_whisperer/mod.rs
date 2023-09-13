@@ -183,14 +183,7 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
         );
         let mut inner = self.inner.borrow_mut();
         if inner.spi.is_none() {
-            inner.spi = Some(Rc::new(spi::Spi::open(
-                Rc::clone(&self.device),
-                &self.io_mapper.resolve_pin("SPI_SDI"),
-                &self.io_mapper.resolve_pin("SPI_SDO"),
-                &self.io_mapper.resolve_pin("SPI_CLK"),
-                &self.io_mapper.resolve_pin("SPI_CS"),
-                &self.io_mapper.resolve_pin("SW_STRAP1"),
-            )?));
+            inner.spi = Some(Rc::new(spi::Spi::open(Rc::clone(&self.device))?));
         }
         Ok(Rc::clone(inner.spi.as_ref().unwrap()))
     }
