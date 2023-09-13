@@ -6,6 +6,7 @@
 pub mod command;
 pub mod config;
 
+mod gpio;
 mod i2c;
 mod spi;
 
@@ -123,6 +124,7 @@ pub struct PinConfiguration {
     /// The default/initial analog level of the pin in Volts, has effect only in `AnalogOutput`
     /// mode.
     pub volts: Option<f32>,
+    pub invert: Option<bool>,
 }
 
 fn merge_field<T>(f1: &mut Option<T>, f2: &Option<T>) -> Result<(), ()>
@@ -147,6 +149,7 @@ impl PinConfiguration {
         merge_field(&mut self.level, &other.level)?;
         merge_field(&mut self.pull_mode, &other.pull_mode)?;
         merge_field(&mut self.volts, &other.volts)?;
+        merge_field(&mut self.invert, &other.invert)?;
         Ok(())
     }
 }
@@ -195,6 +198,7 @@ pub struct TransportWrapper {
     i2c_conf_map: HashMap<String, I2cConfiguration>,
     strapping_conf_map: HashMap<String, HashMap<String, PinConfiguration>>,
     // Below fields are lazily populated, as instances are requested.
+    pin_instance_map: RefCell<HashMap<String, Rc<gpio::GpioPinWrapper>>>,
     spi_instance_map: RefCell<HashMap<String, Rc<spi::PhysicalSpiWrapper>>>,
     i2c_instance_map: RefCell<HashMap<String, Rc<i2c::PhysicalI2cWrapper>>>,
 }
@@ -220,12 +224,13 @@ impl TransportWrapperBuilder {
         pin_conf_list: &mut Vec<(String, PinConfiguration)>,
         pin_conf: &config::PinConfiguration,
     ) {
-        if (None, None, None, None)
+        if (None, None, None, None, None)
             == (
                 pin_conf.mode,
                 pin_conf.pull_mode,
                 pin_conf.level,
                 pin_conf.volts,
+                pin_conf.invert,
             )
         {
             return;
@@ -242,6 +247,9 @@ impl TransportWrapperBuilder {
         }
         if let Some(volts) = pin_conf.volts {
             conf_entry.volts = Some(volts);
+        }
+        if let Some(invert) = pin_conf.invert {
+            conf_entry.invert = Some(invert);
         }
         pin_conf_list.push((pin_conf.name.to_string(), conf_entry))
     }
@@ -333,6 +341,20 @@ impl TransportWrapperBuilder {
                 .entry(strapping_conf.name.to_uppercase())
                 .or_default();
             for pin_conf in strapping_conf.pins {
+                ensure!(
+                    pin_conf.invert.is_none(),
+                    TransportError::InvalidConfStrapInvert(
+                        strapping_conf.name.to_string(),
+                        pin_conf.name.to_string()
+                    )
+                );
+                ensure!(
+                    pin_conf.alias_of.is_none(),
+                    TransportError::InvalidConfStrapAlias(
+                        strapping_conf.name.to_string(),
+                        pin_conf.name.to_string()
+                    )
+                );
                 Self::record_pin_conf(strapping_pin_map, &pin_conf);
             }
         }
@@ -569,6 +591,7 @@ impl TransportWrapperBuilder {
             spi_conf_map,
             i2c_conf_map,
             strapping_conf_map,
+            pin_instance_map: RefCell::new(HashMap::new()),
             spi_instance_map: RefCell::new(HashMap::new()),
             i2c_instance_map: RefCell::new(HashMap::new()),
         };
@@ -700,10 +723,26 @@ impl TransportWrapper {
     /// Returns a [`GpioPin`] implementation.
     pub fn gpio_pin(&self, name: &str) -> Result<Rc<dyn GpioPin>> {
         let resolved_pin_name = map_name(&self.pin_map, name);
-        if let Some(pin) = self.artificial_pin_map.get(&resolved_pin_name) {
-            return Ok(pin.clone());
+        let mut pin_instance_map = self.pin_instance_map.borrow_mut();
+        // Find if we already have a GpioPinWrapper around the requested instance.  If
+        // not, create one.
+        if let Some(instance) = pin_instance_map.get(&resolved_pin_name) {
+            Ok(Rc::clone(instance) as Rc<dyn GpioPin>)
+        } else {
+            let instance = if let Some(pin) = self.artificial_pin_map.get(&resolved_pin_name) {
+                pin.clone()
+            } else {
+                self.transport.gpio_pin(resolved_pin_name.as_str())?
+            };
+            let invert = self
+                .pin_conf_map
+                .get(&resolved_pin_name)
+                .and_then(|conf| conf.invert)
+                .unwrap_or(false);
+            let wrapper = Rc::new(gpio::GpioPinWrapper::new(instance, invert));
+            pin_instance_map.insert(resolved_pin_name, Rc::clone(&wrapper));
+            Ok(wrapper as Rc<dyn GpioPin>)
         }
-        self.transport.gpio_pin(resolved_pin_name.as_str())
     }
 
     /// Convenience method, returns a number of [`GpioPin`] implementations.

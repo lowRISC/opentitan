@@ -48,6 +48,7 @@ rust_library(
         "src/app/command.rs",
         "src/app/config/mod.rs",
         "src/app/config/structs.rs",
+        "src/app/gpio.rs",
         "src/app/i2c.rs",
         "src/app/mod.rs",
         "src/app/spi.rs",
