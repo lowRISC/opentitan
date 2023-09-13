@@ -110,9 +110,10 @@ module mbx_sysif
   assign hw2reg.sys_status.busy.de = sysif_status_busy_valid_i;
   assign hw2reg.sys_status.busy.d  = sysif_status_busy_i;
 
-  // Set by the Host firmware (w1s)
+  // Set by the outbound handler if the DOE interrupt is enabled. Setting this bit creates a DOE
+  // interrupt to the system side.
   // Cleared by the Sys firmware (w1c)
-  assign hw2reg.sys_status.doe_intr_status.de = sysif_status_doe_intr_status_set_i;
+  assign hw2reg.sys_status.doe_intr_status.de = sysif_status_doe_intr_status_set_i & doe_intr_en_o;
   assign hw2reg.sys_status.doe_intr_status.d  = sysif_status_doe_intr_status_set_i;
 
   assign hw2reg.sys_status.error.de = sysif_status_error_set_i | sysif_status_error_clear_i;
