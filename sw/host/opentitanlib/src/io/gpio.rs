@@ -22,9 +22,6 @@ pub struct PinConfiguration {
     /// The default/initial analog level of the pin in Volts, has effect only in `AnalogOutput`
     /// mode.
     pub volts: Option<f32>,
-    /// Whether the pin is inverted when we write to it. This feature can be used to account transistor on the pin line.
-    /// Only Chip whisperer transport is implementing the invert at the moment.
-    pub invert: bool,
 }
 
 impl PinConfiguration {
@@ -33,7 +30,6 @@ impl PinConfiguration {
     /// declarations from multiple files, as long as they are not conflicting (e.g. both PushPull
     /// and OpenDrain, or both high and low level.)
     pub fn merge(&mut self, other: &PinConfiguration) -> Option<()> {
-        self.invert |= other.invert;
         super::merge_configuration_field(&mut self.mode, &other.mode)?;
         super::merge_configuration_field(&mut self.level, &other.level)?;
         super::merge_configuration_field(&mut self.pull_mode, &other.pull_mode)?;
@@ -110,7 +106,6 @@ pub trait GpioPin {
     fn read(&self) -> Result<bool>;
 
     /// Sets the value of the GPIO pin to `value`.
-    /// If invert flag is enabled, writing true will result in 0.
     fn write(&self, value: bool) -> Result<()>;
 
     /// Sets the mode of the GPIO pin as input, output, or open drain I/O.

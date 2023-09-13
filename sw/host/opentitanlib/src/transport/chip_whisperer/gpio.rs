@@ -40,7 +40,6 @@ impl<B: Board> GpioPin for Pin<B> {
 
     fn write(&self, value: bool) -> Result<()> {
         let usb = self.device.borrow();
-        let value = if self.config.invert { !value } else { value };
         usb.pin_set_state(&self.pinname, value)?;
         Ok(())
     }
