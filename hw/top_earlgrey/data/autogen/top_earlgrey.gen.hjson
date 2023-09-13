@@ -989,6 +989,20 @@
           index: -1
         }
         {
+          name: lsio_trigger
+          desc:
+            '''
+            Self-clearing status trigger for the DMA.
+            Set when RX TX FIFO is past their configured watermark matching watermark interrupt behaviour.
+            '''
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: i2c0
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -1063,6 +1077,20 @@
           index: -1
         }
         {
+          name: lsio_trigger
+          desc:
+            '''
+            Self-clearing status trigger for the DMA.
+            Set when RX TX FIFO is past their configured watermark matching watermark interrupt behaviour.
+            '''
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: i2c1
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -1134,6 +1162,20 @@
           inst_name: i2c2
           default: ""
           top_signame: ast_ram_1p_cfg
+          index: -1
+        }
+        {
+          name: lsio_trigger
+          desc:
+            '''
+            Self-clearing status trigger for the DMA.
+            Set when RX TX FIFO is past their configured watermark matching watermark interrupt behaviour.
+            '''
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: i2c2
           index: -1
         }
         {
@@ -16226,6 +16268,20 @@
         index: -1
       }
       {
+        name: lsio_trigger
+        desc:
+          '''
+          Self-clearing status trigger for the DMA.
+          Set when RX TX FIFO is past their configured watermark matching watermark interrupt behaviour.
+          '''
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: i2c0
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -16251,6 +16307,20 @@
         index: -1
       }
       {
+        name: lsio_trigger
+        desc:
+          '''
+          Self-clearing status trigger for the DMA.
+          Set when RX TX FIFO is past their configured watermark matching watermark interrupt behaviour.
+          '''
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: i2c1
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -16273,6 +16343,20 @@
         inst_name: i2c2
         default: ""
         top_signame: ast_ram_1p_cfg
+        index: -1
+      }
+      {
+        name: lsio_trigger
+        desc:
+          '''
+          Self-clearing status trigger for the DMA.
+          Set when RX TX FIFO is past their configured watermark matching watermark interrupt behaviour.
+          '''
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: i2c2
         index: -1
       }
       {

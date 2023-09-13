@@ -115,6 +115,15 @@
       name:    "ram_cfg"
       act:     "rcv"
     }
+    { struct: "logic"
+      type:   "uni"
+      name:   "lsio_trigger"
+      desc: '''
+            Self-clearing status trigger for the DMA.
+            Set when RX TX FIFO is past their configured watermark matching watermark interrupt behaviour.
+      '''
+      act:    "req"
+    }
   ]
   param_list: [
     { name: "FifoDepth",
