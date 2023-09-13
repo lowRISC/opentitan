@@ -108,7 +108,7 @@
             hwqe: "true"
           }
           { name: "doe_intr_status"
-           desc: "Alias of the DoE mailbox interrupt status bit"
+            desc: "Alias of the DoE mailbox interrupt status bit"
             bits: "1"
             resval: "0x0"
             swaccess: "rw"
@@ -116,7 +116,7 @@
             hwqe: "true"
           }
           { name: "error"
-           desc: "Alias of the DoE mailbox error bit"
+            desc: "Alias of the DoE mailbox error bit"
             bits: "2"
             resval: "0x0"
             swaccess: "rw"
