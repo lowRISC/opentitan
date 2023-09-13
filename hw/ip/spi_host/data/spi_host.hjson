@@ -41,6 +41,15 @@
       act:     "rsp",
       width:   "1"
     }
+    { struct: "logic",
+      type:   "uni",
+      name:   "lsio_trigger",
+      desc: '''
+            Self-clearing status trigger for the DMA.
+            Set when RX or TX FIFOs are past their configured watermarks matching watermark interrupt behaviour.
+            '''
+      act:    "req",
+    }
   ]
   regwidth: "32",
   param_list: [

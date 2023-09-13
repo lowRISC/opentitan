@@ -1601,6 +1601,7 @@ module top_earlgrey #(
       // Inter-module signals
       .passthrough_i(spi_device_passthrough_req),
       .passthrough_o(spi_device_passthrough_rsp),
+      .lsio_trigger_o(),
       .tl_i(spi_host0_tl_req),
       .tl_o(spi_host0_tl_rsp),
 
@@ -1633,6 +1634,7 @@ module top_earlgrey #(
       // Inter-module signals
       .passthrough_i(spi_device_pkg::PASSTHROUGH_REQ_DEFAULT),
       .passthrough_o(),
+      .lsio_trigger_o(),
       .tl_i(spi_host1_tl_req),
       .tl_o(spi_host1_tl_rsp),
 
