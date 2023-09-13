@@ -83,6 +83,57 @@
     },
   ],
 
+  features: [
+% for clk  in typed_clocks.sw_clks.values():
+<%
+  src_name = clk.src.name.upper()
+%>\
+    { name: "CLKMGR.ENABLE.${src_name}",
+      desc: "Gating of ${src_name} peripheral clock."
+    }
+% endfor
+% for clk in typed_clocks.hint_clks.values():
+<%
+  endpoints = clk.endpoints
+  target_unit = endpoints[0][0].upper()
+%>\
+    { name: "CLKMGR.HINT.${target_unit}",
+      desc: "Gating of ${target_unit} transactional clock."
+    }
+% endfor
+    { name: "CLKMGR.MEAS_CTRL.REGWEN",
+      desc: '''Control modification of all clock frequency and timeout
+            measurements.
+            '''
+    }
+% for clk in typed_clocks.rg_srcs:
+    { name: "CLKMGR.MEAS_CTRL.${clk.upper()}",
+      desc: "Frequency and timeout measurements of ${clk.upper()} clock."
+    }
+% endfor
+    { name: "CLKMGR.MEAS_CTRL.RECOV_ERR",
+      desc: "Frequency and timeout measurements can flag recoverable errors."
+    }
+    { name: "CLKMGR.LC_EXTCLK.SPEED",
+      desc: "Speed of LC controlled modification of external clock."
+    }
+    { name: "CLKMGR.SW_EXTCLK.REGWEN",
+      desc: "Control software modification of external clock configuration."
+    }
+    { name: "CLKMGR.SW_EXTCLK.HIGH_SPEED",
+      desc: "Software configuration of external clock running at 96 MHz."
+    }
+    { name: "CLKMGR.SW_EXTCLK.LOW_SPEED",
+      desc: "Software configuration of external clock running at 48 MHz."
+    }
+    { name: "CLKMGR.JITTER.REGWEN",
+      desc: "Control modification of clock jitter enable."
+    }
+    { name: "CLKMGR.JITTER.ENABLE",
+      desc: "Enable clock jitter."
+    }
+]
+
   inter_signal_list: [
     { struct:  "clkmgr_out",
       type:    "uni",
