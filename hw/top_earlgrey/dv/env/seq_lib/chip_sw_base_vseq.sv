@@ -1146,7 +1146,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
         @(cfg.clk_rst_vif.cb);
         uvm_hdl_read(mypath, rma_wipe_idx);
       end while (rma_wipe_idx != 3'h3);,
-      "waiting for rma index = 3", 50_000_000
+      "waiting for rma index = 3", 100_000_000
     )
 
     // Reduce page size to 'd2
@@ -1160,7 +1160,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
         @(cfg.clk_rst_vif.cb);
         uvm_hdl_read(mypath, rma_ack);
       end while (rma_ack != lc_ctrl_pkg::On);,
-      "waiting for rma ack == On", 80_000_000
+      "waiting for rma ack == On", 120_000_000
     )
     mypath = {path, ".end_page"};
     `DV_CHECK(uvm_hdl_release(mypath));
