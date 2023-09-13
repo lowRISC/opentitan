@@ -14,15 +14,6 @@ use crate::app::TransportWrapper;
 use crate::impl_serializable_error;
 use crate::util::voltage::Voltage;
 
-#[derive(Default, Debug)]
-pub struct SpiConfiguration {
-    pub underlying_instance: String,
-    pub mode: Option<TransferMode>,
-    pub chip_select: Option<String>,
-    pub bits_per_word: Option<u32>,
-    pub bits_per_sec: Option<u32>,
-}
-
 #[derive(Clone, Debug, Args, Serialize, Deserialize)]
 pub struct SpiParams {
     /// SPI instance.
