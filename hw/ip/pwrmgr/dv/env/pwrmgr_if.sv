@@ -87,26 +87,19 @@ interface pwrmgr_if (
                               `PATH_TO_DUT.u_reg.reset_status_val_0_qs};
   always_comb reset_en_q = {`PATH_TO_DUT.u_reg.reset_en_en_1_qs,
                             `PATH_TO_DUT.u_reg.reset_en_en_0_qs};
-  always_comb
-    wakeup_en = {
-      `PATH_TO_DUT.reg2hw.wakeup_en[5].q,
-      `PATH_TO_DUT.reg2hw.wakeup_en[4].q,
-      `PATH_TO_DUT.reg2hw.wakeup_en[3].q,
-      `PATH_TO_DUT.reg2hw.wakeup_en[2].q,
-      `PATH_TO_DUT.reg2hw.wakeup_en[1].q,
-      `PATH_TO_DUT.reg2hw.wakeup_en[0].q
-    };
+
+  // the multireg is an array of single-bit q fields, hence we can just assign the entire register
+  // struct to the wakeup vector.
+  always_comb wakeup_en = `PATH_TO_DUT.reg2hw.wakeup_en;
 
   // Wakeup_status ro CSR.
-  always_comb
-    wakeup_status = {
-      `PATH_TO_DUT.hw2reg.wake_status[5].d,
-      `PATH_TO_DUT.hw2reg.wake_status[4].d,
-      `PATH_TO_DUT.hw2reg.wake_status[3].d,
-      `PATH_TO_DUT.hw2reg.wake_status[2].d,
-      `PATH_TO_DUT.hw2reg.wake_status[1].d,
-      `PATH_TO_DUT.hw2reg.wake_status[0].d
-    };
+  // the multireg is an array of interleaved d / de fields. taking every second bit starting from 0
+  // will extract all d fields.
+  always_comb begin
+    logic [2*pwrmgr_reg_pkg::NumWkups-1:0] wakeup_status_raw;
+    wakeup_status_raw = `PATH_TO_DUT.hw2reg.wake_status;
+    for (int k = 0; k < pwrmgr_reg_pkg::NumWkups; k++) wakeup_status[k] = wakeup_status_raw[k*2];
+  end
 
   always_comb wakeup_capture_en = !`PATH_TO_DUT.u_reg.wake_info_capture_dis_qs;
   always_comb wake_info = `PATH_TO_DUT.i_wake_info.info_o;
