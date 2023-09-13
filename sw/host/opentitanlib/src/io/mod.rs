@@ -7,7 +7,6 @@ pub mod eeprom;
 pub mod emu;
 pub mod gpio;
 pub mod i2c;
-pub mod io_mapper;
 pub mod ioexpander;
 pub mod jtag;
 pub mod nonblocking_help;
