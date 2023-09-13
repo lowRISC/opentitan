@@ -21,7 +21,7 @@ module mbx_host_reg_top (
 
   import mbx_reg_pkg::* ;
 
-  localparam int AW = 6;
+  localparam int AW = 7;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -52,9 +52,9 @@ module mbx_host_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [14:0] reg_we_check;
+  logic [16:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(15)
+    .OneHotWidth(17)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -179,6 +179,10 @@ module mbx_host_reg_top (
   logic outbound_object_size_we;
   logic [10:0] outbound_object_size_qs;
   logic [10:0] outbound_object_size_wd;
+  logic doe_intr_msg_addr_re;
+  logic [31:0] doe_intr_msg_addr_qs;
+  logic doe_intr_msg_data_re;
+  logic [31:0] doe_intr_msg_data_qs;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -790,8 +794,40 @@ module mbx_host_reg_top (
   assign reg2hw.outbound_object_size.qe = outbound_object_size_qe;
 
 
+  // R[doe_intr_msg_addr]: V(True)
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_doe_intr_msg_addr (
+    .re     (doe_intr_msg_addr_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.doe_intr_msg_addr.d),
+    .qre    (),
+    .qe     (),
+    .q      (reg2hw.doe_intr_msg_addr.q),
+    .ds     (),
+    .qs     (doe_intr_msg_addr_qs)
+  );
 
-  logic [14:0] addr_hit;
+
+  // R[doe_intr_msg_data]: V(True)
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_doe_intr_msg_data (
+    .re     (doe_intr_msg_data_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.doe_intr_msg_data.d),
+    .qre    (),
+    .qe     (),
+    .q      (reg2hw.doe_intr_msg_data.q),
+    .ds     (),
+    .qs     (doe_intr_msg_data_qs)
+  );
+
+
+
+  logic [16:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == MBX_INTR_STATE_OFFSET);
@@ -809,6 +845,8 @@ module mbx_host_reg_top (
     addr_hit[12] = (reg_addr == MBX_OUTBOUND_LIMIT_ADDRESS_OFFSET);
     addr_hit[13] = (reg_addr == MBX_OUTBOUND_READ_PTR_OFFSET);
     addr_hit[14] = (reg_addr == MBX_OUTBOUND_OBJECT_SIZE_OFFSET);
+    addr_hit[15] = (reg_addr == MBX_DOE_INTR_MSG_ADDR_OFFSET);
+    addr_hit[16] = (reg_addr == MBX_DOE_INTR_MSG_DATA_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -830,7 +868,9 @@ module mbx_host_reg_top (
                (addr_hit[11] & (|(MBX_HOST_PERMIT[11] & ~reg_be))) |
                (addr_hit[12] & (|(MBX_HOST_PERMIT[12] & ~reg_be))) |
                (addr_hit[13] & (|(MBX_HOST_PERMIT[13] & ~reg_be))) |
-               (addr_hit[14] & (|(MBX_HOST_PERMIT[14] & ~reg_be)))));
+               (addr_hit[14] & (|(MBX_HOST_PERMIT[14] & ~reg_be))) |
+               (addr_hit[15] & (|(MBX_HOST_PERMIT[15] & ~reg_be))) |
+               (addr_hit[16] & (|(MBX_HOST_PERMIT[16] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -893,6 +933,8 @@ module mbx_host_reg_top (
   assign outbound_object_size_we = addr_hit[14] & reg_we & !reg_error;
 
   assign outbound_object_size_wd = reg_wdata[10:0];
+  assign doe_intr_msg_addr_re = addr_hit[15] & reg_re & !reg_error;
+  assign doe_intr_msg_data_re = addr_hit[16] & reg_re & !reg_error;
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -912,6 +954,8 @@ module mbx_host_reg_top (
     reg_we_check[12] = outbound_limit_address_gated_we;
     reg_we_check[13] = 1'b0;
     reg_we_check[14] = outbound_object_size_we;
+    reg_we_check[15] = 1'b0;
+    reg_we_check[16] = 1'b0;
   end
 
   // Read data return
@@ -984,6 +1028,14 @@ module mbx_host_reg_top (
 
       addr_hit[14]: begin
         reg_rdata_next[10:0] = outbound_object_size_qs;
+      end
+
+      addr_hit[15]: begin
+        reg_rdata_next[31:0] = doe_intr_msg_addr_qs;
+      end
+
+      addr_hit[16]: begin
+        reg_rdata_next[31:0] = doe_intr_msg_data_qs;
       end
 
       default: begin

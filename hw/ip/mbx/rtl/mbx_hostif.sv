@@ -6,7 +6,8 @@ module mbx_hostif
   import mbx_reg_pkg::*;
 #(
     parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-    parameter int unsigned CfgSramAddrWidth      = 32
+    parameter int unsigned CfgSramAddrWidth      = 32,
+    parameter int unsigned CfgSramDataWidth      = 32
 ) (
   input  logic                        clk_i,
   input  logic                        rst_ni,
@@ -45,11 +46,14 @@ module mbx_hostif
   output logic [CfgSramAddrWidth-1:0] hostif_imbx_limit_o,
   output logic [CfgSramAddrWidth-1:0] hostif_ombx_base_o,
   output logic [CfgSramAddrWidth-1:0] hostif_ombx_limit_o,
-  // Read/Write access for the OB DW Count register
+  // Read/Write access for the object size register
   output logic                        hostif_ombx_object_size_write_o,
   output logic [10:0]                 hostif_ombx_object_size_o,
   input  logic                        hostif_ombx_object_size_read_i,
   input  logic [10:0]                 hostif_ombx_object_size_i,
+  // Alias of the interrupt address and data registers from the SYS interface
+  input  logic [CfgSramAddrWidth-1:0] sysif_intr_msg_addr_i,
+  input  logic [CfgSramDataWidth-1:0] sysif_intr_msg_data_i,
   // Control inputs coming from the system registers interface
   input  logic                        sysif_control_abort_write_i
 );
@@ -186,4 +190,8 @@ module mbx_hostif
   // External write logic
   assign  hostif_ombx_object_size_write_o = reg2hw.outbound_object_size.qe;
   assign  hostif_ombx_object_size_o       = reg2hw.outbound_object_size.q;
+
+  // Alias of the IRQ addr and data register from the sys interface (RO)
+  assign hw2reg.doe_intr_msg_addr.d  = sysif_intr_msg_addr_i;
+  assign hw2reg.doe_intr_msg_data.d  = sysif_intr_msg_data_i;
 endmodule

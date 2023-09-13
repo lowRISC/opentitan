@@ -5,6 +5,7 @@
 module mbx_sysif
   import tlul_pkg::*;
 #(
+  parameter int unsigned CfgSramAddrWidth = 32,
   parameter int unsigned CfgSramDataWidth = 32,
   // PCIe capabilities
   parameter bit          DoeIrqSupport    = 1'b1
@@ -37,6 +38,9 @@ module mbx_sysif
   input  logic                        sysif_status_ready_valid_i,
   input  logic                        sysif_status_ready_i,
   output logic                        sysif_status_ready_o,
+  // Alias of the interrupt address and data registers to the host interface
+  output logic [CfgSramAddrWidth-1:0] sysif_intr_msg_addr_o,
+  output logic [CfgSramDataWidth-1:0] sysif_intr_msg_data_o,
   // Control lines for backpressuring the bus
   input  logic                        imbx_pending_i,
   input  logic                        ombx_pending_i,
@@ -242,6 +246,10 @@ module mbx_sysif
     // to register interface (read)
     .qs     ()
   );
+
+  // Forward IRQ addr and data register to the host interface
+  assign sysif_intr_msg_addr_o = reg2hw.sys_doe_intr_msg_addr.q;
+  assign sysif_intr_msg_data_o = reg2hw.sys_doe_intr_msg_data.q;
 
   // Assertions
   `ASSERT(DataWidthCheck_A, CfgSramDataWidth == top_pkg::TL_DW)
