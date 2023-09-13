@@ -112,7 +112,7 @@ _rom_interrupt_vector_c:
    * ROM shadow stack.
    */
   .section .bss
-  .balignl 4, UNIMP
+  .balignl 4
   .global _rom_shadow_stack
   .type _rom_shadow_stack, @object
 _rom_shadow_stack:
