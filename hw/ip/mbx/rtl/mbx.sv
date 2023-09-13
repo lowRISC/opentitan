@@ -62,6 +62,10 @@ module mbx
         hostif_control_abort_set, hostif_status_busy_clear,
         hostif_status_error_set, hostif_status_error_clear;
 
+  // Alias signals from the sys interface
+  logic [CfgSramAddrWidth-1:0] sysif_intr_msg_addr;
+  logic [CfgSramDataWidth-1:0] sysif_intr_msg_data;
+
   //////////////////////////////////////////////////////////////////////////////
   // Signals for the Inbox
   //////////////////////////////////////////////////////////////////////////////
@@ -81,7 +85,8 @@ module mbx
 
   mbx_hostif #(
     .AlertAsyncOn    ( AlertAsyncOn     ),
-    .CfgSramAddrWidth( CfgSramAddrWidth )
+    .CfgSramAddrWidth( CfgSramAddrWidth ),
+    .CfgSramDataWidth( CfgSramDataWidth )
   ) u_hostif (
     .clk_i                               ( clk_i                              ),
     .rst_ni                              ( rst_ni                             ),
@@ -122,6 +127,9 @@ module mbx
     .hostif_ombx_object_size_o            ( hostif_ombx_object_size_wdata     ),
     .hostif_ombx_object_size_read_i       ( hostif_ombx_object_size_read      ),
     .hostif_ombx_object_size_i            ( hostif_ombx_object_size_rdata     ),
+    // Alias of the interrupt address and data registers from the SYS interface
+    .sysif_intr_msg_addr_i                ( sysif_intr_msg_addr               ),
+    .sysif_intr_msg_data_i                ( sysif_intr_msg_data               ),
     // Control inputs coming from the system registers interface
     .sysif_control_abort_write_i          ( sysif_control_abort_write         )
   );
@@ -156,6 +164,7 @@ module mbx
   logic sysif_read_data_read_valid, sysif_read_data_write_valid;
 
   mbx_sysif #(
+    .CfgSramAddrWidth ( CfgSramAddrWidth ),
     .CfgSramDataWidth ( CfgSramDataWidth ),
     .DoeIrqSupport    ( DoeIrqSupport    )
   ) u_sysif (
@@ -191,6 +200,9 @@ module mbx
     .sysif_status_ready_valid_i          ( ombx_status_ready_valid            ),
     .sysif_status_ready_i                ( ombx_status_ready                  ),
     .sysif_status_ready_o                ( sysif_status_ready                 ),
+    // Alias of the interrupt address and data registers to the host interface
+    .sysif_intr_msg_addr_o               ( sysif_intr_msg_addr                ),
+    .sysif_intr_msg_data_o               ( sysif_intr_msg_data                ),
     // Control lines for backpressuring the bus
     .imbx_pending_i                      ( imbx_pending                       ),
     .ombx_pending_i                      ( ombx_pending                       ),
