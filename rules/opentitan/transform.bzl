@@ -135,3 +135,38 @@ def convert_to_vmem(ctx, **kwargs):
         use_default_shell_env = True,
     )
     return output
+
+def extract_software_logs(ctx, **kwargs):
+    """Extract the software logs database from an ELF file.
+
+    Args:
+      ctx: The context object for this rule.
+      kwargs: Overrides of values normally retrived from the context object.
+        name: The basename of the logs output files.
+        src: The src File object.
+        _tool: The log extraction utility.
+
+    Returns:
+      (File, File): The logs and rodata text databases.
+    """
+    name = get_override(ctx, "attr.name", kwargs)
+    output_logs = ctx.actions.declare_file(name + ".logs.txt")
+    output_rodata = ctx.actions.declare_file(name + ".rodata.txt")
+    src = get_override(ctx, "attr.src", kwargs)
+    tool = get_override(ctx, "executable._tool", kwargs)
+    ctx.actions.run(
+        outputs = [output_logs, output_rodata],
+        inputs = [src, tool],
+        arguments = [
+            "--elf-file",
+            src.path,
+            "--logs-fields-section",
+            ".logs.fields",
+            "--name",
+            name,
+            "--outdir",
+            output_logs.dirname,
+        ],
+        executable = tool,
+    )
+    return (output_logs, output_rodata)

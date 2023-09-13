@@ -18,12 +18,12 @@ _FIELDS = {
     "test_cmd": ("attr.test_cmd", False),
     "param": ("attr.param", False),
     "data": ("attr.data", False),
+    #"extract_sw_logs": ("executable.extract_sw_logs", False),
     "_opentitantool": ("executable._opentitantool", True),
 }
 
 ExecEnvInfo = provider(
     doc = "Execution Environment Info",
-    #fields = _FIELDS.keys(),
 )
 
 _unbound = struct(unbound = True)
@@ -71,6 +71,7 @@ def exec_env_as_dict(ctx):
             # If the value doesn't exist in the context object, get the value
             # from the base provider (if present).
             val = getattr(base, field)
+
         if required and not val:
             fail("No value for required field {} in {}".format(field, ctx.attr.name))
         result[field] = val
@@ -146,8 +147,22 @@ def exec_env_common_attrs(**kwargs):
         ),
         "data": attr.label_list(
             default = kwargs.get("data", []),
+            allow_files = True,
             doc = "Additonal dependencies for this environment or test",
         ),
+        # FIXME(cfrantz): This should work, but when we try to use this executable
+        # in the opentitan_{binary,test} rules, the runfiles aren't present.
+        # Somehow, bazel ends up building only the py_binary launcher script but
+        # doesn't construct the runfiles directory.  If we place this label in the
+        # opentitan_{binary,test} attrs, then the runfiles get created.
+        #
+        # Talk to the bazel team and determine whether or not this is a bazel bug.
+        #"extract_sw_logs": attr.label(
+        #    #default = kwargs.get("extract_sw_logs"),
+        #    default = "//util/device_sw_utils:extract_sw_logs_db",
+        #    executable = True,
+        #    cfg = "exec",
+        #),
         "_opentitantool": attr.label(
             default = "//sw/host/opentitantool:opentitantool",
             executable = True,
