@@ -299,7 +299,6 @@ impl Transport for Dediprog {
         }
 
         let resolved_pin = self.io_mapper.resolve_pin(pinname);
-        let default_level = self.io_mapper.pin_level(pinname)?;
 
         let mut inner = self.inner.borrow_mut();
         Ok(match inner.gpio.entry(resolved_pin.clone()) {
@@ -307,7 +306,6 @@ impl Transport for Dediprog {
                 let u = v.insert(Rc::new(gpio::DediprogPin::open(
                     Rc::clone(&self.inner),
                     resolved_pin.as_str(),
-                    default_level,
                 )?));
                 Rc::clone(u)
             }
@@ -349,10 +347,6 @@ impl GpioPin for VoltagePin {
 
     /// Sets the value of the GPIO reset pin by means of the special h1_reset command.
     fn write(&self, _value: bool) -> Result<()> {
-        bail!(TransportError::UnsupportedOperation)
-    }
-
-    fn reset(&self) -> Result<()> {
         bail!(TransportError::UnsupportedOperation)
     }
 

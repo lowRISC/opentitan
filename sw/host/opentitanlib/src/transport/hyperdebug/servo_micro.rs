@@ -23,7 +23,7 @@ impl ServoMicroFlavor {
 impl Flavor for ServoMicroFlavor {
     fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         if pinname == "IO_EXP_16" {
-            return Ok(Rc::new(ServoMicroResetPin::open(inner, false)?));
+            return Ok(Rc::new(ServoMicroResetPin::open(inner)?));
         }
         StandardFlavor::gpio_pin(inner, pinname)
     }
@@ -66,17 +66,15 @@ enum IoExpanderRegister {
 /// Handles the specialized IO expander logic to read and write to the OT reset pin
 pub struct ServoMicroResetPin {
     inner: Rc<Inner>,
-    default_level: bool,
 }
 
 impl ServoMicroResetPin {
     /// The target reset pin mask for `IoExpanderRegister `
     const RESET_PIN_MASK: u8 = 1 << 6;
 
-    pub fn open(inner: &Rc<Inner>, default_level: bool) -> Result<Self> {
+    pub fn open(inner: &Rc<Inner>) -> Result<Self> {
         Ok(Self {
             inner: Rc::clone(inner),
-            default_level,
         })
     }
 
@@ -150,9 +148,5 @@ impl GpioPin for ServoMicroResetPin {
 
     fn set_pull_mode(&self, _mode: PullMode) -> Result<()> {
         bail!(TransportError::UnsupportedOperation)
-    }
-
-    fn reset(&self) -> Result<()> {
-        self.write(self.default_level)
     }
 }

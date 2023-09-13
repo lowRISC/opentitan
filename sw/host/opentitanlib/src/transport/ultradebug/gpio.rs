@@ -38,11 +38,10 @@ impl UltradebugGpio {
         })
     }
 
-    pub fn pin(&self, pinname: &str, default_level: bool) -> Result<UltradebugGpioPin> {
+    pub fn pin(&self, pinname: &str) -> Result<UltradebugGpioPin> {
         Ok(UltradebugGpioPin {
             device: self.device.clone(),
             pin_id: self.pin_name_to_number(pinname)?,
-            default_level,
         })
     }
 
@@ -69,7 +68,6 @@ impl UltradebugGpio {
 pub struct UltradebugGpioPin {
     device: Rc<RefCell<mpsse::Context>>,
     pin_id: u8,
-    default_level: bool,
 }
 
 impl GpioPin for UltradebugGpioPin {
@@ -86,10 +84,6 @@ impl GpioPin for UltradebugGpioPin {
             .gpio_set(self.pin_id, value)
             .context("FTDI error")?;
         Ok(())
-    }
-
-    fn reset(&self) -> Result<()> {
-        self.write(self.default_level)
     }
 
     /// Sets the `direction` of GPIO `id` as input or output.
