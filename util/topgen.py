@@ -423,9 +423,25 @@ def generate_clkmgr(top, cfg_path, out_path):
     generate_regfile_from_path(hjson_out, rtl_path, original_rtl_path)
 
 
+def _render_template(tpl_path: Path, **kwargs: Dict) -> str:
+    out = StringIO()
+    with tpl_path.open(mode="r", encoding="UTF-8") as fin:
+        hjson_tpl = Template(fin.read())
+        try:
+            out = hjson_tpl.render(**kwargs)
+
+        except:  # noqa: E722
+            log.error(exceptions.text_error_template().render())
+
+    if out == "":
+        log.error("Cannot generate pwrmgr config file")
+    else:
+        log.info("pwrmgr hjson: %s" % out)
+    return out
+
+
 # generate pwrmgr
 def generate_pwrmgr(top, out_path):
-    log.info("Generating pwrmgr")
 
     # Count number of wakeups
     n_wkups = len(top["wakeups"])
@@ -445,38 +461,37 @@ def generate_pwrmgr(top, out_path):
         log.warning("The design has no reset request sources. "
                     "Reset requests are not supported.")
 
-    # Define target path
-    rtl_path = out_path / "ip/pwrmgr/rtl/autogen"
+    # Define target path using the top specific ip path
+    spec_ip_path = out_path / "ip" / "pwrmgr"
+    rtl_path = spec_ip_path / "rtl" / "autogen"
     rtl_path.mkdir(parents=True, exist_ok=True)
-    doc_path = out_path / "ip/pwrmgr/data/autogen"
-    doc_path.mkdir(parents=True, exist_ok=True)
+    data_path = spec_ip_path / "data" / "autogen"
+    data_path.mkdir(parents=True, exist_ok=True)
+    dv_env_path = spec_ip_path / "dv" / "env" / "autogen"
+    dv_env_path.mkdir(parents=True, exist_ok=True)
 
     # So, read template files from ip directory.
     tpl_path = Path(__file__).resolve().parent / "../hw/ip/pwrmgr/data"
     hjson_tpl_path = tpl_path / "pwrmgr.hjson.tpl"
+    env_core_tpl_path = tpl_path / "pwrmgr_env.core.tpl"
     original_rtl_path = Path(__file__).resolve().parent / "../hw/ip/pwrmgr/rtl"
 
     # Render and write out hjson
-    out = StringIO()
-    with hjson_tpl_path.open(mode="r", encoding="UTF-8") as fin:
-        hjson_tpl = Template(fin.read())
-        try:
-            out = hjson_tpl.render(NumWkups=n_wkups,
-                                   Wkups=top["wakeups"],
-                                   rst_reqs=top["reset_requests"],
-                                   NumRstReqs=n_rstreqs)
+    render_dict = {"NumWkups": n_wkups,
+                   "Wkups": top["wakeups"],
+                   "rst_reqs": top["reset_requests"],
+                   "NumRstReqs": n_rstreqs}
 
-        except:  # noqa: E722
-            log.error(exceptions.text_error_template().render())
-        log.info("pwrmgr hjson: %s" % out)
-
-    if out == "":
-        log.error("Cannot generate pwrmgr config file")
-        return
-
-    hjson_path = doc_path / "pwrmgr.hjson"
+    out = _render_template(hjson_tpl_path, **render_dict)
+    hjson_path = data_path / "pwrmgr.hjson"
     with hjson_path.open(mode="w", encoding="UTF-8") as fout:
         fout.write(genhdr + out)
+
+    # Generate env core file.
+    out = _render_template(env_core_tpl_path, **render_dict)
+    env_core_path = dv_env_path / "pwrmgr_env.core"
+    with env_core_path.open(mode="w", encoding="UTF-8") as fout:
+        fout.write(out)
 
     # Generate reg files
     generate_regfile_from_path(hjson_path, rtl_path, original_rtl_path)
