@@ -1,4 +1,45 @@
 {
+  "pins": [
+    {
+      "name": "RESET",
+      "level": false
+    },
+    {
+      "name": "SW_STRAP0",
+      "mode": "PushPull",
+      "level": false,
+      "pull_mode": "None",
+      "alias_of": "IOC0"
+    },
+    {
+      "name": "SW_STRAP1",
+      "mode": "PushPull",
+      "level": false,
+      "pull_mode": "None",
+      "alias_of": "IOC1"
+    },
+    {
+      "name": "SW_STRAP2",
+      "mode": "PushPull",
+      "level": false,
+      "pull_mode": "None",
+      "alias_of": "IOC2"
+    },
+    {
+      "name": "TAP_STRAP0",
+      "mode": "PushPull",
+      "level": false,
+      "pull_mode": "None",
+      "alias_of": "IOC8"
+    },
+    {
+      "name": "TAP_STRAP1",
+      "mode": "PushPull",
+      "level": true,
+      "pull_mode": "None",
+      "alias_of": "IOC5"
+    }
+  ],
   "strappings": [
     {
       "name": "ROM_BOOTSTRAP",
