@@ -41,6 +41,11 @@
       act:     "rsp",
       width:   "1"
     }
+    { struct: "logic",
+      type:   "uni",
+      name:   "lsio_trigger",
+      act:    "req",
+    }
   ]
   regwidth: "32",
   param_list: [

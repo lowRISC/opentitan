@@ -2377,6 +2377,15 @@
           index: -1
         }
         {
+          name: lsio_trigger
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: spi_host0
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -2432,6 +2441,15 @@
           package: spi_device_pkg
           type: req_rsp
           act: rsp
+          width: 1
+          inst_name: spi_host1
+          index: -1
+        }
+        {
+          name: lsio_trigger
+          struct: logic
+          type: uni
+          act: req
           width: 1
           inst_name: spi_host1
           index: -1
@@ -16744,6 +16762,15 @@
         index: -1
       }
       {
+        name: lsio_trigger
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: spi_host0
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -16762,6 +16789,15 @@
         package: spi_device_pkg
         type: req_rsp
         act: rsp
+        width: 1
+        inst_name: spi_host1
+        index: -1
+      }
+      {
+        name: lsio_trigger
+        struct: logic
+        type: uni
+        act: req
         width: 1
         inst_name: spi_host1
         index: -1

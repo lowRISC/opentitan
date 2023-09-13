@@ -37,6 +37,8 @@ module spi_host
   input  spi_device_pkg::passthrough_req_t passthrough_i,
   output spi_device_pkg::passthrough_rsp_t passthrough_o,
 
+  output logic             lsio_trigger_o,
+
   output logic             intr_error_o,
   output logic             intr_spi_event_o
 );
@@ -586,6 +588,8 @@ module spi_host
       rx_full_q  <= rx_full_d;
     end
   end
+
+  assign lsio_trigger_o = tx_wm_q | rx_wm_q;
 
   prim_intr_hw #(.Width(1)) intr_hw_spi_event (
     .clk_i,

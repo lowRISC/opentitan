@@ -530,6 +530,7 @@ module top_darjeeling #(
   rom_ctrl_pkg::keymgr_data_t [1:0] keymgr_rom_digest;
   dma_pkg::lsio_trigger_t       dma_lsio_trigger;
   logic       i2c0_lsio_trigger;
+  logic       spi_host0_lsio_trigger;
   logic       uart0_lsio_trigger;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_flash_rma_req;
   lc_ctrl_pkg::lc_tx_t       otbn_lc_rma_ack;
@@ -1402,6 +1403,7 @@ module top_darjeeling #(
       // Inter-module signals
       .passthrough_i(spi_device_passthrough_req),
       .passthrough_o(spi_device_passthrough_rsp),
+      .lsio_trigger_o(spi_host0_lsio_trigger),
       .tl_i(spi_host0_tl_req),
       .tl_o(spi_host0_tl_rsp),
 
@@ -1434,6 +1436,7 @@ module top_darjeeling #(
       // Inter-module signals
       .passthrough_i(spi_device_pkg::PASSTHROUGH_REQ_DEFAULT),
       .passthrough_o(),
+      .lsio_trigger_o(),
       .tl_i(spi_host1_tl_req),
       .tl_o(spi_host1_tl_rsp),
 
@@ -1864,7 +1867,7 @@ module top_darjeeling #(
       .ctn_tl_h2d_o(ctn_tl_h2d_o),
       .ctn_tl_d2h_i(ctn_tl_d2h_i),
       .i2c_lsio_trigger_i(i2c0_lsio_trigger),
-      .spi_host_lsio_trigger_i('0),
+      .spi_host_lsio_trigger_i(spi_host0_lsio_trigger),
       .uart_lsio_trigger_i(uart0_lsio_trigger),
       .soc_lsio_trigger_i(soc_lsio_trigger_i),
       .dma_lsio_trigger_o(dma_lsio_trigger),

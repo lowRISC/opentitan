@@ -2156,6 +2156,20 @@
           index: -1
         }
         {
+          name: lsio_trigger
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: spi_host0
+          default: ""
+          package: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: spi_host0_lsio_trigger
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -2211,6 +2225,15 @@
           package: spi_device_pkg
           type: req_rsp
           act: rsp
+          width: 1
+          inst_name: spi_host1
+          index: -1
+        }
+        {
+          name: lsio_trigger
+          struct: logic
+          type: uni
+          act: req
           width: 1
           inst_name: spi_host1
           index: -1
@@ -4487,6 +4510,9 @@
           act: rcv
           width: 1
           inst_name: soc_proxy
+          default: ""
+          package: ""
+          top_signame: spi_host0_lsio_trigger
           index: -1
         }
         {
@@ -8715,6 +8741,10 @@
       i2c0.lsio_trigger:
       [
         soc_proxy.i2c_lsio_trigger
+      ]
+      spi_host0.lsio_trigger:
+      [
+        soc_proxy.spi_host_lsio_trigger
       ]
       uart0.lsio_trigger:
       [
@@ -16681,6 +16711,20 @@
         index: -1
       }
       {
+        name: lsio_trigger
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: spi_host0
+        default: ""
+        package: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: spi_host0_lsio_trigger
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -16699,6 +16743,15 @@
         package: spi_device_pkg
         type: req_rsp
         act: rsp
+        width: 1
+        inst_name: spi_host1
+        index: -1
+      }
+      {
+        name: lsio_trigger
+        struct: logic
+        type: uni
+        act: req
         width: 1
         inst_name: spi_host1
         index: -1
@@ -18199,6 +18252,9 @@
         act: rcv
         width: 1
         inst_name: soc_proxy
+        default: ""
+        package: ""
+        top_signame: spi_host0_lsio_trigger
         index: -1
       }
       {
@@ -22118,6 +22174,17 @@
         package: ""
         struct: logic
         signame: i2c0_lsio_trigger
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        signame: spi_host0_lsio_trigger
         width: 1
         type: uni
         end_idx: -1
