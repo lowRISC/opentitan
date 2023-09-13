@@ -61,7 +61,7 @@ module mbx
   logic sysif_status_busy, sysif_status_doe_intr_status, sysif_status_error;
 
   // Setter signals from the hostif to the sysif
-  logic hostif_status_doe_intr_status_set, hostif_control_abort_clear, hostif_status_busy_clear,
+  logic hostif_control_abort_clear, hostif_status_busy_clear,
         hostif_status_error_set, hostif_status_error_clear;
 
   // Alias signals from the sys interface
@@ -109,7 +109,6 @@ module mbx
     // Access to the status register
     .hostif_status_busy_clear_o          ( hostif_status_busy_clear           ),
     .hostif_status_busy_i                ( sysif_status_busy                  ),
-    .hostif_status_doe_intr_status_set_o ( hostif_status_doe_intr_status_set  ),
     .hostif_status_doe_intr_status_i     ( sysif_status_doe_intr_status       ),
     .hostif_status_error_set_o           ( hostif_status_error_set            ),
     .hostif_status_error_clear_o         ( hostif_status_error_clear          ),
@@ -157,6 +156,7 @@ module mbx
   //////////////////////////////////////////////////////////////////////////////
   logic ombx_pending;
   logic ombx_status_ready_valid, ombx_status_ready;
+  logic ombx_doe_intr_status_set;
 
   // Interface signals for SRAM host access to read the memory and serve it to the outbox
   logic ombx_sram_read_req, ombx_sram_read_gnt;
@@ -185,7 +185,7 @@ module mbx
     .sysif_status_busy_valid_i           ( imbx_status_busy_valid             ),
     .sysif_status_busy_i                 ( imbx_status_busy                   ),
     .sysif_status_busy_o                 ( sysif_status_busy                  ),
-    .sysif_status_doe_intr_status_set_i  ( hostif_status_doe_intr_status_set  ),
+    .sysif_status_doe_intr_status_set_i  ( ombx_doe_intr_status_set           ),
     .sysif_status_doe_intr_status_o      ( sysif_status_doe_intr_status       ),
     .sysif_status_error_set_i            ( hostif_status_error_set            ),
     .sysif_status_error_clear_i          ( hostif_status_error_clear          ),
@@ -246,6 +246,7 @@ module mbx
   ) u_ombx (
     .clk_i                           ( clk_i                          ),
     .rst_ni                          ( rst_ni                         ),
+    .ombx_doe_intr_status_set_o      ( ombx_doe_intr_status_set       ),
     // Interface to the host port
     .ombx_state_error_o              ( ombx_state_error               ),
     .ombx_pending_o                  ( ombx_pending                   ),
