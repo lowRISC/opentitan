@@ -54,9 +54,6 @@ module soc_proxy
   assign ctn_tl_h2d_o = ctn_tl_i;
   assign ctn_tl_o = ctn_tl_d2h_i;
 
-  // Tie off unimplemented outputs temporarily.
-  assign wkup_internal_req_o = 1'b0;
-
   // Register node
   soc_proxy_core_reg2hw_t reg2hw;
   soc_proxy_core_hw2reg_t hw2reg;
@@ -221,6 +218,38 @@ module soc_proxy
     .d_i    (soc_wkup_async_i),
     .q_o    (wkup_external_req_o)
   );
+
+  // Generate internal wakeup signal combinatorially from asynchronous signals
+  logic async_wkup;
+  assign async_wkup = |{fatal_alert_external, recov_alert_external};
+
+  // Synchronize wakeup signal onto AON domain
+  logic unstable_wkup;
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_prim_flop_2sync_wake (
+    .clk_i  (clk_aon_i),
+    .rst_ni (rst_aon_ni),
+    .d_i    (async_wkup),
+    .q_o    (unstable_wkup)
+  );
+
+  // Filter out possible glitches from unstable wakeup signal
+  logic wkup_d, wkup_q;
+  logic [2:0] wkup_filter_d, wkup_filter_q;
+  always_ff @(posedge clk_aon_i, negedge rst_aon_ni) begin
+    if (!rst_aon_ni) begin
+      wkup_q <= '0;
+      wkup_filter_q <= '0;
+    end else begin
+      wkup_q <= wkup_d;
+      wkup_filter_q <= wkup_filter_d;
+    end
+  end
+  assign wkup_filter_d = {wkup_filter_q[1:0], unstable_wkup};
+  assign wkup_d = &wkup_filter_q;
+  assign wkup_internal_req_o = wkup_q;
 
   // Collate LSIO trigger inputs into signal for DMA
   assign dma_lsio_trigger_o = {
