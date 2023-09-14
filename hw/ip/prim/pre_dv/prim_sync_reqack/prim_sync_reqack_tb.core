@@ -38,6 +38,8 @@ targets:
           - '--trace-structs'
           - '--trace-params'
           - '--trace-max-array 1024'
+          # This increase became necessary: for simplicity do it everywhere.
+          - '--max-num-width 131072'
 # compiler flags
 #
 # -O

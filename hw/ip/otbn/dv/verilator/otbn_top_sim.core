@@ -64,6 +64,8 @@ targets:
           - '--trace-structs'
           - '--trace-params'
           - '--trace-max-array 1024'
+          # This increase became necessary: for simplicity do it everywhere.
+          - '--max-num-width 131072'
           - '-CFLAGS "-std=c++11 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=otbn_top_sim"'
           - '-LDFLAGS "-pthread -lutil -lelf"'
           - "-Wall"

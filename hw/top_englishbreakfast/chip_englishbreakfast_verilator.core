@@ -100,6 +100,8 @@ targets:
           - '--trace-params'
           - '--trace-max-array 1024'
           - '--unroll-count 512'
+          # This increase became necessary: for simplicity do it everywhere.
+          - '--max-num-width 131072'
           - '-CFLAGS "-std=c++11 -Wall -DVM_TRACE_FMT_FST -DVL_USER_STOP -DTOPLEVEL_NAME=chip_englishbreakfast_verilator"'
           - '-LDFLAGS "-pthread -lutil -lelf"'
           - '-Wall'

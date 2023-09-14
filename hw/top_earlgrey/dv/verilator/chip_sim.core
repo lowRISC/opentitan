@@ -101,6 +101,8 @@ targets:
           - '--trace-params'
           - '--trace-max-array 1024'
           - '--unroll-count 512'
+          # This increase became necessary: for simplicity do it everywhere.
+          - '--max-num-width 131072'
           # TODO: Variable expansion depends on edalize internals. Find better solution.
           #       (Applies to LDFLAGS expansion below as well)
           - '-CFLAGS "$(CFLAGS_FOR_BUILD) -std=c++11 -Wall -DVM_TRACE_FMT_FST -DVL_USER_STOP -DTOPLEVEL_NAME=chip_sim_tb"'
