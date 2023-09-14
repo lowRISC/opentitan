@@ -551,6 +551,14 @@
       run_timeout_mins: 240
     }
     {
+      name: chip_sw_usbdev_vbus
+      uvm_test_seq: chip_sw_usbdev_dpi_vseq
+      sw_images: ["//sw/device/tests:usbdev_vbus_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+uart_idx=0", "+calibrate_usb_clk=1"]
+      reseed: 1
+    }
+    {
       name: chip_sw_usbdev_dpi
       uvm_test_seq: chip_sw_usbdev_dpi_vseq
       sw_images: ["//sw/device/tests:usbdev_test:1"]

@@ -2347,6 +2347,25 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "usbdev_vbus_test",
+    srcs = ["usbdev_vbus_test.c"],
+    targets = [
+        "verilator",
+        "cw310_test_rom",
+        "dv",
+    ],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:usbdev",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "usbdev_pullup_test",
     srcs = ["usbdev_pullup_test.c"],
     targets = [
