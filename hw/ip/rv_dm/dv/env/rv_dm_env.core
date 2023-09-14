@@ -38,6 +38,7 @@ filesets:
       - seq_lib/rv_dm_mem_tl_access_resuming_vseq.sv: {is_include_file: true}
       - seq_lib/rv_dm_hart_unavail_vseq.sv: {is_include_file: true}
       - seq_lib/rv_dm_cmderr_halt_resume_vseq.sv: {is_include_file: true}
+      - seq_lib/rv_dm_dataaddr_rw_access_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
