@@ -22,20 +22,20 @@ use std::rc::Rc;
 pub struct SpiWrapper {
     /// Reference to the `Target` instance of the underlying transport.
     underlying_target: Rc<dyn Target>,
-    my_mode: Cell<Option<spi::TransferMode>>,
-    my_bits_per_word: Cell<Option<u32>>,
-    my_max_speed: Cell<Option<u32>>,
-    my_chip_select: RefCell<Option<Rc<dyn GpioPin>>>,
+    mode: Cell<Option<spi::TransferMode>>,
+    bits_per_word: Cell<Option<u32>>,
+    max_speed: Cell<Option<u32>>,
+    chip_select: RefCell<Option<Rc<dyn GpioPin>>>,
 }
 
 impl SpiWrapper {
     pub fn new(transport: &dyn Transport, conf: &super::SpiConfiguration) -> Result<Self> {
         Ok(Self {
             underlying_target: transport.spi(conf.underlying_instance.as_str())?,
-            my_mode: Cell::new(conf.mode),
-            my_bits_per_word: Cell::new(conf.bits_per_word),
-            my_max_speed: Cell::new(conf.bits_per_sec),
-            my_chip_select: RefCell::new(match conf.chip_select {
+            mode: Cell::new(conf.mode),
+            bits_per_word: Cell::new(conf.bits_per_word),
+            max_speed: Cell::new(conf.bits_per_sec),
+            chip_select: RefCell::new(match conf.chip_select {
                 Some(ref cs) => Some(transport.gpio_pin(cs.as_str())?),
                 None => None,
             }),
@@ -43,16 +43,16 @@ impl SpiWrapper {
     }
 
     fn apply_settings_to_underlying(&self) -> Result<()> {
-        if let Some(mode) = self.my_mode.get() {
+        if let Some(mode) = self.mode.get() {
             self.underlying_target.set_transfer_mode(mode)?;
         }
-        if let Some(bits_per_word) = self.my_bits_per_word.get() {
+        if let Some(bits_per_word) = self.bits_per_word.get() {
             self.underlying_target.set_bits_per_word(bits_per_word)?;
         }
-        if let Some(max_speed) = self.my_max_speed.get() {
+        if let Some(max_speed) = self.max_speed.get() {
             self.underlying_target.set_max_speed(max_speed)?;
         }
-        if let Some(chip_select) = self.my_chip_select.borrow().as_ref() {
+        if let Some(chip_select) = self.chip_select.borrow().as_ref() {
             self.underlying_target.set_chip_select(chip_select)?;
         }
         Ok(())
@@ -64,7 +64,7 @@ impl Target for SpiWrapper {
         self.underlying_target.get_transfer_mode()
     }
     fn set_transfer_mode(&self, mode: spi::TransferMode) -> Result<()> {
-        self.my_mode.set(Some(mode));
+        self.mode.set(Some(mode));
         Ok(())
     }
 
@@ -72,7 +72,7 @@ impl Target for SpiWrapper {
         self.underlying_target.get_bits_per_word()
     }
     fn set_bits_per_word(&self, bits_per_word: u32) -> Result<()> {
-        self.my_bits_per_word.set(Some(bits_per_word));
+        self.bits_per_word.set(Some(bits_per_word));
         Ok(())
     }
 
@@ -80,7 +80,7 @@ impl Target for SpiWrapper {
         self.underlying_target.get_max_speed()
     }
     fn set_max_speed(&self, max_speed: u32) -> Result<()> {
-        self.my_max_speed.set(Some(max_speed));
+        self.max_speed.set(Some(max_speed));
         Ok(())
     }
 
@@ -89,7 +89,7 @@ impl Target for SpiWrapper {
     }
 
     fn set_chip_select(&self, chip_select: &Rc<dyn GpioPin>) -> Result<()> {
-        *self.my_chip_select.borrow_mut() = Some(Rc::clone(chip_select));
+        *self.chip_select.borrow_mut() = Some(Rc::clone(chip_select));
         Ok(())
     }
 
