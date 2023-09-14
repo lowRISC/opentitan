@@ -84,6 +84,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   uint num_ram_main_tiles;
   uint num_ram_ret_tiles;
   uint num_ram_mbox_tiles;
+  uint num_ram_ctn_tiles;
   uint num_otbn_dmem_tiles;
 
   // ext component cfgs
@@ -208,6 +209,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     `DV_CHECK_LE_FATAL(num_ram_main_tiles, 16)
     `DV_CHECK_LE_FATAL(num_ram_ret_tiles, 16)
     `DV_CHECK_LE_FATAL(num_ram_mbox_tiles, 16)
+    `DV_CHECK_LE_FATAL(num_ram_ctn_tiles, 16)
     `DV_CHECK_LE_FATAL(num_otbn_dmem_tiles, 16)
 
     // ral_model_names = chip_reg_block // 1 entry
@@ -246,6 +248,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     num_ram_main_tiles = 1;
     num_ram_ret_tiles = 1;
     num_ram_mbox_tiles = 1;
+    num_ram_ctn_tiles = 1;
     num_otbn_dmem_tiles = 1;
   endfunction
 
@@ -434,6 +437,8 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
         end else if (i == SwTypeOtp) begin
           otp_images[OtpTypeCustom] = $sformatf("%0s.24.vmem", sw_images[i]);
         end else if (i == SwTypeDebug) begin
+          sw_images[i] = $sformatf("%0s_%0s", sw_images[i], sw_build_device);
+        end else if (i == SwTypeCtn) begin
           sw_images[i] = $sformatf("%0s_%0s", sw_images[i], sw_build_device);
         end
       end

@@ -47,6 +47,10 @@ class chip_env extends cip_base_env #(
 
       is_invalid |= mem inside {[OtbnDmem0:OtbnDmem15]} && (int'(mem - OtbnDmem0) >
                                                             cfg.num_otbn_dmem_tiles - 1);
+
+      is_invalid |= mem inside {[RamCtn0:RamCtn15]} && (int'(mem - RamCtn0) >
+                                                        cfg.num_ram_ctn_tiles - 1);
+
       if (is_invalid) continue;
       if (!uvm_config_db#(mem_bkdr_util)::get(this, "", inst, cfg.mem_bkdr_util_h[mem])) begin
         `uvm_fatal(`gfn, {"failed to get ", inst, " from uvm_config_db"})

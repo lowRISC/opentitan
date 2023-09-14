@@ -87,6 +87,18 @@ class chip_sw_base_vseq extends chip_base_vseq;
       main_sram_bkdr_write32(addr, rand_val);
     end
 
+    // Assume each tile contains the same number of bytes.
+    size_bytes = cfg.mem_bkdr_util_h[chip_mem_e'(RamCtn0)].get_size_bytes();
+    total_bytes = size_bytes * cfg.num_ram_ctn_tiles;
+
+    // Randomize the main SRAM.
+    for (int addr = 0; addr < total_bytes; addr = addr + 4) begin
+      bit [31:0] rand_val;
+
+      `DV_CHECK_STD_RANDOMIZE_FATAL(rand_val, "Randomization failed!")
+      ctn_sram_bkdr_write32(addr, rand_val);
+    end
+
     // Initialize the data partition in all flash banks to all 1s.
     `uvm_info(`gfn, "Initializing flash banks (data partition only)", UVM_MEDIUM)
     cfg.mem_bkdr_util_h[FlashBank0Data].set_mem();
@@ -126,6 +138,10 @@ class chip_sw_base_vseq extends chip_base_vseq;
       cfg.mem_bkdr_util_h[FlashBank1Data].load_mem_from_file(
           {cfg.sw_images[SwTypeTestSlotB], ".64.scr.vmem"});
     end
+    if (cfg.sw_images.exists(SwTypeCtn)) begin
+      cfg.mem_bkdr_util_h[RamCtn0].load_mem_from_file(
+          {cfg.sw_images[SwTypeCtn], ".64.scr.vmem"});
+    end
 
     config_jitter();
 
@@ -160,7 +176,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
       bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0]   key = RndCnstSramCtrlMainSramKey,
       bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce = RndCnstSramCtrlMainSramNonce,
       bit [38:0] flip_bits = '0);
-    _sram_bkdr_write32(addr, data, 1, key, nonce, flip_bits);
+    _sram_bkdr_write32(addr, data, RamMain0, cfg.num_ram_main_tiles, 1, key, nonce, flip_bits);
   endfunction
 
   virtual function void ret_sram_bkdr_write32(
@@ -169,7 +185,15 @@ class chip_sw_base_vseq extends chip_base_vseq;
       bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0]   key = RndCnstSramCtrlRetAonSramKey,
       bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce = RndCnstSramCtrlRetAonSramNonce,
       bit [38:0] flip_bits = '0);
-    _sram_bkdr_write32(addr, data, 0, key, nonce, flip_bits);
+    _sram_bkdr_write32(addr, data, RamRet0, cfg.num_ram_ret_tiles, 1, key, nonce, flip_bits);
+  endfunction
+
+  // The CTN memory is currently not scrambled, but it has integrity.
+  virtual function void ctn_sram_bkdr_write32(
+      bit [bus_params_pkg::BUS_AW-1:0] addr,
+      bit [31:0] data,
+      bit [38:0] flip_bits = '0);
+    _sram_bkdr_write32(addr, data, RamCtn0, cfg.num_ram_ctn_tiles, 0, '0, '0, flip_bits);
   endfunction
 
   // scrambled address may cross the tile, this function will find out what tile the address is
@@ -177,44 +201,40 @@ class chip_sw_base_vseq extends chip_base_vseq;
   protected function void _sram_bkdr_write32(
       bit [bus_params_pkg::BUS_AW-1:0] addr,
       bit [31:0] data,
-      bit is_main_ram, // if 1, main ram, otherwise, ret ram
+      chip_mem_e mem,
+      int num_tiles,
+      bit is_scrambled,
       bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0]   key,
       bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce,
       bit [38:0] flip_bits);
 
-    chip_mem_e mem;
-    int        num_tiles;
     bit [31:0] addr_scr;
     bit [38:0] data_scr;
     bit [31:0] addr_mask;
     int        tile_idx;
     int        size_bytes;
 
-    // Use the 1st tile of the RAM for now. Based on the scrambled address, will find out which
-    // tile to write.
-    if (is_main_ram) begin
-      mem = RamMain0;
-      num_tiles = cfg.num_ram_main_tiles;
-    end else begin
-      mem = RamRet0;
-      num_tiles = cfg.num_ram_ret_tiles;
-    end
-
     // Assume each tile contains the same number of bytes
     size_bytes = cfg.mem_bkdr_util_h[mem].get_size_bytes();
     addr_mask = size_bytes - 1;
 
-    // calculate the scramble address
-    addr_scr = cfg.mem_bkdr_util_h[mem].get_sram_encrypt_addr(
-        addr, nonce, $clog2(num_tiles));
+    if (is_scrambled) begin
+      // calculate the scramble address
+      addr_scr = cfg.mem_bkdr_util_h[mem].get_sram_encrypt_addr(
+          addr, nonce, $clog2(num_tiles));
+
+      // calculate the scrambled data
+      data_scr = cfg.mem_bkdr_util_h[mem].get_sram_encrypt32_intg_data(
+          addr, data, key, nonce,
+          $clog2(num_tiles));
+    end else begin
+      // if not scrambled, just calculate ECC.
+      addr_scr = addr;
+      data_scr = prim_secded_pkg::prim_secded_inv_39_32_enc(data);
+    end
 
     // determine which tile the scrambled address belongs
     tile_idx = addr_scr / size_bytes;
-
-    // calculate the scrambled data
-    data_scr = cfg.mem_bkdr_util_h[mem].get_sram_encrypt32_intg_data(
-        addr, data, key, nonce,
-        $clog2(num_tiles));
 
     // write the scrambled data into the targetted memory tile
     mem = chip_mem_e'(mem + tile_idx);
@@ -572,7 +592,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     // Infer mem from address.
     `DV_CHECK(cfg.get_mem_from_addr(addr, mem))
-    `DV_CHECK_FATAL(mem inside {Rom0, [RamMain0:RamMain15], FlashBank0Data, FlashBank1Data},
+    `DV_CHECK_FATAL(mem inside {Rom0, [RamMain0:RamMain15], [RamCtn0:RamCtn15],
+                                FlashBank0Data, FlashBank1Data},
         $sformatf("SW symbol %0s is not expected to appear in %0s mem", symbol, mem))
 
     addr_mask = (2**$clog2(cfg.mem_bkdr_util_h[mem].get_size_bytes()))-1;

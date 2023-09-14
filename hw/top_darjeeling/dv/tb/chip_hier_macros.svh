@@ -58,6 +58,7 @@
 `define RAM_MAIN_MEM_HIER     `RAM_MAIN_HIER.u_prim_ram_1p_adv.u_mem.`MEM_ARRAY_SUB
 `define RAM_RET_MEM_HIER      `RAM_RET_HIER.u_prim_ram_1p_adv.u_mem.`MEM_ARRAY_SUB
 `define RAM_MBOX_MEM_HIER     `RAM_MBOX_HIER.u_prim_ram_1p_adv.u_mem.`MEM_ARRAY_SUB
+`define RAM_CTN_MEM_HIER      `DUT_HIER.u_prim_ram_1p_adv_ctn.u_mem.`MEM_ARRAY_SUB
 `define ROM0_MEM_HIER         `ROM_CTRL0_HIER.`ROM_CTRL_INT_PATH
 `define ROM1_MEM_HIER         `ROM_CTRL1_HIER.`ROM_CTRL_INT_PATH
 `define OTP_GENERIC_HIER      `OTP_CTRL_HIER.u_otp.gen_generic.u_impl_generic

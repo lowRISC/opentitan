@@ -19,6 +19,9 @@ class chip_common_vseq extends chip_stub_cpu_base_vseq;
     for (int ram_idx = 0; ram_idx < cfg.num_ram_main_tiles; ram_idx++) begin
       cfg.mem_bkdr_util_h[chip_mem_e'(RamMain0 + ram_idx)].randomize_mem();
     end
+    for (int ram_idx = 0; ram_idx < cfg.num_ram_ctn_tiles; ram_idx++) begin
+      cfg.mem_bkdr_util_h[chip_mem_e'(RamCtn0 + ram_idx)].randomize_mem();
+    end
   endtask
 
   virtual task body();
