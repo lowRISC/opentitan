@@ -303,25 +303,21 @@
             - Send and receive packets to fill the entire buffer. Ensure all the packets are
               correct.
             - Check interrupts (connected, pkt_received, pkt_sent, av_empty, rx_full) are triggered
-              correcly.
+              correctly.
             '''
       stage: V3
       tests: ["chip_sw_usbdev_stream"]
     }
     {
-      name: chip_sw_usb_vbus
+      name: chip_sw_usbdev_vbus
       desc: '''Verify that the USB device can detect the presence of VBUS from the USB host.
 
-            - This test extends from `chip_usb_fs_df_tx_rx`, add below at the end of the sequence.
-            - VBUS is controlled by SW, through programming CSRs (`override_pwr_sense_en` and
-              `override_pwr_sense_val`) to connect / disconnect the USB.
-            - Disconnect the USB to trigger `disconnected` interrupt.
-            - Then reconnect it and check the `connected` interrupt.
-            - Re-enable data transfer and ensure data correctness.
-            - Observe valid reference pulse usb_ref_val/pulse_o.
+            - Set up the pinmux to ensure that the SENSE/VBUS input can reach usbdev.
+            - Check that VBUS is asserted indicating the presence of a connection to the
+              USB host or DPI model.
             '''
-      stage: V3
-      tests: []
+      stage: V2
+      tests: ["chip_sw_usbdev_vbus"]
     }
     {
       name: chip_sw_usb_suspend
