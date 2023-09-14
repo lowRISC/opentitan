@@ -115,7 +115,7 @@
       name:    "soc_alert_req"
       act:     "rcv"
       desc:    "Differential fatal alert from SoC (input port), synchronous"
-      width:   8
+      width:   4
     }
     { struct:  "alert_ack"
       package: "prim_alert_pkg"
@@ -123,7 +123,7 @@
       name:    "soc_alert_ack"
       act:     "req"
       desc:    "Differential fatal alert from SoC (acknowledge port), synchronous"
-      width:   8
+      width:   4
     }
     { struct:  "logic"
       type:    "uni"

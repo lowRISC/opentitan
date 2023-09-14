@@ -4440,7 +4440,7 @@
           package: prim_alert_pkg
           type: uni
           act: rcv
-          width: 8
+          width: 4
           inst_name: soc_proxy
           default: ""
           external: true
@@ -4455,7 +4455,7 @@
           package: prim_alert_pkg
           type: uni
           act: req
-          width: 8
+          width: 4
           inst_name: soc_proxy
           default: ""
           external: true
@@ -17967,7 +17967,7 @@
         package: prim_alert_pkg
         type: uni
         act: rcv
-        width: 8
+        width: 4
         inst_name: soc_proxy
         default: ""
         external: true
@@ -17982,7 +17982,7 @@
         package: prim_alert_pkg
         type: uni
         act: req
-        width: 8
+        width: 4
         inst_name: soc_proxy
         default: ""
         external: true
@@ -21323,7 +21323,7 @@
         package: prim_alert_pkg
         struct: alert_tx
         signame: soc_alert_req_i
-        width: 8
+        width: 4
         type: uni
         default: ""
         direction: in
@@ -21335,7 +21335,7 @@
         package: prim_alert_pkg
         struct: alert_ack
         signame: soc_alert_ack_o
-        width: 8
+        width: 4
         type: uni
         default: ""
         direction: out

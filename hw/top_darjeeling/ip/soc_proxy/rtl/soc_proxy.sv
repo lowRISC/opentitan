@@ -42,8 +42,8 @@ module soc_proxy
 );
 
   // Feed CTN TL-UL ports through.
-  assign ctn_tl_h2d_o = tlul_pkg::TL_H2D_DEFAULT;
-  assign ctn_tl_o = tlul_pkg::TL_D2H_DEFAULT;
+  assign ctn_tl_h2d_o = ctn_tl_i;
+  assign ctn_tl_o = ctn_tl_d2h_i;
 
   // Tie off unimplemented outputs temporarily.
   assign dma_lsio_trigger_o = '0;
