@@ -384,6 +384,24 @@
       tests: []
     }
     {
+      name: chip_sw_usbdev_pullup
+      desc: '''Verify that the USB device can assert the pull up to indicate its presence.
+
+            - This test extends from `chip_sw_usbdev_vbus` by checking that the DP line of
+              the USB is deasserted after VBUS detection.
+            - Enable the interface by asserting the pull up.
+            - Check that the DP line rises by reading from the `phy_pins_sense` register.
+            - Host/DPI model detects the presence of a Full Speed device.
+            - Deassert the pull up.
+            - Check that the DP line falls again.
+            - For those targets which can apply a pull up to either line, repeat the above
+              for the DN line using the usbdev pin-flipping feature.
+            - No other communication with the host, so indicating Low Speed is harmless.
+            '''
+      stage: V2
+      tests: ["chip_sw_usbdev_pullup"]
+    }
+    {
       name: chip_usb_sof
       desc: '''Verify that USB can detect SOF and respond with `usb_ref_pulse_o` and
             `usb_ref_val_o`.
