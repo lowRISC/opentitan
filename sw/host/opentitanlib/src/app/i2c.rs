@@ -20,24 +20,24 @@ use std::rc::Rc;
 pub struct I2cWrapper {
     /// Reference to the `Bus` instance of the underlying transport.
     underlying_target: Rc<dyn Bus>,
-    my_default_addr: Cell<Option<u8>>,
-    my_max_speed: Cell<Option<u32>>,
+    default_addr: Cell<Option<u8>>,
+    max_speed: Cell<Option<u32>>,
 }
 
 impl I2cWrapper {
     pub fn new(transport: &dyn Transport, conf: &super::I2cConfiguration) -> Result<Self> {
         Ok(Self {
             underlying_target: transport.i2c(conf.underlying_instance.as_str())?,
-            my_default_addr: Cell::new(conf.default_addr),
-            my_max_speed: Cell::new(conf.bits_per_sec),
+            default_addr: Cell::new(conf.default_addr),
+            max_speed: Cell::new(conf.bits_per_sec),
         })
     }
 
     fn apply_settings_to_underlying(&self) -> Result<()> {
-        if let Some(addr) = self.my_default_addr.get() {
+        if let Some(addr) = self.default_addr.get() {
             self.underlying_target.set_default_address(addr)?;
         }
-        if let Some(speed) = self.my_max_speed.get() {
+        if let Some(speed) = self.max_speed.get() {
             self.underlying_target.set_max_speed(speed)?;
         }
         Ok(())
@@ -49,12 +49,12 @@ impl Bus for I2cWrapper {
         self.underlying_target.get_max_speed()
     }
     fn set_max_speed(&self, max_speed: u32) -> Result<()> {
-        self.my_max_speed.set(Some(max_speed));
+        self.max_speed.set(Some(max_speed));
         Ok(())
     }
 
     fn set_default_address(&self, addr: u8) -> Result<()> {
-        self.my_default_addr.set(Some(addr));
+        self.default_addr.set(Some(addr));
         Ok(())
     }
 
