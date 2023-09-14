@@ -574,9 +574,9 @@
     },
     { name: "soc_proxy",
       type: "soc_proxy",
-      clock_srcs: {clk_i: "main"},
+      clock_srcs: {clk_i: "main", clk_aon_i: "aon"},
       clock_group: "infra",
-      reset_connections: {rst_ni: "lc"},
+      reset_connections: {rst_ni: "lc", rst_aon_ni: "lc_aon"},
       base_addrs: {
         core: {hart: "0x22030000"},
         ctn:  {hart: "0x40000000"},

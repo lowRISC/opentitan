@@ -129,6 +129,7 @@
         {
           clk_io_div4_infra: io_div4
           clk_main_infra: main
+          clk_aon_infra: aon
           clk_usb_infra: usb
           clk_io_div2_infra: io_div2
           clk_io_infra: io
@@ -309,6 +310,7 @@
         domains:
         [
           Aon
+          "0"
         ]
         shadowed: false
         sw: false
@@ -4389,6 +4391,7 @@
       clock_srcs:
       {
         clk_i: main
+        clk_aon_i: aon
       }
       clock_group: infra
       reset_connections:
@@ -4396,6 +4399,11 @@
         rst_ni:
         {
           name: lc
+          domain: "0"
+        }
+        rst_aon_ni:
+        {
+          name: lc_aon
           domain: "0"
         }
       }
@@ -4426,6 +4434,7 @@
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
+        clk_aon_i: clkmgr_aon_clocks.clk_aon_infra
       }
       domain:
       [
@@ -15475,6 +15484,7 @@
         {
           clk_io_div4_infra: io_div4
           clk_main_infra: main
+          clk_aon_infra: aon
           clk_usb_infra: usb
           clk_io_div2_infra: io_div2
           clk_io_infra: io
@@ -15499,6 +15509,7 @@
         {
           clk_io_div4_infra: io_div4
           clk_main_infra: main
+          clk_aon_infra: aon
           clk_usb_infra: usb
           clk_io_div2_infra: io_div2
           clk_io_infra: io
@@ -15523,6 +15534,7 @@
         {
           clk_io_div4_infra: io_div4
           clk_main_infra: main
+          clk_aon_infra: aon
           clk_usb_infra: usb
           clk_io_div2_infra: io_div2
           clk_io_infra: io
@@ -15547,6 +15559,7 @@
         {
           clk_io_div4_infra: io_div4
           clk_main_infra: main
+          clk_aon_infra: aon
           clk_usb_infra: usb
           clk_io_div2_infra: io_div2
           clk_io_infra: io

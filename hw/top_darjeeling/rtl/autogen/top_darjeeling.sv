@@ -871,19 +871,21 @@ module top_darjeeling #(
     prim_mubi_pkg::mubi4_t unused_cg_en_4;
     assign unused_cg_en_4 = clkmgr_aon_cg_en.io_div2_powerup;
     prim_mubi_pkg::mubi4_t unused_cg_en_5;
-    assign unused_cg_en_5 = clkmgr_aon_cg_en.aon_secure;
+    assign unused_cg_en_5 = clkmgr_aon_cg_en.aon_infra;
     prim_mubi_pkg::mubi4_t unused_cg_en_6;
-    assign unused_cg_en_6 = clkmgr_aon_cg_en.aon_peri;
+    assign unused_cg_en_6 = clkmgr_aon_cg_en.aon_secure;
     prim_mubi_pkg::mubi4_t unused_cg_en_7;
-    assign unused_cg_en_7 = clkmgr_aon_cg_en.aon_timers;
+    assign unused_cg_en_7 = clkmgr_aon_cg_en.aon_peri;
     prim_mubi_pkg::mubi4_t unused_cg_en_8;
-    assign unused_cg_en_8 = clkmgr_aon_cg_en.usb_infra;
+    assign unused_cg_en_8 = clkmgr_aon_cg_en.aon_timers;
     prim_mubi_pkg::mubi4_t unused_cg_en_9;
-    assign unused_cg_en_9 = clkmgr_aon_cg_en.io_div2_infra;
+    assign unused_cg_en_9 = clkmgr_aon_cg_en.usb_infra;
     prim_mubi_pkg::mubi4_t unused_cg_en_10;
-    assign unused_cg_en_10 = clkmgr_aon_cg_en.io_infra;
+    assign unused_cg_en_10 = clkmgr_aon_cg_en.io_div2_infra;
     prim_mubi_pkg::mubi4_t unused_cg_en_11;
-    assign unused_cg_en_11 = clkmgr_aon_cg_en.io_peri;
+    assign unused_cg_en_11 = clkmgr_aon_cg_en.io_infra;
+    prim_mubi_pkg::mubi4_t unused_cg_en_12;
+    assign unused_cg_en_12 = clkmgr_aon_cg_en.io_peri;
     prim_mubi_pkg::mubi4_t unused_rst_en_0;
     assign unused_rst_en_0 = rstmgr_aon_rst_en.por_aon[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_1;
@@ -1884,7 +1886,9 @@ module top_darjeeling #(
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_infra),
-      .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
+      .clk_aon_i (clkmgr_aon_clocks.clk_aon_infra),
+      .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
+      .rst_aon_ni (rstmgr_aon_resets.rst_lc_aon_n[rstmgr_pkg::Domain0Sel])
   );
   sram_ctrl #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[38:38]),

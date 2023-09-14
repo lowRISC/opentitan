@@ -14,6 +14,8 @@ module soc_proxy
 ) (
   input  logic clk_i,
   input  logic rst_ni,
+  input  logic clk_aon_i,
+  input  logic rst_aon_ni,
 
   input  tlul_pkg::tl_h2d_t core_tl_i,
   output tlul_pkg::tl_d2h_t core_tl_o,
