@@ -6,14 +6,16 @@
 pub mod command;
 pub mod config;
 
-use crate::io::eeprom;
+mod i2c;
+mod spi;
+
 use crate::io::emu::Emulator;
 use crate::io::gpio::{GpioMonitoring, GpioPin, PinMode, PullMode};
-use crate::io::i2c::{self, Bus};
+use crate::io::i2c::Bus;
 use crate::io::ioexpander::IoExpander;
 use crate::io::jtag::{Jtag, JtagParams};
 use crate::io::nonblocking_help::NonblockingHelp;
-use crate::io::spi::{self, Target};
+use crate::io::spi::{Target, TransferMode};
 use crate::io::uart::Uart;
 use crate::transport::{
     ioexpander, Capability, ProgressIndicator, ProxyOps, Transport, TransportError,
@@ -152,7 +154,7 @@ impl PinConfiguration {
 #[derive(Default, Debug)]
 pub struct SpiConfiguration {
     pub underlying_instance: String,
-    pub mode: Option<spi::TransferMode>,
+    pub mode: Option<TransferMode>,
     pub chip_select: Option<String>,
     pub bits_per_word: Option<u32>,
     pub bits_per_sec: Option<u32>,
@@ -627,7 +629,7 @@ impl TransportWrapper {
     pub fn spi(&self, name: &str) -> Result<Rc<dyn Target>> {
         let name = name.to_uppercase();
         if let Some(spi_conf) = self.spi_conf_map.get(&name) {
-            let wrapper = SpiWrapper::new(&*self.transport, spi_conf)?;
+            let wrapper = spi::SpiWrapper::new(&*self.transport, spi_conf)?;
             Ok(Rc::new(wrapper))
         } else {
             self.transport.spi(name.as_str())
@@ -638,7 +640,7 @@ impl TransportWrapper {
     pub fn i2c(&self, name: &str) -> Result<Rc<dyn Bus>> {
         let name = name.to_uppercase();
         if let Some(i2c_conf) = self.i2c_conf_map.get(&name) {
-            let wrapper = I2cWrapper::new(&*self.transport, i2c_conf)?;
+            let wrapper = i2c::I2cWrapper::new(&*self.transport, i2c_conf)?;
             Ok(Rc::new(wrapper))
         } else {
             self.transport.i2c(name.as_str())
@@ -924,174 +926,5 @@ impl PinStrapping {
             }
         }
         Ok(())
-    }
-}
-
-/// Several `SpiWrapper` objects can exist concurrently, sharing the same underlying transport
-/// target, but e.g. having distinct chip select and clock speed settings.  (Terminology is a
-/// little muddy here, the underlying object is more properly representing the SPI "bus", and this
-/// wrapper a particular target chip on the bus.)
-///
-/// Calling e.g. `set_max_speed()` on a `SpiWrapper` will not immediately be propagated to the
-/// underlying transport, instead, the accumulated settings are kept in the `SpiWrapper`, and
-/// propagated only whenever an actual SPI transaction is initiated.
-struct SpiWrapper {
-    /// Reference to the `Target` instance of the underlying transport.
-    underlying_target: Rc<dyn Target>,
-    my_mode: Cell<Option<spi::TransferMode>>,
-    my_bits_per_word: Cell<Option<u32>>,
-    my_max_speed: Cell<Option<u32>>,
-    my_chip_select: RefCell<Option<Rc<dyn GpioPin>>>,
-}
-
-impl SpiWrapper {
-    fn new(transport: &dyn Transport, conf: &SpiConfiguration) -> Result<Self> {
-        Ok(Self {
-            underlying_target: transport.spi(conf.underlying_instance.as_str())?,
-            my_mode: Cell::new(conf.mode),
-            my_bits_per_word: Cell::new(conf.bits_per_word),
-            my_max_speed: Cell::new(conf.bits_per_sec),
-            my_chip_select: RefCell::new(match conf.chip_select {
-                Some(ref cs) => Some(transport.gpio_pin(cs.as_str())?),
-                None => None,
-            }),
-        })
-    }
-
-    fn apply_settings_to_underlying(&self) -> Result<()> {
-        if let Some(mode) = self.my_mode.get() {
-            self.underlying_target.set_transfer_mode(mode)?;
-        }
-        if let Some(bits_per_word) = self.my_bits_per_word.get() {
-            self.underlying_target.set_bits_per_word(bits_per_word)?;
-        }
-        if let Some(max_speed) = self.my_max_speed.get() {
-            self.underlying_target.set_max_speed(max_speed)?;
-        }
-        if let Some(chip_select) = self.my_chip_select.borrow().as_ref() {
-            self.underlying_target.set_chip_select(chip_select)?;
-        }
-        Ok(())
-    }
-}
-
-impl Target for SpiWrapper {
-    fn get_transfer_mode(&self) -> Result<spi::TransferMode> {
-        self.underlying_target.get_transfer_mode()
-    }
-    fn set_transfer_mode(&self, mode: spi::TransferMode) -> Result<()> {
-        self.my_mode.set(Some(mode));
-        Ok(())
-    }
-
-    fn get_bits_per_word(&self) -> Result<u32> {
-        self.underlying_target.get_bits_per_word()
-    }
-    fn set_bits_per_word(&self, bits_per_word: u32) -> Result<()> {
-        self.my_bits_per_word.set(Some(bits_per_word));
-        Ok(())
-    }
-
-    fn get_max_speed(&self) -> Result<u32> {
-        self.underlying_target.get_max_speed()
-    }
-    fn set_max_speed(&self, max_speed: u32) -> Result<()> {
-        self.my_max_speed.set(Some(max_speed));
-        Ok(())
-    }
-
-    fn supports_bidirectional_transfer(&self) -> Result<bool> {
-        self.underlying_target.supports_bidirectional_transfer()
-    }
-
-    fn set_chip_select(&self, chip_select: &Rc<dyn GpioPin>) -> Result<()> {
-        *self.my_chip_select.borrow_mut() = Some(Rc::clone(chip_select));
-        Ok(())
-    }
-
-    fn get_max_transfer_count(&self) -> Result<usize> {
-        self.underlying_target.get_max_transfer_count()
-    }
-
-    fn get_max_transfer_sizes(&self) -> Result<spi::MaxSizes> {
-        self.underlying_target.get_max_transfer_sizes()
-    }
-
-    fn set_voltage(&self, voltage: crate::util::voltage::Voltage) -> Result<()> {
-        self.underlying_target.set_voltage(voltage)
-    }
-
-    fn run_transaction(&self, transaction: &mut [spi::Transfer]) -> Result<()> {
-        self.apply_settings_to_underlying()?;
-        self.underlying_target.run_transaction(transaction)
-    }
-
-    fn get_eeprom_max_transfer_sizes(&self) -> Result<spi::MaxSizes> {
-        self.underlying_target.get_eeprom_max_transfer_sizes()
-    }
-
-    fn run_eeprom_transactions(&self, transactions: &mut [eeprom::Transaction]) -> Result<()> {
-        self.apply_settings_to_underlying()?;
-        self.underlying_target.run_eeprom_transactions(transactions)
-    }
-
-    fn assert_cs(self: Rc<Self>) -> Result<spi::AssertChipSelect> {
-        self.apply_settings_to_underlying()?;
-        Rc::clone(&self.underlying_target).assert_cs()
-    }
-}
-
-/// Several `I2cWrapper` objects can exist concurrently, sharing the same underlying transport
-/// bus, but having distinct I2C 7-bit address settings.  (Terminology is a little muddy here, in
-/// that the wrapper also implements the I2C "bus" trait, even though it more properly would be
-/// named a "target" or "device".)
-///
-/// Calling e.g. `set_max_speed()` on a `I2cWrapper` will not immediately be propagated to the
-/// underlying transport, instead, the accumulated settings are kept in the `I2cWrapper`, and
-/// propagated only whenever an actual I2C transaction is initiated.
-struct I2cWrapper {
-    /// Reference to the `Bus` instance of the underlying transport.
-    underlying_target: Rc<dyn Bus>,
-    my_default_addr: Cell<Option<u8>>,
-    my_max_speed: Cell<Option<u32>>,
-}
-
-impl I2cWrapper {
-    fn new(transport: &dyn Transport, conf: &I2cConfiguration) -> Result<Self> {
-        Ok(Self {
-            underlying_target: transport.i2c(conf.underlying_instance.as_str())?,
-            my_default_addr: Cell::new(conf.default_addr),
-            my_max_speed: Cell::new(conf.bits_per_sec),
-        })
-    }
-
-    fn apply_settings_to_underlying(&self) -> Result<()> {
-        if let Some(addr) = self.my_default_addr.get() {
-            self.underlying_target.set_default_address(addr)?;
-        }
-        if let Some(speed) = self.my_max_speed.get() {
-            self.underlying_target.set_max_speed(speed)?;
-        }
-        Ok(())
-    }
-}
-
-impl Bus for I2cWrapper {
-    fn get_max_speed(&self) -> Result<u32> {
-        self.underlying_target.get_max_speed()
-    }
-    fn set_max_speed(&self, max_speed: u32) -> Result<()> {
-        self.my_max_speed.set(Some(max_speed));
-        Ok(())
-    }
-
-    fn set_default_address(&self, addr: u8) -> Result<()> {
-        self.my_default_addr.set(Some(addr));
-        Ok(())
-    }
-
-    fn run_transaction(&self, addr: Option<u8>, transaction: &mut [i2c::Transfer]) -> Result<()> {
-        self.apply_settings_to_underlying()?;
-        self.underlying_target.run_transaction(addr, transaction)
     }
 }
