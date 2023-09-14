@@ -824,8 +824,10 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         if (cfg.scb_h.ecc_error_addr.exists({tl_addr[31:3],3'h0}) | derr_is_set) derr = 1;
       end
       cfg.otf_read_entry.insert(rd_entry, flash_op);
-      `uvm_info("direct_read", $sformatf("num_i:%0d bank:%0d exec: 0x%x derr:%0d in_err:%0d",
-                                          i, bank, tl_addr, derr, in_err), UVM_MEDIUM)
+      `uvm_info("direct_read", $sformatf({"num_i:%0d bank:%0d exec: page:%0d(%0d)",
+                                          " 0x%x derr:%0d in_err:%0d"},
+                                         i, bank, tl_addr, page, (page % 256),
+                                         derr, in_err), UVM_MEDIUM)
       if (in_err) cfg.scb_h.in_error_addr[{tl_addr[31:3],3'h0}] = 1;
 
       derr |= in_err;
