@@ -138,7 +138,6 @@ SECTIONS {
      * This is much cheaper (for small data) than materializing the
      * address and loading from that (which will take one extra instruction).
      */
-    __global_pointer$ = . + 2048;
 
     /* Small data should come before larger data. This helps to ensure small
      * globals are within 2048 bytes of the value of `gp`, making their accesses

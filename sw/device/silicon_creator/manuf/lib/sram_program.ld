@@ -74,7 +74,6 @@ SECTIONS {
 
      * Since the .data section is small for SRAM programs, it doesn't make a big
      * difference to distinguish data from small data. */
-    __global_pointer$ = . + 2048;
 
     KEEP(*(.data))
     KEEP(*(.data.*))

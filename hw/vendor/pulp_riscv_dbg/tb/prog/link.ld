@@ -315,8 +315,6 @@ SECTIONS
 
   /* The compiler uses this to access data in the .sdata, .data, .sbss and .bss
      sections with fewer instructions (relaxation). This reduces code size. */
-    __global_pointer$ = MIN(__SDATA_BEGIN__ + 0x800,
-			    MAX(__DATA_BEGIN__ + 0x800, __BSS_END__ - 0x800));
   _end = .; PROVIDE (end = .);
   . = DATA_SEGMENT_END (.);
 

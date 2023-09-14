@@ -157,7 +157,6 @@ SECTIONS {
      * This is much cheaper (for small data) than materializing the
      * address and loading from that (which will take one extra instruction).
      */
-    __global_pointer$ = . + 2048;
 
     /* SRAM programs embedded in functional tests must come first. */
     *(.data.sram_program)

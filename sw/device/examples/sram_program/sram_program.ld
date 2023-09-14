@@ -42,7 +42,6 @@ SECTIONS {
      *
      * This must match the value used for functional tests to be able to call
      * SRAM programs from functional tests. */
-    __global_pointer$ = . + 2048;
 
     /* Place the entry point of the SRAM program to the start of the main SRAM
      * so that we don't have to maintain a separate offset from the start of
