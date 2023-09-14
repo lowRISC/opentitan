@@ -599,13 +599,21 @@ def extract_clocks(top: OrderedDict):
             'type': "dummy",
             'clock_srcs': {'clk_i': "io"},
             'clock_group': "peri",
-            'ep_next': "usbdev",
+            'ep_next': "pwrmgr_aon",
         },
         {
             'name': "io_dummy_infra",
             'type': "dummy",
             'clock_srcs': {'clk_i': "io"},
             'clock_group': "infra",
+        },
+        {
+            'name': "io_dummy_usbdev",
+            'type': "dummy",
+            'clock_srcs': {'clk_i': "io", 'clk_aon_i': 'aon'},
+            'clock_group': "peri",
+            'reset_connections': {'rst_ni': 'usb', 'rst_aon_ni': 'usb_aon'},
+            'ep_next': "pwrmgr_aon",
         }
     ]
 

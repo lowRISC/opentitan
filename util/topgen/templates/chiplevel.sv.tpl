@@ -148,9 +148,18 @@ module chip_${top["name"]}_${target["name"]} #(
     dft_strap0_idx:    Dft0PadIdx,
     dft_strap1_idx:    Dft1PadIdx,
     // TODO: check whether there is a better way to pass these USB-specific params
+% if top["name"] != "darjeeling":
     usb_dp_idx:        DioUsbdevUsbDp,
     usb_dn_idx:        DioUsbdevUsbDn,
     usb_sense_idx:     MioInUsbdevSense,
+% else:
+    // The use of these indexes is gated behind a parameter, but to synthesize they
+    // need to exist even if the code-path is never used (pinmux.sv:UsbWkupModuleEn).
+    // Hence, set to zero.
+    usb_dp_idx:        0,
+    usb_dn_idx:        0,
+    usb_sense_idx:     0,
+% endif
     // Pad types for attribute WARL behavior
     dio_pad_type: {
 <%
@@ -193,7 +202,13 @@ module chip_${top["name"]}_${target["name"]} #(
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_raw;
+## TODO: Calculate this signal width, rather than hardcode it.
+## Currently, the -5 difference between EG/DJ is due to the removal of USB.
+% if top["name"] == "darjeeling":
+  logic [19-1:0]                       dio_in_raw;
+% else:
   logic [24-1:0]                       dio_in_raw;
+% endif
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_out;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
@@ -413,6 +428,7 @@ module chip_${top["name"]}_${target["name"]} #(
 ## USB for CW310                                                 ##
 ###################################################################
 % if target["name"] == "cw310":
+% if top["name"] != "darjeeling":
   // TODO: generalize this USB mux code and align with other tops.
 
   // Only use the UPHY on CW310, which does not support pin flipping.
@@ -473,6 +489,7 @@ module chip_${top["name"]}_${target["name"]} #(
     dio_attr[DioUsbdevUsbDn]
   };
 
+% endif
 % endif
 
 
@@ -1126,6 +1143,7 @@ module chip_${top["name"]}_${target["name"]} #(
     manual_in_otp_ext_volt
   };
 
+% if top["name"] != "darjeeling":
   ///////////////////////////////
   // Differential USB Receiver //
   ///////////////////////////////
@@ -1165,6 +1183,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .usb_diff_rx_obs_o ( usb_diff_rx_obs       ),
     .input_o           ( usb_rx_d              )
   );
+% endif
 
 % if top["name"] == "darjeeling":
   soc_proxy_pkg::soc_alert_req_t [soc_proxy_pkg::NumFatalExternalAlerts-1:0] soc_fatal_alert_req;
@@ -1207,6 +1226,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .sensor_ctrl_ast_alert_req_i  ( ast_alert_req              ),
     .sensor_ctrl_ast_alert_rsp_o  ( ast_alert_rsp              ),
     .sensor_ctrl_ast_status_i     ( ast_pwst.io_pok            ),
+% if top["name"] != "darjeeling":
     .usb_dp_pullup_en_o           ( usb_dp_pullup_en           ),
     .usb_dn_pullup_en_o           ( usb_dn_pullup_en           ),
     .usbdev_usb_rx_d_i            ( usb_rx_d                   ),
@@ -1216,6 +1236,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .usbdev_usb_rx_enable_o       ( usb_rx_enable              ),
     .usbdev_usb_ref_val_o         ( usb_ref_val                ),
     .usbdev_usb_ref_pulse_o       ( usb_ref_pulse              ),
+% endif
     .ast_tl_req_o                 ( base_ast_bus               ),
     .ast_tl_rsp_i                 ( ast_base_bus               ),
     .adc_req_o                    ( adc_req                    ),
@@ -1321,7 +1342,9 @@ module chip_${top["name"]}_${target["name"]} #(
     // Memory attributes
     .ram_1p_cfg_i                 ( ram_1p_cfg                 ),
     .spi_ram_2p_cfg_i             ( spi_ram_2p_cfg             ),
+% if top["name"] != "darjeeling":
     .usb_ram_2p_cfg_i             ( usb_ram_2p_cfg             ),
+% endif
 
     .rom_cfg_i                    ( rom_cfg                    ),
 
@@ -1403,7 +1426,9 @@ module chip_${top["name"]}_${target["name"]} #(
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
     .RvCoreIbexPipeLine(1),
     .SramCtrlRetAonInstrExec(0),
+    % if top["name"] != "darjeeling":
     .UsbdevRcvrWakeTimeUs(10000),
+    % endif
   % if lib.num_rom_ctrl(top["module"]) > 1:
     // TODO(opentitan-integrated/issues/251):
     // Enable hashing below once the build infrastructure can
@@ -1459,6 +1484,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .sck_monitor_o                ( sck_monitor           ),
     .pwrmgr_ast_req_o             ( base_ast_pwr          ),
     .pwrmgr_ast_rsp_i             ( ast_base_pwr          ),
+% if top["name"] != "darjeeling":
     .usb_dp_pullup_en_o           ( usb_dp_pullup_en      ),
     .usb_dn_pullup_en_o           ( usb_dn_pullup_en      ),
     .usbdev_usb_rx_d_i            ( usb_rx_d              ),
@@ -1468,6 +1494,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .usbdev_usb_rx_enable_o       ( usb_rx_enable         ),
     .usbdev_usb_ref_val_o         ( usb_ref_val           ),
     .usbdev_usb_ref_pulse_o       ( usb_ref_pulse         ),
+% endif
     .ast_edn_req_i                ( ast_edn_edn_req       ),
     .ast_edn_rsp_o                ( ast_edn_edn_rsp       ),
     .obs_ctrl_i                   ( obs_ctrl              ),
@@ -1562,7 +1589,9 @@ module chip_${top["name"]}_${target["name"]} #(
     // Memory attributes
     .ram_1p_cfg_i    ( '0 ),
     .spi_ram_2p_cfg_i( '0 ),
+% if top["name"] != "darjeeling":
     .usb_ram_2p_cfg_i( '0 ),
+% endif
     .rom_cfg_i       ( '0 ),
 
      // DFT signals
