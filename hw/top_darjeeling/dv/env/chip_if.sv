@@ -76,7 +76,6 @@ interface chip_if;
 `define SRAM_CTRL_MBOX      `TOP_HIER.u_sram_ctrl_mbox
 `define SYSRST_CTRL_HIER    `TOP_HIER.u_sysrst_ctrl_aon
 `define UART_HIER(i)        `TOP_HIER.u_uart``i
-`define USBDEV_HIER         `TOP_HIER.u_usbdev
 
   // Identifier for logs.
   string MsgId = $sformatf("%m");
@@ -118,7 +117,6 @@ interface chip_if;
 
       // These are active low, so pull up.
       dios_if.pins_pu[top_darjeeling_pkg::DioPadPorN] = 1;
-      dios_if.pins_pu[top_darjeeling_pkg::DioPadUsbP] = 1;
       dios_if.pins_pu[top_darjeeling_pkg::DioPadIor8] = 1;
       dios_if.pins_pu[top_darjeeling_pkg::DioPadIor9] = 1;
 
@@ -182,9 +180,6 @@ interface chip_if;
 
   // Functional (dedicated) interface (input): power on reset input.
   pins_if #(.Width(1), .PullStrength("Weak")) por_n_if(.pins(dios[top_darjeeling_pkg::DioPadPorN]));
-
-  // Functional (dedicated) interface (inout): USB.
-  // TODO!
 
   // Functional (dedicated) interface (input): CC1, CC2.
   pins_if #(.Width(2), .PullStrength("Weak")) cc_if(
@@ -591,10 +586,6 @@ interface chip_if;
 `endif
   clk_rst_if aon_clk_por_rst_if(.clk(aon_clk), .rst_n(aon_rst_n));
 
-  wire usb_clk = `USBDEV_HIER.clk_i;
-  wire usb_rst_n = `USBDEV_HIER.rst_ni;
-  clk_rst_if usb_clk_rst_if(.clk(usb_clk), .rst_n(usb_rst_n));
-
 `ifdef GATE_LEVEL
   wire io_div4_clk = 1'b0;
   wire io_div4_rst_n = 1'b1;
@@ -675,7 +666,6 @@ interface chip_if;
   wire kmac_clk_is_enabled = 0;
   wire otbn_clk_is_enabled = 0;
 
-  wire usbdev_clk_is_enabled = 0;
   wire io_clk_is_enabled = 0;
   wire io_div2_clk_is_enabled = 0;
   wire io_div4_clk_is_enabled = 0;
@@ -685,7 +675,6 @@ interface chip_if;
   wire kmac_clk_is_enabled = `CLKMGR_HIER.u_reg.hw2reg.clk_hints_status.clk_main_kmac_val.d;
   wire otbn_clk_is_enabled = `CLKMGR_HIER.u_reg.hw2reg.clk_hints_status.clk_main_otbn_val.d;
 
-  wire usbdev_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_usb_peri_en.q;
   wire io_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_io_peri_en.q;
   wire io_div2_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_io_div2_peri_en.q;
   wire io_div4_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_io_div4_peri_en.q;
@@ -942,7 +931,6 @@ interface chip_if;
       PeripheralSramCtrlRetAon: path = {path, ".", `DV_STRINGIFY(`SRAM_CTRL_RET_HIER)};
       PeripheralSysrstCtrlAon:  path = {path, ".", `DV_STRINGIFY(`SYSRST_CTRL_HIER)};
       PeripheralUart0:          path = {path, ".", `DV_STRINGIFY(`UART_HIER(0))};
-      PeripheralUsbdev:         path = {path, ".", `DV_STRINGIFY(`USBDEV_HIER)};
       default:      `uvm_fatal(MsgId, $sformatf("Bad peripheral: %0s", peripheral.name()))
     endcase
     return path;
@@ -978,21 +966,6 @@ interface chip_if;
   //   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_keymgr_key_state,
   //       `KEYMGR_DPE_HIER.u_ctrl.key_state_q)
   // `endif
-  // Signal probe function for RX idle detection in usbdev.
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_usbdev_rx_idle_det_o,
-      `USBDEV_HIER.usbdev_impl.u_usb_fs_nb_pe.u_usb_fs_rx.rx_idle_det_o)
-
-  // Signal probe function for se0 signal in usbdev.
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_usbdev_se0,
-      `USBDEV_HIER.usbdev_impl.u_usbdev_linkstate.line_se0_raw)
-
-  // Signal probe function for link reset signal in usbdev.
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_usbdev_link_reset_o,
-      `USBDEV_HIER.usbdev_impl.u_usbdev_linkstate.link_reset_o)
-
-  // Signal probe function for SOF valid signal in usbdev.
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_usbdev_sof_valid_o,
-      `USBDEV_HIER.usbdev_impl.u_usb_fs_nb_pe.sof_valid_o)
 
   // Signal probe function for peripheral to MIO in pinmux.
   wire [UVM_HDL_MAX_WIDTH-1:0] mio_to_periph = `PINMUX_HIER.mio_to_periph_o;
@@ -1005,12 +978,8 @@ interface chip_if;
 
   // Signal probe function for peripheral to DIO in pinmux.
   wire [UVM_HDL_MAX_WIDTH-1:0] dio_to_periph = `PINMUX_HIER.dio_to_periph_o;
-  // We cannot force bits 12:13 since they are inputs. So we split the probe functions into two.
-  // TODO: Find a more elegant solution for this.
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pinmux_periph_to_dio_i_11_0,
-      `PINMUX_HIER.periph_to_dio_i[11:0])
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pinmux_periph_to_dio_i_15_14,
-      `PINMUX_HIER.periph_to_dio_i[15:14])
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pinmux_periph_to_dio_i_13_0,
+      `PINMUX_HIER.periph_to_dio_i[13:0])
 
   // Signal probe function for peripheral to DIO output enable in pinmux.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pinmux_periph_to_dio_oe_i,
@@ -1177,6 +1146,5 @@ assign spi_host_1_state = {tb.dut.top_darjeeling.u_spi_host1.u_spi_core.u_fsm.st
 `undef SRAM_CTRL_RET_HIER
 `undef SYSRST_CTRL_HIER
 `undef UART_HIER
-`undef USBDEV_HIER
 
 endinterface

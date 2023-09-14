@@ -78,7 +78,6 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   sw_test_status_vif sw_test_status_vif;
   ast_supply_vif     ast_supply_vif;
   ast_ext_clk_vif    ast_ext_clk_vif;
-  usb20_vif          usb20_vif;
 
   // Number of RAM tiles for each RAM instance.
   uint num_ram_main_tiles;
@@ -266,7 +265,6 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     super.post_build_ral_settings(ral);
     if (!$cast(chip_ral, ral)) return;
     // Out of reset, the link is in disconnected state.
-    chip_ral.usbdev.intr_state.disconnected.set_reset(1'b1);
 
     chip_ral.rv_dm_mem.get_registers(regs);
     foreach (regs[i]) begin

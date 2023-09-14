@@ -16,16 +16,6 @@ module chip_sim_tb (
   logic cio_spi_device_sdi_p2d;
   logic cio_spi_device_sdo_d2p, cio_spi_device_sdo_en_d2p;
 
-  logic cio_usbdev_sense_p2d;
-  logic cio_usbdev_se0_d2p;
-  logic cio_usbdev_dp_pullup_d2p;
-  logic cio_usbdev_dn_pullup_d2p;
-  logic cio_usbdev_rx_enable_d2p;
-  logic cio_usbdev_tx_use_d_se0_d2p;
-  logic cio_usbdev_d_p2d, cio_usbdev_d_d2p, cio_usbdev_d_en_d2p;
-  logic cio_usbdev_dp_p2d, cio_usbdev_dp_d2p, cio_usbdev_dp_en_d2p;
-  logic cio_usbdev_dn_p2d, cio_usbdev_dn_d2p, cio_usbdev_dn_en_d2p;
-
   chip_darjeeling_verilator u_dut (
     .clk_i,
     .rst_ni,
@@ -46,24 +36,7 @@ module chip_sim_tb (
     .cio_spi_device_csb_p2d_i(cio_spi_device_csb_p2d),
     .cio_spi_device_sdi_p2d_i(cio_spi_device_sdi_p2d),
     .cio_spi_device_sdo_d2p_o(cio_spi_device_sdo_d2p),
-    .cio_spi_device_sdo_en_d2p_o(cio_spi_device_sdo_en_d2p),
-
-    // communication with USB
-    .cio_usbdev_sense_p2d_i(cio_usbdev_sense_p2d),
-    .cio_usbdev_dp_pullup_d2p_o(cio_usbdev_dp_pullup_d2p),
-    .cio_usbdev_dn_pullup_d2p_o(cio_usbdev_dn_pullup_d2p),
-    .cio_usbdev_dp_p2d_i(cio_usbdev_dp_p2d),
-    .cio_usbdev_dp_d2p_o(cio_usbdev_dp_d2p),
-    .cio_usbdev_dp_en_d2p_o(cio_usbdev_dp_en_d2p),
-    .cio_usbdev_dn_p2d_i(cio_usbdev_dn_p2d),
-    .cio_usbdev_dn_d2p_o(cio_usbdev_dn_d2p),
-    .cio_usbdev_dn_en_d2p_o(cio_usbdev_dn_en_d2p),
-    .cio_usbdev_d_p2d_i(cio_usbdev_d_p2d),
-    .cio_usbdev_d_d2p_o(cio_usbdev_d_d2p),
-    .cio_usbdev_d_en_d2p_o(cio_usbdev_d_en_d2p),
-    .cio_usbdev_se0_d2p_o(cio_usbdev_se0_d2p),
-    .cio_usbdev_rx_enable_d2p_o(cio_usbdev_rx_enable_d2p),
-    .cio_usbdev_tx_use_d_se0_d2p_o(cio_usbdev_tx_use_d_se0_d2p)
+    .cio_spi_device_sdo_en_d2p_o(cio_spi_device_sdo_en_d2p)
   );
 
   // GPIO DPI
@@ -135,29 +108,6 @@ module chip_sim_tb (
     .spi_device_sdi_o     (cio_spi_device_sdi_p2d),
     .spi_device_sdo_i     (cio_spi_device_sdo_d2p),
     .spi_device_sdo_en_i  (cio_spi_device_sdo_en_d2p)
-  );
-
-  // USB DPI
-  usbdpi u_usbdpi (
-    .clk_i           (clk_i),
-    .rst_ni          (rst_ni),
-    .clk_48MHz_i     (clk_i),
-    .enable          (1'b1),
-    .sense_p2d       (cio_usbdev_sense_p2d),
-    .pullupdp_d2p    (cio_usbdev_dp_pullup_d2p),
-    .pullupdn_d2p    (cio_usbdev_dn_pullup_d2p),
-    .dp_p2d          (cio_usbdev_dp_p2d),
-    .dp_d2p          (cio_usbdev_dp_d2p),
-    .dp_en_d2p       (cio_usbdev_dp_en_d2p),
-    .dn_p2d          (cio_usbdev_dn_p2d),
-    .dn_d2p          (cio_usbdev_dn_d2p),
-    .dn_en_d2p       (cio_usbdev_dn_en_d2p),
-    .d_p2d           (cio_usbdev_d_p2d),
-    .d_d2p           (cio_usbdev_d_d2p),
-    .d_en_d2p        (cio_usbdev_d_en_d2p),
-    .se0_d2p         (cio_usbdev_se0_d2p),
-    .rx_enable_d2p   (cio_usbdev_rx_enable_d2p),
-    .tx_use_d_se0_d2p(cio_usbdev_tx_use_d_se0_d2p)
   );
 
   `define RV_CORE_IBEX      u_dut.top_darjeeling.u_rv_core_ibex

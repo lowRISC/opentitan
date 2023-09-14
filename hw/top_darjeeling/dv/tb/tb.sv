@@ -461,13 +461,6 @@ module tb;
                                        .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[OtbnDmem0], `OTBN_DMEM_HIER)
 
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for USBDEV BUFFER", UVM_MEDIUM)
-      m_mem_bkdr_util[UsbdevBuf] = new(.name  ("mem_bkdr_util[UsbdevBuf]"),
-                                       .path  (`DV_STRINGIFY(`USBDEV_BUF_HIER)),
-                                       .depth ($size(`USBDEV_BUF_HIER)),
-                                       .n_bits($bits(`USBDEV_BUF_HIER)),
-                                       .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone));
-
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for SPI_DEVICE EGRESS MEM", UVM_MEDIUM)
       m_mem_bkdr_util[SpiDeviceEgressMem] =
         new(.name  ("mem_bkdr_util[SpiDeviceEgressMem]"),
@@ -538,7 +531,6 @@ module tb;
           $assertoff(0, dut.top_darjeeling.u_spi_host1);
           $assertoff(0, dut.top_darjeeling.u_sysrst_ctrl_aon);
           $assertoff(0, dut.top_darjeeling.u_uart0);
-          $assertoff(0, dut.top_darjeeling.u_usbdev);
         end else begin
           $asserton(0, dut.top_darjeeling.u_gpio);
           $asserton(0, dut.top_darjeeling.u_i2c0);
@@ -550,7 +542,6 @@ module tb;
           $asserton(0, dut.top_darjeeling.u_spi_host1);
           $asserton(0, dut.top_darjeeling.u_sysrst_ctrl_aon);
           $asserton(0, dut.top_darjeeling.u_uart0);
-          $asserton(0, dut.top_darjeeling.u_usbdev);
         end
       end
       // See chip_sw_sleep_pin_mio_dio_val_vseq for more details.

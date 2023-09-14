@@ -55,7 +55,6 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     '{"*sram_ctrl_ret*prim_reg_we_check*", TopDarjeelingAlertIdSramCtrlRetAonFatalError},
     '{"*sysrst_ctrl*prim_reg_we_check*", TopDarjeelingAlertIdSysrstCtrlAonFatalFault},
     '{"*uart0*prim_reg_we_check*", TopDarjeelingAlertIdUart0FatalFault},
-    '{"*usbdev*prim_reg_we_check*", TopDarjeelingAlertIdUsbdevFatalFault}
   };
 
   rand int ip_index;
