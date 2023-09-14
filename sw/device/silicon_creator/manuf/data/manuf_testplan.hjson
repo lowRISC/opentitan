@@ -309,7 +309,7 @@
       name: manuf_ft_provision_rma_token_and_personalization
       desc: '''Provision RMA unlock token.
 
-            ## Provisioning of RMA_UNLOCK_TOKEN
+            **Provisioning of RMA_UNLOCK_TOKEN**
 
             The RMA_UNLOCK_TOKEN is used to take a device from a production ls_state (i.e. DEV,
             PROD) in to RMA state. RMA entry is conditional to flash erase, and it also triggers
@@ -323,15 +323,15 @@
             The manufactuer is expected to maintain the RMA_UNLOCK_TOKEN decryption key in an
             offline HSM.
 
-            ## Personalization
+            **Personalization**
 
             The device is configured with a unique set of secrets, which once provisioned, are
             hidden from software. These secrets are used as the root of the key derivation
             function in the key manager.
 
-            ## Test steps
+            **Test steps**
 
-            ### Prep steps
+            ***Prep steps***
             - Pre-load the OTP state with an image of an individualized device. See
               manuf_ft_sku_individualization for more details.
             - Check expected ls_state and OTP locked partitions (SECRET1, HW_CFG).
@@ -339,7 +339,7 @@
             - Initialize entropy source in FIPS mode. Check health status after setting appropriate
               health test parameters.
 
-            ### Device secrets
+            ***Device secrets***
             - Instantiate the SW CSRNG, and configure it to generate data.
             - Configure the Silicon Creator secret info flash partition.
             - Uninstantiate the SW CSRNG.
@@ -351,14 +351,14 @@
             - Lock SECRET2 OTP partition.
             - Perform reset triggered by software.
 
-            ### RMA provisioning
+            ***RMA provisioning***
             - Instantiate the SW CSRNG, and configure it to generate data.
             - Configure RMA_TOKEN in the OTP partition with data extracted from the CSRNG.
             - Encrypt RMA_TOKEN with asymmetric algorithm (e.g RSA-3072). The encrypted blob will
               be sent to the host in the result status.
             - Uninstantiate the sw CSRNG.
 
-            ### Device Identity
+            ***Device Identity***
 
             The OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN OTP must be configured so that the
             attestation measurement can be provided in the manifest of the test program. This
@@ -375,7 +375,7 @@
             - Configure OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN OTP to switch to attestation mode
               associated with the device SKU.
 
-            ### Result status
+            ***Result status***
             - Send response to host with test result serialized in JSON format. The result must
               include the encrypted RMA_UNLOCK_TOKEN, the DEVICE_ID, the public attestation key
               and its hash.

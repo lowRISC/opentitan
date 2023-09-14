@@ -998,10 +998,10 @@
       name: rom_e2e_asm_c_interrupt_handler
       desc: '''Verify that `rom_start.S` configures the ROM C interrupt handler and it triggers shutdown.
 
-            #### Using a ROM_EXT image (preferred)
+            **Using a ROM_EXT image (preferred)**
             See #14274.
 
-            #### Using a debugger
+            **Using a debugger**
             `CREATOR_SW_CFG_ROM_EXEC_EN` should be set to `0` and the chip should in a life cycle
              state where debugging is enabled, i.e. TEST, DEV, or RMA.
 

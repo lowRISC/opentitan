@@ -1620,7 +1620,7 @@
             Check that escalation receivers located inside always-on blocks do not auto-escalate
             due to the reverse ping feature while the system is in deep sleep.
 
-            ## Reverse ping timeout calculation
+            **Reverse ping timeout calculation**
 
             The reverse ping timeout calculation is done using the following formula available in
             `prim_esc_receiver`:
@@ -1645,7 +1645,7 @@
             reverse_ping_timeout = 0.175s = (4 * 4 ( 2 * 2 * 2^16)) / 24e6
             ```
 
-            ## Procedure
+            **Procedure**
 
             - On POR reset:
               - Enable all alerts assigning them to ClassA.
