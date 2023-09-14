@@ -32,7 +32,8 @@
   ]
 
   clocking: [
-    { clock: "clk_i", reset: "rst_ni" }
+    { clock: "clk_i", reset: "rst_ni", primary: true }
+    { clock: "clk_aon_i", reset: "rst_aon_ni" }
   ]
 
   bus_interfaces: [
