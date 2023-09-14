@@ -113,8 +113,6 @@ module tb;
 `endif
     // Dedicated Pads
     .POR_N(dut.chip_if.dios[top_darjeeling_pkg::DioPadPorN]),
-    .USB_P(dut.chip_if.dios[top_darjeeling_pkg::DioPadUsbP]),
-    .USB_N(dut.chip_if.dios[top_darjeeling_pkg::DioPadUsbN]),
 `ifdef ANALOGSIM
     .CC1(cc1),
     .CC2(cc2),
@@ -214,34 +212,6 @@ module tb;
     .out_o(gsim_tl_win_d2h_int)
   );
 `endif
-  // Interface presently just permits the DPI model to be easily connected and
-  // disconnected as required, since SENSE pin is a MIO with other uses.
-  usb20_if u_usb20_if (
-    .clk_i            (dut.chip_if.usb_clk),
-    .rst_ni           (dut.chip_if.usb_rst_n),
-
-    .usb_vbus         (dut.chip_if.mios[top_darjeeling_pkg::MioPadIoc7]),
-    .usb_p            (dut.chip_if.dios[top_darjeeling_pkg::DioPadUsbP]),
-    .usb_n            (dut.chip_if.dios[top_darjeeling_pkg::DioPadUsbN])
-  );
-
-  // Instantiate & connect the USB DPI model for top-level testing.
-  usb20_usbdpi u_usb20_usbdpi (
-    .clk_i            (dut.chip_if.usb_clk),
-    .rst_ni           (dut.chip_if.usb_rst_n),
-
-    .enable           (u_usb20_if.connected),
-
-    // Outputs from the DPI module
-    .usb_sense_p2d_o  (u_usb20_if.usb_sense_p2d),
-    .usb_dp_en_p2d_o  (u_usb20_if.usb_dp_en_p2d),
-    .usb_dn_en_p2d_o  (u_usb20_if.usb_dn_en_p2d),
-    .usb_dp_p2d_o     (u_usb20_if.usb_dp_p2d),
-    .usb_dn_p2d_o     (u_usb20_if.usb_dn_p2d),
-
-    .usb_p            (dut.chip_if.dios[top_darjeeling_pkg::DioPadUsbP]),
-    .usb_n            (dut.chip_if.dios[top_darjeeling_pkg::DioPadUsbN])
-  );
 
   sim_sram u_sim_sram (
 `ifdef GATE_LEVEL
@@ -304,10 +274,6 @@ module tb;
     // AST io clk blocker interface.
     uvm_config_db#(virtual ast_ext_clk_if)::set(
         null, "*.env", "ast_ext_clk_vif", dut.ast_ext_clk_if);
-
-    // USB DPI interface.
-    uvm_config_db#(virtual usb20_if)::set(
-        null, "*.env", "usb20_vif", u_usb20_if);
 
     // Format time in microseconds losing no precision. The added "." makes it easier to determine
     // the order of magnitude without counting digits, as is needed if it was formatted as ps or ns.

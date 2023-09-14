@@ -43,77 +43,7 @@ set MAIN_TCK_PERIOD [expr $MAIN_TCK_TARGET_PERIOD*$MAIN_TCK_FACTOR] ;# over cons
 create_clock -name MAIN_CLK -period ${MAIN_TCK_PERIOD} [get_pins ${MAIN_CLK_PIN}]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks MAIN_CLK]
 #set_false_path -from [get_clocks ${MAIN_CLK_PIN_AST}] -to [get_clocks ${MAIN_CLK_PIN}]
-#####################
-# USB clock         #
-#####################
-set USB_CLK_PIN u_ast/clk_src_usb_o
-# target is 48MHz, overconstrain by 5%
-set USB_TCK_TARGET_PERIOD 20.8
-set USB_TCK_PERIOD [expr $USB_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
-# USB clock uncertainty needs to be within 2500ppm
-set USB_CLOCK_UNCERTAINTY [expr $USB_TCK_PERIOD * .0025]
-create_clock -name USB_CLK -period ${USB_TCK_PERIOD} [get_pins ${USB_CLK_PIN}]
-set_clock_uncertainty ${USB_CLOCK_UNCERTAINTY} [get_clocks USB_CLK]
 
-# This requires knowledge of actual pin names, hence we only run this if we're compiling against
-# real libs (i.e., not GTECH mode).
-if {$FOUNDRY_ROOT != ""} {
-  # generic constraints to make sure all reg <-> pad paths have a constraint.
-  # specific constraints to minimize skew are further below.
-  set FLOP_PATH gen_*u_impl*/gen_flops?0?*?u_size_only_reg
-  set_max_delay 5 -from [get_pins top_darjeeling/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/u_*_flop/${FLOP_PATH}/Q] \
-                  -to   [get_ports USB_*]
-  set_max_delay 5 -from [get_ports USB_*] \
-                  -to   [get_pins top_darjeeling/u_usbdev/i_usbdev_iomux/cdc_io_to_usb/u_sync_1/${FLOP_PATH}/D]
-
-  # The USB 2.0 spec specifies that full-speed driver rise/fall times can be 4ns to 20ns, and that
-  # differential edges should be within +-10% to minimize skew. Assuming the fastest rise/fall time
-  # of 4ns, we end up with a maximum skew tolerance of 400ps. In order to make the constraints
-  # straightforward, we use set_max_delay between output flop and pad driver, and constrain to 350ps to
-  # retain some margin.
-  set MAX_USB_DELAY 0.35
-
-  # output enable timing
-  set_max_delay ${MAX_USB_DELAY} -from [get_pins top_darjeeling/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/u_oe_flop/${FLOP_PATH}/Q*] \
-                                 -to   [get_pins -hierarchical -filter "full_name =~ *u_dio_pad*/*/OE"]
-  # dp output timing
-  # note that there is a path to the OE as well due to virtual open drain emulation in the pad wrapper (although it is likely not being used for USB).
-  set_max_delay ${MAX_USB_DELAY} -from [get_pins top_darjeeling/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/u_usb_dp_o_flop/${FLOP_PATH}/Q*] \
-                                 -to   [get_pins -hierarchical -filter "full_name =~ *u_dio_pad*/*/OE"]
-  set_max_delay ${MAX_USB_DELAY} -from [get_pins top_darjeeling/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/u_usb_dp_o_flop/${FLOP_PATH}/Q*] \
-                                 -to   [get_pins -hierarchical -filter "full_name =~ *u_dio_pad*/*/A"]
-
-  # dn output timing
-  # note that there is a path to the OE as well due to virtual open drain emulation in the pad wrapper (although it is likely not being used for USB).
-  set_max_delay ${MAX_USB_DELAY} -from [get_pins top_darjeeling/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/u_usb_dn_o_flop/${FLOP_PATH}/Q*] \
-                                 -to   [get_pins -hierarchical -filter "full_name =~ *u_dio_pad*/*/OE"]
-  set_max_delay ${MAX_USB_DELAY} -from [get_pins top_darjeeling/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/u_usb_dn_o_flop/${FLOP_PATH}/Q*] \
-                                 -to   [get_pins -hierarchical -filter "full_name =~ *u_dio_pad*/*/A"]
-
-  # We reuse the same set_max_delay constraints as for the driver paths to stay on the safe side
-  # (there is more skew budget on the receiver side according to the spec, but we shouldn't be using that
-  # up since there would otherwise be no margin for cable and PCB skew).
-  #
-  # The USBDEV has both a regular and a differential amplifier input mode.
-  # For the former, the skew only matters up to the differential amplifier inputs.
-  # For the latter, we need to constrain the skew up to the flop inputs.
-
-  # dp input timing to differential receiver
-  set_max_delay ${MAX_USB_DELAY} -from [get_ports USB_P]                                        \
-                                 -to [get_pins -leaf -filter {@pin_direction == in} -of_objects \
-                                        [get_nets -segments -of_objects                         \
-                                          [get_pins u_prim_usb_diff_rx/input_pi]]]
-
-  # dn input timing to differential receiver
-  set_max_delay ${MAX_USB_DELAY} -from [get_ports USB_N]                                        \
-                                 -to [get_pins -leaf -filter {@pin_direction == in} -of_objects \
-                                        [get_nets -segments -of_objects                         \
-                                          [get_pins u_prim_usb_diff_rx/input_ni]]]
-
-  # dp/dn input timing to regular regs
-  set_max_delay ${MAX_USB_DELAY} -from [get_pins -hierarchical -filter "full_name =~ *u_dio_pad*/*/Y"] \
-                                 -to   [get_pins top_darjeeling/u_usbdev/i_usbdev_iomux/cdc_io_to_usb/u_sync_1/${FLOP_PATH}/D]
-}
 
 #####################
 # IO clk            #
@@ -266,7 +196,7 @@ set AST_EXT_TCK_PERIOD [expr $AST_EXT_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
 create_clock -name AST_EXT_CLK -period ${AST_EXT_TCK_PERIOD} [get_ports ${AST_EXT_CLK_PIN}]
 set_clock_uncertainty -setup  ${SETUP_CLOCK_UNCERTAINTY} [get_clocks AST_EXT_CLK]
 
-# This is not needed by CDC runs because io_clk/usb_clk/main_clk/aon_clk are propagated from ast_ext_clk in ast.lib
+# This is not needed by CDC runs because io_clk/main_clk/aon_clk are propagated from ast_ext_clk in ast.lib
 # we don't use this constraint to avoid unnecessary CDC issues
 if {!$IS_CDC_RUN} {
     set_clock_groups -name group_ast -async -group [get_clocks AST_EXT_CLK]
@@ -730,7 +660,6 @@ set SPI_TPM_CLKS "SPI_TPM_CLK SPI_TPM_IN_CLK SPI_TPM_OUT_CLK"
 # see chip_darjeeling_asic_check_only.sdc.
 set_clock_groups -name group1 -async                                  \
     -group [get_clocks MAIN_CLK                                     ] \
-    -group [get_clocks USB_CLK                                      ] \
     -group [get_clocks "${SPI_DEV_CLKS} ${SPI_DEV_PASS_CLKS} ${SPI_TPM_CLKS}"] \
     -group [get_clocks {IO_CLK SPI_HOST_CLK}       ] \
     -group [get_clocks IO_DIV2_CLK                                  ] \

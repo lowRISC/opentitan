@@ -141,11 +141,6 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/uart/lint/{tool}"
              },
-             {    name: usbdev
-                  fusesoc_core: lowrisc:ip:usbdev
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/usbdev/lint/{tool}"
-             },
              {    name: socket_1n
                   fusesoc_core: lowrisc:tlul:socket_1n
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]

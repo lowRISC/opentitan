@@ -70,7 +70,6 @@ package chip_env_pkg;
   typedef virtual sw_test_status_if    sw_test_status_vif;
   typedef virtual ast_supply_if        ast_supply_vif;
   typedef virtual ast_ext_clk_if       ast_ext_clk_vif;
-  typedef virtual usb20_if             usb20_vif;
 
   // Types of memories in the chip.
   //
@@ -85,7 +84,6 @@ package chip_env_pkg;
     ICacheWay1Tag,
     ICacheWay0Data,
     ICacheWay1Data,
-    UsbdevBuf,
     OtbnDmem[16],
     OtbnImem,
     Otp,

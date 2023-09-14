@@ -35,7 +35,6 @@ filesets:
       - lowrisc:ip:otp_ctrl
       - lowrisc:ip:lc_ctrl
       - lowrisc:ip:mbx
-      - lowrisc:ip:usbdev
       - lowrisc:top_darjeeling:xbar_dbg
       - lowrisc:top_darjeeling:xbar_main
       - lowrisc:top_darjeeling:xbar_mbx
@@ -51,7 +50,6 @@ filesets:
       - lowrisc:systems:soc_proxy
       - lowrisc:tlul:headers
       - lowrisc:prim:all
-      - lowrisc:prim:usb_diff_rx
       - lowrisc:prim:mubi
       - lowrisc:systems:top_darjeeling_pkg
       - "fileset_partner  ? (partner:systems:ast_pkg)"

@@ -84,13 +84,6 @@ class chip_env extends cip_base_env #(
       `uvm_fatal(`gfn, "failed to get ast_ext_clk_vif from uvm_config_db")
     end
 
-    // get the handle to the usb20 interface.
-    if (!uvm_config_db#(usb20_vif)::get(
-            this, "", "usb20_vif", cfg.usb20_vif
-        )) begin
-      `uvm_fatal(`gfn, "failed to get usb20_vif from uvm_config_db")
-    end
-
     // create components
     foreach (m_uart_agents[i]) begin
       m_uart_agents[i] = uart_agent::type_id::create($sformatf("m_uart_agent%0d", i), this);

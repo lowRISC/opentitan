@@ -30,8 +30,6 @@ CONNECTION, AST_RST_POR_IN,           ,                      POR_N,             
 # Other power related signals
 #################################
 
-CONNECTION, AST_USB_REF_IN,      top_darjeeling.u_usbdev,      usb_ref_pulse_o,           u_ast,                   usb_ref_pulse_i
-CONNECTION, AST_USB_REF_VAL_IN,  top_darjeeling.u_usbdev,      usb_ref_val_o,             u_ast,                   usb_ref_val_i
 CONNECTION, AST_OTP_PWR_SEQ_IN,  top_darjeeling.u_otp_ctrl,    otp_ast_pwr_seq_o,         u_ast,                   otp_power_seq_i
 CONNECTION, AST_MAIN_PD_IN,      top_darjeeling.u_pwrmgr_aon,  pwr_ast_o.main_pd_n,       u_ast,                   main_pd_ni
 CONNECTION, AST_MAIN_ISO_EN_IN,  top_darjeeling.u_pwrmgr_aon,  pwr_ast_o.pwr_clamp_env,   u_ast,                   main_env_iso_en_i

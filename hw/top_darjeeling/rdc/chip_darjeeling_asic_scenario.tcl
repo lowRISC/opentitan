@@ -39,7 +39,6 @@ set_reset_scenario { \
   { top_darjeeling.clkmgr_aon_clocks.clk_io_div4_powerup { constraint { @t0 0 } } } \
   { top_darjeeling.clkmgr_aon_clocks.clk_main_powerup    { constraint { @t0 0 } } } \
   { top_darjeeling.clkmgr_aon_clocks.clk_io_powerup      { constraint { @t0 0 } } } \
-  { top_darjeeling.clkmgr_aon_clocks.clk_usb_powerup     { constraint { @t0 0 } } } \
   { top_darjeeling.clkmgr_aon_clocks.clk_io_div2_powerup { constraint { @t0 0 } } } \
   { top_darjeeling.clkmgr_aon_clocks.clk_main_aes        { constraint { @t0 0 } } } \
   { top_darjeeling.clkmgr_aon_clocks.clk_main_hmac       { constraint { @t0 0 } } } \
@@ -47,7 +46,6 @@ set_reset_scenario { \
   { top_darjeeling.clkmgr_aon_clocks.clk_main_otbn       { constraint { @t0 0 } } } \
   { top_darjeeling.clkmgr_aon_clocks.clk_io_div4_infra   { constraint { @t0 0 } } } \
   { top_darjeeling.clkmgr_aon_clocks.clk_main_infra      { constraint { @t0 0 } } } \
-  { top_darjeeling.clkmgr_aon_clocks.clk_usb_infra       { constraint { @t0 0 } } } \
   { top_darjeeling.clkmgr_aon_clocks.clk_io_infra        { constraint { @t0 0 } } } \
   { top_darjeeling.clkmgr_aon_clocks.clk_io_div2_infra   { constraint { @t0 0 } } } \
   { top_darjeeling.clkmgr_aon_clocks.clk_io_div4_secure  { constraint { @t0 0 } } } \
@@ -56,7 +54,6 @@ set_reset_scenario { \
   { top_darjeeling.clkmgr_aon_clocks.clk_io_div4_peri    { constraint { @t0 0 } } } \
   { top_darjeeling.clkmgr_aon_clocks.clk_io_div2_peri    { constraint { @t0 0 } } } \
   { top_darjeeling.clkmgr_aon_clocks.clk_io_peri         { constraint { @t0 0 } } } \
-  { top_darjeeling.clkmgr_aon_clocks.clk_usb_peri        { constraint { @t0 0 } } } \
   { top_darjeeling.pwrmgr_aon_low_power                  { constraint { @t0 1 } } } \
   { top_darjeeling.spi_device_passthrough_req.passthrough_en { constraint { @t0 0 } } } \
   { top_darjeeling.u_spi_host0.reg2hw.control.output_en.q    { constraint { @t0 0 } } } \
@@ -73,7 +70,6 @@ set_reset_scenario { \
   { top_darjeeling.clkmgr_aon_clocks.clk_io_div4_powerup { constraint { @t0 0 } } } \
   { top_darjeeling.clkmgr_aon_clocks.clk_main_powerup    { constraint { @t0 0 } } } \
   { top_darjeeling.clkmgr_aon_clocks.clk_io_powerup      { constraint { @t0 0 } } } \
-  { top_darjeeling.clkmgr_aon_clocks.clk_usb_powerup     { constraint { @t0 0 } } } \
   { top_darjeeling.clkmgr_aon_clocks.clk_io_div2_powerup { constraint { @t0 0 } } } \
   { top_darjeeling.clkmgr_aon_clocks.clk_main_aes        { constraint { @t0 0 } } } \
   { top_darjeeling.clkmgr_aon_clocks.clk_main_hmac       { constraint { @t0 0 } } } \
@@ -81,7 +77,6 @@ set_reset_scenario { \
   { top_darjeeling.clkmgr_aon_clocks.clk_main_otbn       { constraint { @t0 0 } } } \
   { top_darjeeling.clkmgr_aon_clocks.clk_io_div4_infra   { constraint { @t0 0 } } } \
   { top_darjeeling.clkmgr_aon_clocks.clk_main_infra      { constraint { @t0 0 } } } \
-  { top_darjeeling.clkmgr_aon_clocks.clk_usb_infra       { constraint { @t0 0 } } } \
   { top_darjeeling.clkmgr_aon_clocks.clk_io_infra        { constraint { @t0 0 } } } \
   { top_darjeeling.clkmgr_aon_clocks.clk_io_div2_infra   { constraint { @t0 0 } } } \
   { top_darjeeling.clkmgr_aon_clocks.clk_io_div4_secure  { constraint { @t0 0 } } } \
@@ -90,7 +85,6 @@ set_reset_scenario { \
   { top_darjeeling.clkmgr_aon_clocks.clk_io_div4_peri    { constraint { @t0 0 } } } \
   { top_darjeeling.clkmgr_aon_clocks.clk_io_div2_peri    { constraint { @t0 0 } } } \
   { top_darjeeling.clkmgr_aon_clocks.clk_io_peri         { constraint { @t0 0 } } } \
-  { top_darjeeling.clkmgr_aon_clocks.clk_usb_peri        { constraint { @t0 0 } } } \
   { top_darjeeling.pwrmgr_aon_low_power                  { constraint { @t0 1 } } } \
   { top_darjeeling.spi_device_passthrough_req.passthrough_en { constraint { @t0 0 } } } \
   { top_darjeeling.u_spi_host0.reg2hw.control.output_en.q    { constraint { @t0 0 } } } \

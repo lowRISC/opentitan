@@ -21,7 +21,6 @@ module pinmux_tb
   input  clk_aon_i,
   input  rst_aon_ni,
   output logic pin_wkup_req_o,
-  output logic usb_wkup_req_o,
   input  sleep_en_i,
   input  strap_en_i,
   input  strap_en_override_i,
@@ -38,15 +37,6 @@ module pinmux_tb
   input jtag_pkg::jtag_rsp_t rv_jtag_i,
   output jtag_pkg::jtag_req_t dft_jtag_o,
   input jtag_pkg::jtag_rsp_t dft_jtag_i,
-  input usbdev_dppullup_en_i,
-  input usbdev_dnpullup_en_i,
-  output logic usb_dppullup_en_o,
-  output logic usb_dnpullup_en_o,
-  input usbdev_suspend_req_i,
-  input usbdev_wake_ack_i,
-  output logic usbdev_bus_reset_o,
-  output logic usbdev_sense_lost_o,
-  output logic usbdev_wake_detect_active_o,
   input tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
   input prim_alert_pkg::alert_rx_t[NumAlerts-1:0] alert_rx_i,
@@ -91,10 +81,6 @@ module pinmux_tb
     tap_strap1_idx:    Tap1PadIdx,
     dft_strap0_idx:    Dft0PadIdx,
     dft_strap1_idx:    Dft1PadIdx,
-    // TODO: check whether there is a better way to pass these USB-specific params
-    usb_dp_idx:        DioUsbdevUsbDp,
-    usb_dn_idx:        DioUsbdevUsbDn,
-    usb_sense_idx:     MioInUsbdevSense,
     // Pad types for attribute WARL behavior
     dio_pad_type: {
       BidirStd, // DIO spi_host0_csb
@@ -111,8 +97,6 @@ module pinmux_tb
       BidirStd, // DIO spi_host0_sd
       BidirStd, // DIO spi_host0_sd
       BidirStd, // DIO spi_host0_sd
-      BidirStd, // DIO usbdev_usb_dn
-      BidirStd  // DIO usbdev_usb_dp
     },
     mio_pad_type: {
       BidirOd, // MIO Pad 46

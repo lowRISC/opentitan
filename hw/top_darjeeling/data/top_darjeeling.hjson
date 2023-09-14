@@ -155,8 +155,6 @@
       { name: "spi_device",     gen: true,  type: "top", parent: "lc_src", clk: "io_div4", sw: true }
       { name: "spi_host0",      gen: true,  type: "top", parent: "lc_src", clk: "io_div4", sw: true }
       { name: "spi_host1",      gen: true,  type: "top", parent: "lc_src", clk: "io_div2", sw: true }
-      { name: "usb",            gen: true,  type: "top", parent: "lc_src", clk: "usb",     sw: true }
-      { name: "usb_aon",        gen: true,  type: "top", parent: "lc_src", clk: "aon",     sw: true }
       { name: "i2c0",           gen: true,  type: "top", parent: "lc_src", clk: "io_div4", sw: true },
       { name: "i2c1",           gen: true,  type: "top", parent: "lc_src", clk: "io_div4", sw: true },
       { name: "i2c2",           gen: true,  type: "top", parent: "lc_src", clk: "io_div4", sw: true },
@@ -324,19 +322,6 @@
         hart: "0x32000000",
       },
     },
-    // TODO: remove, disentangle wiring in topgen
-    { name: "usbdev",
-      type: "usbdev",
-      clock_srcs: {clk_i: "usb", clk_aon_i: "aon"},
-      clock_group: "peri",
-      reset_connections: {rst_ni: "usb", rst_aon_ni: "usb_aon"},
-      base_addr: {
-        hart: "0x32010000",
-      },
-      param_decl: {
-        RcvrWakeTimeUs: "100"
-      },
-    },
     { name: "pwrmgr_aon",
       type: "pwrmgr",
       clock_group: "powerup",
@@ -485,7 +470,7 @@
       param_decl: {
         // TODO: these parameters should be changed
         // for the final configuration of Darjeeling.
-        UsbWkupModuleEn: "1",
+        UsbWkupModuleEn: "0",
         HwStrapSamplingEn: "0",
         // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
         // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED FOR
@@ -554,7 +539,7 @@
           domain: "0",
         },
         rst_ast_usb_ni: {
-          name: "usb",
+          name: "por_usb",
           domain: "0"
         }
       },
@@ -1051,15 +1036,6 @@
           act:     "rcv"
         },
 
-        { struct:  "ram_2p_cfg",
-          package: "prim_ram_2p_pkg",
-          type:    "uni",
-          name:    "usb_ram_2p_cfg",
-          // The activity direction for a port inter-signal is "opposite" of
-          // what the external module actually needs.
-          act:     "rcv"
-        },
-
         { struct:  "rom_cfg",
           package: "prim_rom_pkg",
           type:    "uni",
@@ -1096,7 +1072,6 @@
                                    'sram_ctrl_mbox.cfg',
                                    'rv_core_ibex.ram_cfg'],
       'ast.spi_ram_2p_cfg'      : ['spi_device.ram_cfg'],
-      'ast.usb_ram_2p_cfg'      : ['usbdev.ram_cfg'],
       'ast.rom_cfg'             : ['rom_ctrl0.rom_cfg',
                                    'rom_ctrl1.rom_cfg'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
@@ -1140,15 +1115,6 @@
       // the RMA request is just routed to OTBN directly.
       'lc_ctrl.lc_flash_rma_req' : ['otbn.lc_rma_req'],
       'otbn.lc_rma_ack'          : ['lc_ctrl.lc_flash_rma_ack'],
-
-      // usbdev connection to pinmux
-      'usbdev.usb_dp_pullup'      : ['pinmux_aon.usbdev_dppullup_en'],
-      'usbdev.usb_dn_pullup'      : ['pinmux_aon.usbdev_dnpullup_en'],
-      'usbdev.usb_aon_suspend_req': ['pinmux_aon.usbdev_suspend_req'],
-      'usbdev.usb_aon_wake_ack'   : ['pinmux_aon.usbdev_wake_ack'],
-      'usbdev.usb_aon_bus_reset'  : ['pinmux_aon.usbdev_bus_reset'],
-      'usbdev.usb_aon_sense_lost' : ['pinmux_aon.usbdev_sense_lost'],
-      'pinmux_aon.usbdev_wake_detect_active' : ['usbdev.usb_aon_wake_detect_active'],
 
       // Edn connections
       'edn0.edn'              : ['keymgr_dpe.edn', 'otp_ctrl.edn', 'ast.edn', 'kmac.entropy',
@@ -1290,7 +1256,6 @@
         'ast.obs_ctrl'                    : 'obs_ctrl',
         'ast.ram_1p_cfg'                  : 'ram_1p_cfg',
         'ast.spi_ram_2p_cfg'              : 'spi_ram_2p_cfg',
-        'ast.usb_ram_2p_cfg'              : 'usb_ram_2p_cfg',
         'ast.rom_cfg'                     : 'rom_cfg',
         'clkmgr_aon.jitter_en'            : 'clk_main_jitter_en',
         'clkmgr_aon.io_clk_byp_req'       : 'io_clk_byp_req',
@@ -1345,8 +1310,6 @@
         'peri.tl_ast'                     : 'ast_tl',
         'pinmux_aon.dft_strap_test'       : 'dft_strap_test'
         'pinmux_aon.dft_hold_tap_sel'     : 'dft_hold_tap_sel',
-        'pinmux_aon.usb_dppullup_en'      : 'usb_dp_pullup_en',
-        'pinmux_aon.usb_dnpullup_en'      : 'usb_dn_pullup_en',
         'pwrmgr_aon.pwr_ast'              : 'pwrmgr_ast',
         'otp_ctrl.otp_ast_pwr_seq'        : '',
         'otp_ctrl.otp_ast_pwr_seq_h'      : '',
@@ -1367,13 +1330,6 @@
         'soc_proxy.soc_intr_async'        : 'soc_intr_async',
         'soc_proxy.soc_lsio_trigger'      : 'soc_lsio_trigger',
         'spi_device.sck_monitor'          : 'sck_monitor',
-        'usbdev.usb_rx_d'                 : '',
-        'usbdev.usb_tx_d'                 : '',
-        'usbdev.usb_tx_se0'               : '',
-        'usbdev.usb_tx_use_d_se0'         : '',
-        'usbdev.usb_rx_enable'            : '',
-        'usbdev.usb_ref_val'              : '',
-        'usbdev.usb_ref_pulse'            : '',
     },
   },
 
@@ -1444,8 +1400,6 @@
     pads: [
       // Special manually connected pads
       { name: 'POR_N'           , type: 'InputStd',     bank: 'VCC' , connection: 'manual', desc: 'System reset'},
-      { name: 'USB_P'           , type: 'DualBidirTol', bank: 'VCC' , connection: 'manual', desc: 'USB P signal'},
-      { name: 'USB_N'           , type: 'DualBidirTol', bank: 'VCC' , connection: 'manual', desc: 'USB N signal'},
       { name: 'CC1'             , type: 'InputStd',     bank: 'AVCC', connection: 'manual', desc: 'ADC input 1', port_type: '`INOUT_AI'},
       { name: 'CC2'             , type: 'InputStd',     bank: 'AVCC', connection: 'manual', desc: 'ADC input 2', port_type: '`INOUT_AI'},
       { name: 'OTP_EXT_VOLT'    , type: 'AnalogIn1',    bank: 'VCC' , connection: 'manual', desc: 'OTP external voltage input'},
@@ -1556,9 +1510,6 @@
     //         DIO is manual, there is no way to automatically infer the corresponding pad type).
     //
     signals: [
-      // USB
-      { instance: 'usbdev',          port: 'usb_dp',         connection: 'manual', pad: ''             , desc: ''},
-      { instance: 'usbdev',          port: 'usb_dn',         connection: 'manual', pad: ''             , desc: ''},
       // SPI Host0
       { instance: 'spi_host0',       port: 'sck',            connection: 'direct', pad: 'SPI_HOST_CLK' , desc: ''},
       { instance: 'spi_host0',       port: 'csb',            connection: 'direct', pad: 'SPI_HOST_CS_L', desc: ''},
@@ -1598,7 +1549,6 @@
       { instance: "sysrst_ctrl_aon", port: 'pwrb_out',       connection: 'muxed',  pad: ''             , desc: ''},
       { instance: "sysrst_ctrl_aon", port: 'lid_open',       connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "sysrst_ctrl_aon", port: 'z3_wakeup',      connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: 'usbdev',          port: 'sense',          connection: 'muxed' , pad: ''             , desc: ''},
     ],
 
     num_wkup_detect: 8
@@ -1686,23 +1636,12 @@
         remove_pads: [
           'CC1', 'CC2',
           'OTP_EXT_VOLT'
-          'USB_P', 'USB_N'
         ],
 
         add_pads: [
           // Additional infrastructure pads
           { name: 'IO_CLK',           type: 'InputStd', bank: 'VCC', connection: 'manual', desc: 'Extra clock input for FPGA target'}
           { name: 'POR_BUTTON_N',     type: 'InputStd', bank: 'VCC', connection: 'manual', desc: 'Power-on reset button input'}
-          // Custom USB pads
-          { name: 'IO_USB_CONNECT',  type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_USB_DP_TX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_USB_DN_TX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_USB_D_RX',     type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_USB_DP_RX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_USB_DN_RX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_USB_OE_N',     type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_USB_SPEED',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_USB_SUSPEND',  type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
           // ChipWhisperer IO
           { name: 'IO_CLKOUT',        type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual clock output for SCA setup'}
           { name: 'IO_TRIGGER',       type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual trigger output for SCA setup'}

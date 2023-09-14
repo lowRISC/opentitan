@@ -9,7 +9,7 @@
 
   fusesoc_core: lowrisc:systems:chip_darjeeling_asic:0.1
 
-  bbox_cmd: "[list aon_osc io_osc sys_osc usb_osc]"
+  bbox_cmd: "[list aon_osc io_osc sys_osc]"
   conn_csvs_dir: "{proj_root}/hw/{top_chip}/formal/conn_csvs"
   conn_csvs: ["{conn_csvs_dir}/analog_sigs.csv",
               "{conn_csvs_dir}/aon_timer_rst.csv",

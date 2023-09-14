@@ -33,7 +33,6 @@
       stage: V2
       tests: ["ast_clk_sys_out",
               "ast_clk_aon_out",
-              "ast_clk_usb_out",
               "ast_clk_io_out",
               "ast_all_byp_ack_out",
               "ast_io_byp_ack_out",
@@ -42,7 +41,6 @@
               "ast_clk_es_in",
               "ast_clk_rng_in",
               "ast_clk_tlul_in",
-              "ast_clk_usb_in",
               "ast_clk_sns_in",
               "ast_clk_jen_in",
               "ast_all_byp_ack_in",
@@ -61,11 +59,9 @@
       stage: V2
       tests: ["ast_clk_sys_val_out",
               "ast_clk_aon_val_out",
-              "ast_clk_usb_val_out",
               "ast_clk_io_val_out",
               "ast_main_pok_out",
               "ast_clk_sys_en_in",
-              "ast_clk_usb_en_in",
               "ast_clk_io_en_in"]
       tags: ["conn"]
     }
@@ -82,7 +78,6 @@
               "ast_rst_es_in",
               "ast_rst_rng_in",
               "ast_rst_tlul_in",
-              "ast_rst_usb_in",
               "ast_rst_sns_in"]
       tags: ["conn"]
     }
@@ -139,9 +134,7 @@
                the system, excluding power manager.
             '''
       stage: V2
-      tests: ["ast_usb_ref_in",
-              "ast_usb_ref_val_in",
-              "ast_otp_pwr_seq_in",
+      tests: ["ast_otp_pwr_seq_in",
               "ast_main_pd_in",
               "ast_main_iso_en_in",
               "ast_otp_pwr_seq_out",]
@@ -156,10 +149,9 @@
       desc: '''Verify ast model's dual port configuration bits are connected to the dual port RAMs
             in the following blocks:
             - spi_device
-            - usbdev
             '''
       stage: V2
-      tests: ["ast_dft_spi_device_ram_2p_cfg", "ast_dft_usbdev_ram_2p_cfg"]
+      tests: ["ast_dft_spi_device_ram_2p_cfg"]
       tags: ["conn"]
     }
     {
@@ -327,13 +319,6 @@
       tests: ["clkmgr_main_secure_alert_20_cg_en"]
       tags: ["conn"]
     }
-    {
-      name: cg_en_usb_peri
-      desc: '''Verify clkmgr's cg_en_o.usb_peri is connected to alert_handler's lpg_cg_en[9].'''
-      stage: V2
-      tests: ["clkmgr_usb_peri_alert_9_cg_en"]
-      tags: ["conn"]
-    }
 
     /////////////////////////
     // clkmgr_idle.csv     //
@@ -472,24 +457,6 @@
       tests: ["clkmgr_peri_clk_spi_host0_clk"]
       tags: ["conn"]
     }
-    {
-      name: clkmgr_clk_usb_peri
-      desc: '''Verify clkmgr's `clk_usb_peri` is connected to the following:
-            - usbdev's clk_i
-            '''
-      stage: V2
-      tests: ["clkmgr_peri_clk_usbdev_usb_clk"]
-      tags: ["conn"]
-    }
-    {
-      name: clkmgr_clk_aon_peri
-      desc: '''Verify clkmgr's `clk_aon_peri` is connected to the following blocks' clock input:
-            - usbdev clk_aon_i
-            '''
-      stage: V2
-      tests: ["clkmgr_peri_clk_usbdev_aon_clk"]
-      tags: ["conn"]
-    }
 
     /////////////////////////
     // clkmgr powerup      //
@@ -541,13 +508,6 @@
       desc: '''Verify clkmgr's `clk_io_powerup` is connected to rstmgr's io clock.'''
       stage: V2
       tests: ["clkmgr_powerup_clk_rstmgr_io_clk"]
-      tags: ["conn"]
-    }
-    {
-      name: clkmgr_clk_usb_powerup
-      desc: '''Verify clkmgr's `clk_usb_powerup` is connected to rstmgr's usb clock.'''
-      stage: V2
-      tests: ["clkmgr_powerup_clk_rstmgr_usb_clk"]
       tags: ["conn"]
     }
     {
@@ -983,13 +943,6 @@
       tags: ["conn"]
     }
     {
-      name: rst_lc_usb_aon
-      desc: '''Verify rstmgr's rst_lc_usb_n[0] is connected to clkmgr's rst_usb_ni.'''
-      stage: V2
-      tests: ["rstmgr_lc_usb_aon_clkmgr_rst_usb_ni"]
-      tags: ["conn"]
-    }
-    {
       name: rst_por_aon_aon
       desc: '''Verify rstmgr's rst_por_aon_n[0] is connected to pwrmgr's rst_slow_ni.'''
       stage: V2
@@ -1037,13 +990,6 @@
               "rstmgr_por_io_div4_aon_clkmgr_rst_root_ni",
               "rstmgr_por_io_div4_aon_pwrmgr_rst_ni",
               "rstmgr_por_io_div4_aon_rstmgr_rst_ni"]
-      tags: ["conn"]
-    }
-    {
-      name: rst_por_usb_aon
-      desc: '''Verify rstmgr's rst_por_usb_n[0] is connected to clkmgr's rst_root_usb_ni.'''
-      stage: V2
-      tests: ["rstmgr_por_usb_aon_clkmgr_rst_root_usb_ni"]
       tags: ["conn"]
     }
     {
@@ -1192,30 +1138,6 @@
               "rstmgr_sys_shadowed_d0_kmac_rst_shadowed_ni"]
       tags: ["conn"]
     }
-    {
-      name: rst_sys_usb_d0
-      desc: '''Verify rstmgr's rst_sys_usb_n[1] is connected to xbar_main's rst_usb_ni.'''
-      stage: V2
-      tests: ["rstmgr_sys_usb_d0_xbar_main_rst_usb_ni"]
-      tags: ["conn"]
-    }
-    {
-      name: rst_usb_aon_d0
-      desc: '''Verify rstmgr's rst_usb_aon_n[1] is connected to usbdev's rst_aon_ni
-            '''
-      stage: V2
-      tests: ["rstmgr_usb_aon_d0_usbdev_rst_aon_ni"]
-      tags: ["conn"]
-    }
-    {
-      name: rst_usb_d0
-      desc: '''Verify rstmgr's rst_usb_n[1] is connected to the following:
-            - usbdev's rst_ni
-            '''
-      stage: V2
-      tests: ["rstmgr_usb_d0_usbdev_rst_ni"]
-      tags: ["conn"]
-    }
     ///////////////////////
     // rstmgr_rst_en.csv //
     ///////////////////////
@@ -1332,13 +1254,6 @@
       tests: ["rstmgr_sys_io_div4_d0_alert_0_rst_en",
               "rstmgr_sys_io_div4_d0_alert_5_rst_en",
               "rstmgr_sys_io_div4_d0_alert_16_rst_en"]
-      tags: ["conn"]
-    }
-    {
-      name: rst_en_usb_d0
-      desc: '''Verify rstmgr's rst_en_o.usb[1] connects to alert_handler's lpg_rst_en[9].'''
-      stage: V2
-      tests: ["rstmgr_usb_d0_alert_9_rst_en"]
       tags: ["conn"]
     }
 

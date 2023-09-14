@@ -310,8 +310,3 @@ set_multicycle_path -hold -end -from [get_clocks clk_spid_csb] \
 set_multicycle_path -hold -end -from [get_clocks clk_spi_tpm] \
     -through [get_ports ${all_muxed_ports}] \
     -to [get_clocks clk_spi_tpm_out] 1
-
-
-## The usb calibration handling inside ast is assumed to be async to the outside world
-## even though its interface is also a usb clock.
-set_false_path -from ${clks_48_unbuf} -to [get_pins u_ast/u_usb_clk/u_ref_pulse_sync/u_sync*/u_sync_1/gen_*/q_o_reg[0]/D]

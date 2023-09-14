@@ -24,7 +24,6 @@ Clocks and resets are supplied from the Analog Sensor Top, referred to as [ast](
 `ast` supplies a number of clocks into `top_darjeeling`.
 - sys: main jittery system clock used for higher performance blocks and security (processory, memory and crypto blocks).
 - io: a fixed clock used for peripheral blocks such as timers and I/O functionality, such as SPI or I2C.
-- usb: a fixed clock used specifically for usb operations.
 - aon: an always on, low frequency clock used for power management and low speed timers.
 
 These clocks are then divided down and distributed to the rest of the system.
@@ -59,7 +58,6 @@ The clock mapping is shown below:
 | clk_ast_es_i     | sys                        |
 | clk_ast_rng_i    | sys                        |
 | clk_ast_tlul_i   | io_div4                    |
-| clk_ast_usb_i    | usb                        |
 
 The reset clock domain is identical to the table above, and the power domain mapping is shown below
 
@@ -71,7 +69,6 @@ The reset clock domain is identical to the table above, and the power domain map
 | rst_ast_es_i     | main                          |
 | rst_ast_rng_i    | main                          |
 | rst_ast_tlul_i   | main                          |
-| rst_ast_usb_i    | main                          |
 
 ### System Reset Handling and Flash
 
@@ -246,13 +243,6 @@ Typical commands such as read status, address mode, read data and program data a
 Passthrough mode supports serial flash passthrough from an upstream SPI host to a downstream serial flash device.
 
 See the [SPI device specification](../../../ip/spi_device/README.md) for more details.
-
-##### USB device
-
-The chip contains a single module that supports USB device mode at full speed.
-In addition to normal functionality, USB suspend / resume is supported alongside the chip's low power modes.
-
-See the [USB device specification](../../../ip/usbdev/README.md) for more details.
 
 ##### I2C host
 

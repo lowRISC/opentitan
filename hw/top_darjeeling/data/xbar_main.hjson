@@ -116,14 +116,6 @@
       req_fifo_pass: false,
       rsp_fifo_pass: false,
     },
-    // TODO: remove, disentangle wiring in topgen / pinmux
-    { name:      "usbdev",
-      type:      "device",
-      clock:     "clk_usb_i",
-      reset:     "rst_usb_ni",
-      req_fifo_pass: false,
-      rsp_fifo_pass: false,
-    },
     { name:      "hmac",
       type:      "device",
       clock:     "clk_main_i",
@@ -383,7 +375,7 @@
     rv_core_ibex.cored:  [
       "rom_ctrl0.rom", "rom_ctrl0.regs", "rom_ctrl1.rom", "rom_ctrl1.regs",
       "rv_dm.mem", "rv_dm.regs", "sram_ctrl_main.ram", "peri",
-      "spi_host1", "usbdev", "aes", "csrng", "edn0", "edn1", "hmac",
+      "spi_host1", "aes", "csrng", "edn0", "edn1", "hmac",
       "rv_plic", "otbn", "keymgr_dpe", "kmac", "sram_ctrl_main.regs",
       "rv_core_ibex.cfg", "sram_ctrl_mbox.ram", "sram_ctrl_mbox.regs",
       "soc_proxy.ctn", "soc_proxy.core", "dma", "mbx0.core", "mbx1.core",
@@ -393,7 +385,7 @@
     rv_dm.sba: [
       "rom_ctrl0.rom", "rom_ctrl0.regs", "rom_ctrl1.rom", "rom_ctrl1.regs",
       "rv_dm.mem", "rv_dm.regs", "sram_ctrl_main.ram", "peri",
-      "spi_host1", "usbdev", "aes", "csrng", "edn0", "edn1", "hmac",
+      "spi_host1", "aes", "csrng", "edn0", "edn1", "hmac",
       "rv_plic", "otbn", "keymgr_dpe", "kmac", "sram_ctrl_main.regs",
       "rv_core_ibex.cfg", "sram_ctrl_mbox.ram", "sram_ctrl_mbox.regs",
       "soc_proxy.ctn", "soc_proxy.core", "dma", "mbx0.core", "mbx1.core",

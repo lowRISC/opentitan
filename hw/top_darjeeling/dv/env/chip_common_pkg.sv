@@ -93,8 +93,6 @@ package chip_common_pkg;
   // This maps the DIO on the pinmux / peripheral side to the DIO on the pad side, both of
   // which have different enum numbering in top_darjeeling_pkg.sv.
   parameter top_darjeeling_pkg::dio_pad_e DioToDioPadMap [top_darjeeling_pkg::DioCount] = '{
-    top_darjeeling_pkg::DioPadUsbP,       /* DioUsbdevUsbDp */
-    top_darjeeling_pkg::DioPadUsbN,       /* DioUsbdevUsbDn */
     top_darjeeling_pkg::DioPadSpiHostD0,  /* DioSpiHost0Sd0 */
     top_darjeeling_pkg::DioPadSpiHostD1,  /* DioSpiHost0Sd1 */
     top_darjeeling_pkg::DioPadSpiHostD2,  /* DioSpiHost0Sd2 */

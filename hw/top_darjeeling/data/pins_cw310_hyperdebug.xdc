@@ -63,8 +63,7 @@ set_property -dict { PACKAGE_PIN M20 IOSTANDARD LVCMOS33 }  [get_ports { IOB11 }
 set_property -dict { PACKAGE_PIN P25 IOSTANDARD LVCMOS33 }  [get_ports { IOB12 }]; # PMOD2_IO8, I2C SDA
 
 ## IOC bank
-# Most pins are on USERIO* headers, but IOC7 is used for VBUS detection for USB.
-# In addition, IOC9 is placed on PMOD2, as it didn't make the cut for the USERIO headers.
+# IOC9 is placed on PMOD2, as it didn't make the cut for the USERIO headers.
 set_property -dict { PACKAGE_PIN E10 IOSTANDARD LVCMOS33 }  [get_ports { IOC0  }]; # J5.14 USERIOB-14, SW STRAP 0
 set_property -dict { PACKAGE_PIN A9  IOSTANDARD LVCMOS33 }  [get_ports { IOC1  }]; # J5.15 USERIOB-15, SW STRAP 1
 set_property -dict { PACKAGE_PIN D8  IOSTANDARD LVCMOS33 }  [get_ports { IOC2  }]; # J5.16 USERIOB-16, SW STRAP 2
@@ -72,7 +71,7 @@ set_property -dict { PACKAGE_PIN G15 IOSTANDARD LVCMOS33 }  [get_ports { IOC3  }
 set_property -dict { PACKAGE_PIN F15 IOSTANDARD LVCMOS33 }  [get_ports { IOC4  }]; # J4.14 USERIOA-14, UART TX (CONSOLE), DFT STRAP 1
 set_property -dict { PACKAGE_PIN D15 IOSTANDARD LVCMOS33 }  [get_ports { IOC5  }]; # J4.16 USERIOA-16, TAP STRAP 1
 set_property -dict { PACKAGE_PIN D16 IOSTANDARD LVCMOS33 }  [get_ports { IOC6  }]; # J4.18 USERIOA-18, EXT_CLK
-set_property -dict { PACKAGE_PIN P18 IOSTANDARD LVCMOS33 }  [get_ports { IOC7  }]; # USRUSB_VBUS_DETECT
+set_property -dict { PACKAGE_PIN P18 IOSTANDARD LVCMOS33 }  [get_ports { IOC7  }];
 set_property -dict { PACKAGE_PIN D9  IOSTANDARD LVCMOS33 }  [get_ports { IOC8  }]; # J5.18 USERIOB-18, TAP STRAP 0
 set_property -dict { PACKAGE_PIN N19 IOSTANDARD LVCMOS33 }  [get_ports { IOC9  }]; # PMOD2_IO1 (GPIO)
 set_property -dict { PACKAGE_PIN F19 IOSTANDARD LVCMOS33 }  [get_ports { IOC10 }]; # J4.36 USERIOA-36, OPEN-DRAIN ALERT
@@ -116,34 +115,6 @@ set_property -dict { PACKAGE_PIN AE11 IOSTANDARD LVCMOS18 } [get_ports { SPI_HOS
 ## ChipWhisperer 20-Pin Connector (J14)
 set_property -dict { PACKAGE_PIN AF24 IOSTANDARD LVCMOS33 } [get_ports { IO_TRIGGER }]; #J14 PIN 16 CWIO_IO4 - Capture Trigger
 set_property -dict { PACKAGE_PIN AB21 IOSTANDARD LVCMOS33 } [get_ports { IO_CLKOUT }];  #J14 PIN  4 CWIO_HS1 - Target clock
-
-## TI TUSB1106 USB PHY usbdev testing
-set_property -dict { PACKAGE_PIN AF19  IOSTANDARD LVCMOS18 } [get_ports { IO_USB_DP_TX }]; #USRUSB_VPO
-set_property -dict { PACKAGE_PIN AF20  IOSTANDARD LVCMOS18 } [get_ports { IO_USB_DN_TX }]; #USRUSB_VMO
-set_property -dict { PACKAGE_PIN V16   IOSTANDARD LVCMOS18 } [get_ports { IO_USB_DP_RX }]; #USRUSB_VP
-set_property -dict { PACKAGE_PIN V13   IOSTANDARD LVCMOS18 } [get_ports { IO_USB_DN_RX }]; #USRUSB_VM
-set_property -dict { PACKAGE_PIN AF14  IOSTANDARD LVCMOS18 } [get_ports { IO_USB_CONNECT }]; #USRUSB_SOFTCONN
-set_property -dict { PACKAGE_PIN AE15  IOSTANDARD LVCMOS18 } [get_ports { IO_USB_OE_N }]; #USRUSB_OE
-set_property -dict { PACKAGE_PIN V17   IOSTANDARD LVCMOS18 } [get_ports { IO_USB_D_RX }]; #USRUSB_RCV
-set_property -dict { PACKAGE_PIN AE16  IOSTANDARD LVCMOS18 } [get_ports { IO_USB_SPEED }]; #USRUSB_SPD
-set_property -dict { PACKAGE_PIN AF15  IOSTANDARD LVCMOS18 } [get_ports { IO_USB_SUSPEND }]; #USRUSB_SUS
-
-## USB input delay to accommodate T_FST (full-speed transition time) and the
-## PHY's sampling logic. The PHY expects to only see up to one transient / fake
-## SE0. The phase relationship with the PHY's sampling clock is arbitrary, but
-## for simplicity, constrain the maximum path delay to something smaller than
-## `T_sample - T_FST(max)` to help keep the P/N skew from slipping beyond one
-## sample period.
-set clks_48_unbuf [get_clocks -of_objects [get_pin clkgen/pll/CLKOUT1]]
-set_input_delay -clock ${clks_48_unbuf} -min 3 [get_ports {IO_USB_DP_RX IO_USB_DN_RX IO_USB_D_RX}]
-set_input_delay -clock ${clks_48_unbuf} -add_delay -max 17 [get_ports {IO_USB_DP_RX IO_USB_DN_RX IO_USB_D_RX}]
-
-## USB output max skew constraint
-## Use the output-enable as a "clock" and time the P/N relative to it. Keep the skew within T_FST.
-set usb_embed_out_clk [create_generated_clock -name usb_embed_out_clk -source [get_pin clkgen/pll/CLKOUT1] -multiply_by 1 [get_ports IO_USB_OE_N]]
-set_false_path -from [get_clocks -include_generated_clocks clk_io_div4] -to ${usb_embed_out_clk}
-set_output_delay -min -clock ${usb_embed_out_clk} 7 [get_ports {IO_USB_DP_TX IO_USB_DN_TX}]
-set_output_delay -max -clock ${usb_embed_out_clk} 14 [get_ports {IO_USB_DP_TX IO_USB_DN_TX}] -add_delay
 
 ## Configuration options, can be used for all designs
 set_property CONFIG_VOLTAGE 3.3 [current_design]

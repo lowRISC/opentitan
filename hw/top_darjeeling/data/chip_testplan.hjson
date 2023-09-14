@@ -15,10 +15,10 @@
                      "hw/top_darjeeling/data/chip_conn_testplan.hjson"]
 
   testpoints: [
-    /////////////////////////////////////////////////////////////
-    // IO Peripherals                                          //
-    // UART, GPIO, I2C, SPIDEV, SPIHOST, USB, PINMUX & PADCTRL //
-    /////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////
+    // IO Peripherals                                     //
+    // UART, GPIO, I2C, SPIDEV, SPIHOST, PINMUX & PADCTRL //
+    ////////////////////////////////////////////////////////
 
     // UART (pre-verified IP) integration tests:
     {
@@ -268,107 +268,6 @@
             '''
       stage: V2
       tests: ["chip_sw_i2c_device_tx_rx"]
-    }
-
-    // USB (pre-verified IP) integration tests:
-    {
-      name: chip_sw_usbdev_dpi
-      desc: '''Sketch of USBDPI integration.
-            '''
-      stage: V2
-      tests: ["chip_sw_usbdev_dpi"]
-    }
-    {
-      name: chip_sw_usb_fs_tx_rx
-      desc: '''Verify the transmission of single-ended data over the USB at full speed. As a part of
-            this test, the enablement of USB pullup is also expected to be verified.
-
-            - Set `tx_differential_mode` to single-ended and `rx_differential_mode` to
-              differential. The other modes are not supported in OpenTitan.
-            - configure Link state to `Active`.
-            - Send and receive packets to fill the entire buffer. Ensure all the packets are
-              correct.
-            - Check interrupts (connected, pkt_received, pkt_sent, av_empty, rx_full) are triggered
-              correcly.
-            '''
-      stage: V3
-      tests: ["chip_sw_usbdev_stream"]
-    }
-    {
-      name: chip_sw_usb_vbus
-      desc: '''Verify that the USB device can detect the presence of VBUS from the USB host.
-
-            - This test extends from `chip_usb_fs_df_tx_rx`, add below at the end of the sequence.
-            - VBUS is controlled by SW, through programming CSRs (`override_pwr_sense_en` and
-              `override_pwr_sense_val`) to connect / disconnect the USB.
-            - Disconnect the USB to trigger `disconnected` interrupt.
-            - Then reconnect it and check the `connected` interrupt.
-            - Re-enable data transfer and ensure data correctness.
-            - Observe valid reference pulse usb_ref_val/pulse_o.
-            '''
-      stage: V3
-      tests: []
-    }
-    {
-      name: chip_sw_usb_suspend
-      desc: '''Verify that the USB device can detect the presence of VBUS from the USB host.
-
-            - This test extends from `chip_usb_fs_df_tx_rx`, add below at the end of the sequence.
-            - Configure USB device to enter `Suspend` state and ensure `link_suspend` interrupt is
-              triggered.
-            - Test these 2 power modes.
-              - Normal sleep:
-                - Configure pwrmgr to enter normal sleep mode, then clocks are disable while powers
-                  are kept on.
-                - Resume the device through pinmux and check the `link_resume` interrupt.
-                - Ensure that previously enumerated information is kept.
-              - Deep sleep:
-                - Before entering deep sleep, store previously enumerated information in retention
-                  RAM. (optional)
-                - Configure pwrmgr to enter deep sleep mode, and powers are turned off.
-                - Resume the device through pinmux and check the `link_resume` interrupt.
-                - Ensure that previously enumerated information and configuration (non-default
-                  values) are wiped, as USB has been reset before wakeup.
-                - Restore previously enumerated information (if it's stored) or re-enumerate the
-                  USB.
-            - Re-enable data transfer and ensure data correctness.
-            '''
-      stage: V3
-      tests: []
-    }
-    {
-      name: chip_usb_sof
-      desc: '''Verify that USB can detect SOF and respond with `usb_ref_pulse_o` and
-            `usb_ref_val_o`.
-
-            - Configure to enable `usb_ref_disable`.
-            - Send a frame with the same frame number as the USB device to trigger `frame`
-              interrupt.
-            - Ensure `usb_ref_pulse_o` and `usb_ref_val_o` behave correctly.
-            - Stop sending any frame and check the `host_lost` interrupt. Ensure `use_ref_*` behave
-              correctly.
-            '''
-      stage: V3
-      tests: []
-    }
-    {
-      name: chip_usb_wake_debug
-      desc: '''Verify that `usb_state_debug_i` can be read from the CSR.
-
-            - Drive random value on `usb_state_debug_i`.
-            - Ensure the CSR `wake_debug` returns correctly value.
-            '''
-      stage: V3
-      tests: []
-    }
-    {
-      name: chip_usb_enumeration
-      desc: '''Verify USB enumeration. Details are not clear.
-
-            - TODO
-            '''
-      stage: V3
-      tests: []
     }
 
     // PINMUX & PADRING (pre-verified IP) integration tests:
@@ -1341,7 +1240,7 @@
             - Pulse the reset to the peripheral via software.
             - Read the resister after reset and verify it returns the reset value.
             - Repeat these steps for each of these software resettable peripherals:
-              `spi_device`, `spi_host0`, `spi_host1`, `usb`, `i2c0`, `i2c1`, `i2c2`.
+              `spi_device`, `spi_host0`, `spi_host1`, `i2c0`, `i2c1`, `i2c2`.
 
             Notice the two `spi_host` IPs receive two different resets, `spi_host*`.
             '''
@@ -2762,7 +2661,7 @@
             2. Create AST alerts
             3. Activate ADC conversion
             4. EDN entropy supply to AST
-            Enter sleep/deep sleep/ stop IO/USB clocks
+            Enter sleep/deep sleep/ stop IO clocks
             Repeat 1-4 to check it is ok.
             '''
       stage: V2
@@ -2783,24 +2682,6 @@
               "chip_sw_kmac_mode_kmac_jitter_en",
               "chip_sw_sram_ctrl_scrambled_access_jitter_en",
               "chip_sw_edn_entropy_reqs_jitter"]
-    }
-    {
-      name: chip_sw_ast_usb_clk_calib
-      desc: '''Verify the USB clk calibration signaling.
-
-            - First place the AST into a mode where usb clock frequency significantly deviates from
-              the ideal.
-            - Verify the clock is "off" using the clkmgr measurement mechanism.
-            - Then, turn on the usb sof calibration machinery and wait a few mS.
-            - Afterwards, measure the usb clock again using the clkmgr measurement controls, at this
-              point the clock should be significantly more accurate.
-            - Note, while the above is ideal, usbdev chip level testing is not yet ready and this
-              test fakes the usb portion through DV forces.
-            - Note also the real AST calibration logic is not available, so the sof testing in the
-              open source is effectively short-circuited.
-            '''
-      stage: V2
-      tests: ["chip_sw_usb_ast_clk_calib"]
     }
     {
       name: chip_sw_ast_alerts
@@ -3010,7 +2891,6 @@
               "chip_sw_otbn_smoketest",
               "chip_sw_otp_ctrl_smoketest",
               "chip_sw_pwrmgr_smoketest",
-              "chip_sw_pwrmgr_usbdev_smoketest",
               "chip_sw_rv_plic_smoketest",
               "chip_sw_rv_timer_smoketest",
               "chip_sw_rstmgr_smoketest",
@@ -3212,8 +3092,6 @@
           - ideally for digital activity, UART / I2C modules should be activated
             - for first pass simplicity can activate IO portion only for now through GPIO
           - for dedicated pins, focus on SPI device quad activity
-          - USB activity should be activated
-            - for first pass simplicity activate IO portion only for now via pin forcing in usbdev.
         - Ongoing cpu activity (icache / SRAM scrambling both activated)
           - servicing ongoing threads and random read/write data to memory
           - icache needs to be activated, otherwise the system may spend most of its time fetching

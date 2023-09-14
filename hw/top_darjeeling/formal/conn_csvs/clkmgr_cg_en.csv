@@ -18,7 +18,6 @@ CONNECTION, CLKMGR_IO_DIV4_TIMERS_ALERT_5_CG_EN, top_darjeeling.u_clkmgr_aon, cg
 CONNECTION, CLKMGR_IO_DIV4_SECURE_ALERT_6_CG_EN, top_darjeeling.u_clkmgr_aon, cg_en_o.io_div4_secure, top_darjeeling.u_alert_handler, lpg_cg_en_i[6]
 CONNECTION, CLKMGR_IO_PERI_ALERT_7_CG_EN, top_darjeeling.u_clkmgr_aon, cg_en_o.io_peri, top_darjeeling.u_alert_handler, lpg_cg_en_i[7]
 CONNECTION, CLKMGR_IO_DIV2_PERI_ALERT_8_CG_EN, top_darjeeling.u_clkmgr_aon, cg_en_o.io_div2_peri, top_darjeeling.u_alert_handler, lpg_cg_en_i[8]
-CONNECTION, CLKMGR_USB_PERI_ALERT_9_CG_EN, top_darjeeling.u_clkmgr_aon, cg_en_o.usb_peri, top_darjeeling.u_alert_handler, lpg_cg_en_i[9]
 CONNECTION, CLKMGR_IO_DIV4_POWERUP_ALERT_10_CG_EN, top_darjeeling.u_clkmgr_aon, cg_en_o.io_div4_powerup, top_darjeeling.u_alert_handler, lpg_cg_en_i[10]
 CONNECTION, CLKMGR_IO_DIV4_POWERUP_ALERT_11_CG_EN, top_darjeeling.u_clkmgr_aon, cg_en_o.io_div4_powerup, top_darjeeling.u_alert_handler, lpg_cg_en_i[11]
 CONNECTION, CLKMGR_IO_DIV4_POWERUP_ALERT_12_CG_EN, top_darjeeling.u_clkmgr_aon, cg_en_o.io_div4_secure, top_darjeeling.u_alert_handler, lpg_cg_en_i[12]

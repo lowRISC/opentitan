@@ -145,11 +145,6 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/uart/dv/lint/{tool}"
              },
-             {    name: usbdev
-                  fusesoc_core: lowrisc:dv:usbdev_sim
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/usbdev/dv/lint/{tool}"
-             },
              // Top-specific IPs
              {    name: alert_handler
                   fusesoc_core: lowrisc:opentitan:top_darjeeling_alert_handler_sim

@@ -25,23 +25,6 @@ module chip_darjeeling_verilator (
   input cio_spi_device_sdi_p2d_i,
   output logic cio_spi_device_sdo_d2p_o,
   output logic cio_spi_device_sdo_en_d2p_o,
-
-  // communication with USB
-  input cio_usbdev_sense_p2d_i,
-  output logic cio_usbdev_dp_pullup_d2p_o,
-  output logic cio_usbdev_dn_pullup_d2p_o,
-  input cio_usbdev_dp_p2d_i,
-  output logic cio_usbdev_dp_d2p_o,
-  output logic cio_usbdev_dp_en_d2p_o,
-  input cio_usbdev_dn_p2d_i,
-  output logic cio_usbdev_dn_d2p_o,
-  output logic cio_usbdev_dn_en_d2p_o,
-  input cio_usbdev_d_p2d_i,
-  output logic cio_usbdev_d_d2p_o,
-  output logic cio_usbdev_d_en_d2p_o,
-  output logic cio_usbdev_se0_d2p_o,
-  output logic cio_usbdev_rx_enable_d2p_o,
-  output logic cio_usbdev_tx_use_d_se0_d2p_o
 );
 
   import top_darjeeling_pkg::*;
@@ -59,32 +42,7 @@ module chip_darjeeling_verilator (
     dio_in[DioSpiDeviceSck] = cio_spi_device_sck_p2d_i;
     dio_in[DioSpiDeviceCsb] = cio_spi_device_csb_p2d_i;
     dio_in[DioSpiDeviceSd0] = cio_spi_device_sdi_p2d_i;
-    dio_in[DioUsbdevUsbDp] = cio_usbdev_dp_p2d_i;
-    dio_in[DioUsbdevUsbDn] = cio_usbdev_dn_p2d_i;
   end
-
-  // USB
-  logic usb_dp_pullup;
-  logic usb_dn_pullup;
-  logic usb_rx_d;
-  logic usb_tx_d;
-  logic usb_tx_se0;
-  logic usb_tx_use_d_se0;
-  logic usb_rx_enable;
-
-  assign usb_rx_d = cio_usbdev_d_p2d_i;
-  assign cio_usbdev_d_d2p_o  = usb_tx_d;
-  assign cio_usbdev_d_en_d2p_o = dio_oe[DioUsbdevUsbDp];
-  assign cio_usbdev_dn_pullup_d2p_o = usb_dn_pullup;
-  assign cio_usbdev_dp_pullup_d2p_o = usb_dp_pullup;
-  assign cio_usbdev_se0_d2p_o = usb_tx_se0;
-  assign cio_usbdev_rx_enable_d2p_o = usb_rx_enable;
-  assign cio_usbdev_tx_use_d_se0_d2p_o = usb_tx_use_d_se0;
-
-  assign cio_usbdev_dp_d2p_o = dio_out[DioUsbdevUsbDp];
-  assign cio_usbdev_dp_en_d2p_o = dio_oe[DioUsbdevUsbDp];
-  assign cio_usbdev_dn_d2p_o = dio_out[DioUsbdevUsbDn];
-  assign cio_usbdev_dn_en_d2p_o = dio_oe[DioUsbdevUsbDn];
 
   assign cio_spi_device_sdo_d2p_o = dio_out[DioSpiDeviceSd1];
   assign cio_spi_device_sdo_en_d2p_o = dio_oe[DioSpiDeviceSd1];
@@ -106,8 +64,6 @@ module chip_darjeeling_verilator (
     mio_in[MioPadIoc8] = cio_gpio_p2d_i[30];
     // UART RX
     mio_in[MioPadIoc3] = cio_uart_rx_p2d_i;
-    // USB VBUS sense
-    mio_in[MioPadIoc7] = cio_usbdev_sense_p2d_i;
   end
 
 
@@ -388,9 +344,6 @@ module chip_darjeeling_verilator (
   otp_ctrl_pkg::otp_ast_req_t otp_ctrl_otp_ast_pwr_seq;
   otp_ctrl_pkg::otp_ast_rsp_t otp_ctrl_otp_ast_pwr_seq_h;
 
-  logic usb_ref_pulse;
-  logic usb_ref_val;
-
   // adc
   ast_pkg::adc_ast_req_t adc_req;
   ast_pkg::adc_ast_rsp_t adc_rsp;
@@ -490,7 +443,7 @@ module chip_darjeeling_verilator (
     .rst_ast_alert_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
     .rst_ast_es_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
     .rst_ast_rng_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::Domain0Sel]),
-    .rst_ast_usb_ni (rstmgr_aon_resets.rst_usb_n[rstmgr_pkg::Domain0Sel]),
+    .rst_ast_usb_ni ('1),
 
     // pok test for FPGA
     .vcc_supp_i            ( vcc_supp ),
@@ -524,8 +477,8 @@ module chip_darjeeling_verilator (
     .clk_src_io_val_o      ( ast_base_pwr.io_clk_val ),
     .clk_src_io_48m_o      ( div_step_down_req ),
     // usb source clock
-    .usb_ref_pulse_i       ( usb_ref_pulse ),
-    .usb_ref_val_i         ( usb_ref_val ),
+    .usb_ref_pulse_i       ( '0 ),
+    .usb_ref_val_i         ( '0 ),
     .clk_src_usb_en_i      ( base_ast_pwr.usb_clk_en ),
     .clk_src_usb_o         ( ast_base_clks.clk_usb ),
     .clk_src_usb_val_o     ( ast_base_pwr.usb_clk_val ),
@@ -582,9 +535,9 @@ module chip_darjeeling_verilator (
     dft_strap0_idx: MioPadIoc3,
     dft_strap1_idx: MioPadIoc4,
     // TODO: check whether there is a better way to pass these USB-specific params
-    usb_dp_idx:        DioUsbdevUsbDp,
-    usb_dn_idx:        DioUsbdevUsbDn,
-    usb_sense_idx:     MioInUsbdevSense,
+    usb_dp_idx:     0,
+    usb_dn_idx:     0,
+    usb_sense_idx:  0,
     // TODO: connect these once the verilator chip-level has been merged with the chiplevel.sv.tpl
     dio_pad_type: {pinmux_reg_pkg::NDioPads{prim_pad_wrapper_pkg::BidirStd}},
     mio_pad_type: {pinmux_reg_pkg::NMioPads{prim_pad_wrapper_pkg::BidirStd}}
@@ -620,8 +573,6 @@ module chip_darjeeling_verilator (
     .sensor_ctrl_ast_alert_req_i  ( ast_alert_req    ),
     .sensor_ctrl_ast_alert_rsp_o  ( ast_alert_rsp    ),
     .sensor_ctrl_ast_status_i     ( ast_pwst.io_pok  ),
-    .usbdev_usb_ref_val_o         ( usb_ref_val      ),
-    .usbdev_usb_ref_pulse_o       ( usb_ref_pulse    ),
     .ast_tl_req_o                 ( base_ast_bus     ),
     .ast_tl_rsp_i                 ( ast_base_bus     ),
     .adc_req_o                    ( adc_req          ),
@@ -663,15 +614,6 @@ module chip_darjeeling_verilator (
     .soc_rst_req_async_i          ( 1'b0 ),
     .soc_lsio_trigger_i           ( '0 ),
 
-    // USB signals
-    .usb_dp_pullup_en_o           (usb_dp_pullup),
-    .usb_dn_pullup_en_o           (usb_dn_pullup),
-    .usbdev_usb_rx_d_i            (usb_rx_d),
-    .usbdev_usb_tx_d_o            (usb_tx_d),
-    .usbdev_usb_tx_se0_o          (usb_tx_se0),
-    .usbdev_usb_tx_use_d_se0_o    (usb_tx_use_d_se0),
-    .usbdev_usb_rx_enable_o       (usb_rx_enable),
-
     // OTP external voltage
     .otp_ext_voltage_h_io         ( ),
 
@@ -693,7 +635,6 @@ module chip_darjeeling_verilator (
     // This is different between verilator and the rest of the platforms right now
     .ram_1p_cfg_i                 ('0),
     .spi_ram_2p_cfg_i             ('0),
-    .usb_ram_2p_cfg_i             ('0),
     .rom_cfg_i                    ('0),
 
     // DFT signals

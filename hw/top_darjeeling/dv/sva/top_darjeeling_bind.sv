@@ -14,9 +14,6 @@ module top_darjeeling_bind;
     .io_clk_en(u_pwrmgr_aon.pwr_ast_o.io_clk_en),
     .io_clk_val(u_pwrmgr_aon.pwr_ast_i.io_clk_val),
     .clk_io_i(u_clkmgr_aon.clk_io_i),
-    .usb_clk_en(u_pwrmgr_aon.pwr_ast_o.usb_clk_en),
-    .usb_clk_val(u_pwrmgr_aon.pwr_ast_i.usb_clk_val),
-    .clk_usb_i(u_clkmgr_aon.clk_usb_i),
     .main_pd_n(u_pwrmgr_aon.pwr_ast_o.main_pd_n),
     .main_pok(u_pwrmgr_aon.pwr_ast_i.main_pok)
   );
