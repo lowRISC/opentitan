@@ -11,8 +11,12 @@ filesets:
       - lowrisc:ip:tlul
     files:
       - rtl/hmac_pkg.sv
+      - rtl/hmac_multimode_pkg.sv
       - rtl/sha2.sv
+      - rtl/sha2_multimode.sv
+      - rtl/sha2_multimode32.sv
       - rtl/sha2_pad.sv
+      - rtl/sha2_multimode_pad.sv
       - rtl/hmac_reg_pkg.sv
       - rtl/hmac_reg_top.sv
       - rtl/hmac_core.sv
