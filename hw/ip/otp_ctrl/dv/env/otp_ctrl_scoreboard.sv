@@ -570,9 +570,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
             // as correctable ECC errors.
             // Only check the first 16 bits because if ECC readout detects uncorrectable error, it
             // won't continue read the remaining 16 bits.
-            `DV_CHECK_EQ(item.d_data & 16'hffff, read_out & 16'hffff,
-                       $sformatf("mem read mismatch at TLUL addr %0h, csr_addr %0h",
-                       csr_addr, dai_addr))
+            uncorr_comp(item.d_data[15:0], read_out[15:0], csr_addr, dai_addr);
           end
         end else if (ecc_err == OtpNoEccErr) begin
           `DV_CHECK_EQ(item.d_data, otp_a[otp_addr],
@@ -1362,5 +1360,12 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     exp_alert = alert_name == "fatal_check_error" ? OtpCheckAlert : OtpMacroAlert;
     super.set_exp_alert(alert_name, is_fatal, max_delay);
   endfunction
-
+  // Compare uncorrectable errored data.
+  // This function will be overridden by closed source environment.
+  virtual function void uncorr_comp(bit[15:0] rcv, bit[15:0] exp,
+                                    bit [TL_AW-1:0] csr_addr, bit [TL_AW-1:0] dai_addr);
+    `DV_CHECK_EQ(rcv, exp,
+                 $sformatf("mem read mismatch at TLUL addr %0h, csr_addr %0h",
+                           csr_addr, dai_addr))
+  endfunction
 endclass
