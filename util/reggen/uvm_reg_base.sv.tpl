@@ -459,7 +459,8 @@ reg_field_name, field)">\
   tag = field_tag.split(":")
 %>\
 %       if tag[0] == "excl":
-      csr_excl.add_excl(${fname}.get_full_name(), ${tag[2]}, ${tag[1]});
+      csr_excl.add_excl(${fname}.get_full_name(),
+                        ${tag[2]}, ${tag[1]});
 %       endif
 %     endfor
 %   endif
@@ -648,7 +649,8 @@ reg_field_name, field)">\
         tag = reg_tag.split(":")
 %>\
 %         if tag[0] == "excl":
-      csr_excl.add_excl(${reg_inst}.get_full_name(), ${tag[2]}, ${tag[1]});
+      csr_excl.add_excl(${reg_inst}.get_full_name(),
+                        ${tag[2]}, ${tag[1]});
 %         endif
 %       endfor
 %     endif
