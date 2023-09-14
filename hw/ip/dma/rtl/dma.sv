@@ -569,7 +569,7 @@ module dma
             if (cfg_abort_en) begin
               ctrl_state_d = DmaIdle;
             end else begin
-              // Abort if we handled all
+              // Proceed if we handled all
               if (32'(clear_index_q) >= (NumIntClearSources - 1)) begin
                 ctrl_state_d = DmaAddrSetup;
               end
@@ -580,7 +580,7 @@ module dma
           clear_index_en = 1'b1;
           clear_index_d  = clear_index_q + INT_CLEAR_SOURCES_WIDTH'(1'b1);
 
-          if (32'(clear_index_d) >= NumIntClearSources) begin
+          if (32'(clear_index_q) >= (NumIntClearSources - 1)) begin
             ctrl_state_d = DmaAddrSetup;
           end
         end
