@@ -422,6 +422,17 @@
       tests: ["rv_dm_cmderr_halt_resume"]
     }
     {
+      name: dataaddr_rw_access
+      desc: '''
+            Verify the read write access of the data registers through the memory mapped DataAddr register.
+
+            - Write random data to the shadowed data registers via the corresponding DataAddr registers.
+            - Read back the written data and verify that it matches the expected values.
+            '''
+      stage: V1
+      tests: ["rv_dm_dataaddr_rw_access"]
+    }
+    {
       name: stress_all
       desc: '''
             A 'bug hunt' test that stresses the DUT to its limits.
