@@ -560,6 +560,14 @@
       reseed: 1
     }
     {
+      name: chip_sw_usbdev_pullup
+      uvm_test_seq: chip_sw_usbdev_dpi_vseq
+      sw_images: ["//sw/device/tests:usbdev_pullup_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+uart_idx=0", "+calibrate_usb_clk=1"]
+      reseed: 1
+    }
+    {
       name: chip_sw_usbdev_pincfg
       uvm_test_seq: chip_sw_usbdev_dpi_vseq
       sw_images: ["//sw/device/tests:usbdev_pincfg_test:1"]
