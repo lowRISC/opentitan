@@ -80,6 +80,7 @@ module keymgr
   `ASSERT_INIT(AdvDataWidth_A, AdvDataWidth <= KDFMaxWidth)
   `ASSERT_INIT(IdDataWidth_A,  IdDataWidth  <= KDFMaxWidth)
   `ASSERT_INIT(GenDataWidth_A, GenDataWidth <= KDFMaxWidth)
+  `ASSERT_INIT(MaxWidthDivisible_A, KDFMaxWidth % KmacDataIfWidth == 0)
   `ASSERT_INIT(OutputKeyDiff_A, RndCnstHardOutputSeed != RndCnstSoftOutputSeed)
 
   import prim_mubi_pkg::mubi4_test_true_strict;
