@@ -25,6 +25,7 @@
     "hw/top_earlgrey/data/ip/chip_keymgr_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_kmac_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_lc_ctrl_testplan.hjson",
+    "hw/top_earlgrey/data/ip/chip_pwrmgr_testplan.hjson",
   ]
 
   testpoints: [
@@ -1123,6 +1124,7 @@
       tests: ["chip_sw_all_escalation_resets"]
     }
 
+<<<<<<< HEAD
     // PWRMGR tests:
     {
       name: chip_sw_pwrmgr_external_full_reset
@@ -1377,6 +1379,8 @@
       tests: ["chip_sw_all_escalation_resets"]
     }
 
+=======
+>>>>>>> 8cd5f594c ([sival,pwrmgr_testplan] Import chip_pwrmgr_testplan.hjson)
     // RSTMGR tests:
     {
       name: chip_sw_rstmgr_non_sys_reset_info
