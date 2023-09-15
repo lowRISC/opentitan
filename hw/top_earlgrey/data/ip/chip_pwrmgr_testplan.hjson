@@ -1,0 +1,261 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: chip_pwrmgr
+  testpoints: [
+    // PWRMGR tests:
+    {
+      name: chip_sw_pwrmgr_external_full_reset
+      desc: '''Verify the cold boot sequence by wiggling of chip's `POR_N`.
+
+            This ensures that both FSMs are properly reset on the POR signal. The check  is that
+            the processor ends up running. Also verify, the rstmgr recorded POR in `reset_info` CSR
+            by checking retention SRAM for reset_reason.
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_full_aon_reset"]
+    }
+    {
+      name: chip_sw_pwrmgr_random_sleep_all_wake_ups
+      desc: '''Verify that the chip can go into random low power states and be woken up by ALL wake
+            up sources.
+
+            This verifies ALL wake up sources. This also verifies that the pwrmgr sequencing is
+            working correctly as expected. X-ref'ed with all individual IP tests. For each wakeup
+            source clear and enable `wake_info` CSR, enable the wakeup from that source with the
+            `wakeup_en` CSR, bring the chip to both normal and low power sleep, optionally
+            disabling the source's clock, have the source issue a wakeup event and verify
+            `wake_info` indicates the expected wakeup.
+
+            Each test should perform a minimum of 2 low power transitions to ensure there are no
+            state dependent corner cases with wakeup interactions.
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_random_sleep_all_wake_ups"]
+    }
+    {
+      name: chip_sw_pwrmgr_normal_sleep_all_wake_ups
+      desc: '''Verify that the chip can go into normal sleep state and be woken up by ALL wake up
+            sources.
+
+            This verifies ALL wake up sources. This also verifies that the pwrmgr sequencing is
+            working correctly as expected. X-ref'ed with all individual IP tests. For each wakeup
+            source clear and enable `wake_info` CSR, enable the wakeup from that source with the
+            `wakeup_en` CSR, bring the chip to normal sleep, optionally disabling the source's
+            clock, have the source issue a wakeup event and verify `wake_info` indicates the
+            expected wakeup.
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_normal_sleep_all_wake_ups"]
+    }
+    {
+      name: chip_sw_pwrmgr_sleep_all_reset_reqs
+      desc: '''Verify that the chip can go into normal sleep state and be reset by ALL reset req
+            sources.
+
+            This verifies ALL reset sources. This also verifies that the pwrmgr sequencing is
+            working correctly as expected. X-ref'ed with all individual IP tests. For each reset
+            source, enable the source and bring the chip to low power, issue a reset, and verify the
+            rstmgr's `reset_info` indicated the expected reset by checking retention SRAM for
+            reset_reason.
+            '''
+      stage: V2
+      tests: ["chip_sw_aon_timer_wdog_bite_reset"]
+    }
+    {
+      name: chip_sw_pwrmgr_deep_sleep_all_wake_ups
+      desc: '''Verify that the chip can go into deep sleep state and be woken up by ALL wake up
+            sources.
+
+            This verifies ALL wake up sources. This also verifies that the pwrmgr sequencing is
+            working correctly as expected. X-ref'ed with all individual IP tests. Similar to
+            chip_pwrmgr_sleep_all_wake_ups, except `control.main_pd_n` is set to 0.
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_deep_sleep_all_wake_ups"]
+    }
+    {
+      name: chip_sw_pwrmgr_deep_sleep_all_reset_reqs
+      desc: '''Verify that the chip can go into deep sleep state and be reset up by ALL reset req
+            sources.
+
+            This verifies ALL reset sources.
+            - 7 resets are generated randomly with deep sleeps
+            - POR (HW PAD) reset, SW POR, sysrst, wdog timer reset, esc rst, SW req
+            - esc reset is followd by normal mode because it does not work with sleep mode
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_deep_sleep_all_reset_reqs"]
+    }
+    {
+      name: chip_sw_pwrmgr_normal_sleep_all_reset_reqs
+      desc: '''Verify that the chip can go into normal sleep state and be reset up by ALL reset req
+            sources.
+
+            This verifies ALL reset sources.
+            - 7 resets are generated randomly with normal sleeps
+            - POR (HW PAD) reset, SW POR, sysrst, wdog timer reset, esc rst, SW req
+            - esc reset is followed by normal mode and cleared by reset because it does not work
+              with sleep mode
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_normal_sleep_all_reset_reqs"]
+    }
+    {
+      name: chip_sw_pwrmgr_wdog_reset
+      desc: '''Verify that the chip can be reset by watchdog timer reset source.
+
+            This verifies watchdog timer reset source. This also verifies that the pwrmgr sequencing
+            is working correctly as expected. X-ref'ed with all individual IP tests. Similar to
+            chip_pwrmgr_sleep_all_reset_reqs, except the chip is not put in low power mode.
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_wdog_reset"]
+    }
+    {
+      name: chip_sw_pwrmgr_aon_power_glitch_reset
+      desc: '''Verify the cold boot sequence through an AON power glitch.
+
+
+            Pulsing the AST vcaon_supp_i input causes an AON power glitch which becomes a POR.
+            This ensures that both FSMs are properly reset on the POR signal. The check is that
+            the processor ends up running. Also verify, the rstmgr recorded POR in `reset_info` CSR
+            by checking retention SRAM for reset_reason.
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_full_aon_reset"]
+    }
+    {
+      name: chip_sw_pwrmgr_main_power_glitch_reset
+      desc: '''Verify the effect of a glitch in main power rail.
+
+            The vcmain_supp_i AST input is forced to drop once the test is running. This triggers
+            a MainPwr reset request, which is checked by reading retention SRAM's reset_reason to
+            see that the reset_info CSR's POR bit is not set when the test restarts.
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_main_power_glitch_reset"]
+    }
+    {
+      name: chip_sw_pwrmgr_random_sleep_power_glitch_reset
+      desc: '''Verify the effect of a glitch in main power rail in random sleep states.
+
+            The vcmain_supp_i AST input is forced to drop right after putting the chip in a random
+            sleep state. This triggers a MainPwr reset request, which is checked by reading
+            retention SRAM's reset_reason to show that the reset_info CSR's POR bit is not set when
+            the test restarts.
+
+            Note: the glitch has to be sent in a very narrow window:
+            - If sent too early the chip won't have started to process deep sleep.
+            - If too late the hardware won't monitor main power okay so the glitch will have no
+              effect, and the test will timeout.
+
+            Each test should perform a minimum of 2 low power transitions to ensure there are no
+            state dependent corner cases with power glitch handling.
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_random_sleep_power_glitch_reset"]
+    }
+    {
+      name: chip_sw_pwrmgr_deep_sleep_power_glitch_reset
+      desc: '''Verify the effect of a glitch in main power rail in deep sleep.
+
+            The vcmain_supp_i AST input is forced to drop right after putting the chip in deep
+            sleep. This triggers a MainPwr reset request, which is checked by reading retention
+            SRAM's reset_reason to show that the reset_info CSR's POR bit is not set when the test
+            restarts.
+
+            Note: the glitch has to be sent in a very narrow window:
+            - If sent too early the chip won't have started to process deep sleep.
+            - If too late the hardware won't monitor main power okay so the glitch will have no
+              effect, and the test will timeout.
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_deep_sleep_power_glitch_reset"]
+    }
+    {
+      name: chip_sw_pwrmgr_sleep_power_glitch_reset
+      desc: '''Verify the effect of a glitch in main power rail in shallow sleep.
+
+            The vcmain_supp_i AST input is forced to drop after putting the chip in shallow sleep.
+            This triggers a MainPwr reset request, which is checked by reading the retention SRAM's
+            reset_reason shows that the reset_info CSR's POR bit is not set when the
+            test restarts.
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_sleep_power_glitch_reset"]
+    }
+    {
+      name: chip_sw_pwrmgr_random_sleep_all_reset_reqs
+      desc: '''Verify that this chip can be reset by All available reset sources.
+
+            - 12 resets are generated randomly with normal/deep sleeps
+            - POR (HW PAD) reset, SW POR, sysrst, wdog timer reset, esc rst, SW req
+            - esc reset is followd by normal mode because it does not work with sleep mode
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_random_sleep_all_reset_reqs"]
+    }
+    {
+      name: chip_sw_pwrmgr_sysrst_ctrl_reset
+      desc: '''Verify the effect of a sysrst_ctrl output in main power rail.
+
+            - Read the reset cause register in rstmgr to confirm that the SW is in the POR reset
+              phase.
+            - After sysrst reset is generated by forcing, read the reset cause register in rstmgr to
+              confirm that the SW is now in the sysrst reset phase.
+            - Generate sysrst by driving input PAD.
+            - After reset, read the reset cause register in rstmgr to confirm that the SW is now in
+              the sysrst reset phase.
+            - Program the AON timer wdog to 'bark' after some time.
+            - Let the bark escalate to bite, which should result in a reset request.
+            - After reset, read the reset cause register in rstmgr to confirm that the SW is now in
+              the wdog reset phase.
+            - Program the AON timer wdog to 'bark' after some time.
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_sysrst_ctrl_reset"]
+    }
+    {
+      name: chip_sw_pwrmgr_b2b_sleep_reset_req
+      desc: '''Verify that the pwrmgr sequences sleep_req and reset req coming in almost at the same
+            time, one after the other. Use POR_N PAD to trigger reset.
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_b2b_sleep_reset_req"]
+    }
+    {
+      name: chip_sw_pwrmgr_sleep_disabled
+      desc: '''Verify that the chip does not go to sleep on WFI when low power hint is 0.
+
+            This calls WFI with low_power_hint disabled and pwrmgr interrupts enabled,
+            and fails if the pwrmgr ISR is called.
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_sleep_disabled"]
+    }
+    {
+      name: chip_sw_pwrmgr_usb_clk_disabled_when_active
+      desc: '''Verify that the USB stops responding when its clock is disabled in active state.
+
+            Configure the pwrmgr CONTROL CSR with USB_CLK_EN_ACTIVE off, and issue a CSR read
+	    to the USB.  This CSR read should cause the CPU to hung.  Prior to this read,
+	    configure the watchdog to bite, and the test passes if there is a watchdog reset.
+	    '''
+      stage: V3
+      tests: ["chip_sw_pwrmgr_usb_clk_disabled_when_active"]
+    }
+    {
+      name: chip_sw_pwrmgr_escalation_reset
+      desc: '''Verify the power manager resets to a clean state after an escalation reset.
+
+            Trigger an internal fatal fault for the regfile onehot checker and let it escalate to
+            reset. Upon alert escalation reset, the internal status should be clear and pwrmgr
+            should not attempt to send out more alerts.
+            '''
+      stage: V2
+      tests: ["chip_sw_all_escalation_resets"]
+    }
+  ]
+}
