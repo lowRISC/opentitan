@@ -9,6 +9,7 @@ load(
     "OPENTITANTOOL_OPENOCD_TEST_CMDS",
     "ROM_BOOT_FAILURE_MSG",
     "cw310_params",
+    "cw340_params",
     "dv_params",
     "opentitan_functest",
     "verilator_params",
@@ -948,6 +949,14 @@ opentitan_functest(
 opentitan_functest(
     name = "example_test_from_flash",
     srcs = ["example_test_from_flash.c"],
+    targets = [
+        "dv",
+        "verilator",
+        "cw310_test_rom",
+        "cw310_rom_with_fake_keys",
+        "cw340_test_rom",
+        "cw340_rom_with_fake_keys",
+    ],
     deps = [
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -2309,6 +2318,9 @@ opentitan_functest(
     cw310 = cw310_params(
         exit_failure = ROM_BOOT_FAILURE_MSG,
     ),
+    cw340 = cw340_params(
+        exit_failure = ROM_BOOT_FAILURE_MSG,
+    ),
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
@@ -2316,6 +2328,7 @@ opentitan_functest(
     signed = True,
     targets = [
         "cw310_rom_with_fake_keys",
+        "cw340_rom_with_fake_keys",
         "verilator",
         "dv",
     ],
