@@ -43,12 +43,14 @@ FPGA_TARGETS = [
     for rom in _ROMS
     if (fpga, rom) not in _BLACKLIST_TARGETS
 ]
-FPGA_TARGETS_WITH_REAL_KEYS = [
-    _fpga_target(fpga, "rom_with_real_keys")
-    for fpga in _FPGAS
-    if (fpga, "rom_with_real_keys") not in _BLACKLIST_TARGETS
+FPGA_DEFAULT_TARGETS = [
+    _fpga_target("cw310", "rom_with_fake_keys"),
+    _fpga_target("cw310", "test_rom"),
 ]
 VALID_TARGETS = ["dv", "verilator"] + FPGA_TARGETS
+
+# By default, only build CW310 targets to avoid overloading the CI
+DEFAULT_TARGETS = ["dv", "verilator"] + FPGA_DEFAULT_TARGETS
 
 OTTF_SUCCESS_MSG = r"PASS.*\n"
 OTTF_FAILURE_MSG = r"(FAIL|FAULT).*\n"
@@ -326,7 +328,7 @@ def cw340_params(
 
 def opentitan_functest(
         name,
-        targets = sets.to_list(sets.difference(sets.make(VALID_TARGETS), sets.make(FPGA_TARGETS_WITH_REAL_KEYS))),
+        targets = DEFAULT_TARGETS,
         args = [],
         data = [],
         test_in_rom = False,
