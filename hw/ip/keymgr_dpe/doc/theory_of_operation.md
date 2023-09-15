@@ -27,21 +27,21 @@ In order to address the relationships among keymgr_dpe slots and their stored DP
 
 ## Key Manager Slots
 
-keymgr_dpe consists of `NumKeyMgrStages` slots, which is a generic parameter.
+keymgr_dpe consists of `DpeNumBootStages` slots, which is a generic parameter.
 Each of these key manager slots can store a DPE context, i.e. all DICE-related information for a particular boot stage. That includes a secret key along with additional context information described below.
 The secret key size is fixed to 256-bit.
 
 Each slot data consists of the following fields:
 * `valid` bit that tells whether the slot is occupied.
-* `stage_ctr` that refers to which boot stage this slot belongs to.
+* `boot_stage` that refers to which boot stage this slot belongs to.
 * `max_key_version` stores the maximum allowed key version that can be generated from this slot.
 * `key_policy` limits some of the operations that can be performed with this slot.
 
 A slot is a dynamic storage unit and the DPE context it stores is controlled by SW, even though their secret keys never leave HW.
 A slot becomes active (i.e. `valid` is set to 1) when it is chosen as a destination slot during a successful advance call.
 
-When a slot is active, `stage_ctr` refers to its DPE context boot stage.
-For flexibility, `stage_ctr` is a simple unsigned integer that is incremented from the parent's `stage_ctr` during advance calls.
+When a slot is active, `boot_stage` refers to its DPE context boot stage.
+For flexibility, `boot_stage` is a simple unsigned integer that is incremented from the parent's `boot_stage` during advance calls.
 Its actual mapping to boot stages such as ROM, BL0 or Kernel can be determined by SW.
 Hence, keymgr_dpe is oblivious to this mapping between counter values and the boot stages, with an exception.
 The exception is that the first two stages are treated specially by RTL during KDF advance calls, as they consume other HW-backed inputs that come from keymgr_dpe’s peripheral inputs.
@@ -124,18 +124,18 @@ This initial latching can only be done once unless keymgr_dpe is reset.
 If the OTP root key is not valid during the latching cycle, keymgr_dpe moves to `Invalid`state.
 
 Further advance calls use the key stored in the specified `CONTROL_SHADOWED.SLOT_SRC_SEL` slot (equally referred to as _parent_ or _source_ slot) , and the result of the derivation updates the slot specified by `CONTROL_SHADOWED.SLOT_DST_SEL`  (referred to as _destination_ or _child_ slot).
-Assuming that `key_policy`, `stage_ctr` or `valid` bits of the parent context permit, the child secret is derived from the parent secret through a key derivation function during advance operation.
-`KDF(child_key) = KDF(parent_key, message)`, where the message input might take few forms depending on stage_ctr of the parent slot.
+Assuming that `key_policy`, `boot_stage` or `valid` bits of the parent context permit, the child secret is derived from the parent secret through a key derivation function during advance operation.
+`KDF(child_key) = KDF(parent_key, message)`, where the message input might take few forms depending on boot_stage of the parent slot.
 In particular:
-* If `stage_ctr=0` for the parent, then `message = (SW_CDI_INPUT || hw_revision_seed || device_identifier || health_st_measurement || rom_descriptors || creator_div_secret)`. See [KDF Details](#kdf-details) for more details on HW backed inputs.
-* If `stage_ctr=1` for the parent, the concatenated message input of KDF call is `(SW_CDI_INPUT || owner_div_secret)`.
-* If `stage_ctr>1` for the parent, then the message input is simply `SW_CDI_INPUT`.
+* If `boot_stage=0` for the parent, then `message = (SW_CDI_INPUT || hw_revision_seed || device_identifier || health_st_measurement || rom_descriptors || creator_div_secret)`. See [KDF Details](#kdf-details) for more details on HW backed inputs.
+* If `boot_stage=1` for the parent, the concatenated message input of KDF call is `(SW_CDI_INPUT || owner_div_secret)`.
+* If `boot_stage>1` for the parent, then the message input is simply `SW_CDI_INPUT`.
 
 At the end of a successful advance operation, the following updates are made for the slot selected by SLOT_DST_SEL:
 * `valid` bit is set to 1.
 * `key_policy` is updated (based on the parent’s policy and SLOT_POLICY).
 * `max_key_version` is updated with MAX_KEY_VERSION register.
-* `stage_ctr` is set to the parent’s `stage_ctr + 1`.
+* `boot_stage` is set to the parent’s `boot_stage + 1`.
 * `key` is updated from the key received from KMAC.
 
 Note that the same slot can be chosen both as source and destination. In this case, the child DICE context overwrites the parent DICE context. Otherwise (if the source and destination are not same), then the source slot remains unmodified.
@@ -146,7 +146,7 @@ An advance operation returns error in the following cases:
 
 * The UDS is not latched yet.
 * The source slot is not valid.
-* `stage_ctr` reached to the maximum allowed value.
+* `boot_stage` reached to the maximum allowed value.
 * The policy bits of the source slot prevent advancing (e.g. `allow_child` is false).
 
 In particular note that the destination slot does not have be empty/invalid.
