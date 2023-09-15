@@ -278,6 +278,92 @@
       '''
     }
   ],
+  features: [
+    {
+      name: "USBDEV.CONN.VBUS"
+      desc: '''Detection of VBUS/SENSE signal from the host controller, indicating a
+            connection and/or supplying power.
+            '''
+    }
+    {
+      name: "USBDEV.CONN.PULLUP"
+      desc: '''Assertion and removal of pull up resistor indicating Full Speed device
+            presence on the USB.
+            '''
+    }
+    {
+      name: "USBDEV.CONN.REF_PULSE"
+      desc: '''Generation of a reference pulse in response to Start Of Frame packet
+            reception, to synchronize the device clock with that of the host controller.
+            '''
+    }
+    {
+      name: "USBDEV.CONN.PIN_CONFIG"
+      desc: '''Support for different pin configurations; pin flipping, transmission and
+            reception modes.
+            '''
+    }
+    {
+      name: "USBDEV.CONN.RESET"
+      desc: '''usbdev reset and the ability to empty the Av and Rx FIFOs. Required for
+            adapting to polarity of SBU connections on USB-C cables.
+            '''
+    }
+    {
+      name: "USBDEV.TRANSFER.CONTROL_RX"
+      desc: "Reception of packets in Control Transfers from the host controller."
+    }
+    {
+      name: "USBDEV.TRANSFER.CONTROL_TX"
+      desc: "Transmission of response packets in Control Transfers from the host."
+    }
+    {
+      name: "USBDEV.TRANSFER.ENDPOINTS"
+      desc: "Use of multiple endpoints in communication with the host controller."
+    }
+    {
+      name: "USBDEV.TRANSFER.BULK"
+      desc: "Bulk Transfer streams."
+    }
+    {
+      name: "USBDEV.TRANSFER.ISOCHRONOUS"
+      desc: "Support for Isochronous Transfers and Endpoints."
+    }
+    {
+      name: "USBDEV.TRANSFER.CONTROL"
+      desc: '''Support for Control Transfers/Endpoints other than the Default Control Pipe
+            at Endpoint Zero.
+            '''
+    }
+    {
+      name: "USBDEV.TRANSFER.INTERRUPT"
+      desc: "Support for Interrupt Transfers and Endpoints."
+    }
+    {
+      name: "USBDEV.POWER.SUSPEND"
+      desc: "Detection of Suspend request from the host."
+    }
+    {
+      name: "USBDEV.POWER.RESUME"
+      desc: "Detection of Resume Signaling from the host controller."
+    }
+    {
+      name: "USBDEV.POWER.AON"
+      desc: "Handover of the USB to the AON module that handles Wake signaling."
+    }
+    {
+      name: "USBDEV.POWER.WAKE_DISCONNECT",
+      desc: "Wake from Sleep in response to Disconnection."
+    }
+    {
+      name: "USBDEV.POWER.WAKE_RESUME",
+      desc: "Wake from Sleep in response to Resume Signaling."
+    }
+    {
+      name: "USBDEV.POWER.WAKE_BUS_RESET",
+      desc: "Wake from Sleep in response to Bus Reset from host."
+    }
+  ],
   countermeasures: [
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
