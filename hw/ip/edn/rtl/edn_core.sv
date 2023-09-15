@@ -676,7 +676,7 @@ module edn_core import edn_pkg::*;
   // SEC_CM: CTR.REDUN
   prim_count #(
     .Width(RegWidth),
-    .ResetValue({RegWidth{1'b1}})
+    .ResetValue(edn_reg_pkg::MaxNumReqsBetweenReseedsResval)
   ) u_prim_count_max_reqs_cntr (
     .clk_i,
     .rst_ni,
