@@ -34,18 +34,6 @@ static dif_pinmux_t pinmux;
 static dif_flash_ctrl_state_t flash_ctrl_state;
 static dif_lc_ctrl_t lc_ctrl;
 
-enum {
-  /**
-   * Number of flash info fields to provision.
-   */
-  kNumFlashInfoFields = 3,
-
-  /**
-   * Number of OTP fields to provision.
-   */
-  kNumOtpFields = 2,
-};
-
 /**
  * Initializes all DIF handles used in this SRAM program.
  */

@@ -8,13 +8,13 @@ package(default_visibility = ["//visibility:public"])
 
 rust_binary(
     name = "cp",
-    srcs = [
-        "src/main.rs",
-    ],
+    srcs = ["src/main.rs"],
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/provisioning/cp_lib",
+        "//sw/host/provisioning/ujson_lib",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
+        "@crate_index//:humantime",
     ],
 )
