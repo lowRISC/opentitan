@@ -1,0 +1,73 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: chip_adc_ctrl
+  testpoints: [
+    // ADC_CTRL (pre-verified IP) integration tests:
+    {
+      name: chip_sw_adc_ctrl_debug_cable_irq
+      desc: '''Verify that the ADC correctly detects the voltage level programmed for each channel.
+
+            - Program both ADC channels to detect mutually exclusive range of voltages. Setting only
+              one filter CSR is sufficient.
+            - Program the ADC intr ctrl CSR to detect the selected filter on both channels.
+              Enable the debug cable interrupt at ADC ctrl as well as PLIC.
+            - Enable the ADC ctrl to run with defaults in normal mode (depending on simulation
+              runtime).
+            - Verify through assertion checks, the ADC with AST stays powered down periodically in
+              slow scan mode.
+            - After some time, force the ADC output of AST to be a value within the programmed range
+              for each channel. Glitch it out of range for some time before stabilizing to ensure
+              that debouce logic works.
+            - Service the debug cable irq. Read the intr status register to verify that the selected
+              filter caused the interrupt to fire. Read the ADC channel value register to verify the
+              correctness of the detected value that was forced in the AST for each channel.
+            '''
+      features:["ADC_CTRL.MODE.LOW_POWER"]
+      stage: V2
+      si_stage: SV2
+      tests: ["chip_sw_adc_ctrl_sleep_debug_cable_wakeup"]
+    }
+    {
+      name: chip_sw_adc_ctrl_sleep_debug_cable_wakeup
+      desc: '''Verify that in deep sleep, ADC ctrl can signal the ADC within the AST to power down.
+
+            - Read the reset cause register in rstmgr to confirm we are in POR reset phase.
+            - Follow the same steps as chip_adc_ctrl_debug_cable_irq, but instead of programming the
+              selected filter to interrupt, program it to wake up the chip from sleep.
+            - Program the pwrmgr to put the chip in deep sleep state and wake up on debug cable
+              detection.
+            - Issue a WFI to bring the chip in low power state.
+            - After some time, force the ADC output of AST to be a value within the programmed
+              filter range. That should cause the pwrmgr to wake up.
+            - Read the reset cause register to confirm wake up from low power exit phase.
+            - Read the pwrmgr wake up status register to confirm wake up was due to debug cable
+              detection.
+            - Read the ADC channel value register to verify the correctness of the detected value
+              that was forced in the AST.
+            - Repeat for both ADC channels.
+            '''
+      features:["ADC_CTRL.MODE.LOW_POWER"]
+      stage: V2
+      si_stage: SV2
+      tests: ["chip_sw_adc_ctrl_sleep_debug_cable_wakeup"]
+    }
+    {
+      name: chip_sw_adc_ctrl_normal
+      desc:"Verifiy that ADC can sample from channel 0 and 1 in normal mode."
+      features:["ADC_CTRL.MODE.NORMAL"]
+      stage: V3
+      si_stage: SV2
+      tests: []
+    }
+    {
+      name: chip_sw_adc_ctrl_oneshot
+      desc:"Verifiy that ADC can sample from channel 0 and 1 in normal mode with oneshot filter config."
+      features:["ADC_CTRL.ONESHOT", "ADC_CTRL.MODE.NORMAL"]
+      stage: V3
+      si_stage: SV2
+      tests: []
+    }
+  ]
+}

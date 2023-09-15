@@ -19,6 +19,7 @@
     "sw/device/silicon_creator/manuf/data/manuf_testplan.hjson"
 
     // IP block specific top level test plans.
+    "hw/top_earlgrey/data/ip/chip_adc_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_flash_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_hmac_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_keymgr_testplan.hjson",
@@ -596,7 +597,7 @@
     //////////////////////////////////////////////////////////////////////////////////////
     // System Peripherals                                                               //
     // XBAR, RV_DM, RV_TIMER, AON_TIMER, PLIC, CLK/RST/PWR MGR, ALERT_HANDLER,          //
-    // ADC_CTRL, SYSRST_CTRL                                                            //
+    // SYSRST_CTRL                                                                      //
     //////////////////////////////////////////////////////////////////////////////////////
 
     // XBAR (pre-verified IP) tests:
@@ -1847,52 +1848,6 @@
         "chip_sw_adc_ctrl_sleep_debug_cable_wakeup",
         "chip_sw_sysrst_ctrl_ulp_z3_wakeup"
       ]
-    }
-
-    // ADC_CTRL (pre-verified IP) integration tests:
-    {
-      name: chip_sw_adc_ctrl_debug_cable_irq
-      desc: '''Verify that the ADC correctly detects the voltage level programmed for each channel.
-
-            - Program both ADC channels to detect mutually exclusive range of voltages. Setting only
-              one filter CSR is sufficient.
-            - Program the ADC intr ctrl CSR to detect the selected filter on both channels.
-              Enable the debug cable interrupt at ADC ctrl as well as PLIC.
-            - Enable the ADC ctrl to run with defaults in normal mode (depending on simulation
-              runtime).
-            - Verify through assertion checks, the ADC with AST stays powered down periodically in
-              slow scan mode.
-            - After some time, force the ADC output of AST to be a value within the programmed range
-              for each channel. Glitch it out of range for some time before stabilizing to ensure
-              that debouce logic works.
-            - Service the debug cable irq. Read the intr status register to verify that the selected
-              filter caused the interrupt to fire. Read the ADC channel value register to verify the
-              correctness of the detected value that was forced in the AST for each channel.
-            '''
-      stage: V2
-      tests: ["chip_sw_adc_ctrl_sleep_debug_cable_wakeup"]
-    }
-    {
-      name: chip_sw_adc_ctrl_sleep_debug_cable_wakeup
-      desc: '''Verify that in deep sleep, ADC ctrl can signal the ADC within the AST to power down.
-
-            - Read the reset cause register in rstmgr to confirm we are in POR reset phase.
-            - Follow the same steps as chip_adc_ctrl_debug_cable_irq, but instead of programming the
-              selected filter to interrupt, program it to wake up the chip from sleep.
-            - Program the pwrmgr to put the chip in deep sleep state and wake up on debug cable
-              detection.
-            - Issue a WFI to bring the chip in low power state.
-            - After some time, force the ADC output of AST to be a value within the programmed
-              filter range. That should cause the pwrmgr to wake up.
-            - Read the reset cause register to confirm wake up from low power exit phase.
-            - Read the pwrmgr wake up status register to confirm wake up was due to debug cable
-              detection.
-            - Read the ADC channel value register to verify the correctness of the detected value
-              that was forced in the AST.
-            - Repeat for both ADC channels.
-            '''
-      stage: V2
-      tests: ["chip_sw_adc_ctrl_sleep_debug_cable_wakeup"]
     }
 
     ///////////////////////////////////////////////////////

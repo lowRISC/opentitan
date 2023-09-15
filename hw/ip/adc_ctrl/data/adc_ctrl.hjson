@@ -80,6 +80,26 @@
       desc: "End-to-end bus integrity scheme."
     }
   ]
+  features: [
+    {
+      name: "ADC_CTRL.MODE.NORMAL"
+      desc: '''In this mode, the ADC will always be enabled and consuming power.
+            Use when fast sampling is required.
+      '''
+    }
+    {
+      name: "ADC_CTRL.MODE.LOW_POWER"
+      desc: '''During low-power mode, the ADC controller is intermittently activated to capture samples.
+      When the number of samples acquired and processed by the filter matches the predefined value set in adc_ctrl.ADC_LP_SAMPLE_CTL, the controller switches to normal operation mode.
+      '''
+    }
+    {
+      name: "ADC_CTRL.ONESHOT"
+      desc: '''When the controller is set to oneshot mode, it waits for a high value (1) from both channel 0 and channel 1, sequentially.
+      Once it detects these high values from both channels, it proceeds to set adc_ctrl.ADC_INTR_STATUS.ONESHOT and returns to a powered-off state, without evaluating the filters.
+      '''
+    }
+  ]
   regwidth: "32",
   registers: [
     { name: "adc_en_ctl",
