@@ -40,7 +40,7 @@ At the end of a successful operation, the slot selected by SLOT_DST_SEL is loade
 *  valid bit is set to 1,
 *  its key_policy is updated (based on the parent’s policy and SLOT_POLICY)
 *  max_key_version is updated with MAX_KEY_VERSION register,
-*  stage_ctr is set to the parent’s stage_ctr + 1,
+*  boot_stage is set to the parent’s boot_stage + 1,
 key is updated from the key received from KMAC.
 The slot SLOT_SRC_SEL remains unmodified (unless SLOT_SRC_SEL = SLOT_DST_SEL).
 
