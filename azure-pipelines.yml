@@ -466,7 +466,7 @@ jobs:
   # Build CW310-hyperdebug variant of the Earl Grey toplevel design using Vivado
   dependsOn:
     - lint
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'), eq(variables['Build.SourceBranchName'], 'master'))
+  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'), eq(variables['Build.SourceBranchName'], 'earlgrey_es'))
   pool: ci-public-eda
   timeoutInMinutes: 240
   steps:
@@ -537,7 +537,7 @@ jobs:
   dependsOn:
     - chip_earlgrey_cw310
     - chip_earlgrey_cw310_hyperdebug
-  condition: eq(variables['Build.SourceBranchName'], 'master')
+  condition: eq(variables['Build.SourceBranchName'], 'earlgrey_es')
   steps:
     - template: ci/download-artifacts-template.yml
       parameters:
@@ -558,7 +558,7 @@ jobs:
           - "chip_earlgrey_cw310_hyperdebug/rom.mmi"
           - "chip_earlgrey_cw310_hyperdebug/otp.mmi"
         gcpKeyFile: "gcpkey.json"
-        bucketURI: "gs://opentitan-bitstreams/master"
+        bucketURI: "gs://opentitan-bitstreams/earlgrey_es"
 
 - job: execute_test_rom_fpga_tests_cw310
   displayName: CW310 Test ROM Tests
