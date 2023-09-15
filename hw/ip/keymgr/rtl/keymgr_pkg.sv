@@ -89,7 +89,7 @@ package keymgr_pkg;
   // see security strength description https://keccak.team/keccak.html
   // The max width here is chosen arbitrarily to ensure we do not get out of hand.
   // Since KMAC is a MAC operation, the data can be as long as we need.
-  parameter int KDFMaxWidth = 1600;
+  parameter int KDFMaxWidth = 2000;
 
   // Enumeration for operations
   typedef enum logic [1:0] {
