@@ -25,18 +25,18 @@ use crate::util::vmem::Vmem;
 use top_earlgrey::top_earlgrey;
 
 /// Command-line parameters.
-#[derive(Debug, Args, Clone)]
+#[derive(Debug, Args, Clone, Default)]
 pub struct SramProgramParams {
-    /// Path to the VMEM file to load.
-    #[arg(long, conflicts_with = "elf")]
-    pub vmem: Option<PathBuf>,
-
     /// Path to the ELF file to load.
-    #[arg(long)]
+    #[arg(long, default_value = None)]
     pub elf: Option<PathBuf>,
 
+    /// Path to the VMEM file to load.
+    #[arg(long, conflicts_with = "elf", default_value = None)]
+    pub vmem: Option<PathBuf>,
+
     /// Address where to load the VMEM file.
-    #[arg(long, value_parser = <u32 as ParseInt>::from_str, conflicts_with="elf")]
+    #[arg(long, value_parser = <u32 as ParseInt>::from_str, conflicts_with="elf", default_value = None)]
     pub load_addr: Option<u32>,
 }
 
