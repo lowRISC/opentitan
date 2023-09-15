@@ -21,6 +21,13 @@
 - [Unofficial Guides](./doc/getting_started/unofficial/README.md)
   - [RedHat/Fedora](./doc/getting_started/unofficial/fedora.md)
 
+# Use Cases
+
+- [Use Cases](./doc/use_cases/README.md)
+- [Platform Integrity Module](./doc/use_cases/platform_integrity_module/README.md)
+- [Trusted Platform Module (TPM)](./doc/use_cases/tpm/README.md)
+- [Universal 2nd-Factor Security Key (U2F)](./doc/use_cases/u2f/README.md)
+
 # Hardware
 
 - [HW Homepage](./hw/README.md)
@@ -476,13 +483,6 @@
   - [Secure Boot](./doc/security/specs/secure_boot/README.md)
 - [Lightweight Threat Model](./doc/security/threat_model/README.md)
 - [Secure Hardware Design Guidelines](./doc/security/implementation_guidelines/hardware/README.md)
-
-# Use Cases
-
-- [Use Cases](./doc/use_cases/README.md)
-- [Platform Integrity Module](./doc/use_cases/platform_integrity_module/README.md)
-- [Trusted Platform Module](./doc/use_cases/tpm/README.md)
-- [Universal 2nd-Factor Security Key](./doc/use_cases/u2f/README.md)
 
 # Contributing
 
