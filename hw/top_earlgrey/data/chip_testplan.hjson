@@ -31,6 +31,7 @@
     "hw/top_earlgrey/data/ip/chip_lc_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_pwrmgr_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_rstmgr_testplan.hjson",
+    "hw/top_earlgrey/data/ip/chip_usbdev_testplan.hjson",
   ]
 
   testpoints: [
@@ -280,48 +281,6 @@
 
     // USB (pre-verified IP) integration tests:
     {
-      name: chip_sw_usbdev_dpi
-      desc: '''Integration of USBDPI at chip level to test connection and communications.
-
-            - DPI model provides a simulation of a simple USB host; asserts VBUS
-            - SW sets up the USB device, and enables the interface.
-            - DPI detects presence of pull up and VBUS, and initiates communications.
-            - SW receives device address and configuration from DPI model.
-            - A small data packet is transmitted from the device to the DPI model.
-            - DPI model returns a small data packet to the device and SW.
-            - SW checks the content of the received data packet.
-            '''
-      stage: V2
-      tests: ["chip_sw_usbdev_dpi"]
-    }
-    {
-      name: chip_sw_usb_fs_tx_rx
-      desc: '''Verify the transmission of single-ended data over the USB at full speed. As a part of
-            this test, the enablement of USB pullup is also expected to be verified.
-
-            - Set `tx_differential_mode` to single-ended and `rx_differential_mode` to
-              differential. The other modes are not supported in OpenTitan.
-            - configure Link state to `Active`.
-            - Send and receive packets to fill the entire buffer. Ensure all the packets are
-              correct.
-            - Check interrupts (connected, pkt_received, pkt_sent, av_empty, rx_full) are triggered
-              correctly.
-            '''
-      stage: V3
-      tests: ["chip_sw_usbdev_stream"]
-    }
-    {
-      name: chip_sw_usbdev_vbus
-      desc: '''Verify that the USB device can detect the presence of VBUS from the USB host.
-
-            - Set up the pinmux to ensure that the SENSE/VBUS input can reach usbdev.
-            - Check that VBUS is asserted indicating the presence of a connection to the
-              USB host or DPI model.
-            '''
-      stage: V2
-      tests: ["chip_sw_usbdev_vbus"]
-    }
-    {
       name: chip_sw_usb_suspend
       desc: '''Verify that the USB device can detect the presence of VBUS from the USB host.
 
@@ -349,59 +308,6 @@
       tests: []
     }
     {
-      name: chip_sw_usbdev_pullup
-      desc: '''Verify that the USB device can assert the pull up to indicate its presence.
-
-            - This test extends from `chip_sw_usbdev_vbus` by checking that the DP line of
-              the USB is deasserted after VBUS detection.
-            - Enable the interface by asserting the pull up.
-            - Check that the DP line rises by reading from the `phy_pins_sense` register.
-            - Host/DPI model detects the presence of a Full Speed device.
-            - Deassert the pull up.
-            - Check that the DP line falls again.
-            - For those targets which can apply a pull up to either line, repeat the above
-              for the DN line using the usbdev pin-flipping feature.
-            - No other communication with the host, so indicating Low Speed is harmless.
-            '''
-      stage: V2
-      tests: ["chip_sw_usbdev_pullup"]
-    }
-    {
-      name: chip_usb_sof
-      desc: '''Verify that USB can detect SOF and respond with `usb_ref_pulse_o` and
-            `usb_ref_val_o`.
-
-            - Configure to enable `usb_ref_disable`.
-            - Send a frame with the same frame number as the USB device to trigger `frame`
-              interrupt.
-            - Ensure `usb_ref_pulse_o` and `usb_ref_val_o` behave correctly.
-            - Stop sending any frame and check the `host_lost` interrupt. Ensure `use_ref_*` behave
-              correctly.
-            '''
-      stage: V3
-      tests: []
-    }
-    {
-      name: chip_sw_usbdev_setup_rx
-      desc: '''Verify that the USB device can receive the SETUP stage of a Control Transfer
-            from the host/DPI model.
-
-            - This test extends from `chip_sw_usbdev_pullup` by checking that the device
-              can receive packets from the host/DPI model.
-            - Set `tx_differential_mode` to single-ended and `rx_differential_mode` to
-              differential. The other modes are not supported in OpenTitan Earl Grey.
-            - Upon detection of the usbdev asserting its pull up on the DP line,
-              indicating the presence of a Full Speed device, the first communication
-              attempt from the host/DPI model will be a SETUP token packet.
-            - Software shall receive the SETUP DATA packet following the token packet.
-            - The properties but not contents of this packet shall be verified;
-              This makes the test robust against alternative host behaviors, since the
-              first Control Transfer to be sent upon connection is unspecified.
-            '''
-      stage: V2
-      tests: ["chip_sw_usbdev_setuprx"]
-    }
-    {
       name: chip_usb_wake_debug
       desc: '''Verify that `usb_state_debug_i` can be read from the CSR.
 
@@ -410,20 +316,6 @@
             '''
       stage: V3
       tests: []
-    }
-    {
-      name: chip_sw_usbdev_pincfg
-      desc: '''Verify that the USB device can operate in all pin configurations.
-
-            - This test extends from `chip_sw_usbdev_dpi`
-            - Cycles the device through each of the supported bus modes/pin configurations.
-            - Checks that the DPI model can set up the device with a given pin configuration,
-              before resetting the device and advancing to the next pin configuration.
-            - Exercises all permutations of (i) pinflipping on/off, (ii) single-ended transmission
-              on/off, and (iii) external differential receiver yes/no
-            '''
-      stage: V2
-      tests: ["chip_sw_usbdev_pincfg"]
     }
 
     // PINMUX & PADRING (pre-verified IP) integration tests:
