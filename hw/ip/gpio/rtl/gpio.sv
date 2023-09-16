@@ -7,14 +7,20 @@
 `include "prim_assert.sv"
 
 module gpio
+  import gpio_pkg::*;
   import gpio_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  parameter bit GpioAsHwStrapsEn = 1,
   // This parameter instantiates 2-stage synchronizers on all GPIO inputs.
   parameter bit GpioAsyncOn = 1
 ) (
   input clk_i,
   input rst_ni,
+
+  // Strap sampling trigger and broadcast output
+  input strap_en_i,
+  output gpio_straps_t sampled_straps_o,
 
   // Bus interface
   input  tlul_pkg::tl_h2d_t tl_i,
@@ -56,6 +62,43 @@ module gpio
       .thresh_i({CntWidth{1'b1}}),
       .filter_o(data_in_d[i])
     );
+  end
+
+
+
+  if (GpioAsHwStrapsEn) begin : gen_strap_sample
+    // sample at gpio inputs at strap_en_i signal pulse.
+    logic strap_en;
+    prim_flop_2sync #(
+      .Width(1)
+    ) u_prim_flop_2sync (
+      .clk_i,
+      .rst_ni,
+      .d_i(strap_en_i),
+      .q_o(strap_en)
+    );
+    // we guarantee here by design that this will always be done exactly once per reset cycle.
+    logic sample_trigger;
+    assign sample_trigger                    = strap_en && !reg2hw.hw_straps_data_in_valid.q;
+    assign hw2reg.hw_straps_data_in_valid.de = sample_trigger;
+    assign hw2reg.hw_straps_data_in_valid.d  = 1'b1;
+    assign hw2reg.hw_straps_data_in.de       = sample_trigger;
+    assign hw2reg.hw_straps_data_in.d        = data_in_d;
+    assign sampled_straps_o.data             = reg2hw.hw_straps_data_in.q;
+    assign sampled_straps_o.valid            = reg2hw.hw_straps_data_in_valid.q;
+    `ASSUME(StrapSampleOnce_A, ##1 $fell(sample_trigger) |-> always !sample_trigger)
+  end else begin : gen_no_strap_sample
+    assign hw2reg.hw_straps_data_in_valid.de = 1'b0;
+    assign hw2reg.hw_straps_data_in_valid.d  = 1'b0;
+    assign hw2reg.hw_straps_data_in.de       = 1'b0;
+    assign hw2reg.hw_straps_data_in.d        = '0;
+    assign sampled_straps_o.data             = '0;
+    assign sampled_straps_o.valid            = 1'b0;
+
+    logic unused_signals;
+    assign unused_signals = ^{strap_en_i,
+                              reg2hw.hw_straps_data_in.q,
+                              reg2hw.hw_straps_data_in_valid.q};
   end
 
   // GPIO_IN
@@ -190,4 +233,5 @@ module gpio
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+
 endmodule

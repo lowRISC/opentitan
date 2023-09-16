@@ -3,24 +3,26 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/gpio/data/gpio.hjson -->
 ## Summary
 
-| Name                                                 | Offset   |   Length | Description                                   |
-|:-----------------------------------------------------|:---------|---------:|:----------------------------------------------|
-| gpio.[`INTR_STATE`](#intr_state)                     | 0x0      |        4 | Interrupt State Register                      |
-| gpio.[`INTR_ENABLE`](#intr_enable)                   | 0x4      |        4 | Interrupt Enable Register                     |
-| gpio.[`INTR_TEST`](#intr_test)                       | 0x8      |        4 | Interrupt Test Register                       |
-| gpio.[`ALERT_TEST`](#alert_test)                     | 0xc      |        4 | Alert Test Register                           |
-| gpio.[`DATA_IN`](#data_in)                           | 0x10     |        4 | GPIO Input data read value                    |
-| gpio.[`DIRECT_OUT`](#direct_out)                     | 0x14     |        4 | GPIO direct output data write value           |
-| gpio.[`MASKED_OUT_LOWER`](#masked_out_lower)         | 0x18     |        4 | GPIO write data lower with mask.              |
-| gpio.[`MASKED_OUT_UPPER`](#masked_out_upper)         | 0x1c     |        4 | GPIO write data upper with mask.              |
-| gpio.[`DIRECT_OE`](#direct_oe)                       | 0x20     |        4 | GPIO Output Enable.                           |
-| gpio.[`MASKED_OE_LOWER`](#masked_oe_lower)           | 0x24     |        4 | GPIO write Output Enable lower with mask.     |
-| gpio.[`MASKED_OE_UPPER`](#masked_oe_upper)           | 0x28     |        4 | GPIO write Output Enable upper with mask.     |
-| gpio.[`INTR_CTRL_EN_RISING`](#intr_ctrl_en_rising)   | 0x2c     |        4 | GPIO interrupt enable for GPIO, rising edge.  |
-| gpio.[`INTR_CTRL_EN_FALLING`](#intr_ctrl_en_falling) | 0x30     |        4 | GPIO interrupt enable for GPIO, falling edge. |
-| gpio.[`INTR_CTRL_EN_LVLHIGH`](#intr_ctrl_en_lvlhigh) | 0x34     |        4 | GPIO interrupt enable for GPIO, level high.   |
-| gpio.[`INTR_CTRL_EN_LVLLOW`](#intr_ctrl_en_lvllow)   | 0x38     |        4 | GPIO interrupt enable for GPIO, level low.    |
-| gpio.[`CTRL_EN_INPUT_FILTER`](#ctrl_en_input_filter) | 0x3c     |        4 | filter enable for GPIO input bits.            |
+| Name                                                       | Offset   |   Length | Description                                                   |
+|:-----------------------------------------------------------|:---------|---------:|:--------------------------------------------------------------|
+| gpio.[`INTR_STATE`](#intr_state)                           | 0x0      |        4 | Interrupt State Register                                      |
+| gpio.[`INTR_ENABLE`](#intr_enable)                         | 0x4      |        4 | Interrupt Enable Register                                     |
+| gpio.[`INTR_TEST`](#intr_test)                             | 0x8      |        4 | Interrupt Test Register                                       |
+| gpio.[`ALERT_TEST`](#alert_test)                           | 0xc      |        4 | Alert Test Register                                           |
+| gpio.[`DATA_IN`](#data_in)                                 | 0x10     |        4 | GPIO Input data read value                                    |
+| gpio.[`HW_STRAPS_DATA_IN_VALID`](#hw_straps_data_in_valid) | 0x14     |        4 | Indicates whether the data in !!HW_STRAPS_DATA_IN is valid.   |
+| gpio.[`HW_STRAPS_DATA_IN`](#hw_straps_data_in)             | 0x18     |        4 | GPIO Input data sampled as straps during cold boot read value |
+| gpio.[`DIRECT_OUT`](#direct_out)                           | 0x1c     |        4 | GPIO direct output data write value                           |
+| gpio.[`MASKED_OUT_LOWER`](#masked_out_lower)               | 0x20     |        4 | GPIO write data lower with mask.                              |
+| gpio.[`MASKED_OUT_UPPER`](#masked_out_upper)               | 0x24     |        4 | GPIO write data upper with mask.                              |
+| gpio.[`DIRECT_OE`](#direct_oe)                             | 0x28     |        4 | GPIO Output Enable.                                           |
+| gpio.[`MASKED_OE_LOWER`](#masked_oe_lower)                 | 0x2c     |        4 | GPIO write Output Enable lower with mask.                     |
+| gpio.[`MASKED_OE_UPPER`](#masked_oe_upper)                 | 0x30     |        4 | GPIO write Output Enable upper with mask.                     |
+| gpio.[`INTR_CTRL_EN_RISING`](#intr_ctrl_en_rising)         | 0x34     |        4 | GPIO interrupt enable for GPIO, rising edge.                  |
+| gpio.[`INTR_CTRL_EN_FALLING`](#intr_ctrl_en_falling)       | 0x38     |        4 | GPIO interrupt enable for GPIO, falling edge.                 |
+| gpio.[`INTR_CTRL_EN_LVLHIGH`](#intr_ctrl_en_lvlhigh)       | 0x3c     |        4 | GPIO interrupt enable for GPIO, level high.                   |
+| gpio.[`INTR_CTRL_EN_LVLLOW`](#intr_ctrl_en_lvllow)         | 0x40     |        4 | GPIO interrupt enable for GPIO, level low.                    |
+| gpio.[`CTRL_EN_INPUT_FILTER`](#ctrl_en_input_filter)       | 0x44     |        4 | filter enable for GPIO input bits.                            |
 
 ## INTR_STATE
 Interrupt State Register
@@ -103,9 +105,42 @@ GPIO Input data read value
 |:------:|:------:|:-------:|:--------|:--------------|
 |  31:0  |   ro   |    x    | DATA_IN |               |
 
+## HW_STRAPS_DATA_IN_VALID
+Indicates whether the data in [`HW_STRAPS_DATA_IN`](#hw_straps_data_in) is valid.
+- Offset: `0x14`
+- Reset default: `0x0`
+- Reset mask: `0x1`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "HW_STRAPS_DATA_IN_VALID", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 250}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                    | Description   |
+|:------:|:------:|:-------:|:------------------------|:--------------|
+|  31:1  |        |         |                         | Reserved      |
+|   0    |   ro   |   0x0   | HW_STRAPS_DATA_IN_VALID |               |
+
+## HW_STRAPS_DATA_IN
+GPIO Input data sampled as straps during cold boot read value
+- Offset: `0x18`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "HW_STRAPS_DATA_IN", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name              | Description   |
+|:------:|:------:|:-------:|:------------------|:--------------|
+|  31:0  |   ro   |   0x0   | HW_STRAPS_DATA_IN |               |
+
 ## DIRECT_OUT
 GPIO direct output data write value
-- Offset: `0x14`
+- Offset: `0x1c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -130,7 +165,7 @@ if mask bits are set.
 
 Read-back of this register returns upper 16 bits as zero
 and lower 16 bits as DATA_OUT[15:0].
-- Offset: `0x18`
+- Offset: `0x20`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -156,7 +191,7 @@ if mask bits are set.
 
 Read-back of this register returns upper 16 bits as zero
 and lower 16 bits as DATA_OUT[31:16].
-- Offset: `0x1c`
+- Offset: `0x24`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -175,7 +210,7 @@ and lower 16 bits as DATA_OUT[31:16].
 GPIO Output Enable.
 
 Setting direct_oe[i] to 1 enables output mode for GPIO[i]
-- Offset: `0x20`
+- Offset: `0x28`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -201,7 +236,7 @@ if mask bits are set.
 
 Read-back of this register returns upper 16 bits as zero
 and lower 16 bits as DATA_OE[15:0].
-- Offset: `0x24`
+- Offset: `0x2c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -228,7 +263,7 @@ if mask bits are set.
 
 Read-back of this register returns upper 16 bits as zero
 and lower 16 bits as DATA_OE[31:16].
-- Offset: `0x28`
+- Offset: `0x30`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -248,7 +283,7 @@ GPIO interrupt enable for GPIO, rising edge.
 
 If [`INTR_ENABLE`](#intr_enable)[i] is true, a value of 1 on [`INTR_CTRL_EN_RISING`](#intr_ctrl_en_rising)[i]
 enables rising-edge interrupt detection on GPIO[i].
-- Offset: `0x2c`
+- Offset: `0x34`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -267,7 +302,7 @@ GPIO interrupt enable for GPIO, falling edge.
 
 If [`INTR_ENABLE`](#intr_enable)[i] is true, a value of 1 on [`INTR_CTRL_EN_FALLING`](#intr_ctrl_en_falling)[i]
 enables falling-edge interrupt detection on GPIO[i].
-- Offset: `0x30`
+- Offset: `0x38`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -286,7 +321,7 @@ GPIO interrupt enable for GPIO, level high.
 
 If [`INTR_ENABLE`](#intr_enable)[i] is true, a value of 1 on [`INTR_CTRL_EN_LVLHIGH`](#intr_ctrl_en_lvlhigh)[i]
 enables level high interrupt detection on GPIO[i].
-- Offset: `0x34`
+- Offset: `0x3c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -305,7 +340,7 @@ GPIO interrupt enable for GPIO, level low.
 
 If [`INTR_ENABLE`](#intr_enable)[i] is true, a value of 1 on [`INTR_CTRL_EN_LVLLOW`](#intr_ctrl_en_lvllow)[i]
 enables level low interrupt detection on GPIO[i].
-- Offset: `0x38`
+- Offset: `0x40`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -324,7 +359,7 @@ filter enable for GPIO input bits.
 
 If [`CTRL_EN_INPUT_FILTER`](#ctrl_en_input_filter)[i] is true, a value of input bit [i]
 must be stable for 16 cycles before transitioning.
-- Offset: `0x3c`
+- Offset: `0x44`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
