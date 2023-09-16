@@ -782,6 +782,7 @@
       }
       param_decl:
       {
+        GpioAsHwStrapsEn: "0"
         GpioAsyncOn: "1"
       }
       clock_connections:
@@ -803,9 +804,40 @@
           expose: "true"
           name_top: GpioGpioAsyncOn
         }
+        {
+          name: GpioAsHwStrapsEn
+          desc: Enable HW straps sampling logic for GPIO inputs at initial cold boot
+          type: bit
+          default: "0"
+          expose: "true"
+          name_top: GpioGpioAsHwStrapsEn
+        }
       ]
       inter_signal_list:
       [
+        {
+          name: strap_en
+          desc: This signal is pulsed high by the power manager after reset in order to sample the HW straps.
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          default: 1'b0
+          inst_name: gpio
+          index: -1
+        }
+        {
+          name: sampled_straps
+          desc: This vector contains the sampled strap values.
+          struct: gpio_straps
+          package: gpio_pkg
+          type: uni
+          act: req
+          width: 1
+          default: "'0"
+          inst_name: gpio
+          index: -1
+        }
         {
           name: tl
           struct: tl
@@ -10276,7 +10308,7 @@
           [
             {
               base_addr: 0x40040000
-              size_byte: 0x40
+              size_byte: 0x80
             }
           ]
           xbar: false
@@ -16207,6 +16239,29 @@
         default: ""
         end_idx: -1
         top_signame: uart3_tl
+        index: -1
+      }
+      {
+        name: strap_en
+        desc: This signal is pulsed high by the power manager after reset in order to sample the HW straps.
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        default: 1'b0
+        inst_name: gpio
+        index: -1
+      }
+      {
+        name: sampled_straps
+        desc: This vector contains the sampled strap values.
+        struct: gpio_straps
+        package: gpio_pkg
+        type: uni
+        act: req
+        width: 1
+        default: "'0"
+        inst_name: gpio
         index: -1
       }
       {

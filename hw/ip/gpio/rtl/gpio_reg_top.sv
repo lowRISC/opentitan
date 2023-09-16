@@ -21,7 +21,7 @@ module gpio_reg_top (
 
   import gpio_reg_pkg::* ;
 
-  localparam int AW = 6;
+  localparam int AW = 7;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -52,9 +52,9 @@ module gpio_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [15:0] reg_we_check;
+  logic [17:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(16)
+    .OneHotWidth(18)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -177,6 +177,8 @@ module gpio_reg_top (
   logic ctrl_en_input_filter_we;
   logic [31:0] ctrl_en_input_filter_qs;
   logic [31:0] ctrl_en_input_filter_wd;
+  logic hw_straps_data_in_valid_qs;
+  logic [31:0] hw_straps_data_in_qs;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -631,8 +633,64 @@ module gpio_reg_top (
   );
 
 
+  // R[hw_straps_data_in_valid]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_hw_straps_data_in_valid (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-  logic [15:0] addr_hit;
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.hw_straps_data_in_valid.de),
+    .d      (hw2reg.hw_straps_data_in_valid.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.hw_straps_data_in_valid.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (hw_straps_data_in_valid_qs)
+  );
+
+
+  // R[hw_straps_data_in]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_hw_straps_data_in (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.hw_straps_data_in.de),
+    .d      (hw2reg.hw_straps_data_in.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.hw_straps_data_in.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (hw_straps_data_in_qs)
+  );
+
+
+
+  logic [17:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == GPIO_INTR_STATE_OFFSET);
@@ -651,6 +709,8 @@ module gpio_reg_top (
     addr_hit[13] = (reg_addr == GPIO_INTR_CTRL_EN_LVLHIGH_OFFSET);
     addr_hit[14] = (reg_addr == GPIO_INTR_CTRL_EN_LVLLOW_OFFSET);
     addr_hit[15] = (reg_addr == GPIO_CTRL_EN_INPUT_FILTER_OFFSET);
+    addr_hit[16] = (reg_addr == GPIO_HW_STRAPS_DATA_IN_VALID_OFFSET);
+    addr_hit[17] = (reg_addr == GPIO_HW_STRAPS_DATA_IN_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -673,7 +733,9 @@ module gpio_reg_top (
                (addr_hit[12] & (|(GPIO_PERMIT[12] & ~reg_be))) |
                (addr_hit[13] & (|(GPIO_PERMIT[13] & ~reg_be))) |
                (addr_hit[14] & (|(GPIO_PERMIT[14] & ~reg_be))) |
-               (addr_hit[15] & (|(GPIO_PERMIT[15] & ~reg_be)))));
+               (addr_hit[15] & (|(GPIO_PERMIT[15] & ~reg_be))) |
+               (addr_hit[16] & (|(GPIO_PERMIT[16] & ~reg_be))) |
+               (addr_hit[17] & (|(GPIO_PERMIT[17] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -756,6 +818,8 @@ module gpio_reg_top (
     reg_we_check[13] = intr_ctrl_en_lvlhigh_we;
     reg_we_check[14] = intr_ctrl_en_lvllow_we;
     reg_we_check[15] = ctrl_en_input_filter_we;
+    reg_we_check[16] = 1'b0;
+    reg_we_check[17] = 1'b0;
   end
 
   // Read data return
@@ -828,6 +892,14 @@ module gpio_reg_top (
 
       addr_hit[15]: begin
         reg_rdata_next[31:0] = ctrl_en_input_filter_qs;
+      end
+
+      addr_hit[16]: begin
+        reg_rdata_next[0] = hw_straps_data_in_valid_qs;
+      end
+
+      addr_hit[17]: begin
+        reg_rdata_next[31:0] = hw_straps_data_in_qs;
       end
 
       default: begin

@@ -27,7 +27,7 @@
       notes:              "",
     }
     {
-      version:            "1.1.0",
+      version:            "1.2.0",
       life_stage:         "L1",
       design_stage:       "D3",
       verification_stage: "V2S",
@@ -69,6 +69,15 @@
       local:   "false",
       expose:  "true"
     },
+    { name:    "GpioAsHwStrapsEn",
+      type:    "bit",
+      default: "1'b1",
+      desc:    '''
+      Enable HW straps sampling logic for GPIO inputs at initial cold boot
+      '''
+      local:   "false",
+      expose:  "true"
+    },
   ]
   countermeasures: [
     { name: "BUS.INTEGRITY",
@@ -94,6 +103,30 @@
       desc: 'Masked output access enables to modify either upper or lower 16bits of output register  without a Read-Modify-Write.'
     }
   ]
+  inter_signal_list: [
+    { struct:  "logic",
+      type:    "uni",
+      name:    "strap_en",
+      act:     "rcv",
+      package: "",
+      desc:    '''
+               This signal is pulsed high by the power manager after reset in order to sample the HW straps.
+               ''',
+      default: "1'b0"
+    },
+    { struct:  "gpio_straps",
+      type:    "uni",
+      name:    "sampled_straps",
+      act:     "req",
+      package: "gpio_pkg",
+      desc:    '''
+               This vector contains the sampled strap values.
+               ''',
+      default: "'0"
+    },
+  ]
+
+
   regwidth: "32",
   registers: [
     { name: "DATA_IN",
@@ -340,6 +373,30 @@
       hwaccess: "hro",
       fields: [
         { bits: "31:0" }
+      ],
+    },
+    { name: "HW_STRAPS_DATA_IN_VALID",
+      desc: "Indicates whether the data in !!HW_STRAPS_DATA_IN is valid.",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      tags: [// data_in is ro register with strap values driven externally, so exclude all check
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          resval: "0"
+        }
+      ],
+    },
+    { name: "HW_STRAPS_DATA_IN",
+      desc: "GPIO Input data sampled as straps during cold boot read value",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      tags: [// data_in is ro register with strap values driven externally, so exclude all check
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "31:0",
+          resval: "0"
+        }
       ],
     },
   ],

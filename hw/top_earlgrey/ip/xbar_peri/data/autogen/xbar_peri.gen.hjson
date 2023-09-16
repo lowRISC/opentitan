@@ -250,7 +250,7 @@
       [
         {
           base_addr: 0x40040000
-          size_byte: 0x40
+          size_byte: 0x80
         }
       ]
       xbar: false
