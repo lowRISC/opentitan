@@ -19,6 +19,7 @@ module top_darjeeling #(
   // parameters for uart0
   // parameters for gpio
   parameter bit GpioGpioAsyncOn = 1,
+  parameter bit GpioGpioAsHwStrapsEn = 1,
   // parameters for spi_device
   // parameters for i2c0
   // parameters for i2c1
@@ -1109,7 +1110,8 @@ module top_darjeeling #(
   );
   gpio #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[1:1]),
-    .GpioAsyncOn(GpioGpioAsyncOn)
+    .GpioAsyncOn(GpioGpioAsyncOn),
+    .GpioAsHwStrapsEn(GpioGpioAsHwStrapsEn)
   ) u_gpio (
 
       // Input
@@ -1126,6 +1128,8 @@ module top_darjeeling #(
       .alert_rx_i  ( alert_rx[1:1] ),
 
       // Inter-module signals
+      .strap_en_i(pwrmgr_aon_strap),
+      .sampled_straps_o(),
       .tl_i(gpio_tl_req),
       .tl_o(gpio_tl_rsp),
 

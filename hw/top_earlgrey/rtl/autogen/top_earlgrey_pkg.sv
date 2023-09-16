@@ -59,7 +59,7 @@ package top_earlgrey_pkg;
   /**
    * Peripheral size in bytes for gpio in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_GPIO_SIZE_BYTES = 32'h40;
+  parameter int unsigned TOP_EARLGREY_GPIO_SIZE_BYTES = 32'h80;
 
   /**
    * Peripheral base address for spi_device in top earlgrey.

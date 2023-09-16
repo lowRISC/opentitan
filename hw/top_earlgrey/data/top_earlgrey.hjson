@@ -263,6 +263,7 @@
         hart: "0x40040000",
       },
       param_decl: {
+        GpioAsHwStrapsEn: "0",
         GpioAsyncOn: "1"
       }
     }
