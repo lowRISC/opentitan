@@ -24,7 +24,6 @@ rust_library(
         "@crate_index//:arrayvec",
         "@crate_index//:clap",
         "@crate_index//:hex",
-        "@crate_index//:humantime",
         "@crate_index//:log",
         "@crate_index//:serde",
         "@crate_index//:serde_json",

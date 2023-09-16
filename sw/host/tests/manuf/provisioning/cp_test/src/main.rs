@@ -58,23 +58,23 @@ fn cp_provision(
         ..Default::default()
     };
     unlock_raw(
-        &transport,
+        transport,
         &opts.init.jtag_params,
-        &opts.init.bootstrap.options.reset_delay,
+        opts.init.bootstrap.options.reset_delay,
     )?;
     run_sram_cp_provision(
-        &transport,
+        transport,
         &opts.init.jtag_params,
-        &opts.init.bootstrap.options.reset_delay,
+        opts.init.bootstrap.options.reset_delay,
         &provisioning_sram_program,
         &opts.provisioning_actions,
-        &provisioning_data,
-        &opts.timeout,
+        provisioning_data,
+        opts.timeout,
     )?;
     reset_and_lock(
-        &transport,
+        transport,
         &opts.init.jtag_params,
-        &opts.init.bootstrap.options.reset_delay,
+        opts.init.bootstrap.options.reset_delay,
     )?;
     Ok(())
 }
@@ -157,7 +157,6 @@ fn check_cp_provisioning(
     uart.set_flow_control(true)?;
     let _ = UartConsole::wait_for(
         &*uart,
-        //r"Waiting",
         r"Waiting for expected CP provisioning data ...",
         opts.timeout,
     )?;
@@ -180,11 +179,11 @@ fn main() -> Result<()> {
     let transport = opts.init.init_target()?;
 
     // Generate random provisioning values for testing.
-    let mut device_id = ArrayVec::<u32, 8>::new();
-    let mut manuf_state = ArrayVec::<u32, 8>::new();
-    let mut wafer_auth_secret = ArrayVec::<u32, 8>::new();
-    let mut test_exit_token = ArrayVec::<u32, 4>::new();
-    let mut test_unlock_token = ArrayVec::<u32, 4>::new();
+    let mut device_id = ArrayVec::new();
+    let mut manuf_state = ArrayVec::new();
+    let mut wafer_auth_secret = ArrayVec::new();
+    let mut test_exit_token = ArrayVec::new();
+    let mut test_unlock_token = ArrayVec::new();
     for i in 0..8 {
         if i < 4 {
             test_exit_token.push(rand::thread_rng().next_u32());
@@ -197,11 +196,11 @@ fn main() -> Result<()> {
 
     // Provision values into the chip.
     let provisioning_data = ManufCpProvisioningData {
-        device_id: device_id,
-        manuf_state: manuf_state,
-        wafer_auth_secret: wafer_auth_secret,
-        test_unlock_token: test_unlock_token,
-        test_exit_token: test_exit_token,
+        device_id,
+        manuf_state,
+        wafer_auth_secret,
+        test_unlock_token,
+        test_exit_token,
     };
     cp_provision(&opts, &transport, &provisioning_data)?;
 
