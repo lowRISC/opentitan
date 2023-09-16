@@ -52,8 +52,8 @@ opentitan_ram_binary(
 )
 
 opentitan_ram_binary(
-    name = "sram_cp_provision_test",
-    srcs = ["sram_cp_provision_test.c"],
+    name = "sram_cp_provision_functest",
+    srcs = ["sram_cp_provision_functest.c"],
     hdrs = ["sram_cp_provision.h"],
     archive_symbol_prefix = "sram_cp_provision",
     deps = [
@@ -114,7 +114,7 @@ opentitan_functest(
 )
 
 opentitan_functest(
-    name = "cp_provision_test",
+    name = "cp_provision_functest",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_raw",
@@ -123,13 +123,13 @@ opentitan_functest(
             "--clear-bitstream",
             "--bitstream=\"$(location {bitstream})\"",
             "--provisioning-sram-elf=\"$(rootpath :sram_cp_provision_fpga_cw310_elf_transition)\"",
-            "--test-sram-elf=\"$(rootpath :sram_cp_provision_test_fpga_cw310_elf_transition)\"",
+            "--test-sram-elf=\"$(rootpath :sram_cp_provision_functest_fpga_cw310_elf_transition)\"",
             "--all-steps",
         ] + OPENTITANTOOL_OPENOCD_TEST_CMDS,
     ),
     data = [
         ":sram_cp_provision_fpga_cw310_elf_transition",
-        ":sram_cp_provision_test_fpga_cw310_elf_transition",
+        ":sram_cp_provision_functest_fpga_cw310_elf_transition",
     ] + OPENTITANTOOL_OPENOCD_DATA_DEPS,
     key_struct = RSA_ONLY_KEY_STRUCTS[0],
     targets = ["cw310_rom_with_fake_keys"],

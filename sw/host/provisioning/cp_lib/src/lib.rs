@@ -129,7 +129,7 @@ pub struct ManufCpProvisioningActions {
 pub fn unlock_raw(
     transport: &TransportWrapper,
     jtag_params: &JtagParams,
-    reset_delay: &Duration,
+    reset_delay: Duration,
 ) -> Result<()> {
     // Set the TAP straps for the lifecycle controller and reset.
     transport
@@ -137,7 +137,7 @@ pub fn unlock_raw(
         .apply()
         .context("failed to apply LC TAP strapping")?;
     transport
-        .reset_target(*reset_delay, true)
+        .reset_target(reset_delay, true)
         .context("failed to reset")?;
 
     // Connect to the LC TAP via JTAG.
@@ -157,7 +157,7 @@ pub fn unlock_raw(
         DifLcCtrlState::TestUnlocked0,
         Some(token_words),
         true,
-        *reset_delay,
+        reset_delay,
         Some(JtagTap::LcTap),
     )
     .context("failed to transition to TEST_UNLOCKED0.")?;
@@ -174,15 +174,15 @@ pub fn unlock_raw(
 pub fn run_sram_cp_provision(
     transport: &TransportWrapper,
     jtag_params: &JtagParams,
-    reset_delay: &Duration,
+    reset_delay: Duration,
     sram_program: &SramProgramParams,
     provisioning_actions: &ManufCpProvisioningActions,
     provisioning_data: &ManufCpProvisioningData,
-    timeout: &Duration,
+    timeout: Duration,
 ) -> Result<()> {
     // Set CPU TAP straps, reset, and connect to the JTAG interface.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
-    transport.reset_target(*reset_delay, true)?;
+    transport.reset_target(reset_delay, true)?;
     let jtag = jtag_params.create(transport)?;
     jtag.connect(JtagTap::RiscvTap)?;
 
@@ -201,7 +201,7 @@ pub fn run_sram_cp_provision(
 
     // Get UART, set flow control, and wait for test to start running.
     uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Waiting for CP provisioning data ...", *timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Waiting for CP provisioning data ...", timeout)?;
 
     // Inject provisioning data into the device.
     provisioning_data.send(&*uart)?;
@@ -210,37 +210,37 @@ pub fn run_sram_cp_provision(
     let mut send_done: bool = false;
     if provisioning_actions.all_steps {
         CpProvisioningCommand::EraseAndWriteAll.send(&*uart)?;
-        Status::recv(&*uart, *timeout, false)?;
+        Status::recv(&*uart, timeout, false)?;
         send_done = true;
     }
     if provisioning_actions.flash_info_erase_device_id_and_manuf_state {
         CpProvisioningCommand::FlashInfoEraseDeviceIdAndManufState.send(&*uart)?;
-        Status::recv(&*uart, *timeout, false)?;
+        Status::recv(&*uart, timeout, false)?;
         send_done = true;
     }
     if provisioning_actions.flash_info_erase_wafer_auth_secret {
         CpProvisioningCommand::FlashInfoEraseWaferAuthSecret.send(&*uart)?;
-        Status::recv(&*uart, *timeout, false)?;
+        Status::recv(&*uart, timeout, false)?;
         send_done = true;
     }
     if provisioning_actions.flash_info_write_device_id_and_manuf_state {
         CpProvisioningCommand::FlashInfoWriteDeviceIdAndManufState.send(&*uart)?;
-        Status::recv(&*uart, *timeout, false)?;
+        Status::recv(&*uart, timeout, false)?;
         send_done = true;
     }
     if provisioning_actions.flash_info_write_wafer_auth_secret {
         CpProvisioningCommand::FlashInfoWriteWaferAuthSecret.send(&*uart)?;
-        Status::recv(&*uart, *timeout, false)?;
+        Status::recv(&*uart, timeout, false)?;
         send_done = true;
     }
     if provisioning_actions.otp_write_and_lock_secret0 {
         CpProvisioningCommand::OtpSecret0WriteAndLock.send(&*uart)?;
-        Status::recv(&*uart, *timeout, false)?;
+        Status::recv(&*uart, timeout, false)?;
         send_done = true;
     }
     if send_done {
         CpProvisioningCommand::Done.send(&*uart)?;
-        Status::recv(&*uart, *timeout, false)?;
+        Status::recv(&*uart, timeout, false)?;
     }
 
     // Once the SRAM program has sent a response, we can continue with an LC transition to
@@ -254,7 +254,7 @@ pub fn run_sram_cp_provision(
 pub fn reset_and_lock(
     transport: &TransportWrapper,
     jtag_params: &JtagParams,
-    reset_delay: &Duration,
+    reset_delay: Duration,
 ) -> Result<()> {
     // Set the TAP straps for the lifecycle controller and reset.
     transport
@@ -262,7 +262,7 @@ pub fn reset_and_lock(
         .apply()
         .context("failed to apply LC TAP strapping")?;
     transport
-        .reset_target(*reset_delay, true)
+        .reset_target(reset_delay, true)
         .context("failed to reset")?;
 
     // Connect to the LC TAP via JTAG.
@@ -278,7 +278,7 @@ pub fn reset_and_lock(
         DifLcCtrlState::TestLocked0,
         None,
         true,
-        *reset_delay,
+        reset_delay,
         Some(JtagTap::LcTap),
     )
     .context("failed to transition to TEST_LOCKED0.")?;

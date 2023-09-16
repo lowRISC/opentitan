@@ -57,23 +57,23 @@ fn main() -> Result<()> {
         unlock_raw(
             &transport,
             &opts.init.jtag_params,
-            &opts.init.bootstrap.options.reset_delay,
+            opts.init.bootstrap.options.reset_delay,
         )?;
     }
     run_sram_cp_provision(
         &transport,
         &opts.init.jtag_params,
-        &opts.init.bootstrap.options.reset_delay,
+        opts.init.bootstrap.options.reset_delay,
         &opts.sram_program,
         &opts.provisioning_actions,
         &provisioning_data,
-        &opts.timeout,
+        opts.timeout,
     )?;
     if opts.provisioning_actions.all_steps || opts.provisioning_actions.lock_chip {
         reset_and_lock(
             &transport,
             &opts.init.jtag_params,
-            &opts.init.bootstrap.options.reset_delay,
+            opts.init.bootstrap.options.reset_delay,
         )?;
     }
 
