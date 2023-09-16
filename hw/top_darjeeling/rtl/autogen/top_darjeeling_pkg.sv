@@ -532,6 +532,16 @@ package top_darjeeling_pkg;
   parameter int unsigned TOP_DARJEELING_CTN_SIZE_BYTES = 32'h40000000;
 
   /**
+   * Memory base address for ram_ctn in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_RAM_CTN_BASE_ADDR = 32'h41000000;
+
+  /**
+   * Memory size for ram_ctn in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_RAM_CTN_SIZE_BYTES = 32'h100000;
+
+  /**
    * Memory base address for ram_ret_aon in top darjeeling.
    */
   parameter int unsigned TOP_DARJEELING_RAM_RET_AON_BASE_ADDR = 32'h30600000;

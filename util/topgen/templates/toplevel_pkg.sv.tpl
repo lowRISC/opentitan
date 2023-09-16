@@ -38,6 +38,28 @@ package top_${top["name"]}_pkg;
    */
   parameter int unsigned ${region.size_bytes_name().as_c_define()} = ${hex_size_bytes};
 
+## TODO: we need a more holistic approach to declare memories and IPs sitting in the
+## CTN address space. For now, we create the base and offset for the CTN SRAM with this workaround.
+% if name == "ctn":
+<%
+    hex_base_addr = "32'h{:x}".format(region.base_addr + 0x01000000)
+    hex_size_bytes = "32'h{:x}".format(0x00100000)
+
+    base_addr_name = region.base_addr_name().as_c_define().replace('CTN', 'RAM_CTN')
+    size_bytes_name = region.size_bytes_name().as_c_define().replace('CTN', 'RAM_CTN')
+
+%>\
+  /**
+   * Memory base address for ram_ctn in top ${top["name"]}.
+   */
+  parameter int unsigned ${base_addr_name} = ${hex_base_addr};
+
+  /**
+   * Memory size for ram_ctn in top ${top["name"]}.
+   */
+  parameter int unsigned ${size_bytes_name} = ${hex_size_bytes};
+
+% endif
 % endfor
 
   // Enumeration of alert modules

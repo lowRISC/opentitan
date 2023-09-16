@@ -690,31 +690,42 @@ pub const CTN_BASE_ADDR: usize = 0x40000000;
 
 /// Memory size for ctn in top darjeeling.
 pub const CTN_SIZE_BYTES: usize = 0x40000000;
+
+/// Memory base address for ram_ctn in top darjeeling.
+pub const RAM_CTN_BASE_ADDR: usize = 0x41000000;
+
+/// Memory size for ram_ctn in top darjeeling.
+pub const RAM_CTN_SIZE_BYTES: usize = 0x100000;
 /// Memory base address for ram_ret_aon in top darjeeling.
 pub const RAM_RET_AON_BASE_ADDR: usize = 0x30600000;
 
 /// Memory size for ram_ret_aon in top darjeeling.
 pub const RAM_RET_AON_SIZE_BYTES: usize = 0x1000;
+
 /// Memory base address for eflash in top darjeeling.
 pub const EFLASH_BASE_ADDR: usize = 0x34000000;
 
 /// Memory size for eflash in top darjeeling.
 pub const EFLASH_SIZE_BYTES: usize = 0x100000;
+
 /// Memory base address for ram_main in top darjeeling.
 pub const RAM_MAIN_BASE_ADDR: usize = 0x10000000;
 
 /// Memory size for ram_main in top darjeeling.
 pub const RAM_MAIN_SIZE_BYTES: usize = 0x10000;
+
 /// Memory base address for ram_mbox in top darjeeling.
 pub const RAM_MBOX_BASE_ADDR: usize = 0x11000000;
 
 /// Memory size for ram_mbox in top darjeeling.
 pub const RAM_MBOX_SIZE_BYTES: usize = 0x1000;
+
 /// Memory base address for rom0 in top darjeeling.
 pub const ROM0_BASE_ADDR: usize = 0x8000;
 
 /// Memory size for rom0 in top darjeeling.
 pub const ROM0_SIZE_BYTES: usize = 0x8000;
+
 /// Memory base address for rom1 in top darjeeling.
 pub const ROM1_BASE_ADDR: usize = 0x20000;
 

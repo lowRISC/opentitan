@@ -13,40 +13,51 @@
 //!
 //! This file contains const definitions for use within Rust code.
 
-/// Memory base for soc_proxy_ctn in top darjeeling.
+/// Memory base address for ctn in top darjeeling.
 pub const TOP_DARJEELING_CTN_BASE_ADDR: usize = 0x40000000;
 
-/// Memory size for soc_proxy_ctn in top darjeeling.
+/// Memory size for ctn in top darjeeling.
 pub const TOP_DARJEELING_CTN_SIZE_BYTES: usize = 0x40000000;
-/// Memory base for sram_ctrl_ret_aon_ram_ret_aon in top darjeeling.
+
+/// Memory base address for ram_ctn in top darjeeling.
+pub const TOP_DARJEELING_RAM_CTN_BASE_ADDR: usize = 0x41000000;
+
+/// Memory size for ram_ctn in top darjeeling.
+pub const TOP_DARJEELING_RAM_CTN_SIZE_BYTES: usize = 0x100000;
+/// Memory base address for ram_ret_aon in top darjeeling.
 pub const TOP_DARJEELING_RAM_RET_AON_BASE_ADDR: usize = 0x30600000;
 
-/// Memory size for sram_ctrl_ret_aon_ram_ret_aon in top darjeeling.
+/// Memory size for ram_ret_aon in top darjeeling.
 pub const TOP_DARJEELING_RAM_RET_AON_SIZE_BYTES: usize = 0x1000;
-/// Memory base for flash_ctrl_eflash in top darjeeling.
+
+/// Memory base address for eflash in top darjeeling.
 pub const TOP_DARJEELING_EFLASH_BASE_ADDR: usize = 0x34000000;
 
-/// Memory size for flash_ctrl_eflash in top darjeeling.
+/// Memory size for eflash in top darjeeling.
 pub const TOP_DARJEELING_EFLASH_SIZE_BYTES: usize = 0x100000;
-/// Memory base for sram_ctrl_main_ram_main in top darjeeling.
+
+/// Memory base address for ram_main in top darjeeling.
 pub const TOP_DARJEELING_RAM_MAIN_BASE_ADDR: usize = 0x10000000;
 
-/// Memory size for sram_ctrl_main_ram_main in top darjeeling.
+/// Memory size for ram_main in top darjeeling.
 pub const TOP_DARJEELING_RAM_MAIN_SIZE_BYTES: usize = 0x10000;
-/// Memory base for sram_ctrl_mbox_ram_mbox in top darjeeling.
+
+/// Memory base address for ram_mbox in top darjeeling.
 pub const TOP_DARJEELING_RAM_MBOX_BASE_ADDR: usize = 0x11000000;
 
-/// Memory size for sram_ctrl_mbox_ram_mbox in top darjeeling.
+/// Memory size for ram_mbox in top darjeeling.
 pub const TOP_DARJEELING_RAM_MBOX_SIZE_BYTES: usize = 0x1000;
-/// Memory base for rom_ctrl0_rom0 in top darjeeling.
-pub const TOP_DARJEELING_ROM0_BASE_ADDR: usize = 0x00008000;
 
-/// Memory size for rom_ctrl0_rom0 in top darjeeling.
+/// Memory base address for rom0 in top darjeeling.
+pub const TOP_DARJEELING_ROM0_BASE_ADDR: usize = 0x8000;
+
+/// Memory size for rom0 in top darjeeling.
 pub const TOP_DARJEELING_ROM0_SIZE_BYTES: usize = 0x8000;
-/// Memory base for rom_ctrl1_rom1 in top darjeeling.
-pub const TOP_DARJEELING_ROM1_BASE_ADDR: usize = 0x00020000;
 
-/// Memory size for rom_ctrl1_rom1 in top darjeeling.
+/// Memory base address for rom1 in top darjeeling.
+pub const TOP_DARJEELING_ROM1_BASE_ADDR: usize = 0x20000;
+
+/// Memory size for rom1 in top darjeeling.
 pub const TOP_DARJEELING_ROM1_SIZE_BYTES: usize = 0x10000;
 
 /// Peripheral base address for uart0 in top darjeeling.
@@ -62,7 +73,6 @@ pub const TOP_DARJEELING_UART0_BASE_ADDR: usize = 0x30010000;
 /// address between #TOP_DARJEELING_UART0_BASE_ADDR and
 /// `TOP_DARJEELING_UART0_BASE_ADDR + TOP_DARJEELING_UART0_SIZE_BYTES`.
 pub const TOP_DARJEELING_UART0_SIZE_BYTES: usize = 0x40;
-
 /// Peripheral base address for gpio in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -76,7 +86,6 @@ pub const TOP_DARJEELING_GPIO_BASE_ADDR: usize = 0x30000000;
 /// address between #TOP_DARJEELING_GPIO_BASE_ADDR and
 /// `TOP_DARJEELING_GPIO_BASE_ADDR + TOP_DARJEELING_GPIO_SIZE_BYTES`.
 pub const TOP_DARJEELING_GPIO_SIZE_BYTES: usize = 0x40;
-
 /// Peripheral base address for spi_device in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -90,7 +99,6 @@ pub const TOP_DARJEELING_SPI_DEVICE_BASE_ADDR: usize = 0x30310000;
 /// address between #TOP_DARJEELING_SPI_DEVICE_BASE_ADDR and
 /// `TOP_DARJEELING_SPI_DEVICE_BASE_ADDR + TOP_DARJEELING_SPI_DEVICE_SIZE_BYTES`.
 pub const TOP_DARJEELING_SPI_DEVICE_SIZE_BYTES: usize = 0x2000;
-
 /// Peripheral base address for i2c0 in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -104,7 +112,6 @@ pub const TOP_DARJEELING_I2C0_BASE_ADDR: usize = 0x30080000;
 /// address between #TOP_DARJEELING_I2C0_BASE_ADDR and
 /// `TOP_DARJEELING_I2C0_BASE_ADDR + TOP_DARJEELING_I2C0_SIZE_BYTES`.
 pub const TOP_DARJEELING_I2C0_SIZE_BYTES: usize = 0x80;
-
 /// Peripheral base address for i2c1 in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -118,7 +125,6 @@ pub const TOP_DARJEELING_I2C1_BASE_ADDR: usize = 0x31030000;
 /// address between #TOP_DARJEELING_I2C1_BASE_ADDR and
 /// `TOP_DARJEELING_I2C1_BASE_ADDR + TOP_DARJEELING_I2C1_SIZE_BYTES`.
 pub const TOP_DARJEELING_I2C1_SIZE_BYTES: usize = 0x80;
-
 /// Peripheral base address for i2c2 in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -132,7 +138,6 @@ pub const TOP_DARJEELING_I2C2_BASE_ADDR: usize = 0x31040000;
 /// address between #TOP_DARJEELING_I2C2_BASE_ADDR and
 /// `TOP_DARJEELING_I2C2_BASE_ADDR + TOP_DARJEELING_I2C2_SIZE_BYTES`.
 pub const TOP_DARJEELING_I2C2_SIZE_BYTES: usize = 0x80;
-
 /// Peripheral base address for rv_timer in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -146,7 +151,6 @@ pub const TOP_DARJEELING_RV_TIMER_BASE_ADDR: usize = 0x30100000;
 /// address between #TOP_DARJEELING_RV_TIMER_BASE_ADDR and
 /// `TOP_DARJEELING_RV_TIMER_BASE_ADDR + TOP_DARJEELING_RV_TIMER_SIZE_BYTES`.
 pub const TOP_DARJEELING_RV_TIMER_SIZE_BYTES: usize = 0x200;
-
 /// Peripheral base address for core device on otp_ctrl in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -160,7 +164,6 @@ pub const TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR: usize = 0x30130000;
 /// address between #TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR and
 /// `TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR + TOP_DARJEELING_OTP_CTRL_CORE_SIZE_BYTES`.
 pub const TOP_DARJEELING_OTP_CTRL_CORE_SIZE_BYTES: usize = 0x8000;
-
 /// Peripheral base address for prim device on otp_ctrl in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -174,7 +177,6 @@ pub const TOP_DARJEELING_OTP_CTRL_PRIM_BASE_ADDR: usize = 0x30138000;
 /// address between #TOP_DARJEELING_OTP_CTRL_PRIM_BASE_ADDR and
 /// `TOP_DARJEELING_OTP_CTRL_PRIM_BASE_ADDR + TOP_DARJEELING_OTP_CTRL_PRIM_SIZE_BYTES`.
 pub const TOP_DARJEELING_OTP_CTRL_PRIM_SIZE_BYTES: usize = 0x20;
-
 /// Peripheral base address for lc_ctrl in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -188,7 +190,6 @@ pub const TOP_DARJEELING_LC_CTRL_BASE_ADDR: usize = 0x30140000;
 /// address between #TOP_DARJEELING_LC_CTRL_BASE_ADDR and
 /// `TOP_DARJEELING_LC_CTRL_BASE_ADDR + TOP_DARJEELING_LC_CTRL_SIZE_BYTES`.
 pub const TOP_DARJEELING_LC_CTRL_SIZE_BYTES: usize = 0x100;
-
 /// Peripheral base address for alert_handler in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -202,7 +203,6 @@ pub const TOP_DARJEELING_ALERT_HANDLER_BASE_ADDR: usize = 0x30150000;
 /// address between #TOP_DARJEELING_ALERT_HANDLER_BASE_ADDR and
 /// `TOP_DARJEELING_ALERT_HANDLER_BASE_ADDR + TOP_DARJEELING_ALERT_HANDLER_SIZE_BYTES`.
 pub const TOP_DARJEELING_ALERT_HANDLER_SIZE_BYTES: usize = 0x800;
-
 /// Peripheral base address for spi_host0 in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -216,7 +216,6 @@ pub const TOP_DARJEELING_SPI_HOST0_BASE_ADDR: usize = 0x30300000;
 /// address between #TOP_DARJEELING_SPI_HOST0_BASE_ADDR and
 /// `TOP_DARJEELING_SPI_HOST0_BASE_ADDR + TOP_DARJEELING_SPI_HOST0_SIZE_BYTES`.
 pub const TOP_DARJEELING_SPI_HOST0_SIZE_BYTES: usize = 0x40;
-
 /// Peripheral base address for spi_host1 in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -230,7 +229,6 @@ pub const TOP_DARJEELING_SPI_HOST1_BASE_ADDR: usize = 0x32000000;
 /// address between #TOP_DARJEELING_SPI_HOST1_BASE_ADDR and
 /// `TOP_DARJEELING_SPI_HOST1_BASE_ADDR + TOP_DARJEELING_SPI_HOST1_SIZE_BYTES`.
 pub const TOP_DARJEELING_SPI_HOST1_SIZE_BYTES: usize = 0x40;
-
 /// Peripheral base address for usbdev in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -244,7 +242,6 @@ pub const TOP_DARJEELING_USBDEV_BASE_ADDR: usize = 0x32010000;
 /// address between #TOP_DARJEELING_USBDEV_BASE_ADDR and
 /// `TOP_DARJEELING_USBDEV_BASE_ADDR + TOP_DARJEELING_USBDEV_SIZE_BYTES`.
 pub const TOP_DARJEELING_USBDEV_SIZE_BYTES: usize = 0x1000;
-
 /// Peripheral base address for pwrmgr_aon in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -258,7 +255,6 @@ pub const TOP_DARJEELING_PWRMGR_AON_BASE_ADDR: usize = 0x30400000;
 /// address between #TOP_DARJEELING_PWRMGR_AON_BASE_ADDR and
 /// `TOP_DARJEELING_PWRMGR_AON_BASE_ADDR + TOP_DARJEELING_PWRMGR_AON_SIZE_BYTES`.
 pub const TOP_DARJEELING_PWRMGR_AON_SIZE_BYTES: usize = 0x80;
-
 /// Peripheral base address for rstmgr_aon in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -272,7 +268,6 @@ pub const TOP_DARJEELING_RSTMGR_AON_BASE_ADDR: usize = 0x30410000;
 /// address between #TOP_DARJEELING_RSTMGR_AON_BASE_ADDR and
 /// `TOP_DARJEELING_RSTMGR_AON_BASE_ADDR + TOP_DARJEELING_RSTMGR_AON_SIZE_BYTES`.
 pub const TOP_DARJEELING_RSTMGR_AON_SIZE_BYTES: usize = 0x80;
-
 /// Peripheral base address for clkmgr_aon in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -286,7 +281,6 @@ pub const TOP_DARJEELING_CLKMGR_AON_BASE_ADDR: usize = 0x30420000;
 /// address between #TOP_DARJEELING_CLKMGR_AON_BASE_ADDR and
 /// `TOP_DARJEELING_CLKMGR_AON_BASE_ADDR + TOP_DARJEELING_CLKMGR_AON_SIZE_BYTES`.
 pub const TOP_DARJEELING_CLKMGR_AON_SIZE_BYTES: usize = 0x80;
-
 /// Peripheral base address for sysrst_ctrl_aon in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -300,7 +294,6 @@ pub const TOP_DARJEELING_SYSRST_CTRL_AON_BASE_ADDR: usize = 0x31060000;
 /// address between #TOP_DARJEELING_SYSRST_CTRL_AON_BASE_ADDR and
 /// `TOP_DARJEELING_SYSRST_CTRL_AON_BASE_ADDR + TOP_DARJEELING_SYSRST_CTRL_AON_SIZE_BYTES`.
 pub const TOP_DARJEELING_SYSRST_CTRL_AON_SIZE_BYTES: usize = 0x100;
-
 /// Peripheral base address for adc_ctrl_aon in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -314,7 +307,6 @@ pub const TOP_DARJEELING_ADC_CTRL_AON_BASE_ADDR: usize = 0x31070000;
 /// address between #TOP_DARJEELING_ADC_CTRL_AON_BASE_ADDR and
 /// `TOP_DARJEELING_ADC_CTRL_AON_BASE_ADDR + TOP_DARJEELING_ADC_CTRL_AON_SIZE_BYTES`.
 pub const TOP_DARJEELING_ADC_CTRL_AON_SIZE_BYTES: usize = 0x80;
-
 /// Peripheral base address for pinmux_aon in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -328,7 +320,6 @@ pub const TOP_DARJEELING_PINMUX_AON_BASE_ADDR: usize = 0x30460000;
 /// address between #TOP_DARJEELING_PINMUX_AON_BASE_ADDR and
 /// `TOP_DARJEELING_PINMUX_AON_BASE_ADDR + TOP_DARJEELING_PINMUX_AON_SIZE_BYTES`.
 pub const TOP_DARJEELING_PINMUX_AON_SIZE_BYTES: usize = 0x1000;
-
 /// Peripheral base address for aon_timer_aon in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -342,7 +333,6 @@ pub const TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR: usize = 0x30470000;
 /// address between #TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR and
 /// `TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR + TOP_DARJEELING_AON_TIMER_AON_SIZE_BYTES`.
 pub const TOP_DARJEELING_AON_TIMER_AON_SIZE_BYTES: usize = 0x40;
-
 /// Peripheral base address for ast in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -356,7 +346,6 @@ pub const TOP_DARJEELING_AST_BASE_ADDR: usize = 0x30480000;
 /// address between #TOP_DARJEELING_AST_BASE_ADDR and
 /// `TOP_DARJEELING_AST_BASE_ADDR + TOP_DARJEELING_AST_SIZE_BYTES`.
 pub const TOP_DARJEELING_AST_SIZE_BYTES: usize = 0x400;
-
 /// Peripheral base address for sensor_ctrl in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -370,7 +359,6 @@ pub const TOP_DARJEELING_SENSOR_CTRL_BASE_ADDR: usize = 0x30020000;
 /// address between #TOP_DARJEELING_SENSOR_CTRL_BASE_ADDR and
 /// `TOP_DARJEELING_SENSOR_CTRL_BASE_ADDR + TOP_DARJEELING_SENSOR_CTRL_SIZE_BYTES`.
 pub const TOP_DARJEELING_SENSOR_CTRL_SIZE_BYTES: usize = 0x40;
-
 /// Peripheral base address for core device on soc_proxy in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -384,7 +372,6 @@ pub const TOP_DARJEELING_SOC_PROXY_CORE_BASE_ADDR: usize = 0x22030000;
 /// address between #TOP_DARJEELING_SOC_PROXY_CORE_BASE_ADDR and
 /// `TOP_DARJEELING_SOC_PROXY_CORE_BASE_ADDR + TOP_DARJEELING_SOC_PROXY_CORE_SIZE_BYTES`.
 pub const TOP_DARJEELING_SOC_PROXY_CORE_SIZE_BYTES: usize = 0x10;
-
 /// Peripheral base address for ctn device on soc_proxy in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -398,7 +385,6 @@ pub const TOP_DARJEELING_SOC_PROXY_CTN_BASE_ADDR: usize = 0x40000000;
 /// address between #TOP_DARJEELING_SOC_PROXY_CTN_BASE_ADDR and
 /// `TOP_DARJEELING_SOC_PROXY_CTN_BASE_ADDR + TOP_DARJEELING_SOC_PROXY_CTN_SIZE_BYTES`.
 pub const TOP_DARJEELING_SOC_PROXY_CTN_SIZE_BYTES: usize = 0x40000000;
-
 /// Peripheral base address for regs device on sram_ctrl_ret_aon in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -412,7 +398,6 @@ pub const TOP_DARJEELING_SRAM_CTRL_RET_AON_REGS_BASE_ADDR: usize = 0x30500000;
 /// address between #TOP_DARJEELING_SRAM_CTRL_RET_AON_REGS_BASE_ADDR and
 /// `TOP_DARJEELING_SRAM_CTRL_RET_AON_REGS_BASE_ADDR + TOP_DARJEELING_SRAM_CTRL_RET_AON_REGS_SIZE_BYTES`.
 pub const TOP_DARJEELING_SRAM_CTRL_RET_AON_REGS_SIZE_BYTES: usize = 0x20;
-
 /// Peripheral base address for ram device on sram_ctrl_ret_aon in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -426,7 +411,6 @@ pub const TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR: usize = 0x30600000;
 /// address between #TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR and
 /// `TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR + TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES`.
 pub const TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES: usize = 0x1000;
-
 /// Peripheral base address for core device on flash_ctrl in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -440,7 +424,6 @@ pub const TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR: usize = 0x33000000;
 /// address between #TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR and
 /// `TOP_DARJEELING_FLASH_CTRL_CORE_BASE_ADDR + TOP_DARJEELING_FLASH_CTRL_CORE_SIZE_BYTES`.
 pub const TOP_DARJEELING_FLASH_CTRL_CORE_SIZE_BYTES: usize = 0x200;
-
 /// Peripheral base address for prim device on flash_ctrl in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -454,7 +437,6 @@ pub const TOP_DARJEELING_FLASH_CTRL_PRIM_BASE_ADDR: usize = 0x33008000;
 /// address between #TOP_DARJEELING_FLASH_CTRL_PRIM_BASE_ADDR and
 /// `TOP_DARJEELING_FLASH_CTRL_PRIM_BASE_ADDR + TOP_DARJEELING_FLASH_CTRL_PRIM_SIZE_BYTES`.
 pub const TOP_DARJEELING_FLASH_CTRL_PRIM_SIZE_BYTES: usize = 0x80;
-
 /// Peripheral base address for mem device on flash_ctrl in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -468,7 +450,6 @@ pub const TOP_DARJEELING_FLASH_CTRL_MEM_BASE_ADDR: usize = 0x34000000;
 /// address between #TOP_DARJEELING_FLASH_CTRL_MEM_BASE_ADDR and
 /// `TOP_DARJEELING_FLASH_CTRL_MEM_BASE_ADDR + TOP_DARJEELING_FLASH_CTRL_MEM_SIZE_BYTES`.
 pub const TOP_DARJEELING_FLASH_CTRL_MEM_SIZE_BYTES: usize = 0x100000;
-
 /// Peripheral base address for regs device on rv_dm in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -482,7 +463,6 @@ pub const TOP_DARJEELING_RV_DM_REGS_BASE_ADDR: usize = 0x21200000;
 /// address between #TOP_DARJEELING_RV_DM_REGS_BASE_ADDR and
 /// `TOP_DARJEELING_RV_DM_REGS_BASE_ADDR + TOP_DARJEELING_RV_DM_REGS_SIZE_BYTES`.
 pub const TOP_DARJEELING_RV_DM_REGS_SIZE_BYTES: usize = 0x4;
-
 /// Peripheral base address for mem device on rv_dm in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -496,7 +476,6 @@ pub const TOP_DARJEELING_RV_DM_MEM_BASE_ADDR: usize = 0x40000;
 /// address between #TOP_DARJEELING_RV_DM_MEM_BASE_ADDR and
 /// `TOP_DARJEELING_RV_DM_MEM_BASE_ADDR + TOP_DARJEELING_RV_DM_MEM_SIZE_BYTES`.
 pub const TOP_DARJEELING_RV_DM_MEM_SIZE_BYTES: usize = 0x1000;
-
 /// Peripheral base address for rv_plic in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -510,7 +489,6 @@ pub const TOP_DARJEELING_RV_PLIC_BASE_ADDR: usize = 0x28000000;
 /// address between #TOP_DARJEELING_RV_PLIC_BASE_ADDR and
 /// `TOP_DARJEELING_RV_PLIC_BASE_ADDR + TOP_DARJEELING_RV_PLIC_SIZE_BYTES`.
 pub const TOP_DARJEELING_RV_PLIC_SIZE_BYTES: usize = 0x8000000;
-
 /// Peripheral base address for aes in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -524,7 +502,6 @@ pub const TOP_DARJEELING_AES_BASE_ADDR: usize = 0x21100000;
 /// address between #TOP_DARJEELING_AES_BASE_ADDR and
 /// `TOP_DARJEELING_AES_BASE_ADDR + TOP_DARJEELING_AES_SIZE_BYTES`.
 pub const TOP_DARJEELING_AES_SIZE_BYTES: usize = 0x100;
-
 /// Peripheral base address for hmac in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -538,7 +515,6 @@ pub const TOP_DARJEELING_HMAC_BASE_ADDR: usize = 0x21110000;
 /// address between #TOP_DARJEELING_HMAC_BASE_ADDR and
 /// `TOP_DARJEELING_HMAC_BASE_ADDR + TOP_DARJEELING_HMAC_SIZE_BYTES`.
 pub const TOP_DARJEELING_HMAC_SIZE_BYTES: usize = 0x1000;
-
 /// Peripheral base address for kmac in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -552,7 +528,6 @@ pub const TOP_DARJEELING_KMAC_BASE_ADDR: usize = 0x21120000;
 /// address between #TOP_DARJEELING_KMAC_BASE_ADDR and
 /// `TOP_DARJEELING_KMAC_BASE_ADDR + TOP_DARJEELING_KMAC_SIZE_BYTES`.
 pub const TOP_DARJEELING_KMAC_SIZE_BYTES: usize = 0x1000;
-
 /// Peripheral base address for otbn in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -566,7 +541,6 @@ pub const TOP_DARJEELING_OTBN_BASE_ADDR: usize = 0x21130000;
 /// address between #TOP_DARJEELING_OTBN_BASE_ADDR and
 /// `TOP_DARJEELING_OTBN_BASE_ADDR + TOP_DARJEELING_OTBN_SIZE_BYTES`.
 pub const TOP_DARJEELING_OTBN_SIZE_BYTES: usize = 0x10000;
-
 /// Peripheral base address for keymgr in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -580,7 +554,6 @@ pub const TOP_DARJEELING_KEYMGR_BASE_ADDR: usize = 0x21140000;
 /// address between #TOP_DARJEELING_KEYMGR_BASE_ADDR and
 /// `TOP_DARJEELING_KEYMGR_BASE_ADDR + TOP_DARJEELING_KEYMGR_SIZE_BYTES`.
 pub const TOP_DARJEELING_KEYMGR_SIZE_BYTES: usize = 0x100;
-
 /// Peripheral base address for csrng in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -594,7 +567,6 @@ pub const TOP_DARJEELING_CSRNG_BASE_ADDR: usize = 0x21150000;
 /// address between #TOP_DARJEELING_CSRNG_BASE_ADDR and
 /// `TOP_DARJEELING_CSRNG_BASE_ADDR + TOP_DARJEELING_CSRNG_SIZE_BYTES`.
 pub const TOP_DARJEELING_CSRNG_SIZE_BYTES: usize = 0x80;
-
 /// Peripheral base address for edn0 in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -608,7 +580,6 @@ pub const TOP_DARJEELING_EDN0_BASE_ADDR: usize = 0x21170000;
 /// address between #TOP_DARJEELING_EDN0_BASE_ADDR and
 /// `TOP_DARJEELING_EDN0_BASE_ADDR + TOP_DARJEELING_EDN0_SIZE_BYTES`.
 pub const TOP_DARJEELING_EDN0_SIZE_BYTES: usize = 0x80;
-
 /// Peripheral base address for edn1 in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -622,7 +593,6 @@ pub const TOP_DARJEELING_EDN1_BASE_ADDR: usize = 0x21180000;
 /// address between #TOP_DARJEELING_EDN1_BASE_ADDR and
 /// `TOP_DARJEELING_EDN1_BASE_ADDR + TOP_DARJEELING_EDN1_SIZE_BYTES`.
 pub const TOP_DARJEELING_EDN1_SIZE_BYTES: usize = 0x80;
-
 /// Peripheral base address for regs device on sram_ctrl_main in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -636,7 +606,6 @@ pub const TOP_DARJEELING_SRAM_CTRL_MAIN_REGS_BASE_ADDR: usize = 0x211C0000;
 /// address between #TOP_DARJEELING_SRAM_CTRL_MAIN_REGS_BASE_ADDR and
 /// `TOP_DARJEELING_SRAM_CTRL_MAIN_REGS_BASE_ADDR + TOP_DARJEELING_SRAM_CTRL_MAIN_REGS_SIZE_BYTES`.
 pub const TOP_DARJEELING_SRAM_CTRL_MAIN_REGS_SIZE_BYTES: usize = 0x20;
-
 /// Peripheral base address for ram device on sram_ctrl_main in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -650,7 +619,6 @@ pub const TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR: usize = 0x10000000;
 /// address between #TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR and
 /// `TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR + TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES`.
 pub const TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES: usize = 0x10000;
-
 /// Peripheral base address for regs device on sram_ctrl_mbox in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -664,7 +632,6 @@ pub const TOP_DARJEELING_SRAM_CTRL_MBOX_REGS_BASE_ADDR: usize = 0x211D0000;
 /// address between #TOP_DARJEELING_SRAM_CTRL_MBOX_REGS_BASE_ADDR and
 /// `TOP_DARJEELING_SRAM_CTRL_MBOX_REGS_BASE_ADDR + TOP_DARJEELING_SRAM_CTRL_MBOX_REGS_SIZE_BYTES`.
 pub const TOP_DARJEELING_SRAM_CTRL_MBOX_REGS_SIZE_BYTES: usize = 0x20;
-
 /// Peripheral base address for ram device on sram_ctrl_mbox in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -678,7 +645,6 @@ pub const TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_BASE_ADDR: usize = 0x11000000;
 /// address between #TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_BASE_ADDR and
 /// `TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_BASE_ADDR + TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_SIZE_BYTES`.
 pub const TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_SIZE_BYTES: usize = 0x1000;
-
 /// Peripheral base address for regs device on rom_ctrl0 in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -692,7 +658,6 @@ pub const TOP_DARJEELING_ROM_CTRL0_REGS_BASE_ADDR: usize = 0x211E0000;
 /// address between #TOP_DARJEELING_ROM_CTRL0_REGS_BASE_ADDR and
 /// `TOP_DARJEELING_ROM_CTRL0_REGS_BASE_ADDR + TOP_DARJEELING_ROM_CTRL0_REGS_SIZE_BYTES`.
 pub const TOP_DARJEELING_ROM_CTRL0_REGS_SIZE_BYTES: usize = 0x80;
-
 /// Peripheral base address for rom device on rom_ctrl0 in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -706,7 +671,6 @@ pub const TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR: usize = 0x8000;
 /// address between #TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR and
 /// `TOP_DARJEELING_ROM_CTRL0_ROM_BASE_ADDR + TOP_DARJEELING_ROM_CTRL0_ROM_SIZE_BYTES`.
 pub const TOP_DARJEELING_ROM_CTRL0_ROM_SIZE_BYTES: usize = 0x8000;
-
 /// Peripheral base address for regs device on rom_ctrl1 in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -720,7 +684,6 @@ pub const TOP_DARJEELING_ROM_CTRL1_REGS_BASE_ADDR: usize = 0x211E1000;
 /// address between #TOP_DARJEELING_ROM_CTRL1_REGS_BASE_ADDR and
 /// `TOP_DARJEELING_ROM_CTRL1_REGS_BASE_ADDR + TOP_DARJEELING_ROM_CTRL1_REGS_SIZE_BYTES`.
 pub const TOP_DARJEELING_ROM_CTRL1_REGS_SIZE_BYTES: usize = 0x80;
-
 /// Peripheral base address for rom device on rom_ctrl1 in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -734,7 +697,6 @@ pub const TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR: usize = 0x20000;
 /// address between #TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR and
 /// `TOP_DARJEELING_ROM_CTRL1_ROM_BASE_ADDR + TOP_DARJEELING_ROM_CTRL1_ROM_SIZE_BYTES`.
 pub const TOP_DARJEELING_ROM_CTRL1_ROM_SIZE_BYTES: usize = 0x10000;
-
 /// Peripheral base address for dma in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -748,7 +710,6 @@ pub const TOP_DARJEELING_DMA_BASE_ADDR: usize = 0x22010000;
 /// address between #TOP_DARJEELING_DMA_BASE_ADDR and
 /// `TOP_DARJEELING_DMA_BASE_ADDR + TOP_DARJEELING_DMA_SIZE_BYTES`.
 pub const TOP_DARJEELING_DMA_SIZE_BYTES: usize = 0x100;
-
 /// Peripheral base address for cfg device on rv_core_ibex in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped

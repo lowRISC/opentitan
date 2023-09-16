@@ -456,9 +456,7 @@ module tb;
           .depth ($size(`RAM_CTN_MEM_HIER)),
           .n_bits($bits(`RAM_CTN_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
-          // The CTN RAM is currently mapped to 32'h04100000
-          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_CTN_BASE_ADDR +
-                                CtnSramAddrBase));
+          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_RAM_CTN_BASE_ADDR));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamCtn0], `RAM_CTN_MEM_HIER)
 
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for ROM0", UVM_MEDIUM)

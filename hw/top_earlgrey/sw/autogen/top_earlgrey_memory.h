@@ -22,45 +22,44 @@
 
 
 /**
- * Memory base for sram_ctrl_ret_aon_ram_ret_aon in top earlgrey.
+ * Memory base address for ram_ret_aon in top earlgrey.
  */
 #define TOP_EARLGREY_RAM_RET_AON_BASE_ADDR 0x40600000
 
 /**
- * Memory size for sram_ctrl_ret_aon_ram_ret_aon in top earlgrey.
+ * Memory size for ram_ret_aon in top earlgrey.
  */
 #define TOP_EARLGREY_RAM_RET_AON_SIZE_BYTES 0x1000
 
 /**
- * Memory base for flash_ctrl_eflash in top earlgrey.
+ * Memory base address for eflash in top earlgrey.
  */
 #define TOP_EARLGREY_EFLASH_BASE_ADDR 0x20000000
 
 /**
- * Memory size for flash_ctrl_eflash in top earlgrey.
+ * Memory size for eflash in top earlgrey.
  */
 #define TOP_EARLGREY_EFLASH_SIZE_BYTES 0x100000
 
 /**
- * Memory base for sram_ctrl_main_ram_main in top earlgrey.
+ * Memory base address for ram_main in top earlgrey.
  */
 #define TOP_EARLGREY_RAM_MAIN_BASE_ADDR 0x10000000
 
 /**
- * Memory size for sram_ctrl_main_ram_main in top earlgrey.
+ * Memory size for ram_main in top earlgrey.
  */
 #define TOP_EARLGREY_RAM_MAIN_SIZE_BYTES 0x20000
 
 /**
- * Memory base for rom_ctrl0_rom0 in top earlgrey.
+ * Memory base address for rom0 in top earlgrey.
  */
-#define TOP_EARLGREY_ROM0_BASE_ADDR 0x00008000
+#define TOP_EARLGREY_ROM0_BASE_ADDR 0x8000
 
 /**
- * Memory size for rom_ctrl0_rom0 in top earlgrey.
+ * Memory size for rom0 in top earlgrey.
  */
 #define TOP_EARLGREY_ROM0_SIZE_BYTES 0x8000
-
 
 
 /**

@@ -21,34 +21,46 @@
 #ifdef __ASSEMBLER__
 
 
-% for m in top["module"]:
-  % if "memory" in m:
-    % for key, val in m["memory"].items():
-/**
- * Memory base for ${m["name"]}_${val["label"]} in top ${top["name"]}.
- */
-#define TOP_${top["name"].upper()}_${val["label"].upper()}_BASE_ADDR ${m["base_addrs"][key][helper.addr_space]}
+% for name, region in helper.memories():
+<%
+    hex_base_addr = "0x{:X}".format(region.base_addr)
+    hex_size_bytes = "0x{:X}".format(region.size_bytes)
 
-/**
- * Memory size for ${m["name"]}_${val["label"]} in top ${top["name"]}.
- */
-#define TOP_${top["name"].upper()}_${val["label"].upper()}_SIZE_BYTES ${val["size"]}
+    base_addr_name = region.base_addr_name().as_c_define()
+    size_bytes_name = region.size_bytes_name().as_c_define()
 
-    % endfor
-  % endif
-% endfor
-
-% for m in top["memory"]:
+%>\
 /**
- * Memory base address for ${m["name"]} in top ${top["name"]}.
+ * Memory base address for ${name} in top ${top["name"]}.
  */
-#define TOP_${top["name"].upper()}_${m["name"].upper()}_BASE_ADDR ${m["base_addr"][helper.addr_space]}
+#define ${base_addr_name} ${hex_base_addr}
 
 /**
- * Memory size for ${m["name"]} in top ${top["name"]}.
+ * Memory size for ${name} in top ${top["name"]}.
  */
-#define TOP_${top["name"].upper()}_${m["name"].upper()}_SIZE_BYTES ${m["size"]}
+#define ${size_bytes_name} ${hex_size_bytes}
 
+## TODO: we need a more holistic approach to declare memories and IPs sitting in the
+## CTN address space. For now, we create the base and offset for the CTN SRAM with this workaround.
+% if name == "ctn":
+<%
+    hex_base_addr = "0x{:X}".format(region.base_addr + 0x01000000)
+    hex_size_bytes = "0x{:X}".format(0x00100000)
+
+    base_addr_name = region.base_addr_name().as_c_define().replace('CTN', 'RAM_CTN')
+    size_bytes_name = region.size_bytes_name().as_c_define().replace('CTN', 'RAM_CTN')
+
+%>\
+/**
+ * Memory base address for ram_ctn in top ${top["name"]}.
+ */
+#define ${base_addr_name} ${hex_base_addr}
+
+/**
+ * Memory size for ram_ctn in top ${top["name"]}.
+ */
+#define ${size_bytes_name} ${hex_size_bytes}
+% endif
 % endfor
 
 % for (inst_name, if_name), region in helper.devices():

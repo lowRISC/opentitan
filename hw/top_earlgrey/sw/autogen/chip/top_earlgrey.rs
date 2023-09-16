@@ -677,16 +677,19 @@ pub const RAM_RET_AON_BASE_ADDR: usize = 0x40600000;
 
 /// Memory size for ram_ret_aon in top earlgrey.
 pub const RAM_RET_AON_SIZE_BYTES: usize = 0x1000;
+
 /// Memory base address for eflash in top earlgrey.
 pub const EFLASH_BASE_ADDR: usize = 0x20000000;
 
 /// Memory size for eflash in top earlgrey.
 pub const EFLASH_SIZE_BYTES: usize = 0x100000;
+
 /// Memory base address for ram_main in top earlgrey.
 pub const RAM_MAIN_BASE_ADDR: usize = 0x10000000;
 
 /// Memory size for ram_main in top earlgrey.
 pub const RAM_MAIN_SIZE_BYTES: usize = 0x20000;
+
 /// Memory base address for rom0 in top earlgrey.
 pub const ROM0_BASE_ADDR: usize = 0x8000;
 

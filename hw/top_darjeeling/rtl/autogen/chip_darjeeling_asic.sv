@@ -1081,12 +1081,16 @@ module chip_darjeeling_asic #(
   logic [CtnSramDw-1:0] sram_wdata, sram_wmask, sram_rdata;
 
   // Steering of requests.
+  // Addresses leaving the RoT through the CTN port are mapped to an internal 1G address space of
+  // 0x4000_0000 - 0x8000_0000. However, the CTN RAM only covers a 1MB region inside that space,
+  // and hence additional decoding and steering logic is needed here.
   // TODO: this should in the future be replaced by an automatically generated crossbar.
   always_comb begin
     // Default steering to generate error response if address is not within the range
     ctn_dev_sel_s1n = 1'b1;
     // Steering to CTN SRAM.
-    if ((ctn_egress_tl_h2d.a_address & ~top_pkg::CtnSramAddrMask) == top_pkg::CtnSramAddrBase) begin
+    if ((ctn_egress_tl_h2d.a_address & ~(TOP_DARJEELING_RAM_CTN_SIZE_BYTES-1)) ==
+        TOP_DARJEELING_RAM_CTN_BASE_ADDR) begin
       ctn_dev_sel_s1n = 1'd0;
     end
   end

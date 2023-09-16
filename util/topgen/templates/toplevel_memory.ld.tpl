@@ -59,6 +59,17 @@ MEMORY {
 % for m in top["memory"]:
   ${m["name"]}(${memory_to_flags(m)}) : ORIGIN = ${m["base_addr"][helper.addr_space]}, LENGTH = ${m["size"]}
 % endfor
+## TODO: need to find a more holistic way to define memories on the wrapper CTN crossbar.
+## At the moment, the topgen tooling is only aware of the CTN address space as a whole.
+% for m in top["module"]:
+  % if "memory" in m:
+    % for key, mem in m["memory"].items():
+      % if mem["label"] == "ctn":
+  ram_ctn(${flags(mem)}) : ORIGIN = ${m["base_addrs"][key][helper.addr_space]} + 0x01000000, LENGTH = 0x00100000
+      % endif
+    % endfor
+  % endif
+% endfor
   rom_ext_virtual(rx) : ORIGIN = 0x90000000, LENGTH = ${get_virtual_memory_size(top)}
   owner_virtual(rx) : ORIGIN = 0xa0000000, LENGTH = ${get_virtual_memory_size(top)}
 }

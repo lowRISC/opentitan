@@ -955,6 +955,15 @@ extern "C" {
 #define TOP_DARJEELING_CTN_SIZE_BYTES 0x40000000u
 
 /**
+ * Memory base address for ram_ctn in top darjeeling.
+ */
+#define TOP_DARJEELING_RAM_CTN_BASE_ADDR 0x41000000u
+
+/**
+ * Memory size for ram_ctn in top darjeeling.
+ */
+#define TOP_DARJEELING_RAM_CTN_SIZE_BYTES 0x100000u
+/**
  * Memory base address for ram_ret_aon in top darjeeling.
  */
 #define TOP_DARJEELING_RAM_RET_AON_BASE_ADDR 0x30600000u
