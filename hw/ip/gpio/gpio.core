@@ -11,6 +11,7 @@ filesets:
       - lowrisc:prim:all
     files:
       - rtl/gpio_reg_pkg.sv
+      - rtl/gpio_pkg.sv
       - rtl/gpio.sv
       - rtl/gpio_reg_top.sv
     file_type: systemVerilogSource

@@ -20,6 +20,7 @@ module top_earlgrey #(
   // parameters for uart3
   // parameters for gpio
   parameter bit GpioGpioAsyncOn = 1,
+  parameter bit GpioGpioAsHwStrapsEn = 0,
   // parameters for spi_device
   parameter spi_device_pkg::sram_type_e SpiDeviceSramType = spi_device_pkg::DefaultSramType,
   // parameters for i2c0
@@ -1160,7 +1161,8 @@ module top_earlgrey #(
   );
   gpio #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[4:4]),
-    .GpioAsyncOn(GpioGpioAsyncOn)
+    .GpioAsyncOn(GpioGpioAsyncOn),
+    .GpioAsHwStrapsEn(GpioGpioAsHwStrapsEn)
   ) u_gpio (
 
       // Input
@@ -1177,6 +1179,8 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[4:4] ),
 
       // Inter-module signals
+      .strap_en_i(1'b0),
+      .sampled_straps_o(),
       .tl_i(gpio_tl_req),
       .tl_o(gpio_tl_rsp),
 
