@@ -490,13 +490,36 @@ class mem_bkdr_util extends uvm_object;
   endfunction
 
   // load mem from file
-  virtual task load_mem_from_file(string file);
+  virtual task load_mem_from_file(string file, bit recompute_ecc = 0);
     check_file(file, "r");
     this.file = file;
     ->readmemh_event;
     // The delay below avoids a race condition between this mem backdoor load and a subsequent
     // backdoor write to a particular location.
     #0;
+
+    // Recompute ECC if indicated (this allows to load an image that does not have ECC present).
+    if (recompute_ecc) begin
+      case (err_detection_scheme)
+        Ecc_22_16, EccHamming_22_16, EccInv_22_16, EccInvHamming_22_16: begin
+          for (int addr = 0; addr < depth; addr += bytes_per_word) begin
+            write16(addr, read(addr));
+          end
+        end
+        Ecc_39_32, EccHamming_39_32, EccInv_39_32, EccInvHamming_39_32: begin
+          for (int addr = 0; addr < depth; addr += bytes_per_word) begin
+            write32(addr, read(addr));
+          end
+        end
+        Ecc_72_64, EccHamming_72_64, EccInv_72_64, EccInvHamming_72_64: begin
+          for (int addr = 0; addr < depth; addr += bytes_per_word) begin
+            write64(addr, read(addr));
+          end
+        end
+        // Nothing to recompute
+        default: ;
+      endcase
+    end
   endtask
 
   // save mem contents to file

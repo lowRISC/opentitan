@@ -62,7 +62,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     // Initialize the sw logger interface.
     foreach (cfg.sw_images[i]) begin
-      if (i inside {SwTypeRom, SwTypeDebug, SwTypeTestSlotA, SwTypeTestSlotB}) begin
+      if (i inside {SwTypeRom, SwTypeDebug, SwTypeTestSlotA, SwTypeTestSlotB, SwTypeCtn}) begin
         cfg.sw_logger_vif.add_sw_log_db(cfg.sw_images[i]);
       end
     end
@@ -139,8 +139,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
           {cfg.sw_images[SwTypeTestSlotB], ".64.scr.vmem"});
     end
     if (cfg.sw_images.exists(SwTypeCtn)) begin
+      // Backdoor load plain 32bit image and recompute ECC so that we don't get integrity errors.
       cfg.mem_bkdr_util_h[RamCtn0].load_mem_from_file(
-          {cfg.sw_images[SwTypeCtn], ".64.scr.vmem"});
+          .file({cfg.sw_images[SwTypeCtn], ".32.vmem"}), .recompute_ecc(1));
     end
 
     config_jitter();
@@ -563,7 +564,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
   // TODO: Need to deal with scrambling.
   virtual function void sw_symbol_backdoor_access(input string symbol,
                                                   inout bit [7:0] data[],
-                                                  input sw_type_e sw_type = SwTypeTestSlotA,
+                                                  // Used to be SwTypeTestSlotA, but Darjeeling
+                                                  // executes from the CTN SRAM.
+                                                  input sw_type_e sw_type = SwTypeCtn,
                                                   input bit does_not_exist_ok = 0,
                                                   input bit is_write = 0);
 
@@ -591,7 +594,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
     `DV_CHECK_EQ_FATAL(size, data.size())
 
     // Infer mem from address.
-    `DV_CHECK(cfg.get_mem_from_addr(addr, mem))
+    `DV_CHECK(cfg.get_mem_from_addr(addr, mem),
+              $sformatf("Memory region containing SW symbol %0s @0x%08X could not be found",
+              symbol, addr))
     `DV_CHECK_FATAL(mem inside {Rom0, [RamMain0:RamMain15], [RamCtn0:RamCtn15],
                                 FlashBank0Data, FlashBank1Data},
         $sformatf("SW symbol %0s is not expected to appear in %0s mem", symbol, mem))
@@ -625,7 +630,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
   // Wrapper function for reads via sw_symbol_backdoor_access.
   virtual function void sw_symbol_backdoor_read(input string symbol,
                                                 inout bit [7:0] data[],
-                                                input sw_type_e sw_type = SwTypeTestSlotA,
+                                                // Used to be SwTypeTestSlotA, but Darjeeling
+                                                // executes from the CTN SRAM.
+                                                input sw_type_e sw_type = SwTypeCtn,
                                                 input bit does_not_exist_ok = 0);
 
     sw_symbol_backdoor_access(symbol, data, sw_type, does_not_exist_ok, 0);
@@ -637,7 +644,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
   // Wrapper function for writes via sw_symbol_backdoor_access.
   virtual function void sw_symbol_backdoor_overwrite(input string symbol,
                                                      input bit [7:0] data[],
-                                                     input sw_type_e sw_type = SwTypeTestSlotA,
+                                                     // Used to be SwTypeTestSlotA, but Darjeeling
+                                                     // executes from the CTN SRAM.
+                                                     input sw_type_e sw_type = SwTypeCtn,
                                                      input bit does_not_exist_ok = 0);
 
     sw_symbol_backdoor_access(symbol, data, sw_type, does_not_exist_ok, 1);
