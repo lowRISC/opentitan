@@ -379,8 +379,10 @@
       desc: "Indicates whether the data in !!HW_STRAPS_DATA_IN is valid.",
       swaccess: "ro",
       hwaccess: "hrw",
-      tags: [// data_in is ro register with strap values driven externally, so exclude all check
-             "excl:CsrNonInitTests:CsrExclAll"],
+      tags: [// Value in the register is determined by GPIO pin values that are sampled
+             // at system boot time (typically triggered by the power manager). Hence,
+             // we exclude both init and non-init checks here.
+             "excl:CsrAllTests:CsrExclAll"],
       fields: [
         { bits: "0",
           resval: "0"
@@ -391,8 +393,10 @@
       desc: "GPIO Input data sampled as straps during cold boot read value",
       swaccess: "ro",
       hwaccess: "hrw",
-      tags: [// data_in is ro register with strap values driven externally, so exclude all check
-             "excl:CsrNonInitTests:CsrExclAll"],
+      tags: [// Value in the register is determined by GPIO pin values that are sampled
+             // at system boot time (typically triggered by the power manager). Hence,
+             // we exclude both init and non-init checks here.
+             "excl:CsrAllTests:CsrExclAll"],
       fields: [
         { bits: "31:0",
           resval: "0"
