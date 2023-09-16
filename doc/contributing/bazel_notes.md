@@ -371,8 +371,11 @@ Specifically, when the rustc compiler is invoked, it uses the LLVM linker that i
 This means bazel cannot ensure it is installed at a specific location, and instead just uses whatever is available on the host machine.
 The issue above points out that rustc expects the linker to be located in the same directory as `gcc`, so if on the host machine this statement is untrue, there can be build issues.
 
-To resolve this problem:
+To resolve this problem, you can either:
 1. Install the LLVM linker with, e.g., `sudo apt install lld`.
 2. Symlink `lld` to where `gcc` is installed.
 
-This workaround will be needed until the rust issue is resolved.
+or,
+1. add the build flag `--@rules_rust//:extra_rustc_toolchain_dirs=/path/to/somewhere/else` to your `.bazelrc-site` file to specify a different location on your system where host toolchain tools may be found.
+
+Either of these workarounds will be needed until the `rules_rust` issue is resolved.
