@@ -57,19 +57,24 @@ module pwrmgr_sec_cm_checker_assert
           clk_i,
           reset_or_disable)
 
+  // For any assertions involving state transitions, also allow cases where the fsm
+  // transitions to an invalid state, since we inject invalid encodings at random.
+
   // Check that unless rom_intg_chk_done is mubi true the fast state machine will
   // stay in FastPwrStateRomCheckDone.
   `ASSERT(RomBlockCheckGoodState_A,
           rom_intg_chk_done != prim_mubi_pkg::MuBi4True &&
           fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone |=>
-          fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone,
+          fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone ||
+          fast_state == pwrmgr_pkg::FastPwrStateInvalid,
           clk_i,
           reset_or_disable)
 
   `ASSERT(RomAllowCheckGoodState_A,
           rom_intg_chk_done == prim_mubi_pkg::MuBi4True &&
           fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone |=>
-          fast_state == pwrmgr_pkg::FastPwrStateRomCheckGood,
+          fast_state == pwrmgr_pkg::FastPwrStateRomCheckGood ||
+          fast_state == pwrmgr_pkg::FastPwrStateInvalid,
           clk_i,
           reset_or_disable)
 
@@ -79,7 +84,8 @@ module pwrmgr_sec_cm_checker_assert
           rom_intg_chk_good != prim_mubi_pkg::MuBi4True &&
           rom_intg_chk_dis != prim_mubi_pkg::MuBi4True &&
           fast_state == pwrmgr_pkg::FastPwrStateRomCheckGood |=>
-          fast_state == pwrmgr_pkg::FastPwrStateRomCheckGood,
+          fast_state == pwrmgr_pkg::FastPwrStateRomCheckGood ||
+          fast_state == pwrmgr_pkg::FastPwrStateInvalid,
           clk_i,
           reset_or_disable)
 
@@ -87,7 +93,8 @@ module pwrmgr_sec_cm_checker_assert
           (rom_intg_chk_good == prim_mubi_pkg::MuBi4True ||
            rom_intg_chk_dis == prim_mubi_pkg::MuBi4True) &&
           fast_state == pwrmgr_pkg::FastPwrStateRomCheckGood |=>
-          fast_state == pwrmgr_pkg::FastPwrStateActive,
+          fast_state == pwrmgr_pkg::FastPwrStateActive ||
+          fast_state == pwrmgr_pkg::FastPwrStateInvalid,
           clk_i,
           reset_or_disable)
 
