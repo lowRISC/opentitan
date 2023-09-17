@@ -1,0 +1,81 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: chip_sysrst_ctrl
+  testpoints: [
+    {
+      name: chip_sw_sysrst_ctrl_combo_reset
+      desc: '''Verify that sysrst_ctrl issue reset on combo detection
+
+            - Initialize sysrst_ctrl with combo detect and output of combo detect as rst_req assertion.
+            - Wait for a delay greater than combo detect timer
+            - Check if there is a reset and if reset source is sysrst_ctrl
+            - Check if sysrst_ctrl.WKUP_STATUS.wakeup_sts is set
+            '''
+      features: ["SYSRST_CTRL.COMBO_DETECT"]
+      stage: V3
+      si_stage: SV2
+      lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
+      tests: ["chip_sw_pwrmgr_sysrst_ctrl_reset", "chip_sw_sysrst_ctrl_reset"]
+    }
+    {
+      name: chip_sw_sysrst_ctrl_input
+      desc: '''Verify that SW can access the raw value of input signal via sysrst_ctrl
+
+            - Initialize sysrst_ctrl
+            - set the following input signals with a random value
+              - pwrb_in_i
+              - key2_in_i
+              - key1_in_i
+              - key0_in_i
+              - ac_present_i
+              - ec_rst_l_i
+              - flash_wp_l_i
+            - Wait for values to synchronize
+            - Read sysrst_ctrl.PIN_IN_VALUE and check if it matches the values being driven on inputs
+            - Repeat the sequence for different combinations of input signals
+
+            '''
+      features: ["SYSRST_CTRL.PIN_INPUT_VALUE_ACCESS"]
+      stage: V3
+      si_stage: SV2
+      lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
+      tests: ["chip_sw_sysrst_ctrl_inputs"]
+    }
+    {
+      name: chip_sw_sysrst_ctrl_input_interrupt
+      desc: '''Verify that SW can detect the key input transition via sysrst_ctrl
+
+            - initialize sysrst_ctrl to detect key input transitions
+            - program sysrst_ctrl.KEY_INTR_CTL with a random value
+            - program timer register sysrst_ctrl.KEY_INTR_DEBOUNCE_CTL
+            - Toggle the key inputs and wait for interrupt from sysrst_ctrl
+            - check that KEY_INTR_STATUS matches the toggled key input signals
+            - Check that sysrst_ctrl.WKUP_STATUS.wakeup_sts is set
+            '''
+      features: ["SYSRST_CTRL.INPUT_TRIGGERED_INTERRUPT"]
+      stage: V3
+      si_stage: SV2
+      lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
+      tests: ["chip_sw_sysrst_ctrl_in_irq"]
+    }
+    {
+        name: chip_sw_sysrst_ctrl_ulp_wakeup
+        desc: '''Verify that sysrst_ctrl wakesup the OT
+
+              - Intialize sysrst_ctrl to detect input signal transitions for wakeup
+              - Program OT in to Low power state
+              - Toggle input signals programmed for ULP feature
+              - Check that after debounce time, OT wakesup and wakeup source is sysrst_ctrl
+              - Check that ULP_STATUS is as expected
+              - Check INTR_STATE is as expected
+              '''
+        features: ["SYSRST_CTRL.ULATRA_LOW_POWER_WAKEUP"]
+        stage: V3
+        si_stage:SV2
+        lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
+        tests: ["chip_sw_sysrst_ctrl_ulp_z3_wakeup"]
+    }
+  ]
+}

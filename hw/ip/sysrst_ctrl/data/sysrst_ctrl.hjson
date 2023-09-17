@@ -106,6 +106,64 @@
       width:   "1"
     }
   ],
+  features: [
+    {
+      name: "SYSRST_CTRL.COMBO_DETECT"
+      desc: '''
+            sys_rst_ctrl block can be configured to detect input key combinations
+            with optional precondition
+            '''
+    }
+    {
+      name: "SYSRST_CTRL.AUTO_BLOCK_KEY_OUTPUT"
+      desc: '''
+            sysrst_ctrl block can be configured to override the output value of specific passthrough signals,
+            depending on whether certain input signals are asserted or not
+            '''
+    }
+    {
+      name: "SYSRST_CTRL.INPUT_TRIGGERED_INTERRUPT"
+      desc: '''
+            sysrst_ctrl block can be configured to assert interrupt based on a combination of input signal transitions
+            '''
+    }
+    {
+      name: "SYSRST_CTRL.ULTRA_LOW_POWER_WAKEUP"
+      desc: '''
+            sysrst_ctrl block can be programmed to detect certain specific signal transitions on the
+            ac_present_i, pwrb_in_i and lid_open_i inputs. After this transition is held for a programmed time,
+            sysrst_ctrl block triggers z3_wakeup signal
+            '''
+    }
+    {
+      name: "SYSRST_CTRL.PINOUT_KEY_INVERSION_CONTROL"
+      desc: '''
+            sysrst_ctrl block can be programmed to override all output signals, and change the signal polarity
+            of some of the input and output signals
+            '''
+    }
+    {
+      name: "SYSRST_CTRL.HARDWARE_RESET_STRETCH"
+      desc: '''
+            When OpenTitan is in reset, ec_rst_l_o will be asserted (active low).
+            The power-on-reset value of PIN_ALLOWED_CTL.EC_RST_L_1 and PIN_OUT_CTL.EC_RST_L will
+            guarantee that ec_rst_l_o remains asserted after OpenTitan reset is released.
+            '''
+    }
+    {
+      name: "SYSRST_CTRL.FLASH_WRITE_PROTECT"
+      desc: '''
+            Upon reset, the flash_wp_l_o signal will be asserted active low.
+            The software can release flash_wp_l_o explicitly by setting PIN_OUT_CTL.FLASH_WP_L to 0 when needed.
+            '''
+    }
+    {
+      name: "SYSRST_CTRL.PIN_INPUT_VALUE_ACCESS"
+      desc: '''
+            sysrst_ctrl allows the software to read the raw input pin values via the PIN_IN_VALUE register like GPIOs.
+            '''
+    }
+  ]
   countermeasures: [
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
