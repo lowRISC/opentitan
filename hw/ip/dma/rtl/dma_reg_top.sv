@@ -52,9 +52,9 @@ module dma_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [55:0] reg_we_check;
+  logic [61:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(56)
+    .OneHotWidth(62)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -217,8 +217,8 @@ module dma_reg_top (
   logic [31:0] handshake_interrupt_enable_qs;
   logic [31:0] handshake_interrupt_enable_wd;
   logic clear_int_src_we;
-  logic [7:0] clear_int_src_qs;
-  logic [7:0] clear_int_src_wd;
+  logic [10:0] clear_int_src_qs;
+  logic [10:0] clear_int_src_wd;
   logic [31:0] sha2_digest_0_qs;
   logic [31:0] sha2_digest_1_qs;
   logic [31:0] sha2_digest_2_qs;
@@ -236,8 +236,8 @@ module dma_reg_top (
   logic [31:0] sha2_digest_14_qs;
   logic [31:0] sha2_digest_15_qs;
   logic clear_int_bus_we;
-  logic [7:0] clear_int_bus_qs;
-  logic [7:0] clear_int_bus_wd;
+  logic [10:0] clear_int_bus_qs;
+  logic [10:0] clear_int_bus_wd;
   logic int_source_addr_0_we;
   logic [31:0] int_source_addr_0_qs;
   logic [31:0] int_source_addr_0_wd;
@@ -262,6 +262,15 @@ module dma_reg_top (
   logic int_source_addr_7_we;
   logic [31:0] int_source_addr_7_qs;
   logic [31:0] int_source_addr_7_wd;
+  logic int_source_addr_8_we;
+  logic [31:0] int_source_addr_8_qs;
+  logic [31:0] int_source_addr_8_wd;
+  logic int_source_addr_9_we;
+  logic [31:0] int_source_addr_9_qs;
+  logic [31:0] int_source_addr_9_wd;
+  logic int_source_addr_10_we;
+  logic [31:0] int_source_addr_10_qs;
+  logic [31:0] int_source_addr_10_wd;
   logic int_source_wr_val_0_we;
   logic [31:0] int_source_wr_val_0_qs;
   logic [31:0] int_source_wr_val_0_wd;
@@ -286,6 +295,15 @@ module dma_reg_top (
   logic int_source_wr_val_7_we;
   logic [31:0] int_source_wr_val_7_qs;
   logic [31:0] int_source_wr_val_7_wd;
+  logic int_source_wr_val_8_we;
+  logic [31:0] int_source_wr_val_8_qs;
+  logic [31:0] int_source_wr_val_8_wd;
+  logic int_source_wr_val_9_we;
+  logic [31:0] int_source_wr_val_9_qs;
+  logic [31:0] int_source_wr_val_9_wd;
+  logic int_source_wr_val_10_we;
+  logic [31:0] int_source_wr_val_10_qs;
+  logic [31:0] int_source_wr_val_10_wd;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -1557,9 +1575,9 @@ module dma_reg_top (
     .q_o(clear_int_src_qe)
   );
   prim_subreg #(
-    .DW      (8),
+    .DW      (11),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
+    .RESVAL  (11'h0),
     .Mubi    (1'b0)
   ) u_clear_int_src (
     .clk_i   (clk_i),
@@ -2061,9 +2079,9 @@ module dma_reg_top (
     .q_o(clear_int_bus_qe)
   );
   prim_subreg #(
-    .DW      (8),
+    .DW      (11),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
+    .RESVAL  (11'h0),
     .Mubi    (1'b0)
   ) u_clear_int_bus (
     .clk_i   (clk_i),
@@ -2416,6 +2434,129 @@ module dma_reg_top (
   assign reg2hw.int_source_addr[7].qe = int_source_addr_7_qe;
 
 
+  // Subregister 8 of Multireg int_source_addr
+  // R[int_source_addr_8]: V(False)
+  logic int_source_addr_8_qe;
+  logic [0:0] int_source_addr_8_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_int_source_addr8_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&int_source_addr_8_flds_we),
+    .q_o(int_source_addr_8_qe)
+  );
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_int_source_addr_8 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (int_source_addr_8_we),
+    .wd     (int_source_addr_8_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (int_source_addr_8_flds_we[0]),
+    .q      (reg2hw.int_source_addr[8].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (int_source_addr_8_qs)
+  );
+  assign reg2hw.int_source_addr[8].qe = int_source_addr_8_qe;
+
+
+  // Subregister 9 of Multireg int_source_addr
+  // R[int_source_addr_9]: V(False)
+  logic int_source_addr_9_qe;
+  logic [0:0] int_source_addr_9_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_int_source_addr9_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&int_source_addr_9_flds_we),
+    .q_o(int_source_addr_9_qe)
+  );
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_int_source_addr_9 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (int_source_addr_9_we),
+    .wd     (int_source_addr_9_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (int_source_addr_9_flds_we[0]),
+    .q      (reg2hw.int_source_addr[9].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (int_source_addr_9_qs)
+  );
+  assign reg2hw.int_source_addr[9].qe = int_source_addr_9_qe;
+
+
+  // Subregister 10 of Multireg int_source_addr
+  // R[int_source_addr_10]: V(False)
+  logic int_source_addr_10_qe;
+  logic [0:0] int_source_addr_10_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_int_source_addr10_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&int_source_addr_10_flds_we),
+    .q_o(int_source_addr_10_qe)
+  );
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_int_source_addr_10 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (int_source_addr_10_we),
+    .wd     (int_source_addr_10_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (int_source_addr_10_flds_we[0]),
+    .q      (reg2hw.int_source_addr[10].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (int_source_addr_10_qs)
+  );
+  assign reg2hw.int_source_addr[10].qe = int_source_addr_10_qe;
+
+
   // Subregister 0 of Multireg int_source_wr_val
   // R[int_source_wr_val_0]: V(False)
   logic int_source_wr_val_0_qe;
@@ -2744,8 +2885,131 @@ module dma_reg_top (
   assign reg2hw.int_source_wr_val[7].qe = int_source_wr_val_7_qe;
 
 
+  // Subregister 8 of Multireg int_source_wr_val
+  // R[int_source_wr_val_8]: V(False)
+  logic int_source_wr_val_8_qe;
+  logic [0:0] int_source_wr_val_8_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_int_source_wr_val8_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&int_source_wr_val_8_flds_we),
+    .q_o(int_source_wr_val_8_qe)
+  );
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_int_source_wr_val_8 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-  logic [55:0] addr_hit;
+    // from register interface
+    .we     (int_source_wr_val_8_we),
+    .wd     (int_source_wr_val_8_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (int_source_wr_val_8_flds_we[0]),
+    .q      (reg2hw.int_source_wr_val[8].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (int_source_wr_val_8_qs)
+  );
+  assign reg2hw.int_source_wr_val[8].qe = int_source_wr_val_8_qe;
+
+
+  // Subregister 9 of Multireg int_source_wr_val
+  // R[int_source_wr_val_9]: V(False)
+  logic int_source_wr_val_9_qe;
+  logic [0:0] int_source_wr_val_9_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_int_source_wr_val9_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&int_source_wr_val_9_flds_we),
+    .q_o(int_source_wr_val_9_qe)
+  );
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_int_source_wr_val_9 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (int_source_wr_val_9_we),
+    .wd     (int_source_wr_val_9_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (int_source_wr_val_9_flds_we[0]),
+    .q      (reg2hw.int_source_wr_val[9].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (int_source_wr_val_9_qs)
+  );
+  assign reg2hw.int_source_wr_val[9].qe = int_source_wr_val_9_qe;
+
+
+  // Subregister 10 of Multireg int_source_wr_val
+  // R[int_source_wr_val_10]: V(False)
+  logic int_source_wr_val_10_qe;
+  logic [0:0] int_source_wr_val_10_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_int_source_wr_val10_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&int_source_wr_val_10_flds_we),
+    .q_o(int_source_wr_val_10_qe)
+  );
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_int_source_wr_val_10 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (int_source_wr_val_10_we),
+    .wd     (int_source_wr_val_10_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (int_source_wr_val_10_flds_we[0]),
+    .q      (reg2hw.int_source_wr_val[10].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (int_source_wr_val_10_qs)
+  );
+  assign reg2hw.int_source_wr_val[10].qe = int_source_wr_val_10_qe;
+
+
+
+  logic [61:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == DMA_INTR_STATE_OFFSET);
@@ -2796,14 +3060,20 @@ module dma_reg_top (
     addr_hit[45] = (reg_addr == DMA_INT_SOURCE_ADDR_5_OFFSET);
     addr_hit[46] = (reg_addr == DMA_INT_SOURCE_ADDR_6_OFFSET);
     addr_hit[47] = (reg_addr == DMA_INT_SOURCE_ADDR_7_OFFSET);
-    addr_hit[48] = (reg_addr == DMA_INT_SOURCE_WR_VAL_0_OFFSET);
-    addr_hit[49] = (reg_addr == DMA_INT_SOURCE_WR_VAL_1_OFFSET);
-    addr_hit[50] = (reg_addr == DMA_INT_SOURCE_WR_VAL_2_OFFSET);
-    addr_hit[51] = (reg_addr == DMA_INT_SOURCE_WR_VAL_3_OFFSET);
-    addr_hit[52] = (reg_addr == DMA_INT_SOURCE_WR_VAL_4_OFFSET);
-    addr_hit[53] = (reg_addr == DMA_INT_SOURCE_WR_VAL_5_OFFSET);
-    addr_hit[54] = (reg_addr == DMA_INT_SOURCE_WR_VAL_6_OFFSET);
-    addr_hit[55] = (reg_addr == DMA_INT_SOURCE_WR_VAL_7_OFFSET);
+    addr_hit[48] = (reg_addr == DMA_INT_SOURCE_ADDR_8_OFFSET);
+    addr_hit[49] = (reg_addr == DMA_INT_SOURCE_ADDR_9_OFFSET);
+    addr_hit[50] = (reg_addr == DMA_INT_SOURCE_ADDR_10_OFFSET);
+    addr_hit[51] = (reg_addr == DMA_INT_SOURCE_WR_VAL_0_OFFSET);
+    addr_hit[52] = (reg_addr == DMA_INT_SOURCE_WR_VAL_1_OFFSET);
+    addr_hit[53] = (reg_addr == DMA_INT_SOURCE_WR_VAL_2_OFFSET);
+    addr_hit[54] = (reg_addr == DMA_INT_SOURCE_WR_VAL_3_OFFSET);
+    addr_hit[55] = (reg_addr == DMA_INT_SOURCE_WR_VAL_4_OFFSET);
+    addr_hit[56] = (reg_addr == DMA_INT_SOURCE_WR_VAL_5_OFFSET);
+    addr_hit[57] = (reg_addr == DMA_INT_SOURCE_WR_VAL_6_OFFSET);
+    addr_hit[58] = (reg_addr == DMA_INT_SOURCE_WR_VAL_7_OFFSET);
+    addr_hit[59] = (reg_addr == DMA_INT_SOURCE_WR_VAL_8_OFFSET);
+    addr_hit[60] = (reg_addr == DMA_INT_SOURCE_WR_VAL_9_OFFSET);
+    addr_hit[61] = (reg_addr == DMA_INT_SOURCE_WR_VAL_10_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -2866,7 +3136,13 @@ module dma_reg_top (
                (addr_hit[52] & (|(DMA_PERMIT[52] & ~reg_be))) |
                (addr_hit[53] & (|(DMA_PERMIT[53] & ~reg_be))) |
                (addr_hit[54] & (|(DMA_PERMIT[54] & ~reg_be))) |
-               (addr_hit[55] & (|(DMA_PERMIT[55] & ~reg_be)))));
+               (addr_hit[55] & (|(DMA_PERMIT[55] & ~reg_be))) |
+               (addr_hit[56] & (|(DMA_PERMIT[56] & ~reg_be))) |
+               (addr_hit[57] & (|(DMA_PERMIT[57] & ~reg_be))) |
+               (addr_hit[58] & (|(DMA_PERMIT[58] & ~reg_be))) |
+               (addr_hit[59] & (|(DMA_PERMIT[59] & ~reg_be))) |
+               (addr_hit[60] & (|(DMA_PERMIT[60] & ~reg_be))) |
+               (addr_hit[61] & (|(DMA_PERMIT[61] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -2972,10 +3248,10 @@ module dma_reg_top (
   assign handshake_interrupt_enable_wd = reg_wdata[31:0];
   assign clear_int_src_we = addr_hit[22] & reg_we & !reg_error;
 
-  assign clear_int_src_wd = reg_wdata[7:0];
+  assign clear_int_src_wd = reg_wdata[10:0];
   assign clear_int_bus_we = addr_hit[39] & reg_we & !reg_error;
 
-  assign clear_int_bus_wd = reg_wdata[7:0];
+  assign clear_int_bus_wd = reg_wdata[10:0];
   assign int_source_addr_0_we = addr_hit[40] & reg_we & !reg_error;
 
   assign int_source_addr_0_wd = reg_wdata[31:0];
@@ -3000,30 +3276,48 @@ module dma_reg_top (
   assign int_source_addr_7_we = addr_hit[47] & reg_we & !reg_error;
 
   assign int_source_addr_7_wd = reg_wdata[31:0];
-  assign int_source_wr_val_0_we = addr_hit[48] & reg_we & !reg_error;
+  assign int_source_addr_8_we = addr_hit[48] & reg_we & !reg_error;
+
+  assign int_source_addr_8_wd = reg_wdata[31:0];
+  assign int_source_addr_9_we = addr_hit[49] & reg_we & !reg_error;
+
+  assign int_source_addr_9_wd = reg_wdata[31:0];
+  assign int_source_addr_10_we = addr_hit[50] & reg_we & !reg_error;
+
+  assign int_source_addr_10_wd = reg_wdata[31:0];
+  assign int_source_wr_val_0_we = addr_hit[51] & reg_we & !reg_error;
 
   assign int_source_wr_val_0_wd = reg_wdata[31:0];
-  assign int_source_wr_val_1_we = addr_hit[49] & reg_we & !reg_error;
+  assign int_source_wr_val_1_we = addr_hit[52] & reg_we & !reg_error;
 
   assign int_source_wr_val_1_wd = reg_wdata[31:0];
-  assign int_source_wr_val_2_we = addr_hit[50] & reg_we & !reg_error;
+  assign int_source_wr_val_2_we = addr_hit[53] & reg_we & !reg_error;
 
   assign int_source_wr_val_2_wd = reg_wdata[31:0];
-  assign int_source_wr_val_3_we = addr_hit[51] & reg_we & !reg_error;
+  assign int_source_wr_val_3_we = addr_hit[54] & reg_we & !reg_error;
 
   assign int_source_wr_val_3_wd = reg_wdata[31:0];
-  assign int_source_wr_val_4_we = addr_hit[52] & reg_we & !reg_error;
+  assign int_source_wr_val_4_we = addr_hit[55] & reg_we & !reg_error;
 
   assign int_source_wr_val_4_wd = reg_wdata[31:0];
-  assign int_source_wr_val_5_we = addr_hit[53] & reg_we & !reg_error;
+  assign int_source_wr_val_5_we = addr_hit[56] & reg_we & !reg_error;
 
   assign int_source_wr_val_5_wd = reg_wdata[31:0];
-  assign int_source_wr_val_6_we = addr_hit[54] & reg_we & !reg_error;
+  assign int_source_wr_val_6_we = addr_hit[57] & reg_we & !reg_error;
 
   assign int_source_wr_val_6_wd = reg_wdata[31:0];
-  assign int_source_wr_val_7_we = addr_hit[55] & reg_we & !reg_error;
+  assign int_source_wr_val_7_we = addr_hit[58] & reg_we & !reg_error;
 
   assign int_source_wr_val_7_wd = reg_wdata[31:0];
+  assign int_source_wr_val_8_we = addr_hit[59] & reg_we & !reg_error;
+
+  assign int_source_wr_val_8_wd = reg_wdata[31:0];
+  assign int_source_wr_val_9_we = addr_hit[60] & reg_we & !reg_error;
+
+  assign int_source_wr_val_9_wd = reg_wdata[31:0];
+  assign int_source_wr_val_10_we = addr_hit[61] & reg_we & !reg_error;
+
+  assign int_source_wr_val_10_wd = reg_wdata[31:0];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -3076,14 +3370,20 @@ module dma_reg_top (
     reg_we_check[45] = int_source_addr_5_we;
     reg_we_check[46] = int_source_addr_6_we;
     reg_we_check[47] = int_source_addr_7_we;
-    reg_we_check[48] = int_source_wr_val_0_we;
-    reg_we_check[49] = int_source_wr_val_1_we;
-    reg_we_check[50] = int_source_wr_val_2_we;
-    reg_we_check[51] = int_source_wr_val_3_we;
-    reg_we_check[52] = int_source_wr_val_4_we;
-    reg_we_check[53] = int_source_wr_val_5_we;
-    reg_we_check[54] = int_source_wr_val_6_we;
-    reg_we_check[55] = int_source_wr_val_7_we;
+    reg_we_check[48] = int_source_addr_8_we;
+    reg_we_check[49] = int_source_addr_9_we;
+    reg_we_check[50] = int_source_addr_10_we;
+    reg_we_check[51] = int_source_wr_val_0_we;
+    reg_we_check[52] = int_source_wr_val_1_we;
+    reg_we_check[53] = int_source_wr_val_2_we;
+    reg_we_check[54] = int_source_wr_val_3_we;
+    reg_we_check[55] = int_source_wr_val_4_we;
+    reg_we_check[56] = int_source_wr_val_5_we;
+    reg_we_check[57] = int_source_wr_val_6_we;
+    reg_we_check[58] = int_source_wr_val_7_we;
+    reg_we_check[59] = int_source_wr_val_8_we;
+    reg_we_check[60] = int_source_wr_val_9_we;
+    reg_we_check[61] = int_source_wr_val_10_we;
   end
 
   // Read data return
@@ -3196,7 +3496,7 @@ module dma_reg_top (
       end
 
       addr_hit[22]: begin
-        reg_rdata_next[7:0] = clear_int_src_qs;
+        reg_rdata_next[10:0] = clear_int_src_qs;
       end
 
       addr_hit[23]: begin
@@ -3264,7 +3564,7 @@ module dma_reg_top (
       end
 
       addr_hit[39]: begin
-        reg_rdata_next[7:0] = clear_int_bus_qs;
+        reg_rdata_next[10:0] = clear_int_bus_qs;
       end
 
       addr_hit[40]: begin
@@ -3300,35 +3600,59 @@ module dma_reg_top (
       end
 
       addr_hit[48]: begin
-        reg_rdata_next[31:0] = int_source_wr_val_0_qs;
+        reg_rdata_next[31:0] = int_source_addr_8_qs;
       end
 
       addr_hit[49]: begin
-        reg_rdata_next[31:0] = int_source_wr_val_1_qs;
+        reg_rdata_next[31:0] = int_source_addr_9_qs;
       end
 
       addr_hit[50]: begin
-        reg_rdata_next[31:0] = int_source_wr_val_2_qs;
+        reg_rdata_next[31:0] = int_source_addr_10_qs;
       end
 
       addr_hit[51]: begin
-        reg_rdata_next[31:0] = int_source_wr_val_3_qs;
+        reg_rdata_next[31:0] = int_source_wr_val_0_qs;
       end
 
       addr_hit[52]: begin
-        reg_rdata_next[31:0] = int_source_wr_val_4_qs;
+        reg_rdata_next[31:0] = int_source_wr_val_1_qs;
       end
 
       addr_hit[53]: begin
-        reg_rdata_next[31:0] = int_source_wr_val_5_qs;
+        reg_rdata_next[31:0] = int_source_wr_val_2_qs;
       end
 
       addr_hit[54]: begin
-        reg_rdata_next[31:0] = int_source_wr_val_6_qs;
+        reg_rdata_next[31:0] = int_source_wr_val_3_qs;
       end
 
       addr_hit[55]: begin
+        reg_rdata_next[31:0] = int_source_wr_val_4_qs;
+      end
+
+      addr_hit[56]: begin
+        reg_rdata_next[31:0] = int_source_wr_val_5_qs;
+      end
+
+      addr_hit[57]: begin
+        reg_rdata_next[31:0] = int_source_wr_val_6_qs;
+      end
+
+      addr_hit[58]: begin
         reg_rdata_next[31:0] = int_source_wr_val_7_qs;
+      end
+
+      addr_hit[59]: begin
+        reg_rdata_next[31:0] = int_source_wr_val_8_qs;
+      end
+
+      addr_hit[60]: begin
+        reg_rdata_next[31:0] = int_source_wr_val_9_qs;
+      end
+
+      addr_hit[61]: begin
+        reg_rdata_next[31:0] = int_source_wr_val_10_qs;
       end
 
       default: begin
