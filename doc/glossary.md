@@ -214,7 +214,7 @@ Position-Independent Code.
 
 Pin Multiplexer.
 
-### PKI
+#### PKI
 
 Public Key Infrastructure.
 
@@ -222,7 +222,7 @@ Public Key Infrastructure.
 
 Physical Memory Protection.
 
-### POR
+#### POR
 
 Power-On Reset.
 
