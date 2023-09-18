@@ -6,15 +6,17 @@ package(default_visibility = ["//visibility:public"])
 
 load("//rules:autogen.bzl", "autogen_cryptotest_header")
 load(
-    "//rules:opentitan_test.bzl",
-    "opentitan_functest",
+    "//rules/opentitan:defs.bzl",
+    "EARLGREY_TEST_ENVS",
+    "opentitan_test",
     "verilator_params",
 )
 load("@ot_python_deps//:requirements.bzl", "requirement")
 
-opentitan_functest(
+opentitan_test(
     name = "fors_test",
     srcs = ["fors_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -46,9 +48,10 @@ autogen_cryptotest_header(
     tool = ":sphincsplus_set_testvectors",
 )
 
-opentitan_functest(
+opentitan_test(
     name = "verify_test_hardcoded",
     srcs = ["verify_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "eternal",
     ),
@@ -62,9 +65,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "wots_test",
     srcs = ["wots_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -154,10 +158,13 @@ autogen_cryptotest_header(
     tool = ":sphincsplus_set_testvectors",
 )
 
-opentitan_functest(
+opentitan_test(
     name = "verify_test_kat0",
     srcs = ["verify_test.c"],
-    targets = ["cw310_test_rom"],  # Test set is too large for Verilator or ROM
+    exec_env = {
+        # Test set is too large for Verilator or ROM
+        "//hw/top_earlgrey:fpga_cw310": None,
+    },
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat0_header",
         "//sw/device/lib/base:memory",
@@ -168,10 +175,13 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "verify_test_kat1",
     srcs = ["verify_test.c"],
-    targets = ["cw310_test_rom"],  # Test set is too large for Verilator or ROM
+    exec_env = {
+        # Test set is too large for Verilator or ROM
+        "//hw/top_earlgrey:fpga_cw310": None,
+    },
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat1_header",
         "//sw/device/lib/base:memory",
@@ -182,10 +192,13 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "verify_test_kat2",
     srcs = ["verify_test.c"],
-    targets = ["cw310_test_rom"],  # Test set is too large for Verilator or ROM
+    exec_env = {
+        # Test set is too large for Verilator or ROM
+        "//hw/top_earlgrey:fpga_cw310": None,
+    },
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat2_header",
         "//sw/device/lib/base:memory",
@@ -196,10 +209,13 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "verify_test_kat3",
     srcs = ["verify_test.c"],
-    targets = ["cw310_test_rom"],  # Test set is too large for Verilator or ROM
+    exec_env = {
+        # Test set is too large for Verilator or ROM
+        "//hw/top_earlgrey:fpga_cw310": None,
+    },
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat3_header",
         "//sw/device/lib/base:memory",
@@ -210,10 +226,13 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "verify_test_kat4",
     srcs = ["verify_test.c"],
-    targets = ["cw310_test_rom"],  # Test set is too large for Verilator or ROM
+    exec_env = {
+        # Test set is too large for Verilator or ROM
+        "//hw/top_earlgrey:fpga_cw310": None,
+    },
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat4_header",
         "//sw/device/lib/base:memory",
@@ -224,10 +243,13 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "verify_test_kat5",
     srcs = ["verify_test.c"],
-    targets = ["cw310_test_rom"],  # Test set is too large for Verilator or ROM
+    exec_env = {
+        # Test set is too large for Verilator or ROM
+        "//hw/top_earlgrey:fpga_cw310": None,
+    },
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat5_header",
         "//sw/device/lib/base:memory",
@@ -238,10 +260,13 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "verify_test_kat6",
     srcs = ["verify_test.c"],
-    targets = ["cw310_test_rom"],  # Test set is too large for Verilator or ROM
+    exec_env = {
+        # Test set is too large for Verilator or ROM
+        "//hw/top_earlgrey:fpga_cw310": None,
+    },
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat6_header",
         "//sw/device/lib/base:memory",
@@ -252,10 +277,13 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "verify_test_kat7",
     srcs = ["verify_test.c"],
-    targets = ["cw310_test_rom"],  # Test set is too large for Verilator or ROM
+    exec_env = {
+        # Test set is too large for Verilator or ROM
+        "//hw/top_earlgrey:fpga_cw310": None,
+    },
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat7_header",
         "//sw/device/lib/base:memory",
@@ -266,10 +294,13 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "verify_test_kat8",
     srcs = ["verify_test.c"],
-    targets = ["cw310_test_rom"],  # Test set is too large for Verilator or ROM
+    exec_env = {
+        # Test set is too large for Verilator or ROM
+        "//hw/top_earlgrey:fpga_cw310": None,
+    },
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat8_header",
         "//sw/device/lib/base:memory",
@@ -280,10 +311,13 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "verify_test_kat9",
     srcs = ["verify_test.c"],
-    targets = ["cw310_test_rom"],  # Test set is too large for Verilator or ROM
+    exec_env = {
+        # Test set is too large for Verilator or ROM
+        "//hw/top_earlgrey:fpga_cw310": None,
+    },
     deps = [
         ":sphincsplus_shake_128s_simple_testvectors_kat9_header",
         "//sw/device/lib/base:memory",

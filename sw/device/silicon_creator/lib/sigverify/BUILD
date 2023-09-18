@@ -4,13 +4,14 @@
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
+load("//rules:otbn.bzl", "otbn_insn_count_range")
 load(
-    "//rules:opentitan_test.bzl",
+    "//rules/opentitan:defs.bzl",
+    "EARLGREY_TEST_ENVS",
     "cw310_params",
-    "opentitan_functest",
+    "opentitan_test",
     "verilator_params",
 )
-load("//rules:otbn.bzl", "otbn_insn_count_range")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -73,9 +74,10 @@ cc_test(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "mod_exp_ibex_functest_hardcoded",
     srcs = ["mod_exp_ibex_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
         tags = [
@@ -90,13 +92,15 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "mod_exp_ibex_functest_wycheproof",
     srcs = ["mod_exp_ibex_functest.c"],
     cw310 = cw310_params(
         timeout = "long",
     ),
-    targets = ["cw310_test_rom"],  # Test set is too large to run in simulation
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310": None,
+    },
     deps = [
         ":mod_exp_ibex",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -139,9 +143,10 @@ dual_cc_library(
     ),
 )
 
-opentitan_functest(
+opentitan_test(
     name = "mod_exp_otbn_functest_hardcoded",
     srcs = ["mod_exp_otbn_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
         tags = [
@@ -156,14 +161,10 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "mod_exp_otbn_functest_wycheproof",
     srcs = ["mod_exp_otbn_functest.c"],
-    targets = [
-        "cw310_test_rom",
-        "verilator",
-        "dv",
-    ],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
         tags = [
@@ -218,9 +219,10 @@ cc_library(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rsa_verify_functest",
     srcs = ["rsa_verify_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
         tags = [
@@ -248,9 +250,10 @@ cc_library(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "spx_verify_functest",
     srcs = ["spx_verify_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
         tags = [
@@ -316,9 +319,10 @@ cc_test(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "sigverify_dynamic_functest_hardcoded",
     srcs = ["sigverify_dynamic_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
         tags = [
@@ -333,13 +337,16 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "sigverify_dynamic_functest_wycheproof",
     srcs = ["sigverify_dynamic_functest.c"],
     cw310 = cw310_params(
         timeout = "long",
     ),
-    targets = ["cw310_test_rom"],  # Test set is too large to run in simulation
+    exec_env = {
+        # Test set is too large to run in simulation
+        "//hw/top_earlgrey:fpga_cw310": None,
+    },
     deps = [
         ":sigverify",
         "//sw/device/lib/testing/test_framework:ottf_main",

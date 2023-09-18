@@ -2,9 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
-load("//rules/opentitan:defs.bzl", "EARLGREY_TEST_ENVS", "opentitan_test")
+load(
+    "//rules/opentitan:defs.bzl",
+    "EARLGREY_TEST_ENVS",
+    "opentitan_test",
+    "verilator_params",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -67,9 +71,10 @@ cc_test(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "alert_functest",
     srcs = ["alert_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -268,9 +273,10 @@ cc_test(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "keymgr_functest",
     srcs = ["keymgr_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -320,9 +326,10 @@ cc_test(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "kmac_functest",
     srcs = ["kmac_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -500,9 +507,10 @@ cc_test(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "retention_sram_functest",
     srcs = ["retention_sram_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -568,9 +576,10 @@ cc_test(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rnd_functest",
     srcs = ["rnd_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         ":otp",
         ":rnd",
@@ -627,9 +636,10 @@ cc_test(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rstmgr_functest",
     srcs = ["rstmgr_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -666,9 +676,10 @@ cc_test(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "uart_functest",
     srcs = ["uart_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     deps = [
         ":uart",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -709,9 +720,10 @@ cc_test(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "watchdog_functest",
     srcs = ["watchdog_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
