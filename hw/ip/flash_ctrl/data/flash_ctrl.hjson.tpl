@@ -553,6 +553,87 @@
     },
   ],
 
+  features: [
+    {
+     name: "FLASH_CTRL.ESCALATION"
+     desc:'''Flash controller has two sources of escalation.
+     1. Global escalation : This is initiated by the Lifecycle Controller through lc_escalate_en.
+     2. Local escalation : This is activated in response to standard faults detected within the flash.
+                           These faults are monitored through flash_ctrl.STD_FAULT_STATUS.
+     '''
+    }
+    {
+      name: "FLASH_CTRL.FETCH_CODE"
+      desc: '''If SW programs flash_ctrl.EXEC to 0xA26A38F7, code fetch from flash device is allowed.
+            All top-level tests that make use of the tests uses this features. No dedicated test is required.
+      '''
+    }
+    {
+      name: "FLASH_CTRL.INFO.CREATOR_PARTITION"
+      desc: '''This partition stores creator root seed.
+            It is accessed by the flash controller after scramble key is received.
+            SW can read or program the contents when both of the following conditions are satisfied:
+              1. Life cycle state is one of DEV, PROD, PROD_END, or RMA.
+              2. OTP SECRET2_DIGEST partition has not been written and locked.
+            '''
+    }
+    {
+      name: "FLASH_CTRL.INFO.ISOLATED_PARTITION"
+      desc: '''This partition can hold extra manufacturing details (e.g., the wafer authentication secret).
+            SW can read or program the contents when life cycle state is one of PROD, PROD_END, or RMA.
+            SW can only program the contents when life cycle state is TEST_UNLOCKED* or DEV.
+            '''
+    }
+    {
+      name: "FLASH_CTRL.INFO.OWNER_PARTITION"
+      desc: '''This partition stores owner root seed.
+            It is accessed by the flash controller after scramble key is received.
+            SW can read or program the contents when life cycle state is one of DEV, PROD, PROD_END, or RMA.
+            '''
+    }
+    {
+      name: "FLASH_CTRL.INIT.ROOT_SEEDS"
+      desc: "After the scrambling keys are requested, the flash controller reads root seeds from secret partitions and provides them to the key manager."
+    }
+    {
+      name: "FLASH_CTRL.INIT.SCRAMBLING_KEYS"
+      desc: "When flash_ctrl.INIT is set, flash controller requests scrambling keys from otp contoller."
+    }
+    {
+      name: "FLASH_CTRL.MEM_PROTECTION"
+      desc: '''For data partitions, SW can designate a memory region of up to 8 regions.
+      Each of these regions can contain more than one page, up to a maximum limit (which is 512 in earlgrey).
+      For each region, SW can establish the access policy by programming flash_ctrl.MP_REGION_CFG.
+      In the case of information partitions, the access policy can be configured on a per page basis.
+      To achieve this, SW must configure flash_ctrl.BANK*_INFO*_PAGE_CFG.
+      '''
+    }
+    {
+      name: "FLASH_CTRL.OP.HOST_READ"
+      desc: "Host can read any data partition by providing a valid physical address."
+    }
+    {
+      name: "FLASH_CTRL.OP.PROTOCOL_CTRL"
+      desc: '''As opposed to the host, the protocol controller can read, write and erase both data and info partitions.
+      It has lower priority than host requests.
+      While an operation is in progress, other hw initiated request i.e. RMA, will be held until the operation is finished.
+      '''
+    }
+    {
+      name: "FLASH_CTRL.RMA"
+      desc: '''Upon receiving an RMA request from the LC (Lifecycle Controller), the flash controller ensures the completion of all ongoing processes.
+      Subsequently, it proceeds to perform the following actions:
+        1. Erase the following partitions:
+         - Creator partition
+         - Owner partition
+         - Isolated partition
+         - Data partition
+        2. After erasing each page within these partitions, the flash controller systematically writes random data to them.
+        This procedure is implemented to guarantee that any sensitive information previously stored in these partitions remains unrecoverable.
+      '''
+    }
+  ],
+
   regwidth: "32",
   registers: {
     core: [
@@ -766,9 +847,9 @@
           { bits: "27:16",
             name: "NUM",
             desc: '''
-	      One fewer than the number of bus words the flash operation should read or program.
-	      For example, to read 10 words, software should program this field with the value 9.
-	    '''
+              One fewer than the number of bus words the flash operation should read or program.
+              For example, to read 10 words, software should program this field with the value 9.
+            '''
             resval: "0"
           },
         ]
