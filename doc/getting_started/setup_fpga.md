@@ -19,20 +19,23 @@ Refer to the design documentation for information on what exactly is needed.
 
 ## Obtain an FPGA bitstream
 
-To run OpenTitan on an FPGA, you will need an FPGA bitstream.
-You can either download the latest bitstream for the ChipWhisperer CW310 board or build it yourself.
-
+To instantiate OpenTitan on an FPGA you will need a bitstream. You can either download an existing bitstream for one of the supported ChipWhisperer boards or you can build it yourself.
+To ensure the commands shown in this tutorial work for any supported board, we use the `BOARD` environment variable to specify the target board.
+```sh
+export BOARD=cw340
+```
 ### Download a Pre-built Bitstream
 
-If you are using the ChipWhisperer CW310 board with the Xilinx Kintex 7 XC7K410T FPGA, you can download the latest passing [pre-built bitstream](https://storage.googleapis.com/opentitan-bitstreams/master/bitstream-latest.tar.gz).
+If you are using the ChipWhisperer CW340 board with the Xilinx XCKU095-1FFVA1156C Kintex UltraScale or the CW310 board with the Xilinx Kintex 7 XC7K410T FPGA, you can download the latest passing [pre-built bitstream](https://storage.googleapis.com/opentitan-bitstreams/master/bitstream-latest.tar.gz).
 
 For example, to download and unpack the bitstream, run the following:
 
-```console
+```sh
 mkdir -p /tmp/bitstream-latest
-cd /tmp/bitstream-latest
+pushd /tmp/bitstream-latest
 curl https://storage.googleapis.com/opentitan-bitstreams/master/bitstream-latest.tar.gz -o bitstream-latest.tar.gz
 tar -xvf bitstream-latest.tar.gz
+popd
 ```
 
 By default, the bitstream is built with a version of the boot ROM used for testing (called the _test ROM_; pulled from `sw/device/lib/testing/test_rom`).
@@ -58,20 +61,20 @@ While Bazel is the entry point for kicking off the FPGA synthesis, under the hoo
 During the build process, the boot ROM is baked into the bitstream.
 As mentioned above, we maintain two boot ROM programs, one for testing (_test ROM_), and one for production (_ROM_).
 
-To build an FPGA bitstream with the _test ROM_, use:
-```console
+To build an FPGA bitstream with the _test ROM_ for the chosen board, use:
+```sh
 cd $REPO_TOP
-bazel build //hw/bitstream/vivado:fpga_cw310_test_rom
+bazel build //hw/bitstream/vivado:fpga_${BOARD}_test_rom
 ```
 
-To build an FPGA bitstream with the _ROM_, use:
-```console
+To build an FPGA bitstream with the _ROM_ for the chosen board, use:
+```sh
 cd $REPO_TOP
-bazel build //hw/bitstream/vivado:fpga_cw310_rom
+bazel build //hw/bitstream/vivado:fpga_${BOARD}_rom
 ```
 
-Note, building these bitstreams will require Vivado be installed on your system, with access to the proper licenses, described [here](./install_vivado/README.md).
-For general software development on the FPGA, Vivado must still be installed, but the Lab Edition is sufficient.
+>**Note**: Building these bitstreams will require Vivado be installed on your system, with access to the proper licenses, described [here](./install_vivado/README.md).
+>For general software development on the FPGA, Vivado must still be installed, but the Lab Edition is sufficient.
 
 #### Dealing with FPGA Congestion Issues
 
@@ -85,7 +88,7 @@ See [this comment](https://github.com/lowRISC/opentitan/pull/8138#issuecomment-9
 Sometimes, it may be desirable to open the generated project in the Vivado GUI for inspection.
 To this end, run:
 
-```console
+```sh
 . /tools/Xilinx/Vivado/{{#tool-version vivado }}/settings64.sh
 cd $REPO_TOP
 make -C $(dirname $(find bazel-out/* -wholename '*synth-vivado/Makefile')) build-gui
@@ -103,62 +106,78 @@ This behavior is helpful to create reproducible builds and avoids Vivado modifyi
 But during debugging this behavior is not helpful.
 The `--no-export` option of FuseSoC disables copying the source files into the staging area, and `--setup` instructs fusesoc to not start the synthesis process.
 
-```console
-# Only create Vivado project directory by using FuseSoC directly (skipping Bazel invocation).
+**Only create Vivado project directory by using FuseSoC directly (skipping Bazel invocation).**
+```sh
 cd $REPO_TOP
-fusesoc --cores-root . run --flag=fileset_top --target=synth --no-export --setup lowrisc:systems:chip_earlgrey_cw310
+fusesoc --cores-root . run --flag=fileset_top --target=synth --no-export --setup lowrisc:systems:chip_earlgrey_${BOARD}
 ```
 
 You can then navigate to the created project directory, and open Vivado
-```console
+```sh
 . /tools/Xilinx/Vivado/{{#tool-version vivado }}/settings64.sh
-cd $REPO_TOP/build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/
-vivado
+cd $REPO_TOP/build/lowrisc_systems_chip_earlgrey_${BOARD}_0.1/synth-vivado/vivado
 ```
 
 Finally, using the Tcl console, you can kick off the project setup with
-```console
-source lowrisc_systems_chip_earlgrey_cw310_0.1.tcl
+```sh
+source lowrisc_systems_chip_earlgrey_${BOARD}_0.1.tcl
 ```
 
-## Connecting the ChipWhisperer CW310 board
+## Connecting the ChipWhisperer FPGA board:
 
-The ChipWhisperer CW310 board supports different power options.
+### CW310 board
+
+The CW310 board supports different power options.
 It is recommended to power the board via the included DC power adapter.
 To this end:
 1. Set the *SW2* switch (to the right of the barrel connector) up to the *5V Regulator* option.
-1. Set the switch below the barrel connector to the right towards the *Barrel* option.
-1. Set the *Control Power* switch (bottom left corner, *SW7*) to the right.
-1. Ensure the *Tgt Power* switch (above the fan, *S1*) is set to the right towards the *Auto* option.
-1. Plug the DC power adapter into the barrel jack (*J11*) in the top left corner of the board.
-1. Use a USB-C cable to connect your PC with the *USB-C Data* connector (*J8*) in the lower left corner on the board.
+2. Set the switch below the barrel connector to the right, towards the *Barrel* option.
+3. Set the *Control Power* switch (bottom left corner, *SW7*) to the right.
+4. Ensure the *Tgt Power* switch (above the fan, *S1*) is set to the right, towards the *Auto* option.
+5. Plug the DC power adapter into the barrel jack (*J11*) in the top left corner of the board.
+6. Use a USB-C cable to connect your PC with the *USB-C Data* connector (*J8*) in the lower left corner on the board.
 
+### CW340 board
+
+The CW340 board should be powered via the included DC power adapter.
+To this end:
+1. Set the *Control Power* switch (top left corner, *SW7*) to the right.
+2. Ensure the *Tgt Power* switch (center of the board) is set to the right, towards the *Auto* option.
+3. Plug the DC power adapter into the barrel jack (*J11*) in the top left corner of the board.
+4. Use a USB-C cable to connect your PC (*host*) with the *USB-C* connector (*J28*) in the lower left corner on the board.
+5. Set the jumpers *JP1* and *JP2* to select the UART0 routing:
+   1. If set to FTDI the UART0 will (likely) be routed to `/dev/ttyUSB2`.
+   1. If set to SAM the UART0 will be routed to `/dev/ttyACM0`.
+
+### Detecting the board
 You can now use the following to monitor output from dmesg:
-```console
+```sh
 sudo dmesg -Hw
 ```
 This should show which serial ports have been assigned, or if the board is having trouble connecting to USB.
 If `dmesg` reports a problem you can trigger a *USB_RST* with *SW5*.
-When properly connected, `dmesg` should identify the board, not show any errors, and the status light should flash.
-They should be named `'/dev/ttyACM*'`, e.g. `/dev/ttyACM1`.
+When properly connected, `dmesg` should identify the board, not show any errors, and the status light should flash (next to *SW5*).
+They should be named `'/dev/ttyACM*'` for CW310 and `/dev/ttyACM*` + `/dev/ttyUSB*` + for CW340 depending on the jumpers *JP1* and *JP2* described above.
+ >e.g. `/dev/ttyACM1`.
+
 To ensure that you have sufficient access permissions, set up the udev rules as explained in the [Vivado installation instructions](./install_vivado/README.md).
 
 You will then need to run this command to configure the board. You only need to run it once.
-```console
-bazel run //sw/host/opentitantool -- --interface=cw310 fpga set-pll
+```sh
+bazel run //sw/host/opentitantool -- --interface=${BOARD} fpga set-pll
 ```
 
 Check that it's working by [running the demo](#bootstrapping-the-demo-software) or a test, such as the `uart_smoketest` below.
-```console
+```sh
 cd $REPO_TOP
-bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310_test_rom
+bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_test_rom
 ```
 
 ### Troubleshooting
 
 If the tests/demo aren't working on the FPGA (especially if you get an error like `SFDP header contains incorrect signature`) then try adding `--rcfile=` to the `set-pll` command:
-```console
-bazel run //sw/host/opentitantool -- --rcfile= --interface=cw310 fpga set-pll
+```sh
+bazel run //sw/host/opentitantool -- --rcfile= --interface=${BOARD} fpga set-pll
 ```
 It's also worth pressing the `USB_RST` and `USR_RESET` buttons on the FPGA if you face continued errors.
 
@@ -166,7 +185,7 @@ It's also worth pressing the `USB_RST` and `USR_RESET` buttons on the FPGA if yo
 
 There are two ways to load a bitstream on to the FPGA and bootstrap software into the OpenTitan embedded flash:
 1. **automatically**, on single invocations of `bazel test ...`.
-1. **manually**, using multiple invocations of `opentitantool`, and
+2. **manually**, using multiple invocations of `opentitantool`, and
 Which one you use, will depend on how the build target is defined for the software you would like to test on the FPGA.
 Specifically, for software build targets defined in Bazel BUILD files using the `opentitan_functest` Bazel macro, you will use the latter (**automatic**) approach.
 Alternatively, for software build targets defined in Bazel BUILD files using the `opentitan_flash_binary` Bazel macro, you will use the former (**manual**) approach.
@@ -178,14 +197,14 @@ See below for details on both approaches.
 A majority of on-device software tests are defined using the custom `opentitan_functest` Bazel macro, which under the hood, instantiates several Bazel [`native.sh_test` rules](https://docs.bazel.build/versions/main/be/shell.html#sh_test).
 In doing so, this macro provides a convenient interface for developers to run software tests on OpenTitan FPGA instances with a single invocation of `bazel test ...`.
 For example, to run the UART smoke test (which is an `opentitan_functest` defined in `sw/device/tests/BUILD`) on FPGA hardware, and see the output in real time, use:
-```console
+```sh
 cd $REPO_TOP
-bazel test --test_tag_filters=cw310 --test_output=streamed //sw/device/tests:uart_smoketest
+bazel test --test_tag_filters=${BOARD} --test_output=streamed //sw/device/tests:uart_smoketest
 ```
 or
-```console
+```sh
 cd $REPO_TOP
-bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310_test_rom
+bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_test_rom
 ```
 
 Under the hood, Bazel conveniently dispatches `opentitantool` to both:
@@ -198,15 +217,15 @@ To get a better understanding of the `opentitantool` functions Bazel invokes aut
 
 By default, the above invocations of `bazel test ...` use the pre-built (Internet downloaded) FPGA bitstream.
 To instruct bazel to load the bitstream built earlier, or to have bazel build an FPGA bitstream on the fly, and load that bitstream onto the FPGA, add the `--define bitstream=vivado` flag to either of the above Bazel commands, for example, run:
-```
-bazel test --define bitstream=vivado --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310_test_rom
+```sh
+bazel test --define bitstream=vivado --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_test_rom
 ```
 
 #### Configuring Bazel to skip loading a bitstream
 
 Alternatively, if you would like to instruct Bazel to skip loading any bitstream at all, and simply use the bitstream that is already loaded, add the `--define bitstream=skip` flag, for example, run:
-```
-bazel test --define bitstream=skip --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310_test_rom
+```sh
+bazel test --define bitstream=skip --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_test_rom
 ```
 
 ### Manually loading FPGA bitstreams and bootstrapping OpenTitan software with `opentitantool`
@@ -219,27 +238,33 @@ Below, we describe how to accomplish this, and in doing so, we shed some light o
 #### Manually loading a bitstream onto the FPGA with `opentitantool`
 
 Note: The following examples assume that you have a `~/.config/opentitantool/config` with the proper `--interface` option.
-For the CW310, its contents would look like:
+For the CW340, its contents would look like:
+```sh
+--interface=cw340
 ```
+Or:
+```sh
 --interface=cw310
 ```
+For CW310.
 
 To flash the bitstream onto the FPGA using `opentitantool`, use the following command:
 
-```console
+**If you downloaded the bitstream from the Internet:**
+```sh
 cd $REPO_TOP
-
-### If you downloaded the bitstream from the Internet:
-bazel run //sw/host/opentitantool fpga load-bitstream /tmp/bitstream-latest/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig
-
-### If you built the bitstream yourself:
-bazel run //sw/host/opentitantool fpga load-bitstream $(ci/scripts/target-location.sh //hw/bitstream/vivado:fpga_cw310_test_rom)
+bazel run //sw/host/opentitantool -- fpga load-bitstream /tmp/bitstream-latest/lowrisc_systems_chip_earlgrey_${BOARD}_0.1.bit.orig
+```
+**if you built the bitstream yourself:**
+```sh
+cd $REPO_TOP
+bazel run //sw/host/opentitantool -- fpga load-bitstream $(ci/scripts/target-location.sh //hw/bitstream/vivado:fpga_${BOARD}_test_rom)
 ```
 
 Depending on the FPGA device, the flashing itself may take several seconds.
 After completion, a message like this should be visible from the UART:
 
-```
+```console
 I00000 test_rom.c:81] Version: earlgrey_silver_release_v5-5886-gde4cb1bb9, Build Date: 2022-06-13 09:17:56
 I00001 test_rom.c:87] TestROM:6b2ca9a1
 I00002 test_rom.c:118] Test ROM complete, jumping to flash!
@@ -248,24 +273,24 @@ I00002 test_rom.c:118] Test ROM complete, jumping to flash!
 #### Bootstrapping the demo software
 
 The `hello_world` demo software shows off some capabilities of the OpenTitan hardware.
-To load `hello_world` into the FPGA on the ChipWhisperer CW310 board follow the steps shown below.
+To load `hello_world` into the FPGA on the ChipWhisperer CW340 board follow the steps shown below.
 
 1. Generate the bitstream and flash it to the FPGA as described above.
-1. Open a serial console (use the device file determined before) and connect.
+2. Open a serial console (use the device file determined before) and connect.
    Settings: 115200 baud, 8 bits per byte, no software flow-control for sending and receiving data.
-   ```console
+   ```sh
    screen /dev/ttyACM1 115200,cs8,-ixon,-ixoff
    ```
-1. Run `opentitantool`.
-   ```console
+3. Run `opentitantool`.
+   ```sh
    cd ${REPO_TOP}
-   bazel run //sw/host/opentitantool -- --interface=cw310 fpga set-pll # This needs to be done only once.
-   bazel build //sw/device/examples/hello_world:hello_world_fpga_cw310_bin
-   bazel run //sw/host/opentitantool bootstrap $(ci/scripts/target-location.sh //sw/device/examples/hello_world:hello_world_fpga_cw310_bin)
+   bazel run //sw/host/opentitantool -- --interface=${BOARD} fpga set-pll # This needs to be done only once.
+   bazel build //sw/device/examples/hello_world:hello_world_fpga_${BOARD}_bin
+   bazel run //sw/host/opentitantool -- bootstrap $(ci/scripts/target-location.sh //sw/device/examples/hello_world:hello_world_fpga_${BOARD}_bin)
    ```
 
-   and then output like this should appear from the UART:
-   ```
+   And then output like this should appear from the UART:
+   ```console
    I00000 test_rom.c:81] Version: earlgrey_silver_release_v5-5886-gde4cb1bb9, Build Date: 2022-06-13 09:17:56
    I00001 test_rom.c:87] TestROM:6b2ca9a1
    I00000 test_rom.c:81] Version: earlgrey_silver_release_v5-5886-gde4cb1bb9, Build Date: 2022-06-13 09:17:56
@@ -279,44 +304,57 @@ To load `hello_world` into the FPGA on the ChipWhisperer CW310 board follow the 
    I00005 hello_world.c:76] The LEDs show the ASCII code of the last character.
    ```
 
-1. Observe the output both on the board and the serial console. Type any text into the console window.
-1. Exit `screen` by pressing CTRL-a k, and confirm with y.
+4. Observe the output both on the board and the serial console. Type any text into the console window.
+5. Exit `screen` by pressing CTRL-a k, and confirm with y.
+6. Alternatively you can use the console embedded into `opentitantool` to see the output from the UART instead of `screen`.
+```sh
+bazel run //sw/host/opentitantool -- \
+--exec "bootstrap $(ci/scripts/target-location.sh //sw/device/examples/hello_world:hello_world_fpga_${BOARD}_bin)"\
+console
+```
 
 #### Troubleshooting
 
 If the firmware load fails, try pressing the "USR-RST" button before loading the bitstream.
 
-## Connect with OpenOCD and debug
+## Debugging with JTAG
 
-The CW310 supports JTAG-based debugging with OpenOCD and GDB via the standard ARM JTAG headers on the board (labeled USR Debug Headers).
-To use it, program the bitstream and bootstrap the desired firmware, then connect a JTAG adapter to one of the headers.
-For this guide, the `Olimex ARM-USB-TINY-H` JTAG adapter was used.
+### Tap Straps
 
 After bootstrapping the firmware, the TAP straps may need to be set.
 As of this writing, the FPGA images are typically programmed to be in the RMA lifecycle state, and the TAP straps are sampled continuously in that state.
 To connect the JTAG chain to the CPU's TAP, adjust the strap values with opentitantool.
 Assuming opentitantool has been built and that the current directory is the root of the workspace, run these commands:
 
-```console
-./bazel-bin/sw/host/opentitantool/opentitantool \
-        --interface cw310 \
-        gpio write TAP_STRAP0 false
-./bazel-bin/sw/host/opentitantool/opentitantool \
-        --interface cw310 \
-        gpio write TAP_STRAP1 true
+```sh
+./bazel-bin/sw/host/opentitantool/opentitantool --interface cw340 \
+        --exec "gpio write TAP_STRAP0 false" \
+        --exec "gpio write TAP_STRAP1 true" \
+        no-op
 ```
+
+### CW340 Board
+
+The CW340 supports JTAG-based debugging with OpenOCD and GDB via the FTDI Chip embedded on the board. So no external JTAG adapter is needed.
+
+### CW310 Board
+
+The CW310 supports JTAG-based debugging with OpenOCD and GDB via the standard ARM JTAG headers on the board (labeled USR Debug Headers).
+To use it, program the bitstream and bootstrap the desired firmware, then connect a JTAG adapter to one of the headers.
+For this guide, the `Olimex ARM-USB-TINY-H` JTAG adapter was used.
 
 Connect a JTAG adapter to one of the headers.
 For the `Olimex ARM-USB-TINY-H`, use the classic ARM JTAG header (J13) and make sure switch S2 is set to 3.3 V.
 Depending on the adapter's default state, OpenTitan may be held in reset when the adapter is initially connected.
 This reset will come under software control once OpenOCD initializes the driver.
 
-### Device permissions: udev rules
+**Device permissions: udev rules**
+
 The JTAG adapter's device node in `/dev` must have read-write permissions.
 Otherwise, OpenOCD will fail because it's unable to open the USB device.
 The udev rule below matches the ARM-USB-TINY-H adapter, sets the octal mode mask to `0666`, and creates a symlink at `/dev/jtag_adapter_arm_usb_tiny_h`.
 
-```
+```console
 # [/etc/udev/rules.d/90-jtag-adapter.rules]
 
 SUBSYSTEM=="usb", ATTRS{idVendor}=="15ba", ATTRS{idProduct}=="002a", MODE="0666", SYMLINK+="jtag_adapter_arm_usb_tiny_h"
@@ -324,7 +362,7 @@ SUBSYSTEM=="usb", ATTRS{idVendor}=="15ba", ATTRS{idProduct}=="002a", MODE="0666"
 
 Now, reload the udev rules and reconnect the JTAG adapter.
 
-```bash
+```sh
 # Reload the udev rules.
 sudo udevadm control --reload-rules
 sudo udevadm trigger
@@ -337,10 +375,21 @@ sudo udevadm trigger --verbose --type=subsystems --action=add --subsystem-match=
 stat --dereference -c '%a' /dev/jtag_adapter_arm_usb_tiny_h
 ```
 
-The command below tells OpenOCD to connect to the ChipWhisperer CW310 FPGA board via an Olimex ARM-USB-TINY-H JTAG adapter.
-(Note that a different JTAG adapter will require a different config than `//third_party/openocd:jtag_olimex_cfg`.)
+### Connecting OpenOCD
+The command below tells OpenOCD to connect to the ChipWhisperer FPGA board via an JTAG adapter.
+(Note that a different JTAG adapter will require a different config file `//third_party/openocd:jtag_*_cfg`.)
 
-```console
+** CW340 - FTDI adapter**
+```sh
+cd $REPO_TOP
+./bazelisk.sh run //third_party/openocd -- \
+    -f "bazel-opentitan/$(./bazelisk.sh outquery //third_party/openocd:jtag_ftdi_cfg)" \
+    -c "adapter speed 500; transport select jtag; reset_config trst_only" \
+    -f util/openocd/target/lowrisc-earlgrey.cfg
+```
+
+** CW310 - Olimex adapter**
+```sh
 cd $REPO_TOP
 ./bazelisk.sh run //third_party/openocd -- \
     -f "bazel-opentitan/$(./bazelisk.sh outquery //third_party/openocd:jtag_olimex_cfg)" \
@@ -349,7 +398,7 @@ cd $REPO_TOP
 ```
 
 Example OpenOCD output:
-```
+```console
 Open On-Chip Debugger 0.11.0
 Licensed under GNU GPL v2
 For bug reports, read
@@ -389,15 +438,15 @@ mdw 0x8000 0x10 // read 16 bytes at address 0x8000
 
 First, make sure the device software has been built with debug symbols (by default Bazel does not build software with debug symbols).
 For example, to build and test the UART smoke test with debug symbols, you can add `--copt=-g` flag to the `bazel test ...` command:
-```console
+```sh
 cd $REPO_TOP
-bazel test --copt=-g --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310_test_rom
+bazel test --copt=-g --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw340_test_rom
 ```
 
 Then a connection between OpenOCD and GDB may be established with:
-```console
+```sh
 cd $REPO_TOP
-./bazelisk.sh build --config=riscv32 //sw/device/tests:uart_smoketest_prog_fpga_cw310.elf
+./bazelisk.sh build --config=riscv32 //sw/device/tests:uart_smoketest_prog_fpga_cw340.elf
 riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" \
   "$(./bazelisk.sh outquery --config=riscv32 //sw/device/tests:uart_smoketest_prog_fpga_cw310.elf)"
 ```
@@ -452,6 +501,7 @@ It is especially useful in the context of our `rom.elf`, which resides in the RO
 
 The output of the disassemble should now contain additional information.
 
+
 ## Reproducing FPGA CI Failures Locally
 
 When an FPGA test fails in CI, it can be helpful to run the tests locally with the version of the bitstream generated by the failing CI run.
@@ -460,11 +510,11 @@ To avoid rebuilding the bitstream, you can download the bitstream artifact from 
 To download the bitstream:
 
 1. Open your PR on Github and navigate to the "Checks" tab.
-1. On the left sidebar, expand the "Azure Pipelines" menu.
-1. Open the "CI (CW310's Earl Grey Bitstream)" job and click on "View more details on Azure Pipelines".
-1. Click on "1 artifact produced".
-1. Click on the three dots for "partial-build-bin-chip_earlgrey_cw310".
-1. You can either download the artifact directly or download with the URL.
+2. On the left sidebar, expand the "Azure Pipelines" menu.
+3. Open the "CI (CW340's Earl Grey Bitstream)" job and click on "View more details on Azure Pipelines".
+4. Click on "1 artifact produced".
+5. Click on the three dots for "partial-build-bin-chip_earlgrey_cw340".
+6. You can either download the artifact directly or download with the URL.
 
 Note that Azure does not allow you to download the artifact with `wget` or `curl` by default, so to use the download URL, you need to specify a `user-agent` header.
 For example, to download with `curl`, you can use the following command
@@ -473,7 +523,7 @@ For example, to download with `curl`, you can use the following command
 curl --output /tmp/artifact.tar.gz -H 'user-agent: Mozilla/5.0' <download_URL>
 ```
 
-After extracting the artifact, the bitstream is located at `build-bin/hw/top_earlgrey/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.{splice,orig}`.
+After extracting the artifact, the bitstream is located at `build-bin/hw/top_earlgrey/lowrisc_systems_chip_earlgrey_cw340_0.1.bit.{splice,orig}`.
 The `.splice` bitstream has the ROM spliced in, and the `.orig` bitstream has the test ROM.
 
 Next, load the bitstream with opentitantool, and run the test.
@@ -481,7 +531,7 @@ The FPGA tests attempt to load the latest bitstream by default, but because we w
 
 ```console
 # Load the bitstream with opentitantool
-bazel run //sw/host/opentitantool --interface=cw310 fpga load-bitstream <path_to_your_bitstream>
+bazel run //sw/host/opentitantool --interface=cw340 fpga load-bitstream <path_to_your_bitstream>
 
 # Run the broken test locally, showing all test output and skipping the bitstream loading
 bazel test <broken_test_rule> --define bitstream=skip --test_output=streamed
