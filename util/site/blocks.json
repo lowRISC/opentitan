@@ -2,235 +2,196 @@
     "high-speed-crossbar": {
         "name": "High Speed Crossbar",
         "data_file": "hw/ip/tlul/data/tlul.prj.hjson",
-        "href": "/hw/ip/tlul#top",
         "report": "/hw/top_earlgrey/ip/xbar_main/dv/autogen"
     },
     "ibex": {
         "name": "Ibex",
         "data_file": "hw/ip/rv_core_ibex/data/rv_core_ibex.hjson",
-        "href": "/hw/ip/rv_core_ibex#top",
         "report": null
     },
     "interrupt-controller": {
         "name": "Interrupt Controller",
         "data_file": "hw/top_earlgrey/ip_autogen/rv_plic/data/rv_plic.hjson",
-        "href": "/hw/top_earlgrey/ip_autogen/rv_plic#top",
         "report": null
     },
     "debug-module": {
         "name": "Debug Module",
         "data_file": "hw/ip/rv_dm/data/rv_dm.hjson",
-        "href": "/hw/ip/rv_dm#top",
         "report": "/hw/ip/rv_dm/dv"
     },
     "rom": {
         "name": "ROM",
         "data_file": "hw/ip/rom_ctrl/data/rom_ctrl.hjson",
-        "href": "/hw/ip/rom_ctrl#top",
         "report": "/hw/ip/rom_ctrl/dv"
     },
     "main-sram": {
         "name": "Main SRAM",
         "data_file": "hw/ip/sram_ctrl/data/sram_ctrl.hjson",
-        "href": "/hw/ip/sram_ctrl#top",
         "report": "/hw/ip/sram_ctrl_main/dv"
     },
     "key-manager": {
         "name": "Key Manager",
         "data_file": "hw/ip/keymgr/data/keymgr.hjson",
-        "href": "/hw/ip/keymgr#top",
         "report": "/hw/ip/keymgr/dv"
     },
     "otbn": {
         "name": "OTBN",
         "data_file": "hw/ip/otbn/data/otbn.hjson",
-        "href": "/hw/ip/otbn#top",
         "report": "/hw/ip/otbn/dv/uvm"
     },
     "aes": {
         "name": "AES",
         "data_file": "hw/ip/aes/data/aes.hjson",
-        "href": "/hw/ip/aes#top",
         "report": "/hw/ip/aes_unmasked/dv"
     },
     "kmac": {
         "name": "KMAC",
         "data_file": "hw/ip/kmac/data/kmac.hjson",
-        "href": "/hw/ip/kmac#top",
         "report": "/hw/ip/kmac_unmasked/dv"
     },
     "hmac": {
         "name": "HMAC",
         "data_file": "hw/ip/hmac/data/hmac.hjson",
-        "href": "/hw/ip/hmac#top",
         "report": "/hw/ip/hmac/dv"
     },
     "flash": {
         "name": "Flash",
         "data_file": "hw/ip/flash_ctrl/data/flash_ctrl.hjson",
-        "href": "/hw/ip/flash_ctrl#top",
         "report": "/hw/ip/flash_ctrl/dv"
     },
     "edn": {
         "name": "EDN",
         "data_file": "hw/ip/edn/data/edn.hjson",
-        "href": "/hw/ip/edn#top",
         "report": "/hw/ip/edn/dv"
     },
     "csrng": {
         "name": "CSRNG",
         "data_file": "hw/ip/csrng/data/csrng.hjson",
-        "href": "/hw/ip/csrng#top",
         "report": "/hw/ip/csrng/dv"
     },
     "entropy-source": {
         "name": "Entropy Source",
         "data_file": "hw/ip/entropy_src/data/entropy_src.hjson",
-        "href": "/hw/ip/entropy_src#top",
         "report": "/hw/ip/entropy_src/dv"
     },
     "spi-host-0": {
         "name": "SPI Host",
         "data_file": "hw/ip/spi_host/data/spi_host.hjson",
-        "href": "/hw/ip/spi_host#top",
         "report": "/hw/ip/spi_host/dv"
     },
     "spi-host-1": {
         "name": "SPI Host",
         "data_file": "hw/ip/spi_host/data/spi_host.hjson",
-        "href": "/hw/ip/spi_host#top",
         "report": "/hw/ip/spi_host/dv"
     },
     "usb": {
         "name": "USB",
         "data_file": "hw/ip/usbdev/data/usbdev.hjson",
-        "href": "/hw/ip/usbdev#top",
         "report": "/hw/ip/usbdev/dv"
     },
     "peripheral-crossbar": {
         "name": "Peripheral Crossbar",
         "data_file": "hw/ip/tlul/data/tlul.prj.hjson",
-        "href": "/hw/ip/tlul#top",
         "report": "/hw/top_earlgrey/ip/xbar_peri/dv/autogen"
     },
     "otp-fuse-controller": {
         "name": "OTP Fuse Controller",
         "data_file": "hw/ip/otp_ctrl/data/otp_ctrl.hjson",
-        "href": "/hw/ip/otp_ctrl#top",
         "report": "/hw/ip/otp_ctrl/dv"
     },
     "life-cycle": {
         "name": "Life Cycle",
         "data_file": "hw/ip/lc_ctrl/data/lc_ctrl.hjson",
-        "href": "/hw/ip/lc_ctrl#top",
         "report": "/hw/ip/lc_ctrl/dv"
     },
     "alert-handler": {
         "name": "Alert Handler",
         "data_file": "hw/top_earlgrey/ip_autogen/alert_handler/data/alert_handler.hjson",
-        "href": "/hw/top_earlgrey/ip_autogen/alert_handler#top",
         "report": "/hw/top_earlgrey/ip_autogen/alert_handler/dv"
     },
     "uart": {
         "name": "UART",
         "data_file": "hw/ip/uart/data/uart.hjson",
-        "href": "/hw/ip/uart#top",
         "report": "/hw/ip/uart/dv"
     },
     "timers": {
         "name": "Timers",
         "data_file": "hw/ip/rv_timer/data/rv_timer.hjson",
-        "href": "/hw/ip/rv_timer#top",
         "report": "/hw/ip/rv_timer/dv"
     },
     "gpio": {
         "name": "GPIO",
         "data_file": "hw/ip/gpio/data/gpio.hjson",
-        "href": "/hw/ip/gpio#top",
         "report": "/hw/ip/gpio/dv"
     },
     "i2c": {
         "name": "I2C",
         "data_file": "hw/ip/i2c/data/i2c.hjson",
-        "href": "/hw/ip/i2c#top",
         "report": "/hw/ip/i2c/dv"
     },
     "spi-device": {
         "name": "SPI Device",
         "data_file": "hw/ip/spi_device/data/spi_device.hjson",
-        "href": "/hw/ip/spi_device#top",
         "report": "/hw/ip/spi_device/dv"
     },
     "pattern-generators": {
         "name": "Pattern Generators",
         "data_file": "hw/ip/pattgen/data/pattgen.hjson",
-        "href": "/hw/ip/pattgen#top",
         "report": "/hw/ip/pattgen/dv"
     },
     "pwm": {
         "name": "PWM",
         "data_file": "hw/ip/pwm/data/pwm.hjson",
-        "href": "/hw/ip/pwm#top",
         "report": "/hw/ip/pwm/dv"
     },
     "retention-sram": {
         "name": "Retention SRAM",
         "data_file": "hw/ip/sram_ctrl/data/sram_ctrl.hjson",
-        "href": "/hw/ip/sram_ctrl#top",
         "report": "/hw/ip/sram_ctrl_ret/dv"
     },
     "power-manager": {
         "name": "Power Manager",
         "data_file": "hw/ip/pwrmgr/data/pwrmgr.hjson",
-        "href": "/hw/ip/pwrmgr#top",
         "report": "/hw/ip/pwrmgr/dv"
     },
     "sysrst-controller": {
         "name": "SYSRST Controller",
         "data_file": "hw/ip/sysrst_ctrl/data/sysrst_ctrl.hjson",
-        "href": "/hw/ip/sysrst_ctrl#top",
         "report": "/hw/ip/sysrst_ctrl/dv"
     },
     "aon-timers": {
         "name": "AON Timer",
         "data_file": "hw/ip/aon_timer/data/aon_timer.hjson",
-        "href": "/hw/ip/aon_timer#top",
         "report": "/hw/ip/aon_timer/dv"
     },
     "clkrst-managers": {
         "name": "CLK/RST Managers",
         "data_file": "hw/ip/clkmgr/data/clkmgr.hjson",
-        "href": "/hw/ip/clkmgr#top",
         "report": "/hw/ip/clkmgr/dv"
     },
     "pinmux-padctrl": {
         "name": "PINMUX/PADCTRL",
         "data_file": "hw/ip/pinmux/data/pinmux.hjson",
-        "href": "/hw/ip/pinmux#top",
         "report": null
     },
     "adc-controller": {
         "name": "ADC Controller",
         "data_file": "hw/ip/adc_ctrl/data/adc_ctrl.hjson",
-        "href": "/hw/ip/adc_ctrl#top",
         "report": "/hw/ip/adc_ctrl/dv"
     },
     "sensor-control": {
         "name": "Sensor Controller",
         "data_file": "hw/top_earlgrey/ip/sensor_ctrl/data/sensor_ctrl.hjson",
-        "href": "/hw/top_earlgrey/ip/sensor_ctrl#top",
         "report": null
     },
     "analog-sensor-top": {
         "name": "Analog Sensor Top",
         "data_file": "hw/top_earlgrey/ip/ast/data/ast.hjson",
-        "href": "/hw/top_earlgrey/ip/ast#top",
         "report": null
     },
     "padring": {
         "name": "Padring",
         "data_file": null,
-        "href": "/hw/top_earlgrey/ip/pinmux/doc/autogen/pinout_asic/",
         "report": null
     }
 }

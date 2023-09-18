@@ -76,7 +76,6 @@ def main() -> None:
 
         block_output = {}
         block_output['name'] = block['name']
-        block_output['href'] = block['href']
         (
             block_output['version'],
             block_output['design_stage'],
