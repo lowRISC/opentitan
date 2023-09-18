@@ -16,7 +16,6 @@
 #include "sw/ip/rstmgr/test/utils/rstmgr_testutils.h"
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
 #include "sw/ip/uart/dif/dif_uart.h"
-#include "sw/ip/usbdev/dif/dif_usbdev.h"
 #include "sw/lib/sw/device/base/abs_mmio.h"
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/runtime/log.h"
@@ -24,14 +23,12 @@
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "spi_host_regs.h"
 #include "uart_regs.h"
-#include "usbdev_regs.h"
 
 /**
  * The peripherals used to test when the peri clocks are disabled are
  * bit 0: clk_io_div4_peri: uart0
  * bit 1: clk_io_div2_peri: spi_host1
  * bit 2: clk_io_peri: spi_host0
- * bit 3: clk_usb_peri: usbdev
  */
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -45,7 +42,6 @@ static dif_aon_timer_t aon_timer;
 static dif_flash_ctrl_state_t flash_ctrl;
 static dif_spi_host_t spi_host0;
 static dif_spi_host_t spi_host1;
-static dif_usbdev_t usbdev;
 static dif_uart_t uart0;
 
 OT_SET_BSS_SECTION(".non_volatile_scratch", uint64_t hung_data_addr[4];)
@@ -89,24 +85,13 @@ static void spi_host1_csr_access(void) {
   CHECK(state == kDifToggleEnabled);
 }
 
-static void usbdev_csr_access(void) {
-  CHECK_DIF_OK(dif_usbdev_irq_set_enabled(&usbdev, kDifUsbdevIrqPowered,
-                                          kDifToggleEnabled));
-  dif_toggle_t state;
-  CHECK_DIF_OK(
-      dif_usbdev_irq_get_enabled(&usbdev, kDifUsbdevIrqPowered, &state));
-  CHECK(state == kDifToggleEnabled);
-}
-
 peri_context_t peri_context[kTopDarjeelingGateableClocksLast + 1] = {
     {uart0_csr_access,
      TOP_DARJEELING_UART0_BASE_ADDR + UART_INTR_ENABLE_REG_OFFSET},
     {spi_host1_csr_access,
      TOP_DARJEELING_SPI_HOST1_BASE_ADDR + SPI_HOST_INTR_ENABLE_REG_OFFSET},
     {spi_host0_csr_access,
-     TOP_DARJEELING_SPI_HOST0_BASE_ADDR + SPI_HOST_INTR_ENABLE_REG_OFFSET},
-    {usbdev_csr_access,
-     TOP_DARJEELING_USBDEV_BASE_ADDR + USBDEV_INTR_ENABLE_REG_OFFSET}};
+     TOP_DARJEELING_SPI_HOST0_BASE_ADDR + SPI_HOST_INTR_ENABLE_REG_OFFSET}};
 
 /**
  * Test that disabling a 'gateable' unit's clock causes the unit to become
@@ -180,8 +165,6 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_DARJEELING_SPI_HOST0_BASE_ADDR), &spi_host0));
   CHECK_DIF_OK(dif_spi_host_init(
       mmio_region_from_addr(TOP_DARJEELING_SPI_HOST1_BASE_ADDR), &spi_host1));
-  CHECK_DIF_OK(dif_usbdev_init(
-      mmio_region_from_addr(TOP_DARJEELING_USBDEV_BASE_ADDR), &usbdev));
 
   // Enable cpu dump capture.
   CHECK_DIF_OK(dif_rstmgr_cpu_info_set_enabled(&rstmgr, kDifToggleEnabled));

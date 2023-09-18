@@ -22,7 +22,6 @@
 #include "sw/ip/rv_plic/test/utils/rv_plic_testutils.h"
 #include "sw/ip/spi_device/dif/dif_spi_device.h"
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
-#include "sw/ip/usbdev/dif/dif_usbdev.h"
 #include "sw/lib/sw/device/base/math.h"
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/irq.h"
@@ -34,7 +33,6 @@
 #include "spi_device_regs.h"
 #include "spi_host_regs.h"
 #include "sw/top_darjeeling/sw/test/utils/autogen/isr_testutils.h"
-#include "usbdev_regs.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -44,7 +42,6 @@ static dif_rstmgr_t rstmgr;
 static dif_spi_device_handle_t spi_dev;
 static dif_spi_host_t spi_host0;
 static dif_spi_host_t spi_host1;
-static dif_usbdev_t usbdev;
 static dif_i2c_t i2c0;
 static dif_i2c_t i2c1;
 static dif_i2c_t i2c2;
@@ -65,9 +62,6 @@ static void init_peripherals(void) {
 
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR), &rstmgr));
-
-  CHECK_DIF_OK(dif_usbdev_init(
-      mmio_region_from_addr(TOP_DARJEELING_USBDEV_BASE_ADDR), &usbdev));
 
   CHECK_DIF_OK(dif_spi_device_init(
       mmio_region_from_addr(TOP_DARJEELING_SPI_DEVICE_BASE_ADDR),
@@ -109,22 +103,20 @@ static const uint32_t spihost0_alerts[] = {
     kTopDarjeelingAlertIdSpiHost0FatalFault};
 static const uint32_t spihost1_alerts[] = {
     kTopDarjeelingAlertIdSpiHost1FatalFault};
-static const uint32_t usbdev_alerts[] = {kTopDarjeelingAlertIdUsbdevFatalFault};
 static const uint32_t i2c0_alerts[] = {kTopDarjeelingAlertIdI2c0FatalFault};
 static const uint32_t i2c1_alerts[] = {kTopDarjeelingAlertIdI2c1FatalFault};
 static const uint32_t i2c2_alerts[] = {kTopDarjeelingAlertIdI2c2FatalFault};
 
 static const uint32_t num_spihost0_alerts = ARRAYSIZE(spihost0_alerts);
 static const uint32_t num_spihost1_alerts = ARRAYSIZE(spihost1_alerts);
-static const uint32_t num_usbdev_alerts = ARRAYSIZE(usbdev_alerts);
 static const uint32_t num_spidev_alerts = ARRAYSIZE(spidev_alerts);
 static const uint32_t num_i2c0_alerts = ARRAYSIZE(i2c0_alerts);
 static const uint32_t num_i2c1_alerts = ARRAYSIZE(i2c1_alerts);
 static const uint32_t num_i2c2_alerts = ARRAYSIZE(i2c2_alerts);
 
-static const size_t num_alerts =
-    num_spihost0_alerts + num_spihost1_alerts + num_usbdev_alerts +
-    num_i2c0_alerts + num_i2c1_alerts + num_i2c2_alerts + num_spidev_alerts;
+static const size_t num_alerts = num_spihost0_alerts + num_spihost1_alerts +
+                                 num_i2c0_alerts + num_i2c1_alerts +
+                                 num_i2c2_alerts + num_spidev_alerts;
 
 /**
  * A structure to keep the info for peripheral IPs
@@ -173,14 +165,6 @@ static const test_t kPeripherals[] = {
         .alert_ids = spihost1_alerts,
         .num_alert_peri = num_spihost1_alerts,
         .reset_index = kTopDarjeelingResetManagerSwResetsSpiHost1,
-    },
-    {
-        .name = "USB",
-        .base = TOP_DARJEELING_USBDEV_BASE_ADDR,
-        .dif = &usbdev,
-        .alert_ids = usbdev_alerts,
-        .num_alert_peri = num_usbdev_alerts,
-        .reset_index = kTopDarjeelingResetManagerSwResetsUsb,
     },
     {
         .name = "SPI_DEVICE",

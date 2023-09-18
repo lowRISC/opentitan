@@ -687,6 +687,7 @@ opentitan_functest(
 opentitan_functest(
     name = "pwrmgr_usbdev_smoketest",
     srcs = ["pwrmgr_usbdev_smoketest.c"],
+    tags = ["earlgrey"],
     targets = ["dv"],
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -1005,7 +1006,6 @@ cc_library(
         "//sw/top_darjeeling/sw/dif:pwrmgr",
         "//sw/top_darjeeling/sw/dif:rv_plic",
         "//sw/top_darjeeling/sw/dif:sensor_ctrl",
-        "//sw/top_darjeeling/sw/dif:usbdev",
         "//sw/top_darjeeling/sw/test/utils:aon_timer_testutils",
         "//sw/top_darjeeling/sw/test/utils:isr_testutils",
         "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
@@ -1228,6 +1228,7 @@ opentitan_functest(
 opentitan_functest(
     name = "ast_usb_clk_calib",
     srcs = ["ast_usb_clk_calib.c"],
+    tags = ["earlgrey"],
     targets = ["dv"],
     deps = [
         "//hw/top_darjeeling/ip/ast/data:ast_regs",

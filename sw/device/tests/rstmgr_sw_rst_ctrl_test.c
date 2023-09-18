@@ -8,7 +8,6 @@
 #include "sw/ip/rstmgr/dif/dif_rstmgr.h"
 #include "sw/ip/spi_device/dif/dif_spi_device.h"
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
-#include "sw/ip/usbdev/dif/dif_usbdev.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/memory.h"
 #include "sw/lib/sw/device/base/mmio.h"
@@ -19,7 +18,6 @@
 #include "i2c_regs.h"
 #include "spi_device_regs.h"
 #include "spi_host_regs.h"
-#include "usbdev_regs.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -35,7 +33,6 @@ OTTF_DEFINE_TEST_CONFIG();
  * // 0     | SPI_DEVICE |  CFG           |  0x7f00      |  0x3f0c
  * // 1     | SPI_HOST0  |  CONFIGOPTS    |  0x0         |  0x3210000
  * // 2     | SPI_HOST1  |  CONFIGOPTS    |  0x0         |  0x6540000
- * // 3     | USB        |  EP_OUT_ENABLE |  0x0         |  0xc3
  * // 4     | I2C0       |  TIMING0       |  0x0         |  0x8b00cfe
  * // 5     | I2C1       |  TIMING1       |  0x0         |  0x114010d8
  * // 6     | I2C2       |  TIMING2       |  0x0         |  0x19ec1595
@@ -54,7 +51,6 @@ OTTF_DEFINE_TEST_CONFIG();
 
 MAKE_INIT_FUNC(spi_device);
 MAKE_INIT_FUNC(spi_host);
-MAKE_INIT_FUNC(usbdev);
 MAKE_INIT_FUNC(i2c);
 
 static void spi_device_config(void *dif) {
@@ -141,7 +137,6 @@ static void i2c2_config(void *dif) {
 static dif_spi_device_handle_t spi_dev;
 static dif_spi_host_t spi_host0;
 static dif_spi_host_t spi_host1;
-static dif_usbdev_t usbdev;
 static dif_i2c_t i2c0;
 static dif_i2c_t i2c1;
 static dif_i2c_t i2c2;
@@ -216,15 +211,6 @@ static const test_t kPeripherals[] = {
         .config = spi_host1_config,
         .program_val = 0x6540000,
         .reset_index = kTopDarjeelingResetManagerSwResetsSpiHost1,
-    },
-    {
-        .name = "USB",
-        .base = TOP_DARJEELING_USBDEV_BASE_ADDR,
-        .offset = USBDEV_EP_OUT_ENABLE_REG_OFFSET,
-        .dif = &usbdev,
-        .init = usbdev_init,
-        .program_val = 0xc3,
-        .reset_index = kTopDarjeelingResetManagerSwResetsUsb,
     },
     {
         .name = "I2C0",

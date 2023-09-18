@@ -53,36 +53,7 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
                                             kDifPinmuxPadKindMio, in_attr,
                                             &out_attr));
   };
-
-  // Configure a higher drive strength for the USB_P and USB_N pads because we
-  // must the pad drivers must be capable of overpowering the 'pull' signal
-  // strength of the internal pull ups in the differential receiver.
-  //
-  // 'pull' strength is required because at the host end of the USB, there
-  // are 'weak' pull downs, allowing it to detect device presence when it
-  // applies its pull up.
-  //    strong PAD driver > internal pull up > weak pull down at host
-  //
-  // Normally the pull up on USB_P will be asserted, but we may be employing
-  // 'pin flipping' and instead choose to apply the _N pull up.
-  if (kDeviceType == kDeviceSimDV) {
-    dif_pinmux_pad_attr_t out_attr;
-    dif_pinmux_pad_attr_t in_attr = {
-        .slew_rate = 0, .drive_strength = 1, .flags = 0};
-
-    CHECK_DIF_OK(
-        dif_pinmux_pad_write_attrs(pinmux, kTopDarjeelingDirectPadsUsbdevUsbDp,
-                                   kDifPinmuxPadKindDio, in_attr, &out_attr));
-    CHECK_DIF_OK(
-        dif_pinmux_pad_write_attrs(pinmux, kTopDarjeelingDirectPadsUsbdevUsbDn,
-                                   kDifPinmuxPadKindDio, in_attr, &out_attr));
-  }
 #endif
-
-  // Configure USBDEV SENSE outputs to be high-Z (IOC7)
-  CHECK_DIF_OK(
-      dif_pinmux_output_select(pinmux, kTopDarjeelingPinmuxMioOutIoc7,
-                               kTopDarjeelingPinmuxOutselConstantHighZ));
 }
 
 // Mapping of Chip IOs to the GPIO peripheral.

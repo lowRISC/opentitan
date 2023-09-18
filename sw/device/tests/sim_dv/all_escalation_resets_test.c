@@ -240,7 +240,6 @@ static const char *sram_ctrl_ret_inst_name = "sram_ctrl_ret";
 static const char *sram_ctrl_mbox_inst_name = "sram_ctrl_mbox";
 static const char *sysrst_ctrl_inst_name = "sysrst_ctrl";
 static const char *uart0_inst_name = "uart0";
-static const char *usbdev_inst_name = "usbdev";
 
 static void trivial_fault_checker(bool enable, const char *ip_inst,
                                   const char *type) {
@@ -988,10 +987,6 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
     } break;
     case kTopDarjeelingAlertIdUart0FatalFault: {
       fault_checker_t fc = {trivial_fault_checker, uart0_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopDarjeelingAlertIdUsbdevFatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, usbdev_inst_name, we_check};
       fault_checker = fc;
     } break;
     default: {

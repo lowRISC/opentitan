@@ -25,7 +25,6 @@
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
 #include "sw/ip/rv_plic/test/utils/rv_plic_testutils.h"
 #include "sw/ip/spi_host/dif/dif_spi_host.h"
-#include "sw/ip/usbdev/dif/dif_usbdev.h"
 #include "sw/lib/sw/device/base/math.h"
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/ibex.h"
@@ -41,7 +40,6 @@
 #include "otbn_regs.h"
 #include "spi_host_regs.h"
 #include "sw/top_darjeeling/sw/test/utils/autogen/isr_testutils.h"
-#include "usbdev_regs.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -50,7 +48,6 @@ static dif_alert_handler_t alert_handler;
 static dif_clkmgr_t clkmgr;
 static dif_spi_host_t spi_host0;
 static dif_spi_host_t spi_host1;
-static dif_usbdev_t usbdev;
 static dif_aes_t aes;
 static dif_hmac_t hmac;
 static dif_kmac_t kmac;
@@ -99,9 +96,6 @@ static void init_peripherals(void) {
   CHECK_DIF_OK(dif_spi_host_init(
       mmio_region_from_addr(TOP_DARJEELING_SPI_HOST1_BASE_ADDR), &spi_host1));
 
-  CHECK_DIF_OK(dif_usbdev_init(
-      mmio_region_from_addr(TOP_DARJEELING_USBDEV_BASE_ADDR), &usbdev));
-
   CHECK_DIF_OK(
       dif_aes_init(mmio_region_from_addr(TOP_DARJEELING_AES_BASE_ADDR), &aes));
 
@@ -137,7 +131,6 @@ static const uint32_t spihost0_alerts[] = {
     kTopDarjeelingAlertIdSpiHost0FatalFault};
 static const uint32_t spihost1_alerts[] = {
     kTopDarjeelingAlertIdSpiHost1FatalFault};
-static const uint32_t usbdev_alerts[] = {kTopDarjeelingAlertIdUsbdevFatalFault};
 
 static const uint32_t num_aes_alerts = ARRAYSIZE(aes_alerts);
 static const uint32_t num_hmac_alerts = ARRAYSIZE(hmac_alerts);
@@ -145,12 +138,11 @@ static const uint32_t num_kmac_alerts = ARRAYSIZE(kmac_alerts);
 static const uint32_t num_otbn_alerts = ARRAYSIZE(otbn_alerts);
 static const uint32_t num_spihost0_alerts = ARRAYSIZE(spihost0_alerts);
 static const uint32_t num_spihost1_alerts = ARRAYSIZE(spihost1_alerts);
-static const uint32_t num_usbdev_alerts = ARRAYSIZE(usbdev_alerts);
 
 static const size_t num_alerts =
     ARRAYSIZE(aes_alerts) + ARRAYSIZE(hmac_alerts) + ARRAYSIZE(kmac_alerts) +
     ARRAYSIZE(otbn_alerts) + ARRAYSIZE(spihost0_alerts) +
-    ARRAYSIZE(spihost1_alerts) + ARRAYSIZE(usbdev_alerts);
+    ARRAYSIZE(spihost1_alerts);
 
 /**
  * A structure to keep the info for peripheral IPs
@@ -262,17 +254,6 @@ static const test_t kPeripherals[] = {
         .alert_ids = spihost1_alerts,
         .num_alert_peri = num_spihost1_alerts,
         .clk_index = kTopDarjeelingGateableClocksIoDiv2Peri,
-        .is_hintable = false,
-    },
-    {
-        .name = "USB",
-        .base = TOP_DARJEELING_USBDEV_BASE_ADDR,
-        .offset = USBDEV_ALERT_TEST_REG_OFFSET,
-        .dif = &usbdev,
-        .fatal_alert_bit = 0,
-        .alert_ids = usbdev_alerts,
-        .num_alert_peri = num_usbdev_alerts,
-        .clk_index = kTopDarjeelingGateableClocksUsbPeri,
         .is_hintable = false,
     },
 };

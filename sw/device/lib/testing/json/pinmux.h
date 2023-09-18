@@ -70,7 +70,6 @@ extern "C" {
     value(_, SysrstCtrlAonKey2In, kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonKey2In) \
     value(_, SysrstCtrlAonPwrbIn, kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonPwrbIn) \
     value(_, SysrstCtrlAonLidOpen, kTopDarjeelingPinmuxPeripheralInSysrstCtrlAonLidOpen) \
-    value(_, UsbdevSense, kTopDarjeelingPinmuxPeripheralInUsbdevSense) \
     value(_, End, kTopDarjeelingPinmuxPeripheralInLast + 1)
 C_ONLY(UJSON_SERDE_ENUM(PinmuxPeripheralIn, pinmux_peripheral_in_t, TOP_DARJEELING_PINMUX_PERIPHERAL_IN, WITH_UNKNOWN));
 
@@ -247,8 +246,6 @@ C_ONLY(UJSON_SERDE_ENUM(PinmuxMioOut, pinmux_mio_out_t, TOP_DARJEELING_PINMUX_MI
 C_ONLY(UJSON_SERDE_ENUM(PinmuxOutsel, pinmux_outsel_t, TOP_DARJEELING_PINMUX_OUTSEL, WITH_UNKNOWN));
 
 #define TOP_DARJEELING_DIRECT_PADS(_, value) \
-    value(_, UsbdevUsbDp, kTopDarjeelingDirectPadsUsbdevUsbDp) \
-    value(_, UsbdevUsbDn, kTopDarjeelingDirectPadsUsbdevUsbDn) \
     value(_, SpiHost0Sd0, kTopDarjeelingDirectPadsSpiHost0Sd0) \
     value(_, SpiHost0Sd1, kTopDarjeelingDirectPadsSpiHost0Sd1) \
     value(_, SpiHost0Sd2, kTopDarjeelingDirectPadsSpiHost0Sd2) \

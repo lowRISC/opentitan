@@ -311,12 +311,3 @@ cc_library(
         "//sw/lib/sw/device/base:mmio",
     ],
 )
-
-cc_library(
-    name = "usbdev",
-    hdrs = ["//sw/ip/usbdev/driver:usbdev.h"],
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        "//sw/lib/sw/device/base:mmio",
-    ],
-)

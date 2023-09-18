@@ -22,7 +22,6 @@ cc_library(
         "//sw/top_darjeeling/sw/drivers:rv_core_ibex",
         "//sw/top_darjeeling/sw/drivers:sram_ctrl",
         "//sw/top_darjeeling/sw/drivers:uart",
-        "//sw/top_darjeeling/sw/drivers:usbdev",
     ],
 )
 

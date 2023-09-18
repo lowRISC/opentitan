@@ -20,7 +20,6 @@
 #include "sw/ip/rv_plic/test/utils/rv_plic_testutils.h"
 #include "sw/ip/sensor_ctrl/dif/dif_sensor_ctrl.h"
 #include "sw/ip/sysrst_ctrl/dif/dif_sysrst_ctrl.h"
-#include "sw/ip/usbdev/dif/dif_usbdev.h"
 #include "sw/lib/sw/device/base/mmio.h"
 #include "sw/lib/sw/device/runtime/ibex.h"
 #include "sw/lib/sw/device/runtime/irq.h"
@@ -54,7 +53,6 @@ extern dif_pwrmgr_t pwrmgr;
 extern dif_rv_plic_t rv_plic;
 extern dif_sensor_ctrl_t sensor_ctrl;
 extern dif_sysrst_ctrl_t sysrst_ctrl;
-extern dif_usbdev_t usbdev;
 
 void init_units(void);
 

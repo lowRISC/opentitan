@@ -180,7 +180,6 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:rstmgr",
         "//sw/top_darjeeling/sw/dif:rv_plic",
         "//sw/top_darjeeling/sw/dif:spi_host",
-        "//sw/top_darjeeling/sw/dif:usbdev",
         "//sw/top_darjeeling/sw/test/utils:alert_handler_testutils",
         "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
         "//sw/top_darjeeling/sw/test/utils:isr_testutils",
@@ -244,7 +243,6 @@ opentitan_functest(
         "//hw/ip/i2c/data:i2c_regs",
         "//hw/ip/spi_device/data:spi_device_regs",
         "//hw/ip/spi_host/data:spi_host_regs",
-        "//hw/ip/usbdev/data:usbdev_regs",
         "//hw/top_darjeeling:alert_handler_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -261,7 +259,6 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:rv_plic",
         "//sw/top_darjeeling/sw/dif:spi_device",
         "//sw/top_darjeeling/sw/dif:spi_host",
-        "//sw/top_darjeeling/sw/dif:usbdev",
         "//sw/top_darjeeling/sw/test/utils:alert_handler_testutils",
         "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
         "//sw/top_darjeeling/sw/test/utils:isr_testutils",
@@ -573,7 +570,6 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:rstmgr",
         "//sw/top_darjeeling/sw/dif:spi_host",
         "//sw/top_darjeeling/sw/dif:uart",
-        "//sw/top_darjeeling/sw/dif:usbdev",
         "//sw/top_darjeeling/sw/test/utils:aon_timer_testutils",
         "//sw/top_darjeeling/sw/test/utils:flash_ctrl_testutils",
         "//sw/top_darjeeling/sw/test/utils:nv_counter_testutils",
@@ -1599,7 +1595,6 @@ opentitan_functest(
         "//hw/ip/i2c/data:i2c_regs",
         "//hw/ip/spi_device/data:spi_device_regs",
         "//hw/ip/spi_host/data:spi_host_regs",
-        "//hw/ip/usbdev/data:usbdev_regs",
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/arch:device",
@@ -1612,7 +1607,6 @@ opentitan_functest(
         "//sw/top_darjeeling/sw/dif:rstmgr",
         "//sw/top_darjeeling/sw/dif:spi_device",
         "//sw/top_darjeeling/sw/dif:spi_host",
-        "//sw/top_darjeeling/sw/dif:usbdev",
     ],
 )
 
@@ -2152,6 +2146,7 @@ opentitan_functest(
     cw310 = cw310_params(
         tags = ["manual"],
     ),
+    tags = ["earlgrey"],
     targets = [
         "verilator",
         "cw310_test_rom",
@@ -2176,6 +2171,7 @@ opentitan_functest(
 opentitan_functest(
     name = "usbdev_mixed_test",
     srcs = ["usbdev_mixed_test.c"],
+    tags = ["earlgrey"],
     targets = [
         "verilator",
         "dv",
@@ -2198,6 +2194,7 @@ opentitan_functest(
 opentitan_functest(
     name = "usbdev_iso_test",
     srcs = ["usbdev_iso_test.c"],
+    tags = ["earlgrey"],
     targets = [
         "verilator",
         "dv",
@@ -2224,6 +2221,7 @@ opentitan_functest(
         timeout = "eternal",
         tags = ["manual"],
     ),
+    tags = ["earlgrey"],
     targets = [
         "verilator",
         "cw310_test_rom",

@@ -1185,35 +1185,3 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
-
-cc_library(
-    name = "usbdev",
-    srcs = [
-        "//sw/ip/usbdev/dif:headers",
-        "//sw/ip/usbdev/dif:sources",
-    ],
-    hdrs = [
-        "//sw/ip/usbdev/dif:api",
-    ],
-    deps = [
-        "//hw/ip/usbdev/data:usbdev_regs",
-        "//sw/ip/base/dif:base",
-        "//sw/lib/sw/device/base:bitfield",
-        "//sw/lib/sw/device/base:macros",
-        "//sw/lib/sw/device/base:memory",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/base:multibits",
-    ],
-)
-
-cc_test(
-    name = "usbdev_unittest",
-    srcs = [
-        "//sw/ip/usbdev/dif:test_sources",
-    ],
-    deps = [
-        ":usbdev",
-        "//sw/ip/base/dif:test_base",
-        "@googletest//:gtest_main",
-    ],
-)

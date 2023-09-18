@@ -41,7 +41,6 @@ cc_library(
         "//sw/top_darjeeling/sw/dif:spi_host",
         "//sw/top_darjeeling/sw/dif:sysrst_ctrl",
         "//sw/top_darjeeling/sw/dif:uart",
-        "//sw/top_darjeeling/sw/dif:usbdev",
     ],
 )
 
@@ -416,46 +415,5 @@ cc_library(
         "//sw/lib/sw/device/base:macros",
         "//sw/lib/sw/device/base:status",
         "//sw/top_darjeeling/sw/dif:spi_host",
-    ],
-)
-
-cc_library(
-    name = "usb_testutils",
-    srcs = [
-        "//sw/ip/usbdev/test/utils:usb_testutils.c",
-        "//sw/ip/usbdev/test/utils:usb_testutils_controlep.c",
-    ],
-    hdrs = [
-        "//sw/ip/usbdev/test/utils:usb_testutils.h",
-        "//sw/ip/usbdev/test/utils:usb_testutils_controlep.h",
-        "//sw/ip/usbdev/test/utils:usb_testutils_diags.h",
-    ],
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/top_darjeeling/sw/dif:usbdev",
-        "//sw/top_darjeeling/sw/drivers:usbdev",
-    ],
-)
-
-cc_library(
-    name = "usb_testutils_simpleserial",
-    srcs = ["//sw/ip/usbdev/test/utils:usb_testutils_simpleserial.c"],
-    hdrs = ["//sw/ip/usbdev/test/utils:usb_testutils_simpleserial.h"],
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        ":usb_testutils",
-        "//sw/device/lib/testing/test_framework:check",
-    ],
-)
-
-cc_library(
-    name = "usb_testutils_streams",
-    srcs = ["//sw/ip/usbdev/test/utils:usb_testutils_streams.c"],
-    hdrs = ["//sw/ip/usbdev/test/utils:usb_testutils_streams.h"],
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        ":usb_testutils",
-        "//sw/device/lib/testing/test_framework:check",
     ],
 )

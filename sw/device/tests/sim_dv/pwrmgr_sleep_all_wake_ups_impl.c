@@ -14,7 +14,6 @@
 #include "sw/ip/rv_plic/dif/dif_rv_plic.h"
 #include "sw/ip/sensor_ctrl/dif/dif_sensor_ctrl.h"
 #include "sw/ip/sysrst_ctrl/dif/dif_sysrst_ctrl.h"
-#include "sw/ip/usbdev/dif/dif_usbdev.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "pwrmgr_regs.h"
@@ -30,7 +29,6 @@ dif_pwrmgr_t pwrmgr;
 dif_rv_plic_t rv_plic;
 dif_sensor_ctrl_t sensor_ctrl;
 dif_sysrst_ctrl_t sysrst_ctrl;
-dif_usbdev_t usbdev;
 
 /**
  * sysrst_ctrl config for test #1
@@ -98,26 +96,6 @@ static void prgm_pinmux_wakeup(void *dif) {
 }
 
 /**
- * usb config for test #4
- * . Fake low power entry through usb
- * . Force usb to output suspend indication
- * (*dif) handle is not used but leave as is
- * to be called from execute_test
- */
-static void prgm_usb_wakeup(void *dif) {
-  dif_usbdev_phy_pins_drive_t pins = {
-      .dp_pullup_en = true,
-      .dn_pullup_en = false,
-  };
-  CHECK_DIF_OK(dif_usbdev_set_phy_pins_state(dif, kDifToggleEnabled, pins));
-  CHECK_DIF_OK(dif_usbdev_set_wake_enable(dif, kDifToggleEnabled));
-
-  LOG_INFO("prgm_usb_wakeup: wait 20us (usb)");
-  // Give the hardware a chance to recognize the wakeup values are the same.
-  busy_spin_micros(20);  // 20us
-}
-
-/**
  * aon timer config for test #5
  * set wakeup signal in 50us
  */
@@ -154,12 +132,6 @@ const test_wakeup_sources_t kTestWakeupSources[PWRMGR_PARAM_NUM_WKUPS] = {
         .config = prgm_pinmux_wakeup,
     },
     {
-        .name = "USB",
-        .dif_handle = &usbdev,
-        .wakeup_src = kDifPwrmgrWakeupRequestSourceFour,
-        .config = prgm_usb_wakeup,
-    },
-    {
         .name = "AONTIMER",
         .dif_handle = &aon_timer,
         .wakeup_src = kDifPwrmgrWakeupRequestSourceFive,
@@ -194,8 +166,6 @@ void init_units(void) {
   CHECK_DIF_OK(dif_sensor_ctrl_init(
       mmio_region_from_addr(TOP_DARJEELING_SENSOR_CTRL_BASE_ADDR),
       &sensor_ctrl));
-  CHECK_DIF_OK(dif_usbdev_init(
-      mmio_region_from_addr(TOP_DARJEELING_USBDEV_BASE_ADDR), &usbdev));
 }
 
 void execute_test(uint32_t wakeup_source, bool deep_sleep) {
@@ -204,9 +174,7 @@ void execute_test(uint32_t wakeup_source, bool deep_sleep) {
       kTestWakeupSources[wakeup_source].dif_handle);
   dif_pwrmgr_domain_config_t cfg;
   CHECK_DIF_OK(dif_pwrmgr_get_domain_config(&pwrmgr, &cfg));
-  cfg = (cfg & (kDifPwrmgrDomainOptionIoClockInLowPower |
-                kDifPwrmgrDomainOptionUsbClockInLowPower |
-                kDifPwrmgrDomainOptionUsbClockInActivePower)) |
+  cfg = (cfg & (kDifPwrmgrDomainOptionIoClockInLowPower)) |
         (!deep_sleep ? kDifPwrmgrDomainOptionMainPowerInLowPower : 0);
 
   CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
@@ -244,10 +212,6 @@ void cleanup(uint32_t test_idx) {
           &adc_ctrl, kDifAdcCtrlFilter5, kDifToggleDisabled));
       break;
     case PWRMGR_PARAM_PINMUX_AON_PIN_WKUP_REQ_IDX:
-      CHECK_DIF_OK(dif_pinmux_wakeup_cause_clear(&pinmux));
-      break;
-    case PWRMGR_PARAM_PINMUX_AON_USB_WKUP_REQ_IDX:
-      CHECK_DIF_OK(dif_usbdev_set_wake_enable(&usbdev, kDifToggleDisabled));
       CHECK_DIF_OK(dif_pinmux_wakeup_cause_clear(&pinmux));
       break;
     case PWRMGR_PARAM_AON_TIMER_AON_WKUP_REQ_IDX:

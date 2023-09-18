@@ -14,7 +14,6 @@
 #include "sw/ip/rv_core_ibex/driver/rv_core_ibex.h"
 #include "sw/ip/sram_ctrl/driver/sram_ctrl.h"
 #include "sw/ip/uart/driver/uart.h"
-#include "sw/ip/usbdev/driver/usbdev.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
@@ -54,5 +53,3 @@ const uint32_t kSramCtrlMainRegsBaseAddr[] = {
     TOP_DARJEELING_SRAM_CTRL_MAIN_REGS_BASE_ADDR};
 
 const uint32_t kUartBaseAddr[] = {TOP_DARJEELING_UART0_BASE_ADDR};
-
-const uint32_t kUsbdevBaseAddr[] = {TOP_DARJEELING_USBDEV_BASE_ADDR};
