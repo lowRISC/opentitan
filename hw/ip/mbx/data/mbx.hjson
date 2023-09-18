@@ -123,17 +123,6 @@
             hwaccess: "hrw"
             hwqe: "true"
           }
-          { name: "async_msg_status"
-            desc: '''
-                  When Set, this bit indicates the DOE instance has one or more asynchronous messages to transfer
-                  The transition of this bit from Clear to Set is an interrupt triggering event
-                  '''
-            bits: "3"
-            resval: "0x0"
-            swaccess: "rw"
-            hwaccess: "hrw"
-            hwqe: "true"
-          }
           {
             name: "ready"
             desc: "Alias of the DoE mailbox ready bit"
@@ -370,14 +359,6 @@
             resval: "0x0"
             swaccess: "rw"
           }
-          { name: "async_msg_en"
-            desc: '''
-                  If DOE Async Message Support is Set, this bit, when Set, enables the use of the DOE Async Message mechanism.
-                  '''
-            bits: "3"
-            resval: "0x0"
-            swaccess: "rw"
-          }
           { name: "go"
             desc: '''
                   A write of 1 to this bit indicates to the DOE instance that it can start consuming the data object transferred through the DOE Write Data Mailbox register.
@@ -414,16 +395,6 @@
                   The transition of this bit from Clear to Set is an interrupt triggering event.
                   '''
             bits: "2"
-            resval: "0x0"
-            swaccess: "ro"
-            hwaccess: "hrw"
-          }
-          { name: "async_msg_status"
-            desc: '''
-                  When Set, this bit indicates the DOE instance has one or more asynchronous messages to transfer.
-                  The transition of this bit from Clear to Set is an interrupt triggering event.
-                  '''
-            bits: "3"
             resval: "0x0"
             swaccess: "ro"
             hwaccess: "hrw"

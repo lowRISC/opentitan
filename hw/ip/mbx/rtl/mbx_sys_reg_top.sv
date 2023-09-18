@@ -184,15 +184,12 @@ module mbx_sys_reg_top (
   logic sys_control_abort_wd;
   logic sys_control_doe_intr_en_qs;
   logic sys_control_doe_intr_en_wd;
-  logic sys_control_async_msg_en_qs;
-  logic sys_control_async_msg_en_wd;
   logic sys_control_go_wd;
   logic sys_status_we;
   logic sys_status_busy_qs;
   logic sys_status_doe_intr_status_qs;
   logic sys_status_doe_intr_status_wd;
   logic sys_status_error_qs;
-  logic sys_status_async_msg_status_qs;
   logic sys_status_ready_qs;
 
   // Register instances
@@ -278,7 +275,7 @@ module mbx_sys_reg_top (
 
   // R[sys_control]: V(True)
   logic sys_control_qe;
-  logic [3:0] sys_control_flds_we;
+  logic [2:0] sys_control_flds_we;
   assign sys_control_qe = &sys_control_flds_we;
   //   F[abort]: 0:0
   prim_subreg_ext #(
@@ -312,22 +309,6 @@ module mbx_sys_reg_top (
   );
   assign reg2hw.sys_control.doe_intr_en.qe = sys_control_qe;
 
-  //   F[async_msg_en]: 3:3
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_sys_control_async_msg_en (
-    .re     (sys_control_re),
-    .we     (sys_control_we),
-    .wd     (sys_control_async_msg_en_wd),
-    .d      (hw2reg.sys_control.async_msg_en.d),
-    .qre    (),
-    .qe     (sys_control_flds_we[2]),
-    .q      (reg2hw.sys_control.async_msg_en.q),
-    .ds     (),
-    .qs     (sys_control_async_msg_en_qs)
-  );
-  assign reg2hw.sys_control.async_msg_en.qe = sys_control_qe;
-
   //   F[go]: 31:31
   prim_subreg_ext #(
     .DW    (1)
@@ -337,7 +318,7 @@ module mbx_sys_reg_top (
     .wd     (sys_control_go_wd),
     .d      (hw2reg.sys_control.go.d),
     .qre    (),
-    .qe     (sys_control_flds_we[3]),
+    .qe     (sys_control_flds_we[2]),
     .q      (reg2hw.sys_control.go.q),
     .ds     (),
     .qs     ()
@@ -347,14 +328,14 @@ module mbx_sys_reg_top (
 
   // R[sys_status]: V(False)
   logic sys_status_qe;
-  logic [4:0] sys_status_flds_we;
+  logic [3:0] sys_status_flds_we;
   prim_flop #(
     .Width(1),
     .ResetValue(0)
   ) u_sys_status0_qe (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .d_i(&(sys_status_flds_we | 5'h1d)),
+    .d_i(&(sys_status_flds_we | 4'hd)),
     .q_o(sys_status_qe)
   );
   //   F[busy]: 0:0
@@ -439,33 +420,6 @@ module mbx_sys_reg_top (
     .qs     (sys_status_error_qs)
   );
 
-  //   F[async_msg_status]: 3:3
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_sys_status_async_msg_status (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.sys_status.async_msg_status.de),
-    .d      (hw2reg.sys_status.async_msg_status.d),
-
-    // to internal hardware
-    .qe     (sys_status_flds_we[3]),
-    .q      (reg2hw.sys_status.async_msg_status.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (sys_status_async_msg_status_qs)
-  );
-
   //   F[ready]: 31:31
   prim_subreg #(
     .DW      (1),
@@ -485,7 +439,7 @@ module mbx_sys_reg_top (
     .d      (hw2reg.sys_status.ready.d),
 
     // to internal hardware
-    .qe     (sys_status_flds_we[4]),
+    .qe     (sys_status_flds_we[3]),
     .q      (reg2hw.sys_status.ready.q),
     .ds     (),
 
@@ -529,8 +483,6 @@ module mbx_sys_reg_top (
 
   assign sys_control_doe_intr_en_wd = reg_wdata[1];
 
-  assign sys_control_async_msg_en_wd = reg_wdata[3];
-
   assign sys_control_go_wd = reg_wdata[31];
   assign sys_status_we = addr_hit[3] & reg_we & !reg_error;
 
@@ -560,7 +512,6 @@ module mbx_sys_reg_top (
       addr_hit[2]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = sys_control_doe_intr_en_qs;
-        reg_rdata_next[3] = sys_control_async_msg_en_qs;
         reg_rdata_next[31] = '0;
       end
 
@@ -568,7 +519,6 @@ module mbx_sys_reg_top (
         reg_rdata_next[0] = sys_status_busy_qs;
         reg_rdata_next[1] = sys_status_doe_intr_status_qs;
         reg_rdata_next[2] = sys_status_error_qs;
-        reg_rdata_next[3] = sys_status_async_msg_status_qs;
         reg_rdata_next[31] = sys_status_ready_qs;
       end
 
