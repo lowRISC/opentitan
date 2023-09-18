@@ -539,7 +539,16 @@ class mem_bkdr_util extends uvm_object;
     for (int i = 0; i < depth; i++) begin
       uvm_hdl_data_t data;
       `DV_CHECK_STD_RANDOMIZE_FATAL(data, "Randomization failed!", path)
-      data = get_ecc_computed_data(data);
+      if (`HAS_PARITY) begin
+        uvm_hdl_data_t raw_data = data;
+        for (int byte_idx = 0; byte_idx < bytes_per_word; byte_idx++) begin
+          bit raw_byte = raw_data[byte_idx * 8 +: 8];
+          bit parity = (err_detection_scheme == ParityOdd) ? ~(^raw_byte) : (^raw_byte);
+          data[byte_idx * 9 +: 9] = {parity, raw_byte};
+        end
+      end else begin
+        data = get_ecc_computed_data(data);
+      end
       write(i * bytes_per_word, data);
     end
   endfunction
