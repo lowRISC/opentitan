@@ -22,7 +22,7 @@ module mbx_ombx #(
   // Control signals from the host and system interface
   // Writing a 1 to control.abort register clears the abort condition
   input  logic                          hostif_control_abort_clear_i,
-  input  logic                          hostif_status_error_set_i,
+  input  logic                          hostif_control_error_set_i,
   input  logic                          sysif_status_ready_i,
   input  logic                          sysif_control_abort_set_i,
   input  logic                          sysif_read_data_read_valid_i,
@@ -142,7 +142,7 @@ module mbx_ombx #(
   // or the requester aborts the transaction
   logic clear_read_data;
   assign clear_read_data = sys_read_all              |
-                           hostif_status_error_set_i |
+                           hostif_control_error_set_i |
                            sysif_control_abort_set_i;
   // Advance the SRAM read response to read data
   prim_generic_flop_en #(
@@ -234,8 +234,8 @@ module mbx_ombx #(
     .rst_ni                    ( rst_ni                       ),
     .mbx_range_valid_i         ( hostif_range_valid_i         ),
     .hostif_abort_ack_i        ( hostif_control_abort_clear_i ),
-    .hostif_status_error_set_i ( hostif_status_error_set_i    ),
     .hostif_status_busy_clear_i( 1'b0                         ),
+    .hostif_control_error_set_i( hostif_control_error_set_i   ),
     .sysif_control_abort_set_i ( sysif_control_abort_set_i    ),
     .sys_read_all_i            ( sys_read_all                 ),
     .writer_close_mbx_i        ( writer_close_mbx             ),
