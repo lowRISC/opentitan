@@ -40,14 +40,14 @@ module dma
   output dma_pkg::sys_req_t                         sys_o
 );
   import prim_mubi_pkg::*;
-  import hmac_pkg::*;
+  import hmac_multimode_pkg::*;
 
   dma_reg2hw_t reg2hw;
   dma_hw2reg_t hw2reg;
 
   localparam int unsigned TRANSFER_BYTES_WIDTH    = $bits(reg2hw.total_data_size.q);
   localparam int unsigned INT_CLEAR_SOURCES_WIDTH = $clog2(NumIntClearSources);
-  localparam int unsigned NR_SHA_DIGEST_ELEMTS    = 8;
+  localparam int unsigned NR_SHA_DIGEST_ELEMENTS  = 16;
 
   // Flopped bus for SYS interface
   dma_pkg::sys_req_t sys_req_d;
@@ -372,9 +372,10 @@ module dma
   logic use_inline_hashing;
   logic sha2_en, sha2_hash_start, sha2_hash_process;
   logic sha2_valid, sha2_ready, sha2_digest_we;
-  sha_fifo_t sha2_data;
-  logic [63:0] sha2_msg_len;
-  sha_word_t [7:0] sha2_digest;
+  sha_fifo32_t sha2_data;
+  logic [127:0] sha2_msg_len;
+  digest_mode_e sha2_mode;
+  sha_word64_t [7:0] sha2_digest;
 
   // SHA2 message length is in bits
   assign sha2_msg_len       = reg2hw.total_data_size.q << 3;
@@ -424,17 +425,28 @@ module dma
     .q_o   ( sha2_hash_done_sticky_q )
   );
 
+  // Translate the DMA opcode to the SHA2 digest mode
+  always_comb begin
+    unique case (reg2hw.control.opcode.q)
+      OpcSha256: sha2_mode = SHA2_256;
+      OpcSha384: sha2_mode = SHA2_384;
+      OpcSha512: sha2_mode = SHA2_512;
+      default:   sha2_mode = None;
+    endcase
+  end
+
   // SHA2 engine for inline hashing operations
-  sha2 u_sha2 (
+  sha2_multimode32 u_sha2 (
     .clk_i            ( clk_i             ),
     .rst_ni           ( rst_ni            ),
     .wipe_secret      ( 1'b0              ),
     .wipe_v           ( 32'b0             ),
     .fifo_rvalid      ( sha2_valid        ),
     .fifo_rdata       ( sha2_data         ),
-    .fifo_rready      ( sha2_ready        ),
+    .word_buffer_ready( sha2_ready        ),
     .sha_en           ( sha2_en           ),
     .hash_start       ( sha2_hash_start   ),
+    .digest_mode      ( sha2_mode         ),
     .hash_process     ( sha2_hash_process ),
     .hash_done        ( sha2_hash_done_d  ),
     .message_length   ( sha2_msg_len      ),
@@ -676,8 +688,7 @@ module dma
           bad_size = 1'b1;
         end
 
-        if (!(reg2hw.control.opcode.q inside {OpcCopy,
-                                              OpcSha256})) begin
+        if (!(reg2hw.control.opcode.q inside {OpcCopy, OpcSha256, OpcSha384, OpcSha512})) begin
           bad_opcode = 1'b1;
         end
 
@@ -1267,10 +1278,13 @@ module dma
       end
     end
 
-    // Write digest to CSRs when needed
-    for (int i = 0; i < NR_SHA_DIGEST_ELEMTS; ++i) begin
-      hw2reg.sha2_digest[i].de = sha2_digest_we;
-      hw2reg.sha2_digest[i].d  = sha2_digest[i];
+    // Write digest to CSRs when needed. The digest is a 64-bit datatype, which leads to assign
+    // two 32-bit CSRs per iteration
+    for (int i = 0; i < NR_SHA_DIGEST_ELEMENTS; i += 2) begin
+      hw2reg.sha2_digest[i].de   = sha2_digest_we;
+      hw2reg.sha2_digest[i+1].de = sha2_digest_we;
+      hw2reg.sha2_digest[i].d    = sha2_digest[i/2][0  +: 32];
+      hw2reg.sha2_digest[i+1].d  = sha2_digest[i/2][32 +: 32];
     end
 
     hw2reg.destination_address_hi.de = update_destination_addr_reg;
