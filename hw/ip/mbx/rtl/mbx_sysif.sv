@@ -22,7 +22,6 @@ module mbx_sysif
   output logic                        doe_intr_o,
   // Access to the control register
   output logic                        sysif_control_abort_set_o,
-  output logic                        sysif_control_async_msg_en_o,
   output logic                        sysif_control_go_set_o,
   // Access to the status register
   input  logic                        sysif_status_busy_valid_i,
@@ -33,8 +32,6 @@ module mbx_sysif
   input  logic                        sysif_status_error_set_i,
   input  logic                        sysif_status_error_clear_i,
   output logic                        sysif_status_error_o,
-  input  logic                        sysif_status_async_msg_status_set_i,
-  output logic                        sysif_status_async_msg_status_o,
   input  logic                        sysif_status_ready_valid_i,
   input  logic                        sysif_status_ready_i,
   output logic                        sysif_status_ready_o,
@@ -105,31 +102,7 @@ module mbx_sysif
     .qs     ()
   );
 
-  // Manual implementation of the async_msg_en bit
-  // SWAccess: RW
-  // HWAccess: RO
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
-  ) u_sys_control_async_msg_en (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    // from register interface
-    .we     (reg2hw.sys_control.async_msg_en.qe),
-    .wd     (reg2hw.sys_control.async_msg_en.q),
-    // HWAccess: hro
-    .de     (1'b0),
-    .d      (1'b0),
-    // to internal hardware
-    .qe     (),
-    .q      (sysif_control_async_msg_en_o),
-    .ds     (hw2reg.sys_control.async_msg_en.d),
-    .qs     ()
-  );
-
   // Fiddle out status register bits for external write logic
-  assign sysif_status_async_msg_status_o = reg2hw.sys_status.async_msg_status.q;
   assign sysif_status_doe_intr_status_o  = reg2hw.sys_status.doe_intr_status.q;
   assign sysif_status_busy_o             = reg2hw.sys_status.busy.q;
   assign sysif_status_ready_o            = reg2hw.sys_status.ready.q;
@@ -149,8 +122,6 @@ module mbx_sysif
 
   // Set by the Host firmware (w1s)
   // Cleared by the Sys firmware (w1c)
-  assign hw2reg.sys_status.async_msg_status.de = sysif_status_async_msg_status_set_i;
-  assign hw2reg.sys_status.async_msg_status.d  = sysif_status_async_msg_status_set_i;
   assign hw2reg.sys_status.ready.de            = sysif_status_ready_valid_i;
   assign hw2reg.sys_status.ready.d             = sysif_status_ready_i;
 
