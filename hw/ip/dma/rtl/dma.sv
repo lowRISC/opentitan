@@ -1576,8 +1576,10 @@ module dma
   );
 `endif
 
-  `ASSERT_IF(SwMustClearGoForReconfig_A, assert_last_config_go ? (!reg2hw.control.go.q) : 1'b1,
-                                         sw_reg_wr && (!cfg_abort_en))
+  `ASSERT_IF(SwMustClearGoForReconfig_A,
+             // GO bit is not set or GO bit is set but DMA is not busy
+             assert_last_config_go ? (!reg2hw.control.go.q || !reg2hw.status.busy.q) : 1'b1,
+             u_dma_reg.reg_we && (!cfg_abort_en))
    // The RTL code assumes that src/dst BE signals are the same
   `ASSERT_NEVER(BeMustBeTheSame_A, req_src_be_q != req_dst_be_q)
 
