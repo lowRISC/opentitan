@@ -38,6 +38,10 @@ Comportable (hardware) Intellectual Property.
 
 See the [comportability specification](./contributing/hw/comportability/README.md).
 
+#### CP
+
+Circuit Probe.
+
 #### CRC
 
 Cyclic Redundancy Check.
@@ -137,6 +141,10 @@ Field Programmable Gate Array.
 #### FPV
 
 Formal Property Verification.
+
+#### FT
+
+Final Test.
 
 #### GF2
 
