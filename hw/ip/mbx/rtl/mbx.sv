@@ -61,8 +61,8 @@ module mbx
   logic sysif_status_busy, sysif_status_doe_intr_status, sysif_status_error;
 
   // Setter signals from the hostif to the sysif
-  logic hostif_control_abort_clear, hostif_status_busy_clear,
-        hostif_status_error_set, hostif_status_error_clear;
+  logic hostif_status_doe_intr_status_set, hostif_status_busy_clear,
+        hostif_control_abort_clear, hostif_control_error_set;
 
   // Alias signals from the sys interface
   logic [CfgSramAddrWidth-1:0] sysif_intr_msg_addr;
@@ -106,13 +106,12 @@ module mbx
     .alert_tx_o                          ( alert_tx_o                         ),
     // Access to the control register
     .hostif_control_abort_clear_o        ( hostif_control_abort_clear         ),
+    .hostif_control_error_set_o          ( hostif_control_error_set           ),
+    .hostif_control_error_i              ( sysif_status_error                 ),
     // Access to the status register
     .hostif_status_busy_clear_o          ( hostif_status_busy_clear           ),
     .hostif_status_busy_i                ( sysif_status_busy                  ),
     .hostif_status_doe_intr_status_i     ( sysif_status_doe_intr_status       ),
-    .hostif_status_error_set_o           ( hostif_status_error_set            ),
-    .hostif_status_error_clear_o         ( hostif_status_error_clear          ),
-    .hostif_status_error_i               ( sysif_status_error                 ),
     // Access to the IB/OB RD/WR Pointers
     .hostif_imbx_write_ptr_i             ( imbx_sram_write_ptr                ),
     .hostif_ombx_read_ptr_i              ( ombx_sram_read_ptr                 ),
@@ -187,8 +186,7 @@ module mbx
     .sysif_status_busy_o                 ( sysif_status_busy                  ),
     .sysif_status_doe_intr_status_set_i  ( ombx_doe_intr_status_set           ),
     .sysif_status_doe_intr_status_o      ( sysif_status_doe_intr_status       ),
-    .sysif_status_error_set_i            ( hostif_status_error_set            ),
-    .sysif_status_error_clear_i          ( hostif_status_error_clear          ),
+    .sysif_status_error_set_i            ( hostif_control_error_set           ),
     .sysif_status_error_o                ( sysif_status_error                 ),
     .sysif_status_ready_valid_i          ( ombx_status_ready_valid            ),
     .sysif_status_ready_i                ( ombx_status_ready                  ),
@@ -211,18 +209,18 @@ module mbx
     .CfgSramAddrWidth( CfgSramAddrWidth ),
     .CfgSramDataWidth( CfgSramDataWidth )
   ) u_imbx (
-    .clk_i                      ( clk_i                        ),
-    .rst_ni                     ( rst_ni                       ),
+    .clk_i                      ( clk_i                         ),
+    .rst_ni                     ( rst_ni                        ),
     // Interface to the host port
-    .imbx_state_error_o        ( imbx_state_error              ),
-    .imbx_pending_o            ( imbx_pending                  ),
-    .imbx_irq_ready_o          ( hostif_event_intr_ready       ),
-    .imbx_irq_abort_o          ( hostif_event_intr_abort       ),
-    .imbx_status_busy_update_o ( imbx_status_busy_valid        ),
-    .imbx_status_busy_o        ( imbx_status_busy              ),
+    .imbx_state_error_o          ( imbx_state_error             ),
+    .imbx_pending_o              ( imbx_pending                 ),
+    .imbx_irq_ready_o            ( hostif_event_intr_ready      ),
+    .imbx_irq_abort_o            ( hostif_event_intr_abort      ),
+    .imbx_status_busy_update_o   ( imbx_status_busy_valid       ),
+    .imbx_status_busy_o          ( imbx_status_busy             ),
     .hostif_control_abort_clear_i( hostif_control_abort_clear   ),
+    .hostif_control_error_set_i  ( hostif_control_error_set     ),
     .hostif_status_busy_clear_i  ( hostif_status_busy_clear     ),
-    .hostif_status_error_set_i   ( hostif_status_error_set      ),
     // SRAM range configuration
     .hostif_range_valid_i        ( hostif_address_range_valid   ),
     .hostif_base_i               ( hostif_imbx_base             ),
@@ -259,7 +257,7 @@ module mbx
     // Control signals from the host and system interface
     // Writing a 1 to control.abort register clears the abort condition
     .hostif_control_abort_clear_i    ( hostif_control_abort_clear     ),
-    .hostif_status_error_set_i       ( hostif_status_error_set        ),
+    .hostif_control_error_set_i      ( hostif_control_error_set       ),
     .sysif_control_abort_set_i       ( sysif_control_abort_set        ),
     .sysif_read_data_read_valid_i    ( sysif_read_data_read_valid     ),
     .sysif_read_data_write_valid_i   ( sysif_read_data_write_valid    ),

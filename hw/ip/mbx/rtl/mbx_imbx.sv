@@ -19,8 +19,8 @@ module mbx_imbx #(
   // Access to the control and status registers of host interface
   // Writing a 1 to control.abort register clears the abort condition
   input  logic                        hostif_control_abort_clear_i,
+  input  logic                        hostif_control_error_set_i,
   input  logic                        hostif_status_busy_clear_i,
-  input  logic                        hostif_status_error_set_i,
   // Range configuration for the private SRAM
   input  logic                        hostif_range_valid_i,
   input  logic [CfgSramAddrWidth-1:0] hostif_base_i,
@@ -115,13 +115,13 @@ module mbx_imbx #(
   logic imbx_set_busy, imbx_clear_busy;
   assign imbx_set_busy  = (mbx_write                   &
                            sysif_control_go_set_i      &
-                           ~hostif_status_error_set_i  &
+                           ~hostif_control_error_set_i  &
                            ~sysif_control_abort_set_i) |
                            sysif_control_abort_set_i;
 
   // Exit of mailbox read is used to clear imbx.busy and imbx.ready
   // Not yet qualified with mbx_read
-  assign imbx_clear_busy = hostif_status_error_set_i |
+  assign imbx_clear_busy = hostif_control_error_set_i |
                            sysif_control_abort_set_i |
                            hostif_status_busy_clear_i;
 
@@ -142,8 +142,8 @@ module mbx_imbx #(
     .rst_ni                    ( rst_ni                       ),
     .mbx_range_valid_i         ( hostif_range_valid_i         ),
     .hostif_abort_ack_i        ( hostif_control_abort_clear_i ),
-    .hostif_status_error_set_i ( hostif_status_error_set_i    ),
     .hostif_status_busy_clear_i( hostif_status_busy_clear_i   ),
+    .hostif_control_error_set_i( hostif_control_error_set_i   ),
     .sysif_control_abort_set_i ( sysif_control_abort_set_i    ),
     .sys_read_all_i            ( 1'b0                         ),
     .writer_close_mbx_i        ( sysif_control_go_set_i       ),

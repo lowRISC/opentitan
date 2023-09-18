@@ -93,6 +93,18 @@
             hwaccess: "hrw"
             hwqe: "true"
           }
+          { name: "error"
+            desc: '''
+                  Set by firmware to signal an error, i.e., unable to provide a response to request.
+                  Set by hardware, on SYS.WDATA or SYS.RDATA performing an invalid access.
+                  Cleared by the hardware when SYS sets CONTROL.ABORT.
+                  '''
+            bits: "2"
+            resval: "0x0"
+            swaccess: "rw"
+            hwaccess: "hrw"
+            hwqe: "true"
+          }
         ]
       }
       { name: "STATUS"
@@ -110,14 +122,6 @@
           { name: "doe_intr_status"
             desc: "Alias of the DoE mailbox interrupt status bit"
             bits: "1"
-            resval: "0x0"
-            swaccess: "rw"
-            hwaccess: "hrw"
-            hwqe: "true"
-          }
-          { name: "error"
-            desc: "Alias of the DoE mailbox error bit"
-            bits: "2"
             resval: "0x0"
             swaccess: "rw"
             hwaccess: "hrw"
