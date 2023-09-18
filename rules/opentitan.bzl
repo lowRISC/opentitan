@@ -514,6 +514,7 @@ def _elf_to_scrambled_rom_impl(ctx):
             ],
             arguments = [
                 ctx.file._config.path,
+                ctx.attr.mode,
                 src.path,
                 scrambled.path,
             ],
@@ -529,6 +530,10 @@ elf_to_scrambled_rom_vmem = rv_rule(
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "data": attr.label_list(allow_files = True),
+        "mode": attr.string(
+            values = ["base-rom", "second-rom", "sram"],
+            mandatory = True,
+        ),
         "_scramble_tool": attr.label(
             default = "@//hw/ip/rom_ctrl/util:scramble_image",
             executable = True,
@@ -898,6 +903,7 @@ def opentitan_binary(
 
 def opentitan_rom_binary(
         name,
+        mode,
         devices = PER_DEVICE_DEPS.keys(),
         platform = OPENTITAN_PLATFORM,
         testonly = False,
@@ -962,6 +968,7 @@ def opentitan_rom_binary(
         dev_targets.append(":" + scr_vmem_name)
         elf_to_scrambled_rom_vmem(
             name = scr_vmem_name,
+            mode = mode,
             srcs = [elf_name],
             platform = platform,
             testonly = testonly,

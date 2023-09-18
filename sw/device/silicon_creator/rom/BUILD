@@ -155,6 +155,7 @@ cc_library(
 opentitan_rom_binary(
     name = "rom_with_fake_keys",
     testonly = True,
+    mode = "base-rom",
     deps = [
         ":rom_without_keys",
         "//sw/device/silicon_creator/rom/keys/fake/rsa",
@@ -164,6 +165,7 @@ opentitan_rom_binary(
 
 opentitan_rom_binary(
     name = "rom_with_real_keys_from_src",
+    mode = "base-rom",
     deps = [
         ":rom_without_keys",
         "//sw/device/silicon_creator/rom/keys/real/rsa",
@@ -181,6 +183,7 @@ _ROM_DEVICES = [
     elf_to_scrambled_rom_vmem(
         name = "rom_with_real_keys_{}_scr_vmem".format(dev),
         srcs = ["//sw/device/silicon_creator/rom/binaries:rom_with_real_keys_{}.elf".format(dev)],
+        mode = "base-rom",
         platform = OPENTITAN_PLATFORM,
     )
     for dev in _ROM_DEVICES

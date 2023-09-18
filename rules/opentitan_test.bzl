@@ -376,6 +376,7 @@ def opentitan_functest(
         ot_flash_binary = name + "_rom_prog"
         opentitan_rom_binary(
             name = ot_flash_binary,
+            mode = "base-rom",
             deps = deps,
             devices = devices_to_build_for,
             testonly = True,

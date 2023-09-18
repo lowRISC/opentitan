@@ -22,6 +22,7 @@ ld_library(
 
 opentitan_rom_binary(
     name = "test_rom",
+    mode = "base-rom",
     deps = [
         ":linker_script",
         ":test_rom_lib",
