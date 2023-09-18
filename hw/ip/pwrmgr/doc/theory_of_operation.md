@@ -68,9 +68,9 @@ Instead the system goes into a terminal non-responsive state where a user or hos
 
 The fast clock domain FSM (referred to as fast FSM from here on) resets to `Low Power` state and waits for a power-up request from the slow FSM.
 
-Once received, the fast FSM releases the life cycle reset stage (see [reset controller]({{< relref "hw/ip/rstmgr/doc" >}}) for more details).
+Once received, the fast FSM releases the life cycle reset stage (see [reset controller](../../rstmgr/README.md) for more details).
 This allows the [OTP](../../otp_ctrl/README.md) to begin sensing.
-Once OTP sensing completes , the life cycle controller is initialized.
+Once OTP sensing completes, the life cycle controller is initialized.
 The initialization of the life cycle controller puts the device into its allowed operating state (see [life cycle controller](../../lc_ctrl/README.md) for more details).
 
 Once life cycle initialization is done, the fast FSM enables all second level clock gating (see [clock controller](../../clkmgr/README.md) for more details) and initiates strap sampling.
@@ -196,13 +196,11 @@ Once a steady state is reached, reset requests are then observed and processed.
 
 ### Reset Recording
 
-There are three ways in which the device is reset:
-- Non-debug-module reset request
+There are two ways in which the device is reset:
+- The reset requests mentioned in [reset handling](#reset-request-handling)
 - Low power entry (`sleep_req` in the state diagram)
-- Direct reset requests by peripherals or alert escalation
 
-The power manager does not handle the non-debug-module request (please see reset controller).
-For the remaining two reset causes, the power manager handles only 1 pathway at a time (see state diagrams).
+The power manager handles only one of these at a time (see state diagrams).
 This means if reset request and low power entry collide, the power manager will handle them on a first come first served basis.
 When the handling of the first is completed, the power manager handles the second pending request if it is still present.
 
