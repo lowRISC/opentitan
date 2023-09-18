@@ -518,7 +518,7 @@ jobs:
   # Build CW340 variant of the Earl Grey toplevel design using Vivado
   dependsOn:
     - lint
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'), eq(variables['Build.SourceBranchName'], 'master'))
+  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
   pool: ci-public-eda
   timeoutInMinutes: 150
   steps:
