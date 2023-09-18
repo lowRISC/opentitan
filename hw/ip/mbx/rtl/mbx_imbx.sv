@@ -117,7 +117,8 @@ module mbx_imbx #(
                            sysif_control_go_set_i      &
                            ~hostif_control_error_set_i  &
                            ~sysif_control_abort_set_i) |
-                           sysif_control_abort_set_i;
+                           sysif_control_abort_set_i   |
+                           ~hostif_range_valid_i;
 
   // Exit of mailbox read is used to clear imbx.busy and imbx.ready
   // Not yet qualified with mbx_read
