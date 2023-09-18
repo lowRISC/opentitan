@@ -248,6 +248,7 @@ jobs:
       echo -//third_party/riscv-compliance/... >> "${TARGET_PATTERN_FILE}"
       echo -//hw/... >> "${TARGET_PATTERN_FILE}"
       echo -//sw/top_earlgrey/... >> "${TARGET_PATTERN_FILE}"
+      echo -//sw/device/tests/autogen/top_earlgrey/... >> "${TARGET_PATTERN_FILE}"
       ./bazelisk.sh cquery \
         --noinclude_aspects \
         --output=starlark \
@@ -263,6 +264,15 @@ jobs:
         --output=starlark \
         --starlark:expr='"-{}".format(target.label)' \
         -- "rdeps(//..., set(//sw/top_darjeeling/sw/dif:flash_ctrl //sw/top_darjeeling/sw/dif:keymgr))" \
+        >> "${TARGET_PATTERN_FILE}"
+      # Exclude all BoB tests
+      # Make this query more-general in the future, but currently functest does not
+      # tag the software components so we filter by target-name instead
+      ./bazelisk.sh cquery \
+        --noinclude_aspects \
+        --output=starlark \
+        --starlark:expr='"-{}".format(target.label)' \
+        -- 'filter("tests:i2c_host_.*", //sw/device/tests/...)' \
         >> "${TARGET_PATTERN_FILE}"
       ci/bazelisk.sh build \
         --build_tests_only=false \
