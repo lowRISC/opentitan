@@ -23,7 +23,6 @@ ci/bazelisk.sh test \
     //sw/device/tests:otbn_irq_test_sim_verilator \
     //sw/device/tests:kmac_mode_cshake_test_sim_verilator \
     //sw/device/tests:kmac_mode_kmac_test_sim_verilator \
-    //sw/device/tests:usbdev_test_sim_verilator \
     //sw/device/silicon_creator/lib/drivers:hmac_functest_sim_verilator \
     //sw/device/silicon_creator/lib/drivers:uart_functest_sim_verilator \
     //sw/device/silicon_creator/lib/drivers:retention_sram_functest_sim_verilator \

@@ -4,44 +4,44 @@
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_flash_binary")
 
-opentitan_flash_binary(
-    name = "hello_usbdev",
-    srcs = [
-        "hello_usbdev.c",
-    ],
-    copts = [
-        "-nostdlib",
-        "-ffreestanding",
-        # Disable the date-time warning only for the hello world program.
-        "-Wno-date-time",
-    ],
-    deps = [
-        ":hello_usbdev_lib",
-        "//sw/lib/sw/device/base:mmio",
-    ],
-)
+# opentitan_flash_binary(
+#     name = "hello_usbdev",
+#     srcs = [
+#         "hello_usbdev.c",
+#     ],
+#     copts = [
+#         "-nostdlib",
+#         "-ffreestanding",
+#         # Disable the date-time warning only for the hello world program.
+#         "-Wno-date-time",
+#     ],
+#     deps = [
+#         ":hello_usbdev_lib",
+#         "//sw/lib/sw/device/base:mmio",
+#     ],
+# )
 
-cc_library(
-    name = "hello_usbdev_lib",
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/examples:demos",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-        "//sw/device/lib/testing/test_framework:ottf_start",
-        "//sw/device/lib/testing/test_framework:ottf_test_config",
-        "//sw/lib/sw/device/arch:device",
-        "//sw/lib/sw/device/crt",
-        "//sw/lib/sw/device/runtime:hart",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:gpio",
-        "//sw/top_darjeeling/sw/dif:pinmux",
-        "//sw/top_darjeeling/sw/dif:spi_device",
-        "//sw/top_darjeeling/sw/dif:uart",
-        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
-        "//sw/top_darjeeling/sw/test/utils:usb_testutils",
-        "//sw/top_darjeeling/sw/test/utils:usb_testutils_simpleserial",
-    ],
-)
+# cc_library(
+#     name = "hello_usbdev_lib",
+#     target_compatible_with = [OPENTITAN_CPU],
+#     deps = [
+#         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+#         "//sw/device/examples:demos",
+#         "//sw/device/lib/testing/test_framework:check",
+#         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+#         "//sw/device/lib/testing/test_framework:ottf_start",
+#         "//sw/device/lib/testing/test_framework:ottf_test_config",
+#         "//sw/lib/sw/device/arch:device",
+#         "//sw/lib/sw/device/crt",
+#         "//sw/lib/sw/device/runtime:hart",
+#         "//sw/lib/sw/device/runtime:log",
+#         "//sw/top_darjeeling/sw/device/runtime:print",
+#         "//sw/top_darjeeling/sw/dif:gpio",
+#         "//sw/top_darjeeling/sw/dif:pinmux",
+#         "//sw/top_darjeeling/sw/dif:spi_device",
+#         "//sw/top_darjeeling/sw/dif:uart",
+#         "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:usb_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:usb_testutils_simpleserial",
+#     ],
+# )

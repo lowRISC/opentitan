@@ -2140,107 +2140,107 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
-    name = "usbdev_test",
-    srcs = ["usbdev_test.c"],
-    cw310 = cw310_params(
-        tags = ["manual"],
-    ),
-    tags = ["earlgrey"],
-    targets = [
-        "verilator",
-        "cw310_test_rom",
-        "dv",
-    ],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
-    deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:pinmux",
-        "//sw/top_darjeeling/sw/dif:usbdev",
-        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
-        "//sw/top_darjeeling/sw/test/utils:usb_testutils",
-        "//sw/top_darjeeling/sw/test/utils:usb_testutils_simpleserial",
-    ],
-)
+# opentitan_functest(
+#     name = "usbdev_test",
+#     srcs = ["usbdev_test.c"],
+#     cw310 = cw310_params(
+#         tags = ["manual"],
+#     ),
+#     tags = ["earlgrey"],
+#     targets = [
+#         "verilator",
+#         "cw310_test_rom",
+#         "dv",
+#     ],
+#     verilator = verilator_params(
+#         timeout = "long",
+#     ),
+#     deps = [
+#         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+#         "//sw/device/lib/testing/test_framework:ottf_main",
+#         "//sw/lib/sw/device/runtime:log",
+#         "//sw/top_darjeeling/sw/device/runtime:print",
+#         "//sw/top_darjeeling/sw/dif:pinmux",
+#         "//sw/top_darjeeling/sw/dif:usbdev",
+#         "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:usb_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:usb_testutils_simpleserial",
+#     ],
+# )
 
-opentitan_functest(
-    name = "usbdev_mixed_test",
-    srcs = ["usbdev_mixed_test.c"],
-    tags = ["earlgrey"],
-    targets = [
-        "verilator",
-        "dv",
-    ],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
-    deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:pinmux",
-        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
-        "//sw/top_darjeeling/sw/test/utils:usb_testutils",
-        "//sw/top_darjeeling/sw/test/utils:usb_testutils_streams",
-    ],
-)
+# opentitan_functest(
+#     name = "usbdev_mixed_test",
+#     srcs = ["usbdev_mixed_test.c"],
+#     tags = ["earlgrey"],
+#     targets = [
+#         "verilator",
+#         "dv",
+#     ],
+#     verilator = verilator_params(
+#         timeout = "long",
+#     ),
+#     deps = [
+#         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+#         "//sw/device/lib/testing/test_framework:ottf_main",
+#         "//sw/lib/sw/device/runtime:log",
+#         "//sw/top_darjeeling/sw/device/runtime:print",
+#         "//sw/top_darjeeling/sw/dif:pinmux",
+#         "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:usb_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:usb_testutils_streams",
+#     ],
+# )
 
-opentitan_functest(
-    name = "usbdev_iso_test",
-    srcs = ["usbdev_iso_test.c"],
-    tags = ["earlgrey"],
-    targets = [
-        "verilator",
-        "dv",
-    ],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
-    deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:pinmux",
-        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
-        "//sw/top_darjeeling/sw/test/utils:usb_testutils",
-        "//sw/top_darjeeling/sw/test/utils:usb_testutils_streams",
-    ],
-)
+# opentitan_functest(
+#     name = "usbdev_iso_test",
+#     srcs = ["usbdev_iso_test.c"],
+#     tags = ["earlgrey"],
+#     targets = [
+#         "verilator",
+#         "dv",
+#     ],
+#     verilator = verilator_params(
+#         timeout = "long",
+#     ),
+#     deps = [
+#         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+#         "//sw/device/lib/testing/test_framework:ottf_main",
+#         "//sw/lib/sw/device/runtime:log",
+#         "//sw/top_darjeeling/sw/device/runtime:print",
+#         "//sw/top_darjeeling/sw/dif:pinmux",
+#         "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:usb_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:usb_testutils_streams",
+#     ],
+# )
 
-opentitan_functest(
-    name = "usbdev_stream_test",
-    srcs = ["usbdev_stream_test.c"],
-    cw310 = cw310_params(
-        timeout = "eternal",
-        tags = ["manual"],
-    ),
-    tags = ["earlgrey"],
-    targets = [
-        "verilator",
-        "cw310_test_rom",
-        "dv",
-    ],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
-    deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:pinmux",
-        "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
-        "//sw/top_darjeeling/sw/test/utils:usb_testutils",
-        "//sw/top_darjeeling/sw/test/utils:usb_testutils_streams",
-    ],
-)
+# opentitan_functest(
+#     name = "usbdev_stream_test",
+#     srcs = ["usbdev_stream_test.c"],
+#     cw310 = cw310_params(
+#         timeout = "eternal",
+#         tags = ["manual"],
+#     ),
+#     tags = ["earlgrey"],
+#     targets = [
+#         "verilator",
+#         "cw310_test_rom",
+#         "dv",
+#     ],
+#     verilator = verilator_params(
+#         timeout = "long",
+#     ),
+#     deps = [
+#         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+#         "//sw/device/lib/testing/test_framework:ottf_main",
+#         "//sw/lib/sw/device/runtime:log",
+#         "//sw/top_darjeeling/sw/device/runtime:print",
+#         "//sw/top_darjeeling/sw/dif:pinmux",
+#         "//sw/top_darjeeling/sw/test/utils:pinmux_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:usb_testutils",
+#         "//sw/top_darjeeling/sw/test/utils:usb_testutils_streams",
+#     ],
+# )
 
 opentitan_functest(
     name = "rstmgr_alert_info_test",

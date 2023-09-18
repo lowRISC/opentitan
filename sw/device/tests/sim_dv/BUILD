@@ -684,22 +684,22 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
-    name = "pwrmgr_usbdev_smoketest",
-    srcs = ["pwrmgr_usbdev_smoketest.c"],
-    tags = ["earlgrey"],
-    targets = ["dv"],
-    deps = [
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:hart",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:pwrmgr",
-        "//sw/top_darjeeling/sw/dif:usbdev",
-        "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
-    ],
-)
+# opentitan_functest(
+#     name = "pwrmgr_usbdev_smoketest",
+#     srcs = ["pwrmgr_usbdev_smoketest.c"],
+#     tags = ["earlgrey"],
+#     targets = ["dv"],
+#     deps = [
+#         "//sw/device/lib/testing/test_framework:ottf_main",
+#         "//sw/lib/sw/device/base:mmio",
+#         "//sw/lib/sw/device/runtime:hart",
+#         "//sw/lib/sw/device/runtime:log",
+#         "//sw/top_darjeeling/sw/device/runtime:print",
+#         "//sw/top_darjeeling/sw/dif:pwrmgr",
+#         "//sw/top_darjeeling/sw/dif:usbdev",
+#         "//sw/top_darjeeling/sw/test/utils:pwrmgr_testutils",
+#     ],
+# )
 
 opentitan_functest(
     name = "rv_dm_access_after_wakeup",
@@ -1226,26 +1226,26 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
-    name = "ast_usb_clk_calib",
-    srcs = ["ast_usb_clk_calib.c"],
-    tags = ["earlgrey"],
-    targets = ["dv"],
-    deps = [
-        "//hw/top_darjeeling/ip/ast/data:ast_regs",
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/ip/base/dif:base",
-        "//sw/lib/sw/device/base:memory",
-        "//sw/lib/sw/device/base:mmio",
-        "//sw/lib/sw/device/runtime:log",
-        "//sw/top_darjeeling/sw/device/runtime:print",
-        "//sw/top_darjeeling/sw/dif:clkmgr",
-        "//sw/top_darjeeling/sw/dif:pinmux",
-        "//sw/top_darjeeling/sw/dif:usbdev",
-        "//sw/top_darjeeling/sw/test/utils:clkmgr_testutils",
-    ],
-)
+# opentitan_functest(
+#     name = "ast_usb_clk_calib",
+#     srcs = ["ast_usb_clk_calib.c"],
+#     tags = ["earlgrey"],
+#     targets = ["dv"],
+#     deps = [
+#         "//hw/top_darjeeling/ip/ast/data:ast_regs",
+#         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+#         "//sw/device/lib/testing/test_framework:ottf_main",
+#         "//sw/ip/base/dif:base",
+#         "//sw/lib/sw/device/base:memory",
+#         "//sw/lib/sw/device/base:mmio",
+#         "//sw/lib/sw/device/runtime:log",
+#         "//sw/top_darjeeling/sw/device/runtime:print",
+#         "//sw/top_darjeeling/sw/dif:clkmgr",
+#         "//sw/top_darjeeling/sw/dif:pinmux",
+#         "//sw/top_darjeeling/sw/dif:usbdev",
+#         "//sw/top_darjeeling/sw/test/utils:clkmgr_testutils",
+#     ],
+# )
 
 opentitan_functest(
     name = "csrng_fuse_en_sw_app_read",
