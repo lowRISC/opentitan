@@ -4,8 +4,14 @@
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load("//rules:autogen.bzl", "autogen_chip_info")
-load("//rules:opentitan_test.bzl", "cw310_params", "opentitan_functest", "verilator_params")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
+load(
+    "//rules/opentitan:defs.bzl",
+    "EARLGREY_TEST_ENVS",
+    "cw310_params",
+    "opentitan_test",
+    "verilator_params",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -52,9 +58,10 @@ cc_test(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "boot_data_functest",
     srcs = ["boot_data_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "eternal",
         tags = ["flaky"],
@@ -183,9 +190,10 @@ cc_library(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "irq_asm_functest",
     srcs = ["irq_asm_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -396,16 +404,20 @@ cc_test(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "crc32_functest",
     srcs = ["crc32_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         ":crc32",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "crc32_perftest",
     srcs = ["crc32_perftest.c"],
     cw310 = cw310_params(
@@ -413,7 +425,9 @@ opentitan_functest(
             "manual",
         ],
     ),
-    targets = ["cw310_test_rom"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310": None,
+    },
     deps = [
         ":crc32",
         "//sw/device/lib/base:macros",
