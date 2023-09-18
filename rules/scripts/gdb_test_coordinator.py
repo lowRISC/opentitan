@@ -16,6 +16,7 @@ import selectors
 import subprocess
 import sys
 import time
+import os
 from typing import Callable, Dict, List, NewType, Optional, TextIO, Tuple
 
 import rich
@@ -30,10 +31,11 @@ COLOR_PURPLE = ConsoleStyle('purple')
 class BackgroundProcessGroup:
 
     def __init__(self):
-        self.selector = selectors.DefaultSelector()
+        self.selector = selectors.SelectSelector()
         self.procs_queue: List[subprocess.Popen] = []
         self.names: Dict[subprocess.Popen, str] = {}
         self.console = rich.console.Console(color_system="256")
+        self.unregistered = False
 
     def run(self,
             command: List[str],
@@ -47,18 +49,42 @@ class BackgroundProcessGroup:
         self.procs_queue.append(proc)
         self.names[proc] = label
 
-        # Register the new process with our selector. The `echo` closure may be
-        # called multiple times by `maybe_print_output`.
-        def echo(line):
-            if line == "":
-                return
-            self.console.print(f"[{label}] ", style=style, end='')
-            print(line, flush=True)
+        # Accumulator of output from the sub-process.
+        self.buffer = ""
 
-            if callback is not None:
-                callback(line)
+        # Register the new process with our selector. The `got_stdout_chunk`
+        # closure may be called multiple times by `maybe_print_output`.
+        def got_stdout_chunk(out, chunk):
+            if chunk == "":  # Subprocess has terminated
+                print("%s terminated" % label)
+                self.selector.unregister(proc.stdout)
+                self.unregistered = True
 
-        self.selector.register(proc.stdout, selectors.EVENT_READ, echo)
+            # Append to any previous partial line in the buffer.
+            self.buffer += chunk
+
+            # Now see if any complete lines have been received.
+            while True:
+                j = self.buffer.find("\n")
+                if j == -1:
+                    break  # Buffer contains only incomplete line.
+
+                # Pick the first complete line in the buffer, removing it from
+                # buffer.
+                line = self.buffer[:j]
+                self.buffer = self.buffer[j + 1:]
+
+                if line == "":
+                    continue
+                self.console.print(f"[{label}] ", style=style, end='')
+                print(line, flush=True)
+                out.append((proc.stdout, line))
+
+                if callback is not None:
+                    callback(line)
+
+        os.set_blocking(proc.stdout.fileno(), False)
+        self.selector.register(proc.stdout, selectors.EVENT_READ, got_stdout_chunk)
         return proc
 
     def empty(self) -> bool:
@@ -77,7 +103,8 @@ class BackgroundProcessGroup:
         assert proc not in self.procs_queue
         self.maybe_print_output(
             timeout_seconds=1)  # Flush any remaining lines.
-        self.selector.unregister(proc.stdout)
+        if not self.unregistered:
+            self.selector.unregister(proc.stdout)
         self.names.pop(proc, None)
 
     def _block_for_output(self,
@@ -85,10 +112,9 @@ class BackgroundProcessGroup:
         out = []
         events = self.selector.select(timeout=timeout_seconds)
         for key, mask in events:
-            line = key.fileobj.readline().rstrip()
+            chunk = key.fileobj.read()
             callback = key.data
-            callback(line)
-            out.append((key.fileobj, line))
+            callback(out, chunk)
         return out
 
     def maybe_print_output(self, timeout_seconds: int) -> None:
@@ -241,7 +267,7 @@ def main(openocd_path: str = typer.Option(...),
         # If we are defining GDB's success by checking output lines and we've
         # seen all of the expected lines, kill GDB and ignore its return code.
         if proc == gdb and gdb_alternative_success_mode and gdb_expect_output_sequence == []:
-            print("Terminating GDB now that it has printed the expected lines")
+            print("Terminating GDB now that it has printed the expected lines", flush=True)
             gdb.terminate()
             gdb.wait()
             background.forget(gdb)
