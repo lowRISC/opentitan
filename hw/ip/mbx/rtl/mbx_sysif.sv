@@ -30,7 +30,6 @@ module mbx_sysif
   input  logic                        sysif_status_doe_intr_status_set_i,
   output logic                        sysif_status_doe_intr_status_o,
   input  logic                        sysif_status_error_set_i,
-  input  logic                        sysif_status_error_clear_i,
   output logic                        sysif_status_error_o,
   input  logic                        sysif_status_ready_valid_i,
   input  logic                        sysif_status_ready_i,
@@ -118,7 +117,8 @@ module mbx_sysif
   assign hw2reg.soc_status.doe_intr_status.de = sysif_status_doe_intr_status_set_i & doe_intr_en_o;
   assign hw2reg.soc_status.doe_intr_status.d  = sysif_status_doe_intr_status_set_i;
 
-  assign hw2reg.soc_status.error.de = sysif_status_error_set_i | sysif_status_error_clear_i;
+  // Error is cleared when writing the abort bit
+  assign hw2reg.soc_status.error.de = sysif_status_error_set_i | sysif_control_abort_set_o;
   assign hw2reg.soc_status.error.d  = sysif_status_error_set_i;
 
   // Set by OT firmware (w1s)

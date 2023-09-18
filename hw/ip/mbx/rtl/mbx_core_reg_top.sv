@@ -143,14 +143,14 @@ module mbx_core_reg_top (
   logic control_abort_wd;
   logic control_doe_intr_en_qs;
   logic control_doe_intr_en_wd;
+  logic control_error_qs;
+  logic control_error_wd;
   logic status_re;
   logic status_we;
   logic status_busy_qs;
   logic status_busy_wd;
   logic status_doe_intr_status_qs;
   logic status_doe_intr_status_wd;
-  logic status_error_qs;
-  logic status_error_wd;
   logic address_range_regwen_we;
   logic [3:0] address_range_regwen_qs;
   logic [3:0] address_range_regwen_wd;
@@ -370,7 +370,7 @@ module mbx_core_reg_top (
 
   // R[control]: V(True)
   logic control_qe;
-  logic [1:0] control_flds_we;
+  logic [2:0] control_flds_we;
   assign control_qe = &control_flds_we;
   //   F[abort]: 0:0
   prim_subreg_ext #(
@@ -404,10 +404,26 @@ module mbx_core_reg_top (
   );
   assign reg2hw.control.doe_intr_en.qe = control_qe;
 
+  //   F[error]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_control_error (
+    .re     (control_re),
+    .we     (control_we),
+    .wd     (control_error_wd),
+    .d      (hw2reg.control.error.d),
+    .qre    (),
+    .qe     (control_flds_we[2]),
+    .q      (reg2hw.control.error.q),
+    .ds     (),
+    .qs     (control_error_qs)
+  );
+  assign reg2hw.control.error.qe = control_qe;
+
 
   // R[status]: V(True)
   logic status_qe;
-  logic [2:0] status_flds_we;
+  logic [1:0] status_flds_we;
   assign status_qe = &status_flds_we;
   //   F[busy]: 0:0
   prim_subreg_ext #(
@@ -440,22 +456,6 @@ module mbx_core_reg_top (
     .qs     (status_doe_intr_status_qs)
   );
   assign reg2hw.status.doe_intr_status.qe = status_qe;
-
-  //   F[error]: 2:2
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_status_error (
-    .re     (status_re),
-    .we     (status_we),
-    .wd     (status_error_wd),
-    .d      (hw2reg.status.error.d),
-    .qre    (),
-    .qe     (status_flds_we[2]),
-    .q      (reg2hw.status.error.q),
-    .ds     (),
-    .qs     (status_error_qs)
-  );
-  assign reg2hw.status.error.qe = status_qe;
 
 
   // R[address_range_regwen]: V(False)
@@ -882,14 +882,14 @@ module mbx_core_reg_top (
   assign control_abort_wd = reg_wdata[0];
 
   assign control_doe_intr_en_wd = reg_wdata[1];
+
+  assign control_error_wd = reg_wdata[2];
   assign status_re = addr_hit[5] & reg_re & !reg_error;
   assign status_we = addr_hit[5] & reg_we & !reg_error;
 
   assign status_busy_wd = reg_wdata[0];
 
   assign status_doe_intr_status_wd = reg_wdata[1];
-
-  assign status_error_wd = reg_wdata[2];
   assign address_range_regwen_we = addr_hit[6] & reg_we & !reg_error;
 
   assign address_range_regwen_wd = reg_wdata[3:0];
@@ -965,12 +965,12 @@ module mbx_core_reg_top (
       addr_hit[4]: begin
         reg_rdata_next[0] = control_abort_qs;
         reg_rdata_next[1] = control_doe_intr_en_qs;
+        reg_rdata_next[2] = control_error_qs;
       end
 
       addr_hit[5]: begin
         reg_rdata_next[0] = status_busy_qs;
         reg_rdata_next[1] = status_doe_intr_status_qs;
-        reg_rdata_next[2] = status_error_qs;
       end
 
       addr_hit[6]: begin
