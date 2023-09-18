@@ -551,6 +551,7 @@
       default:   "5",
     },
   ],
+
   features: [
     {
      name: "FLASH_CTRL.ESCALATION"
@@ -578,7 +579,7 @@
     {
       name: "FLASH_CTRL.INFO.ISOLATED_PARTITION"
       desc: '''This partition can hold extra manufacturing details (e.g., the wafer authentication secret).
-            SW can read or program the contents when life cycle state is either of of PROD / PROD_END / RMA.
+            SW can read or program the contents when life cycle state is one of PROD, PROD_END, or RMA.
             SW can only program the contents when life cycle state is TEST_UNLOCKED* or DEV.
             '''
     }
@@ -586,12 +587,12 @@
       name: "FLASH_CTRL.INFO.OWNER_PARTITION"
       desc: '''This partition stores owner root seed.
             It is accessed by the flash controller after scramble key is received.
-            SW can read or program the contents when life cycle state is either one of DEV / PROD / PROD_END / RMA.
+            SW can read or program the contents when life cycle state is one of DEV, PROD, PROD_END, or RMA.
             '''
     }
     {
       name: "FLASH_CTRL.INIT.ROOT_SEEDS"
-      desc: "After the scrambling keys are requested, the flash controller reads root seeds from secret partitions and provides them to the key manager.
+      desc: "After the scrambling keys are requested, the flash controller reads root seeds from secret partitions and provides them to the key manager."
     }
     {
       name: "FLASH_CTRL.INIT.SCRAMBLING_KEYS"
@@ -632,7 +633,6 @@
     }
   ],
 
-  // REGISTER definition
   regwidth: "32",
   registers: {
     core: [
