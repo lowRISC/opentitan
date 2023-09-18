@@ -12,12 +12,12 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     str = $sformatf("%0s\n %0s act: 0x%0h, exp: 0x%0h", str, `"VAR`", act.``VAR, exp.``VAR);
 
   typedef struct packed {
-    bit [keymgr_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
-    bit [keymgr_pkg::KeyWidth-1:0]         HardwareRevisionSecret;
-    bit [keymgr_pkg::DevIdWidth-1:0]       DeviceIdentifier;
-    bit [keymgr_pkg::HealthStateWidth-1:0] HealthMeasurement;
-    bit [keymgr_pkg::KeyWidth-1:0]         RomDigest;
-    bit [keymgr_pkg::KeyWidth-1:0]         DiversificationKey;
+    bit [keymgr_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0]                   SoftwareBinding;
+    bit [keymgr_pkg::KeyWidth-1:0]                                         HardwareRevisionSecret;
+    bit [keymgr_pkg::DevIdWidth-1:0]                                       DeviceIdentifier;
+    bit [keymgr_pkg::HealthStateWidth-1:0]                                 HealthMeasurement;
+    bit [keymgr_reg_pkg::NumRomDigestInputs-1:0][keymgr_pkg::KeyWidth-1:0] RomDigests;
+    bit [keymgr_pkg::KeyWidth-1:0]                                         DiversificationKey;
   } adv_creator_data_t;
 
   typedef struct packed {
@@ -914,18 +914,22 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
           `uvm_info(`gfn, "HW invalid input on otp_device_id", UVM_LOW)
         end
 
-        if (cfg.keymgr_vif.rom_digest.data inside {0, '1}) begin
-          invalid_hw_input_type = RomDigestInvalid;
-          void'(ral.debug.invalid_digest.predict(1));
-          err_cnt++;
-          `uvm_info(`gfn, "HW invalid input on rom_digest", UVM_LOW)
-        end
+        for (int i = 0; i < keymgr_reg_pkg::NumRomDigestInputs; ++i) begin
+          if (cfg.keymgr_vif.rom_digests[i].data inside {0, '1}) begin
+            invalid_hw_input_type = RomDigestInvalid;
+            void'(ral.debug.invalid_digest.predict(1));
+            err_cnt++;
+            `uvm_info(`gfn, $sformatf("HW invalid input on rom_digests[%0d]", i), UVM_LOW)
+          end
 
-        if (!cfg.keymgr_vif.rom_digest.valid) begin
-          invalid_hw_input_type = RomDigestValidLow;
-          void'(ral.debug.invalid_digest.predict(1));
-          err_cnt++;
-          `uvm_info(`gfn, "HW invalid input, rom_digest.valid is low", UVM_LOW)
+          if (!cfg.keymgr_vif.rom_digests[i].valid) begin
+            invalid_hw_input_type = RomDigestValidLow;
+            void'(ral.debug.invalid_digest.predict(1));
+            err_cnt++;
+            `uvm_info(`gfn,
+                      $sformatf("HW invalid input, rom_digests[%0d].valid is low", i),
+                      UVM_LOW)
+          end
         end
 
         if (cfg.keymgr_vif.flash.seeds[flash_ctrl_pkg::CreatorSeedIdx] inside {0, '1}) begin
@@ -992,7 +996,9 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     act = {<<8{byte_data_q}};
 
     exp.DiversificationKey = cfg.keymgr_vif.flash.seeds[flash_ctrl_pkg::CreatorSeedIdx];
-    exp.RomDigest          = cfg.keymgr_vif.rom_digest.data;
+    for (int i = 0; i < keymgr_reg_pkg::NumRomDigestInputs; ++i) begin
+      exp.RomDigests[i] = cfg.keymgr_vif.rom_digests[i].data;
+    end
     exp.HealthMeasurement  = cfg.keymgr_vif.keymgr_div;
     exp.DeviceIdentifier   = cfg.keymgr_vif.otp_device_id;
     exp.HardwareRevisionSecret = keymgr_pkg::RndCnstRevisionSeedDefault;
@@ -1001,7 +1007,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
     // The order of the string creation must match the design
     `CREATE_CMP_STR(DiversificationKey)
-    `CREATE_CMP_STR(RomDigest)
+    `CREATE_CMP_STR(RomDigests)
     `CREATE_CMP_STR(HealthMeasurement)
     `CREATE_CMP_STR(DeviceIdentifier)
     `CREATE_CMP_STR(HardwareRevisionSecret)

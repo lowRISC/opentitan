@@ -7,6 +7,7 @@ interface keymgr_if(input clk, input rst_n);
 
   import uvm_pkg::*;
   import keymgr_env_pkg::*;
+  import keymgr_reg_pkg::NumRomDigestInputs;
 
   // Represents the keymgr sideload state for each sideload interface.
   //
@@ -15,12 +16,12 @@ interface keymgr_if(input clk, input rst_n);
   // Status can't be directly changed from SideLoadClear to SideLoadAvail.
   // When status is SideLoadClear due to SIDELOAD_CLEAR programmed, need to write CSR to 0 to reset
   // it so that status is changed to SideLoadNotAvail, then we may set it to SideLoadAvail again
-  lc_ctrl_pkg::lc_tx_t            keymgr_en;
-  lc_ctrl_pkg::lc_keymgr_div_t    keymgr_div;
-  otp_ctrl_pkg::otp_device_id_t   otp_device_id;
-  otp_ctrl_pkg::otp_keymgr_key_t  otp_key;
-  flash_ctrl_pkg::keymgr_flash_t  flash;
-  rom_ctrl_pkg::keymgr_data_t     rom_digest;
+  lc_ctrl_pkg::lc_tx_t                                keymgr_en;
+  lc_ctrl_pkg::lc_keymgr_div_t                        keymgr_div;
+  otp_ctrl_pkg::otp_device_id_t                       otp_device_id;
+  otp_ctrl_pkg::otp_keymgr_key_t                      otp_key;
+  flash_ctrl_pkg::keymgr_flash_t                      flash;
+  rom_ctrl_pkg::keymgr_data_t[NumRomDigestInputs-1:0] rom_digests;
 
   keymgr_pkg::hw_key_req_t kmac_key;
   keymgr_pkg::hw_key_req_t aes_key;
@@ -103,8 +104,10 @@ interface keymgr_if(input clk, input rst_n);
     otp_device_id = 'hF0F0;
     otp_key = otp_ctrl_pkg::OTP_KEYMGR_KEY_DEFAULT;
     flash   = flash_ctrl_pkg::KEYMGR_FLASH_DEFAULT;
-    rom_digest.data = 256'hA20A046CF42E6EAC560A3F82BFA76285B5C1D4AEA7C915E49A32D1C89BE0F507;
-    rom_digest.valid = '1;
+    for (int i = 0; i < NumRomDigestInputs; ++i) begin
+      rom_digests[i].data = 256'hA20A046CF42E6EAC560A3F82BFA76285B5C1D4AEA7C915E49A32D1C89BE0F507;
+      rom_digests[i].valid = '1;
+    end
     if (rand_otp_key) begin
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_otp_key,
                                          local_otp_key.creator_root_key_share0_valid == 1;
@@ -196,7 +199,7 @@ interface keymgr_if(input clk, input rst_n);
     keymgr_div = local_keymgr_div;
     otp_device_id = local_otp_device_id;
     flash   = local_flash;
-    rom_digest = local_rom_digest;
+    rom_digests[0] = local_rom_digest;
 
     // a few cycles design to sync up these inputs, before we start operations
     repeat ($urandom_range(3, 100)) @(posedge clk);

@@ -97,18 +97,11 @@ module keymgr_input_checks import keymgr_pkg::*; #(
 
   assign key_vld_o = &key_chk;
 
-  // check all ROM digest inputs
-  logic unused_rom_digest;
   always_comb begin
     rom_digest_vld_o = 1'b1;
-    // TODO(opentitan-integrated/issues/251):
-    // replace below code with commented code once SW and DV model can handle multiple
-    // ROM_CTRL digests.
-    //  for (int k = 0; k < NumRomDigestInputs; k++) begin
-    for (int k = 0; k < 1; k++) begin
+    for (int k = 0; k < keymgr_reg_pkg::NumRomDigestInputs; k++) begin
       rom_digest_vld_o &= rom_digest_i[k].valid && valid_chk(MaxWidth'(rom_digest_i[k].data));
     end
-    unused_rom_digest = ^rom_digest_i[1];
   end
 
   // checks for all 0's or all 1's of value

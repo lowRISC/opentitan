@@ -419,27 +419,18 @@ module keymgr
                                    otp_key_i.creator_seed_valid};
     assign creator_seed = flash_i.seeds[flash_ctrl_pkg::CreatorSeedIdx];
   end
-  // TODO(opentitan-integrated/issues/251):
-  // replace below code with commented code once SW and DV model can handle multiple
-  // // ROM_CTRL digests.
-  // logic [KeyWidth*NumRomDigestInputs-1:0] rom_digests;
-  // always_comb begin
-  //   rom_digests = '0;
-  //   for (int k = 0; k < NumRomDigestInputs; k++) begin
-  //     rom_digests[KeyWidth*k +: KeyWidth] = rom_digest_i[k].data;
-  //   end
-  // end
-  // assign adv_matrix[Creator] = AdvDataWidth'({sw_binding,
-  //                                             revision_seed,
-  //                                             otp_device_id_i,
-  //                                             lc_keymgr_div_i,
-  //                                             rom_digests,
-  //                                             creator_seed});
+  logic [KeyWidth*NumRomDigestInputs-1:0] rom_digests;
+  always_comb begin
+    rom_digests = '0;
+    for (int k = 0; k < NumRomDigestInputs; k++) begin
+      rom_digests[KeyWidth*k +: KeyWidth] = rom_digest_i[k].data;
+    end
+  end
   assign adv_matrix[Creator] = AdvDataWidth'({sw_binding,
                                               revision_seed,
                                               otp_device_id_i,
                                               lc_keymgr_div_i,
-                                              rom_digest_i[0].data,
+                                              rom_digests,
                                               creator_seed});
 
   assign adv_dvalid[Creator] = creator_seed_vld &
