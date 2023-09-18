@@ -591,7 +591,7 @@
     }
     {
       name: "FLASH_CTRL.INIT.ROOT_SEEDS"
-      desc: "After the scrambling keys are requested, the flash controller reads root seeds from secret partitions and provides them to the key manager.
+      desc: "After the scrambling keys are requested, the flash controller reads root seeds from secret partitions and provides them to the key manager."
     }
     {
       name: "FLASH_CTRL.INIT.SCRAMBLING_KEYS"
