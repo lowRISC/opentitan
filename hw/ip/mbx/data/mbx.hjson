@@ -123,15 +123,6 @@
             hwaccess: "hrw"
             hwqe: "true"
           }
-          {
-            name: "ready"
-            desc: "Alias of the DoE mailbox ready bit"
-            bits: "31"
-            resval: "0x0"
-            swaccess: "rw"
-            hwaccess: "hrw"
-            hwqe: "true"
-          }
         ]
       }
       { name: "ADDRESS_RANGE_REGWEN"
