@@ -35,7 +35,6 @@ module mbx_hostif
   input  logic                        hostif_status_busy_i,
   input  logic                        hostif_status_doe_intr_status_i,
   input  logic                        hostif_status_error_i,
-  input  logic                        hostif_status_ready_i,
   // Access to the IB/OB RD/WR pointers
   input  logic [CfgSramAddrWidth-1:0] hostif_imbx_write_ptr_i,
   input  logic [CfgSramAddrWidth-1:0] hostif_ombx_read_ptr_i,
@@ -165,7 +164,6 @@ module mbx_hostif
   assign hw2reg.status.busy.d             = hostif_status_busy_i;
   assign hw2reg.status.doe_intr_status.d  = hostif_status_doe_intr_status_i;
   assign hw2reg.status.error.d            = hostif_status_error_i;
-  assign hw2reg.status.ready.d            = hostif_status_ready_i;
   // External write logic
   assign hostif_status_busy_clear_o           = reg2hw.status.busy.qe  & ~reg2hw.status.busy.q;
   assign hostif_status_doe_intr_status_set_o  = reg2hw.status.doe_intr_status.qe &

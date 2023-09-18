@@ -34,7 +34,6 @@ module mbx_sysif
   output logic                        sysif_status_error_o,
   input  logic                        sysif_status_ready_valid_i,
   input  logic                        sysif_status_ready_i,
-  output logic                        sysif_status_ready_o,
   // Alias of the interrupt address and data registers to the host interface
   output logic [CfgSramAddrWidth-1:0] sysif_intr_msg_addr_o,
   output logic [CfgSramDataWidth-1:0] sysif_intr_msg_data_o,
@@ -105,7 +104,6 @@ module mbx_sysif
   // Fiddle out status register bits for external write logic
   assign sysif_status_doe_intr_status_o  = reg2hw.sys_status.doe_intr_status.q;
   assign sysif_status_busy_o             = reg2hw.sys_status.busy.q;
-  assign sysif_status_ready_o            = reg2hw.sys_status.ready.q;
   assign sysif_status_error_o            = reg2hw.sys_status.error.q;
 
   // External read logic
