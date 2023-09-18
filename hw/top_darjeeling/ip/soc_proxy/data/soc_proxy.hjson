@@ -131,7 +131,7 @@
       desc:    "LSIO trigger signal from UART"
     }
     { struct:  "logic"
-      width:   2
+      width:   8
       type:    "uni"
       name:    "soc_lsio_trigger"
       act:     "rcv"

@@ -34,7 +34,7 @@ module soc_proxy
   input  logic       i2c_lsio_trigger_i,
   input  logic       spi_host_lsio_trigger_i,
   input  logic       uart_lsio_trigger_i,
-  input  logic [1:0] soc_lsio_trigger_i,
+  input  logic [7:0] soc_lsio_trigger_i,
   output dma_pkg::lsio_trigger_t dma_lsio_trigger_o,
 
   output tlul_pkg::tl_h2d_t ctn_tl_h2d_o,

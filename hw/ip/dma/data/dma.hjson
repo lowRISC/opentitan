@@ -28,7 +28,7 @@
     { name: "NumIntClearSources",
       desc: "Number of interrupt clearing sources to process",
       type: "int",
-      default: "8",
+      default: "11",
       local: "true"
     },
     { name: "EnableDataIntgGen",

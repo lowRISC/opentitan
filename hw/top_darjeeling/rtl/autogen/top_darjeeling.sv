@@ -197,7 +197,7 @@ module top_darjeeling #(
   output soc_proxy_pkg::soc_alert_rsp_t [3:0] soc_recov_alert_rsp_o,
   input  logic       soc_wkup_async_i,
   input  logic [7:0] soc_intr_async_i,
-  input  logic [1:0] soc_lsio_trigger_i,
+  input  logic [7:0] soc_lsio_trigger_i,
   output logic       sck_monitor_o,
   input  logic       usbdev_usb_rx_d_i,
   output logic       usbdev_usb_tx_d_o,

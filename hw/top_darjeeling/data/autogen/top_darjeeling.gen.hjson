@@ -4543,7 +4543,7 @@
           struct: logic
           type: uni
           act: rcv
-          width: 2
+          width: 8
           inst_name: soc_proxy
           default: ""
           package: ""
@@ -18289,7 +18289,7 @@
         struct: logic
         type: uni
         act: rcv
-        width: 2
+        width: 8
         inst_name: soc_proxy
         default: ""
         package: ""
@@ -21746,7 +21746,7 @@
         package: ""
         struct: logic
         signame: soc_lsio_trigger_i
-        width: 2
+        width: 8
         type: uni
         default: ""
         direction: in
