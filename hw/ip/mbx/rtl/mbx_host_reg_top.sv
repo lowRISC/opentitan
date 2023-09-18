@@ -151,8 +151,6 @@ module mbx_host_reg_top (
   logic status_doe_intr_status_wd;
   logic status_error_qs;
   logic status_error_wd;
-  logic status_ready_qs;
-  logic status_ready_wd;
   logic address_range_regwen_we;
   logic [3:0] address_range_regwen_qs;
   logic [3:0] address_range_regwen_wd;
@@ -409,7 +407,7 @@ module mbx_host_reg_top (
 
   // R[status]: V(True)
   logic status_qe;
-  logic [3:0] status_flds_we;
+  logic [2:0] status_flds_we;
   assign status_qe = &status_flds_we;
   //   F[busy]: 0:0
   prim_subreg_ext #(
@@ -458,22 +456,6 @@ module mbx_host_reg_top (
     .qs     (status_error_qs)
   );
   assign reg2hw.status.error.qe = status_qe;
-
-  //   F[ready]: 31:31
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_status_ready (
-    .re     (status_re),
-    .we     (status_we),
-    .wd     (status_ready_wd),
-    .d      (hw2reg.status.ready.d),
-    .qre    (),
-    .qe     (status_flds_we[3]),
-    .q      (reg2hw.status.ready.q),
-    .ds     (),
-    .qs     (status_ready_qs)
-  );
-  assign reg2hw.status.ready.qe = status_qe;
 
 
   // R[address_range_regwen]: V(False)
@@ -908,8 +890,6 @@ module mbx_host_reg_top (
   assign status_doe_intr_status_wd = reg_wdata[1];
 
   assign status_error_wd = reg_wdata[2];
-
-  assign status_ready_wd = reg_wdata[31];
   assign address_range_regwen_we = addr_hit[6] & reg_we & !reg_error;
 
   assign address_range_regwen_wd = reg_wdata[3:0];
@@ -991,7 +971,6 @@ module mbx_host_reg_top (
         reg_rdata_next[0] = status_busy_qs;
         reg_rdata_next[1] = status_doe_intr_status_qs;
         reg_rdata_next[2] = status_error_qs;
-        reg_rdata_next[31] = status_ready_qs;
       end
 
       addr_hit[6]: begin

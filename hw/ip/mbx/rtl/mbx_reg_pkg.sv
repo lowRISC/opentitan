@@ -72,10 +72,6 @@ package mbx_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } ready;
-    struct packed {
-      logic        q;
-      logic        qe;
     } error;
     struct packed {
       logic        q;
@@ -168,9 +164,6 @@ package mbx_reg_pkg;
     struct packed {
       logic        d;
     } error;
-    struct packed {
-      logic        d;
-    } ready;
   } mbx_hw2reg_status_reg_t;
 
   typedef struct packed {
@@ -196,12 +189,12 @@ package mbx_reg_pkg;
 
   // Register -> HW type for host interface
   typedef struct packed {
-    mbx_reg2hw_intr_state_reg_t intr_state; // [290:289]
-    mbx_reg2hw_intr_enable_reg_t intr_enable; // [288:287]
-    mbx_reg2hw_intr_test_reg_t intr_test; // [286:283]
-    mbx_reg2hw_alert_test_reg_t alert_test; // [282:279]
-    mbx_reg2hw_control_reg_t control; // [278:275]
-    mbx_reg2hw_status_reg_t status; // [274:267]
+    mbx_reg2hw_intr_state_reg_t intr_state; // [288:287]
+    mbx_reg2hw_intr_enable_reg_t intr_enable; // [286:285]
+    mbx_reg2hw_intr_test_reg_t intr_test; // [284:281]
+    mbx_reg2hw_alert_test_reg_t alert_test; // [280:277]
+    mbx_reg2hw_control_reg_t control; // [276:273]
+    mbx_reg2hw_status_reg_t status; // [272:267]
     mbx_reg2hw_address_range_regwen_reg_t address_range_regwen; // [266:263]
     mbx_reg2hw_address_range_valid_reg_t address_range_valid; // [262:262]
     mbx_reg2hw_inbound_base_address_reg_t inbound_base_address; // [261:231]
@@ -217,9 +210,9 @@ package mbx_reg_pkg;
 
   // HW -> register type for host interface
   typedef struct packed {
-    mbx_hw2reg_intr_state_reg_t intr_state; // [145:142]
-    mbx_hw2reg_control_reg_t control; // [141:140]
-    mbx_hw2reg_status_reg_t status; // [139:136]
+    mbx_hw2reg_intr_state_reg_t intr_state; // [144:141]
+    mbx_hw2reg_control_reg_t control; // [140:139]
+    mbx_hw2reg_status_reg_t status; // [138:136]
     mbx_hw2reg_inbound_write_ptr_reg_t inbound_write_ptr; // [135:106]
     mbx_hw2reg_outbound_read_ptr_reg_t outbound_read_ptr; // [105:76]
     mbx_hw2reg_outbound_object_size_reg_t outbound_object_size; // [75:64]
@@ -256,11 +249,10 @@ package mbx_reg_pkg;
   parameter logic [1:0] MBX_CONTROL_RESVAL = 2'h 0;
   parameter logic [0:0] MBX_CONTROL_ABORT_RESVAL = 1'h 0;
   parameter logic [0:0] MBX_CONTROL_DOE_INTR_EN_RESVAL = 1'h 0;
-  parameter logic [31:0] MBX_STATUS_RESVAL = 32'h 1;
+  parameter logic [2:0] MBX_STATUS_RESVAL = 3'h 1;
   parameter logic [0:0] MBX_STATUS_BUSY_RESVAL = 1'h 1;
   parameter logic [0:0] MBX_STATUS_DOE_INTR_STATUS_RESVAL = 1'h 0;
   parameter logic [0:0] MBX_STATUS_ERROR_RESVAL = 1'h 0;
-  parameter logic [0:0] MBX_STATUS_READY_RESVAL = 1'h 0;
   parameter logic [31:0] MBX_INBOUND_WRITE_PTR_RESVAL = 32'h 0;
   parameter logic [29:0] MBX_INBOUND_WRITE_PTR_INBOUND_READ_PTR_RESVAL = 30'h 0;
   parameter logic [31:0] MBX_OUTBOUND_READ_PTR_RESVAL = 32'h 0;
@@ -298,7 +290,7 @@ package mbx_reg_pkg;
     4'b 0001, // index[ 2] MBX_INTR_TEST
     4'b 0001, // index[ 3] MBX_ALERT_TEST
     4'b 0001, // index[ 4] MBX_CONTROL
-    4'b 1111, // index[ 5] MBX_STATUS
+    4'b 0001, // index[ 5] MBX_STATUS
     4'b 0001, // index[ 6] MBX_ADDRESS_RANGE_REGWEN
     4'b 0001, // index[ 7] MBX_ADDRESS_RANGE_VALID
     4'b 1111, // index[ 8] MBX_INBOUND_BASE_ADDRESS
