@@ -56,12 +56,10 @@ module mbx
   logic sysif_control_abort_write;
 
   // Status signal inputs from the sysif to the hostif
-  logic sysif_status_busy, sysif_status_doe_intr_status, sysif_status_async_msg_status,
-        sysif_status_error, sysif_status_ready;
+  logic sysif_status_busy, sysif_status_doe_intr_status, sysif_status_error, sysif_status_ready;
 
   // Setter signals from the hostif to the sysif
-  logic hostif_status_doe_intr_status_set, hostif_status_async_msg_status_set,
-        hostif_control_abort_set, hostif_status_busy_clear,
+  logic hostif_status_doe_intr_status_set, hostif_control_abort_set, hostif_status_busy_clear,
         hostif_status_error_set, hostif_status_error_clear;
 
   // Alias signals from the sys interface
@@ -110,8 +108,6 @@ module mbx
     .hostif_status_busy_i                ( sysif_status_busy                  ),
     .hostif_status_doe_intr_status_set_o ( hostif_status_doe_intr_status_set   ),
     .hostif_status_doe_intr_status_i     ( sysif_status_doe_intr_status       ),
-    .hostif_status_async_msg_status_set_o( hostif_status_async_msg_status_set ),
-    .hostif_status_async_msg_status_i    ( sysif_status_async_msg_status      ),
     .hostif_status_error_set_o           ( hostif_status_error_set            ),
     .hostif_status_error_clear_o         ( hostif_status_error_clear          ),
     .hostif_status_error_i               ( sysif_status_error                 ),
@@ -140,7 +136,7 @@ module mbx
   //////////////////////////////////////////////////////////////////////////////
   // Control and Status signals of the system interface
   //////////////////////////////////////////////////////////////////////////////
-  logic sysif_control_go_set, sysif_control_abort_set, sysif_control_async_msg_en;
+  logic sysif_control_go_set, sysif_control_abort_set;
 
   //////////////////////////////////////////////////////////////////////////////
   // Signals for the Inbox
@@ -182,7 +178,6 @@ module mbx
     .doe_intr_o                          ( doe_intr_o                         ),
     // Access to the control register
     .sysif_control_abort_set_o           ( sysif_control_abort_set            ),
-    .sysif_control_async_msg_en_o        ( sysif_control_async_msg_en         ),
     .sysif_control_go_set_o              ( sysif_control_go_set               ),
     // Access to the status register
     .sysif_status_busy_valid_i           ( imbx_status_busy_valid             ),
@@ -196,9 +191,6 @@ module mbx
     .sysif_status_error_set_i            ( hostif_status_error_set            ),
     .sysif_status_error_clear_i          ( hostif_status_error_clear          ),
     .sysif_status_error_o                ( sysif_status_error          ),
-
-    .sysif_status_async_msg_status_set_i ( hostif_status_async_msg_status_set  ),
-    .sysif_status_async_msg_status_o     ( sysif_status_async_msg_status      ),
 
     .sysif_status_ready_valid_i          ( ombx_status_ready_valid            ),
     .sysif_status_ready_i                ( ombx_status_ready                  ),

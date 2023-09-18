@@ -32,11 +32,9 @@ module mbx_hostif
   output logic                        hostif_status_doe_intr_status_set_o,
   output logic                        hostif_status_error_set_o,
   output logic                        hostif_status_error_clear_o,
-  output logic                        hostif_status_async_msg_status_set_o,
   input  logic                        hostif_status_busy_i,
   input  logic                        hostif_status_doe_intr_status_i,
   input  logic                        hostif_status_error_i,
-  input  logic                        hostif_status_async_msg_status_i,
   input  logic                        hostif_status_ready_i,
   // Access to the IB/OB RD/WR pointers
   input  logic [CfgSramAddrWidth-1:0] hostif_imbx_write_ptr_i,
@@ -167,7 +165,6 @@ module mbx_hostif
   assign hw2reg.status.busy.d             = hostif_status_busy_i;
   assign hw2reg.status.doe_intr_status.d  = hostif_status_doe_intr_status_i;
   assign hw2reg.status.error.d            = hostif_status_error_i;
-  assign hw2reg.status.async_msg_status.d = hostif_status_async_msg_status_i;
   assign hw2reg.status.ready.d            = hostif_status_ready_i;
   // External write logic
   assign hostif_status_busy_clear_o           = reg2hw.status.busy.qe  & ~reg2hw.status.busy.q;
@@ -175,8 +172,6 @@ module mbx_hostif
                                                 reg2hw.status.doe_intr_status.q;
   assign hostif_status_error_set_o            = reg2hw.status.error.qe &  reg2hw.status.error.q;
   assign hostif_status_error_clear_o          = reg2hw.status.error.qe & ~reg2hw.status.error.q;
-  assign hostif_status_async_msg_status_set_o =
-    reg2hw.status.async_msg_status.qe & reg2hw.status.async_msg_status.q;
 
   // Address config valid
   assign hostif_address_range_valid_o = reg2hw.address_range_valid.q;
