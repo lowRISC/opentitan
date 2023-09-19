@@ -84,8 +84,9 @@ class TopGenCTest(TopGenC):
 
             # Device regions may have multiple TL interfaces. Pick the region
             # associated with the 'core' interface.
-            if_name = None if len(
-                self.device_regions[inst_name]) == 1 else 'core'
+            if_name = 'core'
+            if len(self.device_regions[inst_name]) == 1:
+                if_name = list(self.device_regions[inst_name].keys())[0]
             try:
                 region = self.device_regions[inst_name][if_name]
             except KeyError:
