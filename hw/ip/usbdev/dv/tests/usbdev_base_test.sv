@@ -10,6 +10,10 @@ class usbdev_base_test extends cip_base_test #(
   `uvm_component_utils(usbdev_base_test)
   `uvm_component_new
 
+  virtual function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    test_timeout_ns = 50_000_000;  // 50ms.
+  endfunction : build_phase
   // the base class dv_base_test creates the following instances:
   // usbdev_env_cfg: cfg
   // usbdev_env:     env

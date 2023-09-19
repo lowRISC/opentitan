@@ -15,8 +15,7 @@ filesets:
       - usb20_agent_cfg.sv: {is_include_file: true}
       - usb20_agent_cov.sv: {is_include_file: true}
       - usb20_item.sv: {is_include_file: true}
-      - usb20_host_driver.sv: {is_include_file: true}
-      - usb20_device_driver.sv: {is_include_file: true}
+      - usb20_driver.sv: {is_include_file: true}
       - usb20_monitor.sv: {is_include_file: true}
       - usb20_agent.sv: {is_include_file: true}
       - seq_lib/usb20_seq_list.sv: {is_include_file: true}

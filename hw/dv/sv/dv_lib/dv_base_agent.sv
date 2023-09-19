@@ -38,7 +38,7 @@ class dv_base_agent #(type CFG_T            = dv_base_agent_cfg,
     monitor = MONITOR_T::type_id::create("monitor", this);
     monitor.cfg = cfg;
     monitor.cov = cov;
-
+     $display( " IF_mode %s", cfg.if_mode);
     if (cfg.is_active) begin
       sequencer = SEQUENCER_T::type_id::create("sequencer", this);
       sequencer.cfg = cfg;
@@ -53,8 +53,12 @@ class dv_base_agent #(type CFG_T            = dv_base_agent_cfg,
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
+     $display( " cfg is active %b, has driver = %b", cfg.is_active, cfg.has_driver);
     if (cfg.is_active && cfg.has_driver) begin
+    
       driver.seq_item_port.connect(sequencer.seq_item_export);
+      $display ( " Driver and Sequencer ports are connected ");
+    
     end
     if (cfg.has_req_fifo) begin
       monitor.req_analysis_port.connect(sequencer.req_analysis_fifo.analysis_export);
