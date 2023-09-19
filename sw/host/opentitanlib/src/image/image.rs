@@ -214,7 +214,7 @@ impl Image {
             self.size = std::cmp::max(end_index, self.size);
         }
 
-        let mut manifest = self.borrow_manifest_mut()?;
+        let manifest = self.borrow_manifest_mut()?;
         manifest.extensions.entries = ext_table;
 
         Ok(())
