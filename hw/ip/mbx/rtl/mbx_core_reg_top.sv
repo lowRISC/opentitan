@@ -6,14 +6,14 @@
 
 `include "prim_assert.sv"
 
-module mbx_host_reg_top (
+module mbx_core_reg_top (
   input clk_i,
   input rst_ni,
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
   // To HW
-  output mbx_reg_pkg::mbx_host_reg2hw_t reg2hw, // Write
-  input  mbx_reg_pkg::mbx_host_hw2reg_t hw2reg, // Read
+  output mbx_reg_pkg::mbx_core_reg2hw_t reg2hw, // Write
+  input  mbx_reg_pkg::mbx_core_hw2reg_t hw2reg, // Read
 
   // Integrity check errors
   output logic intg_err_o
@@ -836,23 +836,23 @@ module mbx_host_reg_top (
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((addr_hit[ 0] & (|(MBX_HOST_PERMIT[ 0] & ~reg_be))) |
-               (addr_hit[ 1] & (|(MBX_HOST_PERMIT[ 1] & ~reg_be))) |
-               (addr_hit[ 2] & (|(MBX_HOST_PERMIT[ 2] & ~reg_be))) |
-               (addr_hit[ 3] & (|(MBX_HOST_PERMIT[ 3] & ~reg_be))) |
-               (addr_hit[ 4] & (|(MBX_HOST_PERMIT[ 4] & ~reg_be))) |
-               (addr_hit[ 5] & (|(MBX_HOST_PERMIT[ 5] & ~reg_be))) |
-               (addr_hit[ 6] & (|(MBX_HOST_PERMIT[ 6] & ~reg_be))) |
-               (addr_hit[ 7] & (|(MBX_HOST_PERMIT[ 7] & ~reg_be))) |
-               (addr_hit[ 8] & (|(MBX_HOST_PERMIT[ 8] & ~reg_be))) |
-               (addr_hit[ 9] & (|(MBX_HOST_PERMIT[ 9] & ~reg_be))) |
-               (addr_hit[10] & (|(MBX_HOST_PERMIT[10] & ~reg_be))) |
-               (addr_hit[11] & (|(MBX_HOST_PERMIT[11] & ~reg_be))) |
-               (addr_hit[12] & (|(MBX_HOST_PERMIT[12] & ~reg_be))) |
-               (addr_hit[13] & (|(MBX_HOST_PERMIT[13] & ~reg_be))) |
-               (addr_hit[14] & (|(MBX_HOST_PERMIT[14] & ~reg_be))) |
-               (addr_hit[15] & (|(MBX_HOST_PERMIT[15] & ~reg_be))) |
-               (addr_hit[16] & (|(MBX_HOST_PERMIT[16] & ~reg_be)))));
+              ((addr_hit[ 0] & (|(MBX_CORE_PERMIT[ 0] & ~reg_be))) |
+               (addr_hit[ 1] & (|(MBX_CORE_PERMIT[ 1] & ~reg_be))) |
+               (addr_hit[ 2] & (|(MBX_CORE_PERMIT[ 2] & ~reg_be))) |
+               (addr_hit[ 3] & (|(MBX_CORE_PERMIT[ 3] & ~reg_be))) |
+               (addr_hit[ 4] & (|(MBX_CORE_PERMIT[ 4] & ~reg_be))) |
+               (addr_hit[ 5] & (|(MBX_CORE_PERMIT[ 5] & ~reg_be))) |
+               (addr_hit[ 6] & (|(MBX_CORE_PERMIT[ 6] & ~reg_be))) |
+               (addr_hit[ 7] & (|(MBX_CORE_PERMIT[ 7] & ~reg_be))) |
+               (addr_hit[ 8] & (|(MBX_CORE_PERMIT[ 8] & ~reg_be))) |
+               (addr_hit[ 9] & (|(MBX_CORE_PERMIT[ 9] & ~reg_be))) |
+               (addr_hit[10] & (|(MBX_CORE_PERMIT[10] & ~reg_be))) |
+               (addr_hit[11] & (|(MBX_CORE_PERMIT[11] & ~reg_be))) |
+               (addr_hit[12] & (|(MBX_CORE_PERMIT[12] & ~reg_be))) |
+               (addr_hit[13] & (|(MBX_CORE_PERMIT[13] & ~reg_be))) |
+               (addr_hit[14] & (|(MBX_CORE_PERMIT[14] & ~reg_be))) |
+               (addr_hit[15] & (|(MBX_CORE_PERMIT[15] & ~reg_be))) |
+               (addr_hit[16] & (|(MBX_CORE_PERMIT[16] & ~reg_be)))));
   end
 
   // Generate write-enables
