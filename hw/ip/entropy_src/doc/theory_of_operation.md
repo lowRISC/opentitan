@@ -4,7 +4,7 @@ As already described, this IP block will collect bits of entropy for firmware or
 This revision supports only an external interface for a PTRNG noise source implementation.
 
 The first step is initialization and enabling.
-The PTRNG noise source mode is selected when the `ENABLE` field will be set.
+The PTRNG noise source mode is selected when the [`MODULE_ENABLE`](registers.md#module_enable) field is set.
 After the block is enabled and initialized, entropy bits will be collected up indefinitely until disabled.
 
 
@@ -89,7 +89,7 @@ This drop point will save on conditioner power, and still preserve `esfinal` FIF
 
 The above process will be repeated for as long as entropy bits are to be collected and processed.
 
-At any time, the `ENABLE` field can be cleared to halt the entropy generation (and health check testing).
+At any time, the [`MODULE_ENABLE`](registers.md#module_enable) field can be cleared to halt the entropy generation (and health check testing).
 See the Programmers Guide section for more details on the ENTROPY_SRC block disable sequence.
 
 ## Block Diagram
@@ -105,7 +105,7 @@ After power-up, the ENTROPY_SRC block is disabled.
 For simplicity of initialization, only a single register write is needed to start functional operation of the ENTROPY_SRC block.
 This assumes that proper defaults are chosen for thresholds, sampling rate, and other registers.
 
-For security reasons, a configuration and control register locking function is performed by the [`REGEN`](registers.md#regen) register.
+For security reasons, a configuration and control register locking function is performed by the [`REGWEN`](registers.md#regwen) register.
 Clearing the bit in this register will prevent future modification of the [`CONF`](registers.md#conf) register or other writeable registers by firmware.
 
 ### Entropy Processing
