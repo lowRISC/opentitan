@@ -33,8 +33,8 @@ module mbx
   input   tlul_pkg::tl_h2d_t                        soc_tl_d_i,
   output  tlul_pkg::tl_d2h_t                        soc_tl_d_o,
   // Host port to access private SRAM
-  input   tlul_pkg::tl_d2h_t                        tl_sram_i,
-  output  tlul_pkg::tl_h2d_t                        tl_sram_o
+  input   tlul_pkg::tl_d2h_t                        sram_tl_h_i,
+  output  tlul_pkg::tl_h2d_t                        sram_tl_h_o
 );
   //////////////////////////////////////////////////////////////////////////////
   // General signals for the mailbox
@@ -286,8 +286,8 @@ module mbx
   ) u_sramrwarb (
     .clk_i                     ( clk_i                    ),
     .rst_ni                    ( rst_ni                   ),
-    .tl_host_o                 ( tl_sram_o                ),
-    .tl_host_i                 ( tl_sram_i                ),
+    .tl_host_o                 ( sram_tl_h_o              ),
+    .tl_host_i                 ( sram_tl_h_i              ),
     .intg_err_o                ( tl_sram_intg_err         ),
     .sram_err_o                ( sram_err                 ),
     // Interface to the inbound mailbox
