@@ -12,8 +12,16 @@
             This ensures that both FSMs are properly reset on the POR signal. The check  is that
             the processor ends up running. Also verify, the rstmgr recorded POR in `reset_info` CSR
             by checking retention SRAM for reset_reason.
+            SiVal: This will be exercised without any special test, just by using the external POR.
             '''
       stage: V2
+      si_stage: SV1
+      lc_states: [
+        "RAW",
+        "TEST_LOCKED",
+        "TEST_UNLOCKED",
+      ]
+      features: ["PWRMGR.RESET.POR_REQUEST"]
       tests: ["chip_sw_pwrmgr_full_aon_reset"]
     }
     {
@@ -30,9 +38,38 @@
 
             Each test should perform a minimum of 2 low power transitions to ensure there are no
             state dependent corner cases with wakeup interactions.
+            SiVal: This test can do controllable variants of wakeup testing, provided we run
+            enough cycles with suitable randomization. This can run in any lifecycle state
+            with the corresponding OTP.
+            This test will need the host side to trigger wakeups that use external pins.
+            Note:
+            - The sensor_ctrl wakeup is not necessarily controllable, or the ones that are
+              will not trigger in sleep mode.
             '''
       stage: V2
+      si_stage: SV3
+      lc_states: [
+        "TEST_UNLOCKED",
+        "DEV",
+        "PROD",
+        "PROD_END",
+        "RMA",
+      ]
+      features: [
+        "PWRMGR.LOW_POWER.SYSRST_CTRL_AON_WKUP_REQ_WAKEUP_ENABLE",
+        "PWRMGR.LOW_POWER.SYSRST_CTRL_AON_WKUP_REQ_WAKEUP_REQUEST",
+        "PWRMGR.LOW_POWER.ADC_CTRL_AON_WKUP_REQ_WAKEUP_ENABLE",
+        "PWRMGR.LOW_POWER.ADC_CTRL_AON_WKUP_REQ_WAKEUP_REQUEST",
+        "PWRMGR.LOW_POWER.PINMUX_AON_PIN_WKUP_REQ_WAKEUP_ENABLE",
+        "PWRMGR.LOW_POWER.PINMUX_AON_PIN_WKUP_REQ_WAKEUP_REQUEST",
+        "PWRMGR.LOW_POWER.PINMUX_AON_USB_WKUP_REQ_WAKEUP_ENABLE",
+        "PWRMGR.LOW_POWER.PINMUX_AON_USB_WKUP_REQ_WAKEUP_REQUEST",
+        "PWRMGR.LOW_POWER.AON_TIMER_AON_WKUP_REQ_WAKEUP_ENABLE",
+        "PWRMGR.LOW_POWER.AON_TIMER_AON_WKUP_REQ_WAKEUP_REQUEST",
+        "PWRMGR.LOW_POWER.WAKE_INFO"
+      ]
       tests: ["chip_sw_pwrmgr_random_sleep_all_wake_ups"]
+      bazel: []
     }
     {
       name: chip_sw_pwrmgr_normal_sleep_all_wake_ups
@@ -45,9 +82,12 @@
             `wakeup_en` CSR, bring the chip to normal sleep, optionally disabling the source's
             clock, have the source issue a wakeup event and verify `wake_info` indicates the
             expected wakeup.
+            SiVal: No need to run this, run chip_sw_pwrmgr_random_sleep_all_wake_ups instead.
             '''
       stage: V2
+      si_stage: None
       tests: ["chip_sw_pwrmgr_normal_sleep_all_wake_ups"]
+      bazel: []
     }
     {
       name: chip_sw_pwrmgr_sleep_all_reset_reqs
@@ -59,9 +99,12 @@
             source, enable the source and bring the chip to low power, issue a reset, and verify the
             rstmgr's `reset_info` indicated the expected reset by checking retention SRAM for
             reset_reason.
-            '''
+            SiVal: No need to run this, run chip_sw_pwrmgr_random_sleep_all_reset_reqs instead.
+	    '''
       stage: V2
+      si_stage: None
       tests: ["chip_sw_aon_timer_wdog_bite_reset"]
+      bazel: []
     }
     {
       name: chip_sw_pwrmgr_deep_sleep_all_wake_ups
@@ -71,9 +114,12 @@
             This verifies ALL wake up sources. This also verifies that the pwrmgr sequencing is
             working correctly as expected. X-ref'ed with all individual IP tests. Similar to
             chip_pwrmgr_sleep_all_wake_ups, except `control.main_pd_n` is set to 0.
+            SiVal: No need to run this, run chip_sw_pwrmgr_random_sleep_all_wake_ups instead.
             '''
       stage: V2
+      si_stage: None
       tests: ["chip_sw_pwrmgr_deep_sleep_all_wake_ups"]
+      bazel: []
     }
     {
       name: chip_sw_pwrmgr_deep_sleep_all_reset_reqs
@@ -83,10 +129,13 @@
             This verifies ALL reset sources.
             - 7 resets are generated randomly with deep sleeps
             - POR (HW PAD) reset, SW POR, sysrst, wdog timer reset, esc rst, SW req
-            - esc reset is followd by normal mode because it does not work with sleep mode
+            - esc reset is followed by normal mode because it does not work with sleep mode
+            SiVal: No need to run this, run chip_sw_pwrmgr_random_sleep_all_reset_reqs instead.
             '''
       stage: V2
+      si_stage: None
       tests: ["chip_sw_pwrmgr_deep_sleep_all_reset_reqs"]
+      bazel: []
     }
     {
       name: chip_sw_pwrmgr_normal_sleep_all_reset_reqs
@@ -98,9 +147,12 @@
             - POR (HW PAD) reset, SW POR, sysrst, wdog timer reset, esc rst, SW req
             - esc reset is followed by normal mode and cleared by reset because it does not work
               with sleep mode
+            SiVal: No need to run this, run chip_sw_pwrmgr_random_sleep_all_reset_reqs instead.
             '''
       stage: V2
+      si_stage: None
       tests: ["chip_sw_pwrmgr_normal_sleep_all_reset_reqs"]
+      bazel: []
     }
     {
       name: chip_sw_pwrmgr_wdog_reset
@@ -109,9 +161,23 @@
             This verifies watchdog timer reset source. This also verifies that the pwrmgr sequencing
             is working correctly as expected. X-ref'ed with all individual IP tests. Similar to
             chip_pwrmgr_sleep_all_reset_reqs, except the chip is not put in low power mode.
+	    SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
             '''
       stage: V2
+      si_stage: SV2
+      lc_states: [
+        "TEST_UNLOCKED",
+        "DEV",
+        "PROD",
+        "PROD_END",
+        "RMA",
+      ]
+      features: [
+        "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_ENABLE",
+        "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_REQUEST",
+      ]
       tests: ["chip_sw_pwrmgr_wdog_reset"]
+      bazel: ["//sw/device/tests:pwrmgr_wdog_reset_reqs_test_fpga_cw310_test_rom"]
     }
     {
       name: chip_sw_pwrmgr_aon_power_glitch_reset
@@ -122,9 +188,12 @@
             This ensures that both FSMs are properly reset on the POR signal. The check is that
             the processor ends up running. Also verify, the rstmgr recorded POR in `reset_info` CSR
             by checking retention SRAM for reset_reason.
+            SiVal: AON power glitch cannot be triggered at will.
             '''
       stage: V2
+      si_stage: None
       tests: ["chip_sw_pwrmgr_full_aon_reset"]
+      bazel: []
     }
     {
       name: chip_sw_pwrmgr_main_power_glitch_reset
@@ -133,9 +202,12 @@
             The vcmain_supp_i AST input is forced to drop once the test is running. This triggers
             a MainPwr reset request, which is checked by reading retention SRAM's reset_reason to
             see that the reset_info CSR's POR bit is not set when the test restarts.
+            SiVal: Main power glitch cannot be triggered at will.
             '''
       stage: V2
+      si_stage: None
       tests: ["chip_sw_pwrmgr_main_power_glitch_reset"]
+      bazel: []
     }
     {
       name: chip_sw_pwrmgr_random_sleep_power_glitch_reset
@@ -153,9 +225,12 @@
 
             Each test should perform a minimum of 2 low power transitions to ensure there are no
             state dependent corner cases with power glitch handling.
+            SiVal: Main power glitch cannot be triggered at will.
             '''
       stage: V2
+      si_stage: None
       tests: ["chip_sw_pwrmgr_random_sleep_power_glitch_reset"]
+      bazel: []
     }
     {
       name: chip_sw_pwrmgr_deep_sleep_power_glitch_reset
@@ -170,9 +245,12 @@
             - If sent too early the chip won't have started to process deep sleep.
             - If too late the hardware won't monitor main power okay so the glitch will have no
               effect, and the test will timeout.
+            SiVal: Main power glitch cannot be triggered at will.
             '''
       stage: V2
+      si_stage: None
       tests: ["chip_sw_pwrmgr_deep_sleep_power_glitch_reset"]
+      bazel: []
     }
     {
       name: chip_sw_pwrmgr_sleep_power_glitch_reset
@@ -182,20 +260,43 @@
             This triggers a MainPwr reset request, which is checked by reading the retention SRAM's
             reset_reason shows that the reset_info CSR's POR bit is not set when the
             test restarts.
+            SiVal: Main power glitch cannot be triggered at will.
             '''
       stage: V2
+      si_stage: None
       tests: ["chip_sw_pwrmgr_sleep_power_glitch_reset"]
+      bazel: []
     }
     {
       name: chip_sw_pwrmgr_random_sleep_all_reset_reqs
-      desc: '''Verify that this chip can be reset by All available reset sources.
+      desc: '''Verify resets by relevant reset sources in sleep modes.
 
             - 12 resets are generated randomly with normal/deep sleeps
             - POR (HW PAD) reset, SW POR, sysrst, wdog timer reset, esc rst, SW req
-            - esc reset is followd by normal mode because it does not work with sleep mode
+            - SW reset from rstmgr cannot be requested in sleep mode.
+            SiVal: What is SW POR? It seems to just set mio_in_i[46].
+            Esc reset is triggered by pwrmgr ALERT_TEST.FATAL_FAULT CSR, and can configure the
+            alert handler so that the reset triggers after setting sleep mode.
             '''
       stage: V2
+      si_stage: SV3
+      lc_states: [
+        "TEST_UNLOCKED",
+        "DEV",
+        "PROD",
+        "PROD_END",
+        "RMA",
+      ]
+      features: [
+        "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_ENABLE",
+        "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_REQUEST",
+        "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_ENABLE",
+        "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_REQUEST",
+        "PWRMGR.RESET.ESCALATION_REQUEST",
+        "PWRMGR.RESET.POR_REQUEST",
+      ]
       tests: ["chip_sw_pwrmgr_random_sleep_all_reset_reqs"]
+      bazel: []
     }
     {
       name: chip_sw_pwrmgr_sysrst_ctrl_reset
@@ -213,9 +314,12 @@
             - After reset, read the reset cause register in rstmgr to confirm that the SW is now in
               the wdog reset phase.
             - Program the AON timer wdog to 'bark' after some time.
+            SiVal: The pin that causes sysrst to reset needs to be pulsed from the host side.
             '''
       stage: V2
+      si_stage: None
       tests: ["chip_sw_pwrmgr_sysrst_ctrl_reset"]
+      bazel: []
     }
     {
       name: chip_sw_pwrmgr_b2b_sleep_reset_req
@@ -223,7 +327,9 @@
             time, one after the other. Use POR_N PAD to trigger reset.
             '''
       stage: V2
+      si_stage: None
       tests: ["chip_sw_pwrmgr_b2b_sleep_reset_req"]
+      bazel: []
     }
     {
       name: chip_sw_pwrmgr_sleep_disabled
@@ -231,20 +337,64 @@
 
             This calls WFI with low_power_hint disabled and pwrmgr interrupts enabled,
             and fails if the pwrmgr ISR is called.
+	    SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
             '''
       stage: V2
+      si_stage: SV3
+      lc_states: [
+        "TEST_UNLOCKED",
+        "DEV",
+      ]
+      features: ["PWRMGR.LOW_POWER.ENTRY"]
       tests: ["chip_sw_pwrmgr_sleep_disabled"]
+      bazel: ["//sw/device/tests:pwrmgr_sleep_disabled_test_fpga_cw310_test_rom"]
     }
     {
       name: chip_sw_pwrmgr_usb_clk_disabled_when_active
       desc: '''Verify that the USB stops responding when its clock is disabled in active state.
 
             Configure the pwrmgr CONTROL CSR with USB_CLK_EN_ACTIVE off, and issue a CSR read
-	    to the USB.  This CSR read should cause the CPU to hung.  Prior to this read,
-	    configure the watchdog to bite, and the test passes if there is a watchdog reset.
-	    '''
+            to the USB.  This CSR read should cause the CPU to hung.  Prior to this read,
+            configure the watchdog to bite, and the test passes if there is a watchdog reset.
+	    SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
+            '''
       stage: V3
+      si_stage: SV3
+      lc_states: [
+        "TEST_UNLOCKED",
+        "DEV",
+      ]
+      features: ["PWRMGR.CLOCK_CONTROL.USB_WHEN_ACTIVE"]
       tests: ["chip_sw_pwrmgr_usb_clk_disabled_when_active"]
+      bazel: ["//sw/device/tests:pwrmgr_usb_clk_disabled_when_active_test_fpga_cw310_test_rom"]
+    }
+    {
+      name: chip_sw_all_resets
+      desc: '''Verify resets by relevant reset sources when active.
+
+            - POR (HW PAD) reset, SW POR, sysrst, wdog timer reset, esc rst.
+            - rstmgr sw reset is in rstmgr testplan.
+            - ndm reset is in rv_dm testplan.
+            '''
+      stage: V3
+      si_stage: SV3
+      lc_states: [
+        "TEST_UNLOCKED",
+        "DEV",
+        "PROD",
+        "PROD_END",
+        "RMA",
+      ]
+      features: [
+        "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_ENABLE",
+        "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_REQUEST",
+        "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_ENABLE",
+        "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_REQUEST",
+        "PWRMGR.RESET.ESCALATION_REQUEST",
+        "PWRMGR.RESET.POR_REQUEST",
+      ]
+      tests: []
+      bazel: []
     }
     {
       name: chip_sw_pwrmgr_escalation_reset
@@ -253,9 +403,19 @@
             Trigger an internal fatal fault for the regfile onehot checker and let it escalate to
             reset. Upon alert escalation reset, the internal status should be clear and pwrmgr
             should not attempt to send out more alerts.
+            SiVal: Could generate escalation writing to the alert_test, and setting the
+            alert_handler to immediately trip escalation reset.
+            Any LC state and OTP image.
             '''
       stage: V2
+      si_stage: SV3
+      lc_states: [
+        "TEST_UNLOCKED",
+        "DEV",
+      ]
+      features: ["PWRMGR.RESET.ESCALATION_REQUEST"]
       tests: ["chip_sw_all_escalation_resets"]
+      bazel: []
     }
   ]
 }
