@@ -1233,6 +1233,8 @@ module chip_${top["name"]}_${target["name"]} #(
     .dma_sys_rsp_i                ( '0                         ),
     .dma_ctn_tl_h2d_o             (                            ),
     .dma_ctn_tl_d2h_i             ( tlul_pkg::TL_D2H_DEFAULT   ),
+    .mbx_tl_req_i                 ( tlul_pkg::TL_H2D_DEFAULT   ),
+    .mbx_tl_rsp_o                 (                            ),
     .soc_fatal_alert_req_i        ( soc_fatal_alert_req        ),
     .soc_fatal_alert_rsp_o        (                            ),
     .soc_recov_alert_req_i        ( soc_recov_alert_req        ),
