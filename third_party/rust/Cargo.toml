@@ -42,10 +42,11 @@ num_enum = "0.5"
 object = "0.25.3"
 p256 = "0.13.2"
 pem-rfc7468 = { version = "0.7.0", features = ["alloc", "std"] }
-pqcrypto-sphincsplus = "0.6.4"
+pqcrypto-internals = "0.2.5"
+pqcrypto-sphincsplus = { version = "0.6.4", default-features = false, features = ["std"] }
 pqcrypto-traits = "0.3.4"
 proc-macro-error = "1.0"
-proc-macro2 = "1.0.45"
+proc-macro2 = "1.0.66"
 quote = "1.0"
 rand = "0.8.4"
 raw_tty = "0.1.0"
