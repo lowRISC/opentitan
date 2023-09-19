@@ -304,4 +304,8 @@ module mbx
     .ombx_sram_read_resp_o     ( ombx_sram_read_data      )
   );
 
+  // Assertions
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A,
+                                                 u_sysif.u_soc_regs,
+                                                 alert_tx_o[0])
 endmodule
