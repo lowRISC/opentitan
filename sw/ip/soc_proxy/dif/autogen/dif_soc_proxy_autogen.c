@@ -90,6 +90,18 @@ static bool soc_proxy_get_irq_bit_index(dif_soc_proxy_irq_t irq,
     case kDifSocProxyIrqExternal3:
       *index_out = 3;
       break;
+    case kDifSocProxyIrqExternal4:
+      *index_out = 4;
+      break;
+    case kDifSocProxyIrqExternal5:
+      *index_out = 5;
+      break;
+    case kDifSocProxyIrqExternal6:
+      *index_out = 6;
+      break;
+    case kDifSocProxyIrqExternal7:
+      *index_out = 7;
+      break;
     default:
       return false;
   }
@@ -98,10 +110,8 @@ static bool soc_proxy_get_irq_bit_index(dif_soc_proxy_irq_t irq,
 }
 
 static dif_irq_type_t irq_types[] = {
-    kDifIrqTypeEvent,
-    kDifIrqTypeEvent,
-    kDifIrqTypeEvent,
-    kDifIrqTypeEvent,
+    kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent,
+    kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent,
 };
 
 OT_WARN_UNUSED_RESULT
@@ -109,7 +119,7 @@ dif_result_t dif_soc_proxy_irq_get_type(const dif_soc_proxy_t *soc_proxy,
                                         dif_soc_proxy_irq_t irq,
                                         dif_irq_type_t *type) {
   if (soc_proxy == NULL || type == NULL ||
-      irq == kDifSocProxyIrqExternal3 + 1) {
+      irq == kDifSocProxyIrqExternal7 + 1) {
     return kDifBadArg;
   }
 

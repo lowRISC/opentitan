@@ -196,7 +196,7 @@ module top_darjeeling #(
   input  soc_proxy_pkg::soc_alert_req_t [3:0] soc_recov_alert_req_i,
   output soc_proxy_pkg::soc_alert_rsp_t [3:0] soc_recov_alert_rsp_o,
   input  logic       soc_wkup_async_i,
-  input  logic [3:0] soc_intr_async_i,
+  input  logic [7:0] soc_intr_async_i,
   input  logic [1:0] soc_lsio_trigger_i,
   output logic       sck_monitor_o,
   input  logic       usbdev_usb_rx_d_i,
@@ -363,7 +363,7 @@ module top_darjeeling #(
   // rv_core_ibex
 
 
-  logic [161:0]  intr_vector;
+  logic [165:0]  intr_vector;
   // Interrupt source list
   logic intr_uart0_tx_watermark;
   logic intr_uart0_rx_watermark;
@@ -466,7 +466,7 @@ module top_darjeeling #(
   logic intr_aon_timer_aon_wdog_timer_bark;
   logic intr_sensor_ctrl_io_status_change;
   logic intr_sensor_ctrl_init_status_change;
-  logic [3:0] intr_soc_proxy_external;
+  logic [7:0] intr_soc_proxy_external;
   logic intr_flash_ctrl_prog_empty;
   logic intr_flash_ctrl_prog_lvl;
   logic intr_flash_ctrl_rd_full;
@@ -2539,32 +2539,32 @@ module top_darjeeling #(
   );
   // interrupt assignments
   assign intr_vector = {
-      intr_dma_dma_memory_buffer_limit, // IDs [161 +: 1]
-      intr_dma_dma_error, // IDs [160 +: 1]
-      intr_dma_dma_done, // IDs [159 +: 1]
-      intr_edn1_edn_fatal_err, // IDs [158 +: 1]
-      intr_edn1_edn_cmd_req_done, // IDs [157 +: 1]
-      intr_edn0_edn_fatal_err, // IDs [156 +: 1]
-      intr_edn0_edn_cmd_req_done, // IDs [155 +: 1]
-      intr_csrng_cs_fatal_err, // IDs [154 +: 1]
-      intr_csrng_cs_hw_inst_exc, // IDs [153 +: 1]
-      intr_csrng_cs_entropy_req, // IDs [152 +: 1]
-      intr_csrng_cs_cmd_req_done, // IDs [151 +: 1]
-      intr_keymgr_op_done, // IDs [150 +: 1]
-      intr_otbn_done, // IDs [149 +: 1]
-      intr_kmac_kmac_err, // IDs [148 +: 1]
-      intr_kmac_fifo_empty, // IDs [147 +: 1]
-      intr_kmac_kmac_done, // IDs [146 +: 1]
-      intr_hmac_hmac_err, // IDs [145 +: 1]
-      intr_hmac_fifo_empty, // IDs [144 +: 1]
-      intr_hmac_hmac_done, // IDs [143 +: 1]
-      intr_flash_ctrl_corr_err, // IDs [142 +: 1]
-      intr_flash_ctrl_op_done, // IDs [141 +: 1]
-      intr_flash_ctrl_rd_lvl, // IDs [140 +: 1]
-      intr_flash_ctrl_rd_full, // IDs [139 +: 1]
-      intr_flash_ctrl_prog_lvl, // IDs [138 +: 1]
-      intr_flash_ctrl_prog_empty, // IDs [137 +: 1]
-      intr_soc_proxy_external, // IDs [133 +: 4]
+      intr_dma_dma_memory_buffer_limit, // IDs [165 +: 1]
+      intr_dma_dma_error, // IDs [164 +: 1]
+      intr_dma_dma_done, // IDs [163 +: 1]
+      intr_edn1_edn_fatal_err, // IDs [162 +: 1]
+      intr_edn1_edn_cmd_req_done, // IDs [161 +: 1]
+      intr_edn0_edn_fatal_err, // IDs [160 +: 1]
+      intr_edn0_edn_cmd_req_done, // IDs [159 +: 1]
+      intr_csrng_cs_fatal_err, // IDs [158 +: 1]
+      intr_csrng_cs_hw_inst_exc, // IDs [157 +: 1]
+      intr_csrng_cs_entropy_req, // IDs [156 +: 1]
+      intr_csrng_cs_cmd_req_done, // IDs [155 +: 1]
+      intr_keymgr_op_done, // IDs [154 +: 1]
+      intr_otbn_done, // IDs [153 +: 1]
+      intr_kmac_kmac_err, // IDs [152 +: 1]
+      intr_kmac_fifo_empty, // IDs [151 +: 1]
+      intr_kmac_kmac_done, // IDs [150 +: 1]
+      intr_hmac_hmac_err, // IDs [149 +: 1]
+      intr_hmac_fifo_empty, // IDs [148 +: 1]
+      intr_hmac_hmac_done, // IDs [147 +: 1]
+      intr_flash_ctrl_corr_err, // IDs [146 +: 1]
+      intr_flash_ctrl_op_done, // IDs [145 +: 1]
+      intr_flash_ctrl_rd_lvl, // IDs [144 +: 1]
+      intr_flash_ctrl_rd_full, // IDs [143 +: 1]
+      intr_flash_ctrl_prog_lvl, // IDs [142 +: 1]
+      intr_flash_ctrl_prog_empty, // IDs [141 +: 1]
+      intr_soc_proxy_external, // IDs [133 +: 8]
       intr_sensor_ctrl_init_status_change, // IDs [132 +: 1]
       intr_sensor_ctrl_io_status_change, // IDs [131 +: 1]
       intr_aon_timer_aon_wdog_timer_bark, // IDs [130 +: 1]

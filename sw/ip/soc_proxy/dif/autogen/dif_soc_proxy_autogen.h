@@ -115,6 +115,10 @@ typedef enum dif_soc_proxy_irq {
   kDifSocProxyIrqExternal1 = 1,
   kDifSocProxyIrqExternal2 = 2,
   kDifSocProxyIrqExternal3 = 3,
+  kDifSocProxyIrqExternal4 = 4,
+  kDifSocProxyIrqExternal5 = 5,
+  kDifSocProxyIrqExternal6 = 6,
+  kDifSocProxyIrqExternal7 = 7,
 } dif_soc_proxy_irq_t;
 
 /**

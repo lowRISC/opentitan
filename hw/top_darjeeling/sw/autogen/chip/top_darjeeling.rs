@@ -1102,56 +1102,64 @@ pub enum TopDarjeelingPlicIrqId {
     SocProxyExternal2 = 135,
     /// soc_proxy_external 3
     SocProxyExternal3 = 136,
+    /// soc_proxy_external 4
+    SocProxyExternal4 = 137,
+    /// soc_proxy_external 5
+    SocProxyExternal5 = 138,
+    /// soc_proxy_external 6
+    SocProxyExternal6 = 139,
+    /// soc_proxy_external 7
+    SocProxyExternal7 = 140,
     /// flash_ctrl_prog_empty
-    FlashCtrlProgEmpty = 137,
+    FlashCtrlProgEmpty = 141,
     /// flash_ctrl_prog_lvl
-    FlashCtrlProgLvl = 138,
+    FlashCtrlProgLvl = 142,
     /// flash_ctrl_rd_full
-    FlashCtrlRdFull = 139,
+    FlashCtrlRdFull = 143,
     /// flash_ctrl_rd_lvl
-    FlashCtrlRdLvl = 140,
+    FlashCtrlRdLvl = 144,
     /// flash_ctrl_op_done
-    FlashCtrlOpDone = 141,
+    FlashCtrlOpDone = 145,
     /// flash_ctrl_corr_err
-    FlashCtrlCorrErr = 142,
+    FlashCtrlCorrErr = 146,
     /// hmac_hmac_done
-    HmacHmacDone = 143,
+    HmacHmacDone = 147,
     /// hmac_fifo_empty
-    HmacFifoEmpty = 144,
+    HmacFifoEmpty = 148,
     /// hmac_hmac_err
-    HmacHmacErr = 145,
+    HmacHmacErr = 149,
     /// kmac_kmac_done
-    KmacKmacDone = 146,
+    KmacKmacDone = 150,
     /// kmac_fifo_empty
-    KmacFifoEmpty = 147,
+    KmacFifoEmpty = 151,
     /// kmac_kmac_err
-    KmacKmacErr = 148,
+    KmacKmacErr = 152,
     /// otbn_done
-    OtbnDone = 149,
+    OtbnDone = 153,
     /// keymgr_op_done
-    KeymgrOpDone = 150,
+    KeymgrOpDone = 154,
     /// csrng_cs_cmd_req_done
-    CsrngCsCmdReqDone = 151,
+    CsrngCsCmdReqDone = 155,
     /// csrng_cs_entropy_req
-    CsrngCsEntropyReq = 152,
+    CsrngCsEntropyReq = 156,
     /// csrng_cs_hw_inst_exc
-    CsrngCsHwInstExc = 153,
+    CsrngCsHwInstExc = 157,
     /// csrng_cs_fatal_err
-    CsrngCsFatalErr = 154,
+    CsrngCsFatalErr = 158,
     /// edn0_edn_cmd_req_done
-    Edn0EdnCmdReqDone = 155,
+    Edn0EdnCmdReqDone = 159,
     /// edn0_edn_fatal_err
-    Edn0EdnFatalErr = 156,
+    Edn0EdnFatalErr = 160,
     /// edn1_edn_cmd_req_done
-    Edn1EdnCmdReqDone = 157,
+    Edn1EdnCmdReqDone = 161,
     /// edn1_edn_fatal_err
-    Edn1EdnFatalErr = 158,
+    Edn1EdnFatalErr = 162,
     /// dma_dma_done
-    DmaDmaDone = 159,
+    DmaDmaDone = 163,
     /// dma_dma_error
-    DmaDmaError = 160,
+    DmaDmaError = 164,
     /// dma_dma_memory_buffer_limit
-    DmaDmaMemoryBufferLimit = 161,
+    DmaDmaMemoryBufferLimit = 165,
 }
 
 impl TryFrom<u32> for TopDarjeelingPlicIrqId {
@@ -1295,31 +1303,35 @@ impl TryFrom<u32> for TopDarjeelingPlicIrqId {
             134 => Ok(Self::SocProxyExternal1),
             135 => Ok(Self::SocProxyExternal2),
             136 => Ok(Self::SocProxyExternal3),
-            137 => Ok(Self::FlashCtrlProgEmpty),
-            138 => Ok(Self::FlashCtrlProgLvl),
-            139 => Ok(Self::FlashCtrlRdFull),
-            140 => Ok(Self::FlashCtrlRdLvl),
-            141 => Ok(Self::FlashCtrlOpDone),
-            142 => Ok(Self::FlashCtrlCorrErr),
-            143 => Ok(Self::HmacHmacDone),
-            144 => Ok(Self::HmacFifoEmpty),
-            145 => Ok(Self::HmacHmacErr),
-            146 => Ok(Self::KmacKmacDone),
-            147 => Ok(Self::KmacFifoEmpty),
-            148 => Ok(Self::KmacKmacErr),
-            149 => Ok(Self::OtbnDone),
-            150 => Ok(Self::KeymgrOpDone),
-            151 => Ok(Self::CsrngCsCmdReqDone),
-            152 => Ok(Self::CsrngCsEntropyReq),
-            153 => Ok(Self::CsrngCsHwInstExc),
-            154 => Ok(Self::CsrngCsFatalErr),
-            155 => Ok(Self::Edn0EdnCmdReqDone),
-            156 => Ok(Self::Edn0EdnFatalErr),
-            157 => Ok(Self::Edn1EdnCmdReqDone),
-            158 => Ok(Self::Edn1EdnFatalErr),
-            159 => Ok(Self::DmaDmaDone),
-            160 => Ok(Self::DmaDmaError),
-            161 => Ok(Self::DmaDmaMemoryBufferLimit),
+            137 => Ok(Self::SocProxyExternal4),
+            138 => Ok(Self::SocProxyExternal5),
+            139 => Ok(Self::SocProxyExternal6),
+            140 => Ok(Self::SocProxyExternal7),
+            141 => Ok(Self::FlashCtrlProgEmpty),
+            142 => Ok(Self::FlashCtrlProgLvl),
+            143 => Ok(Self::FlashCtrlRdFull),
+            144 => Ok(Self::FlashCtrlRdLvl),
+            145 => Ok(Self::FlashCtrlOpDone),
+            146 => Ok(Self::FlashCtrlCorrErr),
+            147 => Ok(Self::HmacHmacDone),
+            148 => Ok(Self::HmacFifoEmpty),
+            149 => Ok(Self::HmacHmacErr),
+            150 => Ok(Self::KmacKmacDone),
+            151 => Ok(Self::KmacFifoEmpty),
+            152 => Ok(Self::KmacKmacErr),
+            153 => Ok(Self::OtbnDone),
+            154 => Ok(Self::KeymgrOpDone),
+            155 => Ok(Self::CsrngCsCmdReqDone),
+            156 => Ok(Self::CsrngCsEntropyReq),
+            157 => Ok(Self::CsrngCsHwInstExc),
+            158 => Ok(Self::CsrngCsFatalErr),
+            159 => Ok(Self::Edn0EdnCmdReqDone),
+            160 => Ok(Self::Edn0EdnFatalErr),
+            161 => Ok(Self::Edn1EdnCmdReqDone),
+            162 => Ok(Self::Edn1EdnFatalErr),
+            163 => Ok(Self::DmaDmaDone),
+            164 => Ok(Self::DmaDmaError),
+            165 => Ok(Self::DmaDmaMemoryBufferLimit),
             _ => Err(val),
         }
     }
@@ -1652,7 +1664,7 @@ impl TryFrom<u32> for TopDarjeelingAlertId {
 ///
 /// This array is a mapping from `TopDarjeelingPlicIrqId` to
 /// `TopDarjeelingPlicPeripheral`.
-pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeripheral; 162] = [
+pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeripheral; 166] = [
     // None -> TopDarjeelingPlicPeripheral::Unknown
     TopDarjeelingPlicPeripheral::Unknown,
     // Uart0TxWatermark -> TopDarjeelingPlicPeripheral::Uart0
@@ -1926,6 +1938,14 @@ pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeriph
     // SocProxyExternal2 -> TopDarjeelingPlicPeripheral::SocProxy
     TopDarjeelingPlicPeripheral::SocProxy,
     // SocProxyExternal3 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal4 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal5 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal6 -> TopDarjeelingPlicPeripheral::SocProxy
+    TopDarjeelingPlicPeripheral::SocProxy,
+    // SocProxyExternal7 -> TopDarjeelingPlicPeripheral::SocProxy
     TopDarjeelingPlicPeripheral::SocProxy,
     // FlashCtrlProgEmpty -> TopDarjeelingPlicPeripheral::FlashCtrl
     TopDarjeelingPlicPeripheral::FlashCtrl,

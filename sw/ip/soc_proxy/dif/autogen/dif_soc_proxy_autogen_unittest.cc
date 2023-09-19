@@ -82,7 +82,7 @@ TEST_F(IrqGetTypeTest, BadIrq) {
 
   EXPECT_DIF_BADARG(dif_soc_proxy_irq_get_type(
       &soc_proxy_,
-      static_cast<dif_soc_proxy_irq_t>(kDifSocProxyIrqExternal3 + 1), &type));
+      static_cast<dif_soc_proxy_irq_t>(kDifSocProxyIrqExternal7 + 1), &type));
 }
 
 TEST_F(IrqGetTypeTest, Success) {
@@ -156,9 +156,9 @@ TEST_F(IrqIsPendingTest, Success) {
 
   // Get the last IRQ state.
   irq_state = true;
-  EXPECT_READ32(SOC_PROXY_INTR_STATE_REG_OFFSET, {{3, false}});
+  EXPECT_READ32(SOC_PROXY_INTR_STATE_REG_OFFSET, {{7, false}});
   EXPECT_DIF_OK(dif_soc_proxy_irq_is_pending(
-      &soc_proxy_, kDifSocProxyIrqExternal3, &irq_state));
+      &soc_proxy_, kDifSocProxyIrqExternal7, &irq_state));
   EXPECT_FALSE(irq_state);
 }
 
@@ -170,7 +170,7 @@ TEST_F(AcknowledgeStateTest, NullArgs) {
 }
 
 TEST_F(AcknowledgeStateTest, AckSnapshot) {
-  const uint32_t num_irqs = 4;
+  const uint32_t num_irqs = 8;
   const uint32_t irq_mask = (1u << num_irqs) - 1;
   dif_soc_proxy_irq_state_snapshot_t irq_snapshot = 1;
 
@@ -224,9 +224,9 @@ TEST_F(IrqAcknowledgeTest, Success) {
       dif_soc_proxy_irq_acknowledge(&soc_proxy_, kDifSocProxyIrqExternal0));
 
   // Clear the last IRQ state.
-  EXPECT_WRITE32(SOC_PROXY_INTR_STATE_REG_OFFSET, {{3, true}});
+  EXPECT_WRITE32(SOC_PROXY_INTR_STATE_REG_OFFSET, {{7, true}});
   EXPECT_DIF_OK(
-      dif_soc_proxy_irq_acknowledge(&soc_proxy_, kDifSocProxyIrqExternal3));
+      dif_soc_proxy_irq_acknowledge(&soc_proxy_, kDifSocProxyIrqExternal7));
 }
 
 class IrqForceTest : public SocProxyTest {};
@@ -248,9 +248,9 @@ TEST_F(IrqForceTest, Success) {
       dif_soc_proxy_irq_force(&soc_proxy_, kDifSocProxyIrqExternal0, true));
 
   // Force last IRQ.
-  EXPECT_WRITE32(SOC_PROXY_INTR_TEST_REG_OFFSET, {{3, true}});
+  EXPECT_WRITE32(SOC_PROXY_INTR_TEST_REG_OFFSET, {{7, true}});
   EXPECT_DIF_OK(
-      dif_soc_proxy_irq_force(&soc_proxy_, kDifSocProxyIrqExternal3, true));
+      dif_soc_proxy_irq_force(&soc_proxy_, kDifSocProxyIrqExternal7, true));
 }
 
 class IrqGetEnabledTest : public SocProxyTest {};
@@ -287,9 +287,9 @@ TEST_F(IrqGetEnabledTest, Success) {
 
   // Last IRQ is disabled.
   irq_state = kDifToggleEnabled;
-  EXPECT_READ32(SOC_PROXY_INTR_ENABLE_REG_OFFSET, {{3, false}});
+  EXPECT_READ32(SOC_PROXY_INTR_ENABLE_REG_OFFSET, {{7, false}});
   EXPECT_DIF_OK(dif_soc_proxy_irq_get_enabled(
-      &soc_proxy_, kDifSocProxyIrqExternal3, &irq_state));
+      &soc_proxy_, kDifSocProxyIrqExternal7, &irq_state));
   EXPECT_EQ(irq_state, kDifToggleDisabled);
 }
 
@@ -320,9 +320,9 @@ TEST_F(IrqSetEnabledTest, Success) {
 
   // Disable last IRQ.
   irq_state = kDifToggleDisabled;
-  EXPECT_MASK32(SOC_PROXY_INTR_ENABLE_REG_OFFSET, {{3, 0x1, false}});
+  EXPECT_MASK32(SOC_PROXY_INTR_ENABLE_REG_OFFSET, {{7, 0x1, false}});
   EXPECT_DIF_OK(dif_soc_proxy_irq_set_enabled(
-      &soc_proxy_, kDifSocProxyIrqExternal3, irq_state));
+      &soc_proxy_, kDifSocProxyIrqExternal7, irq_state));
 }
 
 class IrqDisableAllTest : public SocProxyTest {};

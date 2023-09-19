@@ -11,7 +11,7 @@
  * `top_darjeeling_plic_peripheral_t`.
  */
 const top_darjeeling_plic_peripheral_t
-    top_darjeeling_plic_interrupt_for_peripheral[162] = {
+    top_darjeeling_plic_interrupt_for_peripheral[166] = {
   [kTopDarjeelingPlicIrqIdNone] = kTopDarjeelingPlicPeripheralUnknown,
   [kTopDarjeelingPlicIrqIdUart0TxWatermark] = kTopDarjeelingPlicPeripheralUart0,
   [kTopDarjeelingPlicIrqIdUart0RxWatermark] = kTopDarjeelingPlicPeripheralUart0,
@@ -149,6 +149,10 @@ const top_darjeeling_plic_peripheral_t
   [kTopDarjeelingPlicIrqIdSocProxyExternal1] = kTopDarjeelingPlicPeripheralSocProxy,
   [kTopDarjeelingPlicIrqIdSocProxyExternal2] = kTopDarjeelingPlicPeripheralSocProxy,
   [kTopDarjeelingPlicIrqIdSocProxyExternal3] = kTopDarjeelingPlicPeripheralSocProxy,
+  [kTopDarjeelingPlicIrqIdSocProxyExternal4] = kTopDarjeelingPlicPeripheralSocProxy,
+  [kTopDarjeelingPlicIrqIdSocProxyExternal5] = kTopDarjeelingPlicPeripheralSocProxy,
+  [kTopDarjeelingPlicIrqIdSocProxyExternal6] = kTopDarjeelingPlicPeripheralSocProxy,
+  [kTopDarjeelingPlicIrqIdSocProxyExternal7] = kTopDarjeelingPlicPeripheralSocProxy,
   [kTopDarjeelingPlicIrqIdFlashCtrlProgEmpty] = kTopDarjeelingPlicPeripheralFlashCtrl,
   [kTopDarjeelingPlicIrqIdFlashCtrlProgLvl] = kTopDarjeelingPlicPeripheralFlashCtrl,
   [kTopDarjeelingPlicIrqIdFlashCtrlRdFull] = kTopDarjeelingPlicPeripheralFlashCtrl,
