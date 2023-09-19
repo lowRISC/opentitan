@@ -142,66 +142,105 @@ interface keymgr_if(input clk, input rst_n);
     start_edn_req = 0;
   endfunction
 
+  // Set the keymgr_div signal to a random value. If is_invalid is true, this value is constrained
+  // to be all-zero or all-one.
+  function automatic void set_random_keymgr_div(bit is_invalid);
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(keymgr_div, !(keymgr_div inside {0, '1});, , msg_id)
+    if (is_invalid) begin
+      keymgr_div = ($urandom & 1) ? '0 : '1;
+    end
+  endfunction
+
+  // Set the otp_device_id signal to a random value. If is_invalid is true, this value is
+  // constrained to be all-zero or all-one.
+  function automatic void set_random_otp_device_id(bit is_invalid);
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(otp_device_id, !(otp_device_id inside {0, '1});, , msg_id)
+    if (is_invalid) begin
+      otp_device_id = ($urandom & 1) ? '0 : '1;
+    end
+  endfunction
+
+  // Set the flash signal to a random value. This signal will contain up to num_bad_seeds seeds
+  // which are constained to be all-zero or all-one.
+  function automatic void set_random_flash(int num_bad_seeds);
+    // Start by picking non-constant seeds
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(flash,
+                                       foreach (flash.seeds[i]) {
+                                         !(flash.seeds[i] inside {0, '1});
+                                       }, , msg_id)
+    // If num_bad_seeds is positive, set some randomly chosen seeds to be '0 or '1
+    repeat (num_bad_seeds) begin
+      int i = $urandom % flash_ctrl_pkg::NumSeeds;
+      flash.seeds[i]  = ($urandom & 1) ? '0 : '1;
+    end
+  endfunction
+
+  // Set the rom digest signal from rom_ctrl i to a random value. If bad_data is true, the digest
+  // data will be '0 or '1. If bad_valid is true, the valid signal will be 0.
+  function automatic void set_random_rom_digest(int i, bit bad_data, bit bad_valid);
+    bit [255:0] data;
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(data, !(data inside {0, '1});, , msg_id)
+    rom_digests[i].data = data;
+    if (bad_data) begin
+      rom_digests[i].data  = ($urandom & 1) ? '0 : '1;
+    end
+    rom_digests[i].valid = !bad_valid;
+  endfunction
+
   // randomize lc, flash input data
   task automatic drive_random_hw_input_data(int num_invalid_input = 0);
-    lc_ctrl_pkg::lc_keymgr_div_t     local_keymgr_div;
-    bit [keymgr_pkg::DevIdWidth-1:0] local_otp_device_id;
-    flash_ctrl_pkg::keymgr_flash_t   local_flash;
-    rom_ctrl_pkg::keymgr_data_t      local_rom_digest;
+    // Firstly, decide which signals should be driven with invalid data. Store the choices we make
+    // as a set of flags / counters.
+    bit bad_keymgr_div = 1'b0;
+    bit bad_otp_device_id = 1'b0;
+    int bad_flash_seeds = 0;
+    bit [NumRomDigestInputs-1:0] bad_rom_data = '0, bad_rom_valid = '0;
 
-    // async delay as these signals are from different clock domain
-    #($urandom_range(1000, 0) * 1ns);
-
-    // randomize all data to be non all 0s or 1s
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_keymgr_div,
-                                       !(local_keymgr_div inside {0, '1});, , msg_id)
-
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_otp_device_id,
-                                       !(local_otp_device_id inside {0, '1});, , msg_id)
-
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_flash,
-                                       foreach (local_flash.seeds[i]) {
-                                         !(local_flash.seeds[i] inside {0, '1});
-                                       }, , msg_id)
-
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_rom_digest,
-                                       local_rom_digest.valid == 1;
-                                       !(local_rom_digest.data inside {0, '1});, , msg_id)
-
-    // make HW input to be all 0s or 1s
     repeat (num_invalid_input) begin
       randcase
-        1: begin
-          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_keymgr_div,
-                                             local_keymgr_div inside {0, '1};, , msg_id)
-        end
-        1: begin
-          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_otp_device_id,
-                                             local_otp_device_id inside {0, '1};, , msg_id)
-        end
-        1: begin
-          int idx = $urandom_range(0, flash_ctrl_pkg::NumSeeds - 1);
-          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_flash,
-                                             local_flash.seeds[idx] inside {0, '1};, , msg_id)
-        end
-        1: begin
-          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_rom_digest,
-                                             !local_rom_digest.valid;, , msg_id)
-        end
-        1: begin
-          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_rom_digest,
-                                             local_rom_digest.valid == 1;
-                                             local_rom_digest.data inside {0, '1};, , msg_id)
-        end
+        1: bad_keymgr_div = 1'b1;
+        1: bad_otp_device_id = 1'b1;
+        1: bad_flash_seeds++;
+        1: bad_rom_data[$urandom % NumRomDigestInputs] = 1'b1;
+        1: bad_rom_valid[$urandom % NumRomDigestInputs] = 1'b1;
       endcase
     end
 
-    keymgr_div = local_keymgr_div;
-    otp_device_id = local_otp_device_id;
-    flash   = local_flash;
-    rom_digests[0] = local_rom_digest;
+    // Drive each signal, starting each signal's drive at a randomised time, not synchronised with
+    // any clock. This models the fact that the signals are from different clock domains.
+    fork
+      // keymgr_div
+      begin
+        #($urandom_range(1000, 0) * 1ns);
+        set_random_keymgr_div(bad_keymgr_div);
+      end
 
-    // a few cycles design to sync up these inputs, before we start operations
+      // otp_device_id
+      begin
+        #($urandom_range(1000, 0) * 1ns);
+        set_random_otp_device_id(bad_otp_device_id);
+      end
+
+      // flash
+      begin
+        #($urandom_range(1000, 0) * 1ns);
+        set_random_flash(bad_flash_seeds);
+      end
+
+      // rom_digests
+      begin
+        for (int i = 0; i < NumRomDigestInputs; i++)
+          fork
+            automatic int local_i = i;
+            #($urandom_range(1000, 0) * 1ns);
+            set_random_rom_digest(local_i, bad_rom_data[local_i], bad_rom_valid[local_i]);
+          join_none
+        wait fork;
+      end
+    join
+
+    // Once the join above has completed, every signal has been driven. Wait a few more cycles for
+    // the design to sync up these inputs before we start operations
     repeat ($urandom_range(3, 100)) @(posedge clk);
   endtask
 
