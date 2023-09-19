@@ -11,9 +11,7 @@
 This document specifies ENTROPY_SRC hardware IP functionality.
 This module conforms to the [Comportable guideline for peripheral functionality.](../../../doc/contributing/hw/comportability/README.md)
 
-
 ## Features
-
 
 - This revision provides an interface to an external physical random noise generator (also referred to as a physical true random number generator.
 The PTRNG external source is a physical true random noise source.
@@ -56,7 +54,7 @@ The repetition count test fails if any sequence of bits continuously asserts the
 The thresholds for these tests should be chosen to achieve a low false-positive rate (&alpha;) given a conservative estimate of the manufacturing tolerances of the PTRNG noise source.
 The combined choice of threshold and window size then determine the false-negative rate (&beta;), or the probability of missing statistical defects at any particular magnitude.
 
-When the IP is disabled by clearing the `ENABLE` bit in [`CONF`](data/entropy_src.hjson#conf), all heath checks are disabled and all counters internal to the health checks are reset.
+When the IP is disabled by clearing the [`MODULE_ENABLE`](./doc/registers.md#MODULE_ENABLE) register, all health checks are disabled and all counters internal to the health checks are reset.
 
 In order to compensate for the fact our tests (like *all* realistic statistical tests) have finite resolution for detecting defects, we conservatively use 2048 bits of PTRNG noise source to construct each 384 bit conditioned entropy sample.
 When passed through the conditioning block, the resultant entropy stream will be full entropy unless the PTRNG noise source has encountered some statistical defect serious enough to reduce the raw min-entropy to a level below 0.375 bits of entropy per output bit.
@@ -88,7 +86,7 @@ Boot-time mode also has the feature that it bypasses the SHA conditioning functi
 For maximal flexibility in normal operation, the conditioning function can also be implemented by firmware.
 When this firmware conditioning feature is activated, data read directly out of the noise source can be reinjected into the entropy pipeline via a TL-UL register after it has been processed by firmware.
 It should be noted that this firmware algorithm must be vetted by NIST to satisfy the requirements for a full-entropy source.
-This feature can also be disabled for security purposes, either by locking the feature via the [`REGEN`](data/entropy_src.hjson#regen) register at boot, or by a write to one-time programmable (OTP) memory.
+This feature can also be disabled for security purposes, either by locking the feature via the [`REGWEN`](./doc/registers.md#regwen) register at boot, or by a write to one-time programmable (OTP) memory.
 
 ## Compatibility
 This IP block does not have any direct hardware compatibility requirements.
