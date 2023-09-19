@@ -447,7 +447,6 @@ For the purpose of `top_earlgrey`, the first option has been chosen to benefit s
 | rom_ctrl          | rom_ctrl      | 0x00008000 (rom)  |
 |                   |               | 0x411e0000 (regs) |
 | rv_core_ibex      | rv_core_ibex  | 0x411F0000 (cfg)  |
-
 <!-- END CMDGEN -->
 
 
@@ -537,7 +536,6 @@ The first EDN instance, `u_edn0` is intended to be configured to deliver entropy
 | 44   | IOR11            | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
 | 45   | IOR12            | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
 | 46   | IOR13            | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
-
 <!-- END CMDGEN -->
 
 # RTL Implementation Notes

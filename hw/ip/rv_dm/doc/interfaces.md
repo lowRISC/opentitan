@@ -45,7 +45,6 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | RV_DM.MEM_TL_LC_GATE.FSM.SPARSE    | The control FSM inside the TL-UL gating primitive is sparsely encoded.                                                                                                                                                                                                                                                                                                                                                                                                 |
 | RV_DM.EXEC.CTRL.MUBI               | The instruction fetch enable signal that is modulated with LC_HW_DEBUG_EN and that feeds into the TL-UL adapter is multibit encoded.                                                                                                                                                                                                                                                                                                                                   |
 
-
 <!-- END CMDGEN -->
 
 ## Life Cycle Control

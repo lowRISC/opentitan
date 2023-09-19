@@ -431,5 +431,4 @@ A read only register that shows the existing faults
 |   1    |   ro   |   0x0   | ESC_TIMEOUT    | When 1, an escalation clock / reset timeout has occurred. |
 |   0    |   ro   |   0x0   | REG_INTG_ERR   | When 1, an integrity error has occurred.                  |
 
-
 <!-- END CMDGEN -->

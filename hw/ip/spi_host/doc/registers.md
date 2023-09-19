@@ -527,5 +527,4 @@ Assert to send a spi_event interrupt whenever [`STATUS.TXEMPTY`](#status)
 Assert to send a spi_event interrupt whenever [`STATUS.RXFULL`](#status)
    goes high
 
-
 <!-- END CMDGEN -->

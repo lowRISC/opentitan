@@ -64,7 +64,6 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | RV_CORE_IBEX.ICACHE.MEM.SCRAMBLE            | ICache memory scrambling.                                                                                                                                                                        |
 | RV_CORE_IBEX.ICACHE.MEM.INTEGRITY           | ICache memory integrity checking.                                                                                                                                                                |
 
-
 <!-- END CMDGEN -->
 
 All ports and parameters of Ibex are exposed through this wrapper module, except for the instruction and data memory interfaces (signals starting with `instr_` and `data_`).

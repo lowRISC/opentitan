@@ -34,5 +34,4 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 |:-----------------------|:---------------------------------|
 | ADC_CTRL.BUS.INTEGRITY | End-to-end bus integrity scheme. |
 
-
 <!-- END CMDGEN -->

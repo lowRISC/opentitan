@@ -798,5 +798,4 @@ are ignored.
 - Access: `wo`
 - Byte writes are  supported.
 
-
 <!-- END CMDGEN -->

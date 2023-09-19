@@ -1297,5 +1297,4 @@ The packet buffer is used for sending and receiveing packets.
 - Access: `rw`
 - Byte writes are *not* supported.
 
-
 <!-- END CMDGEN -->

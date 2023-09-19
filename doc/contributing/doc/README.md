@@ -39,7 +39,6 @@ If run, the following snippet will have the register tables of the AES block (ou
 # Registers
 
 <!-- BEGIN CMDGEN #util/regtool.py -d ./hw/ip/aes/data/aes.hjson -->
-
 <!-- END CMDGEN -->
 ````
 

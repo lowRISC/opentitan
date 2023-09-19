@@ -52,5 +52,4 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 |:--------------------------|:---------------------------------|
 | SYSRST_CTRL.BUS.INTEGRITY | End-to-end bus integrity scheme. |
 
-
 <!-- END CMDGEN -->

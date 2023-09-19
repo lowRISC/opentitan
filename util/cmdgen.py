@@ -9,7 +9,7 @@ into documentation files. The populated files can then be committed into the
 repository, so the in-repo representation matches the generated content.
 
 CMDGEN blocks are declared within a file as follows:
-```
+
 <!-- BEGIN CMDGEN util/selfdoc.py reggen -->
                    `--------------------`
                             `cmd`
@@ -17,7 +17,21 @@ CMDGEN blocks are declared within a file as follows:
 ... generated_content ...
 
 <!-- END CMDGEN -->
+
+
+Optional arguments can be passed to the cmdgen tool itself by using the '--'
+seperator, where all positional arguments after the seperator become the command
+to be passed to the subprocess.
+
+<!-- BEGIN CMDGEN --md-codeblock console -- util/ipgen.py generate --help -->
+                                            `---------------------------`
+                                                       `cmd`
+```console
+... generated_content ...
 ```
+
+<!-- END CMDGEN -->
+
 
 CI tooling can automatically check that files are out of date due to
 changes to the repository from which the documentation is generated.
@@ -28,6 +42,7 @@ from pathlib import Path
 import re
 import subprocess
 import argparse
+from argparse import Namespace
 
 import logging
 logger = logging.getLogger(__name__)
@@ -48,8 +63,26 @@ END_MARKER_PATTERN = re.compile(
     flags=(re.M | re.X))
 
 
+def _parse_cmdgen_args(cmd: str) -> Namespace:
+    import shlex
+    strings = shlex.split(cmd)
+
+    # Use the '--' identifier plus nargs='*' to easily scoop up all arguments
+    if "--" not in strings:
+        strings = ["--"] + strings
+
+    parser = argparse.ArgumentParser(prog="cmdgen_block")
+    parser.add_argument(
+        "--md-codeblock", help="Wrap generated content in markdown codeblock", type=str,
+    )
+    parser.add_argument(
+        "cmd", help="Command to be executed in a subprocess.", nargs='*',
+    )
+    return parser.parse_args(strings)
+
+
 def cmdgen_rewrite_md(filepath: Path, dry_run: bool, update: bool) -> bool:
-    '''Find all CMDGEN blocks in a file and check their content is up to date.
+    """Find all CMDGEN blocks in a file and check their content is up to date.
 
     See this module's docstring to see how these blocks are declared.
 
@@ -60,7 +93,7 @@ def cmdgen_rewrite_md(filepath: Path, dry_run: bool, update: bool) -> bool:
 
     Returns:
         bool: If neither dry_run or update are set, will return True if an update is required.
-    '''
+    """
     rel_path = filepath.relative_to(REPO_ROOT)
     modified = False
     needs_updating = False
@@ -73,6 +106,7 @@ def cmdgen_rewrite_md(filepath: Path, dry_run: bool, update: bool) -> bool:
             break  # no more replacements to do
         match_start_linum = 1 + content[0:match_start.start(0)].count("\n")
         cmd = match_start.group('cmd').strip()
+        cmd_args = _parse_cmdgen_args(cmd)
 
         # search end marker after the start marker
         match_end = END_MARKER_PATTERN.search(content, pos)
@@ -89,7 +123,10 @@ def cmdgen_rewrite_md(filepath: Path, dry_run: bool, update: bool) -> bool:
             continue
 
         # Run the found-command in a subshell
-        res = subprocess.run(cmd, shell=True, capture_output=True)
+        res = subprocess.run(" ".join(cmd_args.cmd),
+                             shell=True,
+                             capture_output=True,
+                             env={"COLUMNS": "80"})
         if res.stderr:
             logger.info(
                 f"{rel_path}:L{match_start_linum}: `{cmd}` "
@@ -103,7 +140,10 @@ def cmdgen_rewrite_md(filepath: Path, dry_run: bool, update: bool) -> bool:
 
         pos = match_end.end(0)
 
-        new_content = '\n' + res.stdout.decode() + '\n'
+        new_content = '\n' + \
+            res.stdout.decode() if not cmd_args.md_codeblock else \
+            ('\n' + f"```{cmd_args.md_codeblock}" + '\n' + res.stdout.decode() + '```') + \
+            '\n'
         old_content = content[match_start.end(0):match_end.start(0)]
         if new_content != old_content:
             if update:
@@ -132,7 +172,7 @@ def cmdgen_rewrite_md(filepath: Path, dry_run: bool, update: bool) -> bool:
 
 
 def main() -> int:
-    '''Either check or update all CMDGEN blocks found in the given files.'''
+    """Either check or update all CMDGEN blocks found in the given files."""
     parser = argparse.ArgumentParser(prog="cmdgen")
     parser.add_argument(
         "globs", nargs="+", type=str, metavar="file",

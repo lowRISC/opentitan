@@ -53,5 +53,4 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | RSTMGR.SW_RST.CONFIG.REGWEN    | Software reset controls are protected by regwen                                                                            |
 | RSTMGR.DUMP_CTRL.CONFIG.REGWEN | Crash dump controls are protected by regwen                                                                                |
 
-
 <!-- END CMDGEN -->

@@ -365,5 +365,4 @@ UART RX timeout control
 | 30:24  |        |         |        | Reserved                           |
 |  23:0  |   rw   |   0x0   | VAL    | RX timeout value in UART bit times |
 
-
 <!-- END CMDGEN -->

@@ -48,7 +48,6 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | ROM_CTRL.CTRL.MEM.INTEGRITY            | End-to-end data/memory integrity scheme.                                                                                                                                                                                                                                                                                                                      |
 | ROM_CTRL.TLUL_FIFO.CTR.REDUN           | The TL-UL response FIFO pointers are implemented with duplicate counters.                                                                                                                                                                                                                                                                                     |
 
-
 <!-- END CMDGEN -->
 
 ## Parameters

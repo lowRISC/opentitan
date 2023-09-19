@@ -534,5 +534,4 @@ I2C host clock generation timeout value (in units of input clock frequency)
 |:------:|:------:|:-------:|:------------------|:--------------|
 |  31:0  |   rw   |   0x0   | HOST_TIMEOUT_CTRL |               |
 
-
 <!-- END CMDGEN -->

@@ -52,5 +52,4 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 |:--------------------|:---------------------------------|
 | I2C.BUS.INTEGRITY   | End-to-end bus integrity scheme. |
 
-
 <!-- END CMDGEN -->

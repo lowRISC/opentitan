@@ -35,5 +35,4 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 |:--------------------|:---------------------------------|
 | HMAC.BUS.INTEGRITY  | End-to-end bus integrity scheme. |
 
-
 <!-- END CMDGEN -->

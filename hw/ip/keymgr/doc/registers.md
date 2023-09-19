@@ -761,5 +761,4 @@ misbehaves.
 |   1    |  rw0c  |   0x0   | INVALID_OWNER_SEED   | Owner seed failed input checks during operation      |
 |   0    |  rw0c  |   0x0   | INVALID_CREATOR_SEED | Creator seed failed input checks during operation    |
 
-
 <!-- END CMDGEN -->

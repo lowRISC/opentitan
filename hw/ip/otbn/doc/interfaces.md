@@ -77,7 +77,6 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | OTBN.KEY.SIDELOAD                        | Keys can be sideloaded without exposing them to the CPU                                                                                                                                                                                                                                                                                                                |
 | OTBN.TLUL_FIFO.CTR.REDUN                 | The TL-UL response FIFO pointers are implemented with duplicate counters.                                                                                                                                                                                                                                                                                              |
 
-
 <!-- END CMDGEN -->
 
 ## Hardware Interface Requirements

@@ -488,5 +488,4 @@ The AES unit is idle (1) or busy (0).
 This flag is `0` if one of the following operations is currently running: i) encryption/decryption, ii) register clearing or iii) PRNG reseeding.
 This flag is also `0` if an encryption/decryption is running but the AES unit is stalled.
 
-
 <!-- END CMDGEN -->

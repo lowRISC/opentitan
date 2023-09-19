@@ -133,7 +133,6 @@ base_addr | required | int | Base address of the device. It is required for the 
 size_byte | required | int | Memory space of the device. It is required for the device
 
 
-
 <!-- END CMDGEN -->
 
 ## Fabrication process

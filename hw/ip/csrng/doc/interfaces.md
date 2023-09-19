@@ -61,7 +61,6 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | CSRNG.AES_CIPHER.CTR.REDUN          | The AES round counter inside the AES cipher core FSM is protected with multiple, independent logic rails. See the AES module documentation for AES-specific countermeasures.                                                                                        |
 | CSRNG.AES_CIPHER.DATA_REG.LOCAL_ESC | Upon local escalation, the AES cipher core doesn't output intermediate state. See the AES module documentation for AES-specific countermeasures.                                                                                                                    |
 
-
 <!-- END CMDGEN -->
 
 ## Other CSRNG signals.

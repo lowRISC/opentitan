@@ -705,5 +705,4 @@ key interrupt source
 |   1    |  rw1c  |   0x0   | key0_in_H2L    | 0: case not detected;1: case detected |
 |   0    |  rw1c  |   0x0   | pwrb_H2L       | 0: case not detected;1: case detected |
 
-
 <!-- END CMDGEN -->

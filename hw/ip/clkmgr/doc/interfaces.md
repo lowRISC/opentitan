@@ -55,5 +55,4 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | CLKMGR.MEAS.CONFIG.REGWEN                  | The measurement controls protected with regwen.              |
 | CLKMGR.CLK_CTRL.CONFIG.REGWEN              | Software controlled clock requests are proteced with regwen. |
 
-
 <!-- END CMDGEN -->

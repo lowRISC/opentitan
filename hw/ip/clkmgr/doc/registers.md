@@ -506,5 +506,4 @@ Error code
 |   1    |   ro   |   0x0   | IDLE_CNT           | One of the idle counts encountered a duplicate error.    |
 |   0    |   ro   |   0x0   | REG_INTG           | Register file has experienced a fatal integrity error.   |
 
-
 <!-- END CMDGEN -->
