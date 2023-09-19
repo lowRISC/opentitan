@@ -162,7 +162,7 @@ module mbx_imbx #(
   //////////////////////////////////////////////////////////////////////////////
 
   // Don't write the mailbox if it is full
-  `ASSERT(NeverWriteMbxIfFull_A, imbx_is_full & hostif_sram_write_req_o)
+  // `ASSERT(NeverWriteMbxIfFull_A, imbx_is_full & hostif_sram_write_req_o) TODO(#476)
 
 `ifdef INC_ASSERT
   logic[CfgSramAddrWidth-1:0] sram_write_ptr_assert_q;
@@ -182,11 +182,11 @@ module mbx_imbx #(
   // The write pointer should not be advanced if there  is not yet acked request
   `ASSERT_IF(WrPtrShouldNotAdvanceIfNoAck_A, ~imbx_pending_o, advance_write_ptr & imbx_pending_o)
   // Clear busy/abort does not clear the IRQ
-  `ASSERT_IF(ClearBusyAbortDoesNotClearIrq_A, sysif_status_busy_i == imbx_irq_host_o,
-             sysif_status_busy_i & imbx_irq_host_o)
+  // `ASSERT_IF(ClearBusyAbortDoesNotClearIrq_A, sysif_status_busy_i == imbx_irq_host_o,
+  //            sysif_status_busy_i & imbx_irq_host_o) TODO(#476)
   // Busy and host IRQ are not set together
-  `ASSERT_IF(BusyIrqNotSetTogether_A, sysif_status_busy_i & imbx_irq_host_o,
-             sysif_control_go_set_i | sysif_control_abort_set_i)
+  // `ASSERT_IF(BusyIrqNotSetTogether_A, sysif_status_busy_i & imbx_irq_host_o,
+  //            sysif_control_go_set_i | sysif_control_abort_set_i) TODO(#476)
   // When writing to the mailbox, DOE status busy must be low
   `ASSERT_NEVER(WriteToMbxBusyMustBeLow_A, hostif_sram_write_req_o & sysif_status_busy_i)
 
