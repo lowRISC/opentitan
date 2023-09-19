@@ -122,7 +122,7 @@ impl Frame {
         while addr < max_addr {
             // Try skipping over 0xffffffff words.
             let nonempty_addr = addr
-                + payload[addr..]
+                + payload[addr..max_addr]
                     .chunks(4)
                     .position(|c| c != [0xff; 4])
                     .unwrap_or(0)
