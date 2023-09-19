@@ -490,7 +490,6 @@ module otbn_controller
     // On any error immediately halt, either going to OtbnStateLocked or OtbnStateHalt depending on
     // whether it was a fatal error.
     if (err) begin
-      prefetch_en_o           = 1'b0;
       insn_fetch_resp_clear_o = 1'b1;
 
       if (fatal_err) begin

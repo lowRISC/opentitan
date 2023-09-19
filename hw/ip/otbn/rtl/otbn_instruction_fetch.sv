@@ -102,8 +102,10 @@ module otbn_instruction_fetch
   logic [NWdr-1:0] rf_bignum_wr_sec_wipe_onehot;
 
   // The prefetch has failed if a fetch is requested and either no prefetch has done or was done to
-  // the wrong address.
-  assign insn_prefetch_fail = insn_fetch_req_valid_i &
+  // the wrong address. The `insn_fetch_req_valid_raw_i` signal doesn't factor in errors which is
+  // important to avoid timing issues here as this signal factors into the muxing for the
+  // imem_addr_o output.
+  assign insn_prefetch_fail = insn_fetch_req_valid_raw_i &
                               (~imem_rvalid_i || (insn_fetch_req_addr_i != insn_prefetch_addr));
 
   // Fetch response is valid when prefetch has matched what was requested. Otherwise if no fetch is
@@ -315,7 +317,9 @@ module otbn_instruction_fetch
     // By default prefetch the next instruction
     imem_addr_o = insn_prefetch_addr + 'd4;
 
-    if (!insn_fetch_req_valid_i) begin
+    // Use the `insn_fetch_req_valid_raw_i` signal here as it doesn't factor in errors. This is
+    // important for timing reasons so errors don't factor into the `imem_addr_o` signal.
+    if (!insn_fetch_req_valid_raw_i) begin
       // Keep prefetching the same instruction when a new one isn't being requested. In this
       // scenario OTBN is stalled and will eventually want the prefetched instruction.
       imem_addr_o = insn_prefetch_addr;
