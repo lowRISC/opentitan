@@ -634,6 +634,28 @@
         }
       ]
     }
+    { multireg: {
+        name: "SHA2_DIGEST"
+        cname: "DMA"
+        desc: '''
+              Digest register for the inline hashing operation.
+              Depending on the used hashing mode, not all registers are used.
+                SHA256: Digest is stored in registers 0 to 7
+                SHA384: Digest is stored in registers 0 to 11
+                SHA512: Digest is stored in registers 0 to 15
+              '''
+        count: "16"
+        swaccess: "ro",
+        hwaccess: "hrw",
+        fields: [
+          { name: "data"
+            desc: "SHA2 digest data"
+            bits: "31:0"
+            resval: "0"
+          }
+        ]
+      }
+    }
     { name: "CLEAR_INT_BUS"
       desc: '''Bus selection bit where the clearing command should be performed."
             0: CTN/System faric
@@ -680,28 +702,6 @@
             desc: "Write value for interrupt clearing write."
             bits: "31:0"
             resval: 0x0
-          }
-        ]
-      }
-    }
-    { multireg: {
-        name: "SHA2_DIGEST"
-        cname: "DMA"
-        desc: '''
-              Digest register for the inline hashing operation.
-              Depending on the used hashing mode, not all registers are used.
-                SHA256: Digest is stored in registers 0 to 7
-                SHA384: Digest is stored in registers 0 to 11
-                SHA512: Digest is stored in registers 0 to 15
-              '''
-        count: "16"
-        swaccess: "ro",
-        hwaccess: "hrw",
-        fields: [
-          { name: "data"
-            desc: "SHA2 digest data"
-            bits: "31:0"
-            resval: "0"
           }
         ]
       }
