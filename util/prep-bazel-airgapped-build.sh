@@ -142,7 +142,7 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     --repository_cache=${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR} \
     //... \
     @bindgen_clang_linux//... \
-    @rules_rust_bindgen__bindgen-0.60.1//... \
+    @rules_rust_bindgen__bindgen-0.65.1//... \
     @go_sdk//... \
     @lowrisc_rv32imcb_files//... \
     @local_config_cc_toolchains//... \
@@ -154,6 +154,7 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     @rules_foreign_cc//toolchains/... \
     @ninja_1.10.2_linux//... \
     @cmake-3.22.2-linux-x86_64//... \
+    @rustfmt_nightly-2023-07-13__x86_64-unknown-linux-gnu_tools//... \
     @rust_analyzer_1.67.0_tools//... \
     @rust_linux_x86_64__x86_64-unknown-linux-gnu__nightly_tools//... \
     @rust_linux_x86_64__riscv32imc-unknown-none-elf__nightly_tools//...
