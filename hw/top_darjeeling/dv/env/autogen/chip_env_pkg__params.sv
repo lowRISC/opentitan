@@ -71,10 +71,30 @@ parameter string LIST_OF_ALERTS[] = {
   "rom_ctrl0_fatal",
   "rom_ctrl1_fatal",
   "dma_fatal_fault",
+  "mbx0_fatal_fault",
+  "mbx0_recov_fault",
+  "mbx1_fatal_fault",
+  "mbx1_recov_fault",
+  "mbx2_fatal_fault",
+  "mbx2_recov_fault",
+  "mbx3_fatal_fault",
+  "mbx3_recov_fault",
+  "mbx4_fatal_fault",
+  "mbx4_recov_fault",
+  "mbx5_fatal_fault",
+  "mbx5_recov_fault",
+  "mbx6_fatal_fault",
+  "mbx6_recov_fault",
+  "mbx7_fatal_fault",
+  "mbx7_recov_fault",
+  "mbx_jtag_fatal_fault",
+  "mbx_jtag_recov_fault",
+  "mbx_pcie0_fatal_fault",
+  "mbx_pcie0_recov_fault",
   "rv_core_ibex_fatal_sw_err",
   "rv_core_ibex_recov_sw_err",
   "rv_core_ibex_fatal_hw_err",
   "rv_core_ibex_recov_hw_err"
 };
 
-parameter uint NUM_ALERTS = 70;
+parameter uint NUM_ALERTS = 90;

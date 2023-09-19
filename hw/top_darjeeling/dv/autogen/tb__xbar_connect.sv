@@ -39,6 +39,16 @@ tl_if rv_core_ibex__corei_tl_if(clk_main, rst_n);
 tl_if rv_core_ibex__cored_tl_if(clk_main, rst_n);
 tl_if rv_dm__sba_tl_if(clk_main, rst_n);
 tl_if dma__host_tl_if(clk_main, rst_n);
+tl_if mbx0__sram_tl_if(clk_main, rst_n);
+tl_if mbx1__sram_tl_if(clk_main, rst_n);
+tl_if mbx2__sram_tl_if(clk_main, rst_n);
+tl_if mbx3__sram_tl_if(clk_main, rst_n);
+tl_if mbx4__sram_tl_if(clk_main, rst_n);
+tl_if mbx5__sram_tl_if(clk_main, rst_n);
+tl_if mbx6__sram_tl_if(clk_main, rst_n);
+tl_if mbx7__sram_tl_if(clk_main, rst_n);
+tl_if mbx_jtag__sram_tl_if(clk_main, rst_n);
+tl_if mbx_pcie0__sram_tl_if(clk_main, rst_n);
 
 tl_if rv_dm__regs_tl_if(clk_main, rst_n);
 tl_if rv_dm__mem_tl_if(clk_main, rst_n);
@@ -68,6 +78,16 @@ tl_if sram_ctrl_main__ram_tl_if(clk_main, rst_n);
 tl_if sram_ctrl_mbox__regs_tl_if(clk_main, rst_n);
 tl_if sram_ctrl_mbox__ram_tl_if(clk_main, rst_n);
 tl_if dma_tl_if(clk_main, rst_n);
+tl_if mbx0__core_tl_if(clk_main, rst_n);
+tl_if mbx1__core_tl_if(clk_main, rst_n);
+tl_if mbx2__core_tl_if(clk_main, rst_n);
+tl_if mbx3__core_tl_if(clk_main, rst_n);
+tl_if mbx4__core_tl_if(clk_main, rst_n);
+tl_if mbx5__core_tl_if(clk_main, rst_n);
+tl_if mbx6__core_tl_if(clk_main, rst_n);
+tl_if mbx7__core_tl_if(clk_main, rst_n);
+tl_if mbx_jtag__core_tl_if(clk_main, rst_n);
+tl_if mbx_pcie0__core_tl_if(clk_main, rst_n);
 tl_if uart0_tl_if(clk_io_div4, rst_n);
 tl_if i2c0_tl_if(clk_io_div4, rst_n);
 tl_if i2c1_tl_if(clk_io_div4, rst_n);
@@ -91,6 +111,16 @@ tl_if aon_timer_aon_tl_if(clk_io_div4, rst_n);
 tl_if sysrst_ctrl_aon_tl_if(clk_io_div4, rst_n);
 tl_if adc_ctrl_aon_tl_if(clk_io_div4, rst_n);
 tl_if ast_tl_if(clk_io_div4, rst_n);
+tl_if mbx0__soc_tl_if(clk_main, rst_n);
+tl_if mbx1__soc_tl_if(clk_main, rst_n);
+tl_if mbx2__soc_tl_if(clk_main, rst_n);
+tl_if mbx3__soc_tl_if(clk_main, rst_n);
+tl_if mbx4__soc_tl_if(clk_main, rst_n);
+tl_if mbx5__soc_tl_if(clk_main, rst_n);
+tl_if mbx6__soc_tl_if(clk_main, rst_n);
+tl_if mbx7__soc_tl_if(clk_main, rst_n);
+tl_if mbx_jtag__soc_tl_if(clk_main, rst_n);
+tl_if mbx_pcie0__soc_tl_if(clk_main, rst_n);
 
 initial begin
   wait (xbar_mode !== 1'bx);
@@ -99,6 +129,7 @@ initial begin
     $assertoff(0, tb);
     $asserton(0, tb.dut.top_darjeeling.u_xbar_main);
     $asserton(0, tb.dut.top_darjeeling.u_xbar_peri);
+    $asserton(0, tb.dut.top_darjeeling.u_xbar_mbx);
 
 
     // These are all zero-time: anything that consumes time go at the end.
@@ -109,6 +140,7 @@ initial begin
     force tb.dut.top_darjeeling.u_xbar_main.clk_usb_i = clk_usb;
     force tb.dut.top_darjeeling.u_xbar_main.clk_spi_host1_i = clk_io_div2;
     force tb.dut.top_darjeeling.u_xbar_peri.clk_peri_i = clk_io_div4;
+    force tb.dut.top_darjeeling.u_xbar_mbx.clk_mbx_i = clk_main;
 
     // bypass rstmgr, force resets directly
     force tb.dut.top_darjeeling.u_xbar_main.rst_main_ni = rst_n;
@@ -116,6 +148,7 @@ initial begin
     force tb.dut.top_darjeeling.u_xbar_main.rst_usb_ni = rst_n;
     force tb.dut.top_darjeeling.u_xbar_main.rst_spi_host1_ni = rst_n;
     force tb.dut.top_darjeeling.u_xbar_peri.rst_peri_ni = rst_n;
+    force tb.dut.top_darjeeling.u_xbar_mbx.rst_mbx_ni = rst_n;
 
 `ifndef GATE_LEVEL
     `DRIVE_CHIP_TL_HOST_IF(rv_core_ibex__corei, rv_core_ibex, corei_tl_h)
@@ -150,6 +183,26 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_mbox__ram, sram_ctrl_mbox, ram_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(dma, dma, tl_d)
     `DRIVE_CHIP_TL_HOST_IF(dma__host, dma, host_tl_h)
+    `DRIVE_CHIP_TL_DEVICE_IF(mbx0__core, mbx0, core_tl_d)
+    `DRIVE_CHIP_TL_HOST_IF(mbx0__sram, mbx0, sram_tl_h)
+    `DRIVE_CHIP_TL_DEVICE_IF(mbx1__core, mbx1, core_tl_d)
+    `DRIVE_CHIP_TL_HOST_IF(mbx1__sram, mbx1, sram_tl_h)
+    `DRIVE_CHIP_TL_DEVICE_IF(mbx2__core, mbx2, core_tl_d)
+    `DRIVE_CHIP_TL_HOST_IF(mbx2__sram, mbx2, sram_tl_h)
+    `DRIVE_CHIP_TL_DEVICE_IF(mbx3__core, mbx3, core_tl_d)
+    `DRIVE_CHIP_TL_HOST_IF(mbx3__sram, mbx3, sram_tl_h)
+    `DRIVE_CHIP_TL_DEVICE_IF(mbx4__core, mbx4, core_tl_d)
+    `DRIVE_CHIP_TL_HOST_IF(mbx4__sram, mbx4, sram_tl_h)
+    `DRIVE_CHIP_TL_DEVICE_IF(mbx5__core, mbx5, core_tl_d)
+    `DRIVE_CHIP_TL_HOST_IF(mbx5__sram, mbx5, sram_tl_h)
+    `DRIVE_CHIP_TL_DEVICE_IF(mbx6__core, mbx6, core_tl_d)
+    `DRIVE_CHIP_TL_HOST_IF(mbx6__sram, mbx6, sram_tl_h)
+    `DRIVE_CHIP_TL_DEVICE_IF(mbx7__core, mbx7, core_tl_d)
+    `DRIVE_CHIP_TL_HOST_IF(mbx7__sram, mbx7, sram_tl_h)
+    `DRIVE_CHIP_TL_DEVICE_IF(mbx_jtag__core, mbx_jtag, core_tl_d)
+    `DRIVE_CHIP_TL_HOST_IF(mbx_jtag__sram, mbx_jtag, sram_tl_h)
+    `DRIVE_CHIP_TL_DEVICE_IF(mbx_pcie0__core, mbx_pcie0, core_tl_d)
+    `DRIVE_CHIP_TL_HOST_IF(mbx_pcie0__sram, mbx_pcie0, sram_tl_h)
     `DRIVE_CHIP_TL_DEVICE_IF(uart0, uart0, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(i2c0, i2c0, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(i2c1, i2c1, tl)
@@ -173,6 +226,16 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(sysrst_ctrl_aon, sysrst_ctrl_aon, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(adc_ctrl_aon, adc_ctrl_aon, tl)
     `DRIVE_CHIP_TL_EXT_DEVICE_IF(ast, ast, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(mbx0__soc, mbx0, soc_tl_d)
+    `DRIVE_CHIP_TL_DEVICE_IF(mbx1__soc, mbx1, soc_tl_d)
+    `DRIVE_CHIP_TL_DEVICE_IF(mbx2__soc, mbx2, soc_tl_d)
+    `DRIVE_CHIP_TL_DEVICE_IF(mbx3__soc, mbx3, soc_tl_d)
+    `DRIVE_CHIP_TL_DEVICE_IF(mbx4__soc, mbx4, soc_tl_d)
+    `DRIVE_CHIP_TL_DEVICE_IF(mbx5__soc, mbx5, soc_tl_d)
+    `DRIVE_CHIP_TL_DEVICE_IF(mbx6__soc, mbx6, soc_tl_d)
+    `DRIVE_CHIP_TL_DEVICE_IF(mbx7__soc, mbx7, soc_tl_d)
+    `DRIVE_CHIP_TL_DEVICE_IF(mbx_jtag__soc, mbx_jtag, soc_tl_d)
+    `DRIVE_CHIP_TL_DEVICE_IF(mbx_pcie0__soc, mbx_pcie0, soc_tl_d)
 `endif
 
     // And this can consume time, so they go at the end of this block.

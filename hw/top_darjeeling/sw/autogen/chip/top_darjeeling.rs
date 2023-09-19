@@ -671,6 +671,136 @@ pub const TOP_DARJEELING_DMA_BASE_ADDR: usize = 0x22010000;
 /// address between #TOP_DARJEELING_DMA_BASE_ADDR and
 /// `TOP_DARJEELING_DMA_BASE_ADDR + TOP_DARJEELING_DMA_SIZE_BYTES`.
 pub const TOP_DARJEELING_DMA_SIZE_BYTES: usize = 0x100;
+/// Peripheral base address for core device on mbx0 in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const TOP_DARJEELING_MBX0_CORE_BASE_ADDR: usize = 0x22000000;
+
+/// Peripheral size for core device on mbx0 in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #TOP_DARJEELING_MBX0_CORE_BASE_ADDR and
+/// `TOP_DARJEELING_MBX0_CORE_BASE_ADDR + TOP_DARJEELING_MBX0_CORE_SIZE_BYTES`.
+pub const TOP_DARJEELING_MBX0_CORE_SIZE_BYTES: usize = 0x80;
+/// Peripheral base address for core device on mbx1 in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const TOP_DARJEELING_MBX1_CORE_BASE_ADDR: usize = 0x22000100;
+
+/// Peripheral size for core device on mbx1 in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #TOP_DARJEELING_MBX1_CORE_BASE_ADDR and
+/// `TOP_DARJEELING_MBX1_CORE_BASE_ADDR + TOP_DARJEELING_MBX1_CORE_SIZE_BYTES`.
+pub const TOP_DARJEELING_MBX1_CORE_SIZE_BYTES: usize = 0x80;
+/// Peripheral base address for core device on mbx2 in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const TOP_DARJEELING_MBX2_CORE_BASE_ADDR: usize = 0x22000200;
+
+/// Peripheral size for core device on mbx2 in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #TOP_DARJEELING_MBX2_CORE_BASE_ADDR and
+/// `TOP_DARJEELING_MBX2_CORE_BASE_ADDR + TOP_DARJEELING_MBX2_CORE_SIZE_BYTES`.
+pub const TOP_DARJEELING_MBX2_CORE_SIZE_BYTES: usize = 0x80;
+/// Peripheral base address for core device on mbx3 in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const TOP_DARJEELING_MBX3_CORE_BASE_ADDR: usize = 0x22000300;
+
+/// Peripheral size for core device on mbx3 in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #TOP_DARJEELING_MBX3_CORE_BASE_ADDR and
+/// `TOP_DARJEELING_MBX3_CORE_BASE_ADDR + TOP_DARJEELING_MBX3_CORE_SIZE_BYTES`.
+pub const TOP_DARJEELING_MBX3_CORE_SIZE_BYTES: usize = 0x80;
+/// Peripheral base address for core device on mbx4 in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const TOP_DARJEELING_MBX4_CORE_BASE_ADDR: usize = 0x22000400;
+
+/// Peripheral size for core device on mbx4 in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #TOP_DARJEELING_MBX4_CORE_BASE_ADDR and
+/// `TOP_DARJEELING_MBX4_CORE_BASE_ADDR + TOP_DARJEELING_MBX4_CORE_SIZE_BYTES`.
+pub const TOP_DARJEELING_MBX4_CORE_SIZE_BYTES: usize = 0x80;
+/// Peripheral base address for core device on mbx5 in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const TOP_DARJEELING_MBX5_CORE_BASE_ADDR: usize = 0x22000500;
+
+/// Peripheral size for core device on mbx5 in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #TOP_DARJEELING_MBX5_CORE_BASE_ADDR and
+/// `TOP_DARJEELING_MBX5_CORE_BASE_ADDR + TOP_DARJEELING_MBX5_CORE_SIZE_BYTES`.
+pub const TOP_DARJEELING_MBX5_CORE_SIZE_BYTES: usize = 0x80;
+/// Peripheral base address for core device on mbx6 in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const TOP_DARJEELING_MBX6_CORE_BASE_ADDR: usize = 0x22000600;
+
+/// Peripheral size for core device on mbx6 in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #TOP_DARJEELING_MBX6_CORE_BASE_ADDR and
+/// `TOP_DARJEELING_MBX6_CORE_BASE_ADDR + TOP_DARJEELING_MBX6_CORE_SIZE_BYTES`.
+pub const TOP_DARJEELING_MBX6_CORE_SIZE_BYTES: usize = 0x80;
+/// Peripheral base address for core device on mbx7 in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const TOP_DARJEELING_MBX7_CORE_BASE_ADDR: usize = 0x22000700;
+
+/// Peripheral size for core device on mbx7 in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #TOP_DARJEELING_MBX7_CORE_BASE_ADDR and
+/// `TOP_DARJEELING_MBX7_CORE_BASE_ADDR + TOP_DARJEELING_MBX7_CORE_SIZE_BYTES`.
+pub const TOP_DARJEELING_MBX7_CORE_SIZE_BYTES: usize = 0x80;
+/// Peripheral base address for core device on mbx_jtag in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const TOP_DARJEELING_MBX_JTAG_CORE_BASE_ADDR: usize = 0x22000800;
+
+/// Peripheral size for core device on mbx_jtag in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #TOP_DARJEELING_MBX_JTAG_CORE_BASE_ADDR and
+/// `TOP_DARJEELING_MBX_JTAG_CORE_BASE_ADDR + TOP_DARJEELING_MBX_JTAG_CORE_SIZE_BYTES`.
+pub const TOP_DARJEELING_MBX_JTAG_CORE_SIZE_BYTES: usize = 0x80;
+/// Peripheral base address for core device on mbx_pcie0 in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const TOP_DARJEELING_MBX_PCIE0_CORE_BASE_ADDR: usize = 0x22040000;
+
+/// Peripheral size for core device on mbx_pcie0 in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #TOP_DARJEELING_MBX_PCIE0_CORE_BASE_ADDR and
+/// `TOP_DARJEELING_MBX_PCIE0_CORE_BASE_ADDR + TOP_DARJEELING_MBX_PCIE0_CORE_SIZE_BYTES`.
+pub const TOP_DARJEELING_MBX_PCIE0_CORE_SIZE_BYTES: usize = 0x80;
 /// Peripheral base address for cfg device on rv_core_ibex in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -794,6 +924,26 @@ pub enum TopDarjeelingPlicPeripheral {
     Edn1 = 26,
     /// dma
     Dma = 27,
+    /// mbx0
+    Mbx0 = 28,
+    /// mbx1
+    Mbx1 = 29,
+    /// mbx2
+    Mbx2 = 30,
+    /// mbx3
+    Mbx3 = 31,
+    /// mbx4
+    Mbx4 = 32,
+    /// mbx5
+    Mbx5 = 33,
+    /// mbx6
+    Mbx6 = 34,
+    /// mbx7
+    Mbx7 = 35,
+    /// mbx_jtag
+    MbxJtag = 36,
+    /// mbx_pcie0
+    MbxPcie0 = 37,
 }
 
 impl TryFrom<u32> for TopDarjeelingPlicPeripheral {
@@ -828,6 +978,16 @@ impl TryFrom<u32> for TopDarjeelingPlicPeripheral {
             25 => Ok(Self::Edn0),
             26 => Ok(Self::Edn1),
             27 => Ok(Self::Dma),
+            28 => Ok(Self::Mbx0),
+            29 => Ok(Self::Mbx1),
+            30 => Ok(Self::Mbx2),
+            31 => Ok(Self::Mbx3),
+            32 => Ok(Self::Mbx4),
+            33 => Ok(Self::Mbx5),
+            34 => Ok(Self::Mbx6),
+            35 => Ok(Self::Mbx7),
+            36 => Ok(Self::MbxJtag),
+            37 => Ok(Self::MbxPcie0),
             _ => Err(val),
         }
     }
@@ -1171,6 +1331,46 @@ pub enum TopDarjeelingPlicIrqId {
     DmaDmaError = 164,
     /// dma_dma_memory_buffer_limit
     DmaDmaMemoryBufferLimit = 165,
+    /// mbx0_mbx_ready
+    Mbx0MbxReady = 166,
+    /// mbx0_mbx_abort
+    Mbx0MbxAbort = 167,
+    /// mbx1_mbx_ready
+    Mbx1MbxReady = 168,
+    /// mbx1_mbx_abort
+    Mbx1MbxAbort = 169,
+    /// mbx2_mbx_ready
+    Mbx2MbxReady = 170,
+    /// mbx2_mbx_abort
+    Mbx2MbxAbort = 171,
+    /// mbx3_mbx_ready
+    Mbx3MbxReady = 172,
+    /// mbx3_mbx_abort
+    Mbx3MbxAbort = 173,
+    /// mbx4_mbx_ready
+    Mbx4MbxReady = 174,
+    /// mbx4_mbx_abort
+    Mbx4MbxAbort = 175,
+    /// mbx5_mbx_ready
+    Mbx5MbxReady = 176,
+    /// mbx5_mbx_abort
+    Mbx5MbxAbort = 177,
+    /// mbx6_mbx_ready
+    Mbx6MbxReady = 178,
+    /// mbx6_mbx_abort
+    Mbx6MbxAbort = 179,
+    /// mbx7_mbx_ready
+    Mbx7MbxReady = 180,
+    /// mbx7_mbx_abort
+    Mbx7MbxAbort = 181,
+    /// mbx_jtag_mbx_ready
+    MbxJtagMbxReady = 182,
+    /// mbx_jtag_mbx_abort
+    MbxJtagMbxAbort = 183,
+    /// mbx_pcie0_mbx_ready
+    MbxPcie0MbxReady = 184,
+    /// mbx_pcie0_mbx_abort
+    MbxPcie0MbxAbort = 185,
 }
 
 impl TryFrom<u32> for TopDarjeelingPlicIrqId {
@@ -1343,6 +1543,26 @@ impl TryFrom<u32> for TopDarjeelingPlicIrqId {
             163 => Ok(Self::DmaDmaDone),
             164 => Ok(Self::DmaDmaError),
             165 => Ok(Self::DmaDmaMemoryBufferLimit),
+            166 => Ok(Self::Mbx0MbxReady),
+            167 => Ok(Self::Mbx0MbxAbort),
+            168 => Ok(Self::Mbx1MbxReady),
+            169 => Ok(Self::Mbx1MbxAbort),
+            170 => Ok(Self::Mbx2MbxReady),
+            171 => Ok(Self::Mbx2MbxAbort),
+            172 => Ok(Self::Mbx3MbxReady),
+            173 => Ok(Self::Mbx3MbxAbort),
+            174 => Ok(Self::Mbx4MbxReady),
+            175 => Ok(Self::Mbx4MbxAbort),
+            176 => Ok(Self::Mbx5MbxReady),
+            177 => Ok(Self::Mbx5MbxAbort),
+            178 => Ok(Self::Mbx6MbxReady),
+            179 => Ok(Self::Mbx6MbxAbort),
+            180 => Ok(Self::Mbx7MbxReady),
+            181 => Ok(Self::Mbx7MbxAbort),
+            182 => Ok(Self::MbxJtagMbxReady),
+            183 => Ok(Self::MbxJtagMbxAbort),
+            184 => Ok(Self::MbxPcie0MbxReady),
+            185 => Ok(Self::MbxPcie0MbxAbort),
             _ => Err(val),
         }
     }
@@ -1440,8 +1660,28 @@ pub enum TopDarjeelingAlertPeripheral {
     RomCtrl1 = 36,
     /// dma
     Dma = 37,
+    /// mbx0
+    Mbx0 = 38,
+    /// mbx1
+    Mbx1 = 39,
+    /// mbx2
+    Mbx2 = 40,
+    /// mbx3
+    Mbx3 = 41,
+    /// mbx4
+    Mbx4 = 42,
+    /// mbx5
+    Mbx5 = 43,
+    /// mbx6
+    Mbx6 = 44,
+    /// mbx7
+    Mbx7 = 45,
+    /// mbx_jtag
+    MbxJtag = 46,
+    /// mbx_pcie0
+    MbxPcie0 = 47,
     /// rv_core_ibex
-    RvCoreIbex = 38,
+    RvCoreIbex = 48,
 }
 
 /// Alert Handler Alert Source.
@@ -1582,14 +1822,54 @@ pub enum TopDarjeelingAlertId {
     RomCtrl1Fatal = 64,
     /// dma_fatal_fault
     DmaFatalFault = 65,
+    /// mbx0_fatal_fault
+    Mbx0FatalFault = 66,
+    /// mbx0_recov_fault
+    Mbx0RecovFault = 67,
+    /// mbx1_fatal_fault
+    Mbx1FatalFault = 68,
+    /// mbx1_recov_fault
+    Mbx1RecovFault = 69,
+    /// mbx2_fatal_fault
+    Mbx2FatalFault = 70,
+    /// mbx2_recov_fault
+    Mbx2RecovFault = 71,
+    /// mbx3_fatal_fault
+    Mbx3FatalFault = 72,
+    /// mbx3_recov_fault
+    Mbx3RecovFault = 73,
+    /// mbx4_fatal_fault
+    Mbx4FatalFault = 74,
+    /// mbx4_recov_fault
+    Mbx4RecovFault = 75,
+    /// mbx5_fatal_fault
+    Mbx5FatalFault = 76,
+    /// mbx5_recov_fault
+    Mbx5RecovFault = 77,
+    /// mbx6_fatal_fault
+    Mbx6FatalFault = 78,
+    /// mbx6_recov_fault
+    Mbx6RecovFault = 79,
+    /// mbx7_fatal_fault
+    Mbx7FatalFault = 80,
+    /// mbx7_recov_fault
+    Mbx7RecovFault = 81,
+    /// mbx_jtag_fatal_fault
+    MbxJtagFatalFault = 82,
+    /// mbx_jtag_recov_fault
+    MbxJtagRecovFault = 83,
+    /// mbx_pcie0_fatal_fault
+    MbxPcie0FatalFault = 84,
+    /// mbx_pcie0_recov_fault
+    MbxPcie0RecovFault = 85,
     /// rv_core_ibex_fatal_sw_err
-    RvCoreIbexFatalSwErr = 66,
+    RvCoreIbexFatalSwErr = 86,
     /// rv_core_ibex_recov_sw_err
-    RvCoreIbexRecovSwErr = 67,
+    RvCoreIbexRecovSwErr = 87,
     /// rv_core_ibex_fatal_hw_err
-    RvCoreIbexFatalHwErr = 68,
+    RvCoreIbexFatalHwErr = 88,
     /// rv_core_ibex_recov_hw_err
-    RvCoreIbexRecovHwErr = 69,
+    RvCoreIbexRecovHwErr = 89,
 }
 
 impl TryFrom<u32> for TopDarjeelingAlertId {
@@ -1662,10 +1942,30 @@ impl TryFrom<u32> for TopDarjeelingAlertId {
             63 => Ok(Self::RomCtrl0Fatal),
             64 => Ok(Self::RomCtrl1Fatal),
             65 => Ok(Self::DmaFatalFault),
-            66 => Ok(Self::RvCoreIbexFatalSwErr),
-            67 => Ok(Self::RvCoreIbexRecovSwErr),
-            68 => Ok(Self::RvCoreIbexFatalHwErr),
-            69 => Ok(Self::RvCoreIbexRecovHwErr),
+            66 => Ok(Self::Mbx0FatalFault),
+            67 => Ok(Self::Mbx0RecovFault),
+            68 => Ok(Self::Mbx1FatalFault),
+            69 => Ok(Self::Mbx1RecovFault),
+            70 => Ok(Self::Mbx2FatalFault),
+            71 => Ok(Self::Mbx2RecovFault),
+            72 => Ok(Self::Mbx3FatalFault),
+            73 => Ok(Self::Mbx3RecovFault),
+            74 => Ok(Self::Mbx4FatalFault),
+            75 => Ok(Self::Mbx4RecovFault),
+            76 => Ok(Self::Mbx5FatalFault),
+            77 => Ok(Self::Mbx5RecovFault),
+            78 => Ok(Self::Mbx6FatalFault),
+            79 => Ok(Self::Mbx6RecovFault),
+            80 => Ok(Self::Mbx7FatalFault),
+            81 => Ok(Self::Mbx7RecovFault),
+            82 => Ok(Self::MbxJtagFatalFault),
+            83 => Ok(Self::MbxJtagRecovFault),
+            84 => Ok(Self::MbxPcie0FatalFault),
+            85 => Ok(Self::MbxPcie0RecovFault),
+            86 => Ok(Self::RvCoreIbexFatalSwErr),
+            87 => Ok(Self::RvCoreIbexRecovSwErr),
+            88 => Ok(Self::RvCoreIbexFatalHwErr),
+            89 => Ok(Self::RvCoreIbexRecovHwErr),
             _ => Err(val),
         }
     }
@@ -1675,7 +1975,7 @@ impl TryFrom<u32> for TopDarjeelingAlertId {
 ///
 /// This array is a mapping from `TopDarjeelingPlicIrqId` to
 /// `TopDarjeelingPlicPeripheral`.
-pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeripheral; 166] = [
+pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeripheral; 186] = [
     // None -> TopDarjeelingPlicPeripheral::Unknown
     TopDarjeelingPlicPeripheral::Unknown,
     // Uart0TxWatermark -> TopDarjeelingPlicPeripheral::Uart0
@@ -2008,13 +2308,53 @@ pub const TOP_DARJEELING_PLIC_INTERRUPT_FOR_PERIPHERAL: [TopDarjeelingPlicPeriph
     TopDarjeelingPlicPeripheral::Dma,
     // DmaDmaMemoryBufferLimit -> TopDarjeelingPlicPeripheral::Dma
     TopDarjeelingPlicPeripheral::Dma,
+    // Mbx0MbxReady -> TopDarjeelingPlicPeripheral::Mbx0
+    TopDarjeelingPlicPeripheral::Mbx0,
+    // Mbx0MbxAbort -> TopDarjeelingPlicPeripheral::Mbx0
+    TopDarjeelingPlicPeripheral::Mbx0,
+    // Mbx1MbxReady -> TopDarjeelingPlicPeripheral::Mbx1
+    TopDarjeelingPlicPeripheral::Mbx1,
+    // Mbx1MbxAbort -> TopDarjeelingPlicPeripheral::Mbx1
+    TopDarjeelingPlicPeripheral::Mbx1,
+    // Mbx2MbxReady -> TopDarjeelingPlicPeripheral::Mbx2
+    TopDarjeelingPlicPeripheral::Mbx2,
+    // Mbx2MbxAbort -> TopDarjeelingPlicPeripheral::Mbx2
+    TopDarjeelingPlicPeripheral::Mbx2,
+    // Mbx3MbxReady -> TopDarjeelingPlicPeripheral::Mbx3
+    TopDarjeelingPlicPeripheral::Mbx3,
+    // Mbx3MbxAbort -> TopDarjeelingPlicPeripheral::Mbx3
+    TopDarjeelingPlicPeripheral::Mbx3,
+    // Mbx4MbxReady -> TopDarjeelingPlicPeripheral::Mbx4
+    TopDarjeelingPlicPeripheral::Mbx4,
+    // Mbx4MbxAbort -> TopDarjeelingPlicPeripheral::Mbx4
+    TopDarjeelingPlicPeripheral::Mbx4,
+    // Mbx5MbxReady -> TopDarjeelingPlicPeripheral::Mbx5
+    TopDarjeelingPlicPeripheral::Mbx5,
+    // Mbx5MbxAbort -> TopDarjeelingPlicPeripheral::Mbx5
+    TopDarjeelingPlicPeripheral::Mbx5,
+    // Mbx6MbxReady -> TopDarjeelingPlicPeripheral::Mbx6
+    TopDarjeelingPlicPeripheral::Mbx6,
+    // Mbx6MbxAbort -> TopDarjeelingPlicPeripheral::Mbx6
+    TopDarjeelingPlicPeripheral::Mbx6,
+    // Mbx7MbxReady -> TopDarjeelingPlicPeripheral::Mbx7
+    TopDarjeelingPlicPeripheral::Mbx7,
+    // Mbx7MbxAbort -> TopDarjeelingPlicPeripheral::Mbx7
+    TopDarjeelingPlicPeripheral::Mbx7,
+    // MbxJtagMbxReady -> TopDarjeelingPlicPeripheral::MbxJtag
+    TopDarjeelingPlicPeripheral::MbxJtag,
+    // MbxJtagMbxAbort -> TopDarjeelingPlicPeripheral::MbxJtag
+    TopDarjeelingPlicPeripheral::MbxJtag,
+    // MbxPcie0MbxReady -> TopDarjeelingPlicPeripheral::MbxPcie0
+    TopDarjeelingPlicPeripheral::MbxPcie0,
+    // MbxPcie0MbxAbort -> TopDarjeelingPlicPeripheral::MbxPcie0
+    TopDarjeelingPlicPeripheral::MbxPcie0,
 ];
 
 /// Alert Handler Alert Source to Peripheral Map
 ///
 /// This array is a mapping from `TopDarjeelingAlertId` to
 /// `TopDarjeelingAlertPeripheral`.
-pub const TOP_DARJEELING_ALERT_FOR_PERIPHERAL: [TopDarjeelingAlertPeripheral; 70] = [
+pub const TOP_DARJEELING_ALERT_FOR_PERIPHERAL: [TopDarjeelingAlertPeripheral; 90] = [
     // Uart0FatalFault -> TopDarjeelingAlertPeripheral::Uart0
     TopDarjeelingAlertPeripheral::Uart0,
     // GpioFatalFault -> TopDarjeelingAlertPeripheral::Gpio
@@ -2147,6 +2487,46 @@ pub const TOP_DARJEELING_ALERT_FOR_PERIPHERAL: [TopDarjeelingAlertPeripheral; 70
     TopDarjeelingAlertPeripheral::RomCtrl1,
     // DmaFatalFault -> TopDarjeelingAlertPeripheral::Dma
     TopDarjeelingAlertPeripheral::Dma,
+    // Mbx0FatalFault -> TopDarjeelingAlertPeripheral::Mbx0
+    TopDarjeelingAlertPeripheral::Mbx0,
+    // Mbx0RecovFault -> TopDarjeelingAlertPeripheral::Mbx0
+    TopDarjeelingAlertPeripheral::Mbx0,
+    // Mbx1FatalFault -> TopDarjeelingAlertPeripheral::Mbx1
+    TopDarjeelingAlertPeripheral::Mbx1,
+    // Mbx1RecovFault -> TopDarjeelingAlertPeripheral::Mbx1
+    TopDarjeelingAlertPeripheral::Mbx1,
+    // Mbx2FatalFault -> TopDarjeelingAlertPeripheral::Mbx2
+    TopDarjeelingAlertPeripheral::Mbx2,
+    // Mbx2RecovFault -> TopDarjeelingAlertPeripheral::Mbx2
+    TopDarjeelingAlertPeripheral::Mbx2,
+    // Mbx3FatalFault -> TopDarjeelingAlertPeripheral::Mbx3
+    TopDarjeelingAlertPeripheral::Mbx3,
+    // Mbx3RecovFault -> TopDarjeelingAlertPeripheral::Mbx3
+    TopDarjeelingAlertPeripheral::Mbx3,
+    // Mbx4FatalFault -> TopDarjeelingAlertPeripheral::Mbx4
+    TopDarjeelingAlertPeripheral::Mbx4,
+    // Mbx4RecovFault -> TopDarjeelingAlertPeripheral::Mbx4
+    TopDarjeelingAlertPeripheral::Mbx4,
+    // Mbx5FatalFault -> TopDarjeelingAlertPeripheral::Mbx5
+    TopDarjeelingAlertPeripheral::Mbx5,
+    // Mbx5RecovFault -> TopDarjeelingAlertPeripheral::Mbx5
+    TopDarjeelingAlertPeripheral::Mbx5,
+    // Mbx6FatalFault -> TopDarjeelingAlertPeripheral::Mbx6
+    TopDarjeelingAlertPeripheral::Mbx6,
+    // Mbx6RecovFault -> TopDarjeelingAlertPeripheral::Mbx6
+    TopDarjeelingAlertPeripheral::Mbx6,
+    // Mbx7FatalFault -> TopDarjeelingAlertPeripheral::Mbx7
+    TopDarjeelingAlertPeripheral::Mbx7,
+    // Mbx7RecovFault -> TopDarjeelingAlertPeripheral::Mbx7
+    TopDarjeelingAlertPeripheral::Mbx7,
+    // MbxJtagFatalFault -> TopDarjeelingAlertPeripheral::MbxJtag
+    TopDarjeelingAlertPeripheral::MbxJtag,
+    // MbxJtagRecovFault -> TopDarjeelingAlertPeripheral::MbxJtag
+    TopDarjeelingAlertPeripheral::MbxJtag,
+    // MbxPcie0FatalFault -> TopDarjeelingAlertPeripheral::MbxPcie0
+    TopDarjeelingAlertPeripheral::MbxPcie0,
+    // MbxPcie0RecovFault -> TopDarjeelingAlertPeripheral::MbxPcie0
+    TopDarjeelingAlertPeripheral::MbxPcie0,
     // RvCoreIbexFatalSwErr -> TopDarjeelingAlertPeripheral::RvCoreIbex
     TopDarjeelingAlertPeripheral::RvCoreIbex,
     // RvCoreIbexRecovSwErr -> TopDarjeelingAlertPeripheral::RvCoreIbex

@@ -512,6 +512,106 @@ package top_darjeeling_pkg;
   parameter int unsigned TOP_DARJEELING_DMA_SIZE_BYTES = 32'h100;
 
   /**
+   * Peripheral base address for core device on mbx0 in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_MBX0_CORE_BASE_ADDR = 32'h22000000;
+
+  /**
+   * Peripheral size in bytes for core device on mbx0 in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_MBX0_CORE_SIZE_BYTES = 32'h80;
+
+  /**
+   * Peripheral base address for core device on mbx1 in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_MBX1_CORE_BASE_ADDR = 32'h22000100;
+
+  /**
+   * Peripheral size in bytes for core device on mbx1 in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_MBX1_CORE_SIZE_BYTES = 32'h80;
+
+  /**
+   * Peripheral base address for core device on mbx2 in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_MBX2_CORE_BASE_ADDR = 32'h22000200;
+
+  /**
+   * Peripheral size in bytes for core device on mbx2 in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_MBX2_CORE_SIZE_BYTES = 32'h80;
+
+  /**
+   * Peripheral base address for core device on mbx3 in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_MBX3_CORE_BASE_ADDR = 32'h22000300;
+
+  /**
+   * Peripheral size in bytes for core device on mbx3 in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_MBX3_CORE_SIZE_BYTES = 32'h80;
+
+  /**
+   * Peripheral base address for core device on mbx4 in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_MBX4_CORE_BASE_ADDR = 32'h22000400;
+
+  /**
+   * Peripheral size in bytes for core device on mbx4 in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_MBX4_CORE_SIZE_BYTES = 32'h80;
+
+  /**
+   * Peripheral base address for core device on mbx5 in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_MBX5_CORE_BASE_ADDR = 32'h22000500;
+
+  /**
+   * Peripheral size in bytes for core device on mbx5 in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_MBX5_CORE_SIZE_BYTES = 32'h80;
+
+  /**
+   * Peripheral base address for core device on mbx6 in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_MBX6_CORE_BASE_ADDR = 32'h22000600;
+
+  /**
+   * Peripheral size in bytes for core device on mbx6 in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_MBX6_CORE_SIZE_BYTES = 32'h80;
+
+  /**
+   * Peripheral base address for core device on mbx7 in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_MBX7_CORE_BASE_ADDR = 32'h22000700;
+
+  /**
+   * Peripheral size in bytes for core device on mbx7 in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_MBX7_CORE_SIZE_BYTES = 32'h80;
+
+  /**
+   * Peripheral base address for core device on mbx_jtag in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_MBX_JTAG_CORE_BASE_ADDR = 32'h22000800;
+
+  /**
+   * Peripheral size in bytes for core device on mbx_jtag in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_MBX_JTAG_CORE_SIZE_BYTES = 32'h80;
+
+  /**
+   * Peripheral base address for core device on mbx_pcie0 in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_MBX_PCIE0_CORE_BASE_ADDR = 32'h22040000;
+
+  /**
+   * Peripheral size in bytes for core device on mbx_pcie0 in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_MBX_PCIE0_CORE_SIZE_BYTES = 32'h80;
+
+  /**
    * Peripheral base address for cfg device on rv_core_ibex in top darjeeling.
    */
   parameter int unsigned TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR = 32'h211F0000;
@@ -642,7 +742,17 @@ package top_darjeeling_pkg;
     TopDarjeelingAlertPeripheralRomCtrl0 = 35,
     TopDarjeelingAlertPeripheralRomCtrl1 = 36,
     TopDarjeelingAlertPeripheralDma = 37,
-    TopDarjeelingAlertPeripheralRvCoreIbex = 38,
+    TopDarjeelingAlertPeripheralMbx0 = 38,
+    TopDarjeelingAlertPeripheralMbx1 = 39,
+    TopDarjeelingAlertPeripheralMbx2 = 40,
+    TopDarjeelingAlertPeripheralMbx3 = 41,
+    TopDarjeelingAlertPeripheralMbx4 = 42,
+    TopDarjeelingAlertPeripheralMbx5 = 43,
+    TopDarjeelingAlertPeripheralMbx6 = 44,
+    TopDarjeelingAlertPeripheralMbx7 = 45,
+    TopDarjeelingAlertPeripheralMbxJtag = 46,
+    TopDarjeelingAlertPeripheralMbxPcie0 = 47,
+    TopDarjeelingAlertPeripheralRvCoreIbex = 48,
     TopDarjeelingAlertPeripheralCount
   } alert_peripheral_e;
 
@@ -714,10 +824,30 @@ package top_darjeeling_pkg;
     TopDarjeelingAlertIdRomCtrl0Fatal = 63,
     TopDarjeelingAlertIdRomCtrl1Fatal = 64,
     TopDarjeelingAlertIdDmaFatalFault = 65,
-    TopDarjeelingAlertIdRvCoreIbexFatalSwErr = 66,
-    TopDarjeelingAlertIdRvCoreIbexRecovSwErr = 67,
-    TopDarjeelingAlertIdRvCoreIbexFatalHwErr = 68,
-    TopDarjeelingAlertIdRvCoreIbexRecovHwErr = 69,
+    TopDarjeelingAlertIdMbx0FatalFault = 66,
+    TopDarjeelingAlertIdMbx0RecovFault = 67,
+    TopDarjeelingAlertIdMbx1FatalFault = 68,
+    TopDarjeelingAlertIdMbx1RecovFault = 69,
+    TopDarjeelingAlertIdMbx2FatalFault = 70,
+    TopDarjeelingAlertIdMbx2RecovFault = 71,
+    TopDarjeelingAlertIdMbx3FatalFault = 72,
+    TopDarjeelingAlertIdMbx3RecovFault = 73,
+    TopDarjeelingAlertIdMbx4FatalFault = 74,
+    TopDarjeelingAlertIdMbx4RecovFault = 75,
+    TopDarjeelingAlertIdMbx5FatalFault = 76,
+    TopDarjeelingAlertIdMbx5RecovFault = 77,
+    TopDarjeelingAlertIdMbx6FatalFault = 78,
+    TopDarjeelingAlertIdMbx6RecovFault = 79,
+    TopDarjeelingAlertIdMbx7FatalFault = 80,
+    TopDarjeelingAlertIdMbx7RecovFault = 81,
+    TopDarjeelingAlertIdMbxJtagFatalFault = 82,
+    TopDarjeelingAlertIdMbxJtagRecovFault = 83,
+    TopDarjeelingAlertIdMbxPcie0FatalFault = 84,
+    TopDarjeelingAlertIdMbxPcie0RecovFault = 85,
+    TopDarjeelingAlertIdRvCoreIbexFatalSwErr = 86,
+    TopDarjeelingAlertIdRvCoreIbexRecovSwErr = 87,
+    TopDarjeelingAlertIdRvCoreIbexFatalHwErr = 88,
+    TopDarjeelingAlertIdRvCoreIbexRecovHwErr = 89,
     TopDarjeelingAlertIdCount
   } alert_id_e;
 
@@ -982,6 +1112,16 @@ package top_darjeeling_pkg;
     PeripheralKeymgr,
     PeripheralKmac,
     PeripheralLcCtrl,
+    PeripheralMbx0,
+    PeripheralMbx1,
+    PeripheralMbx2,
+    PeripheralMbx3,
+    PeripheralMbx4,
+    PeripheralMbx5,
+    PeripheralMbx6,
+    PeripheralMbx7,
+    PeripheralMbxJtag,
+    PeripheralMbxPcie0,
     PeripheralOtbn,
     PeripheralOtpCtrl,
     PeripheralPinmuxAon,

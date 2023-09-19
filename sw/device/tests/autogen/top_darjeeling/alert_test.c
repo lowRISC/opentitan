@@ -26,6 +26,7 @@
 #include "sw/ip/keymgr/dif/dif_keymgr.h"
 #include "sw/ip/kmac/dif/dif_kmac.h"
 #include "sw/ip/lc_ctrl/dif/dif_lc_ctrl.h"
+#include "sw/ip/mbx/dif/dif_mbx.h"
 #include "sw/ip/otbn/dif/dif_otbn.h"
 #include "sw/ip/otp_ctrl/dif/dif_otp_ctrl.h"
 #include "sw/ip/pinmux/dif/dif_pinmux.h"
@@ -71,6 +72,16 @@ static dif_i2c_t i2c2;
 static dif_keymgr_t keymgr;
 static dif_kmac_t kmac;
 static dif_lc_ctrl_t lc_ctrl;
+static dif_mbx_t mbx0;
+static dif_mbx_t mbx1;
+static dif_mbx_t mbx2;
+static dif_mbx_t mbx3;
+static dif_mbx_t mbx4;
+static dif_mbx_t mbx5;
+static dif_mbx_t mbx6;
+static dif_mbx_t mbx7;
+static dif_mbx_t mbx_jtag;
+static dif_mbx_t mbx_pcie0;
 static dif_otbn_t otbn;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_pinmux_t pinmux_aon;
@@ -151,6 +162,36 @@ static void init_peripherals(void) {
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_LC_CTRL_BASE_ADDR);
   CHECK_DIF_OK(dif_lc_ctrl_init(base_addr, &lc_ctrl));
+
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_MBX0_CORE_BASE_ADDR);
+  CHECK_DIF_OK(dif_mbx_init(base_addr, &mbx0));
+
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_MBX1_CORE_BASE_ADDR);
+  CHECK_DIF_OK(dif_mbx_init(base_addr, &mbx1));
+
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_MBX2_CORE_BASE_ADDR);
+  CHECK_DIF_OK(dif_mbx_init(base_addr, &mbx2));
+
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_MBX3_CORE_BASE_ADDR);
+  CHECK_DIF_OK(dif_mbx_init(base_addr, &mbx3));
+
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_MBX4_CORE_BASE_ADDR);
+  CHECK_DIF_OK(dif_mbx_init(base_addr, &mbx4));
+
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_MBX5_CORE_BASE_ADDR);
+  CHECK_DIF_OK(dif_mbx_init(base_addr, &mbx5));
+
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_MBX6_CORE_BASE_ADDR);
+  CHECK_DIF_OK(dif_mbx_init(base_addr, &mbx6));
+
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_MBX7_CORE_BASE_ADDR);
+  CHECK_DIF_OK(dif_mbx_init(base_addr, &mbx7));
+
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_MBX_JTAG_CORE_BASE_ADDR);
+  CHECK_DIF_OK(dif_mbx_init(base_addr, &mbx_jtag));
+
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_MBX_PCIE0_CORE_BASE_ADDR);
+  CHECK_DIF_OK(dif_mbx_init(base_addr, &mbx_pcie0));
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_OTBN_BASE_ADDR);
   CHECK_DIF_OK(dif_otbn_init(base_addr, &otbn));
@@ -519,6 +560,156 @@ static void trigger_alert_test(void) {
 
     // Verify that alert handler received it.
     exp_alert = kTopDarjeelingAlertIdLcCtrlFatalProgError + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
+
+  // Write mbx's alert_test reg and check alert_cause.
+  for (dif_mbx_alert_t i = 0; i < 2; ++i) {
+    CHECK_DIF_OK(dif_mbx_alert_force(&mbx0, kDifMbxAlertFatalFault + i));
+
+    // Verify that alert handler received it.
+    exp_alert = kTopDarjeelingAlertIdMbx0FatalFault + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
+
+  // Write mbx's alert_test reg and check alert_cause.
+  for (dif_mbx_alert_t i = 0; i < 2; ++i) {
+    CHECK_DIF_OK(dif_mbx_alert_force(&mbx1, kDifMbxAlertFatalFault + i));
+
+    // Verify that alert handler received it.
+    exp_alert = kTopDarjeelingAlertIdMbx1FatalFault + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
+
+  // Write mbx's alert_test reg and check alert_cause.
+  for (dif_mbx_alert_t i = 0; i < 2; ++i) {
+    CHECK_DIF_OK(dif_mbx_alert_force(&mbx2, kDifMbxAlertFatalFault + i));
+
+    // Verify that alert handler received it.
+    exp_alert = kTopDarjeelingAlertIdMbx2FatalFault + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
+
+  // Write mbx's alert_test reg and check alert_cause.
+  for (dif_mbx_alert_t i = 0; i < 2; ++i) {
+    CHECK_DIF_OK(dif_mbx_alert_force(&mbx3, kDifMbxAlertFatalFault + i));
+
+    // Verify that alert handler received it.
+    exp_alert = kTopDarjeelingAlertIdMbx3FatalFault + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
+
+  // Write mbx's alert_test reg and check alert_cause.
+  for (dif_mbx_alert_t i = 0; i < 2; ++i) {
+    CHECK_DIF_OK(dif_mbx_alert_force(&mbx4, kDifMbxAlertFatalFault + i));
+
+    // Verify that alert handler received it.
+    exp_alert = kTopDarjeelingAlertIdMbx4FatalFault + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
+
+  // Write mbx's alert_test reg and check alert_cause.
+  for (dif_mbx_alert_t i = 0; i < 2; ++i) {
+    CHECK_DIF_OK(dif_mbx_alert_force(&mbx5, kDifMbxAlertFatalFault + i));
+
+    // Verify that alert handler received it.
+    exp_alert = kTopDarjeelingAlertIdMbx5FatalFault + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
+
+  // Write mbx's alert_test reg and check alert_cause.
+  for (dif_mbx_alert_t i = 0; i < 2; ++i) {
+    CHECK_DIF_OK(dif_mbx_alert_force(&mbx6, kDifMbxAlertFatalFault + i));
+
+    // Verify that alert handler received it.
+    exp_alert = kTopDarjeelingAlertIdMbx6FatalFault + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
+
+  // Write mbx's alert_test reg and check alert_cause.
+  for (dif_mbx_alert_t i = 0; i < 2; ++i) {
+    CHECK_DIF_OK(dif_mbx_alert_force(&mbx7, kDifMbxAlertFatalFault + i));
+
+    // Verify that alert handler received it.
+    exp_alert = kTopDarjeelingAlertIdMbx7FatalFault + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
+
+  // Write mbx's alert_test reg and check alert_cause.
+  for (dif_mbx_alert_t i = 0; i < 2; ++i) {
+    CHECK_DIF_OK(dif_mbx_alert_force(&mbx_jtag, kDifMbxAlertFatalFault + i));
+
+    // Verify that alert handler received it.
+    exp_alert = kTopDarjeelingAlertIdMbxJtagFatalFault + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
+
+  // Write mbx's alert_test reg and check alert_cause.
+  for (dif_mbx_alert_t i = 0; i < 2; ++i) {
+    CHECK_DIF_OK(dif_mbx_alert_force(&mbx_pcie0, kDifMbxAlertFatalFault + i));
+
+    // Verify that alert handler received it.
+    exp_alert = kTopDarjeelingAlertIdMbxPcie0FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);

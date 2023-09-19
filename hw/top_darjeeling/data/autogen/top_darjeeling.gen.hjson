@@ -527,6 +527,10 @@
       name: hart
       desc: The main address space, shared between the CPU and DM
     }
+    {
+      name: soc_mbx
+      desc: SoC address space for mailbox access
+    }
   ]
   module:
   [
@@ -7972,6 +7976,1216 @@
       }
     }
     {
+      name: mbx0
+      type: mbx
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: infra
+      reset_connections:
+      {
+        rst_ni:
+        {
+          name: lc
+          domain: "0"
+        }
+      }
+      base_addrs:
+      {
+        core:
+        {
+          hart: 0x22000000
+        }
+        soc:
+        {
+          soc_mbx: 0x00005000
+        }
+      }
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_main_infra
+      }
+      domain:
+      [
+        "0"
+      ]
+      param_decl: {}
+      param_list: []
+      inter_signal_list:
+      [
+        {
+          name: doe_intr_support
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx0
+          package: ""
+          external: true
+          top_signame: mbx0_doe_intr_support
+          conn_type: false
+          index: -1
+        }
+        {
+          name: doe_intr_en
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx0
+          package: ""
+          external: true
+          top_signame: mbx0_doe_intr_en
+          conn_type: false
+          index: -1
+        }
+        {
+          name: doe_intr
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx0
+          package: ""
+          external: true
+          top_signame: mbx0_doe_intr
+          conn_type: false
+          index: -1
+        }
+        {
+          name: sram_tl_h
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: mbx0
+          default: ""
+          top_signame: main_tl_mbx0__sram
+          index: -1
+        }
+        {
+          name: core_tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: mbx0
+          default: ""
+          end_idx: -1
+          top_signame: mbx0_core_tl_d
+          index: -1
+        }
+        {
+          name: soc_tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: mbx0
+          default: ""
+          end_idx: -1
+          top_signame: mbx0_soc_tl_d
+          index: -1
+        }
+      ]
+    }
+    {
+      name: mbx1
+      type: mbx
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: infra
+      reset_connections:
+      {
+        rst_ni:
+        {
+          name: lc
+          domain: "0"
+        }
+      }
+      base_addrs:
+      {
+        core:
+        {
+          hart: 0x22000100
+        }
+        soc:
+        {
+          soc_mbx: 0x00005100
+        }
+      }
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_main_infra
+      }
+      domain:
+      [
+        "0"
+      ]
+      param_decl: {}
+      param_list: []
+      inter_signal_list:
+      [
+        {
+          name: doe_intr_support
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx1
+          package: ""
+          external: true
+          top_signame: mbx1_doe_intr_support
+          conn_type: false
+          index: -1
+        }
+        {
+          name: doe_intr_en
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx1
+          package: ""
+          external: true
+          top_signame: mbx1_doe_intr_en
+          conn_type: false
+          index: -1
+        }
+        {
+          name: doe_intr
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx1
+          package: ""
+          external: true
+          top_signame: mbx1_doe_intr
+          conn_type: false
+          index: -1
+        }
+        {
+          name: sram_tl_h
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: mbx1
+          default: ""
+          top_signame: main_tl_mbx1__sram
+          index: -1
+        }
+        {
+          name: core_tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: mbx1
+          default: ""
+          end_idx: -1
+          top_signame: mbx1_core_tl_d
+          index: -1
+        }
+        {
+          name: soc_tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: mbx1
+          default: ""
+          end_idx: -1
+          top_signame: mbx1_soc_tl_d
+          index: -1
+        }
+      ]
+    }
+    {
+      name: mbx2
+      type: mbx
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: infra
+      reset_connections:
+      {
+        rst_ni:
+        {
+          name: lc
+          domain: "0"
+        }
+      }
+      base_addrs:
+      {
+        core:
+        {
+          hart: 0x22000200
+        }
+        soc:
+        {
+          soc_mbx: 0x00005200
+        }
+      }
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_main_infra
+      }
+      domain:
+      [
+        "0"
+      ]
+      param_decl: {}
+      param_list: []
+      inter_signal_list:
+      [
+        {
+          name: doe_intr_support
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx2
+          package: ""
+          external: true
+          top_signame: mbx2_doe_intr_support
+          conn_type: false
+          index: -1
+        }
+        {
+          name: doe_intr_en
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx2
+          package: ""
+          external: true
+          top_signame: mbx2_doe_intr_en
+          conn_type: false
+          index: -1
+        }
+        {
+          name: doe_intr
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx2
+          package: ""
+          external: true
+          top_signame: mbx2_doe_intr
+          conn_type: false
+          index: -1
+        }
+        {
+          name: sram_tl_h
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: mbx2
+          default: ""
+          top_signame: main_tl_mbx2__sram
+          index: -1
+        }
+        {
+          name: core_tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: mbx2
+          default: ""
+          end_idx: -1
+          top_signame: mbx2_core_tl_d
+          index: -1
+        }
+        {
+          name: soc_tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: mbx2
+          default: ""
+          end_idx: -1
+          top_signame: mbx2_soc_tl_d
+          index: -1
+        }
+      ]
+    }
+    {
+      name: mbx3
+      type: mbx
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: infra
+      reset_connections:
+      {
+        rst_ni:
+        {
+          name: lc
+          domain: "0"
+        }
+      }
+      base_addrs:
+      {
+        core:
+        {
+          hart: 0x22000300
+        }
+        soc:
+        {
+          soc_mbx: 0x00005300
+        }
+      }
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_main_infra
+      }
+      domain:
+      [
+        "0"
+      ]
+      param_decl: {}
+      param_list: []
+      inter_signal_list:
+      [
+        {
+          name: doe_intr_support
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx3
+          package: ""
+          external: true
+          top_signame: mbx3_doe_intr_support
+          conn_type: false
+          index: -1
+        }
+        {
+          name: doe_intr_en
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx3
+          package: ""
+          external: true
+          top_signame: mbx3_doe_intr_en
+          conn_type: false
+          index: -1
+        }
+        {
+          name: doe_intr
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx3
+          package: ""
+          external: true
+          top_signame: mbx3_doe_intr
+          conn_type: false
+          index: -1
+        }
+        {
+          name: sram_tl_h
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: mbx3
+          default: ""
+          top_signame: main_tl_mbx3__sram
+          index: -1
+        }
+        {
+          name: core_tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: mbx3
+          default: ""
+          end_idx: -1
+          top_signame: mbx3_core_tl_d
+          index: -1
+        }
+        {
+          name: soc_tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: mbx3
+          default: ""
+          end_idx: -1
+          top_signame: mbx3_soc_tl_d
+          index: -1
+        }
+      ]
+    }
+    {
+      name: mbx4
+      type: mbx
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: infra
+      reset_connections:
+      {
+        rst_ni:
+        {
+          name: lc
+          domain: "0"
+        }
+      }
+      base_addrs:
+      {
+        core:
+        {
+          hart: 0x22000400
+        }
+        soc:
+        {
+          soc_mbx: 0x00005400
+        }
+      }
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_main_infra
+      }
+      domain:
+      [
+        "0"
+      ]
+      param_decl: {}
+      param_list: []
+      inter_signal_list:
+      [
+        {
+          name: doe_intr_support
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx4
+          package: ""
+          external: true
+          top_signame: mbx4_doe_intr_support
+          conn_type: false
+          index: -1
+        }
+        {
+          name: doe_intr_en
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx4
+          package: ""
+          external: true
+          top_signame: mbx4_doe_intr_en
+          conn_type: false
+          index: -1
+        }
+        {
+          name: doe_intr
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx4
+          package: ""
+          external: true
+          top_signame: mbx4_doe_intr
+          conn_type: false
+          index: -1
+        }
+        {
+          name: sram_tl_h
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: mbx4
+          default: ""
+          top_signame: main_tl_mbx4__sram
+          index: -1
+        }
+        {
+          name: core_tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: mbx4
+          default: ""
+          end_idx: -1
+          top_signame: mbx4_core_tl_d
+          index: -1
+        }
+        {
+          name: soc_tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: mbx4
+          default: ""
+          end_idx: -1
+          top_signame: mbx4_soc_tl_d
+          index: -1
+        }
+      ]
+    }
+    {
+      name: mbx5
+      type: mbx
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: infra
+      reset_connections:
+      {
+        rst_ni:
+        {
+          name: lc
+          domain: "0"
+        }
+      }
+      base_addrs:
+      {
+        core:
+        {
+          hart: 0x22000500
+        }
+        soc:
+        {
+          soc_mbx: 0x00005500
+        }
+      }
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_main_infra
+      }
+      domain:
+      [
+        "0"
+      ]
+      param_decl: {}
+      param_list: []
+      inter_signal_list:
+      [
+        {
+          name: doe_intr_support
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx5
+          package: ""
+          external: true
+          top_signame: mbx5_doe_intr_support
+          conn_type: false
+          index: -1
+        }
+        {
+          name: doe_intr_en
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx5
+          package: ""
+          external: true
+          top_signame: mbx5_doe_intr_en
+          conn_type: false
+          index: -1
+        }
+        {
+          name: doe_intr
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx5
+          package: ""
+          external: true
+          top_signame: mbx5_doe_intr
+          conn_type: false
+          index: -1
+        }
+        {
+          name: sram_tl_h
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: mbx5
+          default: ""
+          top_signame: main_tl_mbx5__sram
+          index: -1
+        }
+        {
+          name: core_tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: mbx5
+          default: ""
+          end_idx: -1
+          top_signame: mbx5_core_tl_d
+          index: -1
+        }
+        {
+          name: soc_tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: mbx5
+          default: ""
+          end_idx: -1
+          top_signame: mbx5_soc_tl_d
+          index: -1
+        }
+      ]
+    }
+    {
+      name: mbx6
+      type: mbx
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: infra
+      reset_connections:
+      {
+        rst_ni:
+        {
+          name: lc
+          domain: "0"
+        }
+      }
+      base_addrs:
+      {
+        core:
+        {
+          hart: 0x22000600
+        }
+        soc:
+        {
+          soc_mbx: 0x00005600
+        }
+      }
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_main_infra
+      }
+      domain:
+      [
+        "0"
+      ]
+      param_decl: {}
+      param_list: []
+      inter_signal_list:
+      [
+        {
+          name: doe_intr_support
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx6
+          package: ""
+          external: true
+          top_signame: mbx6_doe_intr_support
+          conn_type: false
+          index: -1
+        }
+        {
+          name: doe_intr_en
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx6
+          package: ""
+          external: true
+          top_signame: mbx6_doe_intr_en
+          conn_type: false
+          index: -1
+        }
+        {
+          name: doe_intr
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx6
+          package: ""
+          external: true
+          top_signame: mbx6_doe_intr
+          conn_type: false
+          index: -1
+        }
+        {
+          name: sram_tl_h
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: mbx6
+          default: ""
+          top_signame: main_tl_mbx6__sram
+          index: -1
+        }
+        {
+          name: core_tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: mbx6
+          default: ""
+          end_idx: -1
+          top_signame: mbx6_core_tl_d
+          index: -1
+        }
+        {
+          name: soc_tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: mbx6
+          default: ""
+          end_idx: -1
+          top_signame: mbx6_soc_tl_d
+          index: -1
+        }
+      ]
+    }
+    {
+      name: mbx7
+      type: mbx
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: infra
+      reset_connections:
+      {
+        rst_ni:
+        {
+          name: lc
+          domain: "0"
+        }
+      }
+      base_addrs:
+      {
+        core:
+        {
+          hart: 0x22000700
+        }
+        soc:
+        {
+          soc_mbx: 0x00005700
+        }
+      }
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_main_infra
+      }
+      domain:
+      [
+        "0"
+      ]
+      param_decl: {}
+      param_list: []
+      inter_signal_list:
+      [
+        {
+          name: doe_intr_support
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx7
+          package: ""
+          external: true
+          top_signame: mbx7_doe_intr_support
+          conn_type: false
+          index: -1
+        }
+        {
+          name: doe_intr_en
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx7
+          package: ""
+          external: true
+          top_signame: mbx7_doe_intr_en
+          conn_type: false
+          index: -1
+        }
+        {
+          name: doe_intr
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx7
+          package: ""
+          external: true
+          top_signame: mbx7_doe_intr
+          conn_type: false
+          index: -1
+        }
+        {
+          name: sram_tl_h
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: mbx7
+          default: ""
+          top_signame: main_tl_mbx7__sram
+          index: -1
+        }
+        {
+          name: core_tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: mbx7
+          default: ""
+          end_idx: -1
+          top_signame: mbx7_core_tl_d
+          index: -1
+        }
+        {
+          name: soc_tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: mbx7
+          default: ""
+          end_idx: -1
+          top_signame: mbx7_soc_tl_d
+          index: -1
+        }
+      ]
+    }
+    {
+      name: mbx_jtag
+      type: mbx
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: infra
+      reset_connections:
+      {
+        rst_ni:
+        {
+          name: lc
+          domain: "0"
+        }
+      }
+      base_addrs:
+      {
+        core:
+        {
+          hart: 0x22000800
+        }
+        soc:
+        {
+          soc_mbx: 0x00005800
+        }
+      }
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_main_infra
+      }
+      domain:
+      [
+        "0"
+      ]
+      param_decl: {}
+      param_list: []
+      inter_signal_list:
+      [
+        {
+          name: doe_intr_support
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx_jtag
+          package: ""
+          external: true
+          top_signame: mbx_jtag_doe_intr_support
+          conn_type: false
+          index: -1
+        }
+        {
+          name: doe_intr_en
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx_jtag
+          package: ""
+          external: true
+          top_signame: mbx_jtag_doe_intr_en
+          conn_type: false
+          index: -1
+        }
+        {
+          name: doe_intr
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx_jtag
+          package: ""
+          external: true
+          top_signame: mbx_jtag_doe_intr
+          conn_type: false
+          index: -1
+        }
+        {
+          name: sram_tl_h
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: mbx_jtag
+          default: ""
+          top_signame: main_tl_mbx_jtag__sram
+          index: -1
+        }
+        {
+          name: core_tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: mbx_jtag
+          default: ""
+          end_idx: -1
+          top_signame: mbx_jtag_core_tl_d
+          index: -1
+        }
+        {
+          name: soc_tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: mbx_jtag
+          default: ""
+          end_idx: -1
+          top_signame: mbx_jtag_soc_tl_d
+          index: -1
+        }
+      ]
+    }
+    {
+      name: mbx_pcie0
+      type: mbx
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: infra
+      reset_connections:
+      {
+        rst_ni:
+        {
+          name: lc
+          domain: "0"
+        }
+      }
+      base_addrs:
+      {
+        core:
+        {
+          hart: 0x22040000
+        }
+        soc:
+        {
+          soc_mbx: 0x00000100
+        }
+      }
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_main_infra
+      }
+      domain:
+      [
+        "0"
+      ]
+      param_decl: {}
+      param_list: []
+      inter_signal_list:
+      [
+        {
+          name: doe_intr_support
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx_pcie0
+          package: ""
+          external: true
+          top_signame: mbx_pcie0_doe_intr_support
+          conn_type: false
+          index: -1
+        }
+        {
+          name: doe_intr_en
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx_pcie0
+          package: ""
+          external: true
+          top_signame: mbx_pcie0_doe_intr_en
+          conn_type: false
+          index: -1
+        }
+        {
+          name: doe_intr
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: mbx_pcie0
+          package: ""
+          external: true
+          top_signame: mbx_pcie0_doe_intr
+          conn_type: false
+          index: -1
+        }
+        {
+          name: sram_tl_h
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: mbx_pcie0
+          default: ""
+          top_signame: main_tl_mbx_pcie0__sram
+          index: -1
+        }
+        {
+          name: core_tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: mbx_pcie0
+          default: ""
+          end_idx: -1
+          top_signame: mbx_pcie0_core_tl_d
+          index: -1
+        }
+        {
+          name: soc_tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: mbx_pcie0
+          default: ""
+          end_idx: -1
+          top_signame: mbx_pcie0_soc_tl_d
+          index: -1
+        }
+      ]
+    }
+    {
       name: rv_core_ibex
       type: rv_core_ibex
       param_decl:
@@ -9134,6 +10348,86 @@
       [
         dma.host_tl_h
       ]
+      mbx0.core_tl_d:
+      [
+        main.tl_mbx0__core
+      ]
+      main.tl_mbx0__sram:
+      [
+        mbx0.sram_tl_h
+      ]
+      mbx1.core_tl_d:
+      [
+        main.tl_mbx1__core
+      ]
+      main.tl_mbx1__sram:
+      [
+        mbx1.sram_tl_h
+      ]
+      mbx2.core_tl_d:
+      [
+        main.tl_mbx2__core
+      ]
+      main.tl_mbx2__sram:
+      [
+        mbx2.sram_tl_h
+      ]
+      mbx3.core_tl_d:
+      [
+        main.tl_mbx3__core
+      ]
+      main.tl_mbx3__sram:
+      [
+        mbx3.sram_tl_h
+      ]
+      mbx4.core_tl_d:
+      [
+        main.tl_mbx4__core
+      ]
+      main.tl_mbx4__sram:
+      [
+        mbx4.sram_tl_h
+      ]
+      mbx5.core_tl_d:
+      [
+        main.tl_mbx5__core
+      ]
+      main.tl_mbx5__sram:
+      [
+        mbx5.sram_tl_h
+      ]
+      mbx6.core_tl_d:
+      [
+        main.tl_mbx6__core
+      ]
+      main.tl_mbx6__sram:
+      [
+        mbx6.sram_tl_h
+      ]
+      mbx7.core_tl_d:
+      [
+        main.tl_mbx7__core
+      ]
+      main.tl_mbx7__sram:
+      [
+        mbx7.sram_tl_h
+      ]
+      mbx_jtag.core_tl_d:
+      [
+        main.tl_mbx_jtag__core
+      ]
+      main.tl_mbx_jtag__sram:
+      [
+        mbx_jtag.sram_tl_h
+      ]
+      mbx_pcie0.core_tl_d:
+      [
+        main.tl_mbx_pcie0__core
+      ]
+      main.tl_mbx_pcie0__sram:
+      [
+        mbx_pcie0.sram_tl_h
+      ]
       uart0.tl:
       [
         peri.tl_uart0
@@ -9222,6 +10516,46 @@
       [
         peri.tl_adc_ctrl_aon
       ]
+      mbx0.soc_tl_d:
+      [
+        mbx.tl_mbx0__soc
+      ]
+      mbx1.soc_tl_d:
+      [
+        mbx.tl_mbx1__soc
+      ]
+      mbx2.soc_tl_d:
+      [
+        mbx.tl_mbx2__soc
+      ]
+      mbx3.soc_tl_d:
+      [
+        mbx.tl_mbx3__soc
+      ]
+      mbx4.soc_tl_d:
+      [
+        mbx.tl_mbx4__soc
+      ]
+      mbx5.soc_tl_d:
+      [
+        mbx.tl_mbx5__soc
+      ]
+      mbx6.soc_tl_d:
+      [
+        mbx.tl_mbx6__soc
+      ]
+      mbx7.soc_tl_d:
+      [
+        mbx.tl_mbx7__soc
+      ]
+      mbx_jtag.soc_tl_d:
+      [
+        mbx.tl_mbx_jtag__soc
+      ]
+      mbx_pcie0.soc_tl_d:
+      [
+        mbx.tl_mbx_pcie0__soc
+      ]
     }
     top:
     [
@@ -9261,6 +10595,37 @@
       dma.sys: dma_sys
       dma.ctn_tl_h2d: dma_ctn_tl_h2d
       dma.ctn_tl_d2h: dma_ctn_tl_d2h
+      mbx.tl_mbx: mbx_tl
+      mbx0.doe_intr: mbx0_doe_intr
+      mbx0.doe_intr_en: mbx0_doe_intr_en
+      mbx0.doe_intr_support: mbx0_doe_intr_support
+      mbx1.doe_intr: mbx1_doe_intr
+      mbx1.doe_intr_en: mbx1_doe_intr_en
+      mbx1.doe_intr_support: mbx1_doe_intr_support
+      mbx2.doe_intr: mbx2_doe_intr
+      mbx2.doe_intr_en: mbx2_doe_intr_en
+      mbx2.doe_intr_support: mbx2_doe_intr_support
+      mbx3.doe_intr: mbx3_doe_intr
+      mbx3.doe_intr_en: mbx3_doe_intr_en
+      mbx3.doe_intr_support: mbx3_doe_intr_support
+      mbx4.doe_intr: mbx4_doe_intr
+      mbx4.doe_intr_en: mbx4_doe_intr_en
+      mbx4.doe_intr_support: mbx4_doe_intr_support
+      mbx5.doe_intr: mbx5_doe_intr
+      mbx5.doe_intr_en: mbx5_doe_intr_en
+      mbx5.doe_intr_support: mbx5_doe_intr_support
+      mbx6.doe_intr: mbx6_doe_intr
+      mbx6.doe_intr_en: mbx6_doe_intr_en
+      mbx6.doe_intr_support: mbx6_doe_intr_support
+      mbx7.doe_intr: mbx7_doe_intr
+      mbx7.doe_intr_en: mbx7_doe_intr_en
+      mbx7.doe_intr_support: mbx7_doe_intr_support
+      mbx_jtag.doe_intr: mbx_jtag_doe_intr
+      mbx_jtag.doe_intr_en: mbx_jtag_doe_intr_en
+      mbx_jtag.doe_intr_support: mbx_jtag_doe_intr_support
+      mbx_pcie0.doe_intr: mbx_pcie0_doe_intr
+      mbx_pcie0.doe_intr_en: mbx_pcie0_doe_intr_en
+      mbx_pcie0.doe_intr_support: mbx_pcie0_doe_intr_support
       lc_ctrl.dmi_tl_h2d: lc_ctrl_dmi_h2d
       lc_ctrl.dmi_tl_d2h: lc_ctrl_dmi_d2h
       rv_dm.dmi_tl_h2d: rv_dm_dmi_h2d
@@ -9390,6 +10755,16 @@
           soc_proxy.ctn
           soc_proxy.core
           dma
+          mbx0.core
+          mbx1.core
+          mbx2.core
+          mbx3.core
+          mbx4.core
+          mbx5.core
+          mbx6.core
+          mbx7.core
+          mbx_jtag.core
+          mbx_pcie0.core
         ]
         rv_dm.sba:
         [
@@ -9422,11 +10797,61 @@
           soc_proxy.ctn
           soc_proxy.core
           dma
+          mbx0.core
+          mbx1.core
+          mbx2.core
+          mbx3.core
+          mbx4.core
+          mbx5.core
+          mbx6.core
+          mbx7.core
+          mbx_jtag.core
+          mbx_pcie0.core
         ]
         dma.host:
         [
           sram_ctrl_main.ram
           peri
+        ]
+        mbx0.sram:
+        [
+          sram_ctrl_mbox.ram
+        ]
+        mbx1.sram:
+        [
+          sram_ctrl_mbox.ram
+        ]
+        mbx2.sram:
+        [
+          sram_ctrl_mbox.ram
+        ]
+        mbx3.sram:
+        [
+          sram_ctrl_mbox.ram
+        ]
+        mbx4.sram:
+        [
+          sram_ctrl_mbox.ram
+        ]
+        mbx5.sram:
+        [
+          sram_ctrl_mbox.ram
+        ]
+        mbx6.sram:
+        [
+          sram_ctrl_mbox.ram
+        ]
+        mbx7.sram:
+        [
+          sram_ctrl_mbox.ram
+        ]
+        mbx_jtag.sram:
+        [
+          sram_ctrl_mbox.ram
+        ]
+        mbx_pcie0.sram:
+        [
+          sram_ctrl_mbox.ram
         ]
       }
       nodes:
@@ -10118,6 +11543,356 @@
           req_fifo_pass: true
           rsp_fifo_pass: true
         }
+        {
+          name: mbx0.core
+          type: device
+          addr_space: hart
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          inst_type: mbx
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                hart: 0x22000000
+              }
+              size_byte: 0x80
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+        {
+          name: mbx0.sram
+          type: host
+          addr_space: hart
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          xbar: false
+          stub: false
+          inst_type: ""
+          req_fifo_pass: true
+          rsp_fifo_pass: true
+        }
+        {
+          name: mbx1.core
+          type: device
+          addr_space: hart
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          inst_type: mbx
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                hart: 0x22000100
+              }
+              size_byte: 0x80
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+        {
+          name: mbx1.sram
+          type: host
+          addr_space: hart
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          xbar: false
+          stub: false
+          inst_type: ""
+          req_fifo_pass: true
+          rsp_fifo_pass: true
+        }
+        {
+          name: mbx2.core
+          type: device
+          addr_space: hart
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          inst_type: mbx
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                hart: 0x22000200
+              }
+              size_byte: 0x80
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+        {
+          name: mbx2.sram
+          type: host
+          addr_space: hart
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          xbar: false
+          stub: false
+          inst_type: ""
+          req_fifo_pass: true
+          rsp_fifo_pass: true
+        }
+        {
+          name: mbx3.core
+          type: device
+          addr_space: hart
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          inst_type: mbx
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                hart: 0x22000300
+              }
+              size_byte: 0x80
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+        {
+          name: mbx3.sram
+          type: host
+          addr_space: hart
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          xbar: false
+          stub: false
+          inst_type: ""
+          req_fifo_pass: true
+          rsp_fifo_pass: true
+        }
+        {
+          name: mbx4.core
+          type: device
+          addr_space: hart
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          inst_type: mbx
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                hart: 0x22000400
+              }
+              size_byte: 0x80
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+        {
+          name: mbx4.sram
+          type: host
+          addr_space: hart
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          xbar: false
+          stub: false
+          inst_type: ""
+          req_fifo_pass: true
+          rsp_fifo_pass: true
+        }
+        {
+          name: mbx5.core
+          type: device
+          addr_space: hart
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          inst_type: mbx
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                hart: 0x22000500
+              }
+              size_byte: 0x80
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+        {
+          name: mbx5.sram
+          type: host
+          addr_space: hart
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          xbar: false
+          stub: false
+          inst_type: ""
+          req_fifo_pass: true
+          rsp_fifo_pass: true
+        }
+        {
+          name: mbx6.core
+          type: device
+          addr_space: hart
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          inst_type: mbx
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                hart: 0x22000600
+              }
+              size_byte: 0x80
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+        {
+          name: mbx6.sram
+          type: host
+          addr_space: hart
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          xbar: false
+          stub: false
+          inst_type: ""
+          req_fifo_pass: true
+          rsp_fifo_pass: true
+        }
+        {
+          name: mbx7.core
+          type: device
+          addr_space: hart
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          inst_type: mbx
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                hart: 0x22000700
+              }
+              size_byte: 0x80
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+        {
+          name: mbx7.sram
+          type: host
+          addr_space: hart
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          xbar: false
+          stub: false
+          inst_type: ""
+          req_fifo_pass: true
+          rsp_fifo_pass: true
+        }
+        {
+          name: mbx_jtag.core
+          type: device
+          addr_space: hart
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          inst_type: mbx
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                hart: 0x22000800
+              }
+              size_byte: 0x80
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+        {
+          name: mbx_jtag.sram
+          type: host
+          addr_space: hart
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          xbar: false
+          stub: false
+          inst_type: ""
+          req_fifo_pass: true
+          rsp_fifo_pass: true
+        }
+        {
+          name: mbx_pcie0.core
+          type: device
+          addr_space: hart
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          inst_type: mbx
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                hart: 0x22040000
+              }
+              size_byte: 0x80
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+        {
+          name: mbx_pcie0.sram
+          type: host
+          addr_space: hart
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          xbar: false
+          stub: false
+          inst_type: ""
+          req_fifo_pass: true
+          rsp_fifo_pass: true
+        }
       ]
       addr_spaces:
       [
@@ -10177,6 +11952,136 @@
           default: ""
           end_idx: -1
           top_signame: main_tl_dma__host
+          index: -1
+        }
+        {
+          name: tl_mbx0__sram
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: main
+          default: ""
+          end_idx: -1
+          top_signame: main_tl_mbx0__sram
+          index: -1
+        }
+        {
+          name: tl_mbx1__sram
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: main
+          default: ""
+          end_idx: -1
+          top_signame: main_tl_mbx1__sram
+          index: -1
+        }
+        {
+          name: tl_mbx2__sram
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: main
+          default: ""
+          end_idx: -1
+          top_signame: main_tl_mbx2__sram
+          index: -1
+        }
+        {
+          name: tl_mbx3__sram
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: main
+          default: ""
+          end_idx: -1
+          top_signame: main_tl_mbx3__sram
+          index: -1
+        }
+        {
+          name: tl_mbx4__sram
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: main
+          default: ""
+          end_idx: -1
+          top_signame: main_tl_mbx4__sram
+          index: -1
+        }
+        {
+          name: tl_mbx5__sram
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: main
+          default: ""
+          end_idx: -1
+          top_signame: main_tl_mbx5__sram
+          index: -1
+        }
+        {
+          name: tl_mbx6__sram
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: main
+          default: ""
+          end_idx: -1
+          top_signame: main_tl_mbx6__sram
+          index: -1
+        }
+        {
+          name: tl_mbx7__sram
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: main
+          default: ""
+          end_idx: -1
+          top_signame: main_tl_mbx7__sram
+          index: -1
+        }
+        {
+          name: tl_mbx_jtag__sram
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: main
+          default: ""
+          end_idx: -1
+          top_signame: main_tl_mbx_jtag__sram
+          index: -1
+        }
+        {
+          name: tl_mbx_pcie0__sram
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: main
+          default: ""
+          end_idx: -1
+          top_signame: main_tl_mbx_pcie0__sram
           index: -1
         }
         {
@@ -10526,6 +12431,126 @@
           inst_name: main
           default: ""
           top_signame: dma_tl_d
+          index: -1
+        }
+        {
+          name: tl_mbx0__core
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: main
+          default: ""
+          top_signame: mbx0_core_tl_d
+          index: -1
+        }
+        {
+          name: tl_mbx1__core
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: main
+          default: ""
+          top_signame: mbx1_core_tl_d
+          index: -1
+        }
+        {
+          name: tl_mbx2__core
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: main
+          default: ""
+          top_signame: mbx2_core_tl_d
+          index: -1
+        }
+        {
+          name: tl_mbx3__core
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: main
+          default: ""
+          top_signame: mbx3_core_tl_d
+          index: -1
+        }
+        {
+          name: tl_mbx4__core
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: main
+          default: ""
+          top_signame: mbx4_core_tl_d
+          index: -1
+        }
+        {
+          name: tl_mbx5__core
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: main
+          default: ""
+          top_signame: mbx5_core_tl_d
+          index: -1
+        }
+        {
+          name: tl_mbx6__core
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: main
+          default: ""
+          top_signame: mbx6_core_tl_d
+          index: -1
+        }
+        {
+          name: tl_mbx7__core
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: main
+          default: ""
+          top_signame: mbx7_core_tl_d
+          index: -1
+        }
+        {
+          name: tl_mbx_jtag__core
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: main
+          default: ""
+          top_signame: mbx_jtag_core_tl_d
+          index: -1
+        }
+        {
+          name: tl_mbx_pcie0__core
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: main
+          default: ""
+          top_signame: mbx_pcie0_core_tl_d
           index: -1
         }
       ]
@@ -11378,6 +13403,426 @@
           external: true
           top_signame: ast_tl
           conn_type: false
+          index: -1
+        }
+      ]
+    }
+    {
+      name: mbx
+      clock_srcs:
+      {
+        clk_mbx_i: main
+      }
+      clock_group: infra
+      reset: rst_mbx_ni
+      reset_connections:
+      {
+        rst_mbx_ni:
+        {
+          name: lc
+          domain: "0"
+        }
+      }
+      clock_connections:
+      {
+        clk_mbx_i: clkmgr_aon_clocks.clk_main_infra
+      }
+      domain:
+      [
+        "0"
+      ]
+      connections:
+      {
+        mbx:
+        [
+          mbx0.soc
+          mbx1.soc
+          mbx2.soc
+          mbx3.soc
+          mbx4.soc
+          mbx5.soc
+          mbx6.soc
+          mbx7.soc
+          mbx_jtag.soc
+          mbx_pcie0.soc
+        ]
+      }
+      nodes:
+      [
+        {
+          name: mbx
+          type: host
+          addr_space: soc_mbx
+          clock: clk_mbx_i
+          reset: rst_mbx_ni
+          xbar: true
+          pipeline: false
+          stub: false
+          inst_type: ""
+          req_fifo_pass: true
+          rsp_fifo_pass: true
+        }
+        {
+          name: mbx0.soc
+          type: device
+          addr_space: soc_mbx
+          clock: clk_mbx_i
+          reset: rst_mbx_ni
+          pipeline: false
+          inst_type: mbx
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                soc_mbx: 0x5000
+              }
+              size_byte: 0x20
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+        {
+          name: mbx1.soc
+          type: device
+          addr_space: soc_mbx
+          clock: clk_mbx_i
+          reset: rst_mbx_ni
+          pipeline: false
+          inst_type: mbx
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                soc_mbx: 0x5100
+              }
+              size_byte: 0x20
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+        {
+          name: mbx2.soc
+          type: device
+          addr_space: soc_mbx
+          clock: clk_mbx_i
+          reset: rst_mbx_ni
+          pipeline: false
+          inst_type: mbx
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                soc_mbx: 0x5200
+              }
+              size_byte: 0x20
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+        {
+          name: mbx3.soc
+          type: device
+          addr_space: soc_mbx
+          clock: clk_mbx_i
+          reset: rst_mbx_ni
+          pipeline: false
+          inst_type: mbx
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                soc_mbx: 0x5300
+              }
+              size_byte: 0x20
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+        {
+          name: mbx4.soc
+          type: device
+          addr_space: soc_mbx
+          clock: clk_mbx_i
+          reset: rst_mbx_ni
+          pipeline: false
+          inst_type: mbx
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                soc_mbx: 0x5400
+              }
+              size_byte: 0x20
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+        {
+          name: mbx5.soc
+          type: device
+          addr_space: soc_mbx
+          clock: clk_mbx_i
+          reset: rst_mbx_ni
+          pipeline: false
+          inst_type: mbx
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                soc_mbx: 0x5500
+              }
+              size_byte: 0x20
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+        {
+          name: mbx6.soc
+          type: device
+          addr_space: soc_mbx
+          clock: clk_mbx_i
+          reset: rst_mbx_ni
+          pipeline: false
+          inst_type: mbx
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                soc_mbx: 0x5600
+              }
+              size_byte: 0x20
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+        {
+          name: mbx7.soc
+          type: device
+          addr_space: soc_mbx
+          clock: clk_mbx_i
+          reset: rst_mbx_ni
+          pipeline: false
+          inst_type: mbx
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                soc_mbx: 0x5700
+              }
+              size_byte: 0x20
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+        {
+          name: mbx_jtag.soc
+          type: device
+          addr_space: soc_mbx
+          clock: clk_mbx_i
+          reset: rst_mbx_ni
+          pipeline: false
+          inst_type: mbx
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                soc_mbx: 0x5800
+              }
+              size_byte: 0x20
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+        {
+          name: mbx_pcie0.soc
+          type: device
+          addr_space: soc_mbx
+          clock: clk_mbx_i
+          reset: rst_mbx_ni
+          pipeline: false
+          inst_type: mbx
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                soc_mbx: 0x100
+              }
+              size_byte: 0x20
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
+      ]
+      addr_spaces:
+      [
+        soc_mbx
+      ]
+      clock: clk_mbx_i
+      type: xbar
+      inter_signal_list:
+      [
+        {
+          name: tl_mbx
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: mbx
+          default: ""
+          external: true
+          top_signame: mbx_tl
+          conn_type: false
+          index: -1
+        }
+        {
+          name: tl_mbx0__soc
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: mbx
+          default: ""
+          top_signame: mbx0_soc_tl_d
+          index: -1
+        }
+        {
+          name: tl_mbx1__soc
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: mbx
+          default: ""
+          top_signame: mbx1_soc_tl_d
+          index: -1
+        }
+        {
+          name: tl_mbx2__soc
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: mbx
+          default: ""
+          top_signame: mbx2_soc_tl_d
+          index: -1
+        }
+        {
+          name: tl_mbx3__soc
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: mbx
+          default: ""
+          top_signame: mbx3_soc_tl_d
+          index: -1
+        }
+        {
+          name: tl_mbx4__soc
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: mbx
+          default: ""
+          top_signame: mbx4_soc_tl_d
+          index: -1
+        }
+        {
+          name: tl_mbx5__soc
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: mbx
+          default: ""
+          top_signame: mbx5_soc_tl_d
+          index: -1
+        }
+        {
+          name: tl_mbx6__soc
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: mbx
+          default: ""
+          top_signame: mbx6_soc_tl_d
+          index: -1
+        }
+        {
+          name: tl_mbx7__soc
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: mbx
+          default: ""
+          top_signame: mbx7_soc_tl_d
+          index: -1
+        }
+        {
+          name: tl_mbx_jtag__soc
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: mbx
+          default: ""
+          top_signame: mbx_jtag_soc_tl_d
+          index: -1
+        }
+        {
+          name: tl_mbx_pcie0__soc
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: mbx
+          default: ""
+          top_signame: mbx_pcie0_soc_tl_d
           index: -1
         }
       ]
@@ -13711,6 +16156,16 @@
     edn0
     edn1
     dma
+    mbx0
+    mbx1
+    mbx2
+    mbx3
+    mbx4
+    mbx5
+    mbx6
+    mbx7
+    mbx_jtag
+    mbx_pcie0
   ]
   interrupt:
   [
@@ -14476,6 +16931,126 @@
       type: interrupt
       module_name: dma
     }
+    {
+      name: mbx0_mbx_ready
+      width: 1
+      type: interrupt
+      module_name: mbx0
+    }
+    {
+      name: mbx0_mbx_abort
+      width: 1
+      type: interrupt
+      module_name: mbx0
+    }
+    {
+      name: mbx1_mbx_ready
+      width: 1
+      type: interrupt
+      module_name: mbx1
+    }
+    {
+      name: mbx1_mbx_abort
+      width: 1
+      type: interrupt
+      module_name: mbx1
+    }
+    {
+      name: mbx2_mbx_ready
+      width: 1
+      type: interrupt
+      module_name: mbx2
+    }
+    {
+      name: mbx2_mbx_abort
+      width: 1
+      type: interrupt
+      module_name: mbx2
+    }
+    {
+      name: mbx3_mbx_ready
+      width: 1
+      type: interrupt
+      module_name: mbx3
+    }
+    {
+      name: mbx3_mbx_abort
+      width: 1
+      type: interrupt
+      module_name: mbx3
+    }
+    {
+      name: mbx4_mbx_ready
+      width: 1
+      type: interrupt
+      module_name: mbx4
+    }
+    {
+      name: mbx4_mbx_abort
+      width: 1
+      type: interrupt
+      module_name: mbx4
+    }
+    {
+      name: mbx5_mbx_ready
+      width: 1
+      type: interrupt
+      module_name: mbx5
+    }
+    {
+      name: mbx5_mbx_abort
+      width: 1
+      type: interrupt
+      module_name: mbx5
+    }
+    {
+      name: mbx6_mbx_ready
+      width: 1
+      type: interrupt
+      module_name: mbx6
+    }
+    {
+      name: mbx6_mbx_abort
+      width: 1
+      type: interrupt
+      module_name: mbx6
+    }
+    {
+      name: mbx7_mbx_ready
+      width: 1
+      type: interrupt
+      module_name: mbx7
+    }
+    {
+      name: mbx7_mbx_abort
+      width: 1
+      type: interrupt
+      module_name: mbx7
+    }
+    {
+      name: mbx_jtag_mbx_ready
+      width: 1
+      type: interrupt
+      module_name: mbx_jtag
+    }
+    {
+      name: mbx_jtag_mbx_abort
+      width: 1
+      type: interrupt
+      module_name: mbx_jtag
+    }
+    {
+      name: mbx_pcie0_mbx_ready
+      width: 1
+      type: interrupt
+      module_name: mbx_pcie0
+    }
+    {
+      name: mbx_pcie0_mbx_abort
+      width: 1
+      type: interrupt
+      module_name: mbx_pcie0
+    }
   ]
   alert_module:
   [
@@ -14517,6 +17092,16 @@
     rom_ctrl0
     rom_ctrl1
     dma
+    mbx0
+    mbx1
+    mbx2
+    mbx3
+    mbx4
+    mbx5
+    mbx6
+    mbx7
+    mbx_jtag
+    mbx_pcie0
     rv_core_ibex
   ]
   alert:
@@ -15112,6 +17697,186 @@
       type: alert
       async: "1"
       module_name: dma
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: mbx0_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx0
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: mbx0_recov_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx0
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: mbx1_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx1
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: mbx1_recov_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx1
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: mbx2_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx2
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: mbx2_recov_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx2
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: mbx3_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx3
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: mbx3_recov_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx3
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: mbx4_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx4
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: mbx4_recov_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx4
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: mbx5_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx5
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: mbx5_recov_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx5
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: mbx6_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx6
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: mbx6_recov_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx6
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: mbx7_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx7
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: mbx7_recov_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx7
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: mbx_jtag_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx_jtag
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: mbx_jtag_recov_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx_jtag
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: mbx_pcie0_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx_pcie0
+      lpg_name: infra_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: mbx_pcie0_recov_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx_pcie0
       lpg_name: infra_lc_0
       lpg_idx: 16
     }
@@ -20037,6 +22802,806 @@
         index: -1
       }
       {
+        name: doe_intr_support
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx0
+        package: ""
+        external: true
+        top_signame: mbx0_doe_intr_support
+        conn_type: false
+        index: -1
+      }
+      {
+        name: doe_intr_en
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx0
+        package: ""
+        external: true
+        top_signame: mbx0_doe_intr_en
+        conn_type: false
+        index: -1
+      }
+      {
+        name: doe_intr
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx0
+        package: ""
+        external: true
+        top_signame: mbx0_doe_intr
+        conn_type: false
+        index: -1
+      }
+      {
+        name: sram_tl_h
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: mbx0
+        default: ""
+        top_signame: main_tl_mbx0__sram
+        index: -1
+      }
+      {
+        name: core_tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: mbx0
+        default: ""
+        end_idx: -1
+        top_signame: mbx0_core_tl_d
+        index: -1
+      }
+      {
+        name: soc_tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: mbx0
+        default: ""
+        end_idx: -1
+        top_signame: mbx0_soc_tl_d
+        index: -1
+      }
+      {
+        name: doe_intr_support
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx1
+        package: ""
+        external: true
+        top_signame: mbx1_doe_intr_support
+        conn_type: false
+        index: -1
+      }
+      {
+        name: doe_intr_en
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx1
+        package: ""
+        external: true
+        top_signame: mbx1_doe_intr_en
+        conn_type: false
+        index: -1
+      }
+      {
+        name: doe_intr
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx1
+        package: ""
+        external: true
+        top_signame: mbx1_doe_intr
+        conn_type: false
+        index: -1
+      }
+      {
+        name: sram_tl_h
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: mbx1
+        default: ""
+        top_signame: main_tl_mbx1__sram
+        index: -1
+      }
+      {
+        name: core_tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: mbx1
+        default: ""
+        end_idx: -1
+        top_signame: mbx1_core_tl_d
+        index: -1
+      }
+      {
+        name: soc_tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: mbx1
+        default: ""
+        end_idx: -1
+        top_signame: mbx1_soc_tl_d
+        index: -1
+      }
+      {
+        name: doe_intr_support
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx2
+        package: ""
+        external: true
+        top_signame: mbx2_doe_intr_support
+        conn_type: false
+        index: -1
+      }
+      {
+        name: doe_intr_en
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx2
+        package: ""
+        external: true
+        top_signame: mbx2_doe_intr_en
+        conn_type: false
+        index: -1
+      }
+      {
+        name: doe_intr
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx2
+        package: ""
+        external: true
+        top_signame: mbx2_doe_intr
+        conn_type: false
+        index: -1
+      }
+      {
+        name: sram_tl_h
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: mbx2
+        default: ""
+        top_signame: main_tl_mbx2__sram
+        index: -1
+      }
+      {
+        name: core_tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: mbx2
+        default: ""
+        end_idx: -1
+        top_signame: mbx2_core_tl_d
+        index: -1
+      }
+      {
+        name: soc_tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: mbx2
+        default: ""
+        end_idx: -1
+        top_signame: mbx2_soc_tl_d
+        index: -1
+      }
+      {
+        name: doe_intr_support
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx3
+        package: ""
+        external: true
+        top_signame: mbx3_doe_intr_support
+        conn_type: false
+        index: -1
+      }
+      {
+        name: doe_intr_en
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx3
+        package: ""
+        external: true
+        top_signame: mbx3_doe_intr_en
+        conn_type: false
+        index: -1
+      }
+      {
+        name: doe_intr
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx3
+        package: ""
+        external: true
+        top_signame: mbx3_doe_intr
+        conn_type: false
+        index: -1
+      }
+      {
+        name: sram_tl_h
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: mbx3
+        default: ""
+        top_signame: main_tl_mbx3__sram
+        index: -1
+      }
+      {
+        name: core_tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: mbx3
+        default: ""
+        end_idx: -1
+        top_signame: mbx3_core_tl_d
+        index: -1
+      }
+      {
+        name: soc_tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: mbx3
+        default: ""
+        end_idx: -1
+        top_signame: mbx3_soc_tl_d
+        index: -1
+      }
+      {
+        name: doe_intr_support
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx4
+        package: ""
+        external: true
+        top_signame: mbx4_doe_intr_support
+        conn_type: false
+        index: -1
+      }
+      {
+        name: doe_intr_en
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx4
+        package: ""
+        external: true
+        top_signame: mbx4_doe_intr_en
+        conn_type: false
+        index: -1
+      }
+      {
+        name: doe_intr
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx4
+        package: ""
+        external: true
+        top_signame: mbx4_doe_intr
+        conn_type: false
+        index: -1
+      }
+      {
+        name: sram_tl_h
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: mbx4
+        default: ""
+        top_signame: main_tl_mbx4__sram
+        index: -1
+      }
+      {
+        name: core_tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: mbx4
+        default: ""
+        end_idx: -1
+        top_signame: mbx4_core_tl_d
+        index: -1
+      }
+      {
+        name: soc_tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: mbx4
+        default: ""
+        end_idx: -1
+        top_signame: mbx4_soc_tl_d
+        index: -1
+      }
+      {
+        name: doe_intr_support
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx5
+        package: ""
+        external: true
+        top_signame: mbx5_doe_intr_support
+        conn_type: false
+        index: -1
+      }
+      {
+        name: doe_intr_en
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx5
+        package: ""
+        external: true
+        top_signame: mbx5_doe_intr_en
+        conn_type: false
+        index: -1
+      }
+      {
+        name: doe_intr
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx5
+        package: ""
+        external: true
+        top_signame: mbx5_doe_intr
+        conn_type: false
+        index: -1
+      }
+      {
+        name: sram_tl_h
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: mbx5
+        default: ""
+        top_signame: main_tl_mbx5__sram
+        index: -1
+      }
+      {
+        name: core_tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: mbx5
+        default: ""
+        end_idx: -1
+        top_signame: mbx5_core_tl_d
+        index: -1
+      }
+      {
+        name: soc_tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: mbx5
+        default: ""
+        end_idx: -1
+        top_signame: mbx5_soc_tl_d
+        index: -1
+      }
+      {
+        name: doe_intr_support
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx6
+        package: ""
+        external: true
+        top_signame: mbx6_doe_intr_support
+        conn_type: false
+        index: -1
+      }
+      {
+        name: doe_intr_en
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx6
+        package: ""
+        external: true
+        top_signame: mbx6_doe_intr_en
+        conn_type: false
+        index: -1
+      }
+      {
+        name: doe_intr
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx6
+        package: ""
+        external: true
+        top_signame: mbx6_doe_intr
+        conn_type: false
+        index: -1
+      }
+      {
+        name: sram_tl_h
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: mbx6
+        default: ""
+        top_signame: main_tl_mbx6__sram
+        index: -1
+      }
+      {
+        name: core_tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: mbx6
+        default: ""
+        end_idx: -1
+        top_signame: mbx6_core_tl_d
+        index: -1
+      }
+      {
+        name: soc_tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: mbx6
+        default: ""
+        end_idx: -1
+        top_signame: mbx6_soc_tl_d
+        index: -1
+      }
+      {
+        name: doe_intr_support
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx7
+        package: ""
+        external: true
+        top_signame: mbx7_doe_intr_support
+        conn_type: false
+        index: -1
+      }
+      {
+        name: doe_intr_en
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx7
+        package: ""
+        external: true
+        top_signame: mbx7_doe_intr_en
+        conn_type: false
+        index: -1
+      }
+      {
+        name: doe_intr
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx7
+        package: ""
+        external: true
+        top_signame: mbx7_doe_intr
+        conn_type: false
+        index: -1
+      }
+      {
+        name: sram_tl_h
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: mbx7
+        default: ""
+        top_signame: main_tl_mbx7__sram
+        index: -1
+      }
+      {
+        name: core_tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: mbx7
+        default: ""
+        end_idx: -1
+        top_signame: mbx7_core_tl_d
+        index: -1
+      }
+      {
+        name: soc_tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: mbx7
+        default: ""
+        end_idx: -1
+        top_signame: mbx7_soc_tl_d
+        index: -1
+      }
+      {
+        name: doe_intr_support
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx_jtag
+        package: ""
+        external: true
+        top_signame: mbx_jtag_doe_intr_support
+        conn_type: false
+        index: -1
+      }
+      {
+        name: doe_intr_en
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx_jtag
+        package: ""
+        external: true
+        top_signame: mbx_jtag_doe_intr_en
+        conn_type: false
+        index: -1
+      }
+      {
+        name: doe_intr
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx_jtag
+        package: ""
+        external: true
+        top_signame: mbx_jtag_doe_intr
+        conn_type: false
+        index: -1
+      }
+      {
+        name: sram_tl_h
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: mbx_jtag
+        default: ""
+        top_signame: main_tl_mbx_jtag__sram
+        index: -1
+      }
+      {
+        name: core_tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: mbx_jtag
+        default: ""
+        end_idx: -1
+        top_signame: mbx_jtag_core_tl_d
+        index: -1
+      }
+      {
+        name: soc_tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: mbx_jtag
+        default: ""
+        end_idx: -1
+        top_signame: mbx_jtag_soc_tl_d
+        index: -1
+      }
+      {
+        name: doe_intr_support
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx_pcie0
+        package: ""
+        external: true
+        top_signame: mbx_pcie0_doe_intr_support
+        conn_type: false
+        index: -1
+      }
+      {
+        name: doe_intr_en
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx_pcie0
+        package: ""
+        external: true
+        top_signame: mbx_pcie0_doe_intr_en
+        conn_type: false
+        index: -1
+      }
+      {
+        name: doe_intr
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: mbx_pcie0
+        package: ""
+        external: true
+        top_signame: mbx_pcie0_doe_intr
+        conn_type: false
+        index: -1
+      }
+      {
+        name: sram_tl_h
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: mbx_pcie0
+        default: ""
+        top_signame: main_tl_mbx_pcie0__sram
+        index: -1
+      }
+      {
+        name: core_tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: mbx_pcie0
+        default: ""
+        end_idx: -1
+        top_signame: mbx_pcie0_core_tl_d
+        index: -1
+      }
+      {
+        name: soc_tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: mbx_pcie0
+        default: ""
+        end_idx: -1
+        top_signame: mbx_pcie0_soc_tl_d
+        index: -1
+      }
+      {
         name: rst_cpu_n
         struct: logic
         type: uni
@@ -20342,6 +23907,136 @@
         default: ""
         end_idx: -1
         top_signame: main_tl_dma__host
+        index: -1
+      }
+      {
+        name: tl_mbx0__sram
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: main
+        default: ""
+        end_idx: -1
+        top_signame: main_tl_mbx0__sram
+        index: -1
+      }
+      {
+        name: tl_mbx1__sram
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: main
+        default: ""
+        end_idx: -1
+        top_signame: main_tl_mbx1__sram
+        index: -1
+      }
+      {
+        name: tl_mbx2__sram
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: main
+        default: ""
+        end_idx: -1
+        top_signame: main_tl_mbx2__sram
+        index: -1
+      }
+      {
+        name: tl_mbx3__sram
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: main
+        default: ""
+        end_idx: -1
+        top_signame: main_tl_mbx3__sram
+        index: -1
+      }
+      {
+        name: tl_mbx4__sram
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: main
+        default: ""
+        end_idx: -1
+        top_signame: main_tl_mbx4__sram
+        index: -1
+      }
+      {
+        name: tl_mbx5__sram
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: main
+        default: ""
+        end_idx: -1
+        top_signame: main_tl_mbx5__sram
+        index: -1
+      }
+      {
+        name: tl_mbx6__sram
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: main
+        default: ""
+        end_idx: -1
+        top_signame: main_tl_mbx6__sram
+        index: -1
+      }
+      {
+        name: tl_mbx7__sram
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: main
+        default: ""
+        end_idx: -1
+        top_signame: main_tl_mbx7__sram
+        index: -1
+      }
+      {
+        name: tl_mbx_jtag__sram
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: main
+        default: ""
+        end_idx: -1
+        top_signame: main_tl_mbx_jtag__sram
+        index: -1
+      }
+      {
+        name: tl_mbx_pcie0__sram
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: main
+        default: ""
+        end_idx: -1
+        top_signame: main_tl_mbx_pcie0__sram
         index: -1
       }
       {
@@ -20694,6 +24389,126 @@
         index: -1
       }
       {
+        name: tl_mbx0__core
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: main
+        default: ""
+        top_signame: mbx0_core_tl_d
+        index: -1
+      }
+      {
+        name: tl_mbx1__core
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: main
+        default: ""
+        top_signame: mbx1_core_tl_d
+        index: -1
+      }
+      {
+        name: tl_mbx2__core
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: main
+        default: ""
+        top_signame: mbx2_core_tl_d
+        index: -1
+      }
+      {
+        name: tl_mbx3__core
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: main
+        default: ""
+        top_signame: mbx3_core_tl_d
+        index: -1
+      }
+      {
+        name: tl_mbx4__core
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: main
+        default: ""
+        top_signame: mbx4_core_tl_d
+        index: -1
+      }
+      {
+        name: tl_mbx5__core
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: main
+        default: ""
+        top_signame: mbx5_core_tl_d
+        index: -1
+      }
+      {
+        name: tl_mbx6__core
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: main
+        default: ""
+        top_signame: mbx6_core_tl_d
+        index: -1
+      }
+      {
+        name: tl_mbx7__core
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: main
+        default: ""
+        top_signame: mbx7_core_tl_d
+        index: -1
+      }
+      {
+        name: tl_mbx_jtag__core
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: main
+        default: ""
+        top_signame: mbx_jtag_core_tl_d
+        index: -1
+      }
+      {
+        name: tl_mbx_pcie0__core
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: main
+        default: ""
+        top_signame: mbx_pcie0_core_tl_d
+        index: -1
+      }
+      {
         name: tl_main
         struct: tl
         package: tlul_pkg
@@ -20981,6 +24796,140 @@
         external: true
         top_signame: ast_tl
         conn_type: false
+        index: -1
+      }
+      {
+        name: tl_mbx
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: mbx
+        default: ""
+        external: true
+        top_signame: mbx_tl
+        conn_type: false
+        index: -1
+      }
+      {
+        name: tl_mbx0__soc
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: mbx
+        default: ""
+        top_signame: mbx0_soc_tl_d
+        index: -1
+      }
+      {
+        name: tl_mbx1__soc
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: mbx
+        default: ""
+        top_signame: mbx1_soc_tl_d
+        index: -1
+      }
+      {
+        name: tl_mbx2__soc
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: mbx
+        default: ""
+        top_signame: mbx2_soc_tl_d
+        index: -1
+      }
+      {
+        name: tl_mbx3__soc
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: mbx
+        default: ""
+        top_signame: mbx3_soc_tl_d
+        index: -1
+      }
+      {
+        name: tl_mbx4__soc
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: mbx
+        default: ""
+        top_signame: mbx4_soc_tl_d
+        index: -1
+      }
+      {
+        name: tl_mbx5__soc
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: mbx
+        default: ""
+        top_signame: mbx5_soc_tl_d
+        index: -1
+      }
+      {
+        name: tl_mbx6__soc
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: mbx
+        default: ""
+        top_signame: mbx6_soc_tl_d
+        index: -1
+      }
+      {
+        name: tl_mbx7__soc
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: mbx
+        default: ""
+        top_signame: mbx7_soc_tl_d
+        index: -1
+      }
+      {
+        name: tl_mbx_jtag__soc
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: mbx
+        default: ""
+        top_signame: mbx_jtag_soc_tl_d
+        index: -1
+      }
+      {
+        name: tl_mbx_pcie0__soc
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: mbx
+        default: ""
+        top_signame: mbx_pcie0_soc_tl_d
         index: -1
       }
       {
@@ -21407,6 +25356,390 @@
         conn_type: false
         index: -1
         netname: dma_ctn_tl_d2h
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: mbx_tl_req_i
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: mbx_tl_h2d
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: mbx_tl_rsp_o
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx_tl_d2h
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx0_doe_intr_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx0_doe_intr
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx0_doe_intr_en_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx0_doe_intr_en
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx0_doe_intr_support_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx0_doe_intr_support
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx1_doe_intr_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx1_doe_intr
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx1_doe_intr_en_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx1_doe_intr_en
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx1_doe_intr_support_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx1_doe_intr_support
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx2_doe_intr_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx2_doe_intr
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx2_doe_intr_en_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx2_doe_intr_en
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx2_doe_intr_support_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx2_doe_intr_support
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx3_doe_intr_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx3_doe_intr
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx3_doe_intr_en_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx3_doe_intr_en
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx3_doe_intr_support_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx3_doe_intr_support
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx4_doe_intr_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx4_doe_intr
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx4_doe_intr_en_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx4_doe_intr_en
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx4_doe_intr_support_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx4_doe_intr_support
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx5_doe_intr_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx5_doe_intr
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx5_doe_intr_en_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx5_doe_intr_en
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx5_doe_intr_support_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx5_doe_intr_support
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx6_doe_intr_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx6_doe_intr
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx6_doe_intr_en_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx6_doe_intr_en
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx6_doe_intr_support_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx6_doe_intr_support
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx7_doe_intr_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx7_doe_intr
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx7_doe_intr_en_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx7_doe_intr_en
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx7_doe_intr_support_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx7_doe_intr_support
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx_jtag_doe_intr_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx_jtag_doe_intr
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx_jtag_doe_intr_en_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx_jtag_doe_intr_en
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx_jtag_doe_intr_support_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx_jtag_doe_intr_support
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx_pcie0_doe_intr_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx_pcie0_doe_intr
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx_pcie0_doe_intr_en_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx_pcie0_doe_intr_en
+      }
+      {
+        package: ""
+        struct: logic
+        signame: mbx_pcie0_doe_intr_support_o
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: mbx_pcie0_doe_intr_support
       }
       {
         package: tlul_pkg
@@ -23580,6 +27913,446 @@
       {
         package: tlul_pkg
         struct: tl_h2d
+        signame: mbx0_core_tl_d_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: mbx0_core_tl_d_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: main_tl_mbx0__sram_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: main_tl_mbx0__sram_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: mbx1_core_tl_d_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: mbx1_core_tl_d_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: main_tl_mbx1__sram_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: main_tl_mbx1__sram_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: mbx2_core_tl_d_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: mbx2_core_tl_d_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: main_tl_mbx2__sram_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: main_tl_mbx2__sram_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: mbx3_core_tl_d_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: mbx3_core_tl_d_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: main_tl_mbx3__sram_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: main_tl_mbx3__sram_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: mbx4_core_tl_d_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: mbx4_core_tl_d_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: main_tl_mbx4__sram_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: main_tl_mbx4__sram_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: mbx5_core_tl_d_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: mbx5_core_tl_d_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: main_tl_mbx5__sram_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: main_tl_mbx5__sram_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: mbx6_core_tl_d_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: mbx6_core_tl_d_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: main_tl_mbx6__sram_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: main_tl_mbx6__sram_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: mbx7_core_tl_d_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: mbx7_core_tl_d_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: main_tl_mbx7__sram_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: main_tl_mbx7__sram_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: mbx_jtag_core_tl_d_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: mbx_jtag_core_tl_d_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: main_tl_mbx_jtag__sram_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: main_tl_mbx_jtag__sram_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: mbx_pcie0_core_tl_d_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: mbx_pcie0_core_tl_d_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: main_tl_mbx_pcie0__sram_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: main_tl_mbx_pcie0__sram_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
         signame: uart0_tl_req
         width: 1
         type: req_rsp
@@ -24054,6 +28827,226 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: adc_ctrl_aon_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: mbx0_soc_tl_d_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: mbx0_soc_tl_d_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: mbx1_soc_tl_d_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: mbx1_soc_tl_d_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: mbx2_soc_tl_d_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: mbx2_soc_tl_d_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: mbx3_soc_tl_d_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: mbx3_soc_tl_d_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: mbx4_soc_tl_d_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: mbx4_soc_tl_d_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: mbx5_soc_tl_d_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: mbx5_soc_tl_d_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: mbx6_soc_tl_d_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: mbx6_soc_tl_d_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: mbx7_soc_tl_d_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: mbx7_soc_tl_d_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: mbx_jtag_soc_tl_d_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: mbx_jtag_soc_tl_d_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: mbx_pcie0_soc_tl_d_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: mbx_pcie0_soc_tl_d_rsp
         width: 1
         type: req_rsp
         end_idx: -1

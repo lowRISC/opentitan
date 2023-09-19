@@ -91,6 +91,36 @@ tl_device_t xbar_devices[$] = '{
     '{"dma", '{
         '{32'h22010000, 32'h220100ff}
     }},
+    '{"mbx0__core", '{
+        '{32'h22000000, 32'h2200007f}
+    }},
+    '{"mbx1__core", '{
+        '{32'h22000100, 32'h2200017f}
+    }},
+    '{"mbx2__core", '{
+        '{32'h22000200, 32'h2200027f}
+    }},
+    '{"mbx3__core", '{
+        '{32'h22000300, 32'h2200037f}
+    }},
+    '{"mbx4__core", '{
+        '{32'h22000400, 32'h2200047f}
+    }},
+    '{"mbx5__core", '{
+        '{32'h22000500, 32'h2200057f}
+    }},
+    '{"mbx6__core", '{
+        '{32'h22000600, 32'h2200067f}
+    }},
+    '{"mbx7__core", '{
+        '{32'h22000700, 32'h2200077f}
+    }},
+    '{"mbx_jtag__core", '{
+        '{32'h22000800, 32'h2200087f}
+    }},
+    '{"mbx_pcie0__core", '{
+        '{32'h22040000, 32'h2204007f}
+    }},
     '{"uart0", '{
         '{32'h30010000, 32'h3001003f}
     }},
@@ -159,6 +189,36 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"ast", '{
         '{32'h30480000, 32'h304803ff}
+    }},
+    '{"mbx0__soc", '{
+        '{32'h00005000, 32'h0000501f}
+    }},
+    '{"mbx1__soc", '{
+        '{32'h00005100, 32'h0000511f}
+    }},
+    '{"mbx2__soc", '{
+        '{32'h00005200, 32'h0000521f}
+    }},
+    '{"mbx3__soc", '{
+        '{32'h00005300, 32'h0000531f}
+    }},
+    '{"mbx4__soc", '{
+        '{32'h00005400, 32'h0000541f}
+    }},
+    '{"mbx5__soc", '{
+        '{32'h00005500, 32'h0000551f}
+    }},
+    '{"mbx6__soc", '{
+        '{32'h00005600, 32'h0000561f}
+    }},
+    '{"mbx7__soc", '{
+        '{32'h00005700, 32'h0000571f}
+    }},
+    '{"mbx_jtag__soc", '{
+        '{32'h00005800, 32'h0000581f}
+    }},
+    '{"mbx_pcie0__soc", '{
+        '{32'h00000100, 32'h0000011f}
     }}};
 
   // List of Xbar hosts
@@ -222,7 +282,17 @@ tl_host_t xbar_hosts[$] = '{
         "sram_ctrl_mbox__regs",
         "soc_proxy__ctn",
         "soc_proxy__core",
-        "dma"}}
+        "dma",
+        "mbx0__core",
+        "mbx1__core",
+        "mbx2__core",
+        "mbx3__core",
+        "mbx4__core",
+        "mbx5__core",
+        "mbx6__core",
+        "mbx7__core",
+        "mbx_jtag__core",
+        "mbx_pcie0__core"}}
     ,
     '{"rv_dm__sba", 2, '{
         "rom_ctrl0__rom",
@@ -275,7 +345,17 @@ tl_host_t xbar_hosts[$] = '{
         "sram_ctrl_mbox__regs",
         "soc_proxy__ctn",
         "soc_proxy__core",
-        "dma"}}
+        "dma",
+        "mbx0__core",
+        "mbx1__core",
+        "mbx2__core",
+        "mbx3__core",
+        "mbx4__core",
+        "mbx5__core",
+        "mbx6__core",
+        "mbx7__core",
+        "mbx_jtag__core",
+        "mbx_pcie0__core"}}
     ,
     '{"dma__host", 3, '{
         "sram_ctrl_main__ram",
@@ -302,4 +382,34 @@ tl_host_t xbar_hosts[$] = '{
         "aon_timer_aon",
         "adc_ctrl_aon",
         "sysrst_ctrl_aon"}}
+    ,
+    '{"mbx0__sram", 4, '{
+        "sram_ctrl_mbox__ram"}}
+    ,
+    '{"mbx1__sram", 5, '{
+        "sram_ctrl_mbox__ram"}}
+    ,
+    '{"mbx2__sram", 6, '{
+        "sram_ctrl_mbox__ram"}}
+    ,
+    '{"mbx3__sram", 7, '{
+        "sram_ctrl_mbox__ram"}}
+    ,
+    '{"mbx4__sram", 8, '{
+        "sram_ctrl_mbox__ram"}}
+    ,
+    '{"mbx5__sram", 9, '{
+        "sram_ctrl_mbox__ram"}}
+    ,
+    '{"mbx6__sram", 10, '{
+        "sram_ctrl_mbox__ram"}}
+    ,
+    '{"mbx7__sram", 11, '{
+        "sram_ctrl_mbox__ram"}}
+    ,
+    '{"mbx_jtag__sram", 12, '{
+        "sram_ctrl_mbox__ram"}}
+    ,
+    '{"mbx_pcie0__sram", 13, '{
+        "sram_ctrl_mbox__ram"}}
 };

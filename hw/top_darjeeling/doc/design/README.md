@@ -447,6 +447,16 @@ For the purpose of `top_darjeeling`, the first option has been chosen to benefit
 | rom_ctrl1         | rom_ctrl      | 0x00020000 (rom)  |
 |                   |               | 0x211e1000 (regs) |
 | dma               | dma           | 0x22010000 (regs) |
+| mbx0              | mbx           | 0x22000000 (core) |
+| mbx1              | mbx           | 0x22000100 (core) |
+| mbx2              | mbx           | 0x22000200 (core) |
+| mbx3              | mbx           | 0x22000300 (core) |
+| mbx4              | mbx           | 0x22000400 (core) |
+| mbx5              | mbx           | 0x22000500 (core) |
+| mbx6              | mbx           | 0x22000600 (core) |
+| mbx7              | mbx           | 0x22000700 (core) |
+| mbx_jtag          | mbx           | 0x22000800 (core) |
+| mbx_pcie0         | mbx           | 0x22040000 (core) |
 | rv_core_ibex      | rv_core_ibex  | 0x211f0000 (cfg)  |
 
 <!-- END CMDGEN -->

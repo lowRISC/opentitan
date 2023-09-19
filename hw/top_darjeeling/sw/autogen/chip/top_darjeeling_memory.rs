@@ -710,6 +710,136 @@ pub const TOP_DARJEELING_DMA_BASE_ADDR: usize = 0x22010000;
 /// address between #TOP_DARJEELING_DMA_BASE_ADDR and
 /// `TOP_DARJEELING_DMA_BASE_ADDR + TOP_DARJEELING_DMA_SIZE_BYTES`.
 pub const TOP_DARJEELING_DMA_SIZE_BYTES: usize = 0x100;
+/// Peripheral base address for core device on mbx0 in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const TOP_DARJEELING_MBX0_CORE_BASE_ADDR: usize = 0x22000000;
+
+/// Peripheral size for core device on mbx0 in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #TOP_DARJEELING_MBX0_CORE_BASE_ADDR and
+/// `TOP_DARJEELING_MBX0_CORE_BASE_ADDR + TOP_DARJEELING_MBX0_CORE_SIZE_BYTES`.
+pub const TOP_DARJEELING_MBX0_CORE_SIZE_BYTES: usize = 0x80;
+/// Peripheral base address for core device on mbx1 in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const TOP_DARJEELING_MBX1_CORE_BASE_ADDR: usize = 0x22000100;
+
+/// Peripheral size for core device on mbx1 in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #TOP_DARJEELING_MBX1_CORE_BASE_ADDR and
+/// `TOP_DARJEELING_MBX1_CORE_BASE_ADDR + TOP_DARJEELING_MBX1_CORE_SIZE_BYTES`.
+pub const TOP_DARJEELING_MBX1_CORE_SIZE_BYTES: usize = 0x80;
+/// Peripheral base address for core device on mbx2 in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const TOP_DARJEELING_MBX2_CORE_BASE_ADDR: usize = 0x22000200;
+
+/// Peripheral size for core device on mbx2 in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #TOP_DARJEELING_MBX2_CORE_BASE_ADDR and
+/// `TOP_DARJEELING_MBX2_CORE_BASE_ADDR + TOP_DARJEELING_MBX2_CORE_SIZE_BYTES`.
+pub const TOP_DARJEELING_MBX2_CORE_SIZE_BYTES: usize = 0x80;
+/// Peripheral base address for core device on mbx3 in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const TOP_DARJEELING_MBX3_CORE_BASE_ADDR: usize = 0x22000300;
+
+/// Peripheral size for core device on mbx3 in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #TOP_DARJEELING_MBX3_CORE_BASE_ADDR and
+/// `TOP_DARJEELING_MBX3_CORE_BASE_ADDR + TOP_DARJEELING_MBX3_CORE_SIZE_BYTES`.
+pub const TOP_DARJEELING_MBX3_CORE_SIZE_BYTES: usize = 0x80;
+/// Peripheral base address for core device on mbx4 in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const TOP_DARJEELING_MBX4_CORE_BASE_ADDR: usize = 0x22000400;
+
+/// Peripheral size for core device on mbx4 in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #TOP_DARJEELING_MBX4_CORE_BASE_ADDR and
+/// `TOP_DARJEELING_MBX4_CORE_BASE_ADDR + TOP_DARJEELING_MBX4_CORE_SIZE_BYTES`.
+pub const TOP_DARJEELING_MBX4_CORE_SIZE_BYTES: usize = 0x80;
+/// Peripheral base address for core device on mbx5 in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const TOP_DARJEELING_MBX5_CORE_BASE_ADDR: usize = 0x22000500;
+
+/// Peripheral size for core device on mbx5 in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #TOP_DARJEELING_MBX5_CORE_BASE_ADDR and
+/// `TOP_DARJEELING_MBX5_CORE_BASE_ADDR + TOP_DARJEELING_MBX5_CORE_SIZE_BYTES`.
+pub const TOP_DARJEELING_MBX5_CORE_SIZE_BYTES: usize = 0x80;
+/// Peripheral base address for core device on mbx6 in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const TOP_DARJEELING_MBX6_CORE_BASE_ADDR: usize = 0x22000600;
+
+/// Peripheral size for core device on mbx6 in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #TOP_DARJEELING_MBX6_CORE_BASE_ADDR and
+/// `TOP_DARJEELING_MBX6_CORE_BASE_ADDR + TOP_DARJEELING_MBX6_CORE_SIZE_BYTES`.
+pub const TOP_DARJEELING_MBX6_CORE_SIZE_BYTES: usize = 0x80;
+/// Peripheral base address for core device on mbx7 in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const TOP_DARJEELING_MBX7_CORE_BASE_ADDR: usize = 0x22000700;
+
+/// Peripheral size for core device on mbx7 in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #TOP_DARJEELING_MBX7_CORE_BASE_ADDR and
+/// `TOP_DARJEELING_MBX7_CORE_BASE_ADDR + TOP_DARJEELING_MBX7_CORE_SIZE_BYTES`.
+pub const TOP_DARJEELING_MBX7_CORE_SIZE_BYTES: usize = 0x80;
+/// Peripheral base address for core device on mbx_jtag in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const TOP_DARJEELING_MBX_JTAG_CORE_BASE_ADDR: usize = 0x22000800;
+
+/// Peripheral size for core device on mbx_jtag in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #TOP_DARJEELING_MBX_JTAG_CORE_BASE_ADDR and
+/// `TOP_DARJEELING_MBX_JTAG_CORE_BASE_ADDR + TOP_DARJEELING_MBX_JTAG_CORE_SIZE_BYTES`.
+pub const TOP_DARJEELING_MBX_JTAG_CORE_SIZE_BYTES: usize = 0x80;
+/// Peripheral base address for core device on mbx_pcie0 in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const TOP_DARJEELING_MBX_PCIE0_CORE_BASE_ADDR: usize = 0x22040000;
+
+/// Peripheral size for core device on mbx_pcie0 in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #TOP_DARJEELING_MBX_PCIE0_CORE_BASE_ADDR and
+/// `TOP_DARJEELING_MBX_PCIE0_CORE_BASE_ADDR + TOP_DARJEELING_MBX_PCIE0_CORE_SIZE_BYTES`.
+pub const TOP_DARJEELING_MBX_PCIE0_CORE_SIZE_BYTES: usize = 0x80;
 /// Peripheral base address for cfg device on rv_core_ibex in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped

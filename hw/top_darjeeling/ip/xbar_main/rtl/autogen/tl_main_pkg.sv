@@ -37,6 +37,16 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_MBOX__REGS = 32'h 211d0000;
   localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_MBOX__RAM  = 32'h 11000000;
   localparam logic [31:0] ADDR_SPACE_DMA                  = 32'h 22010000;
+  localparam logic [31:0] ADDR_SPACE_MBX0__CORE           = 32'h 22000000;
+  localparam logic [31:0] ADDR_SPACE_MBX1__CORE           = 32'h 22000100;
+  localparam logic [31:0] ADDR_SPACE_MBX2__CORE           = 32'h 22000200;
+  localparam logic [31:0] ADDR_SPACE_MBX3__CORE           = 32'h 22000300;
+  localparam logic [31:0] ADDR_SPACE_MBX4__CORE           = 32'h 22000400;
+  localparam logic [31:0] ADDR_SPACE_MBX5__CORE           = 32'h 22000500;
+  localparam logic [31:0] ADDR_SPACE_MBX6__CORE           = 32'h 22000600;
+  localparam logic [31:0] ADDR_SPACE_MBX7__CORE           = 32'h 22000700;
+  localparam logic [31:0] ADDR_SPACE_MBX_JTAG__CORE       = 32'h 22000800;
+  localparam logic [31:0] ADDR_SPACE_MBX_PCIE0__CORE      = 32'h 22040000;
 
   localparam logic [31:0] ADDR_MASK_RV_DM__REGS          = 32'h 00000003;
   localparam logic [31:0] ADDR_MASK_RV_DM__MEM           = 32'h 00000fff;
@@ -69,9 +79,19 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_MBOX__REGS = 32'h 0000001f;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_MBOX__RAM  = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_DMA                  = 32'h 000000ff;
+  localparam logic [31:0] ADDR_MASK_MBX0__CORE           = 32'h 0000007f;
+  localparam logic [31:0] ADDR_MASK_MBX1__CORE           = 32'h 0000007f;
+  localparam logic [31:0] ADDR_MASK_MBX2__CORE           = 32'h 0000007f;
+  localparam logic [31:0] ADDR_MASK_MBX3__CORE           = 32'h 0000007f;
+  localparam logic [31:0] ADDR_MASK_MBX4__CORE           = 32'h 0000007f;
+  localparam logic [31:0] ADDR_MASK_MBX5__CORE           = 32'h 0000007f;
+  localparam logic [31:0] ADDR_MASK_MBX6__CORE           = 32'h 0000007f;
+  localparam logic [31:0] ADDR_MASK_MBX7__CORE           = 32'h 0000007f;
+  localparam logic [31:0] ADDR_MASK_MBX_JTAG__CORE       = 32'h 0000007f;
+  localparam logic [31:0] ADDR_MASK_MBX_PCIE0__CORE      = 32'h 0000007f;
 
-  localparam int N_HOST   = 4;
-  localparam int N_DEVICE = 29;
+  localparam int N_HOST   = 14;
+  localparam int N_DEVICE = 39;
 
   typedef enum int {
     TlRvDmRegs = 0,
@@ -102,14 +122,34 @@ package tl_main_pkg;
     TlSramCtrlMainRam = 25,
     TlSramCtrlMboxRegs = 26,
     TlSramCtrlMboxRam = 27,
-    TlDma = 28
+    TlDma = 28,
+    TlMbx0Core = 29,
+    TlMbx1Core = 30,
+    TlMbx2Core = 31,
+    TlMbx3Core = 32,
+    TlMbx4Core = 33,
+    TlMbx5Core = 34,
+    TlMbx6Core = 35,
+    TlMbx7Core = 36,
+    TlMbxJtagCore = 37,
+    TlMbxPcie0Core = 38
   } tl_device_e;
 
   typedef enum int {
     TlRvCoreIbexCorei = 0,
     TlRvCoreIbexCored = 1,
     TlRvDmSba = 2,
-    TlDmaHost = 3
+    TlDmaHost = 3,
+    TlMbx0Sram = 4,
+    TlMbx1Sram = 5,
+    TlMbx2Sram = 6,
+    TlMbx3Sram = 7,
+    TlMbx4Sram = 8,
+    TlMbx5Sram = 9,
+    TlMbx6Sram = 10,
+    TlMbx7Sram = 11,
+    TlMbxJtagSram = 12,
+    TlMbxPcie0Sram = 13
   } tl_host_e;
 
 endpackage
