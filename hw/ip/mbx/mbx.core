@@ -13,8 +13,8 @@ filesets:
     files:
       - rtl/mbx_reg_pkg.sv
       - rtl/mbx.sv
-      - rtl/mbx_host_reg_top.sv
-      - rtl/mbx_sys_reg_top.sv
+      - rtl/mbx_core_reg_top.sv
+      - rtl/mbx_soc_reg_top.sv
       - rtl/mbx_hostif.sv
       - rtl/mbx_sysif.sv
       - rtl/mbx_sramrwarb.sv

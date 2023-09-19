@@ -49,15 +49,15 @@ module mbx_sysif
 );
   import mbx_reg_pkg::*;
 
-  mbx_sys_reg2hw_t reg2hw;
-  mbx_sys_hw2reg_t hw2reg;
+  mbx_soc_reg2hw_t reg2hw;
+  mbx_soc_hw2reg_t hw2reg;
 
   // Interface for the custom register interface with bus blocking support
   tlul_pkg::tl_h2d_t tl_win_h2d[2];
   tlul_pkg::tl_d2h_t tl_win_d2h[2];
 
   // SEC_CM: BUS.INTEGRITY
-  mbx_sys_reg_top u_sys_regs (
+  mbx_soc_reg_top u_soc_regs (
     .clk_i      ( clk_i      ),
     .rst_ni     ( rst_ni     ),
     .tl_i       ( tl_sys_i   ),
@@ -69,14 +69,14 @@ module mbx_sysif
   );
 
   assign doe_intr_support_o = DoeIrqSupport;
-  assign doe_intr_o         = reg2hw.sys_status.doe_intr_status.q;
+  assign doe_intr_o         = reg2hw.soc_status.doe_intr_status.q;
 
   // Control register
-  assign sysif_control_abort_set_o   = reg2hw.sys_control.abort.qe & reg2hw.sys_control.abort.q;
-  assign hw2reg.sys_control.abort.d  = 1'b0;
+  assign sysif_control_abort_set_o   = reg2hw.soc_control.abort.qe & reg2hw.soc_control.abort.q;
+  assign hw2reg.soc_control.abort.d  = 1'b0;
 
-  assign sysif_control_go_set_o   = reg2hw.sys_control.go.qe & reg2hw.sys_control.go.q;
-  assign hw2reg.sys_control.go.d  = 1'b0;
+  assign sysif_control_go_set_o   = reg2hw.soc_control.go.qe & reg2hw.soc_control.go.q;
+  assign hw2reg.soc_control.go.d  = 1'b0;
 
   // Manual implementation of the doe_intr_en bit
   // SWAccess: RW
@@ -85,44 +85,44 @@ module mbx_sysif
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_sys_control_doe_intr_en (
+  ) u_soc_control_doe_intr_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
     // from register interface
-    .we     (reg2hw.sys_control.doe_intr_en.qe),
-    .wd     (reg2hw.sys_control.doe_intr_en.q),
+    .we     (reg2hw.soc_control.doe_intr_en.qe),
+    .wd     (reg2hw.soc_control.doe_intr_en.q),
     // HWAccess: hro
     .de     (1'b0),
     .d      (1'b0),
     // to internal hardware
     .qe     (),
     .q      (doe_intr_en_o),
-    .ds     (hw2reg.sys_control.doe_intr_en.d),
+    .ds     (hw2reg.soc_control.doe_intr_en.d),
     .qs     ()
   );
 
   // Fiddle out status register bits for external write logic
-  assign sysif_status_doe_intr_status_o  = reg2hw.sys_status.doe_intr_status.q;
-  assign sysif_status_busy_o             = reg2hw.sys_status.busy.q;
-  assign sysif_status_error_o            = reg2hw.sys_status.error.q;
+  assign sysif_status_doe_intr_status_o  = reg2hw.soc_status.doe_intr_status.q;
+  assign sysif_status_busy_o             = reg2hw.soc_status.busy.q;
+  assign sysif_status_error_o            = reg2hw.soc_status.error.q;
 
   // External read logic
-  assign hw2reg.sys_status.busy.de = sysif_status_busy_valid_i;
-  assign hw2reg.sys_status.busy.d  = sysif_status_busy_i;
+  assign hw2reg.soc_status.busy.de = sysif_status_busy_valid_i;
+  assign hw2reg.soc_status.busy.d  = sysif_status_busy_i;
 
   // Set by the outbound handler if the DOE interrupt is enabled. Setting this bit creates a DOE
   // interrupt to the system side.
-  // Cleared by the Sys firmware (w1c)
-  assign hw2reg.sys_status.doe_intr_status.de = sysif_status_doe_intr_status_set_i & doe_intr_en_o;
-  assign hw2reg.sys_status.doe_intr_status.d  = sysif_status_doe_intr_status_set_i;
+  // Cleared by SoC firmware (w1c)
+  assign hw2reg.soc_status.doe_intr_status.de = sysif_status_doe_intr_status_set_i & doe_intr_en_o;
+  assign hw2reg.soc_status.doe_intr_status.d  = sysif_status_doe_intr_status_set_i;
 
-  assign hw2reg.sys_status.error.de = sysif_status_error_set_i | sysif_status_error_clear_i;
-  assign hw2reg.sys_status.error.d  = sysif_status_error_set_i;
+  assign hw2reg.soc_status.error.de = sysif_status_error_set_i | sysif_status_error_clear_i;
+  assign hw2reg.soc_status.error.d  = sysif_status_error_set_i;
 
-  // Set by the Host firmware (w1s)
-  // Cleared by the Sys firmware (w1c)
-  assign hw2reg.sys_status.ready.de            = sysif_status_ready_valid_i;
-  assign hw2reg.sys_status.ready.d             = sysif_status_ready_i;
+  // Set by OT firmware (w1s)
+  // Cleared by SoC firmware (w1c)
+  assign hw2reg.soc_status.ready.de            = sysif_status_ready_valid_i;
+  assign hw2reg.soc_status.ready.d             = sysif_status_ready_i;
 
   // Dedicated TLUL adapter for implementing the write data mailbox register via a register window.
   // We use the register window to access the internal bus signals, allowing the mailbox to halt
@@ -130,7 +130,7 @@ module mbx_sysif
   logic reg_wdata_we;
   logic [top_pkg::TL_DW-1:0] reg_wdata_wdata;
   tlul_adapter_reg #(
-    .RegAw             ( SysAw          ),
+    .RegAw             ( SocAw          ),
     .RegDw             ( top_pkg::TL_DW ),
     .EnableDataIntgGen ( 0              )
   ) u_wdata_reg_if (
@@ -156,7 +156,7 @@ module mbx_sysif
   // the bus if there are too many outstanding requests. The register is implemented as hwext
   // outside of this hierarchy
   tlul_adapter_reg #(
-    .RegAw             ( SysAw          ),
+    .RegAw             ( SocAw          ),
     .RegDw             ( top_pkg::TL_DW ),
     .EnableDataIntgGen ( 0              )
   ) u_rdata_reg_if (
@@ -218,8 +218,8 @@ module mbx_sysif
   );
 
   // Forward IRQ addr and data register to the host interface
-  assign sysif_intr_msg_addr_o = reg2hw.sys_doe_intr_msg_addr.q;
-  assign sysif_intr_msg_data_o = reg2hw.sys_doe_intr_msg_data.q;
+  assign sysif_intr_msg_addr_o = reg2hw.soc_doe_intr_msg_addr.q;
+  assign sysif_intr_msg_data_o = reg2hw.soc_doe_intr_msg_data.q;
 
   // Assertions
   `ASSERT(DataWidthCheck_A, CfgSramDataWidth == top_pkg::TL_DW)

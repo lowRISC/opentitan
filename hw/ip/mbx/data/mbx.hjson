@@ -19,9 +19,9 @@
 
   clocking: [{clock: "clk_i", reset: "rst_ni", primary: true}]
   bus_interfaces: [
-    { protocol: "tlul", direction: "device", name: "host" }
+    { protocol: "tlul", direction: "device", name: "core" }
     { protocol: "tlul", direction: "host",   name: "sram" }
-    { protocol: "tlul", direction: "device", name: "sys" }
+    { protocol: "tlul", direction: "device", name: "soc" }
   ]
   inter_signal_list: [
     { struct:  "logic",
@@ -72,9 +72,9 @@
   ]
   regwidth: "32"
   registers: {
-    host: [
+    core: [
       { name: "CONTROL"
-        desc: "DOE mailbox control register visible to the mailbox host"
+        desc: "DOE mailbox control register visible to OpenTitan"
         hwext: "true"
         fields: [
           { name: "abort"
@@ -96,7 +96,7 @@
         ]
       }
       { name: "STATUS"
-        desc: "DOE mailbox status register visible to the mailbox host"
+        desc: "DOE mailbox status register visible to OpenTitan"
         hwext: "true"
         fields: [
           { name: "busy"
@@ -264,7 +264,7 @@
       }
       { name: "DOE_INTR_MSG_ADDR"
         desc: '''
-              Software read-only alias of the DOE_INTR_MSG_ADDR register of the SYS interface for convenient access of the OT firmware.
+              Software read-only alias of the DOE_INTR_MSG_ADDR register of the SoC interface for convenient access of the OT firmware.
               Defined only for FW-to-FW mailboxes.
               '''
         hwext: "true"
@@ -280,7 +280,7 @@
       }
       { name: "DOE_INTR_MSG_DATA"
         desc: '''
-              Software read-only alias of the DOE_INTR_MSG_DATA register of the SYS interface for convenient access of the OT firmware.
+              Software read-only alias of the DOE_INTR_MSG_DATA register of the SoC interface for convenient access of the OT firmware.
               Defined only for FW-to-FW mailboxes.
               '''
         hwext: "true"
@@ -295,8 +295,8 @@
         ]
       }
     ]
-    sys: [
-      { name: "SYS_DOE_INTR_MSG_ADDR"
+    soc: [
+      { name: "SOC_DOE_INTR_MSG_ADDR"
         desc: '''
               Utilized by the mailbox responder to send an interrupt message to the requester via a write to the configured address.
               Defined only for FW-to-FW mailboxes.
@@ -312,7 +312,7 @@
           }
         ]
       }
-      { name: "SYS_DOE_INTR_MSG_DATA"
+      { name: "SOC_DOE_INTR_MSG_DATA"
         desc: '''
               Interrupt message data to be sent to the address configured in the DOE_INTR_MSG_ADDR register.
               Defined only for FW-to-FW mailboxes.
@@ -328,7 +328,7 @@
           }
         ]
       }
-      { name: "SYS_CONTROL"
+      { name: "SOC_CONTROL"
         desc: "DOE mailbox control register."
         hwaccess: "hrw"
         hwqe: "true"
@@ -360,7 +360,7 @@
           }
         ]
       }
-      { name: "SYS_STATUS"
+      { name: "SOC_STATUS"
         desc: "DOE mailbox status register"
         fields: [
           { name: "busy"
@@ -392,7 +392,7 @@
           }
           { name: "ready"
             desc: '''
-                  When Set, this bit indicates the DOE instance has a data object available to be read by system firmware/software.
+                  When Set, this bit indicates the DOE instance has a data object available to be read by SoC firmware/software.
                   The transition of this bit from Clear to Set is an interrupt triggering event.
                   '''
             bits: "31"

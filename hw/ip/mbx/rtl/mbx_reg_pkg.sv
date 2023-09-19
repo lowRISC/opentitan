@@ -10,11 +10,11 @@ package mbx_reg_pkg;
   parameter int NumAlerts = 2;
 
   // Address widths within the block
-  parameter int HostAw = 7;
-  parameter int SysAw = 5;
+  parameter int CoreAw = 7;
+  parameter int SocAw = 5;
 
   ///////////////////////////////////////////////
-  // Typedefs for registers for host interface //
+  // Typedefs for registers for core interface //
   ///////////////////////////////////////////////
 
   typedef struct packed {
@@ -187,7 +187,7 @@ package mbx_reg_pkg;
     logic [31:0] d;
   } mbx_hw2reg_doe_intr_msg_data_reg_t;
 
-  // Register -> HW type for host interface
+  // Register -> HW type for core interface
   typedef struct packed {
     mbx_reg2hw_intr_state_reg_t intr_state; // [288:287]
     mbx_reg2hw_intr_enable_reg_t intr_enable; // [286:285]
@@ -206,9 +206,9 @@ package mbx_reg_pkg;
     mbx_reg2hw_outbound_object_size_reg_t outbound_object_size; // [75:64]
     mbx_reg2hw_doe_intr_msg_addr_reg_t doe_intr_msg_addr; // [63:32]
     mbx_reg2hw_doe_intr_msg_data_reg_t doe_intr_msg_data; // [31:0]
-  } mbx_host_reg2hw_t;
+  } mbx_core_reg2hw_t;
 
-  // HW -> register type for host interface
+  // HW -> register type for core interface
   typedef struct packed {
     mbx_hw2reg_intr_state_reg_t intr_state; // [144:141]
     mbx_hw2reg_control_reg_t control; // [140:139]
@@ -218,28 +218,28 @@ package mbx_reg_pkg;
     mbx_hw2reg_outbound_object_size_reg_t outbound_object_size; // [75:64]
     mbx_hw2reg_doe_intr_msg_addr_reg_t doe_intr_msg_addr; // [63:32]
     mbx_hw2reg_doe_intr_msg_data_reg_t doe_intr_msg_data; // [31:0]
-  } mbx_host_hw2reg_t;
+  } mbx_core_hw2reg_t;
 
-  // Register offsets for host interface
-  parameter logic [HostAw-1:0] MBX_INTR_STATE_OFFSET = 7'h 0;
-  parameter logic [HostAw-1:0] MBX_INTR_ENABLE_OFFSET = 7'h 4;
-  parameter logic [HostAw-1:0] MBX_INTR_TEST_OFFSET = 7'h 8;
-  parameter logic [HostAw-1:0] MBX_ALERT_TEST_OFFSET = 7'h c;
-  parameter logic [HostAw-1:0] MBX_CONTROL_OFFSET = 7'h 10;
-  parameter logic [HostAw-1:0] MBX_STATUS_OFFSET = 7'h 14;
-  parameter logic [HostAw-1:0] MBX_ADDRESS_RANGE_REGWEN_OFFSET = 7'h 18;
-  parameter logic [HostAw-1:0] MBX_ADDRESS_RANGE_VALID_OFFSET = 7'h 1c;
-  parameter logic [HostAw-1:0] MBX_INBOUND_BASE_ADDRESS_OFFSET = 7'h 20;
-  parameter logic [HostAw-1:0] MBX_INBOUND_LIMIT_ADDRESS_OFFSET = 7'h 24;
-  parameter logic [HostAw-1:0] MBX_INBOUND_WRITE_PTR_OFFSET = 7'h 28;
-  parameter logic [HostAw-1:0] MBX_OUTBOUND_BASE_ADDRESS_OFFSET = 7'h 2c;
-  parameter logic [HostAw-1:0] MBX_OUTBOUND_LIMIT_ADDRESS_OFFSET = 7'h 30;
-  parameter logic [HostAw-1:0] MBX_OUTBOUND_READ_PTR_OFFSET = 7'h 34;
-  parameter logic [HostAw-1:0] MBX_OUTBOUND_OBJECT_SIZE_OFFSET = 7'h 38;
-  parameter logic [HostAw-1:0] MBX_DOE_INTR_MSG_ADDR_OFFSET = 7'h 3c;
-  parameter logic [HostAw-1:0] MBX_DOE_INTR_MSG_DATA_OFFSET = 7'h 40;
+  // Register offsets for core interface
+  parameter logic [CoreAw-1:0] MBX_INTR_STATE_OFFSET = 7'h 0;
+  parameter logic [CoreAw-1:0] MBX_INTR_ENABLE_OFFSET = 7'h 4;
+  parameter logic [CoreAw-1:0] MBX_INTR_TEST_OFFSET = 7'h 8;
+  parameter logic [CoreAw-1:0] MBX_ALERT_TEST_OFFSET = 7'h c;
+  parameter logic [CoreAw-1:0] MBX_CONTROL_OFFSET = 7'h 10;
+  parameter logic [CoreAw-1:0] MBX_STATUS_OFFSET = 7'h 14;
+  parameter logic [CoreAw-1:0] MBX_ADDRESS_RANGE_REGWEN_OFFSET = 7'h 18;
+  parameter logic [CoreAw-1:0] MBX_ADDRESS_RANGE_VALID_OFFSET = 7'h 1c;
+  parameter logic [CoreAw-1:0] MBX_INBOUND_BASE_ADDRESS_OFFSET = 7'h 20;
+  parameter logic [CoreAw-1:0] MBX_INBOUND_LIMIT_ADDRESS_OFFSET = 7'h 24;
+  parameter logic [CoreAw-1:0] MBX_INBOUND_WRITE_PTR_OFFSET = 7'h 28;
+  parameter logic [CoreAw-1:0] MBX_OUTBOUND_BASE_ADDRESS_OFFSET = 7'h 2c;
+  parameter logic [CoreAw-1:0] MBX_OUTBOUND_LIMIT_ADDRESS_OFFSET = 7'h 30;
+  parameter logic [CoreAw-1:0] MBX_OUTBOUND_READ_PTR_OFFSET = 7'h 34;
+  parameter logic [CoreAw-1:0] MBX_OUTBOUND_OBJECT_SIZE_OFFSET = 7'h 38;
+  parameter logic [CoreAw-1:0] MBX_DOE_INTR_MSG_ADDR_OFFSET = 7'h 3c;
+  parameter logic [CoreAw-1:0] MBX_DOE_INTR_MSG_DATA_OFFSET = 7'h 40;
 
-  // Reset values for hwext registers and their fields for host interface
+  // Reset values for hwext registers and their fields for core interface
   parameter logic [1:0] MBX_INTR_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] MBX_INTR_TEST_MBX_READY_RESVAL = 1'h 0;
   parameter logic [0:0] MBX_INTR_TEST_MBX_ABORT_RESVAL = 1'h 0;
@@ -262,7 +262,7 @@ package mbx_reg_pkg;
   parameter logic [31:0] MBX_DOE_INTR_MSG_DATA_RESVAL = 32'h 0;
   parameter logic [31:0] MBX_DOE_INTR_MSG_DATA_DOE_INTR_MSG_DATA_RESVAL = 32'h 0;
 
-  // Register index for host interface
+  // Register index for core interface
   typedef enum int {
     MBX_INTR_STATE,
     MBX_INTR_ENABLE,
@@ -281,10 +281,10 @@ package mbx_reg_pkg;
     MBX_OUTBOUND_OBJECT_SIZE,
     MBX_DOE_INTR_MSG_ADDR,
     MBX_DOE_INTR_MSG_DATA
-  } mbx_host_id_e;
+  } mbx_core_id_e;
 
-  // Register width information to check illegal writes for host interface
-  parameter logic [3:0] MBX_HOST_PERMIT [17] = '{
+  // Register width information to check illegal writes for core interface
+  parameter logic [3:0] MBX_CORE_PERMIT [17] = '{
     4'b 0001, // index[ 0] MBX_INTR_STATE
     4'b 0001, // index[ 1] MBX_INTR_ENABLE
     4'b 0001, // index[ 2] MBX_INTR_TEST
@@ -305,18 +305,18 @@ package mbx_reg_pkg;
   };
 
   //////////////////////////////////////////////
-  // Typedefs for registers for sys interface //
+  // Typedefs for registers for soc interface //
   //////////////////////////////////////////////
 
   typedef struct packed {
     logic [31:0] q;
     logic        qe;
-  } mbx_reg2hw_sys_doe_intr_msg_addr_reg_t;
+  } mbx_reg2hw_soc_doe_intr_msg_addr_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
     logic        qe;
-  } mbx_reg2hw_sys_doe_intr_msg_data_reg_t;
+  } mbx_reg2hw_soc_doe_intr_msg_data_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -331,7 +331,7 @@ package mbx_reg_pkg;
       logic        q;
       logic        qe;
     } abort;
-  } mbx_reg2hw_sys_control_reg_t;
+  } mbx_reg2hw_soc_control_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -347,7 +347,7 @@ package mbx_reg_pkg;
     struct packed {
       logic        q;
     } busy;
-  } mbx_reg2hw_sys_status_reg_t;
+  } mbx_reg2hw_soc_status_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -359,7 +359,7 @@ package mbx_reg_pkg;
     struct packed {
       logic        d;
     } go;
-  } mbx_hw2reg_sys_control_reg_t;
+  } mbx_hw2reg_soc_control_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -378,56 +378,56 @@ package mbx_reg_pkg;
       logic        d;
       logic        de;
     } ready;
-  } mbx_hw2reg_sys_status_reg_t;
+  } mbx_hw2reg_soc_status_reg_t;
 
-  // Register -> HW type for sys interface
+  // Register -> HW type for soc interface
   typedef struct packed {
-    mbx_reg2hw_sys_doe_intr_msg_addr_reg_t sys_doe_intr_msg_addr; // [76:44]
-    mbx_reg2hw_sys_doe_intr_msg_data_reg_t sys_doe_intr_msg_data; // [43:11]
-    mbx_reg2hw_sys_control_reg_t sys_control; // [10:5]
-    mbx_reg2hw_sys_status_reg_t sys_status; // [4:0]
-  } mbx_sys_reg2hw_t;
+    mbx_reg2hw_soc_doe_intr_msg_addr_reg_t soc_doe_intr_msg_addr; // [76:44]
+    mbx_reg2hw_soc_doe_intr_msg_data_reg_t soc_doe_intr_msg_data; // [43:11]
+    mbx_reg2hw_soc_control_reg_t soc_control; // [10:5]
+    mbx_reg2hw_soc_status_reg_t soc_status; // [4:0]
+  } mbx_soc_reg2hw_t;
 
-  // HW -> register type for sys interface
+  // HW -> register type for soc interface
   typedef struct packed {
-    mbx_hw2reg_sys_control_reg_t sys_control; // [10:8]
-    mbx_hw2reg_sys_status_reg_t sys_status; // [7:0]
-  } mbx_sys_hw2reg_t;
+    mbx_hw2reg_soc_control_reg_t soc_control; // [10:8]
+    mbx_hw2reg_soc_status_reg_t soc_status; // [7:0]
+  } mbx_soc_hw2reg_t;
 
-  // Register offsets for sys interface
-  parameter logic [SysAw-1:0] MBX_SYS_DOE_INTR_MSG_ADDR_OFFSET = 5'h 0;
-  parameter logic [SysAw-1:0] MBX_SYS_DOE_INTR_MSG_DATA_OFFSET = 5'h 4;
-  parameter logic [SysAw-1:0] MBX_SYS_CONTROL_OFFSET = 5'h 8;
-  parameter logic [SysAw-1:0] MBX_SYS_STATUS_OFFSET = 5'h c;
+  // Register offsets for soc interface
+  parameter logic [SocAw-1:0] MBX_SOC_DOE_INTR_MSG_ADDR_OFFSET = 5'h 0;
+  parameter logic [SocAw-1:0] MBX_SOC_DOE_INTR_MSG_DATA_OFFSET = 5'h 4;
+  parameter logic [SocAw-1:0] MBX_SOC_CONTROL_OFFSET = 5'h 8;
+  parameter logic [SocAw-1:0] MBX_SOC_STATUS_OFFSET = 5'h c;
 
-  // Reset values for hwext registers and their fields for sys interface
-  parameter logic [31:0] MBX_SYS_CONTROL_RESVAL = 32'h 0;
-  parameter logic [0:0] MBX_SYS_CONTROL_ABORT_RESVAL = 1'h 0;
-  parameter logic [0:0] MBX_SYS_CONTROL_DOE_INTR_EN_RESVAL = 1'h 0;
-  parameter logic [0:0] MBX_SYS_CONTROL_GO_RESVAL = 1'h 0;
+  // Reset values for hwext registers and their fields for soc interface
+  parameter logic [31:0] MBX_SOC_CONTROL_RESVAL = 32'h 0;
+  parameter logic [0:0] MBX_SOC_CONTROL_ABORT_RESVAL = 1'h 0;
+  parameter logic [0:0] MBX_SOC_CONTROL_DOE_INTR_EN_RESVAL = 1'h 0;
+  parameter logic [0:0] MBX_SOC_CONTROL_GO_RESVAL = 1'h 0;
 
-  // Window parameters for sys interface
-  parameter logic [SysAw-1:0] MBX_WDATA_OFFSET = 5'h 10;
+  // Window parameters for soc interface
+  parameter logic [SocAw-1:0] MBX_WDATA_OFFSET = 5'h 10;
   parameter int unsigned      MBX_WDATA_SIZE   = 'h 4;
   parameter int unsigned      MBX_WDATA_IDX    = 0;
-  parameter logic [SysAw-1:0] MBX_RDATA_OFFSET = 5'h 14;
+  parameter logic [SocAw-1:0] MBX_RDATA_OFFSET = 5'h 14;
   parameter int unsigned      MBX_RDATA_SIZE   = 'h 4;
   parameter int unsigned      MBX_RDATA_IDX    = 1;
 
-  // Register index for sys interface
+  // Register index for soc interface
   typedef enum int {
-    MBX_SYS_DOE_INTR_MSG_ADDR,
-    MBX_SYS_DOE_INTR_MSG_DATA,
-    MBX_SYS_CONTROL,
-    MBX_SYS_STATUS
-  } mbx_sys_id_e;
+    MBX_SOC_DOE_INTR_MSG_ADDR,
+    MBX_SOC_DOE_INTR_MSG_DATA,
+    MBX_SOC_CONTROL,
+    MBX_SOC_STATUS
+  } mbx_soc_id_e;
 
-  // Register width information to check illegal writes for sys interface
-  parameter logic [3:0] MBX_SYS_PERMIT [4] = '{
-    4'b 1111, // index[0] MBX_SYS_DOE_INTR_MSG_ADDR
-    4'b 1111, // index[1] MBX_SYS_DOE_INTR_MSG_DATA
-    4'b 1111, // index[2] MBX_SYS_CONTROL
-    4'b 1111  // index[3] MBX_SYS_STATUS
+  // Register width information to check illegal writes for soc interface
+  parameter logic [3:0] MBX_SOC_PERMIT [4] = '{
+    4'b 1111, // index[0] MBX_SOC_DOE_INTR_MSG_ADDR
+    4'b 1111, // index[1] MBX_SOC_DOE_INTR_MSG_DATA
+    4'b 1111, // index[2] MBX_SOC_CONTROL
+    4'b 1111  // index[3] MBX_SOC_STATUS
   };
 
 endpackage
