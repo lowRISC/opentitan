@@ -380,6 +380,26 @@
       tests: []
     }
     {
+      name: chip_sw_usbdev_setup_rx
+      desc: '''Verify that the USB device can receive the SETUP stage of a Control Transfer
+            from the host/DPI model.
+
+            - This test extends from `chip_sw_usbdev_pullup` by checking that the device
+              can receive packets from the host/DPI model.
+            - Set `tx_differential_mode` to single-ended and `rx_differential_mode` to
+              differential. The other modes are not supported in OpenTitan Earl Grey.
+            - Upon detection of the usbdev asserting its pull up on the DP line,
+              indicating the presence of a Full Speed device, the first communication
+              attempt from the host/DPI model will be a SETUP token packet.
+            - Software shall receive the SETUP DATA packet following the token packet.
+            - The properties but not contents of this packet shall be verified;
+              This makes the test robust against alternative host behaviors, since the
+              first Control Transfer to be sent upon connection is unspecified.
+            '''
+      stage: V2
+      tests: ["chip_sw_usbdev_setuprx"]
+    }
+    {
       name: chip_usb_wake_debug
       desc: '''Verify that `usb_state_debug_i` can be read from the CSR.
 
