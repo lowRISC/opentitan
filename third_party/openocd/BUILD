@@ -29,7 +29,7 @@ genrule(
 )
 
 filegroup(
-    name = "jtag_adapter_cfg",
+    name = "jtag_olimex_cfg",
     srcs = ["@openocd//:tcl/interface/ftdi/olimex-arm-usb-tiny-h.cfg"],
     visibility = ["//visibility:public"],
 )

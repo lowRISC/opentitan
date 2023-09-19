@@ -338,12 +338,12 @@ stat --dereference -c '%a' /dev/jtag_adapter_arm_usb_tiny_h
 ```
 
 The command below tells OpenOCD to connect to the ChipWhisperer CW310 FPGA board via an Olimex ARM-USB-TINY-H JTAG adapter.
-(Note that a different JTAG adapter will require a different config than `//third_party/openocd:jtag_adapter_cfg`.)
+(Note that a different JTAG adapter will require a different config than `//third_party/openocd:jtag_olimex_cfg`.)
 
 ```console
 cd $REPO_TOP
 ./bazelisk.sh run //third_party/openocd -- \
-    -f "bazel-opentitan/$(./bazelisk.sh outquery //third_party/openocd:jtag_adapter_cfg)" \
+    -f "bazel-opentitan/$(./bazelisk.sh outquery //third_party/openocd:jtag_olimex_cfg)" \
     -c "adapter speed 500; transport select jtag; reset_config trst_only" \
     -f util/openocd/target/lowrisc-earlgrey.cfg
 ```

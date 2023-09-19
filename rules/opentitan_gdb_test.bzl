@@ -209,7 +209,7 @@ _opentitan_gdb_fpga_cw310_test = rv_rule(
             allow_single_file = True,
         ),
         "_openocd_jtag_adapter_config": attr.label(
-            default = "//third_party/openocd:jtag_adapter_cfg",
+            default = "//third_party/openocd:jtag_olimex_cfg",
             allow_single_file = True,
         ),
         "_openocd": attr.label(
