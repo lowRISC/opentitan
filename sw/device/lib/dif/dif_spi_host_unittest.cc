@@ -365,9 +365,9 @@ TEST_F(TransactionTest, TransmitDual) {
 
   EXPECT_WRITE32(SPI_HOST_CSID_REG_OFFSET, 0);
   EXPECT_READY(true);
-  EXPECT_CALL(fifo_, write(&spi_host_, buf, sizeof(buf)));
   EXPECT_COMMAND_REG(/*length=*/sizeof(buf), /*width=*/kDifSpiHostWidthDual,
                      /*direction=*/kDifSpiHostDirectionTx, /*last=*/true);
+  EXPECT_CALL(fifo_, write(&spi_host_, buf, sizeof(buf)));
 
   EXPECT_DIF_OK(dif_spi_host_transaction(&spi_host_, 0, &segment, 1));
 }
@@ -403,10 +403,10 @@ TEST_F(TransactionTest, Transceive) {
 
   EXPECT_WRITE32(SPI_HOST_CSID_REG_OFFSET, 0);
   EXPECT_READY(true);
-  EXPECT_CALL(fifo_, write(&spi_host_, txbuf, sizeof(txbuf)));
   EXPECT_COMMAND_REG(
       /*length=*/sizeof(txbuf), /*width=*/kDifSpiHostWidthStandard,
       /*direction=*/kDifSpiHostDirectionBidirectional, /*last=*/true);
+  EXPECT_CALL(fifo_, write(&spi_host_, txbuf, sizeof(txbuf)));
   EXPECT_CALL(fifo_, read(&spi_host_, rxbuf, sizeof(rxbuf)));
 
   EXPECT_DIF_OK(dif_spi_host_transaction(&spi_host_, 0, &segment, 1));
@@ -429,9 +429,9 @@ TEST_F(TransactionTest, MultiSegmentTxRx) {
 
   EXPECT_WRITE32(SPI_HOST_CSID_REG_OFFSET, 0);
   EXPECT_READY(true);
-  EXPECT_CALL(fifo_, write(&spi_host_, txbuf, sizeof(txbuf)));
   EXPECT_COMMAND_REG(/*length=*/sizeof(txbuf), /*width=*/kDifSpiHostWidthDual,
                      /*direction=*/kDifSpiHostDirectionTx, /*last=*/false);
+  EXPECT_CALL(fifo_, write(&spi_host_, txbuf, sizeof(txbuf)));
   EXPECT_READY(true);
   EXPECT_COMMAND_REG(/*length=*/sizeof(rxbuf), /*width=*/kDifSpiHostWidthDual,
                      /*direction=*/kDifSpiHostDirectionRx, /*last=*/true);

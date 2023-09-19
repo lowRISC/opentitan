@@ -341,29 +341,25 @@ static void issue_dummy(const dif_spi_host_t *spi_host,
 static dif_result_t issue_data_phase(const dif_spi_host_t *spi_host,
                                      dif_spi_host_segment_t *segment,
                                      bool last_segment) {
-  size_t length;
-  dif_spi_host_width_t width;
-  dif_spi_host_direction_t direction;
-
   switch (segment->type) {
     case kDifSpiHostSegmentTypeTx:
-      width = segment->tx.width;
-      length = segment->tx.length;
-      direction = kDifSpiHostDirectionTx;
+      write_command_reg(spi_host, (uint16_t)segment->tx.length,
+                        segment->tx.width, kDifSpiHostDirectionTx,
+                        last_segment);
       spi_host_fifo_write_alias(spi_host, segment->tx.buf,
                                 (uint16_t)segment->tx.length);
       break;
     case kDifSpiHostSegmentTypeBidirectional:
-      width = segment->bidir.width;
-      length = segment->bidir.length;
-      direction = kDifSpiHostDirectionBidirectional;
+      write_command_reg(spi_host, (uint16_t)segment->bidir.length,
+                        segment->bidir.width, kDifSpiHostDirectionBidirectional,
+                        last_segment);
       spi_host_fifo_write_alias(spi_host, segment->bidir.txbuf,
                                 (uint16_t)segment->bidir.length);
       break;
     case kDifSpiHostSegmentTypeRx:
-      width = segment->rx.width;
-      length = segment->rx.length;
-      direction = kDifSpiHostDirectionRx;
+      write_command_reg(spi_host, (uint16_t)segment->rx.length,
+                        segment->rx.width, kDifSpiHostDirectionRx,
+                        last_segment);
       break;
     default:
       // Programming error (within this file).  We should never get here.
@@ -371,7 +367,6 @@ static dif_result_t issue_data_phase(const dif_spi_host_t *spi_host,
       // represent a data transfer.
       return kDifBadArg;
   }
-  write_command_reg(spi_host, (uint16_t)length, width, direction, last_segment);
   return kDifOk;
 }
 
