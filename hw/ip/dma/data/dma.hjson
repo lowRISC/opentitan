@@ -443,6 +443,7 @@
         { bits: "5:2"
           name: "opcode"
           resval: 0x0
+          hwaccess: "hro"
           desc: '''
                 Defines the type of DMA operations.
                 '''
@@ -468,6 +469,7 @@
         { bits: "6"
           name: "hardware_handshake_enable"
           resval: 0x0
+          hwaccess: "hro"
           desc: '''
                 Enable hardware handshake mode.
                 Used to clear FIFOs from low speed IO peripherals receiving data, e.g., I3C receive buffer.
@@ -482,6 +484,7 @@
         { bits: "7"
           name: "memory_buffer_auto_increment_enable"
           resval: 0x0
+          hwaccess: "hro"
           desc: '''
                 Used in conjunction with the hardware handshake mode of operation.
                 Auto Increments the memory buffer address register by data size to point to the next memory buffer address.
@@ -492,6 +495,7 @@
         { bits: "8"
           name: "fifo_auto_increment_enable"
           resval: 0x0
+          hwaccess: "hro"
           desc: '''
                 Used in conjunction with the hardware handshake mode of operation.
                 If set, reads/writes from/to incremental addresses for FIFO data register addresses.
@@ -507,9 +511,30 @@
                 1: Send data from memory buffer to LSIO FIFO.
                 '''
         }
+        { bits: "10"
+          name: "start_hashing"
+          resval: 0x0
+          hwaccess: "hrw"
+          desc: '''
+                Marks the initial transfer to initialize the SHA engine at start.
+                This bit is necessary to support inline hashing for the handshake mode, in which multiple transfers contribute to a final digest.
+                Note, for non-handshake transfers with inline hashing mode enabled, this bit must be set to also mark the first transfer.
+                '''
+        }
+        { bits: "11"
+          name: "stop_hashing"
+          resval: 0x0
+          hwaccess: "hro"
+          desc: '''
+                Marks the end of a transfer to enable the digest computation after all data has been transferred.
+                This bit is necessary to support inline hashing for the handshake mode, in which multiple transfers contribute to a final digest.
+                Note, for non-handshake transfers with inline hashing mode enabled, this bit must be set to also mark the end of a transfer.
+                '''
+        }
         { bits: "27"
           name: "abort"
           swaccess: "wo"
+          hwaccess: "hro"
           resval: 0x0
           desc: '''
                 Aborts the DMA operation if this bit is set.
@@ -520,6 +545,7 @@
         { bits: "31"
           name: "go"
           resval: 0x0
+          hwaccess: "hrw"
           desc: '''
                 Trigger the DMA operation when the Go bit is set.
                 For normal operation, DMA engine clears the GO bit automatically after the configured operation is complete.
