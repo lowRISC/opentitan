@@ -1,7 +1,7 @@
 # Theory of Operation
 
 As already described, this IP block will collect bits of entropy for firmware or hardware consumption.
-This revision supports only an external interface for a PTRNG noise source implementation.
+This revision supports only an external interface for a PTRNG (Physical True Random Number Generator) noise source implementation.
 
 The first step is initialization and enabling.
 The PTRNG noise source mode is selected when the [`MODULE_ENABLE`](registers.md#module_enable) field is set.
