@@ -29,9 +29,9 @@ module mbx
   // Device port facing OpenTitan
   input   tlul_pkg::tl_h2d_t                        core_tl_d_i,
   output  tlul_pkg::tl_d2h_t                        core_tl_d_o,
-  // Device port facing CTN Xbar
-  input   tlul_pkg::tl_h2d_t                        tl_sys_i,
-  output  tlul_pkg::tl_d2h_t                        tl_sys_o,
+  // Device port facing SoC
+  input   tlul_pkg::tl_h2d_t                        soc_tl_d_i,
+  output  tlul_pkg::tl_d2h_t                        soc_tl_d_o,
   // Host port to access private SRAM
   input   tlul_pkg::tl_d2h_t                        tl_sram_i,
   output  tlul_pkg::tl_h2d_t                        tl_sram_o
@@ -171,8 +171,8 @@ module mbx
   ) u_sysif (
     .clk_i                               ( clk_i                              ),
     .rst_ni                              ( rst_ni                             ),
-    .tl_sys_i                            ( tl_sys_i                           ),
-    .tl_sys_o                            ( tl_sys_o                           ),
+    .tl_sys_i                            ( soc_tl_d_i                         ),
+    .tl_sys_o                            ( soc_tl_d_o                         ),
     .intg_err_o                          ( sysif_intg_err                     ),
     // System interrupt support
     .doe_intr_support_o                  ( doe_intr_support_o                 ),
