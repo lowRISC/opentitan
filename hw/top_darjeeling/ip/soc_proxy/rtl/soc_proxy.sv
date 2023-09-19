@@ -8,6 +8,7 @@
 
 module soc_proxy
   import soc_proxy_reg_pkg::*;
+  import soc_proxy_pkg::*;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
 ) (
@@ -33,10 +34,10 @@ module soc_proxy
   output tlul_pkg::tl_h2d_t ctn_tl_h2d_o,
   input  tlul_pkg::tl_d2h_t ctn_tl_d2h_i,
 
-  input  prim_alert_pkg::alert_tx_t  [3:0] soc_fatal_alert_req_i,
-  output prim_alert_pkg::alert_ack_t [3:0] soc_fatal_alert_ack_o,
-  input  prim_alert_pkg::alert_tx_t  [3:0] soc_recov_alert_req_i,
-  output prim_alert_pkg::alert_ack_t [3:0] soc_recov_alert_ack_o,
+  input  soc_alert_req_t [3:0] soc_fatal_alert_i,
+  output soc_alert_rsp_t [3:0] soc_fatal_alert_o,
+  input  soc_alert_req_t [3:0] soc_recov_alert_i,
+  output soc_alert_rsp_t [3:0] soc_recov_alert_o,
 
   input  logic soc_wkup_async_i,
 
@@ -52,9 +53,9 @@ module soc_proxy
   assign intr_external_o = '0;
   assign wkup_internal_req_o = 1'b0;
   assign wkup_external_req_o = 1'b0;
-  for (genvar i = 0; i < 4; i++) begin : gen_tieoff_soc_alert_ack
-    assign soc_fatal_alert_ack_o[i] = prim_alert_pkg::ALERT_ACK_DEFAULT;
-    assign soc_recov_alert_ack_o[i] = prim_alert_pkg::ALERT_ACK_DEFAULT;
+  for (genvar i = 0; i < 4; i++) begin : gen_tieoff_soc_alert_rsp
+    assign soc_fatal_alert_o[i] = SOC_ALERT_RSP_DEFAULT;
+    assign soc_recov_alert_o[i] = SOC_ALERT_RSP_DEFAULT;
   end
 
   // Register node

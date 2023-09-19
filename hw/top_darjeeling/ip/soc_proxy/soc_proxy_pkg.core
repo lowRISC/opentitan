@@ -11,6 +11,7 @@ filesets:
       - lowrisc:tlul:headers
     files:
       - rtl/soc_proxy_reg_pkg.sv
+      - rtl/soc_proxy_pkg.sv
     file_type: systemVerilogSource
 
 targets:

@@ -109,36 +109,20 @@
       act:     "req"
       desc:    "Collated LSIO trigger signals for DMA"
     }
-    { struct:  "alert_tx"
-      package: "prim_alert_pkg"
-      type:    "uni"
-      name:    "soc_fatal_alert_req"
-      act:     "rcv"
-      desc:    "Differential fatal alert from SoC (input port), synchronous"
+    { struct:  "soc_alert"
+      package: "soc_proxy_pkg"
+      type:    "req_rsp"
+      name:    "soc_fatal_alert"
+      act:     "rsp"
+      desc:    "Differential fatal alert from SoC, synchronous"
       width:   4
     }
-    { struct:  "alert_ack"
-      package: "prim_alert_pkg"
-      type:    "uni"
-      name:    "soc_fatal_alert_ack"
-      act:     "req"
-      desc:    "Differential fatal alert from SoC (acknowledge port), synchronous"
-      width:   4
-    }
-    { struct:  "alert_tx"
-      package: "prim_alert_pkg"
-      type:    "uni"
-      name:    "soc_recov_alert_req"
-      act:     "rcv"
-      desc:    "Differential recoverable alert from SoC (input port), synchronous"
-      width:   4
-    }
-    { struct:  "alert_ack"
-      package: "prim_alert_pkg"
-      type:    "uni"
-      name:    "soc_recov_alert_ack"
-      act:     "req"
-      desc:    "Differential recoverable alert from SoC (acknowledge port), synchronous"
+    { struct:  "soc_alert"
+      package: "soc_proxy_pkg"
+      type:    "req_rsp"
+      name:    "soc_recov_alert"
+      act:     "rsp"
+      desc:    "Differential recoverable alert from SoC, synchronous"
       width:   4
     }
     { struct:  "logic"
