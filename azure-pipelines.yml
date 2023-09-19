@@ -573,6 +573,21 @@ jobs:
       downloadPartialBuildBinFrom:
         - chip_earlgrey_cw310_hyperdebug
         - sw_build
+  # We run the update command twice to workaround an issue with udev on the container.
+  # Where rusb cannot dynamically update its device list in CI (udev is not completely
+  # functional). If the device is in normal mode, the first thing that opentitantool
+  # does is to switch it to DFU mode and wait until it reconnects. This reconnection is
+  # never detected. But if we run the tool another time, the device list is queried again
+  # and opentitantool can finish the update. The device will now reboot in normal mode
+  # and work for the hyperdebug job.
+  - bash: |
+      ci/bazelisk.sh run \
+        //sw/host/opentitantool:opentitantool -- \
+        --interface=hyperdebug_dfu transport update-firmware \
+      || ci/bazelisk.sh run \
+        //sw/host/opentitantool:opentitantool -- \
+        --interface=hyperdebug_dfu transport update-firmware || true
+    displayName: "Update the hyperdebug firmware"
   - bash: |
       set -e
       . util/build_consts.sh
