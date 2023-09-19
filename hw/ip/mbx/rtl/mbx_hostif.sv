@@ -197,4 +197,9 @@ module mbx_hostif
   // Alias of the IRQ addr and data register from the sys interface (RO)
   assign hw2reg.doe_intr_msg_addr.d  = sysif_intr_msg_addr_i;
   assign hw2reg.doe_intr_msg_data.d  = sysif_intr_msg_data_i;
+
+  // Assertions
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A,
+                                                 u_regs,
+                                                 alert_tx_o[0])
 endmodule
