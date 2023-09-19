@@ -538,6 +538,36 @@ cc_test(
 )
 
 cc_library(
+    name = "mbx",
+    srcs = [
+        "//sw/ip/mbx/dif:headers",
+        "//sw/ip/mbx/dif:sources",
+    ],
+    hdrs = [
+        "//sw/ip/mbx/dif:api",
+    ],
+    deps = [
+        "//hw/ip/mbx/data:mbx_regs",
+        "//sw/ip/base/dif:base",
+        "//sw/lib/sw/device/base:bitfield",
+        "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/base:mmio",
+    ],
+)
+
+cc_test(
+    name = "mbx_unittest",
+    srcs = [
+        "//sw/ip/mbx/dif:test_sources",
+    ],
+    deps = [
+        ":mbx",
+        "//sw/ip/base/dif:test_base",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "otbn",
     srcs = [
         "//sw/ip/otbn/dif:headers",
