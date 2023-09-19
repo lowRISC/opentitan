@@ -122,13 +122,13 @@ module soc_proxy_core_reg_top (
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
   logic intr_state_we;
-  logic [3:0] intr_state_qs;
-  logic [3:0] intr_state_wd;
+  logic [7:0] intr_state_qs;
+  logic [7:0] intr_state_wd;
   logic intr_enable_we;
-  logic [3:0] intr_enable_qs;
-  logic [3:0] intr_enable_wd;
+  logic [7:0] intr_enable_qs;
+  logic [7:0] intr_enable_wd;
   logic intr_test_we;
-  logic [3:0] intr_test_wd;
+  logic [7:0] intr_test_wd;
   logic alert_test_we;
   logic alert_test_fatal_alert_intg_wd;
   logic alert_test_fatal_alert_external_0_wd;
@@ -143,9 +143,9 @@ module soc_proxy_core_reg_top (
   // Register instances
   // R[intr_state]: V(False)
   prim_subreg #(
-    .DW      (4),
+    .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (4'h0),
+    .RESVAL  (8'h0),
     .Mubi    (1'b0)
   ) u_intr_state (
     .clk_i   (clk_i),
@@ -171,9 +171,9 @@ module soc_proxy_core_reg_top (
 
   // R[intr_enable]: V(False)
   prim_subreg #(
-    .DW      (4),
+    .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
+    .RESVAL  (8'h0),
     .Mubi    (1'b0)
   ) u_intr_enable (
     .clk_i   (clk_i),
@@ -202,7 +202,7 @@ module soc_proxy_core_reg_top (
   logic [0:0] intr_test_flds_we;
   assign intr_test_qe = &intr_test_flds_we;
   prim_subreg_ext #(
-    .DW    (4)
+    .DW    (8)
   ) u_intr_test (
     .re     (1'b0),
     .we     (intr_test_we),
@@ -390,13 +390,13 @@ module soc_proxy_core_reg_top (
   // Generate write-enables
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
-  assign intr_state_wd = reg_wdata[3:0];
+  assign intr_state_wd = reg_wdata[7:0];
   assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
-  assign intr_enable_wd = reg_wdata[3:0];
+  assign intr_enable_wd = reg_wdata[7:0];
   assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
-  assign intr_test_wd = reg_wdata[3:0];
+  assign intr_test_wd = reg_wdata[7:0];
   assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
 
   assign alert_test_fatal_alert_intg_wd = reg_wdata[0];
@@ -431,15 +431,15 @@ module soc_proxy_core_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[3:0] = intr_state_qs;
+        reg_rdata_next[7:0] = intr_state_qs;
       end
 
       addr_hit[1]: begin
-        reg_rdata_next[3:0] = intr_enable_qs;
+        reg_rdata_next[7:0] = intr_enable_qs;
       end
 
       addr_hit[2]: begin
-        reg_rdata_next[3:0] = '0;
+        reg_rdata_next[7:0] = '0;
       end
 
       addr_hit[3]: begin
