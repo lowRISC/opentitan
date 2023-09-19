@@ -196,6 +196,10 @@ module dma_reg_top (
   logic control_fifo_auto_increment_enable_wd;
   logic control_data_direction_qs;
   logic control_data_direction_wd;
+  logic control_start_hashing_qs;
+  logic control_start_hashing_wd;
+  logic control_stop_hashing_qs;
+  logic control_stop_hashing_wd;
   logic control_abort_wd;
   logic control_go_qs;
   logic control_go_wd;
@@ -1134,7 +1138,7 @@ module dma_reg_top (
 
   // R[control]: V(False)
   logic control_qe;
-  logic [6:0] control_flds_we;
+  logic [8:0] control_flds_we;
   prim_flop #(
     .Width(1),
     .ResetValue(0)
@@ -1159,8 +1163,8 @@ module dma_reg_top (
     .wd     (control_opcode_wd),
 
     // from internal hardware
-    .de     (hw2reg.control.opcode.de),
-    .d      (hw2reg.control.opcode.d),
+    .de     (1'b0),
+    .d      ('0),
 
     // to internal hardware
     .qe     (control_flds_we[0]),
@@ -1187,8 +1191,8 @@ module dma_reg_top (
     .wd     (control_hardware_handshake_enable_wd),
 
     // from internal hardware
-    .de     (hw2reg.control.hardware_handshake_enable.de),
-    .d      (hw2reg.control.hardware_handshake_enable.d),
+    .de     (1'b0),
+    .d      ('0),
 
     // to internal hardware
     .qe     (control_flds_we[1]),
@@ -1215,8 +1219,8 @@ module dma_reg_top (
     .wd     (control_memory_buffer_auto_increment_enable_wd),
 
     // from internal hardware
-    .de     (hw2reg.control.memory_buffer_auto_increment_enable.de),
-    .d      (hw2reg.control.memory_buffer_auto_increment_enable.d),
+    .de     (1'b0),
+    .d      ('0),
 
     // to internal hardware
     .qe     (control_flds_we[2]),
@@ -1243,8 +1247,8 @@ module dma_reg_top (
     .wd     (control_fifo_auto_increment_enable_wd),
 
     // from internal hardware
-    .de     (hw2reg.control.fifo_auto_increment_enable.de),
-    .d      (hw2reg.control.fifo_auto_increment_enable.d),
+    .de     (1'b0),
+    .d      ('0),
 
     // to internal hardware
     .qe     (control_flds_we[3]),
@@ -1284,6 +1288,62 @@ module dma_reg_top (
   );
   assign reg2hw.control.data_direction.qe = control_qe;
 
+  //   F[start_hashing]: 10:10
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_control_start_hashing (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (control_we),
+    .wd     (control_start_hashing_wd),
+
+    // from internal hardware
+    .de     (hw2reg.control.start_hashing.de),
+    .d      (hw2reg.control.start_hashing.d),
+
+    // to internal hardware
+    .qe     (control_flds_we[5]),
+    .q      (reg2hw.control.start_hashing.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (control_start_hashing_qs)
+  );
+  assign reg2hw.control.start_hashing.qe = control_qe;
+
+  //   F[stop_hashing]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_control_stop_hashing (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (control_we),
+    .wd     (control_stop_hashing_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (control_flds_we[6]),
+    .q      (reg2hw.control.stop_hashing.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (control_stop_hashing_qs)
+  );
+  assign reg2hw.control.stop_hashing.qe = control_qe;
+
   //   F[abort]: 27:27
   prim_subreg #(
     .DW      (1),
@@ -1299,11 +1359,11 @@ module dma_reg_top (
     .wd     (control_abort_wd),
 
     // from internal hardware
-    .de     (hw2reg.control.abort.de),
-    .d      (hw2reg.control.abort.d),
+    .de     (1'b0),
+    .d      ('0),
 
     // to internal hardware
-    .qe     (control_flds_we[5]),
+    .qe     (control_flds_we[7]),
     .q      (reg2hw.control.abort.q),
     .ds     (),
 
@@ -1331,7 +1391,7 @@ module dma_reg_top (
     .d      (hw2reg.control.go.d),
 
     // to internal hardware
-    .qe     (control_flds_we[6]),
+    .qe     (control_flds_we[8]),
     .q      (reg2hw.control.go.q),
     .ds     (),
 
@@ -3226,6 +3286,10 @@ module dma_reg_top (
 
   assign control_data_direction_wd = reg_wdata[9];
 
+  assign control_start_hashing_wd = reg_wdata[10];
+
+  assign control_stop_hashing_wd = reg_wdata[11];
+
   assign control_abort_wd = reg_wdata[27];
 
   assign control_go_wd = reg_wdata[31];
@@ -3475,6 +3539,8 @@ module dma_reg_top (
         reg_rdata_next[7] = control_memory_buffer_auto_increment_enable_qs;
         reg_rdata_next[8] = control_fifo_auto_increment_enable_qs;
         reg_rdata_next[9] = control_data_direction_qs;
+        reg_rdata_next[10] = control_start_hashing_qs;
+        reg_rdata_next[11] = control_stop_hashing_qs;
         reg_rdata_next[27] = '0;
         reg_rdata_next[31] = control_go_qs;
       end
