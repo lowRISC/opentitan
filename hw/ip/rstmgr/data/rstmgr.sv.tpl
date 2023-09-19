@@ -306,7 +306,7 @@ module rstmgr
 <%rst_name = Name.from_snake_case(name)
 %>\
     % for domain in power_domains:
-       % if domain in rst.domains:
+      % if domain in rst.domains:
   rstmgr_leaf_rst #(
     % if rst.name==rst_ni:
     .SecCheck(0),

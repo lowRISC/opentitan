@@ -48,7 +48,7 @@ interface rstmgr_if (
   `define PATH_TO_DUT tb.dut
 `endif
 
-  logic [7:0] reset_info;
+  logic [NumTotalResets-1:0] reset_info;
   always_comb begin
     reset_info = {
       `PATH_TO_DUT.u_reg.reset_info_hw_req_qs,
