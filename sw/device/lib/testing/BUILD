@@ -27,6 +27,7 @@ cc_library(
         "//sw/device/lib/dif:keymgr",
         "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/dif:kmac",
+        "//sw/device/lib/dif:mbx",
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:pattgen",
